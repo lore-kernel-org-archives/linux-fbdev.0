@@ -1,143 +1,162 @@
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B7A12F7AA6
-	for <linux-fbdev@vger.kernel.org>; Mon, 10 Nov 2025 09:04:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5048535957
+	for <linux-fbdev@vger.kernel.org>; Mon, 10 Nov 2025 09:59:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762765492; cv=none; b=Id6Umku/kk6Ojl1g0OxukQREw9+LNG1i++ZPlk/XqrcIR3AXb//caUZf2C1rsFWyCfqxE8FvxQWzh37LzB1zGuzj77T1Pvdi3Y5b3vwk5f12kt0b1UXEnF/2Uc+dti+EJBtfJP49QMF2ZZ4cRIiw0ZSpcliQYFtmS4dW6auoGAc=
+	t=1762768744; cv=none; b=OnRzysfp9AfkTJldVW6B8oWyO5ADoP9sevkwbg0dCNzEQe5W3Gu3ssoLUGYI7RgmNki8rIQWyohFU5oU0VPP7Bznzx6aPHozC4O7CuktilKpkL76mK0V1hRpmSGg5ohREubTm0Fhz8culjV9eXPj7zkI6LCrrhFo2WzNjAK4vOo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762765492; c=relaxed/simple;
-	bh=cuSN+/ibhibAMGoE5yYpTwRCJCYlYwVkoPXJV+RI0GQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=O2jT9IwCki+J3lciYH34uodZsuxfHEx2aTifmPOcgM75lNt//f+M4YdTo1W07npDqxoucuCEkbJxRBONn7dmUai/8wPIrv++E5aSRlb+T90lxIkaDpWpWU4NlV5ObVPEB5VKQwWfLdbQL/3jnIlxOQNUTXzGeLgtiBN68jv0RAI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XRcUotCT; arc=none smtp.client-ip=209.85.221.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1762768744; c=relaxed/simple;
+	bh=Ldxb3xiosslpoOJubQchwtbD2Q0t8Tiz2RiN7Ya71NU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XpV/j4d7qEij7fI406kbmP/wJ0Bdc04dJf4yPqEl8UYaqgjDEArGPzqez4JDcxBD3nwUb4ykWFv3kiUBSW03JnYXQQ3NsdjdFLyLzJ7TFzRgbjYHAXdYJUU8TCukifQ8u4FdVfx+yjYKyo6zWhqSFHbZ7NF/Dcw0CHZM1kUtYvk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=CU4X2lut; arc=none smtp.client-ip=209.85.221.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XRcUotCT"
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-429c8632fcbso1733984f8f.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 10 Nov 2025 01:04:50 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="CU4X2lut"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-42b31507ed8so1414174f8f.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 10 Nov 2025 01:59:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762765489; x=1763370289; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Sk5vRB2A8CTvXBhPjKRDoJZr7gkm+Aa51P8sRfLV4X0=;
-        b=XRcUotCTCEu69tsMyqU8cbA/VzEnq+xVT5zvc3d5dWA+vReauW3pcLGqUIp/q52jIV
-         bx9lyRzhy8cm9pBeWlQtU8ty3uxMFhvhhHFxDPWr9TIPAVpABY/1gHcaGfcaHCzZIFaV
-         fBLcD7Tk8m3FENIP6KkjYDh7EA/r4cjBT6KkUg7bXCAWZtcJyJMlNC/LZjk6N+N5Uwrv
-         5kDW7BUo1OX3y+F+HLk8mN2zzGYKZUGu3FcJNoe38D6z1+URhPX+mUVqUALI4aRKTRd/
-         AOEmxp+LxcNlqT6YwUKVLB7Y+lZlf5++QOKdNmk5zh/iYrXmi7DfrwJDuxnFgW8ZDDKu
-         rFGg==
+        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1762768741; x=1763373541; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=wKdtCn/XoTBMU0W91zbNyyVRdCbCwPGBIxEuE5k5q+8=;
+        b=CU4X2lutMaoMp7050vNzWAMZ+EMXpJt11Kci27RsnTIl2yDssByHkBj8jMTgXdJ7dc
+         Pi35qWLiOt36vrj4uZGBBRCDvasuLEpJqHQYRoGN+WkhCWagOO2/EvZc/TZy6zBEUOgU
+         dOseGOeC5P200rjflSAm7dyWMNiR3jRjYfiiWLOcLf+KqSiURh+hOB8DP587ztAzqgxp
+         WpJTeth0Ay0n7WnKSLb2/E9qPQYUEwlNgsGqcDlx4kfd5jfN7zcl212Is8Rz2OSvigRG
+         zcAZwSUMNe/W4U8Mj/XLqoLjmUpYRk9LIfSLo9jagpd8NsIexgbap3qnq30iXiB0tUdu
+         ZqIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762765489; x=1763370289;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Sk5vRB2A8CTvXBhPjKRDoJZr7gkm+Aa51P8sRfLV4X0=;
-        b=GVnr0wlFFtwx37hgZl3bMPRl4U5u9B4kN1EwThFZ+lpd8IhDJvACnYYoARu89CpMWu
-         Zh+10Fa7rIEDZuvRzkKvdWRqTCjlVgops3GXglv/80aPILUFL4Uk86Y62Xbs5OjmhUXR
-         ThjKpUg2wvgXqK+Mwf4i4ZVkbfS+U3NDC/c4Gqn1yGZpibRVptyMf3QdQ2NlMd27YOUk
-         yp03xzBXk2Py5OEV/sc83JTKiKbxV2KBclWaQdUdEfCcPVdYyvUE8wIkx/o16F+7jfec
-         6Usg5kutzE50L8XexFI/r7lI+yVb87gawe25TXfIwXbelmBFw4GIXQIDya3UGXiA7ETi
-         5pOg==
-X-Gm-Message-State: AOJu0Yxn2emsw0aSKNW/Re9sSWqxYJXUNmmAEYD4SVpRq5d3YX0i3Pz0
-	LBDhjet1AlxdERaSzZtmX9RRqSi6Hrd6UztJI2l+EDfgHC9oAj613pR4
-X-Gm-Gg: ASbGncsYRjhlnaHielwZqoefDJgNK5WE4q7nw2qNtnnp2Z0asgr7NX/im8KpI/I5MJK
-	7Tmq7/RmBqrctWcEsMkSIaUGeLl6PKxcfov7NugCycNTyvIlOEwIbkTM3+DJMECWjULGlBGnXAa
-	ORlPIoHDrV7cBl0mwPBcztxy6Gac1Z70xB5JZZSY8Lm+rDyrBmvgEbFoCB/2fOr+c28cdz60Q9G
-	sRRwyEv5v6KmUW2QOzksy2EHBoEqoQv2XZYkP6cQSJ8TUFJS8a7Lf1f3ponlKlCk/QDDby5/BIb
-	DLDI7qkndTa/3HqYKZJjuuNxj57mYLSms74uGfHuou9K15UbyOPwIHajb6uNENxMT59vB/6o5Ru
-	0n2g82jD31uvJo/zLhrjY+1iGOWkx2p3go/4VqAmXXoifCECzh5WRZwiEKtF1Xr/tgChNu0U5Y7
-	pcrXiz3eFflGcsnBftSldnjLDhbTpgucDk5pf2iPcpykjNKXMLt9omZIKPDHE=
-X-Google-Smtp-Source: AGHT+IEwdnOYLiRxGnlYWFiugvoKZP0MLjXKBzH1fGwb5TD6K5KB/oIeeQdF5BkkS4fmoxY0g26LaA==
-X-Received: by 2002:a05:600c:444b:b0:477:7a78:3016 with SMTP id 5b1f17b1804b1-4777a783204mr26968615e9.8.1762765488848;
-        Mon, 10 Nov 2025 01:04:48 -0800 (PST)
-Received: from dell (229.red-88-1-12.dynamicip.rima-tde.net. [88.1.12.229])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-47763e7a6desm103083205e9.8.2025.11.10.01.04.48
+        d=1e100.net; s=20230601; t=1762768741; x=1763373541;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=wKdtCn/XoTBMU0W91zbNyyVRdCbCwPGBIxEuE5k5q+8=;
+        b=Ip4i613S/2xhtzdmohHJIzpzp3zGEF9NPVJKU++VsyonTq7ze6ebyp1eyeKsZLTjfA
+         lHHhE3TqOz5oK6QZSRuxtKByCzBRGsfaXYw95Zg1/Y+2ic0gVGnI7SBRJ6qOHFef22z4
+         TpJCeg+iPaf7aVdTsZF+sxU6sIQGqxuqCo/Efd1pqjVECTXhRuaoNC/w6c/2/r0o4blJ
+         LlcHprxc/3oUrucASZziDZabMLNkmQgB9H08ZfNzLF9bjqcWfoF6SrF428opIc3klDB0
+         iz24SINj7LNeBgtarST6qp18w/pWmm0izWTe8ESecZXgccMXWvxQh0LwQxz0dxHpsxBq
+         qvLA==
+X-Forwarded-Encrypted: i=1; AJvYcCW2l6dRb5oJhEJk7pYi+pxvUk0iykH/Rie7Ws1aMIF3Vl/CGlzxxM4U4k03Y3PQpUjq4XMLlxVky6ql3Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwCducaiDFoZLbEgzn+WFiZmkGULQRitPFCMgeSX+FS/CyOht+1
+	RV3JJoBPUTA8AzFcY0s+Y07FFpzrEDSt88Lu8TGaninIvtSy3GmUyXlYC9HpRb2uRxQ=
+X-Gm-Gg: ASbGncvG1mmc8SzjHWdfN2J9I7QyJfuPG13VGZrrhLSgbSohld4H8OnQsH/+PbKpjKE
+	NjKFdAy/TnBhOMVS463x8J981HjNW//chEPHxtEj4Rtm5HxE7hQp8Qkd+As45D0B5JqmpqiqBKF
+	KotMZopGooOFY8G385kInJlMQ6+63FQp1scaAll155cE03Dbqq+LOvUf53XnsTceMZ78VW+HCu8
+	NNcQ98Ht9EyHYCpUQ8cDkEiHKOl5r+pN0ZgLrNvKnQFPFFVmW0eZLIJML6Bv2FiagvraTCs918d
+	GJR5I3EyVAR67srrvIdosCJaXwNMxuomzQVP/MFPBTix377TaWfFV+AYbPszq5kJjRXQ+DpJTHX
+	dToP4ajSxDX2UpSXFpStYIznc4LrNi9PE9U9dlochoeiDavK5UB2vY3vHosqZV8jGJVA1pYekHX
+	0Vh9NQAbQOgyMZFQXKigWNaHdSX3yHldWMMqrsGbr3NU4cM2tTYksDCtT2WyI=
+X-Google-Smtp-Source: AGHT+IESDCHlcbXRXRa2TG5aApGtSH2moJB6JVIAkSw02ybwWPI2qmXCnmEZcdOIcRiKJ320ee1qvg==
+X-Received: by 2002:a5d:5885:0:b0:429:d19f:d959 with SMTP id ffacd0b85a97d-42b2dc1ab24mr7071023f8f.15.1762768740534;
+        Mon, 10 Nov 2025 01:59:00 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-42b32ecf522sm9799000f8f.45.2025.11.10.01.58.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 10 Nov 2025 01:04:48 -0800 (PST)
-From: Javier Garcia <rampxxxx@gmail.com>
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	shuah@kernel.org,
-	Javier Garcia <rampxxxx@gmail.com>
-Subject: [PATCH] fbdev/vga16fb: Use dev_* fn's instead printk.
-Date: Mon, 10 Nov 2025 10:04:46 +0100
-Message-ID: <20251110090446.2910998-1-rampxxxx@gmail.com>
-X-Mailer: git-send-email 2.50.1
+        Mon, 10 Nov 2025 01:58:59 -0800 (PST)
+Date: Mon, 10 Nov 2025 10:01:11 +0000
+From: Daniel Thompson <daniel@riscstar.com>
+To: Maud Spierings <maudspierings@gocontroll.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v5 2/4] backlight: add max25014atg backlight
+Message-ID: <aRG359gIeP48V2ZZ@aspen.lan>
+References: <20251107-max25014-v5-0-9a6aa57306bf@gocontroll.com>
+ <20251107-max25014-v5-2-9a6aa57306bf@gocontroll.com>
+ <aQ4a2SBDldYgQb56@aspen.lan>
+ <f4e52cc1-9c5f-4069-9079-83be794ab2b3@gocontroll.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f4e52cc1-9c5f-4069-9079-83be794ab2b3@gocontroll.com>
 
-- Family dev_* fn's will show device name, giving extra info to logs.
-- Delete the prefix `vga16fb:` from msg strings, not needed now.
+On Mon, Nov 10, 2025 at 09:40:07AM +0100, Maud Spierings wrote:
+> On 11/7/25 17:14, Daniel Thompson wrote:
+> > On Fri, Nov 07, 2025 at 01:49:59PM +0100, Maud Spierings via B4 Relay wrote:
+> > > +/**
+> > > + * @brief control the brightness with i2c registers
+> > > + *
+> > > + * @param regmap trivial
+> > > + * @param brt brightness
+> > > + * @return int
+> > > + */
+> > > +static int max25014_register_control(struct regmap *regmap, uint32_t brt)
+> >
+> > This isn't a good name for a function. It doesn't really say what it
+> > does. Please find a more descriptive name.
+>
+> Having a lot of difficulties find a succinct name that fits better,
+> max25014_register_brightness_control()?
+> max25014_i2c_brightness_control()?
 
-[    1.037947] vga16fb vga-framebuffer.0: initializing
+I'd focus on what it does rather than how it does it meaning something
+like max25014_update_brightness() would work.
 
-Signed-off-by: Javier Garcia <rampxxxx@gmail.com>
----
- drivers/video/fbdev/vga16fb.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+However, at present, this code is only called from
+max25014_update_status() so the simplest thing to do is to move the
+code into max25014_update_status() and remove this function entirely
+(then it doesn't matter what it is called ;-) ).
 
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 3b4c50d98ba6..432ba7c8164b 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -1324,7 +1324,7 @@ static int vga16fb_probe(struct platform_device *dev)
- 		dev_err(&dev->dev, "vga16b: cannot reserve video memory at 0x%lx\n",
- 		       vga16fb_fix.smem_start);
- 	}
--	printk(KERN_DEBUG "vga16fb: initializing\n");
-+	dev_dbg(&dev->dev, "initializing\n");
- 	info = framebuffer_alloc(sizeof(struct vga16fb_par), &dev->dev);
- 
- 	if (!info) {
-@@ -1336,12 +1336,12 @@ static int vga16fb_probe(struct platform_device *dev)
- 	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS_BASE, 0);
- 
- 	if (!info->screen_base) {
--		printk(KERN_ERR "vga16fb: unable to map device\n");
-+		dev_err(&dev->dev, "unable to map device\n");
- 		ret = -ENOMEM;
- 		goto err_ioremap;
- 	}
- 
--	printk(KERN_INFO "vga16fb: mapped to 0x%p\n", info->screen_base);
-+	dev_info(&dev->dev, "mapped to 0x%p\n", info->screen_base);
- 	par = info->par;
- 
- 	par->isVGA = screen_info_video_type(si) == VIDEO_TYPE_VGAC;
-@@ -1369,13 +1369,13 @@ static int vga16fb_probe(struct platform_device *dev)
- 	i = (info->var.bits_per_pixel == 8) ? 256 : 16;
- 	ret = fb_alloc_cmap(&info->cmap, i, 0);
- 	if (ret) {
--		printk(KERN_ERR "vga16fb: unable to allocate colormap\n");
-+		dev_err(&dev->dev, "unable to allocate colormap\n");
- 		ret = -ENOMEM;
- 		goto err_alloc_cmap;
- 	}
- 
- 	if (vga16fb_check_var(&info->var, info)) {
--		printk(KERN_ERR "vga16fb: unable to validate variable\n");
-+		dev_err(&dev->dev, "unable to validate variable\n");
- 		ret = -EINVAL;
- 		goto err_check_var;
- 	}
-@@ -1386,7 +1386,7 @@ static int vga16fb_probe(struct platform_device *dev)
- 	if (ret)
- 		goto err_check_var;
- 	if (register_framebuffer(info) < 0) {
--		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
-+		dev_err(&dev->dev, "unable to register framebuffer\n");
- 		ret = -EINVAL;
- 		goto err_check_var;
- 	}
--- 
-2.50.1
 
+> > > +/*
+> > > + * 1. disable unused strings
+> > > + * 2. set dim mode
+> > > + * 3. set initial brightness
+> >
+> > How does this code set the initial brightness? It doens't set the
+> > MAX25014_TON* registers.
+>
+> Yep forgot to remove that, I discovered the backlight core takes care of the
+> default brightness, so I removed it from here.
+
+What do you mean by this? Are you sure you aren't relying on another
+driver to enable the backlight rather than the backlight core?
+
+> > > + * 4. set setting register
+> > > + * 5. enable the backlight
+> > > + */
+> > > +static int max25014_configure(struct max25014 *maxim)
+
+
+> > > +static int max25014_probe(struct i2c_client *cl)
+> > > <snip>
+> > > +
+> > > +	/* Enable can be tied to vin rail wait if either is available */
+> > > +	if (maxim->enable || maxim->vin) {
+> > > +		/* Datasheet Electrical Characteristics tSTARTUP 2ms */
+> > > +		usleep_range(2000, 2500);
+> > > +	}
+> >
+> > If you really want to keep the devm_regulator_get_optional() I guess
+> > maybe you could persuade me it's need to avoid this sleep... although
+> > I'd be fairly happy to remove the NULL checks here too!
+>
+> Just wait unconditionally?
+
+If you think it will be unusual for the driver to be used without enable
+or regulator then it's ok to wait unconditionally (all examples you
+have added so far have an enable pin).
+
+
+Daniel.

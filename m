@@ -1,84 +1,186 @@
-Received: from exactco.de (exactco.de [176.9.10.151])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FB2D1DC1AB
-	for <linux-fbdev@vger.kernel.org>; Fri, 14 Nov 2025 15:00:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=176.9.10.151
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6002E328242
+	for <linux-fbdev@vger.kernel.org>; Fri, 14 Nov 2025 16:37:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763132449; cv=none; b=MyqEeqw8PLhzPF/wjoJtorUlrj23l+jDn5HXWEjNlSFVCzEnS8+Rx9kzhvqd6i5iBXxYt5NCd2aOftb6akvy5rKuYBTvuvfoA4PJk0ajJHTDUua5H8q2f2qcTpUKThvaBPjz9cx3vXc4e0LdFQTrrBasJ3sA+RdcaXKZ9q8old8=
+	t=1763138241; cv=none; b=rWspGZQwEW13t5hg3E7WN5oARIhvwp6V30UE3s8LUMlR4pYw085vQutixBglOsA9QYtKziW9kwI52ttORM1uX4yZ2zfYS1rGVCnJ9nyamC52/B4xPET1DbFsgBYRPxuJ9Q7YgTSAKVdDc2Qi918ig9f5Qp82Y0M8E3HgTA9sCfg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763132449; c=relaxed/simple;
-	bh=IavLmV81RgSxpyTV6H/B6pdX1uCnUgUUTPbCMrGXbvE=;
-	h=Date:Message-Id:Cc:To:Subject:From:Mime-Version:Content-Type; b=BkYT51RNTevVnZo/O6MtBElg5rmLvx6lbcLD7SjxdqHuOqkcvFM9aQYSlhkeu4G4dliNvZ3q7wLi23c3+O3lnR7Bra+rMaf5houv/O3jFLae8FswBSMbamgv0nQZQBAnOVI1hC+zoUqWRcGZRjdwp3kYF+pEA6mHSaw2n35XUuE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=exactco.de; spf=pass smtp.mailfrom=exactco.de; dkim=pass (2048-bit key) header.d=exactco.de header.i=@exactco.de header.b=by0u4IcA; arc=none smtp.client-ip=176.9.10.151
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=exactco.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=exactco.de
+	s=arc-20240116; t=1763138241; c=relaxed/simple;
+	bh=W3Df7zZnzpcbBTMb1TCZEf0V3SXSAbin7cR00ZrFWdM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=TBhpTJFUOSWJUvZa2ABo9dTwK8NQ9tsMRIkHsXtJkIiOfHy9Nl/2bCW1oBE2WMw3JyMFPfVNlrZoz1BMMXjJSoSuYADjfYhgcBgaW52IHxJN7YdEiSy6jB8siHcqpUArYv6ng0AqkFaO/GBZS5ESrvYcgb9IWY8aP8B0N2mRLvc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=FIWtTeuj; arc=none smtp.client-ip=212.227.15.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=exactco.de header.i=@exactco.de header.b="by0u4IcA"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=exactco.de;
-	s=x; h=Content-Transfer-Encoding:Content-Type:Mime-Version:From:Subject:To:Cc
-	:Message-Id:Date:Sender:Reply-To:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
-	References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:
-	List-Owner:List-Archive; bh=pxQBMLEEtKCwuorK5zvIQ3hE/hrs1Ey7CRdZ0gM/kGU=; b=b
-	y0u4IcAxzmbUrDnmjoNZiahTo7IJtZrHHXPGm9JhSXy5+ENdFpLSLqAIfcY3xXGL34ISc/CyPxiL2
-	tLCrLcAnf5QZBsTTOwFFUye+34vyH5sNXU8HGqqrFbtx6q1oWK96V6GPXTz247bMVA+LG9sgH6scq
-	3+L5riA+8SqWAjiTHEBHyAwUYMhUmebjYog3xOesXUTVLbGgly/qeqyuM7oxf1FT9umDlUVRRTw9H
-	EDewrMZgqc5SgKELfR7os8/yNXvDzqSJ7szWwoWV0ELdfqo9IzOwxqaP4fPEZWFJ8Z5w7jwA1Y2Of
-	DURwRVYHoi/hlpzytRZLNBT7BxaqXRoTg==;
-Date: Fri, 14 Nov 2025 16:00:42 +0100 (CET)
-Message-Id: <20251114.160042.848790184211544497.rene@exactco.de>
-Cc: Helge Deller <deller@gmx.de>
-To: linux-fbdev@vger.kernel.org
-Subject: [PATCh] fix fbdev/gbefb.c mem_phys
-From: Rene Rebe <rene@exactco.de>
-X-Mailer: Mew version 6.10 on Emacs 30.2
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="FIWtTeuj"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1763138236; x=1763743036; i=deller@gmx.de;
+	bh=W3Df7zZnzpcbBTMb1TCZEf0V3SXSAbin7cR00ZrFWdM=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=FIWtTeujlh/44kC4aRQqkUiAAnoukpdsyEaid6fxAPFJVPBezwbQetd2XZxfSmYp
+	 prylaCtG2X8jYf2TGFuGfA8Lkk2dQomTgG+UkoO/QGDpe+WgufILUgLK5z3BRkTJd
+	 lpQxRlq+C9gRnCjprwumRK7JaFREZPuT6EWXpOZRgEhi96L/EQXGOzPTsVc9CZiju
+	 UkUlxZzQ+ZUQlkaLw9jGHx2avw+9vBqvlxu8vrtUBqTB1GbVi9JPJ1sYnw50PounU
+	 ncnklXKe49UrkQoROSw8pp86BWB4e+wkF89HK20O9cg/AyCnnJ8x9UYIkIKxK30tF
+	 wyivaPGelp5JWWqY1Q==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.51.147]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N2V4P-1wJupn0p8p-00rHsz; Fri, 14
+ Nov 2025 17:37:16 +0100
+Message-ID: <4acc8796-28f4-4360-8ec5-ae56ba7fda1f@gmx.de>
+Date: Fri, 14 Nov 2025 17:37:15 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCh] fix fbdev/gbefb.c mem_phys
+To: Rene Rebe <rene@exactco.de>, linux-fbdev@vger.kernel.org
+References: <20251114.160042.848790184211544497.rene@exactco.de>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20251114.160042.848790184211544497.rene@exactco.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:eNS0dOn77A1DtZISuJkEE833/oNV0q1VrG8vA7XNeI0QFSjEom7
+ Ws/tursG9I/da02XPkrdpqYWo6lce+P+RGdYoidgqEhCLcBCgIzJ6brCYCp5cET3Gg+gijS
+ amq0qRMRHh/y9Qf7qY5S8DdSYJimItHBlYEX9tWIHsSo+2lyEmFDI0wMPIS8LHtqzglHHTg
+ zjzK7oP5KJPNISQcCKRNQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:gKHT129BN9k=;HCn1iesJ7krqWG/NLXYF9xfHIA7
+ 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
+ c5PgMiAkss5S2Tj16Hhki2xarU=
 
-While debuggigng why X would not start on mips64 Sgi/O2 I found the
-phys adress being off. Turns out the gbefb passed the internal
-dma_addr as phys. May be broken pre git history. Fix by converting
-dma_to_phys.
+On 11/14/25 16:00, Rene Rebe wrote:
+> While debuggigng why X would not start on mips64 Sgi/O2 I found the
+> phys adress being off. Turns out the gbefb passed the internal
+> dma_addr as phys. May be broken pre git history. Fix by converting
+> dma_to_phys.
+>=20
+> Signed-off-by: Ren=C3=A9 Rebe <rene@exactco.de>
 
-Signed-off-by: René Rebe <rene@exactco.de>
+Applied.
 
---- a/drivers/video/fbdev/gbefb.c	2024-01-07 20:50:29.647506488 +0100
-+++ b/drivers/video/fbdev/gbefb.c	2024-01-08 00:28:01.651948701 +0100
-@@ -12,6 +12,7 @@
- #include <linux/delay.h>
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
-+#include <linux/dma-direct.h>
- #include <linux/errno.h>
- #include <linux/gfp.h>
- #include <linux/fb.h>
-@@ -65,7 +66,7 @@
- static unsigned int gbe_mem_size = CONFIG_FB_GBE_MEM * 1024*1024;
- static void *gbe_mem;
- static dma_addr_t gbe_dma_addr;
--static unsigned long gbe_mem_phys;
-+static phys_addr_t gbe_mem_phys;
- 
- static struct {
- 	uint16_t *cpu;
-@@ -1182,7 +1182,7 @@
- 			goto out_release_mem_region;
- 		}
- 
--		gbe_mem_phys = (unsigned long) gbe_dma_addr;
-+		gbe_mem_phys = dma_to_phys(&p_dev->dev, gbe_dma_addr);
- 	}
- 
- 	par = info->par;
-
-
--- 
-  René Rebe, ExactCODE GmbH, Lietzenburger Str. 42, DE-10789 Berlin
-  https://exactco.de | https://t2linux.com | https://rene.rebe.de
+Thanks!
+Helge

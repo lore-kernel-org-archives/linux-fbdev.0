@@ -1,79 +1,119 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6B7921D3F3;
-	Thu, 13 Nov 2025 16:46:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A366426CE25;
+	Fri, 14 Nov 2025 08:07:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.84
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763052370; cv=none; b=mcZIXpYzxeNzNPPCkorNA5TIXNCDIT/3GhxU2MzKuaAidgCnKu3jBzPfsFrbIJrzUbXja6fC+Fa2Upr1/5NNwklz1N+57qTn2m80RNbJ/9a6qKikJ3n2D3fQwH7X6SFZpKfFNnJqE1vqbN6unpF5r1Olau0YNsLTOj6b4eL8C6g=
+	t=1763107627; cv=none; b=qJ5YR4fcbhREKvfAgP8JSt951PDGMXNXGenQKF2zZdwuyzzFM/tt5kbSVHslfaee99zlCE98AJq2Fg/DrcThZLreK9v3FkAOrAkYwjwlWnoREUiYRd5BiRrWyWMuQZrqqLPaWEgnbDTjGXNrEQCDvUrViLqV9d5IoNwsT4Zw6Us=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763052370; c=relaxed/simple;
-	bh=+SNBZZpwIVsQ1NMm9S2r0CGt8y213OHdKQwYS8JlXzw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OnlEmWNgSWpkpBzozjRHmmPbNuklH28V+SI3lHMiwlgbYgNezoNWIdsSVcH6jpDOQz/ewMsnGgaFb0wCXUYMuMTgnFXrvp6U6loCL2Tt/rqlgZsvdWq3o4FEXkXQB4W7ZK5ls9y3JouSRCu64Cu6Cgm2QdKM0BREQW2NQdPQpNc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=A8mEga9R; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="A8mEga9R"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2C27C4CEF5;
-	Thu, 13 Nov 2025 16:46:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763052369;
-	bh=+SNBZZpwIVsQ1NMm9S2r0CGt8y213OHdKQwYS8JlXzw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=A8mEga9Rmp51/7zGCoyQ8Ecsah26vWq7zE+u+7YzNSypa+OURY3wOD2ntrIuOCb1Q
-	 JEme03y2PBUgJ6J7Mp85nDQX+CFPREH8wMRLN3+c2kRiUPFPW/nOOmWqEiWXG083h8
-	 uz9cLSjIlrbHa1AOSCluR/uR5MDJoiQrHfrEa2fJGBWgYcRdJVmUkgzSiLZJ4bNCkt
-	 oSzBElibE5+KtXZ8X1XieuXRYpC6bQ/jJqg1F3wG1yqut6gGbG4VE8WG3m7ZOl3DZ3
-	 B/KpoJKIZjzpNQOpX22bjmrJsseposwHAbEzV5bL+KeDFZpp0N6vUKn20rp8ud9a3M
-	 fwIlh14+ShhuA==
-Date: Thu, 13 Nov 2025 16:46:03 +0000
-From: Lee Jones <lee@kernel.org>
-To: Junjie Cao <caojunjie650@gmail.com>
-Cc: Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/2] dt-bindings: leds: backlight: Add Awinic AW99706
- backlight
-Message-ID: <20251113164603.GP1949330@google.com>
-References: <20251109032240.3422503-1-caojunjie650@gmail.com>
- <20251109032240.3422503-2-caojunjie650@gmail.com>
+	s=arc-20240116; t=1763107627; c=relaxed/simple;
+	bh=p59rdtFgI1akA15lrL5R7PVUabRGniZ32umbv6Qey6A=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ipYaBbiJMNVbJn7Vby094/qSTkJOQsnhzaPtqtRSTNBVEu8rHjUh6RVNtJjbCC//2dK56817u8oHDTYxhd+C0WGsGfe1C4J/IJL/Ar3JfdIliq0vURCOeCFMAt7jKBAKXJdJKS46igMFVR6flhhTRlwb4iVX4lzCH7oS9Qlel4s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.84
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from DESKTOP-L0HPE2S (unknown [124.16.141.245])
+	by APP-05 (Coremail) with SMTP id zQCowAAHC2wa4xZp1g63AA--.16037S2;
+	Fri, 14 Nov 2025 16:06:53 +0800 (CST)
+From: Haotian Zhang <vulab@iscas.ac.cn>
+To: Antonino Daplas <adaplas@gmail.com>,
+	Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Haotian Zhang <vulab@iscas.ac.cn>
+Subject: [PATCH] fbdev/riva: Add NULL checks for pci_get_domain_bus_and_slot()
+Date: Fri, 14 Nov 2025 16:06:34 +0800
+Message-ID: <20251114080634.2342-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1.windows.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20251109032240.3422503-2-caojunjie650@gmail.com>
+X-CM-TRANSID:zQCowAAHC2wa4xZp1g63AA--.16037S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Kr45GrykWw4ruF1xXF18Zrb_yoW8uF47pF
+	Z3Za4agFWUtFnrtr4fGF9aqFy5WrW8JFWrK3ZIk34qvws8ArZrKry5KFy7Ga4FkrZ7Aw12
+	kF90qa1qvrn5AaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvv14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r
+	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwCY1x0262kKe7AKxVWU
+	AVWUtwCY02Avz4vE14v_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr
+	1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE
+	14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7
+	IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E
+	87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73Uj
+	IFyTuYvjfUjOzsDUUUU
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiDAUGA2kWr+KwGAAAsW
 
-On Sun, 09 Nov 2025, Junjie Cao wrote:
+The pci_get_domain_bus_and_slot() function can return NULL
+if the requested PCI device is not found. The
+nForceUpdateArbitrationSettings() and nv10GetConfig()
+do not check for this, which can lead to a NULL pointer dereference
+when the returned pointer is used in pci_read_config_dword().
 
-> Add Awinic AW99706 backlight binding documentation.
-> 
-> Signed-off-by: Junjie Cao <caojunjie650@gmail.com>
-> ---
-> Changes in v3:
-> - breaking a long line (Krzysztof)
-> - rename backlight node (Krzysztof)
-> - Link to v2: https://lore.kernel.org/linux-leds/20251103110648.878325-2-caojunjie650@gmail.com
-> 
-> Changes in v2:
-> - use proper units for properties (Krzysztof)
-> - drop non-fixed properties (Krzysztof)
-> - add properties(max-brightness, default-brightness) (Krzysztof)
-> - Link to v1: https://lore.kernel.org/linux-leds/20251026123923.1531727-2-caojunjie650@gmail.com
-> 
->  .../leds/backlight/awinic,aw99706.yaml        | 101 ++++++++++++++++++
->  1 file changed, 101 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/backlight/awinic,aw99706.yaml
+Add NULL checks immediately after the calls to
+pci_get_domain_bus_and_slot() in both functions.
 
-Applied (manually), thanks
+Fixes: e22810808354 ("video: fbdev: riva: deprecate pci_get_bus_and_slot()")
+Signed-off-by: Haotian Zhang <vulab@iscas.ac.cn>
+---
+ drivers/video/fbdev/riva/riva_hw.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
+diff --git a/drivers/video/fbdev/riva/riva_hw.c b/drivers/video/fbdev/riva/riva_hw.c
+index 8b829b720064..5b2f2d57c101 100644
+--- a/drivers/video/fbdev/riva/riva_hw.c
++++ b/drivers/video/fbdev/riva/riva_hw.c
+@@ -1100,6 +1100,10 @@ static void nForceUpdateArbitrationSettings
+ 	int domain = pci_domain_nr(pdev->bus);
+
+ 	dev = pci_get_domain_bus_and_slot(domain, 0, 3);
++	if (!dev) {
++		WARN_ON(1);
++		return;
++	}
+ 	pci_read_config_dword(dev, 0x6C, &uMClkPostDiv);
+ 	pci_dev_put(dev);
+ 	uMClkPostDiv = (uMClkPostDiv >> 8) & 0xf;
+@@ -1115,6 +1119,10 @@ static void nForceUpdateArbitrationSettings
+ 	sim_data.enable_mp      = 0;
+
+ 	dev = pci_get_domain_bus_and_slot(domain, 0, 1);
++	if (!dev) {
++		WARN_ON(1);
++		return;
++	}
+ 	pci_read_config_dword(dev, 0x7C, &sim_data.memory_type);
+ 	pci_dev_put(dev);
+ 	sim_data.memory_type    = (sim_data.memory_type >> 12) & 1;
+@@ -2085,11 +2093,19 @@ static void nv10GetConfig
+ 	 */
+ 	if(chipset == NV_CHIP_IGEFORCE2) {
+ 		dev = pci_get_domain_bus_and_slot(domain, 0, 1);
++		if (!dev) {
++			WARN_ON(1);
++			return;
++		}
+ 		pci_read_config_dword(dev, 0x7C, &amt);
+ 		pci_dev_put(dev);
+ 		chip->RamAmountKBytes = (((amt >> 6) & 31) + 1) * 1024;
+ 	} else if(chipset == NV_CHIP_0x01F0) {
+ 		dev = pci_get_domain_bus_and_slot(domain, 0, 1);
++		if (!dev) {
++			WARN_ON(1);
++			return;
++		}
+ 		pci_read_config_dword(dev, 0x84, &amt);
+ 		pci_dev_put(dev);
+ 		chip->RamAmountKBytes = (((amt >> 4) & 127) + 1) * 1024;
 -- 
-Lee Jones [李琼斯]
+2.50.1.windows.1
+

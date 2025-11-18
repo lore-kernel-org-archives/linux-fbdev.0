@@ -1,144 +1,118 @@
-Received: from mail-io1-f77.google.com (mail-io1-f77.google.com [209.85.166.77])
+Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F0212517AF
-	for <linux-fbdev@vger.kernel.org>; Tue, 18 Nov 2025 08:00:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.77
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12A8B328629
+	for <linux-fbdev@vger.kernel.org>; Tue, 18 Nov 2025 09:57:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763452832; cv=none; b=Cqx6Y0Jjneo40TF9Az6goHA9dYe8zyJ3z/suKwTJVOWjCkUjX2UCCgu8sGTUbybewZ6WhHeNixFbzeyHN8AJMpvTbBow5Qdu5UxBMiWSXGVdxGbpXNmEtWFAApxr2xNRDueOQfBiRGwfxpHuTf5J6jyFWwwGwQB7qkodzO4/D1w=
+	t=1763459839; cv=none; b=eFkYLx2F68ux713c1RqPxM0UPPJP1ybeb3Ek734t11zwCwtfhPNqlfqrSi1D4FzKnLI2GwdvTZr5ZHThXCy4gYLtnk8WDcfjKN4GOSfHsxFkHi7hIb+7KRf6a+SG0sabB+c4DcN9AbJm7bq9ro88ArDqQSZ1vGk422x64wx2fmQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763452832; c=relaxed/simple;
-	bh=vGMiemJRHg5EX1vh0pb+J4+nqLZl5HwCelERxdNYGtU=;
-	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:
-	 Content-Type; b=aPs0eakH4yMvI5mHHRQ2Day7xBjcmxRVsaH70Cpl5az44/MTWDZFIbVAwMdtPHzS1XalRpepJjJaTVzXBmaiQ43Ava/FLyVrN4FySTTXMzKIJ8JwdzYNmeMpkYLpCuHwyi0PSpSw+hYeoMqW3xKes/RvMlLu5X888sx7VCvw3tY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.77
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-io1-f77.google.com with SMTP id ca18e2360f4ac-9434f5350bcso478992639f.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 Nov 2025 00:00:30 -0800 (PST)
+	s=arc-20240116; t=1763459839; c=relaxed/simple;
+	bh=xDkQEi+B8s+5NfWPQ4nrEVjh33lmY4E/4VzVq8xl4tc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NQFQzsBupucSItksEZH3fZ8+a5iTD3LipcLSi6o3Jvkb0QAu/477Lr2FTSpRxaM43m4m5SR9gS0PYPEH5LAH2++tEpXZC3cZbv4BWPhKKTtWWfjvf/IkBqydivh15FyPyO72OSDGDBQ8oY21waOrJ6RlpCEI4UfRCurhrWFpnu0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Tghy5clf; arc=none smtp.client-ip=209.85.214.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Tghy5clf"
+Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-2958db8ae4fso49001235ad.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Nov 2025 01:57:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1763459836; x=1764064636; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Q6tZ5VzBoVYTTO+te69K4vXT1SJ3st9Rw22BJ6+xFwY=;
+        b=Tghy5clfxb/JPDW9WDsrhWxUQbjlF5ov/lfGNDMMClLEpzFbt8FISAc0aZ6qIPRdEU
+         zXSxOI3Lge9I0F6yWU55ffdQsGf3wQVPkAZjBIKRRGceuTmX+IwWjeeWw1bbl46dxGPV
+         Hu55QJg1FH0YrJvjCpG+MY/QTXEoXKnAzOZHt+aRbTN3l9CMQsAaFhydXGCXRTj5AljX
+         4R4rHGeKkAdPaPiYTLYf8HwGjbKjtGCgKSDYnpfu43uvk6uCwCFpiG6u8N9fpW0v7hUJ
+         n8mO5vUFSqSWcbUK8cW4pYcFodRCoPFxtlCizCIBSujMXFfq9ia7DUTceVMqu8//HXvi
+         RTlw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763452830; x=1764057630;
-        h=to:from:subject:message-id:in-reply-to:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=C8/pNX9SbOjjNIN26OVWmhsh/hu9+rN3ZW/7Vppn+XU=;
-        b=D8Ax90XY0mXCUF9FKKUr64/aXJnFnX2JQfhDEkeYnUZk2CcOjhGGroefCsITwpiT3e
-         ojZwErDPCBLTtl08WxL/5jfsx3DeDVvK0uaDEeCySGAoObhXF48CDrU0P9MLIvhY3MH/
-         3iRsfRT0t9yzaXX0rdKX9o/GvXYmIF6fa9QBqJiw4WoB0rVvTTTuTpjB2afAlTGtWS+D
-         MD+3ORwZsTJpte28NFiSY9m+I+fC8zWYUXDS9qf6LUMcxCrj+jiSUDeHNmvMXnkhWnT1
-         WtARHQ+DN3M/tZkp82gatnq0oLDeo9bUhKB92OFcfhOSTUEXS+bXWLy2gYl0L5Fb8Lek
-         TWhA==
-X-Forwarded-Encrypted: i=1; AJvYcCX95mqTG5md03WWE/kQghWOOMdizRfOvBAiXBWk0Q/trhP+l//7o1OfUZB4HTvagRMnTHA6jdjqxOeGjA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxcnjY4dXEiJdPbwlrcQNbMg7v/X188KU0KoTmsr8lk7KlHEz2+
-	H+kRq16cGSXUjqrfo4ZiKS8Log0cxixROYXSoV+UCVcU62vu42rF+MRwnNAmzys3S7E9k7btenY
-	aR/nt0t+nVmp+uzsPb2aQEXGdyKMV0NK1qXiZNm9LV7+sgN/6ZLDFBKtsbQk=
-X-Google-Smtp-Source: AGHT+IFUSYc9EyrU2PmUGojVWx8wzC4EoFtzpZnqsofEv6VT0N5YvuvB7b8t6F5+Hyp52FZwysMK6tWyhPLmwhf5eNBJ83zLs10Q
+        d=1e100.net; s=20230601; t=1763459836; x=1764064636;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Q6tZ5VzBoVYTTO+te69K4vXT1SJ3st9Rw22BJ6+xFwY=;
+        b=R7FdRmcVBxEMwJejojH9o5uyUORm+auCHKXERNIui8/1BoD5igihOpY5n5h4/Ct4bW
+         ExzMgNFe2CWLrcBMW5S3DEG9rBnHr96+RslYAMaPiYxLOmueKhVCQnW5OZ5De8EtCUd1
+         NJG/tZ8Wh6CGdXoxaK6hDPlp7e69Wxcxrcqiq8ejlzJFX6blPQzUU1qWpvFT0yrF7EoP
+         bLLGw6GucqDdfz2XqGEzOYMT1yJS0o7y3Ci2Jrcp+8K7acnEEQEQTOMfj8kDzHv/IGAv
+         jDU9gI21mR6PmDEC/Vd1YvgeettIL4126cJZCSF/XFDK/AvRE54cHBYXEBgAZB/LQToy
+         mgqw==
+X-Forwarded-Encrypted: i=1; AJvYcCUDQHC3PpxwcRLiuNGaSU/nkVwUBH0QQLGgQKR8CUhC4y5AzURcRVBIOxRU2Xa/JzT17I8TrwbQZ+dXjw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzWygaWsYYTnCtly9Ka2QNfMB5+nGnu+1cSxtqaED/SaZZAI7Ym
+	muyXdY+gUWrgyTGwslzJ9DCAEfdojgObOqmUwAN+bfAo4cGHAcxkp6jK
+X-Gm-Gg: ASbGncvhNxso678n2cUgqYXykE2HURbwf1fgpcy54am+iUn2QE6WEdM73X/chez2BU8
+	P6U/mTgqPnIXM7Ljr8ouq4jUY63D56cE1Z6xYvotdbmcUxfOim51IfuwyvVYBvB+Dl3jwt/WtE/
+	o+oW8LUnuHwxUDc+onISRRLLSR5RTWMcmsAH8UFrZ4ZX1wQciJ5WEyWj5yje8BqGx+9xontPVXF
+	1w84ionqi+Id3CfNFB3GdJhoyplnkm07xc76UT8mQscLQJyIRv1R4dbz2R7AhqeGbomedBLVGlr
+	YA13qqH26iIGn5f6vgwX6tNGar+1yuw9S3vg2rsrsp2S6l2eO3hHv/Hoto6jS03bbUhX4c461Sj
+	qAsY2x/xEBC7Gtdn+fZrL7TpimuX86jahBjbVx/WKxKQHuVU8Aypi+61MnKWeY7/pcQ07gWuJ
+X-Google-Smtp-Source: AGHT+IHMmjMJMqz3ygPywtDFWliHJnZbTS7XL1ZWr8wjn2DCGXdd4NPyybAvK2X81ZXZ3yNMXbed1g==
+X-Received: by 2002:a17:903:198b:b0:295:82b4:216a with SMTP id d9443c01a7336-2986a76a1d4mr172192395ad.55.1763459836197;
+        Tue, 18 Nov 2025 01:57:16 -0800 (PST)
+Received: from hsukr3.. ([2405:201:d019:4042:80a6:7dd7:b597:d951])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2985c2ccafesm168572415ad.97.2025.11.18.01.57.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 18 Nov 2025 01:57:15 -0800 (PST)
+From: Sukrut Heroorkar <hsukrut3@gmail.com>
+To: Helge Deller <deller@gmx.de>,
+	Sukrut Heroorkar <hsukrut3@gmail.com>,
+	linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
+	dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER),
+	linux-kernel@vger.kernel.org (open list)
+Cc: shuah@kernel.org,
+	david.hunter.linux@gmail.com
+Subject: [PATCH] fbdev: q40fb: request memory region
+Date: Tue, 18 Nov 2025 15:26:55 +0530
+Message-ID: <20251118095700.393474-1-hsukrut3@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6638:3f1a:b0:572:c2ff:b9bd with SMTP id
- 8926c6da1cb9f-5b7fa51bd46mr2755534173.0.1763452830020; Tue, 18 Nov 2025
- 00:00:30 -0800 (PST)
-Date: Tue, 18 Nov 2025 00:00:30 -0800
-In-Reply-To: <6907c8c8.a70a0220.37351b.0012.GAE@google.com>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <691c279e.a70a0220.3124cb.00b5.GAE@google.com>
-Subject: Re: [syzbot] [fbdev?] KASAN: vmalloc-out-of-bounds Write in imageblit (6)
-From: syzbot <syzbot+5a40432dfe8f86ee657a@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
-	soci@c64.rulez.org, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-syzbot has found a reproducer for the following issue on:
+The q40fb driver uses a fixed physical address but never reserves
+the corresponding I/O region. Reserve the range  as suggested in
+Documentation/gpu/todo.rst ("Request memory regions in all fbdev drivers").
 
-HEAD commit:    e7c375b18160 Merge tag 'vfs-6.18-rc7.fixes' of gitolite.ke..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=15476692580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=1cd7f786c0f5182f
-dashboard link: https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
-compiler:       gcc (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=10a70332580000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=173228b4580000
+No functional change beyond claming the resource. This change is compile
+tested only.
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/1fcb660703f1/disk-e7c375b1.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/4bf314965321/vmlinux-e7c375b1.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/456b373fea36/bzImage-e7c375b1.xz
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+5a40432dfe8f86ee657a@syzkaller.appspotmail.com
-
-RDX: 0000000000000007 RSI: 0000000000000000 RDI: 0000000000000003
-RBP: 00007fff34de03f0 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000001
-R13: 00007fd0417e5fa0 R14: 00007fd0417e5fa0 R15: 0000000000000003
- </TASK>
-==================================================================
-BUG: KASAN: vmalloc-out-of-bounds in fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
-Write of size 8 at addr ffffc90003749fc0 by task syz.0.17/6037
-
-CPU: 0 UID: 0 PID: 6037 Comm: syz.0.17 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 10/25/2025
-Call Trace:
- <TASK>
- __dump_stack lib/dump_stack.c:94 [inline]
- dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
- print_address_description mm/kasan/report.c:378 [inline]
- print_report+0xcd/0x630 mm/kasan/report.c:482
- kasan_report+0xe0/0x110 mm/kasan/report.c:595
- fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
- fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
- fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
- fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
- sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
- drm_fbdev_shmem_defio_imageblit+0x20/0x130 drivers/gpu/drm/drm_fbdev_shmem.c:38
- cw_putcs_aligned drivers/video/fbdev/core/fbcon_cw.c:110 [inline]
- cw_putcs+0x917/0xbb0 drivers/video/fbdev/core/fbcon_cw.c:158
- fbcon_putcs+0x387/0x450 drivers/video/fbdev/core/fbcon.c:1320
- do_update_region+0x2e9/0x3f0 drivers/tty/vt/vt.c:628
- redraw_screen+0x63f/0x760 drivers/tty/vt/vt.c:980
- fbcon_modechanged+0x456/0x6b0 drivers/video/fbdev/core/fbcon.c:2710
- fbcon_rotate drivers/video/fbdev/core/fbcon.c:228 [inline]
- rotate_store+0x258/0x2f0 drivers/video/fbdev/core/fbcon.c:3215
- dev_attr_store+0x58/0x80 drivers/base/core.c:2437
- sysfs_kf_write+0xf2/0x150 fs/sysfs/file.c:142
- kernfs_fop_write_iter+0x3af/0x570 fs/kernfs/file.c:352
- new_sync_write fs/read_write.c:593 [inline]
- vfs_write+0x7d3/0x11d0 fs/read_write.c:686
- ksys_write+0x12a/0x250 fs/read_write.c:738
- do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0xcd/0xfa0 arch/x86/entry/syscall_64.c:94
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7fd04158f6c9
-Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007fff34de0398 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 00007fd0417e5fa0 RCX: 00007fd04158f6c9
-RDX: 0000000000000007 RSI: 0000000000000000 RDI: 0000000000000003
-RBP: 00007fff34de03f0 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000001
-R13: 00007fd0417e5fa0 R14: 00007fd0417e5fa0 R15: 0000000000000003
- </TASK>
-
-The buggy address belongs to a vmalloc virtual mapping
-Memory state around the buggy address:
- ffffc90003749e80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90003749f00: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
->ffffc90003749f80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-                                           ^
- ffffc9000374a000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc9000374a080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-==================================================================
-
-
+Signed-off-by: Sukrut Heroorkar <hsukrut3@gmail.com>
 ---
-If you want syzbot to run the reproducer, reply with:
-#syz test: git://repo/address.git branch-or-commit-hash
-If you attach or paste a git patch, syzbot will apply it before testing.
+ drivers/video/fbdev/q40fb.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/video/fbdev/q40fb.c b/drivers/video/fbdev/q40fb.c
+index 1ff8fa176124..935260326c6f 100644
+--- a/drivers/video/fbdev/q40fb.c
++++ b/drivers/video/fbdev/q40fb.c
+@@ -101,6 +101,12 @@ static int q40fb_probe(struct platform_device *dev)
+ 	info->par = NULL;
+ 	info->screen_base = (char *) q40fb_fix.smem_start;
+ 
++	if (!request_mem_region(q40fb_fix.smem_start, q40fb_fix.smem_len,
++				"q40fb")) {
++		dev_err(&dev->dev, "cannot reserve video memory at 0x%lx\n",
++			q40fb_fix.smem_start);
++	}
++
+ 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+ 		framebuffer_release(info);
+ 		return -ENOMEM;
+@@ -144,6 +150,7 @@ static int __init q40fb_init(void)
+ 		if (ret)
+ 			platform_driver_unregister(&q40fb_driver);
+ 	}
++
+ 	return ret;
+ }
+ 
+-- 
+2.43.0
+

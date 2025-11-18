@@ -1,123 +1,430 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8ECBD531;
-	Tue, 18 Nov 2025 12:49:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99EE6284888;
+	Tue, 18 Nov 2025 16:43:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763470155; cv=none; b=c3D/Nu5K7U/hMGnVeKOOZ9ASwmxlr6LXl4qBqjDc3GAyhKOvBQBMcaD02PJ/XHiFN6ma+Ma8AxYgT5yhmxZ1S6X1P5tOhoC8rhylE/87S+YaOvQ2OkiWAhEUWFDuLSx8gW+tp82aZF4yQRpP/EtszSiEyNqiDtgnL4dCLcOjSvs=
+	t=1763484212; cv=none; b=Oin5Y/UB4WMuDf8/+KOlQrDUv3KOiGkegq5l/iXYZbT4P7udE0Nb0f9e0Iz/FpIJSQLvOsqyFAuKJj1pSsXRWm/2EH5+qXNs8pRukSieoVHgMQQ3WpBTfpAMWSFlBqMCJU1EZ7yy83DIP5WANwfi9XqzYp++1s0Y2QZsK4S85Ug=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763470155; c=relaxed/simple;
-	bh=9YCkDMqLNwTXxB2/du8dT0VZecv+69TsOkjhuOSXYag=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lM8AMtClpZgpipAhjCaVXDv039XTsUTp/AdGEpvaSozTh/7K/cUBChHE/ef+oPFqPjxumrDCODVHBsvtJvX2F2A2ebLD8keNJ1N+O040X3ATHHKxhfO35Zwld3wsayes+smMowqzxuOUCgv07giTMeK8+Rrnfh/Vtp+UR9NoCPE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Nd5MxB/F; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1763484212; c=relaxed/simple;
+	bh=m8XjLzAXzOc37XC791aYHU9g3Jt73This5J26oyrmjQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=GNXyokQN6KQTiNHRY6h34mrliIgMfkwyb4AB3HdLZl7X0gvSYPvjPS7ezUMFb9e1K8wmq/RrjdWXEOSDF8uiBRZu1dF5PqVPwYGlZsLA0smpBVl60Aox3sPE0TJM1I4MNaAXch0uE/ICpbpjcyHn4kF8vP29tu/R9ZuLL7DxPbM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NT29gvpR; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Nd5MxB/F"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00BD7C2BC87;
-	Tue, 18 Nov 2025 12:49:12 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NT29gvpR"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id CA37EC4CEF5;
+	Tue, 18 Nov 2025 16:43:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763470155;
-	bh=9YCkDMqLNwTXxB2/du8dT0VZecv+69TsOkjhuOSXYag=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Nd5MxB/FPve7LcUWbbiGm8gPcXqZN1mqVh9FKcATbSdx//TjVaQE6X1Dol1WhmsZz
-	 D2Gfb3U5EkaNqRLs/DrqjCQodcFxZJbE1/lP2i65KMrdu2AHvSqEq9jQpqatQsSuUA
-	 NO5g4AxZU7NIQT9TQpbNLtrgXPNPh1GHcbnBskPDVT4ZSCLmCC32T8LIwo3dBX9fcg
-	 L6sn1PHReFqXq3nJBcu59wn9DkITLoZGvJF2RB+YvO+UcKYX7kDS0pTyErRi34RQj4
-	 1Imf3DUTh2dSZtFUWsj/svftG22xaWYZElbB4tArLfebWsE5lKMT9IJWJMP6q19lGB
-	 7f556L9I4XFdQ==
-Date: Tue, 18 Nov 2025 12:52:14 +0000
-From: Daniel Thompson <danielt@kernel.org>
-To: Mark Brown <broonie@kernel.org>
-Cc: Michael Grzeschik <m.grzeschik@pengutronix.de>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
-	Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>, Pengutronix <kernel@pengutronix.de>,
-	linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight: pwm_bl: apply the initial backlight state
- with sane defaults
-Message-ID: <aRxr_sR0ksklFsw-@aspen.lan>
-References: <20250731-blpwm-v1-1-0171fd31bff9@pengutronix.de>
- <f492d4d3-751c-40a3-bb93-0e1bb192cde7@sirena.org.uk>
+	s=k20201202; t=1763484212;
+	bh=m8XjLzAXzOc37XC791aYHU9g3Jt73This5J26oyrmjQ=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=NT29gvpR84lN2dfHTso3YkTS9UNEQtMlXwrXxVLtmN5jSZJpfIWFJkQaafV/qMZk6
+	 ouFAFjbor6euAQnh3CE4Q9Cg1kDaPHy9OMaI8Ric1K/nPuc5aHy0/BfhBSyf3hQqjB
+	 VuJ9eB6MXqOYmatZ9HwJcLvn/iBEgDS/uivuX/jOZB3yrVpqtmRdfEnWMEDv3iOevc
+	 4G4dhBBEmuFrqGUARtkYNUVx6IAid+zGsr4mU0FSabQE7bkm5DD5PISepVWJ/6gEeT
+	 DuNk13l0NX2QgxlTWg7vV0WMIuadgPKxhBgYbFK2+bpDZwRfJMi2fYO2hAEUaFG0Uz
+	 M+VgdnXYRTLIA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA999CEDDA4;
+	Tue, 18 Nov 2025 16:43:31 +0000 (UTC)
+From: Petri Karhula via B4 Relay <devnull+petri.karhula.novatron.fi@kernel.org>
+Date: Tue, 18 Nov 2025 16:43:02 +0000
+Subject: [PATCH] backlight: Add Congatec Board Controller (CGBC) backlight
+ support
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f492d4d3-751c-40a3-bb93-0e1bb192cde7@sirena.org.uk>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20251118-cgbc-backlight-v1-1-cc6ac5301034@novatron.fi>
+X-B4-Tracking: v=1; b=H4sIABWiHGkC/x3MQQqAIBBA0avIrBMcI6iuEi10mmwoLDQiiO6et
+ HyL/x/InIQz9OqBxJdk2WMBVgpocTGwlqkYrLENIraagiftHa2bhOXUdUOIppu88S2U6Eg8y/0
+ Ph/F9P8JnXcRgAAAA
+X-Change-ID: 20251118-cgbc-backlight-35c1109db0b8
+To: Thomas Richard <thomas.richard@bootlin.com>, Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+ Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, Petri Karhula <petri.karhula@novatron.fi>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1763484210; l=11033;
+ i=petri.karhula@novatron.fi; s=20251118; h=from:subject:message-id;
+ bh=4to+YvDeDBwc/AJTuZbkdhJA1zoGvBQP4eFOsodVlrc=;
+ b=UKWw31Gnad+Ub8I3v28fhyvq7IfbTxNZ+v76htnhpjA/JzBNDRVljK29lCvv/hAXpT1fO+gx0
+ IcJNhrCxdXECeUtymY8995pap5b9LoHlbBiCGIGcD/lB224/ZGcN0qc
+X-Developer-Key: i=petri.karhula@novatron.fi; a=ed25519;
+ pk=LRYJ99jPPsHJwdJEPkqlmzAMqo6oyw7I421aHEfDp7o=
+X-Endpoint-Received: by B4 Relay for petri.karhula@novatron.fi/20251118
+ with auth_id=567
+X-Original-From: Petri Karhula <petri.karhula@novatron.fi>
+Reply-To: petri.karhula@novatron.fi
 
-On Fri, Nov 14, 2025 at 02:09:56PM +0000, Mark Brown wrote:
-> On Thu, Jul 31, 2025 at 10:47:18AM +0200, Michael Grzeschik wrote:
-> > Currently when calling pwm_apply_might_sleep in the probe routine
-> > the pwm will be configured with an not fully defined state.
-> >
-> > The duty_cycle is not yet set in that moment. There is a final
-> > backlight_update_status call that will have a properly setup state.
-> > However this change in the backlight can create a short flicker if the
-> > backlight was already preinitialised.
->
-> I'm seeing the libre.computer Renegade Elite producing warnings during
-> boot in -next which bisect to this patch.  The warnings are:
->
-> [   24.175095] input: adc-keys as /devices/platform/adc-keys/input/input1
-> [   24.176612] ------------[ cut here ]------------
-> [   24.177048] WARNING: CPU: 0 PID: 0 at kernel/context_tracking.c:127 ct_kernel_exit.constprop.0+0x98/0xa0
->
-> ...
->
-> [   24.190106] Call trace:
-> [   24.190325]  ct_kernel_exit.constprop.0+0x98/0xa0 (P)
-> [   24.190775]  ct_idle_enter+0x10/0x20
-> [   24.191096]  cpuidle_enter_state+0x1fc/0x320
-> [   24.191476]  cpuidle_enter+0x38/0x50
-> [   24.191802]  do_idle+0x1e4/0x260
-> [   24.192094]  cpu_startup_entry+0x34/0x3c
-> [   24.192444]  rest_init+0xdc/0xe0
-> [   24.192734]  console_on_rootfs+0x0/0x6c
-> [   24.193082]  __primary_switched+0x88/0x90
-> [   24.193445] ---[ end trace 0000000000000000 ]---
->
-> which seems a little surprising but there is some console stuff there
-> that looks relevant.
->
-> Full log:
->
->     https://lava.sirena.org.uk/scheduler/job/2086528#L897
+From: Petri Karhula <petri.karhula@novatron.fi>
 
-Michael, reading these logs it looks to me like the underlying oops
-is this backtrace (which makes a lot more sense given the code you
-altered):
+This driver provides backlight brightness control through the Linux
+backlight subsystem. It communicates with the board controller to
+adjust LCD backlight using PWM signals. Communication is done
+through Congatec Board Controller core driver.
 
-[   24.133631] Call trace:
-[   24.133853]  pwm_backlight_probe+0x830/0x868 [pwm_bl] (P)
-[   24.134341]  platform_probe+0x5c/0xa4
-[   24.134679]  really_probe+0xbc/0x2c0
-[   24.135001]  __driver_probe_device+0x78/0x120
-[   24.135391]  driver_probe_device+0x3c/0x154
-[   24.135765]  __driver_attach+0x90/0x1a0
-[   24.136111]  bus_for_each_dev+0x7c/0xdc
-[   24.136462]  driver_attach+0x24/0x38
-[   24.136785]  bus_add_driver+0xe4/0x208
-[   24.137124]  driver_register+0x68/0x130
-[   24.137468]  __platform_driver_register+0x24/0x30
-[   24.137888]  pwm_backlight_driver_init+0x20/0x1000 [pwm_bl]
-[   24.138389]  do_one_initcall+0x60/0x1d4
-[   24.138735]  do_init_module+0x54/0x23c
-[   24.139073]  load_module+0x1760/0x1cf0
-[   24.139407]  init_module_from_file+0x88/0xcc
-[   24.139787]  __arm64_sys_finit_module+0x1bc/0x338
-[   24.140207]  invoke_syscall+0x48/0x104
-[   24.140549]  el0_svc_common.constprop.0+0x40/0xe0
-[   24.140970]  do_el0_svc+0x1c/0x28
-[   24.141268]  el0_svc+0x34/0xec
-[   24.141548]  el0t_64_sync_handler+0xa0/0xf0
-[   24.141920]  el0t_64_sync+0x198/0x19c
+Signed-off-by: Petri Karhula <petri.karhula@novatron.fi>
+---
+Backlight driver to control backlight behind Congatec Board Controller.
+This driver provides backlight brightness control through the Linux
+backlight subsystem. It communicates with the board controller to
+adjust LCD backlight using PWM signals. Communication is done
+through Congatec Board Controller core driver.
+    
+---
+ drivers/mfd/cgbc-core.c           |   1 +
+ drivers/video/backlight/Kconfig   |  11 ++
+ drivers/video/backlight/Makefile  |   1 +
+ drivers/video/backlight/cgbc_bl.c | 281 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 294 insertions(+)
 
-Should we back out the patch for now?
+diff --git a/drivers/mfd/cgbc-core.c b/drivers/mfd/cgbc-core.c
+index 4782ff1114a9..10bb4b414c34 100644
+--- a/drivers/mfd/cgbc-core.c
++++ b/drivers/mfd/cgbc-core.c
+@@ -237,6 +237,7 @@ static struct mfd_cell cgbc_devs[] = {
+ 	{ .name = "cgbc-i2c", .id = 1 },
+ 	{ .name = "cgbc-i2c", .id = 2 },
+ 	{ .name = "cgbc-hwmon"	},
++	{ .name = "cgbc-backlight" },
+ };
+ 
+ static int cgbc_map(struct cgbc_device_data *cgbc)
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index d9374d208cee..702f3b8ed036 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -249,6 +249,17 @@ config BACKLIGHT_PWM
+ 	  If you have a LCD backlight adjustable by PWM, say Y to enable
+ 	  this driver.
+ 
++config BACKLIGHT_CGBC
++	tristate "Congatec Board Controller (CGBC) backlight support"
++	depends on MFD_CGBC && X86
++	help
++	  Say Y here to enable support for LCD backlight control on Congatec
++	  x86-based boards via the CGBC (Congatec Board Controller).
++
++	  This driver provides backlight brightness control through the Linux
++	  backlight subsystem. It communicates with the board controller to
++	  adjust LCD backlight using PWM signals.
++
+ config BACKLIGHT_DA903X
+ 	tristate "Backlight Driver for DA9030/DA9034 using WLED"
+ 	depends on PMIC_DA903X
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index dfbb169bf6ea..0169fd8873ed 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -27,6 +27,7 @@ obj-$(CONFIG_BACKLIGHT_APPLE_DWI)	+= apple_dwi_bl.o
+ obj-$(CONFIG_BACKLIGHT_AS3711)		+= as3711_bl.o
+ obj-$(CONFIG_BACKLIGHT_BD6107)		+= bd6107.o
+ obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE)	+= backlight.o
++obj-$(CONFIG_BACKLIGHT_CGBC)		+= cgbc_bl.o
+ obj-$(CONFIG_BACKLIGHT_DA903X)		+= da903x_bl.o
+ obj-$(CONFIG_BACKLIGHT_DA9052)		+= da9052_bl.o
+ obj-$(CONFIG_BACKLIGHT_EP93XX)		+= ep93xx_bl.o
+diff --git a/drivers/video/backlight/cgbc_bl.c b/drivers/video/backlight/cgbc_bl.c
+new file mode 100644
+index 000000000000..4382321f4cac
+--- /dev/null
++++ b/drivers/video/backlight/cgbc_bl.c
+@@ -0,0 +1,281 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Congatec Board Controller (CGBC) Backlight Driver
++ *
++ * This driver provides backlight control for LCD displays connected to
++ * Congatec boards via the CGBC (Congatec Board Controller). It integrates
++ * with the Linux backlight subsystem and communicates with hardware through
++ * the cgbc-core module.
++ *
++ * Copyright (C) 2025 Novatron Oy
++ *
++ * Author: Petri Karhula <petri.karhula@novatron.fi>
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/backlight.h>
++
++#include <linux/mfd/cgbc.h>
++
++#define CGBC_BL_DRIVER_VERSION     "0.0.1"
++
++#define BLT_PWM_DUTY_MASK          0x7F
++#define BLT_PWM_INVERTED_MASK      0x80
++
++/* CGBC command for PWM brightness control*/
++#define CGBC_CMD_BLT0_PWM          0x75
++
++#define CGBC_BL_MAX_BRIGHTNESS     100
++
++/**
++ * CGBC backlight driver data
++ * @dev: Pointer to the platform device
++ * @bl_dev: Pointer to the backlight device
++ * @cgbc: Pointer to the parent CGBC device data
++ * @current_brightness: Current brightness level (0-100)
++ */
++struct cgbc_bl_data {
++	struct device *dev;
++	struct backlight_device *bl_dev;
++	struct cgbc_device_data *cgbc;
++	unsigned int current_brightness;
++};
++
++/**
++ * Read current PWM settings from hardware
++ * @bl_data: Backlight driver data
++ *
++ * Reads the current PWM duty cycle percentage (= brightness level)
++ * from the board controller.
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++static int cgbc_bl_read_pwm_settings(struct cgbc_bl_data *bl_data)
++{
++	u8 cmd_buf[4] = { CGBC_CMD_BLT0_PWM, 0, 0, 0 };
++	u8 reply_buf[3];
++	int ret;
++
++	ret = cgbc_command(bl_data->cgbc, cmd_buf, sizeof(cmd_buf), reply_buf,
++			   sizeof(reply_buf), NULL);
++
++	if (ret < 0) {
++		dev_err(bl_data->dev, "Failed to read PWM settings: %d\n", ret);
++		return ret;
++	}
++
++	/*
++	 * Only return PWM duty factor percentage,
++	 * ignore polarity inversion bit (bit 7)
++	 */
++	bl_data->current_brightness = reply_buf[0] & BLT_PWM_DUTY_MASK;
++
++	dev_dbg(bl_data->dev, "Current PWM duty=%u\n", bl_data->current_brightness);
++
++	return 0;
++}
++
++/**
++ * Set backlight brightness
++ * @bl_data: Backlight driver data
++ * @brightness: Brightness level (0-100)
++ *
++ * Sets the backlight brightness by configuring the PWM duty cycle.
++ * Preserves the current polarity and frequency settings.
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++static int cgbc_bl_set_brightness(struct cgbc_bl_data *bl_data, u8 brightness)
++{
++	u8 cmd_buf[4] = { CGBC_CMD_BLT0_PWM, 0, 0, 0 };
++	u8 reply_buf[3];
++	int ret;
++
++	/* Read the current values */
++	ret = cgbc_command(bl_data->cgbc, cmd_buf, sizeof(cmd_buf), reply_buf,
++			   sizeof(reply_buf), NULL);
++
++	if (ret < 0) {
++		dev_err(bl_data->dev, "Failed to read PWM settings: %d\n", ret);
++		return ret;
++	}
++
++	/*
++	 * Prepare command buffer for writing new settings. Only 2nd byte is changed
++	 * to set new brightness (PWM duty cycle %). Other balues (polarity, frequency)
++	 * are preserved from the read values.
++	 */
++	cmd_buf[1] = (reply_buf[0] & BLT_PWM_INVERTED_MASK) |
++		     (BLT_PWM_DUTY_MASK & brightness);
++	cmd_buf[2] = reply_buf[1];
++	cmd_buf[3] = reply_buf[2];
++
++	ret = cgbc_command(bl_data->cgbc, cmd_buf, sizeof(cmd_buf), reply_buf,
++			   sizeof(reply_buf), NULL);
++
++	if (ret < 0) {
++		dev_err(bl_data->dev, "Failed to set brightness: %d\n", ret);
++		return ret;
++	}
++
++	bl_data->current_brightness = reply_buf[0] & BLT_PWM_DUTY_MASK;
++
++	/* Verify the setting was applied correctly */
++	if (bl_data->current_brightness != brightness) {
++		dev_err(bl_data->dev,
++			"Brightness setting verification failed\n");
++		return -EIO;
++	}
++
++	dev_dbg(bl_data->dev, "Set brightness to %u\n", brightness);
++
++	return 0;
++}
++
++/**
++ * Backlight update callback
++ * @bl: Backlight device
++ *
++ * Called by the backlight subsystem when brightness needs to be updated.
++ * Changes the brightness level on the hardware
++ * if requested value differs from the current setting.
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++static int cgbc_bl_update_status(struct backlight_device *bl)
++{
++	struct cgbc_bl_data *bl_data = bl_get_data(bl);
++	u8 brightness;
++	int ret;
++
++	brightness = bl->props.brightness;
++
++	if (brightness != bl_data->current_brightness) {
++		ret = cgbc_bl_set_brightness(bl_data, brightness);
++
++		if (ret < 0) {
++			dev_err(bl_data->dev, "Failed to set brightness: %d\n",
++			       ret);
++			return ret;
++		}
++	}
++
++	return 0;
++}
++
++/**
++ * Get current backlight brightness
++ * @bl: Backlight device
++ *
++ * Returns the current brightness level by reading from hardware.
++ *
++ * Return: Current brightness level (0-100), or negative error code
++ */
++static int cgbc_bl_get_brightness(struct backlight_device *bl)
++{
++	struct cgbc_bl_data *bl_data = bl_get_data(bl);
++	int ret;
++
++	/* Read current PWM brightness settings */
++	ret = cgbc_bl_read_pwm_settings(bl_data);
++
++	if (ret < 0) {
++		dev_err(bl_data->dev, "Failed to read PWM settings: %d\n", ret);
++		return ret;
++	}
++
++	return bl_data->current_brightness;
++}
++
++/* Backlight device operations */
++static const struct backlight_ops cgbc_bl_ops = {
++	.options = BL_CORE_SUSPENDRESUME,
++	.update_status = cgbc_bl_update_status,
++	.get_brightness = cgbc_bl_get_brightness,
++};
++
++/**
++ * Probe function for CGBC backlight driver
++ * @pdev: Platform device
++ *
++ * Initializes the CGBC backlight driver and registers it with the
++ * Linux backlight subsystem.
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++static int cgbc_bl_probe(struct platform_device *pdev)
++{
++	struct cgbc_device_data *cgbc = dev_get_drvdata(pdev->dev.parent);
++	struct cgbc_bl_data *bl_data;
++	struct backlight_properties props;
++	struct backlight_device *bl_dev;
++	int ret;
++
++	bl_data = devm_kzalloc(&pdev->dev, sizeof(*bl_data), GFP_KERNEL);
++
++	if (!bl_data)
++		return -ENOMEM;
++
++	bl_data->dev = &pdev->dev;
++	bl_data->cgbc = cgbc;
++
++	ret = cgbc_bl_read_pwm_settings(bl_data);
++
++	if (ret) {
++		dev_err(&pdev->dev, "Failed to read initial PWM settings: %d\n",
++			ret);
++		return ret;
++	}
++
++	memset(&props, 0, sizeof(props));
++	props.type = BACKLIGHT_PLATFORM;
++	props.max_brightness = CGBC_BL_MAX_BRIGHTNESS;
++	props.brightness = bl_data->current_brightness;
++
++	bl_dev = devm_backlight_device_register(&pdev->dev, "cgbc-backlight",
++						&pdev->dev, bl_data,
++						&cgbc_bl_ops, &props);
++
++	if (IS_ERR(bl_dev)) {
++		dev_err(&pdev->dev, "Failed to register backlight device\n");
++		return PTR_ERR(bl_dev);
++	}
++
++	bl_data->bl_dev = bl_dev;
++	platform_set_drvdata(pdev, bl_data);
++
++	dev_info(&pdev->dev,
++		 "CGBC backlight driver registered (brightness=%u)\n",
++		 bl_data->current_brightness);
++
++	return 0;
++}
++
++/**
++ * Remove function for CGBC backlight driver
++ * @pdev: Platform device
++ *
++ * The Linux device-managed resource framework (devres) does the cleanup.
++ * No explicit cleanup is needed here.
++ */
++static void cgbc_bl_remove(struct platform_device *pdev)
++{
++	dev_info(&pdev->dev, "CGBC backlight driver removed\n");
++}
++
++static struct platform_driver cgbc_bl_driver = {
++	.driver = {
++		.name = "cgbc-backlight",
++	},
++	.probe = cgbc_bl_probe,
++	.remove = cgbc_bl_remove,
++};
++
++module_platform_driver(cgbc_bl_driver);
++
++MODULE_AUTHOR("Petri Karhula <petri.karhula@novatron.fi>");
++MODULE_DESCRIPTION("Congatec Board Controller (CGBC) Backlight Driver");
++MODULE_LICENSE("GPL");
++MODULE_VERSION(CGBC_BL_DRIVER_VERSION);
++MODULE_ALIAS("platform:cgbc-backlight");
+
+---
+base-commit: e7c375b181600caf135cfd03eadbc45eb530f2cb
+change-id: 20251118-cgbc-backlight-35c1109db0b8
+
+Best regards,
+-- 
+Petri Karhula <petri.karhula@novatron.fi>
 
 
-Daniel.

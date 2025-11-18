@@ -1,169 +1,144 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-f77.google.com (mail-io1-f77.google.com [209.85.166.77])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F01171DF27D
-	for <linux-fbdev@vger.kernel.org>; Mon, 17 Nov 2025 15:14:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F0212517AF
+	for <linux-fbdev@vger.kernel.org>; Tue, 18 Nov 2025 08:00:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.166.77
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763392492; cv=none; b=j9VL0O6RgJ5s+efDTJbJdALhtvru8BZB2kJtafZHYCauRwpbiDLtnAr7ce4F9wMrW/uZj1QFYC3wk8rx61ASFOVuqdgnJKNfrStQbc9cII/Pvwhuj2GMYvfs1A22d2LVYvlO1Ep5RHfg6v9+35elTCXC4/tuyqkH3qBICRMgkKg=
+	t=1763452832; cv=none; b=Cqx6Y0Jjneo40TF9Az6goHA9dYe8zyJ3z/suKwTJVOWjCkUjX2UCCgu8sGTUbybewZ6WhHeNixFbzeyHN8AJMpvTbBow5Qdu5UxBMiWSXGVdxGbpXNmEtWFAApxr2xNRDueOQfBiRGwfxpHuTf5J6jyFWwwGwQB7qkodzO4/D1w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763392492; c=relaxed/simple;
-	bh=Kpxw0TaZ10Ycx/CK4jHHAsvhr5KNMqub3z5v5EbOBwc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=PF2SUBf4623S6cDp9kxtsPkYMuzsQIHSZn8M7INhFVNVGgwGOUsjTEgjE4K8+kDTSM0iRcThqIxO7cWEsjmmKhIe0rFgFMCVkB+c/KXI//fm26qUJ6AzjV9KI4dhACM5tG0GXs60K0ORo9JCrWJl6yB2y0dQkoGZx9/Uhg/s6Pw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=f+ysXdVy; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=lageWxIh; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="f+ysXdVy";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="lageWxIh"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1763392490;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=kx8ZUuPVQ5znIDs7P4S73XyxKgfUqqBlKv9cHIMA/P0=;
-	b=f+ysXdVyRjJFiO+UYXtD3qgVZafU7GJGDJ+TNBaljAA//5elf5H5utPYvQDaS+ZmuqT/wT
-	G1sCzKF/C4KIXWCAD78f3R3gjF0AdtE9H6izmwwV+2axljX7hyItVhsn2Gw9T7lw+SzwnD
-	qvS/reG6Fe5HPNkhDRkC94miizNWCMM=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-119-a9TQRDWBMJu1oOnmRiac1A-1; Mon, 17 Nov 2025 10:14:47 -0500
-X-MC-Unique: a9TQRDWBMJu1oOnmRiac1A-1
-X-Mimecast-MFC-AGG-ID: a9TQRDWBMJu1oOnmRiac1A_1763392486
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-429cdb0706aso3952852f8f.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Nov 2025 07:14:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1763392486; x=1763997286; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=kx8ZUuPVQ5znIDs7P4S73XyxKgfUqqBlKv9cHIMA/P0=;
-        b=lageWxIhLoq262ri6AMN6vroKxQNOZX2AXzEU7pbrDCsUkgcsJF9lrAbqY5mkNic5I
-         yxL8uwIqZMDel4YMbx0+/KGukLaLoGxe5VIt8Trp8Sn9+VN9HBj6uNHm06uMUaZTj1Ee
-         wBfpYIGWao+CqsMLKuaZUbldUh5lOYE3cbFnNZXam1G7TkM1aQR4XgbPSu8mOnRIIq2l
-         ovbH4iqMZBG27Pd9azYDxoov3TlH1c0d3w1cQHiy93ZrFQxqqsPhLxulq0Cn0J/P4Yll
-         QnXSF+7I8i2vzz3K7+EsbQc7paApqX5SxYCFi8P6lJg5pPozBH3kh64ezjn47WFxiHrQ
-         rh/A==
+	s=arc-20240116; t=1763452832; c=relaxed/simple;
+	bh=vGMiemJRHg5EX1vh0pb+J4+nqLZl5HwCelERxdNYGtU=;
+	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:
+	 Content-Type; b=aPs0eakH4yMvI5mHHRQ2Day7xBjcmxRVsaH70Cpl5az44/MTWDZFIbVAwMdtPHzS1XalRpepJjJaTVzXBmaiQ43Ava/FLyVrN4FySTTXMzKIJ8JwdzYNmeMpkYLpCuHwyi0PSpSw+hYeoMqW3xKes/RvMlLu5X888sx7VCvw3tY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.166.77
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-io1-f77.google.com with SMTP id ca18e2360f4ac-9434f5350bcso478992639f.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Nov 2025 00:00:30 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763392486; x=1763997286;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kx8ZUuPVQ5znIDs7P4S73XyxKgfUqqBlKv9cHIMA/P0=;
-        b=cfrgLWZPFaqbvDu2VC990W0+dcCAVMfa0+5vksOcigOl8mtg3e1rRlm5/x+7NDiQDp
-         +fz6pIIGTCacFxP/uxLnmInA2p7KdtZZGqvD8XStsMG0bav8MXdRiyo5LJlyguSk5DU+
-         sL6STy2sk9I9hvRgq+18lYGRXtCvaoUs6LYvSp/wUTkbVt/Ws6W9qmgBHYO12MEJre26
-         OFKVZGwJHBqMzWekCBgNDcQpyEWzW4Ni6DeYilg13LvbznOhNugCb8iWHuFrm9xt2P4g
-         q3UechoFwvGY20HHnHbZ3JNUw3yceQoko9kM9C/Sqc0W5iTM0ux5nJiRDs0KYBtm3iRm
-         YYsQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWTCvcdrVvlyBqIUBRHjonEOJmJ66OB2HbWQdsmF6Om52xihxTcbvDC6iEQ3m7a4+1svIRZc1OZJO6gLQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzg5/CXWswxE3AEGcB9ZP7ujK1VpG8Nvyq2KXlYa1y/9IgH+FWO
-	DPNN8lCSMNoBc8J2t34GImOoE5sZhZCryGix+Aq1haLy/BWHgGgKU4mxWUN4VteeCKtJDdlE8Bh
-	Ty1AU1JBjuMVdHe/VnECf+l5ec0cIxPhJCtCEK6Z2b45/98OChyBn0ftBSUeFN8d+
-X-Gm-Gg: ASbGncvbkt/tqbenWpUfJ0eYhTZXg7yUB6pGrdayJYfFZKBK8si4PzvFTv66cKRymGE
-	SV6xGzTQaFnwtKPOhKCFDn1fuL8GYYQalmDs9qEd1ZqlkgRw9w+zqTtle0rHPJxUPGS9th4PuGH
-	2R5wj0911oKOERFd1/HXP7/2L+FtNwXGZsyZXUbAdoNRB4uCnwnNLfNYT8CRMQvFoQdxSuDMcBC
-	+7XrVjBEVYmdnsqtVF5JuyYpQ8p09z52r3WvZYiqK5nNykWsE+U6LQCw4fL+BDXVXhjl6RBM61G
-	mrzd1UPDOV8zUJaUaAKpIVet/qCq5vtwQiTY2WKl7SgsyJnXhk9KMDHrmbm8YXuujk+v0ZlVAP/
-	pFc1tr+C5sXas0BnyE3og61BrkMScOGxW36idKMvwpetb/Tnh505puo9qbqzUvHBltJKX
-X-Received: by 2002:a05:600c:8b4b:b0:477:755b:5587 with SMTP id 5b1f17b1804b1-4778fe55405mr135076645e9.8.1763392486522;
-        Mon, 17 Nov 2025 07:14:46 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IF1Imhn+5hGc5232CXEsbuOoPXvPaiufKMMUFle9A3qt/AF8KRLMNtNt270jXisxDN8USi6Ng==
-X-Received: by 2002:a05:600c:8b4b:b0:477:755b:5587 with SMTP id 5b1f17b1804b1-4778fe55405mr135076405e9.8.1763392486109;
-        Mon, 17 Nov 2025 07:14:46 -0800 (PST)
-Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-47787e2bcf9sm313765805e9.3.2025.11.17.07.14.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Nov 2025 07:14:45 -0800 (PST)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>,
- maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com,
- simona@ffwll.ch, deller@gmx.de, lukas@wunner.de,
- ville.syrjala@linux.intel.com, sam@ravnborg.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] drm, fbcon, vga_switcheroo: Avoid race condition in
- fbcon setup
-In-Reply-To: <9306d41f-6afc-4277-9198-a23e51cbd9f6@suse.de>
-References: <20251105161549.98836-1-tzimmermann@suse.de>
- <87fradkkzp.fsf@ocarina.mail-host-address-is-not-set>
- <9306d41f-6afc-4277-9198-a23e51cbd9f6@suse.de>
-Date: Mon, 17 Nov 2025 16:14:44 +0100
-Message-ID: <87cy5glmhn.fsf@ocarina.mail-host-address-is-not-set>
+        d=1e100.net; s=20230601; t=1763452830; x=1764057630;
+        h=to:from:subject:message-id:in-reply-to:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=C8/pNX9SbOjjNIN26OVWmhsh/hu9+rN3ZW/7Vppn+XU=;
+        b=D8Ax90XY0mXCUF9FKKUr64/aXJnFnX2JQfhDEkeYnUZk2CcOjhGGroefCsITwpiT3e
+         ojZwErDPCBLTtl08WxL/5jfsx3DeDVvK0uaDEeCySGAoObhXF48CDrU0P9MLIvhY3MH/
+         3iRsfRT0t9yzaXX0rdKX9o/GvXYmIF6fa9QBqJiw4WoB0rVvTTTuTpjB2afAlTGtWS+D
+         MD+3ORwZsTJpte28NFiSY9m+I+fC8zWYUXDS9qf6LUMcxCrj+jiSUDeHNmvMXnkhWnT1
+         WtARHQ+DN3M/tZkp82gatnq0oLDeo9bUhKB92OFcfhOSTUEXS+bXWLy2gYl0L5Fb8Lek
+         TWhA==
+X-Forwarded-Encrypted: i=1; AJvYcCX95mqTG5md03WWE/kQghWOOMdizRfOvBAiXBWk0Q/trhP+l//7o1OfUZB4HTvagRMnTHA6jdjqxOeGjA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxcnjY4dXEiJdPbwlrcQNbMg7v/X188KU0KoTmsr8lk7KlHEz2+
+	H+kRq16cGSXUjqrfo4ZiKS8Log0cxixROYXSoV+UCVcU62vu42rF+MRwnNAmzys3S7E9k7btenY
+	aR/nt0t+nVmp+uzsPb2aQEXGdyKMV0NK1qXiZNm9LV7+sgN/6ZLDFBKtsbQk=
+X-Google-Smtp-Source: AGHT+IFUSYc9EyrU2PmUGojVWx8wzC4EoFtzpZnqsofEv6VT0N5YvuvB7b8t6F5+Hyp52FZwysMK6tWyhPLmwhf5eNBJ83zLs10Q
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+X-Received: by 2002:a05:6638:3f1a:b0:572:c2ff:b9bd with SMTP id
+ 8926c6da1cb9f-5b7fa51bd46mr2755534173.0.1763452830020; Tue, 18 Nov 2025
+ 00:00:30 -0800 (PST)
+Date: Tue, 18 Nov 2025 00:00:30 -0800
+In-Reply-To: <6907c8c8.a70a0220.37351b.0012.GAE@google.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <691c279e.a70a0220.3124cb.00b5.GAE@google.com>
+Subject: Re: [syzbot] [fbdev?] KASAN: vmalloc-out-of-bounds Write in imageblit (6)
+From: syzbot <syzbot+5a40432dfe8f86ee657a@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, simona@ffwll.ch, 
+	soci@c64.rulez.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+syzbot has found a reproducer for the following issue on:
 
-> Hi
->
-> Am 17.11.25 um 11:32 schrieb Javier Martinez Canillas:
->> Thomas Zimmermann <tzimmermann@suse.de> writes:
->>
->> Hello Thomas,
->>
->>> Protect vga_switcheroo_client_fb_set() with console lock. Avoids OOB
->>> access in fbcon_remap_all(). Without holding the console lock the call
->>> races with switching outputs.
->>>
->>> VGA switcheroo calls fbcon_remap_all() when switching clients. The fbcon
->>> function uses struct fb_info.node, which is set by register_framebuffer().
->>> As the fb-helper code currently sets up VGA switcheroo before registering
->>> the framebuffer, the value of node is -1 and therefore not a legal value.
->>> For example, fbcon uses the value within set_con2fb_map() [1] as an index
->>> into an array.
->>>
->>> Moving vga_switcheroo_client_fb_set() after register_framebuffer() can
->>> result in VGA switching that does not switch fbcon correctly.
->>>
->>> Therefore move vga_switcheroo_client_fb_set() under fbcon_fb_registered(),
->>> which already holds the console lock. Fbdev calls fbcon_fb_registered()
->>> from within register_framebuffer(). Serializes the helper with VGA
->>> switcheroo's call to fbcon_remap_all().
->>>
->>> Although vga_switcheroo_client_fb_set() takes an instance of struct fb_info
->>> as parameter, it really only needs the contained fbcon state. Moving the
->>> call to fbcon initialization is therefore cleaner than before. Only amdgpu,
->>> i915, nouveau and radeon support vga_switcheroo. For all other drivers,
->>> this change does nothing.
->>>
->>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->>> Link: https://elixir.bootlin.com/linux/v6.17/source/drivers/video/fbdev/core/fbcon.c#L2942 # [1]
->>> ---
->> I'm not that familiar with fbcon and vga_switcheroo to properly review
->> your patch but after reading the explanation in the commit message and
->> reading the diff, the change does make sense to me.
->>
->> Acked-by: Javier Martinez Canillas <javierm@redhat.com>
->>
->> But I think that would be good if you get some testing for the drivers
->> that make use of vga_switcheroo. Also, do you need a Fixes tag ?
->
-> I've ran the testing on amdgpu and i915 so that nothing breaks. The bug 
-> is hard to reproduce though. I've discovered it by reading the code.
->
+HEAD commit:    e7c375b18160 Merge tag 'vfs-6.18-rc7.fixes' of gitolite.ke..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=15476692580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=1cd7f786c0f5182f
+dashboard link: https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
+compiler:       gcc (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=10a70332580000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=173228b4580000
 
-Thanks.
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/1fcb660703f1/disk-e7c375b1.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/4bf314965321/vmlinux-e7c375b1.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/456b373fea36/bzImage-e7c375b1.xz
 
-I usually put that kind of information between the --- separator and the
-start of the diff. Since that info can be useful for reviewers and doesn't
-end in the commited patch, due tools like `git am` omitting that section.
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+5a40432dfe8f86ee657a@syzkaller.appspotmail.com
 
-> About Fixes, the problem has been in the code forever. So IDK what Fixes 
-> would make sense. Just in case:
->
+RDX: 0000000000000007 RSI: 0000000000000000 RDI: 0000000000000003
+RBP: 00007fff34de03f0 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000001
+R13: 00007fd0417e5fa0 R14: 00007fd0417e5fa0 R15: 0000000000000003
+ </TASK>
+==================================================================
+BUG: KASAN: vmalloc-out-of-bounds in fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
+Write of size 8 at addr ffffc90003749fc0 by task syz.0.17/6037
 
-I see. Then I agree that having the tag is less useful.
+CPU: 0 UID: 0 PID: 6037 Comm: syz.0.17 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 10/25/2025
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
+ print_address_description mm/kasan/report.c:378 [inline]
+ print_report+0xcd/0x630 mm/kasan/report.c:482
+ kasan_report+0xe0/0x110 mm/kasan/report.c:595
+ fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+ fb_bitmap_2ppw drivers/video/fbdev/core/fb_imageblit.h:364 [inline]
+ fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:462 [inline]
+ fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
+ sys_imageblit+0x1a6f/0x1e60 drivers/video/fbdev/core/sysimgblt.c:24
+ drm_fbdev_shmem_defio_imageblit+0x20/0x130 drivers/gpu/drm/drm_fbdev_shmem.c:38
+ cw_putcs_aligned drivers/video/fbdev/core/fbcon_cw.c:110 [inline]
+ cw_putcs+0x917/0xbb0 drivers/video/fbdev/core/fbcon_cw.c:158
+ fbcon_putcs+0x387/0x450 drivers/video/fbdev/core/fbcon.c:1320
+ do_update_region+0x2e9/0x3f0 drivers/tty/vt/vt.c:628
+ redraw_screen+0x63f/0x760 drivers/tty/vt/vt.c:980
+ fbcon_modechanged+0x456/0x6b0 drivers/video/fbdev/core/fbcon.c:2710
+ fbcon_rotate drivers/video/fbdev/core/fbcon.c:228 [inline]
+ rotate_store+0x258/0x2f0 drivers/video/fbdev/core/fbcon.c:3215
+ dev_attr_store+0x58/0x80 drivers/base/core.c:2437
+ sysfs_kf_write+0xf2/0x150 fs/sysfs/file.c:142
+ kernfs_fop_write_iter+0x3af/0x570 fs/kernfs/file.c:352
+ new_sync_write fs/read_write.c:593 [inline]
+ vfs_write+0x7d3/0x11d0 fs/read_write.c:686
+ ksys_write+0x12a/0x250 fs/read_write.c:738
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xcd/0xfa0 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7fd04158f6c9
+Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007fff34de0398 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007fd0417e5fa0 RCX: 00007fd04158f6c9
+RDX: 0000000000000007 RSI: 0000000000000000 RDI: 0000000000000003
+RBP: 00007fff34de03f0 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000001
+R13: 00007fd0417e5fa0 R14: 00007fd0417e5fa0 R15: 0000000000000003
+ </TASK>
 
--- 
-Best regards,
+The buggy address belongs to a vmalloc virtual mapping
+Memory state around the buggy address:
+ ffffc90003749e80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc90003749f00: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+>ffffc90003749f80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+                                           ^
+ ffffc9000374a000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc9000374a080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+==================================================================
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
 
+---
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.

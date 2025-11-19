@@ -1,117 +1,96 @@
-Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1C502DCF6C
-	for <linux-fbdev@vger.kernel.org>; Wed, 19 Nov 2025 07:17:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8A6542749DF;
+	Wed, 19 Nov 2025 08:26:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763536634; cv=none; b=hLtopCN0l5DbjRMiBtQFpGcLwFjhjt3X1O0U4G2Oo/tWeYXyX+CykAxSNUTidydrKHLiG717DVoh7nmrYe7rA0IwBmPEn9uqiqdeK+p+d/hTauHGGAh+6QSbSkDHgReGjCQa0UHoOBaWkvl7aS+y8O3O71tBl6NCmmmff7YUrr4=
+	t=1763540780; cv=none; b=DuQBMgguA7/zxNlMGrn5zKOPK8mNUdvhmiLtW8mWtidAl4FaGasSJ1IGVnVeVKP4CUHawbUIynxTw2i5ZcQxBJ8stH+xY/xtCEtSuFdAVe5YOF0cXnrwuxw8MYxJVvlEpOR+DICm+wWMwnkM6mQmDyPo3PmNaVa4DVf/QDOGSgI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763536634; c=relaxed/simple;
-	bh=yf3rj7kjgFeuw8WqVV00rLykAQcjoD6ee92L2NroJdM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=sGKrfcTc2jomQo8gZfrB5peulHLWDluIjpS/mg4kks02YbyzHRz4Wx6cUuL0pwkqVY2nXC4cv+yFRxbgBZe4qAjEoH0fc3wcQ3BJcnZBxkeJ1kCBJXJQ5SKXdniNicYmMeOK2H9gwAibokQrUP6toHGiUGHxNdXyI7aJAsybIuU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Bf/aH3ZY; arc=none smtp.client-ip=209.85.208.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1763540780; c=relaxed/simple;
+	bh=QHwp4lY2HPcPahRZXK4LaMFm9Mk6v/c6AOOPuydO0fQ=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=U7HDJFwRd7KHwpVmsa5W0Fe7JPOMfyxw764eWi3X7sY7TKOj/9fXZytZ02clpu+cTj5kXHM7LRRn8lVCCG5JKdCJpdyKrwDIkwsiyRg3dEbUVIQ265YbKx1fIWFgqIM3pno+j8kQHbfrtUcCjKOyoW9F90Rapc3h/4UeoHNc6Aw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YGDICVXm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Bf/aH3ZY"
-Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-64198771a9bso11868047a12.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 Nov 2025 23:17:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1763536631; x=1764141431; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=/EJ+O+/tQ6vW+24H3RZKmxUGOMkY2b8gAhqMukrgBCU=;
-        b=Bf/aH3ZYkEn/BVBkAWVQnfS05dKP4Lb6cj7gPniBoPLaQg//I76nxGskbv/Evo/fj4
-         DThJIBpQlBJFa9ij84xmrQCcTMEY5t6tGjtH9sw98rV6FDiEJ7FGYBYgiJJp8tlK1tmf
-         cNeTdMj3XvyVZ/A8UTJPlGSI3FDYCqP5sCNO0iN5x84H6nrphPfdx1PnPBscM2vpvqBq
-         w3WJt+5K+ba0pPM7EzKuUcrataEebL9diC0P+uJYKLjecdAP2cad2NQZjbG26fWPibfD
-         8Fqmib6WQAmQSl00sdTWl6t0n5k6DmMQKi99hGW0Liy/7UBpPWjOl16lMndS+BizE3cT
-         N75Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763536631; x=1764141431;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=/EJ+O+/tQ6vW+24H3RZKmxUGOMkY2b8gAhqMukrgBCU=;
-        b=k4ZLrZLmT4B4J1iVOCVlO5kGhkvHYoLpY6y2HCUHjVJO1JjnSYEqIzRkinFqvb5nRW
-         0tQfgnV4smplSVqs8/XPjpBFOK+urjC5sDxV+sMUoZrOTQkwRoVg0XR5+Ijzqw0mRVCN
-         MPUAAIyMganysm6YMehb+LR2Tqyk9QendxaK/5OkL4E7EWW7zbE8r1BcW9hoT+ruNOe2
-         8lGlcp44+kzvxsUKuSoo91MOK36JBYzHT4MhJGAkNjQxyMV16WuO459DX028OUUXmcSk
-         6h3lYZUgT6i8Ywuz+Xyl6rbH8NDXXDVLwyMIgTLVwN33sPTfe5uAaPsr71FcT/ErBSOM
-         tekA==
-X-Gm-Message-State: AOJu0Yw2zjH8MgOZGE9uQmW/UVUReEq5VRPtcx+0LvkoPNWjDQxdmTjS
-	MELiJFoOyPtyQ8ay8EJgPxFbJuTZP2IljNWu1B3/XDYeQoxmyOLULqDaapGKHiYMcRD2QVxrXmd
-	1f2WgGmZY8fHSjvQTuQ4c57vxG0UoMs4=
-X-Gm-Gg: ASbGnctPK5xN6gh4hMYEvURDnjiNQT4GSPQn2zfSlnGlqdB6xHocXIgEXkFp0uVcv5v
-	i3BtVvdM+kyRwHRy4YK/0tesfFQsNfx74I7eeFpzbfXQLFsjvwieIDUYf+69stIaN1HTj3nr1cW
-	W8515zM7UEK3Uguwhgf6TDILp376pYBS3V48F+ZPKHTw3P2uOPVvz67m3ktQffWoACu1AZWOnWX
-	dWlogz+Y332ajR0DkD4GDwSX8mO14w7oa6rV9aGfAAq1XkLCXRebKc3zHBrg1KAKVusfPtH7wv1
-	Mwt7TrT385moSSM3n+miEsGr
-X-Google-Smtp-Source: AGHT+IE9uQZLBFdQDPsVLkSPNjmAX4yph6y8DZKHX9lDmrbOkhEeQZJx2xhnAtV5cyCcH5NeKJmBDDc5Ze+fOVNVM3M=
-X-Received: by 2002:a05:6402:4310:b0:640:3210:6e48 with SMTP id
- 4fb4d7f45d1cf-64350e046fcmr17282325a12.4.1763536630884; Tue, 18 Nov 2025
- 23:17:10 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YGDICVXm"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A3C0BC16AAE;
+	Wed, 19 Nov 2025 08:26:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1763540780;
+	bh=QHwp4lY2HPcPahRZXK4LaMFm9Mk6v/c6AOOPuydO0fQ=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=YGDICVXmnp62M+m/7hr9sSqXloS+MGgedTPrYk/pLl+l2rgjZqFbXBQ5ZosJsUYdS
+	 i+0G5pfd9uQiLc7YhUXHk8zJpHG9ZSGZ52vZHCyMyqbZnIKLsT4Ig5DbW/lvB0zcqf
+	 QN1Dsi2gvEnXSFlfIUg/BvKWCtBMhzFqaGApRycYT++8ykzP2Ao1IVveTeBobiz25F
+	 oTQW2hPd3ma/E8c4/yT36bPI8YyATLqGa5N4A0+FNwb3mooSN+/jxfK72cD68Jye/q
+	 LxTiMv721Dd3GhzluRiKfPtRA9NC7AgBOElGbsCYRDuN59csbB87sAzN+QbtKDVHGj
+	 8xJZIsny1RM2w==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 840BCCF258C;
+	Wed, 19 Nov 2025 08:26:19 +0000 (UTC)
+From: Petri Karhula via B4 Relay <devnull+petri.karhula.novatron.fi@kernel.org>
+Subject: [PATCH v2 0/2] Backlight driver to control backlight behind
+ Congatec Board Controller.
+Date: Wed, 19 Nov 2025 08:25:45 +0000
+Message-Id: <20251119-cgbc-backlight-v2-0-4d4edd7ca662@novatron.fi>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251115125701.3228804-1-rampxxxx@gmail.com>
-In-Reply-To: <20251115125701.3228804-1-rampxxxx@gmail.com>
-From: Javier Garcia <rampxxxx@gmail.com>
-Date: Wed, 19 Nov 2025 08:16:58 +0100
-X-Gm-Features: AWmQ_bmzv8l-KX59QSz0MNOTxclz8UMiBbVuiOxbVwWiFfQ6NOwXKoAwcySw9Pg
-Message-ID: <CABPJ0vjy1ccb4DCd5Q1B=LQPMdpAQN+hhWd39tk9y6TbepZoSw@mail.gmail.com>
-Subject: Re: [PATCH] fbdev/tridentfb: replace printk() with dev_*() in probe
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, shuah@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAl/HWkC/3XMQQ7CIBCF4as0sxbDtNZUV97DdAFTChMNGCBE0
+ 3B3sXuX/0vet0EykU2Ca7dBNIUTB9+iP3RATnlrBC+toZf9iIiTIKtJaEWPJ1uXxTASorwsWuo
+ J2ukVzcrvHbzPrR2nHOJn9wv+1r9UQYGC6KxoHCTK4XTzoagcgz+uDHOt9QtIFpQwrgAAAA==
+X-Change-ID: 20251118-cgbc-backlight-35c1109db0b8
+To: Thomas Richard <thomas.richard@bootlin.com>, Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+ Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, Petri Karhula <petri.karhula@novatron.fi>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1763540778; l=1068;
+ i=petri.karhula@novatron.fi; s=20251118; h=from:subject:message-id;
+ bh=QHwp4lY2HPcPahRZXK4LaMFm9Mk6v/c6AOOPuydO0fQ=;
+ b=9AC+En9IdiAecmW78tFIvc8DEAPUbK4EcxwsMxWLlAHkyp8BR55ywXRluE6Le3nArv5o2KFH8
+ MmL/x2bWw96B8p+bpE4kNLQHot5Ap5+sTkR3z0nXz7slK4d6uuzMZfX
+X-Developer-Key: i=petri.karhula@novatron.fi; a=ed25519;
+ pk=LRYJ99jPPsHJwdJEPkqlmzAMqo6oyw7I421aHEfDp7o=
+X-Endpoint-Received: by B4 Relay for petri.karhula@novatron.fi/20251118
+ with auth_id=567
+X-Original-From: Petri Karhula <petri.karhula@novatron.fi>
+Reply-To: petri.karhula@novatron.fi
 
-Hi Deller,
+This driver provides backlight brightness control through the Linux
+backlight subsystem. It communicates with the board controller to
+adjust LCD backlight using PWM signals. Communication is done
+through Congatec Board Controller core driver.
+    
 
-Any comments on this patch?,
-
-Thanks!
+Signed-off-by: Petri Karhula <petri.karhula@novatron.fi>
+---
+Changes in v2:
+- Separated Board Controller core driver change into its own patch
+- Link to v1: https://lore.kernel.org/r/20251118-cgbc-backlight-v1-1-cc6ac5301034@novatron.fi
 
 ---
-Javier Garcia
+Petri Karhula (2):
+      backlight: Add Congatec Board Controller (CGBC) backlight support
+      mfd: cgbc: Add support for backlight
 
-On Sat, 15 Nov 2025 at 13:57, Javier Garcia <rampxxxx@gmail.com> wrote:
->
-> - Replace in `trident_pc_probe()` printk by dev_* fn's
-> - Delete the prefix `tridentfb:` from msg strings, not needed now.
->
-> Signed-off-by: Javier Garcia <rampxxxx@gmail.com>
-> ---
->  drivers/video/fbdev/tridentfb.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-> index 516cf2a18757..17b7253b8fbe 100644
-> --- a/drivers/video/fbdev/tridentfb.c
-> +++ b/drivers/video/fbdev/tridentfb.c
-> @@ -1631,7 +1631,7 @@ static int trident_pci_probe(struct pci_dev *dev,
->         }
->
->         if (noaccel) {
-> -               printk(KERN_DEBUG "disabling acceleration\n");
-> +               dev_dbg(&dev->dev, "disabling acceleration\n");
->                 info->flags |= FBINFO_HWACCEL_DISABLED;
->                 info->pixmap.scan_align = 1;
->         }
-> @@ -1693,7 +1693,7 @@ static int trident_pci_probe(struct pci_dev *dev,
->         info->var.activate |= FB_ACTIVATE_NOW;
->         info->device = &dev->dev;
->         if (register_framebuffer(info) < 0) {
-> -               printk(KERN_ERR "tridentfb: could not register framebuffer\n");
-> +               dev_err(&dev->dev, "could not register framebuffer\n");
->                 fb_dealloc_cmap(&info->cmap);
->                 err = -EINVAL;
->                 goto out_unmap2;
-> --
-> 2.50.1
->
+ drivers/mfd/cgbc-core.c           |   1 +
+ drivers/video/backlight/Kconfig   |  11 ++
+ drivers/video/backlight/Makefile  |   1 +
+ drivers/video/backlight/cgbc_bl.c | 281 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 294 insertions(+)
+---
+base-commit: e7c375b181600caf135cfd03eadbc45eb530f2cb
+change-id: 20251118-cgbc-backlight-35c1109db0b8
+
+Best regards,
+-- 
+Petri Karhula <petri.karhula@novatron.fi>
+
+

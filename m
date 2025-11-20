@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF98B337BBA;
-	Thu, 20 Nov 2025 14:09:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A10527F005;
+	Thu, 20 Nov 2025 14:10:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763647760; cv=none; b=GZz4ePDDkTAU3TBhMRYNzgWNoaOAOuOYEazVyiQjHAs8J/iQm1KgTs5Tol2MC8QSgZHrgqjLelgArk3mnrroUWUI9ZCdDe80dYS/Gfqhvm+Pl8Yrd6AHW3CHzQEMU9Mj7S0RO0M82GN5nXnFDuGbq86+N7q+1DeIPq4UVWTV0hI=
+	t=1763647802; cv=none; b=mYAn1T/8IVSrmHYUmopL0TeZcR71G/zcxq4++h8FPs7Fwfu6WOSEa6eZnsXkqFMRfYDMW6XqdkTec0O9wc+0AqkVuBAS/mSCBz3WcqmjY5937aBbLg7Xgu8qG7mLSBBzSbUaOmfwjsQDAA7nzXbGYwuwzVmp+wHx0pHVdd9sAEA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763647760; c=relaxed/simple;
-	bh=cB1MfBeclsVR7tg+ihgdmU0VGtZGLmlkem4dlSdvRNE=;
+	s=arc-20240116; t=1763647802; c=relaxed/simple;
+	bh=KsWxIncxKwE6NI82R+jakcRYjup9pZZTD1zW8iIIk5k=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YpizRAW6qOiCLodI2kRnanZMijxvvvqCTP++n7DxLKZLx7DpBhON4nL00SyIMiQQrTzbXrheTMzCHzb2ktot1sXonZ+YK3z78DgQ7jMtCfV7q29FlwKnsth8wiiNEQ6iE5MyFSVnSkH3lyKxUmuNOxIdghbVSllEkkiY5zA82u4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CVqEZpA4; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=qgxKbdl3oGETg9qgCCSm8Zkdcld5B+i4P4uE00Xy8TvODft02hMEtBOiAlAwEEnTh8SafTq0IKck9w3AEObhNs+j2YkIfY5QdPQFSIEDAEZqdh8Rb1uVfDXucH+ALw0mYOa7rs8edmWFpFv5j0TZOLw6OyLB07TMeusv+oLUgfg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=H7xiImZK; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CVqEZpA4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4EC6AC4CEF1;
-	Thu, 20 Nov 2025 14:09:18 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="H7xiImZK"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67544C4CEF1;
+	Thu, 20 Nov 2025 14:09:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763647760;
-	bh=cB1MfBeclsVR7tg+ihgdmU0VGtZGLmlkem4dlSdvRNE=;
+	s=k20201202; t=1763647801;
+	bh=KsWxIncxKwE6NI82R+jakcRYjup9pZZTD1zW8iIIk5k=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=CVqEZpA4Nhxw17SJ6Vlb53h4OvwmjmgrppItW3kIZG6sdTTYWjpPlGn4rQMDAeDc9
-	 jWEkGWCbUwTt9Dt2afL8cx3GVtBatWPkjpKeglKw7d/lusU97BuPDWcZwDFb9y9OBT
-	 zeINZpzcVhQcmHtH28yKnbPEV/AAGjkPkL2XFsWKOMEHoYDxRIS1nIQo3YEroSaNdl
-	 S5LhNRuQJ/R62Xfq2HhkqGkfV0/EQJxdUiGhwXnJdLJuvysjbVRfxG/lQLs49pIRSf
-	 FHTj1JZ7n33i3YoRq+WnPd2bpS7LcJpQsdt82RA+av+cML3mNqSIbdGVQzP/V3RHiA
-	 7w8E7a7gXKMNg==
-Message-ID: <3f66d2dd-4378-4d33-a0ce-3128c13ad6a5@kernel.org>
-Date: Thu, 20 Nov 2025 15:09:16 +0100
+	b=H7xiImZK9ERGgqnQfRvIUK8iEneYN9AN9WLTZiZniPHOby1BQHqKMFrPN898h3P92
+	 7FGvFd+K30LOC0esXB1/C17YOOoHNhFh+3CxcEdgqsP/ALF4/8KkyeKMkklBnSBO+5
+	 o5Wf2IWeZ1TAB9CwjWF8Tr7u8y3cKEsDbCCO0Vbn53w87b709EYG0sRmwWRkt+cMHN
+	 4kKMip2942uiVNvL2QUzzWMRaqzQltcKyyVbifL7Vz7Qa5dK24ExI0PcEm4llKRlPF
+	 yMQr+lPvR3DhQCBjz5tbTX1SL3Njrm65t5oAe0fMcfa3CIw0M/rOEAB3hrqelK8XK7
+	 NiL4D7LXzfKFA==
+Message-ID: <c636a799-5b8c-4f1b-a3e5-74c9df63977d@kernel.org>
+Date: Thu, 20 Nov 2025 15:09:57 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -35,14 +35,15 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] backlight: Add Congatec Board Controller (CGBC) backlight
- support
+Subject: Re: [PATCH v2 1/2] backlight: Add Congatec Board Controller (CGBC)
+ backlight support
 To: petri.karhula@novatron.fi, Thomas Richard <thomas.richard@bootlin.com>,
  Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
  Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
 Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
  linux-fbdev@vger.kernel.org
-References: <20251118-cgbc-backlight-v1-1-cc6ac5301034@novatron.fi>
+References: <20251119-cgbc-backlight-v2-0-4d4edd7ca662@novatron.fi>
+ <20251119-cgbc-backlight-v2-1-4d4edd7ca662@novatron.fi>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -88,124 +89,11 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20251118-cgbc-backlight-v1-1-cc6ac5301034@novatron.fi>
+In-Reply-To: <20251119-cgbc-backlight-v2-1-4d4edd7ca662@novatron.fi>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 18/11/2025 17:43, Petri Karhula via B4 Relay wrote:
-> +
-> +/**
-> + * Get current backlight brightness
-> + * @bl: Backlight device
-> + *
-> + * Returns the current brightness level by reading from hardware.
-> + *
-> + * Return: Current brightness level (0-100), or negative error code
-> + */
-
-Why are you documenting standard API?
-
-> +static int cgbc_bl_get_brightness(struct backlight_device *bl)
-> +{
-> +	struct cgbc_bl_data *bl_data = bl_get_data(bl);
-> +	int ret;
-> +
-> +	/* Read current PWM brightness settings */
-> +	ret = cgbc_bl_read_pwm_settings(bl_data);
-> +
-> +	if (ret < 0) {
-> +		dev_err(bl_data->dev, "Failed to read PWM settings: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	return bl_data->current_brightness;
-> +}
-> +
-> +/* Backlight device operations */
-
-Huh? Can it be a GPIO device operations?
-
-> +static const struct backlight_ops cgbc_bl_ops = {
-> +	.options = BL_CORE_SUSPENDRESUME,
-> +	.update_status = cgbc_bl_update_status,
-> +	.get_brightness = cgbc_bl_get_brightness,
-> +};
-> +
-> +/**
-> + * Probe function for CGBC backlight driver
-> + * @pdev: Platform device
-> + *
-> + * Initializes the CGBC backlight driver and registers it with the
-> + * Linux backlight subsystem.
-> + *
-> + * Return: 0 on success, negative error code on failure
-
-Very redundant and useless comment.
-
-> + */
-> +static int cgbc_bl_probe(struct platform_device *pdev)
-> +{
-> +	struct cgbc_device_data *cgbc = dev_get_drvdata(pdev->dev.parent);
-> +	struct cgbc_bl_data *bl_data;
-> +	struct backlight_properties props;
-> +	struct backlight_device *bl_dev;
-> +	int ret;
-> +
-> +	bl_data = devm_kzalloc(&pdev->dev, sizeof(*bl_data), GFP_KERNEL);
-> +
-
-Drop blank line. There is never such line between allocation and check.
-
-> +	if (!bl_data)
-> +		return -ENOMEM;
-> +
-> +	bl_data->dev = &pdev->dev;
-> +	bl_data->cgbc = cgbc;
-> +
-> +	ret = cgbc_bl_read_pwm_settings(bl_data);
-> +
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Failed to read initial PWM settings: %d\n",
-> +			ret);
-
-return dev_err_probe
-
-> +		return ret;
-> +	}
-> +
-> +	memset(&props, 0, sizeof(props));
-> +	props.type = BACKLIGHT_PLATFORM;
-> +	props.max_brightness = CGBC_BL_MAX_BRIGHTNESS;
-> +	props.brightness = bl_data->current_brightness;
-> +
-> +	bl_dev = devm_backlight_device_register(&pdev->dev, "cgbc-backlight",
-> +						&pdev->dev, bl_data,
-> +						&cgbc_bl_ops, &props);
-> +
-> +	if (IS_ERR(bl_dev)) {
-> +		dev_err(&pdev->dev, "Failed to register backlight device\n");
-
-return dev_err_probe
-
-> +		return PTR_ERR(bl_dev);
-> +	}
-> +
-> +	bl_data->bl_dev = bl_dev;
-> +	platform_set_drvdata(pdev, bl_data);
-> +
-> +	dev_info(&pdev->dev,
-> +		 "CGBC backlight driver registered (brightness=%u)\n",
-> +		 bl_data->current_brightness);
-
-Drop.
-
-This does not look like useful printk message. Drivers should be silent
-on success:
-https://elixir.bootlin.com/linux/v6.15-rc7/source/Documentation/process/coding-style.rst#L913
-https://elixir.bootlin.com/linux/v6.15-rc7/source/Documentation/process/debugging/driver_development_debugging_guide.rst#L79
-
-> +
-> +	return 0;
+On 19/11/2025 09:25, Petri Karhula via B4 Relay wrote:
 > +}
 > +
 > +/**
@@ -214,19 +102,14 @@ https://elixir.bootlin.com/linux/v6.15-rc7/source/Documentation/process/debuggin
 > + *
 > + * The Linux device-managed resource framework (devres) does the cleanup.
 > + * No explicit cleanup is needed here.
-
-Drop such comments, they are not useful. Please write only useful
-comments, not ones stating obvious.
-
 > + */
 > +static void cgbc_bl_remove(struct platform_device *pdev)
 > +{
 > +	dev_info(&pdev->dev, "CGBC backlight driver removed\n");
-
-Drop, there is no such code in Linux kernel. Drop it.
-
-
 > +}
-> +
+
+
+I reviewed v1, but all comments are applicable.
+
 Best regards,
 Krzysztof

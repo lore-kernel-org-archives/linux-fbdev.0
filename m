@@ -1,495 +1,119 @@
-Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 361552F690B;
-	Thu, 20 Nov 2025 09:09:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02E8630F537;
+	Thu, 20 Nov 2025 09:24:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763629753; cv=none; b=cbgJljlKE7tamywOQ6ZcxwBNxyrGNujegoq/bgTTscGdT58uTWXkGyr3ag3M5Z/XxONXuGfs92M1l9I2Lv3j1Jfttuf2DRDHuX8kd7pLuP2/OffxhS/3BQvrBOnOwxs0+DSlgEZMiHRcOlRAJ1Qmq+5zhbh7gvtbGDmICnRim7c=
+	t=1763630694; cv=none; b=aWAvsZ2ZlNQ5+nK9z1vp4wCerqM1oojL/c0S5GdxrqWIGOeuG7lufNEQBf1tqBOia1g2Suv2qeQLpadwWQgFDWGhtzR+lgo2vE5u2mlbwsg2USE9Ea6qmllZQos5WlAli+ozAszFKnBwF7WC3u/n/ACFMTAnmlRZsX7rbrV4t4U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763629753; c=relaxed/simple;
-	bh=3dVoV0P2ZOno0OgxkyFVIzp+/6h8zMUz1Lf/bxgJ8nI=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=Y53CP6WAtSO+vj9OdwJ3qTZ/XdVfB/SBxwg7vgnquV1lOdQIX0pSFRGJbbfDNamA0Hv3VxhJbk/Of6K5/vqywhc3PfxonCIybo+MGWuMxIPu88cism5l8LcH/T2duquhH+JIpcCioMHZIDAMrQhgQEf4hFqUIujbbQrNcZRaY98=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=VMMMGD9P; arc=none smtp.client-ip=185.246.84.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1763630694; c=relaxed/simple;
+	bh=OPjNc/gUByCFqZ8Vixc1KLela/ta95EHDRNxS4C1lGg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=I/mOrlYI0PS80blwoaocSrKAA6y5THkZPcwqmme5IfCYimNjkt2/DTQYgGo5mddlYoSgBiBFvDC6FQ7jN459baLxMmfqIkDcKZnbhC1j1VoAUjtTcJPUU0iAj6gwcJTqVMOvJpjUTNKOONIf3Da3mcqeGeKJyUEgPZolmVPAbOc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=CV20VqFq; arc=none smtp.client-ip=198.175.65.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="VMMMGD9P"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id 538111A1C28;
-	Thu, 20 Nov 2025 09:09:06 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 29A216068C;
-	Thu, 20 Nov 2025 09:09:06 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 0F35E10371C05;
-	Thu, 20 Nov 2025 10:09:03 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1763629745; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:content-language:in-reply-to:references;
-	bh=7l7LwjakFaiU9qB8wCUSVjG9lA7SMcgmBpsVuJVyMBg=;
-	b=VMMMGD9P4nTeHCrU8VMOPqfEG/P703S9KjU0+6/fVuKydalkAuRnGKnbOTWel860eAINfQ
-	UDf3ip/Bz/0WnQoUOlVI6BD2P3SLwyV1k8APFkFqXL1qcBg+qfSn+JpK7mJ54m3hUyy+1d
-	+zYR/sTMhvhhwtlGK/bgDxgocOU0dfR0pMyFXY908HfQQ4oobxu08ZLDCeu3jhL9eUv3aq
-	7QRTZ74SfnRrpICMzdtUCNODB+2Rn76BvfGTFxlF/7KtE2J0pDBbdWTJQqnzGodHF7l3pb
-	n+ExLgCwlBV+SyzfM5Az+QCvt/SU175/ejzmQMfr3HB1/ySpowCpBjFdY3wKkw==
-Message-ID: <f40abf01-46f2-41e6-a21f-c58c21d653c4@bootlin.com>
-Date: Thu, 20 Nov 2025 10:09:03 +0100
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="CV20VqFq"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1763630692; x=1795166692;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=OPjNc/gUByCFqZ8Vixc1KLela/ta95EHDRNxS4C1lGg=;
+  b=CV20VqFq89ihkJjPyfW+oerCjks9HKS86+SVzFyRYcCQEncZhwrl3WF6
+   HVnHSdPGDXGv3ZAzfQNA/P2PAfdcfkqWUeZa6iSo/FkVSZe+xSUBPrVKn
+   pYkE425FghOB/kXcatSBMp5I3OGrV9+jENP3EAzQFS2jFHKZf8QcdEhNX
+   RL7Rgmdu3GFK8m8G0wVf+TdQTMwP5M131k5/qEhZRPTxq144x3p6xRWzy
+   kpHmF2Y0ZinbyM7COW10H3yFTrbqtR5WNQ/gy48LndWnjpPN9+MS+iOuv
+   ocNtLrUReM0tr487Rv6R82cyU/S6x+TGs/IK6LdoqfHyLzMqNwlq5p3G7
+   w==;
+X-CSE-ConnectionGUID: GWtwdQTMQFWAT1jyLuyG7w==
+X-CSE-MsgGUID: lfbjL8SJTLOaNFSv4H52dA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11618"; a="65572011"
+X-IronPort-AV: E=Sophos;i="6.19,317,1754982000"; 
+   d="scan'208";a="65572011"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Nov 2025 01:24:51 -0800
+X-CSE-ConnectionGUID: c33I7xXpT0ibIp+AOLBl8w==
+X-CSE-MsgGUID: 2SrIl1SnRwWseOQT7lVhaA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,317,1754982000"; 
+   d="scan'208";a="221957870"
+Received: from lkp-server01.sh.intel.com (HELO adf6d29aa8d9) ([10.239.97.150])
+  by orviesa002.jf.intel.com with ESMTP; 20 Nov 2025 01:24:49 -0800
+Received: from kbuild by adf6d29aa8d9 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1vM0uD-0003oF-2q;
+	Thu, 20 Nov 2025 09:24:45 +0000
+Date: Thu, 20 Nov 2025 17:23:58 +0800
+From: kernel test robot <lkp@intel.com>
+To: ssrane_b23@ee.vjti.ac.in, Zsolt Kajtar <soci@c64.rulez.org>,
+	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc: oe-kbuild-all@lists.linux.dev, Shaurya Rane <ssrane_b23@ee.vjti.ac.in>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	syzbot+5a40432dfe8f86ee657a@syzkaller.appspotmail.com
+Subject: Re: [PATCH] fbdev: core: Fix vmalloc-out-of-bounds in fb_imageblit
+Message-ID: <202511201752.4fVbQwPc-lkp@intel.com>
+References: <20251119133821.89998-1-ssranevjti@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Thomas Richard <thomas.richard@bootlin.com>
-Subject: Re: [PATCH v2 1/2] backlight: Add Congatec Board Controller (CGBC)
- backlight support
-To: petri.karhula@novatron.fi, Lee Jones <lee@kernel.org>,
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
- Helge Deller <deller@gmx.de>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-References: <20251119-cgbc-backlight-v2-0-4d4edd7ca662@novatron.fi>
- <20251119-cgbc-backlight-v2-1-4d4edd7ca662@novatron.fi>
-Content-Language: en-US
-In-Reply-To: <20251119-cgbc-backlight-v2-1-4d4edd7ca662@novatron.fi>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251119133821.89998-1-ssranevjti@gmail.com>
 
-Hello Petri,
+Hi,
 
-Thanks for your patch.
+kernel test robot noticed the following build warnings:
 
-On 11/19/25 9:25 AM, Petri Karhula via B4 Relay wrote:
-> From: Petri Karhula <petri.karhula@novatron.fi>
-> 
-> This driver provides backlight brightness control through the Linux
-> backlight subsystem. It communicates with the board controller to
-> adjust LCD backlight using PWM signals. Communication is done
-> through Congatec Board Controller core driver.
-> 
-> Signed-off-by: Petri Karhula <petri.karhula@novatron.fi>
-> ---
->  drivers/video/backlight/Kconfig   |  11 ++
->  drivers/video/backlight/Makefile  |   1 +
->  drivers/video/backlight/cgbc_bl.c | 281 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 293 insertions(+)
-> 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index d9374d208cee..702f3b8ed036 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -249,6 +249,17 @@ config BACKLIGHT_PWM
->  	  If you have a LCD backlight adjustable by PWM, say Y to enable
->  	  this driver.
->  
-> +config BACKLIGHT_CGBC
-> +	tristate "Congatec Board Controller (CGBC) backlight support"
-> +	depends on MFD_CGBC && X86
-> +	help
-> +	  Say Y here to enable support for LCD backlight control on Congatec
-> +	  x86-based boards via the CGBC (Congatec Board Controller).
-> +
-> +	  This driver provides backlight brightness control through the Linux
-> +	  backlight subsystem. It communicates with the board controller to
-> +	  adjust LCD backlight using PWM signals.
-> +
->  config BACKLIGHT_DA903X
->  	tristate "Backlight Driver for DA9030/DA9034 using WLED"
->  	depends on PMIC_DA903X
-> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-> index dfbb169bf6ea..0169fd8873ed 100644
-> --- a/drivers/video/backlight/Makefile
-> +++ b/drivers/video/backlight/Makefile
-> @@ -27,6 +27,7 @@ obj-$(CONFIG_BACKLIGHT_APPLE_DWI)	+= apple_dwi_bl.o
->  obj-$(CONFIG_BACKLIGHT_AS3711)		+= as3711_bl.o
->  obj-$(CONFIG_BACKLIGHT_BD6107)		+= bd6107.o
->  obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE)	+= backlight.o
-> +obj-$(CONFIG_BACKLIGHT_CGBC)		+= cgbc_bl.o
->  obj-$(CONFIG_BACKLIGHT_DA903X)		+= da903x_bl.o
->  obj-$(CONFIG_BACKLIGHT_DA9052)		+= da9052_bl.o
->  obj-$(CONFIG_BACKLIGHT_EP93XX)		+= ep93xx_bl.o
-> diff --git a/drivers/video/backlight/cgbc_bl.c b/drivers/video/backlight/cgbc_bl.c
-> new file mode 100644
-> index 000000000000..4382321f4cac
-> --- /dev/null
-> +++ b/drivers/video/backlight/cgbc_bl.c
-> @@ -0,0 +1,281 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Congatec Board Controller (CGBC) Backlight Driver
-> + *
-> + * This driver provides backlight control for LCD displays connected to
-> + * Congatec boards via the CGBC (Congatec Board Controller). It integrates
-> + * with the Linux backlight subsystem and communicates with hardware through
-> + * the cgbc-core module.
-> + *
-> + * Copyright (C) 2025 Novatron Oy
-> + *
-> + * Author: Petri Karhula <petri.karhula@novatron.fi>
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/backlight.h>
-> +
-> +#include <linux/mfd/cgbc.h>
+[auto build test WARNING on drm-misc/drm-misc-next]
+[also build test WARNING on drm-tip/drm-tip linus/master v6.18-rc6 next-20251119]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-headers shall be sorted in alphabetical order
+url:    https://github.com/intel-lab-lkp/linux/commits/ssrane_b23-ee-vjti-ac-in/fbdev-core-Fix-vmalloc-out-of-bounds-in-fb_imageblit/20251119-215054
+base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
+patch link:    https://lore.kernel.org/r/20251119133821.89998-1-ssranevjti%40gmail.com
+patch subject: [PATCH] fbdev: core: Fix vmalloc-out-of-bounds in fb_imageblit
+config: nios2-randconfig-r073-20251120 (https://download.01.org/0day-ci/archive/20251120/202511201752.4fVbQwPc-lkp@intel.com/config)
+compiler: nios2-linux-gcc (GCC) 10.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251120/202511201752.4fVbQwPc-lkp@intel.com/reproduce)
 
-> +
-> +#define CGBC_BL_DRIVER_VERSION     "0.0.1"
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202511201752.4fVbQwPc-lkp@intel.com/
 
-not needed
+All warnings (new ones prefixed by >>):
 
-> +
-> +#define BLT_PWM_DUTY_MASK          0x7F
-> +#define BLT_PWM_INVERTED_MASK      0x80
+   In file included from drivers/video/fbdev/core/cfbimgblt.c:17:
+   drivers/video/fbdev/core/fb_imageblit.h: In function 'fb_imageblit':
+>> drivers/video/fbdev/core/fb_imageblit.h:490:16: warning: unused variable 'max_offset_bytes' [-Wunused-variable]
+     490 |  unsigned long max_offset_bytes;
+         |                ^~~~~~~~~~~~~~~~
 
-Use GENMASK
 
-> +
-> +/* CGBC command for PWM brightness control*/
-> +#define CGBC_CMD_BLT0_PWM          0x75
-> +
-> +#define CGBC_BL_MAX_BRIGHTNESS     100
-> +
-> +/**
-> + * CGBC backlight driver data
-> + * @dev: Pointer to the platform device
-> + * @bl_dev: Pointer to the backlight device
-> + * @cgbc: Pointer to the parent CGBC device data
-> + * @current_brightness: Current brightness level (0-100)
-> + */
-> +struct cgbc_bl_data {
-> +	struct device *dev;
-> +	struct backlight_device *bl_dev;
+vim +/max_offset_bytes +490 drivers/video/fbdev/core/fb_imageblit.h
 
-not used
+   480	
+   481	static inline void fb_imageblit(struct fb_info *p, const struct fb_image *image)
+   482	{
+   483		int bpp = p->var.bits_per_pixel;
+   484		unsigned int bits_per_line = BYTES_TO_BITS(p->fix.line_length);
+   485		struct fb_address dst = fb_address_init(p);
+   486		struct fb_reverse reverse = fb_reverse_init(p);
+   487		const u32 *palette = fb_palette(p);
+   488		struct fb_image clipped_image;
+   489		u32 max_x, max_y;
+ > 490		unsigned long max_offset_bytes;
 
-> +	struct cgbc_device_data *cgbc;
-> +	unsigned int current_brightness;
-> +};
-> +
-> +/**
-> + * Read current PWM settings from hardware
-> + * @bl_data: Backlight driver data
-> + *
-> + * Reads the current PWM duty cycle percentage (= brightness level)
-> + * from the board controller.
-> + *
-> + * Return: 0 on success, negative error code on failure
-> + */
-> +static int cgbc_bl_read_pwm_settings(struct cgbc_bl_data *bl_data)
-> +{
-> +	u8 cmd_buf[4] = { CGBC_CMD_BLT0_PWM, 0, 0, 0 };
-> +	u8 reply_buf[3];
-> +	int ret;
-> +
-> +	ret = cgbc_command(bl_data->cgbc, cmd_buf, sizeof(cmd_buf), reply_buf,
-> +			   sizeof(reply_buf), NULL);
-> +
-> +	if (ret < 0) {
-> +		dev_err(bl_data->dev, "Failed to read PWM settings: %d\n", ret);
-> +		return ret;
-> +	}
-
-error message not needed from my point of view.
-
-> +
-> +	/*
-> +	 * Only return PWM duty factor percentage,
-> +	 * ignore polarity inversion bit (bit 7)
-> +	 */
-> +	bl_data->current_brightness = reply_buf[0] & BLT_PWM_DUTY_MASK;
-
-I would prefer to use FIELD_GET
-
-> +
-> +	dev_dbg(bl_data->dev, "Current PWM duty=%u\n", bl_data->current_brightness);
-
-Not needed from my point of view.
-
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * Set backlight brightness
-> + * @bl_data: Backlight driver data
-> + * @brightness: Brightness level (0-100)
-> + *
-> + * Sets the backlight brightness by configuring the PWM duty cycle.
-> + * Preserves the current polarity and frequency settings.
-> + *
-> + * Return: 0 on success, negative error code on failure
-> + */
-> +static int cgbc_bl_set_brightness(struct cgbc_bl_data *bl_data, u8 brightness)
-> +{
-> +	u8 cmd_buf[4] = { CGBC_CMD_BLT0_PWM, 0, 0, 0 };
-
-u8 cmd_buf[4] = { CGBC_CMD_BLT0_PWM };
-
-> +	u8 reply_buf[3];
-> +	int ret;
-> +
-> +	/* Read the current values */
-> +	ret = cgbc_command(bl_data->cgbc, cmd_buf, sizeof(cmd_buf), reply_buf,
-> +			   sizeof(reply_buf), NULL);
-> +
-> +	if (ret < 0) {
-> +		dev_err(bl_data->dev, "Failed to read PWM settings: %d\n", ret);
-> +		return ret;
-> +	}
-
-error message not needed from my point of view.
-
-> +
-> +	/*
-> +	 * Prepare command buffer for writing new settings. Only 2nd byte is changed
-> +	 * to set new brightness (PWM duty cycle %). Other balues (polarity, frequency)
-
-values
-
-> +	 * are preserved from the read values.
-> +	 */
-> +	cmd_buf[1] = (reply_buf[0] & BLT_PWM_INVERTED_MASK) |
-> +		     (BLT_PWM_DUTY_MASK & brightness);
-
-use FIELD_PREP
-
-> +	cmd_buf[2] = reply_buf[1];
-> +	cmd_buf[3] = reply_buf[2];
-> +
-> +	ret = cgbc_command(bl_data->cgbc, cmd_buf, sizeof(cmd_buf), reply_buf,
-> +			   sizeof(reply_buf), NULL);
-> +
-> +	if (ret < 0) {
-> +		dev_err(bl_data->dev, "Failed to set brightness: %d\n", ret);
-
-error messages not needed from my point of view.
-
-> +		return ret;
-> +	}
-> +
-> +	bl_data->current_brightness = reply_buf[0] & BLT_PWM_DUTY_MASK;
-> +
-> +	/* Verify the setting was applied correctly */
-> +	if (bl_data->current_brightness != brightness) {
-> +		dev_err(bl_data->dev,
-> +			"Brightness setting verification failed\n");
-> +		return -EIO;
-> +	}
-
-Do we really need to check the brightness returned by the board
-controller? Have you ever run into a situation where cbgc_command
-completed without errors, but the brightness level didn’t match what you
-expected? Maybe we could assume that if the cbgc_command returned
-successfully the brightness value is correct?
-
-I'm not against checking the backlight value. I looked at Congatec's
-implementation and they also check it.
-
-> +
-> +	dev_dbg(bl_data->dev, "Set brightness to %u\n", brightness);
-
-Not needed, the core already has this message
-
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * Backlight update callback
-> + * @bl: Backlight device
-> + *
-> + * Called by the backlight subsystem when brightness needs to be updated.
-> + * Changes the brightness level on the hardware
-> + * if requested value differs from the current setting.
-> + *
-> + * Return: 0 on success, negative error code on failure
-> + */
-> +static int cgbc_bl_update_status(struct backlight_device *bl)
-> +{
-> +	struct cgbc_bl_data *bl_data = bl_get_data(bl);
-> +	u8 brightness;
-> +	int ret;
-> +
-> +	brightness = bl->props.brightness;
-
-use backlight_get_brightness()
-
-> +
-> +	if (brightness != bl_data->current_brightness) {
-> +		ret = cgbc_bl_set_brightness(bl_data, brightness);
-> +
-> +		if (ret < 0) {
-> +			dev_err(bl_data->dev, "Failed to set brightness: %d\n",
-> +			       ret);
-> +			return ret;
-> +		}
-
-error message not needed from my point of view.
-
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * Get current backlight brightness
-> + * @bl: Backlight device
-> + *
-> + * Returns the current brightness level by reading from hardware.
-> + *
-> + * Return: Current brightness level (0-100), or negative error code
-> + */
-> +static int cgbc_bl_get_brightness(struct backlight_device *bl)
-> +{
-> +	struct cgbc_bl_data *bl_data = bl_get_data(bl);
-> +	int ret;
-> +
-> +	/* Read current PWM brightness settings */
-> +	ret = cgbc_bl_read_pwm_settings(bl_data);
-> +
-> +	if (ret < 0) {
-> +		dev_err(bl_data->dev, "Failed to read PWM settings: %d\n", ret);
-> +		return ret;
-> +	}
-
-error message not needed from my point of view.
-If you remove all these error messages, you can also remove the struct
-device in the struct cgbc_bl_data.
-
-> +
-> +	return bl_data->current_brightness;
-> +}
-
-Maybe you can remove cgbc_bl_read_pwm_settings() and move all the code
-in cgbc_bl_get_brightness(). It makes the code easier to read.
-
-> +
-> +/* Backlight device operations */
-> +static const struct backlight_ops cgbc_bl_ops = {
-> +	.options = BL_CORE_SUSPENDRESUME,
-> +	.update_status = cgbc_bl_update_status,
-> +	.get_brightness = cgbc_bl_get_brightness,
-> +};
-> +
-> +/**
-> + * Probe function for CGBC backlight driver
-> + * @pdev: Platform device
-> + *
-> + * Initializes the CGBC backlight driver and registers it with the
-> + * Linux backlight subsystem.
-> + *
-> + * Return: 0 on success, negative error code on failure
-> + */
-> +static int cgbc_bl_probe(struct platform_device *pdev)
-> +{
-> +	struct cgbc_device_data *cgbc = dev_get_drvdata(pdev->dev.parent);
-> +	struct cgbc_bl_data *bl_data;
-> +	struct backlight_properties props;
-> +	struct backlight_device *bl_dev;
-> +	int ret;
-
-nitpick: reverse xmas tree
-
-> +
-> +	bl_data = devm_kzalloc(&pdev->dev, sizeof(*bl_data), GFP_KERNEL);
-> +
-
-nitpick: drop empty line.
-
-> +	if (!bl_data)
-> +		return -ENOMEM;
-> +
-> +	bl_data->dev = &pdev->dev;
-> +	bl_data->cgbc = cgbc;
-> +
-> +	ret = cgbc_bl_read_pwm_settings(bl_data);
-> +
-
-nitpick: drop empty line.
-
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Failed to read initial PWM settings: %d\n",
-> +			ret);
-> +		return ret;
-> +	}
-
-Use dev_err_probe().
-
-> +
-> +	memset(&props, 0, sizeof(props));
-
-Use struct backlight_properties props = { };
-
-> +	props.type = BACKLIGHT_PLATFORM;
-> +	props.max_brightness = CGBC_BL_MAX_BRIGHTNESS;
-> +	props.brightness = bl_data->current_brightness;
-> +
-> +	bl_dev = devm_backlight_device_register(&pdev->dev, "cgbc-backlight",
-> +						&pdev->dev, bl_data,
-> +						&cgbc_bl_ops, &props);
-> +
-> +	if (IS_ERR(bl_dev)) {
-> +		dev_err(&pdev->dev, "Failed to register backlight device\n");
-> +		return PTR_ERR(bl_dev);
-> +	}
-
-Use dev_err_probe()
-
-> +
-> +	bl_data->bl_dev = bl_dev;
-> +	platform_set_drvdata(pdev, bl_data);
-> +
-> +	dev_info(&pdev->dev,
-> +		 "CGBC backlight driver registered (brightness=%u)\n",
-> +		 bl_data->current_brightness);
-
-No logs if device probes successfully.
-
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * Remove function for CGBC backlight driver
-> + * @pdev: Platform device
-> + *
-> + * The Linux device-managed resource framework (devres) does the cleanup.
-> + * No explicit cleanup is needed here.
-> + */
-> +static void cgbc_bl_remove(struct platform_device *pdev)
-> +{
-> +	dev_info(&pdev->dev, "CGBC backlight driver removed\n");
-> +}
-
-Remove operation does nothing so drop it.
-
-> +
-> +static struct platform_driver cgbc_bl_driver = {
-> +	.driver = {
-> +		.name = "cgbc-backlight",
-> +	},
-> +	.probe = cgbc_bl_probe,
-> +	.remove = cgbc_bl_remove,
-> +};
-> +
-> +module_platform_driver(cgbc_bl_driver);
-> +
-> +MODULE_AUTHOR("Petri Karhula <petri.karhula@novatron.fi>");
-> +MODULE_DESCRIPTION("Congatec Board Controller (CGBC) Backlight Driver");
-> +MODULE_LICENSE("GPL");
-> +MODULE_VERSION(CGBC_BL_DRIVER_VERSION);
-
-Not needed
-
-> +MODULE_ALIAS("platform:cgbc-backlight");
-> 
-
-Best Regards,
-Thomas
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

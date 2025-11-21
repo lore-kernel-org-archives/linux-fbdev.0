@@ -1,120 +1,130 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua1-f48.google.com (mail-ua1-f48.google.com [209.85.222.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB3153446C2;
-	Thu, 20 Nov 2025 20:22:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BE9933E349
+	for <linux-fbdev@vger.kernel.org>; Fri, 21 Nov 2025 10:03:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763670174; cv=none; b=H6nRS94uXcb0J/0xOarkaBG+CWB7ksZZIlnuIf3ZdYZIqlBozlESpWO6E1BkNXhGhXwjor3BzOw5mi4jSBM9uUmn0CkTvrwbm4iptuAXiHfU3DNmyTWVq8Q81nRZ1CkT8mVmEMSVnhnkPc0LfYmyUnKmy250Jr6NZ0h+QG70x3Q=
+	t=1763719407; cv=none; b=rr/dnXMTfkMZc6gsZ6gX7UrZTIwavSV3jSEgpfhJLsbYXwnTYEAoqqXap8Ks0hSvQCRYyhZPtvlqstAY1mYyDfYaBv3qqEdVYUCO8WCuwpo4DN5TbandC/6VP55YjYa1bR2EIvtbqHgU8JbDhb97+dnfATIaw1K8lZ46ekCcmNM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763670174; c=relaxed/simple;
-	bh=D4nR4AaepjgwbZ3lVY7RfDmYBfaka+Jn2iZsXq8hE8U=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=ZBmuFY7703VsjCkXUIc1BALFw5vo6622l5U0MlxNHUoicIOsXKCkcCIt51ougyr/tT6np0fcHhJltEAvKucVvaNKEAJV8UqV4PEd/2zA5mGCRIuVUmJnFYGp+w0+VVGo7M4qirKsnpbDfdZC118xeYUUALwLfnxeSan69qabRQs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Kl30p+in; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Kl30p+in"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81C1AC4CEF1;
-	Thu, 20 Nov 2025 20:22:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763670173;
-	bh=D4nR4AaepjgwbZ3lVY7RfDmYBfaka+Jn2iZsXq8hE8U=;
-	h=From:Date:Subject:To:Cc:From;
-	b=Kl30p+inpq2mHmQcIL1RIejwVOf55PNSFWxKiy5AgFAw/5LDhRWN/OLdTMC3fq3YI
-	 ZxAXY+LWkYbfVhfqfeKF2DRBIjtd5NdP/lSmn5qcW0pamzMnqFNAJELUq44JP7ki+8
-	 vPuY0E5MoLAK6y2P9jLGQTGm93D14nVs2fjgMiGWQ5LcOI0RqEkBI1gcAhh4wmv7kz
-	 YW4JfvrQdtBYdBhckq8YYf9QQcgVHukTSwznADVn0EMQRGqZDiBgReBSwTobNn5oXZ
-	 kl/k36C0WL68eI3LuU8WP5wQc0MXra9BaSpLlucIVlJ/DcjWfpXgx3Gm7TqhbOn+lW
-	 NYxR5RmTfd9+A==
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Thu, 20 Nov 2025 13:22:46 -0700
-Subject: [PATCH] backlight: aw99706: Fix unused function warnings from
- suspend/resume ops
+	s=arc-20240116; t=1763719407; c=relaxed/simple;
+	bh=TeUAIYoYe5WG9QPmEwZ5LJi25FDVtq2bv+Us8Wz9dgA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UhdEbooxpmhZAuBsWpdF+pYDQFvs59KoN18SNaYTbOojYygnyHz0zRpwSU/oAJczMU43ye28+rvm842ozm7CNGvHOixpuHJVG7ule91w3ZuLbljwIebvsl2fdftowCdIbA/QEHKR/Y+NvWlbTIp/9/67Odax0iznosKXkvbi0EA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ua1-f48.google.com with SMTP id a1e0cc1a2514c-9372a52af7eso575248241.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Nov 2025 02:03:24 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1763719404; x=1764324204;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wlBMUu/EpwAnMbRqR4FueGr8bEwdrvt/wf+TDoxxT9k=;
+        b=jglvfvRKot5MfCq4BnRI7/b/eVz635VH+N+1C9/N0duYzb4RbJ/tBKJmQyeta9F7fr
+         2k4/a6p9s20eFi2WDUr+dY1ckj33258jl03BnG61cu6IkiHWmxJd3c7N50Rm8qWEeYmQ
+         P/r/GMcDwOGmObwbKW6h2nCRJC/BzrgmvDQ9eFNF+bm9dqO/Lt8g0v1C4X3RQOVRi9Ko
+         qFqv+L0ucm7bq9T513j+rKYv/aOPiRxMjLIkB3v7UdwUPvUIhTmqqppHKbuVb4mIIayb
+         xYrGE41Qc9c2nuTpAOYXk0cqxUQTdew17SYaSEqnHvOkHTrQS8t9V8v+7CvGJlYh1Rxb
+         1W2w==
+X-Forwarded-Encrypted: i=1; AJvYcCXNL3sRjn1f4wnzBjNwpfVLZTMLYP0dvNBGaHWogbP5rv/RN5RuwTgEXLuElVY6fFKPF8V70WzIR5FIBQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwHUlZnxL3IR6hpOYRc3setKfpNL/DI20svy1KFR0yb4b9CptWI
+	lKwBgfbyr5W1VguHTp1AYiiv215PsSCEhZl4OvH4xH/MXNqdf4Cen/bXkkVaYTyT
+X-Gm-Gg: ASbGncsikX92AVRAp54RSPucICR7inAr94TKkMWux9mPI8RFC2LlfzVjUG8ejZs+KzH
+	WqV1D25mnOQz/V8N4V+8ctHUa5CLN1pxQ5kZSyNIrbDUWul9ikGPIuIj9LuqAEcbQ19SvQU4sa3
+	g62sXwQ8lgYsQYkXKRwpClEltgNvxJSmLXp3rdU7VUcRVgwtWezYO/zdaOPMLon9DX0LjArlYsh
+	+79jYnoHcB9bibA1ch+r2nQssXUtRYjVUKI2rzMwssaqPBr7wLkbpqmbroZw7ulEPBEtWgZOUlX
+	lBzjhYo8RmFMA2AOfpwjQCbzLhW+SpdH6j5dC2Dvr4E/UqxmdvEjOkKkKfbizuF1lI2q2z3zCiU
+	EwTw3gNwlIiXtTioq6Anih6hoWCzLaTudZ7a53l2FmXRrpPbl4FmTtz/aGJ/rhcDKVpMiJFUloz
+	XwES0y4WSwdrq78GtWOPMVl7cIXKIangGCUIY8+oGI6TP++Z19
+X-Google-Smtp-Source: AGHT+IHDP0sTU9unk4Hje09RyXKu/FxY/5+K1wncIOwqO2Xy/VHe5gubgoWFm/YwJlMhgFr+zRDLMA==
+X-Received: by 2002:a05:6102:3e23:b0:5dd:89d5:6e3a with SMTP id ada2fe7eead31-5e1de13b7e3mr333190137.13.1763719403666;
+        Fri, 21 Nov 2025 02:03:23 -0800 (PST)
+Received: from mail-vs1-f45.google.com (mail-vs1-f45.google.com. [209.85.217.45])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-93c561c3e95sm2069097241.3.2025.11.21.02.03.23
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 21 Nov 2025 02:03:23 -0800 (PST)
+Received: by mail-vs1-f45.google.com with SMTP id ada2fe7eead31-5dfcfbcbcc0so643013137.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Nov 2025 02:03:23 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCXNvvMPADKidzHDFv7qn+Kko9e6E/SX/S14qrrrmoV9kSI2tvkAtO1VVsJ9EJAsYFLiYIB6Y2ngZhJyNw==@vger.kernel.org
+X-Received: by 2002:a05:6102:579a:b0:5db:33f9:adce with SMTP id
+ ada2fe7eead31-5e1de3d42camr385692137.41.1763719402998; Fri, 21 Nov 2025
+ 02:03:22 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251120-backlight-aw99706-fix-unused-pm-functions-v1-1-8b9c17c4e783@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAJV4H2kC/yWNywrCMBAAf6Xs2YUktA31V8RDutm08RFLN1Gh9
- N+NehwYZjYQXiMLHJsNVn5GiY9UQR8aoNmliTH6ymCU6bQ2CkdH11uc5ozuNQxW9RjiG0sqwh6
- XO4aSKNeIYGBjbUetZ+qh9paVq/p7nc5/ljJemPJ3APv+AYV/7xCNAAAA
-X-Change-ID: 20251120-backlight-aw99706-fix-unused-pm-functions-fe2775c4dec6
-To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
- Pengyu Luo <mitltlatltl@gmail.com>, Junjie Cao <caojunjie650@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- patches@lists.linux.dev, Nathan Chancellor <nathan@kernel.org>
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2470; i=nathan@kernel.org;
- h=from:subject:message-id; bh=D4nR4AaepjgwbZ3lVY7RfDmYBfaka+Jn2iZsXq8hE8U=;
- b=owGbwMvMwCUmm602sfCA1DTG02pJDJnyFbO9UhiOJ9/hyQ2e4vlUSDUp6szMO6c+3Vyg4rxJb
- V7SJYHkjlIWBjEuBlkxRZbqx6rHDQ3nnGW8cWoSzBxWJpAhDFycAjCRkHWMDEsnPbvjHiKul/Ym
- zEjVUmvBnxurJPMXCDy67bay+qxM0BFGhq28S8+l8V2Qv3/piaFg1rLPzzq4p15u694v8CBB+o2
- 1IycA
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
+References: <20251120180233.763975-1-hsukrut3@gmail.com>
+In-Reply-To: <20251120180233.763975-1-hsukrut3@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 21 Nov 2025 11:03:11 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdV3UvDHT0uu8oeiCGc9pURaLPDPmG-Fu9kC9H8DQyqRDw@mail.gmail.com>
+X-Gm-Features: AWmQ_bkayHVM_Ddsfirz9lK5uUvThJmyJwFAo8HPyX8vy-dtp3QKVrq4J4AGcFo
+Message-ID: <CAMuHMdV3UvDHT0uu8oeiCGc9pURaLPDPmG-Fu9kC9H8DQyqRDw@mail.gmail.com>
+Subject: Re: [RFC/RFT PATCH] fbdev: q40fb: request memory region
+To: Sukrut Heroorkar <hsukrut3@gmail.com>
+Cc: Helge Deller <deller@gmx.de>, 
+	"open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, 
+	"open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, 
+	shuah@kernel.org, david.hunter.linux@gamil.com, 
+	linux-m68k <linux-m68k@lists.linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 
-When building for a platform without CONFIG_PM_SLEEP, such as s390,
-there are two unused function warnings:
+Hi Sukrut,
 
-  drivers/video/backlight/aw99706.c:436:12: error: 'aw99706_resume' defined but not used [-Werror=unused-function]
-    436 | static int aw99706_resume(struct device *dev)
-        |            ^~~~~~~~~~~~~~
-  drivers/video/backlight/aw99706.c:429:12: error: 'aw99706_suspend' defined but not used [-Werror=unused-function]
-    429 | static int aw99706_suspend(struct device *dev)
-        |            ^~~~~~~~~~~~~~~
+CC linux-m68k
 
-SET_SYSTEM_SLEEP_PM_OPS, used within SIMPLE_DEV_PM_OPS, expands to
-nothing when CONFIG_PM_SLEEP is not set, so these functions are
-completely unused in this configuration.
+On Thu, 20 Nov 2025 at 19:03, Sukrut Heroorkar <hsukrut3@gmail.com> wrote:
+> The q40fb driver uses a fixed physical address but never reserves
+> the corresponding I/O region. Reserve the range  as suggested in
+> Documentation/gpu/todo.rst ("Request memory regions in all fbdev drivers").
+>
+> If the memory cannot be reserved, fail probe with -EBUSY to avoid
+> conflicting with another user of the same address.
+>
+> Signed-off-by: Sukrut Heroorkar <hsukrut3@gmail.com>
 
-SIMPLE_DEV_PM_OPS is deprecated in favor of DEFINE_SIMPLE_DEV_PM_OPS,
-which avoids this issue by using pm_sleep_ptr to make these callbacks
-NULL when CONFIG_PM_SLEEP is unset while making the callback functions
-always appear used to the compiler regardless of configuration. Switch
-to DEFINE_SIMPLE_DEV_PM_OPS for aw99706_pm_ops to clear up the warning.
+Thanks for your patch!
 
-Additionally, wrap the pointer to aw99706_pm_ops in pm_ptr() in
-aw99706_i2c_driver to ensure that the structure is completely eliminated
-in configurations without CONFIG_PM.
+> ---
+> Testing: This patch is sent as RFT since Q40 hardware is unavilable and
+> QEMU does not emulated a Q40 platform. The change is therefore compile-tested
+> only.
 
-Fixes: 88a8e9b49ee8 ("backlight: aw99706: Add support for Awinic AW99706 backlight")
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
----
- drivers/video/backlight/aw99706.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I would suggest not to apply this, unless it is tested on real
+hardware.  It wouldn't be the first time an innocent-looking change like
+this breaks a system. See e.g.
+https://lore.kernel.org/all/Y5I2oQexHNdlIbsQ@shell.armlinux.org.uk
 
-diff --git a/drivers/video/backlight/aw99706.c b/drivers/video/backlight/aw99706.c
-index b7c1d24b17ac..df5b23b2f753 100644
---- a/drivers/video/backlight/aw99706.c
-+++ b/drivers/video/backlight/aw99706.c
-@@ -440,7 +440,7 @@ static int aw99706_resume(struct device *dev)
- 	return aw99706_hw_init(aw);
- }
- 
--static SIMPLE_DEV_PM_OPS(aw99706_pm_ops, aw99706_suspend, aw99706_resume);
-+static DEFINE_SIMPLE_DEV_PM_OPS(aw99706_pm_ops, aw99706_suspend, aw99706_resume);
- 
- static const struct i2c_device_id aw99706_ids[] = {
- 	{ "aw99706" },
-@@ -461,7 +461,7 @@ static struct i2c_driver aw99706_i2c_driver = {
- 	.driver = {
- 		.name = "aw99706",
- 		.of_match_table = aw99706_match_table,
--		.pm = &aw99706_pm_ops,
-+		.pm = pm_ptr(&aw99706_pm_ops),
- 	},
- };
- 
+> --- a/drivers/video/fbdev/q40fb.c
+> +++ b/drivers/video/fbdev/q40fb.c
+> @@ -101,6 +101,13 @@ static int q40fb_probe(struct platform_device *dev)
+>         info->par = NULL;
+>         info->screen_base = (char *) q40fb_fix.smem_start;
+>
+> +       if (!request_mem_region(q40fb_fix.smem_start, q40fb_fix.smem_len,
+> +                               "q40fb")) {
+> +               dev_err(&dev->dev, "cannot reserve video memory at 0x%lx\n",
+> +                       q40fb_fix.smem_start);
+> +               return -EBUSY;
+> +       }
+> +
+>         if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+>                 framebuffer_release(info);
+>                 return -ENOMEM;
 
----
-base-commit: 1704e206cb98c5e43af1483e3b07450055a31008
-change-id: 20251120-backlight-aw99706-fix-unused-pm-functions-fe2775c4dec6
+Gr{oetje,eeting}s,
 
-Best regards,
---  
-Nathan Chancellor <nathan@kernel.org>
+                        Geert
 
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

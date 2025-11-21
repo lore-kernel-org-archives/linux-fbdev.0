@@ -1,237 +1,201 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED7E230BB87
-	for <linux-fbdev@vger.kernel.org>; Fri, 21 Nov 2025 10:17:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E44E1349B1E
+	for <linux-fbdev@vger.kernel.org>; Fri, 21 Nov 2025 13:56:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763720255; cv=none; b=KSvxr0Ikt3V7NpB1YANjXjiq3sL6YakUlweTcqRHUNE/hjrti25J22PyshQu4LokTFJreSDUjkhVdcolAn+PwpgZTdNex1StqNacEvl2DmYOKewgOGPtd/YH2HpuQqZEDiNnGjcNlZTwkGxw1aQNritOQQFHzhXfSDozEQkt2Ws=
+	t=1763733395; cv=none; b=uX+LBB0iQlGI10ySH3Ws6mH26iKQ+zVrqivt2eUx2OmYV1PmEj3ylXURL36XeWzy+D1FT+nmdBP03Qu2/MEWzdNHzKKABcTpM8y1SQVZVFtLQNPTxlgFS0ZFpyRz53nsDXKa/3dViDcjYRN56RzHHCJZpP75bExefg9pTQHMDfE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763720255; c=relaxed/simple;
-	bh=bBfjH066HzD/ZuAWJuAe7UPfltUGSFoTXiK/NtObsss=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UTXACe84YQMiB8oXAFaQlcF0tudIphtuI2gJIDKxlU0DSNJ7cTrkNflmwLmYXbGIY477XToXBbnwYnNfIYYrkzR6EwLBzgw+6xPql1RPIiAwfVk9K/HNRqxAJzwUCv/D+rKokY5M5Ixq9lhnkQALSnU7hun8dit9g1YBYFUJ7YI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=paAp3imy; arc=none smtp.client-ip=212.227.15.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1763733395; c=relaxed/simple;
+	bh=xym5R5yEVSDL4/KM5LMgvvTEfCR+Kft6Tnj1uH1q3FU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gETERCZ0Oh2ViOjnkMRwRdoeSH/nO6Fq+HaDDYSkvu+X6IG6djBmY4RCqSrlH3kN39CPLW64TJd7pUoVsxXdVawhZg9G7BEBZWRehqrAhwITVJh1ZCa79moeGHi5oMKaGI4g7GzT6HVnqlRILWROm1GXgu81KbrHQ90ye5m7E4E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=iMKPWBQ2; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Abyw+g0j; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=iMKPWBQ2; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Abyw+g0j; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="paAp3imy"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1763720233; x=1764325033; i=deller@gmx.de;
-	bh=AUYZ+FHy+OkjJ/Qsz96W1/vj7q4IVCZCdbgzfj0ocZ8=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=paAp3imyiqhHhSdr9FGxA7kfj/dgdNNQjIyyYayanSIXuIq22uWPV/DMg8WdBrlE
-	 JN+HICYTd1RXUinjhPY2aMNmxjdUMJB1wYB0v1IOf3eimhiUrL08gS9FVQ1O1Aorp
-	 IT8H3He3uzZ+Bkc/sWoLA1+5VUplCTWUIdRnP97TpxsQemguyhluduWP/hhDtoiHo
-	 BMg3nyTPLH8JuZE+qiJNsSLSSJBA1DNniW5ih7ZRz7/2r4o5w0ZrsOJKbZeHfdjXk
-	 aRsPDOZaBV1/u6uP6ekEaZNIsIraf4jqkbCsHJZBavM1afn9UM8Q12kElh7hhfBy/
-	 tgWo32ZULL0ExqN9Sw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.51.198]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N5GDv-1w5vlk0vGX-014cdR; Fri, 21
- Nov 2025 11:17:13 +0100
-Message-ID: <cd870d98-2e40-46d0-ae5a-2299f243cc79@gmx.de>
-Date: Fri, 21 Nov 2025 11:17:11 +0100
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="iMKPWBQ2";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Abyw+g0j";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="iMKPWBQ2";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Abyw+g0j"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 28247218EA;
+	Fri, 21 Nov 2025 13:56:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1763733391; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=2fy6AJV5/LJmpRrj1RphVCyLdSqiM/Tki+XKx37wkHU=;
+	b=iMKPWBQ2/YHLmQOMzgxyhZgL0qVKiRCtXOcpIhrGmp/kgyxlmA98lsYRipa9vkpslgCdGp
+	KdwVujc9na0fwt4t97s6rd4OfBWKtXmh/kRfine8gwUkvhtdVbu9uNgzcGm9EhYGSdMrV1
+	YEibxSNMD8K3yNpaFCBYQBYvBRpv3Ss=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1763733391;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=2fy6AJV5/LJmpRrj1RphVCyLdSqiM/Tki+XKx37wkHU=;
+	b=Abyw+g0jyRAdyZfxtFfsshAV0j5bGUOXfi7JyQENaF5nTh7i2CQVizKVX7OXJuuSarUXYD
+	zmJth7/Q/teZsWBQ==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=iMKPWBQ2;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=Abyw+g0j
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1763733391; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=2fy6AJV5/LJmpRrj1RphVCyLdSqiM/Tki+XKx37wkHU=;
+	b=iMKPWBQ2/YHLmQOMzgxyhZgL0qVKiRCtXOcpIhrGmp/kgyxlmA98lsYRipa9vkpslgCdGp
+	KdwVujc9na0fwt4t97s6rd4OfBWKtXmh/kRfine8gwUkvhtdVbu9uNgzcGm9EhYGSdMrV1
+	YEibxSNMD8K3yNpaFCBYQBYvBRpv3Ss=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1763733391;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=2fy6AJV5/LJmpRrj1RphVCyLdSqiM/Tki+XKx37wkHU=;
+	b=Abyw+g0jyRAdyZfxtFfsshAV0j5bGUOXfi7JyQENaF5nTh7i2CQVizKVX7OXJuuSarUXYD
+	zmJth7/Q/teZsWBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id B94E83EA61;
+	Fri, 21 Nov 2025 13:56:30 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id TzTPK45vIGkqdQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 21 Nov 2025 13:56:30 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: ardb@kernel.org,
+	javierm@redhat.com,
+	arnd@arndb.de
+Cc: x86@kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-efi@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-riscv@lists.infradead.org,
+	dri-devel@lists.freedesktop.org,
+	linux-hyperv@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 0/6] arch,sysfb: Move screen and edid info into single place
+Date: Fri, 21 Nov 2025 14:36:04 +0100
+Message-ID: <20251121135624.494768-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.51.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC/RFT PATCH] fbdev: q40fb: request memory region
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
- Sukrut Heroorkar <hsukrut3@gmail.com>
-Cc: "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
- "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
- shuah@kernel.org, david.hunter.linux@gamil.com,
- linux-m68k <linux-m68k@lists.linux-m68k.org>
-References: <20251120180233.763975-1-hsukrut3@gmail.com>
- <CAMuHMdV3UvDHT0uu8oeiCGc9pURaLPDPmG-Fu9kC9H8DQyqRDw@mail.gmail.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
- HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
- r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
- CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
- 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
- dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
- Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
- GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
- aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
- 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
- ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
- FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
- uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
- uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
- REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
- qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
- iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
- gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
- Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
- qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
- 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
- dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
- rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
- UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
- eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
- ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
- dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
- lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
- 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
- xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
- wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
- fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
- Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
- l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
- RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
- BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
- Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
- XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
- MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
- FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
- 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
- ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <CAMuHMdV3UvDHT0uu8oeiCGc9pURaLPDPmG-Fu9kC9H8DQyqRDw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:5f3W+pJxv1yeHw+e3e8+HYVUMI1+A1sWKvZHYpFS8n4k+URysnd
- PqGddL9HDouYPW9CsE8LOYlDTQzKUL6nUm+GTvCQfywEW5W7ouPEDd7WuMSwP72BpmI7pqG
- CeNYsPxvnpTD39hJiBS8Vi0p8u3qHJpSXzjPVcMmvfUZ4VwxVhibqLmdriBjnHCHnFKlHMH
- xpp6b8l2q+eFh1rdtTTpg==
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:QdU6NvWqEFE=;E3kvfLBXvvz0eX8GpKMi0fCwVBr
- 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
- fRiOn55FaxuqQnJo4=
+X-Rspamd-Queue-Id: 28247218EA
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FROM_EQ_ENVFROM(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_TLS_ALL(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Spam-Score: -3.01
 
-Hi Geert & Sukrut,
+Replace screen_info and edid_info with sysfb_primary_device of type
+struct sysfb_display_info. Update all users.
 
-On 11/21/25 11:03, Geert Uytterhoeven wrote:
-> On Thu, 20 Nov 2025 at 19:03, Sukrut Heroorkar <hsukrut3@gmail.com> wrot=
-e:
->> The q40fb driver uses a fixed physical address but never reserves
->> the corresponding I/O region. Reserve the range  as suggested in
->> Documentation/gpu/todo.rst ("Request memory regions in all fbdev driver=
-s").
->>
->> If the memory cannot be reserved, fail probe with -EBUSY to avoid
->> conflicting with another user of the same address.
->>
->> Signed-off-by: Sukrut Heroorkar <hsukrut3@gmail.com>
->=20
-> Thanks for your patch!
->=20
->> ---
->> Testing: This patch is sent as RFT since Q40 hardware is unavilable and
->> QEMU does not emulated a Q40 platform. The change is therefore compile-=
-tested
->> only.
->=20
-> I would suggest not to apply this, unless it is tested on real
-> hardware.  It wouldn't be the first time an innocent-looking change like
-> this breaks a system. See e.g.
-> https://lore.kernel.org/all/Y5I2oQexHNdlIbsQ@shell.armlinux.org.uk
+Sysfb DRM drivers currently fetch the global edid_info directly, when
+they should get that information together with the screen_info from their
+device. Wrapping screen_info and edid_info in sysfb_primary_display and
+passing this to drivers enables this.
 
-Geert, that's actually my thought as well, so I'm happy you wrote down
-your opinion here!
+Replacing both with sysfb_primary_display has been motivate by the EFI
+stub. EFI wants to transfer EDID via config table in a single entry.
+Using struct sysfb_display_info this will become easily possible. Hence
+accept some churn in architecture code for the long-term improvements.
 
-By any chance, do you (or someone on this list) know of someone who has
-that card and might be able to test it?
+Patches 1 and 2 reduce the exposure of screen_info in EFI-related code.
 
-Helge
+Patch 3 adds struct sysfb_display_info.
+
+Patch 4 replaces scren_info with sysfb_primary_display. This results in
+several changes throught the kernel, but is really just a refactoring.
+
+Patch 5 updates sysfb to transfer sysfb_primary_display to the related
+drivers.
+
+Patch 6 moves edid_info into sysfb_primary_display. This resolves some
+drivers' reference to the global edid_info, but also makes the EDID data
+available on non-x86 architectures.
+
+The short-term benefit of this series is in patches 5 and 6. With
+sysfb_primary_display in place a follow-up series will improve EFI support
+for EDID as outlined in the series at [1] and [2].
+
+[1] https://lore.kernel.org/dri-devel/20251015160816.525825-1-tzimmermann@suse.de/
+[2] https://lore.kernel.org/linux-efi/20251119123011.1187249-5-ardb+git@google.com/
+
+Thomas Zimmermann (6):
+  efi: earlycon: Reduce number of references to global screen_info
+  efi: sysfb_efi: Reduce number of references to global screen_info
+  sysfb: Add struct sysfb_display_info
+  sysfb: Replace screen_info with sysfb_primary_display
+  sysfb: Pass sysfb_primary_display to devices
+  sysfb: Move edid_info into sysfb_primary_display
+
+ arch/arm64/kernel/image-vars.h                |  2 +-
+ arch/loongarch/kernel/efi.c                   | 11 +--
+ arch/loongarch/kernel/image-vars.h            |  2 +-
+ arch/riscv/kernel/image-vars.h                |  2 +-
+ arch/x86/kernel/kexec-bzimage64.c             |  4 +-
+ arch/x86/kernel/setup.c                       | 16 ++--
+ arch/x86/video/video-common.c                 |  4 +-
+ drivers/firmware/efi/earlycon.c               | 42 +++++-----
+ drivers/firmware/efi/efi-init.c               | 14 ++--
+ drivers/firmware/efi/libstub/efi-stub-entry.c | 18 +++--
+ drivers/firmware/efi/sysfb_efi.c              | 81 ++++++++++---------
+ drivers/firmware/sysfb.c                      | 13 +--
+ drivers/firmware/sysfb_simplefb.c             |  2 +-
+ drivers/gpu/drm/sysfb/efidrm.c                | 14 ++--
+ drivers/gpu/drm/sysfb/vesadrm.c               | 14 ++--
+ drivers/hv/vmbus_drv.c                        |  6 +-
+ drivers/pci/vgaarb.c                          |  4 +-
+ drivers/video/Kconfig                         |  1 -
+ drivers/video/fbdev/core/fbmon.c              |  8 +-
+ drivers/video/fbdev/efifb.c                   | 10 ++-
+ drivers/video/fbdev/vesafb.c                  | 10 ++-
+ drivers/video/fbdev/vga16fb.c                 |  8 +-
+ drivers/video/screen_info_pci.c               |  5 +-
+ include/linux/screen_info.h                   |  2 -
+ include/linux/sysfb.h                         | 23 ++++--
+ include/video/edid.h                          |  4 -
+ 26 files changed, 177 insertions(+), 143 deletions(-)
 
 
->> --- a/drivers/video/fbdev/q40fb.c
->> +++ b/drivers/video/fbdev/q40fb.c
->> @@ -101,6 +101,13 @@ static int q40fb_probe(struct platform_device *dev=
-)
->>          info->par =3D NULL;
->>          info->screen_base =3D (char *) q40fb_fix.smem_start;
->>
->> +       if (!request_mem_region(q40fb_fix.smem_start, q40fb_fix.smem_le=
-n,
->> +                               "q40fb")) {
->> +               dev_err(&dev->dev, "cannot reserve video memory at 0x%l=
-x\n",
->> +                       q40fb_fix.smem_start);
->> +               return -EBUSY;
->> +       }
->> +
->>          if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
->>                  framebuffer_release(info);
->>                  return -ENOMEM;
+base-commit: 57e807d4454add8b60e8807ad1cf812141f34cdb
+-- 
+2.51.1
+

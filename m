@@ -1,155 +1,241 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8BCD1F37A1
-	for <linux-fbdev@vger.kernel.org>; Sat, 22 Nov 2025 11:43:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D9192F60A4
+	for <linux-fbdev@vger.kernel.org>; Mon, 24 Nov 2025 09:28:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1763811792; cv=none; b=GLAV7G/W6gG6GKPenuiRz+LwRpd0EyFTiUQr+I72Q3Lj1KxwskLo1nJTxK5CvR3LPAK7QV2vWz+aGHxyBYKs4lxqEBPJL1si23i64rQGSx2G5+ts951Z+adG7yUOHfjZ8frfk+SuMAY6RX5cESkbJs70uqc0NGxvomplf24gUwo=
+	t=1763976541; cv=none; b=mC2zMQXJz+KqqFIL46lTz6VzKYMVrCz4gMvl5I7WnCgYnDkDaf/8pDF8/7RvUT+fHbs6w5omjLMn/LWWIUV0lOH0UlThsv3yA1Y3sQi5dfYLLvnBNXSpsOYGQHsJ1lef7iU/ycsKzQEjfijYgktdwFquPd7KbaxsS8YCUYY6gAc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1763811792; c=relaxed/simple;
-	bh=p8H88tgM9+gXap9lRijwllIzLZu5llgC1f7xv5nwybk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=h3yanYYUgOdY5Dl4BDbsiCSNZ0ugrO1pug+/87GfV1YVNBylHObRHVm6jGc+tRQz2TS2CCWzdFN4y6KqioIYfoYmwDzaTehzkzslPe/tjSLiUwjSeuH5o92+4Givei5FLq5mh2Q4gVNzyKlO2KZmaaf1E9zbFJNlKrwJ7dZ5Rc0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ipvswz18; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1763976541; c=relaxed/simple;
+	bh=PUxuEYfHaMXKyRQa8nksQ38OVmVCrv/2GMdnL6jPYFU=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GySAlG101kaDmV44t669gtcRRWWj7iKbequHpkuGH93jZKfsHiH5dtG9j8sOGRMQZZmZiJNliNA8vhDsk8YwIOO7tffEibKJSzuq4I/cFF5A1KutAbNVFFiLfzuS+5B4lJy6ggaKn3PugSV+ubVd72Bvi+gIgwBKEDAMV7gxDec=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=NghiHQ1X; arc=none smtp.client-ip=209.85.128.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ipvswz18"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91C2AC4CEF5
-	for <linux-fbdev@vger.kernel.org>; Sat, 22 Nov 2025 11:43:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763811791;
-	bh=p8H88tgM9+gXap9lRijwllIzLZu5llgC1f7xv5nwybk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=Ipvswz18aqd0/TPfyaDV4JwDv6OLD0cZeJIq8CrXbsMPz1VZwsapYJAtdiVIc37YT
-	 P/L0lbDBumBVIGHT+mEZV/7MD9cSmtv3T3DWptmTmc9qxDrBKkyRPXa4Ae8aE0PQUQ
-	 HbDVsMpuUKTcGgV/9mxXWCLrCfILdEio7MaZrfnJFLJTlc/yk47dzUsqNJjonEuNfi
-	 r7fYLuhO8HnGh2sORE0RhoxErJSvva28uDuBOu5ftFkehUDuNOUqLnkO6/lmnaImM7
-	 hcZKmV+aF+35cjIVo76O+EsmfvKSnHRb4a8+jOL/NKN437gxi/5FmsRnI8XRWwG0Y8
-	 yt3iC2HpajEig==
-Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-378e8d10494so36148241fa.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 22 Nov 2025 03:43:11 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCVv8vOX9aWsrVXznPuP/dzBX3aIqfs6/6i5mnuWdVw+OK8wxcy5PZGwnrk/7q5juh5CiiLvPy4Ea7IxCQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxLN3xgn9KMiy1otG7aqLIYORKnh8+V1qHhbiPn5HZMKfd4KRhn
-	utBhCW2MYXNJWwFMlu+t/VYAFpSSEqRv6IaVEb8Vnby944/CmE9xN3rQrgt5iCchhGcB7rNgaOJ
-	xaaRNXLIEAmrOn7yNvgaVtzxbM+vGFqw=
-X-Google-Smtp-Source: AGHT+IGKRFlgwehxRBm62tvmwTXy609E55PZi7OAqnBZ+de0+tT9jGT1vTKQcXSXNqsiURj9qycDJBw3M2X6JvRwZDY=
-X-Received: by 2002:a05:6512:3b27:b0:592:fa8a:810d with SMTP id
- 2adb3069b0e04-596a3ea7847mr1884146e87.16.1763811789974; Sat, 22 Nov 2025
- 03:43:09 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="NghiHQ1X"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-477a1c28778so44835545e9.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Nov 2025 01:28:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1763976536; x=1764581336; darn=vger.kernel.org;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:date:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=qSUd6Iu5swY1yI3rOZ1kFsJAdObQXxI7F4AS/dEiKfI=;
+        b=NghiHQ1XnuVAxJDYO9j5gFue3oxXZobpMnaAc0O0j+bvafBSaYiBWYoA8JSBTz/Fe7
+         ru1UeThmjk0uBr0A8Cv47ChE1AcEqOdOafnSq7D8rLKnbXcEahyM8/Rib+sLwp9XB06n
+         beePpTwd/p6pNhHiDDAShLzH6NjAisRkRKqQU7K8qjgRuqMYoCKnYsGyRm0x+AdvRSOu
+         07JPh0E246JgrOqgkevqiOgE3wiQ8cevZCECmMZeVV+MNzWeZbXACSvm7LZXn6M4n90E
+         vO0xdNpo/J2aFrwTJc0YwnKXiNfEbHTEuUC5Z6K/OUuykMKdW5VkCYcxmTBVl1w3ztNF
+         XSTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1763976536; x=1764581336;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:date:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=qSUd6Iu5swY1yI3rOZ1kFsJAdObQXxI7F4AS/dEiKfI=;
+        b=SughTn83cOdNy3UGgmJhPpeZw+FP2Y71blU7LD/8K0Lyzx58XJVsCrf6na0L4K+kzt
+         z0Gn1jy70imLmVc2+ps01rcNjdL5Y9VQyQbRdwKL6ODtNKE8/WxiqkueTUNiMf1u/6D0
+         44kbnGcTB8iA/Fiee4VcI4WvZEX5CuATlL2bpma2F4G+tFzxvLftmz2djVJzTuSaMtmJ
+         1aUR3o27zDyBiUBszczRpV51c8ljY9bmzZlK9ip74D7HW4jsRn9y22X6BCwjKMwLxUbl
+         Ws4lu2OY685/2bAL/Tynr4UbUxntzEqlPb8lL4/xP9rsTDltfcxGEQTFcev4imEHRJ2M
+         z68g==
+X-Forwarded-Encrypted: i=1; AJvYcCXqUhL1aHipLl71bv2nq8xKHI1h38t1pyRRQgR9ewvYtXtvUP1CivAj/Os/vzW7qz1CHxDPbKxDY6p0Wg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzKjno447t1x0DyKGUyfAuzbJfPxklawlHK/8h3HA+6p9s7Selh
+	O7IrMEscvA7xCiv6tee59xK85yj5dADu1jJP0OwPxN+JQkxg14vWX8t5QFpqMxJyKwI=
+X-Gm-Gg: ASbGncsaQxNrytq9CdcTkf2C858gAxaLapK1Q1U7ce7bEmEswWukr06CzT9MPsBNF2o
+	b5Cdb0MOVY+HYP49H16Dm1WY5fgzm0WOazssKzdaJZyMg2FUL2dFJ70+EFTeG0yn/Tb+TR0/R1n
+	Ku8q9og/ZqpCtsOJbjnDCwI8hLnN5oliYwU91XRTG++k6BvALveZRT6L4gXev+CDTA8NF90ooDT
+	JekwRsRAM800kTk4tLsUdysg9rbihM6ZZwPEzJ8bbGib6gvL7tzXP+krl+n8lGgP/quCiCIdAhU
+	F1gbV8hhDboBHBpvZDts7x8+RAK6byTbj38mviqCbrUFdztGOMN+7BsLcNj0QsgjWit0RwdE17g
+	fqrV44K495VcKJ2bPK+74Q1ZBtr1OBl9vuwqNW2ITw8TmDBoIkQ9PnTvfAJ2FK/oNLxqVCNRJVo
+	m7klz1r0tIyZlFQ1iRgaksXPxVE+NDXYGDz12+/PEU
+X-Google-Smtp-Source: AGHT+IGqX87Liusvu8VA+P6vAK2NQvQqKGFS75x4fPSdpk7QAnEFO6Q86alRxbuZVhECcom6UWrp6g==
+X-Received: by 2002:a05:600c:1c0c:b0:46e:7e22:ff6a with SMTP id 5b1f17b1804b1-477c018a099mr145588045e9.15.1763976536416;
+        Mon, 24 Nov 2025 01:28:56 -0800 (PST)
+Received: from r1chard (220-129-146-231.dynamic-ip.hinet.net. [220.129.146.231])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-345b03c7515sm9757191a91.5.2025.11.24.01.28.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Nov 2025 01:28:56 -0800 (PST)
+From: Richard Lyu <richard.lyu@suse.com>
+X-Google-Original-From: Richard Lyu <r1chard@r1chard>
+Date: Mon, 24 Nov 2025 17:28:49 +0800
+To: Thomas Zimmermann <tzimmermann@suse.de>, ardb@kernel.org,
+	javierm@redhat.com, arnd@arndb.de
+Cc: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org,
+	loongarch@lists.linux.dev, linux-riscv@lists.infradead.org,
+	dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 1/6] efi: earlycon: Reduce number of references to global
+ screen_info
+Message-ID: <aSQlUVPfQrEwXPWm@r1chard>
+References: <20251121135624.494768-1-tzimmermann@suse.de>
+ <20251121135624.494768-2-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251121135624.494768-1-tzimmermann@suse.de> <96a8d591-29d5-4764-94f9-6042252e53ff@app.fastmail.com>
- <CAMj1kXF1Dh0RbuqYc0fhAPf-CM0mdYh8BhenM8-ugKVHfwnhBg@mail.gmail.com>
- <199e7538-5b4a-483b-8976-84e4a8a0f2fd@suse.de> <CAMj1kXE+mS1Sm5GaROU0P97J2w1pew0P_To4sKiw8h1iOMuLcg@mail.gmail.com>
- <d080729c-6586-4b9c-b234-470977849d3d@suse.de> <6dff8e7e-c99b-443d-a1d8-22650ca0b595@suse.de>
- <CAMj1kXGpC_162bFL65kQw=7qVP7ezYw77Q76y217dDs8pqHogw@mail.gmail.com>
- <8d0bc096-e346-462b-a274-f0cc1456eea3@suse.de> <CAMj1kXFdethf2sb1tm1V4wRW1SyPt-OnCmaAXc5cHNKuLJMXWA@mail.gmail.com>
- <4c716fd1-c989-4e48-9878-e7312fefc302@suse.de>
-In-Reply-To: <4c716fd1-c989-4e48-9878-e7312fefc302@suse.de>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Sat, 22 Nov 2025 12:42:58 +0100
-X-Gmail-Original-Message-ID: <CAMj1kXHO12LritnbMXapGBV8QnQOCVopJbaBi2ejMUgZQFGdSg@mail.gmail.com>
-X-Gm-Features: AWmQ_blTv2LH7aQFylqJjjKyEMR6uIyXZhGHq7nWzAQ8kC07d8tB-75tF0Nly1A
-Message-ID: <CAMj1kXHO12LritnbMXapGBV8QnQOCVopJbaBi2ejMUgZQFGdSg@mail.gmail.com>
-Subject: Re: [PATCH 0/6] arch, sysfb: Move screen and edid info into single place
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Javier Martinez Canillas <javierm@redhat.com>, x86@kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-efi@vger.kernel.org, loongarch@lists.linux.dev, 
-	linux-riscv@lists.infradead.org, dri-devel@lists.freedesktop.org, 
-	linux-hyperv@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251121135624.494768-2-tzimmermann@suse.de>
+User-Agent: Mutt/2.2.13 (2024-03-09)
 
-On Sat, 22 Nov 2025 at 11:52, Thomas Zimmermann <tzimmermann@suse.de> wrote:
->
-> Hi
->
-> Am 21.11.25 um 17:31 schrieb Ard Biesheuvel:
-> > On Fri, 21 Nov 2025 at 17:26, Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> >> Hi
-> >>
-> >> Am 21.11.25 um 17:19 schrieb Ard Biesheuvel:
-> >>> On Fri, 21 Nov 2025 at 17:09, Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> >>>>
-> >>>> Am 21.11.25 um 17:08 schrieb Thomas Zimmermann:
-> >>>>> Hi
-> >>>>>
-> >>>>> Am 21.11.25 um 16:56 schrieb Ard Biesheuvel:
-> >>>>>> On Fri, 21 Nov 2025 at 16:53, Thomas Zimmermann <tzimmermann@suse.de>
-> >>>>>> wrote:
-> >>>>>>> Hi
-> >>>>>>>
-> >>>>>>> Am 21.11.25 um 16:16 schrieb Ard Biesheuvel:
-> >>>>>>>> On Fri, 21 Nov 2025 at 16:10, Arnd Bergmann <arnd@arndb.de> wrote:
-> >>>>>>>>> On Fri, Nov 21, 2025, at 14:36, Thomas Zimmermann wrote:
-> >>>>>>>>>> Replace screen_info and edid_info with sysfb_primary_device of type
-> >>>>>>>>>> struct sysfb_display_info. Update all users.
-> >>>>>>>>>>
-> >>>>>>>>>> Sysfb DRM drivers currently fetch the global edid_info directly,
-> >>>>>>>>>> when
-> >>>>>>>>>> they should get that information together with the screen_info
-> >>>>>>>>>> from their
-> >>>>>>>>>> device. Wrapping screen_info and edid_info in
-> >>>>>>>>>> sysfb_primary_display and
-> >>>>>>>>>> passing this to drivers enables this.
-> >>>>>>>>>>
-> >>>>>>>>>> Replacing both with sysfb_primary_display has been motivate by
-> >>>>>>>>>> the EFI
-> >>>>>>>>>> stub. EFI wants to transfer EDID via config table in a single entry.
-> >>>>>>>>>> Using struct sysfb_display_info this will become easily possible.
-> >>>>>>>>>> Hence
-> >>>>>>>>>> accept some churn in architecture code for the long-term
-> >>>>>>>>>> improvements.
-> >>>>>>>>> This all looks good to me,
-> >>>>>>>>>
-> >>>>>>>>> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> >>>>>>> Thanks
-> >>>>>>>
-> >>>>>>>>> It should also bring us one step closer to eventually
-> >>>>>>>>> disconnecting the x86 boot ABI from the kernel-internal
-> >>>>>>>>> sysfb_primary_display.
-> >>>>>>>>>
-> >>>>>>>> Agreed
-> >>>>>>>>
-> >>>>>>>> Acked-by: Ard Biesheuvel <ardb@kernel.org>
-> >>>>>>> Thanks
-> >>>>>>>
-> >>>>>>>> I can take patches 1-2 right away, if that helps during the next
-> >>>>>>>> cycle.
-> >>>>>>>     From my sysfb-focused POV, these patches would ideally all go through
-> >>>>>>> the same tree, say efi or generic arch, or whatever fits best. Most of
-> >>>>>>> the other code is only renames anyway.
-> >>>>>>>
-> >>>>>> I don't mind queueing all of it, but I did get a conflict on
-> >>>>>> drivers/pci/vgaarb.c
-> >>>>> Probably from a78835b86a44 ("PCI/VGA: Select SCREEN_INFO on X86")
-> >>>> https://lore.kernel.org/all/20251013220829.1536292-1-superm1@kernel.org/
-> >>>>
-> >>> Yes, if I merge back -rc2 first, I can apply patches 1-5 onto my
-> >>> efi/next tree. But then I hit
-> >>>
-> >>> Applying: sysfb: Move edid_info into sysfb_primary_display
-> >>> error: sha1 information is lacking or useless (drivers/gpu/drm/sysfb/efidrm.c).
-> >>> error: could not build fake ancestor
-> >>> Patch failed at 0006 sysfb: Move edid_info into sysfb_primary_display
-> >>>
-> >>> If you prefer, you can take the whole lot via the sysfb tree instead,
-> >>> assuming it does not depend on the EDID changes I already queued up?
-> >> Sure, I can also add it to the drm-misc tree. ETA in upstream would be
-> >> v6.20-rc1.
-> >>
-> > But does that mean the EDID firmware on non-x86 will have to wait for
-> > 6.21? I was trying to avoid making this a 6 month effort.
->
-> No problem. Then let me rebase onto linux-next and put the existing EDID
-> patches for EFI on top. It's mostly acked or reviewed already. Once we
-> have it in good shape we can merged it all at once via the linux-efi
-> tree. Does that work for you?
->
+Reviewed-by: Richard Lyu <richard.lyu@suse.com>
 
-Sounds good.
+On 2025/11/21 14:36, Thomas Zimmermann wrote:
+> Replace usage of global screen_info with local pointers. This will
+> later reduce churn when screen_info is being moved.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>  drivers/firmware/efi/earlycon.c | 40 ++++++++++++++++-----------------
+>  1 file changed, 20 insertions(+), 20 deletions(-)
+> 
+> diff --git a/drivers/firmware/efi/earlycon.c b/drivers/firmware/efi/earlycon.c
+> index d18a1a5de144..fac3a295c57f 100644
+> --- a/drivers/firmware/efi/earlycon.c
+> +++ b/drivers/firmware/efi/earlycon.c
+> @@ -32,12 +32,13 @@ static void *efi_fb;
+>   */
+>  static int __init efi_earlycon_remap_fb(void)
+>  {
+> +	const struct screen_info *si = &screen_info;
+> +
+>  	/* bail if there is no bootconsole or it was unregistered already */
+>  	if (!earlycon_console || !console_is_registered(earlycon_console))
+>  		return 0;
+>  
+> -	efi_fb = memremap(fb_base, screen_info.lfb_size,
+> -			  fb_wb ? MEMREMAP_WB : MEMREMAP_WC);
+> +	efi_fb = memremap(fb_base, si->lfb_size, fb_wb ? MEMREMAP_WB : MEMREMAP_WC);
+>  
+>  	return efi_fb ? 0 : -ENOMEM;
+>  }
+> @@ -71,12 +72,12 @@ static __ref void efi_earlycon_unmap(void *addr, unsigned long len)
+>  	early_memunmap(addr, len);
+>  }
+>  
+> -static void efi_earlycon_clear_scanline(unsigned int y)
+> +static void efi_earlycon_clear_scanline(unsigned int y, const struct screen_info *si)
+>  {
+>  	unsigned long *dst;
+>  	u16 len;
+>  
+> -	len = screen_info.lfb_linelength;
+> +	len = si->lfb_linelength;
+>  	dst = efi_earlycon_map(y*len, len);
+>  	if (!dst)
+>  		return;
+> @@ -85,7 +86,7 @@ static void efi_earlycon_clear_scanline(unsigned int y)
+>  	efi_earlycon_unmap(dst, len);
+>  }
+>  
+> -static void efi_earlycon_scroll_up(void)
+> +static void efi_earlycon_scroll_up(const struct screen_info *si)
+>  {
+>  	unsigned long *dst, *src;
+>  	u16 maxlen = 0;
+> @@ -99,8 +100,8 @@ static void efi_earlycon_scroll_up(void)
+>  	}
+>  	maxlen *= 4;
+>  
+> -	len = screen_info.lfb_linelength;
+> -	height = screen_info.lfb_height;
+> +	len = si->lfb_linelength;
+> +	height = si->lfb_height;
+>  
+>  	for (i = 0; i < height - font->height; i++) {
+>  		dst = efi_earlycon_map(i*len, len);
+> @@ -120,7 +121,8 @@ static void efi_earlycon_scroll_up(void)
+>  	}
+>  }
+>  
+> -static void efi_earlycon_write_char(u32 *dst, unsigned char c, unsigned int h)
+> +static void efi_earlycon_write_char(u32 *dst, unsigned char c, unsigned int h,
+> +				    const struct screen_info *si)
+>  {
+>  	const u32 color_black = 0x00000000;
+>  	const u32 color_white = 0x00ffffff;
+> @@ -145,13 +147,12 @@ static void efi_earlycon_write_char(u32 *dst, unsigned char c, unsigned int h)
+>  static void
+>  efi_earlycon_write(struct console *con, const char *str, unsigned int num)
+>  {
+> -	struct screen_info *si;
+> +	const struct screen_info *si = &screen_info;
+>  	u32 cur_efi_x = efi_x;
+>  	unsigned int len;
+>  	const char *s;
+>  	void *dst;
+>  
+> -	si = &screen_info;
+>  	len = si->lfb_linelength;
+>  
+>  	while (num) {
+> @@ -174,7 +175,7 @@ efi_earlycon_write(struct console *con, const char *str, unsigned int num)
+>  			x = efi_x;
+>  
+>  			while (n-- > 0) {
+> -				efi_earlycon_write_char(dst + x*4, *s, h);
+> +				efi_earlycon_write_char(dst + x*4, *s, h, si);
+>  				x += font->width;
+>  				s++;
+>  			}
+> @@ -207,10 +208,10 @@ efi_earlycon_write(struct console *con, const char *str, unsigned int num)
+>  			cur_line_y = (cur_line_y + 1) % max_line_y;
+>  
+>  			efi_y -= font->height;
+> -			efi_earlycon_scroll_up();
+> +			efi_earlycon_scroll_up(si);
+>  
+>  			for (i = 0; i < font->height; i++)
+> -				efi_earlycon_clear_scanline(efi_y + i);
+> +				efi_earlycon_clear_scanline(efi_y + i, si);
+>  		}
+>  	}
+>  }
+> @@ -226,22 +227,21 @@ void __init efi_earlycon_reprobe(void)
+>  static int __init efi_earlycon_setup(struct earlycon_device *device,
+>  				     const char *opt)
+>  {
+> -	struct screen_info *si;
+> +	const struct screen_info *si = &screen_info;
+>  	u16 xres, yres;
+>  	u32 i;
+>  
+>  	fb_wb = opt && !strcmp(opt, "ram");
+>  
+> -	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI) {
+> +	if (si->orig_video_isVGA != VIDEO_TYPE_EFI) {
+>  		fb_probed = true;
+>  		return -ENODEV;
+>  	}
+>  
+> -	fb_base = screen_info.lfb_base;
+> -	if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE)
+> -		fb_base |= (u64)screen_info.ext_lfb_base << 32;
+> +	fb_base = si->lfb_base;
+> +	if (si->capabilities & VIDEO_CAPABILITY_64BIT_BASE)
+> +		fb_base |= (u64)si->ext_lfb_base << 32;
+>  
+> -	si = &screen_info;
+>  	xres = si->lfb_width;
+>  	yres = si->lfb_height;
+>  
+> @@ -266,7 +266,7 @@ static int __init efi_earlycon_setup(struct earlycon_device *device,
+>  
+>  	efi_y -= font->height;
+>  	for (i = 0; i < (yres - efi_y) / font->height; i++)
+> -		efi_earlycon_scroll_up();
+> +		efi_earlycon_scroll_up(si);
+>  
+>  	device->con->write = efi_earlycon_write;
+>  	earlycon_console = device->con;
+> -- 
+> 2.51.1
+> 
+> 

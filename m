@@ -1,178 +1,142 @@
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qv1-f44.google.com (mail-qv1-f44.google.com [209.85.219.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD1D12D948F
-	for <linux-fbdev@vger.kernel.org>; Tue, 25 Nov 2025 08:24:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E05B72BE047
+	for <linux-fbdev@vger.kernel.org>; Tue, 25 Nov 2025 09:08:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764059082; cv=none; b=UuAFLqKH+0NdGkVpz40Yl0D6RcyV11307QAVhEFjEZ+WtTpeelAUrSvnutP6BsPR0drDVtisT0XNvNo6XGV5kfL4greAqHDLeePyL2K0Bq3I5kpho+1JGTRULCOgVmGb7OhxuOYdniLLfoMFlYH7hbotiN5sD6OEIAewFQv7URg=
+	t=1764061732; cv=none; b=WMGUALfVvNMwrwAtedRumMOZHSZiZa7S0ll4WVJmvvXlsfxpZr/M2NYKjaBHsT1urMu8Ra3IUZT91rg8x4ud1sTEhvYj+qmOj06jZbxMtOaUrlzx8dnexzFbuePRJE0pqFM3/5xgmu7C4D39dtZPhLYw78jiCnmzAbK17z7ouJs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764059082; c=relaxed/simple;
-	bh=If+VgiQyyouldR/fQUtKqlbwUMOGSuP+lvB4VzI0074=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b3Aad0+N5mk1AsLhvPUfShOgBnRF4GL2bzKPjEUXpFFdHI6vZiqleaqEPnYwMFTg8+WC2rhYMSxnZL0zSiPtCX0sX4yEixPZ7KAJ/DzETruMVOwF63W2dgOonZ99e53/CLM1u1sawIns9TNDH/3sv/2IFXj2yhYrJHhbBJ409GI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <mgr@pengutronix.de>)
-	id 1vNoLb-0001ew-KH; Tue, 25 Nov 2025 09:24:27 +0100
-Received: from pty.whiteo.stw.pengutronix.de ([2a0a:edc0:2:b01:1d::c5])
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <mgr@pengutronix.de>)
-	id 1vNoLb-002MCy-0J;
-	Tue, 25 Nov 2025 09:24:27 +0100
-Received: from mgr by pty.whiteo.stw.pengutronix.de with local (Exim 4.96)
-	(envelope-from <mgr@pengutronix.de>)
-	id 1vNoLa-005ooi-3B;
-	Tue, 25 Nov 2025 09:24:26 +0100
-Date: Tue, 25 Nov 2025 09:24:26 +0100
-From: Michael Grzeschik <mgr@pengutronix.de>
-To: Daniel Thompson <danielt@kernel.org>
-Cc: Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>,
-	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	Uwe =?iso-8859-15?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
-	Pengutronix <kernel@pengutronix.de>
-Subject: Re: [PATCH] backlight: pwm_bl: apply the initial backlight state
- with sane defaults
-Message-ID: <aSVnulk0yfAd4UCx@pengutronix.de>
-References: <20250731-blpwm-v1-1-0171fd31bff9@pengutronix.de>
- <f492d4d3-751c-40a3-bb93-0e1bb192cde7@sirena.org.uk>
- <aRxr_sR0ksklFsw-@aspen.lan>
+	s=arc-20240116; t=1764061732; c=relaxed/simple;
+	bh=jCdO90en+FjhKk4ix5gedxAx+9JnP8FYLniKGNGpn2c=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CHlLEr3xZ+6dByJLxaQ5NyRRUKikW9pej7iouXg2vEufly419+oujObYlxvoKciHSQayOCspvStAWjln3+Tm6pY7A/Q3/hYlZUF/WGiDo3yxSrSrvlkUmuOzekaVWeWFzzPqRmh0bOh7seqdhKSRms9gquQYT0gsqRgDZKZyWaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Jxp7KNgQ; arc=none smtp.client-ip=209.85.219.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jxp7KNgQ"
+Received: by mail-qv1-f44.google.com with SMTP id 6a1803df08f44-882475d8851so61625196d6.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 25 Nov 2025 01:08:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1764061730; x=1764666530; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=jCdO90en+FjhKk4ix5gedxAx+9JnP8FYLniKGNGpn2c=;
+        b=Jxp7KNgQM3Q9rE375JZ+a1EbcBaUFmyrwcZdXdQXr+YpvCB7hko+7KZMTBFLtzh+AN
+         lt0bxTIqcUiF7QfmHc9SyllXwBj3RYVm31VYo4idtbSH8KAxbrtAoJgkbmhgSKbuLjO1
+         xoPgbS+d9oYIz8EOL2kQ2pInSqKcHdCEcDiSzkKyW/M2QURYUKzHs6V/9PpuTJAG0pkB
+         K2Cii8suWSM2MiDlL2UOYnbONT6BwOuQNUtpD3BMSUkbj3PGGT3udoSvfpq5EDA7VOLt
+         M785hPEr/2mJ15ZgPB1993mSrnZir0OWwJMJWIrYxdfyq/d9WLc8KBdqxIbjDW26C6a8
+         /hoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1764061730; x=1764666530;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=jCdO90en+FjhKk4ix5gedxAx+9JnP8FYLniKGNGpn2c=;
+        b=AZ0EyUjqf6G5lUMmBmW0AtDuXvHBciHQdqvSyKkQoCYwrbEQ06s5Ra5b9c3kghMn6b
+         W2aq7lFJp4Kx2XoueDsM9Nz+KX27gfwsmjSDkJX3q4rCt9a1SXcMjPyeaesKpFc10eQ6
+         thXB666LJj5le+G2uaqp0BSfbL+ZRUHU8zO19LExmLZ18luKx6/hIpjtq+7ZqBHwr1Dc
+         7qPpa3K7oRWbeC2BBdNewIubo+waGBiZzf+6z0ZzSsrAGpIoPRfZ5Bbx+Uv0cAlhWRGO
+         49s/1Jos0LwYs6tk7/y3JZLFqk4tiAuNbEVouBYMZmf1TdEifNWqJ/mZRDgX7ZmtpL0G
+         clLw==
+X-Forwarded-Encrypted: i=1; AJvYcCWVHrmywiAqzGAcoge/DOXIg08XvVqO+ZHqc68nf4b5hVONe/qG2q7HaXMebT79J62CtpXyXkfU12ENWg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzi/KX7sZ/r9GJVRfwDir1h1EOrBRyLcd33FPjUZA/b2Gmn5K3S
+	MQLjKzqJe+kfRSkNM9tb6B4bsVu9AlarNPb+V9ZM9Ics+cwo+OdJDfLBfgcBes86qs9PWp3Mubc
+	JmpUCdcjSgbs+n6A4+r3acDlS/djjPYs=
+X-Gm-Gg: ASbGnctmdsAWFVpyh8frVmYMvDk7x/t3Wl2GV826hiIT/xGn+6DPgU1tobyGM/91m+0
+	7kJkcVtL2yBQDDnsvZLpzclwFIx2+vVNNkx+8BdiuoIhuUf4p5orLU+xoDnHeiDWCyfi5yX/SNU
+	4Qxk/j2eZXR3WlM/KqC54/s11jK1/WWrks8bWFickLFOuA0wa0ZtGZP/Mz2TrJgov21upHsKUvz
+	jPYJjmd+e06iRmBaGBQoaFSM4ITsCzPpZ319ahjxG5Mn0sfTKTBBA1J4j5Xs39KAod9iw==
+X-Google-Smtp-Source: AGHT+IGTFbY486YnNQWkoWlEaQzvsvasZFyHoZ9KTpGkdm47RfNT3iuxVdTNRpkeEmLfhER+Qz0gUPpksmHAUXp+rAI=
+X-Received: by 2002:a05:620a:4092:b0:8b2:4b6:22e0 with SMTP id
+ af79cd13be357-8b33d468064mr1952580085a.60.1764061729682; Tue, 25 Nov 2025
+ 01:08:49 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="5lR1y+xZyNcXp5Ry"
-Content-Disposition: inline
-In-Reply-To: <aRxr_sR0ksklFsw-@aspen.lan>
-X-Sent-From: Pengutronix Hildesheim
-X-URL: http://www.pengutronix.de/
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: mgr@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
-
-
---5lR1y+xZyNcXp5Ry
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
+References: <20251124234432.1988476-1-joelagnelf@nvidia.com>
+ <f73e4536-ec89-4625-96d4-6fa42018e4e4@amd.com> <CAPM=9twe3xcVBgrNCT+1_pGECPL-ry_aA2dxBwbKVeai4+S7AQ@mail.gmail.com>
+ <24d4f02b-8ecd-4512-a1f0-ba41684ede1d@amd.com> <dfc50417-66ce-44ce-b607-917d678c5631@nvidia.com>
+ <9f433dee-7ad9-4d0f-8ac1-e67deb409b70@amd.com>
+In-Reply-To: <9f433dee-7ad9-4d0f-8ac1-e67deb409b70@amd.com>
+From: Dave Airlie <airlied@gmail.com>
+Date: Tue, 25 Nov 2025 19:08:37 +1000
+X-Gm-Features: AWmQ_bm6tlLng_0bNMM-_zVqLKGasd2tHLj_Nv0hY-yBLivUiNyEs9A42o3KV94
+Message-ID: <CAPM=9tyN_A3oEyQZCOWaLO1orO6oKX0ZukJHR7cFy12Go+7d=A@mail.gmail.com>
+Subject: Re: [PATCH] gpu: Move DRM buddy allocator one level up
+To: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+Cc: John Hubbard <jhubbard@nvidia.com>, Joel Fernandes <joelagnelf@nvidia.com>, 
+	linux-kernel@vger.kernel.org, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Simona Vetter <simona@ffwll.ch>, Jonathan Corbet <corbet@lwn.net>, 
+	Alex Deucher <alexander.deucher@amd.com>, Jani Nikula <jani.nikula@linux.intel.com>, 
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>, 
+	Matthew Auld <matthew.auld@intel.com>, Matthew Brost <matthew.brost@intel.com>, 
+	Lucas De Marchi <lucas.demarchi@intel.com>, 
+	=?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>, 
+	Helge Deller <deller@gmx.de>, Danilo Krummrich <dakr@kernel.org>, Alice Ryhl <aliceryhl@google.com>, 
+	Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, 
+	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Trevor Gross <tmgross@umich.edu>, Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>, 
+	Edwin Peer <epeer@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>, nouveau@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, rust-for-linux@vger.kernel.org, 
+	linux-doc@vger.kernel.org, amd-gfx@lists.freedesktop.org, 
+	intel-gfx@lists.freedesktop.org, intel-xe@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 18, 2025 at 12:52:14PM +0000, Daniel Thompson wrote:
->On Fri, Nov 14, 2025 at 02:09:56PM +0000, Mark Brown wrote:
->> On Thu, Jul 31, 2025 at 10:47:18AM +0200, Michael Grzeschik wrote:
->> > Currently when calling pwm_apply_might_sleep in the probe routine
->> > the pwm will be configured with an not fully defined state.
->> >
->> > The duty_cycle is not yet set in that moment. There is a final
->> > backlight_update_status call that will have a properly setup state.
->> > However this change in the backlight can create a short flicker if the
->> > backlight was already preinitialised.
->>
->> I'm seeing the libre.computer Renegade Elite producing warnings during
->> boot in -next which bisect to this patch.  The warnings are:
->>
->> [   24.175095] input: adc-keys as /devices/platform/adc-keys/input/input1
->> [   24.176612] ------------[ cut here ]------------
->> [   24.177048] WARNING: CPU: 0 PID: 0 at kernel/context_tracking.c:127 c=
-t_kernel_exit.constprop.0+0x98/0xa0
->>
->> ...
->>
->> [   24.190106] Call trace:
->> [   24.190325]  ct_kernel_exit.constprop.0+0x98/0xa0 (P)
->> [   24.190775]  ct_idle_enter+0x10/0x20
->> [   24.191096]  cpuidle_enter_state+0x1fc/0x320
->> [   24.191476]  cpuidle_enter+0x38/0x50
->> [   24.191802]  do_idle+0x1e4/0x260
->> [   24.192094]  cpu_startup_entry+0x34/0x3c
->> [   24.192444]  rest_init+0xdc/0xe0
->> [   24.192734]  console_on_rootfs+0x0/0x6c
->> [   24.193082]  __primary_switched+0x88/0x90
->> [   24.193445] ---[ end trace 0000000000000000 ]---
->>
->> which seems a little surprising but there is some console stuff there
->> that looks relevant.
->>
->> Full log:
->>
->>     https://lava.sirena.org.uk/scheduler/job/2086528#L897
+On Tue, 25 Nov 2025 at 18:11, Christian K=C3=B6nig <christian.koenig@amd.co=
+m> wrote:
 >
->Michael, reading these logs it looks to me like the underlying oops
->is this backtrace (which makes a lot more sense given the code you
->altered):
+> On 11/25/25 08:59, John Hubbard wrote:
+> > On 11/24/25 11:54 PM, Christian K=C3=B6nig wrote:
+> >> On 11/25/25 08:49, Dave Airlie wrote:
+> >>> On Tue, 25 Nov 2025 at 17:45, Christian K=C3=B6nig <christian.koenig@=
+amd.com> wrote:
+> > ...
+> >> My question is why exactly is nova separated into nova-core and nova-d=
+rm? That doesn't seem to be necessary in the first place.
+> >>
+> > The idea is that nova-core allows building up a separate software stack=
+ for
+> > VFIO, without pulling in any DRM-specific code that a hypervisor (for e=
+xample)
+> > wouldn't need. That makes for a smaller, more security-auditable set of=
+ code
+> > for that case.
 >
->[   24.133631] Call trace:
->[   24.133853]  pwm_backlight_probe+0x830/0x868 [pwm_bl] (P)
->[   24.134341]  platform_probe+0x5c/0xa4
->[   24.134679]  really_probe+0xbc/0x2c0
->[   24.135001]  __driver_probe_device+0x78/0x120
->[   24.135391]  driver_probe_device+0x3c/0x154
->[   24.135765]  __driver_attach+0x90/0x1a0
->[   24.136111]  bus_for_each_dev+0x7c/0xdc
->[   24.136462]  driver_attach+0x24/0x38
->[   24.136785]  bus_add_driver+0xe4/0x208
->[   24.137124]  driver_register+0x68/0x130
->[   24.137468]  __platform_driver_register+0x24/0x30
->[   24.137888]  pwm_backlight_driver_init+0x20/0x1000 [pwm_bl]
->[   24.138389]  do_one_initcall+0x60/0x1d4
->[   24.138735]  do_init_module+0x54/0x23c
->[   24.139073]  load_module+0x1760/0x1cf0
->[   24.139407]  init_module_from_file+0x88/0xcc
->[   24.139787]  __arm64_sys_finit_module+0x1bc/0x338
->[   24.140207]  invoke_syscall+0x48/0x104
->[   24.140549]  el0_svc_common.constprop.0+0x40/0xe0
->[   24.140970]  do_el0_svc+0x1c/0x28
->[   24.141268]  el0_svc+0x34/0xec
->[   24.141548]  el0t_64_sync_handler+0xa0/0xf0
->[   24.141920]  el0t_64_sync+0x198/0x19c
+> Well that is the same argument used by some AMD team to maintain a separa=
+te out of tree hypervisor for nearly a decade.
 >
->Should we back out the patch for now?
+> Additional to that the same argument has also been used to justify the KF=
+D node as alternative API to DRM for compute.
+>
+> Both cases have proven to be extremely bad ideas.
+>
+> Background is that except for all the legacy stuff the DRM API is actuall=
+y very well thought through and it is actually quite hard to come up with s=
+omething similarly well.
+>
 
-I would be fine with that. But actually I would like to see the
-proof that without the patch, this backtrace will not trigger.
-Looking through the codepath, I could not directly find a case
-where this should happen.
+Well you just answered your own question, why is AMD maintaining GIM
+instead of solving this upstream with a split model? the nova-core/drm
+split would be perfect for GIM.
 
-Mark, is there a way to rerun this without my patch?
+kfd was a terrible idea, and we don't intend to offer userspace
+multiple APIs with nova, nova-drm will be the primary userspace API
+provider. nova-core will not provide userspace API, it will provide an
+API to nova-drm and an API to the vgpu driver which will provide it's
+own userspace API without graphics or compute, just enough to setup
+VFs.
 
-Michael
-
---=20
-Pengutronix e.K.                           |                             |
-Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
-31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-
---5lR1y+xZyNcXp5Ry
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEElXvEUs6VPX6mDPT8C+njFXoeLGQFAmklZ7YACgkQC+njFXoe
-LGS72w/6AoHVwozXjyve4l+1qlupkgIh4y0b5i8qAkJeX6oKbvwx7jqGUCUY1W3e
-/L14o/GoYDwISuEsU4C8resSkGoLlp/QEotyIq+lbeBSAFl6O57NYg1EO+2pV9b6
-vzvaWopThDGJY9ZSSvl/UecGpu4UcaRP8wMmal93yUIQ0AH6kiDS0JH2ZCXAFFvU
-Al+Plxsne/zsm/3DhXFbCfHOMLITnaVedqwQd4gsOrc6u00JS2fEWQLVLHofGCLp
-f9m1xxpEzb5naXDI/gQGlzKqmZ7ko0UDTSXukh13PMuHRR/nBzPKhuQb15+jR1I7
-KBjkCVDV0NcV7oAFSvdUYLcVAVUNQLahsFXwCtxid3MUfluWcCmyM9fg1/Uzw8DH
-W7NtR2nzlsLE4sNoHVLVHW60GYvO63IGmgiTBCgfFOt5WVuk2XopiBKRnMKc6UHw
-yY+0xOH0GEChfTEnOnQbZlGG+xTRdthTpIWf5gQ5lF4wdcFiJF3zS9fq/GHaRrRq
-qK3napeB52Lzw/BfZ9NPG1qLysv5QlT6WSJuGdl2/C7/lXRcIsi1xpNgzXZyPUNT
-4VULTw9scsCtl9ZnD0+sijC3GYZjHKCgK7t/FZ7wBCL10g/wZPojLz9zh3v4VNeh
-LleDOHxGk2ioCks2UMm0zJBJoTXKQREw13zHZ4W6B7Pm4uptXRc=
-=R0Gw
------END PGP SIGNATURE-----
-
---5lR1y+xZyNcXp5Ry--
+Dave.

@@ -1,210 +1,178 @@
-Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010019.outbound.protection.outlook.com [52.101.201.19])
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [185.203.201.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 274C7230BD5;
-	Tue, 25 Nov 2025 08:11:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.19
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764058271; cv=fail; b=Fqquv2G/MGl96BULzMknN0n2BVr/m/dciin9ATocxjdC7M6WyYC9GdazOGHll1UfEfSTVVgkGaNQzzJC3z4CXGQfEJofBkCy4jQFnFwhBKysh+ZMgq2/0s0okeZcmBf4JpinjYMtiHL2jmxuAVIo5s848aqwxkqsCwTX1BuCI0U=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764058271; c=relaxed/simple;
-	bh=VUvfCbFgYprLtTVSgFwHX4zdN679IfNnk9IagHw6G1o=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=NR1/a5l5ZERpfoCDVeKyom8uA5O99pW0XoSUw3L0BICOe8Q3u97s0xzPs7Y/K+Ev9cBJ1DytZfRW8iGkV0WmpTxCQVeefDqbHqJFJq7lkAAE3YD6Fjc/jM6BKMavIWhr4/2OQlM9udHLTWqq58QRJgMmkH/RBRjtsqBnNo3S9A8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=NjwwEV1Z; arc=fail smtp.client-ip=52.101.201.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="NjwwEV1Z"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=XL7XrqCa1u4dfsEqj21XFRDl1vNAn3sMAMKv7hN8QbM+89fLuUHMarSCRwmZgZtdH0PmRPshuvn40hrAvpBwo7ERD6JfGvs9tJ0mL7Q2LnAzc8XqE3pVEMUQRXDANhkF6VNCbSH9sjYzWbwKN9lanZvQ6j8zj8vAgUtxOzRdLa6Xo4XM/JeqNQAiuJm3yNjU+rjErUeSAKnrGf6T5pfv4gNqaElP+kwePZKFzGq3JE8LlxOgMgeSY56l6PJRy0tUYtuWHW6dXmKVm5ncC/mnvz9qU/B9dklM4a4V88lCNRv0ySUSsE6aG4fAyAbunIgtdl8fGkGD6iTCEQI8Cy9YPA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=zlaqHOGScwMFe0aPUXRKvdlf3lhDMcXZZ2lO3MtGjgQ=;
- b=AnQvXDQoQ549MtJbYjB1dYRg49NV5dRniBl/1iRUvxsE6ar/qX7Yi41Ahp0UG2o7KNN3+zluENTMQnnAcZC7igSLOWMDeASbMCv5F13uMHSB8fRK8tKgixM1L1TUmGUQ3roUAmebjzNO7ws4W6N9sP8B+KEvpQMocsuTwTD9FSL9/wKf2kR2xGwTu6+6irPAjIKrPgylXza/2mK1XuOsGbVesCg4M6LUdUugL7WiZNW1jljtZ8C0+lCqnqNCTv+F0RT3C4V3uquswQ+aqojPl68hQ8zTiguxr6ZKjhjXJ0KRMok973JARhr//ifvS3zPeJdwU47H8nRyvdb9/6ukDA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=zlaqHOGScwMFe0aPUXRKvdlf3lhDMcXZZ2lO3MtGjgQ=;
- b=NjwwEV1Zf+v3VyCIctXIyaXqSOD+tauzkVa64ayAQuBH0pRkqDDxcuuts2cqptzUJV+Hp1XAC4xY3IPxm9F81KoEhffa7fe5+ERG1ld/coyrsodvcfwQUNnA/yVsse8/sBmwwXLiwTjc5xQ041IxyhQ7Zce3a1pcudAXEnp1ggI=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com (2603:10b6:510:13c::22)
- by MW6PR12MB8707.namprd12.prod.outlook.com (2603:10b6:303:241::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9343.17; Tue, 25 Nov
- 2025 08:11:04 +0000
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::46fb:96f2:7667:7ca5]) by PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::46fb:96f2:7667:7ca5%4]) with mapi id 15.20.9343.016; Tue, 25 Nov 2025
- 08:11:04 +0000
-Message-ID: <9f433dee-7ad9-4d0f-8ac1-e67deb409b70@amd.com>
-Date: Tue, 25 Nov 2025 09:10:54 +0100
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] gpu: Move DRM buddy allocator one level up
-To: John Hubbard <jhubbard@nvidia.com>, Dave Airlie <airlied@gmail.com>
-Cc: Joel Fernandes <joelagnelf@nvidia.com>, linux-kernel@vger.kernel.org,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- Simona Vetter <simona@ffwll.ch>, Jonathan Corbet <corbet@lwn.net>,
- Alex Deucher <alexander.deucher@amd.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>,
- Matthew Auld <matthew.auld@intel.com>,
- Matthew Brost <matthew.brost@intel.com>,
- Lucas De Marchi <lucas.demarchi@intel.com>,
- =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
- Helge Deller <deller@gmx.de>, Danilo Krummrich <dakr@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>, Miguel Ojeda <ojeda@kernel.org>,
- Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>,
- Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?=
- <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>,
- Andreas Hindborg <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>,
- Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>,
- Edwin Peer <epeer@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>,
- nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
- rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
- intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20251124234432.1988476-1-joelagnelf@nvidia.com>
- <f73e4536-ec89-4625-96d4-6fa42018e4e4@amd.com>
- <CAPM=9twe3xcVBgrNCT+1_pGECPL-ry_aA2dxBwbKVeai4+S7AQ@mail.gmail.com>
- <24d4f02b-8ecd-4512-a1f0-ba41684ede1d@amd.com>
- <dfc50417-66ce-44ce-b607-917d678c5631@nvidia.com>
-Content-Language: en-US
-From: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-In-Reply-To: <dfc50417-66ce-44ce-b607-917d678c5631@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: FR2P281CA0144.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:98::18) To PH7PR12MB5685.namprd12.prod.outlook.com
- (2603:10b6:510:13c::22)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD1D12D948F
+	for <linux-fbdev@vger.kernel.org>; Tue, 25 Nov 2025 08:24:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.203.201.7
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1764059082; cv=none; b=UuAFLqKH+0NdGkVpz40Yl0D6RcyV11307QAVhEFjEZ+WtTpeelAUrSvnutP6BsPR0drDVtisT0XNvNo6XGV5kfL4greAqHDLeePyL2K0Bq3I5kpho+1JGTRULCOgVmGb7OhxuOYdniLLfoMFlYH7hbotiN5sD6OEIAewFQv7URg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1764059082; c=relaxed/simple;
+	bh=If+VgiQyyouldR/fQUtKqlbwUMOGSuP+lvB4VzI0074=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=b3Aad0+N5mk1AsLhvPUfShOgBnRF4GL2bzKPjEUXpFFdHI6vZiqleaqEPnYwMFTg8+WC2rhYMSxnZL0zSiPtCX0sX4yEixPZ7KAJ/DzETruMVOwF63W2dgOonZ99e53/CLM1u1sawIns9TNDH/3sv/2IFXj2yhYrJHhbBJ409GI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass smtp.mailfrom=pengutronix.de; arc=none smtp.client-ip=185.203.201.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pengutronix.de
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <mgr@pengutronix.de>)
+	id 1vNoLb-0001ew-KH; Tue, 25 Nov 2025 09:24:27 +0100
+Received: from pty.whiteo.stw.pengutronix.de ([2a0a:edc0:2:b01:1d::c5])
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <mgr@pengutronix.de>)
+	id 1vNoLb-002MCy-0J;
+	Tue, 25 Nov 2025 09:24:27 +0100
+Received: from mgr by pty.whiteo.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <mgr@pengutronix.de>)
+	id 1vNoLa-005ooi-3B;
+	Tue, 25 Nov 2025 09:24:26 +0100
+Date: Tue, 25 Nov 2025 09:24:26 +0100
+From: Michael Grzeschik <mgr@pengutronix.de>
+To: Daniel Thompson <danielt@kernel.org>
+Cc: Mark Brown <broonie@kernel.org>, linux-pwm@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>,
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	Uwe =?iso-8859-15?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
+	Pengutronix <kernel@pengutronix.de>
+Subject: Re: [PATCH] backlight: pwm_bl: apply the initial backlight state
+ with sane defaults
+Message-ID: <aSVnulk0yfAd4UCx@pengutronix.de>
+References: <20250731-blpwm-v1-1-0171fd31bff9@pengutronix.de>
+ <f492d4d3-751c-40a3-bb93-0e1bb192cde7@sirena.org.uk>
+ <aRxr_sR0ksklFsw-@aspen.lan>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB5685:EE_|MW6PR12MB8707:EE_
-X-MS-Office365-Filtering-Correlation-Id: 49523eec-1751-4eec-7a1d-08de2bfa2d65
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|7416014|376014|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?OEpFNDJEUlJXQjVmYjlxSlBGaVpOd2lDcTU3ejA2anUza3d1RjY5TytZSXds?=
- =?utf-8?B?OElHT3hDWE9zd05UbVRCQ05ENHlEa3VKcWpCUGhBb0VOVmFjKzdCQm9ZaElT?=
- =?utf-8?B?NVNXemlueng0aDNPRCt1ZFBJYWg1Q3NYRnhpYXRYc09ybllEVTFUdXByV3Fh?=
- =?utf-8?B?eUlvd1hCbHMzU2RDM2t2TUNJZVJocE9pSDA0L24xSGxkRVhVUHNwVzlyU0dh?=
- =?utf-8?B?ME9pZWFiUEJubXMvME9zb3lQRHVqV0o0Z1M5OGorem5nMkFETnVMTkx6WXlZ?=
- =?utf-8?B?M3d3M1lkN25GQjdnN0lIYnIyeHRyVXdZbHdKTGtKZlhWUjJteEdtekRsdWMx?=
- =?utf-8?B?MndRVEt3OU9Nei9uVHM5WU16eEd1a1dIRHB2RE00dTRud1RPZmFBOEFSYndI?=
- =?utf-8?B?UXBObHVLK2tZTnV0UTVqWHRjTHdSU0xNSDZ0eUR2NzZzQzZ2dVhFRlNpL01H?=
- =?utf-8?B?bEpQN040dWRnRUpFRE4rbWpGMis3TzYzRjVCZVQ1YktvUnpINHdBVDcrSTF0?=
- =?utf-8?B?RmxBbXFRSUZ6K0JyVS9BcEJsbzh5eGxnZURHc1ZFUnI3cUlPZWxsK3Buem5Z?=
- =?utf-8?B?VCtLRURBUUsxRWhQM01rYWZMTjI5Y1lOOTRKVndvWmY3UjdVbnJxZ21IZ0FS?=
- =?utf-8?B?TzZJdEZmTnBoalREWERwdVB1QjZNSjRRZXkxUDJZVmd5aDM2NEtTTnlaOFRV?=
- =?utf-8?B?TitEWjRDUlovSUpGaEtZMU9NQlZ6cUowZ3JPUUtHUDlQZlhlTzRtcjdITEhT?=
- =?utf-8?B?dmY4aW5Rejc3dEY2ZnJkVzByWWxrampKUFBNR1BPOWJsNjE2YlpBbHZmWFUy?=
- =?utf-8?B?WlU5RmViUU9EeXN5ZjdiS3UrNnpzWEpYMFhaZHRGaTVVV0llOVNWUTk2b1o2?=
- =?utf-8?B?VHpDSVV6L0RISFIzUENxVTBZWHR3eTNyNldIZlFWTUFqalV2NytMTU9EZUxS?=
- =?utf-8?B?NWZWNEc1N3pwOWlGRXBXVW5DU2RsUHFKVWZJdE5LN2lEc0xhRTlHR0lwREZx?=
- =?utf-8?B?SkZWd0VkNENxZEpJOWVCM1JUR2d3eG1ORHZveG9QM3oyZU8xM0lqYXZVelp6?=
- =?utf-8?B?WVNFK0RpTlJxYWlKZWFSbDU3QVB6KzJsd0RoYkhUbEMrUDZoNXJxRWlpTTFn?=
- =?utf-8?B?K3o2YXQvRlJYb2dsR2kwb3ZkY1N1TG1lV3Y3SjB1bStWbnk3WjVCdm1Fd0VM?=
- =?utf-8?B?c3kxSXlqRWw2aHVScG5KTWpUQkxsRzF0Y3FBaVFDcm1EeldMV25NWnlpYXls?=
- =?utf-8?B?MkNxczlDbklTdk5SWFZVRlo3L2hBcnFwR003TXIvaVZTWGRWYjh6T3IreTR4?=
- =?utf-8?B?UjQ2NjdqUlA3ZlJ1VTZyR3pWVXVzZWtRZGRQSWNudXFIZ0NUbEFVKzQxNEFl?=
- =?utf-8?B?bVd5WVZ3VGNGaW1JQk1OZ2dpdWExdHdMdG1ucERNbGNPM1dKbVVneVczSHVW?=
- =?utf-8?B?VHkrRG1TRVQwS3FUdUpsR0ZxcFB2Z3RaakdibHZjbFdlRnUzellSUVRhK2xl?=
- =?utf-8?B?ODMxMUQ4ei9sWEJYeHFRbWFFZWdLMHpFL3NUcGJzRWNxL3o1NGVVQWlvVXNw?=
- =?utf-8?B?ZW4xMkNISXNTSHlDRDhnUkJLdjBVM0ZRUW9DUXd4MmhBTmF3Y1dPa2NzaGlj?=
- =?utf-8?B?ZVVUVHFyWkk0LzdMSEZHWkJoTHRPREpscDF1cFpiMzROTE90UU5WUGMrTmRB?=
- =?utf-8?B?R0NIaXNaSGl1cTF5K2ZuRzVveFFBTmxqYnRPdFpUUTlFQkdZZ040SE5RZHlK?=
- =?utf-8?B?dWVoTEtYUGpHZmRJeVpoMjc1Q0pDMDNEcXlPNHpEMUpTQW5laGN0VndwWTNs?=
- =?utf-8?B?TG1OY0RnanI3THNiRXQwZW1kSXpaWWkrTFAwZ3d1Nnhhbmh6akNQNHNoWVA4?=
- =?utf-8?B?UDdPU3hmVjUxZ3NXV09CSExLWXQxMUZHdVBvdGNWOVYwR0N2STR5RmNsSXNY?=
- =?utf-8?Q?pTbuJWWlDq32R1WmMg8hkAwOB9kWIuYG?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?T3VjQ1BPYlV4cmdJZk50d0diRHhpUU1kSHptb2V4ckxnbGtlM1NsQVBNcW5V?=
- =?utf-8?B?WmJia21FN0JlTzF6SGc1NG5GTkpLeUdEZXdOWHdZTVlNVEZLRWFxU3pSTnhT?=
- =?utf-8?B?T29aZGVIeElyV3hXVHlHQ1FkejkvZVJCcUVQRWtwRnVOMkNac3VXOTVjL1cy?=
- =?utf-8?B?VXhiK2tWYzdlOEp2U1ZremJ1TmVEbDhEd2RydzEwM0thUGRVcnRPKzVXcVht?=
- =?utf-8?B?VlU0TEwzSnVvYzE1VlRPSnVBMXpmNEZ2T2xUVm9FWE1VMFJqWTRWamFaNzZ4?=
- =?utf-8?B?L05CalJJNnFVZXplYVQ0OHdlS044RGhGVzhOeVNQdkV6NUZXTDV0NG8xYzRz?=
- =?utf-8?B?ZC9EWE16SDl1dlh0dUhoMkpBeUE5dEtzdVNmblpVdEt6eWhUeE5WQjlreS9I?=
- =?utf-8?B?ZXNISldITVAxT3FjQ3phZDNLNnE1ZXVlclBaYVBkR3gvU05vVXlVQy8rSzRS?=
- =?utf-8?B?TmtoL2psZGJrWkdPMEc5RmphdVBGQmcvdHkwa0hlMGovY0R4WWpjK1ltSk1L?=
- =?utf-8?B?a0NBaW1RbnA4VTBZSUxnUjgxY1BpVE9UQ2t5WWR5alRKMzFhbXN4NjBEY3My?=
- =?utf-8?B?S2NqZG9qaERrMml0a2JGMlNyR0UxcDh5OHdvVFpDdk92eGdqMEU3cDdVcXJk?=
- =?utf-8?B?dzFMZlFvRmNZYWp3Y0FKR2VmUWpaNEh4ZENONC95M0s0cVhiS1EyNUhxcXUr?=
- =?utf-8?B?WmlUY05TL2xoMjZMRmZQTW9KV1RGOEp3end4OFoxRmNYL3dpYi8wVWZvU1Nr?=
- =?utf-8?B?OTc5eVErZGlWSGEwQlhCOUtiN2c1YWFISDQ0N1VSak50NmlXRGx1M3duT2w1?=
- =?utf-8?B?YXVNZnplNFpJUGlxanV3dG5XZWdvcHJrdHVSVjZkN1I1ZnVUOElGQ0J1Ty9R?=
- =?utf-8?B?SzYxV0NMSDMrR2EydkhzK3RNaTBwUXBYR3JWNG1aUUlFSmVldkdyN3dRMm5o?=
- =?utf-8?B?b2U3LzRZOVJZcmNBVXdoY1B3MGlra1JRVk1FQ1hQaUNPVWI2SThnTlBMcWh3?=
- =?utf-8?B?NGFsYkdpOHJOdSs1WU12MHlGb3k2cjVEQ253WWlXVjdudmlxQXF3UTUwSzVK?=
- =?utf-8?B?eWFFdDN4ZjZYeHdGNngza0tKRnZwWU40dmhjNkltMnV6VzlNQm9HUytDWlZ6?=
- =?utf-8?B?cFE5bEhmMkxrWVhpN05FZTBURTBtVE1xUWtxV2plNVdHWXYwdE4yOUdXdGxG?=
- =?utf-8?B?VDlKY0RnVnJQd2duTTE4YnZXUk5uZkpMK1VoVlVPbUlyR0VSSlBRSWU5TUpz?=
- =?utf-8?B?VmlJYVZzWGRIblhEcVBHSGs2S0N0Y25KL1ViQlZpQUlCTVBYaW5LTWtXTjNv?=
- =?utf-8?B?YXJHWTBWOENPeWw3MElUVnpudHJyblpwTWc5SmU3dmtaNUd2OHJzRkx6bHlO?=
- =?utf-8?B?UmJzd1Uzdm51WDZXaHhtdmhDeDFZTDl5bTNldUtPOGVQZUZzRmhxMVlobk1L?=
- =?utf-8?B?Rk1YTklieWhCUXZMZ3ZLdEM0Q2dQQVZNQVVHNVRxRkxZQ1ZGM043bDVxajg2?=
- =?utf-8?B?djh2RFN4NDRxZWNIVzk5S0Z1MVpWVnhYMnNHa1h6YlZPbFJRTnBkVk4xZzE5?=
- =?utf-8?B?WGZTTzB3aVJhWmdsNitjcGNQUFRCSC9LY0VFc1ZiQnRuTkFXYmhmckVlS1dB?=
- =?utf-8?B?RjJoTTdmNXVjdWJWa3oxd2hQWmxvU2szeUJRWlJmZlNSY21obnEvUEVLT0o5?=
- =?utf-8?B?VUQwWG5ZZkxHamRSL0IydXMxMEMrc2tsSGRWZUpzVFVraGRBNCtmRUt2L2cy?=
- =?utf-8?B?MFM3T1kwWlVncnRydXJqelJ6Mko3dVJkMFExUXQxWFRYYnhyU1VYYUJmbENN?=
- =?utf-8?B?QjZ3VzB3dkJIdlZVajFvSExvbVZELzBSMWgzQTBwZ3pCbllyNzJiRGZTa3VI?=
- =?utf-8?B?QkJaRGdrRlU5Z0tZOGU5SDhoZjM2S0gvc3paRWpQSmZCSkZtb2hQN05SaHc2?=
- =?utf-8?B?Q3lKMysxbysxc2JoMXNRV09UeE1HaE4xcDJpSXZRU2ZKVlpPeUNQMHh2ZE9w?=
- =?utf-8?B?VTNsVnNDT2NUVWxKWWVJekhVWUpaYmFhRWhvY2l3YlBQZ01HVWx3MEdxb0Fy?=
- =?utf-8?B?d0pxZHFrQ24wT0oxL2V2Nk1xOGhrUmc4WXd5WFVyck1xS2I4OUpSYVc4Z01R?=
- =?utf-8?Q?OcC8DyWKgfX3JgoGE+3izPDFY?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 49523eec-1751-4eec-7a1d-08de2bfa2d65
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5685.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Nov 2025 08:11:04.0683
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: WP8CuDfd9XYrfwJB8tB3QRBW06YSmRc0WDNBCjklHbqVlrMMYkdgAucJdG0iUxI1
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR12MB8707
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="5lR1y+xZyNcXp5Ry"
+Content-Disposition: inline
+In-Reply-To: <aRxr_sR0ksklFsw-@aspen.lan>
+X-Sent-From: Pengutronix Hildesheim
+X-URL: http://www.pengutronix.de/
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: mgr@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 
-On 11/25/25 08:59, John Hubbard wrote:
-> On 11/24/25 11:54 PM, Christian König wrote:
->> On 11/25/25 08:49, Dave Airlie wrote:
->>> On Tue, 25 Nov 2025 at 17:45, Christian König <christian.koenig@amd.com> wrote:
-> ...
->> My question is why exactly is nova separated into nova-core and nova-drm? That doesn't seem to be necessary in the first place.
+
+--5lR1y+xZyNcXp5Ry
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Nov 18, 2025 at 12:52:14PM +0000, Daniel Thompson wrote:
+>On Fri, Nov 14, 2025 at 02:09:56PM +0000, Mark Brown wrote:
+>> On Thu, Jul 31, 2025 at 10:47:18AM +0200, Michael Grzeschik wrote:
+>> > Currently when calling pwm_apply_might_sleep in the probe routine
+>> > the pwm will be configured with an not fully defined state.
+>> >
+>> > The duty_cycle is not yet set in that moment. There is a final
+>> > backlight_update_status call that will have a properly setup state.
+>> > However this change in the backlight can create a short flicker if the
+>> > backlight was already preinitialised.
 >>
-> The idea is that nova-core allows building up a separate software stack for
-> VFIO, without pulling in any DRM-specific code that a hypervisor (for example)
-> wouldn't need. That makes for a smaller, more security-auditable set of code
-> for that case.
+>> I'm seeing the libre.computer Renegade Elite producing warnings during
+>> boot in -next which bisect to this patch.  The warnings are:
+>>
+>> [   24.175095] input: adc-keys as /devices/platform/adc-keys/input/input1
+>> [   24.176612] ------------[ cut here ]------------
+>> [   24.177048] WARNING: CPU: 0 PID: 0 at kernel/context_tracking.c:127 c=
+t_kernel_exit.constprop.0+0x98/0xa0
+>>
+>> ...
+>>
+>> [   24.190106] Call trace:
+>> [   24.190325]  ct_kernel_exit.constprop.0+0x98/0xa0 (P)
+>> [   24.190775]  ct_idle_enter+0x10/0x20
+>> [   24.191096]  cpuidle_enter_state+0x1fc/0x320
+>> [   24.191476]  cpuidle_enter+0x38/0x50
+>> [   24.191802]  do_idle+0x1e4/0x260
+>> [   24.192094]  cpu_startup_entry+0x34/0x3c
+>> [   24.192444]  rest_init+0xdc/0xe0
+>> [   24.192734]  console_on_rootfs+0x0/0x6c
+>> [   24.193082]  __primary_switched+0x88/0x90
+>> [   24.193445] ---[ end trace 0000000000000000 ]---
+>>
+>> which seems a little surprising but there is some console stuff there
+>> that looks relevant.
+>>
+>> Full log:
+>>
+>>     https://lava.sirena.org.uk/scheduler/job/2086528#L897
+>
+>Michael, reading these logs it looks to me like the underlying oops
+>is this backtrace (which makes a lot more sense given the code you
+>altered):
+>
+>[   24.133631] Call trace:
+>[   24.133853]  pwm_backlight_probe+0x830/0x868 [pwm_bl] (P)
+>[   24.134341]  platform_probe+0x5c/0xa4
+>[   24.134679]  really_probe+0xbc/0x2c0
+>[   24.135001]  __driver_probe_device+0x78/0x120
+>[   24.135391]  driver_probe_device+0x3c/0x154
+>[   24.135765]  __driver_attach+0x90/0x1a0
+>[   24.136111]  bus_for_each_dev+0x7c/0xdc
+>[   24.136462]  driver_attach+0x24/0x38
+>[   24.136785]  bus_add_driver+0xe4/0x208
+>[   24.137124]  driver_register+0x68/0x130
+>[   24.137468]  __platform_driver_register+0x24/0x30
+>[   24.137888]  pwm_backlight_driver_init+0x20/0x1000 [pwm_bl]
+>[   24.138389]  do_one_initcall+0x60/0x1d4
+>[   24.138735]  do_init_module+0x54/0x23c
+>[   24.139073]  load_module+0x1760/0x1cf0
+>[   24.139407]  init_module_from_file+0x88/0xcc
+>[   24.139787]  __arm64_sys_finit_module+0x1bc/0x338
+>[   24.140207]  invoke_syscall+0x48/0x104
+>[   24.140549]  el0_svc_common.constprop.0+0x40/0xe0
+>[   24.140970]  do_el0_svc+0x1c/0x28
+>[   24.141268]  el0_svc+0x34/0xec
+>[   24.141548]  el0t_64_sync_handler+0xa0/0xf0
+>[   24.141920]  el0t_64_sync+0x198/0x19c
+>
+>Should we back out the patch for now?
 
-Well that is the same argument used by some AMD team to maintain a separate out of tree hypervisor for nearly a decade.
+I would be fine with that. But actually I would like to see the
+proof that without the patch, this backtrace will not trigger.
+Looking through the codepath, I could not directly find a case
+where this should happen.
 
-Additional to that the same argument has also been used to justify the KFD node as alternative API to DRM for compute.
+Mark, is there a way to rerun this without my patch?
 
-Both cases have proven to be extremely bad ideas.
+Michael
 
-Background is that except for all the legacy stuff the DRM API is actually very well thought through and it is actually quite hard to come up with something similarly well.
+--=20
+Pengutronix e.K.                           |                             |
+Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
+31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
-Regards,
-Christian. 
+--5lR1y+xZyNcXp5Ry
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> 
-> thanks,
+-----BEGIN PGP SIGNATURE-----
 
+iQIzBAABCgAdFiEElXvEUs6VPX6mDPT8C+njFXoeLGQFAmklZ7YACgkQC+njFXoe
+LGS72w/6AoHVwozXjyve4l+1qlupkgIh4y0b5i8qAkJeX6oKbvwx7jqGUCUY1W3e
+/L14o/GoYDwISuEsU4C8resSkGoLlp/QEotyIq+lbeBSAFl6O57NYg1EO+2pV9b6
+vzvaWopThDGJY9ZSSvl/UecGpu4UcaRP8wMmal93yUIQ0AH6kiDS0JH2ZCXAFFvU
+Al+Plxsne/zsm/3DhXFbCfHOMLITnaVedqwQd4gsOrc6u00JS2fEWQLVLHofGCLp
+f9m1xxpEzb5naXDI/gQGlzKqmZ7ko0UDTSXukh13PMuHRR/nBzPKhuQb15+jR1I7
+KBjkCVDV0NcV7oAFSvdUYLcVAVUNQLahsFXwCtxid3MUfluWcCmyM9fg1/Uzw8DH
+W7NtR2nzlsLE4sNoHVLVHW60GYvO63IGmgiTBCgfFOt5WVuk2XopiBKRnMKc6UHw
+yY+0xOH0GEChfTEnOnQbZlGG+xTRdthTpIWf5gQ5lF4wdcFiJF3zS9fq/GHaRrRq
+qK3napeB52Lzw/BfZ9NPG1qLysv5QlT6WSJuGdl2/C7/lXRcIsi1xpNgzXZyPUNT
+4VULTw9scsCtl9ZnD0+sijC3GYZjHKCgK7t/FZ7wBCL10g/wZPojLz9zh3v4VNeh
+LleDOHxGk2ioCks2UMm0zJBJoTXKQREw13zHZ4W6B7Pm4uptXRc=
+=R0Gw
+-----END PGP SIGNATURE-----
+
+--5lR1y+xZyNcXp5Ry--

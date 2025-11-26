@@ -1,200 +1,126 @@
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012066.outbound.protection.outlook.com [52.101.48.66])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B17B736D4FF;
-	Wed, 26 Nov 2025 07:44:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.48.66
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764143082; cv=fail; b=QAlKPQPH7uJXOW+FtOsE7eff5TtzVYK4WgRzBXmtdYODkPQtL7aN9VNvAa56c/BknTQUDrFhPeB/QnZssn1dWumftre7jqRkeTgfH4FCnffNs0hzzVk6gx/nNUsc8ZToV0d5yrY/Kks0lvZKo2k0RVcVaTzYlqGNvDPaUkUllCA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764143082; c=relaxed/simple;
-	bh=nXq6bhZ0Xid/rCnSLbRAL7kcagIT3OeYWWdNIk3An9Y=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=TEbANd+uJBl0WerHgJv+GhldslMfAGlGcSK1G8mntiWIlBEjSZKTPFUAeB9irebUmyvgZGYWbMi3OBjvi2AjCw5jjKlCjOrjpu+6YpEHZhfz9FfMerIMWqw1E79t/j/o7TWKpgtWyM/TA3T3TjJmeSJZuCstv9fjKW78kYuOaU0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=BMbV1+tG; arc=fail smtp.client-ip=52.101.48.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F309D14F125;
+	Wed, 26 Nov 2025 12:19:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1764159583; cv=none; b=gvurSPvC9kKeaePrU7yuVgTy9j4H+u5KkpcjIPS68RxPo4+iv/fpbMmU/cEKWnjM06m2cIm0nDTx8RwqUXKZxt1EN52WNFMor75TAcaYSNXoW7Dqv+aLtebN7DxNiuv55TPNeCc8EjhAjjJU5r33Z6MyqfSTL9Ivx4TGCYkb7+w=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1764159583; c=relaxed/simple;
+	bh=DpblEZ7Jqa5nTEFa+LhpQdaCZW7NNgLiSMt10scqV8w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=b0iIZ1mOGKzZq0MrO8jaOLDDZ7hjCXKOdeYxh1aMEbr42YMy9/MqEYX0RZtjxU5ok22oFGNJR8HBZbSWA2Uit4beQRkDw0aJyg32FIQ1wXqeOiFdZByXjkOm0tl1JUff0FCioBfd07dOVfYwsELDFTkqrZEc/djZyhnEs+xL6mo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EemWM17I; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="BMbV1+tG"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ypm7G48Cl4QsHoQN+SLlEYvpWgEc+VjPyUzk1t6rs53BUFiJRYgeqKN8jAsuG+zqkG2+m8jGIYHh/HlmnjLle8um1EKKwIqbaXsv7q+D1S7gUuOCmry8Fah17R4WdHWpf6X6kyZybuPsAvgj9//z5TD1DYBVQozrxebLKCJGx9ALeGVmdHQPfnetFH1+wGoYWQKj0LeO3YhGi8lRUorNr9vtUgeCjirZy4P7hahPA+7A93UeQA1EAhXFjGOlXvZcQ8DF3plgna2P0rM0DxIW3/Ehd4B4xCqRkMvzVkuh9ft4o4EiVYoofRkBLCvAyWLqZCzzxEg3r5/PvzukN1cVBw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nXq6bhZ0Xid/rCnSLbRAL7kcagIT3OeYWWdNIk3An9Y=;
- b=koKDMQgsMZ/Zx7YZmF/S0KIt5+e8qZLfPKgkzgTJDnredeIucPnVt74W4dGzfX28C4Oxr9x1lSyZ/k5N6xVsEkiQelE2S+HPka8DFhecIN2V1UWE1OwAYwDFc6DPztHSKtfc0AIaPC6pui0WSm+Mp/rfB3fybFCw8eTbsSuihYqEVEGZDjCAg+/pZtoTV90O3yj5CfziqnMUfkJRUpKIw0CX8BCSoWXhQrARDapITNIP9OWCN+HkvSMMfrZ7b2S00IEdXp7qNo7W7h9eDtIdAEZnNwLtdz+43di+tywBOuA0tYqDTs/OKbFiF/26pMWE1+lyyy2oDAoR4REcACtPVQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.118.232) smtp.rcpttodomain=gmail.com smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nXq6bhZ0Xid/rCnSLbRAL7kcagIT3OeYWWdNIk3An9Y=;
- b=BMbV1+tGWVgXis9uVWlTwu0JCiqpVx0D1LgzFFR1mdCrToi7iFc6+ekHbIND9SIMDtV3l3SJx/OBOesG/RHEWNM3w40l9Si5UTUB1wbF/6Nu2liiTHunPmdN84WWgfvZMaITEbhnIzKhyXM5WwQpuXLIfQxvkE7YPbePgqIvkffNDoYRO+dl/MEk9WiVT0hAnszc4/laXMEvIr96l2vEB0uNiF/vFAOHj18TEB92d4w/LFvi5OcYl9+0Ov5JDdXdbDNFSICZOIB6S1n1xskNRACDCoublSYnl52TIQYGU/SHTBaPEKhJLOG23D3lQ5VDzwxjaobniyIPzX5iPsPQmA==
-Received: from DS7PR06CA0003.namprd06.prod.outlook.com (2603:10b6:8:2a::27) by
- DS5PPF7B9F1F8E0.namprd12.prod.outlook.com (2603:10b6:f:fc00::656) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9343.17; Wed, 26 Nov
- 2025 07:44:35 +0000
-Received: from CY4PEPF0000E9CF.namprd03.prod.outlook.com
- (2603:10b6:8:2a:cafe::ea) by DS7PR06CA0003.outlook.office365.com
- (2603:10b6:8:2a::27) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9366.12 via Frontend Transport; Wed,
- 26 Nov 2025 07:44:33 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.118.232)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.118.232 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.118.232; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.118.232) by
- CY4PEPF0000E9CF.mail.protection.outlook.com (10.167.241.134) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9366.7 via Frontend Transport; Wed, 26 Nov 2025 07:44:35 +0000
-Received: from drhqmail201.nvidia.com (10.126.190.180) by mail.nvidia.com
- (10.127.129.5) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 25 Nov
- 2025 23:44:23 -0800
-Received: from drhqmail203.nvidia.com (10.126.190.182) by
- drhqmail201.nvidia.com (10.126.190.180) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.20; Tue, 25 Nov 2025 23:44:23 -0800
-Received: from inno-thin-client (10.127.8.10) by mail.nvidia.com
- (10.126.190.182) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Tue, 25 Nov 2025 23:44:13 -0800
-Date: Wed, 26 Nov 2025 09:44:12 +0200
-From: Zhi Wang <zhiw@nvidia.com>
-To: Dave Airlie <airlied@gmail.com>
-CC: Christian =?UTF-8?B?S8O2bmln?= <christian.koenig@amd.com>, John Hubbard
-	<jhubbard@nvidia.com>, Joel Fernandes <joelagnelf@nvidia.com>,
-	<linux-kernel@vger.kernel.org>, Maarten Lankhorst
-	<maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>, Simona Vetter <simona@ffwll.ch>,
-	Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>,
-	Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen
-	<joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>,
-	"Matthew Auld" <matthew.auld@intel.com>, Matthew Brost
-	<matthew.brost@intel.com>, "Lucas De Marchi" <lucas.demarchi@intel.com>,
-	Thomas =?UTF-8?B?SGVsbHN0csO2bQ==?= <thomas.hellstrom@linux.intel.com>, Helge
- Deller <deller@gmx.de>, "Danilo Krummrich" <dakr@kernel.org>, Alice Ryhl
-	<aliceryhl@google.com>, "Miguel Ojeda" <ojeda@kernel.org>, Alex Gaynor
-	<alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, Gary Guo
-	<gary@garyguo.net>, "=?UTF-8?B?QmrDtnJu?= Roy Baron"
-	<bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, "Andreas
- Hindborg" <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>,
-	"Alistair Popple" <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>, Edwin
- Peer <epeer@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>,
-	<nouveau@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
-	<rust-for-linux@vger.kernel.org>, <linux-doc@vger.kernel.org>,
-	<amd-gfx@lists.freedesktop.org>, <intel-gfx@lists.freedesktop.org>,
-	<intel-xe@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH] gpu: Move DRM buddy allocator one level up
-Message-ID: <20251126094412.23373c13.zhiw@nvidia.com>
-In-Reply-To: <CAPM=9tx5neQ=TbmK+2eAO=O-XW_67VhOGO-791kqyVDJEpTA+w@mail.gmail.com>
-References: <20251124234432.1988476-1-joelagnelf@nvidia.com>
-	<f73e4536-ec89-4625-96d4-6fa42018e4e4@amd.com>
-	<CAPM=9twe3xcVBgrNCT+1_pGECPL-ry_aA2dxBwbKVeai4+S7AQ@mail.gmail.com>
-	<24d4f02b-8ecd-4512-a1f0-ba41684ede1d@amd.com>
-	<dfc50417-66ce-44ce-b607-917d678c5631@nvidia.com>
-	<9f433dee-7ad9-4d0f-8ac1-e67deb409b70@amd.com>
-	<CAPM=9tyN_A3oEyQZCOWaLO1orO6oKX0ZukJHR7cFy12Go+7d=A@mail.gmail.com>
-	<cc0db376-6cff-45d7-b3a3-d13be664700f@amd.com>
-	<CAPM=9tx5neQ=TbmK+2eAO=O-XW_67VhOGO-791kqyVDJEpTA+w@mail.gmail.com>
-Organization: NVIDIA
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.33; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EemWM17I"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09F0BC113D0;
+	Wed, 26 Nov 2025 12:19:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764159582;
+	bh=DpblEZ7Jqa5nTEFa+LhpQdaCZW7NNgLiSMt10scqV8w=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=EemWM17IQYzadctzqnkw7jLA2naPmWJMyA7Z/AaTdAsGeRG7p1bEBsSor39UsnAOE
+	 6HVJ86FsOCdWMlAjfF7vekuwNX04BUsi/SJ2nGUAuYrJqSRRmd3Fh8fchchdEntrXD
+	 dPUK/gvCUeLRAqgKvaeCpmFzHQ/xS5zpEuPebW/lAp65+GZ+n0yH5dhuaC7V5Vdq76
+	 dyfl8wLXUSk5GSmghC9D9GVWc/2EoAqlmV3DALm+eLFJrHAUAu7wbgQX2SBZYAJpUy
+	 RijLrk4UTzsGoIibjCGi03CuOb5iDZRBQlz3BdWO5+it5TX9aqwnqphJjXjnsRm3IR
+	 IHM6YFw9BgkRw==
+Date: Wed, 26 Nov 2025 12:19:36 +0000
+From: Daniel Thompson <danielt@kernel.org>
+To: Doug Anderson <dianders@chromium.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, simona@ffwll.ch,
+	airlied@gmail.com, alexander.deucher@amd.com,
+	christian.koenig@amd.com, lyude@redhat.com, dakr@kernel.org,
+	deller@gmx.de, mripard@kernel.org,
+	maarten.lankhorst@linux.intel.com, jason.wessel@windriver.com,
+	dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
+	nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Nir Lichtman <nir@lichtman.org>
+Subject: Re: [PATCH 0/5] drm: Remove remaining support for kdb
+Message-ID: <aSbwWLTLe0bMhOKV@aspen.lan>
+References: <20251125130634.1080966-1-tzimmermann@suse.de>
+ <CAD=FV=X_-t2AF5osp7Hamoe7WYE_2YWJZCaPaOj=9seSbnwwVA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY4PEPF0000E9CF:EE_|DS5PPF7B9F1F8E0:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2c6c02fc-8e2f-41b2-4121-08de2cbfa528
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|36860700013|82310400026|7053199007;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?OXh5STFveDNFUHR5YktkaktwRU1RRndTV2ZSQmZCbW1mTk13V2xDMW5rV241?=
- =?utf-8?B?dzdnbEV6MXc3ekROQ2Uva2wwbEJnZ2xnemtPeFdHamdHOFQ0S3RzU2VvUncv?=
- =?utf-8?B?RmtZb0dybE11VWR0TFQxQkhIcmxWZytUT2FiZHV5Y3BieVVwME9reTM2YVI1?=
- =?utf-8?B?bTFLS3Ezd1FBYXNKOTU0enNieVkxS0p1VHZid29mZm9WaUs5MXlnRDNodDhF?=
- =?utf-8?B?RDR6Z0ljZmY5eUNuc2dvQUg5M0c1N2w3blJ0cXFjb1BhcGFDM0V0V1h0TjRE?=
- =?utf-8?B?SkNjT3VKbWhkeW9tL3hicm1jQysyUU1xQkFRRzhKckFtMUw4Q0hmU21hbkNw?=
- =?utf-8?B?cEV5aHBPWTJmS0RJdEpicnVBM054T3dnNFlpM2JEYytKM1F0aE1qczNpQUxC?=
- =?utf-8?B?eVlOdkkyM0J3Y2lmdVdtSUJRd1FjQmFFdzJtSDhqK0NYeklCYzhMR0pNQVJL?=
- =?utf-8?B?cUZ5VWVoVXBDZHNVSVRoVU5HTHhmVFhpQlF0dVJ6bU5yQkVVeDcxdVNxbEpy?=
- =?utf-8?B?ckJoaFdQMmJZV0hkWnBjbGE1VWduUk9KUXc0ZFY3LzVrcEtsa0hMOEVrZCtC?=
- =?utf-8?B?UDR3TXlTTjQyNW5ZNnV6VXNnT0VnWHpUemYrNWNwVGZVNHcwUzlGbkhGak11?=
- =?utf-8?B?bnM0TXpZdlA0cm1UMVB4Qjd1NWhQQW01MmlpRkNFdG9tUFNUQ0I5S0FjRkFE?=
- =?utf-8?B?SGtVQWViZlVBQlhQVUM3WisyM3Y2WVNzNHlqS05nbks4RU9Ya1RNMnFOU1RD?=
- =?utf-8?B?NGpnMFpoN1gybWVSUG0yMXZBVlcxdE9DSWZrZGJDWU5pck5sUlZnRDlZeWl5?=
- =?utf-8?B?QzFyY2hiUUhSc3BsdFYvdSsweW04eW1leWt5L2Nod0Y4c2luR293YlFLdWpx?=
- =?utf-8?B?MGF2dHNUU3dWQkxKM1BaT1UzZ1dvOXpBRUVPc3p5ZWlWZ3ZOK0dOalR2S1ZO?=
- =?utf-8?B?V21WMmJVanNiTkFaNW9EVmNUYks0QnBISTZkSjN5V1VVamVkOHA3WUR0Q3NZ?=
- =?utf-8?B?ODVrNUJyTzE3d0V1R1MzYVE1eFpZUWhJNFl6S0M1Ri9ubWZsZDVuZDNUaGFv?=
- =?utf-8?B?TmZCN2lUQjNVa0tBNjN6Zk8wNGJIWDA4K25yMjRZV2VuMDRWdC9QRk5SZ2U2?=
- =?utf-8?B?dENtRWNhSFNOUGQ0RzhHSE1wOG5udUVTbHA3YmZBNzBFMitOZEsvbW9JNnFw?=
- =?utf-8?B?VzNjM1VTSDBBajJsZW9lWUlyN1lMaDBzRTFaVlhYelQwdGRPY1p3VjZvS0U4?=
- =?utf-8?B?N2lUTk90bW51Wm9YeUFJaEtrak1ycmZWQ01XNU9LVGo2amFWZll0bDJMODhp?=
- =?utf-8?B?bEorYmNxcFczRjhVd1REd204eXA0eWd4VFZzcHc5bm4xMVpOUUUzQlZPYTVk?=
- =?utf-8?B?MmNKR0xKSDNScXVHWXVFdTZsbzhHRFZOVDE3QjFBdFpHeVpRODNJZUFXM0g2?=
- =?utf-8?B?R0FReU9MQndUNGF0TllUWFFtMmdiazJwWCtTNHcvNWN5cm5SZDlGWkRwRHE0?=
- =?utf-8?B?eGZmU3VISWJBc1YyNmtGd2dJYW5TUXdld3JsR1JkSEk4d3BkUWU1Y0lFRHlE?=
- =?utf-8?B?QWpxU0dzeUtpWmlGcmd3WW9lbGtaTE1aL3lPU0Ivdmp6WGJ1MllIYlhxWmlm?=
- =?utf-8?B?MExNQS9SdHNyQ0FYVXVFblZ1YWpzOXZaM3hVRDMrbWJxRDB6eUt3cS9kTmI4?=
- =?utf-8?B?cjd6MldheFIxMW92VllRbGxZVUtQS2x1ZDAyN0FMcm1tNk9TUWdwTk4rT1dy?=
- =?utf-8?B?cXBnbEpsSk1HY1psN3I0VEtmbzl2NGRlUmdUSHdPZEJYUHRYUFZrNzFpeFFH?=
- =?utf-8?B?eWswVE04V2dZTTUvOHFKNjdhcXN6dmFweWRROUtYVEZNNFI1ZHpQNThxL3cr?=
- =?utf-8?B?TkNJNVhKbXVYY1BIYlV2cThTenBmTjU4SURnYjZKbHdQTFViakRPNlJ5NW9B?=
- =?utf-8?B?MmZUUlpYT2U1MHl1cXVxaktxbDFLMlN4OUZIanRHU0pkS0s5ejVmNFNqZTUv?=
- =?utf-8?B?OE4veEc5NzlYcUZ3QWxOQWJiVnBUSGYvU0tqV1VrUVNEd2pCQXRQa1ZMTmNX?=
- =?utf-8?B?b1Vvb0FWRzVQTS85anMxNVNWY1FJdlUzWmcvenBzTlZadEJ6Tk9pTTJyZnBq?=
- =?utf-8?Q?19Jk=3D?=
-X-Forefront-Antispam-Report:
-	CIP:216.228.118.232;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc7edge1.nvidia.com;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(36860700013)(82310400026)(7053199007);DIR:OUT;SFP:1101;
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Nov 2025 07:44:35.3778
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2c6c02fc-8e2f-41b2-4121-08de2cbfa528
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.118.232];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	CY4PEPF0000E9CF.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS5PPF7B9F1F8E0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAD=FV=X_-t2AF5osp7Hamoe7WYE_2YWJZCaPaOj=9seSbnwwVA@mail.gmail.com>
 
-On Wed, 26 Nov 2025 06:17:25 +1000
-Dave Airlie <airlied@gmail.com> wrote:
-
-> On Tue, 25 Nov 2025 at 19:15, Christian K=C3=B6nig <christian.koenig@amd.=
-com>
-> wrote:
+On Tue, Nov 25, 2025 at 07:26:33AM -0800, Doug Anderson wrote:
+> On Tue, Nov 25, 2025 at 5:06 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> > <snip>
+> > Therefore remove the remaining support for kdb from the DRM drivers
+> > and from DRM fbdev emulation. Also remove the hooks from fbdev, as
+> > there are no fbdev drivers with kdb support.
 > >
-> > On 11/25/25 10:08, Dave Airlie wrote:
+> > If we ever want to address kdb support within DRM drivers, a place to
+> > start would be the scanout buffers used by DRM's panic screen. These
+> > use the current display mode. They can be written and flushed without
+> > mode setting involved.
+> >
+> > Note: kdb over serial lines is not affected by this series and continues
+> > to work as before.
+> >
+> > Thomas Zimmermann (5):
+> >   drm/amdgpu: Do not implement mode_set_base_atomic callback
+> >   drm/nouveau: Do not implement mode_set_base_atomic callback
+> >   drm/radeon: Do not implement mode_set_base_atomic callback
+> >   drm/fbdev-helper: Remove drm_fb_helper_debug_enter/_leave()
+> >   fbcon: Remove fb_debug_enter/_leave from struct fb_ops
+>
+> Personally, I've never worked with kdb over anything other than
+> serial, so this won't bother any of my normal workflows. That being
+> said, at least as of a year ago someone on the lists was talking about
+> using kdb with a keyboard and (presumably) a display. You can see a
+> thread here:
+>
+> http://lore.kernel.org/r/20241031192350.GA26688@lichtman.org
+>
+> Daniel may also have comments here?
 
-snip
+TL;DR - I'm pretty relaxed about these changes... but I'd like
+        to know how to test the changes.
 
-> So far I haven't heard anything about needing dma-buf interactions at
-> that level, and maybe Zhi has more insight into the future there.
->=20
+Like Doug I only really use kdb via serial but, since I'm maintain
+the thing I do occasionally test kdb works on the qemu console. I don't
+do it very often though because it's a manual test!
 
-For VFIO parts, the vendor VFIO driver relies on the core driver's support
-to export the VM's framebuffer to the userspace either as type a)
-VFIO_GFX_PLANE_TYPE_REGION, framebuffer as a region or b)
-VFIO_GFX_PLANE_TYPE_DMABUF, framebuffer as a dmabuf, which is usually
-backed by a GEM object.
+I'd assume that will still work since it won't involve any of the
+drivers above. I'm afraid I can't double check that since patch 4
+doesn't apply cleanly in v6.18-rc7 (nor to linux-next... and neither
+does the base-commit appear in linux-next).
 
-NVIDIA vGPU uses VFIO_GFX_PLANE_TYPE_REGION, so dma-buf interactions
-are not required.
+Anyhow, the only testing I do for kgdboc=kms,kdb is to boot an x86-64
+defconfig+kgdb+kdb kernel in qemu with something like the following
+command line, which FWIW does still work:
 
-> Dave.
+    qemu-system-x86_64 -enable-kvm -m 1G -smp 2 \
+      -kernel arch/x86/boot/bzImage \
+      -monitor none -chardev stdio,id=mon,mux=on,signal=off \
+      -serial chardev:mon \
+      -initrd rootfs.cpio.gz \
+      -append " console=tty0 console=ttyS0,115200 kgdboc=kms,kbd,ttyS0 kgdbwait"
 
+The reason I'm fairly relaxed about changes here is that the kbd driver
+only works on PCs with legacy keyboard interfaces. If the kernel is
+talking to the keyboard using USB or I2C (which almost all PCs do) then
+kdb cannot be used anyway.
+
+So... it would be a "cool project"[1] to get kdb running on
+a special interrupt-free I2C mode and with the DRM panic code so you
+can do live analysis if your laptop/chomebook crashes. However it is
+simply not "real enough" to justify slowing down other developers.
+
+
+Daniel.
+
+
+[1] ... but not quite cool enough that I see myself spending time on it
+    though!

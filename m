@@ -1,252 +1,150 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D734E313558
-	for <linux-fbdev@vger.kernel.org>; Wed, 26 Nov 2025 13:32:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44C292FF66D
+	for <linux-fbdev@vger.kernel.org>; Wed, 26 Nov 2025 14:20:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764163958; cv=none; b=MYfLxwI/1JSEOnzDRsj3MY8OdEzoIVv++ev/IckcPXlnrADaS6t4i8GkQ8cSkwTPvFNb4yZfmFI6N43MI73nAD5V1mBg/TVlBedrKkyXrTXaevqbhU2dW+2UnEt3O8HvS4F55SUhYlnIBnEA37roSQv3/F2qhi9hfORHd5vVjQw=
+	t=1764166830; cv=none; b=CaY3VMAM407ggAPcIMvJfq5jkCQdhWproVmO+AW2qQEyYk0tuBflpoq/23mXnHq0De5SoNZZ/wjyj87sDdIhrxlAp08tUnF38I0pLN72nv4Es7cmX0uiAsd/z4NIlfZ62AasmDaPSjaO2ncl0SRVZJtyz+00uFrE1vuGsvDyt2Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764163958; c=relaxed/simple;
-	bh=db2r9BHpx/xH6t1bpvflPwbNv+lgmY8vMeHq2HIcCts=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=S7CYB5wz1DJ4kGC0+fJ9na69Jt0EAmh423R3nAIRVjKrqmQawperHGTK9SNpKsDPmwxG2dCpgkEKSAoYjDpgqJkAVWEsyUsoEklLEUedZrdKPfxbUczxaNZg04xiG2m2R/cLIZuWwtKo17rYCEh1EdU7SQwTsE7yZWb5fgtIOpU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yu9UUo97; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=yhK5dapJ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fRzFy2U2; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=4/+ETEnE; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1764166830; c=relaxed/simple;
+	bh=kR8KCrtjkrqH0dCBDtoBNt6Co87mHfxvKHk9SsvTfbA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RPWmof5X2GHlqR5yEI/6FPHyU1gXmfcy56/QNomt69pOu2hURXDvUJ/ZNts0U+YYLgjh+m8MRmdYLKsoqa2FVJ7r5c9Sg1TSU6ADbwk7OSXr0yqOHL5P0YBoZG9OZaeJyX8WJnwYi9BGQIEFLA3HL3lppoa/ilJzhkbk/qdQiTU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=cfWqkOAz; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yu9UUo97";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="yhK5dapJ";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fRzFy2U2";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="4/+ETEnE"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id ED5A233689;
-	Wed, 26 Nov 2025 13:32:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1764163955; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=hIZg0NrBErhJe7J0VcGIQwXQFyhWuMVsY6KJ1KKoZJo=;
-	b=yu9UUo9701WVs7WPgMR1/R7ip+y1tzC5EIAMWiNRoKNN8CVjg6yOvQg+0jsBx26lKHWwgF
-	pFAiykqu54AqiBlZcHC/LGAhyF9y5G5tXQbv00lvZljEtf7Vgjv9SA9P53fh8y6CjNLuue
-	axEWmNV+2p+Yo62adhdFm0K3M1LXTVM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1764163955;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=hIZg0NrBErhJe7J0VcGIQwXQFyhWuMVsY6KJ1KKoZJo=;
-	b=yhK5dapJY20S8BiN1WG0Db7vKHTy5iK465l6GWvq/8W2s4xXfzfUo4iT7l0zkAyUTMnO9B
-	JVKUUtSviQnZySBQ==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=fRzFy2U2;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="4/+ETEnE"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1764163954; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=hIZg0NrBErhJe7J0VcGIQwXQFyhWuMVsY6KJ1KKoZJo=;
-	b=fRzFy2U2RL4r3Ye9td70s1YnUwVGh9x+Dwrwl/HhJHr8lQswRgePYhxbFEFVh/c+avHf1d
-	sECx7cbU1NVVNFYmXUtOZCkPfJL8Ei0Vd5V1Hrm+JBrzuVL2bckOL2yG9SWn9wJOTyu8M9
-	OW/EBXPu/IBjVJahKZLd61x+MyAO4P8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1764163954;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=hIZg0NrBErhJe7J0VcGIQwXQFyhWuMVsY6KJ1KKoZJo=;
-	b=4/+ETEnEFvDi03gyIpr9+BPhTRn6YhY4FV7tF5EoKo1NfmkTHZV4kyteispDmmTSb83Lyx
-	+5NndoTVIifx+uAg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6F4B53EA63;
-	Wed, 26 Nov 2025 13:32:33 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id +a+/GXEBJ2lZBwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 26 Nov 2025 13:32:33 +0000
-Message-ID: <054f60ca-b898-488f-81f4-14eed0a1360b@suse.de>
-Date: Wed, 26 Nov 2025 14:32:32 +0100
+	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="cfWqkOAz"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-42b38693c4dso2976246f8f.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Nov 2025 06:20:27 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1764166825; x=1764771625; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=K+mX3K4EZWXpumEvNCBx9+WunDYcwtTk4SgV9tqSlww=;
+        b=cfWqkOAzIgRIvSUFk2ZXxvBtX6kFCDRmxCScKsEwEs/GRFYn151TfESN84/7yH6zHG
+         mHs5ziMnku2mhDGIfMdWabn5I48clydmj/EIL0aoNFr6lqKLq2/oaAJDd8IEYjZBp5c/
+         TDeX8TYXidbaGOt5dkDlSNm41tAQFMLZ5D31FfmrqzkMWDZlaZKF68ejEf4nAnaNBn1s
+         0qL35hVyrbn4/hsiczDrcyBS/lpqzfg/HijqhKS004TA7ACMW2NP4M202zF4tnffR4qe
+         otxi1B7cVo/9JOEDv4tYhVk4+0AK/s/eZ0YLPi+eH9UK6flufCAiryQvgFMjL0C7Jbh9
+         DP0A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1764166825; x=1764771625;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=K+mX3K4EZWXpumEvNCBx9+WunDYcwtTk4SgV9tqSlww=;
+        b=DsaUVZXMVFlH1yvnC/XeXfRph1AcJKcBHyFw79wg/i0wZi686M1UJkP/oD6oBRRz+6
+         AXnB/Ilh7pjx9yqE5ec9pPGrZP/4MlLQ2ku912hWdHFzoVtVj38+wGvv2Mvu1OTKinTq
+         VQqGAK20k1f/s1XzYXhK90LEI6GBf1uJiIBxmZxQr7frpXJhMUWYYbhlnGEthMWs1z2K
+         +/tYL/riUixTouwYwdNzHYyu7TyLTtOp5mmw6cdwT17g86y/grkqbhan1Z2woaLG4d7C
+         ofCqAxGX5E03NM8BGQ3nj+FYeeNRCvWAy3lnu9wXc+b1z5eEMt0BHPcAF2uQGzi1RDWO
+         f9hA==
+X-Forwarded-Encrypted: i=1; AJvYcCVrJ7QEeeZOESMU468qqsm/G9CyAU7+6LzEOd8jtBSJVs5vl2jUiH23gS0SU7MYuHZKhnjl5nc8puPr2Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzIb07T7uJkKP1jvfU1obnrcqqvARd7HW/wJPhf/VbQMpR7+Fbs
+	SR8Ygup0/7Org+m+VNYM8hWoU/P0Y2n18RpQc9weG78fi+zvG3ukldyoUWdyQI8ZEwM=
+X-Gm-Gg: ASbGncvk72KGK4R0ydZbUbawOyBcVLiYdjDiCseFMIazIPkqg6cGwsmO0KcnXG72QH/
+	W2uXFaYlt6GX509ebKIrnEDrcusTqLAwHY+wMiG5KtvQT9fv2ltSSrIicp3L3hQ5c/l1Imic582
+	Qruw9bPUcyw3s6ukT4JqyFhf5bo2AJ4FlrrFGLQrdm2/6vk1hwFD+msTK0o/QvVpPLAGtCvD0aM
+	EXXPVyaeDFJqHRjwh0D9D1+MGGzBIsGnflBYMNavBHVDENZ+YWB3bSdwp0X2rvRVzl3iFtZ1RNP
+	jvvrWRD8+bBAiDF7qOY8HyDvZ+UeuTf/3ZRRDtou8n0lCRgVCXM7Nk25DGnm7GT3/pCgtPjqScy
+	3hIDb09Q3wIp5TGZK1+xbpoITetbh94kbcQP5oBS1B0CMogbXgmDpjnQVY4Z+g9Bw9h0H0yv8r+
+	r5QVX+dgLlhdoiU1kyB47PZdFwRuyzGZ0setxY9AnzwzcoeZUrn0Tnf6vUut1sViYkTEfqJQ==
+X-Google-Smtp-Source: AGHT+IHetDpaeSCLD158eeBfnLMa77d0GWcu9KkUU/dpWWOreiarVBFn16/gIezMUQj2z9CZm6a8yQ==
+X-Received: by 2002:a05:6000:40c9:b0:42b:3806:2bb7 with SMTP id ffacd0b85a97d-42e0f1e35c2mr7360017f8f.6.1764166825367;
+        Wed, 26 Nov 2025 06:20:25 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-42cb7fba20esm40814603f8f.37.2025.11.26.06.20.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 26 Nov 2025 06:20:24 -0800 (PST)
+Date: Wed, 26 Nov 2025 14:20:22 +0000
+From: Daniel Thompson <daniel@riscstar.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Daniel Thompson <danielt@kernel.org>,
+	Doug Anderson <dianders@chromium.org>, simona@ffwll.ch,
+	airlied@gmail.com, alexander.deucher@amd.com,
+	christian.koenig@amd.com, lyude@redhat.com, dakr@kernel.org,
+	deller@gmx.de, mripard@kernel.org,
+	maarten.lankhorst@linux.intel.com, jason.wessel@windriver.com,
+	dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
+	nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Nir Lichtman <nir@lichtman.org>
+Subject: Re: [PATCH 0/5] drm: Remove remaining support for kdb
+Message-ID: <aScMprMh6Eh4JU5D@aspen.lan>
+References: <20251125130634.1080966-1-tzimmermann@suse.de>
+ <CAD=FV=X_-t2AF5osp7Hamoe7WYE_2YWJZCaPaOj=9seSbnwwVA@mail.gmail.com>
+ <aSbwWLTLe0bMhOKV@aspen.lan>
+ <054f60ca-b898-488f-81f4-14eed0a1360b@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/5] drm: Remove remaining support for kdb
-To: Daniel Thompson <danielt@kernel.org>,
- Doug Anderson <dianders@chromium.org>
-Cc: simona@ffwll.ch, airlied@gmail.com, alexander.deucher@amd.com,
- christian.koenig@amd.com, lyude@redhat.com, dakr@kernel.org, deller@gmx.de,
- mripard@kernel.org, maarten.lankhorst@linux.intel.com,
- jason.wessel@windriver.com, dri-devel@lists.freedesktop.org,
- amd-gfx@lists.freedesktop.org, nouveau@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Nir Lichtman <nir@lichtman.org>
-References: <20251125130634.1080966-1-tzimmermann@suse.de>
- <CAD=FV=X_-t2AF5osp7Hamoe7WYE_2YWJZCaPaOj=9seSbnwwVA@mail.gmail.com>
- <aSbwWLTLe0bMhOKV@aspen.lan>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <aSbwWLTLe0bMhOKV@aspen.lan>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-3.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCVD_TLS_ALL(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[19];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[ffwll.ch,gmail.com,amd.com,redhat.com,kernel.org,gmx.de,linux.intel.com,windriver.com,lists.freedesktop.org,vger.kernel.org,lichtman.org];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,suse.de:dkim,suse.com:url];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
-	DKIM_TRACE(0.00)[suse.de:+]
-X-Rspamd-Action: no action
-X-Spam-Flag: NO
-X-Spam-Score: -3.51
-X-Spam-Level: 
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: ED5A233689
+In-Reply-To: <054f60ca-b898-488f-81f4-14eed0a1360b@suse.de>
 
-Hi
+On Wed, Nov 26, 2025 at 02:32:32PM +0100, Thomas Zimmermann wrote:
+> Hi
+>
+> Am 26.11.25 um 13:19 schrieb Daniel Thompson:
+> > On Tue, Nov 25, 2025 at 07:26:33AM -0800, Doug Anderson wrote:
+> > > On Tue, Nov 25, 2025 at 5:06 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> > > > <snip>
+> > > > Therefore remove the remaining support for kdb from the DRM drivers
+> > > > and from DRM fbdev emulation. Also remove the hooks from fbdev, as
+> > > > there are no fbdev drivers with kdb support.
+> > > >
+> > > > If we ever want to address kdb support within DRM drivers, a place to
+> > > > start would be the scanout buffers used by DRM's panic screen. These
+> > > > use the current display mode. They can be written and flushed without
+> > > > mode setting involved.
+> > > >
+> > > > Note: kdb over serial lines is not affected by this series and continues
+> > > > to work as before.
+> > > >
+> > > > Thomas Zimmermann (5):
+> > > >    drm/amdgpu: Do not implement mode_set_base_atomic callback
+> > > >    drm/nouveau: Do not implement mode_set_base_atomic callback
+> > > >    drm/radeon: Do not implement mode_set_base_atomic callback
+> > > >    drm/fbdev-helper: Remove drm_fb_helper_debug_enter/_leave()
+> > > >    fbcon: Remove fb_debug_enter/_leave from struct fb_ops
+> > > Personally, I've never worked with kdb over anything other than
+> > > serial, so this won't bother any of my normal workflows. That being
+> > > said, at least as of a year ago someone on the lists was talking about
+> > > using kdb with a keyboard and (presumably) a display. You can see a
+> > > thread here:
+> > >
+> > > http://lore.kernel.org/r/20241031192350.GA26688@lichtman.org
+> > >
+> > > Daniel may also have comments here?
+> > TL;DR - I'm pretty relaxed about these changes... but I'd like
+> >          to know how to test the changes.
+> >
+> > Like Doug I only really use kdb via serial but, since I'm maintain
+> > the thing I do occasionally test kdb works on the qemu console. I don't
+> > do it very often though because it's a manual test!
+> >
+> > I'd assume that will still work since it won't involve any of the
+> > drivers above. I'm afraid I can't double check that since patch 4
+> > doesn't apply cleanly in v6.18-rc7 (nor to linux-next... and neither
+> > does the base-commit appear in linux-next).
+>
+> To test its effects, ignore this series and simply clear the two calbacks at
+> [1]. This is where the debugger invokes fbcon. The series removes their
+> implementation in the final patch.
+>
+> [1] https://elixir.bootlin.com/linux/v6.17.9/source/drivers/video/fbdev/core/fbcon.c#L3202
 
-Am 26.11.25 um 13:19 schrieb Daniel Thompson:
-> On Tue, Nov 25, 2025 at 07:26:33AM -0800, Doug Anderson wrote:
->> On Tue, Nov 25, 2025 at 5:06 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
->>> <snip>
->>> Therefore remove the remaining support for kdb from the DRM drivers
->>> and from DRM fbdev emulation. Also remove the hooks from fbdev, as
->>> there are no fbdev drivers with kdb support.
->>>
->>> If we ever want to address kdb support within DRM drivers, a place to
->>> start would be the scanout buffers used by DRM's panic screen. These
->>> use the current display mode. They can be written and flushed without
->>> mode setting involved.
->>>
->>> Note: kdb over serial lines is not affected by this series and continues
->>> to work as before.
->>>
->>> Thomas Zimmermann (5):
->>>    drm/amdgpu: Do not implement mode_set_base_atomic callback
->>>    drm/nouveau: Do not implement mode_set_base_atomic callback
->>>    drm/radeon: Do not implement mode_set_base_atomic callback
->>>    drm/fbdev-helper: Remove drm_fb_helper_debug_enter/_leave()
->>>    fbcon: Remove fb_debug_enter/_leave from struct fb_ops
->> Personally, I've never worked with kdb over anything other than
->> serial, so this won't bother any of my normal workflows. That being
->> said, at least as of a year ago someone on the lists was talking about
->> using kdb with a keyboard and (presumably) a display. You can see a
->> thread here:
->>
->> http://lore.kernel.org/r/20241031192350.GA26688@lichtman.org
->>
->> Daniel may also have comments here?
-> TL;DR - I'm pretty relaxed about these changes... but I'd like
->          to know how to test the changes.
->
-> Like Doug I only really use kdb via serial but, since I'm maintain
-> the thing I do occasionally test kdb works on the qemu console. I don't
-> do it very often though because it's a manual test!
->
-> I'd assume that will still work since it won't involve any of the
-> drivers above. I'm afraid I can't double check that since patch 4
-> doesn't apply cleanly in v6.18-rc7 (nor to linux-next... and neither
-> does the base-commit appear in linux-next).
+Thanks. Explanation in original cover letter was great and there's
+certainly been no harm to QEMU.
 
-To test its effects, ignore this series and simply clear the two 
-calbacks at [1]. This is where the debugger invokes fbcon. The series 
-removes their implementation in the final patch.
-
-[1] 
-https://elixir.bootlin.com/linux/v6.17.9/source/drivers/video/fbdev/core/fbcon.c#L3202
-
-Best regards
-Thomas
-
->
-> Anyhow, the only testing I do for kgdboc=kms,kdb is to boot an x86-64
-> defconfig+kgdb+kdb kernel in qemu with something like the following
-> command line, which FWIW does still work:
->
->      qemu-system-x86_64 -enable-kvm -m 1G -smp 2 \
->        -kernel arch/x86/boot/bzImage \
->        -monitor none -chardev stdio,id=mon,mux=on,signal=off \
->        -serial chardev:mon \
->        -initrd rootfs.cpio.gz \
->        -append " console=tty0 console=ttyS0,115200 kgdboc=kms,kbd,ttyS0 kgdbwait"
->
-> The reason I'm fairly relaxed about changes here is that the kbd driver
-> only works on PCs with legacy keyboard interfaces. If the kernel is
-> talking to the keyboard using USB or I2C (which almost all PCs do) then
-> kdb cannot be used anyway.
->
-> So... it would be a "cool project"[1] to get kdb running on
-> a special interrupt-free I2C mode and with the DRM panic code so you
-> can do live analysis if your laptop/chomebook crashes. However it is
-> simply not "real enough" to justify slowing down other developers.
->
->
-> Daniel.
->
->
-> [1] ... but not quite cool enough that I see myself spending time on it
->      though!
->
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+Acked-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
 
 
+Daniel.

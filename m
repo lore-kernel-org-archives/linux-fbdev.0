@@ -1,119 +1,233 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4853B1F584C;
-	Wed, 26 Nov 2025 06:56:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45CF02C0F9E
+	for <linux-fbdev@vger.kernel.org>; Wed, 26 Nov 2025 07:44:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764140213; cv=none; b=SgZ6KFP2d+sO/TgOrc5Yl1h29LHAqV55u7Ca7lEnwN0PNI+aVkKSRf1TsJbWJkvAMvx7wHh5TrELFg//bWN5PoDbBjE+v6NbOPGmNqh9k4sDcLe+YXyzmJQ/TY7gwm/o59julLRXidXGFrvGWHCEnwk3CcAuflelngNPy4kpQUI=
+	t=1764143054; cv=none; b=lDtWRcLPrBy6gOFikxZxLf/LwU3t1nY8hh6gdWdHA4sFWZF+Wwv13PMUQdfiNrLLHbj+g1DuFYRWU/Y8n8Q4cMFYcuh1EBTzH+B00VutIU1vbOPQQgimYtVmysBBf8ehYwLm9IMBkSHpE42REVH1nsIROLWomFBGDOYixn10NQo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764140213; c=relaxed/simple;
-	bh=mu/A6WTwOPzOFtjJtzxiGOLlJpJakjKpzGHoz5XkpY4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A+itmw7eUjSHxmJogdUk8QyIG0Lw+KvpExhQMLbmKJVO1mGMd+nJk8U5qBaPELU58vMD93w0Tk5a2uqiSwwWKTPIOsNUgnNU4i67NjuikiggurKihE69Z0fxf/VAfTjIWafUhmZbpw2uKYDCF0d+9A0aHpg3nf2v1llOWkx+70k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Bwqvo+Fy; arc=none smtp.client-ip=198.175.65.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1764143054; c=relaxed/simple;
+	bh=qbV2RmWMAe0NOBPQxeua3rY0TMMxosUuCWkSeH9084w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=kSgLaYhm5b5m5tt0DtgqeuOTVES7aPOqp3nMw0loJckKYUlk9boH9GmDhz1BlCAAd7+vch7GdehyP4upGxu9xXu5wU6wOOpxgroqeedoHsvaYfz4WBoRjYfTSegZGLpRrCO9q1anmrPzg33jPL4a5dQLwzfprhTSD+TV0UroZjM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=ybhOim0S; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=yABW/xyo; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=UCUavnyk; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Nm7xnp8F; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Bwqvo+Fy"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1764140212; x=1795676212;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=mu/A6WTwOPzOFtjJtzxiGOLlJpJakjKpzGHoz5XkpY4=;
-  b=Bwqvo+Fy3LrvkWdZy2XYSj/faMA4orGSKSJvgwVW/x06axBby2B3o6f+
-   4ZEws5m8Ksg7p1zEHLZjPmjgawun8WamnN6wyCRhTDnhbfLDDV8enggzz
-   zDI27is0mNvN8D3soNE0i42jz13m75l+dgRLoOTtVUxWOW58wt6Elq/6t
-   XvywcntXXekJh2ZWETzv3dNdZt5PC4id5fiCLCMsRL6+hdzqx4ty/DpO5
-   CLpjnIOvkWlrqxUwKRtT3gAk9Ey8Pfk5QgzqvpSsPjqDqDuDmtt1zpIbT
-   P2oAXIGTofEg4qvaVqOXybAN7o2O6r1UjpUZd5CkOnzb+nqqrYQMSkjGA
-   g==;
-X-CSE-ConnectionGUID: wjh5h5AQR5aoWCA4l6BLeQ==
-X-CSE-MsgGUID: IIPHRYz/S/6Cmu80MnYdJg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11624"; a="77279923"
-X-IronPort-AV: E=Sophos;i="6.20,227,1758610800"; 
-   d="scan'208";a="77279923"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2025 22:56:52 -0800
-X-CSE-ConnectionGUID: o31zWgfrRUqmgMMDa8YZVQ==
-X-CSE-MsgGUID: I2GaolsOQWKolPUqR1HrYw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,227,1758610800"; 
-   d="scan'208";a="230118861"
-Received: from igk-lkp-server01.igk.intel.com (HELO 1f7de368ad0d) ([10.211.93.152])
-  by orviesa001.jf.intel.com with ESMTP; 25 Nov 2025 22:56:50 -0800
-Received: from kbuild by 1f7de368ad0d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vO9SJ-000000000ej-1a9N;
-	Wed, 26 Nov 2025 06:56:47 +0000
-Date: Wed, 26 Nov 2025 07:55:50 +0100
-From: kernel test robot <lkp@intel.com>
-To: ssrane_b23@ee.vjti.ac.in, Zsolt Kajtar <soci@c64.rulez.org>,
-	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>
-Cc: oe-kbuild-all@lists.linux.dev, Shaurya Rane <ssrane_b23@ee.vjti.ac.in>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	syzbot+5a40432dfe8f86ee657a@syzkaller.appspotmail.com
-Subject: Re: [PATCH] fbdev: core: Fix vmalloc-out-of-bounds in fb_imageblit
-Message-ID: <202511260749.KJgv3MyF-lkp@intel.com>
-References: <20251119133821.89998-1-ssranevjti@gmail.com>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="ybhOim0S";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="yABW/xyo";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="UCUavnyk";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Nm7xnp8F"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 2CE8E5BDB6;
+	Wed, 26 Nov 2025 07:44:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1764143049; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=drklKyV2RPFla2Q7/A/lp8Rvp/WaNYg8cDw0mMQv3ac=;
+	b=ybhOim0S7I6Let02rcOFQ9JLXVbOlScNzfGLueqP9Zlw5YUBun1q12IgIf848jaJX+bSAe
+	IIZ1Yrqe3xipE8FGu1WBy04HgXL/rvq0ZwL5H7MURFcrGZsFZw6ROFgmK6B0wvROgl+TEy
+	2TM7EARxF8gFVbHb4sd2ekvb0Gp0hk0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1764143049;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=drklKyV2RPFla2Q7/A/lp8Rvp/WaNYg8cDw0mMQv3ac=;
+	b=yABW/xyoPVkXjNeRmgFQT71lSKB5Fdd+5kuTYOzRZD/LesA6aO1BbBuOpOL5VYCr5z4O7m
+	lySg7DYaLEYilvDA==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1764143048; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=drklKyV2RPFla2Q7/A/lp8Rvp/WaNYg8cDw0mMQv3ac=;
+	b=UCUavnyk+e/uOj+YykZnXOPhdx5863ygS+CA9P9ptUJtjb/6J4yiu+guDlVNmWXfwanmWn
+	cZQzKFKrFAni3iT8byQyjGnclSkcexz6EC68COXiRUiEryduFvfuA5cZ8edEM7ZZmgH5Ky
+	YuVwHfBZuMV6Uojom1oG1dcIgb5go2E=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1764143048;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=drklKyV2RPFla2Q7/A/lp8Rvp/WaNYg8cDw0mMQv3ac=;
+	b=Nm7xnp8FwfJv6zoaVtqeeVxqi86LFnHwP/Thn+695VgWnwv7/hQiEaQ6UwpCuktecvkuSe
+	0+9p+Xjxwg0/qyDg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A45B23EA63;
+	Wed, 26 Nov 2025 07:44:07 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 3yIaJsevJmn9LQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 26 Nov 2025 07:44:07 +0000
+Message-ID: <38dcc504-5fa7-49ff-a74c-9a877fd267d5@suse.de>
+Date: Wed, 26 Nov 2025 08:44:07 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251119133821.89998-1-ssranevjti@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/5] drm: Remove remaining support for kdb
+To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, simona@ffwll.ch,
+ airlied@gmail.com, alexander.deucher@amd.com, christian.koenig@amd.com,
+ lyude@redhat.com, dakr@kernel.org, deller@gmx.de, mripard@kernel.org,
+ jason.wessel@windriver.com, danielt@kernel.org, dianders@chromium.org
+Cc: dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
+ nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20251125130634.1080966-1-tzimmermann@suse.de>
+ <82ed9798-9237-4404-9b32-9430bfb82b26@linux.intel.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <82ed9798-9237-4404-9b32-9430bfb82b26@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	ARC_NA(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_TWELVE(0.00)[18];
+	FREEMAIL_TO(0.00)[linux.intel.com,ffwll.ch,gmail.com,amd.com,redhat.com,kernel.org,gmx.de,windriver.com,chromium.org];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url]
+X-Spam-Flag: NO
+X-Spam-Score: -4.30
 
-Hi,
+Hi
 
-kernel test robot noticed the following build warnings:
+Am 25.11.25 um 17:25 schrieb Maarten Lankhorst:
+> Hey,
+>
+> I'm glad to see the old kdb handler gone.
+>
+> Could we perhaps extend the drm panic handler somehow for this to work?
+> Restore could potentially be simply duplicating and committing the current state.
 
-[auto build test WARNING on drm-misc/drm-misc-next]
-[also build test WARNING on linus/master v6.18-rc7 next-20251126]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Yeah, I briefly outlined this in the cover letter. If we wanted to 
+support kdb, we could get the scanout buffer and use the buffer's simple 
+display update for showing the debugger. I think this still requires 
+quite some work, but would avoid all the issues with the current approach.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/ssrane_b23-ee-vjti-ac-in/fbdev-core-Fix-vmalloc-out-of-bounds-in-fb_imageblit/20251119-215054
-base:   git://anongit.freedesktop.org/drm/drm-misc drm-misc-next
-patch link:    https://lore.kernel.org/r/20251119133821.89998-1-ssranevjti%40gmail.com
-patch subject: [PATCH] fbdev: core: Fix vmalloc-out-of-bounds in fb_imageblit
-config: x86_64-rhel-9.4-ltp (https://download.01.org/0day-ci/archive/20251126/202511260749.KJgv3MyF-lkp@intel.com/config)
-compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251126/202511260749.KJgv3MyF-lkp@intel.com/reproduce)
+Best regards
+Thomas
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202511260749.KJgv3MyF-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   In file included from drivers/video/fbdev/core/cfbimgblt.c:17:
-   drivers/video/fbdev/core/fb_imageblit.h: In function 'fb_imageblit':
->> drivers/video/fbdev/core/fb_imageblit.h:490:23: warning: unused variable 'max_offset_bytes' [-Wunused-variable]
-     490 |         unsigned long max_offset_bytes;
-         |                       ^~~~~~~~~~~~~~~~
-
-
-vim +/max_offset_bytes +490 drivers/video/fbdev/core/fb_imageblit.h
-
-   480	
-   481	static inline void fb_imageblit(struct fb_info *p, const struct fb_image *image)
-   482	{
-   483		int bpp = p->var.bits_per_pixel;
-   484		unsigned int bits_per_line = BYTES_TO_BITS(p->fix.line_length);
-   485		struct fb_address dst = fb_address_init(p);
-   486		struct fb_reverse reverse = fb_reverse_init(p);
-   487		const u32 *palette = fb_palette(p);
-   488		struct fb_image clipped_image;
-   489		u32 max_x, max_y;
- > 490		unsigned long max_offset_bytes;
+>
+> Kind regards,
+> ~Maarten Lankhorst
+>
+> Den 2025-11-25 kl. 13:52, skrev Thomas Zimmermann:
+>> Remove the rest of the kbd support from DRM. Driver support has been
+>> broken for years without anyone complaining.
+>>
+>> Kdb cannot use regular DRM mode setting, so DRM drivers have to
+>> implement an additional hook to make it work (in theory). As outlined
+>> by Sima in commit 9c79e0b1d096 ("drm/fb-helper: Give up on kgdb for
+>> atomic drivers") from 2017, kdb is not compatible with DRM atomic mode
+>> setting. Non-atomic mode setting meanwhile has become rare.
+>>
+>> Only 3 DRM drivers implement the hooks for kdb support. Amdgpu and
+>> nouveau use non-atomic mode setting on older devices. But both drivers
+>> have switched to generic fbdev emulation, which isn't compatible with
+>> kdb. Radeon still runs kdb, but it doesn't work in practice. See the
+>> commits in this series for details
+>>
+>> Therefore remove the remaining support for kdb from the DRM drivers
+>> and from DRM fbdev emulation. Also remove the hooks from fbdev, as
+>> there are no fbdev drivers with kdb support.
+>>
+>> If we ever want to address kdb support within DRM drivers, a place to
+>> start would be the scanout buffers used by DRM's panic screen. These
+>> use the current display mode. They can be written and flushed without
+>> mode setting involved.
+>>
+>> Note: kdb over serial lines is not affected by this series and continues
+>> to work as before.
+>>
+>> Thomas Zimmermann (5):
+>>    drm/amdgpu: Do not implement mode_set_base_atomic callback
+>>    drm/nouveau: Do not implement mode_set_base_atomic callback
+>>    drm/radeon: Do not implement mode_set_base_atomic callback
+>>    drm/fbdev-helper: Remove drm_fb_helper_debug_enter/_leave()
+>>    fbcon: Remove fb_debug_enter/_leave from struct fb_ops
+>>
+>>   Documentation/process/debugging/kgdb.rst    |  28 -----
+>>   drivers/gpu/drm/amd/amdgpu/dce_v10_0.c      |  35 ++-----
+>>   drivers/gpu/drm/amd/amdgpu/dce_v6_0.c       |  35 ++-----
+>>   drivers/gpu/drm/amd/amdgpu/dce_v8_0.c       |  35 ++-----
+>>   drivers/gpu/drm/drm_fb_helper.c             | 108 --------------------
+>>   drivers/gpu/drm/nouveau/dispnv04/crtc.c     |  24 +----
+>>   drivers/gpu/drm/radeon/atombios_crtc.c      |  74 ++++----------
+>>   drivers/gpu/drm/radeon/radeon_legacy_crtc.c |  23 ++---
+>>   drivers/gpu/drm/radeon/radeon_mode.h        |  10 +-
+>>   drivers/video/fbdev/core/fbcon.c            |  24 -----
+>>   drivers/video/fbdev/core/fbcon.h            |   1 -
+>>   include/drm/drm_fb_helper.h                 |  21 ----
+>>   include/drm/drm_modeset_helper_vtables.h    |  23 -----
+>>   include/linux/fb.h                          |   4 -
+>>   14 files changed, 63 insertions(+), 382 deletions(-)
+>>
+>>
+>> base-commit: 0a21e96e0b6840d2a4e0b45a957679eeddeb4362
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+
+

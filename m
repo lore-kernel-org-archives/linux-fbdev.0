@@ -1,91 +1,64 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED83A3358CC;
-	Thu, 27 Nov 2025 15:22:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 189063376B0;
+	Thu, 27 Nov 2025 15:55:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764256923; cv=none; b=OnZb81uc74m1I6bg1jxys9zJWE/Sm0WfK8vVQ6/tGTKJybHTWi/p799RWcnadPI1I3CXmT5eGlifdpespExwgLXwoys+zAB0kQbM794ypsHA/cnZiQjiOSl0h2m84B+y7SBlrc7S0nI6Y+2HjW/f7H5LBy30tbcRQIw7gvJ9qg4=
+	t=1764258946; cv=none; b=HnGOUtB9I68hGIoZvoOtTffOiBoQjj31/0tdvCwlJbbEug8M7NLQpIjuRrHteIbUamDnHgrwnQXiYLv2xHIzrT5b8C7Li5rnh/PyQ6+9Ffg0/rP1cZPqp6qPBmN4PANzoHDXO7eaKGct1KC8tIUieTnOMRvvTzn2pvD1mf4LzTA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764256923; c=relaxed/simple;
-	bh=jcPepnZLZgpDua5txvocFEmcFpPGA3RIdeogtsflON8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=j4JxNJlh0z8I0RgL9LbjeAsJK/cWS+m5YLRe+cfH+fvEawpR/0hJGlrELMyj+35YaiRod8FWd9LPyHzV4y+gFfHw/EiFRHmQ9opVV8nVpUPl108cNSpuBBmvr8ZrN38X2kuHTzBQlWEJ1wvpqj5QNDYuceI8KaT96CcLlUztxb0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FJkPje3t; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1764258946; c=relaxed/simple;
+	bh=79PrYF2iuQAc+y+8JIgjRAAux2ndHI3wVSQ8aGdIWUw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WBSDxoqfu6r9tIGm/t9RE6Uget2nrjzknoSKh2a8W1TKeZYXcZolvk+j147KYLU7eyINFScBMwYMjWbKcIsRsUow2fj70hfAXBQRTw/7OiXdvzWun/fhh3/ZBoDEqoDgt9rvaqSreS5RbG568D1Ssx3S/+MMW6blIIMZ5FDQAkU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fgOslIUY; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FJkPje3t"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 96300C116D0;
-	Thu, 27 Nov 2025 15:22:00 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fgOslIUY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0779BC4CEF8;
+	Thu, 27 Nov 2025 15:55:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764256920;
-	bh=jcPepnZLZgpDua5txvocFEmcFpPGA3RIdeogtsflON8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=FJkPje3tTCGdHtnTEx/KMCWBYmgJscR+W3TgsoJ5utstmrJd0gBb48OFttWsu35i4
-	 rv+N13OGBJTLAX7wUBqKC00LktGNfdN3v7SqHej3j89VWJn3aLJbv5bovWwwnkOR0R
-	 CTfYTzBr16PqFvMVCsdxfYbMejQU+Sj+HYMnblPWLH5ZDs70VdFD2RU87bBZClafEv
-	 ZLITrV2Q8QyVogIuGImFfULlJchEsrbo/unqfHrqbfmwtXsyqXrtXNtYucUPIpfRRB
-	 mgp2Tkwu77Wkrd6EMnfe8kkHvfdv94eeaR0aLVEa4im7q2WGK0dv+MBvLZ5FZVvj5Q
-	 gm8NxJUac4R0w==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CCABD116F5;
-	Thu, 27 Nov 2025 15:22:00 +0000 (UTC)
-From: Petri Karhula via B4 Relay <devnull+petri.karhula.novatron.fi@kernel.org>
-Date: Thu, 27 Nov 2025 15:22:00 +0000
-Subject: [PATCH v4 2/2] mfd: cgbc: Add support for backlight
+	s=k20201202; t=1764258945;
+	bh=79PrYF2iuQAc+y+8JIgjRAAux2ndHI3wVSQ8aGdIWUw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=fgOslIUYs0AZCw799d0aeqrZbiD6pyAm2YhoR41il0xyM0tYRo3WJHXWyGRtIBJQ+
+	 Mj2WRqmbidrW/SmRYUA9oszt1rhc3PpLV4sb2QLce9rW7YxoE9poMD+IPzmJc+D0NB
+	 vjbCZZaBQnXVqf37MUNMvjUKWeDJqWwNgMO/2EO/zNTKh7nyzAhQREOCf6Cg0dfRxL
+	 zf8aO+LF+JWRb0kc8Nnf2tQz995m3fPsu1ahIbgGXG+AlstG8n/0/taPt2VHmCYa0O
+	 +xw/cRiT6fmJ73kFT2DLLpA6UQ/8vARTrvBcLMRc3gDoR/jU0CrNtA4bauMwhOpyZl
+	 25U6f1cncmO0g==
+Date: Thu, 27 Nov 2025 15:55:41 +0000
+From: Daniel Thompson <danielt@kernel.org>
+To: petri.karhula@novatron.fi
+Cc: Thomas Richard <thomas.richard@bootlin.com>, Lee Jones <lee@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v4 1/2] backlight: Add Congatec Board Controller (CGBC)
+ backlight support
+Message-ID: <aSh0ffjtRlow2WO-@aspen.lan>
+References: <20251127-cgbc-backlight-v4-0-626523b7173d@novatron.fi>
+ <20251127-cgbc-backlight-v4-1-626523b7173d@novatron.fi>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251127-cgbc-backlight-v4-2-626523b7173d@novatron.fi>
-References: <20251127-cgbc-backlight-v4-0-626523b7173d@novatron.fi>
-In-Reply-To: <20251127-cgbc-backlight-v4-0-626523b7173d@novatron.fi>
-To: Thomas Richard <thomas.richard@bootlin.com>, Lee Jones <lee@kernel.org>, 
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
- Helge Deller <deller@gmx.de>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- linux-fbdev@vger.kernel.org, Petri Karhula <petri.karhula@novatron.fi>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1764256919; l=730;
- i=petri.karhula@novatron.fi; s=20251118; h=from:subject:message-id;
- bh=KPNSZCbWidPbzGQwgMCbuFj/C6Dnnhi7zAXThQ+Pso8=;
- b=e2lTmkqyYL2lvoBpDSI9YvqxziY/8WcYfbee+pofEMx4BfEH0cI64hldpZ5qWBMQaPCGx+dbW
- wN4GsI6gxYtDJAQHmLwZwtRrftEmknjdQxiJrFL4zg8YRHtg+7/tIH4
-X-Developer-Key: i=petri.karhula@novatron.fi; a=ed25519;
- pk=LRYJ99jPPsHJwdJEPkqlmzAMqo6oyw7I421aHEfDp7o=
-X-Endpoint-Received: by B4 Relay for petri.karhula@novatron.fi/20251118
- with auth_id=567
-X-Original-From: Petri Karhula <petri.karhula@novatron.fi>
-Reply-To: petri.karhula@novatron.fi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251127-cgbc-backlight-v4-1-626523b7173d@novatron.fi>
 
-From: Petri Karhula <petri.karhula@novatron.fi>
+On Thu, Nov 27, 2025 at 03:21:59PM +0000, Petri Karhula via B4 Relay wrote:
+> From: Petri Karhula <petri.karhula@novatron.fi>
+>
+> This driver provides backlight brightness control through the Linux
+> backlight subsystem. It communicates with the board controller to
+> adjust LCD backlight using PWM signals. Communication is done
+> through Congatec Board Controller core driver.
+>
+> Signed-off-by: Petri Karhula <petri.karhula@novatron.fi>
 
-The Board Controller has control for display backlight.
-Add backlight cell for the cgbc-backlight driver which
-adds support for backlight brightness control.
-
-Signed-off-by: Petri Karhula <petri.karhula@novatron.fi>
----
- drivers/mfd/cgbc-core.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/mfd/cgbc-core.c b/drivers/mfd/cgbc-core.c
-index 4782ff1114a9..10bb4b414c34 100644
---- a/drivers/mfd/cgbc-core.c
-+++ b/drivers/mfd/cgbc-core.c
-@@ -237,6 +237,7 @@ static struct mfd_cell cgbc_devs[] = {
- 	{ .name = "cgbc-i2c", .id = 1 },
- 	{ .name = "cgbc-i2c", .id = 2 },
- 	{ .name = "cgbc-hwmon"	},
-+	{ .name = "cgbc-backlight" },
- };
- 
- static int cgbc_map(struct cgbc_device_data *cgbc)
-
--- 
-2.34.1
+Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
 
 
+Daniel.

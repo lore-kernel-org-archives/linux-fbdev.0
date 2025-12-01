@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 562D32BE62E;
-	Mon,  1 Dec 2025 22:10:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 389991E7C03;
+	Mon,  1 Dec 2025 22:51:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764627059; cv=none; b=RZwHsEGJzTHkfzqN8W/I2aI74JKwktA6u4ITVKct7WA6h/d/y1bVcfNnB52JOR+6pm9buIsiRymgR/lMyLDX3/z2AS55cn/ZTOfLH1fzpq3wGxGMvdvBnnKx9O7nezgENuKXyl/NyWSCfyyURM3tgVzd26LDHpaPG6aobYVGZIA=
+	t=1764629488; cv=none; b=Y2n1oOd6Ea+w1EtsUBA2Bo0ZIoyv8GdPUECTyZKVZWXBiq5Dv0mrAZr1ACXdvK9isUs+ERXCSTHr694uW8OCqGtaWhfSzJs9+9F1QV+wdfRsaveSAshUbI2GlYB0s2r7q/g6wR85Gz4EnH3eL+9urjcP1vrcM8wingaBZ8YIoQ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764627059; c=relaxed/simple;
-	bh=j2D3hRBZI5QkXGbuJwMdox5sp0EOC/YYi/24i9XPVls=;
+	s=arc-20240116; t=1764629488; c=relaxed/simple;
+	bh=l6a8KE0SQRDdJHNwVx3ilxUBBg9ZsFk4iQ3P3jn1cCY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VNF0e7T4AxtwiNFj+miF9gLzzzZ5r/edGNBhyeSQ9YtpQuYZOzECsveRAov2jFTUYvWpp+eLlEXPlIVAVQzjzmleMyvaF+/o3iMCxXOE+wze0QLfCysceUR9Qb3J63LWg+xyztZOF21w88JKH1S29L77gnWCj/xeXs4+wSpqb4c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BxSfazRK; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=Fsoo1VmJI6nyL7x55kQiw3AxO8LDON5cANgY4ysQjq0Apq6hBcDk1Tg0nH0k+3i6qHfAClkj4VT6rmHMllazR3VNGjlAU2l9UtWbhDpESrWGYi2OefqDknuAib2oirPD2yLs5l5tZcLEuzk5tx/pnPdcWOlQmCvZq3yDEtWxRew=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=m5udlNqh; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BxSfazRK"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C18AAC116D0;
-	Mon,  1 Dec 2025 22:10:57 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="m5udlNqh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A4C2C4CEF1;
+	Mon,  1 Dec 2025 22:51:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764627059;
-	bh=j2D3hRBZI5QkXGbuJwMdox5sp0EOC/YYi/24i9XPVls=;
+	s=k20201202; t=1764629487;
+	bh=l6a8KE0SQRDdJHNwVx3ilxUBBg9ZsFk4iQ3P3jn1cCY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BxSfazRKrSH4APxJ/dXczuqSQ9UktoWUdTk0Lz9eX1/08bq8zgt1nFr7l1MRQkFwz
-	 ZsICotIcfK2eXu8rHkeTInPj5aU48rwnfHg1Q3Cd7hGkT0qz6B0n7prNtC7sHo2air
-	 JdinlaARGiKsKFL47f3e3Alv5ruociYZWmzhbRP10Q5KUT7hW1pZto3ADDPWjWu9YH
-	 X5co8WT0XHExU0qgNlZx6142gElc18YKfulT2oS+KvQT81v9vlDdfYEi/ycDoKmEGq
-	 f+aBlauMSk7922HkRWLbu6YXsW8RSnn3t4h7sqIse33e1Emi7GlF+nuQbivkJBNkvI
-	 oDbqsBH73NZTA==
+	b=m5udlNqhOrxeKfPmSLeccLSvSbqX5+SiNB77oiTf24gMs1cf1t5NcVT6y2WEvzJcn
+	 v92rwC/DkEMb8tvON1+nh7wcDrKL7m3oHwEcjBGzj+grL/h1naoAMaQO67shLT2eX1
+	 x8sM289OhNRbzRN2I+nMyMIftlJDjPTtg8S2w7prKksUVPPnIk2GSFdhqD2ZRZZOaO
+	 sSHzdN8o0sWV+eahBnjF4R6tEoRwsKXa8mJ8G/9h5qLUTXj9eS/VpzYl6rm9ip9zxY
+	 sC6Mvqj9PboKAgZuFbe08GzjLV43HbaeYnZOJcGoSHeazH6BHYJMpqmhGJvf3U3O+n
+	 wtgMtOsy7fDnA==
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org
 Cc: Thomas Zimmermann <tzimmermann@suse.de>,
@@ -36,12 +36,12 @@ Cc: Thomas Zimmermann <tzimmermann@suse.de>,
 	amd-gfx@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.12.y] drm, fbcon, vga_switcheroo: Avoid race condition in fbcon setup
-Date: Mon,  1 Dec 2025 17:10:55 -0500
-Message-ID: <20251201221055.1281985-1-sashal@kernel.org>
+Subject: [PATCH 6.6.y] drm, fbcon, vga_switcheroo: Avoid race condition in fbcon setup
+Date: Mon,  1 Dec 2025 17:51:23 -0500
+Message-ID: <20251201225123.1298682-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.51.0
-In-Reply-To: <2025120119-edgy-recycled-bcfe@gregkh>
-References: <2025120119-edgy-recycled-bcfe@gregkh>
+In-Reply-To: <2025120119-quake-universal-d896@gregkh>
+References: <2025120119-quake-universal-d896@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -90,15 +90,15 @@ Cc: amd-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org
 Cc: <stable@vger.kernel.org> # v2.6.34+
 Link: https://patch.msgid.link/20251105161549.98836-1-tzimmermann@suse.de
-[ adapted dev->dev variable access ]
+[ drm_fb_helper_unregister_info() lacks vga_switcheroo code ]
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/gpu/drm/drm_fb_helper.c  | 6 ------
+ drivers/gpu/drm/drm_fb_helper.c  | 7 -------
  drivers/video/fbdev/core/fbcon.c | 9 +++++++++
- 2 files changed, 9 insertions(+), 6 deletions(-)
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index b15ddbd65e7b5..a8971c4eb9f05 100644
+index b507c1c008a3e..3891837a78414 100644
 --- a/drivers/gpu/drm/drm_fb_helper.c
 +++ b/drivers/gpu/drm/drm_fb_helper.c
 @@ -30,9 +30,7 @@
@@ -111,7 +111,15 @@ index b15ddbd65e7b5..a8971c4eb9f05 100644
  
  #include <drm/drm_atomic.h>
  #include <drm/drm_drv.h>
-@@ -1637,10 +1635,6 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
+@@ -1668,7 +1666,6 @@ static int drm_fb_helper_find_sizes(struct drm_fb_helper *fb_helper,
+ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
+ {
+ 	struct drm_client_dev *client = &fb_helper->client;
+-	struct drm_device *dev = fb_helper->dev;
+ 	struct drm_fb_helper_surface_size sizes;
+ 	int ret;
+ 
+@@ -1687,10 +1684,6 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
  
  	strcpy(fb_helper->fb->comm, "[fbcon]");
  
@@ -123,18 +131,18 @@ index b15ddbd65e7b5..a8971c4eb9f05 100644
  }
  
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 1fc1e47ae2b49..e681066736dea 100644
+index 78a5b22c8d150..8b2c3065c0c26 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -65,6 +65,7 @@
+@@ -64,6 +64,7 @@
+ #include <linux/console.h>
  #include <linux/string.h>
  #include <linux/kd.h>
- #include <linux/panic.h>
 +#include <linux/pci.h>
- #include <linux/printk.h>
  #include <linux/slab.h>
  #include <linux/fb.h>
-@@ -77,6 +78,7 @@
+ #include <linux/fbcon.h>
+@@ -75,6 +76,7 @@
  #include <linux/interrupt.h>
  #include <linux/crc32.h> /* For counting font checksums */
  #include <linux/uaccess.h>
@@ -142,7 +150,7 @@ index 1fc1e47ae2b49..e681066736dea 100644
  #include <asm/irq.h>
  
  #include "fbcon.h"
-@@ -2894,6 +2896,9 @@ void fbcon_fb_unregistered(struct fb_info *info)
+@@ -2913,6 +2915,9 @@ void fbcon_fb_unregistered(struct fb_info *info)
  
  	console_lock();
  
@@ -152,7 +160,7 @@ index 1fc1e47ae2b49..e681066736dea 100644
  	fbcon_registered_fb[info->node] = NULL;
  	fbcon_num_registered_fb--;
  
-@@ -3027,6 +3032,10 @@ static int do_fb_registered(struct fb_info *info)
+@@ -3046,6 +3051,10 @@ static int do_fb_registered(struct fb_info *info)
  		}
  	}
  

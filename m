@@ -1,132 +1,73 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 685CB2F5339;
-	Mon,  1 Dec 2025 11:53:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31B2C30FC25
+	for <linux-fbdev@vger.kernel.org>; Mon,  1 Dec 2025 13:13:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764590006; cv=none; b=Xfh3PnW/Y4Q1cKhjZdfPCwwc/tK3vIt9hIhreFH6kOUyKYSWqXsvbw4W1aC8QsHv2t7SwlxN8vR4nU723W2w5u+j6Ey7MlklcWKgVe8ClXeAmVfAvmqE7UkcSZk0M0tX3RHqSCqSrfly4KtVHkE7wWHll91VDX8vTNxpeaAwwSo=
+	t=1764594792; cv=none; b=PAQGWf3mLUdBLDluCVVpNTkcADcc4OUf1E/bxB3kS0tEio3S66Uw3Dc0MU+yvBcl7lHGyqznK/KsHpgfo7ZcBcqOliTUusjt4WQO/qsPOKKCevNt16V2ezQ+A0uaYnjR8JGgq5v8ioylI7DfDWke5EeZTQsmzMUbdGTn5bEVDPY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764590006; c=relaxed/simple;
-	bh=GmBvLXZvt8I62GcNCrFd8uMFNLRQ0E3zJfqAU/UXg5Q=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bxdRVkcO8bcZDqgtjRN7e+8g5JlOqQ0YfDPSsbXyAiYRHLzreW9oN56MAPCQN/bCyUp5zfRMZpXt5gz6VqjyN6y5tnx9CZ7mRvWRgWmn+5t2Vw2M/xSVX4yL2G3y9hh4bNGNTI11KHx2/22SA0vSZM85koFCqdqTa2B0XQyqdCo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=QEXKQpc5; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1764594792; c=relaxed/simple;
+	bh=PCJVEwldbTm5ZBlmGgpIAN4Ymo77aALiVTsZI5zgLx4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=f+f/6Z+t9Hrn2WNxTAb7QQHbwvuTGPkpMemATeFsH9ocHfmWvgjIePZv4CqN5cGo1ECi9Gw3qQeHCfd00iv1mFEjqV4+YpOAEXy1+Zf04RymZ915M4K983bhke7xi5UskUCA65buUATXZ5m1VykslgEuZ/CZdP4AC1rYkXZrpl0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=EB+wolPF; arc=none smtp.client-ip=185.246.85.4
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="QEXKQpc5"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 0CE95C2BCB2;
-	Mon,  1 Dec 2025 11:53:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764590006;
-	bh=GmBvLXZvt8I62GcNCrFd8uMFNLRQ0E3zJfqAU/UXg5Q=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=QEXKQpc5k2p/rV8SOW1voyvTQixGmjC/Xts92rui2jXpScWKC0rSx3Azq7iqRCrL0
-	 HJV6AndFc0TNO9gkRsSQ8pVx7LYZmBtgk1xZytW3jdtbUWk1VrYgdmb+iTcnifW4Ep
-	 b2O6NlXCUuq/nqYr+dWjiz968bJicQ4zvCGAE1U6o152dSlXWiDswPqyTx/66euMeU
-	 AC5l4FsdfObFN9cWnIJcntUIVyvzkDEY6yryyAjsPa7jQ6fjzBUIOOrK4pGZBNmwSg
-	 IDS92RYZYCzrZjRk+FTw1N3ud3P+SIVtost8RPQFsOyunDkV8+CVKCynEW+pxkP0AJ
-	 +uNgsfGe354/g==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED733D116FE;
-	Mon,  1 Dec 2025 11:53:25 +0000 (UTC)
-From: Maud Spierings via B4 Relay <devnull+maudspierings.gocontroll.com@kernel.org>
-Date: Mon, 01 Dec 2025 12:53:23 +0100
-Subject: [PATCH v6 4/4] arm64: dts: freescale:
- moduline-display-av123z7m-n17: add backlight
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="EB+wolPF"
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 5F4384E419B6;
+	Mon,  1 Dec 2025 13:13:08 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 2B8E7606BB;
+	Mon,  1 Dec 2025 13:13:08 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 68FC81191817C;
+	Mon,  1 Dec 2025 14:13:06 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1764594787; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:content-language:in-reply-to:references;
+	bh=fBRDi0A4o9YmsnBRCqreFxadvyrDZVlPJ4NIul79DiI=;
+	b=EB+wolPFmTG8gw6JMI6Ev653l4ibvW4Q32N68/5VkdZ6OI77sE495kI3TQPzNOIjTK3WPf
+	DKfd7IsZC0/S+fiPgUPX9RZjQChZz+WyJYACH04dkVpbh6msxy7znLDdRAhts8+GQjNHyN
+	MoHT9DSk2bqj/W//Rq1OgZJ0xw7tOJUI7Aq9CfAA2Vtz7xFwtGMI2mizIFuY8QhAqAA8pF
+	96iDG7W/Z+ns8mECFnuOKCWVHsF/s1P5VHIolIy2KTymFqlAwxUiH/LAw0SblblTlsiKs2
+	h5M9M3GTlYYcZN0v3rpiT+7cY234wGLOJdrofaHUHTZcFbSQBUTG1yIsISa1tQ==
+Message-ID: <9222543c-5e67-4fe5-b598-e1bab8f6da2e@bootlin.com>
+Date: Mon, 1 Dec 2025 14:13:05 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/2] backlight: Add Congatec Board Controller (CGBC)
+ backlight support
+To: petri.karhula@novatron.fi, Lee Jones <lee@kernel.org>,
+ Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+ Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org
+References: <20251127-cgbc-backlight-v4-0-626523b7173d@novatron.fi>
+ <20251127-cgbc-backlight-v4-1-626523b7173d@novatron.fi>
+Content-Language: en-US
+From: Thomas Richard <thomas.richard@bootlin.com>
+In-Reply-To: <20251127-cgbc-backlight-v4-1-626523b7173d@novatron.fi>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251201-max25014-v6-4-88e3ac8112ff@gocontroll.com>
-References: <20251201-max25014-v6-0-88e3ac8112ff@gocontroll.com>
-In-Reply-To: <20251201-max25014-v6-0-88e3ac8112ff@gocontroll.com>
-To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
- Mark Brown <broonie@kernel.org>
-Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-fbdev@vger.kernel.org, imx@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, 
- Maud Spierings <maudspierings@gocontroll.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1764590004; l=1603;
- i=maudspierings@gocontroll.com; s=20250214; h=from:subject:message-id;
- bh=p7v9nfcElDLPKwR+b9bnugh6l92KIwOyUGJG8sBB/to=;
- b=IswOnV6rtsUvU+mzQ+CDr164E2jUGWb6s2ps7ncTe9Tc1TOj+K8n4oNnpW0rhlZK45nDRKtcX
- f7cIklQWfrSDKM3SnGiHila/OtQteE0mBTqoiZEZUIUl66EsGnuG7+b
-X-Developer-Key: i=maudspierings@gocontroll.com; a=ed25519;
- pk=7chUb8XpaTQDvWhzTdHC0YPMkTDloELEC7q94tOUyPg=
-X-Endpoint-Received: by B4 Relay for maudspierings@gocontroll.com/20250214
- with auth_id=341
-X-Original-From: Maud Spierings <maudspierings@gocontroll.com>
-Reply-To: maudspierings@gocontroll.com
+X-Last-TLS-Session-Version: TLSv1.3
 
-From: Maud Spierings <maudspierings@gocontroll.com>
+On 11/27/25 4:21 PM, Petri Karhula via B4 Relay wrote:
+> From: Petri Karhula <petri.karhula@novatron.fi>
+> 
+> This driver provides backlight brightness control through the Linux
+> backlight subsystem. It communicates with the board controller to
+> adjust LCD backlight using PWM signals. Communication is done
+> through Congatec Board Controller core driver.
+Tested on a conga-SA7 module with conga-SEVAL carrier board.
 
-Add the missing backlight.
+Tested-by: Thomas Richard <thomas.richard@bootlin.com>
 
-Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
----
- ...x8p-ml81-moduline-display-106-av123z7m-n17.dtso | 25 +++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso b/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso
-index 3eb665ce9d5d..786a04ef40c8 100644
---- a/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso
-+++ b/arch/arm64/boot/dts/freescale/imx8mp-tx8p-ml81-moduline-display-106-av123z7m-n17.dtso
-@@ -16,6 +16,7 @@
- 
- 	panel {
- 		compatible = "boe,av123z7m-n17";
-+		backlight = <&backlight>;
- 		enable-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
- 		pinctrl-0 = <&pinctrl_panel>;
- 		pinctrl-names = "default";
-@@ -91,10 +92,32 @@ lvds1_out: endpoint {
- 		};
- 	};
- 
--	/* max25014 @ 0x6f */
-+	backlight: backlight@6f {
-+		compatible = "maxim,max25014";
-+		reg = <0x6f>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		enable-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_backlight>;
-+		maxim,iset = <7>;
-+
-+		led@0 {
-+			reg = <0>;
-+			led-sources = <0 1 2 3>;
-+			default-brightness = <50>;
-+		};
-+	};
- };
- 
- &iomuxc {
-+	pinctrl_backlight: backlightgrp {
-+		fsl,pins = <
-+			MX8MP_IOMUXC_GPIO1_IO04__GPIO1_IO04
-+				(MX8MP_PULL_UP | MX8MP_PULL_ENABLE)
-+		>;
-+	};
-+
- 	pinctrl_lvds_bridge: lvdsbridgegrp {
- 		fsl,pins = <
- 			MX8MP_IOMUXC_SAI1_TXD2__GPIO4_IO14
-
--- 
-2.52.0
-
-
+Best Regards,
+Thomas

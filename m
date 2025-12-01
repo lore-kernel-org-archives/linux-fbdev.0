@@ -1,317 +1,168 @@
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011051.outbound.protection.outlook.com [52.101.65.51])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA34229D29B;
-	Mon,  1 Dec 2025 16:52:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.51
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764607975; cv=fail; b=XCWjBHJSt9Yp8coQV/ge0WhzxzwuQ2YYRpjf7YxFXh5FEy5BOlW+wi8GwiSEI+kitNtEkM2/g/jvKY4Co5rTCijua//MGTjWPobDKLq2YqzDda1shdWL4rb0SYLAv/ei1FsQ89+XLMEaivqbP2GclPET8A82CmefNAFhQkPYhXA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764607975; c=relaxed/simple;
-	bh=1I4rZd/Enhc7yFBuz5wiHn8wsU6msY7LSHTio/q959w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=S/929HTwkVdGOujaqnVpuS1BhRriwzBHG6fwmK1zW4GEv7mUKeZ3pRw3/L9TR5JATePfOYQywV4sz9EiSigkO/5AW1tLjMu2XTwfTt+X580BgPJdLWiNcBVMXIB+h7hZaPOl2dK0l3DvmMSDaCOQ1n47djPP0UEMmdoges3BG2k=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=R3aL+RUr; arc=fail smtp.client-ip=52.101.65.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 562D32BE62E;
+	Mon,  1 Dec 2025 22:10:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1764627059; cv=none; b=RZwHsEGJzTHkfzqN8W/I2aI74JKwktA6u4ITVKct7WA6h/d/y1bVcfNnB52JOR+6pm9buIsiRymgR/lMyLDX3/z2AS55cn/ZTOfLH1fzpq3wGxGMvdvBnnKx9O7nezgENuKXyl/NyWSCfyyURM3tgVzd26LDHpaPG6aobYVGZIA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1764627059; c=relaxed/simple;
+	bh=j2D3hRBZI5QkXGbuJwMdox5sp0EOC/YYi/24i9XPVls=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=VNF0e7T4AxtwiNFj+miF9gLzzzZ5r/edGNBhyeSQ9YtpQuYZOzECsveRAov2jFTUYvWpp+eLlEXPlIVAVQzjzmleMyvaF+/o3iMCxXOE+wze0QLfCysceUR9Qb3J63LWg+xyztZOF21w88JKH1S29L77gnWCj/xeXs4+wSpqb4c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BxSfazRK; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="R3aL+RUr"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=KPdpOeqCsrO8c86HNHj607ceMqo8XPQAcISF7Ci7o6gD6oowJD2hFeY9ZPfK9wbOgXIXxbn3hpy8mEpYB+jnTuuPJ5UzBstQfM7EDRqSM8bQXC2as/iAcaYeZVynSQV3HWOEnoeuP8rROv4m3b6xH3sV/IWlAYLwEsDkXIsmBQipFH6BVvb9R4Y2fjGK6NlCd9bMkFEGogyQZbtHCyhZmKTLMKAuG6FwiNapc9nMlBSJ2mlDA4Vc9RnhP8Zes9XYRmkhzB/mpZZeGh6mvkSagCq6k8pBbUe7oYCAWoG5ME8JKF7UtaYXZyCyA6qNFesvCDHq0nBLyxNJ/xLw1AZXpQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=l58dffqnoPz3cOiK1sf14CjfiSUwOcau9Xv/PpLgrXg=;
- b=X0MlfzKCjyD79OHCwLN9Ab/BImQnMlSbtmLgKV2MJ9Xt0CVs5lzxGoq4JyKZXOGwZ3veTZiu/vHYaeeGRaNDBFWf0hkNe+3Tdktg1KI8Rbvv1hL69tDpfWhwktCB1dfZxgQo7viRqXUvjWsF0tA+NU3+/qVZRHeckJr4r+6wU0uOapPmrVmZpBAy3h+CLZ00OS8DA38OKpgOAaPWyN6CpGPZbJqGld4gi1SfOFmnhE6FltBDSJ0TrqLBXqUuZGULDx3NT0sylJ5obJts8p632f1Cei2mL4KAHx+YJRtAwotdu9Si4XzOqPdvxIVJgEwIE/NgGSZaT2nV6oXSHq12tw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=l58dffqnoPz3cOiK1sf14CjfiSUwOcau9Xv/PpLgrXg=;
- b=R3aL+RUrpCwsvSr4ysrPPKxtf3h/Vz8Q2NpYZdINz/5iY5Q758qn4iszjSoc0nukaT7C/qYW3tHYGMTuSQYsMsa0kmaPZn4O38FeN9zI+NeZSbltgtX1GDu/jwIGVrL1N7TWakh5xTm4RiiFZsUFP/GGSbU/ZkVsNiORC32KEIzHuI3tsJjVWrqUl9NVBstEG+fc9ZRKfToNt7THMCBXckAXgK3OikAzDhbLmBn/Q1qq1fFlzGU3FDvjvEPT57PYgrBZiKtVrcm6TgyfIyz1u9s5m0IjAybiRdWVmVGZFb2Wxs6mBXBWgMj2mhnv6CMSt7esQQCcqzfzk2ahXuCkNQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from DU2PR04MB8951.eurprd04.prod.outlook.com (2603:10a6:10:2e2::22)
- by AS8PR04MB8279.eurprd04.prod.outlook.com (2603:10a6:20b:3f8::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9366.17; Mon, 1 Dec
- 2025 16:52:49 +0000
-Received: from DU2PR04MB8951.eurprd04.prod.outlook.com
- ([fe80::753c:468d:266:196]) by DU2PR04MB8951.eurprd04.prod.outlook.com
- ([fe80::753c:468d:266:196%4]) with mapi id 15.20.9366.012; Mon, 1 Dec 2025
- 16:52:48 +0000
-Date: Mon, 1 Dec 2025 11:52:38 -0500
-From: Frank Li <Frank.li@nxp.com>
-To: maudspierings@gocontroll.com
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v6 1/4] dt-bindings: backlight: Add max25014 support
-Message-ID: <aS3H1qzSMKHamqpP@lizhi-Precision-Tower-5810>
-References: <20251201-max25014-v6-0-88e3ac8112ff@gocontroll.com>
- <20251201-max25014-v6-1-88e3ac8112ff@gocontroll.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251201-max25014-v6-1-88e3ac8112ff@gocontroll.com>
-X-ClientProxiedBy: PH8PR02CA0015.namprd02.prod.outlook.com
- (2603:10b6:510:2d0::7) To DU2PR04MB8951.eurprd04.prod.outlook.com
- (2603:10a6:10:2e2::22)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BxSfazRK"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C18AAC116D0;
+	Mon,  1 Dec 2025 22:10:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764627059;
+	bh=j2D3hRBZI5QkXGbuJwMdox5sp0EOC/YYi/24i9XPVls=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=BxSfazRKrSH4APxJ/dXczuqSQ9UktoWUdTk0Lz9eX1/08bq8zgt1nFr7l1MRQkFwz
+	 ZsICotIcfK2eXu8rHkeTInPj5aU48rwnfHg1Q3Cd7hGkT0qz6B0n7prNtC7sHo2air
+	 JdinlaARGiKsKFL47f3e3Alv5ruociYZWmzhbRP10Q5KUT7hW1pZto3ADDPWjWu9YH
+	 X5co8WT0XHExU0qgNlZx6142gElc18YKfulT2oS+KvQT81v9vlDdfYEi/ycDoKmEGq
+	 f+aBlauMSk7922HkRWLbu6YXsW8RSnn3t4h7sqIse33e1Emi7GlF+nuQbivkJBNkvI
+	 oDbqsBH73NZTA==
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	dri-devel@lists.freedesktop.org,
+	nouveau@lists.freedesktop.org,
+	amd-gfx@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 6.12.y] drm, fbcon, vga_switcheroo: Avoid race condition in fbcon setup
+Date: Mon,  1 Dec 2025 17:10:55 -0500
+Message-ID: <20251201221055.1281985-1-sashal@kernel.org>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <2025120119-edgy-recycled-bcfe@gregkh>
+References: <2025120119-edgy-recycled-bcfe@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DU2PR04MB8951:EE_|AS8PR04MB8279:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2d19c844-45d3-4f5a-fd1b-08de30fa0f23
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|366016|7416014|52116014|376014|1800799024|38350700014|7053199007;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?x6suohBV+EXou57H3PUnLwyDDUbOVQ9pBOq+mTasHdq7hlY9C5Ue2cKEpPkE?=
- =?us-ascii?Q?t6qswluzbmBiAZ2v/D2qJpGWo0hhAIlM+7sgmjiKavYKXUO27UBLYVWlNaAI?=
- =?us-ascii?Q?VJEtdM13CqOdC+4vXMNlGmq1II0C/bn2YDcxL3gNTGPdAofK2G4Hw7LXPgy8?=
- =?us-ascii?Q?uQVd4db/xB0NAymP2gebPxu0EWf1kE4nLtjGmQUD6oM66I1m+sEug9IXUTo9?=
- =?us-ascii?Q?pmVrjO/kXhoyyAXA/oRdOelWrsNxAPu8sr2qUdPI7jbHdtO9UER6VXcY2wlX?=
- =?us-ascii?Q?/YKxDpZJ4AoEQetf9yvozwJpcgViTW1Gf4bGCay4xyPHc8irb4BWaQhpkJhE?=
- =?us-ascii?Q?8De1Qgi+Xye8soQb+8+0vg/IYe8LgjiR1XWujtLdSKpLGPjEBZQ1tIl4v4FA?=
- =?us-ascii?Q?AYa1hpe5B2+R6gsmOZur21RyO4iniaa3i29gsUH3bVychqqEBdmnf3sDVfNM?=
- =?us-ascii?Q?wkGQ+jr8i45pQZLcHvLHrHOPC4toW1uspb/UA6b9+nhaRMLhg2s0s1RsC+j7?=
- =?us-ascii?Q?CHZ4Wj6rrpFnaVpDldoU4tZ5p4bQ/3BWXzGpmLI7gFhdq9NMIXk9NnLgxirz?=
- =?us-ascii?Q?izEpxG0w5MKy3/s2A/W7b5kCguV4pwvdaGoVSRAZTjzRT/2c8w3hl8JZYf45?=
- =?us-ascii?Q?+kQTXZD/z2oQWI3yH/+2W7LiMmHMs2HCJI75WuCEguE3KM1E8bB7gAotXiOU?=
- =?us-ascii?Q?hP52GcHxCnYv7DCOW25OIpqwTBOy2mIUuc0smdbt8W9L7clb9sy+LWwS+xmk?=
- =?us-ascii?Q?LIEidtFiDJW5CS6VG9BVXdgPVfcOob+HO0R+3KIZBXp23M52sdNAtFVc3XMW?=
- =?us-ascii?Q?gOovD36fJAt6bC2x4UPjzq1uinPQuxEJd0Ymjy/OvNGImkdGy4SxyVlpmuui?=
- =?us-ascii?Q?Z9AFnQBoAUOwN6CUPsRCHTWGOrGxVOD2+uFJVuX04OFpTp1+Wl49ESypf+iy?=
- =?us-ascii?Q?1d6NCk/53WxQWUGgUxu71jlULZiTcyK/PT1VmeJL8RQ4XD7ygEM8/r8YaMHY?=
- =?us-ascii?Q?pRCKphQlboCavDolngLUwqVZ1agjDpFjI4pTkqLA/wOqiQ5kc38Z9wFqlZOR?=
- =?us-ascii?Q?A1ju9aIran5Uro7tpmN5RfytitiqjbrdPAX35wsn2fIViy419Ufs/aleS5Gg?=
- =?us-ascii?Q?rCaNsL5DCMp79IMjz7GwrM83mDhc0JMGR+KqIcItatT/sJVC35rSFnkqkGGW?=
- =?us-ascii?Q?TuGW5vZVaz83v7OEhVtRERqDn8TQ/MF3S/KLzR4jQt9t4R4BMA2rawviRld6?=
- =?us-ascii?Q?9EYhPaPRZp5Wwofm4AwEjxr8YWJkFv2eIvHd7BXdLrfxrhCyIwaarhsKElJ/?=
- =?us-ascii?Q?oDJxDIDheaIZ17VjGIbvolrE2pi2E0PaanxiEVBA6+w7Y8djwzks2T2a3b5B?=
- =?us-ascii?Q?AH6CyxFUGJoyTHIUUs6+tnz90EAlqEYK7n8kaWXARdqQJFsIdTDLeLhgDCuN?=
- =?us-ascii?Q?gfiA6ROf9WMLu7TwBKYQHEtshjiaJwFnP8S2MbvZYsHSizH/b7e4sg=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU2PR04MB8951.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(7416014)(52116014)(376014)(1800799024)(38350700014)(7053199007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?P9AqLSRMFR48W2TKbZgd2TZmXTBsJP0/ypP9pHJLicknagJ7BV9D6vEuLqoV?=
- =?us-ascii?Q?H4yv1kN0Nyg98LNfEtLQdZ8rT7afWxRybOHYlkrMIrvN7PCIBsgj8CAKNDyC?=
- =?us-ascii?Q?v/FtWNft/jym0+qWRwJcOusYJQePTwUWwYizWGH44iAHw8Xmh90wW6PlkWhg?=
- =?us-ascii?Q?iRjqkY/benNt1CT5owkn87bTk42D3FpVjgzj3GQmLoNmwJZhfu34VfzPm+KC?=
- =?us-ascii?Q?1CCHvfk+8J/IaY7n8wRDaFwLj9OxNo2uBYlw0aCn2Aijxzyy/mEvefoU61Iq?=
- =?us-ascii?Q?uGBO+3RdS1alDhcTGBG9XwGYG+YeR131rRXJLOAljFwAMFTDrG8nCGICkYRj?=
- =?us-ascii?Q?0ulHaeVpfvw7y95xfZMK7Y5vGXIRNC9CGy1qskYpba8qIGdHF1cJo1zBGFV1?=
- =?us-ascii?Q?Bwgbix5s8Gui3aN70A5N552DtSnYFUlmOQzDbaPcuiYz0l44iE3OB/WuUixp?=
- =?us-ascii?Q?yp1B2rD9Cv160HsWV+t5BUnx8fNV6pv/6tS9M2X0Ozd8pKc8j4SwqgZIrw1R?=
- =?us-ascii?Q?+SAZKIFKjHeUplMQ5eeqO1XhxVEfYkLg2ZFvthPNKUs4xMiXMKm14WGYvxgx?=
- =?us-ascii?Q?mBp354Y2BaijkTNvhHzWHFwoZcIhvq1sVAuAIXYmUi/HYk1vM9rKr3WD81j5?=
- =?us-ascii?Q?QPDoUVmg+yxgxf+0FUBA2pmNmeVHbXQGnwZsOXJbnQd4Kje31jX/sE6nEf7/?=
- =?us-ascii?Q?ZjjhxeumIO+L5psc4Pih5Y4MCvYDC8H4rtMCWzJKk32Y9WQATmm9B5Hkilj0?=
- =?us-ascii?Q?4nL4RRrGxjGMjnGJAZzsL5tjD0PqETmTluy5nqMvzzzE93agWXe1j5D4tJek?=
- =?us-ascii?Q?56OJUZDwmC7E/kJBom9Kn2rFerH0lOeNOKvKQnv9yQsYGxrosWbjaFryRN3f?=
- =?us-ascii?Q?RXqg1imHe657iu/NWLjHiUhmMhvOo/mPrMzGRT/W4qAaVEfEnMMHYiugljup?=
- =?us-ascii?Q?8h+88+WxxGU0gpVXhRsFXm3Pi4yvsyg1oMW4MW2gmlbZh5Ov3FKUY19hUEiv?=
- =?us-ascii?Q?M6XqXMk6PT6u1XHyF42DSG3ZtkatsLZ7KdHGE1IsVHjzMqRqbiP/MRCh1jCH?=
- =?us-ascii?Q?urOplsYObtLQqxH0YgYxNFNbUQv6RvfQ8y+RkpByn+sJwlkAYzAs87f+jhrV?=
- =?us-ascii?Q?tn0FCadf/3cbvSENgnGzv1r6e40F3LKNwsLA+iYbNiIRPlVsStOxb7YWEXQS?=
- =?us-ascii?Q?bX952t5AWmP3/4aVyoMHkJYnNJff0Efh7M9k8/wn44BQ/xkA/EtN2kMlEr0n?=
- =?us-ascii?Q?r+JYdi5IABTvN1sN5AFwheIbdI1xM9SZUPWfK0NPzerLcNwkLToZJqX7HGAZ?=
- =?us-ascii?Q?NKpxIqJNWTbx8thLK/hubJVEgkWJD1EL4g5dLFi0HDEvQom7QVPUGixGMFZd?=
- =?us-ascii?Q?8eT5eYbsOAfqthK47y5P+VSNn/W4RdT0tBc87Tfovva9uQYmGwgTRLVzRhXC?=
- =?us-ascii?Q?NhGkU18R325ziA7fOnNjzlNrQsoUfaHprTXG4noLevipx5n0XpUOBt8vzOcO?=
- =?us-ascii?Q?qvIvWJCmxPQspbuROUBCuURfA/TY8h6JRTvCOBeMvCRH6XjaRNNLqNTBxXJR?=
- =?us-ascii?Q?UfIdu1jXu53GVSn0SlQ=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2d19c844-45d3-4f5a-fd1b-08de30fa0f23
-X-MS-Exchange-CrossTenant-AuthSource: DU2PR04MB8951.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Dec 2025 16:52:48.8395
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: zkvPhN+ZO4DM3ufm79Im18GRam+/hXLyThBb2JIjYSuO9d3WtK7JTaOfite01DlyKpzi+/z+F9SBEnbj5cxSkQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8279
+Content-Transfer-Encoding: 8bit
 
-On Mon, Dec 01, 2025 at 12:53:20PM +0100, Maud Spierings via B4 Relay wrote:
-> From: Maud Spierings <maudspierings@gocontroll.com>
->
-> The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
-> with integrated boost controller.
->
-> Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
->
-> ---
->
-> In the current implementation the control registers for channel 1,
-> control all channels. So only one led subnode with led-sources is
-> supported right now. If at some point the driver functionality is
-> expanded the bindings can be easily extended with it.
-> ---
->  .../bindings/leds/backlight/maxim,max25014.yaml    | 107 +++++++++++++++++++++
->  MAINTAINERS                                        |   5 +
->  2 files changed, 112 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
-> new file mode 100644
-> index 000000000000..e83723224b07
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
-> @@ -0,0 +1,107 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/leds/backlight/maxim,max25014.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Maxim max25014 backlight controller
-> +
-> +maintainers:
-> +  - Maud Spierings <maudspierings@gocontroll.com>
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - maxim,max25014
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  "#address-cells":
-> +    const: 1
-> +
-> +  "#size-cells":
-> +    const: 0
-> +
-> +  enable-gpios:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  power-supply:
-> +    description: Regulator which controls the boost converter input rail.
-> +
-> +  pwms:
-> +    maxItems: 1
-> +
-> +  maxim,iset:
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +    maximum: 15
-> +    default: 11
-> +    description:
-> +      Value of the ISET field in the ISET register. This controls the current
-> +      scale of the outputs, a higher number means more current.
-> +
-> +  led@0:
+From: Thomas Zimmermann <tzimmermann@suse.de>
 
-define whole binding, allow 0-3. binding is not related with driver's
-implement.
+[ Upstream commit eb76d0f5553575599561010f24c277cc5b31d003 ]
 
-it'd better put unders leds.
+Protect vga_switcheroo_client_fb_set() with console lock. Avoids OOB
+access in fbcon_remap_all(). Without holding the console lock the call
+races with switching outputs.
 
+VGA switcheroo calls fbcon_remap_all() when switching clients. The fbcon
+function uses struct fb_info.node, which is set by register_framebuffer().
+As the fb-helper code currently sets up VGA switcheroo before registering
+the framebuffer, the value of node is -1 and therefore not a legal value.
+For example, fbcon uses the value within set_con2fb_map() [1] as an index
+into an array.
 
-> +    type: object
-> +    description: Properties for a string of connected LEDs.
-> +    $ref: common.yaml#
-> +
-> +    properties:
-> +      reg:
-> +        const: 0
-> +
-> +      led-sources:
-> +        allOf:
-> +          - minItems: 1
-> +            maxItems: 4
-> +            items:
-> +              minimum: 0
-> +              maximum: 3
-> +            default: [0, 1, 2, 3]
-> +
-> +      default-brightness:
-> +        minimum: 0
-> +        maximum: 100
-> +        default: 50
-> +
-> +    required:
-> +      - reg
-> +
-> +    additionalProperties: false
+Moving vga_switcheroo_client_fb_set() after register_framebuffer() can
+result in VGA switching that does not switch fbcon correctly.
 
-unevaluatedProperties: false because ref to common.yaml
+Therefore move vga_switcheroo_client_fb_set() under fbcon_fb_registered(),
+which already holds the console lock. Fbdev calls fbcon_fb_registered()
+from within register_framebuffer(). Serializes the helper with VGA
+switcheroo's call to fbcon_remap_all().
 
-Frank
+Although vga_switcheroo_client_fb_set() takes an instance of struct fb_info
+as parameter, it really only needs the contained fbcon state. Moving the
+call to fbcon initialization is therefore cleaner than before. Only amdgpu,
+i915, nouveau and radeon support vga_switcheroo. For all other drivers,
+this change does nothing.
 
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/gpio/gpio.h>
-> +    #include <dt-bindings/interrupt-controller/irq.h>
-> +
-> +    i2c {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +
-> +        backlight@6f {
-> +            compatible = "maxim,max25014";
-> +            reg = <0x6f>;
-> +            #address-cells = <1>;
-> +            #size-cells = <0>;
-> +            enable-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
-> +            interrupt-parent = <&gpio1>;
-> +            interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
-> +            power-supply = <&reg_backlight>;
-> +            pwms = <&pwm1>;
-> +            maxim,iset = <7>;
-> +
-> +            led@0 {
-> +                reg = <0>;
-> +                led-sources = <0 1 2 3>;
-> +                default-brightness = <50>;
-> +            };
-> +        };
-> +    };
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 58c7e3f678d8..606ce086f758 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -15261,6 +15261,11 @@ F:	Documentation/userspace-api/media/drivers/max2175.rst
->  F:	drivers/media/i2c/max2175*
->  F:	include/uapi/linux/max2175.h
->
-> +MAX25014 BACKLIGHT DRIVER
-> +M:	Maud Spierings <maudspierings@gocontroll.com>
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
-> +
->  MAX31335 RTC DRIVER
->  M:	Antoniu Miclaus <antoniu.miclaus@analog.com>
->  L:	linux-rtc@vger.kernel.org
->
-> --
-> 2.52.0
->
->
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Link: https://elixir.bootlin.com/linux/v6.17/source/drivers/video/fbdev/core/fbcon.c#L2942 # [1]
+Fixes: 6a9ee8af344e ("vga_switcheroo: initial implementation (v15)")
+Acked-by: Javier Martinez Canillas <javierm@redhat.com>
+Acked-by: Alex Deucher <alexander.deucher@amd.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: nouveau@lists.freedesktop.org
+Cc: amd-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: <stable@vger.kernel.org> # v2.6.34+
+Link: https://patch.msgid.link/20251105161549.98836-1-tzimmermann@suse.de
+[ adapted dev->dev variable access ]
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/gpu/drm/drm_fb_helper.c  | 6 ------
+ drivers/video/fbdev/core/fbcon.c | 9 +++++++++
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index b15ddbd65e7b5..a8971c4eb9f05 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -30,9 +30,7 @@
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
+ #include <linux/console.h>
+-#include <linux/pci.h>
+ #include <linux/sysrq.h>
+-#include <linux/vga_switcheroo.h>
+ 
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_drv.h>
+@@ -1637,10 +1635,6 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
+ 
+ 	strcpy(fb_helper->fb->comm, "[fbcon]");
+ 
+-	/* Set the fb info for vgaswitcheroo clients. Does nothing otherwise. */
+-	if (dev_is_pci(dev->dev))
+-		vga_switcheroo_client_fb_set(to_pci_dev(dev->dev), fb_helper->info);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 1fc1e47ae2b49..e681066736dea 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -65,6 +65,7 @@
+ #include <linux/string.h>
+ #include <linux/kd.h>
+ #include <linux/panic.h>
++#include <linux/pci.h>
+ #include <linux/printk.h>
+ #include <linux/slab.h>
+ #include <linux/fb.h>
+@@ -77,6 +78,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/crc32.h> /* For counting font checksums */
+ #include <linux/uaccess.h>
++#include <linux/vga_switcheroo.h>
+ #include <asm/irq.h>
+ 
+ #include "fbcon.h"
+@@ -2894,6 +2896,9 @@ void fbcon_fb_unregistered(struct fb_info *info)
+ 
+ 	console_lock();
+ 
++	if (info->device && dev_is_pci(info->device))
++		vga_switcheroo_client_fb_set(to_pci_dev(info->device), NULL);
++
+ 	fbcon_registered_fb[info->node] = NULL;
+ 	fbcon_num_registered_fb--;
+ 
+@@ -3027,6 +3032,10 @@ static int do_fb_registered(struct fb_info *info)
+ 		}
+ 	}
+ 
++	/* Set the fb info for vga_switcheroo clients. Does nothing otherwise. */
++	if (info->device && dev_is_pci(info->device))
++		vga_switcheroo_client_fb_set(to_pci_dev(info->device), info);
++
+ 	return ret;
+ }
+ 
+-- 
+2.51.0
+

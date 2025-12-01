@@ -1,223 +1,317 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazon11011051.outbound.protection.outlook.com [52.101.65.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC03A32D425
-	for <linux-fbdev@vger.kernel.org>; Mon,  1 Dec 2025 16:41:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764607288; cv=none; b=AKr1HEZEaaEnt8ta7pmqz8zt8XS2Obxfuy7cX6nPmQLl7PWMRHXqAJBScsQb+j0nCN3SHUZhqdKLkZiREg/fxjElR8NM2dSg02gUSDbxELuOUDZOjey2KUHZ0Zb6uKwizIZh5fagjrHmvgjvweyD44CdP+ZIxfshO5tK/M+9Zu0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764607288; c=relaxed/simple;
-	bh=NSZBt1RdN90yDkvZmP6halBLdCXKC7DSNb4k2eGyWUM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=F3QZlZyobXUF8ik2BXgi73Ss0tVfoOmrciW1telcAIKfg166ndRDMPbGjNCdGA2BOw1q/kFPi7f3lt0sDXtRN5D4uFT8zjLfg792mDPzjBlrACQqdE/DSOeur8P4SREr5kpDDNBScTgBBkD3vwlmFAsVTqWQ15Xkbr1rxLdV3xc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=AnfnCLhs; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=gK87lDIX; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=weLu5IwR; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ZcRQ8KPQ; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA34229D29B;
+	Mon,  1 Dec 2025 16:52:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.65.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1764607975; cv=fail; b=XCWjBHJSt9Yp8coQV/ge0WhzxzwuQ2YYRpjf7YxFXh5FEy5BOlW+wi8GwiSEI+kitNtEkM2/g/jvKY4Co5rTCijua//MGTjWPobDKLq2YqzDda1shdWL4rb0SYLAv/ei1FsQ89+XLMEaivqbP2GclPET8A82CmefNAFhQkPYhXA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1764607975; c=relaxed/simple;
+	bh=1I4rZd/Enhc7yFBuz5wiHn8wsU6msY7LSHTio/q959w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=S/929HTwkVdGOujaqnVpuS1BhRriwzBHG6fwmK1zW4GEv7mUKeZ3pRw3/L9TR5JATePfOYQywV4sz9EiSigkO/5AW1tLjMu2XTwfTt+X580BgPJdLWiNcBVMXIB+h7hZaPOl2dK0l3DvmMSDaCOQ1n47djPP0UEMmdoges3BG2k=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass smtp.mailfrom=nxp.com; dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b=R3aL+RUr; arc=fail smtp.client-ip=52.101.65.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=nxp.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="AnfnCLhs";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="gK87lDIX";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="weLu5IwR";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ZcRQ8KPQ"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id DAF4B336FF;
-	Mon,  1 Dec 2025 16:41:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1764607284; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wDiBR4Q7ybuHyM6ZkzXOPvizNEbGxQNP9Ce0mkV1K6Q=;
-	b=AnfnCLhs6wM+/O3GKNDu4P/TD/vLQpqznkQqMP2gT9u4NKfGhgPZJBPEL7ZhStIV/dMQ6a
-	Jbgiktj9YhbRcXTKlBjKbyQYip8Us6a2HzOL7QYDibyzKBMMRCv+YL+I2dXX1UoXC5b5fW
-	7ECmRKmY9VVGH8Gv1Z9FT00n0OWRTxY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1764607284;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wDiBR4Q7ybuHyM6ZkzXOPvizNEbGxQNP9Ce0mkV1K6Q=;
-	b=gK87lDIXCYXfris5Aie/JnlTAkeMjnAtQUSUZlJZGHl/Ze9ZH6I9qX7HUbLMGHsRIpHqgb
-	mU6ySmUXuYko1KDA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=weLu5IwR;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ZcRQ8KPQ
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1764607282; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wDiBR4Q7ybuHyM6ZkzXOPvizNEbGxQNP9Ce0mkV1K6Q=;
-	b=weLu5IwRgNOSHzGZ8XbnW3cqXyZt1xugaSaPVugM1GCtvXJtlStL894BCbR4LiSx3V6iEb
-	YSSmTv+FnKNo9kAIqU5vX5CDxZsfBLvGlAU4F9p11pB71uVDkGANKveZXM+QrPIBiYzX10
-	iQvCxOEdroj2NccrQbI6chLqsOK1P7o=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1764607282;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=wDiBR4Q7ybuHyM6ZkzXOPvizNEbGxQNP9Ce0mkV1K6Q=;
-	b=ZcRQ8KPQwfjic6IbsKestp+VP/i2eQFNmB409nfhxbPZaGdNgSTRqhJzUls8iOJTmfM6X2
-	Tyc5IHT6bLFQ5QAA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 61F803EA63;
-	Mon,  1 Dec 2025 16:41:22 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id xs95FjLFLWmYYwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 01 Dec 2025 16:41:22 +0000
-Message-ID: <0ffe6198-bd3d-44f7-82bc-225e6dfd69b2@suse.de>
-Date: Mon, 1 Dec 2025 17:41:21 +0100
+	dkim=pass (2048-bit key) header.d=nxp.com header.i=@nxp.com header.b="R3aL+RUr"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=KPdpOeqCsrO8c86HNHj607ceMqo8XPQAcISF7Ci7o6gD6oowJD2hFeY9ZPfK9wbOgXIXxbn3hpy8mEpYB+jnTuuPJ5UzBstQfM7EDRqSM8bQXC2as/iAcaYeZVynSQV3HWOEnoeuP8rROv4m3b6xH3sV/IWlAYLwEsDkXIsmBQipFH6BVvb9R4Y2fjGK6NlCd9bMkFEGogyQZbtHCyhZmKTLMKAuG6FwiNapc9nMlBSJ2mlDA4Vc9RnhP8Zes9XYRmkhzB/mpZZeGh6mvkSagCq6k8pBbUe7oYCAWoG5ME8JKF7UtaYXZyCyA6qNFesvCDHq0nBLyxNJ/xLw1AZXpQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=l58dffqnoPz3cOiK1sf14CjfiSUwOcau9Xv/PpLgrXg=;
+ b=X0MlfzKCjyD79OHCwLN9Ab/BImQnMlSbtmLgKV2MJ9Xt0CVs5lzxGoq4JyKZXOGwZ3veTZiu/vHYaeeGRaNDBFWf0hkNe+3Tdktg1KI8Rbvv1hL69tDpfWhwktCB1dfZxgQo7viRqXUvjWsF0tA+NU3+/qVZRHeckJr4r+6wU0uOapPmrVmZpBAy3h+CLZ00OS8DA38OKpgOAaPWyN6CpGPZbJqGld4gi1SfOFmnhE6FltBDSJ0TrqLBXqUuZGULDx3NT0sylJ5obJts8p632f1Cei2mL4KAHx+YJRtAwotdu9Si4XzOqPdvxIVJgEwIE/NgGSZaT2nV6oXSHq12tw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=l58dffqnoPz3cOiK1sf14CjfiSUwOcau9Xv/PpLgrXg=;
+ b=R3aL+RUrpCwsvSr4ysrPPKxtf3h/Vz8Q2NpYZdINz/5iY5Q758qn4iszjSoc0nukaT7C/qYW3tHYGMTuSQYsMsa0kmaPZn4O38FeN9zI+NeZSbltgtX1GDu/jwIGVrL1N7TWakh5xTm4RiiFZsUFP/GGSbU/ZkVsNiORC32KEIzHuI3tsJjVWrqUl9NVBstEG+fc9ZRKfToNt7THMCBXckAXgK3OikAzDhbLmBn/Q1qq1fFlzGU3FDvjvEPT57PYgrBZiKtVrcm6TgyfIyz1u9s5m0IjAybiRdWVmVGZFb2Wxs6mBXBWgMj2mhnv6CMSt7esQQCcqzfzk2ahXuCkNQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from DU2PR04MB8951.eurprd04.prod.outlook.com (2603:10a6:10:2e2::22)
+ by AS8PR04MB8279.eurprd04.prod.outlook.com (2603:10a6:20b:3f8::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9366.17; Mon, 1 Dec
+ 2025 16:52:49 +0000
+Received: from DU2PR04MB8951.eurprd04.prod.outlook.com
+ ([fe80::753c:468d:266:196]) by DU2PR04MB8951.eurprd04.prod.outlook.com
+ ([fe80::753c:468d:266:196%4]) with mapi id 15.20.9366.012; Mon, 1 Dec 2025
+ 16:52:48 +0000
+Date: Mon, 1 Dec 2025 11:52:38 -0500
+From: Frank Li <Frank.li@nxp.com>
+To: maudspierings@gocontroll.com
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v6 1/4] dt-bindings: backlight: Add max25014 support
+Message-ID: <aS3H1qzSMKHamqpP@lizhi-Precision-Tower-5810>
+References: <20251201-max25014-v6-0-88e3ac8112ff@gocontroll.com>
+ <20251201-max25014-v6-1-88e3ac8112ff@gocontroll.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251201-max25014-v6-1-88e3ac8112ff@gocontroll.com>
+X-ClientProxiedBy: PH8PR02CA0015.namprd02.prod.outlook.com
+ (2603:10b6:510:2d0::7) To DU2PR04MB8951.eurprd04.prod.outlook.com
+ (2603:10a6:10:2e2::22)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/5] drm: Remove remaining support for kdb
-To: simona@ffwll.ch, airlied@gmail.com, alexander.deucher@amd.com,
- christian.koenig@amd.com, lyude@redhat.com, dakr@kernel.org, deller@gmx.de,
- mripard@kernel.org, maarten.lankhorst@linux.intel.com,
- jason.wessel@windriver.com, danielt@kernel.org, dianders@chromium.org
-Cc: dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org,
- nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20251125130634.1080966-1-tzimmermann@suse.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20251125130634.1080966-1-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[18];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[ffwll.ch,gmail.com,amd.com,redhat.com,kernel.org,gmx.de,linux.intel.com,windriver.com,chromium.org];
-	MID_RHS_MATCH_FROM(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_TLS_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.com:url];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	TO_DN_NONE(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DKIM_TRACE(0.00)[suse.de:+]
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spam-Level: 
-X-Rspamd-Queue-Id: DAF4B336FF
-X-Spam-Flag: NO
-X-Spam-Score: -4.51
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DU2PR04MB8951:EE_|AS8PR04MB8279:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2d19c844-45d3-4f5a-fd1b-08de30fa0f23
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|19092799006|366016|7416014|52116014|376014|1800799024|38350700014|7053199007;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?x6suohBV+EXou57H3PUnLwyDDUbOVQ9pBOq+mTasHdq7hlY9C5Ue2cKEpPkE?=
+ =?us-ascii?Q?t6qswluzbmBiAZ2v/D2qJpGWo0hhAIlM+7sgmjiKavYKXUO27UBLYVWlNaAI?=
+ =?us-ascii?Q?VJEtdM13CqOdC+4vXMNlGmq1II0C/bn2YDcxL3gNTGPdAofK2G4Hw7LXPgy8?=
+ =?us-ascii?Q?uQVd4db/xB0NAymP2gebPxu0EWf1kE4nLtjGmQUD6oM66I1m+sEug9IXUTo9?=
+ =?us-ascii?Q?pmVrjO/kXhoyyAXA/oRdOelWrsNxAPu8sr2qUdPI7jbHdtO9UER6VXcY2wlX?=
+ =?us-ascii?Q?/YKxDpZJ4AoEQetf9yvozwJpcgViTW1Gf4bGCay4xyPHc8irb4BWaQhpkJhE?=
+ =?us-ascii?Q?8De1Qgi+Xye8soQb+8+0vg/IYe8LgjiR1XWujtLdSKpLGPjEBZQ1tIl4v4FA?=
+ =?us-ascii?Q?AYa1hpe5B2+R6gsmOZur21RyO4iniaa3i29gsUH3bVychqqEBdmnf3sDVfNM?=
+ =?us-ascii?Q?wkGQ+jr8i45pQZLcHvLHrHOPC4toW1uspb/UA6b9+nhaRMLhg2s0s1RsC+j7?=
+ =?us-ascii?Q?CHZ4Wj6rrpFnaVpDldoU4tZ5p4bQ/3BWXzGpmLI7gFhdq9NMIXk9NnLgxirz?=
+ =?us-ascii?Q?izEpxG0w5MKy3/s2A/W7b5kCguV4pwvdaGoVSRAZTjzRT/2c8w3hl8JZYf45?=
+ =?us-ascii?Q?+kQTXZD/z2oQWI3yH/+2W7LiMmHMs2HCJI75WuCEguE3KM1E8bB7gAotXiOU?=
+ =?us-ascii?Q?hP52GcHxCnYv7DCOW25OIpqwTBOy2mIUuc0smdbt8W9L7clb9sy+LWwS+xmk?=
+ =?us-ascii?Q?LIEidtFiDJW5CS6VG9BVXdgPVfcOob+HO0R+3KIZBXp23M52sdNAtFVc3XMW?=
+ =?us-ascii?Q?gOovD36fJAt6bC2x4UPjzq1uinPQuxEJd0Ymjy/OvNGImkdGy4SxyVlpmuui?=
+ =?us-ascii?Q?Z9AFnQBoAUOwN6CUPsRCHTWGOrGxVOD2+uFJVuX04OFpTp1+Wl49ESypf+iy?=
+ =?us-ascii?Q?1d6NCk/53WxQWUGgUxu71jlULZiTcyK/PT1VmeJL8RQ4XD7ygEM8/r8YaMHY?=
+ =?us-ascii?Q?pRCKphQlboCavDolngLUwqVZ1agjDpFjI4pTkqLA/wOqiQ5kc38Z9wFqlZOR?=
+ =?us-ascii?Q?A1ju9aIran5Uro7tpmN5RfytitiqjbrdPAX35wsn2fIViy419Ufs/aleS5Gg?=
+ =?us-ascii?Q?rCaNsL5DCMp79IMjz7GwrM83mDhc0JMGR+KqIcItatT/sJVC35rSFnkqkGGW?=
+ =?us-ascii?Q?TuGW5vZVaz83v7OEhVtRERqDn8TQ/MF3S/KLzR4jQt9t4R4BMA2rawviRld6?=
+ =?us-ascii?Q?9EYhPaPRZp5Wwofm4AwEjxr8YWJkFv2eIvHd7BXdLrfxrhCyIwaarhsKElJ/?=
+ =?us-ascii?Q?oDJxDIDheaIZ17VjGIbvolrE2pi2E0PaanxiEVBA6+w7Y8djwzks2T2a3b5B?=
+ =?us-ascii?Q?AH6CyxFUGJoyTHIUUs6+tnz90EAlqEYK7n8kaWXARdqQJFsIdTDLeLhgDCuN?=
+ =?us-ascii?Q?gfiA6ROf9WMLu7TwBKYQHEtshjiaJwFnP8S2MbvZYsHSizH/b7e4sg=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DU2PR04MB8951.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(7416014)(52116014)(376014)(1800799024)(38350700014)(7053199007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?P9AqLSRMFR48W2TKbZgd2TZmXTBsJP0/ypP9pHJLicknagJ7BV9D6vEuLqoV?=
+ =?us-ascii?Q?H4yv1kN0Nyg98LNfEtLQdZ8rT7afWxRybOHYlkrMIrvN7PCIBsgj8CAKNDyC?=
+ =?us-ascii?Q?v/FtWNft/jym0+qWRwJcOusYJQePTwUWwYizWGH44iAHw8Xmh90wW6PlkWhg?=
+ =?us-ascii?Q?iRjqkY/benNt1CT5owkn87bTk42D3FpVjgzj3GQmLoNmwJZhfu34VfzPm+KC?=
+ =?us-ascii?Q?1CCHvfk+8J/IaY7n8wRDaFwLj9OxNo2uBYlw0aCn2Aijxzyy/mEvefoU61Iq?=
+ =?us-ascii?Q?uGBO+3RdS1alDhcTGBG9XwGYG+YeR131rRXJLOAljFwAMFTDrG8nCGICkYRj?=
+ =?us-ascii?Q?0ulHaeVpfvw7y95xfZMK7Y5vGXIRNC9CGy1qskYpba8qIGdHF1cJo1zBGFV1?=
+ =?us-ascii?Q?Bwgbix5s8Gui3aN70A5N552DtSnYFUlmOQzDbaPcuiYz0l44iE3OB/WuUixp?=
+ =?us-ascii?Q?yp1B2rD9Cv160HsWV+t5BUnx8fNV6pv/6tS9M2X0Ozd8pKc8j4SwqgZIrw1R?=
+ =?us-ascii?Q?+SAZKIFKjHeUplMQ5eeqO1XhxVEfYkLg2ZFvthPNKUs4xMiXMKm14WGYvxgx?=
+ =?us-ascii?Q?mBp354Y2BaijkTNvhHzWHFwoZcIhvq1sVAuAIXYmUi/HYk1vM9rKr3WD81j5?=
+ =?us-ascii?Q?QPDoUVmg+yxgxf+0FUBA2pmNmeVHbXQGnwZsOXJbnQd4Kje31jX/sE6nEf7/?=
+ =?us-ascii?Q?ZjjhxeumIO+L5psc4Pih5Y4MCvYDC8H4rtMCWzJKk32Y9WQATmm9B5Hkilj0?=
+ =?us-ascii?Q?4nL4RRrGxjGMjnGJAZzsL5tjD0PqETmTluy5nqMvzzzE93agWXe1j5D4tJek?=
+ =?us-ascii?Q?56OJUZDwmC7E/kJBom9Kn2rFerH0lOeNOKvKQnv9yQsYGxrosWbjaFryRN3f?=
+ =?us-ascii?Q?RXqg1imHe657iu/NWLjHiUhmMhvOo/mPrMzGRT/W4qAaVEfEnMMHYiugljup?=
+ =?us-ascii?Q?8h+88+WxxGU0gpVXhRsFXm3Pi4yvsyg1oMW4MW2gmlbZh5Ov3FKUY19hUEiv?=
+ =?us-ascii?Q?M6XqXMk6PT6u1XHyF42DSG3ZtkatsLZ7KdHGE1IsVHjzMqRqbiP/MRCh1jCH?=
+ =?us-ascii?Q?urOplsYObtLQqxH0YgYxNFNbUQv6RvfQ8y+RkpByn+sJwlkAYzAs87f+jhrV?=
+ =?us-ascii?Q?tn0FCadf/3cbvSENgnGzv1r6e40F3LKNwsLA+iYbNiIRPlVsStOxb7YWEXQS?=
+ =?us-ascii?Q?bX952t5AWmP3/4aVyoMHkJYnNJff0Efh7M9k8/wn44BQ/xkA/EtN2kMlEr0n?=
+ =?us-ascii?Q?r+JYdi5IABTvN1sN5AFwheIbdI1xM9SZUPWfK0NPzerLcNwkLToZJqX7HGAZ?=
+ =?us-ascii?Q?NKpxIqJNWTbx8thLK/hubJVEgkWJD1EL4g5dLFi0HDEvQom7QVPUGixGMFZd?=
+ =?us-ascii?Q?8eT5eYbsOAfqthK47y5P+VSNn/W4RdT0tBc87Tfovva9uQYmGwgTRLVzRhXC?=
+ =?us-ascii?Q?NhGkU18R325ziA7fOnNjzlNrQsoUfaHprTXG4noLevipx5n0XpUOBt8vzOcO?=
+ =?us-ascii?Q?qvIvWJCmxPQspbuROUBCuURfA/TY8h6JRTvCOBeMvCRH6XjaRNNLqNTBxXJR?=
+ =?us-ascii?Q?UfIdu1jXu53GVSn0SlQ=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2d19c844-45d3-4f5a-fd1b-08de30fa0f23
+X-MS-Exchange-CrossTenant-AuthSource: DU2PR04MB8951.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Dec 2025 16:52:48.8395
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: zkvPhN+ZO4DM3ufm79Im18GRam+/hXLyThBb2JIjYSuO9d3WtK7JTaOfite01DlyKpzi+/z+F9SBEnbj5cxSkQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8279
 
-Series has been acked by Sima via IRC. Patches 4 and 5 have been r-b'ed.
+On Mon, Dec 01, 2025 at 12:53:20PM +0100, Maud Spierings via B4 Relay wrote:
+> From: Maud Spierings <maudspierings@gocontroll.com>
+>
+> The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+> with integrated boost controller.
+>
+> Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
+>
+> ---
+>
+> In the current implementation the control registers for channel 1,
+> control all channels. So only one led subnode with led-sources is
+> supported right now. If at some point the driver functionality is
+> expanded the bindings can be easily extended with it.
+> ---
+>  .../bindings/leds/backlight/maxim,max25014.yaml    | 107 +++++++++++++++++++++
+>  MAINTAINERS                                        |   5 +
+>  2 files changed, 112 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+> new file mode 100644
+> index 000000000000..e83723224b07
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+> @@ -0,0 +1,107 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/leds/backlight/maxim,max25014.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Maxim max25014 backlight controller
+> +
+> +maintainers:
+> +  - Maud Spierings <maudspierings@gocontroll.com>
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - maxim,max25014
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  "#address-cells":
+> +    const: 1
+> +
+> +  "#size-cells":
+> +    const: 0
+> +
+> +  enable-gpios:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  power-supply:
+> +    description: Regulator which controls the boost converter input rail.
+> +
+> +  pwms:
+> +    maxItems: 1
+> +
+> +  maxim,iset:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    maximum: 15
+> +    default: 11
+> +    description:
+> +      Value of the ISET field in the ISET register. This controls the current
+> +      scale of the outputs, a higher number means more current.
+> +
+> +  led@0:
 
-https://people.freedesktop.org/~cbrill/dri-log/?channel=dri-devel&highlight_names=&date=2025-12-01&show_html=true
+define whole binding, allow 0-3. binding is not related with driver's
+implement.
+
+it'd better put unders leds.
 
 
-Am 25.11.25 um 13:52 schrieb Thomas Zimmermann:
-> Remove the rest of the kbd support from DRM. Driver support has been
-> broken for years without anyone complaining.
->
-> Kdb cannot use regular DRM mode setting, so DRM drivers have to
-> implement an additional hook to make it work (in theory). As outlined
-> by Sima in commit 9c79e0b1d096 ("drm/fb-helper: Give up on kgdb for
-> atomic drivers") from 2017, kdb is not compatible with DRM atomic mode
-> setting. Non-atomic mode setting meanwhile has become rare.
->
-> Only 3 DRM drivers implement the hooks for kdb support. Amdgpu and
-> nouveau use non-atomic mode setting on older devices. But both drivers
-> have switched to generic fbdev emulation, which isn't compatible with
-> kdb. Radeon still runs kdb, but it doesn't work in practice. See the
-> commits in this series for details
->
-> Therefore remove the remaining support for kdb from the DRM drivers
-> and from DRM fbdev emulation. Also remove the hooks from fbdev, as
-> there are no fbdev drivers with kdb support.
->
-> If we ever want to address kdb support within DRM drivers, a place to
-> start would be the scanout buffers used by DRM's panic screen. These
-> use the current display mode. They can be written and flushed without
-> mode setting involved.
->
-> Note: kdb over serial lines is not affected by this series and continues
-> to work as before.
->
-> Thomas Zimmermann (5):
->    drm/amdgpu: Do not implement mode_set_base_atomic callback
->    drm/nouveau: Do not implement mode_set_base_atomic callback
->    drm/radeon: Do not implement mode_set_base_atomic callback
->    drm/fbdev-helper: Remove drm_fb_helper_debug_enter/_leave()
->    fbcon: Remove fb_debug_enter/_leave from struct fb_ops
->
->   Documentation/process/debugging/kgdb.rst    |  28 -----
->   drivers/gpu/drm/amd/amdgpu/dce_v10_0.c      |  35 ++-----
->   drivers/gpu/drm/amd/amdgpu/dce_v6_0.c       |  35 ++-----
->   drivers/gpu/drm/amd/amdgpu/dce_v8_0.c       |  35 ++-----
->   drivers/gpu/drm/drm_fb_helper.c             | 108 --------------------
->   drivers/gpu/drm/nouveau/dispnv04/crtc.c     |  24 +----
->   drivers/gpu/drm/radeon/atombios_crtc.c      |  74 ++++----------
->   drivers/gpu/drm/radeon/radeon_legacy_crtc.c |  23 ++---
->   drivers/gpu/drm/radeon/radeon_mode.h        |  10 +-
->   drivers/video/fbdev/core/fbcon.c            |  24 -----
->   drivers/video/fbdev/core/fbcon.h            |   1 -
->   include/drm/drm_fb_helper.h                 |  21 ----
->   include/drm/drm_modeset_helper_vtables.h    |  23 -----
->   include/linux/fb.h                          |   4 -
->   14 files changed, 63 insertions(+), 382 deletions(-)
->
->
-> base-commit: 0a21e96e0b6840d2a4e0b45a957679eeddeb4362
+> +    type: object
+> +    description: Properties for a string of connected LEDs.
+> +    $ref: common.yaml#
+> +
+> +    properties:
+> +      reg:
+> +        const: 0
+> +
+> +      led-sources:
+> +        allOf:
+> +          - minItems: 1
+> +            maxItems: 4
+> +            items:
+> +              minimum: 0
+> +              maximum: 3
+> +            default: [0, 1, 2, 3]
+> +
+> +      default-brightness:
+> +        minimum: 0
+> +        maximum: 100
+> +        default: 50
+> +
+> +    required:
+> +      - reg
+> +
+> +    additionalProperties: false
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+unevaluatedProperties: false because ref to common.yaml
 
+Frank
 
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/gpio/gpio.h>
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +    i2c {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +
+> +        backlight@6f {
+> +            compatible = "maxim,max25014";
+> +            reg = <0x6f>;
+> +            #address-cells = <1>;
+> +            #size-cells = <0>;
+> +            enable-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
+> +            interrupt-parent = <&gpio1>;
+> +            interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
+> +            power-supply = <&reg_backlight>;
+> +            pwms = <&pwm1>;
+> +            maxim,iset = <7>;
+> +
+> +            led@0 {
+> +                reg = <0>;
+> +                led-sources = <0 1 2 3>;
+> +                default-brightness = <50>;
+> +            };
+> +        };
+> +    };
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 58c7e3f678d8..606ce086f758 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -15261,6 +15261,11 @@ F:	Documentation/userspace-api/media/drivers/max2175.rst
+>  F:	drivers/media/i2c/max2175*
+>  F:	include/uapi/linux/max2175.h
+>
+> +MAX25014 BACKLIGHT DRIVER
+> +M:	Maud Spierings <maudspierings@gocontroll.com>
+> +S:	Maintained
+> +F:	Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+> +
+>  MAX31335 RTC DRIVER
+>  M:	Antoniu Miclaus <antoniu.miclaus@analog.com>
+>  L:	linux-rtc@vger.kernel.org
+>
+> --
+> 2.52.0
+>
+>

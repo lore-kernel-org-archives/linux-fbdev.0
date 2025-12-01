@@ -1,40 +1,40 @@
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40B5C22B5A3
-	for <linux-fbdev@vger.kernel.org>; Sat, 29 Nov 2025 10:28:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAFF52FE585
+	for <linux-fbdev@vger.kernel.org>; Mon,  1 Dec 2025 09:25:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.223
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764412085; cv=none; b=uZ7a9OdkdQKbQpkYE+mvveS7oM4/HXDCcnWcjMbA+d2Nvc866VKZMN/w36UsGDOVkSZJxdnN4dEpCpSPQySvW7mPYA7Cpwqw3AsMqhD3UYwRX3EWDoAToV7PUyyJIPs2SQM77Td+d/Y6g+wpyHCMSEst3fbzQ5+P73cS2DsVYSo=
+	t=1764581135; cv=none; b=VljKsQWNELGXc6N3zUPQ1FPwhPiAAr2C/EorOfSNfUVMhJkToAi7hqCvRWAEGarAElxeYb3TYvHZJwSCMfhjYbmbEUMVGPgc7j165Gptxzef5rPyDP+GANC9yuR07giG2aczIVFM6HaTa7+81Wk32Ijl41a0dwIoGEpHMkpsG58=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764412085; c=relaxed/simple;
-	bh=OsIgH7jnRXE27PuYHQEZQVfVHYE3bIlsGn8LPRz+jDw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=h3lBgtqolLi8leqRQPfuHzIjjWCxk81QOlhbZoBkePxeHi0UKfrpBD52tdCIytf/PvLlRyJnrcxjWUfF4cRjoyyCOkgwLYhJAP7bDH8DOtR1c10aD0SEgGTU4hspnRcPl+FrzMPmd1xla8gs8q2LiCzfuv1FA2DI1/JhQDvkpGs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=FMyP9X19; arc=none smtp.client-ip=185.246.85.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1764581135; c=relaxed/simple;
+	bh=ydTOmHPWY7Ybqezzk4k+0xHYKdDfJw0xqGof99RGWG8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=gYI8BfvGm84wsukFKFRxkbAZIpJVHCVH/dBtzt6eT8yla3DDjVTVAl52R+E8TvNSiNDNQ8vlJHs7YOu65iuL0QfJ1m5uvBAqn6MHkYZmzGT45VJrx8+Ux/ua8GNGjc6+WBqJ8+XZrQH0Rd9BiAkDCoRo8OGJ7//Au+wNzgYmjU8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=wIoSGk7I; arc=none smtp.client-ip=113.46.200.223
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="FMyP9X19"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 197DB4E41971;
-	Sat, 29 Nov 2025 10:28:00 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id C6FE560706;
-	Sat, 29 Nov 2025 10:27:59 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 79948102F274D;
-	Sat, 29 Nov 2025 11:27:57 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1764412079; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:content-language:in-reply-to:references;
-	bh=gzvuaBZkisdI8uhv3itEmVnMdXtPgcQ087X+dPKk1go=;
-	b=FMyP9X19OZgcb2FZJK6VpKkGEV5sjwrm95J+AAY2pWsNYT13BY1gTV3X24Yu6Ovy1pY3Da
-	4W1yR2qjK9cu0fDjuBmvBD7W+KKyh7o3ejf1IBPJ04IE18Ccz7xBITDFfkVXC88eCEBu7R
-	d1S+frJebLBbCKU4tJWbeu7fTrisq821sxUpq4FmKGf+Zv6NWLUmK4V3XL923Dm/r6I+7s
-	AZ+6tlO4grB0nK8aKMyCc9HHnyV0KU068YR6y0Aixh0zkkcMXKnaL8uAtiCouBsvqddUyQ
-	8l1FwuFukDmOlxRf/+XgH9k4GVwxhJFukJZ/ccn98UOFB2Xc9MmDAnDIn727iQ==
-Message-ID: <a4edce66-d08a-4b82-9472-b22f2fdb34eb@bootlin.com>
-Date: Sat, 29 Nov 2025 11:27:56 +0100
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="wIoSGk7I"
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=70DyG3siVbXyJAmKkksFDasRdSXuYweryE3rvQYDiDw=;
+	b=wIoSGk7I6j1eQMnEVlC2nFVDyEs/XaVDcO8SjWPUSfDJiNHZehJVGeVVMQ7rHtIxKrFZhGlas
+	mPE1l2qF2FgE6iKIP6thTmWVksBXy71NvI3vCQLx+vR7XnOWDpA8AtOlWes0IGMoDdylv/y1gqr
+	N9jc8tJ4qaFdlFoNedRhHmQ=
+Received: from mail.maildlp.com (unknown [172.19.88.163])
+	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4dKdk74bpNzmV73;
+	Mon,  1 Dec 2025 17:23:27 +0800 (CST)
+Received: from kwepemh100007.china.huawei.com (unknown [7.202.181.92])
+	by mail.maildlp.com (Postfix) with ESMTPS id B8BC51800CE;
+	Mon,  1 Dec 2025 17:25:18 +0800 (CST)
+Received: from [10.67.111.31] (10.67.111.31) by kwepemh100007.china.huawei.com
+ (7.202.181.92) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 1 Dec
+ 2025 17:25:18 +0800
+Message-ID: <224e4e5b-14ae-411c-ad6c-f73c3b946ff8@huawei.com>
+Date: Mon, 1 Dec 2025 17:25:17 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -42,51 +42,37 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/2] backlight: Add Congatec Board Controller (CGBC)
- backlight support
-To: petri.karhula@novatron.fi, Lee Jones <lee@kernel.org>,
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
- Helge Deller <deller@gmx.de>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-References: <20251127-cgbc-backlight-v4-0-626523b7173d@novatron.fi>
- <20251127-cgbc-backlight-v4-1-626523b7173d@novatron.fi>
+Subject: Re: [PATCH stable] fbdev: Fix out-of-bounds issue in sys_fillrect()
+To: Helge Deller <deller@gmx.de>
+CC: <linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>, Lu
+ Jialin <lujialin4@huawei.com>
+References: <20251112073207.1731125-1-gubowen5@huawei.com>
+ <148a116a-b893-4e91-8573-1eebc2bb5c0e@gmx.de>
 Content-Language: en-US
-From: Thomas Richard <thomas.richard@bootlin.com>
-In-Reply-To: <20251127-cgbc-backlight-v4-1-626523b7173d@novatron.fi>
-Content-Type: text/plain; charset=UTF-8
+From: Gu Bowen <gubowen5@huawei.com>
+In-Reply-To: <148a116a-b893-4e91-8573-1eebc2bb5c0e@gmx.de>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Last-TLS-Session-Version: TLSv1.3
+X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
+ kwepemh100007.china.huawei.com (7.202.181.92)
 
-On 11/27/25 4:21 PM, Petri Karhula via B4 Relay wrote:
-> From: Petri Karhula <petri.karhula@novatron.fi>
+Hi,
+
+On 11/15/2025 3:21 AM, Helge Deller wrote:
 > 
-> This driver provides backlight brightness control through the Linux
-> backlight subsystem. It communicates with the board controller to
-> adjust LCD backlight using PWM signals. Communication is done
-> through Congatec Board Controller core driver.
+> That patch does not apply to git head.
+> Can you try to reproduce with git head?
 > 
 
-[...]
+fbdev has already been refactored by commit eabb03293087 ("fbdev: 
+Refactoring the fbcon packed pixel drawing routines") on v6.15-rc1, so 
+this issue no longer exists in the mainline version. Similar question 
+has occurred in the past:
 
-> +		bl_data->current_brightness = reply_buf[0] & BLT_PWM_DUTY_MASK;
-> +
-> +		/* Verify the setting was applied correctly */
-> +		if (bl_data->current_brightness != brightness) {
-> +			dev_err(bl_data->dev,
-> +				"Brightness setting verification failed\n");
-> +			return -EIO;
-> +		}
+https://syzkaller.appspot.com/bug?extid=66bde8e1e4161d4b2cca
 
-I'm still not really convinced by other error messages, but okay let's
-keep them. Maybe add current and requested brightnesses in this message,
-it could be useful for debugging.
+After the refactoring patch was merged, this issue did not reappear, but 
+it still exists in the stable version.
 
-	"Brightness setting verification failed (X instead of Y)"
-
-Otherwise looks good to me. I will test your series
-
-Reviewed-by: Thomas Richard <thomas.richard@bootlin.com>
-
-Best Regards,
-Thomas
+BR,
+Guber

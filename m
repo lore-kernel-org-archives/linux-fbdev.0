@@ -1,234 +1,125 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 107451A9F9B;
-	Tue,  2 Dec 2025 20:23:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E2EF23ABBE
+	for <linux-fbdev@vger.kernel.org>; Tue,  2 Dec 2025 20:32:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764706996; cv=none; b=J/1ZpWhy9idNEdJPe/AWdRRx6mGz2LVl03B7ycMg7lVuLIOUOg9Ov3yH/+EvOcECYNnoUXCxLv8CgpcUaOIMQlDCSvD2z38q3Ii9NJS2im/xFtNvZeqHOFBLYpwVjfpg2JRyar5IS2wsvAKUzPdRZc3/gepx9Yl0p2SwVIeNf9k=
+	t=1764707567; cv=none; b=gbiDzoE+koYPxoGJ8Q+9n6wI4gUvJ3v7XNd+Ahnj4hBImAgjQPwvXTM86+LrDNpHoWHeftaqsZWuQ5dsYk3qZqQGjoA/Ea+9MRWvvIeKCOLZBFasXHUZ9hA1NksgwZpB9y5o9HhKa4RbUUOJz5vXgEnqs2jxh1EWEFUsw3prWo0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764706996; c=relaxed/simple;
-	bh=5okg3qKSOzCDrFMh8ZM74TVx5aD+HlYMj2Cu+hyF15g=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PprO1rctS7CDp6zUP9Cl8HC0ZLxO+ySFk8CUzuL8E5dOekbFvTLNC/NRQB9GmHoQv5AzeXTFu9+/dC0TyJCuZh6g7QWcmV+5eQ577alpv1AsR5tPl3G2uG9pHUMS+2VUGRITSBdBHlYjqOAgNH9cYqTcm+gkFwhp7WTvrE9Uu7o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LXLhyXkS; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1764707567; c=relaxed/simple;
+	bh=xu08GN+iaE1NR2CiJs7br+IQxgHuECSd8j1tKJjCegM=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Ylv1MQvGwqhU2xeeXdYIB8WnM4OGHbsoJirZ2a3UVAOTG0ABCJGGNun2pbYPKHc5NqKjRdvg36JeorDpO/qNQJtrrs8rGRXdzPcNlpQTwf04QtQG4PBYTU3nERqD+9jHQVH9mSoqfcPVNwOSEszpEdjuQ1tUnQJrRxc/WJVbcfY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SufxYRkA; arc=none smtp.client-ip=209.85.128.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LXLhyXkS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6DED2C4CEF1;
-	Tue,  2 Dec 2025 20:23:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764706995;
-	bh=5okg3qKSOzCDrFMh8ZM74TVx5aD+HlYMj2Cu+hyF15g=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=LXLhyXkStvhn6cK4QG7j0j2aZlhd60lye5CC+4V1hPwAfPiAEkSnYdd3OY483MMEs
-	 5R5mMRKRHrjS5hoGRvjo+uPFbAUpdyfy2VD8/ZAxu44GVtmReFx62MkhBVB/2bjXCt
-	 cKzmqpssrs+j9kIqBgRr0noruJZK2iJcdVChc7gVfsLdiTyT23tNZxx1GgGEPpaNPN
-	 lo4bfOzzFkw8/UpsFwloivm7tenl5p8rEqcURZhq9zPNv8lChK0jkYsjfeEpnLsDU+
-	 kKsMNE2UJ2y8Bhzvb2cHppetLvWNFuDblUQCzBc52B+aUO1rB912pSTeL8JYXkMXAn
-	 lchWvi7A6iv6w==
-From: Sasha Levin <sashal@kernel.org>
-To: stable@vger.kernel.org
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	dri-devel@lists.freedesktop.org,
-	nouveau@lists.freedesktop.org,
-	amd-gfx@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.12.y] drm, fbcon, vga_switcheroo: Avoid race condition in fbcon setup
-Date: Tue,  2 Dec 2025 15:23:12 -0500
-Message-ID: <20251202202312.2505097-1-sashal@kernel.org>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <2025120119-edgy-recycled-bcfe@gregkh>
-References: <2025120119-edgy-recycled-bcfe@gregkh>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SufxYRkA"
+Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-477563e28a3so1375555e9.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 02 Dec 2025 12:32:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1764707564; x=1765312364; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PUBtZ8cLKM5d5hZ3mQmHNgCoY0mmWdEWs/wmEJwMqZY=;
+        b=SufxYRkAmLlVxpv4POQc7Yy24G6Z7cfoCVr0wrOHbkr+bBCQKKb14vJ+ShUdzmTUGP
+         7x1Q1IsfS3BMIWAofuD5szDqePIqgjgQj/yvqMK1xaSKRivJVGm806VihXQgCpls2jms
+         Shy/82wx/1djoMP6TeMC5ZkHfyV2vX+5ONUdV8Fsj3aOgSUqfmLZ48bbxVWdLIx5Om5m
+         Czz2PWhUOlolnZ/Dz8Diq1gNegtynP3PZiQUJ0UD7ZRdjIeC9X6JH9RSx6MRrG9au4bW
+         mRSQjZuBxZkjRmApbVpL/6gakTBfbtKtSlB6teBuO+8GAqFeYHO6oRuxpEXfWxz/yaUW
+         /LJw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1764707564; x=1765312364;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=PUBtZ8cLKM5d5hZ3mQmHNgCoY0mmWdEWs/wmEJwMqZY=;
+        b=BVjx1HJKUIAjr0NrmT3lZ73nTed21IutUdJjf9QjiPw8KCM1w2nvFAz+39I3mlLgf6
+         3cONqYCRJ1sdQmACGnwbveglYT2oC5EDQbUgQjonOby1Oq+EPMeUSYd+rfuQEPD07nob
+         /bx3ZVmiAZUEehoUILsOu5b1I7OzjHLIwkG3GsMeDHEkr4PyckAgTwBDPEt5CCokdFiW
+         2qS8pU3ENjPonqmS1y7MZwgXYlp1hFgCbfBsJoV5i6H3BFGJg1LX1OJ4DKWKteorHs5I
+         vuMW+w4c7MQ7gzCv/AFeWFEGaIaJWhxUVZsnv5pBDwl5fe1DWPktAqZY3dS/TDH/FSfd
+         j4Bw==
+X-Forwarded-Encrypted: i=1; AJvYcCUipX8bPlK5Y2UTRpennGuGvRfOURH4+6TuYFPB5TMhVVct7f103vue9HC5WxgFpRsbX0spdnOu9eYwYw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyyA3uRop79Kdzt36s6IxwiDT9WXFP/rFw8JKwlv8k6nuE30o3u
+	+KW2G1nGTFTMkW8RkT+UH/xsADxC4eBzqlmDxu2fPJ0KQaCf1Jhp+U5w
+X-Gm-Gg: ASbGncvpxnI39apHdoMdczWmu22MRKz/znkfHmEih5uV7/0wmDtesmyjVfqD+9qagDC
+	ZJoqDjuyFTxJNncLPlOQCmDIdV8Ehg+xgD22KZbNDZdG8QK7c57B+wvsT8U1dhf38sq+An/PWWR
+	HSOPlF6z2PhstR7elzK5hwqlzTVGfDwZmNHp1cCuYVJsgXYFuM8dVNKTLQ+sZg5FtKxmYN69OHc
+	5vYj426ShtM7f8ZkFX4eiBXV9dwwGAZ3SRHBb8+NRkfw8DNlIiGyw0lThsJfhOh3taIqEbAxNRo
+	9/hEv8g6AB5tK5afMJnn0DMVV6aFpN3IgUIii0UJyr2KIJAIgRVGmggtHhp4Q8I+OWhJjRj+yze
+	ixGDCGHiPwCdzrAJndRRRUQGP361YCv5+3R89zBCzcSv72YqwkDmi5/JZMaejm+ojT5n6wepmge
+	YNbiWcOZ1qTgHG/O4LwWNqRT7jVUf4ibuwYORb8+kwY9BdqzVtdby5
+X-Google-Smtp-Source: AGHT+IFivlozvH6bBlGbstrebUkwLUxZxo6lElB4cxa3RUVfhbge2mArpvbfT4BqVBOBwBydEMFZ6w==
+X-Received: by 2002:a05:600c:c8f:b0:475:ddad:c3a9 with SMTP id 5b1f17b1804b1-47926fa069cmr46582875e9.13.1764707564292;
+        Tue, 02 Dec 2025 12:32:44 -0800 (PST)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4792a8ccbfesm6461965e9.13.2025.12.02.12.32.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Dec 2025 12:32:44 -0800 (PST)
+Date: Tue, 2 Dec 2025 20:32:39 +0000
+From: David Laight <david.laight.linux@gmail.com>
+To: Thorsten Blum <thorsten.blum@linux.dev>
+Cc: Helge Deller <deller@gmx.de>, Chelsy Ratnawat
+ <chelsyratnawat2001@gmail.com>, Thomas Zimmermann <tzimmermann@suse.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Raag Jadav
+ <raag.jadav@intel.com>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fbdev/pxafb: Fix multiple clamped values in
+ pxafb_adjust_timing
+Message-ID: <20251202203239.63084e0f@pumpkin>
+In-Reply-To: <C3FDBCE7-14D9-4999-B463-C2E3E384E7DB@linux.dev>
+References: <20251202181600.511166-2-thorsten.blum@linux.dev>
+	<a7213b69-f6ae-4975-8c8b-2783dbe9f9b3@gmx.de>
+	<C3FDBCE7-14D9-4999-B463-C2E3E384E7DB@linux.dev>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+On Tue, 2 Dec 2025 19:36:17 +0100
+Thorsten Blum <thorsten.blum@linux.dev> wrote:
 
-[ Upstream commit eb76d0f5553575599561010f24c277cc5b31d003 ]
+> On 2. Dec 2025, at 19:28, Helge Deller wrote:
+> > On 12/2/25 19:15, Thorsten Blum wrote:  
+> >> The variables were never clamped because the return value of clamp_val()
+> >> was not used. Fix this by assigning the clamped values, and use clamp()
+> >> instead of clamp_val().
+> >> Cc: stable@vger.kernel.org
+> >> Fixes: 3f16ff608a75 ("[ARM] pxafb: cleanup of the timing checking code")
+> >> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+> >> ---
+> >>  drivers/video/fbdev/pxafb.c | 12 ++++++------
+> >>  1 file changed, 6 insertions(+), 6 deletions(-)  
+> > 
+> > Thanks for the patch!
+> > It looks good, so I'll include it in the fbdev tree.
+> > Out of curiosity:
+> > How did you notice? Do you actually have the hardware and tested it?  
+> 
+> I only compile-tested it.
+> 
+> I stumbled upon another driver with the same bug and then used grep to
+> search for other instances and found about 6 or 7, including this one.
 
-Protect vga_switcheroo_client_fb_set() with console lock. Avoids OOB
-access in fbcon_remap_all(). Without holding the console lock the call
-races with switching outputs.
+I've just hacked minmax.h so clamp() and clamp_t() (and thus clamp_val())
+are 'static inline u64 __must_check clamp(...)'.
 
-VGA switcheroo calls fbcon_remap_all() when switching clients. The fbcon
-function uses struct fb_info.node, which is set by register_framebuffer().
-As the fb-helper code currently sets up VGA switcheroo before registering
-the framebuffer, the value of node is -1 and therefore not a legal value.
-For example, fbcon uses the value within set_con2fb_map() [1] as an index
-into an array.
+Didn't find any in any other files.
+But I think you missed some double error in the same file (nearby).
 
-Moving vga_switcheroo_client_fb_set() after register_framebuffer() can
-result in VGA switching that does not switch fbcon correctly.
+	David
 
-Therefore move vga_switcheroo_client_fb_set() under fbcon_fb_registered(),
-which already holds the console lock. Fbdev calls fbcon_fb_registered()
-from within register_framebuffer(). Serializes the helper with VGA
-switcheroo's call to fbcon_remap_all().
-
-Although vga_switcheroo_client_fb_set() takes an instance of struct fb_info
-as parameter, it really only needs the contained fbcon state. Moving the
-call to fbcon initialization is therefore cleaner than before. Only amdgpu,
-i915, nouveau and radeon support vga_switcheroo. For all other drivers,
-this change does nothing.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Link: https://elixir.bootlin.com/linux/v6.17/source/drivers/video/fbdev/core/fbcon.c#L2942 # [1]
-Fixes: 6a9ee8af344e ("vga_switcheroo: initial implementation (v15)")
-Acked-by: Javier Martinez Canillas <javierm@redhat.com>
-Acked-by: Alex Deucher <alexander.deucher@amd.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: nouveau@lists.freedesktop.org
-Cc: amd-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: <stable@vger.kernel.org> # v2.6.34+
-Link: https://patch.msgid.link/20251105161549.98836-1-tzimmermann@suse.de
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/gpu/drm/drm_fb_helper.c            | 6 ------
- drivers/gpu/drm/i915/display/intel_fbdev.c | 6 ------
- drivers/gpu/drm/radeon/radeon_fbdev.c      | 5 -----
- drivers/video/fbdev/core/fbcon.c           | 9 +++++++++
- 4 files changed, 9 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index b15ddbd65e7b5..a8971c4eb9f05 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -30,9 +30,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/console.h>
--#include <linux/pci.h>
- #include <linux/sysrq.h>
--#include <linux/vga_switcheroo.h>
- 
- #include <drm/drm_atomic.h>
- #include <drm/drm_drv.h>
-@@ -1637,10 +1635,6 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper)
- 
- 	strcpy(fb_helper->fb->comm, "[fbcon]");
- 
--	/* Set the fb info for vgaswitcheroo clients. Does nothing otherwise. */
--	if (dev_is_pci(dev->dev))
--		vga_switcheroo_client_fb_set(to_pci_dev(dev->dev), fb_helper->info);
--
- 	return 0;
- }
- 
-diff --git a/drivers/gpu/drm/i915/display/intel_fbdev.c b/drivers/gpu/drm/i915/display/intel_fbdev.c
-index 49a1ac4f54919..337cc9fc31b19 100644
---- a/drivers/gpu/drm/i915/display/intel_fbdev.c
-+++ b/drivers/gpu/drm/i915/display/intel_fbdev.c
-@@ -589,11 +589,8 @@ static int intel_fbdev_restore_mode(struct drm_i915_private *dev_priv)
- static void intel_fbdev_client_unregister(struct drm_client_dev *client)
- {
- 	struct drm_fb_helper *fb_helper = drm_fb_helper_from_client(client);
--	struct drm_device *dev = fb_helper->dev;
--	struct pci_dev *pdev = to_pci_dev(dev->dev);
- 
- 	if (fb_helper->info) {
--		vga_switcheroo_client_fb_set(pdev, NULL);
- 		drm_fb_helper_unregister_info(fb_helper);
- 	} else {
- 		drm_fb_helper_unprepare(fb_helper);
-@@ -620,7 +617,6 @@ static int intel_fbdev_client_hotplug(struct drm_client_dev *client)
- {
- 	struct drm_fb_helper *fb_helper = drm_fb_helper_from_client(client);
- 	struct drm_device *dev = client->dev;
--	struct pci_dev *pdev = to_pci_dev(dev->dev);
- 	int ret;
- 
- 	if (dev->fb_helper)
-@@ -634,8 +630,6 @@ static int intel_fbdev_client_hotplug(struct drm_client_dev *client)
- 	if (ret)
- 		goto err_drm_fb_helper_fini;
- 
--	vga_switcheroo_client_fb_set(pdev, fb_helper->info);
--
- 	return 0;
- 
- err_drm_fb_helper_fini:
-diff --git a/drivers/gpu/drm/radeon/radeon_fbdev.c b/drivers/gpu/drm/radeon/radeon_fbdev.c
-index fb70de29545c6..a197ba2f2717b 100644
---- a/drivers/gpu/drm/radeon/radeon_fbdev.c
-+++ b/drivers/gpu/drm/radeon/radeon_fbdev.c
-@@ -300,10 +300,8 @@ static void radeon_fbdev_client_unregister(struct drm_client_dev *client)
- {
- 	struct drm_fb_helper *fb_helper = drm_fb_helper_from_client(client);
- 	struct drm_device *dev = fb_helper->dev;
--	struct radeon_device *rdev = dev->dev_private;
- 
- 	if (fb_helper->info) {
--		vga_switcheroo_client_fb_set(rdev->pdev, NULL);
- 		drm_helper_force_disable_all(dev);
- 		drm_fb_helper_unregister_info(fb_helper);
- 	} else {
-@@ -325,7 +323,6 @@ static int radeon_fbdev_client_hotplug(struct drm_client_dev *client)
- {
- 	struct drm_fb_helper *fb_helper = drm_fb_helper_from_client(client);
- 	struct drm_device *dev = client->dev;
--	struct radeon_device *rdev = dev->dev_private;
- 	int ret;
- 
- 	if (dev->fb_helper)
-@@ -342,8 +339,6 @@ static int radeon_fbdev_client_hotplug(struct drm_client_dev *client)
- 	if (ret)
- 		goto err_drm_fb_helper_fini;
- 
--	vga_switcheroo_client_fb_set(rdev->pdev, fb_helper->info);
--
- 	return 0;
- 
- err_drm_fb_helper_fini:
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 1fc1e47ae2b49..e681066736dea 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -65,6 +65,7 @@
- #include <linux/string.h>
- #include <linux/kd.h>
- #include <linux/panic.h>
-+#include <linux/pci.h>
- #include <linux/printk.h>
- #include <linux/slab.h>
- #include <linux/fb.h>
-@@ -77,6 +78,7 @@
- #include <linux/interrupt.h>
- #include <linux/crc32.h> /* For counting font checksums */
- #include <linux/uaccess.h>
-+#include <linux/vga_switcheroo.h>
- #include <asm/irq.h>
- 
- #include "fbcon.h"
-@@ -2894,6 +2896,9 @@ void fbcon_fb_unregistered(struct fb_info *info)
- 
- 	console_lock();
- 
-+	if (info->device && dev_is_pci(info->device))
-+		vga_switcheroo_client_fb_set(to_pci_dev(info->device), NULL);
-+
- 	fbcon_registered_fb[info->node] = NULL;
- 	fbcon_num_registered_fb--;
- 
-@@ -3027,6 +3032,10 @@ static int do_fb_registered(struct fb_info *info)
- 		}
- 	}
- 
-+	/* Set the fb info for vga_switcheroo clients. Does nothing otherwise. */
-+	if (info->device && dev_is_pci(info->device))
-+		vga_switcheroo_client_fb_set(to_pci_dev(info->device), info);
-+
- 	return ret;
- }
- 
--- 
-2.51.0
+> 
+> Thanks,
+> Thorsten
+> 
+> 
 

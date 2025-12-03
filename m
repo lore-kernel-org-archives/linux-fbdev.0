@@ -1,125 +1,5448 @@
-Received: from mail-pg1-f175.google.com (mail-pg1-f175.google.com [209.85.215.175])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 210EA264627
-	for <linux-fbdev@vger.kernel.org>; Wed,  3 Dec 2025 03:56:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 876392D7386
+	for <linux-fbdev@vger.kernel.org>; Wed,  3 Dec 2025 09:07:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764734170; cv=none; b=Q+JikJM2PloKq8tsYxxJuxPEllVrUp7q7Cz3ODqZJcYPo1ozEHhiqEXFspkdxwR+BKGHE2U6yaD9AvdEfR5vvlbbdXft5o54EifEauKQhBInOuislhnW1qVEPJHJf69wOfhYAq6DGvRSOkYyumMWg7agPjJ9s0tw6p6zmYjrv/c=
+	t=1764752883; cv=none; b=Nz9/InjRVkS+Hmx00WlcsGF3kEDs8hX+uaIrpZuggC+6pH6Gi/E7Tf92F7d1jLRA5QfTc6cPlMDSsE64HBq1W5Kb8x2MQYXwlrK7INcCIC4asCkooyJApZLKBtNmlOi2VEXZd4pOpniv7Oz11G3dmEaciJIy+R2paDgMct9iV3g=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764734170; c=relaxed/simple;
-	bh=PMlRGDGHmJC+DPTlafzIHuUYQiPFJGWZdHKXsipGnfw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FVLk+nu8tNgd0BHmelqfcN+VIXRewgWQzzkpr87HsuiWk9WRDOkLK36zQZdsPVMbvn69suSrB4Ra3tF5qyStkloEKpZS48xTz5J9zPu46uFXBKfXf5le6bDDXM60CXvPEC1Hf3zdIVd2dhIsZ//DUyMXEyHabD9N+PkpH/mlulQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20230601.gappssmtp.com header.i=@cse-iitm-ac-in.20230601.gappssmtp.com header.b=2Ati4iUM; arc=none smtp.client-ip=209.85.215.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cse.iitm.ac.in
+	s=arc-20240116; t=1764752883; c=relaxed/simple;
+	bh=S0NamMKIuee2gD0qNn7sQwT9jalfCpbGQ51l4ttch/Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Qnfvcy7mfBo2TGK9CfHRf8cBN2QUJmmfj6tX9RghClMeG1E5IEU1UUiSflgGiysFWhL7h0kP/7fEAiBErdxImaNIKGkceqLnHK7KMHYcweY93/2U8pmtLz/28IfphdD9QVyAZyW1nRY3KPsxkgexEorOC8U/qqtr+4f6RTaQvmk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jSxP6aw5; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=W/qTNfWV; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MNpr2bUM; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=2ANmxJzZ; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20230601.gappssmtp.com header.i=@cse-iitm-ac-in.20230601.gappssmtp.com header.b="2Ati4iUM"
-Received: by mail-pg1-f175.google.com with SMTP id 41be03b00d2f7-bd610f4425fso3676582a12.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 02 Dec 2025 19:56:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cse-iitm-ac-in.20230601.gappssmtp.com; s=20230601; t=1764734164; x=1765338964; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=tAaOe3I4qqbjiAbuFCLi0zuJzOlC1rPEZWLT+Z/CQgA=;
-        b=2Ati4iUM42G+qfoc/qMwoWq76HddJFlAjPtI4SBEsbg1sbzrL47Ip5Nm/GrkHJ1AKm
-         It/dQZzif8DJ8zfDhrBOog+o7d8Ez09iYYI+y1b9ok4w0sxZkRHArIInSetbDJxd7DD1
-         CVyyho9/NpTAZ8Zo6FMY1j1Jks1UPQcAxzeWUIYvI6RyBZDcte/VIPUD1g858LWzvHof
-         ITdQCfUD0UTDEocYIx3Tc/d971TCh4TR0X6jrUu0yLotbMHbERDwAPnABsQgax0dTFcb
-         +NgDDqRoavWeKM0nxX5cz48O85jn/C3wmGH6RUXb2Gmf/wKNI/7pBbOoLSCXCvtjUN3H
-         uBoQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764734164; x=1765338964;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tAaOe3I4qqbjiAbuFCLi0zuJzOlC1rPEZWLT+Z/CQgA=;
-        b=Sf46N21Fp+lJENsqllZZX856WKif3l8SJdRltKnS5rHq/p/mzf/QOd5x/r7O/vxA44
-         Lzr7bNy+lBIwl74OP+9hVxPpeWwqXNQnriJLEEWcP4m0Tvqb3ai+NV8nrZpxkopT91sH
-         WnghK49uchAk0Jnd8AygYX3EhGKZuvBsDL6vbigoIaT30FPsJ1rUL232t/ntr389Tz9W
-         FKqDZt5p7xqlPUifDLaFYkKcr4FlBiMjDI8VpQimTeJ2kTnUUG2zWzzKQukM91YF7115
-         OSeGnM2hgkf0m8cHdRw3fISPeJ5ygPDictrf1QAwe2czwUPIgfPGz9HdWL/Be2WarWVR
-         c8tQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVMICtMXKbhvMrMPwLKCckTyycLfs/olvgnIVgJs4FnWfjFNMlHow3QrAqRVCAnd0mJ/6lNh4hIFIK4zw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx55qSAJuwKWqJWtE6uwecArO6t3GFqba3w+rUvxbgTLaj2Oarq
-	Iu0IigAFBl5X8ut7XWwi5UlV1Sb1ytnXfjoYvGa7YMrvXMNlkAJtX6O8Dvwz/jpi0i4=
-X-Gm-Gg: ASbGncv6sqR2pAdHiOyJ+2rW5oZyhKEXcax0eCMvEMCfV0zLmL54crJYT/j/HycxVzY
-	jYymGnRstBr6dOXbnk8Im37zFinEt7/sFELVVvJzB/dXDi89ly588ml0OSs23E7O1dhBCzPsn7j
-	MEhd4Spj6sEHCXnhT5vYkvrmuXUjitlOsgsblSvPQW8oJ0BTUHt4F1lAhcyHB+gUQ8co7ejAzol
-	LeZmpdb3awqnpKU88sGEYfH4ZtilShI68D+YKnjkfCiSH4EZkFA3h7RgNAd6ptGi6Ox/H7dkACb
-	wBZw4KRI/8WXHcSYKlQAC6JMrPqjVSzt3s/h8Lz1CBwGQXLz7jCF59EOU/iRvpjioP6WP7HOGxD
-	0yAviKkmeworaFRS9X9xneOf9wXd9Ei6fBPbarTgfn78W0OrLhmn8XIbnGhZCYFFyjLtQq8jtLH
-	BHcdpfyVQlaqYp440HzF6+gHdX
-X-Google-Smtp-Source: AGHT+IFef9AGSAm8GKX/qr/Br9lF5EWDpBydbgHDWnXJYMbMYZGYeYLEZP4+XBsg5LuvOZUhF/xKRg==
-X-Received: by 2002:a05:7022:91e:b0:119:e56b:98c0 with SMTP id a92af1059eb24-11df0cdb884mr855726c88.39.1764734163762;
-        Tue, 02 Dec 2025 19:56:03 -0800 (PST)
-Received: from localhost.localdomain ([49.37.219.248])
-        by smtp.googlemail.com with ESMTPSA id a92af1059eb24-11dcb057cb0sm96287741c88.9.2025.12.02.19.55.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Dec 2025 19:56:03 -0800 (PST)
-From: Abdun Nihaal <nihaal@cse.iitm.ac.in>
-To: deller@gmx.de
-Cc: Abdun Nihaal <nihaal@cse.iitm.ac.in>,
-	niederp@physik.uni-kl.de,
-	tomi.valkeinen@ti.com,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] fbdev: ssd1307fb: fix potential page leak in ssd1307fb_probe()
-Date: Wed,  3 Dec 2025 09:25:44 +0530
-Message-ID: <20251203035546.26849-1-nihaal@cse.iitm.ac.in>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jSxP6aw5";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="W/qTNfWV";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MNpr2bUM";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="2ANmxJzZ"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 921363376E;
+	Wed,  3 Dec 2025 09:07:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1764752871; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=eX4nvzLnIHaJs9QozauDqVEsShO8Sfpr12RPrUccX7U=;
+	b=jSxP6aw5l+Xd4lohyidA5oGGcMOwNWi9tNQEAIQ7ZBZfJg0aIjM8ztd48UOJv4BS8eyUMU
+	dMEUNhF6CdTeZxfOUWrnTK9gwTbHSd+e3EjkGQqh2FQf22PR2ceLz4zOczpYy0G2VGtyLI
+	6S0tAbPAyIioC6H1LNOW1wK/KCyPGk0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1764752871;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=eX4nvzLnIHaJs9QozauDqVEsShO8Sfpr12RPrUccX7U=;
+	b=W/qTNfWVb+ddeR//FGobPJKb31BVtXTG8KuC9v7WaI3pIov1Zn8a9dtaEJ2KdBqUrWrtbP
+	TO2W1lIJ2fzBDtCg==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1764752870; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=eX4nvzLnIHaJs9QozauDqVEsShO8Sfpr12RPrUccX7U=;
+	b=MNpr2bUMl9CU3Inl2fQUT/I2JWa6YhCYDkWqYRBFp/bYrJ2HOKPoXx92y+oUyVHQbOmjno
+	CM/5DPT/EPm6X8CMoTfLl067FQDNZ3DZTHSJSCmnHr2zeTlqF8BO0WbxpAKkVR7XDH3SfE
+	j7JrljAYgo78jDmFj32w2c7uD7Dwlr4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1764752870;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=eX4nvzLnIHaJs9QozauDqVEsShO8Sfpr12RPrUccX7U=;
+	b=2ANmxJzZM4SFsaTfXPeTiNU35VjZ+UYBvIpj7AqoGvQ5ZZ4KLNu+pqzhgnxF+uUZoaCAN6
+	njB0lzjLhtAIXhCA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 543933EA65;
+	Wed,  3 Dec 2025 09:07:50 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Kt4sE+b9L2lKegAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 03 Dec 2025 09:07:50 +0000
+Message-ID: <2894e19c-449a-43cf-bf2e-2fc19bb68306@suse.de>
+Date: Wed, 3 Dec 2025 10:07:49 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fonts: Add Terminus 10x18 console font
+To: Helge Deller <deller@gmx.de>,
+ Neilay Kharwadkar <neilaykharwadkar@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20251116192029.2490-1-neilaykharwadkar@gmail.com>
+ <04b704f3-9f89-497b-821a-5622c1e1b3a6@suse.de>
+ <a4fb3f2d-df6c-4f81-be96-d23c72c94688@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <a4fb3f2d-df6c-4f81-be96-d23c72c94688@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spam-Score: -4.30
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.978];
+	MIME_GOOD(-0.10)[text/plain];
+	ARC_NA(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	TO_DN_SOME(0.00)[];
+	FREEMAIL_TO(0.00)[gmx.de,gmail.com];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_THREE(0.00)[4];
+	RCVD_TLS_ALL(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.com:url]
 
-The page allocated for vmem using __get_free_pages() is not freed on the
-error paths after it. Fix that by adding a corresponding __free_pages()
-call to the error path.
+Hi
 
-Fixes: facd94bc458a ("fbdev: ssd1307fb: Allocate page aligned video memory.")
-Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
----
-Compile tested only. Not tested on hardware.
+Am 02.12.25 um 20:05 schrieb Helge Deller:
+> On 11/17/25 11:04, Thomas Zimmermann wrote:
+>> Am 16.11.25 um 20:20 schrieb Neilay Kharwadkar:
+>>> Add a compile-in option for Terminus 10x18 bitmap console font
+>>> to improve readability on modern laptop displays.
+>>>
+>>> On modern 13-16 inch laptop displays with high pixel density,
+>>> common scaled resolutions like 1280x800 and 1440x900 are widely
+>>> used.
+>>>
+>>> At these resolutions, VGA 8x16 is too small and difficult to
+>>> read for extended periods, while Terminus 16x32 is too large,
+>>> providing only 25-28 rows. The existing 10x18 font has poor
+>>> readability.
+>>>
+>>> Terminus 10x18 provides improved readability with its clean,
+>>> fixed-width design while maintaining practical row counts
+>>> (44-50 rows).
+>>>
+>>> A comfortable and readable built-in font for early boot messages,
+>>> kernel panics or whenever userspace is unavailable.
+>>>
+>>> The font was converted from standard Terminus ter-i18b.psf using
+>>> psftools and formatted to match kernel font conventions.
+>>>
+>>> This patch is non-intrusive, no options are enabled by default
+>>> so most users won't notice a thing.
+>>
+>> What is the font's license and who owns the copyright?
+>
+> Copyright seeems fine. According to [1] the font license is
+> SIL OFL 1.1, which is FSF approved. And we already have the
+> Terminus 16x32 font included in the linux kernel (CONFIG_FONT_TER16x32).
+>
+> I've applied this patch to the fbdev git tree.
+> Thomas, let me know if you have additional concerns.
 
-v1->v2:
-- Fix incorrect call to __free_pages with uninitialized values as
-  pointed out by Helge Deller. Now, the patch uses vmem and vmem_size
-  which hold valid values at the goto site.
+Not really. I just hope that not everyone's going to try to get their 
+favorite font into the kernel. There's a ioctl to load fonts from 
+userspace, which is preferred. But Terminus seems common enough to make 
+merging it reasonable.
 
-  Thanks for catching. I'm sorry I overlooked this in v1.
+Best regards
+Thomas
 
-v1 link: https://lore.kernel.org/all/20251202191225.111661-1-nihaal@cse.iitm.ac.in/
+>
+> Thanks!
+> Helge
+>
+> [1] https://terminus-font.sourceforge.net/
+>
+>
+>
+>>> Signed-off-by: Neilay Kharwadkar <neilaykharwadkar@gmail.com>
+>>> ---
+>>>   include/linux/font.h      |    4 +-
+>>>   lib/fonts/Kconfig         |   12 +
+>>>   lib/fonts/Makefile        |    1 +
+>>>   lib/fonts/font_ter10x18.c | 5143 
+>>> +++++++++++++++++++++++++++++++++++++
+>>>   lib/fonts/fonts.c         |    3 +
+>>>   5 files changed, 5162 insertions(+), 1 deletion(-)
+>>>   create mode 100644 lib/fonts/font_ter10x18.c
+>>>
+>>> diff --git a/include/linux/font.h b/include/linux/font.h
+>>> index 81caffd51bb4..fd8625cd76b2 100644
+>>> --- a/include/linux/font.h
+>>> +++ b/include/linux/font.h
+>>> @@ -35,6 +35,7 @@ struct font_desc {
+>>>   #define FONT6x10_IDX    10
+>>>   #define TER16x32_IDX    11
+>>>   #define FONT6x8_IDX    12
+>>> +#define TER10x18_IDX    13
+>>>   extern const struct font_desc    font_vga_8x8,
+>>>               font_vga_8x16,
+>>> @@ -48,7 +49,8 @@ extern const struct font_desc font_vga_8x8,
+>>>               font_mini_4x6,
+>>>               font_6x10,
+>>>               font_ter_16x32,
+>>> -            font_6x8;
+>>> +            font_6x8,
+>>> +            font_ter_10x18;
+>>>   /* Find a font with a specific name */
+>>> diff --git a/lib/fonts/Kconfig b/lib/fonts/Kconfig
+>>> index ae59b5b4e225..7d03823e46dc 100644
+>>> --- a/lib/fonts/Kconfig
+>>> +++ b/lib/fonts/Kconfig
+>>> @@ -112,6 +112,17 @@ config FONT_SUN12x22
+>>>         big letters (like the letters used in the SPARC PROM). If the
+>>>         standard font is unreadable for you, say Y, otherwise say N.
+>>> +config FONT_TER10x18
+>>> +    bool "Terminus 10x18 font (not supported by all drivers)"
+>>> +    depends on FRAMEBUFFER_CONSOLE || DRM_PANIC
+>>> +    depends on !SPARC && FONTS || SPARC
+>>> +    help
+>>> +      Terminus Font is a clean, fixed width bitmap font, designed
+>>> +      for long (8 and more hours per day) work with computers.
+>>> +      This is the high resolution version made for use with 13-16" 
+>>> laptops.
+>>> +      It fits between the normal 8x16 font and Terminus 16x32.
+>>> +      If other fonts are unreadable for you, say Y, otherwise say N.
+>>> +
+>>>   config FONT_TER16x32
+>>>       bool "Terminus 16x32 font (not supported by all drivers)"
+>>>       depends on FRAMEBUFFER_CONSOLE || DRM_PANIC
+>>> @@ -140,6 +151,7 @@ config FONT_AUTOSELECT
+>>>       depends on !FONT_SUN8x16
+>>>       depends on !FONT_SUN12x22
+>>>       depends on !FONT_10x18
+>>> +    depends on !FONT_TER10x18
+>>>       depends on !FONT_TER16x32
+>>>       depends on !FONT_6x8
+>>>       select FONT_8x16
+>>> diff --git a/lib/fonts/Makefile b/lib/fonts/Makefile
+>>> index e16f68492174..30a85a4292fa 100644
+>>> --- a/lib/fonts/Makefile
+>>> +++ b/lib/fonts/Makefile
+>>> @@ -14,6 +14,7 @@ font-objs-$(CONFIG_FONT_PEARL_8x8) += 
+>>> font_pearl_8x8.o
+>>>   font-objs-$(CONFIG_FONT_ACORN_8x8) += font_acorn_8x8.o
+>>>   font-objs-$(CONFIG_FONT_MINI_4x6)  += font_mini_4x6.o
+>>>   font-objs-$(CONFIG_FONT_6x10)      += font_6x10.o
+>>> +font-objs-$(CONFIG_FONT_TER10x18)  += font_ter10x18.o
+>>>   font-objs-$(CONFIG_FONT_TER16x32)  += font_ter16x32.o
+>>>   font-objs-$(CONFIG_FONT_6x8)       += font_6x8.o
+>>> diff --git a/lib/fonts/font_ter10x18.c b/lib/fonts/font_ter10x18.c
+>>> new file mode 100644
+>>> index 000000000000..80356e9d56c7
+>>> --- /dev/null
+>>> +++ b/lib/fonts/font_ter10x18.c
+>>> @@ -0,0 +1,5143 @@
+>>> +// SPDX-License-Identifier: GPL-2.0
+>>> +#include <linux/font.h>
+>>> +#include <linux/module.h>
+>>> +
+>>> +#define FONTDATAMAX 9216
+>>> +
+>>> +static const struct font_data fontdata_ter10x18 = {
+>>> +    { 0, 0, FONTDATAMAX, 0 }, {
+>>> +    /* 0 0x00 '^@' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 1 0x01 '^A' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x80, 0x40, /* #--------# */
+>>> +    0x80, 0x40, /* #--------# */
+>>> +    0xb3, 0x40, /* #-##--##-# */
+>>> +    0xb3, 0x40, /* #-##--##-# */
+>>> +    0x80, 0x40, /* #--------# */
+>>> +    0x80, 0x40, /* #--------# */
+>>> +    0xbf, 0x40, /* #-######-# */
+>>> +    0x9e, 0x40, /* #--####--# */
+>>> +    0x80, 0x40, /* #--------# */
+>>> +    0x80, 0x40, /* #--------# */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 2 0x02 '^B' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xcc, 0xc0, /* ##--##--## */
+>>> +    0xcc, 0xc0, /* ##--##--## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xc0, 0xc0, /* ##------## */
+>>> +    0xe1, 0xc0, /* ###----### */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 3 0x03 '^C' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x73, 0x80, /* -###--###- */
+>>> +    0xf3, 0xc0, /* ####--#### */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 4 0x04 '^D' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 5 0x05 '^E' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 6 0x06 '^F' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 7 0x07 '^G' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 8 0x08 '^H' */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xf3, 0xc0, /* ####--#### */
+>>> +    0xe1, 0xc0, /* ###----### */
+>>> +    0xe1, 0xc0, /* ###----### */
+>>> +    0xf3, 0xc0, /* ####--#### */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +
+>>> +    /* 9 0x09 '^I' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x21, 0x00, /* --#----#-- */
+>>> +    0x21, 0x00, /* --#----#-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 10 0x0a '^J' */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xe1, 0xc0, /* ###----### */
+>>> +    0xcc, 0xc0, /* ##--##--## */
+>>> +    0xde, 0xc0, /* ##-####-## */
+>>> +    0xde, 0xc0, /* ##-####-## */
+>>> +    0xcc, 0xc0, /* ##--##--## */
+>>> +    0xe1, 0xc0, /* ###----### */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +
+>>> +    /* 11 0x0b '^K' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0f, 0x80, /* ----#####- */
+>>> +    0x03, 0x80, /* ------###- */
+>>> +    0x06, 0x80, /* -----##-#- */
+>>> +    0x0c, 0x80, /* ----##--#- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 12 0x0c '^L' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 13 0x0d '^M' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x31, 0x80, /* --##---##- */
+>>> +    0x31, 0x80, /* --##---##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0xf0, 0x00, /* ####------ */
+>>> +    0xe0, 0x00, /* ###------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 14 0x0e '^N' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x63, 0x80, /* -##---###- */
+>>> +    0xe3, 0x00, /* ###---##-- */
+>>> +    0xc0, 0x00, /* ##-------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 15 0x0f '^O' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xcc, 0xc0, /* ##--##--## */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0xf3, 0xc0, /* ####--#### */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0xcc, 0xc0, /* ##--##--## */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 16 0x10 '^P' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xc0, 0x00, /* ##-------- */
+>>> +    0xf0, 0x00, /* ####------ */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xff, 0x00, /* ########-- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0x00, /* ########-- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xf0, 0x00, /* ####------ */
+>>> +    0xc0, 0x00, /* ##-------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 17 0x11 '^Q' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0xc0, /* --------## */
+>>> +    0x03, 0xc0, /* ------#### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x03, 0xc0, /* ------#### */
+>>> +    0x00, 0xc0, /* --------## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 18 0x12 '^R' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 19 0x13 '^S' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 20 0x14 '^T' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3d, 0x80, /* --####-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 21 0x15 '^U' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1b, 0x00, /* ---##-##-- */
+>>> +    0x0e, 0x00, /* ----###--- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 22 0x16 '^V' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 23 0x17 '^W' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 24 0x18 '^X' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 25 0x19 '^Y' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 26 0x1a '^Z' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x04, 0x00, /* -----#---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x04, 0x00, /* -----#---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 27 0x1b '^[' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x10, 0x00, /* ---#------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x10, 0x00, /* ---#------ */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 28 0x1c '^\' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 29 0x1d '^]' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x12, 0x00, /* ---#--#--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x12, 0x00, /* ---#--#--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 30 0x1e '^^' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 31 0x1f '^_' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 32 0x20 ' ' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 33 0x21 '!' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 34 0x22 '"' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 35 0x23 '#' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 36 0x24 '$' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 37 0x25 '%' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x73, 0x00, /* -###--##-- */
+>>> +    0x53, 0x00, /* -#-#--##-- */
+>>> +    0x76, 0x00, /* -###-##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x37, 0x00, /* --##-###-- */
+>>> +    0x65, 0x00, /* -##--#-#-- */
+>>> +    0x67, 0x00, /* -##--###-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 38 0x26 '&' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3c, 0x00, /* --####---- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x3c, 0x00, /* --####---- */
+>>> +    0x39, 0x80, /* --###--##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0xc7, 0x00, /* ##---###-- */
+>>> +    0xc3, 0x00, /* ##----##-- */
+>>> +    0xc3, 0x00, /* ##----##-- */
+>>> +    0x67, 0x80, /* -##--####- */
+>>> +    0x3d, 0x80, /* --####-##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 39 0x27 ''' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 40 0x28 '(' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 41 0x29 ')' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 42 0x2a '*' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 43 0x2b '+' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 44 0x2c ',' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 45 0x2d '-' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 46 0x2e '.' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 47 0x2f '/' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 48 0x30 '0' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x63, 0x80, /* -##---###- */
+>>> +    0x67, 0x80, /* -##--####- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x79, 0x80, /* -####--##- */
+>>> +    0x71, 0x80, /* -###---##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 49 0x31 '1' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x3c, 0x00, /* --####---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 50 0x32 '2' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 51 0x33 '3' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x1f, 0x00, /* ---#####-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 52 0x34 '4' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x03, 0x80, /* ------###- */
+>>> +    0x07, 0x80, /* -----####- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x19, 0x80, /* ---##--##- */
+>>> +    0x31, 0x80, /* --##---##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 53 0x35 '5' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 54 0x36 '6' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1f, 0x00, /* ---#####-- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 55 0x37 '7' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 56 0x38 '8' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 57 0x39 '9' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 58 0x3a ':' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 59 0x3b ';' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 60 0x3c '<' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 61 0x3d '=' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 62 0x3e '>' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 63 0x3f '?' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 64 0x40 '@' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xcf, 0x80, /* ##--#####- */
+>>> +    0xd9, 0x80, /* ##-##--##- */
+>>> +    0xd9, 0x80, /* ##-##--##- */
+>>> +    0xd9, 0x80, /* ##-##--##- */
+>>> +    0xd9, 0x80, /* ##-##--##- */
+>>> +    0xcf, 0x80, /* ##--#####- */
+>>> +    0xc0, 0x00, /* ##-------- */
+>>> +    0xc0, 0x00, /* ##-------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 65 0x41 'A' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 66 0x42 'B' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 67 0x43 'C' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 68 0x44 'D' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7e, 0x00, /* -######--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x7e, 0x00, /* -######--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 69 0x45 'E' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7e, 0x00, /* -######--- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 70 0x46 'F' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7e, 0x00, /* -######--- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 71 0x47 'G' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x67, 0x80, /* -##--####- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 72 0x48 'H' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 73 0x49 'I' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 74 0x4a 'J' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x07, 0x80, /* -----####- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 75 0x4b 'K' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x78, 0x00, /* -####----- */
+>>> +    0x78, 0x00, /* -####----- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 76 0x4c 'L' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 77 0x4d 'M' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x80, 0x80, /* #-------#- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xe3, 0x80, /* ###---###- */
+>>> +    0xf7, 0x80, /* ####-####- */
+>>> +    0xdd, 0x80, /* ##-###-##- */
+>>> +    0xc9, 0x80, /* ##--#--##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 78 0x4e 'N' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x71, 0x80, /* -###---##- */
+>>> +    0x79, 0x80, /* -####--##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x67, 0x80, /* -##--####- */
+>>> +    0x63, 0x80, /* -##---###- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 79 0x4f 'O' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 80 0x50 'P' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 81 0x51 'Q' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x67, 0x80, /* -##--####- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 82 0x52 'R' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x78, 0x00, /* -####----- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 83 0x53 'S' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 84 0x54 'T' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 85 0x55 'U' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 86 0x56 'V' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 87 0x57 'W' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc9, 0x80, /* ##--#--##- */
+>>> +    0xdd, 0x80, /* ##-###-##- */
+>>> +    0xf7, 0x80, /* ####-####- */
+>>> +    0xe3, 0x80, /* ###---###- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0x80, 0x80, /* #-------#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 88 0x58 'X' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 89 0x59 'Y' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 90 0x5a 'Z' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 91 0x5b '[' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 92 0x5c '\' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 93 0x5d ']' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 94 0x5e '^' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 95 0x5f '_' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 96 0x60 '`' */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 97 0x61 'a' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 98 0x62 'b' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 99 0x63 'c' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 100 0x64 'd' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 101 0x65 'e' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 102 0x66 'f' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x07, 0x80, /* -----####- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 103 0x67 'g' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +
+>>> +    /* 104 0x68 'h' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 105 0x69 'i' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 106 0x6a 'j' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x07, 0x00, /* -----###-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +
+>>> +    /* 107 0x6b 'k' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x78, 0x00, /* -####----- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 108 0x6c 'l' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 109 0x6d 'm' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 110 0x6e 'n' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 111 0x6f 'o' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 112 0x70 'p' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +
+>>> +    /* 113 0x71 'q' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +
+>>> +    /* 114 0x72 'r' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x6f, 0x80, /* -##-#####- */
+>>> +    0x78, 0x00, /* -####----- */
+>>> +    0x70, 0x00, /* -###------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 115 0x73 's' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 116 0x74 't' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x7e, 0x00, /* -######--- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0f, 0x00, /* ----####-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 117 0x75 'u' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 118 0x76 'v' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 119 0x77 'w' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 120 0x78 'x' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 121 0x79 'y' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +
+>>> +    /* 122 0x7a 'z' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 123 0x7b '{' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x07, 0x00, /* -----###-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x38, 0x00, /* --###----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x07, 0x00, /* -----###-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 124 0x7c '|' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 125 0x7d '}' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x38, 0x00, /* --###----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x07, 0x00, /* -----###-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x38, 0x00, /* --###----- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 126 0x7e '~' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x39, 0x80, /* --###--##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x67, 0x00, /* -##--###-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 127 0x7f '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x08, 0x00, /* ----#----- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0xff, 0x80, /* #########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 128 0x80 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +
+>>> +    /* 129 0x81 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 130 0x82 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 131 0x83 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 132 0x84 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 133 0x85 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 134 0x86 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 135 0x87 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +
+>>> +    /* 136 0x88 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 137 0x89 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 138 0x8a '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 139 0x8b '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 140 0x8c '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 141 0x8d '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 142 0x8e '' */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 143 0x8f '' */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 144 0x90 '' */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7e, 0x00, /* -######--- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 145 0x91 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7b, 0x80, /* -####-###- */
+>>> +    0x0c, 0xc0, /* ----##--## */
+>>> +    0x0c, 0xc0, /* ----##--## */
+>>> +    0x7c, 0xc0, /* -#####--## */
+>>> +    0xcf, 0xc0, /* ##--###### */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0xcc, 0xc0, /* ##--##--## */
+>>> +    0x77, 0x80, /* -###-####- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 146 0x92 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0xc0, /* -######### */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc7, 0xc0, /* ##---##### */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 147 0x93 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 148 0x94 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 149 0x95 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 150 0x96 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 151 0x97 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 152 0x98 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +
+>>> +    /* 153 0x99 '' */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 154 0x9a '' */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 155 0x9b '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 156 0x9c '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x7e, 0x00, /* -######--- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x31, 0x80, /* --##---##- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 157 0x9d '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 158 0x9e '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0xfb, 0x00, /* #####-##-- */
+>>> +    0xc3, 0x00, /* ##----##-- */
+>>> +    0xc7, 0x80, /* ##---####- */
+>>> +    0xc3, 0x00, /* ##----##-- */
+>>> +    0xc3, 0x00, /* ##----##-- */
+>>> +    0xc3, 0x00, /* ##----##-- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 159 0x9f '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x07, 0x00, /* -----###-- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x38, 0x00, /* --###----- */
+>>> +
+>>> +    /* 160 0xa0 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 161 0xa1 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 162 0xa2 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 163 0xa3 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x80, /* --#######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 164 0xa4 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3b, 0x80, /* --###-###- */
+>>> +    0x6e, 0x00, /* -##-###--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 165 0xa5 '' */
+>>> +    0x3b, 0x80, /* --###-###- */
+>>> +    0x6e, 0x00, /* -##-###--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x71, 0x80, /* -###---##- */
+>>> +    0x79, 0x80, /* -####--##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x67, 0x80, /* -##--####- */
+>>> +    0x63, 0x80, /* -##---###- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 166 0xa6 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 167 0xa7 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 168 0xa8 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 169 0xa9 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 170 0xaa '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 171 0xab '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x70, 0x00, /* -###------ */
+>>> +    0x30, 0x80, /* --##----#- */
+>>> +    0x31, 0x80, /* --##---##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x37, 0x00, /* --##-###-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0xc1, 0x80, /* ##-----##- */
+>>> +    0x83, 0x00, /* #-----##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0f, 0x80, /* ----#####- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 172 0xac '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x70, 0x00, /* -###------ */
+>>> +    0x30, 0x80, /* --##----#- */
+>>> +    0x31, 0x80, /* --##---##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x19, 0x80, /* ---##--##- */
+>>> +    0x33, 0x80, /* --##--###- */
+>>> +    0x67, 0x80, /* -##--####- */
+>>> +    0xcd, 0x80, /* ##--##-##- */
+>>> +    0x8f, 0x80, /* #---#####- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 173 0xad '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 174 0xae '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0xc0, /* ----##--## */
+>>> +    0x19, 0x80, /* ---##--##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x19, 0x80, /* ---##--##- */
+>>> +    0x0c, 0xc0, /* ----##--## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 175 0xaf '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x19, 0x80, /* ---##--##- */
+>>> +    0x0c, 0xc0, /* ----##--## */
+>>> +    0x19, 0x80, /* ---##--##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x66, 0x00, /* -##--##--- */
+>>> +    0xcc, 0x00, /* ##--##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 176 0xb0 '' */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 177 0xb1 '' */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0x55, 0x40, /* -#-#-#-#-# */
+>>> +
+>>> +    /* 178 0xb2 '' */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xaa, 0x80, /* #-#-#-#-#- */
+>>> +
+>>> +    /* 179 0xb3 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 180 0xb4 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 181 0xb5 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 182 0xb6 '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 183 0xb7 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xfe, 0x00, /* #######--- */
+>>> +    0xfe, 0x00, /* #######--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 184 0xb8 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 185 0xb9 '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 186 0xba '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 187 0xbb '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xfe, 0x00, /* #######--- */
+>>> +    0xfe, 0x00, /* #######--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 188 0xbc '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0xf6, 0x00, /* ####-##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0xfe, 0x00, /* #######--- */
+>>> +    0xfe, 0x00, /* #######--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 189 0xbd '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0xfe, 0x00, /* #######--- */
+>>> +    0xfe, 0x00, /* #######--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 190 0xbe '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 191 0xbf '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 192 0xc0 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 193 0xc1 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 194 0xc2 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 195 0xc3 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 196 0xc4 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 197 0xc5 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 198 0xc6 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 199 0xc7 '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 200 0xc8 '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 201 0xc9 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 202 0xca '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0xf7, 0xc0, /* ####-##### */
+>>> +    0xf7, 0xc0, /* ####-##### */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 203 0xcb '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xf7, 0xc0, /* ####-##### */
+>>> +    0xf7, 0xc0, /* ####-##### */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 204 0xcc '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x37, 0xc0, /* --##-##### */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 205 0xcd '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 206 0xce '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0xf7, 0xc0, /* ####-##### */
+>>> +    0xf7, 0xc0, /* ####-##### */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xf7, 0xc0, /* ####-##### */
+>>> +    0xf7, 0xc0, /* ####-##### */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 207 0xcf '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 208 0xd0 '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 209 0xd1 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 210 0xd2 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 211 0xd3 '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 212 0xd4 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 213 0xd5 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 214 0xd6 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x3f, 0xc0, /* --######## */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 215 0xd7 '' */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +    0x36, 0x00, /* --##-##--- */
+>>> +
+>>> +    /* 216 0xd8 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 217 0xd9 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0xfc, 0x00, /* ######---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 218 0xda '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0f, 0xc0, /* ----###### */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 219 0xdb '' */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +
+>>> +    /* 220 0xdc '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +
+>>> +    /* 221 0xdd '' */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +    0xf8, 0x00, /* #####----- */
+>>> +
+>>> +    /* 222 0xde '' */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +    0x07, 0xc0, /* -----##### */
+>>> +
+>>> +    /* 223 0xdf '' */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0xff, 0xc0, /* ########## */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 224 0xe0 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7d, 0x80, /* -#####-##- */
+>>> +    0xc7, 0x00, /* ##---###-- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc6, 0x00, /* ##---##--- */
+>>> +    0xc7, 0x00, /* ##---###-- */
+>>> +    0x7d, 0x80, /* -#####-##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 225 0xe1 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x62, 0x00, /* -##---#--- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x7f, 0x00, /* -#######-- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +
+>>> +    /* 226 0xe2 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 227 0xe3 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 228 0xe4 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 229 0xe5 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1f, 0xc0, /* ---####### */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 230 0xe6 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x63, 0x80, /* -##---###- */
+>>> +    0x7d, 0x80, /* -#####-##- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +
+>>> +    /* 231 0xe7 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x07, 0x00, /* -----###-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 232 0xe8 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 233 0xe9 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 234 0xea '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x73, 0x80, /* -###--###- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 235 0xeb '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 236 0xec '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 237 0xed '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x01, 0x80, /* -------##- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x67, 0x80, /* -##--####- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x79, 0x80, /* -####--##- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 238 0xee '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1f, 0x80, /* ---######- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x60, 0x00, /* -##------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x1f, 0x80, /* ---######- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 239 0xef '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x61, 0x80, /* -##----##- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 240 0xf0 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 241 0xf1 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 242 0xf2 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 243 0xf3 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x30, 0x00, /* --##------ */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 244 0xf4 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x07, 0x00, /* -----###-- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0d, 0x80, /* ----##-##- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +
+>>> +    /* 245 0xf5 '' */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x6c, 0x00, /* -##-##---- */
+>>> +    0x38, 0x00, /* --###----- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 246 0xf6 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x7f, 0x80, /* -########- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 247 0xf7 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x39, 0x80, /* --###--##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x67, 0x00, /* -##--###-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x39, 0x80, /* --###--##- */
+>>> +    0x6d, 0x80, /* -##-##-##- */
+>>> +    0x67, 0x00, /* -##--###-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 248 0xf8 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 249 0xf9 '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x1c, 0x00, /* ---###---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 250 0xfa '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 251 0xfb '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x03, 0x80, /* ------###- */
+>>> +    0x03, 0x80, /* ------###- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x03, 0x00, /* ------##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x63, 0x00, /* -##---##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x1b, 0x00, /* ---##-##-- */
+>>> +    0x0f, 0x00, /* ----####-- */
+>>> +    0x07, 0x00, /* -----###-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 252 0xfc '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3e, 0x00, /* --#####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 253 0xfd '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x1e, 0x00, /* ---####--- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x33, 0x00, /* --##--##-- */
+>>> +    0x06, 0x00, /* -----##--- */
+>>> +    0x0c, 0x00, /* ----##---- */
+>>> +    0x18, 0x00, /* ---##----- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 254 0xfe '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x3f, 0x00, /* --######-- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +
+>>> +    /* 255 0xff '' */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +    0x00, 0x00, /* ---------- */
+>>> +} };
+>>> +
+>>> +
+>>> +const struct font_desc font_ter_10x18 = {
+>>> +    .idx    = TER10x18_IDX,
+>>> +    .name    = "TER10x18",
+>>> +    .width    = 10,
+>>> +    .height = 18,
+>>> +    .charcount = 256,
+>>> +    .data    = fontdata_ter10x18.data,
+>>> +#ifdef __sparc__
+>>> +    .pref    = 5,
+>>> +#else
+>>> +    .pref    = -1,
+>>> +#endif
+>>> +};
+>>> diff --git a/lib/fonts/fonts.c b/lib/fonts/fonts.c
+>>> index 47e34950b665..a7f118b30171 100644
+>>> --- a/lib/fonts/fonts.c
+>>> +++ b/lib/fonts/fonts.c
+>>> @@ -54,6 +54,9 @@ static const struct font_desc *fonts[] = {
+>>>   #ifdef CONFIG_FONT_6x10
+>>>       &font_6x10,
+>>>   #endif
+>>> +#ifdef CONFIG_FONT_TER10x18
+>>> +    &font_ter_10x18,
+>>> +#endif
+>>>   #ifdef CONFIG_FONT_TER16x32
+>>>       &font_ter_16x32,
+>>>   #endif
+>>
+>
+>
 
- drivers/video/fbdev/ssd1307fb.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index aa6cc0a8151a..83dd31fa1fab 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -680,7 +680,7 @@ static int ssd1307fb_probe(struct i2c_client *client)
- 	if (!ssd1307fb_defio) {
- 		dev_err(dev, "Couldn't allocate deferred io.\n");
- 		ret = -ENOMEM;
--		goto fb_alloc_error;
-+		goto fb_defio_error;
- 	}
- 
- 	ssd1307fb_defio->delay = HZ / refreshrate;
-@@ -757,6 +757,8 @@ static int ssd1307fb_probe(struct i2c_client *client)
- 		regulator_disable(par->vbat_reg);
- reset_oled_error:
- 	fb_deferred_io_cleanup(info);
-+fb_defio_error:
-+	__free_pages(vmem, get_order(vmem_size));
- fb_alloc_error:
- 	framebuffer_release(info);
- 	return ret;
 -- 
-2.43.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+
 

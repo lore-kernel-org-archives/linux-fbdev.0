@@ -1,96 +1,91 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2C09334C06
-	for <linux-fbdev@vger.kernel.org>; Thu,  4 Dec 2025 09:17:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB1A65B5AB;
+	Thu,  4 Dec 2025 14:35:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1764839863; cv=none; b=G+kZJBh3fX6s0P13RGwbNteaFfHQIi2s5jJ6ukTbNEJluSYYduLNFGx48Y0Ylsrj0M28kenF3IB/YycjQapiYpAWEeQG+DaTp9y5wM8OBM56/Kab5fDlwJG3JiCGvuEzouMLCbpxW98wOtx3b1p/motTfjSn/jt5OB3eteBTDoY=
+	t=1764858928; cv=none; b=mzuMtTsNfiVyFRqj1dj4MfaHQFA8b4lIohi0AY4K5JoyRnov/yvjY8Izm0ASSpTF3X9RnPgAlMqGFvayXcz8rqijJJQCH9DLRj6h3DD4MTCCphpU79G/5WFynxKU0YUwj0d2XguZx1gJQa+cgiZwJAXtImIxK+W8Csg+raHoG4Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1764839863; c=relaxed/simple;
-	bh=bdxR7v9DL4giaQ0nD6cGSOn8HPdLK+CBHB+mv5p51TE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rRwrzqEVKMtJ8+iMtaGwHYY/B5a8BgX9H6mt4VTYpU6r2n/t4Qvn4Z/W3VJm1GdMCut2w9IRkAopfodFjssKA0XABrIDRvREdWHJrxlrMB3/wF3YupTKmwM0rmoKJhiKceJcIKNlfbJlgA5CeCJ2dzM7wFBt5+RjfRKcHbPOfMw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lXMJFlx5; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1764858928; c=relaxed/simple;
+	bh=jcPepnZLZgpDua5txvocFEmcFpPGA3RIdeogtsflON8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Z4mrD3r4YIQ8gUDk9ZJJ0FMQQfO1ZjnpCTOTGeWFsFiMdOuTfc6vPi7459qLgA/ypX/vYhDzjRF30ffVuKOXYyc5F3By2nEWAQQsN0UyNI5CSFozbl53Hmqc+us4x6m3i0BxLpqd3k8xSNi/uh0NUQuDNBZjs6LKMILPwUA9QT8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qv3J2RDL; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lXMJFlx5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 866A6C4AF0B
-	for <linux-fbdev@vger.kernel.org>; Thu,  4 Dec 2025 09:17:43 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qv3J2RDL"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 5A52DC116B1;
+	Thu,  4 Dec 2025 14:35:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764839863;
-	bh=bdxR7v9DL4giaQ0nD6cGSOn8HPdLK+CBHB+mv5p51TE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=lXMJFlx51rTedas29KHnOrmyDSqkZ9OMYrKSulTiX57PBwHm2eQiqLevCstNDBnVT
-	 nCVGTNp7fzETozRNuQAA5mbYmXhdurch8QsIn1ts0SUX0878qPP6F5FVDYrBr3wT9W
-	 AkgTKbQXFCzm1WMgZMKHaINZLTSqwLCCAD0dAxU5Kk45tsxO0uZPJvt91vcWn+0bYC
-	 C2IgMJeK7my4B4xpP9tsR0pWBNKZ4d4GMAlf00wpJGT2bjit1qFoztrZDlC8sl6QNP
-	 7TWkDlYiX/OoujuaVpQfW9eeV92YLP9lkU3JZRQx/bEk4561i1k13l8QYbKxWEI4oz
-	 nLySSoiGo2EBQ==
-Received: by mail-lf1-f50.google.com with SMTP id 2adb3069b0e04-596ba05aaecso664917e87.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 04 Dec 2025 01:17:43 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUtpvmAh5uGG42LtkC8lhwEJ6fx7GuNwnUn5FTYr1Lz8UTcM/vK+JneQqHrbhNFYEugEMvA/89CLGF8Sw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw3P2evaKknMzg+1IiPpX0bXmgeTKXXcU9yh+CBwMrW90c3U1Zq
-	dDcjgiSQisN8PjU/F1Uz8YnnUEG/YNrJ2lcC23vq3m4gHv3DWKU/RAJYcKh8wjCOJNrAi9bxnE5
-	qIUaGitWlzxmJLC0bx6OpCZByBKCggeU=
-X-Google-Smtp-Source: AGHT+IEepIIomfWFRr0Rx3UmKjb+4HGFPEe9u/4871RbpTRAjdKjp2QqrAmQWNspq2CaP1lGYKWgUBnucw5FQcFMAE4=
-X-Received: by 2002:a05:6512:3b0e:b0:55f:4633:7b2 with SMTP id
- 2adb3069b0e04-597d3fdddf4mr1972090e87.46.1764839861912; Thu, 04 Dec 2025
- 01:17:41 -0800 (PST)
+	s=k20201202; t=1764858928;
+	bh=jcPepnZLZgpDua5txvocFEmcFpPGA3RIdeogtsflON8=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=qv3J2RDLwPlkbGtjD7fB8ZxiEBr1/tQ1zXFJtXLkt2Le/h+/PGf4lodjfJiVob+2p
+	 b/VPSyHrw7b0+Z6OPp5JEN06qvN8ltpfqzFt4QLT9My+iWF6JRXIaDQ/1+kwxd58O/
+	 oLEtHaG4eCzTsigp0uVSoWpu548QgZrG3z/HdH+n4zlvwnufM9RvSw8M90v1aD8C28
+	 qSItcXzI+YfTKiPsWoHoeAK2CcfWg3ExgU3X071gfnjPRkJ5Uo3pFjXcARg+KFoKJ0
+	 V+fOWcrHRgo6cqI24kKK2UzUTk/Yw+zW23qs2cqwtU8rPCQxKnY6fCc3Mv+J35Osme
+	 ktrovyxVz1QAQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C4D6D206B2;
+	Thu,  4 Dec 2025 14:35:28 +0000 (UTC)
+From: Petri Karhula via B4 Relay <devnull+petri.karhula.novatron.fi@kernel.org>
+Date: Thu, 04 Dec 2025 14:35:27 +0000
+Subject: [PATCH v5 2/2] mfd: cgbc: Add support for backlight
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251126160854.553077-1-tzimmermann@suse.de> <aSe1ZBXa3JBidhem@r1chard>
- <fc4ea259-3389-46e2-b860-972aa8179507@suse.de>
-In-Reply-To: <fc4ea259-3389-46e2-b860-972aa8179507@suse.de>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Thu, 4 Dec 2025 10:17:29 +0100
-X-Gmail-Original-Message-ID: <CAMj1kXE8Q6FGX5+64gPyW=ExicR4UbnEDeW4ycCsSsD2WtaYJA@mail.gmail.com>
-X-Gm-Features: AWmQ_bm9xn92SSdHRbzJXHCDOFUkHMVJIr0kEdVYpgmMwEspup4WiDKMgeR24mo
-Message-ID: <CAMj1kXE8Q6FGX5+64gPyW=ExicR4UbnEDeW4ycCsSsD2WtaYJA@mail.gmail.com>
-Subject: Re: [PATCH v3 0/9] arch,sysfb,efi: Support EDID on non-x86 EFI systems
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Richard Lyu <richard.lyu@suse.com>, javierm@redhat.com, arnd@arndb.de, 
-	helgaas@kernel.org, x86@kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, 
-	loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, 
-	dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20251204-cgbc-backlight-v5-2-26f1be6a69c3@novatron.fi>
+References: <20251204-cgbc-backlight-v5-0-26f1be6a69c3@novatron.fi>
+In-Reply-To: <20251204-cgbc-backlight-v5-0-26f1be6a69c3@novatron.fi>
+To: Thomas Richard <thomas.richard@bootlin.com>, Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+ Helge Deller <deller@gmx.de>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, Petri Karhula <petri.karhula@novatron.fi>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1764858927; l=730;
+ i=petri.karhula@novatron.fi; s=20251118; h=from:subject:message-id;
+ bh=KPNSZCbWidPbzGQwgMCbuFj/C6Dnnhi7zAXThQ+Pso8=;
+ b=qodL7XDtf8qnh34WGfen5MG7V/8ECPtObHwrm0SZEeQ7KZYuXD00kUX91CRBxrVkTBH+KPESd
+ tUPwb80sfWgB5lJeyV3gkaXjleoV+IOHUAMvMhAkfirjJ/j5kbwOpzV
+X-Developer-Key: i=petri.karhula@novatron.fi; a=ed25519;
+ pk=LRYJ99jPPsHJwdJEPkqlmzAMqo6oyw7I421aHEfDp7o=
+X-Endpoint-Received: by B4 Relay for petri.karhula@novatron.fi/20251118
+ with auth_id=567
+X-Original-From: Petri Karhula <petri.karhula@novatron.fi>
+Reply-To: petri.karhula@novatron.fi
 
-On Thu, 27 Nov 2025 at 08:43, Thomas Zimmermann <tzimmermann@suse.de> wrote:
->
-> Hi
->
-> Am 27.11.25 um 03:20 schrieb Richard Lyu:
-> > Hi Thomas,
-> >
-> > I am attempting to test this patch series but encountered merge conflicts when applying it to various trees.
-> > Could you please clarify the specific base commit (or branch/tag) this series was generated against?
->
-> Thanks for testing.
->
-> >
-> > When testing on the next branch on commits 7a2ff00 and e41ef37, I hit a conflict on PATCH v3 4/9:
-> > patching file drivers/pci/vgaarb.c
-> > Hunk #2 FAILED at 557.
-> > 1 out of 2 hunks FAILED -- rejects in file drivers/pci/vgaarb.c
-> >
-> > When testing against 3a86608 (Linux 6.18-rc1), the following conflicts occurred:
-> > patching file drivers/gpu/drm/sysfb/efidrm.c
-> > Hunk #1 FAILED at 24.
-> > 1 out of 2 hunks FAILED -- rejects in file drivers/gpu/drm/sysfb/efidrm.c
-> > patching file drivers/gpu/drm/sysfb/vesadrm.c
-> > Hunk #1 FAILED at 25.
-> > 1 out of 2 hunks FAILED -- rejects in file drivers/gpu/drm/sysfb/vesadrm.c
-> >
-> > Please let me know the correct base, and I will retest.
->
-> It's in the cover letter: d724c6f85e80a23ed46b7ebc6e38b527c09d64f5 The
-> commit is in linux-next. The idea is that the EFI tree can pick up the
-> changes easily in the next cycle. linux-next seemed like the best
-> choice. Best regards Thomas
+From: Petri Karhula <petri.karhula@novatron.fi>
 
-Thanks. I will queue this up as soon as -rc1 is released.
+The Board Controller has control for display backlight.
+Add backlight cell for the cgbc-backlight driver which
+adds support for backlight brightness control.
+
+Signed-off-by: Petri Karhula <petri.karhula@novatron.fi>
+---
+ drivers/mfd/cgbc-core.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/mfd/cgbc-core.c b/drivers/mfd/cgbc-core.c
+index 4782ff1114a9..10bb4b414c34 100644
+--- a/drivers/mfd/cgbc-core.c
++++ b/drivers/mfd/cgbc-core.c
+@@ -237,6 +237,7 @@ static struct mfd_cell cgbc_devs[] = {
+ 	{ .name = "cgbc-i2c", .id = 1 },
+ 	{ .name = "cgbc-i2c", .id = 2 },
+ 	{ .name = "cgbc-hwmon"	},
++	{ .name = "cgbc-backlight" },
+ };
+ 
+ static int cgbc_map(struct cgbc_device_data *cgbc)
+
+-- 
+2.34.1
+
+

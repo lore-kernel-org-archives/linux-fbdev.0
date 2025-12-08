@@ -1,102 +1,407 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 227DB285050
-	for <linux-fbdev@vger.kernel.org>; Mon,  8 Dec 2025 18:27:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55E0D2D3EC7
+	for <linux-fbdev@vger.kernel.org>; Mon,  8 Dec 2025 21:07:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765218460; cv=none; b=bzd4hfgUJq80D45kNoRPko1HUK/weIbfaXjaiylpY/p1ytzbZKB0eGXx/96se3cJ7abFQ03412zHWZGUAxGHUMFc73KyuEd29kJO1EnEIrx8rP3/EbYxife6Mad3nWgoJdbRJjdccp33UVSb7s+Vl8JMjValppoSnr7ykJbHXz8=
+	t=1765228031; cv=none; b=r7iytHbtP/0LJQxgfX8oEgoksCaH7msRiL1/+V19KYqqxPQzUMoov57T6H2Vxxw61UlQcXM+HEM4zoQiOvNmwerFS1DL6O6WhE9yX3sU0Yfgr+AjsM0s4Rp3/YIUWnPOJ6pHtCKKdVr1s4yBhqvxRuCyMUrcpSXlU/Q/JgF00L4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765218460; c=relaxed/simple;
-	bh=W1ZXOT3hNZJb6E/5NbQJ/DcPJqLVuLRf6vJkSTtXdX8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Z7TEnAtda2yvEGsWIj9CGj3X+NjGpMIeHNG2CzMeXS5QZ66ZwkkHR2SAHXaXYLD0+Jcts8gIP9cvoHffb7CX69ODIzv/JjvAtbIQq/zfEiKzyKwfweJuRiUhd1GCeano86Hd2fSkpPY++GIxGifnXWYte7+d2nbKCc7UUE6kWsw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=RN1+/AZd; arc=none smtp.client-ip=198.175.65.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	s=arc-20240116; t=1765228031; c=relaxed/simple;
+	bh=BuyRWD+gYUtKR6SNm6SbZ1nyAAJ0j0jKNpYO74bLaZs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Q6zInTMGOplZUIb4JOxEvK4hJtCdIqa4ipCCyyPqeAqoCaDitUDc3nCyZjigI7TD2Vh1reVo8zn7b6EdRpEgMgzlgX1WL/Ezzv9jXdhiW9C81i2wnyRPZCXK2/iC7bfuzXZ4rjFt6KhpoJResrMEuqmzjFFht+1IHp/mx1oa9Cw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=cIXMT27g; arc=none smtp.client-ip=192.198.163.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="RN1+/AZd"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="cIXMT27g"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1765218459; x=1796754459;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=W1ZXOT3hNZJb6E/5NbQJ/DcPJqLVuLRf6vJkSTtXdX8=;
-  b=RN1+/AZdnGBYcD7ubYLkQFk5LWU0CRx7FXkvUT7fnsWxPGaDgUdbJx6x
-   2eFu/i0wtvb4el4SOCh/mQ1dr/D0WhAXaS0P9vJ4GVjtMzkyFacEYOFSb
-   4HMs5kZsrA9Q5y6y76+5R0oJbdjXaSVnJ2CfK9NN7tA/JlkQzqqaFSTKP
-   HmNzEKgJNQ1xfnJ0mSJxtCbQnWMjjpKe/RYfpCK+1xcCBGbAy52ky46WN
-   hbfJ0ZMz3XtZlMKBwZ/QYeF0BB7w2va/GHGmA5XS4hhm/Nyy5nvIsjBGL
-   OorynfXnU9ZcRfbCD12bEleUMx5Km8Qvhl/XUpK2TM+TLDm+kMGE4U+mQ
+  t=1765228030; x=1796764030;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=BuyRWD+gYUtKR6SNm6SbZ1nyAAJ0j0jKNpYO74bLaZs=;
+  b=cIXMT27gKiwyELF6RGm3Z0WTh2dz4PvX1RWa2Q0n9N2Z4yrUhaOw9k2Y
+   4z88duvE75wwhi/rrDMwe6MPsinjsYsSJIMoSbHFkgjBXjReHrRwnbfK9
+   dxzClye+Z6MwdVPKMNcDgETT0kHH2etqHhPnJgc7jzoj8dpR409XRLQRI
+   EOaH9RfM/md3ctM5/LIEaUtwg0eJbd5afmRfuQFjsJvhXDNWMw6Ih5Nni
+   kuWhCM8nZalCrbxKBNAsygYMw2Ws2XrKQR8/TaGfe+XcxpsNetlh5DhdR
+   GtI4bbLZ8BgEnyc0UeiUT5uTk8sXpaNGcudaGfqwYkxDRM1HMYAfkL5xW
    Q==;
-X-CSE-ConnectionGUID: 7p20PMuVQFCRxKXmyNR1Ng==
-X-CSE-MsgGUID: pj0zSZk+QZK87aNB+h8jMw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11636"; a="67129566"
+X-CSE-ConnectionGUID: i0awWE/MRfK5nsCmqzLtvw==
+X-CSE-MsgGUID: cp3LSpRKTZ+MvPNj7vm74g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11636"; a="78537974"
 X-IronPort-AV: E=Sophos;i="6.20,259,1758610800"; 
-   d="scan'208";a="67129566"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 10:27:38 -0800
-X-CSE-ConnectionGUID: K3Kxe0ayTcuUhj0/3+JLhw==
-X-CSE-MsgGUID: 8wqRL96lQcSJ9mcooBIg9Q==
+   d="scan'208";a="78537974"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 13:07:09 -0800
+X-CSE-ConnectionGUID: nqvnXMV+QuGTrbufrDzEvg==
+X-CSE-MsgGUID: rY5KH2wbQLi8ATprmTz0Qw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.20,259,1758610800"; 
-   d="scan'208";a="196014503"
-Received: from rvuia-mobl.ger.corp.intel.com (HELO localhost) ([10.245.245.89])
-  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Dec 2025 10:27:36 -0800
-From: Ville Syrjala <ville.syrjala@linux.intel.com>
-To: intel-gfx@lists.freedesktop.org
-Cc: intel-xe@lists.freedesktop.org,
-	Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org,
+   d="scan'208";a="200204397"
+Received: from lkp-server01.sh.intel.com (HELO d335e3c6db51) ([10.239.97.150])
+  by orviesa003.jf.intel.com with ESMTP; 08 Dec 2025 13:07:06 -0800
+Received: from kbuild by d335e3c6db51 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1vSiRj-000000000qf-3KaN;
+	Mon, 08 Dec 2025 21:07:03 +0000
+Date: Tue, 9 Dec 2025 05:07:03 +0800
+From: kernel test robot <lkp@intel.com>
+To: Ville Syrjala <ville.syrjala@linux.intel.com>,
+	intel-gfx@lists.freedesktop.org
+Cc: oe-kbuild-all@lists.linux.dev, intel-xe@lists.freedesktop.org,
+	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH 14/19] video/vga: Add VGA_IS0_R
-Date: Mon,  8 Dec 2025 20:26:32 +0200
-Message-ID: <20251208182637.334-15-ville.syrjala@linux.intel.com>
-X-Mailer: git-send-email 2.51.2
-In-Reply-To: <20251208182637.334-1-ville.syrjala@linux.intel.com>
-References: <20251208182637.334-1-ville.syrjala@linux.intel.com>
+Subject: Re: [PATCH 14/19] video/vga: Add VGA_IS0_R
+Message-ID: <202512090434.DRy1Kvan-lkp@intel.com>
+References: <20251208182637.334-15-ville.syrjala@linux.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251208182637.334-15-ville.syrjala@linux.intel.com>
 
-From: Ville Syrjälä <ville.syrjala@linux.intel.com>
+Hi Ville,
 
-Add a proper name for the "Input status register 0" IO address.
-Currently we have some code that does read addressed using the
-aliasing VGA_MSR_W define, making it unclear what register we're
-actually reading.
+kernel test robot noticed the following build errors:
 
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Signed-off-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
----
- include/video/vga.h | 2 ++
- 1 file changed, 2 insertions(+)
+[auto build test ERROR on drm-tip/drm-tip]
+[cannot apply to drm-i915/for-linux-next drm-i915/for-linux-next-fixes linus/master v6.18 next-20251208]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-diff --git a/include/video/vga.h b/include/video/vga.h
-index 468764d6727a..d83c5f153253 100644
---- a/include/video/vga.h
-+++ b/include/video/vga.h
-@@ -46,6 +46,7 @@
- #define VGA_MIS_R   	0x3CC	/* Misc Output Read Register */
- #define VGA_MIS_W   	0x3C2	/* Misc Output Write Register */
- #define VGA_FTC_R	0x3CA	/* Feature Control Read Register */
-+#define VGA_IS0_R	0x3C2	/* Input Status Register 0 */
- #define VGA_IS1_RC  	0x3DA	/* Input Status Register 1 - color emulation */
- #define VGA_IS1_RM  	0x3BA	/* Input Status Register 1 - mono emulation */
- #define VGA_PEL_D   	0x3C9	/* PEL Data Register */
-@@ -485,3 +486,4 @@ static inline void vga_mm_wattr (void __iomem *regbase, unsigned char reg, unsig
- }
- 
- #endif /* __linux_video_vga_h__ */
-+?
+url:    https://github.com/intel-lab-lkp/linux/commits/Ville-Syrjala/drm-i915-vga-Register-vgaarb-client-later/20251209-030730
+base:   https://gitlab.freedesktop.org/drm/tip.git drm-tip
+patch link:    https://lore.kernel.org/r/20251208182637.334-15-ville.syrjala%40linux.intel.com
+patch subject: [PATCH 14/19] video/vga: Add VGA_IS0_R
+config: microblaze-randconfig-r072-20251209 (https://download.01.org/0day-ci/archive/20251209/202512090434.DRy1Kvan-lkp@intel.com/config)
+compiler: microblaze-linux-gcc (GCC) 8.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251209/202512090434.DRy1Kvan-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202512090434.DRy1Kvan-lkp@intel.com/
+
+All error/warnings (new ones prefixed by >>):
+
+   In file included from include/linux/vgaarb.h:15,
+                    from drivers/video/aperture.c:12:
+>> include/video/vga.h:489:1: error: expected identifier or '(' before '?' token
+    ?
+    ^
+   In file included from drivers/video/aperture.c:14:
+>> include/video/vga.h:489:1: error: expected identifier or '(' before '?' token
+    ?
+    ^
+   drivers/video/aperture.c: In function 'devm_aperture_acquire_release':
+>> drivers/video/aperture.c:153:21: error: dereferencing pointer to incomplete type 'struct aperture_range'
+     bool detached = !ap->dev;
+                        ^~
+   In file included from include/linux/bits.h:30,
+                    from include/linux/ratelimit_types.h:5,
+                    from include/linux/ratelimit.h:5,
+                    from include/linux/dev_printk.h:16,
+                    from include/linux/device.h:15,
+                    from drivers/video/aperture.c:4:
+   drivers/video/aperture.c: In function 'devm_aperture_acquire':
+>> include/linux/container_of.h:21:47: error: dereferencing pointer to incomplete type 'struct aperture_range'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+                                                  ^~
+   include/linux/build_bug.h:78:56: note: in definition of macro '__static_assert'
+    #define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
+                                                           ^~~~
+   include/linux/container_of.h:21:2: note: in expansion of macro 'static_assert'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+     ^~~~~~~~~~~~~
+   include/linux/container_of.h:21:16: note: in expansion of macro '__same_type'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+                   ^~~~~~~~~~~
+   drivers/video/aperture.c:174:8: note: in expansion of macro 'container_of'
+      ap = container_of(pos, struct aperture_range, lh);
+           ^~~~~~~~~~~~
+   include/linux/compiler_types.h:537:27: error: expression in static assertion is not an integer
+    #define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
+                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/build_bug.h:78:56: note: in definition of macro '__static_assert'
+    #define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
+                                                           ^~~~
+   include/linux/container_of.h:21:2: note: in expansion of macro 'static_assert'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+     ^~~~~~~~~~~~~
+   include/linux/container_of.h:21:16: note: in expansion of macro '__same_type'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+                   ^~~~~~~~~~~
+   drivers/video/aperture.c:174:8: note: in expansion of macro 'container_of'
+      ap = container_of(pos, struct aperture_range, lh);
+           ^~~~~~~~~~~~
+   In file included from include/uapi/linux/posix_types.h:5,
+                    from include/uapi/linux/types.h:14,
+                    from include/linux/types.h:6,
+                    from include/linux/aperture.h:6,
+                    from drivers/video/aperture.c:3:
+>> include/linux/stddef.h:16:32: error: invalid use of undefined type 'struct aperture_range'
+    #define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
+                                   ^~~~~~~~~~~~~~~~~~
+   include/linux/container_of.h:24:21: note: in expansion of macro 'offsetof'
+     ((type *)(__mptr - offsetof(type, member))); })
+                        ^~~~~~~~
+   drivers/video/aperture.c:174:8: note: in expansion of macro 'container_of'
+      ap = container_of(pos, struct aperture_range, lh);
+           ^~~~~~~~~~~~
+   In file included from include/linux/bits.h:30,
+                    from include/linux/ratelimit_types.h:5,
+                    from include/linux/ratelimit.h:5,
+                    from include/linux/dev_printk.h:16,
+                    from include/linux/device.h:15,
+                    from drivers/video/aperture.c:4:
+   drivers/video/aperture.c: In function 'aperture_detach_devices':
+>> include/linux/container_of.h:21:47: error: dereferencing pointer to incomplete type 'struct aperture_range'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+                                                  ^~
+   include/linux/build_bug.h:78:56: note: in definition of macro '__static_assert'
+    #define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
+                                                           ^~~~
+   include/linux/container_of.h:21:2: note: in expansion of macro 'static_assert'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+     ^~~~~~~~~~~~~
+   include/linux/container_of.h:21:16: note: in expansion of macro '__same_type'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+                   ^~~~~~~~~~~
+   drivers/video/aperture.c:255:31: note: in expansion of macro 'container_of'
+      struct aperture_range *ap = container_of(pos, struct aperture_range, lh);
+                                  ^~~~~~~~~~~~
+   include/linux/compiler_types.h:537:27: error: expression in static assertion is not an integer
+    #define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
+                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/build_bug.h:78:56: note: in definition of macro '__static_assert'
+    #define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
+                                                           ^~~~
+   include/linux/container_of.h:21:2: note: in expansion of macro 'static_assert'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+     ^~~~~~~~~~~~~
+   include/linux/container_of.h:21:16: note: in expansion of macro '__same_type'
+     static_assert(__same_type(*(ptr), ((type *)0)->member) || \
+                   ^~~~~~~~~~~
+   drivers/video/aperture.c:255:31: note: in expansion of macro 'container_of'
+      struct aperture_range *ap = container_of(pos, struct aperture_range, lh);
+                                  ^~~~~~~~~~~~
+   In file included from include/uapi/linux/posix_types.h:5,
+                    from include/uapi/linux/types.h:14,
+                    from include/linux/types.h:6,
+                    from include/linux/aperture.h:6,
+                    from drivers/video/aperture.c:3:
+>> include/linux/stddef.h:16:32: error: invalid use of undefined type 'struct aperture_range'
+    #define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
+                                   ^~~~~~~~~~~~~~~~~~
+   include/linux/container_of.h:24:21: note: in expansion of macro 'offsetof'
+     ((type *)(__mptr - offsetof(type, member))); })
+                        ^~~~~~~~
+   drivers/video/aperture.c:255:31: note: in expansion of macro 'container_of'
+      struct aperture_range *ap = container_of(pos, struct aperture_range, lh);
+                                  ^~~~~~~~~~~~
+--
+   In file included from drivers/gpu/drm/mgag200/mgag200_drv.h:13,
+                    from drivers/gpu/drm/mgag200/mgag200_bmc.c:10:
+>> include/video/vga.h:489:1: error: expected identifier or '(' before '?' token
+    ?
+    ^
+   In file included from include/linux/dma-buf.h:16,
+                    from include/drm/drm_gem.h:38,
+                    from drivers/gpu/drm/mgag200/mgag200_drv.h:18,
+                    from drivers/gpu/drm/mgag200/mgag200_bmc.c:10:
+>> include/linux/iosys-map.h:183:47: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline void iosys_map_set_vaddr(struct iosys_map *map, void *vaddr)
+                                                  ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_set_vaddr':
+>> include/linux/iosys-map.h:185:5: error: dereferencing pointer to incomplete type 'struct iosys_map'
+     map->vaddr = vaddr;
+        ^~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:196:53: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline void iosys_map_set_vaddr_iomem(struct iosys_map *map,
+                                                        ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_set_vaddr_iomem':
+   include/linux/iosys-map.h:199:5: error: dereferencing pointer to incomplete type 'struct iosys_map'
+     map->vaddr_iomem = vaddr_iomem;
+        ^~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:214:52: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline bool iosys_map_is_equal(const struct iosys_map *lhs,
+                                                       ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_is_equal':
+>> include/linux/iosys-map.h:217:9: error: dereferencing pointer to incomplete type 'const struct iosys_map'
+     if (lhs->is_iomem != rhs->is_iomem)
+            ^~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:235:51: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline bool iosys_map_is_null(const struct iosys_map *map)
+                                                      ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_is_null':
+   include/linux/iosys-map.h:237:9: error: dereferencing pointer to incomplete type 'const struct iosys_map'
+     if (map->is_iomem)
+            ^~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:252:50: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline bool iosys_map_is_set(const struct iosys_map *map)
+                                                     ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_is_set':
+>> include/linux/iosys-map.h:254:28: error: passing argument 1 of 'iosys_map_is_null' from incompatible pointer type [-Werror=incompatible-pointer-types]
+     return !iosys_map_is_null(map);
+                               ^~~
+   include/linux/iosys-map.h:235:62: note: expected 'const struct iosys_map *' but argument is of type 'const struct iosys_map *'
+    static inline bool iosys_map_is_null(const struct iosys_map *map)
+                                         ~~~~~~~~~~~~~~~~~~~~~~~~^~~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:265:43: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline void iosys_map_clear(struct iosys_map *map)
+                                              ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_clear':
+   include/linux/iosys-map.h:267:24: error: dereferencing pointer to incomplete type 'struct iosys_map'
+     memset(map, 0, sizeof(*map));
+                           ^~~~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:281:47: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline void iosys_map_memcpy_to(struct iosys_map *dst, size_t dst_offset,
+                                                  ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_memcpy_to':
+   include/linux/iosys-map.h:284:9: error: dereferencing pointer to incomplete type 'struct iosys_map'
+     if (dst->is_iomem)
+            ^~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:301:66: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline void iosys_map_memcpy_from(void *dst, const struct iosys_map *src,
+                                                                     ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_memcpy_from':
+   include/linux/iosys-map.h:304:9: error: dereferencing pointer to incomplete type 'const struct iosys_map'
+     if (src->is_iomem)
+            ^~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:318:42: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline void iosys_map_incr(struct iosys_map *map, size_t incr)
+                                             ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_incr':
+   include/linux/iosys-map.h:320:9: error: dereferencing pointer to incomplete type 'struct iosys_map'
+     if (map->is_iomem)
+            ^~
+   include/linux/iosys-map.h: At top level:
+   include/linux/iosys-map.h:336:44: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+    static inline void iosys_map_memset(struct iosys_map *dst, size_t offset,
+                                               ^~~~~~~~~
+   include/linux/iosys-map.h: In function 'iosys_map_memset':
+   include/linux/iosys-map.h:339:9: error: dereferencing pointer to incomplete type 'struct iosys_map'
+     if (dst->is_iomem)
+            ^~
+   In file included from include/drm/drm_gem.h:38,
+                    from drivers/gpu/drm/mgag200/mgag200_drv.h:18,
+                    from drivers/gpu/drm/mgag200/mgag200_bmc.c:10:
+   include/linux/dma-buf.h: At top level:
+>> include/linux/dma-buf.h:277:45: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+     int (*vmap)(struct dma_buf *dmabuf, struct iosys_map *map);
+                                                ^~~~~~~~~
+   include/linux/dma-buf.h:278:48: warning: 'struct iosys_map' declared inside parameter list will not be visible outside of this definition or declaration
+     void (*vunmap)(struct dma_buf *dmabuf, struct iosys_map *map);
+                                                   ^~~~~~~~~
+>> include/linux/dma-buf.h:332:19: error: field 'vmap_ptr' has incomplete type
+     struct iosys_map vmap_ptr;
+                      ^~~~~~~~
+   cc1: some warnings being treated as errors
+--
+   In file included from drivers/gpu/drm/mgag200/mgag200_drv.h:13,
+                    from drivers/gpu/drm/mgag200/mgag200_ddc.c:36:
+>> include/video/vga.h:489:1: error: expected identifier or '(' before '?' token
+    ?
+    ^
+--
+   In file included from drivers/gpu/drm/mgag200/mgag200_drv.h:13,
+                    from drivers/gpu/drm/mgag200/mgag200_drv.c:25:
+>> include/video/vga.h:489:1: error: expected identifier or '(' before '?' token
+    ?
+    ^
+   In file included from include/linux/dma-buf.h:16,
+                    from include/drm/drm_gem.h:38,
+                    from drivers/gpu/drm/mgag200/mgag200_drv.h:18,
+                    from drivers/gpu/drm/mgag200/mgag200_drv.c:25:
+   include/linux/iosys-map.h: In function 'iosys_map_set_vaddr':
+>> include/linux/iosys-map.h:185:5: error: dereferencing pointer to incomplete type 'struct iosys_map'
+     map->vaddr = vaddr;
+        ^~
+   include/linux/iosys-map.h: In function 'iosys_map_is_equal':
+>> include/linux/iosys-map.h:217:9: error: dereferencing pointer to incomplete type 'const struct iosys_map'
+     if (lhs->is_iomem != rhs->is_iomem)
+            ^~
+   In file included from include/drm/drm_gem.h:38,
+                    from drivers/gpu/drm/mgag200/mgag200_drv.h:18,
+                    from drivers/gpu/drm/mgag200/mgag200_drv.c:25:
+   include/linux/dma-buf.h: At top level:
+>> include/linux/dma-buf.h:332:19: error: field 'vmap_ptr' has incomplete type
+     struct iosys_map vmap_ptr;
+                      ^~~~~~~~
+--
+   In file included from drivers/gpu/drm/tiny/bochs.c:29:
+>> include/video/vga.h:489:1: error: expected identifier or '(' before '?' token
+    ?
+    ^
+   In file included from include/linux/module.h:23,
+                    from drivers/gpu/drm/tiny/bochs.c:5:
+   drivers/gpu/drm/tiny/bochs.c: In function '__check_modeset':
+>> drivers/gpu/drm/tiny/bochs.c:66:29: error: 'bochs_modeset' undeclared (first use in this function); did you mean 'drm_mode_set'?
+    module_param_named(modeset, bochs_modeset, int, 0444);
+                                ^~~~~~~~~~~~~
+   include/linux/moduleparam.h:430:68: note: in definition of macro '__param_check'
+     static inline type __always_unused *__check_##name(void) { return(p); }
+                                                                       ^
+   include/linux/moduleparam.h:155:2: note: in expansion of macro 'param_check_int'
+     param_check_##type(name, &(value));       \
+     ^~~~~~~~~~~~
+   drivers/gpu/drm/tiny/bochs.c:66:1: note: in expansion of macro 'module_param_named'
+    module_param_named(modeset, bochs_modeset, int, 0444);
+    ^~~~~~~~~~~~~~~~~~
+   drivers/gpu/drm/tiny/bochs.c:66:29: note: each undeclared identifier is reported only once for each function it appears in
+    module_param_named(modeset, bochs_modeset, int, 0444);
+                                ^~~~~~~~~~~~~
+   include/linux/moduleparam.h:430:68: note: in definition of macro '__param_check'
+     static inline type __always_unused *__check_##name(void) { return(p); }
+                                                                       ^
+   include/linux/moduleparam.h:155:2: note: in expansion of macro 'param_check_int'
+     param_check_##type(name, &(value));       \
+     ^~~~~~~~~~~~
+   drivers/gpu/drm/tiny/bochs.c:66:1: note: in expansion of macro 'module_param_named'
+    module_param_named(modeset, bochs_modeset, int, 0444);
+    ^~~~~~~~~~~~~~~~~~
+   drivers/gpu/drm/tiny/bochs.c: At top level:
+>> drivers/gpu/drm/tiny/bochs.c:66:29: error: 'bochs_modeset' undeclared here (not in a function); did you mean 'drm_mode_set'?
+    module_param_named(modeset, bochs_modeset, int, 0444);
+                                ^~~~~~~~~~~~~
+   include/linux/moduleparam.h:298:54: note: in definition of macro '__module_param_call'
+         VERIFY_OCTAL_PERMISSIONS(perm), level, flags, { arg } }
+                                                         ^~~
+   include/linux/moduleparam.h:156:2: note: in expansion of macro 'module_param_cb'
+     module_param_cb(name, &param_ops_##type, &value, perm);     \
+     ^~~~~~~~~~~~~~~
+   drivers/gpu/drm/tiny/bochs.c:66:1: note: in expansion of macro 'module_param_named'
+    module_param_named(modeset, bochs_modeset, int, 0444);
+    ^~~~~~~~~~~~~~~~~~
+   drivers/gpu/drm/tiny/bochs.c: In function 'bochs_pci_driver_init':
+   drivers/gpu/drm/tiny/bochs.c:835:1: warning: control reaches end of non-void function [-Wreturn-type]
+    drm_module_pci_driver_if_modeset(bochs_pci_driver, bochs_modeset);
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+..
+
+
+vim +489 include/video/vga.h
+
+   487	
+   488	#endif /* __linux_video_vga_h__ */
+ > 489	?
+
 -- 
-2.51.2
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

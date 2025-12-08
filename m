@@ -1,144 +1,134 @@
-Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1498A17BA2
-	for <linux-fbdev@vger.kernel.org>; Sun,  7 Dec 2025 07:26:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BA6F2DC349
+	for <linux-fbdev@vger.kernel.org>; Mon,  8 Dec 2025 10:36:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765092416; cv=none; b=Y/RsgQeeg8RVWB2wFp/DpCjJZ0eBUWtpukr9qGiHxQ/OUzC56p+ka9QCtTaFZxOhFCxTdX1YwiTnA0KZUqWBlqhQ6EM4jQzaFnkmp6Ho2WCwcILKQl33/yMTAJWtlO1LKdWwhJz6mrEjF4vmIhyOZiKuKBgvgxX9/9TgKnn/maM=
+	t=1765190164; cv=none; b=FYQdxcOMiOsjVxEcr2bNyv6dkrkVKGw0SOedhS98WxmhRG96s7ZiwAIJtyEZjpGjcr4a6bceqFwA8fGstoR8E0XTZpW5e1seY7UBzSyjELOruFbodx/HX0Gi+1MAl6oFZNScCxeZOyGfXotEzZKrAq/aeyH6hh/662k84VNhQ10=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765092416; c=relaxed/simple;
-	bh=fckAhuubTKdSBsK2F15HzWXj7qefxnBiIDefELE4Skw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KFs01/TFNWfCiD10LWY+6rtMtBdP9QFzYDjAFM+YTdOgAK6CrH2KYkv7RGt9n16jzPbJeFpxpwdRUtdAQY8bg4YjmEfvTI9a1zqCbl1y0naJAEetiAi8umCODMo6I38A4btq0uZySn6Z1L6qv7yEsWfo0AueSPIZH8Y0MiEc7Iw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Z/AwJVlt; arc=none smtp.client-ip=209.85.214.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1765190164; c=relaxed/simple;
+	bh=s0L/F0IMsYB37Rxo4CHT7apF8oSazdCraUwxwRSEMFw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RgJ0X8KcsDIauX3A17s2mZv06cYIs9CnOUCYaqsetrhNODNOgU4GhUPO33Bp2vXrokXpwNIpHIPgfucOCPlth7yg4IQPY1uZ2H1o7nWT41r8QiaYMN00sZ6wjSgdT1h4WFEVUBDh+A3VDQ/JkAbXth3y4OrdqKdSNI5rtDdsPMU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=nMhn5PTL; arc=none smtp.client-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Z/AwJVlt"
-Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-297dd95ffe4so31430655ad.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 06 Dec 2025 23:26:54 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="nMhn5PTL"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-4779ce2a624so54842105e9.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 08 Dec 2025 02:36:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765092414; x=1765697214; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=tEK2eF1M99CkbnJ4lJKZbSTlkLnJNDGKuxnzg8A0N00=;
-        b=Z/AwJVlt7wq5NIwWY9hvhrC3pZKm/ptN8wpeuo7qO/q+j0kQl3S3DgYV3dYV1TzdKd
-         BEWE7ypnnAsrzYFH6X9Z1H4cPvspE4GdsQtn7iY9IAVB2ERH6FMfGwzUQsMhAjdZ0jBB
-         fKAZnxINeS6yVa9+BIDzmHWwMfk8+oePmdbZHcEGdWD6MgrKpOuy6litUXHNOSxBDWPV
-         4IsgcUPPPtxWMTAOJbWIP9YN7X+fnOMR30yJwYRU/0U5agpyDixncfPhaROxmqkcio7d
-         T+KXE+L+jVTrTP8BGsO/tjI+Jttj7993IKxfWxsv+TjPiUz/ezB2y1FEqFQzJWAF7xlO
-         3cUQ==
+        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1765190159; x=1765794959; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=+E3SOYkqsEc+5aDXpHHAZRqmKpJ7LXworventsdWgtI=;
+        b=nMhn5PTL7mWngGMbeboSyi0dP4zWTcbikcsfwcPLTx5aKFoQ6YACS3xEp7I5wQDn19
+         8+2oMBb4KM3f7xm5TgP9iNxIw/2JGVRoGc/fIIAHZCJuKS2POcqde2W0oj0v2OJZXhry
+         SGzWvtxeP2UNR1Ac3c0KW4Iy328FdcyzlRVD1YFVYiJpFajCmcYmS/YYa83/nJwGzhL5
+         taurYQskIYL4QueLkW7MvOdtVB/nOFF3a5YJUQMYQ/Qus+r3ic3+3YR3sdJ52y8CFwIw
+         1BF2mfTZdOGsRkm1dGNzEBa+ZtAMAKYlVhHE9DqtAcDBWxU6MWii/vchH0S8uzaWaY5x
+         Ip6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765092414; x=1765697214;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tEK2eF1M99CkbnJ4lJKZbSTlkLnJNDGKuxnzg8A0N00=;
-        b=ic+OxqNP6OAtrUckW++yxqH4qxttsaw0VTVg7AbLsPO7H0MflHB8itDL0oghlX+uJY
-         joVSPjdFVfgKx3/o/8fW9SPQGhBDOGVaQkDTq5e7PeHX9Sxz2VVp5gqztfvwdV0YIywb
-         vHZQWBP6urvyplZTjSWgrIgvI73TNdRCywcTuzrhxqVoQ/Vixzu1WtYjbtVQKtQ4SdgL
-         rtPTcwsXlGNLtU2BWc5/HC448MoUPvz/9wompFx4mpUZLvbeQ7jKa3eSxk3MoMmbfMWN
-         SsUEVmWJE6oOLNHNF0VkvXaGD7v2WqVG3j0xULsJrH+aKQ+Tn1l/XvqF5Da2qWK56CTB
-         N7og==
-X-Forwarded-Encrypted: i=1; AJvYcCXqPsMotfENe+p/2IyAADnNgLI0RI+Zq0OHyMdRjZUVKK6jfjKHXZYqrm9NvzY2SntulejqBCef+Wvqkw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywh6xv06ZYp0kBr/Uh95ifH2rO85D8OyieW4U+WHhin+ApKI3iU
-	O+6rlMVqZafy5zfI5ygswnjXOMvx4OrYFLris89U2pCpbAn7xyJOX5Vh
-X-Gm-Gg: ASbGncsb7lBau/rMe40lT3he8m8X+JSAOBUEDU8pfOz6dh6KV4mp+dcAmX6STtVu5UP
-	AyTP1qUmYosRXmSFJgT+P0VN3sbkpKLIbEXV8ipKm87R3ZIFeYTZWRDY1n9QojLsnAkh6o+WzZh
-	xFMsApsByRVzf29kDAO2o1lfvOy0iInfgHDULK82p6Oeb4N77/gP06+beX1rqEHeCmka9akWZ4/
-	IwdgCX6lYnviRCevKul26KMy0dOTH2Kt7e3vtCi7njq+GIc6yDspZ8POIr+RLf0EEwFxvoqEusv
-	vH7++haKY5gGViWQ2rUt8TgQpwPNeB74ufMD32mfpkG0SHhhlu/2E802Lpg9LNIhqG1LvKj4Ya7
-	a1lLGhJDqioahe/lOPqLPGugfRMPnFHFH0RyeOxtzrYlPnCPGG0yO0BtPXJnB0BcHQst56jTgFn
-	1/U+WKd6FbgA==
-X-Google-Smtp-Source: AGHT+IFZ1X99wA8hRN/ZGpHPSkBafJxesyhbybcnYCATbgOcM4F6190itrl1yOrpl2KdPdZRHijNHA==
-X-Received: by 2002:a17:903:2381:b0:299:fc47:d7d7 with SMTP id d9443c01a7336-29df579eb2emr38062925ad.3.1765092414366;
-        Sat, 06 Dec 2025 23:26:54 -0800 (PST)
-Received: from lgs.. ([101.76.246.176])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29daeaabf8asm90338325ad.85.2025.12.06.23.26.51
+        d=1e100.net; s=20230601; t=1765190159; x=1765794959;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+E3SOYkqsEc+5aDXpHHAZRqmKpJ7LXworventsdWgtI=;
+        b=Gny1nWOUXtVLwsmDZA1bQ0YqgPzSdPLgCR58MnrKIls7WnOzSnSyLsHagDhBVvoWy6
+         t8toN3xDm/oXHkj5PkcxN73guWcgXBkPw0RQ3xrCjYRfU9Lvb81Lyc12et2a6JoRaKyM
+         ru8UDrHFDVsa8KkJie579AcN2PEVEBitxD7ddz/W/x0kXQezhxiFbZ+mzH8XLGpjnYY7
+         RPDfSpHiL8a92FCi3YIVOQJ9At9sNtB6L26MeizVhVQseDuc1CzxUTHA65aypu075pnM
+         s6h5VEyzRqV+W5Dnds8tmE8YyNfBKpJZ+Vpnevwsy7mAvZ+xtpWLRv21dIZHEmf2H74m
+         M35Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXLKlkT4ivwpFLCQFSvTuaEyCamAVxRJmhnQ/qVL2N+LcAGwSm+v3ZL4Ndq/+1R0tjrwylH6kvFxNOhMw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzjtHOUnWeqYZwVsQ4IxB6JsSb7ZELETfRbfs8Epink3mVWzOc/
+	LVy3RlMs8dK31FCFB3OLbx87HfVqM+OivWokab6cK3us0VULL9oTYBP01vEU7qwtIww=
+X-Gm-Gg: ASbGncvCg/Ot03NQbFRryG63AeiJiMWjYXMjtWJ7MnFE7TL4IgKJBlAVgwGPnUrlkMv
+	KXKRJXJ7VF6GnHYh6CJGM6Eddd8eNGGuCjv/EML9AKe4Aor7dFRtexhCF7N+gDrTUf30xXjirUo
+	UFxfjv+cFajFjXwv+wJnkf0vukS+IqL/l/LyiKbElf/3Tu877qT/U5WVbwsXPchuLCObNaDoV5K
+	TvO2Vz/bFk8k4J0ni6GJqsrjKvN6A/9y1l0Fr3MQhhbYkes5PobW+j7KpSpsjygES2MyT9HsZ+s
+	vfGRbxzFCqYvfBVw5IJDDEi5+XMCkgcVW2Z5YnQwW2byS22hHXtcFnvU+j/dAA3+cJSQd5vnKni
+	E0+wdHWZper8ZNTyEo/p9p+9VQtQKo5Nidbj5yvokhsMG/8jYRNtP1QkIdyiS4Mykmz19m0NXJ4
+	pZWkXqfQSip3OS959bsgiZQ8kzstwnUTGFcEGNse/MJyVjd0LcatxxsS1I9lGyzJu2AGFpeA==
+X-Google-Smtp-Source: AGHT+IGge21HXj48TLUzsA7ggUbHSFC0xO5HgqxGNKT4MTX7Oe0oV8kQd6FtV8OIYLtnHQGrRwLESw==
+X-Received: by 2002:a05:600c:818e:b0:477:9fcf:3fe3 with SMTP id 5b1f17b1804b1-47939c87088mr76977635e9.0.1765190159388;
+        Mon, 08 Dec 2025 02:35:59 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-479311e712fsm240407865e9.9.2025.12.08.02.35.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 06 Dec 2025 23:26:53 -0800 (PST)
-From: Guangshuo Li <lgs201920130244@gmail.com>
-To: Antonino Daplas <adaplas@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Cc: Guangshuo Li <lgs201920130244@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] riva/fbdev: fix divide error in nv3_arb()
-Date: Sun,  7 Dec 2025 15:25:32 +0800
-Message-ID: <20251207072532.518547-1-lgs201920130244@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        Mon, 08 Dec 2025 02:35:58 -0800 (PST)
+Date: Mon, 8 Dec 2025 10:35:55 +0000
+From: Daniel Thompson <daniel@riscstar.com>
+To: Maud Spierings <maudspierings@gocontroll.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v6 2/4] backlight: add max25014atg backlight
+Message-ID: <aTaqCxsGj_waN92Y@aspen.lan>
+References: <20251201-max25014-v6-0-88e3ac8112ff@gocontroll.com>
+ <20251201-max25014-v6-2-88e3ac8112ff@gocontroll.com>
+ <aTG0EK_zuSB-U_bb@aspen.lan>
+ <8a9a59b8-d5c0-46b3-8f86-a4cd910b7af3@gocontroll.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8a9a59b8-d5c0-46b3-8f86-a4cd910b7af3@gocontroll.com>
 
-A userspace program can trigger the RIVA NV3 arbitration code by
-calling the FBIOPUT_VSCREENINFO ioctl on /dev/fb*. When doing so,
-the driver recomputes FIFO arbitration parameters in nv3_arb(), using
-state->mclk_khz (derived from the PRAMDAC MCLK PLL) as a divisor
-without validating it first.
+On Fri, Dec 05, 2025 at 04:20:55PM +0100, Maud Spierings wrote:
+> Thanks for the review.
+>
+> On 12/4/25 17:17, Daniel Thompson wrote:
+> > On Mon, Dec 01, 2025 at 12:53:21PM +0100, Maud Spierings via B4 Relay wrote:
+> > > The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+> > > with integrated boost controller.
+> > >
+> > > Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
+>
+> <snip>
+>
+> > > +static int max25014_update_status(struct backlight_device *bl_dev)
+> > > +{
+> > > +	struct max25014 *maxim = bl_get_data(bl_dev);
+> > > +	uint32_t reg;
+> > > +	int ret;
+> > > +
+> > > +	if (backlight_is_blank(maxim->bl))
+> > > +		bl_dev->props.brightness = 0;
+> >
+> > This isn't right. Why would you change the backlight level just because
+> > it is currently blanked (and sorry I missed this one last time).
+>
+> so just remove this bit then jeah?
 
-In a normal setup, state->mclk_khz is provided by the real hardware
-and is non-zero. However, an attacker can construct a malicious or
-misconfigured device (e.g. a crafted/emulated PCI device) that exposes
-a bogus PLL configuration, causing state->mclk_khz to become zero.
-Once nv3_get_param() calls nv3_arb(), the division by state->mclk_khz in
-the gns calculation causes a divide error and crashes the kernel.
+Yes. backlight_get_brightness() is all you should need.
 
-Fix this by checking whether state->mclk_khz is zero and bailing out before doing the division.
 
-The following log reveals it:
+> > > +
+> > > +	reg  = TON_STEP * bl_dev->props.brightness;
+> >
+> > The correct way to honour blanking is just go call
+> > backlight_get_brightness() instead of reading the property directly.
+>
+> will do.
 
-rivafb: setting virtual Y resolution to 2184
-divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-CPU: 0 PID: 2187 Comm: syz-executor.0 Not tainted 5.18.0-rc1+ #1
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
-RIP: 0010:nv3_arb drivers/video/fbdev/riva/riva_hw.c:439 [inline]
-RIP: 0010:nv3_get_param+0x3ab/0x13b0 drivers/video/fbdev/riva/riva_hw.c:546
-Code: c1 e8 03 42 0f b6 14 38 48 89 f8 83 e0 07 83 c0 03 38 d0 7c 08 84 d2 0f 85 b7 0e 00 00 41 8b 46 18 01 d8 69 c0 40 42 0f 00 99 <41> f7 fc 48 63 c8 4c 89 e8 48 c1 e8 03 42 0f b6 14 38 4c 89 e8 83
-RSP: 0018:ffff888013b2f318 EFLAGS: 00010206
-RAX: 0000000001d905c0 RBX: 0000000000000016 RCX: 0000000000040000
-RDX: 0000000000000000 RSI: 0000000000000080 RDI: ffff888013b2f6f0
-RBP: 0000000000000002 R08: ffffffff82226288 R09: 0000000000000001
-R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000000000
-R13: ffff888013b2f4d8 R14: ffff888013b2f6d8 R15: dffffc0000000000
-Call Trace:
-  nv3CalcArbitration.constprop.0+0x255/0x460 drivers/video/fbdev/riva/riva_hw.c:603
-  nv3UpdateArbitrationSettings drivers/video/fbdev/riva/riva_hw.c:637 [inline]
-  CalcStateExt+0x447/0x1b90 drivers/video/fbdev/riva/riva_hw.c:1246
-  riva_load_video_mode+0x8a9/0xea0 drivers/video/fbdev/riva/fbdev.c:779
-  rivafb_set_par+0xc0/0x5f0 drivers/video/fbdev/riva/fbdev.c:1196
-  fb_set_var+0x604/0xeb0 drivers/video/fbdev/core/fbmem.c:1033
-  do_fb_ioctl+0x234/0x670 drivers/video/fbdev/core/fbmem.c:1109
-  fb_ioctl+0xdd/0x130 drivers/video/fbdev/core/fbmem.c:1188
-  __x64_sys_ioctl+0x122/0x190 fs/ioctl.c:856
+Thanks.
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Cc: stable@vger.kernel.org
-Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
----
- drivers/video/fbdev/riva/riva_hw.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/riva/riva_hw.c b/drivers/video/fbdev/riva/riva_hw.c
-index 8b829b720064..d70c6c4d28e8 100644
---- a/drivers/video/fbdev/riva/riva_hw.c
-+++ b/drivers/video/fbdev/riva/riva_hw.c
-@@ -436,6 +436,9 @@ static char nv3_arb(nv3_fifo_info * res_info, nv3_sim_state * state,  nv3_arb_in
-     vmisses = 2;
-     eburst_size = state->memory_width * 1;
-     mburst_size = 32;
-+	if (!state->mclk_khz)
-+		return (0);
-+
-     gns = 1000000 * (gmisses*state->mem_page_miss + state->mem_latency)/state->mclk_khz;
-     ainfo->by_gfacc = gns*ainfo->gdrain_rate/1000000;
-     ainfo->wcmocc = 0;
--- 
-2.43.0
-
+Daniel.

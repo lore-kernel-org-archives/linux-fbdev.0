@@ -1,106 +1,194 @@
-Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23BB42C0F62
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Dec 2025 14:25:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BA6227C162;
+	Tue,  9 Dec 2025 19:07:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765290349; cv=none; b=TTOoJTGSXdoxoYXY6hmV6ItVYvA3sQ0yGwyrHk+ZIY1gkGkZmkwlC4+n41Gxt4Iil9y1yCpZP53Zgn5CF4Zw9/UQjf/Z2KjHKjXtJxRwZAKdZ8CVCajtcL4ezERqHltDFlKKjgnj+tl/TeEVq+yFaUQ/F7bQt+Z/Q4OJqy8//1o=
+	t=1765307246; cv=none; b=OC/ysrwgqih8RSzcvZXUjZNQmqvDUC1w0xzxCc2LoZ9lRZTjHXJDgFG5bYhvkc11fMo6TJoo8ZkoNCXwR6Ge1tECNExJHeWVG8ZwthedFelMYchBoDtzqfiX1czHXS5Rp9vMSTZjxH7FTB6y9GAuuKbtGna5UVeuFoFwzux47tU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765290349; c=relaxed/simple;
-	bh=p/QNLZHkkEp+08g4pHXLslu5TUvKGyb9J5Qo1iBjVxg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TBwIzam5KBeoBjLwePOd27GwhUJrrHRQTEbMuXk8iItvViqqv67q3eUx2sNC0KUvGeGoX7EEFdm4r8eawg3SIs2ZU3cknDL1ZZxP2Z8RIvtu1zOOmoEnMHchCTR5+OsaHbpzoTUluPRvWivKjCxhDIsU6zabW8Y2W+a3rJXH/sA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eWLSqmpX; arc=none smtp.client-ip=209.85.218.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1765307246; c=relaxed/simple;
+	bh=Oym70OZBadIC1w/YlIPC9DL2FkmLeSFqIX49SQ+L7/g=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ddJ/urqJOYh9ffigNf6RJ/WNw2AV52aPw9AyxCkUWrta/mSuFNJLchzfWOgYjHrLYUrKAoSofDpzZng4h8BYouEnGO/X7MbBEnWBI1fSbsjao9gdCsIj37GXwMtAgwe5eHuhELZvcfZs20PjdTnHSVgEJHIIUwOx9WdweFqdGLA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lwA+gXGm; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eWLSqmpX"
-Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-b79ea617f55so1084757766b.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 09 Dec 2025 06:25:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765290346; x=1765895146; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7tczTAGf+NRaPH/lcY4iGZ+jG9JiJwZWejZNNrAcawA=;
-        b=eWLSqmpXxVbLqSmhyOUffWE8c0E+TQ+ueWJOdRrtCyDuyeNgf1alcBFttZCOLhj55O
-         H5wFcEHFyMNl9XAsoMtqOqkccrKEelJnsJ+vo70TAhGpW+ayJx5/GczJGRmBPwtBZwbW
-         NW9QyI9kaUKqn33gM+43VcQ9LszLl3f/hsxPVQBoS6/poPn/3ZjNo5zL8H30LoQ4LhMz
-         jhl3sWP7MVBuJUt1LiNvBf5Hcj816Bs+DnYMpEN0po2cihBhjrR7my3g42gdJbh+CO70
-         1PGDRTf9azP7ZxndFubvWQN9GGTEi8KX07sKMH8bpf4J/blBfXfewSINKcWxyj13sam/
-         MN0w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765290346; x=1765895146;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=7tczTAGf+NRaPH/lcY4iGZ+jG9JiJwZWejZNNrAcawA=;
-        b=sa5yAEvNir9mVOo9f2gof4dYWEdy+FnfWopr5LVDaWKWXmvawster/26GMbY6MTCYq
-         9pDnDrZLDwELAvgHrJ3XaNkZP5FVYaGgdfkK50zUhUuT/Xjr9pgrU7NJEU7oRPxZ+7Nz
-         YFtFCakO4yhw/SBhTlgg72Q9BshSOSGKVBoVITvEC7ktmFsyJbZICAfcTjl7rWt6hGa3
-         k/4L0pN87QwAnjLu9QRHff9NHHpMTFdpsWvdqr3Khv5q5DQpOi1YaZ9asTIdV67Yib2k
-         2I5P1pfE77pVKqG9caDkTAxxexXHCRupBrJTh7Mh7ryaAHE6P8ajNARb9UheHE4Ak2JT
-         E0DQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXNtYc/aSqnA1f8yo1HvuK5eVB8ZNoUVZ+igAYvBaqQdvN3P/wy8Nu0YBqIUrosJ0p1DuTq+vsAq+KatA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwSrfiDPauYJ16plQ2WcH9a3TuZtdfsk851NpR47Pjc3A4XSwan
-	lR+VLkS0S+yyA6aZ1vFrjqj51yzvc2S2pd1uH7yPKsPvjK4mqbk4lPz01oIGFLtMxgUbBmfXjrp
-	t9R9RLBmsHEwgpfbWiZmlZpn25OL5zwg=
-X-Gm-Gg: ASbGncv7tghTH553ZJ2jZT6GapyXvhBZjjZwWJEkbPJcGIm110eylbC4xeZ/OImjMXf
-	ewScQq6iQx6HdfBHzSvsi5J8xdBQu1f5i1jd9o7fOmf4Ttp//xQNVaoeMKl8F0cP+Zs4Vk6qGWm
-	It3Y5UrWytfZQa4dze6BTcjPL1o7pgCZunYmMqC9zY4P2SdrQN2pqxnTfB35YJpP4FycjuZ/aIw
-	ekOFBJiYDqVcAk5mvwyJQjuzN6nYuRfoovhX/dK6aZNDF6AcduqX2b3qaYZojCFs8B6fg4hfCuy
-	0PUonsf1A0hJ8fyz9Jvk5oU0c0hnljvkQ1OqVi1NH2y1aAP/D1yecmYI4T/nqtC+KLiMBzA=
-X-Google-Smtp-Source: AGHT+IEUDyZqURELnRBTzjTZuETiToxli9ABhMGm4/e9CoRb3wfwUJvgUlRqDbyn79ps6rpZIghHoUYB7oNXT7FULvM=
-X-Received: by 2002:a17:907:720b:b0:b7a:1b3:5e5d with SMTP id
- a640c23a62f3a-b7a242be82bmr1105272266b.8.1765290346242; Tue, 09 Dec 2025
- 06:25:46 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lwA+gXGm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51CFDC4CEF5;
+	Tue,  9 Dec 2025 19:07:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1765307245;
+	bh=Oym70OZBadIC1w/YlIPC9DL2FkmLeSFqIX49SQ+L7/g=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=lwA+gXGmpmgU5IwRHGVMFdXkRrn2+bkW/1NNddhQa7ZCTcOkRZKqNLyZxseM4ffEc
+	 tvoHjUes1u+9UfHDpaHfHBrJKjrOTB5C5P0qTNTSINvTke+8WiffQDDM7v6eRQ1QnF
+	 ALj2rikjP19zVrI4FCAiJ5V0WwVzuy6D22psHQrApox27xZXK5Y58q75kL3bEgSmkE
+	 YJOXdKxIk8hj3CNeYCUveh0d+yaWA/49Fe+x7I9Eumh+mweANs1I0FWElnnU8nX2FF
+	 jwpB+a4Ed6Ruh3KB7nMLnDd2wD3F6WE+vCqHXZmG9Q7zgTpxyzcTo6Q2vVCjya9ixP
+	 fEwMfQ3mJUIXw==
+Date: Tue, 9 Dec 2025 13:07:22 -0600
+From: Rob Herring <robh@kernel.org>
+To: Maud Spierings <maudspierings@gocontroll.com>
+Cc: Frank Li <Frank.li@nxp.com>, Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v6 1/4] dt-bindings: backlight: Add max25014 support
+Message-ID: <20251209190722.GA945742-robh@kernel.org>
+References: <20251201-max25014-v6-0-88e3ac8112ff@gocontroll.com>
+ <20251201-max25014-v6-1-88e3ac8112ff@gocontroll.com>
+ <aS3H1qzSMKHamqpP@lizhi-Precision-Tower-5810>
+ <b9fe6df7-fdc6-4a32-919b-8f3b44eace7d@gocontroll.com>
+ <aS79eKc9Ac4np6Nf@lizhi-Precision-Tower-5810>
+ <e428c3a9-49e2-4af5-b597-2cdfef7028f5@gocontroll.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251209042744.7875-1-chintanlike@gmail.com> <19e8a1b0-75e3-4c8d-911a-15fd70f60bea@suse.de>
- <f5d50007-5b48-47cb-8133-72fca274d562@gmx.de>
-In-Reply-To: <f5d50007-5b48-47cb-8133-72fca274d562@gmx.de>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Tue, 9 Dec 2025 16:25:09 +0200
-X-Gm-Features: AQt7F2oJ-HAqvTo7dPHCW2Uqr5UaQh_WR7_Bb48h-O510S-3IyA861WvQJm_2eQ
-Message-ID: <CAHp75Vds8GP+daMe9WcEbOaNT91kMHUjidzGUN-1_kVDuWBtLw@mail.gmail.com>
-Subject: Re: [PATCH 0/3] fbdev: Guard sysfs interfaces under CONFIG_FB_DEVICE
-To: Helge Deller <deller@gmx.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>, Chintan Patel <chintanlike@gmail.com>, 
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
-	linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, andy@kernel.org, gregkh@linuxfoundation.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e428c3a9-49e2-4af5-b597-2cdfef7028f5@gocontroll.com>
 
-On Tue, Dec 9, 2025 at 10:23=E2=80=AFAM Helge Deller <deller@gmx.de> wrote:
-> On 12/9/25 08:27, Thomas Zimmermann wrote:
+On Mon, Dec 08, 2025 at 02:56:50PM +0100, Maud Spierings wrote:
+> On 12/2/25 15:53, Frank Li wrote:
+> > On Tue, Dec 02, 2025 at 08:46:21AM +0100, Maud Spierings wrote:
+> > > On 12/1/25 17:52, Frank Li wrote:
+> > > > On Mon, Dec 01, 2025 at 12:53:20PM +0100, Maud Spierings via B4 Relay wrote:
+> > > > > From: Maud Spierings <maudspierings@gocontroll.com>
+> > > > > 
+> > > > > The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+> > > > > with integrated boost controller.
+> > > > > 
+> > > > > Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
+> > > > > 
+> > > > > ---
+> > > > > 
+> > > > > In the current implementation the control registers for channel 1,
+> > > > > control all channels. So only one led subnode with led-sources is
+> > > > > supported right now. If at some point the driver functionality is
+> > > > > expanded the bindings can be easily extended with it.
+> > > > > ---
+> > > > >    .../bindings/leds/backlight/maxim,max25014.yaml    | 107 +++++++++++++++++++++
+> > > > >    MAINTAINERS                                        |   5 +
+> > > > >    2 files changed, 112 insertions(+)
+> > > > > 
+> > > > > diff --git a/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+> > > > > new file mode 100644
+> > > > > index 000000000000..e83723224b07
+> > > > > --- /dev/null
+> > > > > +++ b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+> > > > > @@ -0,0 +1,107 @@
+> > > > > +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> > > > > +%YAML 1.2
+> > > > > +---
+> > > > > +$id: http://devicetree.org/schemas/leds/backlight/maxim,max25014.yaml#
+> > > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > > > > +
+> > > > > +title: Maxim max25014 backlight controller
+> > > > > +
+> > > > > +maintainers:
+> > > > > +  - Maud Spierings <maudspierings@gocontroll.com>
+> > > > > +
+> > > > > +properties:
+> > > > > +  compatible:
+> > > > > +    enum:
+> > > > > +      - maxim,max25014
+> > > > > +
+> > > > > +  reg:
+> > > > > +    maxItems: 1
+> > > > > +
+> > > > > +  "#address-cells":
+> > > > > +    const: 1
+> > > > > +
+> > > > > +  "#size-cells":
+> > > > > +    const: 0
+> > > > > +
+> > > > > +  enable-gpios:
+> > > > > +    maxItems: 1
+> > > > > +
+> > > > > +  interrupts:
+> > > > > +    maxItems: 1
+> > > > > +
+> > > > > +  power-supply:
+> > > > > +    description: Regulator which controls the boost converter input rail.
+> > > > > +
+> > > > > +  pwms:
+> > > > > +    maxItems: 1
+> > > > > +
+> > > > > +  maxim,iset:
+> > > > > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > > > > +    maximum: 15
+> > > > > +    default: 11
+> > > > > +    description:
+> > > > > +      Value of the ISET field in the ISET register. This controls the current
+> > > > > +      scale of the outputs, a higher number means more current.
+> > > > > +
+> > > > > +  led@0:
+> > > > 
+> > > > define whole binding, allow 0-3. binding is not related with driver's
+> > > > implement.
+> > > > 
+> > > > it'd better put unders leds.
+> > > > 
+> > > 
+> > > so like:
+> > > 
+> > > backlight: backlight@6f {
+> > > 	compatible = "maxim,max25014";
+> > > 	reg = <0x6f>;
+> > > 	enable-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
+> > > 	pinctrl-names = "default";
+> > > 	pinctrl-0 = <&pinctrl_backlight>;
+> > > 	maxim,iset = <7>;
+> > > 
+> > > 	leds {
+> > > 		#address-cells = <1>;
+> > > 		#size-cells = <0>;
+> > > 
+> > > 		led@0 {
+> > > 			reg = <0>;
+> > > 			led-sources = <0 1 2>;
+> > > 			default-brightness = <50>;
+> > > 		};
+> > > 
+> > > 		optional led@#....
+> > > 	};
+> > > };
+> > > 
+> > > right?
+> > 
+> > yes.
+> > 
+> 
+> I am feeling a bit weird about these led sub nodes, because it is not
+> programmed as a led driver, it is programmed as a backlight. I am trying to
+> figure out how this would be used later when the led strings are
+> individually controllable.
+> 
+> it isn't possible to link the seperate strings to different displays because
+> it is only one backlight device, so I don't seen any reason why it would
+> ever be used in another way than what it is now, were all strings are
+> programmed by one register.
+> 
+> The only way I can make sense of it is if instead I program this device as a
+> led driver and then use the led_bl driver as the actual backlight.
+> 
+> Thats a pretty big step in a different direction, but then the led subnodes
+> at least can be properly used I feel.
 
-...
+If you don't have any use for anything other than driving a single 
+backlight, then I'd just drop the led nodes completely.
 
-> This whole series adds a whole lot of ifdef'ery, which I think is the
-> worst approach. It makes the code less readable and leads to two code
-> paths, which may trigger different build errors depending on the config.
->
-> I'm sure it must be possible to do the same without adding more #ifdefs,
-> e.g. by introducing a function like   dev_of_fbinfo(fbinfo)  which
-> simply returns NULL for the FB_DEVICE=3Dn case.  Then, that value can be =
-tested
-> like
->         if (dev_of_fbinfo(fbinfo))
->                 {...do-the-things...}
-> For the FB_DEVICE=3Dn case this will then be optimized out by the compile=
-r,
-> while you still have full compiler syntax checking.
->
-> Thoughts?
-
-I second you. I am also not a fan of ifdeffery when it can be avoided.
-
---=20
-With Best Regards,
-Andy Shevchenko
+Rob

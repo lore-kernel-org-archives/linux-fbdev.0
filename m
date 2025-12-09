@@ -1,101 +1,106 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f51.google.com (mail-ej1-f51.google.com [209.85.218.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70D491E6DC5
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Dec 2025 10:55:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23BB42C0F62
+	for <linux-fbdev@vger.kernel.org>; Tue,  9 Dec 2025 14:25:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765277759; cv=none; b=u+g6LI3ok+fJBcEWl1uXhzx/l0GEBQpkNFkMl1c1ppD1OP4qDaGqbnzSRSrEPotP863sORDNEbFfzf4xDiKDmg1M8w+C3/rIcozuTB7q1C5k8M6UKyLFg2UGonxhnNV5ddQo8MtCqmH1UCMQvDO6GMuNwVgJA5MxhLoyMBeD8kM=
+	t=1765290349; cv=none; b=TTOoJTGSXdoxoYXY6hmV6ItVYvA3sQ0yGwyrHk+ZIY1gkGkZmkwlC4+n41Gxt4Iil9y1yCpZP53Zgn5CF4Zw9/UQjf/Z2KjHKjXtJxRwZAKdZ8CVCajtcL4ezERqHltDFlKKjgnj+tl/TeEVq+yFaUQ/F7bQt+Z/Q4OJqy8//1o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765277759; c=relaxed/simple;
-	bh=M9bbmFgZkc8S0DNcL/KplCM1YEckeT2rBelfi6r5VxE=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=QYiIm9pY3GRNwTfsd6Vay1t0FgaJ53DFDzvtfiENlXAWHEU3ErOm18qWgPGWrpDCgOebTRL7AVfQWWZgpVdKkObp0LFuEowog/O50WU5hFa1ugN/SVHn1Ul1nzghYIb5VuYL+NU2MjRtDC6JoEAxewaFM7aktDA9aet5zSYYJeA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=k54kGDbd; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1765290349; c=relaxed/simple;
+	bh=p/QNLZHkkEp+08g4pHXLslu5TUvKGyb9J5Qo1iBjVxg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TBwIzam5KBeoBjLwePOd27GwhUJrrHRQTEbMuXk8iItvViqqv67q3eUx2sNC0KUvGeGoX7EEFdm4r8eawg3SIs2ZU3cknDL1ZZxP2Z8RIvtu1zOOmoEnMHchCTR5+OsaHbpzoTUluPRvWivKjCxhDIsU6zabW8Y2W+a3rJXH/sA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=eWLSqmpX; arc=none smtp.client-ip=209.85.218.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="k54kGDbd"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1765277757; x=1796813757;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version:content-transfer-encoding;
-  bh=M9bbmFgZkc8S0DNcL/KplCM1YEckeT2rBelfi6r5VxE=;
-  b=k54kGDbdK4HxnOVSPFduzL6XmS6sdVvFDssjGUL4mteeBG1AnsXpM9P6
-   JSOQ0OcMI3FZ6/gyb5NIDQLZ4S1u9oB+uqJYYF5T60KThIWZ0nnZH2uEe
-   8f8wKh64nwsTEY6WEFbX1sOVQviCiqqoz7+3ieNCK8hHOQ/AESnkX558D
-   WC/5q+8Gm9u9QTwxYXyPj2lSWpWoI2Z3tZr0tVvr1/5XbrEln2J1kfXxM
-   LBmM7EkyuyUN/OJ3wTXfLoheGQ0B2pwPU6ev6MvhyvqYbeg4a2eXtljxD
-   szmBpVHaCszTFHbzP3R1HUjvRwEkHtmFSdajE8H1nR8sgWhFuG01j4gXn
-   Q==;
-X-CSE-ConnectionGUID: L2+Lb2i1Qwqh1G16PHMBaA==
-X-CSE-MsgGUID: P2yGymJRQBOgZIFycDQw9A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11636"; a="67126084"
-X-IronPort-AV: E=Sophos;i="6.20,261,1758610800"; 
-   d="scan'208";a="67126084"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2025 02:55:55 -0800
-X-CSE-ConnectionGUID: B9R2JDrcRmebdiafbPB+qA==
-X-CSE-MsgGUID: UA7yqdrxR2mmm3tyLVJTbA==
-X-ExtLoop1: 1
-Received: from mwiniars-mobl.ger.corp.intel.com (HELO localhost) ([10.245.246.154])
-  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2025 02:55:52 -0800
-From: Jani Nikula <jani.nikula@linux.intel.com>
-To: Ville Syrjala <ville.syrjala@linux.intel.com>,
- intel-gfx@lists.freedesktop.org
-Cc: intel-xe@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v2 14/19] video/vga: Add VGA_IS0_R
-In-Reply-To: <20251209075549.14051-1-ville.syrjala@linux.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20251208182637.334-15-ville.syrjala@linux.intel.com>
- <20251209075549.14051-1-ville.syrjala@linux.intel.com>
-Date: Tue, 09 Dec 2025 12:55:49 +0200
-Message-ID: <7f70f53e34433e3056bf16195b009d14fb60b745@intel.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eWLSqmpX"
+Received: by mail-ej1-f51.google.com with SMTP id a640c23a62f3a-b79ea617f55so1084757766b.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 09 Dec 2025 06:25:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1765290346; x=1765895146; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=7tczTAGf+NRaPH/lcY4iGZ+jG9JiJwZWejZNNrAcawA=;
+        b=eWLSqmpXxVbLqSmhyOUffWE8c0E+TQ+ueWJOdRrtCyDuyeNgf1alcBFttZCOLhj55O
+         H5wFcEHFyMNl9XAsoMtqOqkccrKEelJnsJ+vo70TAhGpW+ayJx5/GczJGRmBPwtBZwbW
+         NW9QyI9kaUKqn33gM+43VcQ9LszLl3f/hsxPVQBoS6/poPn/3ZjNo5zL8H30LoQ4LhMz
+         jhl3sWP7MVBuJUt1LiNvBf5Hcj816Bs+DnYMpEN0po2cihBhjrR7my3g42gdJbh+CO70
+         1PGDRTf9azP7ZxndFubvWQN9GGTEi8KX07sKMH8bpf4J/blBfXfewSINKcWxyj13sam/
+         MN0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1765290346; x=1765895146;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=7tczTAGf+NRaPH/lcY4iGZ+jG9JiJwZWejZNNrAcawA=;
+        b=sa5yAEvNir9mVOo9f2gof4dYWEdy+FnfWopr5LVDaWKWXmvawster/26GMbY6MTCYq
+         9pDnDrZLDwELAvgHrJ3XaNkZP5FVYaGgdfkK50zUhUuT/Xjr9pgrU7NJEU7oRPxZ+7Nz
+         YFtFCakO4yhw/SBhTlgg72Q9BshSOSGKVBoVITvEC7ktmFsyJbZICAfcTjl7rWt6hGa3
+         k/4L0pN87QwAnjLu9QRHff9NHHpMTFdpsWvdqr3Khv5q5DQpOi1YaZ9asTIdV67Yib2k
+         2I5P1pfE77pVKqG9caDkTAxxexXHCRupBrJTh7Mh7ryaAHE6P8ajNARb9UheHE4Ak2JT
+         E0DQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXNtYc/aSqnA1f8yo1HvuK5eVB8ZNoUVZ+igAYvBaqQdvN3P/wy8Nu0YBqIUrosJ0p1DuTq+vsAq+KatA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwSrfiDPauYJ16plQ2WcH9a3TuZtdfsk851NpR47Pjc3A4XSwan
+	lR+VLkS0S+yyA6aZ1vFrjqj51yzvc2S2pd1uH7yPKsPvjK4mqbk4lPz01oIGFLtMxgUbBmfXjrp
+	t9R9RLBmsHEwgpfbWiZmlZpn25OL5zwg=
+X-Gm-Gg: ASbGncv7tghTH553ZJ2jZT6GapyXvhBZjjZwWJEkbPJcGIm110eylbC4xeZ/OImjMXf
+	ewScQq6iQx6HdfBHzSvsi5J8xdBQu1f5i1jd9o7fOmf4Ttp//xQNVaoeMKl8F0cP+Zs4Vk6qGWm
+	It3Y5UrWytfZQa4dze6BTcjPL1o7pgCZunYmMqC9zY4P2SdrQN2pqxnTfB35YJpP4FycjuZ/aIw
+	ekOFBJiYDqVcAk5mvwyJQjuzN6nYuRfoovhX/dK6aZNDF6AcduqX2b3qaYZojCFs8B6fg4hfCuy
+	0PUonsf1A0hJ8fyz9Jvk5oU0c0hnljvkQ1OqVi1NH2y1aAP/D1yecmYI4T/nqtC+KLiMBzA=
+X-Google-Smtp-Source: AGHT+IEUDyZqURELnRBTzjTZuETiToxli9ABhMGm4/e9CoRb3wfwUJvgUlRqDbyn79ps6rpZIghHoUYB7oNXT7FULvM=
+X-Received: by 2002:a17:907:720b:b0:b7a:1b3:5e5d with SMTP id
+ a640c23a62f3a-b7a242be82bmr1105272266b.8.1765290346242; Tue, 09 Dec 2025
+ 06:25:46 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+References: <20251209042744.7875-1-chintanlike@gmail.com> <19e8a1b0-75e3-4c8d-911a-15fd70f60bea@suse.de>
+ <f5d50007-5b48-47cb-8133-72fca274d562@gmx.de>
+In-Reply-To: <f5d50007-5b48-47cb-8133-72fca274d562@gmx.de>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Tue, 9 Dec 2025 16:25:09 +0200
+X-Gm-Features: AQt7F2oJ-HAqvTo7dPHCW2Uqr5UaQh_WR7_Bb48h-O510S-3IyA861WvQJm_2eQ
+Message-ID: <CAHp75Vds8GP+daMe9WcEbOaNT91kMHUjidzGUN-1_kVDuWBtLw@mail.gmail.com>
+Subject: Re: [PATCH 0/3] fbdev: Guard sysfs interfaces under CONFIG_FB_DEVICE
+To: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, Chintan Patel <chintanlike@gmail.com>, 
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
+	linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, andy@kernel.org, gregkh@linuxfoundation.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 09 Dec 2025, Ville Syrjala <ville.syrjala@linux.intel.com> wrote:
-> From: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
->
-> Add a proper name for the "Input status register 0" IO address.
-> Currently we have some code that does read addressed using the
-> aliasing VGA_MSR_W define, making it unclear what register we're
-> actually reading.
->
-> v2: Remove stray '?'
->
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Signed-off-by: Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com>
+On Tue, Dec 9, 2025 at 10:23=E2=80=AFAM Helge Deller <deller@gmx.de> wrote:
+> On 12/9/25 08:27, Thomas Zimmermann wrote:
 
-Reviewed-by: Jani Nikula <jani.nikula@intel.com>
+...
 
-> ---
->  include/video/vga.h | 1 +
->  1 file changed, 1 insertion(+)
+> This whole series adds a whole lot of ifdef'ery, which I think is the
+> worst approach. It makes the code less readable and leads to two code
+> paths, which may trigger different build errors depending on the config.
 >
-> diff --git a/include/video/vga.h b/include/video/vga.h
-> index 468764d6727a..2f13c371800b 100644
-> --- a/include/video/vga.h
-> +++ b/include/video/vga.h
-> @@ -46,6 +46,7 @@
->  #define VGA_MIS_R   	0x3CC	/* Misc Output Read Register */
->  #define VGA_MIS_W   	0x3C2	/* Misc Output Write Register */
->  #define VGA_FTC_R	0x3CA	/* Feature Control Read Register */
-> +#define VGA_IS0_R	0x3C2	/* Input Status Register 0 */
->  #define VGA_IS1_RC  	0x3DA	/* Input Status Register 1 - color emulation =
-*/
->  #define VGA_IS1_RM  	0x3BA	/* Input Status Register 1 - mono emulation */
->  #define VGA_PEL_D   	0x3C9	/* PEL Data Register */
+> I'm sure it must be possible to do the same without adding more #ifdefs,
+> e.g. by introducing a function like   dev_of_fbinfo(fbinfo)  which
+> simply returns NULL for the FB_DEVICE=3Dn case.  Then, that value can be =
+tested
+> like
+>         if (dev_of_fbinfo(fbinfo))
+>                 {...do-the-things...}
+> For the FB_DEVICE=3Dn case this will then be optimized out by the compile=
+r,
+> while you still have full compiler syntax checking.
+>
+> Thoughts?
+
+I second you. I am also not a fan of ifdeffery when it can be avoided.
 
 --=20
-Jani Nikula, Intel
+With Best Regards,
+Andy Shevchenko

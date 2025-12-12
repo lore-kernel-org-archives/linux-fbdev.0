@@ -1,276 +1,245 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazon11022140.outbound.protection.outlook.com [40.107.75.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCCF03016F5
-	for <linux-fbdev@vger.kernel.org>; Wed, 10 Dec 2025 14:25:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765376724; cv=none; b=RLGfaTf737jwQLulZciedMcq4bScQoAJwykYR7USFbA1RGThMyYucrdKHVCcBzuBGZJolIhOh9WS+2eY7/a751YRmekHZCrzpNFNokUFzI9Fz1qDTB7MH/LJZHCgMYQwYBL01RKs3ojbi9QjfhbVPt6TZ/1h3ZgKM8V1WW22L8s=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765376724; c=relaxed/simple;
-	bh=6zIyq8rgofQn0ebLU2yV60RpctEeHlc/GLxk+YA8EWA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nkEjBIxlu0sgUElESASux/la035WT+QB47vGaqatCeWFTdwjc288VukJXHSUnmiZKWuCimFF5/ZCtEvDyPoX0BJ74+ee5I7chCHA9bHLZuxyCdlbDUBugKL81Zcd1w6caDKV2Iw16q8j+SRlKsnzLV3ORQUdGItYw0a2CJ1GsxM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fClFlMsN; arc=none smtp.client-ip=192.198.163.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB2C4246BB2;
+	Fri, 12 Dec 2025 16:41:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.75.140
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1765557680; cv=fail; b=OSu1/+zgQentYDkSqDGgYckkH0r8nOqQVfzkhDq/IkF/UkS0cmm9LxU2nMdKU/L+xT2iUK1cjBdfHxlsqJzq5l+YFgCchaczgYFQRdaspzDHL5qkzPKvjwZM23Kgu8DybDKTj5W8VAkXlfNkCdhH0mJACVn8j5T26IT3hJyZRpg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1765557680; c=relaxed/simple;
+	bh=tqrbnySbjMRENl38Nd4S48Y/BorR0TeZnjCANdZ+NzA=;
+	h=From:Subject:Date:Message-Id:Content-Type:To:Cc:MIME-Version; b=RPFGqeQGlu6G8focujrYFM5tWLmATTMJZSNxOH1mV9FCXwB1525V/3AT6PtWCOld3ll9EwzvZ3G+M6Q17FT9SXJw1GJgej4Xh6fzn4oMMJuPT2V97TAmWB/D/n5TBbU3zvio7fbkjy/qpDwApRIcpcnvkhwIwPZVmiy4V0wRslk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=advantech.com; spf=pass smtp.mailfrom=advantech.de; dkim=pass (2048-bit key) header.d=advantech.com header.i=@advantech.com header.b=jfJYtbSY; arc=fail smtp.client-ip=40.107.75.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=advantech.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=advantech.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fClFlMsN"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1765376723; x=1796912723;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=6zIyq8rgofQn0ebLU2yV60RpctEeHlc/GLxk+YA8EWA=;
-  b=fClFlMsNxuyI5aBkseYD77X8xvjYKvSKD9tcVrPsptBUZZdlZIH+4Imk
-   gmRVy+gEOdJ+J4M6kZBc+47bWd5e4Hon/Zmix+lpeL184LDJWzqNsq76N
-   h7zY63UTT835b3B0wDnviZnbomuokZGwIJAj4s9AP46PyEjCm8JrKezy7
-   aibYVGw7FeuP9VhZmV/+UzkKfwWiLAp81hnbJW0JOsxVwjIpd4j0YmytX
-   6DOgOaiB7zOWGedwmK8DWn8lP78uwQ/LWhK6CIt5hRW8RiCivvhtP7Ekh
-   CdUb+57sAgsItTMHZyGGu4F9gwoM3Nv2LqWIV6TIbDmYQHBQTGUBs/oCs
-   g==;
-X-CSE-ConnectionGUID: MmeVwu/5THSzmRxarKrqkw==
-X-CSE-MsgGUID: hNQhHQrLTI+lt9z8p9bliw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11638"; a="54893109"
-X-IronPort-AV: E=Sophos;i="6.20,264,1758610800"; 
-   d="scan'208";a="54893109"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Dec 2025 06:25:22 -0800
-X-CSE-ConnectionGUID: OvXahgJSSaGyUE0XKKWTaQ==
-X-CSE-MsgGUID: gX/pGK64Q4mAEfZQthb5lg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.20,264,1758610800"; 
-   d="scan'208";a="219863626"
-Received: from lkp-server01.sh.intel.com (HELO d335e3c6db51) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 10 Dec 2025 06:25:20 -0800
-Received: from kbuild by d335e3c6db51 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vTL82-000000003GX-0lVV;
-	Wed, 10 Dec 2025 14:25:18 +0000
-Date: Wed, 10 Dec 2025 22:24:28 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ville Syrjala <ville.syrjala@linux.intel.com>,
-	intel-gfx@lists.freedesktop.org
-Cc: oe-kbuild-all@lists.linux.dev, intel-xe@lists.freedesktop.org,
-	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 14/19] video/vga: Add VGA_IS0_R
-Message-ID: <202512102200.KIAC3RLu-lkp@intel.com>
-References: <20251208182637.334-15-ville.syrjala@linux.intel.com>
+	dkim=pass (2048-bit key) header.d=advantech.com header.i=@advantech.com header.b="jfJYtbSY"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=jT6J372+Nfda//vnPFWfU6ulwCpBeNU5TlBxjiJGYfUkNQX4eFTLm445PeJdl5B7cpx9snOizW0RFAflQgnyuzKH2fHxuM/grHP2xgSmiuP9e5XeplxeK/1mDCmBtnoznQN0i46bR0mmp/c9lAnxyrNg5yt9suFt2LG54Gew8I9AZ0EZcJZsMRa9pAUk4mKyXvaP60pLvn2WGM2zCRFt1a74o95mvVS1cdy0ostIlc3iGFT/c3p8LaXEK4L3VlgJxqQVAidJUFvVJbn/BFUjRjnwF4GxOMkZg+ccEuk50uwdZxuy+rWdPAJwkFlCS7PL9/3y4Ri7oRDfGPozuCtuxg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=QBw35jX0aADda8kMdZRemBJOFN8CDdDIL5muHhBSfoU=;
+ b=u1hB0d9nrd9cmIGhkP11zcBBPF/OZhfk7SUzEB5hdNbTqDyXt5K+P4TFZDR0N2ON/7zs7NC+JPTx3UobNt/GRuLMJEIbcM4JEh1bAXWcavd7Lt0lc8mXMcRqN5k3D+U/yUsna4DsG9HiTEurXhq9nlEDem12ncAcGaRM3BtCMMndfXzyf4X5xCE6BlMyFbDK0ZXLM4Z67ePPBZ8HrfN5jXKIn2GklwNbZMLWgCoTYGRTZW9xeZ2uIvPy1+kDUpW11r7jKNplZ94HYrtZdeYM+ijoaVzT76eHtguWEpo/rqE+yvgg6uSP9iOVp+3g9/nnMvGWwEvuCYYeQKysNVs6jQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=advantech.de; dmarc=pass action=none header.from=advantech.com;
+ dkim=pass header.d=advantech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=advantech.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=QBw35jX0aADda8kMdZRemBJOFN8CDdDIL5muHhBSfoU=;
+ b=jfJYtbSYgFG3I6uQUjyT0TRSUPhysL7G17RGSjc7Zt6yZQcO16+bpTZGgCVNgZY4VMM39jo54KsPSmZW9DaZ1H3bp1VFqkIz8UUy0EQmOuY4HNSYpE4pieyCxCdkDy9WbdmAt+pzRjbp0LljnYoK+EFz8nPU6j3uFy6CdHxlYZydcJOFG8kDDMU8n6KPSnsD6r3nMkUovlozYn+h4fRfm0LXqkQjsOJQTIDi/XkIJQ2tNjKpYv3eXWUF1/3TH0vkkBiP9tdJIeXX0/t2lSFMwWyjANKz3jNchYUmpYh0hD+wRUZfMtQiNCLJ2z67L5W1gxWP3ppeOrGK8kUb+07kdA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=advantech.com;
+Received: from PSAPR02MB4502.apcprd02.prod.outlook.com (2603:1096:301:21::6)
+ by JH0PR02MB6564.apcprd02.prod.outlook.com (2603:1096:990:3f::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9412.11; Fri, 12 Dec
+ 2025 16:41:12 +0000
+Received: from PSAPR02MB4502.apcprd02.prod.outlook.com
+ ([fe80::59c9:fe0:25f6:702b]) by PSAPR02MB4502.apcprd02.prod.outlook.com
+ ([fe80::59c9:fe0:25f6:702b%6]) with mapi id 15.20.9412.005; Fri, 12 Dec 2025
+ 16:41:12 +0000
+From: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Subject: [PATCH 0/8] Add support for Advantech EIO MFD series devices
+Date: Fri, 12 Dec 2025 17:40:51 +0100
+Message-Id: <20251212-upstream-v1-v1-0-d50d40ec8d8a@advantech.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAJNFPGkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDI1NDI0Mj3dKC4pKi1MRc3TJDXQtDY2OLZDMD4zRLEyWgjoKi1LTMCrBp0bG
+ 1tQAUh79LXQAAAA==
+To: Lee Jones <lee@kernel.org>, Linus Walleij <linusw@kernel.org>, 
+ Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
+ Andi Shyti <andi.shyti@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ Wim Van Sebroeck <wim@linux-watchdog.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
+ linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, 
+ Wenkai Chung <wenkai.chung@advantech.com.tw>, 
+ Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>, 
+ Hongzhi Wang <hongzhi.wang@advantech.com>, 
+ Mikhail Tsukerman <mikhail.tsukerman@advantech.com>, 
+ Thomas Kastner <thomas.kastner@advantech.com>, 
+ Ramiro Oliveira <ramiro.oliveira@advantech.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2127;
+ i=ramiro.oliveira@advantech.com; h=from:subject:message-id;
+ bh=tqrbnySbjMRENl38Nd4S48Y/BorR0TeZnjCANdZ+NzA=;
+ b=owEB7QES/pANAwAKAc7t0Ke8vbAJAcsmYgBpPEWcFoSvX7yazNRXEe724p+7U7pEGW5e3KmM1
+ oPYAb32SsuJAbMEAAEKAB0WIQS1Nkng0ZvJmBKh6GLO7dCnvL2wCQUCaTxFnAAKCRDO7dCnvL2w
+ CcYuDADJyNToPIL5BmMJ3Hx2hGZOISjg93iuFZyC7dDJ8a1z2cw01WxKbwqSOofNjyJ2eL3fBRG
+ XpOtKZNm/4C3UHovpgPNy//u/pZBo4Embr4yN0gm9Rmyjls4UP+0StOwHdUKcm/HddZiagVsVFD
+ 6mYZTSlsDKoCn5CvPAuPc0o01QHnJ/VWLdUSoNpOU8/6NTqo9s9abGhi8gn8Iw5TawgRwT8PKID
+ iepQSuDmiCcbf1oArqKoK72XjL2McR/OxAtVed7qELCosWTG+6Q3YAbECIILkcIWZMUXJUJtMci
+ VCIdc5RIDOdr/PArKnz2fzLL45KIW/sYMlTDVHsoQuOE6Qfg9WJL77gsAMn78gJRWWT1qZTCI8w
+ fL42w55yPWBvZVObV6EbE32HaSiXbypPvsKhLGTiBFxPvr1aDHJ9jSH1Do8dCvusFi0RX3aC523
+ BZdNTfBbdvfT8ccG3LWRggYpTCf6zOikA2uGtNlyJiSsQJrDfxnC28s1dYn8GUX/1BxEI=
+X-Developer-Key: i=ramiro.oliveira@advantech.com; a=openpgp;
+ fpr=B53649E0D19BC99812A1E862CEEDD0A7BCBDB009
+X-ClientProxiedBy: FR4P281CA0175.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:b7::12) To PSAPR02MB4502.apcprd02.prod.outlook.com
+ (2603:1096:301:21::6)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251208182637.334-15-ville.syrjala@linux.intel.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PSAPR02MB4502:EE_|JH0PR02MB6564:EE_
+X-MS-Office365-Filtering-Correlation-Id: a4d4c07c-8167-4aea-9e91-08de399d4289
+X-MS-Exchange-AtpMessageProperties: SA
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|7416014|366016|52116014|376014|38350700014|921020;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?R0czeVFpN2VUTFhqenJyLzlFYksvU2lrd285bjZQZlNKNDBQMlJoSDJFVStv?=
+ =?utf-8?B?aXYxZGdLcUdwTFVnR1NpZWdIc25NU1ArTC9JUWwyMHpKQ1gxTzFRSjhkT1N3?=
+ =?utf-8?B?bFQwMHc5QXVjTS9zdUhDQzB2OExOcFgwR1czd0UrclZEMklZUkllTDc0Nm1H?=
+ =?utf-8?B?dFR6aUFCdkY5RjAwc1NERTJtTGJ4VnpkZ3EwUnNIRGZCaXE3NXpsckRuK2M2?=
+ =?utf-8?B?RVBzcmd2MlJnck96Rzk4VUFCVG93dWpKbXZ1bUpoOEVZenR0QWhLOElSelpN?=
+ =?utf-8?B?Zy96ak1OOGhKMlBVWTgvMVRMem5XblV4S1phTHNFcWpiZkR6TDhKc2NIaWV0?=
+ =?utf-8?B?N2o4SnEzOEQzdzFRN09nZm1nT1haYTBCL0FmYmNmb3VKU0UzUFRWaVNZSW10?=
+ =?utf-8?B?Z09WWGhhb3VxZ3VWeHQ3ZVBlaCs4SkV4RCtFNXp4b1JHU2J0QWQzWWU5dzF0?=
+ =?utf-8?B?ZDlQNjRxa21NWm9iaTBSWjdCaEdPRlUxR2tVVUxDR2g1cnBhVy82UVlBWVhn?=
+ =?utf-8?B?V1luNmhDMFMyQ2ZMZXRWM2lFTmxNV1h2L1Z0R3loRjB3TmdjRU5VKzJUdWo4?=
+ =?utf-8?B?WmNKR00xU0NPZmtPMHcwT1RYRmlTN2pCK2ZmbUpuZk1JdjllVEJrOWdoK0V5?=
+ =?utf-8?B?WFArSDBFK1diNUtuL0g3ZGh2aEFXb3pzN0U2Q1Z3aGNOVSsrajNCMjlLYzhm?=
+ =?utf-8?B?TEdxaTdQcWsvWVkvUFc1TFR2Z2ZnRE05NWFxT21ZZ1paZnJLc0Q0eG1VRFFD?=
+ =?utf-8?B?T1V1UXZIRXR5eTZDVTB1cCs3bElHNXJtY2tBcW5uQVJVejRmL2o0b0orWGpO?=
+ =?utf-8?B?MmhqVGhaeHJxOXZ1TVV0R1c0MkJsTEFWcXBaNFdudU83ZU9PNG9vd0xtMVVq?=
+ =?utf-8?B?TURXUUk5K3k1VVk0TmYwQU5kZGNLeG1rcEp0S2NFcjFzOEQ3S0l1NjNRb0ZB?=
+ =?utf-8?B?blZJdFVtbkVVUDZ5eFVCbnF2VGV3dFh3UmdzTnZpYkwzN09walZBSmMrSmFh?=
+ =?utf-8?B?NmZiMkoyWVYwazFJVjBaMEplcHpFVXRxbDVhaHZVLzZ4ZWtIZXI4ZllId2d2?=
+ =?utf-8?B?c2lqYkNjOEFqVjhRT0o4anREclJhbE91U3lXVjNDa2YxUWRTUnhneDJpWnU4?=
+ =?utf-8?B?RFlLYWJXamNHMXc1SHp2dnQrUWt1M1AzSlZ2T3JvUWZZaGk0c2NGdEN6Z1lJ?=
+ =?utf-8?B?Q0JJQURBdHl3bDF1NWxxeDJZS3RHV2hpVG0vMXBpWGt1ZndrZ2hzUTBpUmht?=
+ =?utf-8?B?aDM2MDJ1aWF3VjAwRWdyeVJQSkN5UkdrY3pleUJqb004eCt2S201UjMwcTVK?=
+ =?utf-8?B?RTFrbk5oZkZFWGJiU1A4NExBSkNybFZyR0V3ZmdiM3NZZ1h5ckhaaWRnYkdZ?=
+ =?utf-8?B?bTdJamloUVFYc3l3Qms2UzZ3RUpnWXZ5dklIOC9NK3dQTXBiNnhIYXV1LytK?=
+ =?utf-8?B?QkxROW5DWXk5RmFsTlNwTHNSTGExSmVWSk9YWk9zOFFwMlNqQngvUzVMWUli?=
+ =?utf-8?B?Z1ZlZ3Q5RlcrNit6MkRyMStMcWtJMHJiR2ovMGZYNTFGT1lkQ1kwRldpZmNR?=
+ =?utf-8?B?azR4ZkRWUjZ3TXk4RmVHVVduVjFiQW1ONHkzNUhVRFNLS2VjZjV5RmkyVFZj?=
+ =?utf-8?B?dzV0R1NwNWV4Y2hBbjIxSUlXaFpMRm1lM0VYOXlGVVl2UWh1VmR1c2szeW9r?=
+ =?utf-8?B?MXAwNndtODRGMjNDY1FQc01aRGNITUtreFpsWTJmWHROdVNTRzhENjBUc0ta?=
+ =?utf-8?B?Nmp3azhMRXRhVHcvSDhaOFlsbGtadHdlcU9LUGFYR2t1QWlJNjVFVUd1ZWFG?=
+ =?utf-8?B?Tjd0VjdtNEpNZFpsdVJiMnlDdFo3YVkrSThyck1VMXNtSW1kODJncWVUN3Q2?=
+ =?utf-8?B?ZnV2aHdGYU5pS0dRbzNDTm94Y3o3cVNUMmFxL3JKMm9YSXBjUHQzcDRlRjcv?=
+ =?utf-8?B?bW1RNmtnWDBiWnJ1Z1cxYjRNb1AybVBoL2QydnoxZWRQSWI3UWZIUHB2Q3Nl?=
+ =?utf-8?B?WERYVUcySWpmMmJHNVl0YytlcnJJd3RJbzh3MnNQNm1hcVJhNXFQUmsvOFdz?=
+ =?utf-8?B?b2JIR2pnbWttUWhmbEV0VEhFRzY1ZWlBSllRZz09?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PSAPR02MB4502.apcprd02.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(366016)(52116014)(376014)(38350700014)(921020);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?RzdWcTVycnQzR2xuSmlMT1I1MGJ6WENCZHg2Wnl4bHdpY1VvTzlZUThsMHdk?=
+ =?utf-8?B?bVBoWmVPRy9HdVBVOHJVb2lhSkJrRjluQ2s2NmxncUZvSk40UVloOTQ5clpu?=
+ =?utf-8?B?d1FhRUN5bmlVUDlvYlBUM1ZJd0FPc0RvaUVtdldGMm4xa1A0N2ZGYTQrcTRC?=
+ =?utf-8?B?WHRITHdOK3N2eStiMjBTR0w1WHZ5bFVXV1VhU295bExnZlcyTHJhV0dNWERh?=
+ =?utf-8?B?aXVScnAwanl0Z0pjeFhpZUU4M2pNdy9Ta1A0ZndGcGFzTmM3SENJOUpXdzEy?=
+ =?utf-8?B?TlN5bXRhZzVmKzV0WU9TTWp4TUw1VHlLUlF1YUp1RkdZVld0NEZIY25LQ3Bz?=
+ =?utf-8?B?cnQxSnd4MTcyTHZvdEliemZmUVlZL0cxdHlENFRFMXNBWTdmMU5XdzExOWly?=
+ =?utf-8?B?enRIT25OakM3Z01MUE42ZVQyTVY0ZnpjSmROL3hWU3Q0SThwbG5zQnZnOW01?=
+ =?utf-8?B?aGUzaGxpWmFjYmxPcDlBWHBmWXhpdytZcjlWeWJvMjROd0NHT1d0LzVWaG9j?=
+ =?utf-8?B?RkdibGt5U0kxN2xGTExDbk9pUkdqOXhrN3JCVGxoTmdkUXlnY256RXNJZERv?=
+ =?utf-8?B?Y3J3ZDVlRDFPQWpxZUZUUTIzMVpGRGM3QjBhTVJxZHdpcUtuYzByVG9rb1RO?=
+ =?utf-8?B?N0thWE5wdXVlbFNBb055a3pXREUxNG5PT3Z6ai8zR2wvRlJ4bTZ5MEg1Z0ti?=
+ =?utf-8?B?U1RmS3BHNG55UVJCUzZOcjhWZTErT3UrQ0JzdjBvWXlQSWdITTU1T2llaGxC?=
+ =?utf-8?B?Q29qaDJ5d2dqQkZBOERhSXpCc2xFT2RtdmZtTS84U3VRRlcwMWEvOTYwdnpF?=
+ =?utf-8?B?QWs1ak9ZOXVLMEExZExWcE1yYTB5OGxTVWtOdGNnSzk1VXNMZVRucGdUWnpQ?=
+ =?utf-8?B?OCtoNGlvKy9LZFcreE5veWpJaDQ0anQxaWdKaFNCTDhLWFE3SDd4YmJzNkV3?=
+ =?utf-8?B?UmdsdVZLQ0VtRGVOS0dVUFVlbVRqNzFHSkthM2gyblN1ekxURmdTYmRIL09z?=
+ =?utf-8?B?MW0wOTdUclRqSzZFSktoOGZzaWJMRlpHN1BBU3pEaTFxSGNTUFphRVRsRVhk?=
+ =?utf-8?B?OE52VU1iaWRsbEF6VlBKZFZNRDllQzlmS2FFZk5RZTAwQk52aVZRbE9QUW4z?=
+ =?utf-8?B?bm1ESTdpK0hpMlhXTDVxWk40NkdVWWdZcTFGMEx6alBycTFMTCszbGZyOUlE?=
+ =?utf-8?B?Z2dNZmgyVGJIWHMxNWFnc0xJUDQ0ZEZCSEJadnlWakMzWmZVQjJia0p4eU1D?=
+ =?utf-8?B?Z090MnpLbURNb2pkUXU3dllwMmdVNm1QcEZwdkZxMy9TajBkdjgxZ2VxN2Yv?=
+ =?utf-8?B?dkFCQU5KYzhxQXlsejVicG1YRUhyejRZVHNuRHQ4Q2tpSkRLenBDb0p4VG9X?=
+ =?utf-8?B?a3UzSzJMdzNOalVoZEU0YjZHbk1LOSsxM0NpSlhDM0JZSW1BVU1CWlJJQUFt?=
+ =?utf-8?B?WmtVaE1ZaEs0em8xNkdCY1F4MXRaZHVaYzJDcHpIS3R1eFVORVFRNmczSFpJ?=
+ =?utf-8?B?ZEVLWnZRekF3THNhc1BBalZ6b1RUU1dDR1pLZVAzdWFBc2JkM1I1ZjdxZEYy?=
+ =?utf-8?B?T0NRMnVadWJtRG9QbVRpTVJSdXlLRzdCUndzNkJKbXhzVlBVRmhlS29pTDRT?=
+ =?utf-8?B?UGowUUFVd2h4SkgrMUNHZzRaaVdGZXNMd2dvMXRqckwrWFpkc01GWUpHTUND?=
+ =?utf-8?B?Y2M3ZjA3SmNFbXpwWlFsN2piWGloSnRsbndlSmRGRkVXWG85bUdoZUVCZFY3?=
+ =?utf-8?B?MEMrZnI1THRQUGg1emkwWk1obzkxTWdqUG5uQUlpMlRJYXREMHlDUmNjaERN?=
+ =?utf-8?B?UUNYd1JiblNJQzBzYWdLVXl2Mktla2Vwc3BjNDQvTVN3TEJyVkNwNitFd0l6?=
+ =?utf-8?B?a2grZW1UNnZTcUFLTFhLZGpQRDZ1Q2NEVTY4SlY0cE41YWxKVEtUejg1ZFps?=
+ =?utf-8?B?VWZUV0xXYjZCcWRYdWR1NTdDOENXRVhyb0IrVlFJTmJpZkdTWUhPMU1Wendm?=
+ =?utf-8?B?dlFIT1poa0dibG8reWxuY0JHV3ZNdnVlY0padUxWeHBCUFI4NUh5OEgwaXJ5?=
+ =?utf-8?B?WWRmU2ViVXl1QThoOWFMc0JkM1liZUN0RmtMdzJOTW1ybWRkTm96SlpTMFpx?=
+ =?utf-8?B?RWRZdDE5aUJEY0h2NEJ0bmhyVjFkck5DSFJybnRWM3pNQS9xdUNObytzbXpC?=
+ =?utf-8?Q?xMjIwQD5hWTD3XaIngXOc40=3D?=
+X-OriginatorOrg: advantech.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a4d4c07c-8167-4aea-9e91-08de399d4289
+X-MS-Exchange-CrossTenant-AuthSource: PSAPR02MB4502.apcprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Dec 2025 16:41:12.4025
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: a77d40d9-dcba-4dda-b571-5f18e6da853f
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6TVYUEO4yKp0UeH+FPUknd8qdUHr9JlXCDv50e9Hs/s74Huanso69J7TdPJDhIfx94DY6g5wSlw3hqvfIoyNyxmsjZ7jtEw2ov2IWNSI5KY=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: JH0PR02MB6564
 
-Hi Ville,
+This series implements a set of drivers allowing to support the
+Advantech EIO-2xx series of devices.
 
-kernel test robot noticed the following build errors:
+This includes GPIO, hwmon, I2C bus, backlight controller, watchdog,
+thermal and a fan driver.
 
-[auto build test ERROR on drm-tip/drm-tip]
-[cannot apply to drm-i915/for-linux-next drm-i915/for-linux-next-fixes drm-xe/drm-xe-next linus/master v6.18 next-20251210]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+This series of patches targets several different subsystems, but the MFD
+subsystem is the main target.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Ville-Syrjala/drm-i915-vga-Register-vgaarb-client-later/20251209-195929
-base:   https://gitlab.freedesktop.org/drm/tip.git drm-tip
-patch link:    https://lore.kernel.org/r/20251208182637.334-15-ville.syrjala%40linux.intel.com
-patch subject: [PATCH 14/19] video/vga: Add VGA_IS0_R
-config: s390-randconfig-002-20251210 (https://download.01.org/0day-ci/archive/20251210/202512102200.KIAC3RLu-lkp@intel.com/config)
-compiler: s390-linux-gcc (GCC) 9.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251210/202512102200.KIAC3RLu-lkp@intel.com/reproduce)
+Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+---
+Ramiro Oliveira (8):
+      Add Advantech EIO MFD driver
+      Add Advantech EIO GPIO driver
+      Add Advantech EIO Hardware Monitor driver
+      Add Advantech EIO I2C driver
+      Add Advantech EIO Backlight driver
+      Add Advantech EIO Watchdog driver
+      Add Advantech EIO Thermal driver
+      Add Advantech EIO Fan driver
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202512102200.KIAC3RLu-lkp@intel.com/
+ MAINTAINERS                      |   13 +
+ drivers/gpio/Kconfig             |    6 +
+ drivers/gpio/Makefile            |    1 +
+ drivers/gpio/gpio-eio.c          |  273 +++++++++
+ drivers/hwmon/Kconfig            |   10 +
+ drivers/hwmon/Makefile           |    1 +
+ drivers/hwmon/eio-hwmon.c        |  344 ++++++++++++
+ drivers/i2c/busses/Kconfig       |    6 +
+ drivers/i2c/busses/Makefile      |    1 +
+ drivers/i2c/busses/i2c-eio.c     | 1142 ++++++++++++++++++++++++++++++++++++++
+ drivers/mfd/Kconfig              |   10 +
+ drivers/mfd/Makefile             |    1 +
+ drivers/mfd/eio_core.c           |  621 +++++++++++++++++++++
+ drivers/thermal/Kconfig          |   17 +
+ drivers/thermal/Makefile         |    2 +
+ drivers/thermal/eio_fan.c        |  490 ++++++++++++++++
+ drivers/thermal/eio_thermal.c    |  352 ++++++++++++
+ drivers/video/backlight/Kconfig  |    6 +
+ drivers/video/backlight/Makefile |    1 +
+ drivers/video/backlight/eio_bl.c |  268 +++++++++
+ drivers/watchdog/Kconfig         |    7 +
+ drivers/watchdog/Makefile        |    1 +
+ drivers/watchdog/eio_wdt.c       |  672 ++++++++++++++++++++++
+ include/linux/mfd/eio.h          |  127 +++++
+ 24 files changed, 4372 insertions(+)
+---
+base-commit: d9771d0dbe18dd643760431870a6abf9b0866bb0
+change-id: 20251212-upstream-v1-81338c603f94
 
-All errors (new ones prefixed by >>):
-
-   In file included from drivers/video/vgastate.c:20:
-   include/video/vga.h:489:1: error: expected identifier or '(' before '?' token
-     489 | ?
-         | ^
-   drivers/video/vgastate.c: In function 'save_vga_text':
->> drivers/video/vgastate.c:89:9: error: dereferencing pointer to incomplete type 'struct regstate'
-      89 |    saved->vga_font0[i] = vga_r(fbbase, i);
-         |         ^~
-   drivers/video/vgastate.c: In function 'restore_vga_text':
-   drivers/video/vgastate.c:175:26: error: dereferencing pointer to incomplete type 'struct regstate'
-     175 |    vga_w(fbbase, i, saved->vga_font0[i]);
-         |                          ^~
-   drivers/video/vgastate.c: In function 'save_vga_mode':
-   drivers/video/vgastate.c:232:7: error: dereferencing pointer to incomplete type 'struct regstate'
-     232 |  saved->misc = vga_r(state->vgabase, VGA_MIS_R);
-         |       ^~
-   drivers/video/vgastate.c: In function 'restore_vga_mode':
-   drivers/video/vgastate.c:263:40: error: dereferencing pointer to incomplete type 'struct regstate'
-     263 |  vga_w(state->vgabase, VGA_MIS_W, saved->misc);
-         |                                        ^~
-   drivers/video/vgastate.c: In function 'save_vga_cmap':
-   drivers/video/vgastate.c:319:8: error: dereferencing pointer to incomplete type 'struct regstate'
-     319 |   saved->vga_cmap[i] = vga_r(state->vgabase, VGA_PEL_D);
-         |        ^~
-   drivers/video/vgastate.c: In function 'restore_vga_cmap':
-   drivers/video/vgastate.c:332:41: error: dereferencing pointer to incomplete type 'struct regstate'
-     332 |   vga_w(state->vgabase, VGA_PEL_D, saved->vga_cmap[i]);
-         |                                         ^~
-   drivers/video/vgastate.c: In function 'vga_cleanup':
-   drivers/video/vgastate.c:340:14: error: dereferencing pointer to incomplete type 'struct regstate'
-     340 |   vfree(saved->vga_font0);
-         |              ^~
-   In file included from include/linux/workqueue.h:9,
-                    from include/linux/mm_types.h:19,
-                    from include/linux/mmzone.h:22,
-                    from include/linux/gfp.h:7,
-                    from include/linux/umh.h:4,
-                    from include/linux/kmod.h:9,
-                    from include/linux/module.h:18,
-                    from drivers/video/vgastate.c:16:
-   drivers/video/vgastate.c: In function 'save_vga':
-   drivers/video/vgastate.c:354:25: error: invalid application of 'sizeof' to incomplete type 'struct regstate'
-     354 |  saved = kzalloc(sizeof(struct regstate), GFP_KERNEL);
-         |                         ^~~~~~
-   include/linux/alloc_tag.h:251:9: note: in definition of macro 'alloc_hooks_tag'
-     251 |  typeof(_do_alloc) _res;      \
-         |         ^~~~~~~~~
-   include/linux/slab.h:1096:25: note: in expansion of macro 'alloc_hooks'
-    1096 | #define kzalloc(...)    alloc_hooks(kzalloc_noprof(__VA_ARGS__))
-         |                         ^~~~~~~~~~~
-   drivers/video/vgastate.c:354:10: note: in expansion of macro 'kzalloc'
-     354 |  saved = kzalloc(sizeof(struct regstate), GFP_KERNEL);
-         |          ^~~~~~~
-   drivers/video/vgastate.c:354:25: error: invalid application of 'sizeof' to incomplete type 'struct regstate'
-     354 |  saved = kzalloc(sizeof(struct regstate), GFP_KERNEL);
-         |                         ^~~~~~
-   include/linux/alloc_tag.h:255:10: note: in definition of macro 'alloc_hooks_tag'
-     255 |   _res = _do_alloc;     \
-         |          ^~~~~~~~~
-   include/linux/slab.h:1096:25: note: in expansion of macro 'alloc_hooks'
-    1096 | #define kzalloc(...)    alloc_hooks(kzalloc_noprof(__VA_ARGS__))
-         |                         ^~~~~~~~~~~
-   drivers/video/vgastate.c:354:10: note: in expansion of macro 'kzalloc'
-     354 |  saved = kzalloc(sizeof(struct regstate), GFP_KERNEL);
-         |          ^~~~~~~
-   drivers/video/vgastate.c:354:25: error: invalid application of 'sizeof' to incomplete type 'struct regstate'
-     354 |  saved = kzalloc(sizeof(struct regstate), GFP_KERNEL);
-         |                         ^~~~~~
-   include/linux/alloc_tag.h:258:10: note: in definition of macro 'alloc_hooks_tag'
-     258 |   _res = _do_alloc;     \
-         |          ^~~~~~~~~
-   include/linux/slab.h:1096:25: note: in expansion of macro 'alloc_hooks'
-    1096 | #define kzalloc(...)    alloc_hooks(kzalloc_noprof(__VA_ARGS__))
-         |                         ^~~~~~~~~~~
-   drivers/video/vgastate.c:354:10: note: in expansion of macro 'kzalloc'
-     354 |  saved = kzalloc(sizeof(struct regstate), GFP_KERNEL);
-         |          ^~~~~~~
-   drivers/video/vgastate.c:354:8: warning: assignment to 'struct regstate *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
-     354 |  saved = kzalloc(sizeof(struct regstate), GFP_KERNEL);
-         |        ^
-   drivers/video/vgastate.c:362:8: error: dereferencing pointer to incomplete type 'struct regstate'
-     362 |   saved->vga_cmap = vmalloc(768);
-         |        ^~
-
-
-vim +89 drivers/video/vgastate.c
-
-^1da177e4c3f41 Linus Torvalds 2005-04-16   47  
-^1da177e4c3f41 Linus Torvalds 2005-04-16   48  static void save_vga_text(struct vgastate *state, void __iomem *fbbase)
-^1da177e4c3f41 Linus Torvalds 2005-04-16   49  {
-^1da177e4c3f41 Linus Torvalds 2005-04-16   50  	struct regstate *saved = (struct regstate *) state->vidstate;
-^1da177e4c3f41 Linus Torvalds 2005-04-16   51  	int i;
-^1da177e4c3f41 Linus Torvalds 2005-04-16   52  	u8 misc, attr10, gr4, gr5, gr6, seq1, seq2, seq4;
-0449359f053829 Ondrej Zajicek 2007-05-08   53  	unsigned short iobase;
-^1da177e4c3f41 Linus Torvalds 2005-04-16   54  
-^1da177e4c3f41 Linus Torvalds 2005-04-16   55  	/* if in graphics mode, no need to save */
-0449359f053829 Ondrej Zajicek 2007-05-08   56  	misc = vga_r(state->vgabase, VGA_MIS_R);
-0449359f053829 Ondrej Zajicek 2007-05-08   57  	iobase = (misc & 1) ? 0x3d0 : 0x3b0;
-0449359f053829 Ondrej Zajicek 2007-05-08   58  
-0449359f053829 Ondrej Zajicek 2007-05-08   59  	vga_r(state->vgabase, iobase + 0xa);
-0449359f053829 Ondrej Zajicek 2007-05-08   60  	vga_w(state->vgabase, VGA_ATT_W, 0x00);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   61  	attr10 = vga_rattr(state->vgabase, 0x10);
-0449359f053829 Ondrej Zajicek 2007-05-08   62  	vga_r(state->vgabase, iobase + 0xa);
-0449359f053829 Ondrej Zajicek 2007-05-08   63  	vga_w(state->vgabase, VGA_ATT_W, 0x20);
-0449359f053829 Ondrej Zajicek 2007-05-08   64  
-^1da177e4c3f41 Linus Torvalds 2005-04-16   65  	if (attr10 & 1)
-^1da177e4c3f41 Linus Torvalds 2005-04-16   66  		return;
-^1da177e4c3f41 Linus Torvalds 2005-04-16   67  
-^1da177e4c3f41 Linus Torvalds 2005-04-16   68  	/* save regs */
-^1da177e4c3f41 Linus Torvalds 2005-04-16   69  	gr4 = vga_rgfx(state->vgabase, VGA_GFX_PLANE_READ);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   70  	gr5 = vga_rgfx(state->vgabase, VGA_GFX_MODE);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   71  	gr6 = vga_rgfx(state->vgabase, VGA_GFX_MISC);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   72  	seq2 = vga_rseq(state->vgabase, VGA_SEQ_PLANE_WRITE);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   73  	seq4 = vga_rseq(state->vgabase, VGA_SEQ_MEMORY_MODE);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   74  
-^1da177e4c3f41 Linus Torvalds 2005-04-16   75  	/* blank screen */
-^1da177e4c3f41 Linus Torvalds 2005-04-16   76  	seq1 = vga_rseq(state->vgabase, VGA_SEQ_CLOCK_MODE);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   77  	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x1);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   78  	vga_wseq(state->vgabase, VGA_SEQ_CLOCK_MODE, seq1 | 1 << 5);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   79  	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x3);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   80  
-^1da177e4c3f41 Linus Torvalds 2005-04-16   81  	/* save font at plane 2 */
-^1da177e4c3f41 Linus Torvalds 2005-04-16   82  	if (state->flags & VGA_SAVE_FONT0) {
-^1da177e4c3f41 Linus Torvalds 2005-04-16   83  		vga_wseq(state->vgabase, VGA_SEQ_PLANE_WRITE, 0x4);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   84  		vga_wseq(state->vgabase, VGA_SEQ_MEMORY_MODE, 0x6);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   85  		vga_wgfx(state->vgabase, VGA_GFX_PLANE_READ, 0x2);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   86  		vga_wgfx(state->vgabase, VGA_GFX_MODE, 0x0);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   87  		vga_wgfx(state->vgabase, VGA_GFX_MISC, 0x5);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   88  		for (i = 0; i < 4 * 8192; i++)
-^1da177e4c3f41 Linus Torvalds 2005-04-16  @89  			saved->vga_font0[i] = vga_r(fbbase, i);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   90  	}
-^1da177e4c3f41 Linus Torvalds 2005-04-16   91  
-^1da177e4c3f41 Linus Torvalds 2005-04-16   92  	/* save font at plane 3 */
-^1da177e4c3f41 Linus Torvalds 2005-04-16   93  	if (state->flags & VGA_SAVE_FONT1) {
-^1da177e4c3f41 Linus Torvalds 2005-04-16   94  		vga_wseq(state->vgabase, VGA_SEQ_PLANE_WRITE, 0x8);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   95  		vga_wseq(state->vgabase, VGA_SEQ_MEMORY_MODE, 0x6);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   96  		vga_wgfx(state->vgabase, VGA_GFX_PLANE_READ, 0x3);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   97  		vga_wgfx(state->vgabase, VGA_GFX_MODE, 0x0);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   98  		vga_wgfx(state->vgabase, VGA_GFX_MISC, 0x5);
-^1da177e4c3f41 Linus Torvalds 2005-04-16   99  		for (i = 0; i < state->memsize; i++)
-^1da177e4c3f41 Linus Torvalds 2005-04-16  100  			saved->vga_font1[i] = vga_r(fbbase, i);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  101  	}
-^1da177e4c3f41 Linus Torvalds 2005-04-16  102  
-^1da177e4c3f41 Linus Torvalds 2005-04-16  103  	/* save font at plane 0/1 */
-^1da177e4c3f41 Linus Torvalds 2005-04-16  104  	if (state->flags & VGA_SAVE_TEXT) {
-^1da177e4c3f41 Linus Torvalds 2005-04-16  105  		vga_wseq(state->vgabase, VGA_SEQ_PLANE_WRITE, 0x1);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  106  		vga_wseq(state->vgabase, VGA_SEQ_MEMORY_MODE, 0x6);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  107  		vga_wgfx(state->vgabase, VGA_GFX_PLANE_READ, 0x0);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  108  		vga_wgfx(state->vgabase, VGA_GFX_MODE, 0x0);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  109  		vga_wgfx(state->vgabase, VGA_GFX_MISC, 0x5);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  110  		for (i = 0; i < 8192; i++)
-^1da177e4c3f41 Linus Torvalds 2005-04-16  111  			saved->vga_text[i] = vga_r(fbbase, i);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  112  
-^1da177e4c3f41 Linus Torvalds 2005-04-16  113  		vga_wseq(state->vgabase, VGA_SEQ_PLANE_WRITE, 0x2);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  114  		vga_wseq(state->vgabase, VGA_SEQ_MEMORY_MODE, 0x6);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  115  		vga_wgfx(state->vgabase, VGA_GFX_PLANE_READ, 0x1);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  116  		vga_wgfx(state->vgabase, VGA_GFX_MODE, 0x0);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  117  		vga_wgfx(state->vgabase, VGA_GFX_MISC, 0x5);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  118  		for (i = 0; i < 8192; i++)
-^1da177e4c3f41 Linus Torvalds 2005-04-16  119  			saved->vga_text[8192+i] = vga_r(fbbase + 2 * 8192, i);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  120  	}
-^1da177e4c3f41 Linus Torvalds 2005-04-16  121  
-^1da177e4c3f41 Linus Torvalds 2005-04-16  122  	/* restore regs */
-^1da177e4c3f41 Linus Torvalds 2005-04-16  123  	vga_wseq(state->vgabase, VGA_SEQ_PLANE_WRITE, seq2);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  124  	vga_wseq(state->vgabase, VGA_SEQ_MEMORY_MODE, seq4);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  125  
-^1da177e4c3f41 Linus Torvalds 2005-04-16  126  	vga_wgfx(state->vgabase, VGA_GFX_PLANE_READ, gr4);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  127  	vga_wgfx(state->vgabase, VGA_GFX_MODE, gr5);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  128  	vga_wgfx(state->vgabase, VGA_GFX_MISC, gr6);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  129  
-^1da177e4c3f41 Linus Torvalds 2005-04-16  130  	/* unblank screen */
-^1da177e4c3f41 Linus Torvalds 2005-04-16  131  	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x1);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  132  	vga_wseq(state->vgabase, VGA_SEQ_CLOCK_MODE, seq1 & ~(1 << 5));
-^1da177e4c3f41 Linus Torvalds 2005-04-16  133  	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x3);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  134  
-^1da177e4c3f41 Linus Torvalds 2005-04-16  135  	vga_wseq(state->vgabase, VGA_SEQ_CLOCK_MODE, seq1);
-^1da177e4c3f41 Linus Torvalds 2005-04-16  136  }
-^1da177e4c3f41 Linus Torvalds 2005-04-16  137  
-
+Best regards,
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Ramiro Oliveira <ramiro.oliveira@advantech.com>
+

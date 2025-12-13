@@ -1,132 +1,112 @@
-Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD8DB2253B0
-	for <linux-fbdev@vger.kernel.org>; Sat, 13 Dec 2025 14:53:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 659F8221726;
+	Sat, 13 Dec 2025 15:20:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765637589; cv=none; b=f3jCm2I+zIsHsdf83Y9b+5T3DHraasqnQR3dgCJ2J1ezqkGnPJFBTjFg7XC/KrBk/rrYcmR+tB89YrMXDY1gmx99HxF3Xx8UW9SVz2w9BNHcWJSKiHNeMPap34TEXwumL/xSK5qHvYUnW1koKsdjW6MzWVfivzJPCg09F1Z4ntU=
+	t=1765639202; cv=none; b=Jx4n97C8JG6tia9cBwkzD2AWzauK13yBs1UeLvyo6cCKtX5ZjfWsqwiXcvNVXE9Dte7b1o7JoCeyPyh2zWc/qnK+/OHbVO012DJt2U102KvOn/F9phFawiwEj3JsO7XCaXfFNOGBgXYpVPl8vD4fUn1wJwMyRNLHkh1iE1rGaQo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765637589; c=relaxed/simple;
-	bh=4R6TSlXfUMmFdJR4o1UhCXmiq6RYJfcD5Q+FvL+r66M=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UdXgGmDZEdghG1FM1GFIoDZD4+Tc3o5vaIQctmIBsTOkCvxikGIpwmnsaUfVGBisHoO8DgzKeKoAKQImps1oiEGzoorS8yPqZmEM1cd7CR6eZEtVx5ue2XmTevDjFs6skzom3SyTP0WdV5E32CBsBW2ywDJh4DxeIH7C/5t3/q8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Tqhbs7wh; arc=none smtp.client-ip=209.85.216.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1765639202; c=relaxed/simple;
+	bh=SfRsyNZlXG5eeLM8ItwniBCiImW1HWheHg8vcn/Omxo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NaTxkBHxiScdS3wkKzNzqDs77Rz+JyrPwjsZBjBgiHe/uQV8i5zyWGaSoNLBBMgiOjndWkFExQs6vVCGHCgJVlhTyEXxVjp6VwMKdUdgE99mgCCWVjIF0bQMRi+SYX15YPOCMFjhkCwX9SLd3Lr41zpxvoTkJ4xW+H1aVwJYRXc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EJFXRYZJ; arc=none smtp.client-ip=198.175.65.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Tqhbs7wh"
-Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-349bb6f9c86so2796161a91.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 13 Dec 2025 06:53:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765637587; x=1766242387; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=dqhPVfC6SZiXAXM+VHctjJfUvTdA8pHgty0TuL9jqcc=;
-        b=Tqhbs7whYrArHRnvRodg0hi8GFZu5sqdCJfTDyqOh4kUQtp7u6axlx6EhLLNStZ8Mc
-         8R7p9WaD9q1oKUCj2Bmkp0Ktx5jnh3af+AQD1J6akjXm7tv+nL/bLF3TdeRpqBgZi41n
-         U5EbWyrI2HbZ0I+F0yiLhpoK5cp4BhdvXZ88+DK1uBbA+l8OMK4kQKckrqe1dCWks0y3
-         3bFUQbzm+FpVFQdJH5ZO3+Bj1DTIKV7SyvS4qm4Od/YRhTHMl9AMhj7wMzD2fcSKMb/K
-         QNwISYyuGfDffGSQkFCAbHRVOqxZdhg3fmk1ErFOqlmiW2y8685uT3pjnjCtAaPook9p
-         4fNg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765637587; x=1766242387;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dqhPVfC6SZiXAXM+VHctjJfUvTdA8pHgty0TuL9jqcc=;
-        b=tECAZVm9XZK4UwBgrU9p6UnOyFCH0IVibVRVOHbVHQoMP+IMp9edqrOiCCcL/OI4sW
-         TgiFck48puGefzj26ZtGqbsn8W35ra2Cat6Zs6j7WH7mog6i1cGI2Lib21Djzts+rSHO
-         UVmd5HWfyQirK6gMVASx5hLsblSEfua5WB6XvVAfkDRZz3LiHx2UHaoeJ+rdspTmHshe
-         1wkLcyJ7+pZt7/GfH4qOAtwTY7m+uYiXts7eqbplinfcPlgWwD1DkQ+vAxKE7VxaJr5D
-         UlDr49PBNymS87mIW66fnGm9YKd//04if8pWLvpKO7lz3VXgZ3aFGCwmM3a3QO98hkVo
-         JVCw==
-X-Forwarded-Encrypted: i=1; AJvYcCX5choOdg3Z7qTy919qX9nmlV/6GV43jvA/rxW8vJug/dS51fKVAQOuk/9kFAvAmgde9D5cCJIqvNFmWA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxVQQs3hcbJ2vtfpKIzFj+oqdTDWeRPfoSe2VbgesB0pEs0k4h9
-	XvUnyn2Z33MTDZ9OAkDgb3lV3j8SDzldiTR3M1svWLJhvgFEwszfGaUu
-X-Gm-Gg: AY/fxX5+AztlxmXXud8F7MC/F81N35NZunQQ1THiMVQROwXKizScvpMc275jIJgCbCS
-	c6T7jIgCHMs4Y5M5udc/B6k2Do7ztIyIAs+/JX4yXDKwLyhVJ048jDipVN9QOICdgit+bsef2Ac
-	dhLfoeu2adgl6IlQg50EYkE1pZXZMwcnXPE9MPeTPDroTM9trrP3Xx1lAbXckxs6NKEDhuCTUIf
-	6Y1HP152NPDPkMXvNPam7ooQ4R2KxzJVU/ILinQLmnODzC3gsV6ZvxSPecrV4rmF/G4ct5YJkpA
-	1CNlRJ2bzFyDU6y0UYONEiv9bntHI5lnw08s5vg4zR3Oz3y7ZgEr8G5axfFxC+X9QatunjwWztO
-	xJ+oIzUrtaWfsy30FLb8uJZu2T9oLM3ezIEH3OWryN8nBsnHiEDVJo2fAM+wMabpG8dbLoU/16+
-	VMmdvRfCsXp6b+ww6Kn8g=
-X-Google-Smtp-Source: AGHT+IHs94AtaIdi/LK1f1GL3oQjfIDINw0e2ryNLZ6e/m2MH5qRKb0B7VnFS+f9bCSyi3GmlCJ2Sg==
-X-Received: by 2002:a17:90b:2e0c:b0:340:ff89:8b62 with SMTP id 98e67ed59e1d1-34abd78fbedmr4750217a91.21.1765637586883;
-        Sat, 13 Dec 2025 06:53:06 -0800 (PST)
-Received: from LilGuy ([2409:40c2:105b:dc88:1107:395c:23c0:2b1b])
-        by smtp.googlemail.com with ESMTPSA id 41be03b00d2f7-c0c2c48bf7asm8146647a12.32.2025.12.13.06.52.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 13 Dec 2025 06:53:06 -0800 (PST)
-From: Swaraj Gaikwad <swarajgaikwad1925@gmail.com>
-To: Helge Deller <deller@gmx.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Hans Verkuil <hverkuil+cisco@kernel.org>,
-	Nicolas Dufresne <nicolas.dufresne@collabora.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Zi Yan <ziy@nvidia.com>,
-	Donet Tom <donettom@linux.ibm.com>,
-	Yann Dirson <ydirson@free.fr>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Vivek Kasireddy <vivek.kasireddy@intel.com>,
-	Qianfeng Rong <rongqianfeng@vivo.com>,
-	Kees Cook <kees@kernel.org>,
-	linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
-	dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER),
-	linux-kernel@vger.kernel.org (open list)
-Cc: skhan@linuxfoundation.org,
-	david.hunter.linux@gmail.com,
-	Swaraj Gaikwad <swarajgaikwad1925@gmail.com>
-Subject: [PATCH v2] fbdev: arkfb: Request legacy VGA I/O region
-Date: Sat, 13 Dec 2025 20:22:34 +0000
-Message-ID: <20251213202239.8772-1-swarajgaikwad1925@gmail.com>
-X-Mailer: git-send-email 2.52.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EJFXRYZJ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1765639200; x=1797175200;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=SfRsyNZlXG5eeLM8ItwniBCiImW1HWheHg8vcn/Omxo=;
+  b=EJFXRYZJmEpSyB9vXIZ5ouKMJXCbo4zgOywVXuHXkf8elqdfLzPdPXyx
+   zy5QTOo7Ap+jqEkupX2+OPd4mJlefRwMGY4WLqVxuubBaLhd9RB0h3gGO
+   TntDcMbgb95si37POsSbOr8hs+3U0/SLYKTSaGkPEzrP8t4/VAXem/g8O
+   fujJjjmiIl9NV+q1eDdLrZzIFLujRNzxPo57t4gpqgtuv5UkBST6dT6k2
+   MHrAHvHiR1rwfll6RMQ02FKWijylMDwEGiyheTJF4ySkdCWgi33Y8Vtds
+   xFyEY4BevpKJLIfCoJbh0kFOEXbkzcuGn7MxBhJY5IwnJ1sYsqVPbsdRn
+   g==;
+X-CSE-ConnectionGUID: UbyUTfSIR22KsafAM62eNA==
+X-CSE-MsgGUID: f86AqWXySEyhH6qMZ/AlDw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11641"; a="67490529"
+X-IronPort-AV: E=Sophos;i="6.21,146,1763452800"; 
+   d="scan'208";a="67490529"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Dec 2025 07:20:00 -0800
+X-CSE-ConnectionGUID: z0Y2RG6kQ2uPXLwf/ZjKXw==
+X-CSE-MsgGUID: Yp1UjaFaR1KDmEwIYcyCqw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,146,1763452800"; 
+   d="scan'208";a="197325290"
+Received: from lkp-server01.sh.intel.com (HELO d335e3c6db51) ([10.239.97.150])
+  by orviesa007.jf.intel.com with ESMTP; 13 Dec 2025 07:19:54 -0800
+Received: from kbuild by d335e3c6db51 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1vURPS-000000007nN-3CMB;
+	Sat, 13 Dec 2025 15:19:50 +0000
+Date: Sat, 13 Dec 2025 23:19:31 +0800
+From: kernel test robot <lkp@intel.com>
+To: Ramiro Oliveira <ramiro.oliveira@advantech.com>,
+	Lee Jones <lee@kernel.org>, Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
+	linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
+	linux-i2c@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	Wenkai Chung <wenkai.chung@advantech.com.tw>,
+	Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>,
+	Hongzhi Wang <hongzhi.wang@advantech.com>,
+	Mikhail Tsukerman <mikhail.tsukerman@advantech.com>,
+	Thomas Kastner <thomas.kastner@advantech.com>,
+	Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Subject: Re: [PATCH 1/8] Add Advantech EIO MFD driver
+Message-ID: <202512132239.HrAPSw6z-lkp@intel.com>
+References: <20251212-upstream-v1-v1-1-d50d40ec8d8a@advantech.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251212-upstream-v1-v1-1-d50d40ec8d8a@advantech.com>
 
-The arkfb driver uses the legacy VGA I/O range (0x3c0+) but does not
-request it. This can cause conflicts with other drivers that try to
-reserve these ports.
+Hi Ramiro,
 
-Fix this by using devm_request_region() during the probe function.
-This ensures the region is properly reserved and automatically released
-on driver detach.
+kernel test robot noticed the following build warnings:
 
-v1: https://lore.kernel.org/lkml/20251213154937.104301-1-swarajgaikwad1925@gmail.com/
-Signed-off-by: Swaraj Gaikwad <swarajgaikwad1925@gmail.com>
----
-v2:
- - Use resource_size(&vga_res) instead of hardcoded 64 * 1024.
- - (Feedback from Kees Cook)
+[auto build test WARNING on d9771d0dbe18dd643760431870a6abf9b0866bb0]
 
-Compile-tested only on x86_64.
+url:    https://github.com/intel-lab-lkp/linux/commits/Ramiro-Oliveira/Add-Advantech-EIO-MFD-driver/20251213-004905
+base:   d9771d0dbe18dd643760431870a6abf9b0866bb0
+patch link:    https://lore.kernel.org/r/20251212-upstream-v1-v1-1-d50d40ec8d8a%40advantech.com
+patch subject: [PATCH 1/8] Add Advantech EIO MFD driver
+config: nios2-allmodconfig (https://download.01.org/0day-ci/archive/20251213/202512132239.HrAPSw6z-lkp@intel.com/config)
+compiler: nios2-linux-gcc (GCC) 11.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251213/202512132239.HrAPSw6z-lkp@intel.com/reproduce)
 
- drivers/video/fbdev/arkfb.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202512132239.HrAPSw6z-lkp@intel.com/
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index ec084323115f..24e4c20d1a32 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -1018,6 +1018,12 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+All warnings (new ones prefixed by >>):
 
- 	pcibios_bus_to_resource(dev->bus, &vga_res, &bus_reg);
+>> Warning: drivers/mfd/eio_core.c:37 cannot understand function prototype: 'uint timeout = DEFAULT_TIMEOUT;'
 
-+	if (!devm_request_region(&dev->dev, vga_res.start, resource_size(&vga_res), "arkfb-vga")) {
-+		dev_err(info->device, "cannot reserve legacy VGA ports\n");
-+		rc = -EBUSY;
-+		goto err_find_mode;
-+	}
-+
- 	par->state.vgabase = (void __iomem *) (unsigned long) vga_res.start;
-
- 	/* FIXME get memsize */
-
-base-commit: a859eca0e4cc96f63ff125dbe5388d961558b0e9
---
-2.52.0
-
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

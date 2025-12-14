@@ -1,114 +1,448 @@
-Received: from mailrelay-egress4.pub.mailoutpod2-cph3.one.com (mailrelay-egress4.pub.mailoutpod2-cph3.one.com [46.30.211.179])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F665284662
-	for <linux-fbdev@vger.kernel.org>; Sat, 13 Dec 2025 22:40:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 004782C1586
+	for <linux-fbdev@vger.kernel.org>; Sun, 14 Dec 2025 00:54:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765665606; cv=none; b=sJTXSXFm2ohAH6CxDtBqAIjEvRZUTMkhqRXwqLj6XN/Ng6kdWMUg9B1WVGsdHNaae9p/+Oho/MzmBzrlh0cU8MoBHrRrVhK2YpoLJMMx8WyGBrnfYS0vWKup9e/FgPII5HqBgvXYW962ukoNLmfO6mit0N/BRiJn5o9FtZIVeEc=
+	t=1765673666; cv=none; b=F2GuFiiyBiLc8DIGeS/qu2ipkVephaTOz0whhkZ0G02n4WBjylth97/f4MNiocS/KTE9J0lWXw8OIf/cQsKckhzzSpZEGDgLjlVcby13jNLz4R+OKMv3M0yA/8XG2gLMYqOV/AjBdWiuA0lNGPhLE6nt7P4B+iG2b3uepIwJCXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765665606; c=relaxed/simple;
-	bh=gpvpJGJrWlkgk+3hJKM53TEbcpNKyweddkTe4naUJrQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nUmWxEKo91ZaE0z+5oebcZmBhCnZaMREGY4yi/0kE+1gI3X0SW5NAvCj4W1PLpjQqjvNR+/sO6zfXMg1Z7Xn8JPTGCdrh8S2qnGqcS1Gs3SGACJwfn34jrz0TTW9Ijw5oeYahcWRWNY3dH4hMsRshWujsP7Wx6BHYtlZPce6YZc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=M+mvJRvr; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=nwz0TLxi; arc=none smtp.client-ip=46.30.211.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+	s=arc-20240116; t=1765673666; c=relaxed/simple;
+	bh=ERnGOFeUU+FQpv7jY6ycnDkzi1PWq3mrRjKSp8p+Tno=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VTZo4fiQmQPTg7m3dOv6QUkuI+tzA8C7O77TEVRa/EB3rsPGnONKYZwR+pP8n7Rm/h8Osg12C9WkwPJukJs6omiyXsavcIvrcHr6e80S7i63vcKoX6aj014q8NMYXoMfW8watuR1C8LfljmGtaZaInO8IHmpSgiCvhZqmcGl9Ww=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FCCqmTzQ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="M+mvJRvr";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="nwz0TLxi"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1765665532; x=1766270332;
-	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=AGTupz+Pclwt+J47h8KMxZjHtngDo80UP2S/FxfkJ9A=;
-	b=M+mvJRvrwMMGQo968yNDjATJymPOjG8pYGYCnY8thshjrwr4YSiz1srs3tBXQJo8LT4fihNr/znwB
-	 AIO1stBFjWlhAchezvTAcqMmWgKvl8gK6FTaK4RhWFu8PP1+O3AHrjj6a6td6xCoKHuY0+cDoNs2PH
-	 yJi6+GKdwMPNkTicUEPBTNIR1yr8Qner63k5BSea3gbWMQLqjMZeNsSRcxI7cqsacP9JqS41LpJqkt
-	 wA+ZCMa8DX8DiKaiGLqaqRnN7/gqzm+hx2JK8phQDQ3rHsUnHhxGGs2UGuOYxRf9AD5UqgYyPsNf/H
-	 Aos7cS9yzet1vj/N2YGs11JgokNx5xQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1765665532; x=1766270332;
-	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=AGTupz+Pclwt+J47h8KMxZjHtngDo80UP2S/FxfkJ9A=;
-	b=nwz0TLxi6qRatp5o1I1mUKI7IqFVd2zy+F31RFJALsZ7ynofpfB9LO5C7a5gDiVncnPhcVkWWc8w+
-	 xMVEzUDAw==
-X-HalOne-ID: 7e017289-d874-11f0-9f68-c9fa7b04d629
-Received: from ravnborg.org (unknown [2a00:fd01:81e9:6100:cbc5:f170:b0ba:1217])
-	by mailrelay1.pub.mailoutpod3-cph3.one.com (Halon) with ESMTPSA
-	id 7e017289-d874-11f0-9f68-c9fa7b04d629;
-	Sat, 13 Dec 2025 22:38:52 +0000 (UTC)
-Date: Sat, 13 Dec 2025 23:38:50 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Swaraj Gaikwad <swarajgaikwad1925@gmail.com>
-Cc: Helge Deller <deller@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
-	Hans Verkuil <hverkuil+cisco@kernel.org>,
-	Nicolas Dufresne <nicolas.dufresne@collabora.com>,
-	Frank Li <Frank.Li@nxp.com>, Zi Yan <ziy@nvidia.com>,
-	Donet Tom <donettom@linux.ibm.com>, Yann Dirson <ydirson@free.fr>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Vivek Kasireddy <vivek.kasireddy@intel.com>,
-	Qianfeng Rong <rongqianfeng@vivo.com>, Kees Cook <kees@kernel.org>,
-	"open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-	"open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
-	open list <linux-kernel@vger.kernel.org>, skhan@linuxfoundation.org,
-	david.hunter.linux@gmail.com
-Subject: Re: [PATCH v2] fbdev: arkfb: Request legacy VGA I/O region
-Message-ID: <20251213223850.GA419250@ravnborg.org>
-References: <20251213202239.8772-1-swarajgaikwad1925@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FCCqmTzQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4ED4C16AAE
+	for <linux-fbdev@vger.kernel.org>; Sun, 14 Dec 2025 00:54:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1765673665;
+	bh=ERnGOFeUU+FQpv7jY6ycnDkzi1PWq3mrRjKSp8p+Tno=;
+	h=From:In-Reply-To:References:Date:Subject:To:Cc:From;
+	b=FCCqmTzQMJfXI+75bKihD5Op6Hx1tue1ECM/xu2+KD1qPMjsbMIGH8/fHaAgwuWMJ
+	 0Iva5wpt9NmU5W0rHW9jXZ0iA2zDWD4bcibWyXAXm9JJML4BZWrnqcj09eYVNEAQBg
+	 yU8q/bobkKUVbqaUUfwy2OS8ojfUsidNI2ZCx+yjl1+vnggoy9IQBLDgf/qsobnv4c
+	 iqfd9lq5DjK9Gf1wTHAQaPrs4B6pQJBWsEgAQ65fYVYyXLJqkbit27U5SqVRxdnoVD
+	 Wany39R3Ji8+O0xGDcXPt36gui5eD6hL8E2egkLQTDEmRU7FFFcZpkn7cWn+9g8NH/
+	 447RzeFhE/eXw==
+Received: by mail-lj1-f170.google.com with SMTP id 38308e7fff4ca-37b495ce059so16124901fa.0
+        for <linux-fbdev@vger.kernel.org>; Sat, 13 Dec 2025 16:54:25 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCV4f75YfebRk/vTQ/ApPPevuXS9PPM7Mk9ihLQa5rsT2WSIZD+e0U3ORA/yXoP12Q9W0VkYlazkNeA82g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyfvYCv748uTjbPSiT5tP6yqZN2JQjFnStP42YN98z56mJCaC9n
+	LuqN3AgGOP6+NjE9FXHslFlRDZFQIHbgK57mXu9ThBPVFproDeri9tIXSoidKGkNyfH1XOfl67U
+	3QYufXfCpDSOCVwX9FP0S+jREJJ74ev9E6cnQpHycTw==
+X-Google-Smtp-Source: AGHT+IF+JTcUODVC8z3ioXKDx5XLzM5A1F8MUCHcdRDUszOJc4X0+0PBaKTTlEDU6RzJck0+mvccxy7H3ksd1gh+4p8=
+X-Received: by 2002:a2e:bd12:0:b0:37b:96e5:dc40 with SMTP id
+ 38308e7fff4ca-37fd0726477mr18776321fa.8.1765673664108; Sat, 13 Dec 2025
+ 16:54:24 -0800 (PST)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Sat, 13 Dec 2025 19:54:22 -0500
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Sat, 13 Dec 2025 19:54:22 -0500
+From: Bartosz Golaszewski <brgl@kernel.org>
+In-Reply-To: <20251212-upstream-v1-v1-2-d50d40ec8d8a@advantech.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251213202239.8772-1-swarajgaikwad1925@gmail.com>
+References: <20251212-upstream-v1-v1-0-d50d40ec8d8a@advantech.com> <20251212-upstream-v1-v1-2-d50d40ec8d8a@advantech.com>
+Date: Sat, 13 Dec 2025 19:54:22 -0500
+X-Gmail-Original-Message-ID: <CAMRc=McWhREAapUO1C26c7MxFhwsq9=HH7Z8BZabwbB1L5UoBw@mail.gmail.com>
+X-Gm-Features: AQt7F2rFZ6NOo1ZqC__JipFGbv1EYlUkIy_oMb4Oy-Kh-pnz_txKQTmUlgiNcFo
+Message-ID: <CAMRc=McWhREAapUO1C26c7MxFhwsq9=HH7Z8BZabwbB1L5UoBw@mail.gmail.com>
+Subject: Re: [PATCH 2/8] Add Advantech EIO GPIO driver
+To: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, 
+	Wenkai Chung <wenkai.chung@advantech.com.tw>, 
+	Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>, 
+	Hongzhi Wang <hongzhi.wang@advantech.com>, 
+	Mikhail Tsukerman <mikhail.tsukerman@advantech.com>, 
+	Thomas Kastner <thomas.kastner@advantech.com>, Lee Jones <lee@kernel.org>, 
+	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
+	Andi Shyti <andi.shyti@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	Wim Van Sebroeck <wim@linux-watchdog.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, 
+	Lukasz Luba <lukasz.luba@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Swaraj,
-
-On Sat, Dec 13, 2025 at 08:22:34PM +0000, Swaraj Gaikwad wrote:
-> The arkfb driver uses the legacy VGA I/O range (0x3c0+) but does not
-> request it. This can cause conflicts with other drivers that try to
-> reserve these ports.
-> 
-> Fix this by using devm_request_region() during the probe function.
-> This ensures the region is properly reserved and automatically released
-> on driver detach.
-> 
-> v1: https://lore.kernel.org/lkml/20251213154937.104301-1-swarajgaikwad1925@gmail.com/
-> Signed-off-by: Swaraj Gaikwad <swarajgaikwad1925@gmail.com>
+On Fri, 12 Dec 2025 17:40:53 +0100, Ramiro Oliveira
+<ramiro.oliveira@advantech.com> said:
+> This driver controls the GPIO component of the Advantech EIO chip.
+>
+> Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
 > ---
-> v2:
->  - Use resource_size(&vga_res) instead of hardcoded 64 * 1024.
->  - (Feedback from Kees Cook)
-> 
-> Compile-tested only on x86_64.
-> 
->  drivers/video/fbdev/arkfb.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-> index ec084323115f..24e4c20d1a32 100644
-> --- a/drivers/video/fbdev/arkfb.c
-> +++ b/drivers/video/fbdev/arkfb.c
-> @@ -1018,6 +1018,12 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
-> 
->  	pcibios_bus_to_resource(dev->bus, &vga_res, &bus_reg);
-> 
-> +	if (!devm_request_region(&dev->dev, vga_res.start, resource_size(&vga_res), "arkfb-vga")) {
-> +		dev_err(info->device, "cannot reserve legacy VGA ports\n");
-> +		rc = -EBUSY;
-> +		goto err_find_mode;
+>  MAINTAINERS             |   1 +
+>  drivers/gpio/Kconfig    |   6 ++
+>  drivers/gpio/Makefile   |   1 +
+>  drivers/gpio/gpio-eio.c | 273 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 281 insertions(+)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index bd9279796c2f..359d4a13f212 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -619,6 +619,7 @@ F:	drivers/platform/x86/adv_swbutton.c
+>  ADVANTECH EIO DRIVER
+>  M:	Ramiro Oliveira <ramiro.oliveira@advantech.com>
+>  S:	Maintained
+> +F:	drivers/gpio/gpio-eio.c
+
+Instead of churning MAINTAINERS in every patch of the series, I suggest you
+add a separate patch adding the full entry at the end.
+
+>  F:	drivers/mfd/eio_core.c
+>  F:	include/linux/mfd/eio.h
+>
+> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> index bd185482a7fd..628a914842bd 100644
+> --- a/drivers/gpio/Kconfig
+> +++ b/drivers/gpio/Kconfig
+> @@ -277,6 +277,12 @@ config GPIO_DWAPB
+>  	  Say Y or M here to build support for the Synopsys DesignWare APB
+>  	  GPIO block.
+>
+> +config GPIO_EIO
+> +	tristate "Advantech EIO GPIO"
+> +	depends on MFD_EIO
+> +	help
+> +	  Say Y or M to build support for Advantech EIO GPIO block.
+> +
+>  config GPIO_EIC_SPRD
+>  	tristate "Spreadtrum EIC support"
+>  	depends on ARCH_SPRD || COMPILE_TEST
+> diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+> index 2421a8fd3733..ba3883d5e4a0 100644
+> --- a/drivers/gpio/Makefile
+> +++ b/drivers/gpio/Makefile
+> @@ -64,6 +64,7 @@ obj-$(CONFIG_GPIO_DLN2)			+= gpio-dln2.o
+>  obj-$(CONFIG_GPIO_DS4520)		+= gpio-ds4520.o
+>  obj-$(CONFIG_GPIO_DWAPB)		+= gpio-dwapb.o
+>  obj-$(CONFIG_GPIO_EIC_SPRD)		+= gpio-eic-sprd.o
+> +obj-$(CONFIG_GPIO_EIO)			+= gpio-eio.o
+>  obj-$(CONFIG_GPIO_ELKHARTLAKE)		+= gpio-elkhartlake.o
+>  obj-$(CONFIG_GPIO_EM)			+= gpio-em.o
+>  obj-$(CONFIG_GPIO_EN7523)		+= gpio-en7523.o
+> diff --git a/drivers/gpio/gpio-eio.c b/drivers/gpio/gpio-eio.c
+> new file mode 100644
+> index 000000000000..50f66a325e8f
+> --- /dev/null
+> +++ b/drivers/gpio/gpio-eio.c
+> @@ -0,0 +1,273 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * GPIO driver for Advantech EIO Embedded controller.
+> + *
+> + * Copyright (C) 2025 Advantech Corporation. All rights reserved.
+> + */
+> +
+> +#include <linux/errno.h>
+> +#include <linux/gpio.h>
+
+Don't include this, it's a legacy header as per one of the first lines in this
+file.
+
+> +#include <linux/gpio/driver.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/mfd/eio.h>
+> +#include <linux/module.h>
+> +
+> +#define GPIO_MAX_PINS	48
+> +#define GPIO_WRITE	0x18
+> +#define GPIO_READ	0x19
+> +
+> +struct eio_gpio_dev {
+> +	u64 avail;
+> +	int max;
+> +	struct gpio_chip chip;
+> +	struct device *dev;
+> +};
+> +
+> +struct {
+> +	int size;
+> +	bool write;
+> +} ctrl_para[] = {
+> +	{ 0x01, false }, { 0x00, false }, { 0x00, false }, { 0x02, false },
+> +	{ 0x01, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
+> +	{ 0x00, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
+> +	{ 0x00, false }, { 0x00, false }, { 0x00, false }, { 0x00, false },
+> +	{ 0x01, true  }, { 0x01, true  }, { 0x02, true  }, { 0x02, true  },
+> +	{ 0x02, false }, { 0x10, false }
+> +};
+
+This should be static.
+
+> +
+> +enum {
+> +	GPIO_STATUS	 = 0,
+> +	GPIO_GROUP_AVAIL = 3,
+> +	GPIO_ERROR	 = 0x04,
+> +	GPIO_PIN_DIR	 = 0x10,
+> +	GPIO_PIN_LEVEL	 = 0x11,
+> +	GPIO_GROUP_DIR	 = 0x12,
+> +	GPIO_GROUP_LEVEL = 0x13,
+> +	GPIO_MAPPING	 = 0x14,
+> +	GPIO_NAME	 = 0x15
+> +} gpio_ctrl;
+
+Do enum gpio_ctrl {. But also use a common prefix for all symbols in
+this driver.
+
+> +
+> +struct {
+> +	int group;
+> +	int port;
+> +} group_map[] = {
+> +	{ 0, 0 }, { 0, 1 },
+> +	{ 1, 0 }, { 1, 1 },
+> +	{ 2, 0 }, { 2, 1 },
+> +	{ 3, 0 }, { 3, 1 },
+> +	{ 3, 2 }, { 3, 3 },
+> +	{ 3, 4 }, { 3, 5 },
+> +	{ 3, 6 }, { 3, 7 }
+> +};
+> +
+> +static int timeout;
+> +module_param(timeout, int, 0444);
+> +MODULE_PARM_DESC(timeout, "Set PMC command timeout value.\n");
+> +
+> +static int pmc_write(struct device *mfd_dev, u8 ctrl, u8 dev_id, void *data)
+> +{
+> +	struct pmc_op op = {
+> +		 .cmd       = GPIO_WRITE,
+> +		 .control   = ctrl,
+> +		 .device_id = dev_id,
+> +		 .payload   = (u8 *)data,
+> +		 .timeout   = timeout,
+> +	};
+> +
+> +	if (ctrl > ARRAY_SIZE(ctrl_para))
+> +		return -ENOMEM;
+> +
+> +	if (!ctrl_para[ctrl].write)
+> +		return -EINVAL;
+> +
+> +	op.size = ctrl_para[ctrl].size;
+> +
+> +	return eio_core_pmc_operation(mfd_dev, &op);
+> +}
+> +
+> +static int pmc_read(struct device *mfd_dev, u8 ctrl, u8 dev_id, void *data)
+> +{
+> +	struct pmc_op op = {
+> +		 .cmd       = GPIO_READ,
+> +		 .control   = ctrl,
+> +		 .device_id = dev_id,
+> +		 .payload   = (u8 *)data,
+> +		 .timeout   = timeout,
+> +	};
+> +
+> +	if (ctrl > ARRAY_SIZE(ctrl_para))
+> +		return -ENOMEM;
+> +
+> +	op.size = ctrl_para[ctrl].size;
+> +
+> +	return eio_core_pmc_operation(mfd_dev, &op);
+> +}
+> +
+> +static int get_dir(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +	u8 dir;
+> +	int ret;
+> +
+> +	ret = pmc_read(chip->parent, GPIO_PIN_DIR, offset, &dir);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return dir ? 0 : 1;
+> +}
+> +
+> +static int dir_input(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +	u8 dir = 0;
+> +
+> +	return pmc_write(chip->parent, GPIO_PIN_DIR, offset, &dir);
+> +}
+> +
+> +static int dir_output(struct gpio_chip *chip, unsigned int offset, int value)
+> +{
+> +	u8 dir = 1;
+> +	u8 val = value;
+> +
+> +	pmc_write(chip->parent, GPIO_PIN_DIR, offset, &dir);
+> +
+> +	return pmc_write(chip->parent, GPIO_PIN_LEVEL, offset, &val);
+> +}
+> +
+> +static int gpio_get(struct gpio_chip *chip, unsigned int offset)
+> +{
+> +	u8 level;
+> +	int ret;
+> +
+> +	ret = pmc_read(chip->parent, GPIO_PIN_LEVEL, offset, &level);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return level;
+> +}
+> +
+> +static int gpio_set(struct gpio_chip *chip, unsigned int offset, int value)
+> +{
+> +	u8 val = value;
+> +
+> +	pmc_write(chip->parent, GPIO_PIN_LEVEL, offset, &val);
+> +
+> +	return 0;
+> +}
+> +
+> +static int check_support(struct device *dev)
+> +{
+> +	u8  data;
+> +	int ret;
+> +
+> +	ret = pmc_read(dev, GPIO_STATUS, 0, &data);
+> +	if (!ret)
+> +		return ret;
+> +
+> +	if ((data & 0x01) == 0)
+> +		return -EOPNOTSUPP;
+> +
+> +	return 0;
+> +}
+> +
+> +static int check_pin(struct device *dev, int pin)
+> +{
+> +	int ret;
+> +	int group, bit;
+> +	u16 data;
+> +
+> +	/* Get pin mapping */
+> +	ret = pmc_read(dev, GPIO_MAPPING, pin, &data);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if ((data & 0xFF) > ARRAY_SIZE(group_map))
+> +		return -EINVAL;
+> +
+> +	group = group_map[data & 0xFF].group;
+> +	bit   = data >> 8;
+> +
+> +	/* Check mapped pin */
+> +	ret = pmc_read(dev, GPIO_GROUP_AVAIL, group, &data);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return data & BIT(bit) ? 0 : -EOPNOTSUPP;
+> +}
+> +
+> +static int gpio_init(struct device *mfd, struct eio_gpio_dev *eio_gpio)
+> +{
+> +	int ret;
+> +	int i;
+
+Keep these on the same line.
+
+> +	char str[GPIO_MAX_PINS + 1];
+> +
+> +	memset(str, 0x30, sizeof(str));
+> +
+> +	ret = check_support(mfd);
+> +	if (ret) {
+> +		dev_err(eio_gpio->dev, "GPIO not supported (%d)\n", ret);
+
+return dev_err_probe()
+
+> +		return ret;
 > +	}
 > +
->  	par->state.vgabase = (void __iomem *) (unsigned long) vga_res.start;
+> +	eio_gpio->avail = 0;
+> +
+> +	for (i = 0 ; i <  GPIO_MAX_PINS ; i++) {
+> +		ret = check_pin(mfd, i);
+> +		if (ret)
+> +			continue;
+> +
+> +		eio_gpio->avail |= BIT(i);
+> +		eio_gpio->max = i + 1;
+> +		str[GPIO_MAX_PINS - i] = '1';
+> +	}
+> +
+> +	dev_info(eio_gpio->dev, "GPIO pins=%s\n", str);
+> +
 
-Any explanation why devm_request_region() is the right choice here?
-As per the line above vga_res.start is iomem, and I had expected to see
-devm_request_mem_region() used.
-I looked only briefly, so I may be wrong.
+No need to print anything here.
 
-	Sam
+> +	return eio_gpio->max ? 0 : -EOPNOTSUPP;
+> +}
+> +
+> +static const struct gpio_chip eio_gpio_chip = {
+> +	.label	 	  = KBUILD_MODNAME,
+> +	.owner		  = THIS_MODULE,
+> +	.direction_input  = dir_input,
+> +	.get		  = gpio_get,
+> +	.direction_output = dir_output,
+> +	.set		  = gpio_set,
+> +	.get_direction	  = get_dir,
+> +	.base		  = -1,
+> +	.can_sleep	  = true,
+> +};
+
+Instead of having an unnecessary copy of the chip in .rodata, just use compound
+literals when initiating it in probe().
+
+> +
+> +static int gpio_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev =  &pdev->dev;
+> +	struct eio_gpio_dev *eio_gpio;
+> +	struct eio_dev *eio_dev = dev_get_drvdata(dev->parent);
+> +
+> +	if (!eio_dev) {
+> +		dev_err(dev, "Error contact eio_core\n");
+> +		return -ENODEV;
+> +	}
+
+return dev_err_probe()
+
+> +
+> +	eio_gpio = devm_kzalloc(dev, sizeof(*eio_gpio), GFP_KERNEL);
+
+This can fail, please check the return value.
+
+> +	eio_gpio->dev = dev;
+> +
+> +	if (gpio_init(dev->parent, eio_gpio))
+> +		return -EIO;
+> +
+> +	eio_gpio->chip	   = eio_gpio_chip;
+
+Don't use tabs like that please. Just stick to single spaces.
+
+> +	eio_gpio->chip.parent = dev->parent;
+> +	eio_gpio->chip.ngpio  = eio_gpio->max;
+> +
+> +	return devm_gpiochip_add_data(dev, &eio_gpio->chip, eio_gpio);
+> +}
+> +
+> +static struct platform_driver gpio_driver = {
+> +	.probe  = gpio_probe,
+> +	.driver = { .name = KBUILD_MODNAME, },
+> +};
+> +
+> +module_platform_driver(gpio_driver);
+> +
+> +MODULE_AUTHOR("Wenkai Chung <wenkai.chung@advantech.com.tw>");
+> +MODULE_AUTHOR("Ramiro Oliveira <ramiro.oliveira@advantech.com>");
+> +MODULE_DESCRIPTION("GPIO driver for Advantech EIO embedded controller");
+> +MODULE_LICENSE("GPL");
+>
+> --
+> 2.43.0
+>
+>

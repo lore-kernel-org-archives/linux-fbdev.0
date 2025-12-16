@@ -1,156 +1,86 @@
-Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
+Received: from mail-oo1-f71.google.com (mail-oo1-f71.google.com [209.85.161.71])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59BD02D879B
-	for <linux-fbdev@vger.kernel.org>; Mon, 15 Dec 2025 22:53:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5396422D7B5
+	for <linux-fbdev@vger.kernel.org>; Tue, 16 Dec 2025 01:32:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.71
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765839207; cv=none; b=UCF8kCShuKjDVatWG5ev+VZ26mNsB3wT/w07dhj9/RcSoa/xAXdjnQF9lX4qvFDGt5mkY9MlaxkwlYnWjjno1gHred3zFtT9AThdnQVXgfWxPEPlzWsVYxLIf41rk5UHexBrrEPqCf9mlzG0gpXTj2NVCcKmeIknOWjikB+pp1k=
+	t=1765848755; cv=none; b=qsdYc7LnDveDG8BRvxhpQobjzDkOGdysJ/umG2wX0MBBl6Dcijx10B49LDNbAqo8qryG9JDEZEp5XThcCUySOhOyn1CAH/UrLrbd6UNYXyva0566wRkIhcZ+l6jSFvTg77XarURuBIv9qI1Wed41sokN3EC+2kbQe/1S9z5q7x8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765839207; c=relaxed/simple;
-	bh=U5pUdxyvEPst47p179lKntth0kpH7/c4ygEMz1tZ1mI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=o8P8FCsCQ8OEw/lgHp/GDLDGqoRUSeRvpZ9LFLG142JrhpAMaeSy8ihk4ruraV2FBtvm5b0du19WCiin2DhuPyhy4tQP2PLeq1WEo8AvDZKW55yQJHazpBY3eM9MiIblqH+bocRXkeABLlZObvGh3lFRr1uyIdxmbkX43J9VerU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WosAcyky; arc=none smtp.client-ip=209.85.214.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WosAcyky"
-Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2a07f8dd9cdso26067945ad.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 15 Dec 2025 14:53:26 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765839206; x=1766444006; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=b4y5PLcNykjjXFNDo27wTnIWBRQRo7DKJyM5i0+giPM=;
-        b=WosAcykyPx2/KZkmR3SMLmdNli93sgV168DgiUy6v//xmYGfgmMFD5qhoPFedzetaV
-         eyog6zq1Qnqhf9ETeWpu39z34VEKvpf6LuzPHipFJZMqqrbEQmHfCb4OoYZAcYOFng77
-         +/AR3EdK7ySkY0V7M2Or1dRSGzY1g6wjT/N2K+9FGRzBTUsQl5UMv76d/+fMPUqwoej8
-         WxOQrLV2YBsON/5hyy9lK6iR2ESLOY2Kp5BO40WTuF//Ko7ejMGKYZl6BFhmncBY7+o3
-         p+NT5SUrZcfexo4MnDJLaMlQzY1XTpdKm0WWjhSqbKSDogzqYWajsEulA0R8PphHIXto
-         R8QA==
+	s=arc-20240116; t=1765848755; c=relaxed/simple;
+	bh=x1AzDUTruthvY5BrLXbvgBbgvxlICnws4Bc+rQSCirg=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=n/BM7yh6JValXSgfh1TkBhnWe/uwr77SVRTNZJCB9ao/eQe8lIRwl8kwQQMt9cD6ELJbovQRQ5CFQ/HewdoX7ApaSKlfgMhP66sL0C9unyBxNzd3EViUC/CduHCggs0A98oN/r/9M+1MSvaf7iiS9fOKKjXSX8VGoGUSQHjrXu4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.161.71
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oo1-f71.google.com with SMTP id 006d021491bc7-65b2cd67cceso6469361eaf.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 15 Dec 2025 17:32:33 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765839206; x=1766444006;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=b4y5PLcNykjjXFNDo27wTnIWBRQRo7DKJyM5i0+giPM=;
-        b=ccMxe9SRf8xDXf7p3aWgjm/Nwn9eTinU5y/sG/8Iiidn5hXVAUYxG2OQpSxD6cBB8X
-         n3A/HKwyK9crfiNuV4WjnPnI50BVbQw0T+0yB8TQ5HozOhAtf63IezYDlVQd+IAaIhBc
-         1AFuX1TVoQHNyppRbYJbH7Yqgd6Ku5QjLPcw6+x/G1yIfHiF/GGUW7/HJucH+gf2vNLE
-         mHUm9Z/63WwFqPf6+06pN+iv3l70P6/nb0YV6GMf0GwU3bM7UJtBo9cjCWxiuN2OO7fA
-         4+mDQJk4xsZM0Xmtb9OP0Idz0+OZyjuq5NaEetc1Kz+8JEaQfgIGI6wVnMfl+pcCNftO
-         j1Dg==
-X-Forwarded-Encrypted: i=1; AJvYcCUG/8z29Vn2Z+e7HHQo4w1BpvoxFmdkEPAt71BwPIfZPWG1np2b+sqKyLj6E0ysCWZlzg02O0rSawU7Rg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzby38yyxc/B2w7CKdZwZFZ50cybP2rcmozwxR8VtEwYiv7pqnS
-	j68hYZlg4F6m7C9g5NDqmhyfOSRGQhA5oW5WUyb0itj64lf8P9hCRvEpL9CgceP8
-X-Gm-Gg: AY/fxX70cXN05d0V0G772tpQrwVNMf48ypReAdBsJxbVYydGBmeBjoxXGyiHOY7OjpB
-	x1IBKX4zMNOIcdHMRihPRIqVZO8wIG34l8j41MfH4kv33kTDirK7+xeFxzXQUdg182+6oxMHzBw
-	+0TiQdd9qQzCBH+wmQOq2CQTgcNR47d2DxWvJudHVWOf2KXvMjIAr2X/t5zmtVKO6RpRsPcHTSc
-	HnQXtr90cyo2kCWac29fPQmHLAoif/nhKl3xulTw0Mrjs8sAgDnbipcJ6e77p7CvoIKFNa18nqX
-	W6ehb0hKcbT/2T8PsdzHsLM1v43HSyiRr9KpcQsaUO7Xq1p0H0IEzzdB1JIw1XY9LCru/Qxmkvk
-	EmI2NhF4ntVWCegMsnEHIpDCHI9TRUmRBkUiMkgMYDK2OlBzs1KR9rpTa62DOF1ckEwf3OCedQk
-	aIYo0HhSp8nvaI8SPDK/Vg4iURMw==
-X-Google-Smtp-Source: AGHT+IEZ9kpuajnTEPYHznFAawAXm9oPKcyxxTpunc95UjNrN7yiUhUAnO2BusqteKwTAEK8ENvJvQ==
-X-Received: by 2002:a17:902:f789:b0:29f:2734:6ffb with SMTP id d9443c01a7336-29f27347628mr119839355ad.22.1765839205502;
-        Mon, 15 Dec 2025 14:53:25 -0800 (PST)
-Received: from localhost.localdomain ([2409:40f2:2e:1717:4362:2468:ba9b:e74a])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29f301bf609sm99085545ad.23.2025.12.15.14.53.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 15 Dec 2025 14:53:25 -0800 (PST)
-From: patdiviyam@gmail.com
-To: dri-devel@lists.freedesktop.org
-Cc: tzimmermann@suse.de,
-	deller@gmx.de,
-	linux-fbdev@vger.kernel.org,
-	DiviyamPathak <patdiviyam@gmail.com>
-Subject: [PATCH] fbdev: xilinxfb: request memory region before mapping framebuffer
-Date: Tue, 16 Dec 2025 04:23:05 +0530
-Message-ID: <20251215225305.3820098-1-patdiviyam@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        d=1e100.net; s=20230601; t=1765848752; x=1766453552;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=0TsmtcGK6vh0QqYKqpsmekYVPYxFCMxaQ9X53IA6HrU=;
+        b=ZxLkc1hPWwch1IwpyqnClKzvDEhTCuYNTCdo1Rqb3Buf3Ubsm+VmtG30hsaDXq3zNj
+         Tn9Q0v2BXMND7x7NTTb/3F0+We82UhD9FoizyCuH3QGmbi3oJ6W9reh4LTXWV9/fl4rC
+         kKf/qvSrnEXNo0TLekoX8OFebGWN+TQKEoq1GLI7M/WRg4eHSYgKONUQ/s6cnuqHg2/+
+         L3I2OKCUI0FZKx2y320iB4sx33zA59j32+WuG5xz9KmmQjjktAFqWBOJsZOrjLSKL9lR
+         lKmwEIp5NqKb8Os5RzyrbPLCCUA58oA3sADG8NW+2q5dMdUQlNPbNs/T6gAIDnd1UMPC
+         zWZQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU6cqmE351+SfsYMUhgSidOOUPlK8gabYdVbEjnTunqdMe89x8VTpbyN618mZXoiPJTSD2DweS09gkH/Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxiXdgfaknawSAvKmsQ24xgodrexDXUzTKIzUqfn3rlzr6xzbnY
+	d2KIJ4FIx98X0boR2ckxZhS05Ub4vhaBPy/ygbnVdWDDbnXKcj6OA9XftNh5y4ltCHo51U0Lrol
+	Gb+To5EghTfdNWpngBwVIGUkH3OWtWYfYk2aBVCbXjEph0YglzT8zD6Pb+Sk=
+X-Google-Smtp-Source: AGHT+IHfE3otoIpgOC8SvVZse092awUbxjtuPTv0YsrUkmHApBjD190nsNbJouwdA4gNEp05U8Y7z0JWdO3JpnsXeSTQmykmIuc7
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Received: by 2002:a05:6820:138e:b0:657:7272:e011 with SMTP id
+ 006d021491bc7-65b4516d5bamr5416438eaf.5.1765848752316; Mon, 15 Dec 2025
+ 17:32:32 -0800 (PST)
+Date: Mon, 15 Dec 2025 17:32:32 -0800
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6940b6b0.a70a0220.33cd7b.012c.GAE@google.com>
+Subject: [syzbot] Monthly fbdev report (Dec 2025)
+From: syzbot <syzbot+lista7158be2d6e72ac0da8b@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-From: DiviyamPathak <patdiviyam@gmail.com>
+Hello fbdev maintainers/developers,
 
-The xilinxfb driver maps a physical framebuffer address with ioremap()
-without first reserving the memory region. This can conflict with other
-drivers accessing the same resource.
+This is a 31-day syzbot report for the fbdev subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/fbdev
 
-Request the memory region with devm_request_mem_region() before mapping
-the framebuffer and use managed mappings for proper lifetime handling.
+During the period, 0 new issues were detected and 0 were fixed.
+In total, 6 issues are still open and 29 have already been fixed.
 
-This addresses the fbdev TODO about requesting memory regions and avoids
-potential resource conflicts.
+Some of the still happening issues:
 
-Signed-off-by: DiviyamPathak <patdiviyam@gmail.com>
+Ref Crashes Repro Title
+<1> 920     Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
+                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
+<2> 381     Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
+                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
+<3> 134     No    KASAN: vmalloc-out-of-bounds Write in fillrect
+                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+<4> 7       No    KASAN: slab-out-of-bounds Read in soft_cursor (2)
+                  https://syzkaller.appspot.com/bug?extid=ae44b38396335bd847cd
+
 ---
- drivers/video/fbdev/xilinxfb.c | 30 +++++++++++++++++-------------
- 1 file changed, 17 insertions(+), 13 deletions(-)
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinxfb.c
-index 0a6e05cd155a..f18437490de8 100644
---- a/drivers/video/fbdev/xilinxfb.c
-+++ b/drivers/video/fbdev/xilinxfb.c
-@@ -280,19 +280,27 @@ static int xilinxfb_assign(struct platform_device *pdev,
- 	/* Allocate the framebuffer memory */
- 	if (pdata->fb_phys) {
- 		drvdata->fb_phys = pdata->fb_phys;
--		drvdata->fb_virt = ioremap(pdata->fb_phys, fbsize);
-+		/* Request the memory region before mapping */
-+		if (!devm_request_mem_region(dev, pdata->fb_phys, fbsize,
-+					DRIVER_NAME)) {
-+			dev_err(dev, "Cannot request framebuffer memory region\n");
-+			return -EBUSY;
-+		}
-+		drvdata->fb_virt = devm_ioremap(dev, pdata->fb_phys, fbsize);
-+		if (!drvdata->fb_virt) {
-+			dev_err(dev, "Could not map framebuffer memory\n");
-+			return -ENOMEM;
-+		}
- 	} else {
- 		drvdata->fb_alloced = 1;
- 		drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
--						      &drvdata->fb_phys,
--						      GFP_KERNEL);
--	}
--
--	if (!drvdata->fb_virt) {
--		dev_err(dev, "Could not allocate frame buffer memory\n");
--		return -ENOMEM;
-+					&drvdata->fb_phys,
-+					GFP_KERNEL);
-+		if (!drvdata->fb_virt) {
-+			dev_err(dev, "Could not allocate frame buffer memory\n");
-+			return -ENOMEM;
-+		}
- 	}
--
- 	/* Clear (turn to black) the framebuffer */
- 	memset_io((void __iomem *)drvdata->fb_virt, 0, fbsize);
- 
-@@ -362,8 +370,6 @@ static int xilinxfb_assign(struct platform_device *pdev,
- 	if (drvdata->fb_alloced)
- 		dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
- 				  drvdata->fb_phys);
--	else
--		iounmap(drvdata->fb_virt);
- 
- 	/* Turn off the display */
- 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-@@ -386,8 +392,6 @@ static void xilinxfb_release(struct device *dev)
- 	if (drvdata->fb_alloced)
- 		dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
- 				  drvdata->fb_virt, drvdata->fb_phys);
--	else
--		iounmap(drvdata->fb_virt);
- 
- 	/* Turn off the display */
- 	xilinx_fb_out32(drvdata, REG_CTRL, 0);
--- 
-2.43.0
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
 
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
+
+You may send multiple commands in a single email message.

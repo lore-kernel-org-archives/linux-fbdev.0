@@ -1,318 +1,279 @@
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11023075.outbound.protection.outlook.com [52.101.83.75])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9578332E743;
-	Tue, 16 Dec 2025 08:20:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.83.75
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765873236; cv=fail; b=dsIwjH1SPYijaB2yOn0BnSgf8OXQICuVCXlwEOpp6M8XQWnNXfMVWH8icRGhCiWfrLho7i/LswU7f4uZg/h08dF1UdoRYiQaujp8GUcudyr23l1c3ib0xrYgEV9gv1JdJV6BXI2Prxwt5f62hJn/TX98WHOiPCZOhvjlwxFFUpI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765873236; c=relaxed/simple;
-	bh=uzCLRrMlpwwV9h6myGK2WLoMoS+0thsYPWTv2ayaNuA=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=kA4H9cGQPD/vlFac2Y5KrBvB8tZFzMwzqOVriuSmn7q9C2s2dlbDxF54Wq8SpncPCkZkdBjcoAgP2vXkq2jIjO3iNnzf2emKux2EOLf4uyBADgQFGfNb5ya3lGpUScN1mX+ZKtvC9pONSdk6f+bnWH974rYJImhey0i7IpQaTrM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com; spf=pass smtp.mailfrom=gocontroll.com; dkim=fail (0-bit key) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.b=Bo0cXp2P reason="key not found in DNS"; arc=fail smtp.client-ip=52.101.83.75
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gocontroll.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2CC31B6D1A
+	for <linux-fbdev@vger.kernel.org>; Tue, 16 Dec 2025 13:23:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1765891419; cv=none; b=GMWF7DpXUpfcw/NUbc8a1oJ8CtAzQx4gg5xgWRSNmn0q4nQBBJEmzUqeZr6OoQm/XVdFH6pwawiLUtTvZ/YEWMnSvfkqH9Y5EBvzqvdhWyIDIih+4gZpDsvho8N4xkFXXk4Zmv+hy2RQ8BD9Ks/xXLUkNqOtrh/AnBhUVgDo3Ro=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1765891419; c=relaxed/simple;
+	bh=DPq1jAGc1D2O/ZyUazla2tvm5eNJUgScceBv0fDtLkU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=fgcpAskBp8DPhJ7wnt/8r6uMHSOr9YhP+CGl6DytEV/IEWLK57EG9BnOY/tw84BZhlCsft8vB9EzJR4yyTKYFzyFCruHFH/BUI2q+/hkU9+VbGZRl/J7H1gBg562cxWtiM7b6EgFpt0zrXvlwNI8WG5Qg/G/+pJiAitNtQus1Mo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nGre6Dbv; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.b="Bo0cXp2P"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=QLDqUXk+arfQZd59G0BreR6yzMsufHgs5XotuiKJ/ZrT1uNT702olYxXrpGMzUrUrBxFL+Sq23FJMspTVdy2MaR3e0F9P+13z/uzo80mBC1G+NRIC1wMSYc29VPHbT86WhYyJeRQoQxCJjdQeOCeRJXrsgieNoyhphdvBwhqsZLbRdAEUhOWLRx4q60khBrL/D0x3tbXSEmd2yI48IaZ0ZyLIKYPJ7FJBRGAt60/3leCXK7E6rT5qhOLSapb666oDROOWe8ekvzlHrk8390U2zc0v2uNmBfckC3oCxWx+tZ6j6govoGB2SVE/whZqOBzFVQ5Mhbr682gOO32bXuXLA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=29oPxxF8b8COhPsQ7LYjKYUXHLsQGuWb3suQLprLhQ4=;
- b=aD4Q/XFGuYY5jER4x/6OICGVxfEqWdux9up/tn6BfyvcouQijAlUZjQ9bNVIbiM+0ZS034V+l7rPp6K2GPPNSijKbsga3Lj3at60p7ck/SZgATI6y/Hk6RsE15ABefaKSIFLRZNe1AVRSc5MkvMNCVHuTgn/J6ZHG0UtVv3XlnAvHn68Q5Q+9xkZZ2L3u4gJEHCBhttozq3vq7fxGkElK+PbQEeq6K+kGqJmtxTgTR//XWj4kKFSIWh1mQz3sAweug8hUqu8xSIJhjcd2qT9IKu1kMvLb0w9nhIYs8/sFC8u5j1y/o/3zUQoShERWRBjLLx5/RUKBgknikVeacOlvA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=gocontroll.com; dmarc=pass action=none
- header.from=gocontroll.com; dkim=pass header.d=gocontroll.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gocontrollcom.onmicrosoft.com; s=selector1-gocontrollcom-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=29oPxxF8b8COhPsQ7LYjKYUXHLsQGuWb3suQLprLhQ4=;
- b=Bo0cXp2PuZAU19OExuvBG/W7pTNwLInB2FSNbD9p1ky/rTvM0Pm2bUXFpAo7idtXvUd1C0KEiOaVQg3hDGzz9968VxjUIN0tS+dtG1F2iTmkxjtddyvek+Sk+3xbXOaQrwh5yytTdrk2Abg3FaxXPC5QREnprWp03Rr3c/ZIBm2e15YXq11zdw2KanvuoPWy+WY4fKf+0YMeU9Mrb3QNpNmHb268Bh+YKLeOA4FoSWVoj4l2BHIeXAlUkbTSXbfKwS43cKns1OzaOA90QJyZllI1L62SbKOH3VRicpeN2E4jPWPICGShYS9T1DXQHfGEc1LT9yw0GJJC/afY/Yov4Q==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=gocontroll.com;
-Received: from VI0PR04MB11748.eurprd04.prod.outlook.com (2603:10a6:800:2eb::6)
- by PA1PR04MB10283.eurprd04.prod.outlook.com (2603:10a6:102:463::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9434.6; Tue, 16 Dec
- 2025 08:20:27 +0000
-Received: from VI0PR04MB11748.eurprd04.prod.outlook.com
- ([fe80::5a4c:391:3df:9ffd]) by VI0PR04MB11748.eurprd04.prod.outlook.com
- ([fe80::5a4c:391:3df:9ffd%6]) with mapi id 15.20.9412.011; Tue, 16 Dec 2025
- 08:20:26 +0000
-Message-ID: <d1d83ca2-d856-4e30-b53f-6b601a287768@gocontroll.com>
-Date: Tue, 16 Dec 2025 09:19:40 +0100
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 1/4] dt-bindings: backlight: Add max25014 support
-To: Rob Herring <robh@kernel.org>
-Cc: Frank Li <Frank.li@nxp.com>, Lee Jones <lee@kernel.org>,
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
- Pavel Machek <pavel@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, dri-devel@lists.freedesktop.org,
- linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
-References: <20251201-max25014-v6-0-88e3ac8112ff@gocontroll.com>
- <20251201-max25014-v6-1-88e3ac8112ff@gocontroll.com>
- <aS3H1qzSMKHamqpP@lizhi-Precision-Tower-5810>
- <b9fe6df7-fdc6-4a32-919b-8f3b44eace7d@gocontroll.com>
- <aS79eKc9Ac4np6Nf@lizhi-Precision-Tower-5810>
- <e428c3a9-49e2-4af5-b597-2cdfef7028f5@gocontroll.com>
- <20251209190722.GA945742-robh@kernel.org>
-Content-Language: en-US
-From: Maud Spierings <maudspierings@gocontroll.com>
-In-Reply-To: <20251209190722.GA945742-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: AS4P191CA0002.EURP191.PROD.OUTLOOK.COM
- (2603:10a6:20b:5d5::6) To VI0PR04MB11748.eurprd04.prod.outlook.com
- (2603:10a6:800:2eb::6)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nGre6Dbv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F93AC16AAE
+	for <linux-fbdev@vger.kernel.org>; Tue, 16 Dec 2025 13:23:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1765891419;
+	bh=DPq1jAGc1D2O/ZyUazla2tvm5eNJUgScceBv0fDtLkU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=nGre6DbvGUgnZ+ESxttsrnECY5lWVvqQ1gRq4R08/NWMM6Rb5ayGTuV9K9W/HqR3Q
+	 YGAGrMdKjxCZnF9RFyzdK69F1AQUANMKOGzht2N/FoW3JIeHZRdnF2XsY2K6sgW70V
+	 U+HDhuzRiG/Lo6imIWRSAqVyL/NRr0FvFO4gOUpyGp6IDnfl/qh3D/gj1x5B8ycpG2
+	 gAzN/+9lxsa+fl1T+WbVyRxI/k88S3LHjZRCLCWuBXE6N3osXAj09ZGHK4TAGCckwT
+	 gZZIYQP8g382SyQr6jZi16qKdej6YlbWsF/u8WCmfc+fxrtTHYs0PrlqLhepsiLRQ3
+	 PMZCjx7IxWsOg==
+Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-349bb6f9c86so6017235a91.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 16 Dec 2025 05:23:39 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUJ1apH2lLFFEHPw2hbyVM+eQOOEQfbOwtwQZWyIt+53p6RRSeAOKQ6+l0fqMGE3htscx0CIklGIYMNEQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx0EpKtFGGSGM5fG26KuLyAD7R6nlFmUCEyai5CNTUZaqkP6/xC
+	UNi80mH0awceAaTmmVMFVjnl5AcdSahkigLxedrURBtYn9omkAq2oGdHTtWMM2K54Qt2lObqnln
+	yheLQ9oflWtFnbbA1sqRlkGaaQsWO0F8=
+X-Google-Smtp-Source: AGHT+IHUnDpKNHYUuXbGrQN2jg3vGOrZPyoOq5q+Rmr8AbIh7IbWBUkMTVkTTrw2Wag6CLrhtskPUlwtBJIXFO06Kbc=
+X-Received: by 2002:a17:90b:4cce:b0:34a:b1ea:664e with SMTP id
+ 98e67ed59e1d1-34abd734361mr11835652a91.15.1765891419204; Tue, 16 Dec 2025
+ 05:23:39 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: VI0PR04MB11748:EE_|PA1PR04MB10283:EE_
-X-MS-Office365-Filtering-Correlation-Id: ee2d8b14-35cd-48d5-21b3-08de3c7bf760
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|366016|10070799003|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?dnNiLzZ0WndhMHpNMXlYb3lOYUVtelROdDQxcXR4U0N0WmhreG45MDNtVEJN?=
- =?utf-8?B?R2VtMWNNaU5YZ0E4N09qN0VJQXo4MkJFRENjRDFtSmhRRTN6TWVUOVNLemhH?=
- =?utf-8?B?OVkrRWZCSUhyZ0UvT2lPY3Y2ai9CSTlhazVEU0ZhUGFENkV6NVJXRjdya2dp?=
- =?utf-8?B?UWwwUTRxUmg1bHdTenFHbmt2eUhJMStaSEdyTFM5WEFmRk96T3QvbTNyT2JH?=
- =?utf-8?B?bTViVlRjMG52NmZFei9mK0RJVFd3RUc5VEZqcmtGU3JuUnpjREo4VUErbGpW?=
- =?utf-8?B?Skdpbno1UXFhTU9sUEJjR1gzVUhoeFJNWEFWMm9xeVBJWVRLdnptS1ZBZ2s0?=
- =?utf-8?B?V0pHSHFlenBRU3BTUGd1VlovQXYwL2QwczhwQ21zOWl3UGY1ZEo4czdCUi8z?=
- =?utf-8?B?R3VSWFpzOFlESVNyd1VUUVI5SGVjZ1N4dG5ZcVZWM0FZVC8vSHhwbnZWRXlm?=
- =?utf-8?B?VkJqczVzdytHM3A3MVBvcjRuRmNHemxuc2M5Z1EyQzFwNmVuZXAzWXpscXcw?=
- =?utf-8?B?TjhSb1RiMGNiWHdHNzZZdHorUEdjNC9MVyt4bXpUclVuSTN4WVpkSCtBTmRB?=
- =?utf-8?B?REh3NXBMRGJtZDgwRVFyM1RibnA0R0xXTlBFbnB6ZWsvUVhsRzFrMWpvWE1W?=
- =?utf-8?B?bkVKWmlYam5DZWlYZXlaN3VvT3BzeEcwMWxVcklsRm50b3BQWkRMZXlZbmYz?=
- =?utf-8?B?OEhBWTZFVDVoUXRyVFduU1lUYUFTUzNJMXVseld2bFVWb1dWNlAvSDlPeVhu?=
- =?utf-8?B?aCtVMk9iZ3hiTFY4b21TenNueUs1QXN6YjMzRU5kcGxuLzkxV1BVYkZUWHBz?=
- =?utf-8?B?L3lURzlCOGVFWUdpcCtsSE5MVDkyWU9URzAwVXhKS0ZqMUJ0SlBIcWFhdmw1?=
- =?utf-8?B?Uk9PNEZUeEd3ZXdRRVN5NWV3M1RSbCtjWU5jbHRkWU1PZzZpWjU3S3dKMTlz?=
- =?utf-8?B?RUFzU1BnaUdJTVhXRlBaS1hwV1QrVUhsc1NXWjloVFhJNW1BV3ZtZ01Wbkd5?=
- =?utf-8?B?eE1GN3g5UHRVRDI1UTJobThRV0gxOTByMFl4RnBDcHY1WjJhaWJwbnI5WWFE?=
- =?utf-8?B?U0NCU1lXS09YSmhLZVpPRmUxaitjZW51REpoODZCbEJxcERLU3p5ZEtmV1d2?=
- =?utf-8?B?ZGNnT1QwODlqUkpLQ1lzditLaXM2VXEvbktSNFNBd2Nab2RDM0lXU2JEUW9C?=
- =?utf-8?B?d1NKNkdxRHNkRk1TUjVBRDFlNUhTVnB0MWQ3enNXWTNwRklIZTJrMVpjR0tM?=
- =?utf-8?B?NEVDUDBpWFpRL2duWE5USDZMeGs3MW9RVGpYbTJHaGR5S2Iya1lrVFV1Z3Yy?=
- =?utf-8?B?S2tiT0ZFTk5tUHpPaE5PeEo5aEdxbnd0Mjl0Z0VQOGpWZVI2ektpWVV2aWk4?=
- =?utf-8?B?UTc5MzdTUXhQODBmbVFOVVZsNC91NVBqRnhzZWFocS9jQnpTSlpmZEFiSUtS?=
- =?utf-8?B?UmtQcFJhbFFVWDhGMlQxUWRaU0orZWwrd0lGMWtXY0ZYSkdGWEZiN1VMRHlY?=
- =?utf-8?B?NzF0STZ6U0kzeUpqdXR6bGNRSVZvaG1CU2ZHaFJFSDBLVlFOYVU3UTBobVND?=
- =?utf-8?B?UDVnMHhDdTlENGxhSnp4aWRDdzV3ZGVrd2R6ZFBWZnpmSVFXWmJiTU9Cc0FF?=
- =?utf-8?B?cEtYVWlnbk85RHg5Y3hUZmZZMStzcDlDcmNTQTZscGVNdERLUGREek5QR3NM?=
- =?utf-8?B?QlIrT3VoWXJSU3dsS3pyN3NCUUJIUTFLUzEzQ1FJWS9NWmxSczNCUlBONlFa?=
- =?utf-8?B?TUJvUE1rMFBUV1BOY2t1eFJUQWMxMFlkSURvbWxPSXhwZFB6UGpkcGxVaWd0?=
- =?utf-8?B?eThjaUJrNlJKWDEvalBWbXFQVFBmNmExNWZEVkE2V2IwYi95TmlXcVU1QWs4?=
- =?utf-8?B?TlhKQjVyQS9XTXowY29YdVFVaVJvQTBPeDhuZU0yYkptSXc9PQ==?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR04MB11748.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(10070799003)(1800799024);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?VDliYzdEbDZMK24zcGVHNmNJWDd5c1lSN2Y1ZkNmZ0FodnVPM2VKZk9GQkFB?=
- =?utf-8?B?UGdOempHQ3phZWN5WmNWNnlDN3htcEIrNXdXVkhTRDRCZnEvVk1UYTltZ0pk?=
- =?utf-8?B?SFpnM1c0THdTM0k4dkZNWFlrYU5iNWNsSytFbmdsdGhmN0J2MVkyMEFINjl5?=
- =?utf-8?B?dStrNlBxZjgyVzJ4dmoxMUFFN2pJckVycFg2MDVSSTYyUndVRFlQTjhMSWhH?=
- =?utf-8?B?UUZnZFMzTDhyM2JmakZOTzVILzFwZGpaVlFpc1p1eURoM0NZV1lOVExBaklV?=
- =?utf-8?B?aGZTWE5sT0gxWmc3RGJKRytLOElIaUVIdU9uc0w4SklNWUp4dEdzMlJYekdJ?=
- =?utf-8?B?blhUWExZVDRkcnpEanlFVzFsc0UvL0hFd1F3YkVVekhRMUxodnMxRmtPTkF5?=
- =?utf-8?B?RDhZUGxxZlNrNzgxZTRidzltSVpIejBvR3AvUGI3OWxSWEpDbXhCZm1sa1lk?=
- =?utf-8?B?K09EaXVvank2NnozRkQxejhhT1pyWXZXNkN4RCsvNEtQaWhuUXp5SFUyTHZk?=
- =?utf-8?B?QlE5VUxGNjcvYnREbS9LVDBxSC8wTDVMYjB0UlMzTFhtQ2ErRFpXV0RJZTBS?=
- =?utf-8?B?bWhJQTNvWDRlOFRCMDdDYzBPMTVVcXNGOTcxV05NSWE3Rzk3OXRFbHFxNjFa?=
- =?utf-8?B?ZEQ5SnNOSm5hWnlyUFRmRHI1cUNaOTVCbUlmQ3ZVMVlYRUtGNXFpMHBqSkVa?=
- =?utf-8?B?MTQwUHpaTlVtYzY0NDM2OVVvdVNtUVJRcmQrbUdkdXhwZnJ0T2JpeHE3Wjlz?=
- =?utf-8?B?ekoxTEoxdW5aVitDZEdMSWNINGRDOHpjRkdmR2lrY2N1L29xaU5HbjR4Uko5?=
- =?utf-8?B?T1NYNkRrZ21nUVBWeG1QS254eldoYms1MzNyN3R3ZE10Yktodmw5RVRaMy9k?=
- =?utf-8?B?WmVxbk84d3pnTWF0SDArdWg1R1BnN0tQbXNPZ0RjS1A1RWVValF0TzhZbnFy?=
- =?utf-8?B?Mmh4OC9RTW1rNXBZRkJZdDJFdlNRMmp6TnNDTzc3TjBPUGJ1ZldMSFpxUzBw?=
- =?utf-8?B?N0QveDNpN3A4L1VHcm80VytVbENYbWVpWnRpL1EyUEFudm9CQlNnKyt4dW9N?=
- =?utf-8?B?M3hnaEtDVStQRSt6R1hDK0JNeUdNcmhZWkpST1k3S2tZZ25samN0TTBrNHJl?=
- =?utf-8?B?c2hFTkdZeHF3UG9PQ1Y3UlAvcEY4RXBpSHNCcWxZMlRPcGFyZk95VVRINGov?=
- =?utf-8?B?RE9UWVRBMlNIQXZQUHJ6Tjc0YUJnZHkvOGx1RXczMS9PU0dlR2NCT3ZyZlE0?=
- =?utf-8?B?bmZsejVod0tOUW5DU01tQkRjTlRIQnhHUEFCQ3RQSmg0WGJnd0ZicVIzTjFX?=
- =?utf-8?B?SXlBb3g5UVYzNTJOL1pPL2ZnYUhvd1ZNbUdzeWdGb2pkZGFVV0ZVVmEzYXNt?=
- =?utf-8?B?MGhyWTFCZUprT29oQ2U3UWZXWWl6UDdNb3lVQU13c2QxaEJ6SXdCQ1loOEJk?=
- =?utf-8?B?aTA1TmU2aWk2bGVXWFFzUkVjLzdTdmM0RGhEd25HZ3ZrQzJITnRyMTB2VHh5?=
- =?utf-8?B?bndPb01zWW5Yc3BtZjlrNVlRck5YSEdlWlZCbUdDNDVXSFF5YXhKNzhlOVhK?=
- =?utf-8?B?WUNiVDVWbm9DMFJ0QlJMcFJVOWxLWnFtaEFaQ3dSNkNGVTVHZ0NMaEMyY1FK?=
- =?utf-8?B?OTdsZ3BQZkd2M0E1a1BaVHRobnNBRXh2T2tUTWNORXYrV2lKTkdzQktBbGJ3?=
- =?utf-8?B?R2h3Nm9jTlliWW5mQzJEQXczZjlveWMwd0FCNlZCaXVGN1UvNEFCUW1CaThx?=
- =?utf-8?B?aWwyRDZlc1ZycU45VjBDcXI3QkZzTjNld1JyRGpUL1BvVm5BdWtzbDBEUjd6?=
- =?utf-8?B?MDBWN2laTzJoYk9PSlo1cGNTSnFyNE5NZGNRdkFpSGlmYlFqYlpJcG5xd1ls?=
- =?utf-8?B?R1NRbWJmM2VmWFdiNlA5QUhCbnN6VXpzNk5GRzhyWFdoejF6WGwxZldRWW11?=
- =?utf-8?B?bEFiMk0xcm53b1F2aEhydnRIMXBWSUhabVFvQjUrNzFJclExcC90YkZKOCs3?=
- =?utf-8?B?UXlMR3g4c0tVSWpjZkNyZXMrT09pQU94T1VSRUxmN3M3N0RPc01KTkkwNmNZ?=
- =?utf-8?B?VzZDdHhrNW03czdabElYUTRxRTNMZUgvaVRkci9WcWFUQlNFN0h6bnhTa0pV?=
- =?utf-8?B?eEMrWFhKUEZrZkw1MkVMUU1FMExPd29lUS9JcmV0cFloWlJhYVZwSk4wUmZq?=
- =?utf-8?B?S2VkTkpZUTMvWEx0Z2EyZDdyeFpmWnVtUGkrZGFRemNkblBQT0tmUEUrVklh?=
- =?utf-8?B?bTI5M29Xck93b0NXSDMyR3ByR1hnPT0=?=
-X-OriginatorOrg: gocontroll.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ee2d8b14-35cd-48d5-21b3-08de3c7bf760
-X-MS-Exchange-CrossTenant-AuthSource: VI0PR04MB11748.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Dec 2025 08:20:26.4334
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4c8512ff-bac0-4d26-919a-ee6a4cecfc9d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: hC/KmwaHeGK6IMalqf3FY3i+elfxSvC9BQcXZNh5vEPaxav9zVEMFlmn6JNRA8OWmYHW87A95JQsAW3eZR58rW20nwmASYtFW6LODUajcDU=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB10283
+References: <20251126160854.553077-1-tzimmermann@suse.de> <20251126160854.553077-10-tzimmermann@suse.de>
+In-Reply-To: <20251126160854.553077-10-tzimmermann@suse.de>
+From: Ard Biesheuvel <ardb@kernel.org>
+Date: Tue, 16 Dec 2025 14:23:28 +0100
+X-Gmail-Original-Message-ID: <CAMj1kXFeBS7O5A-CPds3UfFnjegGTpVsuF7VznBc-zZ+gjygtw@mail.gmail.com>
+X-Gm-Features: AQt7F2oAVMGGFI57G40bXQNZ0WT8L2VZYIDSVOafxb5SZLs3ZzjQIedL6et7Yfs
+Message-ID: <CAMj1kXFeBS7O5A-CPds3UfFnjegGTpVsuF7VznBc-zZ+gjygtw@mail.gmail.com>
+Subject: Re: [PATCH v3 9/9] efi: libstub: Simplify interfaces for primary_display
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: javierm@redhat.com, arnd@arndb.de, richard.lyu@suse.com, 
+	helgaas@kernel.org, x86@kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, 
+	loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, 
+	dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org, 
+	linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On 12/9/25 20:07, Rob Herring wrote:
-> On Mon, Dec 08, 2025 at 02:56:50PM +0100, Maud Spierings wrote:
->> On 12/2/25 15:53, Frank Li wrote:
->>> On Tue, Dec 02, 2025 at 08:46:21AM +0100, Maud Spierings wrote:
->>>> On 12/1/25 17:52, Frank Li wrote:
->>>>> On Mon, Dec 01, 2025 at 12:53:20PM +0100, Maud Spierings via B4 Relay wrote:
->>>>>> From: Maud Spierings <maudspierings@gocontroll.com>
->>>>>>
->>>>>> The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
->>>>>> with integrated boost controller.
->>>>>>
->>>>>> Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
->>>>>>
->>>>>> ---
->>>>>>
->>>>>> In the current implementation the control registers for channel 1,
->>>>>> control all channels. So only one led subnode with led-sources is
->>>>>> supported right now. If at some point the driver functionality is
->>>>>> expanded the bindings can be easily extended with it.
->>>>>> ---
->>>>>>     .../bindings/leds/backlight/maxim,max25014.yaml    | 107 +++++++++++++++++++++
->>>>>>     MAINTAINERS                                        |   5 +
->>>>>>     2 files changed, 112 insertions(+)
->>>>>>
->>>>>> diff --git a/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
->>>>>> new file mode 100644
->>>>>> index 000000000000..e83723224b07
->>>>>> --- /dev/null
->>>>>> +++ b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
->>>>>> @@ -0,0 +1,107 @@
->>>>>> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
->>>>>> +%YAML 1.2
->>>>>> +---
->>>>>> +$id: http://devicetree.org/schemas/leds/backlight/maxim,max25014.yaml#
->>>>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->>>>>> +
->>>>>> +title: Maxim max25014 backlight controller
->>>>>> +
->>>>>> +maintainers:
->>>>>> +  - Maud Spierings <maudspierings@gocontroll.com>
->>>>>> +
->>>>>> +properties:
->>>>>> +  compatible:
->>>>>> +    enum:
->>>>>> +      - maxim,max25014
->>>>>> +
->>>>>> +  reg:
->>>>>> +    maxItems: 1
->>>>>> +
->>>>>> +  "#address-cells":
->>>>>> +    const: 1
->>>>>> +
->>>>>> +  "#size-cells":
->>>>>> +    const: 0
->>>>>> +
->>>>>> +  enable-gpios:
->>>>>> +    maxItems: 1
->>>>>> +
->>>>>> +  interrupts:
->>>>>> +    maxItems: 1
->>>>>> +
->>>>>> +  power-supply:
->>>>>> +    description: Regulator which controls the boost converter input rail.
->>>>>> +
->>>>>> +  pwms:
->>>>>> +    maxItems: 1
->>>>>> +
->>>>>> +  maxim,iset:
->>>>>> +    $ref: /schemas/types.yaml#/definitions/uint32
->>>>>> +    maximum: 15
->>>>>> +    default: 11
->>>>>> +    description:
->>>>>> +      Value of the ISET field in the ISET register. This controls the current
->>>>>> +      scale of the outputs, a higher number means more current.
->>>>>> +
->>>>>> +  led@0:
->>>>>
->>>>> define whole binding, allow 0-3. binding is not related with driver's
->>>>> implement.
->>>>>
->>>>> it'd better put unders leds.
->>>>>
->>>>
->>>> so like:
->>>>
->>>> backlight: backlight@6f {
->>>> 	compatible = "maxim,max25014";
->>>> 	reg = <0x6f>;
->>>> 	enable-gpios = <&gpio1 4 GPIO_ACTIVE_HIGH>;
->>>> 	pinctrl-names = "default";
->>>> 	pinctrl-0 = <&pinctrl_backlight>;
->>>> 	maxim,iset = <7>;
->>>>
->>>> 	leds {
->>>> 		#address-cells = <1>;
->>>> 		#size-cells = <0>;
->>>>
->>>> 		led@0 {
->>>> 			reg = <0>;
->>>> 			led-sources = <0 1 2>;
->>>> 			default-brightness = <50>;
->>>> 		};
->>>>
->>>> 		optional led@#....
->>>> 	};
->>>> };
->>>>
->>>> right?
->>>
->>> yes.
->>>
->>
->> I am feeling a bit weird about these led sub nodes, because it is not
->> programmed as a led driver, it is programmed as a backlight. I am trying to
->> figure out how this would be used later when the led strings are
->> individually controllable.
->>
->> it isn't possible to link the seperate strings to different displays because
->> it is only one backlight device, so I don't seen any reason why it would
->> ever be used in another way than what it is now, were all strings are
->> programmed by one register.
->>
->> The only way I can make sense of it is if instead I program this device as a
->> led driver and then use the led_bl driver as the actual backlight.
->>
->> Thats a pretty big step in a different direction, but then the led subnodes
->> at least can be properly used I feel.
-> 
-> If you don't have any use for anything other than driving a single
-> backlight, then I'd just drop the led nodes completely.
+Hi Thomas
 
-Theoretically with how the registers are laid out, it should be able to 
-control 4 led strings individually. But as I said when I configure led 
-string 1 it will also affect all the others seemingly. I am not sure if 
-with some other configuration you can indeed do individual control.
+On Wed, 26 Nov 2025 at 17:09, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>
+> Rename alloc_primary_display() and __alloc_primary_display(), clarify
+> free semantics to make interfaces easier to understand.
+>
+> Rename alloc_primary_display() to lookup_primary_display() as it
+> does not necessarily allocate. Then rename __alloc_primary_display()
+> to the new alloc_primary_display(). The helper belongs to
+> free_primary_display), so it should be named without underscores.
+>
+> The lookup helper does not necessarily allocate, so the output
+> parameter needs_free to indicate when free should be called.
 
-Before I start converting stuff back to how it was several versions ago. 
-Frank, do you agree with removing the led nodes in this case? I don't 
-want to get stuck between two different paths.
+I don't understand why we need this. Whether or not the helper
+allocates is a compile time decision, and in builds where it doesn't,
+the free helper doesn't do anything.
 
-Kind regards,
-Maud
+I'm all for making things simpler, but I don't think this patch
+achieves that tbh.
 
+I've queued up this series now up until this patch - once we converge
+on the simplification, I'm happy to apply it on top.
+
+Thanks,
+
+
+
+> Pass
+> an argument through the calls to track this state. Put the free
+> handling into release_primary_display() for simplificy.
+>
+> Also move the comment fro primary_display.c to efi-stub-entry.c,
+> where it now describes lookup_primary_display().
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>  drivers/firmware/efi/libstub/efi-stub-entry.c | 23 +++++++++++++++++--
+>  drivers/firmware/efi/libstub/efi-stub.c       | 22 ++++++++++++------
+>  drivers/firmware/efi/libstub/efistub.h        |  2 +-
+>  .../firmware/efi/libstub/primary_display.c    | 17 +-------------
+>  drivers/firmware/efi/libstub/zboot.c          |  6 +++--
+>  5 files changed, 42 insertions(+), 28 deletions(-)
+>
+> diff --git a/drivers/firmware/efi/libstub/efi-stub-entry.c b/drivers/firmware/efi/libstub/efi-stub-entry.c
+> index aa85e910fe59..3077b51fe0b2 100644
+> --- a/drivers/firmware/efi/libstub/efi-stub-entry.c
+> +++ b/drivers/firmware/efi/libstub/efi-stub-entry.c
+> @@ -14,10 +14,29 @@ static void *kernel_image_addr(void *addr)
+>         return addr + kernel_image_offset;
+>  }
+>
+> -struct sysfb_display_info *alloc_primary_display(void)
+> +/*
+> + * There are two ways of populating the core kernel's sysfb_primary_display
+> + * via the stub:
+> + *
+> + *   - using a configuration table, which relies on the EFI init code to
+> + *     locate the table and copy the contents; or
+> + *
+> + *   - by linking directly to the core kernel's copy of the global symbol.
+> + *
+> + * The latter is preferred because it makes the EFIFB earlycon available very
+> + * early, but it only works if the EFI stub is part of the core kernel image
+> + * itself. The zboot decompressor can only use the configuration table
+> + * approach.
+> + */
+> +
+> +struct sysfb_display_info *lookup_primary_display(bool *needs_free)
+>  {
+> +       *needs_free = true;
+> +
+>         if (IS_ENABLED(CONFIG_ARM))
+> -               return __alloc_primary_display();
+> +               return alloc_primary_display();
+> +
+> +       *needs_free = false;
+>
+>         if (IS_ENABLED(CONFIG_X86) ||
+>             IS_ENABLED(CONFIG_EFI_EARLYCON) ||
+> diff --git a/drivers/firmware/efi/libstub/efi-stub.c b/drivers/firmware/efi/libstub/efi-stub.c
+> index 42d6073bcd06..dc545f62c62b 100644
+> --- a/drivers/firmware/efi/libstub/efi-stub.c
+> +++ b/drivers/firmware/efi/libstub/efi-stub.c
+> @@ -51,14 +51,14 @@ static bool flat_va_mapping = (EFI_RT_VIRTUAL_OFFSET != 0);
+>  void __weak free_primary_display(struct sysfb_display_info *dpy)
+>  { }
+>
+> -static struct sysfb_display_info *setup_primary_display(void)
+> +static struct sysfb_display_info *setup_primary_display(bool *dpy_needs_free)
+>  {
+>         struct sysfb_display_info *dpy;
+>         struct screen_info *screen = NULL;
+>         struct edid_info *edid = NULL;
+>         efi_status_t status;
+>
+> -       dpy = alloc_primary_display();
+> +       dpy = lookup_primary_display(dpy_needs_free);
+>         if (!dpy)
+>                 return NULL;
+>         screen = &dpy->screen;
+> @@ -68,15 +68,22 @@ static struct sysfb_display_info *setup_primary_display(void)
+>
+>         status = efi_setup_graphics(screen, edid);
+>         if (status != EFI_SUCCESS)
+> -               goto err_free_primary_display;
+> +               goto err___free_primary_display;
+>
+>         return dpy;
+>
+> -err_free_primary_display:
+> -       free_primary_display(dpy);
+> +err___free_primary_display:
+> +       if (*dpy_needs_free)
+> +               free_primary_display(dpy);
+>         return NULL;
+>  }
+>
+> +static void release_primary_display(struct sysfb_display_info *dpy, bool dpy_needs_free)
+> +{
+> +       if (dpy && dpy_needs_free)
+> +               free_primary_display(dpy);
+> +}
+> +
+>  static void install_memreserve_table(void)
+>  {
+>         struct linux_efi_memreserve *rsv;
+> @@ -156,13 +163,14 @@ efi_status_t efi_stub_common(efi_handle_t handle,
+>                              char *cmdline_ptr)
+>  {
+>         struct sysfb_display_info *dpy;
+> +       bool dpy_needs_free;
+>         efi_status_t status;
+>
+>         status = check_platform_features();
+>         if (status != EFI_SUCCESS)
+>                 return status;
+>
+> -       dpy = setup_primary_display();
+> +       dpy = setup_primary_display(&dpy_needs_free);
+>
+>         efi_retrieve_eventlog();
+>
+> @@ -182,7 +190,7 @@ efi_status_t efi_stub_common(efi_handle_t handle,
+>
+>         status = efi_boot_kernel(handle, image, image_addr, cmdline_ptr);
+>
+> -       free_primary_display(dpy);
+> +       release_primary_display(dpy, dpy_needs_free);
+>
+>         return status;
+>  }
+> diff --git a/drivers/firmware/efi/libstub/efistub.h b/drivers/firmware/efi/libstub/efistub.h
+> index 979a21818cc1..1503ffb82903 100644
+> --- a/drivers/firmware/efi/libstub/efistub.h
+> +++ b/drivers/firmware/efi/libstub/efistub.h
+> @@ -1176,8 +1176,8 @@ efi_enable_reset_attack_mitigation(void) { }
+>
+>  void efi_retrieve_eventlog(void);
+>
+> +struct sysfb_display_info *lookup_primary_display(bool *needs_free);
+>  struct sysfb_display_info *alloc_primary_display(void);
+> -struct sysfb_display_info *__alloc_primary_display(void);
+>  void free_primary_display(struct sysfb_display_info *dpy);
+>
+>  void efi_cache_sync_image(unsigned long image_base,
+> diff --git a/drivers/firmware/efi/libstub/primary_display.c b/drivers/firmware/efi/libstub/primary_display.c
+> index cdaebab26514..34c54ac1e02a 100644
+> --- a/drivers/firmware/efi/libstub/primary_display.c
+> +++ b/drivers/firmware/efi/libstub/primary_display.c
+> @@ -7,24 +7,9 @@
+>
+>  #include "efistub.h"
+>
+> -/*
+> - * There are two ways of populating the core kernel's sysfb_primary_display
+> - * via the stub:
+> - *
+> - *   - using a configuration table, which relies on the EFI init code to
+> - *     locate the table and copy the contents; or
+> - *
+> - *   - by linking directly to the core kernel's copy of the global symbol.
+> - *
+> - * The latter is preferred because it makes the EFIFB earlycon available very
+> - * early, but it only works if the EFI stub is part of the core kernel image
+> - * itself. The zboot decompressor can only use the configuration table
+> - * approach.
+> - */
+> -
+>  static efi_guid_t primary_display_guid = LINUX_EFI_PRIMARY_DISPLAY_TABLE_GUID;
+>
+> -struct sysfb_display_info *__alloc_primary_display(void)
+> +struct sysfb_display_info *alloc_primary_display(void)
+>  {
+>         struct sysfb_display_info *dpy;
+>         efi_status_t status;
+> diff --git a/drivers/firmware/efi/libstub/zboot.c b/drivers/firmware/efi/libstub/zboot.c
+> index 4b76f74c56da..c1fd1fdbcb08 100644
+> --- a/drivers/firmware/efi/libstub/zboot.c
+> +++ b/drivers/firmware/efi/libstub/zboot.c
+> @@ -26,9 +26,11 @@ void __weak efi_cache_sync_image(unsigned long image_base,
+>         // executable code loaded into memory to be safe for execution.
+>  }
+>
+> -struct sysfb_display_info *alloc_primary_display(void)
+> +struct sysfb_display_info *lookup_primary_display(bool *needs_free)
+>  {
+> -       return __alloc_primary_display();
+> +       *needs_free = true;
+> +
+> +       return alloc_primary_display();
+>  }
+>
+>  asmlinkage efi_status_t __efiapi
+> --
+> 2.51.1
+>

@@ -1,157 +1,97 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mail.crpt.ru (mail.crpt.ru [91.236.205.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 531D4346FCA
-	for <linux-fbdev@vger.kernel.org>; Tue, 16 Dec 2025 13:40:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CC4226FA5A;
+	Wed, 17 Dec 2025 09:29:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.236.205.1
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1765892454; cv=none; b=pJWsLCBeDWfYX1aC9FwnTTchgNUxtKjyxn0jr0AJXHANtsQEPkQR2JHjOZUec/GDT58XXVBLNh3alafzSBgQU0EC7UT2raPjMvG9v8YEAk2qwi0/iC5sz/eNNAVHRo4fY+k607+X2LLghAWSYumAdYp+5PpbSlR/RFJFWcPKWlY=
+	t=1765963756; cv=none; b=Z/av5MD+GPa+fVlvHll8PvZNb58qZixtpm0Jh/vHg0D/znb/B2lpCkkbbTuCq3tLSYyNJGWXeULXwuW+yXs/oTYtP+S6ULkAZ9/GYAGjNU3sJSsY68ej6DllbZI79I0TDnz2Gu7VcupbQ+RKcVFln1ygS+mvi/HxHgLtAebDTCI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1765892454; c=relaxed/simple;
-	bh=bpE6mSMhtsJNcViEHUKqxdpK/zXIk25nSDmiikJg7Jo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=UDnLu/QJChokIYPRgkQFjsaNufPaXEesJ6367LT9Ft31+9NSksxGOcFGvnl1ez33jd64WZ6f0Q08Jqjc74/iJMKTY+K6DIQ5u2wlPl/F+AF4N/5Zy1ut+VyUHrY4d0QtXKsBieo2qqOX+JhCDNl/Bzbf18G1igOuKV5Qw5Nz22o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NeZdgjmo; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1765963756; c=relaxed/simple;
+	bh=715d+r/USyVm9Mnb9SAlADsKO4TV4fUR/6/7FwHFdq8=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=ir68ZQGU0QNOb5w+CPLDGdH8TuY26Jr0heHHkMWrsv4z5w1w3jCZgGSqNciaUavgSD+Mr263SFeMCj5Qo+svJE6fhkxmDsaGBXw3armwvTmdD24PVGcadMyV5j77dlQ9wbWxBNUJUPY3HnHdMICd8ESmz5qbk0csFhDMFXC7g9U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru; spf=pass smtp.mailfrom=crpt.ru; dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b=nwcHSH3F; arc=none smtp.client-ip=91.236.205.1
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=crpt.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NeZdgjmo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08469C16AAE
-	for <linux-fbdev@vger.kernel.org>; Tue, 16 Dec 2025 13:40:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765892454;
-	bh=bpE6mSMhtsJNcViEHUKqxdpK/zXIk25nSDmiikJg7Jo=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=NeZdgjmofb5XyxZ/9WvmQDRKMMTSL7UvRP7wXhCM0Sn1k0OBFCu7ph/Ju5GY0XNL7
-	 aqoPVZqK6Uf82+24gaphNn/PeUkv1uFk6jNXl84kPZwk63Ov+FFGyxxW3JfHP6gQ7K
-	 hiEX4jmVRRQ4gXRa8TTiN7k2GFggH0g4IrXrHv/svzQ67VjOTSouguE4IL4rEqYkRu
-	 1fCwDjUzmIhKIHieXY7Djjg+l3hHsd53Fuu1izTymS6+7mURvOZSjrfDGXv1E1njvR
-	 VE6jFsByaR6RC69K1SiOW4Utea7uiGZbxTDnZaJaogGFKZ85nLoQzcQrm6ab4btr3s
-	 ikpOL4/rzbaVQ==
-Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-29f1bc40b35so66680665ad.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Dec 2025 05:40:54 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUvbjeJHEtsokHgNFYyW2BGyIlAdISSCCLY03r6U9glgojzs6oZqtbcaTAchDgxqL4uQaYQHN3XEPE9uQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzAkttuCxNbGz7+3+NnTeKC8rQr8ylhOxggIr2hxHMredPEgVpC
-	ja3n/3Agvi0JwV4Pqfeu0edApYYMcac0nVhsS6xLF2z+E8xzlZ7wbkFtepEPzTX0gkbA1hKdGgc
-	HBeg4nUMDs7z3KTVrcIvat6IcgxGsNc4=
-X-Google-Smtp-Source: AGHT+IHcmZJ38d94bL4vjoP1Iao4l30Ahx8lP9aMcBlBTOZ7Gso5/FdhsFfK6P+oxGrsyN3M1S7cHEzzA6Roze4LOiE=
-X-Received: by 2002:a17:902:cf0d:b0:2a0:d59e:9848 with SMTP id
- d9443c01a7336-2a0d59e9a43mr99280585ad.53.1765892453645; Tue, 16 Dec 2025
- 05:40:53 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b="nwcHSH3F"
+Received: from mail.crpt.ru ([192.168.60.3])
+	by mail.crpt.ru  with ESMTPS id 5BH9B66e017848-5BH9B66g017848
+	(version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=OK);
+	Wed, 17 Dec 2025 12:11:06 +0300
+Received: from EX2.crpt.local (192.168.60.4) by ex1.crpt.local (192.168.60.3)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.44; Wed, 17 Dec
+ 2025 12:11:06 +0300
+Received: from EX2.crpt.local ([192.168.60.4]) by EX2.crpt.local
+ ([192.168.60.4]) with mapi id 15.01.2507.044; Wed, 17 Dec 2025 12:11:05 +0300
+From: =?utf-8?B?0JLQsNGC0L7RgNC+0L/QuNC9INCQ0L3QtNGA0LXQuQ==?=
+	<a.vatoropin@crpt.ru>
+To: Simona Vetter <simona@ffwll.ch>
+CC: =?utf-8?B?0JLQsNGC0L7RgNC+0L/QuNC9INCQ0L3QtNGA0LXQuQ==?=
+	<a.vatoropin@crpt.ru>, Helge Deller <deller@gmx.de>, Thomas Zimmermann
+	<tzimmermann@suse.de>, =?utf-8?B?VmlsbGUgU3lyasOkbMOk?=
+	<ville.syrjala@linux.intel.com>, Sam Ravnborg <sam@ravnborg.org>, Shixiong Ou
+	<oushixiong@kylinos.cn>, Kees Cook <kees@kernel.org>, Zsolt Kajtar
+	<soci@c64.rulez.org>, Andrew Morton <akpm@linux-foundation.org>, "Antonino A.
+ Daplas" <adaplas@gmail.com>, "linux-fbdev@vger.kernel.org"
+	<linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
+	<dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "lvc-project@linuxtesting.org"
+	<lvc-project@linuxtesting.org>, "stable@vger.kernel.org"
+	<stable@vger.kernel.org>
+Subject: [PATCH] fbcon: Add check for return value
+Thread-Topic: [PATCH] fbcon: Add check for return value
+Thread-Index: AQHcbzUTe6Spm9oxpEiKqGWLeVgT8g==
+Date: Wed, 17 Dec 2025 09:11:05 +0000
+Message-ID: <20251217091036.249549-1-a.vatoropin@crpt.ru>
+Accept-Language: ru-RU, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-kse-serverinfo: EX1.crpt.local, 9
+x-kse-antivirus-interceptor-info: scan successful
+x-kse-antivirus-info: Clean, bases: 12/16/2025 9:37:00 PM
+x-kse-attachment-filter-triggered-rules: Clean
+x-kse-attachment-filter-triggered-filters: Clean
+x-kse-bulkmessagesfiltering-scan-result: protection disabled
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251126160854.553077-1-tzimmermann@suse.de> <20251126160854.553077-8-tzimmermann@suse.de>
-In-Reply-To: <20251126160854.553077-8-tzimmermann@suse.de>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Tue, 16 Dec 2025 14:40:42 +0100
-X-Gmail-Original-Message-ID: <CAMj1kXG6cFsKwZk3a+xRrOYNz73efxjo=6Jnnr8HCKRO0X-zCQ@mail.gmail.com>
-X-Gm-Features: AQt7F2qIXhwz3lKtiowhJ6LkUm-qxxF02G3Bdlrhhj6FcFVAi1NXBSE5o0PIhTQ
-Message-ID: <CAMj1kXG6cFsKwZk3a+xRrOYNz73efxjo=6Jnnr8HCKRO0X-zCQ@mail.gmail.com>
-Subject: Re: [PATCH v3 7/9] efi: Refactor init_primary_display() helpers
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: javierm@redhat.com, arnd@arndb.de, richard.lyu@suse.com, 
-	helgaas@kernel.org, x86@kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, 
-	loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, 
-	dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-FEAS-BEC-Info: WlpIGw0aAQkEARIJHAEHBlJSCRoLAAEeDUhZUEhYSFhIWUhZXkguLVxYWC48UVlRWFhYWVxaSFlRSAlGHgkcBxoHGAEGKAsaGBxGGh1IWUhZXUgbAQUHBgkoDg4fBARGCwBIWEhaSFlaSFlRWkZZXlBGXlhGW0hQSFhIWEhZW0hYSFhIWEhZX0gJDAkYBAkbKA8FCQEERgsHBUhYSFpdSAkDGAUoBAEGHRBFDgcdBgwJHAEHBkYHGg9IWEhZW0gMDQQEDRooDwUQRgwNSFhIW1lIDBoBRQwNHg0EKAQBGxwbRg4aDQ0MDRsDHAcYRgcaD0hYSFldSAMNDRsoAw0aBg0ERgcaD0hYSFpfSAQBBh0QRQ4KDA0eKB4PDRpGAw0aBg0ERgcaD0hYSFpQSAQeC0UYGgcCDQscKAQBBh0QHA0bHAEGD0YHGg9IWEhaWUgHHRsAARABBwYPKAMRBAEGBxtGCwZIWEhZXkgbCQUoGgkeBgoHGg9GBxoPSFhIWV1IGwEFBwYJKA4OHwQERgsASFhIWVBIGwcLASgLXlxGGh0EDRJGBxoPSFhIWVFIHBIBBQUNGgUJBgYoGx0bDUYMDUhYSFpRSB4BBAQNRhsRGgIJBAkoBAEGHRBGAQYcDQRGCwcFSFg=
+X-FEAS-Client-IP: 192.168.60.3
+X-FE-Policy-ID: 2:4:0:SYSTEM
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=crpt.ru; s=crpt.ru; c=relaxed/relaxed;
+ h=from:to:cc:subject:date:message-id:content-type:mime-version;
+ bh=715d+r/USyVm9Mnb9SAlADsKO4TV4fUR/6/7FwHFdq8=;
+ b=nwcHSH3FFtXmave6KkyHQ/9yrIvC/8EtpggN5T+GssfByeIpjdcHmZbmGGkAk3coSRXIpaLAyi56
+	cOOwLEk1OeceHGku1U0wBLb+fTE1EFk7QZPs7l5Cf7LCpBH/VdXcu6VTQTMXKBywUVNnp+pt0IDX
+	VRNvPay4omqoL/ep/w2EYNh/FVDKV50yjyhp7plXmWXTYHyzK+ZovWVTqa7pB22OgoQICkpR/oW8
+	TKgsrKMotxNhCbl/CBq/odIGxKiVZBnptXIHmrk7U0pX/s1QSjJQrMroKmFiaeCpfbAq6TsQ7/07
+	qHr/zOpNneehTT6Iu0AfjOJLBTGJmwEDMOHT2A==
 
-On Wed, 26 Nov 2025 at 17:09, Thomas Zimmermann <tzimmermann@suse.de> wrote:
->
-> Rework the kernel's init_primary_display() helpers to allow for later
-> support of additional config-table entries and EDID information. No
-> functional changes.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  arch/loongarch/kernel/efi.c     | 22 +++++++++++-----------
->  drivers/firmware/efi/efi-init.c | 19 ++++++++++---------
->  2 files changed, 21 insertions(+), 20 deletions(-)
->
-
-This patch seems unnecessary now that we've replace one table with another.
-
-I've dropped it for now - let me know if you really want to keep it.
-
-
-> diff --git a/arch/loongarch/kernel/efi.c b/arch/loongarch/kernel/efi.c
-> index 638a392d2cd2..1ef38036e8ae 100644
-> --- a/arch/loongarch/kernel/efi.c
-> +++ b/arch/loongarch/kernel/efi.c
-> @@ -81,19 +81,19 @@ EXPORT_SYMBOL_GPL(sysfb_primary_display);
->
->  static void __init init_primary_display(void)
->  {
-> -       struct screen_info *si;
-> -
-> -       if (screen_info_table == EFI_INVALID_TABLE_ADDR)
-> -               return;
-> -
-> -       si = early_memremap(screen_info_table, sizeof(*si));
-> -       if (!si) {
-> -               pr_err("Could not map screen_info config table\n");
-> +       if (screen_info_table == EFI_INVALID_TABLE_ADDR) {
-> +               struct screen_info *si = early_memremap(screen_info_table, sizeof(*si));
-> +
-> +               if (!si) {
-> +                       pr_err("Could not map screen_info config table\n");
-> +                       return;
-> +               }
-> +               sysfb_primary_display.screen = *si;
-> +               memset(si, 0, sizeof(*si));
-> +               early_memunmap(si, sizeof(*si));
-> +       } else {
->                 return;
->         }
-> -       sysfb_primary_display.screen = *si;
-> -       memset(si, 0, sizeof(*si));
-> -       early_memunmap(si, sizeof(*si));
->
->         memblock_reserve(__screen_info_lfb_base(&sysfb_primary_display.screen),
->                          sysfb_primary_display.screen.lfb_size);
-> diff --git a/drivers/firmware/efi/efi-init.c b/drivers/firmware/efi/efi-init.c
-> index d1d418a34407..ca697d485116 100644
-> --- a/drivers/firmware/efi/efi-init.c
-> +++ b/drivers/firmware/efi/efi-init.c
-> @@ -67,10 +67,9 @@ EXPORT_SYMBOL_GPL(sysfb_primary_display);
->
->  static void __init init_primary_display(void)
->  {
-> -       struct screen_info *si;
-> -
->         if (screen_info_table != EFI_INVALID_TABLE_ADDR) {
-> -               si = early_memremap(screen_info_table, sizeof(*si));
-> +               struct screen_info *si = early_memremap(screen_info_table, sizeof(*si));
-> +
->                 if (!si) {
->                         pr_err("Could not map screen_info config table\n");
->                         return;
-> @@ -78,14 +77,16 @@ static void __init init_primary_display(void)
->                 sysfb_primary_display.screen = *si;
->                 memset(si, 0, sizeof(*si));
->                 early_memunmap(si, sizeof(*si));
-> +       } else {
-> +               return;
-> +       }
->
-> -               if (memblock_is_map_memory(sysfb_primary_display.screen.lfb_base))
-> -                       memblock_mark_nomap(sysfb_primary_display.screen.lfb_base,
-> -                                           sysfb_primary_display.screen.lfb_size);
-> +       if (memblock_is_map_memory(sysfb_primary_display.screen.lfb_base))
-> +               memblock_mark_nomap(sysfb_primary_display.screen.lfb_base,
-> +                                   sysfb_primary_display.screen.lfb_size);
->
-> -               if (IS_ENABLED(CONFIG_EFI_EARLYCON))
-> -                       efi_earlycon_reprobe();
-> -       }
-> +       if (IS_ENABLED(CONFIG_EFI_EARLYCON))
-> +               efi_earlycon_reprobe();
->  }
->
->  static int __init uefi_init(u64 efi_system_table)
-> --
-> 2.51.1
->
+RnJvbTogQW5kcmV5IFZhdG9yb3BpbiA8YS52YXRvcm9waW5AY3JwdC5ydT4NCg0KSWYgZmJjb25f
+b3BlbigpIGZhaWxzIHdoZW4gY2FsbGVkIGZyb20gY29uMmZiX2FjcXVpcmVfbmV3aW5mbygpIHRo
+ZW4NCmluZm8tPmZiY29uX3BhciBwb2ludGVyIHJlbWFpbnMgTlVMTCB3aGljaCBpcyBsYXRlciBk
+ZXJlZmVyZW5jZWQuDQoNCkFkZCBjaGVjayBmb3IgcmV0dXJuIHZhbHVlIG9mIHRoZSBmdW5jdGlv
+biBjb24yZmJfYWNxdWlyZV9uZXdpbmZvKCkgdG8NCmF2b2lkIGl0Lg0KDQpGb3VuZCBieSBMaW51
+eCBWZXJpZmljYXRpb24gQ2VudGVyIChsaW51eHRlc3Rpbmcub3JnKSB3aXRoIFNWQUNFLg0KDQpG
+aXhlczogZDFiYWE0ZmZhNjc3ICgiZmJjb246IHNldF9jb24yZmJfbWFwIGZpeGVzIikNCkNjOiBz
+dGFibGVAdmdlci5rZXJuZWwub3JnDQpTaWduZWQtb2ZmLWJ5OiBBbmRyZXkgVmF0b3JvcGluIDxh
+LnZhdG9yb3BpbkBjcnB0LnJ1Pg0KLS0tDQogZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29u
+LmMgfCAzICsrLQ0KIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24o
+LSkNCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jIGIvZHJp
+dmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMNCmluZGV4IGU3ZTA3ZWIyMTQyZS4uNzQ1MzM3
+N2YzNDMzIDEwMDY0NA0KLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMNCisr
+KyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jDQpAQCAtMTA0Nyw3ICsxMDQ3LDgg
+QEAgc3RhdGljIHZvaWQgZmJjb25faW5pdChzdHJ1Y3QgdmNfZGF0YSAqdmMsIGJvb2wgaW5pdCkN
+CiAJCXJldHVybjsNCiANCiAJaWYgKCFpbmZvLT5mYmNvbl9wYXIpDQotCQljb24yZmJfYWNxdWly
+ZV9uZXdpbmZvKHZjLCBpbmZvLCB2Yy0+dmNfbnVtKTsNCisJCWlmIChjb24yZmJfYWNxdWlyZV9u
+ZXdpbmZvKHZjLCBpbmZvLCB2Yy0+dmNfbnVtKSkNCisJCQlyZXR1cm47DQogDQogCS8qIElmIHdl
+IGFyZSBub3QgdGhlIGZpcnN0IGNvbnNvbGUgb24gdGhpcw0KIAkgICBmYiwgY29weSB0aGUgZm9u
+dCBmcm9tIHRoYXQgY29uc29sZSAqLw0KLS0gDQoyLjQzLjANCg==

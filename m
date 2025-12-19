@@ -1,127 +1,303 @@
-Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azon11012058.outbound.protection.outlook.com [40.107.209.58])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19BDA2D323D
-	for <linux-fbdev@vger.kernel.org>; Fri, 19 Dec 2025 05:43:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.173
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766123031; cv=none; b=tUaeyOSQWrcdZ7i2N83H7uDAp/2Q/zUs5+HDSPQooGHyhpxe/9Cm836KV753pul3bGdbPOanYHNOIzMwtJZE6P1EmmoxvcnsqREJIN7rAL3crEKoAWmNBvigITmNitITLThBrhSdCOSFXcB6bIMUU3vBu0mTdeKoF9a8XY9dqvk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766123031; c=relaxed/simple;
-	bh=wTBNcJt2rI9S3EuSYIzTN+CG+sDnu9ds+FK4O8Ikt9Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GCxGUEXii9DG5BvlzWUMBESIFD1HyyonrHtmLlaAq40TxesapStNht8e+k8lHAIYusID+JZgEvN4JEmUtnTDVpcrsD0I+yoc1TYZ3+kjut6ZMSIHmcTiTgroKy8XDzveAfok27MxdRYduarTHpkVbQNFICczOxKa302mYNqbizw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BqUXsznZ; arc=none smtp.client-ip=209.85.214.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 479DF26F2A8;
+	Fri, 19 Dec 2025 20:38:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.209.58
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1766176699; cv=fail; b=EhEVrvyDGYcN/mrs+l74K/yjqwRLYEHRczwA2vrM6iKlKRJFIFpK+wjpf//FQG+3ZxKiIs38okE2XPx4UkN9MLicHsnOddWKPxBvU5/suXHzYe5vhjKpNCL3oZupxVJCLMfpfPWxBpMzXhA6X8mir8Q2FWe8TikgXMLrEzLYvlk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1766176699; c=relaxed/simple;
+	bh=HDF4HqBeVxfIXbcZFM+WScIGDAP3Rzw7a8nAS2y4ITI=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=Uw9S7GPPUpovKehRpH2k2smpRM6QB2rjkIFGVZ7lPDimmN6tFwv6GnI1m3GYKY2EpqJdfwSXSyTZGCpkdVwGhgkJd+2Op7f8xF3juGCtVVn3JRUIJ/31dJkLn1CA1+2oD9GgUXGVE0ZcLB2rYY8fkDM/H0TbfzsLD3pG38wF8F4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=NHiYD59q; arc=fail smtp.client-ip=40.107.209.58
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BqUXsznZ"
-Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-2a0a33d0585so13296975ad.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 18 Dec 2025 21:43:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1766123029; x=1766727829; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=GyhsaHMpowAoVL5AwJvNjQeVURBtbaVBE0KV9gHYSKY=;
-        b=BqUXsznZ8P4OyXHuXngaPVscRGGIN/svI91ndgycwFbrr3iCcwu5Wn2+sFPD7AOqlk
-         kXcxIW8kg1HeXADbKto+/VAnpIErudnnYXfZh7TopzCAI5uMtMeuVGs63CsH5aW7X3eb
-         koehOKM4CqKu/7rRtLf4ezvx1k9ZZ6ovrvkKZI1mi1TA9/X7Vi6hFSn7Ttbcnlvtdrvq
-         lIC7ugaXETfdBVwpsloxNv7ijcTtBBODJ34LxSmk2bGuUiO6KQa82Q5/ulYCx15DeqNv
-         HyodnIMuUS5nHuaVni4opLEi8xaHtL5oc7ZJFMs5w20s0VtXyd+r2eGzucpOSXneXhEH
-         /K9g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766123029; x=1766727829;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=GyhsaHMpowAoVL5AwJvNjQeVURBtbaVBE0KV9gHYSKY=;
-        b=gS4JbIarqmfNX8Bu6D9ggaNpH9I6X/F5UimXtp7mCqldFrzz7+NQVpAz4brE/LoFeT
-         y48UK0SEbDYLAAT71C+be4rroOWjw+XIUE8w2kB6nvPvBQKawGfuScqTMCinz7o+Ris8
-         fExd6yLhELkP0xatF2Llf44FB/OXoN7RJqq6YrGw9MnSeR+zL7WuAUU4yUgtM9nM+s6/
-         uFsxRWv0JSGDJzBGDE/KGU+4u97JOlz1igxkvNoTpbUJJkNGf3HbwEXJPDVk7zmi27MV
-         DHjHsRW4y6c8xh81FV+peG+GgFUoe0tLGhBLgkiINdeKof/fiwmJ/kceYX5wd3TZy6lm
-         Kjkw==
-X-Gm-Message-State: AOJu0YzCZriQd+RYnRuJJVRnqIFvyqgvvQTuYkvvelizj/4Rhw5xehbs
-	zMvfNAh6fP1rhRwI8dlBFphEZm/K63qIzCbcyLoUUnn9C7UnpRyh0UmuCk8kApj6
-X-Gm-Gg: AY/fxX5CMSi1fVlFPLjAe2kRuFZL0mSqS2iz8qYqKgJpUnR2heXytG2PW9B3M3GGUNU
-	WQkvu1EXlG56qO4erSFGVOwK2QksehFhk/E5a1lJpvHUaUKn64nTHUqhQYzrqXQnYWl0ghUdNRB
-	u8pkf1XsG9q2ZnvgMHWASLNSuxI5lV40T03ZaAvEl2OfZjZLMsgPTw/zjB57+Qz8dQ1nK5SuwBS
-	uPdS/YRZB0FvMEM7X2ibHGj86PALeMmb9fBsytLMc+TnBw23vOdJzW/HfmL4Y3r6wUCFPlAETGx
-	Q/KdpwcxeUjT9E3hl1feGcngg17Fvd9WWdusUOtuWQ9PIFxPJcMUDWKDotQBBwxjxc7zd+pke/m
-	+kIAutKNSsNRnxi4b+ypSt/6eWUwy6n0zZgURrXm6lFWj3oiyfY8HJtTUunG6SzLU4yB+q0WChG
-	XI/C1KvtnZ4AualA3Nz28mpEADHDO4mJfseWbpy4W+3dU=
-X-Google-Smtp-Source: AGHT+IHXEchSi8iM+Y5+MS3Ww91XngpXuQu21mxZ8hWmVfsLgeWot8cDnyt6+QWma8zqSPX6kmHH4g==
-X-Received: by 2002:a17:902:f68f:b0:29f:1fad:8e56 with SMTP id d9443c01a7336-2a2f22049acmr15569505ad.6.1766123029021;
-        Thu, 18 Dec 2025 21:43:49 -0800 (PST)
-Received: from cmpatel-home.hsd1.or.comcast.net ([2601:1c0:5780:9200:5160:2cad:cf88:afa5])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a2f3da7dabsm9878955ad.25.2025.12.18.21.43.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 18 Dec 2025 21:43:48 -0800 (PST)
-From: Chintan Patel <chintanlike@gmail.com>
-To: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-omap@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="NHiYD59q"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=AsuGWw9XgRunBdmEMiHEjrcd5ephnWyqqYPD6ITwXZQHfQ8HOGCiOsAR+Ps0uNHffObxjfnD9dMQQgxIR8k3pLf5EDRrMVmAKFrp6KMuQra4i40FWB3RiqyYhrfjD23wEY7OZco4r4mnJNBK0DE94C+UCYdfz39mg8bQne3IjofbnI7gdy5Cukna637Bt5EVm/XggaKCq1pufNW5Wwnrb/w84avlNsE875m8+ShESu7pviD0FKVVaIBnZ3q+y7fi2hbtipjQN8y7U/GNqV4E0VFVXkVzmdEHsx3q6M4GoZIyRVUHa+W87XcTm3dieqw+4VdrXS1uO+qaN6o6OolCaA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=g5vpq9kAsPE8M4dr8GKMjVgztODwSuR62pZ8lOOp6LE=;
+ b=uIGTetOh7j/zX/HN4NVxP9D2yOwZxLfPHPBvY3R8o7iWIwtfFZB+CINb0GMVpDPaayohjPBELvZakJK1rxInmMaZfvfB5TtPptln6d7ETCfTy5GUVI+D7aeqoYaZcpf5/4OfANGMkt/nAfdAF5RaHmagZcvfNhmF+5bUrNmdWR0+0+B544bCGcnGIM/4oFZCYK/G5FOr8NV8JciL0yjqszwh4o4UyCuA8+dJsBuWgBUBP9PFH9YmBDkZFJOuejCwwU9F4Dvk2Viu9lHEt3XHx5W9qC2s93MxUyBsCir9YS9TmbPblz4eAkuNFJRtM9QjFIfYgXCUN9A4UEqm9eY9zg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=g5vpq9kAsPE8M4dr8GKMjVgztODwSuR62pZ8lOOp6LE=;
+ b=NHiYD59q0qf+5BqgQEf2h8eT73aP1FrVZeeDeRGl687O2po2VeGixmAmQspTDmsb15yqAfPKW9/NZS5poYmLwv5GYW6d7AhrMF5L+VWJUHPdYGx+i4AwMsW3jS9tXw4OhPzzSbqL0cwFJZVPT01vGSQrC/6u26eigqy7W3lQaFL0icSb4n9LsSeiWdWYzLFhFpm3ajxUcIPEuqVsv7SpoXA6qxDL7vJjEKu+6YW6Eo2to8rdorDPqeoD/MNNUE5vP7lGofqmU1/S2rbdz1QMGvtCMrgGQLrHXMuVWhejM5Rbg5Tmb1Wgooz1jZNiSpBYAG39ZHMw1PUk9X8kujQnSw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from SN7PR12MB8059.namprd12.prod.outlook.com (2603:10b6:806:32b::7)
+ by CH2PR12MB4248.namprd12.prod.outlook.com (2603:10b6:610:7a::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9434.6; Fri, 19 Dec
+ 2025 20:38:09 +0000
+Received: from SN7PR12MB8059.namprd12.prod.outlook.com
+ ([fe80::4ee2:654e:1fe8:4b91]) by SN7PR12MB8059.namprd12.prod.outlook.com
+ ([fe80::4ee2:654e:1fe8:4b91%2]) with mapi id 15.20.9434.009; Fri, 19 Dec 2025
+ 20:38:09 +0000
+From: Joel Fernandes <joelagnelf@nvidia.com>
+To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	Huang Rui <ray.huang@amd.com>,
+	Matthew Auld <matthew.auld@intel.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Lucas De Marchi <lucas.demarchi@intel.com>,
+	=?UTF-8?q?Thomas=20Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+	Helge Deller <deller@gmx.de>
+Cc: Danilo Krummrich <dakr@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	Gary Guo <gary@garyguo.net>,
+	=?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?= <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Trevor Gross <tmgross@umich.edu>,
+	John Hubbard <jhubbard@nvidia.com>,
+	Alistair Popple <apopple@nvidia.com>,
+	Timur Tabi <ttabi@nvidia.com>,
+	Edwin Peer <epeer@nvidia.com>,
+	Alexandre Courbot <acourbot@nvidia.com>,
+	Andrea Righi <arighi@nvidia.com>,
+	Philipp Stanner <phasta@kernel.org>,
+	Elle Rhumsaa <elle@weathered-steel.dev>,
+	Daniel Almeida <daniel.almeida@collabora.com>,
+	joel@joelfernandes.org,
+	nouveau@lists.freedesktop.org,
 	dri-devel@lists.freedesktop.org,
-	tzimmermann@suse.de,
-	andy@kernel.org,
-	deller@gmx.de,
-	gregkh@linuxfoundation.org,
-	Chintan Patel <chintanlike@gmail.com>
-Subject: [PATCH v2 4/4] fbdev: sh_mobile_lcdc: Make FB_DEVICE dependency optional
-Date: Thu, 18 Dec 2025 21:43:19 -0800
-Message-ID: <20251219054320.447281-5-chintanlike@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251219054320.447281-1-chintanlike@gmail.com>
-References: <20251219054320.447281-1-chintanlike@gmail.com>
+	rust-for-linux@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	amd-gfx@lists.freedesktop.org,
+	intel-gfx@lists.freedesktop.org,
+	intel-xe@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Joel Fernandes <joelagnelf@nvidia.com>
+Subject: [PATCH RFC v5 0/6] nova-core: Memory management initial patches
+Date: Fri, 19 Dec 2025 15:37:59 -0500
+Message-Id: <20251219203805.1246586-1-joelagnelf@nvidia.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: IA4P220CA0006.NAMP220.PROD.OUTLOOK.COM
+ (2603:10b6:208:558::7) To SN7PR12MB8059.namprd12.prod.outlook.com
+ (2603:10b6:806:32b::7)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN7PR12MB8059:EE_|CH2PR12MB4248:EE_
+X-MS-Office365-Filtering-Correlation-Id: 20ba80d7-1b87-4ecd-8ee7-08de3f3e8580
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|366016|376014|1800799024|921020;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?Iu8cYFQs918VyX08wfS+mLJO7zdXRKeOogFR5C0hMzQZfDm8Vj0zf7/grZjX?=
+ =?us-ascii?Q?VdT4t3hb7VWDZki58G1Eq0lV6keJBDBYmFvqOYSvj1w8ryCoZMXZEd25szK1?=
+ =?us-ascii?Q?YevSpaCXV7h8mPl/P46FnqppAHQxZDUlsECYh08LvyPCJ4FHDw1g4ITti5kD?=
+ =?us-ascii?Q?PDy0WLfFb8qhsSSUI/belbgfgxwIO5DGGfeC81rYj0qBUflH9KBkNdAqzeav?=
+ =?us-ascii?Q?sQxMqpLcuAEz/l5Ww7R57CHqC+ty95uo7Ry4/uPRJuAOlcQyiemARi88Fa4b?=
+ =?us-ascii?Q?zTMakFXiqtQp3DZrR9HVc7sXj+D5cn1gkJHpjVw7jzZ/JOlnnt3ueehv2/In?=
+ =?us-ascii?Q?zUUTW49yeH0zWm2610/II1rCqSjNwSamHl2b26CAIBdK2dwXnU2CbFER5BDK?=
+ =?us-ascii?Q?S08e0YWt5uID9lrskTkr+k/oKQBxnzc+/PXXxbKbpzZsAXVaLRqHcyDsL3OC?=
+ =?us-ascii?Q?KcNu92lED/Pm73cQjxTbUjpudm/JXLMfSOLVwPQGRY6zlEkMx8vVDtvevwfg?=
+ =?us-ascii?Q?K9CPsGLzg1/+kZId2wkcE677VwA18w89uGm9leYDvG9wmxZ9DMz7d9vdOh75?=
+ =?us-ascii?Q?zir/4YCEwuFY/DNwvo6bT7FZR9g6t86cxZGmQCQZMTUx9sbR1t0mVbyS4vUa?=
+ =?us-ascii?Q?O9vVsSl38IO4h8P29GB7Pc+hoAOumgqlAxtmfndt2cQt/k86z52KXKNKfHFR?=
+ =?us-ascii?Q?L+BCNREuD3qhFDkLBte+la/he07wJfMzqUYnrktOjdQOiOROknUUAW4Sxoo/?=
+ =?us-ascii?Q?frS0R2EB9ZxTAmDHEraxZ/EFKSOACaxGQ/1A9iSab6vTP5adjSN/bVutCl0s?=
+ =?us-ascii?Q?K9Gbvm+Cr9A3gZx9hsQcX8IcX3fIlX/5ZYuGJiq0+juSWST3sHZFzBmFX4aU?=
+ =?us-ascii?Q?TTijvKIk76yowubHdCXgEAmHTzYo/CMKvpMNl9k8YRLEGSVNEzZF88Q7/P7i?=
+ =?us-ascii?Q?PyuWRGq83r3gQkiVu7oAFhDiOWuSS/rMgybeNiTnlHFFr0GK6DPhTRyJMaZO?=
+ =?us-ascii?Q?wXU3JTug56Vm4Btks0I86cnzaxN2d8hEL60grIPvsp6hUwU5j0NmHKhiUZDp?=
+ =?us-ascii?Q?RZjSnbNGReG7Lh6a6JIoGhqjN+iSKY3+n2hWwdr0k1cJdoreY3+H2aPmmz8R?=
+ =?us-ascii?Q?0Bac5YU8PPcGHsl30/Mi9wC6Pk9xDT23+zz8N47UPxfu1EycS2jlxlbrt0yw?=
+ =?us-ascii?Q?0vyAi/+4PIZoWhlVLuobJijBrZpPzAaD4YYLh7xmWOHC2Drx4Rmlqxwu6xb3?=
+ =?us-ascii?Q?8aH2hX8BFfTV63j/MgnRcAEuv+S57jn2XCf99IpP7zpupi+Boo2KzF7TeoA3?=
+ =?us-ascii?Q?GZ2he4T3y8hIN7843KtwM4CKgSXa7Ytn/t38FkW+wruhMOfr+2JBM9+63zdm?=
+ =?us-ascii?Q?RipjAs56xgxHpKms2RA+UZg8mdLpqm04qKmaec2gveHg3HkiPBAsgyiCwLM4?=
+ =?us-ascii?Q?/ShKKfL3/LEbMcKiFzuaamvTkiYTWHa6XCto3G8Nl0Vg8qkuys9SrztYCNHo?=
+ =?us-ascii?Q?+vV+bGg+AbRZ0FONHLiHpk42QzqW6uve8qPJ?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN7PR12MB8059.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(366016)(376014)(1800799024)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?TvTW6UlduMUJndQTMtpAxhGASHJRzxCJmREGfi0KIMetrjlvjNfyGCWdH5UV?=
+ =?us-ascii?Q?dpGVz8HSnnsAyI502/iitmuSPhYD8435QzTyClUTcPebfPu0WsdEbrKAofGq?=
+ =?us-ascii?Q?pDpu1CAl8lHJhtLvb6whlpoP60K/dSJBTv8vzQO1FzBR0QB+tFE4wO2FzDhT?=
+ =?us-ascii?Q?gzjUaCYtkDbAAeFTf7oONTtuM3Rvbd4kZdpLpTw5lfI5YmNnn+3a1duwLu1o?=
+ =?us-ascii?Q?iGrKmUFUq1f3bBTfqUPW8CquUzeVm2AK0Qta25ZL4SPthDMHNYKn+zm+hAKX?=
+ =?us-ascii?Q?cWcNBBuMED2cHeS7ZBV+SoDF4GB9iK0WBpZmxlfslmZYic3EFIEaXhA2wPPi?=
+ =?us-ascii?Q?gvx5geEr74tva1ASLhA6HdG3LSAuxwn5ny/Z8/qofyiyaB3cHW4UuJ7kcRZD?=
+ =?us-ascii?Q?eUsL+gpG6taYNTyqhMfdXVwGsjWM0QLoPmH/amwxaVPFKldO7z0+EW3Z+vos?=
+ =?us-ascii?Q?slka28HONSw41vkHaRZvyOnxXnS1dW2aw8Weix75ohaClmrBlG8sEaM+OSf0?=
+ =?us-ascii?Q?HX3fTb7YmsXb2a5QzG88bHvSfdJ63IXyXzlNDBJcD7BkzexC83pW4tMcXWAk?=
+ =?us-ascii?Q?Jg9KxMNFOYcYxXSTT1CtWtN4iI5xZoCNVSd3hRltYC1Y7eCb9+M/Bxx5qUF4?=
+ =?us-ascii?Q?LTKE50SvKHTpB0hmhrbfaPlKIhSA+/HPfFwDWF2x3n4aYvSmFUCyVw6+VHnA?=
+ =?us-ascii?Q?MJIl+9uI60FUUboOGfg2IMMXPMu1975jBwzVivASJEckmSqqgCYFpFab9Erf?=
+ =?us-ascii?Q?Gl6ILni66IrRHlJGEQbLebU8GCkkVNItfTG8kV/FNrbdwqwZyLLrxmKZMbvk?=
+ =?us-ascii?Q?hbd+XD0j+J/YkTzc+3g0VCVivur5Ep3m8LBbQB5gCYQcUEUXZOLiV1ZO7BtL?=
+ =?us-ascii?Q?qBYMBeMUIRPTD1THbVoABPTCVJHLoZ1g8pY23baho4BJT3pQksJf1NXG67+Q?=
+ =?us-ascii?Q?Jhn5TWoIiLIEa6de0brkMYbuLsIjX67k2sri9nx68aktvo1qlnF37qB81KOD?=
+ =?us-ascii?Q?pseaWP78w7oon0CjlWGrWPz6padSSgfiLeg+K8veptHj4cOmj5FFnFFSiULr?=
+ =?us-ascii?Q?3He/4GgOa+dtdjrzN+XR2cGoG63spvTDC816ix9eHHKh5BJC+KngRjxim8Sa?=
+ =?us-ascii?Q?+kteduQ+qNneIMEyPDRfAexnfrEqccwisGUt9nDT5E61fzs73gbRaRvk7Iaf?=
+ =?us-ascii?Q?Beg1kLnR6WIVCOmlB9y5RMzUnvup+QQpxBi0Ug9MCeC/SZBHTtGyutCwqZJ5?=
+ =?us-ascii?Q?MfHvSnCMBXcmNbFaQ2T6+E5NhXFTAt7tnQDqGOhgHSWDgX1e42N1759MqCbN?=
+ =?us-ascii?Q?KJZEVNwZJfC90fcgCDFOxG9QmzMmeIi+Ciy1K7+Y3hxXDPd/0c1vc1wLw/2R?=
+ =?us-ascii?Q?nIOYnIqSzRbuC/3Mv1chVrOaAApGCPUTxG0nJoF2fkHcW1TsYNnQ2Zrcu+8O?=
+ =?us-ascii?Q?i7xgWsSAs32zQvVuVmpe4tKSS1WyVwhGfPShcNAhGKVoNYOGF1fpFaK3sGyi?=
+ =?us-ascii?Q?S/NfFen5lhThGtPeRjQJTdFlqwZXuxPEcO89mdMTCNLMHyv7mJNpCtRoIAwE?=
+ =?us-ascii?Q?91HwBZbHeKoD26gqHa1IXeS/U/TibVcB2v7qlG6ADZpaRA4C8kBoyXWkM5uG?=
+ =?us-ascii?Q?ZSh1KfkDZUBzH9GLmqAODK2CoV6oH3me2HiD7mvdsonureVG69EZeTVdiO16?=
+ =?us-ascii?Q?k5Jl5E8E9qSHyAPN1xzMaYzA/fVjc+6uNmtdD929skjAuJ8CS2kypD5K1tqd?=
+ =?us-ascii?Q?O4lOvIGG5g=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 20ba80d7-1b87-4ecd-8ee7-08de3f3e8580
+X-MS-Exchange-CrossTenant-AuthSource: SN7PR12MB8059.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Dec 2025 20:38:09.5085
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: wMzFItwkBH5Piz2An0rQR1m/qV0U21KA12s1FddNnY177OOGwARcmuMPavXg2vMfzsPJaJMZyryqB8KTDhhMUw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR12MB4248
 
-The sh_mobile_lcdc driver exposes overlay configuration via sysfs, but the
-core driver does not require CONFIG_FB_DEVICE.
+This series is based on the latest drm-rust-next tree and provides initial memory management infrastructure for the nova-core
+GPU driver. It combines and builds upon several previous series and provides a foundation for nova GPU memory management.
 
-Make sysfs support optional by defining overlay_sysfs_groups as NULL when
-FB_DEVICE is disabled. The driver always sets .dev_groups, and the kernel
-naturally skips NULL attribute groups while the code remains buildable
-and type-checked.
+The RFC series includes:
+- A Rust module (CList) to interface with C circular linked lists, required
+  for iterating over buddy allocator block lists.
+- Movement of the DRM buddy allocator up to drivers/gpu/ level, renamed to GPU
+  buddy, making it available for GPU drivers with non-DRM use cases (e.g., vGPU).
+- Rust bindings for the GPU buddy allocator.
+- PRAMIN aperture support for direct VRAM access before page tables are initialized.
+- Documentation for the PRAMIN mechanism.
+- VRAM read/write self-tests for PRAMIN (disabled by default via Kconfig).
 
-v2:
-- Replace CONFIG_FB_DEVICE ifdefs with NULL overlay_sysfs_groups
-- Always populate .dev_groups
+The series combines various previous series since all the patches are related.
+Moving forward I will only send one coherent series with the mm patches.
 
-Suggested-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Chintan Patel <chintanlike@gmail.com>
----
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Next steps:
+Page table types and page table mapping support will be added on top of this
+foundation extracted from the original PRAMIN series. I need to make several
+changes there such as to support multiple page table formats, as well as
+updating it to use the new PRAMIN and buddy APIs.
 
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index dd950e4ab5ce..704c17ad241e 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -1350,7 +1350,16 @@ static struct attribute *overlay_sysfs_attrs[] = {
- 	&dev_attr_overlay_rop3.attr,
- 	NULL,
- };
-+
-+#ifdef CONFIG_FB_DEVICE
- ATTRIBUTE_GROUPS(overlay_sysfs);
-+#else
-+/*
-+ * When CONFIG_FB_DEVICE is disabled, define overlay_sysfs_groups as NULL.
-+ * The compiler will optimize out the sysfs code paths when dev_groups is NULL.
-+ */
-+static const struct attribute_group *overlay_sysfs_groups[] = { NULL };
-+#endif
- 
- static const struct fb_fix_screeninfo sh_mobile_lcdc_overlay_fix  = {
- 	.id =		"SH Mobile LCDC",
+Changes from v4 to v5:
+- Added PRAMIN aperture support for bootstrapping memory management.
+- Added documentation for the PRAMIN aperture mechanism.
+- Added PRAMIN self-tests for VRAM read/write verification (disabled by default).
+- Improved buddy allocator bindings a bit (fewer lines of code).
+
+The patches on based on drm-rust-next commit:
+97cf6bc0abd3 ("rust: drm: use `pin_init::zeroed()` for file operations initialization")
+
+Previous series that are combined:
+- v4 (clist + buddy): https://lore.kernel.org/all/20251204215129.2357292-1-joelagnelf@nvidia.com/
+- v3 (clist only): https://lore.kernel.org/all/20251129213056.4021375-1-joelagnelf@nvidia.com/
+- v2 (clist only): https://lore.kernel.org/all/20251111171315.2196103-4-joelagnelf@nvidia.com/
+- clist RFC (original with buddy): https://lore.kernel.org/all/20251030190613.1224287-1-joelagnelf@nvidia.com/
+- DRM buddy move: https://lore.kernel.org/all/20251124234432.1988476-1-joelagnelf@nvidia.com/
+- PRAMIN series: https://lore.kernel.org/all/20251020185539.49986-1-joelagnelf@nvidia.com/
+
+Joel Fernandes (6):
+  rust: clist: Add support to interface with C linked lists
+  gpu: Move DRM buddy allocator one level up
+  rust: gpu: Add GPU buddy allocator bindings
+  nova-core: mm: Add support to use PRAMIN windows to write to VRAM
+  docs: gpu: nova-core: Document the PRAMIN aperture mechanism
+  nova-core: Add PRAMIN aperture self-tests
+
+ Documentation/gpu/drm-mm.rst                  |   10 +-
+ Documentation/gpu/nova/core/pramin.rst        |  125 ++
+ Documentation/gpu/nova/index.rst              |    1 +
+ MAINTAINERS                                   |    7 +
+ drivers/gpu/Kconfig                           |   13 +
+ drivers/gpu/Makefile                          |    2 +
+ drivers/gpu/buddy.c                           | 1310 +++++++++++++++++
+ drivers/gpu/drm/Kconfig                       |    1 +
+ drivers/gpu/drm/Kconfig.debug                 |    4 +-
+ drivers/gpu/drm/amd/amdgpu/Kconfig            |    1 +
+ drivers/gpu/drm/amd/amdgpu/amdgpu_ras.c       |    2 +-
+ .../gpu/drm/amd/amdgpu/amdgpu_res_cursor.h    |   12 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.c  |   80 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.h  |   20 +-
+ drivers/gpu/drm/drm_buddy.c                   | 1287 +---------------
+ drivers/gpu/drm/i915/Kconfig                  |    1 +
+ drivers/gpu/drm/i915/i915_scatterlist.c       |   10 +-
+ drivers/gpu/drm/i915/i915_ttm_buddy_manager.c |   55 +-
+ drivers/gpu/drm/i915/i915_ttm_buddy_manager.h |    6 +-
+ .../drm/i915/selftests/intel_memory_region.c  |   20 +-
+ drivers/gpu/drm/tests/Makefile                |    1 -
+ .../gpu/drm/ttm/tests/ttm_bo_validate_test.c  |    5 +-
+ drivers/gpu/drm/ttm/tests/ttm_mock_manager.c  |   18 +-
+ drivers/gpu/drm/ttm/tests/ttm_mock_manager.h  |    4 +-
+ drivers/gpu/drm/xe/Kconfig                    |    1 +
+ drivers/gpu/drm/xe/xe_res_cursor.h            |   34 +-
+ drivers/gpu/drm/xe/xe_svm.c                   |   12 +-
+ drivers/gpu/drm/xe/xe_ttm_vram_mgr.c          |   73 +-
+ drivers/gpu/drm/xe/xe_ttm_vram_mgr_types.h    |    4 +-
+ drivers/gpu/nova-core/Kconfig                 |   11 +
+ drivers/gpu/nova-core/gsp/boot.rs             |    4 +
+ drivers/gpu/nova-core/mm/mod.rs               |    5 +
+ drivers/gpu/nova-core/mm/pramin.rs            |  298 ++++
+ drivers/gpu/nova-core/nova_core.rs            |    1 +
+ drivers/gpu/nova-core/regs.rs                 |    5 +
+ drivers/gpu/tests/Makefile                    |    3 +
+ .../gpu_buddy_test.c}                         |  390 ++---
+ drivers/gpu/tests/gpu_random.c                |   48 +
+ drivers/gpu/tests/gpu_random.h                |   28 +
+ drivers/video/Kconfig                         |    2 +
+ include/drm/drm_buddy.h                       |  163 +-
+ include/linux/gpu_buddy.h                     |  177 +++
+ rust/bindings/bindings_helper.h               |   11 +
+ rust/helpers/gpu.c                            |   23 +
+ rust/helpers/helpers.c                        |    2 +
+ rust/helpers/list.c                           |   12 +
+ rust/kernel/clist.rs                          |  357 +++++
+ rust/kernel/gpu/buddy.rs                      |  518 +++++++
+ rust/kernel/gpu/mod.rs                        |    5 +
+ rust/kernel/lib.rs                            |    3 +
+ 50 files changed, 3385 insertions(+), 1800 deletions(-)
+ create mode 100644 Documentation/gpu/nova/core/pramin.rst
+ create mode 100644 drivers/gpu/Kconfig
+ create mode 100644 drivers/gpu/buddy.c
+ create mode 100644 drivers/gpu/nova-core/mm/mod.rs
+ create mode 100644 drivers/gpu/nova-core/mm/pramin.rs
+ create mode 100644 drivers/gpu/tests/Makefile
+ rename drivers/gpu/{drm/tests/drm_buddy_test.c => tests/gpu_buddy_test.c} (68%)
+ create mode 100644 drivers/gpu/tests/gpu_random.c
+ create mode 100644 drivers/gpu/tests/gpu_random.h
+ create mode 100644 include/linux/gpu_buddy.h
+ create mode 100644 rust/helpers/gpu.c
+ create mode 100644 rust/helpers/list.c
+ create mode 100644 rust/kernel/clist.rs
+ create mode 100644 rust/kernel/gpu/buddy.rs
+ create mode 100644 rust/kernel/gpu/mod.rs
 -- 
-2.43.0
+2.34.1
 

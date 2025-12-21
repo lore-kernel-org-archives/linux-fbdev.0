@@ -1,114 +1,115 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B9D123185E;
-	Sat, 20 Dec 2025 14:35:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1AC2280A5C
+	for <linux-fbdev@vger.kernel.org>; Sun, 21 Dec 2025 15:31:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766241311; cv=none; b=uiIhCsbZtT/JJrvQ/SwLjzipcPI8pRur1bdgYU4djIFpsJ9hJqkS1aYHID8Cvgmvu2uZoHWvG2fZeOznqEOTaxjATGrKH8LCNkM+v4f+OnTgu6x3XGsgAYxe5R+Me9Iikw7CP+qEFYeMh1ZwLdAleBqHaS8brAHKrgGFWf4tM3E=
+	t=1766331089; cv=none; b=WSFQFC+N/6J/6IY/SLCbS1rLjaQJvY1jnm98cvfpgLndzy6t6jGQz47RRIFiT8q+XmYYnOf9J+8531/c2Pl28VeoiH9j+Cv33iJCZwQ/Y3tQQ8FQzqNVTar/zyrHOyoPuSaf5PuXInQVImZJO1W5YR+BGloY0XAU9aYJvXfljS0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766241311; c=relaxed/simple;
-	bh=2+ESbQOp1tL3mXSKzq6nAnjpDq5WfXCoBt6oeAzOvHQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b5+Zs0FlRA+/DiAQbjK716C6wYRH7mJ0emIixyZKS8WuaTTDEsB4CqcDhqbPrHN56S4dFpx3FtfnhAtS2R5cVMgpT+agY6Ih57+Xab2njZgmi25Xrx6/8bjBlrnM6pynZ64+wq9TtccQ6KmI5tfEu1QzurKhdpbsWjKa3CX2Y4k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=HottKzuB; arc=none smtp.client-ip=192.198.163.7
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1766331089; c=relaxed/simple;
+	bh=GkXEKImhZDeltY1IKY52xL/hPVVMAkBaQ+g+36vcwzY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DE254uhYSYDk/rxMg+fO0fCGiBQ0K2SP/hthOiqnJREgg9h+6KK3iJJLlcAzMPVdz1qTX0HkYrbrrxQnhTBiSeX8RPhj+2pvrVwjHPowS+glvGvyzPHM1kbLxocZM50YKTc6B9bn1SxclT8rPtQWbbh83DkGp0wilKc2eK4riPk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Tt1aN6ia; arc=none smtp.client-ip=209.85.218.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="HottKzuB"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1766241309; x=1797777309;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=2+ESbQOp1tL3mXSKzq6nAnjpDq5WfXCoBt6oeAzOvHQ=;
-  b=HottKzuBvPB2HUM8f0KG0AA6L6vQRuYy6M2ozQUV+97ML0FfjAYFk0bh
-   Vs8ucyInruoMAR+YHWjQB/+38K7ulNdDGj3onzTFkCMA+w7EWUG8m7c6r
-   qOMXa30K7e4pfkmeyK64V2HXTI+zOCow3OvGmwZHcKYtg3UCBDYSMmYxf
-   F3aZ7i6UT9nftO44PFIBW+uLcBV17SEfimal2XQqHln4+U/HLaEwc4kFo
-   DMGBTmTmtMashq0cmDz+cwzLkvRBRNF746oCLLgdRYtJVNN0QjPWfZGYF
-   Qk9TiSPurIH/3paaOdma5WmilljeFMkcFgxwfdyaiMWCZnfWio+2+Vh0g
-   A==;
-X-CSE-ConnectionGUID: 9ULviWs9QqSYlnB2J2JDAg==
-X-CSE-MsgGUID: vwJmfP+xRWKTgGqI+IBo6Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11648"; a="93649995"
-X-IronPort-AV: E=Sophos;i="6.21,164,1763452800"; 
-   d="scan'208";a="93649995"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Dec 2025 06:35:09 -0800
-X-CSE-ConnectionGUID: y9x4ULWtQqamFlHOImGcYw==
-X-CSE-MsgGUID: b//WKfloS+mq6haUem+7Xg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,164,1763452800"; 
-   d="scan'208";a="199023542"
-Received: from lkp-server01.sh.intel.com (HELO 0d09efa1b85f) ([10.239.97.150])
-  by fmviesa006.fm.intel.com with ESMTP; 20 Dec 2025 06:35:07 -0800
-Received: from kbuild by 0d09efa1b85f with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vWy2z-000000004eF-0EeA;
-	Sat, 20 Dec 2025 14:35:05 +0000
-Date: Sat, 20 Dec 2025 22:34:49 +0800
-From: kernel test robot <lkp@intel.com>
-To: Arjun Changla <arjunchangla7@gmail.com>, andy@kernel.org,
-	gregkh@linuxfoundation.org
-Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Arjun Changla <arjunchangla7@gmail.com>
-Subject: Re: [PATCH] staging: fbtft: fix spacing before close parenthesis
-Message-ID: <202512202133.HE4EhjjS-lkp@intel.com>
-References: <20251218061406.8043-1-arjunchangla7@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Tt1aN6ia"
+Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-b7cee045187so583138266b.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 21 Dec 2025 07:31:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1766331085; x=1766935885; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=31JTYOJ68zQU7Ygr6vWGrJQgZrlwNQc62R8gkC5DC6I=;
+        b=Tt1aN6iap9AOSbem+64b20ZSoVcnPhBWCxEE5MKB2jvXFz2wTEC4sztNow6jifmVaH
+         HqizFvnbR8q7nBpnJD7UhW1/xvtPMSaEtVo++ob+WAyEOmGj8nT41Cy1JI9UD8Hz9fKs
+         FoGiRmmgcCc9Pf0LGRFjWIOCiCT7Xz6sq53NH7SlsABuaZsQzwxI5xpmK/TUIXbilwpC
+         Z1DMwWxhLh1/I+qnhcyU5TiuKDOgxwxCijt3LyZk1jGbckr/Ltt+tv9746jl18YMKI+1
+         vraPon6+NTOcXeMGry9PpoJSkEY26SSJ2OL7lcyRdCq/vwQXgHOEUnZtOiK2Sd0jYpNP
+         wUew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1766331085; x=1766935885;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=31JTYOJ68zQU7Ygr6vWGrJQgZrlwNQc62R8gkC5DC6I=;
+        b=YeKv39CsLolKOA1/0wHd+w1Wq1wDIO771vjFq0yJF7fnjZCfct+5AqpvfvQTPudSv6
+         MSJrUE9REk2aQzVu7x/tWvDue0qsU3sE8zif9zXE/GB6cxsS5i375qaZX4Oag+eA6k6B
+         y/hrUdU5DZccyLNE+UcNKNtOJOfV6IrlTtV01yzHoDCpuj89GCZ/tzOofPQBv2Pi7JVC
+         q5+7CxuL3Lc05Mih6Y/otVlpIxprEGj9CHTfFWIgP0xO1TmxWIUbqF5Y1c4moNIT4umj
+         IQtfNLhwDwrsm6SQt/bloVTQ3+bhKfMznwI9rmNFgzSLbp6z2Sq8kg8VNFgZOBdPktk4
+         M5dw==
+X-Forwarded-Encrypted: i=1; AJvYcCVuFDOSBfZb2SNOX7OQl93Gh1LzIwFbHNplxCqdkbcHpNBPzpOU3IYxn8sOGaLaKgQm/ZRY2u80monfLQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxZBqTJRyINChMCyZosxjLvYgMYPmd3ZjEiFIBkbHBnlvrXspDb
+	kmu5Gg3xPxpYTak0Hi7mnYYjAWSy/tlaKtcBqwxsicDWhO4oBwTxr5GK
+X-Gm-Gg: AY/fxX5f6WLCubvgu7luwe8CUS0sZMwdNuhI94Jmes60DvGAYeUYnbbi74sPZfBv9V6
+	4CAd9RlpLBXe3X0+Xa2O9UFyRRJj8ZKw6B5QM9y9+si5aeaUBexs24DHU1bgaEMSQD/VQGVKzRZ
+	SMPJDCt+mb8ZquA5zlsR52anNzbCtaeBp0U0HBWvGmVQ7GinPpDXJPYtYFqb9/nxD9lrYIq2M8N
+	z4KaH6UHQnyVKhNyzISFVVZ5mmiW/nKEjAdtfHwNEWTp6vnQ6HJNvhKEoHLLX1egjFGMPbWXj34
+	IgWj9c9Lax2T2LbuufuG20F+7ja+e87JFKOeKsLghi505KS79lvmbj7mhy/4GRZNu4m7C3Kj4Pu
+	ZE/ewy9ZXkcb+DqcnAc9FB9GimNBcNEBi6JCBO/u/jxxYwP9Bdfk5OD7Et9IoW+9jVqvX4LO67I
+	U/O2s1TfWKxQSxyhBBBb+mrhYJ8em8iFko6ct9GhDZwT/UKZgyS4a0acTI1P+nxgIv
+X-Google-Smtp-Source: AGHT+IEWQw6scbu4XBuN0qhvATX1MA/714hTCuzyU3fnZ6I3hM6XzvuN+URTkBVTkVQKVp95ua7aPQ==
+X-Received: by 2002:a17:907:3e12:b0:b7d:27dd:9a54 with SMTP id a640c23a62f3a-b8020634a93mr1332188166b.31.1766331084895;
+        Sun, 21 Dec 2025 07:31:24 -0800 (PST)
+Received: from localhost (2a02-a44a-2a80-0-8c2a-39d0-7ce1-2682.fixed6.kpn.net. [2a02:a44a:2a80:0:8c2a:39d0:7ce1:2682])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8037f51144sm801623066b.69.2025.12.21.07.31.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 21 Dec 2025 07:31:24 -0800 (PST)
+From: Tim Wassink <timwassink.dev@gmail.com>
+To: timwassink.dev@gmail.com
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org (open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER),
+	linux-staging@lists.linux.dev (open list:STAGING SUBSYSTEM),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] staging: sm750fb: Rename CamelCase variable fixId to fix_id
+Date: Sun, 21 Dec 2025 16:30:45 +0100
+Message-ID: <20251221153102.38178-1-timwassink.dev@gmail.com>
+X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251218061406.8043-1-arjunchangla7@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Arjun,
+The variable fixId violates the kernel coding style, which prefers
+snake_case for variable names. Rename it to fix_id to match the
+standard style.
 
-kernel test robot noticed the following build errors:
+This is a coding style change only.
 
-[auto build test ERROR on staging/staging-testing]
+Signed-off-by: Tim Wassink <timwassink.dev@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Arjun-Changla/staging-fbtft-fix-spacing-before-close-parenthesis/20251218-141736
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20251218061406.8043-1-arjunchangla7%40gmail.com
-patch subject: [PATCH] staging: fbtft: fix spacing before close parenthesis
-config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20251220/202512202133.HE4EhjjS-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 15.1.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251220/202512202133.HE4EhjjS-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202512202133.HE4EhjjS-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> drivers/staging/fbtft/fbtft-bus.c:65:53: error: macro 'define_fbtft_write_reg' requires 4 arguments, but only 3 given
-      65 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-         |                                                     ^
-   drivers/staging/fbtft/fbtft-bus.c:14:9: note: macro 'define_fbtft_write_reg' defined here
-      14 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
-         |         ^~~~~~~~~~~~~~~~~~~~~~
-   drivers/staging/fbtft/fbtft-bus.c:65:23: error: expected ';' before 'void'
-      65 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-         |                       ^
-         |                       ;
-
-
-vim +/define_fbtft_write_reg +65 drivers/staging/fbtft/fbtft-bus.c
-
-    64	
-  > 65	define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-    66	define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
-    67	define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
-    68	
-
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index fecd7457e615..d100b9e1d3d5 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -740,7 +740,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 		"kernel HELPERS prepared vesa_modes",
+ 	};
+ 
+-	static const char *fixId[2] = {
++	static const char *fix_id[2] = {
+ 		"sm750_fb1", "sm750_fb2",
+ 	};
+ 
+@@ -862,7 +862,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	fix->ywrapstep = crtc->ywrapstep;
+ 	fix->accel = FB_ACCEL_SMI;
+ 
+-	strscpy(fix->id, fixId[index], sizeof(fix->id));
++	strscpy(fix->id, fix_id[index], sizeof(fix->id));
+ 
+ 	fix->smem_start = crtc->o_screen + sm750_dev->vidmem_start;
+ 	pr_info("fix->smem_start = %lx\n", fix->smem_start);
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.52.0
+

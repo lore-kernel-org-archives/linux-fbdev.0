@@ -1,394 +1,235 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F58A2367CF
-	for <linux-fbdev@vger.kernel.org>; Sun, 21 Dec 2025 16:18:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B88FB1428F4
+	for <linux-fbdev@vger.kernel.org>; Sun, 21 Dec 2025 16:57:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766333918; cv=none; b=Z1QPW0XZdTT8WPclu0IypQURr91ociKX2A/DagpSO+CSDgkUhbQo4FaqBnhUhgTmO5CrL6WDJF26ScCSt/h+AC5A9vS0WHCfyoJArNYDaaif/COnXoAPD/V7tTpaR71HGrptl8uU6Nsvoag9LRexFBfMv+h2t+RMpd20blHfTeA=
+	t=1766336267; cv=none; b=m6RLJBYynEwMO45k46fuebOSPfMBavWP6dPdZmUckkg7TfEhUppfamPY81Am9oIG3WVsO9htyQTo81FsKDBpTA5E7D3ssqjMcBvOp+9rsGV5f1qK460UTvalWqnlHqYON+i+DMgCvEtEGjBDogqYJxjNjm8JgZKPLcRvy3lzKlw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766333918; c=relaxed/simple;
-	bh=b6N6Jj7QBC5KdMoc+yYcrtzg/8owWwq3DmZcwg0Z8v8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XOTqERgDBERjMVG4+RWYYALh4ZBLhJqrLDSyHH8yiv/ubqZ93WFldVDbC0fhU6SutSsxdMtefxCVxTNWWs7rkWPIg8N6taawSpGMef58p8rLZ5XtCOH1PWtEUIgP3HF/n/gBF+Sw5uOcM/YatPmTYXOyhOcyFoU8ZvjRPCVEfxc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=mCnt4Y8g; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=+fysO4lT; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=SK/TpTNu; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JK9Vnvs5; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1766336267; c=relaxed/simple;
+	bh=gtXcanUpV0NFaNGqdgZgrqiwcUkd9mEi2yY0vi3IH9M=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tM2YtXzJAYUsp0lh/Pxzxg40BBiXRSw3tKVapjnGFPSFLEsIeT6QNdg8iIrMAIr0xkOy5dfMV3Rev+AbQFHvDPNcM8PL/q8IXJD08fBKVF1SXAVtJLidXOMFwtLeqTiIlhXs5UpL/M7zE4gJ5dzzSLvCQf37n12yuiidEIXUdfU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=nChQO6YV; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=J9tSBme2; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="mCnt4Y8g";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="+fysO4lT";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="SK/TpTNu";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JK9Vnvs5"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 653C35BCC2;
-	Sun, 21 Dec 2025 16:18:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1766333910; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=3Yj5PCkcX3NpOx0MVubHGjm/vyE75Or7OKm5HcbRRAM=;
-	b=mCnt4Y8g9wsGeC8a71YqMV35vOzr1m0HM69UW17UulhUuwVG0ydF3uuvzeXLa4GIvslZ7S
-	QYQc3/3AA/mLmpp+EtuVSWHSFyj2qHFq13+nY3F0Sz2QLUSg458KpQloTphi22MZ5Meq/4
-	GIRIQkIUdIRy7RQxjyXcgjxIfnpljRA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1766333910;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=3Yj5PCkcX3NpOx0MVubHGjm/vyE75Or7OKm5HcbRRAM=;
-	b=+fysO4lT9QRvCJD4KFhF25SM1m1m/VNA80U1DScLwbWpQQYgUEyHmTeDGtG7rBrqQV+M1F
-	6h3OrRzIQ6Ob+kBA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="SK/TpTNu";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=JK9Vnvs5
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1766333909; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=3Yj5PCkcX3NpOx0MVubHGjm/vyE75Or7OKm5HcbRRAM=;
-	b=SK/TpTNuD9iwQ9XXcNlTwGcmiWFxH31bYOz2qi35e3x4fDRgAsvNA+ZhUzRPxq2nzxPFHF
-	RvhyFdO8JkbXaUmVNgZ58vW8x0HCHKwcOGRGsaidcJfg1bVOfg3aVOEyZwSXTlFJXdYsPb
-	LNIrSYQRjUUWwcmwLqIn/6OIXHPU5xM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1766333909;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=3Yj5PCkcX3NpOx0MVubHGjm/vyE75Or7OKm5HcbRRAM=;
-	b=JK9Vnvs5Ps/AD+vFcl47c3Ac/ds9F0AXi/mGl57Rxm+IAa4aNyMKLohCuHyatBPjX+BmXa
-	jJVUd9ZB1w6TZPCw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E8B7513A54;
-	Sun, 21 Dec 2025 16:18:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id oHBlN9QdSGnANgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Sun, 21 Dec 2025 16:18:28 +0000
-Message-ID: <0204b4f2-98b3-4463-9ae7-fc3657ce2fc1@suse.de>
-Date: Sun, 21 Dec 2025 17:18:28 +0100
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="nChQO6YV";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="J9tSBme2"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5BLDaF9w266668
+	for <linux-fbdev@vger.kernel.org>; Sun, 21 Dec 2025 16:57:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=qcppdkim1; bh=bN7W8KuZTb2DirG3bJS9nOTczWMfVRtYjIE
+	WaxsTlhQ=; b=nChQO6YVdWJ/36aFmgJFoyt2k0fZLABFDaX178In4m2hbQlkGut
+	W0o35lFehl7X208DYvazaGVarSrStAgyhsDP+06pyJjp1dNJ50cBkjSMwmTAscS+
+	On9ILbLrjf3FGOoWDPq1XDTZg/Auj1ePMjtL+k2gGqtTyBBMO+d5vCn3AfdjPmHw
+	FYrVWl/Bf6qMdVd0vMKuMTGbofm0dIIIEM/JiG/TkBjaWac9yIeFy2mbmwIEq/+m
+	UO8JuLcLwbB1WaD+GHz+Rg59nwB46d8Pbhgwl1PdXIYlpb3IWRFrpEUGPWSM9u3b
+	uMJfc6dmDkdYegLwE0nG7xU1Z6nyp8bABRQ==
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4b5mydtm3h-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-fbdev@vger.kernel.org>; Sun, 21 Dec 2025 16:57:44 +0000 (GMT)
+Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-4ed6ceab125so86293991cf.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 21 Dec 2025 08:57:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1766336263; x=1766941063; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=bN7W8KuZTb2DirG3bJS9nOTczWMfVRtYjIEWaxsTlhQ=;
+        b=J9tSBme2z4ZGydG1Xfj3f1Pry5hu4Q8mRha33SfwWKPWCk/z1cgjvrS2qWEpfb8Tn1
+         Jm6sIHnQ6vJHypghj5r4c92igLr8e2ZgFwze1/xn/BNhfKUXE2v6gjmoiGRWIY2H6CS2
+         SLU1wpYepHl1kGvZe9IMjUvn2q8+pjlr2RYtivxQDD3FgAW9ytCbSeboqI8F9C6jDgoe
+         JBSMTKI/969qZ4GFAPH3VwW2x24ZvQEA6cffM0SbjHAYefhAeTQcqX26M8NMn3WyJOaL
+         rOUM5H0W9S2oQtQDB+qsmr+1F6q5H6MOTtUORzwzCWnBq5wJaKa0KAaGPyKz1jCNKLAe
+         jffg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1766336263; x=1766941063;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bN7W8KuZTb2DirG3bJS9nOTczWMfVRtYjIEWaxsTlhQ=;
+        b=HhYIRSFcOZbpqe/LFhEfR1i7lA89Z+NwuQCfpIWw5tYmgcFzSvWUZtsP3qXJRSUB1Y
+         5OLuhVsVFing+BuJ9tdllohgfJiyEumgJ62oie5qYL4XFlCZRDc5WvXdAomQihara9QU
+         zLkZFd/55axkZWEkT+BWeRl9L7hhKuCnieMmnVZgCjrFBZj5oPH5r/VzTOpTSq3TH+eC
+         19Ew3wltNEXSkx4xxl/nvLYRosVvGtd4jsj07cpJRGrNuA5fgfKTrPbrKwm+0fnEL4f4
+         9v0e39rQQ6nFohH7aHrcLKuvttPlMe/Aec+M7+dB7e3QkXDHi4DFYpHasK+0uCqHjTPq
+         UJqQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXGtJgKiuMG9LT2aAfLET6/S+otVYCnTwZ6X0zfybOQE9CM9XjkJ2jqezzCG/7k/2ZQyfcD78+4qOz6vw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyvVRzUnJ/43WmDl72/wh2AujPEMfn8/7WVjctCECYwx1pE+4Wx
+	6lO+ZUK6ggjVXjdoarJphQkQZtG/3f99A8+flXrQazbnu3gcQxgcA2UzKRsVmQ/o8X2+2MnROGw
+	JrUORQFAVKISqvG4oVqISPxqQ8Cv0iYg+BBOiGFKuHyQ5zx/tFfQvl/OhuaYZrcT/zw==
+X-Gm-Gg: AY/fxX4u+9VI1Fb44dnkqVagp//keYvXRiRQdWZb6d7fuaiS7zGUzhP2KdkSyDR3Pec
+	tZkWnaURlIWxtsZxWtfbxqRU8GdLgyUo3yXUGv3jGppWil7WsKYR8uR2Bos05lU02Sn5sVXQsIo
+	5+YfkbOOk+isBPczjQhYAsPt9o/8gMCP4IRAGOKkbnaO8sNM1aJoPn0im3pi04hReP3OnN0481V
+	8hvuzzCbJ+4yZLLfpuUaLFsHkIceh596VVU82sdp1u9Pgg0mr2CnZ0PAGmJiC7gx9AkoVXHSIYM
+	cDn9/av5aDxjJFsK3F1uuu0OauGmdKlKZgk61j6LYUJLYpkG4budAsgVvUkN/fdCAecq9k73/QF
+	bb4ycXIhWgTwvxseRkkLhmdLdNzVQieitkh9tGaSr006vIfM501Ql4ple3zTG/F8e0V7T/OrX5y
+	f1eSz9V4WlWV+SpH/gHe0X6I2g
+X-Received: by 2002:a05:622a:588e:b0:4f0:24e2:8de6 with SMTP id d75a77b69052e-4f4abd9765emr147790541cf.64.1766336263062;
+        Sun, 21 Dec 2025 08:57:43 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IEDrLWQigAphc9gZx4ySp95tJ7pg8YC1s9DqWguNVNoGK8HW9bCnd0hfLpMD8fq2gEg1xMSCw==
+X-Received: by 2002:a05:622a:588e:b0:4f0:24e2:8de6 with SMTP id d75a77b69052e-4f4abd9765emr147790231cf.64.1766336262551;
+        Sun, 21 Dec 2025 08:57:42 -0800 (PST)
+Received: from shalem (2001-1c00-0c32-7800-5bfa-a036-83f0-f9ec.cable.dynamic.v6.ziggo.nl. [2001:1c00:c32:7800:5bfa:a036:83f0:f9ec])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8037f09149sm807070166b.47.2025.12.21.08.57.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 21 Dec 2025 08:57:41 -0800 (PST)
+From: Hans de Goede <johannes.goede@oss.qualcomm.com>
+To: Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>
+Cc: Hans de Goede <johannes.goede@oss.qualcomm.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        stable@vger.kernel.org, Shixiong Ou <oushixiong@kylinos.cn>
+Subject: [PATCH] fbdev: Use device_create_with_groups() to fix sysfs groups registration race
+Date: Sun, 21 Dec 2025 17:57:40 +0100
+Message-ID: <20251221165740.15821-1-johannes.goede@oss.qualcomm.com>
+X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 9/9] efi: libstub: Simplify interfaces for
- primary_display
-To: Ard Biesheuvel <ardb@kernel.org>
-Cc: javierm@redhat.com, arnd@arndb.de, richard.lyu@suse.com,
- helgaas@kernel.org, x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org,
- loongarch@lists.linux.dev, linux-riscv@lists.infradead.org,
- dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-fbdev@vger.kernel.org
-References: <20251126160854.553077-1-tzimmermann@suse.de>
- <20251126160854.553077-10-tzimmermann@suse.de>
- <CAMj1kXFeBS7O5A-CPds3UfFnjegGTpVsuF7VznBc-zZ+gjygtw@mail.gmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <CAMj1kXFeBS7O5A-CPds3UfFnjegGTpVsuF7VznBc-zZ+gjygtw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Spam-Score: -4.51
-X-Rspamd-Queue-Id: 653C35BCC2
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:dkim,suse.de:email];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DKIM_TRACE(0.00)[suse.de:+]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Level: 
+X-Proofpoint-GUID: qjIjDEa7sCh2U6rZtWsbY865iUC44G2f
+X-Proofpoint-ORIG-GUID: qjIjDEa7sCh2U6rZtWsbY865iUC44G2f
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjIxMDE1OSBTYWx0ZWRfX40MS96xec0A+
+ LmGINmZml9n5ENGxLTZmBywtDdptGkYF2R+TrKo/oUYnw0LZZOp9yPaLGLqUp00kqWFlfUltvq5
+ KpbYY+LMpe7YnFd1sKKrWp1I0DTp8UHwarsevtMo3RVygEezYtv3w4tzGYSNQMWVi6OZghp+2if
+ 8Yr8+LN8Zkcne3HNSo95F5nOc9vs5Ytfrt8/z9NhqZFxN6zxMq/5fNGqqAe/D0KMqmj7mTLY4fT
+ dibdC6VdTIC9/3uWw27kBrD4SzWjDOwhEL5BVvfEgzhXTG46gLVHwyTV9+BzYzJ8KUzHR0ZW+Qv
+ JlPY8ZFRdZighT7RUBbZQGpLHNMtyqqW4jEDY/D6l45GlEZbopoGIKUlyu7JWts5tEuXw/oGLiI
+ r9I4uQTBmPZpqZgwm0a7O5XoLF5tibcgyXBXOwPZyeibZ8gVOrNcSWyQrExyQHbhqIMpcmgdW5l
+ 7j5HHz6XuDJR4obyoWw==
+X-Authority-Analysis: v=2.4 cv=N6wk1m9B c=1 sm=1 tr=0 ts=69482708 cx=c_pps
+ a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=xqWC_Br6kY4A:10 a=wP3pNCr1ah4A:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
+ a=mFxE72mproX8ypq736UA:9 a=a_PwQJl-kcHnX1M80qC6:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-21_04,2025-12-19_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 impostorscore=0 phishscore=0 malwarescore=0 bulkscore=0
+ lowpriorityscore=0 adultscore=0 spamscore=0 clxscore=1011 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2512120000 definitions=main-2512210159
 
-Hi
+The fbdev sysfs attributes are registered after sending the uevent for
+the device creation, leaving a race window where e.g. udev rules may
+not be able to access the sysfs attributes because the registration is
+not done yet.
 
-Am 16.12.25 um 14:23 schrieb Ard Biesheuvel:
-> Hi Thomas
->
-> On Wed, 26 Nov 2025 at 17:09, Thomas Zimmermann <tzimmermann@suse.de> wrote:
->> Rename alloc_primary_display() and __alloc_primary_display(), clarify
->> free semantics to make interfaces easier to understand.
->>
->> Rename alloc_primary_display() to lookup_primary_display() as it
->> does not necessarily allocate. Then rename __alloc_primary_display()
->> to the new alloc_primary_display(). The helper belongs to
->> free_primary_display), so it should be named without underscores.
->>
->> The lookup helper does not necessarily allocate, so the output
->> parameter needs_free to indicate when free should be called.
-> I don't understand why we need this. Whether or not the helper
-> allocates is a compile time decision, and in builds where it doesn't,
-> the free helper doesn't do anything.
->
-> I'm all for making things simpler, but I don't think this patch
-> achieves that tbh.
->
-> I've queued up this series now up until this patch - once we converge
-> on the simplification, I'm happy to apply it on top.
+Fix this by switching to device_create_with_groups(). This also results in
+a nice cleanup. After switching to device_create_with_groups() all that
+is left of fb_init_device() is setting the drvdata and that can be passed
+to device_create[_with_groups]() too. After which fb_init_device() can
+be completely removed.
 
-If you don't want this patch, just leave it out then. Coming from 
-another subsystem, I found the current logic and naming confusing THB.
+Dropping fb_init_device() + fb_cleanup_device() in turn allows removing
+fb_info.class_flag as they were the only user of this field.
 
-Best regards
-Thomas
+Fixes: 5fc830d6aca1 ("fbdev: Register sysfs groups through device_add_group")
+Cc: stable@vger.kernel.org
+Cc: Shixiong Ou <oushixiong@kylinos.cn>
+Signed-off-by: Hans de Goede <johannes.goede@oss.qualcomm.com>
+---
+Note the fixes tag is technically wrong. This race has existed forever.
+The commit I picked for the fixes tag is a dependency of this change not
+the commit introducing the race. I don't believe that backporting this
+back any further is useful which is why I went with this commit.
+---
+ drivers/video/fbdev/core/fbsysfs.c | 36 +++---------------------------
+ include/linux/fb.h                 |  1 -
+ 2 files changed, 3 insertions(+), 34 deletions(-)
 
-
->
-> Thanks,
->
->
->
->> Pass
->> an argument through the calls to track this state. Put the free
->> handling into release_primary_display() for simplificy.
->>
->> Also move the comment fro primary_display.c to efi-stub-entry.c,
->> where it now describes lookup_primary_display().
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->> ---
->>   drivers/firmware/efi/libstub/efi-stub-entry.c | 23 +++++++++++++++++--
->>   drivers/firmware/efi/libstub/efi-stub.c       | 22 ++++++++++++------
->>   drivers/firmware/efi/libstub/efistub.h        |  2 +-
->>   .../firmware/efi/libstub/primary_display.c    | 17 +-------------
->>   drivers/firmware/efi/libstub/zboot.c          |  6 +++--
->>   5 files changed, 42 insertions(+), 28 deletions(-)
->>
->> diff --git a/drivers/firmware/efi/libstub/efi-stub-entry.c b/drivers/firmware/efi/libstub/efi-stub-entry.c
->> index aa85e910fe59..3077b51fe0b2 100644
->> --- a/drivers/firmware/efi/libstub/efi-stub-entry.c
->> +++ b/drivers/firmware/efi/libstub/efi-stub-entry.c
->> @@ -14,10 +14,29 @@ static void *kernel_image_addr(void *addr)
->>          return addr + kernel_image_offset;
->>   }
->>
->> -struct sysfb_display_info *alloc_primary_display(void)
->> +/*
->> + * There are two ways of populating the core kernel's sysfb_primary_display
->> + * via the stub:
->> + *
->> + *   - using a configuration table, which relies on the EFI init code to
->> + *     locate the table and copy the contents; or
->> + *
->> + *   - by linking directly to the core kernel's copy of the global symbol.
->> + *
->> + * The latter is preferred because it makes the EFIFB earlycon available very
->> + * early, but it only works if the EFI stub is part of the core kernel image
->> + * itself. The zboot decompressor can only use the configuration table
->> + * approach.
->> + */
->> +
->> +struct sysfb_display_info *lookup_primary_display(bool *needs_free)
->>   {
->> +       *needs_free = true;
->> +
->>          if (IS_ENABLED(CONFIG_ARM))
->> -               return __alloc_primary_display();
->> +               return alloc_primary_display();
->> +
->> +       *needs_free = false;
->>
->>          if (IS_ENABLED(CONFIG_X86) ||
->>              IS_ENABLED(CONFIG_EFI_EARLYCON) ||
->> diff --git a/drivers/firmware/efi/libstub/efi-stub.c b/drivers/firmware/efi/libstub/efi-stub.c
->> index 42d6073bcd06..dc545f62c62b 100644
->> --- a/drivers/firmware/efi/libstub/efi-stub.c
->> +++ b/drivers/firmware/efi/libstub/efi-stub.c
->> @@ -51,14 +51,14 @@ static bool flat_va_mapping = (EFI_RT_VIRTUAL_OFFSET != 0);
->>   void __weak free_primary_display(struct sysfb_display_info *dpy)
->>   { }
->>
->> -static struct sysfb_display_info *setup_primary_display(void)
->> +static struct sysfb_display_info *setup_primary_display(bool *dpy_needs_free)
->>   {
->>          struct sysfb_display_info *dpy;
->>          struct screen_info *screen = NULL;
->>          struct edid_info *edid = NULL;
->>          efi_status_t status;
->>
->> -       dpy = alloc_primary_display();
->> +       dpy = lookup_primary_display(dpy_needs_free);
->>          if (!dpy)
->>                  return NULL;
->>          screen = &dpy->screen;
->> @@ -68,15 +68,22 @@ static struct sysfb_display_info *setup_primary_display(void)
->>
->>          status = efi_setup_graphics(screen, edid);
->>          if (status != EFI_SUCCESS)
->> -               goto err_free_primary_display;
->> +               goto err___free_primary_display;
->>
->>          return dpy;
->>
->> -err_free_primary_display:
->> -       free_primary_display(dpy);
->> +err___free_primary_display:
->> +       if (*dpy_needs_free)
->> +               free_primary_display(dpy);
->>          return NULL;
->>   }
->>
->> +static void release_primary_display(struct sysfb_display_info *dpy, bool dpy_needs_free)
->> +{
->> +       if (dpy && dpy_needs_free)
->> +               free_primary_display(dpy);
->> +}
->> +
->>   static void install_memreserve_table(void)
->>   {
->>          struct linux_efi_memreserve *rsv;
->> @@ -156,13 +163,14 @@ efi_status_t efi_stub_common(efi_handle_t handle,
->>                               char *cmdline_ptr)
->>   {
->>          struct sysfb_display_info *dpy;
->> +       bool dpy_needs_free;
->>          efi_status_t status;
->>
->>          status = check_platform_features();
->>          if (status != EFI_SUCCESS)
->>                  return status;
->>
->> -       dpy = setup_primary_display();
->> +       dpy = setup_primary_display(&dpy_needs_free);
->>
->>          efi_retrieve_eventlog();
->>
->> @@ -182,7 +190,7 @@ efi_status_t efi_stub_common(efi_handle_t handle,
->>
->>          status = efi_boot_kernel(handle, image, image_addr, cmdline_ptr);
->>
->> -       free_primary_display(dpy);
->> +       release_primary_display(dpy, dpy_needs_free);
->>
->>          return status;
->>   }
->> diff --git a/drivers/firmware/efi/libstub/efistub.h b/drivers/firmware/efi/libstub/efistub.h
->> index 979a21818cc1..1503ffb82903 100644
->> --- a/drivers/firmware/efi/libstub/efistub.h
->> +++ b/drivers/firmware/efi/libstub/efistub.h
->> @@ -1176,8 +1176,8 @@ efi_enable_reset_attack_mitigation(void) { }
->>
->>   void efi_retrieve_eventlog(void);
->>
->> +struct sysfb_display_info *lookup_primary_display(bool *needs_free);
->>   struct sysfb_display_info *alloc_primary_display(void);
->> -struct sysfb_display_info *__alloc_primary_display(void);
->>   void free_primary_display(struct sysfb_display_info *dpy);
->>
->>   void efi_cache_sync_image(unsigned long image_base,
->> diff --git a/drivers/firmware/efi/libstub/primary_display.c b/drivers/firmware/efi/libstub/primary_display.c
->> index cdaebab26514..34c54ac1e02a 100644
->> --- a/drivers/firmware/efi/libstub/primary_display.c
->> +++ b/drivers/firmware/efi/libstub/primary_display.c
->> @@ -7,24 +7,9 @@
->>
->>   #include "efistub.h"
->>
->> -/*
->> - * There are two ways of populating the core kernel's sysfb_primary_display
->> - * via the stub:
->> - *
->> - *   - using a configuration table, which relies on the EFI init code to
->> - *     locate the table and copy the contents; or
->> - *
->> - *   - by linking directly to the core kernel's copy of the global symbol.
->> - *
->> - * The latter is preferred because it makes the EFIFB earlycon available very
->> - * early, but it only works if the EFI stub is part of the core kernel image
->> - * itself. The zboot decompressor can only use the configuration table
->> - * approach.
->> - */
->> -
->>   static efi_guid_t primary_display_guid = LINUX_EFI_PRIMARY_DISPLAY_TABLE_GUID;
->>
->> -struct sysfb_display_info *__alloc_primary_display(void)
->> +struct sysfb_display_info *alloc_primary_display(void)
->>   {
->>          struct sysfb_display_info *dpy;
->>          efi_status_t status;
->> diff --git a/drivers/firmware/efi/libstub/zboot.c b/drivers/firmware/efi/libstub/zboot.c
->> index 4b76f74c56da..c1fd1fdbcb08 100644
->> --- a/drivers/firmware/efi/libstub/zboot.c
->> +++ b/drivers/firmware/efi/libstub/zboot.c
->> @@ -26,9 +26,11 @@ void __weak efi_cache_sync_image(unsigned long image_base,
->>          // executable code loaded into memory to be safe for execution.
->>   }
->>
->> -struct sysfb_display_info *alloc_primary_display(void)
->> +struct sysfb_display_info *lookup_primary_display(bool *needs_free)
->>   {
->> -       return __alloc_primary_display();
->> +       *needs_free = true;
->> +
->> +       return alloc_primary_display();
->>   }
->>
->>   asmlinkage efi_status_t __efiapi
->> --
->> 2.51.1
->>
-
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index b8344c40073b..baa2bae0fb5b 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -12,8 +12,6 @@
+ 
+ #include "fb_internal.h"
+ 
+-#define FB_SYSFS_FLAG_ATTR 1
+-
+ static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
+ {
+ 	int err;
+@@ -451,33 +449,7 @@ static struct attribute *fb_device_attrs[] = {
+ 	NULL,
+ };
+ 
+-static const struct attribute_group fb_device_attr_group = {
+-	.attrs          = fb_device_attrs,
+-};
+-
+-static int fb_init_device(struct fb_info *fb_info)
+-{
+-	int ret;
+-
+-	dev_set_drvdata(fb_info->dev, fb_info);
+-
+-	fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
+-
+-	ret = device_add_group(fb_info->dev, &fb_device_attr_group);
+-	if (ret)
+-		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
+-
+-	return 0;
+-}
+-
+-static void fb_cleanup_device(struct fb_info *fb_info)
+-{
+-	if (fb_info->class_flag & FB_SYSFS_FLAG_ATTR) {
+-		device_remove_group(fb_info->dev, &fb_device_attr_group);
+-
+-		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
+-	}
+-}
++ATTRIBUTE_GROUPS(fb_device);
+ 
+ int fb_device_create(struct fb_info *fb_info)
+ {
+@@ -485,14 +457,13 @@ int fb_device_create(struct fb_info *fb_info)
+ 	dev_t devt = MKDEV(FB_MAJOR, node);
+ 	int ret;
+ 
+-	fb_info->dev = device_create(fb_class, fb_info->device, devt, NULL, "fb%d", node);
++	fb_info->dev = device_create_with_groups(fb_class, fb_info->device, devt, fb_info,
++						 fb_device_groups, "fb%d", node);
+ 	if (IS_ERR(fb_info->dev)) {
+ 		/* Not fatal */
+ 		ret = PTR_ERR(fb_info->dev);
+ 		pr_warn("Unable to create device for framebuffer %d; error %d\n", node, ret);
+ 		fb_info->dev = NULL;
+-	} else {
+-		fb_init_device(fb_info);
+ 	}
+ 
+ 	return 0;
+@@ -505,7 +476,6 @@ void fb_device_destroy(struct fb_info *fb_info)
+ 	if (!fb_info->dev)
+ 		return;
+ 
+-	fb_cleanup_device(fb_info);
+ 	device_destroy(fb_class, devt);
+ 	fb_info->dev = NULL;
+ }
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 05cc251035da..c3302d513546 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -497,7 +497,6 @@ struct fb_info {
+ #if defined(CONFIG_FB_DEVICE)
+ 	struct device *dev;		/* This is this fb device */
+ #endif
+-	int class_flag;                    /* private sysfs flags */
+ #ifdef CONFIG_FB_TILEBLITTING
+ 	struct fb_tile_ops *tileops;    /* Tile Blitting */
+ #endif
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
+2.52.0
 

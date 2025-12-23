@@ -1,108 +1,109 @@
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.crpt.ru (mail.crpt.ru [91.236.205.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF6B430F526
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Dec 2025 21:29:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 714882C11C4;
+	Tue, 23 Dec 2025 06:31:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.236.205.1
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766438980; cv=none; b=Suxlyb7eyLfoVSSpZ9OtxNOznNmy6BYHd+oI0UX8vtoZadKO+G80VUOxEsVbczYKFF0L6iwwr5TfXLqJouLEF+uhro5b/kHqeZzOTC0Tj8SGJeYMo5y/Y17h4l6EvqcsVb3tPXRu/ZBCmY4DnwNv6Ss3wSN/Y4qIn8XqPXQ2o84=
+	t=1766471520; cv=none; b=mmKgB1lPDuU6BgdFRVEdouVgpPxVpSpNqmi+aLGZc41HmCl4UFoGNuDUBZEttOVIG4/6ypO4YA3XfEXW5mZWdf8jPcUSE4OkQUzcPdx26nWFXNI9o8WzJsy9maHdHCYKgklHYgFQx88oh8skz2/lhhCL/gr3dIKtr08WhtruRLc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766438980; c=relaxed/simple;
-	bh=pyPRbx6it1eRbylNbnhGgk0sgAAY902esWUARckU4U4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ejIacl8RJx7lHDSi8Ec25dttS4SXNCqH4+Yy4FLYHo5JQXGSCkeIh5pQP4P06rF2qfIOhgqDZmI2Hde8Do5hdCF2SfVVRw/MPLdnZq+a7iunnYQC8MOS+XtkO70EvXhyb48BviiIG3mBopJZAKuR/FLW65cRmEyEL2XrccXm3lE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=B3no9+8F; arc=none smtp.client-ip=209.85.218.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1766471520; c=relaxed/simple;
+	bh=uIyoHWdWNu6d1ClWbNYZx1UJseEfMekq0zayGia+/zg=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=tzQ/xDhIoUx7ZhyVa6PipiK0pD3qeZEnkTOabhNvTdTBdR1jSqFAP+1p1DtBY0SL37sWU8KJVTjYz8t/6n1tv89u2OIWneDt9QIs52fFmUwTEsyTy35ax7Iv2UJEuIAeAXgwxCniTsjsmHWasg80eNQXwcLrdmx95fysVAhGXdA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru; spf=pass smtp.mailfrom=crpt.ru; dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b=lA39fu/B; arc=none smtp.client-ip=91.236.205.1
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=crpt.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="B3no9+8F"
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-b7355f6ef12so778321466b.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Dec 2025 13:29:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1766438977; x=1767043777; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=BXWJIrQGSeCEefAdF6HYxUBEX9eBPbFxpub4IBJuCcs=;
-        b=B3no9+8Fg5IYfRk3CwnLVCQrchwv9Y92hy/1I7Gnu1EVTpsRcN+zjnOhfSvvcw2HeP
-         98Y1sssVOlYNp0NcKTpnhX4jsgk26BrrGduW26YHTmaqGao4WRxOYh1YakAeiuylsCBP
-         FaN/URj25OZCjRoXQBSbhhA8bHHz2ZF5exJUmNAoUqQQxt2K053OP6178zIhWUHnBxLz
-         ooJIP3wAspLpGnaV21noy4BTldDteOgfGtWtkN/DgLpQmGhn607VIf+9ZTu945XYv9CL
-         UrpKzo1t+Lje4r0ms6du6sVXh6fEqvUVPjTusd0i9pP1vCF0kAkESjiQ8e2Q5oHDpqGE
-         ygKw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766438977; x=1767043777;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=BXWJIrQGSeCEefAdF6HYxUBEX9eBPbFxpub4IBJuCcs=;
-        b=EMomLsK4l5Inj5USvcmO9+bmf/w7gMhoFUtQ7YZEVwpLv3fKxGCCqYDhYsXEV4Rn9b
-         dpaxkjM1+hwlfTCO2xKfH2NUVDRur+7AuP41xRbl+mn+jgzYzrPW3XjfvUDGoAmkdHPX
-         oTf8Zwru8Wu09fNThCk9wnj5SSthhM4yeAAtAr1vEB0SBYVi1oLzGeTzntoT3/Czoo/w
-         rFnomXJ0jVOH/gsYPoE7n1EF+/5cClGRROYFS9rhh/ypwFr8us+W+EaGY3BVwivxvchB
-         gJ/MBgGQGo7wRqxkAaDR87y2fhfKICEbQ8dp23UtsaLAjvBZDFQtvEWFRurzD3lAwJ0b
-         qkqw==
-X-Gm-Message-State: AOJu0YzBxYLfe8Apw8IzunGOa1F2EcltdLq9wNdo2cFU9Rphe1E1eyYA
-	9C30J1ie0G8jtxjvMqh4DiZyOGLSmpAPT47GsAPXYqHOmvrOPjsgPKrML8e7xA==
-X-Gm-Gg: AY/fxX569Gx3DeVUiINm2kRrmwFzdHW/2ACDHR49WePv4wj5GWrgFxw8O3wPaOesURM
-	zYsDKVQLy7/iOMQcpKFMJmc7YX5FoccS3O4UdU6q83OOJQHmtJkY2au3r+lefmzKGsTESthuRJG
-	p1cALpDSPmt4CUY4MVoefVCjWoG14B/gu8mGkwWuciELiKvogpZjc5mzebjKqlVrrYJjU3JGn79
-	7Or+IxLJddukKiCVthBQetJ/EIZXSMIZLTLFjziR6UDOxcSc6uonZzgLVPqtw3nD6OAr9AXDuPA
-	siVqtwByEBTzo+CgleAqwGnNzzUDjOsY3jURotM2QIsC6lQbqnWOjtHxJU+mbB/TIlB1U+qCK6D
-	4ox6D6p3yIXyZjnRKD3jfDF5yIdU1P004U8u9lXgg0YTn+1SivW9uFCD12e1zqbmmPkEMgbvAb7
-	BNMwY/JkQ3H2XfEWVcN/I+nh+n3ZLgbS2sET9cw9j/hqFHeYgs4jgsPwcVpMeYew==
-X-Google-Smtp-Source: AGHT+IGTKsTRfat4leQ78e123zhOg6UamgeVDxItHWdIQtPdUqEVFL3XYITUUz6+yg57k5dFN/i7MQ==
-X-Received: by 2002:a17:907:3e8c:b0:b72:5d08:486c with SMTP id a640c23a62f3a-b8036f5a0cdmr1458907966b.27.1766438976936;
-        Mon, 22 Dec 2025 13:29:36 -0800 (PST)
-Received: from localhost (19.120-65-87.adsl-dyn.isp.belgacom.be. [87.65.120.19])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-64b912534f2sm11359443a12.15.2025.12.22.13.29.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Dec 2025 13:29:35 -0800 (PST)
-From: William Hansen-Baird <william.hansen.baird@gmail.com>
-X-Google-Original-From: William Hansen-Baird <william.hansen.baird@icloud.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	William Hansen-Baird <william.hansen.baird@icloud.com>
-Subject: [PATCH] staging/sm750fb: remove outdated TODO lines
-Date: Mon, 22 Dec 2025 16:28:50 -0500
-Message-ID: <20251222212849.555571-2-william.hansen.baird@icloud.com>
-X-Mailer: git-send-email 2.52.0
+	dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b="lA39fu/B"
+Received: from mail.crpt.ru ([192.168.60.4])
+	by mail.crpt.ru  with ESMTPS id 5BN6V7ol026179-5BN6V7on026179
+	(version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=OK);
+	Tue, 23 Dec 2025 09:31:07 +0300
+Received: from EX2.crpt.local (192.168.60.4) by ex2.crpt.local (192.168.60.4)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.44; Tue, 23 Dec
+ 2025 09:31:06 +0300
+Received: from EX2.crpt.local ([192.168.60.4]) by EX2.crpt.local
+ ([192.168.60.4]) with mapi id 15.01.2507.044; Tue, 23 Dec 2025 09:31:06 +0300
+From: =?koi8-r?B?98HUz9LP0MnOIOHOxNLFyg==?= <a.vatoropin@crpt.ru>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+CC: =?koi8-r?B?98HUz9LP0MnOIOHOxNLFyg==?= <a.vatoropin@crpt.ru>, "Thomas
+ Zimmermann" <tzimmermann@suse.de>, Greg Kroah-Hartman
+	<gregkh@linuxfoundation.org>, Samasth Norway Ananda
+	<samasth.norway.ananda@oracle.com>, Zsolt Kajtar <soci@c64.rulez.org>, "Lucas
+ De Marchi" <lucas.demarchi@intel.com>, "Antonino A. Daplas"
+	<adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"lvc-project@linuxtesting.org" <lvc-project@linuxtesting.org>,
+	"stable@vger.kernel.org" <stable@vger.kernel.org>
+Subject: [PATCH 5.10] fbcon: Add check for return value
+Thread-Topic: [PATCH 5.10] fbcon: Add check for return value
+Thread-Index: AQHcc9W32zQUeRD9Y0S9vQt0S50zYg==
+Date: Tue, 23 Dec 2025 06:31:06 +0000
+Message-ID: <20251223063055.77545-1-a.vatoropin@crpt.ru>
+Accept-Language: ru-RU, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-kse-serverinfo: EX2.crpt.local, 9
+x-kse-antivirus-interceptor-info: scan successful
+x-kse-antivirus-info: Clean, bases: 12/22/2025 10:06:00 PM
+x-kse-attachment-filter-triggered-rules: Clean
+x-kse-attachment-filter-triggered-filters: Clean
+x-kse-bulkmessagesfiltering-scan-result: protection disabled
+Content-Type: text/plain; charset="koi8-r"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-FEAS-BEC-Info: WlpIGw0aAQkEARIJHAEHBlJSCRoLAAEeDUhZUEhYSFhIWUhZXkguLVxYWC48UVlRWFhYWVxaSFlRSAlGHgkcBxoHGAEGKAsaGBxGGh1IWUhaXEgKRhIHBAYBDRoDAQ0oGwkFGx0GD0YLBwVIWEhaSFlaSFlRWkZZXlBGXlhGXEhQSFhIWEhZWUhYSFhIWEhZX0gJDAkYBAkbKA8FCQEERgsHBUhYSFpdSAkDGAUoBAEGHRBFDgcdBgwJHAEHBkYHGg9IWEhaXEgKRhIHBAYBDRoDAQ0oGwkFGx0GD0YLBwVIWEhbWUgMGgFFDA0eDQQoBAEbHBtGDhoNDQwNGwMcBxhGBxoPSFhIWl5IDxoNDwMAKAQBBh0QDgcdBgwJHAEHBkYHGg9IWEhaX0gEAQYdEEUOCgwNHigeDw0aRgMNGgYNBEYHGg9IWEhaXEgEHQsJG0YMDQUJGgsAASgBBhwNBEYLBwVIWEhaUEgEHgtFGBoHAg0LHCgEAQYdEBwNGxwBBg9GBxoPSFhIW1pIGwkFCRscAEYGBxofCRFGCQYJBgwJKAcaCQsEDUYLBwVIWEhZUEgbBwsBKAteXEYaHQQNEkYHGg9IWEhZUUgcEgEFBQ0aBQkGBigbHRsNRgwNSFg=
+X-FEAS-Client-IP: 192.168.60.4
+X-FE-Policy-ID: 2:4:0:SYSTEM
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=crpt.ru; s=crpt.ru; c=relaxed/relaxed;
+ h=from:to:cc:subject:date:message-id:content-type:mime-version;
+ bh=NmXWo8cqnFNX78iJ5OKHOK6zwMhrZ7kh7/MERegNA/g=;
+ b=lA39fu/BqQS/xZVIKnQL+bzgWvxLLD+qKKh8hSbRK62x1rAjm+mP3xZRoEjD3futJ2e2dADCuQKt
+	wlUoYWm1b8opOQ5SiAaPRv57OfJt4wpgCDuaKC5IvFffkb5cDzZS0t8ryXjMvl9YyYx8o7Iiyo2g
+	D9pku7j8FM7HbfLeGAlwzUKJxAgSvgnvqSxLIOWIy1SOdyNEK+/lXJKPK6//xNT7z4tKTwECs7fg
+	V5zRKCs8PP4VCIbvRddkLF+J7uoWeq6Qy2gCat8CnBFRKGTv2DZKC8OLTr5pZiOr2z3pSvduTJGK
+	xyhbLWatUT1YzZ+pMc+nc/VCVXc208yF3/jxQg==
 
-The TODO lines about "checkpatch cleanup" and "kernel coding style"
-are no longer needed as all files conform to the kernel coding style,
-as verified with checkpatch.pl
+From: Andrey Vatoropin <a.vatoropin@crpt.ru>
 
-Note: checkpatch reports a false positive WARNING for sm750.c line 36
-about missing const in static const char *g_fbmode[].
-checkpatch suggests static const char * const g_fbmode[].
-This was intentional, as the array is modified throughout the code,
-while the inner strings remain unchanged.
+If fbcon_open() fails when called from con2fb_acquire_newinfo() then
+info->fbcon_par pointer remains NULL which is later dereferenced.
 
-Signed-off-by: William Hansen-Baird <william.hansen.baird@icloud.com>
+Add check for return value of the function con2fb_acquire_newinfo() to
+avoid it.
+
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
+
+Fixes: d1baa4ffa677 ("fbcon: set_con2fb_map fixes")
+Cc: stable@vger.kernel.org
+Signed-off-by: Andrey Vatoropin <a.vatoropin@crpt.ru>
 ---
- drivers/staging/sm750fb/TODO | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm750fb/TODO b/drivers/staging/sm750fb/TODO
-index 7ce632d040b3..037984801654 100644
---- a/drivers/staging/sm750fb/TODO
-+++ b/drivers/staging/sm750fb/TODO
-@@ -1,6 +1,4 @@
- TODO:
--- lots of checkpatch cleanup
--- use kernel coding style
- - refine the code and remove unused code
- - Implement hardware acceleration for imageblit if image->depth > 1
- - must be ported to the atomic kms framework in the drm subsystem (which will
--- 
-2.52.0
-
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fb=
+con.c
+index 3dd03e02bf97..d9b2b54f00db 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -1057,7 +1057,8 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 		return;
+=20
+ 	if (!info->fbcon_par)
+-		con2fb_acquire_newinfo(vc, info, vc->vc_num, -1);
++		if (con2fb_acquire_newinfo(vc, info, vc->vc_num, -1))
++			return;
+=20
+ 	/* If we are not the first console on this
+ 	   fb, copy the font from that console */
+--=20
+2.43.0

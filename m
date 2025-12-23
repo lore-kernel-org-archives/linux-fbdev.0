@@ -1,109 +1,107 @@
-Received: from mail.crpt.ru (mail.crpt.ru [91.236.205.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 714882C11C4;
-	Tue, 23 Dec 2025 06:31:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.236.205.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A78F349B10
+	for <linux-fbdev@vger.kernel.org>; Tue, 23 Dec 2025 19:00:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766471520; cv=none; b=mmKgB1lPDuU6BgdFRVEdouVgpPxVpSpNqmi+aLGZc41HmCl4UFoGNuDUBZEttOVIG4/6ypO4YA3XfEXW5mZWdf8jPcUSE4OkQUzcPdx26nWFXNI9o8WzJsy9maHdHCYKgklHYgFQx88oh8skz2/lhhCL/gr3dIKtr08WhtruRLc=
+	t=1766516407; cv=none; b=TMYP9q5bxJoFPAfltC4Lw6bPVzhBYbriSCcWNpbAAFJLNexLHYTsMcTzMpcKl4KdYJGbaoSnkjpT9oWCg8Oo0ie5hL3ulmoLQUYYhxNwk6//U6Vzarkn6zupyeHKyWAi7yTjCPAd3QaVaBAATGCrZIrlY4Bw89pot34eiFhaavE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766471520; c=relaxed/simple;
-	bh=uIyoHWdWNu6d1ClWbNYZx1UJseEfMekq0zayGia+/zg=;
-	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=tzQ/xDhIoUx7ZhyVa6PipiK0pD3qeZEnkTOabhNvTdTBdR1jSqFAP+1p1DtBY0SL37sWU8KJVTjYz8t/6n1tv89u2OIWneDt9QIs52fFmUwTEsyTy35ax7Iv2UJEuIAeAXgwxCniTsjsmHWasg80eNQXwcLrdmx95fysVAhGXdA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru; spf=pass smtp.mailfrom=crpt.ru; dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b=lA39fu/B; arc=none smtp.client-ip=91.236.205.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=crpt.ru
+	s=arc-20240116; t=1766516407; c=relaxed/simple;
+	bh=0Y88mplztIxM7HXKshrFYXfqzTchd2WEF2D5dxep1s8=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Yp7od+Bks4Xk3LAagglf6DY86BaJFa3PiUvStmS+VNEwrll8murFLcMt5oErb2jgB13xMh33w/ffro7jftWaABWkMw1y9C98ZLRj9Jan/efIPoOM6Oho+3ZUPUJ6J15Wpje5sUGpBZtt6ftVPMQFreUM+UNYPPX6zJjt+Fdmsk4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KinabQE9; arc=none smtp.client-ip=209.85.214.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b="lA39fu/B"
-Received: from mail.crpt.ru ([192.168.60.4])
-	by mail.crpt.ru  with ESMTPS id 5BN6V7ol026179-5BN6V7on026179
-	(version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=OK);
-	Tue, 23 Dec 2025 09:31:07 +0300
-Received: from EX2.crpt.local (192.168.60.4) by ex2.crpt.local (192.168.60.4)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.44; Tue, 23 Dec
- 2025 09:31:06 +0300
-Received: from EX2.crpt.local ([192.168.60.4]) by EX2.crpt.local
- ([192.168.60.4]) with mapi id 15.01.2507.044; Tue, 23 Dec 2025 09:31:06 +0300
-From: =?koi8-r?B?98HUz9LP0MnOIOHOxNLFyg==?= <a.vatoropin@crpt.ru>
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-CC: =?koi8-r?B?98HUz9LP0MnOIOHOxNLFyg==?= <a.vatoropin@crpt.ru>, "Thomas
- Zimmermann" <tzimmermann@suse.de>, Greg Kroah-Hartman
-	<gregkh@linuxfoundation.org>, Samasth Norway Ananda
-	<samasth.norway.ananda@oracle.com>, Zsolt Kajtar <soci@c64.rulez.org>, "Lucas
- De Marchi" <lucas.demarchi@intel.com>, "Antonino A. Daplas"
-	<adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"lvc-project@linuxtesting.org" <lvc-project@linuxtesting.org>,
-	"stable@vger.kernel.org" <stable@vger.kernel.org>
-Subject: [PATCH 5.10] fbcon: Add check for return value
-Thread-Topic: [PATCH 5.10] fbcon: Add check for return value
-Thread-Index: AQHcc9W32zQUeRD9Y0S9vQt0S50zYg==
-Date: Tue, 23 Dec 2025 06:31:06 +0000
-Message-ID: <20251223063055.77545-1-a.vatoropin@crpt.ru>
-Accept-Language: ru-RU, en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-kse-serverinfo: EX2.crpt.local, 9
-x-kse-antivirus-interceptor-info: scan successful
-x-kse-antivirus-info: Clean, bases: 12/22/2025 10:06:00 PM
-x-kse-attachment-filter-triggered-rules: Clean
-x-kse-attachment-filter-triggered-filters: Clean
-x-kse-bulkmessagesfiltering-scan-result: protection disabled
-Content-Type: text/plain; charset="koi8-r"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KinabQE9"
+Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-2a0d5c365ceso66747105ad.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 23 Dec 2025 11:00:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1766516403; x=1767121203; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=6jBtO4dndspPVV4A9wtVY7GwksvV1hpeoiNFJc4zK5Q=;
+        b=KinabQE9nwD/R0C3S7vg6Izx0p+gjduSrIz1zxa+QMCY7qqX8K15bKP2s6Bivm364M
+         tji4daXyCaCsYXcbJK8EcG99/uCnjQxVN8xap7gRcvnK2RJ7Yqv6FKcP/SDhoyWg1GPU
+         bR/do1u3asphkHBj/dZXB90jp2bje+GtntRmgbjuaBnjn8jxPBWS+Or/L3R0mU/dAJPH
+         YUwiAl32TIE5lwQv3XRQaKUwRM0Trdh7KzyVUublcdNEA41dxAwfIp9M60UvqZBNiUAQ
+         LYG2pQNJN0fTa9NrGWKBj8MrBjlwzFCDLCmfNKLKN2TZ5S/pqaDMNK7otrEywwlmlpti
+         DCcA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1766516403; x=1767121203;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=6jBtO4dndspPVV4A9wtVY7GwksvV1hpeoiNFJc4zK5Q=;
+        b=rHsi755n7EgjjcLsr/CXSBfwxh2zWi9chS9KZmC5xL6li7R3UGqkKgLoSNe5bqrn2i
+         uo2Ar6AZsk7R2AlMTLvWmnqpadelYeHyzHxGUzvXy0F0kkBvyxIkn3o+lTq9BGbWxthF
+         mtGc+T0WlMl21LO37A8yXcbqIDD7g/eDsukrCOy5obT9pxUHZmMKF4IDUNfkUEc4B4PO
+         J+NX/u+OinlnToxfTkyUaUAymNs/Wp2q9pVl/HS95W8uaOY52stOenkc9UsZkFzGzPiG
+         rSL59t0xNprMwPdDn/652cS5sWc/Tm6JQtvw/fNea8FX+EliM+pjcSpqki2cULhg1zDO
+         rszQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVYJtBbc/qTt6VxnJQrHCgWcVYn1xi3KqJV7xnU9ddSlUsazOZDflNvzXH4K4a0YHD+kMzZr1c6BFmDBg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzXdGKGqhSSwX2gqqOX4q6iaE51tREc6dJ7I8h54Mg6mKT7LAfG
+	LJsBhTHD2Hawfqc9tdglsuFg3tMnS9doi3sqXRi6Mi6bTfolKwuH50Wl
+X-Gm-Gg: AY/fxX74vb27nXR+YINkxZuWU9nM9009inKNcrG00CyEpN1d8QoLZzFL2yu8LtEUgXb
+	Yjo9GdRjlZuBAyamh0SLuMMG6DJQ6jjoVSkgAtv/XINm283z7PSbBXDIPP1BDPox/H+Va68d6Mr
+	827xt9WWrkGhd5mUuZY5ZiyVDSxZrk72U0+a65AithK7XCif/qkVeBLZkWBF81p8bRmdqc/6zl7
+	Yuf4BznqWL9Xh0ACBL5+mZ0hxc4ywjVm5mFUN7Jubby5SJabZSMjl0kKOko//nMdGC2m17h8YTq
+	CQSTwPHsSlgoOgARcOsFQdKhEAoNoaOAgce7/97kX7MVkl7UCNZSTpWo1xOev1IREzY0e4WjKc+
+	y41ZH66sWGvxeVPtoJPOZYOsZw7jh0lFYxRjg03E3hjpKFJuiTFjq5BNYqcYPqni9yj9LSEOqdq
+	TcXUvqYCMMGAQPD2NZF5ui26siF+XpXhYV7vrgA6QpkkXqnzQ9e5p8Dj4=
+X-Google-Smtp-Source: AGHT+IE7jfEB8WE9Di5kUUN3m+9BJnxw1dEA/zZLfCeFxaE4nVXyo/8F8TLSXBu/nrwFR+4JHbVQ/w==
+X-Received: by 2002:a17:903:248:b0:2a2:f465:1271 with SMTP id d9443c01a7336-2a2f46512famr118389975ad.44.1766516403432;
+        Tue, 23 Dec 2025 11:00:03 -0800 (PST)
+Received: from localhost.localdomain ([2409:40c2:1052:c28c:d56c:4c53:fd22:65f7])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a2f3d4cbdasm135320905ad.65.2025.12.23.11.00.00
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Tue, 23 Dec 2025 11:00:03 -0800 (PST)
+From: Tejas Chaudhari <tejaschaudhari038@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-staging@lists.linux.dev,
+	linux-fbdev@vger.kernel.org,
+	Tejas Chaudhari <tejaschaudhari038@gmail.com>
+Subject: [PATCH] staging: sm750fb: improve clarity in TODO file
+Date: Wed, 24 Dec 2025 00:29:50 +0530
+Message-Id: <20251223185950.12328-1-tejaschaudhari038@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-FEAS-BEC-Info: WlpIGw0aAQkEARIJHAEHBlJSCRoLAAEeDUhZUEhYSFhIWUhZXkguLVxYWC48UVlRWFhYWVxaSFlRSAlGHgkcBxoHGAEGKAsaGBxGGh1IWUhaXEgKRhIHBAYBDRoDAQ0oGwkFGx0GD0YLBwVIWEhaSFlaSFlRWkZZXlBGXlhGXEhQSFhIWEhZWUhYSFhIWEhZX0gJDAkYBAkbKA8FCQEERgsHBUhYSFpdSAkDGAUoBAEGHRBFDgcdBgwJHAEHBkYHGg9IWEhaXEgKRhIHBAYBDRoDAQ0oGwkFGx0GD0YLBwVIWEhbWUgMGgFFDA0eDQQoBAEbHBtGDhoNDQwNGwMcBxhGBxoPSFhIWl5IDxoNDwMAKAQBBh0QDgcdBgwJHAEHBkYHGg9IWEhaX0gEAQYdEEUOCgwNHigeDw0aRgMNGgYNBEYHGg9IWEhaXEgEHQsJG0YMDQUJGgsAASgBBhwNBEYLBwVIWEhaUEgEHgtFGBoHAg0LHCgEAQYdEBwNGxwBBg9GBxoPSFhIW1pIGwkFCRscAEYGBxofCRFGCQYJBgwJKAcaCQsEDUYLBwVIWEhZUEgbBwsBKAteXEYaHQQNEkYHGg9IWEhZUUgcEgEFBQ0aBQkGBigbHRsNRgwNSFg=
-X-FEAS-Client-IP: 192.168.60.4
-X-FE-Policy-ID: 2:4:0:SYSTEM
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=crpt.ru; s=crpt.ru; c=relaxed/relaxed;
- h=from:to:cc:subject:date:message-id:content-type:mime-version;
- bh=NmXWo8cqnFNX78iJ5OKHOK6zwMhrZ7kh7/MERegNA/g=;
- b=lA39fu/BqQS/xZVIKnQL+bzgWvxLLD+qKKh8hSbRK62x1rAjm+mP3xZRoEjD3futJ2e2dADCuQKt
-	wlUoYWm1b8opOQ5SiAaPRv57OfJt4wpgCDuaKC5IvFffkb5cDzZS0t8ryXjMvl9YyYx8o7Iiyo2g
-	D9pku7j8FM7HbfLeGAlwzUKJxAgSvgnvqSxLIOWIy1SOdyNEK+/lXJKPK6//xNT7z4tKTwECs7fg
-	V5zRKCs8PP4VCIbvRddkLF+J7uoWeq6Qy2gCat8CnBFRKGTv2DZKC8OLTr5pZiOr2z3pSvduTJGK
-	xyhbLWatUT1YzZ+pMc+nc/VCVXc208yF3/jxQg==
+Content-Transfer-Encoding: 8bit
 
-From: Andrey Vatoropin <a.vatoropin@crpt.ru>
+Improve wording and consistency in the sm750fb TODO file
+by clarifying references to checkpatch.pl and improving
+sentence readability.
 
-If fbcon_open() fails when called from con2fb_acquire_newinfo() then
-info->fbcon_par pointer remains NULL which is later dereferenced.
+No functional changes.
 
-Add check for return value of the function con2fb_acquire_newinfo() to
-avoid it.
-
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
-
-Fixes: d1baa4ffa677 ("fbcon: set_con2fb_map fixes")
-Cc: stable@vger.kernel.org
-Signed-off-by: Andrey Vatoropin <a.vatoropin@crpt.ru>
+Signed-off-by: Tejas Chaudhari <tejaschaudhari038@gmail.com>
 ---
- drivers/video/fbdev/core/fbcon.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/staging/sm750fb/TODO | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fb=
-con.c
-index 3dd03e02bf97..d9b2b54f00db 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1057,7 +1057,8 @@ static void fbcon_init(struct vc_data *vc, int init)
- 		return;
-=20
- 	if (!info->fbcon_par)
--		con2fb_acquire_newinfo(vc, info, vc->vc_num, -1);
-+		if (con2fb_acquire_newinfo(vc, info, vc->vc_num, -1))
-+			return;
-=20
- 	/* If we are not the first console on this
- 	   fb, copy the font from that console */
---=20
-2.43.0
+diff --git a/drivers/staging/sm750fb/TODO b/drivers/staging/sm750fb/TODO
+index 7ce632d04..56ffd9b36 100644
+--- a/drivers/staging/sm750fb/TODO
++++ b/drivers/staging/sm750fb/TODO
+@@ -1,8 +1,8 @@
+ TODO:
+-- lots of checkpatch cleanup
++- lots of checkpatch.pl cleanup
+ - use kernel coding style
+ - refine the code and remove unused code
+-- Implement hardware acceleration for imageblit if image->depth > 1
++- Implement hardware acceleration for imageblit when image->depth > 1
+ - must be ported to the atomic kms framework in the drm subsystem (which will
+   give you a basic fbdev driver for free)
+ 
+-- 
+2.39.5 (Apple Git-154)
+

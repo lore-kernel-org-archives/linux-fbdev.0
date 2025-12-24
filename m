@@ -1,62 +1,62 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD6EB3164D3
-	for <linux-fbdev@vger.kernel.org>; Wed, 24 Dec 2025 11:36:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C323D313277
+	for <linux-fbdev@vger.kernel.org>; Wed, 24 Dec 2025 12:20:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766576171; cv=none; b=nOI00+hgFueBZ1EjCeBfQz0Y/t41JxHirVtOYHk2ni3mr1DDBWlevdVkkzoyOt2HiCwPyb/O2kIItpPO/qgFSN3pZXfUEIsLWUzUjJkcuYpf7v3o1tmPQms+0kI0ljC12yQaoK6q6p8SQcdibT4fdn3yUPtbgow0mizWo7L08os=
+	t=1766578857; cv=none; b=tw2Yx355y4mC6T3tlpcWPjfpuiFixpQjMfo0UGueVw88zR0lQzz2ghAHhN3ofmoRaR/Du36xKtop2pLW1IS3hwfQq3VxcpBuh2e4gHvV5+w+TveJnGUHPX4G1Gb1bHtb12xON1CqUeADKuAWyG2QBbUOnLKKSp2YwkGY21cjG0E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766576171; c=relaxed/simple;
-	bh=E9D8zRqNni0lpcFHFxsxBO+LlOzIrwhf+NiZ4m6trYQ=;
+	s=arc-20240116; t=1766578857; c=relaxed/simple;
+	bh=jL3wlcQ0W03J3Sg9bLt+jdq8Jel+5XU4pry/9V1YQ3I=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A6FfrIHq8bYXV+MjvcKlYqU90siHkSBhY5nSrydiibdM/NthxpJqUAUfzMoMASLzQNoPFWFLw3i0w+OYSParkiMBuSpLRjIxLXG5M9RFB5/vI91iRDAUcQF7aEu3DrVqC9d0ULwnueQ0w5hly7zzXicAT8lWLmVCta0fP+EhsNc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nzyi4TYf; arc=none smtp.client-ip=192.198.163.12
+	 Content-Type:Content-Disposition:In-Reply-To; b=LlTcwaq/VRiUhX2z6SrW6K2jo3mXH/2a2mo5dAmC+TfpbD99ywrbwzFuMIbQN9Ur9hsTqA7FMbAeDEu++25EY/SduH0qlrltfT1A+GIiSIDPu7Vl4i4WIDDtAi1LMcd5Z2Vhmy/tvoiJvBa4jCgtPQ9zFFDt5S+rlsaz2a2Uy/o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Atoy3h1D; arc=none smtp.client-ip=198.175.65.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nzyi4TYf"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Atoy3h1D"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1766576169; x=1798112169;
+  t=1766578856; x=1798114856;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=E9D8zRqNni0lpcFHFxsxBO+LlOzIrwhf+NiZ4m6trYQ=;
-  b=nzyi4TYf1CpUKrkudnfRoZ36YZd80vEnsf2PvFL1yHA+vpT28GDnm3Ho
-   S/Enb3iPcTTeblfQdCsmYoSA7UX3xV3Fp/DQuZtkNqss4j3IDcGdCOs54
-   D4EE2Xa2uilvcKrQd4e4Pem+t3QkGuC3SclNpfIUIN5DhDo2ABRETXjtH
-   Am879Ma2mTBD64KczebM8K29w6Q97y/J2xamR4WuRHn6fHcSyV0/wWp6v
-   LDyRA4iQkbTwZe6spqo5DFksTYjEfr5wdZnffPzYonTXav70dKU2U4OLD
-   e1l1KC+hSz3F2sFMUs9ezyQWJDpmpLZSYsqN8d+BowCjvf04PjVyCyR0i
-   A==;
-X-CSE-ConnectionGUID: k4O2p1+7TdyKcPsZJNfIWA==
-X-CSE-MsgGUID: HnC8h7j8RhCXnNBLUX5uXA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11651"; a="72276257"
-X-IronPort-AV: E=Sophos;i="6.21,173,1763452800"; 
-   d="scan'208";a="72276257"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Dec 2025 03:36:08 -0800
-X-CSE-ConnectionGUID: n/YGhQIsTRCQn3aAtbh1KQ==
-X-CSE-MsgGUID: j5ACiIA2Rb+8pS2HTligxg==
+  bh=jL3wlcQ0W03J3Sg9bLt+jdq8Jel+5XU4pry/9V1YQ3I=;
+  b=Atoy3h1DGN1QcpeVt6S+bDAExU/4xbFpru++UF56lfHmb7dHtk7IoHAD
+   wEeD6tKu/gQpE0uIW3YWKs9ZXDGXJ1muYYgwn8PezyMFhR2FVWaJO58lk
+   JnTL2vy/QK+M+wqgpniDCpN7V0OVWBzaVpWosELBYpkYkkidxc4QWV3bd
+   9oAqg6sdqajOO7UGtZNlX7Hjc8a94b7sJcP2DPU2Gt2gkiDJtCMlhDlMl
+   fjPbG+10hOUt9UGF+iIwJThHXvIuwVHCsHRLQo+raNSVP3IhTaa0vzcB+
+   OkH9lFs4rXGc/OCJcsBpZRHHqjjiwqNaG6Dv2BD5XfvhX6Qxiv3tsGoAG
+   w==;
+X-CSE-ConnectionGUID: GxW+4Bp9RTOf/BfmGtPMNQ==
+X-CSE-MsgGUID: fxuEgYnhSV61CwGoV3l04Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11635"; a="68354721"
+X-IronPort-AV: E=Sophos;i="6.20,256,1758610800"; 
+   d="scan'208";a="68354721"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Dec 2025 04:20:54 -0800
+X-CSE-ConnectionGUID: we/BISZYTxyxDi6hzkUnkg==
+X-CSE-MsgGUID: va9cux6YTMCoWKwWdCEUzw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.21,173,1763452800"; 
-   d="scan'208";a="200293695"
+   d="scan'208";a="199759526"
 Received: from lkp-server02.sh.intel.com (HELO dd3453e2b682) ([10.239.97.151])
-  by fmviesa008.fm.intel.com with ESMTP; 24 Dec 2025 03:36:06 -0800
+  by orviesa009.jf.intel.com with ESMTP; 24 Dec 2025 04:20:51 -0800
 Received: from kbuild by dd3453e2b682 with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1vYN9v-0000000030X-3SdA;
-	Wed, 24 Dec 2025 11:36:03 +0000
-Date: Wed, 24 Dec 2025 19:35:20 +0800
+	id 1vYNrF-0000000032N-1A75;
+	Wed, 24 Dec 2025 12:20:49 +0000
+Date: Wed, 24 Dec 2025 20:20:01 +0800
 From: kernel test robot <lkp@intel.com>
 To: Tejas Chaudhari <tejaschaudhari038@gmail.com>,
 	linux-staging@lists.linux.dev
-Cc: oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
-	sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org,
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-fbdev@vger.kernel.org, sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org,
 	Tejas Chaudhari <tejaschaudhari038@gmail.com>
 Subject: Re: [PATCH] staging: sm750fb: make g_fbmode array fully const
-Message-ID: <202512241948.KJeOfUVv-lkp@intel.com>
+Message-ID: <202512242055.7j6y6sD6-lkp@intel.com>
 References: <20251223191141.14206-1-tejaschaudhari038@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -78,31 +78,42 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Tejas-Chaudhari/staging-s
 base:   staging/staging-testing
 patch link:    https://lore.kernel.org/r/20251223191141.14206-1-tejaschaudhari038%40gmail.com
 patch subject: [PATCH] staging: sm750fb: make g_fbmode array fully const
-config: x86_64-randconfig-004-20251224 (https://download.01.org/0day-ci/archive/20251224/202512241948.KJeOfUVv-lkp@intel.com/config)
-compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251224/202512241948.KJeOfUVv-lkp@intel.com/reproduce)
+config: x86_64-randconfig-003-20251224 (https://download.01.org/0day-ci/archive/20251224/202512242055.7j6y6sD6-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251224/202512242055.7j6y6sD6-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202512241948.KJeOfUVv-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202512242055.7j6y6sD6-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
-   drivers/staging/sm750fb/sm750.c: In function 'lynxfb_set_fbinfo':
->> drivers/staging/sm750fb/sm750.c:795:33: error: assignment of read-only location 'g_fbmode[index]'
+>> drivers/staging/sm750fb/sm750.c:795:19: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
      795 |                 g_fbmode[index] = g_def_fbmode;
-         |                                 ^
-   drivers/staging/sm750fb/sm750.c:797:41: error: assignment of read-only location 'g_fbmode[index]'
+         |                 ~~~~~~~~~~~~~~~ ^
+   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
+      36 | static const char * const g_fbmode[] = {NULL, NULL};
+         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/staging/sm750fb/sm750.c:797:20: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
      797 |                         g_fbmode[index] = g_fbmode[0];
-         |                                         ^
-   drivers/staging/sm750fb/sm750.c: In function 'sm750fb_setup':
->> drivers/staging/sm750fb/sm750.c:958:45: error: assignment of read-only location 'g_fbmode[0]'
+         |                         ~~~~~~~~~~~~~~~ ^
+   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
+      36 | static const char * const g_fbmode[] = {NULL, NULL};
+         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/staging/sm750fb/sm750.c:958:17: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
      958 |                                 g_fbmode[0] = opt;
-         |                                             ^
-   drivers/staging/sm750fb/sm750.c:962:45: error: assignment of read-only location 'g_fbmode[1]'
+         |                                 ~~~~~~~~~~~ ^
+   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
+      36 | static const char * const g_fbmode[] = {NULL, NULL};
+         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/staging/sm750fb/sm750.c:962:17: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
      962 |                                 g_fbmode[1] = opt;
-         |                                             ^
+         |                                 ~~~~~~~~~~~ ^
+   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
+      36 | static const char * const g_fbmode[] = {NULL, NULL};
+         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+   4 errors generated.
 
 
 vim +795 drivers/staging/sm750fb/sm750.c
@@ -298,85 +309,6 @@ b610e1193a917f Matej Dujava         2020-04-30  885  	lynxfb_set_visual_mode(inf
 81dee67e215b23 Sudip Mukherjee      2015-03-03  910  	return ret;
 81dee67e215b23 Sudip Mukherjee      2015-03-03  911  }
 81dee67e215b23 Sudip Mukherjee      2015-03-03  912  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  913  /*	chip specific g_option configuration routine */
-700591a9adc8b1 Mike Rapoport        2015-10-26  914  static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  915  {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  916  	char *opt;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  917  	int swap;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  918  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  919  	swap = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  920  
-1757d106a9ce8c Mike Rapoport        2015-10-26  921  	sm750_dev->initParm.chip_clk = 0;
-1757d106a9ce8c Mike Rapoport        2015-10-26  922  	sm750_dev->initParm.mem_clk = 0;
-1757d106a9ce8c Mike Rapoport        2015-10-26  923  	sm750_dev->initParm.master_clk = 0;
-1757d106a9ce8c Mike Rapoport        2015-10-26  924  	sm750_dev->initParm.powerMode = 0;
-1757d106a9ce8c Mike Rapoport        2015-10-26  925  	sm750_dev->initParm.setAllEngOff = 0;
-1757d106a9ce8c Mike Rapoport        2015-10-26  926  	sm750_dev->initParm.resetMemory = 1;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  927  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  928  	/* defaultly turn g_hwcursor on for both view */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  929  	g_hwcursor = 3;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  930  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  931  	if (!src || !*src) {
-c56de0967a658c Elise Lennion        2016-10-31  932  		dev_warn(&sm750_dev->pdev->dev, "no specific g_option.\n");
-81dee67e215b23 Sudip Mukherjee      2015-03-03  933  		goto NO_PARAM;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  934  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  935  
-0fa96e39279988 Sudip Mukherjee      2015-03-10  936  	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-c56de0967a658c Elise Lennion        2016-10-31  937  		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
-c56de0967a658c Elise Lennion        2016-10-31  938  		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  939  
-144634a6b42146 Katie Dunne          2017-02-19  940  		if (!strncmp(opt, "swap", strlen("swap"))) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  941  			swap = 1;
-144634a6b42146 Katie Dunne          2017-02-19  942  		} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
-1757d106a9ce8c Mike Rapoport        2015-10-26  943  			sm750_dev->nocrt = 1;
-144634a6b42146 Katie Dunne          2017-02-19  944  		} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
-1757d106a9ce8c Mike Rapoport        2015-10-26  945  			sm750_dev->pnltype = sm750_doubleTFT;
-144634a6b42146 Katie Dunne          2017-02-19  946  		} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
-1757d106a9ce8c Mike Rapoport        2015-10-26  947  			sm750_dev->pnltype = sm750_dualTFT;
-144634a6b42146 Katie Dunne          2017-02-19  948  		} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
-1757d106a9ce8c Mike Rapoport        2015-10-26  949  			sm750_dev->pnltype = sm750_24TFT;
-144634a6b42146 Katie Dunne          2017-02-19  950  		} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  951  			g_hwcursor &= ~0x1;
-144634a6b42146 Katie Dunne          2017-02-19  952  		} else if (!strncmp(opt, "nohwc1", strlen("nohwc1"))) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  953  			g_hwcursor &= ~0x2;
-144634a6b42146 Katie Dunne          2017-02-19  954  		} else if (!strncmp(opt, "nohwc", strlen("nohwc"))) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  955  			g_hwcursor = 0;
-144634a6b42146 Katie Dunne          2017-02-19  956  		} else {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  957  			if (!g_fbmode[0]) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03 @958  				g_fbmode[0] = opt;
-cee9ba1c30d051 Abdul Rauf           2017-01-08  959  				dev_info(&sm750_dev->pdev->dev,
-cee9ba1c30d051 Abdul Rauf           2017-01-08  960  					 "find fbmode0 : %s\n", g_fbmode[0]);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  961  			} else if (!g_fbmode[1]) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  962  				g_fbmode[1] = opt;
-cee9ba1c30d051 Abdul Rauf           2017-01-08  963  				dev_info(&sm750_dev->pdev->dev,
-cee9ba1c30d051 Abdul Rauf           2017-01-08  964  					 "find fbmode1 : %s\n", g_fbmode[1]);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  965  			} else {
-c56de0967a658c Elise Lennion        2016-10-31  966  				dev_warn(&sm750_dev->pdev->dev, "How many view you wann set?\n");
-81dee67e215b23 Sudip Mukherjee      2015-03-03  967  			}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  968  		}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  969  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  970  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  971  NO_PARAM:
-e359b6a863e19f Mike Rapoport        2015-10-26  972  	if (sm750_dev->revid != SM750LE_REVISION_ID) {
-a3f92cc94c6126 Mike Rapoport        2016-01-17  973  		if (sm750_dev->fb_count > 1) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  974  			if (swap)
-1757d106a9ce8c Mike Rapoport        2015-10-26  975  				sm750_dev->dataflow = sm750_dual_swap;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  976  			else
-1757d106a9ce8c Mike Rapoport        2015-10-26  977  				sm750_dev->dataflow = sm750_dual_normal;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  978  		} else {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  979  			if (swap)
-1757d106a9ce8c Mike Rapoport        2015-10-26  980  				sm750_dev->dataflow = sm750_simul_sec;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  981  			else
-1757d106a9ce8c Mike Rapoport        2015-10-26  982  				sm750_dev->dataflow = sm750_simul_pri;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  983  		}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  984  	} else {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  985  		/* SM750LE only have one crt channel */
-1757d106a9ce8c Mike Rapoport        2015-10-26  986  		sm750_dev->dataflow = sm750_simul_sec;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  987  		/* sm750le do not have complex attributes */
-1757d106a9ce8c Mike Rapoport        2015-10-26  988  		sm750_dev->nocrt = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  989  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  990  }
-81dee67e215b23 Sudip Mukherjee      2015-03-03  991  
 
 -- 
 0-DAY CI Kernel Test Service

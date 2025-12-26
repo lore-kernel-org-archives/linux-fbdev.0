@@ -1,105 +1,175 @@
-Received: from mail-pj1-f43.google.com (mail-pj1-f43.google.com [209.85.216.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83E0F313270
-	for <linux-fbdev@vger.kernel.org>; Fri, 26 Dec 2025 12:04:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.43
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id A5073314B6E;
+	Fri, 26 Dec 2025 12:21:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.107.17.57
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766750682; cv=none; b=AvIjk43GhCXR8fxBcRwRfUU/LZDmK5kkcu8OCxICg+Zah6s4Bb5N8wPFKpvfHOgTriPrBZMbhXYtxzZsb+cmQs+oowqyyxXfkuIP3JBfUMxfp3KCCC8elWOYGxyRX1fYJFOSoGoNKxvJFkKZmROAq2bGpj7pdEr3yadD8IkSMRg=
+	t=1766751677; cv=none; b=hiqT5vcF0jZbdtshsZPT3CC4y0L/6DfHijuoVHS0ef4O43qKnFPpRgy8GxtNETx4bcM7xN91kKVCUMsDf15iPsBuBaIWAf6KqO4evcpBlM62JoXLSJqxuUUU3FMfHSPY9f+wHZBAZZlDuscW8i+6AaR9N/9VCnkzkr9ueW5qgws=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766750682; c=relaxed/simple;
-	bh=5WWw3Ai3nUNL+KGovcJwkDFtqP99aWr0F86Mzj5u/cA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZB9elU6xKVkhhp/PZLOfCvLpmv0k8kzit5mBsJ7t3bxj5w3TKW64/2renxZYb82cJodMLJvAoEH6nlr8zGE1IC/v+rTFlwOnkIT1Zj7YmVTgdPFF24FAZRqmtuR8wCUkpDLlXcR20A0AsLKXj/ebLpgYZG5LQYfzNS3w3GmcDgE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GVFJQiD9; arc=none smtp.client-ip=209.85.216.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GVFJQiD9"
-Received: by mail-pj1-f43.google.com with SMTP id 98e67ed59e1d1-34c32700f38so1147416a91.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 26 Dec 2025 04:04:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1766750680; x=1767355480; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=jzOikjZCAZIVSqRjJRRgnV5+w+5j2FvIdULvG9czO64=;
-        b=GVFJQiD9btkYr1UWzH8XW1PecfjRd/bhjQr+T0p4DC6UgcG6An3tjN+ma5oDMNjgZN
-         ag+pf6ueQJLn+U2u5Lh07sWWVKf6AjdXmyqCZG/cS1SLOFFvc3UymM5JLLHd/nSTq/a5
-         jxMsPSLQeLvpBS5+qKgitY7m/+0o714K+x3Rmoh2NcIi1wnMAK9mRr1YbkWUYTojOlsq
-         dYtraY55aDMFCZSUoyUsn0f5m5j+Ql4eJEMgrGMKy8NwbbzJC98iiocDxGAGlqP6oWLn
-         yr2kQEEeQDnYv34U9YOKo0and1s8TjTqHaOkXNgsp6OG+OqgkfmEAChYnf+5R2t1a7xL
-         H5fw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766750680; x=1767355480;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=jzOikjZCAZIVSqRjJRRgnV5+w+5j2FvIdULvG9czO64=;
-        b=phZP7De38bqhukPxD4R7uuKv/8c6GKUZMpEiLSO3JfffGXZWDgbzstSNhqYB9nOMpH
-         QTc1/jW+8aTyoOxhHEObYbUVilmp9EhTEM8HwJ/owEcP+/3JMsevXGAfQCqDQSyOkW/f
-         nwTMsS0MX5eX+Zfe+Rky6TVEqAaL7MkhPhIMH1zlVwc1pMIyioAVaxiDI7EAsWRMMCMl
-         bJkVCh1bU4Hvo05/sDHn/Oeb6PRdxddc8P6AwmCEou17WIhY4ifPSpQPa9+n0i35qZXB
-         HqVXHYdl+6y1d4ebORA2Dx4PCxtF/GNZF1NUqHPGIdiDDXFx4KwK/9nZNJQrhOf56YAr
-         hDdQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWQrAAh/XO0iERY2cUT3cIiZFRsw/bgc7cCLkEtD7aJGAXIo9jGDjFZCtGXb2DHELkqmhe90d2Wlp+Ezw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzKjsIq8DpDBlySUaQX++qm15lejU0tfxivEPLN7K1E6jgBgyWQ
-	+Yt3AZMuoMaYwPlXD4N5u1zTGsRIAwx6OuNnCHiITLOlt2c0Wj5Rt908
-X-Gm-Gg: AY/fxX656yCKpKq7TLrZhVPMn0gEZON5/MfNxjQUSpLuyyNFspQQRO4TfiV05NODF3d
-	R5c9KyXkiecugp+2dASHVmzbMPRqPFZD2pb+MLuVs5Fqsw9Kj/NUMxQGRjuQY08tvOzrCiWLs0S
-	vxszqI0ZhH8f35jRldzkxz7/7cU9IIW6k91elFsHB+zAqGSXThLd2QdiN3HPu1akK4jJF/aOTK8
-	RCOweV5SZabVnfilyJ6ickkH3EiKSCZ2+emklLplC5n9KtaktLKncS/ZR3EZu038ZHJ/Lfd02Qz
-	CEt7unQVsb+N/e2YfHexTKGdtzSmsGa0ft14u6jKq57jSXASn1qyvVtGgyFEcd0bSPdOmXloFrc
-	w17qw+O/1t1++2Qq56KKgo3Js51lYAg3Ya0HhkMfp0uGO+eV+CDRxVWASbz7MUglT28VNZJm06A
-	uiSpFaX9E8yrFkYJMBaif+rnzEY8j/vr1V4HV3rPghFghkP5rB
-X-Google-Smtp-Source: AGHT+IGHbrz3Pi/17OtuTBKj/RvZlBgKGNkstEwcas0tluFEbj85RUQ4XNy2YcB56+6MmI/E1pvQ4w==
-X-Received: by 2002:a17:90b:4d8e:b0:343:e480:49f1 with SMTP id 98e67ed59e1d1-34e921c4431mr15253293a91.5.1766750679676;
-        Fri, 26 Dec 2025 04:04:39 -0800 (PST)
-Received: from zlabs-hw-ts-ws2.csez.zohocorpin.com ([122.15.156.136])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c1e79a17fb2sm18821244a12.12.2025.12.26.04.04.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 26 Dec 2025 04:04:38 -0800 (PST)
-From: MottiKumar <mottikumarbabu@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: skhan@linuxfoundation.org,
-	linux-kernel-mentees@lists.linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	mottikumarbabu@gmail.com
-Subject: [PATCH] staging: sm750fb: fix const array warning
-Date: Fri, 26 Dec 2025 17:34:17 +0530
-Message-ID: <20251226120417.2599020-1-mottikumarbabu@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1766751677; c=relaxed/simple;
+	bh=XfD4oBld84hGa0frYTJY3dTeUChuqIrn5kecni3QS+w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fCAVAhElRe4Rh9hD7FnlrU572z6i/DhLEkKq7SuGZ9K2mzZyet2UoG4Ypi2KZd2hqVwxaI5Ce+YSRpCQ+2H16u1fbejZlzBOqkjk5tQs6ABc/gp5k3yZfGvMho5TerppZ5Ztkc9P9MtgD0E4Q/fM554y9jrNUTZ6UnnGSrctea8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org; spf=pass smtp.mailfrom=altlinux.org; arc=none smtp.client-ip=194.107.17.57
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=altlinux.org
+Received: from imap.altlinux.org (imap.altlinux.org [194.107.17.38])
+	by vmicros1.altlinux.org (Postfix) with ESMTP id E0FF172C8CC;
+	Fri, 26 Dec 2025 15:21:12 +0300 (MSK)
+Received: from pony.office.basealt.ru (unknown [193.43.10.9])
+	by imap.altlinux.org (Postfix) with ESMTPSA id CC2F636D00D1;
+	Fri, 26 Dec 2025 15:21:12 +0300 (MSK)
+Received: by pony.office.basealt.ru (Postfix, from userid 500)
+	id A1B95360D63C; Fri, 26 Dec 2025 15:21:12 +0300 (MSK)
+Date: Fri, 26 Dec 2025 15:21:12 +0300
+From: Vitaly Chikunov <vt@altlinux.org>
+To: Junjie Cao <junjie.cao@intel.com>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Peilin Ye <yepeilin.cs@gmail.com>, 
+	Daniel Vetter <daniel.vetter@ffwll.ch>, Shigeru Yoshida <syoshida@redhat.com>, 
+	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Zsolt Kajtar <soci@c64.rulez.org>, 
+	Albin Babu Varghese <albinbabuvarghese20@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org, regressions@lists.linux.dev
+Subject: Re: [PATCH v2] fbdev: bitblit: bound-check glyph index in bit_putcs*
+Message-ID: <aU58SeZZPxScVPad@altlinux.org>
+References: <20251020134701.84082-1-junjie.cao@intel.com>
+ <aU23brU4lZqIkw4Z@altlinux.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aU23brU4lZqIkw4Z@altlinux.org>
 
-Add a missing const to g_fbmode to fix a checkpatch warning:
-"static const char * array should probably be static const char * const"
+Dear linux-fbdev, stable,
 
-Signed-off-by: MottiKumar <mottikumarbabu@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Fri, Dec 26, 2025 at 01:29:13AM +0300, Vitaly Chikunov wrote:
+> 
+> On Mon, Oct 20, 2025 at 09:47:01PM +0800, Junjie Cao wrote:
+> > bit_putcs_aligned()/unaligned() derived the glyph pointer from the
+> > character value masked by 0xff/0x1ff, which may exceed the actual font's
+> > glyph count and read past the end of the built-in font array.
+> > Clamp the index to the actual glyph count before computing the address.
+> > 
+> > This fixes a global out-of-bounds read reported by syzbot.
+> > 
+> > Reported-by: syzbot+793cf822d213be1a74f2@syzkaller.appspotmail.com
+> > Closes: https://syzkaller.appspot.com/bug?extid=793cf822d213be1a74f2
+> > Tested-by: syzbot+793cf822d213be1a74f2@syzkaller.appspotmail.com
+> > Signed-off-by: Junjie Cao <junjie.cao@intel.com>
+> 
+> This commit is applied to v5.10.247 and causes a regression: when
+> switching VT with ctrl-alt-f2 the screen is blank or completely filled
+> with angle characters, then new text is not appearing (or not visible).
+> 
+> This commit is found with git bisect from v5.10.246 to v5.10.247:
+> 
+>   0998a6cb232674408a03e8561dc15aa266b2f53b is the first bad commit
+>   commit 0998a6cb232674408a03e8561dc15aa266b2f53b
+>   Author:     Junjie Cao <junjie.cao@intel.com>
+>   AuthorDate: 2025-10-20 21:47:01 +0800
+>   Commit:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>   CommitDate: 2025-12-07 06:08:07 +0900
+> 
+>       fbdev: bitblit: bound-check glyph index in bit_putcs*
+> 
+>       commit 18c4ef4e765a798b47980555ed665d78b71aeadf upstream.
+> 
+>       bit_putcs_aligned()/unaligned() derived the glyph pointer from the
+>       character value masked by 0xff/0x1ff, which may exceed the actual font's
+>       glyph count and read past the end of the built-in font array.
+>       Clamp the index to the actual glyph count before computing the address.
+> 
+>       This fixes a global out-of-bounds read reported by syzbot.
+> 
+>       Reported-by: syzbot+793cf822d213be1a74f2@syzkaller.appspotmail.com
+>       Closes: https://syzkaller.appspot.com/bug?extid=793cf822d213be1a74f2
+>       Tested-by: syzbot+793cf822d213be1a74f2@syzkaller.appspotmail.com
+>       Signed-off-by: Junjie Cao <junjie.cao@intel.com>
+>       Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+>       Signed-off-by: Helge Deller <deller@gmx.de>
+>       Cc: stable@vger.kernel.org
+>       Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> 
+>    drivers/video/fbdev/core/bitblit.c | 16 ++++++++++++----
+>    1 file changed, 12 insertions(+), 4 deletions(-)
+> 
+> The minimal reproducer in cli, after kernel is booted:
+> 
+>   date >/dev/tty2; chvt 2
+> 
+> and the date does not appear.
+> 
+> Thanks,
+> 
+> #regzbot introduced: 0998a6cb232674408a03e8561dc15aa266b2f53b
+> 
+> > ---
+> > v1: https://lore.kernel.org/linux-fbdev/5d237d1a-a528-4205-a4d8-71709134f1e1@suse.de/
+> > v1 -> v2:
+> >  - Fix indentation and add blank line after declarations with the .pl helper
+> >  - No functional changes
+> > 
+> >  drivers/video/fbdev/core/bitblit.c | 16 ++++++++++++----
+> >  1 file changed, 12 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
+> > index 9d2e59796c3e..085ffb44c51a 100644
+> > --- a/drivers/video/fbdev/core/bitblit.c
+> > +++ b/drivers/video/fbdev/core/bitblit.c
+> > @@ -79,12 +79,16 @@ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+> >  				     struct fb_image *image, u8 *buf, u8 *dst)
+> >  {
+> >  	u16 charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
+> > +	unsigned int charcnt = vc->vc_font.charcount;
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index d100b9e1d3d5..7afb58561a0c 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -33,7 +33,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel;
- static int g_nomtrr;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview;
--- 
-2.43.0
+Perhaps, vc->vc_font.charcount (which is relied upon in the following
+comparison) is not always set correctly in v5.10.247. At least two
+commits that set vc_font.charcount are missing from v5.10.247:
 
+  a1ac250a82a5 ("fbcon: Avoid using FNTCHARCNT() and hard-coded built-in font charcount")
+  a5a923038d70 ("fbdev: fbcon: Properly revert changes when vc_resize() failed")
+
+Thanks,
+
+
+> >  	u32 idx = vc->vc_font.width >> 3;
+> >  	u8 *src;
+> >  
+> >  	while (cnt--) {
+> > -		src = vc->vc_font.data + (scr_readw(s++)&
+> > -					  charmask)*cellsize;
+> > +		u16 ch = scr_readw(s++) & charmask;
+> > +
+> > +		if (ch >= charcnt)
+> > +			ch = 0;
+> > +		src = vc->vc_font.data + (unsigned int)ch * cellsize;
+> >  
+> >  		if (attr) {
+> >  			update_attr(buf, src, attr, vc);
+> > @@ -112,14 +116,18 @@ static inline void bit_putcs_unaligned(struct vc_data *vc,
+> >  				       u8 *dst)
+> >  {
+> >  	u16 charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
+> > +	unsigned int charcnt = vc->vc_font.charcount;
+> >  	u32 shift_low = 0, mod = vc->vc_font.width % 8;
+> >  	u32 shift_high = 8;
+> >  	u32 idx = vc->vc_font.width >> 3;
+> >  	u8 *src;
+> >  
+> >  	while (cnt--) {
+> > -		src = vc->vc_font.data + (scr_readw(s++)&
+> > -					  charmask)*cellsize;
+> > +		u16 ch = scr_readw(s++) & charmask;
+> > +
+> > +		if (ch >= charcnt)
+> > +			ch = 0;
+> > +		src = vc->vc_font.data + (unsigned int)ch * cellsize;
+> >  
+> >  		if (attr) {
+> >  			update_attr(buf, src, attr, vc);
+> > -- 
+> > 2.48.1
+> > 

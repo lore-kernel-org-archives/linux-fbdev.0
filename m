@@ -1,72 +1,72 @@
-Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC64C227E95
-	for <linux-fbdev@vger.kernel.org>; Sat, 27 Dec 2025 14:20:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CE09320A22
+	for <linux-fbdev@vger.kernel.org>; Sat, 27 Dec 2025 14:22:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1766845205; cv=none; b=obuQm3pOZC3PweRXTehSyAEIQZeY3Z6mxTb/P8SmIaifNiktXkao+3AHmW5nR5DG/6HRG1+QTuzNLDWvogs6PCOdaYc/7qcAUAQYX+L3fvYGECSkEPUCYaVjHFE66JFg+oMtw9CRFph4E2fp8kA2F3EL+u5RG4RtMPl+28dqRDY=
+	t=1766845351; cv=none; b=C6+9i+2ueZxQ6OUrq/BJY3OYLEuFSAdkRjeMbWPDY+pH4oCO7TSUl75oRaKlujflImD/SNN9bRALeUWHyzHmjb4IWfi3N6Q64oeibYw+t17xvQdmyHK8mbOz4kmuaWfdqeQLFTuzpgzzhFBVMprtZAFSN3Gl4782hPuKHuU7woA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1766845205; c=relaxed/simple;
-	bh=qVm/WbD0OkOzktJs0xypVZ5JiX+A86nrc1r124G+N4k=;
+	s=arc-20240116; t=1766845351; c=relaxed/simple;
+	bh=8YtmJWxVLcTXPglZgU+78L34QqcvuKoQn/q5GRMHn7s=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=LX/6beJpmnoQcZCFEdfKgie/5c0F7qj6vlIHJOR3SSFcH7jfF3ItcjgU4BOUPA4QiVIQTZ9GfjIVDTuvYbOxUn17Es1kqSUXCNX1wXzGJMOhiF0nLFRbXE/8IBqjdLQ8rD82KLdMF0AhDkG1YxhmAoK1rAOjyFovwyGRvR4B/Zg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SvTeVO6M; arc=none smtp.client-ip=209.85.218.53
+	 To:Cc:Content-Type; b=jDeRmugFuvrXYiyk8Nllc7TBqj+lW4U9/EUnGMHXgMQAVbHZKkTfchRjrNjjl15XwNC2RAkXjbbf37KLKJm0geH/Szok6r1N1xSYhrF018A8Et4nPtjogCg1Wih+nx/rlmgA64/ZxosA4Om5N59HB9w6fTYtQuHJir23b+hLZdQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dBUf+WMC; arc=none smtp.client-ip=209.85.218.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SvTeVO6M"
-Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-b7636c96b9aso1426763666b.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 27 Dec 2025 06:20:03 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dBUf+WMC"
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-b7ffbf4284dso1027248666b.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 27 Dec 2025 06:22:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1766845202; x=1767450002; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1766845348; x=1767450148; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=e3rVAXM2uA2BUpYCLCItwXy4Hyvoocs+aIR9WcWlcsk=;
-        b=SvTeVO6MVVqVbmfPn9szsF8EJxBfd59gZuOicA+iNEUHNhC5bLFbAqHttptJ6dGh9q
-         XJXsP0PPOZpxdqdjvweHlyG5i2RdppyifgnYYM08jSLGaVIHvuQ6r0Y3sCJcVJA1VHbP
-         BQJKV4ByFq3RSP7qtfSCBeJZoma1BAMkm8GN/ew8M7t47+XHqWr9p+FSFStI2XXQqKem
-         ggLbNznjCEMcS17lubNgoXu0ZsGh9Y4cXLh4fAH8cMm5/S6jO/mGKWTOSpEZWgHIT0sT
-         pUNoyTT0kBF7e4E6/qRLB3rG0MXvLafApzb7OLxazzrDwoe1523gOxJFSfS+/hiCtf1Q
-         hGKw==
+        bh=wsY2YPUX+wtykoq8K3+fTG9jA80ktVPXe78RbmtQw8Y=;
+        b=dBUf+WMCc5m9G/KFx6Xr+dzLMPTW8JT0qBeNr2rQqwts8t/Y1Q1cPNIUTZ7z+koEBl
+         L2Jjb9rQURpUmmGfgFZZdvQJ4GTUPPrJbRinlIwoxFH+zzqdlIufSZ3L4ZMdgOdQZ7Tp
+         TB6y87n6tJiEI7+nxXoHYfMnsVDT2qyHchY3DpUfmfuKPoCbEleBjApYCmhVGoUNAjPy
+         Q+NMNIhg1M1CoOklGlp9NvS43Rbd5BSq+tHsenp80loXrvDzgQVHXKREm1NJ8Mh1f/rK
+         4FsDJI0SXzKwznrlIJKMA/PVHxNu+V1M17XjQkB2lFiCb4S4i95rnDGPn0Rp9MddOWjk
+         8SYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766845202; x=1767450002;
+        d=1e100.net; s=20230601; t=1766845348; x=1767450148;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=e3rVAXM2uA2BUpYCLCItwXy4Hyvoocs+aIR9WcWlcsk=;
-        b=PdwINudQ7kMA2Hjn1XQX3gcWQoex8cMV1LxPAAspSzCdqb/PyMiX6HgLIsvWaFnGQR
-         YOrHq0NVS6r02wA44BE7ylj4ONSuyOMnpf/2sMgGZV5pRUVWRKULCMRn+Nq2NkH8XX1n
-         yLvhyaC6SHV0jFV8+iByi/tVevZrqpa08/z7bzFGXS24zYHvHbK688ySiZxEv2VzotO3
-         YmdGDNiXU9UXT+czSZ7IWGLg9Q3FgPaHXOLi5nlkfSwVHLxVqekoxvroRNa0u23qETTz
-         jIOeYxk/a75PThA2GgWzxzMWBbFujZGOWnqB0HgyNU0wKmDqnXXWHLvicqyMqzCp6JUy
-         tDlQ==
-X-Gm-Message-State: AOJu0Yzi/WNw0ZZdWwvBsbuH9SPsit2ujOXFUkJ0g9ISS2IBvXBhLNNN
-	3We6KOX7L/mGpwcw4dnydGqyVIQRWgULi09o8iAG1H9nCN96ZikGO2r6dDfgMrqFMVO4ZnM3upc
-	DVQu3dF9yEtHlObep5fjJu+4yk+ivtnE=
-X-Gm-Gg: AY/fxX5pMstpHQL0jNsa6qfrxhOKtoeBxJl7dO2B70qmzy6A6/7UudDHfecRRBH0GkO
-	fXUBis1S+dr9/r1Sx66UQTh/UApCWCU0JSFiy5RP/cL464T7d8qRpcUAmBDJjyXgP5PVN5qgZg/
-	p631HwW8c5FB5gYu5Mr9Hz4/6VcZMdMHaNMELQ8+hM30/O7HI7hmhw3zfPZqksWeDcmEwHIGSD+
-	wTbvW3fsXVqg+PHhtYp51nO+ittIMRZPDLtMeQg/jPmnTbbzdrTvJ8illTDXynkBtpx/LjE2qii
-	6u+1uIYENZYIdIWj5KKg20NY8qdOVfQF6eKKB2Xdej4TN4wHdvHkHN0DmcBN4uwUOUkaoRc=
-X-Google-Smtp-Source: AGHT+IF8S2vZ7+R+gmMHpDxIPniiRhAY4GhOubuUewd59zPB/hHlKmS5S1gCB4cVMV+kZ1atbDLTB1f1Uuy9kvPPTQ4=
-X-Received: by 2002:a17:906:7315:b0:b73:398c:c5a7 with SMTP id
- a640c23a62f3a-b80371a7253mr2621691866b.41.1766845201824; Sat, 27 Dec 2025
- 06:20:01 -0800 (PST)
+        bh=wsY2YPUX+wtykoq8K3+fTG9jA80ktVPXe78RbmtQw8Y=;
+        b=GfBWf7YBP8a0107mZT2PJJPzSHnaOufUoHUnxFYOSpCZrnGYvIVvvS8mMX4jg7egTI
+         Ugu5M1psYBGOGONSdmFp001BvuBwCEnL5Hv7MF/sfoTjca5cJNjLfYzDduRpQkmA1Hk5
+         AbJfkjusbFRRPtc1CLnLune+yDD3C8WEDvKP840NT7+5atSdAX/PUhZglke4C1Jz8+3V
+         u6yGj4lDNxlY407bDGCRs5me7/TeQkpl0Vd/7lE93pvaRW07D85Z00pNqnVDCbJ9nQXZ
+         rf7oe9Hf9DSzibha/RfrROOhfBEqX57UdHshQ2xQI/0UWOnT5tmDPAkQz3E29QHqkKGb
+         LZCQ==
+X-Gm-Message-State: AOJu0Yw+dKkza0u58z/59PMGL8o9wQcx7qRvtaMOXAoN4oR8Ujogfru/
+	HUeO+LQCmIPZxlqPi9S2QSgpCl+yCEhDj7FrvlP6qYkzUXtfRKM679ZgFbz5HfSVqMbMZHxYvQV
+	dZIuV0VLmVPaB6Oh8MwaxY4NC9X+M31gCxVZ9
+X-Gm-Gg: AY/fxX72vvsIaVwxEt6UoLKsE2VAu6E9gOVzcSa8cHEViXxRMjUy5JDbVpUg3C7I2mu
+	keJ4+1otweGA+Vw4h2/sggXqkqvYbOHphSb4M9BzmtVytsCFG0/uvAXAfBOZT6nBilBmANa8Qwm
+	ZR75tkGLlrUThDgPw2xbaeuMI04CgmaAvZJs/toM1lEtKZr42cQwDEzyaN++7c5c6PNU7QcNrve
+	dyZ4nWcNx+MI3atiC4xQFAJkmdAseoozxvADdKMI19hYG88UnWZGeQfMtmChwTuItDOO2PIUa3L
+	VxWt9HW4v4CDUhpeY86W74iJkuuVYNSQliRBs/bCzMJffmSprlIkFUqBTHiQCEZJ3kjhzTM=
+X-Google-Smtp-Source: AGHT+IFueBeZlh5SVe0yz+/yxQv364cBzdkglW+0ZdQCwGpAc3nvuAc182enll5nZikPEvfIE1pSBxl7zDgGxVvO12k=
+X-Received: by 2002:a17:907:2d0e:b0:b76:bcf5:a38a with SMTP id
+ a640c23a62f3a-b8036a924ffmr2886902566b.0.1766845347379; Sat, 27 Dec 2025
+ 06:22:27 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251219054320.447281-1-chintanlike@gmail.com> <20251219054320.447281-3-chintanlike@gmail.com>
-In-Reply-To: <20251219054320.447281-3-chintanlike@gmail.com>
+References: <20251219054320.447281-1-chintanlike@gmail.com> <20251219054320.447281-5-chintanlike@gmail.com>
+In-Reply-To: <20251219054320.447281-5-chintanlike@gmail.com>
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Sat, 27 Dec 2025 16:19:25 +0200
-X-Gm-Features: AQt7F2qzW7hXhSkhTQqqZrlX5yqv6kNuSTsnbNk-OS8FE2UIntKjLzVunWTLcHw
-Message-ID: <CAHp75VeLF8nd-JiPFnxJ2H43ZS=oYgW4=BTZjR_GuUuj03gyRg@mail.gmail.com>
-Subject: Re: [PATCH v2 2/4] staging: fbtft: Make FB_DEVICE dependency optional
+Date: Sat, 27 Dec 2025 16:21:51 +0200
+X-Gm-Features: AQt7F2pBB7tF8rd4vW2CaPeAEaMHCh3Al7Dq6z2gzKKZ-tCgBNcws0oMLkjEaOA
+Message-ID: <CAHp75VfTki7r-BMadsmOWudr2nc2f2VYgL9y6xR64usQB70ZAw@mail.gmail.com>
+Subject: Re: [PATCH v2 4/4] fbdev: sh_mobile_lcdc: Make FB_DEVICE dependency optional
 To: Chintan Patel <chintanlike@gmail.com>
 Cc: linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
 	linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, 
@@ -78,61 +78,37 @@ Content-Transfer-Encoding: quoted-printable
 On Fri, Dec 19, 2025 at 7:43=E2=80=AFAM Chintan Patel <chintanlike@gmail.co=
 m> wrote:
 >
-> fbtft provides sysfs interfaces for debugging and gamma configuration,
-> but these are not required for the core driver.
+> The sh_mobile_lcdc driver exposes overlay configuration via sysfs, but th=
+e
+> core driver does not require CONFIG_FB_DEVICE.
 >
-> Drop the hard dependency on CONFIG_FB_DEVICE and make sysfs support
-> optional by using dev_of_fbinfo() at runtime. When FB_DEVICE is disabled,
-> sysfs operations are skipped while the code remains buildable and
-> type-checked.
+> Make sysfs support optional by defining overlay_sysfs_groups as NULL when
+> FB_DEVICE is disabled. The driver always sets .dev_groups, and the kernel
+> naturally skips NULL attribute groups while the code remains buildable
+> and type-checked.
 
 > v2:
-> - Replace CONFIG_FB_DEVICE ifdefs with runtime checks
-> - Use dev_of_fbinfo() to guard sysfs creation and removal
+> - Replace CONFIG_FB_DEVICE ifdefs with NULL overlay_sysfs_groups
+> - Always populate .dev_groups
 
-The place for the change log is either a cover letter, or...
-
-> Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Suggested-by: Helge Deller <deller@gmx.de>
-> Signed-off-by: Chintan Patel <chintanlike@gmail.com>
-> ---
-
-...a comment block here. It's not so important to be in the Git
-history since we have a lore.kernel.org archive.
-
->  drivers/staging/fbtft/Kconfig       |  5 ++++-
->  drivers/staging/fbtft/fbtft-sysfs.c | 18 ++++++++++++++----
+Same comment about the changelog in the commit messages.
 
 ...
 
->  void fbtft_sysfs_init(struct fbtft_par *par)
->  {
-> -       device_create_file(par->info->dev, &debug_device_attr);
-> +       struct device *dev =3D dev_of_fbinfo(par->info);
-> +
-> +       if (!dev)
-> +               return;
+> +#ifdef CONFIG_FB_DEVICE
+>  ATTRIBUTE_GROUPS(overlay_sysfs);
+> +#else
+> +/*
+> + * When CONFIG_FB_DEVICE is disabled, define overlay_sysfs_groups as NUL=
+L.
+> + * The compiler will optimize out the sysfs code paths when dev_groups i=
+s NULL.
+> + */
+> +static const struct attribute_group *overlay_sysfs_groups[] =3D { NULL }=
+;
+> +#endif
 
-
-The better way is to decouple the definition and the assignment in the
-cases when it's followed by a conditional (validation check). In this
-case any new code added in between doesn't affect readability and
-maintenance efforts.
-
-       struct device *dev;
-
-       dev =3D dev_of_fbinfo(par->info);
-       if (!dev)
-               return;
-
-> +       device_create_file(dev, &debug_device_attr);
->         if (par->gamma.curves && par->fbtftops.set_gamma)
-> -               device_create_file(par->info->dev, &gamma_device_attrs[0]=
-);
-> +               device_create_file(dev, &gamma_device_attrs[0]);
->  }
-
-Ditto for the rest.
+Hmm... I'm wondering if PTR_IF() can anyhow help here.
 
 --=20
 With Best Regards,

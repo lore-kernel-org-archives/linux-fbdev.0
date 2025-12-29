@@ -1,523 +1,247 @@
-Received: from mail-pf1-f225.google.com (mail-pf1-f225.google.com [209.85.210.225])
+Received: from mail-pl1-f226.google.com (mail-pl1-f226.google.com [209.85.214.226])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D06BA30F7E0
-	for <linux-fbdev@vger.kernel.org>; Mon, 29 Dec 2025 21:59:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.225
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA638330B36
+	for <linux-fbdev@vger.kernel.org>; Mon, 29 Dec 2025 22:06:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.226
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767045558; cv=none; b=OpoFYJFt/Zyl0k9kJGaLpECNARklwBPVurP0p3flp/jhahEKDW6QlVMz91Q36IVzTThALCfdO6jqKRZTGXOIaH22C9aB3tXOgCDiOeJo36jz5TYVkVmWSD4pgpxGn6d3rgUKEl2rwUQk3fprhJJL1xscYdmuNXVCPcsgeqotmf4=
+	t=1767045979; cv=none; b=eJ27odJjxtL89XBni2CGi3y3PxZtoaRp7OpiTc9jrTQaIuRcakZEwupQXTCX0JRfOBaddXHjMgqUBIdBrt2y9xXEoxPOrXWEBN946630kIPH+UdXGJG1kyHhwZf9aM2e1MD5PZpYJvWRiv6Xb9qdUo69j07Zy1mzzp8t2J0kkbU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767045558; c=relaxed/simple;
-	bh=BcBsQxJIQJJlqTuvgYwuQeVrGVdbVN2Bv4pHjjNssq4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DcVmpi0vNFKykBcXzOy4ajRJQo8jh3IHbRiakByZfnsLfGWctmctTRHrmFjJYxHK/iv1C5zGZ1DQCnBieWY4sbzMISVEOqylg8p6m0Xkew0iHytJEpqKiqjgNuj99ATBWkX6E12gW9BgPchVsruL/UTNQP+1YC4ruDteYcKAazA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=Bc1Uuj/d; arc=none smtp.client-ip=209.85.210.225
+	s=arc-20240116; t=1767045979; c=relaxed/simple;
+	bh=y5YIqKVzOgea1hEskvVJXNFijZ0oP6nkRby64GmSm8c=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=nH5gnsrRlc+I/P00jbUXFwMwOvY6MzUEZt1NN7bUNncd+C+bONc2fo5V2ZtiTujm9PW1dQO8LfkMaQFX1FYn42HD1E3rghJMnxqk/bgb5X0xLRGk5xFfxgFsLFj2fLySuKturpIQrd0HUS9JcIOjmx7SMBqMtHB9D9XtWPo1dM4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com; spf=fail smtp.mailfrom=broadcom.com; dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b=Nbeh+IaU; arc=none smtp.client-ip=209.85.214.226
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=broadcom.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="Bc1Uuj/d"
-Received: by mail-pf1-f225.google.com with SMTP id d2e1a72fcca58-7b9215e55e6so5795247b3a.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 29 Dec 2025 13:59:16 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="Nbeh+IaU"
+Received: by mail-pl1-f226.google.com with SMTP id d9443c01a7336-2a09a3bd9c5so83983855ad.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 29 Dec 2025 14:06:17 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767045556; x=1767650356;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:dkim-signature:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=pJWRKQHrZ65aEzUoFIqsgm/0iuuS/awy21jyOivXLQY=;
-        b=cJsXqm6Xddi6HZhuKIRW0LhMOi3Bg2W5a9+1ZcZUS9hIOKTRrezmWTahhWSm7aaBz4
-         oLAk/irASdIMYmRYAlouAvUOekLWFuXpfIawAvQiD4cH60Z5zs7+mZTuEKE7enAqhvhL
-         it164+WYuvSgtiBQGipEmSo4NGxWmfKKnYseXmjJVOqzTiqxHWTNIR7yO2oAlU0l16JV
-         qsrCWYmxx0SIWu0oR9F+Hio1/0tsBv38RHtgpJBjTf8Q0jfmkhkQujvqWfpqM+VEP4ao
-         LdEZa+sfU5S54hBiUmWONKlWBcyaHGeSrlIJABwcKQoXwxS7H89EXfbxrfEQmeOsuVEY
-         UqnA==
-X-Forwarded-Encrypted: i=1; AJvYcCXuA8kjTVSaustdJalVqKsYH+qYOzuNz4lop/eKUwu+fSXRU3Vxe8hxcZd2AiRHPdj/ePD6ucKtZi6AvA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyh9tIgm7R+oHHSju2qIzU0H+ClZVx4sMyZbczaxCKQAcpix/kd
-	cuWcEXVHuvjkyA4rRu8bCW8bqf2T6EIceMie23+tCQMCKz4DmDJI+cuUlADOMUlpslfaJD/1aOw
-	qQKWaV+u4vxFnbjW8OKSQfoN0STTpBVsheTIcGGpallp6xGo5lZIzKkzSmJx7UGykTy16ZMxf4T
-	RDQT388fGI3Q+sqVnqaM3wezsLcgRxNW53sdZSDt2npBBPeXK8nCqGckZQrx6j1DyUv4ZCYKVgu
-	A24iEiCFpuKP5w=
-X-Gm-Gg: AY/fxX7JvPXA3q2tD5zepQD4lcrMMHeuTT1xIxlFodBs30HsoQgDR0iTjRaDL1a9dik
-	Y4mWcuRG2wT8Hbt/ecXGrLhc3KVX0bAMaqRSJ1HRf3ZIAX0FOL3t7oSqI/5VY68VuQZs+8jY/Bk
-	RwDL9x49GXyAQbazz3MeIWom0HvLoK1So8lkLNnsKsKNSj5j5VeAKJZxhJKsQTDcBKN2pYVVsik
-	xdo0VCoe8B0maYH7eH5hTXb7bUYQ34K8XzwB3sZw3B9GkjwYR+K+4YYPDgE+LOhiB9dbKXyFPnP
-	ZkZN0A03W6WSQi8p/fphdjnMjmEp86RL6SMtcOyD+bNIJDoP6zuoWh4q3KZvz9NI3VTqCbKxhVS
-	590SC4/TcD9/woi/bnS10VfyeQPVQ1sds6n4TO/219uU+tK4yI5WDTmX43jdyUwb3zP1xs+ys3z
-	Q8FJrlOzj6z8zES+BzEoff5ECB4CkERMNoyKHHzSM=
-X-Google-Smtp-Source: AGHT+IE0UOnBIxGdmfxKGtsri2x0P8/3pntsfinDvmLp2YgmoSvK93GXLfraLGYnJ+zEML1yvnEMlEskf1SM
-X-Received: by 2002:a05:7022:4393:b0:119:e56b:989d with SMTP id a92af1059eb24-121722ab956mr35446262c88.4.1767045555806;
-        Mon, 29 Dec 2025 13:59:15 -0800 (PST)
-Received: from smtp-us-east1-p01-i01-si01.dlp.protect.broadcom.com (address-144-49-247-2.dlp.protect.broadcom.com. [144.49.247.2])
-        by smtp-relay.gmail.com with ESMTPS id a92af1059eb24-1217252ca05sm6055436c88.4.2025.12.29.13.59.15
+        d=1e100.net; s=20230601; t=1767045977; x=1767650777;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:dkim-signature:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=UwzcNp2HYOV4Z1mSXVXCsNd5TObEfxUddJJZvW7JJZk=;
+        b=b3zog9NP+llqKZr9y3TcrD93TMhAUaIf6nYWxD6IQwi2JTG4CJtjYi/e81WH018/L/
+         6TGnao3YDNblHSrtlTiYijcxAjofSnp4IsOpNGOFnmhCjuHRd8HZiAJiGntW9dpJo/jG
+         D/vF89FoTEE38az/M03PlDFpxxZPkZ/wrr8QeHmU8Lkuj2p4FGJhcX122Ekg0PnF9cXe
+         9A1vRZhJHz7+t2YFSinhTWt+ebBrngqKOMIVVTMq6zEaifUt4DueJvV3o6lSyK2m/+HF
+         gc9jF68/bmztoEmdx9zak88MvKjqjBZokjkUrSeZr3wlBIabYTUds8+FfgQ/JD9WLvjQ
+         nOIA==
+X-Forwarded-Encrypted: i=1; AJvYcCUNEjSUse8C74PfZI6n3hQPtaoDRLmdPPyJnKCnnMZJ23kl7FXLhOtVcuLX+NloavTcVHlpzvhMfetOQQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzP5WyiNxkvr2gmjrfwPIvqVU8FKr1D+H4WbrtDVp+Nag6+ME39
+	eS/LvaUSK9LZECnqYZeuDnrj3UT1ldAPhNcjFlFRqPGjWxaeWRkWelDEanoa/lwO9jtfbS0Isj1
+	oPs5RWRKohPTfaAUxgFBX6j5/LIacF9qfc+lmST+2qSFuhADrxCEufB6kvTdUwpnZ60finTV9sw
+	YdPGlaWPyBQ+ckyAGWIuAJiIlRurB5c1n/jXZtvs2OwEBhkqQ6oBOc+Cxxvl7EBJN0uUNsTdptu
+	YLDVA8cuNB/gVU=
+X-Gm-Gg: AY/fxX7LRUSZAgZw6qc+wwywwLij793V0iIO4+ipEAYtI1McdO3pGh9BYEdWTeVLJ1V
+	06VkAcg+SPPQdlmAqZ314cEAgcGlDYhWsRPuHj3AzyzbPgD/xy7qJYvSfTJuJ3KiBSN/zmTTbQu
+	dJdEEvgsVFNJAIiVa0HhoScq4x/GigbSxIf1ariWfVdYr9R+ry223Bv/wBHvhkc1GRaq/n78+X2
+	xBIu2yltlcuVGQq1UdxquIK8nYGv409wk8hi0MYuzius54TKGEvMou4/b9UQc/oBlXeqCBJ/9sk
+	vnQ83xG2FnYP5WHS8LwRxcPllC0iwjqlie1tuhN3ZtnQ4uNSfgP5wCr0tN67MBrvdyfJttXxkFV
+	3qqIJQAnNjEQgDtdFAxTgG7En7Bwm73Vsv/XQ/KYrQCIk6pkpMPh7DnBrdMODbM9yC99G476yst
+	/irSbvgFFb2xKIV2cDe9jBUZkRKqlGU5QNVDw93t12s3Os
+X-Google-Smtp-Source: AGHT+IGkC/T5Ug40pBLB/PTYvd+HNF4u0/XJSbMf94cUjooX0FvhiVTm6OiXKpkHN10D6t12Rwnt5C5Y/pvh
+X-Received: by 2002:a17:902:cf08:b0:2a2:ecb6:55ac with SMTP id d9443c01a7336-2a2f220cbf6mr365345675ad.7.1767045977171;
+        Mon, 29 Dec 2025 14:06:17 -0800 (PST)
+Received: from smtp-us-east1-p01-i01-si01.dlp.protect.broadcom.com (address-144-49-247-117.dlp.protect.broadcom.com. [144.49.247.117])
+        by smtp-relay.gmail.com with ESMTPS id 41be03b00d2f7-c1e7b784fedsm2277111a12.8.2025.12.29.14.06.16
         for <linux-fbdev@vger.kernel.org>
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 29 Dec 2025 13:59:15 -0800 (PST)
+        Mon, 29 Dec 2025 14:06:17 -0800 (PST)
 X-Relaying-Domain: broadcom.com
 X-CFilter-Loop: Reflected
-Received: by mail-qv1-f69.google.com with SMTP id 6a1803df08f44-88a3356a310so266276436d6.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 29 Dec 2025 13:59:14 -0800 (PST)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-4edaf9e48ecso264538841cf.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 29 Dec 2025 14:06:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=broadcom.com; s=google; t=1767045554; x=1767650354; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pJWRKQHrZ65aEzUoFIqsgm/0iuuS/awy21jyOivXLQY=;
-        b=Bc1Uuj/dibZ/HmiHHL0ZIZvqwRX7tTy1XPZmhMWQyhK41iDOJEJZOs7P6oggFO/QiT
-         dmuD3GiBh5uQEW46ior9RFuWdJUG6j4TDSN/izULpcsdcqaxegjwXMoSv7ZN0M3xp1oV
-         mJxPl0hYyBsSm7wjiYvNjjaxMAbn+ai5xaYuE=
-X-Forwarded-Encrypted: i=1; AJvYcCUlz9NOwMSMBlw+xCI9DjdfxJG/lEmuqdGJHm5iDiYg22hfe/424qsGA81uREx1D3Gk0uKxnwR4wRsMJQ==@vger.kernel.org
-X-Received: by 2002:a05:6214:419b:b0:88f:fbcf:e7cb with SMTP id 6a1803df08f44-88ffbcfeeabmr183064816d6.51.1767045554120;
-        Mon, 29 Dec 2025 13:59:14 -0800 (PST)
-X-Received: by 2002:a05:6214:419b:b0:88f:fbcf:e7cb with SMTP id 6a1803df08f44-88ffbcfeeabmr183064626d6.51.1767045553722;
-        Mon, 29 Dec 2025 13:59:13 -0800 (PST)
-Received: from localhost.localdomain (pool-173-49-113-140.phlapa.fios.verizon.net. [173.49.113.140])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-88d9759f164sm231530026d6.24.2025.12.29.13.59.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        d=broadcom.com; s=google; t=1767045976; x=1767650776; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=UwzcNp2HYOV4Z1mSXVXCsNd5TObEfxUddJJZvW7JJZk=;
+        b=Nbeh+IaU1WNR2p7QWDZlZWk5JailD90naOfx2AjXV8E7Z6PnlRMVr99k1OErloAJFs
+         g/GFgxI8s+KNpRJTFCl7t9MRp0jd5W4KAPcdSrzXy8NRi3redB8AOqkBFKbFUWhxl7f8
+         zyr7T4WNGkcM6MINCUY9IG9majzeGfgP5gh/4=
+X-Forwarded-Encrypted: i=1; AJvYcCW41sNSDl+PM5/EQ37MEBLooz+eCts+ZDfU7scZ7Yx1wi96is5kNeynwbkqpF0OY+8mAE05C1A9t2TCmQ==@vger.kernel.org
+X-Received: by 2002:a05:6214:428e:b0:88a:3681:1d96 with SMTP id 6a1803df08f44-88d881b984fmr478636046d6.63.1767045551435;
         Mon, 29 Dec 2025 13:59:11 -0800 (PST)
+X-Received: by 2002:a05:6214:428e:b0:88a:3681:1d96 with SMTP id 6a1803df08f44-88d881b984fmr478635666d6.63.1767045550918;
+        Mon, 29 Dec 2025 13:59:10 -0800 (PST)
+Received: from localhost.localdomain (pool-173-49-113-140.phlapa.fios.verizon.net. [173.49.113.140])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-88d9759f164sm231530026d6.24.2025.12.29.13.59.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Dec 2025 13:59:10 -0800 (PST)
 From: Zack Rusin <zack.rusin@broadcom.com>
 To: dri-devel@lists.freedesktop.org
-Cc: Ard Biesheuvel <ardb@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Javier Martinez Canillas <javierm@redhat.com>,
+Cc: Alex Deucher <alexander.deucher@amd.com>,
+	amd-gfx@lists.freedesktop.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Ce Sun <cesun102@amd.com>,
+	Chia-I Wu <olvaffe@gmail.com>,
+	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Dave Airlie <airlied@redhat.com>,
+	Deepak Rawat <drawat.floss@gmail.com>,
+	Dmitry Osipenko <dmitry.osipenko@collabora.com>,
+	Gerd Hoffmann <kraxel@redhat.com>,
+	Gurchetan Singh <gurchetansingh@chromium.org>,
+	Hans de Goede <hansg@kernel.org>,
+	Hawking Zhang <Hawking.Zhang@amd.com>,
 	Helge Deller <deller@gmx.de>,
+	intel-gfx@lists.freedesktop.org,
+	intel-xe@lists.freedesktop.org,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Jocelyn Falempe <jfalempe@redhat.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Lijo Lazar <lijo.lazar@amd.com>,
 	linux-efi@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	linux-hyperv@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH 01/12] video/aperture: Add sysfb restore on DRM probe failure
-Date: Mon, 29 Dec 2025 16:58:07 -0500
-Message-ID: <20251229215906.3688205-2-zack.rusin@broadcom.com>
+	Lucas De Marchi <lucas.demarchi@intel.com>,
+	Lyude Paul <lyude@redhat.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	"Mario Limonciello (AMD)" <superm1@kernel.org>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	nouveau@lists.freedesktop.org,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	spice-devel@lists.freedesktop.org,
+	=?UTF-8?q?Thomas=20Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	=?UTF-8?q?Timur=20Krist=C3=B3f?= <timur.kristof@gmail.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	virtualization@lists.linux.dev,
+	Vitaly Prosyak <vitaly.prosyak@amd.com>
+Subject: [PATCH 00/12] Recover sysfb after DRM probe failure
+Date: Mon, 29 Dec 2025 16:58:06 -0500
+Message-ID: <20251229215906.3688205-1-zack.rusin@broadcom.com>
 X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20251229215906.3688205-1-zack.rusin@broadcom.com>
-References: <20251229215906.3688205-1-zack.rusin@broadcom.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-DetectorID-Processed: b00c1d49-9d2e-4205-b15f-d015386d3d5e
 
-When a DRM driver calls aperture_remove_conflicting_pci_devices(), the
-firmware framebuffer (EFI, VESA, etc.) is disabled and its platform
-device is unregistered. If the DRM driver's probe subsequently fails,
-the user is left with no display output.
+Almost a rite of passage for every DRM developer and most Linux users
+is upgrading your DRM driver/updating boot flags/changing some config
+and having DRM driver fail at probe resulting in a blank screen.
 
-Add sysfb_restore() to re-enable the Generic System Framebuffers
-support and re-create the platform device that was previously
-unregistered by sysfb_disable().
+Currently there's no way to recover from DRM driver probe failure. PCI
+DRM driver explicitly throw out the existing sysfb to get exclusive
+access to PCI resources so if the probe fails the system is left without
+a functioning display driver.
 
-Add devm_aperture_remove_conflicting_pci_devices() which wraps the
-existing function and registers a devm action to automatically call
-sysfb_restore() if the driver's probe fails or the driver is unloaded.
-Drivers can call devm_aperture_remove_conflicting_pci_devices_done()
-after successful probe to cancel the automatic restore.
+Add code to sysfb to recever system framebuffer when DRM driver's probe
+fails. This means that a DRM driver that fails to load reloads the system
+framebuffer driver.
 
-Refactor sysfb_init() to use a shared __sysfb_create_device() helper
-that can be called from both sysfb_init() and sysfb_restore(). Add a
-quirks_applied flag to handle the edge case where a driver calls
-sysfb_disable() before sysfb_init() runs, in this case sysfb_restore()
-defers device creation to sysfb_init() since the __init quirk functions
-cannot be called after init memory is freed.
+This works best with simpledrm. Without it Xorg won't recover because
+it still tries to load the vendor specific driver which ends up usually
+not working at all. With simpledrm the system recovers really nicely
+ending up with a working console and not a blank screen.
 
-Signed-off-by: Zack Rusin <zack.rusin@broadcom.com>
+There's a caveat in that some hardware might require some special magic
+register write to recover EFI display. I'd appreciate it a lot if
+maintainers could introduce a temporary failure in their drivers
+probe to validate that the sysfb recovers and they get a working console.
+The easiest way to double check it is by adding:
+ /* XXX: Temporary failure to test sysfb restore - REMOVE BEFORE COMMIT */
+ dev_info(&pdev->dev, "Testing sysfb restore: forcing probe failure\n");
+ ret = -EINVAL;
+ goto out_error;
+or such right after the devm_aperture_remove_conflicting_pci_devices .
+
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: amd-gfx@lists.freedesktop.org
 Cc: Ard Biesheuvel <ardb@kernel.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-efi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Cc: Ce Sun <cesun102@amd.com>
+Cc: Chia-I Wu <olvaffe@gmail.com>
+Cc: "Christian König" <christian.koenig@amd.com>
+Cc: Danilo Krummrich <dakr@kernel.org>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Deepak Rawat <drawat.floss@gmail.com>
+Cc: Dmitry Osipenko <dmitry.osipenko@collabora.com>
 Cc: dri-devel@lists.freedesktop.org
+Cc: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Gurchetan Singh <gurchetansingh@chromium.org>
+Cc: Hans de Goede <hansg@kernel.org>
+Cc: Hawking Zhang <Hawking.Zhang@amd.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: intel-gfx@lists.freedesktop.org
+Cc: intel-xe@lists.freedesktop.org
+Cc: Jani Nikula <jani.nikula@linux.intel.com>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Jocelyn Falempe <jfalempe@redhat.com>
+Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+Cc: Lijo Lazar <lijo.lazar@amd.com>
+Cc: linux-efi@vger.kernel.org
 Cc: linux-fbdev@vger.kernel.org
----
- drivers/firmware/efi/sysfb_efi.c  |   2 +-
- drivers/firmware/sysfb.c          | 191 +++++++++++++++++++-----------
- drivers/firmware/sysfb_simplefb.c |  10 +-
- drivers/video/aperture.c          |  54 +++++++++
- include/linux/aperture.h          |  14 +++
- include/linux/sysfb.h             |   6 +
- 6 files changed, 201 insertions(+), 76 deletions(-)
+Cc: linux-hyperv@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Lucas De Marchi <lucas.demarchi@intel.com>
+Cc: Lyude Paul <lyude@redhat.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: "Mario Limonciello (AMD)" <superm1@kernel.org>
+Cc: Mario Limonciello <mario.limonciello@amd.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: nouveau@lists.freedesktop.org
+Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
+Cc: Simona Vetter <simona@ffwll.ch>
+Cc: spice-devel@lists.freedesktop.org
+Cc: "Thomas Hellström" <thomas.hellstrom@linux.intel.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: "Timur Kristóf" <timur.kristof@gmail.com>
+Cc: Tvrtko Ursulin <tursulin@ursulin.net>
+Cc: virtualization@lists.linux.dev
+Cc: Vitaly Prosyak <vitaly.prosyak@amd.com>
 
-diff --git a/drivers/firmware/efi/sysfb_efi.c b/drivers/firmware/efi/sysfb_efi.c
-index 1e509595ac03..3fe7c57ad849 100644
---- a/drivers/firmware/efi/sysfb_efi.c
-+++ b/drivers/firmware/efi/sysfb_efi.c
-@@ -365,7 +365,7 @@ __init void sysfb_apply_efi_quirks(void)
- 	}
- }
- 
--__init void sysfb_set_efifb_fwnode(struct platform_device *pd)
-+void sysfb_set_efifb_fwnode(struct platform_device *pd)
- {
- 	if (screen_info.orig_video_isVGA == VIDEO_TYPE_EFI && IS_ENABLED(CONFIG_PCI)) {
- 		fwnode_init(&efifb_fwnode, &efifb_fwnode_ops);
-diff --git a/drivers/firmware/sysfb.c b/drivers/firmware/sysfb.c
-index 889e5b05c739..c45b6f487103 100644
---- a/drivers/firmware/sysfb.c
-+++ b/drivers/firmware/sysfb.c
-@@ -38,6 +38,7 @@
- static struct platform_device *pd;
- static DEFINE_MUTEX(disable_lock);
- static bool disabled;
-+static bool quirks_applied;
- 
- static struct device *sysfb_parent_dev(const struct screen_info *si);
- 
-@@ -79,6 +80,121 @@ void sysfb_disable(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(sysfb_disable);
- 
-+/* Caller must hold disable_lock */
-+static int __sysfb_create_device(bool restore)
-+{
-+	struct screen_info *si = &screen_info;
-+	struct device *parent;
-+	unsigned int type;
-+	struct simplefb_platform_data mode;
-+	const char *name;
-+	bool compatible;
-+	int ret = 0;
-+
-+	if (!IS_ERR_OR_NULL(pd))
-+		return 0;
-+
-+	/*
-+	 * If quirks haven't been applied yet, sysfb_init() hasn't run.
-+	 * Don't create the device now - let sysfb_init() do it after
-+	 * applying the necessary fixups and quirks. We can't call
-+	 * sysfb_apply_efi_quirks() here because it's __init.
-+	 */
-+	if (!quirks_applied)
-+		return 0;
-+
-+	parent = sysfb_parent_dev(si);
-+	if (IS_ERR(parent))
-+		return PTR_ERR(parent);
-+
-+	type = screen_info_video_type(si);
-+
-+	/* try to create a simple-framebuffer device */
-+	compatible = sysfb_parse_mode(si, &mode);
-+	if (compatible) {
-+		pd = sysfb_create_simplefb(si, &mode, parent);
-+		if (!IS_ERR(pd)) {
-+			if (restore)
-+				pr_info("sysfb: restored simple-framebuffer device\n");
-+			goto put_device;
-+		}
-+	}
-+
-+	/* if the FB is incompatible, create a legacy framebuffer device */
-+	switch (type) {
-+	case VIDEO_TYPE_EGAC:
-+		name = "ega-framebuffer";
-+		break;
-+	case VIDEO_TYPE_VGAC:
-+		name = "vga-framebuffer";
-+		break;
-+	case VIDEO_TYPE_VLFB:
-+		name = "vesa-framebuffer";
-+		break;
-+	case VIDEO_TYPE_EFI:
-+		name = "efi-framebuffer";
-+		break;
-+	default:
-+		name = "platform-framebuffer";
-+		break;
-+	}
-+
-+	pd = platform_device_alloc(name, 0);
-+	if (!pd) {
-+		ret = -ENOMEM;
-+		goto put_device;
-+	}
-+
-+	pd->dev.parent = parent;
-+
-+	sysfb_set_efifb_fwnode(pd);
-+
-+	ret = platform_device_add_data(pd, si, sizeof(*si));
-+	if (ret)
-+		goto err;
-+
-+	ret = platform_device_add(pd);
-+	if (ret)
-+		goto err;
-+
-+	if (restore)
-+		pr_info("sysfb: restored %s device\n", name);
-+	goto put_device;
-+err:
-+	platform_device_put(pd);
-+	pd = NULL;
-+put_device:
-+	put_device(parent);
-+	return ret;
-+}
-+
-+/**
-+ * sysfb_restore() - restore the Generic System Framebuffer
-+ *
-+ * This function re-enables the Generic System Framebuffers support and
-+ * re-creates the platform device that was previously unregistered by
-+ * sysfb_disable(). This is intended for use by DRM drivers that need to
-+ * restore the fallback framebuffer when their probe fails after having
-+ * called aperture_remove_conflicting_devices() or similar.
-+ *
-+ * Context: The function can sleep. A @disable_lock mutex is acquired.
-+ *
-+ * Returns:
-+ * 0 on success, or a negative errno value otherwise.
-+ */
-+int sysfb_restore(void)
-+{
-+	int ret;
-+
-+	mutex_lock(&disable_lock);
-+	disabled = false;
-+	ret = __sysfb_create_device(true);
-+	mutex_unlock(&disable_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(sysfb_restore);
-+
- /**
-  * sysfb_handles_screen_info() - reports if sysfb handles the global screen_info
-  *
-@@ -141,82 +257,17 @@ static struct device *sysfb_parent_dev(const struct screen_info *si)
- 
- static __init int sysfb_init(void)
- {
--	struct screen_info *si = &screen_info;
--	struct device *parent;
--	unsigned int type;
--	struct simplefb_platform_data mode;
--	const char *name;
--	bool compatible;
- 	int ret = 0;
- 
- 	screen_info_apply_fixups();
--
--	mutex_lock(&disable_lock);
--	if (disabled)
--		goto unlock_mutex;
--
- 	sysfb_apply_efi_quirks();
- 
--	parent = sysfb_parent_dev(si);
--	if (IS_ERR(parent)) {
--		ret = PTR_ERR(parent);
--		goto unlock_mutex;
--	}
--
--	/* try to create a simple-framebuffer device */
--	compatible = sysfb_parse_mode(si, &mode);
--	if (compatible) {
--		pd = sysfb_create_simplefb(si, &mode, parent);
--		if (!IS_ERR(pd))
--			goto put_device;
--	}
--
--	type = screen_info_video_type(si);
--
--	/* if the FB is incompatible, create a legacy framebuffer device */
--	switch (type) {
--	case VIDEO_TYPE_EGAC:
--		name = "ega-framebuffer";
--		break;
--	case VIDEO_TYPE_VGAC:
--		name = "vga-framebuffer";
--		break;
--	case VIDEO_TYPE_VLFB:
--		name = "vesa-framebuffer";
--		break;
--	case VIDEO_TYPE_EFI:
--		name = "efi-framebuffer";
--		break;
--	default:
--		name = "platform-framebuffer";
--		break;
--	}
--
--	pd = platform_device_alloc(name, 0);
--	if (!pd) {
--		ret = -ENOMEM;
--		goto put_device;
--	}
--
--	pd->dev.parent = parent;
--
--	sysfb_set_efifb_fwnode(pd);
--
--	ret = platform_device_add_data(pd, si, sizeof(*si));
--	if (ret)
--		goto err;
--
--	ret = platform_device_add(pd);
--	if (ret)
--		goto err;
--
--	goto put_device;
--err:
--	platform_device_put(pd);
--put_device:
--	put_device(parent);
--unlock_mutex:
-+	mutex_lock(&disable_lock);
-+	quirks_applied = true;
-+	if (!disabled)
-+		ret = __sysfb_create_device(false);
- 	mutex_unlock(&disable_lock);
-+
- 	return ret;
- }
- 
-diff --git a/drivers/firmware/sysfb_simplefb.c b/drivers/firmware/sysfb_simplefb.c
-index 592d8a644619..6fcbc3ae17d5 100644
---- a/drivers/firmware/sysfb_simplefb.c
-+++ b/drivers/firmware/sysfb_simplefb.c
-@@ -24,8 +24,8 @@ static const char simplefb_resname[] = "BOOTFB";
- static const struct simplefb_format formats[] = SIMPLEFB_FORMATS;
- 
- /* try parsing screen_info into a simple-framebuffer mode struct */
--__init bool sysfb_parse_mode(const struct screen_info *si,
--			     struct simplefb_platform_data *mode)
-+bool sysfb_parse_mode(const struct screen_info *si,
-+		      struct simplefb_platform_data *mode)
- {
- 	__u8 type;
- 	u32 bits_per_pixel;
-@@ -61,9 +61,9 @@ __init bool sysfb_parse_mode(const struct screen_info *si,
- 	return false;
- }
- 
--__init struct platform_device *sysfb_create_simplefb(const struct screen_info *si,
--						     const struct simplefb_platform_data *mode,
--						     struct device *parent)
-+struct platform_device *sysfb_create_simplefb(const struct screen_info *si,
-+					      const struct simplefb_platform_data *mode,
-+					      struct device *parent)
- {
- 	struct platform_device *pd;
- 	struct resource res;
-diff --git a/drivers/video/aperture.c b/drivers/video/aperture.c
-index 2b5a1e666e9b..4de6dc04a3fd 100644
---- a/drivers/video/aperture.c
-+++ b/drivers/video/aperture.c
-@@ -372,3 +372,57 @@ int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *na
- 
- }
- EXPORT_SYMBOL(aperture_remove_conflicting_pci_devices);
-+
-+static void devm_aperture_restore_sysfb(void *unused)
-+{
-+	sysfb_restore();
-+}
-+
-+/**
-+ * devm_aperture_remove_conflicting_pci_devices - remove existing framebuffers
-+ *                                                with sysfb restore on failure
-+ * @pdev: PCI device
-+ * @name: a descriptive name of the requesting driver
-+ *
-+ * This function removes devices that own apertures within any of @pdev's
-+ * memory bars, similar to aperture_remove_conflicting_pci_devices().
-+ *
-+ * Additionally, it registers a devm action that will restore the system
-+ * framebuffer if the driver's probe fails or the driver is unloaded. This
-+ * ensures the user doesn't lose display output if the DRM driver probe fails
-+ * after removing the firmware framebuffer.
-+ *
-+ * This function should be called early in the driver's probe function. The
-+ * driver must call devm_aperture_remove_conflicting_pci_devices_done() after
-+ * successfully completing probe to cancel the automatic restore.
-+ *
-+ * Returns:
-+ * 0 on success, or a negative errno code otherwise
-+ */
-+int devm_aperture_remove_conflicting_pci_devices(struct pci_dev *pdev,
-+						 const char *name)
-+{
-+	int ret;
-+
-+	ret = aperture_remove_conflicting_pci_devices(pdev, name);
-+	if (ret)
-+		return ret;
-+
-+	return devm_add_action_or_reset(&pdev->dev, devm_aperture_restore_sysfb,
-+					NULL);
-+}
-+EXPORT_SYMBOL(devm_aperture_remove_conflicting_pci_devices);
-+
-+/**
-+ * devm_aperture_remove_conflicting_pci_devices_done - cancel sysfb restore
-+ * @pdev: PCI device
-+ *
-+ * Cancels the automatic sysfb restore action registered by
-+ * devm_aperture_remove_conflicting_pci_devices(). Call this after the
-+ * driver has successfully completed probe and registered its display.
-+ */
-+void devm_aperture_remove_conflicting_pci_devices_done(struct pci_dev *pdev)
-+{
-+	devm_remove_action(&pdev->dev, devm_aperture_restore_sysfb, NULL);
-+}
-+EXPORT_SYMBOL(devm_aperture_remove_conflicting_pci_devices_done);
-diff --git a/include/linux/aperture.h b/include/linux/aperture.h
-index 1a9a88b11584..ea0ece7f777e 100644
---- a/include/linux/aperture.h
-+++ b/include/linux/aperture.h
-@@ -19,6 +19,10 @@ int aperture_remove_conflicting_devices(resource_size_t base, resource_size_t si
- int __aperture_remove_legacy_vga_devices(struct pci_dev *pdev);
- 
- int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev, const char *name);
-+
-+int devm_aperture_remove_conflicting_pci_devices(struct pci_dev *pdev,
-+						 const char *name);
-+void devm_aperture_remove_conflicting_pci_devices_done(struct pci_dev *pdev);
- #else
- static inline int devm_aperture_acquire_for_platform_device(struct platform_device *pdev,
- 							    resource_size_t base,
-@@ -42,6 +46,16 @@ static inline int aperture_remove_conflicting_pci_devices(struct pci_dev *pdev,
- {
- 	return 0;
- }
-+
-+static inline int devm_aperture_remove_conflicting_pci_devices(struct pci_dev *pdev,
-+							       const char *name)
-+{
-+	return 0;
-+}
-+
-+static inline void devm_aperture_remove_conflicting_pci_devices_done(struct pci_dev *pdev)
-+{
-+}
- #endif
- 
- /**
-diff --git a/include/linux/sysfb.h b/include/linux/sysfb.h
-index b449665c686a..c0ade38bcf99 100644
---- a/include/linux/sysfb.h
-+++ b/include/linux/sysfb.h
-@@ -63,6 +63,7 @@ struct efifb_dmi_info {
- #ifdef CONFIG_SYSFB
- 
- void sysfb_disable(struct device *dev);
-+int sysfb_restore(void);
- 
- bool sysfb_handles_screen_info(void);
- 
-@@ -72,6 +73,11 @@ static inline void sysfb_disable(struct device *dev)
- {
- }
- 
-+static inline int sysfb_restore(void)
-+{
-+	return -ENODEV;
-+}
-+
- static inline bool sysfb_handles_screen_info(void)
- {
- 	return false;
+Zack Rusin (12):
+  video/aperture: Add sysfb restore on DRM probe failure
+  drm/vmwgfx: Use devm aperture helpers for sysfb restore on probe
+    failure
+  drm/xe: Use devm aperture helpers for sysfb restore on probe failure
+  drm/amdgpu: Use devm aperture helpers for sysfb restore on probe
+    failure
+  drm/virtio: Add sysfb restore on probe failure
+  drm/nouveau: Use devm aperture helpers for sysfb restore on probe
+    failure
+  drm/qxl: Use devm aperture helpers for sysfb restore on probe failure
+  drm/vboxvideo: Use devm aperture helpers for sysfb restore on probe
+    failure
+  drm/hyperv: Add sysfb restore on probe failure
+  drm/ast: Use devm aperture helpers for sysfb restore on probe failure
+  drm/radeon: Use devm aperture helpers for sysfb restore on probe
+    failure
+  drm/i915: Use devm aperture helpers for sysfb restore on probe failure
+
+ drivers/firmware/efi/sysfb_efi.c           |   2 +-
+ drivers/firmware/sysfb.c                   | 191 +++++++++++++--------
+ drivers/firmware/sysfb_simplefb.c          |  10 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_device.c |   9 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c    |   7 +
+ drivers/gpu/drm/ast/ast_drv.c              |  13 +-
+ drivers/gpu/drm/hyperv/hyperv_drm_drv.c    |  23 +++
+ drivers/gpu/drm/i915/i915_driver.c         |  13 +-
+ drivers/gpu/drm/nouveau/nouveau_drm.c      |  16 +-
+ drivers/gpu/drm/qxl/qxl_drv.c              |  14 +-
+ drivers/gpu/drm/radeon/radeon_drv.c        |  15 +-
+ drivers/gpu/drm/vboxvideo/vbox_drv.c       |  13 +-
+ drivers/gpu/drm/virtio/virtgpu_drv.c       |  29 ++++
+ drivers/gpu/drm/vmwgfx/vmwgfx_drv.c        |  13 +-
+ drivers/gpu/drm/xe/xe_device.c             |   7 +-
+ drivers/gpu/drm/xe/xe_pci.c                |   7 +
+ drivers/video/aperture.c                   |  54 ++++++
+ include/linux/aperture.h                   |  14 ++
+ include/linux/sysfb.h                      |   6 +
+ 19 files changed, 368 insertions(+), 88 deletions(-)
+
 -- 
 2.48.1
 

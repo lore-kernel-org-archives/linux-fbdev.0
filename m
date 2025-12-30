@@ -1,99 +1,85 @@
-Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79E512D9798
-	for <linux-fbdev@vger.kernel.org>; Tue, 30 Dec 2025 22:43:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8F7E4C97;
+	Tue, 30 Dec 2025 23:22:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=130.133.4.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767134599; cv=none; b=mLMm6vrm+ZCSVV8GdlDuCuXAI6RqAORqFmSubAIXO7niEPTxEld9KLc7noJHINRSdAjjwcEpcrDuOKiU8mA9mFjYHyY3jr1Yj0Y/K5w0nF1wjHYDcpVXGHaN4lgCDohL6+GBU3mK+0YYxXqNbqiv0rAFb7ZJWC4n66KVyNQGbCk=
+	t=1767136960; cv=none; b=ZoYi6vtb8DmrFPcOXsuu+3Hg311Bm8PRxDsHIONIu9kvynbFvkbExPlNf+aaj59XQ2Br7XKiIN3o9ipklIQw2iyXd5yXugNN/1phkYDUedEvi3Xg6aE6CP8/OB4SCoScqQw92yprLq6PYjWt4xdzlfGVTe5j3hi4urn29vY+OZg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767134599; c=relaxed/simple;
-	bh=9mEi6OrHM82M1e0Eu4BKfGlCSswhhgbyi6wTYu1Esdo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=e9x/Lzw4MvTD1y5+TF7fo4Dd2gN+ELPpN/xr0LXPhwAdNA2h+yrZN1cuhm4Lb5mjRNaqcztXtvN1EioryfixT6SPPkSoFC3nE7BoJgb4nB5/IR7ZA9qUtYEiwrLJhCeU21RzjbxhEtCMqujEwVj1ub1EyCGmgm1DvMYWHxJZBFw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PAg5++er; arc=none smtp.client-ip=209.85.208.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1767136960; c=relaxed/simple;
+	bh=r2cz9tw4jBKd82ar26gz02zPgXIBNjbzzIJP69Pfj0g=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=iehFrNl0A+tSYn/iBTgYIwJmaenutJ/dIQlqDE94OyMMNyx7wA/FiuB7lsMTEZ+rGgpTcYAi1+cPaqwr3CUUq1X40c8TCBUSbTo3dqzxYtkOeBkzN63v6STOQjC39fEfkstFo3T8hBpSvMBvtlikU8RFWcz9eK5NvknN14atd74=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; spf=pass smtp.mailfrom=zedat.fu-berlin.de; dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.b=TCzUVSDa; arc=none smtp.client-ip=130.133.4.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zedat.fu-berlin.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PAg5++er"
-Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-64b83949fdaso14156134a12.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 30 Dec 2025 14:43:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767134596; x=1767739396; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9mEi6OrHM82M1e0Eu4BKfGlCSswhhgbyi6wTYu1Esdo=;
-        b=PAg5++er65WS9XxvwSqI8vU5Ei9DZ2ee4hp1LUGGnmc2jZNXAPLR7coXt0b/G3L3yV
-         nyV8UJzcGetCTEKtLWahDfzGtaLZNKn869cJf5jbkfZncAIannxQpy3IK0wFiXzkN6Fa
-         aqUJz6DxavxE4PcCXu168uImohUIhai8eAttJ3Q2bdlcEbrowqaqcCLB/PGiYnJ3gGME
-         ZraCnBDCDShBa5uLsuQL/Vr2cBv8cTSQkNhJbDxKK/FiNo7xu/qWmcg2QUXtkzdsegeZ
-         yIR+5tegggkV1fjv2waDstCN5xgArYM4Op6vtTSX9DPtUVi+cs96n6JZ47k6TLyeWRxx
-         uLNA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767134596; x=1767739396;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=9mEi6OrHM82M1e0Eu4BKfGlCSswhhgbyi6wTYu1Esdo=;
-        b=Ahu3fUgKruAH9pzKwAAMVbqShYg3yTN+g8WS/08XlRy8vTuiPCoPYKkkgGOReMMpgC
-         0OT5MCK/cxU0Zj0y5EjHgjpYmhZx7KrOuHfJWpQmPBqAhf2Z6ymQRdYqhFLfnwOyuRly
-         Txtd5yjotGTqOUCh4mW38jkIVyOM22VsCrgrdmpfDJpxq0A8UXol3j29wo/vA02U7Ec7
-         ku4e6+6bQM41DwyaCzYue+04JJ6yhGea0Kcv7wLQuQOTqHX+7FOCZmETXbf0dp4Rbs24
-         oc6wQtJnCWqBqgB9Od7RgfO9iV+23aWt9d9J4TqtGfXISnVkZGzVtmNfWfAS3dC6p/2p
-         qOwQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXcCO4Alw8XLCKxywNaXTD4Ecr2xSZZAK+XVTOqgdsingTEQNi/DZW3wCQKqovvvEptIchZ9/WXi7L0iA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzTtObNUvnZ/unAbGt8GRsluKJ742V4Rkp/Vaj7uuBcU+2GWXaC
-	rKOUQbspCiAOu+N8P84U90ynkyAtw+tFyRA8+63xyNIUtZXz3D0genxVB+YiShb/hzq0Qk/5r3k
-	wYlWgi6KuXY4na6QBzWPepyyfWereoPM=
-X-Gm-Gg: AY/fxX4tHS6189jFkAYZSJZJx7UUMmXOIHqaVMARtJ0OLz/mTOdRAWpPZSzG1ku7gAb
-	Ba4yBRT5lR0oxmH8Fbk1v9rTaqC4WX/RSBFM1AL8Xcyjvr1p1tBtre/q78Jj430xDl1nLDiUjMc
-	CaQ9M+Nf0AxSHiKoyK+wwdEWvd6qRx8r0ue8GV+p2DJ6pMROeoBmMvUxyYTnApxqluJ6dQbEWoL
-	vhL4BH5qwUQ3dUOX5NU+g0icF+MS5ePkWeC9W697ssXPbEDSG3NE9mXPTVlud6/7cFWG/+1qq8S
-	bUWXIE5a3gm9ULzfN8ylR26Fup72ijyEs0R8P/s8iyU1bUpt1gVXtq2KvyBc6Xg5P/t53QW+bl+
-	m98EEZpU=
-X-Google-Smtp-Source: AGHT+IFQWfQKkPBeY8y1lW4UgnrOAAMI40g1X5cdWEdu84v+wi5zQgy4ZIJWy0xewaTSwh16p/etDzIVCFjsFTSA5bA=
-X-Received: by 2002:a17:907:9408:b0:b73:6998:7bce with SMTP id
- a640c23a62f3a-b8037152a19mr3578554666b.33.1767134595488; Tue, 30 Dec 2025
- 14:43:15 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.b="TCzUVSDa"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
+	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:From:
+	Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
+	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
+	References; bh=rkYEIdat85qyx72JG9RDCYxdwTBwQbQUb/q775rwPoQ=; t=1767136958;
+	x=1767741758; b=TCzUVSDa6/2E4Cr97E4gKkLN1Z6xAm9PEJ72J/PGTom1Gn5Oi9HSIXNaJH0FS
+	R2hXUOtAJ3QZ/2967VWH1w73mkVn6MXlULCURMvjEIiOGejAgRyOUO9Fz/bk/0RIfqU8qaf3zyEwo
+	sNr6kq/VamZRIt8SuIDMoXb9/wgVGVKc5kS14+26bK0KEV5mEE2AlHikDWmc5Xg2Ih5/mZwA9gTuX
+	gSMi5n570lHZjXEVtmMu1BCZcDR3c0wS3YRknRalM9Sn0FS6d501AgTYtHuHGxsjRG10regwwb5go
+	/JmjrIA14C+9HyMcWSrKl1cg7/sVSFDlIkaf7xaKlDYX8VS/Qg==;
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.99)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1vaize-00000002bJi-0GXQ; Wed, 31 Dec 2025 00:19:10 +0100
+Received: from dynamic-093-128-019-094.93.128.pool.telefonica.de ([93.128.19.94] helo=[192.168.178.50])
+          by inpost2.zedat.fu-berlin.de (Exim 4.99)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1vaizd-00000002yoB-3X8A; Wed, 31 Dec 2025 00:19:09 +0100
+Message-ID: <12a2ee5ca1a085fe0bd0c1b2d6e08589445cbf66.camel@physik.fu-berlin.de>
+Subject: Re: [PATCH 0/6] video/logo: allow custom boot logo and simplify
+ logic
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To: Vincent Mailhol <mailhol@kernel.org>, Helge Deller <deller@gmx.de>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Yoshinori Sato
+ <ysato@users.sourceforge.jp>, Rich Felker	 <dalias@libc.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
+Date: Wed, 31 Dec 2025 00:19:08 +0100
+In-Reply-To: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
+References: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.2 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20251230052827.4676-1-chintanlike@gmail.com> <20251230052827.4676-4-chintanlike@gmail.com>
- <aVO5X0NKSdkH6Ab5@smile.fi.intel.com> <081b59e8-e74b-4af6-bd31-00ebb4e12e5c@gmail.com>
-In-Reply-To: <081b59e8-e74b-4af6-bd31-00ebb4e12e5c@gmail.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 31 Dec 2025 00:42:39 +0200
-X-Gm-Features: AQt7F2qWtePPexAYMwq8dRDWvuDOrmxY5lQaE1jMdbfoOaWp8Hbs7ajPSCcSepQ
-Message-ID: <CAHp75Vf0n2wQAEt_kfvZKKyjS7VqU3_SvF0vYbYBGikP=7dQmg@mail.gmail.com>
-Subject: Re: [PATCH v3 3/4] fbdev: omapfb: Make FB_DEVICE dependency optional
-To: Chintan Patel <chintanlike@gmail.com>
-Cc: Andy Shevchenko <andriy.shevchenko@intel.com>, linux-fbdev@vger.kernel.org, 
-	linux-staging@lists.linux.dev, linux-omap@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	tzimmermann@suse.de, andy@kernel.org, deller@gmx.de, 
-	gregkh@linuxfoundation.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-ZEDAT-Hint: PO
 
-On Tue, Dec 30, 2025 at 8:01=E2=80=AFPM Chintan Patel <chintanlike@gmail.co=
-m> wrote:
-> On 12/30/25 03:37, Andy Shevchenko wrote:
-> > On Mon, Dec 29, 2025 at 09:28:21PM -0800, Chintan Patel wrote:
+Hi Vincent,
 
-...
+On Tue, 2025-12-30 at 23:19 +0100, Vincent Mailhol wrote:
+> This series allows the user to replace the default kernel boot logo by
+> a custom one directly in the kernel configuration. This makes it
+> easier to customise the boot logo without the need to modify the
+> sources and allows such customisation to remain persistent after
+> applying the configuration to another version of the kernel.
 
-> > Still the same issue I pointed out in v2 review.
+Wouldn't it make more sense to make the boot logo to be configurable
+at runtime so that users don't have to rebuild their kernel at all
+to change their boot logo?
 
-> Sorry about that. I had actually made your suggested changes but somehow
-> I mistakenly send old patches instead of updated one. I will send
-> updated one. Should I send v4 or v3 is fine?
-
-v4 needs to be sent.
+Adrian
 
 --=20
-With Best Regards,
-Andy Shevchenko
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913

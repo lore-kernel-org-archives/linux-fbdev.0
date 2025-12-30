@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C4A82E8B9F
-	for <linux-fbdev@vger.kernel.org>; Tue, 30 Dec 2025 09:57:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3342F2798F8;
+	Tue, 30 Dec 2025 10:10:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767088662; cv=none; b=kbhLljhE4zRXlWcnb5tQO29rjUWFGvuVizYPW3L8v5zSOudwQ7hHUQkYiLd7SWD52SECRlrH8baasbCZdBlRMga6gYuQiaQYA3mSJcKs/Y1leh5kakW0dmMOUODg1mZxU9Ref+NbvksuhuKdT463H18aS43/wcYls4962gX+/uo=
+	t=1767089424; cv=none; b=sUEPXtFfDIMvWw3hmfOfaZUhwgSwOyrY0kAlyeMSYNHPXOLBt+MAErqpNGWR39o7tEUp13av98bhH0xxXnUavgtbqsd3qGRH+tp/KcoE65arqAIgYIS+ohY5iUv+ZEmoHKRK5LJflvxi9kHit7UoHM5SKhW8MeGRrhEogIcdaBg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767088662; c=relaxed/simple;
-	bh=iMdLebX3IRYLsjS52PuT7vdrl0k9Cy1cNe9T/g40Epc=;
+	s=arc-20240116; t=1767089424; c=relaxed/simple;
+	bh=d/kHrsH+XoZuZtvnpHqwMqq8TBZSxGg6ne7+QepWYEU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CO1Alsopo2++ZXvle8+2PWwQ7Dj6BxuLhgvRdIP0rGaJE29ZfLc5fWaX9O7NxlIpMtmJlRWs8TlVtRcCzAcfk5Yem5BMh67k7xPLWda61cyFUxabdSknct2nOzC1QCN4ARu+/KGm4lO3cxIOBB56IyG8CzrHZpopS/uqVymO4tQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=olmeytOO; arc=none smtp.client-ip=212.227.15.15
+	 In-Reply-To:Content-Type; b=uMuJnxJfhOJfgRJh49t1x5tcZ4mEJXXYVhcISvIY9He7bmHMDE8QpHmLD7ZR02KiMHLN1oqNri4p30qnIbsDaUEOzQ5H26oWeAMBA8KVjHKSgn/KXTr6UyGytQ58kmT74j4ppYWY4X2Si4MLan8ciX55T3sWTC6AEmtYxM/Fl48=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=cI3tZl4p; arc=none smtp.client-ip=212.227.15.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="olmeytOO"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="cI3tZl4p"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1767088653; x=1767693453; i=deller@gmx.de;
-	bh=W655YJR9d+1BjcFpbdv5IHrPJ/BMYQuU9FNei3KQepM=;
+	s=s31663417; t=1767089417; x=1767694217; i=deller@gmx.de;
+	bh=HWMqf7C9R1XN2iJA3m7j7t2Iq+GhqWobceqRGHHQanY=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=olmeytOOZ8Q34fhLHhsTd0pNbBqpfAdrLOenOKWb0iIhQpMaHNqgy07l8ILXFgzq
-	 ARByZq6rbSm0YOXgXguVRxGCnaJfv4Qdq9pHP7Uo3sylofoD3EZR7DgP74+zaVScC
-	 NOyqeRKyaajTWbKC0nRF740IPsKIore0k1hc76i+W3Kr7SGHif6ogI0oyD+1dZPmr
-	 RwSfjrWOuGiaAgfGxdGBiGZ8B3qf7N2A8pWQEZ+7tKlglYt8RGi2QK0wb40eQIiX8
-	 Y5xpDg6cMw7mHVjVxrRyBrRDKBFGO1tiAZVTTAdkep7ltCJb+eNmJMYndp/l4I3t9
-	 S4PN2PLbkIwT89HHBQ==
+	b=cI3tZl4plTXQOVab0LRkbHp8lMxz3e6VLMzFV02+nRxmOFPtAfGbangtFiEbJsYv
+	 kDTObv6+RM8JWwaMKXtnA6METTw7jruy5g2oNOxUutXwaDyGHJdwX+mRtZhlNnvfZ
+	 9gXgO31glavB5Vq1BR0qKuDa/V8PDGPureJopggXOZGG7mn26c5YPvcjKz0yCRBpS
+	 WEQ/AZ2zXj/nQTjnWwhrs5IiCxdkrMzvAP0qxgN1PhcMQ8pTFq+GtAOefGzCKroqK
+	 VJzwZY3x36iynktrMEuNRl6ZDHbmO8XhqOrCFNk3nZXLZFH2zmZyhIwUs0B+NE820
+	 X382bspEMYSYS/3vDQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.55] ([109.250.51.253]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MTABZ-1vUFF41bSR-00We5H; Tue, 30
- Dec 2025 10:57:33 +0100
-Message-ID: <c3253bfe-e967-48ae-9376-a65ad1d53419@gmx.de>
-Date: Tue, 30 Dec 2025 10:57:31 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MVeMA-1vSrCX13gq-00YZho; Tue, 30
+ Dec 2025 11:10:17 +0100
+Message-ID: <0e284b23-e753-4100-8959-2d01977c1ad0@gmx.de>
+Date: Tue, 30 Dec 2025 11:10:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,12 +43,16 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: xilinxfb: request memory region before mapping
- framebuffer
-To: patdiviyam@gmail.com
-Cc: tzimmermann@suse.de, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-References: <20251215225305.3820098-1-patdiviyam@gmail.com>
+Subject: Re: [PATCH] fbdev: geode: lxfb: Use devm_request_mem_region
+To: Swaraj Gaikwad <swarajgaikwad1925@gmail.com>,
+ Andres Salomon <dilinger@queued.net>,
+ "moderated list:AMD GEODE PROCESSOR/CHIPSET SUPPORT"
+ <linux-geode@lists.infradead.org>,
+ "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+ "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
+ open list <linux-kernel@vger.kernel.org>
+Cc: skhan@linuxfoundation.org, david.hunter.linux@gmail.com
+References: <20251214012059.304043-1-swarajgaikwad1925@gmail.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -94,174 +98,210 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20251215225305.3820098-1-patdiviyam@gmail.com>
+In-Reply-To: <20251214012059.304043-1-swarajgaikwad1925@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:cYRJRm4lrHdt0/WtFcAzMzKxRQuFWgEbmXySsi2m7HAsxh1HjQD
- PvZ8kjG2YNzDyIitogKuwVSzHPOzZWphyoUka0s6aP/weOOUCK6v3gF29SsLkgmkt7kBWzA
- VCFsVE/pu9+SuFiCknyKQHyriZrMjOsM/70uWJSeWFXo3lq3US3FjwuSclTPq8Etet7svkw
- glwx3jMQN6P6kwn4zZRkA==
+X-Provags-ID: V03:K1:MMqVyPWROZf5r95yg9v8nq/1s2epymBzUdiaWQ62AQvShniR0+U
+ hlvGZ2KBycKekQOy2Wo4RkuIpECrqPk5RlFB5x3vddRRKIQ6SbiXx1MdnuIbFBN8TnjcMGw
+ jI1zM8c63qkSEogOQCoFNL/sDnDnLmJ41Rl/VWU7dJvLOxVmQ4FuBpzh5n5h/HC7gNM89Pz
+ JAA4XFcGaHczsuDdZbDNQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:ZJkUoi6AAdY=;bgDwquZUPuNeAKIk6gwMT2u2J/Y
- +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
- vXfMT0ZKUs/xaTQ4UpV8CA2SsxlIy
+UI-OutboundReport: notjunk:1;M01:P0:mmw08bnNByI=;zsJKsbmPFbHWBR7FKSQeCSDXKZX
+ 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
 
-On 12/15/25 23:53, patdiviyam@gmail.com wrote:
-> From: DiviyamPathak <patdiviyam@gmail.com>
->=20
-> The xilinxfb driver maps a physical framebuffer address with ioremap()
-> without first reserving the memory region. This can conflict with other
-> drivers accessing the same resource.
->=20
-> Request the memory region with devm_request_mem_region() before mapping
-> the framebuffer and use managed mappings for proper lifetime handling.
->=20
-> This addresses the fbdev TODO about requesting memory regions and avoids
-> potential resource conflicts.
->=20
-> Signed-off-by: DiviyamPathak <patdiviyam@gmail.com>
+Hello Swaraj,
 
-Was it tested it on physical hardware?
-If not, could someone test?
+On 12/14/25 02:20, Swaraj Gaikwad wrote:
+> The lxfb driver currently uses pci_request_region() for memory
+> reservation, which requires manual error handling and cleanup using
+> pci_release_region().
+>=20
+> Simplify the driver by migrating to the managed helper
+> devm_request_mem_region(). This ensures that resources are automatically
+> released on driver detach, allowing the removal of explicit cleanup code
+> in the probe error path and the remove function.
+>=20
+> This addresses the TODO item "Request memory regions in all fbdev
+> drivers" in Documentation/gpu/todo.rst.
+>=20
+> Signed-off-by: Swaraj Gaikwad <swarajgaikwad1925@gmail.com>
+> ---
+> Compile-tested only on x86_64.
+
+I'm somewhat hesitated to apply your geode and arkfb patches.
+
+IIRC, geode and arkfb chips were mostly (only?) used in some
+laptops. That means, beside the arkfb and geode onboard graphics
+chips there were no other (PCI) graphic cards which could conflict
+at VGA addresses. So basically there is no real benefit for
+those drivers to switching using devm_* functions.
+
+Then, although your patches seem to be correct, it's hard to say
+they are okay without actual testing.
+
+That said, maybe someone still has the hardware and is able to test?
 
 Helge
-
-
-> ---
->   drivers/video/fbdev/xilinxfb.c | 30 +++++++++++++++++-------------
->   1 file changed, 17 insertions(+), 13 deletions(-)
+ =20
+>   drivers/video/fbdev/geode/lxfb_core.c | 36 +++++++++------------------
+>   1 file changed, 12 insertions(+), 24 deletions(-)
 >=20
-> diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinx=
-fb.c
-> index 0a6e05cd155a..f18437490de8 100644
-> --- a/drivers/video/fbdev/xilinxfb.c
-> +++ b/drivers/video/fbdev/xilinxfb.c
-> @@ -280,19 +280,27 @@ static int xilinxfb_assign(struct platform_device =
-*pdev,
->   	/* Allocate the framebuffer memory */
->   	if (pdata->fb_phys) {
->   		drvdata->fb_phys =3D pdata->fb_phys;
-> -		drvdata->fb_virt =3D ioremap(pdata->fb_phys, fbsize);
-> +		/* Request the memory region before mapping */
-> +		if (!devm_request_mem_region(dev, pdata->fb_phys, fbsize,
-> +					DRIVER_NAME)) {
-> +			dev_err(dev, "Cannot request framebuffer memory region\n");
-> +			return -EBUSY;
-> +		}
-> +		drvdata->fb_virt =3D devm_ioremap(dev, pdata->fb_phys, fbsize);
-> +		if (!drvdata->fb_virt) {
-> +			dev_err(dev, "Could not map framebuffer memory\n");
-> +			return -ENOMEM;
-> +		}
->   	} else {
->   		drvdata->fb_alloced =3D 1;
->   		drvdata->fb_virt =3D dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
-> -						      &drvdata->fb_phys,
-> -						      GFP_KERNEL);
-> -	}
+> diff --git a/drivers/video/fbdev/geode/lxfb_core.c b/drivers/video/fbdev=
+/geode/lxfb_core.c
+> index cad99f5b7fe8..8189d6a13c5d 100644
+> --- a/drivers/video/fbdev/geode/lxfb_core.c
+> +++ b/drivers/video/fbdev/geode/lxfb_core.c
+> @@ -335,25 +335,21 @@ static int lxfb_map_video_memory(struct fb_info *i=
+nfo, struct pci_dev *dev)
+>   	if (ret)
+>   		return ret;
+>=20
+> -	ret =3D pci_request_region(dev, 0, "lxfb-framebuffer");
+> +	if (!devm_request_mem_region(&dev->dev, pci_resource_start(dev, 0),
+> +			      pci_resource_len(dev, 0), "lxfb-framebuffer"))
+> +		return -EBUSY;
+>=20
+> -	if (ret)
+> -		return ret;
 > -
-> -	if (!drvdata->fb_virt) {
-> -		dev_err(dev, "Could not allocate frame buffer memory\n");
-> -		return -ENOMEM;
-> +					&drvdata->fb_phys,
-> +					GFP_KERNEL);
-> +		if (!drvdata->fb_virt) {
-> +			dev_err(dev, "Could not allocate frame buffer memory\n");
-> +			return -ENOMEM;
-> +		}
+> -	ret =3D pci_request_region(dev, 1, "lxfb-gp");
+> -
+> -	if (ret)
+> -		return ret;
+> +	if (!devm_request_mem_region(&dev->dev, pci_resource_start(dev, 1),
+> +			      pci_resource_len(dev, 1), "lxfb-gp"))
+> +		return -EBUSY;
+>=20
+> -	ret =3D pci_request_region(dev, 2, "lxfb-vg");
+> +	if (!devm_request_mem_region(&dev->dev, pci_resource_start(dev, 2),
+> +			      pci_resource_len(dev, 2), "lxfb-vg"))
+> +		return -EBUSY;
+>=20
+> -	if (ret)
+> -		return ret;
+> -
+> -	ret =3D pci_request_region(dev, 3, "lxfb-vp");
+> -
+> -	if (ret)
+> -		return ret;
+> +	if (!devm_request_mem_region(&dev->dev, pci_resource_start(dev, 3),
+> +			      pci_resource_len(dev, 3), "lxfb-vp"))
+> +		return -EBUSY;
+>=20
+>   	info->fix.smem_start =3D pci_resource_start(dev, 0);
+>   	info->fix.smem_len =3D vram ? vram : lx_framebuffer_size();
+> @@ -546,19 +542,15 @@ static int lxfb_probe(struct pci_dev *pdev, const =
+struct pci_device_id *id)
+>   err:
+>   	if (info->screen_base) {
+>   		iounmap(info->screen_base);
+> -		pci_release_region(pdev, 0);
 >   	}
-> -
->   	/* Clear (turn to black) the framebuffer */
->   	memset_io((void __iomem *)drvdata->fb_virt, 0, fbsize);
->  =20
-> @@ -362,8 +370,6 @@ static int xilinxfb_assign(struct platform_device *p=
-dev,
->   	if (drvdata->fb_alloced)
->   		dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
->   				  drvdata->fb_phys);
-> -	else
-> -		iounmap(drvdata->fb_virt);
->  =20
->   	/* Turn off the display */
->   	xilinx_fb_out32(drvdata, REG_CTRL, 0);
-> @@ -386,8 +392,6 @@ static void xilinxfb_release(struct device *dev)
->   	if (drvdata->fb_alloced)
->   		dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
->   				  drvdata->fb_virt, drvdata->fb_phys);
-> -	else
-> -		iounmap(drvdata->fb_virt);
->  =20
->   	/* Turn off the display */
->   	xilinx_fb_out32(drvdata, REG_CTRL, 0);
+>   	if (par->gp_regs) {
+>   		iounmap(par->gp_regs);
+> -		pci_release_region(pdev, 1);
+>   	}
+>   	if (par->dc_regs) {
+>   		iounmap(par->dc_regs);
+> -		pci_release_region(pdev, 2);
+>   	}
+>   	if (par->vp_regs) {
+>   		iounmap(par->vp_regs);
+> -		pci_release_region(pdev, 3);
+>   	}
+>=20
+>   	fb_dealloc_cmap(&info->cmap);
+> @@ -575,16 +567,12 @@ static void lxfb_remove(struct pci_dev *pdev)
+>   	unregister_framebuffer(info);
+>=20
+>   	iounmap(info->screen_base);
+> -	pci_release_region(pdev, 0);
+>=20
+>   	iounmap(par->gp_regs);
+> -	pci_release_region(pdev, 1);
+>=20
+>   	iounmap(par->dc_regs);
+> -	pci_release_region(pdev, 2);
+>=20
+>   	iounmap(par->vp_regs);
+> -	pci_release_region(pdev, 3);
+>=20
+>   	fb_dealloc_cmap(&info->cmap);
+>   	framebuffer_release(info);
+>=20
+> base-commit: a859eca0e4cc96f63ff125dbe5388d961558b0e9
+> --
+> 2.52.0
+>=20
 

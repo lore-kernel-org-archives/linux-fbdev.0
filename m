@@ -1,34 +1,35 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E11D023B63F;
-	Tue, 30 Dec 2025 22:20:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA05223B63F;
+	Tue, 30 Dec 2025 22:20:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767133231; cv=none; b=Ntq9pT9bNKNJKBWILbLf9tRGO90KPE+cuin4KJ5wxLIodT1IqTKAKxpMnMfI97pl4Was5XDZ78pLJX6ij+ntpfGdCMkgyore0H8660imb7yOz1GSWdb7t/BDGthctXEMiIoYU7QR0RX1odQtlLt5uP2vBs7eNtDgBE8rmlhuX60=
+	t=1767133234; cv=none; b=E5cwS/CwtnIazRdHmsEG4dANP+JLVQc6XSsR9yo7+c6XJhXCt56SDFsdAZvjeXRj/yx4Ks0iHSoOlSiRlKJAUoADeCRaN7Zj4wM8SL3aCbYtG4hisAwQ0oCCxIJChvOi1EMSgCTkPixFaEwxafM3V/EWnfWHic1mLFt+WD6vs4M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767133231; c=relaxed/simple;
-	bh=6I1rEjCG98kdXTPmhTpC3Bn5VqMKhdxPrgp53PclCTE=;
+	s=arc-20240116; t=1767133234; c=relaxed/simple;
+	bh=oiaT6aLlR+Lw7QjGCokHCw+7kOpOxkIL1yAAgjdQAoU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=aqSpEOPSj5cgg5rvWRiQ3d55sCfePIm21W8BRhcVvKQNjT6hoL6x/fJ/pWk1wrYFtiYtmTsl0d2dUthcAFR/B4YG+m9eb39249U0++n9ua7Tx5uHIXo4VYsRy4ous8Uo0o6yh37D2iyiFle55eT/B/EoywgIj2x0TdwnLp4D8Xw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=heaprSRu; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:To:Cc; b=ehJhKGdMamE49wvk78xHPbnC25QNN5c/5BK0JzAKGbHaCgn5YzHhf/YgfrTv20ZiPk/4Alr7GMCeVpGfhGIrOl3UyX7nM2VJ55eCeo7iIKc/KSe0SVgP1hCOphBHghFv65GdC1XXpHuFiQR3duRAM8lTYfs6hgy5KHO569mZ6j0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uAvcTXId; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="heaprSRu"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF47AC16AAE;
-	Tue, 30 Dec 2025 22:20:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uAvcTXId"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE644C4CEFB;
+	Tue, 30 Dec 2025 22:20:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767133230;
-	bh=6I1rEjCG98kdXTPmhTpC3Bn5VqMKhdxPrgp53PclCTE=;
+	s=k20201202; t=1767133233;
+	bh=oiaT6aLlR+Lw7QjGCokHCw+7kOpOxkIL1yAAgjdQAoU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=heaprSRuplV4FHuNIOHD+RI8xFWZsEThLI98xpea+vlBo2wemVEZMxnz7bP1c2fOa
-	 Lk+7iWx0WQcSc5/p1wiX7zd/bO6v7CVvaTH38pvnqtPIClg894tnjsxqxkymkmpw+K
-	 430haaHolWTSgMlZIr/kY3xlLonijVWsyTpr84y6dGk4JfWtP4TYMnwYHdsBRASRdA
-	 giLkM6qBWWhxh52X2ApS3c7YPCCLZMcnLJIHJ4mcxJTFe0/y6259Znd61dzhT/sAiU
-	 h1zQaX56hqITSNUXNffPiLfn/OvQWDx7S0i03x53lgrYwbw2fV/4kIy/i7O3fdiuiI
-	 pOwatwMC3R4Jw==
+	b=uAvcTXId1+g5SoDSBHxwipcS05pcotNbHjxY0/gUbt85pfEuo+DqBzQso++znZBvy
+	 RDbJ901DGoC74xAsh+we+FSPRnbdkMWa4bYvrI3yITFXQ2PQFZ7Pv7mnAJQ2iseZ8W
+	 lAB/cVUsQmkskCgEyP7IKbVXDZbi7EsjkDMt0r7q48DxLfng8X8wBBbTcYY8hGqVky
+	 G5hxHGcSbIjrazxelbyAQ4JsHzyMHdizIFsFOJTF99uZ2ill1rA5RfMC3kBEP7rP+9
+	 AL+Zx6KjSzX7VGMODH/jU3h/xAKHoG1Wm9xSiFYGnf2vMe9vyQuZ2pAJEgmCyDwkNS
+	 0HZ0gsUYjX5cA==
 From: Vincent Mailhol <mailhol@kernel.org>
-Date: Tue, 30 Dec 2025 23:20:00 +0100
-Subject: [PATCH 1/6] video/logo: remove orphan .pgm Makefile rule
+Date: Tue, 30 Dec 2025 23:20:01 +0100
+Subject: [PATCH 2/6] video/logo: add a type parameter to the logo makefile
+ function
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -36,8 +37,8 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20251230-custom-logo-v1-1-4736374569ee@kernel.org>
+Content-Transfer-Encoding: 7bit
+Message-Id: <20251230-custom-logo-v1-2-4736374569ee@kernel.org>
 References: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
 In-Reply-To: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
 To: Helge Deller <deller@gmx.de>, 
@@ -48,40 +49,60 @@ Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, 
  Vincent Mailhol <mailhol@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=943; i=mailhol@kernel.org;
- h=from:subject:message-id; bh=6I1rEjCG98kdXTPmhTpC3Bn5VqMKhdxPrgp53PclCTE=;
- b=owGbwMvMwCV2McXO4Xp97WbG02pJDJkhAWLXFKf84vZ1fND7fqbuwww1ptBnJsKzdb3q47a89
- pgTyJzWMZGFQYyLwVJMkWVZOSe3Qkehd9ihv5Ywc1iZQIZIizQwAAELA19uYl6pkY6Rnqm2oZ6h
- oQ6QycDFKQBT7f2KkWHLEnbmKas+2xsu2OD1WCNvfZ6xfBB3+a/webfuLmd5nzmJ4Z8+D+Nuo6k
- F/3/ZZHz3rJATvHrqZdHb0w2/A4/3zp5d+ZgbAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1715; i=mailhol@kernel.org;
+ h=from:subject:message-id; bh=oiaT6aLlR+Lw7QjGCokHCw+7kOpOxkIL1yAAgjdQAoU=;
+ b=owGbwMvMwCV2McXO4Xp97WbG02pJDJkhAZLRHmGmG87kxcWFZWvMZ/ycbma37f8Ji3dZKbbHu
+ vwflV/vmMjCIMbFYCmmyLKsnJNboaPQO+zQX0uYOaxMIEOkRRoYgICFgS83Ma/USMdIz1TbUM/Q
+ UAfIZODiFICpdp/MyHC5qZ99WXhttc6c14G70w6UfzS4s++PNJ/gu1lzz0ntqZ7GyNDiYTvh16x
+ rHzRfnlD8xxL9ZG2S1pnnjE5iBpNX+diUnOQEAA==
 X-Developer-Key: i=mailhol@kernel.org; a=openpgp;
  fpr=ED8F700574E67F20E574E8E2AB5FEB886DBB99C2
 
-The kernel has no actual grey-scale logos. And looking at the git
-history, it seems that there never was one (or maybe there was in the
-pre-git history? I did not check that far…)
+When translating a portable pixmap file into a .c file, the pnmtologo
+tool expects to receive the image type (either mono, vga16 or clut224)
+as an argument under the -t option.
 
-Remove the Makefile rule for the .pgm grey scale images.
+Currently, this information is stored in the file name. Because we
+will allow for custom logo in an upcoming change, it is preferable to
+decouple the image name from its type.
+
+Add a new $2 parameter to the Makefile logo function which contains
+the image type.
+
+Update all the individual targets to provide this new argument. Note
+that this transitional: all those targets will be removed in an
+upcoming clean-up change.
 
 Signed-off-by: Vincent Mailhol <mailhol@kernel.org>
 ---
- drivers/video/logo/Makefile | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/video/logo/Makefile | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
-index 895c60b8402e..8b67c4941a4c 100644
+index 8b67c4941a4c..3f249e9dcf37 100644
 --- a/drivers/video/logo/Makefile
 +++ b/drivers/video/logo/Makefile
-@@ -30,8 +30,5 @@ $(obj)/%.c: $(src)/%.pbm $(obj)/pnmtologo FORCE
- $(obj)/%.c: $(src)/%.ppm $(obj)/pnmtologo FORCE
- 	$(call if_changed,logo)
+@@ -22,13 +22,16 @@ hostprogs := pnmtologo
  
--$(obj)/%.c: $(src)/%.pgm $(obj)/pnmtologo FORCE
+ # Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
+ quiet_cmd_logo = LOGO    $@
+-      cmd_logo = $(obj)/pnmtologo -t $(lastword $(subst _, ,$*)) -n $* -o $@ $<
++      cmd_logo = $(obj)/pnmtologo -t $2 -n $* -o $@ $<
+ 
+ $(obj)/%.c: $(src)/%.pbm $(obj)/pnmtologo FORCE
 -	$(call if_changed,logo)
--
++	$(call if_changed,logo,mono)
+ 
+-$(obj)/%.c: $(src)/%.ppm $(obj)/pnmtologo FORCE
+-	$(call if_changed,logo)
++$(obj)/%_vga16.c: $(src)/%_vga16.ppm $(obj)/pnmtologo FORCE
++	$(call if_changed,logo,vga16)
++
++$(obj)/%_clut224.c: $(src)/%_clut224.ppm $(obj)/pnmtologo FORCE
++	$(call if_changed,logo,clut224)
+ 
  # generated C files
--targets += *_mono.c *_vga16.c *_clut224.c *_gray256.c
-+targets += *_mono.c *_vga16.c *_clut224.c
+ targets += *_mono.c *_vga16.c *_clut224.c
 
 -- 
 2.51.2

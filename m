@@ -1,283 +1,99 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A62A32BD597;
-	Tue, 30 Dec 2025 22:20:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79E512D9798
+	for <linux-fbdev@vger.kernel.org>; Tue, 30 Dec 2025 22:43:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767133246; cv=none; b=Rh8BojDwz+HrBbi3+RyrYtB/No6gYtzCouqmAcPzDrRNSROUG4vNLtkNo9LtS8VDTkv1t2T+lC3B0mkNkGxio1g1uSxxmTjKOiOmouV2I3OwiNom5voN7v1j1JgBQ7UZgSJ37Xv72h/8V0cLqt1a72JOcYOHKd0cSfk6SzHxkFg=
+	t=1767134599; cv=none; b=mLMm6vrm+ZCSVV8GdlDuCuXAI6RqAORqFmSubAIXO7niEPTxEld9KLc7noJHINRSdAjjwcEpcrDuOKiU8mA9mFjYHyY3jr1Yj0Y/K5w0nF1wjHYDcpVXGHaN4lgCDohL6+GBU3mK+0YYxXqNbqiv0rAFb7ZJWC4n66KVyNQGbCk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767133246; c=relaxed/simple;
-	bh=NNCSULr2nRdE2yYWQR8DwWPhpf7lqz4No+9QPkhz7fU=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=rcSqVN5+b5njMRyeXA0TYm7oJm8JqmxgbzH57uvEQJLxOLt/f5Tej2mCbeDOHPAVdVgjDMUngBFBc9EP795ITeJGQ0zWiC3R4RTsbczHzCVRDaDezJ+CNRk1zUl5EBZk7gml52beJc/zpabaPjUClg404DZ5CSYIK9Iw3WvvmU4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=qRkcgSNB; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1767134599; c=relaxed/simple;
+	bh=9mEi6OrHM82M1e0Eu4BKfGlCSswhhgbyi6wTYu1Esdo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=e9x/Lzw4MvTD1y5+TF7fo4Dd2gN+ELPpN/xr0LXPhwAdNA2h+yrZN1cuhm4Lb5mjRNaqcztXtvN1EioryfixT6SPPkSoFC3nE7BoJgb4nB5/IR7ZA9qUtYEiwrLJhCeU21RzjbxhEtCMqujEwVj1ub1EyCGmgm1DvMYWHxJZBFw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PAg5++er; arc=none smtp.client-ip=209.85.208.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="qRkcgSNB"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CAC0C113D0;
-	Tue, 30 Dec 2025 22:20:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767133246;
-	bh=NNCSULr2nRdE2yYWQR8DwWPhpf7lqz4No+9QPkhz7fU=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=qRkcgSNBcPguuY/ndScjetUz8gZf8VpwWDvFBamXau7VLtAbdMkNLh01o3MQ2J4Av
-	 hKlGkm5KtQ5ke73AyNbnnYSuA9zJGjzT9++tV1ePxHiUf4x94uYEyhV6EtBLvEkMkM
-	 yZA8m1F9DepWU9UB5WLP8XzJ4ctPsdqBQd5OYxzWL9kCmC+O6qy6ZEZNtOeqwOf2oE
-	 QeQ4z3MJIXvHedHMOfL/vfkFqw3MelRceuDF80y9ghUaKjmD9aycuAZsZG5LcOCAxm
-	 JLsHzNNEzFElRklwGf4ru6VMTXULscVvhcshXV3C6szO9GxCfHj1/Qd3jQbj5GJ0Nf
-	 r7RTo8WIiI6pQ==
-From: Vincent Mailhol <mailhol@kernel.org>
-Date: Tue, 30 Dec 2025 23:20:05 +0100
-Subject: [PATCH 6/6] video/logo: move logo selection logic to Kconfig
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PAg5++er"
+Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-64b83949fdaso14156134a12.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 30 Dec 2025 14:43:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1767134596; x=1767739396; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9mEi6OrHM82M1e0Eu4BKfGlCSswhhgbyi6wTYu1Esdo=;
+        b=PAg5++er65WS9XxvwSqI8vU5Ei9DZ2ee4hp1LUGGnmc2jZNXAPLR7coXt0b/G3L3yV
+         nyV8UJzcGetCTEKtLWahDfzGtaLZNKn869cJf5jbkfZncAIannxQpy3IK0wFiXzkN6Fa
+         aqUJz6DxavxE4PcCXu168uImohUIhai8eAttJ3Q2bdlcEbrowqaqcCLB/PGiYnJ3gGME
+         ZraCnBDCDShBa5uLsuQL/Vr2cBv8cTSQkNhJbDxKK/FiNo7xu/qWmcg2QUXtkzdsegeZ
+         yIR+5tegggkV1fjv2waDstCN5xgArYM4Op6vtTSX9DPtUVi+cs96n6JZ47k6TLyeWRxx
+         uLNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767134596; x=1767739396;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=9mEi6OrHM82M1e0Eu4BKfGlCSswhhgbyi6wTYu1Esdo=;
+        b=Ahu3fUgKruAH9pzKwAAMVbqShYg3yTN+g8WS/08XlRy8vTuiPCoPYKkkgGOReMMpgC
+         0OT5MCK/cxU0Zj0y5EjHgjpYmhZx7KrOuHfJWpQmPBqAhf2Z6ymQRdYqhFLfnwOyuRly
+         Txtd5yjotGTqOUCh4mW38jkIVyOM22VsCrgrdmpfDJpxq0A8UXol3j29wo/vA02U7Ec7
+         ku4e6+6bQM41DwyaCzYue+04JJ6yhGea0Kcv7wLQuQOTqHX+7FOCZmETXbf0dp4Rbs24
+         oc6wQtJnCWqBqgB9Od7RgfO9iV+23aWt9d9J4TqtGfXISnVkZGzVtmNfWfAS3dC6p/2p
+         qOwQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXcCO4Alw8XLCKxywNaXTD4Ecr2xSZZAK+XVTOqgdsingTEQNi/DZW3wCQKqovvvEptIchZ9/WXi7L0iA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzTtObNUvnZ/unAbGt8GRsluKJ742V4Rkp/Vaj7uuBcU+2GWXaC
+	rKOUQbspCiAOu+N8P84U90ynkyAtw+tFyRA8+63xyNIUtZXz3D0genxVB+YiShb/hzq0Qk/5r3k
+	wYlWgi6KuXY4na6QBzWPepyyfWereoPM=
+X-Gm-Gg: AY/fxX4tHS6189jFkAYZSJZJx7UUMmXOIHqaVMARtJ0OLz/mTOdRAWpPZSzG1ku7gAb
+	Ba4yBRT5lR0oxmH8Fbk1v9rTaqC4WX/RSBFM1AL8Xcyjvr1p1tBtre/q78Jj430xDl1nLDiUjMc
+	CaQ9M+Nf0AxSHiKoyK+wwdEWvd6qRx8r0ue8GV+p2DJ6pMROeoBmMvUxyYTnApxqluJ6dQbEWoL
+	vhL4BH5qwUQ3dUOX5NU+g0icF+MS5ePkWeC9W697ssXPbEDSG3NE9mXPTVlud6/7cFWG/+1qq8S
+	bUWXIE5a3gm9ULzfN8ylR26Fup72ijyEs0R8P/s8iyU1bUpt1gVXtq2KvyBc6Xg5P/t53QW+bl+
+	m98EEZpU=
+X-Google-Smtp-Source: AGHT+IFQWfQKkPBeY8y1lW4UgnrOAAMI40g1X5cdWEdu84v+wi5zQgy4ZIJWy0xewaTSwh16p/etDzIVCFjsFTSA5bA=
+X-Received: by 2002:a17:907:9408:b0:b73:6998:7bce with SMTP id
+ a640c23a62f3a-b8037152a19mr3578554666b.33.1767134595488; Tue, 30 Dec 2025
+ 14:43:15 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251230-custom-logo-v1-6-4736374569ee@kernel.org>
-References: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
-In-Reply-To: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
-To: Helge Deller <deller@gmx.de>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, 
- Vincent Mailhol <mailhol@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7578; i=mailhol@kernel.org;
- h=from:subject:message-id; bh=NNCSULr2nRdE2yYWQR8DwWPhpf7lqz4No+9QPkhz7fU=;
- b=owGbwMvMwCV2McXO4Xp97WbG02pJDJkhAarP5c2f/p45d23xMpentp8lQy57Wdz1NPCv17F92
- ma/RIurYyILgxgXg6WYIsuyck5uhY5C77BDfy1h5rAygQyRFmlgAAIWBr7cxLxSIx0jPVNtQz1D
- Qx0gk4GLUwCm2vQVI0PfxNsMe27uk1M8yRhwjV17pwZb3vrKNfssn4X+l+j4szKRkaHXjUmqYxN
- jgtLs/VmXTkgEH1E4GlqlHud6/MOBZdJPtnMCAA==
-X-Developer-Key: i=mailhol@kernel.org; a=openpgp;
- fpr=ED8F700574E67F20E574E8E2AB5FEB886DBB99C2
+References: <20251230052827.4676-1-chintanlike@gmail.com> <20251230052827.4676-4-chintanlike@gmail.com>
+ <aVO5X0NKSdkH6Ab5@smile.fi.intel.com> <081b59e8-e74b-4af6-bd31-00ebb4e12e5c@gmail.com>
+In-Reply-To: <081b59e8-e74b-4af6-bd31-00ebb4e12e5c@gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Wed, 31 Dec 2025 00:42:39 +0200
+X-Gm-Features: AQt7F2qWtePPexAYMwq8dRDWvuDOrmxY5lQaE1jMdbfoOaWp8Hbs7ajPSCcSepQ
+Message-ID: <CAHp75Vf0n2wQAEt_kfvZKKyjS7VqU3_SvF0vYbYBGikP=7dQmg@mail.gmail.com>
+Subject: Re: [PATCH v3 3/4] fbdev: omapfb: Make FB_DEVICE dependency optional
+To: Chintan Patel <chintanlike@gmail.com>
+Cc: Andy Shevchenko <andriy.shevchenko@intel.com>, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-omap@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	tzimmermann@suse.de, andy@kernel.org, deller@gmx.de, 
+	gregkh@linuxfoundation.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Now that the path to the logo file can be directly entered in Kbuild,
-there is no more need to handle all the logo file selection in the
-Makefile and the C files.
+On Tue, Dec 30, 2025 at 8:01=E2=80=AFPM Chintan Patel <chintanlike@gmail.co=
+m> wrote:
+> On 12/30/25 03:37, Andy Shevchenko wrote:
+> > On Mon, Dec 29, 2025 at 09:28:21PM -0800, Chintan Patel wrote:
 
-Move all the logo file selection logic to Kbuild, this done, clean-up
-the C code to only leave one entry for each logo type (monochrome,
-16-colors and 224-colors).
+...
 
-Signed-off-by: Vincent Mailhol <mailhol@kernel.org>
----
- drivers/video/logo/Kconfig  | 49 +++++++++------------------------------------
- drivers/video/logo/Makefile | 21 +------------------
- drivers/video/logo/logo.c   | 46 ++++--------------------------------------
- include/linux/linux_logo.h  |  9 ---------
- 4 files changed, 14 insertions(+), 111 deletions(-)
+> > Still the same issue I pointed out in v2 review.
 
-diff --git a/drivers/video/logo/Kconfig b/drivers/video/logo/Kconfig
-index 1d1651c067a1..9bf8f14c6856 100644
---- a/drivers/video/logo/Kconfig
-+++ b/drivers/video/logo/Kconfig
-@@ -25,6 +25,7 @@ config LOGO_LINUX_MONO
- config LOGO_LINUX_MONO_FILE
- 	string "Monochrome logo .pbm file"
- 	depends on LOGO_LINUX_MONO
-+	default "drivers/video/logo/logo_superh_mono.pbm" if SUPERH
- 	default "drivers/video/logo/logo_linux_mono.pbm"
- 	help
- 	  Takes a path to a monochromatic logo in the portable pixmap file
-@@ -42,6 +43,7 @@ config LOGO_LINUX_VGA16
- config LOGO_LINUX_VGA16_FILE
- 	string "16-color logo .ppm file"
- 	depends on LOGO_LINUX_VGA16
-+	default "drivers/video/logo/logo_superh_vga16.ppm" if SUPERH
- 	default "drivers/video/logo/logo_linux_vga16.ppm"
- 	help
- 	  Takes a path to a logo in the portable pixmap file format (.ppm),
-@@ -61,6 +63,13 @@ config LOGO_LINUX_CLUT224
- config LOGO_LINUX_CLUT224_FILE
- 	string "224-color logo .ppm file"
- 	depends on LOGO_LINUX_CLUT224
-+	default "drivers/video/logo/logo_dec_clut224.ppm" if MACH_DECSTATION || ALPHA
-+	default "drivers/video/logo/logo_mac_clut224.ppm" if MAC
-+	default "drivers/video/logo/logo_parisc_clut224.ppm" if PARISC
-+	default "drivers/video/logo/logo_sgi_clut224.ppm" if SGI_IP22 || SGI_IP27 || SGI_IP32
-+	default "drivers/video/logo/logo_sun_clut224.ppm" if SPARC
-+	default "drivers/video/logo/logo_superh_clut224.ppm" if SUPERH
-+	default "drivers/video/logo/logo_spe_clut224.ppm" if SPU_BASE
- 	default "drivers/video/logo/logo_linux_clut224.ppm"
- 	help
- 	  Takes a path to a 224-color logo in the portable pixmap file
-@@ -71,44 +80,4 @@ config LOGO_LINUX_CLUT224_FILE
- 
- 	    magick source_image -compress none -colors 224 destination.ppm
- 
--config LOGO_DEC_CLUT224
--	bool "224-color Digital Equipment Corporation Linux logo"
--	depends on MACH_DECSTATION || ALPHA
--	default y
--
--config LOGO_MAC_CLUT224
--	bool "224-color Macintosh Linux logo"
--	depends on MAC
--	default y
--
--config LOGO_PARISC_CLUT224
--	bool "224-color PA-RISC Linux logo"
--	depends on PARISC
--	default y
--
--config LOGO_SGI_CLUT224
--	bool "224-color SGI Linux logo"
--	depends on SGI_IP22 || SGI_IP27 || SGI_IP32
--	default y
--
--config LOGO_SUN_CLUT224
--	bool "224-color Sun Linux logo"
--	depends on SPARC
--	default y
--
--config LOGO_SUPERH_MONO
--	bool "Black and white SuperH Linux logo"
--	depends on SUPERH
--	default y
--
--config LOGO_SUPERH_VGA16
--	bool "16-color SuperH Linux logo"
--	depends on SUPERH
--	default y
--
--config LOGO_SUPERH_CLUT224
--	bool "224-color SuperH Linux logo"
--	depends on SUPERH
--	default y
--
- endif # LOGO
-diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
-index ac8e9da3f51a..c32238fddaa6 100644
---- a/drivers/video/logo/Makefile
-+++ b/drivers/video/logo/Makefile
-@@ -5,16 +5,6 @@ obj-$(CONFIG_LOGO)			+= logo.o
- obj-$(CONFIG_LOGO_LINUX_MONO)		+= logo_linux_mono.o
- obj-$(CONFIG_LOGO_LINUX_VGA16)		+= logo_linux_vga16.o
- obj-$(CONFIG_LOGO_LINUX_CLUT224)	+= logo_linux_clut224.o
--obj-$(CONFIG_LOGO_DEC_CLUT224)		+= logo_dec_clut224.o
--obj-$(CONFIG_LOGO_MAC_CLUT224)		+= logo_mac_clut224.o
--obj-$(CONFIG_LOGO_PARISC_CLUT224)	+= logo_parisc_clut224.o
--obj-$(CONFIG_LOGO_SGI_CLUT224)		+= logo_sgi_clut224.o
--obj-$(CONFIG_LOGO_SUN_CLUT224)		+= logo_sun_clut224.o
--obj-$(CONFIG_LOGO_SUPERH_MONO)		+= logo_superh_mono.o
--obj-$(CONFIG_LOGO_SUPERH_VGA16)		+= logo_superh_vga16.o
--obj-$(CONFIG_LOGO_SUPERH_CLUT224)	+= logo_superh_clut224.o
--
--obj-$(CONFIG_SPU_BASE)			+= logo_spe_clut224.o
- 
- # How to generate logo's
- 
-@@ -33,14 +23,5 @@ $(obj)/logo_linux_vga16.c: $(CONFIG_LOGO_LINUX_VGA16_FILE) $(obj)/pnmtologo FORC
- $(obj)/logo_linux_clut224.c: $(CONFIG_LOGO_LINUX_CLUT224_FILE) $(obj)/pnmtologo FORCE
- 	$(call if_changed,logo,clut224)
- 
--$(obj)/%.c: $(src)/%.pbm $(obj)/pnmtologo FORCE
--	$(call if_changed,logo,mono)
--
--$(obj)/%_vga16.c: $(src)/%_vga16.ppm $(obj)/pnmtologo FORCE
--	$(call if_changed,logo,vga16)
--
--$(obj)/%_clut224.c: $(src)/%_clut224.ppm $(obj)/pnmtologo FORCE
--	$(call if_changed,logo,clut224)
--
- # generated C files
--targets += *_mono.c *_vga16.c *_clut224.c
-+targets += logo_linux_mono.c logo_linux_vga16.c logo_linux_clut224.c
-diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
-index 141f15a9a459..91535f8848da 100644
---- a/drivers/video/logo/logo.c
-+++ b/drivers/video/logo/logo.c
-@@ -48,59 +48,21 @@ const struct linux_logo * __ref fb_find_logo(int depth)
- 	if (nologo || logos_freed)
- 		return NULL;
- 
--	if (depth >= 1) {
- #ifdef CONFIG_LOGO_LINUX_MONO
--		/* Generic Linux logo */
-+	if (depth >= 1)
- 		logo = &logo_linux_mono;
- #endif
--#ifdef CONFIG_LOGO_SUPERH_MONO
--		/* SuperH Linux logo */
--		logo = &logo_superh_mono;
--#endif
--	}
- 	
--	if (depth >= 4) {
- #ifdef CONFIG_LOGO_LINUX_VGA16
--		/* Generic Linux logo */
-+	if (depth >= 4)
- 		logo = &logo_linux_vga16;
- #endif
--#ifdef CONFIG_LOGO_SUPERH_VGA16
--		/* SuperH Linux logo */
--		logo = &logo_superh_vga16;
--#endif
--	}
- 	
--	if (depth >= 8) {
- #ifdef CONFIG_LOGO_LINUX_CLUT224
--		/* Generic Linux logo */
-+	if (depth >= 8)
- 		logo = &logo_linux_clut224;
- #endif
--#ifdef CONFIG_LOGO_DEC_CLUT224
--		/* DEC Linux logo on MIPS/MIPS64 or ALPHA */
--		logo = &logo_dec_clut224;
--#endif
--#ifdef CONFIG_LOGO_MAC_CLUT224
--		/* Macintosh Linux logo on m68k */
--		if (MACH_IS_MAC)
--			logo = &logo_mac_clut224;
--#endif
--#ifdef CONFIG_LOGO_PARISC_CLUT224
--		/* PA-RISC Linux logo */
--		logo = &logo_parisc_clut224;
--#endif
--#ifdef CONFIG_LOGO_SGI_CLUT224
--		/* SGI Linux logo on MIPS/MIPS64 */
--		logo = &logo_sgi_clut224;
--#endif
--#ifdef CONFIG_LOGO_SUN_CLUT224
--		/* Sun Linux logo */
--		logo = &logo_sun_clut224;
--#endif
--#ifdef CONFIG_LOGO_SUPERH_CLUT224
--		/* SuperH Linux logo */
--		logo = &logo_superh_clut224;
--#endif
--	}
-+
- 	return logo;
- }
- EXPORT_SYMBOL_GPL(fb_find_logo);
-diff --git a/include/linux/linux_logo.h b/include/linux/linux_logo.h
-index e37699b7e839..d5a66af27fd9 100644
---- a/include/linux/linux_logo.h
-+++ b/include/linux/linux_logo.h
-@@ -33,15 +33,6 @@ struct linux_logo {
- extern const struct linux_logo logo_linux_mono;
- extern const struct linux_logo logo_linux_vga16;
- extern const struct linux_logo logo_linux_clut224;
--extern const struct linux_logo logo_dec_clut224;
--extern const struct linux_logo logo_mac_clut224;
--extern const struct linux_logo logo_parisc_clut224;
--extern const struct linux_logo logo_sgi_clut224;
--extern const struct linux_logo logo_sun_clut224;
--extern const struct linux_logo logo_superh_mono;
--extern const struct linux_logo logo_superh_vga16;
--extern const struct linux_logo logo_superh_clut224;
--extern const struct linux_logo logo_spe_clut224;
- 
- extern const struct linux_logo *fb_find_logo(int depth);
- #ifdef CONFIG_FB_LOGO_EXTRA
+> Sorry about that. I had actually made your suggested changes but somehow
+> I mistakenly send old patches instead of updated one. I will send
+> updated one. Should I send v4 or v3 is fine?
 
--- 
-2.51.2
+v4 needs to be sent.
 
+--=20
+With Best Regards,
+Andy Shevchenko

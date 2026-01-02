@@ -1,80 +1,140 @@
-Received: from mail.antaris-organics.com (mail.antaris-organics.com [91.227.220.155])
+Received: from ixit.cz (ixit.cz [185.100.197.86])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2AAA9463;
-	Fri,  2 Jan 2026 16:30:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.227.220.155
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18EFF2BD597;
+	Fri,  2 Jan 2026 16:43:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.100.197.86
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767371457; cv=none; b=q2ARRx2RGzLRjv4F87YqJHnYJ2dULZI7yeCiY0sToP+vmD47kUM4jJfk5g+JpMk/wbLMlFMzAhfcn8pJ8xl9ya2g1nBVg9jMQrqK+j7/yiyooQLqM3iiamYpsGN8dPiwTueCLmH++q/6oLEpRr3YhF1QHwVNS8Q3YemFgU84jAk=
+	t=1767372217; cv=none; b=ff0+erMf+G6upUHhsJzTUG/h3PdWstH86FRhAzgL2AirfjZoY6yzIpXUT+HO4jqHiydqYHiDsIfrj0aAOtEmnwuVP6ybqH8J/rqXHuvx2nGS4ZF4vVZiG2zEcvVt2YWfxWvw44EPbXm6oglYLpIg49bSmFHZnIBLa9YwVls+2OQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767371457; c=relaxed/simple;
-	bh=W9x6B8RzXHD/s8bwGkmccsIgeP5fFleFJ110N4EFG7Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=E6YqvmZH0QMI7Tj9xDvInwib/efGP+/6D0usL7kT9EnjlfNXGDHJ9u1cMhTRlKY1d3edleEbssXXFJH80Qgg4oueHsp62VQ2jRfXstDzD5sHJ5YqmN3T+ind64Us+VgFmwV2FYhEYQmT7qlwskgy39DliuBEJXTzjhvi4OruSBA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mareichelt.com; spf=pass smtp.mailfrom=mareichelt.com; dkim=pass (2048-bit key) header.d=mareichelt.com header.i=@mareichelt.com header.b=lqf5AkAa; arc=none smtp.client-ip=91.227.220.155
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=mareichelt.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mareichelt.com
+	s=arc-20240116; t=1767372217; c=relaxed/simple;
+	bh=Se2Msbx3b/ptPCRXXz7HlIiyt9musS0Pn1UHpKNXAfg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=L5YN4u+RCYTXnVnva4tUJUSq1Unlh1s05ANCgSvf4Cfs+PGWHHe9Z1kBrYIo9Wbc7b/tUGvp4v5+CHcgJWgKg1WX0jfApSp0sV1DG4dv0cRmJRXmODtNGRJtnDZKaXbHWQyIqXk5imTJ14b8dcdqnItmSLSIiOirCpwObqZU3b8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz; spf=pass smtp.mailfrom=ixit.cz; dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b=VugoNGGM; arc=none smtp.client-ip=185.100.197.86
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ixit.cz
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ixit.cz
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mareichelt.com header.i=@mareichelt.com header.b="lqf5AkAa"
-Date: Fri, 2 Jan 2026 17:30:53 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mareichelt.com;
-	s=202107; t=1767371454;
-	bh=W9x6B8RzXHD/s8bwGkmccsIgeP5fFleFJ110N4EFG7Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To:Cc:Cc:content-type:content-type:date:date:
-	 From:from:in-reply-to:in-reply-to:message-id:mime-version:
-	 mime-version:references:reply-to:Sender:Subject:Subject:To:To;
-	b=lqf5AkAa/DoxkAYzjCuBjHhW+xWFdftVlnaQy71fwhffSKJqE0SXgt+qVrCJGIvSu
-	 mCq00ogYsb04ofykSwXzsY5TbCgigxrqBPbPFuuc5duzFyyhWXP5zTcHG3/Sjmo3KX
-	 c3LkNMivFTKjZIdEUOr0R2Qg+acBDyzy9aS+fTmghtotPOQtxw1VisplcNxQubXRdB
-	 wizQhu87oa6ebSs7NNcs60u54Nna1C6wq/PCE2OsKwOKOs7U7WPP+QYEjEwUxdjrwo
-	 4tQjfDfdicqbYjucDpgmCdthoZhoCkKTZgROznMG+HkrUOFtCsk46BSnyMzsa410/5
-	 PI5bsenp+hO0g==
-From: Markus Reichelt <ml@mareichelt.com>
-To: Vincent Mailhol <mailhol@kernel.org>
-Cc: Helge Deller <deller@gmx.de>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
-Subject: Re: [PATCH 0/6] video/logo: allow custom boot logo and simplify logic
-Message-ID: <20260102163053.GE26548@pc21.mareichelt.com>
-Mail-Followup-To: Vincent Mailhol <mailhol@kernel.org>,
-	Helge Deller <deller@gmx.de>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
-References: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
+	dkim=pass (1024-bit key) header.d=ixit.cz header.i=@ixit.cz header.b="VugoNGGM"
+Received: from [10.0.0.240] (unknown [10.88.125.21])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ixit.cz (Postfix) with ESMTPSA id 4C40B5340F59;
+	Fri, 02 Jan 2026 17:34:13 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ixit.cz; s=dkim;
+	t=1767371653;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Ija806yE6QgsXpe3aUxDMELDAOmfLdQICSHtDX9Ei7g=;
+	b=VugoNGGMCXsdf//NbIBQCzTlGpgyPfPMWWVVhjI5jGBetclGvAoKw4tyyASSy7ghu8Wfxf
+	UTDeONh56H10V98MFBwe8eLkBmQD1FxmiLnCOB/vr6MXbw5jBqkLvUFPbjrKxF5Osm2DLS
+	v39fxUq7S2ZNZHfT0UNXhYwPmAo5K5M=
+Message-ID: <e04c9862-761f-4f36-b978-b760d2a0a928@ixit.cz>
+Date: Fri, 2 Jan 2026 17:34:12 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/6] video/logo: remove orphan .pgm Makefile rule
+To: Vincent Mailhol <mailhol@kernel.org>, Helge Deller <deller@gmx.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
+References: <20251230-custom-logo-v1-0-4736374569ee@kernel.org>
+ <20251230-custom-logo-v1-1-4736374569ee@kernel.org>
+Content-Language: en-US
+From: David Heidelberg <david@ixit.cz>
+Autocrypt: addr=david@ixit.cz; keydata=
+ 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
+In-Reply-To: <20251230-custom-logo-v1-1-4736374569ee@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-* Vincent Mailhol <mailhol@kernel.org> wrote:
+On 30/12/2025 23:20, Vincent Mailhol wrote:
+> The kernel has no actual grey-scale logos. And looking at the git
+> history, it seems that there never was one (or maybe there was in the
+> pre-git history? I did not check that far…)
+> 
+> Remove the Makefile rule for the .pgm grey scale images.
 
-> This series allows the user to replace the default kernel boot logo by
-> a custom one directly in the kernel configuration. This makes it
-> easier to customise the boot logo without the need to modify the
-> sources and allows such customisation to remain persistent after
-> applying the configuration to another version of the kernel.
+Great to see this series.
 
-Hah! What I have been doing for so many moons is to just cp my own logo
-'logo_linux_clut224.ppm' -> 'drivers/video/logo/logo_linux_clut224.ppm'
-for each custom kernel build - that works like a charm.
-Maybe... I'm too pragmatic? It's that famous 'kill bill' logo from ages
-ago, 224 colors PPM
+I think the Fixes: tag should still go here, even if it is not very 
+specific.
 
-Haven't tested your patch series cos stuff just works for me.
-Looking forward to feedback from all those logo nerds out there.
+David
 
-Markus
+> 
+> Signed-off-by: Vincent Mailhol <mailhol@kernel.org>
+> ---
+>   drivers/video/logo/Makefile | 5 +----
+>   1 file changed, 1 insertion(+), 4 deletions(-)
+> 
+> diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
+> index 895c60b8402e..8b67c4941a4c 100644
+> --- a/drivers/video/logo/Makefile
+> +++ b/drivers/video/logo/Makefile
+> @@ -30,8 +30,5 @@ $(obj)/%.c: $(src)/%.pbm $(obj)/pnmtologo FORCE
+>   $(obj)/%.c: $(src)/%.ppm $(obj)/pnmtologo FORCE
+>   	$(call if_changed,logo)
+>   
+> -$(obj)/%.c: $(src)/%.pgm $(obj)/pnmtologo FORCE
+> -	$(call if_changed,logo)
+> -
+>   # generated C files
+> -targets += *_mono.c *_vga16.c *_clut224.c *_gray256.c
+> +targets += *_mono.c *_vga16.c *_clut224.c
+> 
+
+-- 
+David Heidelberg
+

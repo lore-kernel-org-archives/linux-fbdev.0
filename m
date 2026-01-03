@@ -1,90 +1,116 @@
-Received: from www3141.sakura.ne.jp (www3141.sakura.ne.jp [49.212.207.181])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77D93176ADE;
-	Sat,  3 Jan 2026 13:01:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=49.212.207.181
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767445311; cv=pass; b=T6lYeZ2h76RKwwpSTXC4v0cEdq3eKWsmRWluqGe6Ntuj1HAs0IFQXpXjTTNKpYel6wNiFzFlDkNed0YbJ8dibvWv6wyRX1UwAnGpMYlEqAigKzOQE6YSVnmxOuK9o/yT7Jvb+Y4umUSEmayQabYWRK7LYO08WRpJd0JHmterL8Y=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767445311; c=relaxed/simple;
-	bh=Kni+ALOf0SmXO5HjT3FmQtt5s7alI1o8bjgFe8pbzMo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CpOigF270CGtCEVAY2dDDSVsd3LjkhHTDmgapL1iwbGMLhl8iMPop2bB0j+rUxptpV/dhyW2xRZn9dF5nFB36skTme8zKU6l2JAmh04hMitzRpj1d795lB+B6bVnxzHmpGDUy0ZHYB8dQybpx+P0BmlJhAJFjPtGx6wQZctqKmo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redadmin.org; spf=pass smtp.mailfrom=redadmin.org; dkim=pass (1024-bit key) header.d=redadmin.org header.i=@redadmin.org header.b=j7H50wh4; arc=pass smtp.client-ip=49.212.207.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redadmin.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redadmin.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E54914884C;
+	Sat,  3 Jan 2026 13:15:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1767446160; cv=none; b=gvz3zF5NnVz5aJuSc1ZhkPeqVX2bn6GpILGYvZvZwp2vl7GpARcmp6zHLJ1B3B8hCPBf7Hbr2qfj8591/E6bb6u9982x0o3MJiWJwt21bzuhvHUR7WDFZ0d/4zaX7yPF8565f0lBLhCQNdW5Gt3YGPHc09mg+3BAEaZICcE1EYc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1767446160; c=relaxed/simple;
+	bh=T1meHIE3kNQ1z03ZzqxoD5qsWYeE0kujZCxSwuYVgbA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=skSMjIvzmk2CMlcmUaw7QWd6Wt9YCr+iziEfWyG/Nyq8ZUQy+bC6tDRCx/ihmHuVKKZkPbtHnZAlo49juyWvHf0Qz/9Yxb6jd9aeY741Ayaq0EAAg6KsOlwJUCkZs4zjz9HJMZ/e4m3i2XH7ldbalWnhgTk2fpKSZA7RBD2oIZ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VqxIX5o/; arc=none smtp.client-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redadmin.org header.i=@redadmin.org header.b="j7H50wh4"
-Received: from www.redadmin.org (bc043154.ppp.asahi-net.or.jp [222.228.43.154])
-	(authenticated bits=0)
-	by www3141.sakura.ne.jp (8.16.1/8.16.1) with ESMTPSA id 603C8Uqp025816
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
-	Sat, 3 Jan 2026 21:08:31 +0900 (JST)
-	(envelope-from weibu@redadmin.org)
-Received: from localhost (localhost [127.0.0.1])
-	by www.redadmin.org (Postfix) with ESMTP id 9FF8E109EFAE6;
-	Sat,  3 Jan 2026 21:08:30 +0900 (JST)
-X-Virus-Scanned: amavis at redadmin.org
-Received: from www.redadmin.org ([127.0.0.1])
- by localhost (redadmin.org [127.0.0.1]) (amavis, port 10024) with ESMTP
- id 3iWl4XW8LZRY; Sat,  3 Jan 2026 21:08:27 +0900 (JST)
-Received: by www.redadmin.org (Postfix, from userid 1000)
-	id 15174109EFAE2; Sat,  3 Jan 2026 21:08:27 +0900 (JST)
-Authentication-Results: www.redadmin.org; arc=none smtp.remote-ip=127.0.0.1
-ARC-Seal: i=1; a=rsa-sha256; d=redadmin.org; s=20231208space; t=1767442107;
-	cv=none; b=YTvZR+T/SBh7fOvZxg8HkhDHuAr11REbaWi1Doae5+FztuBz8ItGJ7AQo1v5sjEU7AdW5+qrIzTfRNLzvLKO0rX+rrkpzicyLhRas5ukEesikyhlS3/qGxPYZXLayvPRuzuXCHZR9Ca4sqC3wmPySAVQRHaIRgNCx/3V+muqvPE=
-ARC-Message-Signature: i=1; a=rsa-sha256; d=redadmin.org; s=20231208space;
-	t=1767442107; c=relaxed/relaxed;
-	bh=UKbt6mJywnCUvdREcRbT7IioK/DgJePwglUtLe9nS7M=;
-	h=DKIM-Filter:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
-	 X-Mailer:MIME-Version:Content-Transfer-Encoding; b=hzHHCLg745SCB7XCgmQCIvazw3JHtiJXZlEjzl6Zz/YPXzq+0qGJFpXlMHFh0qKJWAa/R637Xsa9g5KYtG1uPeZeKjJMN7O+XAQKZ/xchXEztVJhckix3a+IoK54Go0yj1jdiayIRYRkECD4S27FwNqCvevrNm5y96hkVV0TSIU=
-ARC-Authentication-Results: i=1; www.redadmin.org
-DKIM-Filter: OpenDKIM Filter v2.11.0 www.redadmin.org 15174109EFAE2
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redadmin.org;
-	s=20231208space; t=1767442107;
-	bh=UKbt6mJywnCUvdREcRbT7IioK/DgJePwglUtLe9nS7M=;
-	h=From:To:Cc:Subject:Date:From;
-	b=j7H50wh4vixl7CY7dqtei1IJ3G/17d14wVgym4FvqQgySjcnORBiqet/PDQye/h02
-	 +QjeWVpAtwyXx56HJHgAvOCDgunFnR3nJeo59fDju3gwP+dHBdbah3MkK3uNSyNeBE
-	 R5fwz8A4H+lCFV4B/ARLPHJJwTcXeIm1Kf/DYD90=
-From: Akiyoshi Kurita <weibu@redadmin.org>
-To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org, Akiyoshi Kurita <weibu@redadmin.org>
-Subject: [PATCH] staging: sm750fb: fix typo 'resetted' -> 'reset'
-Date: Sat,  3 Jan 2026 21:08:24 +0900
-Message-ID: <20260103120824.1275574-1-weibu@redadmin.org>
-X-Mailer: git-send-email 2.47.3
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VqxIX5o/"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1767446159; x=1798982159;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=T1meHIE3kNQ1z03ZzqxoD5qsWYeE0kujZCxSwuYVgbA=;
+  b=VqxIX5o/C3YyuMRgF2hGYQx+0kEd1dQFyX+KiZMDTFH97AUqo3N/Hztx
+   sSjQ74WR9NZ5OVvVc/WNoIrJvZhEYWV5oHzYXOrUqGOg/yUB9h7Sux+0O
+   vNm1HOvEIqwhJ+OejzOhOAJw+dVaFhi+dg5Zf3EtHdt7oZPckDX/QGcjd
+   xQH+xlJ+PkYCmTJtPsoQeNs5twwlcJ21no4EwS1iDPxmn+jPXDswKA7jI
+   OE9Y4MRRWLqXrx5ebRJxOlLH444f0Fk1z4otXF0UDbrHdRxxgwLJRw2c7
+   ret7jwXDcrTvpRtL0rOvlYC0I3vmLod5VZEzi3kNnnblixyoPf4l8P58l
+   g==;
+X-CSE-ConnectionGUID: cnA5If30RiKuk3raO6eLwA==
+X-CSE-MsgGUID: UWr86gPvRTCH8MeHCSJ8Fw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11659"; a="79618391"
+X-IronPort-AV: E=Sophos;i="6.21,198,1763452800"; 
+   d="scan'208";a="79618391"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jan 2026 05:15:58 -0800
+X-CSE-ConnectionGUID: SXduwwDzS2ymGuu/a19Lsw==
+X-CSE-MsgGUID: tTYV2PBmQGGnZKJ37j/26A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,198,1763452800"; 
+   d="scan'208";a="201636735"
+Received: from dhhellew-desk2.ger.corp.intel.com (HELO localhost) ([10.245.244.75])
+  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jan 2026 05:15:56 -0800
+Date: Sat, 3 Jan 2026 15:15:54 +0200
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Chintan Patel <chintanlike@gmail.com>, Helge Deller <deller@kernel.org>,
+	andy <andy@kernel.org>, linux-fbdev@vger.kernel.org,
+	linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v3 4/4] fbdev: sh_mobile_lcdc: Make FB_DEVICE dependency
+ optional
+Message-ID: <aVkWigAQWC1dZBAv@smile.fi.intel.com>
+References: <20251230052827.4676-1-chintanlike@gmail.com>
+ <20251230052827.4676-5-chintanlike@gmail.com>
+ <aVOJovo-k6-0KnVg@carbonx1>
+ <aa2b08f8-e6c3-4768-bce9-e36ad9d1e74b@gmail.com>
+ <73007a0a-dd96-43eb-be2e-ccbf8b19cd79@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <73007a0a-dd96-43eb-be2e-ccbf8b19cd79@gmx.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-Fix a typo in a comment.
+On Sat, Jan 03, 2026 at 10:59:44AM +0100, Helge Deller wrote:
+> On 12/30/25 19:25, Chintan Patel wrote:
+> > On 12/30/25 00:13, Helge Deller wrote:
 
-Signed-off-by: Akiyoshi Kurita <weibu@redadmin.org>
----
- drivers/staging/sm750fb/ddk750_chip.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+...
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750f=
-b/ddk750_chip.c
-index 025dae3756aa..136692b00804 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -249,7 +249,7 @@ int ddk750_init_hw(struct initchip_param *p_init_param)
- 	 * Reset the memory controller.
- 	 * If the memory controller is not reset in SM750,
- 	 * the system might hang when sw accesses the memory.
--	 * The memory should be resetted after changing the MXCLK.
-+	 * The memory should be reset after changing the MXCLK.
- 	 */
- 	if (p_init_param->reset_memory =3D=3D 1) {
- 		reg =3D peek32(MISC_CTRL);
---=20
-2.47.3
+> > > > -ATTRIBUTE_GROUPS(overlay_sysfs);
+> > > 
+> > > Instead of replacing the ^ ATTRIBUTE_GROUPS() by the code below,
+> > > isn't it possible to just mark the overlay_sysfs_attrs[] array
+> > > _maybe_unused, and just do:
+> > > + #ifdef CONFIG_FB_DEVICE
+> > > + ATTRIBUTE_GROUPS(overlay_sysfs);
+> > > + #endif
+> > > 
+> > > ?
+> > 
+> > Yes, the __maybe_unused + #ifdef ATTRIBUTE_GROUPS() approach would work.
+> > 
+> > I went with the PTR_IF(IS_ENABLED()) pattern because Andy suggested
+> > using PTR_IF() to conditionally include overlay_sysfs_group in
+> > overlay_sysfs_groups, and to keep .dev_groups always populated while
+> > letting the device core skip NULL groups. This avoids conditional
+> > wiring via #ifdef and keeps the code type-checked without
+> > CONFIG_FB_DEVICE.
+> > If you still prefer the simpler #ifdef ATTRIBUTE_GROUPS() approach
+> > for this driver, I can switch to that, but I wanted to follow Andy’s
+> > guidance here.
+> 
+> I assume Andy will agree to my suggested approach, as it's cleaner
+> and avoids code bloat/duplication. Maybe you send out a v4 with my
+> suggested approach, then it's easier to judge... ?
+
+I'm also fine with original code. But a suggested approach would work as well
+(at least like it sounds from the above description). Ideally would be nice to
+get rid of ifdeffery completely (that's why we have PTR_IF() for), although
+it might be not so readable. TL;DR: the most readable solution is the winner.
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
 

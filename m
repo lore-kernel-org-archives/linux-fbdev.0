@@ -1,116 +1,116 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E54914884C;
-	Sat,  3 Jan 2026 13:15:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6A45221290
+	for <linux-fbdev@vger.kernel.org>; Sun,  4 Jan 2026 11:06:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767446160; cv=none; b=gvz3zF5NnVz5aJuSc1ZhkPeqVX2bn6GpILGYvZvZwp2vl7GpARcmp6zHLJ1B3B8hCPBf7Hbr2qfj8591/E6bb6u9982x0o3MJiWJwt21bzuhvHUR7WDFZ0d/4zaX7yPF8565f0lBLhCQNdW5Gt3YGPHc09mg+3BAEaZICcE1EYc=
+	t=1767524810; cv=none; b=rUesBLn/toI+rb9HJQrhHmxqeRGQjYkcpaUjDr1IGbrSzyNdx+1SSVwxCEOQw7vBeltfnv/jTRNDICZDV3kq8J0NsNzcdeunZ4VIbMBIAerpcEHKD7jofCneMzHjZQz1BSm9DQxcy1IM9ogpOHk3nqqICW71nvKwZLXFlD5rwcg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767446160; c=relaxed/simple;
-	bh=T1meHIE3kNQ1z03ZzqxoD5qsWYeE0kujZCxSwuYVgbA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=skSMjIvzmk2CMlcmUaw7QWd6Wt9YCr+iziEfWyG/Nyq8ZUQy+bC6tDRCx/ihmHuVKKZkPbtHnZAlo49juyWvHf0Qz/9Yxb6jd9aeY741Ayaq0EAAg6KsOlwJUCkZs4zjz9HJMZ/e4m3i2XH7ldbalWnhgTk2fpKSZA7RBD2oIZ8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=VqxIX5o/; arc=none smtp.client-ip=192.198.163.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1767524810; c=relaxed/simple;
+	bh=eDHeyoZczKr3AyHj3CQ3Ty67UKiPmoUz2PAKeg50fG4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ag8fTpMnlFSW1cY0NkAD87DWPgjiNOeiC9cGQTKLV7LG38Lw7JZLfGVp1pBbc/KkYfSZUsRvQk7p3uY/Hy3A7ZqBlEeRe+Q23G3ehZs5d6e87nS6cBpF83LB41J5i8Bry7jWJaCDemakHklya2+XZS4zxN8n3vyiHlhWqHOgYxE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dNADy/9j; arc=none smtp.client-ip=209.85.215.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="VqxIX5o/"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1767446159; x=1798982159;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=T1meHIE3kNQ1z03ZzqxoD5qsWYeE0kujZCxSwuYVgbA=;
-  b=VqxIX5o/C3YyuMRgF2hGYQx+0kEd1dQFyX+KiZMDTFH97AUqo3N/Hztx
-   sSjQ74WR9NZ5OVvVc/WNoIrJvZhEYWV5oHzYXOrUqGOg/yUB9h7Sux+0O
-   vNm1HOvEIqwhJ+OejzOhOAJw+dVaFhi+dg5Zf3EtHdt7oZPckDX/QGcjd
-   xQH+xlJ+PkYCmTJtPsoQeNs5twwlcJ21no4EwS1iDPxmn+jPXDswKA7jI
-   OE9Y4MRRWLqXrx5ebRJxOlLH444f0Fk1z4otXF0UDbrHdRxxgwLJRw2c7
-   ret7jwXDcrTvpRtL0rOvlYC0I3vmLod5VZEzi3kNnnblixyoPf4l8P58l
-   g==;
-X-CSE-ConnectionGUID: cnA5If30RiKuk3raO6eLwA==
-X-CSE-MsgGUID: UWr86gPvRTCH8MeHCSJ8Fw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11659"; a="79618391"
-X-IronPort-AV: E=Sophos;i="6.21,198,1763452800"; 
-   d="scan'208";a="79618391"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jan 2026 05:15:58 -0800
-X-CSE-ConnectionGUID: SXduwwDzS2ymGuu/a19Lsw==
-X-CSE-MsgGUID: tTYV2PBmQGGnZKJ37j/26A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,198,1763452800"; 
-   d="scan'208";a="201636735"
-Received: from dhhellew-desk2.ger.corp.intel.com (HELO localhost) ([10.245.244.75])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jan 2026 05:15:56 -0800
-Date: Sat, 3 Jan 2026 15:15:54 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Chintan Patel <chintanlike@gmail.com>, Helge Deller <deller@kernel.org>,
-	andy <andy@kernel.org>, linux-fbdev@vger.kernel.org,
-	linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v3 4/4] fbdev: sh_mobile_lcdc: Make FB_DEVICE dependency
- optional
-Message-ID: <aVkWigAQWC1dZBAv@smile.fi.intel.com>
-References: <20251230052827.4676-1-chintanlike@gmail.com>
- <20251230052827.4676-5-chintanlike@gmail.com>
- <aVOJovo-k6-0KnVg@carbonx1>
- <aa2b08f8-e6c3-4768-bce9-e36ad9d1e74b@gmail.com>
- <73007a0a-dd96-43eb-be2e-ccbf8b19cd79@gmx.de>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dNADy/9j"
+Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-c3e921afad1so1584204a12.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 04 Jan 2026 03:06:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1767524808; x=1768129608; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=yUCt/I1JDgpKPWl0wJY+VdRCfc9g+GhZhdDVLk6Y6Gw=;
+        b=dNADy/9jucsyc3RpzgNvYCiFGj3SLfkA8hYCzubnb+Mvp1xm+H1ozypetB8WbEX92O
+         RYIGIzC5Gw7+oGmxwqctjcuFIol5k+Rj1cvf19JUkiHToUtWsRHun7/sexxjrpfEwI/j
+         c8mrH5VgaLEFKfwX2Teue2vW89CBAHlxyOd2nK1hGZ5XSI8cDEDb/ppQpxpDtE/h0H8N
+         ZyqZc+KcDbwbPk3W+SiWSYMiiTefB76hNG0qXEy/4U9lO36mOSxmTnGTPHDXPDdxdnWV
+         DVS0PeOCajRziKN78EQy3ghBXYBUj5dLaUfkVbPQC9JEQ5xE8SR32z+xntArVVsNeCIk
+         jenA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767524808; x=1768129608;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yUCt/I1JDgpKPWl0wJY+VdRCfc9g+GhZhdDVLk6Y6Gw=;
+        b=TOY2/cK3Ao59E8jNSTHCK0MkD2kryt/I1b7HIn/vnfvx+M1o3q8BXoHPzontjnrTkI
+         mi1cCzNfglKWGusQgSmtts8GvpkDV7pdcw6Ommpah59hyPgUA9EWG85E4ap7nAxN+KF6
+         lFa+wGl2o0BZuVnJd0/YXMzTPQsNC6tLfLWrMNAX70Hnih9fuQ61MsDtpbivnij3Sg29
+         SFMP2SIbGUgZPQFaYonkygexOlXxVXcw+9yPCoyNI1pfqa4TXZWJ9iPoDgeEZp5Cto3o
+         r/EAz4EDwGVnbZbqdnF7zGnHpmBGT9zdGNUvuZEBtSQz/btyhT7NXoxINSBNOUzNt1Yk
+         BNDg==
+X-Forwarded-Encrypted: i=1; AJvYcCVBN0ZEuAfRIREFA+3pkQryvFn879fURNTcMG1EpgH9BQvO70b+4UDFgOunau6Tjt0qBgdoiC4rTawOXg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzb7Vt0B8bpYILvZtRwlevFe9UjgYEaGbtw+Rs/EGfrJQtO1rtR
+	auFT3BfG8JkHzN9CO9c7xozHTOewuxBGI6PZGmxs62BKdHXWrk8ZF4uy
+X-Gm-Gg: AY/fxX7rGa3q3vzR82l03FwpF4/gk37bMoHipDINizk9J0GcSQhhd4nwyKkGOwk8fjM
+	6gdAXqAKn4CO1RACLvm46LR4wt5Bd1IqaanvVxdjpPqKr1fHavL0KqXPomfzjczk2ZAoEXsfqhG
+	keUrBQw8PevAN/bnyqFPN0B/mQqloVkBVLKlyafJX0lXyvYWr55qV1OrFR5Tf4rLcRJAjyUgKtA
+	cgGUYzWECFKAls4HMRTFLLUZcfJC/gHbFcAzGW/3mGw2Tk46pnbLhbUdSGOK/M887MROVMyeyhr
+	kEqPi4gTgmmKzUkk2gZkaup0cUBpiY3LbMRPrUM2GUUC/dHACvHaYjhWc3ED6eQPLut/QQI5ikj
+	pYP6ZSe7hloI5nds3vZnfrsm0YmNdjbvLphO6foC7VX3r/yU9+mnF6jE4AFExRIjy1P2nQpd/hE
+	dujpxgCgslETbK/OI/mhyxdGv5UHt90atrnTkpjML0zQyKjfek2zSLWd9UkYewNPMwmq94cNIBt
+	1S8fhi32Jg=
+X-Google-Smtp-Source: AGHT+IEJJ1hrsUL+EWG+/LYHmGIsftevAAvshlZviJRsmXOHXp8IxBwsGTPWSTtldkfSDqfO6NUI7A==
+X-Received: by 2002:a05:693c:4146:10b0:2b0:738e:287e with SMTP id 5a478bee46e88-2b073904fd7mr23927432eec.30.1767524807784;
+        Sun, 04 Jan 2026 03:06:47 -0800 (PST)
+Received: from ubuntu-linux-2404.. (108-214-96-168.lightspeed.sntcca.sbcglobal.net. [108.214.96.168])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2b140c42e4esm7743509eec.15.2026.01.04.03.06.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 04 Jan 2026 03:06:47 -0800 (PST)
+From: Sun Jian <sun.jian.kdev@gmail.com>
+To: Andy Shevchenko <andy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-staging@lists.linux.dev,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Sun Jian <sun.jian.kdev@gmail.com>
+Subject: [PATCH v1 0/4] staging: fbtft: reduce stack usage by avoiding large write_reg() varargs
+Date: Sun,  4 Jan 2026 19:06:34 +0800
+Message-ID: <20260104110638.532615-1-sun.jian.kdev@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <73007a0a-dd96-43eb-be2e-ccbf8b19cd79@gmx.de>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Sat, Jan 03, 2026 at 10:59:44AM +0100, Helge Deller wrote:
-> On 12/30/25 19:25, Chintan Patel wrote:
-> > On 12/30/25 00:13, Helge Deller wrote:
+Hi,
 
-...
+This series fixes clang `-Wframe-larger-than=1024` warnings in the fbtft
+staging drivers.
 
-> > > > -ATTRIBUTE_GROUPS(overlay_sysfs);
-> > > 
-> > > Instead of replacing the ^ ATTRIBUTE_GROUPS() by the code below,
-> > > isn't it possible to just mark the overlay_sysfs_attrs[] array
-> > > _maybe_unused, and just do:
-> > > + #ifdef CONFIG_FB_DEVICE
-> > > + ATTRIBUTE_GROUPS(overlay_sysfs);
-> > > + #endif
-> > > 
-> > > ?
-> > 
-> > Yes, the __maybe_unused + #ifdef ATTRIBUTE_GROUPS() approach would work.
-> > 
-> > I went with the PTR_IF(IS_ENABLED()) pattern because Andy suggested
-> > using PTR_IF() to conditionally include overlay_sysfs_group in
-> > overlay_sysfs_groups, and to keep .dev_groups always populated while
-> > letting the device core skip NULL groups. This avoids conditional
-> > wiring via #ifdef and keeps the code type-checked without
-> > CONFIG_FB_DEVICE.
-> > If you still prefer the simpler #ifdef ATTRIBUTE_GROUPS() approach
-> > for this driver, I can switch to that, but I wanted to follow Andy’s
-> > guidance here.
-> 
-> I assume Andy will agree to my suggested approach, as it's cleaner
-> and avoids code bloat/duplication. Maybe you send out a v4 with my
-> suggested approach, then it's easier to judge... ?
+The warnings are triggered by very large `write_reg()`/`write_register()`
+varargs calls, which result in excessive stack usage.
 
-I'm also fine with original code. But a suggested approach would work as well
-(at least like it sounds from the above description). Ideally would be nice to
-get rid of ifdeffery completely (that's why we have PTR_IF() for), although
-it might be not so readable. TL;DR: the most readable solution is the winner.
+Switch the affected paths to send a u8 command byte followed by the u8
+payload using `fbtft_write_buf_dc()`. The register values and ordering are
+kept unchanged; only the transfer method is updated.
+
+Patches:
+  1/4 staging: fbtft: core: avoid large stack usage in DT init parsing
+  2/4 staging: fbtft: ssd1351: send gamma table via fbtft_write_buf_dc()
+  3/4 staging: fbtft: ssd1331: send gamma table via fbtft_write_buf_dc()
+  4/4 staging: fbtft: hx8353d: send LUT via buffer to reduce stack usage
+
+Thanks,
+Sun Jian
+
+--
+Sun Jian (4):
+  staging: fbtft: core: avoid large stack usage in DT init parsing
+  staging: fbtft: ssd1351: send gamma table via fbtft_write_buf_dc()
+  staging: fbtft: ssd1331: send gamma table via fbtft_write_buf_dc()
+  staging: fbtft: hx8353d: send LUT via buffer to reduce stack usage
+
+ drivers/staging/fbtft/fb_hx8353d.c | 38 ++++++++++++++++++++++--------
+ drivers/staging/fbtft/fb_ssd1331.c | 29 ++++++++++++-----------
+ drivers/staging/fbtft/fb_ssd1351.c | 35 ++++++++++++---------------
+ drivers/staging/fbtft/fbtft-core.c | 32 ++++++++++---------------
+ 4 files changed, 71 insertions(+), 63 deletions(-)
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 

@@ -1,220 +1,208 @@
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f66.google.com (mail-vs1-f66.google.com [209.85.217.66])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8F651E50E;
-	Tue,  6 Jan 2026 09:04:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.237.130.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 843862989B7
+	for <linux-fbdev@vger.kernel.org>; Tue,  6 Jan 2026 11:48:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767690256; cv=none; b=e3VblqC+q0K+z43/A6g4s17jfB7EVcRsk1yT1Uk7WkQPtVInvc3ZeiTPUNGtNq/s+gebtYhmbruh0nDaFwXysPPMCv9WLLomZ380iXYV5n+eM1BC+T40vWFk0e3btdMjjDQ53ZlfYoEn/2AA2P/el6/FC+RI8Ucxz435ao1R0E8=
+	t=1767700107; cv=none; b=dKoXmp0gxqWV7OzjqET2WiFZ16UTFN+imPi8UGjIDKoH9vghRUKP7AVzc3mKvLo0GA+TsyMuogtdtnAz/GmPpPTqpzPDyDTMt+rH1WzGkBpQ6whIYzO4azRNbFcRjWUamHHzrvjjY/RxbapDyaaJbMb3cldTPRrA4srxNRvkSE0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767690256; c=relaxed/simple;
-	bh=6QYI3zQJ0Tl2jVP8SQayMsYp7gq06LwHG0RQrX00PhY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=A3onFboHDoR5P26H4oNIItrd1L2QARsISj8LShVRh7wwAyX6Vre3z4BgBeo7/fle7AZ8Goz9XWgiD9afFiszp8MLI2yXCt8xtNdY2GFG+RRuO+qLUjkW4Y/uZxgJhxnM98sQRZQkfhUpXygBGM6ZjFCfjm0vTVdHvr7c1DZHjW8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info; spf=pass smtp.mailfrom=leemhuis.info; dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b=WteLVuoC; arc=none smtp.client-ip=80.237.130.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=leemhuis.info
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=leemhuis.info header.i=@leemhuis.info header.b="WteLVuoC"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=leemhuis.info; s=he214686; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:From:
-	Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
-	References; bh=hZWhWS6u8qnxThFxrHymtByvkuCdMoLtOGR4+l86sSM=; t=1767690254;
-	x=1768122254; b=WteLVuoCFa49xlGPGJNL0H6IFtIJ7IyhJj8FF2L1PVEiQYSL3CPXf7u/aIcLR
-	3z75aY2ZRKk4R2XWLgXKSDP9FpljCGXh1jcx7g8NvVOLgT/xTp21KIoaXsUDob88O9NrdEwLCSJcM
-	86xuvjXy7eQFt+TqKl2RxdnUXl4Jy5c7b1SaFnB2kNX8PiqifkjnlAP+YvdaL938azKgK0fWdVhKK
-	MlZd9UA9nZIpjXCYtEQaTwQZLf9tvwjlifUYl52UbNTYuxWD92N9MUD7jTjSrMBa0clL5QvrqbiE7
-	PQd4pwDir95eTZEXdb26maLe2l8dpK0AdENU72d/BLSGbf4tbg==;
-Received: from [2a02:8108:8984:1d00:a0cf:1912:4be:477f]; authenticated
-	by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128)
-	id 1vd2z0-004AI7-0E;
-	Tue, 06 Jan 2026 10:04:06 +0100
-Message-ID: <785e9aa8-dbfa-4325-bbcd-0ab44a2feb46@leemhuis.info>
-Date: Tue, 6 Jan 2026 10:04:05 +0100
+	s=arc-20240116; t=1767700107; c=relaxed/simple;
+	bh=cy90DhPfHZ+Icz6r89LIwxLLHRAHP0I0oJNrsBe1qfk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=W5YNGhpVLBx03A0gmmJuSOGSKAq6z02ZtbUvXFWy2cB4k+YW03DSBH5Tx0imb16gxDvkEAY185a7erAf5kipdVpoM+fNgYnN9BUbjj+38hRd+qIXVvBY+UHNukTF2NYFYmr1ubeF25MnQE4s/3qbgkQEx12o4zqaeQHCjMROBSg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f66.google.com with SMTP id ada2fe7eead31-5dfd0101905so292194137.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 06 Jan 2026 03:48:25 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767700104; x=1768304904;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=eme3GKSVVTwekk5ahSqs0LbJRLjiKfIn3cO6kiKk5PI=;
+        b=Atv9R/HRXRJq437iU5gbM96XRhgr67zyhR9LqLP0fviYxvufbuCSocxlLARk14YcI+
+         W0kEX9+KfezCxjkDEmsUpCiz7A22n/FT+KxmczxT2LzFaiLMGxxxYVHXOzjW4wBg8+EH
+         ajmgFpcA0WW2hZgn1ojj8zXiDx9WX1RGEKIJPlaItdHMS10j9J6eYKSROpK1lvrNWvp/
+         2/7p+ZuIE2qe9cMbu23vTpMm57sk8RqobDWEsg3snep2LbEBYrzjZXLQUjdkNkunHmEv
+         V1Jb4sa/PaY8GQDzKpchu0mpo9A/tu3d95oL/iT6b/7elYho5VcBcPDfrA4X+vgtP+HK
+         EryQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXhiHbNQKN9z43wn9jKytZiatMQOmlxWZgR4dg6E3d+Qo1IXWFdwznwccD44Yt3ghD1dETnLsBNgn8ekg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywba3MG9DAiV7aDsRW2r5PUzgIusiXxp05m1c34ahMKcPX07Qo6
+	fFvrQVFQAUuVGKw+TJ3mdZofsWwyelSf7A/XRsNaEkbbTyqxTbCM7aRVotvf0RIy
+X-Gm-Gg: AY/fxX6b1WuSO0SzAXYBS3K/6qpkSNbIveuJknHvnNFIIEdIKr2ZeuxHNBDR/Oolq4R
+	b9jzbvfAh1CyBxKa8Em2Eo8cBDh3ZyVR5Y7tl5yZCMNMMwAQQZgjkWZVmstbjiSTSi4ayEdwBA7
+	fIUMpsN2A2G3QDwSMsp1yli3+01/sHMlUUYT1rM4CyjZaN2sjh4UvtKB/EJGTqMk/hCgDmcYc9a
+	Zusdj/TlHP9h1Okng6SxUlyFENUBgvqjQNFMdMVhP+g9nedrBDzzaJeWP6dpx4adxgdcFP+aFvB
+	6LEU0PhFgL4A6aOQwOo2fqvGLKLgZt+Hs8OJFyLQOiM+pxv5z90c6dozvBWnEpKD/943ohCE6u+
+	77Mp+djGphsM8GGibnL0PKKdK+Ya4pXclBaSssEQwgsEgQqk3Gg7AZbvxme0N638NnZ6kmzOs38
+	fET85sTkxkou03+NB6DXR3M8SftVxo3bPFUxbv0j8ylppg8X+q1xkhTbKXr5s=
+X-Google-Smtp-Source: AGHT+IF6ucLMyfWYsK6hb4BSUui9saOqTuSYlxPjmayxR/jWXtAjwkYsRO3eCAzR+7IZnlgxfZVBIA==
+X-Received: by 2002:a05:6102:6a92:b0:5dd:b100:47df with SMTP id ada2fe7eead31-5ec742e61c1mr667322137.4.1767700104302;
+        Tue, 06 Jan 2026 03:48:24 -0800 (PST)
+Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-944122ad97esm566883241.3.2026.01.06.03.48.23
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 06 Jan 2026 03:48:24 -0800 (PST)
+Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-5dfd0101905so292190137.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 06 Jan 2026 03:48:23 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCXaDO9mBNJDcNgZj8emc/epSDQmQnztAJQaSXBoe3w5QXxrZ+kaP2XZ+nEyEPmCu2sYGRLXukS9TUSIFw==@vger.kernel.org
+X-Received: by 2002:a05:6102:3588:b0:5db:d411:20cd with SMTP id
+ ada2fe7eead31-5ec744a8304mr863867137.28.1767700102655; Tue, 06 Jan 2026
+ 03:48:22 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbdev: bitblit: bound-check glyph index in bit_putcs*
-To: "Barry K. Nathan" <barryn@pobox.com>, Vitaly Chikunov <vt@altlinux.org>,
- Junjie Cao <junjie.cao@intel.com>, Thomas Zimmermann <tzimmermann@suse.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Peilin Ye <yepeilin.cs@gmail.com>, Daniel Vetter
- <daniel.vetter@ffwll.ch>, Shigeru Yoshida <syoshida@redhat.com>,
- Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
- Zsolt Kajtar <soci@c64.rulez.org>,
- Albin Babu Varghese <albinbabuvarghese20@gmail.com>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- regressions@lists.linux.dev, Ben Hutchings <ben@decadent.org.uk>
-References: <20251020134701.84082-1-junjie.cao@intel.com>
- <aU23brU4lZqIkw4Z@altlinux.org> <aU58SeZZPxScVPad@altlinux.org>
- <ccbbf777-cf4e-4c66-856e-282dd9d61970@pobox.com>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Content-Language: de-DE, en-US
-In-Reply-To: <ccbbf777-cf4e-4c66-856e-282dd9d61970@pobox.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1767690254;1b0531b9;
-X-HE-SMSGID: 1vd2z0-004AI7-0E
+References: <20260101-custom-logo-v2-0-8eec06dfbf85@kernel.org> <20260101-custom-logo-v2-6-8eec06dfbf85@kernel.org>
+In-Reply-To: <20260101-custom-logo-v2-6-8eec06dfbf85@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 6 Jan 2026 12:48:11 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVy48F5HAfqfJgbY83KDAztb9YWTqm8mT1ntTfj0311oA@mail.gmail.com>
+X-Gm-Features: AQt7F2oMgVPDZ6yIPBL4v-hrcVUiy-32V0b_EbYL6M5HBMZvyW9vi5iymuHAylg
+Message-ID: <CAMuHMdVy48F5HAfqfJgbY83KDAztb9YWTqm8mT1ntTfj0311oA@mail.gmail.com>
+Subject: Re: [PATCH v2 6/6] video/logo: move logo selection logic to Kconfig
+To: Vincent Mailhol <mailhol@kernel.org>
+Cc: Helge Deller <deller@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+	linux-sh@vger.kernel.org, linux-m68k <linux-m68k@lists.linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 
-[Top posting to make this easy processable]
+Hi Vincent,
 
-TWIMC, Ben (now CCed) meanwhile reported the problem as well:
+CC linux-m68k
 
-https://lore.kernel.org/all/c5a27a57597c78553bf121d09a1b45ed86dc02a8.camel@decadent.org.uk/
+Thanks for your patch, which is now commit bd710b3da7308cb1
+("video/logo: move logo selection logic to Kconfig") in fbdev/for-next.
 
-There he wrote
-"""
-This can be fixed by backporting the following commits from 5.11:
+On Thu, 1 Jan 2026 at 16:26, Vincent Mailhol <mailhol@kernel.org> wrote:
+> Now that the path to the logo file can be directly entered in Kbuild,
+> there is no more need to handle all the logo file selection in the
+> Makefile and the C files.
 
-7a089ec7d77f console: Delete unused con_font_copy() callback implementations
-259a252c1f4e console: Delete dummy con_font_set() and con_font_default()
-callback implementations
-4ee573086bd8 Fonts: Add charcount field to font_desc
-4497364e5f61 parisc/sticore: Avoid hard-coding built-in font charcount
-a1ac250a82a5 fbcon: Avoid using FNTCHARCNT() and hard-coded built-in
-font charcount
+This may do the wrong thing when booting a multi-platform kernel.
 
-These all apply without fuzz and builds cleanly for x86_64 and parisc64.
-"""
+>
+> The only exception is the logo_spe_clut224 which is only used by the
+> Cell processor (found for example in the Playstation 3) [1]. This
+> extra logo uses its own different image which shows up on a separate
+> line just below the normal logo. Because the extra logo uses a
+> different image, it can not be factorized under the custom logo logic.
+>
+> Move all the logo file selection logic to Kbuild (except from the
+> logo_spe_clut224.ppm), this done, clean-up the C code to only leave
+> one entry for each logo type (monochrome, 16-colors and 224-colors).
+>
+> [1] Cell SPE logos
+> Link: https://lore.kernel.org/all/20070710122702.765654000@pademelon.sonytel.be/
+>
+> Signed-off-by: Vincent Mailhol <mailhol@kernel.org>
 
-Ciao, Thorsten
+> --- a/drivers/video/logo/Kconfig
+> +++ b/drivers/video/logo/Kconfig
 
-On 12/27/25 03:04, Barry K. Nathan wrote:
-> On 12/26/25 4:21 AM, Vitaly Chikunov wrote:
->> Dear linux-fbdev, stable,
->>
->> On Fri, Dec 26, 2025 at 01:29:13AM +0300, Vitaly Chikunov wrote:
->>>
->>> On Mon, Oct 20, 2025 at 09:47:01PM +0800, Junjie Cao wrote:
->>>> bit_putcs_aligned()/unaligned() derived the glyph pointer from the
->>>> character value masked by 0xff/0x1ff, which may exceed the actual
->>>> font's
->>>> glyph count and read past the end of the built-in font array.
->>>> Clamp the index to the actual glyph count before computing the address.
->>>>
->>>> This fixes a global out-of-bounds read reported by syzbot.
->>>>
->>>> Reported-by: syzbot+793cf822d213be1a74f2@syzkaller.appspotmail.com
->>>> Closes: https://syzkaller.appspot.com/bug?extid=793cf822d213be1a74f2
->>>> Tested-by: syzbot+793cf822d213be1a74f2@syzkaller.appspotmail.com
->>>> Signed-off-by: Junjie Cao <junjie.cao@intel.com>
->>>
->>> This commit is applied to v5.10.247 and causes a regression: when
->>> switching VT with ctrl-alt-f2 the screen is blank or completely filled
->>> with angle characters, then new text is not appearing (or not visible).
->>>
->>> This commit is found with git bisect from v5.10.246 to v5.10.247:
->>>
->>>    0998a6cb232674408a03e8561dc15aa266b2f53b is the first bad commit
->>>    commit 0998a6cb232674408a03e8561dc15aa266b2f53b
->>>    Author:     Junjie Cao <junjie.cao@intel.com>
->>>    AuthorDate: 2025-10-20 21:47:01 +0800
->>>    Commit:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>>    CommitDate: 2025-12-07 06:08:07 +0900
->>>
->>>        fbdev: bitblit: bound-check glyph index in bit_putcs*
->>>
->>>        commit 18c4ef4e765a798b47980555ed665d78b71aeadf upstream.
->>>
->>>        bit_putcs_aligned()/unaligned() derived the glyph pointer from
->>> the
->>>        character value masked by 0xff/0x1ff, which may exceed the
->>> actual font's
->>>        glyph count and read past the end of the built-in font array.
->>>        Clamp the index to the actual glyph count before computing the
->>> address.
->>>
->>>        This fixes a global out-of-bounds read reported by syzbot.
->>>
->>>        Reported-by:
->>> syzbot+793cf822d213be1a74f2@syzkaller.appspotmail.com
->>>        Closes: https://syzkaller.appspot.com/bug?
->>> extid=793cf822d213be1a74f2
->>>        Tested-by: syzbot+793cf822d213be1a74f2@syzkaller.appspotmail.com
->>>        Signed-off-by: Junjie Cao <junjie.cao@intel.com>
->>>        Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
->>>        Signed-off-by: Helge Deller <deller@gmx.de>
->>>        Cc: stable@vger.kernel.org
->>>        Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>>
->>>     drivers/video/fbdev/core/bitblit.c | 16 ++++++++++++----
->>>     1 file changed, 12 insertions(+), 4 deletions(-)
->>>
->>> The minimal reproducer in cli, after kernel is booted:
->>>
->>>    date >/dev/tty2; chvt 2
->>>
->>> and the date does not appear.
->>>
->>> Thanks,
->>>
->>> #regzbot introduced: 0998a6cb232674408a03e8561dc15aa266b2f53b
->>>
->>>> ---
->>>> v1: https://lore.kernel.org/linux-fbdev/5d237d1a-a528-4205-
->>>> a4d8-71709134f1e1@suse.de/
->>>> v1 -> v2:
->>>>   - Fix indentation and add blank line after declarations with
->>>> the .pl helper
->>>>   - No functional changes
->>>>
->>>>   drivers/video/fbdev/core/bitblit.c | 16 ++++++++++++----
->>>>   1 file changed, 12 insertions(+), 4 deletions(-)
->>>>
->>>> diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/
->>>> fbdev/core/bitblit.c
->>>> index 9d2e59796c3e..085ffb44c51a 100644
->>>> --- a/drivers/video/fbdev/core/bitblit.c
->>>> +++ b/drivers/video/fbdev/core/bitblit.c
->>>> @@ -79,12 +79,16 @@ static inline void bit_putcs_aligned(struct
->>>> vc_data *vc, struct fb_info *info,
->>>>                        struct fb_image *image, u8 *buf, u8 *dst)
->>>>   {
->>>>       u16 charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
->>>> +    unsigned int charcnt = vc->vc_font.charcount;
->>
->> Perhaps, vc->vc_font.charcount (which is relied upon in the following
->> comparison) is not always set correctly in v5.10.247. At least two
->> commits that set vc_font.charcount are missing from v5.10.247:
->>
->>    a1ac250a82a5 ("fbcon: Avoid using FNTCHARCNT() and hard-coded
->> built-in font charcount")
->>    a5a923038d70 ("fbdev: fbcon: Properly revert changes when
->> vc_resize() failed")
->>
->> Thanks,
-> 
-> I was just about to report this.
-> 
-> I found two ways to fix this bug. One is to revert this patch; the other
-> is to apply the following 3 patches, which are already present in 5.11
-> and later:
-> 
-> 7a089ec7d77fe7d50f6bb7b178fa25eec9fd822b
->     console: Delete unused con_font_copy() callback implementations
-> 
-> 4ee573086bd88ff3060dda07873bf755d332e9ba
->     Fonts: Add charcount field to font_desc
-> 
-> a1ac250a82a5e97db71f14101ff7468291a6aaef
->     fbcon: Avoid using FNTCHARCNT() and hard-coded built-in font
->     charcount
-> 
-> (Oh, by the way, this same regression also affects 5.4.302, and the same
-> 3 patches fix the regression on 5.4 as well, once you manually fix merge
-> conflicts. Maybe it would be better to backport other additional commits
-> instead of fixing the merge conflicts manually, but since 5.4 is now EOL
-> I didn't dig that deep.)
-> 
-> Once these 3 patches are applied, I wonder if a5a923038d70 now becomes
-> necessary for 5.10.y. For what it's worth, it applies fine and the
-> resulting kernel seems to run OK in brief testing.
-> 
+> @@ -61,6 +63,12 @@ config LOGO_LINUX_CLUT224
+>  config LOGO_LINUX_CLUT224_FILE
+>         string "224-color logo .ppm file"
+>         depends on LOGO_LINUX_CLUT224
+> +       default "drivers/video/logo/logo_dec_clut224.ppm" if MACH_DECSTATION || ALPHA
+> +       default "drivers/video/logo/logo_mac_clut224.ppm" if MAC
 
+E.g. an m68k multi-platform kernel including Mac support will scare
+non-Mac users into thinking their machine was assimilated by the
+Apple Empire...
+
+> +       default "drivers/video/logo/logo_parisc_clut224.ppm" if PARISC
+> +       default "drivers/video/logo/logo_sgi_clut224.ppm" if SGI_IP22 || SGI_IP27 || SGI_IP32
+> +       default "drivers/video/logo/logo_sun_clut224.ppm" if SPARC
+> +       default "drivers/video/logo/logo_superh_clut224.ppm" if SUPERH
+>         default "drivers/video/logo/logo_linux_clut224.ppm"
+>         help
+>           Takes a path to a 224-color logo in the portable pixmap file
+
+> --- a/drivers/video/logo/logo.c
+> +++ b/drivers/video/logo/logo.c
+> @@ -48,59 +48,21 @@ const struct linux_logo * __ref fb_find_logo(int depth)
+>         if (nologo || logos_freed)
+>                 return NULL;
+>
+> -       if (depth >= 1) {
+>  #ifdef CONFIG_LOGO_LINUX_MONO
+> -               /* Generic Linux logo */
+> +       if (depth >= 1)
+>                 logo = &logo_linux_mono;
+>  #endif
+> -#ifdef CONFIG_LOGO_SUPERH_MONO
+> -               /* SuperH Linux logo */
+> -               logo = &logo_superh_mono;
+> -#endif
+> -       }
+>
+> -       if (depth >= 4) {
+>  #ifdef CONFIG_LOGO_LINUX_VGA16
+> -               /* Generic Linux logo */
+> +       if (depth >= 4)
+>                 logo = &logo_linux_vga16;
+>  #endif
+> -#ifdef CONFIG_LOGO_SUPERH_VGA16
+> -               /* SuperH Linux logo */
+> -               logo = &logo_superh_vga16;
+> -#endif
+> -       }
+>
+> -       if (depth >= 8) {
+>  #ifdef CONFIG_LOGO_LINUX_CLUT224
+> -               /* Generic Linux logo */
+> +       if (depth >= 8)
+>                 logo = &logo_linux_clut224;
+>  #endif
+> -#ifdef CONFIG_LOGO_DEC_CLUT224
+> -               /* DEC Linux logo on MIPS/MIPS64 or ALPHA */
+> -               logo = &logo_dec_clut224;
+> -#endif
+> -#ifdef CONFIG_LOGO_MAC_CLUT224
+> -               /* Macintosh Linux logo on m68k */
+> -               if (MACH_IS_MAC)
+
+MACH_IS_MAC can be a runtime check.
+
+> -                       logo = &logo_mac_clut224;
+> -#endif
+> -#ifdef CONFIG_LOGO_PARISC_CLUT224
+> -               /* PA-RISC Linux logo */
+> -               logo = &logo_parisc_clut224;
+> -#endif
+> -#ifdef CONFIG_LOGO_SGI_CLUT224
+> -               /* SGI Linux logo on MIPS/MIPS64 */
+> -               logo = &logo_sgi_clut224;
+> -#endif
+> -#ifdef CONFIG_LOGO_SUN_CLUT224
+> -               /* Sun Linux logo */
+> -               logo = &logo_sun_clut224;
+> -#endif
+> -#ifdef CONFIG_LOGO_SUPERH_CLUT224
+> -               /* SuperH Linux logo */
+> -               logo = &logo_superh_clut224;
+> -#endif
+> -       }
+> +
+>         return logo;
+>  }
+>  EXPORT_SYMBOL_GPL(fb_find_logo);
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

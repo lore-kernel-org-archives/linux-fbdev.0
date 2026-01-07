@@ -1,63 +1,63 @@
-Received: from mail-pg1-f175.google.com (mail-pg1-f175.google.com [209.85.215.175])
+Received: from mail-pg1-f178.google.com (mail-pg1-f178.google.com [209.85.215.178])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 992D4256C6D
-	for <linux-fbdev@vger.kernel.org>; Wed,  7 Jan 2026 04:43:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA0DE25CC63
+	for <linux-fbdev@vger.kernel.org>; Wed,  7 Jan 2026 04:43:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767761000; cv=none; b=RlxrMDikEc/3yeFAdMunVBdZi/2Fh+ObHk5gldHS2rFGQufCFwUSMFd/vZsNbByNPilEG3/edGbc7BybLN0E4/uIdy9u6FX/X3Axmn9R6dEiQtBlN0zl1q0qNr4Rm9MMAC8HAwWiNZG+Nemg9/Xr2J+c6s63xY3GbRgUUoqaUuA=
+	t=1767761001; cv=none; b=rjDcGKVQAkY9SdhNh/s1hoFCmIrrmoGRuQ/rIv0x3ewqzNm0YsiZfWZvyURuSvJR4ZqzfaZpK7/YYoU88mFgI17kmp2o8a+jmMd4i44wgqbb+m2VzlFqsZFi/YQdTLYMePPdtw4/06IsPYL8Wo/g3Do7Vl9eSZHoia28cXF3LYI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767761000; c=relaxed/simple;
-	bh=FnV0IJmLlwk0Yk8Amd2W/sf6pDwZoG+c8cE9oXjsy6E=;
+	s=arc-20240116; t=1767761001; c=relaxed/simple;
+	bh=+Fzr6kEopBOBGruOQNRZeskEAAtW+K4Nv+xnTvdpk0Y=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Bpn8jn5/AcXcsv+DkE8loHLw+zL/xG9bhSyrfH+JWvbX01s87jLiywC4HOR0EKtBzFMeyvdgWupPdR7tPQBT7frC20fhMZNx6Lyuap3rA35pl0Z54rHqfPwulYqVHMIAriYrtanzancCFckb/CpZl3d8eKZIb4qsjf5CXImcUB8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OsRk2Atz; arc=none smtp.client-ip=209.85.215.175
+	 MIME-Version; b=lkuff7PP8DDJSvLI/8kLzC4adGcN37RKLffH7bHW0yFBZrst+UlkBqZ0/rNcmfCoqtSg0X86vUDJHty7WM4MtBKZuLKIRbcXWWbedbL/2iSn2w1oPMpD1nMlep6k3bZtlweY3kWChJazSFAitCH/bmKXjXgA27Epe7wTumhOxLo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=d91zWun3; arc=none smtp.client-ip=209.85.215.178
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OsRk2Atz"
-Received: by mail-pg1-f175.google.com with SMTP id 41be03b00d2f7-c3e921afad1so810025a12.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 06 Jan 2026 20:43:18 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d91zWun3"
+Received: by mail-pg1-f178.google.com with SMTP id 41be03b00d2f7-c0224fd2a92so1051601a12.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 06 Jan 2026 20:43:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767760997; x=1768365797; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1767760999; x=1768365799; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=NLWOELcEjrI2iHJxLfRXTvBZahch6VAgebKRz7irVnw=;
-        b=OsRk2AtzqxcSndp5aSNLRXCQSAd33VenZRHISibKT3i2mt1kRTM6JYnUq2/X0zamm+
-         SpCL5X5koCLvjjK9WFwvWxmqVJQ9Ct26MLdS1A+OYWm3gT1bECSAflMZjhhIkRvKQ0fx
-         q1r6DSkPyY6/c0xflLi2chwaIwJzxnDwo+v3WyIZ1oc/E77Tp1vY9zEbXoEfbQ1SEX49
-         i27/VdIfdSD0j1ohtrQN9UhcuSWTW0HS0qKXjc8VBM7KLOLYV1uHoxzGYs8Dm3dsGXDW
-         6Jmeppl6rQT+veyHQvH76rLXmZCNfXA16KwpnmPkcwItFyjsVW7J9UOC9CDm8aixNuN9
-         mEOg==
+        bh=CmNZiMiLRz7C+tpqpi8aiFEIQgPCT214fV1yD6bvzyk=;
+        b=d91zWun33bl4mNjzP495EmDnaUPUtEJAvMFui/KnC02a5zjaqup1O8FFjsb6u4FBkJ
+         PKIo412pF/BZpfTtie5PUq6p0PHNvRR5GD9SkDPy86oEsTa9t/qiscwrUnl22BandhKQ
+         vfbBfxmsYyDLUB5GDJ16lf/4CStn89aL399DO4jX11Bv0wUhatwz3xSPKQi+kiD7LB1+
+         Jop825fHoOOcIVGbTlEmWt1C1h5A7m1CPfpFFey8zUExmG6++CKm3lHJpm5sTGHQzK39
+         oVCPAuclW6z/JF6cCznyVBujOXjuQTa+YQH5kAH7h/uRx6OtOti5zFUadxMEi20o1Ojm
+         /T0w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767760997; x=1768365797;
+        d=1e100.net; s=20230601; t=1767760999; x=1768365799;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=NLWOELcEjrI2iHJxLfRXTvBZahch6VAgebKRz7irVnw=;
-        b=vKfMejLey1UsAaIr+/ifLF4HswpjAqpo3YTWREONs7nx6ZR8/RJzDnMIDvF3NynvMb
-         K5wCJPCYYL9bEyTjQF6WYIgbnVbXnyVGNuJ8rs4DU9E51JK7aYb4xrHqFeP3g4+/9zG3
-         KhaM72O+AKQaZvvWop9XV2xAQDBtIjHZa0gfs4T3kNJiwW6kkmSfKzBSJRdhvxPlyEf4
-         Z24JeWdNsrQypCqL3/lDeXq/4CZYGPrC1VxVAMp6Q3YGfeBbw4qMCeEFpOjxONjjdvkY
-         wJgEq67ss7H4dvBVSrvPww18Xwmbyd3VhyOgeMo5CXqo4jLBTGDFzPYJocxsdpXqLrTl
-         VjIg==
-X-Gm-Message-State: AOJu0Yy0dZ/4dC4UsG7Jj4XH0d9VWCgGcOlCq3tt2Y4WPa9uZvkf7mLw
-	reRLEDZMwtRIjvJC6gxTZ5O6sH/e17X0QotGUkcGlSl5YqSg2XRxQpd4Wu7MOKbU
-X-Gm-Gg: AY/fxX5CL6+TvqlVK5JQQJoVNdE5sJn/TGYgDu9X/YMREGwnMijUGDA3wNDQKNYzUS3
-	OXqOo5iUnfCVMG48tioPQen1ABjaBU4lEjAXpt3tcSgETsmg4qzZqxYxWq3rF1Alh/QQ29ONxwi
-	lJaxFsgrz3w1lBgl14Yv8M4kQFlJIOp5HwEHLAauiUyKy4/jCl2p6VkGdjw5gWZvPA4ZFkDPulF
-	AizC6/Swl47U4WRcCnQAED9046FNlXEHXjicnUdIt6c8YOqLEpDXkjjOgaYb1y7TYKQi61TXpdC
-	Tg7PVXdBC42MgT7mJN29fwYq/m9pxl0ykcx8l08QHyZSslKSQQLoEkKdhQJChciMPGyMtywILlR
-	yMIvU82Ozq+SBkJzxEe88baZfsKyv6XpORj6BNEKnSouV+WRWs1cYAR0FXzUGSInmKMm/uApNei
-	LbaRRI3OQqWQ4/W+2Q696n/FxKYMeXS5r3y3+UotlFRRjrbujyGVVxxA==
-X-Google-Smtp-Source: AGHT+IEF2tiwIdEjUKJoleA4BSAnBVhOgZtlhWyisn+mWM00+oMK/a966pLLKiRVpDOA/U4Wkrlj0A==
-X-Received: by 2002:a05:6a21:32a0:b0:366:2677:4b38 with SMTP id adf61e73a8af0-3898f8f5458mr1134448637.8.1767760997324;
-        Tue, 06 Jan 2026 20:43:17 -0800 (PST)
+        bh=CmNZiMiLRz7C+tpqpi8aiFEIQgPCT214fV1yD6bvzyk=;
+        b=IRwL9W3PKU7FDHPn9uKLxlz0rolsLX5Rf46qwVz7K+gkOyGXElnh92u3wc4h7MMDcG
+         76Fm6d61ndzGzUYTJj04B29cb/VUoNkxyriQyke3mbmg9BiUf5u5bD6R0eENjz8ujrQ+
+         3ThDzC97ho+qY0Nh6mXAiNj4boZ4e/U0btTKF6X4A+Adsc2Ty03fqCuleQSjT0OGunJe
+         W0vhZPQbVxQq0EI5cD/2HuIIGwRs+OsHO9xvVIP3bFo+de1mYHApRpcbCyTh4ULNG6bp
+         ci9ynaZVyPxsN0d5Gk5GiOb5TPDyacCDgpl8HisbNOdYcfnEeTLOHTY5a9twEUNiVsm+
+         Ybmw==
+X-Gm-Message-State: AOJu0Yzja8MezR9LHK4I4jHCB6hN6nv7uQn+Ak7MfZSqDV1f88tl4cU3
+	SdZ3ljI+fBw13W3U0+4hbLP1QkwF6vfks6qtl/p80EIRXfT3omCrDnfBMfrwC75K
+X-Gm-Gg: AY/fxX6ILjq4T8mSTZEO+/gB2L3iBfFLZDWao7/EJmM3W+VKedzOYas51csW09Hn1YN
+	waL8XlOshBXVHEWrrbeSswTGP01pPBFm67wAdmR3PeS2zX03CrSqGUjmImrEov0dz6kpOMEVSQi
+	31duV1HjBs83zlZn0zPGmH/9HzNEZmlB8ZfCEfNA/Dvq2/73wljll6JBkpyJCWugorrqg2qDTiB
+	gsazitH2O0psFOxfK8R9eviuvVBg/AmFhp3UsAoxd3YWXSeuPXNMS3dCfYpAfAGNZ90Bxfqq4BT
+	OB37Rlzv0oigHuqr1Uf2NeiwUJwMblQF1VTzDYa7IlTNGjePaKaS9CDwF4n/Zct+FABSIagrVxF
+	MDlfc7XfgQa8MRJVzqLltjmPg4AeNI9xSnK+h65SSeNTzI5IcLggjItWhZGi9tNl+uKf1uiHeXU
+	SpsWFGqzr9eKhUm4gT0YUBrFZdAQ9YLKTo/xf/USHVQWj2gPncnYT9QA==
+X-Google-Smtp-Source: AGHT+IGyLXpHnLdUccdHLbJKV2U55q9FpnJ0qEZouF7Rk2ZDPQCEjkM51aika9hOgCehETQQWJIYhQ==
+X-Received: by 2002:a05:6a20:918e:b0:34f:b660:770d with SMTP id adf61e73a8af0-3898f9dd14cmr1103698637.55.1767760998777;
+        Tue, 06 Jan 2026 20:43:18 -0800 (PST)
 Received: from cmpatel-home.hsd1.or.comcast.net ([2601:1c0:5780:9200:d1c8:9d76:637a:6957])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3c39ef2sm36866225ad.14.2026.01.06.20.43.16
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3c39ef2sm36866225ad.14.2026.01.06.20.43.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Jan 2026 20:43:17 -0800 (PST)
+        Tue, 06 Jan 2026 20:43:18 -0800 (PST)
 From: Chintan Patel <chintanlike@gmail.com>
 To: linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
@@ -69,9 +69,9 @@ Cc: linux-kernel@vger.kernel.org,
 	deller@gmx.de,
 	gregkh@linuxfoundation.org,
 	Chintan Patel <chintanlike@gmail.com>
-Subject: [PATCH v4 2/4] staging: fbtft: Make FB_DEVICE dependency optional
-Date: Tue,  6 Jan 2026 20:42:55 -0800
-Message-ID: <20260107044258.528624-3-chintanlike@gmail.com>
+Subject: [PATCH v4 3/4] fbdev: omapfb: Make FB_DEVICE dependency optional
+Date: Tue,  6 Jan 2026 20:42:56 -0800
+Message-ID: <20260107044258.528624-4-chintanlike@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260107044258.528624-1-chintanlike@gmail.com>
 References: <20260107044258.528624-1-chintanlike@gmail.com>
@@ -83,78 +83,81 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-fbtft provides sysfs interfaces for debugging and gamma configuration,
-but these are not required for the core driver.
+omapfb provides several sysfs interfaces for framebuffer configuration
+and debugging, but these are not required for the core driver.
 
-Drop the hard dependency on CONFIG_FB_DEVICE and make sysfs support
-optional by using dev_of_fbinfo() at runtime. When FB_DEVICE is disabled,
-sysfs operations are skipped while the code remains buildable and
-type-checked.
+Remove the hard dependency on CONFIG_FB_DEVICE and make sysfs support
+optional by using dev_of_fbinfo() to obtain the backing device at runtime.
+When FB_DEVICE is disabled, sysfs operations are skipped while the code
+still builds and is type-checked.
 
-Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
 Suggested-by: Helge Deller <deller@gmx.de>
-Reviewed-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Chintan Patel <chintanlike@gmail.com>
 ---
- drivers/staging/fbtft/Kconfig       |  5 ++++-
- drivers/staging/fbtft/fbtft-sysfs.c | 20 ++++++++++++++++----
- 2 files changed, 20 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/Kconfig       |  3 ++-
+ .../video/fbdev/omap2/omapfb/omapfb-sysfs.c    | 18 ++++++++++++++----
+ 2 files changed, 16 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
-index c2655768209a..578412a2f379 100644
---- a/drivers/staging/fbtft/Kconfig
-+++ b/drivers/staging/fbtft/Kconfig
-@@ -2,11 +2,14 @@
- menuconfig FB_TFT
- 	tristate "Support for small TFT LCD display modules"
- 	depends on FB && SPI
+diff --git a/drivers/video/fbdev/omap2/omapfb/Kconfig b/drivers/video/fbdev/omap2/omapfb/Kconfig
+index f4cdf999a080..2d20e79adefc 100644
+--- a/drivers/video/fbdev/omap2/omapfb/Kconfig
++++ b/drivers/video/fbdev/omap2/omapfb/Kconfig
+@@ -5,7 +5,6 @@ config OMAP2_VRFB
+ menuconfig FB_OMAP2
+ 	tristate "OMAP2+ frame buffer support"
+ 	depends on FB
 -	depends on FB_DEVICE
- 	depends on BACKLIGHT_CLASS_DEVICE
- 	depends on GPIOLIB || COMPILE_TEST
- 	select FB_BACKLIGHT
- 	select FB_SYSMEM_HELPERS_DEFERRED
-+	help
-+	  Support for small TFT LCD display modules over SPI bus. FB_DEVICE
-+	  is not required, but if enabled, provides sysfs interface for debugging
-+	  and gamma curve configuration.
+ 	depends on DRM_OMAP = n
+ 	depends on GPIOLIB
+ 	select FB_OMAP2_DSS
+@@ -13,6 +12,8 @@ menuconfig FB_OMAP2
+ 	select FB_IOMEM_HELPERS
+ 	help
+ 	  Frame buffer driver for OMAP2+ based boards.
++	  FB_DEVICE is not required, but if enabled, provides sysfs interface
++	  for framebuffer configuration and debugging.
  
- if FB_TFT
+ if FB_OMAP2
  
-diff --git a/drivers/staging/fbtft/fbtft-sysfs.c b/drivers/staging/fbtft/fbtft-sysfs.c
-index e45c90a03a90..d05599d80011 100644
---- a/drivers/staging/fbtft/fbtft-sysfs.c
-+++ b/drivers/staging/fbtft/fbtft-sysfs.c
-@@ -203,14 +203,26 @@ static struct device_attribute debug_device_attr =
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
+index 831b2c2fbdf9..38a635d38d58 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
+@@ -558,10 +558,15 @@ int omapfb_create_sysfs(struct omapfb2_device *fbdev)
  
- void fbtft_sysfs_init(struct fbtft_par *par)
- {
--	device_create_file(par->info->dev, &debug_device_attr);
-+	struct device *dev;
+ 	DBG("create sysfs for fbs\n");
+ 	for (i = 0; i < fbdev->num_fbs; i++) {
++		struct device *dev;
+ 		int t;
 +
-+	dev = dev_of_fbinfo(par->info);
-+	if (!dev)
-+		return;
++		dev = dev_of_fbinfo(fbdev->fbs[i]);
++		if (!dev)
++			continue;
 +
-+	device_create_file(dev, &debug_device_attr);
- 	if (par->gamma.curves && par->fbtftops.set_gamma)
--		device_create_file(par->info->dev, &gamma_device_attrs[0]);
-+		device_create_file(dev, &gamma_device_attrs[0]);
+ 		for (t = 0; t < ARRAY_SIZE(omapfb_attrs); t++) {
+-			r = device_create_file(fbdev->fbs[i]->dev,
+-					&omapfb_attrs[t]);
++			r = device_create_file(dev, &omapfb_attrs[t]);
+ 
+ 			if (r) {
+ 				dev_err(fbdev->dev, "failed to create sysfs "
+@@ -580,9 +585,14 @@ void omapfb_remove_sysfs(struct omapfb2_device *fbdev)
+ 
+ 	DBG("remove sysfs for fbs\n");
+ 	for (i = 0; i < fbdev->num_fbs; i++) {
++		struct device *dev;
++
++		dev = dev_of_fbinfo(fbdev->fbs[i]);
++		if (!dev)
++			continue;
++
+ 		for (t = 0; t < ARRAY_SIZE(omapfb_attrs); t++)
+-			device_remove_file(fbdev->fbs[i]->dev,
+-					&omapfb_attrs[t]);
++			device_remove_file(dev, &omapfb_attrs[t]);
+ 	}
  }
  
- void fbtft_sysfs_exit(struct fbtft_par *par)
- {
--	device_remove_file(par->info->dev, &debug_device_attr);
-+	struct device *dev;
-+
-+	dev = dev_of_fbinfo(par->info);
-+	if (!dev)
-+		return;
-+
-+	device_remove_file(dev, &debug_device_attr);
- 	if (par->gamma.curves && par->fbtftops.set_gamma)
--		device_remove_file(par->info->dev, &gamma_device_attrs[0]);
-+		device_remove_file(dev, &gamma_device_attrs[0]);
- }
 -- 
 2.43.0
 

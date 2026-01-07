@@ -1,37 +1,37 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D602F339862;
-	Wed,  7 Jan 2026 13:33:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6C93327C08;
+	Wed,  7 Jan 2026 13:33:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767792819; cv=none; b=Bn3XZXmBgXJhXtAXATt0SvoBYeY6ZkS+ZtGY0Fq0YUXhCaDD3DdGqUPZxJ+FFrrHSkrtDhoR5k+9QQnYuIf/KrtM9dn/ZSUmx3I0x6mIjUpRy4W0tGZhGnVXTvnnaQVNt2UeyXALS6pE9R9hwNpAmeqoErqXxxTLBVvSP5IiOEI=
+	t=1767792831; cv=none; b=d/f0P22UcVIMZSLwLgiMYYbGeuplR4yF+vm6Yz4FAN/jys8QvFY5Y31LITwPGy3PW+HJLjiIYnVNA2Rd9zm0zLbuXq1aHSpOIhJrb2opKpAMAn5EPSXK6Tw6Ji1UrmBK03x8hmZzGDGL5BPwn3+WwfuKcv/0OUdjivpV/8gA7LM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767792819; c=relaxed/simple;
-	bh=j0wARNgyBwNrwja4s6edywoSF9O2PWD3jbvuDFwhujk=;
+	s=arc-20240116; t=1767792831; c=relaxed/simple;
+	bh=VW78Ujo+EwXFe0PRiUbzn+cyI2HRhNJC2s0rKR3xSr8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZPKVn0PC46buLhW8sxZAeRieADAKUphsRzHtXgJafpl1L2vtF727Enuk28Yessc9oPLj0koklufb1HJXtzyyoOCB+6M8thg+wzDcwGAOl6HH+G/vL6q+sUu1TYdO0lvuL24ixcKnXvq+VceiswLj+BtpX4kbQTmZJuhjqYmrxbg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=ltDKaNuY; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=wfJCZuig; arc=none smtp.client-ip=5.75.144.95
+	 In-Reply-To:To:Cc; b=qXGXpnjVzqZadUlkKQja5k/Ev9LkFbo73f+ebVdv+eayZxDh5Ehqk4FVZNpoZZqDU9AFP0Hjs8052Se989KOsHXf14TPLi0vWlM9KBn3UzXBRtOS+DV+RATihGcJKToKARQbZ8/9ms2T3iWQ7Gp4QLlj3n4hKZJDOHCMGS6ZePg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=cESJymPw; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=M3xRcU+/; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="ltDKaNuY";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="wfJCZuig"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="cESJymPw";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="M3xRcU+/"
 DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Subject:Date:From; t=1767792673; bh=uqqoupHuz5q+FhYfRmGG1xu
-	6sV1Pynys3Jf3ygjytGc=; b=ltDKaNuYevLunHgGBnQsQtp3fePjrtUlzk74lNOn/LxUhWob2O
-	fZ/xqM+/xRG41nvDbfKQ+Gl4Z66H/Gy18X3MApEHHfmBSZ7AM7k8CsULCb590y0kdVJFxtQ17hZ
-	MkIsaBuodJ1/yEoR4ub3MdAqUp1DwugSm8PyoAdlJze62L8XHG1X3sJU72V1xhiak8atlv4j5MC
-	EmTgBCF2c4xrsDMCr6lCAe0rTqbMpsql16f9Ly1rY5qvvHf/AKflSt8fkyuE0/nPD5kols58YWr
-	hs8QUzLTrgpvx1iPSHboayYiYgSfAbL+RuDOqxpCHQqblAD6wBa+O2I1mKxs5U+Ut7g==;
+	h=To:Message-Id:Subject:Date:From; t=1767792676; bh=NaV9lkfW0P2ymvt3pfufEgA
+	rA63fyFY5MEhTkcp5K4c=; b=cESJymPwOR+2Mv8GRlSeadGUcX2U4ONV4rpPNagQGav5PqBbA/
+	fCHPZf7MHFlNHa32YV9ZFu9w5ms+OiKVFBUgngBJO+MsLlka2ZojOO/qRwddgKb0QzYj4Ylv89u
+	3vlWFMDOB9my0gJHsLazJTv3MjC1aJST8F0o3a7cIt6vz8OsxNJO+05vbAxAScZTKEgj9prX+4n
+	MpIHsuGJufucurvb9TJogXvXtHNki3HtIilPTmN4qZcYQeqmAlXS/JP1dh/3RMaUiY14oMRJ8Dk
+	N/2SMoaJtya2gp9GwXhVYoUjgGgGhe/jvgL+C4pZXJqxiuCzqXhPOGUo+yPFqJn2kQA==;
 DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Subject:Date:From; t=1767792673; bh=uqqoupHuz5q+FhYfRmGG1xu
-	6sV1Pynys3Jf3ygjytGc=; b=wfJCZuigWTplWp/itIvuYfdAaOBv+CFYgvwK2sV80AhJRnuM/Y
-	MQyTs2uMQyPoRwCD/SQC9c59gjC0E9b+ucBw==;
+	h=To:Message-Id:Subject:Date:From; t=1767792676; bh=NaV9lkfW0P2ymvt3pfufEgA
+	rA63fyFY5MEhTkcp5K4c=; b=M3xRcU+/JuoAkiLaMgtDEclpQDbfkj1uUnm43LZDaJDOFXTpQq
+	K4NqulYw2Es/0zArd58hh7e+I1f69hjo41Bg==;
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Date: Wed, 07 Jan 2026 14:31:05 +0100
-Subject: [PATCH 1/5] dt-bindings: backlight: qcom-wled: Document ovp values
- for PMI8950
+Date: Wed, 07 Jan 2026 14:31:08 +0100
+Subject: [PATCH 4/5] arm64: dts: qcom: msm8937-xiaomi-land: correct wled
+ ovp value
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -40,7 +40,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260107-pmi8950-wled-v1-1-5e52f5caa39c@mainlining.org>
+Message-Id: <20260107-pmi8950-wled-v1-4-5e52f5caa39c@mainlining.org>
 References: <20260107-pmi8950-wled-v1-0-5e52f5caa39c@mainlining.org>
 In-Reply-To: <20260107-pmi8950-wled-v1-0-5e52f5caa39c@mainlining.org>
 To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
@@ -57,59 +57,35 @@ Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
  linux-fbdev@vger.kernel.org, Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
  =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1767792671; l=1412;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1767792671; l=796;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=j0wARNgyBwNrwja4s6edywoSF9O2PWD3jbvuDFwhujk=;
- b=hD0UQniE76+D+waZhCOZPHGQ+ZR8xVVp0HDOnsdn6pEUyqQmFoYqzSp+VFB0tP/h+akiycXVp
- 7L6BIVDKXSoCP1Vh2nAzr1rKQ6gKjRrtpH3nsrLzdLHuOXr0kdIRL0p
+ bh=VW78Ujo+EwXFe0PRiUbzn+cyI2HRhNJC2s0rKR3xSr8=;
+ b=1H0UZG2Y3jbizp1sxueNLBEqJXnjaCUpBpDkRM9hjtfaY+tThnhRLUozfPE2fzyJ2fe43cDag
+ NswQXXNV87bDi5bE50GI6/zcQ47DQUE1k8CTocRl9dmnUzTuKt4XFR9
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-Document ovp values supported by wled found in PMI8950.
+Correct wled ovp value from 29600 to 29500.
 
+Fixes: 2144f6d57d8e ("arm64: dts: qcom: Add Xiaomi Redmi 3S")
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
- .../bindings/leds/backlight/qcom-wled.yaml           | 20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/qcom/msm8937-xiaomi-land.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml b/Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml
-index a8490781011d..306fb6642617 100644
---- a/Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml
-+++ b/Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml
-@@ -98,8 +98,6 @@ properties:
-     description: |
-       Over-voltage protection limit. This property is for WLED4 only.
-     $ref: /schemas/types.yaml#/definitions/uint32
--    enum: [ 18100, 19600, 29600, 31100 ]
--    default: 29600
+diff --git a/arch/arm64/boot/dts/qcom/msm8937-xiaomi-land.dts b/arch/arm64/boot/dts/qcom/msm8937-xiaomi-land.dts
+index 91837ff940f1..4f301e7c6517 100644
+--- a/arch/arm64/boot/dts/qcom/msm8937-xiaomi-land.dts
++++ b/arch/arm64/boot/dts/qcom/msm8937-xiaomi-land.dts
+@@ -178,7 +178,7 @@ &pmi8950_wled {
+ 	qcom,num-strings = <2>;
+ 	qcom,external-pfet;
+ 	qcom,current-limit-microamp = <20000>;
+-	qcom,ovp-millivolt = <29600>;
++	qcom,ovp-millivolt = <29500>;
  
-   qcom,num-strings:
-     description: |
-@@ -239,6 +237,24 @@ allOf:
-           minimum: 0
-           maximum: 4095
- 
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: qcom,pmi8950-wled
-+
-+    then:
-+      properties:
-+        qcom,ovp-millivolt:
-+          enum: [ 17800, 19400, 29500, 31000 ]
-+          default: 29500
-+
-+    else:
-+      properties:
-+        qcom,ovp-millivolt:
-+          enum: [ 18100, 19600, 29600, 31100 ]
-+          default: 29600
-+
- required:
-   - compatible
-   - reg
+ 	status = "okay";
+ };
 
 -- 
 2.52.0

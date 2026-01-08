@@ -1,93 +1,108 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4355341E5D4;
-	Thu,  8 Jan 2026 09:30:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DAC083D3329
+	for <linux-fbdev@vger.kernel.org>; Thu,  8 Jan 2026 09:47:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767864628; cv=none; b=sTqRL27ZD6f2teHe6S0wkfhSobDX8zNaV2sg1dhZRm634QTnjBEC3PNUTV0mZ/3f6uoXqupiu4qDt3l9FwVw9MnTKkzELeWhie6oPFinti4JiKHaqX54uEAP/aYvlyUqvvYsT/ZvfJobfY+P+FBWmGAhFaWrgvX59Rrq951S6+8=
+	t=1767865654; cv=none; b=HkIweoiDPNjIvNGEDlNd54Z4NpIECJhOa8TMyFAd0iLP4ph4rfk5cGZM43Wj9Vf8CI6w+pG7iflkZnYwFqwUAhjLYJ4pd1s6uGB3wsA8hV/3SjP75zv6n0ji0++hmKiyyoVp7J1KVgQAJq5oLA+2b7HGNnFcvMSy4INZgAAAbWI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767864628; c=relaxed/simple;
-	bh=R28py7aOUMSHDw9GTWXObj2zn8ywuQsBWDeYZtgNrFM=;
-	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
-	 Message-ID:Content-Type; b=gzGmENtFj+uj8UaACztJw+Sm1C6aiP5K2bhc1AmgwiXZym4Jpc2anc/eZf3tyUJ35eXp2fqevV36olbAC/aDHA5Px/zlz3XIvq9xegxQPsYs08xHzNB3MlrFua7VqXQcaBhaCVGpzvp13nsxMMCL9H0dI3zGgZTpvaInI0Nt9Sk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=bNmYW9mb; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=PBLmol3z; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	s=arc-20240116; t=1767865654; c=relaxed/simple;
+	bh=dssYB9ZiBeg3VZkmmPibDzS/sUjaPn78Ja8YTcImm8w=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Z8Oo3au7NGSkKa0ArAZQl8KpAq7fg7zYCdZ0zNWJQWsCgPfxq8/mpP00InzrDm8sIaaLnRPldHUJZh132nIovctiFNnvMEJwATJ94j5FaHNuNf0O2q2frW//hfbfxTWV/dZsAB8SBsnK/37VNouTu/wy4K1wR9ejANV39FMUFRE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Sz5Jc5wP; arc=none smtp.client-ip=209.85.210.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="bNmYW9mb";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="PBLmol3z"
-DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1767864616; bh=+K11+gyj9g6pr1Fpatee6Fb
-	hZy6Ep79Tz865ZNh+y2o=; b=bNmYW9mb+hvjiXOEHgfKR388gGi1kaK5ew8+1VFhAz3409D1zl
-	Jby0ccPef2RHURAi4zCoDtZ02eNHBuoSxWQhI37IsKXjJHEO6+JyrRXf15Yn2xWsbfV4+LVnpn6
-	7SfQ/AOr8NL+j7Aec1JfwKI49sfaTdjKtfAJtidseDG8G5pJqu8F7ZT1twbMbTBsxxxG++PilFc
-	qUQco/aw6xKwQN9zFHABPuX5YAKofsgqe1JfCY6R2KmnPkdPTvitRZUZxyYNcM95+aBp5rsm3Tq
-	Pt0BLx0R9O1y+IL3qK2sHhK5SZ6wjkdXTBFIbPAMc4Py6DSvRZavArSllhar9NwlNqw==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1767864616; bh=+K11+gyj9g6pr1Fpatee6Fb
-	hZy6Ep79Tz865ZNh+y2o=; b=PBLmol3zo+INqRrInBMw5dF73Z7o/6UOGtR1zM5ijDZ0zRlzzv
-	3nMgGEK7kkBXP64oWTCvdMKxtMXFzIQLMzAQ==;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Sz5Jc5wP"
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-81345800791so1715957b3a.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 08 Jan 2026 01:47:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1767865642; x=1768470442; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=qHueD//8AAJamdtTx3KncyHUFlVGKxTPD0kTSQsmSD0=;
+        b=Sz5Jc5wP6Y64Tpo2wdUBwcTLZ2qXF1kLbDX5UPhODFp7CGIFAMcy8OGxU24wIk9BMC
+         FnDo+U1j9N+w+blO0ugYuaK8fE0w3aRW/vMuq/CEBK18cY2p40kZx/sH3ToO5lTi3w1F
+         7AsaBe5MTwO6i1dkN3mwAZt/JogSVt729ybEJMocNHaUNrgPlSQtD5KiROP0bOsGbGad
+         K8Fz/gdels5oqxoPDwkz/P3fNVxRqqU+oHnPIMZANA9rSqF0xnECZHiFSwQtAjD0tbYY
+         yJt8/C286Se6ZgTXbyBSD7wOzOjMZEHIdRfJT9h084EZY69silrzJvExokC9cmhApP9M
+         pzaw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767865642; x=1768470442;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=qHueD//8AAJamdtTx3KncyHUFlVGKxTPD0kTSQsmSD0=;
+        b=BYCG3YQnOkWUnsJwgiwYo6XqteiTawrpQFoCRO2ANLTZ4C0tfSqFJTNQCI4bDLdm8e
+         6UJ4Tn6uCXkgU2Zf8xiv/Vl4P0ZGmX9QDnlg7oAVGj8COYW26INHFQhfW9ktHVuuW2Oi
+         xzO6LRkiobes77FtbuuXdic/rn3Zx8obUi02j49Y25LElkYThU9uualBC+flRsIrA44j
+         gRT4o/q3MbV0ISjCOEuFk/jSTcKihhqcav6lcIQb1vZWAYrcsDltGs33WJLNkOlW7Y+E
+         3ZmwOjwm+FeGRvZ4jarjCcL5SGkdlqEQHex2+tsBVb8fDG14VFj8HUhabEBwjDaDUJHp
+         Heeg==
+X-Forwarded-Encrypted: i=1; AJvYcCXD7WoGecCwLyQwWWy3DQGN6zNBBkzZ/mgvlQdDA6VYt+3/ibUbnI51pnzbO4aQRdNPCOACwIf0YY+q8w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxLaeF5Se08OZevnHRswkjtJjttFKpbwrktm87ZCXe0Qh4IlkvA
+	X5NVh+zz065we2CXZbHwMCRmFAXsrWv6KSGXCppNVlLK8gJiUT3K40wk
+X-Gm-Gg: AY/fxX7M28KC8e04lPS54PA3YXF1VqX5p5ZRWHKmjm1CNNCW7yymrTaUSgejZd0SDLF
+	gtFUyXSKW2kLcqonU2Vzapu9bCsaCSqN00aAnHwDHDig8nCs4U1BY0OIQ8WY21RsrEoOFGj0XYo
+	7wf7dpLvlVB+0W0+DFuD5h6gA5egTgG4uJTP2OJ2Bokn4CqwMdmZWKn741u3bW4iRaKFEsvzSvY
+	8tA/FEYrlmL2QCx+OxSH7GpAXtg7+8MPeaYX7Pdo9j8kS8SwAaJxYaVUmBcmJUhTaUl3A/u1o2A
+	J3+0I0nF7LOVz7oVnlQWqnXzJmD1RB9KnV3JB9X+hwawKNq/b7unSJczw/LoFR5OcBVAkkEvgeg
+	oU5h5I0k5dTLPvqkaC6T4Aloq2cTz+2nHtRmI60uVp3aQJE/wL3R3xUxhYsR34r0qFTMSRzD/rd
+	SLi/abb0KwaLlHEvvHCcBnt+UFxyloxGYVTFk6MyVSreoJjxzakAHrHEWeAmfeDNeJHl+48w==
+X-Google-Smtp-Source: AGHT+IEbE+jBmq+j0BRN5nADLvU8jxL1ZMAc9aObMxYhpM+qu+5ZyALvccqrtar+8Lm5985P6axv3Q==
+X-Received: by 2002:a05:6a20:9184:b0:34f:2f38:cad9 with SMTP id adf61e73a8af0-3898f976c60mr5324357637.53.1767865641705;
+        Thu, 08 Jan 2026 01:47:21 -0800 (PST)
+Received: from localhost.localdomain ([2409:40e3:44:c9c0:8d34:cc3d:a8c9:1a48])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3cc88c2sm73602135ad.79.2026.01.08.01.47.18
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Thu, 08 Jan 2026 01:47:20 -0800 (PST)
+From: Chaitanya Mishra <chaitanyamishra.ai@gmail.com>
+To: andy@kernel.org,
+	gregkh@linuxfoundation.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	chaitanyamishra.ai@gmail.com
+Subject: [PATCH] staging: fbtft: align tinylcd write_reg args
+Date: Thu,  8 Jan 2026 15:17:09 +0530
+Message-ID: <20260108094709.92561-1-chaitanyamishra.ai@gmail.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Thu, 08 Jan 2026 10:30:16 +0100
-From: barnabas.czeman@mainlining.org
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo
- Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring
- <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Bjorn Andersson <andersson@kernel.org>, Kiran Gunda
- <quic_kgunda@quicinc.com>, Helge Deller <deller@gmx.de>, Luca Weiss
- <luca@lucaweiss.eu>, Konrad Dybcio <konradybcio@kernel.org>, Eugene Lepshy
- <fekz115@gmail.com>, Gianluca Boiano <morf3089@gmail.com>, Alejandro Tafalla
- <atafalla@dnyon.com>, dri-devel@lists.freedesktop.org,
- linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
- linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 1/7] dt-bindings: backlight: qcom-wled: Document ovp
- values for PMI8994
-In-Reply-To: <52778327-69bb-4f6c-8d64-094f33809480@oss.qualcomm.com>
-References: <20260108-pmi8950-wled-v2-0-8687f23147d7@mainlining.org>
- <20260108-pmi8950-wled-v2-1-8687f23147d7@mainlining.org>
- <45a2b510-c825-4191-975a-1389f4f18903@oss.qualcomm.com>
- <c7bca43b1b912a6a100d83229d78abde@mainlining.org>
- <52778327-69bb-4f6c-8d64-094f33809480@oss.qualcomm.com>
-Message-ID: <1d1601c3b871e67c76e4f3572400b2d7@mainlining.org>
-X-Sender: barnabas.czeman@mainlining.org
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
 Content-Transfer-Encoding: 8bit
 
-On 2026-01-08 10:22, Konrad Dybcio wrote:
-> On 1/8/26 10:17 AM, barnabas.czeman@mainlining.org wrote:
->> On 2026-01-08 09:54, Konrad Dybcio wrote:
->>> On 1/8/26 4:43 AM, Barnabás Czémán wrote:
->>>> Document ovp values supported by wled found in PMI8994.
->>>> 
->>>> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
->>> 
->>> I reviewed a version of this that said PMI8950, which is very much
->>> not the same..
->>> 
->>> Let me try and get some more docs to confirm or deny what you're
->>> saying..
->> I have sent it for the previous revision msm-4.4 contains the 
->> documentation.
->> https://lore.kernel.org/all/95f7c89fdf9b856f567a498cc56ecfa5@mainlining.org/T/#u
-> 
-> Right, but I didn't send any reply acknowledging that.
-> 
-> On v1, my review tag meant "I concur this is the case for PMI8950"
-Yes, sorry. Since they are pretty much same i have considered it is a
-minor change i have only changed everything to pmi8994 because it
-was introduced before pmi8950 at upstream. I will be more careful next 
-time.
-> 
-> Because you carried it in v2, it appears as if I said "I concur this
-> is the case for PMI8994", which is not what I then said.
-> 
-> Konrad
+Checkpatch reports a misaligned continuation line in the
+
+fb_tinylcd init_display() write_reg() gamma table. Align the
+
+continuation line with the open parenthesis to match kernel style.
+
+No functional change.
+
+Signed-off-by: Chaitanya Mishra <chaitanyamishra.ai@gmail.com>
+---
+ drivers/staging/fbtft/fb_tinylcd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/fbtft/fb_tinylcd.c b/drivers/staging/fbtft/fb_tinylcd.c
+index 9469248f2c50..60cda57bcb33 100644
+--- a/drivers/staging/fbtft/fb_tinylcd.c
++++ b/drivers/staging/fbtft/fb_tinylcd.c
+@@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
+ 	write_reg(par, 0xE5, 0x00);
+ 	write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
+ 	write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
+-		       0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
++		  0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
+ 	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55);
+ 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
+ 	udelay(250);
+-- 
+2.50.1 (Apple Git-155)
+

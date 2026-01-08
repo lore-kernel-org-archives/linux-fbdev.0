@@ -1,76 +1,75 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44F9B347BA8;
-	Thu,  8 Jan 2026 09:57:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CC593F076D;
+	Thu,  8 Jan 2026 10:10:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767866277; cv=none; b=PVJI03LBlWEFTxRUVBcaTtJwI75IgjRCpYSRUideNZRcVfgmfR4lfTGfwGoqlTrw/FG6l1g1juQx7RQdUrMJD+FM4+GTmXkgZYmL68u0YknSf2ArI4lBmQkkAqwMrFwOc6GjxwPjN+bdd2XEcjZASgXgcRh7ToLUdp3/Jeb7QKE=
+	t=1767867003; cv=none; b=UVZaN8EjTXGOSWvBTNV0iXVh1Eui/wGoGzXo1wQE9iQ3pwiKWzT6zdVuL1pdSYd/KtFsQbLzaHWOQADnxeh9bWcv0PL8TMGHK9OzVf4Vxerlf9q0BGjhblNb+5aYMhxZKNnhAg4dQaYORDVaWJZr0y0HDaHNgf+xH4iXZ4eTKGc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767866277; c=relaxed/simple;
-	bh=KJMLKtgmBZCJWuHGsXbhRkAkjlHzsouDdRM0RG+aySw=;
+	s=arc-20240116; t=1767867003; c=relaxed/simple;
+	bh=jhGglnHR79yKqzMve8kZuUJdzdwyNEoqDK2d7uLN0qk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ayulJJovhsIX4EEevsxAMNRdFOH2ehQx+pZH4C/cVwID0lTmklJZaGvm1T4Bvyt3bUBuBGrbh8VrRe/liWe1MRe8KVhi+oA+yei40AfJosYwLDGM/mGGf5XHm/Dc/Qec/A82yPQJfkk1MYbURvjqykrIRCBEKaCBgwa6p2AyseY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=voJ74TeG; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=qk7cxevvkzZH1t5sRNiG+En9ARtCZJPx1espBui81a60e3NkNOwGSBMf0KeLRDbrln6eQR8L7f+l+6PC8uACmq122EoVd8aYTggiMYORTaIZbkZufh+nRpTcE/aJt1eBsuHc9G6eyphzgwnaXU1YVoFkcBrLhsAOjDZBYh8z4Ak=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=LzZZOBOH; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="voJ74TeG"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE17DC116C6;
-	Thu,  8 Jan 2026 09:57:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1767866276;
-	bh=KJMLKtgmBZCJWuHGsXbhRkAkjlHzsouDdRM0RG+aySw=;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="LzZZOBOH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62BF1C116C6;
+	Thu,  8 Jan 2026 10:10:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767867001;
+	bh=jhGglnHR79yKqzMve8kZuUJdzdwyNEoqDK2d7uLN0qk=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=voJ74TeGuTkwCbMTG4VIwF7ZBwZyHb4NT8S94qGEHQk0yHJzG5q4U9jEPLNS0mKlk
-	 f/hnYG61IX9aWBUG46ZnSzrASvEsvzuhOvuyAZsw+YFTVjwHVpBsZPpytA33KHPvaz
-	 79YRDQrhvcJGeTk2ViyDEsaU/PtMkrVrN0Mobp4Q=
-Date: Thu, 8 Jan 2026 10:57:53 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Chaitanya Mishra <chaitanyamishra.ai@gmail.com>
-Cc: andy@kernel.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: align tinylcd write_reg args
-Message-ID: <2026010823-floral-alphabet-4aef@gregkh>
-References: <20260108094709.92561-1-chaitanyamishra.ai@gmail.com>
+	b=LzZZOBOHwTd6nrl3/mbpOCHau0gCfmiYTDmWCyoFBGa4zofYuWFQz+EhZZL+46hGX
+	 bKrZAD4dVcQXwVVHAUS9Lf1fclm7MLcc7nuMWEHhn/bWIjO3zb3OBsF9VaWLAA59hz
+	 ioZoAOIPycOm3zpmADzhBEe+cMfNFw+VMNAuZjTxO8vmbhUs4sCuOFNub935V1fHSB
+	 wF/I3/cfExGbzozL6uhKb0aaD9Ou+linoMAj40L4CbOaFNbD6wzEUjz2T0uasVwU0E
+	 v0gqkJFm/Rxa/OR9Eclq2tXEuURfL+HxpFUlIkMpbrRY+rB/zVTlmudeGltnID8pC0
+	 4zlPsVHHIg5EQ==
+Date: Thu, 8 Jan 2026 11:09:59 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: =?utf-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Kiran Gunda <quic_kgunda@quicinc.com>, 
+	Helge Deller <deller@gmx.de>, Luca Weiss <luca@lucaweiss.eu>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Eugene Lepshy <fekz115@gmail.com>, 
+	Gianluca Boiano <morf3089@gmail.com>, Alejandro Tafalla <atafalla@dnyon.com>, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, 
+	linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Subject: Re: [PATCH v2 1/7] dt-bindings: backlight: qcom-wled: Document ovp
+ values for PMI8994
+Message-ID: <20260108-illustrious-original-harrier-e93aaf@quoll>
+References: <20260108-pmi8950-wled-v2-0-8687f23147d7@mainlining.org>
+ <20260108-pmi8950-wled-v2-1-8687f23147d7@mainlining.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260108094709.92561-1-chaitanyamishra.ai@gmail.com>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20260108-pmi8950-wled-v2-1-8687f23147d7@mainlining.org>
 
-On Thu, Jan 08, 2026 at 03:17:09PM +0530, Chaitanya Mishra wrote:
-> Checkpatch reports a misaligned continuation line in the
-> 
-> fb_tinylcd init_display() write_reg() gamma table. Align the
-> 
-> continuation line with the open parenthesis to match kernel style.
-> 
-> No functional change.
-> 
-> Signed-off-by: Chaitanya Mishra <chaitanyamishra.ai@gmail.com>
+On Thu, Jan 08, 2026 at 04:43:19AM +0100, Barnab=C3=A1s Cz=C3=A9m=C3=A1n wr=
+ote:
+> Document ovp values supported by wled found in PMI8994.
+>=20
+> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+> Signed-off-by: Barnab=C3=A1s Cz=C3=A9m=C3=A1n <barnabas.czeman@mainlining=
+=2Eorg>
 > ---
->  drivers/staging/fbtft/fb_tinylcd.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/fbtft/fb_tinylcd.c b/drivers/staging/fbtft/fb_tinylcd.c
-> index 9469248f2c50..60cda57bcb33 100644
-> --- a/drivers/staging/fbtft/fb_tinylcd.c
-> +++ b/drivers/staging/fbtft/fb_tinylcd.c
-> @@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
->  	write_reg(par, 0xE5, 0x00);
->  	write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
->  	write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
-> -		       0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
-> +		  0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
+>  .../bindings/leds/backlight/qcom-wled.yaml         | 22 ++++++++++++++++=
+++++--
+>  1 file changed, 20 insertions(+), 2 deletions(-)
 
-That kind of makes the code harder to read, right?
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-checkpatch is a guide, always use it as a hint, not as a rule.
+Best regards,
+Krzysztof
 
-thanks,
-
-greg k-h

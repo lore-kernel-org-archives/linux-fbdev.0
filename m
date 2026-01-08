@@ -1,89 +1,73 @@
-Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2BE9A410D0B
-	for <linux-fbdev@vger.kernel.org>; Thu,  8 Jan 2026 10:11:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 801AD3A7F64;
+	Thu,  8 Jan 2026 10:17:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767867068; cv=none; b=n2T1Voyw30og2IrVAQrnjE7KXT4dNP0pXHuV1LADdrxED9EuZW5DKEaVPwOdIK98alnHnbLzoRZASFSJyCfnFPackuWWmQkwWrHPwDGIpX08GdwIf/ajKhu0fa4F9kGKXnHu91Uv2A0gVKyubbPa8u57lfooa1fBaDA0AAC+8nY=
+	t=1767867473; cv=none; b=Ta+hcc3p8NXvh7PEVc/OhwKrR+RoUU8cvUPjX+hTZt2VlohZmQRUi4EfIY9QE7O3LuN/qTKtscwLQ1JTohrWFNjt4EFArDi1qzBHHWKaPIXXjcyFGCv4sVCnBglBJfjDLhs2Qf39JVShIX5Ifuny6hy1USRT5K6avil9MCDV7OY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767867068; c=relaxed/simple;
-	bh=h9uwAqvKFjHNqaoUbE4IiDPfzSZFqv76YqNJ94qfNIw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=uWzJWCkXF0jho2LmAzrZ1Fz/JUe/4A5LWuDsYG8V4c3RaXR9o9bagIQ/aeVmg192kt+evTRrTFbzRLKu/Csgb0HauwWWIEP5sdmM20NHVdj1bd0aTUlJXE+6T9GTgx/LEjDtZACnj8S4dmtp9Snx3Yn7lLY1oqZzceXPKxVK5Hs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ExzkR868; arc=none smtp.client-ip=209.85.210.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1767867473; c=relaxed/simple;
+	bh=FlOcNDp9sNM8DLGW6Xw6lFu1fBpLA2WtnpnC+96/W5s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rLNrnX25An4OgTDBHeCV5Epk/NHhPuMyV8f9/UU013V0UE774cMZzCMILAE8zo29NyvhL8IGzsrEyzr9rzluGL4FxQ/1MbJqxfothE+XYL/enzxxw61vkxcmNxP9oL81RIWQuxJ2nWI8Vu+LhDx0KJR03YRW5cXvjzEC5XrKM/o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Aeif+1Gc; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ExzkR868"
-Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-7bc248dc16aso1943943b3a.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 08 Jan 2026 02:11:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767867063; x=1768471863; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=h9uwAqvKFjHNqaoUbE4IiDPfzSZFqv76YqNJ94qfNIw=;
-        b=ExzkR86830PqjWTqv8AeVJlbiUCUKm+IltakOMgMGOnePObu1C/RxSCAB9hp85xy2B
-         GsdANdtTv68HomD7hIJLquCH4zJGqhSZGf0a5R3s7i3NpYMPqpW/8hf2G9f0LDoAIOog
-         7gtVGRawd6XUw3SYlVZqu8BxdJK1eZbKqyEunqUnXVMCYZII3fighJKCK4VNiYn21+OO
-         9GDa0WunCxA/RKNDCN2picmdfCw2F+nrgcZN//nDh3kXU7MZ2VTWu53PpvTs9RZWiU2k
-         ZFxffnTwdx8ZX8d8FRqhtNBOQGF1Ze6gFhAI+E73mlA0g+rzJbZIkclXmf/EH9CSVOf9
-         /36A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767867063; x=1768471863;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=h9uwAqvKFjHNqaoUbE4IiDPfzSZFqv76YqNJ94qfNIw=;
-        b=YGo2JAqgg6HJQXpw5qYXJfBgfv4B1NW0CF7wdskMFgpmaF4U/KU9yUy4K6eTwBTzTU
-         sAyxMkfmH0lVs09kv9eXqc/PtSf4sdOnxYo4L1qEOiozWlPBs5+ZsWNW/qpodm4rEL8c
-         ZLymJbGQcFDdTod6O5fJ/aGcE8AUsHiW+Y71q5JVBznjhQqqynlrmHckY3PH/oOt3jOO
-         oNmm9tWnTBFkKaqN0VxQLQoyvEhOtdmoL7mXSVNGAob2RH679LL0rGsaQ7NRs+ZSrZ4X
-         CO1pgE4Mq/ajpuJM+hvKqHK6eOkZrQgwEJ7tZwRgQvn84q8unr2YcmURHO/RbMyWfcT9
-         TKrQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU7+EI0arKzrWTk15AqIZJRNELTlOalPI+0yxbnF1jYYhPDAGmOyeM7JUO324DAiiAeOpZmgKoPWO2Jig==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzbkvXAnzE5NViT6hN+elpzBP+f169Tf37sFoAgLXUf+HARd0X3
-	5vofQ5XrTEImWwb/jVFuPLLbO2iN1WWLSbV5K27+TINQaF8Wuiw/a89I
-X-Gm-Gg: AY/fxX7z0YP1t26zZmBgraGro3HyVfcnStJyTmG5SKDik5nC3l5tDT3BLZ2btfSPtwW
-	DRIf3Jd/QeU/A6hynJuBXevNjOWywTRZiVC0Lk0bLADeJo2miLGSGD7RJhxAJhDz9UmKJ9x+ojR
-	FI8D4OFTblo8REocD45j37VBEBE2sWPPgjFE2YCR2gWyeAHQ4JYiKW91sZFNIH4G0K7O63PKS3r
-	PGlK3GOky8h1cceyKdqU/cGbNQu/NTPBe4eb5kywleETrSDZxrro/5Sy3hq9qXAS4RK8fXqhGX1
-	gtYg+JH9nYWeVbTCQRphR2bVNaUgTVySZJBQ2qsCO+6GF9vBO3/qHsAQ4Y3LYxkrQ3B0lXIyr/K
-	b4G3BDtbJ85Ibs018J86DRJ4kcBeP8oBr3Ph9PhL+7I8DVkuOynZWQdVj2AwOh9Joxm+pwCtHtj
-	DsPEjviXe6QormXfKZnh3ydcv/nR6NpUCWcelJ8oCnAKtdjHUIew0S2m3KKFU=
-X-Google-Smtp-Source: AGHT+IEHYRvD7hq42mCwI2aLKv7F5lVXS2SHsFyfxpXbBk1ir1DO9ZQE/5l1NoYaYnM2SJIL+BGJXQ==
-X-Received: by 2002:a05:6a00:8d8e:b0:7b9:ef46:ec61 with SMTP id d2e1a72fcca58-81b7f108957mr5322486b3a.26.1767867063293;
-        Thu, 08 Jan 2026 02:11:03 -0800 (PST)
-Received: from localhost.localdomain ([2409:40e3:44:c9c0:8d34:cc3d:a8c9:1a48])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-819baa19242sm7318484b3a.7.2026.01.08.02.11.00
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 08 Jan 2026 02:11:02 -0800 (PST)
-From: Chaitanya Mishra <chaitanyamishra.ai@gmail.com>
-To: gregkh@linuxfoundation.org
-Cc: andy@kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: align tinylcd write_reg args
-Date: Thu,  8 Jan 2026 15:40:57 +0530
-Message-ID: <20260108101057.9340-1-chaitanyamishra.ai@gmail.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260108094709.92561-1-chaitanyamishra.ai@gmail.com>
-References: <20260108094709.92561-1-chaitanyamishra.ai@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Aeif+1Gc"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A93A0C116C6;
+	Thu,  8 Jan 2026 10:17:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767867473;
+	bh=FlOcNDp9sNM8DLGW6Xw6lFu1fBpLA2WtnpnC+96/W5s=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Aeif+1GcIvuHYuwImiJbr7JLCjanX25RFT8jtzl+0B446ERGcm1rBvHQybzUYoWZW
+	 9YjQP26sK8bjLESF+VjCB9A1Ea2Q7RonkyEnyIVPin0FUP4y2QT+sFf9nhcOeSmuKg
+	 gLdcVfdh4WPOcp0wKqqNLmiOWHEjzDprtSOMyW2l34Qpd5F64IgjaIvczRPox2x1Mh
+	 sfWz7XDTtaAKkW+B1hbcJlci1j/kxMd5sb05i5WqmQyhkYffeAIPy0u8Auv7znvay2
+	 bsWRFw2nKmBMdfO6nVij1WSP116/IuNWhZM24njd4EiI0tUJ/tyDXRqIQpBqKr3HnJ
+	 P84xYWGcGgl5g==
+Date: Thu, 8 Jan 2026 11:17:50 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: =?utf-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Bjorn Andersson <andersson@kernel.org>, Kiran Gunda <quic_kgunda@quicinc.com>, 
+	Helge Deller <deller@gmx.de>, Luca Weiss <luca@lucaweiss.eu>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Eugene Lepshy <fekz115@gmail.com>, 
+	Gianluca Boiano <morf3089@gmail.com>, Alejandro Tafalla <atafalla@dnyon.com>, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, 
+	linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Subject: Re: [PATCH v2 3/7] dt-bindings: backlight: qcom-wled: Document ovp
+ values for PMI8950
+Message-ID: <20260108-piquant-quiet-porpoise-b502b2@quoll>
+References: <20260108-pmi8950-wled-v2-0-8687f23147d7@mainlining.org>
+ <20260108-pmi8950-wled-v2-3-8687f23147d7@mainlining.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20260108-pmi8950-wled-v2-3-8687f23147d7@mainlining.org>
 
-Thanks Greg,
+On Thu, Jan 08, 2026 at 04:43:21AM +0100, Barnab=C3=A1s Cz=C3=A9m=C3=A1n wr=
+ote:
+> Document ovp values supported by wled found in PMI8950.
+>=20
+> Signed-off-by: Barnab=C3=A1s Cz=C3=A9m=C3=A1n <barnabas.czeman@mainlining=
+=2Eorg>
+> ---
+>  Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-Agreed. This change does not improve readability, and checkpatch is only a guide.
-I will drop this patch.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Regards,
-Chaitanya
+Best regards,
+Krzysztof
+

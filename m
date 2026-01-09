@@ -1,108 +1,195 @@
-Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com [209.85.222.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11023123.outbound.protection.outlook.com [52.101.83.123])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 558712FA0DF
-	for <linux-fbdev@vger.kernel.org>; Fri,  9 Jan 2026 08:40:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.54
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767948023; cv=none; b=Ap8jr+6q4Xl+c8OljLfkAPQXwW313rtrqwaVImvHpJn0j2ECXgGEsaTGExuwR7tziHAhPz5bbBT54HVjMoFaYz/ZjklcrlyOUWg56CfcgCPo5QAoGw/Ku+biHVA1rRdv8RneKKMOHsmNGpVDwNlfB65ezLo8NBgyjnNNOL8OGTI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767948023; c=relaxed/simple;
-	bh=4aCwjP/3aetiY+Pdvnezx+dDqcFJcvkgbunGRgECQRw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=uWhBlFaxxrml9pDLaepye5Hlwpgrrpjb/AFJPjl2L/ld9SgU58/HixcU77RvleAmjYkGsSI6wtE0d/KY4Ffz9AWxzBQhag8hGBEi+oRUacMQnZOFxROLFjEUHMkWh2RGVHy/9FAvli77GsLhFSIDrA5gIX0xYPtATtC7OhC/G7A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ua1-f54.google.com with SMTP id a1e0cc1a2514c-9413e5ee53eso2440122241.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 09 Jan 2026 00:40:22 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767948021; x=1768552821;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=WuAsW8sPlBb3HXHQgJVVkI+Y7zt+NEPceHiguDOxVbc=;
-        b=Pt/WH32cQBUqwDeOvI09OA0NdmR1UU8H4RL2JLWQiJD9ixuCbXAj9Vz3sTIh+JvwQg
-         6eWZgkGFJ0ZqAjuHW+V2fJX7W6k7Ous+nlSvQtAYgNHqD65B/ThCXiXchqchfNjiOgiU
-         RM3oquLsbTIcFvwQiV4RoqXl7tvM68nXs0UNff3CpPW6RUlZ2Ip4vpomdDx+bax3nfPv
-         RSkFTKSWTDFfFHjbZsSPvgthJb94m+hZUOxF9M5QabWyhedh93XRhrlMAvWxozHUDTX5
-         XLbIHKEwP63AuzbCYFPLODghW4zu58yqyld+ALHz71QzRMKJbSemVjUd18BzIazStL+y
-         DA1g==
-X-Forwarded-Encrypted: i=1; AJvYcCW4zomOeGn+RBPAsFA+xrAfxsxPYocdF9i6trUM20g3T0LEtYclwzteW8JR9qinbneDoXygtt0Rxq7bgQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzP1/xpZyixWwqDYRibyXUUK2jirGZMMZAiyVDKEUZv8Xjy4els
-	ZprzMTglNmDp77/ceYBJB2VsqLsAgdtgsFoz+fei6O36tT/lyTai/hKwbEkTfO08
-X-Gm-Gg: AY/fxX7SIW3E4OWb1PiimOU8oiSZALTQWhiB4e49MONReS8NIwYNyS/ni0tlttEmRqA
-	EdViwKtz5F6/ukx9OaCxGlTIhc/+U6FrQvcGNEZjGAuDYHyJaA8HIkivnoMwQ7HnY4ozWR0WSiM
-	gXko58Nd4zocDD12e0TtoMZ2+e6Q6i/fSz8r5jTkvAoR3H1TeKPJ3OoPUt7j3dtriaEsgT9T29I
-	yK1NV25jsfsVXfiAHYRZO2oXfYdxyfU5CsS65yzIHPf4XRCSDoeLbl5jUhhY3tnvxvXE5/KEVDA
-	SKL2BMB8mZtyBbqoxyHlJiRwAZ+MDN+KU0ihet67+qf9X+fH2oAlB5BKwZVamyu41z75+kdtQzk
-	ApOvuVbfjGGJrTJ1MjYGCilKzMhcUUaBXZ+l0Ho+xy4Uk2eQPrSlDJbpuZ+9m2lxX1WWzhWpXcI
-	7XM0mefD3S75T6q769ZCyhHsQRQXLM009o+t+1H1zTNSzQjOO//PdU
-X-Google-Smtp-Source: AGHT+IG30Ao4Kw0lNPz4rABXNaioz3/u/UOKtqsFhlwkhg1JXrlI1dJcAiKE8EiQG2aopa7F5eG7xQ==
-X-Received: by 2002:a05:6102:c50:b0:5df:b57a:ad2c with SMTP id ada2fe7eead31-5ecb6573ae1mr3800088137.19.1767948021339;
-        Fri, 09 Jan 2026 00:40:21 -0800 (PST)
-Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com. [209.85.221.171])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-5ec770644d5sm8704822137.8.2026.01.09.00.40.19
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 09 Jan 2026 00:40:20 -0800 (PST)
-Received: by mail-vk1-f171.google.com with SMTP id 71dfb90a1353d-563610de035so809633e0c.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 09 Jan 2026 00:40:19 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCWmWxLe3uhVdvRdMAeJJUAuX7I+qfEINz7Cy+pjVkLrEO3o/xArjlja2mR8hc+32NAw5g2gR8zo4vJZIA==@vger.kernel.org
-X-Received: by 2002:a05:6122:2887:b0:55b:305b:51b4 with SMTP id
- 71dfb90a1353d-56347ffbd4emr3088425e0c.17.1767948019706; Fri, 09 Jan 2026
- 00:40:19 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A74BB355048;
+	Fri,  9 Jan 2026 08:55:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.83.123
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1767948948; cv=fail; b=uaMV63hVGf6toLhTWqfLdsy0dL91w/a7aKn2Uer95/iglvuobrro+0u23FFsqHXhIngDTTG8L2zT7YDSikNlUsWZPSAy0AOpAT5ouj4Nuxe566YCyv+i9PjIw/itqt8Vm9NHxR1M7sPvrVmsfJP+PifZjrq5HRpoKEl9X3EeKOY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1767948948; c=relaxed/simple;
+	bh=YmHoZuLnpzloTwd4YZxvSCU4l+7s0xayESLkxh5Q8SU=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=j4rMgj3DFb+LRPa8zgGbAWJR2OUoZpzLr2qnuHF8AsKersg8mIARbYr7kHHGwIycGvNTaTFVTNkN3/q4ue41Atz1Dqm6X/T4y7MCbBa5FIsE4oL25DmiXPtKejq1hDRaKqDWeyFLMW6JKfoM4WJQ61G3eGnfnvMt+kq/RpfQyCM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com; spf=pass smtp.mailfrom=gocontroll.com; dkim=pass (2048-bit key) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.b=df3H5sBM; arc=fail smtp.client-ip=52.101.83.123
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gocontroll.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.b="df3H5sBM"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=pUg/A6cunQ1Q6nEk1c86SCednXAmTEen6606rxLvMdgJMcBe+oNCTzUzzlDu+YucokJXM/xXjAtDsKHSIqbo6v75QMO5asgFEC+wUkYQpZPQA6j/4H1eb7XSDvyIi0vQYDVcTGCS5Nb6CKYrGt/9royXAplibgKqmSsO2nTXJ9+4KY983l7G5DwaJwgxsDyrwVhmih0e/3FW1DtH3dDelE139vxWKIHi2T6Kj5FG5r+ZKrZKWhrKsiamK1Y5LaWB9rNyc/KpYf5aueCXczoOMEeyLa/C3iTe1XYVPPhRkU3IT8AarP2sGbD0eZdtj6oucfo3lpiJbVHHlbmzmVKKWg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LV8rXPj3w+Xd+Kr4SaVocr4ESLPg85B+FZ1f05w/FsI=;
+ b=c4i2kwXuZeOpnv9kcM0m4cA3mtDf4FXcqMVGd3blM4pDnCjNe1YI9J30rpY6vecTd1aHuNBylL0pp5FGc03yz3cgr8c6g3lWYWBXgNFL5C9FggLMk2IeGo6Ubqlmk9b/YW5Lfl1eO4h8YTtBITyPdK+CZ5l6suXH6LvA5GYJIp+JJ6g+7yrZdpFpRvlswN4kxjjf3yoqJrxVUgGZEpDvd7x8/NYT4XKusfoz+r+kuyHrR/iLGcEDlW/5tLVTVZWFwTRHQC0K04EiTdWbY7TZVJ+EuytrwKaVolv5xnz9ynm54MPs9tU1Ajiq/3hKZdyD3IaDllzowTOp6QNjj2vrhw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=gocontroll.com; dmarc=pass action=none
+ header.from=gocontroll.com; dkim=pass header.d=gocontroll.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gocontrollcom.onmicrosoft.com; s=selector1-gocontrollcom-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LV8rXPj3w+Xd+Kr4SaVocr4ESLPg85B+FZ1f05w/FsI=;
+ b=df3H5sBMBZqHjuB0EpLZlfWv1KXtIQ3ZOZAx0goqLJJ+qOzbh0H2uezimn6+6HfXQQOCE9nkhBDa78Rkorst4Q5hSFNGskXT/ivJ+HUgXM6+PlDTIGxNNiXXmxFVOLFjFUZafSYTlcTBadzAk0FCvHfTkQ3Jto+gXPElePoEfue3W7UrsIPbp/KJ+d6G7HuLd5lH+jU2pGQZCRLRiKiEL6rwRW40tUFQyuqq03Fx3+jVLxk48DoZYxpQWP5pRudxoQLPAq05NXyiBab+xD9et0qwxXcwtpFsxBhdMx2c6Ypw/+ivYiPAWAZzbkplNdv8mXbQcu2ntEHYquGVqaFBFQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=gocontroll.com;
+Received: from AMBPR04MB11741.eurprd04.prod.outlook.com (2603:10a6:20b:6f3::7)
+ by AM8PR04MB7218.eurprd04.prod.outlook.com (2603:10a6:20b:1d9::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9478.4; Fri, 9 Jan
+ 2026 08:55:32 +0000
+Received: from AMBPR04MB11741.eurprd04.prod.outlook.com
+ ([fe80::ee70:7a62:e9f:12b7]) by AMBPR04MB11741.eurprd04.prod.outlook.com
+ ([fe80::ee70:7a62:e9f:12b7%7]) with mapi id 15.20.9499.003; Fri, 9 Jan 2026
+ 08:55:32 +0000
+Message-ID: <fc5aad54-08fe-453e-a3cf-621414c8a060@gocontroll.com>
+Date: Fri, 9 Jan 2026 09:55:18 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 2/4] backlight: add max25014atg backlight
+To: Daniel Thompson <daniel@riscstar.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, dri-devel@lists.freedesktop.org,
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+References: <20251201-max25014-v6-0-88e3ac8112ff@gocontroll.com>
+ <20251201-max25014-v6-2-88e3ac8112ff@gocontroll.com>
+ <aTG0EK_zuSB-U_bb@aspen.lan>
+ <8a9a59b8-d5c0-46b3-8f86-a4cd910b7af3@gocontroll.com>
+ <aTaqCxsGj_waN92Y@aspen.lan>
+Content-Language: en-US
+From: Maud Spierings <maudspierings@gocontroll.com>
+In-Reply-To: <aTaqCxsGj_waN92Y@aspen.lan>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: AS4PR10CA0004.EURPRD10.PROD.OUTLOOK.COM
+ (2603:10a6:20b:5dc::8) To AMBPR04MB11741.eurprd04.prod.outlook.com
+ (2603:10a6:20b:6f3::7)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260108-custom-logo-v3-0-5a7aada7a6d4@kernel.org> <20260108-custom-logo-v3-1-5a7aada7a6d4@kernel.org>
-In-Reply-To: <20260108-custom-logo-v3-1-5a7aada7a6d4@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 9 Jan 2026 09:40:08 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdX04g+BfEuBt_0iCvmZiyCLp58d0QwnFtu3bM1Cv59TzQ@mail.gmail.com>
-X-Gm-Features: AZwV_QhxZ4-tEsGEnK584clI_hiMcF81rYfU7L-GCTH9ANG1oGbPxo_i7btpNjs
-Message-ID: <CAMuHMdX04g+BfEuBt_0iCvmZiyCLp58d0QwnFtu3bM1Cv59TzQ@mail.gmail.com>
-Subject: Re: [PATCH v3 1/7] video/logo: remove orphan .pgm Makefile rule
-To: Vincent Mailhol <mailhol@kernel.org>
-Cc: Helge Deller <deller@gmx.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
-	linux-sh@vger.kernel.org, linux-m68k@lists.linux-m68k.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AMBPR04MB11741:EE_|AM8PR04MB7218:EE_
+X-MS-Office365-Filtering-Correlation-Id: 694bdcaf-0c66-4133-aaee-08de4f5cd84b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|1800799024|366016|7416014|10070799003;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?aTk0UU1MNFZUWUpUUXl5eGxxdEtkTm44b2RQbVk3VWV6TTFsYUtacVduc29z?=
+ =?utf-8?B?alBkS1ltRU1zUEE5S3JQL3lzSXlUMzZvV3M3MnVVK2JucDFoVWVzQzFDSHhY?=
+ =?utf-8?B?UmJpU1RzMW1CTEY0YlJkVGZaRVROQ0hIUDcwY3lLeE5UTlhvVjB5M3dweVhs?=
+ =?utf-8?B?b0lqQXNkUFdOdG8vRnVLVVNIUldYenhranZrUzl4Wi9wYzNSdTVYczB3NGRS?=
+ =?utf-8?B?YVJRVlNyZTFKd2t1WmxsY2tseTlKR1ZmU1l6UXhER3BNN1hkVURzWXpNWXlv?=
+ =?utf-8?B?SGtRWUFpamZ6blFrVEtoTGhCNWtwS0JubWs1UmNzRnErWlg3TGc2SkRYTjdD?=
+ =?utf-8?B?R3l4eElXeDZVVjdHRXJLODl2N0lxZEVMVUxEeTNydmNNaERRS1N6dGhrbG9J?=
+ =?utf-8?B?OFNrTlluLytLL2pySTFCcnlVQ3dLaE85ZFJqRHAyWjJjVVk0QXRDWkUwUWdZ?=
+ =?utf-8?B?VDRlNEdjZ3hVcnNQUWRGNmsrMHdzQ3U2cTU3WlE1cUVRRWV3RmI1QnNBcHVo?=
+ =?utf-8?B?dTlYOEZwUy9QTXBjYUZ1MjhtbG5NTmNGM3ZvVUROR3dUYVQ4SFY0NGlZYytV?=
+ =?utf-8?B?VUtQVmhYbUllS3hZdkttOFN4NHJteTBiODhZVFpBMmR1cGp0bjArblltLzBG?=
+ =?utf-8?B?YUdaY2RyMTFFT3ZHbVE4ZHlndTVSMWl0NWtUMXoxaTRNa1lVc2JwZGJRZ05i?=
+ =?utf-8?B?STdvVUZqbmZJYUV1S3dNUmNOdXk3YTZHTVNoOGZ3UlBaaVZON2J4cXV3UGFV?=
+ =?utf-8?B?R0ZhcWY1Rm9rREZwcUVnbC8wU0h0LzRKLzgxaEtwdGJONnF1MTVFcCsrc2da?=
+ =?utf-8?B?Ykg5RHdLdG1CRzh0RWhCbUdmR1NILzF2QzZ6WmhwNjdVSUpmOStyMGRMeHZh?=
+ =?utf-8?B?K1pEdTBmbWZid2FXYnNNeTBXM3ZVQi8rTkE4bkNxZUFUWVdKUVJMM3pZQ1ho?=
+ =?utf-8?B?TWRTa0pZc1pIWXFFeWsrVDN5azBoZWl0eXJrRlZCc3dWTEpPR2NqVXZpYWx4?=
+ =?utf-8?B?aWhJMWpjNDIrYUJ6S3hZVm5rWkl0NWhSUXd1S2MrWWFyVjN6Z0QvdGpxTjBW?=
+ =?utf-8?B?enloWXh3MEIyYUw3QnQxLzMvVW5lcEhGTVUzMTBjK2JoSU12Y040Wklpd0kw?=
+ =?utf-8?B?Z3RQWHpCSEx6eEp0MSsrTWpHM3gxbHFGRjdFeURpaStjckpZb2tCNDczUExP?=
+ =?utf-8?B?Wk4vSWJIS3VvSFVNNVRPeTNJNWJKTFBvOGRTNXQvOWxwVXR6NG5jZFNwOUxR?=
+ =?utf-8?B?emU2NURoQmdIUzJlM3NPZno0SVpUZXVaQ2ZiTjQvOVZjb2dQSFNlMEh4TEVo?=
+ =?utf-8?B?c2pkanQxbDZRYVZkdDFRL3Y2NGhFaEdjakxBV3YzU0VRTWorOFNyakhuTmhZ?=
+ =?utf-8?B?SEc2d0VQamF4WkFVR0lNTE9Sdm1HQXM1cUpIUFNMWXVhM1pBMWd0VGJscUxE?=
+ =?utf-8?B?bCtNVXlYWllyaFhWcGRWU2lwajFZY0VOQ01KNjNYVVgrNFFuS1phRWpWbVIz?=
+ =?utf-8?B?aGZpY0xhdzFhMXZXbDVWZDlNSDhPSGJ5VlN5NU5pU1JNL2RzRThlSlZ2Vm9N?=
+ =?utf-8?B?bXdyWkJrMUdHTFF2OWVKYlVYWVI1MGUzMXNjbkEyVVNXamloMWxuRUZ4cUdX?=
+ =?utf-8?B?WmN6WWl5elpmVHRVSlRER1RmZWFQS1QrWE5mQ01ZRFdGb1FMT0lvOHdYU2U2?=
+ =?utf-8?B?bjdGM0x3dFVIams3cEMwY2JEeUNnZWU2WDlTb3NRR3JlUXV1WHBxZjhvTXZM?=
+ =?utf-8?B?dFFMdmg3OGg4T0IxbDNNbDFJZzZSMnlrTWVtRTlQbnlDc05Ma2VtVnRRZkE3?=
+ =?utf-8?B?Zjd6MmxyeUgvR0ZvRmVyeE5KNDFoY0g4Mi9Id0xhZHJGT055N05jQmdKdmZl?=
+ =?utf-8?B?VDBJdERnTEdXTmVBaGI4QlptWlE1Mllybkl0Mi9RNWJUWitwUm5BcjdGc0RJ?=
+ =?utf-8?Q?krrGe6ylVYpQGtDluEKuIIPjmbf5uMyR?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AMBPR04MB11741.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016)(7416014)(10070799003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?TG92NFFvb3V1M1RaYlcvVXFtSEpSMVRocTlhNzhXaTlIa292bFdlNVpsYmFE?=
+ =?utf-8?B?QnhiUkdHYllTZjN0R2NBZ1htWGZia2dhNFNVVkJzbXZsOExjWGRSSVUydkJD?=
+ =?utf-8?B?WHNnVmhZaE44bWE2V2VuaW1qWVFZbHJsc0JFVTRjWitWcExiSmRCeXNhcTJw?=
+ =?utf-8?B?dTRIc1cyeEdwMXN4aVNNblVteWo2K1A0QTdlK1gwekxRTS9tcnU0bUg2dkVJ?=
+ =?utf-8?B?S0JXa2I1MTJwSDl3Z2pIVVl0QWtpQnNiQ1J1VnNQRC9BelRSVHBzK0NFeUNo?=
+ =?utf-8?B?VmRWdFg4OVBZRXB5aFpiMTVtd0NJOXVDZ0gwWnJxRWx3WjMwUUFwV0hVTVdC?=
+ =?utf-8?B?THlVeWZtR20yeG5IMGFCV1gvREtndkEyNmcvSS9sNEFYVGQydGwxVTlDVXpn?=
+ =?utf-8?B?eTNaQ0Q0YjgrK1ZTV3luWlJWMzJnVnltdFlHYkw4dzZiWmV0Y3dOdkowaDd6?=
+ =?utf-8?B?TU9CeitZY0J0TmYyWjZEeTlsM1dmWXIyTnJUanFxUVpYNU5NQytDaUt0WGI1?=
+ =?utf-8?B?Q2FsTW1wbkoxMUZZbG5DN0s4clQwQVU2MzVlN3ZUSWpsd0hEbnNWdHVUZG9t?=
+ =?utf-8?B?aEdXZERSQU42YW8rMndwb2hmUVN6SkQwNFJiTWR3ZWY5WXMrNUFYUDNrdXky?=
+ =?utf-8?B?bmE2OUtwL3ljRmwwTjdPV2gyci9mTXZMVkVEWmhQM0gwem5PTGRqM0ZyTTdY?=
+ =?utf-8?B?NXdQaEtYeHNmRzNkTHZqRnZ0VEdCRUlTQjhkQlJ6YnlYVU9VUmpTU1VwZEdi?=
+ =?utf-8?B?L2FKd1I3VndjSVRVODdhenE2SDFpWitKazFsTmlBNitpNk40SzZ5WmZHZ1FY?=
+ =?utf-8?B?ZlY5bVA4TVRJU1dNZlAvVXh2QXo3Zi9VMmNmTXVUMXdXTFNNcXdqa0l0TExY?=
+ =?utf-8?B?cHFTQnR1bHp2UTlUakJiMVh1VFd1eXRuNlNEcTUyY2xNRCtONThpdldpcEpx?=
+ =?utf-8?B?NG5YTTUzUVlpaGdvbVZDRzJEakVWUlZuZFlveFg4MUl5WFZTczVjamk4azc1?=
+ =?utf-8?B?VjhXL3Rzd3JJNEZjSW0xakR4UG9laFVoem44bTRsLyszL0dCck1ubzZCRUtS?=
+ =?utf-8?B?Yk9TczBSSHpoSW5SRG5QbmJBRDZscURnOU5JZHZJdUY2akVBT2JqMlp2b3hQ?=
+ =?utf-8?B?OUZxdWovd1JWYWtCS1JCZndlenBqaDFSRGRuOUptNTJkYUVIWGx5SUwrRU9K?=
+ =?utf-8?B?RE10d012SnNSeFhQUCswZlRlUUpOd2tpa0NGdkVRVmlZL3hSRlppV21jRVYv?=
+ =?utf-8?B?OFRubVFtL1FKWDJZRnVqL25USVNYVU84dEkybkFmQ2ZpOUlReGFpUU5qYVUr?=
+ =?utf-8?B?YkNnckdDUk83QWxlUkxuNXdBU1F1QXV5RnJ5akNPMmpHYlJVNytMOFZoejJX?=
+ =?utf-8?B?NlFQMFM0c3hrL2IraDc1aGRHR3Rqa0V1WG0xOWZDSjJJY25wemFsTnU0RVpW?=
+ =?utf-8?B?bmN5SXdhRDYzS0VJYXMxQzJTU1J0enRYUTBGRU9hczlWOWw2d1pmL01XdU1Y?=
+ =?utf-8?B?ZTdHcTZZcGdmcE8rR2M1cTlmVW9xWkdPaHNuREdzYTV3UE5BU09vSjMxOXRW?=
+ =?utf-8?B?TldDV1k0aW1rVklrNm81a0ZDd0lhMEtOcFpGV29Fd1haWHpneXFxdmJaME9t?=
+ =?utf-8?B?WFFJTzdXV2oxRmx2YlZCdFQ5ZXZnRjVqaG5ZZ2lwczFQZWsvNzYyOE5Vc0Fw?=
+ =?utf-8?B?M3k5SjJDb0xBSW9iRVBOdGgyM0tGTWZoVmFrZnJRNDZJZ25BeC9TaUt5RFo1?=
+ =?utf-8?B?WXFxalhBWHJjRzFxSXBnRFk4N29JS1RNV1BGZ1dTYVdrQlhrTEZpQVNTZ0ta?=
+ =?utf-8?B?MktOYXZnWGhaZHk3dDVzWnBwYlRrTzdPVXZlWTRTT2c5UURJaGd3SlVvWG5G?=
+ =?utf-8?B?RFZoQ0RveGMzL0pqc3JYbnlPNTlXYUdMRjMzdlluSVZwelVJYnZwWVBPaU5q?=
+ =?utf-8?B?NE90bVpEVEpjSEpkb0w5UkNIRDZReFJRbHI2MzVpbTQ4NVNwRGk2VWNIS0Vu?=
+ =?utf-8?B?b1pmNXdCeFdvNk5NVEIwSERhdjM3OVBFb2pWN0M3SXRVTlcwVkRtTVJZaEdz?=
+ =?utf-8?B?Zk5IUUNidlFrOTRHSER3RFBEYVN0NWpYQUd3TUxHWVBXRW9nY3BRd3NFMGY5?=
+ =?utf-8?B?QWx6RERKbDhOOWdYM0Exd0Z1Nm4zNFExdlNVMTMreTZpMEJNbXhSY3ByZk9j?=
+ =?utf-8?B?QndURzUxc3M4L3hmdm9PQkZqTmwvMVNjcUxrcnYvczlKZ2g4cEh4bXpMcjho?=
+ =?utf-8?B?VGJlL1FzdFNqZ0FCOGNNSnYxWlZmcXRCNkg5Yk1ON0dYQmhEU3dGblBDSURp?=
+ =?utf-8?B?a25FN2plSndtdENKbTVobnJackxxVGg4QjVJdWxPRmQya05OMUdWdVhMdng3?=
+ =?utf-8?Q?HeqBBy06ULfKlomUHejyj3NXTrPIDn6myj7iztGfJziQx?=
+X-MS-Exchange-AntiSpam-MessageData-1: 2UKOxadQYWQMYcTt4JzF62zXPwPfG6PjmMQ=
+X-OriginatorOrg: gocontroll.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 694bdcaf-0c66-4133-aaee-08de4f5cd84b
+X-MS-Exchange-CrossTenant-AuthSource: AMBPR04MB11741.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jan 2026 08:55:32.0303
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4c8512ff-bac0-4d26-919a-ee6a4cecfc9d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: wz4cVAO0IbVSmKYSIKvnJFJLz5Gh1ICGKHHfGk3nZ+Isg1sE3UhvBOXyXbtcgezzBWYbNpgfMDIQg9UuJnd5hgrRVbcVV2UzcviFgmYmtm8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7218
 
-Hi Vincent,
+Do you have any comments about:
 
-On Thu, 8 Jan 2026 at 20:06, Vincent Mailhol <mailhol@kernel.org> wrote:
-> The kernel has no actual grey-scale logos. And looking at the git
-> history, it seems that there never was one (or maybe there was in the
-> pre-git history? I did not check that far=E2=80=A6)
->
-> Remove the Makefile rule for the .pgm grey scale images.
->
-> Signed-off-by: Vincent Mailhol <mailhol@kernel.org>
+> +static void max25014_remove(struct i2c_client *cl)
+> +{
+> +	struct max25014 *maxim = i2c_get_clientdata(cl);
+> +
+> +	maxim->bl->props.brightness = 0;
+> +	max25014_update_status(maxim->bl);
+> +	gpiod_set_value_cansleep(maxim->enable, 0);
+> +	regulator_disable(maxim->vin);
+> +}
 
-Thanks for your patch!
+I'm feeling like the setting of the brightness + update status maybe 
+should be a call to backlight_device_set_brightness() or maybe it 
+shouldn't really be there at all?
 
-There newer were grey-scale logos. Linux also never supported
-drawing them.
-
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+Kind regards,
+Maud

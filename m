@@ -1,110 +1,112 @@
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8D4C1DDC07
-	for <linux-fbdev@vger.kernel.org>; Thu,  8 Jan 2026 20:01:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9A8B28850E;
+	Fri,  9 Jan 2026 06:36:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767902464; cv=none; b=rK/XPugByeqZS1AxRUQL/B+tfyBp3rs6Akodr5g0oXbSg7ClSeeZ1EVE77oxU9lte89+Ho1eByxZkyh7oqN5ErS64voeS/vlaRv7ok4B639yrISGW9HOthIXwrMkWTvCdsHuBKHMt/2/BUAibDFHByDpP1Ff+f5vW6fHryIszC4=
+	t=1767940580; cv=none; b=hXuYaAXNP7mwfa43SQg9MiAnk1X3hxmdQZ9sjYEimkty6VTSdftQPi3nmjssf/wc5HAdaRjinb+FOe5f2W0roW8OnktGFNCo7ZRUAIVQ4OCdZHCflFCMFMcccj19IvgoM1gooE5TVwM3z3rCpb7zH3TQsPGDi56u2iNSKWxalrQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767902464; c=relaxed/simple;
-	bh=DE6Sp1xOrVBNsH6sK2fuRAlXsqjZwLxh07gWzBcBmtg=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=CHV53s4YfNjqs/g0UF3jxglBQCe7h9aVOOvXT2sUYG6uENp3gIhOYkWJBRMuUOkzLrniw/fKlbqhSCqCv86fvQcUjgRWkq77E0AXwXL8tmtaGipS2tUR+4ZufHxBF8PGxZQfatiVEESQAwePxHNYsXNNbbzkotvQ2BAHDuDbDuo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Y1rGkU88; arc=none smtp.client-ip=209.85.221.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1767940580; c=relaxed/simple;
+	bh=k6nAvvx5UVSbHO88lKNTmQGUQoFtGy7kceT8JUpw8Go=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=ILf0ejMAdZBXFViN8jr9PYB08weYBeED6OkhUqn99V4yAc1Jy0b9XyKIdnRlTViHXJGahu6vNqxxNuMpAVy4m0mrPCuSdaY2NfgOFmwgqnOAtojhWxeZt4gTxYnmwrzwxytD8kAJfzZTZuKIo5hfNiR/u/ZxFjs3UmIWIqRqqBo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=Z3k8rymC; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=WkmcQYPp; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y1rGkU88"
-Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-43260a5a096so2486801f8f.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 08 Jan 2026 12:01:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1767902460; x=1768507260; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=0R59JhP2h+GNKoVP+C9/jngayGQfqzbzM8akEAfrgYo=;
-        b=Y1rGkU88DBRDx2fqYoyOlsxxs3rrpmhY1BfRnda5oPhYQRfxp4ctXH3jIXEVX43lN+
-         MHpT7EsALTnyHg+IDnR1CITsEpi1FeXp2nxJ+tePwcWa3a8xtmli3JqFv/I7KCAMuO+w
-         tSYKxXhTdYhtLRYOZSvHWpdGMQ8I8vYqGSI5deKdediM+/3BneYNf3Uv5UZZqZMTOH8j
-         /hZXl3HHS91FZ/JhMSgKKqsYVCG+CLgpDYhoI0zqlmMPyjmZ+RwVqjCxKWV6/h9cSA3s
-         f854u6tN7dBLjX2z6hCXdGF7hGijrxENL5XNa5WJa1mq0RQmFIuQqsKUGOO3zobvi/3y
-         ZloA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767902460; x=1768507260;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=0R59JhP2h+GNKoVP+C9/jngayGQfqzbzM8akEAfrgYo=;
-        b=uc0phw+oFm8dlu+khV/bvxIofFBNJb6soOCNJUNieox50/eN4VQLSxQ3K/dbA2eKXL
-         C9ybPgMWdH/U15nlq49C7ZZMQmXE//UzjRFldMI/BUMHC9d4D17mBATADQVsIxUcSczw
-         Bs/lEgtHHnv9C5q5Dg84T79B1YpT+Hb8ypLctS+qIC+lOf0nczu2q9fbjU9LRmmn76uF
-         UBoz7th+hlQR0Cab1s7/GuJbNDMtm4pbLJVHvXNNvNHdzzY193smMXitEzqzYU1WL7+S
-         Kd5daBkUQS9ZLh+t78P3RPY6vXPgYhl7wJyM/YMTa4MqyoMQtrunu1frT6TUXoU3dHIn
-         qZfw==
-X-Forwarded-Encrypted: i=1; AJvYcCV0XVdaXc4KuwM2K1NX9q9Kiw1XSOeBBk5Lr8wlF+1T2QtQfE5UBefQ/R00i/ml/eC9qLmBXuDWw3ZCTw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx94lfELWC+lL/fzhGxyW4nMHK8qd86mCH3XnnaRN+vU3FH0iHY
-	kFP9h+593sNBf+LzlbUV2V02uhT8SywGOg1F/0CbbH7CO6N02x7PMM6Y+GnWZFidLtU=
-X-Gm-Gg: AY/fxX5SkOW03PfpzNjpwMH6VJHQkkQ/R+H3wsmZkf5BGNa2SS8cd6v/HNMg5xpCM4Q
-	xExwR7mn+KExKQlVamVWw7hO3MhsSNKAVwYIWP0s9x6Ut8Qzzs7M/n7H96uUYEyI7Oo7H8BoxDY
-	uedGqTjc2BNy0MGiVMLmDjlhybC8BrEpI0Z7hMgUZXtUzFZVvLn9KlbspHz+ODv2QzuB2KKnadU
-	Dz/ZRaJkfgBfkU5aYU+X1dRIWqSYCuIxS+z+8gfWRTvM2twZBuDYXFREvK+pX2VlBlYGmh85SR9
-	9RdXEKoghrpurYbYUYJ+95L5E75idhQNUhvLHxch1zt6DX4hFoig+VVVkHPSSHapAR46Vk6K4dy
-	UROpWx/xF7ZFYX0f6hqidb7Byrj4gv7s2DtLMaogM1WOGIWYDv2zOQVUtKaQO/wcnDCcFRfasct
-	OJKHPV39MjR5+xN7vO
-X-Google-Smtp-Source: AGHT+IE0npwunWACAYL+5K87C4JawJUGa/VvYRBjPWPZGKZYwiEeVeAPHCRJ0OWPGNFKQWH85CyAbg==
-X-Received: by 2002:a05:6000:4287:b0:430:f494:6aad with SMTP id ffacd0b85a97d-432c378a7dfmr8823298f8f.2.1767902460211;
-        Thu, 08 Jan 2026 12:01:00 -0800 (PST)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-432bd5edb7esm17838263f8f.30.2026.01.08.12.00.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Jan 2026 12:00:59 -0800 (PST)
-Date: Thu, 8 Jan 2026 23:00:57 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Helge Deller <deller@gmx.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org,
-	linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] fbdev: omapfb: remove duplicate check in omapfb_setup_mem()
-Message-ID: <aWAM-SZArPSRNaNK@stanley.mountain>
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="Z3k8rymC";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="WkmcQYPp"
+DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
+	h=Message-ID:Subject:To:From:Date; t=1767940563; bh=KFBoG2fcIxheggmVM+AQApJ
+	yuE3iDl57EzYZzdHaxmg=; b=Z3k8rymCyRPCCIoyqZxbsyayVvG6CGqsrcdjyQLcc/LKkxIegQ
+	vPOzZnySkZG2C00gULRdqZb+Lajp/acC0LJkGFAZ4DgeJBloaNsOSvyT5t+ABWqJnJgqHjwckm5
+	P7LIszibYJqye37DKObXGq1Ih+0lv+0AZ8y0OYYB8dw0ZqrI6tVphU5bB1KOazs9c/KcUDiAr1O
+	DEjiR0PDR2hxgpPzYlL9ufH9LmvCXuqJuDREMPOhJ5RhxFLX45QhCwNAsRnEaSOF132tdVmS4VO
+	cE2RxtWUpIWFUZZURRfPCXFMKg9PtUJhpEO692b3YqMiK4ikZ5/6eO3Bm/AZmDKH67Q==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
+	h=Message-ID:Subject:To:From:Date; t=1767940563; bh=KFBoG2fcIxheggmVM+AQApJ
+	yuE3iDl57EzYZzdHaxmg=; b=WkmcQYPppQ+K2wEGm8QDA4IprDuJbg1u8P1XyGaIOvv7OO0LBh
+	TEfwfdosBtVkxS8JSsxAZ/SmM2HhGojcn4BA==;
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
+Date: Fri, 09 Jan 2026 07:36:03 +0100
+From: barnabas.czeman@mainlining.org
+To: Daniel Thompson <danielt@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Pavel
+ Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Bjorn
+ Andersson <andersson@kernel.org>, Kiran Gunda <quic_kgunda@quicinc.com>,
+ Helge Deller <deller@gmx.de>, Luca Weiss <luca@lucaweiss.eu>, Konrad Dybcio
+ <konradybcio@kernel.org>, Eugene Lepshy <fekz115@gmail.com>, Gianluca Boiano
+ <morf3089@gmail.com>, Alejandro Tafalla <atafalla@dnyon.com>,
+ dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Daniel Thompson
+ <daniel.thompson@linaro.org>, linux-arm-msm@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Subject: Re: [PATCH v2 2/7] backlight: qcom-wled: Support ovp values for
+ PMI8994
+In-Reply-To: <aV-UyhP7wllSBpYj@aspen.lan>
+References: <20260108-pmi8950-wled-v2-0-8687f23147d7@mainlining.org>
+ <20260108-pmi8950-wled-v2-2-8687f23147d7@mainlining.org>
+ <aV-UyhP7wllSBpYj@aspen.lan>
+Message-ID: <67acbe8ff2496e18a99165d794a7bae8@mainlining.org>
+X-Sender: barnabas.czeman@mainlining.org
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 8bit
 
-We know "size" is non-zero because it is checked on the line before.
-Delete the duplicate check and pull the code in a tab.
-
-Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
----
- drivers/video/fbdev/omap/omapfb_main.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index 106d21e74738..a8740213e891 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -846,12 +846,10 @@ static int omapfb_setup_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
- 		 * be reenabled unless its size is > 0.
- 		 */
- 		if (old_size != size && size) {
--			if (size) {
--				memcpy(new_var, &fbi->var, sizeof(*new_var));
--				r = set_fb_var(fbi, new_var);
--				if (r < 0)
--					goto out;
--			}
-+			memcpy(new_var, &fbi->var, sizeof(*new_var));
-+			r = set_fb_var(fbi, new_var);
-+			if (r < 0)
-+				goto out;
- 		}
- 
- 		if (fbdev->ctrl->sync)
--- 
-2.51.0
-
+On 2026-01-08 12:28, Daniel Thompson wrote:
+> On Thu, Jan 08, 2026 at 04:43:20AM +0100, Barnabás Czémán wrote:
+>> WLED4 found in PMI8994 supports different ovp values.
+>> 
+>> Fixes: 6fc632d3e3e0 ("video: backlight: qcom-wled: Add PMI8994 
+>> compatible")
+>> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+>> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
+>> ---
+>>  drivers/video/backlight/qcom-wled.c | 41 
+>> +++++++++++++++++++++++++++++++++++--
+>>  1 file changed, 39 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/drivers/video/backlight/qcom-wled.c 
+>> b/drivers/video/backlight/qcom-wled.c
+>> index a63bb42c8f8b..5decbd39b789 100644
+>> --- a/drivers/video/backlight/qcom-wled.c
+>> +++ b/drivers/video/backlight/qcom-wled.c
+>> @@ -1244,6 +1244,15 @@ static const struct wled_var_cfg wled4_ovp_cfg 
+>> = {
+>>  	.size = ARRAY_SIZE(wled4_ovp_values),
+>>  };
+>> 
+>> +static const u32 pmi8994_wled_ovp_values[] = {
+>> +	31000, 29500, 19400, 17800,
+>> +};
+>> +
+>> +static const struct wled_var_cfg pmi8994_wled_ovp_cfg = {
+>> +	.values = pmi8994_wled_ovp_values,
+>> +	.size = ARRAY_SIZE(pmi8994_wled_ovp_values),
+>> +};
+>> +
+> 
+> Do these *have* to be named after one of the two PMICs that implement
+> this OVP range.
+> 
+> Would something like wled4_alternative_ovp_values[] (and the same
+> throughout the patch) be more descriptive?
+I don't know. I don't like the PMIC naming either but at least it
+descriptive about wich PMIC is needing these values.
+I think PMIC naming would be fine if compatibles what representing the
+same configurations would be deprecated and used as a fallback 
+compatbile
+style.
+I mean we could kept the first added compatible for a configuration.
+Maybe they should be named diferently i don't know if WLEDs have 
+subversion.
+> 
+> 
+> Daniel.

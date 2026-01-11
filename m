@@ -1,67 +1,33 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9C94352F9E
-	for <linux-fbdev@vger.kernel.org>; Sun, 11 Jan 2026 19:51:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8D7D2853EE;
+	Sun, 11 Jan 2026 21:26:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768161069; cv=none; b=FJGKNOmVwatibcudelyQoES5RKu/+99+EyQIkDktq2r9O4B2pkV0T6DVAi0ys7X8nGVJRdLMwvg8Sf//fA6iwdOfZOM9kGlO+veWO6ZjQ1gGHATuKbYoDqsmlcptFZvoEXCgLd7ocIGeMCDb31YSxckPJ4RfoKtsv2fO8E29w7s=
+	t=1768166764; cv=none; b=tschnSd0VRD0SHWnxOJCj02SG3ch4ped4dspyyV4XAbf/8jyxwaEieS/8DCbWXrB07PEtMwwXuAXcJ/fyZKvG/XwzzFlQgyZ+Xdi+imomX7ONjZ7NmMs9MLgToi36N0tNUMmenZg+bbZkedWZq7+MSbGcDUqHm6a5l6O+ZKn1I4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768161069; c=relaxed/simple;
-	bh=76yxRtZvGFU55xsNBTw1GUfwE7XmvAmO7p7IQzUMX0w=;
+	s=arc-20240116; t=1768166764; c=relaxed/simple;
+	bh=s5jblEsCOIT04MrKBnvGy+lMBUADNsEWPlmYaB1oizw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Felow4eZ8RHI1rZ1lOBB4tpMIsuVi2g5rRxq2/y2tfPruEr1G7mCnd7xyS0mJc//fSuj8sA87xm06iCZILrpRUl+LgKRQvV54vzM1WNnYHA62l9so/upW6zBh3gHtAlhhvpn2gmYlg+D5hoPw0yFRzwa22uVVLxs/uiHfrgMm8I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=i34F6F02; arc=none smtp.client-ip=209.85.214.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 In-Reply-To:Content-Type; b=UpMu8dcyvuzeMbK4BTlu0b1WRn5dpjKBAe9JtEwdSmZZ4uveWT6EKGakx5Pk1L4tz0ke/0/L9yjk4jwx3U1ZeE0qfjaCgsGi4+XWFEuTmxE94TwAogn3BTEiVo3AouNLGiT7VW8NyXN+AsgvQVvrxc6+VqNlOIuUk3ujW8picLE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YEMmQ9B4; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i34F6F02"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2a137692691so38452985ad.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 11 Jan 2026 11:51:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768161067; x=1768765867; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=MRLXkFTiZd9a9Tg70dQ7iXKOuDpg8c1t7/NoM418xOw=;
-        b=i34F6F02y0KCD1eutFFOusDtOlmptNcj47nOGWCJUV7Jpa4dZ4qs0aL5yjfIQ8Pi02
-         wBqR6LxuusJue2qdiQUOjcTbXL8rvDTpaMKqZMmjD9lpGToZsOm9NUsIBNwk6ofwvZP7
-         cSdbJi7xwUMaM1Dg7BT0Xlv1CuqBuD7CcS/EeYvDDaT1enUrv2y2biGJhiYjCAyY8q8/
-         CzLcSG+BiEmGNzDEeDQsw2es7w94awA0IsrS733Z6Eg92Ro3cZYPuXB5KshBSZfwAZAu
-         RiGnJ87NhrmujkgNNArF4LEVDVxitwAmuqlTs9pZaLVCCdTpCU38xN2HYs7+LYsAVpz+
-         qhJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768161067; x=1768765867;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=MRLXkFTiZd9a9Tg70dQ7iXKOuDpg8c1t7/NoM418xOw=;
-        b=tYrLyhPrCNqbFh7pgdSAj4Lk1OfW5opChMwb8L8us178EqcKUI6jQhFL6LgGE+5Lty
-         EN+oZy9HE18RUV1AjG2ToqK6SpwgF6PmccbkSVL5Kcg2TlW5NFLopGTgOIOLv18f4L1f
-         9Il54hgDr6jRz8dXD23hC8LmggjM03O0G6uKpPwC4zZKJZkWufpD2fazIHp4Sw7/5A5k
-         8JSHPIVsj0NJAlZiIZX0dDn0rmKJ92SHy2rkIlCFfH0MaTxvOwzB6VZEUGKzU+GDA3ii
-         R55lq4Tzyk0Z4V17kae5QXqfY5cYdX+q0Kq3bKbNdJqUlxMPW7rH+vVNktKsXjBYQBy8
-         dN4w==
-X-Forwarded-Encrypted: i=1; AJvYcCUJWabTN8YjEriHfTiNdIB7B2G9LiDWWzLVCb/JXWUVX29JC/NE9IBam/2eGQYDlf+MZGbCrWSaKMwQbA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwZ6hISW2GtTFt75TyieK97QwjdgyO+Y+yN1sUe8qqyH9j9403K
-	rFbr0OQVW1JzFX9at2mF/6OD6jgsABcigMrDzIG9uLWFGB827oykbXG3
-X-Gm-Gg: AY/fxX6ndfEvj24o2yLU9PvRaryVLjUoH//E/fDRd16S35XYusY19mIm0pdbcjkKH23
-	PM0a2rCOhgDzajzKF7ziu1H3SmrP2DADiwyDFPnvG00Y00ukDfO5eb+IwQICz2dA0V/eV/jNyPa
-	GhUinq6ij2m6J7wulr4/2rz3NXlGG27KsJl6kMjJ2fpxVAoP0yIyGFuAAimRK0HE6W/ii8y2Yt1
-	qUimjasRVGT7Ebqjfye3f6OzosPpaEIVx+NmCGgjEv/6o/CUib8REHPya+t5Pm4naJIgjpDMpiF
-	w36HJfNxArsToo8k6stv4BVZHeEh/adtuFrn9RF5OFGRcKlaO6h0eOE6gPf/rq58piuoyGxi9kz
-	jToLiRMHewc77I0HG3DFJXITyf6CqQW2AwRxeKzoQT3tWN1nDUjPRrdjoVus5dud+pcO9ma4A9p
-	90YLrDceyHdXTyZLmI0W6Xq8Qw3QKrJFK38y+BMKQYMJqr0m+W1Z6JRhiAzIek
-X-Google-Smtp-Source: AGHT+IE6MC5cdfKFrapIzQPAQHoSLTs/H9+tHC4hZDCvPVWe/VgmNXYnGJFwo73wIBWsCgtbF09Mjw==
-X-Received: by 2002:a17:902:e88f:b0:2a0:a793:3357 with SMTP id d9443c01a7336-2a3ee4fecdcmr148105215ad.43.1768161066959;
-        Sun, 11 Jan 2026 11:51:06 -0800 (PST)
-Received: from ?IPV6:2601:1c0:5780:9200:a2d6:d17d:ed6b:f017? ([2601:1c0:5780:9200:a2d6:d17d:ed6b:f017])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3cd2953sm152979465ad.86.2026.01.11.11.51.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 11 Jan 2026 11:51:06 -0800 (PST)
-Message-ID: <75cb40e4-bf33-46eb-875f-f6100f657801@gmail.com>
-Date: Sun, 11 Jan 2026 11:51:05 -0800
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YEMmQ9B4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C44FC4CEF7;
+	Sun, 11 Jan 2026 21:26:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1768166763;
+	bh=s5jblEsCOIT04MrKBnvGy+lMBUADNsEWPlmYaB1oizw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=YEMmQ9B48yZVuinyjMHjUqxfDHVeaANWrveeR9+MqDl2gf9oDVLQLJqVqbvtnx2ft
+	 es+NoYldiPk14hdmjahePyEKCYLhWL3mc8YUezSlapO3OkurIRCgsIgyf6o4f/+s4z
+	 OD5+/qZAUNj9FHKOsqVqI1bwTCzOLksxWWGzTl06LLScKTGCPsTDQ17sLxnmtgOURh
+	 3pKr/qyZlhSC5mg4m6aNoaT5Nsu2mFlBLmjWOf20TtYVbyL1KHCI4dG645vefIpIQD
+	 +edg2g3zNKgTtiHTARvsHQ0fnawUcYvkobvnKVW49QOm4iOaCf+RYsCqg2d6hCct+F
+	 Kudgg+mggqjcw==
+Message-ID: <db3cacfb-cd10-495b-b761-96ee6d7ee95a@kernel.org>
+Date: Sun, 11 Jan 2026 22:25:59 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -69,41 +35,74 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/4] fb: Add dev_of_fbinfo() helper for optional sysfs
- support
-To: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev, linux-omap@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- tzimmermann@suse.de, andy@kernel.org, gregkh@linuxfoundation.org
-References: <20260107044258.528624-1-chintanlike@gmail.com>
- <20260107044258.528624-2-chintanlike@gmail.com>
- <40911dd0-52e1-46de-b060-0372988291ca@gmx.de>
+Subject: Re: [PATCH] video/logo: don't select LOGO_LINUX_MONO and
+ LOGO_LINUX_VGA16 by default
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20260110-mono_and_vga16_logos_default_to_no-v1-1-30f36da979b4@kernel.org>
+ <d48231e4-6c69-4948-99a9-121cd17e2db0@gmx.de>
+From: Vincent Mailhol <mailhol@kernel.org>
 Content-Language: en-US
-From: Chintan Patel <chintanlike@gmail.com>
-In-Reply-To: <40911dd0-52e1-46de-b060-0372988291ca@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Autocrypt: addr=mailhol@kernel.org; keydata=
+ xjMEZluomRYJKwYBBAHaRw8BAQdAf+/PnQvy9LCWNSJLbhc+AOUsR2cNVonvxhDk/KcW7FvN
+ JFZpbmNlbnQgTWFpbGhvbCA8bWFpbGhvbEBrZXJuZWwub3JnPsKZBBMWCgBBFiEE7Y9wBXTm
+ fyDldOjiq1/riG27mcIFAmdfB/kCGwMFCQp/CJcFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcC
+ F4AACgkQq1/riG27mcKBHgEAygbvORJOfMHGlq5lQhZkDnaUXbpZhxirxkAHwTypHr4A/joI
+ 2wLjgTCm5I2Z3zB8hqJu+OeFPXZFWGTuk0e2wT4JzjgEZx4y8xIKKwYBBAGXVQEFAQEHQJrb
+ YZzu0JG5w8gxE6EtQe6LmxKMqP6EyR33sA+BR9pLAwEIB8J+BBgWCgAmFiEE7Y9wBXTmfyDl
+ dOjiq1/riG27mcIFAmceMvMCGwwFCQPCZwAACgkQq1/riG27mcJU7QEA+LmpFhfQ1aij/L8V
+ zsZwr/S44HCzcz5+jkxnVVQ5LZ4BANOCpYEY+CYrld5XZvM8h2EntNnzxHHuhjfDOQ3MAkEK
+In-Reply-To: <d48231e4-6c69-4948-99a9-121cd17e2db0@gmx.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
+On 11/01/2026 at 20:12, Helge Deller wrote:
+> On 1/10/26 13:23, Vincent Mailhol wrote:
+>> Nowadays, nearly all systems have a color depth of eight or more and
+>> are thus able to display the clut224 logo. This means that the
+>> monochrome and vga16 logos will never be displayed on an average
+>> machine and are thus just a waste of bytes.
+>>
+>> Set CONFIG_LOGO_LINUX_MONO and CONFIG_LOGO_LINUX_VGA16 configuration
+>> symbols to no by default.
+> 
+> I agree, that on basically every system today there is no need for the
+> monochrome or VGA16 logo.
+> But I'm not sure about the historic/exotic platforms, e.g. m68, sparc
+> and so on.
+> 
+> So, maybe instead of dropping the default "y", we should e.g. do:
+> +    default y if SUPERH
+
+SUPERH also has a clut224 logo, so I assume we can also default to no
+for it.
+
+> +    default y if XYZ (some other architecture/platform) ???
+> +    default n  (for all others)
+> 
+> The question is: Which arches may have needed the VGA16 or monochrome logo?
+
+My wild guess would be none. Furthermore, no one "needs" a logo. It is
+just a fun thing to add. This is why the LOGO sub menu is turned off by
+default and that none of the defconfig would automatically select a LOGO.
+
+And so, because a user interaction is needed anyway, the few who still
+want a monochrome or vga16 logo can turn the option back on just after
+selecting the LOGO sub-menu.
+
+I guess the same could be said in reverse: we could keep all the logo on
+by default as it is now and the users who only need the clut224 can turn
+off the monochrome and vga16. But let's go for the majority ;)
+
+Well, if someone can come with the list you are looking for, I will
+happily add it to the patch. We can wait for a couple weeks if you want,
+no rush here!
+
+Or your can already stage it in fbdev-next and I will send you a v2 as
+needed. Maybe we will get more comments if this reaches linux-next?
 
 
-On 1/11/26 10:50, Helge Deller wrote:
-> On 1/7/26 05:42, Chintan Patel wrote:
->> Add dev_of_fbinfo() to return the framebuffer struct device when
->> CONFIG_FB_DEVICE is enabled, or NULL otherwise.
->>
->> This allows fbdev drivers to use sysfs interfaces via runtime checks
->> instead of CONFIG_FB_DEVICE ifdefs, keeping the code clean while
->> remaining fully buildable.
->>
->> Suggested-by: Helge Deller <deller@gmx.de>
->> Reviewed-by: Helge Deller <deller@gmx.de>
->> Reviewed-by: Andy Shevchenko <andy@kernel.org>
->> Signed-off-by: Chintan Patel <chintanlike@gmail.com>
->> ---
->>   include/linux/fb.h | 9 +++++++++
->>   1 file changed, 9 insertions(+)
-> 
-> Whole v4 series applied to fbdev git tree.
-> 
-Appreciate Helge and everyone who reviewed it! This was my first kernel 
-series and it was good learning experience for me.
+Yours sincerely,
+Vincent Mailhol
+

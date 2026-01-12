@@ -1,120 +1,158 @@
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 424FD50097D
-	for <linux-fbdev@vger.kernel.org>; Mon, 12 Jan 2026 14:04:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 916752BE035;
+	Mon, 12 Jan 2026 14:46:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768226671; cv=none; b=aSy2QgBCmh56k4Kd+Zmu9fp6p+CWBIoFNQrDLgGcGsObaQVjJCD7NFfR1ygpZtDMzzfmx9Y9LuikN2OwZ1pfH2feu2jLxyYvd9ItLKyPihIijsLO5xhZkYZJxo87BE3O/MjqLRhNW/3xJr0w0bKmAjJzvjALx5KBfPhcQvr4wx0=
+	t=1768229169; cv=none; b=ObnKmbWRjIEGbkVAu94DEADj46R2D/TDgalyeOm8EWhZNnyPohjYKepHwpgQ4BWuXJjzuAd7fBH1m+uAyavFYDEWVgU7fAiKlhUChCvkZyPfOOIdAwzqbLPTn5srXZjlFVuEyJladDFVQhLVujdi9NzZiXa0/FWMdBpdyxArrWk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768226671; c=relaxed/simple;
-	bh=DaGHYSZRKjN0qbFSeTmb7c7ON+ENG7XUIdBvvTtGqqY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Svs+hjGpl05NHK6d8WOHeqEwUVvsu/66p4m8s7WBB8IwCX7r/wI+d7SlbSlcnRHXMUAfOjO8Dnpq1056SoXZGHmlFfZqQIL8xd4AB9z9XiVGUrUrB7Q/QzCjLS3X3594s0VkcFK2qbIgN6LGHhRAM5xaZ2WSg/Ue2Gx67D45150=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=XxO1SC+h; arc=none smtp.client-ip=209.85.221.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1768229169; c=relaxed/simple;
+	bh=5ur1Gzj7guYiRJZW24c7QKcGu2iWe342xXnusclpnts=;
+	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
+	 In-Reply-To:Content-Type; b=FrmpdDnQC1Z6pSVvb5BFLTn0pQ43zzQJP6fn75amgdkqKKD+1HUh88K/uCUOH9pPNhUoAAkOtlbQUK1V7MsLbStpiM6owaWVHpnKswQPk+z+0s0TlTH6VzCjJAEjgw238XivG8Pjo9gVRDTPjQza8QqFd8I4V3elwXOG/vEc2Rc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=DFNd2RQe; arc=none smtp.client-ip=212.227.17.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XxO1SC+h"
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-432d29efb17so122387f8f.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jan 2026 06:04:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768226668; x=1768831468; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ckmRos2OAgMm2H7B68f5iy8S3ZBKtjS9ZYbxKUXmKoY=;
-        b=XxO1SC+hhlRmJOQXgoSXdRTHqXvqemmqMiV4vSwC6SePEWwQg2D4jytIhlqOeeArdn
-         5x+hLmRNlMxn7g7+/Uq3g+y9qlFBBFRv1cF9MjR5Kmk0JijFM+UQ90ATNZqXT6+sWR1C
-         Kq4sBM9PCTU2hAYS7SI3PeSMqLfvY8cAcl3zdVDE3zgrImcvnSqJc21urjELVADS56df
-         qrr0b+7ciWSkS9vQjDCv+JqDhD8kozBnia4H2QilO23/9r20Kk08FOB1CMIC58392+5k
-         bae2A5KE1E8D+mvB2d9TKjcJYkahITkcPTCjvtu2yW4Wjoq1Ks1EicvhpUP6zYA8Lz9i
-         7VHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768226668; x=1768831468;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ckmRos2OAgMm2H7B68f5iy8S3ZBKtjS9ZYbxKUXmKoY=;
-        b=sbXxMBi335/TEwDj1buOF8NOibaeveAzkkfc0KcZDy26ifnF7dkkPiRQMfqH4ITIdM
-         U9WNsS9tkSkNi3hHDGlNKiqn5zIo4SsDYXMvp6aAkt6fAXyx6VrAQdpHq8d57nVYKNOL
-         19vSyqiDuFnmXT0yi8/Md1a+1aWB2tYba5GC46d4L8muat/sVIeXmEHCT8l/D+INCbBk
-         w5PiWiXSGi+JaimUy6JOwuhKBH8uv+pnFPn/3HsE9rnieREX5B8EIOYUYcvv1UN24D3a
-         QD5r8EdoveQTCaZQpKxthN4ELj7yqsP8EqnE0nDYbrCxHDetDNzkxDcjbVh13IIrNlLM
-         kT6A==
-X-Forwarded-Encrypted: i=1; AJvYcCVuT2xp9FgJfoT8yT72eSsfh+SOx/akUrz0K2d48zRH1cUvH4QNDW9tHFIv5clFHe8qQQ54j9wLtIuoKw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz4LsywRTaO/2lPzUAnhLqXP9Yp90dbq1SQJWRUILT9tted4Hyo
-	M9iHHzmjO0Trs3444z63uKhdRDXPLdouXfrjiwImkE+tIdTcEeH9e6EB
-X-Gm-Gg: AY/fxX4XLdvXfSKEToqztmcpZjNR6LHmq46yBAy3cIWFQf0jm7rILhlgcTtLYZb3IJa
-	cKiQzjiz4TYy5VUpybOdrOuJ3a/ePuVnOX2zIAXehzFytoxq4ghRyGxN3QLqZGTtn6zyWl5TtZk
-	3B4W4zxHVVqsQHme7he3RPsW1FgYfnyFhTB9MqnSG98/beIMaxcADwexqE7wIS23WdluFKOwWsf
-	CTLqlN02K9HLeCLzP1XX02KHiVryREaEoQbU36Fn1M5qePsa2aAd/eTOcEIE7T5DJgpGhtZGFW4
-	LuXtXe8sviyFFJAYrsAp/N99TK1GtfG6DTZqlinq2a6n9joQIMJCyoyevocPGfIF6mnRHjm6+pl
-	MI1AfZnVRaYlYrk5lz7406d4NbkguCKVwK85sD3LPNLIux/4wl+uK4Z6Yd8eJvE+TJpdA8juAFT
-	sZRzNGwFUIzSQ6wL3KsdAp9HVNx/6wZv8e0rGoWeJR+gnBZaSDoTgzebz9Kms2EFw3Niig86cnG
-	ESnGKI=
-X-Google-Smtp-Source: AGHT+IH7GUSAAsNDPqrKUndihq0lAKqsPDKz3kaDifL2lP8tPCtWl0A1pugqhFaqlY9nRll5jZEn6w==
-X-Received: by 2002:a05:6000:22c1:b0:430:f718:23a0 with SMTP id ffacd0b85a97d-432c39ded43mr12214129f8f.6.1768226667344;
-        Mon, 12 Jan 2026 06:04:27 -0800 (PST)
-Received: from thomas-precision3591.paris.inria.fr (wifi-pro-83-215.paris.inria.fr. [128.93.83.215])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-432bd5dfa07sm38643537f8f.25.2026.01.12.06.04.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Jan 2026 06:04:26 -0800 (PST)
-From: Thomas Fourier <fourier.thomas@gmail.com>
-To: 
-Cc: Thomas Fourier <fourier.thomas@gmail.com>,
-	stable@vger.kernel.org,
-	Alexey Charkov <alchark@gmail.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Helge Deller <deller@gmx.de>,
-	Tony Prisk <linux@prisktech.co.nz>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: vt8500lcdfb: fix missing dma_free_coherent()
-Date: Mon, 12 Jan 2026 15:00:27 +0100
-Message-ID: <20260112140031.63594-2-fourier.thomas@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="DFNd2RQe"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1768229162; x=1768833962; i=markus.elfring@web.de;
+	bh=JB3LMZssOC1R7HPEWMIahRL/6h3qVOlsb2QWOfHvkSs=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
+	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=DFNd2RQeTcl7cOt+nep42ABUF8OuRRwFf/GWhkLWIzZJlOvzTtVBWnqvWtTd3N2S
+	 qoctqabKCA8ENsEucYI4Zd6vFuC+xym5q/bAAuMPNmMJcfq3/KzczN1jIKEdC1UT6
+	 Kx6J8SHJqavA1g3HGB51jIkRN2uzzYJjkEYyDXqPyZ9rZMtLW3K9IcfSCet2RaL8K
+	 wQ5dzvaYCqD0I/+GiLpXXIjqaHqYthcF86U3he47bKnKw7k8ucw67+plxQ79KVZbx
+	 i3O+7mMhIzjpmrqhZxjcHippWm9gYIKgtGhee1hvtFEEp0GhKHRmkwYzpjn2F1tLs
+	 dz0UhigjLBtYC1HnLw==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.29] ([94.31.92.241]) by smtp.web.de (mrweb106
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MtyA2-1vyD4g0wn6-012qGd; Mon, 12
+ Jan 2026 15:46:02 +0100
+Message-ID: <32d0d8bb-0bf2-47ed-abfb-d84b475ab16a@web.de>
+Date: Mon, 12 Jan 2026 15:46:01 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+To: Thomas Fourier <fourier.thomas@gmail.com>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
+ Alexey Charkov <alchark@gmail.com>, Helge Deller <deller@gmx.de>,
+ Krzysztof Kozlowski <krzk@kernel.org>
+Cc: stable@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20260112140031.63594-2-fourier.thomas@gmail.com>
+Subject: Re: [PATCH] fbdev: vt8500lcdfb: fix missing dma_free_coherent()
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <20260112140031.63594-2-fourier.thomas@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:Shb2M78DrD2g1TfnTywKZORPLW09S1hkc4jdIdfzicgt50u2r6R
+ z9qbaRHP2ci7avAl8Di2N3QsKCaSAVGoz3cirybCMvFMIPJHKYrn7fLgFUdmmYxYcg/lDZN
+ M9cnaSbL4+VMkqMJpqGB6BvJsbQet0xTV/dILP1mNRdlj/FuFWNlx7sl1IR4dYO5Hn7MmFQ
+ I8K6fC/6D8xXvsATAxe2A==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:sAjdl+rkN2s=;nB+ui51iYZXP6FmQEUJFgnSQH2U
+ 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
+ thJ0ElIfQDqA4IUFo=
 
-fbi->fb.screen_buffer is alloced with dma_free_coherent() but is not
-freed if the error path is reached.
+> fbi->fb.screen_buffer is alloced with dma_free_coherent() but is not
 
-Fixes: e7b995371fe1 ("video: vt8500: Add devicetree support for vt8500-fb and wm8505-fb")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
----
- drivers/video/fbdev/vt8500lcdfb.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+                           allocated with a dma_alloc_coherent() call?
 
-diff --git a/drivers/video/fbdev/vt8500lcdfb.c b/drivers/video/fbdev/vt8500lcdfb.c
-index b08a6fdc53fd..85c7a99a7d64 100644
---- a/drivers/video/fbdev/vt8500lcdfb.c
-+++ b/drivers/video/fbdev/vt8500lcdfb.c
-@@ -369,7 +369,7 @@ static int vt8500lcd_probe(struct platform_device *pdev)
- 	if (fbi->palette_cpu == NULL) {
- 		dev_err(&pdev->dev, "Failed to allocate palette buffer\n");
- 		ret = -ENOMEM;
--		goto failed_free_io;
-+		goto failed_free_mem_virt;
- 	}
- 
- 	irq = platform_get_irq(pdev, 0);
-@@ -432,6 +432,9 @@ static int vt8500lcd_probe(struct platform_device *pdev)
- failed_free_palette:
- 	dma_free_coherent(&pdev->dev, fbi->palette_size,
- 			  fbi->palette_cpu, fbi->palette_phys);
-+failed_free_mem_virt:
-+	dma_free_coherent(&pdev->dev, fbi->fb.fix.smem_len,
-+			  fbi->fb.screen_buffer, fbi->fb.fix.smem_start);
- failed_free_io:
- 	iounmap(fbi->regbase);
- failed_free_res:
--- 
-2.43.0
+https://elixir.bootlin.com/linux/v6.19-rc4/source/drivers/video/fbdev/vt85=
+00lcdfb.c#L352-L362
+
+
+> freed if the error path is reached.
+
+See also once more:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Do=
+cumentation/process/submitting-patches.rst?h=3Dv6.19-rc4#n94
+
+
+You should probably not only specify message recipients in the header fiel=
+d =E2=80=9CCc=E2=80=9D.
+
+Regards,
+Markus
+
+
 

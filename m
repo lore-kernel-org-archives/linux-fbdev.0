@@ -1,231 +1,151 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C57B733D4EA
-	for <linux-fbdev@vger.kernel.org>; Mon, 12 Jan 2026 08:36:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F5BE28C037;
+	Mon, 12 Jan 2026 10:06:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768207002; cv=none; b=KqRUaov9J9GdGKg4XZPCOgXxPwdf/Xa2dolk9Vm3Iyzw0V4fwrKVNxjCOFJg8w7x3l7ErPKpWOC4gsgEl4UcWeyk7bi0O10RiE+Z2s8OmTKbWsKpdZw9HNoVs66hpdhKgd3z7cMmao7Ug+29DLsuDYknUEWbJlfhiABmX81diMc=
+	t=1768212379; cv=none; b=iQxkeUwJLL6yXfGylrYYZqwXq6guB19n/W5Wf9wZwFRyqukQdkBLqWRSujeM9MU4oiDOrcrLGEbBYqmg7nz9eok/3Kux4AE+dQejRm6h1mX6Ra4jz2E81JuR6/EfbQdEgLqWvE7/EiEjSqHNx9+vZ0G57o5oP7ASlctbbl6FY8c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768207002; c=relaxed/simple;
-	bh=02hxfbX5Q66uLg8txEPTWe6Et5trWJQeHs96Kig+h4U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SYkpZU9RI9UoSZU2CilPBFznt3+wafgsdFrYDBVcES+VjIuX1C+ANU5Y+vz8EPrekQRy4gFM85lRnTvoQE67VDSJzaY4CAg13ralnVOA8z03gr91Q1TdWv7zG8bZkUuEnMpmHpMJfgwupoUue5q8OoY9efCNJGWlO/4bhN/R0do=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=OBkk/jlY; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=IoI0aLRO; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=OBkk/jlY; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=IoI0aLRO; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1768212379; c=relaxed/simple;
+	bh=3PW+lccnBZa1wwf7a30nZMPulFc55qZnM/4SokkMUr8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MFefhKQglU7xjUWDlgNS48hHlP+tWS246ZlTeYgNwmC4YiQOEDIvS0n+ypag3u6t5xTvs7sBiGkdtCPnfrun8OI5P/1swWfyYCFtzpaPXavuaU7xFEzh+jcGuDtjZMzp+X55H29LYEpWf/vtoPRuj6EnmUXvBc38SBz4ArOTlsI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=buiWGnw9; arc=none smtp.client-ip=192.198.163.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="OBkk/jlY";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="IoI0aLRO";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="OBkk/jlY";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="IoI0aLRO"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 0884D3368A;
-	Mon, 12 Jan 2026 08:36:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1768206999; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=FAekRge9sn5O1ohwPEurWfUBwoDhVg6a3GDMsrAihLQ=;
-	b=OBkk/jlYwUVRqPACpJBlknUhK+ySp87q2KLcgMFRNQ48K2VIrXjNQY5rbCICq0Zo7qBkJR
-	clh9yVLgk+hggrokLhYIlWgxTtk+SKiPNUcDbLE3vq6j8jBGm8GSc4vGtjXXsfhZGwdqb5
-	nWojDxOuL/pX7/IjfFgW2xYWbhk7pYU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1768206999;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=FAekRge9sn5O1ohwPEurWfUBwoDhVg6a3GDMsrAihLQ=;
-	b=IoI0aLROkuzvCzAjjmmHF5DffF1mtkyznt1SX9tOf32WwU4lVGlmoyGaP1y1xSzzR/J8YA
-	UUKcur0gj6fNBUBg==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1768206999; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=FAekRge9sn5O1ohwPEurWfUBwoDhVg6a3GDMsrAihLQ=;
-	b=OBkk/jlYwUVRqPACpJBlknUhK+ySp87q2KLcgMFRNQ48K2VIrXjNQY5rbCICq0Zo7qBkJR
-	clh9yVLgk+hggrokLhYIlWgxTtk+SKiPNUcDbLE3vq6j8jBGm8GSc4vGtjXXsfhZGwdqb5
-	nWojDxOuL/pX7/IjfFgW2xYWbhk7pYU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1768206999;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=FAekRge9sn5O1ohwPEurWfUBwoDhVg6a3GDMsrAihLQ=;
-	b=IoI0aLROkuzvCzAjjmmHF5DffF1mtkyznt1SX9tOf32WwU4lVGlmoyGaP1y1xSzzR/J8YA
-	UUKcur0gj6fNBUBg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id B6E4E3EA63;
-	Mon, 12 Jan 2026 08:36:38 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id kgI4K5ayZGloCAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 12 Jan 2026 08:36:38 +0000
-Message-ID: <33398025-d294-40df-a33b-9ddfec9c6a4e@suse.de>
-Date: Mon, 12 Jan 2026 09:36:38 +0100
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="buiWGnw9"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1768212378; x=1799748378;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=3PW+lccnBZa1wwf7a30nZMPulFc55qZnM/4SokkMUr8=;
+  b=buiWGnw9QFQwAbZ32BBCqSvFXq8BxGIZVw29M+C7IuwJFTixgociIq9w
+   ri6VF7Sg9vqnK2b67MzvIsOzXFpm5B9ouWjanvHvqshhaLU0l9N3bG5Eb
+   RZC8EHpqOLFjTYSFlp5chDMWuUFY8FbRErcq4c8pSVIEAx18/6afUYoAF
+   PKqlvC43YjTJX9WPj/iRju/e7ykwTpIeRNVmjMx3RH4GQXG1qwYdjAya9
+   8KGThJczsO7S6t5uoH3oZLw6izbXAbp1pPXQP25xj6Qr2IRDeYFUNzv69
+   jbgkYLL56/12QWfHGn4b3LkUk/o79tRC4ExSmLDhi/it3AA8n/6CtniHy
+   g==;
+X-CSE-ConnectionGUID: LAqXYovoTvmJPWZJLeUneA==
+X-CSE-MsgGUID: /sd8rrndRteyRh+v1GgrIg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11668"; a="57034236"
+X-IronPort-AV: E=Sophos;i="6.21,219,1763452800"; 
+   d="scan'208";a="57034236"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2026 02:06:16 -0800
+X-CSE-ConnectionGUID: JWYITz9qRL2wHgPvTI3OEA==
+X-CSE-MsgGUID: Fl4ph0OrQhmwRKYcLvXrkg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,219,1763452800"; 
+   d="scan'208";a="203264499"
+Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
+  by orviesa010.jf.intel.com with ESMTP; 12 Jan 2026 02:06:12 -0800
+Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1vfEoM-00000000DF6-03aY;
+	Mon, 12 Jan 2026 10:06:10 +0000
+Date: Mon, 12 Jan 2026 18:05:13 +0800
+From: kernel test robot <lkp@intel.com>
+To: Chintan Patel <chintanlike@gmail.com>, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-omap@vger.kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	tzimmermann@suse.de, andy@kernel.org, deller@gmx.de,
+	gregkh@linuxfoundation.org, Chintan Patel <chintanlike@gmail.com>,
+	kernel test robot <lkp@intel.com>
+Subject: Re: [PATCH v5] staging: fbtft: use dev_of_fbinfo() instead of
+ info->dev
+Message-ID: <202601121705.2kgxpvsS-lkp@intel.com>
+References: <20260112010740.186248-1-chintanlike@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5] staging: fbtft: use dev_of_fbinfo() instead of
- info->dev
-To: Chintan Patel <chintanlike@gmail.com>, linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev, linux-omap@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- andy@kernel.org, deller@gmx.de, gregkh@linuxfoundation.org,
- kernel test robot <lkp@intel.com>
-References: <20260112010740.186248-1-chintanlike@gmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20260112010740.186248-1-chintanlike@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_TLS_ALL(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	ARC_NA(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[gmail.com,vger.kernel.org,lists.linux.dev];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,kernel.org,gmx.de,linuxfoundation.org,intel.com];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,intel.com:email,imap1.dmz-prg2.suse.org:helo]
-X-Spam-Flag: NO
-X-Spam-Score: -4.30
-X-Spam-Level: 
 
-Hi
+Hi Chintan,
 
-Am 12.01.26 um 02:07 schrieb Chintan Patel:
-> This fixes commit
-> a06d03f9f238 ("staging: fbtft: Make FB_DEVICE dependency optional")
->
-> from my previous v4 series:
-> https://patchwork.kernel.org/project/dri-devel/cover/20260107044258.528624-1-chintanlike@gmail.com/
->
-> All direct accesses to info->dev or fb_info->dev are replaced with
-> dev_of_fbinfo() helper, improving readability and ensuring
-> compilation succeeds when CONFIG_FB_DEVICE=n.
->
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202601110740.Y9XK5HtN-lkp@intel.com
-> Signed-off-by: Chintan Patel <chintanlike@gmail.com>
-> ---
->   drivers/staging/fbtft/fbtft-core.c | 9 ++++++---
->   1 file changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-> index 8a5ccc8ae0a1..309e81d7d208 100644
-> --- a/drivers/staging/fbtft/fbtft-core.c
-> +++ b/drivers/staging/fbtft/fbtft-core.c
-> @@ -364,8 +364,9 @@ static int fbtft_fb_setcolreg(unsigned int regno, unsigned int red,
->   {
->   	unsigned int val;
->   	int ret = 1;
-> +	struct device *dev = dev_of_fbinfo(info);
->   
-> -	dev_dbg(info->dev,
-> +	dev_dbg(dev,
->   		"%s(regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X)\n",
->   		__func__, regno, red, green, blue, transp);
+kernel test robot noticed the following build errors:
 
-Rather use fb_dbg() from <linux/fb.h>. It will format the output 
-appropriately.
+[auto build test ERROR on staging/staging-testing]
 
->   
-> @@ -389,9 +390,10 @@ static int fbtft_fb_setcolreg(unsigned int regno, unsigned int red,
->   static int fbtft_fb_blank(int blank, struct fb_info *info)
->   {
->   	struct fbtft_par *par = info->par;
-> +	struct device *dev = dev_of_fbinfo(info);
->   	int ret = -EINVAL;
->   
-> -	dev_dbg(info->dev, "%s(blank=%d)\n",
-> +	dev_dbg(dev, "%s(blank=%d)\n",
->   		__func__, blank);
->   
->   	if (!par->fbtftops.blank)
-> @@ -739,6 +741,7 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
->   	char text2[50] = "";
->   	struct fbtft_par *par = fb_info->par;
->   	struct spi_device *spi = par->spi;
-> +	struct device *dev = dev_of_fbinfo(fb_info);
->   
->   	/* sanity checks */
->   	if (!par->fbtftops.init_display) {
-> @@ -793,7 +796,7 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
->   	if (spi)
->   		sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->bus_num,
->   			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
-> -	dev_info(fb_info->dev,
-> +	dev_info(dev,
+url:    https://github.com/intel-lab-lkp/linux/commits/Chintan-Patel/staging-fbtft-use-dev_of_fbinfo-instead-of-info-dev/20260112-091221
+base:   staging/staging-testing
+patch link:    https://lore.kernel.org/r/20260112010740.186248-1-chintanlike%40gmail.com
+patch subject: [PATCH v5] staging: fbtft: use dev_of_fbinfo() instead of info->dev
+config: x86_64-randconfig-005-20260112 (https://download.01.org/0day-ci/archive/20260112/202601121705.2kgxpvsS-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+rustc: rustc 1.88.0 (6b00bc388 2025-06-23)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260112/202601121705.2kgxpvsS-lkp@intel.com/reproduce)
 
-fb_info() here.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202601121705.2kgxpvsS-lkp@intel.com/
 
-Best regards
-Thomas
+All errors (new ones prefixed by >>):
 
->   		 "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
->   		 fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
->   		 fb_info->fix.smem_len >> 10, text1,
+>> drivers/staging/fbtft/fbtft-core.c:367:23: error: call to undeclared function 'dev_of_fbinfo'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     367 |         struct device *dev = dev_of_fbinfo(info);
+         |                              ^
+>> drivers/staging/fbtft/fbtft-core.c:367:17: error: incompatible integer to pointer conversion initializing 'struct device *' with an expression of type 'int' [-Wint-conversion]
+     367 |         struct device *dev = dev_of_fbinfo(info);
+         |                        ^     ~~~~~~~~~~~~~~~~~~~
+   drivers/staging/fbtft/fbtft-core.c:393:23: error: call to undeclared function 'dev_of_fbinfo'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     393 |         struct device *dev = dev_of_fbinfo(info);
+         |                              ^
+   drivers/staging/fbtft/fbtft-core.c:393:17: error: incompatible integer to pointer conversion initializing 'struct device *' with an expression of type 'int' [-Wint-conversion]
+     393 |         struct device *dev = dev_of_fbinfo(info);
+         |                        ^     ~~~~~~~~~~~~~~~~~~~
+   drivers/staging/fbtft/fbtft-core.c:744:23: error: call to undeclared function 'dev_of_fbinfo'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+     744 |         struct device *dev = dev_of_fbinfo(fb_info);
+         |                              ^
+   drivers/staging/fbtft/fbtft-core.c:744:17: error: incompatible integer to pointer conversion initializing 'struct device *' with an expression of type 'int' [-Wint-conversion]
+     744 |         struct device *dev = dev_of_fbinfo(fb_info);
+         |                        ^     ~~~~~~~~~~~~~~~~~~~~~~
+   6 errors generated.
+
+
+vim +/dev_of_fbinfo +367 drivers/staging/fbtft/fbtft-core.c
+
+   360	
+   361	static int fbtft_fb_setcolreg(unsigned int regno, unsigned int red,
+   362				      unsigned int green, unsigned int blue,
+   363				      unsigned int transp, struct fb_info *info)
+   364	{
+   365		unsigned int val;
+   366		int ret = 1;
+ > 367		struct device *dev = dev_of_fbinfo(info);
+   368	
+   369		dev_dbg(dev,
+   370			"%s(regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X)\n",
+   371			__func__, regno, red, green, blue, transp);
+   372	
+   373		switch (info->fix.visual) {
+   374		case FB_VISUAL_TRUECOLOR:
+   375			if (regno < 16) {
+   376				u32 *pal = info->pseudo_palette;
+   377	
+   378				val  = chan_to_field(red,   &info->var.red);
+   379				val |= chan_to_field(green, &info->var.green);
+   380				val |= chan_to_field(blue,  &info->var.blue);
+   381	
+   382				pal[regno] = val;
+   383				ret = 0;
+   384			}
+   385			break;
+   386		}
+   387		return ret;
+   388	}
+   389	
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

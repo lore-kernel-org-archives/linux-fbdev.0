@@ -1,108 +1,146 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f171.google.com (mail-pf1-f171.google.com [209.85.210.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8D7D2853EE;
-	Sun, 11 Jan 2026 21:26:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA18A202F71
+	for <linux-fbdev@vger.kernel.org>; Mon, 12 Jan 2026 01:07:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768166764; cv=none; b=tschnSd0VRD0SHWnxOJCj02SG3ch4ped4dspyyV4XAbf/8jyxwaEieS/8DCbWXrB07PEtMwwXuAXcJ/fyZKvG/XwzzFlQgyZ+Xdi+imomX7ONjZ7NmMs9MLgToi36N0tNUMmenZg+bbZkedWZq7+MSbGcDUqHm6a5l6O+ZKn1I4=
+	t=1768180079; cv=none; b=UYVF+M0p116bfns/scCbp+JFU5A6z/BDJYixT5ovSfRGC5RVqnKrF/aVIeeXCL/QcVwWZ1zmIzNEPuOK7+Mx4okvE0y8B90JmBMDMNAv5V+ivr9WBhq9jbU3U1K4SMKA5FvuVALS+w78sdWG+9uJQNx7jXs/pj2Xgqk+pswExNE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768166764; c=relaxed/simple;
-	bh=s5jblEsCOIT04MrKBnvGy+lMBUADNsEWPlmYaB1oizw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UpMu8dcyvuzeMbK4BTlu0b1WRn5dpjKBAe9JtEwdSmZZ4uveWT6EKGakx5Pk1L4tz0ke/0/L9yjk4jwx3U1ZeE0qfjaCgsGi4+XWFEuTmxE94TwAogn3BTEiVo3AouNLGiT7VW8NyXN+AsgvQVvrxc6+VqNlOIuUk3ujW8picLE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YEMmQ9B4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1768180079; c=relaxed/simple;
+	bh=zwIEUKzTF3+7hMI67z72W4djedysLxpt1Bovb4GGn2Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HjaEeOhZe/gJ8ktF6/AP0n6K4ZsUNdjS9+AUVf8fUJg6JeonGRBK7/cCckNJai3LIK7/fQmvCck7nL5ObwO2bsRcCHb3mxr7kzL6Y8TStJARS58AMMuDQMY6zzzwpcv4C79QavDSN8ioIJ6rG/jG+xo9V0OsK9EnAj14Y32MsHg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=V9Un5G8A; arc=none smtp.client-ip=209.85.210.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YEMmQ9B4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C44FC4CEF7;
-	Sun, 11 Jan 2026 21:26:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768166763;
-	bh=s5jblEsCOIT04MrKBnvGy+lMBUADNsEWPlmYaB1oizw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=YEMmQ9B48yZVuinyjMHjUqxfDHVeaANWrveeR9+MqDl2gf9oDVLQLJqVqbvtnx2ft
-	 es+NoYldiPk14hdmjahePyEKCYLhWL3mc8YUezSlapO3OkurIRCgsIgyf6o4f/+s4z
-	 OD5+/qZAUNj9FHKOsqVqI1bwTCzOLksxWWGzTl06LLScKTGCPsTDQ17sLxnmtgOURh
-	 3pKr/qyZlhSC5mg4m6aNoaT5Nsu2mFlBLmjWOf20TtYVbyL1KHCI4dG645vefIpIQD
-	 +edg2g3zNKgTtiHTARvsHQ0fnawUcYvkobvnKVW49QOm4iOaCf+RYsCqg2d6hCct+F
-	 Kudgg+mggqjcw==
-Message-ID: <db3cacfb-cd10-495b-b761-96ee6d7ee95a@kernel.org>
-Date: Sun, 11 Jan 2026 22:25:59 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="V9Un5G8A"
+Received: by mail-pf1-f171.google.com with SMTP id d2e1a72fcca58-81c72659e6bso3338006b3a.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 11 Jan 2026 17:07:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1768180077; x=1768784877; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=TkOZXJ1yiBIweSUTCBJOqJ16hNtrAInO8IpS+8lGicY=;
+        b=V9Un5G8AS9O0EYHVSZO1I9uQw3ruYjdLtGKV3S6dsKXWMjUtVgYI38JnHhyHYmgH0x
+         TQ3ys/XR0I5+oqfg6Vpc3Zj34atYmO0tuGH7ocA2PMLn79BIahsAmnhPtbqupAYSz8+5
+         hp3vC0PyRl1f+BPbkVXi1oi8quT1GweB/+uvLH8QKbfqszm0S6IVBnxa59hBO+D6mJT4
+         Ja3ZHpXNw+Q06qQ0JzWWyvJj1ls/iCNceskI019G9IASyOqbhTBrHgWcCTPl4V2v64fs
+         IiwDmPcE8QMxXFqhMTiVwfeqKCwRKaUKWc7+p81tNw8ipnCacsnCFg7MsRhNPSSYM9oF
+         /APQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768180077; x=1768784877;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=TkOZXJ1yiBIweSUTCBJOqJ16hNtrAInO8IpS+8lGicY=;
+        b=Q/3In4lv7ywaGyMdO1LT8O/AFVwClkDg9JdO/RXi/YOEuo1mly1mlGGQCeAf/V2RWC
+         0VcPemaFXdIpgc511dNl+Sb8Y2r7e5WsTSio9M/crhz2gHkBmosNVcuxqkYsZ8EmCwyh
+         rDTfofpuOnjfOTWMBuzaZo6unzHbEPENtISJMu34b+BJ/BoanKr0b7NpqJo/kWhZCcj4
+         mx3SzSLx1AD5wdkD1RJ6Kh69KVMrZF5Nbq+v/fHuJ0ODqbq4x2bqORN/5Q26dLH0O8JZ
+         p1ary0i1x7/ODsOoKb/me6czDZgN8osUts8/Lt/99WbSH4vgw6CZ86dZ8fJmHcTZPKwU
+         qoig==
+X-Gm-Message-State: AOJu0YwUUqfyMMQ/tYJtk9ebW5w5r+ExMAsJj6DUUPZzzsf5lJ/4ri1h
+	+vYelNcekgtQHpCc1X9VJi1xtaT6ZGpuEfyIQTUhAMm35xFh1c5zZG4tNDLKpQ==
+X-Gm-Gg: AY/fxX7mB0Wdly1UEqHs9jDmVCX1XAU5Ya6HbfBZZe7h2t7GXeFgymxvXDr8mZ2cTxy
+	8m0xGV2AT9U3UnRvtJWtS6nE8tHl8yyUVXxw/RCdr2Is/+J6MdIarXCQ+n+FrWHwggF9MfDToHE
+	fm/v2Xtj7eoo/j5e7dkOemrpDCnlQKZcRXOYuCrgAY8c1qZEHu0alohfdzWXa+sV3qayxXQpdzm
+	xgNKdK+0u0E5gah9BsG6xMulU0LsdjPDcI5Mr2/PLpeRHFhxcfInKiu02vN8Ey2JDBtUhSiHsQQ
+	IpSvvPj9rqDgHtgdS5ylX9X8swTYVTID3qmEvrPIleY1VBEB377pD5mh8YyKZOqWX//l+YiunwJ
+	jMMa49HNPIDRz6aDM2YS5vmWtCrUeWXpUGyns5uGL73ZxAGad1RbIC3UtTEbr/zYI6StNgsN8BK
+	40KSNezTPXGpsEbq80N9OSnXkJYsNthcEai9z2PQeJTM4=
+X-Google-Smtp-Source: AGHT+IEqSuoKlQd99SJwcfXAwafP6Ad6qD2z83UEaG0kD39I3j77hVcCOmXZQVclGkZssS94ypX4yw==
+X-Received: by 2002:a05:6a00:a883:b0:81f:31c3:2e34 with SMTP id d2e1a72fcca58-81f31c33305mr4830490b3a.25.1768180076713;
+        Sun, 11 Jan 2026 17:07:56 -0800 (PST)
+Received: from cmpatel-home.hsd1.or.comcast.net ([2601:1c0:5780:9200:a2d6:d17d:ed6b:f017])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-81e042e75b1sm3980489b3a.21.2026.01.11.17.07.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 11 Jan 2026 17:07:55 -0800 (PST)
+From: Chintan Patel <chintanlike@gmail.com>
+To: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-omap@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	tzimmermann@suse.de,
+	andy@kernel.org,
+	deller@gmx.de,
+	gregkh@linuxfoundation.org,
+	Chintan Patel <chintanlike@gmail.com>,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH v5] staging: fbtft: use dev_of_fbinfo() instead of info->dev
+Date: Sun, 11 Jan 2026 17:07:39 -0800
+Message-ID: <20260112010740.186248-1-chintanlike@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video/logo: don't select LOGO_LINUX_MONO and
- LOGO_LINUX_VGA16 by default
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20260110-mono_and_vga16_logos_default_to_no-v1-1-30f36da979b4@kernel.org>
- <d48231e4-6c69-4948-99a9-121cd17e2db0@gmx.de>
-From: Vincent Mailhol <mailhol@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=mailhol@kernel.org; keydata=
- xjMEZluomRYJKwYBBAHaRw8BAQdAf+/PnQvy9LCWNSJLbhc+AOUsR2cNVonvxhDk/KcW7FvN
- JFZpbmNlbnQgTWFpbGhvbCA8bWFpbGhvbEBrZXJuZWwub3JnPsKZBBMWCgBBFiEE7Y9wBXTm
- fyDldOjiq1/riG27mcIFAmdfB/kCGwMFCQp/CJcFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcC
- F4AACgkQq1/riG27mcKBHgEAygbvORJOfMHGlq5lQhZkDnaUXbpZhxirxkAHwTypHr4A/joI
- 2wLjgTCm5I2Z3zB8hqJu+OeFPXZFWGTuk0e2wT4JzjgEZx4y8xIKKwYBBAGXVQEFAQEHQJrb
- YZzu0JG5w8gxE6EtQe6LmxKMqP6EyR33sA+BR9pLAwEIB8J+BBgWCgAmFiEE7Y9wBXTmfyDl
- dOjiq1/riG27mcIFAmceMvMCGwwFCQPCZwAACgkQq1/riG27mcJU7QEA+LmpFhfQ1aij/L8V
- zsZwr/S44HCzcz5+jkxnVVQ5LZ4BANOCpYEY+CYrld5XZvM8h2EntNnzxHHuhjfDOQ3MAkEK
-In-Reply-To: <d48231e4-6c69-4948-99a9-121cd17e2db0@gmx.de>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On 11/01/2026 at 20:12, Helge Deller wrote:
-> On 1/10/26 13:23, Vincent Mailhol wrote:
->> Nowadays, nearly all systems have a color depth of eight or more and
->> are thus able to display the clut224 logo. This means that the
->> monochrome and vga16 logos will never be displayed on an average
->> machine and are thus just a waste of bytes.
->>
->> Set CONFIG_LOGO_LINUX_MONO and CONFIG_LOGO_LINUX_VGA16 configuration
->> symbols to no by default.
-> 
-> I agree, that on basically every system today there is no need for the
-> monochrome or VGA16 logo.
-> But I'm not sure about the historic/exotic platforms, e.g. m68, sparc
-> and so on.
-> 
-> So, maybe instead of dropping the default "y", we should e.g. do:
-> +    default y if SUPERH
+This fixes commit
+a06d03f9f238 ("staging: fbtft: Make FB_DEVICE dependency optional")
 
-SUPERH also has a clut224 logo, so I assume we can also default to no
-for it.
+from my previous v4 series:
+https://patchwork.kernel.org/project/dri-devel/cover/20260107044258.528624-1-chintanlike@gmail.com/
 
-> +    default y if XYZ (some other architecture/platform) ???
-> +    default n  (for all others)
-> 
-> The question is: Which arches may have needed the VGA16 or monochrome logo?
+All direct accesses to info->dev or fb_info->dev are replaced with
+dev_of_fbinfo() helper, improving readability and ensuring 
+compilation succeeds when CONFIG_FB_DEVICE=n.
 
-My wild guess would be none. Furthermore, no one "needs" a logo. It is
-just a fun thing to add. This is why the LOGO sub menu is turned off by
-default and that none of the defconfig would automatically select a LOGO.
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202601110740.Y9XK5HtN-lkp@intel.com
+Signed-off-by: Chintan Patel <chintanlike@gmail.com>
+---
+ drivers/staging/fbtft/fbtft-core.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-And so, because a user interaction is needed anyway, the few who still
-want a monochrome or vga16 logo can turn the option back on just after
-selecting the LOGO sub-menu.
-
-I guess the same could be said in reverse: we could keep all the logo on
-by default as it is now and the users who only need the clut224 can turn
-off the monochrome and vga16. But let's go for the majority ;)
-
-Well, if someone can come with the list you are looking for, I will
-happily add it to the patch. We can wait for a couple weeks if you want,
-no rush here!
-
-Or your can already stage it in fbdev-next and I will send you a v2 as
-needed. Maybe we will get more comments if this reaches linux-next?
-
-
-Yours sincerely,
-Vincent Mailhol
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 8a5ccc8ae0a1..309e81d7d208 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -364,8 +364,9 @@ static int fbtft_fb_setcolreg(unsigned int regno, unsigned int red,
+ {
+ 	unsigned int val;
+ 	int ret = 1;
++	struct device *dev = dev_of_fbinfo(info);
+ 
+-	dev_dbg(info->dev,
++	dev_dbg(dev,
+ 		"%s(regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X)\n",
+ 		__func__, regno, red, green, blue, transp);
+ 
+@@ -389,9 +390,10 @@ static int fbtft_fb_setcolreg(unsigned int regno, unsigned int red,
+ static int fbtft_fb_blank(int blank, struct fb_info *info)
+ {
+ 	struct fbtft_par *par = info->par;
++	struct device *dev = dev_of_fbinfo(info);
+ 	int ret = -EINVAL;
+ 
+-	dev_dbg(info->dev, "%s(blank=%d)\n",
++	dev_dbg(dev, "%s(blank=%d)\n",
+ 		__func__, blank);
+ 
+ 	if (!par->fbtftops.blank)
+@@ -739,6 +741,7 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+ 	char text2[50] = "";
+ 	struct fbtft_par *par = fb_info->par;
+ 	struct spi_device *spi = par->spi;
++	struct device *dev = dev_of_fbinfo(fb_info);
+ 
+ 	/* sanity checks */
+ 	if (!par->fbtftops.init_display) {
+@@ -793,7 +796,7 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+ 	if (spi)
+ 		sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->bus_num,
+ 			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
+-	dev_info(fb_info->dev,
++	dev_info(dev,
+ 		 "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
+ 		 fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
+ 		 fb_info->fix.smem_len >> 10, text1,
+-- 
+2.43.0
 

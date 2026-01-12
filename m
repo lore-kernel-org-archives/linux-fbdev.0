@@ -1,53 +1,53 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52223378D8B;
-	Mon, 12 Jan 2026 17:32:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C0E8350A02;
+	Mon, 12 Jan 2026 18:26:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768239170; cv=none; b=Wj0aNRLeFB//TDMvpdT0R5s80icRFfUdbD7hUur+LjLn94HEzQDC71pjZuQ/1Pxk4OKHsnGfaZ1jeryn5SvKRk69VHKRK71K03/Dn1/m0alrnuuXGoxRsyiGZRzLnff/+Qn/X4/BpvqxwNZCpAwtNlPUrDEKPKonZJdAIxLIg14=
+	t=1768242409; cv=none; b=Hbc2JpuSkQudbRKRiGf9hwAc7i8jwlYiGPN6QBAwNsUcv3l9xSvEHcw/fm59mnjs4wq1H3yznfWU4SMpeiFUYbu10hozPEmMmbVN95wKNsnP/8WGVOGXXNB16ebfuiLMt9MlVuOrErI4Vsg4gOfRBI8QfR7CFXDduk3Or0BBytA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768239170; c=relaxed/simple;
-	bh=OR/IteiQnlHXasGusgNXutT+OFGgvrqsqPj9gtcQV6w=;
+	s=arc-20240116; t=1768242409; c=relaxed/simple;
+	bh=4tX4yfMZLD9CinH/qL7aTz2HXhyLociwzo5T9q1Yp6E=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=S621mur6Lsil2RXtBV/IGgaGl7/eEmcVTKTzf8SXEm9J6O9hJYzvPbFUXTD2eLmWPT52CMWggvlW7+QRnOJCErMzNem8FulIAE0dM5XlraPoxyiw4EfQeAvP7nGy9WMJsCA5bklspDWzWElODpIJp/Jrpla8PeAx6sQUdT8Nq7o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=AO7cGcsP; arc=none smtp.client-ip=192.198.163.19
+	 Content-Type:Content-Disposition:In-Reply-To; b=TMGomw22oDFmURXGIvJMrvuBWx/z5wksehDQX4CGTKztRkYlbnz3frm32dAcXyoHfe0BGe6TAPNW0Oi8QiPf/yMN/7QI6CN3t2MgYPtUUG/Dro8ktjMDnka4/nWjV/1wmM3TkZKiNOvbQn42D9enSX+QBUoYJd8QotV7wBIy+bo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fNVqGG21; arc=none smtp.client-ip=198.175.65.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="AO7cGcsP"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fNVqGG21"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1768239168; x=1799775168;
+  t=1768242408; x=1799778408;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=OR/IteiQnlHXasGusgNXutT+OFGgvrqsqPj9gtcQV6w=;
-  b=AO7cGcsP55YEgI2MOMnyyZXhrucqvf7Mhyesg5YIQnP2JjzMX+YE0+ah
-   doui6maWY7cWFql3qoe0Aegq6XNlCmIkAWd4xPO0W9aaw5uXnClotf4+k
-   lCz07DTAB/5h6NFkAnnHbjEM8o5pNkiTe7LeYtyHWc3i+RGdC+F+oWOGe
-   54juC1pBcEYGHP48jQyV0Huxj3nkm8ncK4clOK/4+vHPBGFd1huVpdkHc
-   jgWWT6xQ0ier0xR5VkYATMpFppD+P+exXr8U2l8C1PlAh9ENpSecgK5aL
-   m+RnQDh/mZIA626hrdjvUoBiOBW0n9q1a9/OKY90pyJgFyRtNsFmuRi12
-   A==;
-X-CSE-ConnectionGUID: 4fNECDlPTsOY9lCvV/m0AQ==
-X-CSE-MsgGUID: F5jPsA7CRu2kLoGtE0KAyA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11669"; a="68522604"
+  bh=4tX4yfMZLD9CinH/qL7aTz2HXhyLociwzo5T9q1Yp6E=;
+  b=fNVqGG211/+HxCbYy5aGaKlTyNoTHyPMlTc4pgphexFQUMGb9aYZeJ5B
+   5rO5zOPPhJvvJQJT/45ucrwaN0WL+zfpC8POZ/LYn/Osuk3sO2EMS8g0P
+   qWJ0ndIrJ6/iwYrSzhpJFwL2LtUzYDLeGe41lLn6HlprberV3h13BhFH8
+   akH2mq/Re1wir/GSF7wJHCIkynOfFSE7QAzF7XvUM45neeikKx/YcA4a4
+   D6UohQpCA2+w29Z6sa4/SwI1Sho42AvzLX/YEikX0J5hEcxcl1uwdgCGu
+   6S+qbd8xtjK9H5EAG1HHhcMkd5RMygAGkhN7EnEHADuvJW/ctpZjqgVgr
+   Q==;
+X-CSE-ConnectionGUID: Rm8hQyYDTEesPJx9W1zE5g==
+X-CSE-MsgGUID: m5u4CrMhSJORi3krLGhrwg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11669"; a="69447447"
 X-IronPort-AV: E=Sophos;i="6.21,221,1763452800"; 
-   d="scan'208";a="68522604"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2026 09:32:46 -0800
-X-CSE-ConnectionGUID: cmPI29FYT3yFlVjLv98KUQ==
-X-CSE-MsgGUID: cgkz92DXRRCWb3hgnntwEQ==
+   d="scan'208";a="69447447"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2026 10:26:48 -0800
+X-CSE-ConnectionGUID: 4ETuplM6TSypTjzSJgZikA==
+X-CSE-MsgGUID: CPf5HPlCTZa/DTGCHI6eTA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.21,221,1763452800"; 
-   d="scan'208";a="208662251"
+   d="scan'208";a="204175332"
 Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
-  by orviesa004.jf.intel.com with ESMTP; 12 Jan 2026 09:32:42 -0800
+  by orviesa007.jf.intel.com with ESMTP; 12 Jan 2026 10:26:45 -0800
 Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1vfLmR-00000000Dg2-2mFw;
-	Mon, 12 Jan 2026 17:32:39 +0000
-Date: Tue, 13 Jan 2026 01:31:53 +0800
+	id 1vfMck-00000000Dk0-30cu;
+	Mon, 12 Jan 2026 18:26:42 +0000
+Date: Tue, 13 Jan 2026 02:26:11 +0800
 From: kernel test robot <lkp@intel.com>
 To: Chintan Patel <chintanlike@gmail.com>, linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev, linux-omap@vger.kernel.org
@@ -58,7 +58,7 @@ Cc: oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
 	kernel test robot <lkp@intel.com>
 Subject: Re: [PATCH v5] staging: fbtft: use dev_of_fbinfo() instead of
  info->dev
-Message-ID: <202601130026.1M3d4LWk-lkp@intel.com>
+Message-ID: <202601130116.rVB5C8Xx-lkp@intel.com>
 References: <20260112010740.186248-1-chintanlike@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -72,40 +72,39 @@ In-Reply-To: <20260112010740.186248-1-chintanlike@gmail.com>
 
 Hi Chintan,
 
-kernel test robot noticed the following build warnings:
+kernel test robot noticed the following build errors:
 
-[auto build test WARNING on staging/staging-testing]
+[auto build test ERROR on staging/staging-testing]
 
 url:    https://github.com/intel-lab-lkp/linux/commits/Chintan-Patel/staging-fbtft-use-dev_of_fbinfo-instead-of-info-dev/20260112-091221
 base:   staging/staging-testing
 patch link:    https://lore.kernel.org/r/20260112010740.186248-1-chintanlike%40gmail.com
 patch subject: [PATCH v5] staging: fbtft: use dev_of_fbinfo() instead of info->dev
-config: nios2-allmodconfig (https://download.01.org/0day-ci/archive/20260113/202601130026.1M3d4LWk-lkp@intel.com/config)
-compiler: nios2-linux-gcc (GCC) 11.5.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260113/202601130026.1M3d4LWk-lkp@intel.com/reproduce)
+config: sh-allmodconfig (https://download.01.org/0day-ci/archive/20260113/202601130116.rVB5C8Xx-lkp@intel.com/config)
+compiler: sh4-linux-gcc (GCC) 15.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260113/202601130116.rVB5C8Xx-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202601130026.1M3d4LWk-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202601130116.rVB5C8Xx-lkp@intel.com/
 
-All warnings (new ones prefixed by >>):
+All errors (new ones prefixed by >>):
 
    drivers/staging/fbtft/fbtft-core.c: In function 'fbtft_fb_setcolreg':
-   drivers/staging/fbtft/fbtft-core.c:367:30: error: implicit declaration of function 'dev_of_fbinfo'; did you mean 'dev_info'? [-Werror=implicit-function-declaration]
+>> drivers/staging/fbtft/fbtft-core.c:367:30: error: implicit declaration of function 'dev_of_fbinfo'; did you mean 'dev_info'? [-Wimplicit-function-declaration]
      367 |         struct device *dev = dev_of_fbinfo(info);
          |                              ^~~~~~~~~~~~~
          |                              dev_info
->> drivers/staging/fbtft/fbtft-core.c:367:30: warning: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+>> drivers/staging/fbtft/fbtft-core.c:367:30: error: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
    drivers/staging/fbtft/fbtft-core.c: In function 'fbtft_fb_blank':
-   drivers/staging/fbtft/fbtft-core.c:393:30: warning: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+   drivers/staging/fbtft/fbtft-core.c:393:30: error: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
      393 |         struct device *dev = dev_of_fbinfo(info);
          |                              ^~~~~~~~~~~~~
    drivers/staging/fbtft/fbtft-core.c: In function 'fbtft_register_framebuffer':
-   drivers/staging/fbtft/fbtft-core.c:744:30: warning: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+   drivers/staging/fbtft/fbtft-core.c:744:30: error: initialization of 'struct device *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
      744 |         struct device *dev = dev_of_fbinfo(fb_info);
          |                              ^~~~~~~~~~~~~
-   cc1: some warnings being treated as errors
 
 
 vim +367 drivers/staging/fbtft/fbtft-core.c

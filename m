@@ -1,126 +1,152 @@
-Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
+Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BF3325BEF8
-	for <linux-fbdev@vger.kernel.org>; Tue, 13 Jan 2026 04:45:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FA3F2F6594
+	for <linux-fbdev@vger.kernel.org>; Tue, 13 Jan 2026 04:59:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768279532; cv=none; b=ldjwZhgvN8pDWBsf1waomFlVd5QajQ3kZr6xMQBUMd6E/J2aa/KH6TJ/5eOJpKc5+OD4TAglDSjx4geXf1m+qfM3jofqgapKZZjBe1omsULBYUWw2mSeZh0dSaznB9EI5ZOQKuhhm57pWbFuolPU/W0M1R0XuhE6l4Y3HTNDmQM=
+	t=1768280383; cv=none; b=mM7L0N69vzOffG0VvcejvmTsWYujEny49LKpDMmkphgV0esTftbrCnOFrh31jGX8RCCamWedlmfc/X0un0hMOUfzho36L7tZEYBVEOvj1WaxJzmtsS2ZIRtBIx3ZtL7ZpUpgYve9DhNeAgKAQoERSykFrvy7nWljuSyTSpS1OcA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768279532; c=relaxed/simple;
-	bh=cN1lliBDvJ2161XpgMqnGbtxFjb3awzneHzXZEap+mk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kLIKQt4MEeGm1koGAYEJgbkjWzWHTz/t2PMusJg63fvClsU6fT+tBkN+5PG0ZT4qyYTD631hVs6PYxk1kEAjHhbluRwxE1GvK2F/udbfxy1q98G6j+os/G28lIEG6gY51o+1YEBP7rVU6q9+pjOIyjmMZuDpb+4DSirLsN1Hfo8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YuVJsQA3; arc=none smtp.client-ip=209.85.210.175
+	s=arc-20240116; t=1768280383; c=relaxed/simple;
+	bh=bCEMHZ6kz6Fm1BrBwVu56MAE7W4gVEikAeeavZ/Di9c=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=db8Zeo90Mds104SvyCO1G9rfmP6KZrWOoj3QpDDKIP5OqHr7WgJRcC3UTnVw4nHBIQrTIiAfLqPYZWxWZfLyTRubj+9jafo56RFM4Q3yBl8gquyZuaQjVGpQynCyxGwxmsM568yJGRIEJe8zSRsxyoHLXBJkXRiBFRJC69p+hyA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ROu4u9rg; arc=none smtp.client-ip=209.85.215.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YuVJsQA3"
-Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-81e9d0cd082so2729381b3a.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jan 2026 20:45:30 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ROu4u9rg"
+Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-b553412a19bso3211724a12.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jan 2026 20:59:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768279530; x=1768884330; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Iy6S9q8/CD1KaKEpgdKuwKLpEadDje8AFP0pfPr3/5I=;
-        b=YuVJsQA3Res31y46H78DBm8nL4DRqWkA0OnGcC8aMdPhc7SJgxNz+xh0jWdwp1tTpc
-         IKU42eIgHvAmQVhRpj7/TmvHBpDSVJNMNJWujPh6/AC8Qr8fM9J7lalJs60RnF5eazUR
-         lnBIlSvxLbwdS8P53zapTA7P/7RqIajhv/pOzfScahgdayojMH2t0IVCQertgK1lZPc7
-         tqR4dcwE9UBJawy/MpSB9o6R6Ljy3pryxPV3BrUUeNNvCLdKF+6g8bgTP5nRZK1XsAsY
-         9JchQB/IE5Ptnhd45oT4PM4daLNm4ykcT6yskaVhvlkm8d6QKzOBgcPkLagSIL2HST3B
-         G0yw==
+        d=gmail.com; s=20230601; t=1768280381; x=1768885181; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=jTvxo6KbWMtGy6RGpj72F7tdPe/SFWx8IlZmuHDEiGo=;
+        b=ROu4u9rgjOCaXGJEOSbb5pNZ9vmHO3Tev3hoSEt5orAw5hu84/0oqAgsEGjFT5M8Vp
+         XrBD9LBYWzOMjJzJvxP3TyVutZ3dKPFHSM+t8A2f8h2MXYN71EbCbNL7kiecA++jpbJs
+         5pGwQ/ixsl9ZHiJkjrpMK/FpmSEefHBnFB2qjoJZuwU8B1L4G+R1Ic3Gvs2Tudl8IX7m
+         K68viRaUe0lj2cgrbnlOCeKpUsvZsIn0A6Eef66rFl90Ns8rqxUZWHderY4SK76ODJXr
+         8d4MgwLD3UtFP/1chuXyKl9egz/n6qgrNo6ybwNSD75CZN+GTXCbWC0fkSJbdpNflreA
+         T4Ew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768279530; x=1768884330;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Iy6S9q8/CD1KaKEpgdKuwKLpEadDje8AFP0pfPr3/5I=;
-        b=LLccy4ioq5cil7ZUDA87muJaD5+IzYpx0yKjZ6/jF+U5xr330kHAdZPHLWEaPws+36
-         vyY56yWMoPie5ezpoi0mU8nKd6SQugJ60Kka8XJbLobuf7h4I/edDhZRvau3DgqRiqn+
-         obTAWgt2eo093T3coB7G8T1b2Adl6nPijym+9A+V+umoDqmMltY3foqsoML3QLeFAoIP
-         wXrKsyDGvWq3AkZs2CO6p0P8UnDa09ZxcC13zDOnd2coTN+VOXbYv28n3ibvFR7hN8B6
-         TrrLeRus/mtedQnBqsf1e6sOuJ9StEY2zLY/eHvcbG9rkAXjHXbVpelUF7egZ11aTzKF
-         9ZdA==
-X-Forwarded-Encrypted: i=1; AJvYcCWGyZF6vln4f9Ee09Nlah7j4uPyREhDseipH+yts6X1w8Ell3h8+zW4YaSxifBbG1QVUdwqv1vlkmgPAA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz4K5yUCQO982eKTJgZkpUxeD09Y3wZgB9KhfLgm1GxtEeS5IL6
-	kLY/BwURdOELxuyfwSDGKGRXEi4p/RCramJeDGPdEinyK1rRoIgZfeMq
-X-Gm-Gg: AY/fxX7Y9v04spbPmLRNgnvDjEewkhzvl8ISGr/ozVNNy2TmvGbw0RSLtHWRpVUTDR+
-	RwKt6AK6ZaJaQM32pn1DT+VrKu/HjEJHbPHKg14S3J55CsmEoYqJ3J7nj9+TYJ9ci18G2Yp960T
-	Z2l0RNhdpbawgH/ykLvjKfzyFL+WQDovygncASllqvaFHYZkCJvaTtMsw+ZQbAaIyAfFuJdksR2
-	zb02pKKAXwOgfdZU8v8sIlYucHcfKSsm1Dg+D55i1nJtLUHh590Idh1709J+FE94jXXyp8cEXmD
-	ETKhNMJH08Pxzgs5QMjyk4JmleqbKwDgf+y+rhY5I6gPiPE0WEJjGH00m6rhDtZJFr8fcq9xy6o
-	1zrf6rJ99n1U5q4WnkYieq6ILr8NN2gaZUWcuQlt3ZWE3+P9A3AGlpzsSnVv5i3kj7mM2Ec3oZ7
-	CYs5/Ito6HrrTA9pcVoOBHpqdWH0w/COUoqg==
-X-Google-Smtp-Source: AGHT+IFqbGus3DZt4vurEFth5/Rb5XoyKQRcXgMFVDwspPX6ajf+F0/ZgCzEPgnpPLFp0Bu5b44dew==
-X-Received: by 2002:a05:6a00:438a:b0:81f:4ce8:d641 with SMTP id d2e1a72fcca58-81f4ce8f745mr5760972b3a.37.1768279530424;
-        Mon, 12 Jan 2026 20:45:30 -0800 (PST)
-Received: from [172.16.20.12] ([136.226.253.21])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-81f36f88f4bsm8338351b3a.36.2026.01.12.20.45.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Jan 2026 20:45:29 -0800 (PST)
-Message-ID: <c182df66-8503-49cf-8d1d-7da17214b843@gmail.com>
-Date: Tue, 13 Jan 2026 10:15:53 +0530
+        d=1e100.net; s=20230601; t=1768280381; x=1768885181;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=jTvxo6KbWMtGy6RGpj72F7tdPe/SFWx8IlZmuHDEiGo=;
+        b=fK3nZEzBgvoHwrEPZAL7G65vKPl+SwrMrj9jgTwjnm8WmGQ3vClP70GguwH+nS+EkW
+         T48YLip+qYMZcbpx0tjXCpAI4CmKrbaDXVNrbXaiPDZsfcUIri7fBQPbjXYjWHnnxXsf
+         SKajKhqCPCstWaxY+11nVkTWnDLvJRYr2YF9gGQMv5dPfZpSwDZzBeRjJROX4KpZCoDD
+         xwuR/NEgW7awWER0iiIYPLAaCJe0pDCeWdja8wFxT0k6f+YlGH//pS75qrcbV4Y4aIBo
+         etlQo9stFgqHZS74HkTQCPkrex3JF9XsChkbknV91YEj/zmoou3uCCGQLVD2I4HQBZ0/
+         WHHA==
+X-Gm-Message-State: AOJu0YxN4QKhjwwqooBfL1JT88CFPiXEhET/RcgsOfo+bp2tlAQvQE2j
+	KmhvwKXVf+D3ZwzwpXchNFd0exp7E/ikAvgkIT8zsZe/E/YqobLxiK7+o8ZNNA==
+X-Gm-Gg: AY/fxX7gnjVTcXZZGYXidn9Vyk+MnkiArQSVJ9EaOIXbp57oDF58+kjlcZfpk4zjk4i
+	mcwKNxwJSQNDVJKY2KXL5WnD0xzRmFEJjsINwG5/8CAaBQYqowwwIIic66RnhgFCGVGleACcHYb
+	E8WNxzI5+fonCJrR2VcAucFXsHAvDbRT8nyQeDYHhaVbdOG3jrYDhTxtkJ711KwMlRnosRg2u6y
+	YzNrPW5TkrYcRIXdO07YKbXcqFaFyTF9E9Mu4LQh6f5LHNUQXnRyYWLKmY/GdeF6wOvZen7+bUZ
+	Hk6IfVHKy3TlOUdMUlriELUlTcOyCLTLZqmvDDRXz4Lqj5AiQMQ6sWiDiDU7fQBA06F0PAPqEC2
+	JsLdfKvjhnlyf0wSDsQPKQUpeT1hCqJ9PbgIuTWZbd3h6ARec5vohOmtI+uUsJXJg15shiMzo0i
+	5Q/r0yxrDTGp7Jeo/BiFVzJFzbtODlD7wB7p4MDEi2G6c=
+X-Google-Smtp-Source: AGHT+IF5y3wMzzLD9O647B9Fwv+OhX6pLmVT/zSElB3m1p3Mv2vCh9yICG/2VmelPoTP3BFPVF2CNg==
+X-Received: by 2002:a17:90a:d40c:b0:34a:b8e0:dd64 with SMTP id 98e67ed59e1d1-34f68c023eamr17396933a91.1.1768280381428;
+        Mon, 12 Jan 2026 20:59:41 -0800 (PST)
+Received: from cmpatel-home.hsd1.or.comcast.net ([2601:1c0:5780:9200:6652:1d71:eee0:e3bb])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-34f5fb74436sm1341597a91.14.2026.01.12.20.59.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Jan 2026 20:59:40 -0800 (PST)
+From: Chintan Patel <chintanlike@gmail.com>
+To: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-omap@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	tzimmermann@suse.de,
+	andy@kernel.org,
+	deller@gmx.de,
+	gregkh@linuxfoundation.org,
+	Chintan Patel <chintanlike@gmail.com>,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH v6] staging: fbtft: Use fbdev logging helpers when FB_DEVICE is disabled
+Date: Mon, 12 Jan 2026 20:59:09 -0800
+Message-ID: <20260113045909.336931-1-chintanlike@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 1/2] dt-bindings: backlight: gpio-backlight: allow
- multiple GPIOs
-To: Daniel Thompson <daniel@riscstar.com>
-Cc: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
- pavel@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260105085120.230862-1-tessolveupstream@gmail.com>
- <20260105085120.230862-2-tessolveupstream@gmail.com>
- <aVuKdAyXfWLs-WJI@aspen.lan>
-Content-Language: en-US
-From: tessolveupstream@gmail.com
-In-Reply-To: <aVuKdAyXfWLs-WJI@aspen.lan>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
+Replace direct accesses to info->dev with fb_dbg() and fb_info()
+helpers to avoid build failures when CONFIG_FB_DEVICE=n.
 
+Fixes: a06d03f9f238 ("staging: fbtft: Make FB_DEVICE dependency optional")
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202601110740.Y9XK5HtN-lkp@intel.com
+Signed-off-by: Chintan Patel <chintanlike@gmail.com>
 
-On 05-01-2026 15:25, Daniel Thompson wrote:
-> On Mon, Jan 05, 2026 at 02:21:19PM +0530, Sudarshan Shetty wrote:
->> Update the gpio-backlight binding to support configurations that require
->> more than one GPIO for enabling/disabling the backlight.
->>
->> Signed-off-by: Sudarshan Shetty <tessolveupstream@gmail.com>
->> ---
->>  .../bindings/leds/backlight/gpio-backlight.yaml      | 12 +++++++++++-
->>  1 file changed, 11 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
->> index 584030b6b0b9..1483ce4a3480 100644
->> --- a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
->> +++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
->> @@ -17,7 +17,8 @@ properties:
->>
->>    gpios:
->>      description: The gpio that is used for enabling/disabling the backlight.
->> -    maxItems: 1
->> +    minItems: 1
->> +    maxItems: 2
-> 
-> Why 2?
-> 
+Changes in v6:
+- Switch debug/info logging to fb_dbg() and fb_info()(suggested by Thomas Zimmermann)
+- Drop dev_of_fbinfo() usage in favor of framebuffer helpers that implicitly
+  handle the debug/info context.
+- Drop __func__ usage per review feedback(suggested by greg k-h)
+- Add Fixes tag for a06d03f9f238 ("staging: fbtft: Make FB_DEVICE dependency optional")
+  (suggested by Andy Shevchenko)
 
-In the current design, the LVDS panel has a single backlight that
-is controlled by two GPIOs. Initially, It described as two separate 
-backlight devices using the same gpio-backlight driver, since the 
-existing driver supports only one GPIO per instance.
+Changes in v5:
+- Initial attempt to replace info->dev accesses using
+  dev_of_fbinfo() helper
+---
+ drivers/staging/fbtft/fbtft-core.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
-So the maintainer suggested to extend the gpio-backlight driver 
-and bindings to support multiple GPIOs.
-https://lore.kernel.org/all/q63bdon55app4gb2il5e7skyc6z2amcnaiqbqlhen7arkxphtb@3jejbelji2ti/
-> 
-> Daniel.
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 8a5ccc8ae0a1..1b3b62950205 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -365,9 +365,9 @@ static int fbtft_fb_setcolreg(unsigned int regno, unsigned int red,
+ 	unsigned int val;
+ 	int ret = 1;
+ 
+-	dev_dbg(info->dev,
+-		"%s(regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X)\n",
+-		__func__, regno, red, green, blue, transp);
++	fb_dbg(info,
++	       "regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X\n",
++	       regno, red, green, blue, transp);
+ 
+ 	switch (info->fix.visual) {
+ 	case FB_VISUAL_TRUECOLOR:
+@@ -391,8 +391,7 @@ static int fbtft_fb_blank(int blank, struct fb_info *info)
+ 	struct fbtft_par *par = info->par;
+ 	int ret = -EINVAL;
+ 
+-	dev_dbg(info->dev, "%s(blank=%d)\n",
+-		__func__, blank);
++	fb_dbg(info, "blank=%d\n", blank);
+ 
+ 	if (!par->fbtftops.blank)
+ 		return ret;
+@@ -793,11 +792,11 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+ 	if (spi)
+ 		sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->bus_num,
+ 			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
+-	dev_info(fb_info->dev,
+-		 "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
+-		 fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
+-		 fb_info->fix.smem_len >> 10, text1,
+-		 HZ / fb_info->fbdefio->delay, text2);
++	fb_info(fb_info,
++		"%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
++		fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
++		fb_info->fix.smem_len >> 10, text1,
++		HZ / fb_info->fbdefio->delay, text2);
+ 
+ 	/* Turn on backlight if available */
+ 	if (fb_info->bl_dev) {
+-- 
+2.43.0
 

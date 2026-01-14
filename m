@@ -1,227 +1,127 @@
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 778673101B1;
-	Wed, 14 Jan 2026 15:00:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5C1239B493
+	for <linux-fbdev@vger.kernel.org>; Wed, 14 Jan 2026 15:53:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768402803; cv=none; b=czpZu74DuIOmVVUWdHUD02vJmQ9bOZzIzK/4NZPlK/j6hGgUs322jetpzW3zkwETNz76+eqChTaCO8e6hMUdW32XB8V/Qgd8QFLxbNkjfkO4EV/BoMGSRzlTzmSJ83IEKcIuuHXNeK8kNQJsiVCkhnZv9UfpB3RGpEWbtsX07fY=
+	t=1768406020; cv=none; b=tEHShLOzbYlZkUDG9/Unr+aTDPKrcDtRsj8zClXKo4i353+vjuzS8L3HwFBZSQW5rUXQqcVd8FJis/Ay+AjP0v8Jv9PGtDMtsxYIHVgWHKNTymOD6SKQOolFBUCnmBJGp5gMpP8U5U8e/y4V1m5inye5weiDzDNcx9VKEJFdQUE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768402803; c=relaxed/simple;
-	bh=1pBF1YRQNxk2lGvGbTpKbhstidHyHdbzznUXBYdEsMs=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=QcJDeNcfrQVaGp5yMR1gWheaxfZ7UY71OoNVq253YblE3sRy2v5qLyeOuRKvLDKB3F31HtmwO6j+zzXVhddjjENRi+SDv1IyAnRwUhYNxCjeFgwSl4xnSji9nEo3zK63KWqUKhGaM3vePNjWZpJP1+mGn+GZOd9C56TW54XHpoQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=KJJwWdYj; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=PHq/uYCZ; arc=none smtp.client-ip=193.142.43.55
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
+	s=arc-20240116; t=1768406020; c=relaxed/simple;
+	bh=MjjY0CZe9m074IFDhBfEpVxdyYS7Z3Q8v4zhohpRutw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=a4Vviv8NLhNN4aNM4Dqe6jgMSrXTvMIbUggPt7fNOTiMs8joemeeeTUHTCjW6P/ZwySRwrlamfGqLSAN6TN9aaez63QV4f2JdvipzMGzT2NOqCZseDEJW9zK2H+UR9GTrC6fIEMjEx9EQb/InE5EbypJzhOME3xPaTV017ixjRY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b=hQOHDn7T; arc=none smtp.client-ip=209.85.128.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="KJJwWdYj";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="PHq/uYCZ"
-Date: Wed, 14 Jan 2026 15:59:55 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1768402796;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type;
-	bh=3NtpMq02bFP0cM3SxnYhJXRT6/tEC5TRWXEogu0kE8o=;
-	b=KJJwWdYjqIMR9SblykjcmGBawPqMNrSMqhUInAcFQ3mJh/szFd2nOIz03aj0LNC87g3n0i
-	R6VRv55dXYQAX3gJtk7TNDouRNnPID30UtBxoKSfZDttswab1zz4uvLavj4EaeGoOSDyBj
-	Uo6relqJoeSY5pvKElxurMZSXBDLXVpMc7ixlxQa3KAQ8z/7W9MpxSghs4PxJUKyd2XtwC
-	UapRf6XLie/85ZNRH3mbcpRQbswXg/nSSY3xhexr9mXBfRzCDaZCaXPN4q+vmbNe5Xr5CX
-	rKUwc9/PwwuRWuV21KBD13i9e6rx5FstQ6sIqDJEqV/Q/2s5a2GGNYHsq7FzjA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1768402796;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type;
-	bh=3NtpMq02bFP0cM3SxnYhJXRT6/tEC5TRWXEogu0kE8o=;
-	b=PHq/uYCZjOOiVrJ1aAJFhnCsHRdBOBYigq7N7buni46q2zlZmRMgI6b3tneIvBlf55ms0o
-	LGF3AnH5CiycyTDA==
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
-	John Ogness <john.ogness@linutronix.de>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Jiri Slaby <jirislaby@kernel.org>, Simona Vetter <simona@ffwll.ch>,
-	Helge Deller <deller@gmx.de>
-Subject: printk's threaded legacy console + fbcon => schedule where it should
- not
-Message-ID: <20260114145955.d924Z-zu@linutronix.de>
+	dkim=pass (2048-bit key) header.d=riscstar-com.20230601.gappssmtp.com header.i=@riscstar-com.20230601.gappssmtp.com header.b="hQOHDn7T"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-47d493a9b96so51003135e9.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 14 Jan 2026 07:53:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=riscstar-com.20230601.gappssmtp.com; s=20230601; t=1768406017; x=1769010817; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=mrePS2BeC/5/zU5iIVNiA/HxBMqtaGmBB9n2hBMQrA0=;
+        b=hQOHDn7T8PjZDNbgPW6/0eJb4z6nY8heDKKRssw5W6YsE5B3CgY+QUeaMtbG5HIozl
+         BDLBuXvzh89+smKariIFQ7c90ZLHqF628Z1MqBVZ3Q0VPI2tRK1eLhvGW0OojO9/Yey5
+         0xvtKFtmC/LqrRbPA6uFHC6hOnai1pCmRQ4cQxni+Ukjf1sv+M+V74u7x1+rJRu+ZEqm
+         Cn67cB2aPBtozrafM2L2mXNDWC6YaMd77RDv+KdgxTi9bA3cbnjMlnHqeJ9cYxgEv2tR
+         BTXWeUnO6BTE0YiKHa0DpdhBbZ0sDkFAKWi+INFckGy9OStXhLXTnm93tG7D8WZHQdU3
+         ne+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768406017; x=1769010817;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=mrePS2BeC/5/zU5iIVNiA/HxBMqtaGmBB9n2hBMQrA0=;
+        b=Om+inYEzasLhqVLY6etJwFjQFQ2vYQ52Zql+j7j6LC2BaQlWqc/rcWTJd2uhoCN3XR
+         OjsicvJcjkGfsnh7MEPVgoFV2g3y61BhVVciuiXPMSPpluF2yA/eNwL7XslDkBYDT3hc
+         1tjcHVBJ+uaGhfubJutFzlt/oSSHYkUGwWa1jLdzQx044AG8pLpnhn95zXhZtZGThMCM
+         zyDCAhzi2qmSOHwmEPE6J0ZY2sq/qEyBa3kprtCVkwT70InR5pHAASZXuCcGUbXGgBwM
+         xnGNUL8SbIjXDg9YpzMfoWm3sXCo6YMk4uYRULA4/ZmU0o5cao0ceaPAFHqtwk2FPv7R
+         zaAg==
+X-Forwarded-Encrypted: i=1; AJvYcCWhYMhlHsCgzEDAChPaiywdv7dM7x1Ow/9rOWaVY0N16tgTxVOi2x1VY3dN2hm2LjiEowoldEwSxTbcGA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwGVOT6kEgPqlQRmkuYqK8lYG03g8XCHrrgXC6ljs0fU8H4sVx0
+	W5HKXbMk8+68268on2NDXTLbunOeHYBaVNe/8iGe8axqPkvTh7M197CJnKN7UK97bwM=
+X-Gm-Gg: AY/fxX6OOWPZ4WKpowbbMcN1UOir7QgjIfMSfiGalYma9ZLIkdWiTF/WE7Flc/3Dff4
+	mQtKi7QGeEt6o0CA+pE0LUj7jMCwBKVygeSV9EPPiMpvbe6KT6ZAqoLQh2cU3JxLtG5gmskOQiX
+	14P0DHH0d8AOn0A1M1xZlx9q0nqpkvYYuW0OJEXcpj9wXRHMuTHaUZ0B1WhqMlBYStt9TPnPiTE
+	6ilyuPo4xFijoJDv4B1XXRRI67sUtnNnq/DS3hvTjs2lEmNjSVZbzP06jaa4GrsgRxJ739ObaD9
+	8OCherNLadSwFrHtcuC/9l041uhOVjqbZMaEYWUF1A+7DhL+SA1xxQNr80h/Iyg+L1WogLvTEvB
+	wGVecxgINuHOQ6n42W4fvoCVbcTON4fcwXi+AZWo2FPfyea/RPA7TnBASHcR6pbstQyLfwsVmzZ
+	fCvviH1kyg+o0xjU6aDMxc/YLZio3HDTPn6+yTZBjYAnBiUAlQJZfh97u/fA8XF1GRmOkRBTkcw
+	LXHPXr68hJ6fw64up7+eEjINs2OWN12TOOJ2gP1rmJO1DSUArQQcENCyU+UWsRR09rtiTJR9lrm
+	VLLic0A=
+X-Received: by 2002:a05:600c:4515:b0:45c:4470:271c with SMTP id 5b1f17b1804b1-47ee339455dmr35015355e9.18.1768406016823;
+        Wed, 14 Jan 2026 07:53:36 -0800 (PST)
+Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-432bd5ee870sm51184009f8f.36.2026.01.14.07.53.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 14 Jan 2026 07:53:36 -0800 (PST)
+Date: Wed, 14 Jan 2026 15:53:34 +0000
+From: Daniel Thompson <daniel@riscstar.com>
+To: tessolveupstream@gmail.com
+Cc: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
+	pavel@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 1/2] dt-bindings: backlight: gpio-backlight: allow
+ multiple GPIOs
+Message-ID: <aWe7_hFpmO0E2sJe@aspen.lan>
+References: <20260105085120.230862-1-tessolveupstream@gmail.com>
+ <20260105085120.230862-2-tessolveupstream@gmail.com>
+ <aVuKdAyXfWLs-WJI@aspen.lan>
+ <c182df66-8503-49cf-8d1d-7da17214b843@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <c182df66-8503-49cf-8d1d-7da17214b843@gmail.com>
 
-Hi,
+On Tue, Jan 13, 2026 at 10:15:53AM +0530, tessolveupstream@gmail.com wrote:
+>
+>
+> On 05-01-2026 15:25, Daniel Thompson wrote:
+> > On Mon, Jan 05, 2026 at 02:21:19PM +0530, Sudarshan Shetty wrote:
+> >> Update the gpio-backlight binding to support configurations that require
+> >> more than one GPIO for enabling/disabling the backlight.
+> >>
+> >> Signed-off-by: Sudarshan Shetty <tessolveupstream@gmail.com>
+> >> ---
+> >>  .../bindings/leds/backlight/gpio-backlight.yaml      | 12 +++++++++++-
+> >>  1 file changed, 11 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
+> >> index 584030b6b0b9..1483ce4a3480 100644
+> >> --- a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
+> >> +++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
+> >> @@ -17,7 +17,8 @@ properties:
+> >>
+> >>    gpios:
+> >>      description: The gpio that is used for enabling/disabling the backlight.
+> >> -    maxItems: 1
+> >> +    minItems: 1
+> >> +    maxItems: 2
+> >
+> > Why 2?
+> >
+>
+> In the current design, the LVDS panel has a single backlight that
+> is controlled by two GPIOs. Initially, It described as two separate
+> backlight devices using the same gpio-backlight driver, since the
+> existing driver supports only one GPIO per instance.
+>
+> So the maintainer suggested to extend the gpio-backlight driver
+> and bindings to support multiple GPIOs.
+> https://lore.kernel.org/all/q63bdon55app4gb2il5e7skyc6z2amcnaiqbqlhen7arkxphtb@3jejbelji2ti/
 
-legacy_kthread_func() does console_lock() which means
-console_may_schedule is 1.
+Right. So, once we support multiple GPIOs then why limit it to 2?
 
-The other path is from vprintk_emit() where we have
-         if (ft.legacy_direct) {
-                 preempt_disable();
-                 if (console_trylock_spinning())
-                         console_unlock();
-                 preempt_enable();
-         }
 
-so all printing happens from console_unlock() where
-console_may_schedule is 0. This is a small difference. With the legacy
-console enabled I get:
-
-| BUG: sleeping function called from invalid context at kernel/printk/printk.c:3377
-| in_atomic(): 1, irqs_disabled(): 0, non_block: 0, pid: 15, name: pr/legacy
-| preempt_count: 1, expected: 0
-| RCU nest depth: 0, expected: 0
-| 3 locks held by pr/legacy/15:
-|  #0: ffffffffa8aebac0 (console_lock){+.+.}-{0:0}, at: legacy_kthread_func+0x6c/0x130
-|  #1: ffffffffa8aebb18 (console_srcu){....}-{0:0}, at: console_flush_one_record+0x7e/0x4d0
-|  #2: ffffffffa8c49818 (printing_lock){+.+.}-{3:3}, at: vt_console_print+0x55/0x490
-| Preemption disabled at:
-| [<0000000000000000>] 0x0
-| CPU: 7 UID: 0 PID: 15 Comm: pr/legacy Not tainted 6.19.0-rc5+ #19 PREEMPT(lazy)
-| Hardware name: To Be Filled By O.E.M. To Be Filled By O.E.M./Z68 Pro3-M, BIOS P2.30 06/29/2012
-| Call Trace:
-|  <TASK>
-|  dump_stack_lvl+0x68/0x90
-|  __might_resched.cold+0xf0/0x12b
-|  console_conditional_schedule+0x27/0x30
-|  fbcon_redraw+0xa0/0x240
-|  fbcon_scroll+0x164/0x1c0
-|  con_scroll+0xfa/0x200
-|  lf+0xa5/0xb0
-|  vt_console_print+0x313/0x490
-|  console_flush_one_record+0x2a0/0x4d0
-|  legacy_kthread_func+0x83/0x130
-|  kthread+0x118/0x250
-|  ret_from_fork+0x309/0x3b0
-|  ret_from_fork_asm+0x1a/0x30
-|  </TASK>
-
-because vt_console_print() acquires a spin_lock for synchronisation
-against another caller while console_conditional_schedule() would like
-to schedule.
-Most callers of console_unlock() do trylock except for few such as
-__pr_flush() which are affected by this the same way as the legacy
-printing thread. But we don't have much pr_flush() so this is hidden.
-
-Is there a strict need for fbcon_scroll() to schedule in fbcon_redraw()?
-From a quick look it looks that intense callers such the printk flush do
-cond_resched() on their own and tty does it, too
-
-| fbcon_scroll+0x164/0x1c0
-| con_scroll+0xfa/0x200
-| lf+0xa5/0xb0
-| do_con_write+0xc68/0x2630
-| con_write+0xf/0x40
-| do_output_char+0x180/0x1e0
-| n_tty_write+0x1ba/0x580
-| file_tty_write.isra.0+0x17e/0x2c0
-
-the cond_resched() is in file_tty_write()/ iterate_tty_write().
-
-Therefore I would suggest to simply
-
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 59b4b5e126ba1..53daf7614b1af 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -3236,7 +3236,6 @@ static int do_con_write(struct tty_struct *tty, const u8 *buf, int count)
- 			goto rescan_last_byte;
- 	}
- 	con_flush(vc, &draw);
--	console_conditional_schedule();
- 	notify_update(vc);
- 
- 	return n;
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 7be9e865325d9..36dd9d4a46ae0 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1607,12 +1607,10 @@ static void fbcon_redraw_move(struct vc_data *vc, struct fbcon_display *p,
- 					start = s;
- 				}
- 			}
--			console_conditional_schedule();
- 			s++;
- 		} while (s < le);
- 		if (s > start)
- 			fbcon_putcs(vc, start, s - start, dy, x);
--		console_conditional_schedule();
- 		dy++;
- 	}
- }
-@@ -1648,14 +1646,12 @@ static void fbcon_redraw_blit(struct vc_data *vc, struct fb_info *info,
- 			}
- 
- 			scr_writew(c, d);
--			console_conditional_schedule();
- 			s++;
- 			d++;
- 		} while (s < le);
- 		if (s > start)
- 			par->bitops->bmove(vc, info, line + ycount, x, line, x, 1,
- 					     s - start);
--		console_conditional_schedule();
- 		if (ycount > 0)
- 			line++;
- 		else {
-@@ -1703,13 +1699,11 @@ static void fbcon_redraw(struct vc_data *vc, int line, int count, int offset)
- 				}
- 			}
- 			scr_writew(c, d);
--			console_conditional_schedule();
- 			s++;
- 			d++;
- 		} while (s < le);
- 		if (s > start)
- 			fbcon_putcs(vc, start, s - start, line, x);
--		console_conditional_schedule();
- 		if (offset > 0)
- 			line++;
- 		else {
-diff --git a/include/linux/console.h b/include/linux/console.h
-index fc9f5c5c1b04c..ec506d3501965 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -697,7 +697,6 @@ extern int unregister_console(struct console *);
- extern void console_lock(void);
- extern int console_trylock(void);
- extern void console_unlock(void);
--extern void console_conditional_schedule(void);
- extern void console_unblank(void);
- extern void console_flush_on_panic(enum con_flush_mode mode);
- extern struct tty_driver *console_device(int *);
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 1d765ad242b82..52b1fefdff4e0 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -3362,22 +3362,6 @@ void console_unlock(void)
- }
- EXPORT_SYMBOL(console_unlock);
- 
--/**
-- * console_conditional_schedule - yield the CPU if required
-- *
-- * If the console code is currently allowed to sleep, and
-- * if this CPU should yield the CPU to another task, do
-- * so here.
-- *
-- * Must be called within console_lock();.
-- */
--void __sched console_conditional_schedule(void)
--{
--	if (console_may_schedule)
--		cond_resched();
--}
--EXPORT_SYMBOL(console_conditional_schedule);
--
- void console_unblank(void)
- {
- 	bool found_unblank = false;
-
-Sebastian
+Daniel.

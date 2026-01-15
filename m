@@ -1,140 +1,83 @@
-Received: from mail-yx1-f41.google.com (mail-yx1-f41.google.com [74.125.224.41])
+Received: from mail-ot1-f71.google.com (mail-ot1-f71.google.com [209.85.210.71])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 285BC39A7FE
-	for <linux-fbdev@vger.kernel.org>; Thu, 15 Jan 2026 12:51:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.41
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768481464; cv=pass; b=YL8qRPhI7xFWemgLoRV7Sc9gSWo2WJKNPACiXUVL3yIvZERWy6SwR4DBtNTT0VBmiobGyiPv4Ycy9xkv+on9Ol6goBgZdJg1Voelc9c4e2r34LlwiC93arZtHLBSLZNyEeVJlVUrF9CH/dTV/Hq2v4ntJtZeoVX/o6cA1AY8U8c=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768481464; c=relaxed/simple;
-	bh=Zarl2LJ7UY5ioSJLPlpaoAe/GCT8sxcR4I2/Yn6UV8I=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=bU+jOWHChClPL4UXfuScK1spbRdLj0CLz37yZkBYfnOfPT5u7iS34dnkhHyoUAgMtQjChBLx4SqxUb4CnA3E3GEED6ZzT/9a6GcX9tLeYo7qfybZh6L9d9R5l1GCO6rzwChxoQ5YoFp5TjS1aGWH8BWo6eOzRY3cUx3b86yZClI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=h0l5ZCvV; arc=pass smtp.client-ip=74.125.224.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h0l5ZCvV"
-Received: by mail-yx1-f41.google.com with SMTP id 956f58d0204a3-64472121ad5so605305d50.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 15 Jan 2026 04:51:02 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1768481462; cv=none;
-        d=google.com; s=arc-20240605;
-        b=YPV7bqxmTPOKKmp/EAzRPnMhyXuxS2G07CC1sLsaaSXsbpoTp19vSMUdAqjziFBgVD
-         4buwuwtZQ9IoED5tc5wqgS6gP7wIkivtKdhKMJxbmEcy7n1ODY7fswf4vz1S03A694Dw
-         QznsgR+eCV/5/oL8HVqqOiummPS367iwTATzzaY+OYyShMKyHRq91FUQ6fFurp+Z2sTx
-         SlcsOqxEU+Evc3UIvbNP3GYvUZLX06C33F5ah205vdzMb4t0xAOYSo9siUrEaBwiUlrD
-         8YiwCDHuOvAknDYgsLHjS9EgL1HznCUa0YcmDDJ9vA3qq/s0qRp7gNKuzDQsfIE4/wv+
-         rwlA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=8ihpgU/XH8/vMbQwTuQEOstZ+MAwMnZDme5L7jGlj1I=;
-        fh=5h27GrKh1HBNZXDEJ/OajgmaB3AqKXjZYAKsL3GkhgU=;
-        b=Lt6fRnjp7/XxtxBiSRNN4eaTAkt/TGfttif4B06rwqU7A4spF7L8lwX7xKa5paZrVq
-         x5IdxE322O+C7CkchHz9p8yqO1/fjHfmdaPbvBd6MW6PF3qlxEhYBPaHdDE5mCk17q1v
-         SjXYPcbZOEHcGsnxdOfWRlu2nrsb7pZ4sHnnEu9zQY8J/WlPb3XAPuGq43y1pckxqkyL
-         UkjNtn8I4mJsDIWKGMLrESyzTxDZX9JFkQFgKScv4ZOXQNfnGyBnLaUqOQH/6Cwl9Tfa
-         VR0+Wa2T8CR+RKryc0TDg/sxGOsZi3USklEfFxpzFXfIT3xv8wyOkqwbRc4Uuwhx4hk5
-         /TGw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768481462; x=1769086262; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=8ihpgU/XH8/vMbQwTuQEOstZ+MAwMnZDme5L7jGlj1I=;
-        b=h0l5ZCvV4pCR/9DX44oJHpaK1NKy/9JO0Zi0i8yGtq83ljWGKAfUiKtplczI+o54/P
-         H7BBbYVERVCrvo2sKR9UFKUxF0ypITJdB28mbf0b4GXIC6z6YP3vokZQc561TsSKDTWb
-         jNKVmMm8s7RyZ6EKlOxcU6ClMiwSlbYj975jM487rurcUKEIhHtz/Mb+OAj8T5A+Lsvc
-         3jK82JJenLg1kEO3M7GcosOH5o+xk2Ix0akxhPU7EJ7ljz/HnRV0mh+OYrTHWfWiQNyu
-         Hx0sJB4CJJO4mw2ux70+tK75OIynk2mPdy6BRvSuGPteiOW5GpxSd6Hd6QhQuBhDhWgN
-         85rA==
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E75F8399010
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Jan 2026 13:09:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.71
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1768482567; cv=none; b=Ou2h3ZEj94qD8xBG8jZZ8MokwRmp4s4too1Hy/Z9io+eCf5PpriYOQntPiCW7/f3TuPWkXRxUby/6bL4Xrle4zeVltUqAaD2GZM2Le+Ed/t296S5dTTibP6kI09gowZV2mpQ7nD2GINityjEUDFoZuBmiGg+ZjZS9MYt2sJMUTs=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1768482567; c=relaxed/simple;
+	bh=n/2+XN19lnDZkOCOAnYM+uaCWGGqX4OUpZy8IfDD0cw=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=DQnDC1cfctaXf48Ak3OPyRtIBn7wXCqQI2wvY2W5LJ7DZTJWla7sdaKuQx+aPwaAlv2mim0tK6F9SgSpt7k7mc1AuwYeidJ/wRqxy0qjq0SIiS0veUQUNUs2+Q0XmykBC0mW1RCkQ8H+8MUjSHfnmcwIZ4aXamuunCWwi8LvC1o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.210.71
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-ot1-f71.google.com with SMTP id 46e09a7af769-7cfd708b2a9so1621990a34.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Jan 2026 05:09:25 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768481462; x=1769086262;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8ihpgU/XH8/vMbQwTuQEOstZ+MAwMnZDme5L7jGlj1I=;
-        b=D8bO9cCmEN/NB6BYhWZA3wHi1Z1KYhd3jZoh0E6++eVovXMgQ9PX1cvk8zxfDOwFES
-         8/zgZasv6d7OqUekS8jkkzgQsFHB1D7KkH6YFWJsLnwv0j6u/2oG6I1WRNh0k0Ufllnx
-         +n6xsAeA5hEpSyHgKBYNldYXn2dEC9M8iuhrx79YK4otZc2Aek93Ht+d+zqg/e6yxip6
-         fN0hqpO8bplJrbRGxNa9EKn/IIVww0KU5lw6LEP5bPYbCk+uCI7M+FyAI5e3PxlYfyDr
-         Dt8+hRvKeyTbTdBz/g+3+zhzjfF11hMEAcanq0L8Tvlds0BBZX2MWJ+/RQRfve5CGhXA
-         zHkQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVgGaR7DDDjVASOOWcNY8Fd3pe8mqeK8hLchuL1luMsESwH6FkyoylgT/3oyWT8TSocUiz5OHFAdEzqQQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyVlU5zzSewZTba6UjuFBLgppwo74Wng25meHDQVzPeXhjVCQIv
-	HylF8+dEwxjHSXM8FPnDqRM+ez1WTNE7r+QDOCoUzKDSF8B9Oc/o1FbvfpRb9hivT/dqkbViaK7
-	8WjYAjj7u2jUCBS4GfOsWcy0THHwUP6y52CB+
-X-Gm-Gg: AY/fxX4tGVJCEkhI3D6WWWeKzyb7lW1HoGtIsA2wo5tF/So6qQKVDeE9zkl9Cu4AbBb
-	p2R3TzZ9M5XxkMbGv83tgi3TRqHpIwRqNB/psSyHWKL9ET1gLWvkTVBd+EHXYJWkYpUeAff3MIc
-	itNuniE9v5ZfkbuXfx54P4aasYfLMtLMVfOUepzXCWM4xemdmxLrAi7+vItrj4vcbI+2Vok+7gH
-	BKHTVU8S6f86PoHn58F/duTdwwsmurJTJ6iRHJzbpvYIH9LuHFWX0EU9Q7K12SrZ9lqAwcEpg==
-X-Received: by 2002:a05:690e:1699:b0:644:6b68:f126 with SMTP id
- 956f58d0204a3-64901b1b0ccmr4522816d50.77.1768481461993; Thu, 15 Jan 2026
- 04:51:01 -0800 (PST)
+        d=1e100.net; s=20230601; t=1768482565; x=1769087365;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=SPtzkduN65KvLO56FxP53OKD7JpT4SfGYkYToTdQwwY=;
+        b=FNNTAJG58flIR2RSYKz2QYFaeC07hIF4JFOG5wty060huK+pQqhqhOgWUlrU4VJgbE
+         MbYpwpHDuOjWQfNdBHSyaMM3rm6Pv8+Bhm/qlufF60Ssx7gwPJCFxL6P0iG6GjrO0Eeo
+         yrfCYFQ3u8Oj9LN/B2SQEYeV+PuhuFD/1lLMIUul+f9Er0z1DDXaj4LjCjIxxoAr8Oep
+         w8isQAKEb82dI/RZYFExMWXoiw2fLMzbZkM7yGcPWbeiXNqWkFuwgwonA5dvigZsU5cE
+         nLGMdOOONbQVNzDkLOWiVYNM6kfiulM1QuuC+8Z0IC8fMked456+I/CEyORsptjJGjV4
+         kQIQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX6fxDl2QvL014n/K1VQypYmHIL6WNdbIQfJOZ+jb+Rk1++PZuGEavGZ9//G/Wn2Ex8wijug9FuWUF1iQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxr1dZWg97K5gKf2Xp95pImnerz72thoOenF+5RgN1M/HKqNCNt
+	88oMt8D5nFXjzNVNON8hyE5tBI5svu9JpWs7jxm7dNVkAR8uvkfmKwxI90HWHZPSlJg5FxYhli4
+	HcAtR5DbDC76v1Etw95afoBr5iRyH6b2ki8+0SD7GHBmmipTiuIxOuuOPxnU=
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260114171748.34767-1-karthikey3608@gmail.com> <2026011521-regally-lunchroom-5602@gregkh>
-In-Reply-To: <2026011521-regally-lunchroom-5602@gregkh>
-From: Karthikey Kadati <karthikey3608@gmail.com>
-Date: Thu, 15 Jan 2026 18:20:50 +0530
-X-Gm-Features: AZwV_QgQmeHSK0Y9SpY85bGiY58cjpqcX7XggsiI9jfwAkSE0vGXDVRNFOR3Tgs
-Message-ID: <CAPsOcum71Rt7i+CcMR9-ZZOxjkfJBrL73gR7UppTrE5Wgz9wKA@mail.gmail.com>
-Subject: Re: [PATCH v3] staging: sm750fb: Convert sw_i2c_read_sda to return bool
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, 
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
-	linux-kernel@vger.kernel.org
+X-Received: by 2002:a05:6820:22a5:b0:65e:e522:bf18 with SMTP id
+ 006d021491bc7-6610060f362mr4037756eaf.4.1768482564876; Thu, 15 Jan 2026
+ 05:09:24 -0800 (PST)
+Date: Thu, 15 Jan 2026 05:09:24 -0800
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6968e704.050a0220.58bed.001f.GAE@google.com>
+Subject: [syzbot] Monthly fbdev report (Jan 2026)
+From: syzbot <syzbot+listd943739c2b03cd5c5808@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
 Content-Type: text/plain; charset="UTF-8"
 
-You are right. I overlooked that the return value is used in bitwise
-shift operations used to construct the data byte.
-Since `sw_i2c_read_sda()` returns a raw data bit (0 or 1) intended for
-shifting, `bool` is semantically incorrect here.
+Hello fbdev maintainers/developers,
 
-I will drop this patch.
+This is a 31-day syzbot report for the fbdev subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/fbdev
 
-Thanks,
-Karthikey
+During the period, 0 new issues were detected and 0 were fixed.
+In total, 6 issues are still open and 29 have already been fixed.
 
+Some of the still happening issues:
 
-On Thu, 15 Jan 2026 at 17:02, Greg KH <gregkh@linuxfoundation.org> wrote:
->
-> On Wed, Jan 14, 2026 at 10:47:48PM +0530, Karthikey Kadati wrote:
-> > The sw_i2c_read_sda() function currently returns unsigned char (1 or 0).
-> > Standardize it to return bool (true or false) to match kernel standards.
-> >
-> > Signed-off-by: Karthikey Kadati <karthikey3608@gmail.com>
-> > ---
-> > v3:
-> >   - Add version history (Reported by kernel test robot).
-> > v2:
-> >   - Fix invalid "Unix Antigravity" Signed-off-by.
-> >   - Submit as standalone patch (detached from unrelated series).
-> >
-> >  drivers/staging/sm750fb/ddk750_swi2c.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-> > index 0ef8d4ff2..9d48673d3 100644
-> > --- a/drivers/staging/sm750fb/ddk750_swi2c.c
-> > +++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-> > @@ -180,7 +180,7 @@ static void sw_i2c_sda(unsigned char value)
-> >   *  Return Value:
-> >   *      The SDA data bit sent by the Slave
-> >   */
-> > -static unsigned char sw_i2c_read_sda(void)
-> > +static bool sw_i2c_read_sda(void)
->
-> So how does this call:
->         data |= (sw_i2c_read_sda() << i);
-> work with a boolean?
->
-> confused,
->
-> greg k-h
+Ref Crashes Repro Title
+<1> 1171    Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
+                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
+<2> 751     Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
+                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
+<3> 140     No    KASAN: vmalloc-out-of-bounds Write in fillrect
+                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
+
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
+
+You may send multiple commands in a single email message.

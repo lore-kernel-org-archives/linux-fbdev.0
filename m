@@ -1,119 +1,125 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A98F42F260F
-	for <linux-fbdev@vger.kernel.org>; Wed, 14 Jan 2026 17:17:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CA091EA7DF
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Jan 2026 04:05:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768411080; cv=none; b=bzpb8JJ26AkIWG/RpR7aWCUPvLTa/ie4/vf/yj553X3fjW+YWYuhxVOa4Ol78xDfTAUxl1+wd2JpjmdUHBHh/921G/ls2WNb2rdlBmid+DMokBFONkUHvfNOEMK5MQk81jDfbFEE7PNinFFRIE4JWL7Vm9CV/RNqx1lrtJqzpSc=
+	t=1768449904; cv=none; b=CYd8zB+Of/wz00MGoy23FGPzTlFcJMiX1ZLRKhs/FC0wVYUbDJ1vQJL76praaEct7Dt66E4huWw8F+ggxDnLfREC/SrmOY82pMahXiCWRDwEcPu8DlTdJ/rHD+1eDClIIkwneVdjuaUXc9rZmCVLOZ6v70vOL8IT8MECDV/NF14=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768411080; c=relaxed/simple;
-	bh=HjnoYpbCeDj1omo7DgKuMORs8cBtchJFKrZZqxLDVq0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rFga80xdgNj11RYGVllle+Hgse1xMaXCt5wJPvt9ffKF9/hrgqiuCE4f6sWXIhlGdUQZeX+TxV5H6Sfihuh2Rm9a3gK75uwBo6QZ1IoBC3i2i+gRmhoUkW0jVTwcwrgIL7WOWQXvWED67WKFgyR0dTTJNvhx07Kh/7qDyT8Xaj4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BqWRsgFz; arc=none smtp.client-ip=209.85.214.171
+	s=arc-20240116; t=1768449904; c=relaxed/simple;
+	bh=iaWwaYwF+Z56LvJlOQ3qTsiq6EK6HcVBvHQn6iq9Yjs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=izg/ildRD6rUzSNTxk1nP0Gxeyj5z76IkdnJ0C0zU9AxHaQ7u/Iz7NeVqqP1okVwRZHkhklt2Q0NOISzTX/Kp9KRMMGlI6IeyGi+laMrF7I3bz7TmacHtEQTV15uCrj2EibIISC9drVKz8VlKplDa0XVn/AEs4lbO6nhtL3W7gQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=a1b95REO; arc=none smtp.client-ip=209.85.214.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BqWRsgFz"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2a09757004cso81224275ad.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 14 Jan 2026 09:17:59 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a1b95REO"
+Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2a0d5c365ceso3723985ad.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 14 Jan 2026 20:05:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768411079; x=1769015879; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=v9nVIWgI/ofdqTvXhbFUpeYGkKVLTQt14mGlLNA55/Y=;
-        b=BqWRsgFzmigoGg/KhICUy8rWpM3UaskHEeCg2nbYrDkLkQsCN+S9pPcQdLIbR7M5CH
-         7JmmQNaUk37ftTI+SCcPNBkkwu5O0iWmTTP4wO/R0Doh8/vOdaNFzAFv7C9h58VpnzmZ
-         DxJsL4+Tf8E1aJjOK4wxTjIFFZJbq2TdTqa0qlXaymsJGbOSGnBCJTbPw8/U6K/xrwAL
-         n6bDFMuyw9RNUsV4az7IQh8seZ/pjr9xFUQbejz399aC0GYhzu6sczqR5SXNP0R88fpz
-         i8U+gJrPvfio0f7DctYXue5vFFQTqfFZKkv7i0/HfKvs6YDTs+iP+f7HQKlJb7S576uk
-         nYpg==
+        d=gmail.com; s=20230601; t=1768449902; x=1769054702; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=UKefXX9KTkiQnQU4SrQGPHAT+zK2SvRI2HKryej3vYE=;
+        b=a1b95REO5pbmU5vvwN4atCluKHcNs4YgMRFvtNF9HOIGCc3SN2KYe7wL1Bj9Ae2saP
+         uTyelth04clp+VW01BGtjvXFoFjw1ujT/GPEQiLPE6/QVB7eoOqKFJXBCQ5ANqT1TV/I
+         D2lnIrkcGLAt8HYphLEXly3Bs4XvgJWyealHZMSfWz/+GJ2SPrC/J3fp9S7SXwWZ5Z7Y
+         NU5/dB/rHqhbtB0bWrOGXrJh8z24k3khEuhCsgTXNi7c8nDbFuS4EJ2mSMX/KA67CvJp
+         oCC8fxfKf9Ic12C94wZIOlOC09UGv9pG7cPqVFKZAhuGq5IOs3fvtD7Uk8bw1uydWEyz
+         Nmeg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768411079; x=1769015879;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=v9nVIWgI/ofdqTvXhbFUpeYGkKVLTQt14mGlLNA55/Y=;
-        b=S0ybkdkLl3B9qPNrsEnGqH0lE4VWAWKO+DPdLjNJgVFy14V9RBbM5YDLEWqq+SyHMU
-         FnvCNiasuHE/rj4+pb/7IALSrREGcUcjg4ib8W/VwhQWDdpVKOtBm0z3h0mAa3cYxrpG
-         jfq5GyjBrPxwq16AR8o/9y8Wgaj/FzurTTDeRbSBe7rhUSYV69i4Cz8odzwfTwMbRtX6
-         6sLztmDzI4dzOwJNpyyay3jrukEcqkwJvGFBU3UugP8AshEgBfXZYz2pUAGptA93gTWr
-         ZG6mqdpKWXcREHyJjxj/HFxK/+pfJLllqjdLvOxNyQWZHzdCfP5ELjj/GlfQ5N0IZ6Ko
-         AYgA==
-X-Gm-Message-State: AOJu0YxqMXoT22Uxp/QYKsveqUCWlquvOHqPheQQSwo9Duytk73TlpMb
-	uw1AhEkDQifsGvJZkh/V2AceSOBaLIPtCF3WNGh6v0Zj7F/8h4IyqZXN
-X-Gm-Gg: AY/fxX714Qe0SVjowwC4R9rU07H4Rq3b1rSyXh66Cs1yjRH7L9ag7wDp/1we4MdZWQU
-	x2afWN7reGXGpgwT7TjSEBiRG5ic2089E8bdtnvXH2IC7rv5HJpsM4vaOvSLvp8aUMQ7cAyLJk3
-	OjQ7p64LomgmWquls/NSvWl9qZShmFWmvKx703OO8Cz9PT0gpoiBf6R4JhjnlMuNQ7qdTGA1eQI
-	TkCXA3fgsJlDzYH03CXahcGOxJqUsHpN3kQelYkuTJ9/snkJDqqUBEHjJGHxOZHZr5mjMqGO7Gj
-	z3l7nB6T7fQcdYVjyjvSvKWiULzbU3CuzNLNvBwUZ05ehLIQy3j8n7guW0kmdraxChHP9n0TTnM
-	GHN1sRy4dz2KMLRvD1jnCqiaF7y8TEKC8Jhb+WuBlXnA9yrsrksF1d2xtFlfugM7ylfiHOBkqnv
-	Or6tTQO9nKxAs25izoEzpKmV4=
-X-Received: by 2002:a17:903:22c9:b0:2a2:f0cb:df98 with SMTP id d9443c01a7336-2a59bb8d639mr30181465ad.25.1768411078776;
-        Wed, 14 Jan 2026 09:17:58 -0800 (PST)
-Received: from karthik.bbrouter ([103.215.237.249])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3cd2954sm67314095ad.86.2026.01.14.09.17.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jan 2026 09:17:58 -0800 (PST)
-From: Karthikey Kadati <karthikey3608@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	karthikey3608@gmail.com
-Subject: [PATCH v3] staging: sm750fb: Convert sw_i2c_read_sda to return bool
-Date: Wed, 14 Jan 2026 22:47:48 +0530
-Message-ID: <20260114171748.34767-1-karthikey3608@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        d=1e100.net; s=20230601; t=1768449902; x=1769054702;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=UKefXX9KTkiQnQU4SrQGPHAT+zK2SvRI2HKryej3vYE=;
+        b=RM5g6mMLHjmch9br6EvtKGkY36+UZmtevP+FwxwrY8IrKKihH3gnLunb4f54/Sv0zA
+         uOluLqRs07eHbG1WXGFnSms3fSbXfSy/ssZ5VZJQJkZoWl9Pdj8q9IMaUwBIKUBtPQ3W
+         hPCeudm/uXZh0wgGN75jMGFRBo8DOLf1pEKcTtp4j56pct8LiwTFWi71i6qZPt87ht0Z
+         DWaqC2hih4HtpGh+yFrYGAj31Afe4ZNGJOtu4kq77HKvMFkAx3ZXZRWIPFMMOARx7z/T
+         bN3B5PkTwoFXP5+KRA8lcfyrhJwutC94DIzBDbZiOSuIGO18IaOxi3RHLpMSlxuOB8tP
+         2JWA==
+X-Gm-Message-State: AOJu0YyAZaBcuON3kdMIhANhr2FTqfcnwLztl7gFSH3qBYbtWBaH5hX8
+	7kfa9mSaPRJOz8cZZ5kAFPObDRehqXcnPGiA/7aFSG6wE8jTVw2AnrDt
+X-Gm-Gg: AY/fxX6RFVxizeLFzqhzmjqoi4fMFAQ3f8Vd4VpcWUNbV/+aPBpCDeXNxLfFHwd2SS2
+	zfpc4D0Ez1Utc80bwP2cM5U7ytae+Jpzf+tnkx7eIJtVU639HXOnS8v66HVdeOhWrChMa3UBUCe
+	ctDLjxije3o8xJp9zSZREzi16bUndblvHwyHXsp7K6S74Mr0pYbFX3DmtJmdDcIos9Hmx85ENr0
+	2+OcuCZ+wQhZAoN/p39+w2AL8sdnYGsyZjbhOugSykXatDKow6674tSdlYgAh+j+9Yi3uhhuYqH
+	KMJX+Rrcg0n83IoNVJ91uwVSH9hsfwNa3oWy7/Q7svzuP+6ly8AumRRXyQN2E0ay/iBBoUtc0XC
+	wn4RfyKPI58mr/fUNLx91oCKRY/b6EO7SjE6VCx5UlMsTrrzWlBXn7RM9cME89E8MagPmtp3qkB
+	dxi1Xzvi3KOJ4nBLy9M8uW5/K5IGulu/4iph82dOEpSPsTGWot++CBDgmt61/8
+X-Received: by 2002:a17:902:da82:b0:298:55c8:eb8d with SMTP id d9443c01a7336-2a599e2411bmr51391755ad.35.1768449902516;
+        Wed, 14 Jan 2026 20:05:02 -0800 (PST)
+Received: from ?IPV6:2601:1c0:5780:9200:e9f3:c6f4:5dd4:2565? ([2601:1c0:5780:9200:e9f3:c6f4:5dd4:2565])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3cb2d79sm244924275ad.56.2026.01.14.20.05.01
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 14 Jan 2026 20:05:01 -0800 (PST)
+Message-ID: <ed199efe-f6b2-426e-b679-ef1f019e6433@gmail.com>
+Date: Wed, 14 Jan 2026 20:05:01 -0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6] staging: fbtft: Use fbdev logging helpers when
+ FB_DEVICE is disabled
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ Greg KH <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+ linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, andy@kernel.org, deller@gmx.de,
+ kernel test robot <lkp@intel.com>
+References: <20260113045909.336931-1-chintanlike@gmail.com>
+ <2026011341-chomp-protegee-6be5@gregkh>
+ <a2d5cc20-5160-4294-bda1-3d5b645ec787@suse.de>
+Content-Language: en-US
+From: Chintan Patel <chintanlike@gmail.com>
+In-Reply-To: <a2d5cc20-5160-4294-bda1-3d5b645ec787@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-The sw_i2c_read_sda() function currently returns unsigned char (1 or 0).
-Standardize it to return bool (true or false) to match kernel standards.
 
-Signed-off-by: Karthikey Kadati <karthikey3608@gmail.com>
----
-v3:
-  - Add version history (Reported by kernel test robot).
-v2:
-  - Fix invalid "Unix Antigravity" Signed-off-by.
-  - Submit as standalone patch (detached from unrelated series).
 
- drivers/staging/sm750fb/ddk750_swi2c.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On 1/14/26 03:38, Thomas Zimmermann wrote:
+> Hi
+> 
+> Am 13.01.26 um 07:16 schrieb Greg KH:
+>> On Mon, Jan 12, 2026 at 08:59:09PM -0800, Chintan Patel wrote:
+>>> Replace direct accesses to info->dev with fb_dbg() and fb_info()
+>>> helpers to avoid build failures when CONFIG_FB_DEVICE=n.
+>> Why is there a fb_* specific logging helper?  dev_info() and dev_dbg()
+>> should be used instead.
+> 
+> Fbdev is entirely inconsistent about its logging. There's dev_*(), 
+> there's pr_*(), and even printk(). The problem with dev_*() logging is 
+> that devices are not always available. The HW device can be NULL and 
+> might not be all that useful in practice. The Fbdev software device is 
+> often not even compiled in nowadays. (This patch is about that problem.) 
+> Hence the next best option is to make fb_*() logging helpers that 
+> address these problems. They are based on pr_*() and print the 
+> framebuffer index, which should always be available after 
+> register_framebuffer().
+> 
+>>
 
-diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-index 0ef8d4ff2..9d48673d3 100644
---- a/drivers/staging/sm750fb/ddk750_swi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-@@ -180,7 +180,7 @@ static void sw_i2c_sda(unsigned char value)
-  *  Return Value:
-  *      The SDA data bit sent by the Slave
-  */
--static unsigned char sw_i2c_read_sda(void)
-+static bool sw_i2c_read_sda(void)
- {
- 	unsigned long gpio_dir;
- 	unsigned long gpio_data;
-@@ -196,9 +196,9 @@ static unsigned char sw_i2c_read_sda(void)
- 	/* Now read the SDA line */
- 	gpio_data = peek32(sw_i2c_data_gpio_data_reg);
- 	if (gpio_data & (1 << sw_i2c_data_gpio))
--		return 1;
-+		return true;
- 	else
--		return 0;
-+		return false;
- }
- 
- /*
--- 
-2.43.0
+Thanks Andy and Thomas.
+
+I’ll update the commit message to clearly describe the underlying issue.
+
+I’ll also split the changes as suggested in 2 patches and send v7:
+1) a patch focused purely on fixing the compilation issue by avoiding
+    info->dev dereferences (using fb_dbg() where logging remains), and
+2) a follow-up cleanup that removes or downgrades the framebuffer
+    registration message to debug level.
+
+I’ll rework the series accordingly and resend.
+
+Thanks for the guidance.
+
 

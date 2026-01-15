@@ -1,57 +1,36 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5615F31354C;
-	Thu, 15 Jan 2026 08:47:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FA423358C4;
+	Thu, 15 Jan 2026 09:00:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768466839; cv=none; b=JOwNP4Jw+wvlAr3jOUULYx5aI0U8m8vjpi9Ozp6TfFyNfIPPdyP1u1MxzXcA1PPwd5Vaf1drLPDRwzQ/smmrsyeiBxQhnkMhpCx+G7y88+2FbWjugE7GPEdwKFq0DNpePI6frNZsKczGYwf8odMZJLhY+oL2BCMW68/103No9Eg=
+	t=1768467603; cv=none; b=I8JvB5+qzZGvymrdbrMg7qMHcCQ+64D1Pyo8KikXX4EB6fzqCOFqncmz6gyz+H3ppQL8gGwWNoae7rzOct1BXiimCaPjvFsJ0+SslqT3QG4dvn4kr+jq42Tc1bhfSUbJ7AB2btK9v01B9GZnYgU85cvmPGKRYIQ2Q8Ea+rLWyLM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768466839; c=relaxed/simple;
-	bh=VB3s4Vtnia94BYmzH5RpaIiyd/44mzLETLVflJuTnek=;
+	s=arc-20240116; t=1768467603; c=relaxed/simple;
+	bh=w6ixnRCagNUi0vz0wh0mts+qkQG/hqAzSYNIgtIJX1U=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rZ6DAoD6OoP8vH0CMsIrlLTMRKwt8y57ic79DbV4BZ7J31c3KNW9fRDpov29GQYzAYLUyQPSH8ymC0P+uXQcsCrO+Z+go9kKZbmt1Jl0avEoJ0L0c+reEWMjaGup442trhzPDa9MGMJffcQQMFPu7pD27RU/CItF4JwjHY7yXLE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=jWwB+Uce; arc=none smtp.client-ip=198.175.65.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=V5iAYKkDbhTcy8HKTnyblHYaEV8H8qpGKkm5mpSb8WDYVGFGOiWLXMZTbhm7IwwR+lwCqOo1PM6tt3dxI3vBUO976m3aCCN6CH9afiQSPJ8kXYeTRE2sR1cJHu/+BauMG4Ryio7YGq/eGDZRSLUlh9TikgvlBEEDBYms7y+K8EI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=vorLa2sM; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="jWwB+Uce"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1768466837; x=1800002837;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=VB3s4Vtnia94BYmzH5RpaIiyd/44mzLETLVflJuTnek=;
-  b=jWwB+UceVnl73wW+L2B6M50LSfkmoExxOYL9pwkNHfGKj0G+Ug7MENSm
-   CcIlkqw8+BsIY8c5Jzb5czgZJ7BEhA792fJK83kHuTGyotHlNUHuG481j
-   GrlBvIFZBQW8+azHCAy/Wr6hZ3NrCtIHFfJodJF+A/g7wSPdE0epHqpSY
-   HzQJQ7/n7kdkDKxa2JUHauSSkmIihJ0uEN8qdPZHQQ0v7G3+uwW566IvG
-   GFLAO5FWWZwlTa/RFEkHhm79l4KyOXs7iqeXj4C83EdMHDTMQnDpH9NLD
-   xRkXxREpIyCujZOgVtUv5hviDJ/C23nmm+xQcb88N8Wt6nw03dc5TlCuQ
-   Q==;
-X-CSE-ConnectionGUID: t+EV4yUNSxKI2z6jEBZyQg==
-X-CSE-MsgGUID: 0rqcoQCCSUGKowC5nOPJ4A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11671"; a="92439706"
-X-IronPort-AV: E=Sophos;i="6.21,226,1763452800"; 
-   d="scan'208";a="92439706"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jan 2026 00:47:16 -0800
-X-CSE-ConnectionGUID: FPdCwKzhQaKIGTXzzgfHew==
-X-CSE-MsgGUID: t4H+Il3eRNCelmQ6mJETmA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,226,1763452800"; 
-   d="scan'208";a="204111066"
-Received: from egrumbac-mobl6.ger.corp.intel.com (HELO localhost) ([10.245.244.216])
-  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jan 2026 00:47:15 -0800
-Date: Thu, 15 Jan 2026 10:47:12 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="vorLa2sM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A74A4C116D0;
+	Thu, 15 Jan 2026 09:00:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1768467603;
+	bh=w6ixnRCagNUi0vz0wh0mts+qkQG/hqAzSYNIgtIJX1U=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=vorLa2sMqoLzUPZkGxiGzqqQc0c/2c/knsdiNq3WKJA5ZCqAGE51rL3cln2ZDBGGz
+	 tc6DZsZB7z67uWWYy4oF+SpWisyfhJZ/Y33lK2cVy5eByRVMKIytjvp5zOpi7JHoW+
+	 EkMA06qIryktCpXf1FTBrYCift0KL21KVKJ5vQFA=
+Date: Thu, 15 Jan 2026 09:59:59 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: WooYoung Jeon <chococookieman1@gmail.com>
-Cc: Andy Shevchenko <andy@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <andy@kernel.org>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] staging: fbtft: replace udelay with usleep_range
-Message-ID: <aWipkPM0pwqx3red@smile.fi.intel.com>
+Message-ID: <2026011528-campfire-disparate-c7f6@gregkh>
 References: <20260115084019.28574-1-chococookieman1@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -62,8 +41,6 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20260115084019.28574-1-chococookieman1@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
 
 On Thu, Jan 15, 2026 at 05:40:19PM +0900, WooYoung Jeon wrote:
 > In the fb_ra8875 driver, udelay(100) is used for delay which
@@ -72,13 +49,52 @@ On Thu, Jan 15, 2026 at 05:40:19PM +0900, WooYoung Jeon wrote:
 > resource efficiency.
 > 
 > This change was suggested by checkpatch.pl.
+> 
+> Signed-off-by: WooYoung Jeon <chococookieman1@gmail.com>
+> ---
+>  drivers/staging/fbtft/fb_ra8875.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
+> index 0ab1de664..92c9e4e03 100644
+> --- a/drivers/staging/fbtft/fb_ra8875.c
+> +++ b/drivers/staging/fbtft/fb_ra8875.c
+> @@ -210,7 +210,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
+>  	}
+>  	len--;
+>  
+> -	udelay(100);
+> +	usleep_range(100, 120);
+>  
+>  	if (len) {
+>  		buf = (u8 *)par->buf;
+> -- 
+> 2.43.0
+> 
 
-Without HW test it's no go. See the previous attempts to "fix" the same place
-over and over. (https://lore.kernel.org/ is at your service to dive into mail
-archives)
+Hi,
 
--- 
-With Best Regards,
-Andy Shevchenko
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
+You are receiving this message because of the following common error(s)
+as indicated below:
 
+- You sent a patch that has been sent multiple times in the past and is
+  identical to ones that have been rejected.  Please always look at the
+  mailing list traffic to determine if you are duplicating other
+  people's work.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot

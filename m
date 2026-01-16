@@ -1,36 +1,37 @@
 Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56B2B1EA7CB;
-	Fri, 16 Jan 2026 07:10:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E87A334D90C;
+	Fri, 16 Jan 2026 07:10:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768547427; cv=none; b=IH/hI1yFmNvkiss6onDQCUOQT0Tm80vq/EPE19vQ/H9Rndf5WNtO4hvbc1jh7aQzJOSCVC18zwqPQliMYjpMOSUCFkHUoaHiFurqIXv4BYrSyKDP3D2gTkPgWT9sMkiwBfDrKFMBwCiAZphgYr40PlgjrQAOEFpJG9njjoHIlYo=
+	t=1768547437; cv=none; b=YZ64DxgD7M1RdBzfoFvAI+vN7bMkFBNuNq8ipnHt/DQb/M8XqMBiAg40Arcx288qD/mYBOIgCr2zU9Sgn1wRNobCX75mL5f4mhUXCLggSHiP9W2AmKvfPCE9yT6KcdZF4OpmFaM7k3jEeLB0IcYDq2gTKkjzy+SV4eGyEAP/uVE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768547427; c=relaxed/simple;
-	bh=yju4oSxB0NaiCLqBM93QBdmsxVeT/doxDNhzm2PCA6Y=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=bFyeLWm/ci8PQVaNpuNUiDACYiFOeOocXHDWfSmtd821Ok1Nkk2yg32G2yzRPakoujZgPRNHatlpAlqVJsYaQoJBRqG+P4yC4gRg0XqH+1ZVISHJds9TCcj1iBLhaE1eA+GXTkmoU5QMWno/SkbAKuNJRrnsjPeBEK1jJ1iYxQ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=WFKFORhR; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=OK6MxOYq; arc=none smtp.client-ip=5.75.144.95
+	s=arc-20240116; t=1768547437; c=relaxed/simple;
+	bh=zbsGn2Qvn3aara0EHz4uPK0rPp25zn+kle3Iajn6Cwc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ZzPSAf+20qs/u0lNx/qNOLDMtFAz9VR7CapwgmxTjC3HeKFnPxQ5fmdv/riy19qKru3DfrOqV3QAMRb6jpvxQxm6ENfagP43Ut4Fy/B76jNq7rvh7wuZHDqy9oVoUFSCtWwWvyn4BFgARKSr8HQgRXdi1RCyBLu5YTkL+djtduM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=VaBEPpYY; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=CoGRshCl; arc=none smtp.client-ip=5.75.144.95
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="WFKFORhR";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="OK6MxOYq"
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="VaBEPpYY";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="CoGRshCl"
 DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Date:Subject:From; t=1768547277; bh=lVpvJ+XJ8TLq81lwSOeh8p2
-	a84h6Y3P65PxX77VIr4Q=; b=WFKFORhRa8Hpm8fzcFgr0hOmI5fqXSTEpJ4mTWyVlVL5mr2nTw
-	OsEo/t0XDcGhR/6ANkxEWZFL1YkJXnnqgcPnyWv1nCZlVeOO5WomYkR60yhbJQFmP+LsyimHRaP
-	55Gr+1Y/Ny+UjR3JTsgzLEGrpEe+Etw1J4L/804S8s0n5R9cLvHpmMTGOtK/GXch6Se9BqTPHE2
-	z/2AJ/1c60IpxFiau22IjHINCUMkMy9sY1uTcukNj/adgkHDA1BzmTzzSA9krVyHupbb+Q/IiRe
-	pqbNBgzZyAxO4mQWciT0F6Y+hc+jtGf+zlkBfMMNLhTjk7zS5NL9dmq/sSsYFUxBseg==;
+	h=To:Message-Id:Subject:Date:From; t=1768547283; bh=Qq6InsqVKyZMyL8BBK8OAsI
+	lvW+EJdyNiC2eOxhaapI=; b=VaBEPpYYGV0aitRRLPWrwe7ifNmDNF7jo9f7xRPRh/F8wIzRrD
+	BFR7NwMc6497hME5ZvUzF7Zby3HEB4hUCtGbFmlN6E6t/E5AkTiLZA3rVk/2BNlxXIa0LXg1H21
+	FjWI4Qls3Ad8nGqAFAwIJ/VUh4dYxMZJukaoLDdzEKbtyXqEsz7mwQU5gUfJRFhIdNrxt6kffOV
+	XG3GD7iXiSY6adVNz50uD3Xz08b2z+ucPql+wfW49JVvdD1S3LmKqdKL8ckLuAoRPLew3IVRjlB
+	qasejZ9h8at2wFPoKuws5/DSDt14P6TkzeiU5iW4qKBAn9wQ2pz4luRLAV8br/bhwvQ==;
 DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=To:Message-Id:Date:Subject:From; t=1768547277; bh=lVpvJ+XJ8TLq81lwSOeh8p2
-	a84h6Y3P65PxX77VIr4Q=; b=OK6MxOYqlHUzv3C/pgwaJVF5U4PFnYHXI03knJ04NRewbEGo4d
-	9AbHXszMUV27+4jZm8pGIy6/5FKBdstQvZAA==;
+	h=To:Message-Id:Subject:Date:From; t=1768547283; bh=Qq6InsqVKyZMyL8BBK8OAsI
+	lvW+EJdyNiC2eOxhaapI=; b=CoGRshClAhUsSwLdMkAUbhVsUGtifY6wsj/5581V9ZqidaiTab
+	80QumbT1nBtOdt5Wes+Kb4DEC4TjJzadEyCg==;
 From: =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
-Subject: [PATCH v3 0/7] Fix PMI8994 WLED ovp values and more
-Date: Fri, 16 Jan 2026 08:07:32 +0100
-Message-Id: <20260116-pmi8950-wled-v3-0-e6c93de84079@mainlining.org>
+Date: Fri, 16 Jan 2026 08:07:39 +0100
+Subject: [PATCH v3 7/7] arm64: dts: qcom: msm8953-xiaomi-daisy: fix
+ backlight
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -39,11 +40,9 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/3XMSw6CMBSF4a2Qjq1pC33gyH0YBxVu4SZQSGuqh
- rB3CyOjcfif5HwLiRAQIjkVCwmQMOLkc5SHgjS99R1QbHMTwYRinGk6j2hqyehjgJbeGK+kNk5
- pq0i+zAEcPnfucs3dY7xP4bXriW/rHyhxyqgEKZxsrC3r5jxa9AN69N1xCh3ZtCQ+BfMliCwYZ
- bQTJa90q3+EdV3fyfWaoe8AAAA=
-X-Change-ID: 20260107-pmi8950-wled-b014578f67a6
+Message-Id: <20260116-pmi8950-wled-v3-7-e6c93de84079@mainlining.org>
+References: <20260116-pmi8950-wled-v3-0-e6c93de84079@mainlining.org>
+In-Reply-To: <20260116-pmi8950-wled-v3-0-e6c93de84079@mainlining.org>
 To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -56,55 +55,42 @@ Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  Daniel Thompson <daniel.thompson@linaro.org>, linux-arm-msm@vger.kernel.org, 
  linux-fbdev@vger.kernel.org, Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
- =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+ =?utf-8?q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?= <barnabas.czeman@mainlining.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1768547276; l=1756;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1768547276; l=1000;
  i=barnabas.czeman@mainlining.org; s=20240730; h=from:subject:message-id;
- bh=yju4oSxB0NaiCLqBM93QBdmsxVeT/doxDNhzm2PCA6Y=;
- b=kUGeeK4mRdlF/SOPDhacwvBN4DZafVp4JKjiCbogQYCAFlEAnp0nWJtKJ2QANj3dS3arq5P93
- BZ1d6wdO3SEA0CC5ZQAWVDFvYKu4XCouvmNmZvqQR97iRZOZVoM2Vlf
+ bh=zbsGn2Qvn3aara0EHz4uPK0rPp25zn+kle3Iajn6Cwc=;
+ b=jXbi9hS+qCYPyUIO2MjLpEkGwVCUg8dMlehD6gtjnFtgUbq6vXrFPPH7hLzQkhTcdONIl1uRu
+ lA95BhCL5LXBZMCPRSwew6pW4uyOlHbhFPmk8n77fx1VbxFJFxAK0Yz
 X-Developer-Key: i=barnabas.czeman@mainlining.org; a=ed25519;
  pk=TWUSIGgwW/Sn4xnX25nw+lszj1AT/A3bzkahn7EhOFc=
 
-This patch series fixes supported ovp values related to pmi8994 wled
-and set same configuration for pmi8950 wled.
-It also corrects wled related properties in xiaomi-daisy, xiaomi-land and
-in xiaomi-vince.
+The backlight on this device is connected via 3 strings. Currently,
+the DT claims only two are present, which results in visible stripes
+on the display (since every third backlight string remains unconfigured).
 
+Fix the number of strings to avoid that.
+
+Fixes: 38d779c26395 ("arm64: dts: qcom: msm8953: Add device tree for Xiaomi Mi A2 Lite")
 Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
 ---
-Changes in v3:
-- pmi8950: reword the commit to make it more clearer
-- Link to v2: https://lore.kernel.org/r/20260108-pmi8950-wled-v2-0-8687f23147d7@mainlining.org
+ arch/arm64/boot/dts/qcom/msm8953-xiaomi-daisy.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes in v2:
-- Rework ovp change to support pmi8994 also.
-- Reword commits.
-- dt-bindings: Set min max for qcom,ovp-millivolt.
-- Link to v1: https://lore.kernel.org/r/20260107-pmi8950-wled-v1-0-5e52f5caa39c@mainlining.org
+diff --git a/arch/arm64/boot/dts/qcom/msm8953-xiaomi-daisy.dts b/arch/arm64/boot/dts/qcom/msm8953-xiaomi-daisy.dts
+index ddd7af616794..59f873a06e4d 100644
+--- a/arch/arm64/boot/dts/qcom/msm8953-xiaomi-daisy.dts
++++ b/arch/arm64/boot/dts/qcom/msm8953-xiaomi-daisy.dts
+@@ -157,7 +157,7 @@ &pm8953_resin {
+ 
+ &pmi8950_wled {
+ 	qcom,current-limit-microamp = <20000>;
+-	qcom,num-strings = <2>;
++	qcom,num-strings = <3>;
+ 
+ 	status = "okay";
+ };
 
----
-Barnabás Czémán (7):
-      dt-bindings: backlight: qcom-wled: Document ovp values for PMI8994
-      backlight: qcom-wled: Support ovp values for PMI8994
-      dt-bindings: backlight: qcom-wled: Document ovp values for PMI8950
-      backlight: qcom-wled: Change PM8950 WLED configurations
-      arm64: dts: qcom: msm8953-xiaomi-vince: correct wled ovp value
-      arm64: dts: qcom: msm8937-xiaomi-land: correct wled ovp value
-      arm64: dts: qcom: msm8953-xiaomi-daisy: fix backlight
-
- .../bindings/leds/backlight/qcom-wled.yaml         | 24 +++++++++++--
- arch/arm64/boot/dts/qcom/msm8937-xiaomi-land.dts   |  2 +-
- arch/arm64/boot/dts/qcom/msm8953-xiaomi-daisy.dts  |  2 +-
- arch/arm64/boot/dts/qcom/msm8953-xiaomi-vince.dts  |  2 +-
- drivers/video/backlight/qcom-wled.c                | 42 ++++++++++++++++++++--
- 5 files changed, 65 insertions(+), 7 deletions(-)
----
-base-commit: f96074c6d01d8a5e9e2fccd0bba5f2ed654c1f2d
-change-id: 20260107-pmi8950-wled-b014578f67a6
-
-Best regards,
 -- 
-Barnabás Czémán <barnabas.czeman@mainlining.org>
+2.52.0
 

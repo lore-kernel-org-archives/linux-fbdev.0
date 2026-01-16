@@ -1,117 +1,152 @@
-Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08FF021B185
-	for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 09:57:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 140ED4C97
+	for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 10:07:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768557479; cv=none; b=td56Yf4nSLE7UNqBlX9HoiGR1nY5/+ILqS3jx3i698oUG1KD0oyTewXVf2GfEI55HMQ0xFfSIphL6uCDwrl64yaOVgIVwBPan4T/UNClfTVO9ZyzCpD5CZLibBJNUNvpL6cQHcoalF4cfMLqRkvg6M06JTrRQh3IrEwlB9M+Fjo=
+	t=1768558071; cv=none; b=o3eUnNfXEL5W4p4mTWJ9qzjftUAbgAlNkEWC9kHgPN0GfVrAi83gO/dHSsk1C9MhV0FaTIYOC9HECUS1fW9df4hBHEaP4fyl5h7pT2kfcxvExq55iTtv2QgmtmyF0T9PInmDS15vSMPeTS1yEx9vmT5vrdZQLlmP0IgCYxrdjbA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768557479; c=relaxed/simple;
-	bh=zPajOeekjwnH1L2PhS0ee7WaYai94vHkoloTqOoAN40=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=m8oYg/qw36w5ydo227p9FRCbDR+GLQuo01jznpA0z3RNNmesJruWjVFYGcLOehuYQy2GmHXgqcZxX3P93j1M0UiKCm17wgXld552T1zoQC+6UhUipdu4NRpGnvMpuf3UfJDukj8STRf5Lg11E5SzayffTt/jPWtGZ8oJ9n1EILg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Jv3/nlXf; arc=none smtp.client-ip=209.85.210.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1768558071; c=relaxed/simple;
+	bh=vDpPl041f/I1iMmWEjgFBtF1sfEIsnwo6gBpwRcH/RE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=VZTa27b4U/T/MtI10njvY90s5O46vodqXSyo2XW1ioRht/VzviXpbeNUCMb2+K6WQ7iAAU0XPdMHRI1/DWXRf+YyMa3ugG/5MMWn3ty+erD3JPuIMRfxWGPMf+T5s3NLjplKiwCwGtwipK+qH4G6YtGqf32uTDPrgrkZIDntiug=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=m5BoFwLH; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=kej30HhF; arc=none smtp.client-ip=205.220.180.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jv3/nlXf"
-Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-81f4ba336b4so1712439b3a.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 01:57:57 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="m5BoFwLH";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="kej30HhF"
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60G7jRZQ2616098
+	for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 10:07:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	UQ3ilnfqSmvB3xC+tWrAFzcEml+l5XRFMGFEeRLo+JQ=; b=m5BoFwLHbwluIwbt
+	ZJVAz7qbrmQSCyPOYNS79oJpdAp90QJSj1EUas0fdv5P/mk2nOJf5X6hzpAxx1Xa
+	0suPQEXrZNAZyv4G/OcQP22fzdw982ay3r1PV/fbnNoP5EIkWvxPJ9WHJT0LTDSm
+	OIQFzqMGP9q1NzgXqgERRpTT6Ixe7LET5gBVeBdn1uSfKQYI+CpAgcjcfAzvdd41
+	PdI/dD+JWu1LTWRuwGcyfABsMUiDonKam+FL571wc9y656mTALv8bWES/XS01le8
+	933vsSJ7MmamMqA+Yv7+yNilGDnbH8NwcvlPxyBfpBL96EO3Gt72rh/lv5oFNmlt
+	b9Nuyg==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bq977ssgn-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 10:07:49 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-8c69fd0a87bso93974985a.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 02:07:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768557477; x=1769162277; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=z9cPCZbEtZqLhkXtHvfyAqgg+9cdVAULaffu1JjYDN8=;
-        b=Jv3/nlXfhvQFpiEurxigKUSHBU7WN0QprWzBMEaL/q7SL/hpZ/kFUjwcutb/ofL619
-         Hc6pH/G/pxG2pOhqHCAT4mQFIAutJEOYcNDrWfbGJyDEDGa0jHo0zBQD4f7UXbb6LVMb
-         V6oT/F+SsMQWoI9dWjkg7xtT1womNWd/go56zbFZ1cewaDokMElV+jBEKBM91vqIlkMI
-         C1t4ehRsUElV8JpK/9Qw4PRdW9yX5nZc0IdQ7Op8ujtaB+EIRFW1YoNQ3VGR9qRAV+z3
-         2ZVHLf/Pnr3S5Xlfw2vWQgAf0TSXMKfpoxuGTh5w4/1TjSmcCH8+IoUlBoVSPSG76f20
-         ctzQ==
+        d=oss.qualcomm.com; s=google; t=1768558068; x=1769162868; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=UQ3ilnfqSmvB3xC+tWrAFzcEml+l5XRFMGFEeRLo+JQ=;
+        b=kej30HhFPAOAxcr8DQcCYy6AnigoPnNPQdJqPNr3dR83jyH3YS4nMBu9uN/Sjtdd1T
+         tU4r5ZbkT9ZTPGa0E+f1QfVsqukNTPy3OyNdDwm3OqeSlYFWK1UUMKKbimlndNiCKYq1
+         QANniXdXj2Jb7FCJ9S2iuHudPMBYYTT1+NcFFmXECOlQEvetKQME8rRWAimxHMnpaOlW
+         APx0Smvpmz+C7SxJiKaHlzdxa2CVSIFy8S35WqmbTvcVr5Ef1RAgmByeyAy/J4FUc+yH
+         1WsbQNo5XkE/h/wfmmqci+ZZB0De1ieBdYMJyJsd0tPQw1gyHKy2vqNO1hPW8qm/aUMC
+         +RmA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768557477; x=1769162277;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=z9cPCZbEtZqLhkXtHvfyAqgg+9cdVAULaffu1JjYDN8=;
-        b=EZIxn3NdBV2+D0i7HjOg77k/FPDag9nKxCcMsq3TIdqXsusHThUkW51f39IkEXMGFX
-         PU4DRx1zkKUrqWK9VFmLqXx3JWOJYtMLWVBojRk4OrgEulLtMqYCNsEtgXn1dupNcqea
-         ynJFZDUoF9aEiCMsU/8RSJ2eKft4u4mJV+0pEac+OSK8ygTr5ZAYHlgzDdarxNRterE7
-         8vzsl/QaqGk2u3VJHHv5lAEbJ/JfJyAz+MGWC1PXMSx+9B1CR4ZIWzrWwnpukJPYOQUN
-         VZc5XOxg+kjQFPWgLs0HGV/09TCB1lvFeBqOQEYn5NvmNIMzKg9FS6ie/jWC7l43IFYs
-         e2BA==
-X-Gm-Message-State: AOJu0YwDgAeJZfw5OZpIacLp9IhM7OCTXmZNQ8gqfBJNrmLp55opvl03
-	BldtKIp2fOk0N/L3TzBDuzTPZhA1ASYjER9ddNj5ob7gGRej5nlMX+oE
-X-Gm-Gg: AY/fxX5u+A25cIjtpMkMn+U+QtTyUBcwfLsHyzHnU30rCvhk2mn/sz7UNpDLFxPaTu7
-	6xp8XMPk+nCwRkQWG8ZVT/+eFJnLhnik7ZLJzlsGto91Umkb8b1BHWmxGMlwaEgm/YHnY3R5BhO
-	aAEpWCe7yQmkEpMgYa7dE8Szbb9owXmweFwBBBR+7j0Rohk1f3C1pftC+8e3hW/DoRYdIRempWQ
-	TisJ5639YlK1tCrlfpwVLEi6AH4PypXOlyuRX/cfyybhwMnbxTOB1ddnDbwvAh0w0zvpojrcM43
-	Pu34uAWcza9VVIOHDPiy3lgmW3utOcb6cZoJ57rJd3o9+5VGVeNKn08BKOThje329zaA5H9rV7G
-	jQb4u9xtR+yktwa2pXUYyT6m2RDmBcdmCfKpe6li1WAQtCJoREDjAud5EpadevEeXmHi2iXavLu
-	kJj+wgstoxzWeyQ4eoju55NSA2D9cQY4cpkiEWad0jAyYCnqdQq1i8uD3gPX60Qkj7ocHexGNkp
-	bMaVWyowcrJXl7vN0wyKNCs7YKhZPmN/eYT4/Xd32QP2dk=
-X-Received: by 2002:a05:6a00:4c86:b0:81f:4063:f1ef with SMTP id d2e1a72fcca58-81fa03a1fe2mr2502376b3a.54.1768557477372;
-        Fri, 16 Jan 2026 01:57:57 -0800 (PST)
-Received: from c8971f1abf06.ap-southeast-2.compute.internal (ec2-54-252-206-51.ap-southeast-2.compute.amazonaws.com. [54.252.206.51])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-81fa108b252sm1645230b3a.7.2026.01.16.01.57.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 16 Jan 2026 01:57:56 -0800 (PST)
-From: Weigang He <geoffreyhe2@gmail.com>
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Weigang He <geoffreyhe2@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] video: of_display_timing: fix refcount leak in of_get_display_timings()
-Date: Fri, 16 Jan 2026 09:57:51 +0000
-Message-Id: <20260116095751.177055-1-geoffreyhe2@gmail.com>
-X-Mailer: git-send-email 2.34.1
+        d=1e100.net; s=20230601; t=1768558068; x=1769162868;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=UQ3ilnfqSmvB3xC+tWrAFzcEml+l5XRFMGFEeRLo+JQ=;
+        b=DcgkSbbdp2XQVXiJSjGwBVz+MTOL6zJVyhuNgBxCAIoluFkS5MGqsKZ1Fznu238Npn
+         EG/3VAeNjhV0nHKooEepAK9KrRa4CCn6wUyQbFU/SWxt40ugsCC/rrvTxFUrzK73jaaC
+         BYpzPaLCbsq8ROG6dcjoNSn8hu4pq9BFW1nAplqa08GyaVpjfJQINpEmTS9D4gsuATvf
+         hh2EvngcqZwOBVkdHuGq46dwj+x+hgoRTa2nxrkWncUTQGltGGcT40R9C/Mf25PYcr4Y
+         PweBbTNPNx6dRkigiV0u16UEOrqer31hntWydmjpaJyqb0rBonMsn5DZq+6EcwEJlQqb
+         WAtg==
+X-Forwarded-Encrypted: i=1; AJvYcCVhgfAaOyvAAibpv4rkYYOIPoCVQaADJjXFezoSrSD6FI+MY/Le7vYSbMAA0sMzlrmQ8M1/DUKHV+MkMw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwFy5w7rp7cfYUZU5kB6icgylrluaDBA0cZtFVPFFf/Zr+mlilG
+	iQqPvuI7gkVQLEBe1ZXKxiUI5TczratvYDSdjL7TUUBQvTtAIpxZaUffydnvN/uwB2WVIN9eNTN
+	oLoemGgj9VVUzs7pcUA9WMmSnUvqck1lvY8f8xK/UsetcYaa7nSM9o2rVyanzg09nnQ==
+X-Gm-Gg: AY/fxX50zisYut5Lc5qbkMu4qBVd7YhnX+qY+ZLKusV2TLbtXw/gy6s/wEaUyKvggSj
+	AbnB/tNWAi4A/RoquRD0sCBn6DaUf6Kr6bD26lHixrSXHKlSaNnNxPvBsgpAS++ZmQOLiTg7ODm
+	FWVVP4leNY1192Vi+T63eiwVWiCHDHoK1n/xV/MRsB7oXmhZfmyiA9zNsilt9AcyTtyKNGKZ4qB
+	GWdUf7oQ+1nOhM39EMi4FRyHQ7GpMcyFVuS28zpv8ZtCip3fJurKw38CScwWCg/2l121O4Rhaao
+	U7OL2ymq+wXR8i7PoJGRNwVhPdTvTHFM6wxIZwH7nqHXi+T/7y5GMNUXOHAtkF21qyq/bqNsXZD
+	c8dWeu11A9oigJ4J0xY1DWb42evHjXhC3DLse9CDoCEEcofXfoNO930LoPg8yZCd7b1Y=
+X-Received: by 2002:ac8:7fc8:0:b0:501:4ba0:e06a with SMTP id d75a77b69052e-502a165ca89mr27196481cf.8.1768558068525;
+        Fri, 16 Jan 2026 02:07:48 -0800 (PST)
+X-Received: by 2002:ac8:7fc8:0:b0:501:4ba0:e06a with SMTP id d75a77b69052e-502a165ca89mr27196171cf.8.1768558068138;
+        Fri, 16 Jan 2026 02:07:48 -0800 (PST)
+Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8795a350dbsm191564966b.69.2026.01.16.02.07.45
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 16 Jan 2026 02:07:47 -0800 (PST)
+Message-ID: <1fadb442-31da-4b48-8730-5f6cf5229600@oss.qualcomm.com>
+Date: Fri, 16 Jan 2026 11:07:45 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 6/7] arm64: dts: qcom: msm8937-xiaomi-land: correct
+ wled ovp value
+To: =?UTF-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>,
+        Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Kiran Gunda <quic_kgunda@quicinc.com>, Helge Deller <deller@gmx.de>,
+        Luca Weiss <luca@lucaweiss.eu>, Konrad Dybcio <konradybcio@kernel.org>,
+        Eugene Lepshy <fekz115@gmail.com>,
+        Gianluca Boiano <morf3089@gmail.com>,
+        Alejandro Tafalla <atafalla@dnyon.com>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <20260116-pmi8950-wled-v3-0-e6c93de84079@mainlining.org>
+ <20260116-pmi8950-wled-v3-6-e6c93de84079@mainlining.org>
+Content-Language: en-US
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20260116-pmi8950-wled-v3-6-e6c93de84079@mainlining.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: 70DzBhUr65x4Ps7H01y5DZp-WakZTX85
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE2MDA3NSBTYWx0ZWRfX8ERmreRwH+oX
+ vV6E/a1hg0gd8gkq4C3GX4fTT7KElsdo5DOuPptc037h78PndbM4ShavD5SZEzIZrrmBE07yD/U
+ AippLVwgAvR61RDTS0NntHbk6yvZvZeDx0Pfy9x6ejhKV7d/ZlSn/ABTZv3OovTfCo/lDQ1NQMH
+ uNFUfLymaM86/GW5ziraRDAAYca8IgGQO5C/k8KOkWwF2ZJMp2x/Z/aVy1UdZ3LA2t8G2Tj1TNK
+ Sam6b0JeVk6q580T8wJVbDXYmlNe+KDIoyfV2LWWVI0D1kIelu5oUWaCIkGwtoUw6rtHBggzX4y
+ SJ/2PdbT1ysZa6DjKvIHamCB2FTk1dR+uvTnzkD1nyRdF3QRw2GMhEzeIsfupiZdg1sBqzLelhf
+ +p1GIZ5/R1IC5hZNdnIQJtxjGn5YoD9LbLo8d6a2sVMQIPySI8duaL4uDynKf4PCVHGFQHowDGD
+ yHk6YI+uwX5td6lZ0ZQ==
+X-Proofpoint-GUID: 70DzBhUr65x4Ps7H01y5DZp-WakZTX85
+X-Authority-Analysis: v=2.4 cv=dbiNHHXe c=1 sm=1 tr=0 ts=696a0df5 cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=OuZLqq7tAAAA:8 a=EUspDBNiAAAA:8
+ a=ECzvPIt7qBxGGsi-YOkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=IoWCM6iH3mJn3m4BftBB:22 a=AKGiAy9iJ-JzxKVHQNES:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2026-01-16_03,2026-01-15_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 clxscore=1015 bulkscore=0 malwarescore=0 priorityscore=1501
+ phishscore=0 spamscore=0 impostorscore=0 lowpriorityscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2512120000 definitions=main-2601160075
 
-of_parse_phandle() returns a device_node with refcount incremented,
-which is stored in 'entry' and then copied to 'native_mode'. When the
-error paths at lines 184 or 192 jump to 'entryfail', native_mode's
-refcount is not decremented, causing a refcount leak.
+On 1/16/26 8:07 AM, Barnabás Czémán wrote:
+> PMI8950 doesn't actually support setting an OVP threshold value of
+> 29.6 V. The closest allowed value is 29.5 V. Set that instead.
+> 
+> Fixes: 2144f6d57d8e ("arm64: dts: qcom: Add Xiaomi Redmi 3S")
+> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
+> ---
 
-Fix this by changing the goto target from 'entryfail' to 'timingfail',
-which properly calls of_node_put(native_mode) before cleanup.
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-Fixes: cc3f414cf2e4 ("video: add of helper for display timings/videomode")
-Cc: stable@vger.kernel.org
-Signed-off-by: Weigang He <geoffreyhe2@gmail.com>
----
- drivers/video/of_display_timing.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-index bebd371c6b93e..1940c9505dd3b 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -181,7 +181,7 @@ struct display_timings *of_get_display_timings(const struct device_node *np)
- 	if (disp->num_timings == 0) {
- 		/* should never happen, as entry was already found above */
- 		pr_err("%pOF: no timings specified\n", np);
--		goto entryfail;
-+		goto timingfail;
- 	}
- 
- 	disp->timings = kcalloc(disp->num_timings,
-@@ -189,7 +189,7 @@ struct display_timings *of_get_display_timings(const struct device_node *np)
- 				GFP_KERNEL);
- 	if (!disp->timings) {
- 		pr_err("%pOF: could not allocate timings array\n", np);
--		goto entryfail;
-+		goto timingfail;
- 	}
- 
- 	disp->num_timings = 0;
--- 
-2.34.1
+Konrad
 

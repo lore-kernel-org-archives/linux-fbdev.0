@@ -1,155 +1,164 @@
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CB0635CBCA
-	for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 10:08:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.180.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B4192367AC
+	for <linux-fbdev@vger.kernel.org>; Sat, 17 Jan 2026 04:30:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768558082; cv=none; b=Xbu8LfVms9IBC3VTup54Ny6qxOTJXtjN6ltJ+2I2EC9GQ0kP4K3Zjxpy4pA+uAePkGBDlXCkyNF1Ii3kklcp7U5Vekftci3V1ACCKDqXnrqmGSBByGNSL33rIJfibbTOuVbLRJY9XLcvWoo1L5Qs8q7eufTD4RdlhQY7Fa8KpHw=
+	t=1768624234; cv=none; b=h86f+sWFklLNU29icYSgPbOq2kgxsb29c6TIyPaZEYbBKaD+VvwxuDFZoUHKzTOI8cCBKqdiQ0TPTTYmD/7fBZPXh3pIwIfOvPH3+2vv0oXHW+RKCZ6R0JUs3jyAqWAiqdKMk7O8cWREzJ3KoYTT5G5tdcMzJSm126iFTV6xwrQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768558082; c=relaxed/simple;
-	bh=4QebrYHi8s49B6sj+XuT+a7lSGj2d/XpXHh/yb6bJ8A=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=X/zTA5qbVW63bOriSGyHx72OayJ+Hr13fur7HRqoTFBjBIXVhf44vA9dBdYIxGhDtUsVGv4wPWlz2enx7zcPOmOQvjBNVVoJnShBTN1rm+tSuqCgQ2dqXgYVtkhUC8USHy3dDuoEZTcgt8meAulclGiBlHZVlFJOK/s+7bG/wvE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=FJwTJJGg; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=BWtQcUd+; arc=none smtp.client-ip=205.220.180.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	s=arc-20240116; t=1768624234; c=relaxed/simple;
+	bh=59/a8WTm/gWfCxzRJbq7yPBBnub6sQLN8ljF0PmknGU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ahl2J/NLklnK32A3nvoVktFiquiVY6YXmsbyPFwb9W4ChwCHkb5ZmEarmRX4ygh523COJEK9/rjNJjtasjOCwnDwQVB8TjEjJYy0v4USh9nJVP0luiIg1w/MltjyIIJQ7JWrDTz39OVOPdfDUG0Sn//3oTzaOdFYah7yGGjRSDw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Dr8EaJNM; arc=none smtp.client-ip=209.85.216.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="FJwTJJGg";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="BWtQcUd+"
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60G7vJK32818797
-	for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 10:08:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	gMp21ney8bm54p1fps9Pw9iiGOGyYYMunTK1tTna0vY=; b=FJwTJJGgW7eFqUaI
-	6GTfqzIUGeKJva8mYQ4CVVPw6t0zLMsTCiZZKCkfHsi3cbvl2mQdJ5oq+t8mYnPq
-	wY8cD7SvhiT1K3pMBK810jXv382zUkBCW9Js8ZxE+9Ot274WqpxhD1eNAMtM9VCV
-	C2faTy3nsHxuLLb1MpBhVnKEamC9ZRxWK+ydhrrdLsBogMYmspZ8YBIq4+mnqE3X
-	fiUCq4sY0KJuIVFZoQqR9BI+jcSVJMs4C5W4Qr13hXCOmTQfT7GBemWVRnPt7Cgj
-	b8cG/XzCI8Giifi7jz4SX+gAfjDSGqZB8rbXFW/SzztNmhzPTZtu6ivTK6yRVplF
-	t85RWg==
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bq99ahr85-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 10:08:00 +0000 (GMT)
-Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-8c6a182d4e1so38664985a.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 02:08:00 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Dr8EaJNM"
+Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-34ab8e0df53so1852939a91.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 16 Jan 2026 20:30:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1768558080; x=1769162880; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=gMp21ney8bm54p1fps9Pw9iiGOGyYYMunTK1tTna0vY=;
-        b=BWtQcUd+9ibywMpnJZCz/MJMAQvGJj3JrrznDDqCstsA3Zmx/ALgfrLPsFyX7XQ/SC
-         euBaDdPEXVS+/frgXqz4yi15o9iccPQ0p8ni2pJUrRniSE5cKNpXvoUcwRSFTOl/ew/4
-         nnvGCn/82gGtTODWbEAv8l8H4sYN6E6+YSRZa3ETrft7wJFshXRxtiCSJ/666/Dr7f4u
-         3ncI3cpdFZe/OFHTatFWvSOxDMzBxakrP2f5mDU4mSzOJZmkTSSGW5vzoPEyKa0aNJeK
-         Gm435Wm6lhCX7cRQs85kLDONEt6lxp4hShuxdjzId7XZwMvYTb1N1KtJvZ/bOY59+Qry
-         14ew==
+        d=gmail.com; s=20230601; t=1768624232; x=1769229032; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=vCrSsGPr19mQwGzLbkxTfgCN7ZB1b84ZZ1vrvJhEPMM=;
+        b=Dr8EaJNMXexPCHjNVzP2tIXtWtLq1VV3hlIDdypVXriV/eSV06TE+kYD/yn/Kz3XHU
+         8OYonGCjgY/bhj8t2FLPlkku3og3+eSfHUBcixadxhP6qh12AEt+pwZDCl4LF8JNpU8b
+         BfiiZkwTO7nLNLYb1pW8mP2F4T/SbH1vFKLUKTjsgnCjL/UkVz6rKTk+buVAYhKpuuMe
+         W9B5HgFtVlI9Fxn0maR4YFIbwGx0uzmbzAvX2bo85xM+yA7DKNRHDJWoKtkTsKbMSZBA
+         3p2ImB3TXS3Cw/xAFbEmVbCSJWf9rBLzf7PqrAKXFWWD6WRvu/sW3//3CdojoCjnyI1p
+         lP3g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768558080; x=1769162880;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=gMp21ney8bm54p1fps9Pw9iiGOGyYYMunTK1tTna0vY=;
-        b=wVtWbPdExs9E9Ys9bctxgns7UfSZm92SnLk6Yx+FzG3lVLSACCWFFS8dgIZtGREn+B
-         7sI1fwaeQtMQVFE/sxBqKC0v6dWdzoDHqfuk6ytYQnEl5bXyIlC5W1bcSog6aPCLksNY
-         WiMc3v2U7FSvvVsRQnN1afbzBLzftejbKjywsetG7oyVUkDWRigJdqhSV1WjuTgjbodr
-         J7g/qlHX5ZtozM6WL4OOgv9coY9V9mWfcBVAmC84d4sTPOE45dD3gH2xOzPXVb7+NgYM
-         m59pg52DX+qPJVmp6m9WruKmLXTzWGQawM+D7ZeDk36HDDkecUT9ww7Osw2tTYwqWjmq
-         H2Fg==
-X-Forwarded-Encrypted: i=1; AJvYcCVMmGoSUrT9Uv4QdsDqyo/etTFAjaVgtGOzQEdC9Uc2ms92IuewfAUq9lnj+NuMFnR2gOj5BQfFoyHiHA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwY8Oc6DOCxsRtfAQTKbg62bJD5Mc6RYIVGwv6pYQ1PF9V56R+3
-	otHnn3AIOY82YA7F0r4A/uovvVMlwCbd6vyqOuQHe64bGHIB+0mZp72prw1VEMf1ZK7tjPDK4fV
-	52QChpoUK9EkNt6T22UqerupOtLjrLPlhXWQlky+d2RyBjJnComSFoYBLF2OgR6T4kg==
-X-Gm-Gg: AY/fxX4Udxqx8JKVWl4scJz0w83HsZxmfKPYFNcTsbKAH/eABUtR5LBvlY2Xah3fGSU
-	hYsVJSSYxoXmRO5q7cO7FaHHGC/Tc0bEPKxzWERAgmDXEtwIWm9W3I8lIwfrYWniY8CrVCP+InF
-	KIqCpIy3zkWyhDqm0vbFNNij7E6TLMy89dUm3Cy9/IU8ruSSw0jLDBxjl9FjPbQlE6ziB/e4W5t
-	JYlhyjMSBGVu8fXE1H6L7AP8zABM3yrDZ0rx+rK8/0jawgN0P53I/LqI47NLcDxwFOz235zPO4c
-	aA5HloaUXsPuIkD74srBeVsB95zv1UMj1qK/Jf5t6btTS4CStEVXWlBJEW9jspAvhm9nVlMM0gk
-	p5rA8vEZalpN896x4Ggu9kibNvqRZJE2xoN76oSSsp4nR8MocXDGdyCnnkJzxkbHIxms=
-X-Received: by 2002:a05:620a:4111:b0:8b1:fa2a:702f with SMTP id af79cd13be357-8c6a670cca8mr237361785a.3.1768558079682;
-        Fri, 16 Jan 2026 02:07:59 -0800 (PST)
-X-Received: by 2002:a05:620a:4111:b0:8b1:fa2a:702f with SMTP id af79cd13be357-8c6a670cca8mr237358785a.3.1768558079218;
-        Fri, 16 Jan 2026 02:07:59 -0800 (PST)
-Received: from [192.168.119.254] (078088045245.garwolin.vectranet.pl. [78.88.45.245])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-654534c8c82sm2074279a12.29.2026.01.16.02.07.57
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 16 Jan 2026 02:07:58 -0800 (PST)
-Message-ID: <66a1716a-47f1-42ce-a72d-8c69d29410d3@oss.qualcomm.com>
-Date: Fri, 16 Jan 2026 11:07:56 +0100
+        d=1e100.net; s=20230601; t=1768624232; x=1769229032;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vCrSsGPr19mQwGzLbkxTfgCN7ZB1b84ZZ1vrvJhEPMM=;
+        b=b6D9tPoNBdKr74TmfJs/iLIV+Dsx9oLNgGS7fyo7zsWSpuiWuI/2FV/BBdBKwJDL+l
+         lxlm+ephiCJ9movhn05ZwIj5G/unchNWv6bslsxMWKPDTv0RVKmfrlKGRJHETWBwuCKB
+         E9DDiF0Qpni8+WOVZqY4Q0kzsva5g0KCMtoFvUlF39qC1hTDmwNpLaS27g6pWSn5R0sF
+         zEWtz/vIW4nyD+PAzecP3DUZbAabUv0Wt/yd/Psf4M6fU3dngPRwR2Ikcf0HBy5p+3W9
+         Ae8xue1/fHC+2En5RNEacaPVYQGCJPmHXBBaSls+azMR+PCGWqKEPc9MBt3Jfl4VbDmd
+         gkMw==
+X-Gm-Message-State: AOJu0YyDqrZR5BPRZkXyMjh2Cgycy1/TGgqkvb4cuTD7GoggwMH8zLXg
+	0QhmiDSidNlvXucNsSS+BVREOHxR30Nje5l1vvznfbkvBzeAaEqlQ/rPMIxBqw==
+X-Gm-Gg: AY/fxX7gHp8NiLxPfrYQgWo9SC22sEEvNMJwvm2F5uUHUqsxxVJMpZRi7RAnRJ2Jp7c
+	lPYzaYTYAM02Kfw01YcKvwrSo9B/ma/CS/EqWTT/PePrvFEOLDP7ZXxqn8mg+zUBe3V72bB1WsG
+	KcrJLPWgolGzIpG55vcHBBX3NI9Gl8rBt+xmIMlOqfOgwS85N+KPKt470qIwRxNGrGkapxwsTKs
+	1/hdmj0U8YpBBcsmaYC4EFiD8dYxyaKsQqh8JQmCydw34nzO808QI6tPnFpTbqR47K9YOkKoRmY
+	mSOzAUCCmY3m8NMnu7b1X/KDFHXouUNOst9c/I96cnvGKyU6+3/WR+sdfYhqrobMck5q43qjYgQ
+	9b0qoQYqb2U5+waOHtz04Nl/itjIhwpSdhhFlaIb9uzDSR+fT8GqDyQQW3ZcDtH+0dLy9f95fGj
+	/4Nyf0xKit42uOaSwVEED2ZQbuqssNWH7ZGQRi9ZGhuRo=
+X-Received: by 2002:a17:902:f78a:b0:2a0:b066:3f55 with SMTP id d9443c01a7336-2a7174efc71mr45039245ad.10.1768624232460;
+        Fri, 16 Jan 2026 20:30:32 -0800 (PST)
+Received: from cmpatel-home.hsd1.or.comcast.net ([2601:1c0:5780:9200:26af:b454:d793:29de])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-81fa108b23asm3370159b3a.3.2026.01.16.20.30.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Jan 2026 20:30:31 -0800 (PST)
+From: Chintan Patel <chintanlike@gmail.com>
+To: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-omap@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	tzimmermann@suse.de,
+	andy@kernel.org,
+	deller@gmx.de,
+	gregkh@linuxfoundation.org,
+	Chintan Patel <chintanlike@gmail.com>,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH v7 1/2] staging: fbtft: Fix build failure when CONFIG_FB_DEVICE=n
+Date: Fri, 16 Jan 2026 20:29:30 -0800
+Message-ID: <20260117042931.6088-1-chintanlike@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 7/7] arm64: dts: qcom: msm8953-xiaomi-daisy: fix
- backlight
-To: =?UTF-8?B?QmFybmFiw6FzIEN6w6ltw6Fu?= <barnabas.czeman@mainlining.org>,
-        Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Kiran Gunda <quic_kgunda@quicinc.com>, Helge Deller <deller@gmx.de>,
-        Luca Weiss <luca@lucaweiss.eu>, Konrad Dybcio <konradybcio@kernel.org>,
-        Eugene Lepshy <fekz115@gmail.com>,
-        Gianluca Boiano <morf3089@gmail.com>,
-        Alejandro Tafalla <atafalla@dnyon.com>
-Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
-References: <20260116-pmi8950-wled-v3-0-e6c93de84079@mainlining.org>
- <20260116-pmi8950-wled-v3-7-e6c93de84079@mainlining.org>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <20260116-pmi8950-wled-v3-7-e6c93de84079@mainlining.org>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: IQG6WMfMaEAZDfl2WwZhU2Vx3hTEBo2G
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE2MDA3NSBTYWx0ZWRfXyBVPriuAwhcH
- t5M06x3GIj6DZnl7OcoYojmFPzp37vBdFQxJxDhGG2+/G7fzkOE0WBXx7KWY4E7BsiR7szY51k4
- ief5Tr52bgodOScpzMtTRiWm1CaGXBxe1vECXBh3MD6X2MFD3gcfu2OfhNhpEmkzRCQ0IISgJf/
- g7XyyJT/euEtfzXBEFknlvXErmGBxhptf5aZXtBGmuw6ECaH5x2NRBmo4BGfVlLAbxvaWl46FMD
- 6qeelBTESLTewni6kKeo1Bh1mPqC+ALeQZHYnpuVgcJLmOxgFJE4z6inDF0vLUHk7d02XfhYt4k
- t8irN5Y9/pMeUk+dkpqNU7SHspbjXsyFis9xxFeBoeTELG9AguIibqM9V+cCjhJCWhEgWy6zRPw
- I6PYy1dWCuVu7WbdY2ZnWtGqt/S6b8F55NJRKXA4SqGPsAgdjWXkhLZW58KpYaMfm2XaC+ql8MX
- cOSWbpBY7eyS2qrkFUw==
-X-Proofpoint-GUID: IQG6WMfMaEAZDfl2WwZhU2Vx3hTEBo2G
-X-Authority-Analysis: v=2.4 cv=f5ZFxeyM c=1 sm=1 tr=0 ts=696a0e00 cx=c_pps
- a=HLyN3IcIa5EE8TELMZ618Q==:117 a=FpWmc02/iXfjRdCD7H54yg==:17
- a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=OuZLqq7tAAAA:8 a=EUspDBNiAAAA:8
- a=HVKn8-F_4eW3eUG8FJoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=zZCYzV9kfG8A:10 a=bTQJ7kPSJx9SKPbeHEYW:22 a=AKGiAy9iJ-JzxKVHQNES:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2026-01-16_03,2026-01-15_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
- suspectscore=0 spamscore=0 malwarescore=0 priorityscore=1501 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2512120000 definitions=main-2601160075
 
-On 1/16/26 8:07 AM, Barnabás Czémán wrote:
-> The backlight on this device is connected via 3 strings. Currently,
-> the DT claims only two are present, which results in visible stripes
-> on the display (since every third backlight string remains unconfigured).
-> 
-> Fix the number of strings to avoid that.
-> 
-> Fixes: 38d779c26395 ("arm64: dts: qcom: msm8953: Add device tree for Xiaomi Mi A2 Lite")
-> Signed-off-by: Barnabás Czémán <barnabas.czeman@mainlining.org>
-> ---
+When CONFIG_FB_DEVICE is disabled, struct fb_info does
+not provide a valid dev pointer. Direct dereferences of
+fb_info->dev therefore result in build failures.
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Fix this by avoiding direct accesses to fb_info->dev and
+switching the affected debug logging to framebuffer helpers
+that do not rely on a device pointer.
 
-Konrad
+This fixes the following build failure reported by the
+kernel test robot.
+
+Fixes: a06d03f9f238 ("staging: fbtft: Make FB_DEVICE dependency optional")
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202601110740.Y9XK5HtN-lkp@intel.com
+Signed-off-by: Chintan Patel <chintanlike@gmail.com>
+
+---
+Changes in v7:
+- Split logging cleanups into a separate patch
+- Limit this patch to the CONFIG_FB_DEVICE=n build fix only
+
+Changes in v6:
+- Switch debug/info logging to fb_dbg() and fb_info()(suggested by Thomas Zimmermann)
+- Drop dev_of_fbinfo() usage in favor of framebuffer helpers that implicitly
+  handle the debug/info context.
+- Drop __func__ usage per review feedback(suggested by greg k-h)
+- Add Fixes tag for a06d03f9f238 ("staging: fbtft: Make FB_DEVICE dependency optional")
+  (suggested by Andy Shevchenko)
+
+Changes in v5:
+- Initial attempt to replace info->dev accesses using
+  dev_of_fbinfo() helper
+
+ drivers/staging/fbtft/fbtft-core.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 8a5ccc8ae0a1..1b3b62950205 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -365,9 +365,9 @@ static int fbtft_fb_setcolreg(unsigned int regno, unsigned int red,
+ 	unsigned int val;
+ 	int ret = 1;
+ 
+-	dev_dbg(info->dev,
+-		"%s(regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X)\n",
+-		__func__, regno, red, green, blue, transp);
++	fb_dbg(info,
++	       "regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X\n",
++	       regno, red, green, blue, transp);
+ 
+ 	switch (info->fix.visual) {
+ 	case FB_VISUAL_TRUECOLOR:
+@@ -391,8 +391,7 @@ static int fbtft_fb_blank(int blank, struct fb_info *info)
+ 	struct fbtft_par *par = info->par;
+ 	int ret = -EINVAL;
+ 
+-	dev_dbg(info->dev, "%s(blank=%d)\n",
+-		__func__, blank);
++	fb_dbg(info, "blank=%d\n", blank);
+ 
+ 	if (!par->fbtftops.blank)
+ 		return ret;
+@@ -793,11 +792,11 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+ 	if (spi)
+ 		sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->bus_num,
+ 			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
+-	dev_info(fb_info->dev,
+-		 "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
+-		 fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
+-		 fb_info->fix.smem_len >> 10, text1,
+-		 HZ / fb_info->fbdefio->delay, text2);
++	fb_info(fb_info,
++		"%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
++		fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
++		fb_info->fix.smem_len >> 10, text1,
++		HZ / fb_info->fbdefio->delay, text2);
+ 
+ 	/* Turn on backlight if available */
+ 	if (fb_info->bl_dev) {
+-- 
+2.43.0
 

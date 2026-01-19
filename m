@@ -1,66 +1,80 @@
-Received: from mail-pl1-f170.google.com (mail-pl1-f170.google.com [209.85.214.170])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8190F1F8755
-	for <linux-fbdev@vger.kernel.org>; Sun, 18 Jan 2026 16:48:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F9763370E5
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 Jan 2026 07:38:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768754895; cv=none; b=en/AL9U+IKzI4hGNIgikEROHCrylQQdNiwu+NmWf7686dE5auMIpkMYdKm3TKUR/tfYq2q5MiUP0G9fv3p87/DJzd3+IgPQ65rb5jHl2zLuNJK4elmrjSgaDeKm0dz0UzAsVhm0KjwmSGNEa/3X000tuTemQ1GClhIrc8P0KpXI=
+	t=1768808322; cv=none; b=VjnHboEIJ/8sY4ZzI9q5NK8sNx0ENl3A5gJqcJOCv3LE22c5+9i74wyXUfVY1UzkulArW+ZjBI1NQY+iqe+8GfokxtXhwIxrOemYLebnEkh5vtjtIs2ZWRnKD1nxJ+aw1kcgFhz5hOWYHxDyZT9gxyuxEGBD5Bp0N6BYWxqN7rQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768754895; c=relaxed/simple;
-	bh=ObBNgYmI7km2QNXCjpehnGoXCANLUlsMEgFWywznUhs=;
+	s=arc-20240116; t=1768808322; c=relaxed/simple;
+	bh=Wkhx5dgAclGb+nTK+AmmSylosA9VWJR5dafkw+Go4/4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fVUKySPAdKkp0apyLrzD1xY1nXTcPQQbCWnu1lBn/rhJ3ybEU/qKHyAkU5AArRb7TuNv9wKVHgV2zRfEqBiNUkOHbSg6ayh2/HG18BT1JAPp3A4pnPeZXs3xtvcFnfo8g6M/A3Zcan9UKt6v0nJ0/WRHCLRQMViYp/7wSd/peK8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QZmroWXG; arc=none smtp.client-ip=209.85.214.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 In-Reply-To:Content-Type; b=ckiX56oJxQGDeBezhQmX0w3gdck9bduwDREUArUdxjd2+wunEYqk5d6s07jbcG1LQCOaEMSJo1cGt4Rl2tVTAo4OcsIIbE2AZA5BlTZ85Wt+3mge6QjNXHE62OaMeOt+JwHbLgVU9CdahhLpeYc4VJCVSgtFpyVphYPKIBxnTkk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=dzm4UbI7; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=BbPYsdkl; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=xqKJWbB7; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=nXymW59z; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QZmroWXG"
-Received: by mail-pl1-f170.google.com with SMTP id d9443c01a7336-2a0f3f74587so22509955ad.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 18 Jan 2026 08:48:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768754893; x=1769359693; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=X0twtbtNGNQIp4HwkKCyjxkTPom6wsw2QrSPQrsy5co=;
-        b=QZmroWXGE2ruM9WWPVMd5Mce81h1MzxLNb1GU2Y88ANcqBMiCbfAvudkzw5F6thdSA
-         vTpwCuadlDcbqtWRwRws1YPx8LEChH0aSro75GGoOrdZGv6IgERwWpt327lE99aPAKnb
-         VbEshIC/mA3s9Wih+XOrIitoKa8xUL19DBZhJFE06S6Av0lxu5Gr6NzXtc6l5UkcV4Fm
-         YmenxwTZ09K1BfQktlGa4wcCibAv8oBNKOk1OxIhchOsN+bFQvQxXjVvcC2nyY5CJFVW
-         rT61hvktJ6wuyGTNZRFff/1bdHhbtkT24b/1DV8ptMuqvhTt1KgD3jgIxM+J8cVIEEoB
-         b1bg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768754893; x=1769359693;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=X0twtbtNGNQIp4HwkKCyjxkTPom6wsw2QrSPQrsy5co=;
-        b=gCfPIkjvnOOFEktDM9MQVixisz8Va3MCs3wLn7KYc5t4mfjvzHjXDCzPsnMAgGIUzH
-         SvoSP3P9QZmNG0lPGpLiUYBLmQsVNTgVWPwq8ry3KJHQC6xC6b1Int4zib79oM9tcWSo
-         uD/Ehj3mdHe35ROHuT7kAYt5ArDTpCR+yvg7qUG9exBouZVn5xvJT5fGM1kFuFhVtEPw
-         P5qUtdaBPymwtq8ShcucyMfMc2NiVkPhHzYPC67qept/Hhhpnmk83cMuuOB6va4CihxG
-         SU68wwtvj0oxnKNnpRXujZNKZLRtKhZG0aLmkR0rMzXxbOg1Vw0USBmhErydQi/Jc1ac
-         4nnw==
-X-Forwarded-Encrypted: i=1; AJvYcCWK3rX5UOrqrTFKPKX5XntMl0nKulLdoe5zK3JhMD90ZURVnMc/rS0e64TDOI42zwSpbLQvNsHQsOMkoA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzfC0G8KRlp9m8xx6/PxFllESNuvkV2l2Y8E0jvPAy1NvUie7m0
-	qLMmkgOQbragELn4D+UZXAK8TfCwNwgToRbZOxQJWs129sucv1jof+jq
-X-Gm-Gg: AY/fxX6V1dikUfz1Xc24TIgNpa6aKK4W+Ok1RBt+6ceoKJSRNiBDl6jKu4JmpkYh5Ea
-	DkfZYGapOEXwXRLOFRpqWyJpHOARWefx/RdCkyPRZ9ETiFYO4qR7vn8rHf+RhypY1B7Yli2HJQl
-	KLzZKEp9nOC0AfhSdgWmhl0UdySnTYfnzttAh6NCzlVZIjlsJWc9lUXq3lv2xqsRFp8Ig3rKf+B
-	Od+1AFfYTKvg1GGC822wzy6s0el7/bexynrA2H8lf24BmlXwMVCZdvuhEDcPsgDbGR38waq7Oh+
-	jmR16h/z1kvVlUB7L7ASEAdkM5dy2h8ctEfUGxxJKyvwzOOokYzixzOYWcR0KSK428rEnrk4qZ0
-	SIwBFbUB90+CHXmo4r3HpV8v0yj93Ilf0NKcFoA0SKuuUfT0kj2iBb94iU4j30bikPzJJybrrHp
-	36kD0JnDXU1jD0I9m29m9ogiVI6bUkJ5H0DqA=
-X-Received: by 2002:a17:903:124d:b0:29e:76b8:41e5 with SMTP id d9443c01a7336-2a7175be718mr92063215ad.30.1768754892810;
-        Sun, 18 Jan 2026 08:48:12 -0800 (PST)
-Received: from [192.168.31.239] ([167.103.54.94])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a7193dbbf5sm70904105ad.47.2026.01.18.08.48.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 18 Jan 2026 08:48:12 -0800 (PST)
-Message-ID: <95a49665-f379-48a7-a2b5-d288cdfdc0a8@gmail.com>
-Date: Sun, 18 Jan 2026 22:18:32 +0530
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="dzm4UbI7";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="BbPYsdkl";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="xqKJWbB7";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="nXymW59z"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id E12405BCFD;
+	Mon, 19 Jan 2026 07:38:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1768808313; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=KFJ54nMOhx8mffPk51jzPOExhgvMSATvxIPYY1eHHYk=;
+	b=dzm4UbI7tvUjfeNa0O+zlfzGtN6hsdqZmMQqdxTinfdEjk8VK0tGsipRZnXIEBW9vpEnqa
+	/5pR6SQdoPvOt8MxtGj1Zh1C/1g6B2aEYXdIc0wEf5fziPSzP3hmnYNrit/oZHLl+Q466t
+	WpajPfV9t3YrazRXdp4wI8yx3+zwbBg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1768808313;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=KFJ54nMOhx8mffPk51jzPOExhgvMSATvxIPYY1eHHYk=;
+	b=BbPYsdklfOsdb9VsbiMzqvwqrpP1+H7ZyHpqyYVIOPV1QypCCnUYigmnI2nG/FLvC9FKIE
+	c0mXrRqvSCN7vgBA==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1768808312; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=KFJ54nMOhx8mffPk51jzPOExhgvMSATvxIPYY1eHHYk=;
+	b=xqKJWbB7XEe7Kt+oGeYNop182tnYGztB5d8/APNjfoN/YQJORiC946dUoknNFO4ELOTwh0
+	jXOCjZJr5XBUTnIvXLfN9c/h9zK3tNo7hyQHHmLVr8mUVc2xxsmQ9ieD81qXJpV8Jb/Jm/
+	SRCWgErxS9uHBUEkg7TSPVqpNMUJsG8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1768808312;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=KFJ54nMOhx8mffPk51jzPOExhgvMSATvxIPYY1eHHYk=;
+	b=nXymW59zb9Fnc1Vv9HYLwWI2+aYLZn5k/vh/FWKoZqgROysB5Ztkd/KHsxi0bBPzG7YMhg
+	zgm3hHXSVQBDdRCw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9E2053EA63;
+	Mon, 19 Jan 2026 07:38:32 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 12QtJXjfbWm7ZAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 19 Jan 2026 07:38:32 +0000
+Message-ID: <5bc62c51-308c-483f-a92d-29354f2deeac@suse.de>
+Date: Mon, 19 Jan 2026 08:38:31 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -68,90 +82,152 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 1/2] dt-bindings: backlight: gpio-backlight: allow
- multiple GPIOs
-To: Daniel Thompson <daniel@riscstar.com>
-Cc: lee@kernel.org, danielt@kernel.org, jingoohan1@gmail.com, deller@gmx.de,
- pavel@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260105085120.230862-1-tessolveupstream@gmail.com>
- <20260105085120.230862-2-tessolveupstream@gmail.com>
- <aVuKdAyXfWLs-WJI@aspen.lan> <c182df66-8503-49cf-8d1d-7da17214b843@gmail.com>
- <aWe7_hFpmO0E2sJe@aspen.lan>
+Subject: Re: [PATCH] fbdev: sys_fillrect: Add bounds checking to prevent
+ vmalloc-out-of-bounds
+To: Osama Abdelkader <osama.abdelkader@gmail.com>,
+ Zsolt Kajtar <soci@c64.rulez.org>, Simona Vetter <simona@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: syzbot+7a63ce155648954e749b@syzkaller.appspotmail.com
+References: <20260118001852.70173-1-osama.abdelkader@gmail.com>
 Content-Language: en-US
-From: tessolveupstream@gmail.com
-In-Reply-To: <aWe7_hFpmO0E2sJe@aspen.lan>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20260118001852.70173-1-osama.abdelkader@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -2.80
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	FREEMAIL_TO(0.00)[gmail.com,c64.rulez.org,ffwll.ch,gmx.de,vger.kernel.org,lists.freedesktop.org];
+	TAGGED_RCPT(0.00)[7a63ce155648954e749b];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCPT_COUNT_SEVEN(0.00)[8];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.com:url]
+X-Spam-Level: 
+X-Spam-Flag: NO
 
+Hi,
 
+thanks for the patch.
 
-On 14-01-2026 21:23, Daniel Thompson wrote:
-> On Tue, Jan 13, 2026 at 10:15:53AM +0530, tessolveupstream@gmail.com wrote:
->>
->>
->> On 05-01-2026 15:25, Daniel Thompson wrote:
->>> On Mon, Jan 05, 2026 at 02:21:19PM +0530, Sudarshan Shetty wrote:
->>>> Update the gpio-backlight binding to support configurations that require
->>>> more than one GPIO for enabling/disabling the backlight.
->>>>
->>>> Signed-off-by: Sudarshan Shetty <tessolveupstream@gmail.com>
->>>> ---
->>>>  .../bindings/leds/backlight/gpio-backlight.yaml      | 12 +++++++++++-
->>>>  1 file changed, 11 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
->>>> index 584030b6b0b9..1483ce4a3480 100644
->>>> --- a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
->>>> +++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
->>>> @@ -17,7 +17,8 @@ properties:
->>>>
->>>>    gpios:
->>>>      description: The gpio that is used for enabling/disabling the backlight.
->>>> -    maxItems: 1
->>>> +    minItems: 1
->>>> +    maxItems: 2
->>>
->>> Why 2?
->>>
->>
->> In the current design, the LVDS panel has a single backlight that
->> is controlled by two GPIOs. Initially, It described as two separate
->> backlight devices using the same gpio-backlight driver, since the
->> existing driver supports only one GPIO per instance.
->>
->> So the maintainer suggested to extend the gpio-backlight driver
->> and bindings to support multiple GPIOs.
->> https://lore.kernel.org/all/q63bdon55app4gb2il5e7skyc6z2amcnaiqbqlhen7arkxphtb@3jejbelji2ti/
-> 
-> Right. So, once we support multiple GPIOs then why limit it to 2?
-> 
+Am 18.01.26 um 01:18 schrieb Osama Abdelkader:
+> The sys_fillrect function was missing bounds validation, which could lead
+> to vmalloc-out-of-bounds writes when the rectangle coordinates extend
+> beyond the framebuffer's virtual resolution. This was detected by KASAN
+> and reported by syzkaller.
+>
+> Add validation to:
+> 1. Check that width and height are non-zero
+> 2. Verify that dx and dy are within virtual resolution bounds
+> 3. Clip the rectangle dimensions to fit within virtual resolution if needed
 
-Okay, got the point. I'm removing the maxItems constraint entirely 
-to allow any number of GPIOs as below:
+This is rather a problem with the caller of the fillrect helper and 
+affects all drivers and all implementations of fb_fillrect. Clipping 
+should happen in the fbcon functions before invoking ->fb_con.
 
-diff --git a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
-index 1483ce4a3480..82698519daff 100644
---- a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
-+++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
-@@ -16,9 +16,11 @@ properties:
-     const: gpio-backlight
+Best regards
+Thomas
 
-   gpios:
--    description: The gpio that is used for enabling/disabling the backlight.
-+    description: |
-+      The gpio that is used for enabling/disabling the backlight.
-+      Multiple GPIOs can be specified for panels that require several
-+      enable signals.
-     minItems: 1
--    maxItems: 2
+>
+> This follows the same pattern used in other framebuffer drivers like
+> pm2fb_fillrect.
+>
+> Reported-by: syzbot+7a63ce155648954e749b@syzkaller.appspotmail.com
+> Closes: https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+> Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
+> ---
+>   drivers/video/fbdev/core/sysfillrect.c | 21 ++++++++++++++++++++-
+>   1 file changed, 20 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/core/sysfillrect.c b/drivers/video/fbdev/core/sysfillrect.c
+> index 12eea3e424bb..73fc322ff8fd 100644
+> --- a/drivers/video/fbdev/core/sysfillrect.c
+> +++ b/drivers/video/fbdev/core/sysfillrect.c
+> @@ -7,6 +7,7 @@
+>   #include <linux/module.h>
+>   #include <linux/fb.h>
+>   #include <linux/bitrev.h>
+> +#include <linux/string.h>
+>   #include <asm/types.h>
+>   
+>   #ifdef CONFIG_FB_SYS_REV_PIXELS_IN_BYTE
+> @@ -18,10 +19,28 @@
+>   
+>   void sys_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+>   {
+> +	struct fb_fillrect modded;
+> +	int vxres, vyres;
+> +
+>   	if (!(p->flags & FBINFO_VIRTFB))
+>   		fb_warn_once(p, "%s: framebuffer is not in virtual address space.\n", __func__);
+>   
+> -	fb_fillrect(p, rect);
+> +	vxres = p->var.xres_virtual;
+> +	vyres = p->var.yres_virtual;
+> +
+> +	/* Validate and clip rectangle to virtual resolution */
+> +	if (!rect->width || !rect->height ||
+> +	    rect->dx >= vxres || rect->dy >= vyres)
+> +		return;
+> +
+> +	memcpy(&modded, rect, sizeof(struct fb_fillrect));
+> +
+> +	if (modded.dx + modded.width > vxres)
+> +		modded.width = vxres - modded.dx;
+> +	if (modded.dy + modded.height > vyres)
+> +		modded.height = vyres - modded.dy;
+> +
+> +	fb_fillrect(p, &modded);
+>   }
+>   EXPORT_SYMBOL(sys_fillrect);
+>   
 
-   default-on:
-     description: enable the backlight at boot.
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
 
-Does this approach work for you?
-> 
-> Daniel.
 

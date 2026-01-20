@@ -1,150 +1,93 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from relay.hostedemail.com (smtprelay0014.hostedemail.com [216.40.44.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBCA2441057;
-	Tue, 20 Jan 2026 14:31:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8B2844BCAC;
+	Tue, 20 Jan 2026 16:08:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.40.44.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768919478; cv=none; b=KF66sZMpPjLbn74MkXarhukwdmNRjEosTqSBkVXyYxrwia7MBxDmu/EPQKm7QS1OScasBTffX3XUSCeZ0Po/MqqqtUwcmw281kw3siW62s+AsH11ouVznpkBUqIL7fEQHHQ2Ts10pfJJ13ZZJ8spg7QJVZiBvLx74wpmlVMqm8U=
+	t=1768925318; cv=none; b=didRx8qYppVFfwAOqoil7fVvhF26J3pZbixmuEeI48R7R8SpxasYdAdB6m/3sXrC5KDxHey8GYkHV7hJTgiuq5JqjCCsWs1xOLMb1FgXMKa2w3eS4E8b2eqd9wdcqqjAkqH6zbQaozY47yXfdUBMvei1KIYHXtSbymMOIoy0TXU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768919478; c=relaxed/simple;
-	bh=s85xFP9uAEf5v/tpfUOiZujjKSHqwCqldvU+qcb0zC4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DXJXQLUO2p2aqWTppByp/KSt8L+uMRqQFtrHw5KhmmQyheGe182H1DDe/UqIomCwXRMGltjKj6TAO9uRsGNdBkyTaSfYj1p9vJH+3UM3C6/qGBF6/1Oo3Sl5Opz16e+aeoI7kk6at3sB3ezEnoLt3jCONYxeiAEeYaUoUSrH6d4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IFNIWqHD; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IFNIWqHD"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7630EC16AAE;
-	Tue, 20 Jan 2026 14:31:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768919477;
-	bh=s85xFP9uAEf5v/tpfUOiZujjKSHqwCqldvU+qcb0zC4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=IFNIWqHD7tB96iUwcJdHS4wPuLhuyY1E+8TII0MbXb45WksfpHmEvuraXycep1H+X
-	 2JR31o+qFX0qwaolAMUXMhFQgxCYqKFkYWQOiAg+QV0jpcLtYNq5c7GyJNb6zF/pwn
-	 siAJbMRwrYQY9A0iNpKUQt2/GPOR7IZUSw+IHsH0lyEp3LFGiopgRRRwHFZrZPZgXB
-	 BeDHkcJia7F+VtkI9f4ze9ywgKB3wfKmrV5HRxWX8bSoCsfw3Pq5hoYaCjOOMHTm9h
-	 cpO3vrfTE6WWEFK4fjh8ugTv30nA+k2/UWurldZjvWvp7aM8FUGljFITknZsepX8mj
-	 B4X17ybFNIFjg==
-Message-ID: <3f3c47ea-1660-4bd4-ab89-3bdf58217995@kernel.org>
-Date: Tue, 20 Jan 2026 15:31:12 +0100
+	s=arc-20240116; t=1768925318; c=relaxed/simple;
+	bh=xxSHYRcsD6KSZPrhr8mI2zyDRVOU8GgOZrlwewaiM8k=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=inXsQb6hqS3vqi+whrLSdr/kF+BZ0h3HVRvWSTgo/OjtRNA1BywOniSMUgImNa0+ADOdu6sBipuYS6ZOUV6Ga5Zf77J2wB52D/ujx4UTptSU+C1uNVpyKlyXAArj+ufcwnVl1BfVEXz1LrCBlT3tssrRkI90b5QDmS02EYBrQi8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org; spf=pass smtp.mailfrom=goodmis.org; arc=none smtp.client-ip=216.40.44.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=goodmis.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goodmis.org
+Received: from omf13.hostedemail.com (a10.router.float.18 [10.200.18.1])
+	by unirelay10.hostedemail.com (Postfix) with ESMTP id 149FCC2371;
+	Tue, 20 Jan 2026 16:08:28 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: rostedt@goodmis.org) by omf13.hostedemail.com (Postfix) with ESMTPA id 98F652001E;
+	Tue, 20 Jan 2026 16:08:25 +0000 (UTC)
+Date: Tue, 20 Jan 2026 11:08:45 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, Petr Mladek <pmladek@suse.com>, John Ogness
+ <john.ogness@linutronix.de>, Sergey Senozhatsky <senozhatsky@chromium.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+ <jirislaby@kernel.org>, Simona Vetter <simona@ffwll.ch>, Helge Deller
+ <deller@gmx.de>
+Subject: Re: printk's threaded legacy console + fbcon => schedule where it
+ should not
+Message-ID: <20260120110845.2922a91a@gandalf.local.home>
+In-Reply-To: <20260114145955.d924Z-zu@linutronix.de>
+References: <20260114145955.d924Z-zu@linutronix.de>
+X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] dt-bindings: backlight: gpio-backlight: allow
- multiple GPIOs
-To: Sudarshan Shetty <tessolveupstream@gmail.com>, lee@kernel.org,
- danielt@kernel.org, jingoohan1@gmail.com
-Cc: deller@gmx.de, pavel@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-leds@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20260120125036.2203995-1-tessolveupstream@gmail.com>
- <20260120125036.2203995-2-tessolveupstream@gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260120125036.2203995-2-tessolveupstream@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Stat-Signature: sc1t1r9yjrbrwriah6z9pj8pwx36gdnt
+X-Rspamd-Server: rspamout04
+X-Rspamd-Queue-Id: 98F652001E
+X-Session-Marker: 726F737465647440676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX1+NCAIc05kvRYS+kWiNkh9HaI1GuceIB1g=
+X-HE-Tag: 1768925305-657059
+X-HE-Meta: U2FsdGVkX1/uU2YSjMw0vIE0Yatvg1jcqqbPKHGWS59S8kwiHZ15FGdbhu4NNd2RwVPlZ3QKDZ3ruvQ0DJCdE0w2t+Yo0bNYRW1/60jzus6Ia72jP58jgpXLvCPzjfvi0Uouif0auLB03V4OKy4X6YTrxINp1X++KSPPdxWSy63angtP7Qk9MVjZFKGIWo/LCTTa8SX5HzSzPVzClLeR0N1D60CMVc+3tb23FQ1HJ2vON2fNIfF3hdQMyVZwnrzQWuD0Qf32avV5XmPl23O0i56cfaPaPfyAb92avUHzwD9PedTLl/iP7b2vOyGarYQg7CqoM03FiHRhXsc3zXVHMCRCgkKyutQ1
 
-On 20/01/2026 13:50, Sudarshan Shetty wrote:
-> Update the gpio-backlight binding to support configurations that require
-> more than one GPIO for enabling/disabling the backlight.
+On Wed, 14 Jan 2026 15:59:55 +0100
+Sebastian Andrzej Siewior <bigeasy@linutronix.de> wrote:
 
-
-Why? Which devices need it? How a backlight would have three enable
-GPIOs? I really do not believe, so you need to write proper hardware
-justification.
-
-> 
-> Signed-off-by: Sudarshan Shetty <tessolveupstream@gmail.com>
-> ---
->  .../leds/backlight/gpio-backlight.yaml        | 24 +++++++++++++++++--
->  1 file changed, 22 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
-> index 584030b6b0b9..4e4a856cbcd7 100644
-> --- a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
-> +++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
-> @@ -16,8 +16,18 @@ properties:
->      const: gpio-backlight
+> @@ -3362,22 +3362,6 @@ void console_unlock(void)
+>  }
+>  EXPORT_SYMBOL(console_unlock);
 >  
->    gpios:
-> -    description: The gpio that is used for enabling/disabling the backlight.
-> -    maxItems: 1
-> +    description: |
-> +      The gpio that is used for enabling/disabling the backlight.
-> +      Multiple GPIOs can be specified for panels that require several
-> +      enable signals. All GPIOs are controlled together.
-> +    type: array
+> -/**
+> - * console_conditional_schedule - yield the CPU if required
 
-There is no such syntax in the bindings, from where did you get it? Type
-is already defined.
+Egad! That goes all the way back to 2002:
 
-items:
-  minItems: 1
-  maxItems: 3
+  https://git.kernel.org/pub/scm/linux/kernel/git/history/history.git/commit/?id=a880f45a48be2956d2c78a839c472287d54435c1
+
+> - *
+> - * If the console code is currently allowed to sleep, and
+> - * if this CPU should yield the CPU to another task, do
+> - * so here.
+> - *
+> - * Must be called within console_lock();.
+> - */
+> -void __sched console_conditional_schedule(void)
+> -{
+> -	if (console_may_schedule)
+> -		cond_resched();
+> -}
+> -EXPORT_SYMBOL(console_conditional_schedule);
+
+I'm assuming this likely isn't needed anymore. I don't know of any reason
+it needs to stay.
+
+Should we just remove it and see what breaks?
+
+-- Steve
 
 
-> +    minItems: 1
-> +    items:
-> +      type: array
-> +      minItems: 3
-> +      maxItems: 3
-> +      items:
-> +        type: integer
 
-All this is some odd stuff - just to be clear, don't send us LLM output.
-I don't want to waste my time to review microslop.
-
-Was it done with help of Microslop?
-
-Best regards,
-Krzysztof
+> -
+>  void console_unblank(void)
+>  {
+>  	bool found_unblank = false;

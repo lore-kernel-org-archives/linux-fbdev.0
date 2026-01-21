@@ -1,69 +1,69 @@
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013013.outbound.protection.outlook.com [40.93.196.13])
+Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazon11010034.outbound.protection.outlook.com [52.101.85.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B56644D03C;
-	Wed, 21 Jan 2026 07:28:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73CED3D410F;
+	Wed, 21 Jan 2026 08:08:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.85.34
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768980484; cv=fail; b=uT4tWwoJaey0XGsaQBHC2RqUJ7IKFMakydlbcNlr5bR9hJDba0LsYbLR3G2dLYsRiwxE0kM4jgFlWsLUjEc2d2zmCzsvtJl2Q3VcHMctTC2jaH4LnJmix79njHnILXMl1nHy0cWpsEmVrZM5c90LcIkjk20fPeW5hQmB8QVgH0Q=
+	t=1768982905; cv=fail; b=X3tW5kKci1U1wUP1I9j3YmIynPr5ajlMdklMNuYy6BPDkYDgMmf4b+EC1Qisei7WzhKpvX9tJFFb/8QzW2b/hwOljd+ICpwl+O74Zbbz8ckhRNwiv9JYhC88S5/orv6bRQpMWEs2Wls4uxzmq9KA6q7f+Y6TD7icMB+hritzElQ=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768980484; c=relaxed/simple;
-	bh=mVjYC92jxnWd08/+oA3/fT/cQVlBeV1qiLobZG6cuyo=;
+	s=arc-20240116; t=1768982905; c=relaxed/simple;
+	bh=Q5xb4nw5VJst4xbJj8k8NUOZQ7nTBOKZ3G7DAZED//c=;
 	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=JEqOhrkSSgOsphF6djjNFjuneWTjFUp92jIPk/AB17hjraWsh0xGTqknpW+ClOHyxWP54F79v5tCFzwsSVuXt21H3XJOwcANMZr/d7Sc5juoaFB8GuLb9hccqIH4xZ7U/Z5iT8fV9keKdiHOnS+2mnCvXIJeHChK6YWYPMO644s=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=GpT49npf; arc=fail smtp.client-ip=40.93.196.13
+	 MIME-Version:Content-Type; b=jsNTu0pixT7Bm2FfHbo5ES3OqJGiMJxvn9eJLemSz/rQDYPvXWr/BOmMM+si2v4g77hncH5RQ+UHj72Bt1Gc1UKkExQONwf45EryhMupGVbppp/iOdKTWqKgEKX3icoQnFa0XBOY7Oev5lCvgqX/NIGJTXX/uyD3xfDX86T/qT0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=oemnVqHS; arc=fail smtp.client-ip=52.101.85.34
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="GpT49npf"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="oemnVqHS"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Pmxse42eKMcZ2DE+HeKTz1wgOAdrf3IfGN4L5Luew1/pFcZAvZ/gHpPCeX5pOP41liC/bfMAxH2ShvQsAAz5M9OT1ZAV7s4gDUOgoQtzyeH6+cwbBm7tRIpeafYQaGqWnfNUp28VP82pphI/p0n+6HS69oCgelWW1lA6xoXHvrRxTc3gth6gu7czNYJHq8DYSqGbA0Yryjg0dBDxL5aBoRm1Z2LezI65Rot+upw0GzaFUqE3TUvMEMYbYQZ8dDOTnP2KMGgZKEBWV0Vf4m/BFfwoiHmIoB20DKzr61GFKT86/2/UAux0GZwybhIXBuiT1qz3jtBczJPq9M8Fmh0jLA==
+ b=j2l342ef7IroXVigXOVsON7VcFDYHdIdYS9dM2fFd81wys5JNE5M0RU2P+XIYU5CepLE6qUbJmIPeNA8gt1zXwfePPUEcsXvtAAikTcH/9oa2FjNs8SIYILgWZbdMIJeH229V+g7qyS2CvXTu9BbfWGia4eUrpNxJUR/x/lWcLmgbHx8I0zDEec+md6QI1U6DpYSeEPPOoJhARJ15rZsx9inLQS7PW/SFSXopycela1SAYyoCSH333TR3tp3W6sOth9WFB/CgRfq3PgSb/00+bPS0LG4AVPD90w6SatAA9CAsjAM0YFxUtGiqkQgFNCf7C4ojeOfg2LRJQnDgxi4mw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UU0BnDKm6Jw6VPR+llbTYp8fU2+RJHE7neoydQrNvlY=;
- b=BPeAtDSQ+lO6JjHVSsuZYqFy6fe3I9vPktONGbsnPC07sh0t8zy1oDAQRnGhqGS8R/bTnsUKaUfQnxtAwVm0JtxiFaXDmZqVv0o90lHMThfveNWaYwy07rCBGVvU4SEDiAdiCcvEatImYoIzKu7hA2Zm8MZi20sbngehu9hH/HwuHsyU7qXyFD5uMDTLbX2b1ikjMaB6nlNf+9NEmU9+X0tjZ0sTOUifbibh1ldIh5mGqf1lQhuVQ6whMO55fCmdVA+fm+1+FUn1K9SQAhOU24sj3IhOPl5cgyGD8KT6fUNXbueRDVUum+zaKcIcJnQMxj3gBJO5ZJPM71Bzc2QGtA==
+ bh=pHVJd6REl+meqWtvaqgwQfiNlcwUHCoPoutxoGdIu94=;
+ b=u9I8+/PZ4EohZj1aMWxp7znT4ryVc/j9TyxrL34UxNGdNcRVhayb/01ZkhpwetqYyWDrDVLL65BCduCnpgBVGKL9AqiKFqIC0bz6QF8ImMaeubf6ebYUlDy+PuSm5HijndVVspgU5PMafHVxwziuliHnrSZtKF1/CTJDnamnVxaO/ghX5depeLVX62IKwptFAxsBcQYOU7Mb1iXjCBiC0viDC2qRpIDXUrrhA7bmGQls/V93edtkt2KaSDclcrRgonbIWtMPtHGGwDKwyWYhfAp8ZEpOLzTX3BXeA4fXlu6oMb3hu0VYAO43MOqO6eTNvxp0eXa51b4N8YXQBcTX9A==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.161) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ 216.228.118.232) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
  dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
  dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UU0BnDKm6Jw6VPR+llbTYp8fU2+RJHE7neoydQrNvlY=;
- b=GpT49npfmQNRtqzuf8mAHfgDaXtF8sMxonvUN2+BoxhT0/l1gh0/WUnY5cfMM9Cq2D5al15e0m1yizFLTw28V8CYcaDI56WUbaBQcW4W/ViWhZyHY4wAicawaSE7oHBufJINuWvWiFzYxwVC61AiO5eBwp6LYdZjtvyeu21pIK3ibR57cVRwfYdZI+HiCGxFJ/UYUQVw/UP8i19DybYJ5EIZLIKlZADoinZsvK2+C3teXuSFB6Yjyxze6E6HXkddaUXEMjuN7urB/bOk6L3mGNxsKACZhkw6KVekpCIYTDIVs8JNw1NivCI3uahpTrfmVkglsiNz7Drfh5aZfkjiAg==
-Received: from BY5PR20CA0027.namprd20.prod.outlook.com (2603:10b6:a03:1f4::40)
- by MN2PR12MB4456.namprd12.prod.outlook.com (2603:10b6:208:266::15) with
+ bh=pHVJd6REl+meqWtvaqgwQfiNlcwUHCoPoutxoGdIu94=;
+ b=oemnVqHSZLDs0H2V9KuAbRc1b3RmiPFn4VMa48LEenyhPL+zYRz1vmKr1PzhXv6BcmSs80wsV+8gmHmqx839jKCoN1hIhwmLFCrU70Jpk0ziPTclVu5vTqT2xmYxl0nF8tfdtf5mfGaisCcLpb0dti6NG2d2VBc7SnN+zLP5XpsTlmlYmNIdCfSgBCkfDX72j5WR4F30rce34GDvsxsUlyUEGkiHJY2hHtQsLprCpCPreYNQ/kJD8FVdHCaOTr0CtKQVW1VrEV9WZMgVJpz4iJ2FX+9IdjsP0JOHEiz+rh0KD6TH41YHII4isiBMqSGoCeAhpKctibgQztFs4wPByQ==
+Received: from BLAP220CA0008.NAMP220.PROD.OUTLOOK.COM (2603:10b6:208:32c::13)
+ by PH7PR12MB8016.namprd12.prod.outlook.com (2603:10b6:510:26b::19) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.9; Wed, 21 Jan
- 2026 07:27:54 +0000
-Received: from SJ1PEPF00002313.namprd03.prod.outlook.com
- (2603:10b6:a03:1f4:cafe::86) by BY5PR20CA0027.outlook.office365.com
- (2603:10b6:a03:1f4::40) with Microsoft SMTP Server (version=TLS1_3,
+ 2026 08:08:06 +0000
+Received: from BN2PEPF00004FBA.namprd04.prod.outlook.com
+ (2603:10b6:208:32c:cafe::4) by BLAP220CA0008.outlook.office365.com
+ (2603:10b6:208:32c::13) with Microsoft SMTP Server (version=TLS1_3,
  cipher=TLS_AES_256_GCM_SHA384) id 15.20.9542.9 via Frontend Transport; Wed,
- 21 Jan 2026 07:27:54 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
+ 21 Jan 2026 08:08:04 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.118.232)
  smtp.mailfrom=nvidia.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=nvidia.com;
 Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.161) by
- SJ1PEPF00002313.mail.protection.outlook.com (10.167.242.167) with Microsoft
+ 216.228.118.232 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.118.232; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.118.232) by
+ BN2PEPF00004FBA.mail.protection.outlook.com (10.167.243.180) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9542.4 via Frontend Transport; Wed, 21 Jan 2026 07:27:54 +0000
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
- (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 20 Jan
- 2026 23:27:42 -0800
-Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail201.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Tue, 20 Jan
- 2026 23:27:41 -0800
-Received: from inno-thin-client (10.127.8.10) by mail.nvidia.com (10.129.68.9)
- with Microsoft SMTP Server id 15.2.2562.20 via Frontend Transport; Tue, 20
- Jan 2026 23:27:31 -0800
-Date: Wed, 21 Jan 2026 09:27:30 +0200
+ 15.20.9542.4 via Frontend Transport; Wed, 21 Jan 2026 08:08:05 +0000
+Received: from drhqmail201.nvidia.com (10.126.190.180) by mail.nvidia.com
+ (10.127.129.5) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 21 Jan
+ 2026 00:07:57 -0800
+Received: from drhqmail203.nvidia.com (10.126.190.182) by
+ drhqmail201.nvidia.com (10.126.190.180) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.20; Wed, 21 Jan 2026 00:07:56 -0800
+Received: from inno-thin-client (10.127.8.10) by mail.nvidia.com
+ (10.126.190.182) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
+ Transport; Wed, 21 Jan 2026 00:07:46 -0800
+Date: Wed, 21 Jan 2026 10:07:45 +0200
 From: Zhi Wang <zhiw@nvidia.com>
 To: Joel Fernandes <joelagnelf@nvidia.com>
 CC: <linux-kernel@vger.kernel.org>, Maarten Lankhorst
@@ -94,12 +94,12 @@ CC: <linux-kernel@vger.kernel.org>, Maarten Lankhorst
 	<linux-doc@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
 	<intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
 	<linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH RFC v6 01/26] rust: clist: Add support to interface with
- C linked lists
-Message-ID: <20260121092730.3628d290.zhiw@nvidia.com>
-In-Reply-To: <20260120204303.3229303-2-joelagnelf@nvidia.com>
+Subject: Re: [PATCH RFC v6 05/26] nova-core: mm: Add support to use PRAMIN
+ windows to write to VRAM
+Message-ID: <20260121100745.2b5a58e5.zhiw@nvidia.com>
+In-Reply-To: <20260120204303.3229303-6-joelagnelf@nvidia.com>
 References: <20260120204303.3229303-1-joelagnelf@nvidia.com>
-	<20260120204303.3229303-2-joelagnelf@nvidia.com>
+	<20260120204303.3229303-6-joelagnelf@nvidia.com>
 Organization: NVIDIA
 X-Mailer: Claws Mail 4.3.1 (GTK 3.24.33; x86_64-pc-linux-gnu)
 Precedence: bulk
@@ -113,365 +113,381 @@ Content-Transfer-Encoding: 7bit
 X-NV-OnPremToCloud: ExternallySecured
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF00002313:EE_|MN2PR12MB4456:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4f918599-7069-43f3-6508-08de58be97d4
+X-MS-TrafficTypeDiagnostic: BN2PEPF00004FBA:EE_|PH7PR12MB8016:EE_
+X-MS-Office365-Filtering-Correlation-Id: 46ebc44a-58ca-4049-f78b-08de58c43520
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|376014|7416014|1800799024|36860700013|82310400026;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?fWNZHfQ5YQoeg3Rpod5xCOFgzPyAOqY2+gKEEAQb3Z+oX4gSietvidB0vQnf?=
- =?us-ascii?Q?51vJilMSJymj4LIsjQXpUEwGqzvVCueNkZrqMRJXsf+ekJL/NDeTCW4O8Rc0?=
- =?us-ascii?Q?y/jKXEIKRQmsWIJsh5UH/Z3El7m3/HIP/2raULLBhn0xRlWWit3nuZHAsHYi?=
- =?us-ascii?Q?JCwUlQ8Yhm7QMtFymMeVgKrDUZjV5ikGhi+NUuYJ0or/hAbW/JYdfT/ncVR4?=
- =?us-ascii?Q?DURoY0phWhOlVaiGzDI4h1YQOIucUjZppEaBuifuD4Cnz/LoSr/exzCsSvqq?=
- =?us-ascii?Q?rp1+C7EquOtCpz1XRz1rnkzVuFsFFnz9ipWVUzKQY1f7zast6mhLUL5il0Fc?=
- =?us-ascii?Q?L1elbZW3C5gQfMNdsl1d4Z7A693IcMLAqZ+HU1b/QETZs9ZHrRhopdzFKZCd?=
- =?us-ascii?Q?aBe0mLUEgCW0Izt30c4bN3zXi5K0Z++jKXPLQF/IOfYqcr5PD/yOsoALEsML?=
- =?us-ascii?Q?jVG0TYf7+o1EQiUjRUJTaszNOPfxcxCpsFxzx0xyjqeIzwJnMXskSrNMmzzm?=
- =?us-ascii?Q?QwZipFOjuKzk8oQRjZv2f1YoW8keT+pd/ntm3C7tjk5vut72qst4gl9IPnkD?=
- =?us-ascii?Q?LajYErVHzg+Nyp6ZtiXkFATyS8jme+cl3HvQv+5QuUqeRl2wxZ8gDvh/Nx2D?=
- =?us-ascii?Q?iNWHKX9CWDVH+oOdezv8hgx4bsKDBymVV/r7qxqG/wVpmg3wSU+xcCKLEsLC?=
- =?us-ascii?Q?R9bwek18+nMgVrF34GPDfJw7+bupngKxsYgN4/gqoGeEqKkrgAmKefcVbvj0?=
- =?us-ascii?Q?2LfQ4J6r4SwQWpTq59kaCC8HTiYz0jW58MlB7fl8RbQl19GLRVL8r6Yk2vXu?=
- =?us-ascii?Q?b6azY+pfRMBhKVtOmBFe687OyuYh7EhjtRRbqBizvDqRaCmclTxiiKL2R0L+?=
- =?us-ascii?Q?tc2/1YcyQ6Ku9Ve5grxwZ352/fhjouvYfqBIiR81oVP9Ozje8M9JX6VkyQsG?=
- =?us-ascii?Q?MkFXYO+Va/hdTGPBOyLDQc1WNqDzv1/CYaHcUSj/Xq42sYdMomqsLMLN3h0e?=
- =?us-ascii?Q?LIZDV44LMpzYwXKr8/nW+KbDc29U0UtJL9/znDQSUK/VrHgTly6+tKNGBzK6?=
- =?us-ascii?Q?HILiOnrDYvxarcqB6ki6h9m5pdyGSODhN2UF123SQh3OB8UbnMR9TOp0BGvG?=
- =?us-ascii?Q?rxkblbrfFIccK0DWL6wBexzkQhEkuY7BCxeHalVFcTGJlUmcJE6k0ZlZh8/F?=
- =?us-ascii?Q?f3m0WgbbJanejdAZhig1cchiT5D7ZkoEsbLqn8hd3pNhBCr3sQZVHrNI/BfO?=
- =?us-ascii?Q?hs2dkoJBf9eNCpASRcCiiA8kcDDVYlxIDM3q+bPii8MZiJroFhBOv/vWersQ?=
- =?us-ascii?Q?XluWc8J+HzwZ8U0kmfZptQao/sZMNZMDRzdpYty09IIspOhaIflYFG+dHQkO?=
- =?us-ascii?Q?WBBX+eZJccVTinM2yh31zptEN3r40xvNUuw0/Xrur35bhjjsP26u3SYltFFr?=
- =?us-ascii?Q?cdNC3EZ2uI241aWD4sKkEdLNjcRx74hcIuJBenvYFw3JtF2L/GDVU51buIPM?=
- =?us-ascii?Q?oJSiWwyXNOG8BGV7V3jzZh2XQwcCa2FSKLGSi+x+dVs5Iozy02s0ScJVGg0i?=
- =?us-ascii?Q?yL2Y9Og6Q2AsqAyyB94Q0CRxOAGBvc+eC5fo0CbUWO1LzAULe4t3QceNwYMY?=
- =?us-ascii?Q?73+8lQ42w7EAmHlwjoPD0FQT2111QGaBGfcGcXSNM8RSJqoRPO+vuTD7R3hV?=
- =?us-ascii?Q?xpNJOA=3D=3D?=
+	=?us-ascii?Q?+/DG+zXL3MSiopJ83yiyS9mf3jozI9zbO4SatqCGczg1jsR/lUflES9WN9t+?=
+ =?us-ascii?Q?2Y3Pw6zMZUEQT48BPPN1c+ezscimrAyhG7Tjp55J4/3gWDYz5IeXAN/69WxA?=
+ =?us-ascii?Q?s91+QWGt1wsgIAEIDdt+cW51yMHT/wpX0kiYc6EJYYvpNTwL5H3PNga5ysJi?=
+ =?us-ascii?Q?w4SS6vN0rBRwSBpTs4BVnPOj60s7ztDvOhQYzhz7R52URABLosy17wumdMTY?=
+ =?us-ascii?Q?Pg9CjSer4dmrWdpn5c5Gyv6skwtOwiaCaqbF5mbeGVwAX2ziU2+JpnP+XD7D?=
+ =?us-ascii?Q?ewSwblu5BJTda2IPwMlI5tvhSLgrN7UHOSY4wdrf7u3xFNbDP0uLGzqyhzYH?=
+ =?us-ascii?Q?VX+Sj4/VMNky+qKf3uQD8E5bqMsN1bgqZtTpal0338PqroXWMJAnFVmIuqb3?=
+ =?us-ascii?Q?RwwtoLM+KUJ8BiOVVprEC4vUGI01XUKv2n/GGWi9ON86sTayLIeL67NNL1KA?=
+ =?us-ascii?Q?ZHm43I5Zfw3fk79U7WpGON8WooMhmwDUzGEO0zquHzN4eoU4k8+VvT/Lyokh?=
+ =?us-ascii?Q?Bqq4YuPgQGvjApb9K2qfxsb0Xg7hEgpoMcywsTERFnm73OuK4Oe2AZdZFPWO?=
+ =?us-ascii?Q?WVp9INkBlj8ZteS/DKrf2fG6CzU/MYcj5YcS/c7M/QPWLHs4Jp444tXoEPbC?=
+ =?us-ascii?Q?XVwcLljII4rcq6yVVfRWEcYIAkMseOQEnhNjOtGFPZtyKFFLlRQHwWxA1VQv?=
+ =?us-ascii?Q?HD2H7TMrZkum9tvwZ4WreNRPudjUr1CiwKQoiTv9Vb/O/CynZ5gBu5jV1bL6?=
+ =?us-ascii?Q?1RYTyX2L0pcUxPpcGTm1+q4BYrgSYSWFKtqcPy0Gt2JfPwtB3KEcaSehyY5C?=
+ =?us-ascii?Q?4mS2Uf6XHghFslk71Mfuh9J/XmkWEMdhcTyDKqMcbgb75c/Py//Fbk/apCCd?=
+ =?us-ascii?Q?ufN54yv1WyE+t15nNXAGPdEadm+RFlAe70B0pnb5pnQ8/PdEZI+wsCZU9z3T?=
+ =?us-ascii?Q?BA+UV+c/VaHfJ9iSTJTXBvPQTtbEMzhQ7L1A64/HJ0Vm15/a2nTCIfs/ramH?=
+ =?us-ascii?Q?mOTYT3dJVqyqe0/o70FL2O2rF7yGjJBwZ40WITqj70mzpQgXOW/SKGD2tgzl?=
+ =?us-ascii?Q?MgECeWYl1vy4callMa5HMjR1M9xVJUHrrs9LWTGXUEcqNWT4UWwz5pbnRKkk?=
+ =?us-ascii?Q?IH7RuvG747cxP2wqs5i2nhSwIOvyBzSONmpJTtNLEdDXQ5eYyEyUzDE49fk0?=
+ =?us-ascii?Q?UNAWT12UWt/4AKa1VkOoUoo3ref2yKdqnGnn3KdNS3JLmlt7ojtIVUnUF92d?=
+ =?us-ascii?Q?c3yi78FqojwbhRWGFjT7nG2jq2PRFovD3LYR54Q/mySZmbUEUNRM858wkjy+?=
+ =?us-ascii?Q?Hzn/lL885c2j5hE/Q/xgXo3Bo1P6XQQf6oExvY+nTiJHdlPZ6M6jQrEm/Gao?=
+ =?us-ascii?Q?fU5sWK/t671wJuttIYikf+5lnvR3aG59d2soQsfnm0pZyuD+ow+9Ujlq4/Ul?=
+ =?us-ascii?Q?brytRNEQbd/qwwDRwKNKIjTVsaTS4/5Aev0MnFLtma1kq4m2BUXDyeOseO1U?=
+ =?us-ascii?Q?VcttVioRg4KJ2SbgJyrX3jAORUy0jQarVMP1z7YWFndDaYAnYjPq1BVTW4R4?=
+ =?us-ascii?Q?AKlzZ5V7NNmfrbqtxYKHMJk+umk3jWTEaW1lDSPcIlc33iVZ7M/xQKjRy8cI?=
+ =?us-ascii?Q?xe65WhZknvWB70PQmJnYt1uJnDlYkR2P8+v9d7dYAVlVPUOWvlaScHrMvXAi?=
+ =?us-ascii?Q?jOOLAQ=3D=3D?=
 X-Forefront-Antispam-Report:
-	CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(36860700013)(82310400026);DIR:OUT;SFP:1101;
+	CIP:216.228.118.232;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc7edge1.nvidia.com;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(36860700013)(82310400026);DIR:OUT;SFP:1101;
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jan 2026 07:27:54.6863
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jan 2026 08:08:05.9895
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4f918599-7069-43f3-6508-08de58be97d4
+X-MS-Exchange-CrossTenant-Network-Message-Id: 46ebc44a-58ca-4049-f78b-08de58c43520
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.118.232];Helo=[mail.nvidia.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF00002313.namprd03.prod.outlook.com
+	BN2PEPF00004FBA.namprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4456
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB8016
 
-On Tue, 20 Jan 2026 15:42:38 -0500
+On Tue, 20 Jan 2026 15:42:42 -0500
 Joel Fernandes <joelagnelf@nvidia.com> wrote:
 
-> Add a new module `clist` for working with C's doubly circular linked
-> lists. Provide low-level iteration over list nodes.
+> PRAMIN apertures are a crucial mechanism to direct read/write to VRAM.
+> Add support for the same.
 > 
-> Typed iteration over actual items is provided with a `clist_create`
-> macro to assist in creation of the `Clist` type.
-> 
-> Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
-> ---
 
-snip
-
-> +/// Initialize a `list_head` object to point to itself.
-> +///
-> +/// # Safety
-> +///
-> +/// `list` must be a valid pointer to a `list_head` object.
-> +#[inline]
-> +pub unsafe fn init_list_head(list: *mut bindings::list_head) {
-> +    // SAFETY: Caller guarantees `list` is a valid pointer to a
-> `list_head`.
-> +    unsafe {
-> +        (*list).next = list;
-> +        (*list).prev = list;
-> +    }
-> +}
-> +
-
-Might be better to have a C helper? since INIT_LIST_HEAD() has WRITE_ONCE()
-for memory ordering. This one seems not equal to it.
+I went through the code, this seems not designed for multiple users. As
+this is used for writting PTEs for page tables, can you shed some light
+about the plan of how we should handle the concurrency of writting multiple
+page table PTEs, e.g. when two GPU memory mapping in two different GPU
+page tables are procceding concurrently, this could happen when people
+creating vGPUs concurrently. 
 
 Z.
 
-> +/// Wraps a `list_head` object for use in intrusive linked lists.
+> Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
+> ---
+>  drivers/gpu/nova-core/mm/mod.rs    |   5 +
+>  drivers/gpu/nova-core/mm/pramin.rs | 244 +++++++++++++++++++++++++++++
+>  drivers/gpu/nova-core/nova_core.rs |   1 +
+>  drivers/gpu/nova-core/regs.rs      |   5 +
+>  4 files changed, 255 insertions(+)
+>  create mode 100644 drivers/gpu/nova-core/mm/mod.rs
+>  create mode 100644 drivers/gpu/nova-core/mm/pramin.rs
+> 
+> diff --git a/drivers/gpu/nova-core/mm/mod.rs
+> b/drivers/gpu/nova-core/mm/mod.rs new file mode 100644
+> index 000000000000..7a5dd4220c67
+> --- /dev/null
+> +++ b/drivers/gpu/nova-core/mm/mod.rs
+> @@ -0,0 +1,5 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +//! Memory management subsystems for nova-core.
+> +
+> +pub(crate) mod pramin;
+> diff --git a/drivers/gpu/nova-core/mm/pramin.rs
+> b/drivers/gpu/nova-core/mm/pramin.rs new file mode 100644
+> index 000000000000..6a7ea2dc7d77
+> --- /dev/null
+> +++ b/drivers/gpu/nova-core/mm/pramin.rs
+> @@ -0,0 +1,244 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +//! Direct VRAM access through the PRAMIN aperture.
+> +//!
+> +//! PRAMIN provides a 1MB sliding window into VRAM through BAR0,
+> allowing the CPU to access +//! video memory directly. The [`Window`]
+> type automatically repositions the window when +//! accessing different
+> VRAM regions and restores the original position on drop. This allows
+> +//! to reuse the same window for multiple accesses in the same window.
+> +//! +//! The PRAMIN aperture is a 1MB region at BAR0 + 0x700000 for all
+> GPUs. The window base is +//! controlled by the `NV_PBUS_BAR0_WINDOW`
+> register and must be 64KB aligned. +//!
+> +//! # Examples
+> +//!
+> +//! ## Basic read/write
+> +//!
+> +//! ```no_run
+> +//! use crate::driver::Bar0;
+> +//! use crate::mm::pramin;
+> +//! use kernel::devres::Devres;
+> +//! use kernel::sync::Arc;
+> +//!
+> +//! fn example(devres_bar: Arc<Devres<Bar0>>) -> Result<()> {
+> +//!     let mut pram_win = pramin::Window::new(devres_bar)?;
+> +//!
+> +//!     // Write and read back.
+> +//!     pram_win.try_write32(0x100, 0xDEADBEEF)?;
+> +//!     let val = pram_win.try_read32(0x100)?;
+> +//!     assert_eq!(val, 0xDEADBEEF);
+> +//!
+> +//!     Ok(())
+> +//!     // Original window position restored on drop.
+> +//! }
+> +//! ```
+> +//!
+> +//! ## Auto-repositioning across VRAM regions
+> +//!
+> +//! ```no_run
+> +//! use crate::driver::Bar0;
+> +//! use crate::mm::pramin;
+> +//! use kernel::devres::Devres;
+> +//! use kernel::sync::Arc;
+> +//!
+> +//! fn example(devres_bar: Arc<Devres<Bar0>>) -> Result<()> {
+> +//!     let mut pram_win = pramin::Window::new(devres_bar)?;
+> +//!
+> +//!     // Access first 1MB region.
+> +//!     pram_win.try_write32(0x100, 0x11111111)?;
+> +//!
+> +//!     // Access at 2MB - window auto-repositions.
+> +//!     pram_win.try_write32(0x200000, 0x22222222)?;
+> +//!
+> +//!     // Back to first region - window repositions again.
+> +//!     let val = pram_win.try_read32(0x100)?;
+> +//!     assert_eq!(val, 0x11111111);
+> +//!
+> +//!     Ok(())
+> +//! }
+> +//! ```
+> +
+> +#![allow(unused)]
+> +
+> +use crate::{
+> +    driver::Bar0,
+> +    regs, //
+> +};
+> +
+> +use kernel::bits::genmask_u64;
+> +use kernel::devres::Devres;
+> +use kernel::prelude::*;
+> +use kernel::ptr::{
+> +    Alignable,
+> +    Alignment, //
+> +};
+> +use kernel::sizes::{
+> +    SZ_1M,
+> +    SZ_64K, //
+> +};
+> +use kernel::sync::Arc;
+> +
+> +/// PRAMIN aperture base offset in BAR0.
+> +const PRAMIN_BASE: usize = 0x700000;
+> +
+> +/// PRAMIN aperture size (1MB).
+> +const PRAMIN_SIZE: usize = SZ_1M;
+> +
+> +/// 64KB alignment for window base.
+> +const WINDOW_ALIGN: Alignment = Alignment::new::<SZ_64K>();
+> +
+> +/// Maximum addressable VRAM offset (40-bit address space).
 > +///
-> +/// # Invariants
-> +///
-> +/// - [`CListHead`] represents an allocated and valid `list_head`
-> structure. +/// - Once a [`CListHead`] is created in Rust, it will not
-> be modified by non-Rust code. +/// - All `list_head` for individual
-> items are not modified for the lifetime of [`CListHead`].
-> +#[repr(transparent)] +pub struct CListHead(Opaque<bindings::list_head>);
+> +/// The `NV_PBUS_BAR0_WINDOW` register has a 24-bit `window_base` field
+> (bits 23:0) that stores +/// bits [39:16] of the target VRAM address.
+> This limits the addressable space to 2^40 bytes. +///
+> +/// CAST: On 64-bit systems, this fits in usize.
+> +const MAX_VRAM_OFFSET: usize = genmask_u64(0..=39) as usize;
 > +
-> +impl CListHead {
-> +    /// Create a `&CListHead` reference from a raw `list_head` pointer.
-> +    ///
-> +    /// # Safety
-> +    ///
-> +    /// - `ptr` must be a valid pointer to an allocated and initialized
-> `list_head` structure.
-> +    /// - `ptr` must remain valid and unmodified for the lifetime `'a`.
-> +    #[inline]
-> +    pub unsafe fn from_raw<'a>(ptr: *mut bindings::list_head) -> &'a
-> Self {
-> +        // SAFETY:
-> +        // - [`CListHead`] has same layout as `list_head`.
-> +        // - `ptr` is valid and unmodified for 'a.
-> +        unsafe { &*ptr.cast() }
-> +    }
-> +
-> +    /// Get the raw `list_head` pointer.
-> +    #[inline]
-> +    pub fn as_raw(&self) -> *mut bindings::list_head {
-> +        self.0.get()
-> +    }
-> +
-> +    /// Get the next [`CListHead`] in the list.
-> +    #[inline]
-> +    pub fn next(&self) -> &Self {
-> +        let raw = self.as_raw();
-> +        // SAFETY:
-> +        // - `self.as_raw()` is valid per type invariants.
-> +        // - The `next` pointer is guaranteed to be non-NULL.
-> +        unsafe { Self::from_raw((*raw).next) }
-> +    }
-> +
-> +    /// Get the previous [`CListHead`] in the list.
-> +    #[inline]
-> +    pub fn prev(&self) -> &Self {
-> +        let raw = self.as_raw();
-> +        // SAFETY:
-> +        // - self.as_raw() is valid per type invariants.
-> +        // - The `prev` pointer is guaranteed to be non-NULL.
-> +        unsafe { Self::from_raw((*raw).prev) }
-> +    }
-> +
-> +    /// Check if this node is linked in a list (not isolated).
-> +    #[inline]
-> +    pub fn is_linked(&self) -> bool {
-> +        let raw = self.as_raw();
-> +        // SAFETY: self.as_raw() is valid per type invariants.
-> +        unsafe { (*raw).next != raw && (*raw).prev != raw }
-> +    }
-> +
-> +    /// Fallible pin-initializer that initializes and then calls user
-> closure.
-> +    ///
-> +    /// Initializes the list head first, then passes `&CListHead` to
-> the closure.
-> +    /// This hides the raw FFI pointer from the user.
-> +    pub fn try_init<E>(
-> +        init_func: impl FnOnce(&CListHead) -> Result<(), E>,
-> +    ) -> impl PinInit<Self, E> {
-> +        // SAFETY: init_list_head initializes the list_head to point to
-> itself.
-> +        // After initialization, we create a reference to pass to the
-> closure.
-> +        unsafe {
-> +            pin_init::pin_init_from_closure(move |slot: *mut Self| {
-> +                init_list_head(slot.cast());
-> +                // SAFETY: slot is now initialized, safe to create
-> reference.
-> +                init_func(&*slot)
-> +            })
+> +/// Generate a PRAMIN read accessor.
+> +macro_rules! define_pramin_read {
+> +    ($name:ident, $ty:ty) => {
+> +        #[doc = concat!("Read a `", stringify!($ty), "` from VRAM at
+> the given offset.")]
+> +        pub(crate) fn $name(&mut self, vram_offset: usize) ->
+> Result<$ty> {
+> +            // Compute window parameters without bar reference.
+> +            let (bar_offset, new_base) =
+> +                self.compute_window(vram_offset,
+> ::core::mem::size_of::<$ty>())?; +
+> +            // Update window base if needed and perform read.
+> +            let bar = self.bar.try_access().ok_or(ENODEV)?;
+> +            if let Some(base) = new_base {
+> +                Self::write_window_base(&bar, base);
+> +                self.current_base = base;
+> +            }
+> +            bar.$name(bar_offset)
 > +        }
-> +    }
+> +    };
 > +}
 > +
-> +// SAFETY: [`CListHead`] can be sent to any thread.
-> +unsafe impl Send for CListHead {}
-> +
-> +// SAFETY: [`CListHead`] can be shared among threads as it is not
-> modified +// by non-Rust code per type invariants.
-> +unsafe impl Sync for CListHead {}
-> +
-> +impl PartialEq for CListHead {
-> +    fn eq(&self, other: &Self) -> bool {
-> +        self.as_raw() == other.as_raw()
-> +    }
+> +/// Generate a PRAMIN write accessor.
+> +macro_rules! define_pramin_write {
+> +    ($name:ident, $ty:ty) => {
+> +        #[doc = concat!("Write a `", stringify!($ty), "` to VRAM at the
+> given offset.")]
+> +        pub(crate) fn $name(&mut self, vram_offset: usize, value: $ty)
+> -> Result {
+> +            // Compute window parameters without bar reference.
+> +            let (bar_offset, new_base) =
+> +                self.compute_window(vram_offset,
+> ::core::mem::size_of::<$ty>())?; +
+> +            // Update window base if needed and perform write.
+> +            let bar = self.bar.try_access().ok_or(ENODEV)?;
+> +            if let Some(base) = new_base {
+> +                Self::write_window_base(&bar, base);
+> +                self.current_base = base;
+> +            }
+> +            bar.$name(value, bar_offset)
+> +        }
+> +    };
 > +}
 > +
-> +impl Eq for CListHead {}
-> +
-> +/// Low-level iterator over `list_head` nodes.
+> +/// PRAMIN window for direct VRAM access.
 > +///
-> +/// An iterator used to iterate over a C intrusive linked list
-> (`list_head`). Caller has to +/// perform conversion of returned
-> [`CListHead`] to an item (using `container_of` macro or similar). +///
-> +/// # Invariants
-> +///
-> +/// [`CListHeadIter`] is iterating over an allocated, initialized and
-> valid list. +struct CListHeadIter<'a> {
-> +    current_head: &'a CListHead,
-> +    list_head: &'a CListHead,
+> +/// The window auto-repositions when accessing VRAM offsets outside the
+> current 1MB range. +/// Original window position is saved on creation
+> and restored on drop. +pub(crate) struct Window {
+> +    bar: Arc<Devres<Bar0>>,
+> +    saved_base: usize,
+> +    current_base: usize,
 > +}
 > +
-> +impl<'a> Iterator for CListHeadIter<'a> {
-> +    type Item = &'a CListHead;
+> +impl Window {
+> +    /// Create a new PRAMIN window accessor.
+> +    ///
+> +    /// Saves the current window position for restoration on drop.
+> +    pub(crate) fn new(bar: Arc<Devres<Bar0>>) -> Result<Self> {
+> +        let bar_access = bar.try_access().ok_or(ENODEV)?;
+> +        let saved_base = Self::try_read_window_base(&bar_access)?;
 > +
-> +    #[inline]
-> +    fn next(&mut self) -> Option<Self::Item> {
-> +        // Advance to next node.
-> +        let next = self.current_head.next();
+> +        Ok(Self {
+> +            bar,
+> +            saved_base,
+> +            current_base: saved_base,
+> +        })
+> +    }
 > +
-> +        // Check if we've circled back to the sentinel head.
-> +        if next == self.list_head {
-> +            None
+> +    /// Read the current window base from the BAR0_WINDOW register.
+> +    fn try_read_window_base(bar: &Bar0) -> Result<usize> {
+> +        let reg = regs::NV_PBUS_BAR0_WINDOW::read(bar);
+> +        let base = u64::from(reg.window_base());
+> +        let shifted = base.checked_shl(16).ok_or(EOVERFLOW)?;
+> +        shifted.try_into().map_err(|_| EOVERFLOW)
+> +    }
+> +
+> +    /// Write a new window base to the BAR0_WINDOW register.
+> +    fn write_window_base(bar: &Bar0, base: usize) {
+> +        // CAST:
+> +        // - We have guaranteed that the base is within the addressable
+> range (40-bits).
+> +        // - After >> 16, a 40-bit aligned base becomes 24 bits, which
+> fits in u32.
+> +        regs::NV_PBUS_BAR0_WINDOW::default()
+> +            .set_window_base((base >> 16) as u32)
+> +            .write(bar);
+> +    }
+> +
+> +    /// Compute window parameters for a VRAM access.
+> +    ///
+> +    /// Returns (bar_offset, new_base) where:
+> +    /// - bar_offset: The BAR0 offset to use for the access
+> +    /// - new_base: Some(base) if window needs repositioning, None
+> otherwise
+> +    fn compute_window(
+> +        &self,
+> +        vram_offset: usize,
+> +        access_size: usize,
+> +    ) -> Result<(usize, Option<usize>)> {
+> +        // Validate VRAM offset is within addressable range (40-bit
+> address space).
+> +        let end_offset =
+> vram_offset.checked_add(access_size).ok_or(EINVAL)?;
+> +        if end_offset > MAX_VRAM_OFFSET + 1 {
+> +            return Err(EINVAL);
+> +        }
+> +
+> +        // Calculate which 64KB-aligned base we need.
+> +        let needed_base = vram_offset.align_down(WINDOW_ALIGN);
+> +
+> +        // Calculate offset within the window.
+> +        let offset_in_window = vram_offset - needed_base;
+> +
+> +        // Check if access fits in 1MB window from this base.
+> +        if offset_in_window + access_size > PRAMIN_SIZE {
+> +            return Err(EINVAL);
+> +        }
+> +
+> +        // Return bar offset and whether window needs repositioning.
+> +        let new_base = if self.current_base != needed_base {
+> +            Some(needed_base)
 > +        } else {
-> +            self.current_head = next;
-> +            Some(self.current_head)
+> +            None
+> +        };
+> +
+> +        Ok((PRAMIN_BASE + offset_in_window, new_base))
+> +    }
+> +
+> +    define_pramin_read!(try_read8, u8);
+> +    define_pramin_read!(try_read16, u16);
+> +    define_pramin_read!(try_read32, u32);
+> +    define_pramin_read!(try_read64, u64);
+> +
+> +    define_pramin_write!(try_write8, u8);
+> +    define_pramin_write!(try_write16, u16);
+> +    define_pramin_write!(try_write32, u32);
+> +    define_pramin_write!(try_write64, u64);
+> +}
+> +
+> +impl Drop for Window {
+> +    fn drop(&mut self) {
+> +        // Restore the original window base if it changed.
+> +        if self.current_base != self.saved_base {
+> +            if let Some(bar) = self.bar.try_access() {
+> +                Self::write_window_base(&bar, self.saved_base);
+> +            }
 > +        }
 > +    }
 > +}
 > +
-> +impl<'a> FusedIterator for CListHeadIter<'a> {}
+> +// SAFETY: `Window` requires `&mut self` for all accessors.
+> +unsafe impl Send for Window {}
 > +
-> +/// A typed C linked list with a sentinel head.
-> +///
-> +/// A sentinel head represents the entire linked list and can be used
-> for +/// iteration over items of type `T`, it is not associated with a
-> specific item. +///
-> +/// The const generic `OFFSET` specifies the byte offset of the
-> `list_head` field within +/// the struct that `T` wraps.
-> +///
-> +/// # Invariants
-> +///
-> +/// - `head` is an allocated and valid C `list_head` structure that is
-> the list's sentinel. +/// - `OFFSET` is the byte offset of the
-> `list_head` field within the struct that `T` wraps. +/// - All the
-> list's `list_head` nodes are allocated and have valid next/prev
-> pointers. +/// - The underlying `list_head` (and entire list) is not
-> modified for the lifetime `'a`. +pub struct CList<'a, T, const OFFSET:
-> usize> {
-> +    head: &'a CListHead,
-> +    _phantom: PhantomData<&'a T>,
-> +}
+> +// SAFETY: `Window` requires `&mut self` for all accessors.
+> +unsafe impl Sync for Window {}
+> diff --git a/drivers/gpu/nova-core/nova_core.rs
+> b/drivers/gpu/nova-core/nova_core.rs index c1121e7c64c5..3de00db3279e
+> 100644 --- a/drivers/gpu/nova-core/nova_core.rs
+> +++ b/drivers/gpu/nova-core/nova_core.rs
+> @@ -13,6 +13,7 @@
+>  mod gfw;
+>  mod gpu;
+>  mod gsp;
+> +mod mm;
+>  mod num;
+>  mod regs;
+>  mod sbuffer;
+> diff --git a/drivers/gpu/nova-core/regs.rs
+> b/drivers/gpu/nova-core/regs.rs index 82cc6c0790e5..c8b8fbdcf608 100644
+> --- a/drivers/gpu/nova-core/regs.rs
+> +++ b/drivers/gpu/nova-core/regs.rs
+> @@ -96,6 +96,11 @@ fn fmt(&self, f: &mut kernel::fmt::Formatter<'_>) ->
+> kernel::fmt::Result { 31:16   frts_err_code as u16;
+>  });
+>  
+> +register!(NV_PBUS_BAR0_WINDOW @ 0x00001700, "BAR0 window control for
+> PRAMIN access" {
+> +    25:24   target as u8, "Target memory (0=VRAM, 1=SYS_MEM_COH,
+> 2=SYS_MEM_NONCOH)";
+> +    23:0    window_base as u32, "Window base address (bits 39:16 of FB
+> addr)"; +});
 > +
-> +impl<'a, T, const OFFSET: usize> CList<'a, T, OFFSET> {
-> +    /// Create a typed [`CList`] from a raw sentinel `list_head`
-> pointer.
-> +    ///
-> +    /// # Safety
-> +    ///
-> +    /// - `ptr` must be a valid pointer to an allocated and initialized
-> `list_head` structure
-> +    ///   representing a list sentinel.
-> +    /// - `ptr` must remain valid and unmodified for the lifetime `'a`.
-> +    /// - The list must contain items where the `list_head` field is at
-> byte offset `OFFSET`.
-> +    /// - `T` must be `#[repr(transparent)]` over the C struct.
-> +    #[inline]
-> +    pub unsafe fn from_raw(ptr: *mut bindings::list_head) -> Self {
-> +        Self {
-> +            // SAFETY: Caller guarantees `ptr` is a valid, sentinel
-> `list_head` object.
-> +            head: unsafe { CListHead::from_raw(ptr) },
-> +            _phantom: PhantomData,
-> +        }
-> +    }
-> +
-> +    /// Get the raw sentinel `list_head` pointer.
-> +    #[inline]
-> +    pub fn as_raw(&self) -> *mut bindings::list_head {
-> +        self.head.as_raw()
-> +    }
-> +
-> +    /// Check if the list is empty.
-> +    #[inline]
-> +    pub fn is_empty(&self) -> bool {
-> +        let raw = self.as_raw();
-> +        // SAFETY: self.as_raw() is valid per type invariants.
-> +        unsafe { (*raw).next == raw }
-> +    }
-> +
-> +    /// Create an iterator over typed items.
-> +    #[inline]
-> +    pub fn iter(&self) -> CListIter<'a, T, OFFSET> {
-> +        CListIter {
-> +            head_iter: CListHeadIter {
-> +                current_head: self.head,
-> +                list_head: self.head,
-> +            },
-> +            _phantom: PhantomData,
-> +        }
-> +    }
-> +}
-> +
-> +/// High-level iterator over typed list items.
-> +pub struct CListIter<'a, T, const OFFSET: usize> {
-> +    head_iter: CListHeadIter<'a>,
-> +    _phantom: PhantomData<&'a T>,
-> +}
-> +
-> +impl<'a, T, const OFFSET: usize> Iterator for CListIter<'a, T, OFFSET> {
-> +    type Item = &'a T;
-> +
-> +    fn next(&mut self) -> Option<Self::Item> {
-> +        let head = self.head_iter.next()?;
-> +
-> +        // Convert to item using OFFSET.
-> +        // SAFETY: `item_ptr` calculation from `OFFSET` (calculated
-> using offset_of!)
-> +        // is valid per invariants.
-> +        Some(unsafe { &*head.as_raw().byte_sub(OFFSET).cast::<T>() })
-> +    }
-> +}
-> +
-> +impl<'a, T, const OFFSET: usize> FusedIterator for CListIter<'a, T,
-> OFFSET> {} +
-> +/// Create a C doubly-circular linked list interface [`CList`] from a
-> raw `list_head` pointer. +///
-> +/// This macro creates a [`CList<T, OFFSET>`] that can iterate over
-> items of type `$rust_type` +/// linked via the `$field` field in the
-> underlying C struct `$c_type`. +///
-> +/// # Arguments
-> +///
-> +/// - `$head`: Raw pointer to the sentinel `list_head` object (`*mut
-> bindings::list_head`). +/// - `$rust_type`: Each item's rust wrapper
-> type. +/// - `$c_type`: Each item's C struct type that contains the
-> embedded `list_head`. +/// - `$field`: The name of the `list_head` field
-> within the C struct. +///
-> +/// # Safety
-> +///
-> +/// The caller must ensure:
-> +/// - `$head` is a valid, initialized sentinel `list_head` pointing to
-> a list that remains +///   unmodified for the lifetime of the rust
-> [`CList`]. +/// - The list contains items of type `$c_type` linked via
-> an embedded `$field`. +/// - `$rust_type` is `#[repr(transparent)]` over
-> `$c_type` or has compatible layout. +/// - The macro is called from an
-> unsafe block. +///
-> +/// # Examples
-> +///
-> +/// Refer to the examples in the [`crate::clist`] module documentation.
-> +#[macro_export]
-> +macro_rules! clist_create {
-> +    ($head:expr, $rust_type:ty, $c_type:ty, $($field:tt).+) => {{
-> +        // Compile-time check that field path is a list_head.
-> +        let _: fn(*const $c_type) -> *const $crate::bindings::list_head
-> =
-> +            |p| ::core::ptr::addr_of!((*p).$($field).+);
-> +
-> +        // Calculate offset and create `CList`.
-> +        const OFFSET: usize = ::core::mem::offset_of!($c_type,
-> $($field).+);
-> +        $crate::clist::CList::<$rust_type, OFFSET>::from_raw($head)
-> +    }};
-> +}
-> diff --git a/rust/kernel/lib.rs b/rust/kernel/lib.rs
-> index f812cf120042..cd7e6a1055b0 100644
-> --- a/rust/kernel/lib.rs
-> +++ b/rust/kernel/lib.rs
-> @@ -75,6 +75,7 @@
->  pub mod bug;
->  #[doc(hidden)]
->  pub mod build_assert;
-> +pub mod clist;
->  pub mod clk;
->  #[cfg(CONFIG_CONFIGFS_FS)]
->  pub mod configfs;
+>  // PFB
+>  
+>  // The following two registers together hold the physical system memory
+> address that is used by the
 

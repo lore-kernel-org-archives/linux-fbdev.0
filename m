@@ -1,333 +1,224 @@
-Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010038.outbound.protection.outlook.com [52.101.201.38])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFF0B1367;
-	Wed, 21 Jan 2026 09:59:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.38
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768989589; cv=fail; b=JrJvpSDpTh4arsDZZuMT0P3tac0sOWaXyyXHM+KygZIqrMsexvBW5d5S57A+54NHn3Iwfo/AN3hKqtWHll/o+2UYK3RUFfXRVrWLcgKSr8Fxpw1vGFChaBbVr8DPrmqnjb3DE5CvnX1mM4xkbO+oLJA1HDNxs0Z2ytIRUghE+Y4=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768989589; c=relaxed/simple;
-	bh=lEDYysupjKGLyTAfPyShECBcC41keHD1ReucCWeEg3k=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BnnS5enePcG5DOgfBHMmtSjkG0ga+UMWbAk+E41j8c7lmpBScDwbN+iF+4rTy6sRB3SmbxN88xwzA3CMfbdT07gM+WP2rm4mCkKsR88Y4HnlNOcyP0HfFXX7OIF8McsuK+KDrM+fv48o8Fp9niDFX7N1ObxugPsnctL/u7J6Y2k=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=gTz7XHKu; arc=fail smtp.client-ip=52.101.201.38
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9B092D8DC2
+	for <linux-fbdev@vger.kernel.org>; Wed, 21 Jan 2026 13:43:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1769003032; cv=none; b=fYRZ/mTq/ZCsSI7TTVYC88qNA0r3ETa964XDhMdh1cHdTtgsqshkdivjmlQXNQYBwdk9kFkv4Lz+bbap2q5HwMyVtM1DV/8wFApT1bUzjeLQ4voLaBDyxKsmvNlaPM7TqxMkeqTtNggQf1WN+Y0yCOH1sKYjKwlr5GfyRT31/CA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1769003032; c=relaxed/simple;
+	bh=QQQGLGrxyDqpRAehqpqA84gQPh/l4+7pkVsxG1/x4Eo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ccvt8xnfR6+Ar2XD89JnvUp2JpLmmM+SBoaB+F15Zn34DC52445G78W2EDr0U9EeperxnXU6QGxThigQ0X+K6xOSnxweZ0MJP54JIUdX8Lrhkv1yhJyI2xqovwSrsOf1ttag1jemSXhJ8SBfYS/RGnGN1Kaz+f82UeE/Ad2fOVg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=c49a5F8m; arc=none smtp.client-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="gTz7XHKu"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=gHr9bOGGqolEc/TlZ9Jp9vFs6/mLwl4o9EEaKHHpalkoLLaKPCon0AuLkxsyq+6Z7HG7VPCZWwCewkf8J7qEWhJ6dCHoVR7NK7zqbaQstHpKraNmUINCvczSnbi2UW6KxY7VvoW9vt5D2NifdKxq5Lu4LD+Ht4vNXIlj/TDmm9DTVcx24AZHQ4YotuUIE/fi1FwUWaKu1R5zPCnTWBgmRyM/AouJekgl7FnqXf0roEmw2vMXU5ioGPM0Wt8xIE9vUfWSyj9UNczXLTsGvozDwpSPMC3gIR0oZwss42O1ehpgBYuPIMAyL4ZHtxM1WpRG4VZOpCpR8fahYEqGnU8JZw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=5BhLejjHzebkpeBB918wFBlMp1KJz6gj6pkiO9mSWBA=;
- b=ORjMFno5zFs5oCPg0yM8seOe2QFWiO02ROAAtv12FN4PP0p0QFAhwpt5tvhq7n4OdPOmzFqBUCeByTP6XTZV537zhSLb3NvL7ASG1kpSf3CQB1X+hOL/ckUB9ygER07AeE3Q38pdC+/OIltoV1XFOzWzuf1wngSNoAUQhHQHcexo03ZfR3YIvRJYT6JbFpSK7Q+yeRzVEeisMmxNtS/s+fw6iswA5VwELE7RQ+Vqctahz4eHK6AETf4pjNtbBpBVZlslmPJ6PPcjqRZfOHJIC1FDkBmuUxdxz6eJKmoHdCXghSpNuzNqc4sx6bvw8rIkI/WJ+omgc0OQgICswaUP3g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.160) smtp.rcpttodomain=protonmail.com smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5BhLejjHzebkpeBB918wFBlMp1KJz6gj6pkiO9mSWBA=;
- b=gTz7XHKud6iu0rN+ZEwTP7Dpj7ViBD+Ef6V+37mX2XmEou72Ns2igUjSjGDJozX0DCOHiC/Y67cuKNqMaDXhicf/wuEOzMoHNux5yn+DwKEfcmnrHeUEPyalXsaKwjr0txZJz5ro9c3mmc42gSshZHlXNY45PeOUBf7FsbSEGYPhD1JLnCJO+A5KY9AwnVLq2Dcjp4BI+DxPziNGnO/9Rj6fMZXJfvds0CIxKmhErLtFOapyDbDQfVW5WdNvbEe7vuk3+1nM1baou17/XmpfaPoFoJQkptKF39RxuJCcaPviT0u2nmeoaA4iCsUCyTbpPyWKiZ722e1G52Rruqsxpw==
-Received: from PH7PR02CA0012.namprd02.prod.outlook.com (2603:10b6:510:33d::12)
- by DS2PR12MB9775.namprd12.prod.outlook.com (2603:10b6:8:2bb::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.9; Wed, 21 Jan
- 2026 09:59:43 +0000
-Received: from SN1PEPF0002BA4E.namprd03.prod.outlook.com
- (2603:10b6:510:33d:cafe::7e) by PH7PR02CA0012.outlook.office365.com
- (2603:10b6:510:33d::12) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9542.10 via Frontend Transport; Wed,
- 21 Jan 2026 09:59:41 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.160) by
- SN1PEPF0002BA4E.mail.protection.outlook.com (10.167.242.71) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9542.4 via Frontend Transport; Wed, 21 Jan 2026 09:59:42 +0000
-Received: from rnnvmail205.nvidia.com (10.129.68.10) by mail.nvidia.com
- (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 21 Jan
- 2026 01:59:28 -0800
-Received: from rnnvmail205.nvidia.com (10.129.68.10) by rnnvmail205.nvidia.com
- (10.129.68.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Wed, 21 Jan
- 2026 01:59:28 -0800
-Received: from inno-thin-client (10.127.8.10) by mail.nvidia.com
- (10.129.68.10) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Wed, 21 Jan 2026 01:59:18 -0800
-Date: Wed, 21 Jan 2026 11:59:17 +0200
-From: Zhi Wang <zhiw@nvidia.com>
-To: Joel Fernandes <joelagnelf@nvidia.com>
-CC: <linux-kernel@vger.kernel.org>, Maarten Lankhorst
-	<maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
-	Simona Vetter <simona@ffwll.ch>, Jonathan Corbet <corbet@lwn.net>, "Alex
- Deucher" <alexander.deucher@amd.com>, Christian =?UTF-8?B?S8O2bmln?=
-	<christian.koenig@amd.com>, Jani Nikula <jani.nikula@linux.intel.com>,
-	"Joonas Lahtinen" <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi
-	<rodrigo.vivi@intel.com>, Tvrtko Ursulin <tursulin@ursulin.net>, Huang Rui
-	<ray.huang@amd.com>, Matthew Auld <matthew.auld@intel.com>, Matthew Brost
-	<matthew.brost@intel.com>, Lucas De Marchi <lucas.demarchi@intel.com>, Thomas
- =?UTF-8?B?SGVsbHN0csO2bQ==?= <thomas.hellstrom@linux.intel.com>, Helge Deller
-	<deller@gmx.de>, Danilo Krummrich <dakr@kernel.org>, Alice Ryhl
-	<aliceryhl@google.com>, Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor
-	<alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, Gary Guo
-	<gary@garyguo.net>, =?UTF-8?B?QmrDtnJu?= Roy Baron
-	<bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, "Andreas
- Hindborg" <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>,
-	"Alistair Popple" <apopple@nvidia.com>, Alexandre Courbot
-	<acourbot@nvidia.com>, "Andrea Righi" <arighi@nvidia.com>, Alexey Ivanov
-	<alexeyi@nvidia.com>, "Philipp Stanner" <phasta@kernel.org>, Elle Rhumsaa
-	<elle@weathered-steel.dev>, "Daniel Almeida" <daniel.almeida@collabora.com>,
-	<joel@joelfernandes.org>, <nouveau@lists.freedesktop.org>,
-	<dri-devel@lists.freedesktop.org>, <rust-for-linux@vger.kernel.org>,
-	<linux-doc@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
-	<intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
-	<linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH RFC v6 14/26] nova-core: mm: Add TLB flush support
-Message-ID: <20260121115917.73cfcc7f.zhiw@nvidia.com>
-In-Reply-To: <20260120204303.3229303-15-joelagnelf@nvidia.com>
-References: <20260120204303.3229303-1-joelagnelf@nvidia.com>
-	<20260120204303.3229303-15-joelagnelf@nvidia.com>
-Organization: NVIDIA
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.33; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="c49a5F8m"
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4801eb2c0a5so46122675e9.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 21 Jan 2026 05:43:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1769003028; x=1769607828; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=CQGrvXlS/vZO/X2X6A7hHoxfwGZEgD9ArCjj7iH+/tM=;
+        b=c49a5F8m7xozCSMvl/RWYuhRIGp8YXG+J3MsB5DPdKyelZl/m+oD0cE/Lnw63QMs5u
+         YIOsFZZOEUDaMjRX+N1ZonKLJqIjVvFG9+XJuGzwFLEcRj2grBX8YtgUt9Ul+3KiDZTZ
+         KJJiU5w9RPb5kj7jPFSFoCHDbzhxs5P9rn+ojNHdsDEIKXxfYHFCaLfEbL4UquCBeedS
+         zrRnjH4PI9OUY2p5lgBnubDDHeqf/EfdDwTjNSnxolYCxwT5EmVuh+ha0mLhoXmGasTn
+         jAN3ywg/mD1WpLR0tw9yimb2lEdyzRf+LA40UdKOPXNs5FsOG3TUSD+3S6XsDcy8mF46
+         6rHA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769003028; x=1769607828;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=CQGrvXlS/vZO/X2X6A7hHoxfwGZEgD9ArCjj7iH+/tM=;
+        b=a0+u8dagYsmlFdDO5o447wdwsL99w1RvU0DJmK3L8wN8L258pYvZL9XWG8MHnacWxK
+         u+p0Di9kk6BdV2wlByxsuuWQ3bzGt+9kg/Vn8pQCQyLtBoFkvyUCCZYTHFubrbWAZCli
+         ofe8eEWWff3BLFdiiamdJkzqkNC03RI9v29EyH7voIGJSw2IKLhQG3Z5/gjnOY1RKpzp
+         NemRCSS/4YoZvVjglKrXtYXqIuQNYfsjHx2M2MJKJzrTVEDxJoH0Mu3z1z1oJJqhYGxj
+         hYCxMLKAxdj9Wu79E/DtVKBzIck6DHMCLAwsW+0wR5XjXVK0CjrB/xrUfSN5ayzMGCKe
+         PPtw==
+X-Forwarded-Encrypted: i=1; AJvYcCWkhvZa1vjLkOVjCYoBuRWCgwJ0rtTFF6Ka8YF486u8lPWnU13OBVdxkCKJdK1QRjWYF0x2yBqKUOQB7Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwX/FfffO2asrrmulWuhBrUhIfuGsKVoFRcKrYkkVxQVyAccgUE
+	w+TnAcJ2JRr+yz4ILw87K/aB5YYAjzEMfYK9lHKoqfaoTS0JaQYWJnoBWwcHKPVYJ0I=
+X-Gm-Gg: AZuq6aI3OloXtVZjsoaLtJ+EaLJDnv3wme5iuyFbc0k45nIdPfh0w9nDtWSRM1WUGQx
+	q4pzTqwxdF9cBUXFVE+fDt7negDdpU+d7vPUTMWHdy9Mz4ruLGMhwIO59dEmeVyPHEx7LzgAm8o
+	7wNIZroHC5qzaIgYmukrkqEXGLilUmFj3lGLQtb4j5HufXR7VuCcr+DPvN0eYt2tx3lSl963FG8
+	5/Zn1CBy9JpxX5jfokMzmYhs08KjmmhwRuDoP1cq6qvK+liK/Fp9RYb85Fm8Cqc1K7yRn8JijYW
+	7yNXWApoKfeJHKIvNf1/Uc6RU3S/gyi9lMvT0MdXAbMyCV0y+c50icKxBzZFMGjfuC/CUkI3jjX
+	jykNDbQx3qcTsqNoHOeVd3vyK3TD+J8lm/O0XbmsE/NqYqcCpOB3uJWO/co+1zwvpwWR/XS7nve
+	UvKzGI2EDz2aowmQ==
+X-Received: by 2002:a05:600c:6990:b0:47e:c562:a41f with SMTP id 5b1f17b1804b1-4801e334361mr235226105e9.18.1769003028140;
+        Wed, 21 Jan 2026 05:43:48 -0800 (PST)
+Received: from pathway.suse.cz ([176.114.240.130])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48042495f8fsm24360645e9.1.2026.01.21.05.43.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 21 Jan 2026 05:43:47 -0800 (PST)
+Date: Wed, 21 Jan 2026 14:43:45 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	John Ogness <john.ogness@linutronix.de>,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>, Simona Vetter <simona@ffwll.ch>,
+	Helge Deller <deller@gmx.de>
+Subject: Re: printk's threaded legacy console + fbcon => schedule where it
+ should not
+Message-ID: <aXDYEVlkFgxdSVSG@pathway.suse.cz>
+References: <20260114145955.d924Z-zu@linutronix.de>
+ <20260120110845.2922a91a@gandalf.local.home>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SN1PEPF0002BA4E:EE_|DS2PR12MB9775:EE_
-X-MS-Office365-Filtering-Correlation-Id: fee268b6-aaa7-43e4-d889-08de58d3cc6a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|36860700013|82310400026|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?vxRT2M8s9l+u73JAASCw8kiQYktLr2/PLsIvrTlM0RLjsFEhMA9JktuUxY+O?=
- =?us-ascii?Q?uKdX13iCDnd06e0Lhk8Jmqe8zErgn4o8Ey6bNejovc7rTsckaOCvTdinfKri?=
- =?us-ascii?Q?KozYCPPrnGEZGR5FjoSOTKEKVsHVU2oWmZKWGJ2zmzxI2AoRfVjzsxLH+EK/?=
- =?us-ascii?Q?nKCUmYg/gq/y75nEJR6QtLjQW4WIZoEamUZD4yB8xLQWo0fSztsoVdkLaE2L?=
- =?us-ascii?Q?r2phLrkP4izO7c4ss9LuBSgzISwY/jaVnaBDGEwMFhfLb5Df6ghOVYDE3vqI?=
- =?us-ascii?Q?2yOQ4kfVu54EGhKURuWfwLEoqFUHzkFnhGEbSUqtzHWh2bWn+YaQpalMkRQr?=
- =?us-ascii?Q?yGman1io6IeBTrrkn6Rw2OPY1XclnuZningACB4zeBvWIGNYdszMitHEkkNo?=
- =?us-ascii?Q?BFu+ucIKnw8Wx53KyEi1Zqb1VSCtLOc7FNdkSzJIll0XzdwLxONHkJ2jE06N?=
- =?us-ascii?Q?v6obM/EQJHzo3BZJmkGkxTNKmGhCd6qVwnHpbDA+1Q7+as66OBuEHNYMtCJJ?=
- =?us-ascii?Q?2K1wCDjW6M6s2VfKTdAyWbADcl1X8FW8L0Crtfi0HEFh1T3lLPGaQA0q77vA?=
- =?us-ascii?Q?i7dijOJGP2M/9zvUy5kIfnRqv8zWumJQVGQVpTlClS3n32srJfEhAhwhYxh/?=
- =?us-ascii?Q?ikvwMEgph4Ne+Uo5J4pH0daPouIL5n2n0jZLExJvAUSBKobyINznD3c3HK78?=
- =?us-ascii?Q?oSShYo8grYtcVjsuz8CPiKAu7tYJvxOGKFfvRGgW/3HGn0A4BwJlN91BF6bp?=
- =?us-ascii?Q?6y1/S8eIjSDpvO+x39DF+DromnKt/zJHcLFN/EydO8axhusGRMh93zNe+cXz?=
- =?us-ascii?Q?3Vxa/wGUcu4DMz+Z4kykHwNUI9zWhs5wu1XS2sjvYhcRZ47iyhb0i/z8vltC?=
- =?us-ascii?Q?/vbhnHSWQWKThvheh2Cv9YWh/kfxLIqYl1X4/QP45OPVfpTdQ2SdwuYheIrH?=
- =?us-ascii?Q?HOitbiI9vqedoPXQOBNUmKFCyrmlODRESdz+ICfaf3zaL0D+YuA+RGiNs4YN?=
- =?us-ascii?Q?D34zROGPD7aZJyFsh4xw+Xo+fAJ69ISu/j+m+iVFuDx8JXhJC7nlqT+K8NS7?=
- =?us-ascii?Q?4rFtumBQl+zICbIkWwZFS95l4olhtM27BTNM9FAliPxheDza6r7/hiynbkjV?=
- =?us-ascii?Q?AfAPgGtKMgXNbbi6ivxZ6QMJABVsqoIBTHsZkMjm1A30EYX0RncXJEUyUCtI?=
- =?us-ascii?Q?0NPAlsobzCPZe3iGcJAHaSv2OFs9kkLd4TLxqQn4XyzOAfIDN6mC8WJXDsLA?=
- =?us-ascii?Q?9/TBpCBGbdRvg2uI57MmSPXns9JBMZk4w9pzzukxE1tAPjIx3gZs4r7rF8++?=
- =?us-ascii?Q?96GpYjsrESddClZf9ADVLU7mYYS9U+Hq0O8wLvFXfmsAQmHDLDxTOcFbcIhM?=
- =?us-ascii?Q?dSfcmIf4YKPkOFicTOWBmvVndiL27G1YA+vvTog/WNc0WlrrIpNb4YlrRVTF?=
- =?us-ascii?Q?/VD8SG+oyB55yZnjVc2Y51bau1IGUVVvKqcwDydnEAR/7506digH6UAjgLbO?=
- =?us-ascii?Q?JfjpyWfs3N0x+bBdZEPhmkmyA4wg6yrSC1gfgD2J1CoHi5eOHjcIOyUJ4iot?=
- =?us-ascii?Q?OuFzM1XOPNcRqDLZc4yf9CSer+upWQ5AD8aSvSkgdYy4kknoBO0QBDBVeSnZ?=
- =?us-ascii?Q?Y+5+duURztvbkJI6zEP03cGDB5XwRdMf9Yf2pEFv8EfO7SeBnQYpbmHyX9qB?=
- =?us-ascii?Q?k/FCmQ=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(7416014)(376014)(36860700013)(82310400026)(1800799024);DIR:OUT;SFP:1101;
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jan 2026 09:59:42.3045
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: fee268b6-aaa7-43e4-d889-08de58d3cc6a
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SN1PEPF0002BA4E.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS2PR12MB9775
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260120110845.2922a91a@gandalf.local.home>
 
-On Tue, 20 Jan 2026 15:42:51 -0500
-Joel Fernandes <joelagnelf@nvidia.com> wrote:
-
-> Add TLB (Translation Lookaside Buffer) flush support for GPU MMU.
+On Tue 2026-01-20 11:08:45, Steven Rostedt wrote:
+> On Wed, 14 Jan 2026 15:59:55 +0100
+> Sebastian Andrzej Siewior <bigeasy@linutronix.de> wrote:
 > 
-
-The same concern as in PATCH 5, guess we need to think of concurrency for
-TLB flush.
-
-> After modifying page table entries, the GPU's TLB must be invalidated
-> to ensure the new mappings take effect. The Tlb struct provides flush
-> functionality through BAR0 registers.
+> > @@ -3362,22 +3362,6 @@ void console_unlock(void)
+> >  }
+> >  EXPORT_SYMBOL(console_unlock);
+> >  
+> > -/**
+> > - * console_conditional_schedule - yield the CPU if required
 > 
-> The flush operation writes the page directory base address and triggers
-> an invalidation, polling for completion with a 2 second timeout matching
-> the Nouveau driver.
+> Egad! That goes all the way back to 2002:
 > 
-> Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
-> ---
->  drivers/gpu/nova-core/mm/mod.rs |  1 +
->  drivers/gpu/nova-core/mm/tlb.rs | 79 +++++++++++++++++++++++++++++++++
->  drivers/gpu/nova-core/regs.rs   | 33 ++++++++++++++
->  3 files changed, 113 insertions(+)
->  create mode 100644 drivers/gpu/nova-core/mm/tlb.rs
+>   https://git.kernel.org/pub/scm/linux/kernel/git/history/history.git/commit/?id=a880f45a48be2956d2c78a839c472287d54435c1
+>
+> > - *
+> > - * If the console code is currently allowed to sleep, and
+> > - * if this CPU should yield the CPU to another task, do
+> > - * so here.
+> > - *
+> > - * Must be called within console_lock();.
+> > - */
+> > -void __sched console_conditional_schedule(void)
+> > -{
+> > -	if (console_may_schedule)
+> > -		cond_resched();
+> > -}
+> > -EXPORT_SYMBOL(console_conditional_schedule);
 > 
-> diff --git a/drivers/gpu/nova-core/mm/mod.rs
-> b/drivers/gpu/nova-core/mm/mod.rs index 6015fc8753bc..39635f2d0156 100644
-> --- a/drivers/gpu/nova-core/mm/mod.rs
-> +++ b/drivers/gpu/nova-core/mm/mod.rs
-> @@ -6,6 +6,7 @@
->  
->  pub(crate) mod pagetable;
->  pub(crate) mod pramin;
-> +pub(crate) mod tlb;
->  
->  use kernel::sizes::SZ_4K;
->  
-> diff --git a/drivers/gpu/nova-core/mm/tlb.rs
-> b/drivers/gpu/nova-core/mm/tlb.rs new file mode 100644
-> index 000000000000..8b2ee620da18
-> --- /dev/null
-> +++ b/drivers/gpu/nova-core/mm/tlb.rs
-> @@ -0,0 +1,79 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +//! TLB (Translation Lookaside Buffer) flush support for GPU MMU.
-> +//!
-> +//! After modifying page table entries, the GPU's TLB must be flushed to
-> +//! ensure the new mappings take effect. This module provides TLB flush
-> +//! functionality for virtual memory managers.
-> +//!
-> +//! # Example
-> +//!
-> +//! ```ignore
-> +//! use crate::mm::tlb::Tlb;
-> +//!
-> +//! fn page_table_update(tlb: &Tlb, pdb_addr: VramAddress) ->
-> Result<()> { +//!     // ... modify page tables ...
-> +//!
-> +//!     // Flush TLB to make changes visible (polls for completion).
-> +//!     tlb.flush(pdb_addr)?;
-> +//!
-> +//!     Ok(())
-> +//! }
-> +//! ```
-> +
-> +#![allow(dead_code)]
-> +
-> +use kernel::{
-> +    devres::Devres,
-> +    io::poll::read_poll_timeout,
-> +    prelude::*,
-> +    sync::Arc,
-> +    time::Delta, //
-> +};
-> +
-> +use crate::{
-> +    driver::Bar0,
-> +    mm::VramAddress,
-> +    regs, //
-> +};
-> +
-> +/// TLB manager for GPU translation buffer operations.
-> +pub(crate) struct Tlb {
-> +    bar: Arc<Devres<Bar0>>,
-> +}
-> +
-> +impl Tlb {
-> +    /// Create a new TLB manager.
-> +    pub(super) fn new(bar: Arc<Devres<Bar0>>) -> Self {
-> +        Self { bar }
-> +    }
-> +
-> +    /// Flush the GPU TLB for a specific page directory base.
-> +    ///
-> +    /// This invalidates all TLB entries associated with the given PDB
-> address.
-> +    /// Must be called after modifying page table entries to ensure the
-> GPU sees
-> +    /// the updated mappings.
-> +    pub(crate) fn flush(&self, pdb_addr: VramAddress) -> Result {
-> +        let bar = self.bar.try_access().ok_or(ENODEV)?;
-> +
-> +        // Write PDB address.
-> +
-> regs::NV_TLB_FLUSH_PDB_LO::from_pdb_addr(pdb_addr.raw_u64()).write(&*bar);
-> +
-> regs::NV_TLB_FLUSH_PDB_HI::from_pdb_addr(pdb_addr.raw_u64()).write(&*bar);
-> +
-> +        // Trigger flush: invalidate all pages and enable.
-> +        regs::NV_TLB_FLUSH_CTRL::default()
-> +            .set_page_all(true)
-> +            .set_enable(true)
-> +            .write(&*bar);
-> +
-> +        // Poll for completion - enable bit clears when flush is done.
-> +        read_poll_timeout(
-> +            || Ok(regs::NV_TLB_FLUSH_CTRL::read(&*bar)),
-> +            |ctrl| !ctrl.enable(),
-> +            Delta::ZERO,
-> +            Delta::from_secs(2),
-> +        )?;
-> +
-> +        Ok(())
-> +    }
-> +}
-> diff --git a/drivers/gpu/nova-core/regs.rs
-> b/drivers/gpu/nova-core/regs.rs index c8b8fbdcf608..e722ef837e11 100644
-> --- a/drivers/gpu/nova-core/regs.rs
-> +++ b/drivers/gpu/nova-core/regs.rs
-> @@ -414,3 +414,36 @@ pub(crate) mod ga100 {
->          0:0     display_disabled as bool;
->      });
->  }
-> +
-> +// MMU TLB
-> +
-> +register!(NV_TLB_FLUSH_PDB_LO @ 0x00b830a0, "TLB flush register: PDB
-> address bits [39:8]" {
-> +    31:0    pdb_lo as u32, "PDB address bits [39:8]";
-> +});
-> +
-> +impl NV_TLB_FLUSH_PDB_LO {
-> +    /// Create a register value from a PDB address.
-> +    ///
-> +    /// Extracts bits [39:8] of the address and shifts it right by 8
-> bits.
-> +    pub(crate) fn from_pdb_addr(addr: u64) -> Self {
-> +        Self::default().set_pdb_lo(((addr >> 8) & 0xFFFF_FFFF) as u32)
-> +    }
-> +}
-> +
-> +register!(NV_TLB_FLUSH_PDB_HI @ 0x00b830a4, "TLB flush register: PDB
-> address bits [47:40]" {
-> +    7:0     pdb_hi as u8, "PDB address bits [47:40]";
-> +});
-> +
-> +impl NV_TLB_FLUSH_PDB_HI {
-> +    /// Create a register value from a PDB address.
-> +    ///
-> +    /// Extracts bits [47:40] of the address and shifts it right by 40
-> bits.
-> +    pub(crate) fn from_pdb_addr(addr: u64) -> Self {
-> +        Self::default().set_pdb_hi(((addr >> 40) & 0xFF) as u8)
-> +    }
-> +}
-> +
-> +register!(NV_TLB_FLUSH_CTRL @ 0x00b830b0, "TLB flush control register" {
-> +    0:0     page_all as bool, "Invalidate all pages";
-> +    31:31   enable as bool, "Enable/trigger flush (clears when flush
-> completes)"; +});
+> I'm assuming this likely isn't needed anymore. I don't know of any reason
+> it needs to stay.
 
+I know that there was a plan to get rid of cond_resched().
+But what is the status now, please?
+
+I still see more that 1k cond_resched() calls in the code:
+
+  $> git grep cond_resched\(\) | grep "\.c:" | wc -l
+  1263
+
+And config PREEMPT_VOLUNTARY still talks about the explicit
+preemption points.
+
+> Should we just remove it and see what breaks?
+
+Honestly, I do not feel comfortable with removing it. It is true that
+it has no effect in the printk() code path. But the vt code is used
+also when working on the terminal.
+
+The vt code still uses console_lock() because it was intertwined
+with printk console code since very old days. console_lock is a kind
+of big kernel lock there.
+
+
+Alternative solution is to get rid of the spin_trylock(). The only
+purpose is to prevent race in console_flush_on_panic(). It used
+to be a simple bit operation. The spin_lock() was added just to
+get barriers right. But we have a great atomic_t API these days.
+
+IMHO, it is a win-win solution because a preemptive context is
+always better.
+
+What about?
+
+From 0fc61b6877e9beb20429effc599bc4bc6ec3a475 Mon Sep 17 00:00:00 2001
+From: Petr Mladek <pmladek@suse.com>
+Date: Wed, 21 Jan 2026 10:47:15 +0100
+Subject: [RFC] tty/vt: Prevent re-entering vt_console_print() in panic()
+ without spin_lock
+
+The commit b0940003f25dd ("vt: bitlock fix") replaced a simple bit
+operation with spin_lock() to get proper memory barriers.
+
+But the code called under this lock calls console_conditional_schedule()
+which calls cond_resched() when console_sem() has been acquired
+in a preemptive context using console_lock(). Note that the semaphore
+can be taken also in an atomic context using console_trylock()
+which is used by printk().
+
+One solution would be to remove console_conditional_schedule().
+It does not have any effect in the printk() code path anyway.
+But the affected VT code is not used just by printk(). And
+the cond_resched() calls were likely added for a reason.
+
+Instead, convert the spin_lock back to an atomic operation with
+proper barriers. The only purpose of the lock is to prevent
+a concurrent access to the guarded code in
+console_flush_on_panic() where console_lock() is ignored.
+Using a full featured spin_trylock, just to get memory barriers
+right, looks like an overkill anyway.
+
+Fixes: b0940003f25dd ("vt: bitlock fix")
+Closes: https://lore.kernel.org/all/20260114145955.d924Z-zu@linutronix.de/
+Signed-off-by: Petr Mladek <pmladek@suse.com>
+---
+ drivers/tty/vt/vt.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 59b4b5e126ba..5be64d1bba91 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -3353,15 +3353,19 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
+ {
+ 	struct vc_data *vc = vc_cons[fg_console].d;
+ 	unsigned char c;
+-	static DEFINE_SPINLOCK(printing_lock);
++	static atomic_t printing_lock = ATOMIC_INIT(0);
+ 	const ushort *start;
+ 	ushort start_x, cnt;
+ 	int kmsg_console;
+ 
+ 	WARN_CONSOLE_UNLOCKED();
+ 
+-	/* this protects against concurrent oops only */
+-	if (!spin_trylock(&printing_lock))
++	/*
++	 * Prevent concurrent printing in console_flush_on_panic() where
++	 * console_lock is ignored. Easier (serial) console drivers
++	 * have bigger chance to get the messages out.
++	 */
++	if (atomic_cmpxchg_acquire(&printing_lock, 0, 1) != 0)
+ 		return;
+ 
+ 	kmsg_console = vt_get_kmsg_redirect();
+@@ -3422,7 +3426,7 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
+ 	notify_update(vc);
+ 
+ quit:
+-	spin_unlock(&printing_lock);
++	atomic_set_release(&printing_lock, 0);
+ }
+ 
+ static struct tty_driver *vt_console_device(struct console *c, int *index)
+-- 
+2.52.0
+
+Best Regards,
+Petr

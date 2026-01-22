@@ -1,77 +1,36 @@
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BA27286D70
-	for <linux-fbdev@vger.kernel.org>; Thu, 22 Jan 2026 13:12:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8F28318EC2
+	for <linux-fbdev@vger.kernel.org>; Thu, 22 Jan 2026 13:12:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769087547; cv=none; b=k7EUh1Xgrh32jrCXI6AExoLeAyJt+MgLc5VcAfXMSsmUAtSmxurLyx53myU8hhobVA7xRkdp3rr86XB5uUmf9/g9HpWT/jGpylYsHG5qEAO5j2XpHgDSLcXPMZSyDVsBYUmRcjhDM0+c29ST39ncquXIb9OKrmpmRXVf9mj/vqA=
+	t=1769087553; cv=none; b=YWsZ5O0Nt4Babkq+z0XtidDeP7r38ADZ+PEbne1FTlL0KKPIw69/WmlJNKmCBWNmBzz/5QZUqAqCWUAoHZu+NbM6SXNTKpldIuuA1YkDw8YHCwOL2YL2I2H26bMsYFneuptpYb0+BhxI4AdpinrK2uGN0+idxln+W4ogECZLKvs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769087547; c=relaxed/simple;
-	bh=WRZ0EhXLJb29aLwhEGFqxGncGobFxQS7ZoIuhvN9DFo=;
+	s=arc-20240116; t=1769087553; c=relaxed/simple;
+	bh=2pLA0i4Frc62dp4tROVKPSgKyhuePmYDhz2KicAi8PA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dH0n4VJvS25oN3Azj+2bbywXj/oFGAOXcaetdqQyZpXjPjez/SWrq/IeknTl4WVigQFLAEUcQtWhZbEjM9xtsqVO7R4FnRmGLrKVvacH9+eqUogP2XvI1t8Yly6pAAJzKLjXS5RTBgaiN74ZUCU8A03UH5o72KZ4rxNIullJoCA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=vsRLFaE/; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=up4No6HG; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=vsRLFaE/; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=up4No6HG; arc=none smtp.client-ip=195.135.223.131
+	 MIME-Version; b=m7Py8QQ1k+1hMpuVb/f3fkaSh98Ghv0k/pNVMbpne5y2fs+Q2UEtSUJHZxt3bPCR3UTPfo/mNWv/t58pxg2JulTPXGsQsrEugDBbzQQXwwRpBxkcecMUzvXoqec52HTyoP7is4k1XFb4HKEdnEMP2+8AbCtv4FGsF5bNC0ocVOw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="vsRLFaE/";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="up4No6HG";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="vsRLFaE/";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="up4No6HG"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 7A3AA5BCCC;
+	by smtp-out2.suse.de (Postfix) with ESMTPS id E64C95BCCD;
 	Thu, 22 Jan 2026 13:12:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1769087537; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VLhTJSno1bZLuuuage2WaKWdag1/dIKALqAVIskMquk=;
-	b=vsRLFaE/FkUf69cYoY5l4rfg59bweqcy2XfesC+7nduJKgTvjy15aLdi/kJOA8os/9lITN
-	+gTwusE5fgIyOGSNeBYfMdwUnK+Mid569sDSDnCbyQtys63kcTpKAZWngDIBIgnSYSZaAy
-	fI+du/cOxg9QkphVmDc1j0cXvTnO5Aw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1769087537;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VLhTJSno1bZLuuuage2WaKWdag1/dIKALqAVIskMquk=;
-	b=up4No6HGfuLpI4hrV7ekdo/sSGkAjnxnNLUu6QYkd2oyJpdQjed7m/x5WUMm3vFJc6v7jj
-	cdQ6p97TKwu+q6BA==
 Authentication-Results: smtp-out2.suse.de;
 	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1769087537; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VLhTJSno1bZLuuuage2WaKWdag1/dIKALqAVIskMquk=;
-	b=vsRLFaE/FkUf69cYoY5l4rfg59bweqcy2XfesC+7nduJKgTvjy15aLdi/kJOA8os/9lITN
-	+gTwusE5fgIyOGSNeBYfMdwUnK+Mid569sDSDnCbyQtys63kcTpKAZWngDIBIgnSYSZaAy
-	fI+du/cOxg9QkphVmDc1j0cXvTnO5Aw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1769087537;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VLhTJSno1bZLuuuage2WaKWdag1/dIKALqAVIskMquk=;
-	b=up4No6HGfuLpI4hrV7ekdo/sSGkAjnxnNLUu6QYkd2oyJpdQjed7m/x5WUMm3vFJc6v7jj
-	cdQ6p97TKwu+q6BA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 39AAF13533;
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id ADE8F13533;
 	Thu, 22 Jan 2026 13:12:17 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id IDTgDDEicmlgMgAAD6G6ig
+	id uHYHKTEicmlgMgAAD6G6ig
 	(envelope-from <tzimmermann@suse.de>); Thu, 22 Jan 2026 13:12:17 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
@@ -80,9 +39,9 @@ To: deller@gmx.de,
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 2/4] fbdev: defio: Keep module reference from VMAs
-Date: Thu, 22 Jan 2026 14:08:30 +0100
-Message-ID: <20260122131213.992810-3-tzimmermann@suse.de>
+Subject: [PATCH 4/4] fbdev: defio: Move pageref array to struct fb_deferred_io_state
+Date: Thu, 22 Jan 2026 14:08:32 +0100
+Message-ID: <20260122131213.992810-5-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260122131213.992810-1-tzimmermann@suse.de>
 References: <20260122131213.992810-1-tzimmermann@suse.de>
@@ -93,85 +52,181 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-6.80 / 50.00];
-	REPLY(-4.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_COUNT_TWO(0.00)[2];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch,intworks.biz];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email];
-	FROM_EQ_ENVFROM(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCVD_TLS_ALL(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de]
-X-Spam-Flag: NO
-X-Spam-Score: -6.80
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Spam-Score: -4.00
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: E64C95BCCD
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 X-Spam-Level: 
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Spam-Flag: NO
 
-Acquire a module reference on each mmap and VMA open; hold it until
-the kernel closes the VMA. Protects against unloading the module
-while user space still has a mapping of the graphics memory. The
-VMA page-fault handling would then call into undefined code.
-
-This situation can happen if the underlying device has been unplugged
-and the driver has been unloaded. It would then be possible to trigger
-the bug by unloading the fbdev core module.
+The pageref array stores all pageref structures for a device's defio
+helpers. Move it into struct fb_deferred_io_state to not expose it to
+drivers.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/fb_defio.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/video/fbdev/core/fb_defio.c | 55 ++++++++++++++---------------
+ include/linux/fb.h                  |  2 --
+ 2 files changed, 27 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-index 0b099a89a823..331b1a9fe485 100644
+index c6945b4422cc..c4be85f80d7d 100644
 --- a/drivers/video/fbdev/core/fb_defio.c
 +++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -14,6 +14,7 @@
- #include <linux/export.h>
- #include <linux/string.h>
- #include <linux/mm.h>
-+#include <linux/module.h>
- #include <linux/vmalloc.h>
- #include <linux/delay.h>
- #include <linux/interrupt.h>
-@@ -83,6 +84,7 @@ static void fb_deferred_io_vm_open(struct vm_area_struct *vma)
- {
- 	struct fb_deferred_io_state *fbdefio_state = vma->vm_private_data;
+@@ -41,28 +41,46 @@ struct fb_deferred_io_state {
+ 	/* fields protected by lock */
+ 	struct fb_info *info;
+ 	struct list_head pagereflist; /* list of pagerefs for touched pages */
++	unsigned long npagerefs;
++	struct fb_deferred_io_pageref *pagerefs;
+ };
  
-+	WARN_ON_ONCE(!try_module_get(THIS_MODULE));
- 	fb_deferred_io_state_get(fbdefio_state);
+-static struct fb_deferred_io_state *fb_deferred_io_state_alloc(void)
++static struct fb_deferred_io_state *fb_deferred_io_state_alloc(unsigned long len)
+ {
+ 	struct fb_deferred_io_state *fbdefio_state;
++	struct fb_deferred_io_pageref *pagerefs;
++	unsigned long npagerefs;
+ 
+ 	fbdefio_state = kzalloc(sizeof(*fbdefio_state), GFP_KERNEL);
+ 	if (!fbdefio_state)
+ 		return NULL;
+ 
++	npagerefs = DIV_ROUND_UP(len, PAGE_SIZE);
++
++	/* alloc a page ref for each page of the display memory */
++	pagerefs = kvcalloc(npagerefs, sizeof(*pagerefs), GFP_KERNEL);
++	if (!pagerefs)
++		goto err_kfree;
++	fbdefio_state->npagerefs = npagerefs;
++	fbdefio_state->pagerefs = pagerefs;
++
+ 	kref_init(&fbdefio_state->ref);
+ 	mutex_init(&fbdefio_state->lock);
+ 
+ 	INIT_LIST_HEAD(&fbdefio_state->pagereflist);
+ 
+ 	return fbdefio_state;
++
++err_kfree:
++	kfree(fbdefio_state);
++	return NULL;
  }
  
-@@ -91,6 +93,7 @@ static void fb_deferred_io_vm_close(struct vm_area_struct *vma)
- 	struct fb_deferred_io_state *fbdefio_state = vma->vm_private_data;
+ static void fb_deferred_io_state_release(struct fb_deferred_io_state *fbdefio_state)
+ {
+ 	WARN_ON(!list_empty(&fbdefio_state->pagereflist));
+ 	mutex_destroy(&fbdefio_state->lock);
++	kvfree(fbdefio_state->pagerefs);
+ 
+ 	kfree(fbdefio_state);
+ }
+@@ -125,18 +143,19 @@ static struct page *fb_deferred_io_get_page(struct fb_info *info, unsigned long
+ 	return page;
+ }
+ 
+-static struct fb_deferred_io_pageref *fb_deferred_io_pageref_lookup(struct fb_info *info,
+-								    unsigned long offset,
+-								    struct page *page)
++static struct fb_deferred_io_pageref *
++fb_deferred_io_pageref_lookup(struct fb_deferred_io_state *fbdefio_state, unsigned long offset,
++			      struct page *page)
+ {
++	struct fb_info *info = fbdefio_state->info;
+ 	unsigned long pgoff = offset >> PAGE_SHIFT;
+ 	struct fb_deferred_io_pageref *pageref;
+ 
+-	if (fb_WARN_ON_ONCE(info, pgoff >= info->npagerefs))
++	if (fb_WARN_ON_ONCE(info, pgoff >= fbdefio_state->npagerefs))
+ 		return NULL; /* incorrect allocation size */
+ 
+ 	/* 1:1 mapping between pageref and page offset */
+-	pageref = &info->pagerefs[pgoff];
++	pageref = &fbdefio_state->pagerefs[pgoff];
+ 
+ 	if (pageref->page)
+ 		goto out;
+@@ -160,7 +179,7 @@ static struct fb_deferred_io_pageref *fb_deferred_io_pageref_get(struct fb_info
+ 	struct list_head *pos = &fbdefio_state->pagereflist;
+ 	struct fb_deferred_io_pageref *pageref, *cur;
+ 
+-	pageref = fb_deferred_io_pageref_lookup(info, offset, page);
++	pageref = fb_deferred_io_pageref_lookup(fbdefio_state, offset, page);
+ 	if (!pageref)
+ 		return NULL;
+ 
+@@ -397,16 +416,13 @@ int fb_deferred_io_init(struct fb_info *info)
+ {
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+ 	struct fb_deferred_io_state *fbdefio_state;
+-	struct fb_deferred_io_pageref *pagerefs;
+-	unsigned long npagerefs;
+-	int ret;
+ 
+ 	BUG_ON(!fbdefio);
+ 
+ 	if (WARN_ON(!info->fix.smem_len))
+ 		return -EINVAL;
+ 
+-	fbdefio_state = fb_deferred_io_state_alloc();
++	fbdefio_state = fb_deferred_io_state_alloc(info->fix.smem_len);
+ 	if (!fbdefio_state)
+ 		return -ENOMEM;
+ 	fbdefio_state->info = info;
+@@ -415,24 +431,9 @@ int fb_deferred_io_init(struct fb_info *info)
+ 	if (fbdefio->delay == 0) /* set a default of 1 s */
+ 		fbdefio->delay = HZ;
+ 
+-	npagerefs = DIV_ROUND_UP(info->fix.smem_len, PAGE_SIZE);
+-
+-	/* alloc a page ref for each page of the display memory */
+-	pagerefs = kvcalloc(npagerefs, sizeof(*pagerefs), GFP_KERNEL);
+-	if (!pagerefs) {
+-		ret = -ENOMEM;
+-		goto err;
+-	}
+-	info->npagerefs = npagerefs;
+-	info->pagerefs = pagerefs;
+-
+ 	info->fbdefio_state = fbdefio_state;
+ 
+ 	return 0;
+-
+-err:
+-	fb_deferred_io_state_release(fbdefio_state);
+-	return ret;
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_init);
+ 
+@@ -475,7 +476,5 @@ void fb_deferred_io_cleanup(struct fb_info *info)
+ 	mutex_unlock(&fbdefio_state->lock);
  
  	fb_deferred_io_state_put(fbdefio_state);
-+	module_put(THIS_MODULE);
+-
+-	kvfree(info->pagerefs);
  }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 2a9d05e51ff4..71e2759f3cfd 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -481,8 +481,6 @@ struct fb_info {
  
- static struct page *fb_deferred_io_get_page(struct fb_info *info, unsigned long offs)
-@@ -335,6 +338,9 @@ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
- 	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
- 
-+	if (!try_module_get(THIS_MODULE))
-+		return -EINVAL;
-+
- 	vma->vm_ops = &fb_deferred_io_vm_ops;
- 	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
- 	if (!(info->flags & FBINFO_VIRTFB))
+ #ifdef CONFIG_FB_DEFERRED_IO
+ 	struct delayed_work deferred_work;
+-	unsigned long npagerefs;
+-	struct fb_deferred_io_pageref *pagerefs;
+ 	struct fb_deferred_io *fbdefio;
+ 	struct fb_deferred_io_state *fbdefio_state;
+ #endif
 -- 
 2.52.0
 

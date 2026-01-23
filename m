@@ -1,243 +1,163 @@
-Received: from PH7PR06CU001.outbound.protection.outlook.com (mail-westus3azon11010020.outbound.protection.outlook.com [52.101.201.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f171.google.com (mail-pf1-f171.google.com [209.85.210.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE9E337AA95;
-	Fri, 23 Jan 2026 10:14:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.201.20
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769163256; cv=fail; b=VY/DUozv2cxCs66ZGTNDnoHOl2QOcybqrOgr843Ldx7n1SEXvAJJti7uocFQvdhjcSKm/Z3rPUVqbPdwJERP0YygiFXrFo5fy8PA/fCDwxUfX9hm/ghJk26bwn1QwHqcnfD82KJ85bfPcDStBloPE/70EjVLR1H7D/J4tvJV8Cc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769163256; c=relaxed/simple;
-	bh=R3Ce19PlzCzs8dBA/bye/nRyQ2PwKjqZaT4ecm6NOTo=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=NmJu2i4b3B+Hn2MmTeOPa5Cbf5fVCj9PYtq8m72MTQxNREV4IknF7kR8URS6iydSi7i3lNdmk8q0T0sCqm9nvA6nFEDbQ7P8fV6ekuwYT1uLiNGWwmPNPdxJVBm8Vcx7Qy5Tcg3brk3jC228iQ3QI6dfoSyk+sPLw3O/vsS70LE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=W4QIwRsX; arc=fail smtp.client-ip=52.101.201.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 297E2340290
+	for <linux-fbdev@vger.kernel.org>; Fri, 23 Jan 2026 11:11:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.171
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1769166666; cv=none; b=XSLwnqyBwOElbAI8F/sQLR6x1BR+rmXbvqtfSPNVqV2j/mfT1zONbf1pwnbhWKjcEc7GVk12h29qGrqCXQqZ5LA1uQm7UeX4VrhfMSaKpFE7dz/M6h8t78C+MUFXZh5PPdYaveuy8o4kTPInVnxMQ5k0ee5V/U1EGRlq9HG6EIw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1769166666; c=relaxed/simple;
+	bh=JzYSUCqqeWKfNi9rdKkxtfHev0ia4H+r1I/ZRyvcQiI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hkhbp2Hbzu5DNb+dJh3SBz3PkCP6+Ii+Na6oRYoJbh2owZEv4LkdsIBC/asY2b0s8G0nXrOHSmPi8uQ0vKFGeVEkEUxJ1Pm7recEj8rCJV4Rg5nL/YE82Bfct8mV7hmwApBenQ13DqpReaYIjiQwL1UW30SbV23CsYr06jemSU4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hAztp8++; arc=none smtp.client-ip=209.85.210.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="W4QIwRsX"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=rIDjrYi3rUTdahj+eBTLUkdNwuqnhXvjJR5rtX9bn/5ywIltTq4VwsJ2XMqrFherAEf9tyF9JBvVZW0VtIlWT4c4spM8bSdjg7owM8/1Zkn7oxhI+Q4ZEtMEAbj1YnHMEEHdhAYbh556pW58NqlXrunTrv17UU5s3ctpjnqvHYfDgPopb0j0QnkvhU//T8AmZNC3Rk6Cw+dWCflEzBvvjiveuy5EZOaiMMAxxGjZThi/5f8eBmae3we1vd63Th4fskekb0eIZVlx9w0p8VXgRgP2yD8Re3pLuvU8cpNtKYvMCxDomGOqbVr3oQgVXzwIP9Gni2mO1Dwwz9/LZg63gQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=mReL2HqlLw6k9N55UDV8jQDAy80aTJhXhTqdfjp68Wk=;
- b=u3Iyau23IchgZO6rzajgc5eK4GP7O3erBsutGqoFbgaTTQ6Iuy48lqIjY822OTRSufPkpo11MVQVZyIc7sDqjc5zHiSnbB8q2+5x78yinipgCZg5A/m2ZhslBc8IXA2TkaMMWkmYbDzd3rSIJ76CbpZRt6G1fhZarBYbaDRZfK9IICxPrfCKtDwqcgMxxg9uIFW2hfkMlNAX6Ffl9qJKiLqzzZyXNJj8qmUwiE+cIN9Aa/K64QyHl0JXiFYmgCaupkSVgSlhW/FFWDMHJNaEzRmss2e4dDws3hLf9lxpoxK6HynYknL/nBRJC3LFnbYvpGPzw0N2QKTLpAgtz9WoQQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.118.233) smtp.rcpttodomain=garyguo.net smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=mReL2HqlLw6k9N55UDV8jQDAy80aTJhXhTqdfjp68Wk=;
- b=W4QIwRsXKJvFpri3OE5Ur3jy/oCgOFvgMTpTmzUkHMvIHqkR5g0hlqVKOFqcsxRCdW2SXqMgGHTndxj+pJdYY3MbkzqHbCgrCMuQy4Y3Ul5P6JFnDmXZ8TlMELm3OEtHtZXf0+g1y2rpAccndordHgBTJ2zZ6SHvjIAOjFFo/5WbBVuA9tKfFZtHd4OvhffPEXJmB8whfsKDLjqZeCTFunaG8O0FozOOQ3zf7BueQtKFqngdO9b6XNToHa1j+SAMcDN8B5+rgBAQ/HorG5rj+EV6bsXPpLOp+Cqe8j1vVECREqrZ4IB2HWnwmyz85z6EWoEDWPF+UHYN0kY39yX0dQ==
-Received: from DM6PR06CA0047.namprd06.prod.outlook.com (2603:10b6:5:54::24) by
- DS4PR12MB999075.namprd12.prod.outlook.com (2603:10b6:8:2fc::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.10; Fri, 23 Jan
- 2026 10:14:04 +0000
-Received: from DS1PEPF00017094.namprd03.prod.outlook.com
- (2603:10b6:5:54:cafe::e1) by DM6PR06CA0047.outlook.office365.com
- (2603:10b6:5:54::24) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9542.11 via Frontend Transport; Fri,
- 23 Jan 2026 10:14:02 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.118.233)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.118.233 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.118.233; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.118.233) by
- DS1PEPF00017094.mail.protection.outlook.com (10.167.17.137) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9564.3 via Frontend Transport; Fri, 23 Jan 2026 10:14:04 +0000
-Received: from drhqmail202.nvidia.com (10.126.190.181) by mail.nvidia.com
- (10.127.129.6) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.20; Fri, 23 Jan
- 2026 02:13:54 -0800
-Received: from drhqmail201.nvidia.com (10.126.190.180) by
- drhqmail202.nvidia.com (10.126.190.181) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.20; Fri, 23 Jan 2026 02:13:53 -0800
-Received: from inno-thin-client (10.127.8.10) by mail.nvidia.com
- (10.126.190.180) with Microsoft SMTP Server id 15.2.2562.20 via Frontend
- Transport; Fri, 23 Jan 2026 02:13:44 -0800
-Date: Fri, 23 Jan 2026 12:13:43 +0200
-From: Zhi Wang <zhiw@nvidia.com>
-To: Joel Fernandes <joelagnelf@nvidia.com>
-CC: <linux-kernel@vger.kernel.org>, Maarten Lankhorst
-	<maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
-	Simona Vetter <simona@ffwll.ch>, Jonathan Corbet <corbet@lwn.net>, "Alex
- Deucher" <alexander.deucher@amd.com>, Christian Koenig
-	<christian.koenig@amd.com>, Jani Nikula <jani.nikula@linux.intel.com>,
-	"Joonas Lahtinen" <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi
-	<rodrigo.vivi@intel.com>, Tvrtko Ursulin <tursulin@ursulin.net>, Huang Rui
-	<ray.huang@amd.com>, Matthew Auld <matthew.auld@intel.com>, Matthew Brost
-	<matthew.brost@intel.com>, Lucas De Marchi <lucas.demarchi@intel.com>,
-	"Thomas Hellstrom" <thomas.hellstrom@linux.intel.com>, Helge Deller
-	<deller@gmx.de>, Danilo Krummrich <dakr@kernel.org>, Alice Ryhl
-	<aliceryhl@google.com>, "Miguel Ojeda" <ojeda@kernel.org>, Alex Gaynor
-	<alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, Gary Guo
-	<gary@garyguo.net>, Bjorn Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin
-	<lossin@kernel.org>, "Andreas Hindborg" <a.hindborg@kernel.org>, Trevor Gross
-	<tmgross@umich.edu>, "Alistair Popple" <apopple@nvidia.com>, Alexandre
- Courbot <acourbot@nvidia.com>, "Andrea Righi" <arighi@nvidia.com>, Alexey
- Ivanov <alexeyi@nvidia.com>, "Philipp Stanner" <phasta@kernel.org>, Elle
- Rhumsaa <elle@weathered-steel.dev>, "Daniel Almeida"
-	<daniel.almeida@collabora.com>, <nouveau@lists.freedesktop.org>,
-	<dri-devel@lists.freedesktop.org>, <rust-for-linux@vger.kernel.org>,
-	<linux-doc@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
-	<intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
-	<linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH RFC v6 05/26] nova-core: mm: Add support to use PRAMIN
- windows to write to VRAM
-Message-ID: <20260123121343.396bc4cd.zhiw@nvidia.com>
-In-Reply-To: <DS0PR12MB6486717785F6DD14EE1F1C46A397A@DS0PR12MB6486.namprd12.prod.outlook.com>
-References: <20260120204303.3229303-1-joelagnelf@nvidia.com>
-	<20260120204303.3229303-6-joelagnelf@nvidia.com>
-	<20260121100745.2b5a58e5.zhiw@nvidia.com>
-	<e186973c-ce31-405a-8bfa-dc647737a666@nvidia.com>
-	<DS0PR12MB6486717785F6DD14EE1F1C46A397A@DS0PR12MB6486.namprd12.prod.outlook.com>
-Organization: NVIDIA
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.33; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hAztp8++"
+Received: by mail-pf1-f171.google.com with SMTP id d2e1a72fcca58-81e821c3d4eso2017433b3a.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 23 Jan 2026 03:11:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1769166663; x=1769771463; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=54G7XuhdW75vYSZtlnacHikNaLX+O6Mlc4zbY7Y1Luc=;
+        b=hAztp8++AFV3mA0CV5I1xTB6mzXvh0DiZUWpiGqlZOGQvdZZU6qJEc7HprCfpRlM/O
+         P1JP9mpEjogKrEvETqxYGVSrNlQuZ/Y4JoyIzB01x2lKKAM6EBsZ6XlDO0HVxdRB3nr8
+         ZX85jqkVDgRrfpgLzVYTRIIzs9SmAPoMlY9xf63JUuwC9Krnf02EpO5afVvN6OnVxalw
+         8rswvL+F9X5RlzfAdLS3vwI68mxSyzKa3XPBWEvDAPrPgkNHWl0qHY0CylpeFP5m1pNa
+         WTSmLmYeFrzOVKYtYgxr5LOC/Pmm399ueF6NFPOLb7ESMCotPxiSuaUh2S4gxmtKCZui
+         HHsQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769166663; x=1769771463;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=54G7XuhdW75vYSZtlnacHikNaLX+O6Mlc4zbY7Y1Luc=;
+        b=pgEMoTK9uQWa0mjOLZCDztV5+U2MI6S8aCoeO5vPA7PO6LwfU8jwInaEt+SY09ej/G
+         DngvWAyi49Bbxkm3rt+UuaxH7DvVokQHKPu2Urk1DvbG0Lz8sErpvDD8sjjm8fzH0GYs
+         Z16QRDYGkihLGjKYnMHm1jbUzuJ3+jgtmvg9hFLsenjUTZTlnkFlzsx1SlBT50wfvhzJ
+         beY8MI6VaVkIjdDQwB8pyh7iFPjLUdWLzPme3H5wle4FsikftM2XkYX/FUhCzdjDebRl
+         CUqrmZDTz6YcxeOI0nNVryKUmlWzBwKMraYrdoRVW/zJ4RYLfc1W+0Rm02XC0fgt6dFf
+         Jzhw==
+X-Forwarded-Encrypted: i=1; AJvYcCVnn45VWfklASa2XuM1dWjMW+O3ZC39W2vGj0z3o1p5L7TrB4usS0mlKny43tFRrAoaXqbe3Q6Zcb9pJA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwdoP4ZGaiakr9HT/lNjzRsDWdDoBi8fNKWLSeWQrDio/wGoyXm
+	hITcUvgNAH1PUQNYNLTo4oF8qSekVbPw0hthaitR/pzmfgwDJC6nCnWS
+X-Gm-Gg: AZuq6aK7JmHLQ42ELZl6dx9bg2py1kwDeNxAJtUySpkHKTa9Z7RMFqOgpJX/zO4XS8Y
+	j8BOln3T+F4w15wgD8nbRvnlDATQNl1doaszsSEYL9EqYY4UkKKjZ46EcqMkwuUkHwi0ZAM40oA
+	cDIeODnJlQoCgQ59uxg17uMK9r/me7sd9rzOK/rHfj5ErinVzDDil5QeF3ecFUVPomOHKG81ryh
+	6mylvz+1MmzSRTgUIOD5kKY9kHOvzN0NvSbIhuJFv3dba6HHOBttenCUIgqV17QIsn6MITwdvqw
+	7+TMTwf/61Uj1gRmJ+V1tw7DnlK6arKQz3hW2AYhmbHiK9W4qSux0ERPRFcUGeQ7aPdqcbt0vIU
+	Hl/24MIguoeOL08BSKCBGN7uEP9hLlLaXoELClF1S4Fsfw4oFsZzn22xOUx3cWZW54Fqaq+exOO
+	7XlME6cRIoH2/GN6Vbug2AS6DjlXPDVRGFpw==
+X-Received: by 2002:a05:6a00:bc8c:b0:823:aa5:23f1 with SMTP id d2e1a72fcca58-82317eea693mr2402046b3a.57.1769166663318;
+        Fri, 23 Jan 2026 03:11:03 -0800 (PST)
+Received: from [172.16.20.12] ([136.226.253.21])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8231864489csm1949221b3a.9.2026.01.23.03.10.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 23 Jan 2026 03:11:02 -0800 (PST)
+Message-ID: <54d156ba-e177-4059-a808-2505983b4e2e@gmail.com>
+Date: Fri, 23 Jan 2026 16:41:24 +0530
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/2] dt-bindings: backlight: gpio-backlight: allow
+ multiple GPIOs
+To: Krzysztof Kozlowski <krzk@kernel.org>, lee@kernel.org,
+ danielt@kernel.org, jingoohan1@gmail.com
+Cc: deller@gmx.de, pavel@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-leds@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260120125036.2203995-1-tessolveupstream@gmail.com>
+ <20260120125036.2203995-2-tessolveupstream@gmail.com>
+ <3f3c47ea-1660-4bd4-ab89-3bdf58217995@kernel.org>
+Content-Language: en-US
+From: tessolveupstream@gmail.com
+In-Reply-To: <3f3c47ea-1660-4bd4-ab89-3bdf58217995@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-NV-OnPremToCloud: ExternallySecured
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS1PEPF00017094:EE_|DS4PR12MB999075:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0e977e9b-bb5f-4136-ef9d-08de5a6822ed
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|36860700013|82310400026;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?8gUNWX/O8eHZBAUr3VJTeDyjNuSbOr+741G7nKhZJQDVJ7sdcQTJfAm70gqp?=
- =?us-ascii?Q?K6Lx2xUI/SWi6nckOXW5hkZZTXv4bHE6YiFZ1AluMO8BoEqVpfBhrr2rHF+j?=
- =?us-ascii?Q?vUR20aNwcmo/+rE+8QIHa0/80OM3vmVmBvPypYtA18XSub9eHMEX/kJxLfPT?=
- =?us-ascii?Q?qlB/Posk/IZ+KFAVgzbV5hhZSh/aOHvOBLrKzVlk8iaBr3FHCf9ajmB++p6x?=
- =?us-ascii?Q?ktRdsxPH3uI3SHgQsyD4mPZxILqQdnr+fQdiADfXxhXCnYIEX+SWiI+SacPM?=
- =?us-ascii?Q?6lE1hdNYParyUs7bQJZi6wGdelz5n06Fyk2Y6uouW0CR5aN7zyn4rHedwnd8?=
- =?us-ascii?Q?ErlTHLnxNjH8I3o4NLW1GqDgXn0i9L26tn6AxIkSY+5hVqjvlf/XcvdBaGst?=
- =?us-ascii?Q?xk8yTggDO4YWaq/Bl9grT5gXdSpVTARJfaBzi1GjJ1AZSVFWQaBV5SjnwrnF?=
- =?us-ascii?Q?EwmEMuxhD23C7dnnPpm+lNwmEmIqvpr46X4+4D3T8quRAFz8You8G0NzjjBk?=
- =?us-ascii?Q?bcEhX0WC7p2mqC4KZEA/Rplyt0g8LANjCbf8VUXlCn4/2mFXCibnLStRzdxB?=
- =?us-ascii?Q?bXhVpDhnU1GY8RVHRNJsIT957jl+/PW2+Sh8y50wdHfQtI1p6ABPjDrMMmhl?=
- =?us-ascii?Q?YajnsvULAiMCOTZlOxguQllgJN5jdzCysrgCUnVkYwmp9NbzeJDj2oZFa0ul?=
- =?us-ascii?Q?LQjUA0Jd3WzXEUjEC1OhJ2OHJhf+Br1QnipPsAZk0K8lDVDxB8Q378M8cXi0?=
- =?us-ascii?Q?gOK52UiOj76v3NPdlD7ZaiORHFwA2mumZa3UO5GKkWCXrF40KxSzZ1g/SFXt?=
- =?us-ascii?Q?cn+WwnEuJ/5HlVEuDrIonv+bNmOIh/f2bexUMmzUT2wGKGyzbtln4SN6/jcM?=
- =?us-ascii?Q?AvMZNWFpXeW6K3ND4ehGfpulI7iEnaz5f9XBk8BqM4uJ4LUNmINP0Aj/s8kH?=
- =?us-ascii?Q?MO+1ktsIcyvi107CxgqsUbzSKrPDiXEE665yowMRKj7rT6e56NfabeUFcgTC?=
- =?us-ascii?Q?6mSAWuQvhFzsSKgmgUwCF7e9FZc2F3o76YeWqpqOB5J9Qlqt30kK0MHKsCg+?=
- =?us-ascii?Q?NcOueIgVf8FqKUFhXgrbB+wJAgF8cUzxCzPeEafBQVnuEQPOU+jPRj9njESQ?=
- =?us-ascii?Q?UGuBpLQIxQYssC45tRVkIPdj0ayAvC2b7kI1QohAv09TQ92fMgIVfbruRcty?=
- =?us-ascii?Q?1TuWhpF+KVIhMb9DOyirHzz8ZQBuYgr8jDIbcTfl/h7MOBxh7/dHPQ64wbxa?=
- =?us-ascii?Q?0z3B2yGggDE/vRIbA3PABq//GL4RIJqe2AjEg19M5XLIGplk6t8ptpeVxaO2?=
- =?us-ascii?Q?1YKZt8xwYquzmrh4PMsYL7iMDEDbPCUUY/SdsVgf7iv7LsnRGaxq9mUyqe34?=
- =?us-ascii?Q?TRyIYWTHIB1phhYIGBrd9Y6kBajku1fD3h4u7TuKxe7DNphP8Jndvs8NPIIB?=
- =?us-ascii?Q?s3JNu/nqmMGcrvLs+70/XVXHA7Jpv874sqS/ZNdx+4ivQ/nIsKwgg7WNlP2g?=
- =?us-ascii?Q?wKxDqX01kMQq37FtebGNkWEtyUbRur5tL6DEredmGysfTyr9VBzE3zyRBTfv?=
- =?us-ascii?Q?4ltnESy4ZzsfIyGnBu3CUoo1xh2VPdnUffU8afZqXsdpbssLrE0C6ORvhqsW?=
- =?us-ascii?Q?HSdIU7yjGy6r1eGhJrUhT+s+mOqZRH/YYsRfXn/1nZ+TRFy1FZAQVtetMm3K?=
- =?us-ascii?Q?i/9/4Q=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:216.228.118.233;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc7edge2.nvidia.com;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(36860700013)(82310400026);DIR:OUT;SFP:1101;
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jan 2026 10:14:04.1322
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0e977e9b-bb5f-4136-ef9d-08de5a6822ed
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.118.233];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DS1PEPF00017094.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS4PR12MB999075
 
-On Thu, 22 Jan 2026 18:16:00 -0500
-Joel Fernandes <joelagnelf@nvidia.com> wrote:
 
-> On Wed, 21 Jan 2026 12:52:10 -0500, Joel Fernandes wrote:
-> > I think we can incrementally build on this series to add support for
-> > the same, it is not something this series directly addresses since I
-> > have spend majority of my time last several months making translation
-> > *work* which is itself no east task. This series is just preliminary
-> > based on work from last several months and to make BAR1 work. For
-> > instance, I kept PRAMIN simple based on feedback that we don't want to
-> > over complicate without fully understanding all the requirements.
-> > There is also additional requirements for locking design that have
-> > implications with DMA fencing etc, for instance.
-> >
-> > Anyway thinking out loud, I am thinking for handling concurrency at
-> > the page table entry level (if we ever need it), we could use per-PT
-> > spinlocks similar to the Linux kernel. But lets plan on how to do this
-> > properly and based on actual requirements.
+
+On 20-01-2026 20:01, Krzysztof Kozlowski wrote:
+> On 20/01/2026 13:50, Sudarshan Shetty wrote:
+>> Update the gpio-backlight binding to support configurations that require
+>> more than one GPIO for enabling/disabling the backlight.
 > 
-> Thanks for the discussion on concurrency, Zhi.
 > 
-> My plan is to make TLB and PRAMIN use immutable references in their
-> function calls and then implement internal locking. I've already done
-> this for the GPU buddy functions, so it should be doable, and we'll keep
-> it consistent. As a result, we will have finer-grain locking on the
-> memory management objects instead of requiring to globally lock a common
-> GpuMm object. I'll plan on doing this for v7.
+> Why? Which devices need it? How a backlight would have three enable
+> GPIOs? I really do not believe, so you need to write proper hardware
+> justification.
+>
+
+To clarify our hardware setup: 
+the panel requires one GPIO for the backlight enable signal, and it 
+also has a PWM input. Since the QCS615 does not provide a PWM controller 
+for this use case, the PWM input is connected to a GPIO that is driven 
+high to provide a constant 100% duty cycle, as explained in the link 
+below.
+https://lore.kernel.org/all/20251028061636.724667-1-tessolveupstream@gmail.com/T/#m93ca4e5c7bf055715ed13316d91f0cd544244cf5
+ 
+>>
+>> Signed-off-by: Sudarshan Shetty <tessolveupstream@gmail.com>
+>> ---
+>>  .../leds/backlight/gpio-backlight.yaml        | 24 +++++++++++++++++--
+>>  1 file changed, 22 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
+>> index 584030b6b0b9..4e4a856cbcd7 100644
+>> --- a/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
+>> +++ b/Documentation/devicetree/bindings/leds/backlight/gpio-backlight.yaml
+>> @@ -16,8 +16,18 @@ properties:
+>>      const: gpio-backlight
+>>  
+>>    gpios:
+>> -    description: The gpio that is used for enabling/disabling the backlight.
+>> -    maxItems: 1
+>> +    description: |
+>> +      The gpio that is used for enabling/disabling the backlight.
+>> +      Multiple GPIOs can be specified for panels that require several
+>> +      enable signals. All GPIOs are controlled together.
+>> +    type: array
 > 
-> Also, the PTE allocation race you mentioned is already handled by PRAMIN
-> serialization. Since threads must hold the PRAMIN lock to write page
-> table entries, concurrent writers are not possible:
+> There is no such syntax in the bindings, from where did you get it? Type
+> is already defined.
 > 
->   Thread A: acquire PRAMIN lock
->   Thread A: read PDE (via PRAMIN) -> NULL
->   Thread A: alloc PT page, write PDE
->   Thread A: release PRAMIN lock
+> items:
+>   minItems: 1
+>   maxItems: 3
 > 
->   Thread B: acquire PRAMIN lock
->   Thread B: read PDE (via PRAMIN) -> sees A's pointer
->   Thread B: uses existing PT page, no allocation needed
 > 
-> No atomic compare-and-swap on VRAM is needed because the PRAMIN lock
-> serializes access. Please let me know if you had a different scenario in
-> mind, but I think this covers it.
+>> +    minItems: 1
+>> +    items:
+>> +      type: array
+>> +      minItems: 3
+>> +      maxItems: 3
+>> +      items:
+>> +        type: integer
 > 
-> Zhi, feel free to use v6 though for any testing you are doing while I
-> rework the locking.
+> All this is some odd stuff - just to be clear, don't send us LLM output.
+> I don't want to waste my time to review microslop.
 > 
+> Was it done with help of Microslop?
+>
 
-Hi Joel:
+I understand now that the schema changes I proposed were not correct, 
+and I will address this in the next patch series. My intention was to 
+check whether the gpio-backlight binding could support more than one 
+enable-type GPIO. 
+Could you please advise what would be an appropriate maximum number of 
+GPIOs for gpio-backlight in such a scenario? For example, would allowing 
+2 GPIOs be acceptable, or should this case be handled in a different way?
+ 
+> Best regards,
+> Krzysztof
 
-Thanks so much for the work and the discussion. It is super important
-efforts for me to move on for the vGPU work. :)
-
-As we discussed, the concurrency matters most when booting multiple vGPUs.
-At that time, the concurrency happens at:
-
-1) Allocating GPU memory chunks
-2) Reserving GPU channels
-3) Mapping GPU memory to BAR1 page table
-
-We basically need kinda protection there. E.g. Guard/Access on immutable
-references, which is backed by the mutex. I believe there shouldn't be a
-non-sleepible path reaching those. This should be fine.
-
-I can see you are thinking of fine-granularity locking scheme, which I
-think is the right direction to go. I agreed with the above two locks.
-
-For 1), I can recall that you mentioned there is some lock protection
-already there.
-
-For 2), We can think of it when reaching there.
-
-However for 3), We need to have one there as well beside the above two
-locks. Have you already had one in the GPU VA allocator?
-
-If yes, the above two locks should be good enough so far. IMO.
-
-Z.

@@ -1,147 +1,167 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
+Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 276331CAA79
-	for <linux-fbdev@vger.kernel.org>; Sat, 24 Jan 2026 16:46:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86C451C84A6
+	for <linux-fbdev@vger.kernel.org>; Sat, 24 Jan 2026 16:51:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769273202; cv=none; b=KSAzMPwCvnH6oDW1g2989ev9btgeaUlEH5in/CqcAkmp3qXylLoaiG3X+IeQxzYNmhn5wmCO3AuJc3G7E5ubCWPB8fSQFVEOlhedVkm/CwoKRdlQm8i2I0i9STgSV2cGgL+Ua/9cQ78O9mQNSpxerk2OKk+ORN61x6nffesYpE0=
+	t=1769273483; cv=none; b=KU9+5xb4uOf6wChOw7PmYoOxWq3CZYdPtFKHzU692g8Ad7ZpSxeS6T8qb9u0n8G2xROmYEyEgSoSDtZGX7AEfTLv4h0OYgFDIInOTdre9JyoqRsOTH5MjktqQaPBdULt97Qfx8XqQg2tKOrMd++RZV/QwlLntx+/CHQRp3FFZ4A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769273202; c=relaxed/simple;
-	bh=kcHW8sud6NXETHS0u2NhE22Vg1E1E1VV27IzyPYRMDM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oX4iAWzOcKx5A1NA6c0KtjK46s/ICOJDP1uU8tKChW2kybwQ2/yiCXTo1AIRop0xg8InHPotSmJEYelOO+rArmxwNWZTyxqOg5x5ey3fDtw2x4ziSqyAT5OLN5Z7IVMWMJxzQisEAlHabo21hr67IK9KzJTSH4SOSZktRF/gw50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Eo0aGbQf; arc=none smtp.client-ip=209.85.128.53
+	s=arc-20240116; t=1769273483; c=relaxed/simple;
+	bh=rFKmxm3Wp+0q98ygaCBrCQ6u0tQr6uPQEz+F7nuZCno=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ALnHUJq6INpvhqErANTFGN6oBQ7WEviia+15ntR4dg7fHYpTgX/yZiAH12yR997QZkRSkBVd5JE1+jx3WfE10sfbRexiiiiS5YvXY/lGypVrbeZtNhwe8d8OV6WPfXiCl4HUJ05mKG/CsHqOCgUiOSd8+xFOhX5ASfua5gxWpgU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HeHNH9DI; arc=none smtp.client-ip=209.85.221.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Eo0aGbQf"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-47ee4539adfso34912065e9.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 24 Jan 2026 08:46:40 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HeHNH9DI"
+Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-4359019da8cso2935284f8f.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 24 Jan 2026 08:51:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769273199; x=1769877999; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=6OUYnmJjUSoTbjfBFrV7WRaFdxNtImiW0cSkzLarl3c=;
-        b=Eo0aGbQf1HCNUOWHNyXO+W2A/084cewn/CeT5NXgUtAtFL7krbosVlNFsYCn7VZSQg
-         /7v76JsPkKBXniUDnMo6NI+EVG0nGpuTcg7KM3UQYjkZIwBoq4WGABZ5e6DKXZPSL27O
-         5NSbHi+3gLGVsadNXXoS1iKY8IvQq3l1ZJrDFfQ53OQDuRySXVjbDtCimxlfta8cJQ+a
-         1ZQY82lCfoTbQQ9KiPTtnIqVNWx76AvmUq6wTUjyDh7esPlBx890jKUBym7A3XgcBp7p
-         TioNvSHd7YpyZQUk9m0bWYkGdjnhP+t/O4oPUjoABDmomd1FCgH83kuYj8Db8QLRMJDn
-         u3xA==
+        d=gmail.com; s=20230601; t=1769273480; x=1769878280; darn=vger.kernel.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=Hxw/rJFKy3Zi43PPBn0FyNiBOjhYEoSqVsfDen/FFE0=;
+        b=HeHNH9DIDZa9zH1m7phw8pUGzWfbSuCRVHPVB0Vu9KyXI8RbOxk7oLdZNb+DNRj5xa
+         S4E7E4Er8KbjXMe1axXRRdx3z2VjVn1zwWHvzx/0hCEhQ80q3QHeApTlNP2SlquccURf
+         xucY79Fb7XzSOJTof1x03olO/Ol38pINMIZe7KILn+BpVZeCV/ILF15reUTsveOirB69
+         A+Y99jPkQpVkr+RMfp2+7XBZ5Xyl53X/YNJBpQS1L4M2RBa+MsFJDEW186mkb7Yw9Bv2
+         DljJulpeld9F1hgzNhQy2ifdMDMzQpe7cLTBskh1UL4Ck2GO08xeUyrMK5BE9DdFP8Qz
+         u11g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769273199; x=1769877999;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=6OUYnmJjUSoTbjfBFrV7WRaFdxNtImiW0cSkzLarl3c=;
-        b=bgqcZ+eHAVlsOfRWnUhJPeqHx/xw+1eMkdZ+FJP3CfEaqh4WsLWjiVKDEBbK+Ku4vm
-         8oG1aZ9C5ph5su/83o0ajana+OFiAX2v+2GHlNJX6tPDX9+isk/nhf3fWA0HaMrYLXrV
-         VJBC01xl+6g6fxM+zFobPiu+6blee9BenEIfDOa3j5DziIWV6qU4LpRiZxq0OzY5Tx2i
-         7InEUaz0GqWijAD0ryt+1NwhDqcobYcdiRX1FhKfsaoJHIP+uUcAMg1HtxowIJT4f+UN
-         U20lRa5rPDPTgS0m1PG8vRp/D7UBc65JYOZov1u+Dk+/wtU5PNAZuYZhSo+GEF+VEiXc
-         9fIQ==
-X-Forwarded-Encrypted: i=1; AJvYcCX75Nn4XF25mN17bpy8wkaPthnsbBIAm/oISdz/Cx3WHeiw2Uv3fjU79T+GVaLTblYyRjJGHYq1OInGRA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxWoHo4Ci3tdiG6K+Q2Kea0URNk8onb3F7U8iBY/ARkzLoauHvC
-	QRjnu9ySZaaPhJ9pb+C++LwoilsAJCRABgKvGvZNLhWE0mTJOsqQp0jF
-X-Gm-Gg: AZuq6aKl4hMXxftvGWfOV+wFL/wlqwnE3wCbAl6YePFbnwlgNeNimhaVrLcMLx2vi3s
-	ICO7xG4Du5vlQY7t9sYhYTvl+nMDOnx1mkWHOx3rEJHp0GVb8Z5uKlkBKnmwb+H+aTL0euHIaoQ
-	QuxmO77Mgso0wuTB6uOoSDwr9FIPXo++xLpehiJxtCC02MpTPZpiSmu0Srt1hhKh6pRBaxeb1H2
-	8lGi6K/nLrREuT6WKyXEb/I5x2gSh2zXRWO6XLKESIyeRmPb5X9htm1IbLWzCAfA8vLrBXRL1jF
-	+XBVrE5aS8dfV3gPjUlvSilGiinizZXiwPOBqw2yjA4hozBoq17dNDSfCKgzcRmswKYBQLa/avH
-	r1KCA22/2B4ZHz7cXzdXjdu/9ByNC70MvjkxQoI16JuKBtGyVCVKiGlNgbm7wa9+u48jN8Px9bD
-	EyLkRjNYmoVBSFfEi6ylqW1sAg9EM9e2xzp1k3ZeJxMiBb3g==
-X-Received: by 2002:a05:600c:3485:b0:47d:403e:9cd5 with SMTP id 5b1f17b1804b1-4804c959816mr99179385e9.11.1769273199342;
-        Sat, 24 Jan 2026 08:46:39 -0800 (PST)
-Received: from osama.. ([156.223.77.192])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4804dbc0d84sm52711215e9.6.2026.01.24.08.46.37
+        d=1e100.net; s=20230601; t=1769273480; x=1769878280;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Hxw/rJFKy3Zi43PPBn0FyNiBOjhYEoSqVsfDen/FFE0=;
+        b=ekWOUfyrk7zyaNJp5+soUDycP0PoeuYJw3tKAVQ3IG484AY6OCJWyuaQlI0kcvVl1m
+         AVuZqxVqJBZfW85CfWq2KklG0+f3ZacGIQ8bd042QR1dfve3yVuHwFdfgHcQPm5sSKJO
+         7cA8OK8qD2edVVsZOYrqKU1P/DeClJ5i/DgnII1o/Khh1Y0f/4J0c6DqO1utBzFtVORk
+         RjTzY/sKv+7fa6Ts4NkB1+bjIFJrHSn+DePJIaRKFYmNmi74mu43fzZjpY6Efbf5p+ei
+         ATa4peBK/+GEMjkgpUqTIsI09oX7RZTIWbJpHmcDApCcUnjJlrH0vsQ5l78wVgpa9be2
+         84yA==
+X-Forwarded-Encrypted: i=1; AJvYcCW1J1uIHXSlwfH7lEVL/AzXmmuskmvahxkTwhcENpPdKUD9yEzOAuF0Kqm9DCI7lwGO/rmz5s989zkOHg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx6l9ic9Ki/eVL2iIVw7gfp/g79pNjyUNtV2SFIqE+1zoaXgpd8
+	PwFoJ1RENb9xkb3rccSKc7PaJ2Z0954aR6cKYLurqEX9No3Bxd4IRL2P
+X-Gm-Gg: AZuq6aLArSjCsFgb4BpEVAenTEgBZN90+ByzSYdihmNB0LY128w8aEazoD9hKymuIAX
+	rwEaH66eBFacZXTHVvh1DPqvTEeySs+vApmD/fKNus4kmMkgdpc/+I1VZJqzj5b1rIpywEedtxZ
+	xbo7fBm52iCefneGx81qPMQNO6/o1my6N5p/AjB+9kCziolSTBjz8PgrAqvGnlq4FzW/7Qo5Koy
+	qc6+Ojb5nJ+ZB97nrU1VPAB4Ao35CFCdnhbgQWvcN99kSf/MZXhAnyyYYLsI7rWbcgp/T8JbKRB
+	k/2GaGbKAgsBoTTx21bX8iHSfECA0lGW7dnhPzovyEwS95JJ/hFZcIiW81MKckPYaD6cC0ZnaS8
+	CW7nnH4ieIW/HhIQjvo7JvooAncmbfNwNNMZrEIiRdRRuly1jCjSEsnIuQikv5AWTXKKKtUYUJ3
+	DlRccFunduTfdryMOlXSAg6iTVyxSC5ZweXqQHn4IW/R4=
+X-Received: by 2002:a05:6000:2886:b0:435:90a7:8db with SMTP id ffacd0b85a97d-435b159cadamr12739865f8f.15.1769273479706;
+        Sat, 24 Jan 2026 08:51:19 -0800 (PST)
+Received: from osama ([156.223.77.192])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435b1f73855sm15431440f8f.29.2026.01.24.08.51.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 24 Jan 2026 08:46:38 -0800 (PST)
+        Sat, 24 Jan 2026 08:51:19 -0800 (PST)
+Date: Sat, 24 Jan 2026 17:51:16 +0100
 From: Osama Abdelkader <osama.abdelkader@gmail.com>
-To: Simona Vetter <simona@ffwll.ch>,
-	Helge Deller <deller@gmx.de>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
 	Lee Jones <lee@kernel.org>,
-	"Daniel Thompson (RISCstar)" <danielt@kernel.org>,
 	Murad Masimov <m.masimov@mt-integration.ru>,
 	Quanmin Yan <yanquanmin1@huawei.com>,
 	Yongzhen Zhang <zhangyongzhen@kylinos.cn>,
-	Osama Abdelkader <osama.abdelkader@gmail.com>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Cc: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
-Subject: [PATCH v2] fbdev: avoid out-of-bounds read in fb_pad_unaligned_buffer()
-Date: Sat, 24 Jan 2026 17:46:30 +0100
-Message-ID: <20260124164633.20444-1-osama.abdelkader@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
+Subject: Re: [PATCH] fbdev: Fix slab-out-of-bounds read in
+ fb_pad_unaligned_buffer
+Message-ID: <aXT4hLBy05W8Spy9@osama>
+References: <20260118134735.11507-1-osama.abdelkader@gmail.com>
+ <7d4b95ff-8a94-4d96-8b75-6153baad9fdf@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <7d4b95ff-8a94-4d96-8b75-6153baad9fdf@suse.de>
 
-fb_pad_unaligned_buffer() unconditionally reads and advances the source
-pointer for the final byte of each row, even when no bits from that byte
-are actually consumed.
+On Mon, Jan 19, 2026 at 08:45:08AM +0100, Thomas Zimmermann wrote:
+> Hi
+> 
+> Am 18.01.26 um 14:47 schrieb Osama Abdelkader:
+> > The function fb_pad_unaligned_buffer() was reading idx+1 bytes per row
+> > from the source buffer, but when mod == 0 (font width is a multiple of
+> > 8 bits), the source buffer only has idx bytes per row. This caused a
+> > slab-out-of-bounds read when accessing src[idx] after the inner loop.
+> > 
+> > Fix this by only reading the extra byte when mod != 0, ensuring we
+> > never read beyond the source buffer boundaries.
+> > 
+> > This fixes the KASAN slab-out-of-bounds read reported by syzkaller:
+> > https://syzkaller.appspot.com/bug?extid=55e03490a0175b8dd81d
+> > 
+> > Reported-by: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
+> > Closes: https://syzkaller.appspot.com/bug?extid=55e03490a0175b8dd81d
+> > Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
+> > ---
+> >   drivers/video/fbdev/core/fbmem.c | 18 ++++++++++--------
+> >   1 file changed, 10 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> > index eff757ebbed1..a0c4932a6758 100644
+> > --- a/drivers/video/fbdev/core/fbmem.c
+> > +++ b/drivers/video/fbdev/core/fbmem.c
+> > @@ -113,15 +113,17 @@ void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx, u32 height,
+> >   			dst[j+1] = tmp;
+> >   			src++;
+> >   		}
+> > -		tmp = dst[idx];
+> > -		tmp &= mask;
+> > -		tmp |= *src >> shift_low;
+> > -		dst[idx] = tmp;
+> > -		if (shift_high < mod) {
+> > -			tmp = *src << shift_high;
+> > -			dst[idx+1] = tmp;
+> > +		if (mod) {
+> 
+> How do we end up here if mod equals 0? When I look at the callers of this
+> function, cases with (mod == 0) take an entirely different branch. [1] [2]
+> 
+> Best regards
+> Thomas
+> 
+> [1] https://elixir.bootlin.com/linux/v6.18.6/source/drivers/video/fbdev/core/bitblit.c#L208
+> [2] https://elixir.bootlin.com/linux/v6.18.6/source/drivers/video/fbdev/core/fbcon_ud.c#L199
+> 
+> > +			tmp = dst[idx];
+> > +			tmp &= mask;
+> > +			tmp |= *src >> shift_low;
+> > +			dst[idx] = tmp;
+> > +			if (shift_high < mod) {
+> > +				tmp = *src << shift_high;
+> > +				dst[idx+1] = tmp;
+> > +			}
+> > +			src++;
+> >   		}
+> > -		src++;
+> >   		dst += d_pitch;
+> >   	}
+> >   }
+> 
+> -- 
+> --
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+> GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+> 
+> 
 
-When shift_high >= mod, the remaining bits do not cross a byte boundary,
-but the code still accesses the next source byte. This can lead to
-out-of-bounds reads under malformed geometry, as reported by syzbot.
+You’re right that callers should only reach this path when mod != 0.
+The issue isn’t the mod == 0 case itself, but that the final source byte is read
+and consumed even when shift_high >= mod, where no bits are actually used.
+I resent a version that only accesses the extra byte when it contributes data.
 
-Fix this by only accessing and consuming the final source byte when it
-contributes bits (shift_high < mod).
-
-This fixes the KASAN slab-out-of-bounds read reported by syzkaller:
-https://syzkaller.appspot.com/bug?extid=55e03490a0175b8dd81d
-
-Reported-by: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
-Closes: https://syzkaller.appspot.com/bug?extid=55e03490a0175b8dd81d
-Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
----
-v2: address the real issue (shift_high >= mod) condition.
----
- drivers/video/fbdev/core/fbmem.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index eff757ebbed1..d125c3db37a1 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -100,7 +100,7 @@ EXPORT_SYMBOL(fb_pad_aligned_buffer);
- void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx, u32 height,
- 				u32 shift_high, u32 shift_low, u32 mod)
- {
--	u8 mask = (u8) (0xfff << shift_high), tmp;
-+	u8 mask = (u8) (0xff << shift_high), tmp;
- 	int i, j;
- 
- 	for (i = height; i--; ) {
-@@ -113,15 +113,18 @@ void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx, u32 height,
- 			dst[j+1] = tmp;
- 			src++;
- 		}
--		tmp = dst[idx];
--		tmp &= mask;
--		tmp |= *src >> shift_low;
--		dst[idx] = tmp;
-+
-+		/* Only consume another source byte if it contributes bits */
- 		if (shift_high < mod) {
-+			tmp = dst[idx];
-+			tmp &= mask;
-+			tmp |= *src >> shift_low;
-+			dst[idx] = tmp;
- 			tmp = *src << shift_high;
- 			dst[idx+1] = tmp;
-+			src++;
- 		}
--		src++;
-+
- 		dst += d_pitch;
- 	}
- }
--- 
-2.43.0
-
+Best regards,
+osama

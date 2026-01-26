@@ -1,263 +1,192 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011014.outbound.protection.outlook.com [40.107.208.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CC2A313547
-	for <linux-fbdev@vger.kernel.org>; Mon, 26 Jan 2026 10:01:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769421705; cv=none; b=TM00rFFzz0EZQN9VMm+nksPrC3PY7vCUbrRfQjTrvHdcgVUf9O/9ajl10uMUKZ89CeRoSYY+L0qO1mGWPR5DSZpQppWfLVZteqOLLXEFqyvzDg7w1lYhQ7IBb6BPnKqnHbAmZrElH/f1tJeEc4Os0zqlwAEjhJmLux7uPiWuYec=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769421705; c=relaxed/simple;
-	bh=43yr8MpN9iodHfijPTJPG/VmdfqUrAFfZZhPG6ooPF8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=izOhXH5jD/JOr5oaHLxf/uwDR0EwNj69wohyIBy8u2FdPi2QtY12KN5JKtkMPzh/HG3yamvDVFhWIKOwCSzcqwRoOlAmLciU4dcPL+2vTeYDN5Lpv563bEvZKzlWWU7v/k6jIlrRRbjxEHqoBzgS/yQtjBNUg9leZZszblGwl/4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=cljO8j/8; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=5zfe0Vri; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=cljO8j/8; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=5zfe0Vri; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DB383126C0;
+	Mon, 26 Jan 2026 10:28:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.14
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1769423308; cv=fail; b=UAYpplM4w6V0vhEwtUs2N8wlNIQKpDduWj6WEcJ7b9qI4BB8fNfxqpEC/AJbfeh0dqmxQPYrFhMxatChQZA+07ocgcnG5tD40BtGopRJyy37VDSDbHsskZC1F7HXbTZXx8s145FQorUw597Dp7pXUbES0coCya92h0wtJRGcHRY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1769423308; c=relaxed/simple;
+	bh=XVSFEzAkpN7nwNpqEL8m0zmEy0VVgoft68rYzvCkmtA=;
+	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
+	 In-Reply-To:MIME-Version; b=SxQZBXRl1mIsynlJa/AJWO9zgYjt9mCjufUoDmviEGeqtyKBmmndmHr1pf/IbiqmenaFRRX1qIC512ecBe6MuDP2C0yz1a9YFUUQ/TNT8GaFgTxevbxdehJPO2uoGg5axWRjlLzf8MEEhNzCwogqqnRoSpGHVcqTMgDvFNeVw0I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=XGRWhCq/; arc=fail smtp.client-ip=40.107.208.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="cljO8j/8";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5zfe0Vri";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="cljO8j/8";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5zfe0Vri"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 364995BD33;
-	Mon, 26 Jan 2026 10:01:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1769421702; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=MCTdo2kIuXkq/O+r27x3Hh0LuKAl+WTC23OqrDgITkw=;
-	b=cljO8j/8EFltCww+6LA4PQioVmV1kZ24qISLcMlQ1R4+oKVIs6u2ZmxsGNZxm0wbrnWmJc
-	/0xHbb0rUdRMJP23432mzG+TsljCjO2mhmgZYhIy27riu+XbLiG/2HpwbUWxRYlIwY+lJO
-	Lat3/RIqVnJ9gCwstEY1lQB4FUopFbY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1769421702;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=MCTdo2kIuXkq/O+r27x3Hh0LuKAl+WTC23OqrDgITkw=;
-	b=5zfe0Vrivp1KUobBZc8loxmLM8CZbDcNlCtgNxVSIEkj3G0A0X+r52dpv+gHd7aACx9RiA
-	bGLwZTnUn5xrBbAQ==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1769421702; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=MCTdo2kIuXkq/O+r27x3Hh0LuKAl+WTC23OqrDgITkw=;
-	b=cljO8j/8EFltCww+6LA4PQioVmV1kZ24qISLcMlQ1R4+oKVIs6u2ZmxsGNZxm0wbrnWmJc
-	/0xHbb0rUdRMJP23432mzG+TsljCjO2mhmgZYhIy27riu+XbLiG/2HpwbUWxRYlIwY+lJO
-	Lat3/RIqVnJ9gCwstEY1lQB4FUopFbY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1769421702;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=MCTdo2kIuXkq/O+r27x3Hh0LuKAl+WTC23OqrDgITkw=;
-	b=5zfe0Vrivp1KUobBZc8loxmLM8CZbDcNlCtgNxVSIEkj3G0A0X+r52dpv+gHd7aACx9RiA
-	bGLwZTnUn5xrBbAQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 5FB7C139F0;
-	Mon, 26 Jan 2026 10:01:41 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id gWo8FIU7d2k1fQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 26 Jan 2026 10:01:41 +0000
-Message-ID: <ed48e82a-cb94-477f-83c4-b2d87ae3cde6@suse.de>
-Date: Mon, 26 Jan 2026 11:01:40 +0100
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="XGRWhCq/"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=jclz2MwefR39Q75/RLnsXQjrOouDYr9jRaW6p56wugRTNAClByVO+eaHL/q40Aig88lHxKY/pf2bsFTRyFzwjnf959P7bfWNV+cG6GJalCrVrVVNt5M3PCdPCjeuTJuTcr9fOrlfLvJqX+dtyn1aL4jZMpmE5hUIwNax4mMh4EzoHzvixG+apa5kzkMZKmIKakm2IE9t/kWtaKgmPqCRp5Q7ZaMazn8QGT5aZx5z8DHGEvjMd9wO5fsI0aVD9DsixeZ13H4gKmlihiRHL4UycVHmmohxGn6wNv3cZG4BLvAyJaX7WJv53WTRIwNe6ZghtHRD1689acYRB6pwkG8g6Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=XVSFEzAkpN7nwNpqEL8m0zmEy0VVgoft68rYzvCkmtA=;
+ b=XEjNdaF3TdQqd53j2FXdcU9gkyDxewHuKTrvPyixko7b29ZOidvulz+zOrAElKl+bhP3Cfdp/HpE4B4c52cyFccF+9xfMvIS81HrTq28jrI8/swhE2cF4WrwnT35Iv0+gNC87pIkLHjj2IGrjTPEIBbIfW1pnLseMaZHF3eCcIRMglj+ZRaJy+L85ojcZQyo94TxzbQHRGeJF149+LtB/fIFMqZK2gdK1P/R8L7vm0MkGtXtgcUo9LEueKjXJlxIKvaebl7bUpXFSJanQhqPY6rr4bxYkEErqXqBg4RzzXc29YKWSW8Y/pVZb4KdtcPP3qfZcmzBURm34VHThEhiNg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=XVSFEzAkpN7nwNpqEL8m0zmEy0VVgoft68rYzvCkmtA=;
+ b=XGRWhCq/q6GZQboxe5+0mLP6yDY8fJqH5giTun1UQYUvbUrDn0DYL5c4/Cylhtu+ePU74MHqKac8f1QbdLZsfpioX17BSAfFDoVWpKwVeAfeLNsO78qcIkZrL+0ZlyXrT2KZesWt12mf9uDMj8IeGyh5WqH8+6Wnk/+PKMFcVasUBuFkLZCsMWyoCauP+BdMLWVEfxlVV9EF5qGkuz7TdbIIotEYaXrIk7gvPHSmL1+nRSanoD/5fVNtOehZzdSeAu40h1nHFXl0hZShFHbD7O+FNvYN8MijbIN7pPH6ywhbB/EZ5m8g3nVJ3FLYfeFhYl+AEb0ZEPeEA+KQIdzsaw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from CH2PR12MB3990.namprd12.prod.outlook.com (2603:10b6:610:28::18)
+ by MN2PR12MB4239.namprd12.prod.outlook.com (2603:10b6:208:1d2::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.10; Mon, 26 Jan
+ 2026 10:28:25 +0000
+Received: from CH2PR12MB3990.namprd12.prod.outlook.com
+ ([fe80::7de1:4fe5:8ead:5989]) by CH2PR12MB3990.namprd12.prod.outlook.com
+ ([fe80::7de1:4fe5:8ead:5989%6]) with mapi id 15.20.9542.010; Mon, 26 Jan 2026
+ 10:28:24 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 26 Jan 2026 19:28:21 +0900
+Message-Id: <DFYG7MT5JINY.1T8ZZ4ASIWXU@nvidia.com>
+Cc: "pengfuyuan" <pengfuyuan@kylinos.cn>, "Danilo Krummrich"
+ <dakr@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>, "Daniel Almeida"
+ <daniel.almeida@collabora.com>, "Miguel Ojeda" <ojeda@kernel.org>, "Boqun
+ Feng" <boqun.feng@gmail.com>, "Gary Guo" <gary@garyguo.net>,
+ =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, "Benno Lossin"
+ <lossin@kernel.org>, "Andreas Hindborg" <a.hindborg@kernel.org>, "Trevor
+ Gross" <tmgross@umich.edu>, "Greg Kroah-Hartman"
+ <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
+ "David Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>,
+ "Helge Deller" <deller@gmx.de>, "Hans de Goede" <hansg@kernel.org>, "Lee
+ Jones" <lee@kernel.org>, "Sam Ravnborg" <sam@ravnborg.org>, "Zsolt Kajtar"
+ <soci@c64.rulez.org>, =?utf-8?q?Ville_Syrj=C3=A4l=C3=A4?=
+ <ville.syrjala@linux.intel.com>, <rust-for-linux@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+ <linux-fbdev@vger.kernel.org>
+Subject: Re: [PATCH v1 v1 0/4] [RUST] Framebuffer driver support
+From: "Alexandre Courbot" <acourbot@nvidia.com>
+To: "Thomas Zimmermann" <tzimmermann@suse.de>
+References: <20260126081744.781392-1-pengfuyuan@kylinos.cn>
+ <ed48e82a-cb94-477f-83c4-b2d87ae3cde6@suse.de>
+In-Reply-To: <ed48e82a-cb94-477f-83c4-b2d87ae3cde6@suse.de>
+X-ClientProxiedBy: TYCP301CA0034.JPNP301.PROD.OUTLOOK.COM
+ (2603:1096:400:380::14) To CH2PR12MB3990.namprd12.prod.outlook.com
+ (2603:10b6:610:28::18)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 v1 0/4] [RUST] Framebuffer driver support
-To: pengfuyuan <pengfuyuan@kylinos.cn>, Danilo Krummrich <dakr@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>,
- Daniel Almeida <daniel.almeida@collabora.com>,
- Miguel Ojeda <ojeda@kernel.org>
-Cc: Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
- =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
- Trevor Gross <tmgross@umich.edu>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J . Wysocki" <rafael@kernel.org>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
- Hans de Goede <hansg@kernel.org>, Lee Jones <lee@kernel.org>,
- Sam Ravnborg <sam@ravnborg.org>, Zsolt Kajtar <soci@c64.rulez.org>,
- =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>,
- rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20260126081744.781392-1-pengfuyuan@kylinos.cn>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260126081744.781392-1-pengfuyuan@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -2.80
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TAGGED_RCPT(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[25];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de,protonmail.com];
-	TO_DN_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[gmail.com,garyguo.net,protonmail.com,kernel.org,umich.edu,linuxfoundation.org,ffwll.ch,gmx.de,ravnborg.org,c64.rulez.org,linux.intel.com,vger.kernel.org,lists.freedesktop.org];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,suse.de:mid]
-X-Spam-Level: 
-X-Spam-Flag: NO
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH2PR12MB3990:EE_|MN2PR12MB4239:EE_
+X-MS-Office365-Filtering-Correlation-Id: a790ff07-8a62-4172-61ec-08de5cc5a2c8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|7416014|376014|10070799003|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?WldhTk1XOHRBUEJKQlJZUDhFWDNZM2lDbUpSd3IvMWdjTnFpQXN2WGdzQVM3?=
+ =?utf-8?B?VldWNnpVRUpVaTRLRDVqeWJvRXllai9MTUtVdTJZUEFobWtoMGNlMU50dStR?=
+ =?utf-8?B?OXg0OXNKK3N5bG9tczZhcDhXd1d1bjRlWHJMSFRIWE5RMjBuVHpVMExIdUtm?=
+ =?utf-8?B?MlFDQWdxcTYvV3RzZ05QdXI4eWFLaUFNK3Q2VC9UWXlETDlCSkJrRUUrbThO?=
+ =?utf-8?B?SHBjSFFxa2ZFODF5a0o2Z3RRNFlxa2RNQ0dVUSt4ZmtCTSsvYzBKTjdmZUJk?=
+ =?utf-8?B?UStpemI1aVgrbmk3aWJvMTBXK2Y1NjhqUCtyQWJXWStrK0tobWZJc2U4TnZz?=
+ =?utf-8?B?ZzRGekNpS0JENzNMRGpmRFJ0clFITVViOW00QTc4RkE4YVhPb2Zyd2hZVUZa?=
+ =?utf-8?B?NWlpYWRJSzFlM0lTOURWczJZdlJhakQ1U2F2ckZ2TDBxd0MrdWl0b1QzMmx1?=
+ =?utf-8?B?ZmhmSWJiR21YOVpFTTZlcURXUXVaM0pBTTdxNmZPZ1MvMmVQN0dOVkwvNUpn?=
+ =?utf-8?B?VFZxNGVtcTZKclZRUlhHRDJjSUJncUJabUtMbmQ2SWRDb09BUnp0dFQ2S3NH?=
+ =?utf-8?B?dWVRSG1WMGJ3VUc3TThRZ09pVDgxZ3NsUGNDRk9jV0hTdmk5U0ZUODdNcHlO?=
+ =?utf-8?B?dW85U1oySUp0bUttOGhxdjNDNWJRajl3aEUxRVV4cUlucDBSdTVtNk8xdnhk?=
+ =?utf-8?B?UVBCeGVDU3B6aTlVTjN6aHFNczVpY1hBdVBwS0s4WVl0a0p5TURZcHhVRlQ0?=
+ =?utf-8?B?ekVMVHdkZWhlT21oYkUrUGhHcEJueDNQdHVSUDJKME1EZHRRWklPb0RRMUU2?=
+ =?utf-8?B?ekNMYVdtK2t2WHhieE1zL0lsTWpBZmZrZExUVFNxOFpxblhGaDVrd0M3VHJi?=
+ =?utf-8?B?TjZKZWpFblc0UGFGVHdIbVJXS3E5Tlk2TGhhckpyT1lyMXF6eWtac2c5RjIx?=
+ =?utf-8?B?M1UxOXk4U3N2UytnbDB6U2thaWEwSzVhNzg3eXQ1WjZFK2dSWUE4aGg5ZVR0?=
+ =?utf-8?B?cGxyZ0tkcWdBWE56VjRjeGUwOW5KeUpnbTJsUDlyVkt4RUtuTjJncjB2czhr?=
+ =?utf-8?B?eHZ5T01SRXI4RE9jK3VUbWRGSENZNUFpMHZZNCtYd054bWxwajB2Y1NuWEla?=
+ =?utf-8?B?SU9NS1NkdnlXQVpUWjZMUHNMQzViYzhWS0ZmWSszMjlsRFgvYWZsKzJzeDU4?=
+ =?utf-8?B?LzJkbFdEQ1Y4bWNGbmVuRFpUOE1XU2lUNzNiTjVlYmVhcjRSdlpTcjF3ZC92?=
+ =?utf-8?B?K0Q5OHRSRmtLK2Q4TnZJMThLSjNCRWJ2TitKd0VpZE9pTUowTzhRN0lyMnEy?=
+ =?utf-8?B?UDJsLzFseTVKRUNVZk9DS2R3UUQ3TmJIdXFLOU00SUI1WlVZK1NrN2tsZWdL?=
+ =?utf-8?B?elp6ejdlNkN0Tm9XMWw5RVgzcE5jZXdydmcyWTNhSDFieWRmN2NTc0pHbkUy?=
+ =?utf-8?B?SGxJZW9ZbExJZDFPRHBvZ0hHb2JpcGhjMnZMamVVRG5QOFpoTHZGYm1QRFJv?=
+ =?utf-8?B?enBVZllJcFF3dm1iYVBncHRiUVBSeDlCdGJNTVl6ZmhEb1h1SlFHWkJwN0c4?=
+ =?utf-8?B?WnlLRXRtL1kwVWZBT0NjazZNakYxOXpidGNwTEJCZGkxekZPQWlHNGxXdzhT?=
+ =?utf-8?B?YkFmRjZWVEo0ZXZpbXIvOG9JVnJCbkNXVUZVWGU1andCVGV4Z3ZndXI3VHN1?=
+ =?utf-8?B?cFpmWlZaT3hnanNnMFZLQ1JDaHFKREhKSTdMMnJ1VGdDYlQ2YU10bGlpdW13?=
+ =?utf-8?B?WGszNEswbHBHbnZhNStCMXRlSmRuclpDZWcwTTVBVG5UU2cxRFRKdmVVcjh2?=
+ =?utf-8?B?ZWNCM2h3bzZ5NmRrU290SEV1YUh4eWdPaXVjV21JQ1IyOU5yTXVQM0d5c3Q1?=
+ =?utf-8?B?QjZZUElNb3Z6WVg4NGdoMUUzNXRPRW1vdWxWcVBoV1hmWm9pWUYySi80c0ti?=
+ =?utf-8?B?SlZPckFUOFJKZ1FPUHFCNkxPY3k3V3lWUFJXWG0rRnE3YUxDRzZ0eWJjaFpS?=
+ =?utf-8?B?RDVmcUIyRW4wZXNud2pxdlFnRUlvZCtoVUI4M1ZMMnlmNE9aZmhOYmQ2QzRO?=
+ =?utf-8?B?WE50bExGcE9Eb3VDdGtWN2RQUjA0anY2dnZwOXp1WE01aEhlaVV5Rm1nMGs3?=
+ =?utf-8?Q?9wEc=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH2PR12MB3990.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(10070799003)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?bDJTOXZDUnV0a05CQ3Vma09tcERIUjlmekNsQ24yQ000eW82NXhBVGJ5UWhj?=
+ =?utf-8?B?Sjg2dmVQNHpubW5CdC9xTFdqb1Vha2swR0txbXVWdm9HeVNFZm9KQ3FKMjFm?=
+ =?utf-8?B?SHdwMDBGRHlvcDd1WDgySGlKeGN3VnNWV2pRRXhwd1E2TGtmM05HaFdsbXFa?=
+ =?utf-8?B?UThUbkFvNndEOTRqUk91ZU1RT1JaVTZhdU14bU85aTNpVWRjejhXWllKU04v?=
+ =?utf-8?B?OU84U0EyY3E5OWVlYTRYWFVhSlVadmRyRldpTEkrTFFTcGVGaDQrdDJTcjZ4?=
+ =?utf-8?B?eEF5RzlVT0pNd1dualhxZVFXamVzclNvRXVLZ3BtQ1NXcElpeXNXOERneUZQ?=
+ =?utf-8?B?a0QxaVR0TXZVcHdtOStrMnR2L3VHZXRiVHBXR1ROdEs3WGNRenZoZW1WT2lZ?=
+ =?utf-8?B?V3BWM0dtMU93SDJPNEJuK0JFMDErQ0tsMjhIU2J2aUZKNkdBNVo0Z3Vzb0tH?=
+ =?utf-8?B?TElXbWpTVG9ybUw1WmZOMmVFdXZyNklPUDB0cHNEQ2tRTzZXTVVINC81K2Fi?=
+ =?utf-8?B?dzV6aUQ5eWw4VjJYeDVCMTZkMC9lSnVhUytZcnM1Y25ucUZtK0JpbVUzMHpZ?=
+ =?utf-8?B?TmtlQ1kyVEdVWEJaRlU3bEorRnJYYU1LaUwrbjAxKzFmRzN5M1pSdXR0dE03?=
+ =?utf-8?B?ZnNSYWY3YUM1VVFTanRPclZUeU1jK2xJQnhoMldNcUE4dG5qWEtYUjZkNm9H?=
+ =?utf-8?B?YThIUFZLbE5DZTIxVGsycWhSSytMbFVBQVBIRURGZlNCc3hKOHJ2ZXN0U09j?=
+ =?utf-8?B?a1AzOVowRmc0eml4RDBDVzJQUXNQMXcxTkkrVE9hSWppVGh6RGRaUHNGWVhl?=
+ =?utf-8?B?OFc2RDZXZEVSRnh4bmpEYWordWhDUVcwY1NWMUd1NFY0ZW9zTTk3N2JmYklp?=
+ =?utf-8?B?VEdBVlU1a1g2UmhtcVFUSTI2b3BFV3J6OU5XWkpNYUdPQWhveFltazhUUjZ1?=
+ =?utf-8?B?MjRKbTV2VmJ2amp0S0NnR3FXQ2dBL1E4K2pkMVdrSUs0T29CeDlUYXQvWDlV?=
+ =?utf-8?B?MDZOUHhEZjNGS1Y2M0E0VTFIRWpoWUwxNDFQekUvNE0wd2RvNXhMVTA3aEpJ?=
+ =?utf-8?B?SHpSeVE0MCt5ZEtXSXBPQjZkcXVVallaQnNYeWo0czRLamNTMmd1ZU01ZTA1?=
+ =?utf-8?B?Y2RPZWN1NVNwb0ZZMlcyaDJJYXFYV21NM0xWU0F4MXk4dWVEems4aDZYYVdo?=
+ =?utf-8?B?dmlMMFV5YW5vazRSa2g0LzJGZlpxZHVONHc1OFd2V1NZN2VOT0ZCYnhERDBX?=
+ =?utf-8?B?Wldsd3Z0MUtZOHVhNEU1aS81YTVndEVqRFJhdlBLblFleXN1MUVQSUNhN1dU?=
+ =?utf-8?B?QkFKNXhoMjRLNTJzWjBScUIyR1R4QWMwRFRNTGxHbFdtQ29vRk1SM0Z5M0tZ?=
+ =?utf-8?B?S3paMGV3N3ZWOSt4aTlKb3JnNkNjZ3VBVlNiYjJvUzVqZ3JTK3RMYWEzcU1Q?=
+ =?utf-8?B?RTJSdlVobXhaZzN3WXBJU0JXYkQ3TW0ycFEzcHpkaGUzSy95b2RQeDd2M3FP?=
+ =?utf-8?B?Y1pheXRLSytXNjNnSFNxZkQ5bGw1U0hscmFoWlV0M2FwMW9xNFhvZjJaZ1Ix?=
+ =?utf-8?B?SDV6eFI0OTdqY08zUjkxbXhVamY3ckFYaTg4RC9KbDRHU1VPOGNGZkxJM3Qw?=
+ =?utf-8?B?MEZWSHZGMUcrTXRTaE96aGtHeitQdGJIa2tnNUw0bGt3OTVnUXRhbHlNUWZ1?=
+ =?utf-8?B?SkFLbUU5MnVpdVdQVGNBajN3TEwzWnpOS3hmNllEbUpHcWI4VndqN1BLcitY?=
+ =?utf-8?B?N2krQXZRYXR1d0t4T2hiaUNpaUZMemJEZk9KYkE0RnRBSnlvS3FYMUVmNmt6?=
+ =?utf-8?B?alR1SVluQkxlVVFoWkNFeXY1YUhnaUg0QUZBZklhdmFZZGxxUHNpUzZNNmlG?=
+ =?utf-8?B?RHd0Um5Gb1cydCtWb2UveUh6YWRCZWljUDl5dFRNbXZkWkxWR3ZrdnlMSkd1?=
+ =?utf-8?B?U1AzZ0N1cDV4UzBMbDUrbkFON3ZYakxwWnpCOVpqYmpsaGlwUkVjbkZESGZF?=
+ =?utf-8?B?emFLUHV0SDlsS2NoQjlRREFydTBiRDVYbEJaL0NUcWk5dVkzNk92L1M4TXZs?=
+ =?utf-8?B?TEYzNHh3eDdzODBPeU96amZia0dQNHlrY3laRmoyMFRHTWdjTUVLUWliZURa?=
+ =?utf-8?B?c3psS1VhcHlIR0srd1huWVVORFFIODc4d2ovYzZlVUdlZ0R4byt5UnEyR3c4?=
+ =?utf-8?B?VW93enFwVVBsUExDRHkwTzVudnRDcFNjQ2htYW1SOUc3ckg3d1ZGQTYxRlFO?=
+ =?utf-8?B?UVNFeStjays1LzExNkY5alpiUmQ4U0R0K014NlF0eGpkRVI4Yno0a3F0R09Y?=
+ =?utf-8?B?Z2FSOFBUYmZMZXlla3JTNjl2RDBXRnVNc3FhcnZ5K0RITnowUE9QWXpib282?=
+ =?utf-8?Q?zynTl9uCicQmJgN1U87BnWMEOBUr4R4fb7qa1F/KFqC07?=
+X-MS-Exchange-AntiSpam-MessageData-1: 2HCIxzUnDYg7qw==
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a790ff07-8a62-4172-61ec-08de5cc5a2c8
+X-MS-Exchange-CrossTenant-AuthSource: CH2PR12MB3990.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Jan 2026 10:28:24.8044
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: eOg/MV41rJ94mrJmD8QwwyF+uvdnOWMtGDkF0b2RHjPiUyowhxoA2V3OROvM43LKLhSqIL9sG5y4lW6ujfn43A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4239
 
-Hi
+On Mon Jan 26, 2026 at 7:01 PM JST, Thomas Zimmermann wrote:
+> Hi
+>
+> Am 26.01.26 um 09:17 schrieb pengfuyuan:
+>> This patch series adds Rust bindings and safe abstractions for the Linux
+>> framebuffer subsystem, enabling framebuffer drivers to be implemented in=
+ Rust.
+>
+> The framebuffer subsystem is obsolete and has been deprecated for a=20
+> decade. No new drivers accepted. Anything that really wants fbdev=20
+> already has a driver. Can we please let it die?
 
-Am 26.01.26 um 09:17 schrieb pengfuyuan:
-> This patch series adds Rust bindings and safe abstractions for the Linux
-> framebuffer subsystem, enabling framebuffer drivers to be implemented in Rust.
-
-The framebuffer subsystem is obsolete and has been deprecated for a 
-decade. No new drivers accepted. Anything that really wants fbdev 
-already has a driver. Can we please let it die?
-
-Best regards
-Thomas
-
->
-> The series consists of 4 patches:
->
-> 1. rust: io: mem: add ioremap_wc support
->     Adds write-combining memory mapping support to the Rust iomem abstraction,
->     which is essential for framebuffer memory regions that benefit from
->     write-combining semantics.
->
-> 2. rust: device: add platdata accessors
->     Implements generic accessors for platform data, enabling drivers to access
->     platform-provided configuration. This is needed for framebuffer drivers
->     that use platform data for configuration.
->
-> 3. rust: fb: add framebuffer driver support
->     Adds the core framebuffer framework abstraction, including:
->     - Device abstraction (`fb::Device`) with reference counting via `AlwaysRefCounted`
->     - Driver and Operations traits (`fb::Driver`, `fb::Operations`)
->     - Screen information wrappers (`fb::FixScreenInfo`, `fb::VarScreenInfo`)
->     - I/O operation helpers (`fb_io_read`, `fb_io_write`, `fb_io_mmap`)
->     - Blit operation helpers (`cfb_fillrect`, `cfb_copyarea`, `cfb_imageblit`)
->
-> 4. rust: fb: add simplefb test driver
->     Adds a test driver that validates the framebuffer framework by porting
->     the C simplefb driver to Rust. This driver serves as both a validation
->     tool and a reference implementation for future Rust framebuffer drivers.
->
-> The implementation follows the same patterns established in the DRM subsystem
-> and maintains full compatibility with the existing C framebuffer subsystem.
-> All C callbacks are properly bridged to Rust trait methods via the `Operations`
-> trait, memory safety is ensured through proper use of `Opaque<fb_info>`, `ARef`,
-> and `AlwaysRefCounted` for reference counting, type invariants are documented
-> and enforced through the type system, and resource cleanup is handled via RAII
-> with proper cleanup order.
->
-> Testing:
-> --------
-> This series has been tested on:
-> - ARM64 platforms with various display configurations
-> - AMD RX550 graphics card
-> - Moore Threads S30 graphics card
-> - Multiple other graphics cards
->
-> All tested configurations show normal display functionality with proper
-> framebuffer initialization, rendering operations (including I/O, color register
-> management, and blitting), memory mapping, and resource cleanup. The simplefb
-> test driver successfully demonstrates the usage of all framebuffer framework
-> APIs and validates the abstraction's correctness.
->
-> The simplefb test driver serves as both a validation tool and a reference
-> implementation for future Rust framebuffer drivers.
->
->
-> pengfuyuan (4):
->    rust: io: mem: add ioremap_wc support
->    rust: device: add platdata accessors
->    rust: fb: add framebuffer driver support
->    rust: fb: add simplefb test driver
->
->   drivers/video/fbdev/Kconfig          |  21 +
->   drivers/video/fbdev/Makefile         |   1 +
->   drivers/video/fbdev/simplefb_rust.rs | 653 +++++++++++++++++++++++++++
->   rust/bindings/bindings_helper.h      |   2 +
->   rust/helpers/device.c                |   5 +
->   rust/helpers/io.c                    |   5 +
->   rust/kernel/device.rs                |  31 ++
->   rust/kernel/fb/blit.rs               | 106 +++++
->   rust/kernel/fb/device.rs             | 463 +++++++++++++++++++
->   rust/kernel/fb/driver.rs             | 169 +++++++
->   rust/kernel/fb/io.rs                 |  76 ++++
->   rust/kernel/fb/mod.rs                |  23 +
->   rust/kernel/fb/screeninfo.rs         | 318 +++++++++++++
->   rust/kernel/io/mem.rs                |  71 +++
->   rust/kernel/lib.rs                   |   2 +
->   15 files changed, 1946 insertions(+)
->   create mode 100644 drivers/video/fbdev/simplefb_rust.rs
->   create mode 100644 rust/kernel/fb/blit.rs
->   create mode 100644 rust/kernel/fb/device.rs
->   create mode 100644 rust/kernel/fb/driver.rs
->   create mode 100644 rust/kernel/fb/io.rs
->   create mode 100644 rust/kernel/fb/mod.rs
->   create mode 100644 rust/kernel/fb/screeninfo.rs
->
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
-
+This, and the patchset is also obviously AI-generated.

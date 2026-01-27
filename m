@@ -1,166 +1,191 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43DFE32863E
-	for <linux-fbdev@vger.kernel.org>; Tue, 27 Jan 2026 19:40:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E521E2848A7;
+	Tue, 27 Jan 2026 20:47:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769542824; cv=none; b=B6Bj8nkwLnROCZa0L5bJbwzD20jNRptfs/jlhftNvL3Id/3l/LmNBDPiF1DKFUTgUnTfZlMKx6EXWSVdka/oMmr6XbeMV/vagRsZZbsNhxjpU2yVNhfTvfS3HzJtPnL4QuBYlkHYoHf8Z8pnyovTImxII2iW/nb++FvuHRHfZBA=
+	t=1769546853; cv=none; b=YCWjMzhCmFxofYrlfScoEeuY1MvxDDsIAwJmMCiTZkALLnTHegif7R/veDN2vb643Id4YoF9PGmHIm0tHESx7hgvzmI9a7Bbvltj0+BB+I7i+YPmaY+mTf21Gb2yyR0/PqHIMittLvMUHMXn6+NqRcOZwltjrtgqr6vrIHwPTrQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769542824; c=relaxed/simple;
-	bh=zvk5je7zKiUla10UlKAmaAQo+KOtZIQ20YbfxH9bHi8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SSi5sCE7iU5ljlk1MiNGTD3cRog9xSibqu2LU0rLThtpelJopxAc318TtFrJDvi1Rw3XJf1O9Mpp9H/rZU95jKmn231F1O+i2I4ui5AotUgQFqBEKJQRlCPECd96ASJkYytwf3hgrjXPvuTrfy3yrgI2o3CMvzo0r0yoV7sJ2ps=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YJVu4Q5x; arc=none smtp.client-ip=209.85.128.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1769546853; c=relaxed/simple;
+	bh=O+k41p7H4yrKcsA0nrSdTpYVgmJRr4reRDabajyJeCI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=RLgpDdJAl139qhlr6aJLOwxQ8JOAOX9EJsE0uof/dkPTSxZqoIoToW71Y45tD5C2sbUSTLZFwaBw2she4o4mZDkOHSOzc2XnCuDcAt7+AzDElAFT25zvL1EgEICXo9AFlJh3ywGnguhtCT3iKuMMBByfktOfm2wKVviw5b3F8kk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=rO0190xC; arc=none smtp.client-ip=212.227.15.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YJVu4Q5x"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4806cc07ce7so3291475e9.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Jan 2026 11:40:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769542821; x=1770147621; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=b52qO2yFLp3y0SMOMTd2WsGkQfNWU95x2F2WxKXZb6k=;
-        b=YJVu4Q5xKjWbwJ9tW8DWkmMSED/uWDpbt/6I3mzGa5mOytt4zfd2u1sZoX8Axfmvwn
-         q3pneoh4YYMe+g91KhEWwpY/i8uxPhLJtalvr9IEJqFqBpy3NPR+vbvKy9RRgvQgRrwo
-         m3iamg4MfVrXQKOuZrb4VLS2oysST+ElxKpy8yLsiqB3uXmXCcdKl5+a79D7OsfC7Wen
-         QLWP8OHnfMX8cc3AZordzuSnqT9gNXPTBlq4u5zy3ZoW1QF71eGHPIwxJmbmavIlT0/h
-         VSdXx1JwnBTD+n+dlxPRDH57E/jfrugS1P6ugYQ0GuCVqOodGmcbC+MvsnrTjLR88Iv1
-         Sxjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769542821; x=1770147621;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=b52qO2yFLp3y0SMOMTd2WsGkQfNWU95x2F2WxKXZb6k=;
-        b=nH+sbIdLVDKHFtfZUjMejw7zvP4rtqgiqIJYT3Au4Q2Qxdey5YLqiReGYvxN+lbz3V
-         1x8M0IGLrbOb+oEcMQz4QMg3wVnKqsufbJJQZ1VdRb7UaB4tS085L0V7x/2MSBbSEeS4
-         CBn76SLcvKtLTVeDt8LE+sRpTFC2It0MEAwlfThrpR+GOvg7EtHg/AfKr+YTV23i3tn+
-         T1ljxbGu7UweOTLOzkV18c39RalkL+GXRB9io90ZA8TsSXH2Zs+f0ESEPLnpGjuM88BH
-         bLNcAdusNmqdptd2rfVyGLuDngU5aReVsrAQ2MEsB2JKx4TjQZyQd/MeEeMXTVLHDR4V
-         DTNQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVN0JYrqKwPqzIqk2dg0hwbxroZz1rOfeJn2/yiAW+KbI6lrUBtM0ITb0fzvtNFMfDdUcyR99+9brMmYQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzGVK/2CYFcM5mdliwreodNNf2LSr0uhXKZh2Z/lPCt3OZ6AgPX
-	gHy6ysVcpFV6u2IkQad2/67jzVoYU2mNU4EYMvhVJ1dTG/AK0ZAVlpZU
-X-Gm-Gg: AZuq6aJlO0iTcHQTemPFVxSbnunpoFffAH3jFfflDstmmRDEPDWSEuL03Lbv0qwVLDW
-	elB7tEObII9wlj2McnM8gziH+tzj1asbgX/NXlggrcuv90O4rQO1NQd/9GKJs00GM3paLVFe9Rc
-	1G7jg8kxiMOsgY73iQavF5w1dUZF6RSEs4bSBEIGnXrH+u15W/HwrPPfLpvmG+Q/U1KiXFCDlN+
-	MKt/u0mPU7KorEgkrSDn3AldlHNaiZyk5oNo4RjqJDaTi+g7FTyRaGmcLWGXyCKFhYMsHQ0W1ad
-	2Gw2fSf/AseBJuBVQ6mWdtSbl63kNoDuI1/iFFG3MH52FX00bWVXE27N3A/SLd50qTvJJFeeUAD
-	56wLm8LTPM4UsEQQB89/tBzAt2JeRoH/IKKm/tiUah1mm8oWLHVRiDAMWrsGyLNFTn82IzQWTX7
-	nEMsk54dm//juaBoMDWmIMx4Y/y03op+7qbjtjQpo=
-X-Received: by 2002:a05:600c:350b:b0:47a:935f:61a0 with SMTP id 5b1f17b1804b1-48069b9a017mr35915635e9.0.1769542821228;
-        Tue, 27 Jan 2026 11:40:21 -0800 (PST)
-Received: from osama ([41.37.41.91])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435e10ee562sm1088358f8f.18.2026.01.27.11.40.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Jan 2026 11:40:20 -0800 (PST)
-Date: Tue, 27 Jan 2026 20:40:15 +0100
-From: Osama Abdelkader <osama.abdelkader@gmail.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Simona Vetter <simona@ffwll.ch>,
-	Thomas Zimmermann <tzimmermann@suse.de>, Lee Jones <lee@kernel.org>,
-	"Daniel Thompson (RISCstar)" <danielt@kernel.org>,
-	Murad Masimov <m.masimov@mt-integration.ru>,
-	Quanmin Yan <yanquanmin1@huawei.com>,
-	Yongzhen Zhang <zhangyongzhen@kylinos.cn>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
-Subject: Re: [PATCH v2] fbdev: avoid out-of-bounds read in
- fb_pad_unaligned_buffer()
-Message-ID: <aXkUnxhRTB4Kw6ph@osama>
-References: <20260124164633.20444-1-osama.abdelkader@gmail.com>
- <889fd11b-80ea-4c23-b47f-4e6b17536b0f@gmx.de>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="rO0190xC"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1769546850; x=1770151650; i=deller@gmx.de;
+	bh=0zwSVBDCJgt0yAfqw5hBAEWxkJxHLlEFcL+4OR0J1Yk=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=rO0190xCNOMt6azoPbrjuPwiriu4H49EyDHAjzRUYTzHxkFPq0tj4P0YXndxNshp
+	 QHLkk0OD2kACzBf7cGZqfJFtIFUqEqp9S/p0YFibSuLXXIBhz21aJWUrWziGDRI8a
+	 BtFwNTfULyBSr2gmXTkdAPuQ+mfdlPRhm0wPG1NL1FV3zJEqDZZ8p+S+6SA98GKKL
+	 yDRwvypP1xwRJSKoM1dPXo7Jh+jogLUT3lQ1kXl1wprQedYCI+RVe75mgjN4RAEhM
+	 766OXoiNl9A7VTon7lwc/QZr22tqeWaZihmXmtlE4Evm7xuOhx0lJ+e9ZrqBLe8Sy
+	 eHHdAnfK4TPzMpJ/Gw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.50.214]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MPXhA-1vPTbX3eaI-00Ojd3; Tue, 27
+ Jan 2026 21:47:29 +0100
+Message-ID: <bb9e6a16-f718-49c7-bf7d-32eb9a87ecc2@gmx.de>
+Date: Tue, 27 Jan 2026 21:47:25 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <889fd11b-80ea-4c23-b47f-4e6b17536b0f@gmx.de>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: fix fb_pad_unaligned_buffer mask
+To: Osama Abdelkader <osama.abdelkader@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Thomas Zimmermann <tzimmermann@suse.de>,
+ Lee Jones <lee@kernel.org>, Murad Masimov <m.masimov@mt-integration.ru>,
+ Yongzhen Zhang <zhangyongzhen@kylinos.cn>,
+ Quanmin Yan <yanquanmin1@huawei.com>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20260127193101.12343-1-osama.abdelkader@gmail.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20260127193101.12343-1-osama.abdelkader@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V03:K1:Kvw0SDMRGLtGkNmrMOpy1hOi39dp2dxekxl3Dt/UKEta46/yQ2E
+ r4klE3MLP6i16JOD6fZLgH4+cuHuJaYQAiTPqC1rYFiYpwod9JkBPvLnUvfipVlzjViBFv3
+ ccw7txOd10DjhdYTlKqlvetAXjUohhlgt036dyvg59gm4RIdfptyFLP88jT1B9ES+V4YcU9
+ MSDTVTUqqCtcig27ETw6w==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:XDkRH/0cjzw=;TqAgC5FrIzMHeb/HuR7h6skq1AW
+ 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
+ YH0ZyQHH+uQ0kuHTdP4d+GHreqUzVA60DEjRGi
 
-On Tue, Jan 27, 2026 at 06:57:32PM +0100, Helge Deller wrote:
-> On 1/24/26 17:46, Osama Abdelkader wrote:
-> > fb_pad_unaligned_buffer() unconditionally reads and advances the source
-> > pointer for the final byte of each row, even when no bits from that byte
-> > are actually consumed.
-> > 
-> > When shift_high >= mod, the remaining bits do not cross a byte boundary,
-> > but the code still accesses the next source byte. This can lead to
-> > out-of-bounds reads under malformed geometry, as reported by syzbot.
-> > 
-> > Fix this by only accessing and consuming the final source byte when it
-> > contributes bits (shift_high < mod).
-> > 
-> > This fixes the KASAN slab-out-of-bounds read reported by syzkaller:
-> > https://syzkaller.appspot.com/bug?extid=55e03490a0175b8dd81d
-> > 
-> > Reported-by: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
-> > Closes: https://syzkaller.appspot.com/bug?extid=55e03490a0175b8dd81d
-> > Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
-> > ---
-> > v2: address the real issue (shift_high >= mod) condition.
-> > ---
-> >   drivers/video/fbdev/core/fbmem.c | 15 +++++++++------
-> >   1 file changed, 9 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> > index eff757ebbed1..d125c3db37a1 100644
-> > --- a/drivers/video/fbdev/core/fbmem.c
-> > +++ b/drivers/video/fbdev/core/fbmem.c
-> > @@ -100,7 +100,7 @@ EXPORT_SYMBOL(fb_pad_aligned_buffer);
-> >   void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx, u32 height,
-> >   				u32 shift_high, u32 shift_low, u32 mod)
-> >   {
-> > -	u8 mask = (u8) (0xfff << shift_high), tmp;
-> > +	u8 mask = (u8) (0xff << shift_high), tmp;
-> 
-> This part is correct, but shouldn't be part of this patch.
+On 1/27/26 20:30, Osama Abdelkader wrote:
+> mask is u8, so it should use 0xff instead of 0xfff
+> Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
+> ---
+>   drivers/video/fbdev/core/fbmem.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 
-I just sent a seperate patch for that, and going to remove it in next version of this one.
+applied.
 
-> 
-> 
-> >   	int i, j;
-> >   	for (i = height; i--; ) {
-> > @@ -113,15 +113,18 @@ void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx, u32 height,
-> >   			dst[j+1] = tmp;
-> >   			src++;
-> >   		}
-> > -		tmp = dst[idx];
-> > -		tmp &= mask;
-> > -		tmp |= *src >> shift_low;
-> > -		dst[idx] = tmp;
-> > +
-> > +		/* Only consume another source byte if it contributes bits */
-> >   		if (shift_high < mod) {
-> > +			tmp = dst[idx];
-> > +			tmp &= mask;
-> > +			tmp |= *src >> shift_low;
-> > +			dst[idx] = tmp;
-> >   			tmp = *src << shift_high;
-> >   			dst[idx+1] = tmp;
-> > +			src++;
-> >   		}
-> > -		src++;
-> 
-> Above you moved the src pointer inside the if(), so every line
-> processed may miss a ptr increment. This means the source would need to
-> be different too, but it hasn't changed, as it's still used from
-> bit_putcs_unaligned() which prints a char from the character fonts.
-> 
-> So, I believe this part at least is wrong.
-> Did you test it?
-> 
-
-I couldn't find syzbot's ReproC, so I did minimal one, I will re-test it and write you.
- 
-> Helge
-
-BR,
-Osama
+Thanks!
+Helge

@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F49C221F39;
-	Tue, 27 Jan 2026 17:32:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 360A21D9A54;
+	Tue, 27 Jan 2026 17:57:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769535160; cv=none; b=a6hZmKJVPWuOuzAEuv2SSpjkTXUL1vgkXVhmvpMBvGOKk7GAB7UKkepTK9joR3L+m6GsgmJGlPGGBaSZPKBGTfLsC3RRNFpTwpHm63AcVQRK6rFnClfadEF20fr5eTpsqmBAWwtR3BUymWPTg3PVRuVkKaJbfpcl06ejZF20pUY=
+	t=1769536664; cv=none; b=kfmkq6hscL2GcXzLpj3YfPKFspjimPDnpPLr4pnQieppi638+ywEG8kpNMW6eH0DtvIxvXB1EwwUWcmut/CQ/wQddVmKETH+iCAd8j3pLhNcw7vFsD0MJMtjkWg7E2qHjfC2GACXt2OrG3uhQfl+GOM72ZgkWNLbQKQOVbYdTGc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769535160; c=relaxed/simple;
-	bh=boUS0BM/DtasiNvAK30obS1u2kbw3NSWbATBomB2Soc=;
+	s=arc-20240116; t=1769536664; c=relaxed/simple;
+	bh=RmiasjJWTueOHiZT3OpeQiZrLktRYPCVw6UitPwEH70=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=J4qppHhAfEIEjHkqCXGyo3TbaH1+/zA4dj4RJv2uI6h0AM0zKjHokMPeJcgp/dYeki8PhgFr3410C5tsOM6LpXS71UKzPIcMPgSYkC05cMjDmbHXNF2Hy7Ym0s9M1PLbxcvKWei5TSTzkeuS3+SRx8+Msn1OLMLZz5wnnwzNiy0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=qdEzst3r; arc=none smtp.client-ip=212.227.15.15
+	 In-Reply-To:Content-Type; b=ev5wcg1cIcSWcwfq2+pSHsR5T+TX9n8WYpZk+56f4BpGnIOU/JcOedNcoesrh+pB3vzWfVJi9t/e5suzaCkBwgV+gtBmanVkMeJuEIK+YkVVi5M3gcQ4h7306qE2ZjxpHWmMbuAisIR90ymLTOrl231Z4x/9QPmjmn1zPBQueSo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=chzcBXXF; arc=none smtp.client-ip=212.227.15.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="qdEzst3r"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="chzcBXXF"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1769535156; x=1770139956; i=deller@gmx.de;
-	bh=cDa+YjTEwTlkpFQTbDojhTZGYqixXgWan0tbg4m2Yfg=;
+	s=s31663417; t=1769536655; x=1770141455; i=deller@gmx.de;
+	bh=WUgFTy2IyQ2WwksymMkEW0DEFzPnFBg90lQSdvRJNKE=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=qdEzst3rBEU3ESjbZGM4BrZSk/BSp0j6QtjIRSLJnlvVtcUyPhF7SclhL3oyrplD
-	 e+vMNeW1QgI/oeLr/x0jI0gPbbBaer2raeiR/gEU/wrMFuwUqLsv649MzR9BgEDO3
-	 /dd1KQQc3UYlE45OTDjyQ2spCE0BhztztEp12UymvO1W4uIWXMeNtOBQDRB6OsYUE
-	 r0q6U/JA5qUzGTuFuYpP9gndrRRbtgTQCrMXqEvsjMTetwuUXvWvNikNCtzZ7UN9U
-	 j5kVVw2pq+DBcc9fsNAGX4gp50PKYUP0i/MrWxRCQX6EvMYehQum37daT1rCNAY+/
-	 pFpfZyGlXvq8DAjuFQ==
+	b=chzcBXXF8PZeaaXbFiaqlrsvtonY28Vc1PJvI0G9sI292HUKuHD6SP3d0HARQp9u
+	 1iNkHH6Ij/QFedItYqX5lou8xQoqFxx6js4VhGKJsSR5TB0p7eVYWMiwxWuFbx4uv
+	 /EhlQxxv97guIVsdsfcywMl7eytQh8SUqVae0VJXRrHQmHWe/V/wXdj2iO7mVG1Wp
+	 CRQWgRY2t2WISoXtLXvAkUEvX9vyu9IXn70uEqHqdBFoEoPxS7lzxgiSE/ECZpdoW
+	 bXBkuXyXdZo3Xt9EgrKmXjxqaEechZawvGX0WRB4pi0Jl57xrsINJiMoBa9q+z49R
+	 meIyPqH+DpChMPlzgQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from [192.168.20.55] ([109.250.50.214]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MAwXr-1va2Ty44c5-009USV; Tue, 27
- Jan 2026 18:32:36 +0100
-Message-ID: <dc2ce712-0f9c-4b85-9b50-910eeb5a302e@gmx.de>
-Date: Tue, 27 Jan 2026 18:32:34 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MrhUE-1w7hPv23e8-00qYKD; Tue, 27
+ Jan 2026 18:57:35 +0100
+Message-ID: <889fd11b-80ea-4c23-b47f-4e6b17536b0f@gmx.de>
+Date: Tue, 27 Jan 2026 18:57:32 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,12 +43,17 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video: of_display_timing: fix refcount leak in
- of_get_display_timings()
-To: Weigang He <geoffreyhe2@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20260116095751.177055-1-geoffreyhe2@gmail.com>
+Subject: Re: [PATCH v2] fbdev: avoid out-of-bounds read in
+ fb_pad_unaligned_buffer()
+To: Osama Abdelkader <osama.abdelkader@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Thomas Zimmermann <tzimmermann@suse.de>,
+ Lee Jones <lee@kernel.org>, "Daniel Thompson (RISCstar)"
+ <danielt@kernel.org>, Murad Masimov <m.masimov@mt-integration.ru>,
+ Quanmin Yan <yanquanmin1@huawei.com>,
+ Yongzhen Zhang <zhangyongzhen@kylinos.cn>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
+References: <20260124164633.20444-1-osama.abdelkader@gmail.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -94,107 +99,162 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20260116095751.177055-1-geoffreyhe2@gmail.com>
+In-Reply-To: <20260124164633.20444-1-osama.abdelkader@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:19Diw4imBS4UaZspXltn4Tb8j2BMt4joNl1MdSkGJQwNsHQs1nV
- TSr9yzKyPgz+juzJqtH18Hk8rr5dnXHwf5pFFJ/D3q1gQuVbT1EA2MqZSDyp2Uy3mJGT1de
- pxKeo0ETqDsLUBn6YWKKps2C0rOMgsAaVKhyrq9l+RD+0Ad+h/tNFAZD7pAo5UaL4Y5iqZh
- 4Dso+KjfsDnRocC2S2UaA==
+X-Provags-ID: V03:K1:jaKOsW7HpKME5/b5EqLnf1HUaLaRdsH0YWJSRnqdMQq3z3kfOcB
+ KB8fKgokWCi3UIKfcZ9FL713uD8c5fE0mULY9cgv/uTdXAxQj9AHGj5PiQlQ1QXnY3ZSygk
+ /QnPdDqYRrl4skNsx4lN1xaWhePn5IOrdLlu0jaMTkfRvuN58eOW9gnqXUgONeKuBEhVmLu
+ AtBoxbLWRZSm5ruUSH0mA==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:BmuVk4zc3i8=;Hh4r4hMTDj3+q7po/gav5QQv38B
- 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
- ECuKPr8r3EJuK6W1ntqZ7XW/9ormB
+UI-OutboundReport: notjunk:1;M01:P0:pswsU8M1dzw=;BnPcYz2TNYYlNNBr2a8LjolNUbd
+ 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
+ 48NL9zjepnJPTM4kz05COfYEng7bP
 
-On 1/16/26 10:57, Weigang He wrote:
-> of_parse_phandle() returns a device_node with refcount incremented,
-> which is stored in 'entry' and then copied to 'native_mode'. When the
-> error paths at lines 184 or 192 jump to 'entryfail', native_mode's
-> refcount is not decremented, causing a refcount leak.
+On 1/24/26 17:46, Osama Abdelkader wrote:
+> fb_pad_unaligned_buffer() unconditionally reads and advances the source
+> pointer for the final byte of each row, even when no bits from that byte
+> are actually consumed.
 >=20
-> Fix this by changing the goto target from 'entryfail' to 'timingfail',
-> which properly calls of_node_put(native_mode) before cleanup.
+> When shift_high >=3D mod, the remaining bits do not cross a byte boundar=
+y,
+> but the code still accesses the next source byte. This can lead to
+> out-of-bounds reads under malformed geometry, as reported by syzbot.
 >=20
-> Fixes: cc3f414cf2e4 ("video: add of helper for display timings/videomode=
-")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Weigang He <geoffreyhe2@gmail.com>
+> Fix this by only accessing and consuming the final source byte when it
+> contributes bits (shift_high < mod).
+>=20
+> This fixes the KASAN slab-out-of-bounds read reported by syzkaller:
+> https://syzkaller.appspot.com/bug?extid=3D55e03490a0175b8dd81d
+>=20
+> Reported-by: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
+> Closes: https://syzkaller.appspot.com/bug?extid=3D55e03490a0175b8dd81d
+> Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
 > ---
->   drivers/video/of_display_timing.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+> v2: address the real issue (shift_high >=3D mod) condition.
+> ---
+>   drivers/video/fbdev/core/fbmem.c | 15 +++++++++------
+>   1 file changed, 9 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core=
+/fbmem.c
+> index eff757ebbed1..d125c3db37a1 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -100,7 +100,7 @@ EXPORT_SYMBOL(fb_pad_aligned_buffer);
+>   void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx, u=
+32 height,
+>   				u32 shift_high, u32 shift_low, u32 mod)
+>   {
+> -	u8 mask =3D (u8) (0xfff << shift_high), tmp;
+> +	u8 mask =3D (u8) (0xff << shift_high), tmp;
 
-applied.
+This part is correct, but shouldn't be part of this patch.
+ =20
 
-Thanks!
+
+>   	int i, j;
+>  =20
+>   	for (i =3D height; i--; ) {
+> @@ -113,15 +113,18 @@ void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch,=
+ u8 *src, u32 idx, u32 height,
+>   			dst[j+1] =3D tmp;
+>   			src++;
+>   		}
+> -		tmp =3D dst[idx];
+> -		tmp &=3D mask;
+> -		tmp |=3D *src >> shift_low;
+> -		dst[idx] =3D tmp;
+> +
+> +		/* Only consume another source byte if it contributes bits */
+>   		if (shift_high < mod) {
+> +			tmp =3D dst[idx];
+> +			tmp &=3D mask;
+> +			tmp |=3D *src >> shift_low;
+> +			dst[idx] =3D tmp;
+>   			tmp =3D *src << shift_high;
+>   			dst[idx+1] =3D tmp;
+> +			src++;
+>   		}
+> -		src++;
+
+Above you moved the src pointer inside the if(), so every line
+processed may miss a ptr increment. This means the source would need to
+be different too, but it hasn't changed, as it's still used from
+bit_putcs_unaligned() which prints a char from the character fonts.
+
+So, I believe this part at least is wrong.
+Did you test it?
+
 Helge

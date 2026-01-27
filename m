@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 360A21D9A54;
-	Tue, 27 Jan 2026 17:57:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F4F01A9F9B;
+	Tue, 27 Jan 2026 18:05:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769536664; cv=none; b=kfmkq6hscL2GcXzLpj3YfPKFspjimPDnpPLr4pnQieppi638+ywEG8kpNMW6eH0DtvIxvXB1EwwUWcmut/CQ/wQddVmKETH+iCAd8j3pLhNcw7vFsD0MJMtjkWg7E2qHjfC2GACXt2OrG3uhQfl+GOM72ZgkWNLbQKQOVbYdTGc=
+	t=1769537153; cv=none; b=WCroauoP7twWg+GSS3LyO7X6KoM2AUPqwdCgAgXaopmdF9I/tbEurd6DEj6biHLfr/TObaFLyLqgGqiZt+fhy1zyhQN8tPoWuVutzhcS82m18Dbk9Do37Hrx71kXtQPNrnk3IeohFDURAKSY+SUj9YWTy2haQw0mmzpKO2TyQwE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769536664; c=relaxed/simple;
-	bh=RmiasjJWTueOHiZT3OpeQiZrLktRYPCVw6UitPwEH70=;
+	s=arc-20240116; t=1769537153; c=relaxed/simple;
+	bh=5nEPDNBzLxTAv7D8HTUDv5cV8QqmkZFAQj7ajQyI5jk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ev5wcg1cIcSWcwfq2+pSHsR5T+TX9n8WYpZk+56f4BpGnIOU/JcOedNcoesrh+pB3vzWfVJi9t/e5suzaCkBwgV+gtBmanVkMeJuEIK+YkVVi5M3gcQ4h7306qE2ZjxpHWmMbuAisIR90ymLTOrl231Z4x/9QPmjmn1zPBQueSo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=chzcBXXF; arc=none smtp.client-ip=212.227.15.15
+	 In-Reply-To:Content-Type; b=Ub7IzU/2dp3Pyto1mmcENd6cnMWBu7v8g48QzVDy7iK28/OfO3PTkXXe6SaxUrj96qUTew2ai52qp2kJ4BwarBQbaX88riYXu1Ru/huceXp0JJOyyikqNWyrDFM7+OCYzx0EnsfpYMLbVdY+J2WV5Pq68ptymfKPVNEs9gQocis=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=LCk/JzdK; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="chzcBXXF"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="LCk/JzdK"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1769536655; x=1770141455; i=deller@gmx.de;
-	bh=WUgFTy2IyQ2WwksymMkEW0DEFzPnFBg90lQSdvRJNKE=;
+	s=s31663417; t=1769537149; x=1770141949; i=deller@gmx.de;
+	bh=c9+TE6dcyyx4nqnkMujsaoiGI5cjwNNmz6zLgFoXjfg=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=chzcBXXF8PZeaaXbFiaqlrsvtonY28Vc1PJvI0G9sI292HUKuHD6SP3d0HARQp9u
-	 1iNkHH6Ij/QFedItYqX5lou8xQoqFxx6js4VhGKJsSR5TB0p7eVYWMiwxWuFbx4uv
-	 /EhlQxxv97guIVsdsfcywMl7eytQh8SUqVae0VJXRrHQmHWe/V/wXdj2iO7mVG1Wp
-	 CRQWgRY2t2WISoXtLXvAkUEvX9vyu9IXn70uEqHqdBFoEoPxS7lzxgiSE/ECZpdoW
-	 bXBkuXyXdZo3Xt9EgrKmXjxqaEechZawvGX0WRB4pi0Jl57xrsINJiMoBa9q+z49R
-	 meIyPqH+DpChMPlzgQ==
+	b=LCk/JzdKGdfhncq/d/LJdRM+5wWKUdWqgOgSUDeoHcktqV3B815bSV9gTG4TpkZS
+	 u4o8PQ2bR8hFLCRediqCEg9q53jkS00Iey484JtLJuYWHVQGZMTLVsR1DezWx1iar
+	 lpEoJrDbNKnhOCPQKfUWMVAimKt3xh1UxFCoyxD37xZJBu50OBQBEr9lhAtryouh3
+	 uujtqNIg1PzI1NuGAkiny7bDr4YzKWRLI8HJS8AriGhRrfv0na7Rg21AoG6raEVzh
+	 GuaU99VBF8PpZADkwMbmBAbkzdqhwUfLP7DS9xQvBpl0FiVLI0DcSvDCyhVUTHMTZ
+	 pWghxAnxZRYc26jrrw==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.50.214]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MrhUE-1w7hPv23e8-00qYKD; Tue, 27
- Jan 2026 18:57:35 +0100
-Message-ID: <889fd11b-80ea-4c23-b47f-4e6b17536b0f@gmx.de>
-Date: Tue, 27 Jan 2026 18:57:32 +0100
+Received: from [192.168.20.55] ([109.250.50.214]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MrQIv-1w8WfS2LIN-00pa5V; Tue, 27
+ Jan 2026 19:05:49 +0100
+Message-ID: <e95d2966-6136-489b-a48f-ea22f3cd2128@gmx.de>
+Date: Tue, 27 Jan 2026 19:05:47 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,17 +43,17 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbdev: avoid out-of-bounds read in
- fb_pad_unaligned_buffer()
-To: Osama Abdelkader <osama.abdelkader@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Thomas Zimmermann <tzimmermann@suse.de>,
- Lee Jones <lee@kernel.org>, "Daniel Thompson (RISCstar)"
- <danielt@kernel.org>, Murad Masimov <m.masimov@mt-integration.ru>,
- Quanmin Yan <yanquanmin1@huawei.com>,
- Yongzhen Zhang <zhangyongzhen@kylinos.cn>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
-References: <20260124164633.20444-1-osama.abdelkader@gmail.com>
+Subject: Re: [PATCH] printk, vt, fbcon: Remove console_conditional_schedule()
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-rt-devel@lists.linux.dev, Petr Mladek <pmladek@suse.com>,
+ Steven Rostedt <rostedt@goodmis.org>, John Ogness
+ <john.ogness@linutronix.de>, Sergey Senozhatsky <senozhatsky@chromium.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Simona Vetter <simona@ffwll.ch>
+References: <20260126180836.SNCdMW2f@linutronix.de>
+ <2026012757-voting-griminess-ca35@gregkh>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -99,162 +99,169 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20260124164633.20444-1-osama.abdelkader@gmail.com>
+In-Reply-To: <2026012757-voting-griminess-ca35@gregkh>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:jaKOsW7HpKME5/b5EqLnf1HUaLaRdsH0YWJSRnqdMQq3z3kfOcB
- KB8fKgokWCi3UIKfcZ9FL713uD8c5fE0mULY9cgv/uTdXAxQj9AHGj5PiQlQ1QXnY3ZSygk
- /QnPdDqYRrl4skNsx4lN1xaWhePn5IOrdLlu0jaMTkfRvuN58eOW9gnqXUgONeKuBEhVmLu
- AtBoxbLWRZSm5ruUSH0mA==
+X-Provags-ID: V03:K1:4wkG4956p91V+HwMdCRCw5jzDauN8WA2Ip3mD8Dah5de+Gu96b4
+ b+Mr8zrfhWwx+mqHrwsrCP7lgdjpfHHh0sy88SXhGpD81vv8fiKkjfvv9O04w7PdObG9fts
+ XPZnvRzBhzfawYWFdA2UqcE0azgC38xcmDozEP/E40mZQ+7s0XX8DjNXb6bibhxYJz4Puzh
+ eWb9o+L2eDECVoXl94kSw==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:pswsU8M1dzw=;BnPcYz2TNYYlNNBr2a8LjolNUbd
- zk97PUUMkznRr7BjFPCv6E3y1TnucLNZ59YC9oh03xWM00SknJ7LeC7DJ9MbazXFsg5VuuAve
- nlZ1HqZ5V2GFn94XolJcg16BS07AY8E5iNDTBLKTasRz7ZdLV0rf8T2fx+uyom75WIOxTt8IM
- ES7SnGt4Jo2B1ZBOdszU1LZKMwhKInD2/jn4yN+2Vt4qTOwrPve04zPbADT0MRSC+aVUMr63p
- F/AoKzp6dvuORDa2nTH9rYTRcEET4mOyPN//dY26/DXNEjDjGLU46D9VHbTqEiYyBaSbCTjyA
- W4WWMnugn8IWm7tMqvBjPnEXURP3GrA6hM//r9trlxkkpRlqxsIhPaFmn1c+Wh/2eAYq4GD1T
- ISQDAZfAOeQsthcSNhF2hVzCsLESXVp4QGD/Mj6s57y0jqJgioSUmLQO6B2AQe5dCa3toe92h
- wct///bLX85FYsKLa3gWpOtvmBAS28WxBbwxvvvrF6tuvqdKoX7otfJySLU3/ZwZetzivUxwr
- hixX8xkE0h+ope0v9VAFkj4qZzzJNI8IgezLp9y5A6SlPZlc1oSSIP6p2RnMvm7Aw+RYUWxI2
- q1qpXXfk2b7/JFAcoKBktm2mO1QKE+/UtR8E1DZHLnkejS3jPm+n0HiHdurL01Sm3GFDzHRxZ
- rryeZenBGlctgfjQgqlk455ZDsSLoGn9LkItxRv7ExCXdy0VpnSoq5ZcAJQdYprsTMCKHvJMo
- 6GlVmmVaYPui1BruvITlxRMEq6oRzzs96fcDjQC6D7YPZNUMqqedX+l8pfTikodG+8BvPrGin
- y93KyQqEIZua/WC2RasGtEWA3l5Rm1OmHfkcRvCD4DeERqm8Mhc+4DGTyMkkjpgqYEokJ6N7S
- 5qlkXuewO2T+/kn17qN4041yb+10bsRlHTH4u4C09EhRoHSaLZXZo0iZ9GOV/uU0oPOBAheRG
- lL0PalwNx4cH+sGkrlNv6/a8Q3h8Q725I0Sl5jbciBxHmF8UORfHGtgOKLxhdtNDKLwNLMy1F
- SotCCSfIOEh4L2XvtasM6dE2NxbnVITQKPhQlffEzJiEktsranIWFE+jIYlXBtc/Kk3/uP2Yu
- OREQgDq8S0EgTx8moaxMn51L+SczF0KxXm33y7GkL5KpSCu4ssj+XGqf0n0m1YsTByxhA9nZX
- vDSauC87DTTmlrRk+s/gisY71njqhBoh9Q76DDlekBQc8/2Fi5FmqtHR8wfzyHfK/ipEsljhS
- tkGcm7MxQC5+A2jq9khwFgqaOYaG8ZkcsV7pY6S9ibSFzsHMBgc6xb0rXJyCFuKtl0CcyUxHv
- XVScgsGVRTVvdIk485xe9Jx5/oim1nnrtB4aqfPcKqZbXZ89MwHKfQsudEfvKCO0+4e9uK/vt
- LbDUP6qd8SxRgQUvrEgh2RheqpngDUKseRNqRkQUFkDcKOv/vAx1Zqnq+0uUUYKBumCnAXpr5
- BGwsicMg52IMcdyEs+OHOxZLeYyfOKcqUQFOt5vhSdsJTwqtAsP6YxjWanhODMQyIYkJMjh0b
- uumN8IDCEKGL0mxMdBLglHQaMnLWIVtv9+kWIzaBzrLbs4cHOvIAP1EEVMq1I+iEirKPWu0nF
- DGFINuSje4aEeq9aG6vGYgmS/TdoUYIWq8BQmaGs6BcSfA3CmJ+avDnrmLLOK+c43jm1WBb8r
- sPestkMs+q3M3U9oVps3SaaNVSWvz/ldyP5z+ZcZdK5w+JWDhPC5xOUwBR5mcVWy/NfwrWi5k
- lPEGwMXtghCnelDWs7/mB+x2HBX6EtoJlsI9EChpIZZtcOWby9hpB32o+yUs6FyU2wxU/CQox
- kk9ZEkGnl1NxmFRWF01C7nj9vLq/9mfNtxc/J/Sgf15PUo9Ptd4uIwkV+PO71Qd1hG47BasuG
- 2XKCCHzT1qVxA50XQekH+57unI8N4jXnywIvyr2B38YK+7n6WcjN6bA2hRg7YCIBw4IfCsb5p
- bhxtq8osaEj5GGJOqugl6mu7dWn0fu3PS+87KKCQ304K05EgNSforiKnqjCe2tT1XdIW2XUhK
- ySdBUSr2yBaW2v8L+EdDovFRZBDoRJX0cp7MSza0nxuoKjvpSHoDsaHZ7YZvnAVpO63oCLVuC
- CstZUK1ZFThKBN3AAPWXXAjhGbaclA8PkZ3s2mqRCj5PK2eAAbBxhwBHUpX2pMUPtte8Ok0nw
- +V0+VlzcL0ZAQYhkQrYFlIkZHjc7f9Um7CB1IzwNtbotoCLY9oVqFWk1L1Ex/9sJ8D7nw04NZ
- IiJFNohOMIMfLljO17nh6FQ9NoW5S5R+jW8b8rdldiHNSoJxlfKv0aywhsJAhh8sWb6FPw3uG
- mT85LxegmJYeUxiaSSi0A0QqQlp0LB4cR/EV+mHKpkG2pqusnuvXCGYQfgSykU06gsj7Y5dNo
- BB+Zg4CPtYTjbd7aKDC9wkfZ6hzHzEEQvw/H50Rl/vg/hcK3xupHpve8gooJj+PodRkGzZiXb
- 3NXlmeeJO1ZAkKvFKYQHuENfVYkk7Tq7luRYDTph5itzIyR3lwBgI9d23krxYERhHxUxHj2RX
- RmK696aYXrr5OX1zcY+h5PJ2pmaxUtguOdt0i53vuhb/Exi53q+75B+SzxGFYS44s93vvnGp2
- Nm1AelRzZP6msyd6TFzYLlnaGEEEvdUJ9OGGsGJmB6C/t2V/u1AwVn2eeWYuQYagpAeKCkFtZ
- qqGMfD16PXz1hPN2eq1lmRNO+eRZhw8nRSD0Rq4/jro0dvwyAC1fT9YMPYRXa0DvEmCyBrJ2J
- xqAe3rDKR2RFx91rEMJoyi3KEMemcYUMAzgaowDIq9kq5aSikTeJUe2/aiQgEr6iSv74i0yHC
- rY6eZ+nt5aOxTHnDsJVI2qnHFata4wE1fubg9WkrOpKT+VqGOZ9LJHStZopSElVMKrZDM4KNB
- vDgQ83nefCFH7H5sirbzXXFasmRcXrzHgmjv9zSEHUFM5+0vXIg8EdlED3SfvZnVxxYFhj4vI
- 4b8U4rAJooAviI2TBxtS0l3inxy+FtksHJnRqhJoVEdigNIzBZMBZvAG6FCAnfLyujNhiHZDe
- SIeWiHoSzTcIZV3Rnw/K4PVB6JKeyjzKjGYzKiMXhonadlCvxe89N1w7WcLpw7nt2GnCBg5rX
- z2oBQVcMu5/frjHi+IwnQ6g7G/mlE/FBLtTMzFahgfBWtQPeZnjMVE8jsQEl10sgsd3E7eMrx
- uWZMKFPSbxZW2swppaKFc0wOsGd/WZW9dClJHSoKlKdDabfD70bmEr23Vc4SoWNwdtvbuv6qw
- zpRHH1uYlIJtpWA4JFLG0TBNf/t87CDCU0PljJX+nmV1OycgZIT7rinbrZhVpMLKZxxFKlGqF
- GRewEuNDa4wr2IAkBpVpg3abdahGYEK/68ADnFtxyNSWu9K2Q5gElMyECZkq28NxfIRhMoLE9
- O9X+Gu+BwmDMcEx9eQ3fqdVrCixk1aqDiZGnVR4I/WAwACxasWrzkBlPN2yrnApcVjIx9NxLw
- V7U3K7OGaZxEMZoSU/sdkbU1XKAWGuogPOFAeferNCiIfsnce+GNB0ES2kX1PdmWkR7zf64L8
- JaQ745addZzzZ5jLnDoJ5zUCsPSaViB/RT+8mvNxUS/pcqrHyLQ6U4X1q14lDPKMMoTSEHwqT
- GDBVc1AprE6nfCh/FKW/s0rzbFVBfp2adspadQTyqFlNA3DQR1cCKCGqQ3TK/73fkZUIuBzZa
- TYWAWMTQkc6sUWoyUI1Ojb6krwzNL9LFN7H93rV9HxtvX/0PRlJ08v/zQC5UVxnEw9B89WscN
- ivz8UrL86ffh+QlebYe1xlJC5dB8HbFDec0opT1DlCy1wPxsW3ZZmiYAUEn+gWjCgA5rT0Sbz
- iu8rKrufoQ9poybV2ujVcuXSDtGH+Ln3n2qerRKSVU/JnIkmb52/O64xNHDqjQD05ASV+iSJD
- Jq45QNImuFwTRCdPcaqJ471Ggajf6nM5XOB1ggqt/UhgpgQyfwftM611vL21P+8RWw5DOOLJL
- BxqoCIZDc8kzyvDhfPaDzvXn4sWC8Z84wGOy+oezVGiMBEIxHoJqGgzg+Ua5bRFiOGXiPAG4a
- uXz3iT9vj1uFdsTIz+wBLSIaIHTPggoMWeV7v67nGEBwhNzOIt/GZhl4/8DGheFucPky7xfZ4
- f7CG90HSwmb6eqU7c5WJ5+UfkbWZ4uMZu9MHxZnHcFepwDQN85xOcqiZlOj0gv9b3S9H/OD28
- PbcsFK355X3bRri9qjk3e2oyYfsCMmpF7GGOpOoWWDa6fHBOyHnusdCHau5AxErCf2y0vu6Xq
- SIQc4nhg+TeWzO64HCL470+4Rs5STIFVvjd6NTXfNxfrp6JYH44YEu8/vcspOnhtks/72Uc70
- T50wc8FK73NA9gDmlq41DWEqbwjg9QbL9+OnDI6YrrlOC2TWqZeWuSyqNOYDs4gaVOz3x96X0
- 1W82uG9UBjYs0ixN6TeUzAbHyh5A1ueh3zmdRqpaVHxdTUjSqQ+tz3Ws+VoVcJDaNUgFXWJYP
- B6w5quFpOBaKYgs+k0R/Y7ASEndIExs7paCbmkI8gXJjsUs8QhR7PxGUNmj3i+R6OUQQLsZlR
- GuE3FY402U7I+3GVsO3LcT+OLSXDsPW41Y/hI22JzmKVS0ymjYjoyVCit37K5cxDwMGUrMHDC
- 7OD2ahS1SdGDK4Navacp4NGt4cLDiO1MnuBsHgueNCCR52N221naUCz3e6gbvsLpQ0cL2PICv
- HyaatnwoRbVM+4jWZrbbhxkmbK3gmcqXWd2sb4WJNUn1a/AL/rRKq2gGUS3txkk93Ci2HkuwP
- EyG/YNQyNG5pfEGunjBhv7NSjB2ZYpa1jFr6zdz18MlQ5vP7XgGSK/hcK3CqBNpjGeNcHY6uD
- eeGNTIHzFakFTBYXmZYE6CHBx4S7n96y2zdFJs4RCGMc22KUZYCnbHQGf3RtbyEHU/57bdQHM
- xnUDTvXs++O15Yby/6+CntDPCK1HNFRBE6nxAHGYJ256XhwAGzPEkFWplqBwvCZS0a6QYjmkx
- XHGKfSJ9Kk39IvXmPlXp+Ox2sECKy87ux7uEif35MVuOMDPo6JMw7GuFvhPldEkuQ/PASHymZ
- talY0w1DoA2fhguwCDUH/UjFUgTLQf0CBlnYH8MPlmodHiJ2ZtE4wdpfmFniSf1wHZGH79sQ9
- 4N3yDsy46th8sJwO/IZS6OU4bwMC6Zyohr2HaIXoUHRyp7kRSLj078MOesnccgiy8J0GkK26C
- 48NL9zjepnJPTM4kz05COfYEng7bP
+UI-OutboundReport: notjunk:1;M01:P0:77nJz+km1Oo=;AOKjUOmox6V+2+lgg0O+2PH5W28
+ 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
 
-On 1/24/26 17:46, Osama Abdelkader wrote:
-> fb_pad_unaligned_buffer() unconditionally reads and advances the source
-> pointer for the final byte of each row, even when no bits from that byte
-> are actually consumed.
+On 1/27/26 15:24, Greg Kroah-Hartman wrote:
+> On Mon, Jan 26, 2026 at 07:08:36PM +0100, Sebastian Andrzej Siewior wrot=
+e:
+>> do_con_write(), fbcon_redraw.*() invoke console_conditional_schedule()
+>> which is a conditional scheduling point based on printk's internal
+>> variables console_may_schedule. It may only be used if the console lock
+>> is acquired for instance via console_lock() or console_trylock().
+>>
+>> Prinkt sets the internal variable to 1 (and allows to schedule)
+>> if the console lock has been acquired via console_lock(). The trylock
+>> does not allow it.
+>>
+>> The console_conditional_schedule() invocation in do_con_write() is
+>> invoked shortly before console_unlock().
+>> The console_conditional_schedule() invocation in fbcon_redraw.*()
+>> original from fbcon_scroll() / vt's con_scroll() which originate from a
+>> line feed.
+>>
+>> In console_unlock() the variable is set to 0 (forbids to schedule) and
+>> it tries to schedule while making progress printing. This is brand new
+>> compared to when console_conditional_schedule() was added in v2.4.9.11.
+>>
+>> In v2.6.38-rc3, console_unlock() (started its existence) iterated over
+>> all consoles and flushed them with disabled interrupts. A scheduling
+>> attempt here was not possible, it relied that a long print scheduled
+>> before console_unlock().
+>>
+>> Since commit 8d91f8b15361d ("printk: do cond_resched() between lines
+>> while outputting to consoles"), which appeared in v4.5-rc1,
+>> console_unlock() attempts to schedule if it was allowed to schedule
+>> while during console_lock(). Each record is idealy one line so after
+>> every line feed.
+>>
+>> This console_conditional_schedule() is also only relevant on
+>> PREEMPT_NONE and PREEMPT_VOLUNTARY builds. In other configurations
+>> cond_resched() becomes a nop and has no impact.
+>>
+>> I'm bringing this all up just proof that it is not required anymore. It
+>> becomes a problem on a PREEMPT_RT build with debug code enabled because
+>> that might_sleep() in cond_resched() remains and triggers a warnings.
+>> This is due to
+>>
+>>   legacy_kthread_func-> console_flush_one_record ->  vt_console_print->=
+ lf
+>>     -> con_scroll -> fbcon_scroll
+>>
+>> and vt_console_print() acquires a spinlock_t which does not allow a
+>> voluntary schedule. There is no need to fb_scroll() to schedule since
+>> console_flush_one_record() attempts to schedule after each line.
+>> !PREEMPT_RT is not affected because the legacy printing thread is only
+>> enabled on PREEMPT_RT builds.
+>>
+>> Therefore I suggest to remove console_conditional_schedule().
+>>
+>> Cc: Simona Vetter <simona@ffwll.ch>
+>> Cc: Helge Deller <deller@gmx.de>
+>> Cc: linux-fbdev@vger.kernel.org
+>> Cc: dri-devel@lists.freedesktop.org
+>> Fixes: 5f53ca3ff83b4 ("printk: Implement legacy printer kthread for PRE=
+EMPT_RT")
+>> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+>> ---
+>>
+>> A follow-up to
+>> 	https://lore.kernel.org/all/20260114145955.d924Z-zu@linutronix.de/
+>>
+>>   drivers/tty/vt/vt.c              |  1 -
+>>   drivers/video/fbdev/core/fbcon.c |  6 ------
+>>   include/linux/console.h          |  1 -
+>>   kernel/printk/printk.c           | 16 ----------------
+>>   4 files changed, 24 deletions(-)
+>>
+>> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+>> [....]
 >=20
-> When shift_high >=3D mod, the remaining bits do not cross a byte boundar=
-y,
-> but the code still accesses the next source byte. This can lead to
-> out-of-bounds reads under malformed geometry, as reported by syzbot.
+> No objection from me about removing this if it's not needed anymore!
 >=20
-> Fix this by only accessing and consuming the final source byte when it
-> contributes bits (shift_high < mod).
->=20
-> This fixes the KASAN slab-out-of-bounds read reported by syzkaller:
-> https://syzkaller.appspot.com/bug?extid=3D55e03490a0175b8dd81d
->=20
-> Reported-by: syzbot+55e03490a0175b8dd81d@syzkaller.appspotmail.com
-> Closes: https://syzkaller.appspot.com/bug?extid=3D55e03490a0175b8dd81d
-> Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
-> ---
-> v2: address the real issue (shift_high >=3D mod) condition.
-> ---
->   drivers/video/fbdev/core/fbmem.c | 15 +++++++++------
->   1 file changed, 9 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core=
-/fbmem.c
-> index eff757ebbed1..d125c3db37a1 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -100,7 +100,7 @@ EXPORT_SYMBOL(fb_pad_aligned_buffer);
->   void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx, u=
-32 height,
->   				u32 shift_high, u32 shift_low, u32 mod)
->   {
-> -	u8 mask =3D (u8) (0xfff << shift_high), tmp;
-> +	u8 mask =3D (u8) (0xff << shift_high), tmp;
+> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-This part is correct, but shouldn't be part of this patch.
- =20
+I've added it to the fbdev git tree to get some testing....
 
-
->   	int i, j;
->  =20
->   	for (i =3D height; i--; ) {
-> @@ -113,15 +113,18 @@ void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch,=
- u8 *src, u32 idx, u32 height,
->   			dst[j+1] =3D tmp;
->   			src++;
->   		}
-> -		tmp =3D dst[idx];
-> -		tmp &=3D mask;
-> -		tmp |=3D *src >> shift_low;
-> -		dst[idx] =3D tmp;
-> +
-> +		/* Only consume another source byte if it contributes bits */
->   		if (shift_high < mod) {
-> +			tmp =3D dst[idx];
-> +			tmp &=3D mask;
-> +			tmp |=3D *src >> shift_low;
-> +			dst[idx] =3D tmp;
->   			tmp =3D *src << shift_high;
->   			dst[idx+1] =3D tmp;
-> +			src++;
->   		}
-> -		src++;
-
-Above you moved the src pointer inside the if(), so every line
-processed may miss a ptr increment. This means the source would need to
-be different too, but it hasn't changed, as it's still used from
-bit_putcs_unaligned() which prints a char from the character fonts.
-
-So, I believe this part at least is wrong.
-Did you test it?
-
+Thanks!
 Helge

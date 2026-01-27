@@ -1,42 +1,37 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DDC22D7D2F;
-	Tue, 27 Jan 2026 14:24:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 999E53587C2;
+	Tue, 27 Jan 2026 14:49:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769523864; cv=none; b=WbRqVK1xgA5oyPk3hUmFYL9kiLWw/RoBMJ+4S9n1mE7rfcmAlDEaNb/1o0zHxJIqVO8fE5kmKRy4VnAcnwI/MshCrczJh9eFTSdm3pqVEo7UZ0iFVzFZfVNjvN4ANF+/X3Y8CzCjUDeV+Wnyze7PG8pXyjVDpyqNwQC5HdXZG7M=
+	t=1769525350; cv=none; b=bKRtNzFrUfADMnylyyOzn5c5J6XFPrPTdSko4UloR6EFY6z1+uIHoQWuui3klU0r5KtTCWt3++xI5N4xSppaT54UZKLCRjgOms//ZwxPuA7LAissCAalBFcxqva9PfDby7daAdInca7wAsvQ4I9s8FFQKJ+KxfOgpZJ6HQkDwtA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769523864; c=relaxed/simple;
-	bh=/X+4BfoLMHfHUsv/F8snNQqOAYWNbZ5/49zAJRESWvc=;
+	s=arc-20240116; t=1769525350; c=relaxed/simple;
+	bh=48vWZ/4+BG9YwJ56E2KnU4acLxPmiexXS6A8kHskf10=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SrcN4r/cqVFR7pDaVqfSrhKyQHbopeZ+MLM84CNOAq5c09KDPGHXeyiQETadmwNZcTNk/BuOW7fRisKK1LHxIBBIrvIA0V2vCyCkhpBhKJplfp9wJNNQkCGKwmRnuVSDdejjUWcnr1p6kgXZ/L+vr6oAszh7MjJE7nw0zgnjE4w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=VNnZbYPh; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=ueSpL9tlaAGzcq+Cw/c8Miui9+8y9uTJkAaqhf03TkCbY3dm4BvCGzZKQbOe3UCTtl4Loo0+snT835FKm+/N/dwJV4PX6nbxyJSvKdp8w7qYLqChz8gUYBjnCndunf6iRv0LjIHn/QKixBjxvUm1U99fo5Sx7W6UJBbzVnjB2Kw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=K+zFHhhD; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="VNnZbYPh"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22EC2C116C6;
-	Tue, 27 Jan 2026 14:24:23 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="K+zFHhhD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8E04C16AAE;
+	Tue, 27 Jan 2026 14:49:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1769523863;
-	bh=/X+4BfoLMHfHUsv/F8snNQqOAYWNbZ5/49zAJRESWvc=;
+	s=korg; t=1769525350;
+	bh=48vWZ/4+BG9YwJ56E2KnU4acLxPmiexXS6A8kHskf10=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=VNnZbYPha4qPCkxHaN7h3JcGPinzgjSakSyg1u2eCYlCihPom7g4T7gNWn3vx24kv
-	 8KcWMqAwUoVI0suAlFjYXs9oG1Nfa7Je89Bwavm1G7knB4Ut4H47IoNyPfp84N44ab
-	 1Wcak7mL/CrcFaZFp8ehfr4k0KL103c6klQc2wak=
-Date: Tue, 27 Jan 2026 15:24:15 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-rt-devel@lists.linux.dev, Petr Mladek <pmladek@suse.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	John Ogness <john.ogness@linutronix.de>,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	Jiri Slaby <jirislaby@kernel.org>, Simona Vetter <simona@ffwll.ch>,
-	Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH] printk, vt, fbcon: Remove console_conditional_schedule()
-Message-ID: <2026012757-voting-griminess-ca35@gregkh>
-References: <20260126180836.SNCdMW2f@linutronix.de>
+	b=K+zFHhhDRE2WihFrjwmrZjCnB5LqfOHBGyI5xsL8fujdInxowt7zeEkdTXWSqLEqW
+	 iadR3dDO/CqNK0pZqR3Y4OYQte9aMn91fjods0LAMg7AE4dnxDs6XYOdxQGOZClNur
+	 A+wa8FqvtwPh3UnN/H/UR2czihHF0PgGvOcbczmk=
+Date: Tue, 27 Jan 2026 15:49:07 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Madhumitha Sundar <madhuananda18@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: make fixId array const
+Message-ID: <2026012755-motivate-sadden-8063@gregkh>
+References: <20260127114232.29504-1-madhuananda18@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,89 +40,43 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260126180836.SNCdMW2f@linutronix.de>
+In-Reply-To: <20260127114232.29504-1-madhuananda18@gmail.com>
 
-On Mon, Jan 26, 2026 at 07:08:36PM +0100, Sebastian Andrzej Siewior wrote:
-> do_con_write(), fbcon_redraw.*() invoke console_conditional_schedule()
-> which is a conditional scheduling point based on printk's internal
-> variables console_may_schedule. It may only be used if the console lock
-> is acquired for instance via console_lock() or console_trylock().
+On Tue, Jan 27, 2026 at 11:42:32AM +0000, Madhumitha Sundar wrote:
+> The fixId array contains constant string literals, but the array itself is
+> currently mutable.
 > 
-> Prinkt sets the internal variable to 1 (and allows to schedule)
-> if the console lock has been acquired via console_lock(). The trylock
-> does not allow it.
+> Make the array const so that the compiler can place it in the read-only
+> data section (.rodata) instead of writable memory.
 > 
-> The console_conditional_schedule() invocation in do_con_write() is
-> invoked shortly before console_unlock().
-> The console_conditional_schedule() invocation in fbcon_redraw.*()
-> original from fbcon_scroll() / vt's con_scroll() which originate from a
-> line feed.
+> This fixes a warning detected by checkpatch.pl:
+> WARNING: static const char * array should probably be static const char * const
 > 
-> In console_unlock() the variable is set to 0 (forbids to schedule) and
-> it tries to schedule while making progress printing. This is brand new
-> compared to when console_conditional_schedule() was added in v2.4.9.11.
-> 
-> In v2.6.38-rc3, console_unlock() (started its existence) iterated over
-> all consoles and flushed them with disabled interrupts. A scheduling
-> attempt here was not possible, it relied that a long print scheduled
-> before console_unlock().
-> 
-> Since commit 8d91f8b15361d ("printk: do cond_resched() between lines
-> while outputting to consoles"), which appeared in v4.5-rc1,
-> console_unlock() attempts to schedule if it was allowed to schedule
-> while during console_lock(). Each record is idealy one line so after
-> every line feed.
-> 
-> This console_conditional_schedule() is also only relevant on
-> PREEMPT_NONE and PREEMPT_VOLUNTARY builds. In other configurations
-> cond_resched() becomes a nop and has no impact.
-> 
-> I'm bringing this all up just proof that it is not required anymore. It
-> becomes a problem on a PREEMPT_RT build with debug code enabled because
-> that might_sleep() in cond_resched() remains and triggers a warnings.
-> This is due to
-> 
->  legacy_kthread_func-> console_flush_one_record ->  vt_console_print-> lf
->    -> con_scroll -> fbcon_scroll
-> 
-> and vt_console_print() acquires a spinlock_t which does not allow a
-> voluntary schedule. There is no need to fb_scroll() to schedule since
-> console_flush_one_record() attempts to schedule after each line.
-> !PREEMPT_RT is not affected because the legacy printing thread is only
-> enabled on PREEMPT_RT builds.
-> 
-> Therefore I suggest to remove console_conditional_schedule().
-> 
-> Cc: Simona Vetter <simona@ffwll.ch>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Fixes: 5f53ca3ff83b4 ("printk: Implement legacy printer kthread for PREEMPT_RT")
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Madhumitha Sundar <madhuananda18@gmail.com>
 > ---
+>  drivers/staging/sm750fb/sm750.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> A follow-up to
-> 	https://lore.kernel.org/all/20260114145955.d924Z-zu@linutronix.de/
-> 
->  drivers/tty/vt/vt.c              |  1 -
->  drivers/video/fbdev/core/fbcon.c |  6 ------
->  include/linux/console.h          |  1 -
->  kernel/printk/printk.c           | 16 ----------------
->  4 files changed, 24 deletions(-)
-> 
-> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-> index 59b4b5e126ba1..53daf7614b1af 100644
-> --- a/drivers/tty/vt/vt.c
-> +++ b/drivers/tty/vt/vt.c
-> @@ -3236,7 +3236,6 @@ static int do_con_write(struct tty_struct *tty, const u8 *buf, int count)
->  			goto rescan_last_byte;
->  	}
->  	con_flush(vc, &draw);
-> -	console_conditional_schedule();
->  	notify_update(vc);
+> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> index fecd7457e..ff590061c 100644
+> --- a/drivers/staging/sm750fb/sm750.c
+> +++ b/drivers/staging/sm750fb/sm750.c
+> @@ -740,7 +740,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+>  		"kernel HELPERS prepared vesa_modes",
+>  	};
 >  
->  	return n;
+> -	static const char *fixId[2] = {
+> +	static const char * const fixId[2] = {
+>  		"sm750_fb1", "sm750_fb2",
+>  	};
+>  
+> -- 
+> 2.43.0
+> 
+> 
 
-No objection from me about removing this if it's not needed anymore!
+Does not apply to my tree at all, please rebase and resend.
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+thanks,
+
+greg k-h

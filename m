@@ -1,135 +1,154 @@
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96010304BA3
-	for <linux-fbdev@vger.kernel.org>; Tue, 27 Jan 2026 15:41:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7115421D5AA;
+	Tue, 27 Jan 2026 17:17:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769528465; cv=none; b=LnCiHgleG42ZSYiY4BC0RuuJu99NCs3eX1AUVa3gP1V5G50GMjEEnn6oZ8T7T8fl74kLcqL8SyDzuFy0dRsE64eg3yP2LHenX7iayb4ZjhWEAkX5PbgFkcLso+Tvk648tuVJV2OO7BD6WxboZERYbF2tWie1Yro+wnqF34B94pQ=
+	t=1769534255; cv=none; b=ABAhVXjSsNKzenVS6QDWSxR8JDV07YBoLcpEvvb01JNmIgitiSz87u6/ENUm0dzwNom0dhoDvdedm8cw+LbLQL8E3TY2zOH1CUX9w+oC3TTap984yvU9++qCA0IQTXbpG2FWOBePSSeYoB5zfVN2NxSfjG2QD+OHeBDNGBdzkiw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769528465; c=relaxed/simple;
-	bh=aFDX34ybk/Kqa5bE8bFWwCkyvn6Pr2LS21JJKYV7n2Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Oe3bI016xSlY94vM9lB9Iy/lCBUL5TLBVXoBb2aeIlBi+ok79a0ggqFknay3k1wSxvv730oNnzwqw0Pxyj/gABDzfN7GrsnLc1s2Yw1X4MJ04G2q9p/fhRlIB7JEOe0pQdoS/8Y/WmSy1J7nnt7aaLChHqXmRLEHpvluo3LpT9g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JGmljhsi; arc=none smtp.client-ip=209.85.221.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1769534255; c=relaxed/simple;
+	bh=PnvdcAk3EnoFSvQmerJcTxzmcs2qkXDejhebUdZlwQU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=qhGz+66e6+GCkF/gxBIo5A5CelTMtwU13tojlwT0ubKWltvLGNTDsKOUmlhQXG5oCseSFsTXLncpa8rodcHmAiEPo3SHPsfbh5eyYl6P5m0X1+gKP4CUoNRiu+agZcIVY9VLJ5n1a0BXdCYOK+ds/rMaAK5/ecFc7h7bckXqw/s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=oN9+5PAn; arc=none smtp.client-ip=212.227.15.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JGmljhsi"
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-43596062728so4169386f8f.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Jan 2026 07:41:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769528462; x=1770133262; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vxdGKRED/GezH50A93RC3QHz4tAJqHqw5Wvg3bxqlKY=;
-        b=JGmljhsiLYN9Adt7r8B3UTMuq4Y0p+SLrV4HyHaX5SmIMnrsrX0uUCPKBfROpFzaxV
-         R5aCQcaAvi1rodcAu7hldWy8szw76Jkyg/yTveAuTgHnpR3DS4ca3ju7t9LxmL/8Fblo
-         e2ZCRKrI7DLwlSRwjakAG4/XaXb/WG4EwYi5wDLfWQsHojEdyks4J3a8qVishCTxIT0m
-         FIoPAFm6uhpPh3GbAKS9Cc6k2pzwvstJpRSM+Ul2gPJrEsGxOhBkOk8hQgrQYTjSGSPr
-         djgHrhSHhv6MBgWDHXVcpnZhiw1dazdgdbGen+vCLmbC0jzmkL6PTpPPG2VNdToU7oD6
-         bDpA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769528462; x=1770133262;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vxdGKRED/GezH50A93RC3QHz4tAJqHqw5Wvg3bxqlKY=;
-        b=FmXFjDVWyoSQlyJX5ygQJuOXQHpCjHz1bWn3PhXRSj3G5DPE7F+sw4OzJxRls9CJm+
-         09RXzDE3g1n8rZRUTyt1aIcEoxL0s/tKisTEWnivnIuTkk4BYgVgytNokigsp3La/tSt
-         NKPkp1gN607TR+ZQsu+3xga2Ivluq1z2GDlShBDeBKtFWy+wsJKpr6B8MMZDMOADOI3+
-         1IjZ/e1kjMg8aPG/Kb/zaQOtV121Lz8JkgWIG07sWQP6K+Gh28QzRy2ifxR8cKB5Mpm5
-         MNJoNhwzCRCXn/EcMcqWX7u+vfyIVeC09q5BJZR8Q/xI6sQVzji8bIL156/eTlAI3ZtH
-         Pvlg==
-X-Gm-Message-State: AOJu0YxgAkUYpN44XVghw1tKNrbcPOXO0AZotfoOqJDYAhGMGOKE7DKC
-	MBlqWpaiP8mqPWmajddMeNnZYrhF9mX+oy/UZbL6LuISRsMT2itKtWwI
-X-Gm-Gg: AZuq6aLOxPZR0DfweVgrgc5Qf3xWuV1qdzvaFCrWJK/2zy5Cu/XlzKmsEW3In55vKOf
-	znwp9Ft7Uz7UeGW9a8YclIKEdUjNl956JCmX3+1agadqZZRgGDQc8ELk9XROr93d61xfesy7WVJ
-	n2w38+JaJl9OPUbtw4Nwtz3RSaOMH2MAPgoGLP4fFzkItlMBTEhBF3y+Z3yeD6MmCK5e/ZgvxR7
-	4xXlAUbk42uYSp/09nOz2TE+qAxZHBaGIy3eNGco+NP5Ipt0Wp6yQ7Q7cWYb6Zigj7qiQzUKMyC
-	+EAKS5CUMLomtwmG3Bm2kUgD3P+asy+mxN0WhChl/9IIhC1sKSJIHPD84Fz7LfkLGOz/lLf+UuN
-	eJOrjx9gWUVNYlv1Dw79ut0vgXSmwcSa9QJauQ9m87q0Id6FL4VXAu/vvRAdCL70br5Tiq86/2i
-	CS2FXWhHPZulXn9+laeY8=
-X-Received: by 2002:a05:6000:1acc:b0:435:9538:939b with SMTP id ffacd0b85a97d-435dd0bdf07mr3190440f8f.8.1769528461541;
-        Tue, 27 Jan 2026 07:41:01 -0800 (PST)
-Received: from Madhu.broadband ([83.106.123.52])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435b1c0179bsm38451602f8f.1.2026.01.27.07.41.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Jan 2026 07:41:01 -0800 (PST)
-From: Madhumitha Sundar <madhuananda18@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Madhumitha Sundar <madhuananda18@gmail.com>
-Subject: [PATCH v2] staging: sm750fb: replace magic number with jiffies timeout
-Date: Tue, 27 Jan 2026 15:40:56 +0000
-Message-ID: <20260127154056.74855-1-madhuananda18@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="oN9+5PAn"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1769534251; x=1770139051; i=deller@gmx.de;
+	bh=dUFu0bjaPKlZSxtueJt9kbaCf2cWUgl7ip+eBYu1L8E=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=oN9+5PAnwbbq4Y+NHKEkO7HtNEpiWDb1x1ig0GAa6X00j4615O/786YyXQZVo9Xh
+	 zC3bygkiEfxwYDRWHOaQ6CNCN8W6K8uerKXiyt3wHJlX84ipo+7RRXQfk411cGp+y
+	 l2Jh30vRoLLtpdXoc8TYRmcMHyC0IFTjcbylGhDsHRU5SVS8xrOQbmycqt9gAO1Fp
+	 e+PctiLUmKCQ43HfgI15PXCaBXdXrDIGX0K3bOrh0+QRfGrjC7mnoCC/B3gvg7Q0J
+	 CJLf5XentAnyFgqxwuW+ja8agX5dnByMvzhzOakWL9wYXaiSMs78pCkEPqn4I+dDc
+	 +HlQv1Gd1ptl8MabpQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.50.214]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Mlf0K-1wBYin1on4-00lzVa; Tue, 27
+ Jan 2026 18:17:31 +0100
+Message-ID: <2f7c934d-1581-495f-9b04-cb5d138d72c4@gmx.de>
+Date: Tue, 27 Jan 2026 18:17:30 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: vt8500lcdfb: fix missing dma_free_coherent()
+To: Thomas Fourier <fourier.thomas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20260112140031.63594-2-fourier.thomas@gmail.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+In-Reply-To: <20260112140031.63594-2-fourier.thomas@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:vtAnENc4twLiTvkaYnRRdWo5lV6c9ccOIeWMuiphm41cv95+pUO
+ qmwIqE4MBfiNSoJZX+7WEmGQ5dtU/l+FI/sBLFOp1RKZ7z5cfdtpgxs92kX6iwl2wWUCTV6
+ 8FEVo4W9o7/HcQ4ldRnfsZsZJONVvPIHDl9UMe1efp5ZhFeeJE7P4105GaVJauUTulJyvr4
+ 2n8Boy+qeYVqYFq9AvDxA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:FHA3kzx37TU=;s3ImftkJZtre52odBCEDVeJm/gY
+ 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
+ mlWLW/TqJGU0qbGvviZ4zbXCHzcxS
 
-The hardware wait loop in hw_sm750_de_wait used a hardcoded loop
-counter (0x10000000), which depends on CPU speed and is unreliable.
+On 1/12/26 15:00, Thomas Fourier wrote:
+> fbi->fb.screen_buffer is alloced with dma_free_coherent() but is not
 
-Replace the loop counter with a jiffies-based timeout (1 second)
-using time_before(). This ensures consistent delays across architectures.
+I've corrected this to "dma_alloc_coherent()", as pointed out by Mr. Elfri=
+ng,
+and applied it to the fbdev tree.
 
-Signed-off-by: Madhumitha Sundar <madhuananda18@gmail.com>
----
-Changes in v2:
- - Switched from loop counter to jiffies + cpu_relax() as requested by Greg KH.
----
- drivers/staging/sm750fb/sm750_hw.c | 21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
+Thanks!
+Helge
 
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index ce46f240c..b24d27a77 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -523,19 +523,32 @@ int hw_sm750le_de_wait(void)
- 
- int hw_sm750_de_wait(void)
- {
--	int i = 0x10000000;
-+	/* Wait for 1 second (HZ) */
-+	unsigned long timeout = jiffies + HZ;
- 	unsigned int mask = SYSTEM_CTRL_DE_STATUS_BUSY |
- 			    SYSTEM_CTRL_DE_FIFO_EMPTY |
- 			    SYSTEM_CTRL_DE_MEM_FIFO_EMPTY;
-+	unsigned int val;
- 
--	while (i--) {
--		unsigned int val = peek32(SYSTEM_CTRL);
-+	/* Run while Current Time is BEFORE the Deadline */
-+	while (time_before(jiffies, timeout)) {
-+		val = peek32(SYSTEM_CTRL);
- 
-+		/* If Not Busy (0) AND Buffers Empty (1), we are good */
- 		if ((val & mask) ==
- 		    (SYSTEM_CTRL_DE_FIFO_EMPTY | SYSTEM_CTRL_DE_MEM_FIFO_EMPTY))
- 			return 0;
-+
-+		/* Polite pause to save power */
-+		cpu_relax();
- 	}
--	/* timeout error */
-+
-+	/* Final check in case we succeeded at the last millisecond */
-+	val = peek32(SYSTEM_CTRL);
-+	if ((val & mask) ==
-+	    (SYSTEM_CTRL_DE_FIFO_EMPTY | SYSTEM_CTRL_DE_MEM_FIFO_EMPTY))
-+		return 0;
-+
- 	return -1;
- }
- 
--- 
-2.43.0
-
+> freed if the error path is reached.
+>=20
+> Fixes: e7b995371fe1 ("video: vt8500: Add devicetree support for vt8500-f=
+b and wm8505-fb")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
+> ---
+>   drivers/video/fbdev/vt8500lcdfb.c | 5 ++++-
+>   1 file changed, 4 insertions(+), 1 deletion(-)

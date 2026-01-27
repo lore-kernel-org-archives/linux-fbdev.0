@@ -1,23 +1,23 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 359DF2571C7;
-	Tue, 27 Jan 2026 08:30:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 617EA32BF52;
+	Tue, 27 Jan 2026 08:58:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769502627; cv=none; b=QRyVKZ8TMJ3ZUFHGJL17WryChpDR5D3hofpPsap4RdGr+SxIT5MRDppL2Lq2fxWKbznFR+j7E4Vh5e+HVR44ZSg7FXidd712UzlDLa6W5LPk6xsDFeXwiST/JgRpGNb3oXTb+RIyoK+1AsNkADaavALHzBkIWx6TO4wM4kh/ci0=
+	t=1769504321; cv=none; b=c+g7fPPr9VVxdIAjpLZsrNtdGSV7vfLMP1z7bRSv02nJN/sQl3mgPrKZw/j5n+g4jDP+z6DRMfzWnOqOkzP8Q4BbUmfg0UNy/5l2UDldRD1xIsQJpcHjKwHJefPueC2L0hBLMiPbuFc9bvIgt479CvPTww+DDBj4sC/oLtI2oXo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769502627; c=relaxed/simple;
-	bh=Qd9o0dhwwbCdLcEjAR+CNYNTHgGjnJKzdZKupLKpFFA=;
+	s=arc-20240116; t=1769504321; c=relaxed/simple;
+	bh=upyv7IwdIeGyogoOnKef2nVc10ymlNOHVf8nDAj6nw4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BSo9LxB/yQLYhH8PVQ9/wBb3/kctVuhPOjbmoQoEKmiHgQLQYgXLv3EUG0uUdAEkdh6TUnCMh+fznf0QhMOzobavki/H/A5VlioLD7hL4gUS4axV1tml05dOTbnLXpF3yYkwQKniy4/2DjDExez4SxPHkJ/3YIX6QJO2Yjj9A04=
+	 Content-Type:Content-Disposition:In-Reply-To; b=QsVeF/zuw969yn4898m/rJ3RI6GLAK2vVFNWgNMrlt+kGUA+nAWP5uQMz5byUA8n7Fi8gJ+RsEoFcoGgVY03BNX9bSOpZZOpopnduo21sKYj65Vg0NqhFdNZg1kFZo26ujoVCxZWKh8hiIFFniIF/RJjWC59jR3HDMGSKLYwjG0=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 69791998fb5a11f0b0f03b4cfa9209d1-20260127
-X-CID-CACHE: Type:Local,Time:202601271604+08,HitQuantity:1
+X-UUID: 59da2636fb5e11f0b0f03b4cfa9209d1-20260127
+X-CID-CACHE: Type:Local,Time:202601271604+08,HitQuantity:2
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.6,REQID:35cfd77d-35cf-4da1-a4a8-7c1512706972,IP:0,UR
+X-CID-O-INFO: VERSION:1.3.6,REQID:3c3462cc-1a5a-46f3-9b98-f1e81a037db3,IP:0,UR
 	L:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:r
 	elease,TS:0
 X-CID-META: VersionHash:a9d874c,CLOUDID:da141f988872f93dfd5565e7e8f36d3e,BulkI
@@ -28,15 +28,15 @@ X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 69791998fb5a11f0b0f03b4cfa9209d1-20260127
+X-UUID: 59da2636fb5e11f0b0f03b4cfa9209d1-20260127
 X-User: pengfuyuan@kylinos.cn
 Received: from peng [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <pengfuyuan@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 1400207429; Tue, 27 Jan 2026 16:30:18 +0800
-Date: Tue, 27 Jan 2026 16:30:15 +0800
+	with ESMTP id 1688504528; Tue, 27 Jan 2026 16:58:30 +0800
+Date: Tue, 27 Jan 2026 16:58:26 +0800
 From: pengfuyuan <pengfuyuan@kylinos.cn>
-To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: Helge Deller <deller@gmx.de>
 Cc: Alexandre Courbot <acourbot@nvidia.com>,
 	Thomas Zimmermann <tzimmermann@suse.de>,
 	Danilo Krummrich <dakr@kernel.org>,
@@ -51,18 +51,18 @@ Cc: Alexandre Courbot <acourbot@nvidia.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
 	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Helge Deller <deller@gmx.de>, Hans de Goede <hansg@kernel.org>,
-	Lee Jones <lee@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-	Zsolt Kajtar <soci@c64.rulez.org>,
+	Hans de Goede <hansg@kernel.org>, Lee Jones <lee@kernel.org>,
+	Sam Ravnborg <sam@ravnborg.org>, Zsolt Kajtar <soci@c64.rulez.org>,
 	Ville =?utf-8?B?U3lyasOkbMOk?= <ville.syrjala@linux.intel.com>,
 	rust-for-linux@vger.kernel.org, linux-kernel@vger.kernel.org,
 	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 Subject: Re: [PATCH v1 v1 0/4] [RUST] Framebuffer driver support
-Message-ID: <20260127083015.GB965382@peng>
+Message-ID: <20260127085826.GA970322@peng>
 References: <20260126081744.781392-1-pengfuyuan@kylinos.cn>
  <ed48e82a-cb94-477f-83c4-b2d87ae3cde6@suse.de>
  <DFYG7MT5JINY.1T8ZZ4ASIWXU@nvidia.com>
- <CANiq72kRhkLKcc279CacJ8CnQ18JEZ4A9-vkcg_k4Jw88O4EDw@mail.gmail.com>
+ <20260127080419.GA965382@peng>
+ <578209b5-6d22-4255-a2e6-256d3f5afa72@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -72,49 +72,78 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CANiq72kRhkLKcc279CacJ8CnQ18JEZ4A9-vkcg_k4Jw88O4EDw@mail.gmail.com>
+In-Reply-To: <578209b5-6d22-4255-a2e6-256d3f5afa72@gmx.de>
 
-On Mon, Jan 26, 2026 at 12:46:41PM +0100, Miguel Ojeda wrote:
-> On Mon, Jan 26, 2026 at 11:28 AM Alexandre Courbot <acourbot@nvidia.com> wrote:
-> >
-> > This, and the patchset is also obviously AI-generated.
+On Tue, Jan 27, 2026 at 09:16:35AM +0100, Helge Deller wrote:
+> On 1/27/26 09:04, pengfuyuan wrote:
+> > On Mon, Jan 26, 2026 at 07:28:21PM +0900, Alexandre Courbot wrote:
+> > > On Mon Jan 26, 2026 at 7:01 PM JST, Thomas Zimmermann wrote:
+> > > > Hi
+> > > > 
+> > > > Am 26.01.26 um 09:17 schrieb pengfuyuan:
+> > > > > This patch series adds Rust bindings and safe abstractions for the Linux
+> > > > > framebuffer subsystem, enabling framebuffer drivers to be implemented in Rust.
+> > > > 
+> > > > The framebuffer subsystem is obsolete and has been deprecated for a
+> > > > decade. No new drivers accepted. Anything that really wants fbdev
+> > > > already has a driver. Can we please let it die?
+> > > 
+> > > This, and the patchset is also obviously AI-generated.
+> > 
+> > Hi,
+> > Thank you for the feedback.
+> > I’d like to be clear about how I used AI in this work:
+> > 
+> > 1.Cover letter – Yes, I used AI to help summarize and phrase the cover letter.
+> > 2.Comments in the code – Some comments were written or refined with AI assistance.
+> > 3.Learning the codebase – When reading and understanding existing Rust-for-Linux code (including DRM and other abstractions), I used AI as a helper to analyze and explain structure and patterns.
+> > 4.Writing the code – The implementation was not fully generated by AI.  I wrote the code myself and used AI mainly to look up existing abstractions, traits, and APIs (e.g. “how does X work? ”, “what’s the right trait for Y?”)  while I was coding.
+> > 
+> > So: AI was used for summaries, comments, learning, and looking
+> > things up;  the logic and structure of the code are mine, and I take
+> > responsibility for them.
+> > If you have concerns about specific parts (e.g. wording, style, or
+> > design), I’m happy to rework those patches or to adjust how I
+> > describe tool use in future submissions.
 > 
-> pengfuyuan: the generated content guidelines I mentioned earlier this
-> month in another of your patches have been merged now, please read:
+> No.
+> Please don't resend any patches for the fbdev layer.
+> There is no need to provide rust bindings for fbdev, as new
+> graphics drivers should use DRM.
 > 
->     https://docs.kernel.org/next/process/generated-content.html
-> 
-> Thanks!
-> 
-> Cheers,
-> Miguel
+> Helge
 
-Hi Miguel,
+Hi Helge,
 
-Thank you for the pointer. I've read the generated content guidelines at
-https://docs.kernel.org/next/process/generated-content.html and will follow
-them.
+Thank you for the clarification, I understand. I will not resend any fbdev
+patches.
 
-For transparency, here is the disclosure for my contribution:
+Just to give some background on why I started with Rust framebuffer bindings:
+our company has a new graphics card, and the plan is to gradually implement
+the display controller (DC) driver using the Rust-for-Linux DRM framework.
+My goal is to bring up the display step by step on an ARM64 system with this
+new GPU.
 
-Tools used:
-- Cursor (IDE) with Claude Sonnet 4.5
+Since it looks like the current Rust DRM support does not yet include KMS
+abstractions (CRTC/plane/connector etc.), my initial idea was to first use a
+simple framebuffer-based approach to light up the display, and then later
+migrate the DC driver to DRM and eventually to KMS abstractions in Rust.
 
-Parts affected by tool use:
-- Cover letter: The cover letter text was summarized/written with AI assistance.
-- Code comments: Comments in the code were written with AI assistance.
-- Learning and development: I used AI to help analyze existing Rust for Linux
-  framework code (e.g. rust/kernel/drm and similar abstractions) and to look
-  up existing traits/abstractions while writing the code. The code itself was
-  not fully AI-generated; I wrote it with AI used as an aid for querying
-  existing abstractions and patterns.
+Given your feedback, I will drop the fbdev approach and focus on DRM instead.
 
-Testing:
-- I tested on a real ARM64 machine, manually swapping six different
-  graphics cards to verify the changes.
+I would like to ask about the current status and plans for Rust DRM KMS
+support:
 
-I understand and can explain the code I submit, and I'm prepared to respond
-to review comments.
+- Is there any active work or a design for KMS abstractions in Rust?
+- Is there a WIP tree or an RFC that I could look at?
+- Are there specific areas where I could help (e.g. prototyping KMS bindings,
+  writing tests, or working on smaller pieces under guidance)?
 
-Thanks,
+My goal is to eventually run the DC driver for this new GPU using the Rust
+DRM stack on that ARM64 system, so I would be happy to help where it is most
+useful for the project.
+
+Thank you again for your time and guidance.
+
+Best regards,
 pengfuyuan

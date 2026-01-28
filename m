@@ -1,71 +1,49 @@
-Received: from mail-pg1-f177.google.com (mail-pg1-f177.google.com [209.85.215.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.smtpout.orange.fr (smtp-81.smtpout.orange.fr [80.12.242.81])
+	(using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11FB7371073
-	for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 20:39:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58D6C32E732;
+	Wed, 28 Jan 2026 21:36:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769632793; cv=none; b=SciNH2K5IgHghLF2HKYkjL+rk7HmmA3tULJSKlQilARpjpEn48tD/nCX+hjsbc3d2KkplUZ6airNu1fQdbxUdwgJC0cGSLMSSfAiLx2yANjA5skvxyBL9itPKaWLcr83Qyr1kAQifZ9nwdi4DrbcEd9/euZgDZj+TwL59stlaCg=
+	t=1769636179; cv=none; b=FKG/0dREWqMZVRBPfYJMZRt/odgSP9ctHaRaBpboEuyDr3ycqYzq6CY90HL/akkjWGtcLassbW9bLMYMcMV0K70ixxeGhMRt/rZOspcimk1fhXedhDIqIHZO1VUN0ypuRzPtHMphTrFV4Dw1haINGzKWV9YSoB62KCJ2qokaZdg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769632793; c=relaxed/simple;
-	bh=Nm5b8sgLD4sBAwSa6lg3pqm0KR82wRdBdgAP9dBu6EY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pv6zl52OcaK09+8OQMaUt1i2DaGBR+pz32AQv9rixXdZd+ZF/25hv169KRrJARB77w3qP+2iElDpGTaaZuTD3KeeeSd3zwQCIzWRnxVQAiyNs2MLBXw8N6Jv40dl5cpp92ffR29Ioe93OOUlSUPnPxnp6/bpWmnBAO1Dvds5M+4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bRnn5JPe; arc=none smtp.client-ip=209.85.215.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1769636179; c=relaxed/simple;
+	bh=DxIIjQuFx2X5vwctTB73xzLfmTjQiro48BHWprUY6kE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=AZ5TkDrZckZItK19/c08A+WMxpl+t7E+5qpBdOq+L43/8SuPMlCA4mCcQT5ESUXZWtQ7ooWbcyYQw1Y8R/OwJ/KXfAR7c/K0qd/qB7waNzjVw/iRbtthrhjEJZo0H6iTFAMM9pJqk5Kl3pGJsrqxqi9kkwalG+eSls5+blRAVNY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=orange.fr; spf=pass smtp.mailfrom=orange.fr; dkim=pass (2048-bit key) header.d=orange.fr header.i=@orange.fr header.b=i1/0Za00; arc=none smtp.client-ip=80.12.242.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=orange.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=orange.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bRnn5JPe"
-Received: by mail-pg1-f177.google.com with SMTP id 41be03b00d2f7-c633984fbeeso538343a12.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 12:39:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769632791; x=1770237591; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=xUtAzlicNbYpibyHmDOFcgslFGJZKtVL/UOPgB2to8g=;
-        b=bRnn5JPe3UTiDCXvpu7G52LBA3vhP6H7k6AxscMVKady5fJrQ4rEjgp0TTWzmX8vvu
-         Q1P4UG89awRYth7rnFQOGd3qM9Qj72eVUR43zEf30OhAwfmM6hIRDCF7FWDvUoEp1RKt
-         8ZiKXELjrVS4xWdcvJt3FWqq8631zBhI/juQeGYxUSF/K8hfCxun7IGQF9oZWQzeyx/n
-         gvQXKqEDS8KYBJ1K9QpBQtWhR0miVkVzan/cYQTahnb5B/5ViGun7DHO68K8pJiu2GaV
-         xvdDMIcsskK8obZYSdM/IIoCjaMRKQ2VRi5aRSvo2fuCeKpB53omQoTs1g3cv5mkvF0j
-         osZA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769632791; x=1770237591;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xUtAzlicNbYpibyHmDOFcgslFGJZKtVL/UOPgB2to8g=;
-        b=XPpQxJrkWktW5J6c1ux/sNJGVs/NV7uyoxgUwZz3C17ltUBSdzvvv+Rm1lYPOpMuHd
-         9F1Aew48FMQLG4ydDm7Atx3F4YFROP/Yuq6wl7reErvhwfjIvSZ4CLEHfiWoyB4Z4A6X
-         62tLc7GWnDuF7zM92DcGePhiDNiZtVuMn27kBYzzsyI6Eju06OMDo+79U5SJbvy4FLjY
-         Uk0wPCqNC6y0y/1AvgrKG4a+pzaJ7I2IgLYfeprFzPh93M51MbsIxpKOZMc5Amh83kZe
-         gq9w4IWHANUH2qIygniHSacjIOhlO2wp7+QVxAuDOJ0r1UbTtrRGOgKv/9znOFQo78ci
-         sRig==
-X-Forwarded-Encrypted: i=1; AJvYcCVwnCx+27lWdystJS2+ig5tsp3yuP2bvfhJzkmq5XI4OEhQQqVG6d9VdX/invCOBRp3q8aD2kqX4XickA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YytlsUUz9TRbT6BgIsn/F2fEMlDR7Y+nStFc/FMLFk4STGT0QgZ
-	zTOJrVhSBIc1RF+OslMgbY5UC46fkWW7LJvnSG+GNv5GSM8lgBcMPE94GfyG6vVc
-X-Gm-Gg: AZuq6aLgYSQnjm0wpPHha642lcUvNlGvF6CEeUFQb+KCZ00SgD/wvxwa+pvdiHKppdn
-	lhPQOb0JiyBPl87kNEuIFkVAz4qc0IeAWnukQ2oJOjQfxHYEAOvH64tovHuPSQ3o2uElBSMMHvG
-	nlkDS++SPZgFOu8O58lDcEPbfja2VNwyGHlkudHdp1QfhyQgk3TxEhIL+uc1uXQ418ewi4d5eWi
-	NK33SmI+I8X0U0nKJqth6hAdAnVGDqiAVumEGER2xYd8ylHfWQ6/fCteT0cpbwQhNWZDUE0AkFI
-	HzmyeGG/L5S4B0d3uXQ8GhF6KRHCKCT8PO3OqlcprdtdfDPnVAbeCLBMpa/nk/5PVz5bqFKzTJY
-	Z5mNItGvub85fcdZRe44kCt1UoYoma0M+etzqTFxuwwDTVy5Ex42SkaeVPxWqJrnqqha79xqfuw
-	TSvF38D7NMBZN4js9MsCp96T4Rpg==
-X-Received: by 2002:a17:902:f683:b0:2a7:a3b3:3229 with SMTP id d9443c01a7336-2a8bd43275amr6095695ad.5.1769632791253;
-        Wed, 28 Jan 2026 12:39:51 -0800 (PST)
-Received: from localhost.localdomain ([58.231.102.222])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a88b4c45c4sm29703465ad.62.2026.01.28.12.39.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Jan 2026 12:39:50 -0800 (PST)
-From: ChanSoo Shin <csshin9928@gmail.com>
-To: andy@kernel.org
-Cc: gregkh@linuxfoundation.org,
+	dkim=pass (2048-bit key) header.d=orange.fr header.i=@orange.fr header.b="i1/0Za00"
+Received: from cyber-villager.home
+ ([IPv6:2a01:cb1c:8326:c500:bfc0:b7c5:d0ed:4f38])
+	by smtp.orange.fr with ESMTPA
+	id lD4SvI2AvEcXwlD4Svk1IB; Wed, 28 Jan 2026 22:27:30 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=orange.fr;
+	s=t20230301; t=1769635650;
+	bh=esahnId/W+bwrnYCC8NREjRi6iSOW0UNlTcA4g2FuLk=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version;
+	b=i1/0Za00yQcwQ8kzuBpu4B/eky+iIvduq/rDDVCPbGdwU2k28XmQCxFNTNb0B3cB8
+	 k3q9yP+BSsqC926s3ILm9A7eFiERVma+qC8SKnz6XZoN1z2F/pYYRABFE5SFCbQbie
+	 a0J2Zitmd2KrUKrDXXQSzcrFbt5mGEnUAyH4UCC/HGQ22Nv7PP5/L1YylFvdoXkE7S
+	 Ardxjjqm2Uih8Y4l2Ve0IVnB6cOcM6kiAy2E/yoRz0mLOq1m1vl3vg8Sp1rqz6pCEJ
+	 6lRkVBoRxv63lUxEbv9Dzi9H69TPU7oc6wf99eUt30gPAbbduxSK7U9vSSEwL0Qp5/
+	 foBI3NGbJNzxw==
+X-ME-Helo: cyber-villager.home
+X-ME-Auth: cGF1bC5yZXRvdXJuZUBvcmFuZ2UuZnI=
+X-ME-Date: Wed, 28 Jan 2026 22:27:30 +0100
+X-ME-IP: 2a01:cb1c:8326:c500:bfc0:b7c5:d0ed:4f38
+From: =?UTF-8?q?Paul=20Retourn=C3=A9?= <paul.retourne@orange.fr>
+To: andy@kernel.org,
+	gregkh@linuxfoundation.org
+Cc: =?UTF-8?q?Paul=20Retourn=C3=A9?= <paul.retourne@orange.fr>,
 	dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
-	ChanSoo Shin <csshin9928@gmail.com>
-Subject: [PATCH v5] fbtft: limit dirty rows based on damage range
-Date: Thu, 29 Jan 2026 05:39:38 +0900
-Message-ID: <20260128203938.962414-1-csshin9928@gmail.com>
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: fbtft: use guard() to simplify code
+Date: Wed, 28 Jan 2026 22:26:42 +0100
+Message-ID: <20260128212644.1170970-1-paul.retourne@orange.fr>
 X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -73,37 +51,110 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Instead of marking the entire display as dirty, calculate the start
-and end rows based on the damage offset and length and only mark the
-affected rows dirty. This reduces unnecessary full framebuffer updates
-for partial writes.
+Use guard() to simplify mutex locking. No functional change.
 
-Signed-off-by: ChanSoo Shin <csshin9928@gmail.com>
+Signed-off-by: Paul Retourné <paul.retourne@orange.fr>
 ---
- drivers/staging/fbtft/fbtft-core.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/staging/fbtft/fb_ssd1305.c  | 4 ++--
+ drivers/staging/fbtft/fb_ssd1306.c  | 4 ++--
+ drivers/staging/fbtft/fbtft-sysfs.c | 8 ++++----
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 8a5ccc8ae0a1..1d5cb45199d0 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -415,8 +415,12 @@ static void fbtft_ops_damage_range(struct fb_info *info, off_t off, size_t len)
- {
- 	struct fbtft_par *par = info->par;
+diff --git a/drivers/staging/fbtft/fb_ssd1305.c b/drivers/staging/fbtft/fb_ssd1305.c
+index 020fe48fed0be..d9215cb35e8f8 100644
+--- a/drivers/staging/fbtft/fb_ssd1305.c
++++ b/drivers/staging/fbtft/fb_ssd1305.c
+@@ -10,6 +10,7 @@
+ #include <linux/init.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/delay.h>
++#include <linux/cleanup.h>
  
--	/* TODO: only mark changed area update all for now */
--	par->fbtftops.mkdirty(info, -1, 0);
-+	__u32 width = info->var.xres;
-+	__u32 start_row = off / width;
-+	__u32 end_row = (off + len - 1) / width;
-+	__u32 height = end_row - start_row + 1;
+ #include "fbtft.h"
+ 
+@@ -35,12 +36,11 @@ static int init_display(struct fbtft_par *par)
+ 	par->fbtftops.reset(par);
+ 
+ 	if (par->gamma.curves[0] == 0) {
+-		mutex_lock(&par->gamma.lock);
++		guard(mutex)(&par->gamma.lock);
+ 		if (par->info->var.yres == 64)
+ 			par->gamma.curves[0] = 0xCF;
+ 		else
+ 			par->gamma.curves[0] = 0x8F;
+-		mutex_unlock(&par->gamma.lock);
+ 	}
+ 
+ 	/* Set Display OFF */
+diff --git a/drivers/staging/fbtft/fb_ssd1306.c b/drivers/staging/fbtft/fb_ssd1306.c
+index 478d710469b91..c230d599ff928 100644
+--- a/drivers/staging/fbtft/fb_ssd1306.c
++++ b/drivers/staging/fbtft/fb_ssd1306.c
+@@ -10,6 +10,7 @@
+ #include <linux/init.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/delay.h>
++#include <linux/cleanup.h>
+ 
+ #include "fbtft.h"
+ 
+@@ -34,12 +35,11 @@ static int init_display(struct fbtft_par *par)
+ 	par->fbtftops.reset(par);
+ 
+ 	if (par->gamma.curves[0] == 0) {
+-		mutex_lock(&par->gamma.lock);
++		guard(mutex)(&par->gamma.lock);
+ 		if (par->info->var.yres == 64)
+ 			par->gamma.curves[0] = 0xCF;
+ 		else
+ 			par->gamma.curves[0] = 0x8F;
+-		mutex_unlock(&par->gamma.lock);
+ 	}
+ 
+ 	/* Set Display OFF */
+diff --git a/drivers/staging/fbtft/fbtft-sysfs.c b/drivers/staging/fbtft/fbtft-sysfs.c
+index e45c90a03a903..72d6cf899336e 100644
+--- a/drivers/staging/fbtft/fbtft-sysfs.c
++++ b/drivers/staging/fbtft/fbtft-sysfs.c
+@@ -1,4 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
++#include <linux/cleanup.h>
 +
-+	par->fbtftops.mkdirty(info, start_row, height);
- }
+ #include "fbtft.h"
+ #include "internal.h"
  
- static void fbtft_ops_damage_area(struct fb_info *info, u32 x, u32 y, u32 width, u32 height)
+@@ -95,14 +97,13 @@ sprintf_gamma(struct fbtft_par *par, u32 *curves, char *buf)
+ 	ssize_t len = 0;
+ 	unsigned int i, j;
+ 
+-	mutex_lock(&par->gamma.lock);
++	guard(mutex)(&par->gamma.lock);
+ 	for (i = 0; i < par->gamma.num_curves; i++) {
+ 		for (j = 0; j < par->gamma.num_values; j++)
+ 			len += scnprintf(&buf[len], PAGE_SIZE,
+ 			     "%04x ", curves[i * par->gamma.num_values + j]);
+ 		buf[len - 1] = '\n';
+ 	}
+-	mutex_unlock(&par->gamma.lock);
+ 
+ 	return len;
+ }
+@@ -124,11 +125,10 @@ static ssize_t store_gamma_curve(struct device *device,
+ 	if (ret)
+ 		return ret;
+ 
+-	mutex_lock(&par->gamma.lock);
++	guard(mutex)(&par->gamma.lock);
+ 	memcpy(par->gamma.curves, tmp_curves,
+ 	       par->gamma.num_curves * par->gamma.num_values *
+ 	       sizeof(tmp_curves[0]));
+-	mutex_unlock(&par->gamma.lock);
+ 
+ 	return count;
+ }
 -- 
 2.52.0
 

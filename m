@@ -1,97 +1,169 @@
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C583E2857CD
-	for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 11:55:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAB28238D54;
+	Wed, 28 Jan 2026 12:04:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769601312; cv=none; b=amoh/777xXQZ90EPGUWs8fFWEwOpIVTkTULMicQD5g0xwF0Q7zOe3a7oHjIxrUH0tamGaMwPUPQoap6pxdW/9i8E6Y8lKDfw9Cxr6nkgfWkczmAPXDKN6hyTl91sbM1QJ83JZnO8ywtj3a2wm28DavdbHWOH/B66gkkTpLRqa5w=
+	t=1769601854; cv=none; b=pH9Qse2jD7iz3N/Kn/uGyt2t8WBXU3zEXFiBNHsy8slKU/X/y2WJ4Hv5l3yMgF/7nqWO6TPkjvsJUNPcRq9Pv3IkOa19/DQ7UOJZhiH8iVoBgGxmXV0BFYfyai4lltsTw1HvBPhtQsvCF+iZLFSeCK79m4N1YRM32ktxTVL35wA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769601312; c=relaxed/simple;
-	bh=PXNg2izECdZqLH5eteW2kxT1B8Pnh6OxK9bdrd2/Ewg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pV8gdvWVjtCA2CB0fLtRVGb+07dek7tE6uC2zff+9JLzI/GHuXPd73NzSSmr9U6FF+9n33mod5PtgBuFujQy1aN+jhXwc1BRevDGKY+yWum3QuEqbuFfeEEbdkKoE+ULFTmU3XprLBMMX+pb7zmv3kzTgxGkUAxGi0lk85f0eB0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=EnQs7Ak8; arc=none smtp.client-ip=209.85.221.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1769601854; c=relaxed/simple;
+	bh=ZmWp47hdVxyqv1Ds+2Hq8SoLybTurOLu+L6KbG5zDis=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=uyvQz1nesuLugqVfxcbUArLkuArvjdIEeb6gogshqUwIbFh5XAcSZMfSqhe3w0oBPe3KGRflAkTogF3es5QvNO0pYrJaGbKYIdfxrxjLT4hgQkkJf7F9QhGoV11t/PnMIz/PaOHjU8jWASfUPCn0IYYUEf+GKigQseAFbObYtQE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Hx8cf+jz; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EnQs7Ak8"
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-435a517be33so4187923f8f.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 03:55:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1769601309; x=1770206109; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=NIZARC7cWLedCY7/Et8vUQyK6E+5feyX/hh/mMWrN5g=;
-        b=EnQs7Ak8O4dvsreKmCW0moqzAWEttjnwEBnWPFyD0O/u+DmkQ7wyOd/wRfesFNANme
-         Eiy91Emwk/hoV966NZ1dZuq3HK3ZiqkH3khL+yH/AM1fogj18VgsiKcvpoZWsUugrsds
-         BcY65t19h2z/OmVcQKzEBcQZN6+jZUzB1aMIgI8x8IUVK2i+qmIUF0clTmrmL28urrPR
-         d9bzB2jD3RD069nO+28vs0cNomTXLBicEh4s9Gtp6/hU/vVndxWUchL0qBAkklG4/xIs
-         BTZfnmOARYwKHuL8TMeeGhggGRR1RU8J90D8wczYYF4nfdKSYI3uZ7EBam+AlAS7QkOY
-         RNHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769601309; x=1770206109;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=NIZARC7cWLedCY7/Et8vUQyK6E+5feyX/hh/mMWrN5g=;
-        b=AuGCxVXdxGPG6VRoPwqS7IAxi6yY6eKvz1Gt0AwbYFQp+7vnwbXmWoMXmp7WduqOV9
-         VvdhusoPmcH/l7kunVvksJ2yTyRWYKqJkPX2gCsmSlYLrWf1pcGpWKBztINW0xPY4zkC
-         ce2qjS7jTprqdYmIFwwM7sCSJSBKLfhGVlHb6cQI+yg1+DXRV4egfZAPPxrAxpOajw2N
-         s0wnFGy0NlR6Ey6fKAK18Dy5uwSrOFBOa4nIHfhQvxUorjwD5KBZbQJLz8ml4JG2f7FG
-         2MVN5kkkKiJlzBHFU+6/0//LXzRjcSbvv1+5Mui0U0+MK7K2QepBqRF7P8Hz5TVLK3HZ
-         OxJw==
-X-Forwarded-Encrypted: i=1; AJvYcCVkLu5C9gU3XCwi6QHQJ+x9s4khbq4sdA/5RemnestIumERM0IREpmOaRQ2+J91RuYvi3S7775uLh8l+Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxYk87qu6j7+/4YCtdK3/kPuHtspQQWUsKYc3S5hr7rDZUYaQLO
-	E/BeH/vquw4AFx/lmXiQOep7H4LmllMad9kAsKScnCFeO5HSwEok2hXh0Vn4pL38kcs=
-X-Gm-Gg: AZuq6aKtf14PwAd0TI2aBqYlXHH1vjiPoafEv0cz8ZxfcuV2ibALZxBkQ15SSMyTdxy
-	wk7vrUmiHgxNLmZz1wLTTellk9WmJYmkGgycDRwJWaSI1rQo5+iCBVJGqXrlkPz3bOViyOWSA6K
-	bYGKkhtgj9eukbzNtjPfoShR0W71R9YW4eNRgxi4sexESn0XZrAMitxmug+51ZJffTSh2M/qjgx
-	dyJHtv+8A2deluj15ARSKBr7Bcn5m7lwSDyUQ+xQolZDpwlpgSTFja+ZsfsQopT9Kdax2+PidrN
-	qhojBUtkmC2t7iALl6XT5Apw+i73eBz1UaHhh87zTc+ppslfQdHZED4uHwluFl/Jcybw/nC3DAk
-	d0bslaogN8xuyUgyavTCxFDY7JeedDv5tjK10FCRwJ08lRdS6++x9CtP8Nmh+EC1CPhgRFdze2v
-	qG13cloVoqTXnhfh47FBGVP7fTFiE=
-X-Received: by 2002:a5d:5c84:0:b0:42f:bc44:1908 with SMTP id ffacd0b85a97d-435dd0514f8mr6071296f8f.6.1769601308968;
-        Wed, 28 Jan 2026 03:55:08 -0800 (PST)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435e10e474csm6545107f8f.2.2026.01.28.03.55.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Jan 2026 03:55:08 -0800 (PST)
-Date: Wed, 28 Jan 2026 14:55:05 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Madhumitha Sundar <madhuananda18@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] staging: sm750fb: replace magic number with jiffies
- timeout
-Message-ID: <aXn5GXXHSZtq66d7@stanley.mountain>
-References: <20260127154056.74855-1-madhuananda18@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Hx8cf+jz"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DA89C4CEF1;
+	Wed, 28 Jan 2026 12:04:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769601854;
+	bh=ZmWp47hdVxyqv1Ds+2Hq8SoLybTurOLu+L6KbG5zDis=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=Hx8cf+jzc7ub0hEm2EJD7hjBM5GYjypHZfOvHh9LRFTILWZObQdgV/HK/IWv+uLPy
+	 QzwMaPaZwA+V+WErhedeik+QeYs1j80V+8P+jOhgKApsZ1s79rGFAC6RUq4+D5Ardn
+	 n62+ipYg5+OX6sXbx9BsgWCbDyUkOOSoZW9EPkqcJk4sUK+fsaoJcXefEI/9RvlHNC
+	 eqkqF2D98GiwsjvyxkKugFrsM93/vx/v/+zhBRaGrlGsp/aOZuQGevj0bw7jmsrvBG
+	 cv+blyDHbdlOGVFLw2q2+VMmk/cjQy252+jpZJPmDd65c5tggySUXW4QONEzl5E3Ao
+	 RqgAJXywJWoUw==
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260127154056.74855-1-madhuananda18@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 28 Jan 2026 13:04:02 +0100
+Message-Id: <DG07HZN0PL87.X5MKDCVVYIRE@kernel.org>
+Subject: Re: [PATCH RFC v6 05/26] nova-core: mm: Add support to use PRAMIN
+ windows to write to VRAM
+Cc: "Zhi Wang" <zhiw@nvidia.com>, <linux-kernel@vger.kernel.org>, "Maarten
+ Lankhorst" <maarten.lankhorst@linux.intel.com>, "Maxime Ripard"
+ <mripard@kernel.org>, "Thomas Zimmermann" <tzimmermann@suse.de>, "David
+ Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Jonathan
+ Corbet" <corbet@lwn.net>, "Alex Deucher" <alexander.deucher@amd.com>,
+ "Christian Koenig" <christian.koenig@amd.com>, "Jani Nikula"
+ <jani.nikula@linux.intel.com>, "Joonas Lahtinen"
+ <joonas.lahtinen@linux.intel.com>, "Rodrigo Vivi" <rodrigo.vivi@intel.com>,
+ "Tvrtko Ursulin" <tursulin@ursulin.net>, "Huang Rui" <ray.huang@amd.com>,
+ "Matthew Auld" <matthew.auld@intel.com>, "Matthew Brost"
+ <matthew.brost@intel.com>, "Lucas De Marchi" <lucas.demarchi@intel.com>,
+ "Thomas Hellstrom" <thomas.hellstrom@linux.intel.com>, "Helge Deller"
+ <deller@gmx.de>, "Alice Ryhl" <aliceryhl@google.com>, "Miguel Ojeda"
+ <ojeda@kernel.org>, "Alex Gaynor" <alex.gaynor@gmail.com>, "Boqun Feng"
+ <boqun.feng@gmail.com>, "Gary Guo" <gary@garyguo.net>, "Bjorn Roy Baron"
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Trevor Gross" <tmgross@umich.edu>,
+ "John Hubbard" <jhubbard@nvidia.com>, "Alistair Popple"
+ <apopple@nvidia.com>, "Timur Tabi" <ttabi@nvidia.com>, "Edwin Peer"
+ <epeer@nvidia.com>, "Alexandre Courbot" <acourbot@nvidia.com>, "Andrea
+ Righi" <arighi@nvidia.com>, "Andy Ritger" <aritger@nvidia.com>, "Alexey
+ Ivanov" <alexeyi@nvidia.com>, "Balbir Singh" <balbirs@nvidia.com>, "Philipp
+ Stanner" <phasta@kernel.org>, "Elle Rhumsaa" <elle@weathered-steel.dev>,
+ "Daniel Almeida" <daniel.almeida@collabora.com>,
+ <nouveau@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
+ <rust-for-linux@vger.kernel.org>, <linux-doc@vger.kernel.org>,
+ <amd-gfx@lists.freedesktop.org>, <intel-gfx@lists.freedesktop.org>,
+ <intel-xe@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>
+To: "Joel Fernandes" <joelagnelf@nvidia.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260120204303.3229303-1-joelagnelf@nvidia.com>
+ <20260120204303.3229303-6-joelagnelf@nvidia.com>
+ <20260121100745.2b5a58e5.zhiw@nvidia.com>
+ <e186973c-ce31-405a-8bfa-dc647737a666@nvidia.com>
+ <DS0PR12MB6486717785F6DD14EE1F1C46A397A@DS0PR12MB6486.namprd12.prod.outlook.com>
+In-Reply-To: <DS0PR12MB6486717785F6DD14EE1F1C46A397A@DS0PR12MB6486.namprd12.prod.outlook.com>
 
-On Tue, Jan 27, 2026 at 03:40:56PM +0000, Madhumitha Sundar wrote:
-> The hardware wait loop in hw_sm750_de_wait used a hardcoded loop
-> counter (0x10000000), which depends on CPU speed and is unreliable.
-> 
-> Replace the loop counter with a jiffies-based timeout (1 second)
-> using time_before(). This ensures consistent delays across architectures.
-> 
-> Signed-off-by: Madhumitha Sundar <madhuananda18@gmail.com>
-> ---
+On Fri Jan 23, 2026 at 12:16 AM CET, Joel Fernandes wrote:
+> My plan is to make TLB and PRAMIN use immutable references in their funct=
+ion
+> calls and then implement internal locking. I've already done this for the=
+ GPU
+> buddy functions, so it should be doable, and we'll keep it consistent. As=
+ a
+> result, we will have finer-grain locking on the memory management objects
+> instead of requiring to globally lock a common GpuMm object. I'll plan on
+> doing this for v7.
+>
+> Also, the PTE allocation race you mentioned is already handled by PRAMIN
+> serialization. Since threads must hold the PRAMIN lock to write page tabl=
+e
+> entries, concurrent writers are not possible:
+>
+>   Thread A: acquire PRAMIN lock
+>   Thread A: read PDE (via PRAMIN) -> NULL
+>   Thread A: alloc PT page, write PDE
+>   Thread A: release PRAMIN lock
+>
+>   Thread B: acquire PRAMIN lock
+>   Thread B: read PDE (via PRAMIN) -> sees A's pointer
+>   Thread B: uses existing PT page, no allocation needed
 
-This feels like an AI patch?  AI patches need to be disclosed.
+This won't work unfortunately.
 
-Anyway, we couldn't merge something like this without testing.
+We have to separate allocations and modifications of the page tabe. Or in o=
+ther
+words, we must not allocate new PDEs or PTEs while holding the lock protect=
+ing
+the page table from modifications.
 
-regards,
-dan carpenter
+Once we have VM_BIND in nova-drm, we will have the situation that userspace
+passes jobs to modify the GPUs virtual address space and hence the page tab=
+les.
 
+Such a jobs has mainly three stages.
 
+  (1) The submit stage.
+
+      This is where the job is initialized, dependencies are set up and the
+      driver has to pre-allocate all kinds of structures that are required
+      throughout the subsequent stages of the job.
+
+  (2) The run stage.
+
+      This is the stage where the job is staged for execution and its DMA f=
+ence
+      has been made public (i.e. it is accessible by userspace).
+
+      This is the stage where we are in the DMA fence signalling critical
+      section, hence we can't do any non-atomic allocations, since otherwis=
+e we
+      could deadlock in MMU notifier callbacks for instance.
+
+      This is the stage where the page table is actually modified. Hence, w=
+e
+      can't acquire any locks that might be held elsewhere while doing
+      non-atomic allocations. Also note that this is transitive, e.g. if yo=
+u
+      take lock A and somewhere else a lock B is taked while A is already h=
+eld
+      and we do non-atomic allocations while holding B, then A can't be hel=
+d in
+      the DMA fence signalling critical path either.
+
+      It is also worth noting that this is the stage where we know the exac=
+t
+      operations we have to execute based on the VM_BIND request from users=
+pace.
+
+      For instance, in the submit stage we may only know that userspace wan=
+ts
+      that we map a BO with a certain offset in the GPUs virtual address sp=
+ace
+      at [0x0, 0x1000000]. What we don't know is what exact operations this=
+ does
+      require, i.e. "What do we have to unmap first?", "Are there any
+      overlapping mappings that we have to truncate?", etc.
+
+      So, we have to consider this when we pre-allocate in the submit stage=
+.
+
+  (3) The cleanup stage.
+
+      This is where the job has been signaled and hence left the DMA fence
+      signalling critical section.
+
+      In this stage the job is cleaned up, which includes freeing data that=
+ is
+      not required anymore, such as PTEs and PDEs.

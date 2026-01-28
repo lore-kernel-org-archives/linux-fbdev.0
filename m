@@ -1,107 +1,161 @@
-Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3253933AD9C
-	for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 08:57:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91B2733BBC0
+	for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 09:02:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769590654; cv=none; b=TfBg1M8awLhd97/w+jsMw7K5B3Uq34GOVMxYrH+69mNZzKCUAsd99o9U1AA2dk+zgzUa2wQTh30WusMtVMT2FE+fEyfFftSIqSMOaZDjc1Ap72HmEM37PFGye9Wx3B20e0C64mUo3SoT0TGGYLzMAk/QBq84gil8P2Hnr1I9D7k=
+	t=1769590928; cv=none; b=WztFYXv9S8V35E0LW6WaoWwR3SEukVMZUbvANeD4M6Qa/KOrukVITMfm6kSMpeqMb0f+V54WK0iR3MwVGyjhcndICsp4uSup5Wv9Xu7Gq6mR6qguhpvjLBlX7jwChoA01zTO7NLAKBmf69cmAHJCLnClIwp9yABWHTr0P6ac4eU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769590654; c=relaxed/simple;
-	bh=figeAjqhG1svupWcxk1Grs5RKQrQQRzXLgakP8DZC9I=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NuQbmDcYliEd8Vwh7GB7vIwLq7ve1HJgTC3+hhzr9WYmlgTCGKxqipQDEZazCrLKj8aiwzpvW5jB+4s/XfNwmLmAlCqls6QRRXsFpqkBj4fDSe6qumHK3G2NtVXgLooagd3ynZUqQdsU6B72kzralKUJ/zi5aibfQnaiatpJ11o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bw+y8zuU; arc=none smtp.client-ip=209.85.214.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1769590928; c=relaxed/simple;
+	bh=1GPlGKZgcb1DldoonD0OPHNoXEsNDWUi3TBlJQ2/goc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=a8qqRAhyKKpimGJONt8FWfr0xj9RcGz4WngSajwo2vVFEJ8+o9sJzsRONMyzIHIY0HrtL369PRfE6zH4DxHbj+x24k9RwlScx2/lfkg03XN7pkZWbW3irb5MvvMQWbTM0CwyBRcTiss79jzQ7zYutUy9Lmcmx1dVVClv0PAE6js=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=SV+SE//Y; arc=none smtp.client-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bw+y8zuU"
-Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2a0a95200e8so45128505ad.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 00:57:33 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="SV+SE//Y"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4806fbc6bf3so3962885e9.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 01:02:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769590652; x=1770195452; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=LEOJgPmuwRbV12LBE88Ol+uZDUf/K36dFJv3SsHLtYY=;
-        b=bw+y8zuURMvfHLbiGZyVBqtNkvGcWvva/IQas3oEYmml9GYXFx8Jqz25k9rHcvo/kt
-         uJgxMq++0eJytZ9laRe/CSC5nHvKDqU+b3RKwDrm7gE5pp8KshRZqRhaFQFg7oTBqKcH
-         Q2bY2YZw5bOjsYoAdmNG6qFDjh5dCKaRSGKn0cmmtZBchkDB22wo70FW9w18SC1jYz57
-         pKwTiMctfivRNb1Uj1YWqdvLXc1ipdI2ubiXhGN4Qxw+703P2AJIOtS2TvDiN/Bmk87D
-         QWOa//gQc4JEFXFp8IfqtVK6EPzHv/sPaKeMKPoYW3FiZvjlUOurh+sfYlpxSJ8lGSz/
-         d2yQ==
+        d=suse.com; s=google; t=1769590925; x=1770195725; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=qAOxIVYTEue9E0jsTADeINvfipVSQ2+6/g8YDctDKvU=;
+        b=SV+SE//Y+5F3DksQv4y6lLM9JJhsuUk/LhKy1Z2iWviotqjZvZRuzivoJAUf4WS3pY
+         HXaqPlqKFg2/zrSeftU2o/v6EYfI2efFxfwo8qFEf0oTjNaTXvxBDOdHtI9B4L+8IAxi
+         PYs4KrRfSDTZvynb7RAzB6zzHXMGXPrKYqR9QRrqy1OS3QHDqgZK1i3DyIpSGDVXYjvq
+         eWZmn6QbqnjdQf7mCyU/tMXpXux1KAdLdQ2mtL6KXp0WcaoLrNyitgrCbhSbO3VArfCH
+         YoG9Hk3U8FOsTpoaFA+zTMu8bZDgVTlKx3rAK67wJ58HUos1YqQpRV0FK1Yu7O+iAIRW
+         GZ+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769590652; x=1770195452;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=LEOJgPmuwRbV12LBE88Ol+uZDUf/K36dFJv3SsHLtYY=;
-        b=bYf61BXqUW4YsRea3g/zLxUBE/vd+mHSUMjIkEhMvxJjouNnvbZzXJN5LNO64LeYwY
-         dSMuKB8B5xIXx6+EvbwQFie+zkjJsrkeWOEQzm2aWkG5blRJj4+C2yV8QMa34g3sAD9T
-         k2uuPS8qnX0dhi8SeJvXzz8YZvPelzMP6oin2epkCQpCyx2LUi6zrTys+DAU0/nxQabo
-         rMklNQyy83WYem8NL1RI8Uwf8J1l2YwBJkN97TgYsRtS2o1uW0esJtxMObpSVmpSsKYJ
-         /O/KAUTd4oaOsD4n2Z1xdZuVvsAfyBVj7GFZzuNsLV1OLWv+HVDsPP6TqW87rWjYXOR1
-         pe8w==
-X-Forwarded-Encrypted: i=1; AJvYcCVvGG5GE+CaWc0AfzcDNd7YDJmNWkQjjfHZT3TKRBOpQu2vjlGeEyKGhXyKIggcECql+MYNCHD4qGnrXg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzkGhoIp1dvQHN/I/fnNe2MjM19lB9EjhBm/DSdE2StA9fPTyuR
-	cIlraca36EHl4ogIXHRXj1HmNbJDAW9TPIB5MSE6TYYkY65rhXItRSUXnmUf0H75
-X-Gm-Gg: AZuq6aJ57UuI7zbcejsguOIA8QlFc8anzwUGhMjoY3UY36CIpDVRK/zi6YQ3wTFc+S6
-	Wov0BbPh85AVVfvDU8IQVKh0HmNR2SNVeO0nEcVyrD7gSNLX0xMLzhUtVjw2oFl4RjHVJWbRZAn
-	DJSh9pgMo1lMDWiHEhTY4MOJcofvW+bK3ZrDz7R3gy+myJvFcGTCB2iMGk9ekut1YTHjT930swR
-	aHH3XcyaaQqbIl/b9eq2QcQ+HM07pk/g1WCm8B746DobxcEJAYGn0VsPwu1WDNNlEIhTUHemmlF
-	+cOmxTvt6O/kcgJJ8+L3sYFCpQfQKeW3hGHaziPToAG3d2EzTUd8TSTOPYi78jnGcj7SGizeedl
-	9OANFPtVge7oBaCUPwaWiYa9+Nd9Tt7C6tf3fRBL3Tc5+xDKMC7LSybG4URT8oVGLXJ4sd/M/cZ
-	FoOuebA6v6uPaab4+50kgScD8jVQ==
-X-Received: by 2002:a17:902:ce82:b0:2a8:7814:47ca with SMTP id d9443c01a7336-2a8781448a6mr38415535ad.0.1769590652450;
-        Wed, 28 Jan 2026 00:57:32 -0800 (PST)
-Received: from localhost.localdomain ([58.231.102.222])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a88b4154fcsm16707795ad.36.2026.01.28.00.57.30
+        d=1e100.net; s=20230601; t=1769590925; x=1770195725;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=qAOxIVYTEue9E0jsTADeINvfipVSQ2+6/g8YDctDKvU=;
+        b=GtoLdaOrAZVdgrTeHoFt3FSRowLexFxgLHRtIHo+gkmyrlO6NYNro5wYE89o0rY1e4
+         h/LLy0OzDtH8ft/kZVEWWNkKBDi6JFHV7h1BusET/RvnprVAQXeRIfnqkgsliL1P7z+K
+         jiT9Y7T3IptWlnbCy+YTHuJRmt+QQx6eC8SDdPM4573rf5ZMN1E+2vHjZCS58SyLcMg9
+         /LW3CygWHQPAPJWZ6yCPm6Q3GBcs8HlGCa/cLQO7jnGePrPBZ0lqXbb6E5aVSidju/RN
+         b9DyNTXn12lQv+OclZbD8xJ1HUOm3xwI4lTLTAg4V3sxUvNJzdDkA61GaTUvoIWI8Mg4
+         AuJg==
+X-Forwarded-Encrypted: i=1; AJvYcCV1BTuadlZncffJkk2x/S+bb5soijUS4ydVg8sKqRgRjshSNxmmcd034BEG1MigUz+31M7f0r053sZM9w==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz7DUcycTU/NUOhsRg+BR8br1P79KfQK3iLyjBHCIOFG8MdtzSo
+	f8CAB2xH7oOT9BkRNtIBo917JnjXOqFsBdekOqJfl3CzwpBygZ9OlglzC5H7yP/cO78=
+X-Gm-Gg: AZuq6aK8+B4iXyclhvqz/U0nFu7W062ENFgL5z/o0UxpYIAPj+dnJFPgoeCIFgqwiW6
+	GUXk19WPl69YjTYRVCbRwaMk3BIdYbRR9C1iIKCXsWPk1YdAZ28Zot0ls57snVtYnn12BJGGumf
+	4wYQ4PARi1k4EHz6cl2NQ0MtzUtmTPgUg9wPSv8LtGTHwbhph48DhVnXM4BytwcJmJcH3mzXMAa
+	AgMN6WYQ1mMXNcHNEZMtH5cQ0hBBp4c8D0/dN7oIJOJN0gpPyj1V1lEIWkdz1mGgSb1bU78gVjx
+	yFxOI60g9hG0uKGeE177ipyXcv58SJxz1iJ7FTyBqlkeq14TxzIWSSxjmn902/cmb8Iq5G/Yu37
+	L7k5L0/Y15riK1QThCSHVOW9ix5uJGYI6NEMB/0dDbz025oCLb8HMLjNDn5qVbC6IeC9Tyl3NdZ
+	619mi6EfiTAgFJpA==
+X-Received: by 2002:a05:600c:3154:b0:477:5cc6:7e44 with SMTP id 5b1f17b1804b1-48069c1a7ebmr50821355e9.11.1769590924606;
+        Wed, 28 Jan 2026 01:02:04 -0800 (PST)
+Received: from pathway.suse.cz ([176.114.240.130])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48066bee7d0sm122234435e9.4.2026.01.28.01.02.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Jan 2026 00:57:32 -0800 (PST)
-From: Waffle0823 <csshin9928@gmail.com>
-To: andy@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	Waffle0823 <csshin9928@gmail.com>
-Subject: [PATCH] fbtft: Improve damage_range to mark only changed rows
-Date: Wed, 28 Jan 2026 17:57:20 +0900
-Message-ID: <20260128085720.862399-1-csshin9928@gmail.com>
-X-Mailer: git-send-email 2.52.0
+        Wed, 28 Jan 2026 01:02:04 -0800 (PST)
+Date: Wed, 28 Jan 2026 10:02:01 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-rt-devel@lists.linux.dev,
+	Steven Rostedt <rostedt@goodmis.org>,
+	John Ogness <john.ogness@linutronix.de>,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>, Simona Vetter <simona@ffwll.ch>,
+	Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] printk, vt, fbcon: Remove console_conditional_schedule()
+Message-ID: <aXnQiSBskXo4RDAL@pathway.suse.cz>
+References: <20260126180836.SNCdMW2f@linutronix.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260126180836.SNCdMW2f@linutronix.de>
 
-Instead of marking the entire display as dirty, calculate
-start_row and end_row based on off/len and mark only those rows.
-This improves performance for partial framebuffer updates.
+On Mon 2026-01-26 19:08:36, Sebastian Andrzej Siewior wrote:
+> do_con_write(), fbcon_redraw.*() invoke console_conditional_schedule()
+> which is a conditional scheduling point based on printk's internal
+> variables console_may_schedule. It may only be used if the console lock
+> is acquired for instance via console_lock() or console_trylock().
+> 
+> Prinkt sets the internal variable to 1 (and allows to schedule)
+> if the console lock has been acquired via console_lock(). The trylock
+> does not allow it.
+> 
+> The console_conditional_schedule() invocation in do_con_write() is
+> invoked shortly before console_unlock().
+> The console_conditional_schedule() invocation in fbcon_redraw.*()
+> original from fbcon_scroll() / vt's con_scroll() which originate from a
+> line feed.
+> 
+> In console_unlock() the variable is set to 0 (forbids to schedule) and
+> it tries to schedule while making progress printing. This is brand new
+> compared to when console_conditional_schedule() was added in v2.4.9.11.
+> 
+> In v2.6.38-rc3, console_unlock() (started its existence) iterated over
+> all consoles and flushed them with disabled interrupts. A scheduling
+> attempt here was not possible, it relied that a long print scheduled
+> before console_unlock().
+> 
+> Since commit 8d91f8b15361d ("printk: do cond_resched() between lines
+> while outputting to consoles"), which appeared in v4.5-rc1,
+> console_unlock() attempts to schedule if it was allowed to schedule
+> while during console_lock(). Each record is idealy one line so after
+> every line feed.
+> 
+> This console_conditional_schedule() is also only relevant on
+> PREEMPT_NONE and PREEMPT_VOLUNTARY builds. In other configurations
+> cond_resched() becomes a nop and has no impact.
+> 
+> I'm bringing this all up just proof that it is not required anymore. It
+> becomes a problem on a PREEMPT_RT build with debug code enabled because
+> that might_sleep() in cond_resched() remains and triggers a warnings.
+> This is due to
+> 
+>  legacy_kthread_func-> console_flush_one_record ->  vt_console_print-> lf
+>    -> con_scroll -> fbcon_scroll
+> 
+> and vt_console_print() acquires a spinlock_t which does not allow a
+> voluntary schedule. There is no need to fb_scroll() to schedule since
+> console_flush_one_record() attempts to schedule after each line.
+> !PREEMPT_RT is not affected because the legacy printing thread is only
+> enabled on PREEMPT_RT builds.
+> 
+> Therefore I suggest to remove console_conditional_schedule().
+> 
+> Cc: Simona Vetter <simona@ffwll.ch>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Fixes: 5f53ca3ff83b4 ("printk: Implement legacy printer kthread for PREEMPT_RT")
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-Signed-off-by: Waffle0283 csshin9928@gmail.com
----
- drivers/staging/fbtft/fbtft-core.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Just for record. This change looks OK from printk() POV.
+printk() does console_trylock() and calls console_unlock()
+with preemption disabled anyway, see vprintk_emit().
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 8a5ccc8ae0a1..0fbdfdaaa94d 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -415,8 +415,11 @@ static void fbtft_ops_damage_range(struct fb_info *info, off_t off, size_t len)
- {
- 	struct fbtft_par *par = info->par;
- 
--	/* TODO: only mark changed area update all for now */
--	par->fbtftops.mkdirty(info, -1, 0);
-+	__u32 width = info->var.xres;
-+	__u32 start_row = off / width;
-+	__u32 end_row = (off + len - 1) / width;
-+
-+	par->fbtftops.mkdirty(info, start_row, end_row);
- }
- 
- static void fbtft_ops_damage_area(struct fb_info *info, u32 x, u32 y, u32 width, u32 height)
--- 
-2.52.0
+VT code still synchronizes some operations using console_lock().
+It is possible that some non-printk related operations rely
+on this. But it is hard to say. It might actually be a good
+idea to find it out.
 
+Also I have seen many printk-related softlockups. But they
+were always caused by slow serial consoles. I can't remember
+any in VT code.
+
+Feel free to use:
+
+Acked-by: Petr Mladek <pmladek@suse.com> # from printk() POV
+
+Best Regards,
+Petr

@@ -1,93 +1,226 @@
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0ECD352FB8
-	for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 13:28:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 521C3352FBA;
+	Wed, 28 Jan 2026 13:29:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769606904; cv=none; b=Rm13PkZW+6Dr99HwBnc2FBjpDJDVzIaHzi4jM9jM1Fpr+3GeKMID947ur5WPco6ektOHDwhM6NSaiO9GIegR43VJVbTWnxYVuWHy3Vvi+nS6CL0d5JdQx/NBCOteR0z+51JwM/tlj7BVwipamc/GvMhfoSTvb4G6NiF/zxTrG7A=
+	t=1769607000; cv=none; b=flgEqHumkvRDn+44qHR/YfIkuR4sXDjAPGUjF3QlZh9pexPt+ak5pFIoHchCu7UVimpl1NRKDT3niQ7tTBEZP3iYOnqXCLpR1BfO4WM+8cCbxS1HjyYcvgtb9Uj2PPiYQmWGGrXdkOjm+ca9EfCOBWZLBZ7t0496WDZkHhjNaTA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769606904; c=relaxed/simple;
-	bh=kPcbbevVhJlCEBzXzO406NdwUd7Cj27M4P7lSigLkdY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=S4bFMRPPZKIvpVrRmPzABiFas9IuU3q0dytVnutB/YpXPNP013N6LdgI2f+6NmTywtoOrO5+ClfZx4x+xxtQbQovXtj1rStQQnauerHkQwTO5QupMlGYoPRSNZVlNDmOHG8GTHOsWcB2dZk5SYFU01fZRCnrkAagdcP97Bwle3k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=suaKZwiF; arc=none smtp.client-ip=209.85.218.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1769607000; c=relaxed/simple;
+	bh=I+k9Xi9QUTUDsyy34GyV/4qDOBkFuaxnQNG0REfOBwk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ceKuz4KJBmL6q7gtBi2NAlQibpIFJQgHyMMIYwHVU4njJKboioHGgsiT3OuHyzjx0FoODniYPsue0BKskjgSJPS2QUEWhsltH3OdAiBRJ+4RPJmFuE60JRKMaBpJalUGEczhCxo0zEN3aACzwSP2gLT+pN3kNDlnUQ7v1YdS4Dw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=PEQjXSR3; arc=none smtp.client-ip=212.227.17.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="suaKZwiF"
-Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-b885e8c6700so945081266b.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 05:28:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1769606901; x=1770211701; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZagjdEHQ21hUp48jB8mdfWlYbNhCwoXWZ/IjA+v/NaQ=;
-        b=suaKZwiFHf0cw0sgMRESQy8np3g1fKQvY8zwpnbdI/EEae9fYLP/KRT7cFJLaXrxUZ
-         ud4nd3Xfka05QMe0hLjCYzbyLYB2MjsZAVgrmAibkI1D6nBIi2mWk0S+xy4PqdHxBoIT
-         iOqQTK8QRBu3Uk96pwP0+89+1wjWlaLfI5IKPig5NGhsgSaAjBczWgC4YQZiWq71/FIq
-         Tokf2otuWkLgf97SRU4pB1likx9+XcavqZOscylSVpb/rfLPabW55JGBR9Ur5jWixXu+
-         ll76su1uv0oU4/1vF72IPih0DGehytSbN8ceqUUg1PEn3xUUPAKBaILiM7+n5kLgNy1O
-         NcSA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769606901; x=1770211701;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ZagjdEHQ21hUp48jB8mdfWlYbNhCwoXWZ/IjA+v/NaQ=;
-        b=pdHBSkrrSgSN2EfrFcpVtOzEIKap4T6hAJma7VkwEj78ufYkdl0nMYzZNpJVGFS9KZ
-         bBRxmWCMlNHALCqSUi5P8CrwqEWFAgDu2Zv6eYGBi38NUPnqRwjcwJDegITnFhk23ylL
-         RmdLeztayJxyhqpM6zJiMd/9FkLpvgSVMlxARAEUvoXkNhZxUTornK5aQzg8/zihxnQx
-         7hvCOK8a1HndtYIrmviR7tGtULzt0cU+/1Pk1iIk2st3s9kj1kUFW8Sawg5nW7EUbUn0
-         1lfT3mauaLbWEb1j2u8oMbFFapOZkZQcqM6GQCmwyW9qovHpOQvxJS6MZ1Hx210eSfYs
-         jGZQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUyt+WifHzxNmLEs1gX400/NQ6AfGZdG3D3kwo9D8fVYUhPu5tt6vTgj80z1fec9NmoQv3wF2NEra5VWQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwhnVWmQwfdnhafHvQ31nzOOUL1Ya+Z9ewGt580uBgX67ZRNKud
-	ErD+4FF6XPd2MjdzkS98j6QnUSmUg2McQVqYWn2B1h+xkP2NxvC/qToi2kbmOmGwBHY=
-X-Gm-Gg: AZuq6aJleiy5OdTKuzDOXtQu2jaDJsmslcYq9jjcVNHD6KOclvv5hSwGnPdo9ANz1VD
-	mYqrBgnScR0czj6QWrvROrV0T01vAlF5RulZBSldNXAumv3C27+ByOiR3cVe8nWNjwrpglHjrgl
-	TMpKZmPGMJyZkXP9Zx1Kb3yMa/85eiowwE3ICkWcyDEBhVL4o1f2MkWToPO9omkMlY5VZwMkIC+
-	+gtknA9nXXRx0YloKbFcVGlmr7d4Idt8mafOOTeS8rI9biQd6uRauzR+YV6DbFU4Y5NB73jzbkc
-	SklH25Bbt3KxDNTLyLET/bWCyTtWXOuHvVky8utBeBp8+0/UacwZtWmStEUyg/CbA0fuq63Vnkf
-	zv2NzzJfia9V/REx4pxoN4LlO0LkTGHxTvRg2nGvCWj7RG73Pkw2SRXMG1qH3I6AT/LusV8hL29
-	8Tw9kUPbyXk0ODPQkV
-X-Received: by 2002:a17:907:3e0c:b0:b88:38e9:8f89 with SMTP id a640c23a62f3a-b8daae2b120mr380653366b.0.1769606901119;
-        Wed, 28 Jan 2026 05:28:21 -0800 (PST)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8dbecea68dsm131504166b.0.2026.01.28.05.28.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Jan 2026 05:28:20 -0800 (PST)
-Date: Wed, 28 Jan 2026 16:28:17 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: ChanSoo Shin <csshin9928@gmail.com>
-Cc: andy@kernel.org, gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH] fbtft: Improve damage_range to mark only changed rows
-Message-ID: <aXoO8Yn9JibNVs-b@stanley.mountain>
-References: <20260128130503.868466-1-csshin9928@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="PEQjXSR3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1769606980; x=1770211780; i=deller@gmx.de;
+	bh=zGl6P2hWQuFb/WAZWna46mFr30odDI7nl+47dtIXaVk=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=PEQjXSR3X4SlHT2rkjcj9QNrpqKMkg8zHIm2Am5eYXvyf6BB/F9XXBkua7vZ4h/v
+	 wGOj9uFlmtk9K2dSYCzEaZGqxvei7lWo2US6KAfx2NBJkbC9sg5l7JP/qDY6IJs2M
+	 j8X3ie4hRDQk5RjpdynNUY9OftdcuMFDIi2+1HX+z13iDDEdXW36CKnT1GaAeiWtm
+	 RlDthl3AuXq4CF3u1/58bUsRI74hucWb0Jao3wHLrTF1ATNKE6QSafXeJqx/+C0jJ
+	 tvckTp5cKKPSDlY7rQEcxCB6UVxAZeZXe7ZRVUc7MCrlUP43AKbMQ2ge8vtmPbind
+	 oO2nj/jU73NOcnFrWw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MeU0q-1wLWMR3EtI-00cmmO; Wed, 28
+ Jan 2026 14:29:39 +0100
+Message-ID: <9ca6e1cc-7469-450b-a58f-9279412fb9de@gmx.de>
+Date: Wed, 28 Jan 2026 14:29:37 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260128130503.868466-1-csshin9928@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: au1100fb: Add missing check for clk_enable
+To: Chen Ni <nichen@iscas.ac.cn>, u.kleine-koenig@baylibre.com,
+ elfring@users.sourceforge.net
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20260128091004.2747011-1-nichen@iscas.ac.cn>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20260128091004.2747011-1-nichen@iscas.ac.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:xJD0tPvPQqSC36NKJK9LpAL0zf5WHtzFSAfat0mUlIMtRyetW9D
+ 38/UI8vBkAqFAUA44fpcSf3yUPSmuaFLbBPA+Ol/iqdlQF0Jd3mAJTMwEmLI1lJhk0sPui9
+ gbqG2B1vIf5Hb2uuBsJGBUO4YswGG2o+nYllo30j3Rigs+ZvngyQ5K8b5RDuqViOIKap3tO
+ ewbjQObmMxB2Q86EO3u1g==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:VO1aih/uMx8=;q4mvLN5boc8W+HYoWAomWpv4j9I
+ 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
+ m8140O/URZGlL8i+Oh5W
 
-On Wed, Jan 28, 2026 at 10:05:03PM +0900, ChanSoo Shin wrote:
-> Instead of marking the entire display as dirty, calculate
-> start_row and end_row based on off/len and mark only those rows.
-> This improves performance for partial framebuffer updates.
-> 
-> Signed-off-by: ChanSoo Shin <csshin9928@gmail.com>
+On 1/28/26 10:10, Chen Ni wrote:
+> Add check for the return value of clk_enable() andreturn the error
+> if it fails in order to catch the error.
+
+Why?
+If it really fails, the screen and everything stay blank,
+so it's even worse....
+It seems nobody is actually checking the return value, most likely
+because if it fails, the system will sleep forever anyway.
+Or am I missing something?
+
+For now I reject this patch.
+
+Helge
+
+
+> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
 > ---
-
-This is v3 but it's not marked or described.
-
-Have you tested this patch?  What was the speed up?
-
-regards,
-dan carpenter
+>   drivers/video/fbdev/au1100fb.c | 5 ++++-
+>   1 file changed, 4 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100=
+fb.c
+> index 6251a6b07b3a..5e7a8f018b7b 100644
+> --- a/drivers/video/fbdev/au1100fb.c
+> +++ b/drivers/video/fbdev/au1100fb.c
+> @@ -567,13 +567,16 @@ int au1100fb_drv_suspend(struct platform_device *d=
+ev, pm_message_t state)
+>   int au1100fb_drv_resume(struct platform_device *dev)
+>   {
+>   	struct au1100fb_device *fbdev =3D platform_get_drvdata(dev);
+> +	int  ret;
+>  =20
+>   	if (!fbdev)
+>   		return 0;
+>  =20
+>   	memcpy(fbdev->regs, &fbregs, sizeof(struct au1100fb_regs));
+>  =20
+> -	clk_enable(fbdev->lcdclk);
+> +	ret =3D clk_enable(fbdev->lcdclk);
+> +	if (ret)
+> +		return ret;
+>  =20
+>   	/* Unblank the LCD */
+>   	au1100fb_fb_blank(VESA_NO_BLANKING, &fbdev->info);
 

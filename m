@@ -1,191 +1,107 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f181.google.com (mail-pl1-f181.google.com [209.85.214.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E521E2848A7;
-	Tue, 27 Jan 2026 20:47:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3253933AD9C
+	for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 08:57:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769546853; cv=none; b=YCWjMzhCmFxofYrlfScoEeuY1MvxDDsIAwJmMCiTZkALLnTHegif7R/veDN2vb643Id4YoF9PGmHIm0tHESx7hgvzmI9a7Bbvltj0+BB+I7i+YPmaY+mTf21Gb2yyR0/PqHIMittLvMUHMXn6+NqRcOZwltjrtgqr6vrIHwPTrQ=
+	t=1769590654; cv=none; b=TfBg1M8awLhd97/w+jsMw7K5B3Uq34GOVMxYrH+69mNZzKCUAsd99o9U1AA2dk+zgzUa2wQTh30WusMtVMT2FE+fEyfFftSIqSMOaZDjc1Ap72HmEM37PFGye9Wx3B20e0C64mUo3SoT0TGGYLzMAk/QBq84gil8P2Hnr1I9D7k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769546853; c=relaxed/simple;
-	bh=O+k41p7H4yrKcsA0nrSdTpYVgmJRr4reRDabajyJeCI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=RLgpDdJAl139qhlr6aJLOwxQ8JOAOX9EJsE0uof/dkPTSxZqoIoToW71Y45tD5C2sbUSTLZFwaBw2she4o4mZDkOHSOzc2XnCuDcAt7+AzDElAFT25zvL1EgEICXo9AFlJh3ywGnguhtCT3iKuMMBByfktOfm2wKVviw5b3F8kk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=rO0190xC; arc=none smtp.client-ip=212.227.15.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1769590654; c=relaxed/simple;
+	bh=figeAjqhG1svupWcxk1Grs5RKQrQQRzXLgakP8DZC9I=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NuQbmDcYliEd8Vwh7GB7vIwLq7ve1HJgTC3+hhzr9WYmlgTCGKxqipQDEZazCrLKj8aiwzpvW5jB+4s/XfNwmLmAlCqls6QRRXsFpqkBj4fDSe6qumHK3G2NtVXgLooagd3ynZUqQdsU6B72kzralKUJ/zi5aibfQnaiatpJ11o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bw+y8zuU; arc=none smtp.client-ip=209.85.214.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="rO0190xC"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1769546850; x=1770151650; i=deller@gmx.de;
-	bh=0zwSVBDCJgt0yAfqw5hBAEWxkJxHLlEFcL+4OR0J1Yk=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=rO0190xCNOMt6azoPbrjuPwiriu4H49EyDHAjzRUYTzHxkFPq0tj4P0YXndxNshp
-	 QHLkk0OD2kACzBf7cGZqfJFtIFUqEqp9S/p0YFibSuLXXIBhz21aJWUrWziGDRI8a
-	 BtFwNTfULyBSr2gmXTkdAPuQ+mfdlPRhm0wPG1NL1FV3zJEqDZZ8p+S+6SA98GKKL
-	 yDRwvypP1xwRJSKoM1dPXo7Jh+jogLUT3lQ1kXl1wprQedYCI+RVe75mgjN4RAEhM
-	 766OXoiNl9A7VTon7lwc/QZr22tqeWaZihmXmtlE4Evm7xuOhx0lJ+e9ZrqBLe8Sy
-	 eHHdAnfK4TPzMpJ/Gw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.55] ([109.250.50.214]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MPXhA-1vPTbX3eaI-00Ojd3; Tue, 27
- Jan 2026 21:47:29 +0100
-Message-ID: <bb9e6a16-f718-49c7-bf7d-32eb9a87ecc2@gmx.de>
-Date: Tue, 27 Jan 2026 21:47:25 +0100
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bw+y8zuU"
+Received: by mail-pl1-f181.google.com with SMTP id d9443c01a7336-2a0a95200e8so45128505ad.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 00:57:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1769590652; x=1770195452; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=LEOJgPmuwRbV12LBE88Ol+uZDUf/K36dFJv3SsHLtYY=;
+        b=bw+y8zuURMvfHLbiGZyVBqtNkvGcWvva/IQas3oEYmml9GYXFx8Jqz25k9rHcvo/kt
+         uJgxMq++0eJytZ9laRe/CSC5nHvKDqU+b3RKwDrm7gE5pp8KshRZqRhaFQFg7oTBqKcH
+         Q2bY2YZw5bOjsYoAdmNG6qFDjh5dCKaRSGKn0cmmtZBchkDB22wo70FW9w18SC1jYz57
+         pKwTiMctfivRNb1Uj1YWqdvLXc1ipdI2ubiXhGN4Qxw+703P2AJIOtS2TvDiN/Bmk87D
+         QWOa//gQc4JEFXFp8IfqtVK6EPzHv/sPaKeMKPoYW3FiZvjlUOurh+sfYlpxSJ8lGSz/
+         d2yQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769590652; x=1770195452;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=LEOJgPmuwRbV12LBE88Ol+uZDUf/K36dFJv3SsHLtYY=;
+        b=bYf61BXqUW4YsRea3g/zLxUBE/vd+mHSUMjIkEhMvxJjouNnvbZzXJN5LNO64LeYwY
+         dSMuKB8B5xIXx6+EvbwQFie+zkjJsrkeWOEQzm2aWkG5blRJj4+C2yV8QMa34g3sAD9T
+         k2uuPS8qnX0dhi8SeJvXzz8YZvPelzMP6oin2epkCQpCyx2LUi6zrTys+DAU0/nxQabo
+         rMklNQyy83WYem8NL1RI8Uwf8J1l2YwBJkN97TgYsRtS2o1uW0esJtxMObpSVmpSsKYJ
+         /O/KAUTd4oaOsD4n2Z1xdZuVvsAfyBVj7GFZzuNsLV1OLWv+HVDsPP6TqW87rWjYXOR1
+         pe8w==
+X-Forwarded-Encrypted: i=1; AJvYcCVvGG5GE+CaWc0AfzcDNd7YDJmNWkQjjfHZT3TKRBOpQu2vjlGeEyKGhXyKIggcECql+MYNCHD4qGnrXg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzkGhoIp1dvQHN/I/fnNe2MjM19lB9EjhBm/DSdE2StA9fPTyuR
+	cIlraca36EHl4ogIXHRXj1HmNbJDAW9TPIB5MSE6TYYkY65rhXItRSUXnmUf0H75
+X-Gm-Gg: AZuq6aJ57UuI7zbcejsguOIA8QlFc8anzwUGhMjoY3UY36CIpDVRK/zi6YQ3wTFc+S6
+	Wov0BbPh85AVVfvDU8IQVKh0HmNR2SNVeO0nEcVyrD7gSNLX0xMLzhUtVjw2oFl4RjHVJWbRZAn
+	DJSh9pgMo1lMDWiHEhTY4MOJcofvW+bK3ZrDz7R3gy+myJvFcGTCB2iMGk9ekut1YTHjT930swR
+	aHH3XcyaaQqbIl/b9eq2QcQ+HM07pk/g1WCm8B746DobxcEJAYGn0VsPwu1WDNNlEIhTUHemmlF
+	+cOmxTvt6O/kcgJJ8+L3sYFCpQfQKeW3hGHaziPToAG3d2EzTUd8TSTOPYi78jnGcj7SGizeedl
+	9OANFPtVge7oBaCUPwaWiYa9+Nd9Tt7C6tf3fRBL3Tc5+xDKMC7LSybG4URT8oVGLXJ4sd/M/cZ
+	FoOuebA6v6uPaab4+50kgScD8jVQ==
+X-Received: by 2002:a17:902:ce82:b0:2a8:7814:47ca with SMTP id d9443c01a7336-2a8781448a6mr38415535ad.0.1769590652450;
+        Wed, 28 Jan 2026 00:57:32 -0800 (PST)
+Received: from localhost.localdomain ([58.231.102.222])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a88b4154fcsm16707795ad.36.2026.01.28.00.57.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Jan 2026 00:57:32 -0800 (PST)
+From: Waffle0823 <csshin9928@gmail.com>
+To: andy@kernel.org
+Cc: gregkh@linuxfoundation.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	Waffle0823 <csshin9928@gmail.com>
+Subject: [PATCH] fbtft: Improve damage_range to mark only changed rows
+Date: Wed, 28 Jan 2026 17:57:20 +0900
+Message-ID: <20260128085720.862399-1-csshin9928@gmail.com>
+X-Mailer: git-send-email 2.52.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: fix fb_pad_unaligned_buffer mask
-To: Osama Abdelkader <osama.abdelkader@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Thomas Zimmermann <tzimmermann@suse.de>,
- Lee Jones <lee@kernel.org>, Murad Masimov <m.masimov@mt-integration.ru>,
- Yongzhen Zhang <zhangyongzhen@kylinos.cn>,
- Quanmin Yan <yanquanmin1@huawei.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-References: <20260127193101.12343-1-osama.abdelkader@gmail.com>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20260127193101.12343-1-osama.abdelkader@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:Kvw0SDMRGLtGkNmrMOpy1hOi39dp2dxekxl3Dt/UKEta46/yQ2E
- r4klE3MLP6i16JOD6fZLgH4+cuHuJaYQAiTPqC1rYFiYpwod9JkBPvLnUvfipVlzjViBFv3
- ccw7txOd10DjhdYTlKqlvetAXjUohhlgt036dyvg59gm4RIdfptyFLP88jT1B9ES+V4YcU9
- MSDTVTUqqCtcig27ETw6w==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:XDkRH/0cjzw=;TqAgC5FrIzMHeb/HuR7h6skq1AW
- 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
- YH0ZyQHH+uQ0kuHTdP4d+GHreqUzVA60DEjRGi
+Content-Transfer-Encoding: 8bit
 
-On 1/27/26 20:30, Osama Abdelkader wrote:
-> mask is u8, so it should use 0xff instead of 0xfff
-> Signed-off-by: Osama Abdelkader <osama.abdelkader@gmail.com>
-> ---
->   drivers/video/fbdev/core/fbmem.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+Instead of marking the entire display as dirty, calculate
+start_row and end_row based on off/len and mark only those rows.
+This improves performance for partial framebuffer updates.
 
-applied.
+Signed-off-by: Waffle0283 csshin9928@gmail.com
+---
+ drivers/staging/fbtft/fbtft-core.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Thanks!
-Helge
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 8a5ccc8ae0a1..0fbdfdaaa94d 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -415,8 +415,11 @@ static void fbtft_ops_damage_range(struct fb_info *info, off_t off, size_t len)
+ {
+ 	struct fbtft_par *par = info->par;
+ 
+-	/* TODO: only mark changed area update all for now */
+-	par->fbtftops.mkdirty(info, -1, 0);
++	__u32 width = info->var.xres;
++	__u32 start_row = off / width;
++	__u32 end_row = (off + len - 1) / width;
++
++	par->fbtftops.mkdirty(info, start_row, end_row);
+ }
+ 
+ static void fbtft_ops_damage_area(struct fb_info *info, u32 x, u32 y, u32 width, u32 height)
+-- 
+2.52.0
+

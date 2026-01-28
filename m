@@ -1,107 +1,150 @@
-Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 14E56342519
-	for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 09:22:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A49C91373;
+	Wed, 28 Jan 2026 09:40:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769592146; cv=none; b=ZvSqTuL71eH6sgxdPhufay87IwX0lhF5fvnTblRfk/DnlY63Bkvi0IAn+18sUSMrFa7CaST8E5IT6uIaXZ2Pnnk9Z0CIUU1hKVZllu21UksjZpYC3aqWyHYu1dDjH0p8gXbwxMRaEUUhFDP+C3O3tMelw4UyqlK3U62rWX8j3W0=
+	t=1769593259; cv=none; b=MbMkJeirP+Ml+jhEpuSQ5pmt/CIGGAVf4JjQYLFEGdhAMrOp3wJoLW33qm3Y+esi/CLzg/H9yoG/EKdlmWaKf+M2qB97iNUUmeYDsKn8ieKDIhAOYLu9SBIySXk/8nolVoOGCKvY+L7n21bjQrSdzDSdSsEpELiIFGqCH8GHn3I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769592146; c=relaxed/simple;
-	bh=J4xPd1IfrfMwRUhA35VU8gwe3m4oudk3ftkWf8tejlM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kXo5YSF9Lc67hbB17i3vOUn7OVdAoV7SKIOU+brIQPEry1xO8oJuZ/ZjyQO1v5eOZ1P3fxbz28ABIwuI5Whba41xFh0cFSEty+EErur2F9vsnBg4HX/9F/P4Tr7hthhLcqee7EmQnWrNvcB6kRs3ZVnRqHtXE27GDjEs9qFqMk0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dI0/K6Rp; arc=none smtp.client-ip=209.85.210.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1769593259; c=relaxed/simple;
+	bh=g42g5JV7O2Xi9dFUIUjtZTNqukZI/pMLYMGGh5U10WU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ITTM+dmSjdF6i3PUZi7n+nTuopBpWHbsW5mXRqHSf/80oJhNt/nUYJM814EBpbvN0DWkrSGc4U8P2yWzu2Dk5nFj+b7L6/oGpirqPXK7AWzAF+G3EG1e0liB4sAHZF9Mqoa4pWlq2epeK5hh3qJQ8ixTfcnT4jh+8ogFxKcVhmY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=mn/e5kAr; arc=none smtp.client-ip=212.227.15.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dI0/K6Rp"
-Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-823081bb15fso3715749b3a.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 01:22:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769592143; x=1770196943; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=/20MeRTWa/ulLtC3Qbnsogn/fAwzsjqDT77al9NCJDw=;
-        b=dI0/K6RpByOAV1e56krtt8Sk6EuAq6ppgtCIG6myrlow7Xykqr4bg3BmHdooHS2mMv
-         ErkznYdcz0y30zVNRB8KOTkhctPCz5KRWWMF+FExU++jlSNt2mb43tEmtsbQ6AKzNCnN
-         jDPyBWZVNaO4Mkm2pgLiAkTRDRQUx2040VgePn3p2SgTIXwyyffNrfxkAIYgH5PAu1Dg
-         7YtzVv/oNuQaSooqX2Q6edE26Y+7ZliCsYXppqRMcK4ymtlgkOAFBU7W1Mf3Cz+AxmeS
-         bXDrwXP1AvFEQcnbdryROnIkvecF1izGh5vGvdNgiqifjJS1xy+/bsBxar8XWlUDlULN
-         QNng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769592143; x=1770196943;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=/20MeRTWa/ulLtC3Qbnsogn/fAwzsjqDT77al9NCJDw=;
-        b=Xwf/LyrlDgHAuOz6gg+qUYOZbdHbqCX8dq5o9J2bNyifNlBKnO+lnHPhY1m9UJWmOF
-         il2LmZYAv9FgyZtCQsj5+eBQcnz+goTD5c9HQwFXjG9kOssWMRGCOUm1ITfrvtPMwnzL
-         PbhgXzz/TjJ0EPWfgQ7//C5VXCYIoSYOLZzzitwKmOZ0JQQMYL2RBR+roiBPED5yJQCJ
-         uYvEdr0MOUxgGy6txX24Y7zVCAeCxqpcIK315s7EbY5ZMmXSQs558D3wi6xAaYZ6XorO
-         wACfyWIacYCwPjd9Az5wNHo/xJed0e45dsKPt/HBZXyZu+QcpI87Gg1AhN9vU3ywJhrs
-         mPyw==
-X-Forwarded-Encrypted: i=1; AJvYcCWfoPd/FxSZ8uvNa6BTZOKIezp0abDMQGSO362nhGWDwwUpAOHp5O14ozAh4+vc6Uzq8nDWu2bosqA/oA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yydkb/sA8GSYlBCWR7prI/nBhAHB3jUezgY4TJntwhxS5zuapnR
-	IFL7yHPbXrIHarG7egzcQvpa7/eA15aVvSdwGtt7/m2iPIqXd/e/H6zC
-X-Gm-Gg: AZuq6aIZzhyk2g/65aOdjayPJ4PSijfoL4wFEtGzUQL/vgtP5Nm28YGHRNWhMTKfEgU
-	UBIBMRzoiyEUeJEVG4ROObln5Bqejo2vnaKUdgsWHpCbqx+lewnPvgG4Fa6jqXvLcaB/5/PuoPO
-	dGAHPIO7TKPd6aZ7by+wmlsLZn8BK9RtH20cVMFEub0uoGplHOigOPIAar5o3oAav2eVhcBVLWP
-	nbelwUjUvYlPMYd1qQNhWGsIawMkOUKZxtitVU3E1J8OK2DL5eMV+8WxCVE3MzY2sFMqo0PiPzP
-	EBFehiX2nj5imoJ2fmU8jdWcV3O2n65svpWVxAKfz8XkexlNv7x88x39XTAt7ysk9s0jA4SMWEw
-	B1sGmUy1ZCqFa4qkERlKY1x4w+R4B+YPoWaMAhl9+0VQzJa+6YkGKU22/G6Wu9NlsPvK2lfabaU
-	hPz8nMUrKrvobdGxkGJ1E1OsRz0g==
-X-Received: by 2002:a05:6a21:6b0d:b0:364:13ab:d4c5 with SMTP id adf61e73a8af0-38ec629f950mr4457135637.26.1769592143279;
-        Wed, 28 Jan 2026 01:22:23 -0800 (PST)
-Received: from localhost.localdomain ([58.231.102.222])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c642b0b4c07sm1758138a12.36.2026.01.28.01.22.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Jan 2026 01:22:22 -0800 (PST)
-From: Waffle0823 <csshin9928@gmail.com>
-To: andy@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	Waffle0823 <csshin9928@gmail.com>
-Subject: [PATCH] fbtft: Improve damage_range to mark only changed rows
-Date: Wed, 28 Jan 2026 18:22:10 +0900
-Message-ID: <20260128092210.864021-1-csshin9928@gmail.com>
-X-Mailer: git-send-email 2.52.0
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="mn/e5kAr"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1769593246; x=1770198046; i=markus.elfring@web.de;
+	bh=LPgjr6YUFZjgmlNth8QyleuTmFci4x/vrSZM+Fe+8Jk=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=mn/e5kArmI4GXr8gNFCJPkN0xxFOI62jpKFiPiRj08PkCrQLUUO4WmV8Owg/EvL/
+	 uvdA1T4JoSY05w7CNBtVcT09Qmpxj/qKWUBG9gNHr4u7Fofot6oJR/FG3Xoqudu3F
+	 6Ibs4XmMFrBxDve/3JzSYQcExE3ucLFoL5ug+qlPY0kQVjUBBvJnB4m11h05OGeWt
+	 sIgnVGUTQx9xSX0CLdHnnQtvGoXjb273IMmWYna8gDNh7C/nTa1RxdfYrzhYi7b2/
+	 gg/em2mkklGB8g+mp+jgY7Nmoog0ovnsAHlNc5l25hFZ2jqP6pAD8jG42C2mhrcdL
+	 95zqvMJ6njgsj+hsmw==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.29] ([94.31.69.179]) by smtp.web.de (mrweb005
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 1M5Qq9-1vlrNz2g5t-001Ozh; Wed, 28
+ Jan 2026 10:40:46 +0100
+Message-ID: <e46c9f31-6991-454b-aedd-10c10fc482a0@web.de>
+Date: Wed, 28 Jan 2026 10:40:33 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: au1100fb: Add missing check for clk_enable
+To: Chen Ni <nichen@iscas.ac.cn>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <20260128091004.2747011-1-nichen@iscas.ac.cn>
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <20260128091004.2747011-1-nichen@iscas.ac.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:B0yCgdL7p5TiiwLHl1tkOIGguhHiagnVWEWkL1TRdp7Rv/J/1gq
+ tvFas3Zb4wvQOXZxhJ4LdotGLz0xbkRMMxKhVsLScFTbfePXvWEppu577z1XZ9WuI0RCHeS
+ uxEcOGukubmcMrES9Rym7LtHDNz4wMD3MxcDJ8s8aMUwOl8qnEMTpmvBDRLPV/qNuxL6Dv9
+ +KjCAT7bOOa5CCuwdWDhA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:0Za+7XWlckc=;KFn78kZOO5DVedNI9GCk2BDDP0J
+ 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
 
-Instead of marking the entire display as dirty, calculate
-start_row and end_row based on off/len and mark only those rows.
-This improves performance for partial framebuffer updates.
+> Add check for the return value of clk_enable() andreturn the error
 
-Signed-off-by: Waffle0823 <csshin9928@gmail.com>
----
- drivers/staging/fbtft/fbtft-core.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+                                                 and return?
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 8a5ccc8ae0a1..0fbdfdaaa94d 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -415,8 +415,11 @@ static void fbtft_ops_damage_range(struct fb_info *info, off_t off, size_t len)
- {
- 	struct fbtft_par *par = info->par;
- 
--	/* TODO: only mark changed area update all for now */
--	par->fbtftops.mkdirty(info, -1, 0);
-+	__u32 width = info->var.xres;
-+	__u32 start_row = off / width;
-+	__u32 end_row = (off + len - 1) / width;
-+
-+	par->fbtftops.mkdirty(info, start_row, end_row);
- }
- 
- static void fbtft_ops_damage_area(struct fb_info *info, u32 x, u32 y, u32 width, u32 height)
--- 
-2.52.0
 
+> if it fails in order to catch the error.
+
+How do you think about to add any tags (like =E2=80=9CFixes=E2=80=9D and =
+=E2=80=9CCc=E2=80=9D) accordingly?
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Do=
+cumentation/process/submitting-patches.rst?h=3Dv6.19-rc7#n145
+
+Regards,
+Markus

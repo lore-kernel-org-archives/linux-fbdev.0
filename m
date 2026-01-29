@@ -1,114 +1,118 @@
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6641378D8C
-	for <linux-fbdev@vger.kernel.org>; Thu, 29 Jan 2026 06:29:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3069637A48B
+	for <linux-fbdev@vger.kernel.org>; Thu, 29 Jan 2026 07:14:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769668175; cv=none; b=ows/OdPqzIqjRbQ+zag+icuVow3Rlezfkr2JFqKXRBqq3+zXZt9nDsX/HlUmH1Y5Cs0ktgw7uMnmkrI7lFi6GcHv31goW9DEIoRxrl5rh9Nc5d3RqA/xMpES0T3C/iJCNzMYlxxCOfITpr4Dtxp4UTbg8B2lCJafdVkLY1yWpMA=
+	t=1769670844; cv=none; b=qGQ8ywEEg1VR5IwQqHj0tVONgaqj/GCLi7Iwhhg8l3M4A5AFloO2AoBMJRQCmusW6Yx0vLsF3puCDgb2EKkBzEXOmC9IwCdhSeIMpYFmnRZR1jvhjbw4TGJBiQBst58nq0f0nYPkQYBu0v2BG5T2Ozre1tsulghfHcluCFTBEXw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769668175; c=relaxed/simple;
-	bh=N9h6vwaKVIUjJ2pkG8X7lhazeTPFYuCM0T9JxT0q6d0=;
+	s=arc-20240116; t=1769670844; c=relaxed/simple;
+	bh=L+F5CpBXR6il9Er3qZ+S7/cbqloU+3ySb0pfp/IqRj4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ApQgVKbG8oGCou4hA1NoLLAizm5AayiMJva5ttO7vfqWIShzwrIA9L25oe0kP83fcSsJpz0gaEWgoj0tFUiiyayd9MeDfK340KLyqqUMCtdTLfXYjD3TPB6l/ocCp8s5G6o7/f8iYYO6xKNdkl8RIHYHunEWeXqGeLOBzHLV+fs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=AD2aRfWt; arc=none smtp.client-ip=209.85.128.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=QfIMRWUijCR2KvyOE7gihSxSdknThJTHW9VDNn4HhbxhuOCpjxhVcy3nWOXVWBQrHgfXUZmYXgxGgIJGdLFXd+0eKECZEkahsgH40Ix1fdpgUK/sFczUz7kzcES8ttmWI3hL9aIuXXQ/5MSj09880BVTJ5oLuYmwfmXcqzoV8pQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=RwVxlhPO; arc=none smtp.client-ip=209.85.221.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="AD2aRfWt"
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-48039fdc8aeso3171175e9.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 22:29:32 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="RwVxlhPO"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-4358fb60802so345373f8f.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 23:14:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1769668170; x=1770272970; darn=vger.kernel.org;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1769670840; x=1770275640; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=puA+CnwxAlMqbOnhYN3pZRQlGRvX1b7vDRdIRgp2KfA=;
-        b=AD2aRfWtWEUSaoVLA/u+1Q+vBaFWQ6Py8djy2dCwi9jvLHZiT26aX5Xqoz5Hq8VhTL
-         T99BQTs0ZgJPvHbDz5Coc65Jxl4M3T+sRJuFynjtR6czV7Ivrtwb6iiHzYAYpN3SIo56
-         zaxaUZGLloA9fLFHU21VF0UWT2sQBxOVgxsJvkM8rbO2lHIzfGptPqXQhhzyjlP/fbhr
-         34SDWucVJ37eDhAGq7h+0pg2dBwZF5yn5eyrRsB4P69ji7y27rAzsO+QQoNyDjW4bHRU
-         SubGfR1K4nfjNyCDFB0DFpoRTuiEs8I7pyye41WfTR0odZ4kAw40gjtnTXXyERKc3rhI
-         a5Pw==
+        bh=L+F5CpBXR6il9Er3qZ+S7/cbqloU+3ySb0pfp/IqRj4=;
+        b=RwVxlhPOD8RGHGzWuq8vP3lSjH+Y9+XvK+NIK/opSM5h8k2tInN+OrO0AKWriJq7Q5
+         ddWado+f16CuZh8gl7+vGJcjM9UFWk/WO+SdUwwwcpcZ8zzDJ6CKWM/bGxzUeXNWXWoO
+         fX6NwMeVHEiqr7o8EaQ7o+Em6KA4MhRjELVv/6LdBUzXZ1uEkBpYgt/u8o5mUSILfmn+
+         YlsH9aGy2Y4rctuqiow/3Qn1pm01qq/sSFx0aYpkY8O8uF8tA9pFirS40RRQcBrQ7IK8
+         8uSxl7LvW6TEDSYXoW70wnaQwlQ6KkngAyAXOgLOLrDCFA8c+Ep4NpsMNTo/bxTclBlZ
+         ggJA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769668170; x=1770272970;
+        d=1e100.net; s=20230601; t=1769670840; x=1770275640;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=puA+CnwxAlMqbOnhYN3pZRQlGRvX1b7vDRdIRgp2KfA=;
-        b=YuvBt7MMOn7umuflGnsIDOKYMoOOwqZnHemdosODJtCwa/cZXZ360LE7mjwPWbUd8d
-         sw/P+uLOrSycSLL2A9MbzVnFLcdfU0FaemHHeFdjUAb1idmthKll2+ALa7AbR2YnuBi5
-         Zrz/qHRFqKxgn3NUhFTjDMr76y+QE4LaIC8lf+Ng2B1PCf/U2gFSIS6HUvfG4NItPwWC
-         KBCKoouNHEVUsiWxhrwJzVZWamu/9OFmBGOCR33ejEclq4UJsZ34VIXW8EDx/ha3f2h9
-         Rt5/+Xc4CNWHw3f9Wh5B2hGrjLayxp0dDhmx5JV2XpRrIXpU4ZGsARm6FkhLh2J7X5Im
-         ENFg==
-X-Forwarded-Encrypted: i=1; AJvYcCVl53/sNUHvTC/t/1MQ4DCx+smUHPV8HDexd6D/GkrOfGPVrWCL6bGFwEAFCi8JtQHRXe4B3UtwC5+lBg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzLkaB6oayNRWwUSUuKZodeRWQKBIIfZ+6rTeJcPa/R6J9JvQ3f
-	eTclgEqTdnkBxShYCnSYKcU0LBFi4ky1Y6PFHr1wjxIfkas9puUOmrrfqdH5m2ChKR4=
-X-Gm-Gg: AZuq6aJQoFmN70jbt7gdDN3FF5eDBPI/ws13PqulgKlJjgeU//KDkpIB/y0oEMYYIXu
-	V+DDfnT66SsE5qBdsKPTmuFXMOzxZnMkzsnM2mIOsXD2YGzteRM9isstVSdAAGn9QUwXRibObcB
-	zk1MOcuKr4fv+2/17/XVUT5a58TgAGmk0X2Oll5fFvfYMEdnx22BrXQODSJ9nP2zH1j1+EdwfU/
-	2WrMwOcLdAGJykyX7WrIup4iPGKq2ENF3T5RA0taUaILcyW7EeXdge2ebemypAalnCiY1Q6ouMp
-	Zewr3w5SCFYmx6APjJzftHdACtP+E+pZ1mmWu+0BcOQC+B5b68nCeC/XM5HXocgwr++J2TjJfSL
-	DIz0RlGN8//UzDO7EH1LGnLbzZkYGVP/rjeUNyDZpBzBIojOcOmD6vUjTUZ0OKgIrGOKRkTghxb
-	HgFW7H0EF4XWf7bdiQ
-X-Received: by 2002:a05:600c:468f:b0:477:a9e:859a with SMTP id 5b1f17b1804b1-48069c6948fmr105945805e9.22.1769668170238;
-        Wed, 28 Jan 2026 22:29:30 -0800 (PST)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4806cddffc0sm130968845e9.5.2026.01.28.22.29.29
+        bh=L+F5CpBXR6il9Er3qZ+S7/cbqloU+3ySb0pfp/IqRj4=;
+        b=f/8W4TmNdCf4r8tU+Tnstq230IXOfItPeTRvHQ+eAG84ljZm/sIhAt1OB19Q3uM73U
+         Ydjg9FNPawGLDbmnv4gBnFvtnOnFJXmoqISbBgJ8yfg+S3IIsC9DThtswaJOR2S4mbBH
+         ExyHHnSxaPnOHmiPYForfwonNbTvyvwwmUGwp0sx8yByZPRUVLQh9IDx/pe0HwdL+tWQ
+         EHTArFgY0Rlu58sF1ObwM1ibShL8USfVWeWenNpP/aj7CjKsKM+3kc7dej7GNzJF5bPx
+         39Tp3p0SVcFS0az25e4RowLP4cCv4wSAJnm2nXdabz8Td0TmievgroMgDJVofXbNIav2
+         r+uw==
+X-Forwarded-Encrypted: i=1; AJvYcCVss/PGVe0saSKP2TRfsprRgm4VGk8Y4M0u9gssDModZSwUI9AISwagaPYLd8P8UKE/qkFtk2MnZjG8GQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzg0LcmDBIa+5+CF+NUwai9n0BMspsuww9v0qbSg1d1reAsmqPN
+	BPTrGLwGnyWWcVufWvVvWRnHpHdpaWS2cX6SDacuvlLq/5E3KZvJVqfcTeCeoZSHaNM=
+X-Gm-Gg: AZuq6aJR5aucMe4eq3Hw0c1kgt+9TXOrI1U1ttbSBMJU2R9x5MZ62ZuKEJ+PMej7uiJ
+	WSngvzB+25+LRYreS405Nst+uTPRaqEQ91ZUfNLnHXvWFQlXoqRHxgiX+0/sceHbT5qs/lKOlET
+	vl9eAprfTcIv4c0TOB5Ra34FFEXeFu5l/WXAJ7CwHBJfDFjgeO0J9e0PjxIua3ZEwoF82TVDjKw
+	y9c86+35dFH6vsJeyaiIakR9/INqMBkt50t3+vEB79LcHKBn8jd7PJbHj2PKhk7xhE2b5S+ijjB
+	DgrTez3bsXCSb4KW49u63npjsfxOt2RpKGIHtSucT1Oc2YFjomOQp4ljkq2bInOJ9tW2k6trayI
+	ATVBSrM0dbWznhgPsJ48VD7IVymw3lPBuwBvDHijycmdGWh21uQPEka6WQ5pKqp3U7hhWWIph4v
+	WGCKP7GRZYnpO60CVE
+X-Received: by 2002:a05:6000:402a:b0:435:932e:f924 with SMTP id ffacd0b85a97d-435ea0645cemr2617818f8f.2.1769670840219;
+        Wed, 28 Jan 2026 23:14:00 -0800 (PST)
+Received: from localhost ([2a02:8071:b783:6940:1d24:d58d:2b65:c291])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-435e10edfccsm11615181f8f.17.2026.01.28.23.13.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Jan 2026 22:29:29 -0800 (PST)
-Date: Thu, 29 Jan 2026 09:29:26 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: ChanSoo Shin <csshin9928@gmail.com>, andy@kernel.org
-Cc: gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
-Subject: Re: [PATCH v5] fbtft: limit dirty rows based on damage range
-Message-ID: <aXr-RhUXwIvMHYZI@stanley.mountain>
-References: <20260128203938.962414-1-csshin9928@gmail.com>
+        Wed, 28 Jan 2026 23:13:59 -0800 (PST)
+Date: Thu, 29 Jan 2026 08:13:58 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Chen Ni <nichen@iscas.ac.cn>
+Cc: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	elfring@users.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] fbdev: au1100fb: Check return value of clk_enable()
+ in .resume()
+Message-ID: <u7a7owvizacghl3kpk5zxrf6iurmvvvjnjnzqa43xgafxcmb7x@jsihky4phvko>
+References: <zytpnyodschvn4mmpllxp62yg3o77hjl7l5nyckoxyuvucjyaj@xsxbybnyzd44>
+ <20260129040714.2772522-1-nichen@iscas.ac.cn>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="gr4u2xptyrvtpzze"
 Content-Disposition: inline
-In-Reply-To: <20260128203938.962414-1-csshin9928@gmail.com>
-
-On Thu, Jan 29, 2026 at 05:39:38AM +0900, ChanSoo Shin wrote:
-> Instead of marking the entire display as dirty, calculate the start
-> and end rows based on the damage offset and length and only mark the
-> affected rows dirty. This reduces unnecessary full framebuffer updates
-> for partial writes.
-> 
-> Signed-off-by: ChanSoo Shin <csshin9928@gmail.com>
-> ---
-
-TL/DR:  I suck as a reviewer so I would be nervous to apply this
-without testing.  Andy is an expert here and we trust him so if he's
-okay with it then great.  Or if some other expert could sign off, but
-I don't know enough to sign off myself.
+In-Reply-To: <20260129040714.2772522-1-nichen@iscas.ac.cn>
 
 
-The problem for me is how do I review something like this?  Staging
-is a grab bag of different modules and I'm not an expert in any of
-the subsystems.  Normally, it's easy to review staging patches
-because they are clean up work which does change how the code works
-so I just look for unintentional side effects.
+--gr4u2xptyrvtpzze
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v2] fbdev: au1100fb: Check return value of clk_enable()
+ in .resume()
+MIME-Version: 1.0
 
-It's trickier to review a patch like this which changes runtime.  If
-it were fixing a bug, then I could verify the bug is real and say
-well, "Maybe the fix is wrong, but we were going to corrupt memory
-anyway, so the worst case is that it is as bad as before.  It can't
-make the problem worse."
+On Thu, Jan 29, 2026 at 12:07:14PM +0800, Chen Ni wrote:
+> Check the return value of clk_enable() in au1100fb_drv_resume() and
+> return the error on failure.
+> This ensures the system is aware of the resume failure and can track
+> its state accurately.
+>=20
+> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
 
-This is your first kernel patch.  You don't work for a company that
-makes the hardware.  You said earlier in a private email that this
-hasn't been tested.
+Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@baylibre.com>
 
-The patch looks reasonable to me, but it also looks simple.  If it
-were that easy why didn't the original author do it?
+Thanks
+Uwe
 
-regards,
-dan carpenter
+--gr4u2xptyrvtpzze
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAml7CLMACgkQj4D7WH0S
+/k5VfwgAgl6ASoju2yK6n3drvTVNDpTdikzxleB+4wdtfFDsC3uG7oWJxnKy7uh/
+7BkY+1OVaBrHr+epWZWjbuKWYv5zfsdlhNRDdk/Rp63pWOfONNpi8IhFZTvrpoq8
+SjLKyuj2RaYAxZ5kzODKlqvrzT/gVHcqesU1vBoBbhq+peUqCbEvpHKSYEg6Kccv
+Ni98EAvyupPogf4+HMdRUH2/qDkZbaLZsAQdwEJyNPwCfJ+LeyBWCqK4y1Xn10b3
+WjCBJfPXice0NhsTFWg4ptCxH1xfPbBeFvWtPQ1YrnnvGvlvu07emABAqfyl197X
+O0dXbeth4EtZiRBR0ggjPGbmXCpa4Q==
+=eHUM
+-----END PGP SIGNATURE-----
+
+--gr4u2xptyrvtpzze--

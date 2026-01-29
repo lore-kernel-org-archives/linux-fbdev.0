@@ -1,81 +1,41 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.smtpout.orange.fr (smtp-79.smtpout.orange.fr [80.12.242.79])
+	(using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3BEBB37D136
-	for <linux-fbdev@vger.kernel.org>; Thu, 29 Jan 2026 08:36:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B89D537BE9A
+	for <linux-fbdev@vger.kernel.org>; Thu, 29 Jan 2026 09:19:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.79
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769675785; cv=none; b=s7TNNIPLvm8F1iZczIKlYlnGfVSpv/tD4/BkPieBRGjU6B358xgZzG5Kb2w19DmQKCkxHqbI4zvNKX54b9l/TwzZ2QxBfkwRBuipzokIPpS5T9SlEULB3iAV4s0YzimFc+cSB5acZeqUwaX2DlQdsYca0j9IEZ9AfAVB7ZhOyL4=
+	t=1769678368; cv=none; b=dw7BKlUJTx9uzGUVDtHe4BWVDvzax10hd+kC97hMZ8GcbKSWoXMcX3aih+35R/tvpkGHfWh1PK1k/4LOP+hY3HLyKhG5lhV6RKYkoAyXlVwRsZ3LJANFHBfN56QwhcasxgDyR9gwkzPCBmbLiu5saMnnelCCbnKzikpnCeA+7qQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769675785; c=relaxed/simple;
-	bh=hjS4wGqHJxTE/IUU65IzABH7Wj1y99FvGUsSSQMBrFM=;
+	s=arc-20240116; t=1769678368; c=relaxed/simple;
+	bh=PcMmVx4vE1I280LP4EFKaqGr5PyhcnobQHkFr/t1ttE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LZXFysLtu22RHyI6Ef31oHNfaPRQ4n8sNfoHUT3yMQ8kQzphNuDJNuEIruSl56bl5Xj8vTeLSk+997r5Q3vmUeKRJMLzP5jyr+sFp11xZ7ln5VK3DM8ZV36cbDB8vIxDYWfC7LVSyZK8dMEwovtsdPvQytlxkeIGQM2eDgaMqFY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CKBj7h7/; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=zqMvb+Z7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Tb6BMQk9; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=49pcOwHJ; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=FAA54ZAO6+o/EKqyN0b6wpTm/juWHSdMWyBGq5W/jx9v17XIUHjAopQzm2Zy/qlTypwrkK6hn4K9WcUc3NkJF1QbP/TNQAyJPn18vpWn2OOLalne/7lkeikjXws9De49Zkl8VpYFa8Bj1yXMXEsMbLdDdFbUBd+Yyg/utzX987o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=orange.fr; spf=pass smtp.mailfrom=orange.fr; dkim=pass (2048-bit key) header.d=orange.fr header.i=@orange.fr header.b=QyJd1PQL; arc=none smtp.client-ip=80.12.242.79
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=orange.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=orange.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CKBj7h7/";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="zqMvb+Z7";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Tb6BMQk9";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="49pcOwHJ"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id D98355BCDC;
-	Thu, 29 Jan 2026 08:36:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1769675768; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WQAc5T7zApr4eCsZOkLI7RX6tGsSY1oM0/JdDUvrtdQ=;
-	b=CKBj7h7/hDPTUCxJGlPCl2+C5MyeZAUssqOt+zDUjH9WqToSjetMNtm+uPYKQGYeA1eMpX
-	S416khMDeh3e8LDivYqH+pVpCJ/m6inub3gPXAgzHnh61ChpyVuzKnJQLt1SGwrsstKqiW
-	nObP2GzSxY/FinviN1if6N59uGFLIXk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1769675768;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WQAc5T7zApr4eCsZOkLI7RX6tGsSY1oM0/JdDUvrtdQ=;
-	b=zqMvb+Z7p05Zy9EdbQV1yftYyrDt/VeVZ/bn6kdPR/VfbkRSZme0oRgR/Ok14JAEy7Wnxp
-	grI5wzf4fqCqoyCA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Tb6BMQk9;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=49pcOwHJ
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1769675767; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WQAc5T7zApr4eCsZOkLI7RX6tGsSY1oM0/JdDUvrtdQ=;
-	b=Tb6BMQk9rD6tUH0WSy5kEIr6e0tquG5xkFxSkBmWDgSeoni+DJZ1PylNkIec8eGf+b8Hvx
-	Y8ln+Il6EX4bI8j4WbdPZKlexh454D4DI8I275XwhAq0STIR8mGpRCfwRzwPJsBQyT3fyM
-	CVSbEYtVprqPQRye9qC2dSlD1GkEQmI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1769675767;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WQAc5T7zApr4eCsZOkLI7RX6tGsSY1oM0/JdDUvrtdQ=;
-	b=49pcOwHJeGqVt6cd2huJXtsU1P4b96MZeA1gcuQut66+Re8AkX0nU8oYN3OR3PcrgpZoxG
-	gcjGI9Ym78x8xuAw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 84E093EA61;
-	Thu, 29 Jan 2026 08:36:07 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id G83rHvcbe2nkaQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 29 Jan 2026 08:36:07 +0000
-Message-ID: <bfc6a338-de9e-404e-839f-245ff21b2968@suse.de>
-Date: Thu, 29 Jan 2026 09:36:06 +0100
+	dkim=pass (2048-bit key) header.d=orange.fr header.i=@orange.fr header.b="QyJd1PQL"
+Received: from [IPV6:2a01:cb1c:8326:c500:bfc0:b7c5:d0ed:4f38]
+ ([IPv6:2a01:cb1c:8326:c500:bfc0:b7c5:d0ed:4f38])
+	by smtp.orange.fr with ESMTPA
+	id lOAIvMmdHENaOlOAIvZhsQ; Thu, 29 Jan 2026 10:18:16 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=orange.fr;
+	s=t20230301; t=1769678296;
+	bh=UM8iBqMDsUWhzMzQ9Tf5yBcRW3jJ9+1KuJO+unr000U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:From;
+	b=QyJd1PQLKzY43wAqv62nST6MyzBHr4Q3QvKVl9G3WHhmN9AW9He384fcZQJTpEgeS
+	 WzEczwkt1FtLrQc6zTFSCPoHs7eLRTpPFOzF8Z4iaatgjwdDm2eHESQYf/JdxH2VE7
+	 ZMKM0b8ViLwH+RNmorDev5XkQLth83aMRj+b65SlwFZhkvGWDBfqV7obbuQmA+FEMD
+	 xaTJwXBBiTjru+mcAyqXr7lELGpZRMAtO4ZsPNOqjFmUOkWpugwjlaIFucQR4EbPmy
+	 C+RxumUSqiFUfxARNSVwjMxDaqQVa3hHP89DVdtbgqxfMmzZ/LbQe37nHDXkUg5PK9
+	 mi7fpswEb5Wng==
+X-ME-Helo: [IPV6:2a01:cb1c:8326:c500:bfc0:b7c5:d0ed:4f38]
+X-ME-Auth: cGF1bC5yZXRvdXJuZUBvcmFuZ2UuZnI=
+X-ME-Date: Thu, 29 Jan 2026 10:18:16 +0100
+X-ME-IP: 2a01:cb1c:8326:c500:bfc0:b7c5:d0ed:4f38
+Message-ID: <6606a440-546d-4b71-a244-86bb7c819d49@orange.fr>
+Date: Thu, 29 Jan 2026 10:18:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,180 +43,61 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v8 1/2] staging: fbtft: Fix build failure when
- CONFIG_FB_DEVICE=n
-To: Chintan Patel <chintanlike@gmail.com>, linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev, linux-omap@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- andy@kernel.org, deller@gmx.de, gregkh@linuxfoundation.org,
- kernel test robot <lkp@intel.com>,
- Andy Shevchenko <andriy.shevchenko@intel.com>
-References: <20260122031635.11414-1-chintanlike@gmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260122031635.11414-1-chintanlike@gmail.com>
+Subject: Re: [PATCH] staging: fbtft: use guard() to simplify code
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: andy@kernel.org, gregkh@linuxfoundation.org,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+ Paul Retourne <paul.retourne@orange.fr>
+References: <20260128212644.1170970-1-paul.retourne@orange.fr>
+ <aXqI7qbxZEulU_GO@smile.fi.intel.com>
+Content-Language: en-US, fr
+From: Paul Retourne <paul.retourne@orange.fr>
+Autocrypt: addr=paul.retourne@orange.fr; keydata=
+ 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
+In-Reply-To: <aXqI7qbxZEulU_GO@smile.fi.intel.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[gmail.com,vger.kernel.org,lists.linux.dev];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_SOME(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	FREEMAIL_CC(0.00)[vger.kernel.org,lists.freedesktop.org,kernel.org,gmx.de,linuxfoundation.org,intel.com];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[11];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,intel.com:email,suse.com:url,suse.de:dkim,suse.de:mid]
-X-Spam-Flag: NO
-X-Spam-Score: -4.51
-X-Rspamd-Queue-Id: D98355BCDC
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spam-Level: 
 
-Hi,
+On 1/28/26 23:08, Andy Shevchenko wrote:
+> Sorry, but I don't see much value in this change.
 
-we've seen reports about this bug from linux-next.
+Understood, I see the problem, I'll try to do changes that are actually 
+useful in the future.
 
-Did anyone merge this series?
-
-Best regards
-Thomas
-
-Am 22.01.26 um 04:16 schrieb Chintan Patel:
-> When CONFIG_FB_DEVICE is disabled, struct fb_info does
-> not provide a valid dev pointer. Direct dereferences of
-> fb_info->dev therefore result in build failures.
->
-> Fix this by avoiding direct accesses to fb_info->dev and
-> switching the affected debug logging to framebuffer helpers
-> that do not rely on a device pointer.
->
-> This fixes the following build failure reported by the
-> kernel test robot.
->
-> Fixes: a06d03f9f238 ("staging: fbtft: Make FB_DEVICE dependency optional")
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202601110740.Y9XK5HtN-lkp@intel.com
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
-> Signed-off-by: Chintan Patel <chintanlike@gmail.com>
->
-> ---
-> Changes in v8:
-> - Add Reviewed-by tag from Andy Shevchenko.
->
-> Changes in v7:
-> - Split logging cleanups into a separate patch
-> - Limit this patch to the CONFIG_FB_DEVICE=n build fix only
->
-> Changes in v6:
-> - Switch debug/info logging to fb_dbg() and fb_info()(suggested by Thomas Zimmermann)
-> - Drop dev_of_fbinfo() usage in favor of framebuffer helpers that implicitly
->    handle the debug/info context.
-> - Drop __func__ usage per review feedback(suggested by greg k-h)
-> - Add Fixes tag for a06d03f9f238 ("staging: fbtft: Make FB_DEVICE dependency optional")
->    (suggested by Andy Shevchenko)
->
-> Changes in v5:
-> - Initial attempt to replace info->dev accesses using
->    dev_of_fbinfo() helper
->
->   drivers/staging/fbtft/fbtft-core.c | 19 +++++++++----------
->   1 file changed, 9 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-> index 8a5ccc8ae0a1..1b3b62950205 100644
-> --- a/drivers/staging/fbtft/fbtft-core.c
-> +++ b/drivers/staging/fbtft/fbtft-core.c
-> @@ -365,9 +365,9 @@ static int fbtft_fb_setcolreg(unsigned int regno, unsigned int red,
->   	unsigned int val;
->   	int ret = 1;
->   
-> -	dev_dbg(info->dev,
-> -		"%s(regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X)\n",
-> -		__func__, regno, red, green, blue, transp);
-> +	fb_dbg(info,
-> +	       "regno=%u, red=0x%X, green=0x%X, blue=0x%X, trans=0x%X\n",
-> +	       regno, red, green, blue, transp);
->   
->   	switch (info->fix.visual) {
->   	case FB_VISUAL_TRUECOLOR:
-> @@ -391,8 +391,7 @@ static int fbtft_fb_blank(int blank, struct fb_info *info)
->   	struct fbtft_par *par = info->par;
->   	int ret = -EINVAL;
->   
-> -	dev_dbg(info->dev, "%s(blank=%d)\n",
-> -		__func__, blank);
-> +	fb_dbg(info, "blank=%d\n", blank);
->   
->   	if (!par->fbtftops.blank)
->   		return ret;
-> @@ -793,11 +792,11 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
->   	if (spi)
->   		sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->bus_num,
->   			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
-> -	dev_info(fb_info->dev,
-> -		 "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
-> -		 fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
-> -		 fb_info->fix.smem_len >> 10, text1,
-> -		 HZ / fb_info->fbdefio->delay, text2);
-> +	fb_info(fb_info,
-> +		"%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
-> +		fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
-> +		fb_info->fix.smem_len >> 10, text1,
-> +		HZ / fb_info->fbdefio->delay, text2);
->   
->   	/* Turn on backlight if available */
->   	if (fb_info->bl_dev) {
+Thank you for looking at it and taking the time to answer.
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
-
+Paul Retourné

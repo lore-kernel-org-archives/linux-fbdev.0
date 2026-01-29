@@ -1,117 +1,113 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86ACF385522
-	for <linux-fbdev@vger.kernel.org>; Thu, 29 Jan 2026 10:59:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3DF133554F;
+	Thu, 29 Jan 2026 16:04:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769684381; cv=none; b=sR5+oIA4gH4TTHA3fbiyKVGW3VgeU+GqxdzSg62c0e4DrRkAqn5DB9lfGS0yr8FeBqDKXyPQ37MBmuFVOCZ5KsDFalxyd6UOVhTVt8/WQcT4AXDN3OMhwPnz5cTPqxg+9kYLTUZkNBTisd06LzhtJJApPypjDmuj2kNPnu84ycs=
+	t=1769702659; cv=none; b=iBLo5YdRTwmGWxQwEl8pYVIxunaACaJy0MMmjiNyeaPnOVwqlJc6iRPLEXdBIpgun1kG7vGAk/PcAZTiHtZxNkEMUmysSSuZt84hfVkCs2xOoaYWBvlvQoGsMpnFphxtGM9hWbNn71olZtQvabXWoQlJN5cfuUtNOm+N+7+c9ts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769684381; c=relaxed/simple;
-	bh=bQ0Q5APcgcKlSb7nEhSdvCM1gNhb+QfFD7Vv8Ooz8/A=;
+	s=arc-20240116; t=1769702659; c=relaxed/simple;
+	bh=Hsz8qVupp8+NBvqtE7ko8C6bGpcKwwmmGaTx6H1EiqQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MZyyVdws1KGV8TgTyJ+R99oVpdMPD/mjJXlsd2ixVvXhty5HuKwjoGjvr7VN8II8CLS8+YRvcoHyVI5ash/3AluUIAz2xMOK4ETfoRQAUQnXXkNyLEp+GGju7xb391u+XJ0xlR/BcsNxTio9pwNtodn11OTs2RJbmupY2ZK63x8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=QPURgkUL; arc=none smtp.client-ip=192.198.163.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=V71V+EuK34ywenuEmdLWUAo5oUfgZC+JbJBhJ+DGq+/r6z4M++FkqYySaTFSqSghGfFol+mZuMLwa4dfUwSWBc6buat9j2YV+kB0JsBm4ZDA2IorKXEL3ptYpdMcBl5GT3tDga1kxevdDzDl0hkhSoSGdFHZtFDtTv3GCUi/UrI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=U2Wf2Hxo; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="QPURgkUL"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769684379; x=1801220379;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=bQ0Q5APcgcKlSb7nEhSdvCM1gNhb+QfFD7Vv8Ooz8/A=;
-  b=QPURgkULgfTPGs52MsNbGLPYGebNeVwYwTgclGbT9TaFj+LoXa1ZEORI
-   sEyHIY8nAu0GzB4N0mMiRNtWqXVOXqEV+4KlIfcy5N9Z2x2J9OY2gJh0O
-   b6mYGiQWK7YOpk0cXtQl6iaCOGOyO8DGAskcM7LGcropliLZMol5pgnZl
-   MX4SY7Ix8yoWNT2uJrfjmlWJAs6zrEdKRt+E3c9N57yO9A0lWflflIZe1
-   J0P6ftq1xbNb0EYtK0osm/SU4FL6zTk1+NbAuIAh0VWwwM/DYtJgeznnr
-   d0EjGy1GyjRousbsuzHhg4FTe0sBColl48mR/IPU2k6wb5AQK7PNYUWVI
-   A==;
-X-CSE-ConnectionGUID: 1CSB0sgqRPWGIRIdchC14g==
-X-CSE-MsgGUID: k1EmQVVUQpqfGcI1LEbJWg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11685"; a="82287320"
-X-IronPort-AV: E=Sophos;i="6.21,260,1763452800"; 
-   d="scan'208";a="82287320"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 02:59:39 -0800
-X-CSE-ConnectionGUID: yOlryslmRdOS3t3cmOkNeQ==
-X-CSE-MsgGUID: Y3U8pILCSuiGKYjyhzcQBA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,260,1763452800"; 
-   d="scan'208";a="213420756"
-Received: from klitkey1-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.155])
-  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jan 2026 02:59:37 -0800
-Date: Thu, 29 Jan 2026 12:59:34 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Dan Carpenter <dan.carpenter@linaro.org>
-Cc: ChanSoo Shin <csshin9928@gmail.com>, andy@kernel.org,
-	gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
-Subject: Re: [PATCH v5] fbtft: limit dirty rows based on damage range
-Message-ID: <aXs9lvhF9MIQASv0@smile.fi.intel.com>
-References: <20260128203938.962414-1-csshin9928@gmail.com>
- <aXr-RhUXwIvMHYZI@stanley.mountain>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="U2Wf2Hxo"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26058C4CEF7;
+	Thu, 29 Jan 2026 16:04:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769702659;
+	bh=Hsz8qVupp8+NBvqtE7ko8C6bGpcKwwmmGaTx6H1EiqQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=U2Wf2Hxot7/wQdQ5EAONpILruPThqD+wOYp/fN1PpHt88KkuuorOZTojO7L5poDY8
+	 METdail+riAgkkvuD0gAroqSaI8QQNjwz/qSOMvTVpNJokFQdPP7pnqkTHf5IvgeLO
+	 UVvc+Q9ZrQ+GffeGowBZR5rL9JDiY8vHUXITndav8S+n6yoL0HqkaNmYyh/vz0TgGS
+	 XSK5SLepAeymWT9vncwNV1IItUnWKrnyjv1a59Ccjy49lM9Mynt1g+H7SqRUoaHjDx
+	 mObKP5HvV9nUMNzIF7NtYee/UVLTQGDBXucglYobu4YCggqM5edPDiq7F1cWJIbS/L
+	 gxxnHFQm88yGg==
+Date: Thu, 29 Jan 2026 10:04:18 -0600
+From: Rob Herring <robh@kernel.org>
+To: Maud Spierings <maudspierings@gocontroll.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v7 1/4] dt-bindings: backlight: Add max25014 support
+Message-ID: <20260129160418.GA1100798-robh@kernel.org>
+References: <20260123-max25014-v7-0-15e504b9acc7@gocontroll.com>
+ <20260123-max25014-v7-1-15e504b9acc7@gocontroll.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <aXr-RhUXwIvMHYZI@stanley.mountain>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+In-Reply-To: <20260123-max25014-v7-1-15e504b9acc7@gocontroll.com>
 
-On Thu, Jan 29, 2026 at 09:29:26AM +0300, Dan Carpenter wrote:
-> On Thu, Jan 29, 2026 at 05:39:38AM +0900, ChanSoo Shin wrote:
-> > Instead of marking the entire display as dirty, calculate the start
-> > and end rows based on the damage offset and length and only mark the
-> > affected rows dirty. This reduces unnecessary full framebuffer updates
-> > for partial writes.
-> > 
-> > Signed-off-by: ChanSoo Shin <csshin9928@gmail.com>
-> > ---
+On Fri, Jan 23, 2026 at 12:31:30PM +0100, Maud Spierings wrote:
+> The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
+> with integrated boost controller.
 > 
-> TL/DR:  I suck as a reviewer so I would be nervous to apply this
-> without testing.  Andy is an expert here and we trust him so if he's
-> okay with it then great.  Or if some other expert could sign off, but
-> I don't know enough to sign off myself.
-
-The rule of thumb for _this_ driver (or set of drivers under FBTFT) is
-that: we are in maintenance mode and we only accept bugfixes or treewide
-changes. The rest can be accepted but unlikely. Either way, we really
-want to see this (kind of changes) being tested on real HW. It's not as
-simple as renaming variable 'i' to 'j'.
-
-> The problem for me is how do I review something like this?  Staging
-> is a grab bag of different modules and I'm not an expert in any of
-> the subsystems.  Normally, it's easy to review staging patches
-> because they are clean up work which does change how the code works
-> so I just look for unintentional side effects.
+> Signed-off-by: Maud Spierings <maudspierings@gocontroll.com>
 > 
-> It's trickier to review a patch like this which changes runtime.  If
-> it were fixing a bug, then I could verify the bug is real and say
-> well, "Maybe the fix is wrong, but we were going to corrupt memory
-> anyway, so the worst case is that it is as bad as before.  It can't
-> make the problem worse."
+> ---
 > 
-> This is your first kernel patch.  You don't work for a company that
-> makes the hardware.  You said earlier in a private email that this
-> hasn't been tested.
+> In the current implementation the control registers for channel 1,
+> control all channels. So only one led subnode with led-sources is
+> supported right now. If at some point the driver functionality is
+> expanded the bindings can be easily extended with it.
+> ---
+>  .../bindings/leds/backlight/maxim,max25014.yaml    | 91 ++++++++++++++++++++++
+>  MAINTAINERS                                        |  5 ++
+>  2 files changed, 96 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+> new file mode 100644
+> index 000000000000..c499e6224a8f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/backlight/maxim,max25014.yaml
+> @@ -0,0 +1,91 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/leds/backlight/maxim,max25014.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Maxim max25014 backlight controller
+> +
+> +maintainers:
+> +  - Maud Spierings <maudspierings@gocontroll.com>
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - maxim,max25014
+> +
+> +  reg:
+> +    maxItems: 1
+> +
 
-Unfortunately it is not the best driver to go with this. At some point I might
-be able to test this when I setup my fbtft minilab at home, I have a few I²C,
-SPI, and parallel panels.
+> +  "#address-cells":
+> +    const: 1
+> +
+> +  "#size-cells":
+> +    const: 0
 
-> The patch looks reasonable to me, but it also looks simple.  If it
-> were that easy why didn't the original author do it?
+No child nodes (with addresses), so these should be dropped. And in the 
+example.
 
--- 
-With Best Regards,
-Andy Shevchenko
+With that,
 
-
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>

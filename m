@@ -1,118 +1,156 @@
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.web.de (mout.web.de [212.227.17.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3069637A48B
-	for <linux-fbdev@vger.kernel.org>; Thu, 29 Jan 2026 07:14:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 262AC371040;
+	Thu, 29 Jan 2026 07:41:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769670844; cv=none; b=qGQ8ywEEg1VR5IwQqHj0tVONgaqj/GCLi7Iwhhg8l3M4A5AFloO2AoBMJRQCmusW6Yx0vLsF3puCDgb2EKkBzEXOmC9IwCdhSeIMpYFmnRZR1jvhjbw4TGJBiQBst58nq0f0nYPkQYBu0v2BG5T2Ozre1tsulghfHcluCFTBEXw=
+	t=1769672522; cv=none; b=R5mb+jdikSLXUAQGf/vyEkolnhbJi9eLFBl2Fd879Xs6FBXNIwPfjYxm/nl2BVaoXw4npw5jnBdoNLiOOl4WHIvrJT1MRpkGdu51aS7z2HTxQoIzcyObHhxCnOX2CnMipq+molpvIIr7yzVDIANslr01IrLw38HHtztVqGlWkZE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769670844; c=relaxed/simple;
-	bh=L+F5CpBXR6il9Er3qZ+S7/cbqloU+3ySb0pfp/IqRj4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QfIMRWUijCR2KvyOE7gihSxSdknThJTHW9VDNn4HhbxhuOCpjxhVcy3nWOXVWBQrHgfXUZmYXgxGgIJGdLFXd+0eKECZEkahsgH40Ix1fdpgUK/sFczUz7kzcES8ttmWI3hL9aIuXXQ/5MSj09880BVTJ5oLuYmwfmXcqzoV8pQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=RwVxlhPO; arc=none smtp.client-ip=209.85.221.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1769672522; c=relaxed/simple;
+	bh=Qq0z9q6Y+KQxDVHEcH1ZFQ9K0x+kjnxlPiluywqssgE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NHSw62VE8bs+6Urx1stwEO7vRneiJkjebIX24I+oy9rOi51mfuEiAFBAvmw85m/xZao9Yjfsfw11HYtQb+ZVY7o82+2Iu4SJotE/2/8lKQVSL39XgyP/ic7vB7Ke8/sOXBb32HTMb85iApv9unoTpPrco8VXwD4ZsMyNGDW1u+U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=ftCxteQ/; arc=none smtp.client-ip=212.227.17.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="RwVxlhPO"
-Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-4358fb60802so345373f8f.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 23:14:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1769670840; x=1770275640; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=L+F5CpBXR6il9Er3qZ+S7/cbqloU+3ySb0pfp/IqRj4=;
-        b=RwVxlhPOD8RGHGzWuq8vP3lSjH+Y9+XvK+NIK/opSM5h8k2tInN+OrO0AKWriJq7Q5
-         ddWado+f16CuZh8gl7+vGJcjM9UFWk/WO+SdUwwwcpcZ8zzDJ6CKWM/bGxzUeXNWXWoO
-         fX6NwMeVHEiqr7o8EaQ7o+Em6KA4MhRjELVv/6LdBUzXZ1uEkBpYgt/u8o5mUSILfmn+
-         YlsH9aGy2Y4rctuqiow/3Qn1pm01qq/sSFx0aYpkY8O8uF8tA9pFirS40RRQcBrQ7IK8
-         8uSxl7LvW6TEDSYXoW70wnaQwlQ6KkngAyAXOgLOLrDCFA8c+Ep4NpsMNTo/bxTclBlZ
-         ggJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769670840; x=1770275640;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=L+F5CpBXR6il9Er3qZ+S7/cbqloU+3ySb0pfp/IqRj4=;
-        b=f/8W4TmNdCf4r8tU+Tnstq230IXOfItPeTRvHQ+eAG84ljZm/sIhAt1OB19Q3uM73U
-         Ydjg9FNPawGLDbmnv4gBnFvtnOnFJXmoqISbBgJ8yfg+S3IIsC9DThtswaJOR2S4mbBH
-         ExyHHnSxaPnOHmiPYForfwonNbTvyvwwmUGwp0sx8yByZPRUVLQh9IDx/pe0HwdL+tWQ
-         EHTArFgY0Rlu58sF1ObwM1ibShL8USfVWeWenNpP/aj7CjKsKM+3kc7dej7GNzJF5bPx
-         39Tp3p0SVcFS0az25e4RowLP4cCv4wSAJnm2nXdabz8Td0TmievgroMgDJVofXbNIav2
-         r+uw==
-X-Forwarded-Encrypted: i=1; AJvYcCVss/PGVe0saSKP2TRfsprRgm4VGk8Y4M0u9gssDModZSwUI9AISwagaPYLd8P8UKE/qkFtk2MnZjG8GQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzg0LcmDBIa+5+CF+NUwai9n0BMspsuww9v0qbSg1d1reAsmqPN
-	BPTrGLwGnyWWcVufWvVvWRnHpHdpaWS2cX6SDacuvlLq/5E3KZvJVqfcTeCeoZSHaNM=
-X-Gm-Gg: AZuq6aJR5aucMe4eq3Hw0c1kgt+9TXOrI1U1ttbSBMJU2R9x5MZ62ZuKEJ+PMej7uiJ
-	WSngvzB+25+LRYreS405Nst+uTPRaqEQ91ZUfNLnHXvWFQlXoqRHxgiX+0/sceHbT5qs/lKOlET
-	vl9eAprfTcIv4c0TOB5Ra34FFEXeFu5l/WXAJ7CwHBJfDFjgeO0J9e0PjxIua3ZEwoF82TVDjKw
-	y9c86+35dFH6vsJeyaiIakR9/INqMBkt50t3+vEB79LcHKBn8jd7PJbHj2PKhk7xhE2b5S+ijjB
-	DgrTez3bsXCSb4KW49u63npjsfxOt2RpKGIHtSucT1Oc2YFjomOQp4ljkq2bInOJ9tW2k6trayI
-	ATVBSrM0dbWznhgPsJ48VD7IVymw3lPBuwBvDHijycmdGWh21uQPEka6WQ5pKqp3U7hhWWIph4v
-	WGCKP7GRZYnpO60CVE
-X-Received: by 2002:a05:6000:402a:b0:435:932e:f924 with SMTP id ffacd0b85a97d-435ea0645cemr2617818f8f.2.1769670840219;
-        Wed, 28 Jan 2026 23:14:00 -0800 (PST)
-Received: from localhost ([2a02:8071:b783:6940:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-435e10edfccsm11615181f8f.17.2026.01.28.23.13.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Jan 2026 23:13:59 -0800 (PST)
-Date: Thu, 29 Jan 2026 08:13:58 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Chen Ni <nichen@iscas.ac.cn>
-Cc: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	elfring@users.sourceforge.net, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] fbdev: au1100fb: Check return value of clk_enable()
- in .resume()
-Message-ID: <u7a7owvizacghl3kpk5zxrf6iurmvvvjnjnzqa43xgafxcmb7x@jsihky4phvko>
-References: <zytpnyodschvn4mmpllxp62yg3o77hjl7l5nyckoxyuvucjyaj@xsxbybnyzd44>
- <20260129040714.2772522-1-nichen@iscas.ac.cn>
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="ftCxteQ/"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1769672511; x=1770277311; i=markus.elfring@web.de;
+	bh=Qq0z9q6Y+KQxDVHEcH1ZFQ9K0x+kjnxlPiluywqssgE=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=ftCxteQ/W7thsUjcOP+JuUfAM2otJU9wjOzn8Gl6rYZH8aXmgS08+K+f926+0q4G
+	 xdtfw7+44RguGN341GHo+YLlfCUNnJ3Osn9MUp/o7/G7+SAXGgzu5asQM9xXoKOHw
+	 xXGrB03Y7JJXEmzhtMUOW0B4DbzhWO6NWaEjSqykcG27EdLvdRmjH7LFgYREJTAv+
+	 JF3UkhMfiJogkAj6oqW+q+eBkdXoSzlWpAG0+H4FYVFzhl/Jpbxik9/aRei8Sm9HM
+	 /AEpOMZyo6rLCmvw4LMLjbDDAlpaiBg6oGI8DU6N5Aqx+U7ae6LTRhA6m8nXeFU6v
+	 +GeqXfbbyTJzsg8Qtg==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.29] ([94.31.92.239]) by smtp.web.de (mrweb105
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MadzU-1wHwR62Kx0-00l5tg; Thu, 29
+ Jan 2026 08:36:26 +0100
+Message-ID: <d19fc825-514c-4ab4-b853-6a12a7517479@web.de>
+Date: Thu, 29 Jan 2026 08:36:13 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="gr4u2xptyrvtpzze"
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] fbdev: au1100fb: Check return value of clk_enable() in
+ .resume()
+To: Chen Ni <nichen@iscas.ac.cn>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Helge Deller <deller@gmx.de>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+References: <zytpnyodschvn4mmpllxp62yg3o77hjl7l5nyckoxyuvucjyaj@xsxbybnyzd44>
+ <20260129040714.2772522-1-nichen@iscas.ac.cn>
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
 In-Reply-To: <20260129040714.2772522-1-nichen@iscas.ac.cn>
-
-
---gr4u2xptyrvtpzze
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v2] fbdev: au1100fb: Check return value of clk_enable()
- in .resume()
-MIME-Version: 1.0
+X-Provags-ID: V03:K1:KwpxARyH4lajqCnAhtubBhmdGLq0cOhC8ZdCRMBwfSt7gTZIL6G
+ rCyUz3BjCicKwjPr990zDihFPXnE5gyulndu9Ybxlc+L94xSRTSX9/fusic5wk3xcg5QPdy
+ +wHmq93iu25ruargVhhnltDWGE1RdPr6Xe1V2MGY7IRqx/6tHeNX1HQtXb3TTphlNdxPaDI
+ 8INoQ2JTxk+tyEK7j6z1Q==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:+z2Se4do9gc=;9w9CawbeVjSXe8GhfBLNplaGqXn
+ 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
+ 3F3esQjHb/X/A2uGSfEYxHq9CbbH+
 
-On Thu, Jan 29, 2026 at 12:07:14PM +0800, Chen Ni wrote:
 > Check the return value of clk_enable() in au1100fb_drv_resume() and
 > return the error on failure.
+
+Were any source code analysis tools involved here?
+
+
 > This ensures the system is aware of the resume failure and can track
+
+Ensure?
+
+
 > its state accurately.
->=20
-> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
 
-Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@baylibre.com>
+Did anything hinder to add any tags (like =E2=80=9CFixes=E2=80=9D and =E2=
+=80=9CCc=E2=80=9D) accordingly?
 
-Thanks
-Uwe
-
---gr4u2xptyrvtpzze
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAml7CLMACgkQj4D7WH0S
-/k5VfwgAgl6ASoju2yK6n3drvTVNDpTdikzxleB+4wdtfFDsC3uG7oWJxnKy7uh/
-7BkY+1OVaBrHr+epWZWjbuKWYv5zfsdlhNRDdk/Rp63pWOfONNpi8IhFZTvrpoq8
-SjLKyuj2RaYAxZ5kzODKlqvrzT/gVHcqesU1vBoBbhq+peUqCbEvpHKSYEg6Kccv
-Ni98EAvyupPogf4+HMdRUH2/qDkZbaLZsAQdwEJyNPwCfJ+LeyBWCqK4y1Xn10b3
-WjCBJfPXice0NhsTFWg4ptCxH1xfPbBeFvWtPQ1YrnnvGvlvu07emABAqfyl197X
-O0dXbeth4EtZiRBR0ggjPGbmXCpa4Q==
-=eHUM
------END PGP SIGNATURE-----
-
---gr4u2xptyrvtpzze--
+Regards,
+Markus

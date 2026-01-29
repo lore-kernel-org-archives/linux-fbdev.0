@@ -1,84 +1,94 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FC1934405E
-	for <linux-fbdev@vger.kernel.org>; Wed, 28 Jan 2026 22:35:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24488186A;
+	Thu, 29 Jan 2026 00:02:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769639707; cv=none; b=bIR+yNugsLw/jkH3BpN7uO6i5wcgABzjO1Wn/4jcHOjluScUvloDSdqRw+EVrRcyNYktKUvYsbTAooiYkmmVjlrlwHLo5aZEG9MSOpQvSBdD2mFIoZnP/q4ptlUycCFYh9FyQilDzboSk3NU7a1Yh20kaNX8ugZRITNJlz54rL8=
+	t=1769644923; cv=none; b=f3SUQ5v1aPJ4BwSa/EfD6DHPx2B8OmoUqWa/RR3/DBkRDzCI3xBm4R/ZsG6hlfOM9kg5KxGBb1sdFrEt4S1jOyQwnxVF0iV2g4AUGpFHG6gXrQ6PGjOgq/X4FwHTfpGLxs/j1rjzu34HPIwTa5yQGPAcf/zRRM8GQDQ+hi5kBpw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769639707; c=relaxed/simple;
-	bh=nhYygQQwOHRkNC6CveoNJnpwHeTyhDqvKVE7dBa1WgY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=T9KWVFOkCgSsACBR+mhzAqKbWDiMitqJVjD7SyhNghf6U1rw1we2nUR8wZuU1n7uLJiZyoCuADcIm5hDToiZ0Mlpjl5e5Ysax+J2OoVAYznY3egFfxuyqrB1f2yrCg3RHi/wOvrv+xcZbbKLgTCrvuLh7Oz1utDqND6AjJgXtBM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=D9KNFiBf; arc=none smtp.client-ip=198.175.65.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1769644923; c=relaxed/simple;
+	bh=J/qTG4pGilyGtjcne9Wna5dgdSlO8aWgnStkPw5cJ5s=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=Bonzi2+CYbQa3I6JGYbaQpwA8yymncipW8qGYwZ/ebuD9Yf1Jpm+iSqemmiLwcavWkh0nbyVVf1uQdHdZtQjQKEQUqLpjnXPaM48+jVrbXD+1aYFNlLLwJJIOOQXAJJXl+RFl1mjPcVW1ZIgmaEW3f+8wJ0e252M7nUX2bbJE+I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=uyzN/XNr; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="D9KNFiBf"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769639706; x=1801175706;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=nhYygQQwOHRkNC6CveoNJnpwHeTyhDqvKVE7dBa1WgY=;
-  b=D9KNFiBfaCL6sNElvo44Pv5dI/KSr90RYr/rHIucInfWlrbTOB7TkDlC
-   DNjShTpBzYLf6DGNm1/hYxDApJXbMHPC/tFOOWjKlH1qXWeWG6AA3w9xq
-   a5L1JTIXWc38HS8mKRBGBSrheAA19Vq3GHfKWGE6xc6HdHjQ4VbnpzOnG
-   /1WQwxu4cRykmbk2m9s/fev2AMtlwT3aOapKl4W/qPdkKQ1D49pbNWNSm
-   h7eD1y4UdIHQgh4ECexLXfYXggCpYeMcgmreg4ypuYZK4mMe5/gAzZJAN
-   /Qpws2jJBmPSd3btEpD3Gwt+9s0SY0QfXqaUzjzEZkuGsf7I6RxrhX3Aw
-   w==;
-X-CSE-ConnectionGUID: xNZeOP1uREmUdk79qr0T3Q==
-X-CSE-MsgGUID: MQS42faKQ2uz/s+v0fO7xQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11685"; a="70905543"
-X-IronPort-AV: E=Sophos;i="6.21,258,1763452800"; 
-   d="scan'208";a="70905543"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jan 2026 14:35:05 -0800
-X-CSE-ConnectionGUID: 6X5jH80pQeSWIE+VLaAAww==
-X-CSE-MsgGUID: Ss0/p/x2QCel/znQA4hZcQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,258,1763452800"; 
-   d="scan'208";a="207992461"
-Received: from egrumbac-mobl6.ger.corp.intel.com (HELO localhost) ([10.245.245.57])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jan 2026 14:35:03 -0800
-Date: Thu, 29 Jan 2026 00:35:01 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: ChanSoo Shin <csshin9928@gmail.com>
-Cc: andy@kernel.org, gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH v5] fbtft: limit dirty rows based on damage range
-Message-ID: <aXqPFXQh5zpbnjhR@smile.fi.intel.com>
-References: <20260128203938.962414-1-csshin9928@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="uyzN/XNr"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65D92C4CEF1;
+	Thu, 29 Jan 2026 00:01:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769644922;
+	bh=J/qTG4pGilyGtjcne9Wna5dgdSlO8aWgnStkPw5cJ5s=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=uyzN/XNryhWrkcwztJ1WDKwN2hRmBTjqVOAbay5Pscnv+XQjxVH9M6+HD/FyMGR3K
+	 TaHM9mmkVsQZcgRFbQStI4OOiB17+Pc+1XtzMZaameGAmZoU19Ew4kHWBmraxKbs9M
+	 wJWQAzCywbHH8zz+cBXS5jx+ozMnDrqk90az1LyFCu6iTt0o0tHpr0DZgRyRLYa9//
+	 6+lNbiu3M/msZ7e/cB9u6XpAJJgV/yTK9VVM4FJPIl43xDuVeHACpSTUX6CGD+s5WP
+	 HjycssjkDZgJZTrOO9ArKose7tzewQYeNivbhVsN62lQzGPKv0YuDTITCXQP7zUwzW
+	 aqiQRk2BQY3sA==
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260128203938.962414-1-csshin9928@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 29 Jan 2026 01:01:51 +0100
+Message-Id: <DG0MRL6T7ACW.25G3GLJMP7PN1@kernel.org>
+Subject: Re: [PATCH RFC v6 00/26] nova-core: Memory management
+ infrastructure (v6)
+Cc: <linux-kernel@vger.kernel.org>, "Maarten Lankhorst"
+ <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
+ <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Jonathan Corbet"
+ <corbet@lwn.net>, "Alex Deucher" <alexander.deucher@amd.com>, "Christian
+ Koenig" <christian.koenig@amd.com>, "Jani Nikula"
+ <jani.nikula@linux.intel.com>, "Joonas Lahtinen"
+ <joonas.lahtinen@linux.intel.com>, "Vivi Rodrigo" <rodrigo.vivi@intel.com>,
+ "Tvrtko Ursulin" <tursulin@ursulin.net>, "Rui Huang" <ray.huang@amd.com>,
+ "Matthew Auld" <matthew.auld@intel.com>, "Matthew Brost"
+ <matthew.brost@intel.com>, "Lucas De Marchi" <lucas.demarchi@intel.com>,
+ "Thomas Hellstrom" <thomas.hellstrom@linux.intel.com>, "Helge Deller"
+ <deller@gmx.de>, "Alice Ryhl" <aliceryhl@google.com>, "Miguel Ojeda"
+ <ojeda@kernel.org>, "Alex Gaynor" <alex.gaynor@gmail.com>, "Boqun Feng"
+ <boqun.feng@gmail.com>, "Gary Guo" <gary@garyguo.net>, "Bjorn Roy Baron"
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Trevor Gross" <tmgross@umich.edu>,
+ "John Hubbard" <jhubbard@nvidia.com>, "Alistair Popple"
+ <apopple@nvidia.com>, "Timur Tabi" <ttabi@nvidia.com>, "Edwin Peer"
+ <epeer@nvidia.com>, "Alexandre Courbot" <acourbot@nvidia.com>, "Andrea
+ Righi" <arighi@nvidia.com>, "Andy Ritger" <aritger@nvidia.com>, "Zhi Wang"
+ <zhiw@nvidia.com>, "Alexey Ivanov" <alexeyi@nvidia.com>, "Balbir Singh"
+ <balbirs@nvidia.com>, "Philipp Stanner" <phasta@kernel.org>, "Elle Rhumsaa"
+ <elle@weathered-steel.dev>, "Daniel Almeida"
+ <daniel.almeida@collabora.com>, <nouveau@lists.freedesktop.org>,
+ <dri-devel@lists.freedesktop.org>, <rust-for-linux@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
+ <intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
+ <linux-fbdev@vger.kernel.org>
+To: "Joel Fernandes" <joelagnelf@nvidia.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <DG06XUWOJLO5.1ESB8ES6A6081@kernel.org>
+ <4540DD73-77BA-45F0-B686-32EB96402717@nvidia.com>
+In-Reply-To: <4540DD73-77BA-45F0-B686-32EB96402717@nvidia.com>
 
-On Thu, Jan 29, 2026 at 05:39:38AM +0900, ChanSoo Shin wrote:
-> Instead of marking the entire display as dirty, calculate the start
-> and end rows based on the damage offset and length and only mark the
-> affected rows dirty. This reduces unnecessary full framebuffer updates
-> for partial writes.
-> 
-> Signed-off-by: ChanSoo Shin <csshin9928@gmail.com>
-> ---
+On Wed Jan 28, 2026 at 1:44 PM CET, Joel Fernandes wrote:
+> I will split into CList, GPU buddy, and Nova MM as you suggest.
 
-This is v5 and no changelog and no answers to the reviewers' questions.
-Please, read all what people replied to your previous attempts.
-Without that processed correctly NAK to this one.
+Thanks, together with a proper changelog this will help a lot.
 
--- 
-With Best Regards,
-Andy Shevchenko
+> One question: what version numbers should each split series use? CList wa=
+s at
+> v3 before being combined, and similar story for GPU buddy and Nova MM. Sh=
+ould
+> I continue from the last version number they were posted with, or continu=
+e
+> from v6?
 
+I'd say from the last version is probably best. Maybe you also want to move=
+ out
+of the RFC stage for some of them.
 
+Thanks,
+Danilo

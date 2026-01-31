@@ -1,261 +1,205 @@
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011046.outbound.protection.outlook.com [40.107.208.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qv1-f46.google.com (mail-qv1-f46.google.com [209.85.219.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACBF2387358;
-	Fri, 30 Jan 2026 21:14:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C83733A9DD
+	for <linux-fbdev@vger.kernel.org>; Sat, 31 Jan 2026 03:01:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.219.46
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1769807665; cv=fail; b=e1kaxyqv9NtJoqKw1ATtc7lIyFz3T8Ss8C5ZqowREO90Bbmol18kKclNWGRI2pdpME3u/cN9qWkhgeYLBScnpffBezzgEkyX/NQLhB9FoqTsCuwypesC1f57AMreC/TZoKEVaftKgr7ADPYE9KPldQUNUzNTBcwVi9iK4KR9rFU=
+	t=1769828475; cv=pass; b=mTi2V4+sIog1Po9RW9ohDWWtOoOAy0glBQxq/u8Wxt4q/A8HKvWIYATOzAtaBWKbPJbimcg5u9voFE8//1tFOam682f7yswP52H6NNl3bkKkT1LCokAPWduwF1YJt9Sg9BorKPKNKekmNOwyA/SxVN5zPkFqIlVbcqeRy63Yn/4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1769807665; c=relaxed/simple;
-	bh=cJdPKpnr9dt3sRnhU1hKiTfZOKC5YU0/DUL5DV6PoRg=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=VEut2L0tlNNGR8s1rAN1C/8dfz79unwOhSASFK4bgaM05f4v3y6o92LlLbDIozuzQG4zRsnrUNp9KU7kZQ2VcqL7XNQ1m/K/ZeBDqVmR20tFKmk5YUTIT5y9g6X71UXMWPN1cF4SpzJWWdqM3Uuvqn4hZXkvY6gLPWIXhgDdmQE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=NFAd2r0z; arc=fail smtp.client-ip=40.107.208.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	s=arc-20240116; t=1769828475; c=relaxed/simple;
+	bh=0dP1zizuvb+YCTfhetz0ht1UJLaJiSW38KjUpELCixc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ucdioX1MPUB0wOztjRldphZGhV3JSimPZ5CTHl+aRQB3xgyBwXg1+leMweiXAAZrhcFe6NNYxoTHI2YZSrj8So8jyJc/olayLUSZrwNBf0fqJACEu8Fw3nA/TLVRxj71DACGE0+SE/rbxPhvhdt2N/b5ejlXcEvgw+/oUTXFAeI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WPz0hibx; arc=pass smtp.client-ip=209.85.219.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="NFAd2r0z"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=N2RS0Q/DI8Ksc/NRQuqMPsrOjkusko5XT4YdQb4Bo1BhiUFEP6VeVeSKfTr470LFgBHqj9t4U+ogtsSq/rs/4+xL5/SdumdfjI/8TTc+4ekhD3vyzGRPcIMNd0A85QEjA8ure2gSf0Qe8umPdRESRxdFPTg/MZQxx38V0jNlHeZapSM44UlZfo1TNhHid+2MN4QY7FaZObEgspSbIZkQnXsFag+lUABZBpJt9A8n9PffwCGHJw3+TemxiS/jJR9dqqogzvVypxteSrZFNhpB4T2vFmMsFI9S7hLS1GxiPMNn9hMV6+cumvK9F7P6zOI3duWD9B2SYwBdX5231R13uA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=HGZlb0sc7tb23SakznYhv9XHsEaHih7CMv9psv2Y/3w=;
- b=fnew/VQwrTdI5O+83EkMORoLH+tEsLeVWl+ENpy0YkMH/yTywkgA3wwnXUun57CrwfezEkQ81+HMczu/nxwjrcEgR0b+G2LeQrzmnuU7VCMBdYhur5xXe3tKcqM3rzENwgUM/NZtFx5aJZWfemeblLsYF86CCuWk0CG72FL5tLje0ScNLzT6zBI69Aggj5WZJaiMM8+LvFpZGejl73F2BQvF3e/BeitJBgjLTLaKPaYEamaDhJDEwOSPQ7gJPenU6+VaGWaF9EgYD7GTNTHu6ta/ENCcv2BebMMa9Mm2yNOnuzZycwbdKMQsJd1FsjRj24SEpkX9ULK7xsD/uS7XXg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HGZlb0sc7tb23SakznYhv9XHsEaHih7CMv9psv2Y/3w=;
- b=NFAd2r0zYkwQLuia/cx7YVwyVPrakshzd7Q0IP/hzLNuR3rczWCUsSHvTWZzRom4XvyDKO2L7dDcq9Hh99P78qhDkx9FPrEckiwdtP3zUD66hNTxPHzv5WXzvbpTpeClHANEa45Q1cQ/HFrldfZWlgmzaqZ4oSO5Bvo8WkY43oaDqEaphPDtkwKUqIPzqRdZmGBgAtqXJdHee+sZ+U7befIxqgQcYcDztAsqh4WthaCKT52XdSqG48LkfjFa4nsgNG7lc2TRbZl5npViYSF4C99iZMspjD4h7pF/koHQYUNzoCQlUF8etuewkWNwq5PEoWG+V1Bz7WRTSa4npn32MA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
- IA0PR12MB8932.namprd12.prod.outlook.com (2603:10b6:208:492::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9564.10; Fri, 30 Jan
- 2026 21:14:19 +0000
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9564.007; Fri, 30 Jan 2026
- 21:14:19 +0000
-Message-ID: <70d88203-2fe1-4bde-b254-51e8107744eb@nvidia.com>
-Date: Fri, 30 Jan 2026 16:14:14 -0500
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC v6 05/26] nova-core: mm: Add support to use PRAMIN
- windows to write to VRAM
-To: John Hubbard <jhubbard@nvidia.com>
-Cc: Danilo Krummrich <dakr@kernel.org>, Zhi Wang <zhiw@nvidia.com>,
- linux-kernel@vger.kernel.org,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>,
- Christian Koenig <christian.koenig@amd.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, Rui Huang <ray.huang@amd.com>,
- Matthew Auld <matthew.auld@intel.com>,
- Matthew Brost <matthew.brost@intel.com>,
- Lucas De Marchi <lucas.demarchi@intel.com>,
- Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
- Helge Deller <deller@gmx.de>, Alice Ryhl <aliceryhl@google.com>,
- Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>,
- Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
- Bjorn Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin
- <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
- Trevor Gross <tmgross@umich.edu>, Alistair Popple <apopple@nvidia.com>,
- Timur Tabi <ttabi@nvidia.com>, Edwin Peer <epeer@nvidia.com>,
- Alexandre Courbot <acourbot@nvidia.com>, Andrea Righi <arighi@nvidia.com>,
- Andy Ritger <aritger@nvidia.com>, Alexey Ivanov <alexeyi@nvidia.com>,
- Balbir Singh <balbirs@nvidia.com>, Philipp Stanner <phasta@kernel.org>,
- Elle Rhumsaa <elle@weathered-steel.dev>,
- Daniel Almeida <daniel.almeida@collabora.com>,
- nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
- rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
- intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <97af2d85-a905-44d4-951f-e56a40f4312e@nvidia.com>
- <20260130015901.GA301119@joelbox2>
- <c064fbdc-9202-437d-80ff-6134d2a33778@nvidia.com>
-Content-Language: en-US
-From: Joel Fernandes <joelagnelf@nvidia.com>
-In-Reply-To: <c064fbdc-9202-437d-80ff-6134d2a33778@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BL1PR13CA0383.namprd13.prod.outlook.com
- (2603:10b6:208:2c0::28) To DS0PR12MB6486.namprd12.prod.outlook.com
- (2603:10b6:8:c5::21)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WPz0hibx"
+Received: by mail-qv1-f46.google.com with SMTP id 6a1803df08f44-8946e0884afso46455356d6.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 30 Jan 2026 19:01:11 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1769828470; cv=none;
+        d=google.com; s=arc-20240605;
+        b=W31etr8klKGt4Hso/Nnn/0GjlK2cA6/ZhdyTavNw4WHBfog/UEyRuszXQyoYSsA9jU
+         NnfGRyIReGWmF6YFWL9rdxKcKJdybpkThjGwO9JsmJqZqrhnkXIxZoBTiOO3du7wTtvj
+         7Kso3SZm7EdqRuTJ7kPmhKZx1fwSLTs4yX3kLc8OHTMDDQMPWIh1NQeWEgKZo+9cZayi
+         QyvU/RTCfBAOps0/S8qZSbXfBS2s4RIh5u0EqKjF73U3rHb6oynraWt3g3RwR+H2rErN
+         BMHwkxc1E+sOhoCqTV/jKcfns7BbQynz7aKzvvUKLa9rFixpsek1b42ObSyEyJbLI0Y3
+         Lkng==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=0dP1zizuvb+YCTfhetz0ht1UJLaJiSW38KjUpELCixc=;
+        fh=yrUn9Yk/lGHFCcFdMQISVaYMSWHpiP0CqW3JNf8W6dw=;
+        b=hVFLyglMgz9MKHeXkxRccnZYq4F9rOhSLf8n5rhDzzaMfQMrDKRpvVYXiU/zNXlFkl
+         6iqj8WwcaEsY1a/B5DdVuq3ZgB+BqdU1+OquppR4NFJrF6vwoCxrnGuSqRpGY5kRmTdh
+         DlAV1WXuPtx2EtOjRkpXEJDE+R+7lA1707jW7zMkK1C7b7K+9SV0ZAI6ZeLilwjmX7vO
+         5wL3OFccAam5KTo5D4VeyeF9CgZOMguPVCQF/hMcuWmBj4WS7P6kzAfpaIJX0+ShGKEQ
+         Mq232FmF2X6OnAJrLSoVQu80TrtL1mzwU32EC0t17Ru2Dz/DyTzg4/yZscvTZeNWhhC2
+         qQuQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1769828470; x=1770433270; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=0dP1zizuvb+YCTfhetz0ht1UJLaJiSW38KjUpELCixc=;
+        b=WPz0hibx6GdNkusUtWCaf2UaHgvYNZqQ1U/vmDYmAFqzLTEnXLMcBhWQuBNLXuZiIX
+         otUnCrtku2ISMwbZY9lc5qsisr6iq45nhbRx3YntkuAiCzcqYDa4niCSPVQ1nF7sqeas
+         lVL7ZCTAqfcSM19/UIhc9mSXnawMpzBIyKVZVoRh5AulgRhPKfm9vHecDK0kYfhrrHeb
+         2HeWLp3RtnUbWHBXaiWBrhCPCf5gAhJpByB/SFxKH3hnHFy837PLHfWJdvMNdpLvVWGH
+         N7JTj7v7qRFeJQPKGmr6dwOsfgXqyFf+zNN8bHokW8n2xwAmM1XoJPacjCg5n4Ez+ctu
+         tnxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769828470; x=1770433270;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0dP1zizuvb+YCTfhetz0ht1UJLaJiSW38KjUpELCixc=;
+        b=fsk8O4xrOem7ppIMmtUr0zFWkNx4UvecuaErNhHw1HsQUbP7bkPtLJLc50FQBat3Gz
+         maRQpf0tWCb3epuvhwUfA11b8Rc2EKTbS4Oa/9frsY/6lxrdqIhaN6DBq6SZJiPe9ufY
+         fQvLyKop0drvdcE6urGL3Q4fr+tAYR6IHgY+3eKbO+75Hm4kLlBZfSGEWxYYBRowDup4
+         zAJmLlCWYzrnhYFJ5Va1Xot1R8nbxXDe4G8ETb1eRSkpPHQJcRPiGZod3IQpjHpHgrR8
+         Hx0gm5WgKduau3MFrPgawhx9uEX/dNwFkdC1I2OIvkYeIGLoINhCLvNOg7QNtmS8Z/nj
+         gBEA==
+X-Forwarded-Encrypted: i=1; AJvYcCW4F0u7S78hSNIcyzhV8N1kmTdng3R9FrLsoVVPwYCh+iUSIe4/TYZXaaK5kdQitgaikYZcbFB3yIHb0g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwL/v9Z7zFJZCamQTzbaHbl04RivmEMOQz6Cm59DxU5hZ0ltX3K
+	htgh5W/COYue5uq5yPyyDJlC6fQHnxAVRzA9m1A5o1XbMK3uqhzhaGL13NOgeaa8ATA8yprdA6f
+	6maVrO4BtY+5pwgNfmCXZ7ERTtcZxmnQ=
+X-Gm-Gg: AZuq6aLfhNfRuHn49vW6Vxx634KFSx+Dsf7Udz4c3Nd8HLeCKQWlLqCc+A0u1aNHLjD
+	UXwK7ESuxqmwX5RJlsOsB4aqBHeCwNDV2OEy3+uIz9jbtpcMDu4iOmJ/+/VurnuFMovLR4ZnouJ
+	MlXut+3BFv3//K4oZ7JjBpJD11rl+Ss5bymNveGWYz9I26QPb41b5lAtxS1HeMo8MQzsk7wBig3
+	Cv3Vyj20Jj0DVOqOTGLPAvDrA6QM94xHYibNYuTeSktMUgUb9JPNnFqOP5yC8XJa3VwWu2O15bH
+	8YKsmjtJ04bU8M5kw/679u6D8sVQ4WsvalesQM87133EZTErudO+GS8=
+X-Received: by 2002:a05:6214:260b:b0:880:51f0:5b93 with SMTP id
+ 6a1803df08f44-894e9fe6cbemr81159006d6.18.1769828470148; Fri, 30 Jan 2026
+ 19:01:10 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|IA0PR12MB8932:EE_
-X-MS-Office365-Filtering-Correlation-Id: d09637fe-9f97-401e-e29a-08de6044879f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|7416014|376014;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?a2x4bW1OTENTeWlDTkp5NXlGeVI4QnIwU0YxNkJVN21VekRRT2QwOUJWZU0w?=
- =?utf-8?B?Q3BXYm4xdkZMUGw1MHhzOVhKR1U1UTRCeXIyOFFEZlNTMnV0YVh1ekJXc0lN?=
- =?utf-8?B?eHN1QWp1aFpsYUt5TjRzNEJsZWppS1liTUJXU28rTm1Ddy9sMkVKZXBZZ3Ry?=
- =?utf-8?B?d3JnbkQvYVQ4bkorZDJBbzZHOCtVanlPTDYvS1lTWENpYjVCbFNnMFN0U3Z4?=
- =?utf-8?B?c1ZKNVcxeEFvWHZxanRMNnpsZG9WK1R3UEx6Z0FMZ1hMT3RCU3Z1YWgzcnls?=
- =?utf-8?B?ZFh4RE5kYnYrczJFSzUxNzZIbkxRMDg3dFNVQjJELy8wSnlRcHllRmQrSmhl?=
- =?utf-8?B?NjJkTzdxN0hCZnRseWxXaWs0ZW84ZGZqYUJ2NDU2V0xUNHd6QkpFTFdBZi9E?=
- =?utf-8?B?OE5SeGwyV0EzbUpmanZLNHlTcGpQWTl1NW1HTW1kNFl1RlZpR0NPS3hrRDJO?=
- =?utf-8?B?VUJOVDNSazJHMjBTRjVrdWF2M3FVSHhWSjhWUXhzY2dhVlhHWWEvTnMwZFJj?=
- =?utf-8?B?eDUrTS9TUmdvcU9tKzRUb3ZTUlhVUjJiak9zNjVMS1B5dUpldTdqR1ZubHQ2?=
- =?utf-8?B?aUhILzZMUFVmWXhrVGFVdnJONlJDUjRIaytLMVlDK0VQSndRekJhZVpybHow?=
- =?utf-8?B?cmk2Nldiamg5aDlRd0s5K2JmTlgybmVMVklTNUNGOGJRcnRzYklSRGpud21z?=
- =?utf-8?B?YmZJUUdFd2hpUVZRM3Vwb1gzTFlvSElpNzdIL2tpbFJpd05wd1g5WlExeG0v?=
- =?utf-8?B?RDFjMW1INVlyNGdlNVUxdzB4ZEdiN01ZUmUweVlTM1RqQ2NLRXowampiSWlQ?=
- =?utf-8?B?aTlYWFpWOWRsM0NSN2NYWjc2MTI4SmlablBpdGdLdGR1Wk56TjFjQVVwRmNK?=
- =?utf-8?B?VTlNS3dxSUhjczBBVUxTMHc0TkhmcDNpYlhUY1BCL0E4bWczZTNwZkM3ckkv?=
- =?utf-8?B?dWJNc1l5VnFTNDR6b01Fd3RHS2xDRUFTWnI3YXFKYWZBT2pEZzFiMFpNQ2Qw?=
- =?utf-8?B?MUxRQ2JrUDNBdS9HWW45eVFUNzBOS3MwejBrcjBuUHhma2lpSlZFVW5mZEYz?=
- =?utf-8?B?eVoyRXc0a1ZsZXdnWmc0VXMrRGJ6TnI1eGwxZFRTa3JOZzErYU5qN3FweGpy?=
- =?utf-8?B?dUZjSlVkNGVEZ2hRYUhOWGJuS0pFVlQ3alVuaDh2SW9OQjdjamFKUlNjU3pK?=
- =?utf-8?B?Z1BXK01NcU8ya1lCT284VDY5N241WXVORHNsdUJ5Y1Rwdk0zNmppTXVBTlpw?=
- =?utf-8?B?Z2lzSTk2NktzQUhNd0hSbmc2cnUyWll0eTVyRmJrS2hnWEY1eFAyOFl0Vk1v?=
- =?utf-8?B?WXQzY3ZOTmZmdDU5Wi9OQkVQWjRDdUdEZEFrU0pKN1dwUlg1ckc1K2lLdEo2?=
- =?utf-8?B?WXBLREkrWWZNV0xlRjFWT2QwQTBvRzdoYUErQU9jVkFpREpZOUlGQllRYXZF?=
- =?utf-8?B?WGhMZkg5bGFldVJsOHlOVjFxQXpXcWs0SlBrQlQyYkkzendtWk4vVkI5UUVq?=
- =?utf-8?B?eGJ3ZWNiOCtDTnVaY1JLb2dZODRRRVdUbmNaSXF1cHhNcFBQMWloWWcrTngw?=
- =?utf-8?B?S0hYbWpLZFpQY1pnbFJyeG55NmEyYy9QNGd5ZlA5eTZqbGk5djFKSlBXMlpx?=
- =?utf-8?B?Qlp1bEg3OVNhSXZVSUNyT2hNWXFiNGE5WVVab2lrYXdqakk2eHEzbGZKN005?=
- =?utf-8?B?QzFYV0xxK0hwODZ6bWplbnBGQktwUThiOVVIdER0WTQ0bDBweXhjTERFQy8x?=
- =?utf-8?B?MHNBNVQvSDBSaVYzREZBRVRhK1l2VFhtZVhXOTVTcGZ5VUVCZjJDQ3I3VlJI?=
- =?utf-8?B?ZVBhTlB1dkJpRXlVN2xLN3VpTWdwazV5ME5yNGRKQmE4WjRWQ3FUcE5DdlYx?=
- =?utf-8?B?LzZGbEJkVVRNdGZ6N09JbHBXQmRRU3JlZmlNckRLV0l5bElGQ3A2VEpOK1k1?=
- =?utf-8?B?N1NPNG5rMGZxcE1PR3N1b2p0eG1Nd2hSblFzMWpzM1pUS3V0MndZZWtwTVpp?=
- =?utf-8?B?S0I0blNFNzBQWnl0Q2hyNWxCb0N1VFhtMG10d3JyYTRIMFB4d2U0R1BTaHRw?=
- =?utf-8?B?cTNkNkM0ZWxQODV5TC9Xek5uSTh6Mjk0RWZqY050UDh1M0w5RjJ0bFFjenF4?=
- =?utf-8?Q?vl3Y=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?MFBCVEd5TUw5SjFwNTJOb05xNGRVamNQUDZtVFNLOTUyOUc3OGtCa2xOZ0JO?=
- =?utf-8?B?VXI5aWNURk85S1lXQ0c0VVF6bnVOeFprRnp0dFJWTHY2ZmxvUWV2NlpVZHU0?=
- =?utf-8?B?Z0dHVklua0NjL1BackxhMThNeGl5QW9pQnV5OHBPSlBtUVA5d1hHdW53OXI5?=
- =?utf-8?B?Ri9oaEtFeHkwTXpVM05GMDN4WGE1L2pWQTV0MklFb2FKOCt6czJqUzRPZ3Z1?=
- =?utf-8?B?eXZVTnlSTk5IdGNZbVBCcEc4S3JNamJrUjRyV1BhT20rRHc4S3ptTEM0VjZq?=
- =?utf-8?B?VU9UeDBLak1vaFpqQ3dwTklJdGdjajlyQ3VwcnZ0V2p1cEFPK05yWmJoWE9q?=
- =?utf-8?B?azdBRFNYdFA2TEpnbXZmZWM2UC82Qjh6KzFpMUxWZCtCVUhhZTJDWmJaNm9z?=
- =?utf-8?B?RWgySndWRDJKZEViRHU2R3RuUnNUVU9Hb0liNUZHeXQ1MkZoYWV3TlA3Y0tp?=
- =?utf-8?B?NFhiSEhpWUJieG41NXVoZzZkSW5DN2wwY3p3NWR0NTFxamU0ekU3VzQ5YkdO?=
- =?utf-8?B?N1E5MXh0RlBWWDVhQXZPaVorSnhNYWhCZ1VlN0k3M2VibVU5eFlJSkhKTDhS?=
- =?utf-8?B?bXV4TTRxUVpKdDBhNHp0Q1ZMWGs5dmw4UUs1TEM0RmFIOC9KeWFnVTAvQTZE?=
- =?utf-8?B?dkV0RTJhaGVwMnBjL1pxbUtLa3dDejFrdTRTZlJBQ2FkRnpDdFZkZ2JQdEtL?=
- =?utf-8?B?ZTMwSHlsOGRnRFoyWExWTUh1NGI2NmxmVkE2SWRtYVpuODFQZGxYM200a2RQ?=
- =?utf-8?B?N0Nab2N1RTkxNjlEMkNuYWh3U2xPUFQxNXNsd0RzZlRTT2lJR3BuOUx5bkhj?=
- =?utf-8?B?dE4rVHc4NVBsZGp5TUpBZWM5bnFwRC80cjN2VndyNU1mOGo3bVNob1FlNnJa?=
- =?utf-8?B?NmJ6NXRiVklqeFJtVmRQNlRRVGZmaGRMcE5xbkloQS9BTVk2OGJIUGdLYWZj?=
- =?utf-8?B?NDBHNDQ0ZUZ6RUgxaE1TbFF1WlhuVFJMMkd5dFZzL0FGMWk0Z0dqaWpBMk1t?=
- =?utf-8?B?ZGg4MnJXK1N3S0xTSFNjNGRNVlhhYmttR3k1cmpyV2RQbzU2M3ZQRnB1bzhq?=
- =?utf-8?B?SkNQbDZxUlhaa2F2VzdiamtvdzBuY0R3MEk1eUI2SHMyNmdaeldRaEVuazlM?=
- =?utf-8?B?Z054UTQ5ZVZaQmtMZEU5Tlg2Rk9pZUtLQ2Q5SitlN2hMTGhsMTZqd3o3aUJo?=
- =?utf-8?B?WmtEbjA5R1RhTHl0aFBTY3ZUSW5aY2FCdzBJL21JWldRK2xlRjRZamlTbDBI?=
- =?utf-8?B?SUN2Y0RIUkNxby9tdkZVRHZHd1dKZGZRMFpvdEFDakRzalZGbEpoWXNLY1Jq?=
- =?utf-8?B?MVFlem9CNm1Ga0xBWW5IdThFeksvSGY0bkh6bFJ2NkNBaFcweGxxc1NmNlBw?=
- =?utf-8?B?ZEdhL0t4NTlpZDZJWjZ0VExxZUxYSnp2L0xadm9KMUNxTzZQMFY1WElwSEFU?=
- =?utf-8?B?OWU3WnZaeW5scFR0eXRtMk84VjliQUcyWXJFR0JiUTdaMFFTaStyWGJqUkx2?=
- =?utf-8?B?ZnZFOEpyZzdhMno0Rllia1RwbUhEQzBQRGJ1NElpNEFPdHNqM004a0NMUVJC?=
- =?utf-8?B?NDE5alo5enVlSmpmTHdPUlRPejZwRG45bVNIbUtnWFRnbTc1V3YrYXpaK0Ju?=
- =?utf-8?B?NXRzRStRU3dkRmhWUDhjYTcyRDdDRTVReTd0VTU5d2RyajliVjgzUzdYY08w?=
- =?utf-8?B?TkdNZEpHcWJJb0NibGZlbWNaTWhTU212c1VjaXRsRzBTMmNjM3BqcmlKWTlq?=
- =?utf-8?B?bGxreURGRElZQkRjajN3MHdsRWlZekQwU01jc09UM0xCYm1QdFFZUkZGemFv?=
- =?utf-8?B?V2RSeEVOMXc0R2ZBVjZ6QVlDU1FpWjhQYmdFc0VxNGFFL3JqNml5MndlMGpl?=
- =?utf-8?B?amhsNjhua290ZGwyNWVxekREcWRiNDFTaXRFMkhnZmZzUzhybFQ3cFN1MmE5?=
- =?utf-8?B?b0RyWTNueDJWbmU2eWkzTkliVUtBUWJUY0JoUEN2QytHSFQzUGh5RWpVN3N5?=
- =?utf-8?B?Njd5RGJ4ajAxTzNDb3pObHlhYnJvTTFGUWhvK3hsQUZZL1pvczAreGprOUda?=
- =?utf-8?B?N3BFWjg3ZGRZVkF2OU1JU0paWWdJbXg2N0R0ME9LLzcraS9oMDRqUVJqNXdz?=
- =?utf-8?B?Vzd1b1liMnRMeDFKK3dOMW1IMjlDRVpZcFRkRUIvZS9SbkJsbk1yZGRWa1Nt?=
- =?utf-8?B?bE55UGNkTGQxK2pZMDhEbjFzOEx0QVAxVUtlL21GSTFQYUZ1Wkd3cVBNeUZj?=
- =?utf-8?B?dU4za01ZUWNreURnamRlR0FvOVR4dDgwNElYeTdlcmlkbkJrL0hLU0ltdno3?=
- =?utf-8?B?Uk1CdHRKRnBjK3VHRzVCaHVrMHh0S20vY3l2bkVVMmt0SENiYUFpUT09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d09637fe-9f97-401e-e29a-08de6044879f
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Jan 2026 21:14:18.6528
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Ft3Zh/YWvFD1DOpj9yVieOo1Vlh68tkpy1qzPeR8odRoW6Qr4JTVdSgwoBqyhNdRu2uBrEU6ZYDrefRpeLBagg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB8932
+References: <97af2d85-a905-44d4-951f-e56a40f4312e@nvidia.com>
+ <20260130015901.GA301119@joelbox2> <c064fbdc-9202-437d-80ff-6134d2a33778@nvidia.com>
+ <70d88203-2fe1-4bde-b254-51e8107744eb@nvidia.com>
+In-Reply-To: <70d88203-2fe1-4bde-b254-51e8107744eb@nvidia.com>
+From: Dave Airlie <airlied@gmail.com>
+Date: Sat, 31 Jan 2026 13:00:58 +1000
+X-Gm-Features: AZwV_QikuSqbC3QYogib7-81aPfnOToX57Ol8yNxSKEx4_hXbDFs8a3hQtETIYo
+Message-ID: <CAPM=9twm1x9rH==uoGQLYa8b4feQMz=Ne14WPuhCPy9_H1u5Tw@mail.gmail.com>
+Subject: Re: [PATCH RFC v6 05/26] nova-core: mm: Add support to use PRAMIN
+ windows to write to VRAM
+To: Joel Fernandes <joelagnelf@nvidia.com>
+Cc: John Hubbard <jhubbard@nvidia.com>, Danilo Krummrich <dakr@kernel.org>, Zhi Wang <zhiw@nvidia.com>, 
+	linux-kernel@vger.kernel.org, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Simona Vetter <simona@ffwll.ch>, Jonathan Corbet <corbet@lwn.net>, 
+	Alex Deucher <alexander.deucher@amd.com>, Christian Koenig <christian.koenig@amd.com>, 
+	Jani Nikula <jani.nikula@linux.intel.com>, 
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, Rui Huang <ray.huang@amd.com>, 
+	Matthew Auld <matthew.auld@intel.com>, Matthew Brost <matthew.brost@intel.com>, 
+	Lucas De Marchi <lucas.demarchi@intel.com>, 
+	Thomas Hellstrom <thomas.hellstrom@linux.intel.com>, Helge Deller <deller@gmx.de>, 
+	Alice Ryhl <aliceryhl@google.com>, Miguel Ojeda <ojeda@kernel.org>, 
+	Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, 
+	Gary Guo <gary@garyguo.net>, Bjorn Roy Baron <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Trevor Gross <tmgross@umich.edu>, Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>, 
+	Edwin Peer <epeer@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>, Andrea Righi <arighi@nvidia.com>, 
+	Andy Ritger <aritger@nvidia.com>, Alexey Ivanov <alexeyi@nvidia.com>, 
+	Balbir Singh <balbirs@nvidia.com>, Philipp Stanner <phasta@kernel.org>, 
+	Elle Rhumsaa <elle@weathered-steel.dev>, Daniel Almeida <daniel.almeida@collabora.com>, 
+	nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
+	rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org, 
+	amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, 
+	intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
+On Sat, 31 Jan 2026 at 07:14, Joel Fernandes <joelagnelf@nvidia.com> wrote:
+>
+>
+>
+> On 1/29/2026 10:38 PM, John Hubbard wrote:
+> > On 1/29/26 5:59 PM, Joel Fernandes wrote:
+> >> On 1/29/26 8:12 PM, John Hubbard wrote:
+> >>> On 1/29/26 4:26 PM, Joel Fernandes wrote:
+> >>>> Based on the below discussion and research, I came up with some deadlock
+> >>>> scenarios that we need to handle in the v6 series of these patches.
+> >>>> [...]
+> >>>> memory allocations under locks that we need in the dma-fence signaling
+> >>>> critical path (when doing the virtual memory map/unmap)
+> >>>
+> >>> unmap? Are you seeing any allocations happening during unmap? I don't
+> >>> immediately see any, but that sounds surprising.
+> >>
+> >> Not allocations but we are acquiring locks during unmap. My understanding
+> >> is (at least some) unmaps have to also be done in the dma fence signaling
+> >> critical path (the run stage), but Danilo/you can correct me if I am wrong
+> >> on that. We cannot avoid all locking but those same locks cannot be held in
+> >> any other paths which do a memory allocation (as mentioned in one of the
+> >> deadlock scenarios), that is probably the main thing to check for unmap.
+> >>
+> >
+> > Right, OK we are on the same page now: no allocations happening on unmap,
+> > but it can still deadlock, because the driver is typically going to
+> > use a single lock to protect calls both map and unmap-related calls
+> > to the buddy allocator.
+>
+> Yes exactly!
+>
+> >
+> > For the deadlock above, I think a good way to break that deadlock is
+> > to not allow taking that lock in a fence signaling calling path.
+> >
+> > So during an unmap, instead of "lock, unmap/free, unlock" it should
+> > move the item to a deferred-free list, which is processed separately.
+> > Of course, this is a little complex, because the allocation and reclaim
+> > has to be aware of such lists if they get large.
+> Yes, also avoiding GFP_KERNEL allocations while holding any of these mm locks
+> (whichever we take during map). The GPU buddy actually does GFP_KERNEL
+> allocations internally which is problematic.
+>
+> Some solutions / next steps:
+>
+> 1. allocating (VRAM and system memory) outside mm locks just before acquiring them.
+>
+> 2. pre-allocating both VRAM and system memory needed, before the DMA fence
+> critical paths (The issue is also to figure out how much memory to pre-allocate
+> for the page table pages based on the VM_BIND request. I think we can analyze
+> the page tables in the submit stage to make an estimate).
+>
+> 3. Unfortunately, I am using gpu-buddy when allocating a VA range in the Vmm
+> (called virt_buddy), which itself does GFP_KERNEL memory allocations in the
+> allocate path. I am not sure what do yet about this. ISTR the maple tree also
+> has similar issues.
+>
+> 4. Using non-reclaimable memory allocations where pre-allocation or
+> pre-allocated memory pools is not possible (I'd like to avoid this #4 so we
+> don't fail allocations when memory is scarce).
+>
+> Will work on these issues for the v7. Thanks,
 
+The way this works on nouveau at least (and I haven't yet read the
+nova code in depth).
 
-On 1/29/2026 10:38 PM, John Hubbard wrote:
-> On 1/29/26 5:59 PM, Joel Fernandes wrote:
->> On 1/29/26 8:12 PM, John Hubbard wrote:
->>> On 1/29/26 4:26 PM, Joel Fernandes wrote:
->>>> Based on the below discussion and research, I came up with some deadlock
->>>> scenarios that we need to handle in the v6 series of these patches.
->>>> [...]
->>>> memory allocations under locks that we need in the dma-fence signaling
->>>> critical path (when doing the virtual memory map/unmap)
->>>
->>> unmap? Are you seeing any allocations happening during unmap? I don't
->>> immediately see any, but that sounds surprising.
->>
->> Not allocations but we are acquiring locks during unmap. My understanding
->> is (at least some) unmaps have to also be done in the dma fence signaling
->> critical path (the run stage), but Danilo/you can correct me if I am wrong
->> on that. We cannot avoid all locking but those same locks cannot be held in
->> any other paths which do a memory allocation (as mentioned in one of the
->> deadlock scenarios), that is probably the main thing to check for unmap.
->>
-> 
-> Right, OK we are on the same page now: no allocations happening on unmap,
-> but it can still deadlock, because the driver is typically going to
-> use a single lock to protect calls both map and unmap-related calls
-> to the buddy allocator.
+Is we have 4 stages of vmm page table mgmt.
 
-Yes exactly!
+ref - locked with a ref lock - can allocate/free memory - just makes
+sure the page tables exist and are reference counted
+map - locked with a map lock - cannot allocate memory - fill in the
+PTEs in the page table
+unmap - locked with a map lock - cannot allocate memory - removes
+entries in PTEs
+unref - locked with a ref lock - can allocate/free memory - just drops
+references and frees (not sure if it ever merges).
 
-> 
-> For the deadlock above, I think a good way to break that deadlock is
-> to not allow taking that lock in a fence signaling calling path.
-> 
-> So during an unmap, instead of "lock, unmap/free, unlock" it should
-> move the item to a deferred-free list, which is processed separately.
-> Of course, this is a little complex, because the allocation and reclaim
-> has to be aware of such lists if they get large.
-Yes, also avoiding GFP_KERNEL allocations while holding any of these mm locks
-(whichever we take during map). The GPU buddy actually does GFP_KERNEL
-allocations internally which is problematic.
+So maps and unmaps can be in fence signalling paths, but unrefs are
+done in free job from a workqueue.
 
-Some solutions / next steps:
-
-1. allocating (VRAM and system memory) outside mm locks just before acquiring them.
-
-2. pre-allocating both VRAM and system memory needed, before the DMA fence
-critical paths (The issue is also to figure out how much memory to pre-allocate
-for the page table pages based on the VM_BIND request. I think we can analyze
-the page tables in the submit stage to make an estimate).
-
-3. Unfortunately, I am using gpu-buddy when allocating a VA range in the Vmm
-(called virt_buddy), which itself does GFP_KERNEL memory allocations in the
-allocate path. I am not sure what do yet about this. ISTR the maple tree also
-has similar issues.
-
-4. Using non-reclaimable memory allocations where pre-allocation or
-pre-allocated memory pools is not possible (I'd like to avoid this #4 so we
-don't fail allocations when memory is scarce).
-
-Will work on these issues for the v7. Thanks,
-
---
-Joel Fernandes
-
+Dave.
+>
+> --
+> Joel Fernandes
+>

@@ -1,62 +1,62 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B6BF37419D
-	for <linux-fbdev@vger.kernel.org>; Mon,  2 Feb 2026 16:57:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65DB13806CC
+	for <linux-fbdev@vger.kernel.org>; Mon,  2 Feb 2026 17:12:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770051448; cv=none; b=MwZ/TTBgZIOkrNP1Elclz40YThjvJL/4Ov+RxSGSBmllFnSC0XheMU8ZDHZk/5khJR6yzVgZ5n3n+nG28Q0DoPZWrKHpsJ27/IakvJNTUnuWsB1fblBwGAZs7KlI36PViNv7e8cUH1LpmaY0AEdSkOdU0yqbjb3r8qiwS5aKhZw=
+	t=1770052373; cv=none; b=FlAF4ZcYxw3Na1tg3BJiggC75zCl5ZAtNwRGviijnz9xoinlGArxxnTzv/iEyQw6AAjJpKLh0XgqFhRdU0hTJnLRz4tLFoSqg3M1FqGbXL5o0vsjeysCBsN66n0ZexWm9TK9//YQSBfwJC1Rv1Xs2PGz/MDm/u9dnO+epTg7XeU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770051448; c=relaxed/simple;
+	s=arc-20240116; t=1770052373; c=relaxed/simple;
 	bh=uZupMsY12grTXtbViH2uDs9GyHCl34p6SlRSawPH9Tk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=irqbQMwj97x+S1jujC4vAoVG1psOYKLhmbik43Af5uckawCvZH65srWkRbTAMPR4VVaS9nn0mhmcC3gXzIlWT2GU7QH59zWaCNkB5LM1IH/ZVvi7Q9g1CzHb6LWQq3gzX5qGIPCCwtr/UihcNWQTgOPFmEAOSRF2BvVAnahj9Mk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fx7dSiDh; arc=none smtp.client-ip=209.85.128.46
+	 MIME-Version; b=HJEC0zM8bYieY4+EzAXuYgE2l9fvbsADHs4Fybw/JD8pRSOIvqJaaLY/d+E9rhdeSctR0gMsEYnmsBnRUmX8DQ1+mD+rOQHCz3W77zMWcsezl9O7y9uVo7NgtZP2LK3E2AO/6109IQmd2B31ExthUqdvE/op0sxbnHo5Tj/MVIg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VpEhW3s3; arc=none smtp.client-ip=209.85.221.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fx7dSiDh"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-482f2599980so18664105e9.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 02 Feb 2026 08:57:26 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VpEhW3s3"
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-42fb6ce71c7so3871679f8f.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 02 Feb 2026 09:12:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770051445; x=1770656245; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1770052370; x=1770657170; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
         bh=INIFCBCUJTQI/9LdXmCI4Y+qu/4cGnWjRRdFLeUHGsM=;
-        b=fx7dSiDhUHqV1SIlxrIDFnOhE2pnPgXNVt2eCe5L70QGO5slKYCuu4Jfs0NObQgj20
-         bsL/6C5Lq48HlBjpj2ssj+y4sYHaRCkESx6x9qPNXTdDgcp8+Ez5AGWvz53pZNx5DVdv
-         qoaECyxR34XYCgz7nylT8uZO0HU9RAnvEtjPvZmBaFt24ipC5JEOuUVqZUDult+KOTTK
-         4JjAp+Dn677bIxjk4KRc6BIZ8pIOKRKMghStsuJsIVfV9ZcePQUffbg8NOMXNGML5MOc
-         E4fWwxSzZBC9GxftrfWeoCm5MtLyrT/bE1/waUDPAnvoDf+sGM9WWG2nVKPw5XlXH5Dw
-         4y4w==
+        b=VpEhW3s3q8CXQ1MdnVz7KOHVc/ly5M4bBlKlRCrnhtrYIM+lof/KYvrRie0RqDEnvv
+         lPmWZ3au/rUn164f/xJ9QWSZJUvjTRWb6t09qHf7Dmwq9cFPN9xMTT7TGKXp5O89MTew
+         HU8BmzKZXgHcyqgVWaltVoui2WC33fVlAaz4OtzXVWew1NTkwEfucXoutID7OPlYZUnu
+         6ymwak7clDoJ0jQrrtj+pHVOCf1PyWJ0cdSkGAZoJY79MYJ9+WFMgpKLQ8M89P/XrbrG
+         CCKxC3sYSsVLZ/jlCaE3PjZKxJ6X0DRs0Vt1h9Ptpy5yULWeIBSCkxaDYQQXfNDGGvwX
+         hxew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770051445; x=1770656245;
+        d=1e100.net; s=20230601; t=1770052370; x=1770657170;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
         bh=INIFCBCUJTQI/9LdXmCI4Y+qu/4cGnWjRRdFLeUHGsM=;
-        b=Z6UC7/tWahgEQDoRVWGJYymQKvWIBKXKA1FLWkmKYh7tYSo3OtHOAaeViDN9VDIlgC
-         UESWuz7cxmFYKFujrqWT+ATGgc3K0i4FbODT59WtmdJXGHVTVq7RWMGBh9DPYFgoMZbh
-         BsXrpzBTC4ucLxRv86DY+l5QcYRsHiyGtQ/R22sT9oeQdiD/XQKUV61OHvpCnfoLKXdG
-         WTEnSgE8kpcqBI5F2iy10NsvkNcsFeQue6bYOFhPackrhjtSLhX46o+8kPKaJ7FiVdcV
-         sMKVvzfKP148m9SzMEIaUXNSbSLDyy7mCmQyz78tZs07N7rOoc4T6nr2i+rxkhjr+egV
-         ZMrQ==
-X-Gm-Message-State: AOJu0YwTvBIX8JUQwPywcMkpDkLDV7CNQY075jFLRAO45mNqApMc9Tno
-	c9a4qmV2hfC0UV5i6gXcw/XYtdWGN7c6fdtMrjlXs+KCuDFrUBTTV3O7
-X-Gm-Gg: AZuq6aLxjdpcY2wSySVjcxUlgw0+tSy5CVoaItxqTE+eDpQrdIhS/VMxuk2ERs3DiQF
-	mgXnNCN8C4cn4P3SFj74Je/gTVVZaeJbzZSVfekRx5f5oNBd2Hf60lTpwqPrgfo0xNgdvjr03Cg
-	+FlTdIDLrO+Smiyu+kjuGTvq6hnZG8jraOhHZlXjVJTJHMBDTHf/RbXVMt78u+Xe248xP16KyFx
-	eIglgsfRMhwORtV65tlQsRR8h/xI7TbzdXuvTExyuK9uy5XDTPpvqI1/xB/UojA8AKfxMVlBJeP
-	vO2mFrWmgpM1/FM0kvv1HMgv18IBOk3HhG/bh+9omVDqk0XqFY+IwXsE+twrxOUhknhxHMvW0B/
-	jlgCH4L20/cuyc/8dMSYuuqmWkg7IOCSXtgX0z9fJxloEiDukSgzvKM5HddyKxdNzLJ6GudK9zH
-	nHdrmLiDfzs9NSjGy1zbEAOEv/xhJKqqxJ3ydLoGB9lHUN6EIMWNk=
-X-Received: by 2002:a05:600c:354c:b0:47d:5d27:2a7f with SMTP id 5b1f17b1804b1-482db49590bmr155556105e9.26.1770051444643;
-        Mon, 02 Feb 2026 08:57:24 -0800 (PST)
+        b=YvUWtd6kR5Ug3FjjtkWnp0LTwFJC4vRktsHsor/T8GWel4hspHg1+6Hzo2wb4vuSUH
+         4eF2rbpjvJuV2GA8jbx1iy0BuBMpZSQ4cqWUYZ2TFTiFjnsbHOTpbJE5GG6JOUa7mEvA
+         C0Eitbsg2+NJ86a2gZRejeRoQusM7NHhdyM1QuHoQWU8fbnQrmbvEA43L2lUndNm7uhb
+         gN0XZ3jqVEM+6TE19REIPiZJW44VvB5c4qJbDlF4IAR/cdUUgw7xxrwBo1If25+hkds4
+         ttWcJle6Rf92VC5EyCj3vAkmIw29AgVGaczttXKyS5mORtg0qhZsT+NJ+2e5AFVDyXX9
+         Fdog==
+X-Gm-Message-State: AOJu0Yy1IckEOj/JecbfniNo9xGVbNe3Gp3pFRBRnAlH8F0DW/9bLSHk
+	KCaoPNA9B6sdCDPIquAQnKwlwh/zFDCyvavFdVs3xQXDMD5yXUFlmldk
+X-Gm-Gg: AZuq6aI2XY1HDCGxMKoKZYtmAoGZoJoDrI/KjwzlAq0D3OuCVbig0V43Rs+g/paL+ev
+	grUKAULY2F4isxwS/BngMW+g3ATtRNc9cVcTGd26NcZkDbstVXhFUvA/KymavXXvpx91LTiqdK6
+	oZoUOrcTvtNGQ6GUfrxxNb53WzLRsTFYA9kL5416SvJpHkOU2DvMTbecZKso1vWuy6uRhwTa/rW
+	pao/J6/i7N6FWK64rsG2yL3yaE2mzNnmlg8Nt3B0JNN7JsY5xUw54r8B7X76qvkg98L9Mc41PMn
+	cuK6eXR+EalZl6s4K4Ve8WPqoIdyaOLVyLOvyoy0shbltw2a4BZtjkWghhv7QRTYyRPg+zMohVd
+	ndpJ65x/nj9QIGdiTeGla9aPGEflkYo2m05g2juUVL+9hCciySGW6sNre5dyx+0jBN9eWq4BLoy
+	eY4vmDAiUv36R8O6VenVnnnyicDupcGGMSaCwOgcAoik2vzxXWoVQ=
+X-Received: by 2002:a5d:64c7:0:b0:431:62:d946 with SMTP id ffacd0b85a97d-435f3a7bafdmr16924187f8f.23.1770052369703;
+        Mon, 02 Feb 2026 09:12:49 -0800 (PST)
 Received: from yehudis-VirtualBox.. ([195.60.235.90])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4830511bfc6sm4121875e9.2.2026.02.02.08.57.22
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435e131cefdsm46308792f8f.23.2026.02.02.09.12.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Feb 2026 08:57:24 -0800 (PST)
+        Mon, 02 Feb 2026 09:12:49 -0800 (PST)
 From: yehudis9982 <y0533159982@gmail.com>
 To: sudipm.mukherjee@gmail.com,
 	teddy.wang@siliconmotion.com,
@@ -66,11 +66,11 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	yehudis9982 <y0533159982@gmail.com>
 Subject: [PATCH v2] staging: sm750fb: rename Bpp to bytes_per_pixel
-Date: Mon,  2 Feb 2026 18:57:18 +0200
-Message-ID: <20260202165719.133879-1-y0533159982@gmail.com>
+Date: Mon,  2 Feb 2026 19:12:43 +0200
+Message-ID: <20260202171243.133935-1-y0533159982@gmail.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260202145413.132435-1-y0533159982@gmail.com>
-References: <20260202145413.132435-1-y0533159982@gmail.com>
+In-Reply-To: <2026020201-monogamy-sash-4866@gregkh>
+References: <2026020201-monogamy-sash-4866@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>

@@ -1,183 +1,106 @@
-Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65DB13806CC
-	for <linux-fbdev@vger.kernel.org>; Mon,  2 Feb 2026 17:12:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE5D92EA15C
+	for <linux-fbdev@vger.kernel.org>; Mon,  2 Feb 2026 20:01:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770052373; cv=none; b=FlAF4ZcYxw3Na1tg3BJiggC75zCl5ZAtNwRGviijnz9xoinlGArxxnTzv/iEyQw6AAjJpKLh0XgqFhRdU0hTJnLRz4tLFoSqg3M1FqGbXL5o0vsjeysCBsN66n0ZexWm9TK9//YQSBfwJC1Rv1Xs2PGz/MDm/u9dnO+epTg7XeU=
+	t=1770062506; cv=none; b=VoTq8eMSr981cXkm/CYUEhn4JYm1+Dn6cSJyAPgq/wkx2ewT35QyVz5wVH1iuuO8jZarMRouCAeh6B7ubLalaeoWcRU3sxT7c7w4NG21T+NIGPNCCA2S+MAHaq1uaIbSaIeeTXtt+WNtURNosi85IC7/Jkx1KsqW6BkKCjwnyh8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770052373; c=relaxed/simple;
-	bh=uZupMsY12grTXtbViH2uDs9GyHCl34p6SlRSawPH9Tk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HJEC0zM8bYieY4+EzAXuYgE2l9fvbsADHs4Fybw/JD8pRSOIvqJaaLY/d+E9rhdeSctR0gMsEYnmsBnRUmX8DQ1+mD+rOQHCz3W77zMWcsezl9O7y9uVo7NgtZP2LK3E2AO/6109IQmd2B31ExthUqdvE/op0sxbnHo5Tj/MVIg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VpEhW3s3; arc=none smtp.client-ip=209.85.221.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1770062506; c=relaxed/simple;
+	bh=jNgUwMtK2RUmQMG3k47FK/HbS0lmCnI74aV7EWKk8EM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KTnhNdsW9GalaSnlEzgROn14WgK2JytsZZDOEHr+QiMV11Wpuqs011JQH+WxgYuP/GVz7ITq1rhHJZGu56vo1Lm4oIloh1/8bhAYvmTK83PuXgB/npN4hOxrhl7T9KBjQf1EAWDZlPXe+Z81HT7svshXnTfDkitIynZgU10kUKg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=AwZRDuGQ; arc=none smtp.client-ip=209.85.221.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VpEhW3s3"
-Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-42fb6ce71c7so3871679f8f.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 02 Feb 2026 09:12:51 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="AwZRDuGQ"
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-42fb4eeb482so3409581f8f.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 02 Feb 2026 12:01:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770052370; x=1770657170; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=INIFCBCUJTQI/9LdXmCI4Y+qu/4cGnWjRRdFLeUHGsM=;
-        b=VpEhW3s3q8CXQ1MdnVz7KOHVc/ly5M4bBlKlRCrnhtrYIM+lof/KYvrRie0RqDEnvv
-         lPmWZ3au/rUn164f/xJ9QWSZJUvjTRWb6t09qHf7Dmwq9cFPN9xMTT7TGKXp5O89MTew
-         HU8BmzKZXgHcyqgVWaltVoui2WC33fVlAaz4OtzXVWew1NTkwEfucXoutID7OPlYZUnu
-         6ymwak7clDoJ0jQrrtj+pHVOCf1PyWJ0cdSkGAZoJY79MYJ9+WFMgpKLQ8M89P/XrbrG
-         CCKxC3sYSsVLZ/jlCaE3PjZKxJ6X0DRs0Vt1h9Ptpy5yULWeIBSCkxaDYQQXfNDGGvwX
-         hxew==
+        d=linaro.org; s=google; t=1770062503; x=1770667303; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=4hGFAoXoGcmWys+uUjHRPMoq6GYRS4Iplih/Yjd1Z5o=;
+        b=AwZRDuGQxjgtd0EejypW9eBFg+I172zVLyDdHnrWjwu2P6pr9HJLEv0crWNIwaA3Tw
+         mQPB5zUygKHQXBpK/uWnpqMRi+lB6kGdSR4jdUr6odCjT7lnG/CugHKOGOkprjCCj0kP
+         D/8kTU1geAy/iyRmALdl/BmQd2E/eZmOr05MrcfAvRdTa8gvd4xb/B1p8A6uhv9BSx67
+         wDhf65U8yXojpH8KyhsYvofkpzi4wxbwCFxyVVK3mE/Ow3cV8W/2kSRZGPSDy5MRSfsb
+         z8fMbor2oQRQvJZ6+RHQEGsuBV5XvSN2n6wKCE+bNQUTAtD3lXJIeDfy04qcAcG4H9ub
+         09BA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770052370; x=1770657170;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=INIFCBCUJTQI/9LdXmCI4Y+qu/4cGnWjRRdFLeUHGsM=;
-        b=YvUWtd6kR5Ug3FjjtkWnp0LTwFJC4vRktsHsor/T8GWel4hspHg1+6Hzo2wb4vuSUH
-         4eF2rbpjvJuV2GA8jbx1iy0BuBMpZSQ4cqWUYZ2TFTiFjnsbHOTpbJE5GG6JOUa7mEvA
-         C0Eitbsg2+NJ86a2gZRejeRoQusM7NHhdyM1QuHoQWU8fbnQrmbvEA43L2lUndNm7uhb
-         gN0XZ3jqVEM+6TE19REIPiZJW44VvB5c4qJbDlF4IAR/cdUUgw7xxrwBo1If25+hkds4
-         ttWcJle6Rf92VC5EyCj3vAkmIw29AgVGaczttXKyS5mORtg0qhZsT+NJ+2e5AFVDyXX9
-         Fdog==
-X-Gm-Message-State: AOJu0Yy1IckEOj/JecbfniNo9xGVbNe3Gp3pFRBRnAlH8F0DW/9bLSHk
-	KCaoPNA9B6sdCDPIquAQnKwlwh/zFDCyvavFdVs3xQXDMD5yXUFlmldk
-X-Gm-Gg: AZuq6aI2XY1HDCGxMKoKZYtmAoGZoJoDrI/KjwzlAq0D3OuCVbig0V43Rs+g/paL+ev
-	grUKAULY2F4isxwS/BngMW+g3ATtRNc9cVcTGd26NcZkDbstVXhFUvA/KymavXXvpx91LTiqdK6
-	oZoUOrcTvtNGQ6GUfrxxNb53WzLRsTFYA9kL5416SvJpHkOU2DvMTbecZKso1vWuy6uRhwTa/rW
-	pao/J6/i7N6FWK64rsG2yL3yaE2mzNnmlg8Nt3B0JNN7JsY5xUw54r8B7X76qvkg98L9Mc41PMn
-	cuK6eXR+EalZl6s4K4Ve8WPqoIdyaOLVyLOvyoy0shbltw2a4BZtjkWghhv7QRTYyRPg+zMohVd
-	ndpJ65x/nj9QIGdiTeGla9aPGEflkYo2m05g2juUVL+9hCciySGW6sNre5dyx+0jBN9eWq4BLoy
-	eY4vmDAiUv36R8O6VenVnnnyicDupcGGMSaCwOgcAoik2vzxXWoVQ=
-X-Received: by 2002:a5d:64c7:0:b0:431:62:d946 with SMTP id ffacd0b85a97d-435f3a7bafdmr16924187f8f.23.1770052369703;
-        Mon, 02 Feb 2026 09:12:49 -0800 (PST)
-Received: from yehudis-VirtualBox.. ([195.60.235.90])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435e131cefdsm46308792f8f.23.2026.02.02.09.12.47
+        d=1e100.net; s=20230601; t=1770062503; x=1770667303;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4hGFAoXoGcmWys+uUjHRPMoq6GYRS4Iplih/Yjd1Z5o=;
+        b=vMdUaLpfsXOia+rajv1f9a95Prqm86LJUetYD6Ppyhrk/E0E3iolZJ9bUdIJTq5g1E
+         3A9g3Chs2bBof/CpatGnm7F5j+GJmTk5GKtZLXsImVdC3YBP/2BJtZAlFK++kgTIu8GF
+         xWY7UgrYMEH4jTjPE4AyZnpiU7JQHttreHufM6qMLXemKZds4PFrDv4MhQH2CRbZM8PU
+         LmRWmXurh7yyaLHBUqNil/0YEFUt5yM22mo+r7kgRrg4HD0acmbuZlpbWQeA2hh70J2X
+         ky8swkr0cGBeXNoJNMc0iBOGIJ0Gf09TFcQ/QEWos5t6bpcyv+LiS8N7SG+3Bq3PEd2S
+         VgOQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWjyFTGq0yxGAXFJlxFiS4AwoRrKCskvlb3hi6i27UURoUaqLqnnvrcuTh3sn6L5WNQe2dFO/U3BRNlkw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy8AuG8Br9vkWKGKX36/PYFiCemmaTp0V2lcBEttddlA8Ezqa7u
+	Zm5cuJjsWSQ8gebDRksJTl0cujAXeaP5YPtfJNgKzlOP4TS0Y54oaI3ixsRVy2p12ow=
+X-Gm-Gg: AZuq6aK+daKTz8L6aW4twBXd0zzGKCNHg0emyNE31/W8b+//RcSebMp/W8lZI+zixj2
+	sEPFBIE6OYP6W5H+/c+IYbc93RvL/nNeggXclKRIaaBs5SwGuKVmfMERi+mvLov3sVRLFXLsnY5
+	XLe+qvKAN5Z5exq66EwIoJj0n2VGyLJMilItwdbhre+6qp4VfMN7GxHTUeDQeCQ9NBbqfZWOXrB
+	0bhD/nvAHb+S9RC0FGdcNixvmnNKORfu1F5JyjxCajJ7PQariviPg1YMEUbH4j7k1tiwRTsC6JI
+	1UMhpbImRukAx0YnsRMmSrqNOi6/QdmQEM/p26+akzep+lXdxrJsT05W18BQpZLuQ8uUXtiiJDt
+	erELuVHoVOGbOrZIj9XSr1hei9welsdlzjpmDD3zpqQJbDdyyRqeR9la+v3OmbS/1hEQ8NRP98F
+	RadaCl65EAldWd9c7B
+X-Received: by 2002:a05:600c:c162:b0:480:1b65:b741 with SMTP id 5b1f17b1804b1-482db4ac5bamr160582205e9.15.1770062502857;
+        Mon, 02 Feb 2026 12:01:42 -0800 (PST)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-483051287cfsm19591905e9.6.2026.02.02.12.01.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Feb 2026 09:12:49 -0800 (PST)
-From: yehudis9982 <y0533159982@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	yehudis9982 <y0533159982@gmail.com>
-Subject: [PATCH v2] staging: sm750fb: rename Bpp to bytes_per_pixel
-Date: Mon,  2 Feb 2026 19:12:43 +0200
-Message-ID: <20260202171243.133935-1-y0533159982@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <2026020201-monogamy-sash-4866@gregkh>
-References: <2026020201-monogamy-sash-4866@gregkh>
+        Mon, 02 Feb 2026 12:01:42 -0800 (PST)
+Date: Mon, 2 Feb 2026 23:01:39 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: KrishnaAgarwal1308 <krishnaworkemail1308@gmail.com>
+Cc: Andy Shevchenko <andy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: fix macro flow control warning and empty
+ macro argument in fbtft-bus.c
+Message-ID: <aYECoy7Apjwgzr9r@stanley.mountain>
+References: <20260202162826.116739-1-krishnaworkemail1308@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260202162826.116739-1-krishnaworkemail1308@gmail.com>
 
-Rename the Bpp parameter to bytes_per_pixel for clarity and to avoid CamelCase, as reported by checkpatch.pl.
+On Mon, Feb 02, 2026 at 09:58:26PM +0530, KrishnaAgarwal1308 wrote:
+> Fix checkpatch warning by adding identity modifier for define_fbtft_write_reg().
+> No functional change.
+> 
 
-Signed-off-by: yehudis9982 <y0533159982@gmail.com>
----
- drivers/staging/sm750fb/sm750_accel.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+This commit does two things.  It introduces fbtft_identity()
+and it flips the if (ret < 0) condition around to avoid the goto
+inside a macro.  Only the first change is mentioned in the commit
+message.
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 046b9282b..3fe9429e1 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -48,7 +48,7 @@ void sm750_hw_de_init(struct lynx_accel *accel)
- 	      DE_STRETCH_FORMAT_ADDRESSING_MASK |
- 	      DE_STRETCH_FORMAT_SOURCE_HEIGHT_MASK;
- 
--	/* DE_STRETCH bpp format need be initialized in setMode routine */
-+	/* DE_STRETCH bytes_per_pixel format need be initialized in setMode routine */
- 	write_dpr(accel, DE_STRETCH_FORMAT,
- 		  (read_dpr(accel, DE_STRETCH_FORMAT) & ~clr) | reg);
- 
-@@ -76,7 +76,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt)
- {
- 	u32 reg;
- 
--	/* fmt=0,1,2 for 8,16,32,bpp on sm718/750/502 */
-+	/* fmt=0,1,2 for 8,16,32,bytes_per_pixel on sm718/750/502 */
- 	reg = read_dpr(accel, DE_STRETCH_FORMAT);
- 	reg &= ~DE_STRETCH_FORMAT_PIXEL_FORMAT_MASK;
- 	reg |= ((fmt << DE_STRETCH_FORMAT_PIXEL_FORMAT_SHIFT) &
-@@ -85,7 +85,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt)
- }
- 
- int sm750_hw_fillrect(struct lynx_accel *accel,
--		      u32 base, u32 pitch, u32 Bpp,
-+		      u32 base, u32 pitch, u32 bytes_per_pixel,
- 		      u32 x, u32 y, u32 width, u32 height,
- 		      u32 color, u32 rop)
- {
-@@ -102,14 +102,14 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
- 
- 	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, base); /* dpr40 */
- 	write_dpr(accel, DE_PITCH,
--		  ((pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
-+		  ((pitch / bytes_per_pixel << DE_PITCH_DESTINATION_SHIFT) &
- 		   DE_PITCH_DESTINATION_MASK) |
--		  (pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
-+		  (pitch / bytes_per_pixel & DE_PITCH_SOURCE_MASK)); /* dpr10 */
- 
- 	write_dpr(accel, DE_WINDOW_WIDTH,
--		  ((pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
-+		  ((pitch / bytes_per_pixel << DE_WINDOW_WIDTH_DST_SHIFT) &
- 		   DE_WINDOW_WIDTH_DST_MASK) |
--		   (pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
-+		   (pitch / bytes_per_pixel & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
- 
- 	write_dpr(accel, DE_FOREGROUND, color); /* DPR14 */
- 
-@@ -138,7 +138,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
-  * @sy: Starting y coordinate of source surface
-  * @dBase: Address of destination: offset in frame buffer
-  * @dPitch: Pitch value of destination surface in BYTE
-- * @Bpp: Color depth of destination surface
-+ * @bytes_per_pixel: Bytes per pixel (color depth / 8) of destination surface
-  * @dx: Starting x coordinate of destination surface
-  * @dy: Starting y coordinate of destination surface
-  * @width: width of rectangle in pixel value
-@@ -149,7 +149,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 		      unsigned int sBase, unsigned int sPitch,
- 		      unsigned int sx, unsigned int sy,
- 		      unsigned int dBase, unsigned int dPitch,
--		      unsigned int Bpp, unsigned int dx, unsigned int dy,
-+		      unsigned int bytes_per_pixel, unsigned int dx, unsigned int dy,
- 		      unsigned int width, unsigned int height,
- 		      unsigned int rop2)
- {
-@@ -249,9 +249,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 	 * pixel values. Need Byte to pixel conversion.
- 	 */
- 	write_dpr(accel, DE_PITCH,
--		  ((dPitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
-+		  ((dPitch / bytes_per_pixel << DE_PITCH_DESTINATION_SHIFT) &
- 		   DE_PITCH_DESTINATION_MASK) |
--		  (sPitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
-+		  (sPitch / bytes_per_pixel & DE_PITCH_SOURCE_MASK)); /* dpr10 */
- 
- 	/*
- 	 * Screen Window width in Pixels.
-@@ -259,9 +259,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 	 * for a given point.
- 	 */
- 	write_dpr(accel, DE_WINDOW_WIDTH,
--		  ((dPitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
-+		  ((dPitch / bytes_per_pixel << DE_WINDOW_WIDTH_DST_SHIFT) &
- 		   DE_WINDOW_WIDTH_DST_MASK) |
--		  (sPitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
-+		  (sPitch / bytes_per_pixel & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
- 
- 	if (accel->de_wait() != 0)
- 		return -1;
--- 
-2.43.0
+I have see the fbtft_identity() approach before and I don't like it.
+https://lore.kernel.org/all/20250718191935.5918-2-abronzo@mac.com/
+The name identity() doesn't mean anything.  It's a real word and
+it has a meaning but it doesn't have a meaning which is at all
+related to this code.
+
+I think I would be okay with this the macro were called nop_endian()
+or cpu_to_cpu_endian() or something.  Or another approach is to just
+leave the code as-is.  Or maybe we could add a comment?
+
+Regarding the flipped condition, the new code is badly formatted and
+uglier than the original.  I would prefer to leave it as-is.
+
+regards,
+dan carpenter
 

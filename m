@@ -1,101 +1,73 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEE4F3A0EB3
-	for <linux-fbdev@vger.kernel.org>; Tue,  3 Feb 2026 13:55:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D108E2FFDF4
+	for <linux-fbdev@vger.kernel.org>; Tue,  3 Feb 2026 23:08:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770126930; cv=none; b=jxzYoLqpZg6Z6dHufVBgsdnvaMOr29jGdO7lw1QdgEXBE4yOUQqgJBbFu0IATu+F/HiXfT9EI0TyvRMhCmbbBBQvwlOcCLMX6u7kExOrwDiNMWQGG3OmHMvBAVdvxqeUxEQk9N1b+IuNv0duP9TBzLPB2wN5oCZ4VjzOKoQC9GM=
+	t=1770160083; cv=none; b=ZRIoLuPalgLZbDQTfBI0P8drOBL8EeB4vezi75exIV1vpq2VQKF6E7n8m3OZD7+UZb8NPCPWsWkALltoZTz7hzxu9d9J1eOZj2i8EHjTGLGNvalbfZdf2R+YMROco+uNPjUkzD6hsg54t20X4rYk2NX/VTYkbD/o6FGWHzvx+uE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770126930; c=relaxed/simple;
-	bh=xm2VKeAsYk6He+S6K11q2Gci+qyi+ItBLbop1iKU/I8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=b+StLb0Uo7+Knc0y/3YFlzY7F/EGObXQh8VYUfR4stEy+I5TwBf68FnX/fQ4WxA/DinZC6TZeSrSzUPWvhGLHbYpj5KjyEZNk1JG/yx/UDt7wrAuT3kgegAsqFaa9BKzU025+r/JyYqQmDE75wLBz8dkmCHE58bj7AKLt1DcOyU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=R+lQBVng; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=P4ZyWV2o; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=R+lQBVng; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=P4ZyWV2o; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1770160083; c=relaxed/simple;
+	bh=jVsaqFD+d8LNN2vVetFEUNyX22dXbwsz0QkKZ7O/2Vo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Nk+fEqvlruSUgYIaMrdQerVWbwJ840hypfN1CBOgE2RPlXNgF9MQuqpP/dj9LP6n0u1zJNzzZV9GGGU5J0B0NhzeI76dsAAJIWKg4RiEnXvEPKjJGYEOAeJwBX/cgV0R8Zx/Z6ufvZ197WPGx3qSGINaVem6ZeCIKH1Xfq0BFKk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=N3XJxgbc; arc=none smtp.client-ip=209.85.218.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="R+lQBVng";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="P4ZyWV2o";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="R+lQBVng";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="P4ZyWV2o"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 0A4593E6D4;
-	Tue,  3 Feb 2026 13:55:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1770126927; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uTSUboSXMQ96dLOPRSbXCAHbAbBhP7M3WA0bd1W/HFM=;
-	b=R+lQBVng4L3h/jT5jD7pKfvJHFp7RslZRRDyBoYuLVX6qdMzboBwgWH/T+kV72dITKvllV
-	79aLeMYZirR1q/3vyW8Py51f5IpojNb7VGKnqwKFSYDtvPoTz9Eb8dV2sbAju2LOwPV/Zz
-	95f+2TjPI74+Bvv75OjMumVeKK4EOjk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1770126927;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uTSUboSXMQ96dLOPRSbXCAHbAbBhP7M3WA0bd1W/HFM=;
-	b=P4ZyWV2oKEQ3apq+Z5K/sppTGaRXdm2jEG+e/5LvU4uqw6IghSDJeLgkZEgVirmxDNTFse
-	zTWxAq5kUXY1FGBw==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=R+lQBVng;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=P4ZyWV2o
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1770126927; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uTSUboSXMQ96dLOPRSbXCAHbAbBhP7M3WA0bd1W/HFM=;
-	b=R+lQBVng4L3h/jT5jD7pKfvJHFp7RslZRRDyBoYuLVX6qdMzboBwgWH/T+kV72dITKvllV
-	79aLeMYZirR1q/3vyW8Py51f5IpojNb7VGKnqwKFSYDtvPoTz9Eb8dV2sbAju2LOwPV/Zz
-	95f+2TjPI74+Bvv75OjMumVeKK4EOjk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1770126927;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uTSUboSXMQ96dLOPRSbXCAHbAbBhP7M3WA0bd1W/HFM=;
-	b=P4ZyWV2oKEQ3apq+Z5K/sppTGaRXdm2jEG+e/5LvU4uqw6IghSDJeLgkZEgVirmxDNTFse
-	zTWxAq5kUXY1FGBw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9715F3EA63;
-	Tue,  3 Feb 2026 13:55:26 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id mHJyI07+gWlGDwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 03 Feb 2026 13:55:26 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: tzungbi@kernel.org,
-	briannorris@chromium.org,
-	jwerner@chromium.org,
-	javierm@redhat.com,
-	samuel@sholland.org,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	airlied@gmail.com,
-	simona@ffwll.ch
-Cc: chrome-platform@lists.linux.dev,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Hans de Goede <hansg@kernel.org>,
-	linux-fbdev@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v3 01/12] firmware: google: framebuffer: Do not unregister platform device
-Date: Tue,  3 Feb 2026 14:52:20 +0100
-Message-ID: <20260203135519.417931-2-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260203135519.417931-1-tzimmermann@suse.de>
-References: <20260203135519.417931-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N3XJxgbc"
+Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-b884a84e655so907491366b.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 03 Feb 2026 15:08:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1770160080; x=1770764880; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=9LC2rgy8FruKnAUghqfggKkncBhJB/4kXDB4TXvEw/Y=;
+        b=N3XJxgbc9UDSEGrRpfamaUYYCNsamA3coFNgUvbrdqKauv/WQ9I3zA3LQ8JpmkcG9x
+         VQPbgToGUYDAcn5ZCYd1aB30sWO8MetFalPw9Jxt8Slw9QKniv0ds3ouNIQFHKRKpCHH
+         Eorpa84gXt6JszkbIqWM1Y08pF/roB1UqzzOZQ93/EHkyuBK6KwRzan90Xve1gXDFvIQ
+         1EcOYp48LlCAxK2AXDlOyiZKlD2TPPB7++j3qWEGOQFxZ+DBCnlfarN7CZ8k1peP1oT1
+         NLd6z1up7OSLPWE/cMfI8zeturtXEqeRF60+ocsoJJmahw6Q31tfvFYf0FWhqTRT6xrQ
+         rcag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770160080; x=1770764880;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=9LC2rgy8FruKnAUghqfggKkncBhJB/4kXDB4TXvEw/Y=;
+        b=GLc43mGVD+OiVsLmqaAgb+4+TeC5VnTN4clgSODWVF1dQjxjkzF3tW7JtJlWjBmUzx
+         Sa0YvIWjrJa2ew2XYNC35bJwysFkd63m0hQrY8oJwNrfvPGxsNY+LKtxBfWVqYaEYX5h
+         qXdJfRFPtOBZTZgTzJA64m9UsBV/J6BGNN86aQHLNQFCVHwn39PcEgvL3v5X+4znl9fl
+         BS2OqmV/wxAFpSpq3yodAEAvzGNOKQGLPV/fBeCtstQtvkxbL+yytxPqsfjfXR8uahCa
+         l7y0/0ppbePy2YBSdUcdomiV+Y40KWE6WDRU8QSnxzkc/+lbQisPOV8PraRxhGkSNjIm
+         ogeQ==
+X-Gm-Message-State: AOJu0Yy7+Vh2DQehH8nzrRsqpsFcSGrqivXK+Hz+tsyVaxzuAPT6mjAv
+	oFRTT/kRx05kuopmPMwuMHz+kNsJHZVDKSuwlaH9mBkm3Uj6kzAb/RlVlEE2BsKjG0Rs+MJO
+X-Gm-Gg: AZuq6aI0sJz3uwWy2Zx/bdrOEfID2Gxk68+DPSuXfrr9Ca8peYgFs2LusI10MgNuDzg
+	9Jwg+5PXK/7C2aC1yIYOaYrogbOJmGMvL14ufCV2AWGNRHyYQMN+48i3SYxSx4Xm8jO+gzTMzqs
+	OAvGvM5s8T4umUuFoeefhj4vEPjT/aZrpplZk7E+J4bvkFJ6TXSajFPHJchVpkko1lOYufoptF7
+	nfojzXDX9aEMqPP9+NqGMKHP31lQbFHJ3YgbiyNDJMFOvFXAybNkpFTQEzHVDWc78pCPQoiIaFL
+	bfIJ3OPjOiI70W+zYTGwiuKAu6sZEKaaIIdY6D0BRc9yXSzMlfPCyRBRkLSWtECuyVvdh2+KNjZ
+	JO1N/V0TN4NrC9dbh/bA5vmNvHC0r3JGOTNj2k6iT7P1+X5jC+Uh6BPY6qSYaZJhNAB/2XAA1at
+	55y/jg5HTMfWBAvzpYBVPPXTCdZBSlyVgPT5h/w+5HPwtCuIbT5Nv3bs51UZDesY9luoM9q0uNw
+	Gt4ophZ5DyE0eB3IoGZdz/F7c2VF8oolFjy2u3pIee7xTenJd3dO1F9VtKM1c0HmD2Fyg==
+X-Received: by 2002:a17:907:60d2:b0:b87:d09c:1825 with SMTP id a640c23a62f3a-b8e9f14c447mr73686566b.13.1770160079802;
+        Tue, 03 Feb 2026 15:07:59 -0800 (PST)
+Received: from cs-874966990260-default.europe-west4-b.c.od237066db22328bb-tp.internal (33.242.13.34.bc.googleusercontent.com. [34.13.242.33])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8ea0021b3bsm38486566b.49.2026.02.03.15.07.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Feb 2026 15:07:59 -0800 (PST)
+From: Artem Lytkin <iprintercanon@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Artem Lytkin <iprintercanon@gmail.com>
+Subject: [PATCH 1/4] staging: sm750fb: replace strcat() with memcpy() in lynxfb_setup()
+Date: Tue,  3 Feb 2026 23:07:55 +0000
+Message-ID: <20260203230758.3056-1-iprintercanon@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -103,100 +75,30 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FREEMAIL_TO(0.00)[kernel.org,chromium.org,redhat.com,sholland.org,linux.intel.com,gmail.com,ffwll.ch];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	R_RATELIMIT(0.00)[to_ip_from(RLegosg57ubitsp1hzqd38n4uy)];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com]
-X-Spam-Flag: NO
-X-Spam-Score: -3.01
-X-Rspamd-Queue-Id: 0A4593E6D4
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spam-Level: 
 
-The native driver takes over the framebuffer aperture by removing the
-system- framebuffer platform device. Afterwards the pointer in drvdata
-is dangling. Remove the entire logic around drvdata and let the kernel's
-aperture helpers handle this. The platform device depends on the native
-hardware device instead of the coreboot device anyway.
+Replace deprecated strcat() with memcpy() in option parsing. The
+destination buffer is allocated with kzalloc (zero-filled) and the
+write position is tracked via pointer, making the null-terminator
+scan in strcat() redundant and potentially unsafe.
 
-When commit 851b4c14532d ("firmware: coreboot: Add coreboot framebuffer
-driver") added the coreboot framebuffer code, the kernel did not support
-device-based aperture management. Instead native driviers only removed
-the conflicting fbdev device. At that point, unregistering the framebuffer
-device most likely worked correctly. It was definitely broken after
-commit d9702b2a2171 ("fbdev/simplefb: Do not use struct
-fb_info.apertures"). So take this commit for the Fixes tag. Earlier
-releases might work depending on the native hardware driver.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: d9702b2a2171 ("fbdev/simplefb: Do not use struct fb_info.apertures")
-Acked-by: Tzung-Bi Shih <tzungbi@kernel.org>
-Acked-by: Julius Werner <jwerner@chromium.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Hans de Goede <hansg@kernel.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: <stable@vger.kernel.org> # v6.3+
+Signed-off-by: Artem Lytkin <iprintercanon@gmail.com>
 ---
- drivers/firmware/google/framebuffer-coreboot.c | 10 ----------
- 1 file changed, 10 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/firmware/google/framebuffer-coreboot.c b/drivers/firmware/google/framebuffer-coreboot.c
-index c68c9f56370f..4e9177105992 100644
---- a/drivers/firmware/google/framebuffer-coreboot.c
-+++ b/drivers/firmware/google/framebuffer-coreboot.c
-@@ -81,19 +81,10 @@ static int framebuffer_probe(struct coreboot_device *dev)
- 						 sizeof(pdata));
- 	if (IS_ERR(pdev))
- 		pr_warn("coreboot: could not register framebuffer\n");
--	else
--		dev_set_drvdata(&dev->dev, pdev);
- 
- 	return PTR_ERR_OR_ZERO(pdev);
- }
- 
--static void framebuffer_remove(struct coreboot_device *dev)
--{
--	struct platform_device *pdev = dev_get_drvdata(&dev->dev);
--
--	platform_device_unregister(pdev);
--}
--
- static const struct coreboot_device_id framebuffer_ids[] = {
- 	{ .tag = CB_TAG_FRAMEBUFFER },
- 	{ /* sentinel */ }
-@@ -102,7 +93,6 @@ MODULE_DEVICE_TABLE(coreboot, framebuffer_ids);
- 
- static struct coreboot_driver framebuffer_driver = {
- 	.probe = framebuffer_probe,
--	.remove = framebuffer_remove,
- 	.drv = {
- 		.name = "framebuffer",
- 	},
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index fecd7457e..4c6e84c03 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -1163,7 +1163,7 @@ static int __init lynxfb_setup(char *options)
+ 		} else if (!strncmp(opt, "dual", strlen("dual"))) {
+ 			g_dualview = 1;
+ 		} else {
+-			strcat(tmp, opt);
++			memcpy(tmp, opt, strlen(opt));
+ 			tmp += strlen(opt);
+ 			if (options)
+ 				*tmp++ = ':';
 -- 
-2.52.0
+2.43.0
 

@@ -1,185 +1,123 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EC6F37AA8F;
-	Tue,  3 Feb 2026 08:17:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5615133EAFE
+	for <linux-fbdev@vger.kernel.org>; Tue,  3 Feb 2026 12:15:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770106650; cv=none; b=p7zB0rqDR+3ja7cmX5RDruwzmwFQMXfBSyeCJLqkKYjwAbZ/EVQkJuKXGlHFdE1hrehuKmMoWUi5HDqkcO+g2OngENhTOjG2midNY6e9puWkr0wZ74mPSkydoDeVvyYLXwM/KXqe98v85F0gtQqFm5/eEIwjVy1uU6uL/L6rd2k=
+	t=1770120907; cv=none; b=MbAtpM4iLvjjbAQraw5PqrMHGIbUZ3fypY8GRMmpD1gkek6c5Pfz4xHhs6sMLc3QMlzz0xrPw+gzcQGXnjKvdqStDdhTlndEJT4HRxLBjdR/W7OmybEl+dADcjFvb1JbQO6gZkEef8oqcaJZju8YrS4VmUDfgBzFaSolf4R7AI0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770106650; c=relaxed/simple;
-	bh=zz1E+vz9JOh8fCD0f3bnFGy0jEo34aMhdcN0zwpb5ng=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=p8pXkhlpObXpwjRNQJPrBsd9w7z7Q4K8li3XOpzNXaM87dQWBJc8omXJSBoPLS7KDE7zB7/nwNB6tXqIaUyOpeP+TSTPLeoHklZfY/AHDTEK2VaoS1lVrpVcTCFaWHu4rl3t/cXnkfYlpFQlBW9zJDAWCJ7LEwWhv8Db+wwKlzI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=aI5AzWwC; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1770120907; c=relaxed/simple;
+	bh=Z9DoncZRp1hGTgs52zuEEOEhMYNvMiELdJSmhQoVOuU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=kPwtl/ODJQBcQGh4axXTgYy0M3ScdY6lwO4Sw0ne3NgohNEEWQmzVI2n8Tg9QNZAD2E0ksKbt7qNQRxTI0tvZbEKqb5eEwzZHaYetfxN7FakjzRy0dZ4He+2aLIZEsZfkeYUO2ZdVwuRRRzNpsZw4QPHq8c3BzN4ZpaA7BWU+BU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BO0RFIS8; arc=none smtp.client-ip=209.85.214.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="aI5AzWwC"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37928C116D0;
-	Tue,  3 Feb 2026 08:17:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1770106649;
-	bh=zz1E+vz9JOh8fCD0f3bnFGy0jEo34aMhdcN0zwpb5ng=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aI5AzWwCxUg00atcqvf23+erjPKIVZmxgx3g5P5fqbVwLtZoScdLrAfaey5/+isiI
-	 DBEbL1IL1fq1sNB8WiTYA+hHS7W4fLcKa4CsaisQr+Vsx70sdChC1QqFGvhCyzYv8V
-	 nWOXCKfMmErtWl6qosP4f9hchLDuHE1q+emXJAsU=
-Date: Tue, 3 Feb 2026 09:17:26 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: yehudis9982 <y0533159982@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] staging: sm750fb: rename Bpp to bytes_per_pixel
-Message-ID: <2026020357-prideful-grip-5730@gregkh>
-References: <2026020201-monogamy-sash-4866@gregkh>
- <20260202171243.133935-1-y0533159982@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BO0RFIS8"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-29efd139227so36922285ad.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 03 Feb 2026 04:15:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1770120905; x=1770725705; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=LVb3ZndkYPxb0vLCFm6FM7GNTS9TCg3b/+4i6KnRxlE=;
+        b=BO0RFIS81KFNnj0npHKFKMz2TnbBCP8FaRFIG+mDZdQFP0AcHBId4+o+lYai4eCS7i
+         FFNbMMI3/9QXp68Wxsr/1plwgzEaLPg7kQ7pn2NMx+iu2BiU5998ozshOpZVhWmKAssX
+         s7ey3Nim2GS3BYUSOblSaPTBvFd3lsROkClahiKJF1NPibDMn1AUsJQ3wSpUaDr7hcVg
+         v2YRCNfRUbIVKWz5V0LHeuHP79fcAgyDqh5Zl/8yR++4bU7V7DCpNGj82xjHm6FjWmWy
+         uQPWttOcKU5qB6w09UD6eC9/uNNwsLyzkG3D2kbqEq17kPSRXtKDbY4mDgssoSnWLfma
+         gn+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770120905; x=1770725705;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=LVb3ZndkYPxb0vLCFm6FM7GNTS9TCg3b/+4i6KnRxlE=;
+        b=puSs7GO90sxg/L2y6jrHv0B6fXZd3BUT5bqFsyfDgz3hQ1DtXlYKysDI42Ntg4X6u6
+         nvKWieHjM3U+Jk/0K7cDYxGp/KLwp+nVbLDzlbr470t3J7weCpB9BB0GaU7UbMQj7FPI
+         auP2vcrYy65taLjLQjMotTkDEAYULlxpCnJemruK4KV4Njt/3jyLdQcr/FZrLX4F2NXE
+         MxKoG/GRQ9Fwyloc+vnCZXkLpPox/b5AbRI4b81sVq3Tf3kNEaz4GuEAZpt3bBZQVvsj
+         dOenmwwT+rZEcuh/KJ4NjvkSQcu5WGt9qMuNANd9mqZ65elm/hNKKQkReQM24dZAccVQ
+         eGVw==
+X-Gm-Message-State: AOJu0YzUYAksXNL9rTPfIzqT9Snc6ktvYlw8EfcEYIrNivKjU+WSDfSo
+	lwRCIdi+MvYI5aPR9e1a8/Nc7K5pqDBlXDzPMJ8No7tsVx86qvVW6JsD
+X-Gm-Gg: AZuq6aJpDoobjAxFON6+hZIiLi3c4JCPoxZEMwXCBOcercR8tunOKeDjy7EKS++kuOj
+	cULniT9aeay9pEly9EaDbKjqTNzgZwMlknpP5OBLBdPhOXaBv0G+6cu23a3bL0kbZZg8Wy2E2Jf
+	EdGojLWpr+D1mMbXImZOtrOUQr/7nW5VPARJVrfh+jS/Tr2qnPTvFkG4mQCt6tAQQKdex+bDj4x
+	+OnH3lq1NTObFSwNWFIhiGM1E1DpQGstISCni2WXon2P6J3H05/Q4kdGcuSky4mI7coWh6WEoyA
+	pN+UAoeynNqYzrukiSXQ+NfyZnlos/mDyp6HddLvADu+gIvnAS/AzMRXRqMHPQKKbIaFwGmUx8R
+	7Fc6ZJi8cF82bPKnw1BFWXecdF/U1DfmmaW/hlQfR/xcQNCgHtlssAaVoDi0wA0ni1iamkEb2cp
+	pZhznX+y+I5v39aWaaDB1FdvySVg==
+X-Received: by 2002:a17:903:2c04:b0:269:8d1b:40c3 with SMTP id d9443c01a7336-2a8d7eaadd2mr149945765ad.12.1770120905361;
+        Tue, 03 Feb 2026 04:15:05 -0800 (PST)
+Received: from junjungu-PC.localdomain ([2408:820c:9008:ba52:f091:7dff:927e:f788])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a88b4c3db4sm183413415ad.50.2026.02.03.04.15.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Feb 2026 04:15:05 -0800 (PST)
+From: Felix Gu <ustc.gu@gmail.com>
+Date: Tue, 03 Feb 2026 20:14:58 +0800
+Subject: [PATCH] fbdev: au1200fb: Fix a memory leak in au1200fb_drv_probe()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260202171243.133935-1-y0533159982@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260203-au1200fb-v1-1-7889c4061337@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAMHmgWkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDIwNj3cRSQyMDg7QkXXNzMyMTE6OkZLM0AyWg8oKi1LTMCrBR0bG1tQC
+ ZhAwuWgAAAA==
+X-Change-ID: 20260203-au1200fb-7762442bc6f0
+To: Helge Deller <deller@gmx.de>, Zhang Shurong <zhang_shurong@foxmail.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-kernel@vger.kernel.org, Felix Gu <ustc.gu@gmail.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1770120902; l=1120;
+ i=ustc.gu@gmail.com; h=from:subject:message-id;
+ bh=Z9DoncZRp1hGTgs52zuEEOEhMYNvMiELdJSmhQoVOuU=;
+ b=STbOjk+2U9pG24k+N3Z0e3r2giORI4ny9g7q6UZRZr1BYvAHqq9qT9OEGEdSXbyMrbpFP9jfH
+ +TC2o9HFL5GBnTkn5B1TXGOv1owwlmXHOxLzhZSEXFi4/PCiqhPggma
+X-Developer-Key: i=ustc.gu@gmail.com; a=ed25519;
+ pk=fjUXwmjchVN7Ja6KGP55IXOzFeCl9edaHoQIEUA+/hw=
 
-On Mon, Feb 02, 2026 at 07:12:43PM +0200, yehudis9982 wrote:
-> Rename the Bpp parameter to bytes_per_pixel for clarity and to avoid CamelCase, as reported by checkpatch.pl.
-> 
-> Signed-off-by: yehudis9982 <y0533159982@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750_accel.c | 26 +++++++++++++-------------
->  1 file changed, 13 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-> index 046b9282b..3fe9429e1 100644
-> --- a/drivers/staging/sm750fb/sm750_accel.c
-> +++ b/drivers/staging/sm750fb/sm750_accel.c
-> @@ -48,7 +48,7 @@ void sm750_hw_de_init(struct lynx_accel *accel)
->  	      DE_STRETCH_FORMAT_ADDRESSING_MASK |
->  	      DE_STRETCH_FORMAT_SOURCE_HEIGHT_MASK;
->  
-> -	/* DE_STRETCH bpp format need be initialized in setMode routine */
-> +	/* DE_STRETCH bytes_per_pixel format need be initialized in setMode routine */
->  	write_dpr(accel, DE_STRETCH_FORMAT,
->  		  (read_dpr(accel, DE_STRETCH_FORMAT) & ~clr) | reg);
->  
-> @@ -76,7 +76,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt)
->  {
->  	u32 reg;
->  
-> -	/* fmt=0,1,2 for 8,16,32,bpp on sm718/750/502 */
-> +	/* fmt=0,1,2 for 8,16,32,bytes_per_pixel on sm718/750/502 */
->  	reg = read_dpr(accel, DE_STRETCH_FORMAT);
->  	reg &= ~DE_STRETCH_FORMAT_PIXEL_FORMAT_MASK;
->  	reg |= ((fmt << DE_STRETCH_FORMAT_PIXEL_FORMAT_SHIFT) &
-> @@ -85,7 +85,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt)
->  }
->  
->  int sm750_hw_fillrect(struct lynx_accel *accel,
-> -		      u32 base, u32 pitch, u32 Bpp,
-> +		      u32 base, u32 pitch, u32 bytes_per_pixel,
->  		      u32 x, u32 y, u32 width, u32 height,
->  		      u32 color, u32 rop)
->  {
-> @@ -102,14 +102,14 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
->  
->  	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, base); /* dpr40 */
->  	write_dpr(accel, DE_PITCH,
-> -		  ((pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
-> +		  ((pitch / bytes_per_pixel << DE_PITCH_DESTINATION_SHIFT) &
->  		   DE_PITCH_DESTINATION_MASK) |
-> -		  (pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
-> +		  (pitch / bytes_per_pixel & DE_PITCH_SOURCE_MASK)); /* dpr10 */
->  
->  	write_dpr(accel, DE_WINDOW_WIDTH,
-> -		  ((pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
-> +		  ((pitch / bytes_per_pixel << DE_WINDOW_WIDTH_DST_SHIFT) &
->  		   DE_WINDOW_WIDTH_DST_MASK) |
-> -		   (pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
-> +		   (pitch / bytes_per_pixel & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
->  
->  	write_dpr(accel, DE_FOREGROUND, color); /* DPR14 */
->  
-> @@ -138,7 +138,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
->   * @sy: Starting y coordinate of source surface
->   * @dBase: Address of destination: offset in frame buffer
->   * @dPitch: Pitch value of destination surface in BYTE
-> - * @Bpp: Color depth of destination surface
-> + * @bytes_per_pixel: Bytes per pixel (color depth / 8) of destination surface
->   * @dx: Starting x coordinate of destination surface
->   * @dy: Starting y coordinate of destination surface
->   * @width: width of rectangle in pixel value
-> @@ -149,7 +149,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
->  		      unsigned int sBase, unsigned int sPitch,
->  		      unsigned int sx, unsigned int sy,
->  		      unsigned int dBase, unsigned int dPitch,
-> -		      unsigned int Bpp, unsigned int dx, unsigned int dy,
-> +		      unsigned int bytes_per_pixel, unsigned int dx, unsigned int dy,
->  		      unsigned int width, unsigned int height,
->  		      unsigned int rop2)
->  {
-> @@ -249,9 +249,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
->  	 * pixel values. Need Byte to pixel conversion.
->  	 */
->  	write_dpr(accel, DE_PITCH,
-> -		  ((dPitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
-> +		  ((dPitch / bytes_per_pixel << DE_PITCH_DESTINATION_SHIFT) &
->  		   DE_PITCH_DESTINATION_MASK) |
-> -		  (sPitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
-> +		  (sPitch / bytes_per_pixel & DE_PITCH_SOURCE_MASK)); /* dpr10 */
->  
->  	/*
->  	 * Screen Window width in Pixels.
-> @@ -259,9 +259,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
->  	 * for a given point.
->  	 */
->  	write_dpr(accel, DE_WINDOW_WIDTH,
-> -		  ((dPitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
-> +		  ((dPitch / bytes_per_pixel << DE_WINDOW_WIDTH_DST_SHIFT) &
->  		   DE_WINDOW_WIDTH_DST_MASK) |
-> -		  (sPitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
-> +		  (sPitch / bytes_per_pixel & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
->  
->  	if (accel->de_wait() != 0)
->  		return -1;
-> -- 
-> 2.43.0
-> 
+In au1200fb_drv_probe(), when platform_get_irq fails(), it directly
+returns from the function with an error code, which causes a memory
+leak.
 
-Hi,
+Replace it with a goto label to ensure proper cleanup.
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+Fixes: 4e88761f5f8c ("fbdev: au1200fb: Fix missing IRQ check in au1200fb_drv_probe")
+Signed-off-by: Felix Gu <ustc.gu@gmail.com>
+---
+ drivers/video/fbdev/au1200fb.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-You are receiving this message because of the following common error(s)
-as indicated below:
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index ed770222660b..685e629e7e16 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1724,8 +1724,10 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 
+ 	/* Now hook interrupt too */
+ 	irq = platform_get_irq(dev, 0);
+-	if (irq < 0)
+-		return irq;
++	if (irq < 0) {
++		ret = irq;
++		goto failed;
++	}
+ 
+ 	ret = request_irq(irq, au1200fb_handle_irq,
+ 			  IRQF_SHARED, "lcd", (void *)dev);
 
-- Your patch contains warnings and/or errors noticed by the
-  scripts/checkpatch.pl tool.
+---
+base-commit: 193579fe01389bc21aff0051d13f24e8ea95b47d
+change-id: 20260203-au1200fb-7762442bc6f0
 
-- It looks like you did not use your "real" name for the patch on either
-  the Signed-off-by: line, or the From: line (both of which have to
-  match).  Please read the kernel file,
-  Documentation/process/submitting-patches.rst for how to do this
-  correctly.
+Best regards,
+-- 
+Felix Gu <ustc.gu@gmail.com>
 
-- This looks like a new version of a previously submitted patch, but you
-  did not list below the --- line any changes from the previous version.
-  Please read the section entitled "The canonical patch format" in the
-  kernel file, Documentation/process/submitting-patches.rst for what
-  needs to be done here to properly describe this.
-
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
-
-thanks,
-
-greg k-h's patch email bot

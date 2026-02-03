@@ -1,152 +1,185 @@
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF4B221146C
-	for <linux-fbdev@vger.kernel.org>; Tue,  3 Feb 2026 04:52:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EC6F37AA8F;
+	Tue,  3 Feb 2026 08:17:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770094336; cv=none; b=jSZESJTbi353BFENceVxo/313zMioe1b5290ZoB1/XAOBtP0/Ji28b4P7LCA7oVvSM2eQH2X5LM6UGklp4XB9p7+j3iV/3WeOpJzhsGyhVpFD4m8IRD/kNhnpFVssjyEZ5aapmtDI+oDweN1cdCnLiwF61D2n+hdawYbWIlHYwo=
+	t=1770106650; cv=none; b=p7zB0rqDR+3ja7cmX5RDruwzmwFQMXfBSyeCJLqkKYjwAbZ/EVQkJuKXGlHFdE1hrehuKmMoWUi5HDqkcO+g2OngENhTOjG2midNY6e9puWkr0wZ74mPSkydoDeVvyYLXwM/KXqe98v85F0gtQqFm5/eEIwjVy1uU6uL/L6rd2k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770094336; c=relaxed/simple;
-	bh=Ftf6AxmGQtAtNVtlE38F82dj2LDYE/4g8fYPDiaBt6k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kTIxYIdRJRsplp9LNoxXNfh7IwXKxfCqGntvEYt74zXYjWrwyKWLL+QEPuLd1fDMc0B/mHAOYP0vZDT/H+iD792zJTerDSp0WbmT8YhtQ/iAUf2hlJJfbQ2tIEpUhfdbjqi/MtDEVFptHIf7ctncSeN2Mi3H0RXyuIJEnL0JJpo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mosc79Qe; arc=none smtp.client-ip=209.85.214.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1770106650; c=relaxed/simple;
+	bh=zz1E+vz9JOh8fCD0f3bnFGy0jEo34aMhdcN0zwpb5ng=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=p8pXkhlpObXpwjRNQJPrBsd9w7z7Q4K8li3XOpzNXaM87dQWBJc8omXJSBoPLS7KDE7zB7/nwNB6tXqIaUyOpeP+TSTPLeoHklZfY/AHDTEK2VaoS1lVrpVcTCFaWHu4rl3t/cXnkfYlpFQlBW9zJDAWCJ7LEwWhv8Db+wwKlzI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=aI5AzWwC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mosc79Qe"
-Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2a09757004cso41713615ad.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 02 Feb 2026 20:52:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770094335; x=1770699135; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=sahNc25e8V/0vokuer5AdT6A9YG4/1fX8go429GK/ZE=;
-        b=mosc79QeWdoFCmTFGg7W5VHSnPtqZg0ERaFER+CvXtToh5h1lE+YkZYHiqqZTkiDvK
-         C/ZcGXyBZsGTeO5tmERakKQvG5AJ601QZ1OdnYXlrm3GXHNvPCAMWYq7hcpHEPt9GcIh
-         D5fWN54BUJr0SbJolo82l0E+wej/JhZ8dddmdYyfNaNyGu+z1rWM3D2CQELlLW8KY++p
-         pVJB617oc4RXp9ZaeStSd7hIgxH81AIcYZaHMyPX+85QpmKBgnyZyKQQZ+MJNg+GGKPo
-         kf11CFLQCH77dwK7dXDqcjZG13dWdUKiZHH+J0OKBdLtW00kuVY2oYMuPmD1d6CdyAcJ
-         8rkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770094335; x=1770699135;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=sahNc25e8V/0vokuer5AdT6A9YG4/1fX8go429GK/ZE=;
-        b=bazaxPRx5TLZVcV+R2PZMQ00OMaC8akKDHGqMweZvwm5GKk33bkkGC2dsQCSNrgj7P
-         PKMk+Mr1AFmUiEkggNnD/9hG78bT2Qtmju1ay+2m81Kmb5MV/BLVGgcFfcijckP8BR8n
-         5KoWkJS9jh83g5tJhk/fMCUkkktmte891mgv9yoWLqE92KtjbnHs8ZgbtArJ5nxxJEoF
-         pd8Mduvw62l9N73acP1EksrGrwH/sPzVWV7aR2pYa9OUgPTeOYRVCZmUNxRgMtyU5C3/
-         cXJ/jOWcbHP0BW9wn85K/HoaSr0f2Nu5uwCwUEboy9c/9tu59GYWpagcuBLDmgbqoLH0
-         briw==
-X-Forwarded-Encrypted: i=1; AJvYcCW8ay0fyaSbnj5Z9Za9LEnc6E2g+QGM2j9jdTtTaH2ImuDlmrN5xSbtgQEY5pPT5M3pwV2+qi2szLt//g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzyWgUFzun6zinksCNuiM7w3JotUv5npENh2vU5ygfOgoh9+gpT
-	2NaSqm7tTn2b7vKyoigZGcoNBWC+sfUVpOQgkNXKURGYruCZCEpG0XTq
-X-Gm-Gg: AZuq6aKOmh7A7z/RX1ZpkbGhqusWJYy9V68V1CrIpIJIhlClDX2QH1zs4VmqaZU9tP4
-	W3kq4zJi7rk2K6Wy0jh2kzHy2PCwMfCKj+YUEA/SPdaEFQFlcyNQtwYAZmyUorA4w6l1abA4buN
-	IkDFN4yuM/a01gpqZCpycvcS2h/idzyuCO0zPd7NYYJQyY6Q9H/4mQ2bpWLFBHoMFG7ssAbOyFh
-	KZZHAJ7J/spZ9Y5jLQEIPQLiG6m8e2Q78KD56RS+j51apk0fTbGDUE/GJwGHq3xucMV0h0ykm7L
-	/IOZ7reqk+TD0GsWqbN1NirzdQtvmM4/3WwzpZXottdlpji+sJ78JyXKdUMviOzWIr+bQHBX4Ji
-	NnnxObrFi3qitK12ytgpIM6HMYYX777spnhwmIqCmrhGzpwdb5gaVTgJAxbdz/rpOX+/VFsz2a5
-	pU6Xjs/+Mrnem5kX9/FBDHA0Q=
-X-Received: by 2002:a17:902:f544:b0:2a7:fe78:a344 with SMTP id d9443c01a7336-2a8d959c5a1mr143542085ad.6.1770094335015;
-        Mon, 02 Feb 2026 20:52:15 -0800 (PST)
-Received: from krishna.. ([103.220.210.247])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a8ec56da60sm85791515ad.38.2026.02.02.20.52.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Feb 2026 20:52:14 -0800 (PST)
-From: KrishnaAgarwal1308 <krishnaworkemail1308@gmail.com>
-To: Andy Shevchenko <andy@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	KrishnaAgarwal1308 <krishnaworkemail1308@gmail.com>
-Subject: [PATCH] staging: fbtft: fix macro flow control warning and empty macro argument in fbtft-bus.c
-Date: Tue,  3 Feb 2026 10:17:28 +0530
-Message-ID: <20260203044728.23774-2-krishnaworkemail1308@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260203044728.23774-1-krishnaworkemail1308@gmail.com>
-References: <20260203044728.23774-1-krishnaworkemail1308@gmail.com>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="aI5AzWwC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37928C116D0;
+	Tue,  3 Feb 2026 08:17:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1770106649;
+	bh=zz1E+vz9JOh8fCD0f3bnFGy0jEo34aMhdcN0zwpb5ng=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=aI5AzWwCxUg00atcqvf23+erjPKIVZmxgx3g5P5fqbVwLtZoScdLrAfaey5/+isiI
+	 DBEbL1IL1fq1sNB8WiTYA+hHS7W4fLcKa4CsaisQr+Vsx70sdChC1QqFGvhCyzYv8V
+	 nWOXCKfMmErtWl6qosP4f9hchLDuHE1q+emXJAsU=
+Date: Tue, 3 Feb 2026 09:17:26 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: yehudis9982 <y0533159982@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] staging: sm750fb: rename Bpp to bytes_per_pixel
+Message-ID: <2026020357-prideful-grip-5730@gregkh>
+References: <2026020201-monogamy-sash-4866@gregkh>
+ <20260202171243.133935-1-y0533159982@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260202171243.133935-1-y0533159982@gmail.com>
 
-Fix checkpatch warning by adding identity modifier for define_fbtft_write_reg().
-No functional change.
+On Mon, Feb 02, 2026 at 07:12:43PM +0200, yehudis9982 wrote:
+> Rename the Bpp parameter to bytes_per_pixel for clarity and to avoid CamelCase, as reported by checkpatch.pl.
+> 
+> Signed-off-by: yehudis9982 <y0533159982@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750_accel.c | 26 +++++++++++++-------------
+>  1 file changed, 13 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+> index 046b9282b..3fe9429e1 100644
+> --- a/drivers/staging/sm750fb/sm750_accel.c
+> +++ b/drivers/staging/sm750fb/sm750_accel.c
+> @@ -48,7 +48,7 @@ void sm750_hw_de_init(struct lynx_accel *accel)
+>  	      DE_STRETCH_FORMAT_ADDRESSING_MASK |
+>  	      DE_STRETCH_FORMAT_SOURCE_HEIGHT_MASK;
+>  
+> -	/* DE_STRETCH bpp format need be initialized in setMode routine */
+> +	/* DE_STRETCH bytes_per_pixel format need be initialized in setMode routine */
+>  	write_dpr(accel, DE_STRETCH_FORMAT,
+>  		  (read_dpr(accel, DE_STRETCH_FORMAT) & ~clr) | reg);
+>  
+> @@ -76,7 +76,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt)
+>  {
+>  	u32 reg;
+>  
+> -	/* fmt=0,1,2 for 8,16,32,bpp on sm718/750/502 */
+> +	/* fmt=0,1,2 for 8,16,32,bytes_per_pixel on sm718/750/502 */
+>  	reg = read_dpr(accel, DE_STRETCH_FORMAT);
+>  	reg &= ~DE_STRETCH_FORMAT_PIXEL_FORMAT_MASK;
+>  	reg |= ((fmt << DE_STRETCH_FORMAT_PIXEL_FORMAT_SHIFT) &
+> @@ -85,7 +85,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt)
+>  }
+>  
+>  int sm750_hw_fillrect(struct lynx_accel *accel,
+> -		      u32 base, u32 pitch, u32 Bpp,
+> +		      u32 base, u32 pitch, u32 bytes_per_pixel,
+>  		      u32 x, u32 y, u32 width, u32 height,
+>  		      u32 color, u32 rop)
+>  {
+> @@ -102,14 +102,14 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+>  
+>  	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, base); /* dpr40 */
+>  	write_dpr(accel, DE_PITCH,
+> -		  ((pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
+> +		  ((pitch / bytes_per_pixel << DE_PITCH_DESTINATION_SHIFT) &
+>  		   DE_PITCH_DESTINATION_MASK) |
+> -		  (pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
+> +		  (pitch / bytes_per_pixel & DE_PITCH_SOURCE_MASK)); /* dpr10 */
+>  
+>  	write_dpr(accel, DE_WINDOW_WIDTH,
+> -		  ((pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
+> +		  ((pitch / bytes_per_pixel << DE_WINDOW_WIDTH_DST_SHIFT) &
+>  		   DE_WINDOW_WIDTH_DST_MASK) |
+> -		   (pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
+> +		   (pitch / bytes_per_pixel & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
+>  
+>  	write_dpr(accel, DE_FOREGROUND, color); /* DPR14 */
+>  
+> @@ -138,7 +138,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+>   * @sy: Starting y coordinate of source surface
+>   * @dBase: Address of destination: offset in frame buffer
+>   * @dPitch: Pitch value of destination surface in BYTE
+> - * @Bpp: Color depth of destination surface
+> + * @bytes_per_pixel: Bytes per pixel (color depth / 8) of destination surface
+>   * @dx: Starting x coordinate of destination surface
+>   * @dy: Starting y coordinate of destination surface
+>   * @width: width of rectangle in pixel value
+> @@ -149,7 +149,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+>  		      unsigned int sBase, unsigned int sPitch,
+>  		      unsigned int sx, unsigned int sy,
+>  		      unsigned int dBase, unsigned int dPitch,
+> -		      unsigned int Bpp, unsigned int dx, unsigned int dy,
+> +		      unsigned int bytes_per_pixel, unsigned int dx, unsigned int dy,
+>  		      unsigned int width, unsigned int height,
+>  		      unsigned int rop2)
+>  {
+> @@ -249,9 +249,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+>  	 * pixel values. Need Byte to pixel conversion.
+>  	 */
+>  	write_dpr(accel, DE_PITCH,
+> -		  ((dPitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
+> +		  ((dPitch / bytes_per_pixel << DE_PITCH_DESTINATION_SHIFT) &
+>  		   DE_PITCH_DESTINATION_MASK) |
+> -		  (sPitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
+> +		  (sPitch / bytes_per_pixel & DE_PITCH_SOURCE_MASK)); /* dpr10 */
+>  
+>  	/*
+>  	 * Screen Window width in Pixels.
+> @@ -259,9 +259,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+>  	 * for a given point.
+>  	 */
+>  	write_dpr(accel, DE_WINDOW_WIDTH,
+> -		  ((dPitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
+> +		  ((dPitch / bytes_per_pixel << DE_WINDOW_WIDTH_DST_SHIFT) &
+>  		   DE_WINDOW_WIDTH_DST_MASK) |
+> -		  (sPitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
+> +		  (sPitch / bytes_per_pixel & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
+>  
+>  	if (accel->de_wait() != 0)
+>  		return -1;
+> -- 
+> 2.43.0
+> 
 
-Signed-off-by: KrishnaAgarwal1308 <krishnaworkemail1308@gmail.com>
----
- drivers/staging/fbtft/fbtft-bus.c | 36 +++++++++++++++----------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+Hi,
 
-diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
-index 30e436ff19e4..0ab4f5c4f886 100644
---- a/drivers/staging/fbtft/fbtft-bus.c
-+++ b/drivers/staging/fbtft/fbtft-bus.c
-@@ -10,6 +10,7 @@
-  *   void (*write_reg)(struct fbtft_par *par, int len, ...);
-  *
-  *****************************************************************************/
-+#define fbtft_identity(x) (x)
- 
- #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
- void func(struct fbtft_par *par, int len, ...)                                \
-@@ -42,29 +43,28 @@ void func(struct fbtft_par *par, int len, ...)                                \
- 	*buf = modifier((data_type)va_arg(args, unsigned int));               \
- 	ret = fbtft_write_buf_dc(par, par->buf, sizeof(data_type) + offset,   \
- 				 0);                                          \
--	if (ret < 0)							      \
--		goto out;						      \
--	len--;                                                                \
--									      \
--	if (par->startbyte)                                                   \
--		*(u8 *)par->buf = par->startbyte | 0x2;                       \
--									      \
--	if (len) {                                                            \
--		i = len;                                                      \
--		while (i--)						      \
--			*buf++ = modifier((data_type)va_arg(args,             \
--							    unsigned int));   \
--		fbtft_write_buf_dc(par, par->buf,			      \
--				   len * (sizeof(data_type) + offset), 1);    \
--	}                                                                     \
--out:									      \
-+	if (ret >= 0) {							      \
-+		len--;                                                                \
-+											\
-+		if (par->startbyte)                                                   \
-+			*(u8 *)par->buf = par->startbyte | 0x2;                       \
-+											\
-+		if (len) {                                                            \
-+			i = len;                                                      \
-+			while (i--)						      \
-+				*buf++ = modifier((data_type)va_arg(args,             \
-+									unsigned int));   \
-+			fbtft_write_buf_dc(par, par->buf,			      \
-+					len * (sizeof(data_type) + offset), 1);    \
-+		}                                                                     \
-+	}											\
- 	va_end(args);                                                         \
- }                                                                             \
- EXPORT_SYMBOL(func);
- 
--define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
-+define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, fbtft_identity)
- define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
--define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
-+define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, fbtft_identity)
- 
- void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
- {
--- 
-2.43.0
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
+You are receiving this message because of the following common error(s)
+as indicated below:
+
+- Your patch contains warnings and/or errors noticed by the
+  scripts/checkpatch.pl tool.
+
+- It looks like you did not use your "real" name for the patch on either
+  the Signed-off-by: line, or the From: line (both of which have to
+  match).  Please read the kernel file,
+  Documentation/process/submitting-patches.rst for how to do this
+  correctly.
+
+- This looks like a new version of a previously submitted patch, but you
+  did not list below the --- line any changes from the previous version.
+  Please read the section entitled "The canonical patch format" in the
+  kernel file, Documentation/process/submitting-patches.rst for what
+  needs to be done here to properly describe this.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot

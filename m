@@ -1,210 +1,105 @@
-Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33CA7352941
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Feb 2026 06:22:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D35CF3A1A32
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Feb 2026 09:15:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770186174; cv=none; b=GlvTgdPqsW6kHLhyuRh6RBsRAYjGp1ALlAUo4YTPO57Dp2INRBIHBMe/vd9l1wq8lQhqmdA/tCEz3bJMN91x2d7GRQaMdfhdpi1+WfX86NIxOOqLm0/DDfuXDLN49Or3HMgVM6PhefujbkYJLY+utlT86xUgz8Y7M2zOgk544Cs=
+	t=1770196527; cv=none; b=U+pwYHLXU7boaQXx9ud0xzrvGuKc9SqqtOf1FzH6VyU+wQwHZTvA0p8SusfAKV66KThYBLJscZSCc6ibD5bGkXgpMCUQg1Z/toSjFaB9D+f9gscmDh4Cp1P7MdoYIobnqjPpCszXTRSQqYCC+UjeSo2WcM2ZGVDvYZP2ISYiITI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770186174; c=relaxed/simple;
-	bh=XNWUFeTs+Kgl3RtBPh3SL54x5bCFit9tdIFTFeTwjl0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Bv8wEK+tEftyzERgB2PALplOl96oWrPo67M8LFhxyLqC8rQINKJLhTQ3GPwsWGZvfv2Du1qOD4byOk+DpT13SG3b66UX12K1KnJDGZBtI2K6MQxE5v92nyghlcsi2S3l/yirQjgGIqRXdqrhPGWw9DJx5gafE+HvHF9O/w0uuSI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kjuBpKzI; arc=none smtp.client-ip=209.85.215.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1770196527; c=relaxed/simple;
+	bh=5m9kSIVNTKtItphnRlrL11Gl8bzNdjb0IlTPZPxLNyw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=FW4DmEjeH5mWsznw2Z3625RjWIig4ssGgQNYYH4qWyIvffaJgf0/TA4BDZGLsuKWe7WMpIVVl5FAWvFJT+kFfHtGVUEyO0B9qanwyACn8BLRF2BWWpVEvRMgF2PYmhy/7GRmKL+JyvtnVaKN9kq5DV/n1/TzKtAX5fwhz3HDBdA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=jOFQL2tv; arc=none smtp.client-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kjuBpKzI"
-Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-bc29d64b39dso2570257a12.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 03 Feb 2026 22:22:54 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="jOFQL2tv"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-4805ef35864so57480605e9.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Feb 2026 01:15:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770186173; x=1770790973; darn=vger.kernel.org;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1770196525; x=1770801325; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=y20MhP2lBI6MQPIBm3+UQ19S98gAaN1y57Up4ru7wdI=;
-        b=kjuBpKzIrWzWk09zSj32eaxcdbTgCY4w6BXbBg1MCYgsJljrqFEj75KBs80OElCdvC
-         luyYRw/z4qu9C3hmzzbTt26K0EQMb+80g2+5cKJ+4R+rWaLXwpjQoPwnHE2+RmHy1Ldq
-         5RoWmJI8i3G7KOzvCldvgj9aDYO85U0B8s1N1YBvb6MRpq7gfQ1mG6UKRY71q7YUQjZn
-         kaXjt0+OysXPT5RVgx1smoZHZzJ6jaPgEV3Ji9SkBu8SKq65EIC0OYrUfcDGDyAWrhma
-         PEYRsciOUdIVmpLq+qtKN4oWcYTyDhLAxEL9CMUuvp8JMLUU4mVk/U/OP5f9X3QYz80w
-         UL/A==
+        bh=bO9G9tYPhY8+70A/i4Fl7rDlPCoV3MPLBkNv0Mgen4Y=;
+        b=jOFQL2tvtgVi9r0lEzH0r5cn/hSmsuO0Ebe09tGlfm+5GO24jSAYYFRAzpwlREay2k
+         Z5nvktMmHXWNeos/7g3lV51X5HNy4ENhc0TvGaPM6prCVQlZkSRZvBHFpQHnTKjqIy6o
+         YU6+GhKuJ5cLbBTI2TPoU0D0lDDYT61WhNp7nRtgoD9LAkBE2aAOff0l2BtL8sHWmzCY
+         FrhGn8mdPkplqk86BpQZSBAl+jw3EAMMwJyWs9fHKxF37foQUhGh78Skpr63SFdBq5PI
+         KoPBsq8i8u/yt7hRNaT35pzDYUCm0lWn5KdfqzO+oj+IIVMB7dGfkZeWZPrx1JvIMc4d
+         jFrQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770186173; x=1770790973;
+        d=1e100.net; s=20230601; t=1770196525; x=1770801325;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=y20MhP2lBI6MQPIBm3+UQ19S98gAaN1y57Up4ru7wdI=;
-        b=NownU6U4U/3OZb2ilZg43NHmtk+6skl/O5wY1zcUilCX/Sh0Noc+0M4ALEiSODMIA4
-         i7ycme4urEcW+V/G0gDtnAxSVbZq1OcOOg+tiZr5tSqrNLu6DeXkEifZEozQKKOrAv9w
-         0zgohBJXlj3ZqnvRYXIZPJhLPdNHjaNMUCSlHlszoZoaF2F40iK13mVmbOvK4DzfGJWn
-         IYfZGtpzyxtmppsvEaLHkZZCDzwpUcB0oyTphWvaKi+8+ndA5z+KAgzVm/1RA4kVSbQf
-         PmnNpG/5rLBvXDYn8dlShNQpA/q0Bem0C1lK43ppJKGhFi6X3Hcs1SW8kmywSLI2N9cO
-         fwMQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUsLlkVR2BPRPCS1QxgRp0jyVvVzKgWAY8/B6/DVF1EDLREABYktl0TmjItkn2ZEX0/hjKziGg0RGvknA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy08BdauBCwOUBvBmGuW2UyvZ5icjSmLN76z8Ar+P8x4bQIdr4Q
-	nK7nCxctPF3YYyUI6NZOy5j6A4apCu4vPveZmsYR1hHaidTRaIVEernG+V2GQcsR
-X-Gm-Gg: AZuq6aJMm5RzjBnGa2zyAWwUF9M2Gu1Jq8oqzzilgW48LoDmzdM34t59kFfMuPwR56L
-	Fy5tx2dYGZkQ6Phkcm/FZxvOP9NdsDY8fttv6Be+B9lsMmQBSGf4okSJDSTIGr6GhMUgFVZ+Osm
-	f0GoaHtVGwDJexG0Ma8R24tblAalfnsnNZITcZ1nriShOnu9yUEcv+aJEgvogLANLan33KvC4xS
-	/Yl3ET9x/j0NzVf4q5owCZeC+m6bEfT1/l0fo0dc/Whg9yNthJbukPe6hlX5v/3a7/ZFWH4iV1B
-	ugO5wCtowRUleQ+HI85CSssMnBBPa7PjB1yHZXKTxCKMHBHIkorH+n2cd00zqrCYq+Uj1yizsHr
-	nekK3AsRHoCgqKltck3VDCsOid8yXFGK660QIRcmlgnkZTUQ9FzrXmtsmxAoGvyKm44J0CL4X8z
-	09wvY2Xrm4qwYj
-X-Received: by 2002:a05:6a21:68e:b0:348:b7a1:431 with SMTP id adf61e73a8af0-393720910f0mr2109274637.10.1770186173475;
-        Tue, 03 Feb 2026 22:22:53 -0800 (PST)
-Received: from mint.. ([2401:4900:53f5:9794:567c:c0b1:37aa:12a9])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c6c85065f6fsm1046364a12.26.2026.02.03.22.22.50
+        bh=bO9G9tYPhY8+70A/i4Fl7rDlPCoV3MPLBkNv0Mgen4Y=;
+        b=alcHrM4tDnFT9+CS3aUJNCMJ2WyNy9UFWpXl4WbHFOU3mnLZmC0RCKegBIFJvEMkpD
+         Z/C7VIsSDPpN1Ih+hpEcKhaHfjqj35dEll9EjAVDEdR9e5rN2cF/DRVAYU2armXH1o23
+         a7+5tjyv+FiQJzYiaWhTtxUSAT3RkVLM9SdF9GOzyFQbdnYxDuMIyr/T5l40B4xJvYPk
+         qyU+x3CgQsL+f1Bf/891mJl1q39WsNlb5Rl/d/NOw4/ivBsrtuYHVaYLHWbpoHMVzRtp
+         vHH6caPl9IUOmUeF5xVw/FsjCEiD2mD4cOvfTMW+QZqW1yx4Y2pjbHTczUx8ZLQm5Q8x
+         ix8g==
+X-Forwarded-Encrypted: i=1; AJvYcCVbcrUE5FzHvaf6kCr1mxoDhQSUQujni1g53AQW/+c3eNTKZjBu2S/BKUksSf9ZY4v3XhaieDKvQR1r9w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyvDlXTTPhw66tOQTlguzSa3iXRKSKnSB8cl/qbrGV08I2ikjXt
+	deuPAwNFEvf2XdVzSwmd5ElxR3+xLq0SLy0hHDGPbia98M10Vn3z3Rn4Ga4iGG8vrKM=
+X-Gm-Gg: AZuq6aL9MezPYA4wOFuIy79kIx7zqYfEJr9QfOLx5nPwnT451IS493mEbdtkJYOIEdj
+	PX8we+JnCVkyXuS1UcYQTkssuzPTWiHsPBT8azaDulAOeERkd0ZvnkKZPPWttNN2wUzbXP5PCIf
+	oTtWhq7e5sT/E1Jx3dlk1Lf06rSvWlED6s5I19LAxwGinXNXxlVlr1Ezzy1xUvAFEXeA+fSjzvS
+	EzgyApRWY8hCt0PHXwsxG52DBUZiqalcrZ3e1r3pmdz9DEgN4YBMiqVbzQuyrRGD5P4tJzrbHVN
+	Fh8QQFB7guR36YH4DfBNf6cJpYXST4BDbwMw2cVYWBO9YXfaNB7Dr475BYgwck3JKVhbSnG9shT
+	b6PrxbLubUt+T0CFhISLozQGqZLoidJnejzGFHdGMwbNYyVrgOwsWcLthRvyH/wAuodzCcx6Bgy
+	43TAR4S88jMfzNoHggUd2fU+W8xl1ZlO/roo8yFoqFd0mHTsJ2uaH7m7Zndio968qFBDbryVdeV
+	Vx4/HwkA8vH6g==
+X-Received: by 2002:a05:600c:1e2a:b0:477:9dc1:b706 with SMTP id 5b1f17b1804b1-4830e988efdmr30794505e9.19.1770196524897;
+        Wed, 04 Feb 2026 01:15:24 -0800 (PST)
+Received: from localhost (p200300f65f20eb0470629fa1229c2efb.dip0.t-ipconnect.de. [2003:f6:5f20:eb04:7062:9fa1:229c:2efb])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-43618058473sm5267642f8f.22.2026.02.04.01.15.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Feb 2026 22:22:52 -0800 (PST)
-From: dhyaan19022009-hue <dhyan19022009@gmail.com>
-X-Google-Original-From: dhyaan19022009-hue <dhyaan19022009@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
+        Wed, 04 Feb 2026 01:15:24 -0800 (PST)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Chen Ni <nichen@iscas.ac.cn>,
 	linux-fbdev@vger.kernel.org,
-	dhyaan19022009-hue <dhyaan19022009@gmail.com>
-Subject: [PATCH] staging: sm750fb: rename pvMem to pv_mem
-Date: Wed,  4 Feb 2026 11:52:40 +0530
-Message-ID: <20260204062240.20293-1-dhyaan19022009@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH v1 0/3] fbdev: au1100fb: support COMPILE_TEST and fix multi-device support
+Date: Wed,  4 Feb 2026 10:15:10 +0100
+Message-ID: <cover.1770196161.git.u.kleine-koenig@baylibre.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1076; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=5m9kSIVNTKtItphnRlrL11Gl8bzNdjb0IlTPZPxLNyw=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBpgw4fm5EVfF5VorVtnsGTdUtnwTU9CvRL9ZmPa dYfsrRRt/2JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaYMOHwAKCRCPgPtYfRL+ ToTkB/oCnl1j/dWfB/K/yBWDw+ka6uMn8A8pVPT1poAR5kUjRJrosD0FvxRS7Sk0hZc9W4Vg5Qy 9HKhOnXBhDJ37VrVCFIqy1tSRpzgKILkG8fWQg+rdEjSmaPoc9pn8ciZA8V5VA6M7/7SB8qb29Z gdvas+i5W+P+heNbEcM3P7OKKrJlMm+JhVjj1GaaEEYhMEMjsLU0+AuGsNxjj2UBzY4QluIPkN2 p/WLmfMLMvY3SA952mEmDq6dTlKZrePmgiEZRLgAAPk9EvV6dY+02eCU4W71QZetl+yJ6jjvzKT wXTf1gCOhf1Hpix2UhOXfIfNBC4L4NI6uOJOjKkIfu0+Dq8C
+X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-Rename the CamelCase variable pvMem to the snake_case pv_mem to
-comply with the Linux kernel coding style. This fixes multiple
-warnings reported by checkpatch.pl.
+Hello,
 
-Signed-off-by: dhyaan19022009-hue <dhyaan19022009@gmail.com>
----
- drivers/staging/sm750fb/sm750.c    | 18 +++++++++---------
- drivers/staging/sm750fb/sm750.h    |  2 +-
- drivers/staging/sm750fb/sm750_hw.c |  6 +++---
- 3 files changed, 13 insertions(+), 13 deletions(-)
+In reply to the patch that became commit 0636e6205bee ("fbdev: au1100fb:
+Check return value of clk_enable() in .resume()") I pointed out that the
+driver uses global data in .suspend() and .resume(). Helge asked Chen if
+they want to address it, but up to now there was no reply. So to get
+this thread out of my inbox I address the issue here. While working on
+that I found another two variables affected and instead of installing a
+mips compiler added COMPILE_TEST support (which revealed several
+warnings fixed in patch #1 when compiled for ARCH=arm).
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index fecd7457e..9bf3c0a37 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -624,27 +624,27 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_primary;
- 		crtc->o_screen = 0;
--		crtc->v_screen = sm750_dev->pvMem;
-+		crtc->v_screen = sm750_dev->pv_mem;
- 		pr_info("use simul primary mode\n");
- 		break;
- 	case sm750_simul_sec:
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_secondary;
- 		crtc->o_screen = 0;
--		crtc->v_screen = sm750_dev->pvMem;
-+		crtc->v_screen = sm750_dev->pv_mem;
- 		break;
- 	case sm750_dual_normal:
- 		if (par->index == 0) {
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_primary;
- 			crtc->o_screen = 0;
--			crtc->v_screen = sm750_dev->pvMem;
-+			crtc->v_screen = sm750_dev->pv_mem;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_secondary;
- 			/* not consider of padding stuffs for o_screen,need fix */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->v_screen = sm750_dev->pvMem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->pv_mem + crtc->o_screen;
- 		}
- 		break;
- 	case sm750_dual_swap:
-@@ -652,7 +652,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_secondary;
- 			crtc->o_screen = 0;
--			crtc->v_screen = sm750_dev->pvMem;
-+			crtc->v_screen = sm750_dev->pv_mem;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_primary;
-@@ -660,7 +660,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			 * need fix
- 			 */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->v_screen = sm750_dev->pvMem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->pv_mem + crtc->o_screen;
- 		}
- 		break;
- 	default:
-@@ -771,7 +771,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	crtc->cursor.max_h = 64;
- 	crtc->cursor.max_w = 64;
- 	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
--	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
-+	crtc->cursor.vstart = sm750_dev->pv_mem + crtc->cursor.offset;
- 
- 	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
- 	if (!g_hwcursor)
-@@ -1090,7 +1090,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 		sm750_dev->mtrr.vram = arch_phys_wc_add(sm750_dev->vidmem_start,
- 							sm750_dev->vidmem_size);
- 
--	memset_io(sm750_dev->pvMem, 0, sm750_dev->vidmem_size);
-+	memset_io(sm750_dev->pv_mem, 0, sm750_dev->vidmem_size);
- 
- 	pci_set_drvdata(pdev, sm750_dev);
- 
-@@ -1122,7 +1122,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
- 	arch_phys_wc_del(sm750_dev->mtrr.vram);
- 
- 	iounmap(sm750_dev->pvReg);
--	iounmap(sm750_dev->pvMem);
-+	iounmap(sm750_dev->pv_mem);
- 	kfree(g_settings);
- }
- 
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index fcb7d586e..2dc57bbe7 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -98,7 +98,7 @@ struct sm750_dev {
- 	__u32 vidmem_size;
- 	__u32 vidreg_size;
- 	void __iomem *pvReg;
--	unsigned char __iomem *pvMem;
-+	unsigned char __iomem *pv_mem;
- 	/* locks*/
- 	spinlock_t slock;
- 
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index ce46f240c..de1331c56 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -76,15 +76,15 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 		sm750_dev->vidmem_start, sm750_dev->vidmem_size);
- 
- 	/* reserve the vidmem space of smi adaptor */
--	sm750_dev->pvMem =
-+	sm750_dev->pv_mem =
- 		ioremap_wc(sm750_dev->vidmem_start, sm750_dev->vidmem_size);
--	if (!sm750_dev->pvMem) {
-+	if (!sm750_dev->pv_mem) {
- 		iounmap(sm750_dev->pvReg);
- 		pr_err("Map video memory failed\n");
- 		ret = -EFAULT;
- 		goto exit;
- 	}
--	pr_info("video memory vaddr = %p\n", sm750_dev->pvMem);
-+	pr_info("video memory vaddr = %p\n", sm750_dev->pv_mem);
- exit:
- 	return ret;
- }
+Uwe Kleine-König (3):
+  fbdev: au1100fb: Mark several local functions as static
+  fbdev: au1100fb: Make driver compilable on non-mips platforms
+  fbdev: au1100fb: Don't store device specific data in global variables
+
+ drivers/video/fbdev/Kconfig    |  3 +-
+ drivers/video/fbdev/au1100fb.c | 86 +++++++++++++++++-----------------
+ drivers/video/fbdev/au1100fb.h |  7 ++-
+ 3 files changed, 49 insertions(+), 47 deletions(-)
+
+
+base-commit: 0636e6205beed850d985276dc56fd73d785bea5c
 -- 
-2.43.0
+2.47.3
 

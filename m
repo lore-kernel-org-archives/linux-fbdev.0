@@ -1,138 +1,155 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF8E03D994
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Feb 2026 15:16:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30B7F352937
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Feb 2026 15:39:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770218213; cv=none; b=TUUFjCTOzWrEVoAWSXMH/5uXfLRm1Q1UmVWXDRIU9LH1B0mcbsVq5zQhVrnUOli6IWwFGHNj0XAgZLYtJP0CEABximPFUnVQNcMvXmN4P55fReQAvPvqJebVeKccj9olsy+SS7a47NMIUlZmC8N3UOyXgzhHjt+ztqZdAS5ch8s=
+	t=1770219578; cv=none; b=uSL1OAOpOtNa5cgNFwOP6MBYZNN5591yu4k2DHFlpnLHgDHFjb7SoGYKE70a5psf5RgLcfIDkIJo4udHTF4u+wDMO+Y61u5h7VxHrw1ZtnCwafLtt0oIE3+bUXUv6xy/xJwKAKReqg2lFMKUbjH+rMJSRr2uS8zTn2R2UZq0dOs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770218213; c=relaxed/simple;
-	bh=LAS0EkVBgtrNL60SSrA5BOjIsofdR08gLvcrjcrN/r0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ilUbkakqrFdtCSvnx8f8DFxpXgJStk3Na3Zo8fVNNaDydJ9IgP/sgIrWTjSFiSGqhqIRZvm3zXkNq624YmnDJMa2IFhcaYCHxDK123sqjwtBJnmrasslPUQmU+sOo8q4GM2kj3ObMMY1vEOT7KOGllubKYLI08O6Zp+XijpgR0o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=caItZR+n; arc=none smtp.client-ip=198.175.65.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1770219578; c=relaxed/simple;
+	bh=yNyoJ5AhNfMEoR0z+MIXzwexmhFP/LF1Uj0/9f8QB7I=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=d+/OscEBPuwcJMSXbvjyIb1JqL1nCFBYTI5QleKLQXpg+d3KCMu6DOwvQyNYFd77pGlZgUK7Ibhsxev8QnnedICwtoj3JnBIeplUn9HMNehw7u0K8jyL4k53ztQKTUKlZenIlgAdKkVlWIHj9HMfxCHO192uysGD/U7r129My9E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OaxFY85X; arc=none smtp.client-ip=209.85.128.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="caItZR+n"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1770218213; x=1801754213;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=LAS0EkVBgtrNL60SSrA5BOjIsofdR08gLvcrjcrN/r0=;
-  b=caItZR+nAk+LdmkjMi2l0RSWfXrVhlbXNG5pjjGBWML+I1qYcUs7r9Fw
-   JbOYj5Aaxb6RgRA8bHOujzsEuWBK9Ib81Wz7w1Vi1LrkJ/d3mRTd1OrI2
-   gpC4yxY8ZAZD7ZdNz6lG/KTTuNN83gKLtS6NZPqmPr5e5NYBDc0NZiMx4
-   L5F8fcqFVM7z4y2HRf+J3wFLeQnQi2aWweOPEbhXYrzmiLGoBTgGoUlPv
-   akTUcYTrZVMN75xtpWAjNwI5XB22YcHav9gTfLIm5s9kgWsy2DFLvpcV6
-   2owCtxN5G4H5+FUjYXQHRXf+LousvRwVqF7t/t6CELe7FMLx8rID/6iHG
-   w==;
-X-CSE-ConnectionGUID: 6BobUj6gTEiCIcLhKRfr8Q==
-X-CSE-MsgGUID: kPWmoZYRSYWQfuSu8VM42A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11691"; a="71391213"
-X-IronPort-AV: E=Sophos;i="6.21,272,1763452800"; 
-   d="scan'208";a="71391213"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Feb 2026 07:16:52 -0800
-X-CSE-ConnectionGUID: YsXuTrHrR5OvoMFxxH70BQ==
-X-CSE-MsgGUID: d1cXLsZCSf2uiD2pONH8ng==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,272,1763452800"; 
-   d="scan'208";a="240967509"
-Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
-  by fmviesa001.fm.intel.com with ESMTP; 04 Feb 2026 07:16:50 -0800
-Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vneca-00000000iLA-25QB;
-	Wed, 04 Feb 2026 15:16:48 +0000
-Date: Wed, 4 Feb 2026 23:16:23 +0800
-From: kernel test robot <lkp@intel.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
-	Helge Deller <deller@gmx.de>
-Cc: oe-kbuild-all@lists.linux.dev, Chen Ni <nichen@iscas.ac.cn>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v1 2/3] fbdev: au1100fb: Make driver compilable on
- non-mips platforms
-Message-ID: <202602042342.RXu7sDV7-lkp@intel.com>
-References: <474eca0c9ecb8a2e610e82922ad22ad7e8ff0b8b.1770196161.git.u.kleine-koenig@baylibre.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OaxFY85X"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4805ef35864so61918045e9.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Feb 2026 07:39:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1770219576; x=1770824376; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=jk10eGunB1uJKb8jAOCmTCvnvS5rA0nvykd8EFnZG7Y=;
+        b=OaxFY85XOjy4JZd1pDjjCJuomtqk0f2yNpMPFaLpavjALQ00CDTpC6F2HHC6uZrD3K
+         NYE7psDMdvNE0+56EoS3CxMvGSXQvO5Rg9i8pn63ch+gfqKDTFV3eg7BiYPB+iguyyIz
+         p/IoJxE8cmXgk2OKh/Ts+PZKYMp7NLMV8EqHNgHXmeEHmORgGAFPon1RPOB3zEB0UJ0S
+         6Rem6kZOCZJfDz344XJrdAVQjTjEgjm0DbvfEJ53FqWrgIFuYh9lFygyYcbxxafxJeoH
+         vrpgoRvDifmGa13A40ID0rpVwuJeW+O1ek5bBNXAcOn2WD3QoHdrMubbKZXHfYJliwPD
+         jiVA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770219576; x=1770824376;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=jk10eGunB1uJKb8jAOCmTCvnvS5rA0nvykd8EFnZG7Y=;
+        b=iUTCLQJFNJRtwGotHqr20pVHCVke4kdNEtZKaF+k2apgbA3rNAees6mp++HGsxJW7m
+         fVmoFddZtPtbmfm54NVNAkV6JYvu16CgAm6qdD0EjIFbG8xfvfzHKKmg125kbb9LtBe0
+         QaU9HazybqUaYFueqrixbKCsm7+aAahJpyPmjY79LfO6I8yJd2W5IeB1C/yyC77000mg
+         RMyGMhYI3xyszcJpKu3lBCO6CZoYCWrZIyxAL7Ew9OM8WZrMsp9fGt5GT2CtCl15M4yQ
+         KWKXO0AqRGtesZyOKkgA6iiX0o6EdCcCmnQIUyNE3xy6JKe56Y30BYt3MiCPFFQ3Iihf
+         IaHg==
+X-Gm-Message-State: AOJu0Yyt6kBw2r1dg8Z7otcZNap7UImk4WGaccIQ0GCZpX7303t3RRmi
+	/zEAYdqFBQnavgCK6od2NkxHexXFSVVtd6nKKrGOEgzuY6kGxq7DXxoG
+X-Gm-Gg: AZuq6aL21y9AToddPer1E3U3xEOK3VOosusJby2kVjTO1Qi3IT2sAZN7mwxt7EWtilr
+	V1QR+3yygWK+6UsZqif/fV5yKPWABqmv56PbloPnjVuJDF0HOpbI/8MoK+C4qAm2DoVFst1f1j0
+	kQ0lXsr/u6vRJbUbThEt4CjB6ADk5FRXpPyKqYns5u7j2xmOca0s30qTPgjHNGf5UQVRw0caD3l
+	GKQxLyqlDnURSvp6ugMFJzIe3t9fHV2+PHwBR+BoZk2r8qE6c/PIKH/Af28KT9PecWv8fseeP1M
+	LEhiNBxYwnowhnWwdWkLrmUNF7tSrq8sO0/9i+xpaBUJK1URFQZG+zZaUFcw5LJTHol0sfITXDP
+	zORiKPaW/ID2FAPmobiHCu5cp81UvYHbKzGQQ5X8XzB0kjqspGaa4oG6+r5WvL6Yr3IYJXxYiB1
+	N+TjraeUPKfBi3
+X-Received: by 2002:a05:600c:c163:b0:480:2521:4d92 with SMTP id 5b1f17b1804b1-4830e988f3amr50683105e9.24.1770219576301;
+        Wed, 04 Feb 2026 07:39:36 -0800 (PST)
+Received: from ubuntu.. ([46.31.101.12])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4361805813asm6930407f8f.27.2026.02.04.07.39.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Feb 2026 07:39:35 -0800 (PST)
+From: Sarah Schwartz <sarah.schwartz025@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Sarah Schwartz <sarah.schwartz025@gmail.com>
+Subject: [PATCH] staging: sm750fb: fix CamelCase warning for dBase
+Date: Wed,  4 Feb 2026 15:38:56 +0000
+Message-ID: <20260204153856.23277-1-sarah.schwartz025@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <474eca0c9ecb8a2e610e82922ad22ad7e8ff0b8b.1770196161.git.u.kleine-koenig@baylibre.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Uwe,
+Rename variable dBase to d_base to fix a CamelCase warning reported by checkpath.pl
+This aligns the code with the Linux kernel coding style.
 
-kernel test robot noticed the following build warnings:
+Signed-off-by: Sarah Schwartz <sarah.schwartz025@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_accel.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-[auto build test WARNING on 0636e6205beed850d985276dc56fd73d785bea5c]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Uwe-Kleine-K-nig/fbdev-au1100fb-Mark-several-local-functions-as-static/20260204-171704
-base:   0636e6205beed850d985276dc56fd73d785bea5c
-patch link:    https://lore.kernel.org/r/474eca0c9ecb8a2e610e82922ad22ad7e8ff0b8b.1770196161.git.u.kleine-koenig%40baylibre.com
-patch subject: [PATCH v1 2/3] fbdev: au1100fb: Make driver compilable on non-mips platforms
-config: s390-allyesconfig (https://download.01.org/0day-ci/archive/20260204/202602042342.RXu7sDV7-lkp@intel.com/config)
-compiler: s390-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260204/202602042342.RXu7sDV7-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202602042342.RXu7sDV7-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   drivers/video/fbdev/au1100fb.c: In function 'au1100fb_fb_mmap':
-   drivers/video/fbdev/au1100fb.c:354:39: error: lvalue required as left operand of assignment
-     354 |         pgprot_val(vma->vm_page_prot) |= (6 << 9); //CCA=6
-         |                                       ^~
-   In file included from include/asm-generic/bug.h:31,
-                    from arch/s390/include/asm/bug.h:60,
-                    from include/linux/bug.h:5,
-                    from include/linux/mmdebug.h:5,
-                    from arch/s390/include/asm/cmpxchg.h:11,
-                    from arch/s390/include/asm/atomic.h:16,
-                    from include/linux/atomic.h:7,
-                    from include/asm-generic/bitops/atomic.h:5,
-                    from arch/s390/include/asm/bitops.h:75,
-                    from include/linux/bitops.h:67,
-                    from include/linux/kernel.h:23,
-                    from include/linux/clk.h:13,
-                    from drivers/video/fbdev/au1100fb.c:44:
-   drivers/video/fbdev/au1100fb.c: In function 'au1100fb_drv_probe':
->> include/linux/kern_levels.h:5:25: warning: format '%d' expects argument of type 'int', but argument 2 has type 'size_t' {aka 'long unsigned int'} [-Wformat=]
-       5 | #define KERN_SOH        "\001"          /* ASCII Start Of Header */
-         |                         ^~~~~~
-   include/linux/printk.h:484:25: note: in definition of macro 'printk_index_wrap'
-     484 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
-         |                         ^~~~
-   drivers/video/fbdev/au1100fb.h:33:30: note: in expansion of macro 'printk'
-      33 | #define print_err(f, arg...) printk(KERN_ERR DRIVER_NAME ": " f "\n", ## arg)
-         |                              ^~~~~~
-   include/linux/kern_levels.h:11:25: note: in expansion of macro 'KERN_SOH'
-      11 | #define KERN_ERR        KERN_SOH "3"    /* error conditions */
-         |                         ^~~~~~~~
-   drivers/video/fbdev/au1100fb.h:33:37: note: in expansion of macro 'KERN_ERR'
-      33 | #define print_err(f, arg...) printk(KERN_ERR DRIVER_NAME ": " f "\n", ## arg)
-         |                                     ^~~~~~~~
-   drivers/video/fbdev/au1100fb.c:472:17: note: in expansion of macro 'print_err'
-     472 |                 print_err("fail to allocate framebuffer (size: %dK))",
-         |                 ^~~~~~~~~
-
-
-vim +5 include/linux/kern_levels.h
-
-314ba3520e513a Joe Perches 2012-07-30  4  
-04d2c8c83d0e3a Joe Perches 2012-07-30 @5  #define KERN_SOH	"\001"		/* ASCII Start Of Header */
-04d2c8c83d0e3a Joe Perches 2012-07-30  6  #define KERN_SOH_ASCII	'\001'
-04d2c8c83d0e3a Joe Perches 2012-07-30  7  
-
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 046b9282b..c77b0fe3b 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -136,7 +136,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+  * @sPitch: Pitch value of source surface in BYTE
+  * @sx: Starting x coordinate of source surface
+  * @sy: Starting y coordinate of source surface
+- * @dBase: Address of destination: offset in frame buffer
++ * @d_base: Address of destination: offset in frame buffer
+  * @dPitch: Pitch value of destination surface in BYTE
+  * @Bpp: Color depth of destination surface
+  * @dx: Starting x coordinate of destination surface
+@@ -148,7 +148,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 		      unsigned int sBase, unsigned int sPitch,
+ 		      unsigned int sx, unsigned int sy,
+-		      unsigned int dBase, unsigned int dPitch,
++		      unsigned int d_base, unsigned int dPitch,
+ 		      unsigned int Bpp, unsigned int dx, unsigned int dy,
+ 		      unsigned int width, unsigned int height,
+ 		      unsigned int rop2)
+@@ -160,7 +160,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 	de_ctrl = 0;
+ 
+ 	/* If source and destination are the same surface, need to check for overlay cases */
+-	if (sBase == dBase && sPitch == dPitch) {
++	if (sBase == d_base && sPitch == dPitch) {
+ 		/* Determine direction of operation */
+ 		if (sy < dy) {
+ 			/*  +----------+
+@@ -241,7 +241,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 	 * It is an address offset (128 bit aligned)
+ 	 * from the beginning of frame buffer.
+ 	 */
+-	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, dBase); /* dpr44 */
++	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, d_base); /* dpr44 */
+ 
+ 	/*
+ 	 * Program pitch (distance between the 1st points of two adjacent lines).
+@@ -304,7 +304,7 @@ static unsigned int de_get_transparency(struct lynx_accel *accel)
+  *	      and -ive mean button up
+  * @startBit: Mono data can start at any bit in a byte, this value should be
+  *	      0 to 7
+- * @dBase: Address of destination: offset in frame buffer
++ * @d_base: Address of destination: offset in frame buffer
+  * @dPitch: Pitch value of destination surface in BYTE
+  * @bytePerPixel: Color depth of destination surface
+  * @dx: Starting x coordinate of destination surface
+@@ -316,7 +316,7 @@ static unsigned int de_get_transparency(struct lynx_accel *accel)
+  * @rop2: ROP value
+  */
+ int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
+-		       u32 srcDelta, u32 startBit, u32 dBase, u32 dPitch,
++		       u32 srcDelta, u32 startBit, u32 d_base, u32 dPitch,
+ 		       u32 bytePerPixel, u32 dx, u32 dy, u32 width,
+ 		       u32 height, u32 fColor, u32 bColor, u32 rop2)
+ {
+@@ -345,7 +345,7 @@ int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
+ 	 * It is an address offset (128 bit aligned)
+ 	 * from the beginning of frame buffer.
+ 	 */
+-	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, dBase);
++	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, d_base);
+ 
+ 	/*
+ 	 * Program pitch (distance between the 1st points of two adjacent
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0
+

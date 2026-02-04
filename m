@@ -1,110 +1,112 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52B523B95F8
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Feb 2026 09:55:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB07E3D7D8F
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Feb 2026 10:15:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770198931; cv=none; b=bPxFNd03w9YaQUPvD0VjmmsDHESl+O7+75+9KPa/YWe2wD9y2Ow8oZ1BZiLRlb1KZoYRvybttea8QcF2E7acI+GizWY8utevnwl4G6X6sWLebu8TGOmVOBw/YUaGN1UBbjwW3YaSvf/24MMlMkyTHWVp5BTB+XZHva6qgHBilJU=
+	t=1770200140; cv=none; b=YeXlYDnIv8QLqfoj9ceVcVE3npbsnS36r9KGsXth6Y5jPlsxGRqJm2i/ttp1+P0pqM8JhpwwxeLFL9s3ACe9947fgwUrF80iIBnjQ+eNOAV0IN9QO+psjeln6NqbmCcn/BdTtlUw3zhwPChDTgXIbQamlfmf3vpMBRT5OSzqEXk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770198931; c=relaxed/simple;
-	bh=fDc9+RnTuNqnqK2DLJw2MgkTQPt1U2igsoiMD6lUu2Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MFmb6SUZ8aMel4zwm5kwDjmg1U8Sctn6duwrG+0G41jWhuOyhQfhMgnpclaM+MjxhEAUCHnkttAfbzHptXvLm2rxDABPMKvi/7QTMSFzmQdkWrT9dwNa/NzlU0f3ZP+KkoRwDvWPCo4VXoGm8wQo9nnh8OO1p5+5/TqtcuAHC/c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=glgbkgof; arc=none smtp.client-ip=209.85.128.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1770200140; c=relaxed/simple;
+	bh=dIsnl0t5FVP9ysSEsc5j1G1gdI61iy67zWOeVDaBYrk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DHHm/12gyHuPdhYdoSkxHcYiJITzww+8Acu5ArJgnlKyS8l7NM2phwb9jCBQHgDX3k/SAbV0dvRXOSLyG0OPWrAYxypVLyU6b9vJfgNaftEgk4G3tMSKP+weqDIQ+6v1hkfxozcihqK0VdxKLR35h8yDGOyNrAUXaW4GUFCQK8Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WRSWpPq/; arc=none smtp.client-ip=209.85.218.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="glgbkgof"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-482f2599980so38388605e9.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Feb 2026 01:55:31 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WRSWpPq/"
+Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-b86ed375d37so893992166b.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Feb 2026 02:15:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1770198930; x=1770803730; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=XzUjtBBrjfJBhBDao8Y/buom6ruqtjiudppkV5j4hu4=;
-        b=glgbkgofbI7qInVxzI2G4p6D7xwoBdKDZ5TjFI4Y9e2wf7+Quwknk0amcexyLDaTRo
-         JlczXuLGX3BBEdINyNNkum6VRz4TklTxWUStm0Ta7xPFGUXg1Y7x44lFZPS3+P/yuuuV
-         8RMZeGrPw6bRFmcwXRC5KgKAkEbJpUWbCDmqq5TEb1GtsAuYb//K725imvxU5axrulDx
-         KVXdrgmSDFwugeqq0m68bf4VIHIzkQzqZsvw06XL3bVFWAZWODVtxUwpcFdlCYppokWs
-         gOAcr6GhhB9YlGh4rRrBD9RsVbWRopj69R/BuZmDZbMLz7VwHaIAz9shl7ukgm+2C7Dm
-         KJpA==
+        d=gmail.com; s=20230601; t=1770200138; x=1770804938; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=LV9toMtWaG2CnsQFvTzbMI2fAsoGpmrHbF+Al0cv328=;
+        b=WRSWpPq/pQbDYvTKO3EukyyLO/mMLEHNqrshhmW19A0/BqNRzSbmleIZUKFaeMHKjs
+         lCQvcUsWUSmGF7BRjOGCuFxVdgcNy0XD9cw6l0SfXiBO3+nFNJ/CC6FKVdXDhgML4AJW
+         kq9KjqLen2X6nMz6cD5ukx3RVGokNzHhBIEvJw4PT6PlD9jsxnKimq1tQbss2kM0NaJY
+         9t4Z0V/2O+cAUlhmboc6uL4N7Fan9ocihoCjbVZz+pFCfHulviHdFROfajm/qplx9W0P
+         +s7swOwdyb5mc5TzSVEcjW3qj0e9PnB/dgIOfuo0GLPEl0iv5pTxqRZkXZTu5c1MJjkH
+         owOg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770198930; x=1770803730;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=XzUjtBBrjfJBhBDao8Y/buom6ruqtjiudppkV5j4hu4=;
-        b=QHiwVfyKhXa/DZnkxwHm+BFZ2zR9EKvjM8JinZKVng+q3NZ6zubRpQj7mv1vI43k3j
-         f7a8MwSxJEjfSn70mNMrXoVxpxTVoyb8ruEWa1LTCGevoNi6gkotC3XSAssuFWihQuVD
-         oi4SjffEx0L0o8jAyHc6DnonOPwSZOG2yq97NTZS/uLi8NfZxAGPCk9LG+QQ0IMrEEtb
-         7GVaWzABx/knAaBK3c7VMChDJ+SNYJ2rh9tK25/tLgK3shj0aLzUnLIg1UuWhIO9zk4x
-         GaDqPP094RDa20+oeXJnruj6qZIi61UNPNF359s+Cr7NqqNfrIXE6ZxSt9NB/pUPe2g6
-         g/FQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXhaIn5rEMAQMQQSSEi7oY5VRKqFuidFsn9DLHlK347X1kQNc6lzzIMKN5icJZBv+LGZ0VeUBXPNEWJ3A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwwQ30F2hf4eLvqvHy0QpogMr096Eb+guLZhuS7zITdytykB2lv
-	ZnWUF8fMFRdCOFPwH/gekOwbRG6z0VRwpe1QcqH1VyffIl4/Yv5Dcpz9N+aj4PAdjYA=
-X-Gm-Gg: AZuq6aLBqOdlogh8oCnEyQ0ahTLBEeAiZ+ozQUSXXZWJ+aez73Zs2aorOaYwz+B8V3Z
-	j/6h+1Zb0L/txkTCcNFNy0c15OGq+iiwhBj0c/ZIIqqHF9kkbseFMq6LNjw8I6Qa+L5WYTw7Rwn
-	tVfoxoVbLhhF8NnZzgUXMJKJwPigMpIgXESmtW015NBxb/s0BoVJ8A1JGSMrtWgxKruJlIhv95V
-	MFxwQt9ssWp5/YZ9+JMfiwu1i3t1tSPTnSJ6Bf3Bg9kqd2ALpHuu3588P9tb3CcWsPvouTjtUtP
-	6Zj7z1wTsa4zprc5iNaIPDd2UPQgw/XOxYoX8VkeDTidSpZ4VVWye4Bdau3cZtP4iHC+NdguiIJ
-	RMQt+tEHErOnZuCAqyCqaSLyX+jCjx+SsYS/9z8Ou7SAzofcLaYAmP+DkoWww3qu/RTZd27R12H
-	HK6rfkXfbn3aXoIH/A
-X-Received: by 2002:a05:600c:358d:b0:465:a51d:d4 with SMTP id 5b1f17b1804b1-4830e93ec05mr37014135e9.6.1770198929624;
-        Wed, 04 Feb 2026 01:55:29 -0800 (PST)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43617e3a486sm5477520f8f.16.2026.02.04.01.55.28
+        d=1e100.net; s=20230601; t=1770200138; x=1770804938;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=LV9toMtWaG2CnsQFvTzbMI2fAsoGpmrHbF+Al0cv328=;
+        b=qjrzOriHGqyDf/SSQBFcRbURNHj7Sf0L7/+gQ4bzzxI+H4SRBFm9QNmBerOs2sUHft
+         byLVAJIfFxdQDOmOeBHp7/T4Wr8p4DOYzuBVu4LkEjTsFajs50FL9g7dLNTp3H3CfdBw
+         yob49N6Vfl3gM6vq/Svxux6k1/4XkSJN7jiPYByLxRh9a+R0j9udMs4oF+fOfG8Dhdlz
+         06CuDVsZGLfoADBUWqjE3vYIG0FmBXtphs+oZp5vpQlRzCB3ggUzQs/N5hOFaKqo4i3O
+         AEAAqtzY9xoFGp+REYlhv9a3b7ghVWmfV5KSyuyvW2Vslr2Zlai282ACjtCW/hlufLg2
+         D/qg==
+X-Gm-Message-State: AOJu0Yz8KhCCURGwHx8/Ek1RW7hpng6XDthJU63PvzpHrq3mK+O5QDdN
+	92MjiouN0u6uH06L2IkP0rB5dwhXUQ671B/Eab99koBjga9Jr3s2JGOKmOq/6fKVOOopZj8y
+X-Gm-Gg: AZuq6aJsGNeOCXFYU6NgtHwaHtRyPq7f9H5CRnO7OUSvraGJpPizM/vlTEOMc3yVnnS
+	567rJ0c8xuW8U9EYU3k9e+WDZMnMuT/17u6lkLQO3ECg/LNTp89F5iXQzMRj3edgHluaJm3dcBE
+	oMx9qniK+oMJHplkI81m75kGsOwkcO87Pu3W+W+4Ik/J94OfpB+WNNKsucAFF0NEvDm4bwMyXB4
+	6HAq6WGQrHOFhEqBDuVbdRzIJIZ1Elpad+qRxjuAE/E1Ff1UZoI7rgzZJJ9c5EIc6yiXLCQpCUh
+	5Fd7k5xO278cHzMxmejQ2G0lNi3GoeC9Pb7PzXuqqg0suGKvi05RuH0DW9W0xsHPs6f6EJ1tU5e
+	ISarbp9lkFIuCVOAeq3K148TQmCZUPzLWqisuK9b8rFcWC2NUtu///FoX8hInvbjy+Gp2P8rqcM
+	o0zmEzE7JLPd51wkn2AunwTvWf1c1Br8145upZQNgnSHsFKzbHiieceHT1MFmx5wTNhRMwWs0ph
+	5lpDi+smh8zEN3fK9ou6ZntAy0UE9moz+eI8mcssxyAFlMmhU7QMlRjvF05gw==
+X-Received: by 2002:a17:907:702:b0:b8a:f2de:e329 with SMTP id a640c23a62f3a-b8e9f080fdbmr169876966b.25.1770200137825;
+        Wed, 04 Feb 2026 02:15:37 -0800 (PST)
+Received: from cs-874966990260-default.europe-west4-b.c.od237066db22328bb-tp.internal (181.183.90.34.bc.googleusercontent.com. [34.90.183.181])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8e9fef0e17sm106440366b.33.2026.02.04.02.15.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Feb 2026 01:55:29 -0800 (PST)
-Date: Wed, 4 Feb 2026 12:55:26 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Artem Lytkin <iprintercanon@gmail.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Wed, 04 Feb 2026 02:15:37 -0800 (PST)
+From: Artem Lytkin <iprintercanon@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] staging: sm750fb: convert pr_* to dev_* logging in
- sm750_hw.c
-Message-ID: <aYMXjuXKIPHVADeD@stanley.mountain>
-References: <20260203230758.3056-1-iprintercanon@gmail.com>
- <20260203230758.3056-4-iprintercanon@gmail.com>
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Artem Lytkin <iprintercanon@gmail.com>
+Subject: [PATCH v2 1/4] staging: sm750fb: add bounds checking to option parsing in lynxfb_setup()
+Date: Wed,  4 Feb 2026 10:15:33 +0000
+Message-ID: <20260204101536.3311-1-iprintercanon@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260203230758.3056-4-iprintercanon@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Feb 03, 2026 at 11:07:58PM +0000, Artem Lytkin wrote:
-> Convert pr_info/pr_err calls to dev_info/dev_err in hw_sm750_map()
-> and hw_sm750_inithw() where struct pci_dev *pdev is available as
-> a function parameter. Functions without direct device pointer access
-> are left unchanged to avoid unnecessary signature changes.
-> 
-> Signed-off-by: Artem Lytkin <iprintercanon@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750_hw.c | 20 ++++++++++----------
->  1 file changed, 10 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-> index ce46f240c..60f9f7135 100644
-> --- a/drivers/staging/sm750fb/sm750_hw.c
-> +++ b/drivers/staging/sm750fb/sm750_hw.c
-> @@ -34,7 +34,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
->  	sm750_dev->vidreg_start = pci_resource_start(pdev, 1);
->  	sm750_dev->vidreg_size = SZ_2M;
->  
-> -	pr_info("mmio phyAddr = %lx\n", sm750_dev->vidreg_start);
-> +	dev_info(&pdev->dev, "mmio phyAddr = %lx\n", sm750_dev->vidreg_start);
->  
+Replace strcat() with memcpy() and add explicit bounds checking on the
+remaining buffer space before each copy. The original code lacked any
+validation that the write position stays within the allocated buffer.
 
-Same.
+Signed-off-by: Artem Lytkin <iprintercanon@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-regards,
-dan carpenter
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index fecd7457e..0eacb522d 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -1163,8 +1163,15 @@ static int __init lynxfb_setup(char *options)
+ 		} else if (!strncmp(opt, "dual", strlen("dual"))) {
+ 			g_dualview = 1;
+ 		} else {
+-			strcat(tmp, opt);
+-			tmp += strlen(opt);
++			size_t opt_len = strlen(opt);
++			size_t remaining = len - (tmp - g_settings);
++
++			if (opt_len + 1 >= remaining) {
++				pr_warn("option string too long\n");
++				break;
++			}
++			memcpy(tmp, opt, opt_len);
++			tmp += opt_len;
+ 			if (options)
+ 				*tmp++ = ':';
+ 			else
+-- 
+2.43.0
 

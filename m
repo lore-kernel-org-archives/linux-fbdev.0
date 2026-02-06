@@ -1,41 +1,41 @@
-Received: from sender4-op-o15.zoho.com (sender4-op-o15.zoho.com [136.143.188.15])
+Received: from sender4-pp-f119.zoho.com (sender4-pp-f119.zoho.com [136.143.188.119])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CD482749D6;
-	Fri,  6 Feb 2026 21:30:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D4441E86E;
+	Fri,  6 Feb 2026 22:34:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.119
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770413457; cv=pass; b=ACrR8l+iaQm87JjGkY62fBygwC5I3N/z3XVXsZjXfGSESxSs2Bh1Hix31JcpvJbDChQhkoNV88GqXBmxd8wC/tc2snHNEUo2JyL2JAbvVvn/wi+2T8AegMIo7MavJMsSePD0GuJOjX12PD4uQBu/bgX0iQSXkIS5TsZnLWKlsgE=
+	t=1770417262; cv=pass; b=l2+paK39srRPQLGeUN1cQ21y42GkQxF5oATQb3QaUaRkC8N5odLv1aJynDTn6JtG3ZxXx+Rf7ON+YYfDf4q6LuxOYRh4pnNs+OdsZJtaTmmOsfZT2E4HwkB7uK9a/22KRs6qZDkpJUp2eA7ItuuDhqgUYmKbeFQqlLrcJ7iWydE=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770413457; c=relaxed/simple;
-	bh=dHk/uf5/R0o1Pb5W9VHPvuhr+RUwzmWTYbA59LNhJ9M=;
+	s=arc-20240116; t=1770417262; c=relaxed/simple;
+	bh=nwjhQnmuEp1LuAUXAWUvtthxUjfgsoNmRvkb+Zsoafc=;
 	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=lE1YLQtZGZ2jupd2Gq+wXEVjSdjXDEQ2meZojRABoozVqgnGV0vieeafQqvSda2TGh8RGd+vWFAtQBOgnF3tBSg68CwVk8r3GmbeJsljRo/gB9b1JF1Jnyh30LWod95CEjRkPuIrM+NI8bGqgZgwRRp0kUyqfT8hrB3tDndyPD4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=PgOuGqgD; arc=pass smtp.client-ip=136.143.188.15
+	 Message-Id:References:To; b=gyIJdOUBz0pUwwHZYGrjXVwzkRfijxoNY7MaWk2vvXYO+uFDtZLqEmxrT6GApua6GHCQsbXYqr7lLt0/Q0Uh38K/6AZTLbtp6ICeBQhA4IXZougATEd2+74+uK0BDJc27IpC3oO6thZpN/WCIGXfyxXg6Y66eatJ1pl5pddter0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b=LxHZZ03J; arc=pass smtp.client-ip=136.143.188.119
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="PgOuGqgD"
-ARC-Seal: i=1; a=rsa-sha256; t=1770413432; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=daniel.almeida@collabora.com header.b="LxHZZ03J"
+ARC-Seal: i=1; a=rsa-sha256; t=1770417234; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=TkGT/rcpJE5Vm/RPC/OLo0/DqSafIQP4dRJ9DS5V9ztK6Ke3kRltQ9h4WbEj57/jfaJLtvCMwnIh6yWLQnTLqDq48jerNv6XpjWF8X5j97XVpzK18xlVRoDnSTTu4fuy2JeuB3KoZ9Jr22UoO/dl//sTGhvEt0MSiVFamYw0wkY=
+	b=RiExs3bv4Y8H0GNaO34C2uPapynSVMRbvsT5doKr4cOkDCxxL3Hjgim05gX+l6zfycGBZ2ExaPDbNl/o2DN0HNRn4pT/1/vErz3mGPkwjoyc1Is8t6VBysJ9jFz2LGbzGO4aK6GJjcSmGg3OTZb2FINL6mSpNg9jeqewzdXz6lM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1770413432; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=dHk/uf5/R0o1Pb5W9VHPvuhr+RUwzmWTYbA59LNhJ9M=; 
-	b=L6YzZ4DJDJPYpSP3wIFwYXu65xdUaNah/57hxFQLAxsKteOXGvzUi2ZgeyUSNPkqsRX5PCNEeD0pA1KNmjXk/uIjTznAWfAcsE6x4AC4GK7YyMpd37JDrNLheEQ9Kb5ODTN63I2H+AkFaDlr/VMeIiBVHKX+ERmLTM+fLtJjDA8=
+	t=1770417234; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=tc02K9ea6k3a52rZLvnILRHeI4xxmaVSZwRgjd+aJI4=; 
+	b=JT+j+YUNy2cWcpE6v/9YDklaQqixjWMof+qoB8V9LQThjMKDcV7e6TVmKIWAWCCiNhUIHWYcm+amncZP+Ad4FrHbGYf4fd6TDjZ8ULczWdJeGqdae29BpL+YtcayHWGETrbT5j8hjAwLY5u09LCs97H4K+VXC9A8wkwiQvC29Go=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
 	dmarc=pass header.from=<daniel.almeida@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1770413432;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1770417234;
 	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
 	h=Content-Type:Mime-Version:Subject:Subject:From:From:In-Reply-To:Date:Date:Cc:Cc:Content-Transfer-Encoding:Message-Id:Message-Id:References:To:To:Reply-To;
-	bh=dHk/uf5/R0o1Pb5W9VHPvuhr+RUwzmWTYbA59LNhJ9M=;
-	b=PgOuGqgDm2r+bre0v+IcQ1LH7g7YFthyDqz3hqjJrYgXp9ck0UIVNlgNR+4ogr8B
-	zu3HbqxQq8nl4tD3M6w2uHxQnQ/DbcuSufmz8XsD8pxovUabdXl98yfhOsYX48rwuYk
-	LwfLOpDCV3saDkZIIa+RtC+Uut/J+35pmJ8yGMJg=
-Received: by mx.zohomail.com with SMTPS id 1770413430954879.3535008602513;
-	Fri, 6 Feb 2026 13:30:30 -0800 (PST)
+	bh=tc02K9ea6k3a52rZLvnILRHeI4xxmaVSZwRgjd+aJI4=;
+	b=LxHZZ03JDNpDc+8PFnHHYRltxbF/8YH5RjJUuPQHRAC/7Sf1UXgxB2yT7gQd/t+e
+	oVa+fMJpJ/Uvp4FX6oa9pKZ5mgQBrNSwAil+Mlu0bTHqCuvOW4lgTGYDEvoAs5fMd5d
+	FISZyzqUUxMOdGD7sAsyHylnFw5C4xWLXRRutqqM=
+Received: by mx.zohomail.com with SMTPS id 1770417231622597.8188882201408;
+	Fri, 6 Feb 2026 14:33:51 -0800 (PST)
 Content-Type: text/plain;
 	charset=utf-8
 Precedence: bulk
@@ -47,11 +47,9 @@ Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3826.700.81\))
 Subject: Re: [PATCH -next v7 1/2] rust: clist: Add support to interface with C
  linked lists
 From: Daniel Almeida <daniel.almeida@collabora.com>
-In-Reply-To: <DG820GM5YHJS.11E92OR824CWM@kernel.org>
-Date: Fri, 6 Feb 2026 18:30:07 -0300
-Cc: Gary Guo <gary@garyguo.net>,
- Joel Fernandes <joelagnelf@nvidia.com>,
- linux-kernel@vger.kernel.org,
+In-Reply-To: <983b7db3-b0e6-45d6-866e-f001b64abde1@nvidia.com>
+Date: Fri, 6 Feb 2026 19:33:27 -0300
+Cc: linux-kernel@vger.kernel.org,
  Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
  Maxime Ripard <mripard@kernel.org>,
  Thomas Zimmermann <tzimmermann@suse.de>,
@@ -70,10 +68,12 @@ Cc: Gary Guo <gary@garyguo.net>,
  Lucas De Marchi <lucas.demarchi@intel.com>,
  =?utf-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
  Helge Deller <deller@gmx.de>,
+ Danilo Krummrich <dakr@kernel.org>,
  Alice Ryhl <aliceryhl@google.com>,
  Miguel Ojeda <ojeda@kernel.org>,
  Alex Gaynor <alex.gaynor@gmail.com>,
  Boqun Feng <boqun.feng@gmail.com>,
+ Gary Guo <gary@garyguo.net>,
  =?utf-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
  Benno Lossin <lossin@kernel.org>,
  Andreas Hindborg <a.hindborg@kernel.org>,
@@ -99,52 +99,48 @@ Cc: Gary Guo <gary@garyguo.net>,
  intel-xe@lists.freedesktop.org,
  linux-fbdev@vger.kernel.org
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <31AAAF36-093A-46CF-AEEA-709CB1DE1E81@collabora.com>
+Message-Id: <4A87E3FC-6A04-4A92-9230-4782D75FC05F@collabora.com>
 References: <20260206004110.1914814-1-joelagnelf@nvidia.com>
  <20260206004110.1914814-2-joelagnelf@nvidia.com>
- <DG7ZF1UT98RQ.3F42J3ULGV2OC@garyguo.net>
- <DG800TDA6OXQ.275PMMS19F1EX@kernel.org>
- <77ac3274-a962-469d-a2f6-6ccc0670988a@nvidia.com>
- <DG80FV3VTT6P.2ZP18EM8605GT@garyguo.net>
- <DG81PJ9QD8FC.2NF6VEKDD3F2Q@kernel.org>
- <DG81V8NG5RC7.38EYLHQZXKTTO@garyguo.net>
- <DG820GM5YHJS.11E92OR824CWM@kernel.org>
-To: Danilo Krummrich <dakr@kernel.org>
+ <73B64D35-6574-4776-962D-865465C40226@collabora.com>
+ <7ed85eca-2a5e-4e8f-8356-e7fbbf7d3a8f@nvidia.com>
+ <E846F3BB-DE64-4E6B-ACA3-00F965038478@collabora.com>
+ <983b7db3-b0e6-45d6-866e-f001b64abde1@nvidia.com>
+To: Joel Fernandes <joelagnelf@nvidia.com>
 X-Mailer: Apple Mail (2.3826.700.81)
 X-ZohoMailClient: External
 
-
-
-> On 6 Feb 2026, at 14:27, Danilo Krummrich <dakr@kernel.org> wrote:
->=20
-> On Fri Feb 6, 2026 at 6:20 PM CET, Gary Guo wrote:
->> I asked for this to be changed to `pub(crate)` because I think this =
-isn't
->> something that should be used by drivers.
 >>=20
->> As you said, tt might be tricky to enforce that with new build system =
-when
->> subsystems are inside different crates. But until then I think it's =
-better to
->> limit visibility.
+>>=20
+>> Yeah, but my point being: is there a reason why the underlying list =
+has to
+>> remain read-only? Is this a safety requirement or an invariant that =
+is established
+>> by the code above?
+> I'm not fully sure if it's an invariant or a safety requirement, but =
+anyone
+> creating a C list head on the rust side must guarantee that it is not =
+modified.
+> Since rust has no visibility on the C side, I believe it is a Rust =
+invariant
+> here that the existence of CListHead assumes that the list cannot be =
+modified
+> once Rust has access over it.  That is up to the creator (user) of the =
+CListHead
+> to guarantee. In the DRM buddy case, once the list is allocated and =
+accessible
+> from Rust, C code will not modify it while the Rust object exists.
 >=20
-> It should *usually* not be used by drivers, but there are exceptions. =
-For
-> instance, it is perfectly valid to be used by Rust drivers that =
-interact with C
-> drivers.
+> Does that make sense, or is there a better way to document this?
+>=20
+> --
+> Joel Fernandes
 
-I agree with what Danilo said here.
 
-I don=E2=80=99t see a reason to forbid drivers from using this. If the =
-reason is
-the unsafe bits, then isn=E2=80=99t it the same pattern used by =
-impl_has_work!()
-anyways? i.e.: a macro that implements an unsafe trait so long as the =
-driver
-gives it the right Work field. Seems equivalent in spirit to the =
-clist_create macro
-introduced by this patch.
+In which case, I recommend moving this to a safety requirement when
+creating the list.
 
-=E2=80=94 Daniel
+I assume the purpose of not modifying the list on the C side is to avoid
+corrupting the list in Rust somehow?
 
+=E2=80=94 Daniel=

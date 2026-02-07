@@ -1,135 +1,118 @@
-Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D629332EBA
-	for <linux-fbdev@vger.kernel.org>; Sat,  7 Feb 2026 15:37:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8BB42701C4
+	for <linux-fbdev@vger.kernel.org>; Sat,  7 Feb 2026 17:12:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770478628; cv=none; b=sNvRoyW6B/x+LtfGUFtuBJtbpnKY73/xzjOsUJSTM8Mj/xzuEaTPlOoeRqn6Xf9eMwil+7m5dpxx/N5IZGZj3l+gSOtV4CNsIGgbXWwgfdaSmJNDCtrUcpZCZNEKWWhxhxCm78oLzKLk63+axuS6yLgxIptHgSneGzY0OkwQfDI=
+	t=1770484375; cv=none; b=jUCXk2m6ZLOfnrOMeQvByK9Np2LjrafmxP/bjXrJ6Py+eb4X1BJo+BbcdjR9/j1rS8iz7ladwufjZw4Yl49+FMGug8o+f6wWZETAVWb1D9adUDFNcpcvQM8zJo3pkQclODwRXSPbVLzXNkfye6ietZrXie5fOBiwmXkMEgu9flQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770478628; c=relaxed/simple;
-	bh=1CaCMNykkYUh7hQ+271R0JN0to2NHJtCJ5SjZ5tg02U=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OjHd2WCVcZGTQdi5AVI10uC9n7v7BK093QT0M5jUR25E6V9dxMTFc+juw+27m/nncLEc5HFNznJzAXkbXFNKxqSVmde8TL+47do32lo24VN/p25IE1GF6/lXxcRVBM30b3qNumwfPJvP6YeAgQDUH0x9+EjTMtePyTQJqE1CJzs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ye10WQvT; arc=none smtp.client-ip=209.85.218.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1770484375; c=relaxed/simple;
+	bh=WJU23aVH+0sUbAyuhM36QZU69ipw8Ieg+NYdGvrvLeY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Rm/5ezXqG5ngPNz42BOtM+TqZrhRHR+pusc1pPP0g4BlRO2hORfxwsutwvKfMC+RBT4JM5g9xGGCPk9PxwQdw5e6qP4rvhjNcC7zAsaUM+SXj7HRMcmMsIG8ynx6JQsJRV8VCjmZsOv9q/A1kXDfTMZIT0BPP2kKMcqr/hhBtgk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=lfXc6Exn; arc=none smtp.client-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ye10WQvT"
-Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-b8e9f89a8e3so340910966b.1
-        for <linux-fbdev@vger.kernel.org>; Sat, 07 Feb 2026 07:37:08 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="lfXc6Exn"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-47edd9024b1so19289365e9.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 07 Feb 2026 09:12:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770478627; x=1771083427; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=RxHH8jkBLGUmEqgSZepVgsJfG6X+09/IxWLokXGo0Zw=;
-        b=Ye10WQvTyT7XSyNx0N1oSonPRa7l84uJgVzTVa7V5BaVas3gBSEsSj+izaK23eEg13
-         XDSYXMTPjx5R3591tJk3DBjDbYCCSWnopDZ0tk7AXF/7uZXmsty9CR0YqSOEkBSgIXwY
-         rAwHwQFeIRmlcYz0UBoHFfMT9pX+WAO/a+5gt4lUob+isnJv0+GxErbhEh4GV5Tmg9kr
-         uf1FMOEPl/UtJf2wD4wjZ5JA7q51Lv89eoWCo0nmb07dFDDK4H5YMtEKV60ge6o/aket
-         ioYjEuWKzZxXbrgC608UWNRJTgTGtlbTzOEyGAjnXSwoWM6VQ1Cp0P1ZDi4chfQ5ViXA
-         SUQg==
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1770484373; x=1771089173; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=AsGgjQ+pwkibaJQBma83cuqHyIeglUS8yUfBuSxo7Lg=;
+        b=lfXc6Exn3x3rSUM8gOBhM3VQ+6S5SbnU6W/WMMkBDbiJzAw/w2U7anAeptueqcdQv6
+         88G34QoHAJ7v1sTIMMY88gTb2Dm58llA+JftEe3YemoRqz6JBvMaHogFcb4krzLlil8s
+         1LQyFdiknfoumSAAkD45Y3vR4DHbZLVFrhsooSG8nMGh5usbdkMqj2Tv9hzkoBtITwJA
+         HdGePCMRlFtkTqQuqIjOdgQof3GO0mSv1bfyWYRFOeBIW5CFxMYhw3jCqRJ596fTtubf
+         lzPUyx/o/2SgO1ofbPuyXkTmkzUWr81GIMTL44CLZ9sUBAwd/ReUTweDP3LaWiwl3qdg
+         XDzg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770478627; x=1771083427;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=RxHH8jkBLGUmEqgSZepVgsJfG6X+09/IxWLokXGo0Zw=;
-        b=EXVWZyFrz0d/5UgRJoBh7ZjHSxLkUomkhcoyIA2n0XQ512cMLm7vNTSn8map3u5vlP
-         5U3n0SsKNq1c6PyIFzruMJ/u7e6tEQ9m4vXWw6OEigUSuSP3RgGKFNxsqK6YKOqr8T2z
-         LMm83vNsxYSFGRT/XNPytVJKtvnLO5VbrhL2dF/eG1uFKbyH8mxpA0DOcbYwN3jctR8v
-         XNyKN8ZhnWWf6ly6JZAk9VgXtEs0JAdN36cfAHUnCcQYtMckJyk5KvIUJecDGtXaN596
-         zCD96MC7RDdvdKVHKP7grOl23s9petX2sp9NuOD6dfOWS2lw47fn2JHMc3Nvm/hCpOgK
-         r1PA==
-X-Gm-Message-State: AOJu0Yw3TvBz6FNVIAEuhvXVB1r5/cnnzfYKwN/67Me0M9kAtoxVG0Lg
-	lmPfpOBJ2q+73itg0PwOuOdAmEzCkhcNWfh1F22XMEWub7SbxxYfP0xU
-X-Gm-Gg: AZuq6aLOivS7wbaPSHa8L+Cj768wTc/QPJHG1JZW8l2kiYNt5Fv2eQ8OwpTprIWsORE
-	xNE/eOydj7cY4j3dOs0nFN4pTCsxMOIQuekCTwPPNNZ5x5jchj2TJKLC0t51glm7WHmC3ivRQYl
-	ktR6t7kZ2nFPXlRR0dth4VAoqpsCWSKIc/ZiwkIQmt5CGgHfp72Xbgqs7mxOXgHNtuj7xBBGRqs
-	p239tM3ag1cKeTnMTF1/Y6tfTXSNOM6UkepQliAYFLNXydEczj1yE+D0/Kij1Hleo+/5wDpvfNx
-	QPjL92jjIkcm+BjqHF3MF0a40tNKsVNbY2Q/UAoQjq+JfzysoAE7E3PbQKLKNxsQbBDnAMy4pZV
-	9cOWxAVRV5C73dDmfUUrLc1VNfR/0K9yLBaGLePbGE9VDl9K/vum/IIe0jtMv0+KBjjpapz4EId
-	96rbkHYSXI3kcwKJoEHdNoEICFHEYkxPc6e5VD0tCyJfCg+FIymZmrdJLL6mPzw1whevFeOuTPl
-	vFHDhcTl7C21o8t+btsqUj5PXPgxJTP9wNdQ6Pjz9XXOda/6PX3ZVDJ/N6t56oo
-X-Received: by 2002:a17:907:6d0c:b0:b8e:d4ed:5ea8 with SMTP id a640c23a62f3a-b8edf2ffe66mr356683766b.42.1770478626661;
-        Sat, 07 Feb 2026 07:37:06 -0800 (PST)
-Received: from cs-874966990260-default.europe-west4-a.c.od237066db22328bb-tp.internal (170.249.141.34.bc.googleusercontent.com. [34.141.249.170])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8eda748aa6sm181308666b.1.2026.02.07.07.37.06
+        d=1e100.net; s=20230601; t=1770484373; x=1771089173;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=AsGgjQ+pwkibaJQBma83cuqHyIeglUS8yUfBuSxo7Lg=;
+        b=AQOtTBprdikjLfQpdamJ0VhyqKW0ltN1BEO8NfcmD90jIKvK5miWqeNlmFSvpKd0Iu
+         eL9Ff/Gc1zYcS3wzT1/sD6RCsioTaa3aBBc8eZaCo6we57a69LJsxSA0b0EbuFZKS/3f
+         Y4fkS6b6mKh2uQ2mpqZRtfMSak/jP5Kh3j+kNI+Rq70mIHNn36e/6ON+dRMsAkbOpuhZ
+         ZPREYGCY79AcrrHO2sDApa2YJjZbeRrVD1z5e0vSIOvPLfMgZgJ17o+xOcCpw8mA+a9S
+         kr3JbQmf/a4kK0OlJxxpINTEybiRKO77Kgbw8E+pzR+MNBn5ggpIIwN9Zsq2lVqq8Xxa
+         B5ig==
+X-Forwarded-Encrypted: i=1; AJvYcCV/NPPKZO6wuWs2qCGzkkABPCUYFUPz/ASpQsXyEx2W7hd36tnpyI7gsl9Vc2g/Kc3T81OXNgPAmHqUVw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxgdabcziZ3x1j1TS6CGzzkpggX8aoNeFsn3gtJm3ng70nCHgTR
+	dAdUy77DJvv4u9RwbFh9KfTFBjfY/8NV/zZy/9VgWH6AoXjrTf/kukHkwE3i/KFoFg0=
+X-Gm-Gg: AZuq6aIPf5h+aX+9bn0VxSnmZcWLcbAVuzCUgAxSiKxfegH+4opgzDDNJi9Rf6UT63I
+	LpuSKhbGJgtZeiBu/936yOeAjzllYfi8gsHFBSw01VOjKHfdRJ/dg2H6THBlBsVBYd7+uirFxpC
+	3Su10MSK4057TtTBp7ztqyqPUz62KHwVFtfh/BJZZ/QYZ8aS9dWNd0C1PeacMGmq+IEs4gdh7IG
+	b0qUBN8V5W/UlzqlfaHGUTfzh915ymj0jAXned9v/GZtrW/cI/Lx/cJPHeTFZOdrxaZwefJBzWi
+	6OzAfFZmC17fwHrxtcvMbA9hRq8gei7s0zZ9JfDMOHywFofc8vdYwmgKgEuzQbTYx8Bl9fND1QC
+	s3nu/wtezjVYNPPUqAkar1FmPR7m95dfnKwzPpBRjjKYTUIfBYMoPb0NkoEZJhs1/wEIB2dDv6n
+	SBfsYsPYOHuyBnbZ8/
+X-Received: by 2002:a05:600c:8b76:b0:47a:814c:ee95 with SMTP id 5b1f17b1804b1-483201e267emr93459715e9.12.1770484372306;
+        Sat, 07 Feb 2026 09:12:52 -0800 (PST)
+Received: from localhost ([2a02:8071:b783:6940:1d24:d58d:2b65:c291])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-436309ed238sm9322002f8f.19.2026.02.07.09.12.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 07 Feb 2026 07:37:06 -0800 (PST)
-From: Artem Lytkin <iprintercanon@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Artem Lytkin <iprintercanon@gmail.com>
-Subject: [PATCH v4 3/3] staging: sm750fb: convert logging to device-based in sm750_hw.c
-Date: Sat,  7 Feb 2026 15:37:03 +0000
-Message-ID: <20260207153703.2049-4-iprintercanon@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260207153703.2049-1-iprintercanon@gmail.com>
-References: <20260207153703.2049-1-iprintercanon@gmail.com>
+        Sat, 07 Feb 2026 09:12:51 -0800 (PST)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Chen Ni <nichen@iscas.ac.cn>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH v2 0/4] fbdev: au1100fb: support COMPILE_TEST and fix multi-device support
+Date: Sat,  7 Feb 2026 18:12:33 +0100
+Message-ID: <cover.1770483674.git.u.kleine-koenig@baylibre.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1538; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=WJU23aVH+0sUbAyuhM36QZU69ipw8Ieg+NYdGvrvLeY=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBph3KDnNMH1/JdOcqL0z3I6M6ieN3Fv7tNS64Oc 2PyksJ6E3+JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaYdygwAKCRCPgPtYfRL+ Tsd7CACLPH0Qdyo0BISW7Y282uaaXnVl3Oatqm9AQpM2A8eCFibYA5/hFBTmwGkBKCCPpuWvoUI l5uReTC8pthgHoplTeynhWF6XA3HlpodJYZFwQ7xaERB4wPM0dytytv+wV4vDIyyVcD2rhmRREM toywxjN/YzzD8qA6WU7pO+USqnW3K2L0WplgiS3+3mslY5gKMBS+axISoTjsmbcF5J0TKj/5MWk LtmW0mKP7Z9Tg2sP4l6ESQ9+AmhB/Uh71q76dSnN7bMEQ853bcv18wKIMYBgz73+qYM5b0KO+0p ExYkERfp+HqwLEd7nT+u3t2eHNMKbf9MGohezqh6U9CK6saG
+X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-Replace pr_err() calls with dev_err() using &pdev->dev or
-&sm750_dev->pdev->dev to provide proper device context in log
-messages. This makes it easier to identify which device generated
-the message when multiple framebuffer devices are present.
+Hello,
 
-Signed-off-by: Artem Lytkin <iprintercanon@gmail.com>
----
- drivers/staging/sm750fb/sm750_hw.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+v1 is available at
+https://lore.kernel.org/linux-fbdev/cover.1770196161.git.u.kleine-koenig@baylibre.com
+.
 
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 983b51164..22cbabd26 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -42,7 +42,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	 */
- 	ret = pci_request_region(pdev, 1, "sm750fb");
- 	if (ret) {
--		pr_err("Can not request PCI regions.\n");
-+		dev_err(&pdev->dev, "Can not request PCI regions.\n");
- 		goto exit;
- 	}
- 
-@@ -50,7 +50,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	sm750_dev->pvReg =
- 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
- 	if (!sm750_dev->pvReg) {
--		pr_err("mmio failed\n");
-+		dev_err(&pdev->dev, "mmio failed\n");
- 		ret = -EFAULT;
- 		goto exit;
- 	}
-@@ -75,7 +75,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 		ioremap_wc(sm750_dev->vidmem_start, sm750_dev->vidmem_size);
- 	if (!sm750_dev->pvMem) {
- 		iounmap(sm750_dev->pvReg);
--		pr_err("Map video memory failed\n");
-+		dev_err(&pdev->dev, "Map video memory failed\n");
- 		ret = -EFAULT;
- 		goto exit;
- 	}
-@@ -291,7 +291,7 @@ int hw_sm750_crtc_set_mode(struct lynxfb_crtc *crtc,
- 
- 	ret = ddk750_set_mode_timing(&modparm, clock);
- 	if (ret) {
--		pr_err("Set mode timing failed\n");
-+		dev_err(&sm750_dev->pdev->dev, "Set mode timing failed\n");
- 		goto exit;
- 	}
- 
+I reshuffled the series to have the only really relevant fix at the
+start. Patch #3 is new in this revision and so is the s390 specific
+#ifdef in patch #4. Patches #2 and #3 fix issues that pop up when
+compiling the driver for arm and arm64 and s390. The last patch drops
+the hard dependency on MIPS_ALCHEMY. For that the above mentioned s390
+specfic #ifdef block has to be added (or alternatively s390 excluded
+from build testing) because s390 is the only platform where pgprot_val
+is not an l-value. The things that happen in that block are maybe very
+mips-specific such that maybe this should be an #ifdef CONFIG_MIPS block
+instead of an #ifndef CONFIG_S390 block?
+
+Note that in the v1 thread Helge wrote to already having applied the
+first two patches, they are not yet in next, so I included them here
+again.
+
+Best regards
+Uwe
+
+Uwe Kleine-König (4):
+  fbdev: au1100fb: Don't store device specific data in global variables
+  fbdev: au1100fb: Mark several local functions as static
+  fbdev: au1100fb: Use %zu to printk a value of type size_t
+  fbdev: au1100fb: Make driver compilable on non-mips platforms
+
+ drivers/video/fbdev/Kconfig    |  3 +-
+ drivers/video/fbdev/au1100fb.c | 89 ++++++++++++++++++----------------
+ drivers/video/fbdev/au1100fb.h |  7 ++-
+ 3 files changed, 53 insertions(+), 46 deletions(-)
+
+
+base-commit: 0636e6205beed850d985276dc56fd73d785bea5c
 -- 
-2.43.0
+2.47.3
 

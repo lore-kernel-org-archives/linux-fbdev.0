@@ -1,63 +1,63 @@
-Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com [209.85.208.49])
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E82122749FE
-	for <linux-fbdev@vger.kernel.org>; Sat,  7 Feb 2026 15:37:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D629332EBA
+	for <linux-fbdev@vger.kernel.org>; Sat,  7 Feb 2026 15:37:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770478628; cv=none; b=ahBGZaC7WMiCpKIe1osDAJO2EjYizz1gbNJeZyRdztis+Q5Ji1xAwO1TPesAz1EQwJi8ZQv22fvxbUwmbWzSAVS/0K1bC3rsBfz/Gz218gvjhoQhtCU1CVH5H3/irTnNxf1yY86JPjR77LanjZnFhZwuqWln7ad2RwUcpoExBj0=
+	t=1770478628; cv=none; b=sNvRoyW6B/x+LtfGUFtuBJtbpnKY73/xzjOsUJSTM8Mj/xzuEaTPlOoeRqn6Xf9eMwil+7m5dpxx/N5IZGZj3l+gSOtV4CNsIGgbXWwgfdaSmJNDCtrUcpZCZNEKWWhxhxCm78oLzKLk63+axuS6yLgxIptHgSneGzY0OkwQfDI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1770478628; c=relaxed/simple;
-	bh=jdubdm4I79MqOnpsLzJ91ixMD6dvIG6KUclj8/ope9Y=;
+	bh=1CaCMNykkYUh7hQ+271R0JN0to2NHJtCJ5SjZ5tg02U=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fsbrspQQ++uMO2GU5EN3pLsJ+54Ar4XSLbUF0T50JZD/KQEIg96eJkbX5LOeMTOAEt17YmJZ3ToLpaKpgW2MAqvTaMn+xiax4UEjXzVqcK/VdTHP7qPxBhVQF2AC1z6TcMXSMUA/JFEomuC+7pbVQdzkPJTlHeyS0s3fZGZYPRs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=H6LdHpHP; arc=none smtp.client-ip=209.85.208.49
+	 MIME-Version; b=OjHd2WCVcZGTQdi5AVI10uC9n7v7BK093QT0M5jUR25E6V9dxMTFc+juw+27m/nncLEc5HFNznJzAXkbXFNKxqSVmde8TL+47do32lo24VN/p25IE1GF6/lXxcRVBM30b3qNumwfPJvP6YeAgQDUH0x9+EjTMtePyTQJqE1CJzs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ye10WQvT; arc=none smtp.client-ip=209.85.218.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H6LdHpHP"
-Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-65832e566edso4216006a12.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 07 Feb 2026 07:37:07 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ye10WQvT"
+Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-b8e9f89a8e3so340910966b.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 07 Feb 2026 07:37:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770478626; x=1771083426; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1770478627; x=1771083427; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=J908Zx4L7U5Tl433tB9UC9jyDe+BTgpPRWxg57FIM4U=;
-        b=H6LdHpHPhgcfNaXS6hSjSmCAXYraTd2zfHxVZxnUCpvVelA9LIwrLNH2JUVACpZN+G
-         1IdX/NjW4C2fKOsoZa4JHN65NlJHZuiD2oXZ+iHbtb21Vkm9fYC+W4ckjmtXKUIVy0AP
-         7PpbYrOPPBAWLDr9alsbfGbReARejT3OeX63DSe3JKDrITgEObhYWQC/KhWRVE4btnYf
-         oV+VA3jrO5xA0x3V8Gu0wf98VsnkUIgrHw5S3YAn1UfUeXbL6VcKMJnc+5Ufzo+/1SBX
-         pdVfV18ugJ/Z+tG11l5ruvrOH0FMUeiV03TAG7A0GvYZ2nK3pbAah2OKEO0NH7sWbGun
-         JJAQ==
+        bh=RxHH8jkBLGUmEqgSZepVgsJfG6X+09/IxWLokXGo0Zw=;
+        b=Ye10WQvTyT7XSyNx0N1oSonPRa7l84uJgVzTVa7V5BaVas3gBSEsSj+izaK23eEg13
+         XDSYXMTPjx5R3591tJk3DBjDbYCCSWnopDZ0tk7AXF/7uZXmsty9CR0YqSOEkBSgIXwY
+         rAwHwQFeIRmlcYz0UBoHFfMT9pX+WAO/a+5gt4lUob+isnJv0+GxErbhEh4GV5Tmg9kr
+         uf1FMOEPl/UtJf2wD4wjZ5JA7q51Lv89eoWCo0nmb07dFDDK4H5YMtEKV60ge6o/aket
+         ioYjEuWKzZxXbrgC608UWNRJTgTGtlbTzOEyGAjnXSwoWM6VQ1Cp0P1ZDi4chfQ5ViXA
+         SUQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770478626; x=1771083426;
+        d=1e100.net; s=20230601; t=1770478627; x=1771083427;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=J908Zx4L7U5Tl433tB9UC9jyDe+BTgpPRWxg57FIM4U=;
-        b=dzpdul+CAgLOosKPgu7efO1nz2YgO3yqz8i7fkLx6dGPgFQaP5SJUklhlc3qxzA4Pw
-         0zjrhXwraDZFU+ED3PdiZG99jfDpPvBh5cW6dSN8lIg10yOGZjsIWdAmT5yOaDA8fGjR
-         pnBY0R7tI0l1rE3/X/E0jRv74kq+wdECyFvlwquH0/g1/LF3uIpRH82EOZjOTR92FU58
-         2eF6/6OWHnz1x+0LHkRm6paMwowyqq1Nbf/1Sj0sMdcPurD8GQtMXJlBYfwE19x/JcKl
-         /8diMNAq2WkZbTTtlyIqWhn9woZP0jjyM+cic3DzYcN6M/4FYWBRYL6LYmhFX2mNpS1X
-         1xcA==
-X-Gm-Message-State: AOJu0YxQVPenRe7xUm7zKNAgq02MV1JZ6YNutCZGvLWNFDb3HNrvGw94
-	SbnGkOMube+7ayCfqbPADvA8AZk7/A1zQYvDa7PsYUqsNhJUND6T0689
-X-Gm-Gg: AZuq6aK+fNeQX1RGZlLizNfOuRQV/gqNWLnfJIszjjSB9xZpacTmiaRcLDQJ633kKV9
-	tiZWzk279gSRdl6cI62a4nz/ffkbNwnzruebiXX9jrV4SF3laBR12TTtevHHosk9/xRA8GjFZKx
-	sGMr7dRtGRLJACBr1yPsPqoq0Mvc5mXamDHah8qqWdUwWuGrukbNbCuxXWh2Qaqd533kYKePLpU
-	o7pobQzfzQBlScxNvpTdrIZxExtkcIUwSJ9SLuaiqDLRa1O3mYSzlZ+ugv2+N38gnMY2CqAJmFK
-	d42znBaQVaPAbh+CmDx2ru76XtXoWP7ibEQlzwe2QCbAnt2nS5wk3pWXHCE8zOqan9gfoK7dVXO
-	OazFKCJ2ue7GB3PusK+crWL+13nn3k/h2sX3ywTwaLGQwY++U97f2ZmB6RnNKmHyS8GnUuRLsGy
-	O4u9CLTumzlefV3wzLyPKkB+i6uCXFT92K6SqEKh3GuISdWr55OkBVbCeNau50xXGDpPG/54Mp0
-	EQrifvhXZbe1PcNosxeSE6dRQAyvvwJBQw/zwL7wdMldP7bHkQ5J3aE+7Z1hlCi
-X-Received: by 2002:a17:907:3d50:b0:b8e:2a8a:430d with SMTP id a640c23a62f3a-b8edf22fc44mr323680666b.26.1770478626090;
+        bh=RxHH8jkBLGUmEqgSZepVgsJfG6X+09/IxWLokXGo0Zw=;
+        b=EXVWZyFrz0d/5UgRJoBh7ZjHSxLkUomkhcoyIA2n0XQ512cMLm7vNTSn8map3u5vlP
+         5U3n0SsKNq1c6PyIFzruMJ/u7e6tEQ9m4vXWw6OEigUSuSP3RgGKFNxsqK6YKOqr8T2z
+         LMm83vNsxYSFGRT/XNPytVJKtvnLO5VbrhL2dF/eG1uFKbyH8mxpA0DOcbYwN3jctR8v
+         XNyKN8ZhnWWf6ly6JZAk9VgXtEs0JAdN36cfAHUnCcQYtMckJyk5KvIUJecDGtXaN596
+         zCD96MC7RDdvdKVHKP7grOl23s9petX2sp9NuOD6dfOWS2lw47fn2JHMc3Nvm/hCpOgK
+         r1PA==
+X-Gm-Message-State: AOJu0Yw3TvBz6FNVIAEuhvXVB1r5/cnnzfYKwN/67Me0M9kAtoxVG0Lg
+	lmPfpOBJ2q+73itg0PwOuOdAmEzCkhcNWfh1F22XMEWub7SbxxYfP0xU
+X-Gm-Gg: AZuq6aLOivS7wbaPSHa8L+Cj768wTc/QPJHG1JZW8l2kiYNt5Fv2eQ8OwpTprIWsORE
+	xNE/eOydj7cY4j3dOs0nFN4pTCsxMOIQuekCTwPPNNZ5x5jchj2TJKLC0t51glm7WHmC3ivRQYl
+	ktR6t7kZ2nFPXlRR0dth4VAoqpsCWSKIc/ZiwkIQmt5CGgHfp72Xbgqs7mxOXgHNtuj7xBBGRqs
+	p239tM3ag1cKeTnMTF1/Y6tfTXSNOM6UkepQliAYFLNXydEczj1yE+D0/Kij1Hleo+/5wDpvfNx
+	QPjL92jjIkcm+BjqHF3MF0a40tNKsVNbY2Q/UAoQjq+JfzysoAE7E3PbQKLKNxsQbBDnAMy4pZV
+	9cOWxAVRV5C73dDmfUUrLc1VNfR/0K9yLBaGLePbGE9VDl9K/vum/IIe0jtMv0+KBjjpapz4EId
+	96rbkHYSXI3kcwKJoEHdNoEICFHEYkxPc6e5VD0tCyJfCg+FIymZmrdJLL6mPzw1whevFeOuTPl
+	vFHDhcTl7C21o8t+btsqUj5PXPgxJTP9wNdQ6Pjz9XXOda/6PX3ZVDJ/N6t56oo
+X-Received: by 2002:a17:907:6d0c:b0:b8e:d4ed:5ea8 with SMTP id a640c23a62f3a-b8edf2ffe66mr356683766b.42.1770478626661;
         Sat, 07 Feb 2026 07:37:06 -0800 (PST)
 Received: from cs-874966990260-default.europe-west4-a.c.od237066db22328bb-tp.internal (170.249.141.34.bc.googleusercontent.com. [34.141.249.170])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8eda748aa6sm181308666b.1.2026.02.07.07.37.05
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8eda748aa6sm181308666b.1.2026.02.07.07.37.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 07 Feb 2026 07:37:05 -0800 (PST)
+        Sat, 07 Feb 2026 07:37:06 -0800 (PST)
 From: Artem Lytkin <iprintercanon@gmail.com>
 To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>,
@@ -66,9 +66,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Artem Lytkin <iprintercanon@gmail.com>
-Subject: [PATCH v4 2/3] staging: sm750fb: convert logging to device-based in sm750.c
-Date: Sat,  7 Feb 2026 15:37:02 +0000
-Message-ID: <20260207153703.2049-3-iprintercanon@gmail.com>
+Subject: [PATCH v4 3/3] staging: sm750fb: convert logging to device-based in sm750_hw.c
+Date: Sat,  7 Feb 2026 15:37:03 +0000
+Message-ID: <20260207153703.2049-4-iprintercanon@gmail.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260207153703.2049-1-iprintercanon@gmail.com>
 References: <20260207153703.2049-1-iprintercanon@gmail.com>
@@ -80,64 +80,53 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Replace pr_err() calls with dev_err() using info->device to provide
-proper device context in log messages. This makes it easier to
-identify which device generated the message when multiple framebuffer
-devices are present.
+Replace pr_err() calls with dev_err() using &pdev->dev or
+&sm750_dev->pdev->dev to provide proper device context in log
+messages. This makes it easier to identify which device generated
+the message when multiple framebuffer devices are present.
 
 Signed-off-by: Artem Lytkin <iprintercanon@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/staging/sm750fb/sm750_hw.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 987ba8772..c5eb3e98f 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -388,7 +388,8 @@ static int lynxfb_ops_set_par(struct fb_info *info)
- 	var->accel_flags = 0;/*FB_ACCELF_TEXT;*/
- 
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 983b51164..22cbabd26 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -42,7 +42,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	 */
+ 	ret = pci_request_region(pdev, 1, "sm750fb");
  	if (ret) {
--		pr_err("bpp %d not supported\n", var->bits_per_pixel);
-+		dev_err(info->device, "bpp %d not supported\n",
-+			var->bits_per_pixel);
- 		return ret;
+-		pr_err("Can not request PCI regions.\n");
++		dev_err(&pdev->dev, "Can not request PCI regions.\n");
+ 		goto exit;
  	}
- 	ret = hw_sm750_crtc_set_mode(crtc, var, fix);
-@@ -487,7 +488,8 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo *var,
- 	ret = lynxfb_set_color_offsets(info);
  
+@@ -50,7 +50,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	sm750_dev->pvReg =
+ 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
+ 	if (!sm750_dev->pvReg) {
+-		pr_err("mmio failed\n");
++		dev_err(&pdev->dev, "mmio failed\n");
+ 		ret = -EFAULT;
+ 		goto exit;
+ 	}
+@@ -75,7 +75,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 		ioremap_wc(sm750_dev->vidmem_start, sm750_dev->vidmem_size);
+ 	if (!sm750_dev->pvMem) {
+ 		iounmap(sm750_dev->pvReg);
+-		pr_err("Map video memory failed\n");
++		dev_err(&pdev->dev, "Map video memory failed\n");
+ 		ret = -EFAULT;
+ 		goto exit;
+ 	}
+@@ -291,7 +291,7 @@ int hw_sm750_crtc_set_mode(struct lynxfb_crtc *crtc,
+ 
+ 	ret = ddk750_set_mode_timing(&modparm, clock);
  	if (ret) {
--		pr_err("bpp %d not supported\n", var->bits_per_pixel);
-+		dev_err(info->device, "bpp %d not supported\n",
-+			var->bits_per_pixel);
- 		return ret;
- 	}
- 
-@@ -502,7 +504,7 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo *var,
- 	request = ALIGN(request, crtc->line_pad);
- 	request = request * var->yres_virtual;
- 	if (crtc->vidmem_size < request) {
--		pr_err("not enough video memory for mode\n");
-+		dev_err(info->device, "not enough video memory for mode\n");
- 		return -ENOMEM;
- 	}
- 
-@@ -527,7 +529,7 @@ static int lynxfb_ops_setcolreg(unsigned int regno,
- 	ret = 0;
- 
- 	if (regno > 256) {
--		pr_err("regno = %d\n", regno);
-+		dev_err(info->device, "regno = %d\n", regno);
- 		return -EINVAL;
- 	}
- 
-@@ -834,7 +836,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 
- 	ret = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (ret < 0) {
--		pr_err("Could not allocate memory for cmap.\n");
-+		dev_err(info->device, "Could not allocate memory for cmap.\n");
+-		pr_err("Set mode timing failed\n");
++		dev_err(&sm750_dev->pdev->dev, "Set mode timing failed\n");
  		goto exit;
  	}
  

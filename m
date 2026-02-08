@@ -1,421 +1,232 @@
-Received: from mail-dl1-f51.google.com (mail-dl1-f51.google.com [74.125.82.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BCE2E2FD7A3
-	for <linux-fbdev@vger.kernel.org>; Sun,  8 Feb 2026 18:43:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 962C026CE2C
+	for <linux-fbdev@vger.kernel.org>; Sun,  8 Feb 2026 19:21:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770576230; cv=none; b=ELxLd0tMN8qeVnj1sHsDMXZDHp9SqxAeWgBTtdb8pCrKBB6W+sGqir7aYAYqkTKqnDrlvVoBzTZpeD9DiDcC6j0tnoDCdiC81Ze0gySDUwZKy2uUwd5A2Q9THrP3TLF8jVDeUd7qcGxKTJaRng4lPjX7vzVBi4ADDlZU1xjSSl4=
+	t=1770578468; cv=none; b=lYLo/hBtDN/YEb6OCa6dl20HQsKktLqpl0fk9BdYvre/L1sJMr9VSY3a/lOuQQTUyPxYqiONYgUN79yOYoy1s4opXY6jecTJQFD/SIyxgFRtJqmISUzOaJ1TEMT2NrHxc0DYB+im+O5lnKOlT43g4hwUC3efZ18VA75oV1czje8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770576230; c=relaxed/simple;
-	bh=ztlA0KZ1Gd072nNLXAWAiF2b3jjDuS3qJqKHNuPm3wM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eKvQ56B9blUKMvk2j3XlzZce9Wp3nsGZ9SKyf6M4DTlrYmgXk0wU5W8D7I4d/iH6xpuK7C1GPNf8qDHFYm2L8Z8l7oiznqP1Fj/YgiQr1PtFtn4gUuh7yy1FoRLjdfPDSBEQ2zFT9CyvAevUhor6xA04XDskb5xtiYBrZihf1/U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MhmQ7YqH; arc=none smtp.client-ip=74.125.82.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1770578468; c=relaxed/simple;
+	bh=1QNFMUZ5hHmD/Atj1I21UMM0yrxKhbTYTbQvKqtjMkw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=rQWov8h7DijPsObgnzU1+40uKmJ/WHjx57r9tKaI3zZTovJwZ/9Pb5PKlPLsrFYlEt2hVNHD1jrldsrpUXciKZr+AfMcltRhRbN10oX8wGTgt9NFFts+VJooPFficTOuVq4xUJMk0TcrAKBHCcYMWzjPErgeYZq1nuFrWY/sKYs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=AnA/4zIO; arc=none smtp.client-ip=212.227.17.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MhmQ7YqH"
-Received: by mail-dl1-f51.google.com with SMTP id a92af1059eb24-1248d27f293so513209c88.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 08 Feb 2026 10:43:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770576230; x=1771181030; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ID1rfm++j/UqADYRjwMhyhPNrd9J6q0fUTI3o2f/FN4=;
-        b=MhmQ7YqHzg4Fy9Yb7i0Rs2JC/mjsshQKZCELpw+LnOkNxY6EKkj64KlPvk4crrTICO
-         br4iZfyUuCeaztSC3bJZI/LHkxZ68Pt/R6Zs/m5FGMonxPd7AkH8RmrVsUsp+mGynesB
-         0LXpfRdmEw836A7hV2T7Mo+ZZDhRz1CMB/GFNuGy7HWdQ0Dp6j480A2T7jFfPnJ05m8+
-         OVZnxLPBO5IQJDt5UYf9mZdZ31Fs+JqCmJyXRzhAyHpJ33Pudw5jYt2oXSbCn9G/eB/7
-         +fz0ACCpGWalaMsAI5ucoG8C+EZQegGftnrnGkTMWvoDUMThx0inABCiYaUWlXwR1nUo
-         01OA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770576230; x=1771181030;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=ID1rfm++j/UqADYRjwMhyhPNrd9J6q0fUTI3o2f/FN4=;
-        b=feUBByRrgvX+6ZRKY3HPLNLWtZW5nXM5Buvqf4WaGYc+7GOfrUVOb3/WpLTB6uJXjL
-         sy6fg4S3iwmFAYjIxo6vOKsVnDiaLCkRi0796trm55i7c3rcFiQ2UV0DRByIsUY3zQ8u
-         89TCplDkrZfR4WtBJoM37SFtnVKptDgsarJVLtSwoIkZl+G1diFRPGz8l3d5Yjdf1jU+
-         FLZEBi6qMkbld+qhu2nKmJVBJ+jZM620mF9aOQzAhzoAo+kn1PV8GJ8D8qSEvI8nqNLA
-         ZqLWmH4BWLN/16vozcECE1xTlHBi029zWdqd7wkY2JXc4ms9ziaXe5cnzbG/XPhzyd27
-         VjCA==
-X-Gm-Message-State: AOJu0Yzn2lsFo5vjTK3R2iWcdZ5HXJFaVxvMUSWFSsKq7OzJWzSp/NWV
-	fmLFZDepc5FLE6X9gfog3koILysAGx+Kk5oyFngeKQ6ydD6+H/+ENSg=
-X-Gm-Gg: AZuq6aIkq8HsJU2xD7CCUakXj7TikEqJOtG+juVd+QwGHDaRJfCX/0KowdRil6yyrPv
-	CapUTQ6MiVQ5U/SauOoqjb58KbaUjH13PvLu5j1t3BOYCpDk6ccW/5mxN3IXEOwr5TUnhtIJ3Mr
-	BRwHOTnn944K1TJM94xUPuySKRbHJC+gUG+bu6oQsEsdfwoxqw3v/JWktLNgtpS8kk0OUOipFd6
-	ElyA2Qba2wlsilyx3I5BvetUWn0rdCr9+h2UbWrouLOKmif73gxjMIQrZ0mL0ls5SMDfo2Ao+lb
-	SG5ABimguiNY5l0yF1N/7+2K25DfCgjEN1Kq1WtUz7t1kil6IvdRF0ApEX3vaz3JgfH8+zfgTq0
-	/N1LBnwYq4H6eYkLwQm95NTM7Q98hBb9wiRL7gS6sbZb/t/lE9ozpACzsIUttG9+iv+wO7tLW75
-	I6dIFT2ra6TUZK34U7NVZLfqs=
-X-Received: by 2002:a05:7022:2527:b0:119:e56b:c74d with SMTP id a92af1059eb24-12704003783mr5713338c88.18.1770576229850;
-        Sun, 08 Feb 2026 10:43:49 -0800 (PST)
-Received: from arch ([2601:647:6980:8130::7378])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1270d8e25f1sm5268865c88.9.2026.02.08.10.43.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 Feb 2026 10:43:49 -0800 (PST)
-From: Shreyas Ravi <shreyasravi320@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Shreyas Ravi <shreyasravi320@gmail.com>
-Subject: [PATCH v4 2/2] staging: sm750fb: remove Hungarian notation prefixes
-Date: Sun,  8 Feb 2026 10:43:44 -0800
-Message-ID: <20260208184344.657617-2-shreyasravi320@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260208184344.657617-1-shreyasravi320@gmail.com>
-References: <2026020842-litigator-flatworm-65d0@gregkh>
- <20260208184344.657617-1-shreyasravi320@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="AnA/4zIO"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1770578465; x=1771183265; i=deller@gmx.de;
+	bh=eJXNgOsVHxue1kLgAn2HyLgO1ePhGZMU4yqMo7m0DMU=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=AnA/4zIOLqktXik8MsIQDa8zkuAseOSo73MCfrB3sbF4FpDWQshgNT0tDc/RtuT6
+	 2Qd4QwF9Iy9oEgSvApIVv/ahIKW0ebNPqwPQFGVQM2RpsQZ1XaPF7hAjorym+7xB/
+	 6I2BlQshXNiH4lgHD26S9mSmryEPOg2awvgUuzKAS0cVoxnGRI8lQcNNEQmV4Drog
+	 sc+lDA4NqPrdhJtxYVsUnMbVs966hnbl2BoKhcbtHu0ujQkLT/Xdh04RD8/SpI9u1
+	 GMP+ETjhiSjKrVkFWyfC47vSOYJv2uF8KHoIwTzQ9StR0nmZoRj7cQ2IRqt3M604r
+	 RVkxtSbVQatyx1xvYA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.55] ([109.250.51.231]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MpDJX-1vSkYQ2nbL-00cy06; Sun, 08
+ Feb 2026 20:21:05 +0100
+Message-ID: <f4b5c6ec-0960-4c76-be49-ec0236b1e450@gmx.de>
+Date: Sun, 8 Feb 2026 20:21:03 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/6] fbdev: au1100fb: Use %zu to printk a value of type
+ size_t
+To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: Chen Ni <nichen@iscas.ac.cn>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <cover.1770572936.git.u.kleine-koenig@baylibre.com>
+ <3eea98cc14bae12a3ff6c6574971669e15a1f16a.1770572936.git.u.kleine-koenig@baylibre.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <3eea98cc14bae12a3ff6c6574971669e15a1f16a.1770572936.git.u.kleine-koenig@baylibre.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:5q6R1V8OLG3iJUvVGvek2qIVgQ9wVh1tA3KOYr2B8W4ttNi/tjl
+ pKIQYowerjTpup4QB1l1yMqdA9opFBfx24zQResU9QoqKnbYoG8Nm0K+gLqTgR4uDqxs20m
+ ramRY2C42YQ+Yus9GlF9qgOrrQ4oYNVKL1VHQacUa/ZcmlfA64eRHhN7shT96dPRRLQS4FP
+ 03axEtMiXBXmFtv4QAJQg==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:tNPp6TbrDxI=;IKhCSMH0dGFr1Z6/MaBzcD9lhjw
+ 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
 
-Remove Hungarian notation prefixes from variable names to comply
-with kernel coding style.
+On 2/8/26 18:58, Uwe Kleine-K=C3=B6nig wrote:
+> %zu is the dedicated type for size_t. %d only works on 32bit
+> architectures where size_t is typedef'd to be unsigned int. (And then
+> the signedness doesn't fit, but `gcc -Wformat` doesn't stumble over this=
+.
+>=20
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com>
+> ---
+>   drivers/video/fbdev/au1100fb.c | 6 +++---
+>   1 file changed, 3 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100=
+fb.c
+> index b1da51683de7..914f371a614c 100644
+> --- a/drivers/video/fbdev/au1100fb.c
+> +++ b/drivers/video/fbdev/au1100fb.c
+> @@ -439,7 +439,7 @@ static int au1100fb_drv_probe(struct platform_device=
+ *dev)
+>   	fbdev->regs =3D (struct au1100fb_regs*)KSEG1ADDR(fbdev->info.fix.mmio=
+_start);
+>  =20
+>   	print_dbg("Register memory map at %p", fbdev->regs);
+> -	print_dbg("phys=3D0x%08x, size=3D%d", fbdev->regs_phys, fbdev->regs_le=
+n);
+> +	print_dbg("phys=3D0x%08x, size=3D%zu", fbdev->regs_phys, fbdev->regs_l=
+en);
+>  =20
+>   	c =3D clk_get(NULL, "lcd_intclk");
+>   	if (!IS_ERR(c)) {
+> @@ -456,7 +456,7 @@ static int au1100fb_drv_probe(struct platform_device=
+ *dev)
+>   					    PAGE_ALIGN(fbdev->fb_len),
+>   					    &fbdev->fb_phys, GFP_KERNEL);
+>   	if (!fbdev->fb_mem) {
+> -		print_err("fail to allocate framebuffer (size: %dK))",
+> +		print_err("fail to allocate framebuffer (size: %zuK))",
+>   			  fbdev->fb_len / 1024);
+>   		return -ENOMEM;
+>   	}
+> @@ -465,7 +465,7 @@ static int au1100fb_drv_probe(struct platform_device=
+ *dev)
+>   	fbdev->info.fix.smem_len =3D fbdev->fb_len;
+>  =20
+>   	print_dbg("Framebuffer memory map at %p", fbdev->fb_mem);
+> -	print_dbg("phys=3D0x%08x, size=3D%dK", fbdev->fb_phys, fbdev->fb_len /=
+ 1024);
+> +	print_dbg("phys=3D0x%08x, size=3D%zuK", &fbdev->fb_phys, fbdev->fb_len=
+ / 1024);
 
-No functional changes.
+The & seems to be wrong.
 
-Signed-off-by: Shreyas Ravi <shreyasravi320@gmail.com>
----
-Changes in v4:
-- Fix merge conflicts (forgot to do in v3)
-
-Changes in v3:
-- Added changelog (was missing in v2)
-
-Changes in v2:
-- Split original patch into two patches per Greg's feedback
-- This patch addresses Hungarian prefix removal
----
- drivers/staging/sm750fb/sm750.c       | 22 ++++++------
- drivers/staging/sm750fb/sm750.h       |  6 ++--
- drivers/staging/sm750fb/sm750_accel.c | 48 +++++++++++++--------------
- drivers/staging/sm750fb/sm750_accel.h |  2 +-
- drivers/staging/sm750fb/sm750_hw.c    | 20 +++++------
- 5 files changed, 49 insertions(+), 49 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 1ed7ff57c142..afcfc9e6c207 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -624,27 +624,27 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_primary;
- 		crtc->o_screen = 0;
--		crtc->v_screen = sm750_dev->p_v_mem;
-+		crtc->v_screen = sm750_dev->v_mem;
- 		pr_info("use simul primary mode\n");
- 		break;
- 	case sm750_simul_sec:
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_secondary;
- 		crtc->o_screen = 0;
--		crtc->v_screen = sm750_dev->p_v_mem;
-+		crtc->v_screen = sm750_dev->v_mem;
- 		break;
- 	case sm750_dual_normal:
- 		if (par->index == 0) {
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_primary;
- 			crtc->o_screen = 0;
--			crtc->v_screen = sm750_dev->p_v_mem;
-+			crtc->v_screen = sm750_dev->v_mem;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_secondary;
- 			/* not consider of padding stuffs for o_screen,need fix */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->v_screen = sm750_dev->p_v_mem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->v_mem + crtc->o_screen;
- 		}
- 		break;
- 	case sm750_dual_swap:
-@@ -652,7 +652,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_secondary;
- 			crtc->o_screen = 0;
--			crtc->v_screen = sm750_dev->p_v_mem;
-+			crtc->v_screen = sm750_dev->v_mem;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_primary;
-@@ -660,7 +660,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			 * need fix
- 			 */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->v_screen = sm750_dev->p_v_mem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->v_mem + crtc->o_screen;
- 		}
- 		break;
- 	default:
-@@ -764,14 +764,14 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	 * must be set after crtc member initialized
- 	 */
- 	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
--	crtc->cursor.mmio = sm750_dev->p_v_reg +
-+	crtc->cursor.mmio = sm750_dev->v_reg +
- 		0x800f0 + (int)crtc->channel * 0x140;
- 
- 	pr_info("crtc->cursor.mmio = %p\n", crtc->cursor.mmio);
- 	crtc->cursor.max_h = 64;
- 	crtc->cursor.max_w = 64;
- 	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
--	crtc->cursor.vstart = sm750_dev->p_v_mem + crtc->cursor.offset;
-+	crtc->cursor.vstart = sm750_dev->v_mem + crtc->cursor.offset;
- 
- 	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
- 	if (!g_hwcursor)
-@@ -1090,7 +1090,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 		sm750_dev->mtrr.vram = arch_phys_wc_add(sm750_dev->vidmem_start,
- 							sm750_dev->vidmem_size);
- 
--	memset_io(sm750_dev->p_v_mem, 0, sm750_dev->vidmem_size);
-+	memset_io(sm750_dev->v_mem, 0, sm750_dev->vidmem_size);
- 
- 	pci_set_drvdata(pdev, sm750_dev);
- 
-@@ -1121,8 +1121,8 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
- 	sm750fb_framebuffer_release(sm750_dev);
- 	arch_phys_wc_del(sm750_dev->mtrr.vram);
- 
--	iounmap(sm750_dev->p_v_reg);
--	iounmap(sm750_dev->p_v_mem);
-+	iounmap(sm750_dev->v_reg);
-+	iounmap(sm750_dev->v_mem);
- 	kfree(g_settings);
- }
- 
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 14e0e7d75f7e..077dde6d6113 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -72,7 +72,7 @@ struct lynx_accel {
- 			   u32 width, u32 height,
- 			   u32 rop2);
- 
--	int (*de_imageblit)(struct lynx_accel *accel, const char *p_srcbuf,
-+	int (*de_imageblit)(struct lynx_accel *accel, const char *srcbuf,
- 			    u32 src_delta, u32 start_bit, u32 d_base, u32 d_pitch,
- 			    u32 byte_per_pixel, u32 dx, u32 dy, u32 width,
- 			    u32 height, u32 f_color, u32 b_color, u32 rop2);
-@@ -97,8 +97,8 @@ struct sm750_dev {
- 	unsigned long vidreg_start;
- 	__u32 vidmem_size;
- 	__u32 vidreg_size;
--	void __iomem *p_v_reg;
--	unsigned char __iomem *p_v_mem;
-+	void __iomem *v_reg;
-+	unsigned char __iomem *v_mem;
- 	/* locks*/
- 	spinlock_t slock;
- 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index b95b15128759..a1daeaff3c28 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -134,22 +134,22 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
-  * @accel: Acceleration device data
-  * @source_base: Address of source: offset in frame buffer
-  * @source_pitch: Pitch value of source surface in BYTE
-- * @sx: Starting x coordinate of source surface
-- * @sy: Starting y coordinate of source surface
-+ * @source_x: Starting x coordinate of source surface
-+ * @source_y: Starting y coordinate of source surface
-  * @dest_base: Address of destination: offset in frame buffer
-  * @dest_pitch: Pitch value of destination surface in BYTE
-  * @bytes_per_pixel: Color depth of destination surface
-- * @dx: Starting x coordinate of destination surface
-- * @dy: Starting y coordinate of destination surface
-+ * @dest_x: Starting x coordinate of destination surface
-+ * @dest_y: Starting y coordinate of destination surface
-  * @width: width of rectangle in pixel value
-  * @height: height of rectangle in pixel value
-  * @rop2: ROP value
-  */
- int sm750_hw_copyarea(struct lynx_accel *accel,
- 		      unsigned int source_base, unsigned int source_pitch,
--		      unsigned int sx, unsigned int sy,
-+		      unsigned int source_x, unsigned int source_y,
- 		      unsigned int dest_base, unsigned int dest_pitch,
--		      unsigned int bytes_per_pixel, unsigned int dx, unsigned int dy,
-+		      unsigned int bytes_per_pixel, unsigned int dest_x, unsigned int dest_y,
- 		      unsigned int width, unsigned int height,
- 		      unsigned int rop2)
- {
-@@ -162,7 +162,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 	/* If source and destination are the same surface, need to check for overlay cases */
- 	if (source_base == dest_base && source_pitch == dest_pitch) {
- 		/* Determine direction of operation */
--		if (sy < dy) {
-+		if (source_y < dest_y) {
- 			/*  +----------+
- 			 *  |S         |
- 			 *  |   +----------+
-@@ -174,7 +174,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 			 */
- 
- 			direction = BOTTOM_TO_TOP;
--		} else if (sy > dy) {
-+		} else if (source_y > dest_y) {
- 			/*  +----------+
- 			 *  |D         |
- 			 *  |   +----------+
-@@ -187,9 +187,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 
- 			direction = TOP_TO_BOTTOM;
- 		} else {
--			/* sy == dy */
-+			/* source_y == dest_y */
- 
--			if (sx <= dx) {
-+			if (source_x <= dest_x) {
- 				/* +------+---+------+
- 				 * |S     |   |     D|
- 				 * |      |   |      |
-@@ -200,7 +200,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 
- 				direction = RIGHT_TO_LEFT;
- 			} else {
--			/* sx > dx */
-+			/* source_x > dest_x */
- 
- 				/* +------+---+------+
- 				 * |D     |   |     S|
-@@ -216,10 +216,10 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 	}
- 
- 	if ((direction == BOTTOM_TO_TOP) || (direction == RIGHT_TO_LEFT)) {
--		sx += width - 1;
--		sy += height - 1;
--		dx += width - 1;
--		dy += height - 1;
-+		source_x += width - 1;
-+		source_y += height - 1;
-+		dest_x += width - 1;
-+		dest_y += height - 1;
- 	}
- 
- 	/*
-@@ -267,11 +267,11 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 		return -1;
- 
- 	write_dpr(accel, DE_SOURCE,
--		  ((sx << DE_SOURCE_X_K1_SHIFT) & DE_SOURCE_X_K1_MASK) |
--		  (sy & DE_SOURCE_Y_K2_MASK)); /* dpr0 */
-+		  ((source_x << DE_SOURCE_X_K1_SHIFT) & DE_SOURCE_X_K1_MASK) |
-+		  (source_y & DE_SOURCE_Y_K2_MASK)); /* dpr0 */
- 	write_dpr(accel, DE_DESTINATION,
--		  ((dx << DE_DESTINATION_X_SHIFT) & DE_DESTINATION_X_MASK) |
--		  (dy & DE_DESTINATION_Y_MASK)); /* dpr04 */
-+		  ((dest_x << DE_DESTINATION_X_SHIFT) & DE_DESTINATION_X_MASK) |
-+		  (dest_y & DE_DESTINATION_Y_MASK)); /* dpr04 */
- 	write_dpr(accel, DE_DIMENSION,
- 		  ((width << DE_DIMENSION_X_SHIFT) & DE_DIMENSION_X_MASK) |
- 		  (height & DE_DIMENSION_Y_ET_MASK)); /* dpr08 */
-@@ -307,8 +307,8 @@ static unsigned int de_get_transparency(struct lynx_accel *accel)
-  * @dest_base: Address of destination: offset in frame buffer
-  * @dest_pitch: Pitch value of destination surface in BYTE
-  * @byte_per_pixel: Color depth of destination surface
-- * @dx: Starting x coordinate of destination surface
-- * @dy: Starting y coordinate of destination surface
-+ * @dest_x: Starting x coordinate of destination surface
-+ * @dest_y: Starting y coordinate of destination surface
-  * @width: width of rectangle in pixel value
-  * @height: height of rectangle in pixel value
-  * @fg_color: Foreground color (corresponding to a 1 in the monochrome data
-@@ -317,7 +317,7 @@ static unsigned int de_get_transparency(struct lynx_accel *accel)
-  */
- int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
- 		       u32 src_delta, u32 start_bit, u32 dest_base, u32 dest_pitch,
--		       u32 byte_per_pixel, u32 dx, u32 dy, u32 width,
-+		       u32 byte_per_pixel, u32 dest_x, u32 dest_y, u32 width,
- 		       u32 height, u32 fg_color, u32 bg_color, u32 rop2)
- {
- 	unsigned int bytes_per_scan;
-@@ -377,8 +377,8 @@ int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
- 		  DE_SOURCE_X_K1_MONO_MASK); /* dpr00 */
- 
- 	write_dpr(accel, DE_DESTINATION,
--		  ((dx << DE_DESTINATION_X_SHIFT) & DE_DESTINATION_X_MASK) |
--		  (dy & DE_DESTINATION_Y_MASK)); /* dpr04 */
-+		  ((dest_x << DE_DESTINATION_X_SHIFT) & DE_DESTINATION_X_MASK) |
-+		  (dest_y & DE_DESTINATION_Y_MASK)); /* dpr04 */
- 
- 	write_dpr(accel, DE_DIMENSION,
- 		  ((width << DE_DIMENSION_X_SHIFT) & DE_DIMENSION_X_MASK) |
-diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
-index 59e679961e96..00a6a022e17e 100644
---- a/drivers/staging/sm750fb/sm750_accel.h
-+++ b/drivers/staging/sm750fb/sm750_accel.h
-@@ -235,7 +235,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
-  * @bg_color: Background color (corresponding to a 0 in the monochrome data
-  * @rop2: ROP value
-  */
--int sm750_hw_imageblit(struct lynx_accel *accel, const char *p_srcbuf,
-+int sm750_hw_imageblit(struct lynx_accel *accel, const char *srcbuf,
- 		       u32 src_delta, u32 start_bit, u32 dest_base, u32 dest_pitch,
- 		       u32 byte_per_pixel, u32 dx, u32 dy, u32 width,
- 		       u32 height, u32 fg_color, u32 bg_color, u32 rop2);
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 4e2ca7263254..b8bc55ba3c54 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -49,19 +49,19 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	}
- 
- 	/* now map mmio and vidmem */
--	sm750_dev->p_v_reg =
-+	sm750_dev->v_reg =
- 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
--	if (!sm750_dev->p_v_reg) {
-+	if (!sm750_dev->v_reg) {
- 		pr_err("mmio failed\n");
- 		ret = -EFAULT;
- 		goto exit;
- 	}
--	pr_info("mmio virtual addr = %p\n", sm750_dev->p_v_reg);
-+	pr_info("mmio virtual addr = %p\n", sm750_dev->v_reg);
- 
--	sm750_dev->accel.dpr_base = sm750_dev->p_v_reg + DE_BASE_ADDR_TYPE1;
--	sm750_dev->accel.dp_port_base = sm750_dev->p_v_reg + DE_PORT_ADDR_TYPE1;
-+	sm750_dev->accel.dpr_base = sm750_dev->v_reg + DE_BASE_ADDR_TYPE1;
-+	sm750_dev->accel.dp_port_base = sm750_dev->v_reg + DE_PORT_ADDR_TYPE1;
- 
--	mmio750 = sm750_dev->p_v_reg;
-+	mmio750 = sm750_dev->v_reg;
- 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
- 
- 	sm750_dev->vidmem_start = pci_resource_start(pdev, 0);
-@@ -76,15 +76,15 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 		sm750_dev->vidmem_start, sm750_dev->vidmem_size);
- 
- 	/* reserve the vidmem space of smi adaptor */
--	sm750_dev->p_v_mem =
-+	sm750_dev->v_mem =
- 		ioremap_wc(sm750_dev->vidmem_start, sm750_dev->vidmem_size);
--	if (!sm750_dev->p_v_mem) {
--		iounmap(sm750_dev->p_v_reg);
-+	if (!sm750_dev->v_mem) {
-+		iounmap(sm750_dev->v_reg);
- 		pr_err("Map video memory failed\n");
- 		ret = -EFAULT;
- 		goto exit;
- 	}
--	pr_info("video memory vaddr = %p\n", sm750_dev->p_v_mem);
-+	pr_info("video memory vaddr = %p\n", sm750_dev->v_mem);
- exit:
- 	return ret;
- }
--- 
-2.53.0
-
+Helge

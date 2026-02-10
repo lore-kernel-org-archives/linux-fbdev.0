@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7E3D2ECE9B;
-	Tue, 10 Feb 2026 10:07:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C2D133FE02;
+	Tue, 10 Feb 2026 10:10:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770718068; cv=none; b=sPLrCpncNXC/9r75//OCfsecalm/yCHe3iqdhNNuWER070mOaUI/nZJsp8ezQsA9ItWrUUyaum2WZX/a/o7JJ43qerhRWHSvpeRdkPGsdlKRe+qPnwcLVGK6qKnnCkt6HGJIBm0EDPo02I75JQz8onM/mn8BrlN3DIL+gMWvtTE=
+	t=1770718217; cv=none; b=M+NE0ePZk6ZlujnAYjocv8DI0KQ0EtVWgcpcHroFROmvw8Xtjv8r8IoYLKqlv5HmHHLOaHKwngV9jkJG2i2HRhBUDN5iE6JBt7f8VnKu8dwtszX955om10vSTzYoGWUDBzl1/xF9rw84Zeps0K5oMPWpNVvrMZpEybzZO7VKe3U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770718068; c=relaxed/simple;
-	bh=u8PznRMNHUq4nAGBxZMhRsI1nFCYrCQ3fE2qie4jbrc=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
-	 References:In-Reply-To; b=NOybn/YMjrTd9bh1d7oeus0lTMptesHzNsGd5gfvpyvhn1LpYxI7GSw+zCOaumfi30DPQWAler5EqsFmLEjBxXMa98H64vbNOzJYcX5y3w8e4nKhRcdlsf05eW/z9Nky1FXdO4PcCRpDFmScNYc4t0eqwPlhTpGUsFdoASbCnDA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AmE+/FBO; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1770718217; c=relaxed/simple;
+	bh=Y1eJ+A7bQ+DjJKh+pu4y7cwRQw19sr4V6ovNvsHmjOE=;
+	h=Mime-Version:Content-Type:Date:Message-Id:From:Subject:Cc:To:
+	 References:In-Reply-To; b=NgOREX5dOqTOJO8P2VyOY6GMv52q4xLfkxWHnrTl6vD5qejY1l8jNQUwOIFMkXTeRvMuZo1aPmbPLqUrXg/7GjAft0Z82+Ro0vpoeZ1JaYSQCWfWD5qgjN8d8SCVGmL0Tf9gw1oTptvNjbKEFBlqGF6bpqnz4mQxNsv02Py3Xgc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KjaZ5ktO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AmE+/FBO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E11BC19423;
-	Tue, 10 Feb 2026 10:07:39 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KjaZ5ktO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 304D5C116C6;
+	Tue, 10 Feb 2026 10:10:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770718068;
-	bh=u8PznRMNHUq4nAGBxZMhRsI1nFCYrCQ3fE2qie4jbrc=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
-	b=AmE+/FBOXpx4l68K7mRYkO1VaqodkSC6EYBRpsvdmsAAuCtBUC0Ski789nLR1zq1E
-	 TFTDJAvO/WZbEVJGb8S5jNstC+zYelojWUA/Vz701gpxjENKDqf79Whnceiw8FNbBY
-	 ut8jot+h95U+T6RJ5kCKlxvUFRclDycYQjjaBjTHT6bLOEcE9HUbcuS+BZFG44DJnu
-	 CVAHmq30G99r6V870J6tOn4+Jg52OrlgRgVX3eznZ31pPxPm5cEPxdXhux6nTT538r
-	 +/0qFbG/tLyPxoR1S45Ir7yxIN7ouU4u22nUuj5eODPtQ6D7izQW76OuKa/9AuTQs9
-	 71HQcI6dvN+Lw==
+	s=k20201202; t=1770718217;
+	bh=Y1eJ+A7bQ+DjJKh+pu4y7cwRQw19sr4V6ovNvsHmjOE=;
+	h=Date:From:Subject:Cc:To:References:In-Reply-To:From;
+	b=KjaZ5ktO2RwcnVfgIKvTFccsUCApAJjPUj4D8e0ZO3b/KLUWqSj0RGU0HG8GMGMBY
+	 /ca+RG3h60JHjlJnxuB/WE1vdfh2hG+sip0oKbsljKs7Y1kANUE/VXUNJ/j44c53gz
+	 EQYNofR+tf0/melgx6bEoZ2lBVdRZbX0Tewo9DNVHrwitaRRpZO4yRMIbsHqPT0/Do
+	 +Zh0a0G7FJfcZeN9ZeFCiYAzzuFKjPeSW2KDjstvQ06C13LjKiZomFwgWOb1lLjoTP
+	 WF0IBAEwIqOKfYua4Pmmk3M+MBi2AmUfFW9dsSgYecM4uLFTuUxaDnyfmp6iru3MSI
+	 +pQkxwj3FuECg==
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -34,10 +34,11 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Tue, 10 Feb 2026 11:07:37 +0100
-Message-Id: <DGB75XMWML8M.DFZY5L52EBQF@kernel.org>
-Subject: Re: [PATCH -next v8 1/3] rust: clist: Add support to interface with
- C linked lists
+Date: Tue, 10 Feb 2026 11:10:06 +0100
+Message-Id: <DGB77U0C946C.3F9PUVN5XX912@kernel.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH -next v8 3/3] nova-core: mm: Select GPU_BUDDY for VRAM
+ allocation
 Cc: <linux-kernel@vger.kernel.org>, "Maarten Lankhorst"
  <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
  "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
@@ -67,29 +68,23 @@ Cc: <linux-kernel@vger.kernel.org>, "Maarten Lankhorst"
  <amd-gfx@lists.freedesktop.org>, <intel-gfx@lists.freedesktop.org>,
  <intel-xe@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>
 To: "Joel Fernandes" <joelagnelf@nvidia.com>
-From: "Danilo Krummrich" <dakr@kernel.org>
 References: <20260209214246.2783990-1-joelagnelf@nvidia.com>
- <20260209214246.2783990-2-joelagnelf@nvidia.com>
-In-Reply-To: <20260209214246.2783990-2-joelagnelf@nvidia.com>
+ <20260209214246.2783990-4-joelagnelf@nvidia.com>
+In-Reply-To: <20260209214246.2783990-4-joelagnelf@nvidia.com>
 
 On Mon Feb 9, 2026 at 10:42 PM CET, Joel Fernandes wrote:
->  rust/kernel/clist.rs   | 320 +++++++++++++++++++++++++++++++++++++++++
+> diff --git a/drivers/gpu/nova-core/Kconfig b/drivers/gpu/nova-core/Kconfi=
+g
+> index 527920f9c4d3..c129764daa23 100644
+> --- a/drivers/gpu/nova-core/Kconfig
+> +++ b/drivers/gpu/nova-core/Kconfig
+> @@ -3,6 +3,7 @@ config NOVA_CORE
+>  	depends on 64BIT
+>  	depends on PCI
+>  	depends on RUST
+> +	select GPU_BUDDY
+>  	select RUST_FW_LOADER_ABSTRACTIONS
+>  	select AUXILIARY_BUS
+>  	default n
 
-I think we should move this under rust/kernel/ffi/ to make it obvious that =
-this
-is FFI infrastructure.
-
-> diff --git a/rust/kernel/clist.rs b/rust/kernel/clist.rs
-> new file mode 100644
-> index 000000000000..8aa72b5d54be
-> --- /dev/null
-> +++ b/rust/kernel/clist.rs
-> @@ -0,0 +1,320 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +//! A C doubly circular intrusive linked list interface for rust code.
-
-Here and in the struct documentation, I'd suggest to clearly point out the
-use-cases, i.e. that this infrastructure is for FFI use-cases only and shou=
-ld
-not be used otherwise in drivers, etc.
+NIT: Let's get the 'select' list ordered. :)

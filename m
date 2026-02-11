@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4F72338581;
-	Wed, 11 Feb 2026 09:21:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C769033120D;
+	Wed, 11 Feb 2026 09:23:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770801694; cv=none; b=FT/NYo3uc3WtQze4M0wVMU1pg+UyYzztjzFUbAkDct0gElHOnQVZUa0FbFbUADtW5xQj+vvjO2eOQmjS8FXlIYfuHsH3xNd3HK49YUafeQ1XgTMsFlht0h0bLu4aKB+u4Pg/YfFZF4whEDHmox2yJr7NJOv3e2vYjWlZcGag1+8=
+	t=1770801838; cv=none; b=pGVnWJsVetG5ts7Kaav/cvLzVuE1SY+XdaA8zkKoKM1K2dk+x5CvrrPNhHlrsaZm/dIqHdxGrCQmUsxsBl2rON70bOHtdfDLEv3Q2QgSGNMlHRfFjABi1Ha0w0E7NlKuwGeUAug4BLxr/pd2KwlWVmRJa2VKnMbC7lAgcojw7O0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770801694; c=relaxed/simple;
-	bh=bbT8L9yuhCkcKZIt2AwaX5L7rkxzlrBrldrxjRCY6Qc=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:To:From:Subject:
-	 References:In-Reply-To; b=i3ogM5Wpw53nP2KEg78SYBGKqL0tmlWzqqsWhJZJp1KX9lhA+QEdfxhC/cJb7OUQearI3uu4WxVHpUQHeH0H/ODfw59/6gxTs6uQYPBBc9w0B07GBloVMFhNq4ew9DzaafaNDIAmJcfyt2IF222pL6Alp5fuMwN6mn2YJa9OJ+4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WvQ3ewTX; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1770801838; c=relaxed/simple;
+	bh=zMMHzAbccCElgZnTTHunt2AaMFlxEi2Wrnpcdd+qN3s=;
+	h=Mime-Version:Content-Type:Date:Message-Id:From:Subject:Cc:To:
+	 References:In-Reply-To; b=uoL/9j0Tby4XhX4Q4dePn7ulvzqcweNqX0j2eC51E4pCKcaIdmtJk8mBXcJbG9lDGZCYuPZ79D4zV8OmTIbR+IjR8UlH+3rxHTAQiYorrVc0W5aulCzqoDwIfowMXeb7Xf+/RCXL1SV1ide3bn1VhCroDkXuiFD019Lhnav02Dw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Tskr0izw; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WvQ3ewTX"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2F38C4CEF7;
-	Wed, 11 Feb 2026 09:21:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tskr0izw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 996A8C4CEF7;
+	Wed, 11 Feb 2026 09:23:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770801694;
-	bh=bbT8L9yuhCkcKZIt2AwaX5L7rkxzlrBrldrxjRCY6Qc=;
-	h=Date:Cc:To:From:Subject:References:In-Reply-To:From;
-	b=WvQ3ewTXZ2lQSqYQAAxvDxZIXx23sQMjCI9kZmySTxXf08I7vSWq2wMpO6JUEUGPl
-	 84R832HYeYTEN0Sk2sDTMYgyZkGhgpKuuL7Gt2uee/ViV4W3er/rKoAd6jcx/tqQ19
-	 OiCiuHd9MlBlEh9GPY3AlGmbqCZfyIWufwYIkkLGn7LojPEaoyHXlkqjdE3pLOOABq
-	 cEOz7Oqh37c+3cpcftV6Nhv8NFmzgTs1tkvuXcpbqOFtPCbG7YslH9I9XRCg0Rs5Bs
-	 AN7w3KKk1aPoNzeTaCrUukzHvsI39VzMEwYkAqejXLvG4xov+ipmcO0xKsgvmnwAFG
-	 aTpMU/ppeRiXA==
+	s=k20201202; t=1770801838;
+	bh=zMMHzAbccCElgZnTTHunt2AaMFlxEi2Wrnpcdd+qN3s=;
+	h=Date:From:Subject:Cc:To:References:In-Reply-To:From;
+	b=Tskr0izwQHtPS47ll8VMuwygb2B8/DvwdW0zs9mUMb8ojVZDptC61rB+AcbAm2pjz
+	 nUqmYFe3UJPLOXlmQw9n66sar+7+PSp/cC8GmrS1MmQ9iG0KyMdAPLMKJUdCoxZF6I
+	 9QbdsW4ZD65VV4kE1kktJCbrC6FPhk4Anm7UehAEK8qt/6YjOcQmLzp/ssYL5WZ6TW
+	 MOXtvGDeRQT+oeG5fGA60KBgPkEGN7WpwC8TBKR5a0M1xmiKZofqk5hKsAPEpN4lyF
+	 4Y0TF8++5DSzOgzUVPh2w+ypiVibGAMNBJsmzUnE+jpZwjzko6xDzXMyQDyWcW852Z
+	 dmaT1NPn5BAbw==
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -34,8 +34,11 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Wed, 11 Feb 2026 10:21:23 +0100
-Message-Id: <DGC0T35RJU05.2TLS17F5B30B3@kernel.org>
+Date: Wed, 11 Feb 2026 10:23:47 +0100
+Message-Id: <DGC0UXBRSOPZ.PG0X6KTEA3RJ@kernel.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH -next v9 1/3] rust: clist: Add support to interface with
+ C linked lists
 Cc: <linux-kernel@vger.kernel.org>, "Maarten Lankhorst"
  <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
  "Simona Vetter" <simona@ffwll.ch>, "Jonathan Corbet" <corbet@lwn.net>,
@@ -66,41 +69,21 @@ Cc: <linux-kernel@vger.kernel.org>, "Maarten Lankhorst"
  <intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
  <linux-fbdev@vger.kernel.org>
 To: "Joel Fernandes" <joelagnelf@nvidia.com>
-From: "Danilo Krummrich" <dakr@kernel.org>
-Subject: Re: [PATCH -next v9 3/3] nova-core: mm: Select GPU_BUDDY for VRAM
- allocation
 References: <20260210233204.790524-1-joelagnelf@nvidia.com>
- <20260210233204.790524-4-joelagnelf@nvidia.com>
-In-Reply-To: <20260210233204.790524-4-joelagnelf@nvidia.com>
+ <20260210233204.790524-2-joelagnelf@nvidia.com>
+In-Reply-To: <20260210233204.790524-2-joelagnelf@nvidia.com>
 
 On Wed Feb 11, 2026 at 12:32 AM CET, Joel Fernandes wrote:
-> nova-core will use the GPU buddy allocator for physical VRAM management.
-> Enable it in Kconfig.
+> Add a new module `clist` for working with C's doubly circular linked
+> lists. Provide low-level iteration over list nodes.
 >
+> Typed iteration over actual items is provided with a `clist_create`
+> macro to assist in creation of the `CList` type.
+>
+> Reviewed-by: Daniel Almeida <daniel.almeida@collabora.com>
+> Acked-by: Gary Guo <gary@garyguo.net>
 > Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
-> ---
->  drivers/gpu/nova-core/Kconfig | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/gpu/nova-core/Kconfig b/drivers/gpu/nova-core/Kconfi=
-g
-> index 527920f9c4d3..6513007bf66f 100644
-> --- a/drivers/gpu/nova-core/Kconfig
-> +++ b/drivers/gpu/nova-core/Kconfig
-> @@ -3,8 +3,9 @@ config NOVA_CORE
->  	depends on 64BIT
->  	depends on PCI
->  	depends on RUST
-> -	select RUST_FW_LOADER_ABSTRACTIONS
 
-I think moving this should be a separate patch.
+I think you forgot to address my comments from [1].
 
->  	select AUXILIARY_BUS
-> +	select GPU_BUDDY
-> +	select RUST_FW_LOADER_ABSTRACTIONS
->  	default n
->  	help
->  	  Choose this if you want to build the Nova Core driver for Nvidia
-> --=20
-> 2.34.1
-
+[1] https://lore.kernel.org/all/DGB75XMWML8M.DFZY5L52EBQF@kernel.org/

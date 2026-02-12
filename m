@@ -1,121 +1,97 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5C7C34846D;
-	Wed, 11 Feb 2026 21:18:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5ECD62877F7
+	for <linux-fbdev@vger.kernel.org>; Thu, 12 Feb 2026 05:35:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770844680; cv=none; b=car26qXoRcg39HF5QyTdBNeOX5boQhWYl9mWnw0huw95OxHZQPyuG1WRLrxYmw9BA/4O5pkoQEqd1d0uq1Y75RhsNGr4oxSoj5DkMC4bBrL7dcv+UPi1DjOyOnBp5mLzL5pxuiwenWeimPwKelQrdr8abVxKce1xuwFnUR8uSV0=
+	t=1770874519; cv=none; b=UfFOBiM5vYITYK9dRK/fXPgYjJ9xYlRJ0H1VNPctyJV6CmSIAvbLoWSnj9DaVUil8fECx45iFE98VhhAl9s+qZ+B0kjrgeXM8mK7xPHe7+Ngk1nuAckD/zoFWu3fPNFw+uklFgtlb4WcYzj/xVQb9DPme23fnldq3l+X1p/wklU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770844680; c=relaxed/simple;
-	bh=Xk2na6235/6MdtkvIhpTRHZmnBktjn8EJsmkNHoHgrE=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
-	 References:In-Reply-To; b=J4OXBAjmoz7SgMmc1j09Q4JsRaPMVkJjk5p9Zxs93+LRoOelzPQw3g8f8SYRE2WEa4/VlDSz2t7eYW9rPjkn9UmSuw+o7VABghcV2bmkvHjw9tpCU8O0llcE6FyiBnC16ZG0hK3QSVaRsMQI1zSlFP1zqNIxq28q7gPJ/eJBPCA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=pvFSgP7e; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1770874519; c=relaxed/simple;
+	bh=83veI/vhVwq0xQcmpgxHqz2Io5xC4iuoCU9FzcUMvQ8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=I9sokTbqOefztsoHFxadM2WXZ+lKNtimtgl7+UEE+vp6D62mQmU/3B7FEtHspGxyW75QnfLAWAIRsDSZFq0F0KvxSGgL5vZpyQmecHLHLLMIirF/0DwIZ8d0s8o3vFIlzKqrvFBPvEfL2Q9GbZmdNhB2bTTBDZwrXMpP0Fzj9cE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=tNAn7ihP; arc=none smtp.client-ip=209.85.221.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="pvFSgP7e"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3614FC4CEF7;
-	Wed, 11 Feb 2026 21:17:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770844680;
-	bh=Xk2na6235/6MdtkvIhpTRHZmnBktjn8EJsmkNHoHgrE=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
-	b=pvFSgP7elG8OioKaof0a5y8V+UeqIvIJPG+ORj4CYPFr0S2UTkWWWbG0TeASObmAG
-	 ld/2Ev08iZ7H17laDT6HY+vl5c1KPccISOEmTY5yNnb0KHbHe7X7dwBH35O5Kj5V80
-	 I1nSWjqVMOy7jX1jsYA4lloLS+T/lz8JVK5hco0RhZ2RE3BYPtFbgpKTVxHX9+kKBm
-	 bOkKsO5SwTP3Vmc05Ti8merg7u0PtlDwVpPXxdTxMW62HnkGuhSqcsU9je/EYTJFW/
-	 Jahai5V1xcB29kEuBDG9/KadzI/EDX63FjALRne+JKjabdUH/sLG44pAVNU/YFu6cV
-	 VPb0rG16+zFrQ==
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tNAn7ihP"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-4359228b7c6so3968711f8f.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 11 Feb 2026 21:35:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1770874517; x=1771479317; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=uGlTAM0CcQ9X7JUlNOqc+vi1n0Z9fGaUWQXZE25x85M=;
+        b=tNAn7ihP68uJ6iN40ami9by8Mkrcwv0bYPTPGUvxwEUOc4u1O4tob/vA4TGU+FEGN6
+         WhHshHGAs700v7GFXcXaHDF2aUMNqbSyOo27HVZ1Os4VUOmI+VYEjNPExMUD11vPEjm2
+         7FHD4V607HmJ1MqXv4M0uij1AcxTCNtrRJzM2rl4csriATSMAmvvSHYVBtM+7dPL1PCd
+         SOY8tE8qaBp+NvopIElGV0OM7EPTYf9mZEpiuCKCkOvyxGLMw8Xcx1vHagpNHhJpJLAe
+         MKPJ0175OC9O12BEpXibdbJcy8C+6VnvE/OOkaLiMCKr5utBoUYMK/QcNS2Z6BCmwMVj
+         O5eQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770874517; x=1771479317;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uGlTAM0CcQ9X7JUlNOqc+vi1n0Z9fGaUWQXZE25x85M=;
+        b=XBSiPzHxDGMsbaGmIe29v6cNlPCChd4/JX2n2BL8dF+g9enoxqTXp2eBNqzWZpCdDT
+         GgQjggQa9STBKa/BnwGaMs94Mo27H4dF8nEHR64Ym1zZFO7M0MkVvZSStJ+s29ufIHPj
+         aOgyjKzDCb9Slg3CFRXJux5xNU/jSG+PKBMIIErP9X0g9I/VS+i0YFzG5MjHYWZhpREz
+         KojQtPj+zw4YGaQgT7TAcU1T3MvpVrMEj27PClZC9+uLZk0nFQwui2vDX7AgVYFCAnru
+         D/pEmmzUUKj8dHBtPC82EWu1vme5fJIL192mXya5VVEg5a8SfkWw2p0Zzxk1dYNOhMP4
+         qejQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWKoBqll6GY+BnhLceCy+hOjFljN8AxLHBbEv32XhYxg3jCsdvtARE081zB5YG/4hsOIdejkfC/9Tw3sA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzmy4RTyhvQIdM8fri2M9U3FFoZ8q+ONUgamaLNH5RmxYyFmFLs
+	/m64xgypQ7IP1aRF6nk4jdMRFk2zN9Xsn7bpvLWHIfMTQJ5ShFUO2212uaW15TZ88QbNgQiR6mi
+	qlG0s
+X-Gm-Gg: AZuq6aIYnsNmeFKBy4Yq/9RyWU/GMh/HaJvoUB7BgRQi46u9QQBQp44uBullTGyka4D
+	JKK7nBaYDrXv1qI3hTqRARUUCWreMfANL+eSB11me1EHT86iJt7JKu7A5qDCSAPF6COtFzcwPyT
+	eTGpV4vJsi16Qjy5iYpV/X29uEksjVZ/4jqsfjGaLEoBf5wo0GSdPNyHa5W87UTlsTOVJZEzoVR
+	4vpQUORpm5h7VyCv9hwrKo1YuDtyICjUoTrmjN5eYJ9S3eaiy+4tPuA4ArG3rKTldp1xC1JyNzx
+	k8g1GVPfGHWe0RIhCU3Mio8xhgZ3i+6JVdI4wFH6KwI4wGlanvi+yeYM4cHmoSgpQpBA70pbHMh
+	dApdVQeMi1YD8J/XcnLz+1f5Td1yUXU+TGa1LfgKN9RsFst9ugHgh4k2rg2nira8nbdBewhVJOa
+	1ANEw9Pfj/ct/gXlycWJtV40bhfBai
+X-Received: by 2002:a05:6000:1883:b0:436:1989:46b7 with SMTP id ffacd0b85a97d-4378acad908mr2605377f8f.15.1770874516749;
+        Wed, 11 Feb 2026 21:35:16 -0800 (PST)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43783e5c93asm8309333f8f.39.2026.02.11.21.35.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Feb 2026 21:35:16 -0800 (PST)
+Date: Thu, 12 Feb 2026 08:35:13 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Rachel Ovrani <rachel.ovrani@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: convert nDirection to snake_case
+Message-ID: <aY1mkfl2lKKj4d55@stanley.mountain>
+References: <20260211142423.4922-1-rachel.ovrani@gmail.com>
+ <aYycB-fAZn-uTO6r@stanley.mountain>
+ <CAPs_yZVzsHMqiMwWqM7m_7q9CRGDwRcHiAbx4VModZnCNzc0fQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 11 Feb 2026 22:17:50 +0100
-Message-Id: <DGCG1MWY5SJC.1ZGMNKR8E2NPW@kernel.org>
-Subject: Re: [PATCH -next v8 1/3] rust: clist: Add support to interface with
- C linked lists
-Cc: <linux-kernel@vger.kernel.org>, "Maarten Lankhorst"
- <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
- "Simona Vetter" <simona@ffwll.ch>, "Jonathan Corbet" <corbet@lwn.net>,
- "Alex Deucher" <alexander.deucher@amd.com>,
- =?utf-8?q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, "Jani Nikula"
- <jani.nikula@linux.intel.com>, "Joonas Lahtinen"
- <joonas.lahtinen@linux.intel.com>, "Rodrigo Vivi" <rodrigo.vivi@intel.com>,
- "Tvrtko Ursulin" <tursulin@ursulin.net>, "Huang Rui" <ray.huang@amd.com>,
- "Matthew Auld" <matthew.auld@intel.com>, "Matthew Brost"
- <matthew.brost@intel.com>, "Lucas De Marchi" <lucas.demarchi@intel.com>,
- =?utf-8?q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
- "Helge Deller" <deller@gmx.de>, "Alice Ryhl" <aliceryhl@google.com>,
- "Miguel Ojeda" <ojeda@kernel.org>, "Alex Gaynor" <alex.gaynor@gmail.com>,
- "Boqun Feng" <boqun.feng@gmail.com>, "Gary Guo" <gary@garyguo.net>,
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, "Benno Lossin"
- <lossin@kernel.org>, "Andreas Hindborg" <a.hindborg@kernel.org>, "Trevor
- Gross" <tmgross@umich.edu>, "Alistair Popple" <apopple@nvidia.com>,
- "Alexandre Courbot" <acourbot@nvidia.com>, "Andrea Righi"
- <arighi@nvidia.com>, "Zhi Wang" <zhiw@nvidia.com>, "Philipp Stanner"
- <phasta@kernel.org>, "Elle Rhumsaa" <elle@weathered-steel.dev>, "Daniel
- Almeida" <daniel.almeida@collabora.com>, <joel@joelfernandes.org>,
- <nouveau@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
- <rust-for-linux@vger.kernel.org>, <linux-doc@vger.kernel.org>,
- <amd-gfx@lists.freedesktop.org>, <intel-gfx@lists.freedesktop.org>,
- <intel-xe@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>
-To: "Joel Fernandes" <joelagnelf@nvidia.com>
-From: "Danilo Krummrich" <dakr@kernel.org>
-References: <20260209214246.2783990-1-joelagnelf@nvidia.com>
- <20260209214246.2783990-2-joelagnelf@nvidia.com>
- <DGB75XMWML8M.DFZY5L52EBQF@kernel.org> <20260211210952.GA3632639@joelbox2>
-In-Reply-To: <20260211210952.GA3632639@joelbox2>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAPs_yZVzsHMqiMwWqM7m_7q9CRGDwRcHiAbx4VModZnCNzc0fQ@mail.gmail.com>
 
-On Wed Feb 11, 2026 at 10:09 PM CET, Joel Fernandes wrote:
-> On Tue, Feb 10, 2026 at 11:07:37AM +0100, Danilo Krummrich wrote:
->> On Mon Feb 9, 2026 at 10:42 PM CET, Joel Fernandes wrote:
->> >  rust/kernel/clist.rs   | 320 ++++++++++++++++++++++++++++++++++++++++=
-+
->>=20
->> I think we should move this under rust/kernel/ffi/ to make it obvious th=
-at this
->> is FFI infrastructure.
->>=20
->> > diff --git a/rust/kernel/clist.rs b/rust/kernel/clist.rs
->> > new file mode 100644
->> > index 000000000000..8aa72b5d54be
->> > --- /dev/null
->> > +++ b/rust/kernel/clist.rs
->> > @@ -0,0 +1,320 @@
->> > +// SPDX-License-Identifier: GPL-2.0
->> > +
->> > +//! A C doubly circular intrusive linked list interface for rust code=
-.
->>=20
->> Here and in the struct documentation, I'd suggest to clearly point out t=
-he
->> use-cases, i.e. that this infrastructure is for FFI use-cases only and s=
-hould
->> not be used otherwise in drivers, etc
->
-> I am curious why we would not want to have drivers be able to use CList. =
-I
-> thought that was the point of making it pub at the module/item level as w=
-ell.
-> I think it is possible a rust driver may have a reference to a CList in t=
-he
-> future.
+On Thu, Feb 12, 2026 at 12:24:44AM +0200, Rachel Ovrani wrote:
+> Thank you for the review!
+> 
+> The 'n_' prefix stands for "new" - the variable holds a newly calculated
+> direction value based on the overlap between source and destination regions.
+> 
+> That said, if you think 'direction' would be clearer, I'm happy to submit a
+> v2 removing the prefix.
 
-It is a (partially) unsafe API built to support FFI interactions. The absol=
-ute
-majority of drivers should not have any FFI interactions themselves. nova-c=
-ore
-is the "odd one" as it will have an interface with a C driver (vGPU).
+I would have never guessed it was new_.  Normally n_ means number and I
+couldn't think of any meaning in Hungarian notation.  Naming it
+"new_direction" is even better.
 
-Besides a few "odd" drivers, there may be quite some subsystem abstractions=
- that
-become users of the API. In the future build system, subsystems and drivers=
- will
-become individual crates.
+regards,
+dan carpenter
 
-> But I will update the current usecase above, as you suggested, good point=
-.

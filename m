@@ -1,40 +1,72 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 316BA25A357;
-	Sat, 14 Feb 2026 21:28:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D03CD314B77
+	for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 22:25:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771104526; cv=none; b=EInZeAitYHP/66Y/hHsTkJdWJFmu7EtsfXraT4tEMp4d5OLSOVCHVpc3G21AxG7NTiZREhrjPl/AMe4FKds93rk1Qd6VEfwjwwhWo74lc5EFzNNhjAIqNd+H3rfA1gVG0CAZYghoaLXSKZC49B2RyIUoPupvWVhV33TCVVhYMkc=
+	t=1771107953; cv=none; b=eCzvjziuG7JgCX2lv9tIptEQ5qj9D1xFc2g7mDl1t861LHwpPsFoUPPbRuTn9rKPY1rG3MpyL1PIteXKbxHyGdResi5xVRWKPipkWoYQ6Naia71QCvGeClRpt5Bp9VOL6Ud8b/xiOUY3WakxKfHsR1aD2mHXZRkQtBl2jurbezE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771104526; c=relaxed/simple;
-	bh=DXqKvvM5+P464FqmXM7ywFIAJJJnPeDBq6zQooW9zfw=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DL4zHfFE6Vn689vKEJ0dDKFiPbgEvmC67zbHQ6qLDJvg2snJEtzIOduim59qSKv9srlhLwlcWg3XWIYOJkDRTQB1rBqTmbOZdjO2uIChEeL9uAJ3qlhseSvxlLbJ1AKXdIiurQuA3I/lv8qbD4uMCHwFJyAypbTeYuZBWx+/9ds=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZfoRcbY6; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1771107953; c=relaxed/simple;
+	bh=gPB8/WX4QlbC0B2UxTWMVblFHmuSf4ny8gF3oefmnWk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type:Content-Disposition; b=c1vJdDXANDemHoIpOBDCO1+G1tductJpiMLUlxZossnNRnledsOuWNmsfLXe0wCbFdxdIHLT4PF8ZjCEoCe3sL0G+I7HEhxmgFBnctZvWhxQD5J3V6tvsOuBJYRgmlIErnXrjUZrPkox9tA241rSsrV24k6be1Tt2BGW6u2HbVE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=fail (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=OMj4Dl5F reason="signature verification failed"; arc=none smtp.client-ip=10.30.226.201; arc=none smtp.client-ip=209.85.128.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZfoRcbY6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7652C16AAE;
-	Sat, 14 Feb 2026 21:28:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771104526;
-	bh=DXqKvvM5+P464FqmXM7ywFIAJJJnPeDBq6zQooW9zfw=;
-	h=Date:From:To:Subject:References:In-Reply-To:From;
-	b=ZfoRcbY6ZN6cVKeBnCI+mZjbG9SbMQoP6W0ncCipYZHusGgWb3Mmm1h5WyeexyuTY
-	 BPAohFZxM45GgUnl7TKLc77gD7RuHQL7JEdhFOVoV+uKi4Wd2jG2krGQMnjQ9nENw+
-	 sn+634dOOhq/oDHNEUX8uXItnw7LzMB/ywjg5QV7huSg8tksVhF4RFkX1usH05XM9q
-	 BFWkEqMRyfmXRUdVWazS5uEcaJilJkpT81Z5BlK0wtVjbqnAN7pqu8awU0DCquXBgt
-	 niuH+Ka3rRqrKoTt13/oX32DcM+6mS3Bl5K7JIWtTBCSZZrmgpREK7kNFXMeq2LC8V
-	 0PWGfpBqoawxw==
-Date: Sat, 14 Feb 2026 22:28:41 +0100
-From: Helge Deller <deller@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: Re: [GIT PULL] fbdev fixes and updates for v7.0-rc1
-Message-ID: <aZDpCUcIXLmuydoF@carbonx1>
-References: <aZBlTsIwTzS0tqBD@carbonx1>
- <177110244909.2897141.11184148040863874004.pr-tracker-bot@kernel.org>
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="OMj4Dl5F"
+Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-48371119eacso18904425e9.2
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 14:25:51 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1771107950; x=1771712750;
+        h=content-transfer-encoding:content-disposition:mime-version
+         :list-unsubscribe:list-subscribe:list-id:precedence:dkim-signature
+         :references:in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=pwU1h6E+8PFMX0KJbuF6T0udAVN+SodXJVv8cPdeK5Y=;
+        b=Ex8YT9XI0un2ZceBUiytFL/fwtivn3Z91+tFVjBM3KSjXtwSnrngB8rM37PlFImF73
+         TemF4Hp7f9bMAZjgm4zMNaDvnZmVp7naMPPLFNZzBp8rtsTBCL7szJdKR0s1FJKBtLh9
+         3ukqpAKXnq6Mp9eIy/VLAyv3oOEHJ2mGO6bRK/zmG6KIpFimPCh2AdtCODfPMRNUfLEX
+         hjGIBSvYeDLgZPrYURrPBMyODOr0bqvdqY7nMYS4TJYdNE17BDXKpgAYzi4hdz+RqHdb
+         xBArvi5ZkELysEBLlNqrk97TcXGZJPNWXrf9yFpQHEL3cL80c2fej0dcIPZpLYbYNCPm
+         CVig==
+X-Forwarded-Encrypted: i=1; AJvYcCU1t79PyrtWV26reOIV6tZT7T3n+WFzZsToJ8XjKWR1wzfU6U/U7VtZmqmE9y8p6R/SSq2RokIPgfO6xA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YztsvhsGvqN8TTTbD8kz0N50D340/f3Hdw3AJ60YPTkVNcLfxW/
+	v6DhHTq4PyfEWF6dPqMizfh+b/NprAiS02qQ5zVHbm4QGq7xLyUHfrt+
+X-Gm-Gg: AZuq6aK5BeJUKXhnDz/Nbe3OdunFSv5v/OMGNn5tiJEtsOVinuJ6YTJa8iAWYHPmMZG
+	SbJ8zljsMsH97+xGY4ncI9NA+/jK77SNiMwQTr13GthToCCupj6p7NCsSNE8SkEJDY8UOreNK1b
+	OtK3s/D/t23ZICF+K2Xn0u4K71rl1g9y+LQouktkKM8a/xx9rLt7CjZle2qPvOpkwfb7u2HwIPb
+	fjnUAD/ZWX2nyvkn78PGSQkhz6Rfzov6QV3SonZ1HXoSN5YwBDJzxVptrcePSW9Gp8UibB/m9G5
+	sUfiUyoLJLYisfH0K99btNsNu6pE2/MHlmig5OD/5Equ53bmQjVKFkP/UGs32pwyjN7wpW64jl4
+	Tn5N8pzMP206TU80ZMNsHRhZJOSijaTDzYVn1Z9BD+VVkds5qt0laI64WXjUelbReO3gg9gtIQb
+	Dh+CKOUgwyZtuXpyeF7EGlUn9T/n8=
+X-Received: by 2002:a05:600c:5246:b0:483:71f7:2782 with SMTP id 5b1f17b1804b1-48373a14406mr108884505e9.12.1771107950050;
+        Sat, 14 Feb 2026 14:25:50 -0800 (PST)
+Received: from Ubuntu.. ([213.137.70.119])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43796ac8d46sm17135301f8f.32.2026.02.14.14.25.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 14 Feb 2026 14:25:49 -0800 (PST)
+From: Sarah Schwartz <sarah.schwartz025@gmail.com>
+To: a0583214067@gmail.com,
+	Sarah Schwartz <sarah.schwartz025@gmail.com>
+Cc: Greg KH <gregkh@linuxfoundation.org>,
+	sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: fix CamelCase warning for dBase
+Date: Sat, 14 Feb 2026 22:25:39 +0000
+Message-ID: <2026020450-shindig-starry-32fc@gregkh>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260204153856.23277-1-sarah.schwartz025@gmail.com>
+References: <20260204153856.23277-1-sarah.schwartz025@gmail.com>
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201]) (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits)) (No client certificate requested) by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10D94421A16; Wed,  4 Feb 2026 15:54:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 371C8C19423; Wed,  4 Feb 2026 15:54:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org; s=korg; t=1770220460; bh=RSORJ03ne4P+AXQgsb8E2FO6orKfDo+ustVJgXpZ7+I=; h=Date:From:To:Cc:Subject:References:In-Reply-To:From; b=OMj4Dl5FLduGGkbiXRA0GeeiD5moSjai0zPSDfAcAyMaTXsmx5vaPBi11IBLr+HX6 TmTIvOT+QsmKqRekKAaCDdNmsKNw7QDD4J6guvsgHlFKAizmt3NtMLTjmydziubYrQ 7kyuHEKwUUZ8B16HFP9LSfolLsHM9AT0I8XcqaK8=
+Precedence: bulk
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,198 +75,40 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <177110244909.2897141.11184148040863874004.pr-tracker-bot@kernel.org>
+Content-Transfer-Encoding: 8bit
+Message-ID: <20260214222539.5faayXRlmLXepHBqztNQJucf_WV55Z6iUTN76fuVa_k@z>
 
-Hi Linus,
+From: Greg KH <gregkh@linuxfoundation.org>
 
-* pr-tracker-bot@kernel.org <pr-tracker-bot@kernel.org>:
-> The pull request you sent on Sat, 14 Feb 2026 13:06:38 +0100:
+On Wed, Feb 04, 2026 at 03:38:56PM +0000, Sarah Schwartz wrote:
+> Rename variable dBase to d_base to fix a CamelCase warning reported by checkpath.pl
+> This aligns the code with the Linux kernel coding style.
 > 
-> > http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.0-rc1
+> Signed-off-by: Sarah Schwartz <sarah.schwartz025@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750_accel.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 > 
-> has been merged into torvalds/linux.git:
-> https://git.kernel.org/torvalds/c/8b3c75a39cc3cde78332f0e10898104a5e1e2807
+> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+> index 046b9282b..c77b0fe3b 100644
+> --- a/drivers/staging/sm750fb/sm750_accel.c
+> +++ b/drivers/staging/sm750fb/sm750_accel.c
+> @@ -136,7 +136,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+>   * @sPitch: Pitch value of source surface in BYTE
+>   * @sx: Starting x coordinate of source surface
+>   * @sy: Starting y coordinate of source surface
+> - * @dBase: Address of destination: offset in frame buffer
+> + * @d_base: Address of destination: offset in frame buffer
 
+what does the "d_" stand for here?
 
-Linus, I'm really sorry, but I messed up drivers/gpu/drm/Kconfig while
-trying to fix a merge conflict.
-My patch series should not have touched drivers/gpu/drm/Kconfig at all.
-That's purely my fault and not the fault of the patch author.
+Should that be dest_base instead?
 
-Can you please revert the changes done to drivers/gpu/drm/Kconfig by
-commit 8f582bcd132c ("drm/hyperv: Remove reference to hyperv_fb
-driver") or alternatively apply the patch below?
+>   * @dPitch: Pitch value of destination surface in BYTE
 
-Thanks,
-Helge
+Why ignore all of these other variables as well?
 
+thanks,
 
+greg k-h
 
-From ea47a4a9b1e9c0a665df5ef6e6b9bd3653c21d9e Mon Sep 17 00:00:00 2001
-From: Helge Deller <deller@gmx.de>
-Date: Sat, 14 Feb 2026 22:16:34 +0100
-Subject: [PATCH] Partly revert "drm/hyperv: Remove reference to hyperv_fb
- driver"
-
-This partly reverts commit 8f582bcd132cf1290e1fbd56b9f783dabe637dd4
-which was messed up by me while trying to fix a merge conflict.
-
-Signed-off-by: Helge Deller <deller@gmx.de>
-
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 65db9928439b..d3d52310c9cc 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -265,152 +265,6 @@ config DRM_SCHED
- 	tristate
- 	depends on DRM
- 
--source "drivers/gpu/drm/sysfb/Kconfig"
--
--source "drivers/gpu/drm/arm/Kconfig"
--
--source "drivers/gpu/drm/radeon/Kconfig"
--
--source "drivers/gpu/drm/amd/amdgpu/Kconfig"
--
--source "drivers/gpu/drm/nouveau/Kconfig"
--
--source "drivers/gpu/drm/nova/Kconfig"
--
--source "drivers/gpu/drm/i915/Kconfig"
--
--source "drivers/gpu/drm/xe/Kconfig"
--
--source "drivers/gpu/drm/kmb/Kconfig"
--
--config DRM_VGEM
--	tristate "Virtual GEM provider"
--	depends on DRM && MMU
--	select DRM_GEM_SHMEM_HELPER
--	help
--	  Choose this option to get a virtual graphics memory manager,
--	  as used by Mesa's software renderer for enhanced performance.
--	  If M is selected the module will be called vgem.
--
--source "drivers/gpu/drm/vkms/Kconfig"
--
--source "drivers/gpu/drm/exynos/Kconfig"
--
--source "drivers/gpu/drm/rockchip/Kconfig"
--
--source "drivers/gpu/drm/vmwgfx/Kconfig"
--
--source "drivers/gpu/drm/gma500/Kconfig"
--
--source "drivers/gpu/drm/udl/Kconfig"
--
--source "drivers/gpu/drm/ast/Kconfig"
--
--source "drivers/gpu/drm/mgag200/Kconfig"
--
--source "drivers/gpu/drm/armada/Kconfig"
--
--source "drivers/gpu/drm/atmel-hlcdc/Kconfig"
--
--source "drivers/gpu/drm/renesas/Kconfig"
--
--source "drivers/gpu/drm/sun4i/Kconfig"
--
--source "drivers/gpu/drm/omapdrm/Kconfig"
--
--source "drivers/gpu/drm/tilcdc/Kconfig"
--
--source "drivers/gpu/drm/qxl/Kconfig"
--
--source "drivers/gpu/drm/virtio/Kconfig"
--
--source "drivers/gpu/drm/msm/Kconfig"
--
--source "drivers/gpu/drm/fsl-dcu/Kconfig"
--
--source "drivers/gpu/drm/tegra/Kconfig"
--
--source "drivers/gpu/drm/stm/Kconfig"
--
--source "drivers/gpu/drm/panel/Kconfig"
--
--source "drivers/gpu/drm/bridge/Kconfig"
--
--source "drivers/gpu/drm/sti/Kconfig"
--
--source "drivers/gpu/drm/imx/Kconfig"
--
--source "drivers/gpu/drm/ingenic/Kconfig"
--
--source "drivers/gpu/drm/v3d/Kconfig"
--
--source "drivers/gpu/drm/vc4/Kconfig"
--
--source "drivers/gpu/drm/loongson/Kconfig"
--
--source "drivers/gpu/drm/etnaviv/Kconfig"
--
--source "drivers/gpu/drm/hisilicon/Kconfig"
--
--source "drivers/gpu/drm/logicvc/Kconfig"
--
--source "drivers/gpu/drm/mediatek/Kconfig"
--
--source "drivers/gpu/drm/mxsfb/Kconfig"
--
--source "drivers/gpu/drm/meson/Kconfig"
--
--source "drivers/gpu/drm/tiny/Kconfig"
--
--source "drivers/gpu/drm/pl111/Kconfig"
--
--source "drivers/gpu/drm/tve200/Kconfig"
--
--source "drivers/gpu/drm/xen/Kconfig"
--
--source "drivers/gpu/drm/vboxvideo/Kconfig"
--
--source "drivers/gpu/drm/lima/Kconfig"
--
--source "drivers/gpu/drm/panfrost/Kconfig"
--
--source "drivers/gpu/drm/panthor/Kconfig"
--
--source "drivers/gpu/drm/aspeed/Kconfig"
--
--source "drivers/gpu/drm/mcde/Kconfig"
--
--source "drivers/gpu/drm/tidss/Kconfig"
--
--source "drivers/gpu/drm/adp/Kconfig"
--
--source "drivers/gpu/drm/xlnx/Kconfig"
--
--source "drivers/gpu/drm/gud/Kconfig"
--
--source "drivers/gpu/drm/sitronix/Kconfig"
--
--source "drivers/gpu/drm/solomon/Kconfig"
--
--source "drivers/gpu/drm/sprd/Kconfig"
--
--source "drivers/gpu/drm/imagination/Kconfig"
--
--source "drivers/gpu/drm/tyr/Kconfig"
--
--config DRM_HYPERV
--	tristate "DRM Support for Hyper-V synthetic video device"
--	depends on DRM && PCI && HYPERV_VMBUS
--	select DRM_CLIENT_SELECTION
--	select DRM_KMS_HELPER
--	select DRM_GEM_SHMEM_HELPER
--	help
--	 This is a KMS driver for Hyper-V synthetic video device. Choose this
--	 option if you would like to enable drm driver for Hyper-V virtual
--	 machine.
--
--	 If M is selected the module will be called hyperv_drm.
--
- # Separate option as not all DRM drivers use it
- config DRM_PANEL_BACKLIGHT_QUIRKS
- 	tristate

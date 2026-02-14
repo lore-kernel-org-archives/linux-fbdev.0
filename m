@@ -1,114 +1,110 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
+Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com [209.85.208.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D03CD314B77
-	for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 22:25:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 734C323D7CF
+	for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 22:48:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771107953; cv=none; b=eCzvjziuG7JgCX2lv9tIptEQ5qj9D1xFc2g7mDl1t861LHwpPsFoUPPbRuTn9rKPY1rG3MpyL1PIteXKbxHyGdResi5xVRWKPipkWoYQ6Naia71QCvGeClRpt5Bp9VOL6Ud8b/xiOUY3WakxKfHsR1aD2mHXZRkQtBl2jurbezE=
+	t=1771109287; cv=none; b=OqHCOzBl38R88/ha1JwcRj6pbOc1F9RxsMd1BzvIvVreE93u+VssZBRgXynF8tJLxNrD6hkk1V7RPjsDqoyxO0sChb2Q3KNT5ZBGwzqueKqG4AGMaHUhfgRtiX4O6/fXFPBLKKuNmIOl3WxZ7VpV/CBHCnayj+uTY7/bVX60bdo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771107953; c=relaxed/simple;
-	bh=gPB8/WX4QlbC0B2UxTWMVblFHmuSf4ny8gF3oefmnWk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type:Content-Disposition; b=c1vJdDXANDemHoIpOBDCO1+G1tductJpiMLUlxZossnNRnledsOuWNmsfLXe0wCbFdxdIHLT4PF8ZjCEoCe3sL0G+I7HEhxmgFBnctZvWhxQD5J3V6tvsOuBJYRgmlIErnXrjUZrPkox9tA241rSsrV24k6be1Tt2BGW6u2HbVE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=fail (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=OMj4Dl5F reason="signature verification failed"; arc=none smtp.client-ip=10.30.226.201; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1771109287; c=relaxed/simple;
+	bh=LbE5Z72PD3MPJ43Bce1pDWGIiyWmIGts/W+3nAK+cjs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=N2jpRua79tj0OAQRst40k/kmJGy3S4WLPBRIbIi5nv3kzAm8lLiqo9Mp0xpcfV/myJ0uXtRwJSyxEjHwJV0l8dIqZC08Q/oT5Ry2tryVJdvixVY0NNfqchDbwuo4dxdjn5A9hiuGOiKCnBXWCCnbmj1FTTnP9PH44mUOawRkWFc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=ap1zvP/c; arc=none smtp.client-ip=209.85.208.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="OMj4Dl5F"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-48371119eacso18904425e9.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 14:25:51 -0800 (PST)
+	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="ap1zvP/c"
+Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-65940221f7eso3512192a12.0
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 14:48:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google; t=1771109284; x=1771714084; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=mYkdhtRoL4GjkDCyjPYy3UUZTydOkdf7syWKV5f5AgY=;
+        b=ap1zvP/co68pfYmG+93DgHX4MimyvyH5mdFE4b0VoWKuhRCnbyn2gkjyazIleQKXE9
+         IACJ9A25sGHHn80gc+VwbQPWGTaupw3W83rjJtv+qxnCW6e6UL8SChwpb8IqcyLSeviT
+         IPjk42byPpDGm1/ZdfrOT0nJoHjMs7f3E5ue8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771107950; x=1771712750;
-        h=content-transfer-encoding:content-disposition:mime-version
-         :list-unsubscribe:list-subscribe:list-id:precedence:dkim-signature
-         :references:in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=pwU1h6E+8PFMX0KJbuF6T0udAVN+SodXJVv8cPdeK5Y=;
-        b=Ex8YT9XI0un2ZceBUiytFL/fwtivn3Z91+tFVjBM3KSjXtwSnrngB8rM37PlFImF73
-         TemF4Hp7f9bMAZjgm4zMNaDvnZmVp7naMPPLFNZzBp8rtsTBCL7szJdKR0s1FJKBtLh9
-         3ukqpAKXnq6Mp9eIy/VLAyv3oOEHJ2mGO6bRK/zmG6KIpFimPCh2AdtCODfPMRNUfLEX
-         hjGIBSvYeDLgZPrYURrPBMyODOr0bqvdqY7nMYS4TJYdNE17BDXKpgAYzi4hdz+RqHdb
-         xBArvi5ZkELysEBLlNqrk97TcXGZJPNWXrf9yFpQHEL3cL80c2fej0dcIPZpLYbYNCPm
-         CVig==
-X-Forwarded-Encrypted: i=1; AJvYcCU1t79PyrtWV26reOIV6tZT7T3n+WFzZsToJ8XjKWR1wzfU6U/U7VtZmqmE9y8p6R/SSq2RokIPgfO6xA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YztsvhsGvqN8TTTbD8kz0N50D340/f3Hdw3AJ60YPTkVNcLfxW/
-	v6DhHTq4PyfEWF6dPqMizfh+b/NprAiS02qQ5zVHbm4QGq7xLyUHfrt+
-X-Gm-Gg: AZuq6aK5BeJUKXhnDz/Nbe3OdunFSv5v/OMGNn5tiJEtsOVinuJ6YTJa8iAWYHPmMZG
-	SbJ8zljsMsH97+xGY4ncI9NA+/jK77SNiMwQTr13GthToCCupj6p7NCsSNE8SkEJDY8UOreNK1b
-	OtK3s/D/t23ZICF+K2Xn0u4K71rl1g9y+LQouktkKM8a/xx9rLt7CjZle2qPvOpkwfb7u2HwIPb
-	fjnUAD/ZWX2nyvkn78PGSQkhz6Rfzov6QV3SonZ1HXoSN5YwBDJzxVptrcePSW9Gp8UibB/m9G5
-	sUfiUyoLJLYisfH0K99btNsNu6pE2/MHlmig5OD/5Equ53bmQjVKFkP/UGs32pwyjN7wpW64jl4
-	Tn5N8pzMP206TU80ZMNsHRhZJOSijaTDzYVn1Z9BD+VVkds5qt0laI64WXjUelbReO3gg9gtIQb
-	Dh+CKOUgwyZtuXpyeF7EGlUn9T/n8=
-X-Received: by 2002:a05:600c:5246:b0:483:71f7:2782 with SMTP id 5b1f17b1804b1-48373a14406mr108884505e9.12.1771107950050;
-        Sat, 14 Feb 2026 14:25:50 -0800 (PST)
-Received: from Ubuntu.. ([213.137.70.119])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43796ac8d46sm17135301f8f.32.2026.02.14.14.25.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Feb 2026 14:25:49 -0800 (PST)
-From: Sarah Schwartz <sarah.schwartz025@gmail.com>
-To: a0583214067@gmail.com,
-	Sarah Schwartz <sarah.schwartz025@gmail.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>,
-	sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: fix CamelCase warning for dBase
-Date: Sat, 14 Feb 2026 22:25:39 +0000
-Message-ID: <2026020450-shindig-starry-32fc@gregkh>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260204153856.23277-1-sarah.schwartz025@gmail.com>
-References: <20260204153856.23277-1-sarah.schwartz025@gmail.com>
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201]) (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits)) (No client certificate requested) by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10D94421A16; Wed,  4 Feb 2026 15:54:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 371C8C19423; Wed,  4 Feb 2026 15:54:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org; s=korg; t=1770220460; bh=RSORJ03ne4P+AXQgsb8E2FO6orKfDo+ustVJgXpZ7+I=; h=Date:From:To:Cc:Subject:References:In-Reply-To:From; b=OMj4Dl5FLduGGkbiXRA0GeeiD5moSjai0zPSDfAcAyMaTXsmx5vaPBi11IBLr+HX6 TmTIvOT+QsmKqRekKAaCDdNmsKNw7QDD4J6guvsgHlFKAizmt3NtMLTjmydziubYrQ 7kyuHEKwUUZ8B16HFP9LSfolLsHM9AT0I8XcqaK8=
-Precedence: bulk
+        d=1e100.net; s=20230601; t=1771109284; x=1771714084;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=mYkdhtRoL4GjkDCyjPYy3UUZTydOkdf7syWKV5f5AgY=;
+        b=D2Q0kRKqDDyKEu6iUPez3HWuCptGsRLPfz5D2SkxZnRPvMZYW+G+0XcDYeahTZ3NpZ
+         2ZA6o2GmyRj3Hru6KCWCy6+5315TlyEHs2QrkJc4c8Zm8M3CsNNYsdzZhvFCir7dyWrg
+         1EQXWrWME/c8v3wd2Wpyes4we35OFKfqwiZ4B0aJQ0Qc0RTHi8ZyVoOmzbN8DwCEBQmX
+         QAuVXj8vjE9bdjhI9H2ERcydBheQeudREn8fiN8WKMrjb1FF9UbjPiyB+ocTUUNMUUzN
+         KbADTSREatAwKHY0cWcO+tpy9GMD03JCuTflDLX0qMbMqRdl9mZQuR+Ik2e28ZQUB92y
+         YN3w==
+X-Forwarded-Encrypted: i=1; AJvYcCX5uvunLIpajh+1g+PIXqZa84H5ZtvGu+F6BSnJDAf8cctLzyyBRxZWljV51bnfENh9nwoigf1gClopsg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyn2WCfyXwSAKUuCL/BX6zypcVb3P7ai/nWSnH0mF5gjNjncwik
+	uKm8F1Yq0ZPnBdm0rUPHlbh8kfeiZEM4BiwkD2KIofwsUot3SoLa8lPLuhki+dVww/STeYVFFU1
+	lxBtGLPQ=
+X-Gm-Gg: AZuq6aL+I1Etro0j0HaoR1FJKEEBEE0UDf9x2VCK7tEExmkCI6rv5ktwG1hgmmoeWfC
+	/jnq6jL/jInCEmXYg16hchNtease8TeIOecHm5U3nK0qthFsDT3DnzUAU34cD5+a1Jdm8LDzFab
+	MegJbp3Qr9APpE78lzwO49foVitrenK0821pGl/RaLTsYCEVFRO5Ml/BJ5XZjJD0sd/hd8utyJD
+	woKbTpRnbWXbpcc6oG3tBqj2nbsTSkt64n4B1uTnWjctXVLNCy/DMZUMW0DaINorFNTClKfuRso
+	+bKQIwocyiNJjDgq0p1MFL1qJGmDwAy7oiZLcd4oYoqExiaPfayXpXY5z6fKXtS/BMYuS9WTvJt
+	hc2R1b90WpSno1m8FT7rgPMS44N/bAJjzrO4AStaDO2Lr+qEV/FMmSOW9kV5PE4lDtf/wVwsf6l
+	sd8l5ODhnx+Faou225OGYd1wa9lBNq/rJU2h8tlFy9ACHHj1xtHzRpeO+pS1Ughr/z9g5AljRx6
+	a53LDTO7MM=
+X-Received: by 2002:a17:907:1c83:b0:b88:21cd:5fcc with SMTP id a640c23a62f3a-b8face2b48cmr347937866b.36.1771109284456;
+        Sat, 14 Feb 2026 14:48:04 -0800 (PST)
+Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com. [209.85.218.48])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8fc735e587sm105894266b.2.2026.02.14.14.48.03
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 14 Feb 2026 14:48:03 -0800 (PST)
+Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-b885a18f620so267226366b.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 14:48:03 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUKRuqLptcjLAfieAZrDU1RY3ORFRyN3s8sJK7adQ3W+3B8e5fYTbCAY737pz9Cruz5C5Ib1ZYwZkv8TA==@vger.kernel.org
+X-Received: by 2002:a17:906:7303:b0:b8f:6f75:f9e with SMTP id
+ a640c23a62f3a-b8facca23a8mr343042466b.1.1771109283474; Sat, 14 Feb 2026
+ 14:48:03 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-Message-ID: <20260214222539.5faayXRlmLXepHBqztNQJucf_WV55Z6iUTN76fuVa_k@z>
+References: <aZBlTsIwTzS0tqBD@carbonx1> <177110244909.2897141.11184148040863874004.pr-tracker-bot@kernel.org>
+ <aZDpCUcIXLmuydoF@carbonx1>
+In-Reply-To: <aZDpCUcIXLmuydoF@carbonx1>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 14 Feb 2026 14:47:47 -0800
+X-Gmail-Original-Message-ID: <CAHk-=wj03hLzK2D=+OYmjgcmGM+XYymp8GyaEs=C0=rXG2nb7w@mail.gmail.com>
+X-Gm-Features: AaiRm50HHjVAcxBlyn1res84hJ74BQRuPE9I7BE6WlfzWIM12HlM8cBqswuaZQA
+Message-ID: <CAHk-=wj03hLzK2D=+OYmjgcmGM+XYymp8GyaEs=C0=rXG2nb7w@mail.gmail.com>
+Subject: Re: [GIT PULL] fbdev fixes and updates for v7.0-rc1
+To: Helge Deller <deller@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
+	Nicolas Schier <nsc@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, 
+	Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Greg KH <gregkh@linuxfoundation.org>
+[ Adding Kconfig maintainers and linux-kbuild list ]
 
-On Wed, Feb 04, 2026 at 03:38:56PM +0000, Sarah Schwartz wrote:
-> Rename variable dBase to d_base to fix a CamelCase warning reported by checkpath.pl
-> This aligns the code with the Linux kernel coding style.
-> 
-> Signed-off-by: Sarah Schwartz <sarah.schwartz025@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750_accel.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-> index 046b9282b..c77b0fe3b 100644
-> --- a/drivers/staging/sm750fb/sm750_accel.c
-> +++ b/drivers/staging/sm750fb/sm750_accel.c
-> @@ -136,7 +136,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
->   * @sPitch: Pitch value of source surface in BYTE
->   * @sx: Starting x coordinate of source surface
->   * @sy: Starting y coordinate of source surface
-> - * @dBase: Address of destination: offset in frame buffer
-> + * @d_base: Address of destination: offset in frame buffer
+On Sat, 14 Feb 2026 at 13:30, Helge Deller <deller@kernel.org> wrote:
+>
+> Linus, I'm really sorry, but I messed up drivers/gpu/drm/Kconfig while
+> trying to fix a merge conflict.
+> My patch series should not have touched drivers/gpu/drm/Kconfig at all.
+> That's purely my fault and not the fault of the patch author.
 
-what does the "d_" stand for here?
+Humm. Funky how the Kconfig parts never complained about the
+duplication of all those source lines, so the problem was basically
+entirely hidden and things still "worked" even though that Kconfig
+file had been so messed up.
 
-Should that be dest_base instead?
+I'm not sure if the Kconfig tools could perhaps warn about this kind
+of duplication - we might have some of it intentionally - but it does
+make me go "Hmm".
 
->   * @dPitch: Pitch value of destination surface in BYTE
+Nathan, Nicolas, comments? See that commit ca4ee40bf13d for the
+partial revert, and notice how Kconfig is entirely happy both before
+and after that..
 
-Why ignore all of these other variables as well?
-
-thanks,
-
-greg k-h
-
+                Linus

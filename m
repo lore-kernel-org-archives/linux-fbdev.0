@@ -1,96 +1,124 @@
-Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com [209.85.128.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E60BA2F6920
-	for <linux-fbdev@vger.kernel.org>; Fri, 13 Feb 2026 23:36:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DDF726299;
+	Sat, 14 Feb 2026 01:56:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771025811; cv=none; b=gS3O+uMDIRDHgFtONXwl0ok68RPxJwIXvRaW7YVTn6jO1yYtzjA5Spcq/oSi6KLqk9tfmgfConUfbIBOZ39XDwurCLJOKe2fx325Ggw9lS1tzGNCjpbwBTR/d4MRlQQv06HfWZtLq5d8RqA0GG3GUmKtbVhTqG2VfRmTKFBC8MA=
+	t=1771034201; cv=none; b=LcAhHH98U6JTDq9Nyx1F1UsqrDULXLKGpaVvCDaWovHaOuVI3o8sBjvQvd6xEK/OKJsUsNArlT455az1JnzH3xpsu9aKPVxYX1M6EDZ+IGpxVee/RMrudQL6zA7KeLmzIKxq7zFf9HLgIya31eqlkAZIRCdc0zEz1tX8wYhVRjY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771025811; c=relaxed/simple;
-	bh=dQ7PAAK/uBgMQmRMuh76TGAZVvMWjI3NugKBqmwfRp8=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=dygDbA1ROivzp6hicBBBO0Mr4gdLZK7kf/FE4YDg65Mhwzohg+AlAn0ptyF51ljSRLTG3LUHvgzYoj4J9ZLiRobum8vZ/fCB/W3pqtNKvkB8IsSilZhGqC84yJnDPo3F4TD1Fzmz+Pb8dBQbVRhT3Ah706F1DJJThCyy8npanzU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=iMYEa5ku; arc=none smtp.client-ip=209.85.128.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1771034201; c=relaxed/simple;
+	bh=y0qFDWHJzfmp+ZG3ctiKK8oU8El8fnF24uYzp+cdIrw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Czc3HniHUXZMSnHtQr4/I2+e2ajEsmZ2jYEuTerEkvRQbKOsixT8KT+UT/9dzqDTz6LGPwNO2e61QmOtYrHGDMwF5wS6PNiOt+/oDpV7s4s990iTBrUYsYSGNR6bfmKJDNiGhT8W8N+G47r6i/Fw+r0gfNoX879UIJmDsNBoJQM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=Sb+n9RJl; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=kiWXtmdX; arc=none smtp.client-ip=193.142.43.55
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iMYEa5ku"
-Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-794fe698e36so15021397b3.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 13 Feb 2026 15:36:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771025809; x=1771630609; darn=vger.kernel.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dQ7PAAK/uBgMQmRMuh76TGAZVvMWjI3NugKBqmwfRp8=;
-        b=iMYEa5kub5I1Y+R4BqzrHkg0//7H1mmj9RjSr2pUISUIw3KHp97ACDeILRxDJp9VF+
-         TJ9jERPn59mroOQ0/W3achxVi2oCbM951pUHONX6t9tcpUBqc9P01lTINq/rnpThy2+s
-         uAOq4ySU16/ZsPc5YEswGf2IVbVTJg5a+/4ztQIXZgQGv/TlErsQAL3pHmDQnfvm5FmT
-         8ammwh0XGV1Ah/6HCiSDZoUpYEl29l3xvbeFbXTl+aQ8CJOrzTdTvDmNCMDKUeuTGk0H
-         xxXY4b9X5zCydIdu8aOhncuXGNraryxnrOXMu4okME834DlUYiQMfuMm/ot0kpP9ol+T
-         TzrA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771025809; x=1771630609;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=dQ7PAAK/uBgMQmRMuh76TGAZVvMWjI3NugKBqmwfRp8=;
-        b=VoMv7EL7mMxm4xIEpqWu1eGIfmpPYWdgac/SxkQlk7LynxpvTcuJo9czsm422AZUOI
-         lgmkKVkPRbAIMlfzTj3QfPadngacIlWuxypWZpccfAyICLzPc+jf7R496rhn7FzHKbYk
-         vd26dSO0q8YW8G1OH5PQSLVyyxwH4kW5PZXWuiekABeRnH3H5DPZDM19y86DixiYaJSv
-         YAT4iQJzKTag3m71199X57U2tCWNWJsGkUovs62+KbF771LGt/OGVZsWyITI94Q58Kdc
-         zkJ0NxmVydd0lt2yOpXZD6SPayKeecAFVJ17lWzUYTzgahhAM32TKTpe9QAVc8GurH2y
-         6Nmw==
-X-Gm-Message-State: AOJu0YzKwRnpeffE/DnBJ5YjArAI9PUQ48NioIorGG398BB2I3o8qpGF
-	CBuwISJI2OMM6SfvPLoX9OgUEhPuQ9K4JbwDKNQpM2+gq3DtzEbmyumE
-X-Gm-Gg: AZuq6aLPxeayl8fUHLLv0JQA7nKIk48WA+CLBfXVe1rWD4ZV4wOGZ9mPlk/b5tWIVoa
-	yssvELYcBB6ouMx+kZAv3ndHP3TjLQQuffqyqlZXREin1LLDOy508jZwWIy4BIS136EojskA040
-	4CD+gGz1i7i4u4bJRfPy80QcEHesrbHCPQyQhRhN1j5/vi2vOOWu4QBgjnNjG46hwtngzqzSCcb
-	7LxDUfrGMW3o087rIHCokOauzoRTRSCcw5f+/FXgxr6Ef6IpY5zcS49h3BHEt+5Ckd/GjPfFjWH
-	7rxg2+3FhBMQN3QhsUEeoNENKpIqIlxRta6LHMov/7NU3XqrTljeu0oPDy98HY/U0A39HQywWbk
-	PnbossznpP5aOC6k5PLwYrDISHCuUs4b7ZezxVI0MEsVcDOCseV+b7aSSc/hvqGIxLToOX4v2vy
-	O1ICv8R0+8lX28BcAd+Tx68xfryV5HG295uuzEeJUcbV7otqW9exOjNmYTUvJcs+i7UzSjQ66MO
-	wVOef4FqznsXa2RQlpWDy7qAfpO+wZrSDv/B6HehsN2I6gweCa46cNsYqVRng==
-X-Received: by 2002:a05:690c:101:b0:796:44e0:abb8 with SMTP id 00721157ae682-797a0c69eb5mr29435987b3.31.1771025808917;
-        Fri, 13 Feb 2026 15:36:48 -0800 (PST)
-Received: from localhost ([2601:7c0:c37c:4c00:e3a8:26f7:7e08:88e1])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-7966c267f4bsm76265707b3.50.2026.02.13.15.36.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 13 Feb 2026 15:36:48 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Sb+n9RJl";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="kiWXtmdX"
+From: Nam Cao <namcao@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1771034191;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6HUCehdSv7BWEJjhfmdtQXE6xdl/l2tpt/Faur9ywDM=;
+	b=Sb+n9RJlLw5aRhJL1coedSR3IQEhPxX/eo229RhG4uPC2hnFkwLuT2zI+FdI6ZXzu3s5co
+	KG1y+JSZU8IhSqjtOf3bOpOYdPeJXhepdXfcYVKnLdMVMjM3kRk3KMObWwypooQB3N2rOi
+	8YkceM0/YY0nkhphPqPMlzZL2WHtk92ZyFbxn02Bquw/O4TYjw7/Yzv33TrTGo4dt5Fz20
+	5jtoQjXrsAVovBDp44ErUhpBUOkR/XUjge0ZbxRAGyJxnh4iJnwWM/+L3UNqHZIP2fTKIe
+	+xC8JMWnSqZBsE/NNrLv6aQgFhKIkBFisYtTD8Xd30riJa5sdXAcGPymVFO+jw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1771034191;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6HUCehdSv7BWEJjhfmdtQXE6xdl/l2tpt/Faur9ywDM=;
+	b=kiWXtmdX2JmlffBLFKeHYNy6wTbO5pOzAxmHN1tFbK0Ip2jAX3qWh022l6VUsKxHxT25z6
+	j9oQv4p0GxM06vCQ==
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: Andy Shevchenko <andy@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: Optimize partial write()
+In-Reply-To: <aY76ixvOUEkvoPk0@smile.fi.intel.com>
+References: <20260213085946.3673695-1-namcao@linutronix.de>
+ <aY76ixvOUEkvoPk0@smile.fi.intel.com>
+Date: Sat, 14 Feb 2026 08:56:09 +0700
+Message-ID: <87bjhsqe9y.fsf@yellow.woof>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 13 Feb 2026 17:36:32 -0600
-Message-Id: <DGE88XETJ97W.1LGV5U59Z9W9Q@gmail.com>
-Cc: <linux-fbdev@vger.kernel.org>, <linux-staging@lists.linux.dev>,
- <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v4] staging: sm750fb: Rename nDirection to new_direction
-From: "Ethan Tidmore" <ethantidmore06@gmail.com>
-To: "RachelOvrani" <rachel.ovrani@gmail.com>, <sudipm.mukherjee@gmail.com>,
- <teddy.wang@siliconmotion.com>, <gregkh@linuxfoundation.org>
-X-Mailer: aerc 0.21.0-0-g5549850facc2
-References: <20260212180402.69356-1-rachel.ovrani@gmail.com>
-In-Reply-To: <20260212180402.69356-1-rachel.ovrani@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 
-On Thu Feb 12, 2026 at 12:04 PM CST, RachelOvrani wrote:
-> Rename the variable 'nDirection' to 'new_direction'
-> to fix the warning reported by checkpatch.pl
+Andy Shevchenko <andriy.shevchenko@intel.com> writes:
+> On Fri, Feb 13, 2026 at 09:59:46AM +0100, Nam Cao wrote:
+>> When user write() only to part of the screen, the driver still updates the
+>> entire screen. That wastes CPU cycles.
+>> 
+>> Optimize by updating only the changed lines. Improvement is measured by a
+>> pair of trace_printk() at the beginning of fb_write() and at the end of
+>> fbtft_deferred_io().
 >
-> Signed-off-by: RachelOvrani <rachel.ovrani@gmail.com>
-> ---
+> Can you elaborate on the HW (the exact model of the panel and [sub]driver)
+> in use?
 
-Hi,
+My hardware is the Adafruit's ILI9340. Driver is fbtft/fb_ili9340.c.
 
-This issue has already been fixed in staging-next. Next time when making
-patches for staging use staging-next to avoid submitting fixes for
-issues that have already been fixed.
+...
+>> -	/* special case, needed ? */
+>
+> Do you know the history of this comment? What is "special case" and when does it appear?
 
-Thanks,
+This allows caller to pass -1 to "make dirty" the entire screen. The
+only caller that uses this special case is removed in this patch.
 
-ET
+...
+>>  static void fbtft_ops_damage_range(struct fb_info *info, off_t off, size_t len)
+>>  {
+>>  	struct fbtft_par *par = info->par;
+>> +	u32 start, end;
+>> +
+>> +	start = off / info->fix.line_length;
+>> +	end = (off + len - 1) / info->fix.line_length;
+>>  
+>> -	/* TODO: only mark changed area update all for now */
+>
+> Ah, this change actually targets the TODO!
+>
+>> -	par->fbtftops.mkdirty(info, -1, 0);
+>> +	par->fbtftops.mkdirty(info, start, end - start + 1);
+>>  }
+>
+> ...
+>
+> In light of the last TODO line I think that the change is desired by
+> the original author. Nevertheless I am wondering about these side effects
+> that might be (very unlikely?) considered if this code (partial refresh)
+> runs for a significant period of time:
+>
+> - some bits of the screen (on non-updated part) might be flipped
+> - the static picture may lead to wearing of (decolourisation) the panel
+> - what is the thermal distribution (probably with backlight off)?
+>
+> Maybe it makes sense to refresh a full screen from time to time, but
+> TBH my knowledge of TFT panels from last decade is quite limited. I only
+> think from the point of the general physics and common sense. That's
+> why this long footnote rather philosophical, but I would be glad to
+> learn the state of affairs of the modern TFT panels in terms of the
+> physical parameters lasting over the time under different application
+> cases.
+
+I can't tell you much about TFT panels, sorry. My company used to do a
+demo board with one of them, that's how I have some hardware to play with.
+
+If user uses mmap() instead of write(), then full refresh is never done
+(well, unless user writes to the entire screen). So if lack of refresh
+is a problem, someone should have noticed already.
+
+Nam

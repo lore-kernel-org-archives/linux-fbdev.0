@@ -1,110 +1,125 @@
-Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com [209.85.208.49])
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 734C323D7CF
-	for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 22:48:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 045861E47C5
+	for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 13:58:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771109287; cv=none; b=OqHCOzBl38R88/ha1JwcRj6pbOc1F9RxsMd1BzvIvVreE93u+VssZBRgXynF8tJLxNrD6hkk1V7RPjsDqoyxO0sChb2Q3KNT5ZBGwzqueKqG4AGMaHUhfgRtiX4O6/fXFPBLKKuNmIOl3WxZ7VpV/CBHCnayj+uTY7/bVX60bdo=
+	t=1771163938; cv=none; b=T72G34mZpCvPH9g3Fs06CMSNtBUostFIKFRHvLLR3P5CE+FCNtgDRKBS/GHeORYEyQddYdDcfKa2JiihafZiO/Ew0/ije1lj0It4tHLg8W0FfYdOg8VvJz808TL3vrhiHdt424S1cdVccxZmEoJFVbn3SQb6y5aMlr0hETIKj7U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771109287; c=relaxed/simple;
-	bh=LbE5Z72PD3MPJ43Bce1pDWGIiyWmIGts/W+3nAK+cjs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=N2jpRua79tj0OAQRst40k/kmJGy3S4WLPBRIbIi5nv3kzAm8lLiqo9Mp0xpcfV/myJ0uXtRwJSyxEjHwJV0l8dIqZC08Q/oT5Ry2tryVJdvixVY0NNfqchDbwuo4dxdjn5A9hiuGOiKCnBXWCCnbmj1FTTnP9PH44mUOawRkWFc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; spf=pass smtp.mailfrom=linuxfoundation.org; dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b=ap1zvP/c; arc=none smtp.client-ip=209.85.208.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
+	s=arc-20240116; t=1771163938; c=relaxed/simple;
+	bh=9uUi7nXMjeT93n+Xkdzqc2t9wJ4cGV5DzI4vsf5mkaU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=gJBtUM738KuB7tmQoce6UwoXwLcoCjPkRfla+hHvIt15QToOa+RlLDbEKberE9nc/pb7TnuuBI4rzymlbCSXx2cBx4SzXcyjeDa+aWoFeKRd+0Aw0vljaTqLLxOglAsHKSGKxccq0vVFx2X38mRkZz7g7io08/M0V9mwHptxESo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=A3XMBy0d; arc=none smtp.client-ip=209.85.128.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="ap1zvP/c"
-Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-65940221f7eso3512192a12.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 14:48:06 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="A3XMBy0d"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-482f2599980so26027965e9.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 05:58:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1771109284; x=1771714084; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=mYkdhtRoL4GjkDCyjPYy3UUZTydOkdf7syWKV5f5AgY=;
-        b=ap1zvP/co68pfYmG+93DgHX4MimyvyH5mdFE4b0VoWKuhRCnbyn2gkjyazIleQKXE9
-         IACJ9A25sGHHn80gc+VwbQPWGTaupw3W83rjJtv+qxnCW6e6UL8SChwpb8IqcyLSeviT
-         IPjk42byPpDGm1/ZdfrOT0nJoHjMs7f3E5ue8=
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1771163934; x=1771768734; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=GMS55t/V9fY9Xp7NFJdKphTgR5hjSDfiqXHxnjBq6kw=;
+        b=A3XMBy0dPQeh+wwFMUjE5tX3rZYTT5nf504L1NS7x5g/A/9eUD41kbBiVngLyF2jGe
+         cHGsdStrj6Kr3ldhcCjzzt4rBt/Og6oRq+fUWHUveS3Zcp46AlTlMOibiMnjdARRJTke
+         ZCtBRmyGoIWZkjr5A9tygtogdA+DtbYa1CENA+VJ337skRbFCHq5L4rCWq5M1buxl/GR
+         hKrqk/47jhIcBgCjd8SPTEmbiOJWRAAdLESRt/r4qh87eK4Bt8HHwGoetTVjfUqymly3
+         bOmi2R+/9u3U4dUWZ0n6BANz41TlsGbU24ou4vQAqvq2Pw7SBdheAeL7/kPdKTpgIdsw
+         1lFA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771109284; x=1771714084;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20230601; t=1771163934; x=1771768734;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=mYkdhtRoL4GjkDCyjPYy3UUZTydOkdf7syWKV5f5AgY=;
-        b=D2Q0kRKqDDyKEu6iUPez3HWuCptGsRLPfz5D2SkxZnRPvMZYW+G+0XcDYeahTZ3NpZ
-         2ZA6o2GmyRj3Hru6KCWCy6+5315TlyEHs2QrkJc4c8Zm8M3CsNNYsdzZhvFCir7dyWrg
-         1EQXWrWME/c8v3wd2Wpyes4we35OFKfqwiZ4B0aJQ0Qc0RTHi8ZyVoOmzbN8DwCEBQmX
-         QAuVXj8vjE9bdjhI9H2ERcydBheQeudREn8fiN8WKMrjb1FF9UbjPiyB+ocTUUNMUUzN
-         KbADTSREatAwKHY0cWcO+tpy9GMD03JCuTflDLX0qMbMqRdl9mZQuR+Ik2e28ZQUB92y
-         YN3w==
-X-Forwarded-Encrypted: i=1; AJvYcCX5uvunLIpajh+1g+PIXqZa84H5ZtvGu+F6BSnJDAf8cctLzyyBRxZWljV51bnfENh9nwoigf1gClopsg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyn2WCfyXwSAKUuCL/BX6zypcVb3P7ai/nWSnH0mF5gjNjncwik
-	uKm8F1Yq0ZPnBdm0rUPHlbh8kfeiZEM4BiwkD2KIofwsUot3SoLa8lPLuhki+dVww/STeYVFFU1
-	lxBtGLPQ=
-X-Gm-Gg: AZuq6aL+I1Etro0j0HaoR1FJKEEBEE0UDf9x2VCK7tEExmkCI6rv5ktwG1hgmmoeWfC
-	/jnq6jL/jInCEmXYg16hchNtease8TeIOecHm5U3nK0qthFsDT3DnzUAU34cD5+a1Jdm8LDzFab
-	MegJbp3Qr9APpE78lzwO49foVitrenK0821pGl/RaLTsYCEVFRO5Ml/BJ5XZjJD0sd/hd8utyJD
-	woKbTpRnbWXbpcc6oG3tBqj2nbsTSkt64n4B1uTnWjctXVLNCy/DMZUMW0DaINorFNTClKfuRso
-	+bKQIwocyiNJjDgq0p1MFL1qJGmDwAy7oiZLcd4oYoqExiaPfayXpXY5z6fKXtS/BMYuS9WTvJt
-	hc2R1b90WpSno1m8FT7rgPMS44N/bAJjzrO4AStaDO2Lr+qEV/FMmSOW9kV5PE4lDtf/wVwsf6l
-	sd8l5ODhnx+Faou225OGYd1wa9lBNq/rJU2h8tlFy9ACHHj1xtHzRpeO+pS1Ughr/z9g5AljRx6
-	a53LDTO7MM=
-X-Received: by 2002:a17:907:1c83:b0:b88:21cd:5fcc with SMTP id a640c23a62f3a-b8face2b48cmr347937866b.36.1771109284456;
-        Sat, 14 Feb 2026 14:48:04 -0800 (PST)
-Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com. [209.85.218.48])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b8fc735e587sm105894266b.2.2026.02.14.14.48.03
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 14 Feb 2026 14:48:03 -0800 (PST)
-Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-b885a18f620so267226366b.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 14 Feb 2026 14:48:03 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUKRuqLptcjLAfieAZrDU1RY3ORFRyN3s8sJK7adQ3W+3B8e5fYTbCAY737pz9Cruz5C5Ib1ZYwZkv8TA==@vger.kernel.org
-X-Received: by 2002:a17:906:7303:b0:b8f:6f75:f9e with SMTP id
- a640c23a62f3a-b8facca23a8mr343042466b.1.1771109283474; Sat, 14 Feb 2026
- 14:48:03 -0800 (PST)
+        bh=GMS55t/V9fY9Xp7NFJdKphTgR5hjSDfiqXHxnjBq6kw=;
+        b=Foa9QYywVUMtQGv5rE4rDczK8gEzZvE5xNt7JIKhRkGootCswakEi5xie/CU49jlqI
+         +oM9uVWF1X2XDD8CYnpz4ShpHAP3PhNz5uRE6JFe7L98REtpcD+V8RttQMT/eqwUPD8V
+         SooHvsg2Nj0Lnw+MqCaCtwjG7A4iN7u2nQ+sgcuwr7AP9vOtpR9oNJrjL/DnzZFq9iwn
+         u83Ep5iTfbCYmSS+RZ3hDaAWClybZZRGHwnUASrOUH1hQKH8xjaIdAtu0/G2OTltcAEo
+         Ywhn4rzc9bYbUv5iUuBYQT2YIl/T5IL+rjAxD+6zz+l608l1c36VZqYE/I2QvIEVQIzI
+         0uVA==
+X-Forwarded-Encrypted: i=1; AJvYcCW5Dd+vGUVkGvmujHWYRHwBVzXPiKLb+2H64H2cMbfg5frN1ApIsBFT1pYKG4suCmnK+DjJfM6egbsrBg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwnFtrSIEpH7HJ/M1RDMp4CHnsz4Ul+kIqxbeWCinbcQPQW5Hdq
+	f/+VUp7fPWItyYMVPXD9yc2jglXOsjXPuRoBiwqvn3JViVFoZhok9p2qokLzGUkH1YMReC243iS
+	7pa1o
+X-Gm-Gg: AZuq6aJLB5clfMp9jQRxBq28qmFbXkFL1t/gbPKUgOs1zCqOYTxfppGka6oZOtSJ0EV
+	7q5It4QfV4w2qb1wawaIoF0JGKWTiczZGhrWzHmnJhsDDt9vJMAskvEfDHMZR0frSsJgOLpvORf
+	9Ycl+40R4Ep7A3FzBfQm2gUhVHNCgqlUI17fupm9irS3yLhOvKoW8PphLBnlOrkGrLEpLAkCXrP
+	8J1PV0b4UAHz+inXTSDsfoJiE40oHgq1t+YvqnJor4/rYmViASmpfK+nSy1t1DAgSYpdIpVNQ/W
+	NQX3DfLLSzOzZQYhtvaSO75RNojVw4XW90Vt8VKbcj8gxRH9tB2drQ2Dsd/h8IR/EGWX8dJMKvz
+	HH+hbR8CCBrcflgkSJq5Ng0EUMOahWWNXvwZFlBTwbcUHSI5mlxQfxD2Yy8VY8NOU97r2bT9+ha
+	Y+ogQdCXR/Tk8+IAPIaAe2CGaM5PSv
+X-Received: by 2002:a05:600c:1549:b0:477:7a53:f493 with SMTP id 5b1f17b1804b1-48373a5d7b6mr125230325e9.23.1771163933666;
+        Sun, 15 Feb 2026 05:58:53 -0800 (PST)
+Received: from localhost ([2a02:8071:b783:6940:1d24:d58d:2b65:c291])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-48370ac3564sm168021765e9.5.2026.02.15.05.58.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 15 Feb 2026 05:58:53 -0800 (PST)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Chen Ni <nichen@iscas.ac.cn>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH v4 0/7] fbdev: au1100fb: support COMPILE_TEST and fix multi-device support and other cleanups
+Date: Sun, 15 Feb 2026 14:58:27 +0100
+Message-ID: <cover.1771163316.git.u.kleine-koenig@baylibre.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <aZBlTsIwTzS0tqBD@carbonx1> <177110244909.2897141.11184148040863874004.pr-tracker-bot@kernel.org>
- <aZDpCUcIXLmuydoF@carbonx1>
-In-Reply-To: <aZDpCUcIXLmuydoF@carbonx1>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 14 Feb 2026 14:47:47 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wj03hLzK2D=+OYmjgcmGM+XYymp8GyaEs=C0=rXG2nb7w@mail.gmail.com>
-X-Gm-Features: AaiRm50HHjVAcxBlyn1res84hJ74BQRuPE9I7BE6WlfzWIM12HlM8cBqswuaZQA
-Message-ID: <CAHk-=wj03hLzK2D=+OYmjgcmGM+XYymp8GyaEs=C0=rXG2nb7w@mail.gmail.com>
-Subject: Re: [GIT PULL] fbdev fixes and updates for v7.0-rc1
-To: Helge Deller <deller@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
-	Nicolas Schier <nsc@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, 
-	Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1534; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=9uUi7nXMjeT93n+Xkdzqc2t9wJ4cGV5DzI4vsf5mkaU=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBpkdEEhCtlw8Y2ymPubtY2wyZRtmxMjDjgwb0JC WlUnh0EVXmJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaZHRBAAKCRCPgPtYfRL+ TssmB/4pcWObZqz7acQq4uBFVjrCI780gmeX3/zYHbtWsYTaZvKGTe8cMy/QmLq6w5YjtBV+NaK t6EXxx1MWKY3ZpDKRXVnIXLyo5trDGV91Vn8P7CdzcgwghEqVb2Xvpi60ySzU8TtZaQ10EzYGBa PplMGWB11qVBGXmgVi1rrx/OUCCWLGVnWkTt9687Q1jYe4O0xYlLj0T7Os27N3lX7VScwGHiVWM 16XJe5d++qJ1R8dnXl4m/LYB5FGdhAOj7r7MOv6qwf3cy81C7VxeClKT340FyxeTVHXqgi9El5f 2HTmicTpbzLQerM3rlLGW8axJ1c71eUNidSyYWtZYjvzaUSR
+X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
 
-[ Adding Kconfig maintainers and linux-kbuild list ]
+Hello,
 
-On Sat, 14 Feb 2026 at 13:30, Helge Deller <deller@kernel.org> wrote:
->
-> Linus, I'm really sorry, but I messed up drivers/gpu/drm/Kconfig while
-> trying to fix a merge conflict.
-> My patch series should not have touched drivers/gpu/drm/Kconfig at all.
-> That's purely my fault and not the fault of the patch author.
+here comes v4 fixing and cleaning up the au1100fb driver (which given
+that it currently doesn't compile probably isn't used at all :-\).
 
-Humm. Funky how the Kconfig parts never complained about the
-duplication of all those source lines, so the problem was basically
-entirely hidden and things still "worked" even though that Kconfig
-file had been so messed up.
+v3 is available at
+https://lore.kernel.org/all/cover.1770572936.git.u.kleine-koenig@baylibre.com.
+Changes since then:
 
-I'm not sure if the Kconfig tools could perhaps warn about this kind
-of duplication - we might have some of it intentionally - but it does
-make me go "Hmm".
+ - rebase to bc57657bd3e64feaac5b4bf3fbd7f8a2fd09f4f8 from an earlier
+   version of that patch in next
 
-Nathan, Nicolas, comments? See that commit ca4ee40bf13d for the
-partial revert, and notice how Kconfig is entirely happy both before
-and after that..
+ - Squash the two printk format patches into a single patch
 
-                Linus
+ - Continue to depend on FB=y (v3 made the driver only depend on FB
+   resulting in an FTBFS)
+
+ - Fix a typo patch #5
+
+ - Patches #6 and #7 are new.
+
+Have fun!
+Uwe
+
+Uwe Kleine-König (7):
+  fbdev: au1100fb: Don't store device specific data in global variables
+  fbdev: au1100fb: Mark several local functions as static
+  fbdev: au1100fb: Use proper conversion specifiers in printk formats
+  fbdev: au1100fb: Make driver compilable on non-mips platforms
+  fbdev: au1100fb: Replace custom printk wrappers by pr_*
+  fbdev: au1100fb: Fold au1100fb.h into its only user
+  fbdev: au1100fb: Replace license boilerplate by SPDX header
+
+ drivers/video/au1100fb.c       |   0
+ drivers/video/fbdev/Kconfig    |   3 +-
+ drivers/video/fbdev/au1100fb.c | 486 +++++++++++++++++++++++++++------
+ drivers/video/fbdev/au1100fb.h | 379 -------------------------
+ 4 files changed, 405 insertions(+), 463 deletions(-)
+ create mode 100644 drivers/video/au1100fb.c
+ delete mode 100644 drivers/video/fbdev/au1100fb.h
+
+
+base-commit: bc57657bd3e64feaac5b4bf3fbd7f8a2fd09f4f8
+-- 
+2.47.3
+

@@ -1,71 +1,71 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B55E25A64C
-	for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 23:33:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E57C182B7
+	for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 23:33:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771198430; cv=none; b=UnOO/tDtAudgcCNJlXKZY87bmgz2LN+ZWs0C4Iy08f3Ev5OS5kGape83/T3aQzRo/QjvHbfXH+o5H6Pp4riinmLu0x+MkDWw8P/vMIYG2VisOOXbR++1iK15gHs6nTZrioXMbtCGMQN7d3tm0jKU4auJ10e7makFlae9UyEMzF0=
+	t=1771198431; cv=none; b=ns5XRe0IxeDLYljUsinHm5gaa47efbKUZwTlqNRpkBr36dMnrwqKOdvVcAlvw67Ep3JQ0OnfkMVREJY8cih0GN77S+jiX2zXqeQCo2Z/w3e1LeaUg09AwBXbirm1u6aAGyK+63gKBmetFqMRLmQOr3+RMfnFx+3rEvs9FevRSmI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771198430; c=relaxed/simple;
-	bh=C+TkgfpREa8zIVzwPsqZ+/CMmjGONBaTrnA3gNijQlo=;
+	s=arc-20240116; t=1771198431; c=relaxed/simple;
+	bh=nodsy71+skdPZF7EJPJp2mOWEfyPOuOSUpcyMAifoE8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=QEns3r86GAJkGjrk5t0dgNLGuXS88+i7exHD09B4zGp1YCCQOFqm9V9djEnRZl4cjpCQtjn3d2vbj99sUlD/yCL9ftzOqt1g+jKOwbg8EeZtDA6RsGx2nVQMpTAWgniZM97YCilJlIMDqe6DGQdYiIFTjX2eGb7Qk96v3ktggq4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=ubBJol5G; arc=none smtp.client-ip=209.85.128.47
+	 MIME-Version:Content-Type; b=YUm5C7PEK2a2wZCi5s+qfmfH4FXkinKxBKop4xw4iVsJj41d95fOEZoXf+Oykk7EG0AUQ3P1smJwSKF+mSR/ney7ayox0Yf16jTXcd+NzbSNP1wPS8CKhAFam+LD6TB0hcDlewENIgl2+yQxKFa0BM78shOt9bTK1ZFSPQqaXD8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=OEMtHyFU; arc=none smtp.client-ip=209.85.128.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="ubBJol5G"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-483703e4b08so19819415e9.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 15:33:48 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="OEMtHyFU"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4834826e5a0so25738945e9.2
+        for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 15:33:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1771198427; x=1771803227; darn=vger.kernel.org;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1771198429; x=1771803229; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=riZ6PWdFfyeNlDheq9J/VZWbSjXQ8eOOU0u+w/mWLKY=;
-        b=ubBJol5GLhVaaUALMW7HmBk5QD0ZsTMzuXJlk2iXGh0DAnQ7wMdi87VbDrclgn/cPF
-         RkOwaUCdc6yEVZs6aaFzTajQ/Ef042NYhbIgZByv9k/Nfej1ogoq0ZFR8pASBjGVs6hU
-         O7dOUeOdbCPEtJzNteRTPLO8QnOdXvjiMOoB0rjFkwX9+GEgLg629l4t0evlujBwSkGZ
-         JT7EXksUsseYW5H4x1em+8zqsAVCPlX9qqvTg5PGe2C5ct34V/Cv9OaetRta+xfXqDYY
-         3oRC4R3tBUahk9oNVqj/57oeMTRJp13kW7nbpC3T+xYB+ynQj+/h8Uo1RZbgzLSSSiic
-         5Clw==
+        bh=+uk53jnOeLmfvArEpFiciKSE6y7l3oB/rvlc5Pr3+3Y=;
+        b=OEMtHyFUkPAI4itzBYQBcd7PKp5dUoAOkLeyiRWAAXk3BeHeGRslZWF6giL3a6IzYU
+         T8jwVmbLoMe/eClk4/38AuSPzTQrluVYO/TgF6znKTNqN1u/ZOxr42YL7WB39B+wKUWr
+         pzsvHMSk75fmox4VZc0ipIU8MbfjB0BMkNiHX8rCIUCFWeXDwygUTUWq9xq5KJ52Qx07
+         nAaaXlzBsNEZM+Fb+72Mn2jq9z37xIn6BUJiX7Ov3TUQux2IlmbIVnDVpAO3X83K6WhP
+         o7dj14XbhtQmPI0be6JW4n+4TZYUr3e8lmS5p8VgFIIOXZzyb7Lac2DHm+wDPe7gOYDk
+         2tWQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771198427; x=1771803227;
+        d=1e100.net; s=20230601; t=1771198429; x=1771803229;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=riZ6PWdFfyeNlDheq9J/VZWbSjXQ8eOOU0u+w/mWLKY=;
-        b=EmJRpY1y2ZoTDazSW/xabaki1D+OwfagEv+92xjWUcKERFbK3U67Nnh9N4ZJrS1iKY
-         Q8uOnqHOBlwb9TYPA3VXN3HHn/NFOezQ1j30nMpCDXgpulbhqTGCbsCW6RRh8UnFPTpe
-         xJU3EBncM4obEnjJ+tFZ0f1l654Z+lP85bn/WPBoAp0K5OqFkEYVNjmEC9EnaAG/h5nR
-         VE8+wAm6erZ+IYquUZXcg9VEA5Mok/0r5rpXDMd5GTZXuDo2T5lnqhmrrNCWFN78WUX3
-         bYLxRrJ+c97WIDiZJd4oTN+UjnWQ2nxj0jogB8WvfrPqhM6bzY2eGtkx14LGgIKhe2+V
-         7MiQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUeatedxMg1aLy4c/GTWNPLmcIiuwEvux9pbyvjA326KgmF893kIMioxLs5KkndpaiSR99oJKPbuvMcuQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxJdZxaPN8pdu6heJ5U5Gc92RZTdBOTVdMeM+rqIH0VphBUs+V9
-	4BceinEhWnyhBVPaJo1pwauwxTiqb4cTQ+A5n5lp1ib1CptbuoxXduVz/aboIlDY1T4=
-X-Gm-Gg: AZuq6aJ1nQPuPYNe8YTAV/rxiYLWm3LtLGivcVCJlR/RoHp9Rb86njfrtW8WTnzB9cN
-	jqWe6Vkke4EAb3IpDrRk+EUwWWfLSoe6Eu1r/M5zLqs1UGGiL3gJi4Iqg/aV8OWUYUztkfaEd5d
-	P5ofrUEPMAruBitcLcFIeChc5LpN5n0fvgNdNMBWCWLWkN0upcEcmzIc7saBInhQjVyiaiOdGEm
-	/jVUgjoil1+0inO3FjjGpEU4zBdLTMR6al+dq0CJ+h9cQFoInhrWIpAVuDID0DUnS09ETFBw3VQ
-	4QfsJHpvsjvD4vpCYsvObNFSyrfXoyqTKoTw/LdbIGXPT6xJXho81w8Gh4yFNFynMhbX1hYuJD3
-	/+dYevf9nL51YESnWPkB55Wg/6zrecOA0k9tQk3dhVpPMjpQ9rPhcoms5D7r45qdkz/GBgjliTT
-	C03aBtP6AnlXbWfUiZxAavkt0GmOtn
-X-Received: by 2002:a05:600c:8b32:b0:47e:e59c:67c5 with SMTP id 5b1f17b1804b1-48378d7250emr126740185e9.8.1771198427340;
-        Sun, 15 Feb 2026 15:33:47 -0800 (PST)
+        bh=+uk53jnOeLmfvArEpFiciKSE6y7l3oB/rvlc5Pr3+3Y=;
+        b=vfN2G6whBuVfFmXSLdTWTDfJVgi7c34ktZ1o47DHCpAthco8yvbotu0Q8XTP6hi9P4
+         kKa9w/56gaHLJbN5l9oXWiot7NxGTmTL84QD7TdKb1uwaaommmrJltzegDEZClHa8PTB
+         JUkPw/5UMQyA76pp4DVr4c3MW53v9ftMf1w//YMWKNC2khFKYGZl89oAYYsxbw2w7UkM
+         BpX6FYopftp+mojCUrdcwdPgP3xeD4MZQY556su5fX89HkA12A2rozppZ4ZCryxH1rvw
+         +6atq4la+6ezSU58Cy40Nxew0yQ+gXW1ovxkVAkgQe7s7ap0xwStEFZr3ZDh07rVoD2S
+         wFnw==
+X-Forwarded-Encrypted: i=1; AJvYcCVQR9jyv1iWNrMIrPK6HhBcJyt+0saRbJU3OYBcehcNvf7GwxMaN31VkwSLUQfI8uHDQXS0GfBvSqU37g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwEQR5WzMecxr6QGWxqIekyeSiS5158vi8Wi2IvjRCvtNskeOyY
+	kcAMyGAemsQf13GMMtNLW9LZIQwQ1/GOOhTMbUOtREIE+++gr1hLejrTjrnKw6jUW6I=
+X-Gm-Gg: AZuq6aK/sfhpBUT6mQBAZqs6HXmtsqmcdSw+djkBlhyq1K59RmzOwuCBgKt1fP3uxJD
+	DlmqTa+5+LtXyTlzTmCwagGdzSeFVGjEOUmAWggkaIIVuO4V5kasQjJN6h+aSp3YMlAu7FtkwAa
+	VkLteAB+hT29pqGzzpdPSHfsp3tY3MgOVbxA4+u27SUlpmqM4osxQ2TZFb+ks5wZtow3Wtei6le
+	6ITdsGNA8o+mVcH7kKHCn8TITz0tcVqPJlZoWz6Co4t6Bd+4uu1GO89R3qmwaW/Fo/B2iak87Tb
+	VHAldLDrR6PKR2nHHU22fov3ptTA6qTFAWp6WUIdHJfMEhbXuDW+BIdOjU4zMxr7PGFJg5mldPi
+	5NnxHKiq+SEIyMGdOqCtK80F5VA7845/UxJeI24EIz78iQuRmBtPLDUNzVdrY/F82PDI4hy42kv
+	Vco4vZbJkeX7GpAl3qJRuywVY9bdkF
+X-Received: by 2002:a05:600d:f:b0:483:7783:5363 with SMTP id 5b1f17b1804b1-483778355a1mr130445345e9.26.1771198428685;
+        Sun, 15 Feb 2026 15:33:48 -0800 (PST)
 Received: from localhost ([2a02:8071:b783:6940:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-43796ad112bsm22934376f8f.36.2026.02.15.15.33.46
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4835d99497asm539810305e9.6.2026.02.15.15.33.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Feb 2026 15:33:47 -0800 (PST)
+        Sun, 15 Feb 2026 15:33:48 -0800 (PST)
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
 To: Helge Deller <deller@gmx.de>
 Cc: Chen Ni <nichen@iscas.ac.cn>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH v5 3/7] fbdev: au1100fb: Use proper conversion specifiers in printk formats
-Date: Mon, 16 Feb 2026 00:33:19 +0100
-Message-ID: <67e84da83038879b933c3c40a3715c2ca82a4813.1771198101.git.u.kleine-koenig@baylibre.com>
+Subject: [PATCH v5 4/7] fbdev: au1100fb: Make driver compilable on non-mips platforms
+Date: Mon, 16 Feb 2026 00:33:20 +0100
+Message-ID: <c858d7a655c5c984a03be813211e47952d963fad.1771198101.git.u.kleine-koenig@baylibre.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <cover.1771198101.git.u.kleine-koenig@baylibre.com>
 References: <cover.1771198101.git.u.kleine-koenig@baylibre.com>
@@ -76,54 +76,91 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2019; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=C+TkgfpREa8zIVzwPsqZ+/CMmjGONBaTrnA3gNijQlo=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBpklfEdt8klR1hZb6Sfbm5eRG4XF5wQH2rt73y2 XmGiszbXzeJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaZJXxAAKCRCPgPtYfRL+ TqQFCACcqZCdYcACZnKLN5Af2fitxAn5w9sPoYdRoIUuln7Qx55503VKvU5tCcQoeejdWT2ccR5 89msNoXlP8uUh9/B/+1Pa5orfqRDdC7aA6u0BA8RowS72J3xrGUSbZWa1EArGfxR+5l7GQVWfdx boWk1NhDNVTGUNXX8taTGpm7k8DTSS2HTuTM2oeKzAGn3zxWfEMP9q4ALSZT7dWR9Oox0q+vY2m f/f/bXYI0UarJsZNKf8gmVuKO/vXFhkjy9kjbNIrUKs0UcfSjgXwwW+PL9RN4s/8eCJrrfY7ktm DqmeQ8rwnXcgwEIi9E6OYzT0W62r5SGpXdSsfjZJBslcWaBS
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2878; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=nodsy71+skdPZF7EJPJp2mOWEfyPOuOSUpcyMAifoE8=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBpklfHf6VCwf3tX/S+LU/WMTwKbeSksp6ifHEL4 Ko4XVmBytGJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaZJXxwAKCRCPgPtYfRL+ Tho0B/9qvhukL3iSwBk61XQHlxonw5P4wNdTyfGEN1nZTe+shcpBZLtIh8nAj1B14zKdEZ2aPg9 WJNfZNE+r6xQjFJ1OP/VzxR3t5TdYiz2wRrOMWU3VaZaWYyG32m5FHcnfqSNT0SVr7VEWk+bVBV zhq5K97sEYcVFZjd621DxFJficmoX4CTVpIOi3nuQfZ6ccaSJDw6nZePJjU0Z+LsPrqVU2OR0ui sNyrCmTNIKlt7GxXRGWZwm7IeSMzOmsiwqZSCjJf2m0I01aThbHBbL6I6ZHlJDR6UxjksxYwJ6T fSoG2XzWgiBza1D3VZw7PEHxay7jo3IHzoxC1t0DM1sBmuBR
 X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-%zu is the dedicated type for size_t. %d only works on 32bit
-architectures where size_t is typedef'd to be unsigned int. (And then
-the signedness doesn't fit, but `gcc -Wformat` doesn't stumble over this.
-Also the size of dma_addr_t is architecture dependent and it should be
-printkd using %pad (and the value passed by reference).
-
-This prepares allowing this driver to be compiled on non-mips platforms.
+The header asm/mach-au1x00/au1000.h is unused apart from pulling in
+<linux/delay.h> (for mdelay()) and <linux/io.h> (for KSEG1ADDR()). Then
+the only platform specific part in the driver is the usage of the KSEG1ADDR
+macro, which for the non-mips case can be stubbed.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
 ---
- drivers/video/fbdev/au1100fb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/Kconfig    |  3 ++-
+ drivers/video/fbdev/au1100fb.c | 12 ++++++++++--
+ drivers/video/fbdev/au1100fb.h |  2 --
+ 3 files changed, 12 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 45733522ff48..ac9ac4287c6a 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1345,7 +1345,8 @@ endchoice
+ 
+ config FB_AU1100
+ 	bool "Au1100 LCD Driver"
+-	depends on (FB = y) && MIPS_ALCHEMY
++	depends on FB = y
++	depends on MIPS_ALCHEMY || COMPILE_TEST
+ 	select FB_IOMEM_HELPERS
+ 	help
+ 	  This is the framebuffer driver for the AMD Au1100 SOC.  It can drive
 diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
-index 1abaa8e81315..398375793f57 100644
+index 398375793f57..7611dad0d68d 100644
 --- a/drivers/video/fbdev/au1100fb.c
 +++ b/drivers/video/fbdev/au1100fb.c
-@@ -440,7 +440,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 	fbdev->regs = (struct au1100fb_regs*)KSEG1ADDR(fbdev->info.fix.mmio_start);
+@@ -42,6 +42,8 @@
+  *  675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ #include <linux/clk.h>
++#include <linux/delay.h>
++#include <linux/io.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+@@ -55,12 +57,15 @@
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
  
- 	print_dbg("Register memory map at %p", fbdev->regs);
--	print_dbg("phys=0x%08x, size=%d", fbdev->regs_phys, fbdev->regs_len);
-+	print_dbg("phys=0x%08x, size=%zu", fbdev->regs_phys, fbdev->regs_len);
+-#include <asm/mach-au1x00/au1000.h>
+-
+ #define DEBUG 0
  
- 	c = clk_get(NULL, "lcd_intclk");
- 	if (!IS_ERR(c)) {
-@@ -457,7 +457,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 					    PAGE_ALIGN(fbdev->fb_len),
- 					    &fbdev->fb_phys, GFP_KERNEL);
- 	if (!fbdev->fb_mem) {
--		print_err("fail to allocate framebuffer (size: %dK))",
-+		print_err("fail to allocate framebuffer (size: %zuK))",
- 			  fbdev->fb_len / 1024);
- 		return -ENOMEM;
- 	}
-@@ -466,7 +466,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 	fbdev->info.fix.smem_len = fbdev->fb_len;
+ #include "au1100fb.h"
  
- 	print_dbg("Framebuffer memory map at %p", fbdev->fb_mem);
--	print_dbg("phys=0x%08x, size=%dK", fbdev->fb_phys, fbdev->fb_len / 1024);
-+	print_dbg("phys=0x%pad, size=%zuK", &fbdev->fb_phys, fbdev->fb_len / 1024);
++#if defined(CONFIG_COMPILE_TEST) && !defined(CONFIG_MIPS)
++/* This is only defined to be able to compile this driver on non-mips platforms */
++#define KSEG1ADDR(x) (x)
++#endif
++
+ #define DRIVER_NAME "au1100fb"
+ #define DRIVER_DESC "LCD controller driver for AU1100 processors"
  
- 	/* load the panel info into the var struct */
- 	fbdev->info.var = (struct fb_var_screeninfo) {
+@@ -332,7 +337,10 @@ static int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ 
+ 	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
+ 
++#ifndef CONFIG_S390
++	/* On s390 pgprot_val() is a function and thus not a lvalue */
+ 	pgprot_val(vma->vm_page_prot) |= (6 << 9); //CCA=6
++#endif
+ 
+ 	return dma_mmap_coherent(fbdev->dev, vma, fbdev->fb_mem, fbdev->fb_phys,
+ 			fbdev->fb_len);
+diff --git a/drivers/video/fbdev/au1100fb.h b/drivers/video/fbdev/au1100fb.h
+index b7bf6e005572..63aef2f52141 100644
+--- a/drivers/video/fbdev/au1100fb.h
++++ b/drivers/video/fbdev/au1100fb.h
+@@ -30,8 +30,6 @@
+ #ifndef _AU1100LCD_H
+ #define _AU1100LCD_H
+ 
+-#include <asm/mach-au1x00/au1000.h>
+-
+ #define print_err(f, arg...) printk(KERN_ERR DRIVER_NAME ": " f "\n", ## arg)
+ #define print_warn(f, arg...) printk(KERN_WARNING DRIVER_NAME ": " f "\n", ## arg)
+ #define print_info(f, arg...) printk(KERN_INFO DRIVER_NAME ": " f "\n", ## arg)
 -- 
 2.47.3
 

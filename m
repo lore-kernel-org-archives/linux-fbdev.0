@@ -1,71 +1,72 @@
 Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCADD2C2346
-	for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 13:59:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FBFA2C2346
+	for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 13:59:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771163942; cv=none; b=PE9zTL3EE5sz0a6fw2haC3NQZZqyNbXHrSxXm1TfxfdUn8nOfQTTL6Ujgg68XANwjnMnYyg4iCpLvhe3/s9cT6UonrlEJq3OdcQXx0lGFIRXyUrBx0EVg5r4e7I3dAVm0cGN4QbC9tSby/8npgbj9rF7L6EzznGNofL2ytUqHL4=
+	t=1771163944; cv=none; b=XxJUkav4LEf3fY79smiSOhA3FGGEYvZ0Ie9QchkzttcJir5R7boXGoNKOr+RRGAf/g0UDJnEmmZUVund32OW0VHGyBPwrUtScc2baduLMVWwSxbU1yBMu2PfKmrQrA1cX/mq7ulovuDuMmC3biQzdUpa4XUZOHiyosn3RAJGhcs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771163942; c=relaxed/simple;
-	bh=nxLVIAxRrrPCwHxjKDubTojYoY2kHdt0zxcbF7maQAE=;
+	s=arc-20240116; t=1771163944; c=relaxed/simple;
+	bh=knkEjt6E6SqfheIipY0HTc6BP4rRXr7oklWLe8fknuU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=tbpEKcgWFbL5ynT3tqFIpm5f8n7axCpfkiKKDxkBockuijIRTYuErFV1siAN/i0BG/C2REGKazU2lhWcmMRE+btIV6tzg4N999sQraK0R0Nhuc+pQB62520h4US5IBKF3hohlvJhJWx8uutdt3Tc4tVLBD1UPbAmsGtkkpnz5mQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=F+ahcqmZ; arc=none smtp.client-ip=209.85.128.48
+	 MIME-Version:Content-Type; b=iHlkfgANYuKcKd/XT5fqAzFZ6QxGmkOwK1qGokN4OtSd3+WdVAxlmyODaIF9iBILWNNiwzwwoIb+Wvhevz0u/oAGQLwj3ZBt8878eUClUiq6O51F2lpq8EP5Lu5mPFtKksYlpsWQHHiE8az53fOXmnjwZfWMnj5V0rwmwJmySWo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=lVL9ehoP; arc=none smtp.client-ip=209.85.128.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="F+ahcqmZ"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-48371119eacso22206245e9.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 05:59:00 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="lVL9ehoP"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-48375f10628so12170995e9.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 05:59:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1771163939; x=1771768739; darn=vger.kernel.org;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1771163942; x=1771768742; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=EzVzlNC4XTu3TVPShM5UZlmbPCmD3tKnvLjfSl0egiI=;
-        b=F+ahcqmZLVOmC+FKXnoJEi2PfvRxfbvF+I2X7ycb4EMPXAWnyCsaLJD5aWWqttPdVk
-         d7x1d7Sgz0VQUtlZaw7lDgYZ7RnD1nlImA/m0qLFaMBUu8qkQE2CvH9896EN+oTUWi0u
-         LiwnOG1DLrt7hk+E+0Sj/AQqdKfRVk1ErcmIIFDJEXqwcFxiWr7cWv57cnBKDvYlePyu
-         tXvcsrkQpVF4bn/0FcbPBi4YXU8n6ru2ETBO0XlcjWtu2LmRoC94Xhy6o5t+/B0wB8J8
-         SnFlFA8bevbF4MP7Qt2aM9JTOxQ7+pYoHEo+cLi/Inh4eHELgR4A19KAKC8EYVWo0Rjb
-         WR6A==
+        bh=ScnBj3oP04p3y5F7vVbJFUDlhPXEJXdunkul8Q3TBN4=;
+        b=lVL9ehoP21qwxTCcRJvCyTiPiWW3iWBwIIBRCQZVHqthfKhqp3tMBoxBVZKWZOQ23t
+         AJRzFFD9OlLbF5vKvSGRVykqH1RLUPPiSK4Acp3IIVc/Mu746XPxfbjYSuQH0/dtcyO7
+         xRAWP5nYd8cjff4kXobHIgyAQXGxLWleIsW3aMyHuDYY+88/DRp/vvK9xMznxCCbPg0v
+         hUVM2Yxal0G8Yz+wnaav5P/7HOukLJmlvAzk+zH8iKRKkTL3oosbsLtA4T7NI1PpV8Vw
+         Tkq0q2YYlvr8VE1ybUCoGa4nl2UwnI3Xt8wiz9bKIBsjLPwrakCRgwy8Oju559xSjjF1
+         +Akw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771163939; x=1771768739;
+        d=1e100.net; s=20230601; t=1771163942; x=1771768742;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=EzVzlNC4XTu3TVPShM5UZlmbPCmD3tKnvLjfSl0egiI=;
-        b=drnYhNrzIBXaVFAitg+rdxK0HNCtlyDRLHG9eGFOJLl+nbYj7jofeJ3ivSGQw5gDzs
-         jQlbvvvE8X6ofmhT/n/CsFamO5/BGEQzlfOn1sl471SkuflKiFOXpbJwdF8GZZc0XdMV
-         GdRIkEmh0uDHKYxhEUwuAtkwTePMD3zpxFtWuSq61KxzXBjkllTA07TkqnHSVN5qicJ5
-         iZU5z3MU1S0epTAlwkbmgE4kCdco0QYypXnS5JjWcHqRHKW3bJdjSKRtnbvuYFI5s4WF
-         7AMLJYYagi7ZNAiFSbd9Ax2yUluV7/SiiQhYVxo3RRd3jGKX2MXe/BX8zY/duvTrsMR3
-         wH9A==
-X-Forwarded-Encrypted: i=1; AJvYcCULepqZ0Bfhvy15uj7/6uUszrcBma2ug60jKc709Lh7qtr3pSR90ljWgQP+B5oE7+u5U7J0RIkhaW160w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwNr2RIOeEmNRb0FMMzdgJLy9g9Zkg0MeC03PLe+IB8T49MCMLd
-	FJw0YMPbQ/jPE0RQF+Gy3U9PopBxlPxKmskrOQMC+glH7bBp56V4YEGSdn/ubZkkWss=
-X-Gm-Gg: AZuq6aJfGUaDmUJHN4wNllrS7/n8GqosZzvT7b/eDqxDLED+qwZJHd0aQ4G4+hlTLU1
-	Fx1HE2robGwvpbCCRfLRY9BuHbOCSKR95dZZmgMddERtrCoqtFG/H//DOBcvYpyf/o6k6a4+nOc
-	WZr6A0UywMNFHD0VWxPIIx9qB4zVZnWOxkdmF0tCP75n2PrEUDuukrySt8yjmML2fHvaIB6hOFt
-	/hH6w2qpsXJGyFjhgBZ+Z8Vlyb6qtuKJOdCQhUXgfCY5ieGGBEVIWS2hHhgDCo0mJDXIwQnnh0t
-	++4Jm9aJhDCi56+U79cUpweQ7axGyE6AJcQCo8lJ08j1PQlACEQUZZD6YdeCEs+qme+krjLIo3v
-	u6AmBrkE5O2D8sP3/et0r49AMhLZl3+PgOWiRGQW6Ba9l9gmERwIR0tjE4PTel9EtGd6qg9DUvL
-	d6reEoMXgq6YAn59+3klnOQ1OiBiKc
-X-Received: by 2002:a05:600c:6206:b0:477:76c2:49c9 with SMTP id 5b1f17b1804b1-48373a0842fmr112466925e9.2.1771163939167;
-        Sun, 15 Feb 2026 05:58:59 -0800 (PST)
+        bh=ScnBj3oP04p3y5F7vVbJFUDlhPXEJXdunkul8Q3TBN4=;
+        b=bSpUKDP4etT6LJe3Vv7uEaqPWWcpPzZdp5h9R4iEiAjYTCGbmMj4VhJe3b2OT9YqFD
+         cFm22bf2mkM3NbcwNrmO46/LpBkCgLU06aErpS6POq29LWoTpz4km5nTmXsqBzLYHWsm
+         SkDUfcqww7spAWt60LxktS2TER2yCJi5HvLBdPxUKGRi984lSYAUrrc409U0UMLifEaT
+         Oz2KUZ18IuhY8f8p4FCCAFkTk8TrWoto7oe2WgoFev3dLiOqJlL2sTMXliIfQPd652Ii
+         X1cAfzpW5N82URs/nE9y2FTKrYhacIm57xtH9/XRUs6Esdtv6qNkf2uN41SfGIp6H8yX
+         d/uA==
+X-Forwarded-Encrypted: i=1; AJvYcCW3acUevlU8tonT4aepyUTiAT50SbUmzdUkKBXHwkpDSkqDwIlSOxH7UJQCN0mPNsiw4od3VKXYyw0l0w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwMp4KRE8V40GqVvspW9DPM7BuDJCtezrr++U/VsVJe87BUkSmi
+	N1OTNHIEDoCEtqHgyRSb72/Zjj4tRD5ORXdnO0ZRSqG3a5qYdnqRWRQL9Tt86jCbhi12+vcXS4T
+	oYqCF
+X-Gm-Gg: AZuq6aLa/FpyObmAaqdaai11VH0KzK96vPO+rRglSQQGor9xIt+SffPeIdijNN6SaKW
+	gZqPGCnuGsTLDYLmD4iqoI6TmyPNkEoZuReHu7ioEtTeYnMT9UGetyje/WX8YGH8CXmH/tRiT/L
+	Zp726H6qRb1OBdykMURM1i+bJlZ2dLd23blpYdMdvMKvgNTMUmsTb1e2WQO206sVXaENtDNKJa/
+	/NW5Xbu8a2HK6kcyHBZahFoOlB+tX9ypdo7iTheUjoIv4ZWHZ3aywNYN3umNAxU6kn9SHI+bnzw
+	4Ei/utuBjT9sFV/bHxcLBRL15pgBadZhmLNDTH9sRmTrQcd+gBsoWUMo+Rt6p5NDOlu1mdD5ozD
+	8F+krva+pI/GsnJWnLzYAyHFCQapJqMU0M6StonPZGgjRQ9BMqJ18sx7YUzWOQD0H8AaGwHvXap
+	u+cCW18qu68/efc8HzMRYWj+XYtnl5
+X-Received: by 2002:a05:600c:450d:b0:483:a21:774c with SMTP id 5b1f17b1804b1-48373a44430mr124838965e9.25.1771163941215;
+        Sun, 15 Feb 2026 05:59:01 -0800 (PST)
 Received: from localhost ([2a02:8071:b783:6940:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4834d7e50casm376592965e9.8.2026.02.15.05.58.58
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-483709f6935sm91936255e9.0.2026.02.15.05.58.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Feb 2026 05:58:58 -0800 (PST)
+        Sun, 15 Feb 2026 05:59:00 -0800 (PST)
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
 To: Helge Deller <deller@gmx.de>
 Cc: Chen Ni <nichen@iscas.ac.cn>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH v4 4/7] fbdev: au1100fb: Make driver compilable on non-mips platforms
-Date: Sun, 15 Feb 2026 14:58:31 +0100
-Message-ID:  <27c0747aa4a85e0b4f2dd7c0778784989522599c.1771163316.git.u.kleine-koenig@baylibre.com>
+Subject: [PATCH v4 5/7] fbdev: au1100fb: Replace custom printk wrappers by pr_*
+Date: Sun, 15 Feb 2026 14:58:32 +0100
+Message-ID:  <6c72b8bcd1b608d1ec7227b8d1aa6c7a73148a05.1771163316.git.u.kleine-koenig@baylibre.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <cover.1771163316.git.u.kleine-koenig@baylibre.com>
 References: <cover.1771163316.git.u.kleine-koenig@baylibre.com>
@@ -76,91 +77,206 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2878; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=nxLVIAxRrrPCwHxjKDubTojYoY2kHdt0zxcbF7maQAE=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBpkdENjGEY/HsrG2a9fINb/lOMBBSEr3t47f6XX iwl7tuqpPuJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaZHRDQAKCRCPgPtYfRL+ Ti4AB/9r3BEwD/lbyGDQJpsF+XW7UVYSlS5SgXhoE5J0aknmjxSsiYIeqbVhJhAV14/lKv8uKsn 9bSSQB2tqGZEM0Eq8q1TzKKfZO2hKEh9jk1eH/HWtbif1pkqChxHzSOVxkjIXnusAq3Q4juc8bt Z6AEHS4MjJzGksA7g4ub5akvlQWwQ1JpJ+wJT2w+DNa6GZAYFjkio0Pu8ycsg6nD99xphEAMN3q H08z2Bf/cfi/vNIfPE6H7jIybGwiiBE/ZkVN4f0FXrwVJbqvIJvXe7C8ES+HMMwG++tZGXyMKJb Bz4gu4JCB7nCHZOgBLf8w5B2wqpT2sX06cmqpeQPBEEU35bc
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6894; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=knkEjt6E6SqfheIipY0HTc6BP4rRXr7oklWLe8fknuU=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBpkdEQBWydOy4yift6xDFkTdTLt0mB5wRzzbHWS gkG4pJLKZ2JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaZHREAAKCRCPgPtYfRL+ Tk+NCAC34rTeEDbwOc39WAvDUIaEFLFy739AZCqUK5LPsTtrkD0cVNrLQFYm4pS1l5X7lY++FNi zB6HiKY3oq4aNeETf1WuZJ6nT9JooXnnhKEJIgWXf7+IJag4hHcOOGq3M+Vp2QXgU5Hm1lu06UC 2T5tdyAxwSGgcA14XuPJiY/pKKrw+42Oja64ovL5bc3evK+N/jAFzlVgY68kAEhDBLeN5dSAygp 7TmSrhhOPwnY4vJSZ2GLCS8VSmERSleugzSMi5NR23BxWv1gTCD5fH6wXfWk/eLnHrn1vE87ydQ d689p2YkSKbmJjjj5F6ZyyhDgx2BVztLKQNWCU/BEmPWfMMS
 X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-The header asm/mach-au1x00/au1000.h is unused apart from pulling in
-<linux/delay.h> (for mdelay()) and <linux/io.h> (for KSEG1ADDR()). Then
-the only platform specific part in the driver is the usage of the KSEG1ADDR
-macro, which for the non-mips case can be stubbed.
+The global wrappers also have the advantage to do stricter format
+checking, so the pr_devel formats are also checked if DEBUG is not
+defined. The global variants only check for DEBUG being defined and not
+its actual value, so the #define to zero is dropped, too.
+
+There is only a slight semantic change as the (by default disabled)
+debug output doesn't contain __FILE__ any more.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
 ---
- drivers/video/fbdev/Kconfig    |  3 ++-
- drivers/video/fbdev/au1100fb.c | 12 ++++++++++--
- drivers/video/fbdev/au1100fb.h |  2 --
- 3 files changed, 12 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/au1100fb.c | 41 +++++++++++++++++-----------------
+ drivers/video/fbdev/au1100fb.h | 10 ---------
+ 2 files changed, 21 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 45733522ff48..ac9ac4287c6a 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1345,7 +1345,8 @@ endchoice
- 
- config FB_AU1100
- 	bool "Au1100 LCD Driver"
--	depends on (FB = y) && MIPS_ALCHEMY
-+	depends on FB = y
-+	depends on MIPS_ALCHEMY || COMPILE_TEST
- 	select FB_IOMEM_HELPERS
- 	help
- 	  This is the framebuffer driver for the AMD Au1100 SOC.  It can drive
 diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
-index e43687ac74a1..782f70c3a98f 100644
+index 782f70c3a98f..86aafa4f0966 100644
 --- a/drivers/video/fbdev/au1100fb.c
 +++ b/drivers/video/fbdev/au1100fb.c
-@@ -42,6 +42,8 @@
+@@ -41,6 +41,9 @@
+  *  with this program; if not, write  to the Free Software Foundation, Inc.,
   *  675 Mass Ave, Cambridge, MA 02139, USA.
   */
++
++#define pr_fmt(fmt) "au1100fb:" fmt "\n"
++
  #include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/io.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -55,12 +57,15 @@
+ #include <linux/delay.h>
+ #include <linux/io.h>
+@@ -57,8 +60,6 @@
  #include <linux/platform_device.h>
  #include <linux/slab.h>
  
--#include <asm/mach-au1x00/au1000.h>
+-#define DEBUG 0
 -
- #define DEBUG 0
- 
  #include "au1100fb.h"
  
-+#if defined(CONFIG_COMPILE_TEST) && !defined(CONFIG_MIPS)
-+/* This is only defined to be able to compile this driver on non-mips platforms */
-+#define KSEG1ADDR(x) (x)
-+#endif
-+
- #define DRIVER_NAME "au1100fb"
- #define DRIVER_DESC "LCD controller driver for AU1100 processors"
+ #if defined(CONFIG_COMPILE_TEST) && !defined(CONFIG_MIPS)
+@@ -97,7 +98,7 @@ static int au1100fb_fb_blank(int blank_mode, struct fb_info *fbi)
+ {
+ 	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
  
-@@ -331,7 +336,10 @@ static int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+-	print_dbg("fb_blank %d %p", blank_mode, fbi);
++	pr_devel("fb_blank %d %p", blank_mode, fbi);
  
- 	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
+ 	switch (blank_mode) {
  
-+#ifndef CONFIG_S390
-+	/* On s390 pgprot_val() is a function and thus not a lvalue */
- 	pgprot_val(vma->vm_page_prot) |= (6 << 9); //CCA=6
-+#endif
+@@ -290,7 +291,7 @@ static int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info
  
- 	return dma_mmap_coherent(fbdev->dev, vma, fbdev->fb_mem, fbdev->fb_phys,
- 			fbdev->fb_len);
+ 	fbdev = to_au1100fb_device(fbi);
+ 
+-	print_dbg("fb_pan_display %p %p", var, fbi);
++	pr_devel("fb_pan_display %p %p", var, fbi);
+ 
+ 	if (!var || !fbdev) {
+ 		return -EINVAL;
+@@ -301,13 +302,13 @@ static int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info
+ 		return -EINVAL;
+ 	}
+ 
+-	print_dbg("fb_pan_display 2 %p %p", var, fbi);
++	pr_devel("fb_pan_display 2 %p %p", var, fbi);
+ 	dy = var->yoffset - fbi->var.yoffset;
+ 	if (dy) {
+ 
+ 		u32 dmaaddr;
+ 
+-		print_dbg("Panning screen of %d lines", dy);
++		pr_devel("Panning screen of %d lines", dy);
+ 
+ 		dmaaddr = fbdev->regs->lcd_dmaaddr0;
+ 		dmaaddr += (fbi->fix.line_length * dy);
+@@ -321,7 +322,7 @@ static int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info
+ 			fbdev->regs->lcd_dmaaddr0 = LCD_DMA_SA_N(dmaaddr);
+ 	}
+ 	}
+-	print_dbg("fb_pan_display 3 %p %p", var, fbi);
++	pr_devel("fb_pan_display 3 %p %p", var, fbi);
+ 
+ 	return 0;
+ }
+@@ -364,7 +365,7 @@ static int au1100fb_setup(struct au1100fb_device *fbdev)
+ 	int num_panels = ARRAY_SIZE(known_lcd_panels);
+ 
+ 	if (num_panels <= 0) {
+-		print_err("No LCD panels supported by driver!");
++		pr_err("No LCD panels supported by driver!");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -387,16 +388,16 @@ static int au1100fb_setup(struct au1100fb_device *fbdev)
+ 				}
+ 			}
+ 			if (i >= num_panels) {
+-				print_warn("Panel '%s' not supported!", this_opt);
++				pr_warn("Panel '%s' not supported!", this_opt);
+ 				return -ENODEV;
+ 			}
+ 		}
+ 		/* Unsupported option */
+ 		else
+-			print_warn("Unsupported option \"%s\"", this_opt);
++			pr_warn("Unsupported option \"%s\"", this_opt);
+ 	}
+ 
+-	print_info("Panel=%s", fbdev->panel->name);
++	pr_info("Panel=%s", fbdev->panel->name);
+ 
+ 	return 0;
+ }
+@@ -421,7 +422,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 	/* Allocate region for our registers and map them */
+ 	regs_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
+ 	if (!regs_res) {
+-		print_err("fail to retrieve registers resource");
++		pr_err("fail to retrieve registers resource");
+ 		return -EFAULT;
+ 	}
+ 
+@@ -439,15 +440,15 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 				     fbdev->info.fix.mmio_start,
+ 				     fbdev->info.fix.mmio_len,
+ 				     DRIVER_NAME)) {
+-		print_err("fail to lock memory region at 0x%08lx",
++		pr_err("fail to lock memory region at 0x%08lx",
+ 			  fbdev->info.fix.mmio_start);
+ 		return -EBUSY;
+ 	}
+ 
+ 	fbdev->regs = (struct au1100fb_regs*)KSEG1ADDR(fbdev->info.fix.mmio_start);
+ 
+-	print_dbg("Register memory map at %p", fbdev->regs);
+-	print_dbg("phys=0x%08x, size=%zu", fbdev->regs_phys, fbdev->regs_len);
++	pr_devel("Register memory map at %p", fbdev->regs);
++	pr_devel("phys=0x%08x, size=%zu", fbdev->regs_phys, fbdev->regs_len);
+ 
+ 	c = clk_get(NULL, "lcd_intclk");
+ 	if (!IS_ERR(c)) {
+@@ -464,7 +465,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 					    PAGE_ALIGN(fbdev->fb_len),
+ 					    &fbdev->fb_phys, GFP_KERNEL);
+ 	if (!fbdev->fb_mem) {
+-		print_err("fail to allocate framebuffer (size: %zuK))",
++		pr_err("fail to allocate framebuffer (size: %zuK))",
+ 			  fbdev->fb_len / 1024);
+ 		return -ENOMEM;
+ 	}
+@@ -472,8 +473,8 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 	fbdev->info.fix.smem_start = fbdev->fb_phys;
+ 	fbdev->info.fix.smem_len = fbdev->fb_len;
+ 
+-	print_dbg("Framebuffer memory map at %p", fbdev->fb_mem);
+-	print_dbg("phys=0x%pad, size=%zuK", &fbdev->fb_phys, fbdev->fb_len / 1024);
++	pr_devel("Framebuffer memory map at %p", fbdev->fb_mem);
++	pr_devel("phys=0x%pad, size=%zuK", &fbdev->fb_phys, fbdev->fb_len / 1024);
+ 
+ 	/* load the panel info into the var struct */
+ 	fbdev->info.var = (struct fb_var_screeninfo) {
+@@ -497,7 +498,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 		return -ENOMEM;
+ 
+ 	if (fb_alloc_cmap(&fbdev->info.cmap, AU1100_LCD_NBR_PALETTE_ENTRIES, 0) < 0) {
+-		print_err("Fail to allocate colormap (%d entries)",
++		pr_err("Fail to allocate colormap (%d entries)",
+ 			   AU1100_LCD_NBR_PALETTE_ENTRIES);
+ 		return -EFAULT;
+ 	}
+@@ -507,7 +508,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 
+ 	/* Register new framebuffer */
+ 	if (register_framebuffer(&fbdev->info) < 0) {
+-		print_err("cannot register new framebuffer");
++		pr_err("cannot register new framebuffer");
+ 		goto failed;
+ 	}
+ 
 diff --git a/drivers/video/fbdev/au1100fb.h b/drivers/video/fbdev/au1100fb.h
-index dc53d063fcc3..998328cd16a2 100644
+index 998328cd16a2..9b70208128a8 100644
 --- a/drivers/video/fbdev/au1100fb.h
 +++ b/drivers/video/fbdev/au1100fb.h
-@@ -30,8 +30,6 @@
+@@ -30,16 +30,6 @@
  #ifndef _AU1100LCD_H
  #define _AU1100LCD_H
  
--#include <asm/mach-au1x00/au1000.h>
+-#define print_err(f, arg...) printk(KERN_ERR DRIVER_NAME ": " f "\n", ## arg)
+-#define print_warn(f, arg...) printk(KERN_WARNING DRIVER_NAME ": " f "\n", ## arg)
+-#define print_info(f, arg...) printk(KERN_INFO DRIVER_NAME ": " f "\n", ## arg)
 -
- #define print_err(f, arg...) printk(KERN_ERR DRIVER_NAME ": " f "\n", ## arg)
- #define print_warn(f, arg...) printk(KERN_WARNING DRIVER_NAME ": " f "\n", ## arg)
- #define print_info(f, arg...) printk(KERN_INFO DRIVER_NAME ": " f "\n", ## arg)
+-#if DEBUG
+-#define print_dbg(f, arg...) printk(__FILE__ ": " f "\n", ## arg)
+-#else
+-#define print_dbg(f, arg...) do {} while (0)
+-#endif
+-
+ #if defined(__BIG_ENDIAN)
+ #define LCD_CONTROL_DEFAULT_PO LCD_CONTROL_PO_11
+ #else
 -- 
 2.47.3
 

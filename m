@@ -1,72 +1,71 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E1512459C9
-	for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 23:33:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1057D2BB13
+	for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 23:33:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771198434; cv=none; b=tLPi8BLWEOqvZ+QCMp4JHEKUJ7QXT4qp9IivmVwU59r6HGrw/EKeLFFjcsKG7sii5t1TNycPggLymYHZ/9bbMUAsGw39E+WwXVIokZ9iJ43c2TUlMJ+sgGT5jOWFLayk8KJGHvY/szUm5bgl/nJBDR5bBqpdIntxCuMsOklzEJI=
+	t=1771198437; cv=none; b=SXJeJqDd6z202kzXI3sge1z+OiGTgoPXr7fSKDxoOtfSaCTSmiWHSJVgRO/wYTy9E5ALRwby7+8qX4siNutSTdnaFKuy3qo1xaU9UyBuz8fkMRasVVisMSoNbBrXMi4+hsQ/cvWZZWEXWL4jtFBX6r0l5FAnLgzaao5ybDBXDZ4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771198434; c=relaxed/simple;
-	bh=9WHUEaOrVOm+WL4G/FUUC3aXFfCTRn5AFAGSSgL5t64=;
+	s=arc-20240116; t=1771198437; c=relaxed/simple;
+	bh=9V9FlgwGcdhV6Cdnj72pIF0gK7a9clPzLHlm+LpXO+c=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UlSnggG/5JgwG4LMYmPYxDBdNE+aRlaHu5DtIENfhGY/1GP4Vtv7jc0PikSTKj1QFT2uFYBJlTfvuCEycBo4p2e16+KQmAUQke2NDDXxzyvBLs3Rnxp1YVbVBSfvKR0YCZvrdDnGrOp7eXDUVXf7V5UMFMtV/OUBdspMGLIp3k8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=c/ot5uAH; arc=none smtp.client-ip=209.85.128.48
+	 MIME-Version:Content-Type; b=ZwgJUG/YBKl9GFC2zx3lmMRQ/dPKUoHanyuYWmX3gOHXqOWddZGUYAQc9tFIXqtRa2mey9yrPnkoc+9nMmB3WhKXrVD1Hqk4tT/qVULcaI5/wcLlopRBy3P0ny+LGDAl4dyuOxXUyN6maa5DkBIO1x0RSbqmJOVFU57eIK4ul3U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b=e1mwS9cu; arc=none smtp.client-ip=209.85.221.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="c/ot5uAH"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-48334ee0aeaso20040965e9.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 15:33:52 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.b="e1mwS9cu"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-436e87589e8so3212385f8f.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 15 Feb 2026 15:33:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1771198431; x=1771803231; darn=vger.kernel.org;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1771198433; x=1771803233; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=TOqo3ZpoHBCEkKQn3Tj+aWTPXLOhLLz8545K4/itoW4=;
-        b=c/ot5uAHubxwZYCVSvDdAIRMOYcVxKHXlNUSvstSlijgom0JHSbY53TAt4G0GFdlx1
-         jw/CkvucpO63B8RPw7EdIOFo6TL5smV9rLuZcatNmONFZ2Fun0QH7SzSH3MnG//rh8KS
-         YNZQZhPi7hvZr3jJTfcjnD59rLXPZ2NPlIWIKtghpUAF8CMiu+0//0Up0EE9I2b1UhVY
-         klIGdp4/MzFdGQqiFBKBQ+l4hsM80kJZZD42jmE1VpeecGDxXD85SRFU68tCNf69mBX9
-         MICmYOaLxGQhD5ai4arR08Ho1ePcDXyxx+OtsZyr5CBl3D/kF+r6PXrxZGzjOZJ9oXxs
-         3mTw==
+        bh=LrwVUOM8wMmDxOUA15e1sYZ1kQqfQ5M9yviTDmJhfrE=;
+        b=e1mwS9cugQZTIr0HlxjfNhzfFOkD7ztBU+e0i3KlACUpG2r4WwzCKTKXi/KotxKeun
+         kGlzfAY09R3O2iXpSep1URJxNP4PotuhS6jmo8fuP6pIS+KjbMd3csUcAn7RlIpbKgrN
+         dSWRGAhHhXJJAIS5zvUFbIqYjMPBf8FuTputxUVbZiTV2P4UDYAuAEh3qzLX/SWnYOmr
+         zu0l0snuPtxJszhuD3evaIvVFsDAHwbfrnl9mSfqSMNdeHV3nty1U6f1tLEcviQKxAtQ
+         R0GfP0MYnMFZn+DMXq0Xyccv0tFRZcJi/Y5fBJQz1FpxenGH56LPSlDHDWJr5z63IBOe
+         gSng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771198431; x=1771803231;
+        d=1e100.net; s=20230601; t=1771198433; x=1771803233;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=TOqo3ZpoHBCEkKQn3Tj+aWTPXLOhLLz8545K4/itoW4=;
-        b=ARZSK2NP+wchVHcGMCyzpLsSub74l6UjeYAROvdVnw3XFbaHPEdNBSNnZVk6gSkb2J
-         JwPU28/rCR2XMULz76nt+kEqcaWuU+tF/OVaBTGOPzRwsOwO+r7eHie9hPIOzcS4HqeW
-         7dBz+1zHpNYdOBsy9Kym902WL0BVwF7KNircdScgX4wDE7ClcHKZ62/U+J5OOR8UuQwa
-         69DaBEVlTqE8kNCUlcSNWkId5YxLhR8SiDFlsdDXNUQX10Gsi31HRje7FzUQfZdvQDeN
-         WW+gi8FGW+0UwO5qroFSWinffrTKdWN687N2dC6ac61ip/Q36RtRXiPiXdLr1T/8ihcd
-         azMQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUSvFguysKaULqw5ETKivBxlsZZX06oQaJdEQlN/qCn7sXoClNKhZREb+iD91IcpuFIgmw2eHtwFuhuVA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz9z5KtgACw9gEFJbc9sf3C7GFEudmz3g2j9VypcjsSc+9ZclUq
-	+0L3l3FUXDNWLsOsl6GFcYzEVNAh8exNDp4WjHH2EAhvrLaqJeRi7UDV92qHO6J3uPM7Vb7uKfG
-	ASysD
-X-Gm-Gg: AZuq6aJg+KIrrXdv2WpDrDVHveEMHYsp8Zo4A8NbRDTgcPgryKENl4Nm7EqRqHRGRUc
-	wPXAEAMqQsxXy2xdqOBBsCOoWlSbZlCw8WG47Y9TEDehG4FonMx64Po9IX52cvFtA+kjf5E5YWZ
-	krUQlNP1GdbGi21tNRVTzn9gyKxDj7FOPjImLjwBYf7/ps+r7PmvmGweiIy6wW1i1yzAWqaRrg2
-	EitzMvqKXA7hQtmakns8ZwdH0brJyjtr61YCEm4/coDpDQZBS+Bo2rYhHf6QvMu1v1ImUiUTgFS
-	iydat9GLReycN/wAsv9/GtD687mPZTqVrxM+HJjeHVXV0S5EUj7g9J1TiPGfUDkoe4UTW1aswfK
-	0d/LYP+/MvpqxmJlJfDgRO14R2WVn2BxOUIFJsyfg2l1+vhS2St6P44cjyJPvoS4mEVC1kSlmVD
-	lSPD3zJERsPIXuMwLEhahg9LUgQdCg
-X-Received: by 2002:a05:600c:3594:b0:477:9a28:b0a4 with SMTP id 5b1f17b1804b1-483737bea7bmr140951365e9.0.1771198430936;
-        Sun, 15 Feb 2026 15:33:50 -0800 (PST)
+        bh=LrwVUOM8wMmDxOUA15e1sYZ1kQqfQ5M9yviTDmJhfrE=;
+        b=wsyU2u/ch0ljMjyuTIs/GP8KgMqhl0VG3RNUu80JZfkg4/9biJbN3QodzeeCDf3tSo
+         l273EGyz+vnWVK3i6rau0SwFaEP+x7KiuZXdihqXNaMamF/gT5dULjGsRwIBTkyNSPj1
+         NkuIcjBdqIN3ovLcc0kiaYdDmHqE2vMwFbDa+lXs4DYBXtvWsfiGRQGwmYHymp5+z4eh
+         nvo7+ycYGt/wLPOPct1z2tZvW3kh+P8Mw5HJIiMMbvO7OXivZoaw97LpQNH97oxvCPuH
+         stjz7NvWLan3xesSPXwxcZaZCACaf8+9uFeHQDHWPhyENnnB8P+iyqdECC79xiM6mKke
+         vSrw==
+X-Forwarded-Encrypted: i=1; AJvYcCWMFmppFgY43RVs6Ia3YQfauWX2xMhOdP1gT74RwHoLDHx2mH30UhDoRy0DLDOS1lWienSQ5i5HND+iDw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxH3qT33lUpheKqPn99J6s6ToOLKvLVWQFKM6mwi8D24v+mAVVS
+	42H6RRrh1huEKJQHTbmyl235y9yndMBlisEHkYRExslx3MnH/bgnZdfmsZxpOlmQgYM=
+X-Gm-Gg: AZuq6aL6NooGLjM2WrPGN0OaJoqV8G6VMM1I2of0CG8j25X3GuYb4T8g+NLwvfoOkGs
+	vjhv1SnipAfoyK+xkAzV1+E7P0LBpMxyGiItc34KnaV1VjjvFT538Yx0ChzqNQ9MjTlxw8U4M8B
+	FRiM2lK/jYNqIlVSxIxBTxGfgZ4w6Aa+KVwR1x5acvAODvHt1/cEDp/A2jnWOGFSWO5cvnL6Sy+
+	AfgOkJpECleKJ5P+9+AWl/LjhfTXLa6MiaqODEh4q7+xhrH7cye6ogc3M+3FEyC+IVWTk66Tyzc
+	w907Waqqsu2tUU6V1psLKfKjPUt1sJWkixusomW5L+ziYtYqiaNLJqnH10I8gS9Z66GRQtypANc
+	Eq/PBWChj+7ehu7bxeBpCA3P4tQaYzAEQxQdr+/wgkakkwsrsxMEz4FSCkjimg9WD7ojZSNDFme
+	7lUUgN89Z9Vf04tyJ1NQjcMAQExppk5/YlnUaBDTU=
+X-Received: by 2002:a05:6000:4284:b0:436:317b:f3bd with SMTP id ffacd0b85a97d-43797913e41mr16255247f8f.33.1771198433399;
+        Sun, 15 Feb 2026 15:33:53 -0800 (PST)
 Received: from localhost ([2a02:8071:b783:6940:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-43796ac800esm23829050f8f.27.2026.02.15.15.33.49
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-43796a5acaasm20787309f8f.6.2026.02.15.15.33.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Feb 2026 15:33:50 -0800 (PST)
+        Sun, 15 Feb 2026 15:33:52 -0800 (PST)
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
 To: Helge Deller <deller@gmx.de>
 Cc: Chen Ni <nichen@iscas.ac.cn>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org
-Subject: [PATCH v5 5/7] fbdev: au1100fb: Replace custom printk wrappers by pr_*
-Date: Mon, 16 Feb 2026 00:33:21 +0100
-Message-ID: <6ca08f50fa1a6f9385cb4433db6406c311582bdc.1771198101.git.u.kleine-koenig@baylibre.com>
+Subject: [PATCH v5 6/7] fbdev: au1100fb: Fold au1100fb.h into its only user
+Date: Mon, 16 Feb 2026 00:33:22 +0100
+Message-ID: <365b70871f70073a04e22f60be8cc03e29c03946.1771198101.git.u.kleine-koenig@baylibre.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <cover.1771198101.git.u.kleine-koenig@baylibre.com>
 References: <cover.1771198101.git.u.kleine-koenig@baylibre.com>
@@ -77,206 +76,753 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6894; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=9WHUEaOrVOm+WL4G/FUUC3aXFfCTRn5AFAGSSgL5t64=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBpklfJHEK4fUFWoAwE4Jd9RrovUhJQH8Gs64uHL h+S3+lepqmJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaZJXyQAKCRCPgPtYfRL+ TiQZCACOSbmduirm/ihLWyQPheMypnxlzY/f7fimpLUVUsadKMt1aODlcZSKHyYJLQMmwB/HyLx ncaNX6aGwDrdTlR42825JxVfPtjELct5Bv6YxV7B6HUEj5zwCkcxtaybnw3mxyaOJREsg1JCEtI U6Oi/6R/oshayEPwfRO0FSQ6MzHIyj5z1rz5mTiECQkzaVey5tz5+DGPaNNalPRSQ9BTWhshCTo JnV1jZ6dez03qo0TLwLrMjm1D46O4VnggMhRT+2PDE2NWwbTeopRfuQE1aE1fVU/tNDGADpxXXn iCchRdbw51EIYCOxomk3ILBKduGoR7CApKMLp8l5hMotiQQw
+X-Developer-Signature: v=1; a=openpgp-sha256; l=29869; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=9V9FlgwGcdhV6Cdnj72pIF0gK7a9clPzLHlm+LpXO+c=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBpklfLMOHY3k4tlgQ0pCBOjFegV2wzWGx9vwlNV f1lXVQw61qJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCaZJXywAKCRCPgPtYfRL+ TvF0CAC4edCQVcjSgnvkqFjeteKE2cVVhnyxeBwyZbIQwUza1v2hcUR1cZDDiGmiEVhGSiS6GHD EII8GWmNU/UHelxpd+2wCDOBrF6MuClt9CH21qvRu6EQsdjuEUv3fEcHdIuYOyRoB7a30P4Ijwi P5O8cSy7hHkD9Pnw8V9h3pGEYdaVgSkPqTbo6XnUihYTIFV4/muG2cTePJCwaAwuVrxnSKcwBxi IB8INv0eo+snrLETKncgjX6Uqj5muLvE23XRS81EnqkbDTzEy3qGf77lA+AL11OH0IGgbNZGI3g Tczt9+x54frw7ZlteiKThPAwlfdesJgdfr0EdSu5+fgxEL+5
 X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-The global wrappers also have the advantage to do stricter format
-checking, so the pr_devel formats are also checked if DEBUG is not
-defined. The global variants only check for DEBUG being defined and not
-its actual value, so the #define to zero is dropped, too.
-
-There is only a slight semantic change as the (by default disabled)
-debug output doesn't contain __FILE__ any more.
+This gets rid of a header that is only used once. The copyrights and
+license specifications are all already covered in the au1100fb.c file.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
 ---
- drivers/video/fbdev/au1100fb.c | 41 +++++++++++++++++-----------------
- drivers/video/fbdev/au1100fb.h | 10 ---------
- 2 files changed, 21 insertions(+), 30 deletions(-)
+ drivers/video/au1100fb.c       |   0
+ drivers/video/fbdev/au1100fb.c | 339 +++++++++++++++++++++++++++++-
+ drivers/video/fbdev/au1100fb.h | 372 ---------------------------------
+ 3 files changed, 338 insertions(+), 373 deletions(-)
+ create mode 100644 drivers/video/au1100fb.c
+ delete mode 100644 drivers/video/fbdev/au1100fb.h
 
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+new file mode 100644
+index 000000000000..e69de29bb2d1
 diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
-index 7611dad0d68d..f589f90cce2c 100644
+index f589f90cce2c..13605337d724 100644
 --- a/drivers/video/fbdev/au1100fb.c
 +++ b/drivers/video/fbdev/au1100fb.c
-@@ -41,6 +41,9 @@
-  *  with this program; if not, write  to the Free Software Foundation, Inc.,
-  *  675 Mass Ave, Cambridge, MA 02139, USA.
-  */
-+
-+#define pr_fmt(fmt) "au1100fb:" fmt "\n"
-+
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/io.h>
-@@ -57,8 +60,6 @@
+@@ -60,7 +60,344 @@
  #include <linux/platform_device.h>
  #include <linux/slab.h>
  
--#define DEBUG 0
--
- #include "au1100fb.h"
+-#include "au1100fb.h"
++#if defined(__BIG_ENDIAN)
++#define LCD_CONTROL_DEFAULT_PO LCD_CONTROL_PO_11
++#else
++#define LCD_CONTROL_DEFAULT_PO LCD_CONTROL_PO_00
++#endif
++#define LCD_CONTROL_DEFAULT_SBPPF LCD_CONTROL_SBPPF_565
++
++/********************************************************************/
++
++/* LCD controller restrictions */
++#define AU1100_LCD_MAX_XRES	800
++#define AU1100_LCD_MAX_YRES	600
++#define AU1100_LCD_MAX_BPP	16
++#define AU1100_LCD_MAX_CLK	48000000
++#define AU1100_LCD_NBR_PALETTE_ENTRIES 256
++
++/* Default number of visible screen buffer to allocate */
++#define AU1100FB_NBR_VIDEO_BUFFERS 4
++
++/********************************************************************/
++
++struct au1100fb_panel
++{
++	const char name[25];		/* Full name <vendor>_<model> */
++
++	u32   	control_base;		/* Mode-independent control values */
++	u32	clkcontrol_base;	/* Panel pixclock preferences */
++
++	u32	horztiming;
++	u32	verttiming;
++
++	u32	xres;		/* Maximum horizontal resolution */
++	u32 	yres;		/* Maximum vertical resolution */
++	u32 	bpp;		/* Maximum depth supported */
++};
++
++struct au1100fb_regs
++{
++	u32  lcd_control;
++	u32  lcd_intstatus;
++	u32  lcd_intenable;
++	u32  lcd_horztiming;
++	u32  lcd_verttiming;
++	u32  lcd_clkcontrol;
++	u32  lcd_dmaaddr0;
++	u32  lcd_dmaaddr1;
++	u32  lcd_words;
++	u32  lcd_pwmdiv;
++	u32  lcd_pwmhi;
++	u32  reserved[(0x0400-0x002C)/4];
++	u32  lcd_palettebase[256];
++};
++
++struct au1100fb_device {
++
++	struct fb_info info;			/* FB driver info record */
++
++	struct au1100fb_panel 	*panel;		/* Panel connected to this device */
++
++	struct au1100fb_regs* 	regs;		/* Registers memory map */
++	size_t       		regs_len;
++	unsigned int 		regs_phys;
++
++#ifdef CONFIG_PM
++	/* stores the register values during suspend */
++	struct au1100fb_regs	pm_regs;
++#endif
++
++	unsigned char* 		fb_mem;		/* FrameBuffer memory map */
++	size_t	      		fb_len;
++	dma_addr_t    		fb_phys;
++	int			panel_idx;
++	struct clk		*lcdclk;
++	struct device		*dev;
++};
++
++/********************************************************************/
++
++#define LCD_CONTROL                (AU1100_LCD_BASE + 0x0)
++  #define LCD_CONTROL_SBB_BIT      21
++  #define LCD_CONTROL_SBB_MASK     (0x3 << LCD_CONTROL_SBB_BIT)
++    #define LCD_CONTROL_SBB_1        (0 << LCD_CONTROL_SBB_BIT)
++    #define LCD_CONTROL_SBB_2        (1 << LCD_CONTROL_SBB_BIT)
++    #define LCD_CONTROL_SBB_3        (2 << LCD_CONTROL_SBB_BIT)
++    #define LCD_CONTROL_SBB_4        (3 << LCD_CONTROL_SBB_BIT)
++  #define LCD_CONTROL_SBPPF_BIT    18
++  #define LCD_CONTROL_SBPPF_MASK   (0x7 << LCD_CONTROL_SBPPF_BIT)
++    #define LCD_CONTROL_SBPPF_655    (0 << LCD_CONTROL_SBPPF_BIT)
++    #define LCD_CONTROL_SBPPF_565    (1 << LCD_CONTROL_SBPPF_BIT)
++    #define LCD_CONTROL_SBPPF_556    (2 << LCD_CONTROL_SBPPF_BIT)
++    #define LCD_CONTROL_SBPPF_1555   (3 << LCD_CONTROL_SBPPF_BIT)
++    #define LCD_CONTROL_SBPPF_5551   (4 << LCD_CONTROL_SBPPF_BIT)
++  #define LCD_CONTROL_WP           (1<<17)
++  #define LCD_CONTROL_WD           (1<<16)
++  #define LCD_CONTROL_C            (1<<15)
++  #define LCD_CONTROL_SM_BIT       13
++  #define LCD_CONTROL_SM_MASK      (0x3 << LCD_CONTROL_SM_BIT)
++    #define LCD_CONTROL_SM_0         (0 << LCD_CONTROL_SM_BIT)
++    #define LCD_CONTROL_SM_90        (1 << LCD_CONTROL_SM_BIT)
++    #define LCD_CONTROL_SM_180       (2 << LCD_CONTROL_SM_BIT)
++    #define LCD_CONTROL_SM_270       (3 << LCD_CONTROL_SM_BIT)
++  #define LCD_CONTROL_DB           (1<<12)
++  #define LCD_CONTROL_CCO          (1<<11)
++  #define LCD_CONTROL_DP           (1<<10)
++  #define LCD_CONTROL_PO_BIT       8
++  #define LCD_CONTROL_PO_MASK      (0x3 << LCD_CONTROL_PO_BIT)
++    #define LCD_CONTROL_PO_00        (0 << LCD_CONTROL_PO_BIT)
++    #define LCD_CONTROL_PO_01        (1 << LCD_CONTROL_PO_BIT)
++    #define LCD_CONTROL_PO_10        (2 << LCD_CONTROL_PO_BIT)
++    #define LCD_CONTROL_PO_11        (3 << LCD_CONTROL_PO_BIT)
++  #define LCD_CONTROL_MPI          (1<<7)
++  #define LCD_CONTROL_PT           (1<<6)
++  #define LCD_CONTROL_PC           (1<<5)
++  #define LCD_CONTROL_BPP_BIT      1
++  #define LCD_CONTROL_BPP_MASK     (0x7 << LCD_CONTROL_BPP_BIT)
++    #define LCD_CONTROL_BPP_1        (0 << LCD_CONTROL_BPP_BIT)
++    #define LCD_CONTROL_BPP_2        (1 << LCD_CONTROL_BPP_BIT)
++    #define LCD_CONTROL_BPP_4        (2 << LCD_CONTROL_BPP_BIT)
++    #define LCD_CONTROL_BPP_8        (3 << LCD_CONTROL_BPP_BIT)
++    #define LCD_CONTROL_BPP_12       (4 << LCD_CONTROL_BPP_BIT)
++    #define LCD_CONTROL_BPP_16       (5 << LCD_CONTROL_BPP_BIT)
++  #define LCD_CONTROL_GO           (1<<0)
++
++#define LCD_INTSTATUS              (AU1100_LCD_BASE + 0x4)
++#define LCD_INTENABLE              (AU1100_LCD_BASE + 0x8)
++  #define LCD_INT_SD               (1<<7)
++  #define LCD_INT_OF               (1<<6)
++  #define LCD_INT_UF               (1<<5)
++  #define LCD_INT_SA               (1<<3)
++  #define LCD_INT_SS               (1<<2)
++  #define LCD_INT_S1               (1<<1)
++  #define LCD_INT_S0               (1<<0)
++
++#define LCD_HORZTIMING             (AU1100_LCD_BASE + 0xC)
++  #define LCD_HORZTIMING_HN2_BIT   24
++  #define LCD_HORZTIMING_HN2_MASK  (0xFF << LCD_HORZTIMING_HN2_BIT)
++  #define LCD_HORZTIMING_HN2_N(N)  ((((N)-1) << LCD_HORZTIMING_HN2_BIT) & LCD_HORZTIMING_HN2_MASK)
++  #define LCD_HORZTIMING_HN1_BIT   16
++  #define LCD_HORZTIMING_HN1_MASK  (0xFF << LCD_HORZTIMING_HN1_BIT)
++  #define LCD_HORZTIMING_HN1_N(N)  ((((N)-1) << LCD_HORZTIMING_HN1_BIT) & LCD_HORZTIMING_HN1_MASK)
++  #define LCD_HORZTIMING_HPW_BIT   10
++  #define LCD_HORZTIMING_HPW_MASK  (0x3F << LCD_HORZTIMING_HPW_BIT)
++  #define LCD_HORZTIMING_HPW_N(N)  ((((N)-1) << LCD_HORZTIMING_HPW_BIT) & LCD_HORZTIMING_HPW_MASK)
++  #define LCD_HORZTIMING_PPL_BIT   0
++  #define LCD_HORZTIMING_PPL_MASK  (0x3FF << LCD_HORZTIMING_PPL_BIT)
++  #define LCD_HORZTIMING_PPL_N(N)  ((((N)-1) << LCD_HORZTIMING_PPL_BIT) & LCD_HORZTIMING_PPL_MASK)
++
++#define LCD_VERTTIMING             (AU1100_LCD_BASE + 0x10)
++  #define LCD_VERTTIMING_VN2_BIT   24
++  #define LCD_VERTTIMING_VN2_MASK  (0xFF << LCD_VERTTIMING_VN2_BIT)
++  #define LCD_VERTTIMING_VN2_N(N)  ((((N)-1) << LCD_VERTTIMING_VN2_BIT) & LCD_VERTTIMING_VN2_MASK)
++  #define LCD_VERTTIMING_VN1_BIT   16
++  #define LCD_VERTTIMING_VN1_MASK  (0xFF << LCD_VERTTIMING_VN1_BIT)
++  #define LCD_VERTTIMING_VN1_N(N)  ((((N)-1) << LCD_VERTTIMING_VN1_BIT) & LCD_VERTTIMING_VN1_MASK)
++  #define LCD_VERTTIMING_VPW_BIT   10
++  #define LCD_VERTTIMING_VPW_MASK  (0x3F << LCD_VERTTIMING_VPW_BIT)
++  #define LCD_VERTTIMING_VPW_N(N)  ((((N)-1) << LCD_VERTTIMING_VPW_BIT) & LCD_VERTTIMING_VPW_MASK)
++  #define LCD_VERTTIMING_LPP_BIT   0
++  #define LCD_VERTTIMING_LPP_MASK  (0x3FF << LCD_VERTTIMING_LPP_BIT)
++  #define LCD_VERTTIMING_LPP_N(N)  ((((N)-1) << LCD_VERTTIMING_LPP_BIT) & LCD_VERTTIMING_LPP_MASK)
++
++#define LCD_CLKCONTROL             (AU1100_LCD_BASE + 0x14)
++  #define LCD_CLKCONTROL_IB        (1<<18)
++  #define LCD_CLKCONTROL_IC        (1<<17)
++  #define LCD_CLKCONTROL_IH        (1<<16)
++  #define LCD_CLKCONTROL_IV        (1<<15)
++  #define LCD_CLKCONTROL_BF_BIT    10
++  #define LCD_CLKCONTROL_BF_MASK   (0x1F << LCD_CLKCONTROL_BF_BIT)
++  #define LCD_CLKCONTROL_BF_N(N)   ((((N)-1) << LCD_CLKCONTROL_BF_BIT) & LCD_CLKCONTROL_BF_MASK)
++  #define LCD_CLKCONTROL_PCD_BIT   0
++  #define LCD_CLKCONTROL_PCD_MASK  (0x3FF << LCD_CLKCONTROL_PCD_BIT)
++  #define LCD_CLKCONTROL_PCD_N(N)  (((N) << LCD_CLKCONTROL_PCD_BIT) & LCD_CLKCONTROL_PCD_MASK)
++
++#define LCD_DMAADDR0               (AU1100_LCD_BASE + 0x18)
++#define LCD_DMAADDR1               (AU1100_LCD_BASE + 0x1C)
++  #define LCD_DMA_SA_BIT           5
++  #define LCD_DMA_SA_MASK          (0x7FFFFFF << LCD_DMA_SA_BIT)
++  #define LCD_DMA_SA_N(N)          ((N) & LCD_DMA_SA_MASK)
++
++#define LCD_WORDS                  (AU1100_LCD_BASE + 0x20)
++  #define LCD_WRD_WRDS_BIT         0
++  #define LCD_WRD_WRDS_MASK        (0xFFFFFFFF << LCD_WRD_WRDS_BIT)
++  #define LCD_WRD_WRDS_N(N)        ((((N)-1) << LCD_WRD_WRDS_BIT) & LCD_WRD_WRDS_MASK)
++
++#define LCD_PWMDIV                 (AU1100_LCD_BASE + 0x24)
++  #define LCD_PWMDIV_EN            (1<<12)
++  #define LCD_PWMDIV_PWMDIV_BIT    0
++  #define LCD_PWMDIV_PWMDIV_MASK   (0xFFF << LCD_PWMDIV_PWMDIV_BIT)
++  #define LCD_PWMDIV_PWMDIV_N(N)   ((((N)-1) << LCD_PWMDIV_PWMDIV_BIT) & LCD_PWMDIV_PWMDIV_MASK)
++
++#define LCD_PWMHI                  (AU1100_LCD_BASE + 0x28)
++  #define LCD_PWMHI_PWMHI1_BIT     12
++  #define LCD_PWMHI_PWMHI1_MASK    (0xFFF << LCD_PWMHI_PWMHI1_BIT)
++  #define LCD_PWMHI_PWMHI1_N(N)    (((N) << LCD_PWMHI_PWMHI1_BIT) & LCD_PWMHI_PWMHI1_MASK)
++  #define LCD_PWMHI_PWMHI0_BIT     0
++  #define LCD_PWMHI_PWMHI0_MASK    (0xFFF << LCD_PWMHI_PWMHI0_BIT)
++  #define LCD_PWMHI_PWMHI0_N(N)    (((N) << LCD_PWMHI_PWMHI0_BIT) & LCD_PWMHI_PWMHI0_MASK)
++
++#define LCD_PALLETTEBASE                (AU1100_LCD_BASE + 0x400)
++  #define LCD_PALLETTE_MONO_MI_BIT      0
++  #define LCD_PALLETTE_MONO_MI_MASK     (0xF << LCD_PALLETTE_MONO_MI_BIT)
++  #define LCD_PALLETTE_MONO_MI_N(N)     (((N)<< LCD_PALLETTE_MONO_MI_BIT) & LCD_PALLETTE_MONO_MI_MASK)
++
++  #define LCD_PALLETTE_COLOR_RI_BIT     8
++  #define LCD_PALLETTE_COLOR_RI_MASK    (0xF << LCD_PALLETTE_COLOR_RI_BIT)
++  #define LCD_PALLETTE_COLOR_RI_N(N)    (((N)<< LCD_PALLETTE_COLOR_RI_BIT) & LCD_PALLETTE_COLOR_RI_MASK)
++  #define LCD_PALLETTE_COLOR_GI_BIT     4
++  #define LCD_PALLETTE_COLOR_GI_MASK    (0xF << LCD_PALLETTE_COLOR_GI_BIT)
++  #define LCD_PALLETTE_COLOR_GI_N(N)    (((N)<< LCD_PALLETTE_COLOR_GI_BIT) & LCD_PALLETTE_COLOR_GI_MASK)
++  #define LCD_PALLETTE_COLOR_BI_BIT     0
++  #define LCD_PALLETTE_COLOR_BI_MASK    (0xF << LCD_PALLETTE_COLOR_BI_BIT)
++  #define LCD_PALLETTE_COLOR_BI_N(N)    (((N)<< LCD_PALLETTE_COLOR_BI_BIT) & LCD_PALLETTE_COLOR_BI_MASK)
++
++  #define LCD_PALLETTE_TFT_DC_BIT       0
++  #define LCD_PALLETTE_TFT_DC_MASK      (0xFFFF << LCD_PALLETTE_TFT_DC_BIT)
++  #define LCD_PALLETTE_TFT_DC_N(N)      (((N)<< LCD_PALLETTE_TFT_DC_BIT) & LCD_PALLETTE_TFT_DC_MASK)
++
++/********************************************************************/
++
++/* List of panels known to work with the AU1100 LCD controller.
++ * To add a new panel, enter the same specifications as the
++ * Generic_TFT one, and MAKE SURE that it doesn't conflicts
++ * with the controller restrictions. Restrictions are:
++ *
++ * STN color panels: max_bpp <= 12
++ * STN mono panels: max_bpp <= 4
++ * TFT panels: max_bpp <= 16
++ * max_xres <= 800
++ * max_yres <= 600
++ */
++static struct au1100fb_panel known_lcd_panels[] =
++{
++	/* 800x600x16bpp CRT */
++	[0] = {
++		.name = "CRT_800x600_16",
++		.xres = 800,
++		.yres = 600,
++		.bpp = 16,
++		.control_base =	0x0004886A |
++			LCD_CONTROL_DEFAULT_PO | LCD_CONTROL_DEFAULT_SBPPF |
++			LCD_CONTROL_BPP_16 | LCD_CONTROL_SBB_4,
++		.clkcontrol_base = 0x00020000,
++		.horztiming = 0x005aff1f,
++		.verttiming = 0x16000e57,
++	},
++	/* just the standard LCD */
++	[1] = {
++		.name = "WWPC LCD",
++		.xres = 240,
++		.yres = 320,
++		.bpp = 16,
++		.control_base = 0x0006806A,
++		.horztiming = 0x0A1010EF,
++		.verttiming = 0x0301013F,
++		.clkcontrol_base = 0x00018001,
++	},
++	/* Sharp 320x240 TFT panel */
++	[2] = {
++		.name = "Sharp_LQ038Q5DR01",
++		.xres = 320,
++		.yres = 240,
++		.bpp = 16,
++		.control_base =
++		( LCD_CONTROL_SBPPF_565
++		| LCD_CONTROL_C
++		| LCD_CONTROL_SM_0
++			| LCD_CONTROL_DEFAULT_PO
++		| LCD_CONTROL_PT
++		| LCD_CONTROL_PC
++		| LCD_CONTROL_BPP_16 ),
++		.horztiming =
++		( LCD_HORZTIMING_HN2_N(8)
++		| LCD_HORZTIMING_HN1_N(60)
++		| LCD_HORZTIMING_HPW_N(12)
++		| LCD_HORZTIMING_PPL_N(320) ),
++		.verttiming =
++		( LCD_VERTTIMING_VN2_N(5)
++		| LCD_VERTTIMING_VN1_N(17)
++		| LCD_VERTTIMING_VPW_N(1)
++		| LCD_VERTTIMING_LPP_N(240) ),
++		.clkcontrol_base = LCD_CLKCONTROL_PCD_N(1),
++	},
++
++	/* Hitachi SP14Q005 and possibly others */
++	[3] = {
++		.name = "Hitachi_SP14Qxxx",
++		.xres = 320,
++		.yres = 240,
++		.bpp = 4,
++		.control_base =
++			( LCD_CONTROL_C
++			| LCD_CONTROL_BPP_4 ),
++		.horztiming =
++			( LCD_HORZTIMING_HN2_N(1)
++			| LCD_HORZTIMING_HN1_N(1)
++			| LCD_HORZTIMING_HPW_N(1)
++			| LCD_HORZTIMING_PPL_N(320) ),
++		.verttiming =
++			( LCD_VERTTIMING_VN2_N(1)
++			| LCD_VERTTIMING_VN1_N(1)
++			| LCD_VERTTIMING_VPW_N(1)
++			| LCD_VERTTIMING_LPP_N(240) ),
++		.clkcontrol_base = LCD_CLKCONTROL_PCD_N(4),
++	},
++
++	/* Generic 640x480 TFT panel */
++	[4] = {
++		.name = "TFT_640x480_16",
++		.xres = 640,
++		.yres = 480,
++		.bpp = 16,
++		.control_base = 0x004806a | LCD_CONTROL_DEFAULT_PO,
++		.horztiming = 0x3434d67f,
++		.verttiming = 0x0e0e39df,
++		.clkcontrol_base = LCD_CLKCONTROL_PCD_N(1),
++	},
++
++	 /* Pb1100 LCDB 640x480 PrimeView TFT panel */
++	[5] = {
++		.name = "PrimeView_640x480_16",
++		.xres = 640,
++		.yres = 480,
++		.bpp = 16,
++		.control_base = 0x0004886a | LCD_CONTROL_DEFAULT_PO,
++		.horztiming = 0x0e4bfe7f,
++		.verttiming = 0x210805df,
++		.clkcontrol_base = 0x00038001,
++	},
++};
++
++/********************************************************************/
++
++/* Inline helpers */
++
++#define panel_is_dual(panel)  (panel->control_base & LCD_CONTROL_DP)
++#define panel_is_active(panel)(panel->control_base & LCD_CONTROL_PT)
++#define panel_is_color(panel) (panel->control_base & LCD_CONTROL_PC)
++#define panel_swap_rgb(panel) (panel->control_base & LCD_CONTROL_CCO)
  
  #if defined(CONFIG_COMPILE_TEST) && !defined(CONFIG_MIPS)
-@@ -97,7 +98,7 @@ static int au1100fb_fb_blank(int blank_mode, struct fb_info *fbi)
- {
- 	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
- 
--	print_dbg("fb_blank %d %p", blank_mode, fbi);
-+	pr_devel("fb_blank %d %p", blank_mode, fbi);
- 
- 	switch (blank_mode) {
- 
-@@ -291,7 +292,7 @@ static int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info
- 
- 	fbdev = to_au1100fb_device(fbi);
- 
--	print_dbg("fb_pan_display %p %p", var, fbi);
-+	pr_devel("fb_pan_display %p %p", var, fbi);
- 
- 	if (!var || !fbdev) {
- 		return -EINVAL;
-@@ -302,13 +303,13 @@ static int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info
- 		return -EINVAL;
- 	}
- 
--	print_dbg("fb_pan_display 2 %p %p", var, fbi);
-+	pr_devel("fb_pan_display 2 %p %p", var, fbi);
- 	dy = var->yoffset - fbi->var.yoffset;
- 	if (dy) {
- 
- 		u32 dmaaddr;
- 
--		print_dbg("Panning screen of %d lines", dy);
-+		pr_devel("Panning screen of %d lines", dy);
- 
- 		dmaaddr = fbdev->regs->lcd_dmaaddr0;
- 		dmaaddr += (fbi->fix.line_length * dy);
-@@ -322,7 +323,7 @@ static int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info
- 			fbdev->regs->lcd_dmaaddr0 = LCD_DMA_SA_N(dmaaddr);
- 	}
- 	}
--	print_dbg("fb_pan_display 3 %p %p", var, fbi);
-+	pr_devel("fb_pan_display 3 %p %p", var, fbi);
- 
- 	return 0;
- }
-@@ -365,7 +366,7 @@ static int au1100fb_setup(struct au1100fb_device *fbdev)
- 	int num_panels = ARRAY_SIZE(known_lcd_panels);
- 
- 	if (num_panels <= 0) {
--		print_err("No LCD panels supported by driver!");
-+		pr_err("No LCD panels supported by driver!");
- 		return -ENODEV;
- 	}
- 
-@@ -388,16 +389,16 @@ static int au1100fb_setup(struct au1100fb_device *fbdev)
- 				}
- 			}
- 			if (i >= num_panels) {
--				print_warn("Panel '%s' not supported!", this_opt);
-+				pr_warn("Panel '%s' not supported!", this_opt);
- 				return -ENODEV;
- 			}
- 		}
- 		/* Unsupported option */
- 		else
--			print_warn("Unsupported option \"%s\"", this_opt);
-+			pr_warn("Unsupported option \"%s\"", this_opt);
- 	}
- 
--	print_info("Panel=%s", fbdev->panel->name);
-+	pr_info("Panel=%s", fbdev->panel->name);
- 
- 	return 0;
- }
-@@ -422,7 +423,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 	/* Allocate region for our registers and map them */
- 	regs_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
- 	if (!regs_res) {
--		print_err("fail to retrieve registers resource");
-+		pr_err("fail to retrieve registers resource");
- 		return -EFAULT;
- 	}
- 
-@@ -440,15 +441,15 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 				     fbdev->info.fix.mmio_start,
- 				     fbdev->info.fix.mmio_len,
- 				     DRIVER_NAME)) {
--		print_err("fail to lock memory region at 0x%08lx",
-+		pr_err("fail to lock memory region at 0x%08lx",
- 			  fbdev->info.fix.mmio_start);
- 		return -EBUSY;
- 	}
- 
- 	fbdev->regs = (struct au1100fb_regs*)KSEG1ADDR(fbdev->info.fix.mmio_start);
- 
--	print_dbg("Register memory map at %p", fbdev->regs);
--	print_dbg("phys=0x%08x, size=%zu", fbdev->regs_phys, fbdev->regs_len);
-+	pr_devel("Register memory map at %p", fbdev->regs);
-+	pr_devel("phys=0x%08x, size=%zu", fbdev->regs_phys, fbdev->regs_len);
- 
- 	c = clk_get(NULL, "lcd_intclk");
- 	if (!IS_ERR(c)) {
-@@ -465,7 +466,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 					    PAGE_ALIGN(fbdev->fb_len),
- 					    &fbdev->fb_phys, GFP_KERNEL);
- 	if (!fbdev->fb_mem) {
--		print_err("fail to allocate framebuffer (size: %zuK))",
-+		pr_err("fail to allocate framebuffer (size: %zuK))",
- 			  fbdev->fb_len / 1024);
- 		return -ENOMEM;
- 	}
-@@ -473,8 +474,8 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 	fbdev->info.fix.smem_start = fbdev->fb_phys;
- 	fbdev->info.fix.smem_len = fbdev->fb_len;
- 
--	print_dbg("Framebuffer memory map at %p", fbdev->fb_mem);
--	print_dbg("phys=0x%pad, size=%zuK", &fbdev->fb_phys, fbdev->fb_len / 1024);
-+	pr_devel("Framebuffer memory map at %p", fbdev->fb_mem);
-+	pr_devel("phys=0x%pad, size=%zuK", &fbdev->fb_phys, fbdev->fb_len / 1024);
- 
- 	/* load the panel info into the var struct */
- 	fbdev->info.var = (struct fb_var_screeninfo) {
-@@ -498,7 +499,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 		return -ENOMEM;
- 
- 	if (fb_alloc_cmap(&fbdev->info.cmap, AU1100_LCD_NBR_PALETTE_ENTRIES, 0) < 0) {
--		print_err("Fail to allocate colormap (%d entries)",
-+		pr_err("Fail to allocate colormap (%d entries)",
- 			   AU1100_LCD_NBR_PALETTE_ENTRIES);
- 		return -EFAULT;
- 	}
-@@ -508,7 +509,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 
- 	/* Register new framebuffer */
- 	if (register_framebuffer(&fbdev->info) < 0) {
--		print_err("cannot register new framebuffer");
-+		pr_err("cannot register new framebuffer");
- 		goto failed;
- 	}
- 
+ /* This is only defined to be able to compile this driver on non-mips platforms */
 diff --git a/drivers/video/fbdev/au1100fb.h b/drivers/video/fbdev/au1100fb.h
-index 63aef2f52141..80743b3e2376 100644
+deleted file mode 100644
+index 80743b3e2376..000000000000
 --- a/drivers/video/fbdev/au1100fb.h
-+++ b/drivers/video/fbdev/au1100fb.h
-@@ -30,16 +30,6 @@
- #ifndef _AU1100LCD_H
- #define _AU1100LCD_H
- 
--#define print_err(f, arg...) printk(KERN_ERR DRIVER_NAME ": " f "\n", ## arg)
--#define print_warn(f, arg...) printk(KERN_WARNING DRIVER_NAME ": " f "\n", ## arg)
--#define print_info(f, arg...) printk(KERN_INFO DRIVER_NAME ": " f "\n", ## arg)
++++ /dev/null
+@@ -1,372 +0,0 @@
+-/*
+- * BRIEF MODULE DESCRIPTION
+- *	Hardware definitions for the Au1100 LCD controller
+- *
+- * Copyright 2002 MontaVista Software
+- * Copyright 2002 Alchemy Semiconductor
+- * Author:	Alchemy Semiconductor, MontaVista Software
+- *
+- *  This program is free software; you can redistribute	 it and/or modify it
+- *  under  the terms of	 the GNU General  Public License as published by the
+- *  Free Software Foundation;  either version 2 of the	License, or (at your
+- *  option) any later version.
+- *
+- *  THIS  SOFTWARE  IS PROVIDED	  ``AS	IS'' AND   ANY	EXPRESS OR IMPLIED
+- *  WARRANTIES,	  INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
+- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+- *  NO	EVENT  SHALL   THE AUTHOR  BE	 LIABLE FOR ANY	  DIRECT, INDIRECT,
+- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *  NOT LIMITED	  TO, PROCUREMENT OF  SUBSTITUTE GOODS	OR SERVICES; LOSS OF
+- *  USE, DATA,	OR PROFITS; OR	BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+- *  ANY THEORY OF LIABILITY, WHETHER IN	 CONTRACT, STRICT LIABILITY, OR TORT
+- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+- *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- *
+- *  You should have received a copy of the  GNU General Public License along
+- *  with this program; if not, write  to the Free Software Foundation, Inc.,
+- *  675 Mass Ave, Cambridge, MA 02139, USA.
+- */
 -
--#if DEBUG
--#define print_dbg(f, arg...) printk(__FILE__ ": " f "\n", ## arg)
+-#ifndef _AU1100LCD_H
+-#define _AU1100LCD_H
+-
+-#if defined(__BIG_ENDIAN)
+-#define LCD_CONTROL_DEFAULT_PO LCD_CONTROL_PO_11
 -#else
--#define print_dbg(f, arg...) do {} while (0)
+-#define LCD_CONTROL_DEFAULT_PO LCD_CONTROL_PO_00
+-#endif
+-#define LCD_CONTROL_DEFAULT_SBPPF LCD_CONTROL_SBPPF_565
+-
+-/********************************************************************/
+-
+-/* LCD controller restrictions */
+-#define AU1100_LCD_MAX_XRES	800
+-#define AU1100_LCD_MAX_YRES	600
+-#define AU1100_LCD_MAX_BPP	16
+-#define AU1100_LCD_MAX_CLK	48000000
+-#define AU1100_LCD_NBR_PALETTE_ENTRIES 256
+-
+-/* Default number of visible screen buffer to allocate */
+-#define AU1100FB_NBR_VIDEO_BUFFERS 4
+-
+-/********************************************************************/
+-
+-struct au1100fb_panel
+-{
+-	const char name[25];		/* Full name <vendor>_<model> */
+-
+-	u32   	control_base;		/* Mode-independent control values */
+-	u32	clkcontrol_base;	/* Panel pixclock preferences */
+-
+-	u32	horztiming;
+-	u32	verttiming;
+-
+-	u32	xres;		/* Maximum horizontal resolution */
+-	u32 	yres;		/* Maximum vertical resolution */
+-	u32 	bpp;		/* Maximum depth supported */
+-};
+-
+-struct au1100fb_regs
+-{
+-	u32  lcd_control;
+-	u32  lcd_intstatus;
+-	u32  lcd_intenable;
+-	u32  lcd_horztiming;
+-	u32  lcd_verttiming;
+-	u32  lcd_clkcontrol;
+-	u32  lcd_dmaaddr0;
+-	u32  lcd_dmaaddr1;
+-	u32  lcd_words;
+-	u32  lcd_pwmdiv;
+-	u32  lcd_pwmhi;
+-	u32  reserved[(0x0400-0x002C)/4];
+-	u32  lcd_palettebase[256];
+-};
+-
+-struct au1100fb_device {
+-
+-	struct fb_info info;			/* FB driver info record */
+-
+-	struct au1100fb_panel 	*panel;		/* Panel connected to this device */
+-
+-	struct au1100fb_regs* 	regs;		/* Registers memory map */
+-	size_t       		regs_len;
+-	unsigned int 		regs_phys;
+-
+-#ifdef CONFIG_PM
+-	/* stores the register values during suspend */
+-	struct au1100fb_regs	pm_regs;
 -#endif
 -
- #if defined(__BIG_ENDIAN)
- #define LCD_CONTROL_DEFAULT_PO LCD_CONTROL_PO_11
- #else
+-	unsigned char* 		fb_mem;		/* FrameBuffer memory map */
+-	size_t	      		fb_len;
+-	dma_addr_t    		fb_phys;
+-	int			panel_idx;
+-	struct clk		*lcdclk;
+-	struct device		*dev;
+-};
+-
+-/********************************************************************/
+-
+-#define LCD_CONTROL                (AU1100_LCD_BASE + 0x0)
+-  #define LCD_CONTROL_SBB_BIT      21
+-  #define LCD_CONTROL_SBB_MASK     (0x3 << LCD_CONTROL_SBB_BIT)
+-    #define LCD_CONTROL_SBB_1        (0 << LCD_CONTROL_SBB_BIT)
+-    #define LCD_CONTROL_SBB_2        (1 << LCD_CONTROL_SBB_BIT)
+-    #define LCD_CONTROL_SBB_3        (2 << LCD_CONTROL_SBB_BIT)
+-    #define LCD_CONTROL_SBB_4        (3 << LCD_CONTROL_SBB_BIT)
+-  #define LCD_CONTROL_SBPPF_BIT    18
+-  #define LCD_CONTROL_SBPPF_MASK   (0x7 << LCD_CONTROL_SBPPF_BIT)
+-    #define LCD_CONTROL_SBPPF_655    (0 << LCD_CONTROL_SBPPF_BIT)
+-    #define LCD_CONTROL_SBPPF_565    (1 << LCD_CONTROL_SBPPF_BIT)
+-    #define LCD_CONTROL_SBPPF_556    (2 << LCD_CONTROL_SBPPF_BIT)
+-    #define LCD_CONTROL_SBPPF_1555   (3 << LCD_CONTROL_SBPPF_BIT)
+-    #define LCD_CONTROL_SBPPF_5551   (4 << LCD_CONTROL_SBPPF_BIT)
+-  #define LCD_CONTROL_WP           (1<<17)
+-  #define LCD_CONTROL_WD           (1<<16)
+-  #define LCD_CONTROL_C            (1<<15)
+-  #define LCD_CONTROL_SM_BIT       13
+-  #define LCD_CONTROL_SM_MASK      (0x3 << LCD_CONTROL_SM_BIT)
+-    #define LCD_CONTROL_SM_0         (0 << LCD_CONTROL_SM_BIT)
+-    #define LCD_CONTROL_SM_90        (1 << LCD_CONTROL_SM_BIT)
+-    #define LCD_CONTROL_SM_180       (2 << LCD_CONTROL_SM_BIT)
+-    #define LCD_CONTROL_SM_270       (3 << LCD_CONTROL_SM_BIT)
+-  #define LCD_CONTROL_DB           (1<<12)
+-  #define LCD_CONTROL_CCO          (1<<11)
+-  #define LCD_CONTROL_DP           (1<<10)
+-  #define LCD_CONTROL_PO_BIT       8
+-  #define LCD_CONTROL_PO_MASK      (0x3 << LCD_CONTROL_PO_BIT)
+-    #define LCD_CONTROL_PO_00        (0 << LCD_CONTROL_PO_BIT)
+-    #define LCD_CONTROL_PO_01        (1 << LCD_CONTROL_PO_BIT)
+-    #define LCD_CONTROL_PO_10        (2 << LCD_CONTROL_PO_BIT)
+-    #define LCD_CONTROL_PO_11        (3 << LCD_CONTROL_PO_BIT)
+-  #define LCD_CONTROL_MPI          (1<<7)
+-  #define LCD_CONTROL_PT           (1<<6)
+-  #define LCD_CONTROL_PC           (1<<5)
+-  #define LCD_CONTROL_BPP_BIT      1
+-  #define LCD_CONTROL_BPP_MASK     (0x7 << LCD_CONTROL_BPP_BIT)
+-    #define LCD_CONTROL_BPP_1        (0 << LCD_CONTROL_BPP_BIT)
+-    #define LCD_CONTROL_BPP_2        (1 << LCD_CONTROL_BPP_BIT)
+-    #define LCD_CONTROL_BPP_4        (2 << LCD_CONTROL_BPP_BIT)
+-    #define LCD_CONTROL_BPP_8        (3 << LCD_CONTROL_BPP_BIT)
+-    #define LCD_CONTROL_BPP_12       (4 << LCD_CONTROL_BPP_BIT)
+-    #define LCD_CONTROL_BPP_16       (5 << LCD_CONTROL_BPP_BIT)
+-  #define LCD_CONTROL_GO           (1<<0)
+-
+-#define LCD_INTSTATUS              (AU1100_LCD_BASE + 0x4)
+-#define LCD_INTENABLE              (AU1100_LCD_BASE + 0x8)
+-  #define LCD_INT_SD               (1<<7)
+-  #define LCD_INT_OF               (1<<6)
+-  #define LCD_INT_UF               (1<<5)
+-  #define LCD_INT_SA               (1<<3)
+-  #define LCD_INT_SS               (1<<2)
+-  #define LCD_INT_S1               (1<<1)
+-  #define LCD_INT_S0               (1<<0)
+-
+-#define LCD_HORZTIMING             (AU1100_LCD_BASE + 0xC)
+-  #define LCD_HORZTIMING_HN2_BIT   24
+-  #define LCD_HORZTIMING_HN2_MASK  (0xFF << LCD_HORZTIMING_HN2_BIT)
+-  #define LCD_HORZTIMING_HN2_N(N)  ((((N)-1) << LCD_HORZTIMING_HN2_BIT) & LCD_HORZTIMING_HN2_MASK)
+-  #define LCD_HORZTIMING_HN1_BIT   16
+-  #define LCD_HORZTIMING_HN1_MASK  (0xFF << LCD_HORZTIMING_HN1_BIT)
+-  #define LCD_HORZTIMING_HN1_N(N)  ((((N)-1) << LCD_HORZTIMING_HN1_BIT) & LCD_HORZTIMING_HN1_MASK)
+-  #define LCD_HORZTIMING_HPW_BIT   10
+-  #define LCD_HORZTIMING_HPW_MASK  (0x3F << LCD_HORZTIMING_HPW_BIT)
+-  #define LCD_HORZTIMING_HPW_N(N)  ((((N)-1) << LCD_HORZTIMING_HPW_BIT) & LCD_HORZTIMING_HPW_MASK)
+-  #define LCD_HORZTIMING_PPL_BIT   0
+-  #define LCD_HORZTIMING_PPL_MASK  (0x3FF << LCD_HORZTIMING_PPL_BIT)
+-  #define LCD_HORZTIMING_PPL_N(N)  ((((N)-1) << LCD_HORZTIMING_PPL_BIT) & LCD_HORZTIMING_PPL_MASK)
+-
+-#define LCD_VERTTIMING             (AU1100_LCD_BASE + 0x10)
+-  #define LCD_VERTTIMING_VN2_BIT   24
+-  #define LCD_VERTTIMING_VN2_MASK  (0xFF << LCD_VERTTIMING_VN2_BIT)
+-  #define LCD_VERTTIMING_VN2_N(N)  ((((N)-1) << LCD_VERTTIMING_VN2_BIT) & LCD_VERTTIMING_VN2_MASK)
+-  #define LCD_VERTTIMING_VN1_BIT   16
+-  #define LCD_VERTTIMING_VN1_MASK  (0xFF << LCD_VERTTIMING_VN1_BIT)
+-  #define LCD_VERTTIMING_VN1_N(N)  ((((N)-1) << LCD_VERTTIMING_VN1_BIT) & LCD_VERTTIMING_VN1_MASK)
+-  #define LCD_VERTTIMING_VPW_BIT   10
+-  #define LCD_VERTTIMING_VPW_MASK  (0x3F << LCD_VERTTIMING_VPW_BIT)
+-  #define LCD_VERTTIMING_VPW_N(N)  ((((N)-1) << LCD_VERTTIMING_VPW_BIT) & LCD_VERTTIMING_VPW_MASK)
+-  #define LCD_VERTTIMING_LPP_BIT   0
+-  #define LCD_VERTTIMING_LPP_MASK  (0x3FF << LCD_VERTTIMING_LPP_BIT)
+-  #define LCD_VERTTIMING_LPP_N(N)  ((((N)-1) << LCD_VERTTIMING_LPP_BIT) & LCD_VERTTIMING_LPP_MASK)
+-
+-#define LCD_CLKCONTROL             (AU1100_LCD_BASE + 0x14)
+-  #define LCD_CLKCONTROL_IB        (1<<18)
+-  #define LCD_CLKCONTROL_IC        (1<<17)
+-  #define LCD_CLKCONTROL_IH        (1<<16)
+-  #define LCD_CLKCONTROL_IV        (1<<15)
+-  #define LCD_CLKCONTROL_BF_BIT    10
+-  #define LCD_CLKCONTROL_BF_MASK   (0x1F << LCD_CLKCONTROL_BF_BIT)
+-  #define LCD_CLKCONTROL_BF_N(N)   ((((N)-1) << LCD_CLKCONTROL_BF_BIT) & LCD_CLKCONTROL_BF_MASK)
+-  #define LCD_CLKCONTROL_PCD_BIT   0
+-  #define LCD_CLKCONTROL_PCD_MASK  (0x3FF << LCD_CLKCONTROL_PCD_BIT)
+-  #define LCD_CLKCONTROL_PCD_N(N)  (((N) << LCD_CLKCONTROL_PCD_BIT) & LCD_CLKCONTROL_PCD_MASK)
+-
+-#define LCD_DMAADDR0               (AU1100_LCD_BASE + 0x18)
+-#define LCD_DMAADDR1               (AU1100_LCD_BASE + 0x1C)
+-  #define LCD_DMA_SA_BIT           5
+-  #define LCD_DMA_SA_MASK          (0x7FFFFFF << LCD_DMA_SA_BIT)
+-  #define LCD_DMA_SA_N(N)          ((N) & LCD_DMA_SA_MASK)
+-
+-#define LCD_WORDS                  (AU1100_LCD_BASE + 0x20)
+-  #define LCD_WRD_WRDS_BIT         0
+-  #define LCD_WRD_WRDS_MASK        (0xFFFFFFFF << LCD_WRD_WRDS_BIT)
+-  #define LCD_WRD_WRDS_N(N)        ((((N)-1) << LCD_WRD_WRDS_BIT) & LCD_WRD_WRDS_MASK)
+-
+-#define LCD_PWMDIV                 (AU1100_LCD_BASE + 0x24)
+-  #define LCD_PWMDIV_EN            (1<<12)
+-  #define LCD_PWMDIV_PWMDIV_BIT    0
+-  #define LCD_PWMDIV_PWMDIV_MASK   (0xFFF << LCD_PWMDIV_PWMDIV_BIT)
+-  #define LCD_PWMDIV_PWMDIV_N(N)   ((((N)-1) << LCD_PWMDIV_PWMDIV_BIT) & LCD_PWMDIV_PWMDIV_MASK)
+-
+-#define LCD_PWMHI                  (AU1100_LCD_BASE + 0x28)
+-  #define LCD_PWMHI_PWMHI1_BIT     12
+-  #define LCD_PWMHI_PWMHI1_MASK    (0xFFF << LCD_PWMHI_PWMHI1_BIT)
+-  #define LCD_PWMHI_PWMHI1_N(N)    (((N) << LCD_PWMHI_PWMHI1_BIT) & LCD_PWMHI_PWMHI1_MASK)
+-  #define LCD_PWMHI_PWMHI0_BIT     0
+-  #define LCD_PWMHI_PWMHI0_MASK    (0xFFF << LCD_PWMHI_PWMHI0_BIT)
+-  #define LCD_PWMHI_PWMHI0_N(N)    (((N) << LCD_PWMHI_PWMHI0_BIT) & LCD_PWMHI_PWMHI0_MASK)
+-
+-#define LCD_PALLETTEBASE                (AU1100_LCD_BASE + 0x400)
+-  #define LCD_PALLETTE_MONO_MI_BIT      0
+-  #define LCD_PALLETTE_MONO_MI_MASK     (0xF << LCD_PALLETTE_MONO_MI_BIT)
+-  #define LCD_PALLETTE_MONO_MI_N(N)     (((N)<< LCD_PALLETTE_MONO_MI_BIT) & LCD_PALLETTE_MONO_MI_MASK)
+-
+-  #define LCD_PALLETTE_COLOR_RI_BIT     8
+-  #define LCD_PALLETTE_COLOR_RI_MASK    (0xF << LCD_PALLETTE_COLOR_RI_BIT)
+-  #define LCD_PALLETTE_COLOR_RI_N(N)    (((N)<< LCD_PALLETTE_COLOR_RI_BIT) & LCD_PALLETTE_COLOR_RI_MASK)
+-  #define LCD_PALLETTE_COLOR_GI_BIT     4
+-  #define LCD_PALLETTE_COLOR_GI_MASK    (0xF << LCD_PALLETTE_COLOR_GI_BIT)
+-  #define LCD_PALLETTE_COLOR_GI_N(N)    (((N)<< LCD_PALLETTE_COLOR_GI_BIT) & LCD_PALLETTE_COLOR_GI_MASK)
+-  #define LCD_PALLETTE_COLOR_BI_BIT     0
+-  #define LCD_PALLETTE_COLOR_BI_MASK    (0xF << LCD_PALLETTE_COLOR_BI_BIT)
+-  #define LCD_PALLETTE_COLOR_BI_N(N)    (((N)<< LCD_PALLETTE_COLOR_BI_BIT) & LCD_PALLETTE_COLOR_BI_MASK)
+-
+-  #define LCD_PALLETTE_TFT_DC_BIT       0
+-  #define LCD_PALLETTE_TFT_DC_MASK      (0xFFFF << LCD_PALLETTE_TFT_DC_BIT)
+-  #define LCD_PALLETTE_TFT_DC_N(N)      (((N)<< LCD_PALLETTE_TFT_DC_BIT) & LCD_PALLETTE_TFT_DC_MASK)
+-
+-/********************************************************************/
+-
+-/* List of panels known to work with the AU1100 LCD controller.
+- * To add a new panel, enter the same specifications as the
+- * Generic_TFT one, and MAKE SURE that it doesn't conflicts
+- * with the controller restrictions. Restrictions are:
+- *
+- * STN color panels: max_bpp <= 12
+- * STN mono panels: max_bpp <= 4
+- * TFT panels: max_bpp <= 16
+- * max_xres <= 800
+- * max_yres <= 600
+- */
+-static struct au1100fb_panel known_lcd_panels[] =
+-{
+-	/* 800x600x16bpp CRT */
+-	[0] = {
+-		.name = "CRT_800x600_16",
+-		.xres = 800,
+-		.yres = 600,
+-		.bpp = 16,
+-		.control_base =	0x0004886A |
+-			LCD_CONTROL_DEFAULT_PO | LCD_CONTROL_DEFAULT_SBPPF |
+-			LCD_CONTROL_BPP_16 | LCD_CONTROL_SBB_4,
+-		.clkcontrol_base = 0x00020000,
+-		.horztiming = 0x005aff1f,
+-		.verttiming = 0x16000e57,
+-	},
+-	/* just the standard LCD */
+-	[1] = {
+-		.name = "WWPC LCD",
+-		.xres = 240,
+-		.yres = 320,
+-		.bpp = 16,
+-		.control_base = 0x0006806A,
+-		.horztiming = 0x0A1010EF,
+-		.verttiming = 0x0301013F,
+-		.clkcontrol_base = 0x00018001,
+-	},
+-	/* Sharp 320x240 TFT panel */
+-	[2] = {
+-		.name = "Sharp_LQ038Q5DR01",
+-		.xres = 320,
+-		.yres = 240,
+-		.bpp = 16,
+-		.control_base =
+-		( LCD_CONTROL_SBPPF_565
+-		| LCD_CONTROL_C
+-		| LCD_CONTROL_SM_0
+-			| LCD_CONTROL_DEFAULT_PO
+-		| LCD_CONTROL_PT
+-		| LCD_CONTROL_PC
+-		| LCD_CONTROL_BPP_16 ),
+-		.horztiming =
+-		( LCD_HORZTIMING_HN2_N(8)
+-		| LCD_HORZTIMING_HN1_N(60)
+-		| LCD_HORZTIMING_HPW_N(12)
+-		| LCD_HORZTIMING_PPL_N(320) ),
+-		.verttiming =
+-		( LCD_VERTTIMING_VN2_N(5)
+-		| LCD_VERTTIMING_VN1_N(17)
+-		| LCD_VERTTIMING_VPW_N(1)
+-		| LCD_VERTTIMING_LPP_N(240) ),
+-		.clkcontrol_base = LCD_CLKCONTROL_PCD_N(1),
+-	},
+-
+-	/* Hitachi SP14Q005 and possibly others */
+-	[3] = {
+-		.name = "Hitachi_SP14Qxxx",
+-		.xres = 320,
+-		.yres = 240,
+-		.bpp = 4,
+-		.control_base =
+-			( LCD_CONTROL_C
+-			| LCD_CONTROL_BPP_4 ),
+-		.horztiming =
+-			( LCD_HORZTIMING_HN2_N(1)
+-			| LCD_HORZTIMING_HN1_N(1)
+-			| LCD_HORZTIMING_HPW_N(1)
+-			| LCD_HORZTIMING_PPL_N(320) ),
+-		.verttiming =
+-			( LCD_VERTTIMING_VN2_N(1)
+-			| LCD_VERTTIMING_VN1_N(1)
+-			| LCD_VERTTIMING_VPW_N(1)
+-			| LCD_VERTTIMING_LPP_N(240) ),
+-		.clkcontrol_base = LCD_CLKCONTROL_PCD_N(4),
+-	},
+-
+-	/* Generic 640x480 TFT panel */
+-	[4] = {
+-		.name = "TFT_640x480_16",
+-		.xres = 640,
+-		.yres = 480,
+-		.bpp = 16,
+-		.control_base = 0x004806a | LCD_CONTROL_DEFAULT_PO,
+-		.horztiming = 0x3434d67f,
+-		.verttiming = 0x0e0e39df,
+-		.clkcontrol_base = LCD_CLKCONTROL_PCD_N(1),
+-	},
+-
+-	 /* Pb1100 LCDB 640x480 PrimeView TFT panel */
+-	[5] = {
+-		.name = "PrimeView_640x480_16",
+-		.xres = 640,
+-		.yres = 480,
+-		.bpp = 16,
+-		.control_base = 0x0004886a | LCD_CONTROL_DEFAULT_PO,
+-		.horztiming = 0x0e4bfe7f,
+-		.verttiming = 0x210805df,
+-		.clkcontrol_base = 0x00038001,
+-	},
+-};
+-
+-/********************************************************************/
+-
+-/* Inline helpers */
+-
+-#define panel_is_dual(panel)  (panel->control_base & LCD_CONTROL_DP)
+-#define panel_is_active(panel)(panel->control_base & LCD_CONTROL_PT)
+-#define panel_is_color(panel) (panel->control_base & LCD_CONTROL_PC)
+-#define panel_swap_rgb(panel) (panel->control_base & LCD_CONTROL_CCO)
+-
+-#endif /* _AU1100LCD_H */
 -- 
 2.47.3
 

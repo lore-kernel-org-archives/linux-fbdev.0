@@ -1,203 +1,85 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18ADE36CDFB
-	for <linux-fbdev@vger.kernel.org>; Tue, 17 Feb 2026 15:58:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2155B267B89;
+	Tue, 17 Feb 2026 21:45:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771343925; cv=none; b=JuYHRX6Fw9zuQdSFCNwDw3U/fUPyVVwikjstiWMNs+p/KjWz7/8AWmzm2ZU5McuFmWhSGeqSyCzqQizrtcdJowj5XTJxb8Ssxf3Ke76BjHcdse6NKShwc2vCudw1sIaT5b9XhSdejy+MZvAHUS/6eqnOiy7MANsQ4vMOIihDvU8=
+	t=1771364728; cv=none; b=idl1laxmysgUPGHBvmADOtA0U3W82r8fRc6R8CTohfd7P+jTl+0h1sR2IsqL7Sv5zpZTxolK2kje+i3lPw/tXJxESuZtTmBJeTwJ9AgYNQQCIWItJNg+gmI2jKPNmG/srQHXT8NeuM9PCwT/nty33eM7q4kZOnrunwmrXs5wY5Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771343925; c=relaxed/simple;
-	bh=xm2VKeAsYk6He+S6K11q2Gci+qyi+ItBLbop1iKU/I8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SwW0Zw8YdXLivKQH/NbIImsKO6VU1AUq0ae48tB7TQvgzLfp7t86J9CU50xqx3iYtsZ6lBMnZo35a/d6OS3+m94V6Y45zFxjd9BCZ3jrheUhkRPvuCVaxDIlx4NCMEdCRPzj6aZqo0+zg7Q4+ATcgxPhhX+GegUXRX6XBi11/LI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Arcmrdf0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ELJJB5iY; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Arcmrdf0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ELJJB5iY; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1771364728; c=relaxed/simple;
+	bh=JPTM2IadFeMvKIMn4IZtSDZBa3m3Kmc9Y1jeip9vad4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ob/wAgN9PCLBGfjjkdcRqOss9p2ho+YlFHgMTQzdzxSvVZZ+AKbzbhg7E0SF0+OI+f1ky+KAZ1E2TJ1LYnjonJxhsJKv5g2T+gf46ac7HiccWRYcXDVSc04tHmIRU25q5XKAgxyltXNfuMZJDNDw5nOWnxve9CBPLYT3kqbw8G8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dzatSmBb; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Arcmrdf0";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ELJJB5iY";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Arcmrdf0";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ELJJB5iY"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 7257F3E7BB;
-	Tue, 17 Feb 2026 15:58:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1771343921; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uTSUboSXMQ96dLOPRSbXCAHbAbBhP7M3WA0bd1W/HFM=;
-	b=Arcmrdf0I/wUQgCbVUA7SkyIwx12Be6bPUrHH9LJjSUSBAVZ2uytSpPXygPS337g1jSpmT
-	mudrrkWY7bW1mooWU4AptQ0CKUrcE1o/iZf5woQPGdc7hWWAVenwL3olC9Op/z0ND6BM0O
-	mHCyI0dqc2bF+kd75bb/uRcYF89v57o=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1771343921;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uTSUboSXMQ96dLOPRSbXCAHbAbBhP7M3WA0bd1W/HFM=;
-	b=ELJJB5iYVC+GNkFe4kEWMxMlqohAr6EuZVTqffAqsA6ryU9AG4+OgDuIBTbP/DOAmAUJ4i
-	jSrJBt2D2ssc0MAA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Arcmrdf0;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ELJJB5iY
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1771343921; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uTSUboSXMQ96dLOPRSbXCAHbAbBhP7M3WA0bd1W/HFM=;
-	b=Arcmrdf0I/wUQgCbVUA7SkyIwx12Be6bPUrHH9LJjSUSBAVZ2uytSpPXygPS337g1jSpmT
-	mudrrkWY7bW1mooWU4AptQ0CKUrcE1o/iZf5woQPGdc7hWWAVenwL3olC9Op/z0ND6BM0O
-	mHCyI0dqc2bF+kd75bb/uRcYF89v57o=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1771343921;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uTSUboSXMQ96dLOPRSbXCAHbAbBhP7M3WA0bd1W/HFM=;
-	b=ELJJB5iYVC+GNkFe4kEWMxMlqohAr6EuZVTqffAqsA6ryU9AG4+OgDuIBTbP/DOAmAUJ4i
-	jSrJBt2D2ssc0MAA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0118B3EA65;
-	Tue, 17 Feb 2026 15:58:40 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id sKlwOjCQlGk9PgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 17 Feb 2026 15:58:40 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: tzungbi@kernel.org,
-	briannorris@chromium.org,
-	jwerner@chromium.org,
-	javierm@redhat.com,
-	samuel@sholland.org,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	airlied@gmail.com,
-	simona@ffwll.ch
-Cc: chrome-platform@lists.linux.dev,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dzatSmBb"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F222CC4CEF7;
+	Tue, 17 Feb 2026 21:45:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1771364727;
+	bh=JPTM2IadFeMvKIMn4IZtSDZBa3m3Kmc9Y1jeip9vad4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=dzatSmBb5dRdKVM7QGegf8H9JKCVmt1CyPf4WmQL1F5Vq5SXeawmvTvZVsb4Lidi3
+	 9tTPWPv5cblZv1V/ofOpaxUTWKnootvYiDk6wdTAKdhIWv1fWWyljUAbFhZd+bjzko
+	 pLHcn6JwMnFM+UwxuY6s3DyC7rhoZdsXQlIQTzMXOhSv/iRwG+NGdcZs5nQJSk6x41
+	 xpkoXNEMWrORVa5tgQ6/8hquM6Aw84uaut69bgWEeNICcaA4c5BfneDqQIrZQSeis2
+	 lKQBfio9w2Mtf1o99NqkXh9X8R5Aur9Lw3+jfXeQax305vnY+hxAFO/PeRYw2g0Z3k
+	 Cx7hrRUUZ0kCg==
+Date: Tue, 17 Feb 2026 14:45:23 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Helge Deller <deller@kernel.org>, Nicolas Schier <nsc@kernel.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Hans de Goede <hansg@kernel.org>,
-	linux-fbdev@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v4 01/12] firmware: google: framebuffer: Do not unregister platform device
-Date: Tue, 17 Feb 2026 16:56:11 +0100
-Message-ID: <20260217155836.96267-2-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260217155836.96267-1-tzimmermann@suse.de>
-References: <20260217155836.96267-1-tzimmermann@suse.de>
+	Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+Subject: Re: [GIT PULL] fbdev fixes and updates for v7.0-rc1
+Message-ID: <20260217214523.GA3380010@ax162>
+References: <aZBlTsIwTzS0tqBD@carbonx1>
+ <177110244909.2897141.11184148040863874004.pr-tracker-bot@kernel.org>
+ <aZDpCUcIXLmuydoF@carbonx1>
+ <CAHk-=wj03hLzK2D=+OYmjgcmGM+XYymp8GyaEs=C0=rXG2nb7w@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[kernel.org,chromium.org,redhat.com,sholland.org,linux.intel.com,gmail.com,ffwll.ch];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	RCVD_COUNT_TWO(0.00)[2];
-	URIBL_BLOCKED(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:mid,suse.de:dkim,suse.de:email,chromium.org:email];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RLegosg57ubitsp1hzqd38n4uy)];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email];
-	FROM_EQ_ENVFROM(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com]
-X-Rspamd-Action: no action
-X-Spam-Flag: NO
-X-Spam-Score: -3.01
-X-Spam-Level: 
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 7257F3E7BB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHk-=wj03hLzK2D=+OYmjgcmGM+XYymp8GyaEs=C0=rXG2nb7w@mail.gmail.com>
 
-The native driver takes over the framebuffer aperture by removing the
-system- framebuffer platform device. Afterwards the pointer in drvdata
-is dangling. Remove the entire logic around drvdata and let the kernel's
-aperture helpers handle this. The platform device depends on the native
-hardware device instead of the coreboot device anyway.
+Hi Linus,
 
-When commit 851b4c14532d ("firmware: coreboot: Add coreboot framebuffer
-driver") added the coreboot framebuffer code, the kernel did not support
-device-based aperture management. Instead native driviers only removed
-the conflicting fbdev device. At that point, unregistering the framebuffer
-device most likely worked correctly. It was definitely broken after
-commit d9702b2a2171 ("fbdev/simplefb: Do not use struct
-fb_info.apertures"). So take this commit for the Fixes tag. Earlier
-releases might work depending on the native hardware driver.
+On Sat, Feb 14, 2026 at 02:47:47PM -0800, Linus Torvalds wrote:
+> [ Adding Kconfig maintainers and linux-kbuild list ]
+> 
+> On Sat, 14 Feb 2026 at 13:30, Helge Deller <deller@kernel.org> wrote:
+> >
+> > Linus, I'm really sorry, but I messed up drivers/gpu/drm/Kconfig while
+> > trying to fix a merge conflict.
+> > My patch series should not have touched drivers/gpu/drm/Kconfig at all.
+> > That's purely my fault and not the fault of the patch author.
+> 
+> Humm. Funky how the Kconfig parts never complained about the
+> duplication of all those source lines, so the problem was basically
+> entirely hidden and things still "worked" even though that Kconfig
+> file had been so messed up.
+> 
+> I'm not sure if the Kconfig tools could perhaps warn about this kind
+> of duplication - we might have some of it intentionally - but it does
+> make me go "Hmm".
+> 
+> Nathan, Nicolas, comments? See that commit ca4ee40bf13d for the
+> partial revert, and notice how Kconfig is entirely happy both before
+> and after that..
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: d9702b2a2171 ("fbdev/simplefb: Do not use struct fb_info.apertures")
-Acked-by: Tzung-Bi Shih <tzungbi@kernel.org>
-Acked-by: Julius Werner <jwerner@chromium.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Hans de Goede <hansg@kernel.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: <stable@vger.kernel.org> # v6.3+
----
- drivers/firmware/google/framebuffer-coreboot.c | 10 ----------
- 1 file changed, 10 deletions(-)
+It seems like we should be able to check if we have seen an sourced
+Kconfig already, presumably somewhere in or around zconf_nextfile() in
+scripts/kconfig/lexer.l. Not sure how complicated it will be, I will see
+if I can wire something like that up during the next development cycle
+(amongst the other things on my plate). Given how wonky that looks in
+menuconfig and the like, maybe it is worth making that a hard error.
 
-diff --git a/drivers/firmware/google/framebuffer-coreboot.c b/drivers/firmware/google/framebuffer-coreboot.c
-index c68c9f56370f..4e9177105992 100644
---- a/drivers/firmware/google/framebuffer-coreboot.c
-+++ b/drivers/firmware/google/framebuffer-coreboot.c
-@@ -81,19 +81,10 @@ static int framebuffer_probe(struct coreboot_device *dev)
- 						 sizeof(pdata));
- 	if (IS_ERR(pdev))
- 		pr_warn("coreboot: could not register framebuffer\n");
--	else
--		dev_set_drvdata(&dev->dev, pdev);
- 
- 	return PTR_ERR_OR_ZERO(pdev);
- }
- 
--static void framebuffer_remove(struct coreboot_device *dev)
--{
--	struct platform_device *pdev = dev_get_drvdata(&dev->dev);
--
--	platform_device_unregister(pdev);
--}
--
- static const struct coreboot_device_id framebuffer_ids[] = {
- 	{ .tag = CB_TAG_FRAMEBUFFER },
- 	{ /* sentinel */ }
-@@ -102,7 +93,6 @@ MODULE_DEVICE_TABLE(coreboot, framebuffer_ids);
- 
- static struct coreboot_driver framebuffer_driver = {
- 	.probe = framebuffer_probe,
--	.remove = framebuffer_remove,
- 	.drv = {
- 		.name = "framebuffer",
- 	},
--- 
-2.52.0
-
+Cheers,
+Nathan

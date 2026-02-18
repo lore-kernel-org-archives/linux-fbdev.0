@@ -1,48 +1,48 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EAC4321445
-	for <linux-fbdev@vger.kernel.org>; Wed, 18 Feb 2026 08:39:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8326326922
+	for <linux-fbdev@vger.kernel.org>; Wed, 18 Feb 2026 08:39:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771403974; cv=none; b=VzT2beW8OH0N15iUi1l/qlqeZlG9NkWPyOnzVDN9XHEe2tbVPZPZIKhRdQyPzp1ebUSl43VIirJIsTIiVYOEmrlHXseCpBEJ6Q3HnGEYl9HKscqEOM/MU4MdoL2+wzF0nApa3b9KqwQG6kl/cQpdOAaS3s/CdoeSZUvmfnhpHAw=
+	t=1771403980; cv=none; b=U4fDXIpoVDTDcH1jTOAZnWvSl/xbMAxtnRTIN2kOWKapN9ZzdYNkToQGsJ7rbR5se81Akpx6g4IZQXKLDE4K4IQeELP8uqV7GFQA8E1tgPpIUFGVqMerF3+6shNfdfI1IqgOF+wXpNnAf+b0IsLLSzUNTL322tS80VSWPtfB7c4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771403974; c=relaxed/simple;
-	bh=bsIoEKH0PhURcu6JnCqwGPG7MbqyVc27FvR7qLKAWaM=;
+	s=arc-20240116; t=1771403980; c=relaxed/simple;
+	bh=rt++1rOyH24xhyR/UKMz+OyIvVYgk6XvGA4TupzT8pU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IkxNiZcP/+/KuBE6FwFw1KP9fYNKxpH8mbFaY7rI1Z2i/035FJnTgjmq9/ptUT7/C6eVoP2zvfjPOYrLPLZpkKLs8snL9DqkuskNrvh/2Xw2N0G6Vt9oKu2kqa6DEWS2HqohLCXzfSurvwPy7yQyH3aqbfhmrXv0S1Colhi4JfU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=xeoCsH1i; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=pA/S95tK; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=xeoCsH1i; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=pA/S95tK; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=TlT7YP54gbjTlx4dbS9gy/LCeMlLu/AQhG0YR+Nsqji5bnq36JBvwU0GHvbhE3uEL/YNRvgFyr5W6EVoKSO1jJJf69yC6Qb16/LfTMlXQyzsonLaClSacQeACISo9O7KeOMF5gPngaDpxWQ4FXQhpMyJI/O6hYm3L4d+iejrx00=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MXjAgxcQ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=+YcvbbTt; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MXjAgxcQ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=+YcvbbTt; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="xeoCsH1i";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="pA/S95tK";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="xeoCsH1i";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="pA/S95tK"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MXjAgxcQ";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="+YcvbbTt";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MXjAgxcQ";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="+YcvbbTt"
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 65AE13E6FF;
+	by smtp-out1.suse.de (Postfix) with ESMTPS id E37F43E6FB;
 	Wed, 18 Feb 2026 08:39:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1771403945; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=pZ1XWdnMQOF0YFSTaaGMx+byRiwPaovl3du8wyBeyaY=;
-	b=xeoCsH1i7L19sG//ODpBE7ecebyo+5EMJ8Gh4AtWnTpSffVC8S58MmIo95c34iu2fIZt2Y
-	zpE8FJmrItrZPn5MOu58GinhhtdkBd1sLpy7+9Ni9DmU8l5UQQaLCJVXxR+HMTw5S12Ppw
-	bZEQNJ0Lj+TvhZnzOzT2hF0fN6TbvSw=
+	bh=QzqtmJhuJ2RxEAWSLSo7zzX/rZyzWuOAMbwlIRZfewI=;
+	b=MXjAgxcQjy0BkN1IUrnfAvixhtazyANfUuc2XS2PswsX8K1AELcovruU8D39OW2qrEPLup
+	07swLmZdm4XLtaYQ6TbgBfvGj0iLz2gzlsEocT1g5zDX/sKLEdBX2bVX84iTbQyU6MteCi
+	BG/dEn0+NEGeD3RGuKa7zFh3O2PwxC0=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1771403945;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=pZ1XWdnMQOF0YFSTaaGMx+byRiwPaovl3du8wyBeyaY=;
-	b=pA/S95tK28cPODbE/YBiDuAQ4NibQsOaCSaxudnjXv2DoX/h7XSrfqa/8WWYdmGfFX6zQk
-	nvrD/wGACxCVV6Cw==
+	bh=QzqtmJhuJ2RxEAWSLSo7zzX/rZyzWuOAMbwlIRZfewI=;
+	b=+YcvbbTtWNEz/pQGc1UD7g/t1+vt5WcXAG8XNYnQiaCm7ADa11sgcQDQyM5xlpJ47tE9wl
+	KkdhDxJpKeEe/VDg==
 Authentication-Results: smtp-out1.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
@@ -50,28 +50,28 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=pZ1XWdnMQOF0YFSTaaGMx+byRiwPaovl3du8wyBeyaY=;
-	b=xeoCsH1i7L19sG//ODpBE7ecebyo+5EMJ8Gh4AtWnTpSffVC8S58MmIo95c34iu2fIZt2Y
-	zpE8FJmrItrZPn5MOu58GinhhtdkBd1sLpy7+9Ni9DmU8l5UQQaLCJVXxR+HMTw5S12Ppw
-	bZEQNJ0Lj+TvhZnzOzT2hF0fN6TbvSw=
+	bh=QzqtmJhuJ2RxEAWSLSo7zzX/rZyzWuOAMbwlIRZfewI=;
+	b=MXjAgxcQjy0BkN1IUrnfAvixhtazyANfUuc2XS2PswsX8K1AELcovruU8D39OW2qrEPLup
+	07swLmZdm4XLtaYQ6TbgBfvGj0iLz2gzlsEocT1g5zDX/sKLEdBX2bVX84iTbQyU6MteCi
+	BG/dEn0+NEGeD3RGuKa7zFh3O2PwxC0=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1771403945;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=pZ1XWdnMQOF0YFSTaaGMx+byRiwPaovl3du8wyBeyaY=;
-	b=pA/S95tK28cPODbE/YBiDuAQ4NibQsOaCSaxudnjXv2DoX/h7XSrfqa/8WWYdmGfFX6zQk
-	nvrD/wGACxCVV6Cw==
+	bh=QzqtmJhuJ2RxEAWSLSo7zzX/rZyzWuOAMbwlIRZfewI=;
+	b=+YcvbbTtWNEz/pQGc1UD7g/t1+vt5WcXAG8XNYnQiaCm7ADa11sgcQDQyM5xlpJ47tE9wl
+	KkdhDxJpKeEe/VDg==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 227BD3EA65;
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A26A93EA65;
 	Wed, 18 Feb 2026 08:39:05 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id +LH+Bql6lWn8LwAAD6G6ig
+	id MDtzJql6lWn8LwAAD6G6ig
 	(envelope-from <tzimmermann@suse.de>); Wed, 18 Feb 2026 08:39:05 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: gregkh@linuxfoundation.org,
@@ -81,9 +81,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 07/13] lib/fonts: Store font data as font_data_t; update consoles
-Date: Wed, 18 Feb 2026 09:15:58 +0100
-Message-ID: <20260218083855.10743-8-tzimmermann@suse.de>
+Subject: [PATCH 09/13] lib/fonts: Compare font data for equality with font_data_is_equal()
+Date: Wed, 18 Feb 2026 09:16:00 +0100
+Message-ID: <20260218083855.10743-10-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260218083855.10743-1-tzimmermann@suse.de>
 References: <20260218083855.10743-1-tzimmermann@suse.de>
@@ -94,6 +94,8 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Spam-Score: -2.80
+X-Spam-Level: 
 X-Spamd-Result: default: False [-2.80 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
@@ -118,328 +120,140 @@ X-Spamd-Result: default: False [-2.80 / 50.00];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FREEMAIL_ENVRCPT(0.00)[gmx.de]
 X-Spam-Flag: NO
-X-Spam-Score: -2.80
-X-Spam-Level: 
 
-Store font data as pointer to font_data_t instead of unsigned char.
-Update consoles.
+Add font_data_is_equal() and update consoles to use it.
 
-Pointers to font data refer to the raw data. There is a hidden header
-before the data that contains additional state. Document the existing
-layout and semantics of font_data_t.
+Font data is equal if it has the same size and contains the same values
+on all bytes. Only fbcon uses a crc32 checksum. If set in both operands
+the checksums have to be equal.
 
-The data field in struct vc_font can be used by any console. Therefore
-it still points to plain data without the additional header. Fbcon sets
-its value from struct fbcon_display.fontdata. Hence, update the size
-test in fbcon_resize() to use struct fbcon_display.fontdata instead of
-struct vc_font.data.
+The new helper also guarantees to not compare internal fonts against
+fonts from user space. Internal fonts cannot be ref-counted, so making
+them equal to user-space fonts with the same byte sequence results in
+undefined behavior.
+
+The test only compares data buffers. Their interpretation is up each
+console. Therefore remove a width test in fbcon_set_font().
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/console/newport_con.c | 17 ++++++-----
- drivers/video/fbdev/core/fbcon.c    | 44 ++++++++++++++++-----------
- drivers/video/fbdev/core/fbcon.h    |  3 +-
- include/linux/font.h                | 47 ++++++++++++++++++++++++++++-
- 4 files changed, 84 insertions(+), 27 deletions(-)
+ drivers/video/console/newport_con.c |  3 +--
+ drivers/video/fbdev/core/fbcon.c    |  7 +-----
+ include/linux/font.h                |  1 +
+ lib/fonts/fonts.c                   | 37 +++++++++++++++++++++++++++--
+ 4 files changed, 38 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
-index 6e9d61791888..fcf76f65b06e 100644
+index eee9695c3eb5..02bf4df05016 100644
 --- a/drivers/video/console/newport_con.c
 +++ b/drivers/video/console/newport_con.c
-@@ -33,9 +33,9 @@
- 
- #define NEWPORT_LEN	0x10000
- 
--#define FONT_DATA ((unsigned char *)font_vga_8x16.data)
-+#define FONT_DATA font_vga_8x16.data
- 
--static unsigned char *font_data[MAX_NR_CONSOLES];
-+static font_data_t *font_data[MAX_NR_CONSOLES];
- 
- static struct newport_regs *npregs;
- static unsigned long newport_addr;
-@@ -370,9 +370,9 @@ static void newport_clear(struct vc_data *vc, unsigned int sy, unsigned int sx,
- static void newport_putc(struct vc_data *vc, u16 charattr, unsigned int ypos,
- 			 unsigned int xpos)
- {
--	unsigned char *p;
-+	const unsigned char *p;
- 
--	p = &font_data[vc->vc_num][(charattr & 0xff) << 4];
-+	p = &font_data_buf(font_data[vc->vc_num])[(charattr & 0xff) << 4];
- 	charattr = (charattr >> 8) & 0xff;
- 	xpos <<= 3;
- 	ypos <<= 4;
-@@ -400,7 +400,7 @@ static void newport_putcs(struct vc_data *vc, const u16 *s,
- 			  unsigned int count, unsigned int ypos,
- 			  unsigned int xpos)
- {
--	unsigned char *p;
-+	const unsigned char *p;
- 	unsigned int i;
- 	u16 charattr;
- 
-@@ -424,7 +424,7 @@ static void newport_putcs(struct vc_data *vc, const u16 *s,
- 				 NPORT_DMODE0_L32);
- 
- 	for (i = 0; i < count; i++, xpos += 8) {
--		p = &font_data[vc->vc_num][(scr_readw(s++) & 0xff) << 4];
-+		p = &font_data_buf(font_data[vc->vc_num])[(scr_readw(s++) & 0xff) << 4];
- 
- 		newport_wait(npregs);
- 
-@@ -503,7 +503,8 @@ static int newport_set_font(int unit, const struct console_font *op,
- 	int h = op->height;
- 	int size = h * op->charcount;
- 	int i;
--	unsigned char *new_data, *data = op->data, *p;
-+	font_data_t *new_data;
-+	unsigned char *data = op->data, *p;
- 
- 	/* ladis: when I grow up, there will be a day... and more sizes will
- 	 * be supported ;-) */
-@@ -519,7 +520,7 @@ static int newport_set_font(int unit, const struct console_font *op,
- 	REFCOUNT(new_data) = 0;	/* usage counter */
- 	FNTSUM(new_data) = 0;
- 
--	p = new_data;
-+	p = (unsigned char *)font_data_buf(new_data);
- 	for (i = 0; i < op->charcount; i++) {
- 		memcpy(p, data, h);
- 		data += 32;
+@@ -530,8 +530,7 @@ static int newport_set_font(int unit, const struct console_font *op,
+ 	/* check if font is already used by other console */
+ 	for (i = 0; i < MAX_NR_CONSOLES; i++) {
+ 		if (font_data[i] != FONT_DATA
+-		    && font_data_size(font_data[i]) == size
+-		    && !memcmp(font_data[i], new_data, size)) {
++		    && font_data_is_equal(font_data[i], new_data)) {
+ 			kfree(new_data - FONT_EXTRA_WORDS * sizeof(int));
+ 			/* current font is the same as the new one */
+ 			if (i == unit)
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 96cf890aa0c9..73f2757155e6 100644
+index ebb9c5c1b247..6fbecce606fd 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1019,8 +1019,10 @@ static const char *fbcon_startup(void)
- 						info->pixmap.blit_y);
- 		vc->vc_font.width = font->width;
- 		vc->vc_font.height = font->height;
--		vc->vc_font.data = (void *)(p->fontdata = font->data);
-+		vc->vc_font.data = font_data_buf(font->data);
- 		vc->vc_font.charcount = font->charcount;
-+
-+		p->fontdata = font->data;
- 	}
- 
- 	cols = FBCON_SWAP(par->rotate, info->var.xres, info->var.yres);
-@@ -1077,11 +1079,12 @@ static void fbcon_init(struct vc_data *vc, bool init)
- 		if (t->fontdata) {
- 			struct vc_data *fvc = vc_cons[fg_console].d;
- 
--			vc->vc_font.data = (void *)(p->fontdata =
--						    fvc->vc_font.data);
-+			vc->vc_font.data = fvc->vc_font.data;
- 			vc->vc_font.width = fvc->vc_font.width;
- 			vc->vc_font.height = fvc->vc_font.height;
- 			vc->vc_font.charcount = fvc->vc_font.charcount;
-+
-+			p->fontdata = t->fontdata;
- 			p->userfont = t->userfont;
- 
- 			if (p->userfont)
-@@ -1096,8 +1099,10 @@ static void fbcon_init(struct vc_data *vc, bool init)
- 							info->pixmap.blit_y);
- 			vc->vc_font.width = font->width;
- 			vc->vc_font.height = font->height;
--			vc->vc_font.data = (void *)(p->fontdata = font->data);
-+			vc->vc_font.data = font_data_buf(font->data);
- 			vc->vc_font.charcount = font->charcount;
-+
-+			p->fontdata = font->data;
- 		}
- 	}
- 
-@@ -1408,11 +1413,12 @@ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
- 	svc = *default_mode;
- 	t = &fb_display[svc->vc_num];
- 
--	if (!vc->vc_font.data) {
--		vc->vc_font.data = (void *)(p->fontdata = t->fontdata);
-+	if (!p->fontdata) {
-+		vc->vc_font.data = font_data_buf(t->fontdata);
- 		vc->vc_font.width = (*default_mode)->vc_font.width;
- 		vc->vc_font.height = (*default_mode)->vc_font.height;
- 		vc->vc_font.charcount = (*default_mode)->vc_font.charcount;
-+		p->fontdata = t->fontdata;
- 		p->userfont = t->userfont;
- 		if (p->userfont)
- 			REFCOUNT(p->fontdata)++;
-@@ -2052,7 +2058,7 @@ static int fbcon_resize(struct vc_data *vc, unsigned int width,
- 	struct fb_var_screeninfo var = info->var;
- 	int x_diff, y_diff, virt_w, virt_h, virt_fw, virt_fh;
- 
--	if (p->userfont && FNTSIZE(vc->vc_font.data)) {
-+	if (p->userfont && FNTSIZE(p->fontdata)) {
- 		unsigned int size = vc_font_size(&vc->vc_font);
- 
- 		/*
-@@ -2062,7 +2068,7 @@ static int fbcon_resize(struct vc_data *vc, unsigned int width,
- 		 * charcount can change and cannot be used to determine the
- 		 * font data allocated size.
- 		 */
--		if (!size || size > FNTSIZE(vc->vc_font.data))
-+		if (!size || size > FNTSIZE(p->fontdata))
- 			return -EINVAL;
- 	}
- 
-@@ -2286,7 +2292,8 @@ static bool fbcon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
- 
- static int fbcon_get_font(struct vc_data *vc, struct console_font *font, unsigned int vpitch)
- {
--	const u8 *fontdata = vc->vc_font.data;
-+	struct fbcon_display *p = &fb_display[vc->vc_num];
-+	font_data_t *fontdata = p->fontdata;
- 	u8 *data = font->data;
- 	int i, j;
- 
-@@ -2411,16 +2418,18 @@ static void set_vc_hi_font(struct vc_data *vc, bool set)
- }
- 
- static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
--			     const u8 * data, int userfont)
-+			     font_data_t *data, int userfont)
- {
- 	struct fb_info *info = fbcon_info_from_console(vc->vc_num);
- 	struct fbcon_par *par = info->fbcon_par;
- 	struct fbcon_display *p = &fb_display[vc->vc_num];
- 	int resize, ret, old_userfont, old_width, old_height, old_charcount;
-+	font_data_t *old_fontdata = p->fontdata;
- 	const u8 *old_data = vc->vc_font.data;
- 
- 	resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
--	vc->vc_font.data = (void *)(p->fontdata = data);
-+	p->fontdata = data;
-+	vc->vc_font.data = font_data_buf(p->fontdata);
- 	old_userfont = p->userfont;
- 	if ((p->userfont = userfont))
- 		REFCOUNT(data)++;
-@@ -2453,12 +2462,12 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
- 		update_screen(vc);
- 	}
- 
--	if (old_userfont && (--REFCOUNT(old_data) == 0))
--		kfree(old_data - FONT_EXTRA_WORDS * sizeof(int));
-+	if (old_userfont && (--REFCOUNT(old_fontdata) == 0))
-+		kfree(old_fontdata - FONT_EXTRA_WORDS * sizeof(int));
- 	return 0;
- 
- err_out:
--	p->fontdata = old_data;
-+	p->fontdata = old_fontdata;
- 	vc->vc_font.data = old_data;
- 
- 	if (userfont) {
-@@ -2488,7 +2497,8 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
- 	int h = font->height;
- 	int size, alloc_size;
- 	int i, csum;
--	u8 *new_data, *data = font->data;
-+	font_data_t *new_data;
-+	u8 *data = font->data;
- 	int pitch = PITCH(font->width);
- 
- 	/* Is there a reason why fbconsole couldn't handle any charcount >256?
-@@ -2527,13 +2537,13 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
- 	if (!new_data)
- 		return -ENOMEM;
- 
--	memset(new_data, 0, FONT_EXTRA_WORDS * sizeof(int));
-+	memset((u8 *)new_data, 0, FONT_EXTRA_WORDS * sizeof(int));
- 
- 	new_data += FONT_EXTRA_WORDS * sizeof(int);
- 	FNTSIZE(new_data) = size;
- 	REFCOUNT(new_data) = 0;	/* usage counter */
- 	for (i=0; i< charcount; i++) {
--		memcpy(new_data + i*h*pitch, data +  i*vpitch*pitch, h*pitch);
-+		memcpy((u8 *)new_data + i * h * pitch, data + i * vpitch * pitch, h * pitch);
- 	}
- 
- 	/* Since linux has a nice crc32 function use it for counting font
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 3f4386a40237..d26ee7860cf5 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -11,6 +11,7 @@
- #ifndef _VIDEO_FBCON_H
- #define _VIDEO_FBCON_H
- 
-+#include <linux/font.h>
- #include <linux/types.h>
- #include <linux/vt_buffer.h>
- #include <linux/vt_kern.h>
-@@ -25,7 +26,7 @@
- 
- struct fbcon_display {
-     /* Filled in by the low-level console driver */
--    const u_char *fontdata;
-+    font_data_t *fontdata;
-     int userfont;                   /* != 0 if fontdata kmalloc()ed */
- #ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
-     u_short scrollmode;             /* Scroll Method, use fb_scrollmode() */
+@@ -2553,14 +2553,9 @@ static int fbcon_set_font(struct vc_data *vc, const struct console_font *font,
+ 	FNTSUM(new_data) = csum;
+ 	/* Check if the same font is on some other console already */
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+-		struct vc_data *tmp = vc_cons[i].d;
+-
+ 		if (fb_display[i].userfont &&
+ 		    fb_display[i].fontdata &&
+-		    FNTSUM(fb_display[i].fontdata) == csum &&
+-		    font_data_size(fb_display[i].fontdata) == size &&
+-		    tmp->vc_font.width == w &&
+-		    !memcmp(fb_display[i].fontdata, new_data, size)) {
++		    font_data_is_equal(fb_display[i].fontdata, new_data)) {
+ 			kfree(new_data - FONT_EXTRA_WORDS * sizeof(int));
+ 			new_data = (u8 *)fb_display[i].fontdata;
+ 			break;
 diff --git a/include/linux/font.h b/include/linux/font.h
-index d929c5fa32ca..4ff8d52e59c3 100644
+index 3afb32b625d3..da9869ca2294 100644
 --- a/include/linux/font.h
 +++ b/include/linux/font.h
-@@ -13,12 +13,57 @@
+@@ -55,6 +55,7 @@ static inline const unsigned char *font_data_buf(font_data_t *fd)
+ }
  
- #include <linux/types.h>
+ unsigned int font_data_size(font_data_t *fd);
++bool font_data_is_equal(font_data_t *lhs, font_data_t *rhs);
  
-+/*
-+ * font_data_t and helpers
-+ */
+ /*
+  * Font lookup
+diff --git a/lib/fonts/fonts.c b/lib/fonts/fonts.c
+index 8c9a6762061c..c9f6328d5dda 100644
+--- a/lib/fonts/fonts.c
++++ b/lib/fonts/fonts.c
+@@ -12,18 +12,25 @@
+  * for more details.
+  */
+ 
++#include <linux/font.h>
+ #include <linux/module.h>
+-#include <linux/types.h>
+ #include <linux/string.h>
++#include <linux/types.h>
 +
-+/**
-+ * font_data_t - Raw font data
-+ *
-+ * Values of type font_data_t store a pointer to raw font data. The format
-+ * is monochrome. Each bit sets a pixel of a stored glyph. Font data does
-+ * not store geometry information for the individual glyphs. Users of the
-+ * font have to store glyph size, pitch and characer count separately.
-+ *
-+ * Font data in font_data_t is not equivalent to raw u8. Each pointer stores
-+ * an additional hidden header before the fotn data. The layout is
-+ *
-+ * +------+-----------------------------+
-+ * | -16  |  CRC32 Checksum (optional)  |
-+ * | -12  |  <Unused>                   |
-+ * |  -8  |  Number of data bytes       |
-+ * |  -4  |  Reference count            |
-+ * +------+-----------------------------+
-+ * |   0  |  Data buffer                |
-+ * |  ... |                             |
-+ * +------+-----------------------------+
-+ *
-+ * Use helpers to access font_data_t. Use font_data_buf() to get the stored data.
-+ */
-+typedef const unsigned char font_data_t;
-+
-+/**
-+ * font_data_buf() - Returns the font data as raw bytes
-+ * @fd: The font data
-+ *
-+ * Returns:
-+ * The raw font data. The provided buffer is read-only.
-+ */
-+static inline const unsigned char *font_data_buf(font_data_t *fd)
++#include <asm/sections.h>
+ #if defined(__mc68000__)
+ #include <asm/setup.h>
+ #endif
+-#include <linux/font.h>
+ 
+ /*
+  * Helpers for font_data_t
+  */
+ 
++static bool font_data_is_internal(font_data_t *fd)
 +{
-+	return (const unsigned char *)fd;
++	return is_kernel_rodata((unsigned long)fd);
 +}
 +
-+/*
-+ * Font lookup
-+ */
-+
- struct font_desc {
-     int idx;
-     const char *name;
-     unsigned int width, height;
-     unsigned int charcount;
--    const void *data;
-+    font_data_t *data;
-     int pref;
- };
+ /**
+  * font_data_size - Return size of the font data in bytes
+  * @fd: Font data
+@@ -37,6 +44,32 @@ unsigned int font_data_size(font_data_t *fd)
+ }
+ EXPORT_SYMBOL_GPL(font_data_size);
  
++/**
++ * font_data_is_equal - Compares font data for equality
++ * @lhs: Left-hand side font data
++ * @rhs: Right-hand-size font data
++ *
++ * Font data is equal if is constain the same sequence of values. The
++ * helper also use the checksum, if both arguments contain it. Font data
++ * coming from different origins, internal or from user space, is never
++ * equal. Allowing this would break reference counting.
++ *
++ * Returns:
++ * True if the given font data is equal, false otherwise.
++ */
++bool font_data_is_equal(font_data_t *lhs, font_data_t *rhs)
++{
++	if (font_data_is_internal(lhs) != font_data_is_internal(rhs))
++		return false;
++	if (font_data_size(lhs) != font_data_size(rhs))
++		return false;
++	if (FNTSUM(lhs) && FNTSUM(rhs) && FNTSUM(lhs) != FNTSUM(rhs))
++		return false;
++
++	return !memcmp(lhs, rhs, FNTSIZE(lhs));
++}
++EXPORT_SYMBOL_GPL(font_data_is_equal);
++
+ /*
+  * Font lookup
+  */
 -- 
 2.52.0
 

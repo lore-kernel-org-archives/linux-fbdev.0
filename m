@@ -1,205 +1,138 @@
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazon11011041.outbound.protection.outlook.com [40.93.194.41])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22D612AF00;
-	Thu, 19 Feb 2026 00:59:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.194.41
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771462779; cv=fail; b=MunBD6qAUKBvCy5Eju3HRGIFmhYVbac/11s1UbkQg1zaVmqmbVryWVudbS5/wzacQ1alyzxA4xbV8qSwqXYXbigWrvrlmyt4ImfW44p9rwA+HTMA7X4raqRjMvO9e1nz9zQOwuQrUD5ji3WXtOjEHk9YJL2CUFfe3HKsNROwIoI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771462779; c=relaxed/simple;
-	bh=oQGDZnfVUTqjJEfWd6g1dKPES9q0hHvrTluEhAStstA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=m8ClJcM0pP5pkmnz2VLMOfIppnr2aSRDpeBME7ECX5RX/fT25sfOwlsElGBf7FBk1cJjBIxzdZhOmx/MtwznM7ExOXp8qxpWP4TOoQSNB6YhqrSQnf618acVjsJFOlTP2Ogsm9cy+9D3/wmq7F2+PUzE4gIJQ+p2eGElNFGA4uc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=oUaslmmx; arc=fail smtp.client-ip=40.93.194.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5E0A22CBF1;
+	Thu, 19 Feb 2026 02:09:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1771466961; cv=none; b=jzVjdd5MrAy0De5iqLmA/TCus+IY3m5ffffRtYw+9jpZJia4mAEiEsoMGVFQHn+QwpCkSQKnsow7m2UWI/0z+9fyx5Lf2okRA5uzLquTTnaWMcI11Y4ZGcCg9OsdvI96nBZIEKS74aIWzlQWTScLm/iRUv7I+zhoDj9MNhJ46yA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1771466961; c=relaxed/simple;
+	bh=7m30KQ51G2XBIZqrYYiXK7MzBNceBX0PbiFcf364MuU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=P6/ft6lGtyZWg9yu7REvawqUNCS2BSkmBjUb5oF1liMprhes/AEaExKEO7ZYzsdF04FmHuK57kuIvjOYN70K9K0mQReenh73MUNikzKJjJoFnx3yD+R7F64J4MQu9M0Lotp8ac5GGv9PGtw53V6GHiOS+hQQrvedVjRXwCoOvUc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ByYpSEL1; arc=none smtp.client-ip=192.198.163.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="oUaslmmx"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nAKihvoVkDmiFk+pn+FYeDDBXcRVuZTZFV7HVlbstLWeaDhGBmS7uSF9qUE9Z99ldAeW8bgvT429s0NU/5EOcaK9wbR+X/kT5Sk48YT5ojE3MLllLAV4EX/pZYJvx08odyFaaZ5Z2fjeppVv3iiX3zfYYgfiydAOqlKaqG9V3pJtpOn4JV4FR647IMFaeHacNVAtSb6xIHObKD9xq/NnXdxmpilmxTJ0LI1yLKFP+PjFdkssxZg7MmzrUvql5s/BNoRz7lj6FGVZPe8p0s5mO7yVgWaGo4k5EKZi69VOgRsMSFJiM7wBBXiocQ6F8VOciWSS/9EmfG20ZziTz4/DXw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=zJmh1j4MTGxOrnOZdTMN7jm8SKekQLLJR5RviScspao=;
- b=kCyE4TpbfHUgmu6V+w0YlDp1CdC5Glppswnn6DcbayJ6/Egyu8C3WKEoS3pP2kAUXy53yGYXQDYhLNA4rf54KR0o9VQWxDJ705lZVB5Lk40sYAFVbxdScSfrF5sA0f4lQHBOasbiC6IN5k0OrwoHgjpEtW+7xOHaBBYUoIZYeoXXPuBohuFqVdoJkpvMtN/6ZQnHbTERvEOOefnmUavgC6aqhJ/sr2k+cqLRt2lLyL3EjYpro1+RU0PSgKDeb2A76Kaz6SfqQalPWTAlVl8L5+ckgY9FPpoxlRNcHawWsJu5e0eY9PJjhMBsm157xQLVpBvNLVPSx4IU71n+Fv0voQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=zJmh1j4MTGxOrnOZdTMN7jm8SKekQLLJR5RviScspao=;
- b=oUaslmmxi/kPLhjnAXfoujQqaitjqKlVmHwj5FsDIOxXokYrLULZX8cIYbgvMpaMRb06RRCEIcJt9b4gP18ZZHf/KXLT6p8NY7qSXqQAjrh7lMICYI0H4RyvvUqlU5kbvBhvjq3VJJGUTfjH4q0pTTY76V8PwxO05J4ww+pokqwvSrN9TFiqrDkwk97CAplLy5B3xXhXTk82jf0S0BaMlYQp1TiImjpadl4W5jLjEWBlU9h//N5vFNZBgzajtTVhnQK/4UOMKVemuj9cbVQXFdJ4tzAaI+WFiB0zoVFc+6tZbAR2ywCSjLaeWYizHP85YL+zg2WxeaOBUPl4K4QEsw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
- DS0PR12MB7653.namprd12.prod.outlook.com (2603:10b6:8:13e::21) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9632.14; Thu, 19 Feb 2026 00:59:29 +0000
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9632.010; Thu, 19 Feb 2026
- 00:59:29 +0000
-Date: Wed, 18 Feb 2026 19:59:27 -0500
-From: Joel Fernandes <joelagnelf@nvidia.com>
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: linux-kernel@vger.kernel.org,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>, Simona Vetter <simona@ffwll.ch>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	Huang Rui <ray.huang@amd.com>,
-	Matthew Auld <matthew.auld@intel.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Lucas De Marchi <lucas.demarchi@intel.com>,
-	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
-	Helge Deller <deller@gmx.de>, Danilo Krummrich <dakr@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>, Miguel Ojeda <ojeda@kernel.org>,
-	Alex Gaynor <alex.gaynor@gmail.com>,
-	Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
-	=?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Trevor Gross <tmgross@umich.edu>,
-	Alistair Popple <apopple@nvidia.com>,
-	Andrea Righi <arighi@nvidia.com>, Zhi Wang <zhiw@nvidia.com>,
-	Philipp Stanner <phasta@kernel.org>,
-	Elle Rhumsaa <elle@weathered-steel.dev>,
-	Daniel Almeida <daniel.almeida@collabora.com>,
-	nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org,
-	amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-	intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH -next v9 1/3] rust: clist: Add support to interface with
- C linked lists
-Message-ID: <1771462209.c70cb872032e4abe@nvidia.com>
-References: <20260210233204.790524-1-joelagnelf@nvidia.com>
- <20260210233204.790524-2-joelagnelf@nvidia.com>
- <DGIIMT4F1GWA.12UFBEUAC80VW@nvidia.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DGIIMT4F1GWA.12UFBEUAC80VW@nvidia.com>
-X-ClientProxiedBy: BLAPR03CA0172.namprd03.prod.outlook.com
- (2603:10b6:208:32f::12) To DS0PR12MB6486.namprd12.prod.outlook.com
- (2603:10b6:8:c5::21)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ByYpSEL1"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1771466960; x=1803002960;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=7m30KQ51G2XBIZqrYYiXK7MzBNceBX0PbiFcf364MuU=;
+  b=ByYpSEL1J/FBgKYw55EkWiG0pu5dcHbBAsiOLE7+1bqfgGiMuBkLMTvp
+   tMmYHAjZh2OqSfZPYUMFWGwPQP1W1+hbaiFijoCb7FZNju4FeO0yBqStW
+   fKfoYlfbpbtrhxV+fd92LpkCTi9k6tGWV62YSv6Rih2mbgF0tsNoP6f59
+   7vY5CibhICb710D906WkK+0uFQu/g3V/7Ws9u8HLPGjkKF4osWJQW4YWj
+   4bobHpfTCMmw1XZ9WLsn+/XBDvfTpLuJyX7nRi82MFM6wr3tkWXSMPT3/
+   ByVMhHbCnF0E4ubYFx1ci/XkZirP1tRZYuq4F4NIgXK0h9mKaJLsjHfsl
+   w==;
+X-CSE-ConnectionGUID: QcuPhHeDSeuqKstC44C5mg==
+X-CSE-MsgGUID: xM+nN6HeQhqG5Zo0vdD0Zw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11705"; a="71753752"
+X-IronPort-AV: E=Sophos;i="6.21,299,1763452800"; 
+   d="scan'208";a="71753752"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Feb 2026 18:09:19 -0800
+X-CSE-ConnectionGUID: pLBckp4rS0C2M5q/V9Eabg==
+X-CSE-MsgGUID: XgxoqCM3QVmbKj/kGVpR+w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,299,1763452800"; 
+   d="scan'208";a="252075932"
+Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
+  by orviesa001.jf.intel.com with ESMTP; 18 Feb 2026 18:09:17 -0800
+Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1vstTe-000000012tE-3GYS;
+	Thu, 19 Feb 2026 02:09:14 +0000
+Date: Thu, 19 Feb 2026 10:08:49 +0800
+From: kernel test robot <lkp@intel.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, gregkh@linuxfoundation.org,
+	deller@gmx.de, sam@ravnborg.org
+Cc: oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 13/13] lib/fonts: Remove internal symbols and macros from
+ public header file
+Message-ID: <202602191044.XKx5ACdn-lkp@intel.com>
+References: <20260218083855.10743-14-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|DS0PR12MB7653:EE_
-X-MS-Office365-Filtering-Correlation-Id: d4b09a72-cf29-4fcb-8792-08de6f5222c0
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|366016|376014|7416014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?egGFtr2vYlL2Fu9n5TzSiRLVTE9sPmAGmnp80u5y0k0m8fR5dOsjInxcMk+E?=
- =?us-ascii?Q?xkZRzKlfe6Lph7BJfExNJ+/AQfxdG+jcVoZl189uTghTbqcgthjYGuDvLxJe?=
- =?us-ascii?Q?FBzffT4fM2jStk0yWznz0tm6S1AWzMihyxxIMRneOFuAozslyIs4IKaiiBTb?=
- =?us-ascii?Q?dW9qTbalum+dz/ANzaEJJBumvx5oxbFVu2yNIeEFpNoCtnZs4BEQjcgj6PKb?=
- =?us-ascii?Q?/kEHPaCcX8Uz4Kf57i1+pxEz/ozbjP0PwtkhJE+RZbHv/qv1BOsHoqYcL548?=
- =?us-ascii?Q?LHmMWpkk206d8O6E5imAobquZNkReZcN7sd+Fv9pw8KJcFbagdYF7qona1i7?=
- =?us-ascii?Q?GcrqKjp6ndNvledLKETcBNMX0d1BFQDRb0rpJSN2tERZsYHfW2ac0lcAN8Z8?=
- =?us-ascii?Q?4XVDAVhcVl/aLbKcFFBQfF2OK4WDbB2+oNTdwOfNXgJxfHamCsz1lnnFeArc?=
- =?us-ascii?Q?G3RkhRRgKnXNX0azjrxdxhnMSdtmNU5uSLBM8NNi4yFbY93RAq/G21qleXu6?=
- =?us-ascii?Q?/0E53hIn2sGL19eDJwTzWYjE1IXIDxVhCy3V0pEyKab/SZ01+WdXrP30fjJ3?=
- =?us-ascii?Q?KyxEXRseWNRPNtxwgS9GeLV2GXJpy406SwRjqAEn4WNG5tJrJ1mNWA3blW/7?=
- =?us-ascii?Q?wCU/oWEr0FHeqa2LO40jhFtfI/qUE00Ym8dhCrff/YKUp18gjGDemQpjwpt8?=
- =?us-ascii?Q?OzMZuZ58ZeyGN7PbUeQXWR90jlPrYjjpSfOd5/niwAw+u8dClZbptPQEe/g/?=
- =?us-ascii?Q?Eyr/Ph+VM2mLmB/GePPDtfMqWhTrVSXo+ZbJes1YFX5LZdM4YCvKe+lkGiKL?=
- =?us-ascii?Q?m5zpEsvM9NfCNO65EuOeGbGjt510f1h0KDfZwZRu4sjkGfRnyTcbf8NRhg30?=
- =?us-ascii?Q?XchLmOe2Lm7kPKVYkMczkHQuqjCNslwYQtXr55GWX4V5ceEi5R40wcqpBRE2?=
- =?us-ascii?Q?VziH6sy3tQ9hSzpqxVQ2LczfI8HmdN+1SknIfniIom4XnQomxU/ZjQtSW6eT?=
- =?us-ascii?Q?geTdg4+4P1tg/lfWXnY/042I9vUcAA0Ab3LHyzDxm2ft9tg+IpeEPKa/daLL?=
- =?us-ascii?Q?HL4Y5NmytqjiqR91ncUhmkD8j5OH5G6pvodBGKRA2auKBRAsaMgrqf9dSUmy?=
- =?us-ascii?Q?50giZjHtRSoY0ymGYCTuJXgN5WtKp+BR1OwYqDoWX1eZafQlvYVsnDBMIbQz?=
- =?us-ascii?Q?hhYPCrXK6pFs46dOjTcSf7rwm9/Kfen3hKnXgyn+YDKz2J124oHo2nUiJ1pI?=
- =?us-ascii?Q?NeIt7sPQ/oE4CJotDessosdnQUpXMGtGvgPnqQth3ZZSd7E3RG9NIRA6kRv6?=
- =?us-ascii?Q?AwuSMREGqPcwl7b1Kyie+Q64ONNEI2Lli5o5f+JXRnMuUMEQw3inudnfapnf?=
- =?us-ascii?Q?Z52h3Donzrs3+qGzMj09tu3hNFTlhekM66j422KZFkYC/8SoCBXGJO0olENp?=
- =?us-ascii?Q?X5IQdsfXpBngmdDscLwJhJ3atBtWdzGEtPCy855GrSvNOp2vO5tUpezpdLaM?=
- =?us-ascii?Q?EY4NBT1PEPvuiAxtNG8tjMHDdJhONuycyyAo/AouGfxKyH17imBzkQpIjo58?=
- =?us-ascii?Q?ALfwxr8wKTW06nDlBa0=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?JOPE/mstImJ6TE2T7Kr3QN5R9Gkk5/iYy85q2VN8HpuZnpZ+aWLrgRuPLDuo?=
- =?us-ascii?Q?SIr27IoK3kzbbRUDIeHTVJwT+KaJqAsf0mo9fLjxkS2lV1RQy7DoLy0Fml9Y?=
- =?us-ascii?Q?/sTbX8bOUg1nulVHEgVB0oHcqPS5Vd8m5+LTkKJVB9ZjklvxU5wnRkxHyN9q?=
- =?us-ascii?Q?X1HpidR9bowv2+oyQ9Jx/1+rc56l0PqPdYzl3WzHMEXYBtnFLhS3B8BOs1Ba?=
- =?us-ascii?Q?cHtOkf3HU/g6NaLraOdTxMkt2Vo3WnX8O3QSkEEAdi/fVThSCPjMV8SeCC7Z?=
- =?us-ascii?Q?RcwyZuXUzONgTcW5VrHRvexXtg36U5S7WSG5uw4LdU/BC3cMEx8RlI2d3Zpt?=
- =?us-ascii?Q?CFPU8cLZD0AD6FkCmTfBXjdX/CrQeBQyIPVcokpH4ppucN+KtbGM4AwGy8uc?=
- =?us-ascii?Q?wJ5EF+aYLkvlHZevmt626NKMr2L2v/jF8PdRNVI2TYXZ/HR2zk5d3MNGwZVH?=
- =?us-ascii?Q?QP1GDnyjizzJdBlE3PEXjLoxflN/NAG/TdBT2x++yVwn3FYdQhemsKN0Rykr?=
- =?us-ascii?Q?7AFxuAG0suKgCCmEpj0q7jfxSYmxejBNdlM0HtkUWlkQDKWgmWlEwokCJfrf?=
- =?us-ascii?Q?iSgTgP5GVIaxfarcN47SrfelakGIWCCgk/+Oi0ndTwLgm2nCZvF3YemhHY4d?=
- =?us-ascii?Q?bVe+61LbJCE6u6di1XLODshx8P/JtqxxzhLY+Py0mrhyA9pKoDQu7lWP+50g?=
- =?us-ascii?Q?/7v7gHGAgEVFVToQ1YQJVk7ErBp4V3p5d9GXHliFCODeC62b16jwEYQosSFT?=
- =?us-ascii?Q?x00AJbkSlzQSW9woOe/T5XjUqeFdhrg7SmbrghbKzwsuxk/vyPPwb0hFnqiq?=
- =?us-ascii?Q?xV68zhU/hjXf4b6R3hvdJ9rhGwde+syhjp8V483VPC8fLJsT7nPXrlsB1f0m?=
- =?us-ascii?Q?UJPX8zOnrEVYsw5BB4u7mdJtKxRfJqe5v5fXpFm/UWc5eLTqj2o7KJrRRED6?=
- =?us-ascii?Q?XldCUnZJbzduTbao0XUVavrLcOYEBESKaxdr5Y8goiV2wWTFNNESHIPC6xgq?=
- =?us-ascii?Q?BQN/zzrfIfQ2iNGEsG6f1lSyQvOyxC4K+/fSija9nUf4lJkQDtuwXXbBdrU/?=
- =?us-ascii?Q?343sia15P4/FfE0l9huz8d3f4ApN7X8W4RveACHqyhBwhGidvo0xNOUOwj4x?=
- =?us-ascii?Q?xSLlLHKcppEHFlPWdR+/pMgQydSKTqKi2lKc20yW0/i+pa7fHCF23oqcsNnr?=
- =?us-ascii?Q?FiWDLJROMV1ePVIYnXjc/lYjt4eSHDljHLhvRCXVml7W4o2frV+eQbCZOFKy?=
- =?us-ascii?Q?DqTabNUukYyyF8nb9bpg+IGpWiEpXtgh4z6hG+4YpVSO+CdFyNjUbK7GKX1o?=
- =?us-ascii?Q?Wo4isInGgyzunhpeiA3pwiUDZobZtJ+WNff+11vF8g51x9UOb132UcZjnfMD?=
- =?us-ascii?Q?lW3Favh4CYdMw10VO15lapFZhtR5SizRL46Te9Bd4POJURemECiBcilGdLLa?=
- =?us-ascii?Q?Mw/xum4IdaxfnmAa4TQltBZxbiUzbc0+unNhh8t40/0lVYG7C3+TdJLEBuVJ?=
- =?us-ascii?Q?xvIkQuXSN6XXdrx9DvX73kLxrFwK+oJk9w6/L8cKrMppqWTKJtc4ZVBlYrFO?=
- =?us-ascii?Q?+Nd1UZ41es0OAn7YAwy6DzuhJayLi8lNtHkKKMKngVoDXkHIXDMErQDFB1ji?=
- =?us-ascii?Q?/as2TNcAfhCk3yVW88U18kpLST6o8BJWncEsFoMO6pVJpjFIlnJ6K2Ds+8W7?=
- =?us-ascii?Q?JjB0+tSBuRrlq4xx0Ok5YCpKusohPqSEIPxiaAx9v9Cd4JpzkF+YigExRw5j?=
- =?us-ascii?Q?EY3S0idgXw=3D=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d4b09a72-cf29-4fcb-8792-08de6f5222c0
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Feb 2026 00:59:29.5666
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 8jQTZ+Amd2lBO/tnoch1gFpBbH0POELZ1O6UVa2FSMKFbdhpFcDVzid1YBDXYhN/Sgv/OzzhIMceVpwFytCFzw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB7653
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260218083855.10743-14-tzimmermann@suse.de>
 
-On Thu, 19 Feb 2026 09:35:31 +0900, Alexandre Courbot wrote:
+Hi Thomas,
 
-[...]
+kernel test robot noticed the following build errors:
 
-> I asked this a couple of times ([1], [2]) but got no reply, so let me
-> try again. :) Given that `list_head` is doubly-linked, can we also
-> implement `DoubleEndedIterator`?
-> 
-> This can be done in a follow-up patch but should be there eventually as
-> C lists are often parsed in both directions.
-> 
-> [1] https://lore.kernel.org/all/DEGQCMSX1SGZ.2NQDPG5KUNA9D@nvidia.com/
-> [2] https://lore.kernel.org/all/DEOLRLCZQMBG.1WHBR4YL8SKYR@nvidia.com/
+[auto build test ERROR on 0082025812a31eda451fb14f13f52683ed375c49]
 
-There was a lot of redesign and you only mentioned it as an optional
-suggestion and there several higher priority comments.
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/fbdev-Declare-src-parameter-of-fb_pad_-helpers-as-constant/20260218-164243
+base:   0082025812a31eda451fb14f13f52683ed375c49
+patch link:    https://lore.kernel.org/r/20260218083855.10743-14-tzimmermann%40suse.de
+patch subject: [PATCH 13/13] lib/fonts: Remove internal symbols and macros from public header file
+config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20260219/202602191044.XKx5ACdn-lkp@intel.com/config)
+compiler: powerpc64-linux-gcc (GCC) 15.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260219/202602191044.XKx5ACdn-lkp@intel.com/reproduce)
 
-Anyway, I disagree. I don't think there's a use case for
-DoubleEndedIterator at the moment -- none of the current users of clist need
-reverse iteration. I'd prefer to keep the interface minimal and add it when
-there's an actual need for it, rather than adding API surface that nobody
-uses. If a usecase comes up, we can always trivially add it.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202602191044.XKx5ACdn-lkp@intel.com/
 
-(will look at other comments in the morning, its night for me).
+All errors (new ones prefixed by >>):
 
-Thanks,
+   In file included from arch/powerpc/kernel/btext.c:23:
+   arch/powerpc/kernel/btext.c: In function 'draw_byte':
+>> arch/powerpc/kernel/btext.c:467:46: error: 'font_sun_8x16' undeclared (first use in this function); did you mean 'font_vga_8x16'?
+     467 |         const unsigned char *font = PTRRELOC(font_sun_8x16.data) + font_index;
+         |                                              ^~~~~~~~~~~~~
+   arch/powerpc/include/asm/setup.h:19:34: note: in definition of macro 'PTRRELOC'
+      19 | #define PTRRELOC(x)     ((typeof(x)) add_reloc_offset((unsigned long)(x)))
+         |                                  ^
+   arch/powerpc/kernel/btext.c:467:46: note: each undeclared identifier is reported only once for each function it appears in
+     467 |         const unsigned char *font = PTRRELOC(font_sun_8x16.data) + font_index;
+         |                                              ^~~~~~~~~~~~~
+   arch/powerpc/include/asm/setup.h:19:34: note: in definition of macro 'PTRRELOC'
+      19 | #define PTRRELOC(x)     ((typeof(x)) add_reloc_offset((unsigned long)(x)))
+         |                                  ^
+
+
+vim +467 arch/powerpc/kernel/btext.c
+
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  462  
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  463  static noinline void draw_byte(unsigned char c, long locX, long locY)
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  464  {
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  465  	unsigned char *base	= calc_base(locX << 3, locY << 4);
+0ebc7feae79ac0 Dr. David Alan Gilbert 2023-08-25  466  	unsigned int font_index = c * 16;
+b94b7356756164 Finn Thain             2025-11-10 @467  	const unsigned char *font = PTRRELOC(font_sun_8x16.data) + font_index;
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  468  	int rb			= dispDeviceRowBytes;
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  469  
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  470  	rmci_maybe_on();
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  471  	switch(dispDeviceDepth) {
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  472  	case 24:
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  473  	case 32:
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  474  		draw_byte_32(font, (unsigned int *)base, rb);
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  475  		break;
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  476  	case 15:
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  477  	case 16:
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  478  		draw_byte_16(font, (unsigned int *)base, rb);
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  479  		break;
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  480  	case 8:
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  481  		draw_byte_8(font, (unsigned int *)base, rb);
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  482  		break;
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  483  	}
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  484  	rmci_maybe_off();
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  485  }
+7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  486  
 
 -- 
-Joel Fernandes
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

@@ -1,138 +1,223 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012016.outbound.protection.outlook.com [52.101.43.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5E0A22CBF1;
-	Thu, 19 Feb 2026 02:09:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771466961; cv=none; b=jzVjdd5MrAy0De5iqLmA/TCus+IY3m5ffffRtYw+9jpZJia4mAEiEsoMGVFQHn+QwpCkSQKnsow7m2UWI/0z+9fyx5Lf2okRA5uzLquTTnaWMcI11Y4ZGcCg9OsdvI96nBZIEKS74aIWzlQWTScLm/iRUv7I+zhoDj9MNhJ46yA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771466961; c=relaxed/simple;
-	bh=7m30KQ51G2XBIZqrYYiXK7MzBNceBX0PbiFcf364MuU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=P6/ft6lGtyZWg9yu7REvawqUNCS2BSkmBjUb5oF1liMprhes/AEaExKEO7ZYzsdF04FmHuK57kuIvjOYN70K9K0mQReenh73MUNikzKJjJoFnx3yD+R7F64J4MQu9M0Lotp8ac5GGv9PGtw53V6GHiOS+hQQrvedVjRXwCoOvUc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ByYpSEL1; arc=none smtp.client-ip=192.198.163.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20ADC1C84C0;
+	Thu, 19 Feb 2026 02:47:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.43.16
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1771469256; cv=fail; b=I4rif0TnAjbdQsYY60j/rmNul7f+a7bcd1lroitt/anV1x0EE5cYrDEGzRzTqTV8PZThernd+AkQH1Gcw5p1T/YVkyZ5vuBePQIAeWfLrcJZnACzDW+IVx7yA6C7NIPNdoWVL7HCPFDtQ6p0wj4BN6wxozZ2VBjSQA7nHrMOhFU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1771469256; c=relaxed/simple;
+	bh=YA7W2sNFbqlH0NfuSnr9TQTVoZTcEKStLwAH5GFyidY=;
+	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
+	 In-Reply-To:MIME-Version; b=r2WCJyecK8CfBlPxtNc9ChZbPDjEpvci3Tcfs1RsibA7uPd8jMjZ9PvNCCGLx63Qkco2LUg/s9vyFvWhTlqGkJIzMJyW0kluGNVAdOClebN3p4QbBESYtEmWIqIYgV0553+KhVIn+Pzq7Jop5NM2/8ecXphxT7jMYPLC91RuvyM=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=WeBPwpdW; arc=fail smtp.client-ip=52.101.43.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ByYpSEL1"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1771466960; x=1803002960;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=7m30KQ51G2XBIZqrYYiXK7MzBNceBX0PbiFcf364MuU=;
-  b=ByYpSEL1J/FBgKYw55EkWiG0pu5dcHbBAsiOLE7+1bqfgGiMuBkLMTvp
-   tMmYHAjZh2OqSfZPYUMFWGwPQP1W1+hbaiFijoCb7FZNju4FeO0yBqStW
-   fKfoYlfbpbtrhxV+fd92LpkCTi9k6tGWV62YSv6Rih2mbgF0tsNoP6f59
-   7vY5CibhICb710D906WkK+0uFQu/g3V/7Ws9u8HLPGjkKF4osWJQW4YWj
-   4bobHpfTCMmw1XZ9WLsn+/XBDvfTpLuJyX7nRi82MFM6wr3tkWXSMPT3/
-   ByVMhHbCnF0E4ubYFx1ci/XkZirP1tRZYuq4F4NIgXK0h9mKaJLsjHfsl
-   w==;
-X-CSE-ConnectionGUID: QcuPhHeDSeuqKstC44C5mg==
-X-CSE-MsgGUID: xM+nN6HeQhqG5Zo0vdD0Zw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11705"; a="71753752"
-X-IronPort-AV: E=Sophos;i="6.21,299,1763452800"; 
-   d="scan'208";a="71753752"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Feb 2026 18:09:19 -0800
-X-CSE-ConnectionGUID: pLBckp4rS0C2M5q/V9Eabg==
-X-CSE-MsgGUID: XgxoqCM3QVmbKj/kGVpR+w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,299,1763452800"; 
-   d="scan'208";a="252075932"
-Received: from lkp-server01.sh.intel.com (HELO 765f4a05e27f) ([10.239.97.150])
-  by orviesa001.jf.intel.com with ESMTP; 18 Feb 2026 18:09:17 -0800
-Received: from kbuild by 765f4a05e27f with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vstTe-000000012tE-3GYS;
-	Thu, 19 Feb 2026 02:09:14 +0000
-Date: Thu, 19 Feb 2026 10:08:49 +0800
-From: kernel test robot <lkp@intel.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, gregkh@linuxfoundation.org,
-	deller@gmx.de, sam@ravnborg.org
-Cc: oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH 13/13] lib/fonts: Remove internal symbols and macros from
- public header file
-Message-ID: <202602191044.XKx5ACdn-lkp@intel.com>
-References: <20260218083855.10743-14-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="WeBPwpdW"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=autLfW/V6tAsQEm0NhRcnb1OuCqq4UbTl2fo+59i8JY5fp00lhQLaXDw5LO+JGGJVfQBHVwqQfZPO55yg2SfTMuDaTyJsxO9s+1W7x5jGNiPKaemFo2TkVeM5zMB8aKpKjFyDTqz6FkxBaSIwQvK/5F1cEJY5TXGmYtQVWr5zZC6HGfbgOz9V9DXSU86MpxDkhKrwN+Z2hBu5iRWeLX8SaEDB+T+ILLHJ/V0Ra1CLKsnOPzdrUPJkHrQPC/gJZWlOtzyMYU6I4iQXZL1kp3mW4DoyC8xGSgp15CY9GM37f2aiXsKNVVafH4LBoH+i0PBcQvK0WPNOxZBzk2TwW5D1g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=YA7W2sNFbqlH0NfuSnr9TQTVoZTcEKStLwAH5GFyidY=;
+ b=uLv6dE8/cATsZLXpJ/LoCdwqx3gAlHBRb9e88hQzOjmDdubJlJMXFTGGwVvw5dcyeF0+tMmSEXFP7nKixI2IMtMCUW4YF+Sl6gMKsAsXADbPTL8eLNJvZaXo/0ZXDNSR8TpqYcKabYkWhlrL4+H0XGHed4Na0hrgBDWx6+K2Zm8Sumhdlmb/TBUHNPZXrr9reHtVpkwF/F5nUrf6AgvA/CHlkgiwvRNqE+ZfAKO4IlGMsBMUAOsPn2uv7O7f90c0daz/DPveKgJSkJGOLANf9lyu3aKnj9wJnEAPSwUtyhN2w8NrLzcgkmJjdMkn17DVBQ78zTzWlo7aGV2kIBxd2A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=YA7W2sNFbqlH0NfuSnr9TQTVoZTcEKStLwAH5GFyidY=;
+ b=WeBPwpdWwDFdmnfjCR8yc3avHnqi3H4yNwRP9py+LdTz7oTq8PCMhfhbQKPVoNnHF2iACmTBqmzuFL/v5HgHxjUNFmfFjd8MqjY03fd4AIXA+ziwTcoCY3Sy/FXcIIw4ZKzxP4eajcc5F+EAHHTmeXxPS2rvtdRqGuYD/aix0RCqgsXBwKEHny6XVRoyQ3Avmz2PRPYQUOH7742uMBsDN97fGRVB31zwp92iBWzd7iRR6bU3aYybHqnzmBFkuQlbDtC3cKdqaIvthfn+dex2v4EOR3J04EiBDt5CGoaRZ76ddDa2xzHOQbifb6MyFDUxdr5hEn0Imnc5/MT7YUR7TA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from CH2PR12MB3990.namprd12.prod.outlook.com (2603:10b6:610:28::18)
+ by SA1PR12MB8095.namprd12.prod.outlook.com (2603:10b6:806:33f::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9632.15; Thu, 19 Feb
+ 2026 02:47:27 +0000
+Received: from CH2PR12MB3990.namprd12.prod.outlook.com
+ ([fe80::7de1:4fe5:8ead:5989]) by CH2PR12MB3990.namprd12.prod.outlook.com
+ ([fe80::7de1:4fe5:8ead:5989%3]) with mapi id 15.20.9632.010; Thu, 19 Feb 2026
+ 02:47:27 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 19 Feb 2026 11:47:23 +0900
+Message-Id: <DGILFRPORZFW.31EV2LX1MGXMK@nvidia.com>
+Cc: <linux-kernel@vger.kernel.org>, "Maarten Lankhorst"
+ <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
+ "Simona Vetter" <simona@ffwll.ch>, "Jonathan Corbet" <corbet@lwn.net>,
+ "Alex Deucher" <alexander.deucher@amd.com>,
+ =?utf-8?q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, "Jani Nikula"
+ <jani.nikula@linux.intel.com>, "Joonas Lahtinen"
+ <joonas.lahtinen@linux.intel.com>, "Rodrigo Vivi" <rodrigo.vivi@intel.com>,
+ "Tvrtko Ursulin" <tursulin@ursulin.net>, "Huang Rui" <ray.huang@amd.com>,
+ "Matthew Auld" <matthew.auld@intel.com>, "Matthew Brost"
+ <matthew.brost@intel.com>, "Lucas De Marchi" <lucas.demarchi@intel.com>,
+ =?utf-8?q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+ "Helge Deller" <deller@gmx.de>, "Danilo Krummrich" <dakr@kernel.org>,
+ "Alice Ryhl" <aliceryhl@google.com>, "Miguel Ojeda" <ojeda@kernel.org>,
+ "Alex Gaynor" <alex.gaynor@gmail.com>, "Boqun Feng" <boqun.feng@gmail.com>,
+ "Gary Guo" <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Trevor Gross" <tmgross@umich.edu>,
+ "Alistair Popple" <apopple@nvidia.com>, "Andrea Righi" <arighi@nvidia.com>,
+ "Zhi Wang" <zhiw@nvidia.com>, "Philipp Stanner" <phasta@kernel.org>, "Elle
+ Rhumsaa" <elle@weathered-steel.dev>, "Daniel Almeida"
+ <daniel.almeida@collabora.com>, <nouveau@lists.freedesktop.org>,
+ <dri-devel@lists.freedesktop.org>, <rust-for-linux@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
+ <intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
+ <linux-fbdev@vger.kernel.org>
+Subject: Re: [PATCH -next v9 1/3] rust: clist: Add support to interface with
+ C linked lists
+From: "Alexandre Courbot" <acourbot@nvidia.com>
+To: "Joel Fernandes" <joelagnelf@nvidia.com>
+References: <20260210233204.790524-1-joelagnelf@nvidia.com>
+ <20260210233204.790524-2-joelagnelf@nvidia.com>
+ <DGIIMT4F1GWA.12UFBEUAC80VW@nvidia.com>
+ <1771462209.c70cb872032e4abe@nvidia.com>
+In-Reply-To: <1771462209.c70cb872032e4abe@nvidia.com>
+X-ClientProxiedBy: TY4P301CA0024.JPNP301.PROD.OUTLOOK.COM
+ (2603:1096:405:2b1::11) To CH2PR12MB3990.namprd12.prod.outlook.com
+ (2603:10b6:610:28::18)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260218083855.10743-14-tzimmermann@suse.de>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH2PR12MB3990:EE_|SA1PR12MB8095:EE_
+X-MS-Office365-Filtering-Correlation-Id: e3a75bc8-1789-4ea9-9a1e-08de6f613739
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|376014|7416014|10070799003|366016;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?QTlFQXZEN1VvZEs1STlET0pRVkl1S21NR1JPUUR5dEpOcmVkNVBxZ3dCcEdY?=
+ =?utf-8?B?V25DOENINTFqOUVDbDJDamhSb2ZqbE5HZDRXQytVUlQreEVXUCswcWt6bHVC?=
+ =?utf-8?B?SGMzNitIeWR2Y212RCs4RG1hTGNTQS96bTFGRFZGdnpTMkxFK0Vha0R1WElG?=
+ =?utf-8?B?NEFsWStuSkdGd3kxMzY4Uy84U0JQNFc1SDVYK1J6T1BsZ1ZzbFJqWmIzTGV1?=
+ =?utf-8?B?ZUdreXVkMDdRREFTYmVXSWVEcG5PM3A3MlI4NDFMbDY5T3FuMUhkY0NTdGJn?=
+ =?utf-8?B?bVhPcmtFMHA0ZU5RK0JTejVlbHhBb0pITlpoQXV4U2NhRU9QY1M5UFFoOFMr?=
+ =?utf-8?B?QXkrRnlZMXhuS29qZlNWTXZ0VUpOYm92S1U2M2xvYWQwMnlLSVJJNnBCTGV5?=
+ =?utf-8?B?S1kzRjBtcWovODNlVFUrMG1sYzRleFBQM1ZyVW9WTEhSZ0VYTlltbWRWTXli?=
+ =?utf-8?B?MEZERnlCajZLTm1PNEtxRTlQaEdTbW1iZU9QbWtpdm1ZWDFnaFJPQWRQMnEy?=
+ =?utf-8?B?SFNYWjhjNDN2eGZQN3JQWVhsUzJBSVBLbEt4ck54TTh2TXNvK1lYWUpqRGwr?=
+ =?utf-8?B?VG5pc3JqSUt5cFVRcGpXbXBZdFZzQlBzdkhUOWpSR3hmcStsU2F2djhyb005?=
+ =?utf-8?B?azQrTmJuR2xDZmdMcjZ0U2tzNHRCaHdHcGNwNWZIMnNIQ1lwajhMMjBHSHl1?=
+ =?utf-8?B?VGhBMG1Sa1l5Q1hvMzl3Tll3dFQreVFTRlJpNzZnNXFrNTR2MGljUmg2TWk4?=
+ =?utf-8?B?WFE5ZGhFUEFxS29zdnR3U2JYUitiekdTNXV0bTd3akJMOWwrNUcyUTRVdzVO?=
+ =?utf-8?B?bGEyRmsrQmduY2Vkc3oxaHNheCt5QVhoOXdqdlgzRXk5UUoyZTlzc1pMY1pJ?=
+ =?utf-8?B?NWpGZ1Z6OFRVYzBVUGpFcUZRQTl5c2FCWDFkblNielBNWW4yQVphV1U5MUdv?=
+ =?utf-8?B?WUJFeDFoZXhLR2RESXJ5Y0s3eWtzMWY5THVjdHd0b1ZTR0Z1STZDb2FSdjVT?=
+ =?utf-8?B?ZmxYak8ya0dzanBWNFJoejRXb1k1a3g1U2tRNXNRSWRmZkxJbTI3dTBmTnlh?=
+ =?utf-8?B?cytpWGtQR1JxdDE3aXJlVGpQcFQ3RHNOZE5HcWdGaFYraDhXWG14K1BJOEdP?=
+ =?utf-8?B?Ukh4SnR3alVyY2tyL3lib3NIUGhxZ0xDcVVvY1BIVnlkOFhXbFlqdWVFdFFH?=
+ =?utf-8?B?RTVJTHc2NlF0VHVQdjR1QVM4c25uQkxTRTNubFpNUEhzcC9saW1iSWVBMkRw?=
+ =?utf-8?B?WENuM3JhK2kybUlkcFIyVGJnMnM3OEZDbktYWlZyekhLd0ViK3RITDRxMDJj?=
+ =?utf-8?B?aXdra2xadGdvTUlwU3Y5M1pUREpXcEZYeVh0c1M1cTJYcmYrenA1ZFROa05X?=
+ =?utf-8?B?RXFXZStEanZvRUVBTndHWDRGNlJ4WnBxbmpvUGdPNXVHb2FMbVZnVkV5STVG?=
+ =?utf-8?B?TXRZWDV0bnRZZGdBZVFCU3pMMTBVQndubnJ3RjQreXdDSExSZ1hmcGZJeXIy?=
+ =?utf-8?B?NFNKZFFzNWJFNkRjUUlFSVRFMHBCK1V6OW83WDBrRkc3cml0Q2M4OEU2a1hD?=
+ =?utf-8?B?VHJCb2c0MmFmUGphVGJFMk1samYzOVVuSVp4M3UvSWJEUTJYdkZPYVNSRVly?=
+ =?utf-8?B?UWp4V280NWxvbHE0ME5tbU9nSGh6Ri9ZcTlmMUVibjc3VndOS3lSU2crNmh4?=
+ =?utf-8?B?Zjk5NlBqTS92ZTlYTDcrT21xUHk2VWtVbFAydTJCVE1yWHhGMjl6WVhpeEpq?=
+ =?utf-8?B?SVliSTVESnhSQVo4ZWVmT3NOL2NkdlZ0b1dlYi9oNXRHMWlMRXVVS2VGOXdv?=
+ =?utf-8?B?K0hIU2xJQWp6Uzh0ZHYvVVRwa0hiWDl4SkRqZlVKSnpqUlNZamFZbWZXZjk5?=
+ =?utf-8?B?QVVMZHVKZWNkUERyWDVidm84UVVmYVNnQjI5UGtYTXVPM1I2QkJSalF2ZHhm?=
+ =?utf-8?B?cUpiUnA1Qk5rb3FLd0JlTXduNnZpbHVTem5xckdIb2Zuemd0TWZBTTFMOEtG?=
+ =?utf-8?B?UmdPMDNWRmZCanhOQXN2MzZ2OE5MMFV0YkRWTldSZHUzV0VBZi8rWkx3SExD?=
+ =?utf-8?B?RjhyQmltQkZ2VTBKMXBSVXZSUGtLV3FlamwyVFNiT01uVVRxM0VlU1Z4ZEl4?=
+ =?utf-8?Q?BRvY=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH2PR12MB3990.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(10070799003)(366016);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?a1RITWlDV21HVHl2aGpNZHRJa0Y4VU5SbW1XOXFLY1FYRVNKelgrS09LR2JZ?=
+ =?utf-8?B?ZzFLTVVjSjBBZDJwaDNXeVZVTTJsZDdTb1V3UGp1SnppNDJXV3RYRmg2eCti?=
+ =?utf-8?B?MEh4Z090ME1MZTdBNXlFU2grR0tGYk5iYm1OOUw5V1pzM1drRlhSTytsV2du?=
+ =?utf-8?B?YTh3OG1iZE8xU1UzVSt5T0tndXplZ1I5NHBGQ0h5THJIcTB3bnBkaGhRZWZq?=
+ =?utf-8?B?cnZUSmZxK0tCSnZOb0dtcm84YmxIazRWNHM4Q2dvWkhmR2RPWnhzRnh2NGdO?=
+ =?utf-8?B?VXZORzh2amhvQ0o4N1NGaWZkSVBaNUFNQ29ZVmRhVEZ5L3NkbzZoaEZpNEVV?=
+ =?utf-8?B?VGtqbGl6dmU4cktYaDBXbTQ0MHFqRE1sbHhqeE1vZjlackZWdEpFOFBvT2Zr?=
+ =?utf-8?B?ZnEvRXFjUU5BWGpRaHVJd1hIWVZuWENIVW5CSDczZVRTVDJSYjl4ZGZpUmVy?=
+ =?utf-8?B?bGtiMjRMVGlYQ2VETjhaN3ZzWXNvQUZLc0syeUlkR2l5M2NyYkdIZ1ViSEpY?=
+ =?utf-8?B?aUxDeDJzWWpMME5sMjMzMVdiQjJlejQ2SlAxdkM1bnVDUkcvY25ORnhXS09u?=
+ =?utf-8?B?Z0Q0OVFIOWhBbnJIT2tIb3lOK1V2KzQvSjB2aFROY201Y1FiN3JjQWN2Rm9T?=
+ =?utf-8?B?VUFrZlRRMGM4a0VHcmJ0eHJTK215T1RWWi9Zc3FBZ3dKMUJELzJpRFUvUTZ4?=
+ =?utf-8?B?TjB5TzZ0K2owU1J3MDZXNWpqK0UvdDFSbEI0ZWFJb25DVFJhREJ4QVllU1lC?=
+ =?utf-8?B?TVIvTFpwYUl3a010dlRVWmNTV3lFaFlyMnhsMjB0b1RUMjNXYzhNM0F5ZTRk?=
+ =?utf-8?B?Y1U4STBvNDIwY01Xd2ZmRG9iOTVMaFpGeWl1cVhkd2xmcEhYV0t0NlV3Snps?=
+ =?utf-8?B?L1dOdjJSTTVpZmxwNWxIYmo2cld1U0tGNCtQRHpwK0JXV1JvcVF3MlVNeVJL?=
+ =?utf-8?B?djRETW84bS9GZkNIcFBWbm80NTYxS0EzWmtDTnNGdittTXMxaVNRNnoxclFR?=
+ =?utf-8?B?SU5RTDZCeHBjMHplWmxUbTZ5Z0tHY0tLemxIR2Z1a281MThQU3dseWIwZ2N4?=
+ =?utf-8?B?N1IyY2ZXL1c3SnZxNFkzdHBSK3NqRFQwcHpmL3B1VmtCeWlhK0lTRERMRVd0?=
+ =?utf-8?B?Yi9NSXM1T3JZazZtMVA4MldraU5QdDl1YndGRWJsWGV0TG5Bd08wcGZnbEtt?=
+ =?utf-8?B?R3VMMG1PTWxzb0R4K2Y3UEdzWWhUSFNlZVM3Z1hmSEx6djJrYkhiaGVvR3JX?=
+ =?utf-8?B?eGlJczlKNHl6RC9jbDdXbmhyRURyVGFMcitoc2RvNlFnUVFrYVRuZm1OQlQ4?=
+ =?utf-8?B?c0wxeWVBL3RwZFMzbXNJc0FhU09TL0Izeld0Sk5vRjMzT2tiSmxSS1Uya1h3?=
+ =?utf-8?B?YlAvY0gvTkZ1ai9iMThOUzZtUGVoc2svdWlUSlI0RDRJQTFwdlR5NWZtbUNv?=
+ =?utf-8?B?SU9iMTlGNGd1bDJlWmZjdnE1VEZwQjVuQVNhTHRGdC9NeFU4ZURZWVFwb3VF?=
+ =?utf-8?B?VWlWZGduZ2VnSi9zT3hxcGt4bzRhTlBFYm9aNEJ4Q3B6VUVjaE04TnVPcWNR?=
+ =?utf-8?B?bzZ5QnZjOXU4c2ZZV09mMFlpRXlwZmxqVTMvR2FzRldRRGdxN0NjN2NpRjBM?=
+ =?utf-8?B?a3Zac2N3U1o5ak5nVk5HY2xoNTJxVlIxTnc5TVQ0ejRiRVc5VFhLbFUvVE9T?=
+ =?utf-8?B?OHE4Q3pIYzgwVUovK3hXMTg1aFNsVE81N3hXRmE4MVErQzJRR1RRV3h3Q1Rx?=
+ =?utf-8?B?cTdGcTVNazd3VzRFYzU1VGFFQUVuYUxtWU1YK1lkaytxN01LODdVNkZsdzl1?=
+ =?utf-8?B?a2VXYjVpRTJNV2tqNHgvUDBDYjdFRjdkV0NvRFJHallwaHphMnV1ck96dGtU?=
+ =?utf-8?B?SHZFNnJMVDdEaXFxMzB4cWhOU1NoV3NOanBRbm1HOVVoeTFibVluSWkxTnFP?=
+ =?utf-8?B?NFVMblVJWE5TcnlFYVludjY0OHcxbEoyZC95bUFaSjB4dkIxY1Bud2czZmtN?=
+ =?utf-8?B?aVJ6VUVFM0c2ZHhJUjk4UG9laGpTbm96cTdEbVl6V3Q3OUNRTkhEYVdhUXd4?=
+ =?utf-8?B?ZnNrcWR5Tlp5bGlXLzlXay9RR3Viemk3NzZ1WnNmalhaRFhnd1FpVEt1MlZv?=
+ =?utf-8?B?RzV0K2hTMzNkeGc5RXoreWMzMG5NbnpuUUlrYzVPTVVRUFBwSlJoR0pCSnFr?=
+ =?utf-8?B?YmszVWlxbkdmaU1sMHlmVmNTUXQ2aU8rNElQRDNNd3FPTVJzQ0sxVzFMb3ZK?=
+ =?utf-8?B?NzFtSHN0L3J1SCtqbE9YQW9GdDJOWjRaQkp0REU5eFBaUEVSUEVTUjVrTThm?=
+ =?utf-8?B?NHRLWUtQVHA3dU5MZTdTZ0ZIV0U5Q1UzT0ZIYmF0SDVLbjArQnhMSG5GbFY4?=
+ =?utf-8?Q?/W5UZQeo4r07xflu/AA5heWaMmCIdngJFuLzpGkhHCQpT?=
+X-MS-Exchange-AntiSpam-MessageData-1: Uuh/Z8B7vQcPhA==
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e3a75bc8-1789-4ea9-9a1e-08de6f613739
+X-MS-Exchange-CrossTenant-AuthSource: CH2PR12MB3990.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Feb 2026 02:47:26.8976
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Qxj8vantii3ApNogRWfpDBb4wVgBUXP0QOyCfsDpq1CXPY4LjVj1ZueeA7fOE8XTpRFdflNFyOv/2EFwa9CHnQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB8095
 
-Hi Thomas,
+On Thu Feb 19, 2026 at 9:59 AM JST, Joel Fernandes wrote:
+> On Thu, 19 Feb 2026 09:35:31 +0900, Alexandre Courbot wrote:
+>
+> [...]
+>
+>> I asked this a couple of times ([1], [2]) but got no reply, so let me
+>> try again. :) Given that `list_head` is doubly-linked, can we also
+>> implement `DoubleEndedIterator`?
+>>=20
+>> This can be done in a follow-up patch but should be there eventually as
+>> C lists are often parsed in both directions.
+>>=20
+>> [1] https://lore.kernel.org/all/DEGQCMSX1SGZ.2NQDPG5KUNA9D@nvidia.com/
+>> [2] https://lore.kernel.org/all/DEOLRLCZQMBG.1WHBR4YL8SKYR@nvidia.com/
+>
+> There was a lot of redesign and you only mentioned it as an optional
+> suggestion and there several higher priority comments.
+>
+> Anyway, I disagree. I don't think there's a use case for
+> DoubleEndedIterator at the moment -- none of the current users of clist n=
+eed
+> reverse iteration. I'd prefer to keep the interface minimal and add it wh=
+en
+> there's an actual need for it, rather than adding API surface that nobody
+> uses. If a usecase comes up, we can always trivially add it.
 
-kernel test robot noticed the following build errors:
+It's a double-linked list still, and `DoubleEndedIterator` a standard
+Rust trait. Adding it now would spare us the trouble of deciding which
+tree takes the feature when it eventually lands.
 
-[auto build test ERROR on 0082025812a31eda451fb14f13f52683ed375c49]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/fbdev-Declare-src-parameter-of-fb_pad_-helpers-as-constant/20260218-164243
-base:   0082025812a31eda451fb14f13f52683ed375c49
-patch link:    https://lore.kernel.org/r/20260218083855.10743-14-tzimmermann%40suse.de
-patch subject: [PATCH 13/13] lib/fonts: Remove internal symbols and macros from public header file
-config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20260219/202602191044.XKx5ACdn-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260219/202602191044.XKx5ACdn-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202602191044.XKx5ACdn-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   In file included from arch/powerpc/kernel/btext.c:23:
-   arch/powerpc/kernel/btext.c: In function 'draw_byte':
->> arch/powerpc/kernel/btext.c:467:46: error: 'font_sun_8x16' undeclared (first use in this function); did you mean 'font_vga_8x16'?
-     467 |         const unsigned char *font = PTRRELOC(font_sun_8x16.data) + font_index;
-         |                                              ^~~~~~~~~~~~~
-   arch/powerpc/include/asm/setup.h:19:34: note: in definition of macro 'PTRRELOC'
-      19 | #define PTRRELOC(x)     ((typeof(x)) add_reloc_offset((unsigned long)(x)))
-         |                                  ^
-   arch/powerpc/kernel/btext.c:467:46: note: each undeclared identifier is reported only once for each function it appears in
-     467 |         const unsigned char *font = PTRRELOC(font_sun_8x16.data) + font_index;
-         |                                              ^~~~~~~~~~~~~
-   arch/powerpc/include/asm/setup.h:19:34: note: in definition of macro 'PTRRELOC'
-      19 | #define PTRRELOC(x)     ((typeof(x)) add_reloc_offset((unsigned long)(x)))
-         |                                  ^
-
-
-vim +467 arch/powerpc/kernel/btext.c
-
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  462  
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  463  static noinline void draw_byte(unsigned char c, long locX, long locY)
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  464  {
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  465  	unsigned char *base	= calc_base(locX << 3, locY << 4);
-0ebc7feae79ac0 Dr. David Alan Gilbert 2023-08-25  466  	unsigned int font_index = c * 16;
-b94b7356756164 Finn Thain             2025-11-10 @467  	const unsigned char *font = PTRRELOC(font_sun_8x16.data) + font_index;
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  468  	int rb			= dispDeviceRowBytes;
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  469  
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  470  	rmci_maybe_on();
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  471  	switch(dispDeviceDepth) {
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  472  	case 24:
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  473  	case 32:
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  474  		draw_byte_32(font, (unsigned int *)base, rb);
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  475  		break;
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  476  	case 15:
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  477  	case 16:
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  478  		draw_byte_16(font, (unsigned int *)base, rb);
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  479  		break;
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  480  	case 8:
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  481  		draw_byte_8(font, (unsigned int *)base, rb);
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  482  		break;
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  483  	}
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  484  	rmci_maybe_off();
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  485  }
-7191b615759ec1 Benjamin Herrenschmidt 2013-07-25  486  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+But even without it the series still stands, so your call.

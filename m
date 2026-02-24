@@ -1,47 +1,47 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010059.outbound.protection.outlook.com [40.93.198.59])
+Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azon11011043.outbound.protection.outlook.com [40.107.208.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0611D1B4F09;
-	Tue, 24 Feb 2026 22:40:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.59
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD5D434D926;
+	Tue, 24 Feb 2026 22:40:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.208.43
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1771972821; cv=fail; b=E9Djt85VkKi2EEj4T70am7RLzfGqrS4LCSdcQPoeQbMLi5nfHQo4d8tLN1ZerqrjqX6p+Bfn2954ZIzrtZlsdD/7KMUPv+pET5pI7i+63eDdzjaMWzubKZHanmNeiAhfmY0XpxHQnOe8AkpwP5GM2YbKnuGj/4wN6kkZ38K0Yg0=
+	t=1771972826; cv=fail; b=qjxEdgbi0m55omfcn+T0ouvpGMBdpjqCieH28OZLiBtUNk3vuH2Tryh2flp6jDmMfCoZxAgulcCHplKoedFvIbYkoOv5iVLGJG7bePt9oFXFviMNDdrXHCTT+oJ/Pwd4zhrVFUXxMJUTw97RJxKogdG+yL3RQzzpoZXmW/0TXR4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1771972821; c=relaxed/simple;
-	bh=6CYNZsfQfv/O64TUtJiUmHnrwshvuNXEXzaG0x9Xc5c=;
+	s=arc-20240116; t=1771972826; c=relaxed/simple;
+	bh=Iy7JOK0473ePqm4pIdSs00BytrGzbj7Hu3jTXxOt5KE=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=ZSkfekN4aigcebzrSw1VmwHVFFHu7jv7JB5dkC+2AopBfai4Qt9mYWxJSLM64+H5DGxvzguLR5zSb7uUDBtXMhaf5EIQniE0Aq/BjRuQ7PBFj7UEbpTnvQLtPuyFUF79lOfhNcX1BBSNQZUWz/Mtl02a9nYcC1L8DfBAR0o0yoQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=tPuitM++; arc=fail smtp.client-ip=40.93.198.59
+	 Content-Type:MIME-Version; b=X8pIK+OVdlBiHjae8lEzAfgTceTqwDpwL82UDPijoUqqVfy4fKowQkssJCh8RkDyKCyl/TU7kK1PfRmXzuBx3rySz6qVr+7ZSSF9sr07nn1J82WbMvUrBstCh8WK4Y3wZ3+xA133D8doD1vqlwyv6g+2huB9UFI+29q//xPTT8w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=kbE+/ZuA; arc=fail smtp.client-ip=40.107.208.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="tPuitM++"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="kbE+/ZuA"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=yhpGCaaCiPosdTI+Hzgb7xgxXLHDacsFVeCmwQSGU5zvx1BLUW/eig7WNpCRP0mZ82CPAC6ZAe/e1UD9N932PMEeIjSC0LQhnc/CskHjSz6qsxmKRiNOsirQjYBoaVII9EpgAMCw6Z0lMSB8asFihkNrzJgW6XuU9SE8GmS2ojxyaSMaLr0GoQgsjcN8C2khc5gLFWPqNC84kzl0uw00G2ZLulucLoiPsaBeIQlC2N/XRG0WiTBvGN13FnAihPsKaQEPvwVWJdZSPf+vOEUMuKL0YQ2MdQz0qDzvblFKtrMiRhW3Zz1IT7SUPpxRuIb3QefqqC9S25LaNf1vd/fK+A==
+ b=av73kToyu84kQm20pbQvE08Rzx1oO0LBeq66hGSJ9F1Ng2ET5zMrmI5FV7Rmw9ylILY5+jDaGCRvATL+UM4Sxca2yobYom+fh3RkMd8Y31h4bwoC7uBy5qPAPJlrNEYX5b7N1bwHJLBvuQSu/oAMUEuRTkOFcM6ZjYB6/67qRav4rdAyzfvNN+sNfTq7AT9hBhg/wEPOyQYbya6FQwE1u5qpKukYC7HCAw8q1+BTzLOO4y4WYXwncPU2G0F7m6X1Z/lUaysl1oGVl0eMRbqUB0m1153pc2z55L0apUYcmcDgAs1dHN2ZJHCMA8TG6td9tdpiX/vnyYC2mkME5p+z4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=QTKgckHqENZNSWGfsHIpHTsn7t6tLd8/f+Yki4Kw6eE=;
- b=FEp4CtbmzsYizzL0Iw4uwZdp92NitusFwsxZA2EqhGavv9GtyxIfayz1hA/0sNssk5wWiGWU2ONzloQCG1HpG9H2VpydTfnoP44g7MiX2VYa5Kwus6S3xNBriVUlbpSJH5i/ydShLKNl8ejTnzwuaq6/q6DQDoqC4DB57pE4gv/Mo24Q+4GHPyaLWc+MGZz+Asc0ZQLkpUkaLQ3geHTLq9cheAgQfLRTgB6s4PQu75fbfvPqWrFOIYV7cp4aOVLQNWO4APUjyXKe07Im6qCsjHGCBypwZkLgojsC3pTtZOK3qNrjuDYTuYVZrtDOBun7sOobQ/vtITALg4hrMeveFA==
+ bh=+R3GxUR30Ce901aqBipSHAbEEdeQtCV+u/rZ5Kf5P0o=;
+ b=qbV0/8Q6lE2ddctuG2be8jv1bDlF/n6CGKSkupqn/aE4Ks5YE/7zzrQutRcXv66VFiGd7vXxPlgfSZUQEyiF3F5ITMAxuLcFi2KBCx0XP6ze2TgpSM08qN+wzMeJMYyHl9QHTLyTUGGUiBiW2yA84vRu/cQtxWu1SR4C0TRmpSKvy0Si/e27WWTwWe+G2lxbtmZr2kvAJYm1epyt0nG3DkfQLNL82qqLEUMHBW1/bry73dxgfPV+Hn26hW5GYT+0oF4HolRa/mVXqXkVpBsMBLGGHn0VAbsm5l21mdxDJf18rVWOU7p5NnCcU27yc0r9ZWwpJXJn8TIZB4kXlUjf7w==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=QTKgckHqENZNSWGfsHIpHTsn7t6tLd8/f+Yki4Kw6eE=;
- b=tPuitM++B+au/z3cfN3JVdjs6RftXtI9mGOUFEEeOu8juAFXfNpW5qkUbXoZv5ytO/K/ewlqfDE5mj08/eeNhrpTb/NwvNJdZ91xOL/UID8wdE8HZlyDJdkTsKXWM1MA5MksxqYBOM+S/ZO5kRYHae3jkqPi+KfvxyH7YrQqZvXLEYRzA0FmcgVRX8i+hn5d3YxxXz5zK88EYGH6biejXFkW8kGMH6vKuGnP10guRMNpw1ipnYz+fTYRVuON9ZPIeH3zs4jV/jOE4mkHzspo7oDXlW+51mRTsc9Zz2mO5FmZgJ2LzXgJf8OhAbV9HweOAkKwU/O/uJ4JZkJgPLP9Xw==
+ bh=+R3GxUR30Ce901aqBipSHAbEEdeQtCV+u/rZ5Kf5P0o=;
+ b=kbE+/ZuAN8mE+DRBeI1EjQSwjB+dI/sx4DlXDVcqkn84Oh0Ng9pSMpQgD4Hm4+mLRzR0+cqbAWA811vgjcXfoa+nDYKY84s61QVI+V5MdlmqtnfTAfybHbZd6zBhF/XyGEqhcAIAxA5Y95PNoVwZxM7aXoaxKonD/GnqiGmtxU17JNOF0acNqDTzSzz/VKDsCe/+x7CQW5BE27XxUsklBrOLfY5Ie5uqHpwtmE7GByw6Php7FErYzzTlehMqWI0/GybNSL85PZzN7gi+cXQYJTE6Eld29dICWl3nhmwBtRrjYQS88zxUVvNyHghtuJTXDp48IrJeEP1OlAAavXOTIg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
  PH0PR12MB7816.namprd12.prod.outlook.com (2603:10b6:510:28c::16) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9632.22; Tue, 24 Feb
- 2026 22:40:13 +0000
+ 2026 22:40:17 +0000
 Received: from DS0PR12MB6486.namprd12.prod.outlook.com
  ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
  ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9632.017; Tue, 24 Feb 2026
- 22:40:13 +0000
+ 22:40:16 +0000
 From: Joel Fernandes <joelagnelf@nvidia.com>
 To: linux-kernel@vger.kernel.org
 Cc: Miguel Ojeda <ojeda@kernel.org>,
@@ -99,17 +99,18 @@ Cc: Miguel Ojeda <ojeda@kernel.org>,
 	intel-gfx@lists.freedesktop.org,
 	intel-xe@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	Joel Fernandes <joelagnelf@nvidia.com>
-Subject: [reference PATCH v11 1/4] gpu: Move DRM buddy allocator one level up (part one)
-Date: Tue, 24 Feb 2026 17:40:02 -0500
-Message-Id: <20260224224005.3232841-2-joelagnelf@nvidia.com>
+	Joel Fernandes <joelagnelf@nvidia.com>,
+	Peter Senna Tschudin <peter.senna@linux.intel.com>
+Subject: [reference PATCH v11 3/4] gpu: Fix uninitialized buddy for built-in drivers
+Date: Tue, 24 Feb 2026 17:40:04 -0500
+Message-Id: <20260224224005.3232841-4-joelagnelf@nvidia.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260224224005.3232841-1-joelagnelf@nvidia.com>
 References: <20260224224005.3232841-1-joelagnelf@nvidia.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: MN0PR05CA0006.namprd05.prod.outlook.com
- (2603:10b6:208:52c::31) To DS0PR12MB6486.namprd12.prod.outlook.com
+X-ClientProxiedBy: MN2PR13CA0005.namprd13.prod.outlook.com
+ (2603:10b6:208:160::18) To DS0PR12MB6486.namprd12.prod.outlook.com
  (2603:10b6:8:c5::21)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -119,392 +120,125 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|PH0PR12MB7816:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5a36273c-9472-4f7c-00f8-08de73f5acbb
+X-MS-Office365-Filtering-Correlation-Id: ef25ae00-3dd0-4cad-c2a0-08de73f5ae97
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|7416014|376014|366016;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?XkHSaJiRxfVP0PpJo0ODVy38XXoOia4Jklh4VX5jajtt9y7EvfP219HtajQ7?=
- =?us-ascii?Q?KxMlNtkSK3isco3zB7lEQxCDaZNCJrmAcFA04TU29JxKPt3Pt9z+Esj8EUft?=
- =?us-ascii?Q?JfReq5vsavAZfeBFN7OkDZhnQWuxYd4XmXFjvn3XlMXUMpb+9j4+Bla1pPq6?=
- =?us-ascii?Q?8yVq8Xl/WDy/YWaynkvwSErTIlNuZ/A1XL7PqllLGC4BTu4Hq+HOxCcg5oyV?=
- =?us-ascii?Q?RMoUCMSOO2ONYY3c6BgTtXQ+CcZIlEDUHHm0FoX9UiVzQ2oEl6oH8GHmCyPM?=
- =?us-ascii?Q?aN+19hT/jwIsZMoYVClMzANGoiiA7ozZltcxXBwCzo7CxBYst0TxP2yDG2X5?=
- =?us-ascii?Q?F+R/5T155HUyFcZOwFOwNFts73zf3mHiDM20ImqcJtCQkPNyI1THESH9MIIE?=
- =?us-ascii?Q?gMK7wVTlDK6Rz39IPvS3m1tlTOvvm1h0kIgKiwqkut5ywfZSVNf37tG4d1IW?=
- =?us-ascii?Q?3ipz5YGqSD5XJx7LBKFVDOywiFheI/ZuLP2nx8kVz6P85aHaPGda4PJO3pZ4?=
- =?us-ascii?Q?kR2v9YOvTPqMRr+0hds8/Vici5kO4Y6w2F/iehRgEgMasERtPckOwyO9Fphd?=
- =?us-ascii?Q?7ecYpdMyn0RCZZiYBVxJ+7JXRg768W6w/uxeV4jMDPVSnYk18DITudgphhNo?=
- =?us-ascii?Q?ruxE7ujtYAiCB/HwlC+HhAhhw1MbEdpMP1XYZ9d8MEP6xg0yDatiWvYwAZWJ?=
- =?us-ascii?Q?xbP1Z2QKoR/gACnO3ZouqWYoXj0L24fjh7iSbUzFkUv+UopgnVUSQrC7XZTA?=
- =?us-ascii?Q?SCWsfvowPaDtuz8xud9tszS7xJCVpUCMZZQrzh2wfR8NKd5IdLEixfE/YxmY?=
- =?us-ascii?Q?eBKIIZGMxiVV2DzQ824Www56yWZZ4oKuLuvYHwnTVE6G36DQvcQT++3Wrdmf?=
- =?us-ascii?Q?xkQekO2qBgjhiGuFyysjKzR+vdF2UizkPvYUt6kB6cn6ZwP5Sa+YxSQh+lKX?=
- =?us-ascii?Q?/5qo9QDwHSEKwyIxKRBarimxX+3kdWyDa0D3kKHHWYp30HHbEEQASpAxnAoH?=
- =?us-ascii?Q?u0AVxfbcLRRWnQ+0cBCRV15BplTTSsgKwYmATLuQrZtaBQ4LCmCVnnu4TIeu?=
- =?us-ascii?Q?KbXxJzfZ7zqgdheqP0K49xC/8/NaCiYbNRu77s8YLyIZLr6cVZIlFoBDcvSC?=
- =?us-ascii?Q?ccz4Kn35JDAnnv3Bm9ktPfW1vSgENXYzUPTvGWrCVIPraE64ElEr4wI/Tcy+?=
- =?us-ascii?Q?hR2mQ6I9r28vpZ2nbg3tlag4wY6nnHSVgSUBR9h75K+IhZAQ4qA7+FTcdbwa?=
- =?us-ascii?Q?OQTHUIY9OB5raVUXVg0lxg4y7Z+4U4XrJl3i3CVXm0iTc0tSTRhwjfN0v6Pu?=
- =?us-ascii?Q?AVmwajgGrh2lUEuu0ac25RdwY9JtrXcPQgplAVYGHKUq1tYKl2GZFYXSc7sc?=
- =?us-ascii?Q?uQbrzmEmtWiOMAVrxBcggBioV6tQNf9E9nlO1uALXAe9w/Xi1Ev1ti+V99fC?=
- =?us-ascii?Q?AchGQZ6hzRtPIIPOPG2d+/QVRbi9I84EPipiN8LiczFu98jBANHMvFSQVFdY?=
- =?us-ascii?Q?7WA93H4ZIpW/tfsABf6S+UMKwz4DYDx/a50+UmEzH6vMnfdWNYGw26bOUIEd?=
- =?us-ascii?Q?85NYj3VwOECxcmvujvU=3D?=
+	=?us-ascii?Q?0BWWCafMok3BxXGmM16kBo+ZoS1qdcacIZfuJBEqsnayez9Cz6YhtqBEmnBR?=
+ =?us-ascii?Q?Ny9O5ua7Jz1/iQu/zNp9lLlbTBcEaJgY33E/4E7zOR518zW1Dijn0joBOaqP?=
+ =?us-ascii?Q?ZQZf4L1pbBSI/ONwZ//2oYBFxhc1hzGJ3H3taDyKoaUTuh9d4n83YIhfE3Dd?=
+ =?us-ascii?Q?Dqnv/pU7hBfz0DDJQwf6r0hLzzz76R7iPPKe7AKsR5YHSktppgk+idZl1bjO?=
+ =?us-ascii?Q?E3HeJ+gBHg/2n5fCepsKQxhvWucPIdmACLOL7Muq1Po4yIRrC7Y5ftkrlVrx?=
+ =?us-ascii?Q?WxJbauvIGpwptZ7Z9+C94Pexws2Pth1ihFmO88FvreWNsqf2gsylNNEKkLq8?=
+ =?us-ascii?Q?Jqr8A4BO5oz2lxl/gKusufs4yWwjrLaRGOyBZXi49GgQq6kz9CmEDg4aC5T7?=
+ =?us-ascii?Q?eghg1PXX7Pdu2kT4lf1stv04GfBfMwcxsBye2rRDSUghHvmtyO0730b423D4?=
+ =?us-ascii?Q?l5IUOmpXbY7CJyoWmG0jj1nsdkkiwepm5SQFXKbKW8LpyGgyhBGrSiIx6Y7C?=
+ =?us-ascii?Q?AVOoahhhVa+9SzsI04sj9rAU1lNw5zsL7bUSJXQBXDxcL8ok5KFs1dLnf3wy?=
+ =?us-ascii?Q?m6aLikOOJrO7tZN/8zxP6GYZLILM8CL+GA6GqZFtBcbmrZuuh3GRTnrPYxoU?=
+ =?us-ascii?Q?EAjGJUBYbuGEgPSxVLwoJq5cSshAmFmMnzdVqB0fZJTty8tZDVPKsBxrTmvY?=
+ =?us-ascii?Q?+s1Hx2gkgMv/NP9jnduIXyJTbeuuvTzUYnAdPvb1zFP6iLO374kzSYDL9OAN?=
+ =?us-ascii?Q?4EP0GhtcCrI0JlkQCvZTVYplbixdbjaXlVEYfSsoGiHzZTeM16S0XoRWbTjf?=
+ =?us-ascii?Q?FxA0cixhJaAH2jgijYS4wCmsHA7Mo+nGfsdUv5mjKCkztOJpNNrStmUMYwCN?=
+ =?us-ascii?Q?YDdFyHbTCJOu+di7ePxdaeTT48PMtYVPixoYeuhM3tY0jSBrDLNwrCiX+AJ0?=
+ =?us-ascii?Q?xQuc90TLXte0HwJz+X62loguvIbCiyeK2RKiIQt89tpzFQcF2HprIHfhlON0?=
+ =?us-ascii?Q?zBP6wAobwx30gcFtecg8pzCcABlWCVh3vD3BdmLbpiYHMblPE/kpxBmq3izB?=
+ =?us-ascii?Q?v8dX8oC1SqhaNtE/3Nf1Vt+Y0ilyZlsRk5HUp0dMxH++OwhhTZm8Kiblawt1?=
+ =?us-ascii?Q?QBSl0xniNHlIJK6JadjRv+Wc2vAk5cD5w7nwxvbJbkcqF5gvnbphjoxqp+kr?=
+ =?us-ascii?Q?aYTzrfYp0bo8W3Twgap6z89u/OCrFS30iPUyksYu4WEWAC5nU7pxdSgwCS/4?=
+ =?us-ascii?Q?n4eDO+Sv6fBRYiVmhNrAFb0g9A1fSLdlUCcHBt7lcT1G7CR35LA3h/mySKOb?=
+ =?us-ascii?Q?5xAezPEJ9FNhe7d8BTYtxwyk8T+TUhEH0xQZGiFiUr7b5iOtAOfBWqMbSJq4?=
+ =?us-ascii?Q?BsF7o4rEXrOoS4pOq47PNZymqfKRxvtAwafp4XRTX5QwMtEFT2aT3s8TNRJT?=
+ =?us-ascii?Q?FFK65ayzkQGNaBtqG/oHpz/n5LRSeTtpZ5wP1Lcdu2Pk/ej4ic11a7i//cwW?=
+ =?us-ascii?Q?Si5UzJtiobPGksgJhRKkSsqtioCOFyY6yzqvq5/QsbNzYtLbX5W88p80OcNJ?=
+ =?us-ascii?Q?YDIJ6wsEHidDkI4T9to=3D?=
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?cMmORnjn7ixxF8m8b7NYYBsmhdq4hg7jGVcpylWptnzfVmEPP98jHU1TQu+S?=
- =?us-ascii?Q?5vTW6aIZ2Fbl10ygZFJ2sYnvH92cU8qapzkC9h404PBrTKKKyo9ANWbImtsz?=
- =?us-ascii?Q?Q57go+DfzZiNkn0+p9QSZvBbsOrMLex14YV6ftmLIHXQsO+u3XPCUhPeMqBq?=
- =?us-ascii?Q?Hzy1YHm0U+uELrSEadTZw+izpDVcE4OszSs17JO30mCXgm+ITPA5kcpTeUp6?=
- =?us-ascii?Q?AVEQ6U4DPoXQN06GxNwGJ7ZN+wZRvW7xUrNDgvd9WsqPENpk3IvlZDtjnTy7?=
- =?us-ascii?Q?myL6+lsFgMVQfsVadBPQN5ROGDFg3vV5PAPOIaRml5uJzQ8s9osoIrC1lS/U?=
- =?us-ascii?Q?9CHCcZGByX4xSWiQU9aGDcDYxLAHZ/iwMpTGF/S1do3epZ2yXGhQDd+6V/xv?=
- =?us-ascii?Q?y4ROao2D32XksGgZ0M2ZMree2/GNlP7elV/UNemYmTUnMUteUKlljJlKGXC4?=
- =?us-ascii?Q?D8jxpn735l7+4pJelmOP6LlBP3AZ5o7fYdDzkG1ECrd8I+TISxjVUWYOa4YX?=
- =?us-ascii?Q?v7LmQHr7pn6MwYvRvlp/ZnHn+MwbP6Mw9I3rV+avj3B6IBjzIFitQKSJvmnd?=
- =?us-ascii?Q?C6XtDLgeTeAYb6oTUajvTfLtiXOSGb7K/W0l7CS+maTcsV0QB2mB8vLjYvUj?=
- =?us-ascii?Q?gTLcB/keCjLupW3QRo09t+t+y5t6CmHtMJK1VJlmN72J9ClzbhFkFD/qk9Fc?=
- =?us-ascii?Q?60xoJ/G2bWFpi2YNMshmo6SaXLm3MOJglAfLu0uNgsfjRA6B53KlpIlABP6l?=
- =?us-ascii?Q?5jbH/KuXXvHEwaMsF4Cahk0D1oo8RykPqONPSVccjEJsaYjmNUHrkInhW9pA?=
- =?us-ascii?Q?zsxmMwmh9QYkbrt2q/caTagtXt89DmcT33F7Xhe7WK2n5pUcC4bUGV0Slhle?=
- =?us-ascii?Q?vonf75sKf0n62EyJWBOlNcBMUlFm0wnWJxlJXH1yEr9O+nuUlavheluClUy1?=
- =?us-ascii?Q?9N09vBdbAWfpUvIR88qjKM/N7GEOfKRELtHPxy1Yp7crKcvc/E+mo/7+ZC19?=
- =?us-ascii?Q?wEAHUxkBLFOqOnn6cigTmL1zmkBu/JeOjrp3oHsM/npM17lrnCjb26Ep1gA3?=
- =?us-ascii?Q?HuTVNWSW00ML3L3ioKFgBjMQOZEAa4u7+wegIwdjzAZStnC9DB/HA9jLJBoo?=
- =?us-ascii?Q?0sFxD3I8WfKGSquoCZ/dYqhDGmEhbGYPcX3m5OxSDag93/Aev8Ggbk9wJ4wz?=
- =?us-ascii?Q?gAsSssl/K2ZnBKLKRhF/W8CgR87McaDxqk1cuncCv0W5pRH+YhN+20JVVHvc?=
- =?us-ascii?Q?pJy72dQIDErtR92qoUEVwKpw/9mhUOqHvyVxhTXYysxIPVKwESScUwH9i3Xn?=
- =?us-ascii?Q?/ndBA+VkxarpWo5wteN4mSojLb+OcLlXc4U0kND2uz64GgBJm3TDPZmITZbc?=
- =?us-ascii?Q?L50aGza1Dml2EOi7uCvB5ghD81ToYqawTkz5+kR++El1La4OIlDj1zkMHQ3h?=
- =?us-ascii?Q?OJrIFI+UMxHl+gz1rX0H3PKkwhUFKmU1IemfuVGu8pSAXSD60pmbQgQm9QTf?=
- =?us-ascii?Q?YSYBxa4twIOcinwPOoWhecjpP3IwjIfJMTNK1r3Vu/UnD5j7MMwxm5Ko8A+Q?=
- =?us-ascii?Q?yjyui0ji2Bg5XFhdDKbftRXgqzHjVNhQ32rRu/Od5E8Nq/U9dgs5h88Hfxzs?=
- =?us-ascii?Q?GlUGKfu3XV5BT26FHSgAALMhm4v9s7RmES1gBZGwm2pJpx2ljBAhKpG5zoS1?=
- =?us-ascii?Q?jEJWp9F1IEc6jOnyBURO28ZzE/9ESxwMjQ9iknH+4XAa08sSXrhTWhEU5ABO?=
- =?us-ascii?Q?sXoznjRP+Q=3D=3D?=
+	=?us-ascii?Q?BZ7CImkMdbC2oH4qBoiMCBeEbmmdYe/VNPGuUSHIFpU+kCP3MWmp0ODMcdit?=
+ =?us-ascii?Q?3CooMJwQgPr1Tq/76hSljsv6suw6JDaSEQhuP4KEIRufemRV8a/0x2QBvCs6?=
+ =?us-ascii?Q?TR+rBXebZssyLZ1W+ypGlFQAQu5+ub+biQESMVxgjIGvnIIcAmgt/6ebfHL4?=
+ =?us-ascii?Q?UKbOtvZ0ZcsH3rbq6Ra7rZmyj08Sf3qaJlrU21HZ7RLqZi00EMLMyvIhuVaa?=
+ =?us-ascii?Q?8HIZAU1Gpt4wnTV4yi6syejr33yHm7EOrZUogdqY80H+yCuDe9Nb1Hnmf41d?=
+ =?us-ascii?Q?DgSviqP9wjQYNEULLEid8fsBEmlAd9AIAwXSvb+NYnWXFMANWKhP4JI4hB+g?=
+ =?us-ascii?Q?sqmIn6b8c9QKDNJtuFgaYRw3aMoYXp35aiT2O3rU/k+8jiDnxk4l8OcI1ylQ?=
+ =?us-ascii?Q?cc3GGRgy79Jox3ooMgfsQXCPLka+RWd7fFmbPaj+tj3S8LqliaEGmdbJcEXA?=
+ =?us-ascii?Q?Kq1fkxreoIHXsdVxnvSkk6N4JPNuAgzJFD8qoMUVil7rZUUhum64PisguLI1?=
+ =?us-ascii?Q?xBsIzuRUwUR7NtmWkgPVcF4daIuSzpRdjKgcmZFXHAwmEjNC/XTouQGhPHLv?=
+ =?us-ascii?Q?Gsi1BVxg/YVY0Aac9UhsS2ygFUI6LO/QcdKUdBLoY3nVKQFlCzyvgu0bOtYN?=
+ =?us-ascii?Q?ELaQa39frJ6G98ia2q3r9cBQoNAf0pCL3aQ7eVWvgN/gCY7taGLVoDnqWKgd?=
+ =?us-ascii?Q?DnjORVzqvEzPFAMxIqVnmyX1Mtsh+wqRm9zqgeLYP9IDJJhysPyHmMx+NOtE?=
+ =?us-ascii?Q?36GSASHWP0Co9Ae+zRFqbjpi+5IY9zcwO2GLH5TPex3Qopn4tEJjw8c/bxtG?=
+ =?us-ascii?Q?/V4DRkWrHjgF1FDzaAMxIS7R256RIM1eWwb24ckluetKEgcdauCkjEZp++Jy?=
+ =?us-ascii?Q?UvQ3U0SIZsZlw3NS/RsUFDQNXQEENj1UFNfuWxaWmiMjxsieKXZVLGb7ErK5?=
+ =?us-ascii?Q?MnCvqzEKzeQPGMNUXJaqfhlDPBUKLsB00lEfS7GKtYol32zzQbFrrQG068zY?=
+ =?us-ascii?Q?HUDV0oOpSEtM1SVr0PDsBCjeGa6QVhiu9ti/EhMeup/qnbJzbUhFgi0iOFp1?=
+ =?us-ascii?Q?UWu0MqU+uv83wesgD3A9lrbCVC/wEvIhF/gzYGfQ6xml8W15290FPFQbf1QK?=
+ =?us-ascii?Q?obb7XurwybUAJH1BLbA/uosoHQWwVnaN5xYzAS8fKFmX3EzAfp8fTeQAuAo+?=
+ =?us-ascii?Q?nc0ZEFnnyD+4ymMmZ7CPpR8+qRugeppPsL3PtCyd5M7O6Ap4DkHKbrvwIhJL?=
+ =?us-ascii?Q?FR3P4j7BSPUUTImeOViWSFXsVe4zsXR8/+bEUuFJZ9TZ0vu68iapeBPKRt9f?=
+ =?us-ascii?Q?RFzYxeBGqU3QAsPpC7JWWH+8Q9lkywDWTDXYgdCR2sWjk0/VzxIBLchIf7ZU?=
+ =?us-ascii?Q?rLK1X7rRex+MOZMqu/JVqOdh1PF6cr+oB547paxlsBPB6jXc98OPMPlf7bzg?=
+ =?us-ascii?Q?wMCpRoeCE4L8CQ32XoP/4wuSQDhzE6jXxYsLsXPZ3aab/+wwSjAFg1+S5fJc?=
+ =?us-ascii?Q?qYcY/DwqwAbjAIWh1odMBOh5rOjRickX3yZ6WsDTWboPc2WfHnPkpMnaayq7?=
+ =?us-ascii?Q?wmwlN4Uo/6mGAYMdP2V/TdQLv46Ilwn9V12GM8c5MnuCL+XjZHf4okvDL8jk?=
+ =?us-ascii?Q?MB64kfM2qVGcSB4ZRGdSRo0J8hRr02LpvHRy2HqLJqbh9FAqEKqJb10b33TT?=
+ =?us-ascii?Q?LGWgZggeio1klYS1cQEEjjzel3zUECS7Sk7alSsI5um90OPAj4YfeYs9Hjt+?=
+ =?us-ascii?Q?MOotaPyjFQ=3D=3D?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5a36273c-9472-4f7c-00f8-08de73f5acbb
+X-MS-Exchange-CrossTenant-Network-Message-Id: ef25ae00-3dd0-4cad-c2a0-08de73f5ae97
 X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Feb 2026 22:40:13.7043
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Feb 2026 22:40:16.8243
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 0LfdBTflOvp0GG6P6rzkfNODFKIrSrOrGi1ETEMRzPpYR0yKtm3EpG5ClamAFNshvF3MiCKpiAEt97/A2XrBjg==
+X-MS-Exchange-CrossTenant-UserPrincipalName: y2jjbDrTm3m3PnWN9A1A0adozSHnb060RN3CnvWu+RePo812+tOUpegxYuM9+hQzV19D9Md0TsQAuHQ8+wxUsQ==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB7816
 
-Move the DRM buddy allocator one level up so that it can be used by GPU
-drivers (example, nova-core) that have usecases other than DRM (such as
-VFIO vGPU support). Modify the API, structures and Kconfigs to use
-"gpu_buddy" terminology. Adapt the drivers and tests to use the new API.
+From: Koen Koning <koen.koning@linux.intel.com>
 
-The commit cannot be split due to bisectability, however no functional
-change is intended. Verified by running K-UNIT tests and build tested
-various configurations.
+Use subsys_initcall instead of module_init for the GPU buddy allocator,
+so its initialization code runs before any gpu drivers.
+Otherwise, a built-in driver that tries to use the buddy allocator will
+run into a kernel NULL pointer dereference because slab_blocks is
+uninitialized.
 
+Specifically, this fixes drm/xe (as built-in) running into a kernel
+panic during boot, because it uses buddy during device probe.
+
+Fixes: ba110db8e1bc ("gpu: Move DRM buddy allocator one level up (part two)")
+Cc: Joel Fernandes <joelagnelf@nvidia.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: intel-xe@lists.freedesktop.org
+Cc: Peter Senna Tschudin <peter.senna@linux.intel.com>
+Cc: Matthew Auld <matthew.auld@intel.com>
+Signed-off-by: Koen Koning <koen.koning@linux.intel.com>
+Reviewed-by: Joel Fernandes <joelagnelf@nvidia.com>
 Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
-Reviewed-by: Dave Airlie <airlied@redhat.com>
-[airlied: I've split this into two so git can find copies easier.
-I've also just nuked drm_random library, that stuff needs to be done
-elsewhere and only the buddy tests seem to be using it].
-Signed-off-by: Dave Airlie <airlied@redhat.com>
 ---
- Documentation/gpu/drm-mm.rst                                | 6 +++---
- drivers/gpu/Makefile                                        | 2 +-
- drivers/gpu/{drm/drm_buddy.c => buddy.c}                    | 2 +-
- drivers/gpu/drm/Kconfig                                     | 4 ----
- drivers/gpu/drm/Kconfig.debug                               | 1 -
- drivers/gpu/drm/Makefile                                    | 3 +--
- drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.h                | 2 +-
- drivers/gpu/drm/i915/gem/i915_gem_ttm.c                     | 2 +-
- drivers/gpu/drm/i915/i915_scatterlist.c                     | 2 +-
- drivers/gpu/drm/i915/i915_ttm_buddy_manager.c               | 2 +-
- drivers/gpu/drm/tests/Makefile                              | 1 -
- drivers/gpu/drm/tests/drm_exec_test.c                       | 2 --
- drivers/gpu/drm/tests/drm_mm_test.c                         | 2 --
- drivers/gpu/drm/ttm/tests/ttm_mock_manager.h                | 2 +-
- drivers/gpu/drm/xe/xe_ttm_vram_mgr_types.h                  | 2 +-
- drivers/gpu/tests/Makefile                                  | 4 ++++
- .../{drm/tests/drm_buddy_test.c => tests/gpu_buddy_test.c}  | 4 ++--
- drivers/gpu/{drm/lib/drm_random.c => tests/gpu_random.c}    | 2 +-
- drivers/gpu/{drm/lib/drm_random.h => tests/gpu_random.h}    | 0
- include/{drm/drm_buddy.h => linux/gpu_buddy.h}              | 0
- 20 files changed, 19 insertions(+), 26 deletions(-)
- rename drivers/gpu/{drm/drm_buddy.c => buddy.c} (99%)
- create mode 100644 drivers/gpu/tests/Makefile
- rename drivers/gpu/{drm/tests/drm_buddy_test.c => tests/gpu_buddy_test.c} (99%)
- rename drivers/gpu/{drm/lib/drm_random.c => tests/gpu_random.c} (97%)
- rename drivers/gpu/{drm/lib/drm_random.h => tests/gpu_random.h} (100%)
- rename include/{drm/drm_buddy.h => linux/gpu_buddy.h} (100%)
+Please note: Greg and Danilo suggest fixing this in the Makefile like Koen
+initially did, so please do so. I am just including this patch here for
+reference.
 
-diff --git a/Documentation/gpu/drm-mm.rst b/Documentation/gpu/drm-mm.rst
-index f22433470c76..ceee0e663237 100644
---- a/Documentation/gpu/drm-mm.rst
-+++ b/Documentation/gpu/drm-mm.rst
-@@ -526,10 +526,10 @@ DRM GPUVM Function References
- DRM Buddy Allocator
- ===================
- 
--DRM Buddy Function References
-------------------------------
-+Buddy Allocator Function References (GPU buddy)
-+-----------------------------------------------
- 
--.. kernel-doc:: drivers/gpu/drm/drm_buddy.c
-+.. kernel-doc:: drivers/gpu/buddy.c
-    :export:
- 
- DRM Cache Handling and Fast WC memcpy()
-diff --git a/drivers/gpu/Makefile b/drivers/gpu/Makefile
-index 36a54d456630..c5292ee2c852 100644
---- a/drivers/gpu/Makefile
-+++ b/drivers/gpu/Makefile
-@@ -2,7 +2,7 @@
- # drm/tegra depends on host1x, so if both drivers are built-in care must be
- # taken to initialize them in the correct order. Link order is the only way
- # to ensure this currently.
--obj-y			+= host1x/ drm/ vga/
-+obj-y			+= host1x/ drm/ vga/ tests/
- obj-$(CONFIG_IMX_IPUV3_CORE)	+= ipu-v3/
- obj-$(CONFIG_TRACE_GPU_MEM)		+= trace/
- obj-$(CONFIG_NOVA_CORE)		+= nova-core/
-diff --git a/drivers/gpu/drm/drm_buddy.c b/drivers/gpu/buddy.c
-similarity index 99%
-rename from drivers/gpu/drm/drm_buddy.c
-rename to drivers/gpu/buddy.c
-index fd34d3755f7c..4cc63d961d26 100644
---- a/drivers/gpu/drm/drm_buddy.c
+ drivers/gpu/buddy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/buddy.c b/drivers/gpu/buddy.c
+index 603c59a2013a..81f57fdf913b 100644
+--- a/drivers/gpu/buddy.c
 +++ b/drivers/gpu/buddy.c
-@@ -10,7 +10,7 @@
- #include <linux/module.h>
- #include <linux/sizes.h>
+@@ -1315,7 +1315,7 @@ static int __init gpu_buddy_module_init(void)
+ 	return 0;
+ }
  
--#include <drm/drm_buddy.h>
-+#include <linux/gpu_buddy.h>
- #include <drm/drm_print.h>
+-module_init(gpu_buddy_module_init);
++subsys_initcall(gpu_buddy_module_init);
+ module_exit(gpu_buddy_module_exit);
  
- enum drm_buddy_free_tree {
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index d3d52310c9cc..ca2a2801e77f 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -269,10 +269,6 @@ config DRM_SCHED
- config DRM_PANEL_BACKLIGHT_QUIRKS
- 	tristate
- 
--config DRM_LIB_RANDOM
--	bool
--	default n
--
- config DRM_PRIVACY_SCREEN
- 	bool
- 	default n
-diff --git a/drivers/gpu/drm/Kconfig.debug b/drivers/gpu/drm/Kconfig.debug
-index 05dc43c0b8c5..3b7886865335 100644
---- a/drivers/gpu/drm/Kconfig.debug
-+++ b/drivers/gpu/drm/Kconfig.debug
-@@ -69,7 +69,6 @@ config DRM_KUNIT_TEST
- 	select DRM_EXPORT_FOR_TESTS if m
- 	select DRM_GEM_SHMEM_HELPER
- 	select DRM_KUNIT_TEST_HELPERS
--	select DRM_LIB_RANDOM
- 	select DRM_SYSFB_HELPER
- 	select PRIME_NUMBERS
- 	default KUNIT_ALL_TESTS
-diff --git a/drivers/gpu/drm/Makefile b/drivers/gpu/drm/Makefile
-index ec2c5ff82382..5c86bc908955 100644
---- a/drivers/gpu/drm/Makefile
-+++ b/drivers/gpu/drm/Makefile
-@@ -78,7 +78,6 @@ drm-$(CONFIG_DRM_CLIENT) += \
- 	drm_client_event.o \
- 	drm_client_modeset.o \
- 	drm_client_sysrq.o
--drm-$(CONFIG_DRM_LIB_RANDOM) += lib/drm_random.o
- drm-$(CONFIG_COMPAT) += drm_ioc32.o
- drm-$(CONFIG_DRM_PANEL) += drm_panel.o
- drm-$(CONFIG_OF) += drm_of.o
-@@ -114,7 +113,7 @@ drm_gpusvm_helper-$(CONFIG_ZONE_DEVICE) += \
- 
- obj-$(CONFIG_DRM_GPUSVM) += drm_gpusvm_helper.o
- 
--obj-$(CONFIG_DRM_BUDDY) += drm_buddy.o
-+obj-$(CONFIG_DRM_BUDDY) += ../buddy.o
- 
- drm_dma_helper-y := drm_gem_dma_helper.o
- drm_dma_helper-$(CONFIG_DRM_FBDEV_EMULATION) += drm_fbdev_dma.o
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.h b/drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.h
-index 5f5fd9a911c2..874779618056 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.h
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vram_mgr.h
-@@ -24,7 +24,7 @@
- #ifndef __AMDGPU_VRAM_MGR_H__
- #define __AMDGPU_VRAM_MGR_H__
- 
--#include <drm/drm_buddy.h>
-+#include <linux/gpu_buddy.h>
- 
- struct amdgpu_vram_mgr {
- 	struct ttm_resource_manager manager;
-diff --git a/drivers/gpu/drm/i915/gem/i915_gem_ttm.c b/drivers/gpu/drm/i915/gem/i915_gem_ttm.c
-index f65fe86c02b5..eeda5daa544f 100644
---- a/drivers/gpu/drm/i915/gem/i915_gem_ttm.c
-+++ b/drivers/gpu/drm/i915/gem/i915_gem_ttm.c
-@@ -5,7 +5,7 @@
- 
- #include <linux/shmem_fs.h>
- 
--#include <drm/drm_buddy.h>
-+#include <linux/gpu_buddy.h>
- #include <drm/drm_print.h>
- #include <drm/ttm/ttm_placement.h>
- #include <drm/ttm/ttm_tt.h>
-diff --git a/drivers/gpu/drm/i915/i915_scatterlist.c b/drivers/gpu/drm/i915/i915_scatterlist.c
-index 4d830740946d..30246f02bcfe 100644
---- a/drivers/gpu/drm/i915/i915_scatterlist.c
-+++ b/drivers/gpu/drm/i915/i915_scatterlist.c
-@@ -7,7 +7,7 @@
- #include "i915_scatterlist.h"
- #include "i915_ttm_buddy_manager.h"
- 
--#include <drm/drm_buddy.h>
-+#include <linux/gpu_buddy.h>
- #include <drm/drm_mm.h>
- 
- #include <linux/slab.h>
-diff --git a/drivers/gpu/drm/i915/i915_ttm_buddy_manager.c b/drivers/gpu/drm/i915/i915_ttm_buddy_manager.c
-index d5c6e6605086..6b256d95badd 100644
---- a/drivers/gpu/drm/i915/i915_ttm_buddy_manager.c
-+++ b/drivers/gpu/drm/i915/i915_ttm_buddy_manager.c
-@@ -5,7 +5,7 @@
- 
- #include <linux/slab.h>
- 
--#include <drm/drm_buddy.h>
-+#include <linux/gpu_buddy.h>
- #include <drm/drm_print.h>
- #include <drm/ttm/ttm_placement.h>
- #include <drm/ttm/ttm_bo.h>
-diff --git a/drivers/gpu/drm/tests/Makefile b/drivers/gpu/drm/tests/Makefile
-index 87d5d5f9332a..d2e2e3d8349a 100644
---- a/drivers/gpu/drm/tests/Makefile
-+++ b/drivers/gpu/drm/tests/Makefile
-@@ -7,7 +7,6 @@ obj-$(CONFIG_DRM_KUNIT_TEST) += \
- 	drm_atomic_test.o \
- 	drm_atomic_state_test.o \
- 	drm_bridge_test.o \
--	drm_buddy_test.o \
- 	drm_cmdline_parser_test.o \
- 	drm_connector_test.o \
- 	drm_damage_helper_test.o \
-diff --git a/drivers/gpu/drm/tests/drm_exec_test.c b/drivers/gpu/drm/tests/drm_exec_test.c
-index 3a20c788c51f..2fc47f3b463b 100644
---- a/drivers/gpu/drm/tests/drm_exec_test.c
-+++ b/drivers/gpu/drm/tests/drm_exec_test.c
-@@ -16,8 +16,6 @@
- #include <drm/drm_gem.h>
- #include <drm/drm_kunit_helpers.h>
- 
--#include "../lib/drm_random.h"
--
- struct drm_exec_priv {
- 	struct device *dev;
- 	struct drm_device *drm;
-diff --git a/drivers/gpu/drm/tests/drm_mm_test.c b/drivers/gpu/drm/tests/drm_mm_test.c
-index aec9eccdeae9..e24a619059d8 100644
---- a/drivers/gpu/drm/tests/drm_mm_test.c
-+++ b/drivers/gpu/drm/tests/drm_mm_test.c
-@@ -16,8 +16,6 @@
- #include <drm/drm_mm.h>
- #include <drm/drm_print.h>
- 
--#include "../lib/drm_random.h"
--
- enum {
- 	BEST,
- 	BOTTOMUP,
-diff --git a/drivers/gpu/drm/ttm/tests/ttm_mock_manager.h b/drivers/gpu/drm/ttm/tests/ttm_mock_manager.h
-index e4c95f86a467..96ea8c9aae34 100644
---- a/drivers/gpu/drm/ttm/tests/ttm_mock_manager.h
-+++ b/drivers/gpu/drm/ttm/tests/ttm_mock_manager.h
-@@ -5,7 +5,7 @@
- #ifndef TTM_MOCK_MANAGER_H
- #define TTM_MOCK_MANAGER_H
- 
--#include <drm/drm_buddy.h>
-+#include <linux/gpu_buddy.h>
- 
- struct ttm_mock_manager {
- 	struct ttm_resource_manager man;
-diff --git a/drivers/gpu/drm/xe/xe_ttm_vram_mgr_types.h b/drivers/gpu/drm/xe/xe_ttm_vram_mgr_types.h
-index a71e14818ec2..babeec5511d9 100644
---- a/drivers/gpu/drm/xe/xe_ttm_vram_mgr_types.h
-+++ b/drivers/gpu/drm/xe/xe_ttm_vram_mgr_types.h
-@@ -6,7 +6,7 @@
- #ifndef _XE_TTM_VRAM_MGR_TYPES_H_
- #define _XE_TTM_VRAM_MGR_TYPES_H_
- 
--#include <drm/drm_buddy.h>
-+#include <linux/gpu_buddy.h>
- #include <drm/ttm/ttm_device.h>
- 
- /**
-diff --git a/drivers/gpu/tests/Makefile b/drivers/gpu/tests/Makefile
-new file mode 100644
-index 000000000000..8e7654e87d82
---- /dev/null
-+++ b/drivers/gpu/tests/Makefile
-@@ -0,0 +1,4 @@
-+# SPDX-License-Identifier: GPL-2.0
-+
-+gpu_buddy_tests-y = gpu_buddy_test.o gpu_random.o
-+obj-$(CONFIG_DRM_KUNIT_TEST) += gpu_buddy_tests.o
-diff --git a/drivers/gpu/drm/tests/drm_buddy_test.c b/drivers/gpu/tests/gpu_buddy_test.c
-similarity index 99%
-rename from drivers/gpu/drm/tests/drm_buddy_test.c
-rename to drivers/gpu/tests/gpu_buddy_test.c
-index e6f8459c6c54..b905932da990 100644
---- a/drivers/gpu/drm/tests/drm_buddy_test.c
-+++ b/drivers/gpu/tests/gpu_buddy_test.c
-@@ -10,9 +10,9 @@
- #include <linux/sched/signal.h>
- #include <linux/sizes.h>
- 
--#include <drm/drm_buddy.h>
-+#include <linux/gpu_buddy.h>
- 
--#include "../lib/drm_random.h"
-+#include "gpu_random.h"
- 
- static unsigned int random_seed;
- 
-diff --git a/drivers/gpu/drm/lib/drm_random.c b/drivers/gpu/tests/gpu_random.c
-similarity index 97%
-rename from drivers/gpu/drm/lib/drm_random.c
-rename to drivers/gpu/tests/gpu_random.c
-index 0e9dba1ef4af..ddd1f594b5d5 100644
---- a/drivers/gpu/drm/lib/drm_random.c
-+++ b/drivers/gpu/tests/gpu_random.c
-@@ -6,7 +6,7 @@
- #include <linux/slab.h>
- #include <linux/types.h>
- 
--#include "drm_random.h"
-+#include "gpu_random.h"
- 
- u32 drm_prandom_u32_max_state(u32 ep_ro, struct rnd_state *state)
- {
-diff --git a/drivers/gpu/drm/lib/drm_random.h b/drivers/gpu/tests/gpu_random.h
-similarity index 100%
-rename from drivers/gpu/drm/lib/drm_random.h
-rename to drivers/gpu/tests/gpu_random.h
-diff --git a/include/drm/drm_buddy.h b/include/linux/gpu_buddy.h
-similarity index 100%
-rename from include/drm/drm_buddy.h
-rename to include/linux/gpu_buddy.h
+ MODULE_DESCRIPTION("GPU Buddy Allocator");
 -- 
 2.34.1
 

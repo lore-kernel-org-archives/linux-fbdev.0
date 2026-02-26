@@ -1,97 +1,89 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010061.outbound.protection.outlook.com [40.93.198.61])
+Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011018.outbound.protection.outlook.com [52.101.52.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8507A5FDA7;
-	Thu, 26 Feb 2026 00:24:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.61
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B75C713DDAA;
+	Thu, 26 Feb 2026 02:27:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.52.18
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772065464; cv=fail; b=VvPRwPwgmToIijbVv9aDcXy6MJSOwFlsC3JttVRqmOJN17+E/Rp5FRbSQP/4x6S7CTqsjbuX+QRF0GtloZY4IgvOoOVuCCtW7HNk4dBb742xU4baoBU+jdL4lu22MJL5RBlOG3X9bw1HJ4G6/a+A2hk53viqporPtpMOL5VIGDk=
+	t=1772072832; cv=fail; b=DiuLuKaiKAtr8N/blxFJ9kJ6zolqTWZwuRFgvR9CZKvxbErhqYzcOJJqgblaU0sOgAwyCT1ncgaBV9GsBu7fKi7nCPK5pShLXq5/SUQJLdy1c0K3gSmCEqQViHzcE8VOezEYB51p5F1+YPx1XGsmTPkSUQVmuhIkfdy/QW17Hs4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772065464; c=relaxed/simple;
-	bh=C0IsEuUzVy9gpGZqsQ8iTQE4TcXijdcIMWiu3aJSRek=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=tCqosPEGSHecA4+iZz9fVPGJfh512soq8z0qob/14vRwxgLB5wmlKyN/YYwL1QSyffbu7qFH2yInKImkEbWoBZHowp2/H8hQDLAzYUOvAUZo8X6BhSXhWb/AhMFOOxVid6mcW0FBzY3EFkI/aIMVJTJeGFat0Oc+emuk1X0lUM4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=tPmOJzeU; arc=fail smtp.client-ip=40.93.198.61
+	s=arc-20240116; t=1772072832; c=relaxed/simple;
+	bh=9hdHc1XlMAskKACFkw4joGo1q8ywqLIVuZE7Ip9buqk=;
+	h=Content-Type:Date:Message-Id:From:To:Cc:Subject:References:
+	 In-Reply-To:MIME-Version; b=LWZXfA7tY97nIDmCKkIhjnpdpGo1GXTfFlj+8OQXOauBTc4uJeMqnrzhe2bMrrfOr8S4PKRGXLYsj7nBzo2yI0z/za9dcucI4gnfsPdJBXOlMIsoDS5D1obwLFIUTnyVQ/SulpoMBek+9buW8kHSthplrwRx4ppMyDfZi75uHGk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=X1F8Hv5W; arc=fail smtp.client-ip=52.101.52.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="tPmOJzeU"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="X1F8Hv5W"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=wtDZI+QoxrXKru87hQh1Bu4sTj5/d3MYob2w5rc9SS56DpZEXP1Owlto/W3K2f27pfmhPZwJ8nLVszPnOVYUGXNcsaX3KHnk5sLz9PU1MmSOXqAr/jAfROxw3zbjh49ZHP1kk7cDdceyCdrS9D9BB2NY9rb66Tn7FvWzbqZVw3dZ/XHJVNYenDCnBk8KIivc1HuEHSncQL2N4RE8bopRrkoHCqs3csv471nnRlK6quLZk8WNaBxkj2wwSj6OfEOyA8DaNKe6f4mbek2mE9+nx22GQZ0PDNihbzrFVO7wYRCnNapO9iZXSlYkL8OqQ3Rjt1wGGyU76qAlwIEYRlD4xQ==
+ b=jwC6vCfdXPpMQwItHZUoeUq77VkwhiUSytWcBU2B29xnoakMelc6+WmDgGtHvQSwGVwwquIecuMCS/FUA7kuWH29tTlR9gKJxQrs6uV2PbvpzgdNjaWCVVttlw+mvpAyCo9epYfQtx04TcUhNsu91HmX2ehukCn1t8ouGcJLH4DRJuvXgJTfJ4SJ7CqIpZU863pSM40K9PO67r1H+OR7iBAFUCtITmA3TAdnTbqye3YAYrHf4XSvb+MKe8pKQcZ/eY9JBkqLwLSVcykAZ7DiCz8IZBTKVu48VXnHulptYN422iYTpfyqKmTKNcixltD46fv4J/2zKS3D1VmXToKTbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=h3TFJnQrX8AusUbzT5qgsy7sqCquIJfpW4wUDsmbnWY=;
- b=eWDmJjjtD96q4ZMbGVeU1o/P1bIYIb2WvGgsVuWaV+QZ+EMfSGK66x13P/ZU15fuSrqu9QK3RbFnmQbefTAGIb/KvTM4TcsES1lxbeBTDPgez2mMN6SXS0kSNtj6UxnR2iK8QoRRzBiV40t4ej2bMZGeAB8ZopLDEPUtOoa+x0T+ysNor8m5L3YzwKXDEXJMePCejEbDRWDuQ6dQAAOG5MRg9YqMGWcvyb/0XJp0gfi5/eugWhvuAibekaZvsCRxk7BhdWn/5besGl6FoUtQR/CHd9BT1ICTmrlVYYW8HDKQRir9WKzyEtuPIf3RCuT6ScO4urk9xGEA9Y6VNR/VHg==
+ bh=zupC/OuGYn3HEsJXl3TBXAqSp8sLYr/EoOIz28aNPJs=;
+ b=c72REXHUvciF1qN3XGjuUx+zDa53JxuHs9kKGeewKTSI8fReB9oSFRfDmzQ8fb9JjAL3IaIsZN5B8untADR2XNdUKQbuubEzPyby2bcg8EnAfvpbt7rd+iH5duRLD9yhCN7stFVEQKjOwV0XzqEPj9c7xJhmEbSwTeDANl0qaWNtbeJiCer7fe9D94+ydrDN0TxcEbks5QfedXZc31eFxo97vAmOlUXQppOKfFB0qhJuNC4BWbXPYxpuhtNpGHxGo5voVbk182d1T4llyRAG8LbhnviSBnOtHEh85iW+a7pt5+mfZCSdVrZ5pjkSi4IE59jWXoZXsvOD1lRb6OCG5A==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=h3TFJnQrX8AusUbzT5qgsy7sqCquIJfpW4wUDsmbnWY=;
- b=tPmOJzeULwOs18tiXnQ7SSHmfSXf/3PNgLo7gsATKr9A2lfEl/Hycq4zhmb8zKEMbmXrw+7abBCIi5ey5NWW1Vx6sVNpk9LS6Jzojk+LmqpGyzVURZllcx9NSxxFf1FZo+xQpqJHu3Et4B82J7veMXDYHHBIsKQehLHPOi0igi1XF1foADmwtXtWQKQKhXe2T7N7pfgk5a5aHma4bM8CmixgAVZQ8t6l2Ebqy7lPKXo+M0pjyIs4BXBIrmygwppQ37Kcu+r6lu2/jGbyXrENdbtWaJfj8cVjRulRph4tnrZb00TS2CAGmueBQkj6R6lmIdB4GNS1azbCRG5RDsMjZg==
+ bh=zupC/OuGYn3HEsJXl3TBXAqSp8sLYr/EoOIz28aNPJs=;
+ b=X1F8Hv5WqTuM8xxJ83yeb+FTE0J12CYxsR4H2V8n3N9zPW78PBd4QVy8IWryXH9PXA/ESKTVE5+BRGJWAAKq7BMH1772vXiRrzVuttoJqQi+Fg0UR3Jj/ucUNR+RvJ9xk807EQrOEm6QbtZN0jV3fbb8aeoeRJlg7L6HTZrE0F4PMpKZOQNjPrz8Hglqo4P4HfRXyVu8cWW2bTGxvhwcCo3J2MZvm6/AeLFhfEG9Ob5+Y/GPnQ/kz53IdsNsyNpbzwOyv9GxQ2HbrQ2RbSjtYDvNCXtnd8Ed4M5tVbDbaN4O2ydXbwrFWyGbYssi/k+WHdp9wZcEdRxEBHuuIvi9Dg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
- IA1PR12MB6259.namprd12.prod.outlook.com (2603:10b6:208:3e5::17) with
+Received: from CH2PR12MB3990.namprd12.prod.outlook.com (2603:10b6:610:28::18)
+ by PH0PR12MB8775.namprd12.prod.outlook.com (2603:10b6:510:28e::19) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9632.22; Thu, 26 Feb
- 2026 00:24:19 +0000
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9632.017; Thu, 26 Feb 2026
- 00:24:19 +0000
-Date: Wed, 25 Feb 2026 19:24:17 -0500
-From: Joel Fernandes <joelagnelf@nvidia.com>
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: linux-kernel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
-	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>,
-	Bjorn Roy Baron <bjorn3_gh@protonmail.com>,
-	Benno Lossin <lossin@kernel.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
-	Alex Gaynor <alex.gaynor@gmail.com>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Dave Airlie <airlied@redhat.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>, Simona Vetter <simona@ffwll.ch>,
-	Daniel Almeida <daniel.almeida@collabora.com>,
-	Koen Koning <koen.koning@linux.intel.com>,
-	Nikola Djukic <ndjukic@nvidia.com>,
-	Philipp Stanner <phasta@kernel.org>,
-	Elle Rhumsaa <elle@weathered-steel.dev>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	Christian Koenig <christian.koenig@amd.com>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	Huang Rui <ray.huang@amd.com>,
-	Matthew Auld <matthew.auld@intel.com>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Lucas De Marchi <lucas.demarchi@intel.com>,
-	Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
-	Helge Deller <deller@gmx.de>, Alistair Popple <apopple@nvidia.com>,
-	Andrea Righi <arighi@nvidia.com>, Zhi Wang <zhiw@nvidia.com>,
-	alexeyi@nvidia.com, Eliot Courtney <ecourtney@nvidia.com>,
-	dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org,
-	rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org,
-	amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-	intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v11 2/2] rust: clist: Add support to interface with C
- linked lists
-Message-ID: <1772065381.31e71601a63def39@nvidia.com>
-References: <20260224222734.3153931-1-joelagnelf@nvidia.com>
- <20260224222734.3153931-3-joelagnelf@nvidia.com>
- <DGNW1KH6TCE1.3DIVLKYG6OURI@nvidia.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DGNW1KH6TCE1.3DIVLKYG6OURI@nvidia.com>
-X-ClientProxiedBy: MN0P220CA0009.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:208:52e::34) To DS0PR12MB6486.namprd12.prod.outlook.com
- (2603:10b6:8:c5::21)
+ 2026 02:27:04 +0000
+Received: from CH2PR12MB3990.namprd12.prod.outlook.com
+ ([fe80::7de1:4fe5:8ead:5989]) by CH2PR12MB3990.namprd12.prod.outlook.com
+ ([fe80::7de1:4fe5:8ead:5989%6]) with mapi id 15.20.9632.017; Thu, 26 Feb 2026
+ 02:27:03 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 26 Feb 2026 11:26:57 +0900
+Message-Id: <DGOJDXWDOJD0.2J6NENL44SQJJ@nvidia.com>
+From: "Alexandre Courbot" <acourbot@nvidia.com>
+To: "Joel Fernandes" <joelagnelf@nvidia.com>
+Cc: <linux-kernel@vger.kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>,
+ "Boqun Feng" <boqun@kernel.org>, "Gary Guo" <gary@garyguo.net>, "Bjorn Roy
+ Baron" <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>,
+ "Andreas Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl"
+ <aliceryhl@google.com>, "Trevor Gross" <tmgross@umich.edu>, "Danilo
+ Krummrich" <dakr@kernel.org>, "Dave Airlie" <airlied@redhat.com>, "Daniel
+ Almeida" <daniel.almeida@collabora.com>, "Koen Koning"
+ <koen.koning@linux.intel.com>, <dri-devel@lists.freedesktop.org>,
+ <nouveau@lists.freedesktop.org>, <rust-for-linux@vger.kernel.org>, "Nikola
+ Djukic" <ndjukic@nvidia.com>, "Maarten Lankhorst"
+ <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
+ "Simona Vetter" <simona@ffwll.ch>, "Jonathan Corbet" <corbet@lwn.net>,
+ "Alex Deucher" <alexander.deucher@amd.com>, "Christian Koenig"
+ <christian.koenig@amd.com>, "Jani Nikula" <jani.nikula@linux.intel.com>,
+ "Joonas Lahtinen" <joonas.lahtinen@linux.intel.com>, "Rodrigo Vivi"
+ <rodrigo.vivi@intel.com>, "Tvrtko Ursulin" <tursulin@ursulin.net>, "Huang
+ Rui" <ray.huang@amd.com>, "Matthew Auld" <matthew.auld@intel.com>, "Matthew
+ Brost" <matthew.brost@intel.com>, "Lucas De Marchi"
+ <lucas.demarchi@intel.com>, "Thomas Hellstrom"
+ <thomas.hellstrom@linux.intel.com>, "Helge Deller" <deller@gmx.de>, "Alex
+ Gaynor" <alex.gaynor@gmail.com>, "Boqun Feng" <boqun.feng@gmail.com>,
+ "Alistair Popple" <apopple@nvidia.com>, "Andrea Righi" <arighi@nvidia.com>,
+ "Zhi Wang" <zhiw@nvidia.com>, "Philipp Stanner" <phasta@kernel.org>, "Elle
+ Rhumsaa" <elle@weathered-steel.dev>, <alexeyi@nvidia.com>, "Eliot Courtney"
+ <ecourtney@nvidia.com>, <linux-doc@vger.kernel.org>,
+ <amd-gfx@lists.freedesktop.org>, <intel-gfx@lists.freedesktop.org>,
+ <intel-xe@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>
+Subject: Re: [PATCH v11 4/4] rust: gpu: Add GPU buddy allocator bindings
+References: <20260224224005.3232841-1-joelagnelf@nvidia.com>
+ <20260224224005.3232841-5-joelagnelf@nvidia.com>
+ <DGO4BIQ6MQ9Y.KB3JJQI71ETU@nvidia.com>
+ <eff888d1-2caa-45bd-a611-e5772ee94e1b@nvidia.com>
+In-Reply-To: <eff888d1-2caa-45bd-a611-e5772ee94e1b@nvidia.com>
+X-ClientProxiedBy: TYCPR01CA0180.jpnprd01.prod.outlook.com
+ (2603:1096:400:2b2::20) To CH2PR12MB3990.namprd12.prod.outlook.com
+ (2603:10b6:610:28::18)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -99,72 +91,288 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|IA1PR12MB6259:EE_
-X-MS-Office365-Filtering-Correlation-Id: c41bce80-935a-490f-7bd9-08de74cd61c1
+X-MS-TrafficTypeDiagnostic: CH2PR12MB3990:EE_|PH0PR12MB8775:EE_
+X-MS-Office365-Filtering-Correlation-Id: a7dcff9b-1f2d-4dd2-8aec-08de74de8626
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024;
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|10070799003|376014|7416014|366016|1800799024;
 X-Microsoft-Antispam-Message-Info:
-	7JZcPqiqftaTV7p8tZepSpK5KFNguf6ci4AeGsS98FRNwbUcI3yqyUy1KeQHuCvGQFSXGwtTBucM+2q4Sir8AG4ofSppl7DdZO3Pu82TB3PD247rfxlmyCCO8ibd4y2d3dI2KjkRTRuWXByki/TnwveX40c43uXIxtmH/IOAuK5FTyxQE7E2p7xct3kZiQNnTIv/2dBxyQ7KBDhIbd6VWUhmeN8lRhuek4ribt2IO9XbSnGWOa8tnDvVoJyx9EXz5x1PbZJ1/TD7DxxofGF5EWseTSsfa66W99sd8pdipXNrDXldvzZ02l/A+oqp3LvTFsWz11+GmeqrtVUXVLthqEX98Ut8uCOrkmqr0f0jPWjwqc6D+Zl6iI65pyq+qn3h0GYcE3YJzsEem9sttZlkfkpk/TchUA2JtVPwJFpV40aISRCTPo7IobzQb/Nz6Y0LoRu7RPoMozyU86z+NAikZiCMKhsrvSzyMOfflOLemcbZfNXSHECrnRtIfKY5J6ZWT8XqRLGeEhBekqLoDobjs4Hf57aKiLV9mAUedWkVe+Y/J+fV/+cp8t8DLfpNonrP0yl8Tcj8IZI4Ge87WWiXpDahPePC7+ti2ElVs9GvfaC1zlZHOGNrZHcpFgYEZPlzkI5g9G6xQCqdPwQfrhMMob5bRyUgdzHPANNi2zwN0FEpK1r0WbrjjYh+bOoiidp5NhcBabknayTTF81r7K5dDlepf5jkUaVTjPodVNMzk1Q=
+	H73ysd4dXLUMwhjWXe0opVOeClSxBfIGEctQJf5y4kIAoLptVhEvZBlUhbX/xtZJMqL0SEFhCwKuVzOctQy/BDEUy0sUtatjvLIIQPfxko7+4q3YD4Zoduhrajattegp5s7x6tqgJWsQqRT8ZtYnz3krT31VKadvP3Dto1peHuA8e1j23VY2Kzzbm6Noel8QCVWcMFPq+Viw2g1Y9b5Wqin2K1iaArJSN1COT8scV1ZRWre4db2yWCNv5odw7u9i6QkV7rxEW6lJI5oI/NQdScnJgJdxVLKQDJDqPThw9tl8A1ny2/E2NXwwnNVkI1+BSAKzbttr7jpdMkyaesEAaOdZYzBD0q/tgro95rXaQYz9KFp9vhqtKseEBKWjb0JuZSaAzti+DMMp2fiq825oBhTno5miEk0itCsA/ETuaReM+cKI94Vd8N0kUvCYeEiL6OmubufMCu//M1MDO8/3gvZzzotv0++/4voq/IY1xWnieYJg67L/qzcu1P4LSHtRFQyOtO01aGMQqT/XDk1/fpPB3oyxX7MVJGh7zRanQ7E8/4QziezcXBKx8ENiGmadMZTrJAr+afgmAQf3l8OWeL6X0Um4rljoCehGeG3w0j4kLkeWkPS2y4agA3U8tgkbSmJ1gsOHuHYCSEEGOnF+jHqIbPIL7WKbvMa6Oar5FsHOR/GMfC13YfS4S0iK0b5EHpWLkzHLTBVAnfmQlGFwdY7hvsvMY478q26QlFdDVNk=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH2PR12MB3990.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?W8PfFYyQkDETfYXsibtszWZXmJ5P77lbsyQlSXYHWNLGsAMvx7f9qPLFBXj+?=
- =?us-ascii?Q?X/nUTqID9PT/ze17PsOP4/RWEAHkCKvgMpbiUJED4dpWbwSx8wssGyAZmirO?=
- =?us-ascii?Q?056ivssN6YVjSsdpZQFzDe1ZEFIKxpZNTFJScmNr/QUjbUEqjF5i2C07saeC?=
- =?us-ascii?Q?jY7oPD6W2o5H8ZC2vphRXhNry0JEGd3aqObJ2KC1DUapItB8arupjWTGc3rq?=
- =?us-ascii?Q?XhbWdQGW7S3QLbvK2qaebT3L0XbamcMrAQdxmYiXcEyieBHhLM+xS5Janhvz?=
- =?us-ascii?Q?F8SM43wkTxeDqY/7sxjmV5dfCbMIX2bp2tkgiCgAA+Jh7Ky/teGN94NDkBm1?=
- =?us-ascii?Q?VOtam/5D2/uPNMnneQZcyprWJyAmknV6lzEJR38s8cHyPKFi737YJuh8qjEM?=
- =?us-ascii?Q?x8kQnrcb5/MFrUTbWOU/qUvIEF//wZbz59jStK17YZJoOGvZuUHw2AuyN1Nd?=
- =?us-ascii?Q?ilxdb1mqIXsTkN9XxmMcgSZrxN0PIwE2WIokCBg49J/z+AuJHZmrgzJc/sqe?=
- =?us-ascii?Q?gC8Ps3DnIeIX2LwuvDxY2BdWBYAgCEa0SSzFMW6zm3iPkhNa5V45tV/xv8S8?=
- =?us-ascii?Q?33t1sfGmTEtwKaObl0wWp/+8FiPPdyDtfPiiNIQYctI3/BmDoOSjizOp4Hz3?=
- =?us-ascii?Q?3yrwFMd+Rp1ccxU57EMVUyyjNWMg/Hg7VymAoM/aH5d50A2tWIgf8Q7rfSNJ?=
- =?us-ascii?Q?krsgogH2dvKfwB4Noz3k+A+981QQ5QjFa2snCpWTOSdFf3pnAkpWHXzzydcx?=
- =?us-ascii?Q?xs6+l6Tld2tfjEIWTKeSHfK39N8QB+3HsOOv44ClHDOFpnmajBv7wXWwYX35?=
- =?us-ascii?Q?Z1sWrFViZCU0Ek4bjAlDp8EjXZ3+6IDeADNNZ3vQ758X2aa8MCe+T7mW1IUe?=
- =?us-ascii?Q?HTWTuOEKkxEtgAg7GEKzrOfoD7F/JEard843okWMqWGT1316D6Tr4LpXBkws?=
- =?us-ascii?Q?cdaq12L5hTowcrbsQEYPZIftGZA9adIP6OBednvymaRZyw2BnttzhaSf3nUk?=
- =?us-ascii?Q?rZfcU8JTlBSF7DyLiy66FEk2m+kZ1PUFrh7AA0RKJnccH0o2sLxrEh1Gw1uu?=
- =?us-ascii?Q?Q3mJ2RqZKf3xd37JUT50Ci206CqUH4Ci0zX9VpOnGs389e22mvwWBHtd0FEL?=
- =?us-ascii?Q?GzklDQdIYH6zKN7obZqfz25IHfncE9N8Q5Q1FNvfcO7/9Q67hSLdxV1+rauZ?=
- =?us-ascii?Q?aoj85S0SH29BszvF3mTaD+zHWgEUSbjX9/0IcectSlKsCoMwi19ItjPIYp8/?=
- =?us-ascii?Q?lA4W6zhmbx3Gpj2zptyHo8a5MqQ4AduVtYkrYjTkSOyIBZtv/sn37EdirRvW?=
- =?us-ascii?Q?6y/M3sVxCc/4t4IVAlY7HilAJaJUlI8ELq9b2nWbvfC+pspv7HwV/iaAHpur?=
- =?us-ascii?Q?UQftt4wcUJxd1A/7e7Lt4VxRGC1uskgTUs1qCpDF76yHBgXIF9TCzW3iaSg/?=
- =?us-ascii?Q?7Yusu4kaBlMHdunmqsx0bh+UzGZEX4LubE7O2OuZ7aYe+rwCaivFEjRg7QLR?=
- =?us-ascii?Q?RvvTev0OxhvJUsmIHbHfnfUk7/awh90bJQBTiZg0ylcK1MvCX7PkOf2TOzP0?=
- =?us-ascii?Q?cMYYo3GAaVAr7enNMlQMWgHqmqRWGNpl1fgdNNyEZpGONqVOxrCPTgxzwc+I?=
- =?us-ascii?Q?0RU09Rk4Z7g8dMG9zGph3JQzSRGnXiCtF3RaxQDObVCVsdnv0uVI5g8KJnuC?=
- =?us-ascii?Q?Zpc/zZsih7IifjxN1xzwM/YDRJcgPK9fn79Eesj5BbWnU73dwF6H6pncKHWQ?=
- =?us-ascii?Q?oCswHImdzQ=3D=3D?=
+	=?utf-8?B?bjhUcUV6ancreWN2Qjg4aWgzbzBaNVVvTUxBRGY5cTgvV0lHRVNScHg1OWVW?=
+ =?utf-8?B?MzE3cFFzRU5IVkhLbWVWNysrRXRLL29tQ0FQZ1BWbUhEc01sTVh1N3E0MGZI?=
+ =?utf-8?B?dHFvNVhYOS9UbU5UY1FvNG1TYzk0cURaWGJkeFhBek95Q3gvNW0wTUY4b0Ny?=
+ =?utf-8?B?NHB1K3EwUXBEQUxIUEZmOGdXR3RwTnVyd3VCd25NYnlpTzJIN1JETVpoaC9p?=
+ =?utf-8?B?NEoyNS8xSXhFbzkwc0tCcTBvY2E5YmttYzNYSWJScER5OWEwVVBkQXhoVjJu?=
+ =?utf-8?B?cXZVdlZHMVNhMWtaQ1FlbUQzUk1qYThYSGdBYng4aElQdDR2Q0N5ZnpPaFF0?=
+ =?utf-8?B?NUlObzNRSSthVnNkS3FueU91Ylh4RC9XZUJuUWFKNmNvRm0rcFVQTUxPUnVW?=
+ =?utf-8?B?Y09rcDU5VjNvbCtsTzlJeVJHdlVJcFZmdEdlV2xpUTZKUDNUb2hVQ1Z2bTFJ?=
+ =?utf-8?B?R0RNQjVYOEFLRXgvUnIva3l0Q0RpQlVSTWVBRXBOYVdYem1ZMUgyUnJ2eUxF?=
+ =?utf-8?B?T2hscll0WjY0SURneW83cVdmS2VSd2hycXNnU2ZCM3Qwam9mT3VONnArMml1?=
+ =?utf-8?B?cm1KZC9QeDZXdkIzZHUxYjRXUUpEM1R6anNpdFp4T3E3NG93QzVmVXhEWnFt?=
+ =?utf-8?B?bzE4eWpEU010MjdkTEc2d3A1M3RvNlpCOUJwWW1nKzVPbTdHUldtekttUEhr?=
+ =?utf-8?B?THBLMnY2SVJ1WHBVZWhIV05hVWUyVXRNZjhST1Q3KzVCaDhIamdMN1N2L3VC?=
+ =?utf-8?B?UDEyc1JyOHZPZlN2RUFNUGxFaDdrTzJnYjQ0L1VRQXdYSEVtTlVnUGhYSm8y?=
+ =?utf-8?B?Vnd4ZmcrbDV1aWh3YTJSWEh6QXNvZmhhdXpRaEpmNzVMbEpwQjdpdlh4WmQy?=
+ =?utf-8?B?b0J2QVRlRXdoSE9xNU41UC9aa29MV2FYSVgyK1QzWkozNmY5S1RLd1FaR2hP?=
+ =?utf-8?B?ODY2c3d1SzRjdnNyZWtTUGxhU2xyQlFsb01STGMzRlZwUnIyaE9qWVNqNHZV?=
+ =?utf-8?B?V3A4Y3lpN0RXM2tFWThneVgvczMzcCt0RnRMUjRHclh5eUZyRDlpVzBXY2d2?=
+ =?utf-8?B?V1BNRFpXYWlzYW1leEFzUG43SWRIUVR3eEtBaER4ZHY5bnhydHp6RFZMS2s3?=
+ =?utf-8?B?aElaNjltUWJoeW9JZTk1d1NrbzJjaVg4RWNUT2pqRGdYbGRtSjVTY0V5NU1h?=
+ =?utf-8?B?TUgyRG5pcDhQOE5CMW03c3pXNVc5WUc3WmhmS3pRMGZTMmVyaUlxWE4wd3dm?=
+ =?utf-8?B?VXA5N3ZoUVBPNmJQdEt6bjh4SGFYaGRkN01KUHhmMlhNK1pTVGQ0c2tZc1FN?=
+ =?utf-8?B?MmFacmxPZzgzRHY0ZS80N1lENkpiLzhFbmpGOFhKNWpuY2xlcHQ0MEdhNmg0?=
+ =?utf-8?B?azZTZG01T3drQXFTSmVob29vTUlCbi9BeGdpQU0yak9hUXdpUUlXbEMwTjJK?=
+ =?utf-8?B?Y29LK0Z5dlNuRXY4bUV3U2I5ZW9pek1MV3MxOElkaTRvLzloWGgxbzgxSGNM?=
+ =?utf-8?B?QkZiZk1oSHJMRWRvNnV4SmdCVm1Vd0xNK0VKL1JIcG9jdXI1OW1QQWZLNjFV?=
+ =?utf-8?B?UVllemwwa2xNM1ZvREhDdlMyTS9kRnhNN2t4dVhZWE5rZ1luTVNKRk1Vc2Nt?=
+ =?utf-8?B?QklGbXo2bkFRWmpCc2IrQTc1cXhMWWVqZmJkUkxuakRqNWI1Sk9LTndOdjB3?=
+ =?utf-8?B?YTRBZ2hKY0VxaXRDTE0xWEJFVUlZL2F4ZWJmNTlEUGxsN2FTM3ljckltK1Ja?=
+ =?utf-8?B?UUh0a3lsdWZYblFoYUtMMS8xYXUwU2RUWEZpMVE3QmFVN3VvZVdkQlF5S1ZN?=
+ =?utf-8?B?eHI3S2haYVRSSHVIdnFEQUNlZE5EUVc3WW9iU080azhZV1dDN2U4ZUNZM2Uy?=
+ =?utf-8?B?UEI4eUhmeDBNVEo2R1ltVDlucHVvbFowUkNZZHlqZEloNDVkV05jVE5kYkdI?=
+ =?utf-8?B?VzBPZ3l5VmhtRXpWS3pwV1FoVkg0UTROU0VIVis1SUk4YlNzSGowcC8reUdV?=
+ =?utf-8?B?QU1yd2V2R1A1K3lrS0IzcmtHYTQ1NzNZeVBkVklaMlUybEpxYnY0Q1BTQVpX?=
+ =?utf-8?B?RXNOQzFuSWwrSXZjZU0wK3dFOWVocFlYM1BqQ3RDMnlXQnZ4cWlsZWsvajVL?=
+ =?utf-8?B?VWpUSkFJemh2YTM1d05zMjVqN3JYSW5KWFF6SzRPdkl3MG9NNFNsRzZydFVR?=
+ =?utf-8?B?UXYwUWZEMkM2OGM5NWVqcDFVUTk1YUp3Wlh1MVV0cUJwcll0Q1pMMDBMVFV4?=
+ =?utf-8?B?VVIwR2dlL1l3a2w4WG9kYUlYSDcyZjhsN1RETGg3V2N2QkQ2cEFvamFXeldQ?=
+ =?utf-8?B?cENva09QbWNveDkzd29QVXh4eGVhUUJTK0xEc2ViL0dKUjdQSVU0emZrQ0x3?=
+ =?utf-8?Q?e6Zt4Zj2fOASFfkTZI+n6Cx/I/vIeWVrobb7nFsudFw01?=
+X-MS-Exchange-AntiSpam-MessageData-1: iOrNunZRjCg1qg==
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c41bce80-935a-490f-7bd9-08de74cd61c1
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a7dcff9b-1f2d-4dd2-8aec-08de74de8626
+X-MS-Exchange-CrossTenant-AuthSource: CH2PR12MB3990.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Feb 2026 00:24:19.2546
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Feb 2026 02:27:03.5047
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 2x6ksK3eON3BIPPAaGSGEUVLANI2msCLTbUu2q+HozF+QmMPlz3vfYJZgd0SihMGG99kz1Z6lUui4/g/mv7lLQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6259
+X-MS-Exchange-CrossTenant-UserPrincipalName: wGLDxBMfcpp3CAUvpPDqj9i8UhrwAa+HP1H7u3EFLakeBnTMph9Sp2Tz768x07+rpUznzJUfGz7Yn1WhyqxFag==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB8775
 
-On Wed, 25 Feb 2026 17:09:22 +0900, Alexandre Courbot wrote:
-> On Wed Feb 25, 2026 at 7:27 AM JST, Joel Fernandes wrote:
->> Add a new module `clist` for working with C's doubly circular linked
->> lists. Provide low-level iteration over list nodes.
-
-<snip>
-
-> +        // SAFETY: `item_ptr` calculation from `OFFSET` (calculated using offset_of!)
+On Thu Feb 26, 2026 at 5:41 AM JST, Joel Fernandes wrote:
+>> This structure doesn't seem to be useful. I would understand using one
+>> if `GpuBuddyParams` had lots of members, some of which have a sensible
+>> default value - then we could implement `Default` and let users fill in
+>> the parameters they need.
+>>
+>> But this structure has no constructor of any sort, requiring users to
+>> fill its 3 members manually - which is actually heavier than having 3
+>> parameters to `GpuBuddy::new`. It is even deconstructed in
+>> `GpuBuddyInner` to store its members as 3 different fields! So let's
+>> skip it.
 >
-> `item_ptr` does not exist.
+> I'd prefer to keep the struct -- all three parameters are `u64`, so
+> positional arguments would be easy to silently misorder. The struct
+> also makes call sites more readable since Rust has no named function call
+> parameters.
 
-Good catch, thanks! Fixed.
+Fair point about the 3 parameters being easily confused. If you keep it,
+can you also store it in `GpuBuddyInner` instead of deconstructing it
+into 3 members?
 
--- 
-Joel Fernandes
+>
+>>> +pub struct GpuBuddyAllocParams {
+>>
+>> This one also feels like it could be rustified some more.
+>>
+>> By this I mean that it e.g. allows the user to specify a range even if
+>> `RANGE_ALLOCATION` is not set. A C API rejects invalid combinations at
+>> runtime. A Rust API should make it impossible to even express them.
+>>
+>> [...]
+>>
+>> That would turn `alloc_blocks` into something like:
+>>
+>>   `fn alloc_blocks(&self, alloc: AllocType, size: u64, min_block_size: A=
+lignment, flags: AllocBlocksFlags)`
+>
+> The C API supports combining allocation modes with modifiers (e.g.
+> RANGE+CLEAR, TOPDOWN+CLEAR), so modeling the mode as a
+> mutually-exclusive enum would lose valid combinations. More importantly,
 
+What I suggested does allow you to combine allocation modes with
+modifiers. I should have pasted a bit of code for clarity, so here goes:
+
+    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+    pub enum GpuBuddyAllocMode {
+        Simple,
+        Range { start: u64, end: u64 },
+        TopDown,
+    }
+
+    impl GpuBuddyAllocMode {
+        // Returns the flag corresponding to the allocation mode.
+        //
+        // Intentionally private - for internal use.
+        fn into_flags(self) -> usize {
+            match self {
+                Self::Simple =3D> 0,
+                Self::Range { .. } =3D> bindings::GPU_BUDDY_RANGE_ALLOCATIO=
+N,
+                Self::TopDown =3D> bindings::GPU_BUDDY_TOPDOWN_ALLOCATION,
+            }
+        }
+    }
+
+    impl_flags!(
+        #[derive(Copy, Clone, PartialEq, Eq, Default)]
+        pub struct GpuBuddyAllocFlags(u32);
+
+        #[derive(Copy, Clone, PartialEq, Eq)]
+        pub enum GpuBuddyAllocFlag {
+            Contiguous =3D bindings::GPU_BUDDY_CONTIGUOUS_ALLOCATION as u32=
+,
+            Clear =3D bindings::GPU_BUDDY_CLEAR_ALLOCATION as u32,
+            TrimDisable =3D bindings::GPU_BUDDY_TRIM_DISABLE as u32,
+        }
+    );
+
+    pub struct GpuBuddyAllocParams {
+        mode: GpuBuddyAllocMode,
+        size: u64,
+        min_block_size: u64,
+        flags: GpuBuddyAllocFlags,
+    }
+
+Now instead of doing something like:
+
+    let params =3D GpuBuddyAllocParams {
+        start_range_address: 0,
+        end_range_address: 0,
+        size: SZ_16M as u64,
+        min_block_size: SZ_16M as u64,
+        buddy_flags: BuddyFlag::TopdownAllocation.into(),
+    };
+
+You would have:
+
+    let params =3D GpuBuddyAllocParams {
+        // No unneeded `start_range` and `end_range`!
+        mode: GpuBuddyAllocMode::TopDown,
+        size: SZ_16M as u64,
+        min_block_size: SZ_16M as u64,
+        flags: Default::default(),
+    };
+
+And for a cleared range allocation:
+
+    let params =3D GpuBuddyAllocParams {
+        mode: GpuBuddyAllocMode::Range {
+            start: 0,
+            end: SZ_16M as u64,
+        },
+        size: SZ_16M as u64,
+        min_block_size: SZ_16M as u64,
+        flags: GpuBuddyAllocFlag::Clear,
+    };
+
+Actually the parameters are now distinct enough that you don't need a
+type to prevent confusion. A block allocation now just reads like a nice
+sentence:
+
+    buddy.alloc_blocks(
+        GpuBuddyAllocMode::Range {
+            start: 0,
+            end: SZ_16M,
+        },
+        SZ_16M,
+        // `min_block_size` should be an `Alignment`, the C API even
+        // returns an error if it is not a power of 2.
+        Alignment::new::<SZ_16M>(),
+        GpuBuddyAllocFlag::Clear,
+    )?;
+
+And the job of `alloc_blocks` is also simplified:
+
+    let (start, end) =3D match mode {
+        GpuBuddyAllocMode::Range { start, end } =3D> (start, end),
+        _ =3D> (0, 0),
+    };
+    let flags =3D mode.into_flags() | u32::from(flags) as usize;
+    // ... and just invoke the C API with these parameters.
+
+> if the C allocator evolves its flag semantics (new combinations become
+> valid, or existing constraints change), an enum on the Rust side would
+> break. It's simpler and more maintainable to pass combinable flags and
+> let the C allocator validate -- which it already does. The switch to
+> `impl_flags!` will work for us without over-constraining.
+
+The evolution you describe is speculative and unlikely to happen as it
+would break all C users just the same. And if the C API adds new flags
+or allocation modes, we will have to update the Rust abstraction either
+way.
+
+Rust abstractions should model the C API correctly. By hardening the way
+the C API can be used and stripping out invalid uses, we save headaches
+to users of the API who don't need to worry about whether the flag they
+pass will result in an error or simply be ignored, and we also save
+maintainer time who don't have to explain the intricacies of their APIs
+to confused users. :)
+
+>
+>>> +/// The internal [`GpuBuddyGuard`] ensures that the lock is held for a=
+ll
+>>
+>> `GpuBuddyGuard` is exported and not internal though.
+>
+> Fixed, removed "internal" wording.
+>
+>>> +    base_offset: u64,
+>>
+>> This does not appear to be used in the C API - does it belong here? It
+>> looks like an additional convenience, but I'm not convinced that's the
+>> role of this type to provide this. But if it really is needed by all
+>> users (guess I'll find out after looking the Nova code :)), then keeping
+>> it is fair I guess.
+>
+> Yes, `base_offset` is needed by nova-core. The GPU's usable VRAM
+> starts at `usable_vram_start` from the GSP firmware parameters:
+>
+>     GpuBuddyParams {
+>         base_offset: params.usable_vram_start,
+>         physical_memory_size: params.usable_vram_size,
+>         chunk_size: SZ_4K.into_safe_cast(),
+>     }
+>
+> `AllocatedBlock::offset()` then adds `base_offset` to return absolute
+> VRAM addresses, so callers don't need to track the offset themselves.
+
+Sounds fair, I'll check how this is used in Nova.
+
+Ah, another thing I've noticed while writing the example above:
+
+> +#[pinned_drop]
+> +impl PinnedDrop for AllocatedBlocks {
+> +    fn drop(self: Pin<&mut Self>) {
+> +        let guard =3D self.buddy.lock();
+> +
+> +        // SAFETY:
+> +        // - list is valid per the type's invariants.
+> +        // - guard provides exclusive access to the allocator.
+> +        // CAST: BuddyFlags were validated to fit in u32 at construction=
+.
+> +        unsafe {
+> +            bindings::gpu_buddy_free_list(
+> +                guard.as_raw(),
+> +                self.list.as_raw(),
+> +                self.flags.as_raw() as u32,
+
+`gpu_buddy_free_list` only expects the `CLEARED` flag - actually it
+silently masks other flags. So you probably want to just pass `0` here -
+adding a `Cleared` field to `GpuBuddyAllocFlag` would also do the trick,
+but it looks risky to me as it relies on the promise that the user has
+cleared the buffer, which is not something we can guarantee. So I don't
+think we can support this safely.
+
+If you just pass `0`, then the `flags` member of `AllocatedBlocks`
+becomes unused and you can just drop it.
+
+And another small one - some methods of `Block` are `pub(crate)` - I
+believe they should either be `pub` or kept private.

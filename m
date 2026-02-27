@@ -1,124 +1,98 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA3ED33121D;
-	Thu, 26 Feb 2026 23:38:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CE6331961B
+	for <linux-fbdev@vger.kernel.org>; Fri, 27 Feb 2026 04:51:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772149085; cv=none; b=rmLE2gPPB37W80C7dgFABLkDSt0DzC1PYzbFR9HgqYRtTuOsrfqBXk65bhkutCIb/epx0gziY2d8tQT5UWvOz80AwRw15Gq8D6IFEJfKPOxQ0tWKG0api8Dm06n0pBrAzueAkQqsYSq31EVyJXCDw6V/by+fri7xLmm3YDx+BqE=
+	t=1772167873; cv=none; b=d+SADPiZC0kh4NW90VOpUWkmd+kMK8DgBHG/KITd9MmqLGNksqdMexYRtY7iRnVSdxrWdTtakDm1UAzmAPBEINCKnIx1gqrx2plgyxw38LRRTKUtUj7ZTzKaeDoP5TMhKEMcbfhH+C0uSn92wrKFArn2O3DwTEdzC2ktiSS0Q6c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772149085; c=relaxed/simple;
-	bh=ycrKLDU4IpRTv1hmXNWpEDbPGZFK9jRLJ8UpYmjOn3w=;
+	s=arc-20240116; t=1772167873; c=relaxed/simple;
+	bh=88StybOU0Ec/gubmYbovd3Oc+JYBooELNU9E/jLothI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jbJNtmObOEYt/0fw9e6ZfU7dfT3ho0oYygzkJGlS4cl7UnUHdpq6eaZntKuM9vheVGade6QabHAiS1sCbo9UWqHdIyQCo+6+wdTzTOYXdAa4tVwZp6pvTKcDmxtRLBRaBGjM1HF0J/YHErTFZdrojdIwXWerU8wwEH0oRrhS1Qo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=aES+IuGY; arc=none smtp.client-ip=192.198.163.18
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=czPmrYVT4tC9WUDYfI2XYCTExrzdnczRtw18eBS/206xlkphyjRmErF0yyCxNqjoko+gVLd36Bh5VC8K1Bi8K+T3BBZhnfp6tMjPhlXOWnJyyQSv8BaCSPFVwWN2a3b4r4NecMufrTXmUfoT07cyuIO6YoWxcgRmc4ldtMotxe0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZHSz3Ai8; arc=none smtp.client-ip=209.85.215.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="aES+IuGY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1772149084; x=1803685084;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=ycrKLDU4IpRTv1hmXNWpEDbPGZFK9jRLJ8UpYmjOn3w=;
-  b=aES+IuGYDLEDHdGKcX+T8b63u7sfmyAlNr5De705Ez6746b5yUrqmwqG
-   UNBUWvhkycx0ORa3aPk/vTjn5VaQzxcGrqX9DPc5NZ4Ii40HvAfZWiaan
-   8Y+AZN0siDUwxyLkCCB+37pw3WpUfdxBqxKNpBkaMTatKoS7VQjfOke7k
-   JZ/wKaQV4DkyyFovvKERwnno7Zh+xglPHCxaLROPSM2+yZNp3/nJCL42i
-   9CcPkGpafauV2HWjsGl9AQZ2P9OKT/tJRxurHL4jilFGeDrSGqBY0AZXy
-   1Z29WIjFOzEy4e8omFOC6QuduPyWzra8VL8s7seQxDhP76VAjI/lUPDoi
-   Q==;
-X-CSE-ConnectionGUID: Ab5dWzCrTBOwAFDrWnXhTw==
-X-CSE-MsgGUID: okFAw6aTTGOQMpq1f9b4vQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11713"; a="72433808"
-X-IronPort-AV: E=Sophos;i="6.21,313,1763452800"; 
-   d="scan'208";a="72433808"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Feb 2026 15:38:04 -0800
-X-CSE-ConnectionGUID: +Qj5ItRiRouYZ/kocrgejA==
-X-CSE-MsgGUID: j7DXUfKnRi6gS8lI5hcXuw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,313,1763452800"; 
-   d="scan'208";a="220859566"
-Received: from lkp-server02.sh.intel.com (HELO a3936d6a266d) ([10.239.97.151])
-  by orviesa003.jf.intel.com with ESMTP; 26 Feb 2026 15:37:58 -0800
-Received: from kbuild by a3936d6a266d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vvkti-00000000A0R-3SDC;
-	Thu, 26 Feb 2026 23:37:21 +0000
-Date: Fri, 27 Feb 2026 07:35:08 +0800
-From: kernel test robot <lkp@intel.com>
-To: dhyan19022009@gmail.com, Andy Shevchenko <andy@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZHSz3Ai8"
+Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-c6e1f417918so488659a12.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 26 Feb 2026 20:51:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772167872; x=1772772672; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Xlc5/wJcGMy2qVaQwNIPCexEitX/U5dL8H2UtAkaHiA=;
+        b=ZHSz3Ai8dW4sXeDF8BiTiLSeykM3ndI1+v2jv/nv2cOr0zAcukIx6mWpYlbwo+kxci
+         8AQSsXKasSgRy4BEbBGf8VW7/hH4Ax83PFNLfnxcjhLubD6RbyvFRrdvnAHYQEzvArHi
+         mDXQiCoiTfYtuhHX018rk5NWcZXgyiXzXGSPL24mkjW5zZIWnTLBHRD5lpQBzIWe1Vnu
+         DLe+3/spKXWi/pRR37WHDMMMZR4OArTOphb2JhQBaJyYMU0kxU2ZQ5ktDVYdLSxua1+x
+         tRTG7lk7+bW1iDc22JQxrUNem2n8Hu+uif+JBCKA8YMbmEoSqfEKk3gI5n8uZ6Kh0Xyx
+         gd2g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772167872; x=1772772672;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Xlc5/wJcGMy2qVaQwNIPCexEitX/U5dL8H2UtAkaHiA=;
+        b=Tr6Hu05FEDdwCRD30jo9KrGWKdsMr+SVDEdrpH76jSEoAKEvuJz+G/Q7ZGlN3h8NkR
+         OB8ce5USgmt1gXay2UKtp0gA/dVK+B48Rvxi4Dc7GPjDQAl9mfLcZSPm292auQEUKdg7
+         UPkUtk8Qon+NJHBRhiZtFTXX8I7gv3mkItH08jLgJcUyUbpjTv/mIYepFwB4pXFWw/nw
+         p4FsDnfuUXK0KUQdPo/Zf1dB9nNYL9j6SnvUWQaNG6vFV5CiWc7ztC910tmJ642dW0M4
+         AAf3hPdfb9L3WkaR9t71UpVEvs9+3dZHkQ30Sg9m1semyObupuB/TFkf0QnVoQw+T2GL
+         9Q3g==
+X-Forwarded-Encrypted: i=1; AJvYcCUpkA63ZCzFcUyCdWS4jrnwYarYjfzW/tNVJRxaJbi9VJsagkQpFWEuSH6bNO/T5/LXZcDpJGK7yTBKpQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzfS76UJT9DUVoePCXSggxHfEaDBuRAuueLnpx2MAhHe1eOw4mc
+	/x/7YNFG09kXnMTvqi5/YoA/qpwxLWUd5BhrKMoL/vdTrgFKck5FpbLS
+X-Gm-Gg: ATEYQzyRAjvWu+786s1/Ss2/ygPIAN/uNJ1yvrLr5QBLWoUWx8Bkg3fBAFZS5eXhARY
+	PXlYlSOfb04UeSEPnaH2YY27mAU42OyFw/8fFmafi0gIry5lTza2Bo26QSQ2kOldpsgRSwymr25
+	tgaRZjMmQovVtkt3Cc1qDwTryzRN5DvaSpRqgFMhstJu5Z62kgxZrTfXq44ZM5UvuTnwerRXIWa
+	THES2oBTrJmAOxOc7koy4RZK5gqHxNKRTO2Zl5KfjpCtCbceG1E/97s1diR/1OExwjCL7eBSVc6
+	bQDb6zI7eqmTjSctIe+r38uhznRhgwxI/Cz6phgHCQ9v3sN1FbObqJEj3EI4AL68J4uKAvmqDhX
+	Sn6zqCKUJxOzkVh2OobLj/d7ZRILVLEHbTVvvUbK4BQqTAdrvICUM3x9Q6yDRYd49jD+1Z8kH6r
+	uvSu0JL4nbv1qqljbGr70wdF32+w==
+X-Received: by 2002:a17:90b:2496:b0:354:ad98:7d1c with SMTP id 98e67ed59e1d1-35965c3cb32mr1089009a91.11.1772167871672;
+        Thu, 26 Feb 2026 20:51:11 -0800 (PST)
+Received: from latitude ([2401:4900:ae25:bd8:c189:b262:db26:b797])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3593dcc9c37sm3706534a91.8.2026.02.26.20.51.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Feb 2026 20:51:11 -0800 (PST)
+Date: Fri, 27 Feb 2026 10:21:05 +0530
+From: Dhyan K Prajapati <dhyan19022009@gmail.com>
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+Cc: Andy Shevchenko <andy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Jason Donenfeld <Jason@zx2c4.com>, dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Dhyan K Prajapati <dhyan19022009@gmail.com>
+	linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] staging: fbtft: fix macro whitespace errors
-Message-ID: <202602270720.2J4j3gHF-lkp@intel.com>
+Message-ID: <aaEiubs2v51xMmUN@latitude>
 References: <20260226172531.13714-1-dhyan19022009@gmail.com>
+ <aaCIqUXPB75vR6rK@smile.fi.intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
-In-Reply-To: <20260226172531.13714-1-dhyan19022009@gmail.com>
+In-Reply-To: <aaCIqUXPB75vR6rK@smile.fi.intel.com>
 
-Hi,
+On Thu, Feb 26, 2026 at 07:53:45PM +0200, Andy Shevchenko wrote:
+>On Thu, Feb 26, 2026 at 10:55:31PM +0530, dhyan19022009@gmail.com wrote:
+>>
+>> Remove prohibited spaces before closing parentheses in macro calls in
+>> fbtft-bus.c, reported by checkpatch.pl
+>
+>You haven't compiled this, have you?
+>
+>
+>-- 
+>With Best Regards,
+>Andy Shevchenko
+>
+>
 
-kernel test robot noticed the following build errors:
-
-[auto build test ERROR on staging/staging-testing]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/dhyan19022009-gmail-com/staging-fbtft-fix-macro-whitespace-errors/20260227-021646
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20260226172531.13714-1-dhyan19022009%40gmail.com
-patch subject: [PATCH] staging: fbtft: fix macro whitespace errors
-config: hexagon-allmodconfig (https://download.01.org/0day-ci/archive/20260227/202602270720.2J4j3gHF-lkp@intel.com/config)
-compiler: clang version 17.0.6 (https://github.com/llvm/llvm-project 6009708b4367171ccdbf4b5905cb6a803753fe18)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260227/202602270720.2J4j3gHF-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202602270720.2J4j3gHF-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> drivers/staging/fbtft/fbtft-bus.c:65:53: error: too few arguments provided to function-like macro invocation
-      65 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-         |                                                     ^
-   drivers/staging/fbtft/fbtft-bus.c:14:9: note: macro 'define_fbtft_write_reg' defined here
-      14 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
-         |         ^
->> drivers/staging/fbtft/fbtft-bus.c:65:1: error: unknown type name 'define_fbtft_write_reg'
-      65 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-         | ^
-   drivers/staging/fbtft/fbtft-bus.c:67:57: error: too few arguments provided to function-like macro invocation
-      67 | define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
-         |                                                         ^
-   drivers/staging/fbtft/fbtft-bus.c:14:9: note: macro 'define_fbtft_write_reg' defined here
-      14 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
-         |         ^
-   drivers/staging/fbtft/fbtft-bus.c:67:1: error: unknown type name 'define_fbtft_write_reg'
-      67 | define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
-         | ^
-   4 errors generated.
-
-
-vim +65 drivers/staging/fbtft/fbtft-bus.c
-
-    64	
-  > 65	define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
-    66	define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
-    67	define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
-    68	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Hey, sorry I atleast should've checked the definition, i'll keep in mind
+not to trust checkpatch.pl blindly

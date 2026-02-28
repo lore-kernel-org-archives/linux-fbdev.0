@@ -1,262 +1,159 @@
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f68.google.com (mail-pj1-f68.google.com [209.85.216.68])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4272E3033FF;
-	Sat, 28 Feb 2026 01:53:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.187
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C849127FB35
+	for <linux-fbdev@vger.kernel.org>; Sat, 28 Feb 2026 20:27:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.68
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772243630; cv=none; b=mVQ43WJKgI87eWKSm9oBrgZkzHWJDpRgj4di5qzCAxgjHxnxQoyFVy6K+NWxVk8RT1xPpSbQVEDBjQVOT4umYZ4bb8kSEeJ8Ej2QqyYJbrqgPGTm8U7dc6WFluEcTU0Tw0JqOkHLA+ADNfmvRQdzrjCkjBEsxIONGavWI4xJZsU=
+	t=1772310433; cv=none; b=RWbr7VJsJ/1JFanGH5Onq0WXyXu+n4PUzqYrYVI+0KjdFl0FqU2jo95rCMPajPJKpNw1mQ/fq3oTgphIBHEONTrnhd/r5EeE0cSmMCaGcDIT6xBPEPIk4kdzfTUF7Hf66P12PURm2vFv9UE5FG7DaaeeVycGH4VneDYUaTchsQ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772243630; c=relaxed/simple;
-	bh=S+ilTV+vNMEsN7eYt/O6IIr3m29qfzUMEvysBrjiQcM=;
-	h=From:To:CC:Subject:Date:Message-ID:References:Content-Type:
-	 MIME-Version; b=PxgRfLoqKqHP3QCNe5KlQKMthfTS04Jh6YNJE0saqIwanh3L6AqQdUnVMnVULe9bj30IHVfJAZ23sa0o6fFa9dH3N6lWwnQVTydq22CWPwpCigBo2YtMyHvCKI49SprUAX5SEVYVTDANhAOEbj0x5Mgdw4/HesWw79ksBDvsJMQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=tCXfa4FH; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=tCXfa4FH; arc=none smtp.client-ip=45.249.212.187
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1772310433; c=relaxed/simple;
+	bh=aYp4smBf5B/m1My73xjNkVi3QPyMBWYzajkjVuSgSlw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PStN1ymJUxM33ZnMyhagthelDO8ae5JLG8Y2n/mmF6qv0PgRLVkOGOJM2fvS2k9coKVk7uhOJV/RwYABk099siyfH3qsnOfRUGEfqLgkHIw67y9FkjGrQZKZeWwsC+prcq7juH3Uz7+xuyOyyUDXsPw8TP6xTfZenMGNdbMlNn4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mw3uX8lY; arc=none smtp.client-ip=209.85.216.68
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="tCXfa4FH";
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="tCXfa4FH"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=YgqhHcoNHz2fkv2FDernGNnKMhXqgo0CBDYIFanP39U=;
-	b=tCXfa4FHZfMiOwevzr04qAlRb3ezqzJP9fmMj3jxFG++hhplMEZIxXA9ua/j19wK2oo0ljhOq
-	HTbBsWQRi9rUqgXXFidD8F8IZuOjrhENmtZt+dGJEFS6oVTDjSgT5AJ+IvUV7Qeahc12wQvdRue
-	UkFjUijHoefHEkSaWBptnpU=
-Received: from canpmsgout01.his.huawei.com (unknown [172.19.92.178])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4fN7Wk036jz1BFMt;
-	Sat, 28 Feb 2026 09:53:22 +0800 (CST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=YgqhHcoNHz2fkv2FDernGNnKMhXqgo0CBDYIFanP39U=;
-	b=tCXfa4FHZfMiOwevzr04qAlRb3ezqzJP9fmMj3jxFG++hhplMEZIxXA9ua/j19wK2oo0ljhOq
-	HTbBsWQRi9rUqgXXFidD8F8IZuOjrhENmtZt+dGJEFS6oVTDjSgT5AJ+IvUV7Qeahc12wQvdRue
-	UkFjUijHoefHEkSaWBptnpU=
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4fN7QN0zhrz1T4G5;
-	Sat, 28 Feb 2026 09:48:44 +0800 (CST)
-Received: from dggpemf500012.china.huawei.com (unknown [7.185.36.8])
-	by mail.maildlp.com (Postfix) with ESMTPS id B697540538;
-	Sat, 28 Feb 2026 09:53:39 +0800 (CST)
-Received: from dggpemf100008.china.huawei.com (7.185.36.138) by
- dggpemf500012.china.huawei.com (7.185.36.8) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Sat, 28 Feb 2026 09:53:39 +0800
-Received: from dggpemf100008.china.huawei.com ([7.185.36.138]) by
- dggpemf100008.china.huawei.com ([7.185.36.138]) with mapi id 15.02.1544.011;
- Sat, 28 Feb 2026 09:53:39 +0800
-From: "chenjun (AM)" <chenjun102@huawei.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, "simona@ffwll.ch"
-	<simona@ffwll.ch>, "deller@gmx.de" <deller@gmx.de>,
-	"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "linruifeng (A)" <linruifeng4@huawei.com>
-Subject: Re: [RFC PATCH] fbcon: Fix out-of-bounds memory in fbcon_putcs
-Thread-Topic: [RFC PATCH] fbcon: Fix out-of-bounds memory in fbcon_putcs
-Thread-Index: AQHcp/hkWokbZ7kj9E6ZoDdZSs/a8A==
-Date: Sat, 28 Feb 2026 01:53:39 +0000
-Message-ID: <031a9e0b2f5346bbb6875c985fac149b@huawei.com>
-References: <20260227144358.101173-1-chenjun102@huawei.com>
- <bc9a37ac-43d2-451b-81b7-e0b23827006f@suse.de>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mw3uX8lY"
+Received: by mail-pj1-f68.google.com with SMTP id 98e67ed59e1d1-35984626dbaso3264a91.2
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Feb 2026 12:27:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772310430; x=1772915230; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=hbY6xLWGKXtaxrC528rj/sYRbGkuV5WfacpZcBywgMA=;
+        b=mw3uX8lYU2wGBB5KBrbno5i8W9uynI96s2wOJzOu839+4mY8hamu7DyuVT69o5kAME
+         ff2Qfs0n9Is3QshWAtwltimVcbsnKmIkohugnsWJDpIZAMVbGzga0ayBSYfWXSxQJCRV
+         bH2rTSqqjvuaua6jmWXmYxGJhjnNxmA5TEB1mqql4RWyj+2s6qmnSdnELnI6Hj+/fCCn
+         ZieqJg3JTJOPQMghKoQk4Pi0Ta/ETJPAcbBIWJvJtcD2x/wqbAkUcWEQtWSTkqIe41Da
+         1O9hTAtgFTJ7ROI5H5GidPOzkWzSIdIBfUH5E4MuYtqR8FAUc4pOp5jC7WxAPDD7jkZY
+         0OOg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772310430; x=1772915230;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hbY6xLWGKXtaxrC528rj/sYRbGkuV5WfacpZcBywgMA=;
+        b=tuEpES+duYKvCtPwaL1vV4XbOTsLxzM1GGc1PSebgiaKe+prt5Jvr83hCd6d0CRpn+
+         1gVSf1OMd9X07LMvNhz2XeDAKMl2/zyAe7GB56rCbi78IyGgoWZsf72Mlr+Pew/TQwCo
+         ibJRbhcwRIwJJA5lBeQGC0Xn+pyVIopxRLr4VOaRD17CbRCwmxlfE1mSzNrfwj7Myy+e
+         +MnqFsYNRcW153QCTJNBiPKYOYANujwQroqDZpjw0HMiY5Ax5K5P4DzM6a1iPQu/e7zB
+         3NjlJHIt09P2GEuGBW51mWNUpP6m1FFlCy5E+DojFrm3mptEbPNxgXiYxHiS2+HOk252
+         Wxyg==
+X-Forwarded-Encrypted: i=1; AJvYcCXGEBK5Tr4fmQzVTiO/C8tB/ydpkGqQlVZGyf4XEW6bPym3VxV0CyeNc783O7C4v7AgYO5Pr+WZYO/L+A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzSsKv94Vx285Ur18wYgTPR9cRSOO9XIFa2tzvAZxKnmRKLs1Bq
+	HHsavNij4hdfh0KjjL26LxVAHN3qyhUjCwfEpz/HumrU3+UM3lzenddY
+X-Gm-Gg: ATEYQzyyDsLlAbzaxnP4CpjOvg9F2vIbwpdhPNS1GPoBhAvSb2lYFjJB2aUzynde6xG
+	I5pF6Cw8e5vK5d/yEdq66+bNY8/fkDSn8uKw1MDgS3XUgmu/ofjL3cqbNMJ7MgR/M2gPuVIy4mx
+	b0pII6fFo8dWgMkhtX05Q+K4ZHdbFlVRosPr1TG1CgcqMNWexYRKpC3cciUktMTXPh8dNe9gV8l
+	Ah3Mw2AAX1zxksAce8u4OEqZ0emx0de3PqM8SAURW/naT53KEwC15rLDNisL+q/pUlTIGv7Tcka
+	7vHICCmTO9p+e4mixBuvasvl/jAG7IO0B0fk1u4fzlhiJrO1MRyjDDBAk1Xf7Bymsjf04dW166A
+	3nGkjndIzlcX0qsmIXV0RScJy3lAjUh4+xUzIugqxwjxUk2NO7im8dsl8cO6t5q+3nvJSAUw/M3
+	Z2P03aaScyNnpUD/VF0DVR0vPvyJ4wLCv2Jfw4gberJVFvmFz9TiumRdyS4W1oXwaELPdeZd/3Z
+	3zPLK3cHjsAQqU=
+X-Received: by 2002:a17:90b:3fc8:b0:354:9dcb:1935 with SMTP id 98e67ed59e1d1-35965cd26bbmr4906008a91.6.1772310429803;
+        Sat, 28 Feb 2026 12:27:09 -0800 (PST)
+Received: from cute.. ([2405:201:31:d01f:37d3:368b:370c:c273])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-359834ac606sm557872a91.6.2026.02.28.12.27.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 28 Feb 2026 12:27:09 -0800 (PST)
+From: Soham Kute <officialsohamkute@gmail.com>
+To: andy@kernel.org,
+	gregkh@linuxfoundation.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Soham Kute <officialsohamkute@gmail.com>
+Subject: [PATCH] staging: fbtft: replace -1 with proper error codes
+Date: Sun,  1 Mar 2026 01:57:01 +0530
+Message-Id: <20260228202701.43337-1-officialsohamkute@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-=1B$B:_=1B(B 2026/2/27 23:56, Thomas Zimmermann =1B$B<LF;=1B(B:=0A=
-> Hi,=0A=
-> =0A=
-> thanks for the patch.=0A=
-> =0A=
-> Am 27.02.26 um 15:43 schrieb Chen Jun:=0A=
->> When a font is set on an invisible console, the screen will not update.=
-=0A=
->> However, the fontbuffer is not updated to match the new font dimensions.=
-=0A=
-> =0A=
-> I looked through vc_resize() but cannot quite find the logic that calls=
-=0A=
-> fbcon_rotate_font(). Can you please point to correct place?=0A=
-> =0A=
-> Best regards=0A=
-> Thomas=0A=
-> =0A=
-=0A=
-Hi, fbcon_rouate_font is called in fbcon_switch=0A=
-=0A=
-[   64.669554] CPU: 3 UID: 0 PID: 978 Comm: a.out Not tainted =0A=
-7.0.0-rc1-00021-gd9d32e5bd5a4-dirty #10 PREEMPT(lazy)=0A=
-[   64.669576] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), =0A=
-BIOS rel-1.13.0-0-gf21b5a4aeb02-prebuilt.qemu.org 04/4=0A=
-[   64.669584] Call Trace: =0A=
-=0A=
-[   64.669589]  <TASK> =0A=
-=0A=
-[   64.669595]  dump_stack_lvl+0x53/0x70 =0A=
-=0A=
-[   64.669615]  fbcon_rotate_font+0x2d6/0xe90 =0A=
-=0A=
-[   64.669636]  ? kfree+0x159/0x3b0 =0A=
-=0A=
-[   64.669650]  ? ud_cursor+0x830/0x1d80 =0A=
-=0A=
-[   64.669661]  ? __kmalloc_noprof+0x198/0x4a0 =0A=
-=0A=
-[   64.669674]  fbcon_switch+0x67b/0x10f0 =0A=
-=0A=
-[   64.669689]  ? __pfx_fbcon_switch+0x10/0x10 =0A=
-=0A=
-[   64.669708]  ? con_is_visible+0xb0/0x130 =0A=
-=0A=
-[   64.669723]  redraw_screen+0x258/0x690 =0A=
-=0A=
-[   64.669736]  ? mutex_unlock+0x7d/0xd0 =0A=
-=0A=
-[   64.669751]  ? __pfx_redraw_screen+0x10/0x10 =0A=
-=0A=
-[   64.669764]  ? tty_get_pgrp+0x73/0xb0 =0A=
-=0A=
-[   64.669784]  vc_do_resize+0x9a5/0xec0 =0A=
-=0A=
-[   64.669803]  ? __pfx_vc_do_resize+0x10/0x10 =0A=
-=0A=
-[   64.669815]  ? kernel_fpu_begin_mask+0x1c5/0x210 =0A=
-=0A=
-[   64.669832]  ? __pfx_kernel_fpu_begin_mask+0x10/0x10 =0A=
-=0A=
-[   64.669843]  ? fbcon_set_font+0x2cb/0x8c0 =0A=
-=0A=
-[   64.669853]  ? __kasan_kmalloc_large+0x81/0xa0 =0A=
-=0A=
-[   64.669863]  ? __kmalloc_large_node_noprof+0x18/0xb0 =0A=
-=0A=
-[   64.669874]  fbcon_do_set_font+0x390/0xa70 =0A=
-=0A=
-[   64.669890]  ? __pfx_fbcon_set_font+0x10/0x10 =0A=
-=0A=
-[   64.669900]  con_font_op+0x7d5/0xc30 =0A=
-=0A=
-[   64.669910]  ? arch_stack_walk+0x9f/0xf0 =0A=
-=0A=
-[   64.669924]  ? __pfx_con_font_op+0x10/0x10 =0A=
-=0A=
-[   64.669940]  vt_ioctl+0x8ee/0x2480 =0A=
-=0A=
-[   64.669953]  ? __pfx_vt_ioctl+0x10/0x10 =0A=
-=0A=
-[   64.669964]  ? __x64_sys_open+0x79/0xc0 =0A=
-=0A=
-[   64.669976]  ? do_syscall_64+0xfa/0x570 =0A=
-=0A=
-[   64.669986]  ? entry_SYSCALL_64_after_hwframe+0x77/0x7f =0A=
-=0A=
-[   64.669996]  ? __pfx_path_openat+0x10/0x10 =0A=
-=0A=
-[   64.670006]  ? __pfx_avc_has_extended_perms+0x10/0x10 =0A=
-=0A=
-[   64.670022]  ? _raw_spin_lock+0x7f/0xd0 =0A=
-=0A=
-[   64.670040]  ? do_file_open+0x22f/0x2b0 =0A=
-=0A=
-[   64.670048]  ? pte_offset_map_lock+0xe2/0x1e0 =0A=
-=0A=
-[   64.670070]  ? __pfx_do_file_open+0x10/0x10 =0A=
-=0A=
-[   64.670082]  tty_ioctl+0x3e7/0x1190 =0A=
-=0A=
-[   64.670098]  ? __pfx_tty_ioctl+0x10/0x10 =0A=
-=0A=
-[   64.670109]  ? __pfx_do_vfs_ioctl+0x10/0x10 =0A=
-=0A=
-[   64.670124]  ? ioctl_has_perm.constprop.74+0x2e1/0x4f0 =0A=
-=0A=
-[   64.670137]  ? __pfx_ioctl_has_perm.constprop.74+0x10/0x10 =0A=
-=0A=
-[   64.670148]  ? __pfx_do_sys_openat2+0x10/0x10 =0A=
-=0A=
-[   64.670191]  __x64_sys_ioctl+0x130/0x1a0 =0A=
-=0A=
-[   64.670204]  do_syscall_64+0xfa/0x570 =0A=
-=0A=
-[   64.670214]  entry_SYSCALL_64_after_hwframe+0x77/0x7f =0A=
-=0A=
-[   64.670223] RIP: 0033:0x7ff56cb0c577 =0A=
-=0A=
-[   64.670233] Code: b3 66 90 48 8b 05 11 89 2c 00 64 c7 00 26 00 00 00 =0A=
-48 c7 c0 ff ff ff ff c3 66 2e 0f 1f 84 00 00 00 00 8=0A=
-[   64.670242] RSP: 002b:00007fff94ab6a48 EFLAGS: 00000206 ORIG_RAX: =0A=
-0000000000000010=0A=
-[   64.670256] RAX: ffffffffffffffda RBX: 0000000000000000 RCX: =0A=
-00007ff56cb0c577=0A=
-[   64.670263] RDX: 00007fff94ab6a60 RSI: 0000000000004b72 RDI: =0A=
-0000000000000003=0A=
-[   64.670269] RBP: 00007fff94ab6af0 R08: 000055bf68e008d0 R09: =0A=
-00007ff56cdec090=0A=
-[   64.670275] R10: 0000000000000000 R11: 0000000000000206 R12: =0A=
-000055bf68e00630=0A=
-[   64.670281] R13: 00007fff94ab6be0 R14: 0000000000000000 R15: =0A=
-0000000000000000=0A=
-[   64.670293]  </TASK> =0A=
-=0A=
-=0A=
->>=0A=
->> This inconsistency leads to out-of-bounds memory access when writing to=
-=0A=
->> the tty bound to fbcon, as demonstrated by the following KASAN report:=
-=0A=
->>=0A=
->> BUG: KASAN: slab-out-of-bounds in fb_pad_aligned_buffer+0xdf/0x140=0A=
->> Read of size 1 at addr ffff8881195a2280 by task a.out/971=0A=
->> Call Trace:=0A=
->>    <TASK>=0A=
->>    fb_pad_aligned_buffer+0xdf/0x140=0A=
->>    ud_putcs+0x88a/0xde0=0A=
->>    fbcon_putcs+0x319/0x430=0A=
->>    do_update_region+0x23c/0x3b0=0A=
->>    do_con_write+0x225c/0x67f0=0A=
->>    con_write+0xe/0x30=0A=
->>    n_tty_write+0x4b5/0xff0=0A=
->>    file_tty_write.isra.41+0x46c/0x880=0A=
->>    vfs_write+0x868/0xd60=0A=
->>    ksys_write+0xf2/0x1d0=0A=
->>    do_syscall_64+0xfa/0x570=0A=
->>=0A=
->> Fix this by calling fbcon_rotate_font() if vc is invisible in=0A=
->> fbcon_do_set_font().=0A=
->>=0A=
->> Signed-off-by: Chen Jun <chenjun102@huawei.com>=0A=
->> ---=0A=
->>    drivers/video/fbdev/core/fbcon.c | 5 +++++=0A=
->>    1 file changed, 5 insertions(+)=0A=
->>=0A=
->> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c=0A=
->> index 666261ae59d8..d76100188bee 100644=0A=
->> --- a/drivers/video/fbdev/core/fbcon.c=0A=
->> +++ b/drivers/video/fbdev/core/fbcon.c=0A=
->> @@ -2444,6 +2444,11 @@ static int fbcon_do_set_font(struct vc_data *vc, =
-int w, int h, int charcount,=0A=
->>    		rows =3D FBCON_SWAP(par->rotate, info->var.yres, info->var.xres);=
-=0A=
->>    		cols /=3D w;=0A=
->>    		rows /=3D h;=0A=
->> +		if (!con_is_visible(vc)) {=0A=
->> +			ret =3D fbcon_rotate_font(info, vc);=0A=
->> +			if (ret)=0A=
->> +				goto err_out;=0A=
->> +		}=0A=
->>    		ret =3D vc_resize(vc, cols, rows);=0A=
->>    		if (ret)=0A=
->>    			goto err_out;=0A=
-> =0A=
-=0A=
+Replace return -1 with proper kernel error codes:
+- -ENODEV when SPI device is NULL
+- -EINVAL when display size or buffer is invalid
+- -EOPNOTSUPP for unimplemented functions
+
+Signed-off-by: Soham Kute <officialsohamkute@gmail.com>
+---
+ drivers/staging/fbtft/fb_ra8875.c | 4 ++--
+ drivers/staging/fbtft/fbtft-bus.c | 4 ++--
+ drivers/staging/fbtft/fbtft-io.c  | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
+index 0ab1de6647d0..c2e5c6276415 100644
+--- a/drivers/staging/fbtft/fb_ra8875.c
++++ b/drivers/staging/fbtft/fb_ra8875.c
+@@ -29,7 +29,7 @@ static int write_spi(struct fbtft_par *par, void *buf, size_t len)
+ 	if (!par->spi) {
+ 		dev_err(par->info->device,
+ 			"%s: par->spi is unexpectedly NULL\n", __func__);
+-		return -1;
++		return -ENODEV;
+ 	}
+ 
+ 	spi_message_init(&m);
+@@ -144,7 +144,7 @@ static int init_display(struct fbtft_par *par)
+ 		write_reg(par, 0x1F, 0x01);
+ 	} else {
+ 		dev_err(par->info->device, "display size is not supported!!");
+-		return -1;
++		return -EINVAL;
+ 	}
+ 
+ 	/* PWM clock */
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 30e436ff19e4..9a87bddd7d19 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -181,7 +181,7 @@ int fbtft_write_vmem16_bus9(struct fbtft_par *par, size_t offset, size_t len)
+ 
+ 	if (!par->txbuf.buf) {
+ 		dev_err(par->info->device, "%s: txbuf.buf is NULL\n", __func__);
+-		return -1;
++		return -EINVAL;
+ 	}
+ 
+ 	remain = len;
+@@ -217,7 +217,7 @@ EXPORT_SYMBOL(fbtft_write_vmem16_bus9);
+ int fbtft_write_vmem8_bus8(struct fbtft_par *par, size_t offset, size_t len)
+ {
+ 	dev_err(par->info->device, "%s: function not implemented\n", __func__);
+-	return -1;
++	return -EOPNOTSUPP;
+ }
+ EXPORT_SYMBOL(fbtft_write_vmem8_bus8);
+ 
+diff --git a/drivers/staging/fbtft/fbtft-io.c b/drivers/staging/fbtft/fbtft-io.c
+index de1904a443c2..2144f5257fa9 100644
+--- a/drivers/staging/fbtft/fbtft-io.c
++++ b/drivers/staging/fbtft/fbtft-io.c
+@@ -19,7 +19,7 @@ int fbtft_write_spi(struct fbtft_par *par, void *buf, size_t len)
+ 	if (!par->spi) {
+ 		dev_err(par->info->device,
+ 			"%s: par->spi is unexpectedly NULL\n", __func__);
+-		return -1;
++		return -ENODEV;
+ 	}
+ 
+ 	spi_message_init(&m);
+@@ -231,6 +231,6 @@ EXPORT_SYMBOL(fbtft_write_gpio16_wr);
+ int fbtft_write_gpio16_wr_latched(struct fbtft_par *par, void *buf, size_t len)
+ {
+ 	dev_err(par->info->device, "%s: function not implemented\n", __func__);
+-	return -1;
++	return -EOPNOTSUPP;
+ }
+ EXPORT_SYMBOL(fbtft_write_gpio16_wr_latched);
+-- 
+2.34.1
+

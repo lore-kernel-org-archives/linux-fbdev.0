@@ -1,159 +1,132 @@
-Received: from mail-pj1-f68.google.com (mail-pj1-f68.google.com [209.85.216.68])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C849127FB35
-	for <linux-fbdev@vger.kernel.org>; Sat, 28 Feb 2026 20:27:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.68
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8C2F125C802;
+	Sun,  1 Mar 2026 01:28:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772310433; cv=none; b=RWbr7VJsJ/1JFanGH5Onq0WXyXu+n4PUzqYrYVI+0KjdFl0FqU2jo95rCMPajPJKpNw1mQ/fq3oTgphIBHEONTrnhd/r5EeE0cSmMCaGcDIT6xBPEPIk4kdzfTUF7Hf66P12PURm2vFv9UE5FG7DaaeeVycGH4VneDYUaTchsQ8=
+	t=1772328523; cv=none; b=Y6NKUsLT6RYZv8BVaN2TiX8qJG5yIN7kgmh5Yeazik78YLKxfWZ21LEuBLt0h9vruBxUK+8nOE2WyjACegufcxulAGOtPIfzz155E2olPfTvZDKhIgVC73vI8gkJdPyfNJggnS3dTFrU4P1ScsxKZHyLnYAca71MYGu/ui9n8TQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772310433; c=relaxed/simple;
-	bh=aYp4smBf5B/m1My73xjNkVi3QPyMBWYzajkjVuSgSlw=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PStN1ymJUxM33ZnMyhagthelDO8ae5JLG8Y2n/mmF6qv0PgRLVkOGOJM2fvS2k9coKVk7uhOJV/RwYABk099siyfH3qsnOfRUGEfqLgkHIw67y9FkjGrQZKZeWwsC+prcq7juH3Uz7+xuyOyyUDXsPw8TP6xTfZenMGNdbMlNn4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mw3uX8lY; arc=none smtp.client-ip=209.85.216.68
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1772328523; c=relaxed/simple;
+	bh=VFNukX7p2Xeib9k6+M5l5y3ZkelJDr2cq/qhqNqnguo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=MktH26Gszj/+fnoTbg738ASsaIXzOfhTTaiDz5NoxyibG/ZOYRHd6dSObLl6+1CiDtZim+TZYTFLJ6o3zRg1+D8S9ALO+9XR9hgD/u2hZB1NYnIE0zG2jbZ9fUT9tSzRbwBgSgYfbo6VmxCwEkQ6QtLEYe2Kjh05l/QvkMN3FmA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iK+45Cc6; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mw3uX8lY"
-Received: by mail-pj1-f68.google.com with SMTP id 98e67ed59e1d1-35984626dbaso3264a91.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Feb 2026 12:27:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772310430; x=1772915230; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=hbY6xLWGKXtaxrC528rj/sYRbGkuV5WfacpZcBywgMA=;
-        b=mw3uX8lYU2wGBB5KBrbno5i8W9uynI96s2wOJzOu839+4mY8hamu7DyuVT69o5kAME
-         ff2Qfs0n9Is3QshWAtwltimVcbsnKmIkohugnsWJDpIZAMVbGzga0ayBSYfWXSxQJCRV
-         bH2rTSqqjvuaua6jmWXmYxGJhjnNxmA5TEB1mqql4RWyj+2s6qmnSdnELnI6Hj+/fCCn
-         ZieqJg3JTJOPQMghKoQk4Pi0Ta/ETJPAcbBIWJvJtcD2x/wqbAkUcWEQtWSTkqIe41Da
-         1O9hTAtgFTJ7ROI5H5GidPOzkWzSIdIBfUH5E4MuYtqR8FAUc4pOp5jC7WxAPDD7jkZY
-         0OOg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772310430; x=1772915230;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=hbY6xLWGKXtaxrC528rj/sYRbGkuV5WfacpZcBywgMA=;
-        b=tuEpES+duYKvCtPwaL1vV4XbOTsLxzM1GGc1PSebgiaKe+prt5Jvr83hCd6d0CRpn+
-         1gVSf1OMd9X07LMvNhz2XeDAKMl2/zyAe7GB56rCbi78IyGgoWZsf72Mlr+Pew/TQwCo
-         ibJRbhcwRIwJJA5lBeQGC0Xn+pyVIopxRLr4VOaRD17CbRCwmxlfE1mSzNrfwj7Myy+e
-         +MnqFsYNRcW153QCTJNBiPKYOYANujwQroqDZpjw0HMiY5Ax5K5P4DzM6a1iPQu/e7zB
-         3NjlJHIt09P2GEuGBW51mWNUpP6m1FFlCy5E+DojFrm3mptEbPNxgXiYxHiS2+HOk252
-         Wxyg==
-X-Forwarded-Encrypted: i=1; AJvYcCXGEBK5Tr4fmQzVTiO/C8tB/ydpkGqQlVZGyf4XEW6bPym3VxV0CyeNc783O7C4v7AgYO5Pr+WZYO/L+A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzSsKv94Vx285Ur18wYgTPR9cRSOO9XIFa2tzvAZxKnmRKLs1Bq
-	HHsavNij4hdfh0KjjL26LxVAHN3qyhUjCwfEpz/HumrU3+UM3lzenddY
-X-Gm-Gg: ATEYQzyyDsLlAbzaxnP4CpjOvg9F2vIbwpdhPNS1GPoBhAvSb2lYFjJB2aUzynde6xG
-	I5pF6Cw8e5vK5d/yEdq66+bNY8/fkDSn8uKw1MDgS3XUgmu/ofjL3cqbNMJ7MgR/M2gPuVIy4mx
-	b0pII6fFo8dWgMkhtX05Q+K4ZHdbFlVRosPr1TG1CgcqMNWexYRKpC3cciUktMTXPh8dNe9gV8l
-	Ah3Mw2AAX1zxksAce8u4OEqZ0emx0de3PqM8SAURW/naT53KEwC15rLDNisL+q/pUlTIGv7Tcka
-	7vHICCmTO9p+e4mixBuvasvl/jAG7IO0B0fk1u4fzlhiJrO1MRyjDDBAk1Xf7Bymsjf04dW166A
-	3nGkjndIzlcX0qsmIXV0RScJy3lAjUh4+xUzIugqxwjxUk2NO7im8dsl8cO6t5q+3nvJSAUw/M3
-	Z2P03aaScyNnpUD/VF0DVR0vPvyJ4wLCv2Jfw4gberJVFvmFz9TiumRdyS4W1oXwaELPdeZd/3Z
-	3zPLK3cHjsAQqU=
-X-Received: by 2002:a17:90b:3fc8:b0:354:9dcb:1935 with SMTP id 98e67ed59e1d1-35965cd26bbmr4906008a91.6.1772310429803;
-        Sat, 28 Feb 2026 12:27:09 -0800 (PST)
-Received: from cute.. ([2405:201:31:d01f:37d3:368b:370c:c273])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-359834ac606sm557872a91.6.2026.02.28.12.27.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Feb 2026 12:27:09 -0800 (PST)
-From: Soham Kute <officialsohamkute@gmail.com>
-To: andy@kernel.org,
-	gregkh@linuxfoundation.org
-Cc: dri-devel@lists.freedesktop.org,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iK+45Cc6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAA4AC19421;
+	Sun,  1 Mar 2026 01:28:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772328523;
+	bh=VFNukX7p2Xeib9k6+M5l5y3ZkelJDr2cq/qhqNqnguo=;
+	h=From:To:Cc:Subject:Date:From;
+	b=iK+45Cc64bV0WqdLUzfD/Mjlp0MIAjeqrY3y45iG5m+MQupZDVUh3w6QBTA1cVxfh
+	 6V8rgOv+cibCvHb4lrlhgOMZYVSoTyynh6bkYXoms6JDcSnZWTV5wavktSZUFWvYS8
+	 wX215Dp9bwYbQsgB6mx0YsSaur6j5u1sAwL0eriKTzhFur/45nbbIrmLq84z0xmTRK
+	 gzq1Q8w9PE8eLjbf68LpfStEkYp3VwXk29M5vTvBiU/1zEjIAYMkAYeXlq5mTzki8u
+	 qN9RopJBWBQyav++Z3Ok5P0L1CONpc73IcN6c7yegrLojjTasSAeqyWJwUQgc9L32X
+	 9pOqQI8nlzMzQ==
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org,
+	rene@exactco.de
+Cc: stable@kernel.org,
+	Helge Deller <deller@gmx.de>,
 	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Soham Kute <officialsohamkute@gmail.com>
-Subject: [PATCH] staging: fbtft: replace -1 with proper error codes
-Date: Sun,  1 Mar 2026 01:57:01 +0530
-Message-Id: <20260228202701.43337-1-officialsohamkute@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	dri-devel@lists.freedesktop.org
+Subject: FAILED: Patch "fbdev: ffb: fix corrupted video output on Sun FFB1" failed to apply to 6.12-stable tree
+Date: Sat, 28 Feb 2026 20:28:41 -0500
+Message-ID: <20260301012841.1686461-1-sashal@kernel.org>
+X-Mailer: git-send-email 2.51.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-Patchwork-Hint: ignore
+X-stable: review
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Replace return -1 with proper kernel error codes:
-- -ENODEV when SPI device is NULL
-- -EINVAL when display size or buffer is invalid
-- -EOPNOTSUPP for unimplemented functions
+The patch below does not apply to the 6.12-stable tree.
+If someone wants it applied there, or to any other stable or longterm
+tree, then please email the backport, including the original git commit
+id to <stable@vger.kernel.org>.
 
-Signed-off-by: Soham Kute <officialsohamkute@gmail.com>
+Thanks,
+Sasha
+
+------------------ original commit in Linus's tree ------------------
+
+From b28da0d092461ac239ff034a8ac3129320177ba3 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ren=C3=A9=20Rebe?= <rene@exactco.de>
+Date: Thu, 5 Feb 2026 16:49:58 +0100
+Subject: [PATCH] fbdev: ffb: fix corrupted video output on Sun FFB1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fix Sun FFB1 corrupted video out ([1] and [2]) by disabling overlay and
+initializing window mode to a known state. The issue never appeared on
+my FFB2+/vertical nor Elite3D/M6. It could also depend on the PROM
+version.
+
+/SUNW,ffb@1e,0: FFB at 000001fc00000000, type 11, DAC pnum[236c] rev[10] manuf_rev[4]
+X (II) /dev/fb0: Detected FFB1, Z-buffer, Single-buffered.
+X (II) /dev/fb0: BT9068 (PAC1) ramdac detected (with normal cursor control)
+X (II) /dev/fb0: Detected Creator/Creator3D
+
+[1] https://www.instagram.com/p/DUTcSmSjSem/
+[2] https://chaos.social/@ReneRebe/116023241660154102
+
+Signed-off-by: René Rebe <rene@exactco.de>
+Cc: stable@kernel.org
+Signed-off-by: Helge Deller <deller@gmx.de>
 ---
- drivers/staging/fbtft/fb_ra8875.c | 4 ++--
- drivers/staging/fbtft/fbtft-bus.c | 4 ++--
- drivers/staging/fbtft/fbtft-io.c  | 4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/ffb.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-index 0ab1de6647d0..c2e5c6276415 100644
---- a/drivers/staging/fbtft/fb_ra8875.c
-+++ b/drivers/staging/fbtft/fb_ra8875.c
-@@ -29,7 +29,7 @@ static int write_spi(struct fbtft_par *par, void *buf, size_t len)
- 	if (!par->spi) {
- 		dev_err(par->info->device,
- 			"%s: par->spi is unexpectedly NULL\n", __func__);
--		return -1;
-+		return -ENODEV;
- 	}
+diff --git a/drivers/video/fbdev/ffb.c b/drivers/video/fbdev/ffb.c
+index 34b6abff9493e..da531b4cb4513 100644
+--- a/drivers/video/fbdev/ffb.c
++++ b/drivers/video/fbdev/ffb.c
+@@ -335,6 +335,9 @@ struct ffb_dac {
+ };
  
- 	spi_message_init(&m);
-@@ -144,7 +144,7 @@ static int init_display(struct fbtft_par *par)
- 		write_reg(par, 0x1F, 0x01);
- 	} else {
- 		dev_err(par->info->device, "display size is not supported!!");
--		return -1;
-+		return -EINVAL;
- 	}
- 
- 	/* PWM clock */
-diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
-index 30e436ff19e4..9a87bddd7d19 100644
---- a/drivers/staging/fbtft/fbtft-bus.c
-+++ b/drivers/staging/fbtft/fbtft-bus.c
-@@ -181,7 +181,7 @@ int fbtft_write_vmem16_bus9(struct fbtft_par *par, size_t offset, size_t len)
- 
- 	if (!par->txbuf.buf) {
- 		dev_err(par->info->device, "%s: txbuf.buf is NULL\n", __func__);
--		return -1;
-+		return -EINVAL;
- 	}
- 
- 	remain = len;
-@@ -217,7 +217,7 @@ EXPORT_SYMBOL(fbtft_write_vmem16_bus9);
- int fbtft_write_vmem8_bus8(struct fbtft_par *par, size_t offset, size_t len)
+ #define FFB_DAC_UCTRL		0x1001 /* User Control */
++#define FFB_DAC_UCTRL_OVENAB	0x00000008 /* Overlay Enable */
++#define FFB_DAC_UCTRL_WMODE	0x00000030 /* Window Mode */
++#define FFB_DAC_UCTRL_WM_COMB	0x00000000 /* Window Mode = Combined */
+ #define FFB_DAC_UCTRL_MANREV	0x00000f00 /* 4-bit Manufacturing Revision */
+ #define FFB_DAC_UCTRL_MANREV_SHIFT 8
+ #define FFB_DAC_TGEN		0x6000 /* Timing Generator */
+@@ -425,7 +428,7 @@ static void ffb_switch_from_graph(struct ffb_par *par)
  {
- 	dev_err(par->info->device, "%s: function not implemented\n", __func__);
--	return -1;
-+	return -EOPNOTSUPP;
- }
- EXPORT_SYMBOL(fbtft_write_vmem8_bus8);
+ 	struct ffb_fbc __iomem *fbc = par->fbc;
+ 	struct ffb_dac __iomem *dac = par->dac;
+-	unsigned long flags;
++	unsigned long flags, uctrl;
  
-diff --git a/drivers/staging/fbtft/fbtft-io.c b/drivers/staging/fbtft/fbtft-io.c
-index de1904a443c2..2144f5257fa9 100644
---- a/drivers/staging/fbtft/fbtft-io.c
-+++ b/drivers/staging/fbtft/fbtft-io.c
-@@ -19,7 +19,7 @@ int fbtft_write_spi(struct fbtft_par *par, void *buf, size_t len)
- 	if (!par->spi) {
- 		dev_err(par->info->device,
- 			"%s: par->spi is unexpectedly NULL\n", __func__);
--		return -1;
-+		return -ENODEV;
- 	}
+ 	spin_lock_irqsave(&par->lock, flags);
+ 	FFBWait(par);
+@@ -450,6 +453,15 @@ static void ffb_switch_from_graph(struct ffb_par *par)
+ 		upa_writel((FFB_DAC_CUR_CTRL_P0 |
+ 			    FFB_DAC_CUR_CTRL_P1), &dac->value2);
  
- 	spi_message_init(&m);
-@@ -231,6 +231,6 @@ EXPORT_SYMBOL(fbtft_write_gpio16_wr);
- int fbtft_write_gpio16_wr_latched(struct fbtft_par *par, void *buf, size_t len)
- {
- 	dev_err(par->info->device, "%s: function not implemented\n", __func__);
--	return -1;
-+	return -EOPNOTSUPP;
++	/* Disable overlay and window modes. */
++	upa_writel(FFB_DAC_UCTRL, &dac->type);
++	uctrl = upa_readl(&dac->value);
++	uctrl &= ~FFB_DAC_UCTRL_WMODE;
++	uctrl |= FFB_DAC_UCTRL_WM_COMB;
++	uctrl &= ~FFB_DAC_UCTRL_OVENAB;
++	upa_writel(FFB_DAC_UCTRL, &dac->type);
++	upa_writel(uctrl, &dac->value);
++
+ 	spin_unlock_irqrestore(&par->lock, flags);
  }
- EXPORT_SYMBOL(fbtft_write_gpio16_wr_latched);
+ 
 -- 
-2.34.1
+2.51.0
+
+
+
 

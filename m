@@ -1,78 +1,70 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 250AC3FD132
-	for <linux-fbdev@vger.kernel.org>; Mon,  2 Mar 2026 14:13:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0E2A13FB075
+	for <linux-fbdev@vger.kernel.org>; Mon,  2 Mar 2026 14:13:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772460783; cv=none; b=nTdoP/rsSfBvZOkc7IGKtV3A8PCRpffR7c+mUBiSXU6Y0ecF7GoCskDttTP1ZTcmBPWIlH391eVW/SrJ5YXG+mImpU5UuBFucYC5Erfcsps72/6wU/7zjxLFXV/1ezqxAtFG7wokfoqBAh5vHIHjFHjx/kZcL92hC4oOs5vRSBM=
+	t=1772460784; cv=none; b=QONX1ewCLDRDPxuoEbHYtqDslmbPqu+5omrwIWhYw2n/elNDnzOkmlpi13ATdrR+evbosmMCz4viALbFIeKqMgKSG69qsu1gRIVKxboJYRpOlhagvi/TkU+pZPo9ydMysSilZC+LDCJ1F9lmLUZ2HnGZMouryha+jGVQVJOlM0M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772460783; c=relaxed/simple;
-	bh=X7ZXt/Tvldpttx1rTGbhAfIensbsUVb6ys+73i6I5kg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TOprjavFRUMLYckvJb3FEMk7BMwHdKJ0VUptN5095mWOkXI8D+DIhVNrz3OfqxnvgyT/TzjFWDMlNQZpcYFbnBQMZY8mb/yo95mwnQdIshOWNSJqc8+2392rK6pYbjBpHtYiKGp6Y9kvCSHOtpPMhGmE/hUW3H+/iIP2S2IeaN4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TqKJdKsr; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CAIj6N61; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TqKJdKsr; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CAIj6N61; arc=none smtp.client-ip=195.135.223.130
+	s=arc-20240116; t=1772460784; c=relaxed/simple;
+	bh=af1/UYcL3Uu4QDueExvFhPkMe/Q43E1UeVzNKaX/It8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LAvHgH8/XcxzIknv5TFea+Lv5p63EUlORNmvvxH4n+gXHvs80Yl881cYAtfNvl7O/HEbSMtMw9OYMiUrMPhh9B6qjGhLoj4t1Q286tBP0aO/Fgo9AkOtJnyUIZt759RE2uJDTvGpFc2FeLirHXsNwmR0+QY5i/27BREWi4iNiis=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jekOrfp0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xPtWV9TS; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jekOrfp0; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xPtWV9TS; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TqKJdKsr";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CAIj6N61";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TqKJdKsr";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CAIj6N61"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jekOrfp0";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xPtWV9TS";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jekOrfp0";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xPtWV9TS"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 9A3673F7F6;
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 2A7335BD59;
 	Mon,  2 Mar 2026 14:13:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1772460780; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jDdFaZ33ivCVSgFIvrCH2YTfOSd7wSVCMvjOyrWj3aI=;
-	b=TqKJdKsryS2kvryXltCj3gTsn1zKaSMK+EYuhzjIBxqHxXJFRvkCN8TFeBIld9EFO9pZqM
-	j2tjLSfNNfk0dJRyKqGqSwJKUsFCOQJXwnl3iu/pKXLZf2RLLt8wsdivIR7vJUlztjTbVx
-	SeJTiFtzfwa6OGHSjx8X2FwEciAWhj4=
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=OEOAzPcJCoPQ6zF/ZSigtvSgprkS1B4aqek8WMiTgkI=;
+	b=jekOrfp0T93DPfJYcJFXYPm0jCI9JhVe/wAHkggmJQwM2P+9QhPQvkdlzHb5WNPY32w5dm
+	rd4Xj28eZP/My4SO0IY7L7qHw3fhlXjcRGf1IwOOzGV7Fz4YN9V/imdFiIqnYOcLZ95rXl
+	hTUK5ddV+zttqksEFssZ654FPyjen6Y=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1772460780;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jDdFaZ33ivCVSgFIvrCH2YTfOSd7wSVCMvjOyrWj3aI=;
-	b=CAIj6N61HBD01Q10TBuDiZAnFicZGP9g1Kt5V4a5CWYRACTvsW+EHkRI57W8Srkk4oTEM+
-	/iOB8r/sbP6XE0DA==
-Authentication-Results: smtp-out1.suse.de;
-	none
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=OEOAzPcJCoPQ6zF/ZSigtvSgprkS1B4aqek8WMiTgkI=;
+	b=xPtWV9TScaHHorOr6FL0CuMOAQG1MCfuax7YdMH/Umq7tZYuvhrTpZmc/uzYIvooeSzW8z
+	FsvYYDVWkwAYjOCw==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=jekOrfp0;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=xPtWV9TS
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1772460780; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jDdFaZ33ivCVSgFIvrCH2YTfOSd7wSVCMvjOyrWj3aI=;
-	b=TqKJdKsryS2kvryXltCj3gTsn1zKaSMK+EYuhzjIBxqHxXJFRvkCN8TFeBIld9EFO9pZqM
-	j2tjLSfNNfk0dJRyKqGqSwJKUsFCOQJXwnl3iu/pKXLZf2RLLt8wsdivIR7vJUlztjTbVx
-	SeJTiFtzfwa6OGHSjx8X2FwEciAWhj4=
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=OEOAzPcJCoPQ6zF/ZSigtvSgprkS1B4aqek8WMiTgkI=;
+	b=jekOrfp0T93DPfJYcJFXYPm0jCI9JhVe/wAHkggmJQwM2P+9QhPQvkdlzHb5WNPY32w5dm
+	rd4Xj28eZP/My4SO0IY7L7qHw3fhlXjcRGf1IwOOzGV7Fz4YN9V/imdFiIqnYOcLZ95rXl
+	hTUK5ddV+zttqksEFssZ654FPyjen6Y=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1772460780;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jDdFaZ33ivCVSgFIvrCH2YTfOSd7wSVCMvjOyrWj3aI=;
-	b=CAIj6N61HBD01Q10TBuDiZAnFicZGP9g1Kt5V4a5CWYRACTvsW+EHkRI57W8Srkk4oTEM+
-	/iOB8r/sbP6XE0DA==
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=OEOAzPcJCoPQ6zF/ZSigtvSgprkS1B4aqek8WMiTgkI=;
+	b=xPtWV9TScaHHorOr6FL0CuMOAQG1MCfuax7YdMH/Umq7tZYuvhrTpZmc/uzYIvooeSzW8z
+	FsvYYDVWkwAYjOCw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6974F3EA69;
-	Mon,  2 Mar 2026 14:13:00 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E77753EA69;
+	Mon,  2 Mar 2026 14:12:59 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id gOxNGOyapWleKQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 02 Mar 2026 14:13:00 +0000
+	id MgBRN+uapWleKQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 02 Mar 2026 14:12:59 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: gregkh@linuxfoundation.org,
 	deller@gmx.de,
@@ -81,12 +73,10 @@ Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 02/13] vt: Remove trailing whitespaces
-Date: Mon,  2 Mar 2026 15:08:36 +0100
-Message-ID: <20260302141255.518657-3-tzimmermann@suse.de>
+Subject: [PATCH v2 00/13] vc,fbcon,fonts: Proper handling of font data
+Date: Mon,  2 Mar 2026 15:08:34 +0100
+Message-ID: <20260302141255.518657-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260302141255.518657-1-tzimmermann@suse.de>
-References: <20260302141255.518657-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -94,52 +84,123 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Score: -2.80
-X-Spam-Level: 
-X-Spamd-Result: default: False [-2.80 / 50.00];
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-3.01 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
 	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
 	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-0.994];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MX_GOOD(-0.01)[];
 	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FROM_HAS_DN(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	RCVD_COUNT_TWO(0.00)[2];
-	FREEMAIL_TO(0.00)[linuxfoundation.org,gmx.de,ravnborg.org];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_SOME(0.00)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_TO(0.00)[linuxfoundation.org,gmx.de,ravnborg.org];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:mid];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
 	FREEMAIL_ENVRCPT(0.00)[gmx.de]
+X-Rspamd-Queue-Id: 2A7335BD59
 X-Spam-Flag: NO
+X-Spam-Score: -3.01
+X-Spam-Level: 
 
-Fix coding style. No functional changes.
+Provide helpers for handling console font data. Update consoles and VT.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- include/linux/console_struct.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+VT's vc_state stores font data as a plain byte array of glphys. Fbcon,
+newport_con and the kernel's internal fonts store the glyph data as an
+array of plain bytes plus a hidden header for reference counting, check
+sums and buffer sizes. The reference counting only works for user-space
+fonts but not for internal fonts. Font-data handling is duplicated in
+several places. Most of the font handling is open-coded and mixed up with
+VT's plain glyph arrays.
 
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index 13b35637bd5a..ebdb9750d348 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -120,7 +120,7 @@ struct vc_data {
- 	unsigned short	vc_complement_mask;	/* [#] Xor mask for mouse pointer */
- 	unsigned short	vc_s_complement_mask;	/* Saved mouse pointer mask */
- 	unsigned long	vc_pos;			/* Cursor address */
--	/* fonts */	
-+	/* fonts */
- 	unsigned short	vc_hi_font_mask;	/* [#] Attribute set for upper 256 chars of font or 0 if not supported */
- 	struct console_font vc_font;		/* Current VC font set */
- 	unsigned short	vc_video_erase_char;	/* Background erase character */
+To address these issues, add proper handling of font data to all involved
+components: struct vc_font for font state in VC; a font data type for the
+consoles. Then implement interfaces for handling font data one by one.
+
+Patch 1 prepares the fbdev interface.
+
+Patches 2 to 4 prepare VT's font handling.
+
+Patches 5 to 13 refactor fbcon and newport_con to use clean interfaces for
+their fonts.
+
+Fbcon has long been a source of problems and bug reports. [1] With its
+confusing implementation, it is hard to find the cause of these bugs.
+Cleaning up the fbcon code will hopefully help with resolving bug reports
+in the future.
+
+The series has been tested with fbcon under DRM's bochs driver by changing
+fonts at runtime using the setfont utility. [2] The changes to newport_con
+have only been tested to compile.
+
+v2:
+- keep declaring the internal fonts in the public header file (Helge)
+- rebase and clean up
+
+[1] https://lore.kernel.org/all/6992c84c.a70a0220.2c38d7.00e8.GAE@google.com/
+[2] https://www.man7.org/linux/man-pages/man8/setfont.8.html
+
+Thomas Zimmermann (13):
+  fbdev: Declare src parameter of fb_pad_ helpers as constant
+  vt: Remove trailing whitespaces
+  vt: Store font in struct vc_font
+  vt: Calculate font-buffer size with vc_font_size()
+  lib/fonts: Remove trailing whitespaces
+  lib/fonts: Remove FNTCHARCNT()
+  lib/fonts: Store font data as font_data_t; update consoles
+  lib/fonts: Read font size with font_data_size()
+  lib/fonts: Compare font data for equality with font_data_is_equal()
+  lib/fonts: Manage font-data lifetime with font_data_get/_put()
+  lib/fonts: Create font_data_t from struct console_font with
+    font_data_import()
+  lib/fonts: Store font data for user space with font_data_export()
+  lib/fonts: Remove internal symbols and macros from public header file
+
+ drivers/video/console/newport_con.c |  61 +++----
+ drivers/video/fbdev/core/bitblit.c  |  11 +-
+ drivers/video/fbdev/core/fbcon.c    | 194 +++++++----------------
+ drivers/video/fbdev/core/fbcon.h    |   8 +-
+ drivers/video/fbdev/core/fbmem.c    |   6 +-
+ include/linux/console_struct.h      |  59 ++++++-
+ include/linux/fb.h                  |  10 +-
+ include/linux/font.h                | 115 +++++++++-----
+ lib/fonts/font.h                    |  38 +++++
+ lib/fonts/font_10x18.c              |   2 +-
+ lib/fonts/font_6x10.c               |   3 +-
+ lib/fonts/font_6x11.c               |   2 +-
+ lib/fonts/font_6x8.c                |   3 +-
+ lib/fonts/font_7x14.c               |   2 +-
+ lib/fonts/font_8x16.c               |   3 +-
+ lib/fonts/font_8x8.c                |   2 +-
+ lib/fonts/font_acorn_8x8.c          |   4 +-
+ lib/fonts/font_mini_4x6.c           |  10 +-
+ lib/fonts/font_pearl_8x8.c          |   2 +-
+ lib/fonts/font_sun12x22.c           |   3 +-
+ lib/fonts/font_sun8x16.c            |   3 +-
+ lib/fonts/font_ter10x18.c           |   4 +-
+ lib/fonts/font_ter16x32.c           |   4 +-
+ lib/fonts/fonts.c                   | 236 +++++++++++++++++++++++++++-
+ 24 files changed, 518 insertions(+), 267 deletions(-)
+ create mode 100644 lib/fonts/font.h
+
+
+base-commit: e57ac53f3ef90826a0b5b7cdf7f1e742a2aa1e9b
 -- 
 2.53.0
 

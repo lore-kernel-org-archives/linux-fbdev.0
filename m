@@ -1,222 +1,145 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 052113FB041
-	for <linux-fbdev@vger.kernel.org>; Mon,  2 Mar 2026 13:45:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 250AC3FD132
+	for <linux-fbdev@vger.kernel.org>; Mon,  2 Mar 2026 14:13:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772459136; cv=none; b=MZbfP8uR3H4Mzur+OjSjGURjm4NNhlbqv0eciP/S8WWfxK0NJw6iKM2x5kK2eLYI6Acuk1MAYOO4U+a/HBsXglweiYSEzc88z4YVESpCUQm9dg9DXKSy8c2MNbfo8qMxhAEnlr9jQM9zp7GYH4AneDxMMgHWo6NkYTtgEdKfu6U=
+	t=1772460783; cv=none; b=nTdoP/rsSfBvZOkc7IGKtV3A8PCRpffR7c+mUBiSXU6Y0ecF7GoCskDttTP1ZTcmBPWIlH391eVW/SrJ5YXG+mImpU5UuBFucYC5Erfcsps72/6wU/7zjxLFXV/1ezqxAtFG7wokfoqBAh5vHIHjFHjx/kZcL92hC4oOs5vRSBM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772459136; c=relaxed/simple;
-	bh=jZOqMmNCx/B44Gc+K7yJGdjUufe6PTh+6sTONhtcQl0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y+7EqbnEi+HIm7C3EmsuY6auQlED+ox+526UiyV+37dic3usRgxksFBJutmfVF3WDOoST5T574WIjeT+UdAC5T4GqD/YfN5iCnaWiR1oCulGb7y4vpFzwymAp0O1ukD2q+rvkwrPWq33l9P+iymDSwkRKOFJrQ+MZtKup6xs4Aw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=i/R9yZ6K; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ZWaC3KlO; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=MNVteQfP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=EEoWOfIt; arc=none smtp.client-ip=195.135.223.130
+	s=arc-20240116; t=1772460783; c=relaxed/simple;
+	bh=X7ZXt/Tvldpttx1rTGbhAfIensbsUVb6ys+73i6I5kg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=TOprjavFRUMLYckvJb3FEMk7BMwHdKJ0VUptN5095mWOkXI8D+DIhVNrz3OfqxnvgyT/TzjFWDMlNQZpcYFbnBQMZY8mb/yo95mwnQdIshOWNSJqc8+2392rK6pYbjBpHtYiKGp6Y9kvCSHOtpPMhGmE/hUW3H+/iIP2S2IeaN4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TqKJdKsr; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CAIj6N61; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TqKJdKsr; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=CAIj6N61; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="i/R9yZ6K";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ZWaC3KlO";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="MNVteQfP";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="EEoWOfIt"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TqKJdKsr";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CAIj6N61";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TqKJdKsr";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="CAIj6N61"
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 26B4D3F887;
-	Mon,  2 Mar 2026 13:45:30 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 9A3673F7F6;
+	Mon,  2 Mar 2026 14:13:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1772459131; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	t=1772460780; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=hGrb3NMgIgqEfMlakG7obxX71STFY5ujm7uR5zREPSU=;
-	b=i/R9yZ6KfbcpWMucW3SE/ogYvrv5Wtp+FqSXPggweB9idGIpKCwGaoIDZCOHK8cIQbBRIe
-	/a8BmVB93z/t9Pz9RVqT7uTeIAfAsPcyH+u3nALDQ0scDniIHrz+kInR5TMowcRWK2p8CX
-	1Q2XeDksPa2n+5OwT95uf2UKeFPv3/A=
+	 in-reply-to:in-reply-to:references:references;
+	bh=jDdFaZ33ivCVSgFIvrCH2YTfOSd7wSVCMvjOyrWj3aI=;
+	b=TqKJdKsryS2kvryXltCj3gTsn1zKaSMK+EYuhzjIBxqHxXJFRvkCN8TFeBIld9EFO9pZqM
+	j2tjLSfNNfk0dJRyKqGqSwJKUsFCOQJXwnl3iu/pKXLZf2RLLt8wsdivIR7vJUlztjTbVx
+	SeJTiFtzfwa6OGHSjx8X2FwEciAWhj4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1772459131;
+	s=susede2_ed25519; t=1772460780;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=hGrb3NMgIgqEfMlakG7obxX71STFY5ujm7uR5zREPSU=;
-	b=ZWaC3KlO7tytB8fzvGNYtrvt9mOnuDWbyQqzKMhNBsesGZSMhiBMqIY2b2ZoRbxoHoyJAE
-	7K84oHHHKNHb+iAw==
+	 in-reply-to:in-reply-to:references:references;
+	bh=jDdFaZ33ivCVSgFIvrCH2YTfOSd7wSVCMvjOyrWj3aI=;
+	b=CAIj6N61HBD01Q10TBuDiZAnFicZGP9g1Kt5V4a5CWYRACTvsW+EHkRI57W8Srkk4oTEM+
+	/iOB8r/sbP6XE0DA==
 Authentication-Results: smtp-out1.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1772459130; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	t=1772460780; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=hGrb3NMgIgqEfMlakG7obxX71STFY5ujm7uR5zREPSU=;
-	b=MNVteQfPofnKqBG7U6LYjres8YzIicr+Kl+vAXjhFE+dN+VVyUC11LCsi3rnu+qW9gXzUV
-	c/XaNQM6M1XyUdPxmGfds8SA7fz5BgG+2In7iYUNoCMv0++qVL7Ivyfu3hcJTyr7rx1SzB
-	hnXmDm6Kqmsu8uIVztxJAIjIrY2YVzo=
+	 in-reply-to:in-reply-to:references:references;
+	bh=jDdFaZ33ivCVSgFIvrCH2YTfOSd7wSVCMvjOyrWj3aI=;
+	b=TqKJdKsryS2kvryXltCj3gTsn1zKaSMK+EYuhzjIBxqHxXJFRvkCN8TFeBIld9EFO9pZqM
+	j2tjLSfNNfk0dJRyKqGqSwJKUsFCOQJXwnl3iu/pKXLZf2RLLt8wsdivIR7vJUlztjTbVx
+	SeJTiFtzfwa6OGHSjx8X2FwEciAWhj4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1772459130;
+	s=susede2_ed25519; t=1772460780;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
+	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=hGrb3NMgIgqEfMlakG7obxX71STFY5ujm7uR5zREPSU=;
-	b=EEoWOfIt/vpjP85FofwZ5kjK76TTwWLILLeFGUFauorAkp4QUunFbW1fBE7IsCa8V7kCXP
-	VIbWLUhPFR2Td+Ag==
+	 in-reply-to:in-reply-to:references:references;
+	bh=jDdFaZ33ivCVSgFIvrCH2YTfOSd7wSVCMvjOyrWj3aI=;
+	b=CAIj6N61HBD01Q10TBuDiZAnFicZGP9g1Kt5V4a5CWYRACTvsW+EHkRI57W8Srkk4oTEM+
+	/iOB8r/sbP6XE0DA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id F0CAB3EA69;
-	Mon,  2 Mar 2026 13:45:29 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6974F3EA69;
+	Mon,  2 Mar 2026 14:13:00 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id ZHJaOXmUpWmECwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 02 Mar 2026 13:45:29 +0000
-Message-ID: <d251b638-2323-4d14-af14-2f15ee826a9a@suse.de>
-Date: Mon, 2 Mar 2026 14:45:29 +0100
+	id gOxNGOyapWleKQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 02 Mar 2026 14:13:00 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: gregkh@linuxfoundation.org,
+	deller@gmx.de,
+	sam@ravnborg.org
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2 02/13] vt: Remove trailing whitespaces
+Date: Mon,  2 Mar 2026 15:08:36 +0100
+Message-ID: <20260302141255.518657-3-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260302141255.518657-1-tzimmermann@suse.de>
+References: <20260302141255.518657-1-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 13/13] lib/fonts: Remove internal symbols and macros from
- public header file
-To: Helge Deller <deller@gmx.de>, gregkh@linuxfoundation.org, sam@ravnborg.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20260218083855.10743-1-tzimmermann@suse.de>
- <20260218083855.10743-14-tzimmermann@suse.de>
- <d8633caa-c01c-433c-8dd3-f300dac53a0b@gmx.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <d8633caa-c01c-433c-8dd3-f300dac53a0b@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.30 / 50.00];
+X-Spam-Score: -2.80
+X-Spam-Level: 
+X-Spamd-Result: default: False [-2.80 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-0.994];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_TO(0.00)[gmx.de,linuxfoundation.org,ravnborg.org];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[6];
-	RCVD_TLS_ALL(0.00)[];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FROM_HAS_DN(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:mid,suse.de:email];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[7];
 	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:mid]
+	FREEMAIL_TO(0.00)[linuxfoundation.org,gmx.de,ravnborg.org];
+	RCVD_TLS_ALL(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de]
 X-Spam-Flag: NO
-X-Spam-Score: -4.30
-X-Spam-Level: 
 
+Fix coding style. No functional changes.
 
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ include/linux/console_struct.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Am 23.02.26 um 16:05 schrieb Helge Deller:
-> On 2/18/26 09:16, Thomas Zimmermann wrote:
->> diff --git a/include/linux/font.h b/include/linux/font.h
->> index 4ff956a1cd0a..6e9a4c93b47b 100644
->> --- a/include/linux/font.h
->> +++ b/include/linux/font.h
->> @@ -92,20 +92,12 @@ struct font_desc {
->>   #define FONT6x8_IDX    12
->>   #define TER10x18_IDX    13
->>   -extern const struct font_desc    font_vga_8x8,
->> -            font_vga_8x16,
->> -            font_pearl_8x8,
->> -            font_vga_6x11,
->> -            font_7x14,
->> -            font_10x18,
->> -            font_sun_8x16,
->> -            font_sun_12x22,
->> -            font_acorn_8x8,
->> -            font_mini_4x6,
->> -            font_6x10,
->> -            font_ter_16x32,
->> -            font_6x8,
->> -            font_ter_10x18;
->> +#if defined(CONFIG_FONT_8x8)
->> +extern const struct font_desc font_vga_8x8;
->> +#endif
->> +#if defined(CONFIG_FONT_8x16)
->> +extern const struct font_desc font_vga_8x16;
->> +#endif
->
-> I suggest not to use all those #ifdef(CONFIG_XXX) in the header files.
-> They are not necessary, and trigger a rebuild of a whole lot C-files
-> in case one single CONFIG option is changed.
-> Instead use it in the C-files only.
-> That way (re-)compilation is faster and you still get a link/build error
-> when a symbol is used although the config option is not set.
-
-Ok. I'll send out an update in a bit.
-
->
->> diff --git a/lib/fonts/font.h b/lib/fonts/font.h
->> new file mode 100644
->> index 000000000000..00f65a3da5c2
->> --- /dev/null
->> +++ b/lib/fonts/font.h
->> @@ -0,0 +1,52 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +
->> +#ifndef _LIB_FONTS_FONT_H
->> +#define _LIB_FONTS_FONT_H
->> +
->> +#include <linux/font.h>
->> +
->> +#if defined(CONFIG_FONT_PEARL_8x8)
->> +extern const struct font_desc font_pearl_8x8;
->> +#endif
->> +#if defined(CONFIG_FONT_6x11)
->> +extern const struct font_desc font_vga_6x11;
->> +#endif
-> ...
-> same here...
->
-> Helge
->
-
+diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+index 13b35637bd5a..ebdb9750d348 100644
+--- a/include/linux/console_struct.h
++++ b/include/linux/console_struct.h
+@@ -120,7 +120,7 @@ struct vc_data {
+ 	unsigned short	vc_complement_mask;	/* [#] Xor mask for mouse pointer */
+ 	unsigned short	vc_s_complement_mask;	/* Saved mouse pointer mask */
+ 	unsigned long	vc_pos;			/* Cursor address */
+-	/* fonts */	
++	/* fonts */
+ 	unsigned short	vc_hi_font_mask;	/* [#] Attribute set for upper 256 chars of font or 0 if not supported */
+ 	struct console_font vc_font;		/* Current VC font set */
+ 	unsigned short	vc_video_erase_char;	/* Background erase character */
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
+2.53.0
 

@@ -1,63 +1,63 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 336E333B6D9
-	for <linux-fbdev@vger.kernel.org>; Tue,  3 Mar 2026 23:25:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AF44348463
+	for <linux-fbdev@vger.kernel.org>; Tue,  3 Mar 2026 23:25:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772580357; cv=none; b=ZrctnOvhNXjPosW9DXF5lZrqOyHEBXK8Hr831ZDBO4pPz8vTNp66ypbwLYkQacxJkooCg/Cem1nn4dUziKGdKVCPoY+rl8jhs9z0T/Ql1VNpbDaHgwMLYnxJbUL1yLzjICApS5jU9K9Qx3tN7QG4mYmLr8beTZmZo2Jez2Y4FPw=
+	t=1772580359; cv=none; b=dB+zZpQinyyeouZjJMXwJSZLpzLfmL/V965HsDQslcDFd7/7p662oyESesdG5QB4dpxZ3RnBrPQkV9q14UNo3OzTdsCsRKsq5GiBrRFHrY7KSXiEdyZN3M3N7/HBS/Rt2JJHT7fuJUtSkGwsri7o3ixT8gYQUxl9hdnPSCyJ1LY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772580357; c=relaxed/simple;
-	bh=juTqYkup/by3DgOkN6qLT4McKLHDc5uf8jqpeji0c8k=;
+	s=arc-20240116; t=1772580359; c=relaxed/simple;
+	bh=DZL51npHETrQOaLm+gXQSMAWjDCRqz6RGYaVU3tGRew=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jQ/msgRzlSTCZbOvcGNp7Cxp2DXTovE1eiDLWxKMJfcX60es0nd4yNgZGotBS6/sDTlzRrjCXbbhAXS6dLDigSBiI7oVw1po5dzfpyGR5Foz+zgGJ7udHEHQfVfOR6ArbQNhgBx0h2VRjAQB9WA69DSOG37kn4NicG+AACG1ayA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DP5gFLiK; arc=none smtp.client-ip=209.85.128.47
+	 MIME-Version; b=tfgCQVBOCwRfrEejeFgTeVPaI32n1CmcxpaMoF8oT435xXSqyzMEZLMwUSNBZ/QSSijqLOrXDbTxYhrz7qJizPjMXmu4IYxciRGYwJuv7xkpixbZCA5/+9SgBT+tRlhofA8WdXKh/LVTeF7KvUa7iKoCqviqFI1Gbd/+6GUN7vA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=P7uyK10v; arc=none smtp.client-ip=209.85.128.48
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DP5gFLiK"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4836e3288cdso42424545e9.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 03 Mar 2026 15:25:56 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P7uyK10v"
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-48370174e18so36182335e9.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 03 Mar 2026 15:25:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772580355; x=1773185155; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1772580356; x=1773185156; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=f0VDTq5+YnLJ0nZqtFumq/na1fPGtAhpN+2pmOfdQ2I=;
-        b=DP5gFLiK9moR80geGraIO36WmmvxBYZXOem4UsiIVId2aOwNdicYo3zMovY55NTPLn
-         RFrli+0LDMTHSs2AzM49JU6d1Cm6e9oLDek18Q7LO7Gxz0cbAbZct95IyGjUGjBvDFga
-         y5vubYKX1d+AUnhQVX415bl9KVm0gW0I2ZW130U9Hzvbp25kIEidIsKa5sjiI3wmmW6v
-         ck/aulYGDEwOCdk0qAPGBRCZC9opI1gVwH/+My3SslZrKqiWBA2A2PBhz+IgPDnQSaHE
-         iIdCNLIlK1c0i+GHSd5tlKryrUuaoY8qmtCwbvNcyMBoB+Xksuooe1vwUKwkhnOlpszC
-         b0yg==
+        bh=q62znnvOqEzZPobsTXXdYeKA44XpPeuRQCLKUu1n+U0=;
+        b=P7uyK10v6Kt8Ig+Xxo8KO7Wgtipf72spDpNTGd6d3QEr3mNKL+69YsByIOE2mi408g
+         IKLtU1JM6RwWFhhVOjv2pvANDq88AKEl+8wPvISsTf3bkvpCMzovgRybKkbEX0RFwSud
+         cad/J7LPnnyRkw6wXnMPRDb09lfeQEVrl+djDbRfs9jalsCfVAlc1SaoP5GCL/JExbjY
+         2D7ad/30ccShYY7VvbcFWX9Es7uQU+9LdsJ6x891G71JOUmkbzkrE5Rhsczfp07PH71F
+         wb30axG051vd2Lp7Zw/9xELkqK3cw6/eEOMLzUGvh3wnYiwDyxCZfiXxvJKzK4QFEchC
+         tVDQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772580355; x=1773185155;
+        d=1e100.net; s=20230601; t=1772580356; x=1773185156;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=f0VDTq5+YnLJ0nZqtFumq/na1fPGtAhpN+2pmOfdQ2I=;
-        b=Kcw5+gJZz/ovE5e/DPqmqnzmHGMWr4NJlJ+sn89eh/5BfcB6oMIAXfBS6pyb1+yw8J
-         X6Llgpw5aSIYtPkuNjHbSjCGt9IsdTWApYLQpa7C9EIxMGI3r9FIR4GHqRPjIyxri2sI
-         B3Jo/jKySIOEfZ+N/08lfnxXkfKmZEXhLWSyXbPL6ONWXn1xyI04cZ/F+Rk0yL7G0vGu
-         OMI4Xd+rGbCj4gathuON7TP9oTn5C0GipHHUMnRqlye9svlxn0QWaaD45rqRTPO9uljH
-         Y4KFGsxr7qFAtl7YXOwJofC4PjoBNJnt4QuBjJCABM/vMGFqrlVDIQ1UhxiXTrZ+oEZk
-         eBwg==
-X-Forwarded-Encrypted: i=1; AJvYcCU3gaiShnjCI38yw2QofGBgdLZjoYiinxGE/1unNG6wjshzyeXv5iXPsfR/C11wuOscvSwnvuAbmUjH6Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw2197bPj+rFMi7iVVgFgyle7q7M1C5QzJxD/ZFyBHzK9YruO8z
-	cv/gn5BOvaRcDj8ZgAfwTZMdfVagEL7lgBOdhGNpRgI8HUTX5kOwtGJ4
-X-Gm-Gg: ATEYQzzXO3j+dcmLNQuXvIzt5Xqj46xCo7vuyvollZOLck5scACtRJ/JNkod+LGUuTh
-	B3G2IQNXc/nUDQDbQ2Q4GVT3HaidbSu330RHdazdnFHKX8CkWLEU5i71wkd9cLOOHpHiYa3bf2T
-	fRWvT/87Nrf3Eaq7UFFdayA0eT224IgVSlAQ810g1+xz4C87TFnzlO+KuHxJ8n2SWCQkRX7McJb
-	GG1xX4OyMyD6E5EPnqQKthgkHyZWIqYQYd6ut+0hpdRmC/0XF/6VtRKAoepsX0Os1znubbDR3m0
-	54wn1aOlnebxQEc0fxQ2hagR4jAnUz3tELLqymwzRTkRGPeyrqa5DBVKN/WdKalukeu1Z7BLSlN
-	v78N9+Fvh2ZXdJEu+IhhVrzf1AGXoerzLKKKwdMgEnO8okzwvULjTr1Yd27LfCOGJwNcRNYgZoJ
-	dDw9aHkG4HXB1Y39bSe/xpE7ltfI1o9CJB2K1yXhHxIBCYRCjoOw==
-X-Received: by 2002:a05:600c:3542:b0:47e:e2b8:66e6 with SMTP id 5b1f17b1804b1-485198ee3admr278035e9.14.1772580354568;
-        Tue, 03 Mar 2026 15:25:54 -0800 (PST)
+        bh=q62znnvOqEzZPobsTXXdYeKA44XpPeuRQCLKUu1n+U0=;
+        b=aSCyGUPWVsCaVD5vlDbSIdxV5Q+rmksKLHk6/SRBweDekjl8NYrv5tUEn78vYf1hVW
+         ABKowpbBqKaVyX3PiMehXy57VxK7fpZG/w0Fe7kiP2qctiGBu0FTpRg4jZMme4gaqi2U
+         Q/l/mzzoiDphHIBiKu9MjRYPD7Q9EZZr1nmpeJW3LHdCHnI/fO60ggvoCZXsh6C5NLEP
+         sp+5RZPCAl7Qxa/Hv7fbRDINEu4w7cHUhE5b58K6tn0srhH54hpp3vtViHgl2ccaErOd
+         4W1u57d4TI8qCb1U/fTZjiBYmawIKuwTn13MXZ4jzSCEnD0nHP4HQSyE52biA/u70odA
+         xFyQ==
+X-Forwarded-Encrypted: i=1; AJvYcCV6NBPDItVnnDd9r1TKOtExq/gnU8Oqg4f8ul+64Tr4DULctok5f5llrR/zPr3suGRIAUJjPDuFkFD1lA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzSzJbGJx3LcCmm2BPykm1uwdVagDvlYV1X6DZPM6Fp+8o8lGT8
+	w6oWT2KXqtIteu4EGRbuP/eGJPLXAtlhCC61yBEq0ETqL7Mztvy8X1rq
+X-Gm-Gg: ATEYQzy2+KKCOThqY4Av/GiJJnDqQbRWv4gtsHh/IMRBKCtrrCrfraPmiQgn47VKrZP
+	WcgZ8tmiiIi/tztJhXAxsWGdVwJBSNr3UVPwhFYP9MikEYnIJdTyXQLXdc81niaN7g9NMQNWx35
+	Z/YIzv211wEQ5t9TY4zLoCGxGgG7DRZHF2813uKK1a4oTZfmxOWbPyAQo5ztI+i78psiwt3Jqpl
+	T7ufzrz5RFPcDKamuDX3iVNSJUSR83s9B7ZqzB+mQfGpAdMKYWHKXaeQGXEMULeaYJJq3QQx+WT
+	2DgpRSqMWv8eAxKHDyyzqi1ojws8dMxpvT+LRZ2HLqBZ2s1tj5YozfV9/O98Av/tqhWwYQWptFa
+	VUSqPM2XKrFRKFYUF3Z+f3Cjtoe/bUv5HAKlfDOwSryrEYF1XQJLr3cj8niQ+gBVveUENOmkDhG
+	XeQm1nTf1hhbGfpsF7LmyR8nJoMkQSP1ktygRYvEmsNnW4HvRe8AWmT2VF9aQS
+X-Received: by 2002:a05:600c:1d05:b0:483:badb:618f with SMTP id 5b1f17b1804b1-48519887d35mr606095e9.25.1772580355798;
+        Tue, 03 Mar 2026 15:25:55 -0800 (PST)
 Received: from arch ([2a02:1210:2e28:2800:36a5:7f85:ccb8:1176])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4851335648esm68036615e9.5.2026.03.03.15.25.54
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4851335648esm68036615e9.5.2026.03.03.15.25.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Mar 2026 15:25:54 -0800 (PST)
+        Tue, 03 Mar 2026 15:25:55 -0800 (PST)
 From: Gabriel Windlin <gawindlin@gmail.com>
 To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>,
@@ -66,9 +66,9 @@ To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org
 Cc: Gabriel Windlin <gawindlin@gmail.com>
-Subject: [PATCH 2/8] staging: sm750fb: remove unused CSC register definitions
-Date: Wed,  4 Mar 2026 00:24:23 +0100
-Message-ID: <20260303232434.1850583-2-gawindlin@gmail.com>
+Subject: [PATCH 3/8] staging: sm750fb: remove unused ZV capture register definitions
+Date: Wed,  4 Mar 2026 00:24:24 +0100
+Message-ID: <20260303232434.1850583-3-gawindlin@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260303232434.1850583-1-gawindlin@gmail.com>
 References: <20260303232434.1850583-1-gawindlin@gmail.com>
@@ -80,105 +80,167 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The Color Space Conversion (CSC) register macros defined in ddk750_reg.h
-are not referenced anywhere in the driver. Remove them to reduce dead
-code as noted in the TODO file.
+The ZV0 and ZV1 video capture port register macros defined in
+ddk750_reg.h are not referenced anywhere in the driver. Remove them
+to reduce dead code as noted in the TODO file.
 
 Signed-off-by: Gabriel Windlin <gawindlin@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_reg.h | 79 ----------------------------
- 1 file changed, 79 deletions(-)
+ drivers/staging/sm750fb/ddk750_reg.h | 141 ---------------------------
+ 1 file changed, 141 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/ddk750_reg.h b/drivers/staging/sm750fb/ddk750_reg.h
-index 59ecbc0d48f7..13b04870ad9b 100644
+index 13b04870ad9b..efdafa993e86 100644
 --- a/drivers/staging/sm750fb/ddk750_reg.h
 +++ b/drivers/staging/sm750fb/ddk750_reg.h
-@@ -1126,85 +1126,6 @@
- /* Panel Palette register starts at 0x080C00 ~ 0x080FFC */
- #define CRT_PALETTE_RAM                               0x080C00
+@@ -1168,147 +1168,6 @@
+ #define I2C_DATA14                                      0x010052
+ #define I2C_DATA15                                      0x010053
  
--/* Color Space Conversion registers. */
+-#define ZV0_CAPTURE_CTRL                                0x090000
+-#define ZV0_CAPTURE_CTRL_FIELD_INPUT                    BIT(27)
+-#define ZV0_CAPTURE_CTRL_SCAN                           BIT(26)
+-#define ZV0_CAPTURE_CTRL_CURRENT_BUFFER                 BIT(25)
+-#define ZV0_CAPTURE_CTRL_VERTICAL_SYNC                  BIT(24)
+-#define ZV0_CAPTURE_CTRL_ADJ                            BIT(19)
+-#define ZV0_CAPTURE_CTRL_HA                             BIT(18)
+-#define ZV0_CAPTURE_CTRL_VSK                            BIT(17)
+-#define ZV0_CAPTURE_CTRL_HSK                            BIT(16)
+-#define ZV0_CAPTURE_CTRL_FD                             BIT(15)
+-#define ZV0_CAPTURE_CTRL_VP                             BIT(14)
+-#define ZV0_CAPTURE_CTRL_HP                             BIT(13)
+-#define ZV0_CAPTURE_CTRL_CP                             BIT(12)
+-#define ZV0_CAPTURE_CTRL_UVS                            BIT(11)
+-#define ZV0_CAPTURE_CTRL_BS                             BIT(10)
+-#define ZV0_CAPTURE_CTRL_CS                             BIT(9)
+-#define ZV0_CAPTURE_CTRL_CF                             BIT(8)
+-#define ZV0_CAPTURE_CTRL_FS                             BIT(7)
+-#define ZV0_CAPTURE_CTRL_WEAVE                          BIT(6)
+-#define ZV0_CAPTURE_CTRL_BOB                            BIT(5)
+-#define ZV0_CAPTURE_CTRL_DB                             BIT(4)
+-#define ZV0_CAPTURE_CTRL_CC                             BIT(3)
+-#define ZV0_CAPTURE_CTRL_RGB                            BIT(2)
+-#define ZV0_CAPTURE_CTRL_656                            BIT(1)
+-#define ZV0_CAPTURE_CTRL_CAP                            BIT(0)
 -
--#define CSC_Y_SOURCE_BASE                               0x1000C8
--#define CSC_Y_SOURCE_BASE_EXT                           BIT(27)
--#define CSC_Y_SOURCE_BASE_CS                            BIT(26)
--#define CSC_Y_SOURCE_BASE_ADDRESS_MASK                  0x3ffffff
+-#define ZV0_CAPTURE_CLIP                                0x090004
+-#define ZV0_CAPTURE_CLIP_EYCLIP_MASK                    (0x3ff << 16)
+-#define ZV0_CAPTURE_CLIP_XCLIP_MASK                     0x3ff
 -
--#define CSC_CONSTANTS                                   0x1000CC
--#define CSC_CONSTANTS_Y_MASK                            (0xff << 24)
--#define CSC_CONSTANTS_R_MASK                            (0xff << 16)
--#define CSC_CONSTANTS_G_MASK                            (0xff << 8)
--#define CSC_CONSTANTS_B_MASK                            0xff
+-#define ZV0_CAPTURE_SIZE                                0x090008
+-#define ZV0_CAPTURE_SIZE_HEIGHT_MASK                    (0x7ff << 16)
+-#define ZV0_CAPTURE_SIZE_WIDTH_MASK                     0x7ff
 -
--#define CSC_Y_SOURCE_X                                  0x1000D0
--#define CSC_Y_SOURCE_X_INTEGER_MASK                     (0x7ff << 16)
--#define CSC_Y_SOURCE_X_FRACTION_MASK                    (0x1fff << 3)
+-#define ZV0_CAPTURE_BUF0_ADDRESS                        0x09000C
+-#define ZV0_CAPTURE_BUF0_ADDRESS_STATUS                 BIT(31)
+-#define ZV0_CAPTURE_BUF0_ADDRESS_EXT                    BIT(27)
+-#define ZV0_CAPTURE_BUF0_ADDRESS_CS                     BIT(26)
+-#define ZV0_CAPTURE_BUF0_ADDRESS_ADDRESS_MASK           0x3ffffff
 -
--#define CSC_Y_SOURCE_Y                                  0x1000D4
--#define CSC_Y_SOURCE_Y_INTEGER_MASK                     (0xfff << 16)
--#define CSC_Y_SOURCE_Y_FRACTION_MASK                    (0x1fff << 3)
+-#define ZV0_CAPTURE_BUF1_ADDRESS                        0x090010
+-#define ZV0_CAPTURE_BUF1_ADDRESS_STATUS                 BIT(31)
+-#define ZV0_CAPTURE_BUF1_ADDRESS_EXT                    BIT(27)
+-#define ZV0_CAPTURE_BUF1_ADDRESS_CS                     BIT(26)
+-#define ZV0_CAPTURE_BUF1_ADDRESS_ADDRESS_MASK           0x3ffffff
 -
--#define CSC_U_SOURCE_BASE                               0x1000D8
--#define CSC_U_SOURCE_BASE_EXT                           BIT(27)
--#define CSC_U_SOURCE_BASE_CS                            BIT(26)
--#define CSC_U_SOURCE_BASE_ADDRESS_MASK                  0x3ffffff
+-#define ZV0_CAPTURE_BUF_OFFSET                          0x090014
+-#ifndef VALIDATION_CHIP
+-    #define ZV0_CAPTURE_BUF_OFFSET_YCLIP_ODD_FIELD      (0x3ff << 16)
+-#endif
+-#define ZV0_CAPTURE_BUF_OFFSET_OFFSET_MASK              0xffff
 -
--#define CSC_V_SOURCE_BASE                               0x1000DC
--#define CSC_V_SOURCE_BASE_EXT                           BIT(27)
--#define CSC_V_SOURCE_BASE_CS                            BIT(26)
--#define CSC_V_SOURCE_BASE_ADDRESS_MASK                  0x3ffffff
+-#define ZV0_CAPTURE_FIFO_CTRL                           0x090018
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_MASK                 0x7
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_0                    0
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_1                    1
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_2                    2
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_3                    3
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_4                    4
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_5                    5
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_6                    6
+-#define ZV0_CAPTURE_FIFO_CTRL_FIFO_7                    7
 -
--#define CSC_SOURCE_DIMENSION                            0x1000E0
--#define CSC_SOURCE_DIMENSION_X_MASK                     (0xffff << 16)
--#define CSC_SOURCE_DIMENSION_Y_MASK                     0xffff
+-#define ZV0_CAPTURE_YRGB_CONST                          0x09001C
+-#define ZV0_CAPTURE_YRGB_CONST_Y_MASK                   (0xff << 24)
+-#define ZV0_CAPTURE_YRGB_CONST_R_MASK                   (0xff << 16)
+-#define ZV0_CAPTURE_YRGB_CONST_G_MASK                   (0xff << 8)
+-#define ZV0_CAPTURE_YRGB_CONST_B_MASK                   0xff
 -
--#define CSC_SOURCE_PITCH                                0x1000E4
--#define CSC_SOURCE_PITCH_Y_MASK                         (0xffff << 16)
--#define CSC_SOURCE_PITCH_UV_MASK                        0xffff
+-#define ZV0_CAPTURE_LINE_COMP                           0x090020
+-#define ZV0_CAPTURE_LINE_COMP_LC_MASK                   0x7ff
 -
--#define CSC_DESTINATION                                 0x1000E8
--#define CSC_DESTINATION_WRAP                            BIT(31)
--#define CSC_DESTINATION_X_MASK                          (0xfff << 16)
--#define CSC_DESTINATION_Y_MASK                          0xfff
+-/* ZV1 */
 -
--#define CSC_DESTINATION_DIMENSION                       0x1000EC
--#define CSC_DESTINATION_DIMENSION_X_MASK                (0xffff << 16)
--#define CSC_DESTINATION_DIMENSION_Y_MASK                0xffff
+-#define ZV1_CAPTURE_CTRL                                0x098000
+-#define ZV1_CAPTURE_CTRL_FIELD_INPUT                    BIT(27)
+-#define ZV1_CAPTURE_CTRL_SCAN                           BIT(26)
+-#define ZV1_CAPTURE_CTRL_CURRENT_BUFFER                 BIT(25)
+-#define ZV1_CAPTURE_CTRL_VERTICAL_SYNC                  BIT(24)
+-#define ZV1_CAPTURE_CTRL_PANEL                          BIT(20)
+-#define ZV1_CAPTURE_CTRL_ADJ                            BIT(19)
+-#define ZV1_CAPTURE_CTRL_HA                             BIT(18)
+-#define ZV1_CAPTURE_CTRL_VSK                            BIT(17)
+-#define ZV1_CAPTURE_CTRL_HSK                            BIT(16)
+-#define ZV1_CAPTURE_CTRL_FD                             BIT(15)
+-#define ZV1_CAPTURE_CTRL_VP                             BIT(14)
+-#define ZV1_CAPTURE_CTRL_HP                             BIT(13)
+-#define ZV1_CAPTURE_CTRL_CP                             BIT(12)
+-#define ZV1_CAPTURE_CTRL_UVS                            BIT(11)
+-#define ZV1_CAPTURE_CTRL_BS                             BIT(10)
+-#define ZV1_CAPTURE_CTRL_CS                             BIT(9)
+-#define ZV1_CAPTURE_CTRL_CF                             BIT(8)
+-#define ZV1_CAPTURE_CTRL_FS                             BIT(7)
+-#define ZV1_CAPTURE_CTRL_WEAVE                          BIT(6)
+-#define ZV1_CAPTURE_CTRL_BOB                            BIT(5)
+-#define ZV1_CAPTURE_CTRL_DB                             BIT(4)
+-#define ZV1_CAPTURE_CTRL_CC                             BIT(3)
+-#define ZV1_CAPTURE_CTRL_RGB                            BIT(2)
+-#define ZV1_CAPTURE_CTRL_656                            BIT(1)
+-#define ZV1_CAPTURE_CTRL_CAP                            BIT(0)
 -
--#define CSC_DESTINATION_PITCH                           0x1000F0
--#define CSC_DESTINATION_PITCH_X_MASK                    (0xffff << 16)
--#define CSC_DESTINATION_PITCH_Y_MASK                    0xffff
+-#define ZV1_CAPTURE_CLIP                                0x098004
+-#define ZV1_CAPTURE_CLIP_YCLIP_MASK                     (0x3ff << 16)
+-#define ZV1_CAPTURE_CLIP_XCLIP_MASK                     0x3ff
 -
--#define CSC_SCALE_FACTOR                                0x1000F4
--#define CSC_SCALE_FACTOR_HORIZONTAL_MASK                (0xffff << 16)
--#define CSC_SCALE_FACTOR_VERTICAL_MASK                  0xffff
+-#define ZV1_CAPTURE_SIZE                                0x098008
+-#define ZV1_CAPTURE_SIZE_HEIGHT_MASK                    (0x7ff << 16)
+-#define ZV1_CAPTURE_SIZE_WIDTH_MASK                     0x7ff
 -
--#define CSC_DESTINATION_BASE                            0x1000F8
--#define CSC_DESTINATION_BASE_EXT                        BIT(27)
--#define CSC_DESTINATION_BASE_CS                         BIT(26)
--#define CSC_DESTINATION_BASE_ADDRESS_MASK               0x3ffffff
+-#define ZV1_CAPTURE_BUF0_ADDRESS                        0x09800C
+-#define ZV1_CAPTURE_BUF0_ADDRESS_STATUS                 BIT(31)
+-#define ZV1_CAPTURE_BUF0_ADDRESS_EXT                    BIT(27)
+-#define ZV1_CAPTURE_BUF0_ADDRESS_CS                     BIT(26)
+-#define ZV1_CAPTURE_BUF0_ADDRESS_ADDRESS_MASK           0x3ffffff
 -
--#define CSC_CONTROL                                     0x1000FC
--#define CSC_CONTROL_STATUS                              BIT(31)
--#define CSC_CONTROL_SOURCE_FORMAT_MASK                  (0x7 << 28)
--#define CSC_CONTROL_SOURCE_FORMAT_YUV422                (0x0 << 28)
--#define CSC_CONTROL_SOURCE_FORMAT_YUV420I               (0x1 << 28)
--#define CSC_CONTROL_SOURCE_FORMAT_YUV420                (0x2 << 28)
--#define CSC_CONTROL_SOURCE_FORMAT_YVU9                  (0x3 << 28)
--#define CSC_CONTROL_SOURCE_FORMAT_IYU1                  (0x4 << 28)
--#define CSC_CONTROL_SOURCE_FORMAT_IYU2                  (0x5 << 28)
--#define CSC_CONTROL_SOURCE_FORMAT_RGB565                (0x6 << 28)
--#define CSC_CONTROL_SOURCE_FORMAT_RGB8888               (0x7 << 28)
--#define CSC_CONTROL_DESTINATION_FORMAT_MASK             (0x3 << 26)
--#define CSC_CONTROL_DESTINATION_FORMAT_RGB565           (0x0 << 26)
--#define CSC_CONTROL_DESTINATION_FORMAT_RGB8888          (0x1 << 26)
--#define CSC_CONTROL_HORIZONTAL_FILTER                   BIT(25)
--#define CSC_CONTROL_VERTICAL_FILTER                     BIT(24)
--#define CSC_CONTROL_BYTE_ORDER                          BIT(23)
+-#define ZV1_CAPTURE_BUF1_ADDRESS                        0x098010
+-#define ZV1_CAPTURE_BUF1_ADDRESS_STATUS                 BIT(31)
+-#define ZV1_CAPTURE_BUF1_ADDRESS_EXT                    BIT(27)
+-#define ZV1_CAPTURE_BUF1_ADDRESS_CS                     BIT(26)
+-#define ZV1_CAPTURE_BUF1_ADDRESS_ADDRESS_MASK           0x3ffffff
 -
- #define DE_DATA_PORT                                    0x110000
- 
- #define I2C_BYTE_COUNT                                  0x010040
+-#define ZV1_CAPTURE_BUF_OFFSET                          0x098014
+-#define ZV1_CAPTURE_BUF_OFFSET_OFFSET_MASK              0xffff
+-
+-#define ZV1_CAPTURE_FIFO_CTRL                           0x098018
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_MASK                 0x7
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_0                    0
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_1                    1
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_2                    2
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_3                    3
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_4                    4
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_5                    5
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_6                    6
+-#define ZV1_CAPTURE_FIFO_CTRL_FIFO_7                    7
+-
+-#define ZV1_CAPTURE_YRGB_CONST                          0x09801C
+-#define ZV1_CAPTURE_YRGB_CONST_Y_MASK                   (0xff << 24)
+-#define ZV1_CAPTURE_YRGB_CONST_R_MASK                   (0xff << 16)
+-#define ZV1_CAPTURE_YRGB_CONST_G_MASK                   (0xff << 8)
+-#define ZV1_CAPTURE_YRGB_CONST_B_MASK                   0xff
+-
+ #define DMA_1_SOURCE                                    0x0D0010
+ #define DMA_1_SOURCE_ADDRESS_EXT                        BIT(27)
+ #define DMA_1_SOURCE_ADDRESS_CS                         BIT(26)
 -- 
 2.53.0
 

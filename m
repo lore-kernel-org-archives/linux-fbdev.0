@@ -1,41 +1,41 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5FE953E3DA8;
-	Tue,  3 Mar 2026 14:15:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8208D3A6EE6;
+	Tue,  3 Mar 2026 14:31:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772547342; cv=none; b=Ccp9sDjiT8mZ8qoLmIr/14EvT/xe1i6RmqHzNy3e1py6mZDL1BjDodp4IwXjeHtCwSuQLiFz70s+nYYibLgjdmy3hiJpAmoyr6BrFgx+ikiFCcXsQp48DZoaTU1KZFqvQ5EG85qwvEtolt+eGnolnhiSIe3HKcodeof3lOhhqhY=
+	t=1772548317; cv=none; b=eoJhd0QzDYCm/Tk5MdIm9h/w3R0vHVSQAUkaMDH5jBKClZeXuWUrD32XXtsaJtudJUGsGr1GNxyMxWBcrHoDwJGhjc0S8Tj/WjIMlw5h5aFdOZOYfXoARVI9xaMndSgcXDUiIPdNryGwlrX+vCNcb16W/fsad9ittyozYeTEqwI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772547342; c=relaxed/simple;
-	bh=hlIVq29G0MhxDL7QF0ZkFaJHx2nj0UMj4lHltTKKjE4=;
+	s=arc-20240116; t=1772548317; c=relaxed/simple;
+	bh=R2ccEefLzTNZDxlheidg+GZVQLXRJYV1y5o5xVP96Gw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=B5buz+QiOD4rhHYGQCAmnpq44L6bKO2qG/PrcuM5LcfCJhL42NtkRGfNq2zk9Me680XwLlaltqCD8wf39aZge8N7VVvRmiw0dgWV2PcayC/bo1fKngbp+kNVwUIAz82xmJEUzI7WMF++YzaG945YKUzn3cBxShyb/UW05yyEJ2Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=KpG08Lj+; arc=none smtp.client-ip=212.227.17.22
+	 In-Reply-To:Content-Type; b=uSNDZxFOpuP4MZqH5yPfeQdfdYUPgQs7EYWsrJOuUjBMlqqchaKKMhHIIsXPpP8o6rJzby/AmMSrk5SIcvaLPgQAfmiFxmj7fABei6/j3WO5LLHYPmjCtCv5nqNnwTG5PBCpRBOmPKlA7Xvy5OPXNUFZfuAmltQppI3cZTMY4Ck=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=rScFUBQv; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="KpG08Lj+"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="rScFUBQv"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1772547323; x=1773152123; i=deller@gmx.de;
-	bh=157y93KS9310mSI3POa0npdwTaPBYvR9QOHiDWz63yc=;
+	s=s31663417; t=1772548305; x=1773153105; i=deller@gmx.de;
+	bh=B70SOfBW8X4KJa8gKZtoxz16YoSgLXF8Oh4612kJ7Rs=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=KpG08Lj+UmB6W2sHC2PEn7LjjbUlWxWPCKl/t8qKoJoCwMPweiK8xDq8YpApBILB
-	 DXaP9wkgLl6LMVtm4VvdssJ/NPTJGGCe9U6ozGvkBwMcyw+ulDzba73vjZq5/W+cR
-	 KNYe9tH3ld9nhgvkU90n7NXXSeHEmYZCUoMUOIfvhEwIplIMwFckcvmaJ+oi63mx0
-	 3DEFIOULGgCZOJb7AnqAAK19vNngmrvAG4qQD+MTxrkvRitB5wlKSNKaEELhiDtjE
-	 UpCD1D9AuaSC6NZ5Jcump714/fb9tyVVzWCn5FuDtWT5AOiHg7PnxDI13+nG8Gahv
-	 ROI61rkNZa29NQ50Mg==
+	b=rScFUBQvjRlM8AN1ngDjrBzwigIHiURVSilRQn6sKqLgaGgiOFSGKh++UFKxkugH
+	 t1zH1wPKyyLrTSQ2rf/sFIVJ8n/G16Z4BjESL8GyEGUzkLdoLxRSF6Fty+GDOBHXk
+	 bfFu651Mw72Kph7SZ36Ps9W0VFah1Q8P70n/njs2br2QUeX5JyDl3sm/gnLH6fKne
+	 pcGwCZHUoQeg1qwYTSchXMySYK/c8KEFL0tvLYqqBqSozRqnrzyuD1jAKogFG6uB2
+	 mT7QPYxYB7bXKwKG/R18arWdim9RuA7OI7hu/mPB1z7T3hBvrmQmJcEfx/Dy+Y8VG
+	 UfXstwrf56iG634+rA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MsYux-1vhXZR2tKd-018MKa; Tue, 03
- Mar 2026 15:15:22 +0100
-Message-ID: <e85bd96c-031f-477e-b0ce-aa10161fbb97@gmx.de>
-Date: Tue, 3 Mar 2026 15:15:21 +0100
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mr9G2-1vI06J0tBm-00cvis; Tue, 03
+ Mar 2026 15:31:45 +0100
+Message-ID: <7e17139f-47bf-4fec-b13f-d4a1b3a7a62d@gmx.de>
+Date: Tue, 3 Mar 2026 15:31:44 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,13 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH] fbcon: Fix out-of-bounds memory in fbcon_putcs
-To: Chen Jun <chenjun102@huawei.com>, simona@ffwll.ch, tzimmermann@suse.de,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linruifeng4@huawei.com
-References: <20260227144358.101173-1-chenjun102@huawei.com>
+Subject: Re: [PATCH v2 03/13] vt: Store font in struct vc_font
+To: Thomas Zimmermann <tzimmermann@suse.de>, gregkh@linuxfoundation.org,
+ sam@ravnborg.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20260302141255.518657-1-tzimmermann@suse.de>
+ <20260302141255.518657-4-tzimmermann@suse.de>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,120 +95,164 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20260227144358.101173-1-chenjun102@huawei.com>
+In-Reply-To: <20260302141255.518657-4-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:8AQFQVeUQl2Vcbj57AMTmFFvVvSvxllfkqMZqO3oUATT0kFsl7/
- M9XlnCjsFKpp5ShLXl4jeq8yz//cn1L2AwwMkd+Fn6oP6XYfvHjHXZIHtyPF2+G/opihp0v
- 2x05bHFihAU/+el6WGfppyCH1qSmy1EWnL1j15abSyWQdvnmHgVJJBplNVJ+BU45w+KaWm+
- n/JPnO3sYf8CspYCVLbHw==
+X-Provags-ID: V03:K1:v5ZtyHuUfC57L6fLXcgS8ULnuYJsstjsUcfVQpGe39k8jw11iTJ
+ IocLBlS60E+fPZGfyou+2WyGYeXkMWlpPNELvZBoFJ+CIGf/DLo/rAfYI+c/16SlgCCO2m7
+ zKbO4CkRbZe7wQaFC9JMk+j8535qYtQV+YnUwW4/3C5Ga4R5JcEePzusk6kO6XAh9Ha8pT1
+ J67SBCed6wajnSFSLdIGQ==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:tulqI3WylFo=;SVzuoF0/MVtOQLWHbmmV+IEx4hv
- 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
+UI-OutboundReport: notjunk:1;M01:P0:Xs3aYNxB0ac=;Sco3P5fZfC1IHtjhg7eG0OFQJ8f
+ 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
 
-On 2/27/26 15:43, Chen Jun wrote:
-> When a font is set on an invisible console, the screen will not update.
-> However, the fontbuffer is not updated to match the new font dimensions.
+On 3/2/26 15:08, Thomas Zimmermann wrote:
+> Replace struct console_font with struct vc_font for the type of the
+> vc_font field of struct vc_data. Struct console_font is UAPI, which
+> prevents further changes. Hence a new data type is required.
 >=20
-> This inconsistency leads to out-of-bounds memory access when writing to
-> the tty bound to fbcon, as demonstrated by the following KASAN report:
+> Struct console_font has a documented vertical pitch of 32 bytes. This
+> is not the case after the font data has been loaded into the kernel.
+> Changing the type of vc_font addresses this inconsistency.
 >=20
-> BUG: KASAN: slab-out-of-bounds in fb_pad_aligned_buffer+0xdf/0x140
-> Read of size 1 at addr ffff8881195a2280 by task a.out/971
-> Call Trace:
->   <TASK>
->   fb_pad_aligned_buffer+0xdf/0x140
->   ud_putcs+0x88a/0xde0
->   fbcon_putcs+0x319/0x430
->   do_update_region+0x23c/0x3b0
->   do_con_write+0x225c/0x67f0
->   con_write+0xe/0x30
->   n_tty_write+0x4b5/0xff0
->   file_tty_write.isra.41+0x46c/0x880
->   vfs_write+0x868/0xd60
->   ksys_write+0xf2/0x1d0
->   do_syscall_64+0xfa/0x570
+> The font data is now declared as constant, as it might come from the
+> kernel's read-only section. There's some fallout throughout the console
+> code where non-const variables refer to it. Fix them. A later update
+> will declare the font data to a dedicated data type.
 >=20
-> Fix this by calling fbcon_rotate_font() if vc is invisible in
-> fbcon_do_set_font().
->=20
-> Signed-off-by: Chen Jun <chenjun102@huawei.com>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->   drivers/video/fbdev/core/fbcon.c | 5 +++++
->   1 file changed, 5 insertions(+)
+>   drivers/video/fbdev/core/bitblit.c | 11 +++++------
+>   drivers/video/fbdev/core/fbcon.c   |  4 ++--
+>   drivers/video/fbdev/core/fbcon.h   |  4 ++--
+>   include/linux/console_struct.h     | 29 +++++++++++++++++++++++++++--
+>   4 files changed, 36 insertions(+), 12 deletions(-)
+>=20
+....
+> diff --git a/include/linux/console_struct.h b/include/linux/console_stru=
+ct.h
+> index ebdb9750d348..7fdcae6ed49c 100644
+> --- a/include/linux/console_struct.h
+> +++ b/include/linux/console_struct.h
+> @@ -13,8 +13,9 @@
+>   #ifndef _LINUX_CONSOLE_STRUCT_H
+>   #define _LINUX_CONSOLE_STRUCT_H
+>  =20
+> -#include <linux/wait.h>
+> +#include <linux/math.h>
+>   #include <linux/vt.h>
+> +#include <linux/wait.h>
+>   #include <linux/workqueue.h>
+>  =20
+>   struct uni_pagedict;
+> @@ -58,6 +59,30 @@ struct vc_state {
+>   	bool		reverse;
+>   };
+>  =20
+> +/**
+> + * struct vc_font - Describes a font
+> + * @width: The width of a single glyph in bits
+> + * @height: The height of a single glyph in scanlines
+> + * @charcount: The number of glyphs in the font
+> + * @data: The raw font data
+> + *
+> + * Font data is organized as an array of glyphs. Each glyph is a bitmap=
+ with
+> + * set bits indicating the foreground color. Unset bits indicate backgr=
+ound
+> + * color. The fields @width and @height store a single glyph's number o=
+f
+> + * horizontal bits and vertical scanlines. If width is not a multiple o=
+f 8,
+> + * there are trailing bits to fill up the byte. These bits should not b=
+e drawn.
+> + *
+> + * The field @data points to the first glphy's first byte. The value @c=
+harcount
+> + * gives the number of glyphs in the font. There are no empty scanlines=
+ between
+> + * two adjacent glyphs.
+> + */
+> +struct vc_font {
+> +	unsigned int width;
+> +	unsigned int height;
+> +	unsigned int charcount;
 
-applied to fbdev git tree.
+I wonder if we shouldn't declare width and height as "u8" or "short int" t=
+ype?
+And charcount as u16 or "short int" ?
+Makes later calculations shorter & easier.
 
-Thanks!
 Helge

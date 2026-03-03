@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8208D3A6EE6;
-	Tue,  3 Mar 2026 14:31:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9411B3C276D;
+	Tue,  3 Mar 2026 14:57:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772548317; cv=none; b=eoJhd0QzDYCm/Tk5MdIm9h/w3R0vHVSQAUkaMDH5jBKClZeXuWUrD32XXtsaJtudJUGsGr1GNxyMxWBcrHoDwJGhjc0S8Tj/WjIMlw5h5aFdOZOYfXoARVI9xaMndSgcXDUiIPdNryGwlrX+vCNcb16W/fsad9ittyozYeTEqwI=
+	t=1772549843; cv=none; b=Pd0EzF6VWFmxR+/XV4nBvVjKcWyWnkpdLajdCumhw27UMCjZFylync4n4h7C30pZItBPXwM11evgv19VBgwy80m7zYJYSlcf4v0kgXqS2Z9GhXRdawel68nWvd9tz07Mmc9xLeckSZO29KWnLkjPjlIEQFCXWAXbJNeUarTEEtU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772548317; c=relaxed/simple;
-	bh=R2ccEefLzTNZDxlheidg+GZVQLXRJYV1y5o5xVP96Gw=;
+	s=arc-20240116; t=1772549843; c=relaxed/simple;
+	bh=Pn7gk4zWn7I2M3uum/MqNNgwX87ZjIbXYW2DsE3e2G0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uSNDZxFOpuP4MZqH5yPfeQdfdYUPgQs7EYWsrJOuUjBMlqqchaKKMhHIIsXPpP8o6rJzby/AmMSrk5SIcvaLPgQAfmiFxmj7fABei6/j3WO5LLHYPmjCtCv5nqNnwTG5PBCpRBOmPKlA7Xvy5OPXNUFZfuAmltQppI3cZTMY4Ck=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=rScFUBQv; arc=none smtp.client-ip=212.227.17.22
+	 In-Reply-To:Content-Type; b=n0e9uGYZaRqIuNadwcZrpMGN68+pDd/omy4lA1/XDmFEWcTgZwXbTlCPHW+UaiEoVcezozjRuDD2rRXp0ldbKePaGy/OLpxJfMlgurejMBXAFFunU/uG4kB0RK0E0c4Mvv7p1f4atG746Hjwv5odABjbd7MBSl8Qp/4NypFAIMg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=pm2XfXon; arc=none smtp.client-ip=212.227.17.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="rScFUBQv"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="pm2XfXon"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1772548305; x=1773153105; i=deller@gmx.de;
-	bh=B70SOfBW8X4KJa8gKZtoxz16YoSgLXF8Oh4612kJ7Rs=;
+	s=s31663417; t=1772549839; x=1773154639; i=deller@gmx.de;
+	bh=Vw/jv/r/uMKMknHhvM67zIUGhvNNB/ewziz6oXAzbLo=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=rScFUBQvjRlM8AN1ngDjrBzwigIHiURVSilRQn6sKqLgaGgiOFSGKh++UFKxkugH
-	 t1zH1wPKyyLrTSQ2rf/sFIVJ8n/G16Z4BjESL8GyEGUzkLdoLxRSF6Fty+GDOBHXk
-	 bfFu651Mw72Kph7SZ36Ps9W0VFah1Q8P70n/njs2br2QUeX5JyDl3sm/gnLH6fKne
-	 pcGwCZHUoQeg1qwYTSchXMySYK/c8KEFL0tvLYqqBqSozRqnrzyuD1jAKogFG6uB2
-	 mT7QPYxYB7bXKwKG/R18arWdim9RuA7OI7hu/mPB1z7T3hBvrmQmJcEfx/Dy+Y8VG
-	 UfXstwrf56iG634+rA==
+	b=pm2XfXon1Q1wt8s7U86i/tPBuba5kUEPwvXpdYrzWsxec4C6tFZD/Myr//KSjBS7
+	 pdKS3LibxEpVZWzjXAiZrFApQ3i4ss1IsHyLzVAor/GGNvr47uthj1coqBa/018ng
+	 R5L6YgpBoQI1dZ0tA69f8CfdugSdJiv7lRJC+oEyJhAYN+djmEfxHTkqE/2TrhGBK
+	 WHQyLcJnCFeOXlIQixW+2LjHb6mtG6ZIIGyib/PpXEfZ+sUXbno0S2Y9fSpAVao6e
+	 thMZ3f9no/TOeJ93DO3sLjdwT0OJN51vQe+6ctcHIU5TtpEKqy/UofxXBYPjDVp14
+	 x9689PZgfbOvKWJRYQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mr9G2-1vI06J0tBm-00cvis; Tue, 03
- Mar 2026 15:31:45 +0100
-Message-ID: <7e17139f-47bf-4fec-b13f-d4a1b3a7a62d@gmx.de>
-Date: Tue, 3 Mar 2026 15:31:44 +0100
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MxUrx-1vmUyc2BJZ-013NUH; Tue, 03
+ Mar 2026 15:57:19 +0100
+Message-ID: <b0a688dc-c613-4cb0-9858-56d8720487c2@gmx.de>
+Date: Tue, 3 Mar 2026 15:57:18 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,13 +43,14 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 03/13] vt: Store font in struct vc_font
+Subject: Re: [PATCH v2 07/13] lib/fonts: Store font data as font_data_t;
+ update consoles
 To: Thomas Zimmermann <tzimmermann@suse.de>, gregkh@linuxfoundation.org,
  sam@ravnborg.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  linux-kernel@vger.kernel.org
 References: <20260302141255.518657-1-tzimmermann@suse.de>
- <20260302141255.518657-4-tzimmermann@suse.de>
+ <20260302141255.518657-8-tzimmermann@suse.de>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -95,164 +96,413 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20260302141255.518657-4-tzimmermann@suse.de>
+In-Reply-To: <20260302141255.518657-8-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:v5ZtyHuUfC57L6fLXcgS8ULnuYJsstjsUcfVQpGe39k8jw11iTJ
- IocLBlS60E+fPZGfyou+2WyGYeXkMWlpPNELvZBoFJ+CIGf/DLo/rAfYI+c/16SlgCCO2m7
- zKbO4CkRbZe7wQaFC9JMk+j8535qYtQV+YnUwW4/3C5Ga4R5JcEePzusk6kO6XAh9Ha8pT1
- J67SBCed6wajnSFSLdIGQ==
+X-Provags-ID: V03:K1:ZBgVXoL5ZMzaTxa57+jQsJDrKa4xfQpxaJX0FQhFRCkZM9NoJdv
+ ufkliwgxk6S3bLxd15yrCOXCytjMONmMr4JNZMrCz/vXi9oETMZKhDBloSo+vW/TaQ9lXdw
+ SVPLquht+3kmG/xbDHr0pi2JdemmYIIYEScqMGZgvAUDTw3p27kfzAuRAOBdPebrMIBkJmq
+ HqQQoj5wssJnZugOuujQg==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Xs3aYNxB0ac=;Sco3P5fZfC1IHtjhg7eG0OFQJ8f
- 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
+UI-OutboundReport: notjunk:1;M01:P0:ZDAnJQr9aRc=;e4/ZCd4HLfEJ26s6MZ2pusAuan2
+ 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
 
 On 3/2/26 15:08, Thomas Zimmermann wrote:
-> Replace struct console_font with struct vc_font for the type of the
-> vc_font field of struct vc_data. Struct console_font is UAPI, which
-> prevents further changes. Hence a new data type is required.
+> Store font data as pointer to font_data_t instead of unsigned char.
+> Update consoles.
 >=20
-> Struct console_font has a documented vertical pitch of 32 bytes. This
-> is not the case after the font data has been loaded into the kernel.
-> Changing the type of vc_font addresses this inconsistency.
+> Pointers to font data refer to the raw data. There is a hidden header
+> before the data that contains additional state. Document the existing
+> layout and semantics of font_data_t.
 >=20
-> The font data is now declared as constant, as it might come from the
-> kernel's read-only section. There's some fallout throughout the console
-> code where non-const variables refer to it. Fix them. A later update
-> will declare the font data to a dedicated data type.
+> The data field in struct vc_font can be used by any console. Therefore
+> it still points to plain data without the additional header. Fbcon sets
+> its value from struct fbcon_display.fontdata. Hence, update the size
+> test in fbcon_resize() to use struct fbcon_display.fontdata instead of
+> struct vc_font.data.
+>=20
+> v2:
+> - 'Font lookup' -> 'Font description' in <linux/font.h>
 >=20
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->   drivers/video/fbdev/core/bitblit.c | 11 +++++------
->   drivers/video/fbdev/core/fbcon.c   |  4 ++--
->   drivers/video/fbdev/core/fbcon.h   |  4 ++--
->   include/linux/console_struct.h     | 29 +++++++++++++++++++++++++++--
->   4 files changed, 36 insertions(+), 12 deletions(-)
+>   drivers/video/console/newport_con.c | 17 ++++++-----
+>   drivers/video/fbdev/core/fbcon.c    | 44 ++++++++++++++++-----------
+>   drivers/video/fbdev/core/fbcon.h    |  3 +-
+>   include/linux/font.h                | 47 ++++++++++++++++++++++++++++-
+>   4 files changed, 84 insertions(+), 27 deletions(-)
 >=20
-....
-> diff --git a/include/linux/console_struct.h b/include/linux/console_stru=
-ct.h
-> index ebdb9750d348..7fdcae6ed49c 100644
-> --- a/include/linux/console_struct.h
-> +++ b/include/linux/console_struct.h
-> @@ -13,8 +13,9 @@
->   #ifndef _LINUX_CONSOLE_STRUCT_H
->   #define _LINUX_CONSOLE_STRUCT_H
+> diff --git a/drivers/video/console/newport_con.c b/drivers/video/console=
+/newport_con.c
+> index e2922caa8685..9b9ed1940404 100644
+> --- a/drivers/video/console/newport_con.c
+> +++ b/drivers/video/console/newport_con.c
+> @@ -33,9 +33,9 @@
 >  =20
-> -#include <linux/wait.h>
-> +#include <linux/math.h>
->   #include <linux/vt.h>
-> +#include <linux/wait.h>
->   #include <linux/workqueue.h>
+>   #define NEWPORT_LEN	0x10000
 >  =20
->   struct uni_pagedict;
-> @@ -58,6 +59,30 @@ struct vc_state {
->   	bool		reverse;
->   };
+> -#define FONT_DATA ((unsigned char *)font_vga_8x16.data)
+> +#define FONT_DATA font_vga_8x16.data
 >  =20
-> +/**
-> + * struct vc_font - Describes a font
-> + * @width: The width of a single glyph in bits
-> + * @height: The height of a single glyph in scanlines
-> + * @charcount: The number of glyphs in the font
-> + * @data: The raw font data
-> + *
-> + * Font data is organized as an array of glyphs. Each glyph is a bitmap=
- with
-> + * set bits indicating the foreground color. Unset bits indicate backgr=
-ound
-> + * color. The fields @width and @height store a single glyph's number o=
-f
-> + * horizontal bits and vertical scanlines. If width is not a multiple o=
-f 8,
-> + * there are trailing bits to fill up the byte. These bits should not b=
-e drawn.
-> + *
-> + * The field @data points to the first glphy's first byte. The value @c=
-harcount
-> + * gives the number of glyphs in the font. There are no empty scanlines=
- between
-> + * two adjacent glyphs.
+> -static unsigned char *font_data[MAX_NR_CONSOLES];
+> +static font_data_t *font_data[MAX_NR_CONSOLES];
+>  =20
+>   static struct newport_regs *npregs;
+>   static unsigned long newport_addr;
+> @@ -370,9 +370,9 @@ static void newport_clear(struct vc_data *vc, unsign=
+ed int sy, unsigned int sx,
+>   static void newport_putc(struct vc_data *vc, u16 charattr, unsigned in=
+t ypos,
+>   			 unsigned int xpos)
+>   {
+> -	unsigned char *p;
+> +	const unsigned char *p;
+>  =20
+> -	p =3D &font_data[vc->vc_num][(charattr & 0xff) << 4];
+> +	p =3D &font_data_buf(font_data[vc->vc_num])[(charattr & 0xff) << 4];
+>   	charattr =3D (charattr >> 8) & 0xff;
+>   	xpos <<=3D 3;
+>   	ypos <<=3D 4;
+> @@ -400,7 +400,7 @@ static void newport_putcs(struct vc_data *vc, const =
+u16 *s,
+>   			  unsigned int count, unsigned int ypos,
+>   			  unsigned int xpos)
+>   {
+> -	unsigned char *p;
+> +	const unsigned char *p;
+>   	unsigned int i;
+>   	u16 charattr;
+>  =20
+> @@ -424,7 +424,7 @@ static void newport_putcs(struct vc_data *vc, const =
+u16 *s,
+>   				 NPORT_DMODE0_L32);
+>  =20
+>   	for (i =3D 0; i < count; i++, xpos +=3D 8) {
+> -		p =3D &font_data[vc->vc_num][(scr_readw(s++) & 0xff) << 4];
+> +		p =3D &font_data_buf(font_data[vc->vc_num])[(scr_readw(s++) & 0xff) <=
+< 4];
+>  =20
+>   		newport_wait(npregs);
+>  =20
+> @@ -503,7 +503,8 @@ static int newport_set_font(int unit, const struct c=
+onsole_font *op,
+>   	int h =3D op->height;
+>   	int size =3D h * op->charcount;
+>   	int i;
+> -	unsigned char *new_data, *data =3D op->data, *p;
+> +	font_data_t *new_data;
+> +	unsigned char *data =3D op->data, *p;
+>  =20
+>   	/* ladis: when I grow up, there will be a day... and more sizes will
+>   	 * be supported ;-) */
+> @@ -519,7 +520,7 @@ static int newport_set_font(int unit, const struct c=
+onsole_font *op,
+>   	REFCOUNT(new_data) =3D 0;	/* usage counter */
+>   	FNTSUM(new_data) =3D 0;
+>  =20
+> -	p =3D new_data;
+> +	p =3D (unsigned char *)font_data_buf(new_data);
+>   	for (i =3D 0; i < op->charcount; i++) {
+>   		memcpy(p, data, h);
+>   		data +=3D 32;
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
+/fbcon.c
+> index 103e91c8d874..8d7840b9ebad 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -1019,8 +1019,10 @@ static const char *fbcon_startup(void)
+>   						info->pixmap.blit_y);
+>   		vc->vc_font.width =3D font->width;
+>   		vc->vc_font.height =3D font->height;
+> -		vc->vc_font.data =3D (void *)(p->fontdata =3D font->data);
+> +		vc->vc_font.data =3D font_data_buf(font->data);
+>   		vc->vc_font.charcount =3D font->charcount;
+> +
+> +		p->fontdata =3D font->data;
+>   	}
+>  =20
+>   	cols =3D FBCON_SWAP(par->rotate, info->var.xres, info->var.yres);
+> @@ -1078,11 +1080,12 @@ static void fbcon_init(struct vc_data *vc, bool =
+init)
+>   		if (t->fontdata) {
+>   			struct vc_data *fvc =3D vc_cons[fg_console].d;
+>  =20
+> -			vc->vc_font.data =3D (void *)(p->fontdata =3D
+> -						    fvc->vc_font.data);
+> +			vc->vc_font.data =3D fvc->vc_font.data;
+>   			vc->vc_font.width =3D fvc->vc_font.width;
+>   			vc->vc_font.height =3D fvc->vc_font.height;
+>   			vc->vc_font.charcount =3D fvc->vc_font.charcount;
+> +
+> +			p->fontdata =3D t->fontdata;
+>   			p->userfont =3D t->userfont;
+>  =20
+>   			if (p->userfont)
+> @@ -1097,8 +1100,10 @@ static void fbcon_init(struct vc_data *vc, bool i=
+nit)
+>   							info->pixmap.blit_y);
+>   			vc->vc_font.width =3D font->width;
+>   			vc->vc_font.height =3D font->height;
+> -			vc->vc_font.data =3D (void *)(p->fontdata =3D font->data);
+> +			vc->vc_font.data =3D font_data_buf(font->data);
+>   			vc->vc_font.charcount =3D font->charcount;
+> +
+> +			p->fontdata =3D font->data;
+>   		}
+>   	}
+>  =20
+> @@ -1409,11 +1414,12 @@ static void fbcon_set_disp(struct fb_info *info,=
+ struct fb_var_screeninfo *var,
+>   	svc =3D *default_mode;
+>   	t =3D &fb_display[svc->vc_num];
+>  =20
+> -	if (!vc->vc_font.data) {
+> -		vc->vc_font.data =3D (void *)(p->fontdata =3D t->fontdata);
+> +	if (!p->fontdata) {
+> +		vc->vc_font.data =3D font_data_buf(t->fontdata);
+>   		vc->vc_font.width =3D (*default_mode)->vc_font.width;
+>   		vc->vc_font.height =3D (*default_mode)->vc_font.height;
+>   		vc->vc_font.charcount =3D (*default_mode)->vc_font.charcount;
+> +		p->fontdata =3D t->fontdata;
+>   		p->userfont =3D t->userfont;
+>   		if (p->userfont)
+>   			REFCOUNT(p->fontdata)++;
+> @@ -2047,7 +2053,7 @@ static int fbcon_resize(struct vc_data *vc, unsign=
+ed int width,
+>   	struct fb_var_screeninfo var =3D info->var;
+>   	int x_diff, y_diff, virt_w, virt_h, virt_fw, virt_fh;
+>  =20
+> -	if (p->userfont && FNTSIZE(vc->vc_font.data)) {
+> +	if (p->userfont && FNTSIZE(p->fontdata)) {
+>   		unsigned int size =3D vc_font_size(&vc->vc_font);
+>  =20
+>   		/*
+> @@ -2057,7 +2063,7 @@ static int fbcon_resize(struct vc_data *vc, unsign=
+ed int width,
+>   		 * charcount can change and cannot be used to determine the
+>   		 * font data allocated size.
+>   		 */
+> -		if (!size || size > FNTSIZE(vc->vc_font.data))
+> +		if (!size || size > FNTSIZE(p->fontdata))
+>   			return -EINVAL;
+>   	}
+>  =20
+> @@ -2281,7 +2287,8 @@ static bool fbcon_blank(struct vc_data *vc, enum v=
+esa_blank_mode blank,
+>  =20
+>   static int fbcon_get_font(struct vc_data *vc, struct console_font *fon=
+t, unsigned int vpitch)
+>   {
+> -	const u8 *fontdata =3D vc->vc_font.data;
+> +	struct fbcon_display *p =3D &fb_display[vc->vc_num];
+> +	font_data_t *fontdata =3D p->fontdata;
+>   	u8 *data =3D font->data;
+>   	int i, j;
+>  =20
+> @@ -2406,16 +2413,18 @@ static void set_vc_hi_font(struct vc_data *vc, b=
+ool set)
+>   }
+>  =20
+>   static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int cha=
+rcount,
+> -			     const u8 * data, int userfont)
+> +			     font_data_t *data, int userfont)
+>   {
+>   	struct fb_info *info =3D fbcon_info_from_console(vc->vc_num);
+>   	struct fbcon_par *par =3D info->fbcon_par;
+>   	struct fbcon_display *p =3D &fb_display[vc->vc_num];
+>   	int resize, ret, old_userfont, old_width, old_height, old_charcount;
+> +	font_data_t *old_fontdata =3D p->fontdata;
+>   	const u8 *old_data =3D vc->vc_font.data;
+>  =20
+>   	resize =3D (w !=3D vc->vc_font.width) || (h !=3D vc->vc_font.height);
+> -	vc->vc_font.data =3D (void *)(p->fontdata =3D data);
+> +	p->fontdata =3D data;
+> +	vc->vc_font.data =3D font_data_buf(p->fontdata);
+>   	old_userfont =3D p->userfont;
+>   	if ((p->userfont =3D userfont))
+>   		REFCOUNT(data)++;
+> @@ -2448,12 +2457,12 @@ static int fbcon_do_set_font(struct vc_data *vc,=
+ int w, int h, int charcount,
+>   		update_screen(vc);
+>   	}
+>  =20
+> -	if (old_userfont && (--REFCOUNT(old_data) =3D=3D 0))
+> -		kfree(old_data - FONT_EXTRA_WORDS * sizeof(int));
+> +	if (old_userfont && (--REFCOUNT(old_fontdata) =3D=3D 0))
+> +		kfree(old_fontdata - FONT_EXTRA_WORDS * sizeof(int));
+>   	return 0;
+>  =20
+>   err_out:
+> -	p->fontdata =3D old_data;
+> +	p->fontdata =3D old_fontdata;
+>   	vc->vc_font.data =3D old_data;
+>  =20
+>   	if (userfont) {
+> @@ -2483,7 +2492,8 @@ static int fbcon_set_font(struct vc_data *vc, cons=
+t struct console_font *font,
+>   	int h =3D font->height;
+>   	int size, alloc_size;
+>   	int i, csum;
+> -	u8 *new_data, *data =3D font->data;
+> +	font_data_t *new_data;
+> +	u8 *data =3D font->data;
+>   	int pitch =3D PITCH(font->width);
+>  =20
+>   	/* Is there a reason why fbconsole couldn't handle any charcount >256=
+?
+> @@ -2522,13 +2532,13 @@ static int fbcon_set_font(struct vc_data *vc, co=
+nst struct console_font *font,
+>   	if (!new_data)
+>   		return -ENOMEM;
+>  =20
+> -	memset(new_data, 0, FONT_EXTRA_WORDS * sizeof(int));
+> +	memset((u8 *)new_data, 0, FONT_EXTRA_WORDS * sizeof(int));
+>  =20
+>   	new_data +=3D FONT_EXTRA_WORDS * sizeof(int);
+>   	FNTSIZE(new_data) =3D size;
+>   	REFCOUNT(new_data) =3D 0;	/* usage counter */
+>   	for (i=3D0; i< charcount; i++) {
+> -		memcpy(new_data + i*h*pitch, data +  i*vpitch*pitch, h*pitch);
+> +		memcpy((u8 *)new_data + i * h * pitch, data + i * vpitch * pitch, h *=
+ pitch);
+>   	}
+>  =20
+>   	/* Since linux has a nice crc32 function use it for counting font
+> diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core=
+/fbcon.h
+> index 3f4386a40237..d26ee7860cf5 100644
+> --- a/drivers/video/fbdev/core/fbcon.h
+> +++ b/drivers/video/fbdev/core/fbcon.h
+> @@ -11,6 +11,7 @@
+>   #ifndef _VIDEO_FBCON_H
+>   #define _VIDEO_FBCON_H
+>  =20
+> +#include <linux/font.h>
+>   #include <linux/types.h>
+>   #include <linux/vt_buffer.h>
+>   #include <linux/vt_kern.h>
+> @@ -25,7 +26,7 @@
+>  =20
+>   struct fbcon_display {
+>       /* Filled in by the low-level console driver */
+> -    const u_char *fontdata;
+> +    font_data_t *fontdata;
+>       int userfont;                   /* !=3D 0 if fontdata kmalloc()ed =
+*/
+>   #ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+>       u_short scrollmode;             /* Scroll Method, use fb_scrollmod=
+e() */
+> diff --git a/include/linux/font.h b/include/linux/font.h
+> index d929c5fa32ca..f19abd112c18 100644
+> --- a/include/linux/font.h
+> +++ b/include/linux/font.h
+> @@ -13,12 +13,57 @@
+>  =20
+>   #include <linux/types.h>
+>  =20
+> +/*
+> + * font_data_t and helpers
 > + */
-> +struct vc_font {
-> +	unsigned int width;
-> +	unsigned int height;
-> +	unsigned int charcount;
+> +
+> +/**
+> + * font_data_t - Raw font data
+> + *
+> + * Values of type font_data_t store a pointer to raw font data. The for=
+mat
+> + * is monochrome. Each bit sets a pixel of a stored glyph. Font data do=
+es
+> + * not store geometry information for the individual glyphs. Users of t=
+he
+> + * font have to store glyph size, pitch and characer count separately.
+> + *
+> + * Font data in font_data_t is not equivalent to raw u8. Each pointer s=
+tores
+> + * an additional hidden header before the fotn data. The layout is
 
-I wonder if we shouldn't declare width and height as "u8" or "short int" t=
-ype?
-And charcount as u16 or "short int" ?
-Makes later calculations shorter & easier.
+typo: fotn -> font
+
+
+>   struct font_desc {
+>       int idx;
+>       const char *name;
+>       unsigned int width, height;
+>       unsigned int charcount;
+
+FYI - maybe type of width, height, charcount would need update here if it'=
+s
+changed as I proposed in the other patch?
 
 Helge

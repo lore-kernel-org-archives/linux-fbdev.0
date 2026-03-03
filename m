@@ -1,81 +1,41 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A28D235F5E5
-	for <linux-fbdev@vger.kernel.org>; Tue,  3 Mar 2026 12:51:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F73B35F5ED;
+	Tue,  3 Mar 2026 14:07:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772542302; cv=none; b=iGgyzv5rugO1cbXMse5m2Faukr8a9tOVuRKS3cHIG3yznsYLbmj5UmurpCcPDLCQmzG2o2Gpf8u/LBMmxMO2GqsSLnZvPAlWE+KUf9duJmsmj2CLYwhBG89CJDCUytzyTs06sXGUmqsApmEBnmQVxWlvLd1Gvq85o4/q/ASkhTM=
+	t=1772546841; cv=none; b=CV2+DxxY7TiIdAmuM4eTEvOEhrkAwHzPuGt+EqdlBT8/fFi+/Gi9N4FsY5gCA9GnNfSZMJa9jzxkqt7tS+6qsKkitDTg+YDD3nEhHUTs9TZnXdRj7451j6B/70H+b1H1nTg1XIUDNAKRIZatNae82EQuwfHSUF75XvenwduvYWo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772542302; c=relaxed/simple;
-	bh=RY20XxbCMPmXuKNszchSL13l+3Vrl7uBIPx54F4dbiA=;
+	s=arc-20240116; t=1772546841; c=relaxed/simple;
+	bh=oGklMYkndDS2s5kfPs2+SWhIE/hCC7BEDMZZVAxZzgA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=A1q5JzTlqJZzQfUWLHph5LPV/R1k+UWa2a0hDyxBaEc2ybWsf2vnCZrMR17HwX9hRKMdJchWgou0MXI0iDOcHXogh7Qt+Y9LHc3DjFdHFgI72AAk0B2U9ZGDipbkqy8DpgCvdDDIc0iAXp8EPMLyrKffLcoJ2A3P5ba3HYnozdY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=LovmQBHT; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=2ZDCwbpk; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lPsJuzQR; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=aAox4pgD; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=gC7UdqM4V3C5j2YIiScrUSBK1ZInt0/W/JzcpyK6Trv95poYTsv/TDmkc/PpV2050L5gR3clZOV58t9E6YHxuGP+JySNoFjCFKbnJuZauUYv7tsZmJVpaoXwKTn0JhptAAvXdIhXXkcapFndSBpRJ50LvrBdAS3Ft+UdTcA/8d4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=YpOba/ki; arc=none smtp.client-ip=212.227.17.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="LovmQBHT";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="2ZDCwbpk";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lPsJuzQR";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="aAox4pgD"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A95FE3E73E;
-	Tue,  3 Mar 2026 12:51:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1772542297; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=iuEIkGzsfNKjeDkA2uWvlu3PhgLdIY1JStDr/M5ZIc8=;
-	b=LovmQBHTa/w6ty5PRsslygi2GMnmaDjFJ9ULGFzDzKlhurNreprOh5lDrhUMYFI3OREBbD
-	e6N+goRJS7BiqBXzEJ+W5Gv0d5fywIwTwJ5KEL6kdYbbdjivJiqKjo7icoHD4fdGhJnFfQ
-	+R0PEqUgMyZ2x7EcVx4sUY1NjogUIsg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1772542297;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=iuEIkGzsfNKjeDkA2uWvlu3PhgLdIY1JStDr/M5ZIc8=;
-	b=2ZDCwbpkYntWZ0KpvGVpwODBPsBrfhhwVnNG7/9r5dRuhSykV5AkxtCUnS0MVW/oDeMpBT
-	D1W4AQi7YFxbmzDA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=lPsJuzQR;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=aAox4pgD
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1772542296; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=iuEIkGzsfNKjeDkA2uWvlu3PhgLdIY1JStDr/M5ZIc8=;
-	b=lPsJuzQRzQCl++Z5Ut0Rg8gevJp9L/RHD4mU18e4Sha6TtIA1j7nkZd9yqiphvYYwqalLm
-	WvDPOLr7PP2IV4N9nzf9JjyBxfy03K60wHb0akx1Y6QyqCbQag4XxmwnNbl/UyLhysXMjV
-	K6/8TdpRKfhy+5/+2xSLwlJaQLF1nLw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1772542296;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=iuEIkGzsfNKjeDkA2uWvlu3PhgLdIY1JStDr/M5ZIc8=;
-	b=aAox4pgDH82h9pT/s8mkbAG66GSFOblwezLV3s5T3YdCRtY6/oZRfzHwA/FGvXNXsDXRHn
-	+up0fLOHEPoDS1Cg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 837CD3EA69;
-	Tue,  3 Mar 2026 12:51:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Pds6HljZpmmUKAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 03 Mar 2026 12:51:36 +0000
-Message-ID: <2fb9b0fe-e63a-4b06-968d-3cb30383ba37@suse.de>
-Date: Tue, 3 Mar 2026 13:51:36 +0100
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="YpOba/ki"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1772546835; x=1773151635; i=deller@gmx.de;
+	bh=oGklMYkndDS2s5kfPs2+SWhIE/hCC7BEDMZZVAxZzgA=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=YpOba/kizF8PrdOCz7vCX6kAXqw+aatAPWLiIsezRwRcuGEY1WyoSSHraMGawPfh
+	 gsoj5zLuXR0yQTUdBWBZSvSTORXRHACHtPN4Jn6Vf7THXAY1/bMKwwLF9KBaaOWC4
+	 1klbySHMGnFQhNYaJuAKuNkDR9cbo916pBOaF1L7Qod7IbGk5YTjibaQtG1MfYlyI
+	 GUcZNoIvYW4Bdy1y4eVb7aKq+VFqgjP5NJqjvgGTo3ySFVYQ66j9vEnvPBE8dau+l
+	 aWYHwcT5LxVhatPOGEg/vv1d1lPEXOI0P23stPletimPnJzcDmjNxD6ObuMvePlem
+	 /FKgyODZGZYjiI1lpw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MwwZX-1vlwzY377b-00zrAW; Tue, 03
+ Mar 2026 15:07:15 +0100
+Message-ID: <ef603e8e-a5f6-4f8a-b538-6535f1b934a2@gmx.de>
+Date: Tue, 3 Mar 2026 15:07:14 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -84,148 +44,154 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] fbdev: goldfishfb: use devm_platform_ioremap_resource()
-To: Amin GATTOUT <amin.gattout@gmail.com>, Helge Deller <deller@gmx.de>
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ Amin GATTOUT <amin.gattout@gmail.com>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  linux-kernel@vger.kernel.org
 References: <20260303-master-v1-1-85eb5ff584b0@gmail.com>
+ <2fb9b0fe-e63a-4b06-968d-3cb30383ba37@suse.de>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260303-master-v1-1-85eb5ff584b0@gmail.com>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
+ HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
+ r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
+ CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
+ 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
+ dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
+ Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
+ GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
+ aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
+ 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
+ ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
+ FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
+ uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
+ uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
+ REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
+ qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
+ iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
+ gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
+ Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
+ qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
+ 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
+ dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
+ rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
+ UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
+ eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
+ ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
+ dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
+ lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
+ 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
+ xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
+ wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
+ fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
+ Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
+ l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
+ RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
+ BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
+ Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
+ XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
+ MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
+ FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
+ 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
+ ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
+In-Reply-To: <2fb9b0fe-e63a-4b06-968d-3cb30383ba37@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_DN_SOME(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[gmail.com,gmx.de];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_FIVE(0.00)[5];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
-	TAGGED_RCPT(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:mid,suse.de:email,suse.com:url]
-X-Rspamd-Queue-Id: A95FE3E73E
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:m4K3RIOmJSqrrLItYyKQAO3HtI8g9W938K4sCOugZRGotSneqJz
+ 7thJLLfX0PtoBbUeoJnTWOoMlN4itfQzw/NUL6GNwSuS9lrImXJdb6WsEn9pIk/4dWGe6V4
+ tyo1KNoeAAjj5Vn+pULPnJTBWVnvKYORhAHzfPTMib79J3naW8rpbROrb0c2HYz80KNXvP9
+ 4Gfj4ofx1g8O8axfa11+w==
 X-Spam-Flag: NO
-X-Spam-Score: -3.01
-X-Spam-Level: 
+UI-OutboundReport: notjunk:1;M01:P0:3z1tXV4jT3g=;NlejXf2dI0TU/dI3VJpLuJX7Yh1
+ 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
+ UkmB5HwrnWrQBao/bbbHNq85pk7blsIjo7GGK9
 
+On 3/3/26 13:51, Thomas Zimmermann wrote:
+> Am 03.03.26 um 13:22 schrieb Amin GATTOUT:
+>> Replace the open-coded platform_get_resource() + ioremap() pair with
+>> devm_platform_ioremap_resource(), which requests the memory region and
+>> maps it in a single call, with automatic cleanup on device removal.
+>>
+>> Signed-off-by: Amin GATTOUT <amin.gattout@gmail.com>
+>=20
+> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+>=20
+>> ---
+>> =C2=A0 drivers/video/fbdev/goldfishfb.c | 14 +++-----------
+>> =C2=A0 1 file changed, 3 insertions(+), 11 deletions(-)
 
-
-Am 03.03.26 um 13:22 schrieb Amin GATTOUT:
-> Replace the open-coded platform_get_resource() + ioremap() pair with
-> devm_platform_ioremap_resource(), which requests the memory region and
-> maps it in a single call, with automatic cleanup on device removal.
->
-> Signed-off-by: Amin GATTOUT <amin.gattout@gmail.com>
-
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-
-> ---
->   drivers/video/fbdev/goldfishfb.c | 14 +++-----------
->   1 file changed, 3 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-> index ffe33a36b944..c9871281bc1d 100644
-> --- a/drivers/video/fbdev/goldfishfb.c
-> +++ b/drivers/video/fbdev/goldfishfb.c
-> @@ -174,7 +174,6 @@ static const struct fb_ops goldfish_fb_ops = {
->   static int goldfish_fb_probe(struct platform_device *pdev)
->   {
->   	int ret;
-> -	struct resource *r;
->   	struct goldfish_fb *fb;
->   	size_t framesize;
->   	u32 width, height;
-> @@ -189,14 +188,9 @@ static int goldfish_fb_probe(struct platform_device *pdev)
->   	init_waitqueue_head(&fb->wait);
->   	platform_set_drvdata(pdev, fb);
->   
-> -	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (r == NULL) {
-> -		ret = -ENODEV;
-> -		goto err_no_io_base;
-> -	}
-> -	fb->reg_base = ioremap(r->start, PAGE_SIZE);
-> -	if (fb->reg_base == NULL) {
-> -		ret = -ENOMEM;
-> +	fb->reg_base = devm_platform_ioremap_resource(pdev, 0);
-> +	if (IS_ERR(fb->reg_base)) {
-> +		ret = PTR_ERR(fb->reg_base);
->   		goto err_no_io_base;
->   	}
->   
-> @@ -273,7 +267,6 @@ static int goldfish_fb_probe(struct platform_device *pdev)
->   				fb->fb.fix.smem_start);
->   err_alloc_screen_base_failed:
->   err_no_irq:
-> -	iounmap(fb->reg_base);
->   err_no_io_base:
->   	kfree(fb);
->   err_fb_alloc_failed:
-> @@ -291,7 +284,6 @@ static void goldfish_fb_remove(struct platform_device *pdev)
->   
->   	dma_free_coherent(&pdev->dev, framesize, (void *)fb->fb.screen_base,
->   						fb->fb.fix.smem_start);
-> -	iounmap(fb->reg_base);
->   	kfree(fb);
->   }
->   
->
-> ---
-> base-commit: 11439c4635edd669ae435eec308f4ab8a0804808
-> change-id: 20260303-master-341e700a2699
->
-> Best regards,
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
+applied to fbdev git tree.
+Thanks!
+Helge
 

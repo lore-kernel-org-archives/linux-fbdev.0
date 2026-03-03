@@ -1,41 +1,40 @@
 Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE29237B018;
-	Tue,  3 Mar 2026 15:29:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D1134EA377;
+	Tue,  3 Mar 2026 19:48:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772551756; cv=none; b=XKl+K2kIhM8ufXqKmkE2Tb+z/cyqap4iBz5obbmxso/RTI7w7Mst8MrfsEVvzeLTN2bpKv06ElTdXqiUtkE8PykMVKW+kprWthALym5EUi9RVyPhyHW5/j1Dfop2dE5QAOFHCITNkrJ8BxT8ptTz0dJ0sxK4GxcSygHCShSbcqM=
+	t=1772567340; cv=none; b=nQauVeOeyVfNP4kAnN5xu5LzaBzmN7xXw5pUeefMuYibZMX24HysZHuy6vKW8TVMOYtKHAE3nTMFwoBBrhy/1wbC5Qjwn34wkaWkQCCXJ6EyYpTxOMtlFOenRk+X50W9b8kok+BhCfr8kB4wuB0DJoc5qBwYzAaGFKqdlDHnP00=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772551756; c=relaxed/simple;
-	bh=q8I+WJ8Dof2sNOzYowUoYBkhpDxz8MUtGNkc7uUGrnk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZWPAAj7kyjNnism/7i47k7b8KaWj38hafGLWeCynIbB7Ba+h9vLwBFd6hFeiULyIUg936kjfpBOIkwsJrGYoX+2fUSrzcKJgr61PAm5N3uZuKBgpp7UHogZx4FQAXXKJs16k9aMsO94dcciqWkd6YqKE1/DTAk9iEg2/ka4WNF8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=VfDjS2BS; arc=none smtp.client-ip=212.227.17.21
+	s=arc-20240116; t=1772567340; c=relaxed/simple;
+	bh=wi9LWREveuwKFs2vcAzCGhS/3R10Dw/jcCnrEl/bAHs=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=VtAxzESk3K+nvYbDohBfUBPDiYWyOlM5pDCpBor2RVDCDb5X4Xt3D2wVdSW48rq6+aMCdL1L5KDGCL65++juBMw+DuHXFnZN8Xcnp8xBdGdBVev3hJuDsHI7c6bEr3xp3DGU/E/u/mfOt9tux9J342YAh8iS22P6DLC0vmI5v3Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=nc4lfpHR; arc=none smtp.client-ip=212.227.17.21
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="VfDjS2BS"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="nc4lfpHR"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1772551751; x=1773156551; i=deller@gmx.de;
-	bh=L0YQ9uGgij/0e7daa60qwS8TKmMh8cYFiTozh7UarjI=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=VfDjS2BS44MXbYCCV4LTFpNj1SwnKmnd7mYC0G5rf1DcPnZ7hdgxtS+Bt8F6LDAG
-	 IMJgDRrvI9LvJJZIOjAAzmRbOU6apwPDDGXS00rFmxegpS/QwYHG7oHq3anP7Woe+
-	 Lb5XgxYDNp00nHFqhXfbhQgMz3qojIgLuDBQ30WtGMM7XXO/XTYByQ9NyWzgWsEnT
-	 4O7oaLbHXhEdGjcyMk4GjAkHRmC7Fy8bMQZ6h1zgPrBwvYW5UBAlDKJf46ElPCPdi
-	 IAgZoNU5Mn9p4e8teJvtu05PKRzDJcdTA1ydHmWVuq5U+Ag8YZbq4ePmH7MpqgW6e
-	 GjH4hQ28JMQ7E4mREg==
+	s=s31663417; t=1772567333; x=1773172133; i=deller@gmx.de;
+	bh=UZsq+a1lyRe1B/+Wa5+G2cTiNkWubqgCj6VvGU94ors=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:From:To:
+	 Cc:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=nc4lfpHRXeO9BXZKAlTe+hgw6lnunh1yWJ6Gnj7p0kwdsfxCF6iqHfw85C7VgrBN
+	 2D0hCMHy3QsbQ/PpKAL6h6zggcabWMzJyAfOnAbDPc9IlIFFKUkLU3oH024+HKenP
+	 I7PDQBP6RjngKtfsLj7/Lh+sV0THhSiAYqYyIeaiyxZ95HH7BayPshhgFCBw1FVs+
+	 DWJW721+IIuua2sediTmv8PxNOHrOSRF66iFuv+ACUIP0ATbZ8hO6Ed98ZHHVSALH
+	 GBHh6+lgS1h/F5c9+VzzR/KaVF4ZOy4zCP329Ayglqck915tq4wKvbUTiZ8+9S4od
+	 6orHrTuA05zvXLqcVg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N6bjy-1vbiyv1INi-00sPNU; Tue, 03
- Mar 2026 16:29:11 +0100
-Message-ID: <11c9e67c-36f9-4d27-8064-41b804cc0c02@gmx.de>
-Date: Tue, 3 Mar 2026 16:29:10 +0100
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MQMyf-1wJHka0tIP-00RqWa; Tue, 03
+ Mar 2026 20:48:53 +0100
+Message-ID: <9bdf0256-201e-454c-a491-96ec86959d3d@gmx.de>
+Date: Tue, 3 Mar 2026 20:48:50 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,14 +42,14 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 00/13] vc,fbcon,fonts: Proper handling of font data
-To: Thomas Zimmermann <tzimmermann@suse.de>, gregkh@linuxfoundation.org,
- sam@ravnborg.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20260302141255.518657-1-tzimmermann@suse.de>
-Content-Language: en-US
+Subject: Re: [RFC PATCH] fbcon: Fix out-of-bounds memory in fbcon_putcs
 From: Helge Deller <deller@gmx.de>
+To: Chen Jun <chenjun102@huawei.com>, simona@ffwll.ch, tzimmermann@suse.de,
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linruifeng4@huawei.com
+References: <20260227144358.101173-1-chenjun102@huawei.com>
+ <e85bd96c-031f-477e-b0ce-aa10161fbb97@gmx.de>
+Content-Language: en-US
 Autocrypt: addr=deller@gmx.de; keydata=
  xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
  HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
@@ -94,182 +93,149 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20260302141255.518657-1-tzimmermann@suse.de>
+In-Reply-To: <e85bd96c-031f-477e-b0ce-aa10161fbb97@gmx.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:k102UeRHoZCq/W2qvwiwD3VKZOBg5f/l82sNhgbv3PDMOvFgxfS
- SwnUEB8UjKkQ+jTjnVlIbtGkpjt9Yf+fAqz+LidnipvTveX9h5oHScYgn64lPh0caNcebwz
- wVUI6InUug2kEUUcqZ32Ptz9nP48L0mN1Uiv/3WkT8sY7xcSgyUQvpu77lWTiWYu7Jiy6X+
- YPe2D3+cp2wZZbEov4b0w==
+X-Provags-ID: V03:K1:s2Le2lPEFoEAWztV1YBwsjFPN1ApL/Wj76cmh6YOEbdDBOWSmmO
+ zqkNxn8lkk4eztWqTknv0t1UHuEHVpU/jCB/beL3qedda4XnnL9BIdqpDh1N5ERzNDV08Ed
+ B9/XMkg4CB5t14uol/MNd8lZElQIs00jUYWK+x+XrkEmJU8E+YYq7CXhABuy1hh+RUlMkbf
+ bXEGUlGIWdGiE6SwwNAmg==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:0jReMGUMJ/k=;00X0f5S0dzIsYuNfVQxdbmXJHAT
- 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
- l/UMwPpMqAb9p6V7EATatMm4PGJ3xWcGwqZ7wG
+UI-OutboundReport: notjunk:1;M01:P0:C+2Ciy+81Ds=;UQ5CMmPrki4bQF2EnBiMgE2KeWM
+ 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
+ XYXHCf1o=
 
-On 3/2/26 15:08, Thomas Zimmermann wrote:
-> Provide helpers for handling console font data. Update consoles and VT.
+On 3/3/26 15:15, Helge Deller wrote:
+> On 2/27/26 15:43, Chen Jun wrote:
+>> When a font is set on an invisible console, the screen will not update.
+>> However, the fontbuffer is not updated to match the new font dimensions=
+.
+>>
+>> This inconsistency leads to out-of-bounds memory access when writing to
+>> the tty bound to fbcon, as demonstrated by the following KASAN report:
+>>
+>> BUG: KASAN: slab-out-of-bounds in fb_pad_aligned_buffer+0xdf/0x140
+>> Read of size 1 at addr ffff8881195a2280 by task a.out/971
+>> Call Trace:
+>> =C2=A0 <TASK>
+>> =C2=A0 fb_pad_aligned_buffer+0xdf/0x140
+>> =C2=A0 ud_putcs+0x88a/0xde0
+>> =C2=A0 fbcon_putcs+0x319/0x430
+>> =C2=A0 do_update_region+0x23c/0x3b0
+>> =C2=A0 do_con_write+0x225c/0x67f0
+>> =C2=A0 con_write+0xe/0x30
+>> =C2=A0 n_tty_write+0x4b5/0xff0
+>> =C2=A0 file_tty_write.isra.41+0x46c/0x880
+>> =C2=A0 vfs_write+0x868/0xd60
+>> =C2=A0 ksys_write+0xf2/0x1d0
+>> =C2=A0 do_syscall_64+0xfa/0x570
+>>
+>> Fix this by calling fbcon_rotate_font() if vc is invisible in
+>> fbcon_do_set_font().
+>>
+>> Signed-off-by: Chen Jun <chenjun102@huawei.com>
+>> ---
+>> =C2=A0 drivers/video/fbdev/core/fbcon.c | 5 +++++
+>> =C2=A0 1 file changed, 5 insertions(+)
 >=20
-> VT's vc_state stores font data as a plain byte array of glphys. Fbcon,
-> newport_con and the kernel's internal fonts store the glyph data as an
-> array of plain bytes plus a hidden header for reference counting, check
-> sums and buffer sizes. The reference counting only works for user-space
-> fonts but not for internal fonts. Font-data handling is duplicated in
-> several places. Most of the font handling is open-coded and mixed up wit=
-h
-> VT's plain glyph arrays.
->=20
-> To address these issues, add proper handling of font data to all involve=
-d
-> components: struct vc_font for font state in VC; a font data type for th=
-e
-> consoles. Then implement interfaces for handling font data one by one.
->=20
-> Patch 1 prepares the fbdev interface.
->=20
-> Patches 2 to 4 prepare VT's font handling.
->=20
-> Patches 5 to 13 refactor fbcon and newport_con to use clean interfaces f=
-or
-> their fonts.
->=20
-> Fbcon has long been a source of problems and bug reports. [1] With its
-> confusing implementation, it is hard to find the cause of these bugs.
-> Cleaning up the fbcon code will hopefully help with resolving bug report=
-s
-> in the future.
->=20
-> The series has been tested with fbcon under DRM's bochs driver by changi=
-ng
-> fonts at runtime using the setfont utility. [2] The changes to newport_c=
-on
-> have only been tested to compile.
->=20
-> v2:
-> - keep declaring the internal fonts in the public header file (Helge)
-> - rebase and clean up
->=20
-> [1] https://lore.kernel.org/all/6992c84c.a70a0220.2c38d7.00e8.GAE@google=
-.com/
-> [2] https://www.man7.org/linux/man-pages/man8/setfont.8.html
->=20
-> Thomas Zimmermann (13):
->    fbdev: Declare src parameter of fb_pad_ helpers as constant
->    vt: Remove trailing whitespaces
->    vt: Store font in struct vc_font
->    vt: Calculate font-buffer size with vc_font_size()
->    lib/fonts: Remove trailing whitespaces
->    lib/fonts: Remove FNTCHARCNT()
->    lib/fonts: Store font data as font_data_t; update consoles
->    lib/fonts: Read font size with font_data_size()
->    lib/fonts: Compare font data for equality with font_data_is_equal()
->    lib/fonts: Manage font-data lifetime with font_data_get/_put()
->    lib/fonts: Create font_data_t from struct console_font with
->      font_data_import()
->    lib/fonts: Store font data for user space with font_data_export()
->    lib/fonts: Remove internal symbols and macros from public header file
->=20
->   drivers/video/console/newport_con.c |  61 +++----
->   drivers/video/fbdev/core/bitblit.c  |  11 +-
->   drivers/video/fbdev/core/fbcon.c    | 194 +++++++----------------
->   drivers/video/fbdev/core/fbcon.h    |   8 +-
->   drivers/video/fbdev/core/fbmem.c    |   6 +-
->   include/linux/console_struct.h      |  59 ++++++-
->   include/linux/fb.h                  |  10 +-
->   include/linux/font.h                | 115 +++++++++-----
->   lib/fonts/font.h                    |  38 +++++
->   lib/fonts/font_10x18.c              |   2 +-
->   lib/fonts/font_6x10.c               |   3 +-
->   lib/fonts/font_6x11.c               |   2 +-
->   lib/fonts/font_6x8.c                |   3 +-
->   lib/fonts/font_7x14.c               |   2 +-
->   lib/fonts/font_8x16.c               |   3 +-
->   lib/fonts/font_8x8.c                |   2 +-
->   lib/fonts/font_acorn_8x8.c          |   4 +-
->   lib/fonts/font_mini_4x6.c           |  10 +-
->   lib/fonts/font_pearl_8x8.c          |   2 +-
->   lib/fonts/font_sun12x22.c           |   3 +-
->   lib/fonts/font_sun8x16.c            |   3 +-
->   lib/fonts/font_ter10x18.c           |   4 +-
->   lib/fonts/font_ter16x32.c           |   4 +-
->   lib/fonts/fonts.c                   | 236 +++++++++++++++++++++++++++-
->   24 files changed, 518 insertions(+), 267 deletions(-)
->   create mode 100644 lib/fonts/font.h
-Thomas, thanks for the nice cleanup!
-Beside a few minor comments which I posted to the various patches, the ser=
-ies looks good.
+> applied to fbdev git tree.
 
-I've applied it for further testing to the fbdev git tree.
-In case you send later v3 series, I'll update it.
+I got a compile error:
 
-Thanks a lot!
+hppa-linux-gnu-ld: drivers/video/fbdev/core/fbcon.o: in function `fbcon_do=
+_set_font':
+/home/cvs/parisc/git-kernel/linus-linux-2.6/drivers/video/fbdev/core/fbcon=
+.c:2392:(.text+0x1e28): undefined reference to `fbcon_rotate_font'
+make[3]: *** [/home/cvs/parisc/git-kernel/linus-linux-2.6/scripts/Makefile=
+.vmlinux:72: vmlinux.unstripped] Error 1
+
+I modified your patch like this:
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
+bcon.c
+index a58ce1fe320c..1fb28f353168 100644
+=2D-- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2388,7 +2388,7 @@ static int fbcon_do_set_font(struct vc_data *vc, int=
+ w, int h, int charcount,
+                 rows =3D FBCON_SWAP(par->rotate, info->var.yres, info->va=
+r.xres);
+                 cols /=3D w;
+                 rows /=3D h;
+-               if (!con_is_visible(vc)) {
++               if (IS_ENABLED(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION) && !co=
+n_is_visible(vc)) {
+                         ret =3D fbcon_rotate_font(info, vc);
+
 Helge

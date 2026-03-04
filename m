@@ -1,151 +1,118 @@
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+Received: from mail-pl1-f196.google.com (mail-pl1-f196.google.com [209.85.214.196])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80BFE3491D0
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 17:11:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 687913BFE36
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 17:35:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.196
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772644289; cv=none; b=mVQD1RUXDHruYVUZnogqjAiYNWQtZ/ktK7r5qWFXK76JZ1x7PVOHpS8xGweq1nr/0s+YyLRfwsVNCHrASZys0jfiXiS5RgbXImUgE6dLYkbSsBZdVNuF/A2V3wg4UGHgnmvbbyAqGvn9bRgwbjikzOCg5FCuvWov/J28uhOoOYY=
+	t=1772645738; cv=none; b=K50LdZXeBb1EM0Abcc93TSXfBiPJE0m+NcUUBJLN5htYv9ojy3YZ2ASd1ZyYWCarNj9Iy6Y5fM5iFIZMwbHnEP8CMB80LED+MqpWqN4JNXeCa6Osq34Zq4Ntp4QnMEKNSQTxmUFvYHwsueBRRuPrm22edK9MowpipDVF7fj+jEw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772644289; c=relaxed/simple;
-	bh=fvm+1TuVEfBZgWEioDiGHAQkV9PHuQ2+SLQAWe7HMDg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=fbCg1poye9ZasrxNtsPO8ZGbN9DkOClm+wGB3S03eeWWLSLsuYmio/Uu2CswLdW9GLVwdiOXFw+LTZAoAvCBvf1sRS7CRQo1jXBOSomtd+62za6o9Dgmup+yAUys6TDbvd34NiZ1qrTgM+Jw7lNkyeqorW79JxJL4s0Zf9TZM+w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NPbFYV0x; arc=none smtp.client-ip=209.85.221.54
+	s=arc-20240116; t=1772645738; c=relaxed/simple;
+	bh=/mgLq6MyipgAXakM35FmxxzZYKnWCLgWV+pnzFPnrtE=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=GcB9z6mo9dzK4q3sjtqqGpTFxKsskbiTIghSx0PsO6qBDa8jALvwJt5DE47QEXpXb8+l5QpSASZIVklxkrLG/TvseB4DIRIYhHgQq6ieBDo3XXjkTeCYXe5Fcjvx1q5RcSxHB0mbcUDOp+Jsx+uPvskNoxPvVTcsdijQjRtRA78=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=B8/ty/D7; arc=none smtp.client-ip=209.85.214.196
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NPbFYV0x"
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-439c9bdc1eeso861523f8f.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 09:11:28 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="B8/ty/D7"
+Received: by mail-pl1-f196.google.com with SMTP id d9443c01a7336-2aae4d2d215so16624075ad.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 09:35:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772644287; x=1773249087; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=6+ERZG98Y+SteZfiVlR3jzzX4R2QxjyojMlsxgWSx7U=;
-        b=NPbFYV0xuXaLVnZaAjju/tlZYlnL8EfwzG8VBapgOfRfwCu9kXp6YMedsSq5YG2iby
-         cH7GD4DIA/Y8HuWRMHxodAdUK2ilRL8q72arChT8+Lfc0WqZoa0D7wmyVHMwNXyDNn2p
-         wWTZxLL3WJ1MLYUfoecVtlAAHHFPjoLGrBWIpk6+f6wtDDW0S/V/AsqH8LGVomrxqaon
-         ekd+XCLuyO/ep6P1ay4YlIfS/9YWOjnbYttAwNtXzDdbxMtCdE60LTKPaZMbRUbdWwMj
-         OCwzqi/2q9U8sunfA7yrDMO2uWnQASpZ//ggWcVBmmJcvrvbaa76vzYEhBrIrKTpIrwk
-         Yhqw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772644287; x=1773249087;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1772645737; x=1773250537; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=6+ERZG98Y+SteZfiVlR3jzzX4R2QxjyojMlsxgWSx7U=;
-        b=TA83G6Yzy/oGvUs9Cerv0wK9qqpnXzCP0Cc1hBlmJpDx59U+vwHZ1JqcYcWU+881/C
-         Oc0saNwTwn+EiduY8Xu8v3c87ZIvovQCqP8CPOMp31HaF2vfsW57pvPZaJqkx8mpuKlI
-         Ypm6RX6fxzOAsjVgWfUO1dLQ+XtW8yljmp5TcAZOxEJQFTVF9CqxXpmoVUVs8whhpYqn
-         Gh4rbKBkoe/fLvAGTU5AVPO475PCVWajgjYmiJGt3HygxHnnjiai+nmyffKUSsR6Ac2c
-         pQS/5Swb2lu4EkBH6W5HyhOUSfWSZBqhAWzYNe9njPWdOiT1uR7peHNXgKKpArkV9A5W
-         dVLQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXIOG02I0yLzFmdyvR/BTv4yXL62Gcp8JwM/MSod78D7w8Vo9PbG02mFWIxPtSHVRhqQ+0MIww/SYzlng==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxtzS5NsNcwyxrAEe2bjGz/ZXFQX1IK6dz+XXAZNpsINIZAnuE6
-	PB+PTnCbOQnXjwip22ggLHLAFBcOnB5IR2hHZtid6jMStUnK8wSKs2zp
-X-Gm-Gg: ATEYQzxhZh+gIVNggJwg5nt59iT7fakobjzmSfFVct1v4gjTliN0WSCcg1QVvlwl+je
-	SLrioMgiLd4dwWpGh6fUQxTZxgWaUmwHi0Qrufz9al83CVQEBPKkVvh18G6HxMrpPDsOrHO5+v2
-	2Fxx0pwL73juG0UIiH8SpJY42BEkWQb2mI9Bh+Of01Oar4uyVWBOMr83mjnZgYYlzSlM9/bTiHG
-	cQq+zUFBkGEwjnrv2c0VqAVK8LMYCZ/9AhJC2wh8DSPxl71/4iS7ftd5ecD1ZhY529gjKG7QxdE
-	/9rVy1U0spC6iQVOQOKVJwx+nh+CEL1MV4od3MiFpwSeB8AII48oyQ3GRM3wJ/cGuD0R//eBDwo
-	QeCedSuRuyhAOev1oXurNZQ4dyyiNHP3sZ4oH/UIDJR0CFDj45qY23SxmNfgyd/KdWc1v93UdXc
-	RtSrkoXrqwkUj1YlPFVp1UeDiU8cUa1w==
-X-Received: by 2002:a05:6000:2dc3:b0:439:bf38:16f7 with SMTP id ffacd0b85a97d-439c7f7e3aamr5793716f8f.14.1772644286733;
-        Wed, 04 Mar 2026 09:11:26 -0800 (PST)
-Received: from [127.0.1.1] ([2001:861:3007:da20:bc65:66ea:698d:4a44])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439b130abfasm27138542f8f.34.2026.03.04.09.11.25
+        bh=GtmuCRd6e+N3D2PnsalDY4juU7geywSEbJtG8JH60jw=;
+        b=B8/ty/D7cSHorQLerRrjs4I8CVa2x6QbCyzrVhjusibL9ndnf870WTGpOaU6t8m8NC
+         PlByazysssAh/xytEIPJ9+5LqopExZ7f5WBPCq9aRkVP35N1egs29G1UIS6jPOTyjnA2
+         I311HNmasXzWmykuNXb4U/mpmrAFp8hROsRosERqpBVtmp+mzO0khpQsJfSoKAf2lHM6
+         guaw0Ls9GJh0lDXf7JFTaCoRZ4aZ1NnYeB1fdVre3uUkSf62BO5JH/VPnkAnVxFM6YJh
+         7dlHusMLYLkILLGR+aUDokWWpiZ0bvLFeBhU4iZ8doX2SpMupLPePbK9gn4J3MgG/sw/
+         mdbA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772645737; x=1773250537;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=GtmuCRd6e+N3D2PnsalDY4juU7geywSEbJtG8JH60jw=;
+        b=SHfd/6fZgSlimvMrgpKkZrQYwOUOaWHCCvbJPromsphLktmT5x2OHpy/eeAmCFKahC
+         0/WbcbsRHRqIKgNFjVRrqSqSrnPHqfU76HPFJOtbhDTem7UJrbo4erR2KL4zAsZIHlG+
+         8dwoBt2ZKG8zc2mzzRqw6y/1ggzwl61G7otNxwEsGqO8QcKEuVxr4T35r/ik2hqfEj/i
+         ypiQX9Al+dOYPFExPXeF75Fx18RsHHmsrOJqOTYevvFL8V9YiuT4NwN/BimrQRm27D94
+         wmcgh9GNk/Xi11PPIBuyJ7NaycLZGmvM5ZaW2LwtLhz07YRx1sKI//GX6F65387GToZT
+         UWfw==
+X-Forwarded-Encrypted: i=1; AJvYcCUdbneYxH4u7K608ZX/WqpnQ5n3bV5ktSU9KGicvmy6nE/vloYoHIak+ppdxhE8+RxfxEY02r59eQHHLA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwcDXzWMPZCJrOOA6fY/A3CGigk31yKz0gxQ7HPcgR+vl3YO5QV
+	0d/qhmB7jHWbE3qjl4GwPDtZsHCuceNrQRm4TqPeFntftrRWpa/MnNdF
+X-Gm-Gg: ATEYQzwyir4n6RgPLCBEikgKgXnGziYBk/XMZU71TdNq+0MSmc0Q5BRRp6Jp0h8n5J3
+	T07q8arqOTwbV6ZLmfTfTNcI/huCB8VsTXM7k7GG4PHHHzErj4FH3tiYZyAUnFe+8xITR24Kafl
+	tQpYgQNtpYEhGTTsnH6tdPOVDRe0TCBnSpemCQ/sqcDqy9i1Y23C42mvbl6SixLfZcH6tSvoOa8
+	eN8k/bBphGvmqgRXEaQmz2V/9YEKy7hPv42dPIIvhzURcbAAIu915Q1FOolMnu3yuAIJIfpY5MD
+	3NGcKo6cr61sfgI8loSUuInbnWhYNuLfVFGIZLbZRz1+28+dNy2p/wdSXPoYQIZVeDZcL1WUYWm
+	O7t7hH8dp3sngWvFNCsdk1OyzjtvTOEKcEnN+Kj4I3kFYnIpRxF3R3HffdwQKE/6TOHqIiFVEUb
+	1HU6mwqSavM8zEEJTv8TKjXuvAhatDy8KEzbH6IloLutw35J+UmtBJZTF8Yjg/QTIFCQpwQqr+Z
+	dDxNTrLj6iiSbk=
+X-Received: by 2002:a17:902:e746:b0:2ae:6364:e6ef with SMTP id d9443c01a7336-2ae6a9da3c6mr22605315ad.1.1772645736597;
+        Wed, 04 Mar 2026 09:35:36 -0800 (PST)
+Received: from cute.. ([2405:201:31:d01f:950d:ab7d:5e5c:5244])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ae4bbdec99sm136901955ad.64.2026.03.04.09.35.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Mar 2026 09:11:25 -0800 (PST)
-From: Amin GATTOUT <amin.gattout@gmail.com>
-Date: Wed, 04 Mar 2026 18:10:42 +0100
-Subject: [PATCH] fbdev: wmt_ge_rops: use devm_platform_ioremap_resource()
+        Wed, 04 Mar 2026 09:35:36 -0800 (PST)
+From: Soham Kute <officialsohamkute@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com
+Cc: gregkh@linuxfoundation.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	dan.carpenter@linaro.org,
+	Soham Kute <officialsohamkute@gmail.com>
+Subject: [PATCH 1/6] staging: sm750fb: hw_sm750le_de_wait: return -ETIMEDOUT on timeout
+Date: Wed,  4 Mar 2026 23:05:24 +0530
+Message-Id: <20260304173529.192067-1-officialsohamkute@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <aaVT1mSeKrSSlrha@stanley.mountain>
+References: <aaVT1mSeKrSSlrha@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260304-master-v1-1-2bfeb1b9559f@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAJFnqGkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDYwNj3dzE4pLUIl2TlKQkYxOTZMtEY0sloOKCotS0zAqwQdGxtbUAA9j
- Lt1gAAAA=
-To: Alexey Charkov <alchark@gmail.com>, 
- Krzysztof Kozlowski <krzk@kernel.org>, Helge Deller <deller@gmx.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
- Thomas Zimmermann <tzimmermann@suse.de>, 
- Amin GATTOUT <amin.gattout@gmail.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772644285; l=1961;
- i=amin.gattout@gmail.com; h=from:subject:message-id;
- bh=fvm+1TuVEfBZgWEioDiGHAQkV9PHuQ2+SLQAWe7HMDg=;
- b=iKDzURGU6c9p1RaVBuYzo76POHmO10cJlkMXVJt7qWoZi/pfdEawYK9LwvspVtgF3iSrXLohY
- M5lAcaB+zeECKSvVIgxHTKrJ37eI8XvJ0JFwlCpZmwOaJkDiLWf7nBg
-X-Developer-Key: i=amin.gattout@gmail.com; a=ed25519;
- pk=C9HM6Jf5d9dPl9fnP9pM/nhMwm+c280ldqYZ0ESu3a8=
+Content-Transfer-Encoding: 8bit
 
-Replace the open-coded platform_get_resource() + ioremap() pair with
-devm_platform_ioremap_resource(), which requests the memory region and
-maps it in a single call, with automatic cleanup on device removal.
+Return -ETIMEDOUT instead of -1 when the DE engine poll loop
+times out. The callers check for non-zero return value and
+propagate the error code back to their callers.
 
-Also reset regbase to NULL in remove() so that the single-instance
-guard in probe() works correctly if the device is re-probed.
-
-Signed-off-by: Amin GATTOUT <amin.gattout@gmail.com>
+Signed-off-by: Soham Kute <officialsohamkute@gmail.com>
 ---
- drivers/video/fbdev/wmt_ge_rops.c | 18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
+ drivers/staging/sm750fb/sm750_hw.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/wmt_ge_rops.c b/drivers/video/fbdev/wmt_ge_rops.c
-index 2bd26bfb2b46..0cf78bcadfa6 100644
---- a/drivers/video/fbdev/wmt_ge_rops.c
-+++ b/drivers/video/fbdev/wmt_ge_rops.c
-@@ -148,25 +148,15 @@ EXPORT_SYMBOL_GPL(wmt_ge_sync);
- 
- static int wmt_ge_rops_probe(struct platform_device *pdev)
- {
--	struct resource *res;
--
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (res == NULL) {
--		dev_err(&pdev->dev, "no I/O memory resource defined\n");
--		return -ENODEV;
--	}
--
- 	/* Only one ROP engine is presently supported. */
- 	if (unlikely(regbase)) {
- 		WARN_ON(1);
- 		return -EBUSY;
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index ce46f240cbaf..e4b6b254335e 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -518,7 +518,7 @@ int hw_sm750le_de_wait(void)
+ 			return 0;
  	}
- 
--	regbase = ioremap(res->start, resource_size(res));
--	if (regbase == NULL) {
--		dev_err(&pdev->dev, "failed to map I/O memory\n");
--		return -EBUSY;
--	}
-+	regbase = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(regbase))
-+		return PTR_ERR(regbase);
- 
- 	writel(1, regbase + GE_ENABLE_OFF);
- 	printk(KERN_INFO "Enabled support for WMT GE raster acceleration\n");
-@@ -176,7 +166,7 @@ static int wmt_ge_rops_probe(struct platform_device *pdev)
- 
- static void wmt_ge_rops_remove(struct platform_device *pdev)
- {
--	iounmap(regbase);
-+	regbase = NULL;
+ 	/* timeout error */
+-	return -1;
++	return -ETIMEDOUT;
  }
  
- static const struct of_device_id wmt_dt_ids[] = {
-
----
-base-commit: 11439c4635edd669ae435eec308f4ab8a0804808
-change-id: 20260303-master-4dbb344c9a39
-
-Best regards,
+ int hw_sm750_de_wait(void)
+@@ -536,7 +536,7 @@ int hw_sm750_de_wait(void)
+ 			return 0;
+ 	}
+ 	/* timeout error */
+-	return -1;
++	return -ETIMEDOUT;
+ }
+ 
+ int hw_sm750_pan_display(struct lynxfb_crtc *crtc,
 -- 
-Amin GATTOUT <amin.gattout@gmail.com>
+2.34.1
 

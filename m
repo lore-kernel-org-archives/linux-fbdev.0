@@ -1,103 +1,99 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+Received: from mail-pg1-f194.google.com (mail-pg1-f194.google.com [209.85.215.194])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AB68390211
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 08:10:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9C2837C90A
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 08:45:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.194
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772611862; cv=none; b=u+goaGhN6gJ7SUiCwUUDpE36iw9LR8io8UbFHW67eBlPA1Ih2xE7FGE1Kba8K9bo4lCD5orPKqznueQMktViEgsojaGoydsWjNspYUBKBNtrlY75QRUL8sPz6/ACmE+TGEyheatHU2GZvu/JHJrxC3LJRwhNQvLNzPEbU6ToYII=
+	t=1772613957; cv=none; b=AvJqFZBHJwehyH1mjop8dgrNAWpOmsr3+8mnmkML+jf3uKQbgzpTBhNMbXG4Pm3G+OiWuuYF+0FA2koHLeYjd3APT/246rQAqjDvnwJCS6D/131BDeD+wyFcR76Pjl58P5RxhBwFBNGYtU5TVgF0a92MVHQyo9EQsxWzSDbCWHM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772611862; c=relaxed/simple;
-	bh=1gMlLUXhCv91U6qxn9U4jYEbEj/754SDso/dXbzlmxY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pGwhhw3s1Mx8ZluZ638pmS0qPmqBJLy5JssZCxhrirHQ5g3kz2cI5RZLQUnY9c4zpFR/bVhQm51DPkmddmLMHn2Ln/ndK6fqAZbDICWw+8qPQmHDZgkxr8IqLC3fTsx/SnVwQp+8X+6CXqMDJJNBpNj0EuARxzJ4XkRcqXxv9Y0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=SadrRLje; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1772613957; c=relaxed/simple;
+	bh=THfLGrQRHE61+kilKBL8NidbBAzC6FOlwjMO3nb9rL4=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=K/o37G/THST1q2pIeUQk3mfRSu0WjW7sgCVg1aGDp9R4dawAhqhn+t4v09zLVbmmNyPvl3rjG8U6mbxcGIRJO27rQmuTtYbNUDTzxnKm15xroGpPS+R8syiIskQh68MTNJ100oC9VRXNFEHZIInHCRKrmKbAplTYTde4FXf/U5Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TQ+4PgAL; arc=none smtp.client-ip=209.85.215.194
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SadrRLje"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-48379a42f76so53859495e9.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 00:10:59 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TQ+4PgAL"
+Received: by mail-pg1-f194.google.com with SMTP id 41be03b00d2f7-c7382963b67so25648a12.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 00:45:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1772611858; x=1773216658; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=i8pSDKN6l/7Id5MISZkLrIAbbIL+fWy4XY0gx/wOsW0=;
-        b=SadrRLjemTGRxE/e5nZqcbWYz8WOWl04T7pd+bOaAKyfY7h0qGgLPCDr9IGRB2+Jnt
-         /KyytuzjUgFpSPREoPoSxdBUTNaTrB8UGQtMTnsznklfH2TVpVxbmuR5gdk0+F3PEQ6w
-         1Vd+r0HEbInzcGfC4Il3crsT8IiiefFsBG94lJ7TFLSIrm1BRIW5a0GbJtpwZ6YDduTc
-         JLCQyoNfl1IEvtqsK7yw1xTNsbXv2wKAVyWkI7qu7KRo4m6JDPP+ji/Rtlj7fQI6b8to
-         pEChMe9OG6kPzHwk+aTMOYDhrgSuwskHQi1ugfNUdCBUAWdUYILULtocsO03PMeR1T9z
-         /Tuw==
+        d=gmail.com; s=20230601; t=1772613954; x=1773218754; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=THfLGrQRHE61+kilKBL8NidbBAzC6FOlwjMO3nb9rL4=;
+        b=TQ+4PgALY7nBbF+m6RdcIgrjUrQG4V/wAFx0uyu2XhKVlw/UmMKTMGAwPkb8jjWjP3
+         fM7sFZXPRxnP1GOoBu6u6LYykoO/jHk20cpXwUTAiUjtNYuYFwcrTMRK8Tn8WC/gzOJw
+         L5R+VjshglABJj5NyETvKYX9/TriXQ9+Y+as1CHIqGA0dtibB4mNumIK/N8m7oPVDE5O
+         Lc5UfW7G9w0/T5W/TzAwWoNp2sd3VgCgnrRmXEk3eNE7e4X09LPQBfwL1ro7qJ986xdq
+         KIShCA0tF0x+dMGJKoz2fqHAIIUulFVK6F8KrFpu2NjnVoc/gEfnlnZ3LVKfs1Wi91pE
+         Z5dw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772611858; x=1773216658;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=i8pSDKN6l/7Id5MISZkLrIAbbIL+fWy4XY0gx/wOsW0=;
-        b=FWxRDuvX+h9jJN7eK15YugzWnreVS93nqzTp8dFxpohDauqKlTDIUvv6WkkpiEZB4B
-         iKAyOFjfTw0W0WIATocz8F+a0OcQJvI6lsopk0HUGDb39tD3tmoqX9jmiFF6WwRCygAk
-         MAzrgXx7gjxUIN8CcOMnKJCP4/4CBMNvrIIYZk6aVzjmbtX0NzpjG1nnYI8rHBSVgAmG
-         T+FFpS6RArZbAtJB540uk2yC/IZtH2Y9OjsKJvBQbFOKxNnrw6zA5oGB9HQBwPBNQvKP
-         5p9ZOph27TcHm+5hQpVkb0E7wj/j4v0c327CCn/G4XOV2ac1mtmQPCXfCttis1gjjLYq
-         qycw==
-X-Forwarded-Encrypted: i=1; AJvYcCU2WddGo0hN9QZ8T6MX1MocLXehfKzFiLgKhwxWco3/CLllV4l43gXq86wiVoKvyCwTAi5QOPUpuZBjFA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxXyUFPamh/R1v6szqY+s+RPSL7tTqvlLmYRQdf7Cwf0kRY11RO
-	ct2jiJzGfTrZ0//85HNFG+SV8Vn+HyowUhSPCVihj1PEMLsA9xbf1XPTp0hWfU+pyUc=
-X-Gm-Gg: ATEYQzzuA63KXoB7iaSGI//FWpyjzjdxSfgD/jD52J0uVfIdMuCGOTvnK2kBnpo0Wqi
-	vaRMyZhut0eMsLwF+JoZ/kaS/NuilQ7lWwihNMUae3R1T7XT1KX4kPTJeWGkSLsTYpobXWldaKR
-	n7Lu4gjheFG97Jm27oJyRAXmgrTpDiAojo5AQQ6rRERnfhk4zkFzQgygDW+25oHBlYfSPOVZK3f
-	dUeq7O9KK3iiVS7LBQ8ckuoschH/Fa6+lb419GNECVBo7j2DHg8NpSEg+lVOPdWHsa5VkkPY5Pd
-	7NI4bH7itF0Od44paY+Qye2W8tTCo8tlEsJozcOB6b47UsSB4NS187HmRt2+HQgoYrkym5kMIg7
-	N49vtjTHM/zWE4BNzgsQO0KhF6KlK54JgoLcyT9bf7+/A4qDBV1586EB0GVBbPemdPqq284oSQt
-	q2N0fvEswBZjItoprT8K84z1Vmpqv4
-X-Received: by 2002:a05:600c:4e51:b0:483:7783:5373 with SMTP id 5b1f17b1804b1-4851988ce8fmr17102135e9.23.1772611857549;
-        Wed, 04 Mar 2026 00:10:57 -0800 (PST)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4851a8d4b3dsm6444525e9.9.2026.03.04.00.10.56
+        d=1e100.net; s=20230601; t=1772613954; x=1773218754;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=THfLGrQRHE61+kilKBL8NidbBAzC6FOlwjMO3nb9rL4=;
+        b=Ds+Yyve4UzvMltENzLCddhRsvPIKXasqJIGEdj0mMt18uf0d/HQFi4+Q940IuZf6vB
+         ecOlKI1eVN+RAP7E2M3kcDmc4v5o7Jn8eibFShgLGiL7cJBsg70j/xL4p4zfnAxCK8mJ
+         viec4F2X1DH4YOzV+cfCbVK9x0n9wRYwpBp/4DeQE1deGauQpuk9Kk90cklL82bA7Dr1
+         jlMqD7Xbik+NVAJKrhwSg9ky5fMGf03WQksRrLO+pvVUdppOOx4bOJVAMIe3NAceMFqY
+         tesKy6PmIpyvdb/OUdWuvTmI9bT+JWvDgXen48XQksxi2ueTX6O9kUmJyrYPx1LIlkGG
+         tz2w==
+X-Forwarded-Encrypted: i=1; AJvYcCV+EJhykCgJe55F5g6KluUuR6oA4wAf8FgCgnBzKXtjLZ6xwCJzRFCi6pvJJrErMmhb30vAyU9wupF/qA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwWqUF9k0twXlc3HcF8xoGds5X5X8EHgncfELdIJEivOn3NnMjL
+	rB9gvvQ0qKO1c5EwelXkIlUVO2xM7smnAScI88zVVBwIZZ+vhl0dJNlc
+X-Gm-Gg: ATEYQzzOaT+BzzNI7uzPtx+Qycr356B8Z+4c9ErztabZjMesMgvDXqr/tRMKOFm9L45
+	6oRTp+op8w1aW8X5QJKV4pFg1BPUxV2JKFboycRoeqUFQgDRUOcJ39pUyBnPgpC4l6MpWCee6eI
+	zEOjbUidt9wk63RVf86g1e/W7QpVlthWKTM4bWrzCblTm+FyF4/Mh60XWPMp/Rq3XFALWr82Dut
+	BeJw8dMCUwWPed58zC14MHj8fdkW1d13hurl1VDsTBYgWsbSJWu4CvS70UjSTl6JPFesO6C3MYg
+	CPBolr983LfVkS8pwMHyp1ofMcvIjYWVgnjdyCMZmSZtsdig1xjS2HKMBEHw1B6tfkIqO9ffFr+
+	VKamfPIr4dYFXatYX41Wxv7qhM7l325b5t8WXuAYGxHKIrVN5e7Sk5byfxLorZfRUZFFd+JZ5z4
+	gsccGEZM3JKoP6MwGS6mBPmWNsyAip8iuSltfwykv+pELDY5tD2GB0qoyPuKT1LhhdwWtmW1ZLU
+	x3kg6nE5j+Amww=
+X-Received: by 2002:a17:902:d50f:b0:2ae:59e0:5127 with SMTP id d9443c01a7336-2ae6ab51eeamr11137435ad.3.1772613953992;
+        Wed, 04 Mar 2026 00:45:53 -0800 (PST)
+Received: from cute.. ([2405:201:31:d01f:950d:ab7d:5e5c:5244])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ae3d1b2c5esm122010285ad.6.2026.03.04.00.45.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Mar 2026 00:10:57 -0800 (PST)
-Date: Wed, 4 Mar 2026 11:10:54 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Gabriel Windlin <gawindlin@gmail.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/8] staging: sm750fb: remove unused CURRENT_GATE,
- CRT_HWC, and DMA register definitions
-Message-ID: <aafpDlf_m2SBNg1b@stanley.mountain>
-References: <20260303232434.1850583-1-gawindlin@gmail.com>
- <20260303232434.1850583-7-gawindlin@gmail.com>
+        Wed, 04 Mar 2026 00:45:53 -0800 (PST)
+From: Soham Kute <officialsohamkute@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com
+Cc: gregkh@linuxfoundation.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	dan.carpenter@linaro.org,
+	Soham Kute <officialsohamkute@gmail.com>
+Subject: [PATCH v2 0/6] staging: sm750fb: fix error return values
+Date: Wed,  4 Mar 2026 14:15:39 +0530
+Message-Id: <20260304084545.156170-1-officialsohamkute@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <aaVT1mSeKrSSlrha@stanley.mountain>
+References: <aaVT1mSeKrSSlrha@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260303232434.1850583-7-gawindlin@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Wed, Mar 04, 2026 at 12:24:28AM +0100, Gabriel Windlin wrote:
-> The CURRENT_GATE_VGA, CURRENT_GATE_PWM, CURRENT_GATE_SSP, and
-> CURRENT_GATE_ZVPORT bit field macros, the CRT_HWC hardware cursor
-> register macros, the DMA_1_SOURCE, DMA_1_DESTINATION, and
-> DMA_1_SIZE_CONTROL register macros, and the unused
-> DMA_ABORT_INTERRUPT_ABORT_0, DMA_ABORT_INTERRUPT_INT_1, and
-> DMA_ABORT_INTERRUPT_INT_0 bit field macros defined in ddk750_reg.h
-> are not referenced anywhere in the driver. Remove them to reduce dead
-> code as noted in the TODO file.
-> 
-> Signed-off-by: Gabriel Windlin <gawindlin@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_reg.h | 41 ----------------------------
+This is v2 of the sm750fb error code fixes, split into one patch
+per function as requested by Dan Carpenter.
 
-We always remove unused code, but I don't really understand the point
-of removing these.  It's not like they hurt readability.  They function
-as documentation.
+Changes in v2:
+- Split into one patch per function
+- Propagate de_wait() error instead of hardcoding -EBUSY
+- Each commit message describes caller behavior
 
-regards,
-dan carpenter
-
+Soham Kute (6):
+11ca38f0ec63 staging: sm750fb: hw_sm750le_de_wait: return -ETIMEDOUT on timeout
+28df828cc89b staging: sm750fb: sm750_hw_fillrect: propagate de_wait() error
+2378ece78154 staging: sm750fb: sm750_hw_copyarea: propagate de_wait() error
+85139ac8c7fe staging: sm750fb: sm750_hw_imageblit: propagate de_wait() error
+9c2430311e23 staging: sm750fb: sw_i2c_write_byte: return -ETIMEDOUT on timeout
+915599b01e9b staging: sm750fb: sm750_sw_i2c_init: return -EINVAL for invalid GPIO

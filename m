@@ -1,114 +1,151 @@
 Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00BBF26D4DD
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 14:31:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80BFE3491D0
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 17:11:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772634666; cv=none; b=HP6DtSDuQUQ3uihgYYDdfncPt12eZXcEXmUyhPOHhjQumqL8km3PvbWHZ/t5/uC6I+nSP7b49yH0y55Js8zJQHy6DQFt/ZFjjvadYZGIsCKu/Wmf5MbJGIp+t++c76xX+LY6Qp95btEiogKXrZPYD9Eba4VYKvTf+V0ba4eVJrg=
+	t=1772644289; cv=none; b=mVQD1RUXDHruYVUZnogqjAiYNWQtZ/ktK7r5qWFXK76JZ1x7PVOHpS8xGweq1nr/0s+YyLRfwsVNCHrASZys0jfiXiS5RgbXImUgE6dLYkbSsBZdVNuF/A2V3wg4UGHgnmvbbyAqGvn9bRgwbjikzOCg5FCuvWov/J28uhOoOYY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772634666; c=relaxed/simple;
-	bh=49HstGghE6b9RLyZMCCzIFM2zryy+XzLsfNn9PHJj84=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IymIC0g+eHZFYlRW4gRCN3y6Ftp7zeYnIXPsNePeZB9rMLKrXFPoZlPkNdmQdbmEZAmd6Z3uiWmp7x8RdAkjIYwfK9cdIbCFY0c5HeGaSnnPuqVxjfYpYRqss/+Grj4hbaWrU5r1NapQdplXeDFV+biqa4Cm5yMYUcx6MXjlkqg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=UmSE0LZy; arc=none smtp.client-ip=209.85.221.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1772644289; c=relaxed/simple;
+	bh=fvm+1TuVEfBZgWEioDiGHAQkV9PHuQ2+SLQAWe7HMDg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=fbCg1poye9ZasrxNtsPO8ZGbN9DkOClm+wGB3S03eeWWLSLsuYmio/Uu2CswLdW9GLVwdiOXFw+LTZAoAvCBvf1sRS7CRQo1jXBOSomtd+62za6o9Dgmup+yAUys6TDbvd34NiZ1qrTgM+Jw7lNkyeqorW79JxJL4s0Zf9TZM+w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NPbFYV0x; arc=none smtp.client-ip=209.85.221.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UmSE0LZy"
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-439af7d77f0so3514258f8f.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 06:31:04 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NPbFYV0x"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-439c9bdc1eeso861523f8f.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 09:11:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1772634663; x=1773239463; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=e22QuF4Z77P320CkhRoj854rwaL3cGinuHQezA/B5ho=;
-        b=UmSE0LZys4su8c5ZDtbopIZUKqiIc8EykWDFAVz/W5YSnkQvF+FmZspcFR5+jF8YCi
-         Q8uDUQi4MjJ4MJB8o46sQk1dYMsrryA6AyyzW7FvYv4dXhQlP+Xl2bf7tDfrkidfqfhs
-         Lt3A0PRQ9V4lob2rcLd2Gi3UjS/ncMmlSrUP3Scl9+6e35aTHBvYu2Qbj2Bs4JHK/LJW
-         dab2g4lDmWSRHAw+ALqRd2E0tw6NB41VL8LuFYmo2tOrlEDusIUi8XzCbVgQ63Am8imm
-         A/Hg4Vo5+pAXsvgs1bVyNa8AgXs7Ptqh4gWeEuPcumSDJAWHzRpPniWTG24XhxXgjqWB
-         786g==
+        d=gmail.com; s=20230601; t=1772644287; x=1773249087; darn=vger.kernel.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=6+ERZG98Y+SteZfiVlR3jzzX4R2QxjyojMlsxgWSx7U=;
+        b=NPbFYV0xuXaLVnZaAjju/tlZYlnL8EfwzG8VBapgOfRfwCu9kXp6YMedsSq5YG2iby
+         cH7GD4DIA/Y8HuWRMHxodAdUK2ilRL8q72arChT8+Lfc0WqZoa0D7wmyVHMwNXyDNn2p
+         wWTZxLL3WJ1MLYUfoecVtlAAHHFPjoLGrBWIpk6+f6wtDDW0S/V/AsqH8LGVomrxqaon
+         ekd+XCLuyO/ep6P1ay4YlIfS/9YWOjnbYttAwNtXzDdbxMtCdE60LTKPaZMbRUbdWwMj
+         OCwzqi/2q9U8sunfA7yrDMO2uWnQASpZ//ggWcVBmmJcvrvbaa76vzYEhBrIrKTpIrwk
+         Yhqw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772634663; x=1773239463;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=e22QuF4Z77P320CkhRoj854rwaL3cGinuHQezA/B5ho=;
-        b=dNm4GZQmT5rUveC32ERkYFRWBKniMNDdERyyUQdqTpr0/fpFxgVhBmrH21YjQBHvfV
-         ry91qjmmWjbo+e6tSRJpq3gEGHkWMJVXjeOpunTxHEpwkcWFUmraeaYe1AW62hV7w3Nn
-         YDz3pdOZ+SbqWBmcdnZbquhEQqYB2QHWvFcVBUwXBbW66H4CDav12C8o8AMKHpyOLBfF
-         hrIWf0srqnC2bnU/ksoCe5tdLsnq1/4xoeZCKpCmOHyO/CvYyt/9B3GxhhpLJoZBWyYf
-         5TC2DgNO657MOK3Awu7a0Mh7koqRHxzqd0kVfE5y4EMwjviBzJPo+4ukFSS6u2DY2KUq
-         XPOA==
-X-Forwarded-Encrypted: i=1; AJvYcCUWy26LSWI6EvXoOMQug/IAoZKRPG4pj+toisLKmMOYbsqAHF0XB3+H7p9tdIpONAuPKQXe6MqYY2Vo6A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy9W0+wO5pN+KNLDxBnKH3blICGeezevI1L/4uQFnKImUOelXNS
-	qOtreBmV7KruvAybZleKbbpe52v49Fi6jSMiQsoZcfQIFUYDDpKIeA70VDi9RSdI+NA=
-X-Gm-Gg: ATEYQzxVYi2/5vKIAqLdFgEnnLulNNVzLt8PYDvKOZAJwDak9rW/psMO3YK4AL4vf42
-	ZNJ779/Hfis9kCOmmFOneEeKz7S9NaUJR+lJ1ZPNizcuanNB6eHLbvmKawJFBwjGAJD15yTwmXZ
-	1ChjY81pGW2C77/nSb6x0a/p3weacUD4x971crSu3P4EenduFm1ExlAfd3O9SEYEJCQ0sRMpDZP
-	uXzpoclicV8E7Raw9dPOcXPayCXEprV78JUb3wocJLTNnDwUzpakZtojn86q91qF07Ymb9Xi2F1
-	v32IZ2tA69MvBiV/Ioa+QyPGkGdnf82G9e16pkouG9eoaY4Xe2uenOxyXBdwDQDe7c2OorYy0U5
-	T5ELqtH1G3/RWIexJaagKk5IEmGAryg2vnhfL/0SvJxyOYtda+xv+E/mzFBxfpZ1/1vlWxBU3QZ
-	JyGClhe6g6qO77hUmTvkxxMjd4udC+
-X-Received: by 2002:a05:6000:2404:b0:439:ab3d:1c27 with SMTP id ffacd0b85a97d-439c7f6a523mr4415308f8f.2.1772634663326;
-        Wed, 04 Mar 2026 06:31:03 -0800 (PST)
-Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439ac9f3e5bsm34010210f8f.37.2026.03.04.06.31.02
+        d=1e100.net; s=20230601; t=1772644287; x=1773249087;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=6+ERZG98Y+SteZfiVlR3jzzX4R2QxjyojMlsxgWSx7U=;
+        b=TA83G6Yzy/oGvUs9Cerv0wK9qqpnXzCP0Cc1hBlmJpDx59U+vwHZ1JqcYcWU+881/C
+         Oc0saNwTwn+EiduY8Xu8v3c87ZIvovQCqP8CPOMp31HaF2vfsW57pvPZaJqkx8mpuKlI
+         Ypm6RX6fxzOAsjVgWfUO1dLQ+XtW8yljmp5TcAZOxEJQFTVF9CqxXpmoVUVs8whhpYqn
+         Gh4rbKBkoe/fLvAGTU5AVPO475PCVWajgjYmiJGt3HygxHnnjiai+nmyffKUSsR6Ac2c
+         pQS/5Swb2lu4EkBH6W5HyhOUSfWSZBqhAWzYNe9njPWdOiT1uR7peHNXgKKpArkV9A5W
+         dVLQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXIOG02I0yLzFmdyvR/BTv4yXL62Gcp8JwM/MSod78D7w8Vo9PbG02mFWIxPtSHVRhqQ+0MIww/SYzlng==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxtzS5NsNcwyxrAEe2bjGz/ZXFQX1IK6dz+XXAZNpsINIZAnuE6
+	PB+PTnCbOQnXjwip22ggLHLAFBcOnB5IR2hHZtid6jMStUnK8wSKs2zp
+X-Gm-Gg: ATEYQzxhZh+gIVNggJwg5nt59iT7fakobjzmSfFVct1v4gjTliN0WSCcg1QVvlwl+je
+	SLrioMgiLd4dwWpGh6fUQxTZxgWaUmwHi0Qrufz9al83CVQEBPKkVvh18G6HxMrpPDsOrHO5+v2
+	2Fxx0pwL73juG0UIiH8SpJY42BEkWQb2mI9Bh+Of01Oar4uyVWBOMr83mjnZgYYlzSlM9/bTiHG
+	cQq+zUFBkGEwjnrv2c0VqAVK8LMYCZ/9AhJC2wh8DSPxl71/4iS7ftd5ecD1ZhY529gjKG7QxdE
+	/9rVy1U0spC6iQVOQOKVJwx+nh+CEL1MV4od3MiFpwSeB8AII48oyQ3GRM3wJ/cGuD0R//eBDwo
+	QeCedSuRuyhAOev1oXurNZQ4dyyiNHP3sZ4oH/UIDJR0CFDj45qY23SxmNfgyd/KdWc1v93UdXc
+	RtSrkoXrqwkUj1YlPFVp1UeDiU8cUa1w==
+X-Received: by 2002:a05:6000:2dc3:b0:439:bf38:16f7 with SMTP id ffacd0b85a97d-439c7f7e3aamr5793716f8f.14.1772644286733;
+        Wed, 04 Mar 2026 09:11:26 -0800 (PST)
+Received: from [127.0.1.1] ([2001:861:3007:da20:bc65:66ea:698d:4a44])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439b130abfasm27138542f8f.34.2026.03.04.09.11.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Mar 2026 06:31:02 -0800 (PST)
-Date: Wed, 4 Mar 2026 17:30:59 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Soham Kute <officialsohamkute@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] staging: sm750fb: sm750_sw_i2c_init: return -EINVAL
- for invalid GPIO
-Message-ID: <aahCI4E54NjUwT2m@stanley.mountain>
-References: <aaVT1mSeKrSSlrha@stanley.mountain>
- <20260304084545.156170-1-officialsohamkute@gmail.com>
- <20260304084545.156170-7-officialsohamkute@gmail.com>
+        Wed, 04 Mar 2026 09:11:25 -0800 (PST)
+From: Amin GATTOUT <amin.gattout@gmail.com>
+Date: Wed, 04 Mar 2026 18:10:42 +0100
+Subject: [PATCH] fbdev: wmt_ge_rops: use devm_platform_ioremap_resource()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260304084545.156170-7-officialsohamkute@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260304-master-v1-1-2bfeb1b9559f@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAJFnqGkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDYwNj3dzE4pLUIl2TlKQkYxOTZMtEY0sloOKCotS0zAqwQdGxtbUAA9j
+ Lt1gAAAA=
+To: Alexey Charkov <alchark@gmail.com>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, 
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+ Thomas Zimmermann <tzimmermann@suse.de>, 
+ Amin GATTOUT <amin.gattout@gmail.com>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772644285; l=1961;
+ i=amin.gattout@gmail.com; h=from:subject:message-id;
+ bh=fvm+1TuVEfBZgWEioDiGHAQkV9PHuQ2+SLQAWe7HMDg=;
+ b=iKDzURGU6c9p1RaVBuYzo76POHmO10cJlkMXVJt7qWoZi/pfdEawYK9LwvspVtgF3iSrXLohY
+ M5lAcaB+zeECKSvVIgxHTKrJ37eI8XvJ0JFwlCpZmwOaJkDiLWf7nBg
+X-Developer-Key: i=amin.gattout@gmail.com; a=ed25519;
+ pk=C9HM6Jf5d9dPl9fnP9pM/nhMwm+c280ldqYZ0ESu3a8=
 
-On Wed, Mar 04, 2026 at 02:15:45PM +0530, Soham Kute wrote:
-> Return -EINVAL instead of -1 when the GPIO pin number is out of
-> range. The caller checks for non-zero return value as failure.
-> 
+Replace the open-coded platform_get_resource() + ioremap() pair with
+devm_platform_ioremap_resource(), which requests the memory region and
+maps it in a single call, with automatic cleanup on device removal.
 
-The caller ignores errors.
+Also reset regbase to NULL in remove() so that the single-instance
+guard in probe() works correctly if the device is re-probed.
 
-> Signed-off-by: Soham Kute <officialsohamkute@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_swi2c.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-> index a17f758dda6c..d90a93ab8fdc 100644
-> --- a/drivers/staging/sm750fb/ddk750_swi2c.c
-> +++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-> @@ -394,7 +394,7 @@ long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
->  	 * range is only from [0..63]
->  	 */
->  	if ((clk_gpio > 31) || (data_gpio > 31))
-> -		return -1;
-> +		return -EINVAL;
+Signed-off-by: Amin GATTOUT <amin.gattout@gmail.com>
+---
+ drivers/video/fbdev/wmt_ge_rops.c | 18 ++++--------------
+ 1 file changed, 4 insertions(+), 14 deletions(-)
 
-Need to update the comments for the function.
+diff --git a/drivers/video/fbdev/wmt_ge_rops.c b/drivers/video/fbdev/wmt_ge_rops.c
+index 2bd26bfb2b46..0cf78bcadfa6 100644
+--- a/drivers/video/fbdev/wmt_ge_rops.c
++++ b/drivers/video/fbdev/wmt_ge_rops.c
+@@ -148,25 +148,15 @@ EXPORT_SYMBOL_GPL(wmt_ge_sync);
+ 
+ static int wmt_ge_rops_probe(struct platform_device *pdev)
+ {
+-	struct resource *res;
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (res == NULL) {
+-		dev_err(&pdev->dev, "no I/O memory resource defined\n");
+-		return -ENODEV;
+-	}
+-
+ 	/* Only one ROP engine is presently supported. */
+ 	if (unlikely(regbase)) {
+ 		WARN_ON(1);
+ 		return -EBUSY;
+ 	}
+ 
+-	regbase = ioremap(res->start, resource_size(res));
+-	if (regbase == NULL) {
+-		dev_err(&pdev->dev, "failed to map I/O memory\n");
+-		return -EBUSY;
+-	}
++	regbase = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(regbase))
++		return PTR_ERR(regbase);
+ 
+ 	writel(1, regbase + GE_ENABLE_OFF);
+ 	printk(KERN_INFO "Enabled support for WMT GE raster acceleration\n");
+@@ -176,7 +166,7 @@ static int wmt_ge_rops_probe(struct platform_device *pdev)
+ 
+ static void wmt_ge_rops_remove(struct platform_device *pdev)
+ {
+-	iounmap(regbase);
++	regbase = NULL;
+ }
+ 
+ static const struct of_device_id wmt_dt_ids[] = {
 
-regards,
-dan carpenter
+---
+base-commit: 11439c4635edd669ae435eec308f4ab8a0804808
+change-id: 20260303-master-4dbb344c9a39
 
->  
->  	if (sm750_get_chip_type() == SM750LE)
->  		return sm750le_i2c_init(clk_gpio, data_gpio);
-> -- 
-> 2.34.1
+Best regards,
+-- 
+Amin GATTOUT <amin.gattout@gmail.com>
+

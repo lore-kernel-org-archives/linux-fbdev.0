@@ -1,74 +1,74 @@
-Received: from mail-ed1-f43.google.com (mail-ed1-f43.google.com [209.85.208.43])
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4C5C35957
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 14:24:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B6BB247291
+	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 14:25:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772634287; cv=none; b=kiElbzlEEHzdNYOuZcscugD1+th1JKZozMFZIEojzK5u7R4U1VPKfJtelRc/XftSzdsHh0tzUc/5EvFQQPF7jWrQsHu5AaDU+dGlgyoFroho3HsaKxMoMlELYRAY8eZdLbaq1BhwlEQ8Sd9wJc65HaqRogIg5wcMsKCMmzkr4Cw=
+	t=1772634339; cv=none; b=KwDCfT7OCNpzKK94CULpS1wUW9t6aDSwn9LJh+CvYg7du8luHGXFpxCJktGHLg8xfOIPrlf+WByLiptt1oQ0wnAZ/FI6zkcoiOwabY1lFiSdOuMoUV6V/KJJMxeh7u+VP3tf39tWpFY8NanK6ta+4lVQFkuMeuyKYdw0zsK94RE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772634287; c=relaxed/simple;
-	bh=qvtp9cOPL28AfjMQQuP2kfpfH9rCoFgtAXBmC0n6E0s=;
+	s=arc-20240116; t=1772634339; c=relaxed/simple;
+	bh=6V2qYjxCYdKujrfKdfTH9jaCaXDQM6SLHUezFjdUNIE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kEuCXubGm+QkxQ5y10CfRbwok57IRYa7u9V82y400NXOBh0R3SZ/K1cK1Ot5f/dQHmKIChg++89ZyOD4DlUtAmQbm1+5E/CJM1PDHf3KEoUIv4qY2yLzLKZxYl30TWnqaFSd1j+1jNkAyJYbmVaq3CaxxLOSowrejwZADajD6kw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=Ac6eMwzV; arc=none smtp.client-ip=209.85.208.43
+	 Content-Type:Content-Disposition:In-Reply-To; b=V0PfvK7xtNiOoiA4dI4LrwVGCDNMXiqyXDsXJ9NSBkkhSNAaVdDwgoPXMDLq9qaqDubezr5GE5e3k1cf+P9EVHHmH589zIiojYjbhl9r39G8kQjU7Gy4LuwyteggJTAcmsEoQcLNvOaxyJIJW4qzuGslVo6BDWG+gFQ8KCMjRRY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=PHUQ9t6o; arc=none smtp.client-ip=209.85.128.51
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ac6eMwzV"
-Received: by mail-ed1-f43.google.com with SMTP id 4fb4d7f45d1cf-660fb578f8eso1073917a12.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 06:24:45 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="PHUQ9t6o"
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-48370174e18so40465055e9.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 06:25:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1772634284; x=1773239084; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1772634336; x=1773239136; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=3LfyFtLkVvYJn6xwzstyzyPG8lEHIihq8sOpWTqCBFc=;
-        b=Ac6eMwzV57oQC4Sy2YL+Ja6Pz6jh4TBw2TKV72t6xh8y5ufJtVuRAiSFKEs3U0hhnm
-         JUZSgAFqRcT1oHsTr4wcqTMMjgp6odRkqnAd4ghV/g+QUOxRFhD0e0BGhRMDBvq+KRfk
-         X4d3G/mm16dlBm6gnRs78iIlCj8pY9aNKxzsZs8AkXoJMgZN6Mo2a3ufVVnipr1rZzMz
-         5QwTDKKaNlI3KkVsWoxiTu6oQdZfr7w/P63whkrc/V/FTY/rcaQKT6oLGI5ovJnHEhZZ
-         Tyk07PmyHvCoSM+srW3fLyYxwQDbMFwjLPheUUaiaFp0FgYydbcQu/VId05wsdrsU3he
-         /A6A==
+        bh=6V2qYjxCYdKujrfKdfTH9jaCaXDQM6SLHUezFjdUNIE=;
+        b=PHUQ9t6o5+WK4xOyyJOtrtYuUeAIu1VGS2chGoAVUAKQdStExr7OcD8+m2lmcKITF2
+         NA75ffWwQjbI7aABP6oAiDdM3GghiA3OXX0d8T8XXl57FSlwckZqnzfBbMjIDloQxggL
+         4cu4aIZeIT3QOLFPjHwIz5OXftV2uKA9Qp9F1zrzOnIdu2V1PBe2LHOpsKp70EvHSjke
+         +FlceUS5N9fRKGWekO7Ahm42DnUrAPKyD+qIdp7CL+IS9UYTwZ9YZU/6W0tQN6Qjm8RB
+         AKcAgz9kSnT43hmRs3N+SzHGQJnYaqjtoSKn3r9z79jjvlCiHHABAzfvIl0NPlob5ndc
+         DBpg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772634284; x=1773239084;
+        d=1e100.net; s=20230601; t=1772634336; x=1773239136;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=3LfyFtLkVvYJn6xwzstyzyPG8lEHIihq8sOpWTqCBFc=;
-        b=mvSnUfuqAZvFvNb3Gcn85erXh9frk1MDh8zKq6UJvGpzh/YuUlBkxDnlh6wSfhJ78V
-         KwgGfIbqjpeyTKYKv+V/XkvF2urB5BsrkGC/doTFQVdbyt+cBIe2X7n04/Q9X8JOld7o
-         d5mzXnExgW1ym19qkVPCnG5Pm83nHBKPAoDLc+84RbVVpRMHzQ89LLOjdWVX4oERTHE4
-         lucqCbsIFh03zL/OE6yGHTAj4euibRTTDUuHVTY0vCtePY/SCRuWhhDcirYlSF2Jj1QU
-         kLuD47K3QHW+x86y1LGFYUY/gbVBt/dBFhlu9gu6dZSllCcUFTPdQ9ghL0ATVkiZhkIv
-         QNmA==
-X-Forwarded-Encrypted: i=1; AJvYcCWHzHXKhWrmG8Te+/+LJQU1LglV9gfnq/Bz36J3KaRwafqrkRXh+s+9CkIzHy0wgQjPwg2xo7r2Nd5Obg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzJb6MqEpNWQTSbmw1Mun+aPmuNEnpb+EDTzsFMLj62QOouhIa5
-	XPHcvQDuf9jTbldae/8rYstOF0kyhI6tYLaHRdZldCBoDBpJZlXKD7BXENppGvaWVx4=
-X-Gm-Gg: ATEYQzzfCVP8ITDWuA8bZD7p+NSmpbCSCuMMsrST69fVXphGRD0Jran6Xna3FqHw66E
-	GW0z6OUH4m85+tzlQhY3A8Q9yd4fERd2g/C8nkVujFEXNwAPp1ErW6Sr0OC9VnOo/QjmCSJby01
-	Pa2oNJ0xDejPw+G/2VspREW5jTJsSFA+oscStEW9MmXj7nkTAOOfWbHmV5m/z7kwuU6IVB0cD7i
-	RUDGKlikt0JGCMGK6z69squnPv49oicuVK8oUy/tM8+eyKoP0akbaX2QqPH1WxgA+yzEuzw9ERY
-	3O/IPQ7F5rMeuhSsUigSXkrGdKNzUXbeAv1T+iaLpupMmTwcjg+m54Y9LWhENvLst4d/Z0DIsfn
-	2XhTaat8cakmN1w0GGgQ9DyScDDmDpcdmlWh9hROwXzr+34qkaYI8zIp1Arph2nL3ZQ0NoVuRZt
-	agJmqwcbco1Sch60nCk3f4MpxZMaGV
-X-Received: by 2002:a50:8d89:0:b0:660:fdb5:4e2e with SMTP id 4fb4d7f45d1cf-660fdb55132mr709089a12.32.1772634284072;
-        Wed, 04 Mar 2026 06:24:44 -0800 (PST)
+        bh=6V2qYjxCYdKujrfKdfTH9jaCaXDQM6SLHUezFjdUNIE=;
+        b=QOyxRxAJbGGvLfAtxAqWjPSCE5+Vb7AwWXgZGCkaRXCCLiLPuAcPqh6MCs67PvEFtS
+         1jjj+TWwt5vBjq/KWSqToN1AdMh5e+pD2jmU+XjWZ3YVLN7ttVvYIF2zYaol7EOGzorg
+         Jxxz0LUC6aH0Oo1bqwpEHW5nzNHY6b1H383LbFYaLm01XJ3GutBlNXAsLSEz186Vy+pn
+         epcK9aHCqLQ+VR/qgkxBylJFNTsK38IrvbNrlj/x7VFblyDmYw8IHyoN6MQ8G5+yI8dg
+         JfX2Ww63xoQqCu2RbK06yTKs4lWLoPr28ixaplD+i2yRJ99t27tLKp9fYd2OSYA2Ions
+         9SCg==
+X-Forwarded-Encrypted: i=1; AJvYcCVfvrVAK2wb0qpVMLxxMHHMMj5zQvSsWHCQTEuABi3274Lkuwmc5dvKQG3NKLy+KhhTym+Rt4iT3+37bA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwLgwOvce83uM8B8tBE/PPkQJGA8XjMXoxGJDr0LNGVlcY99/nh
+	t+sXnF2PMH5JmQs1Wv7vMEt+L0jqv88z0ZmkHkpUu/usJJw1wuLfisPfJR+dkTK2zNc=
+X-Gm-Gg: ATEYQzwCA2Nz+2aS+ML7943U6UA8LcWbt8iI1qu0U4JfKoBfhZ87of7GbovEByAdfpP
+	vPuoqNh0Z4XO6pjcPE7dY5u08dIqTX5pNypBdmnPR7zmzWk2z/yCbyy9T8nZzKn4I6LYgDuMgnB
+	femX2Mo4E/xRSci0Y0GxV42Lhvb82al7v5R72xJ2L1TFwyKMqovmU4hglx6Gz1nDlu3IFKB5uQP
+	o2g0gNFcZ3OptO89qqD7qtFh7CkwJJOUmvfaby2gyv7rc6G/3UqasDty59NTXgUi142w8qMdExs
+	iS+obP1nG8GYYYtr9bEekfZIeRp4Ma9Bcf+dAMk7Dil5gYhGVLbAW0rBTbYOdC8RjgdrC128aiO
+	LIodH7j8X5a9B2lcD9ngYKLCyUd0fU9/ck0MKFCvsaZwPrwREOhjmx928iu/XVG1KMEXUXbUBn1
+	W2HeOP55WvsIV8wnMVLyqiQSJkYl+x
+X-Received: by 2002:a05:600c:444e:b0:483:702f:4641 with SMTP id 5b1f17b1804b1-485198270efmr30791045e9.3.1772634336224;
+        Wed, 04 Mar 2026 06:25:36 -0800 (PST)
 Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-65fabf6cfd9sm5644348a12.22.2026.03.04.06.24.43
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4851acf9cabsm10615715e9.14.2026.03.04.06.25.35
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Mar 2026 06:24:43 -0800 (PST)
-Date: Wed, 4 Mar 2026 17:24:40 +0300
+        Wed, 04 Mar 2026 06:25:35 -0800 (PST)
+Date: Wed, 4 Mar 2026 17:25:32 +0300
 From: Dan Carpenter <dan.carpenter@linaro.org>
 To: Soham Kute <officialsohamkute@gmail.com>
 Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
 	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] staging: sm750fb: sm750_hw_copyarea: propagate
+Subject: Re: [PATCH 4/6] staging: sm750fb: sm750_hw_imageblit: propagate
  de_wait() error
-Message-ID: <aahAqNcuxpU--an9@stanley.mountain>
+Message-ID: <aahA3J_yiTNwUrth@stanley.mountain>
 References: <aaVT1mSeKrSSlrha@stanley.mountain>
  <20260304084545.156170-1-officialsohamkute@gmail.com>
- <20260304084545.156170-4-officialsohamkute@gmail.com>
+ <20260304084545.156170-5-officialsohamkute@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -77,14 +77,13 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260304084545.156170-4-officialsohamkute@gmail.com>
+In-Reply-To: <20260304084545.156170-5-officialsohamkute@gmail.com>
 
-On Wed, Mar 04, 2026 at 02:15:42PM +0530, Soham Kute wrote:
+On Wed, Mar 04, 2026 at 02:15:43PM +0530, Soham Kute wrote:
 > Propagate the error from accel->de_wait() instead of returning -1.
 > The caller treats all non-zero return values as failure.
-> 
 
-The caller just ignores errors.
+The caller ignores errors.
 
 regards,
 dan carpenter

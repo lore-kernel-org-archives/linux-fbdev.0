@@ -1,127 +1,140 @@
-Received: from mail-pg1-f194.google.com (mail-pg1-f194.google.com [209.85.215.194])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 016CA3CC9F3
-	for <linux-fbdev@vger.kernel.org>; Wed,  4 Mar 2026 17:35:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C80DA1C6FF5;
+	Thu,  5 Mar 2026 00:23:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772645762; cv=none; b=L6iyMDPDq6hjV79sY/kub6RZtsiJZNonumGJgBaxVkHu29coFw1muIfELv7Ym8+dffkHTcNBqzk+Z/vInnYM94anUuH/+z2S5gZOdMQA4Ipom5D1JIV1o1fS2ur4MnIsRruTW/tMZu6nKiHhA1Y8n/0x0DsMDbeoMVBc6cYMDrw=
+	t=1772670231; cv=none; b=g+q8RZew8R0dwIB15u9is1IEaSOMZbRocyzrgMcS8ymL240RbkWBaBIVnETABtUDumSchTsrj4rA9oMbwvRT6XqASe/nAWUponowv6g3a/auWFboQj9G0XPOWzNITDvCOxy7NrMBPV6SVFmrCpt5fqQpcocPNJXqzzH35E4KMW4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772645762; c=relaxed/simple;
-	bh=P3RWSgaNEweBva02qPe7Yoe68GpbgepTxng62JJRc1Q=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=JPpMRujgpGVDrv37nDqTCuo/XyJd02Cym6UnLbJ+DkuY411T6PAO6de7UbiJnW739vtnTWTCfw0dAkBGf2b0ORUBKp6mAvtaEZERKFmcGyMeAyU/MlYNk+GZX92dJICRchq8oGhZBaRUWBbYrdRmhdc3Cxy+KL+Mpqwhtb2i/Ak=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=K8nfebyG; arc=none smtp.client-ip=209.85.215.194
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1772670231; c=relaxed/simple;
+	bh=y7DfFca5BwGLTdsV10+azoOM3Jmj6MnCcT9JsOiC4js=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=B2THULhwjSM2CMQ5tTxrJRbjXmFqlmefBdm2rLxJW2vwhTnZfW8sbDGIRKD+fTmCDtEj7HkpENkqpvfMudMy1uVwKT0RfzKkKxL66TplZbxe5hH1MsB9ldg+anL2sq7ukLCerjpDVtmP4Vx1J3iA0LaV24yY9o6ZQ1jPhH7DotA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oU0MDVBS; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="K8nfebyG"
-Received: by mail-pg1-f194.google.com with SMTP id 41be03b00d2f7-c73874b3ae2so43505a12.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 09:35:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772645758; x=1773250558; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8GqwX18uDR+XHlbxuX2mrRGPI2OBZOF06h+p3yCHrqs=;
-        b=K8nfebyGJ9GGRSiyTi0wAyBrxBZYGvYfQMcdZ+wn9CEik3LZ1aC/tKcL7l1QBJL0I5
-         7oc3NoslAl7CBsaUDeosib4Z0QE7GLvVvef0V1xyJIRVUpSRWz3hPQ/DlFQApTPStqMd
-         y6/JYX4Pv8tiWKVFGq/LVPqle2KR61/7mpFNWxuEDxYrBYhY4QCGogVyWZ6vrncAu2Dm
-         EhedvSRVPVRWtkfpAzi06MDQqYL92rNqgVgZpRXOBOQR1l3uqO/5CHZzEOVS9pemcW4I
-         /7rmW8CVYIrtfXv5KGS8IHwIFTiLf7sLhp5FQ3KP5XKUt8EY4DCRLNqRl43KIGkNqIch
-         oNIg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772645758; x=1773250558;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=8GqwX18uDR+XHlbxuX2mrRGPI2OBZOF06h+p3yCHrqs=;
-        b=a+qArbK5tmbMOhgXNheiHTB+t6pmbrMOgPRuxX5E3Plit6D7q0m8t5XRWhYJXozJ0x
-         JVLE/PqJ4XaA7CVh0Fnpo8eTQXOJFCTB0iuAqsDy6zaDdxGx9HkeW9X45vHA8S106p0U
-         7UNI1Omr+VZ/mLwIH544XM+5ujYQpMygl37s7yuqDBZmy43W/ryyssE5wJ3nZSQ1ypet
-         pT1xcrupgxacPJoRdv+1iJFSdcIGJPuIXwWS4gMFLeqHHn+fHUJkHNiWdNBMSdq6Ua/2
-         lNixZ2O5UX7nbTu2cL5ecYCREZOCXj0K+O7e9KZdhPXDTPfCXJl3YF8aAynLTBVerxIV
-         3SRw==
-X-Forwarded-Encrypted: i=1; AJvYcCVhR1+kqZBlseNhR8R9cnm26uXKy9Kp9lhu1IcVGNekT3XlMOWphM05NQXXDiStYE8p9ebHIA3diYpc9g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyQGdOLkA4lKvpw1YniqGmMfMNCAAStwv17QVVG6Xc8PB2n7mba
-	JvRcKwzn2ONsqoQoF31nmjoVq+5d+K6gPFyEAKFQwI/jpIpFdgl6M/js
-X-Gm-Gg: ATEYQzwMztyff8Ynu2uWucLLWrNpBbSAOjSJz9zhON9sqM0aMIDSqxuaEbglesx4YRS
-	QOr+MBSJENrTlB96vvclFTm0Z8QTryBXyHLythrTQY+7YRiTpHxALzhsvyvufLpHykbLEr2/9kB
-	u7MLxgMmvj48wSV3q4ttEfk7wKEmxsGCqJtFb++N5BGvUBp+kTLVHEkiOTAbCgV40kETa0I+qns
-	xvfMxWV69IZaiD5wnMKToOHwenhNKrlcPPdLr4KRKGndHdVYeX5zVFaiULnwk2rwv+W3agTAj10
-	gaIROBYTAf1z0rcFZU8oltWWzG+XP0nLBGNUXs4wdnw1TUYphf0WrrixW5U9iwQv9HjfqTi4h5L
-	PhpAUGV7KJu+g7xLRHu1Nm02GzLkK/dXs7QJQfmq5pA2n80DixEZvYBki1xGXDeoIF4tKhEZNqR
-	7DBgh3lqXs0dp845dHeiX5o0KffQ88f/ytEy5bRlA7RORW97IrV/EYezq2kq8VN3L0cTTRWTGsa
-	GeMewQUJE6Ty34=
-X-Received: by 2002:a17:902:cf04:b0:2ae:3f3f:67c4 with SMTP id d9443c01a7336-2ae6a8c0867mr21923665ad.0.1772645758234;
-        Wed, 04 Mar 2026 09:35:58 -0800 (PST)
-Received: from cute.. ([2405:201:31:d01f:950d:ab7d:5e5c:5244])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ae4bbdec99sm136901955ad.64.2026.03.04.09.35.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Mar 2026 09:35:58 -0800 (PST)
-From: Soham Kute <officialsohamkute@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com
-Cc: gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	dan.carpenter@linaro.org,
-	Soham Kute <officialsohamkute@gmail.com>
-Subject: [PATCH 6/6] staging: sm750fb: sm750_sw_i2c_init: return -EINVAL for invalid GPIO
-Date: Wed,  4 Mar 2026 23:05:29 +0530
-Message-Id: <20260304173529.192067-6-officialsohamkute@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260304173529.192067-1-officialsohamkute@gmail.com>
-References: <aaVT1mSeKrSSlrha@stanley.mountain>
- <20260304173529.192067-1-officialsohamkute@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oU0MDVBS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9B16C4CEF7;
+	Thu,  5 Mar 2026 00:23:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772670231;
+	bh=y7DfFca5BwGLTdsV10+azoOM3Jmj6MnCcT9JsOiC4js=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=oU0MDVBSFI40hoL7TuiPn7pRpKDvN63IIns4tlIhDrF9471f+FD79YkOi41y/su8m
+	 tUZlLFvbRgnE0cfuOGSF5H2p8UwmLqSgKECfjnaVNXbPWVjP3nfmNnJQO0ZrKQbG5V
+	 ke+/XMBUtwVAVljl3jMEDfy+3WxWhM8aAJ5PuSBM+lI7d2xCmwFQIeMDtMh8ouwWHO
+	 l74M5rJUFIecGnt3iKpDwvRS+iG1lWW1jy6nCGw5eRmH2TcCl+So6R52OtyQFwIqoR
+	 krK1doizo4rk/803pysVogqTWxsdU6BQ/IXbd0PzKnw4QzRHCEAYuIXqIMCTf+w8Dr
+	 qgALiewXsskkg==
+Date: Wed, 4 Mar 2026 17:23:47 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: gregkh@linuxfoundation.org, deller@gmx.de, sam@ravnborg.org,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 09/13] lib/fonts: Compare font data for equality with
+ font_data_is_equal()
+Message-ID: <20260305002347.GA4102761@ax162>
+References: <20260302141255.518657-1-tzimmermann@suse.de>
+ <20260302141255.518657-10-tzimmermann@suse.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260302141255.518657-10-tzimmermann@suse.de>
 
-Return -EINVAL instead of -1 when the GPIO pin number is out of
-range. The caller ignores the return value.
+Hi Thomas,
 
-Signed-off-by: Soham Kute <officialsohamkute@gmail.com>
----
- drivers/staging/sm750fb/ddk750_swi2c.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On Mon, Mar 02, 2026 at 03:08:43PM +0100, Thomas Zimmermann wrote:
+...
+> diff --git a/lib/fonts/fonts.c b/lib/fonts/fonts.c
+> index 8c9a6762061c..c9f6328d5dda 100644
+> --- a/lib/fonts/fonts.c
+> +++ b/lib/fonts/fonts.c
+> @@ -12,18 +12,25 @@
+>   * for more details.
+>   */
+>  
+> +#include <linux/font.h>
+>  #include <linux/module.h>
+> -#include <linux/types.h>
+>  #include <linux/string.h>
+> +#include <linux/types.h>
+> +
+> +#include <asm/sections.h>
+>  #if defined(__mc68000__)
+>  #include <asm/setup.h>
+>  #endif
+> -#include <linux/font.h>
+>  
+>  /*
+>   * Helpers for font_data_t
+>   */
+>  
+> +static bool font_data_is_internal(font_data_t *fd)
+> +{
+> +	return is_kernel_rodata((unsigned long)fd);
+> +}
+> +
+>  /**
+>   * font_data_size - Return size of the font data in bytes
+>   * @fd: Font data
+> @@ -37,6 +44,32 @@ unsigned int font_data_size(font_data_t *fd)
+>  }
+>  EXPORT_SYMBOL_GPL(font_data_size);
+>  
+> +/**
+> + * font_data_is_equal - Compares font data for equality
+> + * @lhs: Left-hand side font data
+> + * @rhs: Right-hand-size font data
+> + *
+> + * Font data is equal if is constain the same sequence of values. The
+> + * helper also use the checksum, if both arguments contain it. Font data
+> + * coming from different origins, internal or from user space, is never
+> + * equal. Allowing this would break reference counting.
+> + *
+> + * Returns:
+> + * True if the given font data is equal, false otherwise.
+> + */
+> +bool font_data_is_equal(font_data_t *lhs, font_data_t *rhs)
+> +{
+> +	if (font_data_is_internal(lhs) != font_data_is_internal(rhs))
+> +		return false;
 
-diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-index c73943341f66..46599be8d6b9 100644
---- a/drivers/staging/sm750fb/ddk750_swi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-@@ -344,7 +344,7 @@ static unsigned char sw_i2c_read_byte(unsigned char ack)
-  *      data_gpio     - The GPIO pin to be used as i2c SDA
-  *
-  * Return Value:
-- *      -1   - Fail to initialize the i2c
-+ *      -EINVAL - Fail to initialize the i2c
-  *       0   - Success
-  */
- static long sm750le_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
-@@ -382,7 +382,7 @@ static long sm750le_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
-  *      data_gpio     - The GPIO pin to be used as i2c SDA
-  *
-  * Return Value:
-- *      -1   - Fail to initialize the i2c
-+ *      -EINVAL - Fail to initialize the i2c
-  *       0   - Success
-  */
- long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
-@@ -394,7 +394,7 @@ long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
- 	 * range is only from [0..63]
- 	 */
- 	if ((clk_gpio > 31) || (data_gpio > 31))
--		return -1;
-+		return -EINVAL;
- 
- 	if (sm750_get_chip_type() == SM750LE)
- 		return sm750le_i2c_init(clk_gpio, data_gpio);
--- 
-2.34.1
+This breaks the build when CONFIG_FONT_SUPPORT is a module.
 
+  $ cat allno.config
+  CONFIG_MODULES=y
+  CONFIG_DRM=m
+  CONFIG_DRM_PANIC=y
+
+  $ make -skj"$(nproc)" ARCH=x86_64 CROSS_COMPILE=x86_64-linux- KCONFIG_ALLCONFIG=1 allnoconfig all
+  ERROR: modpost: "__end_rodata" [lib/fonts/font.ko] undefined!
+  make[4]: *** [scripts/Makefile.modpost:147: Module.symvers] Error 1
+  ...
+
+  $ scripts/config -s FONT_SUPPORT
+  m
+
+Cheers,
+Nathan
+
+> +	if (font_data_size(lhs) != font_data_size(rhs))
+> +		return false;
+> +	if (FNTSUM(lhs) && FNTSUM(rhs) && FNTSUM(lhs) != FNTSUM(rhs))
+> +		return false;
+> +
+> +	return !memcmp(lhs, rhs, FNTSIZE(lhs));
+> +}
+> +EXPORT_SYMBOL_GPL(font_data_is_equal);
+> +
+>  /*
+>   * Font lookup
+>   */
+> -- 
+> 2.53.0
+> 

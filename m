@@ -1,74 +1,74 @@
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB36535949
-	for <linux-fbdev@vger.kernel.org>; Thu,  5 Mar 2026 05:34:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6EE342253EB
+	for <linux-fbdev@vger.kernel.org>; Thu,  5 Mar 2026 05:48:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772688882; cv=none; b=i1Z5bw+GqxU3EaE095gC9fYW+fXv+qOSRqy5f/lCQt42mtTEirsrtx34AuejV7Q7BsCRQao4ageWc9KvOeqt7YkkNZwzcQYm1s2qC/KFuLDL2pXF67y3QnijYSm7c4yD5B0KvJAV6MsmNPREEODPwYZN2S3bytnWop2FFrVP3Ek=
+	t=1772689709; cv=none; b=tva+jjemk2cEKwRrt9Sz8t1mMB6XSEfKmi31apBeylriCK2006oNWLNJgh+kCndbAumcTiX7AFgwJkIOg+4UD8SQJ67wX0WZi1eRwpBHncg8UWSTtFYEwxCeQhmDd1V13BPJ4v60eAqrFQ9K6zOOjwzPG3rsssHThKmXdFE87H4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772688882; c=relaxed/simple;
-	bh=MdT53VNsJo1KTOqLFXLHrv9hSp5uEa2RzIedrlI5hlE=;
+	s=arc-20240116; t=1772689709; c=relaxed/simple;
+	bh=hbtHb7uyJF1aXgsD8bxT0M0kmGebDw4L50Af1vw2008=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Dj3hbENiFyN1h0Q1RTvh77AKQf9/eqg4gNqePL3p+Vmf64o5buLD/AE61eCM5tN/WPSR/PRmjKvZrWgrjA+c7JEBLJYwTzTGCoPqIfm3bJAPTtgLlEbJhv3YQQpjT5UKL7/n1JT8TfuVPDgSL+PlXnZnyo4R47UZSfffcvL9PFk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=uvMzd5VS; arc=none smtp.client-ip=209.85.221.53
+	 Content-Type:Content-Disposition:In-Reply-To; b=Oo8dpqRJOdVQMpqtQJJ2odVcSUyQ7FLu8mmZKadDCqXO0oXLnB1WUNTJbMwx/AJ97lg7e+3chvenVIJLTgaTljjN1f0wtGttOQyHjyXrIW9lcxoAN77jTEaueyMcvcb0YHIBxpiL0wdAfc0YhwwEeDjvM0r31APbRd4+XGVDtxM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=lOjuHKxy; arc=none smtp.client-ip=209.85.221.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uvMzd5VS"
-Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-439b790af67so2383521f8f.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 21:34:40 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lOjuHKxy"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-439b78b638eso4254003f8f.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 21:48:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1772688879; x=1773293679; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1772689706; x=1773294506; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=MdT53VNsJo1KTOqLFXLHrv9hSp5uEa2RzIedrlI5hlE=;
-        b=uvMzd5VStfX61P3qkjRU8SsWz5rA/uppZWNuZx6KzoRJhAy6jPX+Yo5UnQRHMLVYzX
-         ++G2dpmTs4MQXxYepuUU6A8FOC/0bEWgn5j7IWpbf1I9Xxhz3AH8dVORNDMhViMSmIJ9
-         homRZgBjSHRRyO4OacV48b6nSoqd5iMyVXqpvTdnyZrvxG3suw2rT1a6EjPElgUNicMq
-         x5itAnYtoLDCxmareJJ+jrzcs3r6+fDPmxLo7JkEvAGFhGlV1BOuIUyJwLm1nlvMKCJC
-         ZKW5IX9aJHRuFVutx5UXJp9I1tFK2KDMIrlwTHrZPvdCPxyV17DdgyVU7UMdyV42L/P3
-         hi9w==
+        bh=tosFlEOKGj8XInQr/E0mYfY51v7I4YOwqCWi7kcZaGo=;
+        b=lOjuHKxyZ0HCPI/c+EHvIWo+aKc+aegJODett1xzj/qpec/mFU93sR/qRBn7nDDH3y
+         9djg4rioUCYBq4Wd0hxWkJGZ+cjuP/rldEbfsDI/1yJRajfjFsf5HinUKDAX/qAwyLde
+         krltGojm2EorWQJocuz0dRbWflj+NtJfJKkfC+SNNZZ0CY/njvOdJsbPKDjpGXzn1frF
+         UwTHDGg9Bjo0wZ4tVNJvbNsYLY6+kAZk1Fl3BvvcaW3E+BSTGw4WLmTi1OH2ypR0p5Tc
+         STVH/eeXGDW3bh9pfqS75f6+Ca5rqs1OtU7BZpRrGjPP1wom0Qyjn1aVG52ZYKCGBLgh
+         CtCQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772688879; x=1773293679;
+        d=1e100.net; s=20230601; t=1772689706; x=1773294506;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=MdT53VNsJo1KTOqLFXLHrv9hSp5uEa2RzIedrlI5hlE=;
-        b=M8rp0mgof1FW0oTP4B3eC/D63fsJialMhqCePQykT+Qmu5PqPJEotO76cOffcTIEZV
-         TVLx6cRESTN+g75N2RGlvQfZmDUR7QRhhSvS+fRjk/T+jaa1GwvxKn6cWUNdoGHWgcl/
-         YS0ZwhpYlPH7digFM7YdcC2TTBNNNX5tgp9yEjx/NkvObJtG2wLgTtFaulQAgK4mHj34
-         cjkZf4jDc5fM5PdtwlOU3/y+2kv4467hlqy/1mWc9pH6Z+YG9P68uAHiktTx+998OzX7
-         B0P4ynuYxVpzmftlgmWLuI00Olk7Pfd7LCvy4QCwmcZ0pnbny+lzOXQlfeBxy30GZNrk
-         dNig==
-X-Forwarded-Encrypted: i=1; AJvYcCUtR3QYHhUG2bFgmNpMytkUmFN35HyEFrn3K2s5kmwf5A5FymkcKJB9kEJ+tLdmNPcu6EjBGV8m6KWwow==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz8u5TXWjxGcLtVikqP5ublCjakfE/lY6RhcKXilDOmIrGsxk1P
-	a5oRtfe9T/NXxkefh+dalb9nZBYYKR8aB7NBjE3RYXBC60ZeOqZ9343IF5X7BycAxtg=
-X-Gm-Gg: ATEYQzxgNs+kJYcR1O6kxmYKAoqd0L/4A8Sd3Un28B+WbeMX03cvtP6bl85DH0rfRy/
-	VlKVK3WhGFn6bKP7L0CP3EP2VK1ziGo5xynv2m8LNw39OG3LNw/gGirMpGEUIJB7I2ZTsZdEPDB
-	7HbAXyngs+DLyWKxczvtLiIhXHHIcD8ZCzp/wJZxJZjMu3N8bLHJTEkb9Kj7tJoeV5hLYz8lBdd
-	WJE9KMnb9FjoChD6eQA/bcohL9UQSQIA+aygxqJG4ykgdfi+ujWO78wDkHsr7kBeLOgYeuv3R4e
-	aogMx2luJPGSgBNcG/WtjcZG5rEznPaJerYYrfmA4dXs9uJqYGqVz6IHbR8u3lxb5bmfN+JvmN0
-	Xe3fm7Qav7bQxMU235AmAqtnyMJClB+9o9Hh1CZtLEzf3CPmx1/4YCJ5JkmrGVJ1jN52ef5PmH+
-	/r4UQCdZV2f8MWlJ5fUEO+CIDu17uv
-X-Received: by 2002:a5d:584c:0:b0:439:cc67:abe9 with SMTP id ffacd0b85a97d-439cfd461camr1819806f8f.27.1772688879158;
-        Wed, 04 Mar 2026 21:34:39 -0800 (PST)
+        bh=tosFlEOKGj8XInQr/E0mYfY51v7I4YOwqCWi7kcZaGo=;
+        b=JQkuQB7TGrsW99XSMI0AJ5p2ovrq2HnxJ3jTnbG0phZMnGFMdMHkK8lDvaVRg5ei4z
+         x12lXLzxomfl59560yYCoYLvkXErcHj/YhyHJnBV+/8VQNiuxmhzbdDvvFFK2Mh4PzbD
+         k8LzecOMIfbgcQi5MW1WKh9kKMn440Yy+zl1dF3lwRylGWfY6C0inSUPxsgssi3ufo5K
+         6aMTYcAj7zLVjtCtGEC3KNuBLqI75xrIWv0AvAzs32SAlQETdITOHt1ZB8yzavTr6fCs
+         BrTXxPds+JmmAVDpQDCgSNNq/FO1Kc2mVbtQ2cuCi4SfU3qCgsHkSW97Qdj6Qx7QWui/
+         2akQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXv+eQG94GFdzFOrAzj7uQYGshpP2v9VdCrV6r8HYV92YoOL9igmMY+y9HSD7wyuilm0tAKW10q4Ke0cw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwlUY22BFkcZtETcsmhguy0Q2/CJwOGT8ZhuW1K1Q2v9Z5GlUco
+	EJex7OX+TCZrNr4GlEIp3Vp/3n6glXw90JblGKYeda3ulvJ3O8L+iJpm8N7hBoggDHI=
+X-Gm-Gg: ATEYQzwTsc4TpkueaALEkOcdeDhAlM66ltzNn6OFclU1JfS9rvksEg6otcm9teCV/gt
+	WtwJs0rxiJl5mMwkCwEz8YGSloY3iEg4kQVrxy2JWdyuSTZ2CU/pKRGxQlEMbQlAIAz8Bo1BCsS
+	RWIQ/TNGPw1sUcAinY3u13PuAmdLLJiDboMM/SyAJdUrAxQNVdVl5k5AUBoeb5lqyIi6G+/7SLL
+	vAi5j1Iqb2nQtpKgaKJEoLTD+ZfOmwVAvAamYmuIXH4ocGDa4utli2Bu5tld5mtQhTuDPRgCvXZ
+	701zxykEiJ/nCgfeqCxBaP0wzBkZ4+x7a/LZDbkDn4R8gO9P9NxW/cffgCB2d/1msGFrme6RnAh
+	1X0+HU2D0Tv2XHxUfVc6x3usB3/wL47lVJ7vqe3vZZOefy8akzOmswdrDQ8b57C/7FdGz2Lin3e
+	Tshr85mEeB/wGGQLXMR9/7R1IDqCsy
+X-Received: by 2002:a05:6000:228a:b0:439:c69f:503a with SMTP id ffacd0b85a97d-439c7fd38c0mr8472479f8f.27.1772689705601;
+        Wed, 04 Mar 2026 21:48:25 -0800 (PST)
 Received: from localhost ([196.207.164.177])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439b8807a4esm26871282f8f.4.2026.03.04.21.34.38
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439b03db76bsm32639731f8f.18.2026.03.04.21.48.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Mar 2026 21:34:38 -0800 (PST)
-Date: Thu, 5 Mar 2026 08:34:35 +0300
+        Wed, 04 Mar 2026 21:48:25 -0800 (PST)
+Date: Thu, 5 Mar 2026 08:48:22 +0300
 From: Dan Carpenter <dan.carpenter@linaro.org>
 To: Soham Kute <officialsohamkute@gmail.com>
 Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
 	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] staging: sm750fb: sm750_hw_fillrect: propagate
- de_wait() error
-Message-ID: <aakV6zJbUAJR7j8M@stanley.mountain>
+Subject: Re: [PATCH 6/6] staging: sm750fb: sm750_sw_i2c_init: return -EINVAL
+ for invalid GPIO
+Message-ID: <aakZJmbAfIvyW02e@stanley.mountain>
 References: <aaVT1mSeKrSSlrha@stanley.mountain>
  <20260304173529.192067-1-officialsohamkute@gmail.com>
- <20260304173529.192067-2-officialsohamkute@gmail.com>
+ <20260304173529.192067-6-officialsohamkute@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -77,14 +77,55 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260304173529.192067-2-officialsohamkute@gmail.com>
+In-Reply-To: <20260304173529.192067-6-officialsohamkute@gmail.com>
 
-On Wed, Mar 04, 2026 at 11:05:25PM +0530, Soham Kute wrote:
-> Propagate the error from accel->de_wait() instead of returning -1.
-> The caller treats all non-zero return values as failure.
+On Wed, Mar 04, 2026 at 11:05:29PM +0530, Soham Kute wrote:
+> Return -EINVAL instead of -1 when the GPIO pin number is out of
+> range. The caller ignores the return value.
+> 
+> Signed-off-by: Soham Kute <officialsohamkute@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_swi2c.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+> index c73943341f66..46599be8d6b9 100644
+> --- a/drivers/staging/sm750fb/ddk750_swi2c.c
+> +++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+> @@ -344,7 +344,7 @@ static unsigned char sw_i2c_read_byte(unsigned char ack)
+>   *      data_gpio     - The GPIO pin to be used as i2c SDA
+>   *
+>   * Return Value:
+> - *      -1   - Fail to initialize the i2c
+> + *      -EINVAL - Fail to initialize the i2c
+>   *       0   - Success
+>   */
+>  static long sm750le_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
 
-No, the caller just ignores the errors.
+This part needs to be done in the patch that changes
+sw_i2c_read_byte().
 
 regards,
 dan carpenter
 
+> @@ -382,7 +382,7 @@ static long sm750le_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
+>   *      data_gpio     - The GPIO pin to be used as i2c SDA
+>   *
+>   * Return Value:
+> - *      -1   - Fail to initialize the i2c
+> + *      -EINVAL - Fail to initialize the i2c
+>   *       0   - Success
+>   */
+>  long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
+> @@ -394,7 +394,7 @@ long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
+>  	 * range is only from [0..63]
+>  	 */
+>  	if ((clk_gpio > 31) || (data_gpio > 31))
+> -		return -1;
+> +		return -EINVAL;
+>  
+>  	if (sm750_get_chip_type() == SM750LE)
+>  		return sm750le_i2c_init(clk_gpio, data_gpio);
+> -- 
+> 2.34.1
+> 

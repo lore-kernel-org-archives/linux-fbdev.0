@@ -1,42 +1,73 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C80DA1C6FF5;
-	Thu,  5 Mar 2026 00:23:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0013F1E5018
+	for <linux-fbdev@vger.kernel.org>; Thu,  5 Mar 2026 05:33:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772670231; cv=none; b=g+q8RZew8R0dwIB15u9is1IEaSOMZbRocyzrgMcS8ymL240RbkWBaBIVnETABtUDumSchTsrj4rA9oMbwvRT6XqASe/nAWUponowv6g3a/auWFboQj9G0XPOWzNITDvCOxy7NrMBPV6SVFmrCpt5fqQpcocPNJXqzzH35E4KMW4=
+	t=1772688829; cv=none; b=uTfXmVQKs2eBQvBR6uULFL9Q4KLs9nVjhV4POZyx6hPfS8pAHzF642GrhHSZOIzC1Ji7Lal/jykZMMbd2PChoIqVl1MpvFLvxONgIMHGBUdx6tzkN6BBrkq0fO/DZ1GIfB6lhXXwEEDUCs0GGjGk4VXJ1N3VFdT3PDIZnaWfQPw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772670231; c=relaxed/simple;
-	bh=y7DfFca5BwGLTdsV10+azoOM3Jmj6MnCcT9JsOiC4js=;
+	s=arc-20240116; t=1772688829; c=relaxed/simple;
+	bh=wj6XVJR7daBU7N60b0ABVb/8u/aeymIukhxPfV3iPe0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B2THULhwjSM2CMQ5tTxrJRbjXmFqlmefBdm2rLxJW2vwhTnZfW8sbDGIRKD+fTmCDtEj7HkpENkqpvfMudMy1uVwKT0RfzKkKxL66TplZbxe5hH1MsB9ldg+anL2sq7ukLCerjpDVtmP4Vx1J3iA0LaV24yY9o6ZQ1jPhH7DotA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oU0MDVBS; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=irme+QLGtSN0kFtTsOGzsBose2bYGIB+QNa9v5qAC7r3Aw53Eb6pS8H7xAVg0ugXPuIJhm1aQO6jnHzTwad2NHRz5rBndiMfPBH5TLlxjOYJV0Cyl+epARFzAt2WXNpySLynuWwETm8xzWo5jtD45T7W76IMgvT2YgpCpPDsrIs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=V7VLctsw; arc=none smtp.client-ip=209.85.221.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oU0MDVBS"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9B16C4CEF7;
-	Thu,  5 Mar 2026 00:23:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772670231;
-	bh=y7DfFca5BwGLTdsV10+azoOM3Jmj6MnCcT9JsOiC4js=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=oU0MDVBSFI40hoL7TuiPn7pRpKDvN63IIns4tlIhDrF9471f+FD79YkOi41y/su8m
-	 tUZlLFvbRgnE0cfuOGSF5H2p8UwmLqSgKECfjnaVNXbPWVjP3nfmNnJQO0ZrKQbG5V
-	 ke+/XMBUtwVAVljl3jMEDfy+3WxWhM8aAJ5PuSBM+lI7d2xCmwFQIeMDtMh8ouwWHO
-	 l74M5rJUFIecGnt3iKpDwvRS+iG1lWW1jy6nCGw5eRmH2TcCl+So6R52OtyQFwIqoR
-	 krK1doizo4rk/803pysVogqTWxsdU6BQ/IXbd0PzKnw4QzRHCEAYuIXqIMCTf+w8Dr
-	 qgALiewXsskkg==
-Date: Wed, 4 Mar 2026 17:23:47 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: gregkh@linuxfoundation.org, deller@gmx.de, sam@ravnborg.org,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 09/13] lib/fonts: Compare font data for equality with
- font_data_is_equal()
-Message-ID: <20260305002347.GA4102761@ax162>
-References: <20260302141255.518657-1-tzimmermann@suse.de>
- <20260302141255.518657-10-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="V7VLctsw"
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-439aa2f8ebaso2976179f8f.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 Mar 2026 21:33:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1772688826; x=1773293626; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Fhxvhu2T/q45ENXvH+eUJLMEREATBu6EpqQKx+HGiRE=;
+        b=V7VLctsw07sgyiUo/+n02NUkyj+Pi7wucaxCrYD0Jyimgwj9OyCQ+/7q+crIFA0OhM
+         IwAKEC5NWyV3Fvp1Jrf3NMvamLy7/pAZj+3VUvT3ovV1X0gOLM1QRToMxhGtEEFPZQiF
+         e513tUXLUdKvdYQV40n9KfhnooIzRmLlvHZo+pfnxeJtepWRQnJJQofZj8sMpmaYs598
+         Qn5dJiKdOWKisaGC+UTfU5ilRZ8UlEnO1CfPVCONP5CyX1oNE/xfTQHYQIq+CbkQ0XsW
+         eWbK4UB8kkGrJPLfD+o5e5ADijhqLLWwvR9V5qOXnvHxUVCi+VMCV+apr9l4g2pf56nl
+         /4rA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772688826; x=1773293626;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Fhxvhu2T/q45ENXvH+eUJLMEREATBu6EpqQKx+HGiRE=;
+        b=B/6y0Mihq64bPUAXMpjdlScbfTyis8ifvndUAmc0ZNZ40Df4JoXaZERTReMY4cROft
+         eJdeFGabGxoWRTNT9Tsdbik2/M/lG1AB3KzNNtuXmGlrzoOPv1h2yZAs3KmxafTiQVGP
+         96vJhcrrDVGAJs9DGQDI8a3SDgcLMQG5IpcvE9UvvVBo7ZrHrT0wSItDXTPXNiNYbG9+
+         wEwqgUtVSxfpUiBIeH4N35MHqn0bj7w8/LMpjbls79jTDwFDZLSbvhegNMhPxI/hmTev
+         /DaMIWXbaYk/WuUq3jqRSD4Az0tkgU5pBc6Y39oBiJXZopzzZ3+igDLopTaET+tQN7AW
+         tw8g==
+X-Forwarded-Encrypted: i=1; AJvYcCXlWFsStZQGh7SFGCBbZJaX8WHHMVSxrd6yguekIMC/KMiUSlhxsAv1VIvsljOL+1vn6N1bGAvqBO/A2g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyFKm/Fqkz72omOLZCyTY93gdFUG8/jB16o/X1LML8mCW5M77nd
+	C0EQcB9G1XAOqO0LbEkWbvnRGEzlmDkV4feAOMzH074uNxaElfKNVzSybotClIshRcU=
+X-Gm-Gg: ATEYQzwEOwB2Xpm8A1tKoPoRf+F4DINHHRUxAxB4gj39i1ESyf203uHbw20yZW+T/vU
+	j79tcWAJmna5OY3TR/IiFTFtz6dxcvDuqeHDUXPGoHt+4OiBYkHu9UXzRgiy05yxF/rWuvHLw7n
+	F1EhwBO3APdQuPfnqoulBB8ZbJ1y7HRpTT8XADNUF5wY0GuJsPGuhuK+fFzRIVaWB0J+/U30KgH
+	Gqi4GK/FtM8VUysoWN+/4i/WW8Cnce/O7NX0zPgfSPQebqPdG/POqfv0Jp6F8603qrhe22jVFJx
+	UxSw3fq8eH85XuqeBdmKqqdRg/foFT3t1UEGthWk5ejp3+CgXTLoDYTMnx4Vl+R4iV/yD95025J
+	yxdOVZwSoZCgkQwOPEa+kxdvdBM2zTkBLi/WsJLMso5c3UKQlth997cJDOOG31KQAs6/dpG1AKX
+	qL22oKYX+j255h1GrDLKdhJBjPgXQw
+X-Received: by 2002:a05:6000:2401:b0:439:ad72:9900 with SMTP id ffacd0b85a97d-439c7fffc62mr7932444f8f.29.1772688826250;
+        Wed, 04 Mar 2026 21:33:46 -0800 (PST)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439af926c53sm40217958f8f.8.2026.03.04.21.33.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Mar 2026 21:33:45 -0800 (PST)
+Date: Thu, 5 Mar 2026 08:33:42 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Soham Kute <officialsohamkute@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] staging: sm750fb: hw_sm750le_de_wait: return
+ -ETIMEDOUT on timeout
+Message-ID: <aakVticYA5tHisbr@stanley.mountain>
+References: <aaVT1mSeKrSSlrha@stanley.mountain>
+ <20260304173529.192067-1-officialsohamkute@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,96 +76,44 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260302141255.518657-10-tzimmermann@suse.de>
+In-Reply-To: <20260304173529.192067-1-officialsohamkute@gmail.com>
 
-Hi Thomas,
-
-On Mon, Mar 02, 2026 at 03:08:43PM +0100, Thomas Zimmermann wrote:
-...
-> diff --git a/lib/fonts/fonts.c b/lib/fonts/fonts.c
-> index 8c9a6762061c..c9f6328d5dda 100644
-> --- a/lib/fonts/fonts.c
-> +++ b/lib/fonts/fonts.c
-> @@ -12,18 +12,25 @@
->   * for more details.
->   */
->  
-> +#include <linux/font.h>
->  #include <linux/module.h>
-> -#include <linux/types.h>
->  #include <linux/string.h>
-> +#include <linux/types.h>
-> +
-> +#include <asm/sections.h>
->  #if defined(__mc68000__)
->  #include <asm/setup.h>
->  #endif
-> -#include <linux/font.h>
->  
->  /*
->   * Helpers for font_data_t
->   */
->  
-> +static bool font_data_is_internal(font_data_t *fd)
-> +{
-> +	return is_kernel_rodata((unsigned long)fd);
-> +}
-> +
->  /**
->   * font_data_size - Return size of the font data in bytes
->   * @fd: Font data
-> @@ -37,6 +44,32 @@ unsigned int font_data_size(font_data_t *fd)
->  }
->  EXPORT_SYMBOL_GPL(font_data_size);
->  
-> +/**
-> + * font_data_is_equal - Compares font data for equality
-> + * @lhs: Left-hand side font data
-> + * @rhs: Right-hand-size font data
-> + *
-> + * Font data is equal if is constain the same sequence of values. The
-> + * helper also use the checksum, if both arguments contain it. Font data
-> + * coming from different origins, internal or from user space, is never
-> + * equal. Allowing this would break reference counting.
-> + *
-> + * Returns:
-> + * True if the given font data is equal, false otherwise.
-> + */
-> +bool font_data_is_equal(font_data_t *lhs, font_data_t *rhs)
-> +{
-> +	if (font_data_is_internal(lhs) != font_data_is_internal(rhs))
-> +		return false;
-
-This breaks the build when CONFIG_FONT_SUPPORT is a module.
-
-  $ cat allno.config
-  CONFIG_MODULES=y
-  CONFIG_DRM=m
-  CONFIG_DRM_PANIC=y
-
-  $ make -skj"$(nproc)" ARCH=x86_64 CROSS_COMPILE=x86_64-linux- KCONFIG_ALLCONFIG=1 allnoconfig all
-  ERROR: modpost: "__end_rodata" [lib/fonts/font.ko] undefined!
-  make[4]: *** [scripts/Makefile.modpost:147: Module.symvers] Error 1
-  ...
-
-  $ scripts/config -s FONT_SUPPORT
-  m
-
-Cheers,
-Nathan
-
-> +	if (font_data_size(lhs) != font_data_size(rhs))
-> +		return false;
-> +	if (FNTSUM(lhs) && FNTSUM(rhs) && FNTSUM(lhs) != FNTSUM(rhs))
-> +		return false;
-> +
-> +	return !memcmp(lhs, rhs, FNTSIZE(lhs));
-> +}
-> +EXPORT_SYMBOL_GPL(font_data_is_equal);
-> +
->  /*
->   * Font lookup
->   */
-> -- 
-> 2.53.0
+On Wed, Mar 04, 2026 at 11:05:24PM +0530, Soham Kute wrote:
+> Return -ETIMEDOUT instead of -1 when the DE engine poll loop
+> times out. The callers check for non-zero return value and
+> propagate the error code back to their callers.
 > 
+
+They don't propagate the error back.  The callers do:
+
+drivers/staging/sm750fb/sm750_accel.c
+    87  int sm750_hw_fillrect(struct lynx_accel *accel,
+    88                        u32 base, u32 pitch, u32 Bpp,
+    89                        u32 x, u32 y, u32 width, u32 height,
+    90                        u32 color, u32 rop)
+    91  {
+    92          u32 de_ctrl;
+    93  
+    94          if (accel->de_wait() != 0) {
+    95                  /*
+    96                   * int time wait and always busy,seems hardware
+    97                   * got something error
+    98                   */
+    99                  pr_debug("De engine always busy\n");
+   100                  return -1;
+   101          }
+
+They return -1.  Propagating the errors means:
+
+	ret = accel->de_wait();
+	if (ret)
+		return ret;
+
+Also this is a v3 patch, it needs v3 in the subject and a little
+description of what changed.
+
+https://staticthinking.wordpress.com/2022/07/27/how-to-send-a-v2-patch/
+
+regards,
+dan carpenter
+

@@ -1,258 +1,284 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazon11013038.outbound.protection.outlook.com [40.107.201.38])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 980A915B998;
-	Sun,  8 Mar 2026 01:46:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772934395; cv=none; b=G0A7HDOVitC6ozzdRHg1ytGvRVTvIakBj2IB6nIjVu9Hc1HtaVHwqT9/3JRlM1XY8Ja+dbRBQXgdnh8ts37IfVzaPomvlMtLgkxLKyS7oBQMHZC8i+oBZUCystS2tf8SmWTYyHbUQN1Or/qkOWzJIPicdX0j1jAf5qWpGJ+C5gs=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772934395; c=relaxed/simple;
-	bh=JuKrpdeAXiz+uHlpk4oCoHahV6Z5B4HuXYS5XNM/TmE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XfoQqRgtsd7m8HlTUirzpwJDjK6RJ865VQBF2Jks214c4l46QL+kvHiWaJCyfhq9By8TG5eaPSUkMiigDRQLl7TYG60a3DVzaPnfSTqWEzJkGnQkUUnhPlQZK8uOONcVrJfToOsh/hXxeW6xo/KSfnwaAzFCd1GQaA+9R8Hm2dQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lJjPf+dy; arc=none smtp.client-ip=192.198.163.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91DC233D4FF;
+	Sun,  8 Mar 2026 18:04:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.107.201.38
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1772993089; cv=fail; b=fHGnh208sB3htXwI9sAL4sFbttYaQanzV+UP4Dl2zrR2HzfobW7QFl2R2AqfLcAiBbpkb0GiPbW0DHnjyKshwZE580EZUAVAXXfpY0CbSotejlcLudXI6RspGWNTt6biowWUOGHcZdY8nCrXGwfLPZX61AffGd5yzAPMJu12TT4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1772993089; c=relaxed/simple;
+	bh=6mk2d/JH2mT0rZOPkzaGwq8UCNpm9Hi5t7mMv3zHtns=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=i8xNuBV6nJvVFESAdIa+RIirCKZBKFlve9PtAqu6BdH+WuZ2TrW3l76KSGhSPyirIUlM2XWAHIK0HcDa9pVucuCZRi0B8VYxsXqOHTEB+NJ0FmLrWDMDeN++I804695mcFjORDHZdy6uMdOFi4yyCOCSNj74Ah97yByOaAvQK8Q=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=UoipFnRL; arc=fail smtp.client-ip=40.107.201.38
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lJjPf+dy"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1772934393; x=1804470393;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=JuKrpdeAXiz+uHlpk4oCoHahV6Z5B4HuXYS5XNM/TmE=;
-  b=lJjPf+dyd8fCu93Kxwu+bD5w6fKhtWaIYSnRkQEYwmtn4Ixo1/uJHLCJ
-   MFh7rEXxkHavJ6fZtPbGYsZ8DmVMBq64NGmekFtWNNXOmF0ndqxbKpK4c
-   ysWlYFYqwRyVHc77ObAzOYYdbH+EgAfsYugRIUAKVQPMVI5s9qQKhlOxe
-   y156c2inejYTjRn9yrlcPou9fp65CLhUvkizuog4uVQHRGnW5TLW+8r9I
-   1+QilvwFBpfOJse0Nb8w5X/8L/E+oY2iK1jfsJ/PnaTQuBJEI//mr0OjX
-   VYEiFUe/iolOOtDWJXt6/cOksmRH/+MgFwIHUH0i0Cy3OL9ywky179PiM
-   w==;
-X-CSE-ConnectionGUID: k+Zvlm6mTni1Zj8IKTiNNA==
-X-CSE-MsgGUID: J0Eh98+fT7m/+kzOPkoVGg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11722"; a="73023465"
-X-IronPort-AV: E=Sophos;i="6.23,107,1770624000"; 
-   d="scan'208";a="73023465"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Mar 2026 17:46:33 -0800
-X-CSE-ConnectionGUID: 9guqWbkSRw2oUxLi2nOdqg==
-X-CSE-MsgGUID: azmyA512QD6t7XNcwgzTzg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,107,1770624000"; 
-   d="scan'208";a="216416294"
-Received: from lkp-server01.sh.intel.com (HELO 058beb05654c) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 07 Mar 2026 17:46:31 -0800
-Received: from kbuild by 058beb05654c with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1vz3Dw-000000002mr-1frU;
-	Sun, 08 Mar 2026 01:46:28 +0000
-Date: Sun, 8 Mar 2026 09:45:41 +0800
-From: kernel test robot <lkp@intel.com>
-To: Oskar Ray-Frayssinet <rayfraytech@gmail.com>,
-	sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Oskar Ray-Frayssinet <rayfraytech@gmail.com>
-Subject: Re: [PATCH] staging: sm750fb: add missing const qualifier to char
- pointer array
-Message-ID: <202603080944.rMPCAhoj-lkp@intel.com>
-References: <20260307131833.1138-1-rayfraytech@gmail.com>
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="UoipFnRL"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=MTurcWn75uGAN4xKlcN3Y6EP0Gr3DBj+edhp8D8pxF7Hj1ZlLqEiQJJ+TVg/dEWfk1ugKAOB0rcEvU4Vbx4rZbVMmGizQPd9/EhoNnE3GidueqBeeDqFre/GDwpHD5JXNzQhkdL9JTS7RDJfbveH6EdeNZI6f4QPofRP2WXJK700BFnU3mLCw2zrJvsef/7hzPffCUFMZCJqanpIvTG8qDUZeuha/jVcMLJA3z3TX3iM6eLVkHFEefvc+qRHipv1TnMA24mBkn/syIixfWgEinYtx0D0ghe1vaTgAdha9ij1w777lCi7JJWMuSrdPBAdJYt8ubcsCKyQrjopLwXKpQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Vm/yi/B0SiRtuoazW8QXTYVEUol9azZQQ9DlDHCtI9o=;
+ b=l2hUmVcfIQ3bw3X0OtNzKHZvV9SRb+knFEmjq0OnBnDGlP/MmVVKqaIexg6M7t7R6iCde3Tu44NVNR4OU1ay9Ramvey9g/Xd95i1OSiEZ+qqAeBVhnJBAVz6/si26gKgdwDBZIutIHwLpgi09JbGEj8xj2rzShIB08QtQMtC6EEX85LzVm1gNEKF7uQxEBZO7v/RZvdGCRu92FhqzwHas6orydisNrWhdCD0YK+Q5c7MTfN0RF32488YQNycHSdQtjuVBE3+rphx1jMDaA5o6Husi9/w/IR9RnNKP9Ev2ltekXwTENaOawD+9jkPxM7+qAYPJGjJPLd2A2sNUefKXw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Vm/yi/B0SiRtuoazW8QXTYVEUol9azZQQ9DlDHCtI9o=;
+ b=UoipFnRLQ+35ExOWmYPc1hgryO1cijMGEtbSNu/Fwq/uwvLPp5bsFkX5gdOyDElrzTgbZRw3j2Navzl1/r+ucuj0NmvqM25yrpbIMjUOZXhAtGDgQPGHHcXx4vgYfdQfC2uBm+LWg3YmPRci5WI3tz43dp6W5mj7WcFmykmzU6eWivXNgLNFqtcVYJgy56C3urxNU2AVTmPLy10hHUMyaxvP0IYtn9D3XOcxUAYVhOxgIsFaeAV8e5i+Kau8B9cMNGrpaAQEvYuKMTacdE6FS1OfDZA+dF4Bp0neK2mooyBVcmXTCYwY8Gfn/1fYJZ8ojtXvdwdR0uV/5HJ/FX9RpQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
+ DS7PR12MB6022.namprd12.prod.outlook.com (2603:10b6:8:86::7) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9700.9; Sun, 8 Mar 2026 18:04:37 +0000
+Received: from DS0PR12MB6486.namprd12.prod.outlook.com
+ ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
+ ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9700.006; Sun, 8 Mar 2026
+ 18:04:36 +0000
+From: Joel Fernandes <joelagnelf@nvidia.com>
+To: linux-kernel@vger.kernel.org
+Cc: Miguel Ojeda <ojeda@kernel.org>,
+	Boqun Feng <boqun@kernel.org>,
+	Gary Guo <gary@garyguo.net>,
+	=?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?= <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>,
+	Trevor Gross <tmgross@umich.edu>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Dave Airlie <airlied@redhat.com>,
+	Daniel Almeida <daniel.almeida@collabora.com>,
+	Koen Koning <koen.koning@linux.intel.com>,
+	dri-devel@lists.freedesktop.org,
+	nouveau@lists.freedesktop.org,
+	rust-for-linux@vger.kernel.org,
+	Nikola Djukic <ndjukic@nvidia.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	Huang Rui <ray.huang@amd.com>,
+	Matthew Auld <matthew.auld@intel.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Lucas De Marchi <lucas.demarchi@intel.com>,
+	=?UTF-8?q?Thomas=20Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+	Helge Deller <deller@gmx.de>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	John Hubbard <jhubbard@nvidia.com>,
+	Alistair Popple <apopple@nvidia.com>,
+	Timur Tabi <ttabi@nvidia.com>,
+	Edwin Peer <epeer@nvidia.com>,
+	Alexandre Courbot <acourbot@nvidia.com>,
+	Andrea Righi <arighi@nvidia.com>,
+	Andy Ritger <aritger@nvidia.com>,
+	Zhi Wang <zhiw@nvidia.com>,
+	Balbir Singh <balbirs@nvidia.com>,
+	Philipp Stanner <phasta@kernel.org>,
+	Elle Rhumsaa <elle@weathered-steel.dev>,
+	alexeyi@nvidia.com,
+	Eliot Courtney <ecourtney@nvidia.com>,
+	joel@joelfernandes.org,
+	linux-doc@vger.kernel.org,
+	amd-gfx@lists.freedesktop.org,
+	intel-gfx@lists.freedesktop.org,
+	intel-xe@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Joel Fernandes <joelagnelf@nvidia.com>
+Subject: [PATCH v12 0/1] Rust GPU buddy allocator bindings
+Date: Sun,  8 Mar 2026 14:04:06 -0400
+Message-Id: <20260308180407.3988286-1-joelagnelf@nvidia.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: CY5PR15CA0145.namprd15.prod.outlook.com
+ (2603:10b6:930:67::13) To DS0PR12MB6486.namprd12.prod.outlook.com
+ (2603:10b6:8:c5::21)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260307131833.1138-1-rayfraytech@gmail.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|DS7PR12MB6022:EE_
+X-MS-Office365-Filtering-Correlation-Id: fb8aaf5e-a432-47de-a243-08de7d3d28d1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|7416014|366016;
+X-Microsoft-Antispam-Message-Info:
+	YrplS0I3IVIn3sX/Px231fd2NQsiXjWtpWrFoItTyMADJEjf6P4ssO2hL+umywd46itnQOTyrkObhNKNFTSlDY9pFP4Y3ZxiY1Gvrhd89J/DHxvbYNTTlXjy2jk+GnMiJI0/4WtwuhinzW1AdpIaN350rZlONm6VcuVcQtPMrXY7gCt+kyoe0TzF37H4oAgN+P4A/QG1f98tlgepMgG0I4L+pE2g6Ixpak2oqdV9HTzy/gRSdTBxsrvpPE0wGaHr9ytuxORe9nUJdDnrd/+B6CfHl8dRrR00T6AiVv5b9TuFw/+NXH/9mDD3batvBIlILUZtWacv92MNF98swvB09pe40js5c+g4rFKGdPJcbXlHFG2gOgbch34iHqhL+UPJYSuDVoM6P01CPVZdi02FOUnXUwcDOTXnevPHLXzNVPQF+0jg7nLdJWC1upKatdz8utUVxktleXgN50wRa6t9cv83VreQTrywM4b5DdlKZcQ3BSMcL0U2aKYTdx0ojXa23LeHYEj4d9x8Htl6HY8s7Gtl6IO0NeqPD/yq5KUiu0x+VwTUNFK49Pk8aL7qHv//PpBSE8HMar06l3GMxHZ1XCoAIBpy5gZawvnqLzT9YFPb7TlU/KSaccsSjdKzo5kaUm2TKfLu+ntvj6kZrGGh+o+ATR+nY+slO4XT9uLThsWuyFkwcUYAgo7SFPNPR7eZyLMw3kWZk2TGsrjoBkwU4Sxm3y+N6yx5LjxyU9h0FGc=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?stwp3e6ORK8sFGXA+zyS37dS8a6iIsHOLmjL6478v5zV8Kx9qXh6lq8fINKQ?=
+ =?us-ascii?Q?NQPRaL40wykV5gndLQ09ffjCteujswDw0ItSDxqOgWB0rxmYLbYKCTQN5k56?=
+ =?us-ascii?Q?bGMTdBKDeI2odhftWnog+UKzoS7IYmgx3qWCNXOB8zw75sQUJljG5J4dzMBs?=
+ =?us-ascii?Q?96A9Zz90deBPXjQiZi04aEEUYtoVKi9ZSjYG1BhjnwWAHk0nI1fgO833gpIj?=
+ =?us-ascii?Q?acLOE3PxAVEcP5A1vq6VunIOHY/W/hnelbja1plwsSl4pFOG1HveBHFuTNrl?=
+ =?us-ascii?Q?NUcgdCMZTfnzoTMM9VHhvuFYL++1MPhuGzCGpl0C4XXLao/krXuIi/Adl2bC?=
+ =?us-ascii?Q?Jbd1FOnURmHcup3AudzZx/w1LKnxNEGXQyTEFA1I8uHEm0vtEmbNTtoCAHPx?=
+ =?us-ascii?Q?zT4RnbsoN1euf2Ov4A3jNY9rCHVf3sdqwRv7f59rPNZZBt9dofmNonmxbSuN?=
+ =?us-ascii?Q?XKxNcMgYYzkM31Xvvh/vDSVMNINg7pETMgJs2lYqXpcpfZbhVXWXAKh6lPOu?=
+ =?us-ascii?Q?omEkqqrOoA+8MEnjHGguG1JwaSnfDj6CpOGOEYZczxTWZuc2RpUvf+h6bfF8?=
+ =?us-ascii?Q?QVrsIkRcwA90siciZUCO7qzEwkdEMyEJSz1berP/tHuowy/7p7HjDhomCnm+?=
+ =?us-ascii?Q?65U0lpZETIKz3fR6QGkPfMURtc2vntipY1nazRTtEbaQMuzbkuwS4SZxmf5i?=
+ =?us-ascii?Q?oozSsgNPLJ+dEGpGk3VAon+d9fUxnTrnZed8Px5Tvq+K/ZNXdk9RTUjNb8up?=
+ =?us-ascii?Q?qW5iJlRcBZArSnqi2EVIugXDHOLtGXyFmRmA9q4uhIySYWnDfCJYNV9uZiTE?=
+ =?us-ascii?Q?J7AehoFltWaoPbBPCW5cIbQchdvbnZZToFaU3MwQHvouvUC5zN11Wu5q+lnP?=
+ =?us-ascii?Q?uyFpRcy1PAYFWjSTKlgsAWPfDXF2c1fsWnXQTIQ2dYcHU3hzfTcdxjFwmJJa?=
+ =?us-ascii?Q?AWO9IOhR0eOHI6cuxEsaoDwbVF+Llj7VUns7sfWjMAy4fA8aw+jm1SesAc7B?=
+ =?us-ascii?Q?Al5oe9kAswNemizANziNpoUig4LG26iU6sH9ymNWzTDzhBvDgI2tQ0LJSCNn?=
+ =?us-ascii?Q?TT4+0Vka8YrrJCNIjXIBJtaM4T/FIPJMPkoQ30DuJhQdD2+1ZklHB+E6jpzN?=
+ =?us-ascii?Q?eySZXawAHJIqHWcUwPcxDvcJkrqq3bSVp2G59rvhYnpP1p8QLW/coRkLF9iK?=
+ =?us-ascii?Q?w8TYL3HOCwCiJ4S+xQCRKzGBTsgkeyPqkszca6tgba+inunCyv28luhkPEUc?=
+ =?us-ascii?Q?MRCvCBKny9mVcAnvYTqltodJb2D++8VlalW5sPu5kO0OywHIB42/DIQLezP4?=
+ =?us-ascii?Q?8uRuCdGNFRfdwBl9Pmaqawm1ZuLdJMHc5QsZAaqhm6mehX4gFTRpuXNiMf60?=
+ =?us-ascii?Q?wobxRIuK32S12ScSLO+B5ihTR8bb7efTu5u+87zcpYFtn6KpzGIrpazq2qC5?=
+ =?us-ascii?Q?qs/3mZR0cbPU49opK5M/7/+uYAjJoR2PqxHOD6z8ZJhayIGpCcO4VXxLlrAn?=
+ =?us-ascii?Q?O62B0WmCXPNN+Sh2IdHrTPaknWFT6UtXdTxiILb1f/ml571uXi3jrrCGqH4m?=
+ =?us-ascii?Q?v/RRHWbJu0HIWzZSdptjJUBUMfVAjeXO7u0tHpeFMHp4J5Ibe00aPct/3cNf?=
+ =?us-ascii?Q?JOAv5AVtTCFy697f52aY8Q8qRLb6pnS+7Gaib1LQ7h5lFt5y0BqepkkaxjwM?=
+ =?us-ascii?Q?R9D66jgQWr2EpvisE0+OUhf2GuFl5PJAKakxEBTg+YzXX85IfD/OsVqbdHDx?=
+ =?us-ascii?Q?ArIXY9MY1A=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: fb8aaf5e-a432-47de-a243-08de7d3d28d1
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Mar 2026 18:04:36.6408
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ElYqE94SjxhkWdd+DDv/YuyXP9TRt99RjpajKVWl6sfJRqtoYRc3/u2jhazOhYu67JFiBE4KKr5ycR5UC2Rkgg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB6022
 
-Hi Oskar,
+This patch adds safe Rust abstractions over the Linux kernel's GPU buddy
+allocator for physical memory management. The prerequisite infrastructure
+patches (DRM buddy code movement and the uninitialized buddy fix) have been
+absorbed into upstream -next, so this is now a standalone patch.
 
-kernel test robot noticed the following build errors:
+The series along with all dependencies, including clist and nova-core mm
+patches, are available at:
+git://git.kernel.org/pub/scm/linux/kernel/git/jfern/linux.git (tag: nova-mm-current-3-8)
 
-[auto build test ERROR on staging/staging-testing]
+This patch is also here:
+https://git.kernel.org/pub/scm/linux/kernel/git/jfern/linux.git/commit/?id=gpu-buddy-bindings-v12 
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Oskar-Ray-Frayssinet/staging-sm750fb-add-missing-const-qualifier-to-char-pointer-array/20260307-212030
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20260307131833.1138-1-rayfraytech%40gmail.com
-patch subject: [PATCH] staging: sm750fb: add missing const qualifier to char pointer array
-config: i386-buildonly-randconfig-003-20260308 (https://download.01.org/0day-ci/archive/20260308/202603080944.rMPCAhoj-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260308/202603080944.rMPCAhoj-lkp@intel.com/reproduce)
+Change log:
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202603080944.rMPCAhoj-lkp@intel.com/
+Changes from v11 to v12:
+- Rebased on linux-next his is now a standalone single patch as dependencies
+  are absorbed (but not clist is a prequisite)
+- Redesigned allocation API (Alexandre Courbot) for better Rust ergonomics.
+- Split single long example into 4 self-contained examples (Alexandre Courbot).
+- Several safety and invariant comment changes (Danilo).
+- MAINTAINERS changes (Arun, Mathew, Danilo, Dave).
+- Fixed `#[cfg(CONFIG_GPU_BUDDY)]` to `#[cfg(CONFIG_GPU_BUDDY = "y")]` (Danilo Krummrich).
+- Updated `ffi::clist::CListHead` to `interop::list::CListHead`.
 
-All errors (new ones prefixed by >>):
+Changes from v10 to v11:
+- Dropped "rust: ffi: Convert pub use to pub mod and create ffi module" patch;
+  the ffi module restructuring will go through a different path.
+- Dropped "rust: clist: Add support to interface with C linked lists" patch;
+  the clist module will be submitted separately.
+- Dropped "nova-core: Kconfig: Sort select statements alphabetically" cosmetic
+  patch.
+- Patches 1-3 (DRM buddy movement and fix) are included as reference only;
+  they are already being pulled into upstream via drm-misc-next.
+- Removed clist patches as those can go in independently (Alice).
+- Moved the Kconfig GPU_BUDDY selection patch to nova-core mm series to enable
+  it when it is actually used.
+- Various nits to comments, etc.
 
->> drivers/staging/sm750fb/sm750.c:782:19: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
-     782 |                 g_fbmode[index] = g_def_fbmode;
-         |                 ~~~~~~~~~~~~~~~ ^
-   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
-      36 | static const char * const g_fbmode[] = {NULL, NULL};
-         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/staging/sm750fb/sm750.c:784:20: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
-     784 |                         g_fbmode[index] = g_fbmode[0];
-         |                         ~~~~~~~~~~~~~~~ ^
-   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
-      36 | static const char * const g_fbmode[] = {NULL, NULL};
-         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/staging/sm750fb/sm750.c:893:17: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
-     893 |                                 g_fbmode[0] = opt;
-         |                                 ~~~~~~~~~~~ ^
-   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
-      36 | static const char * const g_fbmode[] = {NULL, NULL};
-         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/staging/sm750fb/sm750.c:897:17: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
-     897 |                                 g_fbmode[1] = opt;
-         |                                 ~~~~~~~~~~~ ^
-   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
-      36 | static const char * const g_fbmode[] = {NULL, NULL};
-         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-   4 errors generated.
+Changes from v9 to v10:
+- Absorbed the DRM buddy code movement patches into this series as patches 1-2.
+  Dave Airlie reworked these into two parts for better git history.
+- Added "gpu: Fix uninitialized buddy for built-in drivers" fix by Koen Koning,
+  using subsys_initcall instead of module_init to fix NULL pointer dereference
+  when built-in drivers use the buddy allocator before initialization.
+- Added "rust: ffi: Convert pub use to pub mod and create ffi module" to prepare
+  the ffi module for hosting clist as a sub-module.
+- Moved clist from rust/kernel/clist.rs to rust/kernel/ffi/.
+- Added "nova-core: Kconfig: Sort select statements alphabetically" (Danilo).
 
+Changes from v8 to v9:
+- Updated nova-core Kconfig patch: addressed sorting of Kconfig options.
+- Added Daniel Almeida's Reviewed-by tag to clist patch.
+- Minor refinements to GPU buddy bindings.
 
-vim +782 drivers/staging/sm750fb/sm750.c
+Changes from v7 to v8:
+- Added nova-core Kconfig patch to select GPU_BUDDY for VRAM allocation.
+- Various changes suggested by Danilo Krummrich, Gary Guo, and Daniel Almeida.
+- Added Acked-by: Gary Guo for clist patch.
 
-81dee67e215b23f Sudip Mukherjee      2015-03-03  716  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  717  static int lynxfb_set_fbinfo(struct fb_info *info, int index)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  718  {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  719  	int i;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  720  	struct lynxfb_par *par;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  721  	struct sm750_dev *sm750_dev;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  722  	struct lynxfb_crtc *crtc;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  723  	struct lynxfb_output *output;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  724  	struct fb_var_screeninfo *var;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  725  	struct fb_fix_screeninfo *fix;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  726  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  727  	const struct fb_videomode *pdb[] = {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  728  		lynx750_ext, NULL, vesa_modes,
-81dee67e215b23f Sudip Mukherjee      2015-03-03  729  	};
-81dee67e215b23f Sudip Mukherjee      2015-03-03  730  	int cdb[] = {ARRAY_SIZE(lynx750_ext), 0, VESA_MODEDB_SIZE};
-8c475735085a7db Tim Wassink          2025-12-21  731  	static const char *fix_id[2] = {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  732  		"sm750_fb1", "sm750_fb2",
-81dee67e215b23f Sudip Mukherjee      2015-03-03  733  	};
-81dee67e215b23f Sudip Mukherjee      2015-03-03  734  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  735  	int ret, line_length;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  736  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  737  	ret = 0;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  738  	par = (struct lynxfb_par *)info->par;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  739  	sm750_dev = par->dev;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  740  	crtc = &par->crtc;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  741  	output = &par->output;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  742  	var = &info->var;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  743  	fix = &info->fix;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  744  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  745  	/* set index */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  746  	par->index = index;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  747  	output->channel = &crtc->channel;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  748  	sm750fb_set_drv(par);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  749  
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  750  	/*
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  751  	 * set current cursor variable and proc pointer,
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  752  	 * must be set after crtc member initialized
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  753  	 */
-fdc234d85210d91 Benjamin Philip      2021-07-28  754  	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  755  	crtc->cursor.mmio = sm750_dev->pvReg +
-e359b6a863e19f2 Mike Rapoport        2015-10-26  756  		0x800f0 + (int)crtc->channel * 0x140;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  757  
-cd33da26036ea54 Christopher Carbone  2022-08-23  758  	crtc->cursor.max_h = 64;
-cd33da26036ea54 Christopher Carbone  2022-08-23  759  	crtc->cursor.max_w = 64;
-39f9137268ee3df Benjamin Philip      2021-07-26  760  	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  761  	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  762  
-3de08a2d14ff8c7 Lorenzo Stoakes      2015-03-20  763  	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  764  	if (!g_hwcursor)
-52d0744d751d8f1 Arnd Bergmann        2016-11-09  765  		sm750_hw_cursor_disable(&crtc->cursor);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  766  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  767  	/* set info->fbops, must be set before fb_find_mode */
-e359b6a863e19f2 Mike Rapoport        2015-10-26  768  	if (!sm750_dev->accel_off) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  769  		/* use 2d acceleration */
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  770  		if (!g_hwcursor)
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  771  			info->fbops = &lynxfb_ops_accel;
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  772  		else
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  773  			info->fbops = &lynxfb_ops_accel_with_cursor;
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  774  	} else {
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  775  		if (!g_hwcursor)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  776  			info->fbops = &lynxfb_ops;
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  777  		else
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  778  			info->fbops = &lynxfb_ops_with_cursor;
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  779  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  780  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  781  	if (!g_fbmode[index]) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03 @782  		g_fbmode[index] = g_def_fbmode;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  783  		if (index)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  784  			g_fbmode[index] = g_fbmode[0];
-81dee67e215b23f Sudip Mukherjee      2015-03-03  785  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  786  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  787  	for (i = 0; i < 3; i++) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  788  		ret = fb_find_mode(var, info, g_fbmode[index],
-81dee67e215b23f Sudip Mukherjee      2015-03-03  789  				   pdb[i], cdb[i], NULL, 8);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  790  
-db7fb3588ab4920 Artem Lytkin         2026-02-23  791  		if (ret == 1 || ret == 2)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  792  			break;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  793  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  794  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  795  	/* set par */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  796  	par->info = info;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  797  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  798  	/* set info */
-e3a3f9f5123683b Mike Rapoport        2015-10-26  799  	line_length = ALIGN((var->xres_virtual * var->bits_per_pixel / 8),
-e3a3f9f5123683b Mike Rapoport        2015-10-26  800  			    crtc->line_pad);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  801  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  802  	info->pseudo_palette = &par->pseudo_palette[0];
-cc59bde1c920ab6 Benjamin Philip      2021-07-28  803  	info->screen_base = crtc->v_screen;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  804  	info->screen_size = line_length * var->yres_virtual;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  805  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  806  	/* set info->fix */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  807  	fix->type = FB_TYPE_PACKED_PIXELS;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  808  	fix->type_aux = 0;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  809  	fix->xpanstep = crtc->xpanstep;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  810  	fix->ypanstep = crtc->ypanstep;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  811  	fix->ywrapstep = crtc->ywrapstep;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  812  	fix->accel = FB_ACCEL_SMI;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  813  
-8c475735085a7db Tim Wassink          2025-12-21  814  	strscpy(fix->id, fix_id[index], sizeof(fix->id));
-81dee67e215b23f Sudip Mukherjee      2015-03-03  815  
-fdc234d85210d91 Benjamin Philip      2021-07-28  816  	fix->smem_start = crtc->o_screen + sm750_dev->vidmem_start;
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  817  	/*
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  818  	 * according to mmap experiment from user space application,
-81dee67e215b23f Sudip Mukherjee      2015-03-03  819  	 * fix->mmio_len should not larger than virtual size
-81dee67e215b23f Sudip Mukherjee      2015-03-03  820  	 * (xres_virtual x yres_virtual x ByPP)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  821  	 * Below line maybe buggy when user mmap fb dev node and write
-81dee67e215b23f Sudip Mukherjee      2015-03-03  822  	 * data into the bound over virtual size
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  823  	 */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  824  	fix->smem_len = crtc->vidmem_size;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  825  	info->screen_size = fix->smem_len;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  826  	fix->line_length = line_length;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  827  	fix->mmio_start = sm750_dev->vidreg_start;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  828  	fix->mmio_len = sm750_dev->vidreg_size;
-b610e1193a917f4 Matej Dujava         2020-04-30  829  
-b610e1193a917f4 Matej Dujava         2020-04-30  830  	lynxfb_set_visual_mode(info);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  831  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  832  	/* set var */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  833  	var->activate = FB_ACTIVATE_NOW;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  834  	var->accel_flags = 0;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  835  	var->vmode = FB_VMODE_NONINTERLACED;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  836  
-61c507cf652da1b Michel von Czettritz 2015-03-26  837  	ret = fb_alloc_cmap(&info->cmap, 256, 0);
-61c507cf652da1b Michel von Czettritz 2015-03-26  838  	if (ret < 0) {
-fbab250eb51d6d6 Artem Lytkin         2026-02-07  839  		dev_err(info->device, "Could not allocate memory for cmap.\n");
-81dee67e215b23f Sudip Mukherjee      2015-03-03  840  		goto exit;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  841  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  842  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  843  exit:
-81dee67e215b23f Sudip Mukherjee      2015-03-03  844  	lynxfb_ops_check_var(var, info);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  845  	return ret;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  846  }
-81dee67e215b23f Sudip Mukherjee      2015-03-03  847  
+Changes from v6 to v7:
+- Major restructuring: split the large 26-patch v6 RFC series. v7 only contains
+  the Rust infrastructure patches (clist + GPU buddy bindings), extracted from
+  the full nova-core MM series. The nova-core MM patches follow separately.
+- Rebased on linux-next.
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Changes from v5 to v6:
+- Rebased on drm-rust-kernel/drm-rust-next.
+- Expanded from 6 to 26 patches with full nova-core MM infrastructure including
+  page table walker, VMM, BAR1 user interface, TLB flush, and GpuMm manager.
+
+Changes from v4 to v5:
+- Added PRAMIN aperture support with documentation and self-tests.
+- Improved buddy allocator bindings (fewer lines of code).
+- Based on drm-rust-next instead of linux-next.
+
+Changes from v3 to v4:
+- Combined the clist and DRM buddy series into a single coherent series.
+- Added DRM buddy allocator movement from drivers/gpu/drm/ up to drivers/gpu/,
+  renaming API from drm_buddy to gpu_buddy.
+- Added Rust bindings for the GPU buddy allocator.
+
+Changes from v2 to v3:
+- Squashed 3 clist patches into one due to inter-dependencies.
+- Changed Clist to Clist<'a, T> using const generic offset (Alex Courbot).
+- Simplified C helpers to only list_add_tail (Alex Courbot, John Hubbard).
+- Added init_list_head() Rust function (Alex Courbot).
+- Added FusedIterator, PartialEq/Eq impls.
+- Added MAINTAINERS entry (Miguel Ojeda).
+
+Changes from v1 (RFC) to v2:
+- Dropped DRM buddy allocator patches; series focuses solely on clist module.
+- Dropped sample modules, replaced with doctests.
+- Added proper lifetime management similar to scatterlist.
+- Split clist into 3 separate patches.
+
+Link to v11: https://lore.kernel.org/all/20260224224005.3232841-1-joelagnelf@nvidia.com/
+
+Joel Fernandes (1):
+  rust: gpu: Add GPU buddy allocator bindings
+
+ MAINTAINERS                     |   6 +-
+ rust/bindings/bindings_helper.h |  11 +
+ rust/helpers/gpu.c              |  23 ++
+ rust/helpers/helpers.c          |   1 +
+ rust/kernel/gpu/buddy.rs        | 611 ++++++++++++++++++++++++++++++++
+ rust/kernel/gpu/mod.rs          |   5 +
+ rust/kernel/lib.rs              |   2 +
+ 7 files changed, 658 insertions(+), 1 deletion(-)
+ create mode 100644 rust/helpers/gpu.c
+ create mode 100644 rust/kernel/gpu/buddy.rs
+ create mode 100644 rust/kernel/gpu/mod.rs
+
+--
+2.34.1
+

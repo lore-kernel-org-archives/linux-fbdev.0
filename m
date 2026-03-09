@@ -1,104 +1,91 @@
-Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com [209.85.222.44])
+Received: from ha.d.sender-sib.com (ha.d.sender-sib.com [77.32.148.27])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12F2919F13F
-	for <linux-fbdev@vger.kernel.org>; Mon,  9 Mar 2026 00:28:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A38D636EA99
+	for <linux-fbdev@vger.kernel.org>; Mon,  9 Mar 2026 09:51:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=77.32.148.27
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773016095; cv=none; b=o17YMYC9ZTWRAo5LPn4XS4QAjbBRsGH1Kq7kigZMuF1q0Y3tIdcJWdL9kY5Q+iPK2M8wbbM6TUBQ1zZoGqEcSYOc5pdkBlSEsTUyJTuzGoWaU0xINOcpTzegEzPWMvitdsWsmHtCLHBosIFrXIoXBqfwcPicRryhbsP/u1+2Nf8=
+	t=1773049879; cv=none; b=lS1gMgsnzlszsyHwpPrfJngoHBmo3eLVnfXjNgBAUJr+4HSN0W6Y3iOR1SRG6O56BWXGFzG+Wll9zETWA5PonOMoez7JiVjZ+k3+QPAz4OUXQHY+qWXnGAVGOSMJeUo2DyN+n+n9ETEiuF+myId9BgVS5tiyCWFcP9zyDK6E4qM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773016095; c=relaxed/simple;
-	bh=mBr01td4BCvpqI5GZ0lfJ69/mbIPnGmmAZ6z106k/NI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SNP+WTif8rzW+B/OREDlQR9zx3RX6MKiQ4WPAxbAQCMd1fX3k8n0/qKCEBGfdoFogEbJdCQH+HYe2f6DQnO31JrVkMPYiJB9B7dNtka3BJy+Wi6KuT4ub4TiNLiBRXmsLWZaOtSovV7zPOP6C1N5IZreJiEfmQsGh2dxaqIS5ps=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ned59C6I; arc=none smtp.client-ip=209.85.222.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1773049879; c=relaxed/simple;
+	bh=/NjYQLUlAQqRHjopFjH8R6wTEBaPvdHffgxnR2Awpdg=;
+	h=To:Date:Subject:Message-Id:From:Cc:Mime-Version; b=hbPsLaREC+pt2RExu/NREy+xK3vDFiUyriGmBZCS8UT33nhdXnIaaPfrlHAHKaoLClZP7lktQzkgLv9AQlgsnZkL/6SLhd1eh4poW8foY8sLx3/QbhRAG2BmA60tz/mS1AjrEKBI6N7vfrKZxVj7KAdnJolz/eLUy9qy52x5vOw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=dipeshchaudhary.in; spf=pass smtp.mailfrom=ha.d.sender-sib.com; dkim=pass (2048-bit key) header.d=dipeshchaudhary.in header.i=@dipeshchaudhary.in header.b=gBKbl2rc; arc=none smtp.client-ip=77.32.148.27
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=dipeshchaudhary.in
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ha.d.sender-sib.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ned59C6I"
-Received: by mail-ua1-f44.google.com with SMTP id a1e0cc1a2514c-94b07fddecbso7249211241.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 08 Mar 2026 17:28:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773016092; x=1773620892; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=WTPcH67gBIMYWJG75czRVYMRcOaSA8FrrCACoKPG3Vw=;
-        b=ned59C6IiiGsNB6oOas5gtxdUNAiIweAyo1IozqJV2r/1z+WmFE9u5DsUAU/QyiAh+
-         I0g2fe0AsBL5rMS3mshmwEXVPhJlaSXLmTyBJ+ToHxXrDHlxA+G5+z/iuzrvJlpDMFH4
-         +QegfA+nDBU06VVYbcr+UQ6IjkJE3PUXNgjAnJU9Am3O4i0aragzdFuNkmO55LpI7jQx
-         kW1wIt/gDuol9pR2SUJyoVOIFrDCF1aLClT9EazCl5C/4ahTXYxjAZ/uXwNR5Ra3n6ww
-         5HqJ3prtq+yoAhZjXTU3dSit8J0vbyFDAT70/39DFHwMrOghu4X2RmLkJ1ygbrGdzGEl
-         jfRg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773016092; x=1773620892;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WTPcH67gBIMYWJG75czRVYMRcOaSA8FrrCACoKPG3Vw=;
-        b=Eekmai/SVKMU1rvZPwF696WjwScue84W1/gQhh4LtIi58f+tzejV4KjyXxbHdPPXYV
-         63Axgs3Jgi+8jSQYHd/+ou+NEbA2uz+GoVJkoBd5ws35vhm3pwqjAGwsh4REIC50U+Dl
-         +T9lqk1WhR+NV3uWCo72SzFb1N3ABK20VkXdC23EnsbX6N7tASUBAaexieCwLV7ZuB9w
-         fKjIXGtbrvaxw/MuXEbgzjPbS3E3gAbIw43fMWreUsa+TmzvyV9CGmSWH4jMNIwA2GwX
-         WhiYeHlJIHqpVECaljRhidOp9ViUaUgl0+XIy4O54y5NHWsegHN1xGd/VJ24afo2EzbU
-         oa4Q==
-X-Forwarded-Encrypted: i=1; AJvYcCWTUi3FsyLdtAQ5l+pSaqM4/gdQGMeQrEDIvxsttu84jmjScjmah6xcHzDDqdplUSNz6EBPWQSGY+unGg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzlMtW+/H7VV4W0DTvPxfd2cj6AkVJBAq0Mh2JqseRIPAYG8Qgi
-	f5rYgssedpyAETBSSkg60XCQgXCOtx2SUfmA2UExsDDU1kexeJsIv6kR
-X-Gm-Gg: ATEYQzxsHq1XPY97GJyVjGdg68vEgVNI4do0/6BcO4iQk9iTTUOecBYYNguq/80AGCK
-	+gIUING9U+v2sl59rzz3Ir92cSgEa+DyK7CbdIn1Y4hpcc5/yrVxnzs4ypAiJG7+3qYCoErferk
-	jwpgRp4KN0IowDZhN5Zn61W3oe067H4AO4RMvbZvfYRpRNzqQr7TCW5n9mZIJzp7R7WGjDatDCI
-	L8ldzaudu/pU3r90aP6hJdj133715DAT8p0NCQ6jujOrUgOfP8VMlUQDxc1n5jX9uJRkDWXELX/
-	L5cR/eY5h3//CRMWBfBCqlNUDlX4nuO9fSIO0xlUvzuWpDWKnfTvWOTRfCPQmzFpikaP9+c9Mqy
-	BYtBr3IiHrXK4nUu590b8JXyZpVASHVmxTY7+ZYZbjDF90xnzO/LDu+IDRndZ338IBIouRVQ9OY
-	gyU53hJjcy5AFrVw==
-X-Received: by 2002:a05:6102:50a6:b0:5f1:606f:2a14 with SMTP id ada2fe7eead31-5ffe6124a7bmr4227595137.23.1773016092039;
-        Sun, 08 Mar 2026 17:28:12 -0700 (PDT)
-Received: from horus ([138.97.160.237])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-94e7b38e378sm7523203241.7.2026.03.08.17.28.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 Mar 2026 17:28:11 -0700 (PDT)
-From: sluisr <luistermc789@gmail.com>
-X-Google-Original-From: sluisr <contact@sluisr.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com
-Cc: gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	sluisr <contact@sluisr.com>
-Subject: [PATCH] staging: sm750fb: fix static const char * warning
-Date: Sun,  8 Mar 2026 18:28:09 -0600
-Message-ID: <20260309002809.15746-1-contact@sluisr.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=dipeshchaudhary.in header.i=@dipeshchaudhary.in header.b="gBKbl2rc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dipeshchaudhary.in;
+ q=dns/txt; s=brevo1; bh=QRHf1dUs5DHSc4cF4HIYieYENyGomrtSGfANHV362tI=;
+ h=from:subject:date:to:cc:mime-version:content-transfer-encoding:list-unsubscribe:x-csa-complaints:list-unsubscribe-post:message-id:x-sib-id:feedback-id;
+        b=gBKbl2rc4zo49+t9WIdVJBaxi4jzBF2obk8EifctzZY9n5V+aJ0qIo0LpfBEXeiy1M5sL1fdYKcR
+        KwpBP2D4HyBPlRwJ00H1we5DsYfcSwRZsK7XFBaTFJu5OQ1QU/CDr8x7I2sCuFG1McA/RbNmMlpL
+        9oE7i2o9noOcu2g3fheApd7fJJNXaBc9n5tAroXvKBoWPBa53Z4DrDzP2DmQkwE1mfJ/pjy7+jv9
+        vHWkbQjPI7YEKCUbBuO6nJXitFobQ4rQXNC1ehCotU/RyWebhUNsQzMnVqGRi23t1TEAgLOOxAaG
+        US57vX6nf9rskUJwZZdMd5DJJHC+Ic4e+nI30w==
+X-CSA-Complaints: csa-complaints@eco.de
+To: <sudipm.mukherjee@gmail.com>,<teddy.wang@siliconmotion.com>,<gregkh@linuxfoundation.org>
+X-sib-id: cwQc1T0ZnD8TN5v8TRA2xmfANoZUh6Ruqtjkqo-zuqNj-tyRqPGhdytDTwjMtR9kXcUWj3XqtnpLTJvUJqvEM0aHtsL9o5Bb967VE4rQndDnl_iAaAY1Ei4sIEyu4PgUaTthqMuvw3jq_9Lr7xKP9VlkctZUgxPzqPkEDkYSvUpj-w915tdHw7z0
+Origin-messageId: <20260309094957.278429-1-me@dipeshchaudhary.in>
+X-Mailin-EID: NDQ2MTgxMzU4fmxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZ348MjAyNjAzMDkwOTQ5NTcuMjc4NDI5LTEtbWVAZGlwZXNoY2hhdWRoYXJ5LmluPn5oYS5kLnNlbmRlci1zaWIuY29t
+Date: Mon,  9 Mar 2026 09:49:57 +0000
+Subject: [PATCH] staging: sm750fb: constify g_fbmode array
+Message-Id: <c9808cbc-a32a-49e7-b666-4b324da95f9f@smtp-relay.sendinblue.com>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+Feedback-ID: 77.32.148.27:10551297_-1:10551297:Sendinblue
+From: "dipesh chaudhary" <me@dipeshchaudhary.in>
+Cc: <linux-fbdev@vger.kernel.org>, <linux-staging@lists.linux.dev>, <linux-kernel@vger.kernel.org>, "dipesh chaudhary" <me@dipeshchaudhary.in>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 
-This patch fixes a checkpatch.pl warning:
-WARNING: static const char * array should probably be static const char * const
-by adding the missing const keyword to the g_fbmode array declaration.
 
-Signed-off-by: sluisr <contact@sluisr.com>
+Fix checkpatch warning for static const char array. Make the array of point=
+ers read-only to improve memory safety.
+
+Signed-off-by: dipesh chaudhary <me@dipeshchaudhary.in>
 ---
+ Makefile                        | 6 +++---
  drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index dec1f6b88..08d4979c6 100644
+diff --git a/Makefile b/Makefile
+index df471d4212cc..e944c6e71e81 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,8 +1,8 @@
+ # SPDX-License-Identifier: GPL-2.0
+-VERSION =3D 6
+-PATCHLEVEL =3D 19
++VERSION =3D 7
++PATCHLEVEL =3D 0
+ SUBLEVEL =3D 0
+-EXTRAVERSION =3D
++EXTRAVERSION =3D -rc1
+ NAME =3D Baby Opossum Posse
+=20
+ # *DOCUMENTATION*
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm75=
+0.c
+index dec1f6b88a7d..08d4979c6755 100644
 --- a/drivers/staging/sm750fb/sm750.c
 +++ b/drivers/staging/sm750fb/sm750.c
 @@ -33,7 +33,7 @@
- static int g_hwcursor = 1;
+ static int g_hwcursor =3D 1;
  static int g_noaccel;
  static int g_nomtrr;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
+-static const char *g_fbmode[] =3D {NULL, NULL};
++static const char * const g_fbmode[] =3D {NULL, NULL};
+ static const char *g_def_fbmode =3D "1024x768-32@60";
  static char *g_settings;
  static int g_dualview;
--- 
-2.53.0
+--=20
+2.47.3
+
+
 

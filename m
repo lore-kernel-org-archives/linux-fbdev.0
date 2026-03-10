@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9F2F3B2FE2;
-	Tue, 10 Mar 2026 16:36:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A5D13CF057;
+	Tue, 10 Mar 2026 16:56:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773160600; cv=none; b=k9YwjovIR/LNTJjEP/22m8OeJxyLom1RADuRJeMFJhKBoW+go6xyCz43q4fGPhQF/tBXDauOjzVLuxUYZ0jAs3mCUjf4nIbj8j2I2GK8CbT9iOrpsbjSHLJRta+7bD0qONk2smOBGapM4Ll39Gy4dRjlPn3110qZLR1hKfdedik=
+	t=1773161793; cv=none; b=VrURyeRvJNXb0OlG3c6WVyt6DYEvHj5l07VgptSt0lmp97ZZQRKr31ZxIFOOrqvze9+3+qS8aIl9QSa7hs3J8uKKCe6GLpkkXFI7YpyxNX5j5QvTArXCJ297yOLANjgZ1Gyu8LipEutMeJ5XYt+oBVG9a7Wc1Dp6b1K7cSYWkek=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773160600; c=relaxed/simple;
-	bh=VRbwwaX3cX+GBCVQr9yerWGCcdr11Yq7nisfHW3fiJg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=uh+uquDMvSzgXum5QHt9g7eSIGUsjRt9mkZXXBmLz8xXX18SpwvD5ykKdZ9zQ+Buw+w7YfezXHK9jXZiXXstFcblSxgwAU7m5svtTecGNswZpgmdJ4YYfJz/uBEXvsDR7gSG3U1ge8fo9P2D+kt8nuQDI5yMW71bzu0yCns4U7c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=RB1l2bMQ; arc=none smtp.client-ip=212.227.15.15
+	s=arc-20240116; t=1773161793; c=relaxed/simple;
+	bh=HLq+2FQlmGDGDQgzFxE1S2MBcS8CI/qlEEjXPGfC59o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=LYAIHrJ7lJA8FEs5d1Ds4JkhpD7s2X+rdwNqNVGLrQHx91c3+c7tgZg1Is9O+spBpk1GHsAuoXxAUIc9K9JN/5eCuq4ebl5im9+ctNuTn7vsljLbRp8dboeBxb3rKUjGfefFgGYdoXjBzEFvh4/lOK3PjUDANI/r2tAtcvK1Tdw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=h5XaWd8L; arc=none smtp.client-ip=212.227.15.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="RB1l2bMQ"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="h5XaWd8L"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1773160585; x=1773765385; i=deller@gmx.de;
-	bh=7aQBFA7+bdvkE509aQprNTYrqICGki7uxVXnQBwf8L8=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	s=s31663417; t=1773161784; x=1773766584; i=deller@gmx.de;
+	bh=mCsvsr3DxkoWqBrZ+elVC1dwnuggWDdaXv2lg9app6s=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=RB1l2bMQw8xTv5Ql/3ZhZ31IBTeABCLo8BjiP8FeLoPm9irqRidbfeit0MnqAnKe
-	 QbXwzJ2xrVoyh1qD9FPazidIYd3SvimDpQbFrUdPKGZhGz76UhazJS/5cmt293AgC
-	 W4+kPhVEDeZ5g8iHX+1lDR63q6dDQXO+TrkP4s9SPujkUWJrh2wJChLSw6z5DuboY
-	 vogTkxKLyiIn1tWoGavLPSEYyplaHRif+bGEtDCeH/PdrPHUqxQocMS+s0STJM4I4
-	 i6SsmuuoAlHNNWNnzKN0TZKSMKqSQv6ThP3/UWWFWXWldIlksQJaQ1XdVXwBzGJlZ
-	 5LgFkUOucExiCPV5qA==
+	b=h5XaWd8LmPFg1Y+2Ao+Q8cdvDCh3aMzZM6bBpgrWl60o7na7aLG+uv1Z9QxpLcRg
+	 hHu3SokQKqiB/YA63fejIa80ljXHbT+4GpEcnES8ZwvCGonGHogabJz0vIDfp3dfH
+	 Sqb7xQxKw80UxbkaY9JAPfh4TlZcz7VsphIuwJpV3/Z36+LKDzXysNvSWSlusOJHi
+	 Phj/MfWBlbt9z9icxRu9sf4qNJnWRXWzgAPcb/TBkkf2uv+oUKuguIEXJfhxuoHJa
+	 AywVPeYoWzBHCuD9pOclgJ0aw32ZsOiO1E3hC+vtIfBXVytM/9kum3+wOjhMty+XZ
+	 ccROeJHAFtyxD7OJ+Q==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MuUnA-1vj1Pn0yeY-013944; Tue, 10
- Mar 2026 17:36:25 +0100
-Message-ID: <7fdc2a60-2f7d-49c2-b18e-5c5510c9c7cb@gmx.de>
-Date: Tue, 10 Mar 2026 17:36:20 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MYNNo-1w4wKg2jNy-00POf0; Tue, 10
+ Mar 2026 17:56:24 +0100
+Message-ID: <5b04fe68-e953-44a5-8d3f-ac826242e332@gmx.de>
+Date: Tue, 10 Mar 2026 17:56:23 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,14 +43,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video/fbdev/via: check ioremap return value in
- viafb_lcd_get_mobile_state
-To: Wang Jun <1742789905@qq.com>,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, gszhai@bjtu.edu.cn, 25125332@bjtu.edu.cn,
- 25125283@bjtu.edu.cn, 23120469@bjtu.edu.cn
-References: <tencent_5706A404B952870FEAC83A04EEFC8348A305@qq.com>
+Subject: Re: [PATCH v5 RESEND] Fonts: Adding all Terminus fronts from 12 to 32
+ in bold, and normal versions
+To: Pavel Nikulin <pavel@noa-labs.com>, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ Thomas Zimmermann <tzimmermann@suse.de>, Simona Vetter <simona@ffwll.ch>
+References: <aaIFr-GKG1qiJYwg@p100> <20260310123327.9172-2-pavel@noa-labs.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -96,131 +94,155 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <tencent_5706A404B952870FEAC83A04EEFC8348A305@qq.com>
+In-Reply-To: <20260310123327.9172-2-pavel@noa-labs.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:rYlqHtjWmOOYZmbtjATZgVkH3uFF5Dz78GnsS82vO9yIzJ6h1vY
- 2ZUi0awnHeqLIH3hkjGuR7tIzarngF848+D2Y/xfdToFmiWglyxJUGMzZrU2qBBUq4olFQ2
- 6pzukZN3jOI2jw16wv8xtq6HZqcQmW8gzKdEto36lEYxB+MPg5wNmzVhXdciVAXC4ZVeMjX
- 4wYu5E2RLT8OTnwTLqowA==
+X-Provags-ID: V03:K1:2TFGfm0K3UazUeehN4dZkqzFLXOXqOAKIOdaulOMY89Jnqi+9Li
+ cOKtynhbWOmDvnCsDn5y9TiyMWtgpN4iOGlBvUD15X2d+0hTceE4uuNo397WGiIGogmjDzG
+ Yg61bG80Gicqtdvgxn0/wBotxhNfz+p6lfZF13mnC9rWAm3cDNsYU4IHarZqAbEW8kXJsze
+ Lihp+n0nwWHSC3WOc4wZw==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:LSYOcON6l74=;lp+hVQ8L4+jVWPEcOmopddzTJQW
- F+I24I3al/h+5Eefnd3Fs5I41yfSjPpHfFDUUTIJvWEgAOAP+TWv69VSn13+NCphzG3iVLW0V
- 6Ox+/z+nCRXGfemtpIvxKJJFn+x6zItAeL6uIPYjGb+kud1M1yGDlT2XLjFoa28yH5EVRPi8q
- jSW2gR7svVjVgaA/ko+SNYCllPQ1jHBkcQQSq4R8+v3Uq+PHTCpZl+rkhOzjOJyqhQqYYt6BX
- rX4VHTrK8CkxDCgSMHwt4St1KbrPtalt3v42sB2qlvRYF1pQ5Hw/n8gW40NzYGTAPGbP3JIA1
- vYsBoNjkBj1X+jlytWrsEA3rnU7yfzN4OZ5ZKCqvQJVU8l8ycSdCHen2y1ue4+vm0w2wFd1WH
- UvMGSyqOWl3/Cuki4DcwS+N358m+O8oFW4q4wKpNCv8xdquoxr7Zi0ehBu07xpVWFtj+797+A
- D0cqLo/qG2TXAA+jCj8N/1USD6gIIiS3xKWxP0JGyDXrHsgiy81Z4HvgDD8dxGb5mBw4BUhyn
- MOOwXc8+OJAFlanH5pjo5HnPvgeEJ/ELKmdIErJJ85qrUpswJV27GRy+WM3L4nF0GwAmVrZ/8
- h8CnvDiJGJlfo41usysNf6RLxJ0+n9p+a4LUWOfsF6abo/FhCcZEc74J3mnhfXhZ+0Tq6PnH1
- CWqiDkwp+k2k78dMT/RBqML28iTHeQA5lVKA6aJI+YzM/4UHZRdpPrnpRiAb3roo4mNLtTv5F
- AsROdFGo1wvAtieacLSDo4Wu0nxEWydW0ACtfTDBZsP8mOD7grmcOCxpN3oV/YGMhMnkAzMp4
- aH1gYbOHtbsuCPkuAdBeh1KuNOXGPlupArhFOl92p0kL5a0FyhdCT+w6JYVK+Dol6RHzVokD1
- rA7OY5twB0IvCdM6ZePT8/ye2z7FPX8CTEvFx4r4j76fy9+4uneza/3/6Y/Nsha/mErl4n+5z
- S6O69Dciz5UKvghZ7+b5RIicpGnuOFlLg7pC4W+9jE5BO8srqAiUfm02tQqHoDy4TptdI2UvY
- DBTcDNfkB+xcnt5WKQlk6iiwJoJ/d7PPsPStPktYElMAg++Zk4h8M3RxODDLJ//pY74FoA5av
- ujvS7VILcbQ2cR4aSqVfkAj0teDdqOpEcc/V+Tov5E2Q071YEzrrgL7jq6YPlw+jJ1xTqjbYb
- NSqAkj7BNTpfSDF0ifHS+ihqKPCle0jA162lQZEiLGyLAoTpkBzwXdoUhfS1KEouG5XKf9QVu
- 6oJZfSt5gywKQwUWfoGD3qT74JWgbdIeAd3u8eKqkC/9w6eaNtm/6ZMOJ/762n5fLc/Z7xFod
- qhZJhusA9nicqnDfJkd++yMfndVvC1Pf++Ab2AhuV5aRbolXPGaOCJkLDwbtooAXD2QsfpTti
- 7VXQIVnv6ZG3J2Z3iwV2sB1gPxnXFL6wPJSw3ablaWx13IB5s5Uw4h33FLtF5RM5SzKjT0GgZ
- ldAvog6qjd/0ePlWKO9O2FXjPHMhSOrNhRmXloBCwoOZq8q+4X+Yd053B6RYCd93moczaULI5
- /tGrBu+1Y8tavWFqQKAVb4+Wb6qKxKA++gtXrW4ZKXz7OaLRHJtPpHVRqGMmpc52nJOzRApvd
- FiYforYTgNS8EVixkMheL6ynrYTMYeL3I5C8BTGqttA3jpgpgAZWWXPUETb7jiIM1c+1HKc+e
- PJX/n4L6pTxfi0j5gXxHPjeg0O23Qn3V7TOJoIR/sOHGWfdNtKLOC493QoNnI47+gsAw3mZ2C
- lEZkCvtQxTeWPXOAuduZB4h1khoopv3KHFSAjWo/HqiQKs7BMjmeSiNY2RZoipq0yqJkvSun0
- wFYFHQc3mWB2kvxPsuxe5/+gsauSEkZJiykKRd5d0mopkwPU8dXxH7oOruWQTtHkbVP+HcHdK
- LeyPNVlztUkZYKBUsrBw161oRAgPzog6tENay5E1qifgI7q8HH2Yys1xDPCdBmBcSFbFb19UA
- LHTenBvGOqnzV3OhjHcW4UEAG9mSkl/hFHQy41mSgfk/00YL4vvWAo6qKKFhudJ27DCoIUb9E
- JAuovkkaTv7UrpHLG4z3C80bQOV/HB0tQFe7s+veI2Fr18gZrpGYUBj4Ow8C1aLgdnmmbPEfX
- vW+mLBG3whXlt0AyEBMXawU1dcRqzedyaqRKFcDGdNYevMALnwOCjCXUhMUJnSHXQhQxNPyBv
- 2xNgJOSh9PR8Uu+UN5rpNd9J/yuFIvs3Oc9aLsm5Maq0CTMhjVdVBWVW1cSlgiBmGbR66dYUp
- J6X6IFxl9SioaKzc+Gf0Hquz4cnbzOA8Y6iagqBl/69oBqu2qOY5A9gGNQeUUOno/DUck4Yar
- Z7iVzE0SeUz216UsW+xPirhX8WqezJVYmByI7pF1r6vUPbGUgqmt47QfutiN2oAnUWgQxZZmS
- yFqZ8m9VxbF5In3MgCQH4JhV2282dVtPWxzZI5VyYa8Q9n6aLJKmfSBy31j9xvhpqDccE6wYJ
- 7mHv7yVAjfGQ2EYGRP5v4DismsZV+ikTOnQ2kb6EE7TVkqluPLg+NcVeYFCokOeZVJcVHzwTB
- 51RcCBJYn4LfkAqfgETHkhmEqDYdbS15S41J7PBSMXh5EWaYz/8TTVPNvOTLgiUULYs1v3wZH
- 2oWVhNzzqCjP+yhwvDzhagGfzYEXThmWz6JnS/2Xif1RmZZDwyVtDPcXDbHWNLftjMoiyXCkP
- Oli9oEXZbk4T4z5etBEMGE82OQvuQuLrElUfQoEO37MOMmsGpmhyB1uK1PfUuQjtOkpEIH/ry
- 5DqC7QK93qiXFKGMZAsv3FVHy+LhfxF0gWO6UwtHeLKMbO/sedid31kldNqSMheauWBFnhwrs
- yZ/L83jriA5ZNtLnVyJsuJVY64KbyN7wmnoGvql86jUodVu5T8stHPQAuijdf4V14zoV69xoF
- TPBrev9IFt5xDulFZ3hz0AyzoK2zEAvgRjxJhv0sZgBntH0rAvNboNOPllHEHqThNNv8c4vZk
- RVW7rQK3zz8Nhd7Dy2PxlCpaFyoSSfgvx2pLRQPtipgMnA/tu5j6E1/uEAu3eaVvMz2hS99KC
- 0hJwe3Xz3s9cLPFqtG0LsmbLlrC6SGByY5hIzJZaM2rH2OW8i3aeO543v+yCwgrm2w3OkL85G
- 6BmuM/lsZBHL1lWglAdpix99klbqbyEwP40pSjJIFZ6T3oj+7hJsu1XkwaK/gC88scLWKFGwf
- NL75cLEwRlz2OffxkK1WJ4VPacxLEPXyTrYTaCBOEfvHsSIsSRgxnmCQdJuyg6WED0c17e9VN
- cp+5KAovJUNw4/grMNaOGztjm7O3zQqnIAN7xuxkCV8PRRqYWlSeMvYxsWtHldqAMBt+Ur+J9
- E7HCPkwyrhTWhzuZ+y+2qeuBP31biptUm6yMdF608I39+McZ9cqhll2sbXCKVu0HHVqeCOqFg
- nLTYTaI0xZSBb6kIAP8PT0z7EYVEuke0F1KMt6KgnqgQJYj1QgVT8UcRUzWY0IQfBckAfddN1
- PKNMxNMfVmfriOhSJ4mAoiybcpZtYNUbKbzPNvE5uvOKcrFRw8fDUtiNGEKZXWmzbI23gjaUN
- pQzvupi6D9IlSs8lv+ZYg3106I189NSUn8e9NCW/FzQoX8ZshQIJ2EvQpnY3n+x0RzmMkh3/5
- PwtKhZASgNmN2JdlcgsYEcQp6nWmSIVEUU5I2gOzj8ZDieVqw8HbCb6bQUilcnzZfg/0S5wFK
- ESOTy07lB5JPc8HfkiAyUek+hy1PKvkCRyYGZha6qxDREWJ3W5+EyzD7g1C+a/nNxpBxsjBND
- 8BLNkKA2Pv2Q6jZZOLNtDDXT+YmZtW98zZ+WtiOy25ExwL+Lsisy7JLfPLzqGG0uF45zg/MrD
- Z9JOoE6Ot4too/+0rdFdn/PadlQNEbLdeY2T7fy/eOj8YXWFgRnAl0crdMeDTNNIjGw6Oclsn
- CgT3IhCHrNVx+CMRj6AKhCUf8Ifu/AR/zD3B96sc0eqVlSvfk50shYuahVLzmc+0/AGZCNaDN
- wtte28gEW/vzSXxjqRoiB3OfBtvgDiC6ElRoSewcIwoV8AheBzPaCBk6gTHhse68vj4QCE7Oq
- vx4b1AANxMMAKXaqM6z0kLBAV2kFX2e+BcMq1GbgRMczL6gKZpKBTBDouxRxjOF/hvBKAYKVS
- nP0RjYT1jCju19lgJPYqedMJRfH7aqrydwKtEQA4r5bMUEiVA3VN9bYHLSxCnQfnpVfajX1oW
- Iv0ZbvYjsoe7+DBPJU1YXihZSPW6xGY1S9tflNEC0dchpZPpxQDyUtvsGgZLlwVFR3nARq1OV
- NYR5FXc/S/zg7X0SmEk4XbP/GWsOH82niLTkkVD4ULCqUrNuJTB4LAPE2932kEMkQH7oYsOzK
- fI0vNb/wzNvdlqm8cGKYNuOvEzwegrHEiBEW36fDq8X+W7r0mXEmwU97dM0OPJkFIJKG2stto
- XAMAZ1usivOjXNxa8u9pK5khuywbUnFO88Xl2Pzj8wOznRH2Jaek8GSwywvjE/TYprB4NHqcy
- GhuRCPwGoLQbk0W9cMWHa57y+yong5mT1D1CcOr9q21PThMYaxeYu3e5p6Z+1twQtIqZehnmt
- 29Clc+GnkboQj6pmpYZmTphM+hnoduBu3i8b1yFxLTz++i665FlLL+1pA/bkZhEn/1S0z0vEX
- 4VeLY44Tx8E+AHsDTlIGPp6D8F1reoVT1Xd9sxeJeT1U983YQUqHcEpDRhEih37vHH05Wz9yl
- zVisBeKpen7IjP25GLcYKU5AEnlSKEQ7CbWG9EIYcZSpS1q/vx9R4vDfJ+qZSS0nwUrcfg3lS
- N1+FWNK7oJqA6Koz86F2DhPTbd5RtM0w9ZrzTKZhpYHOAGJPlNVBRL2f6JSr7BGrc7RGh8xZ4
- ghMt6fTLgjzbmtfDLGGTg5BCCOQEJ0EWp740inKzwbNbrpdiWS5icHZ4OV9Fe+WtrRdX4OdkO
- WvGViIGi90rYE20UdzTntbn1yIBgclDqIZ3CwqTAzba1ebSKrkJf1s3DQO+lZvAT/HezoTj3t
- ohXM7GQ0TDh3Ns8qgoJCi8WkFUto3tskV86MQBfQ1IqwFbRTj9QQpPNKLyWQmPclSrGeXX6jg
- wDMBwW4K7meUYW4MwLeolWWYJWNA1GFSVeFDQ0dfv4dSi+sXxZQVyhVLqaWldlAKVHteA5tmb
- 6+lDUt9hgUpuWbS5G1L4zsaPl8ntNay/Z/SXtd331VO0AKqnShy846m3lkQRAMf+1+dU4+/o8
- LY+WDe4k=
+UI-OutboundReport: notjunk:1;M01:P0:lnQqDvYMBOg=;00So6FydZ9bgDY2QP3NXbkOTDnb
+ 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
 
-On 3/10/26 02:14, Wang Jun wrote:
-> The function viafb_lcd_get_mobile_state() calls ioremap() without
-> checking the return value. If ioremap() fails (returns NULL), the
-> subsequent readw() will cause a NULL pointer dereference.
+Hello Pavel,
 
-correct.
-
-> This patch adds a proper NULL check after ioremap()=20
-
-yes.
-
-> and returns
-> -ENOMEM in case of failure.
-
-You return "false", not -ENOMEM.
-
-Anyway, I corrected this, dropped the DEBUG_MSG() call and applied it
-to the fbdev git tree.
-
-Thanks!
-Helge
-
- =20
-> Signed-off-by: Wang Jun <1742789905@qq.com>
-> ---
->   drivers/video/fbdev/via/lcd.c | 4 ++++
->   1 file changed, 4 insertions(+)
+On 3/10/26 13:24, Pavel Nikulin wrote:
+>> Why are both bold and non-bold fonts needed?
 >=20
-> diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd=
-.c
-> index 8673fced8749..91359d2b64fb 100644
-> --- a/drivers/video/fbdev/via/lcd.c
-> +++ b/drivers/video/fbdev/via/lcd.c
-> @@ -954,6 +954,10 @@ bool viafb_lcd_get_mobile_state(bool *mobile)
->   	u16 start_pattern;
->  =20
->   	biosptr =3D ioremap(romaddr, 0x10000);
-> +	if (!biosptr) {
-> +		DEBUG_MSG(KERN_ERR " Failed to remap BIOS memory\n");
-> +		return false;
-> +	}
->   	start_pattern =3D readw(biosptr);
->  =20
->   	/* Compare pattern */
+> Because people have different screen densities. On those 4k 10 inch scre=
+ens, people would probably go for bolder versions regardless of how much t=
+ext they want to fit in.
 
+Yes, but is there so much difference between 10x18, 10x18b,10x20,10x20b ?
+I mean, this is a whole lot of source code (bloat?) which we would add to =
+the kernel sources.
+Even more worse, if most people won't even compile it then....
+
+Just looking at the number of possible fonts, I wouldn't know which one to=
+ use myself:
+
+  lib/fonts/font_ter10x18.c  | 6412 ++++++++----------------------------
+  lib/fonts/font_ter10x18b.c | 1305 ++++++++
+  lib/fonts/font_ter10x20.c  | 1305 ++++++++
+  lib/fonts/font_ter10x20b.c | 1305 ++++++++
+  lib/fonts/font_ter11x22.c  | 1561 +++++++++
+  lib/fonts/font_ter11x22b.c | 1561 +++++++++
+  lib/fonts/font_ter12x24.c  | 1561 +++++++++
+  lib/fonts/font_ter12x24b.c | 1561 +++++++++
+  lib/fonts/font_ter14x28.c  | 1817 ++++++++++
+  lib/fonts/font_ter14x28b.c | 1817 ++++++++++
+  lib/fonts/font_ter16x32.c  | 4107 +++++++++++------------
+  lib/fonts/font_ter16x32b.c | 2073 ++++++++++++
+  lib/fonts/font_ter6x12.c   |  537 +++
+  lib/fonts/font_ter8x14.c   |  537 +++
+  lib/fonts/font_ter8x14b.c  |  537 +++
+  lib/fonts/font_ter8x16.c   |  537 +++
+  lib/fonts/font_ter8x16b.c  |  537 +++
+
+>> They may be loaded after bootup via userspace too.
+
+And I still believe, that the fbconsole usually is used for:
+a) older historic machines which can't use DRM/DRI, and
+b) simple devices / embedded devices which still use fbdev, and
+c) probably the majority: new x86 machines with DRM where it's only used s=
+hortly for bootup until graphical login appears.
+
+For a) I believe the current fonts are sufficient (and mimic the architect=
+ure).
+For b) I believe one of the current fonts will be hardcoded by the vendor.
+For c) I think most people don't care about the additional fonts.
+
+> Too many fonts are already baked into the kernel, and I would've
+> advocated for eventually adding a function for PSFs to be more
+> easily added at config, or boot time.
+
+Yes, a function to compile in some PSF-font at build-time would
+probably be more useful?
+
+All that said, my believe is that we already ship enough fonts
+and don't need a whole bunch of additional fonts.
+
+Any opinions from dri-devel folks on that?
+
+> Terminus is a good font for the kernel for the reason that it covers a v=
+ery wide range of font sizes.
+>=20
+> On the sidenote, the previously incorporated Terminus font patch seeming=
+ly has a wrong FONTDATAMAX value
+
+Do you want to send a patch?
+
+Helge

@@ -1,100 +1,221 @@
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D15840759B;
-	Tue, 10 Mar 2026 09:01:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E40DC44A723
+	for <linux-fbdev@vger.kernel.org>; Tue, 10 Mar 2026 10:03:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773133296; cv=none; b=OpoWwKjeiUaavHopmwnujFnGoZ6NJBQCZ65Cmj9eSr414aYVvhN26xw9f+oVeUzXA5IKrrJBVOebrSzF/3sD784dOTfiK2hJ8j38qJC/P4A9jRpCZIAJUHSgGVEbY6MtDeW3LxlpJJP8Q0+CBQ2nM9ZR54Cu5BSuwPImp6lb3oE=
+	t=1773137039; cv=none; b=MRp/fggYnLW9HomHQQGyPH69dveDRVA/1wcFWTCvCrWV1wV2zcRRUzWil6RkjH+MXkMsp025xlAt723FGMlbbrEE/8Iy1VgcHHPDfolNEJ1RKwSvEqncYLEzFQDss7vf/+xOC2PbodNiwWcIoQnuq7Qjk6JjuIJkl6p5eVV66k4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773133296; c=relaxed/simple;
-	bh=+ZtddYTfxK4iy32tnlSe9dFpGEJUP8yEVRuq3mkv7P8=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=UC1s7osRpT1nuXQ2eC3K2hnPdLwBdSkTpq62wbmRJrnjaCmsgsZKJWyKHn9o/QBLXm0h0bSbEQ+c79b3dJEjgWz2fj+BtRTzZgDCxzC1CN9AhGlEI2mc8+bRd364wNz982EROBE6cD8MOOGkvN4jNXsr3zC5fALh61oXYUbfZK0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from localhost (unknown [124.16.138.129])
-	by APP-05 (Coremail) with SMTP id zQCowACHGw_i3a9pWDQLCg--.28450S2;
-	Tue, 10 Mar 2026 17:01:22 +0800 (CST)
-From: Chen Ni <nichen@iscas.ac.cn>
-To: linux-fbdev@vger.kernel.org,
-	linux-omap@vger.kernel.org
-Cc: deller@gmx.de,
-	tglx@kernel.org,
-	mingo@kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Chen Ni <nichen@iscas.ac.cn>
-Subject: [PATCH] video: fbdev: omapfb: Add missing error check for clk_get()
-Date: Tue, 10 Mar 2026 16:56:25 +0800
-Message-Id: <20260310085625.2648545-1-nichen@iscas.ac.cn>
-X-Mailer: git-send-email 2.25.1
+	s=arc-20240116; t=1773137039; c=relaxed/simple;
+	bh=Hw7RpNvAMyoh456wLZRWy481JvPZNjpdv8VhU3i5om8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=sUNlWShn1T1bqtYCUTKrPgeqlgckUgvvBV99CEhJQt7ckdRAXJPqkYIRm2D6jCjwjBrHVXQML9gFE5xVPJoqBjyzh/TpmBSs1jnPeCv+SQYryvTBrBkMDGDDAxquxWrdNPMHbI3Rh9IyeFqkuTlAivCZOes/aLzqbmdTe2z2Td0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Z1KTSE+d; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=C8GMYqmy; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Z1KTSE+d; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=C8GMYqmy; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Z1KTSE+d";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="C8GMYqmy";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Z1KTSE+d";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="C8GMYqmy"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id B659E5BCCF;
+	Tue, 10 Mar 2026 10:03:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1773137032; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=unb/ia/rT9XLdwf1tCA4TtUuNK6PmpqB8m/z31OxSC8=;
+	b=Z1KTSE+dcEFy/IiseyroLmhaoruLJkiCb1NdvrxYjNjrCkzsadHTFRuIxJEfng3nRn98BY
+	HQfTEyW6V0vnVh9nL8YJnBTy7ak4iUTVm+Fpp7QvdXq/O4E24ogzFcZ2fRZ/k2UkFtKyN1
+	daiblFml+LtdPItRS0FpfKWJFDHxvwk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1773137032;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=unb/ia/rT9XLdwf1tCA4TtUuNK6PmpqB8m/z31OxSC8=;
+	b=C8GMYqmyR9HKgSGezsJgHAWhaMOMa8J2nBLLzRA82YEKO0kZxy6yuXew7AHikVTlCgmaj7
+	3dlaZyxUFdjtLNCQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1773137032; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=unb/ia/rT9XLdwf1tCA4TtUuNK6PmpqB8m/z31OxSC8=;
+	b=Z1KTSE+dcEFy/IiseyroLmhaoruLJkiCb1NdvrxYjNjrCkzsadHTFRuIxJEfng3nRn98BY
+	HQfTEyW6V0vnVh9nL8YJnBTy7ak4iUTVm+Fpp7QvdXq/O4E24ogzFcZ2fRZ/k2UkFtKyN1
+	daiblFml+LtdPItRS0FpfKWJFDHxvwk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1773137032;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=unb/ia/rT9XLdwf1tCA4TtUuNK6PmpqB8m/z31OxSC8=;
+	b=C8GMYqmyR9HKgSGezsJgHAWhaMOMa8J2nBLLzRA82YEKO0kZxy6yuXew7AHikVTlCgmaj7
+	3dlaZyxUFdjtLNCQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6B1D83F3CE;
+	Tue, 10 Mar 2026 10:03:52 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id h0I2GIjsr2kZdwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 10 Mar 2026 10:03:52 +0000
+Message-ID: <5f9749ba-18a8-4b6b-a6e7-a011a3871bfb@suse.de>
+Date: Tue, 10 Mar 2026 11:03:51 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev/hga: Request memory region before ioremap
+To: Hardik Phalet <hardik.phalet@pm.me>,
+ Ferenc Bakonyi <fero@drama.obuda.kando.hu>, Helge Deller <deller@gmx.de>
+Cc: Shuah Khan <skhan@linuxfoundation.org>,
+ Brigham Campbell <me@brighamcampbell.com>, linux-nvidia@lists.surfsouth.com,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20260310064124.602848-1-hardik.phalet@pm.me>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20260310064124.602848-1-hardik.phalet@pm.me>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowACHGw_i3a9pWDQLCg--.28450S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7WFWUXr4kCw13Xr1DArW5ZFb_yoW8GF1DpF
-	4UJayFy3y7JFWvya1DGr4qqFyUK3W0yFWfuryvkwnYgF4Yvr4DWryxGFyUXF1fA3yfA3W2
-	qryjya1ktFya9aDanT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9m14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
-	jxv20xvE14v26r106r15McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr
-	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxkF7I0En4kS14v26r12
-	6r1DMxkIecxEwVAFwVW8uwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8Jw
-	CFI7km07C267AKxVWUXVWUAwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v2
-	6r106r1rMI8E67AF67kF1VAFwI0_JF0_Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67
-	AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IY
-	s7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr
-	0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JU3b1nUUUUU=
-X-CM-SenderInfo: xqlfxv3q6l2u1dvotugofq/
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_TO(0.00)[pm.me,drama.obuda.kando.hu,gmx.de];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,suse.de:mid]
+X-Spam-Flag: NO
+X-Spam-Score: -4.30
+X-Spam-Level: 
 
-The hwa742_init() function did not check the return value of clk_get().
-This could lead to dereferencing an error pointer in subsequent clock
-operations, potentially causing a kernel crash.
+Hi
 
-Fix this by adding a missing error check and ensuring proper clock
-resource cleanup on failure and driver removal.
+Am 10.03.26 um 07:41 schrieb Hardik Phalet:
+> The driver calls ioremap() on the HGA video memory at 0xb0000 without
+> first reserving the physical address range via request_mem_region().
+> This leaves the kernel resource tree incomplete and can cause silent
+> conflicts with other drivers claiming the same range.
+>
+> Add a request_mem_region() call before ioremap() in hga_card_detect()
+> and release the region in all error paths and in hgafb_remove().
+>
+> Signed-off-by: Hardik Phalet <hardik.phalet@pm.me>
+> ---
+>   drivers/video/fbdev/hgafb.c | 11 ++++++++++-
+>   1 file changed, 10 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
+> index 14418aa3791a..ceca6cc2c928 100644
+> --- a/drivers/video/fbdev/hgafb.c
+> +++ b/drivers/video/fbdev/hgafb.c
+> @@ -284,9 +284,16 @@ static int hga_card_detect(void)
 
-Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
----
- drivers/video/fbdev/omap/hwa742.c | 4 ++++
- 1 file changed, 4 insertions(+)
+You can pass the platform device from hga_probe() and ...
 
-diff --git a/drivers/video/fbdev/omap/hwa742.c b/drivers/video/fbdev/omap/hwa742.c
-index 64e76e1f5388..68a677f824e9 100644
---- a/drivers/video/fbdev/omap/hwa742.c
-+++ b/drivers/video/fbdev/omap/hwa742.c
-@@ -950,6 +950,8 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
- 	omapfb_conf = dev_get_platdata(fbdev->dev);
- 
- 	hwa742.sys_ck = clk_get(NULL, "hwa_sys_ck");
-+	if (IS_ERR(hwa742.sys_ck))
-+		return PTR_ERR(hwa742.sys_ck);
- 
- 	spin_lock_init(&hwa742.req_lock);
- 
-@@ -1028,6 +1030,7 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
- err2:
- 	hwa742.int_ctrl->cleanup();
- err1:
-+	clk_put(hwa742.sys_ck);
- 	return r;
- }
- 
-@@ -1037,6 +1040,7 @@ static void hwa742_cleanup(void)
- 	hwa742.extif->cleanup();
- 	hwa742.int_ctrl->cleanup();
- 	clk_disable_unprepare(hwa742.sys_ck);
-+	clk_put(hwa742.sys_ck);
- }
- 
- struct lcd_ctrl hwa742_ctrl = {
+>   
+>   	hga_vram_len  = 0x08000;
+>   
+> +	if (!request_mem_region(0xb0000, hga_vram_len, "hgafb")) {
+
+... use devm_request_mem_region() here.  That would avoid all the 
+clean-up calls below AFAICT.
+
+Best regards
+Thomas
+
+
+> +		pr_err("hgafb: cannot reserve video memory at 0xb0000\n");
+> +		return -EBUSY;
+> +	}
+> +
+>   	hga_vram = ioremap(0xb0000, hga_vram_len);
+> -	if (!hga_vram)
+> +	if (!hga_vram) {
+> +		release_mem_region(0xb0000, hga_vram_len);
+>   		return -ENOMEM;
+> +	}
+>   
+>   	if (request_region(0x3b0, 12, "hgafb"))
+>   		release_io_ports = 1;
+> @@ -348,6 +355,7 @@ static int hga_card_detect(void)
+>   	}
+>   	return 0;
+>   error:
+> +	release_mem_region(0xb0000, hga_vram_len);
+>   	if (release_io_ports)
+>   		release_region(0x3b0, 12);
+>   	if (release_io_port)
+> @@ -619,6 +627,7 @@ static void hgafb_remove(struct platform_device *pdev)
+>   	}
+>   
+>   	iounmap(hga_vram);
+> +	release_mem_region(0xb0000, hga_vram_len);
+>   
+>   	if (release_io_ports)
+>   		release_region(0x3b0, 12);
+
 -- 
-2.25.1
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+
 

@@ -1,113 +1,94 @@
-Received: from mail-4322.protonmail.ch (mail-4322.protonmail.ch [185.70.43.22])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F0B83CCFD9
-	for <linux-fbdev@vger.kernel.org>; Tue, 10 Mar 2026 12:30:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.43.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42AB13D811A
+	for <linux-fbdev@vger.kernel.org>; Tue, 10 Mar 2026 12:35:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773145834; cv=none; b=jVNK29UH6IM41FXbrX7Az43S5dIw5SXW9BEWdqz0zLu2GSJW6q2H6THvvvJBygZcqUBd6N7U5g6XV1cdzPAkV6JvWTYuMnv7eoIPUWWbzbVNcThDn/qDCgzBj2jP4oCR8UOyqB+u7idUctSNy5yihX2kN8qpf06rmSbVfHGsnjI=
+	t=1773146107; cv=none; b=tR18IpyB36zBNkW8FsbgWqcXgfOSQg3q9/Y2Z0yze3CNUmWY1UHWFhacblk6fFYGCMAHwd3uMkW/2AfYIQHKMwAPsTjmDWbbIXaFdFFBUGH5Na70CZWI7G1rsHTlwtwWgMYZTvGbrJb+7P3XNHjC+NefnSTn/8Q755rtaBEq1bs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773145834; c=relaxed/simple;
-	bh=KKy2poCEl/KEvHbB7vJt1Km85ohKJhIBhSddoDeu41Y=;
-	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=PVj0Yrr/DeVwZWiCc1iDbq5uBL+1ySaHkcJIEoldAWJoi320yPvhNSZBg76CJuKlQaHxPBQZE2AoZAwC6BXM1z6lg0l2QHo5UA6FaBkk00nDUSlX1uqwnjINX2OLvcE96wBSVrpJyMHFQiYMH5jNGSfArP6sJz1GgqyTTDRVA7Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me; spf=pass smtp.mailfrom=pm.me; dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b=opJSFmdF; arc=none smtp.client-ip=185.70.43.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=pm.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pm.me
+	s=arc-20240116; t=1773146107; c=relaxed/simple;
+	bh=BWifzTTU8+E5T05MnLWIwAZPVtGis7wYRZ1AV6QuWIM=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=nqxsnmM9/jsT7wUx98F8L/m/U/ujDPS7PR/wciRgfkWBmCeBrwljba77huLLI9ldfCFbufal18vHXAEjYwK+JeOXeeSJgNKux9apaFcSDwwsLi+8R8uS9x75MkGIcZsqlf7VgssLWZit1xBPmliQw/ihCkkek1xaz1VW8mYaZ5M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=noa-labs.com; spf=pass smtp.mailfrom=noa-labs.com; dkim=pass (2048-bit key) header.d=noa-labs.com header.i=@noa-labs.com header.b=T1eSIP8q; arc=none smtp.client-ip=209.85.167.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=noa-labs.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=noa-labs.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=pm.me header.i=@pm.me header.b="opJSFmdF"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=pm.me;
-	s=protonmail3; t=1773145830; x=1773405030;
-	bh=70qYgbuSjChtaC/Be+ZW82CQnptfCc3jGidv51tEe7w=;
-	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
-	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=opJSFmdFfOSQHxw1F6eoKz0R14nyZbkQZjs6DliIUApwaf5j1qEsjvczagE1ft1E/
-	 xMnci9i3DQe2CndssWqRWiqnYCXCp0P5icjK6ckQ0qcPsHD+RLWKNvZuelOeOqyLW9
-	 H76yjoFSjqiqptLERebctmzHQGkrU9nwhBNdTL/kt4Hgj4TKIPXkScTGXJEUFqlI2f
-	 6WhJN0SBAmvGgMF9REliytyYdSv5oQtNrC3Hw9C0QUgTzRbY1xdd1txhQ10XQ2vEYp
-	 6cix3rZCTStolijLZO4oLTrdmjfXzjiUS4JEx+DqzexqcmtuRUZ0i+REkVKPZMC8Jq
-	 DY6r9ygjuRgJg==
-Date: Tue, 10 Mar 2026 12:30:27 +0000
-To: Ferenc Bakonyi <fero@drama.obuda.kando.hu>, Helge Deller <deller@gmx.de>
-From: Hardik Phalet <hardik.phalet@pm.me>
-Cc: Shuah Khan <skhan@linuxfoundation.org>, Brigham Campbell <me@brighamcampbell.com>, Thomas Zimmermann <tzimmermann@suse.de>, linux-nvidia@lists.surfsouth.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Hardik Phalet <hardik.phalet@pm.me>
-Subject: [PATCH v3] fbdev/hga: Request memory region before ioremap
-Message-ID: <20260310123004.888132-1-hardik.phalet@pm.me>
-Feedback-ID: 166659585:user:proton
-X-Pm-Message-ID: 1e6537c57d7eaa74a5eb9d60b28cae32c0f30467
+	dkim=pass (2048-bit key) header.d=noa-labs.com header.i=@noa-labs.com header.b="T1eSIP8q"
+Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a140efd2d5so4435585e87.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 10 Mar 2026 05:35:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=noa-labs.com; s=google; t=1773146104; x=1773750904; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BWifzTTU8+E5T05MnLWIwAZPVtGis7wYRZ1AV6QuWIM=;
+        b=T1eSIP8q0pak6LVObwRDuvcQSkzRdBCq+E4anqf7iPZLrbOyVnQUIuR6dkJARJvXsU
+         fBspMj1U3f/Hfc8J+v4Ael4HsrPLGHTegMFYJRpw7hSl/BpT4o1S9YalSgy4scYRwLBK
+         FZloJg2vU50JC0cRfNeCl/XD0ZksWGIm0ZuUV/C1dqXDDjWsdgYDh4Cfnwcdk4KuIf4N
+         kUXv/HDRvDfDVxLgpfftceYOFvrHLFXfKGY/wiuvOBC0cluHAo6ync9AnSbFGmmXQWX/
+         j2RczdZYc3yuAoiyOAeJqy0AgDvYFx/HoKIKxtTj+IbJyYqBKARpJDhJ3WqvYY8LLt2S
+         4geg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773146104; x=1773750904;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=BWifzTTU8+E5T05MnLWIwAZPVtGis7wYRZ1AV6QuWIM=;
+        b=GWY0I0WcTYLbkP/7F3ivJeKg1/wYuprgyektkTSmyFwVSpCSbbnDWPIwVRIyib4pS3
+         ubBnADfwk0r6rYqDr+7lUDHLdElNKgsHdjp2bC7fF/oNnHn/EDXULyoKcn+TUqpsYCuV
+         cBQ9m16OIiy45KG/k0dSe51wWzPZy/kLz78D0o+zVWVojOcmnolY1B4rxFCOZCzNHD13
+         ITULU9OhdD1qcxd6pYeqHJdETRIfegd/EeNBY9Uu2LDX9J9PGfygjVZe2TJT+w4RBnUw
+         dSOxG39AqBiTjyh1Nsy5wpkQMPP+AAUSh3r7Q1ayPiebaQWZc6T+wurqJ2tQQmhSmyZh
+         3S1A==
+X-Forwarded-Encrypted: i=1; AJvYcCVAw1j9e75JVLAZEQ0GASQW1nkpBg2krTVHLKS+tPIkCuN0kFNHQ4/CIvYRlmduvQzd84ENyEiBTaQGCw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YykHjcH7XA3oPKz4XlAo8p3Cze3rqSBvBYCBaf0s72lkcFS82WE
+	26PP5vNEUSzVNyuKUG3T4n7gX7pS/Rev8xlZtjf21MM51QRHhvBc1VZvSEbcmqBssnE=
+X-Gm-Gg: ATEYQzyssSpTuGtd42c2jO5u3jguKvpMGWEhLO6tdyCa48UE28pIjC1mt1+Ay71cFu9
+	+FPHG0ghZ1NW6mp1dIqhwuI8C657hiZ2So6nIh6PDNDZI7ohXvdF8A3qHg2WaGOPamzpIT3yvE7
+	ONZHl7ARCLnjxEA1GJ4t4i7NEjR8ACDQcDuv1n8+rKwf/TVlDb4Cup9nEDwn/lDtSf+/VnsAu9K
+	e4Y8AxH9Wa2USJN/wi7Ky9I+ZGb8PkjxTSKdf/r9w+6gk7+5kf/MqCZiiHoHsTzLmPhiNHs92yF
+	W67TPqz3vfXknNGk72LC9yytCTqVnMaoj1KoLZ1CruWNuXKAZVvb1z1NwPZDUNHS1QBUEOLlh8h
+	9AD02H2icLcnfwlJXarJzV4C/219GVNYm2ejH0Us+q4CHaDCzct8VCXLzCalPf238s7lQcCqKwB
+	fAESHB7j2dUpLOYA9ubQSRUtdf9xZzrcYrIkvkCyvLsJkuXhrm7wafwWe+1QrJrExRUa5LhVLlt
+	RJOFMQ2iGo=
+X-Received: by 2002:a05:6512:12d4:b0:5a1:4514:86f3 with SMTP id 2adb3069b0e04-5a145148935mr2402508e87.30.1773146104334;
+        Tue, 10 Mar 2026 05:35:04 -0700 (PDT)
+Received: from zenbook ([80.249.137.130])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a13d07e16dsm2718011e87.42.2026.03.10.05.35.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Mar 2026 05:35:03 -0700 (PDT)
+From: Pavel Nikulin <pavel@noa-labs.com>
+To: Helge Deller <deller@gmx.de>,
+	linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v5 RESEND] Fonts: Adding all Terminus fronts from 12 to 32 in bold, and normal versions
+Date: Tue, 10 Mar 2026 17:24:02 +0500
+Message-ID: <20260310123327.9172-2-pavel@noa-labs.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <aaIFr-GKG1qiJYwg@p100>
+References: <aaIFr-GKG1qiJYwg@p100>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-The driver calls ioremap() on the HGA video memory at 0xb0000 without
-first reserving the physical address range. This leaves the kernel
-resource tree incomplete and can cause silent conflicts with other
-drivers claiming the same range.
-
-Add a devm_request_mem_region() call before ioremap() in
-hga_card_detect() to reserve the memory region.
-
-Signed-off-by: Hardik Phalet <hardik.phalet@pm.me>
----
-Changes in v3:
-- Used dev_err() to log memory region request, based on another review
-  comment by Thomas [2].
-Changes in v2:
-- Used devm_request_mem_region instead of request_mem_region, based on a
-=09review comment by Thomas [1].
-
-v1: https://lore.kernel.org/all/20260310064124.602848-1-hardik.phalet@pm.me=
-/
-v2: https://lore.kernel.org/all/20260310113810.789575-1-hardik.phalet@pm.me=
-/
-[1]: https://lore.kernel.org/all/5f9749ba-18a8-4b6b-a6e7-a011a3871bfb@suse.=
-de/
-[2]: https://lore.kernel.org/all/ec635591-c861-4aa8-a259-718690ddaa4e@suse.=
-de/
-
- drivers/video/fbdev/hgafb.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
-index 14418aa3791a..d32fd1c5217c 100644
---- a/drivers/video/fbdev/hgafb.c
-+++ b/drivers/video/fbdev/hgafb.c
-@@ -276,7 +276,7 @@ static void hga_blank(int blank_mode)
- =09spin_unlock_irqrestore(&hga_reg_lock, flags);
- }
-=20
--static int hga_card_detect(void)
-+static int hga_card_detect(struct platform_device *pdev)
- {
- =09int count =3D 0;
- =09void __iomem *p, *q;
-@@ -284,6 +284,11 @@ static int hga_card_detect(void)
-=20
- =09hga_vram_len  =3D 0x08000;
-=20
-+=09if (!devm_request_mem_region(&pdev->dev, 0xb0000, hga_vram_len, "hgafb"=
-)) {
-+=09=09dev_err(&pdev->dev, "cannot reserve video memory at 0xb0000\n");
-+=09=09return -EBUSY;
-+=09}
-+
- =09hga_vram =3D ioremap(0xb0000, hga_vram_len);
- =09if (!hga_vram)
- =09=09return -ENOMEM;
-@@ -568,7 +573,7 @@ static int hgafb_probe(struct platform_device *pdev)
- =09struct fb_info *info;
- =09int ret;
-=20
--=09ret =3D hga_card_detect();
-+=09ret =3D hga_card_detect(pdev);
- =09if (ret)
- =09=09return ret;
-=20
---=20
-2.53.0
+Content-Transfer-Encoding: 8bit
 
 
+Hello Helge,
+
+> Why are both bold and non-bold fonts needed?
+
+Because people have different screen densities. On those 4k 10 inch screens, people would probably go for bolder versions regardless of how much text they want to fit in.
+
+> They may be loaded after bootup via userspace too.
+
+Too many fonts are already baked into the kernel, and I would've advocated for eventually adding a function for PSFs to be more easily added at config, or boot time.
+
+Terminus is a good font for the kernel for the reason that it covers a very wide range of font sizes.
+
+On the sidenote, the previously incorporated Terminus font patch seemingly has a wrong FONTDATAMAX value

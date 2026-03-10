@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A5D13CF057;
-	Tue, 10 Mar 2026 16:56:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 543FD3A4F30;
+	Tue, 10 Mar 2026 17:42:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773161793; cv=none; b=VrURyeRvJNXb0OlG3c6WVyt6DYEvHj5l07VgptSt0lmp97ZZQRKr31ZxIFOOrqvze9+3+qS8aIl9QSa7hs3J8uKKCe6GLpkkXFI7YpyxNX5j5QvTArXCJ297yOLANjgZ1Gyu8LipEutMeJ5XYt+oBVG9a7Wc1Dp6b1K7cSYWkek=
+	t=1773164555; cv=none; b=JmZeXl0IRs617//acnBwSWYF5en0s7drfdoVto8L/BilrNm3lW59+79ho94bV+gooY4i8uEuyL8Q2igVgQHf6HM047b/WF0Dg4y5N24Ih/kHtbs2WiktPiwy0Hlz9fAQKBVyYFWAeek143C44USGpXsPFYkmuynP3velUFfNftU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773161793; c=relaxed/simple;
-	bh=HLq+2FQlmGDGDQgzFxE1S2MBcS8CI/qlEEjXPGfC59o=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=LYAIHrJ7lJA8FEs5d1Ds4JkhpD7s2X+rdwNqNVGLrQHx91c3+c7tgZg1Is9O+spBpk1GHsAuoXxAUIc9K9JN/5eCuq4ebl5im9+ctNuTn7vsljLbRp8dboeBxb3rKUjGfefFgGYdoXjBzEFvh4/lOK3PjUDANI/r2tAtcvK1Tdw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=h5XaWd8L; arc=none smtp.client-ip=212.227.15.19
+	s=arc-20240116; t=1773164555; c=relaxed/simple;
+	bh=nZZCEy4wd3aYdKAcqQ3SJUo1rkWVWoUAWHwEQ3iRFHI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dexCqRjZUJ2mm0JG94se0txjZGILfyH2SNavVG51lYUf9VVlegUXxBNAh+mscJ+PtWn6on3tCD0acNKLQ8V+zaGvzAvTH0C4UpkmgNESHQeK50yh4BDWA5/qXSCXlntFnIkbiLYEgK6h3Zjws673dhIfrnFFZ8c8HAqMOP4DuvE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=KWA6MFyO; arc=none smtp.client-ip=212.227.17.22
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="h5XaWd8L"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="KWA6MFyO"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1773161784; x=1773766584; i=deller@gmx.de;
-	bh=mCsvsr3DxkoWqBrZ+elVC1dwnuggWDdaXv2lg9app6s=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
+	s=s31663417; t=1773164551; x=1773769351; i=deller@gmx.de;
+	bh=rt1GjkhdSKgeoYE8V98nlJFEbV5nl90y8YIGCW/ayzE=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=h5XaWd8LmPFg1Y+2Ao+Q8cdvDCh3aMzZM6bBpgrWl60o7na7aLG+uv1Z9QxpLcRg
-	 hHu3SokQKqiB/YA63fejIa80ljXHbT+4GpEcnES8ZwvCGonGHogabJz0vIDfp3dfH
-	 Sqb7xQxKw80UxbkaY9JAPfh4TlZcz7VsphIuwJpV3/Z36+LKDzXysNvSWSlusOJHi
-	 Phj/MfWBlbt9z9icxRu9sf4qNJnWRXWzgAPcb/TBkkf2uv+oUKuguIEXJfhxuoHJa
-	 AywVPeYoWzBHCuD9pOclgJ0aw32ZsOiO1E3hC+vtIfBXVytM/9kum3+wOjhMty+XZ
-	 ccROeJHAFtyxD7OJ+Q==
+	b=KWA6MFyOzPudjYNuLvDYBEHp5oQ2fODBPNZwtVyJGAc526QotOJWpoaYTx7zMfjP
+	 R9MQd2LA7GNPDLiOG8KoT5UZ8LR6qxnwIbUmjuDmirvG70nED0X6sYk00W6BTaskM
+	 3w4mk8bg0zt01qB36L6zKtxY/kXb3+7lUZp+HB970Kykbz178H+oxFFANVc+luoQa
+	 92daczSUq3ABEMY+0D62GowOLfzEk3zWUI6b1+xOvcOO16eptxsQQrMdgBLz9a4W8
+	 28iyDU/QZGA6O/zNJ+9Pz24WC2fuYFXkyyMvTwQLrGkindU1tM2iHBFsGIe/ZLPLD
+	 8nmErN/E3ROgJwXQhQ==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MYNNo-1w4wKg2jNy-00POf0; Tue, 10
- Mar 2026 17:56:24 +0100
-Message-ID: <5b04fe68-e953-44a5-8d3f-ac826242e332@gmx.de>
-Date: Tue, 10 Mar 2026 17:56:23 +0100
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MAwbp-1vtieM1R7J-00A0ms; Tue, 10
+ Mar 2026 18:42:31 +0100
+Message-ID: <b1418319-63d5-4f1a-91dd-ea2e0840663c@gmx.de>
+Date: Tue, 10 Mar 2026 18:42:30 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,12 +43,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 RESEND] Fonts: Adding all Terminus fronts from 12 to 32
- in bold, and normal versions
-To: Pavel Nikulin <pavel@noa-labs.com>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- Thomas Zimmermann <tzimmermann@suse.de>, Simona Vetter <simona@ffwll.ch>
-References: <aaIFr-GKG1qiJYwg@p100> <20260310123327.9172-2-pavel@noa-labs.com>
+Subject: Re: [PATCH] video: fbdev: omapfb: Add missing error check for
+ clk_get()
+To: Chen Ni <nichen@iscas.ac.cn>, linux-fbdev@vger.kernel.org,
+ linux-omap@vger.kernel.org
+Cc: tglx@kernel.org, mingo@kernel.org, dri-devel@lists.freedesktop.org
+References: <20260310085625.2648545-1-nichen@iscas.ac.cn>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -94,155 +94,101 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20260310123327.9172-2-pavel@noa-labs.com>
+In-Reply-To: <20260310085625.2648545-1-nichen@iscas.ac.cn>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:2TFGfm0K3UazUeehN4dZkqzFLXOXqOAKIOdaulOMY89Jnqi+9Li
- cOKtynhbWOmDvnCsDn5y9TiyMWtgpN4iOGlBvUD15X2d+0hTceE4uuNo397WGiIGogmjDzG
- Yg61bG80Gicqtdvgxn0/wBotxhNfz+p6lfZF13mnC9rWAm3cDNsYU4IHarZqAbEW8kXJsze
- Lihp+n0nwWHSC3WOc4wZw==
+X-Provags-ID: V03:K1:T4npeP+mM3tNyPESTHgP7fv5WK9LAFagrXfWVmP1Bv6A/uiQPm5
+ gLdIfxK05jcZNkNTU025426Uj0/Qdh/wuxXA94RardIOSdK7GEzhrZb903q34LasXsXDqog
+ iiTteVhBEDzgYFhJIcwuFcHTMaHKYcI8hUzDu2bMJjEXS1GSmMXGetxg9t6PlmcUj1iQJzB
+ 1ZElfX6U18mGo+bYiZ60g==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:lnQqDvYMBOg=;00So6FydZ9bgDY2QP3NXbkOTDnb
- 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
+UI-OutboundReport: notjunk:1;M01:P0:8fOD/bNNiEA=;3qP894WWdmKbGQg7n9VgSf9M7+h
+ q2tGLDUUNXwhgHpguUSImoyuhdtJnEd4UksYKCxaZ7B1mCbndG5+NZq0Vc+kAvsERHDtVfKCo
+ GSxvfqbAiSwAoUCkJVXIFRIUae5Rg2G/sMKHlQfhJbCxAyerRGR4yEKkzM7dekMZ8joO701lV
+ we+t9lr8us1jPVCWrmVklZ0M9q9ObhJ0pxd1HAdR1xDTzLWa3I8+d0GNUYLrDelyMxoHVHpRd
+ GIIxJw/xRaXtPHJVgnQKKkuWkED1Y0nvKVc4kugjOgxJycLNgHxspDRwBBget+mfPfTMNORbN
+ 748T+h7WnQ+AFABHi4+qMwAzYRIQMY4d40SoB/Nd3mpM+D7fwQ0nhXG13zVI5/91BQePx/Ii+
+ gJtU17qisTLSt41SQvAtGbbETGlMLl6PJNqOLIQaw9HeK7rzEbJjBrY3iIu6jPSSOehArlOJ3
+ 3VLzJA3wQSM50vRD4VHYLm/zflOEsxd/dfi02Ej/27kMrbT2pi+fRypsDPPnKXgVN4H/BciOm
+ K7KEOLWLlYiQsw+1taKRLIfJWdwR9ZursloUHKlkBe2rnkaHnoe8h99aH4gwRUkhiLnCE/V+p
+ wowek/MMws4YA5USWSly3HMV40NIMT08cOYk4V7sqD+OwxWpmJ3/MltC7qECJbuiCRFxt0dSv
+ Xk47ZCE4wr28oIaPkrwiMEuwcX8ghuzrAx6hfCJppX6pU6PeSRTRcWGTdscunncRDYT7+GzIt
+ 8E1TCcTVJrsQSGTvqFIjw1zS3+8lnwzopp/7ENfnOD/dDb4ElclWxdZgk1YKodqPAhedztusT
+ 5bNnOCxA0lAyEQit7/ccHZaKJyVw6ynHaPwnBolXw2B93RsCwNHDg2zvWuaE4y6tqKXAnVHVD
+ yNoL/hjnnVyHybBtsDAWFBDc6nV+vFbxDw476smVRhJ6FcpFT1HQNk1czpEOhIZtmaMG5AJYA
+ oQ7ixk5Z3wDm4GKBOiRFbGObIPCtIr3sHltWWVf49mb7exsa5n9YAL+xzvX9seXusA6zntQx6
+ SKPovGLhSnAsOI6zG1cqPRB9d91uXFNhoQSmltCPBeGwLryMmEAbPhY5nlp6Uajoqhx9XBJnp
+ X/N4Cn0o90qjBo+ayVeGbsK3MgNZo/gh9fdkEdDxEDnzLiAXhPXbuv5FGR7Z4xiKhQiogieei
+ M0LjEQq+uFB9AOUBDLBXDP+AnnXROZkkfPnLVY+Rl1MP4H1HhV0Nf/hSdcGotuszzkSXzLyzw
+ aX9imhUAegh6ECO2Jrx4sTDoJKnPBazyHJVYri82KJ8TUPwV1+yDyX8/HnJiBXJe1xJtxW+CM
+ frOKd4/CYMgqWCp0GpZLyzyfuIuTINHTUXxsRu2grBK/kQs8NML3E4IhgTAjK98SOfe9fLiw4
+ Ftd9ZK3jsq8ml3xLf/O9GoDlYwBYwl2gnL6udeicT03mlWX88RN9dac/nkYM63G815MbUgx77
+ sYkF36T4FiFPIoG8R1OxOnN9JMA1X22NZdG5P63qO7/DhTaK/YgjpwCjxFHV5D8JR2/9T+tu+
+ MvMAOx8hirfruhLNrJzR3Fm+dCZIG6Ychh9OPh7h2lOBVol1DK+wZ1vjtS+XSAb2QvRBALcBV
+ AJMfDGzDwW2wWMsgKrdGyFHJJm07wqSW/rhzlTqL4Nl9BdOTBKlTWA+M9OTZeVxaDXOED/ZqG
+ 79Gi6rIVxHrUUBRWqysaoke6EjAb4mjsDgvqKvDrI2RL7fjpi6DY50MgJahN3a4fBeOviy1Mi
+ LQEyk2roTa9cGFaEpoixrEfNyPS7VkyB98cNob9SPHATJUnQt7A1sHoeSut79tM966HUYCvcp
+ QW165VG28Y/2+bUewe7hTk+IH553QoDwPcX1HoHurnOxWgW5t33B/HuPT1r7hzh1hfQ48CzcU
+ GXsblSe5gHgYTniyBfZB9EG4yjNQZ4MVmcImbFsJEiXb5zTBAvxs8h43QZayzZMRrIhITW4i/
+ /KZf+j65nhZbYaAPHo05d+BYYjT2oAujq/MfnFQwjw+KAnagKQ1Njx2iBg2J7esSIZwpbFiJq
+ DunmjrX6IRaCUL56vN7WKPZM+wjfMP1x73Os48yx9YMOrASy9v/9Y/ed8bkid/Liy7NZFipi+
+ ii9ULb4wZDGmNp8ewbonki6XSZoUMHtWfK/2ZRwG1qj7QS3U30Djc4MQMqHD2pQf843r0Faez
+ NFE6DYoGH+2Yhm3jNmJ+TLu+P6JgkDglKbkOgnihLbBArXzAv+w17ZXRAHjjsVNu8WaTojqRN
+ RBkNhV5of5koE1qGEPfqlnhASa14bYunklVGoh4nJtP4FwYuZzfcseC4PExLoo7Mo2Zu6NxFK
+ pIhGkQoTRpIVU6I+s7ffLlHhk3/IUIJx8mAL2+1crLLAeMJNMAhj5/E3pyF30mcUS9c5yPYgx
+ krWPGYn41r+BotAkc7/xOD8pstb/qFWjRCkw1QjBTrv2AfxdWrHHCg2ONjIy86uVz6om4n1Hf
+ n1l08IksfpXK79xvB0+Nz/Ys2PIt9d/QostfhNPP3Lj4kVsWv/XFUWdcdLyBZA8XNH24ZI+Bd
+ kwp7jtFL3gJAKgm/zzXUn0GYXK8whASI0CloLx6EQQUq/KAzJCXr9gsZFW+zKtCvTL51tKOIM
+ 2I1BQSUV8DHxyvxT28ZokZ4ve//CzzxnE0QBsxIXKpcHUldwisYR7mYRJyEvdat9OpiJm8XIx
+ MyzO/as6RmXckdbOCboJiC56W9QcR5oeDyiP3z8Xt6/FwwxEtyAc1Ydg/kULL8FRNhIklhHfi
+ Z8FxhQkMkDwu39ClqHeBJa4sDRxatUL4HA0SykUCOVG+S54Dcn6Iq/9BwxT2QSXpXHibQuSDF
+ GGv6QtCoulyubzZifIotuz0T7vSBhUhCMOFKqs2jjsEoqeS6EtnvcDfjpQG91QLws7v9W0aLi
+ eRxZRkbkKQfeYbarXnCCbSVxCzHKafHO+Pg45QaIVvdsynjbA267RsYZI+dGm3MRGa4A/svyr
+ VGOXaN6gGrcYyaQiBrS/6L+YSfa2JSgGkqbcWyHAL99+aFWY8EFYim4LoZfyhG0JLKimf5j3P
+ apuIytZHxsApFi+cZuNsvnODAAStQyLoAZe3NitDn91ANJ1N8Txlm7aAZKLcbF5CqDMVyPUBU
+ UvsFwNzNAUky7/yBu57VfeSaTgZnIQ1AUabdRyYPphkV9JpKs3T/afF2mcCxt/ccnynGxXeZW
+ zlBHW7jw4Q74HihlaFEkBGG0KyrkLpN3QRWbjWRyRv2rLEFY3/w5Ih35wPDObCNXxy8S/vJ0d
+ 1U7uhyt7AGKVIo4F0vudaOezDLNA1l3cPiormkl0bK6oVgShruFE5KaJc4OqN+GhhUbTGlbzP
+ x4/PwzLFynz4IDHJBvahNc/k4t8iaL8nqOhJ5d4VJTmynG7uCFj8UEhqRMYVqcWNz2XaX9i0S
+ cGnr4mI2dz/sIzgYi/t3VeBtaLlq+3Ttxoe1188Y5+9jXxktRcc59LckEfHPaVZ5scDkwXhXE
+ 9TM6uPi6ccQlb6X7pcMBKanJ2UWs7rgWYZrSj/4TQXkmBkCIn2HCdbWqqJuvz6D59bwu8X/le
+ ZFZ1vsYHD9sK64L3MFF0ex3Fb+t8C7CrKGmFv4xfq2gEraWGoA4ThT3JqLDio5ChSbOzP0QRt
+ J90L2U5DHlMJdWdqqA1a1EdVD+Nh3lk4qOk9mFWyMwn3IkBrg6uMb0cGtpbg1QEp6/y5ey1qs
+ IqBuuzJ4/a1CJ04oo9sQU7y8F//NCWFzAUmyJ3s+DxEsaRNlrRR7+hwMbXANpklug5ez+aO1N
+ v78AZqGUfvk5/2OketWGp2yFzfhBhD1E6fomyxGtwj01z1H2sc2+JLx2xrI5AwaxtUy6QB9pZ
+ zitbVGchUWR0K5LrxfP0FpIop7/tLEA3zOb/rxKkvFia+p0Y/Ps3qYY+UwsiArC0ifRs7Ce+i
+ G86JYBIJs4x111cr2wWEBSC+Kp3ro4wsLv2EX5tYCCYdJ7cm2BNlVl8abEajXAOEo7tXwcDbt
+ pjZO5/ZRV/mEoKdUs4E755+riL4NOlldgc/GpQhxGiL//58oHuq+vLD40B0bOx1cRCAJKVuLn
+ b5pQZwbIkjYyP95Ii7yjCCXVeqpy9bMw30UQ5sFFNeKPT2qbW58S9/7Mi2W8lDHUKlmtl3IMy
+ /pCEm4JR0zIecbA9F6O0aa6aJw3nLgRva//+o0TwygA8ugUgOmOtx1QZtFeQlCLldjhH0dOLB
+ MRLk1v2vV5PBl3loYeW7P8wjWyR37ieqhkQY3U6nDltvYP4ySTd6Hnh9PRjXFcLG/AC32BiXK
+ tyVU2fDHChK9IgJMQPuWO7ExQAlgxZopU+rq70kpLiStwMuAtFDjVkpb9NNiFdBlmjraiRHWm
+ 5dafbQTLyhvNvqxhGlh3yJsm17g6GVrLOBoxyEH8kgMyvKh1eJUKpSsdkS9Gvpx/wy1SM7dh3
+ nZq4w5ILODjAryjEq6UJxgl/11qf+pX95mY/X9W0f8HgLfF3NMlloFsw47NJxnzr55cvZCbsm
+ /GSPpIZXoA76vVsBdzwby+Ek70Qm+QYTpJbS8hloo4cF0EO03easdn11nMFZVf//yw33YTOIa
+ 7TIBv/gHH/wnNiEnD/c2r5af9drTtfvB373gBp1cp0WE+kxh1mODE7Pc0HBCNKFwCzzGDOmq+
+ sQtVMbMVRd13JaNXM0mWSInTWiVzsw5UYSs11RM4mHMEzDC/ZMuP1xYiaiRKKCPI7UtSwd8kD
+ 4C0jt2v7gWLhjb7IZeiARymRL7XcbRpQTYwoEN7FuVfKXVoAwCKQI3MI/Db+sINXqDAS5sqcC
+ 5mU6+wfBxsf+BQRlxIZ6/eCcTLPkAVD8fNUH0E9T67P58fnNAGqGLyK6waSixqgR797HFc5v+
+ WmunEYN+3gAAmv9oyrR59hv6t3XMJGk2HUR8ICFtuHH2owfPGM+SRYI7FVk833W8TmBqQ+RdA
+ sZnffau6wIbiawr2ho481R1fJXdpzICeoY7gc4PSasaOcPEsbK3x2osFiDVxJPwYXYDWPDENw
+ rAQhzkUNI2M5jX7ORauAnJnB4AZIpKVObxPFqB1TbRkgoAV6YMLmJGc1TN+msEfj59PiDv7df
+ q33b7XAYu/AI0ntqVnzKRqH2ZwFlnx83eBX6M/4CgwP13fGogIYdY3c+ulLF0RJ7mZ8EUS8FH
+ WWRaV3q7p40hOfdDei+LxpWH7q7S6vx8BKVPGZbzDNGmD91qaJgXK/jv1e/Q==
 
-Hello Pavel,
-
-On 3/10/26 13:24, Pavel Nikulin wrote:
->> Why are both bold and non-bold fonts needed?
+On 3/10/26 09:56, Chen Ni wrote:
+> The hwa742_init() function did not check the return value of clk_get().
+> This could lead to dereferencing an error pointer in subsequent clock
+> operations, potentially causing a kernel crash.
 >=20
-> Because people have different screen densities. On those 4k 10 inch scre=
-ens, people would probably go for bolder versions regardless of how much t=
-ext they want to fit in.
-
-Yes, but is there so much difference between 10x18, 10x18b,10x20,10x20b ?
-I mean, this is a whole lot of source code (bloat?) which we would add to =
-the kernel sources.
-Even more worse, if most people won't even compile it then....
-
-Just looking at the number of possible fonts, I wouldn't know which one to=
- use myself:
-
-  lib/fonts/font_ter10x18.c  | 6412 ++++++++----------------------------
-  lib/fonts/font_ter10x18b.c | 1305 ++++++++
-  lib/fonts/font_ter10x20.c  | 1305 ++++++++
-  lib/fonts/font_ter10x20b.c | 1305 ++++++++
-  lib/fonts/font_ter11x22.c  | 1561 +++++++++
-  lib/fonts/font_ter11x22b.c | 1561 +++++++++
-  lib/fonts/font_ter12x24.c  | 1561 +++++++++
-  lib/fonts/font_ter12x24b.c | 1561 +++++++++
-  lib/fonts/font_ter14x28.c  | 1817 ++++++++++
-  lib/fonts/font_ter14x28b.c | 1817 ++++++++++
-  lib/fonts/font_ter16x32.c  | 4107 +++++++++++------------
-  lib/fonts/font_ter16x32b.c | 2073 ++++++++++++
-  lib/fonts/font_ter6x12.c   |  537 +++
-  lib/fonts/font_ter8x14.c   |  537 +++
-  lib/fonts/font_ter8x14b.c  |  537 +++
-  lib/fonts/font_ter8x16.c   |  537 +++
-  lib/fonts/font_ter8x16b.c  |  537 +++
-
->> They may be loaded after bootup via userspace too.
-
-And I still believe, that the fbconsole usually is used for:
-a) older historic machines which can't use DRM/DRI, and
-b) simple devices / embedded devices which still use fbdev, and
-c) probably the majority: new x86 machines with DRM where it's only used s=
-hortly for bootup until graphical login appears.
-
-For a) I believe the current fonts are sufficient (and mimic the architect=
-ure).
-For b) I believe one of the current fonts will be hardcoded by the vendor.
-For c) I think most people don't care about the additional fonts.
-
-> Too many fonts are already baked into the kernel, and I would've
-> advocated for eventually adding a function for PSFs to be more
-> easily added at config, or boot time.
-
-Yes, a function to compile in some PSF-font at build-time would
-probably be more useful?
-
-All that said, my believe is that we already ship enough fonts
-and don't need a whole bunch of additional fonts.
-
-Any opinions from dri-devel folks on that?
-
-> Terminus is a good font for the kernel for the reason that it covers a v=
-ery wide range of font sizes.
+> Fix this by adding a missing error check and ensuring proper clock
+> resource cleanup on failure and driver removal.
 >=20
-> On the sidenote, the previously incorporated Terminus font patch seeming=
-ly has a wrong FONTDATAMAX value
+> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
+> ---
+>   drivers/video/fbdev/omap/hwa742.c | 4 ++++
+>   1 file changed, 4 insertions(+)
 
-Do you want to send a patch?
-
+applied.
+Thanks!
 Helge

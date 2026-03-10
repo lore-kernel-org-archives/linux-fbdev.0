@@ -1,81 +1,41 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 703973BE635
-	for <linux-fbdev@vger.kernel.org>; Tue, 10 Mar 2026 13:08:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9F2F3B2FE2;
+	Tue, 10 Mar 2026 16:36:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773148104; cv=none; b=lXtQ9AYTjHrnV4Jdy9AH6K46WLi9lSnzADbXK40uUsMTw1vjsFI4OhoZZcHfT+IzcYXvIXsHFONnhoEUDbSmsY1WDUs6/cAw3P7ac6N068cTexi+0jOVrHBS1sRcm7sMHnC2H8k3jJ2BMITXAVOT6c4Ug7macsGh1kYrpbP2Vxw=
+	t=1773160600; cv=none; b=k9YwjovIR/LNTJjEP/22m8OeJxyLom1RADuRJeMFJhKBoW+go6xyCz43q4fGPhQF/tBXDauOjzVLuxUYZ0jAs3mCUjf4nIbj8j2I2GK8CbT9iOrpsbjSHLJRta+7bD0qONk2smOBGapM4Ll39Gy4dRjlPn3110qZLR1hKfdedik=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773148104; c=relaxed/simple;
-	bh=oY4cCF6TqMtK2/KhVrirC9wQxqQsb+87dx9x6y6d42w=;
+	s=arc-20240116; t=1773160600; c=relaxed/simple;
+	bh=VRbwwaX3cX+GBCVQr9yerWGCcdr11Yq7nisfHW3fiJg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IMZns02HDeyFZSse1P9SHcVWCefxEN7g++hfHUxFdYsuZI9J/QkxpfAjQuvM2tK961v6iB39F+49R/wbJrmskU10dgu15k6YKvSS+zfZiVwUBTCqSsK/u6GY3cA5e6RlgWp2n/9w3tWhszEUr9Qw6CVx0pLEZs9N1qXGM08c58k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=XXodKw2W; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=fVd1PAhK; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=XXodKw2W; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=fVd1PAhK; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=uh+uquDMvSzgXum5QHt9g7eSIGUsjRt9mkZXXBmLz8xXX18SpwvD5ykKdZ9zQ+Buw+w7YfezXHK9jXZiXXstFcblSxgwAU7m5svtTecGNswZpgmdJ4YYfJz/uBEXvsDR7gSG3U1ge8fo9P2D+kt8nuQDI5yMW71bzu0yCns4U7c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=RB1l2bMQ; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="XXodKw2W";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="fVd1PAhK";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="XXodKw2W";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="fVd1PAhK"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 9CA5A4D224;
-	Tue, 10 Mar 2026 13:08:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1773148101; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Xmc99twvdwTgxgM7C5djSn+lpttdxfULSHMzWQ+1L2s=;
-	b=XXodKw2WehHCpwWPFO7xFGTWRHNj1IKRaX32uzcyP3cOUuBH62vuvbsriVvWypDCk/powE
-	jhlaU5hlOGzetK9PMWS1pKDK7l7coUjalqcXewhRx3J8/sJlZw8DMQpkjBjo0M/wzHBOyy
-	ToUzvr7A4aXFrezIEV2gyebw8u6lTP4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1773148101;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Xmc99twvdwTgxgM7C5djSn+lpttdxfULSHMzWQ+1L2s=;
-	b=fVd1PAhKdurdDVGfT/CC8nK3yO7wHiVlamh54NfPt/7VoAr1+2olg75RsLnRgVOJ9JpBAJ
-	WlyIoTB0KQDInDBw==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=XXodKw2W;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=fVd1PAhK
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1773148101; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Xmc99twvdwTgxgM7C5djSn+lpttdxfULSHMzWQ+1L2s=;
-	b=XXodKw2WehHCpwWPFO7xFGTWRHNj1IKRaX32uzcyP3cOUuBH62vuvbsriVvWypDCk/powE
-	jhlaU5hlOGzetK9PMWS1pKDK7l7coUjalqcXewhRx3J8/sJlZw8DMQpkjBjo0M/wzHBOyy
-	ToUzvr7A4aXFrezIEV2gyebw8u6lTP4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1773148101;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Xmc99twvdwTgxgM7C5djSn+lpttdxfULSHMzWQ+1L2s=;
-	b=fVd1PAhKdurdDVGfT/CC8nK3yO7wHiVlamh54NfPt/7VoAr1+2olg75RsLnRgVOJ9JpBAJ
-	WlyIoTB0KQDInDBw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 5E91D3F482;
-	Tue, 10 Mar 2026 13:08:21 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id vlvRFcUXsGmpPgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 10 Mar 2026 13:08:21 +0000
-Message-ID: <3d58e520-0308-44c7-a43a-e438548e9c40@suse.de>
-Date: Tue, 10 Mar 2026 14:08:20 +0100
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="RB1l2bMQ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1773160585; x=1773765385; i=deller@gmx.de;
+	bh=7aQBFA7+bdvkE509aQprNTYrqICGki7uxVXnQBwf8L8=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=RB1l2bMQw8xTv5Ql/3ZhZ31IBTeABCLo8BjiP8FeLoPm9irqRidbfeit0MnqAnKe
+	 QbXwzJ2xrVoyh1qD9FPazidIYd3SvimDpQbFrUdPKGZhGz76UhazJS/5cmt293AgC
+	 W4+kPhVEDeZ5g8iHX+1lDR63q6dDQXO+TrkP4s9SPujkUWJrh2wJChLSw6z5DuboY
+	 vogTkxKLyiIn1tWoGavLPSEYyplaHRif+bGEtDCeH/PdrPHUqxQocMS+s0STJM4I4
+	 i6SsmuuoAlHNNWNnzKN0TZKSMKqSQv6ThP3/UWWFWXWldIlksQJaQ1XdVXwBzGJlZ
+	 5LgFkUOucExiCPV5qA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MuUnA-1vj1Pn0yeY-013944; Tue, 10
+ Mar 2026 17:36:25 +0100
+Message-ID: <7fdc2a60-2f7d-49c2-b18e-5c5510c9c7cb@gmx.de>
+Date: Tue, 10 Mar 2026 17:36:20 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,156 +43,184 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] fbdev/hga: Request memory region before ioremap
-To: Hardik Phalet <hardik.phalet@pm.me>,
- Ferenc Bakonyi <fero@drama.obuda.kando.hu>, Helge Deller <deller@gmx.de>
-Cc: Shuah Khan <skhan@linuxfoundation.org>,
- Brigham Campbell <me@brighamcampbell.com>, linux-nvidia@lists.surfsouth.com,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20260310123004.888132-1-hardik.phalet@pm.me>
+Subject: Re: [PATCH] video/fbdev/via: check ioremap return value in
+ viafb_lcd_get_mobile_state
+To: Wang Jun <1742789905@qq.com>,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, gszhai@bjtu.edu.cn, 25125332@bjtu.edu.cn,
+ 25125283@bjtu.edu.cn, 23120469@bjtu.edu.cn
+References: <tencent_5706A404B952870FEAC83A04EEFC8348A305@qq.com>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260310123004.888132-1-hardik.phalet@pm.me>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <tencent_5706A404B952870FEAC83A04EEFC8348A305@qq.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	URIBL_BLOCKED(0.00)[pm.me:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.com:url,suse.de:mid,suse.de:dkim,suse.de:email];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[pm.me,drama.obuda.kando.hu,gmx.de];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,pm.me:email,suse.de:mid,suse.de:dkim,suse.de:email,suse.com:url]
-X-Rspamd-Action: no action
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:rYlqHtjWmOOYZmbtjATZgVkH3uFF5Dz78GnsS82vO9yIzJ6h1vY
+ 2ZUi0awnHeqLIH3hkjGuR7tIzarngF848+D2Y/xfdToFmiWglyxJUGMzZrU2qBBUq4olFQ2
+ 6pzukZN3jOI2jw16wv8xtq6HZqcQmW8gzKdEto36lEYxB+MPg5wNmzVhXdciVAXC4ZVeMjX
+ 4wYu5E2RLT8OTnwTLqowA==
 X-Spam-Flag: NO
-X-Spam-Score: -4.51
-X-Spam-Level: 
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 9CA5A4D224
+UI-OutboundReport: notjunk:1;M01:P0:LSYOcON6l74=;lp+hVQ8L4+jVWPEcOmopddzTJQW
+ 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
+ LY+WDe4k=
 
-Hi,
+On 3/10/26 02:14, Wang Jun wrote:
+> The function viafb_lcd_get_mobile_state() calls ioremap() without
+> checking the return value. If ioremap() fails (returns NULL), the
+> subsequent readw() will cause a NULL pointer dereference.
 
-thanks for the patch. Let's hope there are no conflicts with other 
-hardware.  IDK if anyone still uses this driver.
+correct.
 
-Am 10.03.26 um 13:30 schrieb Hardik Phalet:
-> The driver calls ioremap() on the HGA video memory at 0xb0000 without
-> first reserving the physical address range. This leaves the kernel
-> resource tree incomplete and can cause silent conflicts with other
-> drivers claiming the same range.
->
-> Add a devm_request_mem_region() call before ioremap() in
-> hga_card_detect() to reserve the memory region.
->
-> Signed-off-by: Hardik Phalet <hardik.phalet@pm.me>
+> This patch adds a proper NULL check after ioremap()=20
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+yes.
 
-Best regards
-Thomas
+> and returns
+> -ENOMEM in case of failure.
 
+You return "false", not -ENOMEM.
+
+Anyway, I corrected this, dropped the DEBUG_MSG() call and applied it
+to the fbdev git tree.
+
+Thanks!
+Helge
+
+ =20
+> Signed-off-by: Wang Jun <1742789905@qq.com>
 > ---
-> Changes in v3:
-> - Used dev_err() to log memory region request, based on another review
->    comment by Thomas [2].
-> Changes in v2:
-> - Used devm_request_mem_region instead of request_mem_region, based on a
-> 	review comment by Thomas [1].
->
-> v1: https://lore.kernel.org/all/20260310064124.602848-1-hardik.phalet@pm.me/
-> v2: https://lore.kernel.org/all/20260310113810.789575-1-hardik.phalet@pm.me/
-> [1]: https://lore.kernel.org/all/5f9749ba-18a8-4b6b-a6e7-a011a3871bfb@suse.de/
-> [2]: https://lore.kernel.org/all/ec635591-c861-4aa8-a259-718690ddaa4e@suse.de/
->
->   drivers/video/fbdev/hgafb.c | 9 +++++++--
->   1 file changed, 7 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
-> index 14418aa3791a..d32fd1c5217c 100644
-> --- a/drivers/video/fbdev/hgafb.c
-> +++ b/drivers/video/fbdev/hgafb.c
-> @@ -276,7 +276,7 @@ static void hga_blank(int blank_mode)
->   	spin_unlock_irqrestore(&hga_reg_lock, flags);
->   }
->   
-> -static int hga_card_detect(void)
-> +static int hga_card_detect(struct platform_device *pdev)
->   {
->   	int count = 0;
->   	void __iomem *p, *q;
-> @@ -284,6 +284,11 @@ static int hga_card_detect(void)
->   
->   	hga_vram_len  = 0x08000;
->   
-> +	if (!devm_request_mem_region(&pdev->dev, 0xb0000, hga_vram_len, "hgafb")) {
-> +		dev_err(&pdev->dev, "cannot reserve video memory at 0xb0000\n");
-> +		return -EBUSY;
+>   drivers/video/fbdev/via/lcd.c | 4 ++++
+>   1 file changed, 4 insertions(+)
+>=20
+> diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd=
+.c
+> index 8673fced8749..91359d2b64fb 100644
+> --- a/drivers/video/fbdev/via/lcd.c
+> +++ b/drivers/video/fbdev/via/lcd.c
+> @@ -954,6 +954,10 @@ bool viafb_lcd_get_mobile_state(bool *mobile)
+>   	u16 start_pattern;
+>  =20
+>   	biosptr =3D ioremap(romaddr, 0x10000);
+> +	if (!biosptr) {
+> +		DEBUG_MSG(KERN_ERR " Failed to remap BIOS memory\n");
+> +		return false;
 > +	}
-> +
->   	hga_vram = ioremap(0xb0000, hga_vram_len);
->   	if (!hga_vram)
->   		return -ENOMEM;
-> @@ -568,7 +573,7 @@ static int hgafb_probe(struct platform_device *pdev)
->   	struct fb_info *info;
->   	int ret;
->   
-> -	ret = hga_card_detect();
-> +	ret = hga_card_detect(pdev);
->   	if (ret)
->   		return ret;
->   
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
+>   	start_pattern =3D readw(biosptr);
+>  =20
+>   	/* Compare pattern */
 

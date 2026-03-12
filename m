@@ -1,145 +1,83 @@
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B312326ED25;
-	Thu, 12 Mar 2026 21:02:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AFEA36C0C6;
+	Thu, 12 Mar 2026 21:02:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773349322; cv=none; b=NYp4FoOtQp55ypmFS1O2telXbtkvbPO76zkczmDHCO0ipNEgYwZUbKMDPEP7MKScpKzySYaPB+bta6pb1heQyvxi7602F40bt8pWwupPG5A1t4FSpy7dzRX61F42NDYGf187n0tHXA4adDVNXkqroqgVgAG72ctXPVkqBeKxUvI=
+	t=1773349347; cv=none; b=f8EsxmmPOTncBlbTSGc3ZEVf6H5LbV/zDmM+XodSp8ynwFcsu1pxMV0cKrKtLJ545Gc0LiA3ebnpqxmih8WLWZpPVyIk9JOGlibGggnJGeCEx3J95SBO9wAYr7AGtVoSBG4q0J+rAOw7bMZAK9IX5E5v/DdE8bKXT03/DGoIM+c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773349322; c=relaxed/simple;
-	bh=gPy5B/84GswJ33DdF4BraPNfAjU/zsG5oJbx24QJs/Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=lV5B0oobcAXGRZLj9lJZ/FMGMxDizMwfIudBUCTCDu9gPi4yNU0G26qiXE4Jp6JN6BcuFjf68p3MnYwV32FLVmNUrm7dFwAuscTJAEJWaf7gt7uVvnHO/UopgONqIUXwyOuCYkMzo/4pVBH02GwGhRx112Zo/VCVgKOab2/v4b4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=jumpstation.co.uk; spf=pass smtp.mailfrom=jumpstation.co.uk; dkim=pass (2048-bit key) header.d=jumpstation.co.uk header.i=rob.github@jumpstation.co.uk header.b=PoBIT30U; arc=none smtp.client-ip=212.227.17.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=jumpstation.co.uk
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jumpstation.co.uk
+	s=arc-20240116; t=1773349347; c=relaxed/simple;
+	bh=HBjNEsK0kgWWG6H5HyNT9caAsXMcaiE0vxMO6T4D4Zo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=qzJYC6ztPWt7UkQOAJXoWx+tuktCoKKmlo9iPYxh+T9CcvDA7Ded/pbfgEnW4k18IonQwmx2p8/9V7t03u44wgYVG0dGejLzXwPkOr9ugXp7RdKDdwxy43v5FaH0iOiUv4a8IKL4Yb8wg/oORboBMJNvW82Gp+HuoNm7LYD5PJ8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=1/Rx93PS; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=jumpstation.co.uk header.i=rob.github@jumpstation.co.uk header.b="PoBIT30U"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jumpstation.co.uk;
-	s=s1-ionos; t=1773349303; x=1773954103;
-	i=rob.github@jumpstation.co.uk;
-	bh=V9Jz4M+Z9QN56aIB3snMb32hgRyUtBNNksRT8e1ZYxQ=;
-	h=X-UI-Sender-Class:Date:From:To:Cc:Subject:Message-ID:
-	 MIME-Version:Content-Type:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=PoBIT30UGEFyrSl1oauOpUQlI4O9ivtH4FqZhtYS1mPTiJ73Lnrdd9qeYQZahoCW
-	 UIwzwYhw76tmthNvjokJknzysTc8vLE6QCuzmTRLSpNwG2a7vp8V+odHd8FdtIzsr
-	 zzEkHjIEGK0c8wt7QRy8l5s2VofrZGwzg5eaVz4mvjH2rtQnkRfdlQvsDP2tjxzRE
-	 dgVVvi4R48cRAmxgMaMkZU4Dm5c++d0KilAKPHpeah6kOl2/0Gfd5+LT/AuuNrDN9
-	 JxH4TgI+aGoKrU/FriLYSfs99XAiFoFxZwb7h+WoAvlxyV6xn7BMFMBJeKYB+Znkd
-	 FGYnpEMLR9bD6MPW0A==
-X-UI-Sender-Class: 55c96926-9e95-11ee-ae09-1f7a4046a0f6
-Received: from client.hidden.invalid by mrelayeu.kundenserver.de (mreue109
- [212.227.15.153]) with ESMTPSA (Nemesis) id 1MYvTy-1w5F2h3Aky-00YwXR; Thu, 12
- Mar 2026 21:55:39 +0100
-Date: Thu, 12 Mar 2026 20:55:07 +0000
-From: robgithub <rob.github@jumpstation.co.uk>
-To: Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>,
- linux-fbdev@vger.kernel.org
-Cc: robgithub <rob.github@jumpstation.co.uk>, Prasanna Kumar T S M
- <ptsm@linux.microsoft.com>, Wei Liu <wei.liu@kernel.org>, Michael Kelley
- <mhklinux@outlook.com>, Sukrut Heroorkar <hsukrut3@gmail.com>, Randy Dunlap
- <rdunlap@infradead.org>, Mukesh Rathor <mrathor@linux.microsoft.com>, Uwe
- =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <u.kleine-koenig@baylibre.com>,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: fbdev: update outdated help text for CONFIG_FB_NVIDIA
-Message-ID: <20260312205507.70b9013b@hexa5>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="1/Rx93PS"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=rvd89gy3M/R88xH2NB6tQwBMKfAM+iXnOUeThTDccJE=; b=1/Rx93PSD4XhywynZXNYgCMI2x
+	RgAKeeyHO2saVPOJsuKlt3vxGGVQT3DGmWlnXRBetrxYt3NOUK3EWshx17jvGYWd8WZ4TqzQvebAT
+	FNazQJRzDabG2KIZuACvkNXeV2GIbRaWJ5NWvhid0TcZTp7Tt7IH3u4fMEicQWwzd68eQ8rrA964s
+	oIKoT8+t2AvHT8zNi2D91gImYnB6EAGZjovnvfq42J2e9LE8wuRLjwfIsb8+VTIU7sH4IN/u2aGzf
+	W+7YXr7omURbmx7qTWK5GLYmdyI3rv0OW9GVogNeze7lSfNV8K4Ox4iwXNeogxnA9cZW2VGyR5bn9
+	h5L4yV6A==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1w0nAi-0000000FOT8-2SJi;
+	Thu, 12 Mar 2026 21:02:20 +0000
+Message-ID: <034989df-cf86-4136-8522-6c48e5523645@infradead.org>
+Date: Thu, 12 Mar 2026 14:02:18 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/yGBOsdgxZKPDmDkoTfe./G4"
-X-Provags-ID: V03:K1:m4dxKb2C/lhZ6yoYeupD2qV4gdJy+SHNHiOBkdjEWEM+AXGZQdf
- Dd+MLdHQ8sIBriWhNWbrrNvgibU7MqoW81ArvXzay0of27YKPh5qQ1KYlShh3QE0fSWcmpb
- Oguyfcr/kzc9VmB3ec4eF2R9iSvnrikB+Q0Ja6lEDXgP/rFNPXYRyIEdyfck4nKGsfxhwOU
- atvldWUXkwgLWf4+YXY+w==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:kdXYFJvUeWY=;kcXWZdYCSmujfv6pfMLcVnUXiTK
- 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
- ptli1zPKX6YaDhqZyvS1/GPk/SROI=
-
---MP_/yGBOsdgxZKPDmDkoTfe./G4
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: fbdev: update outdated help text for CONFIG_FB_NVIDIA
+To: robgithub <rob.github@jumpstation.co.uk>, Helge Deller <deller@gmx.de>,
+ Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org
+Cc: Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+ Wei Liu <wei.liu@kernel.org>, Michael Kelley <mhklinux@outlook.com>,
+ Sukrut Heroorkar <hsukrut3@gmail.com>,
+ Mukesh Rathor <mrathor@linux.microsoft.com>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20260312205507.70b9013b@hexa5>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20260312205507.70b9013b@hexa5>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-The help text for CONFIG_FB_NVIDIA refers to obsolete hardware and
-incorrect default behaviour. This patch updates the description to
-reflect the current state of the driver and supported devices.
+Hi,
 
-Signed-off-by: robgithub <rob.github@jumpstation.co.uk>
+On 3/12/26 1:55 PM, robgithub wrote:
+> The help text for CONFIG_FB_NVIDIA refers to obsolete hardware and
+> incorrect default behaviour. This patch updates the description to
+> reflect the current state of the driver and supported devices.
+> 
+> Signed-off-by: robgithub <rob.github@jumpstation.co.uk>
 
---MP_/yGBOsdgxZKPDmDkoTfe./G4
-Content-Type: text/x-patch
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename=0001-fbdev-update-outdated-help-text-for-CONFIG_FB_NVIDIA.patch
+Inline patches are preferred over attachments.
 
-=46rom 688a061ba0db71fc2d5facd8344db7a4d5b1575a Mon Sep 17 00:00:00 2001
-From: robgithub <rob.github@jumpstation.co.uk>
-Date: Wed, 11 Mar 2026 22:14:43 +0000
-Subject: [PATCH] fbdev: update outdated help text for CONFIG_FB_NVIDIA
+I thought that Claws mail could send inline patches successfully. (?)
 
-The help text for CONFIG_FB_NVIDIA refers to obsolete hardware and
-incorrect default behaviour. This patch updates the description to
-reflect the current state of the driver and supported devices.
+Documentation/process/email-clients.rst says that it works (after a little
+configuration setting).
 
-Signed-off-by: robgithub <rob.github@jumpstation.co.uk>
----
- drivers/video/fbdev/Kconfig | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+I don't know anything about which products are supported, so I have no
+comment on that.
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index ac9ac4287c6a..d8e331427443 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -668,10 +668,10 @@ config FB_NVIDIA
- 	select BITREVERSE
- 	select VGASTATE
- 	help
--	  This driver supports graphics boards with the nVidia chips, TNT
--	  and newer. For very old chipsets, such as the RIVA128, then use
--	  the rivafb.
--	  Say Y if you have such a graphics board.
-+    Supports NVIDIA GPUs from TNT through early GeForce generations
-+    (NV4=E2=80=93NV2x: Twintor, Twintor2, Celsius, Kelvin).
-+    Later architectures (Rankine and newer) are not reliably supported.
-+    If unsure, say N.
-=20
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called nvidiafb.
---=20
-2.52.0
+In the patch, the indentation is incorrect. Kconfig help text should be
+indented with one tab + 2 spaces, not with 4 spaces.
 
+thanks.
+-- 
+~Randy
 
---MP_/yGBOsdgxZKPDmDkoTfe./G4--

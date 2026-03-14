@@ -1,185 +1,146 @@
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f179.google.com (mail-pg1-f179.google.com [209.85.215.179])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6EF0375AB4;
-	Fri, 13 Mar 2026 20:36:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=217.72.192.75
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17FE731F986
+	for <linux-fbdev@vger.kernel.org>; Sat, 14 Mar 2026 08:09:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773434219; cv=none; b=jliC7WhOAuCcHMelVlgFPZoLiZFj4lISSUMjcPzg0/Eviu6QlSEo+YCb6b/4gXkAB0nvC1AFhRD1NRgZ8MKRN/jW+Jbe7sQLRxWAObPp4n5WOvXEi/4lNti9VCxlbEhcp6eyWKx7qa9wPGD1hrhsypky1BT4bl0shqv5Xd7ex9I=
+	t=1773475791; cv=none; b=jDMDtpUab0tKNYw7wbrZVZ+vT2Bnh1C2kzuIAd+rPVPeOznFBS5CMmr2B2B+snDgh23igbydlw2yZmehc4N+24RA9G+O4dkUQIg97esgsWIa+Gl4F19jRKL5/bVrImp4litpD0KJrmV9X6rlZqX5YSvzMcg2PG1ZjmDMhj5ruz8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773434219; c=relaxed/simple;
-	bh=HOhjvYxy7lKrfPr11g2ILQklsdT1UGGXTr1IN2DjmKg=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=bBAvgse30vDEi3ymTIE3kjt/PVXPnpuNpEFcfc1pmiWSHlTRNgoXjYab3/sQ4JdNGSVkto110iSVrcazKhRGxFF5gwIL7d27hTEtPL+EAvr7lO8jv56avAf5DuW5Mu3GTrrDPunt7himrSydNI2UDoXULQEKK93jhS0SNKT0JKE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=jumpstation.co.uk; spf=pass smtp.mailfrom=jumpstation.co.uk; dkim=pass (2048-bit key) header.d=jumpstation.co.uk header.i=rob.github@jumpstation.co.uk header.b=H2jHEy7Q; arc=none smtp.client-ip=217.72.192.75
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=jumpstation.co.uk
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=jumpstation.co.uk
+	s=arc-20240116; t=1773475791; c=relaxed/simple;
+	bh=Qi1liB3/1EEqA+PyFSxv7Q8niNIJ2IjrvWqcGIQIK1o=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qopyjkS8q8nPx3hABaoKodYlhxBktJIbM/XpwKnw/290AVCcejX3uBfCW86DoOvNCNicvgF6xsVnou/frm0ZdFaP7gnCfoYsDZLH/N7pqWn2PjkgnazcbtFDwxYscAD8iA+ECaf6nw2Hhs1Zi9Ltx+UTAt9FWaFJW8khgpv7Vd4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nGYegrln; arc=none smtp.client-ip=209.85.215.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=jumpstation.co.uk header.i=rob.github@jumpstation.co.uk header.b="H2jHEy7Q"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jumpstation.co.uk;
-	s=s1-ionos; t=1773434197; x=1774038997;
-	i=rob.github@jumpstation.co.uk;
-	bh=yNeguXK/hCzjev/CuFv757Q16f+SKWneTOqzXdVeLgQ=;
-	h=X-UI-Sender-Class:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:
-	 References:MIME-Version:Content-Type:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=H2jHEy7QTlxZpsHz2QGbFL8D81/fISi/3igPyBC96/8dc/TMFfGEqaLYOXqpMAt5
-	 IcxRSuXpEYuR59Q/nl9Kt22sSM5TEpKFhl34uFWF/hrr/I3NCWbcp85PzsodQBGd/
-	 q33148U85yyisOGzkap1iSnX8jb3RTSNL+1S4dV+LwBDrztppy8Aqg2EyQkVHoSkA
-	 cCj1hOfK4yfkO86KZuakn2aZ7CVQNLnOCbnP/y/ivQEuy53wbWFlW3nXtqJcpo8i1
-	 Yydyq4cnDfj2DJOGCXkrxgveO5iZYh6cHojQyFBjZCJmQWhYRAurUMwb2BkUE1BHB
-	 KAArrVYLBcHUmaiZ7w==
-X-UI-Sender-Class: 55c96926-9e95-11ee-ae09-1f7a4046a0f6
-Received: from client.hidden.invalid by mrelayeu.kundenserver.de (mreue106
- [212.227.15.152]) with ESMTPSA (Nemesis) id 1MNLVU-1wH1P51lAw-00JnkN; Fri, 13
- Mar 2026 21:36:37 +0100
-Date: Fri, 13 Mar 2026 20:35:42 +0000
-From: robgithub <rob.github@jumpstation.co.uk>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: robgithub <rob.github@jumpstation.co.uk>, Helge Deller <deller@gmx.de>,
- Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org,
- Prasanna Kumar T S M <ptsm@linux.microsoft.com>, Wei Liu
- <wei.liu@kernel.org>, Michael Kelley <mhklinux@outlook.com>, Sukrut
- Heroorkar <hsukrut3@gmail.com>, Mukesh Rathor
- <mrathor@linux.microsoft.com>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?=
- <u.kleine-koenig@baylibre.com>, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-Subject: Re: fbdev: update outdated help text for CONFIG_FB_NVIDIA
-Message-ID: <20260313203443.7cf0a8f5@hexa5>
-In-Reply-To: <034989df-cf86-4136-8522-6c48e5523645@infradead.org>
-References: <20260312205507.70b9013b@hexa5>
-	<034989df-cf86-4136-8522-6c48e5523645@infradead.org>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nGYegrln"
+Received: by mail-pg1-f179.google.com with SMTP id 41be03b00d2f7-c2af7d09533so2308736a12.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Mar 2026 01:09:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1773475789; x=1774080589; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xu7XjT6nGlxUJnW6WxPujTa3lgtVgoP7cgfnRGuX1Lc=;
+        b=nGYegrlngAJYqGeHEnox1uH1lelv/rqw2c4wKerq3gP3h9FNiM5krVWmhye7p3yeFP
+         bSXdfexD0CgGG5oKCDCuVl1WegctQbMakQCoL2fRG3KPeiwpxMM1NOZ8aVn6mXMImARn
+         ITu+weCWxRWwB0HEfTtt8RHCCz/MA9X/Yb+cLSiSVUWGlfWTGPxF/fnK2ddMMC3LXcOQ
+         TwryZtvGfwLScakKwLYlKp5yxn9z9vYXl/++76IJ4uMnR/dgha70mnJkQA3k64TJbptO
+         aF52Ew39GXhy+IcCCfUWMIfjeOmijuB70WO99AkLCbPvqG6WGfUacOFE/unUbtnZAl3j
+         p7Jg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773475789; x=1774080589;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xu7XjT6nGlxUJnW6WxPujTa3lgtVgoP7cgfnRGuX1Lc=;
+        b=q2ikMDnQedn/UHldfimw/3VG7/nk3gFEjfxYiD1UN/b7lyZQ4kLBiyIfSXAt3Fm7Ng
+         EVifvCylWpxovAwfz9+W5CLztFt+FfzziE6nq8MmJc/ZYxsCdNcV3I7gtx1SXijxuKmB
+         mICPyAhtxDdKgFq+DHGPv0tuP8pRR/5ZdKF6KmWmllIg7Kfs+OstH7ntYl1r2lEpAJr9
+         HvasGnroey4JQYIKETkUzYGy9eSPj5wK65bra6VmS3UlJhwbdjHvZyPOaZzVnEzJP+bS
+         IGIrOyCNhAD1/7K/2AVcbdXk3aONMVeQn4lHJqgO1xg5RoqI7YozXY3LdYXhUDcferGz
+         PUag==
+X-Forwarded-Encrypted: i=1; AJvYcCWskcuQmO9KxX1DgCmeYaHRZ+ytMkxPLhIsTFca+7x13MgKEQQRMLJrzXjF/jiJo7pTDsALjRtxgWc8qQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YynUC2LMb/wmf+BL77SNIryZj2bVZPgtJDbxkFtSG6tOmS4YmL1
+	T3EnV/d7vp+ZBc5/w6Udd9cpdfyFBhtLmbljE6ph3b1BHyooTFpooIz7eCSKctA2W2U=
+X-Gm-Gg: ATEYQzxCfFCiDTHOHxNqyX6d/MPTzvhLfzN6YBTV2MhZBAGP3UFaVOMdti0MES9dNk0
+	+xe5y3xemhrf8oZRz/4/090NckiKjTdrzJwjvoApLyaGw/BoFAh/pQZZEflYbOBF674gU6O24+P
+	XQ5SEKBqwM7ZQIenhloLXUk3uG7fMyx+Bekf5eU175dkc8ts4PHkq3R+oyESBA8n5CH2zmWQKtR
+	mWgwspZT65+WxSHi9E7n4KdRw8zRp1463ABF9HcwCNi0gIPdE6ET5txmFPMx7lVmREal+LeCl2V
+	YzVnz6ha+X2nIzRQUrHdMrwJJ/RBUCa1LUCnl5Up2MyLDtNDeONhN0aHvGU1eLoroP78/HtRIAb
+	mCFpXLEv9wKKGymA40lNiqOcLe2d+dH975X3m16PoHUhA0535WeXfFJ76Tl79bH6GfUTBvi9gud
+	Dv7njc5wYV9p0zqDiXaCchbkXTWHJXDeAX
+X-Received: by 2002:a05:6a21:7106:b0:398:7946:b70d with SMTP id adf61e73a8af0-398ecd617a1mr5324392637.51.1773475789383;
+        Sat, 14 Mar 2026 01:09:49 -0700 (PDT)
+Received: from fedora ([2409:40e5:1052:9a56:d0d2:2da5:541:7e3c])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c73eb9966d9sm3665378a12.11.2026.03.14.01.09.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 14 Mar 2026 01:09:48 -0700 (PDT)
+From: Shubham Chakraborty <chakrabortyshubham66@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Cc: Shubham Chakraborty <chakrabortyshubham66@gmail.com>
+Subject: [PATCH 1/3] staging: sm750fb: Rename enum sm750_pnltype values to snake_case
+Date: Sat, 14 Mar 2026 13:39:30 +0530
+Message-ID: <20260314080934.135457-1-chakrabortyshubham66@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:XUz8T25alQmrBIZdGDY40dw8GomJi3pVKhxc8LFmGxmNVDAs73v
- AtUD3OoNdc0+tA+L5MB7lyIf34i8B0kbl4YAP9UoP1V1419adWiNZeeowUyVFw13Lu7OXGY
- hbKQQHzR3ew/ioudmoGET3FRpAK1UCJZbYGn9btXqamEDZcW/qRy1z3sdPPTq1YbtLf8xaw
- GwC4bnWyE4ViGNXkm3c5w==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:o9HaNVhN59s=;lFAdKnjzIHgSBgW4MLd1hCngF8m
- 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
+Content-Transfer-Encoding: 8bit
 
-=46rom 688a061ba0db71fc2d5facd8344db7a4d5b1575a Mon Sep 17 00:00:00 2001
-From: robgithub <rob.github@jumpstation.co.uk>
-Date: Wed, 11 Mar 2026 22:14:43 +0000
-Subject: [PATCH] fbdev: update outdated help text for CONFIG_FB_NVIDIA
+This patch renames the CamelCase enum values in sm750_pnltype to follow the Linux kernel coding style.
 
-The help text for CONFIG_FB_NVIDIA refers to obsolete hardware and
-incorrect default behaviour. This patch updates the description to
-reflect the current state of the driver and supported devices.
-
-Signed-off-by: robgithub <rob.github@jumpstation.co.uk>
+Signed-off-by: Shubham Chakraborty <chakrabortyshubham66@gmail.com>
 ---
- drivers/video/fbdev/Kconfig | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/staging/sm750fb/sm750.c    | 6 +++---
+ drivers/staging/sm750fb/sm750.h    | 6 +++---
+ drivers/staging/sm750fb/sm750_hw.c | 6 +++---
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index ac9ac4287c6a..d8e331427443 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -668,10 +668,10 @@ config FB_NVIDIA
- 	select BITREVERSE
- 	select VGASTATE
- 	help
--	  This driver supports graphics boards with the nVidia chips, TNT
--	  and newer. For very old chipsets, such as the RIVA128, then use
--	  the rivafb.
--	  Say Y if you have such a graphics board.
-+	  Supports NVIDIA GPUs from TNT through early GeForce generations
-+	  (NV4=E2=80=93NV2x: Twintor, Twintor2, Celsius, Kelvin).
-+	  Later architectures (Rankine and newer) are not reliably supported.
-+	  If unsure, say N.
-=20
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called nvidiafb.
---=20
-2.52.0
-
-
-
-Thanks, this my first time submitting a patch.
-
-I have fixed the invisible whitespace inconsistency, wonder why I missed th=
-at :)
-
-I really wanted to stop future users reading the "and newer" and enabling i=
-t on an unsupported card. It stopped my kernel booting with no errors.
-
-The references I used to confirm the Nvidia devices affected are
-
-List of devices documented in the code between lines 1228-1277
-https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/drive=
-rs/video/fbdev/nvidia/nvidia.c?h=3Dv6.19.6
-
-with more human readable extraction available at
-https://cateee.net/lkddb/web-lkddb/FB_NVIDIA.html
-
-and the code names for all Nvidia cards are here
-https://nouveau.freedesktop.org/CodeNames.html
-
-Regards
-
-Rob
-
-On Thu, 12 Mar 2026 14:02:18 -0700
-Randy Dunlap <rdunlap@infradead.org> wrote:
-
-> Hi,
->=20
-> On 3/12/26 1:55 PM, robgithub wrote:
-> > The help text for CONFIG_FB_NVIDIA refers to obsolete hardware and
-> > incorrect default behaviour. This patch updates the description to
-> > reflect the current state of the driver and supported devices.
-> >=20
-> > Signed-off-by: robgithub <rob.github@jumpstation.co.uk>
->=20
-> Inline patches are preferred over attachments.
->=20
-> I thought that Claws mail could send inline patches successfully. (?)
->=20
-> Documentation/process/email-clients.rst says that it works (after a little
-> configuration setting).
->=20
-> I don't know anything about which products are supported, so I have no
-> comment on that.
->=20
-> In the patch, the indentation is incorrect. Kconfig help text should be
-> indented with one tab + 2 spaces, not with 4 spaces.
->=20
-> thanks.
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index dec1f6b88a7d..729c34372a1e 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -942,11 +942,11 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
+ 			sm750_dev->nocrt = 1;
+ 		} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
+-			sm750_dev->pnltype = sm750_doubleTFT;
++			sm750_dev->pnltype = SM750_DOUBLE_TFT;
+ 		} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
+-			sm750_dev->pnltype = sm750_dualTFT;
++			sm750_dev->pnltype = SM750_DUAL_TFT;
+ 		} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
+-			sm750_dev->pnltype = sm750_24TFT;
++			sm750_dev->pnltype = SM750_24TFT;
+ 		} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
+ 			g_hwcursor &= ~0x1;
+ 		} else if (!strncmp(opt, "nohwc1", strlen("nohwc1"))) {
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 67b9bfa23f41..49a79d0a8a2e 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -13,9 +13,9 @@
+ #endif
+ 
+ enum sm750_pnltype {
+-	sm750_24TFT = 0,	/* 24bit tft */
+-	sm750_dualTFT = 2,	/* dual 18 bit tft */
+-	sm750_doubleTFT = 1,	/* 36 bit double pixel tft */
++	SM750_24TFT = 0,	/* 24bit tft */
++	SM750_DUAL_TFT = 2,	/* dual 18 bit tft */
++	SM750_DOUBLE_TFT = 1,	/* 36 bit double pixel tft */
+ };
+ 
+ /* vga channel is not concerned  */
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index a29faee91c78..0e594734a8b9 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -134,12 +134,12 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 		      ~(PANEL_DISPLAY_CTRL_DUAL_DISPLAY |
+ 			PANEL_DISPLAY_CTRL_DOUBLE_PIXEL);
+ 		switch (sm750_dev->pnltype) {
+-		case sm750_24TFT:
++		case SM750_24TFT:
+ 			break;
+-		case sm750_doubleTFT:
++		case SM750_DOUBLE_TFT:
+ 			val |= PANEL_DISPLAY_CTRL_DOUBLE_PIXEL;
+ 			break;
+-		case sm750_dualTFT:
++		case SM750_DUAL_TFT:
+ 			val |= PANEL_DISPLAY_CTRL_DUAL_DISPLAY;
+ 			break;
+ 		}
+-- 
+2.53.0
 

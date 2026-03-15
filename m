@@ -1,74 +1,73 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40DF736D50A
-	for <linux-fbdev@vger.kernel.org>; Sun, 15 Mar 2026 14:58:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2EFE361DAB
+	for <linux-fbdev@vger.kernel.org>; Sun, 15 Mar 2026 15:07:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773586695; cv=none; b=Rsp3o6I/Ei0/Js4mVOs9AV6n7I0/IczRUnZ/j7MrJWs0PYTODpvWk/7gq14fw2VtMwt403eEYZ3i6E8W5VYu5+MdCqNqTda9se3Qg1X53Ky+OVR8aTgNCa6U6uQ0BmceIH1m1aKmR5m1llwLwSJXcScXA99Eu87whY/OUfyon4A=
+	t=1773587223; cv=none; b=OIOoJmvyGIv6SpuGgl0ET3DNo1QEBFNYIeXfxcuIFSRlLBNDn9aCQvJg2Rcsjb6CYMmZX08KvaDLloSNfYmJ5hgP2XMYtfn8YZsuiAEhBo0lkRQwi27znGffUEDvkoENC1EGL1JXI2aQZAG7CFdD6bt2pev/bO9u3zXlcLSnFOc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773586695; c=relaxed/simple;
-	bh=f7uo+vLBkH0QhVXxQ5yUIUF/Y47ehtCVoJP/aO1cA30=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dP7WfbCxGTqpDlcNoL3RIujoFLBoLWaftLhOAlZrOp3onwkHrG4pSehOUjJOI7JX7bUdpQcaV/bVje56h3F4xdV4gynab3IWegutr9Rfl0xc9aC0Z5irTFge9VYeyfXmTExMyjOGyJE+pHvUUN0zPPfWQJvmG7VfvHDX1BoaW8M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bIV7uCdf; arc=none smtp.client-ip=209.85.128.54
+	s=arc-20240116; t=1773587223; c=relaxed/simple;
+	bh=lHBKOQBGm6Fxx9EJIkZRGsrEONe2639UKB4uauCnkoI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V8dZIgKuOvVxBgMLc4NS3LpMgUN2Zr5A/Dhm7EDK8FuAdLNI44EllBd+w5ImUHbDo2hlQtt4bRpGvJm4/wicUvVQr1CMfGvwSWzBjP1T80d4NpABCSqwBHR+7Rqmv8WK1FTC3Pms09rPOvs1SFKLCk6gYTIcM0ab4UQ//3VWHCY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fGGO4a+P; arc=none smtp.client-ip=209.85.128.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bIV7uCdf"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4852a9c6309so29173755e9.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 15 Mar 2026 07:58:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fGGO4a+P"
+Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-48534b59cf3so33070485e9.2
+        for <linux-fbdev@vger.kernel.org>; Sun, 15 Mar 2026 08:07:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773586693; x=1774191493; darn=vger.kernel.org;
+        d=gmail.com; s=20230601; t=1773587219; x=1774192019; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=zPStZFLXZ4Dkse9i5qAiZ3opia5BJZtkwKvg+f1kXhY=;
-        b=bIV7uCdfZlsRlZRV9xX1BmvFU14at0Cng7yRyeU+hpylqdh+JOmxViR7FcAId/E3C0
-         frs9ojitYl/aJQUr4/BOJwL5u+kzcsrhRmnEL0herHvHZSjrNz7NrcmL/9FouQWL+UW5
-         +/84iPDNXICPOlu+juX4m/G66jmH+8YzKK784o/DMzWwauTuh8tFBg+F7RTeAN58oDa1
-         EoNSU8p0IBqs/QuurLHeIiw6FS7OF8ts9PVOrAPmiENB+KhbWDsP+3ARPdz0jggvyLqr
-         51JXz0IHzMlEz6E8HTiIPNsbRETHIdtxTUAVgnqGX83liPkRC/BOsVX/zgZtHOtylyeQ
-         H5dw==
+        bh=R+oFKCqczy45ErhHsr9BjH0dVnyXksSjS9S6Ban9x4A=;
+        b=fGGO4a+P5BbLZyW7yBlLpIJYbZabiAsIdg98E+w3ZvhvforLH8B8ad6pnk3BX+cNNG
+         O1J4L4EscqOSpQLVgbXQhyCzdNtIkPouWY1pU7cyBrM47owa9Q0kB2t06QjP03BOnRIJ
+         LG7r93swcKKFEgbhadEL1rOFUELIqgJUj/VaNx31kby6Hp6RZvuc7uaqH8FZBpLm8KCL
+         0Wk2hQU23uIod04p7nUo3cL1JMzIcDvuKkyVGCzJwFxOov73LwNyA9sJKtT52Uytrhfh
+         o8O4JPqB9LLI2uvIGpedHbaAITObAjdZRxzQioqmWLEkOsGOQW7wRfkqs4iQThVYRTHC
+         SLXQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773586693; x=1774191493;
+        d=1e100.net; s=20251104; t=1773587219; x=1774192019;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=zPStZFLXZ4Dkse9i5qAiZ3opia5BJZtkwKvg+f1kXhY=;
-        b=ioahbWwyiOakQqiBJD6kQ0xhA4rDIebqFkJi5RV1LoufgM7lScJ86rk+6QXa2D/vzX
-         TAo5clCUGhUh3nkxvwyoWfvvCVeWdgZmhrUEq2cF+hDoEEdCqyZY+NwPaxQux/ASdM9A
-         OiZpNOO4HtVLgFcjhgWPpjrhPgPnai2o2ZewCXWFDuQUCjffXnl0HM+lYfybXlt4fDsi
-         8Prrk4P/V0bc05mfVzlcZmyWo7Yh2wnBLxIU3DHUTuOcwmUhNR4lNR1/KAQo/qSPvk8U
-         G8/Y6Ppg4hpom6N72/L5II85n2nJhln9DrpWeETPKgbY/4f5PCP9t7bFSLAPHgjjli6X
-         1IXA==
-X-Forwarded-Encrypted: i=1; AJvYcCX0nyvRv6xwBaRZ6C4o3QLOAZSTbPB4GxVy+dWYTRY4EBwWpS6owHIo+O4rjoZXavILiL4hnlqYmSXUIg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyNP2LsXkMgrLbiCEbcRVS/YFdXqN2mYZuhF7gquozjsrodAsM4
-	VDG8KfyjMYbp30WMyBx1gZg0gmcJQGcQ4Oyu0zrSVmpY7JapWcur/Bxg
-X-Gm-Gg: ATEYQzwgUM/ey+Z/oLOKCdkxl0P8B6UNsFyCTo/9u4heU8N3SshrjOFmLgc50rG6BVI
-	jvZ26MkohxDSFU8g74F8fZE64umL9gBA/CN7GMNcsFR/g83Rg7VGtjcoDFYAfWaNwX++f7XKu2r
-	cQPf1dXzAe4tQzU8NhemJMzeO2qmkn1WF8QvozsfXscR8Bbfv//sSJIaFvCmQ8RtqrAofWn6HYV
-	g0wnWbH0ZUvHUJwxHNP6u6x1664V8hMJEQysxo89TjSBdlCca4u/Z+2Rm+B2KYCqh2jhHiRBCkR
-	XNAo+DyVFA2mBuLgTWa6c6DxhaBf+hg1/ghiH5eG189DdpqMPGzpQjgnIbUlFb8g/4ul16KVcbP
-	wB0A/5GThBUvlL1eHfKyVa8ErFyJr109WLymgl1ljARnQDW5Hr33bqDOBf8ytuqhhmfFGy0UyJM
-	GFUblC0DuqB9EKDidpi59JLpec9j2odUZp12jIqGcOUEqYpv3gYkjb9IhkfKGIG+3jdbMW8ox30
-	QZ3JzF76lRtRQEPRyx/F6P94IKzLw==
-X-Received: by 2002:a05:600c:4689:b0:477:9b35:3e49 with SMTP id 5b1f17b1804b1-485566cf80dmr161809475e9.3.1773586692556;
-        Sun, 15 Mar 2026 07:58:12 -0700 (PDT)
-Received: from DESKTOP-TILNSD1.localdomain ([139.47.104.103])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48541b6f708sm763476945e9.11.2026.03.15.07.58.11
+        bh=R+oFKCqczy45ErhHsr9BjH0dVnyXksSjS9S6Ban9x4A=;
+        b=ms0LthaVshUFZbFEF43ZWEmTyEbKzSes2LxYlo9c0pO7AXKnry6v6E080ossWcx0fp
+         u/g7SjpLeV97DKxOYGFWLlm3nLJr8NzlcUy9gLcEx51ruukpxe/uYZa+aLsNxLmvbGFa
+         XupqIB1rM4IeL6EWgx5IQYVe488j4PTU9oHTpVMNmkJ+7LgTw6BDW1xqajj5xyhmARxf
+         uCgj02coMl0b4xUrGiMlxhebhtlldHm+CcUWOX23sa2iaZzvXFXHnpBRJpFnlNPagYoY
+         Hi5s11H12PE2L3BDC1EX2X+pWBZjEFG24B1T38SNWBucl6U/Mke5sD2hBRgTyx81e2RF
+         JvQw==
+X-Gm-Message-State: AOJu0YxG5az7M7nlsdDWEWh6hc1E3rlCLHe4QPI1Atu9NpeCRCP2LbOz
+	ERv4Xi4uwXPuXwQa6lHQyVL3CQGz/i2duP+pMyeo9AgoXFlk1IDGr4cR
+X-Gm-Gg: ATEYQzxe0Ee19wZ+0UFiYrEKrQ/G5ok7iX1sEgefIdCfPYRSov7Ixi7g1+Xy5WxSpGR
+	Fj0k5HQ0GPqsnFdAS/wcfRCx0tHYdpfC1J1j4/TMEvOuG8VjMuQ/xQtl7OjkwyHD0IXYlyazT2B
+	8Fi1U3We1JVmNjAXbxUyZV5mA+hOg5kWfguovciNtfrARooWIIwvCmXXzPj6JXzPRYb2aX8iqQT
+	oC8nlFIBKQSCBlYrDeLjlpZS9fkch4EBJCzHZNul02nRxSiRlXZco/CEAkLA00U82Zj8BWAyJkh
+	eNK5D0CRWSIdjxi54ozz/KOZr6oEVPiiOOL3r8cyWhphhZevVo6xrJZVjkgrLHsunXI6kY+QcT6
+	PDEheIFRTOXxVushfg6vGpaPCctbG46i4m8yZb27xnJzceHsydxoI+AKRejKh1ctDu/2RG9imK2
+	Zth7coVfkUJuuPsXdC0hmF/WtV8oELrYJP56J/1UgZqgGXZQtz2f9/ztg=
+X-Received: by 2002:a05:600c:a46:b0:485:358b:e80c with SMTP id 5b1f17b1804b1-4855649971bmr180990195e9.0.1773587219183;
+        Sun, 15 Mar 2026 08:06:59 -0700 (PDT)
+Received: from OaroraEtimis.tail60902c.ts.net ([2408:8956:4c20:952e:71d2:7185:4299:35a7])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439fe20c0b4sm36924829f8f.25.2026.03.15.08.06.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Mar 2026 07:58:12 -0700 (PDT)
-From: Kit Dallege <xaum.io@gmail.com>
-To: Lee Jones <lee@kernel.org>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
+        Sun, 15 Mar 2026 08:06:58 -0700 (PDT)
+From: OaroraEtimis <oaroraetimis@gmail.com>
+X-Google-Original-From: OaroraEtimis <OaroraEtimis@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	Kit Dallege <xaum.io@gmail.com>
-Subject: [PATCH 4/5] backlight: cgbc_bl: fix kernel-doc comment for struct cgbc_bl_data
-Date: Sun, 15 Mar 2026 15:58:02 +0100
-Message-ID: <20260315145802.24224-1-xaum.io@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	OaroraEtimis <OaroraEtimis@gmail.com>
+Subject: [PATCH] staging: sm750fb: Replace busy-wait loop with udelay()
+Date: Sun, 15 Mar 2026 23:05:32 +0800
+Message-ID: <20260315150532.87280-1-OaroraEtimis@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -77,32 +76,56 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add the required 'struct cgbc_bl_data -' prefix to the kernel-doc
-comment so it is properly recognized as struct documentation.
+The empty for-loop in sw_i2c_wait() triggers a -Wunused-but-set-variable
+warning and can be optimized away by modern compilers.
 
-This fixes the following warning:
+Fix this by replacing the unreliable loop with a standard udelay(2).
+This also cleans up the unused 'tmp' variable and outdated comments.
+Include <linux/delay.h> to resolve the implicit function declaration.
 
-  drivers/video/backlight/cgbc_bl.c:29: This comment starts with '/**', but isn't a kernel-doc comment
-
-Signed-off-by: Kit Dallege <xaum.io@gmail.com>
-Signed-off-by: kovan <xaum.io@gmail.com>
+Signed-off-by: OaroraEtimis <OaroraEtimis@gmail.com>
 ---
- drivers/video/backlight/cgbc_bl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750_swi2c.c | 20 ++------------------
+ 1 file changed, 2 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/video/backlight/cgbc_bl.c b/drivers/video/backlight/cgbc_bl.c
-index ab27e14338a8..6b70cd2f0ddd 100644
---- a/drivers/video/backlight/cgbc_bl.c
-+++ b/drivers/video/backlight/cgbc_bl.c
-@@ -27,7 +27,7 @@
- #define CGBC_BL_MAX_BRIGHTNESS     100
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index 0ef8d4ff2ef9..d0aeb917be92 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -11,6 +11,7 @@
+ #include "ddk750_reg.h"
+ #include "ddk750_swi2c.h"
+ #include "ddk750_power.h"
++#include <linux/delay.h>
  
- /**
-- * CGBC backlight driver data
-+ * struct cgbc_bl_data - CGBC backlight driver data
-  * @dev: Pointer to the platform device
-  * @cgbc: Pointer to the parent CGBC device data
-  * @current_brightness: Current brightness level (0-100)
+ /*
+  * I2C Software Master Driver:
+@@ -80,24 +81,7 @@ static unsigned long sw_i2c_data_gpio_data_dir_reg = GPIO_DATA_DIRECTION;
+  */
+ static void sw_i2c_wait(void)
+ {
+-	/* find a bug:
+-	 * peekIO method works well before suspend/resume
+-	 * but after suspend, peekIO(0x3ce,0x61) & 0x10
+-	 * always be non-zero,which makes the while loop
+-	 * never finish.
+-	 * use non-ultimate for loop below is safe
+-	 */
+-
+-    /* Change wait algorithm to use PCI bus clock,
+-     * it's more reliable than counter loop ..
+-     * write 0x61 to 0x3ce and read from 0x3cf
+-     */
+-	int i, tmp;
+-
+-	for (i = 0; i < 600; i++) {
+-		tmp = i;
+-		tmp += i;
+-	}
++	udelay(2);
+ }
+ 
+ /*
 -- 
-2.53.0
+2.47.3
 

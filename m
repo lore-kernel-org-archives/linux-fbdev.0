@@ -1,253 +1,96 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F6EE34DCCC
-	for <linux-fbdev@vger.kernel.org>; Mon, 16 Mar 2026 08:13:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9E5C18787A;
+	Mon, 16 Mar 2026 08:16:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773648818; cv=none; b=Wm7qdN0CtQQsCUtWOhBwZLAK/YwF1pjGslP5lhmzAbQdIxD2xWNZEckZKuCC7CiPZqJ3PT1XeKWA4P1TP2KGw2wQJNcKsfTzuzArnoLoQnAoJwIAcrMrTDQF5iRh5dx8jeT6x5lGsAFnRsJvdUUH58DdDv9wSDA0eNADrIHjwxo=
+	t=1773649019; cv=none; b=cxzCJ4RO7JsEwa6NAywPAOJyot7L4wD77iXx/9SKlih21qMN8blIllCLcdJwaTYCuwrFlNhIu3m36oVuehZmWEtU+Aqw5hdc/Mr5jKK3xHFens874JUhPomecW5fGY8XSIG7WNJD1r0E1C1kE65ZLzkzezFklpDmHcpljNXTGV0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773648818; c=relaxed/simple;
-	bh=UEVQX532bhU1uZYB9WW5jEX9rTIlI5NrZ6h4o+0llQU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=qRaxUwoMlkReBTiHMQxklUCaJ7uAZmnJq1VOzuA56HqyIDhK3DZmwmQosH0d7O2OIhqGMFL2QV/E7Uqg8M8kuQu20gZ7Fuli8dNzEaAi5bpnz47lwBq3F7IXhGgFMJEVS8K4a+ldXaQbtsVdU9GcG9SGKJ5uk3u88EmKkQq88KE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=IlMIFwUj; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xpifF6fe; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=lx5weScJ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ZwSM+o1R; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1773649019; c=relaxed/simple;
+	bh=AjbpXI/kQSTfr5RWg4hjFERFZ+0Aejn2Fq2EyqDEX94=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RwKSjghe6Og1ANHcEYCj1cjeiL/prVP51Nabrf7zbDs+IAIfNfByp+oeIEKnVwrUIttUp9It7pRXf0bBsYJ/aqAQ22phpYgcX+/h1T2pGue6gk4DQp8rehXipWlx+kNg+bk40eJA/BlCUIiDrBkMNSpZ+Ily1/+1A97kLlwdZG4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=swQIPaZ8; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="IlMIFwUj";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xpifF6fe";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="lx5weScJ";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ZwSM+o1R"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id CFE574D23C;
-	Mon, 16 Mar 2026 08:13:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1773648809; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tR76hhd8NlYMq2qEX6+mdC6G2TYttd21nlR58QsOPNQ=;
-	b=IlMIFwUj9pUI0z9XOcWf7NEh7KCfWdbamSLlkBkQShOYDtyPx2ieNyVcyWre6/U+t4pZZW
-	59eAZ6WvhYyMQFzNzfEBIxwTO/KS8D6XIt0uNrNnTS8SE4FLlI14qkstxfrLE4barlXUJ/
-	gmEEqS0kiRZIO/oF8HP937WDnJ32oPU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1773648809;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tR76hhd8NlYMq2qEX6+mdC6G2TYttd21nlR58QsOPNQ=;
-	b=xpifF6fe/n5TgHfmngRE1k/vosW8FxRqlVgPFJuoDaXzCFRKaB63RhETNujV/kiiMGhj8k
-	KnjQpyWh3NFaXyDw==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=lx5weScJ;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ZwSM+o1R
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1773648808; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tR76hhd8NlYMq2qEX6+mdC6G2TYttd21nlR58QsOPNQ=;
-	b=lx5weScJ5sh1WWtMaOKPegGE+TSuBNMm5lIkRvoPT4LesXiAn/9mv0R7OeMWPaS+ZWLjor
-	sVw9b4vyUJC+kIMpeelGQOnkmt+zbTokoBU+FaUOEuvdpgds6VkjJkP5S97jjQNpYD4TVD
-	cMHO6eHUviZGZOWbXxDwAgs8Xl9WxqI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1773648808;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tR76hhd8NlYMq2qEX6+mdC6G2TYttd21nlR58QsOPNQ=;
-	b=ZwSM+o1RAtUiCdNjhkybogTH4iMIs3+P+xYmLJ7DGqA2K9mEux4yEe/XNCcEG4oSyD2LZg
-	8iKKDOmDCwBqO5BA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9199F4273B;
-	Mon, 16 Mar 2026 08:13:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 4jghIqi7t2liSwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 16 Mar 2026 08:13:28 +0000
-Message-ID: <67c28da0-c635-4068-b985-bbe5e3d2b5bd@suse.de>
-Date: Mon, 16 Mar 2026 09:13:28 +0100
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="swQIPaZ8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDD2FC19421;
+	Mon, 16 Mar 2026 08:16:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1773649018;
+	bh=AjbpXI/kQSTfr5RWg4hjFERFZ+0Aejn2Fq2EyqDEX94=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=swQIPaZ8tP05TlYR7yWCdEmPpZONO9b9mSsj7GcGZx6FWHbe90VzjThxjk3/9EoyS
+	 qmdjmOnA3SUCiG1r0AI7HIgqVNxlwKlTgS8zNTBWjn0xXBe5R5UfYvxhWakm9GoMrV
+	 FRssgwZwBxVrLUaS6Gsw7kqKzQIlXGinpkW4aoqI=
+Date: Mon, 16 Mar 2026 09:16:53 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: OaroraEtimis <oaroraetimis@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] staging: sm750fb: Replace busy-wait loop with
+ udelay()
+Message-ID: <2026031644-astronaut-unable-ac49@gregkh>
+References: <20260315232042.231620-1-OaroraEtimis@gmail.com>
+ <2026031626-semisoft-attic-8b37@gregkh>
+ <495a2eb6-619e-4ad8-b550-678f7334819e@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] fbdev/hga: Request memory region before ioremap
-To: Helge Deller <deller@gmx.de>, Hardik Phalet <hardik.phalet@pm.me>,
- Ferenc Bakonyi <fero@drama.obuda.kando.hu>
-Cc: Shuah Khan <skhan@linuxfoundation.org>,
- Brigham Campbell <me@brighamcampbell.com>, linux-nvidia@lists.surfsouth.com,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20260310123004.888132-1-hardik.phalet@pm.me>
- <3d58e520-0308-44c7-a43a-e438548e9c40@suse.de>
- <DH0W99FBZJEX.30MPSPJVGV4ZF@pm.me>
- <afd8b00d-42fa-4eb7-b18e-302d3f7cadf7@suse.de>
- <100ea3bc-d7a2-45c5-982f-5dc5fd27163b@gmx.de>
- <4f06f63c-7ab6-42b7-9789-13c929c64db3@suse.de>
- <e9580f2e-19e2-4e82-b041-afe4cf9fb301@gmx.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <e9580f2e-19e2-4e82-b041-afe4cf9fb301@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	TO_DN_SOME(0.00)[];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[gmx.de,pm.me,drama.obuda.kando.hu];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	DKIM_TRACE(0.00)[suse.de:+];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	MID_RHS_MATCH_FROM(0.00)[];
-	ASN(0.00)[asn:32098, ipnet:2800::/6, country:US];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:mid]
-X-Rspamd-Queue-Id: CFE574D23C
-X-Spam-Flag: NO
-X-Spam-Score: -4.51
-X-Spam-Level: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <495a2eb6-619e-4ad8-b550-678f7334819e@gmail.com>
 
-Hi
+On Mon, Mar 16, 2026 at 03:42:04PM +0800, OaroraEtimis wrote:
+> Hi Greg,
+> 
+> Thanks for the review. Sorry for dropping the historical comment in v2. My
+> only goal was to fix the -Wunused-but-set-variable warning and prevent the
+> loop from being optimized away by the compiler.
+> 
+> I will definitely restore the comment.
+> 
+> 
+> On Mon, Mar 16, 2026 at 14:11, Greg KH wrote:
+> 
+> > How is "2" the same as this busy loop?
+> 
+> It was a rough estimation. A 600-iteration empty loop on older CPUs
+> (~500MHz) took about 2 to 3 microseconds.
+> 
+> 
+> > And why not fix this properly, as the comment states?
+> 
+> The comment suggests writing to VGA ports (0x3ce/0x3cf) to force a delay. I
+> didn't implement this because I don't have the specific hardware or
+> datasheets to test it.
+> 
+> I was afraid that introducing direct VGA I/O just to fix a compiler warning
+> might cause unexpected hardware regressions *or compatibility issues across
+> different platforms.*
+> 
+> Given that I can't test hardware I/O, how would you prefer I handle this in
+> v3?
 
-Am 13.03.26 um 13:50 schrieb Helge Deller:
-> Hi Thomas,
->
-> On 3/13/26 09:05, Thomas Zimmermann wrote:
->> Am 12.03.26 um 20:47 schrieb Helge Deller:
->>> On 3/12/26 16:10, Thomas Zimmermann wrote:
->>>> Am 12.03.26 um 16:04 schrieb Hardik Phalet:
->>>>> On Tue Mar 10, 2026 at 6:38 PM IST, Thomas Zimmermann wrote:
->>>>>> Hi,
->>>>>>
->>>>>> thanks for the patch. Let's hope there are no conflicts with other
->>>>>> hardware.  IDK if anyone still uses this driver.
->>>>> Hi Thomas,
->>>>>
->>>>> Thanks for reviewing this.
->>>>>
->>>>> Since I currently do not have access to the hardware needed to 
->>>>> test the
->>>>> change properly, I will drop this patch for now. I may revisit it 
->>>>> once I
->>>>> can validate the behavior on real hardware.
->>>>
->>>> Good luck. That's the Hercules framebuffer driver. Finding such
->>>> ancient hardware that can run modern Linux is nigh impossible.
->>>>
->>>> But we can merge the patch. If it breaks anyone's setup, they will 
->>>> send a bug report.
->>>>
->>>> Helge will pick up the fix if he's ok with it.
->>>
->>> No, I don't want to merge such patches any longer without any testing
->>> on real hardware. There is no actual problem (else someone would 
->>> have reported),
->>> as such I don't see a benefit to apply it. Applying it just brings 
->>> the risk
->>> that we break it for someone.
->>> So, NAK.
->>>
->>> I believe I wrote about my opinion already in another patch?
->>
->> Sorry, I wasn't aware.
->>
->>> I think we should rephrase that specific TODO item (which mentions 
->>> the memory
->>> region allocation) that only patches which have been tested are 
->>> accepted.
->>
->> There will likely no one show up here for testing unless it breaks
->> there system. Which you won't know until you merge the patch.
->
-> No-one likes to merge unnecessary patches which highly potentially
-> introduce malfunctioning and haven't been tested at all.
->
->> If only pre-tested patches can go in,
->
-> You misunderstand.
-> I'm still happy to take *any* patches for fbdev.
-> Even untested ones if they
-> a) seem necessary (e.g. bugfix), or
-> b) seem beneficial (code cleanup)
-> as long as they don't break the driver. This patch may break the driver.
+Don't do any logical change that testing without hardware can not be
+verified (i.e. whitespace changes).
 
-Any patch falling under a) or b) may break a driver. The patch at hand 
-isn't even particularly fragile. People keep posting clean-up patches 
-for some of the fbdev drivers and I doubt that most of them have seen 
-any testing.
+> 1. Keep the original loop but add cpu_relax() inside to prevent compiler
+> optimization. (Safest for the hardware)
 
-My point here is that if a patch breaks the driver then someone will 
-show up and report the regression. If you operate under the (implicit) 
-assumption that the driver breaks without anyone reporting the 
-regression, the corollary is that the driver is unused.  And so should 
-be removed. I suspect this is the case for a lot of fbdev drivers. Hence 
-we should make a push to get drivers removed.
+Are you sure?  Can you sleep at that point in time?  What does the
+performance of the device then look like?
 
-Best regards
-Thomas
+> 2. Use udelay(2) (or ndelay) and restore the historical comment.
+> 3. Migrate the driver to the standard i2c-algo-bit framework (a much heavier
+> refactoring).
 
->
-> Helge
+Number 3 is the best way.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+good luck!
 
-
+greg k-h

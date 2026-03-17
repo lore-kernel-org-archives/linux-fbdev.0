@@ -1,98 +1,113 @@
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azon11012039.outbound.protection.outlook.com [52.101.48.39])
+Received: from BN8PR05CU002.outbound.protection.outlook.com (mail-eastus2azon11011017.outbound.protection.outlook.com [52.101.57.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2F2C38737F;
-	Tue, 17 Mar 2026 20:27:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.48.39
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C51A19CC0C;
+	Tue, 17 Mar 2026 22:04:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.57.17
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773779271; cv=fail; b=q4tyGfGfwoM6xha3IAE8b1ty7jiX7mo6DZZDVHg6JKy7Ux/UsKWRsmYce2GpqXz2eT5jiJ/AjqjCei2jv5JZzLJra32TC3Gvng6BzMHf80D7JI8PlgcsPJDgFGEc5eeG5ZpnnPmMMIyAFTGD7ZrxS4ZTm4SUTzGrQutXMuHo1cc=
+	t=1773785050; cv=fail; b=rKgMXxZvsz6KJP4v+QJTaKKjpijW8IcRm+oyua4zlE/gOGFHu59cvsHBLKu6QkKhpefuV09b4inssOg1AcWhiM26Nn4GiMf+I8R1oZ4utf7i6RL69xy2Gz9u38jlVY5BXT5vGxuNoXl0yo+MSXxLEsWD1yyxBZt1R3XsJ3rG7AI=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773779271; c=relaxed/simple;
-	bh=RvdcGxPGi7V7YXrS8fBsixrAll3uEoVsQPVGUJJ0S5I=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=BLqc50BSp4e28CcZERprHZC2NXe9E/gj3I9wRJtZpyyZNkH/uUB0M5MYmiSqpv/IhKnYKZXoARJpNd9wqlxacvtRkPzkss7sLgbbjpT+6Sr4U3xQAIvlXZq/RtR2EZyJKzivhGrwzf4r/tyiEmUXNUvpMQlSfXqAmT4sF+DWcNM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=s6Dy+Zcw; arc=fail smtp.client-ip=52.101.48.39
+	s=arc-20240116; t=1773785050; c=relaxed/simple;
+	bh=Mi30xZPYEO8h7SKRmUymvR5Dk9DxiURF08QvD7JWrxc=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=uPzWXMGO1YOVAB/aH+lHVG2Ts4LE32bgqS2SAOr+aZP3esU4ZQIaELd9Tvo+FtmuKsYH9LP5oAlW1Bi25mNo34RK3sR48bJkZT65fOjPAHEt83TwcxFHPmaB3a+91Y1yI/DgpLFT3r+3B4l4Py0t2jSs5UKMSd7J33U5H5/Cq4Q=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=sMd/ONVz; arc=fail smtp.client-ip=52.101.57.17
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="s6Dy+Zcw"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="sMd/ONVz"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=tpv3ERjgvX0nhaqygRW1gEgEatZnOUPvyE/eXRKXuUpDqTyk46Yys1/l+HoC8L7mG3TipUFwTbDgT/ZTLjwuwZmIJogb7wzY0L3USATl2iqvHQjQJZ+c8L7hZy23IEK00pCwj1eSZmgqkYtyD5HSVEnl5DvOC7WCABSDJnsIBKRIRYUFuCwjifyaOpDfTUclNb6s/pZTIRC8sF2M9OMSLsRTtYD38ybrr1pGg3nyaqfY9X72TVZN1SodKr1ljgfFOiqRWxLDNmYWPwKwQ45QGOKLyO7pn1yYFmnzYgQ9yJYpfFGkF+ARwskBzG7VHTb08hIj13IcvzBO9BOXHV88ew==
+ b=HdXl3bDRZcV8mRrXg2SpLAZni/Cr9z/izWVvhOI7g5tBeVCWPK9BD8ATeO9eAaxTX8IVY66VW5foNu4kB4+VM2mPCBbCMfCgKaIvWTpxleoJPw1WpzWnaluth8NralXzEK+9XZ1k+74Fj4024OTFaaNEuo9ce//cf1ajBBEd9DJHCL+dC2IQ6etmlOvoVOxEPmDKvGTG9kzC1nmeME8lbytu5vFBQKWqhJuuu46p5avGef5DDcaIDOni293vkMe9JIspIxro4rLvOZvOcfkk+o6xxEGPGpWzPA7XWGjS6Ro2wRe7ohKng2MORF5lNJ2SiSKWWODujoyx0IeZUR2GYw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/XO0F/bBWNsJFtbN6EZiSt9Ll3FmBDTEbCVDRWozaY4=;
- b=XykYU78xh9sUQnn2Fmc6MVwHT5wXM62Ni8BkEovtlFa9ua+wGliiebY041xZ3KS9tDCihs/P4DvrN/nQRMDuawVwYYufkRmUJ0JeFWc/Ys9M7Wh8pP/OtgRJMO58QYJVlvsdl9nN+l6gG6eITqlPV7D0KgJUDB2pKL0IqR/uby1hXE8J4v3m6poVrcrwvzK2O9SElWPj8x/Fodhkwek8Dep8rsPFHawqMEZjVa2i4Kc0vuwLhhY7VlZEgruAIkan3fYkgjqA7gCsO4OqfG+IF/a6cnKEWHkO4FjdEXaThDfN+zRT5XYoBYjYMfgRbAR8tBWlh5hswLthcoloV/53Zg==
+ bh=RWJ3bnDLN8jIluX4UAOSpnG0ssV2foinopiIbZOvdY0=;
+ b=hCZLkGdwX6rCA0WvU4CUgbK/wFv7ykPkmpSyePnLN3Ji2vQgwpbTjFnXFDL8AyAF/epO0YICseNi5rZa1TasYNlwmya0q34JgW5K3l2eSE5j4asQtZEz7Mf8rjt9YRv3jGWiLCF5WC8NZYZSmujuL5OV5p7YPoSKoIXNTtnqJpwWKYkBSWuKJw137vnmH0aWJkljF4CPc/ziFAqlCbixhYAU1h13GMeYIE6Chlyw85688oRDJBFFs1YERTOT3ghODeJ4rAz90uXf0M4ZlPIodJtLjg+W5bum245bSmxeZNLkz971MOxX6dFrhyRVuLbh0fmqFj0pNkQzEGxEUHBEQQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/XO0F/bBWNsJFtbN6EZiSt9Ll3FmBDTEbCVDRWozaY4=;
- b=s6Dy+Zcw02ROdPk2WVpQ3hsAu3sXZSwEmTmdRdVAHWJ9xdjmsR2ZkeeO3mseMP3JphEdiOJzfa0x6/52qA4Q4qEQBdDSFLiy1OJs3gHHdSfXWMUkUvdV3Q3n8L+4/PktWVIuEtrwfC617R5j5e38RLQ4smRDzJp77g2othmiG+Rf2cpkD68VAaSVQoYKkNO/ji/NoD6fbM8vL4JisiQ74SlmFP0hHQ1LqWwB6XXLk9iihbBFPUzPM+rqf2AO3WFeT1vUic9QqX6bda7Zq8F9/lQ8/eP6F4osY0gKVHw4HCvrIWtq5GcHwDNDCkSp5oOAqW/BXN0gHr5bTOWkKSxxFA==
+ bh=RWJ3bnDLN8jIluX4UAOSpnG0ssV2foinopiIbZOvdY0=;
+ b=sMd/ONVzjo+i0LXLQD5bkVqIphOQpWykVPXeRydwbarmRqVhy7lLZ5dLp6fjuQsjpAacyTsv/0oZw0VWSos4rp9tdKv8XkO8LxtLjmDZoRL6x/5x2OAAnndSMZdiErI9lqNdiwYgqIcptMDkSzgYaeVIx571aoheoc1mRIO2zshLbI1D0Cmgz4sVSp/gveCIitE2Gn96hyOvy7sK8QPxKxBDwrS0/Qk5mqv1/T1pp5Ry6xdcVftvJFr6NQ2xHjTbuDG5QNcCi5/fwHgEDHOlavnEvetPs0zHyN4NzvmBU/nyv6nSWefUDik4pmT/h1QkUnKpm9dyUXpx5v9WNsmOow==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
- CH3PR12MB7666.namprd12.prod.outlook.com (2603:10b6:610:152::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.19; Tue, 17 Mar
- 2026 20:27:41 +0000
+ DM4PR12MB9735.namprd12.prod.outlook.com (2603:10b6:8:225::8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9723.16; Tue, 17 Mar 2026 22:04:01 +0000
 Received: from DS0PR12MB6486.namprd12.prod.outlook.com
  ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
  ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9723.014; Tue, 17 Mar 2026
- 20:27:40 +0000
-Message-ID: <f0d9d589-490d-4ac8-9c90-9406a52ba2d6@nvidia.com>
-Date: Tue, 17 Mar 2026 16:27:37 -0400
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 1/1] rust: interop: Add list module for C linked list
- interface
-To: Danilo Krummrich <dakr@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
- Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>,
- =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
- Alex Gaynor <alex.gaynor@gmail.com>, Dave Airlie <airlied@redhat.com>,
- David Airlie <airlied@gmail.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- Simona Vetter <simona@ffwll.ch>,
- Daniel Almeida <daniel.almeida@collabora.com>,
- Koen Koning <koen.koning@linux.intel.com>, Nikola Djukic
- <ndjukic@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>,
- Philipp Stanner <phasta@kernel.org>, Elle Rhumsaa
- <elle@weathered-steel.dev>, Jonathan Corbet <corbet@lwn.net>,
- Alex Deucher <alexander.deucher@amd.com>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>,
- Matthew Auld <matthew.auld@intel.com>,
- Matthew Brost <matthew.brost@intel.com>,
- Lucas De Marchi <lucas.demarchi@intel.com>,
- =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
- Helge Deller <deller@gmx.de>, John Hubbard <jhubbard@nvidia.com>,
- Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>,
- Edwin Peer <epeer@nvidia.com>, Andrea Righi <arighi@nvidia.com>,
- Andy Ritger <aritger@nvidia.com>, Zhi Wang <zhiw@nvidia.com>,
- Balbir Singh <balbirs@nvidia.com>, alexeyi@nvidia.com,
- Eliot Courtney <ecourtney@nvidia.com>, dri-devel@lists.freedesktop.org,
- rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
- intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20260317201710.934932-1-joelagnelf@nvidia.com>
- <20260317201710.934932-2-joelagnelf@nvidia.com>
- <46986da6-8c89-475c-8561-964adaa7d034@nvidia.com>
- <DH5C4CMXIPXU.3AM5V38WUQRWQ@kernel.org>
-Content-Language: en-US
+ 22:04:01 +0000
 From: Joel Fernandes <joelagnelf@nvidia.com>
-In-Reply-To: <DH5C4CMXIPXU.3AM5V38WUQRWQ@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BL0PR02CA0111.namprd02.prod.outlook.com
- (2603:10b6:208:35::16) To DS0PR12MB6486.namprd12.prod.outlook.com
+To: linux-kernel@vger.kernel.org
+Cc: Miguel Ojeda <ojeda@kernel.org>,
+	Boqun Feng <boqun@kernel.org>,
+	Gary Guo <gary@garyguo.net>,
+	=?UTF-8?q?Bj=C3=B6rn=20Roy=20Baron?= <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>,
+	Trevor Gross <tmgross@umich.edu>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Dave Airlie <airlied@redhat.com>,
+	Daniel Almeida <daniel.almeida@collabora.com>,
+	Koen Koning <koen.koning@linux.intel.com>,
+	dri-devel@lists.freedesktop.org,
+	rust-for-linux@vger.kernel.org,
+	Nikola Djukic <ndjukic@nvidia.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	Huang Rui <ray.huang@amd.com>,
+	Matthew Auld <matthew.auld@intel.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Lucas De Marchi <lucas.demarchi@intel.com>,
+	=?UTF-8?q?Thomas=20Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+	Helge Deller <deller@gmx.de>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	John Hubbard <jhubbard@nvidia.com>,
+	Alistair Popple <apopple@nvidia.com>,
+	Timur Tabi <ttabi@nvidia.com>,
+	Edwin Peer <epeer@nvidia.com>,
+	Alexandre Courbot <acourbot@nvidia.com>,
+	Andrea Righi <arighi@nvidia.com>,
+	Andy Ritger <aritger@nvidia.com>,
+	Zhi Wang <zhiw@nvidia.com>,
+	Balbir Singh <balbirs@nvidia.com>,
+	Philipp Stanner <phasta@kernel.org>,
+	Elle Rhumsaa <elle@weathered-steel.dev>,
+	alexeyi@nvidia.com,
+	Eliot Courtney <ecourtney@nvidia.com>,
+	joel@joelfernandes.org,
+	linux-doc@vger.kernel.org,
+	amd-gfx@lists.freedesktop.org,
+	intel-gfx@lists.freedesktop.org,
+	intel-xe@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	Joel Fernandes <joelagnelf@nvidia.com>
+Subject: [PATCH v13 0/2] Rust GPU buddy allocator bindings
+Date: Tue, 17 Mar 2026 18:03:21 -0400
+Message-Id: <20260317220323.1909618-1-joelagnelf@nvidia.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260308180407.3988286-1-joelagnelf@nvidia.com>
+References: <20260308180407.3988286-1-joelagnelf@nvidia.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MN2PR04CA0034.namprd04.prod.outlook.com
+ (2603:10b6:208:d4::47) To DS0PR12MB6486.namprd12.prod.outlook.com
  (2603:10b6:8:c5::21)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -101,80 +116,180 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|CH3PR12MB7666:EE_
-X-MS-Office365-Filtering-Correlation-Id: 868e6196-9d92-4417-71bd-08de8463a2e3
+X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|DM4PR12MB9735:EE_
+X-MS-Office365-Filtering-Correlation-Id: 691fc461-9612-4eb9-460c-08de84711842
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|56012099003|18002099003|22082099003;
+	BCL:0;ARA:13230040|1800799024|376014|7416014|366016|56012099003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	t9aTwLOSL6fYkXb0tQYoOBET1ZQ5LwxMbbMUdgh/ym6jnOcLFVVl+berGRaAl7k0uRVrMrdARHBFcAUIbXWv+JpKMsphZgj/0ZW4l+TDQpRfQP4ZXG5LKZ/kstACrQP4wE/4ej7oPleLV+zoss7GX1XecSXtw9BxUQhmzFXMKtdQ1FsGOWcZ11UVC3IXShHhvW9NTgrvmpCrwmG37KUBSt8xd/CN1v4HkSzyk3gDOvL1Lt1TlfVcLAMJ4q3uB+Snfbi+xr1zNqIgzoc3Up+V9cYPevarXPBLU80xp+t5wek5f673db+saA9VPmU6rdTMZTWjJGuZ1GL2AcH0pziQysZE8egwYhgdawYln+qNJM8zXXvSzgmjCuuE29Zn9zBP5TJQ/E42C0uPN5WT9+iBk+xrlD090eGpCmHt6jyTptCkBmWyo511cmB10wbhSirEW7F+oEhBQcagU+2hM2RIU4cw7+uk7lsEr0fntQP38dHaKQqq7W2Ti5p1ZpMUxmvbXgHzJeuClErDiKyOcNQo6UQ+HiaZTHM3EfSEd9EvtigjlUbcvmprwIPlki0kFNWnrXMdKXu/DUyYpImsAx/uwGgSWP186oO6LozMZY5uoP7yEzOIEBhMt53fhZekhG6Z2pqzg7bbi82L+Vpo//TW+9uQDtvhGh12NnLy1ycNLYS35MvRdhXU76GOa/g2ut17ihnTiuthNqkpnEXdv3N+Wm/yw9j7etNajr6UUBOGCqU=
+	T03g+rKVAzO6Kr7R7ZtPKMuYvzNMqMU0aG5QJxOOGkT0+3J/1Rp2O3xLUWh+q/brVM5O3X6KrEQfVnDZTN0whWUnTnT8uFMpktdzqRSzye6j/bmF3ENQHVGoePp+iKhf+VWeVcxHBGeUTjsFiNoeRTlSZXKNRhmN9MpCI2nF5ATvwl3axEyj9jjKGgHJtCtqH14+f0lxA9TBll4WV3HE2YxZVDsRQPllnsCNiMys1d4AarlWyhfBahsUeA2z+18i5kpwG9F1SA4eJoeu3GP5F/E9eyY9KNWayepD5v8ynQCx93N7x/02rT+msy1aJjXPef4YS/B4mXEvtASKdrHd/xBoTx+GpsPzzROD5kxosGE3mnv5PK6J/SM1gWNJlSF3u9HlqmBCATWHc6EAeCoVIsyqy57+ss4z9R0nmAC07rNzeD2as9RkQsfBRnurr/vXrL66LC5tdPOHWifLQyJyNOcu2/BgBSCGx5Tx0krAg00MLs0k38idyt+c5bp+3xnpV3RikvDQMWpX6AgUJfiSVkMX9GI6TzKvoNgzt+iW5c9IZ1+JrD2gITRYXu3T8uZiVmFXlKVfkXE1gPZybJbltG7CowHo3hqY5W7yGUR6N4y/rMboGTjilg+pYOLOQeoL+bvxgOeDQTkXPBeRB8lHQyVMJWUhDmck+NyH7mL+lNYsBaOWXwzvTJMnAqWtV5iotbpQi5KjWf2fMdv2Xcymcl/G4rBIsYNl+/NfeoczR0k=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?V3QzOFlOY3lTMVR6ZFNnT28zMEt3VDR5djcwRWVHNlJUQ3V4Z2ttWXVSazV3?=
- =?utf-8?B?aTJTNG83N2tsOVhTV0w2a0FEQlBzS0VHeXMwOFVJVEpBVEtjOWs1bkpJbEU1?=
- =?utf-8?B?b2lWTkx5OGY4M2V2N2JvSHVQQjJCRDI0VG9iMVYvMC80Y3lSUm5CVTFuNTVI?=
- =?utf-8?B?VXMrNlZ5NzFvTkFOdzRtSGRkY0t0Tm1XbEpmdHhyVy9oSVJaUG1LVmlrMmpS?=
- =?utf-8?B?ak1OcExwNVlrb2RObjVxOHhUcVN5OTBTYzNCRENJTEUxMlE3N010UUdhTjE0?=
- =?utf-8?B?Y2lnbHUydGNMajVHLzcvejJJOTR3WEJWQUR6cnJMR2dTNUJKRFROQktySitj?=
- =?utf-8?B?REg5M0tvM0tEU2lTRHdzbVoyazQva0Q3YVYzb2pvNXovNE1PTGdvRG1WQWxr?=
- =?utf-8?B?aFhWNlUydXpzTDlxL3lJRkRCQ3A1K3ZTcjNvTWFyU01RNEV2RVkrekkxYTVH?=
- =?utf-8?B?TzRXOXc1MGROVUhKcDBUUDRFUjNyOVN1VEg2Rit3eGN6YjAxQ1BoMlJvZmVO?=
- =?utf-8?B?SzRTbkV5VkI1R2U4R3pZNjFCTmtEQm4xb25PcDVOaVVUZVpoa2NWTG5YQ3FQ?=
- =?utf-8?B?cmxFeFhHTGlhVXJ6TUV1WmpDZVAwSEJNNkpzcUhxdFgvcFlRbGx2RExXQTA2?=
- =?utf-8?B?L2FhSFpCckozbmsweVk0SmR0bUFMTURoTVBOUEhaSWV4ZnJqSDNrNkFRZlRk?=
- =?utf-8?B?MEtrRlN0MmVvNmZGTUdZVkxiYnhLM1hwcEhURFRTOUtuL2NjWEMrbXpVOTh3?=
- =?utf-8?B?Y3grVElYa1pmOHBvaytGbzJJWjVKZGhXenBYQ24xSXhWRlVlOVlvYlVXUG5O?=
- =?utf-8?B?SnZLYVl6clZPZ3FQNjk2WFh6QmVZUG0vN3NxaHlyb1NUOUdhbGU1TTYweW9G?=
- =?utf-8?B?WllpK09UTGZQV0ZGRHBtamhESWxFSzFxcWcyNmRrbE9ZQzNCd3lyYStpNjdJ?=
- =?utf-8?B?NlFpYnoxOS9sM2pxV1Vxa2tmVCt0V1JSQ25Tc3gzODQva2tQN2RRWkNTZXJu?=
- =?utf-8?B?NDJKRHl1ZUNna3pBOVZUalVOckhOVDN2VkxESTdMN3RFK01Lbm9PdDNJUjY3?=
- =?utf-8?B?WjJlblpOc3M1dkNXcmpHempLZFhUT1lPWlJQcXFyYk1XUUJXZ3BDdWtrUjlS?=
- =?utf-8?B?SVV5VkVraDNzaHcxaG9rbUUzSEdTRVdDbnFLUmFOWDZBSkpVOUt0aUExZDIz?=
- =?utf-8?B?VHNSZGdEdFpITksrNmxjQnNGR3pwazhkY0lleC9HOUcxRHpHVWRBcHNlQ3dC?=
- =?utf-8?B?eU56OHJZNCtVdDJ2MTl5eGNXSXF3Q05kL2crV08wV0diV01Yemt4WUY5VjdR?=
- =?utf-8?B?WmxnMWZLN1lQZXJxS3ArM3Z1RW9OMnZDL20wUmZkRVgwdE9SbmhlNjRVWHhF?=
- =?utf-8?B?VGhiVlVTVlptdE1HUmdVd0dCcCswYXduNHZUNUx3UnVYV0ZCTHpnQUd5dTBu?=
- =?utf-8?B?azVVeWYya2pDVTRGOFoxWElMNFZaLzcvZWVWZGF1bDNEbkpsVGpaTitzSEpZ?=
- =?utf-8?B?a2I5ZzFsdXBzTHpQdzk4Z1pLVUt4K3F0YW4yUFdZSXM0UUlyZklzNE1aYXRF?=
- =?utf-8?B?bDZTK1RMV1pSaUNpUXpIeHo3Tmh2TmgrOERBOWt3KzJQWFRiTWZvd3hYbDU3?=
- =?utf-8?B?UngvR2IzeS9EQitVVTFGalFwNkpSeG5aYVlpQVF4L0ZyUHZkTElIOXYxZ3kr?=
- =?utf-8?B?bEVmZWVuNlE4VlJHWDRtaUZKZWI2RmJBbjFpUHhCZ3hBQktzVDlkaDZDbU5z?=
- =?utf-8?B?N0VkZDBoVFZWUEVVNDJvc3lleHRlRzBKaG5COVpzbHZpQ1BING9weE1IMm5D?=
- =?utf-8?B?RTZ0NE8rYU9aN2hGTGhjRHcvTzVsTGhyazlKMGVWUkpiZFBOeW1OdUZYR3ZU?=
- =?utf-8?B?aytjL21oeG51MlhHUktPQU9xRHUxazBZQmNJOHVjL25INUtXU3FzT2JMazVI?=
- =?utf-8?B?Z0JPUG5SYW1WSGxjMElqQU05S01INkVvc2xFb1FBS3hTcU16azgzTVByOStR?=
- =?utf-8?B?OWJ5SWdDelJJRkJmSyt4UndKWVlqQVNOeGtmQnNrbU9TZ0tqRmVzZzlPQ1BP?=
- =?utf-8?B?SzhxZ0M5U2Y1WCtCZXc2akpiVU4vT09kdWJYV3pLb2x2ZkZVTkg1OHFWdTZQ?=
- =?utf-8?B?R0JYY0NwY0RDR2RRZkhmT3JpRkxuSnVwMTVnWms2dThRR25oeGVkenVVNmo0?=
- =?utf-8?B?Z0pWdG9zWG83dEJIYjY1bEZRY0ZWVS9LdG1FTkJOanJmcXF3ZldLdkR6cVY5?=
- =?utf-8?B?MXIyZzJ0YWt3Nm1mSDlTNXZRTFVUdFZvcTFZbHlPVzJtU0FQMzVDTjFsOFhJ?=
- =?utf-8?B?OHZuL2dpY21wRTZ5N0FPVFVyQUZQSkdIeWpod3NQcG12RHlOcks3QT09?=
+	=?us-ascii?Q?IftdwGE8A0opFVnc56Dh0pE33w1LjCwiV4sF9TtBMiT3upgF4SVIk66xzjuh?=
+ =?us-ascii?Q?bhV3fZ1q5bBS92goRrGOvmsFi24ebe9PTydiVul/fqEIP/U22ueP8aW6Oqfm?=
+ =?us-ascii?Q?LdGEJnQA6FEssa6Dvc92lJHxD+UHpm9HS7OFvLV0wC6XYS5QfB7WgiEg505w?=
+ =?us-ascii?Q?XwDzLs9HYL0WYNsvWzg/VN2XnpKTun0iNxkLzrrwHho3PIMttwtTivI025nd?=
+ =?us-ascii?Q?ACs5rhwtt91YPtcDG1TDP7gnN+chc1atKCBms3qXGbTMF+9JxjrJa84SjDAb?=
+ =?us-ascii?Q?lCjGCXJJLcN7vpVp1N524pib1JYQ1hcjh8E3vajvvDffDkelhzLzvTLsjiyD?=
+ =?us-ascii?Q?/eeJnHlpr5mDMM75UFsniiHqmUulHOCoySFRwAm3VcyOm6+Ud3OTJCs/tVW9?=
+ =?us-ascii?Q?8aKwfbPZuQzGek4x0pj0p/TCNZxxU0cC7T2n+rCVlB/+nLWRIWQH0F/Jkadf?=
+ =?us-ascii?Q?R5kG9DUJIWUzNO4MlNVQeYCopsiA3O5y3iXM0x9GUlJYOmVzo074QdrZEcOK?=
+ =?us-ascii?Q?I8uTPFLn4nPmfI1Tn5VHjoj0KZ90qfXVdEBbbHM+4yO7GG6QlO/QV4SuSr4O?=
+ =?us-ascii?Q?FD7nNYAU9JB5SyNvdbxOirFv1dZlxE7hODJ47rc1ifV/e0FRpVeUTKlSnvH4?=
+ =?us-ascii?Q?oMPsl+PI0bzlzdlAj2xP8QsOWH9MwrsbbpQTdq8FWOFwHnA+Ajil31U+iXgI?=
+ =?us-ascii?Q?Wc8qnhh8M3Ol/6Yn2ijXT7+Q74iVnB5TZSRzUhaGGfBVP1t9Ncc8soveu4O3?=
+ =?us-ascii?Q?NAsOvJlVmpNlmf6E9Xk6BBs0lboQaFE8GN6D14DrcYsxuLrYPfgMT89xofe9?=
+ =?us-ascii?Q?f2boBD0hG1z6atRgsqI+WmUMSNqBxM+WOVrXJzU80BXzoyb8+BjLO/7uSCX7?=
+ =?us-ascii?Q?xuPqdDOJeiiaz+/FHnGV1drdW1Cn2O4HOcum1mI28mNxla4ln5xqk4iwsISI?=
+ =?us-ascii?Q?1ltKQmFZx0czE1/KmASfz7s8SiQRWgpfblZWJUiznOoETdp+kiPNN/lWB6Xk?=
+ =?us-ascii?Q?cELTexlPJYpDSRAgvWoY3GIGmtnBRHfVb3/2TBk3lHMn+FpxqNlEBf4leNb7?=
+ =?us-ascii?Q?R40yUPKevW+4jaUw+f/DeLkFdjtqpXjo8N7kCA9l0T0k20WMwONvPOBLzTyg?=
+ =?us-ascii?Q?ys/0DscpbkSAjknl85oaHKKhA//pfcziBxhb4dpZH/SPVzy6zm5ceRSY0JLi?=
+ =?us-ascii?Q?NmhtQCJDhTSYNZ0XmwN+v939JJetx9SVj/VWydKymbu8SlETJsZ8nmMrElNZ?=
+ =?us-ascii?Q?vrkmN0yxKd45pC9P2lJM1xbzCSWIN3/+VH9jd5Cdi1ZnjmHNHG9YGUE8107m?=
+ =?us-ascii?Q?wNPuOze/j+XNyKXeUDUj4jW/dmODl8dBTxR8geQgy3ZEM11OBuoBa4vYCs8j?=
+ =?us-ascii?Q?7fK3GkLIntJBS7Y4IY9l3IT1mAWuVJBqiRpClowAeOJmDyk39D8c+2ah9J9q?=
+ =?us-ascii?Q?5Vnur+2TF94i5+DIMrMUdePtEZBV66Pu+ldbH6181ddk8N2Phe3ZOCbP9GFI?=
+ =?us-ascii?Q?C4sp/zgPF1OWhO78fk5/L8pnu0CqFzWaREOkjhUpi7VaYUlvxMZ6NeJV2F8C?=
+ =?us-ascii?Q?8u2ycT76EKkiNM9oOfbxpDUBvsI31jMJvV9qGaC75kYpfzWkE5XZjjfndLkA?=
+ =?us-ascii?Q?VGQhpAjNx3ZzRC5EjP9DhswQHrQbhqQOv/4sa905GhvsRH3a5JatX4JPKSiC?=
+ =?us-ascii?Q?DeXKpYCKQrAwUq1xkfl/feJg0Y2hzZsrSyVuXxQvI/xcPr7be+vBSvaWSf/k?=
+ =?us-ascii?Q?Zhf/XzFXtA=3D=3D?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 868e6196-9d92-4417-71bd-08de8463a2e3
+X-MS-Exchange-CrossTenant-Network-Message-Id: 691fc461-9612-4eb9-460c-08de84711842
 X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Mar 2026 20:27:40.7432
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Mar 2026 22:04:00.8590
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: sUZBv6RRvVuMY1Xzkw1cC2Yt4mo+D5XJxE+0JTiDdKPuUlkiaaxcqcbdMEZx/PF8zA35POQd4T6UxV7npzw32A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB7666
+X-MS-Exchange-CrossTenant-UserPrincipalName: Oc2pQYYq5q7SHhFUTImKUiKxtZG1n0j8/YAEL1AVuWAbpCmxKiCgT7waMv8fwkzsNm4mp97qXY8K+nxucyhQLg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB9735
 
+This patch adds safe Rust abstractions over the Linux kernel's GPU buddy
+allocator for physical memory management. The prerequisite infrastructure
+patches (DRM buddy code movement and the uninitialized buddy fix) have been
+absorbed into upstream -next, so this is now a standalone patch.
 
+The series along with all dependencies, including clist and nova-core mm
+patches, are available at:
+git://git.kernel.org/pub/scm/linux/kernel/git/jfern/linux.git (tag: buddy-bindings-v13-20260317)
 
-On 3/17/2026 4:20 PM, Danilo Krummrich wrote:
-> On Tue Mar 17, 2026 at 9:18 PM CET, Joel Fernandes wrote:
->> Sorry, I forgot to add an additional F: for the rust/kernel/interop.rs file.
->> Danilo/Miguel, do you mind adding this when applying?
-> 
-> I can add it, all good.
+Change log:
 
-Thanks, Danilo!
+Changes from v12 to v13:
+- Split MAINTAINERS reviewer update into a separate patch (Danilo).
+- Adjustments to use the Alignment type chunk size parameters (Alex).
+- Fixed doctest assertion due to blocks landing on top of range.
+- Changed chunk_size local vars to Alignment.
+- Changed block size to u64 from usize.
+- Renamed rust/kernel/gpu/mod.rs to rust/kernel/gpu.rs.
+- Several other adjustments (Alex).
+
+Changes from v11 to v12:
+- Rebased on linux-next his is now a standalone single patch as dependencies
+  are absorbed (but not clist is a prequisite)
+- Redesigned allocation API (Alexandre Courbot) for better Rust ergonomics.
+- Split single long example into 4 self-contained examples (Alexandre Courbot).
+- Several safety and invariant comment changes (Danilo).
+- MAINTAINERS changes (Arun, Mathew, Danilo, Dave).
+- Fixed `#[cfg(CONFIG_GPU_BUDDY)]` to `#[cfg(CONFIG_GPU_BUDDY = "y")]` (Danilo Krummrich).
+- Updated `ffi::clist::CListHead` to `interop::list::CListHead`.
+
+Changes from v10 to v11:
+- Dropped "rust: ffi: Convert pub use to pub mod and create ffi module" patch;
+  the ffi module restructuring will go through a different path.
+- Dropped "rust: clist: Add support to interface with C linked lists" patch;
+  the clist module will be submitted separately.
+- Dropped "nova-core: Kconfig: Sort select statements alphabetically" cosmetic
+  patch.
+- Patches 1-3 (DRM buddy movement and fix) are included as reference only;
+  they are already being pulled into upstream via drm-misc-next.
+- Removed clist patches as those can go in independently (Alice).
+- Moved the Kconfig GPU_BUDDY selection patch to nova-core mm series to enable
+  it when it is actually used.
+- Various nits to comments, etc.
+
+Changes from v9 to v10:
+- Absorbed the DRM buddy code movement patches into this series as patches 1-2.
+  Dave Airlie reworked these into two parts for better git history.
+- Added "gpu: Fix uninitialized buddy for built-in drivers" fix by Koen Koning,
+  using subsys_initcall instead of module_init to fix NULL pointer dereference
+  when built-in drivers use the buddy allocator before initialization.
+- Added "rust: ffi: Convert pub use to pub mod and create ffi module" to prepare
+  the ffi module for hosting clist as a sub-module.
+- Moved clist from rust/kernel/clist.rs to rust/kernel/ffi/.
+- Added "nova-core: Kconfig: Sort select statements alphabetically" (Danilo).
+
+Changes from v8 to v9:
+- Updated nova-core Kconfig patch: addressed sorting of Kconfig options.
+- Added Daniel Almeida's Reviewed-by tag to clist patch.
+- Minor refinements to GPU buddy bindings.
+
+Changes from v7 to v8:
+- Added nova-core Kconfig patch to select GPU_BUDDY for VRAM allocation.
+- Various changes suggested by Danilo Krummrich, Gary Guo, and Daniel Almeida.
+- Added Acked-by: Gary Guo for clist patch.
+
+Changes from v6 to v7:
+- Major restructuring: split the large 26-patch v6 RFC series. v7 only contains
+  the Rust infrastructure patches (clist + GPU buddy bindings), extracted from
+  the full nova-core MM series. The nova-core MM patches follow separately.
+- Rebased on linux-next.
+
+Changes from v5 to v6:
+- Rebased on drm-rust-kernel/drm-rust-next.
+- Expanded from 6 to 26 patches with full nova-core MM infrastructure including
+  page table walker, VMM, BAR1 user interface, TLB flush, and GpuMm manager.
+
+Changes from v4 to v5:
+- Added PRAMIN aperture support with documentation and self-tests.
+- Improved buddy allocator bindings (fewer lines of code).
+- Based on drm-rust-next instead of linux-next.
+
+Changes from v3 to v4:
+- Combined the clist and DRM buddy series into a single coherent series.
+- Added DRM buddy allocator movement from drivers/gpu/drm/ up to drivers/gpu/,
+  renaming API from drm_buddy to gpu_buddy.
+- Added Rust bindings for the GPU buddy allocator.
+
+Changes from v2 to v3:
+- Squashed 3 clist patches into one due to inter-dependencies.
+- Changed Clist to Clist<'a, T> using const generic offset (Alex Courbot).
+- Simplified C helpers to only list_add_tail (Alex Courbot, John Hubbard).
+- Added init_list_head() Rust function (Alex Courbot).
+- Added FusedIterator, PartialEq/Eq impls.
+- Added MAINTAINERS entry (Miguel Ojeda).
+
+Changes from v1 (RFC) to v2:
+- Dropped DRM buddy allocator patches; series focuses solely on clist module.
+- Dropped sample modules, replaced with doctests.
+- Added proper lifetime management similar to scatterlist.
+- Split clist into 3 separate patches.
+
+Link to v12: https://lore.kernel.org/all/20260308180407.3988286-1-joelagnelf@nvidia.com/
+Link to v11: https://lore.kernel.org/all/20260224224005.3232841-1-joelagnelf@nvidia.com/
+
+Joel Fernandes (2):
+  rust: gpu: Add GPU buddy allocator bindings
+  MAINTAINERS: gpu: buddy: Update reviewer
+
+ MAINTAINERS                     |   8 +-
+ rust/bindings/bindings_helper.h |  11 +
+ rust/helpers/gpu.c              |  23 ++
+ rust/helpers/helpers.c          |   1 +
+ rust/kernel/gpu.rs              |   6 +
+ rust/kernel/gpu/buddy.rs        | 623 ++++++++++++++++++++++++++++++++
+ rust/kernel/lib.rs              |   2 +
+ 7 files changed, 673 insertions(+), 1 deletion(-)
+ create mode 100644 rust/helpers/gpu.c
+ create mode 100644 rust/kernel/gpu.rs
+ create mode 100644 rust/kernel/gpu/buddy.rs
 
 -- 
-Joel Fernandes
+2.34.1
 

@@ -1,150 +1,125 @@
-Received: from mail-ej1-f73.google.com (mail-ej1-f73.google.com [209.85.218.73])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 893DE378D68
-	for <linux-fbdev@vger.kernel.org>; Wed, 18 Mar 2026 09:10:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.73
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA10838CFE6;
+	Wed, 18 Mar 2026 09:16:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773825008; cv=none; b=kAZGdLdVZXu+SkCwT6/zogHF3zQW0BzM1A2ApJoQ/g93tWb1eFgz83GNKG3lb7p61X6njKmdXTXcuwjNPK8wb2ew7Srnfg1tzwlIbmUSg+npqeservXDsphAM5+uiIxClvGgC2mcl4waT7nBMl5x+c7n/OGFJmwYQu0azTDwMUs=
+	t=1773825363; cv=none; b=Z28uR9g1hipDXruQbFYNMQ0S3DNRqjGr9sVa2w7R0QsIJJa1pXnugFWPEdb99PVayfRF2kNrlFbCsrp59R85PDbWzVYQvlTMBQ+Tr1ySSyQSeddaxyoilbK+r/mbk+1lCgE6FtrCG6nat1bjrQ4M3CyE4joOvnC/qb/sh/IzV6I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773825008; c=relaxed/simple;
-	bh=RGacs2beT3PZu9097upNzyWrZnaBTNv6EpBqYfjVR1M=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=LFuvInztjj9TsazUsL0EH69SFvE7DJLbBIRdx6L9s8mAPe3upFwR6YjGrnk537IxeW90o5ROx2FkejFXsYGQ8GabcWqLqpR+nv4wpNEEDkyuOTElJWhbFTv+tIEj72aqXKvzCF7Xb716a2tg5b1tzPUxtMlwc1Exc4WZ+XJ7ok8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=B957Sag8; arc=none smtp.client-ip=209.85.218.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--aliceryhl.bounces.google.com
+	s=arc-20240116; t=1773825363; c=relaxed/simple;
+	bh=PpwWrd+2QR2uovzpbfqsfAWdIZqDhI4/F4guxYzlqsQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=swWE7CroLeXH/d7RcHAtzPHrtb8ot7HM/lkPOTOeeGtlzFoebXRjBR93v7J0oxDlZ0RztaREiM2O3bsmguUttndt8t4SdXJkSMd5/nfCFG9t8REKPGl8Ouls3qe9ajGztLX/Oe1x/hcI4+6hH9twseIpqCvtJceWqSlqBlYrcZU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Ivf84CT0; arc=none smtp.client-ip=198.175.65.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="B957Sag8"
-Received: by mail-ej1-f73.google.com with SMTP id a640c23a62f3a-b934e96af9dso51918266b.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 18 Mar 2026 02:10:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1773825005; x=1774429805; darn=vger.kernel.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=03huxt4oynUT1355qRW2FMfKGuIDazVvmXTmtQppc9Q=;
-        b=B957Sag8/5rMK3yws4YNEazOyKBP7kFgS3fNbdJFAdEAcOpg7G2CptIZZB4vtipgTT
-         KoLrFopsLoSg+gGmhXvSRCKKE0WdQwT2tfHb5+vYGzE9u15o1+L4fB1EV+UotXoJdQ9X
-         A7F5CZjM8A+QHYAhcrjx9G512RSszgs1KPSU4fDvCuXEW0JCxxyZy0r3ywP9la+outVk
-         GreyDltUoMb+AZGuTYmkq/t+DyIHgfK4WilQyqxzavKGD4IRJedR6uFTeen4ZcTT6bEi
-         8E23a2Anm4DLA3DR53ZvL4A/mHypRGRXMlWslsFGTX6tdCY8HHZ4j+GdViGz6Z+VUlel
-         4UYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773825005; x=1774429805;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=03huxt4oynUT1355qRW2FMfKGuIDazVvmXTmtQppc9Q=;
-        b=NINVi2Eu1HtOUvPPIec1KTZwRkIVqg2Rte5fY112N57sCzDhDf45A+k+6NNpoNkyVc
-         aNbV3X6Q+u8OtTGBRqGBegHRljJc3EuEnb7eWo3QjJZON6wJuP7HQXeVjtUbh8X0RJj7
-         rmmrNrhfykn4Yj4r6SYKDkVQwC9Qu5OKZzqh3HOkRNAbwqcrDnGjXa2VeT4Bct1HrANn
-         RSvsgQD8qaxnoep35IrmmKxIKC160XveDCV0WBNGfl41fYJAsIXOnaWy57LJEIHacxTh
-         p5eAghXsBuk9uvoKbcCuVQaWkP4Iu7r+2DJRteUJOeXr7iRm8twZX+Dqm+CaZINdjv76
-         EN6Q==
-X-Forwarded-Encrypted: i=1; AJvYcCWwkTssGm4JKmWwIS9qVrxDeMF10ReEY91tOU6sm8tF7ECxoX+54Er6MaL2tI5EXBwJvdsV7QurdSZ+Eg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz/nmd2XzIu1kKVTkDI9YMuSXIkE7sQQtfEL0BfHNbdTgL9Y3d5
-	gxPUItmc52tvQ/gq+3+5Z4uUv6MVlcjV6zls7HtE11v+WSYsuKap9Hmh33d8GWuQHSr+jv/Heyz
-	nCi8Xbr2kkbk07le/+A==
-X-Received: from ejjr7.prod.google.com ([2002:a17:906:7047:b0:b94:2c7d:9fe])
- (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:a17:906:c145:b0:b97:ca81:e89a with SMTP id a640c23a62f3a-b97f435a1afmr186730166b.0.1773825004253;
- Wed, 18 Mar 2026 02:10:04 -0700 (PDT)
-Date: Wed, 18 Mar 2026 09:10:03 +0000
-In-Reply-To: <20260317201710.934932-2-joelagnelf@nvidia.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Ivf84CT0"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1773825362; x=1805361362;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=PpwWrd+2QR2uovzpbfqsfAWdIZqDhI4/F4guxYzlqsQ=;
+  b=Ivf84CT0K9lRbuQAWr84oGjvLCaaIXHlk6+YjukjRAaQxq0cEo6AllJF
+   Ze6wpGtRAECvTKlXvzXD9mOBF2d2WpwBjpVEgf9ZUo0CQCeGn+KaRh/1X
+   oBnOmhmGdPyT0L9qEPKzQ5qgToN4AHhSS5/khHNACethp155Px6Z2voIm
+   DlJb3HmAwlSBBINBX5a44mrXf6LLH/p04TQ3HolDFIfDZWvSeRKs6P/Tv
+   TOw8HRy3Xq/guJzmp3r7OrvfQvz/mrnwx0CTNjo3pRvgCt+nOdbQMGsSE
+   L/l305qw77EHUnVUjzZBEdKeNajiGyzMXJBAea2oJfkkPd11ZYXjoArq4
+   g==;
+X-CSE-ConnectionGUID: ZLSEYtO0RVWWfdFfPT1QSQ==
+X-CSE-MsgGUID: 2F80Gzb9Q1CgJqR6A6mgbA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11732"; a="86345769"
+X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; 
+   d="scan'208";a="86345769"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Mar 2026 02:16:01 -0700
+X-CSE-ConnectionGUID: 6O7M7J2OR6OTF280f791KA==
+X-CSE-MsgGUID: 2je+XzzIS4a6LIAiBrIMmw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,127,1770624000"; 
+   d="scan'208";a="222783308"
+Received: from cpetruta-mobl1.ger.corp.intel.com (HELO [10.245.244.34]) ([10.245.244.34])
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Mar 2026 02:15:49 -0700
+Message-ID: <ada571ca-b624-4494-a6fe-c9ca803c6cc6@intel.com>
+Date: Wed, 18 Mar 2026 09:15:46 +0000
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260317201710.934932-1-joelagnelf@nvidia.com> <20260317201710.934932-2-joelagnelf@nvidia.com>
-Message-ID: <abpr65jD6esHysWO@google.com>
-Subject: Re: [PATCH v13 1/1] rust: interop: Add list module for C linked list interface
-From: Alice Ryhl <aliceryhl@google.com>
-To: Joel Fernandes <joelagnelf@nvidia.com>
-Cc: linux-kernel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>, 
-	Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, 
-	"=?utf-8?B?QmrDtnJu?= Roy Baron" <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
-	Andreas Hindborg <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>, 
-	Alex Gaynor <alex.gaynor@gmail.com>, Danilo Krummrich <dakr@kernel.org>, 
-	Dave Airlie <airlied@redhat.com>, David Airlie <airlied@gmail.com>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Simona Vetter <simona@ffwll.ch>, 
-	Daniel Almeida <daniel.almeida@collabora.com>, Koen Koning <koen.koning@linux.intel.com>, 
-	Nikola Djukic <ndjukic@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>, 
-	Philipp Stanner <phasta@kernel.org>, Elle Rhumsaa <elle@weathered-steel.dev>, 
-	Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>, 
-	"Christian =?utf-8?B?S8O2bmln?=" <christian.koenig@amd.com>, Jani Nikula <jani.nikula@linux.intel.com>, 
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
-	Tvrtko Ursulin <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>, 
-	Matthew Auld <matthew.auld@intel.com>, Matthew Brost <matthew.brost@intel.com>, 
-	Lucas De Marchi <lucas.demarchi@intel.com>, 
-	"Thomas =?utf-8?Q?Hellstr=C3=B6m?=" <thomas.hellstrom@linux.intel.com>, Helge Deller <deller@gmx.de>, 
-	John Hubbard <jhubbard@nvidia.com>, Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>, 
-	Edwin Peer <epeer@nvidia.com>, Andrea Righi <arighi@nvidia.com>, Andy Ritger <aritger@nvidia.com>, 
-	Zhi Wang <zhiw@nvidia.com>, Balbir Singh <balbirs@nvidia.com>, alexeyi@nvidia.com, 
-	Eliot Courtney <ecourtney@nvidia.com>, dri-devel@lists.freedesktop.org, 
-	rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org, 
-	amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, 
-	intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v13 2/2] MAINTAINERS: gpu: buddy: Update reviewer
+To: Joel Fernandes <joelagnelf@nvidia.com>, linux-kernel@vger.kernel.org
+Cc: Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>,
+ Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>,
+ Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
+ Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>,
+ Dave Airlie <airlied@redhat.com>,
+ Daniel Almeida <daniel.almeida@collabora.com>,
+ Koen Koning <koen.koning@linux.intel.com>, dri-devel@lists.freedesktop.org,
+ rust-for-linux@vger.kernel.org, Nikola Djukic <ndjukic@nvidia.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>,
+ Matthew Brost <matthew.brost@intel.com>,
+ Lucas De Marchi <lucas.demarchi@intel.com>,
+ =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
+ Helge Deller <deller@gmx.de>, Alex Gaynor <alex.gaynor@gmail.com>,
+ Boqun Feng <boqun.feng@gmail.com>, John Hubbard <jhubbard@nvidia.com>,
+ Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>,
+ Edwin Peer <epeer@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>,
+ Andrea Righi <arighi@nvidia.com>, Andy Ritger <aritger@nvidia.com>,
+ Zhi Wang <zhiw@nvidia.com>, Balbir Singh <balbirs@nvidia.com>,
+ Philipp Stanner <phasta@kernel.org>, Elle Rhumsaa
+ <elle@weathered-steel.dev>, alexeyi@nvidia.com,
+ Eliot Courtney <ecourtney@nvidia.com>, joel@joelfernandes.org,
+ linux-doc@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+ intel-gfx@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org
+References: <20260308180407.3988286-1-joelagnelf@nvidia.com>
+ <20260317220323.1909618-1-joelagnelf@nvidia.com>
+ <20260317220323.1909618-3-joelagnelf@nvidia.com>
+Content-Language: en-GB
+From: Matthew Auld <matthew.auld@intel.com>
+In-Reply-To: <20260317220323.1909618-3-joelagnelf@nvidia.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 17, 2026 at 04:17:10PM -0400, Joel Fernandes wrote:
-> Add a new module `kernel::interop::list` for working with C's doubly
-> circular linked lists. Provide low-level iteration over list nodes.
+On 17/03/2026 22:03, Joel Fernandes wrote:
+> Christian Koenig mentioned he'd like to step down from the reviewer
+> role for the GPU buddy allocator. Joel Fernandes is stepping in as
+> reviewer with agreement from Matthew Auld and Arun Pravin.
 > 
-> Typed iteration over actual items is provided with a `clist_create`
-> macro to assist in creation of the `CList` type.
-> 
-> Cc: Nikola Djukic <ndjukic@nvidia.com>
-> Reviewed-by: Daniel Almeida <daniel.almeida@collabora.com>
-> Reviewed-by: Alexandre Courbot <acourbot@nvidia.com>
-> Acked-by: Alexandre Courbot <acourbot@nvidia.com>
-> Acked-by: Gary Guo <gary@garyguo.net>
-> Acked-by: Miguel Ojeda <ojeda@kernel.org>
 > Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
 
-I have a few nits below. But overall I think this looks ok:
+Acked-by: Matthew Auld <matthew.auld@intel.com>
 
-Reviewed-by: Alice Ryhl <aliceryhl@google.com>
+> ---
+>   MAINTAINERS | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index cd9505d3be60..3353cbf98be1 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -8946,7 +8946,7 @@ F:	include/drm/ttm/
+>   GPU BUDDY ALLOCATOR
+>   M:	Matthew Auld <matthew.auld@intel.com>
+>   M:	Arun Pravin <arunpravin.paneerselvam@amd.com>
+> -R:	Christian Koenig <christian.koenig@amd.com>
+> +R:	Joel Fernandes <joelagnelf@nvidia.com>
+>   L:	dri-devel@lists.freedesktop.org
+>   S:	Maintained
+>   T:	git https://gitlab.freedesktop.org/drm/misc/kernel.git
 
-Please do consider my mod.rs suggestion too, though.
-
-> +//! ```
-> +//! use kernel::{
-> +//!     bindings,
-> +//!     clist_create,
-
-IMO the automatic re-exports of macros at the root shouldn't be used.
-Import it from kernel::interop::list::clist_create instead.
-
-Note that you need to put a re-export below macro definition to do this.
-
-	macro_rules! clist_create {
-	    (unsafe { $head:ident, $rust_type:ty, $c_type:ty, $($field:tt).+ }) => {{
-	        // Compile-time check that field path is a `list_head`.
-	        // SAFETY: `p` is a valid pointer to `$c_type`.
-	        let _: fn(*const $c_type) -> *const $crate::bindings::list_head =
-	            |p| unsafe { &raw const (*p).$($field).+ };
-	
-	        // Calculate offset and create `CList`.
-	        const OFFSET: usize = ::core::mem::offset_of!($c_type, $($field).+);
-	        // SAFETY: The caller of this macro is responsible for ensuring safety.
-	        unsafe { $crate::interop::list::CList::<$rust_type, OFFSET>::from_raw($head) }
-	    }};
-	}
-	pub use clist_create; // <-- you need this
-
-See tracepoint.rs or any of the other macros for an example.
-
-> +//! // Create typed [`CList`] from sentinel head.
-> +//! // SAFETY: `head` is valid and initialized, items are `SampleItemC` with
-> +//! // embedded `link` field, and `Item` is `#[repr(transparent)]` over `SampleItemC`.
-> +//! let list = clist_create!(unsafe { head, Item, SampleItemC, link });
-
-Did you try using this in your real use-case? You require `head` to be
-an :ident, but I think for any 'struct list_head' not stored on the
-stack, accepting an :expr would be easier to use so that you can just
-pass `&raw mut my_c_struct.the_list_head` directly to the macro. Right
-now you have to put the raw pointer in a local variable first.
-
-Alice

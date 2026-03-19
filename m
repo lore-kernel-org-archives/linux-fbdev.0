@@ -1,116 +1,138 @@
-Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A5B03A6B8D
-	for <linux-fbdev@vger.kernel.org>; Thu, 19 Mar 2026 08:06:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.220
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 356D41EE033
+	for <linux-fbdev@vger.kernel.org>; Thu, 19 Mar 2026 08:22:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773907611; cv=none; b=XrOU67guSL5qwx/pXPquvsXD5BUYW8bGn3Y/UVUpJ713ZGotul+X8fvXesZhAE1iwXyG+AYLEHsZP+6k6VgZ8z7ju7IZxtW9Ay+RSWpW0Gqqc28fzyRjlScY6SaA/dMjfIhBfKD5AJmgjIk7/PKTEAcQRfgAlftGP5Z8lLvLi5E=
+	t=1773908523; cv=none; b=ZMGghAjAoWCRghRa3cCImAvSady/fsyABApt5uPTG/IUS3ZZMTNHf+2vapAsZQ/8wDTNHZ0iSQyZGTbJZZgGgXD+PKsSE5XL/oOjkroDeTCW9wAFNzeZ/Ns4KJaz1Qsixkj363Th0tcs2Wj1Sav87HPaUIOxDcq9/doAMCkOEEQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773907611; c=relaxed/simple;
-	bh=aeM4Jx+xJMgx4dbVDSvRpVc/hXULtx2vu/MM9QkUv7c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=SjCmk5Vn7Nrb7R1BLMjBEbZk8U+GLrjwAH9J38T78edXTgeIZGxVPU/04hU4Wy7k4xyN9Ed62+KpTUFMd2z0UnVpK31Nn83R0ZNPygmtIpsvTlGttVqCXJ8A+YRnMKOXE2Tm+ESfF/xJ7YbzxahleoDRJS8r4KS8V60V5kbT9Cw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=xyrtlGI8; arc=none smtp.client-ip=113.46.200.220
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1773908523; c=relaxed/simple;
+	bh=yetkjL3pXRMN3sdV6EFledjFlQqnQct1kECMirWqyAw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rxcEFIzjM19n0H1uZf62dxcpNVbor2uqf6yCeLvpidaQ1dRl6pcmzD1bknehsG9srvbl8z1mpLQtWGvpVIunWkpP2nEkJpSpSOR0szgNZTvOG30jY/Qi35qo/lEahKX94kiYl5ibg0f0xn36z42nxJGM67wQgOXFENs4pcMD8YY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=kSuexT9F; arc=none smtp.client-ip=192.198.163.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="xyrtlGI8"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=de6sE0gCPgrQLlge7GJt5+7mdZ20YrkwDcyPCmIYdVQ=;
-	b=xyrtlGI8N5W0OqJoOiz2rntCCfiKwiaRAAAYOwqZqmdMSWeqYtOGYjRGWBFtTlnmPT/yfzWzj
-	PCSewm+U1YSDipSNpqz0Exgws1TKde7eJCIP/kN6hTFJzv9ByelYVstgwAZ0+vnU9U9eADfEeIW
-	68G2YJDSMMmpQWqfErpiWEE=
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4fbynR0xD8z12LD3;
-	Thu, 19 Mar 2026 16:01:15 +0800 (CST)
-Received: from dggpemf500002.china.huawei.com (unknown [7.185.36.57])
-	by mail.maildlp.com (Postfix) with ESMTPS id 0107540538;
-	Thu, 19 Mar 2026 16:06:46 +0800 (CST)
-Received: from [10.174.179.11] (10.174.179.11) by
- dggpemf500002.china.huawei.com (7.185.36.57) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 19 Mar 2026 16:06:45 +0800
-Message-ID: <e5f7611f-f087-4835-99e3-4fddc927aab8@huawei.com>
-Date: Thu, 19 Mar 2026 16:06:44 +0800
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="kSuexT9F"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1773908521; x=1805444521;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=yetkjL3pXRMN3sdV6EFledjFlQqnQct1kECMirWqyAw=;
+  b=kSuexT9F06PAXOjmc21xXMvaagKjEjKRJkkEjHxz/ZeM3hqxo/Dk30Hq
+   ZyGaGkhDuZ9m6LJkxd6zcLXjn2pA40qZbPyCjkBnnYJ6stS6YM9f86RFr
+   ekQrfoKGHMsSs+3jKyVXE4WWtYLFg4WzF311EIeMN24ILeWnBO63f6rGW
+   d1W80wqjIUo3c5FK1h2+4n5ySst3n0kh4dv/HGTDgcjZLvAJJLC1/cxjU
+   shFF6ScMhH33pzO3Dh5W9CccIIuivJuv1pZYNl/aDfObyj77+QCMmJxPD
+   Fh9m1r76FUCwDdjlICjKj9kmfSd1eMowAaR9rZJJAiVc+leE7TpWVS7Af
+   Q==;
+X-CSE-ConnectionGUID: lTaccoBXSa6Dk92YI6Song==
+X-CSE-MsgGUID: Uj4D8WJkRuOSN3yl3FHOnA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11733"; a="85602853"
+X-IronPort-AV: E=Sophos;i="6.23,129,1770624000"; 
+   d="scan'208";a="85602853"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2026 01:22:01 -0700
+X-CSE-ConnectionGUID: CHlLw4cKSRi9a2kEb/IwRA==
+X-CSE-MsgGUID: hppVklP4QQi30tm1RDWkhQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,129,1770624000"; 
+   d="scan'208";a="245917501"
+Received: from klitkey1-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.120])
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2026 01:21:59 -0700
+Date: Thu, 19 Mar 2026 10:21:56 +0200
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Jason Yan <yanaijie@huawei.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	b.zolnierkie@samsung.com
+Subject: Re: [PATCH] video: fbdev: matroxfb: remove dead code and set but not
+ used variable
+Message-ID: <abuyJDK6E2aHA4rC@ashevche-desk.local>
+References: <20200403021609.20968-1-yanaijie@huawei.com>
+ <20200408101852.GC20795@ravnborg.org>
+ <abpX_2PUWie03GdG@black.igk.intel.com>
+ <17605e19-065c-4b71-abb2-a9c9a7b9ddc6@huawei.com>
+ <abun9dwCYAWd1nIB@ashevche-desk.local>
+ <e5f7611f-f087-4835-99e3-4fddc927aab8@huawei.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] video: fbdev: matroxfb: remove dead code and set but not
- used variable
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-CC: Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
-	<linux-fbdev@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
-	<b.zolnierkie@samsung.com>
-References: <20200403021609.20968-1-yanaijie@huawei.com>
- <20200408101852.GC20795@ravnborg.org> <abpX_2PUWie03GdG@black.igk.intel.com>
- <17605e19-065c-4b71-abb2-a9c9a7b9ddc6@huawei.com>
- <abun9dwCYAWd1nIB@ashevche-desk.local>
-From: Jason Yan <yanaijie@huawei.com>
-In-Reply-To: <abun9dwCYAWd1nIB@ashevche-desk.local>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- dggpemf500002.china.huawei.com (7.185.36.57)
+In-Reply-To: <e5f7611f-f087-4835-99e3-4fddc927aab8@huawei.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-在 2026/3/19 15:38, Andy Shevchenko 写道:
-> On Thu, Mar 19, 2026 at 10:22:08AM +0800, Jason Yan wrote:
->> 在 2026/3/18 15:45, Andy Shevchenko 写道:
->>> On Wed, Apr 08, 2020 at 10:18:52AM +0000, Sam Ravnborg wrote:
->>>> On Fri, Apr 03, 2020 at 10:16:09AM +0800, Jason Yan wrote:
->>>>> Fix the following gcc warning:
->>>>>
->>>>> drivers/video/fbdev/matrox/g450_pll.c:336:15: warning: variable
->>>>> ‘pixel_vco’ set but not used [-Wunused-but-set-variable]
->>>>>     unsigned int pixel_vco;
->>>>>                  ^~~~~~~~~
->>>>> Reported-by: Hulk Robot <hulkci@huawei.com>
->>>>> Signed-off-by: Jason Yan <yanaijie@huawei.com>
->>>>
->>>> Thanks, committed and pushed to drm-misc-next.
->>>> The fix will show up in upstream kernel at the next
->>>> merge window.
->>>
->>> The most of the patches from so called Hulk Robot appeared to be controversial.
->>>
->>> First of all, even so called "dead code" may have side effects on the registers
->>> in HW which may lead to other issues. Second, the mentioned dead code elimination
->>> patch doesn't improve anything as now the dead code is 'mnp' variable (that's how
->>> I got into that, I still have a build error).
->>
->> Sorry, I do not understand what side effects this may cause. Would you
->> please explain it in detail?
+On Thu, Mar 19, 2026 at 04:06:44PM +0800, Jason Yan wrote:
+> 在 2026/3/19 15:38, Andy Shevchenko 写道:
+> > On Thu, Mar 19, 2026 at 10:22:08AM +0800, Jason Yan wrote:
+> > > 在 2026/3/18 15:45, Andy Shevchenko 写道:
+> > > > On Wed, Apr 08, 2020 at 10:18:52AM +0000, Sam Ravnborg wrote:
+> > > > > On Fri, Apr 03, 2020 at 10:16:09AM +0800, Jason Yan wrote:
+> > > > > > Fix the following gcc warning:
+> > > > > > 
+> > > > > > drivers/video/fbdev/matrox/g450_pll.c:336:15: warning: variable
+> > > > > > ‘pixel_vco’ set but not used [-Wunused-but-set-variable]
+> > > > > >     unsigned int pixel_vco;
+> > > > > >                  ^~~~~~~~~
+> > > > > > Reported-by: Hulk Robot <hulkci@huawei.com>
+> > > > > > Signed-off-by: Jason Yan <yanaijie@huawei.com>
+> > > > > 
+> > > > > Thanks, committed and pushed to drm-misc-next.
+> > > > > The fix will show up in upstream kernel at the next
+> > > > > merge window.
+> > > > 
+> > > > The most of the patches from so called Hulk Robot appeared to be controversial.
+> > > > 
+> > > > First of all, even so called "dead code" may have side effects on the registers
+> > > > in HW which may lead to other issues. Second, the mentioned dead code elimination
+> > > > patch doesn't improve anything as now the dead code is 'mnp' variable (that's how
+> > > > I got into that, I still have a build error).
+> > > 
+> > > Sorry, I do not understand what side effects this may cause. Would you
+> > > please explain it in detail?
+> > 
+> > Any IO (and specifically on PCI bus) may have side effects. If the removed code
+> > did some HW accesses (especially reads), it affects the state of HW. You can
+> > read more about PCI bus and what read from it does.
 > 
-> Any IO (and specifically on PCI bus) may have side effects. If the removed code
-> did some HW accesses (especially reads), it affects the state of HW. You can
-> read more about PCI bus and what read from it does.
+> No, the removed code did not do any IO and will not affect the state of HW.
 
-No, the removed code did not do any IO and will not affect the state of HW.
+Excellent, but it leaves the code that does IO and now still breaks the
+compilation.
 
+> > Helge, can we revert this change and start over, please? (I can also send
+> > revert if you think it's a better way)
 > 
-> Helge, can we revert this change and start over, please? (I can also send
-> revert if you think it's a better way)
+> I don't think we need to revert this patch. Please provide proof that this
+> modification will lead to real issues.
 
-I don't think we need to revert this patch. Please provide proof that 
-this modification will lead to real issues.
+It's not me, who should provide an evidence, it had to be the author
+who must had provided testing and everything when submitting the change.
 
-Thanks,
-Jason
+> > I do not believe this change was ever tested on real HW, and I see an evidence
+> > that this most likely was blindly made as it led to the similar issue after
+> > the change.
 
-> 
-> I do not believe this change was ever tested on real HW, and I see an evidence
-> that this most likely was blindly made as it led to the similar issue after
-> the change.
-> 
->>> That said, for the starter I suggest to revert this change. After one need go
->>> carefully through code to understand if it's exactly the case and what to do with
->>> 'mnp' which involves some IO.
->>>
->>> +Cc: current fbdev maintainers
-> 
+No answer here? That's what I expected based on my observations on the quality
+of the patches from so called Hulk Robot.
+
+> > > > That said, for the starter I suggest to revert this change. After one need go
+> > > > carefully through code to understand if it's exactly the case and what to do with
+> > > > 'mnp' which involves some IO.
+> > > > 
+> > > > +Cc: current fbdev maintainers
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+

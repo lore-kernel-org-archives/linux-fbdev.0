@@ -1,108 +1,133 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from out203-205-221-231.mail.qq.com (out203-205-221-231.mail.qq.com [203.205.221.231])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F8463FE66D
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Mar 2026 17:16:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3782C30F535;
+	Wed, 25 Mar 2026 05:44:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.205.221.231
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774372561; cv=none; b=fAx4i7RfjgHfblFW6JVHFFU2BqaX8QO8Yu04ubi52jrupXQ1vdePsZO5c9zLdT/OytrbGkgn6z7nyRgQwn7TfmecFZPlamfSj7w1ECLFZu4g3EwG+IrwcoLUHBLTzA9pXjKGdmCDuPzDo4jyOYWYgxfL2IAnMDgIcrOfsgTgqrI=
+	t=1774417458; cv=none; b=ikClgCcUiRLw93FOhkMxU0B0E91xwbHSh8sPRjhqcG8vCT3b3+VTRTX90NTvJPyGnZuGb2us+I3a9mT8s/D7miL08TDpAZumzZX1TM0iFaPKvbGQSQQIwxddfT2yn30H6ocoq+h750QfT2KOQeNbbAt+du9GoyxvJxKWsyLOf0I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774372561; c=relaxed/simple;
-	bh=rJ1pctPs0xvOqyF2SiLanfq2whzraxuHaYE2pLWCFnQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IgHuFdHygEtpHmV3603TUDZWs6lKm6RIbHvmzmti2BH5r25xPFacN6Gta8TKmWPVGUqjBLVGgDw92mHKEV3rQtopE4J+Kapy2MwkQSMzDb+SLezHNgc0LKhu7z0XT5QPqaGxlikvNV3SNT1cDWSE6ERJHaP7e1WI2SK8A8NS6lE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=D8GIU8z4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774417458; c=relaxed/simple;
+	bh=P2vsmHaG85VL7IOTuwdGn8heZirpnFu+tq+OC1J5dRQ=;
+	h=Message-ID:From:To:Cc:Subject:Date:MIME-Version:Content-Type; b=U5Uufv4a1lplJmmtuTwAZ8TRfLHTojaaJBsYD49Zk8IhyKASkPeKse6aiaESmIQJ72iBjytSGxy5IsRnFT+vAjM+iUHi60H5aFRbMdstTeHVYZTq1eR1iWQx2gZ6zxoS5ooRoOSgoBk1ZPudhsVRhFvWXWUOUi3Z9O32uIrSZ2c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=foxmail.com; spf=pass smtp.mailfrom=foxmail.com; dkim=pass (1024-bit key) header.d=foxmail.com header.i=@foxmail.com header.b=aIAPHZx0; arc=none smtp.client-ip=203.205.221.231
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=foxmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=foxmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="D8GIU8z4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6EA74C2BC87
-	for <linux-fbdev@vger.kernel.org>; Tue, 24 Mar 2026 17:16:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774372561;
-	bh=rJ1pctPs0xvOqyF2SiLanfq2whzraxuHaYE2pLWCFnQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=D8GIU8z42uPdqQnOgaUsOMsL9PsqF7sj3VlsmHDWfwi1TkinZ4lHEHzHUL+mFgGBM
-	 VZMhX6TrJmjfa/8euQPq1+b6iCfqsa56/I7pJGV7H7eWzlo9do/kwsmHx19ChupPGq
-	 6iK8D344oEcEqh626AYWFAs/+PdpEWtVr4h48eynkyaAbKCY5dwQw9ZvDA59DDGsmA
-	 /KccpwmFA/FAmNGz2ytCLFsKkh/CLVSlbWy/mgQmWAhHAwmsQtqe1cu26Qzobsla58
-	 Y/dtfgTz5Gzs3uSI4uoh3kucRK0ZtkOWAiLCfLKLXDZaN5iUFKb8+mz0xPBdIrrGp4
-	 ItW1gRe+KosjQ==
-Received: by mail-ot1-f51.google.com with SMTP id 46e09a7af769-7d744d9acbeso1655451a34.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 24 Mar 2026 10:16:01 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVKiMdCdhjLNNUjQPUtjtHm/N9342q0xwCN9eSc+6YALIbnvBZNSUjePRcDpZU4M1zAiZYfn8DOspvtAg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyjmRIHtYig+Dw2BmrOVSduqzChG3A+TVqEFNTMH0DBJZGMS+Hc
-	6J6QjJIXoL6IO+jC04e8V/1v5MAdNhFSOu1X6z5qA2vH42oPXzpuPNCLLwOvCvSYunp46Wjoi5N
-	XfZxes3zYFGtknDWc/abi7IbUUASERKc=
-X-Received: by 2002:a05:6830:6afa:b0:7d7:5032:cc86 with SMTP id
- 46e09a7af769-7d9d696e682mr54612a34.23.1774372560392; Tue, 24 Mar 2026
- 10:16:00 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=foxmail.com header.i=@foxmail.com header.b="aIAPHZx0"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
+	s=s201512; t=1774417446;
+	bh=lsRs0w3s1XR78ZUa0hs24rqGxcYjBv9JQ4RsHoC6kU8=;
+	h=From:To:Cc:Subject:Date;
+	b=aIAPHZx00D1yNGeUE4A3z93NR5EXC2P5HKdty8dI/3oZL79jF1QmNiSzJHdDtsiz3
+	 60Iz0Ln7VPP2Dc1gUpdX04a8/xUJ4mXzSCPyNweCmoqUfE5JZxtCDQm4hPpBLOtM//
+	 JKfggU6vjWTYKG44nP/fqVcYV9gSGQhhPNB9sa1A=
+Received: from China-team ([60.247.85.88])
+	by newxmesmtplogicsvrszb51-0.qq.com (NewEsmtp) with SMTP
+	id B019964C; Wed, 25 Mar 2026 13:44:01 +0800
+X-QQ-mid: xmsmtpt1774417441tialpb5b7
+Message-ID: <tencent_DAD116D7DC7CB44A8E5BB7E2CCC0E835F00A@qq.com>
+X-QQ-XMAILINFO: OOyEews/EdUg6nw6roCgOEuNTrX7cM0xj+CLaS7nB7CUOe2/s3PCIq1EC3mdKj
+	 4Ejny0jLyTsnhDCUvtG80AEBNykpsrXGIaEJlrvnEHAjkz2UKl7H9BP97/g0ePxC3fVLpIOnVgvg
+	 zB8DbetfYFQvNGp6JY/D/XvatkOOSlqmGzLQ4mOjYS52NS7sv4QhVFxQ5JYIUyLDM+jyqDRC8eIS
+	 REuhkwJlm8k9H7aKOYyBG1VZSm0EbTU/01NkuBTb6mODTQESvrf+rhsVWNHH/On0IrXr+BZZmxW9
+	 jwmzo1tEDyY8oGjt4duedhlwuNEH5yYEU9rNQsHfS8bLdcTwKH8PfwhJK+MvsOB8rp67OOEj8snO
+	 jOJCOH/sBwdAAeqO23mOEu9Wms6turWPQX0UMu3fVU98ZX2HuplvthWiBMav/fnnuCZ8bfzVMNH5
+	 MjRJEedxQYzBXKG4eWGH2MyT4G8HQvGgU9yplFxNIn0NbC49w8qgGBxGnfBE4/9mFAlATBhbX9bU
+	 rYPwa/RiNRJ/ErdkgWR+VQGuDwPU6wUNkaPzYmDtrhjV7WOzqFoYt7LzV/RGW75bw4PoSIL6ReoX
+	 Sj+Hbxt5AC5W0yj3Udmnf5MXLTReVBht9/QxR5luAp6A6Rm8EoZ6wMZQX2wj8saabcQLfouYyh7C
+	 XqTEm79st4Y98DENgfyNbNob23vGop5aLpLYPLoOtQIRQuKDnHcfug92oRSfXMQ8ZAtQeEncKiuI
+	 ZnJeqEwneQpCzTVjKJyayL00skAoygXdiOgAYrtZyGvv8lIr1+1wVtfYq05639P3rcS+w/JfbNtS
+	 sKu3LTd+CVP3KW410fwsZr11GQMNvZh80CD69qol/3uZDp42LyKPwQ4+s7tJ1DFvG6TFk883Nic6
+	 Qe/mefQM1PZLbikMA25QgIBYCFPPWihVi92Bt9hD/Qfkku1InJjSSSlT5tiSbmBZvswH/EJJQzXH
+	 gRRrP+fioGZZXTTAxV0LQa2Z2GKLHF+I2dUyR0VkWkRR2dd8GXi3o6cvw10+bUiCQ3ykb0COEbhT
+	 5WURg+81Yzk5oKvebLPBsPkQk5jYnJKhR6qRp+eyddp3YrMFD+5qhnW5QAoYzfRc0tP8Elqw==
+X-QQ-XMRINFO: MPJ6Tf5t3I/ylTmHUqvI8+Wpn+Gzalws3A==
+From: Alva Lan <alvalan9@foxmail.com>
+To: gregkh@linuxfoundation.org,
+	stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org,
+	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+	Helge Deller <deller@gmx.de>,
+	Alva Lan <alvalan9@foxmail.com>
+Subject: [PATCH 5.15.y] fbdev: efifb: Register sysfs groups through driver core
+Date: Wed, 25 Mar 2026 13:43:39 +0800
+X-OQ-MSGID: <20260325054339.1030580-1-alvalan9@foxmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <5084777.GXAFRqVoOG@rafael.j.wysocki> <acEOf2pI_NpfA4EP@aspen.lan>
- <CAJZ5v0itCrbwM2k4_3F0kQwTfAwKXFQ5G4gcn=bM65Y2NU9YjQ@mail.gmail.com> <20260324164023.GE2902881@google.com>
-In-Reply-To: <20260324164023.GE2902881@google.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 24 Mar 2026 18:15:49 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0hOguJV5QxjewOnFXc5zcGWTGkvvXO85ntuq=dD7uu3xQ@mail.gmail.com>
-X-Gm-Features: AQROBzBNhJuJrMCZzWjpU-Y01kAsHD8yJNab0EMozPdjoBqQ2WLuUdt66_JkkCg
-Message-ID: <CAJZ5v0hOguJV5QxjewOnFXc5zcGWTGkvvXO85ntuq=dD7uu3xQ@mail.gmail.com>
-Subject: Re: [PATCH v1] backlight: apple_bl: Convert to a platform driver
-To: Lee Jones <lee@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, 
-	Linux ACPI <linux-acpi@vger.kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
-	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Mar 24, 2026 at 5:40=E2=80=AFPM Lee Jones <lee@kernel.org> wrote:
->
-> On Tue, 24 Mar 2026, Rafael J. Wysocki wrote:
->
-> > On Mon, Mar 23, 2026 at 10:57=E2=80=AFAM Daniel Thompson <danielt@kerne=
-l.org> wrote:
-> > >
-> > > On Sat, Mar 14, 2026 at 12:50:11PM +0100, Rafael J. Wysocki wrote:
-> > > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > > >
-> > > > In all cases in which a struct acpi_driver is used for binding a dr=
-iver
-> > > > to an ACPI device object, a corresponding platform device is create=
-d by
-> > > > the ACPI core and that device is regarded as a proper representatio=
-n of
-> > > > underlying hardware.  Accordingly, a struct platform_driver should =
-be
-> > > > used by driver code to bind to that device.  There are multiple rea=
-sons
-> > > > why drivers should not bind directly to ACPI device objects [1].
-> > > >
-> > > > Overall, it is better to bind drivers to platform devices than to t=
-heir
-> > > > ACPI companions, so convert the Apple Backlight ACPI driver to a
-> > > > platform one.
-> > > >
-> > > > While this is not expected to alter functionality, it changes sysfs
-> > > > layout and so it will be visible to user space.
-> > > >
-> > > > Link: https://lore.kernel.org/all/2396510.ElGaqSPkdT@rafael.j.wysoc=
-ki/ [1]
-> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
-> >
-> > Thanks!
-> >
-> > Unless anyone has any objections or concerns (in which case please let
-> > me know), I'm going to queue up this one for 7.1.
->
-> Why would you queue-up a Backlight patch?
+From: Thomas Weißschuh <linux@weissschuh.net>
 
-Because I care about this change and it's mostly about ACPI.
+[ Upstream commit 95cdd538e0e5677efbdf8aade04ec098ab98f457 ]
 
-> I'd rather this goes in via the Backlight tree.
+The driver core can register and cleanup sysfs groups already.
+Make use of that functionality to simplify the error handling and
+cleanup.
 
-Sure, no problem with that.
+Also avoid a UAF race during unregistering where the sysctl attributes
+were usable after the info struct was freed.
+
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+Signed-off-by: Helge Deller <deller@gmx.de>
+[ Minor context conflict resolved. ]
+Signed-off-by: Alva Lan <alvalan9@foxmail.com>
+---
+ drivers/video/fbdev/efifb.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index b3d5f884c544..f029cbe9cefb 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -581,15 +581,10 @@ static int efifb_probe(struct platform_device *dev)
+ 		break;
+ 	}
+ 
+-	err = sysfs_create_groups(&dev->dev.kobj, efifb_groups);
+-	if (err) {
+-		pr_err("efifb: cannot add sysfs attrs\n");
+-		goto err_unmap;
+-	}
+ 	err = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (err < 0) {
+ 		pr_err("efifb: cannot allocate colormap\n");
+-		goto err_groups;
++		goto err_unmap;
+ 	}
+ 
+ 	if (efifb_pci_dev)
+@@ -608,8 +603,6 @@ static int efifb_probe(struct platform_device *dev)
+ 		pm_runtime_put(&efifb_pci_dev->dev);
+ 
+ 	fb_dealloc_cmap(&info->cmap);
+-err_groups:
+-	sysfs_remove_groups(&dev->dev.kobj, efifb_groups);
+ err_unmap:
+ 	if (mem_flags & (EFI_MEMORY_UC | EFI_MEMORY_WC))
+ 		iounmap(info->screen_base);
+@@ -629,7 +622,6 @@ static int efifb_remove(struct platform_device *pdev)
+ 
+ 	/* efifb_destroy takes care of info cleanup */
+ 	unregister_framebuffer(info);
+-	sysfs_remove_groups(&pdev->dev.kobj, efifb_groups);
+ 
+ 	return 0;
+ }
+@@ -637,6 +629,7 @@ static int efifb_remove(struct platform_device *pdev)
+ static struct platform_driver efifb_driver = {
+ 	.driver = {
+ 		.name = "efi-framebuffer",
++		.dev_groups = efifb_groups,
+ 	},
+ 	.probe = efifb_probe,
+ 	.remove = efifb_remove,
+-- 
+2.43.0
+

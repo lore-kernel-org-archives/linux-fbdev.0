@@ -1,80 +1,104 @@
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f68.google.com (mail-pj1-f68.google.com [209.85.216.68])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CF4037FF60
-	for <linux-fbdev@vger.kernel.org>; Fri, 27 Mar 2026 19:39:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C399392837
+	for <linux-fbdev@vger.kernel.org>; Sat, 28 Mar 2026 16:02:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.68
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774640387; cv=none; b=N9y4RxycG2WgvuB78/+PJsDDwFEv1755vUtDJxCk1vqSKTTRs2ZF8SHw/tnb8HL6btXYu/sRgwrcPc0TUAUXBFQIB18Ab4vD+/RPJheVp1iKDxPBgg/MfCcvAw2kIcIPm+S1AiXzIK3ZEUhe8eIh0+6V+sfrmZ08OfT0mRgOA6k=
+	t=1774713737; cv=none; b=JIqZm5V2cvzOeGgKmmTnwFo5xgXJK6f+qLyV3V8ysn/STD2ziMb9Z4USICw7/GWwI2pCyBfqVtcd8glf0AXATcxjq7v/9bi2Bm4+hTIGLrM0GBB+Hgu1qhODAf8MiSwcZbMyNP69eaxd2yq9UYLR8TzuTz9gQNzVN7aX0DbirfI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774640387; c=relaxed/simple;
-	bh=EMOfmj1E8tOqpKhmh6cgSz/1MUVNnNg9ABAOmnG+5Rk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=lt6faaDCsKWGQs1+wTQ+em5lJhkV4cspdggYuWelRQu0MqhWk5NRG6t7K7fbPOWOGqXyf8R1+t8sGdac2IHCd76jciLaM3RMTvY5vJmIzzcaZrpNOzKio49gCoHtCXyhUKLeznmcP2ORBeyeW6TewcfLVgkGt5qJIsZMrFeG3Do=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=YBP/iJgv; arc=none smtp.client-ip=185.246.85.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
+	s=arc-20240116; t=1774713737; c=relaxed/simple;
+	bh=X1e5+2xfs4vfM75r0Fko0oq6sN4zv6V/0nqGiFN4IXc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=FIR8tp4Y124Mtr8ewPeCBwyMtRugd1c0NSbAqfyVtg67HXEawqfu4k3WjIgAX7wKGFYzi3+IcaqJ4rhen/vGRKouDghvaOZ+W/SGTGJ8zL3RzMfxRrkWa43hexZdX96xnyGkqfiq91jVMUz99r4TbYh7p8+9kGRfG0ClvDZ8GyM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JYIrOQsl; arc=none smtp.client-ip=209.85.216.68
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="YBP/iJgv"
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 22E874E4282E;
-	Fri, 27 Mar 2026 19:39:41 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id EE83660268;
-	Fri, 27 Mar 2026 19:39:40 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 7510210451AF8;
-	Fri, 27 Mar 2026 20:39:39 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1774640380; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=QBXw6xFuqX0scA2nxRBDxbSxByrStwiIMm6x28ahDaY=;
-	b=YBP/iJgvKAkBfLp6+yHhmKTPpVUrD7qTUx5pt47aKDs9zzGmXGZ8mL0JSwkLXHe5jGGwCP
-	hw2JZyAxoPhvGDJ49xyVzFsN0JQV0q/FcoUXWnXVeizyJsFc00/BaZxBJXn+N8N+GOmg6x
-	T/W/DyO3nj9uPCPVTkQdNpxwA/U5S/xj1GLAYf79BgCEqXr2OX6Q70OEDHTGlTTBQTxGDO
-	KdD/0c4LlVPTIJu8rSU+BKe8tIokKujXWMEsDL4RyM4hhQnD6XF2HDV1rrcMN1e4dJEc6g
-	ynvrDIZoAa+awVPREGqyfoA4J8UcwCGppqzMiguZraIx8zysaefgOstMpsLyYA==
-From: Thomas Richard <thomas.richard@bootlin.com>
-Date: Fri, 27 Mar 2026 20:39:33 +0100
-Subject: [PATCH 2/2] MAINTAINERS: Add cgbc backlight driver
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JYIrOQsl"
+Received: by mail-pj1-f68.google.com with SMTP id 98e67ed59e1d1-35691a231a7so1887011a91.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Mar 2026 09:02:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774713734; x=1775318534; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zO3fzyE74uT1xNOETXZiW8HFjDihl3ZHhtgFTBMYTAU=;
+        b=JYIrOQslpDWClTYnjS6PhCBJ365ba9t3Gd7ocgnWEEUpqj/djBW9YHczjzUcU0XxJp
+         ZIowBe+tUWdivi+cdi/J02Xl8bD4Qt6Qqt15Xc3qeXdmShn7FFCTlrFA1PeybqMI65GG
+         m61fd840d6U2883yqmQSSYig6IaxX16oSnjGTxm7gQFWMf9nRvC0vhrP6V4DW+eu4N3i
+         iyQl7Oled28UVS+ukLqGasNWFxFCy/Sqojc/vR4nmKhtj7sUejd71I+G3uuypT1UfcNt
+         +oc0trgPRJHRimbOhEmKIZUT0ijo5zgw0bvVFrogqwAKmawZNy3Juj488C4Fl/WszlrS
+         ZZVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774713734; x=1775318534;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zO3fzyE74uT1xNOETXZiW8HFjDihl3ZHhtgFTBMYTAU=;
+        b=MKUkRabRszDlgY6C0EtJPIhyUCHWXMK7ycfLkftj+FXp5FeR+LaqinXWTV2tyZRywQ
+         gqcaNeSymJnxINDfwtD1ZhV+EFarpJVq1ws5ZP0BTWkFkzDJ9+lwok23oItO1kDQ2u37
+         DsfP8U04jt+TZrUY93gNyggDaVONU7C0Pg9M8tLNhXjG9+ghtatnBs0mMN2Nrxyc90Rm
+         tKJdCYFe4AjOi4z1bmc1OLPSWMPRfxtmCezcBaL/Cjr8k52kANlBL4FdfAS3Woij1FMu
+         zTxiD9RHbZ5n1of4TuE5s8w5OETon+zUbhVWTd101bV2xrFd8Z7pa7GmLFbc3UsT3TmU
+         Eozw==
+X-Forwarded-Encrypted: i=1; AJvYcCXAdy7+nNKJ/NvgzUHstTaPx5pTPgaYyooJ+mL4MFu9Tu6ETlqiXlOHda/UlhkadKFr3XE2P5mCIG4O0g==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx/LUOQpShSPjTV++L6/e2pxjCDGowk4el9uxXXISYTnuxrDxiq
+	W1a+8T1+PpCIQRQCBRbutFT3D1XVu2cTAMC/J/6M0Okajqp9DvCwWD0/
+X-Gm-Gg: ATEYQzwfLSS+er6WxXX7tmzIteD75UtDbFSNnpOPrWy9+/5nDrJ4Z+t+kR2o+7dUY6i
+	3BCbkVPIP9vJB6Ji6wkv8viswKQwmlscCUS1/eHrH2zGeqmTroB5mqq2mwsdQ8V66JnC9gAplrc
+	y/5hZRgb3eFEWQh7ODegccT7tLSZp0A06Hij3oll0RZuPlXiHV0vrS64K4XEAU4YPurNzdd/WOm
+	HT6X27v742Dq+fAbstwzWBv54HkTFwvy9NNH3ExgKm1+3tewqhjTwpZSBsL3ARThP7jbMtdFP4W
+	Na1YAanmMvBWdJ9zO8yG8Q32NhtaCXRvhKT4MmBh8SuX7EWpxlSHeTtlzyJc7pTZrfMgwkFVKeL
+	HqQA2wXWYgi4N9E181agw1Kz6uRuGeQFEd56CwWZgUtNasgui5uO8ZXUm3oyHAUQCTzOGYHgjqx
+	/CIz3fYareqNwdrGEVaqhJuVkfW3CE6WvZnBWPyD23Eg==
+X-Received: by 2002:a17:90a:da8d:b0:356:22ef:57ba with SMTP id 98e67ed59e1d1-35c2ff1be2cmr6546483a91.7.1774713734243;
+        Sat, 28 Mar 2026 09:02:14 -0700 (PDT)
+Received: from Panzergrenadier.localdomain ([222.205.46.26])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35d9509cf33sm2266914a91.13.2026.03.28.09.02.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 28 Mar 2026 09:02:13 -0700 (PDT)
+From: amanohina1 <caiyuhe80@gmail.com>
+To: andy@kernel.org,
+	gregkh@linuxfoundation.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	amanohina1 <caiyuhe80@gmail.com>
+Subject: [PATCH] staging: fbtft: avoid empty macro argument
+Date: Sun, 29 Mar 2026 00:01:14 +0800
+Message-Id: <20260328160114.1143108-1-caiyuhe80@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260327-backlight-cgbc-remove-x86-dependency-v1-2-4851c9e95371@bootlin.com>
-References: <20260327-backlight-cgbc-remove-x86-dependency-v1-0-4851c9e95371@bootlin.com>
-In-Reply-To: <20260327-backlight-cgbc-remove-x86-dependency-v1-0-4851c9e95371@bootlin.com>
-To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, 
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Thomas Richard <thomas.richard@bootlin.com>
-X-Mailer: b4 0.14.3
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Transfer-Encoding: 8bit
 
-Add missing backlight driver in CONGATEC BOARD CONTROLLER entry.
-
-Signed-off-by: Thomas Richard <thomas.richard@bootlin.com>
+Signed-off-by: amanohina1 <caiyuhe80@gmail.com>
 ---
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/staging/fbtft/fbtft-bus.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 7d10988cbc62..c210dbb94459 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6476,6 +6476,7 @@ F:	drivers/gpio/gpio-cgbc.c
- F:	drivers/hwmon/cgbc-hwmon.c
- F:	drivers/i2c/busses/i2c-cgbc.c
- F:	drivers/mfd/cgbc-core.c
-+F:	drivers/video/backlight/cgbc_bl.c
- F:	drivers/watchdog/cgbc_wdt.c
- F:	include/linux/mfd/cgbc.h
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 30e436ff19e4..d1eb3fc03d7a 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -62,9 +62,11 @@ out:									      \
+ }                                                                             \
+ EXPORT_SYMBOL(func);
  
-
+-define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
++#define fbtft_nop(x) (x)
++
++define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, fbtft_nop)
+ define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+-define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
++define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, fbtft_nop)
+ 
+ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+ {
 -- 
-2.53.0
+2.34.1
 

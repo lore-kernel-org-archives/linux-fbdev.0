@@ -1,210 +1,132 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F3A63A9DB0
-	for <linux-fbdev@vger.kernel.org>; Wed,  1 Apr 2026 08:28:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBDE228690;
+	Wed,  1 Apr 2026 08:58:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775032093; cv=none; b=VY4swMtz2gu8j0oPEtLXAw5WvxeTEdTWEpdWWc6MY6NG9ctpUgiL9njK38Fib/iyJQo1EkaXKNrs1N9HbCxYMk7QrsC66pIIr2nJXQUbrfx2ZaMRQtOqDHFkhxT3lhCO6FxvTkqGV91NQeIo0zhQOn2TAjIEk2C+o5Meoet0vOc=
+	t=1775033911; cv=none; b=p04O2Xr7JxYMrMhu0YnAAiViJ4rKZ1zAEH2I2gYOgCdQ9LU64zKa/GuAunVMqysAGRmbfyj3ugRUzd9J1kVo5ohylvimzYnjvKy3FZWiB3LOdcFN8dst4QlnECx5kuPVIhz1N+LKUSuXoVzLG5+yfqEG9zlR6EwwV/6HEqXINt4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775032093; c=relaxed/simple;
-	bh=qwOXDX7G8MhO+QaH+yjKUggxEV51zUfkF2ccJYwCEOE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MwV+SE06QRNdBMwSijHBFP9cO1mJ/1J44L7xN717OKms5JwZq8X7qvqWx3tj2e1UkJlR/DyRu4ODfjihx9dlQfo6aHNHQNs3WXt9eLCK+DBaxqa3lQNxYNtJgt/lLy3RopaxQ6smJFu9Rv6y/uuFcNTY2kDfqwiZQBa+OVjBodA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yiVwdVRb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=gAou2kim; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yiVwdVRb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=gAou2kim; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1775033911; c=relaxed/simple;
+	bh=Y8xpT6LVN6ZCuT/Jk5Me2F53eCiljn6T0UHuzsLdjX8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=bTSoOB3y6nKDC3aXEigFao8IJCUCb058l1ITWg143vShtpfbZY2oXCbfeFwFEmOEA3Pxu6fGImZ2fC7RC+fGpu1H/FHrfOUSBezV4kBsPJnkMSvb7GChJiacdkGQCLAziaOREOGXOsm8QszeAcjeYoBYR2jxj3AErjOEHPodQyU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NnxIphgd; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yiVwdVRb";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="gAou2kim";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yiVwdVRb";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="gAou2kim"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id BE4464D2B4;
-	Wed,  1 Apr 2026 08:28:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1775032090; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=b6rf6yLk5C2Xs6Db3RHdZP73Kvw90+UjkT/ZJ6nbnps=;
-	b=yiVwdVRbxVBMNMvYT1PtN16ta2oYoCehXnYISnmK8PNl7+w5NLHfDuuif3ap4KSC6a+WBo
-	uJgnqJ4CCcq1PjMsqoU4f9J0XrtHP1aOvHggL4evkN7FqlxWzM9kOjM1EavAUMWRWwTnGL
-	nwRTtg7bnxmTIvi4fDdLBiucK8wpqgM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1775032090;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=b6rf6yLk5C2Xs6Db3RHdZP73Kvw90+UjkT/ZJ6nbnps=;
-	b=gAou2kimX0o1rwu3H8rAWkHbHuXUkMGiMP0AkaMqILQ3/qiJeOHXkS8IcmD2qGEy/Zk2nY
-	cZ1w5yAwFyt9xDBw==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1775032090; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=b6rf6yLk5C2Xs6Db3RHdZP73Kvw90+UjkT/ZJ6nbnps=;
-	b=yiVwdVRbxVBMNMvYT1PtN16ta2oYoCehXnYISnmK8PNl7+w5NLHfDuuif3ap4KSC6a+WBo
-	uJgnqJ4CCcq1PjMsqoU4f9J0XrtHP1aOvHggL4evkN7FqlxWzM9kOjM1EavAUMWRWwTnGL
-	nwRTtg7bnxmTIvi4fDdLBiucK8wpqgM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1775032090;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=b6rf6yLk5C2Xs6Db3RHdZP73Kvw90+UjkT/ZJ6nbnps=;
-	b=gAou2kimX0o1rwu3H8rAWkHbHuXUkMGiMP0AkaMqILQ3/qiJeOHXkS8IcmD2qGEy/Zk2nY
-	cZ1w5yAwFyt9xDBw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 83D9F4A0B0;
-	Wed,  1 Apr 2026 08:28:10 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Zey2HhrXzGmzBgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 01 Apr 2026 08:28:10 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: tsbogend@alpha.franken.de,
-	arnd@arndb.de
-Cc: linux-mips@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH] arch/mips: Drop CONFIG_FIRMWARE_EDID from defconfig files
-Date: Wed,  1 Apr 2026 10:27:57 +0200
-Message-ID: <20260401082805.214198-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NnxIphgd"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EB1CC4CEF7;
+	Wed,  1 Apr 2026 08:58:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775033911;
+	bh=Y8xpT6LVN6ZCuT/Jk5Me2F53eCiljn6T0UHuzsLdjX8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=NnxIphgdTq+dehfltVzb8J31L5N2kUTo+jv6salTOu9EDNLISbTS6zYd/tU2av5Fx
+	 cHpvMKtqjFBmYZEYG281eaCtVQk/+1skh1P4orNb3cPT9gU38gOJ06zs5/wSa5KgbI
+	 j9GI4zIs2Afi4rIaaMNXpsCVeqVRi9GGS4ggoN3Ww73yglUahsPpgG/+UKTeyQDzVv
+	 NP6oesbX0QxIxxZXr7QiK+y6vMSzp5qWboiBm6StMPOt2ghAkDVI1wHVX2UhgTPuKq
+	 lH0J3rQS/msHfsn9y2K9FgTh7x0nkrC5JUsjVJyVZf4Fm0fPF4+TMp0GLVZvZrNHIM
+	 m9rHVIQVp6QWA==
+Message-ID: <7eaf55fd-1ec9-4c30-877f-12961e8f9532@kernel.org>
+Date: Wed, 1 Apr 2026 10:58:27 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 04/10] lib/fonts: Clean up Makefile
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: deller@gmx.de, gregkh@linuxfoundation.org, simona@ffwll.ch,
+ sam@ravnborg.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-serial@vger.kernel.org
+References: <20260327130431.59481-1-tzimmermann@suse.de>
+ <20260327130431.59481-5-tzimmermann@suse.de>
+ <CAMuHMdX1vUuKq-Q1-zA5tC5+LWap4osFJMqQ5pRJ373z++KQLQ@mail.gmail.com>
+ <a2b5aa02-2566-409f-960d-4ecb1419cbd5@suse.de>
+Content-Language: en-US
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ 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
+In-Reply-To: <a2b5aa02-2566-409f-960d-4ecb1419cbd5@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	TO_DN_SOME(0.00)[];
-	RCVD_TLS_ALL(0.00)[]
-X-Spam-Flag: NO
-X-Spam-Score: -2.80
-X-Spam-Level: 
 
-CONFIG_FIRMWARE_EDID=y depends on X86 or EFI_GENERIC_STUB. Neither is
-true here, so drop the lines from the defconfig files.
+On 01. 04. 26, 9:58, Thomas Zimmermann wrote:
+>>> -font-objs-$(CONFIG_FONT_SUN8x16)   += font_sun8x16.o
+>>> -font-objs-$(CONFIG_FONT_SUN12x22)  += font_sun12x22.o
+>>> -font-objs-$(CONFIG_FONT_8x8)       += font_8x8.o
+>>> -font-objs-$(CONFIG_FONT_8x16)      += font_8x16.o
+>>> -font-objs-$(CONFIG_FONT_6x11)      += font_6x11.o
+>>> -font-objs-$(CONFIG_FONT_7x14)      += font_7x14.o
+>>> -font-objs-$(CONFIG_FONT_10x18)     += font_10x18.o
+>>> -font-objs-$(CONFIG_FONT_PEARL_8x8) += font_pearl_8x8.o
+>>> -font-objs-$(CONFIG_FONT_ACORN_8x8) += font_acorn_8x8.o
+>>> -font-objs-$(CONFIG_FONT_MINI_4x6)  += font_mini_4x6.o
+>>> -font-objs-$(CONFIG_FONT_6x10)      += font_6x10.o
+>>> -font-objs-$(CONFIG_FONT_TER10x18)  += font_ter10x18.o
+>>> -font-objs-$(CONFIG_FONT_TER16x32)  += font_ter16x32.o
+>>> -font-objs-$(CONFIG_FONT_6x8)       += font_6x8.o
+>>> +# Built-in fonts
+>>> +font-$(CONFIG_FONT_10x18)     += font_10x18.o
+>>> +font-$(CONFIG_FONT_6x10)      += font_6x10.o
+>>> +font-$(CONFIG_FONT_6x11)      += font_6x11.o
+>>> +font-$(CONFIG_FONT_6x8)       += font_6x8.o
+>>> +font-$(CONFIG_FONT_7x14)      += font_7x14.o
+>>> +font-$(CONFIG_FONT_8x16)      += font_8x16.o
+>>> +font-$(CONFIG_FONT_8x8)       += font_8x8.o
+>> Please sort the anonymous entries by increasing font size.
+> 
+> Makes sense. I'll also leave a comment on the sorting order.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- arch/mips/configs/ip32_defconfig            | 1 -
- arch/mips/configs/lemote2f_defconfig        | 1 -
- arch/mips/configs/malta_qemu_32r6_defconfig | 1 -
- arch/mips/configs/maltaaprp_defconfig       | 1 -
- arch/mips/configs/maltasmvp_defconfig       | 1 -
- arch/mips/configs/maltasmvp_eva_defconfig   | 1 -
- arch/mips/configs/maltaup_defconfig         | 1 -
- 7 files changed, 7 deletions(-)
+>>> +font-$(CONFIG_FONT_SUN12x22)  += font_sun12x22.o
+>>> +font-$(CONFIG_FONT_SUN8x16)   += font_sun8x16.o
 
-diff --git a/arch/mips/configs/ip32_defconfig b/arch/mips/configs/ip32_defconfig
-index 7568838eb08b..ad60c11dd660 100644
---- a/arch/mips/configs/ip32_defconfig
-+++ b/arch/mips/configs/ip32_defconfig
-@@ -71,7 +71,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_HW_RANDOM=y
- CONFIG_WATCHDOG=y
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_GBE=y
- # CONFIG_VGA_CONSOLE is not set
- CONFIG_FRAMEBUFFER_CONSOLE=y
-diff --git a/arch/mips/configs/lemote2f_defconfig b/arch/mips/configs/lemote2f_defconfig
-index 8d3f20ed19b5..7eed322a986f 100644
---- a/arch/mips/configs/lemote2f_defconfig
-+++ b/arch/mips/configs/lemote2f_defconfig
-@@ -136,7 +136,6 @@ CONFIG_FB_SIS_300=y
- CONFIG_FB_SIS_315=y
- CONFIG_FB_SIMPLE=y
- CONFIG_FB_SM712=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_MODE_HELPERS=y
- CONFIG_FB_TILEBLITTING=y
- CONFIG_BACKLIGHT_CLASS_DEVICE=y
-diff --git a/arch/mips/configs/malta_qemu_32r6_defconfig b/arch/mips/configs/malta_qemu_32r6_defconfig
-index accb471a1d93..4bc5ea492a94 100644
---- a/arch/mips/configs/malta_qemu_32r6_defconfig
-+++ b/arch/mips/configs/malta_qemu_32r6_defconfig
-@@ -129,7 +129,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
- CONFIG_POWER_RESET_SYSCON=y
- # CONFIG_HWMON is not set
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_MATROX=y
- CONFIG_FB_MATROX_G=y
- CONFIG_USB=y
-diff --git a/arch/mips/configs/maltaaprp_defconfig b/arch/mips/configs/maltaaprp_defconfig
-index 6bda67c5f68f..3fc0bfff9795 100644
---- a/arch/mips/configs/maltaaprp_defconfig
-+++ b/arch/mips/configs/maltaaprp_defconfig
-@@ -130,7 +130,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
- CONFIG_POWER_RESET_SYSCON=y
- # CONFIG_HWMON is not set
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_MATROX=y
- CONFIG_FB_MATROX_G=y
- CONFIG_USB=y
-diff --git a/arch/mips/configs/maltasmvp_defconfig b/arch/mips/configs/maltasmvp_defconfig
-index e4082537f80f..eefaa45defb5 100644
---- a/arch/mips/configs/maltasmvp_defconfig
-+++ b/arch/mips/configs/maltasmvp_defconfig
-@@ -130,7 +130,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
- CONFIG_POWER_RESET_SYSCON=y
- # CONFIG_HWMON is not set
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_MATROX=y
- CONFIG_FB_MATROX_G=y
- CONFIG_USB=y
-diff --git a/arch/mips/configs/maltasmvp_eva_defconfig b/arch/mips/configs/maltasmvp_eva_defconfig
-index 58f5af45fa98..691356ef2983 100644
---- a/arch/mips/configs/maltasmvp_eva_defconfig
-+++ b/arch/mips/configs/maltasmvp_eva_defconfig
-@@ -133,7 +133,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
- CONFIG_POWER_RESET_SYSCON=y
- # CONFIG_HWMON is not set
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_MATROX=y
- CONFIG_FB_MATROX_G=y
- CONFIG_USB=y
-diff --git a/arch/mips/configs/maltaup_defconfig b/arch/mips/configs/maltaup_defconfig
-index 9bfef7de0d1c..0d02e26ef6f5 100644
---- a/arch/mips/configs/maltaup_defconfig
-+++ b/arch/mips/configs/maltaup_defconfig
-@@ -129,7 +129,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
- CONFIG_POWER_RESET_SYSCON=y
- # CONFIG_HWMON is not set
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_MATROX=y
- CONFIG_FB_MATROX_G=y
- CONFIG_USB=y
+I'd sort even the non-anonymous ^^.
+
+thanks,
 -- 
-2.53.0
-
+js
+suse labs

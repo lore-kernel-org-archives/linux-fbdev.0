@@ -1,180 +1,210 @@
-Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011021.outbound.protection.outlook.com [52.101.62.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E0B438AC99;
-	Wed,  1 Apr 2026 08:27:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.21
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775032055; cv=fail; b=Mm9JC7G+R7X1sjebhzdtO9NfLSJAT4dmJi5n8P3sLuba0DwCaT2MZ4DhxIdAIMdGRVt8M0vmjlJDxoTdrqzUKNPHpy8utGNv2NTHXiylzmSqMK9fOOzHmZ2mMySzeMn593SlROE0fZfvMp2FQKv2snQy4LVR3cOOx4OyhtLvpcI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775032055; c=relaxed/simple;
-	bh=X4xmWTD3D3s7lm1ehE5M5j5CRSwwQqT2yCM+ur0zwiU=;
-	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
-	 In-Reply-To:MIME-Version; b=NVkoe2uvGMXlm79nZwziU8nZQK0SE72wbXN1DcnFos5MxJ/E5aqbuqwNd3J59UWhyNk/C9BTfDd2jos8/mvSI/CzGKacnhBLXKhs2GmlfSnB/hPPMWWUgxgn2k5GR85BHTOQIE7m25VL/Y/8H0bKV0KPRvXsz6ReID1QooNTAwU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=f9E32yt/; arc=fail smtp.client-ip=52.101.62.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F3A63A9DB0
+	for <linux-fbdev@vger.kernel.org>; Wed,  1 Apr 2026 08:28:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775032093; cv=none; b=VY4swMtz2gu8j0oPEtLXAw5WvxeTEdTWEpdWWc6MY6NG9ctpUgiL9njK38Fib/iyJQo1EkaXKNrs1N9HbCxYMk7QrsC66pIIr2nJXQUbrfx2ZaMRQtOqDHFkhxT3lhCO6FxvTkqGV91NQeIo0zhQOn2TAjIEk2C+o5Meoet0vOc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775032093; c=relaxed/simple;
+	bh=qwOXDX7G8MhO+QaH+yjKUggxEV51zUfkF2ccJYwCEOE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MwV+SE06QRNdBMwSijHBFP9cO1mJ/1J44L7xN717OKms5JwZq8X7qvqWx3tj2e1UkJlR/DyRu4ODfjihx9dlQfo6aHNHQNs3WXt9eLCK+DBaxqa3lQNxYNtJgt/lLy3RopaxQ6smJFu9Rv6y/uuFcNTY2kDfqwiZQBa+OVjBodA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yiVwdVRb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=gAou2kim; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=yiVwdVRb; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=gAou2kim; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="f9E32yt/"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=u0l74vgQUwokEPmmD6fMkDHuMIa8mAIBgsstdTB+ph9kbhqtfl/TQMz0XaGHCgUp8kq1OFLJ+QbLJMayIj1f40zyFg97qcdMV+D1LzUYYuckK+/UjKqAHq7qOvDd3ubKwQt5Yic8jExwMCUnJFwU+nGcCN2r0gA9n3jTeCcNWObGHbo6BwwcDEymoGmid8G7CGq/abZzwmzRFk3Dfv2gJJ/BvtpPtv90J0tC9wl8CDRiOfm4msDVsc61NdJ1/AK03HYxWi2uBD6KtLRm5eKNUxZwXnTMuSvihtxgaX6h0kluHGuFSvSz9QLbVuJY1P6xFiEEA76bQom4cAdgC0keLQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=X4xmWTD3D3s7lm1ehE5M5j5CRSwwQqT2yCM+ur0zwiU=;
- b=KlnW246l2SRtIR/zwSzv9vZvJmKpoCFu0vs/i/k0LS7puPQcFUFHLi842QDDVV8OHVIzakJjlmRj5M5kIBgPbYPwQJZ2DI7ntyN86H6WOsp49Uonwt2gsF7mh15gExYtPn3BZSV8ncqRXCAY2BOBRRc6SiTH2JmeVRDDAFe5WEHYz3178/6Y0fkkyooAZWg4xGR8fMxfMJMikXyQ6M65RR3t2jumQoFyctyuvpk1KVqBz/ZwNQpAcuKOoVP5Lc0FEs0pigJ4IbzCFyFXwfrYcoaBRDTmKfymGHTVEL89KRiSY1+LVKeGEmyS+2XBJeWhKPaYRarXgxbtyAOeK6etOQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=X4xmWTD3D3s7lm1ehE5M5j5CRSwwQqT2yCM+ur0zwiU=;
- b=f9E32yt/UVAMVig/Zx39Us1DDcNKJaL0v/Pxex6pJ+Fyb0yC6cG0KiUz7j9XpBFmi0l7zJ/5yHXfOdEcoLJH/fNbETgCQOYP6F2PSXKmOCXqH7ubt/Kw1L+xWRBIq9LZC4tuyybla+2g9jN0O3Og72hYzUpOS1uDSUHGya9MizIl/SgIE0qPkO+zIQ598OPDd4n4lJNCKEfOu6vDxJ76bStW8DPp7/ULWRVvegVUjp2GHQVpMWFWyvR+xwz4WazAX8u3W9yE3aBUINjmyFb0SwRvvCOmcbrS3JY0lEin8E95DxWRnRo6kBawLJJ0VHGSzUq5yZkn+fgKDqwkvkcpbA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BL0PR12MB2353.namprd12.prod.outlook.com (2603:10b6:207:4c::31)
- by SA1PR12MB8857.namprd12.prod.outlook.com (2603:10b6:806:38d::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.15; Wed, 1 Apr
- 2026 08:27:29 +0000
-Received: from BL0PR12MB2353.namprd12.prod.outlook.com
- ([fe80::99b:dcff:8d6d:78e0]) by BL0PR12MB2353.namprd12.prod.outlook.com
- ([fe80::99b:dcff:8d6d:78e0%4]) with mapi id 15.20.9769.016; Wed, 1 Apr 2026
- 08:27:29 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 01 Apr 2026 17:27:25 +0900
-Message-Id: <DHHOCGNIYDW3.1P7YIMVLW93IY@nvidia.com>
-Cc: "Miguel Ojeda" <ojeda@kernel.org>, "Boqun Feng" <boqun@kernel.org>,
- "Gary Guo" <gary@garyguo.net>, "Bjorn Roy Baron"
- <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
- Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
- "Trevor Gross" <tmgross@umich.edu>, "Danilo Krummrich" <dakr@kernel.org>,
- "Dave Airlie" <airlied@redhat.com>, "Daniel Almeida"
- <daniel.almeida@collabora.com>, "Koen Koning"
- <koen.koning@linux.intel.com>, <dri-devel@lists.freedesktop.org>,
- <rust-for-linux@vger.kernel.org>, "Nikola Djukic" <ndjukic@nvidia.com>,
- "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, "Maxime Ripard"
- <mripard@kernel.org>, "Thomas Zimmermann" <tzimmermann@suse.de>, "David
- Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Jonathan
- Corbet" <corbet@lwn.net>, "Alex Deucher" <alexander.deucher@amd.com>,
- "Christian Koenig" <christian.koenig@amd.com>, "Jani Nikula"
- <jani.nikula@linux.intel.com>, "Joonas Lahtinen"
- <joonas.lahtinen@linux.intel.com>, "Rodrigo Vivi" <rodrigo.vivi@intel.com>,
- "Tvrtko Ursulin" <tursulin@ursulin.net>, "Huang Rui" <ray.huang@amd.com>,
- "Matthew Auld" <matthew.auld@intel.com>, "Matthew Brost"
- <matthew.brost@intel.com>, "Lucas De Marchi" <lucas.demarchi@intel.com>,
- "Thomas Hellstrom" <thomas.hellstrom@linux.intel.com>, "Helge Deller"
- <deller@gmx.de>, "Alex Gaynor" <alex.gaynor@gmail.com>, "Boqun Feng"
- <boqun.feng@gmail.com>, "John Hubbard" <jhubbard@nvidia.com>, "Alistair
- Popple" <apopple@nvidia.com>, "Timur Tabi" <ttabi@nvidia.com>, "Edwin Peer"
- <epeer@nvidia.com>, "Alexandre Courbot" <acourbot@nvidia.com>, "Andrea
- Righi" <arighi@nvidia.com>, "Andy Ritger" <aritger@nvidia.com>, "Zhi Wang"
- <zhiw@nvidia.com>, "Balbir Singh" <balbirs@nvidia.com>, "Philipp Stanner"
- <phasta@kernel.org>, "Elle Rhumsaa" <elle@weathered-steel.dev>,
- <alexeyi@nvidia.com>, "Eliot Courtney" <ecourtney@nvidia.com>,
- <joel@joelfernandes.org>, <linux-doc@vger.kernel.org>,
- <amd-gfx@lists.freedesktop.org>, <intel-gfx@lists.freedesktop.org>,
- <intel-xe@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH v10 02/21] gpu: nova-core: gsp: Extract usable FB region
- from GSP
-From: "Eliot Courtney" <ecourtney@nvidia.com>
-To: "Joel Fernandes" <joelagnelf@nvidia.com>, <linux-kernel@vger.kernel.org>
-X-Mailer: aerc 0.21.0-0-g5549850facc2
-References: <20260311004008.2208806-1-joelagnelf@nvidia.com>
- <20260331212048.2229260-1-joelagnelf@nvidia.com>
- <20260331212048.2229260-3-joelagnelf@nvidia.com>
-In-Reply-To: <20260331212048.2229260-3-joelagnelf@nvidia.com>
-X-ClientProxiedBy: TYCP286CA0267.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:400:455::10) To BL0PR12MB2353.namprd12.prod.outlook.com
- (2603:10b6:207:4c::31)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yiVwdVRb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="gAou2kim";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="yiVwdVRb";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="gAou2kim"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id BE4464D2B4;
+	Wed,  1 Apr 2026 08:28:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775032090; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=b6rf6yLk5C2Xs6Db3RHdZP73Kvw90+UjkT/ZJ6nbnps=;
+	b=yiVwdVRbxVBMNMvYT1PtN16ta2oYoCehXnYISnmK8PNl7+w5NLHfDuuif3ap4KSC6a+WBo
+	uJgnqJ4CCcq1PjMsqoU4f9J0XrtHP1aOvHggL4evkN7FqlxWzM9kOjM1EavAUMWRWwTnGL
+	nwRTtg7bnxmTIvi4fDdLBiucK8wpqgM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775032090;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=b6rf6yLk5C2Xs6Db3RHdZP73Kvw90+UjkT/ZJ6nbnps=;
+	b=gAou2kimX0o1rwu3H8rAWkHbHuXUkMGiMP0AkaMqILQ3/qiJeOHXkS8IcmD2qGEy/Zk2nY
+	cZ1w5yAwFyt9xDBw==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775032090; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=b6rf6yLk5C2Xs6Db3RHdZP73Kvw90+UjkT/ZJ6nbnps=;
+	b=yiVwdVRbxVBMNMvYT1PtN16ta2oYoCehXnYISnmK8PNl7+w5NLHfDuuif3ap4KSC6a+WBo
+	uJgnqJ4CCcq1PjMsqoU4f9J0XrtHP1aOvHggL4evkN7FqlxWzM9kOjM1EavAUMWRWwTnGL
+	nwRTtg7bnxmTIvi4fDdLBiucK8wpqgM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775032090;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=b6rf6yLk5C2Xs6Db3RHdZP73Kvw90+UjkT/ZJ6nbnps=;
+	b=gAou2kimX0o1rwu3H8rAWkHbHuXUkMGiMP0AkaMqILQ3/qiJeOHXkS8IcmD2qGEy/Zk2nY
+	cZ1w5yAwFyt9xDBw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 83D9F4A0B0;
+	Wed,  1 Apr 2026 08:28:10 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Zey2HhrXzGmzBgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 01 Apr 2026 08:28:10 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: tsbogend@alpha.franken.de,
+	arnd@arndb.de
+Cc: linux-mips@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH] arch/mips: Drop CONFIG_FIRMWARE_EDID from defconfig files
+Date: Wed,  1 Apr 2026 10:27:57 +0200
+Message-ID: <20260401082805.214198-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL0PR12MB2353:EE_|SA1PR12MB8857:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4d1480e1-2b59-4652-13ae-08de8fc88377
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|10070799003|366016|1800799024|376014|7416014|22082099003|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	soQyQLR3YvfFQpkp6hTJk40kE7rc0OHuML4iPuEyzda7pQXajieMKw9Imx7uG6x1RFj8eDqnVuwt6mca52YXH+ZtS+TgcS2vOQu7djY/VmX09Owi4qQaz95H5dICqQL7TIduzTeVrrKvnRXcLU981aQpvZy/z8aBYt7Cfur6kVdTyanyxFtPXZXP6iRStuSqXOc8a7wHnx/87d7GtrOw9mXBkWdC01DUGtFQULD1vhxzSFNOfpfV5PfWBtcm7kBuDDLKSh/5IrIUTSSEoPU8EeR+55fNYift8PNyPAMGRhRj9VbFOsf6QTxLWcHGkUFaVabd6OCGJ8aegrXNWIeyALdeRQNsP4vhN413Kb3SglQ9wiTo3dhVVP9klhT1a2u2yG6yDMyQnFCjFOCPZN0luvWdA7W3mrsLkxAE0AQ+xSc8M6YH1lC1L+pXXEo/ur95d7obyZy9ucakrGanKbSJtsbQbzLC+Y5U1ImiJH9ce+Fro9vIKeN6xt0BI4uiPr5UtrF1mRc019SF9SoyskeOg3a5eNEIWFfod+AIwShfNLUCTjmrBO2kPzSv7NtYTVcbRjDCvWmCKJo3E7q8VMXBIGkFdR8t9+BBsqCLjokXb9DTRjBMYU1W5/Y2SK77cvL6NyfsM30f2faLXuiuWABLGCqKCIVWs3p7EWYmYzGczvZFOKyBSfQ5Dl7IlfBfy4EmZb2JJOLhXy4ZzIlOPdQs7D/8ifKSNMxcyCy9hdiSFNI=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB2353.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(366016)(1800799024)(376014)(7416014)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?VnhJTmNtM2h0bDducDAvUFpDVDdGZkwrblg1N3krR1k2dTdZb2xDdmNCK2Zp?=
- =?utf-8?B?L05oeDBWcVlYUzc0emtMM0Nhd29ZMHlDOFM3clVZdms0ckowTG04Q0Z5MEJ2?=
- =?utf-8?B?b2Q3b2JWQW11VVlOdVA2Zkt0Y3V4bytQd2pvWERBdktpZlRTR3ZzdWlPRXR2?=
- =?utf-8?B?VVRwc1A1M1F6S05IeGtobEFmQUJCUWw4dldGK0FJcE9PVXdmOFRTeXZWdnJP?=
- =?utf-8?B?bXl2VDAzbE9aM2hUZ0lYUVZqY0k0dkZsSndPbW84bGtYMFZZNllKTXF5ZTg1?=
- =?utf-8?B?TG40M3FDK1BsRmxxZW95T052aTlBellMSGZxYnh3SHBhZWlZb2RQV1lLZnhi?=
- =?utf-8?B?TWY2TGxCSlJ3YmUxUGJuSFgrcFJQYUNubEZsN0NqZGtNOUxPeEMydmN6TDNZ?=
- =?utf-8?B?eXI4MDZiald6aVFxV3c0Y2VQcWMrZGNHdHBFVnl5bkRtRFBVelpqQ21qdG9r?=
- =?utf-8?B?RU9DS0Y1T2p1amtDRHU5QlEzY1A4ZlZoejJlT09vcjNWNFk5eGVOVkRxTlh5?=
- =?utf-8?B?aFlxQVNNRmNSc0x3REJGeFExTldrWGdvbW5xTnRZRXp0dmJEK3NkaEd1RUhm?=
- =?utf-8?B?ZmJSc042NXNIUWZWbjMwRWJ1Tml5V0lXSFlKTDJINWUzVlcyNVcyWHYwODhF?=
- =?utf-8?B?amlEcTUvNkd4S1dVeXZWc0ZrVmJrek9hTjk3UEUxWXhORWxUdVIza1hFRHpV?=
- =?utf-8?B?QXo0Mk9LLyt1UEJ6cFhzT2xzL3grUDhIL0hRZll2RWkyZHF1Q3YzT2hZOEg2?=
- =?utf-8?B?dlpkUmM4bkdwaVZpYmxKb3JxSUJlUXVuMjJZUndaU0o4ak40M0d5cDJqNmJF?=
- =?utf-8?B?cVU1TEUyTXpHT01NWDBJOXVkMFlvVHFpL2lvc2VhYzZ4ZXRMMGVYTUlhTEtN?=
- =?utf-8?B?TE4rVFFjYzJzR2ozeGdwY3cxMEVicGxtUCsrYTBYSTdMZFBqNE9FcHRDdzRU?=
- =?utf-8?B?SjBWaTZPNUdFZStoakNTU3BObGgzR2ZDZm5jcmlXdGlJTjJ4L1cweFN4ZWJG?=
- =?utf-8?B?YzVSNDJaT1hNZC9kMEp5SnEvc1ZCM0w2bFQ3STVrY2xmZVNZQ2QvWTdSNWlx?=
- =?utf-8?B?QW9sNkRIK25hZEh4OFpDR0NUV295QXZhbzdsKzIyeENLQVdjTUNpTmxWRnp6?=
- =?utf-8?B?M2VUUXVzY1JmZmFmSXFpd25XUkUvU0VEcmpUaElTM1g3UTJMck0xU2NVSzBZ?=
- =?utf-8?B?KzlvY0FhaDErWG9SYVJreEw4YWJ4VUFsK2VsMldibS90WlhBdTR3c2pHN3lQ?=
- =?utf-8?B?Mm1SR1BqS3ZmRGNTWXl1a2F6c2xhd2VzNHM2eGNjRndnNVhpTUNlWWZ5RVRs?=
- =?utf-8?B?bUYxQzd5a0FZc0IzUGN1L0xGYzBSbDlTTEpPTnVEL0VYWStBWkpmRHdwdVRt?=
- =?utf-8?B?ZXI1KzRBb1lQNm8vazVXTk04cDVaQjlFaTFSTzdKcC9xNy9nWTcrSUQxbElO?=
- =?utf-8?B?TVJsZm5LMXdQVi9ndStCNGFFc1c1MHpRVDY2V09OVytsTVlzR1g3QTd2Yzdp?=
- =?utf-8?B?MTIvWXhWYmRkVklETDVpblpjZjdyVTZHbU82cUlSNkd6bi8zeFY4dUQ3YzFY?=
- =?utf-8?B?MGU3VDRjRU1DNkhkckp6ZXJ6TmNoM1o3WFBWZFJrWCtWZEowaXIyTTB1emJh?=
- =?utf-8?B?RUhLVkRSRm43WFM0bVJlZ2xKQXdja1NVWnhlS09hMThXbHp4N0RYZGxsUHZX?=
- =?utf-8?B?VGkzZDUzdjFTaVZuL2VscExkdUZnYkFRZ29JWms5cXQ3RHU4Mmh1RjM0MjFi?=
- =?utf-8?B?RGZ0cUpJV215eFd6S2dPNUZLY3hnVlJFUDArbmM1NVNjN0l5UzI4SkR3L0ZU?=
- =?utf-8?B?SGM2dlBoZXhpbTM5a3JJeGg1emk5cDQ4YlgxZ1RYbmtwL3ZaM2puaHhaaDRp?=
- =?utf-8?B?VjhtaDVRZG5OanNTUEdWV2hSbU5UajYrdFgrRWFoem1KcEQ4YitlNVdyZ2Ux?=
- =?utf-8?B?MU81UFJTQ0VqT3pMSWhmVEZWK1pPTzNVejIrKzBIUzRBRTRZWmloNUtmemkw?=
- =?utf-8?B?UzlkMm5uSmErR3oyQWVVMDEvNHJKQ1ZhdEZZcnAzOFVqM0cyTWtocUlxclJi?=
- =?utf-8?B?SmYyQTljT0VTS3Evd245V094OXppWXcva0tqQXg2YVdOZ0RpUDh3QklsRDha?=
- =?utf-8?B?Q2ZnUUhUV3NySXMva09jaWtHUWRYaVhqRE8xVG1ra2hIYXF3Szg4RFB2UXY5?=
- =?utf-8?B?bW13K044OU5aK0VOSjUxd0ZoK0lJT2xCNjU2UTlOK1BiYTl3RGIyRHdNWjJG?=
- =?utf-8?B?M2I5UjhINlJaM1BPL1M1MTVFLzFhM3RLdVRETGNDbjAvaDlMYkdReTF1YVQ5?=
- =?utf-8?B?R0VoN0w3djFCam1ZSmp0WndCem9KSnRxbkVOM3VZSFhDd3FzbXZhRnV0SHd1?=
- =?utf-8?Q?yXP6YlChkSkwbUoNoe1EJb01rerMb2R92O03cn1GpnPAc?=
-X-MS-Exchange-AntiSpam-MessageData-1: z/iQP/LVIp0y4Q==
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4d1480e1-2b59-4652-13ae-08de8fc88377
-X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB2353.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Apr 2026 08:27:29.7440
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: yeTiKuRppP/CQVkScaka12vAkIfXNaCMBXNPcdIn0OHTAGhNY4cx3tyZ2cFd4Gok/TLFUy0ztxsmk1tUvy8NDQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB8857
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[]
+X-Spam-Flag: NO
+X-Spam-Score: -2.80
+X-Spam-Level: 
 
-On Wed Apr 1, 2026 at 6:20 AM JST, Joel Fernandes wrote:
-> Add first_usable_fb_region() to GspStaticConfigInfo to extract the first
-> usable FB region from GSP's fbRegionInfoParams. Usable regions are those
-> that are not reserved or protected.
->
-> The extracted region is stored in GetGspStaticInfoReply and exposed as
-> usable_fb_region field for use by the memory subsystem.
->
-> Cc: Nikola Djukic <ndjukic@nvidia.com>
-> Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
-> ---
+CONFIG_FIRMWARE_EDID=y depends on X86 or EFI_GENERIC_STUB. Neither is
+true here, so drop the lines from the defconfig files.
 
-Please see my feedback from v9[1] which still applies.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ arch/mips/configs/ip32_defconfig            | 1 -
+ arch/mips/configs/lemote2f_defconfig        | 1 -
+ arch/mips/configs/malta_qemu_32r6_defconfig | 1 -
+ arch/mips/configs/maltaaprp_defconfig       | 1 -
+ arch/mips/configs/maltasmvp_defconfig       | 1 -
+ arch/mips/configs/maltasmvp_eva_defconfig   | 1 -
+ arch/mips/configs/maltaup_defconfig         | 1 -
+ 7 files changed, 7 deletions(-)
 
-[1]: https://lore.kernel.org/all/DH1GK30TUB4V.2GR6ANXIZDFFQ@nvidia.com/
+diff --git a/arch/mips/configs/ip32_defconfig b/arch/mips/configs/ip32_defconfig
+index 7568838eb08b..ad60c11dd660 100644
+--- a/arch/mips/configs/ip32_defconfig
++++ b/arch/mips/configs/ip32_defconfig
+@@ -71,7 +71,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_HW_RANDOM=y
+ CONFIG_WATCHDOG=y
+ CONFIG_FB=y
+-CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_GBE=y
+ # CONFIG_VGA_CONSOLE is not set
+ CONFIG_FRAMEBUFFER_CONSOLE=y
+diff --git a/arch/mips/configs/lemote2f_defconfig b/arch/mips/configs/lemote2f_defconfig
+index 8d3f20ed19b5..7eed322a986f 100644
+--- a/arch/mips/configs/lemote2f_defconfig
++++ b/arch/mips/configs/lemote2f_defconfig
+@@ -136,7 +136,6 @@ CONFIG_FB_SIS_300=y
+ CONFIG_FB_SIS_315=y
+ CONFIG_FB_SIMPLE=y
+ CONFIG_FB_SM712=y
+-CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_TILEBLITTING=y
+ CONFIG_BACKLIGHT_CLASS_DEVICE=y
+diff --git a/arch/mips/configs/malta_qemu_32r6_defconfig b/arch/mips/configs/malta_qemu_32r6_defconfig
+index accb471a1d93..4bc5ea492a94 100644
+--- a/arch/mips/configs/malta_qemu_32r6_defconfig
++++ b/arch/mips/configs/malta_qemu_32r6_defconfig
+@@ -129,7 +129,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
+ CONFIG_POWER_RESET_SYSCON=y
+ # CONFIG_HWMON is not set
+ CONFIG_FB=y
+-CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MATROX=y
+ CONFIG_FB_MATROX_G=y
+ CONFIG_USB=y
+diff --git a/arch/mips/configs/maltaaprp_defconfig b/arch/mips/configs/maltaaprp_defconfig
+index 6bda67c5f68f..3fc0bfff9795 100644
+--- a/arch/mips/configs/maltaaprp_defconfig
++++ b/arch/mips/configs/maltaaprp_defconfig
+@@ -130,7 +130,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
+ CONFIG_POWER_RESET_SYSCON=y
+ # CONFIG_HWMON is not set
+ CONFIG_FB=y
+-CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MATROX=y
+ CONFIG_FB_MATROX_G=y
+ CONFIG_USB=y
+diff --git a/arch/mips/configs/maltasmvp_defconfig b/arch/mips/configs/maltasmvp_defconfig
+index e4082537f80f..eefaa45defb5 100644
+--- a/arch/mips/configs/maltasmvp_defconfig
++++ b/arch/mips/configs/maltasmvp_defconfig
+@@ -130,7 +130,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
+ CONFIG_POWER_RESET_SYSCON=y
+ # CONFIG_HWMON is not set
+ CONFIG_FB=y
+-CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MATROX=y
+ CONFIG_FB_MATROX_G=y
+ CONFIG_USB=y
+diff --git a/arch/mips/configs/maltasmvp_eva_defconfig b/arch/mips/configs/maltasmvp_eva_defconfig
+index 58f5af45fa98..691356ef2983 100644
+--- a/arch/mips/configs/maltasmvp_eva_defconfig
++++ b/arch/mips/configs/maltasmvp_eva_defconfig
+@@ -133,7 +133,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
+ CONFIG_POWER_RESET_SYSCON=y
+ # CONFIG_HWMON is not set
+ CONFIG_FB=y
+-CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MATROX=y
+ CONFIG_FB_MATROX_G=y
+ CONFIG_USB=y
+diff --git a/arch/mips/configs/maltaup_defconfig b/arch/mips/configs/maltaup_defconfig
+index 9bfef7de0d1c..0d02e26ef6f5 100644
+--- a/arch/mips/configs/maltaup_defconfig
++++ b/arch/mips/configs/maltaup_defconfig
+@@ -129,7 +129,6 @@ CONFIG_POWER_RESET_PIIX4_POWEROFF=y
+ CONFIG_POWER_RESET_SYSCON=y
+ # CONFIG_HWMON is not set
+ CONFIG_FB=y
+-CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MATROX=y
+ CONFIG_FB_MATROX_G=y
+ CONFIG_USB=y
+-- 
+2.53.0
 
-thanks

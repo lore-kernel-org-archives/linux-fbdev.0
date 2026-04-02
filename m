@@ -1,389 +1,194 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB5712571C7;
-	Thu,  2 Apr 2026 05:59:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=192.198.163.15
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775109561; cv=fail; b=DX2Aek++nnI2QxmUq/xXRwEMlCWepEsQonT4XkO91BXRdahRpqI8f8bliMYKdEfhGdUeuDGdE9Jgp3Cn2TYoULyrqlYpMH9ueqdKvNXb5RUV/QmVhItffsYSACPRlMFAVYRVGWyQZbv8+FfIa3ruCfSwehzIN8+K++ArjOWr2Lg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775109561; c=relaxed/simple;
-	bh=dEThQg5mmheujRXE5wNCpxhqC7aYOFTXuNR39ImfS/U=;
-	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=Xd3wh4tSETxoXDXNPJ0Nmynr+weU0v/Q4sBe2xZWtbjJYlUSxApn/fxoaxS76BJuM+bwj1nZN0v9RWva+pCPspsGwY5mvYsFm678LJPgfhh3V4L1X5eJUWExght4wxoZ4vQdbCq7whEF/9OpMWrgTJ69PYM8O6gU665WOC+RC3s=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=oImtpc0b; arc=fail smtp.client-ip=192.198.163.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA6BD38C415
+	for <linux-fbdev@vger.kernel.org>; Thu,  2 Apr 2026 09:23:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775121796; cv=none; b=LnIpyNKo/1BIGiwgZFOBvMXsvFv2/uroFzQpmKlhkVIpDgVDH5XZvYDjjlV94fuGSH4zC1I0FTTFVR+rCTGup/OEAQek8fH3vJOjYuSo9iygOiK1go8iWhBfsd6EjdknuS9PpWt/oDA2NSdQY7uMHwhL60tcBg1dvvQhdmuJQWg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775121796; c=relaxed/simple;
+	bh=WDFGYZtyYLp+z0Rt0Kel9cVAj0zOatIGepwcVXk3ziw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GNnjbZaY7tDrRhSjwhEmuuA1KTZVAD6Tpm44Ybv2DPclp8z3y59uXU3v8D09WsDrQdmI6cwLxYsQO9RKu2ipFpcHdAMc+RqiJUquHKYhqC4MMbgmosj7S+w5DzAThTM6r4w15kgFcFBYyOTILo77LvG4Ya+AYGbHPREw/M69cWs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=gsm5A9Ww; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=E+OksCf8; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=gsm5A9Ww; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=E+OksCf8; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="oImtpc0b"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775109558; x=1806645558;
-  h=date:from:to:cc:subject:message-id:references:
-   content-transfer-encoding:in-reply-to:mime-version;
-  bh=dEThQg5mmheujRXE5wNCpxhqC7aYOFTXuNR39ImfS/U=;
-  b=oImtpc0bqnr3XYr/1teCfzwhf68l2S4t4BzEWUM46zHa9ZuU50rTBSc6
-   VFNP1yqnLNkDKyOMagBHL556pdQAdg4FcSjUH91xTa3fRI2iheiWnw7zA
-   mThQ8Z9o0tw6KeByeCFNQ7+lmvMdcRxqNeq21Wuk521mCNMZCn5qulk8T
-   Kf5qX6X1HnSMsr5xY5lZn3Qb74ukXHw+C2lFp+cBbaOOe1loC/3iftgwN
-   XfpOverQL5dIpKxJVvDlQYqmBOkSgOG2yhrhmXkaUY8FLASLXshJfS2iF
-   3IrlwcZEz9g2JYuHO7wSMCOFU4kbY5bbHA3gc0dAOpa5cVMV/bCLbKzWu
-   w==;
-X-CSE-ConnectionGUID: kH4OvYzjTjWb4fTmTcHopQ==
-X-CSE-MsgGUID: rST7KzRgQM2QyRmzgjVhzQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11746"; a="76277500"
-X-IronPort-AV: E=Sophos;i="6.23,155,1770624000"; 
-   d="scan'208";a="76277500"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Apr 2026 22:59:17 -0700
-X-CSE-ConnectionGUID: +l38FrejSb+xSrj8ANVkhw==
-X-CSE-MsgGUID: I9SBv+38QmmWI/hZrhoncQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,155,1770624000"; 
-   d="scan'208";a="231833403"
-Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
-  by orviesa005.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Apr 2026 22:59:17 -0700
-Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
- ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Wed, 1 Apr 2026 22:59:16 -0700
-Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Wed, 1 Apr 2026 22:59:16 -0700
-Received: from CY3PR05CU001.outbound.protection.outlook.com (40.93.201.44) by
- edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Wed, 1 Apr 2026 22:59:12 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=dRmREUnwqIXmNNXJA6D1PiY5YZ0W3zSKqR6fQ70F01kLGJ9u7Wq2WTN4kOKWRQ0pzC4eGcGsg3IiYEaor63EMJTQRnNCBBOSS2gZI3mUA3WY39actE/byxFsi1nSbJeYIjP84hseexHz/yUCKiRk6byWX6FxRFkad3KE+gf9KZ5MosPL8Fsb2QX2Qf73JfKYqG7gzzw1BQ3kq8LP6ddbNR8gUCMODBw5Q0LW4NwcW6HMc5zJIzq7djNEEtYQxsXYjM8RCTCC867anpPX3YIyC0Q4DsB+Zs52iGqNeQPPKkWteUufYwfVw8Xm/uEIDOIMCxdqYUAgLP3KmAaqhUtt1Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/5x47shNdkVNVC8TKZfTfxNXXuOrxJd1gKTq5Tt8vOk=;
- b=H1LB0Rbtf+0XwtsISAQuJhEa/h/1z9LCXLFuhPDekJp7W1Gb+w1Llnhb25hj2KTmSxDDoIZRUlLU2VerMdawEOAj165UgWFMKax2UETrm2d5v3WsS1WMjW2iZtmd1mWJoLMKSGm3XPd6ygqSab3wslt2X4/wpON+YDPQqCinU6nJ2Oilzd9PUn8yj3jSfBW6JvNbqD75+hI9C7AA1xOJy6YIj+WCykAJyhzCHYySnncgFaSDhCf1BrCOdVWZUS1nP3TgSZ7cvtMuqfsRBR9UfXRvlwyQbyFCeMtrjbHctIqPeCyqpvRXGZrio1prEQoHv8FyfBHST4DoeGcVTD9PIw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from BL3PR11MB6508.namprd11.prod.outlook.com (2603:10b6:208:38f::5)
- by PH3PPF6E8D29981.namprd11.prod.outlook.com (2603:10b6:518:1::d2d) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.20; Thu, 2 Apr
- 2026 05:59:09 +0000
-Received: from BL3PR11MB6508.namprd11.prod.outlook.com
- ([fe80::53c9:f6c2:ffa5:3cb5]) by BL3PR11MB6508.namprd11.prod.outlook.com
- ([fe80::53c9:f6c2:ffa5:3cb5%7]) with mapi id 15.20.9769.016; Thu, 2 Apr 2026
- 05:59:09 +0000
-Date: Wed, 1 Apr 2026 22:59:01 -0700
-From: Matthew Brost <matthew.brost@intel.com>
-To: Joel Fernandes <joelagnelf@nvidia.com>
-CC: <linux-kernel@vger.kernel.org>, Miguel Ojeda <ojeda@kernel.org>, "Boqun
- Feng" <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, Bjorn Roy Baron
-	<bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, "Andreas
- Hindborg" <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>, "Trevor
- Gross" <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, Dave Airlie
-	<airlied@redhat.com>, Daniel Almeida <daniel.almeida@collabora.com>, "Koen
- Koning" <koen.koning@linux.intel.com>, <dri-devel@lists.freedesktop.org>,
-	<rust-for-linux@vger.kernel.org>, Nikola Djukic <ndjukic@nvidia.com>,
-	"Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, Maxime Ripard
-	<mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
-	<airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Jonathan Corbet
-	<corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>, Christian Koenig
-	<christian.koenig@amd.com>, Jani Nikula <jani.nikula@linux.intel.com>,
-	"Joonas Lahtinen" <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi
-	<rodrigo.vivi@intel.com>, Tvrtko Ursulin <tursulin@ursulin.net>, Huang Rui
-	<ray.huang@amd.com>, Matthew Auld <matthew.auld@intel.com>, Lucas De Marchi
-	<lucas.demarchi@intel.com>, Thomas Hellstrom
-	<thomas.hellstrom@linux.intel.com>, Helge Deller <deller@gmx.de>, Alex Gaynor
-	<alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, John Hubbard
-	<jhubbard@nvidia.com>, Alistair Popple <apopple@nvidia.com>, Timur Tabi
-	<ttabi@nvidia.com>, Edwin Peer <epeer@nvidia.com>, Alexandre Courbot
-	<acourbot@nvidia.com>, Andrea Righi <arighi@nvidia.com>, Andy Ritger
-	<aritger@nvidia.com>, Zhi Wang <zhiw@nvidia.com>, Balbir Singh
-	<balbirs@nvidia.com>, Philipp Stanner <phasta@kernel.org>, Elle Rhumsaa
-	<elle@weathered-steel.dev>, <alexeyi@nvidia.com>, Eliot Courtney
-	<ecourtney@nvidia.com>, <joel@joelfernandes.org>,
-	<linux-doc@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
-	<intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
-	<linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH v10 07/21] gpu: nova-core: mm: Add TLB flush support
-Message-ID: <ac4FpcD29XnbbsdD@gsse-cloud1.jf.intel.com>
-References: <20260311004008.2208806-1-joelagnelf@nvidia.com>
- <20260331212048.2229260-1-joelagnelf@nvidia.com>
- <20260331212048.2229260-8-joelagnelf@nvidia.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260331212048.2229260-8-joelagnelf@nvidia.com>
-X-ClientProxiedBy: MW4PR03CA0028.namprd03.prod.outlook.com
- (2603:10b6:303:8f::33) To BL3PR11MB6508.namprd11.prod.outlook.com
- (2603:10b6:208:38f::5)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="gsm5A9Ww";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="E+OksCf8";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="gsm5A9Ww";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="E+OksCf8"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id A0F135BD6C;
+	Thu,  2 Apr 2026 09:23:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775121790; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=kSnvgggqRkoalA14gFVa+si+vwQUWHJ4fW14t/f7Flc=;
+	b=gsm5A9WwczrN8KBvtiNgHReeh6vzRdEDmvSkijVERMrM96Lrh6k+dyva2m3YxaelxhrbVJ
+	KmhYowDyFSzzrxzl1OCQcxRSJIP4/VTXKA7fgnVL0rPfVQf2b6vPsCCk6n+DCc9xF6dLed
+	n/+MIHFlpnr1oXZMTTwA7SkzEcD3ot8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775121790;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=kSnvgggqRkoalA14gFVa+si+vwQUWHJ4fW14t/f7Flc=;
+	b=E+OksCf8Wp6yroWxHqGqPDGC0Wa+UhIKpl9J5/QANWV+4vcCfsixYIPCh8etEBI6NDxiIE
+	Egm7Jn5mWLpqyeBA==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775121790; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=kSnvgggqRkoalA14gFVa+si+vwQUWHJ4fW14t/f7Flc=;
+	b=gsm5A9WwczrN8KBvtiNgHReeh6vzRdEDmvSkijVERMrM96Lrh6k+dyva2m3YxaelxhrbVJ
+	KmhYowDyFSzzrxzl1OCQcxRSJIP4/VTXKA7fgnVL0rPfVQf2b6vPsCCk6n+DCc9xF6dLed
+	n/+MIHFlpnr1oXZMTTwA7SkzEcD3ot8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775121790;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=kSnvgggqRkoalA14gFVa+si+vwQUWHJ4fW14t/f7Flc=;
+	b=E+OksCf8Wp6yroWxHqGqPDGC0Wa+UhIKpl9J5/QANWV+4vcCfsixYIPCh8etEBI6NDxiIE
+	Egm7Jn5mWLpqyeBA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 07D344A0B0;
+	Thu,  2 Apr 2026 09:23:10 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id SQWwAH41zmlVYAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 02 Apr 2026 09:23:10 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	arnd@arndb.de,
+	ardb@kernel.org,
+	ilias.apalodimas@linaro.org,
+	chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	kys@microsoft.com,
+	haiyangz@microsoft.com,
+	wei.liu@kernel.org,
+	decui@microsoft.com,
+	longli@microsoft.com,
+	deller@gmx.de
+Cc: linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev,
+	linux-efi@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	dri-devel@lists.freedesktop.org,
+	linux-hyperv@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 0/8] firmware: sysfb: Consolidate config/code wrt. sysfb_primary_screen
+Date: Thu,  2 Apr 2026 11:09:14 +0200
+Message-ID: <20260402092305.208728-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL3PR11MB6508:EE_|PH3PPF6E8D29981:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9e9cbddd-3c90-4e0d-2081-08de907cf4f9
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|7416014|376014|18002099003|56012099003|22082099003;
-X-Microsoft-Antispam-Message-Info: xOpxodA7nlGsTu1GBpLhmjG+1aEw8tWu3lW5GeB0mbR/pMn/BixWdREvgqOl2uDn8yVhnTJs1MSuOhQyBdmuvcO3cwEOFoENTMyXrzAeYKd+8lFjsfcLMHpP8q2BtMOtZkwaBFNoCBVB6c8RQB/J85kU12RDdpxFR7BRk+gBfBcDNNlT4XpCdEqzDrteHINEj02feVnVsBW0Chpqe/W+LdxM/gSAD7QU5Y5fx6Tqk/W8kH9wtyTzgfNmj8T7j6N6WXHrBp3bo2l+Nsae+EiCfS3l0y4xLhnC8vfnS6535+p1wzMEog2qvSbVkOT4Oh1s7gF93nj8rR4JMMmI9y6q1d8dZQXr5QP0ARSgouYN8pLc5Vwiud+9RDYEC4e2Bm4g8eB3yEM1CBxuLcU/ovr5gLOv5mkPtjn9l7csaaIeVaGJmH6KelnB4k/1Fv2N+zswsSaog5zYvYn76DQDckHoaiQa/L90xjS6n6vb8ZZI40x5w4RA1+PeW9OQKgCc9BPw2wQVQZCAG5oTnVN/rwMw1rvc4iKL11Y89zE6R40WWu3k5CpExJ5Xm+ilI65weurby0vUbIITbgmRUW9RwCqGdcNmkfVD/7o/vUeiw7amtTJ76Jgrl7vn2OT9tHhKQeDzGeMEr+FcSl8ZwFm/J6+4KaqlPnRZh9tIg2uCRAn0jBh60KSyTpi8TaXpkduEqVTgbM9+xS9u+oAIYN5C5Tr3hQxxXKrsKsUVJZtuX+fHYX8=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL3PR11MB6508.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?OUNnemQ0MTZPZmRIVE9BWmlCQ1R0bFNPL0MwQVdybFhHUDVSRDFhNkFJZ1ZK?=
- =?utf-8?B?ekFoSnV6ck83Y0I3WHQ5MXYzeWdidVBsUXJhLzkxMkkzZmVRQUFwcFNFVGxw?=
- =?utf-8?B?S0duVzBua1pURzZjU0RydVJkZUhKcHkwajVNZnNUeTZtNmFNNUlQVlZzUGdt?=
- =?utf-8?B?MFFTTEtMRjFyTXpHc3JYNCtFeVNaSTRUL2JPUGxPQk94RHZXY2U1ZTVhWEpY?=
- =?utf-8?B?MFdwMjhhZEJOd3ZnSEZ3d29tWnR6REFjdmpSOFFPeHBscXI4ZmRyVUZZQTcz?=
- =?utf-8?B?dEI2cE9BMDd4S3RXMTUyTjd3QU5vT3FpZWpuR0FIaEZkRlVhYmlFMFdEODRy?=
- =?utf-8?B?Z0RRU0RpaStRbzN2VU9VSUZ4VW5oZFJ2eXlSZlN3aTZ6dkt0bkV2UGlIVjl2?=
- =?utf-8?B?TWt6REhwUjBBcjMyYUM3MVNOMjE1dWNGV1BNQ3NNNTdSOEFNa3FlWkkxTVFp?=
- =?utf-8?B?d0tpTDNTdnFWTytyZmRnSUdhd0ZlYjJXRDZQYjBIQVlKS3NhMlIzemkwanM3?=
- =?utf-8?B?T05xS0gwMzhucEhmL3dXbGovbzhHdGpMeDlOK2xqWmg3aHR4VmhtWkwvS0ZO?=
- =?utf-8?B?a1RIQko1VlFuSnVWdzlmNjQwVUFZcDdkZUk3dTRrUFdqVVA1SnJUQTg5YUxD?=
- =?utf-8?B?N0FZdVgvc2Y1Mm1MbkR6d3ZFdFp4cERHM1ozOE4rVGtBMkN1V2RpK2VQR3Rj?=
- =?utf-8?B?cU9hdGhmWFZ2amNDWm4vNGhpb0d0OTVzSlVkeHV2N1ljczVac2Ztcmw4d2NN?=
- =?utf-8?B?NllYaC9GQ3JsY3VFWlVYUVhaZjhuYXZRem1wN2NNdFhHSXhRU1BqK1dEVEwr?=
- =?utf-8?B?eDZ1eEZXa1phOVUvYldJUi9wRjBydFFJSTN4UElaQkFLUXRTNWMwWjJZdFBZ?=
- =?utf-8?B?K0NESUI1dTh1T2NvZ00zaWhuRWV5ZjV4VjVDVzVRdWxWUytCUHBsSUI4ckJQ?=
- =?utf-8?B?TCtnRzNzQnNSbWRJeTFZSlFuNFErYTJpMjhXb0lZT285Ri9UNWNIdWdhWGVC?=
- =?utf-8?B?N2sxRGl0UDlKRTRMUnhsdmNqcHEvV3dQeUE0MGhSNDRyU0FEN3NkenVCNnRH?=
- =?utf-8?B?YmNGWDZXbDUwNlp5bGRCSkNWYlVMaHAxSEgvSzMwN2FhWHUreFlKeEZYQnFn?=
- =?utf-8?B?TGdQWjRZUmNwaWlib2Z6cTBzUHVlTGlLWndRQ002SDE1dVhPN2RmamNBaFg4?=
- =?utf-8?B?em4ybG91dUhFZmk4WElpTmQzOFJPdDdndmZHN1JwWU1wNTdILzV0U01tTE9M?=
- =?utf-8?B?ZnFUMWtjdnMrSDhaNitpdnBiaDZLaWNmQ0ZOV25ldjcxSFoyMEdIZk1KZUJN?=
- =?utf-8?B?QlBQVEMyUFNnNHJMbGRVN0R5Y0IxUVBHN2htanYwUFVGelNVUjBpQzdBOXBl?=
- =?utf-8?B?MFFvWE05OVBDanl2Si9wVERvOEtnNTZKbVJmcHVaeG1QRElvV1NhQnptMkMv?=
- =?utf-8?B?cHE2UU1pVlpMMVVmYy9FQWdkLzdaRFpmSzd0R3dNUDhIUUwya3JRZVZtYnUz?=
- =?utf-8?B?VzBkQUVnNmhoNnN3OFVxSVhrNUJSMjZnczg3ZCtUM3VtZnlPLzd6Nkcwb0Q4?=
- =?utf-8?B?dDQxSlVQNHlldUIzZEtaY0YwWDdJYW55c2Zla3JpSzdJTnNORmc1UlZLOHZY?=
- =?utf-8?B?emVUazlzU0NydXZSdHNNWm90US9DL3FFeEFHRFhwV0I2YjlGVGZydnJ5QWoy?=
- =?utf-8?B?bXFjRFdGRVVYNFRFOHVVM0pDTEF5RTZvb1pIYjBhaHNxT2Zzb2t1SmVPZ1Za?=
- =?utf-8?B?TEdEcVBDcXhYVmR2U3Y1NXpuMHBmNDdQdDNPRGJENGpQcEJnY3I1Nkp6cDI5?=
- =?utf-8?B?aHVma2I4OVkwaTRhSGJCZjI4eC9lVGszRC9DSlByRm1TNEc2dEFWRC96ZFR4?=
- =?utf-8?B?UzhlaUgzclZlVm16ZStlOEoxb3IzUG9ZZlBQMU1XbHNEdDU5YWtIL3FZMVN3?=
- =?utf-8?B?QTlJUGhsUTZKTVFVRG5tSW52ZUVxbjZ5S3JLZ01wcVRGeTNvRHRBcDl3NUxs?=
- =?utf-8?B?ZlhheDQ0ODA2WVlCZmxsaDdtVkpJZkVDVDFyR3hQb0JUWjhUR2JXemVTQTJx?=
- =?utf-8?B?L3lSL29hekp5VVdIbFRTTEVOVTRsUVVsZTNmd0E1TnBCUC80K2lOV2JlMVdj?=
- =?utf-8?B?V2dHdnhDVjlPN1gyeFBZZWV6TzlsWnhBcCttc1d0VE9iYXUwK0VwUjRNVWc2?=
- =?utf-8?B?Ukl5a1dzMms0b2FDaHViOW1mcm5rUWVPZlloblNEUXN3d1pNdGJzc0dTZGJU?=
- =?utf-8?B?bFFjaUVrcFVpdG1kTFdBRVF1eHZ4T3Z2Slhrc1JvQytTdzRiRU0vRGlMTVUx?=
- =?utf-8?B?eDFaK2ltQ0ZXV2JETUhYbWVRTmxXUkZrQk1qNGd2RzlCYzBONFhKaVJ2OWRw?=
- =?utf-8?Q?eNWtQbteiPeSayxA=3D?=
-X-Exchange-RoutingPolicyChecked: QFZrfHCTTB+t2IuMt2TYF4XlH0NJ3/H8/AUPf6hi8Ah9LF7emq/rroechEJbfyk69/Zf+Bif/tROh37tvK/VfFws1Z75HJXdKbrRVYujxpewMKzSV0IxEPugSZRRlaUZSGagk+CiHRJY3hAXdqi0vEyCzEd/qOdewz8vtEs3K8AsBUzG+l8Lli7le8sdV2YGhLX5Guz6x/EhzKtjvlm92KVe3loLOosrfSL4aNVtZ+0JpMxlAqPwX5WfVVeRveaj35HWu57r4rgBpy7hCbRTfJUCso/T+QeD9aRzrZyApPtLHoMEKJNSOBRgE343YjlJuovflRYZMgjo63mZ4LVoXg==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9e9cbddd-3c90-4e0d-2081-08de907cf4f9
-X-MS-Exchange-CrossTenant-AuthSource: BL3PR11MB6508.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Apr 2026 05:59:09.4712
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: cdoTGzorVfux/lARXkmM5ygx3EY8wltPkEEu4jkTSmyk8KTV9cqNnAimxRbqxOO63bhORT6vC5t7uSemtZgZZQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH3PPF6E8D29981
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -2.80
+X-Spam-Level: 
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-0.996];
+	MIME_GOOD(-0.10)[text/plain];
+	ARC_NA(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_TO(0.00)[redhat.com,arndb.de,kernel.org,linaro.org,xen0n.name,linux.intel.com,gmail.com,ffwll.ch,microsoft.com,gmx.de];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCPT_COUNT_TWELVE(0.00)[24];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
+X-Spam-Flag: NO
 
-On Tue, Mar 31, 2026 at 05:20:34PM -0400, Joel Fernandes wrote:
-> Add TLB (Translation Lookaside Buffer) flush support for GPU MMU.
-> 
-> After modifying page table entries, the GPU's TLB must be invalidated
-> to ensure the new mappings take effect. The Tlb struct provides flush
-> functionality through BAR0 registers.
-> 
-> The flush operation writes the page directory base address and triggers
-> an invalidation, polling for completion with a 2 second timeout matching
-> the Nouveau driver.
-> 
-> Cc: Nikola Djukic <ndjukic@nvidia.com>
-> Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
-> ---
->  drivers/gpu/nova-core/mm.rs     |  1 +
->  drivers/gpu/nova-core/mm/tlb.rs | 95 +++++++++++++++++++++++++++++++++
->  drivers/gpu/nova-core/regs.rs   | 42 +++++++++++++++
->  3 files changed, 138 insertions(+)
->  create mode 100644 drivers/gpu/nova-core/mm/tlb.rs
-> 
-> diff --git a/drivers/gpu/nova-core/mm.rs b/drivers/gpu/nova-core/mm.rs
-> index 8f3089a5fa88..cfe9cbe11d57 100644
-> --- a/drivers/gpu/nova-core/mm.rs
-> +++ b/drivers/gpu/nova-core/mm.rs
-> @@ -5,6 +5,7 @@
->  #![expect(dead_code)]
->  
->  pub(crate) mod pramin;
-> +pub(crate) mod tlb;
->  
->  use kernel::sizes::SZ_4K;
->  
-> diff --git a/drivers/gpu/nova-core/mm/tlb.rs b/drivers/gpu/nova-core/mm/tlb.rs
-> new file mode 100644
-> index 000000000000..cd3cbcf4c739
-> --- /dev/null
-> +++ b/drivers/gpu/nova-core/mm/tlb.rs
-> @@ -0,0 +1,95 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +//! TLB (Translation Lookaside Buffer) flush support for GPU MMU.
-> +//!
-> +//! After modifying page table entries, the GPU's TLB must be flushed to
-> +//! ensure the new mappings take effect. This module provides TLB flush
-> +//! functionality for virtual memory managers.
-> +//!
-> +//! # Example
-> +//!
-> +//! ```ignore
-> +//! use crate::mm::tlb::Tlb;
-> +//!
-> +//! fn page_table_update(tlb: &Tlb, pdb_addr: VramAddress) -> Result<()> {
-> +//!     // ... modify page tables ...
-> +//!
-> +//!     // Flush TLB to make changes visible (polls for completion).
-> +//!     tlb.flush(pdb_addr)?;
-> +//!
-> +//!     Ok(())
-> +//! }
-> +//! ```
-> +
-> +use kernel::{
-> +    devres::Devres,
-> +    io::poll::read_poll_timeout,
-> +    io::Io,
-> +    new_mutex,
-> +    prelude::*,
-> +    sync::{
-> +        Arc,
-> +        Mutex, //
-> +    },
-> +    time::Delta, //
-> +};
-> +
-> +use crate::{
-> +    driver::Bar0,
-> +    mm::VramAddress,
-> +    regs, //
-> +};
-> +
-> +/// TLB manager for GPU translation buffer operations.
-> +#[pin_data]
-> +pub(crate) struct Tlb {
-> +    bar: Arc<Devres<Bar0>>,
-> +    /// TLB flush serialization lock: This lock is acquired during the
-> +    /// DMA fence signalling critical path. It must NEVER be held across any
-> +    /// reclaimable CPU memory allocations because the memory reclaim path can
-> +    /// call `dma_fence_wait()`, which would deadlock with this lock held.
-> +    #[pin]
-> +    lock: Mutex<()>,
-> +}
-> +
-> +impl Tlb {
-> +    /// Create a new TLB manager.
-> +    pub(super) fn new(bar: Arc<Devres<Bar0>>) -> impl PinInit<Self> {
-> +        pin_init!(Self {
-> +            bar,
-> +            lock <- new_mutex!((), "tlb_flush"),
-> +        })
-> +    }
-> +
-> +    /// Flush the GPU TLB for a specific page directory base.
-> +    ///
-> +    /// This invalidates all TLB entries associated with the given PDB address.
-> +    /// Must be called after modifying page table entries to ensure the GPU sees
-> +    /// the updated mappings.
-> +    pub(crate) fn flush(&self, pdb_addr: VramAddress) -> Result {
+The global state sysfb_primary_screen holds information about the
+framebuffer provided by EFI/BIOS systems. It is part of the sysfb
+module, but used in several places without direct connection to
+sysfb. Fix this by making users of sysfb_primary_screen depend on
+CONFIG_SYSFB. Fix a few issues in the process.
 
-This landed on my list randomly, so I took a look.
+Patches 1 and 2 fix general errors in the Kconfig rules. In any case,
+these patches should be considered even without the rest of the series.
 
-Wouldn’t you want to virtualize the invalidation based on your device?
+Patch 3 makes CONFIG_SYSFB a user-controlled option, which gives users
+more control over the configuration.
 
-For example, what if you need to register interface changes on future hardware?
+Patches 4 to 6 slightly refactor the sysfb code. The PCI helpers are
+now in a separate source file. Support for relocating the PCI framebuffer
+is now located in sysfb, where it belongs.
 
-Or, if you’re a VF, can you even do MMIO?
+Patches 7 and 8 make earlycon and the firmware EDID depend on sysfb. Both
+rely on sysfb_primary_display to work correctly.
 
-I’d relayer this.
+Smoke-tested with bochs on qemu. Built with/without CONFIG_SYSFB enabled.
 
-Matt
+Note: vgaarb still guards sysfb_primary_display with CONFIG_X86 instead
+of CONFIG_SYSFB. That works reliably and is left in place, as a change to
+guard with SYSFB_SYSFB might affect non-x86 systems in unknown ways.
 
-> +        let _guard = self.lock.lock();
-> +
-> +        let bar = self.bar.try_access().ok_or(ENODEV)?;
-> +
-> +        // Write PDB address.
-> +        bar.write_reg(regs::NV_TLB_FLUSH_PDB_LO::from_pdb_addr(pdb_addr.raw_u64()));
-> +        bar.write_reg(regs::NV_TLB_FLUSH_PDB_HI::from_pdb_addr(pdb_addr.raw_u64()));
-> +
-> +        // Trigger flush: invalidate all pages and enable.
-> +        bar.write_reg(
-> +            regs::NV_TLB_FLUSH_CTRL::zeroed()
-> +                .with_page_all(true)
-> +                .with_enable(true),
-> +        );
-> +
-> +        // Poll for completion - enable bit clears when flush is done.
-> +        read_poll_timeout(
-> +            || Ok(bar.read(regs::NV_TLB_FLUSH_CTRL)),
-> +            |ctrl: &regs::NV_TLB_FLUSH_CTRL| !ctrl.enable(),
-> +            Delta::ZERO,
-> +            Delta::from_secs(2),
-> +        )?;
-> +
-> +        Ok(())
-> +    }
-> +}
-> diff --git a/drivers/gpu/nova-core/regs.rs b/drivers/gpu/nova-core/regs.rs
-> index a3ca02345e20..5e3f5933a55c 100644
-> --- a/drivers/gpu/nova-core/regs.rs
-> +++ b/drivers/gpu/nova-core/regs.rs
-> @@ -548,3 +548,45 @@ pub(crate) mod ga100 {
->          }
->      }
->  }
-> +
-> +// MMU TLB
-> +
-> +register! {
-> +    /// TLB flush register: PDB address bits [39:8].
-> +    pub(crate) NV_TLB_FLUSH_PDB_LO(u32) @ 0x00b830a0 {
-> +        /// PDB address bits [39:8].
-> +        31:0    pdb_lo => u32;
-> +    }
-> +
-> +    /// TLB flush register: PDB address bits [47:40].
-> +    pub(crate) NV_TLB_FLUSH_PDB_HI(u32) @ 0x00b830a4 {
-> +        /// PDB address bits [47:40].
-> +        7:0     pdb_hi => u8;
-> +    }
-> +
-> +    /// TLB flush control register.
-> +    pub(crate) NV_TLB_FLUSH_CTRL(u32) @ 0x00b830b0 {
-> +        /// Invalidate all pages.
-> +        0:0     page_all => bool;
-> +        /// Enable/trigger flush (clears when flush completes).
-> +        31:31   enable => bool;
-> +    }
-> +}
-> +
-> +impl NV_TLB_FLUSH_PDB_LO {
-> +    /// Create a register value from a PDB address.
-> +    ///
-> +    /// Extracts bits [39:8] of the address and shifts it right by 8 bits.
-> +    pub(crate) fn from_pdb_addr(addr: u64) -> Self {
-> +        Self::zeroed().with_pdb_lo(((addr >> 8) & 0xFFFF_FFFF) as u32)
-> +    }
-> +}
-> +
-> +impl NV_TLB_FLUSH_PDB_HI {
-> +    /// Create a register value from a PDB address.
-> +    ///
-> +    /// Extracts bits [47:40] of the address and shifts it right by 40 bits.
-> +    pub(crate) fn from_pdb_addr(addr: u64) -> Self {
-> +        Self::zeroed().with_pdb_hi(((addr >> 40) & 0xFF) as u8)
-> +    }
-> +}
-> -- 
-> 2.34.1
-> 
+Thomas Zimmermann (8):
+  hv: Select CONFIG_SYSFB only for CONFIG_HYPERV_VMBUS
+  firmware: efi: Never declare sysfb_primary_display on x86
+  firmware: sysfb: Make CONFIG_SYSFB a user-selectable option
+  firmware: sysfb: Split sysfb.c into sysfb_primary.c and sysfb_pci.c
+  firmware: sysfb: Implement screen_info relocation for primary display
+  firmware: sysfb: Avoid forward-declaring sysfb_parent_dev()
+  firmware: efi: Make CONFIG_EFI_EARLYCON depend on CONFIG_SYSFB; clean
+    up
+  firmware: sysfb: Move CONFIG_FIRMWARE_EDID to firmware options
+
+ arch/arm64/kernel/image-vars.h                |   2 +-
+ arch/loongarch/configs/loongson32_defconfig   |   1 +
+ arch/loongarch/configs/loongson64_defconfig   |   1 +
+ arch/loongarch/kernel/efi.c                   |   4 +-
+ arch/loongarch/kernel/image-vars.h            |   2 +-
+ arch/riscv/kernel/image-vars.h                |   2 +-
+ drivers/firmware/Kconfig                      |  38 ++++-
+ drivers/firmware/Makefile                     |   7 +-
+ drivers/firmware/efi/Kconfig                  |   3 +-
+ drivers/firmware/efi/efi-init.c               |   6 +-
+ drivers/firmware/efi/libstub/efi-stub-entry.c |   4 +-
+ drivers/firmware/sysfb.h                      |  24 ++++
+ drivers/firmware/sysfb_pci.c                  | 132 ++++++++++++++++++
+ drivers/firmware/{sysfb.c => sysfb_primary.c} |  70 ++++------
+ drivers/gpu/drm/sysfb/Kconfig                 |   4 +-
+ drivers/hv/Kconfig                            |   2 +-
+ drivers/video/Kconfig                         |  19 ---
+ drivers/video/fbdev/Kconfig                   |   5 +-
+ drivers/video/screen_info_pci.c               | 110 ---------------
+ include/linux/screen_info.h                   |   3 -
+ 20 files changed, 241 insertions(+), 198 deletions(-)
+ create mode 100644 drivers/firmware/sysfb.h
+ create mode 100644 drivers/firmware/sysfb_pci.c
+ rename drivers/firmware/{sysfb.c => sysfb_primary.c} (90%)
+
+
+base-commit: 5d36e6d54e963f0c1137aaf2249d2baa781f08c2
+-- 
+2.53.0
+

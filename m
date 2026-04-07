@@ -1,330 +1,100 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DDBB3314D0
-	for <linux-fbdev@vger.kernel.org>; Tue,  7 Apr 2026 07:39:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8735C3A3803
+	for <linux-fbdev@vger.kernel.org>; Tue,  7 Apr 2026 07:48:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775547599; cv=none; b=d5n4Wk+S2+chB5Tei2Iy0cwuK7JappauWdwn5PxLmMRYN7/180PqpdY+tR5hNEx4CUSLe6bQyL5EIKjAgLYyk7y0dTu29Pw/XQSUN1Cflzug75uVnLnCeZjajninfANG1mf5zT9EIXxydZNnHVT5QmBZrQIodnrKD929sNjs1+4=
+	t=1775548101; cv=none; b=lgtiuLaueLAVkCZnN/3MlF4ODe/IFhu2YCUUKq1ctg+i3gQgUN8Ml/pkHwObKuKnsWRJqcaRTJSz1GT+xynWGjVx3FUb0dt3i3/OdJV9VBTv3CC6rscdiznmmWX375J/Fkb0DOuaaJAJWf20IG6URXj+Nvkvgc/VfNDYkUtbaPA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775547599; c=relaxed/simple;
-	bh=EBOdOORde9y6ghNOBZ3Lzh14m+gYogyvgTNmlFbn4vc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=o2SWRLMLSaTK3FdLMWmtFDBQen4wSaR0Hz03/FO44jUteZW0fseJIELKe5kqgIu0oocYygeloLPffzrsLJKA2tV9KMzbxgfu3QSs+1zfvHt+6BkV5S6RxWi1g73zq1zAHXo1UFsY2otwlcFIacK+MjfW0ILF1KuRsWFRjb24byM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Lwc8SswO; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=leyjTsOW; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Lwc8SswO; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=leyjTsOW; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1775548101; c=relaxed/simple;
+	bh=SwbZZZ1xSxNg4oKvTI7d37r7D7/JAHZDzMxhs2PpqL4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pvTvD33snG2JILpYieuyFkhW/UQag3Qwjq8vs/T+R4FYo9UR7Hrru8Jb/PzeoMwTlmS8XQKyFYOsN7IJSuAOtCmc2hUFfQVoiZEOT1BX5MnTfe1cPVySxpMmt6XAfPlc57d00oNQI3rPB9/qxqmPDzEg91eNDYZeNoxmcdneyGw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Sp0BjMRq; arc=none smtp.client-ip=209.85.210.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Lwc8SswO";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="leyjTsOW";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Lwc8SswO";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="leyjTsOW"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 72C245BD52;
-	Tue,  7 Apr 2026 07:39:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1775547582; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=YiyWz4jsfCMiFJgdrKu0mvuvn+cBCeIxv71Vm0SOnFs=;
-	b=Lwc8SswOcmvDaThhW5gu+ugaSdz/Tur+g3ukpvkHUTg651XIM0qsZh6oEKvQgxaagqmhkk
-	frEjXXzQewBMmZbUwIn809pYAZ9F7435SdMZrqdnd+O4rmfU0GhN7ANHAWtHl1Mj8ByaqU
-	2lP6YzT+nwzLTAwK1CI3AIqGfZ8g/p4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1775547582;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=YiyWz4jsfCMiFJgdrKu0mvuvn+cBCeIxv71Vm0SOnFs=;
-	b=leyjTsOWX3c+7WT9jTBLifx0FWt0S1CcF/d5c46EcxUtjD0bJZpdP/ROt2HMfqVxT1Ejjk
-	V3ZzfS/XlYx9/cDA==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1775547582; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=YiyWz4jsfCMiFJgdrKu0mvuvn+cBCeIxv71Vm0SOnFs=;
-	b=Lwc8SswOcmvDaThhW5gu+ugaSdz/Tur+g3ukpvkHUTg651XIM0qsZh6oEKvQgxaagqmhkk
-	frEjXXzQewBMmZbUwIn809pYAZ9F7435SdMZrqdnd+O4rmfU0GhN7ANHAWtHl1Mj8ByaqU
-	2lP6YzT+nwzLTAwK1CI3AIqGfZ8g/p4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1775547582;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=YiyWz4jsfCMiFJgdrKu0mvuvn+cBCeIxv71Vm0SOnFs=;
-	b=leyjTsOWX3c+7WT9jTBLifx0FWt0S1CcF/d5c46EcxUtjD0bJZpdP/ROt2HMfqVxT1Ejjk
-	V3ZzfS/XlYx9/cDA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 263F74A0B0;
-	Tue,  7 Apr 2026 07:39:41 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id opDkB7201GnYZAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 07 Apr 2026 07:39:41 +0000
-Message-ID: <0156562f-5fcf-47ce-8fea-03345f2c3fe6@suse.de>
-Date: Tue, 7 Apr 2026 09:39:40 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Sp0BjMRq"
+Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-82cd70febc7so3610085b3a.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 07 Apr 2026 00:48:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775548100; x=1776152900; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=JqeOhTHdWAUDurkfzU8G9NdSfZd1cydaJmMmKO+4GYM=;
+        b=Sp0BjMRqZ4xhgJCg5SsA/to4EuXIBXVo8ch54cGXGo2R4dFlkA301tMfQT6LAafgOe
+         JGW1zzKvMLLRd7ShsNiP+gM5VZ7nzo/vTf/RYQa1vv4Hn9QnFVF9AXlOkCXmmIiHCFkr
+         5VzN4KA99wkxe7BwgY2c+dDrDTKLVubSWxBEd5GtjmI0nXhznla4DBa0FarFv79uUxh0
+         pSPfot7iP5L2/sX/COV4jnsbG+POYlXdHHG1Peq0hKV76HK8ifPxCZd+n1+fedbSkSJX
+         sipst68+PjhY/cG7R0ubMWUyyxpoq9crcnmphsj2aISe5g1waYbRrKkoVJEzk3hh8k7I
+         5QNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775548100; x=1776152900;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=JqeOhTHdWAUDurkfzU8G9NdSfZd1cydaJmMmKO+4GYM=;
+        b=I/I72to1wE5/+EBaiVmrtusiHrMEKobANQyIJ+Vsb+knZVW825HgCxN8/9UOXVuwxm
+         q9+J8EhgS0gk86fCKXM6aEMqvb9NEkDu/tXBkAzt01/6QGhbwNjL9cNk17r736wEqczF
+         Us4Hn45ccFaJnUgoCKov3AwK2nshJA6NjbCmWYHIAkxtFYDmqyGKRSSjsYJ6HT5c0LdJ
+         nbfk07XA6RZW2DgGk70FRa9OcogQvJyCbxxvnEhu9rSmfhhQQSVWUczEUtDSfvLenPyf
+         OK5pTNyg1cn6+JsSFYRytXHdqk4QbPxLzHIhzvFAnZOSuLOUs1IMf506Er3/HAMoZrMU
+         eaHg==
+X-Forwarded-Encrypted: i=1; AJvYcCUIe1e14Ip3ZrciG/TEJvRnbIcYI+iAdlt7ZNK6Asa5Dq9NjWA64jWzf1n35tr3NMF9Jpn9HUMMvvrtPw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyAzbzS7PM3TBxJocuKy+hcUDEvlxuKPNgwPtTJY/xzjXIAdJ07
+	xIW7VYc6uP1+duNuk3oPWACGvkduYzlSK2m7ZgA020mpC9yZjjkKhPiE
+X-Gm-Gg: AeBDiescyl1GTGWPbKE/1g3nl7I981+/G/h8vHFJgkezBXILFBk9hQQej5zfnYfLmwS
+	5+C8t9gyaBRIt8jP9pjXkA78EjeJjb/pZ6q1bTxKwNflaFYtWF8nbb2T5wbD9uQ0vY4e6QoOrAd
+	6RVlvoG1YexyPOj8QllZZ8qfv5OlB5RkbGQ5ch9U/cqXZkp2GRz98SFWr/vANfCxZ1B4pn6LMGN
+	16sKGkpn35l8dK+TA7ii3zvfShXQjQWzU5VnkptR53uspidQuD9faw5uqNHTM00gXJ47MfXicXS
+	JwMMEZh0dResNrnE4hCGe6hOYwQoiyg3QD4ZmTr/Q4kiEOKU0ojIBl983Le6JV3KGFtgmqCyRUM
+	PstViHVLGQskWFC46JJjbhtzUuU+6bDbGg3d4fOvkNpA89M+f/9TT93cgMnJ5FgYLmanr2rVXsf
+	W7KjGeQgubGc5JzSjG+7LG7mBlGExn2fhawPQ=
+X-Received: by 2002:a05:6a00:6c94:b0:829:9a7b:db84 with SMTP id d2e1a72fcca58-82d0dba35d7mr15634327b3a.49.1775548099671;
+        Tue, 07 Apr 2026 00:48:19 -0700 (PDT)
+Received: from fedora ([2409:40e5:1126:477b:379d:30fd:d3e2:3b3c])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82cf9c9ba21sm22093716b3a.51.2026.04.07.00.48.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Apr 2026 00:48:18 -0700 (PDT)
+From: Shubham Chakraborty <chakrabortyshubham66@gmail.com>
+To: gregkh@linuxfoundation.org
+Cc: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Shubham Chakraborty <chakrabortyshubham66@gmail.com>
+Subject: [PATCH v3 0/3] staging: sm750fb: Rename CamelCase identifiers
+Date: Tue,  7 Apr 2026 13:18:02 +0530
+Message-ID: <20260407074805.14505-1-chakrabortyshubham66@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/8] firmware: sysfb: Make CONFIG_SYSFB a user-selectable
- option
-To: Arnd Bergmann <arnd@arndb.de>,
- Javier Martinez Canillas <javierm@redhat.com>,
- Ard Biesheuvel <ardb@kernel.org>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Dave Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, "K. Y. Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- Dexuan Cui <decui@microsoft.com>, longli@microsoft.com,
- Helge Deller <deller@gmx.de>
-Cc: linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linux-efi@vger.kernel.org, linux-riscv@lists.infradead.org,
- dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
- linux-fbdev@vger.kernel.org
-References: <20260402092305.208728-1-tzimmermann@suse.de>
- <20260402092305.208728-4-tzimmermann@suse.de>
- <78f76717-8f1e-41d6-92f7-261df96b84b6@app.fastmail.com>
- <3e466158-c2e5-4e23-934f-dcdbb71ad41f@suse.de>
- <d3d7c545-3b07-4881-a16d-45b6f039de19@app.fastmail.com>
- <001efe27-9cbb-4a89-8d2d-a1f3ae15e505@suse.de>
- <295a43ce-92fb-435d-a82f-d1cfa8f4f28d@app.fastmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <295a43ce-92fb-435d-a82f-d1cfa8f4f28d@app.fastmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.30
-X-Spam-Level: 
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[23];
-	FREEMAIL_TO(0.00)[arndb.de,redhat.com,kernel.org,linaro.org,xen0n.name,linux.intel.com,gmail.com,ffwll.ch,microsoft.com,gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.com:url,imap1.dmz-prg2.suse.org:helo]
-X-Spam-Flag: NO
 
-Hi
+Hi,
 
-Am 02.04.26 um 18:47 schrieb Arnd Bergmann:
-> On Thu, Apr 2, 2026, at 17:27, Thomas Zimmermann wrote:
->> Am 02.04.26 um 16:59 schrieb Arnd Bergmann:
->>> On Thu, Apr 2, 2026, at 16:10, Thomas Zimmermann wrote:
->>>> Am 02.04.26 um 15:08 schrieb Arnd Bergmann:
->>>>> On Thu, Apr 2, 2026, at 11:09, Thomas Zimmermann wrote:
->>>>> I don't really like this part of the series and would prefer
->>>>> to keep CONFIG_SYSFB hidden as much as possible as an x86
->>>>> (and EFI) specific implementation detail, with the hope
->>>>> of eventually seperating out the x86 bits from the EFI ones.
->>>> You mean, you want to use the EFI-provided framebuffers without the
->>>> intermediate step of going through sysfb_primary_display?
->>>>
->>>> In that case, CONFIG_SYSFB would become an x86-internal thing, right?
->>> The part that is still needed from sysfb is the arbitration
->>> between DRM_EFI and the PCI device driver for the same hardware,
->>> so I think some part of sysfb is clearly needed, in particular
->>> the sysfb_disable() function that removes the EFI framebuffer
->>> when there is a conflicting simpledrm or hardware specific
->>> driver.
->> We do most of that in the aperture-helper module. (see
->> <linux/aperture.h>). Calling sysfb_disable() from there is a workaround
->> for some corner cases. We can have an EFI-specific function that does
->> the same.
-> That sounds good, yes. The same change would need to go into
-> of_platform_default_populate_init() then.
+This series renames a few remaining CamelCase-style identifiers in
+drivers/staging/sm750fb to match kernel coding style.
 
-The call to sysfb_disable() is a workaround for certain cases that 
-aperture helpers don't handle well. In the longer term, I'd want 
-aperture helpers to be more clever about aperture ownership. But as an 
-intermediate step, adding other _disable() function would be an option. 
-But there's no hurry.
+Changes in v3:
+- Fix patch 1/3 commit message to say "upper case" instead of "snake_case"
 
->
->> BTW, simpledrm-on-EFI/VESA is considered obsolete and should preferably
->> be removed from that driver. Simpledrm should become a driver for
->> Devicetree nodes of type simple-framebuffer (as it originally has been
->> intended).
-> Sure, I was only thinking of the case where there are both
-> sysfb (from Arm/riscv UEFI) and simpledrm (from devicetree)
-> objects referring to the same one, not the simpledrm
-> device created by sysfb_simplefb.
->
->>> The parts that I want to keep out of that is anything
->>> related to the x86 boot protocol, non-EFI framebuffers,
->>> text console, and kexec handoff, which we don't need on
->>> non-x86 UEFI systems.
->>>
->>> I don't mind the idea of having a sysfb_primary_display
->>> in the EFI code if that helps keep EFI sane on x86,
->>> but it would be good to make that local to
->>> drivers/firmware/efi and (eventually) detached from
->>> include/uapi/linux/screen_info.h.
->> Efidrm retrieves the framebuffer settings from the contained struct
->> screen_info. Disconnecting from screen_info would require separate
->> graphics drivers for x86 and non-x86. If we split off EFI from sysfb,
->> we'd likely need a sysfbdrm driver of some sort. Just saying.
-> Yes, I saw that as well and don't have an immediate idea for how
-> to best do it. I saw that you already abstracted the access to
-> the screen_info members in drm_sysfb_screen_info.c, which I think
-> is a step in that direction.
->
-> I also noticed that efidrm is mostly a subset of vesadrm, so
-> in theory they could be merged back into an x86 drm driver
-> along with the drm_sysfb_screen_info helpers, and have a non-x86
-> driver that constructs a drm_sysfb_device directly from the
-> EFI structures.
 
-I would not want to have a unifed driver for all-things-screen_info. The 
-code that can easily be shared is already in the sysfb helpers. But I 
-don't mind adding a separate driver for EFI's Graphics Output Protocol. 
-Then there would be current efidrm for EFI-from-screen_info and 
-efigopdrm for EFI via the GOP interfaces. If EFI ever specifies another 
-graphics interface, we could add another driver. The maintenance 
-overhead is small on the DRM side.
+Shubham Chakraborty (3):
+  staging: sm750fb: Rename sm750_pnltype enum values to upper case
+  staging: sm750fb: Rename init_status members to snake_case
+  staging: sm750fb: Rename sm750_dev members to snake_case
 
-What is the future of x86's boot_param and the related screen_info on 
-x86-64?  Is it obsolete?  Will boot loaders run the EFI stub instead?
-
->
->> I think we'd also have to duplicate the framebuffer-relocation code that
->> currently works on anything using struct screen_info (see patch 5).
-> You mean the code from include/linux/screen_info.h? I think
-> it would make sense to have an x86 specific version of that
-> to operate on the x86 screen_info, and a simpler version
-> that just updates the resource for the efirdrm driver, but
-> that could also be done one level higher or lower.
-
-Makes me wonder if the relocation code could be integrated into the 
-aperture helpers. It would have to track the relocation of all PCI 
-graphics devices and probing DRM drivers would query the relocation 
-offset for their given framebuffer.
-
->
->>>>> In general, I am always in favor of properly using Kconfig
->>>>> dependencies over 'select' statements, for the same reasons
->>>>> you describe, but I don't want the the x86 logic for
->>>>> the legacy VESA and VGA console handling to leak into more
->>>>> architectures than necessary.
->>>>>
->>>>> Do you think we could instead move the sysfb_init()
->>>>> function into the same two places that contain the
->>>>> sysfb_primary_display definition (arch/x86/kernel/setup.c,
->>>>> drivers/firmware/efi/efi-init.c) and simplify the efi version
->>>>> to take out the x86 bits? That would reduce the rest
->>>>> of sysfb-primary.c to the logic to unregister the device,
->>>>> and that could then be selected by both x86 and EFI.
->>>> No, I'm more than happy that sysfb finally consolidates all the
->>>> init-framebuffer setup and detection that floated around in the kernel.
->>>> I would not want it to be duplicated again.
->>>>
->>>> For now, we could certainly keep CONFIG_SYSFB hidden and autoselected.
->>>> Although I think this will require soem sort of solution at a later point.
->>> Can you clarify which problem you are trying to solve
->>> with that?
->> One thing is that some users simply what control over their kernel build.
->>
->> I also think that there might be systems that want to use
->> sysfb_primary_display (plus the relocation feature), but not create the
->> framebuffer device. Say for efi-earlycon. It needs user-control over the
->> SYSFB option to do that.
-> I'm still not following, sorry. efi-earlycon doesn't require
-> CONFIG_SYSFB today, and I don't see why that would need to change,
-> or why it couldn't just 'select SYSFB' if it it does change.
->
->> As a side-effect, user-configurable SYSFB gives us a nice place to put
->> SYSFB_SIMPLEFB and FIRMWARE_EDID; two options that currently float
->> around in the config somewhat arbitrarily.
-> You said that SYSFB_SIMPLEFB should get phased out in the future,
-> right?
-
-Yes. Better sooner than later.
-
->
-> I'm also missing your plan for CONFIG_FIRMWARE_EDID. I only
-> see three legacy drivers using the old fb_firmware_edid()
-> interface, so I assume this is not what you are interested in.
->
-> For the global copy that is filled by x86 and efi, and
-> consumed by vesadrm and efidrm, does that even need to
-> be a configuration option rather than get always enabled?
-
-There is code in x86's old 16-bit boot/init code that reads the EDID via 
-VESA. The help text on CONFIG_FIRMWARE_EDID sounds like it needs to be 
-configurable because some systems can't do the VESA calls. Hence, the 
-logical step seems to be to make this consistent for all systems by 
-adopting the option for all EDID retrieval.
-
-If we can remove CONFIG_FIRMWARE_EDID and make EDID support 
-unconditional, I'm all for it.
-
-Best regards
-Thomas
-
->
->         Arnd
+ drivers/staging/sm750fb/sm750.c    | 34 +++++++++++++++---------------
+ drivers/staging/sm750fb/sm750.h    | 16 +++++++-------
+ drivers/staging/sm750fb/sm750_hw.c | 26 +++++++++++------------
+ 3 files changed, 38 insertions(+), 38 deletions(-)
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
+2.53.0
 

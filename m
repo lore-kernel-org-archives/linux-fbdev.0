@@ -1,333 +1,330 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 325521FF1B4;
-	Tue,  7 Apr 2026 05:14:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=198.175.65.10
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775538877; cv=fail; b=HErs+GpYfG4Y5DtUkmdzRuF5a24hPXr+xI4UiFNPAXPY6dxuhT+ZLBa92riyy3Z5o57SlqDcZzerzNhllxettwJ0VmTuKLnSYjjKbll1V2ulsvSjmS7KD9AmmmxtLNUR1v8+tjPjLhQJZLNQ2nNuGpsY/PrlkJgApKPUqwFck70=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775538877; c=relaxed/simple;
-	bh=BQYulf5GtIbuxct6lVW8qNPjTSDptcpDshOyEiEr1Lg=;
-	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=MUB5li+d+8UVfoXpO6MKaSOkucgKI/JElhZemYCvUneHs2nD61PWZMDkjrX9+E0CBZJhllM/ye3sy4h8F9RXfCHwsp7PkmQn7hR2IRRFC8CDU651iHBZ1tRTEjYPZ4jey8mugUOqHwUjchoC8zDqsKVwiD5+WAE1+O/HqFnV+RU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=lI7cGzcL; arc=fail smtp.client-ip=198.175.65.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DDBB3314D0
+	for <linux-fbdev@vger.kernel.org>; Tue,  7 Apr 2026 07:39:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775547599; cv=none; b=d5n4Wk+S2+chB5Tei2Iy0cwuK7JappauWdwn5PxLmMRYN7/180PqpdY+tR5hNEx4CUSLe6bQyL5EIKjAgLYyk7y0dTu29Pw/XQSUN1Cflzug75uVnLnCeZjajninfANG1mf5zT9EIXxydZNnHVT5QmBZrQIodnrKD929sNjs1+4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775547599; c=relaxed/simple;
+	bh=EBOdOORde9y6ghNOBZ3Lzh14m+gYogyvgTNmlFbn4vc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=o2SWRLMLSaTK3FdLMWmtFDBQen4wSaR0Hz03/FO44jUteZW0fseJIELKe5kqgIu0oocYygeloLPffzrsLJKA2tV9KMzbxgfu3QSs+1zfvHt+6BkV5S6RxWi1g73zq1zAHXo1UFsY2otwlcFIacK+MjfW0ILF1KuRsWFRjb24byM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Lwc8SswO; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=leyjTsOW; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Lwc8SswO; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=leyjTsOW; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="lI7cGzcL"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775538874; x=1807074874;
-  h=date:from:to:cc:subject:message-id:references:
-   content-transfer-encoding:in-reply-to:mime-version;
-  bh=BQYulf5GtIbuxct6lVW8qNPjTSDptcpDshOyEiEr1Lg=;
-  b=lI7cGzcL8KTn3lko/SMvPeNpr68XiKQi3zlU+zZIathRleQ+9vmtnfSx
-   EDubN8zoe2eIQAqVBeCgq3vJ/ALXdrxiyOs/wpgxXc/MEmQrcPwpb3MWn
-   0tExoyROimofv6M3M1sInLa8MmBKjjuTB3leZOnAJjc7ISCmqj5fckTOI
-   ixzrrW9ZUsDUCyQADLVbdSBLDBxdkqlqLQDIjjoY1cpNVzvEDLxwR2uGl
-   jkcU98XyJGkzFxY5pCNEdZoQ1xsFcZ7Hp9S34Ubrloa/DTEZJfrVJpzvt
-   0zzAbg2g1bvfofLd0oNo4Q4//DRHZWFPxcmFc5Wdn3b5HQWtkJYeZLEzG
-   w==;
-X-CSE-ConnectionGUID: MZRue0j/Sbuet+qabC8M4w==
-X-CSE-MsgGUID: ThWaniaKSauCojFl7cfrpg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11751"; a="93883718"
-X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; 
-   d="scan'208";a="93883718"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Apr 2026 22:14:33 -0700
-X-CSE-ConnectionGUID: 1WT9Qqq0T7qeDD2vn34LVA==
-X-CSE-MsgGUID: 2Bg4IszlT+mLDKNI5D5+yA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,165,1770624000"; 
-   d="scan'208";a="227971087"
-Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
-  by orviesa009.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Apr 2026 22:14:33 -0700
-Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
- fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Mon, 6 Apr 2026 22:14:31 -0700
-Received: from fmsedg903.ED.cps.intel.com (10.1.192.145) by
- FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Mon, 6 Apr 2026 22:14:31 -0700
-Received: from PH8PR06CU001.outbound.protection.outlook.com (40.107.209.59) by
- edgegateway.intel.com (192.55.55.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Mon, 6 Apr 2026 22:14:31 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=kDn921XdBwdRH1dseYW9vRrAk89yBiDTrIdo11oOnl8i/ozXqEFxWFxl7wB67KXLUYCywrKLws9t7bfWODTVkXQQnb9k4d39D1md7KMS936y6rtlrObCFUr3PzmdJFXfcjgcWFmdYohu9TZEtjqZX0NB4eE4nX5NlFU7NwpwwrBXmBwXux/tDSGel5pPluO4Wxxr1nlxIEuGTLBsH0dirPeTeatGjjRCntWi6Opnb8q7kq8MI+9ZU1FIE1LMiNypdr/JACHQ8HYqCT75s7YNb/YuopLmmPiaXcG3GOc1HNXCdabakLDxpf6Q1gKSEaWlZvUk/bTuE5Q8+y3V4uImsA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=r1RW+tWce/wOGZbNz6J0eGGNzIUBGcePzLpp3Pir9R0=;
- b=YPVTN5+hL9GR7jUb2kEwxJKlcTfe9cs7zULzLwHJvaWKCM6fCtjVLRV578Qi0ZDXOHlN9rDJmnUtSOCP9IDDVMBaieXpbWUJKd3nsEY1T27O3+aqazy8pAZlYP9C2J5G1CU0HAgdFLn+icCJIKsDj27k/QHke+TdHl3BxxqAF7Xxgv2ZtP9YNbORG7jyWCEwsLCGMIZox+O5EeKynuv6YD5id5AZHlcD0e/PALYbFJT4bnof8sfWRWSZ0VdlxG3PgrvNJjvL1Xhx7I3p8plQ2sOMbYIqLCQhBRZkLlja37tzlQElW9cenpNccamV2znMMOXDo+3HFKIVtF40/BruiA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from BL3PR11MB6508.namprd11.prod.outlook.com (2603:10b6:208:38f::5)
- by MW4PR11MB6911.namprd11.prod.outlook.com (2603:10b6:303:22d::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.17; Tue, 7 Apr
- 2026 05:14:28 +0000
-Received: from BL3PR11MB6508.namprd11.prod.outlook.com
- ([fe80::53c9:f6c2:ffa5:3cb5]) by BL3PR11MB6508.namprd11.prod.outlook.com
- ([fe80::53c9:f6c2:ffa5:3cb5%7]) with mapi id 15.20.9769.016; Tue, 7 Apr 2026
- 05:14:28 +0000
-Date: Mon, 6 Apr 2026 22:14:21 -0700
-From: Matthew Brost <matthew.brost@intel.com>
-To: Joel Fernandes <joelagnelf@nvidia.com>
-CC: <linux-kernel@vger.kernel.org>, Miguel Ojeda <ojeda@kernel.org>, "Boqun
- Feng" <boqun@kernel.org>, Gary Guo <gary@garyguo.net>, Bjorn Roy Baron
-	<bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, "Andreas
- Hindborg" <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>, "Trevor
- Gross" <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, Dave Airlie
-	<airlied@redhat.com>, Daniel Almeida <daniel.almeida@collabora.com>, "Koen
- Koning" <koen.koning@linux.intel.com>, <dri-devel@lists.freedesktop.org>,
-	<rust-for-linux@vger.kernel.org>, Nikola Djukic <ndjukic@nvidia.com>,
-	"Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, Maxime Ripard
-	<mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
-	<airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Jonathan Corbet
-	<corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>, Christian Koenig
-	<christian.koenig@amd.com>, Jani Nikula <jani.nikula@linux.intel.com>,
-	"Joonas Lahtinen" <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi
-	<rodrigo.vivi@intel.com>, Tvrtko Ursulin <tursulin@ursulin.net>, Huang Rui
-	<ray.huang@amd.com>, Matthew Auld <matthew.auld@intel.com>, Lucas De Marchi
-	<lucas.demarchi@intel.com>, Thomas Hellstrom
-	<thomas.hellstrom@linux.intel.com>, Helge Deller <deller@gmx.de>, Alex Gaynor
-	<alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, John Hubbard
-	<jhubbard@nvidia.com>, Alistair Popple <apopple@nvidia.com>, Timur Tabi
-	<ttabi@nvidia.com>, Edwin Peer <epeer@nvidia.com>, Alexandre Courbot
-	<acourbot@nvidia.com>, Andrea Righi <arighi@nvidia.com>, Andy Ritger
-	<aritger@nvidia.com>, Zhi Wang <zhiw@nvidia.com>, Balbir Singh
-	<balbirs@nvidia.com>, Philipp Stanner <phasta@kernel.org>, Elle Rhumsaa
-	<elle@weathered-steel.dev>, <alexeyi@nvidia.com>, Eliot Courtney
-	<ecourtney@nvidia.com>, <joel@joelfernandes.org>,
-	<linux-doc@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
-	<intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
-	<linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH v10 07/21] gpu: nova-core: mm: Add TLB flush support
-Message-ID: <adSSrZp6a551xNTu@gsse-cloud1.jf.intel.com>
-References: <20260311004008.2208806-1-joelagnelf@nvidia.com>
- <20260331212048.2229260-1-joelagnelf@nvidia.com>
- <20260331212048.2229260-8-joelagnelf@nvidia.com>
- <ac4FpcD29XnbbsdD@gsse-cloud1.jf.intel.com>
- <0f5605c1-32e8-4a62-b852-b1db01e42817@nvidia.com>
- <39a476f4-ecac-4313-a59f-e00e72d2b426@nvidia.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <39a476f4-ecac-4313-a59f-e00e72d2b426@nvidia.com>
-X-ClientProxiedBy: BYAPR02CA0002.namprd02.prod.outlook.com
- (2603:10b6:a02:ee::15) To BL3PR11MB6508.namprd11.prod.outlook.com
- (2603:10b6:208:38f::5)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Lwc8SswO";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="leyjTsOW";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Lwc8SswO";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="leyjTsOW"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 72C245BD52;
+	Tue,  7 Apr 2026 07:39:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775547582; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=YiyWz4jsfCMiFJgdrKu0mvuvn+cBCeIxv71Vm0SOnFs=;
+	b=Lwc8SswOcmvDaThhW5gu+ugaSdz/Tur+g3ukpvkHUTg651XIM0qsZh6oEKvQgxaagqmhkk
+	frEjXXzQewBMmZbUwIn809pYAZ9F7435SdMZrqdnd+O4rmfU0GhN7ANHAWtHl1Mj8ByaqU
+	2lP6YzT+nwzLTAwK1CI3AIqGfZ8g/p4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775547582;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=YiyWz4jsfCMiFJgdrKu0mvuvn+cBCeIxv71Vm0SOnFs=;
+	b=leyjTsOWX3c+7WT9jTBLifx0FWt0S1CcF/d5c46EcxUtjD0bJZpdP/ROt2HMfqVxT1Ejjk
+	V3ZzfS/XlYx9/cDA==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775547582; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=YiyWz4jsfCMiFJgdrKu0mvuvn+cBCeIxv71Vm0SOnFs=;
+	b=Lwc8SswOcmvDaThhW5gu+ugaSdz/Tur+g3ukpvkHUTg651XIM0qsZh6oEKvQgxaagqmhkk
+	frEjXXzQewBMmZbUwIn809pYAZ9F7435SdMZrqdnd+O4rmfU0GhN7ANHAWtHl1Mj8ByaqU
+	2lP6YzT+nwzLTAwK1CI3AIqGfZ8g/p4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775547582;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=YiyWz4jsfCMiFJgdrKu0mvuvn+cBCeIxv71Vm0SOnFs=;
+	b=leyjTsOWX3c+7WT9jTBLifx0FWt0S1CcF/d5c46EcxUtjD0bJZpdP/ROt2HMfqVxT1Ejjk
+	V3ZzfS/XlYx9/cDA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 263F74A0B0;
+	Tue,  7 Apr 2026 07:39:41 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id opDkB7201GnYZAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 07 Apr 2026 07:39:41 +0000
+Message-ID: <0156562f-5fcf-47ce-8fea-03345f2c3fe6@suse.de>
+Date: Tue, 7 Apr 2026 09:39:40 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL3PR11MB6508:EE_|MW4PR11MB6911:EE_
-X-MS-Office365-Filtering-Correlation-Id: 71b2228d-12b6-405e-5d70-08de94648ade
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024|18002099003|22082099003|56012099003;
-X-Microsoft-Antispam-Message-Info: DvMUvnt6BSMB7qFeEXMicandRBF/yy/TcS6Qftrs5SVyvcsrv8CwFJeLnea9/hy4TyLpmr1FJ0UC4xMJddlLxoGpaGMIbts0W5BQ54EKZKcbivsXEle49Rf/KAqDwtW/8vAkm+F448ZMvDv0bwKOFN712osPLnG0GGTVrOA3q6HDbbqRjwCIAaQJcTTf5bsdJzilDa4+S08kFE1hZgfex2Jm6XLu4WHayUwWUwMhZ/CdCQ/ymAXP7CkSq3e3NACITHhbaxTx67mZ0NvmKAixCzc/6OtwpqF2jAWBlcdn4on6/mHpBk9nWXmm6aH05fyvwm+6MO1Vh7N14t8+tCZveQwdPaQClMz1xFuvIidUvAzvVOivl7uwzhY4gXlSmoZtW63LTUcEnBWqcsFjczTVojrUSpiEuQ5KTD2OpxClRESqSCwQr5FEjTPY5jv7hfShduzrHLqKFfeR2QDIcTgjGQraQkHqC4n+CaO6n6zS+Kc2NRetclNnmKaEfV1t58oeFIBOTd5eRpkMxGeAk6ru8YLfmJrNteTRqELeHm6w9Zb/8YLoPfmI8TD53d7KxdJPCh6UUDXMhHvT5vvSSBndUO0zMYsktNr7x5FDUoGAydFB9ZMYwmVMwEGN2NLYs/CgCBeYw7oq62qJ2MUbqtvStpRzuQ1FTAgHTvDJhd34xnKr3dXdRL5M64/qsgejFM6dn3gSy9wWvLe11ZZNlKTRDk0xxwPe9wmu4Bj5ICW+j50=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL3PR11MB6508.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?cjQzb0RRcG5zdFZhdkJ1R3RUTkxrV0JiK2Nqa1UraEtFQ2JLK1l4MTM3OXhT?=
- =?utf-8?B?WUhRM21SbzJ2QzNjSmo2SmlQakdmSEFBbW13Mm10akRtYnFqa1FVVHBNdUYz?=
- =?utf-8?B?Wlk5dElPemFOWXdhckxMUW1JNGkvRytFRGxnQXJmNGRVMnBJTlJnaVJ1dEMx?=
- =?utf-8?B?TDYzTFRqVU5IOXROSjBGcHZPQ1hKU3ZCdlBKLzB4TzJremY5UlF2NDFjK1Y2?=
- =?utf-8?B?akNRRFNiYngvQUVnVTF3VXlQZ2VHNEQ2WlJkcDFPbjVXclZEZk5FMlhyRWRU?=
- =?utf-8?B?ejVvNHpaNlM0YjJVdDJTaHNLWmxvdXRXTEFXb1lmcGRqRHVwV2VuYklJU0pu?=
- =?utf-8?B?blNPUytZRTE1T0xkdGhqOW5FMjVJdHhXeW5MR1RCRytYTFEwcTg3UjBVMzhv?=
- =?utf-8?B?WWZMb3Zldi80TEIvSVFvaVpkSURzOEdmVDMvUUJkVnM1Mmlzemw3SDlYYk8r?=
- =?utf-8?B?ZDY5Z2xYZ3NjNnJpcVJBOWg0bEliU0JiOWsySGVCdndKZWFISnUzTGQ5SVVj?=
- =?utf-8?B?VmVSc0d1RWtDcndQTWdnZEdqUUZQT2RPc2dEc0VwNDZ4ZUxvVmxWeXowaWRL?=
- =?utf-8?B?Z0t0bm1pOWVwcEdQK2U1d2dFdjJLMmIwMDdQU1BKVTAzS21Mdk4zdVFZUzFL?=
- =?utf-8?B?bVpHTXR0ekQ2eUpDZWk0WUFrRC9IbnpXUDVNOS91UVFUeVZFQ1RFUXVpeDkr?=
- =?utf-8?B?cmUxYkwzbEExM0N1V2cxRkVBMzBoOWh5QWtZZ01aczJNMUNnMGZRbUZydnB2?=
- =?utf-8?B?ckpid29uMGpPUzRVckVRY0Y1dEJkdzFqVnhxMWhmUW9sMUZnVklHTXloM1Yy?=
- =?utf-8?B?aWYwSEZLN0NJeXZ0L3JYVmJIc0JZTEQvOC9rUHNPaTYya2l4anl5UWkvcis1?=
- =?utf-8?B?d21mK2IwK244VmxCTXhKbUFGSDlqVWMzdEpOQWlhMW1vNDlsdis3cTRUSE5C?=
- =?utf-8?B?ejQwaDgzN2I4MUFSVlVMZXc0Q3NRc21kTkdLS2pPY2FWQkthWHRjMDlTdUpR?=
- =?utf-8?B?d3duNEZqNHZKTXNsU2tjU1ZkYm5zOUM4b3dydEVGRkNXcFdpQndvN0FtZFpN?=
- =?utf-8?B?RE5mb2RHNUVxU0hlY212L05RbzNEY2lSU3czbGVxZGdZdHRLY2pST3ovSDcy?=
- =?utf-8?B?cDVvQUkrZVQ2aFZmMURTNjMwckIrMUxIR0hyaVZIcmxCS21sOWlscVVjSm84?=
- =?utf-8?B?REhDZng5SUFYWXl6cEQyWmFYSVI1L0k3NnRFblRkcXZFK1p0UGc1UkhuWUJz?=
- =?utf-8?B?YUQ1SzNHWnkxR2hSUGgweXV6TVhNTi9DNGtsYU4ybUx0QlF1ZHo3VStUUnE2?=
- =?utf-8?B?cERJZGFFQ29UVTF4NjZEZ3NxcThKUlNSS3lpZVJ1ZUZRNkNxZlJoUCtHQ0hn?=
- =?utf-8?B?NUExdDJkSDJvNjNUb0VPTEtLWWVNbUhuZHdZU2JaeFRURGZOeWxYQTVVdUth?=
- =?utf-8?B?MmxSeFJMcnhaYmFlamtPUWViRG55OHlYeFRvR0FDY0dYTHJuSkhnU1k0U2Mx?=
- =?utf-8?B?cXV4alNHa2hjYm5ZOW5ITndOSW5jM0IraUc1dmhrRWhOWnBselFISjNJZlQx?=
- =?utf-8?B?d1llZm9IRXBYNDZEd0NKd1BUdFFyMG5mWmNDSkQ3eld6dm8wQzRLNWJ3TzYy?=
- =?utf-8?B?U0JQa2JXY25oZWxOeFpodURKODN0ZklvNTFGa1c1U0N4NjluZU5URVZhY2dE?=
- =?utf-8?B?eTlPVWNoSks1QU4vMGZnRG1EUUx3Qi9PeEVxU3lsdXAyNndvRXdZTGhzRHFV?=
- =?utf-8?B?eExFZFRwdlNXbitFd0dJbWdPeFdjM2wrRXR2NGpiTk0xYnIyd2FyZXNhWmlq?=
- =?utf-8?B?V3VUZU9LOHVRekZtSmZQVCtZMzh3TXV3NUJwd0VxN3U5b3VJUVFTdW1LYXpx?=
- =?utf-8?B?dnQxQlZPMEpleHFLUzJXZUdCWEw4d3NUK3ZUUEk3Mi9XVVk2eG1GOG5USnQ4?=
- =?utf-8?B?Z0pyY3A2QnM1YVZ3UWJjeEIwOW8yTUp0c2M3ODhvM3gvZlQ4WHJSZ29jUnUv?=
- =?utf-8?B?aXJGbGt0UWdvVE8xSTI3OFdFTUtxZXQ3MUdKZEVNWHBUaVhEZWwzSEc0Z2pI?=
- =?utf-8?B?TmVpV0paSmU2ZWdabVJzRUtjWk5BeEJUT01NTjByeVlwZGVMaXBkWkdvZWhG?=
- =?utf-8?B?Q2FoYnlwMHd2QzlRR2hhcEtIWW9CQktGbk1Jc3FwTEF4Q0ppVDdpdVNpZnBM?=
- =?utf-8?B?MXltRFJxejlKWFhleDQwVGtCZkNWcVJZN0VybHBsQnNBNWtVaWU1cndBYXdR?=
- =?utf-8?B?Q0ExTmhNWHJPeGFKN3BJR1NBTzkyMmxOSDI2V3lGQzY4ZWVqWFNIMUx3OFRH?=
- =?utf-8?B?UGlYZE85cEZ6S3ltOE1jMDF2dGlzTmcwM2FVMFp2Unpad0w4Mml0NG54Z25z?=
- =?utf-8?Q?i9/fWs2cB2Y+5RuU=3D?=
-X-Exchange-RoutingPolicyChecked: FByy2fYMlHjg0GUULLaRqklBy4Aqcbg3mJZpTQ8UAgc1Xev9ZnbJBpFjWZ0cMbvN0VD30OF/MSMyeeV9fla9iXN/0sqK4gBN3tpQ7MRixRnpvyBLA9UUCqLNePd2BWq+b15hgJExR1umd5Qa7wrpRhPob2g+L7Z1nT76kxoTs0KayqyuWtLXBSpP3lzr24Z/e3OmMVlLDep83uIdQR4XQ+LUrjU25oli7Z0G55sATovz4MuFi1jeoImh1ehBI3f1/3kIIq+t47/zxPa3s3sQy1f1a+B1L3foUj4wTRcYOxGMUGrfrCyNVpFY0RSkx0JQ+HInVLL91FwpVmoaOVx44Q==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 71b2228d-12b6-405e-5d70-08de94648ade
-X-MS-Exchange-CrossTenant-AuthSource: BL3PR11MB6508.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Apr 2026 05:14:28.2608
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: LVCGib3JF2YeW9B9kaCnETJEFWKdN2GkiRUKEusIUgtl9wK81LNjJ6LLYbwGExDbSmbg4NdPdg2KWmmtFFz1nA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6911
-X-OriginatorOrg: intel.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/8] firmware: sysfb: Make CONFIG_SYSFB a user-selectable
+ option
+To: Arnd Bergmann <arnd@arndb.de>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Ard Biesheuvel <ardb@kernel.org>,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Dave Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, "K. Y. Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, longli@microsoft.com,
+ Helge Deller <deller@gmx.de>
+Cc: linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linux-efi@vger.kernel.org, linux-riscv@lists.infradead.org,
+ dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
+ linux-fbdev@vger.kernel.org
+References: <20260402092305.208728-1-tzimmermann@suse.de>
+ <20260402092305.208728-4-tzimmermann@suse.de>
+ <78f76717-8f1e-41d6-92f7-261df96b84b6@app.fastmail.com>
+ <3e466158-c2e5-4e23-934f-dcdbb71ad41f@suse.de>
+ <d3d7c545-3b07-4881-a16d-45b6f039de19@app.fastmail.com>
+ <001efe27-9cbb-4a89-8d2d-a1f3ae15e505@suse.de>
+ <295a43ce-92fb-435d-a82f-d1cfa8f4f28d@app.fastmail.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <295a43ce-92fb-435d-a82f-d1cfa8f4f28d@app.fastmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.30
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	ARC_NA(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_TWELVE(0.00)[23];
+	FREEMAIL_TO(0.00)[arndb.de,redhat.com,kernel.org,linaro.org,xen0n.name,linux.intel.com,gmail.com,ffwll.ch,microsoft.com,gmx.de];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.com:url,imap1.dmz-prg2.suse.org:helo]
+X-Spam-Flag: NO
 
-On Mon, Apr 06, 2026 at 06:10:07PM -0400, Joel Fernandes wrote:
-> 
-> 
-> On 4/6/2026 5:24 PM, Joel Fernandes wrote:
-> > 
-> > 
-> > On 4/2/2026 1:59 AM, Matthew Brost wrote:
-> >> On Tue, Mar 31, 2026 at 05:20:34PM -0400, Joel Fernandes wrote:
-> >>> Add TLB (Translation Lookaside Buffer) flush support for GPU MMU.
-> >>>
-> >>> After modifying page table entries, the GPU's TLB must be invalidated
-> >>> to ensure the new mappings take effect. The Tlb struct provides flush
-> >>> functionality through BAR0 registers.
-> >>>
-> >>> The flush operation writes the page directory base address and triggers
-> >>> an invalidation, polling for completion with a 2 second timeout matching
-> >>> the Nouveau driver.
-> >>>
-> >>> Cc: Nikola Djukic <ndjukic@nvidia.com>
-> >>> Signed-off-by: Joel Fernandes <joelagnelf@nvidia.com>
-> >>> ---
-> >>>  drivers/gpu/nova-core/mm.rs     |  1 +
-> >>>  drivers/gpu/nova-core/mm/tlb.rs | 95 +++++++++++++++++++++++++++++++++
-> >>>  drivers/gpu/nova-core/regs.rs   | 42 +++++++++++++++
-> >>>  3 files changed, 138 insertions(+)
-> >>>  create mode 100644 drivers/gpu/nova-core/mm/tlb.rs
-> >>>
-> >>> diff --git a/drivers/gpu/nova-core/mm.rs b/drivers/gpu/nova-core/mm.rs
-> >>> index 8f3089a5fa88..cfe9cbe11d57 100644
-> >>> --- a/drivers/gpu/nova-core/mm.rs
-> >>> +++ b/drivers/gpu/nova-core/mm.rs
-> >>> @@ -5,6 +5,7 @@
-> >>>  #![expect(dead_code)]
-> >>>  
-> >>>  pub(crate) mod pramin;
-> >>> +pub(crate) mod tlb;
-> >>>  
-> >>>  use kernel::sizes::SZ_4K;
-> >>>  
-> >>> diff --git a/drivers/gpu/nova-core/mm/tlb.rs b/drivers/gpu/nova-core/mm/tlb.rs
-> >>> new file mode 100644
-> >>> index 000000000000..cd3cbcf4c739
-> >>> --- /dev/null
-> >>> +++ b/drivers/gpu/nova-core/mm/tlb.rs
-> >>> @@ -0,0 +1,95 @@
-> >>> +// SPDX-License-Identifier: GPL-2.0
-> >>> +
-> >>> +//! TLB (Translation Lookaside Buffer) flush support for GPU MMU.
-> >>> +//!
-> >>> +//! After modifying page table entries, the GPU's TLB must be flushed to
-> >>> +//! ensure the new mappings take effect. This module provides TLB flush
-> >>> +//! functionality for virtual memory managers.
-> >>> +//!
-> >>> +//! # Example
-> >>> +//!
-> >>> +//! ```ignore
-> >>> +//! use crate::mm::tlb::Tlb;
-> >>> +//!
-> >>> +//! fn page_table_update(tlb: &Tlb, pdb_addr: VramAddress) -> Result<()> {
-> >>> +//!     // ... modify page tables ...
-> >>> +//!
-> >>> +//!     // Flush TLB to make changes visible (polls for completion).
-> >>> +//!     tlb.flush(pdb_addr)?;
-> >>> +//!
-> >>> +//!     Ok(())
-> >>> +//! }
-> >>> +//! ```
-> >>> +
-> >>> +use kernel::{
-> >>> +    devres::Devres,
-> >>> +    io::poll::read_poll_timeout,
-> >>> +    io::Io,
-> >>> +    new_mutex,
-> >>> +    prelude::*,
-> >>> +    sync::{
-> >>> +        Arc,
-> >>> +        Mutex, //
-> >>> +    },
-> >>> +    time::Delta, //
-> >>> +};
-> >>> +
-> >>> +use crate::{
-> >>> +    driver::Bar0,
-> >>> +    mm::VramAddress,
-> >>> +    regs, //
-> >>> +};
-> >>> +
-> >>> +/// TLB manager for GPU translation buffer operations.
-> >>> +#[pin_data]
-> >>> +pub(crate) struct Tlb {
-> >>> +    bar: Arc<Devres<Bar0>>,
-> >>> +    /// TLB flush serialization lock: This lock is acquired during the
-> >>> +    /// DMA fence signalling critical path. It must NEVER be held across any
-> >>> +    /// reclaimable CPU memory allocations because the memory reclaim path can
-> >>> +    /// call `dma_fence_wait()`, which would deadlock with this lock held.
-> >>> +    #[pin]
-> >>> +    lock: Mutex<()>,
-> >>> +}
-> >>> +
-> >>> +impl Tlb {
-> >>> +    /// Create a new TLB manager.
-> >>> +    pub(super) fn new(bar: Arc<Devres<Bar0>>) -> impl PinInit<Self> {
-> >>> +        pin_init!(Self {
-> >>> +            bar,
-> >>> +            lock <- new_mutex!((), "tlb_flush"),
-> >>> +        })
-> >>> +    }
-> >>> +
-> >>> +    /// Flush the GPU TLB for a specific page directory base.
-> >>> +    ///
-> >>> +    /// This invalidates all TLB entries associated with the given PDB address.
-> >>> +    /// Must be called after modifying page table entries to ensure the GPU sees
-> >>> +    /// the updated mappings.
-> >>> +    pub(crate) fn flush(&self, pdb_addr: VramAddress) -> Result {
-> >>
-> >> This landed on my list randomly, so I took a look.
-> >>
-> >> Wouldn’t you want to virtualize the invalidation based on your device?
-> >> For example, what if you need to register interface changes on future hardware?
-> > 
-> > Good point, for future hardware it indeed makes sense. I will do that.
-> Actually, at least in the future as far as I can see, the register definitions
-> are the same for TLB invalidation are the same, so we are good and I will not be
-> making any change in this regard.
-> 
-> But, thanks for raising the point and forcing me to double check!
-> 
+Hi
 
-Not my driver, but this looks like a classic “works now” change that may
-not hold up later, which is why I replied to something that isn’t really
-my business.
+Am 02.04.26 um 18:47 schrieb Arnd Bergmann:
+> On Thu, Apr 2, 2026, at 17:27, Thomas Zimmermann wrote:
+>> Am 02.04.26 um 16:59 schrieb Arnd Bergmann:
+>>> On Thu, Apr 2, 2026, at 16:10, Thomas Zimmermann wrote:
+>>>> Am 02.04.26 um 15:08 schrieb Arnd Bergmann:
+>>>>> On Thu, Apr 2, 2026, at 11:09, Thomas Zimmermann wrote:
+>>>>> I don't really like this part of the series and would prefer
+>>>>> to keep CONFIG_SYSFB hidden as much as possible as an x86
+>>>>> (and EFI) specific implementation detail, with the hope
+>>>>> of eventually seperating out the x86 bits from the EFI ones.
+>>>> You mean, you want to use the EFI-provided framebuffers without the
+>>>> intermediate step of going through sysfb_primary_display?
+>>>>
+>>>> In that case, CONFIG_SYSFB would become an x86-internal thing, right?
+>>> The part that is still needed from sysfb is the arbitration
+>>> between DRM_EFI and the PCI device driver for the same hardware,
+>>> so I think some part of sysfb is clearly needed, in particular
+>>> the sysfb_disable() function that removes the EFI framebuffer
+>>> when there is a conflicting simpledrm or hardware specific
+>>> driver.
+>> We do most of that in the aperture-helper module. (see
+>> <linux/aperture.h>). Calling sysfb_disable() from there is a workaround
+>> for some corner cases. We can have an EFI-specific function that does
+>> the same.
+> That sounds good, yes. The same change would need to go into
+> of_platform_default_populate_init() then.
 
-Again, not my area, but I’ve been through this before. Generally,
-getting the abstractions right up front pays off.
+The call to sysfb_disable() is a workaround for certain cases that 
+aperture helpers don't handle well. In the longer term, I'd want 
+aperture helpers to be more clever about aperture ownership. But as an 
+intermediate step, adding other _disable() function would be an option. 
+But there's no hurry.
 
-Matt
+>
+>> BTW, simpledrm-on-EFI/VESA is considered obsolete and should preferably
+>> be removed from that driver. Simpledrm should become a driver for
+>> Devicetree nodes of type simple-framebuffer (as it originally has been
+>> intended).
+> Sure, I was only thinking of the case where there are both
+> sysfb (from Arm/riscv UEFI) and simpledrm (from devicetree)
+> objects referring to the same one, not the simpledrm
+> device created by sysfb_simplefb.
+>
+>>> The parts that I want to keep out of that is anything
+>>> related to the x86 boot protocol, non-EFI framebuffers,
+>>> text console, and kexec handoff, which we don't need on
+>>> non-x86 UEFI systems.
+>>>
+>>> I don't mind the idea of having a sysfb_primary_display
+>>> in the EFI code if that helps keep EFI sane on x86,
+>>> but it would be good to make that local to
+>>> drivers/firmware/efi and (eventually) detached from
+>>> include/uapi/linux/screen_info.h.
+>> Efidrm retrieves the framebuffer settings from the contained struct
+>> screen_info. Disconnecting from screen_info would require separate
+>> graphics drivers for x86 and non-x86. If we split off EFI from sysfb,
+>> we'd likely need a sysfbdrm driver of some sort. Just saying.
+> Yes, I saw that as well and don't have an immediate idea for how
+> to best do it. I saw that you already abstracted the access to
+> the screen_info members in drm_sysfb_screen_info.c, which I think
+> is a step in that direction.
+>
+> I also noticed that efidrm is mostly a subset of vesadrm, so
+> in theory they could be merged back into an x86 drm driver
+> along with the drm_sysfb_screen_info helpers, and have a non-x86
+> driver that constructs a drm_sysfb_device directly from the
+> EFI structures.
 
-> --
-> Joel Fernandes
-> 
+I would not want to have a unifed driver for all-things-screen_info. The 
+code that can easily be shared is already in the sysfb helpers. But I 
+don't mind adding a separate driver for EFI's Graphics Output Protocol. 
+Then there would be current efidrm for EFI-from-screen_info and 
+efigopdrm for EFI via the GOP interfaces. If EFI ever specifies another 
+graphics interface, we could add another driver. The maintenance 
+overhead is small on the DRM side.
+
+What is the future of x86's boot_param and the related screen_info on 
+x86-64?  Is it obsolete?  Will boot loaders run the EFI stub instead?
+
+>
+>> I think we'd also have to duplicate the framebuffer-relocation code that
+>> currently works on anything using struct screen_info (see patch 5).
+> You mean the code from include/linux/screen_info.h? I think
+> it would make sense to have an x86 specific version of that
+> to operate on the x86 screen_info, and a simpler version
+> that just updates the resource for the efirdrm driver, but
+> that could also be done one level higher or lower.
+
+Makes me wonder if the relocation code could be integrated into the 
+aperture helpers. It would have to track the relocation of all PCI 
+graphics devices and probing DRM drivers would query the relocation 
+offset for their given framebuffer.
+
+>
+>>>>> In general, I am always in favor of properly using Kconfig
+>>>>> dependencies over 'select' statements, for the same reasons
+>>>>> you describe, but I don't want the the x86 logic for
+>>>>> the legacy VESA and VGA console handling to leak into more
+>>>>> architectures than necessary.
+>>>>>
+>>>>> Do you think we could instead move the sysfb_init()
+>>>>> function into the same two places that contain the
+>>>>> sysfb_primary_display definition (arch/x86/kernel/setup.c,
+>>>>> drivers/firmware/efi/efi-init.c) and simplify the efi version
+>>>>> to take out the x86 bits? That would reduce the rest
+>>>>> of sysfb-primary.c to the logic to unregister the device,
+>>>>> and that could then be selected by both x86 and EFI.
+>>>> No, I'm more than happy that sysfb finally consolidates all the
+>>>> init-framebuffer setup and detection that floated around in the kernel.
+>>>> I would not want it to be duplicated again.
+>>>>
+>>>> For now, we could certainly keep CONFIG_SYSFB hidden and autoselected.
+>>>> Although I think this will require soem sort of solution at a later point.
+>>> Can you clarify which problem you are trying to solve
+>>> with that?
+>> One thing is that some users simply what control over their kernel build.
+>>
+>> I also think that there might be systems that want to use
+>> sysfb_primary_display (plus the relocation feature), but not create the
+>> framebuffer device. Say for efi-earlycon. It needs user-control over the
+>> SYSFB option to do that.
+> I'm still not following, sorry. efi-earlycon doesn't require
+> CONFIG_SYSFB today, and I don't see why that would need to change,
+> or why it couldn't just 'select SYSFB' if it it does change.
+>
+>> As a side-effect, user-configurable SYSFB gives us a nice place to put
+>> SYSFB_SIMPLEFB and FIRMWARE_EDID; two options that currently float
+>> around in the config somewhat arbitrarily.
+> You said that SYSFB_SIMPLEFB should get phased out in the future,
+> right?
+
+Yes. Better sooner than later.
+
+>
+> I'm also missing your plan for CONFIG_FIRMWARE_EDID. I only
+> see three legacy drivers using the old fb_firmware_edid()
+> interface, so I assume this is not what you are interested in.
+>
+> For the global copy that is filled by x86 and efi, and
+> consumed by vesadrm and efidrm, does that even need to
+> be a configuration option rather than get always enabled?
+
+There is code in x86's old 16-bit boot/init code that reads the EDID via 
+VESA. The help text on CONFIG_FIRMWARE_EDID sounds like it needs to be 
+configurable because some systems can't do the VESA calls. Hence, the 
+logical step seems to be to make this consistent for all systems by 
+adopting the option for all EDID retrieval.
+
+If we can remove CONFIG_FIRMWARE_EDID and make EDID support 
+unconditional, I'm all for it.
+
+Best regards
+Thomas
+
+>
+>         Arnd
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+
+

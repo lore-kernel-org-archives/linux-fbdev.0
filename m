@@ -1,230 +1,254 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from DM5PR21CU001.outbound.protection.outlook.com (mail-centralusazon11011050.outbound.protection.outlook.com [52.101.62.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 086303C9EC7;
-	Tue,  7 Apr 2026 15:48:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775576935; cv=none; b=sA6rZ5xjVFN9G6s93gShCMOubZqX7EmE5yby0oC2m94NEyCvw2R2bqRIFGOyABzAgb3zXuDPnqTUNHwp5ja2Fr1714siejbEwEy9XHc7yxyBXQb7m/AbKP+v1q2dySxTsgswaO89QFde1mkbcizSYJqyhkz5ze+X9tFsbNK6GLA=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775576935; c=relaxed/simple;
-	bh=heg3x7ElmNFxYQmFamb4P+BKHDJ3kk1a9rd0TsZypU0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kYd9n3JLAWaoSAXMnngiy1B0vHDIzksGlGZOnITdya/YkWknGFEaSpmvStKzwXFs5xtbIJKZMaJBgnL9jqdVOpjXB4j4Lrq+xuqY0iunF5GI75kYoP1KwFKrZy6LlMFygM6JpAWwdzGdTmtlrCfuRSPZVG6uXSBxFdNmhTEPx6c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=DDbrEtsV; arc=none smtp.client-ip=212.227.15.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F912364EB7;
+	Wed,  8 Apr 2026 07:04:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.62.50
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775631845; cv=fail; b=fiefgF4IwiUs0q+QEbsmNq7l+mygn4SXZOnOWywfU66xUdB53h5qVjxQHityAiPqi3s8gaKh9EdJytOanaFZDwbCPN1WdvJAHQG4IkAQ4qSOdyX9jZdUlh5bb8TsosuUbVRUC/TSo3RKmkqw49lURfe5Xm1kXxoTU65xaHXZG+c=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775631845; c=relaxed/simple;
+	bh=SQB+YrQ9BTfSze1katwVhTB3Z81pGJNmrQpDoG0E00s=;
+	h=Content-Type:Date:Message-Id:From:To:Cc:Subject:References:
+	 In-Reply-To:MIME-Version; b=XcFsZVOU34ENKRo50TkRkun1BiEBOOnvOUlrIpGjKuZlLaP0chrvCXOQ/zl4reX7DIwe0iCk91WPh3vrZsiZq+ESd+DZHQPSvIfQgQUhlWQqlaC2FOSAwkS8mGJCqjup/Wl3QMNsY/FB4qiprxW7mwU1n7oeLjBAjTpjHESH3Fo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=YR2gWBZl; arc=fail smtp.client-ip=52.101.62.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="DDbrEtsV"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1775576919; x=1776181719; i=deller@gmx.de;
-	bh=YeHk8Sf1tT6rtXzZmZSm3aKs3z2Y9LseDt8hcdNh+R4=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=DDbrEtsVcgXLd90vIII+C7ZGTGZbPuD5zrZilT+xCUa8838XXmhGUbBO1aMvvNKA
-	 Mb6km5a50rXGMTzBA7uSeIuKJkAYl+LIRdlBeNuHnuhtL8Ua93onf69wH0rkxmtke
-	 zSkyzBK1oQnKI+fWHh7cQa88BrZM6t4fTAv5JTh0xzce2m4H4N9Cx6DJ6dLYcsld6
-	 +kX8XK9twYYR2s59Zn5/PIAioSiiZo/tw7HlQskLtKzb2JI6j5iqbVrJZLa6FPh/1
-	 eQUcLKOHbicxIqDd54ij+YYt4nGn5JCu++naL5PFWOFzog9v/r7ktwA4wbia+VTSJ
-	 vMguzIng0ptP4d7kig==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MKbgE-1vtiFH0WWC-00JjsP; Tue, 07
- Apr 2026 17:48:39 +0200
-Message-ID: <5c8816fd-563f-4b79-84b7-57bf79a6d639@gmx.de>
-Date: Tue, 7 Apr 2026 17:48:38 +0200
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="YR2gWBZl"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=OuXzxHarW9Usyz2Y42gL5dLB4D8TSDVWMyYpz4o5lhe1u8OHJOvNHbsljLbIPMS3zPdJGWWRNJ1lmeK4Vk289RfzuO5lRx62zBR9j5Vcfxh9/AFmfya1XICaUbru92RPw6fHMoSmfMc6paBHX7EkroRQ25AyJamq1+MvujUffkUAvekua5wqGVTOriXt9P517znBtA6mTq78FswwXim7cjPfKxLiJ/rb7dCfzroNdVr13ZiBUdbwMVvX5llnFtKICb7PtSCgWYW5PPfXTZaf2v4atunGxP4OYoH4dng7t/x1jiZQMDGXoTtMEpI+T8dNaR5njB62rmO0EGRdcG+PlQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=QutQ3CdynSj67ZC1105GCYUZGUGuk4BvqWikYEe2YQw=;
+ b=LJr33xsj8Ggl39A8jVGzGCewhnjEZzg4dNAmLsOEmz5LLraMfZSTH5/jr1BYDi+8O+m7RgV0vsu/x2aJHhZ20iFvK4ERFz/8n3zApZ/J4IcfeLYqY1rnxiSoW4K79t6ewbcX3gBGmwAZwBXIqIEKVwkC2gi47KTiYYwEjPoiMJh6BW8XG0xmfD0y2Mm3say2QosWqayO4t9kCkT7VnYj3Kp5RjJPntSJiH4x4v8yJfHDm+1a1FFfCx0mtwkTyQif3t3XpOYU5CrV8io/OZjTYwQjAy0yG9gbLw+asNDcY0jBXYdqwbdjMYKKLUTNOtp05qoYf79ze2CupRQGc7ErtQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=QutQ3CdynSj67ZC1105GCYUZGUGuk4BvqWikYEe2YQw=;
+ b=YR2gWBZlY96RtUZKYda0UoWAX/o3zRtl6naMNUSIAnXTR/g5EvaNGfyTdkJQ9bLsTMtFsv3LMRZAiU2siO0Y3xYDYtWfeNBeAmhxxpstcfERQfgtzrLm0lDzbgd4apGJXtY0zhVe/ujmmyFRpJgkMsDe8De5yrpK0HKSJHcCX4gSj++c+SFkUb3Uf4TSzZ5+jAkmMgcAhQ3bfxY0b271FwKEPrqG1JTSzsdJzWpIrsiANGPEX9dvHHRUH5cmBNfV8rc9ZvDWPR2XBczYhnqut33K2IYFqngJ2S5Kqfxe6Oo5UusN4kOwzVQJzC00aX4tV7+DHZH42ahM3V2Wmjo31w==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from CH2PR12MB3990.namprd12.prod.outlook.com (2603:10b6:610:28::18)
+ by PH7PR12MB8055.namprd12.prod.outlook.com (2603:10b6:510:268::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.21; Wed, 8 Apr
+ 2026 07:03:59 +0000
+Received: from CH2PR12MB3990.namprd12.prod.outlook.com
+ ([fe80::7de1:4fe5:8ead:5989]) by CH2PR12MB3990.namprd12.prod.outlook.com
+ ([fe80::7de1:4fe5:8ead:5989%4]) with mapi id 15.20.9769.018; Wed, 8 Apr 2026
+ 07:03:59 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 08 Apr 2026 16:03:54 +0900
+Message-Id: <DHNKYBM159T9.2UUQ7CU0RN0BU@nvidia.com>
+From: "Alexandre Courbot" <acourbot@nvidia.com>
+To: "Joel Fernandes" <joelagnelf@nvidia.com>
+Cc: "Eliot Courtney" <ecourtney@nvidia.com>, <linux-kernel@vger.kernel.org>,
+ "Miguel Ojeda" <ojeda@kernel.org>, "Boqun Feng" <boqun@kernel.org>, "Gary
+ Guo" <gary@garyguo.net>, "Bjorn Roy Baron" <bjorn3_gh@protonmail.com>,
+ "Benno Lossin" <lossin@kernel.org>, "Andreas Hindborg"
+ <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>, "Trevor
+ Gross" <tmgross@umich.edu>, "Danilo Krummrich" <dakr@kernel.org>, "Dave
+ Airlie" <airlied@redhat.com>, "Daniel Almeida"
+ <daniel.almeida@collabora.com>, "Koen Koning"
+ <koen.koning@linux.intel.com>, <dri-devel@lists.freedesktop.org>,
+ <rust-for-linux@vger.kernel.org>, "Nikola Djukic" <ndjukic@nvidia.com>,
+ "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, "Maxime Ripard"
+ <mripard@kernel.org>, "Thomas Zimmermann" <tzimmermann@suse.de>, "David
+ Airlie" <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Jonathan
+ Corbet" <corbet@lwn.net>, "Alex Deucher" <alexander.deucher@amd.com>,
+ "Christian Koenig" <christian.koenig@amd.com>, "Jani Nikula"
+ <jani.nikula@linux.intel.com>, "Joonas Lahtinen"
+ <joonas.lahtinen@linux.intel.com>, "Rodrigo Vivi" <rodrigo.vivi@intel.com>,
+ "Tvrtko Ursulin" <tursulin@ursulin.net>, "Huang Rui" <ray.huang@amd.com>,
+ "Matthew Auld" <matthew.auld@intel.com>, "Matthew Brost"
+ <matthew.brost@intel.com>, "Lucas De Marchi" <lucas.demarchi@intel.com>,
+ "Thomas Hellstrom" <thomas.hellstrom@linux.intel.com>, "Helge Deller"
+ <deller@gmx.de>, "Alex Gaynor" <alex.gaynor@gmail.com>, "Boqun Feng"
+ <boqun.feng@gmail.com>, "John Hubbard" <jhubbard@nvidia.com>, "Alistair
+ Popple" <apopple@nvidia.com>, "Timur Tabi" <ttabi@nvidia.com>, "Edwin Peer"
+ <epeer@nvidia.com>, "Andrea Righi" <arighi@nvidia.com>, "Andy Ritger"
+ <aritger@nvidia.com>, "Zhi Wang" <zhiw@nvidia.com>, "Balbir Singh"
+ <balbirs@nvidia.com>, "Philipp Stanner" <phasta@kernel.org>, "Elle Rhumsaa"
+ <elle@weathered-steel.dev>, <alexeyi@nvidia.com>, <joel@joelfernandes.org>,
+ <linux-doc@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
+ <intel-gfx@lists.freedesktop.org>, <intel-xe@lists.freedesktop.org>,
+ <linux-fbdev@vger.kernel.org>
+Subject: Re: [PATCH v10 12/21] gpu: nova-core: mm: Add unified page table
+ entry wrapper enums
+References: <20260311004008.2208806-1-joelagnelf@nvidia.com>
+ <20260331212048.2229260-1-joelagnelf@nvidia.com>
+ <20260331212048.2229260-13-joelagnelf@nvidia.com>
+ <DHIFF98P1YQ3.1IXUT02E3TF20@nvidia.com>
+ <5db2aab1-4b65-486e-ad9b-27a108bdb0d6@nvidia.com>
+ <DHMYSTLVHIFJ.A2BDMPVNZNLS@nvidia.com>
+ <537a8c5a-3885-4c47-99f6-963b48ddf87d@nvidia.com>
+In-Reply-To: <537a8c5a-3885-4c47-99f6-963b48ddf87d@nvidia.com>
+X-ClientProxiedBy: OS7PR01CA0153.jpnprd01.prod.outlook.com
+ (2603:1096:604:24d::7) To CH2PR12MB3990.namprd12.prod.outlook.com
+ (2603:10b6:610:28::18)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 05/10] lib/fonts: Implement glyph rotation
-To: Thomas Zimmermann <tzimmermann@suse.de>, gregkh@linuxfoundation.org,
- jirislaby@kernel.org, geert@linux-m68k.org, simona@ffwll.ch, sam@ravnborg.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-References: <20260407092555.58816-1-tzimmermann@suse.de>
- <20260407092555.58816-6-tzimmermann@suse.de>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20260407092555.58816-6-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:EDcpDQYUXzoMASknHU+8JhPXWZKJhNbLUEeBvAC0TNlvQGPjGos
- 4BERoXStp2m3iHy1skayIgNUj4q/TqwlKPYWIfRI34PhpUVKxEwsmx9Kr/wU9olBKp0+7Ef
- +bc5Q1YF9C0unfxZDBrmDBIuVEopREPtCL94Uih+WJCNnd5oLrAKZ8OQqD8YCCRB5Rs0kDN
- c+EQkNAJYHW4o4C4wXvsw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Kz+tOXAPoi0=;1i7TD5dZgbwIYkBRTdW+5nfHh6/
- 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
- cUFW2bLV+mzqFfeqfqimdk95bNjYZO4ng==
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH2PR12MB3990:EE_|PH7PR12MB8055:EE_
+X-MS-Office365-Filtering-Correlation-Id: 383e0f28-834d-4218-de67-08de953d0188
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|10070799003|7416014|376014|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	rzFS6rTZvqUDpiwWHXi2W0V3uh5PEOT9ZgsX3+WqkdExvTDntSp7C13ImQ56PsO//qyTtnZ4joYnO7jncP9k0BkdPJ5RLMX6E49V8F9+2+Jepi+C8kldXniy4WVMnYExmLEV5M06G3Ru9f2Syjw1mqpkk40gPBBu2LOc6OQf2fJrWJ5SKaDTlkhA5mvrLt+XtsRPwxW5IJ93uZI8d47S6unVHM3658XIMIJA4BiJiylhYTOB2W54FWObkGc9YFLSfxX4dDDtiTojDceE2f8amuwHaa/OaqDjO2KUttjpnYllQ5KQs1eEH/P+VpnJBIXUp+ivgyXGZTJJD3Dv4NKXtn0UgN34lsCNNd4MVwn0BH0EvmHiHYHj/Zy1w2ysBzatAl0OuG6m590z55OMqn11eZQrRGVd/Nx/yBf/Ymnii3KsibsrEzO3ctKg4ZRIeJF3NukpcXMKonf+1DeOeb9RcSdFHsDc7KNqWdXjgrfsBedeYNI9CaQrWOgySP/n8l0A4cRDqI9UfyisGEVfekSwbq6i8oJ640e55KhSDSJA27YnLCbDnjMMWxQKNFF+nQiK76c95sQP5aVSQIew+lGw6c1vZX5OQsdfKaqDTN/eKVKDqwhmL0d4PjBSI19pQuocXZyrMzXz7D09Vow35eDEYKgh89kyeAV4wzHOrD1jUaQ/qvuVt1keCRLD58W7GV5JB6oUIHPGlPzbjHzlOtuv8i19Ihyic5pRod0XnOUX5ds=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH2PR12MB3990.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(10070799003)(7416014)(376014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?SXFiQnAwTnpBYVEwT0EwOTlTcHNWUmNpYm5QaUVYSVNWbTlib1RQZCs1V0tO?=
+ =?utf-8?B?bWQ1ME0veWJ6VnJpOTdiSFlrSW9waEZyZmpXSTZVbDdZeEhNSGhXcnVrYUho?=
+ =?utf-8?B?M2pycDlCTXJROU5vUzVkZk9PV0xXclJ5VzUrNjU3YThBT0FHditad04yaS9H?=
+ =?utf-8?B?TklBdDNiM1JXZzBWb1dUNWNpZkRMcXNvUlZiUDlGeUt1UVNldnpGNWN3WVdW?=
+ =?utf-8?B?bnFWNTFYbkRocXI4WnhNdS8xNUQzSlZGTEs5OVVYWEk2SUNZZE93ekRtVjVO?=
+ =?utf-8?B?cmdxeXh4WFdRWWNCVVkyay9LSHpLS0NmbENvRkJnWXF6NDNFSjE3MGlJRTA4?=
+ =?utf-8?B?WmlEWHlLVS9MRlVXOHFyNlM5cWsvSEJwS2NLWnpYSGw5K05kOUllWW8reDBh?=
+ =?utf-8?B?cG56OXhnb1hlWk5SODRCOE01NGN2b3FML2I4WFlwUXl4WE5qQUxhS1JodkJJ?=
+ =?utf-8?B?RVFjQTdMTGVjZ3doRzIxNmp2SkoyaEd4b1RRNFBUaUNKckZDbzNsbWVJcHRV?=
+ =?utf-8?B?akFkRlBwdFdHVlFUSXNoVlpTZXVieVlLTkppMTRWdUlaOVBLRkNqMnZxOFVQ?=
+ =?utf-8?B?dnhKRkRQOGtEdG0xSXl4QUZFUjY5WkwzQ002YWxEZzBndGF6TmwzaGt3L3VV?=
+ =?utf-8?B?Sytpejk4aUhZaWdQeHVpaWIvczAvWnpTSWEyd1FxZmNTNlo2WHBSdEc1bm5F?=
+ =?utf-8?B?MnlMRFBZNUVUT2N1OFpaR21DMkZTQXI0WEVrRzl5c0FUZ3lFckJXOGtUdTV4?=
+ =?utf-8?B?WkxyRW9seENrZzcvbHdxZEpTUlIzcjY1SmtCQkl0YVQvbzR6SGFoQS9lamFz?=
+ =?utf-8?B?S0h4VlZpQWhPWXFmcTNHQUhmV3F6RHFoM1dhaGYwbitZaWNlRjh0VnpJQW5C?=
+ =?utf-8?B?SGVNWEZ0eUtRbWVhOURjYmhJSUpseEdiaHNHVUF1djRvelRIYzFVT01jV3VZ?=
+ =?utf-8?B?ZjdDWXdrZzNDQ0w4cnN6cDlNWEFGVkpqTkwwUi9HdGR5dUgwOGlwdVZjL2ZK?=
+ =?utf-8?B?eW84bkFLRzBUbGhBazV5RzZYaU92S0NCQ0hhdml6bmJBTEhZckIzUUI4Q2hN?=
+ =?utf-8?B?blFrL0FLVFd6ck9ZcVhFam9GNzVUeFJubUtZTXAzL1NKMldYNEJCbk1ZWTk2?=
+ =?utf-8?B?Q2UxT0RsVzMvK2Z5UjlGQjh1UW90Y3FVREx3TXdHQVcvMHlmMmJYNTRrTWw1?=
+ =?utf-8?B?TzNyT0FEU2pzMlB0WUt0WHZQampYWUhMbjJKNGdPY0ZvNU5tRW1RZXJRUFM4?=
+ =?utf-8?B?RWZSOE1VRDE3QXJmcUdxOWtBeDFmTklVc1U3dHNqMGhGQUV2R0FQMXhvc0VO?=
+ =?utf-8?B?VFY5TGo3bU02TmMwVXljZ3pIQUVRTGhPNzJmSXgrQWVOYnQxQVo0Tmc0VStB?=
+ =?utf-8?B?NDVzTW5SNzIwNDlOb01SRmhsTk5yblpiL25yMUxjdFhYem54bWJzWWs5ejFr?=
+ =?utf-8?B?a0hLeTdBRnI5OEJuSURkSjU4TW9GdXFzMkJ2U212WDl6WmNKQ24xUXBqcHpG?=
+ =?utf-8?B?QjZHd3JpU2k2Y3VCOTIxdXB5Z29CdjRmU2JMaWRWN0ROZjROUWIzOWhSWEtp?=
+ =?utf-8?B?NmZjc2dUelNpUndOcTJQcTcrbjhyRWlXSjJYSEdXcmVGS2RBaUpPTktnaG4v?=
+ =?utf-8?B?V2ZRWkY5clFORFV6VFhVNXdobm96QXgwTXJMNkp3ck5XelN1WHlLTkZ2SGVt?=
+ =?utf-8?B?Q1VNWEpjM3JGSEozTlNXWGdYTnIwTjRtbXBKR0laa3N2SjhHSzY2VUhBME51?=
+ =?utf-8?B?Vmc1bE91Zm9DKzlBZHlTSVIvY2NaNnNCS0xsYi9UUWtLZEJqcEgwVTRUT0pO?=
+ =?utf-8?B?bTExaHBERjI2M3Zob2FZdTJMempPY3gvdGVzYmhlQjYzcHZUazFITzJBSHRQ?=
+ =?utf-8?B?dE9uWml6bkFPSjRabWMwTjcxb2hDZmJkWWxTN0xIcXJMQkVzQ0FuYndURGhz?=
+ =?utf-8?B?T0xnSHdyaHFKaVdDdEtJMzhuYnIvRlJWano0UkUyS01TQTgyS3BrUWZyQWcy?=
+ =?utf-8?B?Z1hscGpiT3F0RmE4TUx6S3UvRTVodUU0Sys3MjVnTDUyQzBRbWtna1dFUFk0?=
+ =?utf-8?B?VzNVMW9hWko0eVhhVXhDMGR6UG9PQ2YzNm56bDF6L2lkVGNja2hlN20yazFB?=
+ =?utf-8?B?cEd1aGlkZk5BcVpmQlBuaUowUVc5RE1ZUUtsNm85RUhzY2dsRERSbTdmMXNG?=
+ =?utf-8?B?ZUM5eC9mVnRLT0NCcHpvdEU1VUtoR1RCT0RpSU03L2tzNkNqZmZoTFV6VDZj?=
+ =?utf-8?B?SGpUUjZSR2ZFcURQM28zWmFDcEMydk9Xdzl2VXkxbW5uZmU5VUc2aEpMYXVh?=
+ =?utf-8?B?anZ4RGJOUm1vUjA4MlNHS1hoeXBlak1hTENmaGFndUtDZEhKNCtvOXRlUnpU?=
+ =?utf-8?Q?Q9PcPYau7wCRIs4fuh3bvmfqGtCWfzGDlLHRQZQ9lfisB?=
+X-MS-Exchange-AntiSpam-MessageData-1: gItelP6aPABccg==
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 383e0f28-834d-4218-de67-08de953d0188
+X-MS-Exchange-CrossTenant-AuthSource: CH2PR12MB3990.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Apr 2026 07:03:58.9146
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 5SV7SQfyl2ZUWI0I7leiMrt3jnb1RZEk98TyxNDXjA66n6KoDRoRJwadQqvOTL2wEqHWqa5es+9TsECkAYH2VQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB8055
 
-Hi Thomas,
-
-On 4/7/26 11:23, Thomas Zimmermann wrote:
-> Move the glyph rotation helpers from fbcon to the font library. Wrap the=
-m
-> behind clean interfaces. Also clear the output memory to zero. Previousl=
-y,
-> the implementation relied on the caller to do that.
->=20
-> Go through the fbcon code and callers of the glyph-rotation helpers. In
-> addition to the font rotation, there's also the cursor code, which uses
-> the rotation helpers.
->=20
-> The font-rotation relied on a single memset to zero for the whole font.
-> This is now multiple memsets on each glyph. This will be sorted out when
-> the font library also implements font rotation.
->=20
-> Building glyph rotation in the font library still depends on
-> CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=3Dy. If we get more users of the cod=
+On Tue Apr 7, 2026 at 10:59 PM JST, Joel Fernandes wrote:
+> Hi Eliot,
+>
+> On 4/7/2026 9:42 AM, Eliot Courtney wrote:
+>> On Tue Apr 7, 2026 at 6:55 AM JST, Joel Fernandes wrote:
+>>>>> +    /// Compute upper bound on page table pages needed for `num_virt=
+_pages`.
+>>>>> +    ///
+>>>>> +    /// Walks from PTE level up through PDE levels, accumulating the=
+ tree.
+>>>>> +    pub(crate) fn pt_pages_upper_bound(&self, num_virt_pages: usize)=
+ -> usize {
+>>>>> +        let mut total =3D 0;
+>>>>> +
+>>>>> +        // PTE pages at the leaf level.
+>>>>> +        let pte_epp =3D self.entries_per_page(self.pte_level());
+>>>>> +        let mut pages_at_level =3D num_virt_pages.div_ceil(pte_epp);
+>>>>> +        total +=3D pages_at_level;
+>>>>> +
+>>>>> +        // Walk PDE levels bottom-up (reverse of pde_levels()).
+>>>>> +        for &level in self.pde_levels().iter().rev() {
+>>>>> +            let epp =3D self.entries_per_page(level);
+>>>>> +
+>>>>> +            // How many pages at this level do we need to point to
+>>>>> +            // the previous pages_at_level?
+>>>>> +            pages_at_level =3D pages_at_level.div_ceil(epp);
+>>>>> +            total +=3D pages_at_level;
+>>>>> +        }
+>>>>> +
+>>>>> +        total
+>>>>> +    }
+>>>>> +}
+>>>>> +
+>>>>
+>>>> We have a lot of matches on the MMU version here (and below in Pte, Pd=
 e,
-> we can still add a dedicated Kconfig symbol to the font library.
->=20
-> No changes have been made to the actual implementation of the rotate_*()
-> and pattern_*() functions. These will be refactored as separate changes.
->=20
-> v2:
-> - fix typos
->=20
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->   drivers/video/fbdev/core/fbcon_ccw.c    |   4 +-
->   drivers/video/fbdev/core/fbcon_cw.c     |   4 +-
->   drivers/video/fbdev/core/fbcon_rotate.c |  12 +-
->   drivers/video/fbdev/core/fbcon_rotate.h |  71 -----------
->   include/linux/font.h                    |   8 ++
->   lib/fonts/Makefile                      |   1 +
->   lib/fonts/font_rotate.c                 | 150 ++++++++++++++++++++++++
+>>>> DualPde). What about making MmuVersion into a trait (e.g. Mmu) with
+>>>> associated types for Pte, Pde, DualPde which can implement traits
+>>>> defining their common operations too?
+>>>
+>>> I coded this up and it did not look pretty, there's not much LOC saving=
+s and the
+>>> code becomes harder to read because of parametrization of several funct=
+ions. Also:
+>>=20
+>> Thanks for looking into it. Sorry to be a bother, but would you have a
+>> branch around with the code? I'm curious what didn't look good about it.
+>
+> Sorry but I already mentioned that above, the parameterizing of dozens of
+> function call sites, 3-4 new traits (because each struct like
+> Pte/Pde/DualPde etc each need their own trait which different MMU version=
+s
+> implement) etc. The code because hard to read and readability is the top
+> critical criteria for me - I am personally strictly against "Lets use shi=
+ny
+> features in language at the cost of making code unreadable". Because that
+> translates into bugs and nightmare for maintainability.
 
-Patch is Ok.
-But since you move/add the file lib/fonts/font_rotate.c,
-it should be reflected in MAINTAINERS file.
-Do you mind sending a follow-up patch which adds /lib/fonts/* to the
-FRAMEBUFFER LAYER and FRAMEBUFFER CORE entries in the MAINTAINERS file?
+After a quick look I'd say that having a trait here would actually be
+*good* for correctness and maintainability.
 
-Other than that, I've now added this series to the fbdev git tree.
+The current design implies that every operation on a page table (most
+likely using the walker) goes through a branching point. Just looking at
+`PtWalk::read_pte_at_level`, there are already at least 6
+`if version =3D=3D 2 { } else { }` branches that all resolve to the same
+result. Include walking down the PDEs and you have at least a dozen of
+these just to resolve a virtual address. I know CPUs are fast, but this
+is still wasted cycles for no good reason.
 
-Thanks!
-Helge
+If you use a trait here, and make `PtWalk` generic against it, you can
+optimize this away. We had a similar situation when we introduced Turing
+support and the v2 ucode header, and tried both approaches: the
+trait-based one was slightly shorter, and arguably more readable.
+
+But the main argument to use a trait here IMO is that it enables
+associated types and constants. That's particularly critical since some
+equivalent fields have different lengths between v2 and v3. An
+associated `Bounded` type for these would force the caller to validate
+the length of these fields before calling a non-fallible operation,
+which is exactly the level of caution that we want when dealing with
+page tables.
+
+In order to fully benefit from it, we will need the bitfield macro from
+the `kernel` crate so the PDE/PTE fields can be `Bounded`, I will try to
+make it available quickly in a patch that you can depend on.
+
+But long story short, and although I need to dive deeper into the code,
+this looks like a good candidate for using a trait and associated types.

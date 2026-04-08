@@ -1,193 +1,295 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011005.outbound.protection.outlook.com [52.101.52.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CDE952F3C10
-	for <linux-fbdev@vger.kernel.org>; Wed,  8 Apr 2026 14:07:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775657275; cv=none; b=g1TOF7IXv2mvCcayeQiaBAxesevz+9d055iPvfYGVgsH6Ip5ca/ruXCf/iZ2gS/8aFUD/tS+wCGHmDzp3bL+pLAtQNDQEQ4hxNOOA5y3WwETjXRxCH3uikve5DPPW4Tq9BqnhHq26r15NygkyyaMGFpv3JJ/aQ8ox5F7gPVmZ6Q=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775657275; c=relaxed/simple;
-	bh=vifCC4U+ujhVWQuBmpKGQKVOnSnJtO7gU0fTZutv+Hk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZwNjTv1NqdjRxQInlkuY+MGBJ3T65XtZP4QgzeNhOt/sUwTollk9MbibjaX2X565uYlaG+xKD7fOrep7924vaVnBT46t1sIk6yeTl+eUG64Gmcci8f/hA/Uu1TF95rH2DD8Rhvim91yGUT0WyggviJvvx+Ieo1xEm4n+OBV8iIc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=chExnYNH; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xdGis38r; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=chExnYNH; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xdGis38r; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 146043D47C6;
+	Wed,  8 Apr 2026 16:58:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.52.5
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775667519; cv=fail; b=h9zzbbktlzXuIxBSHx/cecGj/DneHJYIQVq6bg5qcu81Y0Kghizn91lp525Qhf59LACsp5/c9QIfyBycPVv2Jx4WCkySU/Qxpy0IeqXhSWVOGm89IbNhV0PHz+w1uJJHzFb+b70vGLeklFsH3gQUuGmDx9dLAA7YjLzrSGvbOtc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775667519; c=relaxed/simple;
+	bh=RBKt57iSWLliZ49/ygIt0/KAwcRtEVnR0jDrRQhL3kY=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Zmh8JoRZIcQju4wPmAIJQ7/1R9GnE9qzvsXTjpX70P2AjDP+hRIgSkVow+UwQ1CQkvgQN8x36aPb/MmHNucPMz1ppfFh7WoYjnVQnLVvwSr/IsofWwsVs/C3VtqYRcysREff4O8sTP/jT5s0CDNTJkM4L/lv4VLO1caVDp4uv0E=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=B9y1wsa4; arc=fail smtp.client-ip=52.101.52.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="chExnYNH";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xdGis38r";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="chExnYNH";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xdGis38r"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 1A9F15BCC1;
-	Wed,  8 Apr 2026 14:07:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1775657271; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=xBsJJwq3aAo0fN1L2VfiJuBT66sNDAZYxUUPKQMoEU0=;
-	b=chExnYNHZVd6FlMm0KVTdGdxr1iOqTnYs0eOmqY/NDE+R7ASlx9be4QtcQm322Cx/L1lnF
-	FmjbE976ZWnbCqGsd6hxWjpTHM+4afD1EJdbuCeDWVUXEH+Dkrs832GrkcKjWInszBYj0d
-	6YfdjLuwRTRKUsAeKFrjNb+iBIrrPNU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1775657271;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=xBsJJwq3aAo0fN1L2VfiJuBT66sNDAZYxUUPKQMoEU0=;
-	b=xdGis38rNXjq+3iIGU6GIiIqi/CK8kNi603q2wpt0k7FkCarq0ixd58TiSzXRlaXxA1qW7
-	TZK1Pug7lR8WK4Dw==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1775657271; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=xBsJJwq3aAo0fN1L2VfiJuBT66sNDAZYxUUPKQMoEU0=;
-	b=chExnYNHZVd6FlMm0KVTdGdxr1iOqTnYs0eOmqY/NDE+R7ASlx9be4QtcQm322Cx/L1lnF
-	FmjbE976ZWnbCqGsd6hxWjpTHM+4afD1EJdbuCeDWVUXEH+Dkrs832GrkcKjWInszBYj0d
-	6YfdjLuwRTRKUsAeKFrjNb+iBIrrPNU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1775657271;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=xBsJJwq3aAo0fN1L2VfiJuBT66sNDAZYxUUPKQMoEU0=;
-	b=xdGis38rNXjq+3iIGU6GIiIqi/CK8kNi603q2wpt0k7FkCarq0ixd58TiSzXRlaXxA1qW7
-	TZK1Pug7lR8WK4Dw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 80E424A0B3;
-	Wed,  8 Apr 2026 14:07:50 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Bj9EHjZh1mn1TQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 08 Apr 2026 14:07:50 +0000
-Message-ID: <5b08f041-b820-4c63-8e1b-b4348909bf0f@suse.de>
-Date: Wed, 8 Apr 2026 16:07:50 +0200
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="B9y1wsa4"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Qy+QCg/qgwgtJQ5F8wCu84UCeeig0KiTykG8A69+9Ly14S2zi67k0+Ni8qrubae9paP/FRWO5WaaQcLJqnZTBveX3infXHvMH0aUFZNUJBMsU2a/TnSC08hc64aG8uMgd+eD0c3Pwtxu/f8JDbvzMI9+Ppw1/ahziveniXOFYv1u6hAySgueI0Eu1+wIh4qL72qpsXbuVd+E4F1p4TKtIVY30ejgLvAcCf9kOkpqjd51fD8z87VYD0yhujvCpfbfsgHfAIKo9GtHiaAqvHPWkYGUzALxiNt6Q/3mBs3IxBCv2h+LUfdQ4nW/9imy30AG6A2dIHFe3q/AF2LZeNklbQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=B4UIIFe7hnORmJdJe/nlxBQbnnmr/iopnsTSASGFnCk=;
+ b=yHNidUmRwd8PzP8XS5hYmA1fAzo7eAxNrB325ip4Q+OVzjPDdgE2+wIhvjD8ZRCkIs7E7v9FSWkW8EZTmfJuKwH4KFKtBs5tBgxIQJV8LYR/MiK/0sDTWMH3/zcSYpl3/fjTL7qwRracOEqj/Byjq2wAo6i6HsolVNbmF6rNoXK5ulSqWNmDVJU7BnbTxI9+3vpwkMmf739guHLfUoTGax7hsQN3c1fl2Q8Tk1bVe1y7My+oE2JIjlaBVyyhCmMt4ymSQSER6ELg89+BGxZjm2FuZ1+UxAxhIMG4Q3I5/XqHabVkprZCdii0F3eHz/HXrO/tvSU6P1Zr5dl3kTq/Qw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=B4UIIFe7hnORmJdJe/nlxBQbnnmr/iopnsTSASGFnCk=;
+ b=B9y1wsa4xxOKB0PRVwULxSkEuu0wPoey852Ea8fINBN3UHssCvjd/dlBMVb7xOtE1URcnmKNh7hNTDiP7VEAFitrCg2DA/tRHnC0Y3eFfq80lBrpi7SEsVW8rUATA6ZuWQSkFC+Z2kopv8OUyge8SNPO/PPdDiFatoHcp6aMtS58crGbZtFfXTxmyCpW5vAYGLDn4v+FAw0u4IkF2zMUujJ4v+BdpGMhG83WTNmteEA8xawgoJrmPyVzJ52oTlMA5+fPZ86cda5zm5bpBVVALtq15+vbtMhu/zrucb5UdZGU872XlfEbngsKdXnZRHi6hWHorMDE7Wdtz4kcu4jGUA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
+ CH3PR12MB8233.namprd12.prod.outlook.com (2603:10b6:610:129::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.20; Wed, 8 Apr
+ 2026 16:58:24 +0000
+Received: from DS0PR12MB6486.namprd12.prod.outlook.com
+ ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
+ ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9769.014; Wed, 8 Apr 2026
+ 16:58:24 +0000
+Message-ID: <da8d03f8-0294-417b-b684-2c20d577f94a@nvidia.com>
+Date: Wed, 8 Apr 2026 12:58:18 -0400
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v10 12/21] gpu: nova-core: mm: Add unified page table
+ entry wrapper enums
+To: Eliot Courtney <ecourtney@nvidia.com>, linux-kernel@vger.kernel.org
+Cc: Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>,
+ Gary Guo <gary@garyguo.net>, Bjorn Roy Baron <bjorn3_gh@protonmail.com>,
+ Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
+ Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
+ Danilo Krummrich <dakr@kernel.org>, Dave Airlie <airlied@redhat.com>,
+ Daniel Almeida <daniel.almeida@collabora.com>,
+ Koen Koning <koen.koning@linux.intel.com>, dri-devel@lists.freedesktop.org,
+ rust-for-linux@vger.kernel.org, Nikola Djukic <ndjukic@nvidia.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>,
+ Christian Koenig <christian.koenig@amd.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>,
+ Matthew Auld <matthew.auld@intel.com>,
+ Matthew Brost <matthew.brost@intel.com>,
+ Lucas De Marchi <lucas.demarchi@intel.com>,
+ Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
+ Helge Deller <deller@gmx.de>, Alex Gaynor <alex.gaynor@gmail.com>,
+ Boqun Feng <boqun.feng@gmail.com>, John Hubbard <jhubbard@nvidia.com>,
+ Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>,
+ Edwin Peer <epeer@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>,
+ Andrea Righi <arighi@nvidia.com>, Andy Ritger <aritger@nvidia.com>,
+ Zhi Wang <zhiw@nvidia.com>, Balbir Singh <balbirs@nvidia.com>,
+ Philipp Stanner <phasta@kernel.org>, Elle Rhumsaa
+ <elle@weathered-steel.dev>, alexeyi@nvidia.com, joel@joelfernandes.org,
+ linux-doc@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+ intel-gfx@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org
+References: <20260311004008.2208806-1-joelagnelf@nvidia.com>
+ <20260331212048.2229260-1-joelagnelf@nvidia.com>
+ <20260331212048.2229260-13-joelagnelf@nvidia.com>
+ <DHIFF98P1YQ3.1IXUT02E3TF20@nvidia.com>
+ <5db2aab1-4b65-486e-ad9b-27a108bdb0d6@nvidia.com>
+ <DHMYSTLVHIFJ.A2BDMPVNZNLS@nvidia.com>
+ <537a8c5a-3885-4c47-99f6-963b48ddf87d@nvidia.com>
+ <DHNT32C2Q5HN.LLME0RV17Z8V@nvidia.com>
+Content-Language: en-US
+From: Joel Fernandes <joelagnelf@nvidia.com>
+In-Reply-To: <DHNT32C2Q5HN.LLME0RV17Z8V@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: CYXPR03CA0086.namprd03.prod.outlook.com
+ (2603:10b6:930:d3::29) To DS0PR12MB6486.namprd12.prod.outlook.com
+ (2603:10b6:8:c5::21)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/8] firmware: efi: Never declare sysfb_primary_display on
- x86
-To: Ard Biesheuvel <ardb@kernel.org>,
- Javier Martinez Canillas <javierm@redhat.com>, Arnd Bergmann
- <arnd@arndb.de>, Ilias Apalodimas <ilias.apalodimas@linaro.org>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- maarten.lankhorst@linux.intel.com, mripard@kernel.org,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- kys@microsoft.com, haiyangz@microsoft.com, Wei Liu <wei.liu@kernel.org>,
- decui@microsoft.com, Long Li <longli@microsoft.com>,
- Helge Deller <deller@gmx.de>
-Cc: linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linux-efi@vger.kernel.org, linux-riscv@lists.infradead.org,
- dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
- linux-fbdev@vger.kernel.org, kernel test robot <lkp@intel.com>
-References: <20260402092305.208728-1-tzimmermann@suse.de>
- <20260402092305.208728-3-tzimmermann@suse.de>
- <d0624a61-b96b-4b2f-89c2-029e8671039d@app.fastmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <d0624a61-b96b-4b2f-89c2-029e8671039d@app.fastmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_TWELVE(0.00)[24];
-	FREEMAIL_TO(0.00)[kernel.org,redhat.com,arndb.de,linaro.org,xen0n.name,linux.intel.com,gmail.com,ffwll.ch,microsoft.com,gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo,suse.com:url]
-X-Spam-Flag: NO
-X-Spam-Score: -4.30
-X-Spam-Level: 
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|CH3PR12MB8233:EE_
+X-MS-Office365-Filtering-Correlation-Id: e9a4b664-2289-45e0-e0ba-08de95900be3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|7416014|376014|366016|18002099003|56012099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	7ULpv9Luii9kOK1rkAzJfD6Sh2yrVMFunSPJ7jzwSLOKIo1L0+674iHAxQnmpabtirQud6wTHcc4D01+/OOvT5KmK3TXV2DztbWtPtVVIXdrKcusPsg2iHv64WmvVKhWMGjCYkdj2M/XAoVoT9dWNIzTpZt2+U0reMjwnNDxZbF7e2c4TAncsbQFRPBtIQnOY5UdrwLb7cYYnJy7MH7bQL69AizfDiEqWgg4CaASGWpmz62n/jwwQ65g5cFtwFIf/TjGtqm3svXPgNUczFdn5j2QplVWWN0cjU61hEAdtUmNQE9ednWEnY67DtmShXFDG7dAqklVCMan4GltNCH5669qxg2QSu0+xvHLuaPCULG0shewVkRolhsuuu+UCuMKv9Mf68w19llW4oQ0B/A9JXCxYh1BYfgf+itVIhXIXq/Mt0Wlcemg3VQrfZzGB3+lkP2l3cRMIiEL8rsrqPZjyxFxyKT0QzSYdOMHFzHiB95jjvxfUjKiRHBMICvk8/w1C8rjN7nWqzvsd8Cv1f8RsSqcpOtdjmhmxSld1ngBeHO0sWr/iktC6QBKjwEDwc8YeDZl0c9KFga+c4URA1GE+hz3wEWbYKfR0Jhpee3CsQZbKox9W0S2a23Vg263HlGgLlh7kJr7GEc0VEQC8SreeyyaKTtpcoK74ZcgvBpP+e+kzVZn8JTjyVqk7B8ax61Tn+BxNhUz7ktXNuBgkwdpatVznhB5zTWoxxpdDCstL9U=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?NWEvVzg1QzZiQUEvalF3WGlTeHlaUTJSSCtaN0s3SnhCbXc5ZW5GckZkeWt0?=
+ =?utf-8?B?ZkIyeUFQdVRocUxNQ3g2bGNSRWo1VEd6NXpGWmRKSGI2RkJ5R1h5NUpPRW5H?=
+ =?utf-8?B?NXV0UUtaRGtWaEZrNm82NEt4dUF1ZVlYeTg1N1Rpa01FbDVNdlMwQ0liVG9q?=
+ =?utf-8?B?UDdpTFY2a3VZNFVERnB5ZWcrRUdXWXFLalZRYWowQzhqOHhQS0pTV1NTQ3NM?=
+ =?utf-8?B?OEpyZnh2RHgvTElMaGcyOFdEUEl1bjh5Q2pacTBxU0hLaUZzTTVVVGROVjFD?=
+ =?utf-8?B?S3BIWkpNelA3bzRTS2o2UVlwdTV3amdrcjd3M1lXN0tkdDVCZUkyMjFmeHdm?=
+ =?utf-8?B?eGZRQlhPT3F0WnMrZGo5NnZrYXVPUjQ4UVhuYzE1S1EyTDBuTFZ5MDNPOG1z?=
+ =?utf-8?B?bzBnMUc4NEZPNUxQK0F3OWhRZ0N4NFVJL3FtNDdreER2NFZtdzVBTWttelZB?=
+ =?utf-8?B?ejJOMm9tdllpTk15TzJld0tMZ2FyUkN4VHgwaUtubzhBeTlGeFl6M2NJa2JO?=
+ =?utf-8?B?QW40YzVDdFJSUHVsajRkbHM1a2tqVjFXdFEyZGc1dG5KOU8za1dqSzhqK3Fy?=
+ =?utf-8?B?ZlhWTUcyVEtiZmxNQ0hPT0ZjN0JaUTBjK1ljZTF0WC9DQnV4SGVJaFlBKzll?=
+ =?utf-8?B?QjJlK2lrL2NsWGg0MHFSVnJvOWw2QWdNeEVGSFFXM1hEWVFBZlVYd1kyeFdR?=
+ =?utf-8?B?dnkyYjV1TkUxSFF6Z1Vja2dkLzczWjIvTERpaEtjaThJcDM3UU1tZVVtcEgy?=
+ =?utf-8?B?SDVIQ0ZSN2tsb1FReFlueXpOY3NkZFFNUHZ2czBGUlZTeXJURWtkQ3ZqY09t?=
+ =?utf-8?B?cmdQVE1sRXIxaGJVOVVIZW9VeEYyeGJmMWlMdGR3VVFnV0RNbkJmbi9idTNi?=
+ =?utf-8?B?dVp5OVp0Mll0Wm5adDRhUTdRY2kxSDBlTzlDM1g4OE5DU0dqTmVtN2J3QjJp?=
+ =?utf-8?B?eE9nUkl2STlPd3o4YVhURkFHWVdSdlFMK0xzbHZsMldFY3psSUFLZW1nWHU3?=
+ =?utf-8?B?UEhHNUUrVlB1MmQvWlIvVVZsTy8vWmlNbHRrWFN1d2pSanpDblVkMGxweVJJ?=
+ =?utf-8?B?VEFURWJNM1RVU0VscGpQQVFoN0Znck52WktRcThrV0FMQUhpdStlcnFVR3Ru?=
+ =?utf-8?B?N3NWTFVJcUt5Zngvd3k1b0xhSG40MDZNWU42SEFacFRMNVVkeEdHS0RVMDNI?=
+ =?utf-8?B?OXFsQkFZeEVuWTNXcEppMmphQllWQjRZOFZtanoyK1A0REliSm5Bc21Za2lL?=
+ =?utf-8?B?WkhucThuK3lvVTJTK0RSNFVqcDdmNWdndnIwNlJqNjY5RTFWZWI3bVlFSmxn?=
+ =?utf-8?B?YkV5bXhIQWFjdmkxenZlM1pWUFVpVHhHZUZ5eE5aSGgxVWtZaDRaZW1BQit1?=
+ =?utf-8?B?dkZwR1U1VlVNQmppcWlVWk1MTmk5S3pNRTYzVVhsWHRZc0N2VnFtalNFb2VN?=
+ =?utf-8?B?dkgycFNzblpWUkMyUWliTnE0MDN0a3MrZU5iOVYvM1ZlT3ZFMWc3UmFRdGtp?=
+ =?utf-8?B?ODRhb1dEclE3aTlOTDJSWSsveCtkaXo0cEFoRm9JWVZ3NUU1MjlpR2srUXdG?=
+ =?utf-8?B?STB6TUFZVjUwSkNZSXhSbUxQekdOSDczYmtMM2dZYVkyNzlpVi9nTTZjY0l6?=
+ =?utf-8?B?c0VzKzg3aVYyaWR0VGovOXZxeGRsWWZXbURsVjlDNHRqbjlOMmJlbjEvODZ2?=
+ =?utf-8?B?Zm5DaXBBL0dzOXBYMFRwZFFTWndzaC8vWXJUUkdpNlMvdFlBSFVobWI3YkUy?=
+ =?utf-8?B?TFZQOW9jb25nRDhQdmpuK2IyWXRITktHWEJQczhjWmtVYmtEYkNtL3RPL3F6?=
+ =?utf-8?B?RCttTXBucEZIZ2tOVnoydllSaS9mWDNDQW9ISmMybnFNS0EveVAxRXZuS0NE?=
+ =?utf-8?B?K1ViZHFicGtPc295UERnaW9SMDErTStadUQyM0RLQU5ZWnN3bXF4cCtoTFdp?=
+ =?utf-8?B?NHBDWEdCamFNQ1NKNU1la1RkUDU5OEdLYzd6UjVqRnlLSGdQRW5La0J1b2R0?=
+ =?utf-8?B?dm9rOGY3VHFoZjU2STJBWDVOaHd4SkgzcU1PSlBUc2lMMXVrYmpuZjRUNDd1?=
+ =?utf-8?B?TGdJVllBQ2RrdFQ3K3RIcWpCQmMzTEhuQTM3VVFaRUU3WXhVUjJMVTNuYUMx?=
+ =?utf-8?B?TnR2YWtFUnpKdGFLNE83bVhUNjZHc25mdXU2SVVxcm1VcG5tQis3VkpHSGRm?=
+ =?utf-8?B?OTgveUUyWkVMa2JJTWl6NncwYitITGFTK1ozRHpFWWN2ZXVaNFIxUGp5Rktx?=
+ =?utf-8?B?SVlwT2VZUzE5OS9DdFNwZkdHTmVWYXZ6SGlhcFRjMDlVb2tyTWkzRVpDMlUy?=
+ =?utf-8?B?OUlZVTFwNkkvVzR6TmFnVzd1NzFqeVFTdXlLcnExM3p6Wk8wU1IxQT09?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e9a4b664-2289-45e0-e0ba-08de95900be3
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Apr 2026 16:58:24.2839
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: mNCF8VH6Bg823LaNqROh1eXZQ2G8Uxa81wu5UBFXK5odJD8lVbUvvz0AUDNvmpFKb5lbK6elBBRoHRF0ta+W7w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB8233
 
-Hi
+Hi Eliot,
 
-Am 08.04.26 um 15:45 schrieb Ard Biesheuvel:
-> Hi Thomas,
->
-> On Thu, 2 Apr 2026, at 11:09, Thomas Zimmermann wrote:
->> The x86 architecture comes with its own instance of the global
->> state variable sysfb_primary_display. Never declare it in the EFI
->> subsystem. Fix the test for CONFIG_FIRMWARE_EDID accordingly.
+On 4/8/2026 9:26 AM, Eliot Courtney wrote:
+> On Tue Apr 7, 2026 at 10:59 PM JST, Joel Fernandes wrote:
+>> Hi Eliot,
 >>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->> Fixes: e65ca1646311 ("efi: export sysfb_primary_display for EDID")
->> Cc: kernel test robot <lkp@intel.com>
->> Cc: Arnd Bergmann <arnd@arndb.de>
->> Cc: Thomas Zimmermann <tzimmermann@suse.de>
->> Cc: Ard Biesheuvel <ardb@kernel.org>
->> Cc: Ilias Apalodimas <ilias.apalodimas@linaro.org>
->> Cc: linux-efi@vger.kernel.org
->> ---
->>   drivers/firmware/efi/efi-init.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
+>> On 4/7/2026 9:42 AM, Eliot Courtney wrote:
+>>> On Tue Apr 7, 2026 at 6:55 AM JST, Joel Fernandes wrote:
+>>>>>> +    /// Compute upper bound on page table pages needed for `num_virt_pages`.
+>>>>>> +    ///
+>>>>>> +    /// Walks from PTE level up through PDE levels, accumulating the tree.
+>>>>>> +    pub(crate) fn pt_pages_upper_bound(&self, num_virt_pages: usize) -> usize {
+>>>>>> +        let mut total = 0;
+>>>>>> +
+>>>>>> +        // PTE pages at the leaf level.
+>>>>>> +        let pte_epp = self.entries_per_page(self.pte_level());
+>>>>>> +        let mut pages_at_level = num_virt_pages.div_ceil(pte_epp);
+>>>>>> +        total += pages_at_level;
+>>>>>> +
+>>>>>> +        // Walk PDE levels bottom-up (reverse of pde_levels()).
+>>>>>> +        for &level in self.pde_levels().iter().rev() {
+>>>>>> +            let epp = self.entries_per_page(level);
+>>>>>> +
+>>>>>> +            // How many pages at this level do we need to point to
+>>>>>> +            // the previous pages_at_level?
+>>>>>> +            pages_at_level = pages_at_level.div_ceil(epp);
+>>>>>> +            total += pages_at_level;
+>>>>>> +        }
+>>>>>> +
+>>>>>> +        total
+>>>>>> +    }
+>>>>>> +}
+>>>>>> +
+>>>>>
+>>>>> We have a lot of matches on the MMU version here (and below in Pte, Pde,
+>>>>> DualPde). What about making MmuVersion into a trait (e.g. Mmu) with
+>>>>> associated types for Pte, Pde, DualPde which can implement traits
+>>>>> defining their common operations too?
+>>>>
+>>>> I coded this up and it did not look pretty, there's not much LOC savings and the
+>>>> code becomes harder to read because of parametrization of several functions. Also:
+>>>
+>>> Thanks for looking into it. Sorry to be a bother, but would you have a
+>>> branch around with the code? I'm curious what didn't look good about it.
 >>
-> Should this be sent out as a fix?
+>> Sorry but I already mentioned that above, the parameterizing of dozens of
+>> function call sites, 3-4 new traits (because each struct like
+>> Pte/Pde/DualPde etc each need their own trait which different MMU versions
+>> implement) etc. The code because hard to read and readability is the top
+>> critical criteria for me - I am personally strictly against "Lets use shiny
+>> features in language at the cost of making code unreadable". Because that
+>> translates into bugs and nightmare for maintainability.
+>>
+>> I don't have the code at the moment, but if you still want to spend on time
+>> on this direction, feel free to share a tree. I am happy to take a look.
+> 
+> I had a go at this, you can see the branch here [1] - it might not be
+> perfect, but I think the shape is directionally good. It's structured so
+> the HEAD commit has the diff from the current approach to the
+> parametrised approach. The main decision is where to do the type
+> erasure, I chose in `Vmm` since it looks like the main top level API for
+> this code, but could do `BarUser` instead. I think it's overall better.
+> I also think Alex's point about associated types making it easier to use
+> the appropriate Bounded type is a good one.
+> 
+> [1]: https://github.com/Edgeworth/linux/commits/review/nova-mm-v10/
+First, thanks for the effort. I looked through this, its pretty much what I
+had before when I used traits. I don't think it is better to be honest. In
+fact your version is worse, it adds many new types and things like the
+following which I did not need before.
 
-Yes, please.
+To put it mildly, the following suggestion should not be anywhere near my code:
 
+/// Type-erased MMU-specific [`Vmm`] implementations.
+enum VmmInner {
+    /// `Vmm` implementation for MMU v2.
+    V2(VmmImpl<MmuV2>),
+    /// `Vmm` implementation for MMU v3.
+    V3(VmmImpl<MmuV3>),
+}
 
+/// MMU-specific [`Vmm`] implementation.
+struct VmmImpl<M: Mmu> {
 
--- 
+Seriously, I have to pass on this. :-)
+
+And, you unfortunately seem to have ignored my point about requiring 4 NEW
+traits (Mmu, PteOps, PdeOps, DualPdeOps etc), which I did not need before.
+So you're making the code much much worse than before actually. We don't
+new traits and types pointlessly.
+
+The only positive thing I could take away from your diff is the following
+(I thought I had already done that, but I'll double check).
+
+-    fn level_index(&self, level: u64) -> u64 {
++    fn level_index(&self, level: PageTableLevel) -> u64 {
+
+Also you're parametrizing VirtualAddress as well which I did not have before:
+
+-     let va = VirtualAddress::from(vfn);
++     let va = M::va(VirtualAddress::from(vfn));
+
+This is another step back.
+
+> I also think Alex's point about associated types making it easier to use
+> the appropriate Bounded type is a good one.
+
+I will reply to Alex thread, separately. I have some good data that should
+hopefully convince you and Alex that my approach in this patch is better
+(Version struct based dispatch than monomorphization). I would emphasize,
+as we all know, that we should make optimizations and changes based on real
+data and proper technical arguments so in the spirit of that, I have
+collected data with both approaches and I will reply to Alex's email with
+all that in there.
+
+Also, the bounded types usage is orthogonal to version-parameterization.
+That can be done regardless, we already use bitfield macro in this code and
+can use bounded types within that if needed to restrict type creation. So I
+don't think we should mix the 2 concepts "bounded types" and
+"parameterization".
+
+thanks,
+
 --
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+Joel Fernandes
 
 

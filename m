@@ -1,76 +1,98 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dl1-f66.google.com (mail-dl1-f66.google.com [74.125.82.66])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E2683BE163;
-	Thu,  9 Apr 2026 13:23:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 289123DBD49
+	for <linux-fbdev@vger.kernel.org>; Thu,  9 Apr 2026 14:41:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775741029; cv=none; b=HLctUJXs04TYWgHzIk18CWWQF+pstXmc06Cl3qtfDAo/rtXO5IGZyv+5hxIkgqH0M2k9Cn9nx53aB+vZP5EmECRM/qtqvgEbSzpyK8+Xs5NITqllPS+XHov1vugQ0pnlTkaBDC0k90wB49ci8eX4EmvK/HTd7BSK+PP2ieCqypM=
+	t=1775745714; cv=none; b=Zin69NrToksueTiJv/PtqdV1F0uWgj/AJ6wuuevR3lf4Fn6q61Bby8Y8bQi/83jMuzBNKCS6XhZmhsp50QbucNwSha7Wis0U2u49ATOP0nduRPZO5A9VV2YODyDYn9zXWcySR+cngpLA2pVRjrs+alqa5jkquJPlFqDVjB5hcgk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775741029; c=relaxed/simple;
-	bh=cpyLN38qyvMpYLDnGTZI62G7deRPujFBSc+WS6/Reoc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aKT8m4H4EnbFyevGg9fMJOnwKpeet9AzxdB8Zz4f9c/2s3CT97DRWoktHirvcj2BMnbbS1bL+I3fXDaUGaUtFWwDUkbTe7ljl9TSsxzPk+/bZ1Ohb4691ZZdiR9gspe1RAbOvpLqBEwEzmYlgv+4tcclIVIkQa7nkL9nfMyoJzs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=jbb/Zijd; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1775745714; c=relaxed/simple;
+	bh=6p4QF9QphcGSUD4l+uqrzYbIS6kc3jd9F/UtB26ySvY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=EPu6xNsIFtiJul8zNWRIuAMVA0jBYUrPUGvTLtN3cLrxl4aqZroQlSOxiMiWBmLQyOgJqgkOqJ/KD+yRtdCtZ8TaQEyS/RgtZpC/aPyMcdT2aoli27+n6Keh2kpmpoY6WPm13nNYyLjYMHoHxolU4qDWvh7bWjmHtqoo9ik0psM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ex9dsFRT; arc=none smtp.client-ip=74.125.82.66
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="jbb/Zijd"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF3A2C2BC87;
-	Thu,  9 Apr 2026 13:23:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1775741029;
-	bh=cpyLN38qyvMpYLDnGTZI62G7deRPujFBSc+WS6/Reoc=;
-	h=From:To:Cc:Subject:Date:From;
-	b=jbb/ZijdRe/uXBIDZZsWPwu/cy/NBkCpykHfgs0Wu0Uxcsg2dadumQ9Cm0EJBRcSd
-	 izmnooFWNmuTYoy9onLE1160mECFpfbnCdP34dAYEN4X5XrLPC59tmYHJePe3AmuoR
-	 cIGy/nktl3J96bH4z8wJUJe1Eub5TVgsxsvfUQxI=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Bernie Thompson <bernie@plugable.com>,
-	Helge Deller <deller@gmx.de>
-Subject: [PATCH] fbdev: udlfb: avoid divide-by-zero on FBIOPUT_VSCREENINFO
-Date: Thu,  9 Apr 2026 15:23:46 +0200
-Message-ID: <2026040945-glare-devouring-f242@gregkh>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ex9dsFRT"
+Received: by mail-dl1-f66.google.com with SMTP id a92af1059eb24-12713e56abdso590173c88.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 09 Apr 2026 07:41:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775745712; x=1776350512; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=WHoVRK6G7QNLQuMnHul4V6G7GtbprndlSqKrNeZpyuo=;
+        b=Ex9dsFRTI+7sbSul48pc5XlK/Di6OvkNvZtl3RhNf3qMZr/ZSLZQH+vthbdqDkglyj
+         AFD+zOQIWp3Vbnfhm1OArRfmn1z1vOWBYILrTNh3tgCZAQLEFcLK52tBHfA8Tj1bMGp+
+         OYvOXWrvtpq98bzqnRpinV2HqT8OCqG1t2wj5GQY48E4C45lMJdK3cwoa/T31LWmYjIj
+         YSNETlqxfr2QROxYWHwWk8iWsW8pIgWGuItOa3pwFFGkleAYo7gFFCw+InleurffILtJ
+         CvwIf/kQw5x5jJj9Ggs7xWR05Lb4LD2rJ8tlgb7NZ4xXQCYb/BPNPgbbAdNaKP3q+TS2
+         GJog==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775745712; x=1776350512;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=WHoVRK6G7QNLQuMnHul4V6G7GtbprndlSqKrNeZpyuo=;
+        b=V+/DApapCNL5umw80jZuvEZxVg8ft+DmrMMYZxunC3VIKovu+4vOwFziRX2/ExlUju
+         mwO8ICph3nAxeQViTZLE8mw1NlvbH3qj/j52cmyU+1GDm20owVAGGvn4tIAUDj7Gxj8R
+         U4MOsin3AATC3EACyYfs5Wd+YNrjsxvCfErH1jxwUbZsY0V1RQnKMNvFYcAxS4PISQV7
+         iwv4+AgaeGftJhRBlIqnfHwiXXf0aPkvswI7LGyNELVnnl8x1vkh6Vry9Ll/N8pPduFF
+         BA9OeJgeeEFsZRi4wIezyvhwoAghBBOMadQFSrm6dRogvIeQ41Rt4WYyZQ0XFkb0dkby
+         HoHQ==
+X-Gm-Message-State: AOJu0YwNMlD7TP9fGD9rEMCue0Qeg0uKTKrgnpaAKgpl04wZhXH5epUI
+	hrnWQKO3syKqAPk+o2KTwBsNwJqt79lGxhPnlE8jNg0cT8ZisRd4hX7g
+X-Gm-Gg: AeBDievRqjZtsc4WPyfotAyTlkHbJ8E23QkC6CjTz/bKEHmGlZBhdaGi3qcRJqzy9cm
+	oM98El993sn7UcBWH0sGAKdwc86V8UPl4gbAI38UFES7eEgKeBTM6coj0mQRnA2L9qZczUkLnoj
+	N4TFug3/sRGdwSiGXjfj+3EPXi1QrgBvloYhWOVw65XeoF4GIDKFK0Gl27kQ8oD3VwHqnhAOJqa
+	GO66JPns4LjgfOVSj9zqEWqV/jaOLEXBc2KwewZ/Tz10tDhIngfifu6WMYnpy306F/RI57Z8ERN
+	QotR3U1c4xBPjH6w/8DgqoTO8ycnsQtyW4Gqe7w/zpXGy5C9FmYU+uP40tvr4OPdHIpd7fHDp1X
+	v5IWXQW7HYvmh3IArF6mumiVoaKImOJKjVbnvygD83XYkAznPItB93DwBZSV9uqkxASzWV7ECOQ
+	yiXL1uo+VrUe41GzLWS8qfFxsKSPW/HbQo/vLoBLCXiFQ6XD4j8U43igg=
+X-Received: by 2002:a05:7022:118:b0:119:e569:f874 with SMTP id a92af1059eb24-12c28c2f6cbmr1557835c88.17.1775745712202;
+        Thu, 09 Apr 2026 07:41:52 -0700 (PDT)
+Received: from localhost.localdomain ([76.32.119.210])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-12c07a8703esm20363284c88.8.2026.04.09.07.41.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 09 Apr 2026 07:41:51 -0700 (PDT)
+From: Hungyu Lin <dennylin0707@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Hungyu Lin <dennylin0707@gmail.com>
+Subject: [PATCH 0/2] staging: sm750fb: improve error handling in de_wait path
+Date: Thu,  9 Apr 2026 14:41:17 +0000
+Message-Id: <20260409144119.21500-1-dennylin0707@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1050; i=gregkh@linuxfoundation.org; h=from:subject:message-id; bh=cpyLN38qyvMpYLDnGTZI62G7deRPujFBSc+WS6/Reoc=; b=owGbwMvMwCRo6H6F97bub03G02pJDJnXVyQKnrEVFDxSoR1x+KtPikjk3veLX7Nq/J+xUTZXi +289/ozHbEsDIJMDLJiiixftvEc3V9xSNHL0PY0zBxWJpAhDFycAjCRj9UM890+eq3cIfFHb8nW nKStfPxlDF9O1DPMTy7tmVty1YSPP1FE8rxuRFzz88BnAA==
-X-Developer-Key: i=gregkh@linuxfoundation.org; a=openpgp; fpr=F4B60CC5BF78C2214A313DCB3147D40DDB2DFB29
 Content-Transfer-Encoding: 8bit
 
-Much like commit 19f953e74356 ("fbdev: fb_pm2fb: Avoid potential divide
-by zero error"), we also need to prevent that same crash from happening
-in the udlfb driver as it uses pixclock directly when dividing, which
-will crash.
+This series improves error handling in the sm750fb driver.
 
-Cc: Bernie Thompson <bernie@plugable.com>
-Cc: Helge Deller <deller@gmx.de>
-Fixes: 59277b679f8b ("Staging: udlfb: add dynamic modeset support")
-Assisted-by: gregkh_clanker_t1000
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/video/fbdev/udlfb.c | 3 +++
- 1 file changed, 3 insertions(+)
+The de_wait() helpers currently return -1 on timeout and callers
+discard error codes by always returning -1. This series replaces
+-1 with -ETIMEDOUT and propagates the error code to improve
+error reporting.
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 3c6a9b5758d9..c341d76bc564 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1018,6 +1018,9 @@ static int dlfb_ops_check_var(struct fb_var_screeninfo *var,
- 	struct fb_videomode mode;
- 	struct dlfb_data *dlfb = info->par;
- 
-+	if (!var->pixclock)
-+		return -EINVAL;
-+
- 	/* set device-specific elements of var unrelated to mode */
- 	dlfb_var_color_format(var);
- 
+Patch 1 replaces -1 with -ETIMEDOUT in de_wait() helpers.
+Patch 2 propagates error codes in callers instead of returning -1.
+
+Hungyu Lin (2):
+  staging: sm750fb: return -ETIMEDOUT on timeout in de_wait functions
+  staging: sm750fb: propagate error codes from de_wait()
+
+ drivers/staging/sm750fb/sm750_accel.c | 22 ++++++++++++----------
+ drivers/staging/sm750fb/sm750_hw.c    |  4 ++--
+ 2 files changed, 14 insertions(+), 12 deletions(-)
+
 -- 
-2.53.0
+2.34.1
 

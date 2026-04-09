@@ -1,240 +1,160 @@
-Received: from BL2PR02CU003.outbound.protection.outlook.com (mail-eastusazon11011039.outbound.protection.outlook.com [52.101.52.39])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EFE6364E9C;
-	Wed,  8 Apr 2026 23:13:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.52.39
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775690025; cv=fail; b=uV4vxqeh7OCUX33hD8Z+n3P1pWIOJhLs9PHdZPINGCVWVn4CIq1lxlwPNcKbM49NT2gJbYviOcJuazV4NxuYBUpUiBezPwWltu3P+6Xs3ZjMkEgEWFupMfMJCBBMpMMT9tK+X/IHDpqn4PXwY1m2WHNV1bz0KuZaLARFSaUPmi8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775690025; c=relaxed/simple;
-	bh=ivVm2Gg3eu4OTld9ACmWq4hM1vHbCi0goCtJ94kLV+0=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=c492zE1Z2VRqx7bawvRINoIAU8Lcdss4uMPEhZ4JrtvEYH4oH0bYLuGOiwZI41oJv4qhZ0AmpLVg/yDY9+MouUMOpjX9sU1uyV84Q3CUs924d4CD47WvyIbhObvBW9IxLG7sXwURYj1Iuruj4D5ygRaZeVnTBiG4qL7B1/TUx3w=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=E3JqTaue; arc=fail smtp.client-ip=52.101.52.39
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C91A530BB94
+	for <linux-fbdev@vger.kernel.org>; Thu,  9 Apr 2026 07:27:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775719639; cv=none; b=eILTT0w91fPIEj/pPS8uGNhjK+jJHU18ZxE7jkIS3tGLbnnllp6GRq8r0BgQC4lSsj7J5rxEKBsefvduzXvwc0sP4d9UFNz2XaPGl8EYveP2Q1ZDZ3imAfK8TUecD0zlWHZMnHcgPkhbBQ6NpdR3Mv3AaiIa9H+5NXE1fnWuDvA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775719639; c=relaxed/simple;
+	bh=72xcIRY0RyHFugLmPzfdXG6+6oEp8my+sR82saRlGPI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AbuoVn4HZ2xM3VkUezqMbvWayZ9XCJ0y9WS/SfR121hV7terC/hxOnXkxR5JFOlu8WTs7OMhJhEjdDQBH++1B9R6jsKj3GMdl0sG2wkMK0kgCeGvM2yQmORfTSaEX7bIqYXKcpSS0W3e8fgYghnI8kC0RsI0jneV7G/kmwieXa0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Dr9xzTk4; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=lu/fj+YZ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=W+DOzxck; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=MLAPGoKM; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="E3JqTaue"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=j3lQ9XRinkR2qNbnrBKGz33cWOWGUpuzS6c+S8psPz8jwp0+sq316u39fp7zMg4Jgk//5dFt95udo5wBGCdou4EwoNF6M5ZeorMqFngiVUVMrXV8qu/HAkRxpRQ38PsM9SKVOZTnmhqQdZ44GcdBHl1k25aL4PcvrnF6X5Ut4YR1o4P/riFvuteH3eawZH0Fes5yuFunUdrzRmJjoyNZxuQH3K59/rCCBEgumfCRg78anP/MW7YfFftwNG8ly0DyLwpVXoniS4MB4EW2MtcUyK2/jpDOxbC0luIw2rG0VIGrjCRVCbCnaZeQAKeWgE7+QnB6L0qkNquELxal+2HIZw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=W3pWKnk+SMkONg6V1V5C0yjzGnuI63EgGrA+sNBcSDA=;
- b=FYjSLQEeI0oxFzsUuWScy0oyVnlppLT1ZWUR5/YqZmPHyW/paJ3HMTkqJQ6Jkn8hFUTsmxhH02pa1SuE2BOwsVnVBicBKD2SyBG94pcXCG6zlpV2wqHnARsVnuQmLVEMA+jkKf1Bl8omi+5aAbC5HhCAoi6KsHs17dPLEI1ohQK7DNjE6FAJ71siOTocc7M3ERAodjmzGnNKYveuTdu6OukTJoybxJRijrKwj0lnA5aF8TmQ3TcMN1Yjq4iQiFnWk8gInx1c64ESZE2Iiy1ix/TE2h4UpEGHDZ8fChdD8pWb3nJaCcN4rSJuckmvK6h3jWZJ9dDUK7D5jSDwEW308g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=W3pWKnk+SMkONg6V1V5C0yjzGnuI63EgGrA+sNBcSDA=;
- b=E3JqTaueGvqfyCBdNn1oYjZhh+/6AHg+vEGUyEHdff2OYr+23L3uNgryTqexNPn0bQDPJFbRWMFcS7oQr6W/TvvUEhRNmOTOuSWxGT8G8GCEOGgVERkLOAvJPJZ9iGiveUqqoEk9wyzCO9bvKL4trS2dL5RFKgic9Oy8gW0LaBQMC/kEOaqQcSKynKgvhLwCwoQf/Y5ammZiPSORWENMdTzdNSp0qk9HK5lAMyJovP1U+NdmxkpSYXJxLsBoLQVKf+Z3C9nrc33eqIraLFOiYed+e4eaWUjW7VXVioQISzpcNSrdHbjQeXpq7uzceCFY773L9/cbawig8j3geJe+Qg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DM3PR12MB9416.namprd12.prod.outlook.com (2603:10b6:0:4b::8) by
- BL1PR12MB5897.namprd12.prod.outlook.com (2603:10b6:208:395::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.17; Wed, 8 Apr
- 2026 23:13:37 +0000
-Received: from DM3PR12MB9416.namprd12.prod.outlook.com
- ([fe80::8cdd:504c:7d2a:59c8]) by DM3PR12MB9416.namprd12.prod.outlook.com
- ([fe80::8cdd:504c:7d2a:59c8%5]) with mapi id 15.20.9769.020; Wed, 8 Apr 2026
- 23:13:37 +0000
-Message-ID: <42dd707f-e23a-4725-8b6f-08ca346b0143@nvidia.com>
-Date: Wed, 8 Apr 2026 16:13:33 -0700
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 12/21] gpu: nova-core: mm: Add unified page table
- entry wrapper enums
-To: Joel Fernandes <joelagnelf@nvidia.com>,
- Eliot Courtney <ecourtney@nvidia.com>, linux-kernel@vger.kernel.org
-Cc: Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>,
- Gary Guo <gary@garyguo.net>, Bjorn Roy Baron <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
- Danilo Krummrich <dakr@kernel.org>, Dave Airlie <airlied@redhat.com>,
- Daniel Almeida <daniel.almeida@collabora.com>,
- Koen Koning <koen.koning@linux.intel.com>, dri-devel@lists.freedesktop.org,
- rust-for-linux@vger.kernel.org, Nikola Djukic <ndjukic@nvidia.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>,
- Christian Koenig <christian.koenig@amd.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>,
- Matthew Auld <matthew.auld@intel.com>,
- Matthew Brost <matthew.brost@intel.com>,
- Lucas De Marchi <lucas.demarchi@intel.com>,
- Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
- Helge Deller <deller@gmx.de>, Alex Gaynor <alex.gaynor@gmail.com>,
- Boqun Feng <boqun.feng@gmail.com>, Alistair Popple <apopple@nvidia.com>,
- Timur Tabi <ttabi@nvidia.com>, Edwin Peer <epeer@nvidia.com>,
- Alexandre Courbot <acourbot@nvidia.com>, Andrea Righi <arighi@nvidia.com>,
- Andy Ritger <aritger@nvidia.com>, Zhi Wang <zhiw@nvidia.com>,
- Balbir Singh <balbirs@nvidia.com>, Philipp Stanner <phasta@kernel.org>,
- Elle Rhumsaa <elle@weathered-steel.dev>, alexeyi@nvidia.com,
- joel@joelfernandes.org, linux-doc@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
- intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20260311004008.2208806-1-joelagnelf@nvidia.com>
- <20260331212048.2229260-1-joelagnelf@nvidia.com>
- <20260331212048.2229260-13-joelagnelf@nvidia.com>
- <DHIFF98P1YQ3.1IXUT02E3TF20@nvidia.com>
- <5db2aab1-4b65-486e-ad9b-27a108bdb0d6@nvidia.com>
- <DHMYSTLVHIFJ.A2BDMPVNZNLS@nvidia.com>
- <537a8c5a-3885-4c47-99f6-963b48ddf87d@nvidia.com>
- <DHNT32C2Q5HN.LLME0RV17Z8V@nvidia.com>
- <da8d03f8-0294-417b-b684-2c20d577f94a@nvidia.com>
-Content-Language: en-US
-From: John Hubbard <jhubbard@nvidia.com>
-In-Reply-To: <da8d03f8-0294-417b-b684-2c20d577f94a@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SJ0PR03CA0247.namprd03.prod.outlook.com
- (2603:10b6:a03:3a0::12) To DM3PR12MB9416.namprd12.prod.outlook.com
- (2603:10b6:0:4b::8)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Dr9xzTk4";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="lu/fj+YZ";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="W+DOzxck";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="MLAPGoKM"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 062B34EDFB;
+	Thu,  9 Apr 2026 07:27:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775719636; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=5l8iEbVSJ/iO+Sg9NaZxX6rd+AtK0+GSi2e9EwTIJH8=;
+	b=Dr9xzTk45PbTPQFp6HAO8oLhL/smBDkNSWgMvnGrsPj6cMMnxEOgZkQVzYnX/oHHY8TkSC
+	8AjQ4j1RXi42ZPNoYyneg+9YdCOlo6gmlYTbarGn8FeEW1x+ASZVJZGoki19sNp6iZdDTD
+	xNnmR165NzIgqT5dXqh8FhQQhcQSJX0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775719636;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=5l8iEbVSJ/iO+Sg9NaZxX6rd+AtK0+GSi2e9EwTIJH8=;
+	b=lu/fj+YZZDHOm7S3SWmplC5rMqblfkdOH7tGqNG8N8S3NbRSXRc8Ey5gpciez6PMwwny2v
+	SBnbjpFUvCcDTsBw==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775719635; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=5l8iEbVSJ/iO+Sg9NaZxX6rd+AtK0+GSi2e9EwTIJH8=;
+	b=W+DOzxckF6xeD2TV+dKWH2sBQvFeW+NtTq2bF8+7OyOkSOOhcRCMSlfjYXsb6hd+byZHtW
+	ocxSmRO9IFRikafPhzOViq3ZmU3MXel/ujt0QKCU80OvMPxhhj/yNdH48s6LxGkM928rR5
+	9njRkWjziRO1azUE/eAt5xxKFvy9M9c=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775719635;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=5l8iEbVSJ/iO+Sg9NaZxX6rd+AtK0+GSi2e9EwTIJH8=;
+	b=MLAPGoKMFg78PG3zaldxVbntnkkRTWVDAJMZlkn3fp18HGuzUYAFKeMCZsj0OPzkOIce20
+	8MbpC5LLOC8/WMCA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C7A524A0B3;
+	Thu,  9 Apr 2026 07:27:14 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id CC1OL9JU12maUAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 09 Apr 2026 07:27:14 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: deller@gmx.de,
+	simona@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2] MAINTAINERS: Add dedicated entry for fbcon
+Date: Thu,  9 Apr 2026 09:26:09 +0200
+Message-ID: <20260409072711.12500-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM3PR12MB9416:EE_|BL1PR12MB5897:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6d5845e8-dc0c-47de-6fc2-08de95c4766c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|366016|18002099003|22082099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	Le2aZmmwIIORLWqF5hNov6zyy1eicARxfPnPGgBzT6fJEJX/+xWYO43gqJfjsQkP+nx7NX/y9u/9wMewpK8ZhnSzjpg8A+/kRBiGleFXaWhmYoX+wrd9CvOmKAImRTP6FkwJgp3riKD7VrewxSG/D+zwsQi2zeJu4nNSRH1h0G0D2DvxqZ37Wac55uCPgIJoqHrKAG0iWo7uqzvuQjgJTbjUc+autO+vrjJWYkU4b2E54qNFqCaVqybRxKi8AJe9qv95UxCyXM9PYGXcHvBm1PlxTLswZWy58gcxdDoNhDmcl393DajiS/AxL6lHYvEcUZ0TeURSs8jIj9uvNl5fVv8aMWIPxSGRckDnf55QclJuThtpoIT36titAzBYEe70MOma62+6+91b8u+vX362j3T7fLWmrpfkH+e5HJpAXk9KdUm7Z2plNJnFeHDlp8GDSfOyZXEO/BjlyqUNH9JUMUnmzO0943ARHJS7WbOixsGTN4iQmw3H74RXpb+c7z8Cl9gAE+DP9sw9V5Ee8qIVTMkcsFChzjiEZ55QkfB2Hi6yO6a20VcN57Cp6cXejcGgbXZInFMTjWsXflWmo0+zCJcqsnsMfGLnlWkrE/TGhggYnO+9yuo/S67gXvBhejvZVgB2EtRrGf29KDYkWsWEuZHWn+k/JIosoQ6lh6hqq01ser99/QR+xNGwBAGoKQ7RtacQuBknYTklS570mLjE1BvOkWYVPREkKQ7bepHrTRE=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM3PR12MB9416.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?R3I2OEsvSjNpOEVpdVByYU1Rei9RWDRQL3E4VUF4bHRQWnpYaU8zRjM4Q2Ju?=
- =?utf-8?B?dVU3VEJlZ1FERU4rVXRLME0xMEVkTzB0a3AwVWJ0S2g0UDlpU250bklVelhY?=
- =?utf-8?B?QjgycFBRV3kzbmtvNWVGZmcvbEhURVhXN3hzZmZsOFBwMm9MOFJnTU1xbndo?=
- =?utf-8?B?QldUdXZieW1hRE0yLzVLdm9BZVVUUFF6SXhsWHFHZktaQk4wbUM0NiswRFZ2?=
- =?utf-8?B?Zm4yU01SRDdFUS92UDBOWUtqOGhXN0krZk51SDk5aXRoMm1hcWUrZ0x3ekhO?=
- =?utf-8?B?ejlDVWhkWlR3UVpMQ3c5UDVTQzJSYmw1T1BPajdobVI4VU80Njc1U0RsNVZ0?=
- =?utf-8?B?UVVLQVlqTE9jRzRzSGhpNzRaTXlkM0wyMU54SzhkbUlvSVl6c1NSQy81Vk1q?=
- =?utf-8?B?SDJXYkR0NmU1V3ZqWU8vbWtKdEszZnBhUEx5ZEZiZ0l1MlZrMmRIMlNKSGZF?=
- =?utf-8?B?OEV0Yi9ZRlVGTHhRL0VEMmpRdXVld0NhTTkwKzdpVy9PUWJjRi9NZ3d4ek50?=
- =?utf-8?B?K0RueExzOXh0ZFR2aEFUS3dGQ3RhbDFNQUR3c1lFRnlpckRnT2VaeWUxdWN4?=
- =?utf-8?B?WllFL2FHa09KbU1jRkdXSFFwTFFvYythblJtcXEzck5WdUdiWHlWbWpFY0pj?=
- =?utf-8?B?ZU9XTDJBQU43RW41Sy9vTFdWeUlOa0t6Z3pORzRyTG5OOTNhM0Z6T2VZWEls?=
- =?utf-8?B?Z3psQ09oV3RRZGdReUxzUXh2bnMyN2hTM0tsSjBGWUJhMDdxbGdpak1tNnJX?=
- =?utf-8?B?MHhheXVaSVFkQ2RzZGFONHRIaGJvQmlxeUQwZDQ5STFiMlMxV0xHdGxGZ2xJ?=
- =?utf-8?B?Q1lhYlhvczh0TUhIYXpVZ21KNHVwZ1c2RTIwTW5ZT21xM09RUkljK0d5NENi?=
- =?utf-8?B?cG1GNUVaOW9QQy8yK0dqaHcxODFEUEkyZ1EzNXJhcGdKVFJBUmpxYlhNWE9X?=
- =?utf-8?B?N29hYWRaVjhEY1dBVUdZRlZoSUlrMGRTbXlsdFI4OVJneHh3NDBycFZQTWxG?=
- =?utf-8?B?NkRWeC9xbVZMakc2RllFdTlTbFgySVdMdm5vVjd0NkEzVjBGYThZM2lqcUVj?=
- =?utf-8?B?TEVCVTlNQXRBOCtrMVljN3lXbUEyUW9RU2hydnN6UkJIUFpzalFCU0llWHAz?=
- =?utf-8?B?R1d6cWM4Z3A3eE5oSnpLUkpjblhLVlQ0YzdCZVRsQlZGMWxsdzBjNVU2VkVS?=
- =?utf-8?B?T0FweDdyajVGVGRoY3FiSkN5MERWeTVXckZmc042VU9hMUY0K3RiNmM4QWlV?=
- =?utf-8?B?MWI0NVRsZ2RXZTRZOWtMUUdaS0E1NExGZmtEcEVITFZYL2x6QVBrK1UxbXAw?=
- =?utf-8?B?SVJvSGxXd1VZY0hCQmdpaTExSnV6M1ZzbzR1aTZueW1WTFRld0RoMXR6Zk5t?=
- =?utf-8?B?UXYvbUxVRTJ3R2xwTERFMEJyR2ZacW1EWXkvTUdsQkJYWEtudCtzME93OXhP?=
- =?utf-8?B?TlMzc1k1eUxrRTd4Y29hSVZSbHZNV1RmWHBzenNlcmdsT1ZjcEdiajBlRFpo?=
- =?utf-8?B?bkdJQVBsZGlFMHBuTDErQ3NxYVViMUF5YXh5NVEwV2s5cm1jcGMyaHVGVWoy?=
- =?utf-8?B?MENMSTVVWTlmamFTZEdLRVRGSHVPeXRFWTZWNG9tQnFxQ0YrR3YrekpSL0hy?=
- =?utf-8?B?WVhXYU1DZHp0cVpMOFRHdjVHeUJFb09YOXdnQWdmNmxZOGI3QXBIOS9pTDJn?=
- =?utf-8?B?S2FScVpEMHgvRUJXOE1tL1lSb2psMmdzbmMzV25qNnhOZy83cDZFbm1rVWpV?=
- =?utf-8?B?ZnIzanhMWGlHWVFUekRQRnltbm1xcmptVGpkNFltYXphUDFwSDlIaWFJWlNt?=
- =?utf-8?B?aGgrTWpPbUwxZ2hIb04wdTBhK3AvbmhzeEpyYlhsdTJoaityUHVSK1JBWGF0?=
- =?utf-8?B?UmloNnJDaTIvMU91RzVORWdwODI3ZHhIQlNnNmpYaW45S3JVc0lxQTdsbzJ3?=
- =?utf-8?B?VUlRSDNSWlEyNFVHaGdQb3FiVUphb2hlazFDR0J4d092V1F1WXFjckF0MjBS?=
- =?utf-8?B?UzFkaDJHK2I5K0FqOUQ4dGZlTktCSmlpeFY2RDBUSlRJTjFRVUEzQUwxclVs?=
- =?utf-8?B?MWpNNTk4N1ZUc1lnUUcxOE1USFhoTEQwRGdyRDFZMHRUTXdpRHVucU9xKzE0?=
- =?utf-8?B?bWxHQzV0TnlQUi9xenQrR29OZGtCL0wxL1o1Mm4way9qZXZJbCt0MWtqcXFE?=
- =?utf-8?B?UGtXd2U2emZuSUlGYzN4dEpVZG9sRHJNZlpGeGR1SDd6N3Q2ZzdSVzZZUXRo?=
- =?utf-8?B?RVlON3VUbS82a1p6emNaMFRKRGVuRnBkbWlzYXdLT2UzQ1JtMDdLMVVmNEZC?=
- =?utf-8?B?WWpvNHdLdnhCR2x2ZEJLOVZDVWlNSHI2cUE0ZTRGa0xlZ01Pb3IvUT09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6d5845e8-dc0c-47de-6fc2-08de95c4766c
-X-MS-Exchange-CrossTenant-AuthSource: DM3PR12MB9416.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Apr 2026 23:13:36.8798
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 1u///sgOWHEHKVUrD+UlVdLUKdMCTxobByQzk1dxNhf0AVXujA3esGPWH7eJ6LOHUKaQiywMkySlaJRHthne7w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR12MB5897
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[billm.au:url,lists.freedesktop.org:email,ffwll.ch:email,suse.de:mid,suse.de:email,gitlab.freedesktop.org:url,gmx.de:email];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch];
+	RCVD_TLS_ALL(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[6];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de]
+X-Spam-Flag: NO
+X-Spam-Score: -2.80
+X-Spam-Level: 
 
-On 4/8/26 9:58 AM, Joel Fernandes wrote:
-> On 4/8/2026 9:26 AM, Eliot Courtney wrote:
->> On Tue Apr 7, 2026 at 10:59 PM JST, Joel Fernandes wrote:
->>> On 4/7/2026 9:42 AM, Eliot Courtney wrote:
->>>> On Tue Apr 7, 2026 at 6:55 AM JST, Joel Fernandes wrote:
-...>> [1]: https://github.com/Edgeworth/linux/commits/review/nova-mm-v10/
-> First, thanks for the effort. I looked through this, its pretty much what I
-> had before when I used traits. I don't think it is better to be honest. In
-> fact your version is worse, it adds many new types and things like the
-> following which I did not need before.
+Add an own entry for the framebuffer console code, which is jointly
+used by the fbdev and DRM drivers.
 
-Hi Joel and all,
+v2:
+- add Helge as maintainer
+- list font and include files
+- update commit message (Helge)
 
-I also looked through Eliot's above attempt carefully, and actually
-liked it a lot (sorry! haha):
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ MAINTAINERS | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-* It cleans up the code. The initial working version was readable, but
-  also had lots of noise on the screen: match statements and pairs of
-  v2/v3 statements.
-
-  And interestingly, the mmu_version was, in effect, sporadically
-  implementing a Trait-based approach. But because it is custom,
-  readers don't benefit as much as they would with Traits, which
-  tell you immediately how things are structured.
-
-Joel, I am passionately in agreement with your principles: code must
-be readable on the screen.
-
-In this case, though, Traits make considerably more readable,
-especially if one makes the very reasonable assumption that readers are
-thoroughly accustomed to dealing with Rust traits.
-
-> 
-> To put it mildly, the following suggestion should not be anywhere near my code:
-> 
-
-lol I understand, believe me. But this is short and not too bad, really.
-
-> /// Type-erased MMU-specific [`Vmm`] implementations.
-
-Type erasure remains a semi-exotic thing, IMHO. As such, another
-sentence to elaborate on this would be a nice touch.
-
-> enum VmmInner {
->     /// `Vmm` implementation for MMU v2.
->     V2(VmmImpl<MmuV2>),
->     /// `Vmm` implementation for MMU v3.
->     V3(VmmImpl<MmuV3>),
-> }
-> 
-> /// MMU-specific [`Vmm`] implementation.
-> struct VmmImpl<M: Mmu> {
-> 
-> Seriously, I have to pass on this. :-)
-> 
-> And, you unfortunately seem to have ignored my point about requiring 4 NEW
-> traits (Mmu, PteOps, PdeOps, DualPdeOps etc), which I did not need before.
-> So you're making the code much much worse than before actually. We don't
-> new traits and types pointlessly.
-
-They are not pointless.
-
-However! What I think would be nice is: do a new v11 with approximately
-this approach, and then we can beat it into being as readable as 
-possible.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8e80296449ba..66769dcf5faa 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10091,6 +10091,29 @@ S:	Maintained
+ W:	https://floatingpoint.billm.au/
+ F:	arch/x86/math-emu/
  
-
-thanks,
++FRAMEBUFFER CONSOLE
++M:	Helge Deller <deller@gmx.de>
++M:	Thomas Zimmermann <tzimmermann@suse.de>
++L:	dri-devel@lists.freedesktop.org
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++T:	git https://gitlab.freedesktop.org/drm/misc/kernel.git
++F:	Documentation/fb/fbcon.rst
++F:	drivers/video/fbdev/core/bitblit.c
++F:	drivers/video/fbdev/core/fb_logo.c
++F:	drivers/video/fbdev/core/fbcon.c
++F:	drivers/video/fbdev/core/fbcon.h
++F:	drivers/video/fbdev/core/fbcon_ccw.c
++F:	drivers/video/fbdev/core/fbcon_cw.c
++F:	drivers/video/fbdev/core/fbcon_rotate.c
++F:	drivers/video/fbdev/core/fbcon_rotate.h
++F:	drivers/video/fbdev/core/fbcon_ud.c
++F:	drivers/video/fbdev/core/softcursor.c
++F:	drivers/video/fbdev/core/tileblit.c
++F:	include/linux/fbcon.h
++F:	include/linux/font.h
++F:	lib/fonts/
++
+ FRAMEBUFFER CORE
+ M:	Simona Vetter <simona@ffwll.ch>
+ S:	Odd Fixes
 -- 
-John Hubbard
+2.53.0
 

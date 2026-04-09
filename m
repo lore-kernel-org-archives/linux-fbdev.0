@@ -1,127 +1,259 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azon11010037.outbound.protection.outlook.com [52.101.56.37])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 307E83A6410;
-	Thu,  9 Apr 2026 09:33:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775727227; cv=none; b=gO3lGKsvkqMVXu4yqeu8DnJgp2KCWj+aReEOQR6EUr5CJvSH0Vk1kaygkmN6YxIK8a5LUN/RhZzEg/uR5d9gJg04ZQ2bBkRqlkPw5hI/raZe9B0gXqMSRkrKSZ7fld7+8j4qPOvamA3cbX/tXlen8CzE5ZJDjiYoZZ3VlrMIJi0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775727227; c=relaxed/simple;
-	bh=SnYznuw5TIZOy509WfsElV3Mi82BzEN6clADK9GcpVQ=;
-	h=From:Subject:To:Cc:Date:Message-ID:References:MIME-Version:
-	 Content-Type; b=eyJS4Z4M6RiUCyDWKScrBa9VocrysVXMQi5CngmLdOglBJlRQ/iLzAzcsvdnF7WpFxclaf0//bAsECBU3YQM4u8Eh/QOOjCPsjSwAKduDcvh+nTrUwO7mGBfUFORQOIh/6U7lDNQaEIhb9WeQl9wI5SfayDmeY2F7XHWT6AkoVw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 2d9fc75233f711f1aa26b74ffac11d73-20260409
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:e5355927-ba50-40cd-a537-64e80443a3bc,IP:0,U
-	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:-25
-X-CID-META: VersionHash:e7bac3a,CLOUDID:9b714985cd9beeb8a954a62bdc96700d,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:81|83|102|898,TC:0,Content:0|14|51,EDM:-
-	3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,A
-	V:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: EECD734AD38344E9AF573D7D83B8AA93
-X-UUID: 2d9fc75233f711f1aa26b74ffac11d73-20260409
-Received: from node4 [(10.44.17.112)] by mailgw.kylinos.cn
-	(envelope-from <zenghongling@kylinos.cn>)
-	(Generic MTA)
-	with ESMTP id 1912020147; Thu, 09 Apr 2026 17:33:34 +0800
-Received: from node4 (localhost [127.0.0.1])
-	by node4 (NSMail) with SMTP id F20E21200BD8F;
-	Thu,  9 Apr 2026 17:33:33 +0800 (CST)
-Received: by node4 (NSMail, from userid 10001)
-	id EB32D1200BD8D; Thu,  9 Apr 2026 17:33:33 +0800 (CST)
-From: =?UTF-8?B?5pu+57qi546y?= <zenghongling@kylinos.cn>
-Subject: =?UTF-8?B?5Zue5aSNOiBSZTogW1BBVENIXSBmYmRldjogb21hcDI6IGZpeCBpbmNvbnNpc3RlbnQgbG9jayByZXR1cm5zIGluIG9tYXBmYl9tbWFw?=
-To: =?UTF-8?B?bGludXgtb21hcA==?= <linux-omap@vger.kernel.org>,
-	=?UTF-8?B?bGludXgtZmJkZXY=?= <linux-fbdev@vger.kernel.org>,
-	=?UTF-8?B?ZHJpLWRldmVs?= <dri-devel@lists.freedesktop.org>,
-	=?UTF-8?B?SGVsZ2UgRGVsbGVy?= <deller@gmx.de>
-Cc: =?UTF-8?B?bGludXgta2VybmVs?= <linux-kernel@vger.kernel.org>,
-	=?UTF-8?B?emhvbmdsaW5nMDcxOQ==?= <zhongling0719@126.com>,
-	=?UTF-8?B?a2VybmVsIHRlc3Qgcm9ib3Q=?= <lkp@intel.com>
-Date: Thu, 09 Apr 2026 17:33:33 +0800
-X-Mailer: NSMAIL 8.2
-Message-ID: <6q0bxq79jlfn-6q0hlwi0fps4@nsmail8.2--kylin--1>
-References: 44ec798c-7b7e-42f4-8e99-a34e49db7dbf@gmx.de
-X-Israising: 0
-X-Seclevel-1: 0
-X-Seclevel: 0
-X-Delaysendtime: Thu, 09 Apr 2026 17:33:33 +0800
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4918837C10C;
+	Thu,  9 Apr 2026 10:34:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.56.37
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775730846; cv=fail; b=ov+hk2pAOFNFlMufw5IZl3qTDWh5XhPSZFp/Lt2spcswmaGr1UJptRafkIM39n0/ab5fzesYNtLYI+mq/EgCYvHyLWTXXoN/7y/QWgkSCAaF4O96/G+sNbGMWIcZAasFHrFielpq4E8iaB9HdVp4K5s1frA5vcKex0FY208oBsk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775730846; c=relaxed/simple;
+	bh=7svNhhXBEOxd5UE68N2GSixIE/MdF1FMWM9N6dP6zuU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=haCb3VCOGKvIksIJWOY4hT56lTK9orDUkmfo0kbEoIgI7Dcyn9PLfZs2ap5Fg6kM3YuIk6C/NMsiZCPe1s7nzR5VOrlLBMYuZ0t3hyXhX+QHEcamlPbYU2Y5tleZjYWbrp6501y0SwU2kL+iKJvyWugHzcrt79DgGYq8WxmAZ3g=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=ROs+sTC1; arc=fail smtp.client-ip=52.101.56.37
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="ROs+sTC1"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Aj41T+MasDm+PckCkTO2FVWfziedezJk/EATK2jgQbJmM8IFy5jnT7vu9VJeM/vkkRFCEdUOY4L3j/M91+Q4ppusUlLVT7XfPwNqnjVS0d8B78Sdkpc+SBf7+G+bRb79YN+W+rv4pLSvWHHkfZo0zhGPYFbMLjKqohfWbk1Fk3Yewri6A3FM9xWMCykrRNxgoQ1C9l3xkBRbtKyIFWcjd4ShO9Z0DnZR+FI/hlWuPjB6ivXqn91diXBylDfmJtfsBCvTOSGwVs/gfQG+QTHUD42HImSl95J+U8bOrFGlxnjU8w1feJzGBTaKu0qV7N4t2vUBd1vIkmBVFQdVMp2FjQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IQVke9bmsoOzK9pErtklZWx+xoiN/1OTuXeK2LhlYG0=;
+ b=Dluaf5j8f3hn0igmoB4uOGiJeodUCxJeaM78vCQr0316bQPhNvKf90ErsqMC7s2CeNuRc8efHi0RGjQ9Ctp3zl0nsfaBKX8fexIF/CnLKig+XFEsX3O94RSf9XdwlGWst4BGBSzLb6yuEFunCZXCoYHpWW+iC3HaxnrEQWk7DX9763YtmdGfsaCc8QJI88P/xaiakKi4s1cQumlhNH42RGEMQrGtJElvOxYQ3yJa19SlrEyVw1VWJcdLk6mScQsulro7zYT23T4enqfAfOutD+Y7V/82aPDQ+F7Kxs71ytfY2SxA1LNrOaW1Fo33y8aNoRoW5m6R8uTVk1q9ODDXsA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=IQVke9bmsoOzK9pErtklZWx+xoiN/1OTuXeK2LhlYG0=;
+ b=ROs+sTC1xDLMzFebUuPc3dU9C42/1CBdzqZp5h9/KcFGKPhemkjP6TkdcGW1FZIZ9U9uHQEkL/6jXwrgHh1q3h5folDx916Fda2QkDA+uKeiGzRFlR9fcH9hd5zPJomkyLKfS8HERouiZrMIhF7dgnexdeMNmtmevJFlKZBoOYkcAtiOPFeNZz0JXKj1sfOO6Aj3Ek6Hm1gBuh09xFfES51ItfM650MOIAcGeSilHsIHSHTlVuDe1ZjroAKCoj6zwVq5/AnUgudKS6OlaLquxqleo+cygfJ9InwZdEhFWKDBmjICMmGknyFXMr9qI4T3mJnZGLCb/UcD0nDc1fL9QQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
+ MW6PR12MB8999.namprd12.prod.outlook.com (2603:10b6:303:247::8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9769.17; Thu, 9 Apr 2026 10:34:00 +0000
+Received: from DS0PR12MB6486.namprd12.prod.outlook.com
+ ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
+ ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9769.014; Thu, 9 Apr 2026
+ 10:33:59 +0000
+Date: Thu, 9 Apr 2026 06:33:57 -0400
+From: Joel Fernandes <joelagnelf@nvidia.com>
+To: John Hubbard <jhubbard@nvidia.com>
+Cc: Joel Fernandes <joelagnelf@nvidia.com>,
+	Eliot Courtney <ecourtney@nvidia.com>, linux-kernel@vger.kernel.org,
+	Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>,
+	Gary Guo <gary@garyguo.net>,
+	Bjorn Roy Baron <bjorn3_gh@protonmail.com>,
+	Benno Lossin <lossin@kernel.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Dave Airlie <airlied@redhat.com>,
+	Daniel Almeida <daniel.almeida@collabora.com>,
+	Koen Koning <koen.koning@linux.intel.com>,
+	dri-devel@lists.freedesktop.org, rust-for-linux@vger.kernel.org,
+	Nikola Djukic <ndjukic@nvidia.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian Koenig <christian.koenig@amd.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Vivi Rodrigo <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	Rui Huang <ray.huang@amd.com>,
+	Matthew Auld <matthew.auld@intel.com>,
+	Matthew Brost <matthew.brost@intel.com>,
+	Lucas De Marchi <lucas.demarchi@intel.com>,
+	Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
+	Helge Deller <deller@gmx.de>, Alex Gaynor <alex.gaynor@gmail.com>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>,
+	Edwin Peer <epeer@nvidia.com>,
+	Alexandre Courbot <acourbot@nvidia.com>,
+	Andrea Righi <arighi@nvidia.com>, Andy Ritger <aritger@nvidia.com>,
+	Zhi Wang <zhiw@nvidia.com>, Balbir Singh <balbirs@nvidia.com>,
+	Philipp Stanner <phasta@kernel.org>,
+	Elle Rhumsaa <elle@weathered-steel.dev>,
+	Alexey Ivanov <alexeyi@nvidia.com>, linux-doc@vger.kernel.org,
+	amd-gfx@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
+	intel-xe@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v10 12/21] gpu: nova-core: mm: Add unified page table
+ entry wrapper enums
+Message-ID: <1775730646.3752.4760@nvidia.com>
+References: <42dd707f-e23a-4725-8b6f-08ca346b0143@nvidia.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <42dd707f-e23a-4725-8b6f-08ca346b0143@nvidia.com>
+X-ClientProxiedBy: BL1PR13CA0186.namprd13.prod.outlook.com
+ (2603:10b6:208:2be::11) To DS0PR12MB6486.namprd12.prod.outlook.com
+ (2603:10b6:8:c5::21)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary=nsmail-6t35ut7s8ime-6t3a3xxuelvr
-X-ns-mid: webmail-69d7726d-6qms4nqp
-X-ope-from: <zenghongling@kylinos.cn>
-X-receipt: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|MW6PR12MB8999:EE_
+X-MS-Office365-Filtering-Correlation-Id: b2538080-24db-47a6-b807-08de9623828b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	6Ou2V8qV0HYf2I55mkKO8pOY9sgFY6Pt7/+tVsl4Y6Knb1Dco0j/CagS3QXqEcUAy1FbLceMNIoO6UrR1zbRtW/oPqLf5cuMzx3Wny42VGJpoCbIFjHUlYN3zHQ/b4WE/RDa0nMidOX9SwFV9GEpJtvM75mT21wp0NoME/8cT6UZtTKU7tOeFrG4XtcdXA/exgKf0c+dbvo031G0YlGUY+q64S+DsEmbOkjtlqjvAY4RwEoIzhxP61Kt1xnpVfx2gFLN8FLxGQvdWosaVilE9DVihQr7Bo3vxhKlu44M3PmC1TVr7T0O0Nwfy3tsuWJbGnbbaAGe2oZowkBNxp4G0Vzrf2BGBen7o6XvVEQj1ytBp4p4wEH5D4vZXCg+5Cjt0jM9ZmXObG4njqWeuyPZMgSxEYiUmL5HJ8eKDSEmLXrkZs7OMA79zzGJ0WJV6g2+bG0nMANfzlNibjgGcKznuC5vO8XaB533jbQKGVARsRZIOA9Nohvw/Gs6zzsPFjOZIwh4U3+FHFMVD0QqqOFZYKHV7WtF6H9qTv1lMk0hs5Tbs0e9zMscrPSANxqxRJJa6ecmeZ6ZN4mjnLDbYH7dIWhfZMK6zrgzgsZwB2xcPVwpNYZ3ovxxvDP28WqVI9bnJy4WrrC3+axVdL1837QAyDDFtmdCLQiNqxJOR/Kg/HmQLDqRD8wMfq6MvoCg+Dgq2yoPpkxZf6uhAm9OxFptcLm2BdSX9WEYmIQxqESdNKg=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?UUhNd2IyMW5yd0N2MmU3VC85d0l4OVlvUWgvZFZKN0VsM1UrUVBFN2g0K0Vp?=
+ =?utf-8?B?VS9yWHVHcWw5b1cyTXg4WVZZZlp5NmFiZW5ZSTRDN0VBcm5QSVc1cklRdmsr?=
+ =?utf-8?B?SHhlN0tsTU4waStyL2ZoRjg3UytBTStPa2VBUVcveVhFeEt2N0U5dTk1cEdp?=
+ =?utf-8?B?WnlwUkxGYXhFcE9UZUNlMkIwMGY2N2NLOWEwZjNNeDFRU0MxYm9oQ0VjeWM1?=
+ =?utf-8?B?dUZmanNMNkladVZCTFVNM3BwQzdVbHBydzBIT0N2ZXRLNmJHa3F3N0NTTUgy?=
+ =?utf-8?B?MEpNd1JrMDlIZUVqdllPU0NLNENEc28rRG1CZTlVSytSaS91ZDY4ZytWTW5W?=
+ =?utf-8?B?WE56U2pqNUlWZHJpZ2NDTGFrc0Y0bWJ0SU9EdzZRZnhhQ3dpa1dzdnVVSzZm?=
+ =?utf-8?B?TVJ6NzRVdFp1MnZCNWFDYW5WU09yTUtHd0JIbkI2UDQrS3FEdHJhZ0hQR0lX?=
+ =?utf-8?B?K3R4cU1aNkRrVm1pdEIrM2sxR2hSWU1ZTGpSUHBvSGVXQ3VWM3JsL2lsaU5o?=
+ =?utf-8?B?OEl5OHAzOG5DbU0wUW9NVG9uaW12SWFqZ2VzTitOMUdtYmpSS1pQdDRIZW9u?=
+ =?utf-8?B?RmxVc0liYzdKOVdLTVMvN2dMMnhEVWJWYWNwYlZvVmkxd0hQeUVneSs1dGtK?=
+ =?utf-8?B?WTBtRllVL1oreVV6c3Y4VFd6SnFPRUJtczBIREIxbVArditPYXY2TGQwSTlU?=
+ =?utf-8?B?M3U0a0FFZlJFRG54SG14QjBDbFVSVHkwWjRJVERxV2laa2Fob3I2TnRrM1U0?=
+ =?utf-8?B?NE5RVFZVZXg5NDdHUWhZOGI0NmJuTTNxRnNDekZTVlh2UXJnWG9VbzNaYkRG?=
+ =?utf-8?B?VFV3NCtaeUVqQ2txOUdYQk5INGdjc0NiOFUxd0xXdjlJUEF0S2lUVTYxdVhO?=
+ =?utf-8?B?Q0JEUVJDSlJDcU0rNVMxRTc2OVhnVHpvTTVLRkNIbDRMdGUzRWh4THovMEJU?=
+ =?utf-8?B?dDZseklNRjVsd09Nd1RQUUlsTStaaFBpSDBkRVhlOGliQmhoY3JobENuVlV2?=
+ =?utf-8?B?NVBXazJmT09wMGhkTkNhdzRVcmFVZXU5ZWNveUgxSFQ0T0lZT2p2WWVuZE1P?=
+ =?utf-8?B?bnZDbUNyeG5GcjcycXFOWURMWXhyNGsxTHNiamlmSjlPSjF5RFpYVkNJTm03?=
+ =?utf-8?B?SzgrdFk5SHVMbUY3RlBsbkg5Z0JjdmFEc3cxZzB5V2VvemYvMDgyenBsZ3Vj?=
+ =?utf-8?B?RjY2Vm40MEpNRmF1Q3d3WDc0Z2hSVVVYTFF1Smt2bE5nS3RkVEZGaXpBUnI5?=
+ =?utf-8?B?Nk9tdnQrUURUeUJUU011UDhiK1dScUsyc0VaSy90dTZ4VEYwK1RQWXpWT2lR?=
+ =?utf-8?B?SGVPYXFRWmVjNUh4WEk3VXpKMm9XQWpOZnd3UmFZNEt5empYMHp2STRUMWEv?=
+ =?utf-8?B?eDVCNU9vZ1ZoMFdzMkRsVlBHZENFMnFZOWh1VmlkOHNxeWFPK3B0cURIV1FQ?=
+ =?utf-8?B?RDZFeUZidm8rTDRMUkViRWIxOUxBMHh3czgrSnBUVlJvMmNoM3Bzbms0eWQr?=
+ =?utf-8?B?TDk2eUcwU1lHUEhtT3JodDNERHdHWk9jcnlQbXVFWTFQZmlReHd6eFpuVlNp?=
+ =?utf-8?B?NG9mRENmSGFTYnB3QkpmZWl5bXJGUEw1MFcxeEJRTFlCWmNxQktyNU9ycUVP?=
+ =?utf-8?B?UUhNRzh3Um9YWW5CZm9VY3ZuclA0WnVwQlVSMy9VZWd4czNqY3RyS3Q4TjlY?=
+ =?utf-8?B?L3lLVnA1N0U1NzNzMWhMSXhYRCtLY2ZJbkFEZEU4cFk1cno3UDAzL3RVK0oz?=
+ =?utf-8?B?SjB3L3FSaGNrYWtXRkRYNGpoWmJSMmtwR1Ivd0hON1pFSTNGTjZCdllTQXpJ?=
+ =?utf-8?B?SUF2VjdaeTI5RlcrYzhMSW5sa0htZDNWRWlremR3YWl0R3JaRHRBM1VpaHkv?=
+ =?utf-8?B?dVoyc09sTDIrMDBUcnpLUzcwb3VKemNDMTdkNHNmUjJGbmZMNFBYOWRsWmZy?=
+ =?utf-8?B?S2IrZGpyZ3NwNGRoaUZDZWVQMjAzRFNuSFl0Ukw2VkhqMEFSTGJLZC9LdGg2?=
+ =?utf-8?B?cWExZGxyNWJDUkh2VVpldk5vTys1YVFoUU11czlMaTZhZXQvS1RMSXo3MENo?=
+ =?utf-8?B?SFI4SmErd2I3ZzFOeXZrc3lYV3k5T0REOGl4bEkrVGx2NzRMYUpxeDloVWR6?=
+ =?utf-8?B?eHIwUExHem5KOVBVdUxjbExMZ0ZpaUtpQUdpZFl3bnBuQ1BsaHh6RnBYbFpY?=
+ =?utf-8?B?cDJCekpncXNzdUZyQWVGdy80QkxRK2VJSmFHOTRCcnZqc1d1QUtkOFpDdVdG?=
+ =?utf-8?B?YlQzc2ZJSHQ1NFQzaU5NVkx4T0R3Mm42dW1WdEcxdlo1Mm9NREYxc1VrRnRK?=
+ =?utf-8?B?aFI2Q3dVWnAxNjZwYVp1STFoYWR1bFcrV3A5a3UxTXZ1NlA2L1ZUdz09?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b2538080-24db-47a6-b807-08de9623828b
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Apr 2026 10:33:59.4428
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: mk8zZhOumboQNlAZU95U0lf/nA8l2sZPBw2WKjYU/Xl9MtlMf+bCk5zTajDt7NitviWH5TFioEKYfUyhr8ox1w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR12MB8999
 
-This message is in MIME format.
+> On Apr 8, 2026, at 7:13 PM, John Hubbard <jhubbard@nvidia.com> wrote:
+> 
+> ﻿On 4/8/26 9:58 AM, Joel Fernandes wrote:
+>>> On 4/8/2026 9:26 AM, Eliot Courtney wrote:
+>>> On Tue Apr 7, 2026 at 10:59 PM JST, Joel Fernandes wrote:
+>>>> On 4/7/2026 9:42 AM, Eliot Courtney wrote:
+>>>>> On Tue Apr 7, 2026 at 6:55 AM JST, Joel Fernandes wrote:
+> ...>> [1]: https://github.com/Edgeworth/linux/commits/review/nova-mm-v10/
+>> First, thanks for the effort. I looked through this, its pretty much what I
+>> had before when I used traits. I don't think it is better to be honest. In
+>> fact your version is worse, it adds many new types and things like the
+>> following which I did not need before.
+> 
+> Hi Joel and all,
+> 
+> I also looked through Eliot's above attempt carefully, and actually
+> liked it a lot (sorry! haha):
+> 
+> * It cleans up the code. The initial working version was readable, but
+>  also had lots of noise on the screen: match statements and pairs of
+>  v2/v3 statements.
+> 
+>  And interestingly, the mmu_version was, in effect, sporadically
+>  implementing a Trait-based approach. But because it is custom,
+>  readers don't benefit as much as they would with Traits, which
+>  tell you immediately how things are structured.
+> 
+> Joel, I am passionately in agreement with your principles: code must
+> be readable on the screen.
+> 
+> In this case, though, Traits make considerably more readable,
+> especially if one makes the very reasonable assumption that readers are
+> thoroughly accustomed to dealing with Rust traits.
+> 
+>> 
+>> To put it mildly, the following suggestion should not be anywhere near my code:
+>> 
+> 
+> lol I understand, believe me. But this is short and not too bad, really.
+> 
+>> /// Type-erased MMU-specific [`Vmm`] implementations.
+> 
+> Type erasure remains a semi-exotic thing, IMHO. As such, another
+> sentence to elaborate on this would be a nice touch.
+> 
+>> enum VmmInner {
+>>    /// `Vmm` implementation for MMU v2.
+>>    V2(VmmImpl<MmuV2>),
+>>    /// `Vmm` implementation for MMU v3.
+>>    V3(VmmImpl<MmuV3>),
+>> }
+>> 
+>> /// MMU-specific [`Vmm`] implementation.
+>> struct VmmImpl<M: Mmu> {
+>> 
+>> Seriously, I have to pass on this. :-)
+>> 
+>> And, you unfortunately seem to have ignored my point about requiring 4 NEW
+>> traits (Mmu, PteOps, PdeOps, DualPdeOps etc), which I did not need before.
+>> So you're making the code much much worse than before actually. We don't
+>> new traits and types pointlessly.
+> 
+> They are not pointless.
+> 
+> However! What I think would be nice is: do a new v11 with approximately
+> this approach, and then we can beat it into being as readable as
+> possible.
 
---nsmail-6t35ut7s8ime-6t3a3xxuelvr
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: base64
+Since it is 3 against 1 here, I rest my case :-). I am still in
+disagreement since I do not see much benefit (that is why I said
+pointless above). Actually it is not even about readability, that is
+subjective (and I haven’t heard most people say parametrizing code for
+the sake of it makes it more readable anyway). It is that the code gen
+is worse, and the complexity is just moved to a higher level in the
+code, not removed. So what are we getting out of this really, other than
+more boiler plate in higher layers of the code that did not exist
+before? Not performance, not better generated code. Really nothing. See
+all the data points in my previous reply.
 
-PGRpdiBzdHlsZT0iZm9udC1mYW1pbHk6TWljcm9zb2Z0IFlhSGVpO2ZvbnQt
-c2l6ZToxNHB4O2NvbG9yOiMwMDAwMDA7IiBjbGFzcz0ibF9ub2RlX2hhc19j
-b2xvciI+PHA+WWVzLCB0aGF0J3Mgb2sgISBUaGFuayB5b3UgZm9yIGFwcGx5
-aW5nIHRoZSBwYXRjaCBhbmQgZm9yPGJyPmNvcnJlY3RpbmcgdGhlIGF1dGhv
-ciBuYW1lLjwvcD4KPGRpdiBpZD0ic2lnbmF0dXJlVG9wIj48L2Rpdj4KPGRp
-diBpZD0iY3MyY19yZSIgc3R5bGU9Im1hcmdpbi1sZWZ0OiAwLjVlbTsgcGFk
-ZGluZy1sZWZ0OiAwLjVlbTsgYm9yZGVyLWxlZnQ6IDFweCBzb2xpZCAjY2Fj
-YWNhOyAtd2Via2l0LXVzZXItbW9kaWZ5OiByZWFkLW9ubHk7IC1tb3otdXNl
-ci1tb2RpZnk6IHJlYWQtb25seTsgLW1zLXVzZXItbW9kaWZ5OiByZWFkLW9u
-bHk7IC1vLXVzZXItbW9kaWZ5OiByZWFkLW9ubHk7Ij48YnI+PGJyPjxicj4K
-PGRpdiBzdHlsZT0iYmFja2dyb3VuZC1jb2xvcjogI2Y4ZjhmODsgcGFkZGlu
-ZzogOHB4IDEwcHg7IGZvbnQtZmFtaWx5OiBNaWNyb3NvZnQgWWFIZWk7IGZv
-bnQtc2l6ZTogMTRweDsgY29sb3I6ICMwMDA7Ij48c3Ryb25nPuS4uyZuYnNw
-OyZuYnNwOyZuYnNwO+mimO+8mjwvc3Ryb25nPjxzcGFuIGlkPSJjczJjX3N1
-YmplY3QiPlJlOiBbUEFUQ0hdIGZiZGV2OiBvbWFwMjogZml4IGluY29uc2lz
-dGVudCBsb2NrIHJldHVybnMgaW4gb21hcGZiX21tYXA8L3NwYW4+IDxicj48
-c3Ryb25nPuaXpSZuYnNwOyZuYnNwOyZuYnNwO+acn++8mjwvc3Ryb25nPjxz
-cGFuIGlkPSJjczJjX2RhdGUiPjIwMjblubQwNOaciDnml6UxNjoyOTwvc3Bh
-bj4gPGJyPjxzdHJvbmc+5Y+R5Lu25Lq677yaPC9zdHJvbmc+PHNwYW4gaWQ9
-ImNzMmNfZnJvbSI+SGVsZ2UgRGVsbGVyPC9zcGFuPiA8YnI+PHN0cm9uZz7m
-lLbku7bkurrvvJo8L3N0cm9uZz48c3BhbiBpZD0iY3MyY190byIgc3R5bGU9
-IndvcmQtYnJlYWs6IGJyZWFrLWFsbDsiPmxpbnV4LW9tYXAsbGludXgtZmJk
-ZXYsZHJpLWRldmVsLEhlbGdlIERlbGxlcjwvc3Bhbj4gPGJyPjxzdHJvbmc+
-5oqE6YCB5Lq677yaPC9zdHJvbmc+PHNwYW4gaWQ9ImNzMmNfdG8iIHN0eWxl
-PSJ3b3JkLWJyZWFrOiBicmVhay1hbGw7Ij5saW51eC1rZXJuZWwsemhvbmds
-aW5nMDcxOSxrZXJuZWwgdGVzdCByb2JvdDwvc3Bhbj48L2Rpdj4KPGJyPgo8
-ZGl2IGlkPSJjczJjX2NvbnRlbnQiPk9uIDQvMi8yNiAxMTozNCwgemVuZ2hv
-bmdsaW5nIHdyb3RlOiAmZ3Q7IEZpeCB0aGUgd2FybmluZyBhYm91dCBpbmNv
-bnNpc3RlbnQgcmV0dXJucyBmb3IgJyZhbXA7cmctJmd0O2xvY2snIGluICZn
-dDsgb21hcGZiX21tYXAoKSBmdW5jdGlvbi4gVGhlIHdhcm5pbmcgYXJpc2Vz
-IGJlY2F1c2UgdGhlIGVycm9yIHBhdGggJmd0OyB1c2VzICdvZmJpLSZndDty
-ZWdpb24nIHdoaWxlIHRoZSBub3JtYWwgcGF0aCB1c2VzICdyZycuICZndDsg
-Jmd0OyBzbWF0Y2ggd2FybmluZ3M6ICZndDsgZHJpdmVycy92aWRlby9mYmRl
-di9vbWFwMi9vbWFwZmIvb21hcGZiLW1haW4uYzoxMTI2IG9tYXBmYl9tbWFw
-KCkgJmd0OyB3YXJuOiBpbmNvbnNpc3RlbnQgcmV0dXJucyAnJmFtcDtyZy0m
-Z3Q7bG9jaycuICZndDsgJmd0OyBSZXBvcnRlZC1ieToga2VybmVsIHRlc3Qg
-cm9ib3QgJmx0O2xrcEBpbnRlbC5jb20mZ3Q7ICZndDsgU2lnbmVkLW9mZi1i
-eTogemVuZ2hvbmdsaW5nICZsdDt6ZW5naG9uZ2xpbmdAa3lsaW5vcy5jbiZn
-dDsgJmd0OyAtLS0gJmd0OyBkcml2ZXJzL3ZpZGVvL2ZiZGV2L29tYXAyL29t
-YXBmYi9vbWFwZmItbWFpbi5jIHwgMiArLSAmZ3Q7IDEgZmlsZSBjaGFuZ2Vk
-LCAxIGluc2VydGlvbigrKSwgMSBkZWxldGlvbigtKSBhcHBsaWVkLiBQUzog
-SSByZXBsYWNlZCBhdXRob3IvZW1haWwgbmFtZSBieSAiSG9uZ2xpbmcgWmVu
-ZyIgaW5zdGVhZCBvZiAiemVuZ2hvbmdsaW5nIi4gSSBhc3N1bWUgdGhhdCdz
-IE9rLCBpZiBub3QgcGxlYXNlIGxldCBtZSBrbm93LiBUaGFua3MhIEhlbGdl
-ICZsdDsvemVuZ2hvbmdsaW5nQGt5bGlub3MuY24mZ3Q7Jmx0Oy9sa3BAaW50
-ZWwuY29tJmd0OzwvZGl2Pgo8L2Rpdj4KPHA+Jm5ic3A7PC9wPgo8cD4mbmJz
-cDs8L3A+CjxkaXYgaWQ9InNpZ25hdHVyZUJvbSI+CjxkaXY+CjxwPiZuYnNw
-OzwvcD4KPGJyPgo8cCBzdHlsZT0iY29sb3I6ICMwMDA7IGZvbnQtc2l6ZTog
-MTZweDsiPi0tLTwvcD4KPGRpdiBpZD0iY3MyY19tYWlsX3NpZ2F0dXJlIiBz
-dHlsZT0iY29sb3I6ICMwMDA7IGZvbnQtc2l6ZTogMTZweDsgZm9udC1mYW1p
-bHk6IE1pY3Jvc29mdCBZYUhlaTsiPjwvZGl2Pgo8cD4mbmJzcDs8L3A+Cjwv
-ZGl2Pgo8L2Rpdj48L2Rpdj4=
+Note that if the mmu version threading bothers everyone so much, we can
+also pass down chipset instead and let the walker deal with determining
+versioning. Would that be better?
 
---nsmail-6t35ut7s8ime-6t3a3xxuelvr--
+But otherwise and since you guys asked, here comes a parameterized v11... ;-).
+  (Coming next week since this week I’m working on IRQ handling).
+
+thanks,
+
+-- 
+Joel Fernandes

@@ -1,200 +1,85 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43D08308F23;
-	Fri, 10 Apr 2026 14:55:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 556043D88FC;
+	Fri, 10 Apr 2026 15:14:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775832955; cv=none; b=rrvbNxEPc0gLaCYRU4PMv8k2HhJ4Zaa47ekuASTf6ZvqKgSmrK1y/zurusxmYIdeX+cMiHAYMh46QfZ2nZvN8NwcHiW3L7YWcSMFm69yVpPS4KcLm9Z87lXvk982mb6d/O+HVtukIwnxJP0GOtkd/BumFO0qq4G6E5wr+VYemm8=
+	t=1775834044; cv=none; b=gpgr7lzb9spY3gOIdofgYgwK0Kd6i0ZJPNyZgpAirXSmn/VjDcVjDXVZIXeJDOIDy8wCnYlsQ+tN/DSIc2bd05qaYN+EKsaKaW2PQ54kvnkMvR3PBOYnurqyqPFtWJ9255SgA7l4CCP1B0w0DmP49ZFsCHTVuhZ4aG8Pwl76RFY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775832955; c=relaxed/simple;
-	bh=+hqVSAecSfDlxLm81hC3aYMP6VSdpFFFUAZbT04dlp4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bNwf058UwvWm19e9rMircdftvuwXoaX+pgwFspF6rP84gw5sNF1cetjkRVjJojqVwDxMVDd2gAEHoRLMchGLPhINL7796S7es3clIsFxvZ02KwdbSRQyhHOf+C0kHkD66KCR/QQeIKU9g+cmYw0hXN2c0yLfVk9QV5bUhOyArcI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Zvi1VE8h; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1775834044; c=relaxed/simple;
+	bh=ZX44VkA/oGGdYrqGVtHG3BQ09eU0s5TAD8UsmKEvOJ4=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=AGz1vUoP8MTPzs+DH82yzUzCMeLVsUA8E9ihpsA94W30Pvzvmxpz6htpnzLWbOEQjfR1BZgD3Qw14EGnUUHYMqghdv4RAVArscyIJ+QCTikQ3yBG/ieYHQVo38XmP0V1Vr8v593YS5ziaQtFjMwPg3EwpOBmXFL/PBc/WQNcCPg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DQRfv3hP; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Zvi1VE8h"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1775832950; x=1776437750; i=deller@gmx.de;
-	bh=ttO0qjnAOVbyK0S9kyCkSIGPJYX/PRaXt0sR/V7ISak=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=Zvi1VE8hbs5rPH4xYTpKZmcztixeKE8HFUtxZLaePp/qCvy5OjOXRRXzkNwGRENz
-	 +6l9UBPFmTAt4R0Wsufdm1pfMZPVyCFguOZ3dYjBpGqaSmck/nTxDrtLg2wn9KyGd
-	 INlseq0rRDqOVQgSPsmLEEOFhS8M+CaZlVOqQvmbHzaoeIK4/xBVwbhQSh2Ce9FzW
-	 5cO0H7Gz8zyBb8Gozp76+uHJwg6BPbJ/G6LohXjRpMRAly2XoaIqWwkzrhYp0rWxi
-	 HvjnSGXzsBVheNd/ehBAZb3Y6asFfTw9XU1rrN166esCD7qtyEqoqhuKuduAXcZxG
-	 ABFeHhfRXJpjB+BwHw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MYeMt-1vyPCf12Qd-00UfVC; Fri, 10
- Apr 2026 16:55:50 +0200
-Message-ID: <58503b21-93fb-4e13-bb1b-374507eb6a74@gmx.de>
-Date: Fri, 10 Apr 2026 16:55:49 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DQRfv3hP"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1CA7DC19421;
+	Fri, 10 Apr 2026 15:14:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775834044;
+	bh=ZX44VkA/oGGdYrqGVtHG3BQ09eU0s5TAD8UsmKEvOJ4=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=DQRfv3hPFw/TKa/ZakF0C/CvhlLPEsVqQv+2r4uwxdObvOGMMWr2s346gixb/wzYP
+	 kH3jI1VGrMbPCg8bbeliLsWsv0WorMVV9pr65pzZbqt3ANfLMAZ3WpCzHo7EbPC0aw
+	 sFqvG5W5Zh5Zl9hqpd/S10vk3SPDt4AvvXdP7MWFAVnJ1yy95RtrFN5r3P/n0YzraC
+	 K1ddeqgVvP6yW3cqrHOPD+5bbhJuKzxhUEtkBkREvZCz2D1PF358eBsZtX1OaLotF8
+	 mIrAdKqmlNIgawRmNAF5mT5jG8tytmCXBJPCuscrYjON8tMw7soKn19X1CoLhvhPBR
+	 sIA/Sxe0F1CKA==
+From: Thomas Gleixner <tglx@kernel.org>
+To: Baolu Lu <baolu.lu@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: baolu.lu@linux.intel.com, x86@kernel.org, iommu@lists.linux.dev, Arnd
+ Bergmann <arnd@arndb.de>, Michael Grzeschik <m.grzeschik@pengutronix.de>,
+ netdev@vger.kernel.org, linux-wireless@vger.kernel.org, Herbert Xu
+ <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org, Vlastimil
+ Babka <vbabka@kernel.org>, linux-mm@kvack.org, David Woodhouse
+ <dwmw2@infradead.org>, Bernie Thompson <bernie@plugable.com>,
+ linux-fbdev@vger.kernel.org, Theodore Tso <tytso@mit.edu>,
+ linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Uladzislau Rezki <urezki@gmail.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com, Andrey
+ Ryabinin <ryabinin.a.a@gmail.com>, Thomas Sailer
+ <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org, "Jason A.
+ Donenfeld" <Jason@zx2c4.com>, Richard Henderson
+ <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, Russell King
+ <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, Catalin
+ Marinas <catalin.marinas@arm.com>, Huacai Chen <chenhuacai@kernel.org>,
+ loongarch@lists.linux.dev, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>, Jonas
+ Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org, Helge Deller
+ <deller@gmx.de>, linux-parisc@vger.kernel.org, Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Paul Walmsley
+ <pjw@kernel.org>, linux-riscv@lists.infradead.org, Heiko Carstens
+ <hca@linux.ibm.com>, linux-s390@vger.kernel.org, "David S. Miller"
+ <davem@davemloft.net>, sparclinux@vger.kernel.org
+Subject: Re: [patch 09/38] iommu/vt-d: Use sched_clock() instead of
+ get_cycles()
+In-Reply-To: <9db9515b-08e8-47bd-aced-206ac183195a@linux.intel.com>
+References: <20260410120044.031381086@kernel.org>
+ <20260410120318.187521447@kernel.org>
+ <9db9515b-08e8-47bd-aced-206ac183195a@linux.intel.com>
+Date: Fri, 10 Apr 2026 17:14:00 +0200
+Message-ID: <87y0iuzw3r.ffs@tglx>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: udlfb: avoid divide-by-zero on FBIOPUT_VSCREENINFO
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org, Bernie Thompson <bernie@plugable.com>
-References: <2026040945-glare-devouring-f242@gregkh>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <2026040945-glare-devouring-f242@gregkh>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:7XNgKzVhuZakm+Z7nJ2w0NEm9AehXwEeP2JGERijKxrTDHFQAZB
- dxiJ1wQHWWBcvG94Xeman+ysC77DvmZYPv/8KgGXc9NlegyvoarPmA3RK147v4RiJzz0Xdn
- 56wzR/9L38M0rEDYpVnsesEom8bxzQnhCYxECoQFxn3bmxAXNKmnxUdCCVTDWY6/WQfaXXK
- fwxLBMyO/mjMv0huYcA0A==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:m399cuAK+rI=;sAae2mTfPwz0dFXz8juyzLzKjY/
- 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
- fOwF+TifZkB6LZLPjUjT4/Lw==
+Content-Type: text/plain
 
-On 4/9/26 15:23, Greg Kroah-Hartman wrote:
-> Much like commit 19f953e74356 ("fbdev: fb_pm2fb: Avoid potential divide
-> by zero error"), we also need to prevent that same crash from happening
-> in the udlfb driver as it uses pixclock directly when dividing, which
-> will crash.
->=20
-> Cc: Bernie Thompson <bernie@plugable.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Fixes: 59277b679f8b ("Staging: udlfb: add dynamic modeset support")
-> Assisted-by: gregkh_clanker_t1000
-> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> ---
->   drivers/video/fbdev/udlfb.c | 3 +++
->   1 file changed, 3 insertions(+)applied.
+On Fri, Apr 10 2026 at 21:45, Baolu Lu wrote:
+> On 4/10/2026 8:19 PM, Thomas Gleixner wrote:
+>> Calculating the timeout from get_cycles() is a historical leftover without
+>> any functional requirement.
+>> 
+>> Use ktime_get() instead.
+>
+> The subject line says "Use sched_clock() ...", but the implementation
+> actually uses ktime_get(). Is it a typo or anything I misunderstood?
 
-applied.
+Indeed. Leftover from an earlier version.
 
-Thanks!
-Helge
+Thanks,
+
+        tglx

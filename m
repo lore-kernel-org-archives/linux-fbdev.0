@@ -1,192 +1,372 @@
-Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazon11010069.outbound.protection.outlook.com [52.101.85.69])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2548C1A682F;
-	Thu,  9 Apr 2026 18:02:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.85.69
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775757776; cv=fail; b=kudGwLJkIe84JzeQCYiyQLWsWR4NOSTrDGyP3Qq84lcXCbjmo8slAgaf9m/hIx2ekmFdmHLNgqbqHZTrECAlj3Hp5VhYKHXOTYF5ntIpb2kEGS0VzuvThm2k4s31lHzzC5tRSzWojW5X1hicP0LLLl8jePTjUlzTjiqAbkpMGOQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775757776; c=relaxed/simple;
-	bh=HWoVRmreJFFoM5LOg+eLPMtalIk+ewFdcZTe8c2VK98=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=drScI5968y/Wdgg/el8mYGd3TMkiXRYsbxMjm8g47lE3ofP6xbK48MmP0pWL02tvNKFdYGmnFZVVFAUplDMH6i6mii2EnlL9OhT0DzS1QX+f2HMVKFvefdhM83ZDhprj1T5ahlVBCPAflCmaiEFawvsPkUxKx2kDvahThIoP3Is=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=oTKIrmY4; arc=fail smtp.client-ip=52.101.85.69
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7493A37C11E;
+	Fri, 10 Apr 2026 12:18:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775823511; cv=none; b=cAhDdNM2XMasoMhXiIrfqnLE7KqLMrUxeujsM2qeMaHtElxuiePwe+c8aXuDXDyGUkfClM2XT4tAv099TMajYmyQg8fSnreRY7DxVGW328LtqthvovyGfhBWDdzN4hs9wkLopK2VRCYYrMzZYKKzi33T446nKiHEYaGglCShBXA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775823511; c=relaxed/simple;
+	bh=xG6Zhe4Reh8n1CuuXKHsxMx4yyA7cv5SRNW/ce+u7MA=;
+	h=Date:Message-ID:From:To:Subject:cc; b=bQLmY14M4gEj9iOYPCtbHpRAGLENN9IvHmAWTcON+NvjdaX1LBJEyxh8EQvFanRo1d3We70uu1rutPi42DhoK4j1vjVc1VSBsUfhYGxnLxf2OtyrVicJCoGQwz1nTeQEbZ/+E7XUFojo6qSJpvVRDeCAO4Ii05bgfO3WAC2FYkk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X6IRMdbN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="oTKIrmY4"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=f+VVhBnh/gSE5orknkPhF/gb+BoeACmuWboCKyJ/RLSzy+eMRg2I0AO51jZICdzAeYcgYVTl+RAGrCjCVtrCFsVgSpy7vwNFbX+jPDF7f4bKsjbOsQ/uuPAW3BgTqgWUh/2pOJ8JwmtkNjVMBOAfbRlavA5ZR2S77xYx+dt3dzIq+gukdvOuiPVtyoo70j29UXtS9Tq0U2AUZFExB8K6/pzCBoi/4L1PaI0/irX9+MySGyBGy/xmncmSiIJAf2b8yNc/ldi9kbAWasTMaRpRTjXcNlmIVNL/boZhbybdmOesYVYy/H4M4c4AJWn0OcQGZkufVTpgF9+g9TInZLI9mw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=oq/4YySi3atnMQACYwqM5uyElZTSA6yoG4z9G9fCl7k=;
- b=Hr/bTmN2m12w8ZMcLpfIBjl3TdNn+a193XUYjx//l/5X90OukcNqrwX494RS4//tANReTr5EtRpYbs0/Q2xFpvkWQxvML8ClylBxkLQdlNnZ2OuazPCErilwfaTGcs23CxC37RnwMDDSEOI8f+Ux2cqT8q0WwVoMdrbMsi6i7/LWgOL6o+fRpxT/Q2GDdUooCuh0cyZLfzGcp2WcxjImt/Pj0qcUtmMIX5SPQR8ZG1ng/1l4qsujVaokFJBR9k0fIvaxrhmSEs1YYTrwpLdWItMJY6XR9vDoZJqqOhNQppOJ7aS4NJsU1AmaFX+jjIvj/FRxM/sHBKl3j8flj9tWag==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=oq/4YySi3atnMQACYwqM5uyElZTSA6yoG4z9G9fCl7k=;
- b=oTKIrmY492juoLUiXjmRsjQlcxrA564r5kE9BhwCdQygQtRVxI3AyqGls7HTQWc9pN9vYhq9mKMkzvZL3zrzjmVDBDU95eHQwsqzOB0buWDNTUDB2pWuR3Jgk8H3j8lXLb1VgpXE3+qAWxk+6ebtJcesOQ25knlajniQJrRhaML8xqdouChcaLkF9DTsvMy23Hx9DCx8SOPpenpv/S/1MgBlZ1W+7dwlr/J2gPK+/UWiRu//vYaIf7kPwNdXlQ22Rfc1T0eak1abmJyEiXh3i5KQbGVgGheWRu+eVIDbJ+p3uh/1U5vEJAjojPC82Mlk1Y5tFBTDDHmMx0IoZq3+8g==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DM3PR12MB9416.namprd12.prod.outlook.com (2603:10b6:0:4b::8) by
- SJ0PR12MB5674.namprd12.prod.outlook.com (2603:10b6:a03:42c::7) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9791.33; Thu, 9 Apr 2026 18:02:51 +0000
-Received: from DM3PR12MB9416.namprd12.prod.outlook.com
- ([fe80::8cdd:504c:7d2a:59c8]) by DM3PR12MB9416.namprd12.prod.outlook.com
- ([fe80::8cdd:504c:7d2a:59c8%5]) with mapi id 15.20.9769.020; Thu, 9 Apr 2026
- 18:02:50 +0000
-Message-ID: <387064d2-8c6b-4b26-93e3-cab88d41dca3@nvidia.com>
-Date: Thu, 9 Apr 2026 11:02:47 -0700
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 12/21] gpu: nova-core: mm: Add unified page table
- entry wrapper enums
-To: Joel Fernandes <joelagnelf@nvidia.com>
-Cc: Eliot Courtney <ecourtney@nvidia.com>, linux-kernel@vger.kernel.org,
- Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>,
- Gary Guo <gary@garyguo.net>, Bjorn Roy Baron <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
- Danilo Krummrich <dakr@kernel.org>, Dave Airlie <airlied@redhat.com>,
- Daniel Almeida <daniel.almeida@collabora.com>,
- Koen Koning <koen.koning@linux.intel.com>, dri-devel@lists.freedesktop.org,
- rust-for-linux@vger.kernel.org, Nikola Djukic <ndjukic@nvidia.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>,
- Christian Koenig <christian.koenig@amd.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Vivi Rodrigo <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, Rui Huang <ray.huang@amd.com>,
- Matthew Auld <matthew.auld@intel.com>,
- Matthew Brost <matthew.brost@intel.com>,
- Lucas De Marchi <lucas.demarchi@intel.com>,
- Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
- Helge Deller <deller@gmx.de>, Alex Gaynor <alex.gaynor@gmail.com>,
- Boqun Feng <boqun.feng@gmail.com>, Alistair Popple <apopple@nvidia.com>,
- Timur Tabi <ttabi@nvidia.com>, Edwin Peer <epeer@nvidia.com>,
- Alexandre Courbot <acourbot@nvidia.com>, Andrea Righi <arighi@nvidia.com>,
- Andy Ritger <aritger@nvidia.com>, Zhi Wang <zhiw@nvidia.com>,
- Balbir Singh <balbirs@nvidia.com>, Philipp Stanner <phasta@kernel.org>,
- Elle Rhumsaa <elle@weathered-steel.dev>, Alexey Ivanov <alexeyi@nvidia.com>,
- linux-doc@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-References: <42dd707f-e23a-4725-8b6f-08ca346b0143@nvidia.com>
- <1775730646.3752.4760@nvidia.com>
-Content-Language: en-US
-From: John Hubbard <jhubbard@nvidia.com>
-In-Reply-To: <1775730646.3752.4760@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: BY3PR05CA0018.namprd05.prod.outlook.com
- (2603:10b6:a03:254::23) To DM3PR12MB9416.namprd12.prod.outlook.com
- (2603:10b6:0:4b::8)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X6IRMdbN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CF16C19421;
+	Fri, 10 Apr 2026 12:18:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775823511;
+	bh=xG6Zhe4Reh8n1CuuXKHsxMx4yyA7cv5SRNW/ce+u7MA=;
+	h=Date:From:To:Subject:cc:From;
+	b=X6IRMdbNwD/1TPVTuuT38dax3aETJdTvvykNWi23GiBjWbaPnFiS31YP2+3+rHYnr
+	 +yBiYqSiaFZumAFwSR+NEqA6PxsCix9KHXp0BGVkWu/kFUlz/YIdIICieWTokegmLh
+	 Yr8j8VsIfTTYuyizZOa5fjt2rtqvhW2e+npoz/WBNOWVCp5m8FdgfGaOB54VOYpbJT
+	 yU3PgzyY9/f2Y08BZe1qPEkZ4DBScL99CvOU6Da3YpVoCSH2byw56W+6qCVZbtJoMm
+	 0joIfHOTvLdlWQN0yWziORYb41f8Ajm7GcTfuGZTXlFCF7Y90aZDQyz+rgc1XQsGrv
+	 br4n1yhF6vGQA==
+Date: Fri, 10 Apr 2026 14:18:27 +0200
+Message-ID: <20260410120044.031381086@kernel.org>
+User-Agent: quilt/0.68
+From: Thomas Gleixner <tglx@kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch 00/38] treewide: Cleanup LATCH,
+ CLOCK_TICK_RATE and get_cycles() [ab]use
+cc: Arnd Bergmann <arnd@arndb.de>,
+ x86@kernel.org,
+ Lu Baolu <baolu.lu@linux.intel.com>,
+ iommu@lists.linux.dev,
+ Michael Grzeschik <m.grzeschik@pengutronix.de>,
+ netdev@vger.kernel.org,
+ linux-wireless@vger.kernel.org,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ linux-crypto@vger.kernel.org,
+ Vlastimil Babka <vbabka@kernel.org>,
+ linux-mm@kvack.org,
+ David Woodhouse <dwmw2@infradead.org>,
+ Bernie Thompson <bernie@plugable.com>,
+ linux-fbdev@vger.kernel.org,
+ "Theodore Tso" <tytso@mit.edu>,
+ linux-ext4@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Uladzislau Rezki <urezki@gmail.com>,
+ Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ kasan-dev@googlegroups.com,
+ Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+ Thomas Sailer <t.sailer@alumni.ethz.ch>,
+ linux-hams@vger.kernel.org,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>,
+ Richard Henderson <richard.henderson@linaro.org>,
+ linux-alpha@vger.kernel.org,
+ Russell King <linux@armlinux.org.uk>,
+ linux-arm-kernel@lists.infradead.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ loongarch@lists.linux.dev,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-m68k@lists.linux-m68k.org,
+ Dinh Nguyen <dinguyen@kernel.org>,
+ Jonas Bonn <jonas@southpole.se>,
+ linux-openrisc@vger.kernel.org,
+ Helge Deller <deller@gmx.de>,
+ linux-parisc@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org,
+ Paul Walmsley <pjw@kernel.org>,
+ linux-riscv@lists.infradead.org,
+ Heiko Carstens <hca@linux.ibm.com>,
+ linux-s390@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>,
+ sparclinux@vger.kernel.org
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM3PR12MB9416:EE_|SJ0PR12MB5674:EE_
-X-MS-Office365-Filtering-Correlation-Id: 400d31ce-b3f4-47ae-93a6-08de966236e7
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|7416014|1800799024|56012099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	kj9SYVST2FGXw3/Gx4LVjn5NoTo3Fgnw0cjHOABTkR3mDBWReAlej3zSrfmbXw0ATfAO46j3uo5Fpyqn1JPwKW7LEqqVGXEthPPb03g8fHxWf8FUTgevOIgYOxwg1KkDxwyetPGbfpMnjjfOT0xWKsoHkkzcrpFMrKH6sYjtbcqLQRbzs9d0/Kc/FJ7gX7297bbsJaOF3MZb3USiuOGGu+VwtssObaYrLx856j2fwhsbnDCoay5M5fyNxpCiQBTGiPw/ahLnp4ifDdZ1W4yV6+ScNQGvDMhKmY82uEkpn6tdhvpSegDz0AeqkwoctyW8NSKGj3GubaR89MC9vu6TMvN7q5whjh3143B18fLNYVKhbm8BEaxffpIc9Y7Mn1TER5NyZYrY1ovhcjh/TlmAI5r2O1981uTDO97Cv569++h5XyaAclj4Q9IWlmqkkmQfR7TnqMye9jjQdoyWm6llaz9mTf102oLj3nPUERFWC2JrEcZq2EIQ2irRvKwaarUJquAh9eFgVEH8mk93mj3/NlEHl38lsbBZJmQQQhB1+IwuMXaSIRi0m3HsxrdSqSrxV1mOrWQ5m+EfO1IgePkUUzKxWYP61xY490EcKoFobexUaL8parlk67iwzlb+fK8cKmgd1RmhH8bEaiAORwjgS7HFUxxW1gO5QVLzDuaCRC7B8c1sQpWPUZlGd/WWcFUvrIqwC3Y+23cX2kaEm+ta31eksZ0toi4N2U/zEiJYd4M=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM3PR12MB9416.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?T1lGSFFZTFdrUVZEeVBLSlFyTkZVNmxaYTBUOUZ1UGpucjBBR05rTFJVVDZp?=
- =?utf-8?B?bitsMjlBeXpodmZpQXRmR0JkVUFRck9MYkJsdEp4ZnFwbjZqSnpWbTJBeGlO?=
- =?utf-8?B?dmR2UEVteFpBMHNnM0pjRklXWmJmeDRRZVprbmRsaWRoS1JBbWNRcHdMc0dw?=
- =?utf-8?B?MTNiZ1ZxakkwT2pXTEEwbXRudm45cCtiN2FnNnlBNElVTEFIYTZjY2F0dDlK?=
- =?utf-8?B?dzM5d2xJbE9BdldCaGQ2bENaOVhuaG5CTzAzRU0xRUlJeHE0U3VMem5WLzU4?=
- =?utf-8?B?Z2VVMk1lUFFHUHNSK2kwY1VsMDcrZU5CNmF4bWFtWGtTU1U5eGlyRXc2SEZ5?=
- =?utf-8?B?TU81ZTJIdmtUL21EL1N0NmhOVmVjU3lHNC9taDVsNG5RYXVVMGU0S0dGMjda?=
- =?utf-8?B?U2lJblhLSnptM0ExbFZSOUQxL1dEcERsbjlwWDl6Vmt4VmkrWFVTMkl1SE1K?=
- =?utf-8?B?aExKdGhvK3kxNDlsaGJrNjBZUVJEaU5BM0M1MmlYa0xNUmJGNDgxOVRpUkFF?=
- =?utf-8?B?Nk14NmFSQU1jOXhNV1E1ZVMvTWhIYkpYNEYwakJmenYzU0loUHRQOVNjZkN5?=
- =?utf-8?B?Sm9IaUxzcEI2ZW5IT0tkdGtIYjBqWExHbkFYR0oyaGVYdHROMlF3aGRnT0JK?=
- =?utf-8?B?dXhWRk12ck9FVHYwalFlTG9PQ0tyZ1ZqS0F0SHlNaXJPRjlGckd4SFpFbHhr?=
- =?utf-8?B?RmI5cHdodDl1U3QyYlF3WGdmTUxYLzgzZlFsSHY1U1U4NEJ1eWNXcWQ1Slp3?=
- =?utf-8?B?STIyQWFvT0pCUms4NWxaTlZtZU80MC9qQVhrbEwzVXcyb2hWT2E4cnVLemY1?=
- =?utf-8?B?VzBkUWI2TUF5aGJwRDExbXdMMk9WWVNPUmJoUjdOcHVjbDlkaUhQc3dNQ0xU?=
- =?utf-8?B?UHFLcDdFbXZvbiszMTRiOVUzOFpqU3MzWHBVNiszZ0t4MXVVVXE2VFJMUXdH?=
- =?utf-8?B?TEZEWCtZVGI5bUpSSDhBblpFQTdpVGtkV2F3YVRQSjNicXB0d2NoN1ZZZ1p4?=
- =?utf-8?B?TnM3dUQzZmxpTU9DdklwRTNrYkRIUDRzdG11bVNVVEhFUVg1QnptcDB2UXZE?=
- =?utf-8?B?TmpBNjdOQVNxRzZWbVpvRmg1NENVa1VZemZHUVVvcHowK0ZRWkk4clc0YUd6?=
- =?utf-8?B?K2ZVeERCdFI4RVhkY2JiMm9BYUxIeWc4S1Nrc2xuMlZTRVcxNVkzbzdHQlVy?=
- =?utf-8?B?NW5sVmVFdmR6Yyt0VldWczRYc3BoVkVqZlQzR050WlQyR1BTeXE3djk1d0M0?=
- =?utf-8?B?b0tiV2NEa1Y5ek1VcUJnS1J2ZlR2RmEvaHg5RUx2NFhhaUllQ2tCbm1zUFc4?=
- =?utf-8?B?RjJ4eTBpamJGd2dxR0I2eGhuWk5pd3Z3SGczWk5KaEM3dFZibGsxMzhEdWpv?=
- =?utf-8?B?TkZCYVVkSFVpZ2Nlb0ROQmc5SVNTU2NEbm9oN0l6cGpEaUp5dERXRUhYcmla?=
- =?utf-8?B?VGV2dlh0VVZXUms4bDNqaDNsL09PeFU3aE5XNloraW4xVmQ3NVIxTVdFeE16?=
- =?utf-8?B?OE5iZFA4cVNVYXVrV3IweTF4QVE4NWJTdkloelhHT3I5WHZ2UlZPR2VITThG?=
- =?utf-8?B?eDdBRC9SamR3b3Y0bklGL0t4MGNGTW9hRWJuTDhVMVRucjlmckZaQjJnNGpu?=
- =?utf-8?B?R2ZCMUZTKytsYkZxTldpMS85NFk1VlNFa05JbEtVTUNuWm44bWpwd3k2TkQ0?=
- =?utf-8?B?Zmp2TTYrZ1ZMY2JUMmJMMW1QbmdiaFdKUEVuNGZDZExKcnUzMzVmK1FQOHI5?=
- =?utf-8?B?cFBHU3M4TzZrWTUzV0FzZUYwdUtkOGd5a2V1T3JJcC9KK3I0cDdWN1NCTzE3?=
- =?utf-8?B?MUExc1c5WmhoS1ZRS3owc2htbXh0a3hhUTd3TWRncHBKZkFlcnJhcm82Rjlq?=
- =?utf-8?B?UVJFQ280Vnd0c3l5UHM5cUV3U1FETlJNK0RGZTdxUWVFeVozdEdJL2wwUUZ4?=
- =?utf-8?B?dGFiQzBlK1FlR1NxV1lDdVJCOGpXRDA1RHNIaWs3SUVFeUZTSENoQWg0clpQ?=
- =?utf-8?B?b1JUQ2F4WFhnYTlNTkFNMm01TmpMVTl2aklxTzNmaSttRWZ2UzVjVHppcm5x?=
- =?utf-8?B?ZTlIYUF6RlQ5WURTcVlzZ2orSXBzTHE3YTI3VTRPcysrbGdmZ2lOZjVsSjBn?=
- =?utf-8?B?b3V3eHdHaFowSUJFUEVuc1lZN1lXZ0RzalRXVzFBa1I0ZFpQYmJqSHZHWTFx?=
- =?utf-8?B?cmlmTFFZUVFTV1p1TmJWQUFxYTdPakFrOW9PeXJjSmRHbU1yaHQwOGlhOVh0?=
- =?utf-8?B?QW1KTnlOd3ptU2k3aitTUjhEVk52TTlUVnZLNy8rVm40SVJud3M5QTNyNGtS?=
- =?utf-8?B?UHZqTGxPN0UxOFZPdjVZZmtzZjZtTEI1QThOdWNwY25PSVBWVnRsQT09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 400d31ce-b3f4-47ae-93a6-08de966236e7
-X-MS-Exchange-CrossTenant-AuthSource: DM3PR12MB9416.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Apr 2026 18:02:50.7930
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: C5sFpG9fRg+sZOCpn2TH1B9iNmeetx5Uqc6pFozRK1XNmvjQndL65KUutjHs+GL4ohBZfQ+585Jg1SZwi7AD5w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB5674
 
-On 4/9/26 3:33 AM, Joel Fernandes wrote:
-...
-> Since it is 3 against 1 here, I rest my case :-). I am still in
+First of all sorry for the insanely big Cc list, but people can't make
+their mind up whether they want to be Cc'ed on everything or not. So I'm
+opting for the worst case to cater to the people who want to be Cc'ed on
+everything and assume that the rest of you got used to it by now. I really
+wanted this to be more confined but a treewide cleanup does not give a lot
+of options.
 
-As Danilo points out, we want to foster healthy debate and land
-on whatever comes out of that. Not just by counting noses. :)
+That said, let me explain what this is about.
 
-> disagreement since I do not see much benefit (that is why I said
-> pointless above). Actually it is not even about readability, that is
-> subjective (and I haven’t heard most people say parametrizing code for
-> the sake of it makes it more readable anyway). It is that the code gen
-> is worse, and the complexity is just moved to a higher level in the
-> code, not removed. So what are we getting out of this really, other than
-> more boiler plate in higher layers of the code that did not exist
-> before? Not performance, not better generated code. Really nothing. See
-> all the data points in my previous reply.
+  1) LATCH
 
-Alex's latest response[1] does a *much* better job than mine, in
-explicitly highlighting what we get out of this. (It arrived a bit after
-your response here.) Please take a very close look at that response and
-see what you think.
+     The LATCH define goes back to Linux version 0.1 and has survived until
+     today for the very wrong reasons.
 
-The patterns in these page tables are not a new thing, and Rust has
-language features to help express them. 
+     Initially it was based on the x86 PIT frequency and also steered the
+     timekeeping conversions.
 
-[1] https://lore.kernel.org/DHOKJ3MJNO5P.SXKOAYKX13JL@nvidia.com
+     With the arrival of non x86 architectures it got changed to be based
+     on CLOCK_TICK_RATE in order not to change core code which depended on
+     LATCH.
 
-thanks,
--- 
-John Hubbard
+     That all got meaningless when timers, timekeeping and scheduling
+     infrastructure got rewritten more than two decades ago.
+
+     But there is still a lonely survivor in arch/x86/kernel/apm_32.c
+     which dates back to Linux 1.3.46 (Dec. 1995)
+
+     Which causes the next historical gem
+
+  2) CLOCK_TICK_RATE
+
+     When Linux got expanded beyond i386 LATCH was made "flexible" by
+     basing it on CLOCK_TICK_RATE to adjust for other frequencies than the
+     i386 PIT frequency.
+
+     As LATCH this got meaningless long ago and for amusement value it got
+     copied into new architectures arriving way after it got obsolete for
+     no reason but with comments to the effect that it's meaningless
+
+     And of course it had a lonely survivor in arch/x86/kernel/setup.c
+     despite it being only an alias for PIT_TICK_RATE for a very long time.
+
+  3) get_cycles()
+
+     That was introduced in 2.1.133pre4 (Dec. 1998) to utilize the back
+     then brand new TSC. The introduction broke everything except i386 SMP
+     with a CPU having a TSC and got then fixed up within a couple of days
+     with empty stubs returning 0 and #ifdeffery for CONFIG_TSC before the
+     2.2.0 release.
+
+     It's amusing that the naming deliberately ignored that TSC is the
+     acronym for Time Stamp Counter and not Cycle Counter and rather went
+     for the underlying coincidence that the TSC was running at the same
+     fixed frequency as the CPU core.
+
+     That turned out to be interesting when CPUs started to have frequency
+     scaling as the TSC then turned into a variable frequency random number
+     generator.
+
+     A decade later CPU designers came to senses and made the TSC invariant
+     usually running at the nominal CPU frequency, which allowed to use it
+     for reliable timekeeping purposes.
+
+     Non x86 architectures implemented get_cycles() based on whatever
+     continuously running counter they had available in their CPUs. Some of
+     them actual CPU cycle counters, but many of them running at a fixed
+     frequency which was completely unrelated to CPU cycles.
+
+     Around 2004/5 the timekeeping subsystem was completely rewritten and
+     made generic along with the scheduling clock and other related
+     infrastructure. With that rewrite get_cycles() got mostly obsolete,
+     but despite it being on the todo list of quite some people it never
+     ceased to exist and it was just a conveniance vehicle to base other
+     things like the recent addition of random_get_entropy() on top with a
+     hideous #ifdef/#define macro maze.
+
+     The other remaining use cases are mostly debugging and testing
+     code. Especially the usage in performance test code is hillarious at
+     best. While the name get_cycles() suggests that it provides access to
+     CPU cycles the reality is that it provides a unspecified counter for
+     most systems, where a lot of architectures simply return 0 because
+     they either do not have such a counter or did not bother to implement
+     it at all.
+
+     So in fact get_cycles() should have been renamed to get_bogo_cycles()
+     long ago matching the BogoMIPS "impress your friends" printk which
+     still exists for historical amusement value.
+
+     But the real solution is to remove it all together instead of
+     proliferating the bogosity.
+
+
+This is what this series does with the following steps:
+
+   1) Cleanup some header dependency hell which got unearthed by the
+      restructuring and went unnoticed so far. It's amazing how the kernel
+      build system magically "works". This affects not only x86, but the
+      main fallout was observed and fixed there. ARM64 and MIPS are at
+      least as bad as they silently rely on the accidental asm/timex.h
+      include through a variety of generic headers to make their
+      architecture code compile. See the changelog and patches specific to
+      those two.
+
+   2) Removal of LATCH
+
+   3) Removal of CLOCK_TICK_RATE
+
+   4) Consolidation of cycles_t which was a typedef in asm/timex.h
+
+   5) Cleanup of read_current_timer() which is only used for delay
+      calibration and has nothing to do with get_cycles()
+
+   6) Cleanup of get_cycles() usage in debug and test code
+
+   7) Decoupling of random_get_entropy() from get_cycles()
+
+   8) Removal of asm/timex.h includes except for architecture internal
+      usage where necessary.
+
+At the end get_cycles() survives in a couple of architectures as a purely
+architecture internal implementation detail.
+
+This survives compile testing on all architectures except hexagon and nios2
+because the current cross tools based on gcc15 do not offer a compiler for
+them anymore. Boot tested on x86 and some qemu instances covering only a
+few architectures.
+
+The series applies on v7.0-rc7 and with very minor conflicts on -next. It
+is also available from git:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git getcycles-v1
+
+Thanks,
+
+	tglx
+---
+ arch/alpha/include/asm/timex.h                 |   33 --------
+ arch/arc/include/asm/timex.h                   |   15 ---
+ arch/arm/include/asm/timex.h                   |   16 ---
+ arch/arm64/include/asm/timex.h                 |   18 ----
+ arch/hexagon/include/asm/timex.h               |   23 -----
+ arch/m68k/include/asm/timex.h                  |   42 ----------
+ arch/microblaze/include/asm/timex.h            |   13 ---
+ arch/mips/include/asm/timex.h                  |  102 -------------------------
+ arch/sh/include/asm/timex.h                    |   24 -----
+ arch/sparc/include/asm/timex.h                 |    9 --
+ arch/sparc/include/asm/timex_32.h              |   14 ---
+ arch/um/include/asm/timex.h                    |    9 --
+ b/Documentation/fb/udlfb.rst                   |    4 
+ b/arch/Kconfig                                 |   10 ++
+ b/arch/alpha/Kconfig                           |    1 
+ b/arch/alpha/include/asm/random.h              |   14 +++
+ b/arch/arm/Kconfig                             |    2 
+ b/arch/arm/include/asm/delay.h                 |    1 
+ b/arch/arm/include/asm/random.h                |   14 +++
+ b/arch/arm/lib/delay.c                         |   14 +--
+ b/arch/arm/mach-omap1/Kconfig                  |    2 
+ b/arch/arm64/Kconfig                           |    2 
+ b/arch/arm64/include/asm/io.h                  |    5 -
+ b/arch/arm64/include/asm/ptp_vmclock.h         |   12 ++
+ b/arch/arm64/include/asm/random.h              |   11 ++
+ b/arch/arm64/include/asm/rqspinlock.h          |    1 
+ b/arch/arm64/kernel/time.c                     |    6 +
+ b/arch/arm64/kernel/topology.c                 |    1 
+ b/arch/arm64/kernel/traps.c                    |    1 
+ b/arch/arm64/kvm/emulate-nested.c              |    1 
+ b/arch/arm64/kvm/hyp/include/hyp/switch.h      |    1 
+ b/arch/arm64/lib/delay.c                       |    1 
+ b/arch/hexagon/Kconfig                         |    1 
+ b/arch/hexagon/kernel/time.c                   |    8 +
+ b/arch/loongarch/Kconfig                       |    1 
+ b/arch/loongarch/include/asm/random.h          |   15 +++
+ b/arch/loongarch/include/asm/timex.h           |    2 
+ b/arch/loongarch/kernel/relocate.c             |    1 
+ b/arch/loongarch/kernel/syscall.c              |    1 
+ b/arch/loongarch/lib/delay.c                   |    2 
+ b/arch/m68k/Kconfig                            |    1 
+ b/arch/m68k/amiga/config.c                     |    1 
+ b/arch/m68k/include/asm/random.h               |   14 +++
+ b/arch/m68k/kernel/time.c                      |    2 
+ b/arch/mips/Kconfig                            |    1 
+ b/arch/mips/generic/init.c                     |    1 
+ b/arch/mips/include/asm/random.h               |    7 +
+ b/arch/mips/kernel/pm-cps.c                    |    1 
+ b/arch/mips/kernel/proc.c                      |    1 
+ b/arch/mips/kernel/relocate.c                  |    2 
+ b/arch/mips/kernel/time.c                      |   53 ++++++++++++
+ b/arch/mips/lib/dump_tlb.c                     |    1 
+ b/arch/mips/mm/cache.c                         |    1 
+ b/arch/nios2/Kconfig                           |    1 
+ b/arch/nios2/include/asm/random.h              |   14 +++
+ b/arch/nios2/include/asm/timex.h               |    7 -
+ b/arch/nios2/kernel/time.c                     |    4 
+ b/arch/openrisc/Kconfig                        |    2 
+ b/arch/openrisc/include/asm/random.h           |   12 ++
+ b/arch/openrisc/include/asm/timex.h            |   10 --
+ b/arch/openrisc/lib/delay.c                    |    8 -
+ b/arch/parisc/Kconfig                          |    1 
+ b/arch/parisc/include/asm/random.h             |   12 ++
+ b/arch/parisc/include/asm/timex.h              |   10 --
+ b/arch/parisc/kernel/processor.c               |    1 
+ b/arch/parisc/kernel/time.c                    |    1 
+ b/arch/powerpc/Kconfig                         |    1 
+ b/arch/powerpc/include/asm/random.h            |   13 +++
+ b/arch/powerpc/include/asm/timex.h             |   25 ------
+ b/arch/powerpc/platforms/cell/spufs/switch.c   |    5 -
+ b/arch/riscv/Kconfig                           |    2 
+ b/arch/riscv/include/asm/random.h              |   25 ++++++
+ b/arch/riscv/include/asm/timex.h               |   23 -----
+ b/arch/riscv/kernel/unaligned_access_speed.c   |    1 
+ b/arch/riscv/kvm/vcpu_timer.c                  |    1 
+ b/arch/riscv/lib/delay.c                       |    8 +
+ b/arch/s390/Kconfig                            |    1 
+ b/arch/s390/include/asm/random.h               |   12 ++
+ b/arch/s390/include/asm/timex.h                |   10 --
+ b/arch/s390/kernel/time.c                      |    1 
+ b/arch/s390/kernel/vtime.c                     |    1 
+ b/arch/sparc/Kconfig                           |    2 
+ b/arch/sparc/include/asm/random.h              |   15 +++
+ b/arch/sparc/include/asm/timex_64.h            |   20 ----
+ b/arch/sparc/kernel/pcic.c                     |    1 
+ b/arch/sparc/kernel/time_32.c                  |    1 
+ b/arch/sparc/kernel/time_64.c                  |    4 
+ b/arch/sparc/vdso/vclock_gettime.c             |    1 
+ b/arch/x86/Kconfig                             |    4 
+ b/arch/x86/include/asm/iommu.h                 |    3 
+ b/arch/x86/include/asm/msr.h                   |    5 -
+ b/arch/x86/include/asm/percpu.h                |    5 -
+ b/arch/x86/include/asm/percpu_types.h          |   17 ++++
+ b/arch/x86/include/asm/ptp_vmclock.h           |   12 ++
+ b/arch/x86/include/asm/pvclock.h               |    1 
+ b/arch/x86/include/asm/random.h                |   12 --
+ b/arch/x86/include/asm/smp.h                   |    2 
+ b/arch/x86/include/asm/tsc.h                   |   11 --
+ b/arch/x86/include/asm/vdso/gettimeofday.h     |    5 -
+ b/arch/x86/kernel/apm_32.c                     |    4 
+ b/arch/x86/kernel/cpu/mce/core.c               |    1 
+ b/arch/x86/kernel/nmi.c                        |    1 
+ b/arch/x86/kernel/setup.c                      |    2 
+ b/arch/x86/kernel/smpboot.c                    |    1 
+ b/arch/x86/kernel/tsc.c                        |   12 +-
+ b/arch/x86/lib/delay.c                         |    8 -
+ b/crypto/jitterentropy-kcapi.c                 |    1 
+ b/crypto/tcrypt.c                              |   84 ++++++++++----------
+ b/drivers/iommu/intel/dmar.c                   |    4 
+ b/drivers/iommu/intel/iommu.h                  |    8 +
+ b/drivers/irqchip/irq-apple-aic.c              |    1 
+ b/drivers/misc/sgi-gru/gruhandles.c            |   20 +---
+ b/drivers/misc/sgi-gru/grukservices.c          |    3 
+ b/drivers/misc/sgi-gru/grutlbpurge.c           |    5 -
+ b/drivers/net/arcnet/arc-rimi.c                |    4 
+ b/drivers/net/arcnet/arcdevice.h               |   20 ----
+ b/drivers/net/arcnet/com20020.c                |    6 -
+ b/drivers/net/arcnet/com90io.c                 |    6 -
+ b/drivers/net/arcnet/com90xx.c                 |    4 
+ b/drivers/net/hamradio/baycom_epp.c            |   51 ------------
+ b/drivers/net/wireless/ath/wil6210/debugfs.c   |    2 
+ b/drivers/net/wireless/ath/wil6210/txrx.c      |    6 -
+ b/drivers/net/wireless/ath/wil6210/txrx_edma.c |    4 
+ b/drivers/net/wireless/ath/wil6210/wil6210.h   |    3 
+ b/drivers/ptp/Kconfig                          |    6 -
+ b/drivers/ptp/ptp_vmclock.c                    |    6 -
+ b/drivers/video/fbdev/udlfb.c                  |   24 ++---
+ b/fs/ext4/mballoc.c                            |    4 
+ b/include/asm-generic/Kbuild                   |    2 
+ b/include/asm-generic/percpu_types.h           |   20 ++++
+ b/include/linux/compiler_types.h               |    1 
+ b/include/linux/delay.h                        |    2 
+ b/include/linux/jiffies.h                      |    3 
+ b/include/linux/random.h                       |   18 ++++
+ b/include/linux/timex.h                        |   26 ------
+ b/include/linux/types.h                        |    6 +
+ b/init/calibrate.c                             |   19 ++--
+ b/kernel/kcsan/core.c                          |    3 
+ b/kernel/kcsan/debugfs.c                       |    8 -
+ b/kernel/time/timer.c                          |    1 
+ b/lib/interval_tree_test.c                     |   17 +---
+ b/lib/rbtree_test.c                            |   47 +++++------
+ b/lib/test_vmalloc.c                           |   10 +-
+ b/mm/kasan/sw_tags.c                           |    2 
+ b/mm/slub.c                                    |   37 +++++----
+ include/asm-generic/timex.h                    |   23 -----
+ 146 files changed, 622 insertions(+), 796 deletions(-)
+
 

@@ -1,75 +1,73 @@
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
+Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FEDD212548
-	for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 14:46:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98B6C39FD4
+	for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 16:50:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776005207; cv=none; b=QWVqH8BqjnynsQWUerApdK/Wy6TjWPyAICpmFMDjQi14bKRU0Sw8I+iBFuIzrwq7mSpiWM2MyTgmRvcW9np8COnPeINLTHGw5VuS/Jgyfmtni9Qv1VSA+dIP5JqBVPMWZEllHxQvTDjKBSxcXVuOBRM6zidkU8gz4cWIR21Fz6I=
+	t=1776012602; cv=none; b=Cbz1z0Z7U4Hn0yFxeQvLxekpv1KizUeEXnFrUphzJVXxm1FYP128vmrDRVu+Lj5B6xt6ivJasyo4J9w6p/VADY6UeD2lNb/WhnhMOxX7WR8YSJtgKw0rh4F1s7nYwCWsZ3/lN4NqQkGKq9tI2ssTWLyV1U48IP7L7+EDjXRQGLA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776005207; c=relaxed/simple;
-	bh=3iWQYpa4v/976oSNv3UVleyySQonyVZzxNwcwTPUUGg=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=NIVbxpcihYZGLjoXq4yd196NrPWxDXMlQJhByLGgBqhCqPinhpyKm9QXgRUQTWVBioVS/4jG7coVnBXCDV2Etn+7nrUwRF4WuNAgIp9Gnu4HMgAHsUx2cla8tdSGi2lyo8EOtKvXoKYf3ObebgDf25x68Qx0KNjWie9HQQNzkgA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VAb4JLii; arc=none smtp.client-ip=209.85.221.47
+	s=arc-20240116; t=1776012602; c=relaxed/simple;
+	bh=/fq4vDr56CO2k+npiEa+6hwzqLAU9ijIhxkJrtFIYjY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NOtZpfYYiezDPQ0ko4q2Kt2bc20GmVGle+uWcOMknsgFwmqYT8Q89fvnGbsAUtxWMRVwZI2INLAZ1KNd8v8Svy9cV4eLefp/BS1goEZZk68x7D1MvgR46WRRSl+XAKYGBMbY+idqgditqkgYtACCHdsj3rYzz8VfcCd0aO76Vrg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=foKFqgwV; arc=none smtp.client-ip=209.85.221.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VAb4JLii"
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-43cfd832155so2347896f8f.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 07:46:45 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="foKFqgwV"
+Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-43d7645adbdso209827f8f.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 09:50:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776005204; x=1776610004; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1776012599; x=1776617399; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=bBPvbkrYp9W7ICoOlah1q6oHXqyE/KvHmdfXYMP2BrU=;
-        b=VAb4JLiikqv8hTIHkTHcysJY8cB4oRR3FncSSSgbAf/oL0YTglUf2kKlClO/kpetng
-         XoUQhCZhBRyJIPVPo28EC64rhLkfIu9WubIrNhdlBbOVfkJOTP/3aUE5ENnx1UHliG81
-         wMBTNGKXz0w+sGihKVU8vvPM0RypRDkKJfaGJ6i/LwItogpzABI7k0hxJGPQPuQsuzTV
-         TAH7yiTbKIPaQGNqoclxwfUPaSeXA3y45c5+ocSLC6AWWyVTtOyM3gOAEooq19f6XbJ+
-         zxhlztRCEt0ISQQcGKiCyFHxR3a8Q69oOJgKFC327qE1RanBL40m+xOx9qGo5/x0/T58
-         4miQ==
+        bh=zY6yfZkHIbKAhpXHmyMs2cR3FIwM5tf4pW3ivO5AZFE=;
+        b=foKFqgwV7teFIr4zOB2lXtdokX4iahJIXHv4jRurzS+5Zx6xOYMDmBUOI49KMzZdsC
+         dLE1IpIqWzGIIogYa/SiF4/+S2DRIzbPoulqxLeRYwYKAYOZDjSNSGrjl0kcBh7dn9/P
+         zncSgQavUdiU2EihVoo43ZD9NsNUZjJHGrB/piKIBu0QEjSNEYkkdMIMXINXFQyVfsjn
+         SA/kuVRwVnfN+ciE8RO9rg00RYR444mIP0Hg+8PKjl6/AXnCBhiEWiCAL8yTpM+PqlUF
+         xPvV7viqfqjfOdaaXFS4YxSEn7UVABeZ4qojk0M/Z9p1oVmVbSN4epReKUrskFL1WV5n
+         iD9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776005204; x=1776610004;
+        d=1e100.net; s=20251104; t=1776012599; x=1776617399;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=bBPvbkrYp9W7ICoOlah1q6oHXqyE/KvHmdfXYMP2BrU=;
-        b=pJ4g32yK30BfUnkYl8Q6XRoDOU9SmaTMjWflrESRtFDaCeMQdmhdI5WLkofAKff8fm
-         0VqpkFAHjmh/CyjIligeoJZHUzj/fA6neqNqLooEy8nPWB59x0xN4do8qgRcywok7rNC
-         fIKnxf9HcOZ9NpeMC9nYEZca4/medTN6JjhS8UQ3hTQaYAEMIemh8w8nIBTiKTCOYYJD
-         tIGXzKhEdzcMfiySEVFJcd5lqeV8wIm9hdSkoh64ssaU9O/X/NB1db7Xvu1ynV64B2QD
-         RqjC66JRrZKh70wsMUTgYPV43kUu6pLZdo2yqV8X5Zwu9l3S8kL5LhB1Wq31WGDcAb6D
-         eZSg==
-X-Forwarded-Encrypted: i=1; AFNElJ/ylQcTYkXSniI2w7vfRcEN5cYpGitAlYn0wZaPhytwp/0temhYI13/cYwb74KFnvbXKf4P7TGJNU4eOQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwTLUJh0EpaqWLZJRQ3hAHqdkzYJLyWOiwQq+MD7rRsES4Ju/Ia
-	dEgeVqGRHC1tXb3USXQAxW2TJOv77OwJi/hg35Mtgh2Hi0VCcEekLHkZ
-X-Gm-Gg: AeBDievLtxmD5MZIstxJX8Q0gruEHPRNY+RN8ddFRUYUqPTSaGDaI+gqKca5hYGstRZ
-	oiXJu8DgAjqRFn+UpH3mJm3mHP5EVP1JF4lRipePWkEKAm7RNC1cHzGZKNiyhEjlzpXf7wpisjy
-	i8QZQZLxuysanEB4ZWwj0J9nOpDGpt6mhfftCy4nyTIX+8hxEYaV5JpsNtJNy32Q/5JT+7/2+hO
-	hD/+VjOamRChpBZUxl7B7DEibRxibuhh06EcLcfsmYQSMo95sZIOcdnPVGDXw+g0p2cB7cHQXW9
-	MoU/S1TfQr3M8ZbO0WybvtLG5YjUYAKIL748l0xCKIbDOpnLfqT1HWl6eCZ9Jsur35OvbVw/pdc
-	t/tJ8okrG6y7tsC0NqaY58io77ZoqnK5D3E0SisenMgd9zfYyWnpOcrLaipAlU5yS2WFmddygTx
-	fUbtvrMn2STeQ5/OJWtrRnTQuJwKUFVM1Lm1fVKZo7+NSTbivZ1Q==
-X-Received: by 2002:a05:6000:2489:b0:43d:77c6:be6d with SMTP id ffacd0b85a97d-43d77c6c43bmr1268704f8f.7.1776005203537;
-        Sun, 12 Apr 2026 07:46:43 -0700 (PDT)
-Received: from localhost.localdomain ([72.255.58.127])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43d63e5ccdasm26622541f8f.34.2026.04.12.07.46.41
+        bh=zY6yfZkHIbKAhpXHmyMs2cR3FIwM5tf4pW3ivO5AZFE=;
+        b=PXB1aObftddL+0qY2o5ssf+a2kFMd17uaHChL8UcKLwUQxG0Cf54HleMi6tjW9XWy0
+         KPwkBW6Aej1vK/wfbWU0lsHO51msrttLKwQ1/h7aeK2fpJD5pH3RrOunfCc3HX6gUpWG
+         jRtF4XE3PWbELpheYFNw+01reZd1Ze3QFSpLfqsTFYSaysjxM1ZuvMCL3xViOJi/7667
+         FnXKH6mvex1GCr4hEkmQVfhGg7JD1M/xpSY1A+1H7qzExTHe4G4urtnMjCgd52+XdcUO
+         I2kXPMYwPdqXSVc9Axl6kz4wsq4Q7FFx6tQrjbQx3kJJKotguuBlHjDAklJuqrXgbs3R
+         RGiA==
+X-Forwarded-Encrypted: i=1; AFNElJ8UY/hnZMLudiS1ERdHSCydynalz9DbdG50Wof4KxYqrv2H7bRlK0hLx6YFi3wIpJA5F/o+GmUgJwiWVg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxJ0pJhqQPR3XF0aE5XLJdbWZ92jnufID0lbzLN5MjRdYR71EJm
+	ySXrNbeDiaelPctU+EkdSxQqAJ5g8MLAqYMXlu9UKFc+T70HDt+EA558
+X-Gm-Gg: AeBDiescEG/BJfWbp19OBfFJIP+gnxNRLvsoqjq3ZmqNHaJ1FYN6P1wZEyBb+XX4TRQ
+	5FYs5qG57QLScSGXmAELJlk+2mr6jOtRH1r6hsnZbjBridGx8mdStzWQz/eHvEwDtbepPVzII04
+	qoKAc+3gkc1F7MvKH6yWCYzOqGTdS/dSFxFI4ojg6ScjsKBLPyC4DHk4nIacRZY0ygU+cpAr4s4
+	6DzOxNWDnUVVy/ZDFTIbEcFo9SHJOSd9RwPtkz/vxYsn75QVKlfFc8QUDlnsVz0UXQGueqVmeQl
+	6SuHY5OVBQ8NJ43P7wareTTiWx8D5ES1lWANG6SNfzxtWMLuC1AjNYpOHnqDjILj2f6C7inWIzp
+	B8WPqVPSiB6lNB/mIvnXPkIqObZttGVvLjbkK6ChIIH2z6CsDjIvtJ9ultVoiYmlnRLe6oUW0ak
+	Iw8hj63N0GflJdAJ/eKmAb
+X-Received: by 2002:a05:6000:238a:b0:43d:7883:87ce with SMTP id ffacd0b85a97d-43d788389c8mr903275f8f.34.1776012598717;
+        Sun, 12 Apr 2026 09:49:58 -0700 (PDT)
+Received: from localhost.localdomain ([2a09:bac6:d6c7:2682::3d6:8f])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43d63de2999sm24999175f8f.6.2026.04.12.09.49.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Apr 2026 07:46:43 -0700 (PDT)
-From: Mahad Ibrahim <mahad.ibrahim.dev@gmail.com>
-To: Andy Shevchenko <andy@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Shuah Khan <skhan@linuxfoundation.org>,
-	linux-kernel-mentees@lists.linuxfoundation.org,
-	dri-devel@lists.freedesktop.org,
+        Sun, 12 Apr 2026 09:49:58 -0700 (PDT)
+From: Baker <mzndmzn@gmail.com>
+To: andy@kernel.org,
+	gregkh@linuxfoundation.org
+Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	Mahad Ibrahim <mahad.ibrahim.dev@gmail.com>
-Subject: [PATCH] staging: fbtft: Use %pe format specifier for error pointers
-Date: Sun, 12 Apr 2026 10:45:52 -0400
-Message-Id: <20260412144552.18493-1-mahad.ibrahim.dev@gmail.com>
-X-Mailer: git-send-email 2.39.5
+	Baker <mzndmzn@gmail.com>
+Subject: [PATCH] staging: fbtft: fix coding style issue in fbtft-bus.c
+Date: Sun, 12 Apr 2026 11:49:53 -0500
+Message-ID: <20260412164953.1470-1-mzndmzn@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -78,50 +76,30 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The %pe format specifier resolves error pointers to their symbolic
-representation. Previously %ld with PTR_ERR() was being used, %pe is a
-better alternative.
+Remove trailing space and comma before closing parenthesis ')' in
+define_fbtft_write_reg macro as reported by checkpatch.pl.
 
-Fixes the following coccinelle warnings reported by coccicheck:
-WARNING: Consider using %pe to print PTR_ERR()
-
-Testing: I do not own the hardware, therefore I could not perform
-hardware testing. Compile tested only.
-
-Signed-off-by: Mahad Ibrahim <mahad.ibrahim.dev@gmail.com>
+Signed-off-by: Baker <mzndmzn@gmail.com>
 ---
- drivers/staging/fbtft/fb_ssd1351.c | 3 +--
- drivers/staging/fbtft/fbtft-core.c | 3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/staging/fbtft/fbtft-bus.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
-index 6736b09b2f45..15524b80035a 100644
---- a/drivers/staging/fbtft/fb_ssd1351.c
-+++ b/drivers/staging/fbtft/fb_ssd1351.c
-@@ -218,8 +218,7 @@ static void register_onboard_backlight(struct fbtft_par *par)
- 				       &bl_props);
- 	if (IS_ERR(bd)) {
- 		dev_err(par->info->device,
--			"cannot register backlight device (%ld)\n",
--			PTR_ERR(bd));
-+			"cannot register backlight device (%pe)\n", bd);
- 		return;
- 	}
- 	par->info->bl_dev = bd;
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index f427c0914907..823315dfbf5d 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -187,8 +187,7 @@ void fbtft_register_backlight(struct fbtft_par *par)
- 				       &fbtft_bl_ops, &bl_props);
- 	if (IS_ERR(bd)) {
- 		dev_err(par->info->device,
--			"cannot register backlight device (%ld)\n",
--			PTR_ERR(bd));
-+			"cannot register backlight device (%pe)\n", bd);
- 		return;
- 	}
- 	par->info->bl_dev = bd;
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 30e436ff19e4..409770891c54 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -62,9 +62,9 @@ out:									      \
+ }                                                                             \
+ EXPORT_SYMBOL(func);
+ 
+-define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
++define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
+ define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+-define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
++define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
+ 
+ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+ {
 -- 
-2.39.5
+2.47.3
 

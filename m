@@ -1,145 +1,127 @@
-Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
+Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CA8D37C107
-	for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 13:23:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.49
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776000187; cv=pass; b=efi8nELAfUZxqnLSit/tgk9WU3CyZ6gpaFYuuLS9jojKLDuhKnzyiOU3CwoBuNm66MnTbAYXRK5vJbZpfUOeEbSgKBFHwgfSJXu6uz7OtCwJMxiha6UskxZihNCfNGkBJhSwraiXqTU8yKEaoVYr0+HwfqlaY2vZirPjTJCDgWI=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776000187; c=relaxed/simple;
-	bh=1p6x7PvyQL+5PGqdAnx23TY8v0cVXdqCOnUZdmPD2Po=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ng4tRDlopiGY1SIQhRNq8Jkv6BFMVVBNBzASKGygQFn8R8CGigqwaJ6q8OV/scKIoOReyrPtejx1XzeJ2cCw2cwpm5Xdzpm8ZodtxA6j97SpvxKAExfdXJ0vLx4yE8oE21TItu+yVX7+bOUjrjU6xVLwxRkY4XZjvswAkJNwfCg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dccArJm9; arc=pass smtp.client-ip=209.85.218.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FEDD212548
+	for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 14:46:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776005207; cv=none; b=QWVqH8BqjnynsQWUerApdK/Wy6TjWPyAICpmFMDjQi14bKRU0Sw8I+iBFuIzrwq7mSpiWM2MyTgmRvcW9np8COnPeINLTHGw5VuS/Jgyfmtni9Qv1VSA+dIP5JqBVPMWZEllHxQvTDjKBSxcXVuOBRM6zidkU8gz4cWIR21Fz6I=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776005207; c=relaxed/simple;
+	bh=3iWQYpa4v/976oSNv3UVleyySQonyVZzxNwcwTPUUGg=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=NIVbxpcihYZGLjoXq4yd196NrPWxDXMlQJhByLGgBqhCqPinhpyKm9QXgRUQTWVBioVS/4jG7coVnBXCDV2Etn+7nrUwRF4WuNAgIp9Gnu4HMgAHsUx2cla8tdSGi2lyo8EOtKvXoKYf3ObebgDf25x68Qx0KNjWie9HQQNzkgA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VAb4JLii; arc=none smtp.client-ip=209.85.221.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dccArJm9"
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-b9c1da7ac63so541556366b.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 06:23:04 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776000183; cv=none;
-        d=google.com; s=arc-20240605;
-        b=ZTZF4qtfpflO3RUoLernwHAm2P5Onblo1az/OEeYdBKAqPBEP1cbYNRnFXoQMcuai0
-         /bt6drtsfLCV1GlazWAY82vU7REmxoZzJ1wWageh3KoOf3pf48mrlKgv4t3HvNtGvBL+
-         9HomGTVmbxh4exrp8a10EqRmPY0gbUzph8uNHG859UQWBb1s3HxssogrbNIa64Zzy7jB
-         TRJk1jDyOwGD8WFsO61dwBD6qUZ60LDsQFb9l7Rg8dd8ZlJeIBKZMnnH0yjmZbU75Qsb
-         DjAfSgyGQ4MdHejpRWhZ3+31AUG5gnACBmjgqonnTtgEv5mdBaHDHzXizp2JtOhtmNvW
-         KdeQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=gDdA9vu4Fz00bgurrj0mXlyC2hJ8rRfiuCUxuR8xwe8=;
-        fh=W3w8V8r9Z9hRxdURsoPesa7fRD5eY6lPlwz5Q/EBuno=;
-        b=Ft6dQzmN2TiQZi8/AfkTYZVQ6MUp/gP9sCaFy6T9ORTZmumyCBneQ+rAHfBwuanlyD
-         9Rsu0Zyy9fO2jmkpPMLyf+EAYXoz0ubUVNOYjkKcaa5i4dmQmwmXYnMfIoXOyWRdgvIf
-         d5gfa75hlcOlrlD74T4Twu2jloRO2rpkIMimCn+kKyA1ubFyl4HYwo1OHL8uByXbgwBn
-         xlRin3YWmynhgFtSqTLRO8Ojhwe6Wk4qbNZ7U4YfcUilpUQtl7AqOM9Bz5eMuh0370v+
-         6nN/QgdLPPGH3Gj8NKb6xGA9In1K5jfiTJobf4YPcg5q3EKpo2VPKjqmkK4efAkRR+1M
-         vucw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VAb4JLii"
+Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-43cfd832155so2347896f8f.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 07:46:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776000183; x=1776604983; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gDdA9vu4Fz00bgurrj0mXlyC2hJ8rRfiuCUxuR8xwe8=;
-        b=dccArJm9v6h9Fdk8lDGNWZnQG14AQ9ZokHDnv7DAL1GW0R6BDoMR0waR0wHnO++sNY
-         YJPJSDf/Eo4Jqw4GQ8Gz/T/rsLkNap5uTZ+EpwANfeQ1dFGXyG88+fN/49+h4JvC9C7c
-         2+asFn0yzVsL4n2hJqrH+GINWtCINsNrMCDz6yHqeLWKks0EsNy7ssNes4vhdFLCd+tg
-         k2Ys2/EuxonOOeyCkSNs/L20e6zSdmHhXIY25hzHxXat+VjZowRiCo0VNk9bdjlPvxYt
-         DV9owUMCQ8VWv/4Ldm8HtUCj9QQlhYJyZr8JnJBv87EbzYIfO7KpnQu2sRPezsHrfV9J
-         1U2Q==
+        d=gmail.com; s=20251104; t=1776005204; x=1776610004; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=bBPvbkrYp9W7ICoOlah1q6oHXqyE/KvHmdfXYMP2BrU=;
+        b=VAb4JLiikqv8hTIHkTHcysJY8cB4oRR3FncSSSgbAf/oL0YTglUf2kKlClO/kpetng
+         XoUQhCZhBRyJIPVPo28EC64rhLkfIu9WubIrNhdlBbOVfkJOTP/3aUE5ENnx1UHliG81
+         wMBTNGKXz0w+sGihKVU8vvPM0RypRDkKJfaGJ6i/LwItogpzABI7k0hxJGPQPuQsuzTV
+         TAH7yiTbKIPaQGNqoclxwfUPaSeXA3y45c5+ocSLC6AWWyVTtOyM3gOAEooq19f6XbJ+
+         zxhlztRCEt0ISQQcGKiCyFHxR3a8Q69oOJgKFC327qE1RanBL40m+xOx9qGo5/x0/T58
+         4miQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776000183; x=1776604983;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=gDdA9vu4Fz00bgurrj0mXlyC2hJ8rRfiuCUxuR8xwe8=;
-        b=OSNYoRNk9d11FsQ0aHo1+SqXWOfGJQeVm9Us+asGsXhutuvRKwi8+CIk1VbNd/53BI
-         trclLW1GdFUs3CC64MHmxj4kaFDG7/DQGV89lJDPx5MunC7U92Vb/+r5hKLIL6c6xXL1
-         6zQTi0gGPe/cNMvZm/ZUBc6ZqvlPcecJsDMjAr6UrEKk7AldpCIgVAW6tRAXIQvVK5ik
-         XUWi8P9bTmVwgpw3xFKUcNe5FIBRYAgqqXjq94dpi2/ed5TqD1M1e2VuPFOwhCD/smBk
-         NHFnoVTFtinzB55Z5JNAX6W74Hw1yA6pvWl1YLzTG7fkNV0STfwq08emKIsoB8Z1gp1m
-         hp0g==
-X-Forwarded-Encrypted: i=1; AJvYcCXSqFxCcNWU9XSS+WBS3/qfDJlJgbqGvbgCYRMbkxhq/2XBaL5dk4p38Hw3IJtqe4DwqjDHyzlsCDmqLw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz1nrG7JcbdvgIw3Gcko/uQhBNDLz+9+eBuS/veajujV3PiS2TL
-	i6OMvLhwmp4ubFVvmlW1mF//qaqEu575MWnx44vcSkXa9U32VAwWgNJJYFckK5ZTFHqon3dt/ol
-	OTptTbp7WueBFARkWAidZypWA4/ZMfJE=
-X-Gm-Gg: AeBDietwSOLBTLaUOp2yJVZE4n0oq8Td3RuQGHp6/dKO2v5Eym0OdMo/JLgiWRmqijB
-	fCkc+p88gW5I4RISVR3IY/gGv39LYshJIcpAqD0NyolUGgS3dfn0afxZSTHcVzsQpGZg0Y2aYHj
-	H14Iin+9ptY4juH4zVpqHBSkwTfhK34ooa0hlCFMjyoRCyqhVER1oZmwrGNltGsPyPM0dIHb/lX
-	eupL6cUxJWxHzb1fovWLdHkfRqKbeOaAoJQGpL76Z2/HDEWU2zLo1hlfOa9UKhmaYoyhcKiksK0
-	9v56+blvit4Dt9VLJmVf4gyBcBOusYFWKvSeFsWB
-X-Received: by 2002:a17:907:e113:b0:b9c:6ef1:ed18 with SMTP id
- a640c23a62f3a-b9d727aa4fdmr352963766b.25.1776000183133; Sun, 12 Apr 2026
- 06:23:03 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1776005204; x=1776610004;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bBPvbkrYp9W7ICoOlah1q6oHXqyE/KvHmdfXYMP2BrU=;
+        b=pJ4g32yK30BfUnkYl8Q6XRoDOU9SmaTMjWflrESRtFDaCeMQdmhdI5WLkofAKff8fm
+         0VqpkFAHjmh/CyjIligeoJZHUzj/fA6neqNqLooEy8nPWB59x0xN4do8qgRcywok7rNC
+         fIKnxf9HcOZ9NpeMC9nYEZca4/medTN6JjhS8UQ3hTQaYAEMIemh8w8nIBTiKTCOYYJD
+         tIGXzKhEdzcMfiySEVFJcd5lqeV8wIm9hdSkoh64ssaU9O/X/NB1db7Xvu1ynV64B2QD
+         RqjC66JRrZKh70wsMUTgYPV43kUu6pLZdo2yqV8X5Zwu9l3S8kL5LhB1Wq31WGDcAb6D
+         eZSg==
+X-Forwarded-Encrypted: i=1; AFNElJ/ylQcTYkXSniI2w7vfRcEN5cYpGitAlYn0wZaPhytwp/0temhYI13/cYwb74KFnvbXKf4P7TGJNU4eOQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwTLUJh0EpaqWLZJRQ3hAHqdkzYJLyWOiwQq+MD7rRsES4Ju/Ia
+	dEgeVqGRHC1tXb3USXQAxW2TJOv77OwJi/hg35Mtgh2Hi0VCcEekLHkZ
+X-Gm-Gg: AeBDievLtxmD5MZIstxJX8Q0gruEHPRNY+RN8ddFRUYUqPTSaGDaI+gqKca5hYGstRZ
+	oiXJu8DgAjqRFn+UpH3mJm3mHP5EVP1JF4lRipePWkEKAm7RNC1cHzGZKNiyhEjlzpXf7wpisjy
+	i8QZQZLxuysanEB4ZWwj0J9nOpDGpt6mhfftCy4nyTIX+8hxEYaV5JpsNtJNy32Q/5JT+7/2+hO
+	hD/+VjOamRChpBZUxl7B7DEibRxibuhh06EcLcfsmYQSMo95sZIOcdnPVGDXw+g0p2cB7cHQXW9
+	MoU/S1TfQr3M8ZbO0WybvtLG5YjUYAKIL748l0xCKIbDOpnLfqT1HWl6eCZ9Jsur35OvbVw/pdc
+	t/tJ8okrG6y7tsC0NqaY58io77ZoqnK5D3E0SisenMgd9zfYyWnpOcrLaipAlU5yS2WFmddygTx
+	fUbtvrMn2STeQ5/OJWtrRnTQuJwKUFVM1Lm1fVKZo7+NSTbivZ1Q==
+X-Received: by 2002:a05:6000:2489:b0:43d:77c6:be6d with SMTP id ffacd0b85a97d-43d77c6c43bmr1268704f8f.7.1776005203537;
+        Sun, 12 Apr 2026 07:46:43 -0700 (PDT)
+Received: from localhost.localdomain ([72.255.58.127])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43d63e5ccdasm26622541f8f.34.2026.04.12.07.46.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 12 Apr 2026 07:46:43 -0700 (PDT)
+From: Mahad Ibrahim <mahad.ibrahim.dev@gmail.com>
+To: Andy Shevchenko <andy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Shuah Khan <skhan@linuxfoundation.org>,
+	linux-kernel-mentees@lists.linuxfoundation.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Mahad Ibrahim <mahad.ibrahim.dev@gmail.com>
+Subject: [PATCH] staging: fbtft: Use %pe format specifier for error pointers
+Date: Sun, 12 Apr 2026 10:45:52 -0400
+Message-Id: <20260412144552.18493-1-mahad.ibrahim.dev@gmail.com>
+X-Mailer: git-send-email 2.39.5
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260410120044.031381086@kernel.org> <20260410120319.131582521@kernel.org>
-In-Reply-To: <20260410120319.131582521@kernel.org>
-From: Magnus Lindholm <linmag7@gmail.com>
-Date: Sun, 12 Apr 2026 15:22:51 +0200
-X-Gm-Features: AQROBzAeMsaeSVePCJ__tEd4f2rWAY6MixXzp_fii2b8vyUpLt4xjSbtYzENFaw
-Message-ID: <CA+=Fv5S68wZQapeaYTspOfsuGk=nBj60sx-ojHBSqrxV59Q+ZA@mail.gmail.com>
-Subject: Re: [patch 23/38] alpha: Select ARCH_HAS_RANDOM_ENTROPY
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, 
-	Richard Henderson <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, 
-	Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, Lu Baolu <baolu.lu@linux.intel.com>, 
-	iommu@lists.linux.dev, Michael Grzeschik <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org, 
-	linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, 
-	linux-crypto@vger.kernel.org, Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org, 
-	David Woodhouse <dwmw2@infradead.org>, Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org, 
-	Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org, 
-	Andrew Morton <akpm@linux-foundation.org>, Uladzislau Rezki <urezki@gmail.com>, 
-	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com, 
-	Andrey Ryabinin <ryabinin.a.a@gmail.com>, Thomas Sailer <t.sailer@alumni.ethz.ch>, 
-	linux-hams@vger.kernel.org, "Jason A. Donenfeld" <Jason@zx2c4.com>, 
-	Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, 
-	Catalin Marinas <catalin.marinas@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
-	loongarch@lists.linux.dev, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>, 
-	Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org, 
-	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org, 
-	Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, 
-	Paul Walmsley <pjw@kernel.org>, linux-riscv@lists.infradead.org, 
-	Heiko Carstens <hca@linux.ibm.com>, linux-s390@vger.kernel.org, 
-	"David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Fri, Apr 10, 2026 at 2:36=E2=80=AFPM Thomas Gleixner <tglx@kernel.org> w=
-rote:
->
-> The only remaining usage of get_cycles() is to provide
-> random_get_entropy().
->
-> Switch alpha over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY
-> and providing random_get_entropy() in asm/random.h.
->
-> Remove asm/timex.h as it has no functionality anymore.
->
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Richard Henderson <richard.henderson@linaro.org>
-> Cc: linux-alpha@vger.kernel.org
-> ---
->  arch/alpha/Kconfig              |    1 +
->  arch/alpha/include/asm/random.h |   14 ++++++++++++++
->  arch/alpha/include/asm/timex.h  |   26 --------------------------
->  3 files changed, 15 insertions(+), 26 deletions(-)
+The %pe format specifier resolves error pointers to their symbolic
+representation. Previously %ld with PTR_ERR() was being used, %pe is a
+better alternative.
 
-Hi,
+Fixes the following coccinelle warnings reported by coccicheck:
+WARNING: Consider using %pe to print PTR_ERR()
 
-The Alpha side looks fine to me.
+Testing: I do not own the hardware, therefore I could not perform
+hardware testing. Compile tested only.
 
-I've applied this patch on top of v7.0-rc7, built a kernel successfully,
-boot-tested it on an Alpha UP2000+ (SMP) without issues.
+Signed-off-by: Mahad Ibrahim <mahad.ibrahim.dev@gmail.com>
+---
+ drivers/staging/fbtft/fb_ssd1351.c | 3 +--
+ drivers/staging/fbtft/fbtft-core.c | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-Acked-by: Magnus Lindholm <linmag7@gmail.com>
-Tested-by: Magnus Lindholm <linmag7@gmail.com>
+diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
+index 6736b09b2f45..15524b80035a 100644
+--- a/drivers/staging/fbtft/fb_ssd1351.c
++++ b/drivers/staging/fbtft/fb_ssd1351.c
+@@ -218,8 +218,7 @@ static void register_onboard_backlight(struct fbtft_par *par)
+ 				       &bl_props);
+ 	if (IS_ERR(bd)) {
+ 		dev_err(par->info->device,
+-			"cannot register backlight device (%ld)\n",
+-			PTR_ERR(bd));
++			"cannot register backlight device (%pe)\n", bd);
+ 		return;
+ 	}
+ 	par->info->bl_dev = bd;
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index f427c0914907..823315dfbf5d 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -187,8 +187,7 @@ void fbtft_register_backlight(struct fbtft_par *par)
+ 				       &fbtft_bl_ops, &bl_props);
+ 	if (IS_ERR(bd)) {
+ 		dev_err(par->info->device,
+-			"cannot register backlight device (%ld)\n",
+-			PTR_ERR(bd));
++			"cannot register backlight device (%pe)\n", bd);
+ 		return;
+ 	}
+ 	par->info->bl_dev = bd;
+-- 
+2.39.5
+

@@ -1,121 +1,157 @@
-Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com [209.85.208.49])
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B93C9391849
-	for <linux-fbdev@vger.kernel.org>; Mon, 13 Apr 2026 06:09:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABEE636308B
+	for <linux-fbdev@vger.kernel.org>; Mon, 13 Apr 2026 07:00:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.47
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776060567; cv=pass; b=OzUh2f+ZcOECki4lULHt2v11GZXaqjqD/Pj6bYuXUeJ3PkLC0ivijpQfjM3g2Xgs/JJTVV8xgUN0Bzw8WxBuwXFhdyWI6hFL13zjkiZEHNHo0f7Ila1zsfxPfjarLuHp2F9Edx4Mh9bFo2y3hr8nXzpv4dxutPZuXQDeTY9SbP4=
+	t=1776063614; cv=pass; b=BqpAaRIqr9dmX0zwIwfIc4dSlTpnwKEd7IiS+pdw2ARga9oZ5mbdr6ZqR6M4NlpX+9Od4fD6/8kKCsi+3z+tCWAconC6+WBLhov1c2pTlVb3AXAa/JkDb944jgAUDwot3+whXkYf+DJfx71+R7n7Wp6ZYoHTHxXj9ghsurIiIII=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776060567; c=relaxed/simple;
-	bh=OiV2w1gDFSOFwIi9IbkYMeKe/6rdSHAAIj+UVdB7T+Y=;
+	s=arc-20240116; t=1776063614; c=relaxed/simple;
+	bh=DNxWK0L5MVbngPTtX4ZuKM7+uvDs78OElrIwXLEPfAU=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DzkS249DwoqelO2NJfVuY0/ZAtTMY4FD9Q3ETRFFGMx9zctZhNyiKTlcTJZgshi5FQ7KyhpA/BeL+zHU8twcd5SxEPcjK12kFJWDdkWBZ2UsmIWW6kCzfg8DdwYidr6qJcUooc4XngHFWWr/YA6Tb/gI8UC/bGO5GUx9xfpMVJA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kbSGboiC; arc=pass smtp.client-ip=209.85.208.49
+	 To:Cc:Content-Type; b=u1xawWXgTYHJRTOnXDKjgsE3tv5gsEkuaBzita4xQIdAJXsQkmtgK6BLUw1uab1Z4452pyG0ztRzTbZrig6EdPJ+dpsqeRyBgD3O59weU3anDrC+3ACXFjcMOv8OLeAYP5n6B4fN/Eh32Oxjp/vAffouXy4nlWe37aLSkXJ21dk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bDZdH7ya; arc=pass smtp.client-ip=209.85.218.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kbSGboiC"
-Received: by mail-ed1-f49.google.com with SMTP id 4fb4d7f45d1cf-670c6c6e64dso3797527a12.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 12 Apr 2026 23:09:25 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776060564; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bDZdH7ya"
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-b9c62fc8debso616509866b.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Apr 2026 00:00:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776063611; cv=none;
         d=google.com; s=arc-20240605;
-        b=F0nv9ddjEX31oU8aWj5yMxVsWyy3555ucDouP+IVX73+Qa5qJ7L3N6jD0plHzf+Jc/
-         Ax+BxLMk+hkXdnHXjFEDpqlpXX7R+HLHIbDuot85zoukbKfcBkk8+Swe0gXOCp6RJ15H
-         f2HVBd2LC4rbcquOqJoO7gOBd3/mCnYz7LWjkS4fhhgh9C6tyj5b6n0dcw8+EANFjmvu
-         om1+gq9QbHkpRc3b8CX74indR5LL9PvzsNjbS7WK114qDijNLxodu29g3jMjMgLSrBWj
-         lB9HAnJs+zcBN8+OA1q4s+QgXTAqlkPE7kjSG0+/3223OTWua15pVbRKiW6GztRulfIl
-         ozkg==
+        b=JCQdE28v99aAOMQGjxpG0Gp1kyHh2/PuKhVlBweKasPejiqgHf2FzQKMbG+c+iFGkN
+         HbO7FqExIGYe/fjDaEo+l0jUpDHchIvxEvMHcRUgN5lrEtLN69ZgUdhsJ2L5LwRZm6n8
+         XiSgAG8HBUzkCfblv9bx+p8w8xcDhXY0e5pRT3hXhy7HRKAG3AFzxTXjq1edU9peApx7
+         0ctf4FWR/9v4UUB+rRwZRtjaiI6e1lB+LyTZXrs+BVIPfkkC9QcMVDxrnJsjAhBJQJ5l
+         PS1GGdSOHslhU6foRDKV6DeohwD1+xXtig4P5xGPtOWMqwV9yE1d3JAyDWsbYxgATJCw
+         MI3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=OiV2w1gDFSOFwIi9IbkYMeKe/6rdSHAAIj+UVdB7T+Y=;
-        fh=ttAi/zdJyFT9dWSJANo9EOxfMf0MfeXNvwSWLsTsQPE=;
-        b=kCMcp16bnS+tyD29dh2vo0UOIADH/C6wItmOfHTJol8gh6pHDML2DIYaX30iO3RxP8
-         TBlThM+pezU9MhugkMt8pGmqlQ6uIaJC1Uoix5NHk3yv605N0jN0Ces+v/2lUc03dLj2
-         WuFBhZAQpd45B1S8UMImzbt2H5KtWzRJMYmeGW+wsntwpDGLMW5K2sP+jMEn+eLK+046
-         YILlK+lBLPW8gE+DkQu8oN+D0iK8Rlow1HOUvh0TOaxxNR6YGQIqAS77o5muvqEbmtj6
-         WW3nHg1O1HqUAIWViM6J37IDygbm1zYJGpKXlqdHK8Y4CXjWiGhY5q7s5/yTn49GU/RG
-         IT4A==;
+        bh=X6pSeBoMwbk97qHNLEiiR0g4dw8qT9zFAczkuZLFIic=;
+        fh=vVDoicU+9xcNUT6k91pAEyPfln9oIKOivppXcyYsI4I=;
+        b=Hec+GAgSXNJRIwWxDDusygjckp+SqDgbOgYaMI+kiRotZmIDwBPx8tbLw245pvFZ5S
+         WBBdaleMsw/MerSgLaoED3a3lfFuOONHgyTKRa4/E2ZLDZfkuqXC1SoZwlMwe/LCT/rc
+         IICQe40kEMFZXwHMffB+73wpnh8S7zzvAAKZpgGJ+SRpX2QXdsLfsgnQsCgkZqF8CWKB
+         8jmygyNtD3HIAXnVgM4rzfeVAAAUNgOcAdl5fzB1x5aI1tVIHKDtmAdbSugdWttX3dOU
+         gy6YKMr4N3vbrxB6+5GfN7luhlva6+FKveLzChWtpclMqEqezoXAyTiLNP5ikg9CLpfN
+         cAbQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776060564; x=1776665364; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1776063611; x=1776668411; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=OiV2w1gDFSOFwIi9IbkYMeKe/6rdSHAAIj+UVdB7T+Y=;
-        b=kbSGboiCb0X38bbnMIunK4WD7B2TfipjmC6UyphmuJHtJCgARAGKyb66UVQEMuVXgF
-         4w+y9ivYNlJM4iKxIOawNAyktli8j5nrCACLEOiW0/rYL0ZgphFr5YQNoAdkeXT+OVcg
-         dVET+5UB4b3X5zJPy83I2TXD6MsRCfwjNIhMKv5bdMor/hSmLxg3wrE1Q06swrxRlRcI
-         v7iSlLIjNHQjTf/LCVh9TltNp+qquxAio6TTNPEDdiTenHY1gThENfnB+kKjU7SfiQbi
-         dC/Dr4ME5g5moLZx6GGTtvbTaGpFgqJEu+lZ7veT3JRKuV8G3gW5s+xdJzYzXME+7IKQ
-         fs0A==
+        bh=X6pSeBoMwbk97qHNLEiiR0g4dw8qT9zFAczkuZLFIic=;
+        b=bDZdH7yatRSoLspqXcY1lKPqaT3jQ3ba9ZYRuhG+2ws2EvJwd0HldLOTEYd6+9XqTz
+         Ee5wa+oXZNrIXG/WOvAEMOlyjlwYRn807VS0FeN+rLlvLFfuy1GziUMv5uAfeALlKWQi
+         cX3Tt3AQgyBqetvEtYVGk5iLChtFEK8rb9u8V/5ldLEgBRB4YLcwCZzoOGf+Vp2Z49TX
+         NFm8j2GfycEG5blZpOShroWbLEjx15HDpB9AdtLb0EdXKoZ0BwRq2Kpp0XYXP8SLA9j/
+         5sQvtyx5MsCbBXrt6TxVVXZ2Vo8bOL1EHUi1DpT4+A+XpYyExj5kv7BaKzKftvkgzO3Q
+         rg9Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776060564; x=1776665364;
+        d=1e100.net; s=20251104; t=1776063611; x=1776668411;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=OiV2w1gDFSOFwIi9IbkYMeKe/6rdSHAAIj+UVdB7T+Y=;
-        b=drc1cCpOAULc19SAR+Ea3CsztqKomrqHZEUwa/bXvxlxIbUjReKEfWGg1MWVCQ7WEz
-         4l5HuGxKjFHhy6tCnzdcQTGHxLt96GG/VoV005QUjPWE7LQXbdqQfCEHTlCQ4zkH0NTQ
-         M9Xz13gsmYfZK+r6tfaYdMp4a3Tuk4FUspF//dZ1v7K8uh3BGj82w09crfns9vD3dQfY
-         9N7HGXrO/nKEWfCAio3iUCkcbxQKEhWcD99pn+uVPnF4yyPsx8Poc7x0P0qSbrG/k/2n
-         B/ZTHDLDWfmN2EeYXlLjZVJNB5fv3O8ZTJkBFGK5J5+d6GvedYe4gK2EzGEFR4lgnyTU
-         8ejQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXm5QNNuuLIG+mCPu6dJtUTDFP0tleyRRglmTn8m6PepbDjhUoWwkGTz1FiT9/sGHzdc2AaOcIc4LmQUg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxuUXx73N7R21nXDpUT5io/sFY8oDX+BjfblOqScXXWqP9oknqx
-	VC9e74uf/qxLZnGa9PAgp6nMic/oJo8ySDYvRWF0bozlNm1w706Ib5TAI43aUveCa8+z6QJMhiV
-	cpDKvTowf8xIxEGaZhlheoRxtot9AERs=
-X-Gm-Gg: AeBDieuATA4eSLXiZi/n66o724zNwsCDi2H8YFbXuIfvgtlM75TlK4h+32NfGhV2KHt
-	77dt93oOlgEqmwpvYDXe0Buzl9GR/ehc+P+nQGa+t3tS09gyNvhgwY6S7Wx+RKr7XKvNH6W17+c
-	fulQ+dZhqZr6Afd/sNo69SUCtKt9Yhe2pzVVNaqI9OC0NlbLXiOjZ94i+CYj/pcsW7J/ifrRalF
-	GUJaUYmiIwm1fNp0hVh5g2CkflYmAEBFq4HpliAHylie+iNXECbSf7Q1F8B80jfEtgd5hXYD4OU
-	+TScAJyi7EbcdrxzRyYpnnEKOuahd/BoeTU+Dk84AY+a0VfzL2SBzpWPUF/0WuNEq17Jb5BlKw/
-	V24/z/98=
-X-Received: by 2002:a17:907:1c97:b0:b98:6984:6630 with SMTP id
- a640c23a62f3a-b9d724362a7mr613445466b.8.1776060563823; Sun, 12 Apr 2026
- 23:09:23 -0700 (PDT)
+        bh=X6pSeBoMwbk97qHNLEiiR0g4dw8qT9zFAczkuZLFIic=;
+        b=D8JAAgAVrHuJSIoHJXdsdYBAgFMJ2RIox9YuamgvoIMFQ/MTCa3hkAoiYKUnm/Ptft
+         QhBclAOMmp64pqN70+6R4cOsoyzv/N4aY6qBa7GI4Ij0E97Tzfeqf6LeJi7EqzxOh4M+
+         ZVE6jD/j9ThJ+fnoNS9KHkvfqW8/nWq2jfx5ooX2FHeHFwpWd1VVnKtwlG46LVir6/xB
+         6HXWinj1jXF35XsGoH9MlUdqu71Kitu8T9XHPI+JMoY44PppO9by79XDLvQkSyp7ermZ
+         Vg26nufJ8dDGb6tDqo8ow+RtVtHXaz2KmlZp5ZIe/n/mEuBkdbfhDTWts19eLggQE1mD
+         4K3w==
+X-Forwarded-Encrypted: i=1; AJvYcCXi+I8TL4kbVFSB7eAheKzYuOQY3fzbuMTKbPH6oWxXGQG9xZ7UxqImSRpa+nQg2XEDJF4m1tzn9egCqg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwNAKhU1kz7JVCHgUTSexmVmtJOAEzOkeC5phi8rDu8kkmKOKLR
+	pL/l5VRhrf8oIRnsPQhlQtcjbRRYEIOcULjPG9BVHzqu+odbgTSPuh6KEVoT0AYT58rZsHltTwm
+	oSyPFmfFYYqXVYFZhre6KXyYstRvmsOI=
+X-Gm-Gg: AeBDietBieJVXW7gCuN2J5CwsJspD78NfZW93B/ZVdM39KMIKoShuhIApx+iCmdaMhB
+	5g220iUpRl9TAdt5EdxgzOAhFGuuvYFPRpovv1gwW+mvX0xvwnXuQefSZ0Is1Jywg8cZ/N2+k2y
+	Uhnd7T24CSe62cWyR7iViMIvKRQIaCLSjHCiZYFSeFzvK6zMOR6zA004ZHUUxwV2DP/DZFi1SwK
+	O91r7uq0uD3z7WXhSQ3oetuyO1hAMC49XkqVIf2BD2Ak1gN1T3X4oXDSDtuTsN8ht0p8dOXv1WO
+	2N0qJoYZx1KG5MZUrJMOBhZ9ia+0GtBCjjHoTfl/YkFKM8mE4f3O4QW512sMv9Dm6eAjM4LQYZq
+	Tz9pSuYk=
+X-Received: by 2002:a17:906:eec7:b0:b9c:69df:4d99 with SMTP id
+ a640c23a62f3a-b9d72ad8da9mr652948566b.46.1776063610650; Mon, 13 Apr 2026
+ 00:00:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260412173317.3329-1-mzndmzn@gmail.com> <20260412173317.3329-2-mzndmzn@gmail.com>
- <CAHp75VcdWMvvM-oKTqRACSXSUiVsEh1Ep_82MsJxfbrG4thUdA@mail.gmail.com> <2026041338-guiding-concur-3831@gregkh>
-In-Reply-To: <2026041338-guiding-concur-3831@gregkh>
+References: <20251218061406.8043-1-arjunchangla7@gmail.com>
+ <2025121827-lubricant-salad-860c@gregkh> <CALO5-psPGGxo9bu4Yjs54Sj=Hpq4x4Zgvp6tEY2MzV+utUfGpA@mail.gmail.com>
+In-Reply-To: <CALO5-psPGGxo9bu4Yjs54Sj=Hpq4x4Zgvp6tEY2MzV+utUfGpA@mail.gmail.com>
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Mon, 13 Apr 2026 09:08:47 +0300
-X-Gm-Features: AQROBzBRxOFTl4Y0hRK_IfrGAfpqN1gBxS94tU4qKCixCJahw8eu990-6JlRl2s
-Message-ID: <CAHp75VeME9eDOZ5KosN_sXTP5CAcOGqPfh4Ld=mamaO=jOJ37w@mail.gmail.com>
-Subject: Re: [PATCH v3] staging: fbtft: replace empty macro args with identity converter
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Baker <mzndmzn@gmail.com>, andy@kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
-	linux-kernel@vger.kernel.org
+Date: Mon, 13 Apr 2026 09:59:33 +0300
+X-Gm-Features: AQROBzC-kH1OmWCu3fYOKS8_sAHANFaz5pop-O-JWmBJ0plqPTqCm4ToMsiAjdg
+Message-ID: <CAHp75VeZyn+55A3T2_VCGUrvsRwODp2hJpL21Z46UeyOeYyQbg@mail.gmail.com>
+Subject: Re: [PATCH] staging: fbtft: fix spacing before close parenthesis
+To: Arjun Changla <arjunchangla7@gmail.com>
+Cc: Greg KH <gregkh@linuxfoundation.org>, andy@kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 13, 2026 at 9:03=E2=80=AFAM Greg KH <gregkh@linuxfoundation.org=
-> wrote:
-> On Mon, Apr 13, 2026 at 08:58:50AM +0300, Andy Shevchenko wrote:
-> > On Sun, Apr 12, 2026 at 8:33=E2=80=AFPM Baker <mzndmzn@gmail.com> wrote=
-:
-> > >
-> > > The define_fbtft_write_reg macro calls 'modifier' as a function.
-> > > Passing an empty token as modifier is undefined behavior in C for
-> > > fixed-arity macros. Introduce fbtft_no_conv() as an identity
-> > > function to replace the empty args in the no-conversion cases.
-> >
-> > This trick is used in the kernel (usually for u8). If you really want
-> > to improve, use _Generic() instead.
+On Mon, Apr 13, 2026 at 9:58=E2=80=AFAM Arjun Changla <arjunchangla7@gmail.=
+com> wrote:
 >
-> No, sorry, this code is fine as-is.
+>
+>
+> On Thu, 18 Dec 2025 at 11:50, Greg KH <gregkh@linuxfoundation.org> wrote:
+>>
+>> On Thu, Dec 18, 2025 at 06:14:06AM +0000, Arjun Changla wrote:
+>> > Fix checkpatch error "space prohibited before that close parenthesis"
+>> > on line 65 by removing the extra space.
+>> >
+>> > Signed-off-by: Arjun Changla <arjunchangla7@gmail.com>
+>> > ---
+>> >  drivers/staging/fbtft/fbtft-bus.c | 2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft=
+/fbtft-bus.c
+>> > index 30e436ff19e4..2f7c891177fb 100644
+>> > --- a/drivers/staging/fbtft/fbtft-bus.c
+>> > +++ b/drivers/staging/fbtft/fbtft-bus.c
+>> > @@ -62,7 +62,7 @@ out:                                                =
+                              \
+>> >  }                                                                    =
+         \
+>> >  EXPORT_SYMBOL(func);
+>> >
+>> > -define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
+>> > +define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
+>>
+>> But you just changed the function definition, does this still work now?
+>> If so, how?
+>>
+>> confused,
+>>
+>> greg k-h
+>
+>
+> Hi Greg,
+>
+> Thank you for the review. The change only removes extra spacing in
+> the function parameter - no functional changes were made.
+>
+> Before:
+>     const struct ia_css_output1_configuration *from ,
+>
+> After:
+>     const struct ia_css_output1_configuration *from,
+>
+> I verified the module builds successfully with no errors:
+>     make M=3Ddrivers/staging/fbtft
 
-Works for me. I suggested they explore the possibilities, it might be
-helpful somewhere else in case of the similar requirements (like in a
-new code).
+What are you talking about?
+The original patch we are discussing is totally wrong. Please, compile
+the code before submitting.
 
 --=20
 With Best Regards,

@@ -1,120 +1,193 @@
-Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9395D23A561
-	for <linux-fbdev@vger.kernel.org>; Mon, 13 Apr 2026 07:54:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.54
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776066852; cv=pass; b=loAAMvVw+Pm47TY++s6MEY5wfAmE3PIEqt1bHlePsXBHbQh9I1FycBZBZbPxrc60PVYenm/Pcl3tjizOpl7fA2uTR+H/MLYgZY0Cu08f5+mGd0Usm4MiMt/QaMNDiJOwahK+SbDGLG/tDmg8JU69twoD2k4PjZ86aw0XvjQetjk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776066852; c=relaxed/simple;
-	bh=BwLGd857a8/Gr8I9fhUqP7Q69S/w4GejNer6yC2hMY4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ol0TuUgSPNxMJY649ABMezj0/+Eii24J6O3GZ599UbCKlGRNV3wAstARjX5oV8XnSm0K7cfJ/WBOQYDEIS2IY1hbEFH3HKw91k4amCoYE6QqT9groJ1RzY8AUnprjAp7F9jB3sdnOyL4N3Ptnbg22nL3xG1IpWkkGSp4FQ+t0pE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CCmNZceP; arc=pass smtp.client-ip=209.85.218.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60217396B73;
+	Mon, 13 Apr 2026 07:59:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776067142; cv=none; b=mwl5JWeertl0/gsLkuJhUFiD/4pFkMbuu1YAx66BnaaHh0xM3vW7B5nuvKYeeYycgQhrlECdYiSPDDUvTjCjz8WGBdJ5FQqMHmDPfWm68Dc/tEiKj9zaFJVmHJMdTkXt2Y46jn+qRWPpKQ36tlP8aPz+KqPZMazxYVK287sR45E=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776067142; c=relaxed/simple;
+	bh=XHj3Sl5zLIaiozQdeiIMCMFRZIyOS3dN0hw7WTARA40=;
+	h=Date:From:To:Cc:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=o5Yy4LGd4QYVJp16vTLLNEu6pFIPQOqsaBE/s5GlxjBieSH7nqN5V9DzN1lBKj+ARWJKEd8uIs8XnYd/tS3ePR3atwpKF9Z0HERwePpnYoHD+JiCxf9IsiRsr8b002FusBcBkCZgtcc6Kvv8W9mqLm7JvCKukmzXI7KK/zz/3lg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aInXVTZD; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CCmNZceP"
-Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-b8d7f22d405so611603666b.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Apr 2026 00:54:11 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776066850; cv=none;
-        d=google.com; s=arc-20240605;
-        b=FSVKntpDVP3BjVGky7tVW50ShnmN5sQ4GhNfqyfu2b0s1TzYFOfJIbw06P06KcLY4V
-         XKSkWREYidzUSzpYLkUiPAu/VPwb+yC76y4vzU51669KHip42S7vL7vo/envEcQHKgMx
-         xlJEP4/iBl1NioFNjgn9dNECHpTsBz9eoUA1fe+5W1RevAcTe8d4Di3FL+FIwUgJfgEj
-         5+734qOHX5w7oB0jlOkTe2UCiyOVyIe17CoTVem4ybPn/eyV+Fyfek/BszKaRJpHWqbl
-         yU+sQhF7/CZRNqqDahx4wtCHxLqdlna4Q4EOZwHaiPcldrEl1fMA42iWJxG3JoOOSI89
-         kp0A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=WF2eIKkja7dyHhJJwMsSuEwqCgvKiY7IvupflJtjz2Y=;
-        fh=qBqNgTWCCf2o9/sAaJ4aMvQHIte6PZL7hZ01fAUpmJU=;
-        b=LUHc3RBAkkv8lRzY8n/EM1Lw36cRigsCJMQryovy/lBbL/Xx2E81+UBCtAoDYrMngG
-         WZyuXu4uvWfuM6kVdpKr6qBtU+SYrFiTeBWj7QxVBP2GwiO2rdaT5NwYtBPB2rtBN5xZ
-         AdD9B+ARgNkJEhIYLM2RpmgqxddKsv3OZVC4LC7SDGQNm4cvvOqwwQNbzi3Vf65tdsm4
-         x/ToE1pNiK4L5J0UvTvy81QoZyxzranvUpgSGA+dMnv9Hx6Qx0wWLFtm16AjvXs5Wm73
-         tMqbxz/u8IW5bm//ol13SolQmU3/zAs8bqRFDj5s0X3JW78YZFrZAC2cZNVexIYoMuvj
-         zH9A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776066850; x=1776671650; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=WF2eIKkja7dyHhJJwMsSuEwqCgvKiY7IvupflJtjz2Y=;
-        b=CCmNZcePWVBeEikwDTbPLHppviif4TxNEs6sIIvxxAH18X0EhT2m47+8xlAQ7Jplp5
-         68ibv5JIR+7Aq9mDkUUJiOBttv0LOTS87x7XRsWr8LQoihzUPIBLJLRu4A5Q1oJCONz2
-         Q2iebFJ5KEbpP2wl+oaoeiYP0v9J3f6LIImIHRUS8ca8W1zGAGXEoE6gbcVAnReRq15Y
-         O3X4ZJsO1OZw9yctwo0xQ4rkMiL+zFJ/1Tof2BklrGyc1qc8QthmoAfe8RxbAsBo2h2Q
-         QRTUta9bg6Tu93lONjFfeHOeIrE9sjpZdxzj05mLR6Yg+vVShBHz59WdxIOoO0O2sSig
-         QKIg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776066850; x=1776671650;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=WF2eIKkja7dyHhJJwMsSuEwqCgvKiY7IvupflJtjz2Y=;
-        b=QQ4bbM5Mytq3+gY4s76RLXcAqYm0O7bTy2erCkJa3nr8PB6wQPsjttBjRjoxFDKHRj
-         0KpVO+Gqpd04j1zZA9fWrlrErIWkRMcDNMPjxMw/zhUwJNbWD54UeypwV1226iZqQNAy
-         bytuJqjZvxQy+A/7Oo+a8TXlNmH/UanOFs49/M79IIhXYghaELvSxh78Z/Ajzbr6EmQD
-         w5ihKvX+PSYsI2Uoa+ctSJ3zFE9rYDe5+HyUouaVB3MN1K2y5Ze2RpVK6Fr2cb//0CAC
-         f6hFQFrCzboX5igbbLya/9hVgGID3KCRxlkHrYmp34RJEJUVCVxZ2xKLRagV2Y9E6PcO
-         DVeg==
-X-Forwarded-Encrypted: i=1; AFNElJ9WnaqGd1FNElZkHd/tlIj2c3r6ikDFuVj3wpXsBYnP8hInKw54A7Fc10s5106QIeIPdBrYieSHrrfRLw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwSK3gZoXYtSKzvw6L6qU/0OC9I/9AL3JqZJtEjRWwcRCIJHaO6
-	wxTSAgnxQIYKF6OKryl46KU6ito9feuyDwVWDHGB2KsV7qfQss0Grb27MUoWQUXgeb6JbA4aBQN
-	wUUyT54K2YlYNwxPA5vQz8CmIyw6bhxw=
-X-Gm-Gg: AeBDietnElTtztfF60zUPcFjan64nTotVZ8GFxy2IZoiTB2gD/oHOJHTgSGJfPa0rcq
-	nGHiGCKQkcJutNZ9TJmHMaSApWwdgdpX6oEZgMPJ5PxdHaFTdU8fzFR+jX6T5yglhGChTbJSWVX
-	wSutDqoLYhGtUSI0yg4Njoa5cE9V7TkxgNt5fX3K0t2Wum5rBGX7hJCgvhcpbgw0nCpQLceGUMz
-	Zs1DWhJ6c+Ep+lwPBneqlmGxTkY8EQ2smayFCAz91x6UWXAcMGNpDbzXE01kRNEyqE157bk8OhQ
-	q2uJwvRYArIFB7d6KgkdvRO0SeA+2M4lGaV2OQe5BcMKsFmCrcLgfWn6zDz117HrH8tpdRTMAzL
-	TiA8A08w=
-X-Received: by 2002:a17:907:9615:b0:b98:6984:6627 with SMTP id
- a640c23a62f3a-b9d729c0986mr635516166b.40.1776066849676; Mon, 13 Apr 2026
- 00:54:09 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aInXVTZD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98E82C2BCB1;
+	Mon, 13 Apr 2026 07:59:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776067142;
+	bh=XHj3Sl5zLIaiozQdeiIMCMFRZIyOS3dN0hw7WTARA40=;
+	h=Date:From:To:Cc:From;
+	b=aInXVTZDoMoSfHiM/ZTxpP0dqJp8rPTOhRsc0Vuegjf9eP1zvaDTJ+apxlgIuhj5m
+	 uymEbEu/UHOJWJ6lw7U0YrRJbLNQJR/o8436sUmQyyIJnGd5I57C1MKi19QSG24eX9
+	 h2iGOBKURBUQkPE+zITLtqcSezi5jonPS8m9wlnnrbrXoKcavVutGZS3YzVK/HoBVS
+	 ZTBks8Urt9YUD0fN0O3n/+VePDQcDLPvpr8M3UALf3YN6/WXTllw86HLQ5q1c3ADYE
+	 YbRf8iuI5QEq4lS/pfjIFvTCKsJMm3+e/VB0lwWLoC4lQj8qW8Sg2xkFLYg/qNqpkL
+	 OEuPIqPS+wyIg==
+Date: Mon, 13 Apr 2026 16:58:59 +0900
+From: "Harry Yoo (Oracle)" <harry@kernel.org>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
+	Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+	Lu Baolu <baolu.lu@linux.intel.com>, iommu@lists.linux.dev,
+	Michael Grzeschik <m.grzeschik@pengutronix.de>,
+	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	linux-crypto@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+	Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
+	Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Uladzislau Rezki <urezki@gmail.com>, Marco Elver <elver@google.com>,
+	Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com,
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+	Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	linux-alpha@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
+	linux-arm-kernel@lists.infradead.org,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>,
+	Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org,
+	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
+	linux-riscv@lists.infradead.org, Heiko Carstens <hca@linux.ibm.com>,
+	linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+	sparclinux@vger.kernel.org, Hao Li <hao.li@linux.dev>,
+	Christoph Lameter <cl@gentwo.org>,
+	David Rientjes <rientjes@google.com>,
+	Roman Gushchin <roman.gushchin@linux.dev>,
+	Shengming Hu <hu.shengming@zte.com.cn>
+Message-ID: <adyiQy_DP_vldg1r@hyeyoo>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260412144552.18493-1-mahad.ibrahim.dev@gmail.com>
- <CAHp75Vdu6pih=NqkYT0CR_oLyr3YgNKBeqYM3+naqVp52UCgVw@mail.gmail.com> <adygIkRhnsGv-LwM@stanley.mountain>
-In-Reply-To: <adygIkRhnsGv-LwM@stanley.mountain>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Mon, 13 Apr 2026 10:53:32 +0300
-X-Gm-Features: AQROBzCmapfAP5XxJL0BZHSYMWhRjgPMxX-DCGpXJHZVAmXSTow49ekBVs85ec0
-Message-ID: <CAHp75VcZU21syEY7rx9BsvckKq-Tic259xPghetPad-gY7kDng@mail.gmail.com>
-Subject: Re: [PATCH] staging: fbtft: Use %pe format specifier for error pointers
-To: Dan Carpenter <error27@gmail.com>
-Cc: Mahad Ibrahim <mahad.ibrahim.dev@gmail.com>, Andy Shevchenko <andy@kernel.org>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Shuah Khan <skhan@linuxfoundation.org>, 
-	linux-kernel-mentees@lists.linuxfoundation.org, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Mon, Apr 13, 2026 at 10:49=E2=80=AFAM Dan Carpenter <error27@gmail.com> =
-wrote:
-> On Mon, Apr 13, 2026 at 10:03:58AM +0300, Andy Shevchenko wrote:
-> > On Sun, Apr 12, 2026 at 5:46=E2=80=AFPM Mahad Ibrahim
-> > <mahad.ibrahim.dev@gmail.com> wrote:
+Bcc: 
+Subject: Re: [patch 14/38] slub: Use prandom instead of get_cycles()
+Reply-To: 
+In-Reply-To: <20260410120318.525653921@kernel.org>
 
-...
+On Fri, Apr 10, 2026 at 02:19:37PM +0200, Thomas Gleixner wrote:
+> The decision whether to scan remote nodes is based on a 'random' number
+> retrieved via get_cycles(). get_cycles() is about to be removed.
+> 
+> There is already prandom state in the code, so use that instead.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Cc: Vlastimil Babka <vbabka@kernel.org>
+> Cc: linux-mm@kvack.org
+> ---
 
-> I always like these changes.  I wish that there were an equivalent
-> %e which printed error codes that weren't stored in an error pointer.
->
-> KTODO: introduce a %e type format thing which prints error codes
+Acked-by: Harry Yoo (Oracle) <harry@kernel.org>
 
-Never happens until it becomes a C standard.
+Is this for this merge window?
 
+This may conflict with upcoming changes on freelist shuffling [1]
+(not queued for slab/for-next yet though), but it should be easy to
+resolve.
 
---=20
-With Best Regards,
-Andy Shevchenko
+[Cc'ing Shengming and SLAB ALLOCATOR folks]
+
+[1] https://lore.kernel.org/linux-mm/20260409204352095kKWVYKtZImN59ybO6iRNj@zte.com.cn
+
+-- 
+Cheers,
+Harry / Hyeonggon
+
+>  mm/slub.c |   37 +++++++++++++++++++++++--------------
+>  1 file changed, 23 insertions(+), 14 deletions(-)
+> 
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -3302,6 +3302,25 @@ static inline struct slab *alloc_slab_pa
+>  	return slab;
+>  }
+>  
+> +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
+> +static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
+> +
+> +static unsigned int slab_get_prandom_state(unsigned int limit)
+> +{
+> +	struct rnd_state *state;
+> +	unsigned int res;
+> +
+> +	/*
+> +	 * An interrupt or NMI handler might interrupt and change
+> +	 * the state in the middle, but that's safe.
+> +	 */
+> +	state = &get_cpu_var(slab_rnd_state);
+> +	res = prandom_u32_state(state) % limit;
+> +	put_cpu_var(slab_rnd_state);
+> +	return res;
+> +}
+> +#endif
+> +
+>  #ifdef CONFIG_SLAB_FREELIST_RANDOM
+>  /* Pre-initialize the random sequence cache */
+>  static int init_cache_random_seq(struct kmem_cache *s)
+> @@ -3365,8 +3384,6 @@ static void *next_freelist_entry(struct
+>  	return (char *)start + idx;
+>  }
+>  
+> -static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
+> -
+>  /* Shuffle the single linked freelist based on a random pre-computed sequence */
+>  static bool shuffle_freelist(struct kmem_cache *s, struct slab *slab,
+>  			     bool allow_spin)
+> @@ -3383,15 +3400,7 @@ static bool shuffle_freelist(struct kmem
+>  	if (allow_spin) {
+>  		pos = get_random_u32_below(freelist_count);
+>  	} else {
+> -		struct rnd_state *state;
+> -
+> -		/*
+> -		 * An interrupt or NMI handler might interrupt and change
+> -		 * the state in the middle, but that's safe.
+> -		 */
+> -		state = &get_cpu_var(slab_rnd_state);
+> -		pos = prandom_u32_state(state) % freelist_count;
+> -		put_cpu_var(slab_rnd_state);
+> +		pos = slab_get_prandom_state(freelist_count);
+>  	}
+>  
+>  	page_limit = slab->objects * s->size;
+> @@ -3882,7 +3891,7 @@ static void *get_from_any_partial(struct
+>  	 * with available objects.
+>  	 */
+>  	if (!s->remote_node_defrag_ratio ||
+> -			get_cycles() % 1024 > s->remote_node_defrag_ratio)
+> +	    slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
+>  		return NULL;
+>  
+>  	do {
+> @@ -7102,7 +7111,7 @@ static unsigned int
+>  
+>  	/* see get_from_any_partial() for the defrag ratio description */
+>  	if (!s->remote_node_defrag_ratio ||
+> -			get_cycles() % 1024 > s->remote_node_defrag_ratio)
+> +	    slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
+>  		return 0;
+>  
+>  	do {
+> @@ -8421,7 +8430,7 @@ void __init kmem_cache_init_late(void)
+>  	flushwq = alloc_workqueue("slub_flushwq", WQ_MEM_RECLAIM | WQ_PERCPU,
+>  				  0);
+>  	WARN_ON(!flushwq);
+> -#ifdef CONFIG_SLAB_FREELIST_RANDOM
+> +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
+>  	prandom_init_once(&slab_rnd_state);
+>  #endif
+>  }
+> 
+> 

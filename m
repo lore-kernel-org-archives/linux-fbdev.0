@@ -1,228 +1,126 @@
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (mail-southcentralusazon11012005.outbound.protection.outlook.com [40.93.195.5])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E758C313E15;
-	Mon, 13 Apr 2026 22:50:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.195.5
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776120656; cv=fail; b=Hb2rRFgu+jDUNqmCFptK5J3yvGJn1KRc+oqo4/sVEAXGZzS4N7c8o3DWHEWHEKdX7VWuKsDsAwEmEdsyfuA7v3F5bSzCev7mrS0NAwHkUY3v5m0irgnk0qoSk37uGC/t/LlH6+HSdepFS4KiMOFUoltROmGro4EMR+Z+eY+RgcE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776120656; c=relaxed/simple;
-	bh=AEEV9moAsNeORsrznOp1Oq3HI99Eps4HhCc/hcTJ+CM=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=PpdzdChiMr3wZdAVaw5oZurKhsp9Zol4VCXv+omne7w4P6zRUfBD6NJMhrxNpe2/0IwH70mIkrfMt/ktT5KOf1G226M2bCbSvmlGIbftvmv7CjMt8F/tde9kf7pf8S6rFHQ9Lxl5KIB0mvzJvLHD36qIEQhsWXwZia/vqQid2Zg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=so6zbIw2; arc=fail smtp.client-ip=40.93.195.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEEAC3E0224;
+	Tue, 14 Apr 2026 11:44:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.16
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776167086; cv=none; b=QQ73R6RnOWM7Xnuz/Yxjwks5XZz92i2Fq/wrEa7JovMx54/XqONJFf8ZLcMW0hVdA/dI4y2XorKLVPezMB+ArhgLecWJGRas4gPF12UDzlbsl/a6FuGCLrbWjC27U/Ndv/KN+J5Xu8tZ7iWiUjfDu8FRGmmE6R79qj/7xqA8Lvg=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776167086; c=relaxed/simple;
+	bh=/uifXYhjkpn2JIQXVjganr+ngHnaC65t/JIBOoBeA2s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YXTIuiqSSsRgcsk5dApV9ZVXUkiHjajqqA7Xxsl+XaZtbehfF/NnKGCqnBQlRHAhqRV8xGqLMxXmF7o+JVpFghEv0wIefRliTjNSGlB9DEPRdZgjn/7IyGnW+SSvcPd3fLxejdWDI7mtHg0R2Q3Stgzp+23rhzs1FT86MfjnZew=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=eSTPwk4Y; arc=none smtp.client-ip=192.198.163.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="so6zbIw2"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=yRaMlx+CDnnE5cXqSVhpRlR/nNvLMQuAd4idpqXpLk4P2m/MbQsdSAqePPtg2Qh85fvHYK8+BayAFNmF0ywkF4KMtp/tOIUqP1I/S+pe6XEgwLeJZ5Y8xlr4Hlv97ZELXVfTKvfrw+wLh5znlLonlAOWVOQqggz0GmOMo6twszBFFjMfXEXK7ojqdTQ5EcAWZT2Yxatb1dW7knXk+KqF13PCUygAvV3+BndDb+4M6gR8nhfWdzHlC6Aut15PTzIIm4HaS1OEz1B6u/zVyh3jQgyd7mdMJVIl6hUVPShLnD8eKGC9DEHeQwvUXjfWvJWWURWIiisJehcKHxlmVHeSJw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ySp9Df2sjx4MlIH0GYDivwTNp2bWFuedA+IYky3W4ws=;
- b=ewxJ3iyJYXpYOgTcdSvBEfKo3MCURJKb6uHYnMmMrHRqS8NrIVsM5AAIhYfOJTB336R3AtjSKvjahhGORHmNMitXNMOdx7K+BsP2DDPlghAFlbtIxC16MBboRhwtn0kpQ7InBuvEsP8ZmS7gbpQKCCC3dt43ETi+JQoZfuFszKi+WHX+BL2h8joECBdOeWaDrPr3/eGMmVRp3tHMO3wgGgkUYeD66+G1LYUarMcRJ3HPS6XuVxkyoMWK3A3vN81IB7lO3x2SinDWW9JVOa6a6Lk4rv2fChhTQk40CgjI9rgGRQQT+mBr0oEthhG4N5PHDE5MXIfGWDrkcibFJj2qHQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ySp9Df2sjx4MlIH0GYDivwTNp2bWFuedA+IYky3W4ws=;
- b=so6zbIw2zubRqnbTW1hfUU8p7Em1AY/Q4kFaDjycniK5iOtQd+qCmOfg1Zs5zcaJZRCNfdzrp3x1SiD8jAAAd8qDGC64hKOYG4IsWRMIK6VW3XFGu9R0ioWjQeCjoybx/AOmmPkwn+alZx1IoU/jy/ra6EKYkUEXSJMgRauuoBbMuEMeZEZe77oZV5IkdGL+JeSZ0Ourm655KrUo/4ux0nsMgQsoPya0sW2hFfJtQJB/g1Vaw+ibnxl3WxUIWbfZ64rqj8e9wJwoAWauH/uWr2gL6n30LH1dSFdMtR9IGK7vX1MRaYytFB4ZjbfKVAYQoIXM1S4UJoWeRN0zUsc0hw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DM3PR12MB9416.namprd12.prod.outlook.com (2603:10b6:0:4b::8) by
- PH7PR12MB6906.namprd12.prod.outlook.com (2603:10b6:510:1b8::8) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9769.48; Mon, 13 Apr 2026 22:50:46 +0000
-Received: from DM3PR12MB9416.namprd12.prod.outlook.com
- ([fe80::8cdd:504c:7d2a:59c8]) by DM3PR12MB9416.namprd12.prod.outlook.com
- ([fe80::8cdd:504c:7d2a:59c8%5]) with mapi id 15.20.9769.046; Mon, 13 Apr 2026
- 22:50:46 +0000
-Message-ID: <02211cad-71a9-4509-804f-39220eb63311@nvidia.com>
-Date: Mon, 13 Apr 2026 15:50:42 -0700
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 12/21] gpu: nova-core: mm: Add unified page table
- entry wrapper enums
-To: Joel Fernandes <joelagnelf@nvidia.com>, Danilo Krummrich <dakr@kernel.org>
-Cc: Eliot Courtney <ecourtney@nvidia.com>, linux-kernel@vger.kernel.org,
- Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>,
- Gary Guo <gary@garyguo.net>, Bjorn Roy Baron <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
- Dave Airlie <airlied@redhat.com>,
- Daniel Almeida <daniel.almeida@collabora.com>,
- Koen Koning <koen.koning@linux.intel.com>, dri-devel@lists.freedesktop.org,
- rust-for-linux@vger.kernel.org, Nikola Djukic <ndjukic@nvidia.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>,
- Christian Koenig <christian.koenig@amd.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Vivi Rodrigo <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, Rui Huang <ray.huang@amd.com>,
- Matthew Auld <matthew.auld@intel.com>,
- Matthew Brost <matthew.brost@intel.com>,
- Lucas De Marchi <lucas.demarchi@intel.com>,
- Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
- Helge Deller <deller@gmx.de>, Alex Gaynor <alex.gaynor@gmail.com>,
- Boqun Feng <boqun.feng@gmail.com>, Alistair Popple <apopple@nvidia.com>,
- Timur Tabi <ttabi@nvidia.com>, Edwin Peer <epeer@nvidia.com>,
- Alexandre Courbot <acourbot@nvidia.com>, Andrea Righi <arighi@nvidia.com>,
- Andy Ritger <aritger@nvidia.com>, Zhi Wang <zhiw@nvidia.com>,
- Balbir Singh <balbirs@nvidia.com>, Philipp Stanner <phasta@kernel.org>,
- Elle Rhumsaa <elle@weathered-steel.dev>, Alexey Ivanov <alexeyi@nvidia.com>,
- linux-doc@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-References: <42dd707f-e23a-4725-8b6f-08ca346b0143@nvidia.com>
- <1775730646.3752.4760@nvidia.com> <DHOKLTRRIX2Z.1YA9X0D0X21K@kernel.org>
- <acd38f51-3acc-4dbf-9929-50187dccec82@nvidia.com>
- <56526b93-72a3-4b07-9aa7-7822bd561cd5@nvidia.com>
-Content-Language: en-US
-From: John Hubbard <jhubbard@nvidia.com>
-In-Reply-To: <56526b93-72a3-4b07-9aa7-7822bd561cd5@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BYAPR06CA0008.namprd06.prod.outlook.com
- (2603:10b6:a03:d4::21) To DM3PR12MB9416.namprd12.prod.outlook.com
- (2603:10b6:0:4b::8)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="eSTPwk4Y"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1776167084; x=1807703084;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=/uifXYhjkpn2JIQXVjganr+ngHnaC65t/JIBOoBeA2s=;
+  b=eSTPwk4Ys48p22f0FooDaxOgVEzNZZ4Uae2lVUxsvBVxDgO4+CAtv5ud
+   ZbgdFyV5lukVuSO2dR4YwJhGfWdpcomKF5T6DxUC810dr6e5V6474Xppu
+   78LEHmDhbxvdQd5L83JwXxLk/I9bPd4YU5l8c9ZkX/samKskPmCMMzugO
+   aCO0Y2jS38RdSelMUJYss2K8OsHEtHo8d3boO5/LyBPrs4ZJM7jtbMOC2
+   pK1+RjKrFRV45RzBEp3NgjnTYS6auBvdtv8A1NXcdTq/EzeeXa+prVBM5
+   Hq62Y4YhwpOfqpk7N/JEBj6aq0OuOXlQXMJRnmlNxHc5Zw3NAR+u4wiPu
+   w==;
+X-CSE-ConnectionGUID: Uvl++ka4RUGdED2L4n5+Yg==
+X-CSE-MsgGUID: Bb8atBLURP+oUfcILaBW8g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11758"; a="64656948"
+X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; 
+   d="scan'208";a="64656948"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Apr 2026 04:44:41 -0700
+X-CSE-ConnectionGUID: T3APFrp+ROWWVa0psOuu0g==
+X-CSE-MsgGUID: ViKU/xG9TGy2574E8oN0MQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,179,1770624000"; 
+   d="scan'208";a="227419138"
+Received: from lkp-server01.sh.intel.com (HELO 7b0b59b3a0d4) ([10.239.97.150])
+  by fmviesa008.fm.intel.com with ESMTP; 14 Apr 2026 04:44:38 -0700
+Received: from kbuild by 7b0b59b3a0d4 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wCcC4-000000001PR-0SFf;
+	Tue, 14 Apr 2026 11:44:36 +0000
+Date: Tue, 14 Apr 2026 19:43:43 +0800
+From: kernel test robot <lkp@intel.com>
+To: Baker <mzndmzn@gmail.com>, andy@kernel.org, gregkh@linuxfoundation.org
+Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org, Baker <mzndmzn@gmail.com>
+Subject: Re: [PATCH] staging: fbtft: fix coding style issue in fbtft-bus.c
+Message-ID: <202604141939.LhzKrfey-lkp@intel.com>
+References: <20260412173317.3329-1-mzndmzn@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM3PR12MB9416:EE_|PH7PR12MB6906:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3d86338d-b258-4f47-72c0-08de99af1967
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|1800799024|366016|56012099003|18002099003|22082099003|18096099003;
-X-Microsoft-Antispam-Message-Info:
-	m/5f0sbWQFkD/RoEFgpT+s31B++OD5wk3a2vqYqv4Y8VA55vyuKhvhl+mg44UK/aoLLNqTuC1Q73QxF/r3ItMGTpqAYFC8AvqQ+CwRm+x9mLEtQwtd3WjYIngTxDwGt/jzhgmL02WOaazfdkcqDc4Y7l0mbVFX2jxovWIAwPOUmFbDt7k4DyEedzQiDwlGJzEFRp2BahM8taxvTsEiXl3jvFlKnR2VbNzvBXFgZG45NLfGtgN1gyL4RzJANzvE82DjOlg9zb7KdSr/UoQyqVdcicb7VaKqC6oI20BG1UGoRVVnkHuqr6dswgWlxIv/AKMT6bK04k15kT54bfN5Yls8bYpj2r6oTYelev1VQbPpkXGXp8CgCYeHUKNlD+oD4MN/n9YwOjaMlCT1pNh5/jg6M6zwWjpI58U4PDyvwb/v7s28Ms7oOQEJ3Lx6B1jydpfDbM4M7Gh/AFlKhobpBYozkVJd87+au2ZWZfBB6WJuuWSy05mEMCKXy0qQJTtsQuvIo+LOk5KTdiOkoRKrgPztUT84dMaRsut6Ob6nt2HW/CgicAV8+BxbpBDjOadnE//SOfsP6GeZxmEeZUnr37MHEEGHNTarWn/35x1zsQC5p+P7cASGn//Y0U20M5zZqnqOY5adDbrwdUMN8ZXDJ/28HVmhEOAz6nNdV6DcvgXUSiSAxGHyzDtJogKXomX7d1VxJOs3RsHEluIKsK2wTym8B68HOqtYb93t7dEZcl+uA=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM3PR12MB9416.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(56012099003)(18002099003)(22082099003)(18096099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ZVFFNi9rVzRzcm92R0F1MzJ6QWpESGI5UXNrRGVLNDhYc2FkYitzSG5wZksy?=
- =?utf-8?B?ek9YSDFXWlhMWVNWL3hzcWswaEFRQjZmVldBK2h4ZDJ5WnF4eW5QQ2ZOVVNM?=
- =?utf-8?B?aUl1RXhIZkdOd2Q5ZHNrSTJqaDBqWVZhQ3VxcGZybE9RdlphTkhqd21yQ1RB?=
- =?utf-8?B?SFdhTG55NmNWaTlKTHNCWDZ3RVkwQjRjQkE4OHY0N28xNFdObWtKSDFMM05M?=
- =?utf-8?B?U0RWV3VXcFdqRmg2ZjJzd2VsRVFMUFlQUHNGTmVBZ3NuU1JCT0V0SXBWNlhR?=
- =?utf-8?B?THh1ZThCWmhVZWw5OTdtRWZGZGpxdDZET2kyQUFZQjBkZkdiaWJhWWl0Zktw?=
- =?utf-8?B?b0FuWEJ5bzVjTjR2bzR2SWJ6QmxvKzdvVjVJT0gxc3c2Wjc5RjREMEk3dnU3?=
- =?utf-8?B?TWZhMFBIdUhRN3d0VkJqbjFKcHhNbTJhQzBjY3hTbi9FZ3hZK3FXVEg5bnU5?=
- =?utf-8?B?NVNZT1RJRmRrRGMzVHpGZ0t6K3ZwOFUzRlBrRmlwYVVvUEZIajB3SkE3TTdQ?=
- =?utf-8?B?MWFDdnNmMW91R1g3bnZXbk9EMktxcUYyZC9RQUlZZGlPb3MzSFdKRFZXSVpC?=
- =?utf-8?B?MERtWGVDVVhSdmVQZ1IxdkxaWTRGNXVmck13Y0VNY2FKMjh6elJxOGxseUJx?=
- =?utf-8?B?RkdKRmZQT0kxV3ZDZzY4S2JOTGZWOW84SGFaY3A3Vko4UzFYdTVUWVhTZ0du?=
- =?utf-8?B?RW8wTVNOVmNDSk02UFhQcGxRdXFFRGdEck5YSGR0Q2dsMU1EOCtzelNVRmhy?=
- =?utf-8?B?MHJLbEJZSC9jOWp2QXdyNS84U2VkSzVtS2NNUGRvUkZ2WkVta0F5M3lwalhl?=
- =?utf-8?B?aWxRdzM3aDQydG51SkVsVkxZcXlXZUN2SUZRVWhHVW9GZ3ByVUY4K0xQRUlS?=
- =?utf-8?B?aXdxdTlWSFc4NXhFWXBpTlVCZ2J4U296TFhZVVNyOCtWTmpEdGN4S3J2d29q?=
- =?utf-8?B?M2dJMVRXQW8xTElsU3J3S0Qza3d0QUk5UDA5cEpvKzQ4dUJ2cFFNWjVwbi8w?=
- =?utf-8?B?Vnl3T2lTUlNPNUlHY3ZLcHQySHliOWlzRHcyTG91WDU5OVFYcFBSYXUrczlm?=
- =?utf-8?B?UE9NcFFRTEdIb2c5blJzemlEVzRpS3IxanlIYVBFN0o1RVhYaHlXdHR4c1Mv?=
- =?utf-8?B?MDBLekEvL0NnS2FMQ3FuQ3Y0RUFtS05tV2p5NjNyVVFVd3pibCtrd1FJSm5K?=
- =?utf-8?B?aFMwb2R2VFR0cVQvRjQvdTM5bzJoSmgxVTFVajVYNG1mejBHWFI5Sk1FVFB0?=
- =?utf-8?B?WGt5WXpUVjV3UEpHb05JSVJuQjRiWE5QM1IzQnRrM1BRVDB3UGwxdlBDY1ZV?=
- =?utf-8?B?cEx6VnJBdDhrMUdwNTNodlZDeTJ3L2lIZ1h6U3A5ekVEOUZBOFZOcEE3bFJT?=
- =?utf-8?B?ck5VOVVIUW45TDJZVm1Ydnh5NVFEc3hQSXM3SjJ3RktvZzBhdW9KcmFWeWFL?=
- =?utf-8?B?WWVKV2cxQ2h6S25KRlZnQ09WNFJsbCtNaFNBcE9qZFpLMVhNYkkzNWJ0VEdh?=
- =?utf-8?B?cWxyeEJkYlZ1OGc3Z1FZeVg4YzBWWlZrUWNIc1ZIY0trUnRjWDVWZ0FFM3Vo?=
- =?utf-8?B?YzZrUW5nRjJta1lIcGlRKzduVDBrZ2ZUQS84NU10Uy9xU09VSzNNNFIzek8w?=
- =?utf-8?B?bXBFQUhNaVlQLzNEa3FVaFIydnpyTFhvaG0vMmVNQzZRN3lNc0FPRFkzc3F2?=
- =?utf-8?B?VU96TkFBRFNnNnBaYllHUTZMcVpuQis5NkF5ZzhuUXNwYll0SG4wcFlKb0hZ?=
- =?utf-8?B?bnVGbFFoZjgxR3FobmlCa1VLaG5TRWl5anptbkJVTHRLdkdpckl6WFNwOHpH?=
- =?utf-8?B?aUNvM24ySGRuT2o2YmJjeHg2SXV5eUlFQnpyRjNkdDlOMjFaU2dLNUQzU080?=
- =?utf-8?B?dit3YjVCUjhqL1FabnRUY0FSSlJPSGpySTM1TzZHcnRRNkI1RC9WSGcrNkhU?=
- =?utf-8?B?TEFsQ21NVldLMWxXNDJKR3A5U0FyT1V0SVZJRzNUSzZjdThCVE1hYkhrTUZF?=
- =?utf-8?B?OUV0YmF2RFV0MTJ4cENIRHk2T0p4OExhWTJCdXVoUXJTaFdkTzlteUpWb1JB?=
- =?utf-8?B?cmxNRDFFaGNBb2xyb2JST1JCNmk5eWtoeVZXV1hsd0hwdDB4RFVISnF4UVdK?=
- =?utf-8?B?YUZGSEt0ZmI1VDRHUkc4T1RqSnIySExCcjJsN0t2TTNsUzQ4U00zRFNMWlUr?=
- =?utf-8?B?dm1MUzVHWkJvdld4ZkFodUUrWEdDVldxWjNLcUFZWldNRlNoVC9wdk96aWh3?=
- =?utf-8?B?Zk9BdFZ0Y1p4NjZ3OG1RYnFkaWZxN0tLRlVyT2ZhVnc2elpPRjBkVFRuVmdJ?=
- =?utf-8?B?NTRFY3BDbDBOZWNHaEhJcWtFdWJ1UDhLMnA4dC9IOEpTSVJ1emNIZz09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3d86338d-b258-4f47-72c0-08de99af1967
-X-MS-Exchange-CrossTenant-AuthSource: DM3PR12MB9416.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Apr 2026 22:50:46.0049
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: hJFP4rwsAFoOIr2gm322ZrTeCsvvVoskmxhPwN2ZqhhfnKG51OBIRFV2TEyN1nFX3GwT2H8aeA7as7QaH0uASQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR12MB6906
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260412173317.3329-1-mzndmzn@gmail.com>
 
-On 4/13/26 3:27 PM, Joel Fernandes wrote:
-> 
-> 
-> On 4/13/2026 4:10 PM, Joel Fernandes wrote:
->> Hi Danilo,
->>
->> On 4/9/2026 7:00 AM, Danilo Krummrich wrote:
->>> On Thu Apr 9, 2026 at 12:33 PM CEST, Joel Fernandes wrote:
->>>> Since it is 3 against 1 here, I rest my case :-).
->>>
->>> That's not how I'd view it. :)
->>>
->>> Anyways, in case I'm included in "3", that's not my position. My point was to
->>> ensure we keep discussing advantages and disadvantages on their merits, as I
->>> think you both have good points.
->>
->> Heh, yes I actually *did not* include you in the 3 since you sounded to be open
->> to both. ;-)
->>
->>>
->>>> I am still in disagreement since I do not see much benefit (that is why I said
->>>> pointless above).
->>>
->>> That is fair -- in this case please explain why the advantages pointed out by
->>> others are not worth it, propose something that picks up the best of both
->>> worlds, etc.
->>>
->>> You can also turn it around and ask people whether they can tweak their counter
->>> proposal to get rid of specific parts you dislike for a reason.
->>>
->>> IOW, keep the ball rolling, so we can come up with the best possible solution.
->>
->> Good advice, thanks! I will try to come up with something that is acceptable to
->> everyone and we can further debate pros/cons on v11.
->>
->> There are some merits on the alternative proposal from Eliot/Alex that I'd like
->> to explore while seeing if I can keep some of the merits in mine as well.
-> I think I found a nice approach. IMO the MMU version dispatch does not belong in
-> Vmm/BarUser layers. Those are version-independent code. However I agree that
-> doing version dispatch at every low-level page table operation is a bit heavy on
-> matches (if we put the MMIO overhead counter-argument aside).
-> 
-> So how about the following approach?
-> 
-> PtWalk, PtMap and everything below it are monomorphized. Vmm and BarUser are
-> not. Version dispatch is handled on PtWalk and PtMap entry points.
+Hi Baker,
 
-Conceptually it sounds pretty good.
+kernel test robot noticed the following build errors:
 
-> 
-> I think it makes it cleaner and splits the code up better too and the
-> organizations makes sense because the version differences are related to page
-> tables, not to generic concepts like Vmm and Bar.
-> 
-> Thoughts? Here is a preview:
-> https://git.kernel.org/pub/scm/linux/kernel/git/jfern/linux.git/commit/?h=pt-traits-v2&id=ff22ba64f729f9f73258777231763a7b9804123b
-> 
+[auto build test ERROR on staging/staging-testing]
 
-Probably impractical to review that here, so let's do the review in
-a v11 posting, I think.
+url:    https://github.com/intel-lab-lkp/linux/commits/Baker/staging-fbtft-fix-coding-style-issue-in-fbtft-bus-c/20260414-101811
+base:   staging/staging-testing
+patch link:    https://lore.kernel.org/r/20260412173317.3329-1-mzndmzn%40gmail.com
+patch subject: [PATCH] staging: fbtft: fix coding style issue in fbtft-bus.c
+config: arm-randconfig-r072-20260414 (https://download.01.org/0day-ci/archive/20260414/202604141939.LhzKrfey-lkp@intel.com/config)
+compiler: arm-linux-gnueabi-gcc (GCC) 13.4.0
+smatch: v0.5.0-9007-gcf3ea02b
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260414/202604141939.LhzKrfey-lkp@intel.com/reproduce)
 
-thanks,
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202604141939.LhzKrfey-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/staging/fbtft/fbtft-bus.c:65:53: error: macro "define_fbtft_write_reg" requires 4 arguments, but only 3 given
+      65 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
+         |                                                     ^
+   drivers/staging/fbtft/fbtft-bus.c:14: note: macro "define_fbtft_write_reg" defined here
+      14 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
+         | 
+>> drivers/staging/fbtft/fbtft-bus.c:65:23: error: expected ';' before 'void'
+      65 | define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
+         |                       ^
+         |                       ;
+   drivers/staging/fbtft/fbtft-bus.c:67:57: error: macro "define_fbtft_write_reg" requires 4 arguments, but only 3 given
+      67 | define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
+         |                                                         ^
+   drivers/staging/fbtft/fbtft-bus.c:14: note: macro "define_fbtft_write_reg" defined here
+      14 | #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
+         | 
+   drivers/staging/fbtft/fbtft-bus.c:67:23: error: expected ';' before 'void'
+      67 | define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
+         |                       ^
+         |                       ;
+      68 | 
+      69 | void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+         | ~~~~                   
+
+
+vim +/define_fbtft_write_reg +65 drivers/staging/fbtft/fbtft-bus.c
+
+    64	
+  > 65	define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
+    66	define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+    67	define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
+    68	
+
 -- 
-John Hubbard
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

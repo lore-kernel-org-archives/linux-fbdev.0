@@ -1,211 +1,162 @@
-Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazon11012035.outbound.protection.outlook.com [52.101.53.35])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D9F32DECCB;
-	Thu, 16 Apr 2026 22:18:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.53.35
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776377917; cv=fail; b=cP+9ckBEkJ1Vrlfvrq5pz913jeZRMSrSzk7lJwECcbvUvIPO0TjMN0ktaDoBXGGkawWyJ+4kmz+96f25olnKYo1u96nOps35x20bpXexvERSpIN5G8OtC7f1zwuyICYNnmlJUcMqoQuFkVAnA48RqEmgtMpnXZpfUbTox5ojlUc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776377917; c=relaxed/simple;
-	bh=//3amu7Ej64TmF7tpTiEGaPu0swSlGvXhMRoYHqhfPU=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=ncyq07pUthcG6/XEJYT6KWT49boCcHKmV+iHZdHa77DznkB4u/yVnOKjdPBBKhUzB5/thgxHy72xzNM93IubwHOsm80ONsk2+jf9K+7t8TMy14zVWDh7lrWXXFJAp/T/4+FviW+k7AFaz470e3tjiMvg4RzDmVrjs7+crt8tkMw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=XB1H0iqR; arc=fail smtp.client-ip=52.101.53.35
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B1763191BD;
+	Thu, 16 Apr 2026 22:44:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776379490; cv=none; b=GkidRFl8P86XyVIlmk4tMsBAFFF/PYGdlsZQIk6XYsjDDIzudAh0fqNLX9nnK2p955SgTfoT4mn8hVdmuoyBOYV0BZnADGZFCfaZxQhmuRpra3OJiiIbdLgIY4DpCiSmFYclKnbFEFukSaB9PNmcZQCL9HqsKiO3UIFSa/5IW5E=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776379490; c=relaxed/simple;
+	bh=+0t4SYHquyA3oakfRA2GOKSWPJ7dOq9Grf4Lkkoe4mk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jhFjKMrJC/+0vsXU/co0/qkHexcr5Bu1WsLu6Iv5/68xz+sV+B00ggwEQxigxV1GMyGNwDcJqr/goNCoalx4zbNltIW3Go3UU0J8spJ1R+Pujje1JyFFvrCFL1jssWq86KLE7OhkO9K1qql2j7OCRqu8Wdp3x0ak77DHZb3bmF4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=lBpjrR8t; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="XB1H0iqR"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=kKHRuibBec5ihQ+f4hnJTQyQ6ZmZVTrV/Dt18axG7+HRfbBXovPCwG3zKcE788ELqcZRZyRebr+QMRq7ST6u95UGCBlXQ+LTtV/WRf+UK+ETCv6WBOxyyT0vBnVTFQZUMUGoowklfSUrd1Ra1rqa9UKyfoz6d2b6mbaUtQf3GB9vHlXrmwKOr6NuyYkA29d23HCv+WGxB8T4LsiXBuw8nYmzt8DrBTdr9Tt1u3EOtVmvio8vd8cdvo5cTXDXH+Fwy2FimpYxGSKEdvFGF4H0MegW3OR9+UKtGjiZcpGYrFB5kO0PpP95WbjAUKGOwqfGlYobUQk6uaQCqVcOb3q12Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=c1P1tQR9yZZWisKMGrQmCkUzuS4EOXOzhommPK/0CbY=;
- b=odjJE4rfoVSWwoWjBJWKp+1ubFvWh/R1+ReO/LDqm5SmuR+udE9d8zHflu+glrcEZeU/YOLCZgcxrsMyr/GqSmVAGbCxULSul6tkOBiFkLdqhp5RthPiBrWiLInhqmceRWszjfBtG4J/Xd2i9PZvYrEqx5W0vmJbBsggoQ/PxEup+q9r8GdRx0jir4vChs4UZIyi/jw12POHu+dIM9OnMT95zaAZiIsqmgieE+AA7B1jVnrWG+bPAe4/+Cw7Bd93VaUDBFJajE6gEhhZjFJafc18TK7NmW59jqJT/h9lNCu2XudTHJPBSSfJ5tpjkQBAD2HBkVDpkWtcUSW36qOFwA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=c1P1tQR9yZZWisKMGrQmCkUzuS4EOXOzhommPK/0CbY=;
- b=XB1H0iqR4+2W99OoP6A8JS7lPZNX51ggQowdihuYITpRDhi1hUxECdjyn7Bv5xCpzO2rirNf0fobDaG8eahcBL7cmS3f2G/tFJ11N/UNDrxHTdU6JC6MfI4uC984o+huWYsVmlXKf8xKG/20zisgrFUVCwiy3PjJg6LZ4mOhLJWyIha/dd/n4vIiW1BrHEkkdjpXa8BoflrTySs74Zfaz4WjLTCX9EWjVFGTa8ZnMpHBiQIssXhkVuzlKtJ5o7G9IHH1mv3BFjXTz7n6Vs1X8AKEb6Fa5IFDttg5vfHsEvhdNtApqvbMrSN+23SWvWnXuoCcpNpYIiAdfxSGeS0FDg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com (2603:10b6:8:c5::21) by
- DS0PR12MB7875.namprd12.prod.outlook.com (2603:10b6:8:14d::7) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9818.20; Thu, 16 Apr 2026 22:18:27 +0000
-Received: from DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33]) by DS0PR12MB6486.namprd12.prod.outlook.com
- ([fe80::88a9:f314:c95f:8b33%4]) with mapi id 15.20.9818.017; Thu, 16 Apr 2026
- 22:18:27 +0000
-Message-ID: <1e3c423e-1cf5-48b1-b012-c4af0eb6b95f@nvidia.com>
-Date: Thu, 16 Apr 2026 18:18:24 -0400
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v11 07/20] gpu: nova-core: mm: Add TLB flush support
-To: Danilo Krummrich <dakr@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
- Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>,
- Bjorn Roy Baron <bjorn3_gh@protonmail.com>, Benno Lossin
- <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>,
- Dave Airlie <airlied@redhat.com>,
- Daniel Almeida <daniel.almeida@collabora.com>,
- Koen Koning <koen.koning@linux.intel.com>, dri-devel@lists.freedesktop.org,
- rust-for-linux@vger.kernel.org, Nikola Djukic <ndjukic@nvidia.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Jonathan Corbet <corbet@lwn.net>, Alex Deucher <alexander.deucher@amd.com>,
- Christian Koenig <christian.koenig@amd.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, Huang Rui <ray.huang@amd.com>,
- Matthew Auld <matthew.auld@intel.com>,
- Lucas De Marchi <lucas.demarchi@intel.com>,
- Thomas Hellstrom <thomas.hellstrom@linux.intel.com>,
- Helge Deller <deller@gmx.de>, Alex Gaynor <alex.gaynor@gmail.com>,
- Boqun Feng <boqun.feng@gmail.com>, John Hubbard <jhubbard@nvidia.com>,
- Alistair Popple <apopple@nvidia.com>, Timur Tabi <ttabi@nvidia.com>,
- Edwin Peer <epeer@nvidia.com>, Alexandre Courbot <acourbot@nvidia.com>,
- Andrea Righi <arighi@nvidia.com>, Andy Ritger <aritger@nvidia.com>,
- Zhi Wang <zhiw@nvidia.com>, Balbir Singh <balbirs@nvidia.com>,
- Philipp Stanner <phasta@kernel.org>, Elle Rhumsaa
- <elle@weathered-steel.dev>, alexeyi@nvidia.com,
- Eliot Courtney <ecourtney@nvidia.com>, joel@joelfernandes.org,
- linux-doc@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- intel-gfx@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-References: <20260415210548.3776595-1-joelagnelf@nvidia.com>
- <20260415210548.3776595-7-joelagnelf@nvidia.com>
- <20260416212312.GA667928@joelbox2> <DHUWPQX14ZGZ.26BV7GQCJDZQI@kernel.org>
-Content-Language: en-US
-From: Joel Fernandes <joelagnelf@nvidia.com>
-In-Reply-To: <DHUWPQX14ZGZ.26BV7GQCJDZQI@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: BLAP220CA0004.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:208:32c::9) To DS0PR12MB6486.namprd12.prod.outlook.com
- (2603:10b6:8:c5::21)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lBpjrR8t"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=xOejhf2JTlBUOqRfxdf0lvXpMeOShPqCZFMc+hUVVlA=; b=lBpjrR8tWIGchgX60Dx+3/WuGd
+	z6WoGjbPom/arFHO7QAxC3NtAM+p+0nay1/wyz4eyi85ig4g2oEhSE1rottWgaivgQ/bkLIG6vkz2
+	56LUcBaN0ACOx1WIiF5PuvDIFo6+4ab8Yaq9SERLeQ9u3Lp4eoPmY/pX5SOaj1FQrt1VP+p3AsgBJ
+	eeVeNGH4LrGBtIJbfeC+bITlD1zcbt4Ds5WVPLlll9p3lDcl+DR0/nmWkr8X9R6rqhBvugLKBKnGM
+	ZEMQcF9vUyFTaJjSpKBrVx7BCSUbMW6TraI4EZvU2WAVwHaHEDizW5hsy0+Nb3BHbv0tDYuSLgAmg
+	IIC67+Sw==;
+Received: from [50.53.43.113] (helo=[192.168.254.34])
+	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1wDVS0-000000039Xq-1DLf;
+	Thu, 16 Apr 2026 22:44:44 +0000
+Message-ID: <e2b309c3-c287-43cf-9ee3-6d092086924b@infradead.org>
+Date: Thu, 16 Apr 2026 15:44:43 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS0PR12MB6486:EE_|DS0PR12MB7875:EE_
-X-MS-Office365-Filtering-Correlation-Id: 12d1b84f-fd02-4f21-5cce-08de9c06152f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|56012099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	Z9gPoYCrnolufJuLkjHrmfiSazfG723fyrhE3ZiF9MPrOtirgVnsicdBjZEF0pKR4MIwKjpimnQKxEdlQFWiFmHyLNwtFLByxU3Cw+1FAc4GRDN0d5/t8DGqxR9zwnX8ugAlP8VQuEsECy2ZMgC+ZcWpML7PS8GeqjfYEojzjF23jRrcFs0E3D9cCuEL9Tw5XbrzKjhKUJg17ZvZI0zGRNRGTQ0KzgOiW0VXKojptxJXqFYlOr7v1TK+n8qzgunpdDh+8aO4cGFCdr6ubauCsaV5yaRp8eWTQUSMxSXJMwCA4JAyla4OgqwQOrlzcJoquRQjg/hgeRcCkWt8jUeuyNYcy+GstG5mXJVcc+Yv8iljucEW70yKCpM0+ejrOyI+9BwV5xnVkZjEYhsaNHPfcx54LPnoUf6GVG3Tyxy5V4G5coXRuzD2FsPESc9adVgAXCwLYPd1XtZPJ2igl6LIoC2AZuskMIaNO5GQE+3+R7xKN0bj315TXBP4WaYAy/MB9tl0NFyKcKkrHPbk2xqrxETNvjqKIp8As5JI8hgePuAUQ3sIBYbo5ZSHPqFI9W0kHyPHaVhW7Q8HQPgQlLF2IMSYFU7AmDnYzOaS/CYz6/rcgHPlM21qTYP1xFgDb3hBZT9uTszsCUyS5413qzPcsLo9+ZZKnsagDZjXl8amS8VVYe5hzXHb4KR/kZWPzwjUdoGJI3BRTVuBSr625QaxU3lOer8TsM56oi6jc4lpq4o=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB6486.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?WGZtWWZ3cjNKMlNPaXNuWlJSbFpGNFE1Z3ZRVDJ0UVJrZG1ONVlXYjY1eXhM?=
- =?utf-8?B?OXcxMzh1dEo2N2UrNDNNdCt4VWhZWHA5S1hNN0Eva1QzK1FBNy9EMG5VYmpv?=
- =?utf-8?B?eE9GZktSN3ExR1hUODhVK0owWVpOYWJnU1U3THc1N2QwZU13dXRadlZwWWgy?=
- =?utf-8?B?UWJNd3UxN2JYMFhoc3Z0VnZjRTdHUytWby8rMnMyMFFBbC9lZzVsa0VnY3d6?=
- =?utf-8?B?RGk5b3dUcDBzTHFYQ2RUQjJZbGlPeFY4bTJ0VUdJRDNxSmplNWIzVEVLUjJ2?=
- =?utf-8?B?dG1CZVdnTXN6eDdFM3d6NUpGZWJNb2xzOXFmTzRCMVRhaUhSZHdacmhUWXJn?=
- =?utf-8?B?UVZkcm5LYmdJdHhFMUVMdFZIM2dWalY4SUVZM0hueENuNzdEN25RU3RHRG9l?=
- =?utf-8?B?dG03ZUFSbldwSzNjakErN2UzaFN0WDJKZk9jei8zWE9ZaEFKZ2NRWGtyZ21k?=
- =?utf-8?B?bEF5cWdNZXRrNklUc0ZSMU5XMzBwelBHUFVjU29KQ3oyVHpjNW96akp5M2Y5?=
- =?utf-8?B?WnBUckU4RjNQRmRPTmxlc2E3Yy8wZWIwNWI4dHZoLzAvK0RqSWk1S0dEZzh4?=
- =?utf-8?B?M1diL1ZGaFYxR0Nld3FhOTczV1ZnenZLeVhNN1JUTjZTV3NhV2lKM0hadlov?=
- =?utf-8?B?MlQ3alhZRnNOcFgyZ1phd2lxeGw5NERFUFp1ZjM3WFB1bHpKK0tmRGNNSzRm?=
- =?utf-8?B?TC95ZVYxN3pVS3kwMjRseThYVkdudWJheGhCQW4wYXVYampKd2dIQW9BYnM1?=
- =?utf-8?B?cGJYWnFDamxteGFseHFhYmVMcnBMd2g0eldjOHpWaGhlREtUR3BMVFA0dHhz?=
- =?utf-8?B?VWNmL3B4bDEzVXJlT01uTlc0YXdjbGJKQUpvN0dweXdwajZGRmErUnJzY2g3?=
- =?utf-8?B?WHFPWUFrc3U0c0RZalc1TUFsWnFHOFM4QUFqTUFmZFJYalJUWnI4ZlJGUFhM?=
- =?utf-8?B?a21XYnZxb29CbldMQzJSc3A4S1NXTDlUdHRWTnJJUXd5UCtuZWVEUm52bjRE?=
- =?utf-8?B?NWZtM2JqNUVUM214NndDSFUrZVJBV29JWnRRRlF2TWtEeXVTUDEyT1JKZ2JD?=
- =?utf-8?B?TXMvY3ZqbWZSUGswT0JadlJFcjFyTlZ5dXFVNDVBWm5kQ0l4MmwrRWUxdDZw?=
- =?utf-8?B?bmpYWDh4K3ArdytmTzNqc0FnQnZkR0tOc3lrZXZ1TERtTjlqWGhSb3p5OVdX?=
- =?utf-8?B?UmlQTXpreWxUMkpSVVgwV3FqQTBhc211VVF2ZmhYQ3lrTWtoNGFpQ2djUXha?=
- =?utf-8?B?MS93czJiWTlqVG1mOEpPcFR1U1lrWmFHK01NNXJJc0FNT3BiUmZOZmRBNGRB?=
- =?utf-8?B?VW51d2NGODFody9vYmNYWXdNVHMzaGMwWFVKMXhtamRRYW9BaWcxdEJNY2ox?=
- =?utf-8?B?N0ZYbExET2pneGpubHlHcTB3RjBOZng2U0M0UXpTR2trVmRkN21PWVd4Tnk5?=
- =?utf-8?B?NXJFeGdwN2VEU2I3ajhhb3JxeXR3cHdxNW9VbWZGSXV0cG41by9PWXJ2WHBG?=
- =?utf-8?B?VlNKRTVIMEZKaDhPZWI5WmJ5TWxCZnBuT3p1dk1jYUVTRzRIc29UeWhYMjlY?=
- =?utf-8?B?dWkyZEJwODkxL0UzRFA4ZVA5WDdQVDdBMm1DendTWVdOMStSZE1TUXNtdmx6?=
- =?utf-8?B?U3FVWm9XeWpYQ3g5TnpJdlFwTTlKd09Sckoyei85cGdCdTdaUjdlTjJoZ0sy?=
- =?utf-8?B?VFBQNnJCRThlMm0rdXF0am53M1h5Skh3RzB0NkVHRTJVOWZKVjR2UTdpUDRZ?=
- =?utf-8?B?cExNbG51Q1ZyTVBTUElVcEFxZWRPdFR1ckV0QzVjWTk3ZUZjN3BPMkpuM3hW?=
- =?utf-8?B?SkFCbVY4S2hoenRXOTFHOTNQN3ArV04xRDl4WnNHVUNPa1E1enhtemN1UU9T?=
- =?utf-8?B?MFg0a1JkbFJCUEhPZkRGVzJMV29Bb1VjMGFtNncwWUE1TGtrU1pjUnE5dVJq?=
- =?utf-8?B?ZUpJbVdCRkZ3VlJHTHNUUEZzTlYwRXJFVlFuS3NOQkRIbWR1VDhSaS9QM1Na?=
- =?utf-8?B?eXBvekxxUDlWTVJLb0dhTXhpQmU1ekZxa3JzcXFra25mdUxsZGNla1ZoNVlH?=
- =?utf-8?B?azd2UjZRajkxajZLQ2o5L25USkpab3NycjNJWitRMThkbDRsOFVTK1J5SmdS?=
- =?utf-8?B?MFFSaFdKZzVzK25DOGQ5VFpMbHN1Rmx1NGNraHZFY24vanNQTzRCYTBBUXl0?=
- =?utf-8?B?elJQeTh3bUZZZ3RzNXNmeCtHck9YeW1oZHRQM2c5dWxpR204UlBKdldhSnlS?=
- =?utf-8?B?dENYSk0xMSt2MXdIZ3RBR1lrc1dhU0thdFMrdkZyUDV1SjNkZnQzYlc5Rk9s?=
- =?utf-8?B?SUVNdWlYc1JaL0o0L1ZLMUEwTXk1RHovTXpIM0xKN2ZNZTR3bWZPZz09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 12d1b84f-fd02-4f21-5cce-08de9c06152f
-X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB6486.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Apr 2026 22:18:27.5574
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: NVV4sENjNQ/k94ELk+Mo9Yv7BuDdIKwYT8yexHU4m6gK3x5qW2PGeSiGTmihKpS9azRkXsQLMnGXXWrZvt9rWg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB7875
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] gpu: ipu-v3: clean up kernel-doc warnings
+To: dri-devel@lists.freedesktop.org
+Cc: Philipp Zabel <p.zabel@pengutronix.de>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+ Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
+References: <20260219215211.459108-1-rdunlap@infradead.org>
+Content-Language: en-US
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20260219215211.459108-1-rdunlap@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+ping.
 
-
-On 4/16/2026 5:45 PM, Danilo Krummrich wrote:
-> On Thu Apr 16, 2026 at 11:23 PM CEST, Joel Fernandes wrote:
->> Btw, I changed this to doing it in 2 phases to avoid holding the RCU readlock
->> across read_poll_timeout, which can sleep. Will squash it in for v12.
+On 2/19/26 1:52 PM, Randy Dunlap wrote:
+> Correct all kernel-doc warnings:
+> - fix a typedef kernel-doc comment
+> - mark a list_head as private
+> - use Returns: for function return values
 > 
-> Why do we need the try_access() dance in the first place? I assume this ends up
-> being called from the BarAccess destructor?
-
-BarAccess is different. The try_access() calls here are in tlb.rs and
-pramin.rs for Bar0. BarAccess uses &'a Bar1 directly — its Drop impl just
-calls self.vmm.unmap_pages(self.mm, mapped), without needing try_access().
-
+> Warning: include/video/imx-ipu-image-convert.h:31 struct member 'list' not
+>  described in 'ipu_image_convert_run'
+> Warning: include/video/imx-ipu-image-convert.h:40 function parameter
+>  'ipu_image_convert_cb_t' not described in 'void'
+> Warning: include/video/imx-ipu-image-convert.h:40 expecting prototype for
+>  ipu_image_convert_cb_t(). Prototype was for void() instead
+> Warning: include/video/imx-ipu-image-convert.h:66 No description found for
+>  return value of 'ipu_image_convert_verify'
+> Warning: include/video/imx-ipu-image-convert.h:90 No description found for
+>  return value of 'ipu_image_convert_prepare'
+> Warning: include/video/imx-ipu-image-convert.h:125 No description found for
+>  return value of 'ipu_image_convert_queue'
+> Warning: include/video/imx-ipu-image-convert.h:163 No description found for
+>  return value of 'ipu_image_convert'
 > 
-> If so, I think this is solvable. Gary and me are currently working on
-> higher-ranked types and a chained Devres type.
-
-Hmm, the issue here is we cannot hold revocable guard while sleeping, but
-we have read the bar as a condition in the body of the poll. So I split the
-try_access()'es. First phase for writing and second for reading (bar 0).
-
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+> ---
+> v2: add Reviewed-by, update Cc: list, rebase, resend
 > 
-> With that, such use-cases should be cleanly solvable without the need for
-> try_access().
+> Cc: Philipp Zabel <p.zabel@pengutronix.de>
+> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+> Cc: Maxime Ripard <mripard@kernel.org>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: David Airlie <airlied@gmail.com>
+> Cc: Simona Vetter <simona@ffwll.ch>
+> Cc: imx@lists.linux.dev
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
 > 
-> Besides that, I can't find where BarAccess is ever constructed.
-
-BarUser::map() constructs it.
-https://lore.kernel.org/all/20260415210548.3776595-18-joelagnelf@nvidia.com/
-
+>  include/video/imx-ipu-image-convert.h |   16 +++++++++++-----
+>  1 file changed, 11 insertions(+), 5 deletions(-)
 > 
-> It already has a lifetime 'a for &'a Bar1, so I don't see why you can't do the
-> same for Bar0.>
-> But again, I don't see this being constructed and I'm not sure the whole
-> construct works in the first place.
+> --- linux-next-20260218.orig/include/video/imx-ipu-image-convert.h
+> +++ linux-next-20260218/include/video/imx-ipu-image-convert.h
+> @@ -27,12 +27,13 @@ struct ipu_image_convert_run {
+>  
+>  	int status;
+>  
+> +	/* private: */
+>  	/* internal to image converter, callers don't touch */
+>  	struct list_head list;
+>  };
+>  
+>  /**
+> - * ipu_image_convert_cb_t - conversion callback function prototype
+> + * typedef ipu_image_convert_cb_t - conversion callback function prototype
+>   *
+>   * @run:	the completed conversion run pointer
+>   * @ctx:	a private context pointer for the callback
+> @@ -60,7 +61,7 @@ void ipu_image_convert_adjust(struct ipu
+>   * @out:	output image format
+>   * @rot_mode:	rotation mode
+>   *
+> - * Returns 0 if the formats and rotation mode meet IPU restrictions,
+> + * Returns: 0 if the formats and rotation mode meet IPU restrictions,
+>   * -EINVAL otherwise.
+>   */
+>  int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
+> @@ -77,11 +78,11 @@ int ipu_image_convert_verify(struct ipu_
+>   * @complete:	run completion callback
+>   * @complete_context:	a context pointer for the completion callback
+>   *
+> - * Returns an opaque conversion context pointer on success, error pointer
+> + * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
+> + *
+> + * Returns: an opaque conversion context pointer on success, error pointer
+>   * on failure. The input/output formats and rotation mode must already meet
+>   * IPU retrictions.
+> - *
+> - * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
+>   */
+>  struct ipu_image_convert_ctx *
+>  ipu_image_convert_prepare(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+> @@ -122,6 +123,8 @@ void ipu_image_convert_unprepare(struct
+>   * In V4L2, drivers should call ipu_image_convert_queue() while
+>   * streaming to queue the conversion of a received input buffer.
+>   * For example mem2mem devices this would be called in .device_run.
+> + *
+> + * Returns: 0 on success or -errno on error.
+>   */
+>  int ipu_image_convert_queue(struct ipu_image_convert_run *run);
+>  
+> @@ -155,6 +158,9 @@ void ipu_image_convert_abort(struct ipu_
+>   * On successful return the caller can queue more run requests if needed, using
+>   * the prepared context in run->ctx. The caller is responsible for unpreparing
+>   * the context when no more conversion requests are needed.
+> + *
+> + * Returns: pointer to the created &struct ipu_image_convert_run that has
+> + * been queued on success; an ERR_PTR(errno) on error.
+>   */
+>  struct ipu_image_convert_run *
+>  ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
 
-BarAccess uses &'a Bar1 because it's a short-lived scoped object. In long
-lived objects I am trying to avoid this. I guess I would be Ok with
-switching &'a Bar1 to Devres as well. But let me know your suggestions!
-
-If it is easier to look at a git tree to get a complete picture, here is
-the git tag of v11:
-https://git.kernel.org/pub/scm/linux/kernel/git/jfern/linux.git/tag/?h=nova-mm-v11-20260415
-
-Thanks.
-
-
+-- 
+~Randy
 

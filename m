@@ -1,162 +1,124 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B1763191BD;
-	Thu, 16 Apr 2026 22:44:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0CBF3803C5;
+	Thu, 16 Apr 2026 22:53:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776379490; cv=none; b=GkidRFl8P86XyVIlmk4tMsBAFFF/PYGdlsZQIk6XYsjDDIzudAh0fqNLX9nnK2p955SgTfoT4mn8hVdmuoyBOYV0BZnADGZFCfaZxQhmuRpra3OJiiIbdLgIY4DpCiSmFYclKnbFEFukSaB9PNmcZQCL9HqsKiO3UIFSa/5IW5E=
+	t=1776380004; cv=none; b=u1b5ZNphpfZh9h0Rp2/r5kNMMM66GlgtJ0aImlvFpzpLJFozlPIvWoIyZ2tHLeEPrvgC1qmeAdUwA78Wx/XHJ4/mycDl7/x+DuYsZwh0e94jt1h60iedIhvs2LU3O0bFPgCdzjq5MvTgOFpTAPHzslFOY/UM+tdhH6Xto7D/n+w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776379490; c=relaxed/simple;
-	bh=+0t4SYHquyA3oakfRA2GOKSWPJ7dOq9Grf4Lkkoe4mk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jhFjKMrJC/+0vsXU/co0/qkHexcr5Bu1WsLu6Iv5/68xz+sV+B00ggwEQxigxV1GMyGNwDcJqr/goNCoalx4zbNltIW3Go3UU0J8spJ1R+Pujje1JyFFvrCFL1jssWq86KLE7OhkO9K1qql2j7OCRqu8Wdp3x0ak77DHZb3bmF4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=lBpjrR8t; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1776380004; c=relaxed/simple;
+	bh=IWCEaQbl3udO2Tkn6BZ3hxIE47g64opbN1VZ4DBMm7A=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=ctLLKotTZE/KimkemeeguiyM98zNZS4No03UhHsO1s21v7t/sPoMBKYNISh2USvOtdyTgUEZL7IaQJFM+6elhMc41JsFY4Ev2v4qOTfMTaD9nKHMdy9NNhies/6eLpu9bdkiF15rs+kjOHvub5WF16vV3Ksb7pvc+9Zi8/vyoZg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c1HwZFbs; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lBpjrR8t"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=xOejhf2JTlBUOqRfxdf0lvXpMeOShPqCZFMc+hUVVlA=; b=lBpjrR8tWIGchgX60Dx+3/WuGd
-	z6WoGjbPom/arFHO7QAxC3NtAM+p+0nay1/wyz4eyi85ig4g2oEhSE1rottWgaivgQ/bkLIG6vkz2
-	56LUcBaN0ACOx1WIiF5PuvDIFo6+4ab8Yaq9SERLeQ9u3Lp4eoPmY/pX5SOaj1FQrt1VP+p3AsgBJ
-	eeVeNGH4LrGBtIJbfeC+bITlD1zcbt4Ds5WVPLlll9p3lDcl+DR0/nmWkr8X9R6rqhBvugLKBKnGM
-	ZEMQcF9vUyFTaJjSpKBrVx7BCSUbMW6TraI4EZvU2WAVwHaHEDizW5hsy0+Nb3BHbv0tDYuSLgAmg
-	IIC67+Sw==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wDVS0-000000039Xq-1DLf;
-	Thu, 16 Apr 2026 22:44:44 +0000
-Message-ID: <e2b309c3-c287-43cf-9ee3-6d092086924b@infradead.org>
-Date: Thu, 16 Apr 2026 15:44:43 -0700
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c1HwZFbs"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2F2AC2BCAF;
+	Thu, 16 Apr 2026 22:53:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776380003;
+	bh=IWCEaQbl3udO2Tkn6BZ3hxIE47g64opbN1VZ4DBMm7A=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=c1HwZFbsb72W4guoxbgZfS9eMY+AE63X18cyoW2/y2nx/pBlBS9AJKBQZDoROZQ++
+	 URGs+VJynCBMwmXxs/C4he2Id/OMhgukzqvSY+gJ9PEs2wKYZo+08Jnof0oDD4TzNl
+	 wHyFwePKaPb0nCC/Twd64IQBmzPJLU9ZGXPNu0uDImY0SndAzTeYTOtC55mrpZugrL
+	 h2zyLoF/2sPZ7v4WA7NPyufsqM86gsgTj3c2HVrM0JIxnzJPSUS0qmEE0gKxRr7Vcl
+	 sysv8qOJdI53oQoVRgbQP7ZPGpyMC+VP69DWaDSJfIbDb+5WSdgKByOcRkvAVSSatA
+	 YMjyglABTXJFg==
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] gpu: ipu-v3: clean up kernel-doc warnings
-To: dri-devel@lists.freedesktop.org
-Cc: Philipp Zabel <p.zabel@pengutronix.de>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
- Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
-References: <20260219215211.459108-1-rdunlap@infradead.org>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20260219215211.459108-1-rdunlap@infradead.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date: Fri, 17 Apr 2026 00:53:11 +0200
+Message-Id: <DHUY5IGHGE49.Z2UVYJ23KX2Y@kernel.org>
+Subject: Re: [PATCH v11 07/20] gpu: nova-core: mm: Add TLB flush support
+Cc: <linux-kernel@vger.kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>,
+ "Boqun Feng" <boqun@kernel.org>, "Gary Guo" <gary@garyguo.net>, "Bjorn Roy
+ Baron" <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>,
+ "Andreas Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl"
+ <aliceryhl@google.com>, "Trevor Gross" <tmgross@umich.edu>, "Dave Airlie"
+ <airlied@redhat.com>, "Daniel Almeida" <daniel.almeida@collabora.com>,
+ "Koen Koning" <koen.koning@linux.intel.com>,
+ <dri-devel@lists.freedesktop.org>, <rust-for-linux@vger.kernel.org>,
+ "Nikola Djukic" <ndjukic@nvidia.com>, "Maarten Lankhorst"
+ <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
+ <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Jonathan Corbet"
+ <corbet@lwn.net>, "Alex Deucher" <alexander.deucher@amd.com>, "Christian
+ Koenig" <christian.koenig@amd.com>, "Jani Nikula"
+ <jani.nikula@linux.intel.com>, "Joonas Lahtinen"
+ <joonas.lahtinen@linux.intel.com>, "Rodrigo Vivi" <rodrigo.vivi@intel.com>,
+ "Tvrtko Ursulin" <tursulin@ursulin.net>, "Huang Rui" <ray.huang@amd.com>,
+ "Matthew Auld" <matthew.auld@intel.com>, "Lucas De Marchi"
+ <lucas.demarchi@intel.com>, "Thomas Hellstrom"
+ <thomas.hellstrom@linux.intel.com>, "Helge Deller" <deller@gmx.de>, "Alex
+ Gaynor" <alex.gaynor@gmail.com>, "Boqun Feng" <boqun.feng@gmail.com>, "John
+ Hubbard" <jhubbard@nvidia.com>, "Alistair Popple" <apopple@nvidia.com>,
+ "Timur Tabi" <ttabi@nvidia.com>, "Edwin Peer" <epeer@nvidia.com>,
+ "Alexandre Courbot" <acourbot@nvidia.com>, "Andrea Righi"
+ <arighi@nvidia.com>, "Andy Ritger" <aritger@nvidia.com>, "Zhi Wang"
+ <zhiw@nvidia.com>, "Balbir Singh" <balbirs@nvidia.com>, "Philipp Stanner"
+ <phasta@kernel.org>, "Elle Rhumsaa" <elle@weathered-steel.dev>,
+ <alexeyi@nvidia.com>, "Eliot Courtney" <ecourtney@nvidia.com>,
+ <joel@joelfernandes.org>, <linux-doc@vger.kernel.org>,
+ <amd-gfx@lists.freedesktop.org>, <intel-gfx@lists.freedesktop.org>,
+ <intel-xe@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>
+To: "Joel Fernandes" <joelagnelf@nvidia.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260415210548.3776595-1-joelagnelf@nvidia.com>
+ <20260415210548.3776595-7-joelagnelf@nvidia.com>
+ <20260416212312.GA667928@joelbox2> <DHUWPQX14ZGZ.26BV7GQCJDZQI@kernel.org>
+ <1e3c423e-1cf5-48b1-b012-c4af0eb6b95f@nvidia.com>
+In-Reply-To: <1e3c423e-1cf5-48b1-b012-c4af0eb6b95f@nvidia.com>
 
-ping.
+On Fri Apr 17, 2026 at 12:18 AM CEST, Joel Fernandes wrote:
+> On 4/16/2026 5:45 PM, Danilo Krummrich wrote:
+>> Why do we need the try_access() dance in the first place? I assume this =
+ends up
+>> being called from the BarAccess destructor?
+>
+> BarAccess is different. The try_access() calls here are in tlb.rs and
+> pramin.rs for Bar0.
 
-On 2/19/26 1:52 PM, Randy Dunlap wrote:
-> Correct all kernel-doc warnings:
-> - fix a typedef kernel-doc comment
-> - mark a list_head as private
-> - use Returns: for function return values
-> 
-> Warning: include/video/imx-ipu-image-convert.h:31 struct member 'list' not
->  described in 'ipu_image_convert_run'
-> Warning: include/video/imx-ipu-image-convert.h:40 function parameter
->  'ipu_image_convert_cb_t' not described in 'void'
-> Warning: include/video/imx-ipu-image-convert.h:40 expecting prototype for
->  ipu_image_convert_cb_t(). Prototype was for void() instead
-> Warning: include/video/imx-ipu-image-convert.h:66 No description found for
->  return value of 'ipu_image_convert_verify'
-> Warning: include/video/imx-ipu-image-convert.h:90 No description found for
->  return value of 'ipu_image_convert_prepare'
-> Warning: include/video/imx-ipu-image-convert.h:125 No description found for
->  return value of 'ipu_image_convert_queue'
-> Warning: include/video/imx-ipu-image-convert.h:163 No description found for
->  return value of 'ipu_image_convert'
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-> ---
-> v2: add Reviewed-by, update Cc: list, rebase, resend
-> 
-> Cc: Philipp Zabel <p.zabel@pengutronix.de>
-> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: David Airlie <airlied@gmail.com>
-> Cc: Simona Vetter <simona@ffwll.ch>
-> Cc: imx@lists.linux.dev
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> 
->  include/video/imx-ipu-image-convert.h |   16 +++++++++++-----
->  1 file changed, 11 insertions(+), 5 deletions(-)
-> 
-> --- linux-next-20260218.orig/include/video/imx-ipu-image-convert.h
-> +++ linux-next-20260218/include/video/imx-ipu-image-convert.h
-> @@ -27,12 +27,13 @@ struct ipu_image_convert_run {
->  
->  	int status;
->  
-> +	/* private: */
->  	/* internal to image converter, callers don't touch */
->  	struct list_head list;
->  };
->  
->  /**
-> - * ipu_image_convert_cb_t - conversion callback function prototype
-> + * typedef ipu_image_convert_cb_t - conversion callback function prototype
->   *
->   * @run:	the completed conversion run pointer
->   * @ctx:	a private context pointer for the callback
-> @@ -60,7 +61,7 @@ void ipu_image_convert_adjust(struct ipu
->   * @out:	output image format
->   * @rot_mode:	rotation mode
->   *
-> - * Returns 0 if the formats and rotation mode meet IPU restrictions,
-> + * Returns: 0 if the formats and rotation mode meet IPU restrictions,
->   * -EINVAL otherwise.
->   */
->  int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
-> @@ -77,11 +78,11 @@ int ipu_image_convert_verify(struct ipu_
->   * @complete:	run completion callback
->   * @complete_context:	a context pointer for the completion callback
->   *
-> - * Returns an opaque conversion context pointer on success, error pointer
-> + * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
-> + *
-> + * Returns: an opaque conversion context pointer on success, error pointer
->   * on failure. The input/output formats and rotation mode must already meet
->   * IPU retrictions.
-> - *
-> - * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
->   */
->  struct ipu_image_convert_ctx *
->  ipu_image_convert_prepare(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
-> @@ -122,6 +123,8 @@ void ipu_image_convert_unprepare(struct
->   * In V4L2, drivers should call ipu_image_convert_queue() while
->   * streaming to queue the conversion of a received input buffer.
->   * For example mem2mem devices this would be called in .device_run.
-> + *
-> + * Returns: 0 on success or -errno on error.
->   */
->  int ipu_image_convert_queue(struct ipu_image_convert_run *run);
->  
-> @@ -155,6 +158,9 @@ void ipu_image_convert_abort(struct ipu_
->   * On successful return the caller can queue more run requests if needed, using
->   * the prepared context in run->ctx. The caller is responsible for unpreparing
->   * the context when no more conversion requests are needed.
-> + *
-> + * Returns: pointer to the created &struct ipu_image_convert_run that has
-> + * been queued on success; an ERR_PTR(errno) on error.
->   */
->  struct ipu_image_convert_run *
->  ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+Yes, and we shouldn't need them in the first place; we should have a
+&Device<Bound> in all call paths this is called from.
 
--- 
-~Randy
+>> If so, I think this is solvable. Gary and me are currently working on
+>> higher-ranked types and a chained Devres type.
+>
+> Hmm, the issue here is we cannot hold revocable guard while sleeping, but
+> we have read the bar as a condition in the body of the poll.
 
+No, you should just require a &Device<Bound>; or maybe we can utilize the
+mentioned higher-ranked types and DevresChain once we have it. But in any c=
+ase
+you shouldn't need try_access() here.
+
+>> With that, such use-cases should be cleanly solvable without the need fo=
+r
+>> try_access().
+>>=20
+>> Besides that, I can't find where BarAccess is ever constructed.
+>
+> BarUser::map() constructs it.
+
+I'm well aware, but absolutely nothing calls BarUser::map(). :)
+
+>> It already has a lifetime 'a for &'a Bar1, so I don't see why you can't =
+do the
+>> same for Bar0.>
+>> But again, I don't see this being constructed and I'm not sure the whole
+>> construct works in the first place.
+>
+> BarAccess uses &'a Bar1 because it's a short-lived scoped object. In long
+> lived objects I am trying to avoid this.
+
+Don't get me wrong, if a lifetime is sufficient -- that's great! But I'm
+suspicious whether it actually is, since BarAccess is never actually constr=
+ucted
+and hence I can't see how it would be used.

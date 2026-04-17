@@ -1,78 +1,73 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 321F735C19F
-	for <linux-fbdev@vger.kernel.org>; Fri, 17 Apr 2026 09:33:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D73535E529
+	for <linux-fbdev@vger.kernel.org>; Fri, 17 Apr 2026 10:17:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776418420; cv=none; b=GGaCO2od0cluaHNb6eR9apmgwtHdXF4VSTjOL3xjlqTxGxffwKnkaXktbbDoBbSZ9sjKEkGTwn/hlAkOxOJDjpxUwTfO4ny714khEozuIZx3n3cUK0dWSbkdwvIXwQbZcxGhMTXpKZG9NsfGIRMa5yOVXOqfv/Wu0Jud9LYavoE=
+	t=1776421077; cv=none; b=YieK2JrbbPg+ravgwxRGuhSRwwmPoQgvg6gfnoOB+FFwPsBtxDRBRoH4WokPYsUsVzIYmGNfo6/fLRKNQtf374zOofmpaYllANtDc+tzUIahH37TiALU8ssDxvssojXQDB1ssz+PmxrBDWcJ7XV9WDQtVORGOAb0Pja8H4pxZig=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776418420; c=relaxed/simple;
-	bh=2Otf4kXRw2fvNYPA2gD8YpzlgN+/Q3fixkyMGHGZlqc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=iTdZwqfFAH1yuWL9kIT4lyNinULflk18lwwOv963TQsBVqA4M1R64SSBlz5cTCajKTAtvoaEswTd655Dh7Y7fEsFmvYT4HVMurV7SvAh+pXm9Tc6pcA/wAyfkz/0NYu4UpLD1LJeEgLoLrYUrmr8zBIZHwrNBI25iykvMPaDk88=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=U/gNzmqR; arc=none smtp.client-ip=209.85.216.51
+	s=arc-20240116; t=1776421077; c=relaxed/simple;
+	bh=wcBO9jGFdwwVPdrukUVB7ZxstBGjl7lPflRRPr6TIuI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ILfCJj6Z1IpYiOSqCAnrjR2kGTMwvUppcmaEKz6eu7MGQsuTINEPgRJqMJI4i3FddonJmfjXH/iTJv+SjkO2PctvxH7tx55VysWmzmw806nX6tF645u4802Bv9pEcgaBPd/uw6OSG31bdcnL+D0QeGfzDZpeN2OMPiwLgjzEvvM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=rcS63PaA; arc=none smtp.client-ip=209.85.216.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U/gNzmqR"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-36143b0dbdbso149479a91.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 17 Apr 2026 02:33:39 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rcS63PaA"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-354bc7c2c46so325552a91.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 17 Apr 2026 03:17:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776418418; x=1777023218; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vMX7hr4YVNh8uAt3LdTcIDPI1RjqIWFFZ3Ztn6YuqVw=;
-        b=U/gNzmqRbsYgAVhu35eqr2GXJsJIhMo2mR5AS63MSmkmODIXyUadUZoOogh6OER+0m
-         9ODlpMOAIjCkymsGB8qWzkcSMJPok1obLTwxAwy+vmF3NZG2wVpoo1FxgpjE+iX5bMTe
-         wtx9TkhWniY2owcqA9/jy3Fkg5at8DNsRpo5mYP0uOb5yfatA8YIymbMZLRR/nTsPN7L
-         EtzE3msgf51k/P+VmuTtVlJgThJsYyl6rpQq9e52iul3GWDR8SjRm8md4ohzs51D4XCu
-         ZazA6Q6goHSd1JY1zHFhIHJEOodn2gTQAWkkYD2YJjJCMD8l9JR4+Vu6eOePZA7wihYo
-         w2/A==
+        d=gmail.com; s=20251104; t=1776421073; x=1777025873; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=8iE4usfHbukw4GyIkJMsnZ0QQYr3hxZC7HTo6J/YluM=;
+        b=rcS63PaAl5wycejXH+F6YrzXazRcRMH+M5s2bUz0ainSF61LY7nebkfHVWqJCbI1jL
+         kDaGgpTUq1z6JZy04NFt31hcEgxFUdnIudChvsrFjXcJOwex6RK+R9/xPWgxXpT4Dntr
+         o7ZorjjAw+q5lGekA1cM3vyIdv3Az8NTTgGeGS+GHeiGbonr+pfEjc9i2AKQrGSxgL2J
+         Dmsk0ya0JYV0OfkZ6kN0685ZFkjC946MNhFKPewWbAhiO7HRiPAcdXuNlHMVLxZJGDgj
+         ooMMBWdH/tpsKTi3KcxcX4mLDfrEsnQnFt4HuiIEs1/xbQu+15QfCQC9URShk1KZ7Xaz
+         6FTQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776418418; x=1777023218;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=vMX7hr4YVNh8uAt3LdTcIDPI1RjqIWFFZ3Ztn6YuqVw=;
-        b=T0NMVBE0WQwyUxdlSmeCFlcObyGXGFYBalu8KDzldONbZl+8gBLkzxBLy8sbpl2TU7
-         o8+eTZGahAw1MKq4qVDMU2PuaE1eA17lperxNrOgkOoo43saU9UvMLxfbcpd7CcO+vPs
-         ycaHpLiHQvrepNS2JZn2fDnEQzli3Yg0p3GNQ8K/k3uCTW4TorjdY2qX+qhGfaf4tubE
-         IiHhCmLNvp0lOw81aaY9zCZYRZpHSE7CJH2ffAH3dc7u0felR5o9DPDqQP8bYd7sDNXf
-         iG72ByDsn7801N2XSTOg+7hrziAZLP9806ErOd+VuVowSaLjb0uDaUBR4os3Oe4fBKpZ
-         ALBw==
-X-Forwarded-Encrypted: i=1; AFNElJ8R+r3dNN1mNMoOc/XLhXAxNwxIpNpcIYZcFX1EbgIVDQa/BSHmADAAJTYV4lYT9x41YtL0WaUY7vuy8A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzrVQJf2ZZAZJeYZZKx7QkPPnXn9Io+d3dP5li3nOk0Apk9tdbI
-	uZeHQFRCvvmksQItQPNBsxp88AfpQEPSBccPgVac8KCO6Qb/V9gBN0qB
-X-Gm-Gg: AeBDies+RnDR/RbXlWykF5JwNk5iNMwt5zAj6GQj7maXm+vlDpbQcAsMw8kH+wt7rtO
-	AjEvHJ5RLD1gOU46iFjmIjTI9ztKL9q/SDymTIR9n1mLbrD/hQYianKRtT75gw2Xoh4jrf64nUi
-	DXMTUVEt2cceVmdZOwYiJtv/kCisN6v4m0lNHxjw+TbbE7VBbupbks1LuRWKc4l1hCOS80kQoSQ
-	Av563G7kPff3zeHVf+p19Mz1UjQWIzbmDX+EkyGB1pOquKLL7y6nKuKn/Mf88/3d09M6yryynHD
-	rmnYcFBHRMnw2jk1qkeKQ95A/NqEAR5eH0KR8IGIanxOHALgq9SHRYmwi8b2m/TTGhNAdrMh3rH
-	xi6ei4pKJ9RuaICkQn83pbClJc8zJ7gmzkLV/fYiLYv42h5ys8riq6vqas97V8oKEATHM6Udl23
-	qlHHt8kROWLfoTYIGs20D/STqAh4Btn6dC3YOHGakcULMFFNiEVeEseYqtWgnk0/pkupyY5GEUx
-	GNBEluyi18AOtWDkpBU7z9DhHZtYU1f+9Y=
-X-Received: by 2002:a17:90b:518f:b0:35e:5051:fb13 with SMTP id 98e67ed59e1d1-361404a78aemr2176490a91.26.1776418418422;
-        Fri, 17 Apr 2026 02:33:38 -0700 (PDT)
-Received: from lucifer-Victus-by-HP-Gaming-Laptop-15-fa1xxx.iitbhu.local ([103.151.209.194])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36140ff2e1esm1410806a91.8.2026.04.17.02.33.35
+        d=1e100.net; s=20251104; t=1776421073; x=1777025873;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=8iE4usfHbukw4GyIkJMsnZ0QQYr3hxZC7HTo6J/YluM=;
+        b=PUh806r2ua4n2RK+CkNF21EosHzghD7valRSnLO8gzo92yhWF3rUawOoSj+e9YovFb
+         k4xWWkIppHA4aRXbduqAH7yq8mwO69nr3h6MsC8wQeP7F2SfNOa8SLIM0SI3WEk6dnG6
+         DKufLtOYNjKtY3QBll03105GsYIN9uaUtOfjggN5mmnBVk1sPZjlQH0eVAt5nW7Ajy1I
+         KI4CUEGnUXtDXDdOR1X4i8fveVvcbY2pj2nVBe/7FwlApq6BmeT9iYT8fWmM898kGDlw
+         gk+pqhuywqTl94Z+LkghTYA6fgG+pjBQLWkP8zOQmBSpaLYmARcsRF8AX8upcJ9oxwJL
+         VoUw==
+X-Forwarded-Encrypted: i=1; AFNElJ/jRF/MoQNZx5HhmkvbL60lgH/YeJXtSUh21nL0wguNJ+XU0YeHuVsY2j0+otMpnIgxPCRYu7Lq6EvSVw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwQ8as0mQwFhKJeCX7NlL+RnKPOYPOEgh/P4IhF3rn66ujwA69y
+	Dh74bF4gYxHSJRO2RA3wopJ9Frsco01F1hmT+dW2uDsKpoyCt8bAaEyI
+X-Gm-Gg: AeBDiesCGOtlVHNgdOfhBJjnLsgdXvprzG7rpnnPXoafps28041Df9BatbYwqa+MK3Y
+	KnxnvpuLjDxmBqniTbTEHsNM9fWbJeE465TdmftFdQIGI/3dkEdBH2yv/IrnfHWTKIvvlFzZ5m2
+	O3WFQOV1f2XNb74U8yHe3SLWc5mzCHdCEOhjzxNgUr8sa8hcYX3oJEAkhqezqo5paNAG83hUs0u
+	mpVn76U4yBTYVL/X2zku5Yb/5KHQGV9OQhpp+vZI9H3EQjb+tx9C+U40fNDiQp3pUToIxEP/QKd
+	LPyXPPseLqPpCTnJWaG22vC3JuOlBJF7JhNxFiRXiF8ygS76sFTNpLDY4xau3IrFY5UkP9iYLAx
+	NlL4WS9uwM86sIrYY8MYJCS1/3Z+xiL/gckUywdc7n+f/TrKb22e04ndJ0Rko4s5WaaDimhGxUW
+	Uevr/mypYYLDjueMfF5GTlaV+qapDs
+X-Received: by 2002:a17:90b:4a09:b0:35f:b7f5:9cd with SMTP id 98e67ed59e1d1-36140490614mr2164284a91.20.1776421073015;
+        Fri, 17 Apr 2026 03:17:53 -0700 (PDT)
+Received: from fedora ([157.20.226.20])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c7976f8f370sm1280728a12.7.2026.04.17.03.17.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Apr 2026 02:33:38 -0700 (PDT)
-From: Sachin Kumar <sachinkumar905846@gmail.com>
-To: andy@kernel.org,
-	gregkh@linuxfoundation.org
-Cc: dri-devel@lists.freedesktop.org,
+        Fri, 17 Apr 2026 03:17:52 -0700 (PDT)
+From: Prasaanth <prasaanth2k@gmail.com>
+To: linux-staging@lists.linux.dev
+Cc: andy@kernel.org,
+	gregkh@linuxfoundation.org,
+	dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	Sachin Kumar <sachinkumar905846@gmail.com>
-Subject: [PATCH v3] staging: fbtft: clarify TODO comment in fbtft-core
-Date: Fri, 17 Apr 2026 15:03:03 +0530
-Message-ID: <20260417093303.33670-1-sachinkumar905846@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <CAHp75VeFZ7PDV_tT8tDibQk-VPkFFHsxiAHOAx-9Xp0N1ijvAQ@mail.gmail.com>
-References: <CAHp75VeFZ7PDV_tT8tDibQk-VPkFFHsxiAHOAx-9Xp0N1ijvAQ@mail.gmail.com>
+	Prasaanth <prasaanth2k@gmail.com>
+Subject: [PATCH] staging: fbtft: fb_tinylcd: fix alignment in write_reg call
+Date: Fri, 17 Apr 2026 15:44:57 +0530
+Message-ID: <20260417101457.7599-1-prasaanth2k@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -81,33 +76,29 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Improve wording of a TODO comment to better describe the
-intended optimization. The comment now clearly states that
-only the changed display area should be updated instead of
-refreshing the entire screen.
+Fix alignment of multiline arguments in write_reg() call to
+match kernel coding style
 
-Signed-off-by: Sachin Kumar <sachinkumar905846@gmail.com>
+Reported by checkpatch.pl
+
+Signed-off-by: Prasaanth <prasaanth2k@gmail.com>
 ---
-v3:
-- add missing changelog for previous version
-- simplify TODO comment to match kernel style
-
- drivers/staging/fbtft/fbtft-core.c | 2 +-
+ drivers/staging/fbtft/fb_tinylcd.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index f427c0914..cff838955 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -414,7 +414,7 @@ static void fbtft_ops_damage_range(struct fb_info *info, off_t off, size_t len)
- {
- 	struct fbtft_par *par = info->par;
- 
--	/* TODO: only mark changed area update all for now */
-+	/* TODO: update only changed area, not entire display */
- 	par->fbtftops.mkdirty(info, -1, 0);
- }
- 
+diff --git a/drivers/staging/fbtft/fb_tinylcd.c b/drivers/staging/fbtft/fb_tinylcd.c
+index 9469248f2..60cda57bc 100644
+--- a/drivers/staging/fbtft/fb_tinylcd.c
++++ b/drivers/staging/fbtft/fb_tinylcd.c
+@@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
+ 	write_reg(par, 0xE5, 0x00);
+ 	write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
+ 	write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
+-		       0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
++		  0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
+ 	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55);
+ 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
+ 	udelay(250);
 -- 
-2.43.0
+2.53.0
 

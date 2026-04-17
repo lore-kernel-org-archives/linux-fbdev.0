@@ -1,104 +1,80 @@
-Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D73535E529
-	for <linux-fbdev@vger.kernel.org>; Fri, 17 Apr 2026 10:17:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85D9F30FC1F;
+	Fri, 17 Apr 2026 11:20:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776421077; cv=none; b=YieK2JrbbPg+ravgwxRGuhSRwwmPoQgvg6gfnoOB+FFwPsBtxDRBRoH4WokPYsUsVzIYmGNfo6/fLRKNQtf374zOofmpaYllANtDc+tzUIahH37TiALU8ssDxvssojXQDB1ssz+PmxrBDWcJ7XV9WDQtVORGOAb0Pja8H4pxZig=
+	t=1776424835; cv=none; b=B3bVyIT4q1aAoRbce6jTBZCVKZtwq4h4LIzqrUYU1PPaaO+icVd2jbL3ZaBH6rY0I4l20deK7F7qNLdTQIdS8GfAVAuz7j6hAszv7GwqP6q6+sf8yii0kJYa4qi37gzgBDE7SnaCCMqhNmMxee/HoO8R6/sBfUBapHsVevs5DNE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776421077; c=relaxed/simple;
-	bh=wcBO9jGFdwwVPdrukUVB7ZxstBGjl7lPflRRPr6TIuI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ILfCJj6Z1IpYiOSqCAnrjR2kGTMwvUppcmaEKz6eu7MGQsuTINEPgRJqMJI4i3FddonJmfjXH/iTJv+SjkO2PctvxH7tx55VysWmzmw806nX6tF645u4802Bv9pEcgaBPd/uw6OSG31bdcnL+D0QeGfzDZpeN2OMPiwLgjzEvvM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=rcS63PaA; arc=none smtp.client-ip=209.85.216.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1776424835; c=relaxed/simple;
+	bh=ZJ/IkHzAzvd9vULVzY+BMeJBCQ616LS8tQLsbyyNNFM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TZY9CUSoA+18w9bzoz4qIQ848gYRghjRh7wnd9tSTZJDc+f58j4/F6H/LNBVam6pVoMx6q4KsADZUnyCeJ4vZzZt8EjN52f3Z5IEPLrx9v7iNDZZ2RmboZoKTxVU9dJLdwVYyNmPtLR5WgJxffkbL4pSLLvRTzUtkO5NpJPwDgM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=BdtM41Zc; arc=none smtp.client-ip=192.198.163.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rcS63PaA"
-Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-354bc7c2c46so325552a91.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 17 Apr 2026 03:17:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776421073; x=1777025873; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=8iE4usfHbukw4GyIkJMsnZ0QQYr3hxZC7HTo6J/YluM=;
-        b=rcS63PaAl5wycejXH+F6YrzXazRcRMH+M5s2bUz0ainSF61LY7nebkfHVWqJCbI1jL
-         kDaGgpTUq1z6JZy04NFt31hcEgxFUdnIudChvsrFjXcJOwex6RK+R9/xPWgxXpT4Dntr
-         o7ZorjjAw+q5lGekA1cM3vyIdv3Az8NTTgGeGS+GHeiGbonr+pfEjc9i2AKQrGSxgL2J
-         Dmsk0ya0JYV0OfkZ6kN0685ZFkjC946MNhFKPewWbAhiO7HRiPAcdXuNlHMVLxZJGDgj
-         ooMMBWdH/tpsKTi3KcxcX4mLDfrEsnQnFt4HuiIEs1/xbQu+15QfCQC9URShk1KZ7Xaz
-         6FTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776421073; x=1777025873;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8iE4usfHbukw4GyIkJMsnZ0QQYr3hxZC7HTo6J/YluM=;
-        b=PUh806r2ua4n2RK+CkNF21EosHzghD7valRSnLO8gzo92yhWF3rUawOoSj+e9YovFb
-         k4xWWkIppHA4aRXbduqAH7yq8mwO69nr3h6MsC8wQeP7F2SfNOa8SLIM0SI3WEk6dnG6
-         DKufLtOYNjKtY3QBll03105GsYIN9uaUtOfjggN5mmnBVk1sPZjlQH0eVAt5nW7Ajy1I
-         KI4CUEGnUXtDXDdOR1X4i8fveVvcbY2pj2nVBe/7FwlApq6BmeT9iYT8fWmM898kGDlw
-         gk+pqhuywqTl94Z+LkghTYA6fgG+pjBQLWkP8zOQmBSpaLYmARcsRF8AX8upcJ9oxwJL
-         VoUw==
-X-Forwarded-Encrypted: i=1; AFNElJ/jRF/MoQNZx5HhmkvbL60lgH/YeJXtSUh21nL0wguNJ+XU0YeHuVsY2j0+otMpnIgxPCRYu7Lq6EvSVw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwQ8as0mQwFhKJeCX7NlL+RnKPOYPOEgh/P4IhF3rn66ujwA69y
-	Dh74bF4gYxHSJRO2RA3wopJ9Frsco01F1hmT+dW2uDsKpoyCt8bAaEyI
-X-Gm-Gg: AeBDiesCGOtlVHNgdOfhBJjnLsgdXvprzG7rpnnPXoafps28041Df9BatbYwqa+MK3Y
-	KnxnvpuLjDxmBqniTbTEHsNM9fWbJeE465TdmftFdQIGI/3dkEdBH2yv/IrnfHWTKIvvlFzZ5m2
-	O3WFQOV1f2XNb74U8yHe3SLWc5mzCHdCEOhjzxNgUr8sa8hcYX3oJEAkhqezqo5paNAG83hUs0u
-	mpVn76U4yBTYVL/X2zku5Yb/5KHQGV9OQhpp+vZI9H3EQjb+tx9C+U40fNDiQp3pUToIxEP/QKd
-	LPyXPPseLqPpCTnJWaG22vC3JuOlBJF7JhNxFiRXiF8ygS76sFTNpLDY4xau3IrFY5UkP9iYLAx
-	NlL4WS9uwM86sIrYY8MYJCS1/3Z+xiL/gckUywdc7n+f/TrKb22e04ndJ0Rko4s5WaaDimhGxUW
-	Uevr/mypYYLDjueMfF5GTlaV+qapDs
-X-Received: by 2002:a17:90b:4a09:b0:35f:b7f5:9cd with SMTP id 98e67ed59e1d1-36140490614mr2164284a91.20.1776421073015;
-        Fri, 17 Apr 2026 03:17:53 -0700 (PDT)
-Received: from fedora ([157.20.226.20])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c7976f8f370sm1280728a12.7.2026.04.17.03.17.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Apr 2026 03:17:52 -0700 (PDT)
-From: Prasaanth <prasaanth2k@gmail.com>
-To: linux-staging@lists.linux.dev
-Cc: andy@kernel.org,
-	gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Prasaanth <prasaanth2k@gmail.com>
-Subject: [PATCH] staging: fbtft: fb_tinylcd: fix alignment in write_reg call
-Date: Fri, 17 Apr 2026 15:44:57 +0530
-Message-ID: <20260417101457.7599-1-prasaanth2k@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="BdtM41Zc"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1776424832; x=1807960832;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=ZJ/IkHzAzvd9vULVzY+BMeJBCQ616LS8tQLsbyyNNFM=;
+  b=BdtM41ZcozJHQUpdYh1lU9H2hYdOyRYYOfbY+DxmWJMpyGHZ1Zn5ka7U
+   InAB/y4W+xWqq7KwtO5wzO86H9sNMnEHe0SHtiTwbkeSPhJnynmhK50i6
+   MMurnAMu9HGWw6LR3PhiSDK9xnupmTX9rsW4mYUnQbbpiKz+yA2JkVRE1
+   rk7dcu3pbd345kfIU3WhT/A5aNEW3pytYwNx/uE4+fQ+5J6bedvdcy+Z2
+   cXClE2lX1A2Y/rY8fDmAPhn6zsFHCXdTOXLSecQwcoyuz6T5u/YDI97fD
+   pF0/EbY0+ddRI7qs5A/6nHvERhm3EUxtwEQ107F+KrvKGGXbz1JXjjdXf
+   g==;
+X-CSE-ConnectionGUID: /5iCi1xzTG62XOhrP/0OpQ==
+X-CSE-MsgGUID: FR5hXEkMQDyQyfaplb/u6g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11761"; a="77512117"
+X-IronPort-AV: E=Sophos;i="6.23,184,1770624000"; 
+   d="scan'208";a="77512117"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2026 04:20:31 -0700
+X-CSE-ConnectionGUID: ov5K17c3SU6ti8os0AnsgA==
+X-CSE-MsgGUID: YPpPWat4QSurhH6SDlYWLw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,184,1770624000"; 
+   d="scan'208";a="229997857"
+Received: from hrotuna-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.245.78])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2026 04:20:31 -0700
+Date: Fri, 17 Apr 2026 14:20:28 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Prasaanth <prasaanth2k@gmail.com>
+Cc: linux-staging@lists.linux.dev, andy@kernel.org,
+	gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: fb_tinylcd: fix alignment in write_reg
+ call
+Message-ID: <aeIXfMcia6e8cQvy@ashevche-desk.local>
+References: <20260417101457.7599-1-prasaanth2k@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260417101457.7599-1-prasaanth2k@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-Fix alignment of multiline arguments in write_reg() call to
-match kernel coding style
+On Fri, Apr 17, 2026 at 03:44:57PM +0530, Prasaanth wrote:
+> Fix alignment of multiline arguments in write_reg() call to
+> match kernel coding style
+> 
+> Reported by checkpatch.pl
 
-Reported by checkpatch.pl
+NAK. Use a common sense.
 
-Signed-off-by: Prasaanth <prasaanth2k@gmail.com>
----
- drivers/staging/fbtft/fb_tinylcd.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/staging/fbtft/fb_tinylcd.c b/drivers/staging/fbtft/fb_tinylcd.c
-index 9469248f2..60cda57bc 100644
---- a/drivers/staging/fbtft/fb_tinylcd.c
-+++ b/drivers/staging/fbtft/fb_tinylcd.c
-@@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
- 	write_reg(par, 0xE5, 0x00);
- 	write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
- 	write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
--		       0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
-+		  0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
- 	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55);
- 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
- 	udelay(250);
 -- 
-2.53.0
+With Best Regards,
+Andy Shevchenko
+
 

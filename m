@@ -1,80 +1,185 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85D9F30FC1F;
-	Fri, 17 Apr 2026 11:20:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B048D395DBC
+	for <linux-fbdev@vger.kernel.org>; Sat, 18 Apr 2026 14:36:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776424835; cv=none; b=B3bVyIT4q1aAoRbce6jTBZCVKZtwq4h4LIzqrUYU1PPaaO+icVd2jbL3ZaBH6rY0I4l20deK7F7qNLdTQIdS8GfAVAuz7j6hAszv7GwqP6q6+sf8yii0kJYa4qi37gzgBDE7SnaCCMqhNmMxee/HoO8R6/sBfUBapHsVevs5DNE=
+	t=1776522991; cv=none; b=QA1+lJ2z/0rMOKSDmiqlaH8PmGyRVYQJy+yo2BZvAER7lQPcFeHAMgxuW4KZOeFUXnZCy0vt9jbCNRoFzXnFYhuR7BPW4FUXIFE0rAetLrOpaABDghXMwejuoMOBaxz6KnG59fQUpTm9NR30GlK1QODYXp/qFDX1jU5x87NFmO8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776424835; c=relaxed/simple;
-	bh=ZJ/IkHzAzvd9vULVzY+BMeJBCQ616LS8tQLsbyyNNFM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TZY9CUSoA+18w9bzoz4qIQ848gYRghjRh7wnd9tSTZJDc+f58j4/F6H/LNBVam6pVoMx6q4KsADZUnyCeJ4vZzZt8EjN52f3Z5IEPLrx9v7iNDZZ2RmboZoKTxVU9dJLdwVYyNmPtLR5WgJxffkbL4pSLLvRTzUtkO5NpJPwDgM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=BdtM41Zc; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="BdtM41Zc"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1776424832; x=1807960832;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=ZJ/IkHzAzvd9vULVzY+BMeJBCQ616LS8tQLsbyyNNFM=;
-  b=BdtM41ZcozJHQUpdYh1lU9H2hYdOyRYYOfbY+DxmWJMpyGHZ1Zn5ka7U
-   InAB/y4W+xWqq7KwtO5wzO86H9sNMnEHe0SHtiTwbkeSPhJnynmhK50i6
-   MMurnAMu9HGWw6LR3PhiSDK9xnupmTX9rsW4mYUnQbbpiKz+yA2JkVRE1
-   rk7dcu3pbd345kfIU3WhT/A5aNEW3pytYwNx/uE4+fQ+5J6bedvdcy+Z2
-   cXClE2lX1A2Y/rY8fDmAPhn6zsFHCXdTOXLSecQwcoyuz6T5u/YDI97fD
-   pF0/EbY0+ddRI7qs5A/6nHvERhm3EUxtwEQ107F+KrvKGGXbz1JXjjdXf
-   g==;
-X-CSE-ConnectionGUID: /5iCi1xzTG62XOhrP/0OpQ==
-X-CSE-MsgGUID: FR5hXEkMQDyQyfaplb/u6g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11761"; a="77512117"
-X-IronPort-AV: E=Sophos;i="6.23,184,1770624000"; 
-   d="scan'208";a="77512117"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2026 04:20:31 -0700
-X-CSE-ConnectionGUID: ov5K17c3SU6ti8os0AnsgA==
-X-CSE-MsgGUID: YPpPWat4QSurhH6SDlYWLw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,184,1770624000"; 
-   d="scan'208";a="229997857"
-Received: from hrotuna-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.245.78])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2026 04:20:31 -0700
-Date: Fri, 17 Apr 2026 14:20:28 +0300
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Prasaanth <prasaanth2k@gmail.com>
-Cc: linux-staging@lists.linux.dev, andy@kernel.org,
-	gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: fb_tinylcd: fix alignment in write_reg
- call
-Message-ID: <aeIXfMcia6e8cQvy@ashevche-desk.local>
-References: <20260417101457.7599-1-prasaanth2k@gmail.com>
+	s=arc-20240116; t=1776522991; c=relaxed/simple;
+	bh=s1QiCuvO/yxnom0YdaAgahlW+22nZ8MdjRUuFA4w6ME=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=p+FwYs0MysLgOZ/H9Ulq/npk6rAHe5a97Qs1QFv17Ab5k9wcUtMpL0Tvrr22BHwVOtJb8V40Lfi0PzsJrw++Wj5nVLKFJnM+uIqM3RN8D/pHhtXea/776dQKvZqZd+2gKjfLF32vs3esHyRnhC4HOk/oEhtL+A0hD+RmJ+WeuIE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=crimson.net.eu.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=crimson.net.eu.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-488d2079582so17839465e9.2
+        for <linux-fbdev@vger.kernel.org>; Sat, 18 Apr 2026 07:36:28 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776522987; x=1777127787;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=J8Myl5eTPvtfBTYrdmzc0XSzpZs+RgyOgv0qYMVJpcU=;
+        b=JvabbpapaG2mOjmhZvVJuUCSkGaTOGFs4bRSAJ/YCZ2/BQ97Ybh0aT4yfqU+BDVJpW
+         H/NxXoGWprwn5Nqzd8lWWMYi1vH7A8OdExlvhBBTzs4+baJUBs8Bl0/rDfjC2KgKHnM4
+         4/ffEBg2D9yrolYf0WProKPpAprr9r6llD24T7BDa7RKpxB4UDSThIYAMZyoPQQ6TUW2
+         gCEIWKGrsNK4P/lcccKdoT1qExNGfQB1JH8fdzY42VcXEXpcl46TZ7xE5T2S9t1cWjWb
+         tP54TB9z3x3RBdNyY81ohvrQfLg8t0IkfivahdjnpWDB4KCR3jg8Rmb3v81BY+/mrcOB
+         5xRA==
+X-Gm-Message-State: AOJu0YxrpKi/3brCBfoniNlJ5TWDfzrn3kbJvgWsV9jOLGEBNTziPZyc
+	6JPef95CqL6NSRAknJ/HlfaJtfYUyWp0Rx0800NWTjMQ0OpvWElv0clu
+X-Gm-Gg: AeBDietU5tNy9zHeYRsTxNIvupYWsNVZCW1iVF8uXoS/BE4Nca59xHTMv7AgX44JjmR
+	zz3QJT7VOYubNroTckWjEO7ie69QgsuTu3LZYUqMdWeu42/GAg2dJi6lhB7IoW9nTPYr/7FTWG5
+	vQocLpCun5BHcHCLLEf+8NrwKFHUjVnFnulQvsY74lku8BeZfYyArI54mYejUjgYl3duRFnAQJc
+	2AIY9TZ1eqBf5wPUAW5B4TV5MP0lvyHcJhwjjoYBUnlV2DhgV8c6WJA9zde2XoylsN/cPkf+sXa
+	T7r2Rzk9RMqySJYKltT2QZvYvw9WzWMd7JZ79yW3+9v98dJtmLGmDTxjDSbiq48ZiJSUUzt5zmo
+	ZHIiH2Lc8GZaLARXRCTd2YP/Ls0bh6a2KWBOB2no2NY1d+Rh9diYG1xmn5pUgUtD5tEtnPBh7Kd
+	P31GttmSEAca+YA8IWp0TB0AyNVI2YlqdZxyedUVIQz8lXbuDnhKCIza7iYKPa4ns80N4EjrXsr
+	nrERH7ihZcKfvO2N4wlbrISSOf5UCc5IQ==
+X-Received: by 2002:a05:600c:674f:b0:488:be21:54ae with SMTP id 5b1f17b1804b1-488fb6e9cecmr107092205e9.0.1776522987033;
+        Sat, 18 Apr 2026 07:36:27 -0700 (PDT)
+Received: from localhost.localdomain ([151.41.34.202])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488fc0f8188sm144271375e9.2.2026.04.18.07.36.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 18 Apr 2026 07:36:26 -0700 (PDT)
+From: deep@crimson.net.eu.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Kenet Jovan Sokoli <deep@crimson.net.eu.org>
+Subject: [PATCH] staging: sm750fb: remove unused functions
+Date: Sat, 18 Apr 2026 16:36:20 +0200
+Message-ID: <20260418143620.845355-1-deep@crimson.net.eu.org>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260417101457.7599-1-prasaanth2k@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+Content-Transfer-Encoding: 8bit
 
-On Fri, Apr 17, 2026 at 03:44:57PM +0530, Prasaanth wrote:
-> Fix alignment of multiline arguments in write_reg() call to
-> match kernel coding style
-> 
-> Reported by checkpatch.pl
+From: Kenet Jovan Sokoli <deep@crimson.net.eu.org>
 
-NAK. Use a common sense.
+The functions sm750_enable_i2c() and sm750_hw_cursor_set_data2() are
+defined and declared but never used. Following the driver's TODO list
+to remove unused code, this patch deletes these dead functions.
 
+Verified by compilation and cppcheck.
+
+Signed-off-by: Kenet Jovan Sokoli <deep@crimson.net.eu.org>
+---
+ drivers/staging/sm750fb/ddk750_power.c | 17 ----------
+ drivers/staging/sm750fb/ddk750_power.h |  5 ---
+ drivers/staging/sm750fb/sm750_cursor.c | 43 --------------------------
+ drivers/staging/sm750fb/sm750_cursor.h |  2 --
+ 4 files changed, 67 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index 12834f78eef7..eaba3bc2e01a 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -126,20 +126,3 @@ void sm750_enable_gpio(unsigned int enable)
+ 
+ 	sm750_set_current_gate(gate);
+ }
+-
+-/*
+- * This function enable/disable the I2C Engine
+- */
+-void sm750_enable_i2c(unsigned int enable)
+-{
+-	u32 gate;
+-
+-	/* Enable I2C Gate */
+-	gate = peek32(CURRENT_GATE);
+-	if (enable)
+-		gate |= CURRENT_GATE_I2C;
+-	else
+-		gate &= ~CURRENT_GATE_I2C;
+-
+-	sm750_set_current_gate(gate);
+-}
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index 5cbb11986bb8..1c4f054d7276 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -33,9 +33,4 @@ void sm750_enable_dma(unsigned int enable);
+  */
+ void sm750_enable_gpio(unsigned int enable);
+ 
+-/*
+- * This function enable/disable the I2C Engine
+- */
+-void sm750_enable_i2c(unsigned int enable);
+-
+ #endif
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 7ede144905c9..f0338e6e76b1 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -130,46 +130,3 @@ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
+ 		}
+ 	}
+ }
+-
+-void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
+-			       const u8 *pcol, const u8 *pmsk)
+-{
+-	int i, j, count, pitch, offset;
+-	u8 color, mask;
+-	u16 data;
+-	void __iomem *pbuffer, *pstart;
+-
+-	/*  in byte*/
+-	pitch = cursor->w >> 3;
+-
+-	/* in byte	*/
+-	count = pitch * cursor->h;
+-
+-	/* in byte */
+-	offset = cursor->max_w * 2 / 8;
+-
+-	data = 0;
+-	pstart = cursor->vstart;
+-	pbuffer = pstart;
+-
+-	for (i = 0; i < count; i++) {
+-		color = *pcol++;
+-		mask = *pmsk++;
+-		data = 0;
+-
+-		for (j = 0; j < 8; j++) {
+-			if (mask & (1 << j))
+-				data |= ((color & (1 << j)) ? 1 : 2) << (j * 2);
+-		}
+-		iowrite16(data, pbuffer);
+-
+-		/* assume pitch is 1,2,4,8,...*/
+-		if (!(i & (pitch - 1))) {
+-			/* need a return */
+-			pstart += offset;
+-			pbuffer = pstart;
+-		} else {
+-			pbuffer += sizeof(u16);
+-		}
+-	}
+-}
+diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
+index 88fa02f6377a..51ba0da0270c 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.h
++++ b/drivers/staging/sm750fb/sm750_cursor.h
+@@ -10,6 +10,4 @@ void sm750_hw_cursor_set_pos(struct lynx_cursor *cursor, int x, int y);
+ void sm750_hw_cursor_set_color(struct lynx_cursor *cursor, u32 fg, u32 bg);
+ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
+ 			      const u8 *data, const u8 *mask);
+-void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
+-			       const u8 *data, const u8 *mask);
+ #endif
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 

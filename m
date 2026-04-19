@@ -1,185 +1,138 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B048D395DBC
-	for <linux-fbdev@vger.kernel.org>; Sat, 18 Apr 2026 14:36:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7396220010A;
+	Sun, 19 Apr 2026 00:45:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.154
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776522991; cv=none; b=QA1+lJ2z/0rMOKSDmiqlaH8PmGyRVYQJy+yo2BZvAER7lQPcFeHAMgxuW4KZOeFUXnZCy0vt9jbCNRoFzXnFYhuR7BPW4FUXIFE0rAetLrOpaABDghXMwejuoMOBaxz6KnG59fQUpTm9NR30GlK1QODYXp/qFDX1jU5x87NFmO8=
+	t=1776559556; cv=none; b=NE2YBfgf1PU8s0d9HLHCE/2D7nyc2sP1l1hauokulGZREZhX39r3D27vKGbYIoYLWa4TvnU5RAkYCWn5gl12plVqU9AcLjKTjxuTB+gQc+xZ4retH43X9GvB5PRZs/wm2Ob3b/1uPnR5ML51Rkx75DlE1x0GReiZ7mUvE+XxhNo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776522991; c=relaxed/simple;
-	bh=s1QiCuvO/yxnom0YdaAgahlW+22nZ8MdjRUuFA4w6ME=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=p+FwYs0MysLgOZ/H9Ulq/npk6rAHe5a97Qs1QFv17Ab5k9wcUtMpL0Tvrr22BHwVOtJb8V40Lfi0PzsJrw++Wj5nVLKFJnM+uIqM3RN8D/pHhtXea/776dQKvZqZd+2gKjfLF32vs3esHyRnhC4HOk/oEhtL+A0hD+RmJ+WeuIE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=crimson.net.eu.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.128.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=crimson.net.eu.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-488d2079582so17839465e9.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 18 Apr 2026 07:36:28 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776522987; x=1777127787;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=J8Myl5eTPvtfBTYrdmzc0XSzpZs+RgyOgv0qYMVJpcU=;
-        b=JvabbpapaG2mOjmhZvVJuUCSkGaTOGFs4bRSAJ/YCZ2/BQ97Ybh0aT4yfqU+BDVJpW
-         H/NxXoGWprwn5Nqzd8lWWMYi1vH7A8OdExlvhBBTzs4+baJUBs8Bl0/rDfjC2KgKHnM4
-         4/ffEBg2D9yrolYf0WProKPpAprr9r6llD24T7BDa7RKpxB4UDSThIYAMZyoPQQ6TUW2
-         gCEIWKGrsNK4P/lcccKdoT1qExNGfQB1JH8fdzY42VcXEXpcl46TZ7xE5T2S9t1cWjWb
-         tP54TB9z3x3RBdNyY81ohvrQfLg8t0IkfivahdjnpWDB4KCR3jg8Rmb3v81BY+/mrcOB
-         5xRA==
-X-Gm-Message-State: AOJu0YxrpKi/3brCBfoniNlJ5TWDfzrn3kbJvgWsV9jOLGEBNTziPZyc
-	6JPef95CqL6NSRAknJ/HlfaJtfYUyWp0Rx0800NWTjMQ0OpvWElv0clu
-X-Gm-Gg: AeBDietU5tNy9zHeYRsTxNIvupYWsNVZCW1iVF8uXoS/BE4Nca59xHTMv7AgX44JjmR
-	zz3QJT7VOYubNroTckWjEO7ie69QgsuTu3LZYUqMdWeu42/GAg2dJi6lhB7IoW9nTPYr/7FTWG5
-	vQocLpCun5BHcHCLLEf+8NrwKFHUjVnFnulQvsY74lku8BeZfYyArI54mYejUjgYl3duRFnAQJc
-	2AIY9TZ1eqBf5wPUAW5B4TV5MP0lvyHcJhwjjoYBUnlV2DhgV8c6WJA9zde2XoylsN/cPkf+sXa
-	T7r2Rzk9RMqySJYKltT2QZvYvw9WzWMd7JZ79yW3+9v98dJtmLGmDTxjDSbiq48ZiJSUUzt5zmo
-	ZHIiH2Lc8GZaLARXRCTd2YP/Ls0bh6a2KWBOB2no2NY1d+Rh9diYG1xmn5pUgUtD5tEtnPBh7Kd
-	P31GttmSEAca+YA8IWp0TB0AyNVI2YlqdZxyedUVIQz8lXbuDnhKCIza7iYKPa4ns80N4EjrXsr
-	nrERH7ihZcKfvO2N4wlbrISSOf5UCc5IQ==
-X-Received: by 2002:a05:600c:674f:b0:488:be21:54ae with SMTP id 5b1f17b1804b1-488fb6e9cecmr107092205e9.0.1776522987033;
-        Sat, 18 Apr 2026 07:36:27 -0700 (PDT)
-Received: from localhost.localdomain ([151.41.34.202])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488fc0f8188sm144271375e9.2.2026.04.18.07.36.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Apr 2026 07:36:26 -0700 (PDT)
-From: deep@crimson.net.eu.org
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Kenet Jovan Sokoli <deep@crimson.net.eu.org>
-Subject: [PATCH] staging: sm750fb: remove unused functions
-Date: Sat, 18 Apr 2026 16:36:20 +0200
-Message-ID: <20260418143620.845355-1-deep@crimson.net.eu.org>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1776559556; c=relaxed/simple;
+	bh=GNU/MRGok5zFJKRq5TRgaA/qhTEKDgwPGLJNEKyjzuk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=pliYUYRh+MVzF7+6amk68FRMCISgB5wo4tHeOsOjzRCBLtpUF7yKn8ctDp3rkllSFXXZ+na5YbT0+7Z3ieY/hTmXw86DH/uW2xVHsv2LmczRzOlS+IphcqlORVneonzsn0KucK+Z+UkkuTd5UmAgFh1d7qKj5LtqwHDc0waiVBM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ethancedwards.com; spf=pass smtp.mailfrom=ethancedwards.com; dkim=pass (2048-bit key) header.d=ethancedwards.com header.i=@ethancedwards.com header.b=JmLxZpJl; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=lyC8Kdq1; arc=none smtp.client-ip=202.12.124.154
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ethancedwards.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ethancedwards.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=ethancedwards.com header.i=@ethancedwards.com header.b="JmLxZpJl";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="lyC8Kdq1"
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id B0B7C7A00AF;
+	Sat, 18 Apr 2026 20:45:54 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-04.internal (MEProxy); Sat, 18 Apr 2026 20:45:54 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	ethancedwards.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:from:from:in-reply-to
+	:message-id:mime-version:reply-to:subject:subject:to:to; s=fm1;
+	 t=1776559554; x=1776645954; bh=+ryyt5gM1krKhmzbZX2sB8GTsWehBb0P
+	fTP5kNNxTZg=; b=JmLxZpJlVmeyaQMDetTvMd4A9wORwND1+SYKtinYyFCappTP
+	g0y/hc4R1WfzVQs5ONHLCeSm6vM4tUH4kioMD1NngbWpun4faUNymIBbUrPf6/2Y
+	qxyJnWwhj61HhfD6R5Wx6ZmmnqAt+5mb63M/aZmOgs5MzkCF4xqGPY/4UZ6wG11j
+	ejIPX8boRdfa3gYe+lSkEtZ8Mmb+U7HLhL1Pda5en+G1PDJXy1OM90OgYTXkQzMx
+	jdzn5eLxt+54xs5EvEX6fAsYeGMgtT7JOE0L3Um/qRJwOmq0SDBnga8RoQ/RfIXI
+	IdTVq1v0Lm0XMu15kb2eNAmTmk51/hdpKpZXBg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:message-id:mime-version:reply-to:subject
+	:subject:to:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm2; t=1776559554; x=1776645954; bh=+ryyt5gM1krKhmzbZX2sB8GTsWeh
+	Bb0PfTP5kNNxTZg=; b=lyC8Kdq1pzb912zWR0STY1SWLvHA/dXKhq3NZOf9HBHf
+	Bp0sag3HM1E/XHXFCo1bwtUbdx9DQ6vIHCS7L7hjqlayJX6lXn1ZbIZFFd0yt1V6
+	9vsUIsA7hJ5hj96fo4hAkV1El4EMaCuIntY9ATo3ZFXZvZhXU3HTscH9T7FTbR7n
+	lI54rN2QPURcDfUM1Wvbh/SbjTqoRLvLdkkL54pLcT4fmz3pQ7B1NgQ0CwNkKMHL
+	g/yHma3C/YKonW2IVwgYOaCJ6uumFWv8nmC/81O6VJlg79KxMElKpbEIfqcjfLM2
+	RPSoajUqSCeylXBttDryjAqpurW2qM/ROx3C5TKNaQ==
+X-ME-Sender: <xms:wiXkabXJ4dbJYKvhYCArf57xN34CfI-sSuKvxKSBh-h6bSgZY8Nz_w>
+    <xme:wiXkadmdILdjVWgBV_QctuWBC1ntem82xSWCA8lmXBQyxSpKF0voTYwzjWxJsFbF4
+    PkATUjwEHXtKjTJlkxyVu8laID1HvYrOw4kXvS2YtgqnOeKyAujTEI>
+X-ME-Received: <xmr:wiXkaeC5_iDgoYRbURVqEdFl92f9QLDvQIwUn7sB6SoC_91kIExMgIdeykvD>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdehgedvgecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpefhfffugggtgffkvfevofesthejredtredtjeenucfhrhhomhepgfhthhgrnhcuvegr
+    rhhtvghrucfgugifrghrughsuceovghthhgrnhesvghthhgrnhgtvggufigrrhgushdrtg
+    homheqnecuggftrfgrthhtvghrnhepieeuhfeuhffguefhffekfffgtefgjeeghfdukeel
+    vdduiedutdffffeghedtiedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpe
+    hmrghilhhfrhhomhepvghthhgrnhesvghthhgrnhgtvggufigrrhgushdrtghomhdpnhgs
+    pghrtghpthhtohepjedpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepuggvlhhlvg
+    hrsehgmhigrdguvgdprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgv
+    rhhnvghlrdhorhhgpdhrtghpthhtohepvghthhgrnhesvghthhgrnhgtvggufigrrhgush
+    drtghomhdprhgtphhtthhopegurhhiqdguvghvvghlsehlihhsthhsrdhfrhgvvgguvghs
+    khhtohhprdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkh
+    gvrhhnvghlrdhorhhgpdhrtghpthhtohepsggvnhhhsehkvghrnhgvlhdrtghrrghshhhi
+    nhhgrdhorhhgpdhrtghpthhtohepkhgvrhhnvghlqdhjrghnihhtohhrshesvhhgvghrrd
+    hkvghrnhgvlhdrohhrgh
+X-ME-Proxy: <xmx:wiXkaUhirGKZwNvgH9flKBReUuSEEZRiTTUoiCaBwhguKIuvI7f4Mg>
+    <xmx:wiXkaTzZ1XBqTQp_KPc279nJAb9WBizZsh2hEgpxf3ogOD9cii7xog>
+    <xmx:wiXkad1GPaouBjiDbYXS295GTUWqwEQorgzvqEb_X80N3Qu05vRc6g>
+    <xmx:wiXkaQ-PmwoN_nYFaWln_-O_6OD3CrXzMHf7MT9bFlfVPEBOHKIeJA>
+    <xmx:wiXkaW5HTpeMoaOEHxiKTQ7GTzq3CbnA4wHDL049LWB3GoIr-hExa_rX>
+Feedback-ID: ibf9e487c:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sat,
+ 18 Apr 2026 20:45:53 -0400 (EDT)
+From: Ethan Carter Edwards <ethan@ethancedwards.com>
+Date: Sat, 18 Apr 2026 20:45:50 -0400
+Subject: [PATCH] video: fbdev: aty: Fix spelling mistake "enfore" ->
+ "enforce"
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260418-radeon-typo-v1-1-8e075365089b@ethancedwards.com>
+X-B4-Tracking: v=1; b=H4sIAL0l5GkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDE0ML3aLElNT8PN2SyoJ8XUsLQxOLJMtUozRjcyWgjoKi1LTMCrBp0bG
+ 1tQDevMZhXQAAAA==
+X-Change-ID: 20260418-radeon-typo-98148b9e2f37
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+ Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, 
+ Ethan Carter Edwards <ethan@ethancedwards.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=992;
+ i=ethan@ethancedwards.com; h=from:subject:message-id;
+ bh=GNU/MRGok5zFJKRq5TRgaA/qhTEKDgwPGLJNEKyjzuk=;
+ b=LS0tLS1CRUdJTiBQR1AgTUVTU0FHRS0tLS0tCgpvd0o0bkp2QXk4ekFKWGJEOXFoNThlVGp6e
+ GhQcXlVeFpENVJQZmpEU1plYjcvZWZONWMrRzZ5M1R2QzZ6UFUzCjZNc2FuUzkvZGx4VTBqSC9Y
+ cGZYVWNyQ0lNYkZJQ3VteVBJL1J6bnRvZVlNaFoxL1hacGc1ckF5Z1F4aDRPSVUKZ0lrY2ttRDR
+ aM3VXYStxRHByUkptNFRyV1h6dmY3WXhmN0ZEOHRQOUgvZjJuZS9RbU13NTR5ZkQveUR0NTZlMA
+ paeC9tZExIZ1kvZHB0WlRjdkVIeVdOSDhsVE8vcjlDKzkyZTNEaXNBQzdKUmVBPT0KPThUR3cKL
+ S0tLS1FTkQgUEdQIE1FU1NBR0UtLS0tLQo=
+X-Developer-Key: i=ethan@ethancedwards.com; a=openpgp;
+ fpr=2E51F61839D1FA947A7300C234C04305D581DBFE
 
-From: Kenet Jovan Sokoli <deep@crimson.net.eu.org>
+There is a spelling mistake in a comment. Fix it.
 
-The functions sm750_enable_i2c() and sm750_hw_cursor_set_data2() are
-defined and declared but never used. Following the driver's TODO list
-to remove unused code, this patch deletes these dead functions.
-
-Verified by compilation and cppcheck.
-
-Signed-off-by: Kenet Jovan Sokoli <deep@crimson.net.eu.org>
+Signed-off-by: Ethan Carter Edwards <ethan@ethancedwards.com>
 ---
- drivers/staging/sm750fb/ddk750_power.c | 17 ----------
- drivers/staging/sm750fb/ddk750_power.h |  5 ---
- drivers/staging/sm750fb/sm750_cursor.c | 43 --------------------------
- drivers/staging/sm750fb/sm750_cursor.h |  2 --
- 4 files changed, 67 deletions(-)
+ drivers/video/fbdev/aty/radeon_monitor.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index 12834f78eef7..eaba3bc2e01a 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -126,20 +126,3 @@ void sm750_enable_gpio(unsigned int enable)
- 
- 	sm750_set_current_gate(gate);
- }
--
--/*
-- * This function enable/disable the I2C Engine
-- */
--void sm750_enable_i2c(unsigned int enable)
--{
--	u32 gate;
--
--	/* Enable I2C Gate */
--	gate = peek32(CURRENT_GATE);
--	if (enable)
--		gate |= CURRENT_GATE_I2C;
--	else
--		gate &= ~CURRENT_GATE_I2C;
--
--	sm750_set_current_gate(gate);
--}
-diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
-index 5cbb11986bb8..1c4f054d7276 100644
---- a/drivers/staging/sm750fb/ddk750_power.h
-+++ b/drivers/staging/sm750fb/ddk750_power.h
-@@ -33,9 +33,4 @@ void sm750_enable_dma(unsigned int enable);
-  */
- void sm750_enable_gpio(unsigned int enable);
- 
--/*
-- * This function enable/disable the I2C Engine
-- */
--void sm750_enable_i2c(unsigned int enable);
--
- #endif
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 7ede144905c9..f0338e6e76b1 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -130,46 +130,3 @@ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
- 		}
- 	}
- }
--
--void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
--			       const u8 *pcol, const u8 *pmsk)
--{
--	int i, j, count, pitch, offset;
--	u8 color, mask;
--	u16 data;
--	void __iomem *pbuffer, *pstart;
--
--	/*  in byte*/
--	pitch = cursor->w >> 3;
--
--	/* in byte	*/
--	count = pitch * cursor->h;
--
--	/* in byte */
--	offset = cursor->max_w * 2 / 8;
--
--	data = 0;
--	pstart = cursor->vstart;
--	pbuffer = pstart;
--
--	for (i = 0; i < count; i++) {
--		color = *pcol++;
--		mask = *pmsk++;
--		data = 0;
--
--		for (j = 0; j < 8; j++) {
--			if (mask & (1 << j))
--				data |= ((color & (1 << j)) ? 1 : 2) << (j * 2);
--		}
--		iowrite16(data, pbuffer);
--
--		/* assume pitch is 1,2,4,8,...*/
--		if (!(i & (pitch - 1))) {
--			/* need a return */
--			pstart += offset;
--			pbuffer = pstart;
--		} else {
--			pbuffer += sizeof(u16);
--		}
--	}
--}
-diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
-index 88fa02f6377a..51ba0da0270c 100644
---- a/drivers/staging/sm750fb/sm750_cursor.h
-+++ b/drivers/staging/sm750fb/sm750_cursor.h
-@@ -10,6 +10,4 @@ void sm750_hw_cursor_set_pos(struct lynx_cursor *cursor, int x, int y);
- void sm750_hw_cursor_set_color(struct lynx_cursor *cursor, u32 fg, u32 bg);
- void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
- 			      const u8 *data, const u8 *mask);
--void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
--			       const u8 *data, const u8 *mask);
- #endif
+diff --git a/drivers/video/fbdev/aty/radeon_monitor.c b/drivers/video/fbdev/aty/radeon_monitor.c
+index df55e23b7a5a..621d13a1a1d9 100644
+--- a/drivers/video/fbdev/aty/radeon_monitor.c
++++ b/drivers/video/fbdev/aty/radeon_monitor.c
+@@ -654,7 +654,7 @@ static void radeon_fixup_panel_info(struct radeonfb_info *rinfo)
+ {
+ #ifdef CONFIG_PPC
+ 	/*
+-	 * LCD Flat panels should use fixed dividers, we enfore that on
++	 * LCD Flat panels should use fixed dividers, we enforce that on
+ 	 * PPC only for now...
+ 	 */
+ 	if (!rinfo->panel_info.use_bios_dividers && rinfo->mon1_type == MT_LCD
+
+---
+base-commit: c7275b05bc428c7373d97aa2da02d3a7fa6b9f66
+change-id: 20260418-radeon-typo-98148b9e2f37
+
+Best regards,
 -- 
-2.43.0
+Ethan Carter Edwards <ethan@ethancedwards.com>
 

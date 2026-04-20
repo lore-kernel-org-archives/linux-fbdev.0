@@ -1,117 +1,85 @@
-Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com [209.85.222.181])
+Received: from mail-oa1-f70.google.com (mail-oa1-f70.google.com [209.85.160.70])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7CCE13C9C4
-	for <linux-fbdev@vger.kernel.org>; Mon, 20 Apr 2026 05:19:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B41FF37FF67
+	for <linux-fbdev@vger.kernel.org>; Mon, 20 Apr 2026 07:05:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.70
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776662372; cv=none; b=IWov4vBT/08upTumaXWFiNNb8fJ9fXxni+g3pXLW8/lihaLBdDNiPlrxIGDynjiH27Ic+/R+NtbRuTRH4BFOcDcJ1tfKGssDjA4bQMifuQtsKB9Iff9uj9iTapNchfNSRjRTBo5kdmcU25BdjOOmhljpKqeeJ2JYHaOKS1oZPVM=
+	t=1776668734; cv=none; b=tiuykoX2zhGc0k/lNN9SODt8UTeMrtKRSDKxzqxMSm2+6hHj9Wht8WblqK0cenPpoJljMRwkkEcNwPNgB9N/w92pkxWgQyB1ULKYEXYlyxaawwoc05V8okoxRjj2r0AM/sxIiwDEjOu29BSjFV2cC77JaWQv7TAU63vwmdU+U2E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776662372; c=relaxed/simple;
-	bh=8kg6S8DHulB7fNhWP6eFQ6wLGKro9ckhhdhLO6BIo24=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=h/ixebk+EfNOpY28ciUHSMfXap6HLVBCtxGaAhqYc2VRI4UNbSy/hMhP2msjR/QBaPYgr9IbxYU2ab1NrmNqlWXWTIO+SPTHlRfcHm7usmo63rVZvVKpXBLYU1fB6j6eFkw6+g7NAjlnSg4irHOhImKR47ABR+ZlDV3ONS/+BMU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=noEHpEYQ; arc=none smtp.client-ip=209.85.222.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="noEHpEYQ"
-Received: by mail-qk1-f181.google.com with SMTP id af79cd13be357-8cfd122d78fso426144185a.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 19 Apr 2026 22:19:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776662369; x=1777267169; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=XVBsgs/Wk3x8UxkibJW5Haz8zZ0ewkla2R+/4mLmWr8=;
-        b=noEHpEYQsNSyox39H81xVN2gdmBhds0+C6WYPl+Z6HLNFSc57C7CFxneAMUfgPyiwJ
-         2mvEnlFQ7UoQlm9Fu6MMPAMC8fXOo197CFhs7dE18hjQIbOeZkGixZfytfWp2VbOCiP7
-         F++cxXQK3up1L2ufyfBj7ZyaOChEWhebBKmwDgdeIHQunraKfgC0w+kpCfoi0uow5TuZ
-         QzM4cwFEDymrJ0VhXFz2j9lnEearryQFR+XlYmGpXwDm9D24/DzFFR16qFyK/uX5OlwL
-         yklpQoVFAVvdYhyk3W8FUCBTEkF7M4zyAj2ii75KL5o6iddwvijeMxg4qMrw8Sbe8kFx
-         dJJQ==
+	s=arc-20240116; t=1776668734; c=relaxed/simple;
+	bh=6CyCZpJImIp73hdnCs9KUaLVbHSHKLhIwmYlwvzejZ0=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=f7XkT20vqe0WS75ZuPIizpR2gxGcjwo9XKiEsPcvz5Nw6zbDbEYhZItFLsqQs1Dk28q83OINaYbsErwDhyqatw4pruC4aP4HQm6R9kJa6PnCwr+oKJJ3X1kuX8Ksr+HPmibhCZzhkKbLXvDRSW3GBpoFeMj8BZZnM8GFbzGxIEI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.160.70
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oa1-f70.google.com with SMTP id 586e51a60fabf-415e1ea16b4so4521051fac.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 20 Apr 2026 00:05:32 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776662369; x=1777267169;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XVBsgs/Wk3x8UxkibJW5Haz8zZ0ewkla2R+/4mLmWr8=;
-        b=ZT7L7wMmWUoe9Cw5Ec4tDxAS8V1aKZa6DmKlpe8T3Vdrs4mXM+mN+9iL1z+KOzIAsb
-         ax5laGu/NjW+yLsiVkkeEHYi0g/n/D/okdLNDEhF5j2qOo1c9ZHff8BwDufntBVo1fmG
-         KpUULcXAZceAhbgsF9PfLuUgBNEbiRzAHsiF41WbNbQNdllKJAZ/uN2DngbXNChlnKL0
-         M7SSlcNC3O50mUatRAQKQ7f7FZi58KvY3OnAPRey0opzRCkYRANn0X5akRbgQ7LMEGq5
-         cfzB0Ekdm0pkRQTxKd7zNfdxijNwaYyCK2Mtg+FYQVACgEIWkg7wAMNFRjq0N8ZraH5C
-         m/Gw==
-X-Forwarded-Encrypted: i=1; AFNElJ+v8XFlv7kqAQE1A6fHd8gV/wa7EeUFAiRqMwO3LY9e8QaDFHBX4UH4EjRMuqlfXRUaAaEPQRdk5l4yPg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzJe3C9WA0neNm8he44f6o2kStqR6/dJstoa7j9UOE+amnq4KYR
-	Ct+56YNOegkV6DJeGG6V4ubUavCvCnUuA+SQS/0hO38DgYw97YSTTxQr
-X-Gm-Gg: AeBDietxtl5Q0GaD4K/mi6mxsxSr/YVTIm/kwqunWrHJpqgD+jA8bf4hIgARMvDmBWh
-	1dBfr2qUoay0lGwgad2zoyiA8jr/mTw+AjBwXIb8n3q1ftmSAIlXhP+4R8M5CbDajjs/gdsLNJe
-	OVuezknxrOUG7k27EmLoEytZoD/SKT1TM1+CCLk+aAAuQnUM+83oG4zlEY2AEiEtrCps0s4Iv60
-	GRrYp/eEmMGviQp8+79ZoVRO1kxT51Ral4BLsQHmGwVd8A64LzMw+mxZ4w0Ak0R0bvVnxgg75pB
-	kbyoySdz3Niz7edlsyIC3q2LkHFa1qlxtVj2ewMSZb6B8lzOLz6tdYhR8ziHRImLHLQ1h4FTaJX
-	quZMMyWPU8etTbOxgd2f/STy0P14FDkwqt8UsIuBSaPtbxnjkjD1XvXepSYrpSMu1u5peJY+x03
-	Pkfc3YdhfDkUifmvRHOnLPkQkaKO0h66LCYxSiNbD/xxrun1akRz6RKV/Y7BQ=
-X-Received: by 2002:a05:620a:2913:b0:8cd:94f9:1bb1 with SMTP id af79cd13be357-8e79010e10emr1688870285a.27.1776662368751;
-        Sun, 19 Apr 2026 22:19:28 -0700 (PDT)
-Received: from localhost.localdomain ([165.85.38.136])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-8e7d99c3c17sm726161485a.45.2026.04.19.22.19.27
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sun, 19 Apr 2026 22:19:28 -0700 (PDT)
-From: Yuho Choi <dbgh9129@gmail.com>
-To: Antonino Daplas <adaplas@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Myeonghun Pak <mhun512@gmail.com>,
-	Ijae Kim <ae878000@gmail.com>,
-	Taegyu Kim <tmk5904@psu.edu>,
-	Yuho Choi <dbgh9129@gmail.com>
-Subject: [PATCH v1] fbdev: savage: fix probe-path EDID cleanup leaks
-Date: Mon, 20 Apr 2026 01:19:26 -0400
-Message-ID: <20260420051926.28276-1-dbgh9129@gmail.com>
-X-Mailer: git-send-email 2.50.1
+        d=1e100.net; s=20251104; t=1776668732; x=1777273532;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ihlt3h/JdRecPguHpY37sjSA/pNIegc1BCyWD0OIPJg=;
+        b=hdexx6LPTFG61TRSSMdSsrAmt0EVvZUy3IdX5p9WDrUx14KxG+oqXVRAriySq+4/Co
+         sAA4hYIs8w1ELVdf+bG2Hpjro8nLrqNUwyXHZWBK9FtOQuSLYHIcFNKkhW4gKwtAxOYs
+         QwdQDop3F3DJNOCzb8jNdEArRrikaEZt3/luSxPMKoC9+lah5a0tr/gPkajXKOlc38LN
+         y0VgtQN427qDdFZzqTpdpRdlgUMfqlBmbSxEB8i4IES7vCSUDT+EdNp7zD9ylH+gjCGQ
+         xJGOeToT/am0GXO+g36cJmFoRkMQ8KPacgYlVJFeEKUQ0JSjKApYVVgNVb69yvNPl4SX
+         E3QA==
+X-Forwarded-Encrypted: i=1; AFNElJ9GZjRWNfUbjN6IrTIrGamgiy3KdxTIuBHBdrwwVzEIW8JB1xEbGS+JfHQ4/Cnr5w/L50fgJowPkqp7ow==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy+wMXzNfMKZ/CNm4jl/piuhi2qaFHtwt5g5cUXJIOt+kp9Suhy
+	TLOr0yT8kZ5nQ+7vTdD3n7BC58QMsYgrmhBN397PUUthxllj0fNP1xJPop4FO8Up0Ba8Smg3npM
+	IeTGSBIRoQPWyM8VzADpFRDi9q2Es+oy+FJNolB/eJHFKpmq3ksQKgUgXvao=
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Received: by 2002:a05:6820:2f10:b0:67c:6412:64e0 with SMTP id
+ 006d021491bc7-69462e66cbemr4797578eaf.15.1776668731775; Mon, 20 Apr 2026
+ 00:05:31 -0700 (PDT)
+Date: Mon, 20 Apr 2026 00:05:31 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <69e5d03b.a00a0220.1bd0ca.0065.GAE@google.com>
+Subject: [syzbot] Monthly fbdev report (Apr 2026)
+From: syzbot <syzbot+listc8cb1bb34676def63e46@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-When CONFIG_FB_SAVAGE_I2C is enabled, savagefb_probe() can build both an
-EDID-derived monspecs.modedb and a modelist from it before later
-failing.
+Hello fbdev maintainers/developers,
 
-The normal success path frees monspecs.modedb after the initial mode
-selection, but the probe error path only deletes the I2C busses and
-misses the EDID-derived allocations.
+This is a 31-day syzbot report for the fbdev subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/fbdev
 
-Free both the modelist and monspecs.modedb on the failed: unwind path.
+During the period, 0 new issues were detected and 0 were fixed.
+In total, 5 issues are still open and 29 have already been fixed.
 
-Co-developed-by: Myeonghun Pak <mhun512@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Co-developed-by: Taegyu Kim <tmk5904@psu.edu>
-Signed-off-by: Taegyu Kim <tmk5904@psu.edu>
-Signed-off-by: Yuho Choi <dbgh9129@gmail.com>
+Some of the still happening issues:
+
+Ref Crashes Repro Title
+<1> 3325    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
+                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
+<2> 1534    Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
+                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
+<3> 229     No    KASAN: vmalloc-out-of-bounds Write in fillrect
+                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+<4> 1       Yes   memory leak in fbcon_set_font (3)
+                  https://syzkaller.appspot.com/bug?extid=6fda7f092994bd03fad1
+
 ---
- drivers/video/fbdev/savage/savagefb_driver.c | 2 ++
- 1 file changed, 2 insertions(+)
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
-index ac41f8f37589f..c2f79357c8da0 100644
---- a/drivers/video/fbdev/savage/savagefb_driver.c
-+++ b/drivers/video/fbdev/savage/savagefb_driver.c
-@@ -2322,6 +2322,8 @@ static int savagefb_probe(struct pci_dev *dev, const struct pci_device_id *id)
-  failed:
- #ifdef CONFIG_FB_SAVAGE_I2C
- 	savagefb_delete_i2c_busses(info);
-+	fb_destroy_modelist(&info->modelist);
-+	fb_destroy_modedb(info->monspecs.modedb);
- #endif
- 	fb_alloc_cmap(&info->cmap, 0, 0);
- 	savage_unmap_video(info);
--- 
-2.50.1 (Apple Git-155)
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
 
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
+
+You may send multiple commands in a single email message.

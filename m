@@ -1,85 +1,114 @@
-Received: from mail-oa1-f70.google.com (mail-oa1-f70.google.com [209.85.160.70])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B41FF37FF67
-	for <linux-fbdev@vger.kernel.org>; Mon, 20 Apr 2026 07:05:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.70
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65205383C81;
+	Mon, 20 Apr 2026 09:29:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776668734; cv=none; b=tiuykoX2zhGc0k/lNN9SODt8UTeMrtKRSDKxzqxMSm2+6hHj9Wht8WblqK0cenPpoJljMRwkkEcNwPNgB9N/w92pkxWgQyB1ULKYEXYlyxaawwoc05V8okoxRjj2r0AM/sxIiwDEjOu29BSjFV2cC77JaWQv7TAU63vwmdU+U2E=
+	t=1776677361; cv=none; b=BYw+n/+zuKsaNNFcHtj579jxQJa5nVh4XjY2rhUD3KeWJh5tl2PV5waJqDOfBhMG0zxulZ/XksxSVHWM92p2Q37Bw1duYefDyh6y0xky7ubr4yY7rJsfFlyN7mi54iBn61+t6uM9bpuqbr6SvJh7vJnd4kSJwP6AItiV/SYW0sI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776668734; c=relaxed/simple;
-	bh=6CyCZpJImIp73hdnCs9KUaLVbHSHKLhIwmYlwvzejZ0=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=f7XkT20vqe0WS75ZuPIizpR2gxGcjwo9XKiEsPcvz5Nw6zbDbEYhZItFLsqQs1Dk28q83OINaYbsErwDhyqatw4pruC4aP4HQm6R9kJa6PnCwr+oKJJ3X1kuX8Ksr+HPmibhCZzhkKbLXvDRSW3GBpoFeMj8BZZnM8GFbzGxIEI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.160.70
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oa1-f70.google.com with SMTP id 586e51a60fabf-415e1ea16b4so4521051fac.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 20 Apr 2026 00:05:32 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776668732; x=1777273532;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ihlt3h/JdRecPguHpY37sjSA/pNIegc1BCyWD0OIPJg=;
-        b=hdexx6LPTFG61TRSSMdSsrAmt0EVvZUy3IdX5p9WDrUx14KxG+oqXVRAriySq+4/Co
-         sAA4hYIs8w1ELVdf+bG2Hpjro8nLrqNUwyXHZWBK9FtOQuSLYHIcFNKkhW4gKwtAxOYs
-         QwdQDop3F3DJNOCzb8jNdEArRrikaEZt3/luSxPMKoC9+lah5a0tr/gPkajXKOlc38LN
-         y0VgtQN427qDdFZzqTpdpRdlgUMfqlBmbSxEB8i4IES7vCSUDT+EdNp7zD9ylH+gjCGQ
-         xJGOeToT/am0GXO+g36cJmFoRkMQ8KPacgYlVJFeEKUQ0JSjKApYVVgNVb69yvNPl4SX
-         E3QA==
-X-Forwarded-Encrypted: i=1; AFNElJ9GZjRWNfUbjN6IrTIrGamgiy3KdxTIuBHBdrwwVzEIW8JB1xEbGS+JfHQ4/Cnr5w/L50fgJowPkqp7ow==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy+wMXzNfMKZ/CNm4jl/piuhi2qaFHtwt5g5cUXJIOt+kp9Suhy
-	TLOr0yT8kZ5nQ+7vTdD3n7BC58QMsYgrmhBN397PUUthxllj0fNP1xJPop4FO8Up0Ba8Smg3npM
-	IeTGSBIRoQPWyM8VzADpFRDi9q2Es+oy+FJNolB/eJHFKpmq3ksQKgUgXvao=
+	s=arc-20240116; t=1776677361; c=relaxed/simple;
+	bh=2BfDlA6VY39y9tYQjOaTN6uHaUdWSfjiCwLjUz39juk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ffWIJ0b0M1UsZq+3/r1iiQAVF7wobZAQzTSTuCn6gPOsXvqW6wvfkltsg7NWOoM5F2wjn9l3UY1GManIf32mJGlM7fjFlbcyiIoQjIYL01+E3nqiVXyUNk74bssdbT0hksneI8gZBmfy4WQVmjiSWNg9RBcAKxLvZzEJuB86IcU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=hfqlAkhR; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="hfqlAkhR"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C817DC19425;
+	Mon, 20 Apr 2026 09:29:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1776677361;
+	bh=2BfDlA6VY39y9tYQjOaTN6uHaUdWSfjiCwLjUz39juk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=hfqlAkhRfz+KuAPhk5XXEvXxALNIoU9QbEQ2Jlf5L89nehJ1rQTz6snbHojbQbOS1
+	 m5zqrzViNaKqUIwreAEsPNFC76T/YSlS1jQLRjrwdSELsgFSwYuaIs2zq8vRf75Azu
+	 nAd7ro5VOj/qgJeixv0q1lOmT7KQUXNrQu11jwes=
+Date: Mon, 20 Apr 2026 11:29:18 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Baker <mzndmzn@gmail.com>
+Cc: andy@kernel.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] staging: fbtft: replace empty macro args with
+ identity converter
+Message-ID: <2026042004-unblock-giblet-cbbc@gregkh>
+References: <20260412173317.3329-1-mzndmzn@gmail.com>
+ <20260412173317.3329-2-mzndmzn@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6820:2f10:b0:67c:6412:64e0 with SMTP id
- 006d021491bc7-69462e66cbemr4797578eaf.15.1776668731775; Mon, 20 Apr 2026
- 00:05:31 -0700 (PDT)
-Date: Mon, 20 Apr 2026 00:05:31 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <69e5d03b.a00a0220.1bd0ca.0065.GAE@google.com>
-Subject: [syzbot] Monthly fbdev report (Apr 2026)
-From: syzbot <syzbot+listc8cb1bb34676def63e46@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260412173317.3329-2-mzndmzn@gmail.com>
 
-Hello fbdev maintainers/developers,
+On Sun, Apr 12, 2026 at 12:33:17PM -0500, Baker wrote:
+> The define_fbtft_write_reg macro calls 'modifier' as a function.
+> Passing an empty token as modifier is undefined behavior in C for
+> fixed-arity macros. Introduce fbtft_no_conv() as an identity
+> function to replace the empty args in the no-conversion cases.
+> 
+> Signed-off-by: Baker <mzndmzn@gmail.com>
+> ---
+>  drivers/staging/fbtft/fbtft-bus.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+> index 30e436ff19e4..7f3fd30576ab 100644
+> --- a/drivers/staging/fbtft/fbtft-bus.c
+> +++ b/drivers/staging/fbtft/fbtft-bus.c
+> @@ -11,6 +11,8 @@
+>   *
+>   *****************************************************************************/
+>  
+> +#define fbtft_no_conv(x) (x)
+> +
+>  #define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
+>  void func(struct fbtft_par *par, int len, ...)                                \
+>  {                                                                             \
+> @@ -62,9 +64,9 @@ out:									      \
+>  }                                                                             \
+>  EXPORT_SYMBOL(func);
+>  
+> -define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
+> +define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, fbtft_no_conv)
+>  define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+> -define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
+> +define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, fbtft_no_conv)
+>  
+>  void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+>  {
+> -- 
+> 2.47.3
+> 
+> 
 
-This is a 31-day syzbot report for the fbdev subsystem.
-All related reports/information can be found at:
-https://syzkaller.appspot.com/upstream/s/fbdev
+Hi,
 
-During the period, 0 new issues were detected and 0 were fixed.
-In total, 5 issues are still open and 29 have already been fixed.
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
-Some of the still happening issues:
+You are receiving this message because of the following common error(s)
+as indicated below:
 
-Ref Crashes Repro Title
-<1> 3325    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
-                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
-<2> 1534    Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
-                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
-<3> 229     No    KASAN: vmalloc-out-of-bounds Write in fillrect
-                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
-<4> 1       Yes   memory leak in fbcon_set_font (3)
-                  https://syzkaller.appspot.com/bug?extid=6fda7f092994bd03fad1
+- It looks like you did not use your "real" name for the patch on either
+  the Signed-off-by: line, or the From: line (both of which have to
+  match).  Please read the kernel file,
+  Documentation/process/submitting-patches.rst for how to do this
+  correctly.
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
 
-To disable reminders for individual bugs, reply with the following command:
-#syz set <Ref> no-reminders
+thanks,
 
-To change bug's subsystems, reply with:
-#syz set <Ref> subsystems: new-subsystem
-
-You may send multiple commands in a single email message.
+greg k-h's patch email bot

@@ -1,138 +1,121 @@
-Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com [209.85.217.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7396220010A;
-	Sun, 19 Apr 2026 00:45:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.154
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFE44175A7E
+	for <linux-fbdev@vger.kernel.org>; Mon, 20 Apr 2026 01:01:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776559556; cv=none; b=NE2YBfgf1PU8s0d9HLHCE/2D7nyc2sP1l1hauokulGZREZhX39r3D27vKGbYIoYLWa4TvnU5RAkYCWn5gl12plVqU9AcLjKTjxuTB+gQc+xZ4retH43X9GvB5PRZs/wm2Ob3b/1uPnR5ML51Rkx75DlE1x0GReiZ7mUvE+XxhNo=
+	t=1776646894; cv=none; b=LTAIzDv1WpfArXN2vhV0HjFxcCtcfl7grfIbLYRfQs2eJVy49sZJU0dSj3ZAmNrawLusnCHDSxGh/e7WUpndgNqWaQkWrkNtPR0kfuT3W/4Yqj7iif7j25SWzLI5HYkaC4E7PcjrzcIxCbtSDz5LC5WHh1/YgxKa0laDu4oioHM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776559556; c=relaxed/simple;
-	bh=GNU/MRGok5zFJKRq5TRgaA/qhTEKDgwPGLJNEKyjzuk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=pliYUYRh+MVzF7+6amk68FRMCISgB5wo4tHeOsOjzRCBLtpUF7yKn8ctDp3rkllSFXXZ+na5YbT0+7Z3ieY/hTmXw86DH/uW2xVHsv2LmczRzOlS+IphcqlORVneonzsn0KucK+Z+UkkuTd5UmAgFh1d7qKj5LtqwHDc0waiVBM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ethancedwards.com; spf=pass smtp.mailfrom=ethancedwards.com; dkim=pass (2048-bit key) header.d=ethancedwards.com header.i=@ethancedwards.com header.b=JmLxZpJl; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=lyC8Kdq1; arc=none smtp.client-ip=202.12.124.154
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ethancedwards.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ethancedwards.com
+	s=arc-20240116; t=1776646894; c=relaxed/simple;
+	bh=CAFACS5bc7bNOjL5ZrwKpBgULCMFmthkCdlQILDVQP4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EsOEk0FjGYg43fWNv3E24XGqKpxBL0zCCRqyGdsCoas62nIrbU9Oy3rY0Gi9NcJ6hRZG6/J6sNABJhtAvL9NJQoUnw6N49vle5FKo+rOSGYdYLGwmn21pyl/FdBHing0QBQe7tuqY/3DMtaAGyAgd1YOUNnqZs7Nbdbd5SivDjY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bA1eIMk7; arc=none smtp.client-ip=209.85.217.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ethancedwards.com header.i=@ethancedwards.com header.b="JmLxZpJl";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="lyC8Kdq1"
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id B0B7C7A00AF;
-	Sat, 18 Apr 2026 20:45:54 -0400 (EDT)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-04.internal (MEProxy); Sat, 18 Apr 2026 20:45:54 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	ethancedwards.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:from:from:in-reply-to
-	:message-id:mime-version:reply-to:subject:subject:to:to; s=fm1;
-	 t=1776559554; x=1776645954; bh=+ryyt5gM1krKhmzbZX2sB8GTsWehBb0P
-	fTP5kNNxTZg=; b=JmLxZpJlVmeyaQMDetTvMd4A9wORwND1+SYKtinYyFCappTP
-	g0y/hc4R1WfzVQs5ONHLCeSm6vM4tUH4kioMD1NngbWpun4faUNymIBbUrPf6/2Y
-	qxyJnWwhj61HhfD6R5Wx6ZmmnqAt+5mb63M/aZmOgs5MzkCF4xqGPY/4UZ6wG11j
-	ejIPX8boRdfa3gYe+lSkEtZ8Mmb+U7HLhL1Pda5en+G1PDJXy1OM90OgYTXkQzMx
-	jdzn5eLxt+54xs5EvEX6fAsYeGMgtT7JOE0L3Um/qRJwOmq0SDBnga8RoQ/RfIXI
-	IdTVq1v0Lm0XMu15kb2eNAmTmk51/hdpKpZXBg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:message-id:mime-version:reply-to:subject
-	:subject:to:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-	fm2; t=1776559554; x=1776645954; bh=+ryyt5gM1krKhmzbZX2sB8GTsWeh
-	Bb0PfTP5kNNxTZg=; b=lyC8Kdq1pzb912zWR0STY1SWLvHA/dXKhq3NZOf9HBHf
-	Bp0sag3HM1E/XHXFCo1bwtUbdx9DQ6vIHCS7L7hjqlayJX6lXn1ZbIZFFd0yt1V6
-	9vsUIsA7hJ5hj96fo4hAkV1El4EMaCuIntY9ATo3ZFXZvZhXU3HTscH9T7FTbR7n
-	lI54rN2QPURcDfUM1Wvbh/SbjTqoRLvLdkkL54pLcT4fmz3pQ7B1NgQ0CwNkKMHL
-	g/yHma3C/YKonW2IVwgYOaCJ6uumFWv8nmC/81O6VJlg79KxMElKpbEIfqcjfLM2
-	RPSoajUqSCeylXBttDryjAqpurW2qM/ROx3C5TKNaQ==
-X-ME-Sender: <xms:wiXkabXJ4dbJYKvhYCArf57xN34CfI-sSuKvxKSBh-h6bSgZY8Nz_w>
-    <xme:wiXkadmdILdjVWgBV_QctuWBC1ntem82xSWCA8lmXBQyxSpKF0voTYwzjWxJsFbF4
-    PkATUjwEHXtKjTJlkxyVu8laID1HvYrOw4kXvS2YtgqnOeKyAujTEI>
-X-ME-Received: <xmr:wiXkaeC5_iDgoYRbURVqEdFl92f9QLDvQIwUn7sB6SoC_91kIExMgIdeykvD>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdehgedvgecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
-    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
-    hrpefhfffugggtgffkvfevofesthejredtredtjeenucfhrhhomhepgfhthhgrnhcuvegr
-    rhhtvghrucfgugifrghrughsuceovghthhgrnhesvghthhgrnhgtvggufigrrhgushdrtg
-    homheqnecuggftrfgrthhtvghrnhepieeuhfeuhffguefhffekfffgtefgjeeghfdukeel
-    vdduiedutdffffeghedtiedvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpe
-    hmrghilhhfrhhomhepvghthhgrnhesvghthhgrnhgtvggufigrrhgushdrtghomhdpnhgs
-    pghrtghpthhtohepjedpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepuggvlhhlvg
-    hrsehgmhigrdguvgdprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgv
-    rhhnvghlrdhorhhgpdhrtghpthhtohepvghthhgrnhesvghthhgrnhgtvggufigrrhgush
-    drtghomhdprhgtphhtthhopegurhhiqdguvghvvghlsehlihhsthhsrdhfrhgvvgguvghs
-    khhtohhprdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkh
-    gvrhhnvghlrdhorhhgpdhrtghpthhtohepsggvnhhhsehkvghrnhgvlhdrtghrrghshhhi
-    nhhgrdhorhhgpdhrtghpthhtohepkhgvrhhnvghlqdhjrghnihhtohhrshesvhhgvghrrd
-    hkvghrnhgvlhdrohhrgh
-X-ME-Proxy: <xmx:wiXkaUhirGKZwNvgH9flKBReUuSEEZRiTTUoiCaBwhguKIuvI7f4Mg>
-    <xmx:wiXkaTzZ1XBqTQp_KPc279nJAb9WBizZsh2hEgpxf3ogOD9cii7xog>
-    <xmx:wiXkad1GPaouBjiDbYXS295GTUWqwEQorgzvqEb_X80N3Qu05vRc6g>
-    <xmx:wiXkaQ-PmwoN_nYFaWln_-O_6OD3CrXzMHf7MT9bFlfVPEBOHKIeJA>
-    <xmx:wiXkaW5HTpeMoaOEHxiKTQ7GTzq3CbnA4wHDL049LWB3GoIr-hExa_rX>
-Feedback-ID: ibf9e487c:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sat,
- 18 Apr 2026 20:45:53 -0400 (EDT)
-From: Ethan Carter Edwards <ethan@ethancedwards.com>
-Date: Sat, 18 Apr 2026 20:45:50 -0400
-Subject: [PATCH] video: fbdev: aty: Fix spelling mistake "enfore" ->
- "enforce"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bA1eIMk7"
+Received: by mail-vs1-f47.google.com with SMTP id ada2fe7eead31-613207140bfso817006137.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 19 Apr 2026 18:01:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776646891; x=1777251691; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=cExEE0g/VkjWFezfORG8uwyZglaid4Bs+rAW28gYyow=;
+        b=bA1eIMk7KL5A2M36QGuPVDOcJ7p6HC94JffrgYzFJYBwPItqN4bm1nZiQt3a/68uyl
+         9KJKHMXhe6tmud9IfmI2i59u8zviB7RaZv2rnxyTzQMisXopDO/ypxgbmM1/tGobzd4J
+         4e/HB8lnHHBYrgZaWYwNPZjpZ0EFv3IFmz7unYIBJ3DoJVeExuG6ZrQ78gmiZELegesl
+         Bn+4O0dFbzeC72AHWmk/O/brc3URqdAMBmJbmvyVd12K5MQuhlWPgkkZYgqf/6LGEC4x
+         w8naRsPQMOyk0rYiWddcoTikiqnBq6pD2k1POKg8BItPNGtyItjhH5MLQ18nGYhAfDXg
+         UkvA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776646891; x=1777251691;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=cExEE0g/VkjWFezfORG8uwyZglaid4Bs+rAW28gYyow=;
+        b=c0P4DCTbL/xETuBmwPXmQnpOzwFBZ3+YeapRLDgGZOsA4PuBws/mF5RE9QbF3c/NOb
+         q40tKoBsRrCEmb1kqzpvYzii0xBJBA/9zxVPXwzoBtATdDb1O2wMaH3DDt/A+T+hp4+g
+         KCqzfgggtEiq8TpOSGzX6+z9+PvBboMBzn+IiLtG1sw1ekza9RhxGT+rG/mnA3d3r5F2
+         oXnoFUJ8hD8XllmSVrQeGPlBsdrO79hIIuhHQ/j6yCEEoZ276gpqaMLE/aKEtostNPFY
+         tNrCh0WHOdyHKsDq1uKLcJ6aNMR7cI6/mo69KeU/K5k3BG3DCK8Xexf/htKkfiGtha+l
+         wCxQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8rRFD8+gLAf5gZ9Nw4kRLOWHk+rID/kwYdLpKJUkjzTRufenFi6KkiF0iWgqQvbBac1t66dfrLGUdq5A==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxJvSOVp5WU2+ZzwARtJaYwo9jQklHammnBMDyCH8ozjFLRRiaL
+	ZpPu4VmjOTFsH+NH6s/kahlF0SvMyuaWe5JTrM/HMSMep8NHOhUm0boR
+X-Gm-Gg: AeBDiesNrbnMYSOtoUcWhnzDqUCY1XuIC/DVPrjnTU5eM49ftSdQ+H5tguYJqYTmBOO
+	v/A4a3rvcKO7Qa5iJHe/X9Q19f2QWWUM+vsjr7sjW0uIXJ0B04Ialw9QC1p+RzkbJ73cAd/GeZi
+	Svm7AxMH5vKG5AT7CfUjDzd61MwZigyfI60Bs8N+3uT8FIsKH7tPR7mNV6Pg1eNaPrGZG7A4nfv
+	ALW7f2ta7mM1eEPDf8KPubdFz0SuMpCFmxGvXfFTbGYQIfK+QmXegdymX1SUJX2c309z6/lS1/G
+	46yCAdjTc3gf0wzOdTOrRFtIt9l7hPuCBvtXQhkGhuQZRoekhBG1IfxEn1oUkUcrUS+Ve//j1eC
+	swV5U13pURBzEdvnWqNBVaG1o8z5F/n+9z8wy/8es0t7tWiXIZ9beK4dOv8YkMSHJtfOvcuZ6o2
+	APwI1POo9/c+2Nf3Lb3kGYR6R8rw/3kSghLoFjQLUEDhYqsquW4K0KDubvT9Y=
+X-Received: by 2002:a05:6102:6c9:b0:607:f24a:1bef with SMTP id ada2fe7eead31-616f60b3913mr4269910137.13.1776646890798;
+        Sun, 19 Apr 2026 18:01:30 -0700 (PDT)
+Received: from localhost.localdomain ([165.85.38.136])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-8eb9becc6c3sm44376885a.39.2026.04.19.18.01.29
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sun, 19 Apr 2026 18:01:30 -0700 (PDT)
+From: Yuho Choi <dbgh9129@gmail.com>
+To: Helge Deller <deller@gmx.de>,
+	Jason Donenfeld <Jason@zx2c4.com>,
+	linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Myeonghun Pak <mhun512@gmail.com>,
+	Ijae Kim <ae878000@gmail.com>,
+	Taegyu Kim <tmk5904@psu.edu>,
+	Yuho Choi <dbgh9129@gmail.com>
+Subject: [PATCH v1] fbdev/offb: fix PCI device reference leak on probe failure
+Date: Sun, 19 Apr 2026 21:01:18 -0400
+Message-ID: <20260420010118.17960-1-dbgh9129@gmail.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260418-radeon-typo-v1-1-8e075365089b@ethancedwards.com>
-X-B4-Tracking: v=1; b=H4sIAL0l5GkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDE0ML3aLElNT8PN2SyoJ8XUsLQxOLJMtUozRjcyWgjoKi1LTMCrBp0bG
- 1tQDevMZhXQAAAA==
-X-Change-ID: 20260418-radeon-typo-98148b9e2f37
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
- Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, 
- Ethan Carter Edwards <ethan@ethancedwards.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=992;
- i=ethan@ethancedwards.com; h=from:subject:message-id;
- bh=GNU/MRGok5zFJKRq5TRgaA/qhTEKDgwPGLJNEKyjzuk=;
- b=LS0tLS1CRUdJTiBQR1AgTUVTU0FHRS0tLS0tCgpvd0o0bkp2QXk4ekFKWGJEOXFoNThlVGp6e
- GhQcXlVeFpENVJQZmpEU1plYjcvZWZONWMrRzZ5M1R2QzZ6UFUzCjZNc2FuUzkvZGx4VTBqSC9Y
- cGZYVWNyQ0lNYkZJQ3VteVBJL1J6bnRvZVlNaFoxL1hacGc1ckF5Z1F4aDRPSVUKZ0lrY2ttRDR
- aM3VXYStxRHByUkptNFRyV1h6dmY3WXhmN0ZEOHRQOUgvZjJuZS9RbU13NTR5ZkQveUR0NTZlMA
- paeC9tZExIZ1kvZHB0WlRjdkVIeVdOSDhsVE8vcjlDKzkyZTNEaXNBQzdKUmVBPT0KPThUR3cKL
- S0tLS1FTkQgUEdQIE1FU1NBR0UtLS0tLQo=
-X-Developer-Key: i=ethan@ethancedwards.com; a=openpgp;
- fpr=2E51F61839D1FA947A7300C234C04305D581DBFE
+Content-Transfer-Encoding: 8bit
 
-There is a spelling mistake in a comment. Fix it.
+offb_init_nodriver() gets a referenced PCI device with
+pci_get_device(). If pci_enable_device() fails, the function returns
+without dropping that reference.
 
-Signed-off-by: Ethan Carter Edwards <ethan@ethancedwards.com>
+Release the PCI device reference before returning from the
+pci_enable_device() failure path.
+
+Fixes: 5bda8f7b5468 ("video: fbdev: offb: Call pci_enable_device() before using the PCI VGA device")
+Co-developed-by: Myeonghun Pak <mhun512@gmail.com>
+Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+Co-developed-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Ijae Kim <ae878000@gmail.com>
+Co-developed-by: Taegyu Kim <tmk5904@psu.edu>
+Signed-off-by: Taegyu Kim <tmk5904@psu.edu>
+Signed-off-by: Yuho Choi <dbgh9129@gmail.com>
 ---
- drivers/video/fbdev/aty/radeon_monitor.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/offb.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_monitor.c b/drivers/video/fbdev/aty/radeon_monitor.c
-index df55e23b7a5a..621d13a1a1d9 100644
---- a/drivers/video/fbdev/aty/radeon_monitor.c
-+++ b/drivers/video/fbdev/aty/radeon_monitor.c
-@@ -654,7 +654,7 @@ static void radeon_fixup_panel_info(struct radeonfb_info *rinfo)
- {
- #ifdef CONFIG_PPC
- 	/*
--	 * LCD Flat panels should use fixed dividers, we enfore that on
-+	 * LCD Flat panels should use fixed dividers, we enforce that on
- 	 * PPC only for now...
- 	 */
- 	if (!rinfo->panel_info.use_bios_dividers && rinfo->mon1_type == MT_LCD
-
----
-base-commit: c7275b05bc428c7373d97aa2da02d3a7fa6b9f66
-change-id: 20260418-radeon-typo-98148b9e2f37
-
-Best regards,
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index f85428e13996b..166b2dff36f59 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -640,8 +640,13 @@ static void offb_init_nodriver(struct platform_device *parent, struct device_nod
+ 			vid = be32_to_cpup(vidp);
+ 			did = be32_to_cpup(didp);
+ 			pdev = pci_get_device(vid, did, NULL);
+-			if (!pdev || pci_enable_device(pdev))
++			if (!pdev)
+ 				return;
++
++			if (pci_enable_device(pdev)) {
++				pci_dev_put(pdev);
++				return;
++			}
+ 		}
+ #endif
+ 		/* kludge for valkyrie */
 -- 
-Ethan Carter Edwards <ethan@ethancedwards.com>
+2.50.1 (Apple Git-155)
 

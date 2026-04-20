@@ -1,47 +1,48 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 946BE3A542F;
-	Mon, 20 Apr 2026 13:17:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2DF24CA285;
+	Mon, 20 Apr 2026 13:33:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776691025; cv=none; b=fQYnGn4KrysO3OnD1qCUQPxE0Z9O5RWmxnNtAiKuyEAG/OP4nTUSI3YA1IRPWpmI/kbIiIzYvfZRTxA6g1LM8jjYaZaGi5fiWjEYRRK6PjStHKhmQ7c4HbmMGkyq/i8jOszoXm3VWAKgkhVdFfrpYYH39LSHMwFIOoVMOkb7mJk=
+	t=1776692001; cv=none; b=P02P6d1QQCa84tlDkopb2tnIVOO9U7VQE9VbnHnbo7kNRwoNB/VUjscOURBRWfh+QpT10JWkzX71/lWXZO9BETB8UrWWKs52y+Fn1fu66XCHVZv6FfzptFOZ5WMmGCBpPyV1y2vsg+f4JxqTKPTGVWOl3u2PduTBo7Vvo+NUCn4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776691025; c=relaxed/simple;
-	bh=aV2gGEjt8S0Tj1d3oacW3apUNrBdas5THx9QEDYkIog=;
+	s=arc-20240116; t=1776692001; c=relaxed/simple;
+	bh=CC4GpNAMEXoNH1UPwn7+SB8s/abXwphtakfGIufYQ9U=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BFsAF2/Y6CHFewq6b7ExHXx/tQfhMmYXiNTtddkjFMhAfkflfbA26zR5WWjaDvpbLtJP+yBaeJBC5p8hZvnpIn/ebUkh8rOer8+LolKfE+IXPofIpDyC3jHwJtjI/eCNdUK89SrwMm2De1HrpJHQo8yFj4X+JbOzPDju72s2e80=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bmP+7W1R; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version:Content-Type; b=gg5H6UdtH55oNYywcTeLrvgpZIfFfMunkLfashvmcK13K2xTXVM/wIkaOMDpJbf48FV9lkhE1h7+WpEpSKLzvhpQJCylrG7dGKz4clIXLxzL35PQ7CqA7ycoIHUrrycjWogPSl/3JrDNJ3eZMCTQoCWvD7RnGq/AMPHJH4QLNNs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O4AXioSF; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bmP+7W1R"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BB5CC4AF09;
-	Mon, 20 Apr 2026 13:17:03 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O4AXioSF"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7839DC2BCB8;
+	Mon, 20 Apr 2026 13:33:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776691025;
-	bh=aV2gGEjt8S0Tj1d3oacW3apUNrBdas5THx9QEDYkIog=;
+	s=k20201202; t=1776692000;
+	bh=CC4GpNAMEXoNH1UPwn7+SB8s/abXwphtakfGIufYQ9U=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=bmP+7W1RNuKmh1YubDldwLci+Yhc2NCkBuuqrEth7yMNzpqBfKs+saPfV4e9n59WR
-	 lEpxszvfac4e50BaKt84icgW3LcIY2PII+Ce6S9MubngfceWt7QBs8AC6jDmca3K3q
-	 PZgXV+mAXyqMHXs72gZjzAh6XuAQeRMIclx9K5+DZbhAHt3ZrC7Cu7OCbnO6sARfOl
-	 T3C5Jb64G4CoIY8M5sOfKeL6K3RGGTQD+hgJipwE/EuPm9x0IloPLiwZR27MuenDXQ
-	 Qf6ZoTfxwKK2ZpZzlKgKng6pGI2hjafcvqP1SWtd4e3o34VYIY70x2MmhQdCfd4htF
-	 54+PUhbtA4e5Q==
+	b=O4AXioSF65QR0LkKfC9h0zjxItH43BD3b4jZIt9r1j4lBakNijNUpuXlxRwlXMf3u
+	 LJqqu2mHkCRCkG1pEc/XvVzNJHfwAtF4jjJez3bu7gScj1xvYq1kxkQobs/I1gzmav
+	 omDOUyba2MEI8hpa5VYR8GwG8PQjaafnibNf+oY+ctZ0bJaEG8Uqo9WKMjjOOw1c/A
+	 nz2GkFYlc5KYtmVj91Cq1tVVpPYdACKXoNVPyZ3HQPzNwdJBO7VHo5osPpTDN6LuMs
+	 pETIdk1XpjaxSIqru//v9/C9DzRIJ1AYWW4WaGiULbTP5fjhMfb9x04y/xBJKUAL38
+	 t/Nkdp28GNyBA==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Wang Jun <1742789905@qq.com>,
+Cc: Hongling Zeng <zenghongling@kylinos.cn>,
+	kernel test robot <lkp@intel.com>,
 	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
-	FlorianSchandinat@gmx.de,
+	linux-omap@vger.kernel.org,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-5.10] fbdev: viafb: check ioremap return value in viafb_lcd_get_mobile_state
-Date: Mon, 20 Apr 2026 09:08:36 -0400
-Message-ID: <20260420131539.986432-50-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 7.0-5.10] fbdev: omap2: fix inconsistent lock returns in omapfb_mmap
+Date: Mon, 20 Apr 2026 09:21:49 -0400
+Message-ID: <20260420132314.1023554-315-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260420131539.986432-1-sashal@kernel.org>
-References: <20260420131539.986432-1-sashal@kernel.org>
+In-Reply-To: <20260420132314.1023554-1-sashal@kernel.org>
+References: <20260420132314.1023554-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -54,329 +55,274 @@ X-stable-base: Linux 7.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Wang Jun <1742789905@qq.com>
+From: Hongling Zeng <zenghongling@kylinos.cn>
 
-[ Upstream commit f044788088ef55e9855b17b7984ffe522c40c093 ]
+[ Upstream commit 98cf7df6e0844f7076df1db690c1ede9d69b61ff ]
 
-The function viafb_lcd_get_mobile_state() calls ioremap() without
-checking the return value. If ioremap() fails (returns NULL), the
-subsequent readw() will cause a NULL pointer dereference.
+Fix the warning about inconsistent returns for '&rg->lock' in
+omapfb_mmap() function. The warning arises because the error path
+uses 'ofbi->region' while the normal path uses 'rg'.
 
-Signed-off-by: Wang Jun <1742789905@qq.com>
+smatch warnings:
+drivers/video/fbdev/omap2/omapfb/omapfb-main.c:1126 omapfb_mmap()
+warn: inconsistent returns '&rg->lock'.
+
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Hongling Zeng <zenghongling@kylinos.cn>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-Now I have all the information needed for the full analysis. Let me
-compile it.
+Good - line 1122 in v6.6 also has `omapfb_put_mem_region(ofbi->region)`
+on the error path, confirming the bug exists in stable trees. Now let me
+compile the full analysis.
 
 ---
 
 ## PHASE 1: COMMIT MESSAGE FORENSICS
 
 **Step 1.1: Subject Line**
-- Subsystem: `fbdev: viafb`
-- Action verb: "check" (adding a missing safety check)
-- Summary: Adds NULL check for `ioremap()` return value in
-  `viafb_lcd_get_mobile_state()`
-Record: [fbdev: viafb] [check] [Add missing ioremap NULL check to
-prevent NULL deref]
+- Subsystem: `fbdev: omap2`
+- Action verb: "fix"
+- Summary: Fix inconsistent lock returns in `omapfb_mmap`
 
 **Step 1.2: Tags**
-- Signed-off-by: Wang Jun <1742789905@qq.com> (author)
-- Signed-off-by: Helge Deller <deller@gmx.de> (fbdev maintainer,
-  committer)
-- No Fixes:, Reported-by:, Tested-by:, Link:, or Cc: stable tags
-Record: Only author and maintainer SOBs. No Fixes: tag or Reported-by —
-this appears to be a code-review/static-analysis finding, not a user-
-reported bug.
+- Reported-by: kernel test robot `<lkp@intel.com>` — automated static
+  analysis (smatch)
+- Signed-off-by: Hongling Zeng (author), Helge Deller (fbdev maintainer)
+- No Fixes: tag (expected)
+- No Cc: stable (expected)
 
-**Step 1.3: Body Text**
-- Bug: `viafb_lcd_get_mobile_state()` calls `ioremap()` without checking
-  the return value.
-- Symptom: If `ioremap()` returns NULL, the subsequent `readw()` causes
-  a NULL pointer dereference.
-- Root cause: Missing NULL check.
-Record: [NULL pointer dereference if ioremap fails] [kernel oops/crash]
-[No version info] [Straightforward missing check]
+**Step 1.3: Commit Body**
+- Bug: smatch warns about inconsistent returns for `&rg->lock` because
+  the error path uses `ofbi->region` while the success path uses `rg`
+- Symptom: smatch warning (not a runtime crash report)
+- Root cause: The error path re-reads `ofbi->region` instead of using
+  the captured local `rg`
 
 **Step 1.4: Hidden Bug Fix?**
-Yes — this is a genuine bug fix. A missing NULL check before pointer
-dereference is a real code defect.
-Record: [Yes, this is a missing NULL check for a function that can fail]
-
----
+Yes. While described as a "warning fix," this is actually a real locking
+correctness bug, as I'll demonstrate below.
 
 ## PHASE 2: DIFF ANALYSIS
 
 **Step 2.1: Inventory**
-- 1 file changed: `drivers/video/fbdev/via/lcd.c`
-- +3 lines added (NULL check, `return false`, blank line), 0 removed
-- Function modified: `viafb_lcd_get_mobile_state()`
-Record: [lcd.c +3/-0] [viafb_lcd_get_mobile_state] [Single-file surgical
-fix]
+- Single file: `drivers/video/fbdev/omap2/omapfb/omapfb-main.c`
+- 1 line changed: `ofbi->region` → `rg`
+- Function: `omapfb_mmap`
+- Scope: single-file surgical fix
 
 **Step 2.2: Code Flow Change**
-- Before: `ioremap()` → immediate `readw(biosptr)` — if biosptr is NULL,
-  kernel oops
-- After: `ioremap()` → NULL check → return `false` if NULL; otherwise
-  proceed normally
-Record: [Before: unchecked ioremap -> readw on potential NULL. After:
-NULL check added, returns false on failure]
+- BEFORE: Error path calls `omapfb_put_mem_region(ofbi->region)` — re-
+  reads the `ofbi->region` pointer
+- AFTER: Error path calls `omapfb_put_mem_region(rg)` — uses the locally
+  captured pointer
 
 **Step 2.3: Bug Mechanism**
-- Category: NULL pointer dereference / memory safety
-- The ioremap() call can fail and return NULL. Without a check,
-  `readw(biosptr)` dereferences NULL.
-Record: [NULL pointer dereference] [Missing ioremap NULL check → readw
-on NULL crashes kernel]
+This is a **synchronization/lock correctness** bug. Key details:
+
+1. `omapfb_get_mem_region()` acquires `down_read_nested(&rg->lock)` and
+   returns its argument (line 183-188 of omapfb.h)
+2. At line 1100: `rg = omapfb_get_mem_region(ofbi->region)` acquires the
+   read lock and stores the pointer locally
+3. Success path (line 1119) correctly releases via `rg`
+4. Error path (line 1124, the bug) releases via `ofbi->region`
+
+Critically, `ofbi->region` **can be changed** by another thread — in
+`omapfb-ioctl.c` line 98: `ofbi->region = new_rg` during
+`omapfb_setup_plane()`. If this happens between get and put:
+- `up_read()` is called on a semaphore **not held** by this thread →
+  undefined behavior / corruption
+- The **actual** locked semaphore is **never released** → deadlock
 
 **Step 2.4: Fix Quality**
-- Obviously correct — standard ioremap error-checking pattern used
-  across the kernel
-- Minimal — 2 lines of logic
-- Return value of `false` is appropriate: the caller in `via_utility.c`
-  simply won't set `LCD_Device` in the connect state, which is the
-  correct degraded behavior
-- Zero regression risk
-Record: [Obviously correct, minimal fix, no regression risk]
-
----
+- Obviously correct: use the already-captured local variable
+- Minimal: 1-line change
+- Zero regression risk: the fix is strictly safer than the original code
+- Pattern matches `omapfb-sysfs.c` line 73, which correctly uses `rg` on
+  its error path
 
 ## PHASE 3: GIT HISTORY INVESTIGATION
 
 **Step 3.1: Blame**
-The buggy code was introduced in commit `ac6c97e20f1bef` by Joseph Chan
-on 2008-10-15 — the original viafb driver submission. This code has
-existed since approximately v2.6.28.
-Record: [Buggy code from ac6c97e20f1bef (Oct 2008), present since
-~v2.6.28]
+The buggy line was introduced in commit `3ed37d9aba486d` ("Revert
+'OMAPFB: simplify locking'") by Tomi Valkeinen on 2012-12-13. This code
+has been present since ~v3.8, meaning all active stable trees contain
+it.
 
-**Step 3.2: Fixes: Tag**
-No Fixes: tag present. Expected for autosel candidates.
-Record: [N/A — no Fixes: tag]
+**Step 3.2: Fixes tag**
+No Fixes: tag present. However, the buggy commit is `3ed37d9aba486d`
+which reverted simplified locking and reintroduced per-region locking.
+The error path was incorrectly written using `ofbi->region` instead of
+`rg` at that time.
 
 **Step 3.3: File History**
-Only cosmetic changes in recent years (spelling fix, I2C terminology,
-fallthrough macro). The function is completely unchanged since 2011
-(`b65d6040e3a7cd` by Stephen Hemminger was the last substantive touch).
-Record: [No prerequisites. Completely standalone fix. No series.]
+The file hasn't had many recent changes — last meaningful changes were
+build system/boilerplate updates. No prerequisites needed.
 
 **Step 3.4: Author**
-Wang Jun has only 2 commits in the tree. Helge Deller is the fbdev
-subsystem maintainer who signed off.
-Record: [Author is not a subsystem regular; maintainer (Helge Deller)
-signed off]
+Hongling Zeng is not the subsystem maintainer but has contributed other
+small fixes (USB quirks, sysfs fixes). The commit was signed off by
+Helge Deller, the fbdev maintainer.
 
 **Step 3.5: Dependencies**
-None — the fix is completely self-contained.
-Record: [No dependencies. Applies standalone.]
-
----
+None. This is a standalone one-line fix.
 
 ## PHASE 4: MAILING LIST RESEARCH
 
-**Step 4.1-4.5:**
-b4 dig failed to find the original patch submission. Lore.kernel.org is
-behind Anubis anti-bot protection and could not be fetched. No mailing
-list discussion could be reviewed.
-Record: [b4 dig: no match found] [Lore: blocked by Anubis] [UNVERIFIED:
-Could not review mailing list discussion]
+**Step 4.1-4.2:** b4 dig could not find the original submission. Lore is
+protected by anti-scraping measures. The commit was signed off by the
+fbdev maintainer (Helge Deller), confirming proper review.
 
----
+**Step 4.3:** The bug was reported by kernel test robot (smatch static
+analysis), not a runtime bug report.
+
+**Step 4.4-4.5:** No related series; standalone patch.
 
 ## PHASE 5: CODE SEMANTIC ANALYSIS
 
-**Step 5.1: Functions Modified**
-`viafb_lcd_get_mobile_state()` — the only function touched.
+**Step 5.1-5.2:** The function `omapfb_mmap` is registered as the
+`.fb_mmap` callback in the framebuffer ops structure, called when
+userspace mmaps the framebuffer device (`/dev/fb*`). This is a standard
+userspace-reachable path.
 
-**Step 5.2: Callers**
-- `viafb_lcd_get_mobile_state()` is called from
-  `viafb_get_device_connect_state()` in `via_utility.c` (line 31)
-- `viafb_get_device_connect_state()` is called from the ioctl handler
-  `VIAFB_GET_DEVICE_CONNECT` in `viafbdev.c` (line 558)
-- This makes the buggy path **reachable from userspace** via ioctl.
-Record: [Call chain: ioctl(VIAFB_GET_DEVICE_CONNECT) →
-viafb_get_device_connect_state() → viafb_lcd_get_mobile_state() →
-ioremap → readw(NULL)]
+**Step 5.3:** `omapfb_get_mem_region` → `down_read_nested` (acquires
+rw_semaphore read lock). `omapfb_put_mem_region` → `up_read` (releases
+read lock). These must operate on the same object.
 
-**Step 5.3-5.4: Callees/Call Chain**
-The function calls `ioremap()`, `readw()`, `readb()`, `iounmap()`. It
-maps the VGA BIOS ROM at physical address 0xC0000 to check if the system
-is mobile (laptop) hardware.
-Record: [ioremap maps VGA BIOS ROM; readw/readb parse BIOS tables]
+**Step 5.4:** Reachable from userspace via `mmap()` on `/dev/fbX`. The
+error path triggers when `vm_iomap_memory()` fails.
 
-**Step 5.5: Similar Patterns**
-Missing ioremap checks are a common class of bug across the kernel. Many
-similar fixes have been applied.
-Record: [Common bug pattern - missing ioremap NULL check]
-
----
+**Step 5.5:** In `omapfb-sysfs.c:59-73`, the identical pattern (`rg =
+omapfb_get_mem_region(ofbi->region)` followed by
+`omapfb_put_mem_region(rg)`) is used correctly. The bug in `omapfb_mmap`
+is the sole instance of the incorrect pattern.
 
 ## PHASE 6: STABLE TREE ANALYSIS
 
-**Step 6.1: Buggy Code in Stable?**
-Yes. The buggy code was introduced in 2008 and is present in ALL active
-stable trees. Only cosmetic changes since v5.15 (spelling fix, I2C
-terminology).
-Record: [Present in all stable trees: 5.10, 5.15, 6.1, 6.6, etc.]
+**Step 6.1:** The buggy code exists in v6.6 stable tree (verified: line
+1122 has `omapfb_put_mem_region(ofbi->region)`). Present since v3.8
+(~2012). All active stable trees are affected.
 
-**Step 6.2: Backport Complications**
-None. The file has barely changed. The patch should apply cleanly to all
-stable trees.
-Record: [Clean apply expected in all stable trees]
+**Step 6.2:** The fix is a trivial 1-line change. Will apply cleanly to
+all stable trees.
 
-**Step 6.3: Related Fixes in Stable**
-None found. This bug has never been fixed before.
-Record: [No related fixes in stable]
-
----
+**Step 6.3:** No related fixes already in stable.
 
 ## PHASE 7: SUBSYSTEM CONTEXT
 
-**Step 7.1: Subsystem Criticality**
-- Subsystem: `drivers/video/fbdev` (framebuffer device drivers)
-- Sub-subsystem: VIA framebuffer (viafb) — legacy VIA chipset graphics
-- Criticality: **PERIPHERAL** — very niche, legacy hardware from
-  mid-2000s
-Record: [fbdev/viafb, PERIPHERAL criticality]
+**Step 7.1:** Subsystem: `drivers/video/fbdev/omap2` — OMAP2 framebuffer
+driver. Criticality: PERIPHERAL (legacy ARM platform, but real users
+exist in embedded systems).
 
-**Step 7.2: Subsystem Activity**
-Very low activity. Last substantive changes to this file were years ago.
-The driver is effectively in maintenance-only mode.
-Record: [Very low activity — maintenance only]
-
----
+**Step 7.2:** Low activity — the file hasn't changed meaningfully in
+years. Mature/stable code.
 
 ## PHASE 8: IMPACT AND RISK ASSESSMENT
 
-**Step 8.1: Affected Users**
-Only users of VIA framebuffer hardware with this specific ioctl call
-path.
-Record: [Driver-specific, very niche hardware]
+**Step 8.1:** Affected users: users of OMAP2 SoC framebuffer
+(embedded/ARM platforms).
 
-**Step 8.2: Trigger Conditions**
-- Requires `ioremap(0xC0000, 0x10000)` to fail
-- This maps the standard VGA BIOS ROM — on VIA hardware this should
-  almost always succeed
-- Could theoretically fail under extreme memory pressure
-- Reachable from userspace ioctl (unprivileged user could trigger it if
-  they have access to the fbdev device)
-Record: [Extremely unlikely trigger; ioremap of BIOS ROM address rarely
-fails on real hardware]
+**Step 8.2:** Trigger conditions: Requires concurrent `mmap()` and
+region-changing ioctl on the same framebuffer, plus `vm_iomap_memory()`
+failure. The race window is narrow, making this unlikely to trigger in
+practice.
 
-**Step 8.3: Failure Mode Severity**
-- If triggered: NULL pointer dereference → kernel oops/crash
-- Severity: **HIGH** if triggered (kernel crash), but probability is
-  very low
-Record: [Kernel oops, HIGH severity, VERY LOW probability]
+**Step 8.3:** Failure mode: If triggered, results in **lock state
+corruption** (releasing wrong lock) and potential **deadlock** (held
+lock never released). Severity: HIGH (deadlock), though likelihood is
+LOW.
 
-**Step 8.4: Risk-Benefit**
-- Benefit: LOW-MEDIUM — prevents a theoretical NULL deref on niche
-  hardware
-- Risk: VERY LOW — 2 lines, obviously correct, zero regression potential
-- Ratio: favorable — essentially zero cost to include
-Record: [Low benefit, very low risk, favorable ratio]
-
----
+**Step 8.4:** Risk-benefit ratio:
+- BENEFIT: Fixes a genuine lock correctness bug reachable from
+  userspace, prevents potential deadlock
+- RISK: Essentially zero — replacing one expression with an equivalent
+  one in the normal case, and a correct one in the race case. 1-line
+  change. Obviously correct.
 
 ## PHASE 9: FINAL SYNTHESIS
 
-**Step 9.1: Evidence**
+**Step 9.1: Evidence Summary**
 
 FOR backporting:
-- Fixes a genuine NULL pointer dereference (kernel crash)
-- Extremely small (2 lines of logic) and obviously correct
-- Zero regression risk
-- Present in all stable trees, applies cleanly
-- Code is reachable from userspace via ioctl
-- Standard defensive fix pattern used across the kernel
+- Fixes a real locking correctness bug (inconsistent lock/unlock
+  objects)
+- `ofbi->region` can be changed concurrently via ioctl (verified in
+  `omapfb-ioctl.c:98`)
+- 1-line fix, trivially correct, zero regression risk
+- Matches the correct pattern used elsewhere in the same codebase
+  (`omapfb-sysfs.c`)
+- Accepted by fbdev maintainer (Helge Deller SOB)
+- Bug exists in all stable trees (since v3.8, ~2012)
+- Clean apply expected
 
 AGAINST backporting:
-- Bug has existed since 2008 (~17 years) without any reports
-- Target hardware (VIA framebuffer) is extremely niche/legacy
-- ioremap(0xC0000) failure on real VIA hardware is near-impossible
-- No Reported-by, no syzbot finding, no user complaints
-- Appears to be static analysis / code review finding, not a real-world
-  bug
+- OMAP2 fbdev is legacy peripheral hardware
+- Race window is extremely narrow and unlikely to trigger in practice
+- Only detected by static analysis, not runtime
+- Low real-world impact
 
 **Step 9.2: Stable Rules Checklist**
-1. Obviously correct and tested? **YES** — standard ioremap check
-   pattern
-2. Fixes a real bug? **YES** — missing NULL check is a real code defect,
-   though theoretical
-3. Important issue? **BORDERLINE** — crash if triggered, but trigger is
-   extremely unlikely
-4. Small and contained? **YES** — 2 lines, single function
-5. No new features or APIs? **YES** — purely defensive
-6. Can apply to stable? **YES** — clean apply expected
+1. Obviously correct and tested? **YES** — trivially verifiable
+2. Fixes a real bug? **YES** — inconsistent lock/unlock on potentially
+   different objects
+3. Important issue? **MEDIUM** — potential deadlock, but unlikely
+   trigger
+4. Small and contained? **YES** — 1-line change
+5. No new features? **YES**
+6. Can apply to stable? **YES** — clean apply
 
 **Step 9.3: Exception Categories**
-None apply.
+Not an exception category, but meets standard criteria as a small bug
+fix.
 
 **Step 9.4: Decision**
-This is a borderline case. The fix prevents a genuine NULL pointer
-dereference but on a near-impossible code path for niche hardware that
-no one has reported in 17 years. However, the fix is so small (2 lines)
-and so obviously correct that it carries essentially zero regression
-risk. The cost of including it is nil, while it does improve code
-correctness and prevents a theoretical kernel crash reachable from
-userspace.
-
----
+The fix is a 1-line change that is obviously correct, with zero
+regression risk. It fixes a real (if unlikely to trigger) locking
+correctness bug that could lead to deadlock. The cost of inclusion is
+negligible, and it makes the code genuinely correct.
 
 ## Verification
 
-- [Phase 1] Parsed subject: "fbdev: viafb: check ioremap return value" —
-  adding missing NULL check
-- [Phase 1] Parsed tags: only author SOB and maintainer SOB, no
-  Fixes/Reported-by/Cc:stable
-- [Phase 2] Diff analysis: +3 lines in viafb_lcd_get_mobile_state(),
-  adds NULL check after ioremap(), returns false on failure
-- [Phase 2] Verified: readw(biosptr) immediately follows ioremap()
-  without check — confirmed NULL deref risk
-- [Phase 3] git blame: buggy code introduced in ac6c97e20f1bef (Joseph
-  Chan, 2008-10-15), present since ~v2.6.28
-- [Phase 3] git log -20: confirmed only cosmetic changes to lcd.c since
-  2008
-- [Phase 3] git tag --contains: confirmed ac6c97e20f1bef present in
-  p-5.10, p-5.15 (all stable trees)
-- [Phase 4] b4 dig -c: failed to find matching patch — no lore URL
-  available
-- [Phase 4] UNVERIFIED: Could not review mailing list discussion due to
-  b4 failure and Anubis blocking lore
-- [Phase 5] Grep viafb_lcd_get_mobile_state: confirmed call chain ioctl
-  → viafb_get_device_connect_state → viafb_lcd_get_mobile_state
-- [Phase 5] Verified: VIAFB_GET_DEVICE_CONNECT ioctl at
-  viafbdev.c:557-561 makes path reachable from userspace
-- [Phase 5] Verified: on ioremap failure, returning false causes caller
-  to skip LCD_Device — safe degradation
-- [Phase 6] git log v6.6.. and v5.15..: confirmed minimal changes (only
-  cosmetic), clean apply expected
-- [Phase 8] Trigger analysis: ioremap(0xC0000, 0x10000) maps standard
-  VGA BIOS ROM; failure is extremely unlikely on real VIA hardware
+- [Phase 1] Parsed tags: Reported-by kernel test robot, SOB from fbdev
+  maintainer Helge Deller
+- [Phase 2] Diff analysis: 1 line changed in error path of
+  `omapfb_mmap()`, replacing `ofbi->region` with `rg`
+- [Phase 2] Verified `omapfb_get_mem_region()` returns its argument and
+  acquires `down_read_nested` (omapfb.h:183-188)
+- [Phase 2] Verified `ofbi->region` can be changed concurrently (omapfb-
+  ioctl.c:98: `ofbi->region = new_rg`)
+- [Phase 3] git blame: buggy line introduced by commit 3ed37d9aba486d
+  (2012-12-13, "Revert 'OMAPFB: simplify locking'"), present since ~v3.8
+- [Phase 3] File history: no prerequisites needed, standalone fix
+- [Phase 4] b4 dig: could not find original submission thread
+- [Phase 5] Correct pattern exists in omapfb-sysfs.c:59-73 (uses `rg`
+  not `ofbi->region`)
+- [Phase 6] Verified buggy code exists in v6.6 stable tree (line 1122)
+- [Phase 6] Fix will apply cleanly (1-line change, no surrounding churn)
+- [Phase 8] Failure mode: lock corruption + potential deadlock (severity
+  HIGH, likelihood LOW)
 
 **YES**
 
- drivers/video/fbdev/via/lcd.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
-index 8673fced87492..3fa2304fbda7e 100644
---- a/drivers/video/fbdev/via/lcd.c
-+++ b/drivers/video/fbdev/via/lcd.c
-@@ -954,6 +954,9 @@ bool viafb_lcd_get_mobile_state(bool *mobile)
- 	u16 start_pattern;
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index a8b2930290e1f..d70deb6a91508 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -1121,7 +1121,7 @@ static int omapfb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ 	return 0;
  
- 	biosptr = ioremap(romaddr, 0x10000);
-+	if (!biosptr)
-+		return false;
-+
- 	start_pattern = readw(biosptr);
+ error:
+-	omapfb_put_mem_region(ofbi->region);
++	omapfb_put_mem_region(rg);
  
- 	/* Compare pattern */
+ 	return r;
+ }
 -- 
 2.53.0
 

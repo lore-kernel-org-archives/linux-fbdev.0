@@ -1,109 +1,186 @@
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 862092C234A
-	for <linux-fbdev@vger.kernel.org>; Thu, 23 Apr 2026 13:42:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55F2C359A9A
+	for <linux-fbdev@vger.kernel.org>; Thu, 23 Apr 2026 20:55:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776951778; cv=none; b=Vi1ZZNSTiWycq5Gjf4wCIGnf6KMCaG5kuCeC4Bx+I01qjSjTua6fXTBpTwwHzAJ0pvVoc8fX73eKPHwxq2EOJgTpLEj/Uu9UAC4HzUqpy5o++b16C/Oo9M3ydmKIGXg4z5ST3WVlq3YJpLf2yTAHMDVsDKJfJzZ7Gv8/CaIQ6Ko=
+	t=1776977739; cv=none; b=MPuyh+5L3kGfNCFv2B6SMISyfbD/pRTubQKohwS7+SGbArRWVXKClXjah6rbN/Hi2/5OHDcdon+Zg3EqfAFfJZv8i17ivS+Mpf+gZuvscKCD+akuqU9/GtHDrPXO9lWs7EL99wxgic+gas4m7me4J65MDmVIDNi8CVLE9tnTkSc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776951778; c=relaxed/simple;
-	bh=KGQTxPk6oMxh7QPY8apsl1ZPfxrpG+Y9tgOuHycUcB4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NhsjtHD2/Uo+k3et8C3iihtBhHjfOSTBG2sJJUSZOy4NWOjgYarEHW4u3M1FHz0YemnHdNMt0BKcAERPCZtVZt1knjtG9SOYPPvkYwvdVuVFKYVJqAma6egkYLcwkIg1B7LjDyno74npef+cG5apt9icVo5f9nKkrnkB7t9HZZo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Gpd8Ygq5; arc=none smtp.client-ip=209.85.221.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1776977739; c=relaxed/simple;
+	bh=PhI7ebNw3NZpmTc9ELA7bWpMMlEb/MDa3SI21gbnDDQ=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version; b=kYRHLlwzVhpM0GA52YTO/I8ycfR6ueQ6UZXoj/NPgYZvAYc0NAO2A1jLSE8UPPWyX7Wfg2sLS95y3NvRl1QrI/R3aNG/UK8dpBX4U+i6Dfy9HOJx+5E+fSZoWubQVA38hxNaWix4drPefysrY7dwHMpOfPFlawcqh6tBj9A6yEo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=NesvFSUV; arc=none smtp.client-ip=212.227.17.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Gpd8Ygq5"
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-4411e1eba51so3279626f8f.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 23 Apr 2026 06:42:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776951776; x=1777556576; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Rxz9NU02O++FzynrCeAoVbLT1PUkMktzynAKMZKwViY=;
-        b=Gpd8Ygq5obG2Z1akpdvrfFFqTeSoIBLhCfYkoL06QquqMfR217bDObqppRdBMDbiwP
-         ZxfmvG/X23is1vDfR6x4Ch7SbC27k8nfryk9/dgQJEDHAkHcO9DGTvqMdoFKHWoM9TKu
-         dml5Z43g0zsza+cXdBoo37zr+7wvemZRNgPDckICgtfgK0LyCDvz4cOObUH2mVA7QXMJ
-         vhX7PQii/JN28y9/gxy/LXnHoeK0IjQQ5QNBtm2ZE4c/cF9FgpA3u585v1z1F0roKkW0
-         ZH8MQnb/l5jIZd2XmV+jMV+YZuqof0g9FmOV5i5szXNtx9s7P63EPhpQx1AJfBYY2Gr+
-         q61A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776951776; x=1777556576;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=Rxz9NU02O++FzynrCeAoVbLT1PUkMktzynAKMZKwViY=;
-        b=W5tmGrOX/SpiTk6jjiXKa8sf5yI4N8l0Ya6SW1/nC8gZRSbLopnsFbdeq4DUEYPZSl
-         kzp7lgRKkCOfspciDHlua0Ctjf7shvUyX8A2+FTB9fVtzWSBqmgbV1UdX1oJX4kplq/b
-         p0OhA2+FV4Wald2HZOdycv+mKD4oOiRODp2Jeivk8KBHb0lx796lBdYrRdJ0N9dGl5DP
-         nBP8yFKy9O7bZep/60eXTU007n9/4YkejjfQN4D8bXoH2oGdkoY+QXqKzb+epGHFnoVY
-         jSEkzNUZVA7GOQ2afWtSSat/1EMp+nuPhPLOFfUAUP177g6j3N9Pw9fYC/vQrkC3eHGY
-         z9lQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/7j7T9G4Nj3SOzk3v7xsoBPLOjz4fj8Vz4vn7wwPkjFCtGEti4Koh42Yo0lMsPgj1NH/ZvDyX1sdFVEg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw4U4hNY0L+o0i8LtR391frwBfak3t5UUM+DjaFnlrPe4nUV/X/
-	oaz4x8VVLSRTUQJcrdI954xkMm4lW968W/3FYp7nLZ3X4th1F7cx2CBN
-X-Gm-Gg: AeBDievGNXx6CU6EgxDYwFZUiO0lU5fp/GPcYZgJMgYyOkg8AWhwGQ9hHFd2rXb7gVY
-	YjSZ1RQq3UPHDN527raD+/Xem1gmZEvVRs2s+lj81kFoROBVSV7eaK1f/INePje64S2emF2PY5D
-	3C5xw1RyLQvax/PKdMfUDsfVZCt7mThB0Pqbw3EMJwcVD6mtDJdH0xkQD0c9KaGXxP7jqz4uT+U
-	IntMdnmh6bF19pLVK2kGvF4Hf77yzIKGrkV4ANOmqaj4MNGIglQQ5J7aNV2w301KxCmnFH6Y8RY
-	/PlEiS7QhHJz9Kunwde0K+1HQqfbHmKfF1OZjQ+pzHNYkXOiFM6/3l4uIw8ViS3UbcGNbrAdRfv
-	wqZBN1XFAuywDsG8D4uSxb6vqIiTQL9zj6XD+Eh2PzMlm8qPH08hQcflXU7GLBCVbXNvqbAqWTX
-	zfbg2U9YZIZxjNCJkT7zQOUiY554Uu6XorxPgnMo+Y
-X-Received: by 2002:a05:6000:2888:b0:43d:7b23:bc99 with SMTP id ffacd0b85a97d-43fe3dc8152mr43015263f8f.15.1776951775662;
-        Thu, 23 Apr 2026 06:42:55 -0700 (PDT)
-Received: from anthony ([2a06:c701:499d:3e00:12ff:e0ff:fea5:3d2e])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43fe4e44f69sm55764812f8f.25.2026.04.23.06.42.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Apr 2026 06:42:55 -0700 (PDT)
-From: Amit Barzilai <amit.barzilai22@gmail.com>
-To: geert@linux-m68k.org
-Cc: amit.barzilai22@gmail.com,
-	deller@gmx.de,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	thomas.zimmermann@suse.de
-Subject: Re: [PATCH 0/3] fbdev: Request memory regions in platform drivers
-Date: Thu, 23 Apr 2026 16:42:35 +0300
-Message-ID: <20260423134235.230024-1-amit.barzilai22@gmail.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <CAMuHMdWhpD5vjfzsYieVOrio0chQAU=s0z5rX8AKTon3S=v-OA@mail.gmail.com>
-References: <CAMuHMdWhpD5vjfzsYieVOrio0chQAU=s0z5rX8AKTon3S=v-OA@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="NesvFSUV"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1776977732; x=1777582532; i=deller@gmx.de;
+	bh=kD4ByncE5P0r3WsGsYODs4SPEglRPkKb/2LsfSNN6+A=;
+	h=X-UI-Sender-Class:From:To:Subject:Date:Message-ID:MIME-Version:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=NesvFSUVac3pHVHFVwmt8TLM2plRq5QMYThFAJzxrlfbZsc6kFClYcUQP6kRVl9S
+	 W2IsUkLwfu+GrFS7MGET5JyoTO8eWk7YfCAP7vnDtF5xVBGXw2wkyA/2SIdcFx5DT
+	 4Q4D7uIgpJB1mn8bQvWKE/FIdfeJfy4GYm58z938IM+I3Og75lcI/iXKbFw4HeAPz
+	 SQ/Ib4TxxnPlEJsk4WVYzhmlSEcPRSQ/y/FxXaSpKHK89U7SXy4O1QObJ1N2jPUhk
+	 gbrVPax7PLzF9Bc1sVu217EOaHyCdSt/Cb/b2HHo56Q6AbVhu+qlwLO3dK4LwH0Wq
+	 FxplY84WckGfw/DNGQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N5VD8-1vI3mo2682-00tVYl; Thu, 23
+ Apr 2026 22:55:32 +0200
+From: Helge Deller <deller@gmx.de>
+To: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH] drm/todo: Drop todo item to request memory regions in all fbdev drivers
+Date: Thu, 23 Apr 2026 22:55:31 +0200
+Message-ID: <20260423205531.49971-1-deller@gmx.de>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:zWc8qvNcoUyvBkSTTVLMaIkLyxTSpiqlY2MoxfQRdKbA4Zn9bKX
+ QEdq5uNVz3CUxknSSFfxULQE5fZ6IN1SGdW71miw113Qjz/CssGMyluuSdczfsvXY/69I69
+ FS9YPmSfQk6QvTQjS5chXfUs5OcZXkJFWD+pNSt2lcAOsdVvXEXOvwg3g6PGUBcdY1gogez
+ lPeV2erpntazgE35xN/Uw==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:O4/AAyMIJ3E=;UOPQzFVos9rXuF0egNFt/VTSxQJ
+ SGw0nIM9xKa/vOFxONt+DEC0PSediPtbm+fZsvXqtWBakzroJSwjyRiElYga6XykUkKTZLe15
+ uLDkZEtpzV5KsIFr1Qnfq+0H4gsQcBznm7hxFKt74HUSpvCdw1YzFPXoKQhFj+ZjtTFfKiw5t
+ hQWtl0/dCV5nQ7aAVnEkvDr3+qgQOu+KF/juH8e4S3i/7Z/C+DXQGDMiEcVnYuvnMinNvrpL8
+ Va3vgoeBszWUuRUkFNnWxhBnEdktm0LI5dUXPgMxWp6p7F8Ns+Jav7j0x0YQpKejYpWcXWINh
+ jHiSbOt3jP9+2rptS0SgwiVaoqb92HKSgkuSF34cYH/eTGHn7Bw/6dTrqJFzo8vi1+FHofov1
+ JH6qB0juMfd9nS0ufB1FwtfJnjWsUAT/TsCYn7m825PBK8JOkaqkORWM96W/PdqhR7gARIaI4
+ ncU2D6OxpTIV9YiTsjTqGk88yFgfyuKe5pNUmWp2lpcvGTVOl0RhPHlIt3ux7aMVF5VR/2DvM
+ 9KidEDiUos85OM7QjDexdCeBpRyd7gcwKvhSLDF0Z5qZhD3qP8YZWHTo5ijCIuYUfxrXt57B/
+ qLZ5ZM9LxUY8YNjpb4nVfiU2yQGBIyh3YOOwqlghXrymUeEZdmd2xbeZN4ejsWmzXdswtzJW2
+ N9kF66++rBFWDV161f5iK2YG7c8gTsJ1rkpIsCx5AlaebRAqSdCfQHq8TUoLZZrXV/f05aVeY
+ e3ox/aRdH6DQwR1iUUIfpKmgF3SUPP/H5MLfvViQ4SedbJS6RgkluYhP14BVzPl9+MUeOSZSg
+ wylOUzig+k9kMyKNobMxyC2ZEPjD4MgmiWEyvI2d9Iyo+6idjg2gNgxShhj0E+1axyRT8HO1L
+ J8IL7FeX2vkrk+WVKo2XcodNnswcsoGU6AWSqyyciowPR7kH8Wd++meDSMlb+MOhaR8zScuU/
+ wDdQOcrR7nzcFhwCkuC1ovQqKXFprqvkkgAWvldVbAgBcV0HZdaABnjr6/qIi1S5zxAovcw/l
+ 5Q/xy37CpN0WvMtPnOlS9xJb7cyVYjT6JX2ci9aovIV8+YRJ9MNKeHWy29AAgvi4vK0mouTww
+ 0BlVtoXQTDYIEtqIZS1qujM3W/DmTn+gufuEnmG32NssdKgEicxOuD+lhf5IUWXkmzJTKCduI
+ EynbBD51nlpIz3wZmpQDutv4pgxICZp6Qbho+6g5yOZJxb9MAXcgL9IviHRlLvgvB/AomO0Cz
+ NBUTrOv2do7QgNz58n7lJo6et/qDepbF2o83v7BoG44fyGtR9Zu4KDoI4+GxoJOJLDK/HEf0V
+ 23+Yvff8rrqZscvqQMt+5BSpchhptQk11k9FdU0bAzvfyHg8saDD+jA1CS5LsZD+e3PUYSgDD
+ Rzukyc57tYFf3qoyNr+rHYARvF6K6yWkjYqmFY5hiQmFwFsNMq+K52MhLTvQJBs7npgPHRfrh
+ gnrAcYficvzHZMtPWlqUnJYhv13UITE82l/l4YJB0iOZucLxgb+2McTUKC1Au0weLzgZP8ZIg
+ ERSkZ/slBs1EtSQEU1g9IOq7migSEpSqAbABti4xNZbZHB/Xv9s4gAqqOWnPiM36DtVdTXinM
+ tdatalypUwCUB7r8b8yW3nNZASnCQLyerlpHOuiTafyoBN2BWYe+e7mI3LLbClzIyxwUKgD6u
+ ZXiQ2QvHSy7IxIi7ryifcSAEc676bewU5WVJrb4vO2k773qvq46/RZKPDisl3Hxarsmn6G6UU
+ XKXqbbDhjpjv3V+rBxInTqS5ffiblz+JjYILS7PocWSpsFDfo/o8gm65WtUnCzHtKAbCE79at
+ xZbwKkSEgMxG/p5fGa7VOI/qm9wRrDy3dKUgC8vt8BK/gE8J9eXznBq1TcFrGQtYsS6h4D4A9
+ dGZPQbCLkLdgh8n58K0Yuer70Bg/sGwK051DK9DdsXY0tOGraDndLGIv4v6gKVk08nyxX+VTw
+ LsvuqvRcgaYRRFcVZtKgKWv7vR7q9wzgYSnf9cPSPbfHFHJZpJsJtoBHxviwZ9x2p7wy5X8lH
+ erj4lhUipdyZjK6Tyne50NQxaQZou+EFAjEuwBW/rRZmUi+WE49aItnN9VY1xc8UHEc40qHHD
+ rBbYIX0vIbUvv4uAdzeTgLQabSeRAhHKSQX2usAuwJlJIUJM80hAzBHygLaxYgisgZYwlQyKL
+ 9qK3HCvk35d8aLASBPBUXznkT/xLp+WMCTSp6Tskuuu7He/I0QboonPATkd1P5r38Xz6620C0
+ C6sLE5QmMguTY4XgeakepaLBiJnBcxHg9caGycZAZvsJIL7y//SqKQbspB+IbkBPOyms5dk+z
+ MUWUtAzdWiwZtiBkCwnKziUa3w6dg7MgLex5B4OUiVkIPxfA5Nf6CNqPN7H6Mvkw/Nt05qlWz
+ 1QH3Wj7nTRKSPKXcRuu8Kgan1AKhnUqyhRKxnGs2EgSOr+uDA+VHwvJW+Os1rfydgBqduMos1
+ M7+thVUKTLV6cciKXPS/AwXLhcIxBeP+pmd9cyXQiT7/syt8Mw6B/pl/6AnUSGsltn/Yeo4IU
+ yi3PuCYBeuCAgxBMEwWbTY5fJwpJFkldSeEuOLs7yEcXDOetsUsSAXJU/w00EDgVxZaTK7NXd
+ FqifBkjUd3zmXLyYS+SR2dj07FpfJpwv7I7ygSUMgfV0E88xhQ8DegNHFxKMCWlpaNCTkstaz
+ RtWJdKiREvmpYZ9tgbX36LJeL57Y1fGyEE2E/vPNAAf1dboZveoYrP9TOfDXWJYPhwWyViMR7
+ 8jjigmV5hNkimjM5R7FPN02opPOjRFq25zFeo7hJ2ZMtuPSu0YlF4LqMZcUlyw5M+PkvZmMkX
+ JvoWExOnAHGGA7pUI2pqKv2jAykOZquFEMfntYbUhlDXfw0VLYOY627wqUHu0Z8bpW85OcPh5
+ 4lLFCQMw+7JyF/6uRtnJgumesKoW4N0KMqKTYYQUtOJrfJBN+nupr7+LieD3IOjK8ijWJQWfQ
+ CVw1ujzdxATKT8nclyHaVxPWiGyTdhbukkAHp1KmboF1XgjTOeriVW+Wj1ymPuz/panr5gvs8
+ uQPfhGhasv2kZkf5cmzhCxPCJMIvX9kyqYR9emv924dVeIIQCBsOCZ2OGgT0/zxLn3xLskqUV
+ d1c5EG4LG6V0THcrCJHPQBj04iMlN0jOG5NUE9j5FwsaChSyr/4xvdm9hogG4AeMadtZXSX0l
+ 6GNalSa9IFAxqzOSdvoHaIy3UdWh4Lwo2YXdakwD/wD9sfgxIOIqgbKtM3g5sxrzi8DU+lp6j
+ PeR+CkSPBSiEach5/z2kmMXlWeNeuYPF0rA++tHnlz74UqZ4LKe4b2EQ+A3G6zF5bUrAWSDbp
+ X3dWsmEwXf2c4q9/NdIhl6fOCDeb+KUUF4Nwjx4Ugp19TriDCX4WhEZhzZO0tr53DMkPDhtpN
+ Klv0m02NFD2EC80b3JG/Umlb5myltF9VCdhgGgmPaWFgl6msJYp2+p1nF1esG1Ac7HCI4e6k2
+ Ng4QoMhGUDlWgy6O1AT/PNg9h8VO8yBg8OEnZo8aXbLT0+sivGWFldS81s7znqnm0ovsnWqT1
+ WwWt9+QZ2UuxJriuc97F3LZW6ABGNCpSIpp2Wj5iV+z9DKU1dGlwNv99mL53FafydmWlqL/zA
+ wbbtUDmsqusovIUF4o07dgBlBDtJcEEajx4n4V8BfyrzA4ivG6s8CVDNnVyh0FnG391qn+L4e
+ eBeBIdNqWU0Fsf0VHxq6Oz9CekLgiOSREnxCEi358msi9HzxZp+DIUJ34JIzaiXKwd7wrNpAy
+ tP33dRlfp73Lkmq26p1pdIwtFV8ZcnPSVpQDcMuQBnm8EXB9Tmiow54cfdmYGEFUYqWtWPHdG
+ N4//wcLdvIsseciNco4dlxRlcyY6z4DRVAHmTqrAlkIkLSTnyU1Bs//Gm8q6jIxNkRUDBEHnD
+ 8aUZ+YTnkWFqZX4HaccMy2gIz6aKKz+v8uHBeeuKr86oLbeIxTWGIzaZdcRYrrP9Ts2o2BcWp
+ EKstwYvfq1/J0bNNu7ceHLYo/Ucrv6fzLgqgT97IT8k77CcPHM7cmpxbc08SF8N+N4ut7yMq4
+ ka0dW6eQEy401IiuGQZ9zL6CI8biWnR8IrUYs4ukaio7PRtSMdq+NTU+fVWmIr1/r7cLyzQSa
+ SerBp9hkYEmo0hfGYpYJhDa7KQXl/iVp/iERbmNFtpSQCtvimBq8goHA0W2CpxinyCgYml15Z
+ 2YGfAuVajt7U6BvLw3992B/lh/dODDTKs+39mJjal8wopc2uvN9rFac4QH8OPmScKpfnRLL4b
+ KuPdcWUx0Qb6TyP4SEc+pB48qlsteI2HLSVA0dAdRhJpbNdF8vcr2PKuQ+MMpaWVrXgDuJPO0
+ Yg5HhxDI9R52ru1CgCfnW+DgkDbS5QjbMuG2akcNvZKC4YdjRqhZYd1fKuDZ3z0kH9Suiy/6f
+ PDVmbaeelBjMXH3ngxkkRwSIaIDERlkhiTlcsGgqmAmHGMYnMF1vzltb0pJELp09rHUKUJsuQ
+ ruxJfb7SNRNtzqMCxoft8z421eAuC5dASIr0NcuTqkXAulEcHgZSNNLCzmj96n9cvzcP/oV5z
+ vIDQFHd5TFIBhm5JCflr8vQH/Yj9WPcwLtVOcTCvxnXV7i+Mw5rtR0HbZtWTXfBZZORZq9CnZ
+ Kv70GrnEoTK2AiCB5NQv1WESwwR32qSCqIpFYTdnw/jVyKZTSkxTKvNdxWRS4Vp78HnVYuOAw
+ F5cEhoGhnVB3C+WS3ULPjjP4KdE/TE+KLEwEqd+98Wb/XOrS0IkfqQG4J7WMAX62pPVcMtMK2
+ DlcCmeDURjmG1CQ+pQpKnQUSiq2/qtHJqJS2Ui9DbK9omN+80WGcglImhLkiiuliKC2BfJuiB
+ u7NOjVWvSCqYZdYXFFw8LcjlS38F0engszN4MK60+52w/A+D40ADa2NOtHYDpoPO3UR+yzZDs
+ n/du8BgazLnoURWZavtUgiPi+gQi/xAIZTY3C5cjNBu6isAWYfdUWLQ8tO7vjWDEG9B7+9rgW
+ HnMzCA+nIry4UvTh2p6KvWIP/olgNeHAiotB6HAtpocWI2/7/9Y6dbE7o4PY0aAuDPJ3XnIGn
+ 8Md35DcgDzc6iA/u1MNzFdrmO6WxFZE0vSJDUX60jHEAGGq23SLrz8+RrfHP3w85F6OeB6PEF
+ +mFa/IQ2mzPQ2Cjcqb4zZj+STpHsGp81UeaEqZNCQHd5sbzsBNGJ3J3qh/rFj6FrTk14qj1wO
+ gxaovF0UkShfQT7jPjpxRraoThn/HxK4bYyHFTmjWF8h9SBODr0psQUcgDfTPVjPhzc2iJL2M
+ WvfWt1zLZchs7pJOmNXo7JP4acktRxVyl6IS4aZo8RSfFfi7QltlTMRISTBvkqEApjoHmDZGQ
+ ixpf6fxZLCaDcTZGVoM9yd9yZ6x34E+bxrm0hRvi0VOtkRX1W62tZxIYrN3WMpiqeWMjY2OdZ
+ gob70aN8s2d3Gx0FPpcKEXSIEqTyZXGOt5DHIaLixUuMSO3bajNLXzJ9aCza0sE2g2/pti2m8
+ /cylCsOZQdytSals5YNTUanevuSD1AlKq5iU=
 
-Hi Geert,
+This item is tagged for beginners, so often people not familiar with
+the fbdev drivers think this is an easy task, start up their AI tools
+and blindly send in the generated code as patches.
 
-> This file does not seem to exist?
-> Was it hallucinated by Claude:claude-sonnet-4-6?
+The problem:
+- Those patches often introduce bugs, so
+- ideally want the code tested, since ressource misconfigurations
+  often lead to failing drivers
+- The patches are often unnecessary, since in the old machines with the
+  old graphic cards resource conflicts usually don't happen as only one
+  graphic card can be used at a time anyway.
+- and today most relevant drivers have necessary patches already
+  implemented.
 
-You are right, I apologize. The correct path is Documentation/gpu/todo.rst.
-I will double-check all references before submitting next time.
+So, let's get rid of this todo item and silence the steady stream of
+stupid patches.
 
-> Have you tested this series?  I have to ask, because adding
-> seemingly-innocent request_mem_region() calls without testing the
-> result is a recurring source of broken drivers.
+Signed-off-by: Helge Deller <deller@gmx.de>
+=2D--
+ Documentation/gpu/todo.rst | 16 ----------------
+ 1 file changed, 16 deletions(-)
 
-I cross-compiled cobalt_lcdfb against cobalt_defconfig (MIPS) and
-clps711x-fb against clps711x_defconfig (ARM). Neither platform has a
-QEMU machine available, so I was not able to do runtime testing.
+diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
+index bc9f14c8a2ec..b4dd64a8cc06 100644
+=2D-- a/Documentation/gpu/todo.rst
++++ b/Documentation/gpu/todo.rst
+@@ -448,22 +448,6 @@ Contact: Thomas Zimmermann <tzimmermann@suse.de>
+=20
+ Level: Intermediate
+=20
+-Request memory regions in all fbdev drivers
+=2D--------------------------------------------
+-
+-Old/ancient fbdev drivers do not request their memory properly.
+-Go through these drivers and add code to request the memory regions
+-that the driver uses. This requires adding calls to request_mem_region(),
+-pci_request_region() or similar functions. Use helpers for managed cleanu=
+p
+-where possible. Problematic areas include hardware that has exclusive ran=
+ges
+-like VGA. VGA16fb does not request the range as it is expected.
+-Drivers are pretty bad at doing this and there used to be conflicts among
+-DRM and fbdev drivers. Still, it's the correct thing to do.
+-
+-Contact: Thomas Zimmermann <tzimmermann@suse.de>
+-
+-Level: Starter
+-
+ Remove driver dependencies on FB_DEVICE
+ ---------------------------------------
+=20
+=2D-=20
+2.53.0
 
-I understand that is not ideal. The changes replace ioremap() with
-devm_platform_get_and_ioremap_resource(), which is already widely used
-across the tree and handles failure cleanly, but I can understand that 
-compile-only testing is not a substitute for hardware validation on
-resource-sensitive paths.
-
-I have not been able to find a suitable runtime environment for either
-platform. If you know of one, I have no problem validating these changes
-properly before they go further.
-
-Thanks,
-Amit

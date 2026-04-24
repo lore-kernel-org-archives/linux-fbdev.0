@@ -1,204 +1,159 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-yx1-f42.google.com (mail-yx1-f42.google.com [74.125.224.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81D442874FA
-	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 08:52:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777020775; cv=none; b=ikz7b4RN4fZHMKm1BHZJT3umENrsHfDfIiMJE33H4WcXYz8lyJ1CZ2/WcgmX7p5jl0MlF6rHaqtzgvJH80HfR9TCzuO4GGtqhpJmezEOMxILQi5sEy//Y7fROLr1NTIIqfLXJ9dZS9Bi0ooLkk8JOm66/vJg1zgoP0FRtFCOEQY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777020775; c=relaxed/simple;
-	bh=eRybPBXKEeL/JKZri1UHyXQtOYYTUSIIjIFcZp7Z/aY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=q5wrwW2uUxXb3fDWnNLba9i/B0klY7IoYVm6b6OOSVreF+Mpkpgcm8LCEX7IGFdTSObkrGCMwT4bkIbkCDI6/q3tYX1aElhcR+vqOukyGZqsutVAA66CvCrywB/Ypav1QQeqxuvwBW7MXhyegKICybSCQLAk9PUxkPqSulo5O+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Oq0cWllz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hRD9ZlK9; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Oq0cWllz; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hRD9ZlK9; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8E9635C193
+	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 08:57:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.42
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777021070; cv=pass; b=gORB/2V3Z+beSb4skDku80nZF/jB892X98KQjVvtmTbhBufJ6c1C1EhBh+4ukLGcoAMNb0oXfTvi0AAvOVBABGBKobtnhDAyCvKo2SAqEaBjrT5VOOC7D752krQa3AklCHIMpJklUpriU2K5Nt90STcdv8Sn7vhL+OVtSIL7jIM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777021070; c=relaxed/simple;
+	bh=mJycpKriTio44XHdChcIwU/V772ZEJHE3GawlsKrjHw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=a828i9hzYWoswU1Dv3F5WakY3Gmwn1+CTPbUJMt0RNruvaI9GuF2NyP3jia1QjhopAD+hXFfbGsryGJQvUXqz/TX/nLS+U7MCKEEK9QD6GQct314/RrFuH1enbNLKSACmtQETGvuAOSoemXblnYwZXThcXbyp8CwRiYFAdH1kZI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=j6+/tIhu; arc=pass smtp.client-ip=74.125.224.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Oq0cWllz";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hRD9ZlK9";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Oq0cWllz";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hRD9ZlK9"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id B7D2C5BD90;
-	Fri, 24 Apr 2026 08:52:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1777020771; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XwOQQ489BoK+8Yq0o3ugr2yIMTYOhh3I1wdF4tGsUIU=;
-	b=Oq0cWllzphhLDsJjEYQGrvvpOa7t1mIO0npwHwPtGY9GnFppw37wohY5YobxbbVzlcgrWQ
-	Pfeck1uEmKSuGnBrBdKGzo1GEuGAGULwDq+uvvwa54mgg0F0rLh4VYF+wa6z4iVREs71H8
-	OBlPnQHM3ckWriVpVUv/a3CpMXUTldE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1777020771;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XwOQQ489BoK+8Yq0o3ugr2yIMTYOhh3I1wdF4tGsUIU=;
-	b=hRD9ZlK9ayktarLUgL9icr4VTR4hAZRcBR7LmqsPIOXJqAEzca6WdhTY5VnMwmMLLWQDV6
-	Y6uuI2OL40GmtJDQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Oq0cWllz;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=hRD9ZlK9
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1777020771; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XwOQQ489BoK+8Yq0o3ugr2yIMTYOhh3I1wdF4tGsUIU=;
-	b=Oq0cWllzphhLDsJjEYQGrvvpOa7t1mIO0npwHwPtGY9GnFppw37wohY5YobxbbVzlcgrWQ
-	Pfeck1uEmKSuGnBrBdKGzo1GEuGAGULwDq+uvvwa54mgg0F0rLh4VYF+wa6z4iVREs71H8
-	OBlPnQHM3ckWriVpVUv/a3CpMXUTldE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1777020771;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XwOQQ489BoK+8Yq0o3ugr2yIMTYOhh3I1wdF4tGsUIU=;
-	b=hRD9ZlK9ayktarLUgL9icr4VTR4hAZRcBR7LmqsPIOXJqAEzca6WdhTY5VnMwmMLLWQDV6
-	Y6uuI2OL40GmtJDQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 98379593A4;
-	Fri, 24 Apr 2026 08:52:51 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Ne25I2Mv62l5HgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 24 Apr 2026 08:52:51 +0000
-Message-ID: <d33c3ccd-f67f-4428-88a5-ce34f63e9bbc@suse.de>
-Date: Fri, 24 Apr 2026 10:52:51 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="j6+/tIhu"
+Received: by mail-yx1-f42.google.com with SMTP id 956f58d0204a3-65075c2ba66so5853198d50.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 01:57:48 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777021068; cv=none;
+        d=google.com; s=arc-20240605;
+        b=P0LQjPvGO2G6kVaWmVBuC6rjbGJ1Hc0hTuhdk5fQ7T8sz/YJcrfs+4KP3ZOCAkWin4
+         ZIep2FHEi0/SAdAvjvINNHfzwJ1uriuG74b6mHvIAh22DpEO/NVI/fq4kON0YvM9D4Eq
+         atreSXLECNHdk8iBnhE7NdFbcZRdQj8mvno5mtZP2XmALU47TFkPNzLjHF35uL9RavwO
+         npHMegcw3tGNPuGl1vhxCww7oMr6YltG0lPdv1fB4Rx/a9hUAeL/gaSyAZDN0koNcHNI
+         WHe1j7i2THkFcnt137n9lWuQguPMzVRt6F3CljCJwLDjiQT5a1ZDrpYvBVT5sprCgqw/
+         jMoQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=QMYh0A8RcacPfWSI+Rx9v4WksGDRAZdmkQHIl/OIKzs=;
+        fh=4dVIkcNSyIQ6LY+wTWC0yDz6z2UnEbn/V2+tZZEf52Q=;
+        b=M3Vvzg9NaTr7A9oOOTh5dOLquZ2e4r3Lpo+VrlWuOB6XXaJbdrfK6bCAEg7WPUQePg
+         IVjwDe8mQ9oaj16xkv56mVS/aqHx0I11GMzb0JpRYd7WUJttd0M6C39mvsOHMsE38a85
+         yDl6FE4vqGKLRmVCrdjj0ZfiXNSnhc3ohuT70bXlK2CkqZjdZ0mrYUAOGIPcbBd7ysml
+         CHn3dFBq8wJoiTHcyo62k/+wnfhG0YZRFyNsW/cxh6pelXHovIAc9X3CBIjWGtlCkydk
+         QmK8gLkNFXEPWD9cu0UR/AmITVBNSyvfZkN1kHqBBJJpaq4QoUW6BUupMmAk5kOqJLAe
+         ixGw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777021068; x=1777625868; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=QMYh0A8RcacPfWSI+Rx9v4WksGDRAZdmkQHIl/OIKzs=;
+        b=j6+/tIhukzxZmK0pAb/20Lt3g+pUgsXuFs/Kr5fwM+/79i6oDwTP8KIS8F0k+DzGPW
+         2O4baIxPIB53jQBYi+gmWyN6dSZ40Kw5+2UZT6YREUFo6lsAqQZRMAFIFiZSMT8L0UjD
+         wqAQf7l3mrt8xbyvMB1aZlyWXd8yNtjijI8byjXZI71/o1rdSJxa8YHv4fy4z06n/vmo
+         msSjantIQMKPaDfufNGsBlEcw67OXC4uVnbFEUZWzC68x1amTAg11vLnZ/iwiMoHCEi7
+         s7v2w3+E+wlEqqqE27eNmzRCOjw4eoMDEE8j1LMZrrgYTmI6JDM7tZnbdjDRH3S0QMlY
+         aa6g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777021068; x=1777625868;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QMYh0A8RcacPfWSI+Rx9v4WksGDRAZdmkQHIl/OIKzs=;
+        b=G1zrhpx9QwCD2r+IHQzULFTvKyC4wTVfldHoipTELzOXWRlvPyNQKtz5e8k448d3vB
+         7VgD2G6r2c77y9GIQYXuAsRV6TNxwUDET9QB81VnSoHcLy395wfzeucQKyhYyEXjPWYK
+         DFJtLI38CnmWkw/qz5v8LdZYElXyjgoHdUx/teDjDztxX04jvzT1GuVOa0iDt9I5bIVq
+         AOU1ZIDTy5R4cayi0M/Gg1e9/ftffUFs0IsuS4PhWeQXbysWMSxu88Hp+oPMqPgIitBV
+         xiMMuy4cmIQWsSg7e5aPye2ep5gruBhmoDwp9OTlT1ad5c9WzWdj1QbRElj/AWhxwDyM
+         UbAw==
+X-Forwarded-Encrypted: i=1; AFNElJ/RPiyCYJa36zln0bxawTo6ublFoLE7PC4IWciuZ6Bege3Ve6UKCGY0LOK5RrQPkEgCtJSWuwxCcprDPA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyudA+A2xaIVbqdqY0qxwKrnAIRdDwoSADC7HS3aXyPfUAIQrzG
+	w+tL9HpSJ7g8jFMxLWRhD1Ct+Onra9RRxObX9i5boDhzsWHjRjvAAVAZy+KJmnErz5jfWTazwu0
+	wGzzx8RY7dSgQeK1LOJAnPHk6FR1GKyM=
+X-Gm-Gg: AeBDietN524PCU3UBzJaL5ar6wt6ah7uKxDYk29Rp3BUTR5odYse5rR5PzYEAXSxYJq
+	9MQiEI/rVnrmDEiEOE78bAdEY6hP9Rq/lFDgj4mZ+6oqOTUZkEsaNYLbawxCCSpTDC2fdM+GzZS
+	V3QR88VrEy+ONSMJQTimr1MaleOLXYl2SqbY7DmlKYfI1e+1xWr0SVy8i7yuZ6FsGzp+a+qoW2f
+	PMBNgGObMENloI/szOVOXwRorN/KW7axG5y7mQYyraDgelqlWoPQMYEU7mCae3Nv+smuPCLMz5x
+	ddv9/NHt/nOjFVWKRGb7
+X-Received: by 2002:a53:d748:0:b0:64c:9ec3:d71a with SMTP id
+ 956f58d0204a3-65310a737b1mr21220612d50.48.1777021067703; Fri, 24 Apr 2026
+ 01:57:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] drm/todo: Drop todo item to request memory regions in all
- fbdev drivers
-To: Helge Deller <deller@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20260423205531.49971-1-deller@gmx.de>
- <CAMuHMdVOk3ejrM5EkOBRjc0rQsSGU7TP+Kgd4=DzYuiF8m8Mzw@mail.gmail.com>
- <39ecf9f1-fd8d-4946-bb09-1041150d99eb@suse.de>
- <c5e49d34-f9b7-4d9e-a8ff-c2de3a3025fb@gmx.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <c5e49d34-f9b7-4d9e-a8ff-c2de3a3025fb@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[gmx.de,linux-m68k.org];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
-	RCVD_TLS_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email,suse.com:url];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+]
-X-Rspamd-Action: no action
-X-Spam-Flag: NO
-X-Spam-Score: -4.51
-X-Spam-Level: 
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: B7D2C5BD90
+References: <20260415190738.3821974-1-lgs201920130244@gmail.com>
+In-Reply-To: <20260415190738.3821974-1-lgs201920130244@gmail.com>
+From: Guangshuo Li <lgs201920130244@gmail.com>
+Date: Fri, 24 Apr 2026 16:57:33 +0800
+X-Gm-Features: AQROBzCmQJ1EX2ApfnpwOngh9p6OkQ-4OwvW-Db64LtyYbRXyvs5_5WPx0t6Mt8
+Message-ID: <CANUHTR-JSL0rkw1VbAa1AYFsp0NGF2Dz3X2AWmQFcJ=mm-nsxw@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: dnfb: fix reference leak on failed device registration
+To: Helge Deller <deller@gmx.de>, Guangshuo Li <lgs201920130244@gmail.com>, 
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org
+Cc: stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Hi
+Hi,
 
-Am 24.04.26 um 10:36 schrieb Helge Deller:
-> On 4/24/26 09:01, Thomas Zimmermann wrote:
->> Hi
->>
->>>> -Contact: Thomas Zimmermann <tzimmermann@suse.de>
->>>> -
->>>> -Level: Starter
->>> I am not really against keeping this item. But as the related changes
->>> are not pure refactorings, and cause a change in behavior, they _must_
->>> be tested on actual hardware.  I guess making that explicit would be a
->>> bit silly (heck, all changes should be tested).  And bumping the level
->>> to intermediate might send the wrong message, too (starters don't need
->>> to test? Doh...)
->>>
->>> Thomas: do we still any hardware for which there exist both DRM and
->>> fbdev drivers, and the resource management is missing in the fbdev
->>> drivers?
->>
->> See my other reply on why this item exists. It's also about hand-
->> over during boot up, which could affect any/most driver.
->>
->> We can remove the item now, if that helps, but it might lead to other 
->> bug reports later on.
+Please disregard this patch.
+
+On Thu, 16 Apr 2026 at 03:07, Guangshuo Li <lgs201920130244@gmail.com> wrote:
 >
-> Thanks, I'll remove the item now.
-> In case we run into reports later on, I'm happy to work with you on 
-> them then.
+> When platform_device_register() fails in dnfb_init(), the embedded
+> struct device in dnfb_device has already been initialized by
+> device_initialize(), but the failure path only unregisters the platform
+> driver and does not drop the device reference for the current platform
+> device:
 >
-> Can I add an Acked-by from you?
-
-No. I think I made my point clear why this item exists. We can talk 
-about how to handle these old drivers (staging, removal, fixing, etc), 
-but pretending it's all well will not solve any issues.
-
-Best regards
-Thomas
-
+>   dnfb_init()
+>     -> platform_device_register(&dnfb_device)
+>        -> device_initialize(&dnfb_device.dev)
+>        -> setup_pdev_dma_masks(&dnfb_device)
+>        -> platform_device_add(&dnfb_device)
 >
-> Helge
+> This leads to a reference leak when platform_device_register() fails.
+> Fix this by calling platform_device_put() before unregistering the
+> platform driver.
+>
+> The issue was identified by a static analysis tool I developed and
+> confirmed by manual review.
+>
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+> ---
+>  drivers/video/fbdev/dnfb.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/dnfb.c b/drivers/video/fbdev/dnfb.c
+> index c4d24540d9ef..72a9c47418f8 100644
+> --- a/drivers/video/fbdev/dnfb.c
+> +++ b/drivers/video/fbdev/dnfb.c
+> @@ -296,8 +296,10 @@ static int __init dnfb_init(void)
+>
+>         if (!ret) {
+>                 ret = platform_device_register(&dnfb_device);
+> -               if (ret)
+> +               if (ret) {
+> +                       platform_device_put(&dnfb_device);
+>                         platform_driver_unregister(&dnfb_driver);
+> +               }
+>         }
+>         return ret;
+>  }
+> --
+> 2.43.0
+>
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+After re-checking it, dnfb_device is a static platform_device and it does
+not provide a dev.release callback. Therefore calling
+platform_device_put() on the platform_device_register() failure path is
+not appropriate here and can trigger the missing release callback
+warning.
 
+This falls into the same static platform_device pattern pointed out in
+the other reviews, so I will drop this patch.
 
+Sorry for the noise.
+
+Best regards,
+Guangshuo Li

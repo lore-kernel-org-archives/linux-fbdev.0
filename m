@@ -1,77 +1,158 @@
-Received: from mail-vs1-f45.google.com (mail-vs1-f45.google.com [209.85.217.45])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5AA554763
-	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 06:43:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AFC835F60E
+	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 06:57:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777012996; cv=none; b=nkImh3pm7TBimC7Z0dT685h7EpTeKuaUYYdwhxJyubB2/gJBb5lvo2ZatGylwIZBC92994PYwKHX2NDx+N+ODvALHz1YSmr0APpmXuN2xbrvZb/Z1Njxp7FDKCygznwbM6i+W4AjQ4Eh5c5geVHBE/COF8u8ynuC0bsWSFhFQ4k=
+	t=1777013860; cv=none; b=Q5MiRvXg7Csr7c6oR3U6v2kvtAt6rfloSjXSY3p0g+LYG7lNIYPttNfYATgQTFBx2/nhO6z2SIbbmjYNdMhmUXOfvVLj0rOtiedT/dkgmeoZNejAhQ1NHDHs5ROKgizPKf0KctfGYmCdKyv1jvMmMVw6zjbyAFO2Zu8I0vzhxdM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777012996; c=relaxed/simple;
-	bh=2dk0QJyccXUMaQGKKRVANye26evV8lSR82dJNOYqSXo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hZJp4lk2Qbtosm0q4kNGxPSQPZ2qMzTdMIDFma4zWd+cArt7kGT0YvbWeSxrmVtj8KdfkoXnuwRBOIbr15lJDq+Y0iNi5LpTHz3i2ECtSuar3/MyTzpJFpLGaaA8wT0pxiYP94UT5OUxqhvRvcYLyMy+43VtPRGCPh2YWNBO/+U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs1-f45.google.com with SMTP id ada2fe7eead31-60591ade110so5134506137.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 23 Apr 2026 23:43:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777012994; x=1777617794;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4oJXSFX8PKzcLFcm7xTXFNvyUHwCzfrNVzAXd7R67sg=;
-        b=USHa4pn4Licgf3N9myYhPX963WoDVJR+ayT2Ln2RDR/AkQQJXRKfiQW1v+A1tERMQQ
-         4SrmFlK1mMgSFNvQbjLXwF4ivliwchrzh2zI+iHRBYkLUFSQ1I1DpKGMEVlpE7C11khG
-         PmA1dYirj4zDtU9MYUsFpn5G06zlN2xDCoSMU2rUsJnsDBSbEeIZxDyyJlIpLRnq3xxQ
-         c4PofX9OO92lD/rJbYDUp8oIXFeHvWwnNJDwFjmdV44geLS0T+ilXfchMizykh21mXu5
-         IW6xtSEDELzmq00PymnmT8qgiquXQPW7BEk9Pd2xp3XcZoA3Faw9An2F1+4Z36ueK37z
-         nfYw==
-X-Gm-Message-State: AOJu0Yx7ulJbHXM3DD+VYUCoMDI5KOYUUyBb4D+kWL//te8GhnW1ogOK
-	1nn5XArpR+i2ua4wNi7/gI+a1F95UWGjPOGdq0Yi/HZzllPMde8JNqQQF2K1drJ2rPE=
-X-Gm-Gg: AeBDievm1WdJ8ALOy+GOh7MaUidkAQg6RBoWN1bljWJSOpCeKxlORIQ9JqqZttFkTGd
-	1j7HrrW9yZktAKlP8RcGvfpbz+LXdLZWWop/dkmEKET3e6MxuRi1JS88GpF/gHEwJR5JIJHeim8
-	mhCDd3JgesJzsHfIKHya/cE47ZPFE+QkR4P+AkTk7rLlRc0mTVT6+pLbzsomYW2q6nZwu5/J6/a
-	8nZN+MKt/Kma4Y0dTM9miuAutY3wtMTenjPEDXXPRlDqHXEN8bERwK/0i8gVcgMo3+Jiqk9xB3H
-	GW8txNEABuQJKr5+BXe2DepKudzA22mRSOdzpSHS3ndcw/7zFQiDjkevARRO8ZIZUH7TMo3p7k7
-	yZ30JQ3mfz0xMZL2Ew+Vv6KK9dW+CcZ1y2fnlgfJISpY1REx9V2pm3NaNYCc50uEZoqmPiSV/0q
-	I0rRssqqWWEHN+Auni8FdL6gkugGeYMIZWp0D5I8Bul7QEIKeCcYBEZ7PzS8psZM1a1qxOBtg=
-X-Received: by 2002:a05:6102:160d:b0:607:a3cb:4573 with SMTP id ada2fe7eead31-616f7d6405dmr15112450137.26.1777012993691;
-        Thu, 23 Apr 2026 23:43:13 -0700 (PDT)
-Received: from mail-vs1-f54.google.com (mail-vs1-f54.google.com. [209.85.217.54])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-958909c5642sm10672756241.7.2026.04.23.23.43.12
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 23 Apr 2026 23:43:12 -0700 (PDT)
-Received: by mail-vs1-f54.google.com with SMTP id ada2fe7eead31-60fa13bde2dso4744966137.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 23 Apr 2026 23:43:12 -0700 (PDT)
-X-Received: by 2002:a05:6102:3e26:b0:60c:bca6:8198 with SMTP id
- ada2fe7eead31-616f54a0df1mr16521159137.10.1777012992325; Thu, 23 Apr 2026
- 23:43:12 -0700 (PDT)
+	s=arc-20240116; t=1777013860; c=relaxed/simple;
+	bh=fIA5Ybq9mykhGW5TvaeJzCbSyjw7L9mlIWBSh4yxHCw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=oFZDJxRdFuVNEGUSCPk+oXFDQ4BeW8hyMv9t8ua3OYPg0uyojUOOIm0ehI8JX/NMr1dkJSaDTnJSRDLlDgdIqAdMTeI9wfllCA/HI1b083a8QkrJ43taz9J6anoCEMbMW3aFo2w8W79HClTjWqnZfqQvzVlQrEFy57AimG43/0E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QOP0tRah; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=wlAWa/QQ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Ykhq56WD; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xPIXmnlR; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QOP0tRah";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="wlAWa/QQ";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Ykhq56WD";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xPIXmnlR"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 1ABC46A868;
+	Fri, 24 Apr 2026 06:57:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1777013857; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=rpEtZHInfoJgNByDQrjuZX346W4lKTBgi1Yot9+im3w=;
+	b=QOP0tRahStTw46nTPTpypuDDCPbYqbgwO4bjR9K7pIUwMbbIVLwahs8OIN1MvlABp4t/Sa
+	NL+ESNQbqhuDrsAyoXGdOlYPwMZZlN50spb1qJFxP0SrIH5ceja/a1Wg7olIKffuy31H0i
+	Jtni9Otd4oonlxig6KsIqy0XQxcpv3Y=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1777013857;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=rpEtZHInfoJgNByDQrjuZX346W4lKTBgi1Yot9+im3w=;
+	b=wlAWa/QQPALVUUNbN3DfqWjkZL+zVDnvetXZkPsNfbbJo8Z1RN+EDyfPgDZGLwH0dQaVSm
+	h+bvDiT7vWimYBBA==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Ykhq56WD;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=xPIXmnlR
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1777013856; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=rpEtZHInfoJgNByDQrjuZX346W4lKTBgi1Yot9+im3w=;
+	b=Ykhq56WDVY34N+fT9poaj/jYN/T1QzB2JLXxBf9M/IHE7aojLoo+Y/n4PEjU3Z7iUQNKHs
+	MBZVwa2ZkmXuvGzaambmiFzny/wjTJ8S30IxW5eSetYWqHbw+JkPprB/K3OPaJ0XvfyfdH
+	NwnJZ9cHdgYig2uHHTQcqWFVL7+qtrE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1777013856;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=rpEtZHInfoJgNByDQrjuZX346W4lKTBgi1Yot9+im3w=;
+	b=xPIXmnlRkERWokC1kFBkJV2jBKcc5qVtoCST3vYa+HolS8Op70DZ2ZK2CtCxYCc7gNJCbF
+	orjb+sXC0XxG6hDg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id F24B5593AE;
+	Fri, 24 Apr 2026 06:57:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id TOLpOV8U62lhKQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 24 Apr 2026 06:57:35 +0000
+Message-ID: <3fe83b69-b868-45a8-9862-50c6f0fdeb95@suse.de>
+Date: Fri, 24 Apr 2026 08:57:35 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260423205531.49971-1-deller@gmx.de>
-In-Reply-To: <20260423205531.49971-1-deller@gmx.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 24 Apr 2026 08:43:00 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVOk3ejrM5EkOBRjc0rQsSGU7TP+Kgd4=DzYuiF8m8Mzw@mail.gmail.com>
-X-Gm-Features: AQROBzD-bUctc5D-Bc0eMK2oVZmhH3jTRhq2Qclb0vv_xr_vyYpPVe9rCYI5UQ0
-Message-ID: <CAMuHMdVOk3ejrM5EkOBRjc0rQsSGU7TP+Kgd4=DzYuiF8m8Mzw@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] drm/todo: Drop todo item to request memory regions in all
  fbdev drivers
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	Thomas Zimmermann <tzimmermann@suse.de>
-Content-Type: text/plain; charset="UTF-8"
+To: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <20260423205531.49971-1-deller@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20260423205531.49971-1-deller@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-4.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_DN_SOME(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_TO(0.00)[gmx.de,vger.kernel.org,lists.freedesktop.org];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCPT_COUNT_THREE(0.00)[3];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email,gmx.de:email,suse.com:url,bootlin.com:url,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
+X-Rspamd-Action: no action
+X-Spam-Flag: NO
+X-Spam-Score: -4.51
+X-Spam-Level: 
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: 1ABC46A868
 
-Hi Helge,
+Hi
 
-On Thu, 23 Apr 2026 at 23:04, Helge Deller <deller@gmx.de> wrote:
+Am 23.04.26 um 22:55 schrieb Helge Deller:
 > This item is tagged for beginners, so often people not familiar with
 > the fbdev drivers think this is an easy task, start up their AI tools
 > and blindly send in the generated code as patches.
@@ -79,29 +160,56 @@ On Thu, 23 Apr 2026 at 23:04, Helge Deller <deller@gmx.de> wrote:
 > The problem:
 > - Those patches often introduce bugs, so
 > - ideally want the code tested, since ressource misconfigurations
-
-resource
-
->   often lead to failing drivers
+>    often lead to failing drivers
 > - The patches are often unnecessary, since in the old machines with the
->   old graphic cards resource conflicts usually don't happen as only one
->   graphic card can be used at a time anyway.
+>    old graphic cards resource conflicts usually don't happen as only one
+>    graphic card can be used at a time anyway.
 > - and today most relevant drivers have necessary patches already
->   implemented.
+>    implemented.
 >
 > So, let's get rid of this todo item and silence the steady stream of
 > stupid patches.
+
+I see that AI patches can be problematic, but reserving these regions is 
+still the correct thing to do. Removing the TODO item will not change that.
+
+Some background on why this item exists: we currently use aperture 
+helpers [1] to manage ownership of the framebuffer memory during boot 
+up. This is necessary to switch from the system-framebuffer driver 
+(i..e, simplefb, simpledrm, etc) to the hardware's native driver. But 
+this is all ad-hoc because Linux' resource management doesn't do this 
+for us. Before we can integrate any such functionality, we have to fix 
+all drivers to reserve their resources correctly.
+
+If we remove the TODO item, we'd likely still want to move forward with 
+improving resource management. If that breaks unfixed fbdev drivers, 
+users would then also send bug reports.
+
+And the other point is (again) that if there are no means of testing a 
+driver and no information whether a driver is actually in used by 
+anyone, it's maybe time to remove the driver.
+
+[1] 
+https://elixir.bootlin.com/linux/v7.0.1/source/drivers/video/aperture.c#L17
+
+Best regards
+Thomas
+
+
 >
 > Signed-off-by: Helge Deller <deller@gmx.de>
-
-Thanks for your patch!
-
+> ---
+>   Documentation/gpu/todo.rst | 16 ----------------
+>   1 file changed, 16 deletions(-)
+>
+> diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
+> index bc9f14c8a2ec..b4dd64a8cc06 100644
 > --- a/Documentation/gpu/todo.rst
 > +++ b/Documentation/gpu/todo.rst
 > @@ -448,22 +448,6 @@ Contact: Thomas Zimmermann <tzimmermann@suse.de>
->
->  Level: Intermediate
->
+>   
+>   Level: Intermediate
+>   
 > -Request memory regions in all fbdev drivers
 > ---------------------------------------------
 > -
@@ -117,30 +225,17 @@ Thanks for your patch!
 > -Contact: Thomas Zimmermann <tzimmermann@suse.de>
 > -
 > -Level: Starter
-
-I am not really against keeping this item. But as the related changes
-are not pure refactorings, and cause a change in behavior, they _must_
-be tested on actual hardware.  I guess making that explicit would be a
-bit silly (heck, all changes should be tested).  And bumping the level
-to intermediate might send the wrong message, too (starters don't need
-to test? Doh...)
-
-Thomas: do we still any hardware for which there exist both DRM and
-fbdev drivers, and the resource management is missing in the fbdev
-drivers?
-
 > -
->  Remove driver dependencies on FB_DEVICE
->  ---------------------------------------
->
-
-Gr{oetje,eeting}s,
-
-                        Geert
+>   Remove driver dependencies on FB_DEVICE
+>   ---------------------------------------
+>   
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+

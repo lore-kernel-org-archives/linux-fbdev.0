@@ -1,81 +1,80 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AFC835F60E
-	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 06:57:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F00D312803
+	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 07:01:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777013860; cv=none; b=Q5MiRvXg7Csr7c6oR3U6v2kvtAt6rfloSjXSY3p0g+LYG7lNIYPttNfYATgQTFBx2/nhO6z2SIbbmjYNdMhmUXOfvVLj0rOtiedT/dkgmeoZNejAhQ1NHDHs5ROKgizPKf0KctfGYmCdKyv1jvMmMVw6zjbyAFO2Zu8I0vzhxdM=
+	t=1777014072; cv=none; b=jTBbdoctqOGKu0bwiclHe2//ry3pFYOViIDSuc20mv+9G+nbbEfspCwKGUMi+DV2U2hYW/tif5hZosAIuR2fHcnlgOzXgLk3c8vF5RJm2CcL8kjXIXJIBcIFl3Ngms2qPK/0OCg/xW2YQVvd7frYgIG2DM3DOKWxvz9rAu1f0+Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777013860; c=relaxed/simple;
-	bh=fIA5Ybq9mykhGW5TvaeJzCbSyjw7L9mlIWBSh4yxHCw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=oFZDJxRdFuVNEGUSCPk+oXFDQ4BeW8hyMv9t8ua3OYPg0uyojUOOIm0ehI8JX/NMr1dkJSaDTnJSRDLlDgdIqAdMTeI9wfllCA/HI1b083a8QkrJ43taz9J6anoCEMbMW3aFo2w8W79HClTjWqnZfqQvzVlQrEFy57AimG43/0E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=QOP0tRah; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=wlAWa/QQ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Ykhq56WD; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xPIXmnlR; arc=none smtp.client-ip=195.135.223.130
+	s=arc-20240116; t=1777014072; c=relaxed/simple;
+	bh=TK9hRTBEkO6agBB511nJ67+WB1RNKeYPlyRhTDeMSiU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cfCf6tdMVVWc8OhQBF/05IS9X5QEQbqNTZ5MMdu1poidfo1ReLPoDKDRFJQrcGNcXHNH7/a9qAoFFnbwuK+K1YoZwPv/KyWVUsFudQhJIrS3ajWXcxg2SGmUTJ/qp+6Xm/fYacBOb0pfbAEZNFYdzJoZnz56GCpVDqWBQZ9hNa0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Ud1fMhXP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JoN43IzU; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Ud1fMhXP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JoN43IzU; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="QOP0tRah";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="wlAWa/QQ";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Ykhq56WD";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xPIXmnlR"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Ud1fMhXP";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JoN43IzU";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Ud1fMhXP";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JoN43IzU"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 1ABC46A868;
-	Fri, 24 Apr 2026 06:57:36 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8C2A66A868;
+	Fri, 24 Apr 2026 07:01:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1777013857; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	t=1777014068; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=rpEtZHInfoJgNByDQrjuZX346W4lKTBgi1Yot9+im3w=;
-	b=QOP0tRahStTw46nTPTpypuDDCPbYqbgwO4bjR9K7pIUwMbbIVLwahs8OIN1MvlABp4t/Sa
-	NL+ESNQbqhuDrsAyoXGdOlYPwMZZlN50spb1qJFxP0SrIH5ceja/a1Wg7olIKffuy31H0i
-	Jtni9Otd4oonlxig6KsIqy0XQxcpv3Y=
+	bh=GcDw3SmHn6azaUYd/HnTWiFfP8SiOlim6taDP1r8Nv4=;
+	b=Ud1fMhXPms6im4si/dXQzqkOPSlI+srn7dRjCkTCRQz5UUSiakM25pgMEJ/dLEmRDu8BIg
+	b7ZH27WIhze6cbRHbJQEXETDKKq8QTgcNvJWyd9LFFZLkdYKLWd1ax8DYFOfm5j9CnPTgy
+	Is1Bj+CQ6btTKfsfyw9umQg7yIxt62U=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1777013857;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	s=susede2_ed25519; t=1777014068;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=rpEtZHInfoJgNByDQrjuZX346W4lKTBgi1Yot9+im3w=;
-	b=wlAWa/QQPALVUUNbN3DfqWjkZL+zVDnvetXZkPsNfbbJo8Z1RN+EDyfPgDZGLwH0dQaVSm
-	h+bvDiT7vWimYBBA==
+	bh=GcDw3SmHn6azaUYd/HnTWiFfP8SiOlim6taDP1r8Nv4=;
+	b=JoN43IzUzgIOMQ9xHX5VXtfIcR7yk2qBhLXlqGRau9tM9FCFrnAbSg9CXVXaV9E+u6TK65
+	rvKGm/6QMSQu24BQ==
 Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Ykhq56WD;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=xPIXmnlR
+	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1777013856; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	t=1777014068; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=rpEtZHInfoJgNByDQrjuZX346W4lKTBgi1Yot9+im3w=;
-	b=Ykhq56WDVY34N+fT9poaj/jYN/T1QzB2JLXxBf9M/IHE7aojLoo+Y/n4PEjU3Z7iUQNKHs
-	MBZVwa2ZkmXuvGzaambmiFzny/wjTJ8S30IxW5eSetYWqHbw+JkPprB/K3OPaJ0XvfyfdH
-	NwnJZ9cHdgYig2uHHTQcqWFVL7+qtrE=
+	bh=GcDw3SmHn6azaUYd/HnTWiFfP8SiOlim6taDP1r8Nv4=;
+	b=Ud1fMhXPms6im4si/dXQzqkOPSlI+srn7dRjCkTCRQz5UUSiakM25pgMEJ/dLEmRDu8BIg
+	b7ZH27WIhze6cbRHbJQEXETDKKq8QTgcNvJWyd9LFFZLkdYKLWd1ax8DYFOfm5j9CnPTgy
+	Is1Bj+CQ6btTKfsfyw9umQg7yIxt62U=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1777013856;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	s=susede2_ed25519; t=1777014068;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=rpEtZHInfoJgNByDQrjuZX346W4lKTBgi1Yot9+im3w=;
-	b=xPIXmnlRkERWokC1kFBkJV2jBKcc5qVtoCST3vYa+HolS8Op70DZ2ZK2CtCxYCc7gNJCbF
-	orjb+sXC0XxG6hDg==
+	bh=GcDw3SmHn6azaUYd/HnTWiFfP8SiOlim6taDP1r8Nv4=;
+	b=JoN43IzUzgIOMQ9xHX5VXtfIcR7yk2qBhLXlqGRau9tM9FCFrnAbSg9CXVXaV9E+u6TK65
+	rvKGm/6QMSQu24BQ==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id F24B5593AE;
-	Fri, 24 Apr 2026 06:57:35 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 619F8593AE;
+	Fri, 24 Apr 2026 07:01:08 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id TOLpOV8U62lhKQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 24 Apr 2026 06:57:35 +0000
-Message-ID: <3fe83b69-b868-45a8-9862-50c6f0fdeb95@suse.de>
-Date: Fri, 24 Apr 2026 08:57:35 +0200
+	id eGs5FjQV62k6LQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Fri, 24 Apr 2026 07:01:08 +0000
+Message-ID: <39ecf9f1-fd8d-4946-bb09-1041150d99eb@suse.de>
+Date: Fri, 24 Apr 2026 09:01:07 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -85,9 +84,10 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] drm/todo: Drop todo item to request memory regions in all
  fbdev drivers
-To: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20260423205531.49971-1-deller@gmx.de>
+ <CAMuHMdVOk3ejrM5EkOBRjc0rQsSGU7TP+Kgd4=DzYuiF8m8Mzw@mail.gmail.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -114,121 +114,70 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260423205531.49971-1-deller@gmx.de>
+In-Reply-To: <CAMuHMdVOk3ejrM5EkOBRjc0rQsSGU7TP+Kgd4=DzYuiF8m8Mzw@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.51 / 50.00];
+X-Spamd-Result: default: False [-4.30 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_DN_SOME(0.00)[];
 	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[gmx.de,vger.kernel.org,lists.freedesktop.org];
+	ARC_NA(0.00)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_TO(0.00)[linux-m68k.org,gmx.de];
 	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
+	RCPT_COUNT_THREE(0.00)[4];
+	TO_DN_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MID_RHS_MATCH_FROM(0.00)[];
-	RCPT_COUNT_THREE(0.00)[3];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:dkim,suse.de:email,gmx.de:email,suse.com:url,bootlin.com:url,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
-X-Rspamd-Action: no action
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,suse.com:url,imap1.dmz-prg2.suse.org:helo]
 X-Spam-Flag: NO
-X-Spam-Score: -4.51
+X-Spam-Score: -4.30
 X-Spam-Level: 
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 1ABC46A868
 
 Hi
 
-Am 23.04.26 um 22:55 schrieb Helge Deller:
-> This item is tagged for beginners, so often people not familiar with
-> the fbdev drivers think this is an easy task, start up their AI tools
-> and blindly send in the generated code as patches.
+>> -Contact: Thomas Zimmermann <tzimmermann@suse.de>
+>> -
+>> -Level: Starter
+> I am not really against keeping this item. But as the related changes
+> are not pure refactorings, and cause a change in behavior, they _must_
+> be tested on actual hardware.  I guess making that explicit would be a
+> bit silly (heck, all changes should be tested).  And bumping the level
+> to intermediate might send the wrong message, too (starters don't need
+> to test? Doh...)
 >
-> The problem:
-> - Those patches often introduce bugs, so
-> - ideally want the code tested, since ressource misconfigurations
->    often lead to failing drivers
-> - The patches are often unnecessary, since in the old machines with the
->    old graphic cards resource conflicts usually don't happen as only one
->    graphic card can be used at a time anyway.
-> - and today most relevant drivers have necessary patches already
->    implemented.
->
-> So, let's get rid of this todo item and silence the steady stream of
-> stupid patches.
+> Thomas: do we still any hardware for which there exist both DRM and
+> fbdev drivers, and the resource management is missing in the fbdev
+> drivers?
 
-I see that AI patches can be problematic, but reserving these regions is 
-still the correct thing to do. Removing the TODO item will not change that.
+See my other reply on why this item exists. It's also about hand-over 
+during boot up, which could affect any/most driver.
 
-Some background on why this item exists: we currently use aperture 
-helpers [1] to manage ownership of the framebuffer memory during boot 
-up. This is necessary to switch from the system-framebuffer driver 
-(i..e, simplefb, simpledrm, etc) to the hardware's native driver. But 
-this is all ad-hoc because Linux' resource management doesn't do this 
-for us. Before we can integrate any such functionality, we have to fix 
-all drivers to reserve their resources correctly.
-
-If we remove the TODO item, we'd likely still want to move forward with 
-improving resource management. If that breaks unfixed fbdev drivers, 
-users would then also send bug reports.
-
-And the other point is (again) that if there are no means of testing a 
-driver and no information whether a driver is actually in used by 
-anyone, it's maybe time to remove the driver.
-
-[1] 
-https://elixir.bootlin.com/linux/v7.0.1/source/drivers/video/aperture.c#L17
+We can remove the item now, if that helps, but it might lead to other 
+bug reports later on.
 
 Best regards
 Thomas
 
 
+
 >
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> ---
->   Documentation/gpu/todo.rst | 16 ----------------
->   1 file changed, 16 deletions(-)
+>> -
+>>   Remove driver dependencies on FB_DEVICE
+>>   ---------------------------------------
+>>
+> Gr{oetje,eeting}s,
 >
-> diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
-> index bc9f14c8a2ec..b4dd64a8cc06 100644
-> --- a/Documentation/gpu/todo.rst
-> +++ b/Documentation/gpu/todo.rst
-> @@ -448,22 +448,6 @@ Contact: Thomas Zimmermann <tzimmermann@suse.de>
->   
->   Level: Intermediate
->   
-> -Request memory regions in all fbdev drivers
-> ---------------------------------------------
-> -
-> -Old/ancient fbdev drivers do not request their memory properly.
-> -Go through these drivers and add code to request the memory regions
-> -that the driver uses. This requires adding calls to request_mem_region(),
-> -pci_request_region() or similar functions. Use helpers for managed cleanup
-> -where possible. Problematic areas include hardware that has exclusive ranges
-> -like VGA. VGA16fb does not request the range as it is expected.
-> -Drivers are pretty bad at doing this and there used to be conflicts among
-> -DRM and fbdev drivers. Still, it's the correct thing to do.
-> -
-> -Contact: Thomas Zimmermann <tzimmermann@suse.de>
-> -
-> -Level: Starter
-> -
->   Remove driver dependencies on FB_DEVICE
->   ---------------------------------------
->   
+>                          Geert
+>
 
 -- 
 --

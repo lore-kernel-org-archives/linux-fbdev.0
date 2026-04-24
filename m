@@ -1,65 +1,156 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE5CE304972;
-	Fri, 24 Apr 2026 09:49:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17FCE3DF00B
+	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 16:24:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777024161; cv=none; b=Vzga40yz6BQGzOTwcVnmrnKcxXO0bIf/5yCe9cMKu/F7hW8H9miSPw+UojBrabFrA4Fghp/LZ6Aq+VRlB5N3omyov/ZZkh6V1YGR5D1A0ihoAcueTfE0XAmmOnAbUNdym7EWpnFJlnynt4pTiOzOldazwl+VwXzFHQYsGJ6tHhY=
+	t=1777047860; cv=none; b=CEsjGKJzDE1ifhxV9WCU+9x8VXv0UWR7BcdEtySufkWcDtqtNZLGSl9SQWZEmsJX0gVgJ4zYk8KylYNzsDnRT/d78j5Wd98X765muhK6kc7rtsWkta3C61i6g/1aW7Q5ZyBqGHFwuzuH8HzpM5xukSorRLhL5IAoceNyMTw7Zhc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777024161; c=relaxed/simple;
-	bh=bCmMLd7TT625UC3cRQD0EElDDVxXsrbMw+gPrcqFMLQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Wn6zm98/b/LIKInhD30Px1Zvr0cY+Jqtqib+ggZ1zxRfn4wvJqBpbq0Ux4KM+Hn5PL/Zh7+rxzjLDwVTSwg5QcFdKueagVOLHmaC+v9ZijdjHcTQg68xPB79s+rO98U6imnV0ei+NET6l74x5ykkcuxfAvzlWbwuyfCkn1xoSDA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=WZ+KVMEk; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777047860; c=relaxed/simple;
+	bh=WGeiHUHtLNR3bIDnkcA7YuMVHwYC8v+r8hhmRXVRhBU=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=b4ablRFhjp9ETJ+CPZC2V1Tg6gf65pr1nYoWV8/FP5h+W/eiOjh971sXVTwVFx0H411eTiHFk+7XBXZqv0cOXRcDNSOhYEB/UJ6xP+6LSEGUCF2n/9KQWp41g7zyQ+vjP4A9fNGFM8rxghFAtxnSxoW8XmXxAEQQ4T/HRQbvvHA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=eZl25zDn; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=TjhB1qik; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="WZ+KVMEk"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16482C2BCB4;
-	Fri, 24 Apr 2026 09:49:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1777024161;
-	bh=bCmMLd7TT625UC3cRQD0EElDDVxXsrbMw+gPrcqFMLQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WZ+KVMEkBBHUpNlYmU5IIWtbtyf5QXsuQgX+/QHw0x7cJVo3iVTPDkQXxixA+EQap
-	 5fqnQ2S+GdO+sKzfQwN/40mcbooHmjK4P2TQyEAAVLtASArBnHm62P0MirKywSsvW6
-	 68xNHyXhihYSVy9ZQKT6UXp1EpM5OWQokJyYBIiY=
-Date: Fri, 24 Apr 2026 11:49:19 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Alexandru Hossu <hossu.alexandru@gmail.com>
-Cc: Andy Shevchenko <andriy.shevchenko@intel.com>, andy@kernel.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: fbtft-bus: replace function-defining
- macro with concrete functions
-Message-ID: <2026042402-dictation-curtly-8267@gregkh>
-References: <20260424092818.3322248-1-hossu.alexandru@gmail.com>
- <aes6JY3Ht6p1VpFa@ashevche-desk.local>
- <69eb3b01.5d0a0220.3c3ebd.f35b@mx.google.com>
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="eZl25zDn";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="TjhB1qik"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1777047858;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=bkHBfOVa4bz/wCbZfmwZYYdZCO/tCYPxae+JQxak4Yg=;
+	b=eZl25zDnldI79cy46T99uOTd673DqSE3j2FysmQbJamPpWT1+bYhnhXu0ciAPPgimA2OcG
+	Lwjqbk1m/+Fj2iobSg00wB8ywT39ue32rH3MCPB5qWPhjYtAyDBWfS9dESKDAbPzROkNcc
+	HyPxpHf9CxQ494ziriMuyR2fcay6u+w=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-55-IG1ReJlFMB6tl_ZXGmSW4A-1; Fri, 24 Apr 2026 12:24:16 -0400
+X-MC-Unique: IG1ReJlFMB6tl_ZXGmSW4A-1
+X-Mimecast-MFC-AGG-ID: IG1ReJlFMB6tl_ZXGmSW4A_1777047855
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-48906aa28cbso46684245e9.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 09:24:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=redhat.com; s=google; t=1777047855; x=1777652655; darn=vger.kernel.org;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=bkHBfOVa4bz/wCbZfmwZYYdZCO/tCYPxae+JQxak4Yg=;
+        b=TjhB1qikvLEcnqjXCwD9cE1ujvN1189GKCrwEeB4sgmLF8KAH8D6TmEoLMN7dJux3v
+         A2yuZGVh20ptA7sQ2ybgSy7VByjAwjS8meyUvV57Dfne7jR1B97RNIgyKf7b9djnt2UE
+         G2Xanq46025fXRBDqC/hXnwbJqKk6++F50GpdPIRG/SWBfJdyED6SHgSVjrWPrpuEMpT
+         SnmtDOafnA1RVxFsTdLEzIc5k1W2+ht4itb40ylzR2DuV69UUefG+nzhuToL0SqIF9AJ
+         CZryrEOHzLyx79bGxKsJiK4fFnJpu4AYuTfMVhqcBcaLn0vBnaU8BXGb2yzkHKe6HY8w
+         wtKg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777047855; x=1777652655;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=bkHBfOVa4bz/wCbZfmwZYYdZCO/tCYPxae+JQxak4Yg=;
+        b=tOVnqkggQEJ9v9BHV8wnhWYJA8uBlJo5MGzpqoRvqTT/Ru1kWompTZmSLUrP30FVJa
+         NjMP0hONIz4fAcUeqF8sHa/HHLTQyeDwkM0ARwVf3QDOvESlr3Rn3p0k1bYfZxP0RhIG
+         G7gstotuuv7H0bVo7jeixHfG7v91zBAwgnPw3ZgrcYKctxrKatz8SRy7mO53B3ZE9Jct
+         pCJkD0nmbg3I4mpdSTLHGXbm2ahEBIBJrDjc0TBaQD88yOmTKxDoh8FZHOwsLuYM+AhL
+         kSJjufOgOtzNknFcIeILTS+s8Yj6R8A2/1kyjzCsxFxluhjwFutnI2ygsRtEeM6MDrsL
+         jsog==
+X-Forwarded-Encrypted: i=1; AFNElJ8K+JaJGXfoW7vLJbmRaRydg5HLIACAIDgu8bwwxY7JMVQ5iobBRJmNKOD3LB5xPeLFv91BH2WlG4Cmmw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxA3KgBtBvHXb4wgcwmVOwgxgkrgdHbzS7d1GCWaVv5sWprIUfr
+	kqhEfH1pHXPjkcrutxODEFwnzqrJVja/VKkmQkRuSks/Hap73xllxaOk0usMyfeAnZ1FKPWvPZt
+	O0PaxgQQUlZUcND4XudGbPtQVB2+2eVhy3uCFuUgchSjlaYky+mrSBuGAyBeBgHod
+X-Gm-Gg: AeBDievMdbF1Apur+TWtQMosUWc5Spq7jJUjTQrsBKOrGUh3H1qvHLoTPY+hGODRcNC
+	y17Gbe6efWCNgQ84oedJeFSZttvyb5xOGWB4FAKgITsmnwiDT+Igk3Ba2NjMvM1GDgdRP5Jq576
+	aTGXlbjiAWFH1VCDPdzITTS3tUxfXD5bhtQWXjcO1P7TcUojUGV28WiY5pSe6eFo0Op1IAjCIOc
+	to369Xp0dAUeZMsvHidIsUEZfw99N6O9B2wU0wPkdjHntYsNG17UaKl1fQCfyOpIjjA206IiTkP
+	09TzdYwhx4SPoydyJO3m8UMFA6zAT1ukkl8BHYcv2bz6fjw2/Srun1GJ0NxavugF+zOON9wuPQO
+	0XxPpXLW7OLv1ZjKJN9pm4yHBPNsMrmGbzQEoDov4jVZRpBiwnfDnWj283aTO7BkfON9JZOHmB+
+	S6k8VshFAAwkTu2nQ=
+X-Received: by 2002:a05:600c:8b6b:b0:485:3c2e:60d5 with SMTP id 5b1f17b1804b1-488fb8859ddmr427762155e9.2.1777047855238;
+        Fri, 24 Apr 2026 09:24:15 -0700 (PDT)
+X-Received: by 2002:a05:600c:8b6b:b0:485:3c2e:60d5 with SMTP id 5b1f17b1804b1-488fb8859ddmr427761525e9.2.1777047854742;
+        Fri, 24 Apr 2026 09:24:14 -0700 (PDT)
+Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a682588f8sm6272915e9.10.2026.04.24.09.24.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Apr 2026 09:24:13 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, Arnd Bergmann <arnd@arndb.de>,
+ Ard Biesheuvel <ardb@kernel.org>, Ilias Apalodimas
+ <ilias.apalodimas@linaro.org>, Huacai Chen <chenhuacai@kernel.org>, WANG
+ Xuerui <kernel@xen0n.name>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
+ Dave Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, "K. Y.
+ Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
+ Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+ longli@microsoft.com, Helge Deller <deller@gmx.de>
+Cc: linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linux-efi@vger.kernel.org, linux-riscv@lists.infradead.org,
+ dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
+ linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 3/8] firmware: sysfb: Make CONFIG_SYSFB a
+ user-selectable option
+In-Reply-To: <0156562f-5fcf-47ce-8fea-03345f2c3fe6@suse.de>
+References: <20260402092305.208728-1-tzimmermann@suse.de>
+ <20260402092305.208728-4-tzimmermann@suse.de>
+ <78f76717-8f1e-41d6-92f7-261df96b84b6@app.fastmail.com>
+ <3e466158-c2e5-4e23-934f-dcdbb71ad41f@suse.de>
+ <d3d7c545-3b07-4881-a16d-45b6f039de19@app.fastmail.com>
+ <001efe27-9cbb-4a89-8d2d-a1f3ae15e505@suse.de>
+ <295a43ce-92fb-435d-a82f-d1cfa8f4f28d@app.fastmail.com>
+ <0156562f-5fcf-47ce-8fea-03345f2c3fe6@suse.de>
+Date: Fri, 24 Apr 2026 18:24:07 +0200
+Message-ID: <87se8kjpi0.fsf@ocarina.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <69eb3b01.5d0a0220.3c3ebd.f35b@mx.google.com>
+Content-Type: text/plain
 
-On Fri, Apr 24, 2026 at 09:40:48AM -0000, Alexandru Hossu wrote:
-> On Fri, Apr 24, 2026 at 12:38:45PM +0300, Andy Shevchenko wrote:
-> > I'm not sure this patch improves the code. What I see it's harder to follow.
-> > NAK.
-> 
-> Fair point. Three near-identical functions hide the pattern the macro
-> makes explicit. I'll drop this approach.
-> 
-> If there's appetite for a minimal fix, I can send a v2 that moves
-> EXPORT_SYMBOL() outside the macro body only, leaving the function
-> definition untouched. Otherwise I'll leave it as-is and wait for
-> Greg's take.
+Thomas Zimmermann <tzimmermann@suse.de> writes:
 
-Please leave as-is, there's nothing wrong with the existing code here.
+Hello,
 
-thanks,
+[...]
 
-greg k-h
+>>>>>> On Thu, Apr 2, 2026, at 11:09, Thomas Zimmermann wrote:
+>>>>>> I don't really like this part of the series and would prefer
+>>>>>> to keep CONFIG_SYSFB hidden as much as possible as an x86
+
+I tend to agree with Arnd here, I'm also not seeing that much value on
+making this symbol user selectable. For now I would just keep it hidden.
+
+[...]
+
+>> Yes, I saw that as well and don't have an immediate idea for how
+>> to best do it. I saw that you already abstracted the access to
+>> the screen_info members in drm_sysfb_screen_info.c, which I think
+>> is a step in that direction.
+>>
+>> I also noticed that efidrm is mostly a subset of vesadrm, so
+>> in theory they could be merged back into an x86 drm driver
+>> along with the drm_sysfb_screen_info helpers, and have a non-x86
+>> driver that constructs a drm_sysfb_device directly from the
+>> EFI structures.
+>
+> I would not want to have a unifed driver for all-things-screen_info. The 
+> code that can easily be shared is already in the sysfb helpers. But I 
+> don't mind adding a separate driver for EFI's Graphics Output Protocol.
+
+I agree. It is much more maintainable if we have dedicated DRM drivers that
+use shared helpers, than attempting to have a driver for different platforms.
+
+As Thomas explained, the maintance effort is small on the DRM side and he has
+done a lot of work to split simpledrm in efidrm, vesadrm and ofdrm.
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

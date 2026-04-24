@@ -1,80 +1,41 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F00D312803
-	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 07:01:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3B3E49620
+	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 08:37:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777014072; cv=none; b=jTBbdoctqOGKu0bwiclHe2//ry3pFYOViIDSuc20mv+9G+nbbEfspCwKGUMi+DV2U2hYW/tif5hZosAIuR2fHcnlgOzXgLk3c8vF5RJm2CcL8kjXIXJIBcIFl3Ngms2qPK/0OCg/xW2YQVvd7frYgIG2DM3DOKWxvz9rAu1f0+Q=
+	t=1777019826; cv=none; b=PKe3sHl6CaOlH3wEK7eQf2FlmkN7vRFZrQVDOLWlIF8ZCVRBjReonI+4E5ZFRmDTsBuDkfCaxUyLBtml/y+wwUMd/D7K9a00ZU23A7Jq6PW01cCmhDJndR4zi9ptC901/Q/oCEAobaosbpNwcZSxkrzd8LnkUZh8sAfBqULbqvs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777014072; c=relaxed/simple;
-	bh=TK9hRTBEkO6agBB511nJ67+WB1RNKeYPlyRhTDeMSiU=;
+	s=arc-20240116; t=1777019826; c=relaxed/simple;
+	bh=gIOfaC8Zw0u4GUS2tv5LaL7ITKQD3mXP0mqO4YTQl8c=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cfCf6tdMVVWc8OhQBF/05IS9X5QEQbqNTZ5MMdu1poidfo1ReLPoDKDRFJQrcGNcXHNH7/a9qAoFFnbwuK+K1YoZwPv/KyWVUsFudQhJIrS3ajWXcxg2SGmUTJ/qp+6Xm/fYacBOb0pfbAEZNFYdzJoZnz56GCpVDqWBQZ9hNa0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Ud1fMhXP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JoN43IzU; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Ud1fMhXP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=JoN43IzU; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=f9wyjQcvujK9yX4jrSZbwyaD8tplI8ZsnJd7Am9pYND+nZZmGVMx6HPMdy/VEi5Lj3ad6xCkrs3Pva9VeN3OUWjK6IXCgheDUdF0iaP3QzUX/KFclBoTzUZh5Lf5QW4y2YvoYRzzCXI6Vb7LJst4HYwo34wsf1DCUtW0FAMa9Fs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=P4rI9KOj; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Ud1fMhXP";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JoN43IzU";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Ud1fMhXP";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="JoN43IzU"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 8C2A66A868;
-	Fri, 24 Apr 2026 07:01:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1777014068; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=GcDw3SmHn6azaUYd/HnTWiFfP8SiOlim6taDP1r8Nv4=;
-	b=Ud1fMhXPms6im4si/dXQzqkOPSlI+srn7dRjCkTCRQz5UUSiakM25pgMEJ/dLEmRDu8BIg
-	b7ZH27WIhze6cbRHbJQEXETDKKq8QTgcNvJWyd9LFFZLkdYKLWd1ax8DYFOfm5j9CnPTgy
-	Is1Bj+CQ6btTKfsfyw9umQg7yIxt62U=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1777014068;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=GcDw3SmHn6azaUYd/HnTWiFfP8SiOlim6taDP1r8Nv4=;
-	b=JoN43IzUzgIOMQ9xHX5VXtfIcR7yk2qBhLXlqGRau9tM9FCFrnAbSg9CXVXaV9E+u6TK65
-	rvKGm/6QMSQu24BQ==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1777014068; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=GcDw3SmHn6azaUYd/HnTWiFfP8SiOlim6taDP1r8Nv4=;
-	b=Ud1fMhXPms6im4si/dXQzqkOPSlI+srn7dRjCkTCRQz5UUSiakM25pgMEJ/dLEmRDu8BIg
-	b7ZH27WIhze6cbRHbJQEXETDKKq8QTgcNvJWyd9LFFZLkdYKLWd1ax8DYFOfm5j9CnPTgy
-	Is1Bj+CQ6btTKfsfyw9umQg7yIxt62U=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1777014068;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=GcDw3SmHn6azaUYd/HnTWiFfP8SiOlim6taDP1r8Nv4=;
-	b=JoN43IzUzgIOMQ9xHX5VXtfIcR7yk2qBhLXlqGRau9tM9FCFrnAbSg9CXVXaV9E+u6TK65
-	rvKGm/6QMSQu24BQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 619F8593AE;
-	Fri, 24 Apr 2026 07:01:08 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id eGs5FjQV62k6LQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 24 Apr 2026 07:01:08 +0000
-Message-ID: <39ecf9f1-fd8d-4946-bb09-1041150d99eb@suse.de>
-Date: Fri, 24 Apr 2026 09:01:07 +0200
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="P4rI9KOj"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1777019819; x=1777624619; i=deller@gmx.de;
+	bh=gIOfaC8Zw0u4GUS2tv5LaL7ITKQD3mXP0mqO4YTQl8c=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=P4rI9KOjIp0y+24ataeDXgZcPp2znhOLxBUUZ/+dBDdj6poSqkW3fAb+vKR7hjR2
+	 A6o08k7bLXuPfDywwJLi4t9CFa88Fm2bJeLDcxHb9Y/FjErVWDwGEr1+z6QDJl/+V
+	 nIpWAmxiv3Zmj/g5sVGY4SWG8Ie6Wkeyj9kp+KKmHR2E8xxrBll3qLd910jdyLI0n
+	 qRCUAqNGu2EUAc49S1DYM5zYt2+RnQY69D5myhbWbmAQLXQWVYF7sv1JL4ADDFRuw
+	 DUO0IqZP98b5wztUYhYZ1ngRiYQmWFYTG2M0uay6+yJ0F1viajA08oL2eqaJVNnNF
+	 KHHwvS+z2u6n9uk+zg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N95iH-1vLSfs1vPD-00w9lb; Fri, 24
+ Apr 2026 10:36:59 +0200
+Message-ID: <c5e49d34-f9b7-4d9e-a8ff-c2de3a3025fb@gmx.de>
+Date: Fri, 24 Apr 2026 10:36:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -84,107 +45,173 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] drm/todo: Drop todo item to request memory regions in all
  fbdev drivers
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Helge Deller <deller@gmx.de>
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20260423205531.49971-1-deller@gmx.de>
  <CAMuHMdVOk3ejrM5EkOBRjc0rQsSGU7TP+Kgd4=DzYuiF8m8Mzw@mail.gmail.com>
+ <39ecf9f1-fd8d-4946-bb09-1041150d99eb@suse.de>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <CAMuHMdVOk3ejrM5EkOBRjc0rQsSGU7TP+Kgd4=DzYuiF8m8Mzw@mail.gmail.com>
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <39ecf9f1-fd8d-4946-bb09-1041150d99eb@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_TO(0.00)[linux-m68k.org,gmx.de];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	RCPT_COUNT_THREE(0.00)[4];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,suse.com:url,imap1.dmz-prg2.suse.org:helo]
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:2D7zg+57g9WwGzqjgVYRVZH2+2sxZddP67p0KGHt0TK5+6EfzTe
+ FO80bsNbN0NKJ7Fo4U/W7HFQNcOMLl9BHah5ixrsx6QAaTr7h1IcAmS8xg6W2fxu7XE/giL
+ ryQNyEmAawKa4SsP1ITlSRM7RVxpllV2eYX//+IvKlFF90PxFVQXOwd7o6u3CUQ8LfeAC6N
+ E3FUCJMEyeTEy8MLTBdZQ==
 X-Spam-Flag: NO
-X-Spam-Score: -4.30
-X-Spam-Level: 
+UI-OutboundReport: notjunk:1;M01:P0:XaDwgsCNPH0=;IpJS5YGfZyTzYfXiaQ+ckwuJzxi
+ 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
+ TKHhvkv3JQVsbjQ==
 
-Hi
-
->> -Contact: Thomas Zimmermann <tzimmermann@suse.de>
->> -
->> -Level: Starter
-> I am not really against keeping this item. But as the related changes
-> are not pure refactorings, and cause a change in behavior, they _must_
-> be tested on actual hardware.  I guess making that explicit would be a
-> bit silly (heck, all changes should be tested).  And bumping the level
-> to intermediate might send the wrong message, too (starters don't need
-> to test? Doh...)
->
-> Thomas: do we still any hardware for which there exist both DRM and
-> fbdev drivers, and the resource management is missing in the fbdev
-> drivers?
-
-See my other reply on why this item exists. It's also about hand-over 
-during boot up, which could affect any/most driver.
-
-We can remove the item now, if that helps, but it might lead to other 
-bug reports later on.
-
-Best regards
-Thomas
-
-
-
->
->> -
->>   Remove driver dependencies on FB_DEVICE
->>   ---------------------------------------
+On 4/24/26 09:01, Thomas Zimmermann wrote:
+> Hi
+>=20
+>>> -Contact: Thomas Zimmermann <tzimmermann@suse.de>
+>>> -
+>>> -Level: Starter
+>> I am not really against keeping this item. But as the related changes
+>> are not pure refactorings, and cause a change in behavior, they _must_
+>> be tested on actual hardware.=C2=A0 I guess making that explicit would =
+be a
+>> bit silly (heck, all changes should be tested).=C2=A0 And bumping the l=
+evel
+>> to intermediate might send the wrong message, too (starters don't need
+>> to test? Doh...)
 >>
-> Gr{oetje,eeting}s,
+>> Thomas: do we still any hardware for which there exist both DRM and
+>> fbdev drivers, and the resource management is missing in the fbdev
+>> drivers?
+>=20
+> See my other reply on why this item exists. It's also about hand-
+> over during boot up, which could affect any/most driver.
 >
->                          Geert
->
+> We can remove the item now, if that helps, but it might lead to other bu=
+g reports later on.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+Thanks, I'll remove the item now.
+In case we run into reports later on, I'm happy to work with you on them t=
+hen.
 
+Can I add an Acked-by from you?
 
+Helge

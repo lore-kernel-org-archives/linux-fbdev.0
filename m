@@ -1,38 +1,37 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A34B34A3DB;
-	Sat, 25 Apr 2026 07:00:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4987345CA3;
+	Sat, 25 Apr 2026 07:04:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777100432; cv=none; b=bmvNWx8TlI0GJ8TtKgOmjEw7erj1V8fWMa8Bmh6uED3BYH9p+YfznljD/4jxZpSkGSuA1Oj27qB1xw6pX6jYgxv536xQ1UPlV6OkCqBTOA6xNYCodMY04DNGCBfZyWMMydE1by4leA/APOPNNIDFTWy1K9jvEf9KDPaTXE7IqKs=
+	t=1777100683; cv=none; b=RWi3cCrEIjhxEdWXU6JLAbicEq8TYHXoj9M42ABi2HBZcJGKUcW/5R3IHtIyCM1aFzhfo+tdz0hb47wczOYwe8WLOuGbdCsoDwqP3CHvlVYfQc4l1kGynzv+kCAUM7xVbW9wX+ZjwgKFx3O4WgYjx3zjV3e5smVjyG6pBCXz2Qo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777100432; c=relaxed/simple;
-	bh=gukY7AYS/X2lF4ah+ofqTbrCgzdvWRI1EOuDfrFZ+Fo=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=g4eoioFkQ0Ft1Hq0rHzFsVFMDnD/cQZ2/pJ8JvpJo0jjgJK93919OzmtfBFnMLbMuLfCzzads1xLaO8RhqEXV2ecZcKdRZ9ySxHkwXzGf1o1J59Ub1eoNVZVqVNiXF108rPV7DCfkFuJvq9LKlQj8QA9hhCtA77mxf/RogVNniM=
+	s=arc-20240116; t=1777100683; c=relaxed/simple;
+	bh=mVqVp6AlElvGHkDDOsLTMJRwAA1tP+Hq576wUOW0wp0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=LcQpN61sAEa9BEQqx4GzRuPvsya93AQroNFB5bN9xdK7A2xhp0udA6JoDFLTJtw4kuVN/7ekOFul+NpU+9jnXeeg+1QTQoBG19KsneMU29OhKHlEABGSI/r9VCFUwg2gFQ9RiHzWcE2ANpjxzMc3HezjrmmbwZQkXKHQJK9yrc0=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 6ce5a60a407411f1aa26b74ffac11d73-20260425
+X-UUID: 5018db82407411f1aa26b74ffac11d73-20260425
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:39e59a1e-bd96-4760-aeee-7d043f3972ff,IP:0,U
-	RL:0,TC:0,Content:41,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:41
-X-CID-META: VersionHash:e7bac3a,CLOUDID:1cac463a28960947bbd5d6a30f10f1dc,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|898,TC:nil,Content:4|15|50,EDM
-	:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
-	,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-O-INFO: VERSION:1.3.12,REQID:796fe8ce-2424-43df-837a-5824a8ff87b6,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:e7bac3a,CLOUDID:69e31420f7444c0bcb2c92291f08c449,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102|898,TC:nil,Content:0|15|50,EDM:-3,IP
+	:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,
+	LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
 X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 6ce5a60a407411f1aa26b74ffac11d73-20260425
+X-UUID: 5018db82407411f1aa26b74ffac11d73-20260425
 X-User: aichao@kylinos.cn
 Received: from thinksys.. [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <aichao@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 1739332319; Sat, 25 Apr 2026 15:00:21 +0800
+	with ESMTP id 1869557384; Sat, 25 Apr 2026 14:59:32 +0800
 From: Ai Chao <aichao@kylinos.cn>
 To: deller@gmx.de,
 	nicolas.ferre@microchip.com,
@@ -63,12 +62,10 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-geode@lists.infradead.org,
 	linux-parisc@vger.kernel.org,
 	Ai Chao <aichao@kylinos.cn>
-Subject: [PATCH 19/35] fbdev: savage: Use safer strscpy() instead of strcpy()
-Date: Sat, 25 Apr 2026 14:59:10 +0800
-Message-Id: <20260425065926.1091168-20-aichao@kylinos.cn>
+Subject: [PATCH 00/35] Use safer strscpy() instead of strcpy()
+Date: Sat, 25 Apr 2026 14:58:51 +0800
+Message-Id: <20260425065926.1091168-1-aichao@kylinos.cn>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260425065926.1091168-1-aichao@kylinos.cn>
-References: <20260425065926.1091168-1-aichao@kylinos.cn>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -77,28 +74,91 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
+This patch series introduces wrapper functions strscpy().
+
 Use a safer function strscpy() instead of strcpy() for copying to arrays.
 
 Only idiomatic code replacement, and no functional changes.
 
-Signed-off-by: Ai Chao <aichao@kylinos.cn>
----
- drivers/video/fbdev/savage/savagefb-i2c.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Summary:
 
-diff --git a/drivers/video/fbdev/savage/savagefb-i2c.c b/drivers/video/fbdev/savage/savagefb-i2c.c
-index 80fa87e2ae2f..820d1f83669d 100644
---- a/drivers/video/fbdev/savage/savagefb-i2c.c
-+++ b/drivers/video/fbdev/savage/savagefb-i2c.c
-@@ -136,7 +136,7 @@ static int savage_setup_i2c_bus(struct savagefb_i2c_chan *chan,
- 	int rc = 0;
- 
- 	if (chan->par) {
--		strcpy(chan->adapter.name, name);
-+		strscpy(chan->adapter.name, name);
- 		chan->adapter.owner		= THIS_MODULE;
- 		chan->adapter.algo_data		= &chan->algo;
- 		chan->adapter.dev.parent	= &chan->par->pcidev->dev;
+  fbdev: matroxfb: Use safer strscpy() instead of strcpy()
+  fbdev: i810: Use safer strscpy() instead of strcpy()
+  fbdev: sisfb: Use safer strscpy() instead of strcpy()
+  fbdev: geode: Use safer strscpy() instead of strcpy()
+  fbdev: atafb: Use safer strscpy() instead of strcpy()
+  fbdev: tdfxfb: Use safer strscpy() instead of strcpy()
+  fbdev: pm2fb: Use safer strscpy() instead of strcpy()
+  fbdev: xen-fbfront: Use safer strscpy() instead of strcpy()
+  fbdev: controlfb: Use safer strscpy() instead of strcpy()
+  fbdev: stifb: Use safer strscpy() instead of strcpy()
+  fbdev: fm2fb: Use safer strscpy() instead of strcpy()
+  fbdev: arkfb: Use safer strscpy() instead of strcpy()
+  fbdev: vt8500lcdfb: Use safer strscpy() instead of strcpy()
+  fbdev: vt8623fb: Use safer strscpy() instead of strcpy()
+  fbdev: gbefb: Use safer strscpy() instead of strcpy()
+  fbdev: wm8505fb: Use safer strscpy() instead of strcpy()
+  fbdev: rivafb: Use safer strscpy() instead of strcpy()
+  fbdev: sh7760fb: Use safer strscpy() instead of strcpy()
+  fbdev: savage: Use safer strscpy() instead of strcpy()
+  fbdev: atmel_lcdfb: Use safer strscpy() instead of strcpy()
+  fbdev: aty128fb: Use safer strscpy() instead of strcpy()
+  fbdev: amifb: Use safer strscpy() instead of strcpy()
+  fbdev: s3fb: Use safer strscpy() instead of strcpy()
+  fbdev: viafb: Use safer strscpy() instead of strcpy()
+  fbdev: platinumfb: Use safer strscpy() instead of strcpy()
+  fbdev: cyber2000fb: Use safer strscpy() instead of strcpy()
+  fbdev: mb862xxfb: Use safer strscpy() instead of strcpy()
+  fbdev: mmpfb: Use safer strscpy() instead of strcpy()
+  fbdev: ep93xx-fb: Use safer strscpy() instead of strcpy()
+  fbdev: valkyriefb: Use safer strscpy() instead of strcpy()
+  fbdev: pxafb: Use safer strscpy() instead of strcpy()
+  fbdev: sa1100fb: Use safer strscpy() instead of strcpy()
+  fbdev: sm501fb: Use safer strscpy() instead of strcpy()
+  fbdev: acornfb: Use safer strscpy() instead of strcpy()
+  fbdev: ocfb: Use safer strscpy() instead of strcpy()
+
+ drivers/video/fbdev/acornfb.c               |  2 +-
+ drivers/video/fbdev/amifb.c                 |  2 +-
+ drivers/video/fbdev/arkfb.c                 |  2 +-
+ drivers/video/fbdev/atafb.c                 | 10 +++++-----
+ drivers/video/fbdev/atmel_lcdfb.c           |  2 +-
+ drivers/video/fbdev/aty/aty128fb.c          |  2 +-
+ drivers/video/fbdev/controlfb.c             |  2 +-
+ drivers/video/fbdev/cyber2000fb.c           |  2 +-
+ drivers/video/fbdev/ep93xx-fb.c             |  2 +-
+ drivers/video/fbdev/fm2fb.c                 |  2 +-
+ drivers/video/fbdev/gbefb.c                 |  2 +-
+ drivers/video/fbdev/geode/gx1fb_core.c      |  2 +-
+ drivers/video/fbdev/geode/gxfb_core.c       |  2 +-
+ drivers/video/fbdev/geode/lxfb_core.c       |  2 +-
+ drivers/video/fbdev/i810/i810-i2c.c         |  2 +-
+ drivers/video/fbdev/i810/i810_main.c        |  2 +-
+ drivers/video/fbdev/matrox/matroxfb_base.c  |  6 +++---
+ drivers/video/fbdev/matrox/matroxfb_crtc2.c |  2 +-
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c  |  2 +-
+ drivers/video/fbdev/mmp/fb/mmpfb.c          |  2 +-
+ drivers/video/fbdev/ocfb.c                  |  2 +-
+ drivers/video/fbdev/platinumfb.c            |  2 +-
+ drivers/video/fbdev/pm2fb.c                 |  6 +++---
+ drivers/video/fbdev/pxafb.c                 |  2 +-
+ drivers/video/fbdev/riva/rivafb-i2c.c       |  2 +-
+ drivers/video/fbdev/s3fb.c                  |  2 +-
+ drivers/video/fbdev/sa1100fb.c              |  2 +-
+ drivers/video/fbdev/savage/savagefb-i2c.c   |  2 +-
+ drivers/video/fbdev/sh7760fb.c              |  2 +-
+ drivers/video/fbdev/sis/sis_main.c          | 16 ++++++++--------
+ drivers/video/fbdev/sm501fb.c               |  2 +-
+ drivers/video/fbdev/stifb.c                 |  2 +-
+ drivers/video/fbdev/tdfxfb.c                |  6 +++---
+ drivers/video/fbdev/valkyriefb.c            |  2 +-
+ drivers/video/fbdev/via/viafbdev.c          |  2 +-
+ drivers/video/fbdev/vt8500lcdfb.c           |  2 +-
+ drivers/video/fbdev/vt8623fb.c              |  2 +-
+ drivers/video/fbdev/wm8505fb.c              |  2 +-
+ drivers/video/fbdev/xen-fbfront.c           |  2 +-
+ 39 files changed, 56 insertions(+), 56 deletions(-)
+
 -- 
 2.34.1
 

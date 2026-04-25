@@ -1,156 +1,129 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17FCE3DF00B
-	for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 16:24:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CFA740DFB9;
+	Sat, 25 Apr 2026 06:59:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777047860; cv=none; b=CEsjGKJzDE1ifhxV9WCU+9x8VXv0UWR7BcdEtySufkWcDtqtNZLGSl9SQWZEmsJX0gVgJ4zYk8KylYNzsDnRT/d78j5Wd98X765muhK6kc7rtsWkta3C61i6g/1aW7Q5ZyBqGHFwuzuH8HzpM5xukSorRLhL5IAoceNyMTw7Zhc=
+	t=1777100389; cv=none; b=nhej6zLkTaqZv2mwfC9dcdki2S4HjquV3WYlxbjBFtY1XGVljYwQryQK5MUlXpvb4pQ8Gk8rvFlusvqUS5lDxwxXoMtVfjYq3ITdSZT17t1jWbkuIWdDhgOhgyTsAk2EomrUElPrLKVVhqISw3nw80h+F1qO0GCTiBZGnsu5OGk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777047860; c=relaxed/simple;
-	bh=WGeiHUHtLNR3bIDnkcA7YuMVHwYC8v+r8hhmRXVRhBU=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=b4ablRFhjp9ETJ+CPZC2V1Tg6gf65pr1nYoWV8/FP5h+W/eiOjh971sXVTwVFx0H411eTiHFk+7XBXZqv0cOXRcDNSOhYEB/UJ6xP+6LSEGUCF2n/9KQWp41g7zyQ+vjP4A9fNGFM8rxghFAtxnSxoW8XmXxAEQQ4T/HRQbvvHA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=eZl25zDn; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=TjhB1qik; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="eZl25zDn";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="TjhB1qik"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1777047858;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=bkHBfOVa4bz/wCbZfmwZYYdZCO/tCYPxae+JQxak4Yg=;
-	b=eZl25zDnldI79cy46T99uOTd673DqSE3j2FysmQbJamPpWT1+bYhnhXu0ciAPPgimA2OcG
-	Lwjqbk1m/+Fj2iobSg00wB8ywT39ue32rH3MCPB5qWPhjYtAyDBWfS9dESKDAbPzROkNcc
-	HyPxpHf9CxQ494ziriMuyR2fcay6u+w=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-55-IG1ReJlFMB6tl_ZXGmSW4A-1; Fri, 24 Apr 2026 12:24:16 -0400
-X-MC-Unique: IG1ReJlFMB6tl_ZXGmSW4A-1
-X-Mimecast-MFC-AGG-ID: IG1ReJlFMB6tl_ZXGmSW4A_1777047855
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-48906aa28cbso46684245e9.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 24 Apr 2026 09:24:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1777047855; x=1777652655; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=bkHBfOVa4bz/wCbZfmwZYYdZCO/tCYPxae+JQxak4Yg=;
-        b=TjhB1qikvLEcnqjXCwD9cE1ujvN1189GKCrwEeB4sgmLF8KAH8D6TmEoLMN7dJux3v
-         A2yuZGVh20ptA7sQ2ybgSy7VByjAwjS8meyUvV57Dfne7jR1B97RNIgyKf7b9djnt2UE
-         G2Xanq46025fXRBDqC/hXnwbJqKk6++F50GpdPIRG/SWBfJdyED6SHgSVjrWPrpuEMpT
-         SnmtDOafnA1RVxFsTdLEzIc5k1W2+ht4itb40ylzR2DuV69UUefG+nzhuToL0SqIF9AJ
-         CZryrEOHzLyx79bGxKsJiK4fFnJpu4AYuTfMVhqcBcaLn0vBnaU8BXGb2yzkHKe6HY8w
-         wtKg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777047855; x=1777652655;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=bkHBfOVa4bz/wCbZfmwZYYdZCO/tCYPxae+JQxak4Yg=;
-        b=tOVnqkggQEJ9v9BHV8wnhWYJA8uBlJo5MGzpqoRvqTT/Ru1kWompTZmSLUrP30FVJa
-         NjMP0hONIz4fAcUeqF8sHa/HHLTQyeDwkM0ARwVf3QDOvESlr3Rn3p0k1bYfZxP0RhIG
-         G7gstotuuv7H0bVo7jeixHfG7v91zBAwgnPw3ZgrcYKctxrKatz8SRy7mO53B3ZE9Jct
-         pCJkD0nmbg3I4mpdSTLHGXbm2ahEBIBJrDjc0TBaQD88yOmTKxDoh8FZHOwsLuYM+AhL
-         kSJjufOgOtzNknFcIeILTS+s8Yj6R8A2/1kyjzCsxFxluhjwFutnI2ygsRtEeM6MDrsL
-         jsog==
-X-Forwarded-Encrypted: i=1; AFNElJ8K+JaJGXfoW7vLJbmRaRydg5HLIACAIDgu8bwwxY7JMVQ5iobBRJmNKOD3LB5xPeLFv91BH2WlG4Cmmw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxA3KgBtBvHXb4wgcwmVOwgxgkrgdHbzS7d1GCWaVv5sWprIUfr
-	kqhEfH1pHXPjkcrutxODEFwnzqrJVja/VKkmQkRuSks/Hap73xllxaOk0usMyfeAnZ1FKPWvPZt
-	O0PaxgQQUlZUcND4XudGbPtQVB2+2eVhy3uCFuUgchSjlaYky+mrSBuGAyBeBgHod
-X-Gm-Gg: AeBDievMdbF1Apur+TWtQMosUWc5Spq7jJUjTQrsBKOrGUh3H1qvHLoTPY+hGODRcNC
-	y17Gbe6efWCNgQ84oedJeFSZttvyb5xOGWB4FAKgITsmnwiDT+Igk3Ba2NjMvM1GDgdRP5Jq576
-	aTGXlbjiAWFH1VCDPdzITTS3tUxfXD5bhtQWXjcO1P7TcUojUGV28WiY5pSe6eFo0Op1IAjCIOc
-	to369Xp0dAUeZMsvHidIsUEZfw99N6O9B2wU0wPkdjHntYsNG17UaKl1fQCfyOpIjjA206IiTkP
-	09TzdYwhx4SPoydyJO3m8UMFA6zAT1ukkl8BHYcv2bz6fjw2/Srun1GJ0NxavugF+zOON9wuPQO
-	0XxPpXLW7OLv1ZjKJN9pm4yHBPNsMrmGbzQEoDov4jVZRpBiwnfDnWj283aTO7BkfON9JZOHmB+
-	S6k8VshFAAwkTu2nQ=
-X-Received: by 2002:a05:600c:8b6b:b0:485:3c2e:60d5 with SMTP id 5b1f17b1804b1-488fb8859ddmr427762155e9.2.1777047855238;
-        Fri, 24 Apr 2026 09:24:15 -0700 (PDT)
-X-Received: by 2002:a05:600c:8b6b:b0:485:3c2e:60d5 with SMTP id 5b1f17b1804b1-488fb8859ddmr427761525e9.2.1777047854742;
-        Fri, 24 Apr 2026 09:24:14 -0700 (PDT)
-Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a682588f8sm6272915e9.10.2026.04.24.09.24.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 24 Apr 2026 09:24:13 -0700 (PDT)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>, Arnd Bergmann <arnd@arndb.de>,
- Ard Biesheuvel <ardb@kernel.org>, Ilias Apalodimas
- <ilias.apalodimas@linaro.org>, Huacai Chen <chenhuacai@kernel.org>, WANG
- Xuerui <kernel@xen0n.name>, Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
- Dave Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, "K. Y.
- Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
- Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
- longli@microsoft.com, Helge Deller <deller@gmx.de>
-Cc: linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linux-efi@vger.kernel.org, linux-riscv@lists.infradead.org,
- dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
- linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 3/8] firmware: sysfb: Make CONFIG_SYSFB a
- user-selectable option
-In-Reply-To: <0156562f-5fcf-47ce-8fea-03345f2c3fe6@suse.de>
-References: <20260402092305.208728-1-tzimmermann@suse.de>
- <20260402092305.208728-4-tzimmermann@suse.de>
- <78f76717-8f1e-41d6-92f7-261df96b84b6@app.fastmail.com>
- <3e466158-c2e5-4e23-934f-dcdbb71ad41f@suse.de>
- <d3d7c545-3b07-4881-a16d-45b6f039de19@app.fastmail.com>
- <001efe27-9cbb-4a89-8d2d-a1f3ae15e505@suse.de>
- <295a43ce-92fb-435d-a82f-d1cfa8f4f28d@app.fastmail.com>
- <0156562f-5fcf-47ce-8fea-03345f2c3fe6@suse.de>
-Date: Fri, 24 Apr 2026 18:24:07 +0200
-Message-ID: <87se8kjpi0.fsf@ocarina.mail-host-address-is-not-set>
+	s=arc-20240116; t=1777100389; c=relaxed/simple;
+	bh=hnWD1AVyRSKxtXt/+A1gcL0PooGfKrpHM0Ap0tUdr3c=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=uCZC2XJT10EDh+hui+6lv4u9C3+RKEMQXAts2zBMdCPMJ3tCXYk7mBB2WDS8XX1NjDjKEAFMiiWtDc3kZGhjP3adlwXWXxO2ArntriMhjJ7QJjGB8WOd8K7J6QEBRv4yh8s68Y3fEUNe2KMM7y+JRU+uSFecFCaeJPSgElF/PnM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 549674b2407411f1aa26b74ffac11d73-20260425
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:810e43dc-ea30-4cf2-8878-d40099abd163,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:e7bac3a,CLOUDID:3da8c7107d9290cc6c015d2d1491a4c0,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|898,TC:nil,Content:0|15|50,EDM
+	:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
+	,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 549674b2407411f1aa26b74ffac11d73-20260425
+X-User: aichao@kylinos.cn
+Received: from thinksys.. [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <aichao@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1225850773; Sat, 25 Apr 2026 14:59:40 +0800
+From: Ai Chao <aichao@kylinos.cn>
+To: deller@gmx.de,
+	nicolas.ferre@microchip.com,
+	alexandre.belloni@bootlin.com,
+	claudiu.beznea@tuxon.dev,
+	linux@armlinux.org.uk,
+	dilinger@queued.net,
+	adaplas@gmail.com,
+	James.Bottomley@HansenPartnership.com,
+	FlorianSchandinat@gmx.de,
+	alchark@gmail.com,
+	krzk@kernel.org,
+	kees@kernel.org,
+	rene@exactco.de,
+	tzimmermann@suse.de,
+	rongqianfeng@vivo.com,
+	thorsten.blum@linux.dev,
+	chelsyratnawat2001@gmail.com,
+	soci@c64.rulez.org,
+	gregkh@linuxfoundation.org,
+	daniel@thingy.jp,
+	linmq006@gmail.com,
+	fourier.thomas@gmail.com
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-geode@lists.infradead.org,
+	linux-parisc@vger.kernel.org,
+	Ai Chao <aichao@kylinos.cn>
+Subject: [PATCH 01/35] fbdev: matroxfb: Use safer strscpy() instead of strcpy()
+Date: Sat, 25 Apr 2026 14:58:52 +0800
+Message-Id: <20260425065926.1091168-2-aichao@kylinos.cn>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260425065926.1091168-1-aichao@kylinos.cn>
+References: <20260425065926.1091168-1-aichao@kylinos.cn>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+Use a safer function strscpy() instead of strcpy() for copying to arrays.
 
-Hello,
+Only idiomatic code replacement, and no functional changes.
 
-[...]
+Signed-off-by: Ai Chao <aichao@kylinos.cn>
+---
+ drivers/video/fbdev/matrox/matroxfb_base.c  | 6 +++---
+ drivers/video/fbdev/matrox/matroxfb_crtc2.c | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
->>>>>> On Thu, Apr 2, 2026, at 11:09, Thomas Zimmermann wrote:
->>>>>> I don't really like this part of the series and would prefer
->>>>>> to keep CONFIG_SYSFB hidden as much as possible as an x86
-
-I tend to agree with Arnd here, I'm also not seeing that much value on
-making this symbol user selectable. For now I would just keep it hidden.
-
-[...]
-
->> Yes, I saw that as well and don't have an immediate idea for how
->> to best do it. I saw that you already abstracted the access to
->> the screen_info members in drm_sysfb_screen_info.c, which I think
->> is a step in that direction.
->>
->> I also noticed that efidrm is mostly a subset of vesadrm, so
->> in theory they could be merged back into an x86 drm driver
->> along with the drm_sysfb_screen_info helpers, and have a non-x86
->> driver that constructs a drm_sysfb_device directly from the
->> EFI structures.
->
-> I would not want to have a unifed driver for all-things-screen_info. The 
-> code that can easily be shared is already in the sysfb helpers. But I 
-> don't mind adding a separate driver for EFI's Graphics Output Protocol.
-
-I agree. It is much more maintainable if we have dedicated DRM drivers that
-use shared helpers, than attempting to have a driver for different platforms.
-
-As Thomas explained, the maintance effort is small on the DRM side and he has
-done a lot of work to split simpledrm in efidrm, vesadrm and ofdrm.
-
+diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
+index e1a4bc7c2318..bd786543478c 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_base.c
++++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+@@ -709,7 +709,7 @@ static void matroxfb_init_fix(struct matrox_fb_info *minfo)
+ 	struct fb_fix_screeninfo *fix = &minfo->fbcon.fix;
+ 	DBG(__func__)
+ 
+-	strcpy(fix->id,"MATROX");
++	strscpy(fix->id, "MATROX");
+ 
+ 	fix->xpanstep = 8;	/* 8 for 8bpp, 4 for 16bpp, 2 for 32bpp */
+ 	fix->ypanstep = 1;
+@@ -1091,8 +1091,8 @@ static int matroxfb_ioctl(struct fb_info *info,
+ 				struct v4l2_capability r;
+ 
+ 				memset(&r, 0, sizeof(r));
+-				strcpy(r.driver, "matroxfb");
+-				strcpy(r.card, "Matrox");
++				strscpy(r.driver, "matroxfb");
++				strscpy(r.card, "Matrox");
+ 				sprintf(r.bus_info, "PCI:%s", pci_name(minfo->pcidev));
+ 				r.version = KERNEL_VERSION(1,0,0);
+ 				r.capabilities = V4L2_CAP_VIDEO_OUTPUT;
+diff --git a/drivers/video/fbdev/matrox/matroxfb_crtc2.c b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
+index 8de882b09a24..c20dd06c5fcd 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_crtc2.c
++++ b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
+@@ -299,7 +299,7 @@ static void matroxfb_dh_init_fix(struct matroxfb_dh_fb_info *m2info)
+ {
+ 	struct fb_fix_screeninfo *fix = &m2info->fbcon.fix;
+ 
+-	strcpy(fix->id, "MATROX DH");
++	strscpy(fix->id, "MATROX DH");
+ 
+ 	fix->smem_start = m2info->video.base;
+ 	fix->smem_len = m2info->video.len_usable;
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+2.34.1
 

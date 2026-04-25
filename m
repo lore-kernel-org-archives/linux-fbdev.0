@@ -1,25 +1,25 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D8E51C3BF7;
-	Sat, 25 Apr 2026 06:59:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6440E314A60;
+	Sat, 25 Apr 2026 07:00:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777100401; cv=none; b=YYL+xyCuoCNdM9EQ+h/TFZ292OxFZYPipf0BwPGv8O8wbepRVP3CCNTZY88Noddnes8lm8UkMmSyv8BdVfRcczUm6Jf2aPN7B/USVmizftjfVSwy9Qjll4Q33L0K++Za+09KkvDk5dE7EYscjqU8YIOgR1NafPK+qSGf1g7TfQk=
+	t=1777100402; cv=none; b=KpnmDpK5NW9kv2YPp1heIZulPy25yuIDo9Diqo/DrfdKbFTUjxH2IITEwYxZHBWtrBGRKPivNWCyjgBxRrleBLuS7RFgrTD/Zpr9djNNCTVYGXyO6dqO+oYn0SY1ZOEtYePVZn/f4URC1EfcmZEQpuoR8p2sQ3JAs28s8XN5wi0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777100401; c=relaxed/simple;
-	bh=96Wy47YWwc6KH8NcLE4IVZBdvfvUDEN+XfrWm/ZCmw0=;
+	s=arc-20240116; t=1777100402; c=relaxed/simple;
+	bh=IxPBa4q6LR8zsTDZVDYOs+mybClYRLeVZ2W/IZT63Bw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=n+xEDz2Hb/QIulDQH+TuqZxKjcvp26gu//ft8L0j4+Hq5EzwSXCquM8ElC6a1Wk+aqltiBqPuA06cERjFJ68NqngfHWXUPPDiAhPnrThEoP/+ThLrwcgWvD4B0UhkbUZHzsfswzqpLGxrl2vNvYDdt/yds8KdxPGIYXwWdjb91E=
+	 MIME-Version; b=aAkxTRrLwBCGIt0dJ3V++O+eB95cOXvOwR9IBJ60jEff/2mC6Ty6auhqwKFyu/QfOWt56Z3ZjvVAfu04FyGx7QdF4m52zpWHWfmb+YvQ587nJ9A1Op6wHqwT05SkU03xvvlTsiN/OzDwcaH7PAtOnAF8xzBK024kramb3NvSM6c=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 5c11cf7a407411f1aa26b74ffac11d73-20260425
+X-UUID: 5d5bf6d0407411f1aa26b74ffac11d73-20260425
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:700b046f-a4fe-40ed-b688-e789afee0875,IP:0,U
-	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:-25
-X-CID-META: VersionHash:e7bac3a,CLOUDID:3f8a7e80e46a0360510c7e23c4deab8f,BulkI
+X-CID-O-INFO: VERSION:1.3.12,REQID:fb6979e2-a7ea-433c-8b7d-c8cb69e668b5,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:e7bac3a,CLOUDID:839ae1e41acbd81821964f9c223aed26,BulkI
 	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|898,TC:nil,Content:0|15|50,EDM
 	:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
 	,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
@@ -27,12 +27,12 @@ X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 5c11cf7a407411f1aa26b74ffac11d73-20260425
+X-UUID: 5d5bf6d0407411f1aa26b74ffac11d73-20260425
 X-User: aichao@kylinos.cn
 Received: from thinksys.. [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <aichao@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 589308069; Sat, 25 Apr 2026 14:59:53 +0800
+	with ESMTP id 824995028; Sat, 25 Apr 2026 14:59:55 +0800
 From: Ai Chao <aichao@kylinos.cn>
 To: deller@gmx.de,
 	nicolas.ferre@microchip.com,
@@ -63,9 +63,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-geode@lists.infradead.org,
 	linux-parisc@vger.kernel.org,
 	Ai Chao <aichao@kylinos.cn>
-Subject: [PATCH 05/35] fbdev: atafb: Use safer strscpy() instead of strcpy()
-Date: Sat, 25 Apr 2026 14:58:56 +0800
-Message-Id: <20260425065926.1091168-6-aichao@kylinos.cn>
+Subject: [PATCH 06/35] fbdev: tdfxfb: Use safer strscpy() instead of strcpy()
+Date: Sat, 25 Apr 2026 14:58:57 +0800
+Message-Id: <20260425065926.1091168-7-aichao@kylinos.cn>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260425065926.1091168-1-aichao@kylinos.cn>
 References: <20260425065926.1091168-1-aichao@kylinos.cn>
@@ -83,58 +83,32 @@ Only idiomatic code replacement, and no functional changes.
 
 Signed-off-by: Ai Chao <aichao@kylinos.cn>
 ---
- drivers/video/fbdev/atafb.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/tdfxfb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index b8ed1c537293..5f2d50919718 100644
---- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -555,7 +555,7 @@ static int tt_encode_fix(struct fb_fix_screeninfo *fix, struct atafb_par *par)
- {
- 	int mode;
- 
--	strcpy(fix->id, "Atari Builtin");
-+	strscpy(fix->id, "Atari Builtin");
- 	fix->smem_start = phys_screen_base;
- 	fix->smem_len = screen_len;
- 	fix->type = FB_TYPE_INTERLEAVED_PLANES;
-@@ -851,7 +851,7 @@ static inline int hxx_prescale(struct falcon_hw *hw)
- static int falcon_encode_fix(struct fb_fix_screeninfo *fix,
- 			     struct atafb_par *par)
- {
--	strcpy(fix->id, "Atari Builtin");
-+	strscpy(fix->id, "Atari Builtin");
- 	fix->smem_start = phys_screen_base;
- 	fix->smem_len = screen_len;
- 	fix->type = FB_TYPE_INTERLEAVED_PLANES;
-@@ -1770,7 +1770,7 @@ static int stste_encode_fix(struct fb_fix_screeninfo *fix,
- {
- 	int mode;
- 
--	strcpy(fix->id, "Atari Builtin");
-+	strscpy(fix->id, "Atari Builtin");
- 	fix->smem_start = phys_screen_base;
- 	fix->smem_len = screen_len;
- 	fix->type = FB_TYPE_INTERLEAVED_PLANES;
-@@ -2069,7 +2069,7 @@ static void st_ovsc_switch(void)
- 
- static int ext_encode_fix(struct fb_fix_screeninfo *fix, struct atafb_par *par)
- {
--	strcpy(fix->id, "Unknown Extern");
-+	strscpy(fix->id, "Unknown Extern");
- 	fix->smem_start = external_addr;
- 	fix->smem_len = PAGE_ALIGN(external_len);
- 	if (external_depth == 1) {
-@@ -3100,7 +3100,7 @@ static int __init atafb_probe(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
+index 4c4e53aaea3a..b7cc2b1012eb 100644
+--- a/drivers/video/fbdev/tdfxfb.c
++++ b/drivers/video/fbdev/tdfxfb.c
+@@ -1401,15 +1401,15 @@ static int tdfxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	/* Configure the default fb_fix_screeninfo first */
+ 	switch (pdev->device) {
+ 	case PCI_DEVICE_ID_3DFX_BANSHEE:
+-		strcpy(info->fix.id, "3Dfx Banshee");
++		strscpy(info->fix.id, "3Dfx Banshee");
+ 		default_par->max_pixclock = BANSHEE_MAX_PIXCLOCK;
+ 		break;
+ 	case PCI_DEVICE_ID_3DFX_VOODOO3:
+-		strcpy(info->fix.id, "3Dfx Voodoo3");
++		strscpy(info->fix.id, "3Dfx Voodoo3");
+ 		default_par->max_pixclock = VOODOO3_MAX_PIXCLOCK;
+ 		break;
+ 	case PCI_DEVICE_ID_3DFX_VOODOO5:
+-		strcpy(info->fix.id, "3Dfx Voodoo5");
++		strscpy(info->fix.id, "3Dfx Voodoo5");
+ 		default_par->max_pixclock = VOODOO5_MAX_PIXCLOCK;
+ 		break;
  	}
- #endif /* ATAFB_EXT */
- 
--//	strcpy(fb_info.mode->name, "Atari Builtin ");
-+//	strscpy(fb_info.mode->name, "Atari Builtin ");
- 	fb_info.fbops = &atafb_ops;
- 	// try to set default (detected; requested) var
- 	do_fb_set_var(&atafb_predefined[default_par - 1], 1);
 -- 
 2.34.1
 

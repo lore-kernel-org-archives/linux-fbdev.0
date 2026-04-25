@@ -1,25 +1,25 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA5703016E1;
-	Sat, 25 Apr 2026 07:00:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 636EC315D39;
+	Sat, 25 Apr 2026 07:00:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777100422; cv=none; b=Bop1XWtJtQ60j1LAo8s7kL7NheGbeX35az4c8wRcKd70LG0wLRnheSJVqMZ3cMndZpGeE49WCmfZmZ9Tsitb72IH3jZz30FNDl/vrcFZ2PIxvwHjRFZeaLTaB8lG6DT4WWmjw0OwajBB3OMON0pthA5FPmsCsLlUUNk2ndVZMrQ=
+	t=1777100423; cv=none; b=j6k51MElEzfIOVMXnNRkjwHfOLThbH1DG5GNwcytiDLOe3JuqMCQBrYxrEit+jsBEyUuPDvySwACDzHAa7sVmcSmUMvc3xN92QiJo9ZLspnPn2YWtJDd1lyhZTGNiAOXiuq7tKpSXlLwYMGPm4AYR82hjKdZuH0fNOLu8wqtyPM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777100422; c=relaxed/simple;
-	bh=MyWaqUc22kbM1BD6CebTQqXWv76eN64cXHUR4Q0ifuM=;
+	s=arc-20240116; t=1777100423; c=relaxed/simple;
+	bh=sIz7HRQ6VssHO5gaCn8Ba7I6XAUSlQWA+tfaOeCm1l8=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=LQrgw5gaao4Eiiht4fs4JecxOnOXN6peeGWPUKxyFPOvvp8FO1F/VJvM6S7w/4zoF4tLwbiw5ubo4r7ocyE0Ag2436iZipoPdkxjTVZc9PBL4cPCu8Bp6WnNKEYMzlyGpSdyEGBvpNi242op0fGSMNtqnosrWBflPr8cv5tcrkg=
+	 MIME-Version; b=G6mi5JT2eM1V29xD8HzttFG0N3v6ac3jfjqVGSFe4gZF7l7d0MHZzticjhZtRw2Px6jAjMMaNA9iZdtnjUi+ZUYIs2PiYH0khWD0YfMmg7uOhF2gQM8s1N2Dq7lCyM0jX+TrCtieGBX32L2fqOhVuXZEdhBsAM7QoDfWcWsr91Y=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 62d0ccd0407411f1aa26b74ffac11d73-20260425
+X-UUID: 668c1dfc407411f1aa26b74ffac11d73-20260425
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:62fb1f17-985f-43f2-8f63-a04f89d5b2f1,IP:0,U
+X-CID-O-INFO: VERSION:1.3.12,REQID:bc96a1ab-d4c4-46fe-bc7c-334a1172fbd2,IP:0,U
 	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
 	release,TS:0
-X-CID-META: VersionHash:e7bac3a,CLOUDID:8d37d59900e98666b1f4e11c73b8c8d8,BulkI
+X-CID-META: VersionHash:e7bac3a,CLOUDID:1d8d2749795928838fe3a6f3082f81f0,BulkI
 	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|898,TC:nil,Content:0|15|50,EDM
 	:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
 	,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
@@ -27,12 +27,12 @@ X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 62d0ccd0407411f1aa26b74ffac11d73-20260425
+X-UUID: 668c1dfc407411f1aa26b74ffac11d73-20260425
 X-User: aichao@kylinos.cn
 Received: from thinksys.. [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <aichao@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 883094395; Sat, 25 Apr 2026 15:00:04 +0800
+	with ESMTP id 467916009; Sat, 25 Apr 2026 15:00:10 +0800
 From: Ai Chao <aichao@kylinos.cn>
 To: deller@gmx.de,
 	nicolas.ferre@microchip.com,
@@ -63,9 +63,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-geode@lists.infradead.org,
 	linux-parisc@vger.kernel.org,
 	Ai Chao <aichao@kylinos.cn>
-Subject: [PATCH 10/35] fbdev: stifb: Use safer strscpy() instead of strcpy()
-Date: Sat, 25 Apr 2026 14:59:01 +0800
-Message-Id: <20260425065926.1091168-11-aichao@kylinos.cn>
+Subject: [PATCH 12/35] fbdev: arkfb: Use safer strscpy() instead of strcpy()
+Date: Sat, 25 Apr 2026 14:59:03 +0800
+Message-Id: <20260425065926.1091168-13-aichao@kylinos.cn>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260425065926.1091168-1-aichao@kylinos.cn>
 References: <20260425065926.1091168-1-aichao@kylinos.cn>
@@ -83,22 +83,22 @@ Only idiomatic code replacement, and no functional changes.
 
 Signed-off-by: Ai Chao <aichao@kylinos.cn>
 ---
- drivers/video/fbdev/stifb.c | 2 +-
+ drivers/video/fbdev/arkfb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
-index 8e5bac27542d..578770bdee02 100644
---- a/drivers/video/fbdev/stifb.c
-+++ b/drivers/video/fbdev/stifb.c
-@@ -1357,7 +1357,7 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- 	var->yres = var->yres_virtual = yres;
- 	var->bits_per_pixel = bpp;
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index 866c1165704e..a05900f0e691 100644
+--- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
+@@ -1025,7 +1025,7 @@ static int ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	info->screen_size = (1 << (regval >> 6)) << 20;
+ 	info->fix.smem_len = info->screen_size;
  
--	strcpy(fix->id, "stifb");
-+	strscpy(fix->id, "stifb");
- 	info->fbops = &stifb_ops;
- 	info->screen_base = ioremap(REGION_BASE(fb,1), fix->smem_len);
- 	if (!info->screen_base) {
+-	strcpy(info->fix.id, "ARK 2000PV");
++	strscpy(info->fix.id, "ARK 2000PV");
+ 	info->fix.mmio_start = 0;
+ 	info->fix.mmio_len = 0;
+ 	info->fix.type = FB_TYPE_PACKED_PIXELS;
 -- 
 2.34.1
 

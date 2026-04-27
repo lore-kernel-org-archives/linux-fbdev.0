@@ -1,149 +1,156 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1D882F25F4
-	for <linux-fbdev@vger.kernel.org>; Mon, 27 Apr 2026 13:06:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4032339714;
+	Mon, 27 Apr 2026 18:32:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777295162; cv=none; b=mkBn90i65gfzYyEePqL3JOn/fcVp06k8fVE9qAlj4DS/toTcSOakhXWpADxuFB2JTSPCk8Zyn8x7qma64pSIJOxDuISExFc1HrzhJThL0OgP/AyDdRubwYyZGUiFBeweYxbfS/DeI6Jt6LHVeX/CD8+YEcCSn+C71Ea7IrDdjnY=
+	t=1777314767; cv=none; b=oxX5tZgBrXNWyeAfXo+4Ta1/1VtIdOClnV+cHh9BDSn50zgURhToI7QZKT8FZK+0fbU2eA76cPsNd7ZfQ01H6b4efSWd1sK4bVmqHv8zBDrdgFyq//YD6LFKXcyJjU/NsQXEWSLn9BHxSgzX+ysNQzmcGlTiNM2deENnoE5jFpY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777295162; c=relaxed/simple;
-	bh=S4pqVnC7SrykP5CG0Cf7mf34BERu4m5QkSgWfBe5Qoc=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Iv709ILkK7C8bjmcsF00s5+5XARqxp2mmOrI7XaiXZ0UmcYZH5OmygRlIEaGhr/J3ozMZ1N6VaebGObahOYkrY7U1epCfeqSO8Me3Cm/Qc4WJ8zjagIOhals/KNMftA6Hbs0eMT6IaYi3XinpJWE3CjDy0/3Vgoiydy4ltrTV/s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=S/MWFHxm; arc=none smtp.client-ip=209.85.128.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1777314767; c=relaxed/simple;
+	bh=RKtH9bT25o7/Z7KqiMovy62aulhS9Vl/2AXd8m0CSLc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Pa8VWNYe0umPRhybqj6Ykg5znId/KnAGLs5tvKJ1xlPDbTBXgWeUQKEImc4bO/x2f77huQCRUlctT+lBbQytcyDabptYoIglho9vV+3cJUIxkNoPSGtyJUWJ0KMbm40OXtA7dnvEOGmMI/4jj1Ye3KNcA1eps8BM3mIqm7jpTtQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=eirIR8rc; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="S/MWFHxm"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-483487335c2so100229325e9.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Apr 2026 06:06:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777295159; x=1777899959; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=F8iqGCzMLvZ/FUHTnqulEZ9CiBEz3wlFLR64nRtCLLQ=;
-        b=S/MWFHxmiycuD3HU0EXzLIkC50oqSfh9RZXXPpjnGWIa5/zFuE5EbIpp3Sj820l6X/
-         +cQUkoUYkXn48mw4z2KPJ5VXbjFZgyI2k404SYQRjnvFMp/PnPNbYnLYACmsQv3RMfHb
-         l5oMqE7CAsIxfZvahOE/XbWt4pIBPKR1p5orA19BeR1PAhJ1kDbQW4CChsp+KekbCs4W
-         1PZCNm6FxpUOivynK2MbzzEabO6KdFjCe4ARpwN/aMcJXddfLMLmK31PBCPe4pySVCgO
-         omkEG+Hscn0lisPIQX6MZQng7vBpncOk5oPXG3HG6mhZgAIl8SboqQCwAajXAwv2q6LP
-         lK0A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777295159; x=1777899959;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=F8iqGCzMLvZ/FUHTnqulEZ9CiBEz3wlFLR64nRtCLLQ=;
-        b=qGsCotG/tMlKRAc1jKv1PltHz4iCajDWjSop8neF9xlGF/Zmer7JMCyggnyR1wi562
-         EqYLGtenEBdEPw5ZynCUWYlfiSzynWzgbg8Z3ld5WWL60EUccOEGeCrCaIU3KhRFplR0
-         0BnFBh9OOzIkkNAt2kJdA8i6w8VOHxQ69e6L1tyb2V6eo4JmJ3zLO4opOn9jPMIw7sDj
-         +SCQ6xBDC6MWc6nniNmhDiUMorJYjU4vUTfJ956UH7xkwWbu/7yAtSV7Z7AU4p5pi+Ze
-         r+6QyLEdx5XBx1IGD2tqC+HpJS2QZtLuDtMMpywiA/tVE9GvEw/doCMC2N0duSzMQMAj
-         3pJA==
-X-Forwarded-Encrypted: i=1; AFNElJ+ixvvjVBZSIbqNl4uyARUHgyj3qNdJ5oaUNeI1Q5C8QUHCGxMXRvmyDeKNRxFzMbu0tR/1rEijrawLAw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzW+aVdHMoog8gV9BMVo12aLxlmAcd1kpii7wzEluLOhyC9XocH
-	q65yBWVxs3VgyOL7vZXQR983HDKzOP3Q90hq5WpYFOkg/E6yLtHCmV0s
-X-Gm-Gg: AeBDietXTGl6BL79aM73tBxmHUL1llQG2/AjE62OLTgzgEDgEroKoVAwEi7CVtbVrO7
-	SU9XRAZlA/l2W/U8hbLERZDMylZuK5y24vHfoI3lUCLt6piUIyAFFlX5ICtoFpi6XXFzR6AgKtD
-	krcN33a4tiKO5hnwNAFWGrgJgYVoCguLlQXspLntUtXuim8dNhdNDenWB43eLPr4Tx2jLnRbXs0
-	lWYLtxlVbaUTgYYeBXQdwhkgaMUppaZcGO5wd5A9cXN5tUWAvIXzN5COl4kAhgrYj9RQZhaiAzv
-	c3Ve0A1QYET6elJlizpgk5jVbreJM+yAug5u025GAAadFSwPyBUJxPRZsLmvAI0wI1+N26FGuiL
-	ROFmiegjcDds7c1DlCjNsXIsza9AReoZrg8rHFQnqglu/EODHpHMbUmFyI/gkhso7BXlIhKKmx2
-	A/TBOkvlXoJrjUs2vKCqaEOwXgW80JwisX3SwZlRM6qbdlQdnVaesluAx60tBD5Ph0Gr65HMeVC
-	D8=
-X-Received: by 2002:a05:600c:3150:b0:480:3ad0:93bf with SMTP id 5b1f17b1804b1-488fb7930famr614025895e9.24.1777295159074;
-        Mon, 27 Apr 2026 06:05:59 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488fb75ab25sm247366475e9.11.2026.04.27.06.05.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Apr 2026 06:05:58 -0700 (PDT)
-Date: Mon, 27 Apr 2026 14:05:55 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Ai Chao <aichao@kylinos.cn>
-Cc: deller@gmx.de, nicolas.ferre@microchip.com,
- alexandre.belloni@bootlin.com, claudiu.beznea@tuxon.dev,
- linux@armlinux.org.uk, dilinger@queued.net, adaplas@gmail.com,
- James.Bottomley@HansenPartnership.com, FlorianSchandinat@gmx.de,
- alchark@gmail.com, krzk@kernel.org, kees@kernel.org, rene@exactco.de,
- tzimmermann@suse.de, rongqianfeng@vivo.com, thorsten.blum@linux.dev,
- chelsyratnawat2001@gmail.com, soci@c64.rulez.org,
- gregkh@linuxfoundation.org, daniel@thingy.jp, linmq006@gmail.com,
- fourier.thomas@gmail.com, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-geode@lists.infradead.org,
- linux-parisc@vger.kernel.org
-Subject: Re: [PATCH 03/35] fbdev: sisfb: Use safer strscpy() instead of
- strcpy()
-Message-ID: <20260427140555.4d001050@pumpkin>
-In-Reply-To: <20260427090910.1940231-1-aichao@kylinos.cn>
-References: <20260427090910.1940231-1-aichao@kylinos.cn>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="eirIR8rc"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=DEvjTnuToY1sm0DpgUIVOaDKJXu5b04Nj+3IlevEBIg=; b=eirIR8rc8D1wzx5NBo9ydvEQjC
+	BDJJcZMHpyrJsKJKHvV2bSr0twcYt/sKxtWL6QBQ1Aej9lwaSg1qNfsjgyM6vbwybEawpmk7h+rDx
+	UN7g/OwQJ6XcaW4btAWItcMsw9Kpa+6F5a30Ril+Qgtn7+SFZYfWHGhtmgS05Is7Tj5mblrorODP5
+	+NJFoLGBt0CTsvF968IaoDccuHwFhiC2zagyshXhMSYtepRUL8rJPaSeCNq2dCupMYjDa1eV8cvFf
+	N2gT9udYgl/cfJUC6UPWlPKv2V5R95g3HzpBMQNPhyN8MCa3pZIBjSSEGubJuTPRYN0H8vaDK8qH+
+	zi+EUsuA==;
+Received: from [50.53.43.113] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1wHQl3-0000000Ha2H-2RpQ;
+	Mon, 27 Apr 2026 18:32:37 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: dri-devel@lists.freedesktop.org
+Cc: Randy Dunlap <rdunlap@infradead.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v3] gpu: ipu-v3: clean up kernel-doc warnings
+Date: Mon, 27 Apr 2026 11:32:36 -0700
+Message-ID: <20260427183236.656902-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On Mon, 27 Apr 2026 17:09:10 +0800
-Ai Chao <aichao@kylinos.cn> wrote:
+Correct all kernel-doc warnings:
+- fix a typedef kernel-doc comment
+- mark a list_head as private
+- use Returns: for function return values
 
-> Hello David and Helge
-> ...
-> > > > -            strcpy(ivideo->myid, "SiS 730");
-> > > > +            strscpy(ivideo->myid, "SiS 730");    
-> > > 
-> > > The compiler knows at build time the length of myid, and the "SIS 730" string.
-> > > Using strscpy() has no benefit here either. Contrary, the code generated
-> > > because of using strscpy() is probably even larger.
-> > > Don't replace such code with strscpy().  
-> 
-> > Both should get converted to a memcpy().  
-> 
-> > If you increase the literal to be too long I'm pretty sure you'll
-> > get a compiler warning/error from strcpy().
-> > OTOH strscpy() is more likely to truncate the string (I'd need to
-> > check).  
-> 
-> > So leaving it as strcpy() is fine - and possibly even better.
-> > The header files might get changed to error strcpy() unless the compiler
-> > knows the source string has a constant length and the destination is
-> > big enough - but that hasn't been done yet.  
-> 
-> struct sis_video_info {
->     char    myid[40];
-> }
-> I have rewritten the code: 
-> strcpy(ivideo->myid, "SiS 730-0123456789abcdefghijklmnopqrstuvwxyz0123456789");
-> Used gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04.3)
-> There was no compiler warning or error. 
-> The strcpy copies the entire string into myid(causing a buffer overflow),
-> whereas strscpy only copies 40 characters into myid according to its size.
+Warning: include/video/imx-ipu-image-convert.h:31 struct member 'list' not
+ described in 'ipu_image_convert_run'
+Warning: include/video/imx-ipu-image-convert.h:40 function parameter
+ 'ipu_image_convert_cb_t' not described in 'void'
+Warning: include/video/imx-ipu-image-convert.h:40 expecting prototype for
+ ipu_image_convert_cb_t(). Prototype was for void() instead
+Warning: include/video/imx-ipu-image-convert.h:66 No description found for
+ return value of 'ipu_image_convert_verify'
+Warning: include/video/imx-ipu-image-convert.h:90 No description found for
+ return value of 'ipu_image_convert_prepare'
+Warning: include/video/imx-ipu-image-convert.h:125 No description found for
+ return value of 'ipu_image_convert_queue'
+Warning: include/video/imx-ipu-image-convert.h:163 No description found for
+ return value of 'ipu_image_convert'
 
-It depends on what is in string.h and the enabled warnings.
-Testing on 'godbolt' gives an error with both gcc and clang without any
-special compilation options.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+---
+v2: add Reviewed-by, update Cc: list, rebase, resend
+v3: rebase & resend
 
-The linux kernel build errors strcpy() at line 799 of fortify-string.h.
-strscpy() doesn't (and really shouldn't) generate an error since it is
-expected to truncate overlong strings.
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: David Airlie <airlied@gmail.com>
+Cc: Simona Vetter <simona@ffwll.ch>
+Cc: imx@lists.linux.dev
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
 
-Since you should (at least) test compile any patches before sending them
-(even trivial ones) you ought to have things setup to have checked what
-happens in a kernel build.
-Ideally you should also run the code.
+ include/video/imx-ipu-image-convert.h |   16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
-This really means that strcpy() is better than strscpy() for copying fixed
-length strings into arrays.
-
-	David
-
-> 
-> Thanks,
-> Ai Chao
-> 
-
+--- linux-next-20260427.orig/include/video/imx-ipu-image-convert.h
++++ linux-next-20260427/include/video/imx-ipu-image-convert.h
+@@ -27,12 +27,13 @@ struct ipu_image_convert_run {
+ 
+ 	int status;
+ 
++	/* private: */
+ 	/* internal to image converter, callers don't touch */
+ 	struct list_head list;
+ };
+ 
+ /**
+- * ipu_image_convert_cb_t - conversion callback function prototype
++ * typedef ipu_image_convert_cb_t - conversion callback function prototype
+  *
+  * @run:	the completed conversion run pointer
+  * @ctx:	a private context pointer for the callback
+@@ -60,7 +61,7 @@ void ipu_image_convert_adjust(struct ipu
+  * @out:	output image format
+  * @rot_mode:	rotation mode
+  *
+- * Returns 0 if the formats and rotation mode meet IPU restrictions,
++ * Returns: 0 if the formats and rotation mode meet IPU restrictions,
+  * -EINVAL otherwise.
+  */
+ int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
+@@ -77,11 +78,11 @@ int ipu_image_convert_verify(struct ipu_
+  * @complete:	run completion callback
+  * @complete_context:	a context pointer for the completion callback
+  *
+- * Returns an opaque conversion context pointer on success, error pointer
++ * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
++ *
++ * Returns: an opaque conversion context pointer on success, error pointer
+  * on failure. The input/output formats and rotation mode must already meet
+  * IPU retrictions.
+- *
+- * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
+  */
+ struct ipu_image_convert_ctx *
+ ipu_image_convert_prepare(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+@@ -122,6 +123,8 @@ void ipu_image_convert_unprepare(struct
+  * In V4L2, drivers should call ipu_image_convert_queue() while
+  * streaming to queue the conversion of a received input buffer.
+  * For example mem2mem devices this would be called in .device_run.
++ *
++ * Returns: 0 on success or -errno on error.
+  */
+ int ipu_image_convert_queue(struct ipu_image_convert_run *run);
+ 
+@@ -155,6 +158,9 @@ void ipu_image_convert_abort(struct ipu_
+  * On successful return the caller can queue more run requests if needed, using
+  * the prepared context in run->ctx. The caller is responsible for unpreparing
+  * the context when no more conversion requests are needed.
++ *
++ * Returns: pointer to the created &struct ipu_image_convert_run that has
++ * been queued on success; an ERR_PTR(errno) on error.
+  */
+ struct ipu_image_convert_run *
+ ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,

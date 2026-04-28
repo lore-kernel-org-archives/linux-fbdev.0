@@ -1,67 +1,68 @@
-Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3931426693
-	for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 13:59:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E747343CEC0
+	for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 13:59:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777384759; cv=none; b=X1Ih/RSBT0ZuHchvcprl/S9n7WggS/FPg2qsTDfx5AUnyvqBbC4pm2piIp/iBNXfh+p6Mu14ecQlRL+Dbew/+v5YztbMWsNqupL/ilUEF3KfpvJFbkmgDnlE1lC2BJqWPk1HaUUTzgvzriMdCbcu5wclWjTqL05KG5dOss0CHKo=
+	t=1777384760; cv=none; b=fahdFyiLr4i2pZyx8Vnnrx41K+JmQDc3UmHQQR+jeyAP0kZKvoJD2JIDciWaYOITIVgvh9lronjL+zHA2mMGt2vyLVcOHrxtenmWIxn57fxrFbovBeRdkFrQyW+Em08bNgs5hAw+2QyJ3WpIc5TP1WIqhJpK20Bkv+IxnKQa/aE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777384759; c=relaxed/simple;
-	bh=333uUG2C6Ne2A4QjGhhNw1YJTlVuEP5rcGs1oRWNx80=;
+	s=arc-20240116; t=1777384760; c=relaxed/simple;
+	bh=KpHc4VUnEH8yC2HEUnCrC546BMHSJ+FMabQtH7NyOYk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bJ4jUlnV6O8VYvk/YXW1YLcEDIA7DBSSF4sIne5+tkcXdEuD5WGeZmALW5iOizc+O59ROzMw2d8BtHy8dcdLgjGqBRAGP7Dw4VcqlyxEnJ0cu15QA9m+Hrsx48HZZQ3DTQ536rV24OBcLYrTzx7+XGLGIXCnNoJ46ONbg7ZWuZ8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=hebD+Nsx; arc=none smtp.client-ip=209.85.128.52
+	 In-Reply-To:To:Cc; b=usXncHcP1D/7XH5452mDwFwjdMrNLZB6mwteE/nzWZkfQn/5ebOaoQ4esxoknTxZ9X3KIxOw1aFg/cIuJeFo86LM4S5JNOTpLVYffEUow6+iqyXTlUPH2zbV6QoAEWvWR4n9rG/n2dMNa3K1b+u6Om5aqVGsQYI2HmUCkBxJuN0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=VM4EeCrT; arc=none smtp.client-ip=209.85.128.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hebD+Nsx"
-Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-4852a9c6309so105341945e9.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 06:59:16 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VM4EeCrT"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4896c22fcbaso86459915e9.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 06:59:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1777384755; x=1777989555; darn=vger.kernel.org;
+        d=linaro.org; s=google; t=1777384756; x=1777989556; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=3cNFpNsHWTlH2CArmHKw2g8Cqw++ZFKef2xJKHsmC7s=;
-        b=hebD+NsxQMe3x9WYsfNKPvB7pEkhKl/mjUCnQRSq1SRkIaTwLomwxvwkyHj5pop1l6
-         hmI/0S3+ftmenuPZnxwc6HtOIxLGB6ptjMVAXUK26jYUlWyxw3ytQ0oAwty9+V6KlhhB
-         Mr0vhM3WkIg9jMQl+TvQcNP2q1LI7r6/5tslsX+kb1tUm5peq/ZwAU/8+BvR/zRLHdHj
-         mBESegebOBj69QDlR7RBfOKW2nItlj8ooDFcdlu6gSxYt1pUYKG4PUM8/bNCGmEE0VNc
-         Jv9hQ5d6rpghI3eGUJiGPFPqWg8lzkrQ9oCClqvQKIUh7pKyJEl2EtSGnUIB4WtaVSOi
-         tA5Q==
+        bh=eKZ7iAWIrTA/bQhSyAbJFi9RrHxwT2445JQxA+ahvBs=;
+        b=VM4EeCrT2YtnOCSRBVGGdyVL8zNPAzZnKFiAbgjcsLSeP1SbGLJOFHRf6BGUGn5AqV
+         yUONrqSX8lzKNa/6ZnEh+Teb+K498s6lcLPTiCfUiN94u0z4RZzwCoj/JNiTmmqhzrjV
+         SyurCk/561TN1hTUh5MTCsCAs54ZUDhXlR7R0G+f4WgDyHz/SKN1Y82E2oQflPtLc2VT
+         GX86O5uynA2VUtAKjl6I00xDlZu4DWd5ztDF0P099nr68KJhtz8Pnyt2AWK/payHFgA4
+         iJc4UO8cn4WO9dyT0JKCVnzwQIJiiIfo/KGCf8Pr1XaMoBIvHCXbWr0Y7a5oRNC+Jg3z
+         HUoQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777384755; x=1777989555;
+        d=1e100.net; s=20251104; t=1777384756; x=1777989556;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=3cNFpNsHWTlH2CArmHKw2g8Cqw++ZFKef2xJKHsmC7s=;
-        b=ZjQZmoX1Kf9fzWlIgU18CxoPzJaVqhgUa77rWhfB10C99mUylJs/8z5HUKcNAub8m2
-         Pnbf93llkXhU7gwBJ+2wa/ogxzS6KJVYCIhvnFoj0ky3qDv6Yh6H3+BnFVtIf9LV0icA
-         xHHfRCze4oTnbntht3aL05wEiZBba/nKPdfAUSGeqaPm9wwi/QRnDoybpXNJ97KZZBwl
-         t3ivV6XthYf7udSpXjHXuWUCww5Iv0R55IgEuRybGp4+vxap3LS+lqqXl9LgJfFhyT/A
-         CST/9iDSI+Ykk2BVs5PbvGaIqjmlYxY/KvRIpg+kiW0d8LGQtEttsFm6Pet6LX+4WFmV
-         RRFQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8v3ne2vt7u2XcVkVhqmrAswS7UQRPq2lo5gptAPpSpRmonv0nuLO/fTnSu2ewGNBl3U3diaaGkqSi+OQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwqHUMmopof1P19ckBsuBR6YEWKplt8LdS4ij9EKxZQIf3c/PqC
-	Ind4gx0LHJxP7FvmbzndnJq45kuYgSw+aAMqfWTon9CkTryas5NTifdHKbBc4uNzClk=
-X-Gm-Gg: AeBDietv3dzcD0rNNavEHoDoaDhQucqUexCvc/Qb4YpqZUFPRAFEboTa8RG7ZKHl9l2
-	vv6zaNssyRKzHDfJm33vh15/sTF+u/C1AuKYhEi0pZI6F382yzphZPkk3sq08tONlNf4wBmVeGv
-	GE/06VJdVyw5ShufhPY6pP1HTWTF3/9FuwXRUlC9l+ZKn4p2vE543TbKXkxbuzbc1iORekkAbR3
-	bY6r8j9w2zd1AN6CEN8xCftCXcR+M0N2of1oANtWurXEWKtzMP6j28aWc2Z57AjvlWRSR13WGkh
-	KR3xyLMH75u+gGZ6A4SFK9Bk3yKy6a1SVRmbSoVaQ77bmBqdPXrfdiosmzzTYfLhtG3aC5lzNIa
-	7UrpYgrEhi+qcXSdq8Bhs9s5pvxGlnQU0KdhSOm33yESe3X0/Yb9emFqO+mUi/04q2PdX+vwf/y
-	SbQUWtfEoIEa1iI0ZZ4Gh+YTrAiqtwZ7y1MCJjUOphBce1XeQaJyIVZfQ=
-X-Received: by 2002:a05:600c:3507:b0:488:af7f:7707 with SMTP id 5b1f17b1804b1-48a77b1db5emr53077915e9.18.1777384755114;
-        Tue, 28 Apr 2026 06:59:15 -0700 (PDT)
+        bh=eKZ7iAWIrTA/bQhSyAbJFi9RrHxwT2445JQxA+ahvBs=;
+        b=i3V/5TfcG5pzY0YsbtDZvewhCXkwAQZaB4Dm2B/qikAQW4ORDbpsOhinxznrY7X37Z
+         NwrbhXdvAkny5K8sgB+3xVsySMnrVVkIJjHmoLoDsygGwX9obtclcyf6LqiU27SqiTsG
+         FBGgERfkB2E2VeMKOSwB7gwEfICSkyQLjxAPV3I2gGnPyrSgK1qxEABdnKmG/q4zAdat
+         atdL9/Du/2fU/6qm1+NosJN1dsUA96bG4xIeGWG1z9GHLe6je4Fd7A/xtDn+NMxaV52l
+         rH9EFlPL7al5YeiDYzZ4jln/Sbhr8qM0Ch5+kKI2+PbtpeeM5hEFY20e2rD8LcGE0qhB
+         cwdw==
+X-Forwarded-Encrypted: i=1; AFNElJ+zhRPMzRqfHs/Dd7r08nCbycsTDexoxzyHjyUBb8exGLR2YLcRcC46tmcY3Gz2C0GB5mKy2up42i1dAA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwaHMKtq9yLras1pFTP8gTrDKmSRmUAzCat3W3pr89Xc4AW/RJK
+	8Lket1yTc5uWfC88p5297S5g8SyOmSp7dqeHrFczu0yxiBuaehru49dS4f1QUdD8DDSDlQWwyzM
+	NqLLsZAQ=
+X-Gm-Gg: AeBDievlE1r3ReVftU7Thg9PfDTXngyVhaREp4RDpKDnxS8FyaJJ6zALXO6UeAIyucg
+	6ZRKYW/mLp5N0DyPN94YLtrz8tL8q2A6/nkC4TyejimgeMBigFD2SpFReKQU+dJa9DyT+wbpuhc
+	r34mP0ebMeKi72ioi2C1vd5GAZqUn/eSdIIRAboTwXJpLMIz/VzMLFg9MXiNePyLWS6hkwuFtfr
+	nifMPxZVh2aBLoN/NmXYNGsBXQt8XLxEHuU8DX5SmbPPPHCUo6aORx3Q2E0PT6y8vcZGeY3ryjq
+	Y5sPCr6DCImBScPGWtraCB7dxj6Mwg2c7PJuP2RjXwjl72tH0b5CcXcDtLLA2XQ+RBrggY2/RhW
+	ZpJSHIGyW1auQIpo7PAmEvdTJv8NU3b0mc5sBIv6g1mEuh5UVWufViP2HUMN3jeZLXlA3Q5vHNh
+	wNmdMmZNQKGIDMa/NDV3M9bELglBRqaTGOvrR2wasyHrtuy3/U6ZG85yc=
+X-Received: by 2002:a05:600d:8402:b0:489:149a:f9e7 with SMTP id 5b1f17b1804b1-48a77b25340mr41771075e9.27.1777384756154;
+        Tue, 28 Apr 2026 06:59:16 -0700 (PDT)
 Received: from arrakeen.starnux.net ([2a01:e0a:106d:1080:8261:5fff:fe11:bdda])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a773efe04sm60811155e9.12.2026.04.28.06.59.14
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a773efe04sm60811155e9.12.2026.04.28.06.59.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Apr 2026 06:59:14 -0700 (PDT)
+        Tue, 28 Apr 2026 06:59:15 -0700 (PDT)
 From: Neil Armstrong <neil.armstrong@linaro.org>
-Date: Tue, 28 Apr 2026 15:59:11 +0200
-Subject: [PATCH 1/2] dt-bindings: regulator: document the SY7758 6-channel
- High Efficiency LED Driver
+Date: Tue, 28 Apr 2026 15:59:12 +0200
+Subject: [PATCH 2/2] backlight: Add SY7758 6-channel High Efficiency LED
+ Driver support
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -70,7 +71,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-1-0caade5fdb32@linaro.org>
+Message-Id: <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-2-0caade5fdb32@linaro.org>
 References: <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-0-0caade5fdb32@linaro.org>
 In-Reply-To: <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-0-0caade5fdb32@linaro.org>
 To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
@@ -82,90 +83,385 @@ Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
  linux-fbdev@vger.kernel.org, KancyJoe <kancy2333@outlook.com>, 
  Neil Armstrong <neil.armstrong@linaro.org>
 X-Mailer: b4 0.15.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1753;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=10600;
  i=neil.armstrong@linaro.org; h=from:subject:message-id;
- bh=333uUG2C6Ne2A4QjGhhNw1YJTlVuEP5rcGs1oRWNx80=;
- b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBp8L0wK6EZCu2c15EL7r3pT23eeIFET1SCFmxKUwzL
- E4ZkWL2JAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCafC9MAAKCRB33NvayMhJ0X21D/
- 9uPq2s4LaBUNeHgTZA6TA2qn8iA2HAkkGx+vn4HSGvvBXuk7CMpE6eC7Ib+dhvcNT6oN20/7nMCjiA
- l0iU6+x7sItuA8TueTBzkmSb6typOWrxFSMeEDPj7PPhnJNJOQXrEzVR5So4jaiUz19D9NEq+m2+Er
- ztoTSZNaNxbMAilz6bJXtRkhFTgrM7qsic1ZTLJho3d3LH7P0xWMBP2mY3bgw/7lF+pzhtIhYsEBD3
- 9lgMXa9sbqm7UHbXePZ7uBDoYwMGeGK83+VC2SOxcTSgMdP4/1ox2BDC5niOpqayIKnfvB16zN873P
- rRKrjQg3aTnTWnoXG2n6eV0wDc/zowYZJg4BjEt/7scw3FqbDhniHS8QaYenAPcEt6VTwZIH6O7DDl
- zPkaa5NVUncIBKso8yhCRzxagqJ1bK9ju1hexM7qw5e4suNM7WBn5N0qKI3ym7Dgh6RbLU7iiVzhbI
- joVAwGp2Z7vBBMVvjV8FElPbXEuigqAp3e+daggvy6fgj6kc4/dYjatMY/EQaCJ7zlEFFZ7iDBiDU8
- 9dI2lLspdfVJDk3XFkvsvI7ed1v7xvFc9Yunj4Lw0YGkBk289oBQO8AHgpV66DBkM1iTTs3S9uo5R6
- mJKYMYxqAgXmRILL0dPfslptoi1Iu6xMlinE9V/wBsEYNn1kbD0i5eT57gmQ==
+ bh=XwkwUb/gWDWAE9PtQGUU15EurO7ORw1iWyFV0UYaRgM=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBp8L0w/OVhYkTAXvHRGaCiz8CW7n4IHJz+kTXaca4S
+ ut5XKtSJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCafC9MAAKCRB33NvayMhJ0RNRD/
+ 4/4h4yOM7I3EarDvjhcxVqPKR9CqLLRXKdDBEN20tTL91KzTiC0rRNlKrObP64R/pyZpLi3g7VO0o5
+ Kf0+wXjW+4MxTFIXQbd5KcYMpIwnD88SjwEK0ZLyChCs2+OiwjMhjDMMWfnBDqDO9vpZ/qgaFlhO+G
+ 1d639USK2QYY/QwVHtxSSekQ9qVqoQCRVS3YtitYwTFyniDuJJ5wWBaCYcDVALLFCwaC4OJVhTw4NX
+ F8A+Fy1ul7wigBan35kV5n6f9ZhzCPOsrkuCvB0mT+qZ0kC2N2hknmvVWkgd2RCdk717yVyrDVc30l
+ bnUHfdMXcSEXUGw+njC0SeTiT86oUPCHn82siZoISXN+NyoTf5U+m2o9nGRV50Q8yqCzn30MWGMb9c
+ pYGTSOLxDPqmnY4ip7fZEHnkgwbD5mKYsgglAT7YEB0KkMcsx5yp/Uo1+1A5FOxlB2mydnJhAfUluk
+ aHEqn/6DjIry4TwcZQk9OUzjEgUDhLGLvIlqm6O0zfieSztc1a3oDBKU4sVHt7GShBdAy3XOAcUSXE
+ ah47tWO8lYJ3HXhuFay1UvEV37Vs12Ox+Idmx4ouBIcnyEQzsItok/TlmL1+NGyfVmvrOFdmI3xsgc
+ CXhxU//mPkKEY6TFizcMWFnHHjfgieS11gCxS/G/KZz5Dm97IhRrw5xqOKyw==
 X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
  fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
 
-Document the Silergy SY7758 6-channel High Efficiency LED Driver
-used for backlight brightness control.
+From: KancyJoe <kancy2333@outlook.com>
+
+Implement support for the Silergy SY7758 6-channel High Efficiency LED
+Driver used for backlight brightness control in the Ayaneo Pocket S2
+dual-DSI panel.
 
 Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+Signed-off-by: KancyJoe <kancy2333@outlook.com>
 ---
- .../bindings/leds/backlight/silergy,sy7758.yaml    | 53 ++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+ drivers/video/backlight/Kconfig  |   8 +
+ drivers/video/backlight/Makefile |   1 +
+ drivers/video/backlight/sy7758.c | 311 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 320 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/leds/backlight/silergy,sy7758.yaml b/Documentation/devicetree/bindings/leds/backlight/silergy,sy7758.yaml
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index a7a3fbaf7c29..052ac80c8213 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -207,6 +207,14 @@ config BACKLIGHT_KTZ8866
+ 		Say Y to enable the backlight driver for the Kinetic KTZ8866
+ 		found in Xiaomi Mi Pad 5 series.
+ 
++config BACKLIGHT_SY7758
++	tristate "Backlight Driver for Silergy SY7758"
++	depends on I2C
++	select REGMAP_I2C
++	help
++	  Say Y to enable the backlight driver for the Silergy SY7758
++	  backlight controller found in Ayaneo Socket S2.
++
+ config BACKLIGHT_LM3533
+ 	tristate "Backlight Driver for LM3533"
+ 	depends on MFD_LM3533
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 794820a98ed4..39ef588b1cf2 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -56,6 +56,7 @@ obj-$(CONFIG_BACKLIGHT_PWM)		+= pwm_bl.o
+ obj-$(CONFIG_BACKLIGHT_QCOM_WLED)	+= qcom-wled.o
+ obj-$(CONFIG_BACKLIGHT_RT4831)		+= rt4831-backlight.o
+ obj-$(CONFIG_BACKLIGHT_SAHARA)		+= kb3886_bl.o
++obj-$(CONFIG_BACKLIGHT_SY7758)		+= sy7758.o
+ obj-$(CONFIG_BACKLIGHT_SKY81452)	+= sky81452-backlight.o
+ obj-$(CONFIG_BACKLIGHT_TPS65217)	+= tps65217_bl.o
+ obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
+diff --git a/drivers/video/backlight/sy7758.c b/drivers/video/backlight/sy7758.c
 new file mode 100644
-index 000000000000..dc44b3b502e2
+index 000000000000..a3e24bd444b6
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/leds/backlight/silergy,sy7758.yaml
-@@ -0,0 +1,53 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/leds/backlight/silergy,sy7758.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/drivers/video/backlight/sy7758.c
+@@ -0,0 +1,311 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Silergy SY7758 6-channel High Efficiency LED Driver
++ *
++ * Copyright (C) 2025 Kancy Joe <kancy2333@outlook.com>
++ * Copyright (C) 2026 Linaro Limited
++ * Author: Neil Armstrong <neil.armstrong@linaro.org>
++ */
++#include <linux/backlight.h>
++#include <linux/module.h>
++#include <linux/i2c.h>
++#include <linux/of.h>
++#include <linux/err.h>
++#include <linux/bits.h>
++#include <linux/regmap.h>
++#include <linux/bitfield.h>
++#include <linux/gpio/consumer.h>
++#include <linux/regulator/consumer.h>
 +
-+title: Silergy SY7758 6-channel High Efficiency LED Driver
++#define DEFAULT_BRIGHTNESS 1024
++#define MAX_BRIGHTNESS 4080
++#define REG_MAX 0xAE
 +
-+maintainers:
-+  - Neil Armstrong <neil.armstrong@linaro.org>
++/* Registers */
++#define REG_BRT_8BIT 0x00
++#define REG_DEV_CTL 0x01
++#define REG_STATUS 0x02
++#define REG_DEV_ID 0x03
++#define REG_DIRECT_CTL 0x04
++#define REG_STATUS2 0x05
++#define REG_BRT_12BIT_L 0x10
++#define REG_BRT_12BIT_H 0x11
++#define REG_LED_ENABLE 0x16
 +
-+description: |
-+  Silergy SY7758 is a high efficiency 6-channels LED backlight
-+  driver with I2C brightness control.
++/* OTP memory */
++#define REG_OTP_CFG98 0x98
++#define REG_OTP_CFG9E 0x9E
++#define REG_OTP_CFG0 0xA0
++#define REG_OTP_CFG1 0xA1
++#define REG_OTP_CFG2 0xA2
++#define REG_OTP_CFG3 0xA3
++#define REG_OTP_CFG4 0xA4
++#define REG_OTP_CFG5 0xA5
++#define REG_OTP_CFG6 0xA6
++#define REG_OTP_CFG7 0xA7
++#define REG_OTP_CFG9 0xA9
++#define REG_OTP_CFGA 0xAA
++#define REG_OTP_CFGE 0xAE
 +
-+allOf:
-+  - $ref: common.yaml#
++/* Fields */
++#define BIT_DEV_CTL_FAST BIT(7)
++#define MSK_DEV_CTL_BRT_MODE GENMASK(2, 1)
++#define BIT_DEV_CTL_BL_CTLB BIT(0)
 +
-+properties:
-+  compatible:
-+    const: silergy,sy7758
++#define BIT_STATUS_OPEN BIT(7)
++#define BIT_STATUS_SHORT BIT(6)
++#define BIT_STATUS_VREF_OK BIT(5)
++#define BIT_STATUS_VBST_OK BIT(4)
++#define BIT_STATUS_OVP BIT(3)
++#define BIT_STATUS_OCP BIT(2)
++#define BIT_STATUS_TSD BIT(1)
++#define BIT_STATUS_UVLO BIT(0)
 +
-+  reg:
-+    maxItems: 1
++#define MSK_DIRECT_CTL_OUT GENMASK(5, 0)
 +
-+  vddio-supply: true
++#define BIT_STATUS2_OCP50MS_LATCH BIT(0)
++#define BIT_STATUS2_OCP2 BIT(0)
 +
-+  enable-gpios:
-+    maxItems: 1
++#define MSK_BRT_12BIT_L GENMASK(7, 0)
++#define MSK_BRT_12BIT_H GENMASK(3, 0)
++#define MSK_LED_ENABLE GENMASK(5, 0)
 +
-+required:
-+  - compatible
-+  - reg
-+  - vddio-supply
-+  - enable-gpios
++#define BIT_CFG98_IBST_LIM_2X BIT(7)
++#define BIT_CFG98_A0_FSETB BIT(0)
 +
-+unevaluatedProperties: false
++#define BIT_CFG9E_VBST_RANGE BIT(5)
++#define MSK_CFG9E_HEADROOM_OFFSET GENMASK(3, 0)
 +
-+examples:
-+  - |
-+    #include <dt-bindings/gpio/gpio.h>
++#define MSK_CFG0_CURRENT_LOW GENMASK(7, 0)
 +
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
++#define BIT_CFG1_PDET_STDBY BIT(7)
++#define MSK_CFG1_CURRENT_MAX GENMASK(6, 4)
++#define MSK_CFG1_CURRENT_HIGH GENMASK(3, 0)
 +
-+        backlight@11 {
-+            compatible = "silergy,sy7758";
-+            reg = <0x11>;
-+            vddio-supply = <&bl_vddio>;
-+            enable-gpios = <&gpio 16 GPIO_ACTIVE_HIGH>;
-+        };
-+    };
++#define BIT_CFG2_UVLO_EN BIT(5)
++#define BIT_CFG2_UVLO_TH BIT(4)
++#define BIT_CFG2_BL_ON BIT(3)
++#define BIT_CFG2_ISET_EN BIT(2)
++#define BIT_CFG2_BST_ESET_EN BIT(1)
++
++#define MSK_CFG3_SLOPE GENMASK(6, 4)
++#define MSK_CFG3_FILTER GENMASK(3, 2)
++#define MSK_CFG3_PWM_INPUT_HYSTERESIS GENMASK(1, 0)
++#define MSK_CFG4_PWM_TO_I_TH GENMASK(7, 4)
++
++#define BIT_CFG5_PWM_DIRECT BIT(7)
++#define MSK_CFG5_PS_MODE GENMASK(6, 4)
++#define MSK_CFG5_PWM_FREQ GENMASK(3, 0)
++
++#define MSK_CFG6_BST_FREQ GENMASK(7, 6)
++#define MSK_CFG6_VBST GENMASK(5, 0)
++
++#define BIT_CFG7_EN_DRV3 BIT(5)
++#define BIT_CFG7_EN_DRV2 BIT(4)
++#define MSK_CFG7_IBST_LIM GENMASK(1, 0)
++
++#define MSK_CFG9_VBST_MAX GENMASK(7, 5)
++#define BIT_CFG9_JUMP_EN BIT(4)
++#define MSK_CFG9_JUMP_TH GENMASK(3, 2)
++#define MSK_CFG9_JUMP_VOLTAGE GENMASK(1, 0)
++
++#define BIT_CFGA_SSCLK_EN BIT(7)
++#define BIT_CFGA_ADAPTIVE BIT(3)
++#define MSK_CFGA_DRIVER_HEADROOM GENMASK(2, 0)
++#define MSK_CFGE_STEP_UP GENMASK(7, 6)
++#define MSK_CFGE_STEP_DN GENMASK(5, 4)
++#define MSK_CFGE_LED_FAULT_TH GENMASK(3, 2)
++#define MSK_CFGE_LED_COMP_HYST GENMASK(1, 0)
++
++struct sy7758 {
++	struct i2c_client *client;
++	struct regmap *regmap;
++	struct gpio_desc *gpio;
++	struct backlight_device *bl;
++};
++
++static const struct regmap_config sy7758_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 8,
++	.max_register = REG_MAX,
++};
++
++static int sy7758_backlight_update_status(struct backlight_device *backlight_dev)
++{
++	struct sy7758 *sydev = bl_get_data(backlight_dev);
++	unsigned int brightness = backlight_get_brightness(backlight_dev);
++	int ret;
++
++	ret = regmap_write(sydev->regmap, REG_BRT_12BIT_L,
++			   FIELD_PREP(MSK_BRT_12BIT_L,
++				      brightness & 0xff));
++	if (ret)
++		return ret;
++
++	ret = regmap_write(sydev->regmap, REG_BRT_12BIT_H,
++			   FIELD_PREP(MSK_BRT_12BIT_H,
++				      (brightness >> 8) & 0xf));
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static const struct backlight_ops sy7758_backlight_ops = {
++	.options = BL_CORE_SUSPENDRESUME,
++	.update_status = sy7758_backlight_update_status,
++};
++
++static int sy7758_init(struct sy7758 *sydev)
++{
++	int ret = 0;
++
++	ret = regmap_write(sydev->regmap, REG_DEV_CTL,
++			   BIT_DEV_CTL_FAST | BIT_DEV_CTL_BL_CTLB |
++			   FIELD_PREP(MSK_DEV_CTL_BRT_MODE, 2));
++	if (ret)
++		return ret;
++
++	ret = regmap_write(sydev->regmap, REG_BRT_12BIT_L,
++			   FIELD_PREP(MSK_BRT_12BIT_L,
++				      DEFAULT_BRIGHTNESS & 0xff));
++	if (ret)
++		return ret;
++
++	ret = regmap_write(sydev->regmap, REG_BRT_12BIT_H,
++			   FIELD_PREP(MSK_BRT_12BIT_H,
++				      (DEFAULT_BRIGHTNESS >> 8)));
++	if (ret)
++		return ret;
++
++	ret = regmap_write(sydev->regmap, REG_OTP_CFG5,
++			   FIELD_PREP(MSK_CFG5_PS_MODE, 6) |
++			   FIELD_PREP(MSK_CFG5_PWM_FREQ, 4));
++	if (ret)
++		return ret;
++
++	ret = regmap_write(sydev->regmap, REG_OTP_CFG0,
++			   FIELD_PREP(MSK_CFG0_CURRENT_LOW, 85));
++	if (ret)
++		return ret;
++
++	ret = regmap_write(sydev->regmap, REG_OTP_CFG1,
++			   BIT_CFG1_PDET_STDBY |
++			   FIELD_PREP(MSK_CFG1_CURRENT_MAX, 1) |
++			   FIELD_PREP(MSK_CFG1_CURRENT_HIGH, 10));
++	if (ret)
++		return ret;
++
++	ret = regmap_write(sydev->regmap, REG_OTP_CFG9,
++			   FIELD_PREP(MSK_CFG9_VBST_MAX, 4));
++	if (ret)
++		return ret;
++
++	ret = regmap_write(sydev->regmap, REG_OTP_CFG2,
++			   BIT_CFG2_BL_ON | BIT_CFG2_UVLO_EN);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int sy7758_probe(struct i2c_client *client)
++{
++	struct backlight_properties props = { };
++	struct device *dev = &client->dev;
++	struct sy7758 *sydev;
++	unsigned int dev_id;
++	int ret;
++
++	sydev = devm_kzalloc(dev, sizeof(*sydev), GFP_KERNEL);
++	if (!sydev)
++		return -ENOMEM;
++
++	i2c_set_clientdata(client, sydev);
++
++	/* Initialize regmap */
++	sydev->client = client;
++	sydev->regmap = devm_regmap_init_i2c(client, &sy7758_regmap_config);
++	if (IS_ERR(sydev->regmap))
++		return dev_err_probe(dev, PTR_ERR(sydev->regmap),
++				     "failed to init regmap\n");
++
++	/* Get and enable regulators */
++	ret = devm_regulator_get_enable(dev, "vddio");
++	if (ret)
++		return dev_err_probe(dev, ret, "failed to get regulator\n");
++
++	usleep_range(100, 200);
++
++	/* Get enable GPIO and set to high */
++	sydev->gpio = devm_gpiod_get(dev, "enable", GPIOD_OUT_HIGH);
++	if (IS_ERR(sydev->gpio))
++		return dev_err_probe(dev, PTR_ERR(sydev->gpio),
++				     "failed to get enable GPIO\n");
++
++	usleep_range(100, 200);
++
++	/* try read and check device id */
++	ret = regmap_read(sydev->regmap, REG_DEV_ID, &dev_id);
++	if (ret < 0)
++		return dev_err_probe(dev, -EPROBE_DEFER,
++				     "failed to read device id\n");
++	if (dev_id != 0x63) {
++		dev_err(dev, "unexpected device id: 0x%02x\n", dev_id);
++		return -ENODEV;
++	}
++
++	/* Initialize and set default brightness */
++	ret = sy7758_init(sydev);
++	if (ret)
++		return ret;
++
++	props.type = BACKLIGHT_RAW;
++	props.max_brightness = MAX_BRIGHTNESS;
++	props.brightness = DEFAULT_BRIGHTNESS;
++	props.scale = BACKLIGHT_SCALE_LINEAR;
++
++	sydev->bl = devm_backlight_device_register(dev, "sy7758-backlight",
++						   dev, sydev, &sy7758_backlight_ops,
++						   &props);
++	if (IS_ERR(sydev->bl))
++		return dev_err_probe(dev, PTR_ERR(sydev->bl),
++				     "failed to register backlight device\n");
++
++	return backlight_update_status(sydev->bl);
++}
++
++static void sy7758_remove(struct i2c_client *client)
++{
++	struct sy7758 *sydev = i2c_get_clientdata(client);
++
++	backlight_disable(sydev->bl);
++}
++
++static const struct i2c_device_id sy7758_ids[] = {
++	{ "sy7758" },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, sy7758_ids);
++
++static const struct of_device_id sy7758_match_table[] = {
++	{ .compatible = "silergy,sy7758", },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, sy7758_match_table);
++
++static struct i2c_driver sy7758_driver = {
++	.driver = {
++		.name = "sy7758",
++		.of_match_table = sy7758_match_table,
++	},
++	.probe = sy7758_probe,
++	.remove = sy7758_remove,
++	.id_table = sy7758_ids,
++};
++
++module_i2c_driver(sy7758_driver);
++
++MODULE_DESCRIPTION("Silergy SY7758 Backlight Driver");
++MODULE_AUTHOR("Kancy Joe <kancy2333@outlook.com>");
++MODULE_LICENSE("GPL");
 
 -- 
 2.34.1

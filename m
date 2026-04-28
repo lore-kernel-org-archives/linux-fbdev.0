@@ -1,102 +1,125 @@
-Received: from forward200a.mail.yandex.net (forward200a.mail.yandex.net [178.154.239.93])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0E1133ADA9;
-	Tue, 28 Apr 2026 20:52:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.93
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777409556; cv=none; b=JWkOjT/ZzYY+zxOoqZNJzPMOZYPWfBZQJtOckvsBfnILlv8Ml5dFxJpf3MuG/NPYOyVMWdy6y4t3Gku9Q3hE0p01w8Q6/1gCX1pxjvaMXRnDwnndmqrZYqeuloiv30ob0OX4IOesQzvGtVYiFnpiKvBhwe7Cd6BCHjB+Krj7eOk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777409556; c=relaxed/simple;
-	bh=F/OmEEhKAmmu4QalJ/slS3LVVrJMytLXKdajWueqpf0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=g7fBZJBCjrBEUBDqNEOkK4+kATzg2xE0CMZJpNRa01WHeSlJMBhoSaE2Pblp1GS4mZE8jkDeTfpg7Z5x++MD0IWPTgolQ+groCdafYDQZKYDt9InFaPbp0RnEa0q4JI3KhNiYJ7GtfHUOwlfnsGxvvQ+Qxd+5hNJMctEjRO5hWo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net; spf=pass smtp.mailfrom=sezginduran.net; dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b=hNotqIgw; arc=none smtp.client-ip=178.154.239.93
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sezginduran.net
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C81D37CD29
+	for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 23:35:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.176
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777419355; cv=pass; b=oP8X8gI8xkbfuypbDVwAS+1XL2Z9AchvsYgwn01PEwsJqHbVoMWx4mgk5IjmnONkhJX/fWZCl1bkrlc5ByRS6puBo0h8C6HE76sJnIE15B29l8ecfPtVS4jRBP5rnuvHhP8NVuqyObUKXrSR8YQ01uS9q74V0WWswrXP2ttkzSE=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777419355; c=relaxed/simple;
+	bh=p24DGe2ChYsLvCmBXf6Kp5TWFFLOr7i+/3Xsm2m1l9M=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VinKe5e3Tvs0Vzp7qomozAOVuokyUTE1WTx33Vdsnw2jpbUGEk9IrzI/OgYkpUgVFY1i62L77BTDk79keAILUYm+hsOz/EEYU4APXtrpbAxl8WoTuQeYaiVn/iC8aEVjqmZ1kNQpHNVm9Eiz2aJ6NrpXHxqAthimpda3JJzv2yo=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lqhu2+sG; arc=pass smtp.client-ip=209.85.214.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b="hNotqIgw"
-Received: from forward100a.mail.yandex.net (forward100a.mail.yandex.net [IPv6:2a02:6b8:c0e:500:1:45:d181:d100])
-	by forward200a.mail.yandex.net (Yandex) with ESMTPS id F0918C523B;
-	Tue, 28 Apr 2026 23:44:29 +0300 (MSK)
-Received: from mail-nwsmtp-smtp-production-main-64.vla.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-64.vla.yp-c.yandex.net [IPv6:2a02:6b8:c18:31e:0:640:f144:0])
-	by forward100a.mail.yandex.net (Yandex) with ESMTPS id 40163C03BC;
-	Tue, 28 Apr 2026 23:44:22 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-64.vla.yp-c.yandex.net (smtp) with ESMTPSA id Iig5pN5S3mI0-WyHfxO9D;
-	Tue, 28 Apr 2026 23:44:21 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sezginduran.net;
-	s=mail; t=1777409061;
-	bh=kizDuhpz/ZW0XbVGAZ4ZeGP8avn86nvPk7wLDHXIDP4=;
-	h=Message-ID:Date:Cc:Subject:To:From;
-	b=hNotqIgw7K4QMghY1XfdeM1qwDgSnHot+0ZyR4SiAnYe5z0m+C8TslOafjDwNLcd7
-	 HLiRk42CK+Xus1cc8eahvWsXRvomkVpqhdVv9fDwiqr2TpEU4Kd7Pr93xN+lSms7SX
-	 Nxgp+IMa4Mowbww8r/3J8vC55FO3f6ZcEhmegD3U=
-Authentication-Results: mail-nwsmtp-smtp-production-main-64.vla.yp-c.yandex.net; dkim=pass header.i=@sezginduran.net
-From: Ahmet Sezgin Duran <ahmet@sezginduran.net>
-To: gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Ahmet Sezgin Duran <ahmet@sezginduran.net>
-Subject: [PATCH] staging: sm750fb: remove double space in fb_ops entries
-Date: Tue, 28 Apr 2026 20:44:16 +0000
-Message-ID: <20260428204416.55374-1-ahmet@sezginduran.net>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lqhu2+sG"
+Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2ad9f316d68so52940675ad.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 16:35:54 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777419354; cv=none;
+        d=google.com; s=arc-20240605;
+        b=hbSJ16aXmyV1h4vD9qMefGYRTtSQC+By/8/MiHqv8cIrMV8rFm5bTUaWX99t5DnkAz
+         9g5U6DnQuzkV8My/PJdwnRlEw9c2H1uxbvE5U2dX7/uZJ0HehIrBoLSuwJiRe+dEgq7k
+         UW2J3NsptyYOlpb6AqdAB/s+/deHoGt1Q0KeE00e7YZRQhNxoBgf3pWkCDo0DPvDiDRn
+         blFZEU8tLSw/T135hkks1wOOmEYnENB3POFjVcDr+omdeiAtBLRHJpp4AFKvkCEHAMFn
+         ucayNXlM3lyO9awvkoNv+FrUd+uBtWmZBic7OVzv3fjhIVJp3+w+zOhOGBSE9pCfX0Xk
+         726w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=0db33wYSB/VKxNPenizKPNWOjqB/3saiIIrw++PQlmA=;
+        fh=dGcToyzx9m1Pj1EU76YXGn61UOdqnsYwcEaattM0DSU=;
+        b=dBaPvGF0ZVspK/hWN/VNSaJRRL6CNtchcaPlq+b8NTag9YqDMiqgapshXhYWEeG4lL
+         OmmTSwxSzPT6VktgAGQA+v+ZwyORG00jsvD+PJClLEJAXM0iQSogz+KsllD84eJ/GDdo
+         abVMMTFDpHkfAN4bq5INl6qUtockVwtQKwZXHl3oQGKx1Ro6vsACV3+8OwF5Db4GgOlF
+         bENajDhK/SA0CVqJ3YJi4/165WRTxhfMb0BNTutjM/WJHC+NbM3vhuICbroC5Yi4iYkA
+         SX7sJwRshAUW4kMXbsUO7zND+XSlUd6EdXmQMfe9wLj/Q+v1DuGLebXnlpKYSthaa/Ot
+         u/dQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777419354; x=1778024154; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=0db33wYSB/VKxNPenizKPNWOjqB/3saiIIrw++PQlmA=;
+        b=lqhu2+sGzhBTsyZRRos2jZ387BvKCfAcc1fKf1A/JtGEisIHLLncDhhkhhRlvdUIMJ
+         Dlg3Jve5tuMahEqtI8RpjhflyeAMzsEIi3hfFO6jBbs2PLnQBwAKxE8w8h5rWhIu/b7h
+         i+1ggRanMO3AgRtgI6tcLrx4Anl5NaM4VL1nKJ7UaCeVYW34Bh8SvOqkrjGoFf+B4m3z
+         XwhrlcC7MepsVB3dW4Sa6QjGUZJZW5ERxk8/PwiX1ZKWInGa07LASTJi254vjO4TYUf8
+         KsgPXB1etH51a2Ky1hoCINE5EHN+oYpO5Ep8rRjv2b9Dl1aRPtQdeWinaMksZwxTenym
+         bY2Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777419354; x=1778024154;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0db33wYSB/VKxNPenizKPNWOjqB/3saiIIrw++PQlmA=;
+        b=jkb/F1O/g2on9z7Bf+U1SkIpMPuyIunOQaCESgqkWNFM9sevRo33oX2r7EC8Un5DcF
+         xPVDFUUxJw2kLL3lFOrY3wj3zo57bmeOf1kJLMpUVjTSNTMj0NVXJj+p7+8u65y6MAMz
+         E/3moDbvTcrfg6zm34yb0TJ9W9fW4gxi2uWx6+ayQvtgyu5at8e6ERAUj8rOSMGwsVN5
+         piJpkx7xCzycbv37UbDaxlgjHOfEYWNSw/dTJv2Uco2wO+pJvUbZ4xkxEwYPSOEUS/rh
+         TK1Y6zc25DoVSYNAbavP912J6GueOPTXl32l4RsXmB38AwsBthMENbl5wEX3CEDH7aT3
+         b18Q==
+X-Forwarded-Encrypted: i=1; AFNElJ9af3hehfqB7aozQynGCRwrHDDQvmXvbexZorBZBPTC54P/yacJf3huw1SnLb4rD2Crrkqo+XBD8mshgA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx0ipizCa+1XAy7KhQ2T4tyO/hsPEMk7dH8KfWhnKOD/HaznMO5
+	7NCtsKIIcoK98xnfwdSi0OmVpFAn9987Nnxhz8/BWi7wNzNdEh+ku8qQEAI0yxtdbEFrQ4Vxgvy
+	LUn0k2F9bkb9TnDGrC+mNuiT4Z5lOJms=
+X-Gm-Gg: AeBDiet3py5FhfXMIw34m2j+k1XYqJAELjC9QB+gnQbcdUFq9VqmLMhZrFRnn7n6Rk3
+	ziyGsAm+DEJX8m8cfOghvaNR/S27QQJZton+37hR7QlXpJ1cGMAmeE9/DKdiZytBff3HTGkQwPK
+	ytR1+tN8wQ9bW1QrE/T7owiCJjbskzq9s2hV3JnqLv7XV0+rDvaMKTDKJmVocWrp5KI8KkyeF1j
+	gZjsEJwWitUBpOMaljtuo2HYkXzMKLFSJdqEMznFH7thb0Z3FHUgJNQsCNve5G5/KcAqgUDHZZd
+	gyYkc0bpXLT2IJfMcqGIh5J1iZdybwdXu0bYqQEsVaHU3PEVwrk=
+X-Received: by 2002:a17:903:1c5:b0:2b2:4b4e:e4d8 with SMTP id
+ d9443c01a7336-2b98730ca87mr13536075ad.4.1777419353607; Tue, 28 Apr 2026
+ 16:35:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-0-0caade5fdb32@linaro.org>
+ <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-2-0caade5fdb32@linaro.org>
+In-Reply-To: <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-2-0caade5fdb32@linaro.org>
+From: Gyeyoung Baek <gye976@gmail.com>
+Date: Wed, 29 Apr 2026 08:35:41 +0900
+X-Gm-Features: AVHnY4IUG0aEhSqiUeS0javv0LFZ7gitoer-tm54oLakxbwVeIPwDa7HUcbCYTI
+Message-ID: <CAKbEznvPAYFUt-ykH7rCQwMFUq6N68B9x7Dd97WRDm3Mvj34fw@mail.gmail.com>
+Subject: Re: [PATCH 2/2] backlight: Add SY7758 6-channel High Efficiency LED
+ Driver support
+To: Neil Armstrong <neil.armstrong@linaro.org>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, KancyJoe <kancy2333@outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Remove extra space after '=' in .fb_check_var assignments.
+Hi,
 
-Signed-off-by: Ahmet Sezgin Duran <ahmet@sezginduran.net>
----
- drivers/staging/sm750fb/sm750.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+> +
+> +static int sy7758_probe(struct i2c_client *client)
+> +{
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 8f43eea2868b..fadba95850be 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -670,7 +670,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- static const struct fb_ops lynxfb_ops = {
- 	.owner = THIS_MODULE,
- 	FB_DEFAULT_IOMEM_OPS,
--	.fb_check_var =  lynxfb_ops_check_var,
-+	.fb_check_var = lynxfb_ops_check_var,
- 	.fb_set_par = lynxfb_ops_set_par,
- 	.fb_setcolreg = lynxfb_ops_setcolreg,
- 	.fb_blank = lynxfb_ops_blank,
-@@ -680,7 +680,7 @@ static const struct fb_ops lynxfb_ops = {
- static const struct fb_ops lynxfb_ops_with_cursor = {
- 	.owner = THIS_MODULE,
- 	FB_DEFAULT_IOMEM_OPS,
--	.fb_check_var =  lynxfb_ops_check_var,
-+	.fb_check_var = lynxfb_ops_check_var,
- 	.fb_set_par = lynxfb_ops_set_par,
- 	.fb_setcolreg = lynxfb_ops_setcolreg,
- 	.fb_blank = lynxfb_ops_blank,
-@@ -691,7 +691,7 @@ static const struct fb_ops lynxfb_ops_with_cursor = {
- static const struct fb_ops lynxfb_ops_accel = {
- 	.owner = THIS_MODULE,
- 	__FB_DEFAULT_IOMEM_OPS_RDWR,
--	.fb_check_var =  lynxfb_ops_check_var,
-+	.fb_check_var = lynxfb_ops_check_var,
- 	.fb_set_par = lynxfb_ops_set_par,
- 	.fb_setcolreg = lynxfb_ops_setcolreg,
- 	.fb_blank = lynxfb_ops_blank,
-@@ -705,7 +705,7 @@ static const struct fb_ops lynxfb_ops_accel = {
- static const struct fb_ops lynxfb_ops_accel_with_cursor = {
- 	.owner = THIS_MODULE,
- 	__FB_DEFAULT_IOMEM_OPS_RDWR,
--	.fb_check_var =  lynxfb_ops_check_var,
-+	.fb_check_var = lynxfb_ops_check_var,
- 	.fb_set_par = lynxfb_ops_set_par,
- 	.fb_setcolreg = lynxfb_ops_setcolreg,
- 	.fb_blank = lynxfb_ops_blank,
+> +
+> +       /* try read and check device id */
+> +       ret = regmap_read(sydev->regmap, REG_DEV_ID, &dev_id);
+> +       if (ret < 0)
+> +               return dev_err_probe(dev, -EPROBE_DEFER,
+> +                                    "failed to read device id\n");
+
+regmap_read() seems it can return errors other than -EPROBE_DEFER
+(like -EINVAL,), and hardcoding -EPROBE_DEFER here might drop the
+actual error.
+And maybe would keep retrying probe forever
+
+How about this?
+> +               return dev_err_probe(dev, ret, "failed to read device id\n");
+
+
 -- 
-2.53.0
-
+Thanks,
+Gyeyoung

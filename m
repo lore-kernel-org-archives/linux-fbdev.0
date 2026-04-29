@@ -1,125 +1,102 @@
-Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
+Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C81D37CD29
-	for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 23:35:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.176
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777419355; cv=pass; b=oP8X8gI8xkbfuypbDVwAS+1XL2Z9AchvsYgwn01PEwsJqHbVoMWx4mgk5IjmnONkhJX/fWZCl1bkrlc5ByRS6puBo0h8C6HE76sJnIE15B29l8ecfPtVS4jRBP5rnuvHhP8NVuqyObUKXrSR8YQ01uS9q74V0WWswrXP2ttkzSE=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777419355; c=relaxed/simple;
-	bh=p24DGe2ChYsLvCmBXf6Kp5TWFFLOr7i+/3Xsm2m1l9M=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=VinKe5e3Tvs0Vzp7qomozAOVuokyUTE1WTx33Vdsnw2jpbUGEk9IrzI/OgYkpUgVFY1i62L77BTDk79keAILUYm+hsOz/EEYU4APXtrpbAxl8WoTuQeYaiVn/iC8aEVjqmZ1kNQpHNVm9Eiz2aJ6NrpXHxqAthimpda3JJzv2yo=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lqhu2+sG; arc=pass smtp.client-ip=209.85.214.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D90876FC3
+	for <linux-fbdev@vger.kernel.org>; Wed, 29 Apr 2026 00:16:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1777421796; cv=none; b=KL82pwV1ejk0Ti+DE7V3cSAxKoQMsdCKHiMRkKDSLnY+FqlvQqW878uEHBauFyotDhPLzfzWtPltn2YjJqmmwVa6aazFf+G49cZ8SPvSW6Dn9uJjK3CCiCLTQBJ/zxAZ/EPkH7VHoKouN0iUXlkwpeZTg7eWTPya8fOuLzP9nys=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1777421796; c=relaxed/simple;
+	bh=MYkC1lGgmyF61CGHkzTO951DZUc25ipo5CaYXUYB1s4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V0Ea9DpkyuU2gQ0inHJZpBCRpo5K7K8cSqeXIbHDKjGOG0thtl1x3Z2kkyBC+Ndr3kFpcxexfn4pMpwLsb24WwMRDzfyzl38VaLhy9mJiYLEWfjdtTWE7jASq/XC7an5e1DD+5XioWR98k21HI7hm6SVHuHGYNlr/MG9l1Cybbc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fQsh0w2/; arc=none smtp.client-ip=209.85.216.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lqhu2+sG"
-Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2ad9f316d68so52940675ad.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 16:35:54 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777419354; cv=none;
-        d=google.com; s=arc-20240605;
-        b=hbSJ16aXmyV1h4vD9qMefGYRTtSQC+By/8/MiHqv8cIrMV8rFm5bTUaWX99t5DnkAz
-         9g5U6DnQuzkV8My/PJdwnRlEw9c2H1uxbvE5U2dX7/uZJ0HehIrBoLSuwJiRe+dEgq7k
-         UW2J3NsptyYOlpb6AqdAB/s+/deHoGt1Q0KeE00e7YZRQhNxoBgf3pWkCDo0DPvDiDRn
-         blFZEU8tLSw/T135hkks1wOOmEYnENB3POFjVcDr+omdeiAtBLRHJpp4AFKvkCEHAMFn
-         ucayNXlM3lyO9awvkoNv+FrUd+uBtWmZBic7OVzv3fjhIVJp3+w+zOhOGBSE9pCfX0Xk
-         726w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=0db33wYSB/VKxNPenizKPNWOjqB/3saiIIrw++PQlmA=;
-        fh=dGcToyzx9m1Pj1EU76YXGn61UOdqnsYwcEaattM0DSU=;
-        b=dBaPvGF0ZVspK/hWN/VNSaJRRL6CNtchcaPlq+b8NTag9YqDMiqgapshXhYWEeG4lL
-         OmmTSwxSzPT6VktgAGQA+v+ZwyORG00jsvD+PJClLEJAXM0iQSogz+KsllD84eJ/GDdo
-         abVMMTFDpHkfAN4bq5INl6qUtockVwtQKwZXHl3oQGKx1Ro6vsACV3+8OwF5Db4GgOlF
-         bENajDhK/SA0CVqJ3YJi4/165WRTxhfMb0BNTutjM/WJHC+NbM3vhuICbroC5Yi4iYkA
-         SX7sJwRshAUW4kMXbsUO7zND+XSlUd6EdXmQMfe9wLj/Q+v1DuGLebXnlpKYSthaa/Ot
-         u/dQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fQsh0w2/"
+Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-35691a231a7so7993860a91.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 28 Apr 2026 17:16:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777419354; x=1778024154; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=0db33wYSB/VKxNPenizKPNWOjqB/3saiIIrw++PQlmA=;
-        b=lqhu2+sGzhBTsyZRRos2jZ387BvKCfAcc1fKf1A/JtGEisIHLLncDhhkhhRlvdUIMJ
-         Dlg3Jve5tuMahEqtI8RpjhflyeAMzsEIi3hfFO6jBbs2PLnQBwAKxE8w8h5rWhIu/b7h
-         i+1ggRanMO3AgRtgI6tcLrx4Anl5NaM4VL1nKJ7UaCeVYW34Bh8SvOqkrjGoFf+B4m3z
-         XwhrlcC7MepsVB3dW4Sa6QjGUZJZW5ERxk8/PwiX1ZKWInGa07LASTJi254vjO4TYUf8
-         KsgPXB1etH51a2Ky1hoCINE5EHN+oYpO5Ep8rRjv2b9Dl1aRPtQdeWinaMksZwxTenym
-         bY2Q==
+        d=gmail.com; s=20251104; t=1777421794; x=1778026594; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=IxLGKHb8A2XfyprIdpvTidPgjGnBvN3bS6Ed5BUmYws=;
+        b=fQsh0w2/AwXmNhXeLICtXQbbYOhpDrxuDqJ+VkehxrcTvBLTsgYEzlk3p7rUrf4e6N
+         XhFuGPpZxpCkkq1am1GjUSBpfAm2nCZjXqM+2C/DTPDaX3RD+04Psj3Lp/TX2f4QmKOn
+         uO5YxK7m4bTITYLwCt0m1NmWTzyhFYLuGnV7pvvvjjPcMcDgd6kHdlg2uqFStchPtpSH
+         bRTv/O7GKJvfs6Mz4uh3Yuy2zlAzW0yQHpgdnLamZVKG+88D9kciufnmnUrUvMJco3HO
+         8kv22MpEsjN7snknvWuHrMoaHoOJQ+feDpVPfFbB5djk249JoCJoeY5FNp6BGrZvBxum
+         Zdeg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777419354; x=1778024154;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1777421794; x=1778026594;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=0db33wYSB/VKxNPenizKPNWOjqB/3saiIIrw++PQlmA=;
-        b=jkb/F1O/g2on9z7Bf+U1SkIpMPuyIunOQaCESgqkWNFM9sevRo33oX2r7EC8Un5DcF
-         xPVDFUUxJw2kLL3lFOrY3wj3zo57bmeOf1kJLMpUVjTSNTMj0NVXJj+p7+8u65y6MAMz
-         E/3moDbvTcrfg6zm34yb0TJ9W9fW4gxi2uWx6+ayQvtgyu5at8e6ERAUj8rOSMGwsVN5
-         piJpkx7xCzycbv37UbDaxlgjHOfEYWNSw/dTJv2Uco2wO+pJvUbZ4xkxEwYPSOEUS/rh
-         TK1Y6zc25DoVSYNAbavP912J6GueOPTXl32l4RsXmB38AwsBthMENbl5wEX3CEDH7aT3
-         b18Q==
-X-Forwarded-Encrypted: i=1; AFNElJ9af3hehfqB7aozQynGCRwrHDDQvmXvbexZorBZBPTC54P/yacJf3huw1SnLb4rD2Crrkqo+XBD8mshgA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx0ipizCa+1XAy7KhQ2T4tyO/hsPEMk7dH8KfWhnKOD/HaznMO5
-	7NCtsKIIcoK98xnfwdSi0OmVpFAn9987Nnxhz8/BWi7wNzNdEh+ku8qQEAI0yxtdbEFrQ4Vxgvy
-	LUn0k2F9bkb9TnDGrC+mNuiT4Z5lOJms=
-X-Gm-Gg: AeBDiet3py5FhfXMIw34m2j+k1XYqJAELjC9QB+gnQbcdUFq9VqmLMhZrFRnn7n6Rk3
-	ziyGsAm+DEJX8m8cfOghvaNR/S27QQJZton+37hR7QlXpJ1cGMAmeE9/DKdiZytBff3HTGkQwPK
-	ytR1+tN8wQ9bW1QrE/T7owiCJjbskzq9s2hV3JnqLv7XV0+rDvaMKTDKJmVocWrp5KI8KkyeF1j
-	gZjsEJwWitUBpOMaljtuo2HYkXzMKLFSJdqEMznFH7thb0Z3FHUgJNQsCNve5G5/KcAqgUDHZZd
-	gyYkc0bpXLT2IJfMcqGIh5J1iZdybwdXu0bYqQEsVaHU3PEVwrk=
-X-Received: by 2002:a17:903:1c5:b0:2b2:4b4e:e4d8 with SMTP id
- d9443c01a7336-2b98730ca87mr13536075ad.4.1777419353607; Tue, 28 Apr 2026
- 16:35:53 -0700 (PDT)
+        bh=IxLGKHb8A2XfyprIdpvTidPgjGnBvN3bS6Ed5BUmYws=;
+        b=U4/q82Uzc7bLSggsgRl621NLjmYZ3PkwzkwHEdiHpwHSWH9Haaz7wynpLCOdgc6KiL
+         YTfiWhsfzaZN1FN8SFRwfnza0HlmEhS4RUT9IgNFKfYrIJTPkHnbQExI1Py/AbZ0YN30
+         2nPbagM+exCqFuO0dwOtZoYTjLg5x+ILBV+WIwA9bXKWPSM0/TTuXjrtVCc9UvaRJF/e
+         vquwifnY8o5ectBS+bpQnwe2MKamqxmYH1Gtbk+AlvV9wnYXnd5aJCKy5fTVhRMaNeOo
+         wdOukvULzGiPZYu0qHw3bAq95d+e9oOacfU/V0WHaIdpjzyNKidNKC+GmfmJyKGtefuQ
+         6Yag==
+X-Forwarded-Encrypted: i=1; AFNElJ/653MlkQdQu9AYwvtG/URmlHMBaILHS7H9zXg/l+pNEX+jQsSV3FQrrFZbDW6vIEsxzReBV7qSnENUuw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyvfWip4dD0cUgHU0/wNI7CQA1qW10jOTIXCphn5caS46ZXxM5M
+	TflVDDgci88cKk6Z93udnPwaSg7ItqEDsQw2NkhzSn48OVpuutJtgKUK
+X-Gm-Gg: AeBDieuxca7AWvYHnDbR7MfhqCaZx3qMs7X5bomCuslXwB5lLdpGgBaxd3ZVpn3ic1F
+	+I5p4czykgtd3isV2x+kKyIy+98+GxjBq2wtZq9VqTRnQJDxnuu8W93ehzTZ10fXOR0bI1yX+Xx
+	+1CUvavcAQ37M92eeRltBLK20khO0lZ7gT46PkXcHnD/XGYcLU8kSWd7eivMbhChXGda3j77Hbb
+	kwz9VoLCF3l0VCsw+aI2h5aE4Ep5QC7UDacp9I8mIll6S7aJgG1Ufan7YvqYE3b4fGaQJH2xg7b
+	DE/S3PGv9v9Tn0oru/+Y4LnV7aX6gyZ8QOShT50tSIiOOMMbsD+TgfIsDcUqb0bkjSES6AQZ8rI
+	+fRfHNQNDfBGAd9f+kEFQ9tYOnmKRaK1d7WxJdtVkOfcpLt3yrXDS30bKYkmczbGjtJFRm9JXxx
+	9lw4Lx3k6my4AV9nCnEtqWO3dcQ6KDDwUdNraJm0whLgcaDYgOCqcoTuW0XH411idPMSJjptc2Q
+	E2AtFHopC8cchK0ifNlYGvMDLU=
+X-Received: by 2002:a17:903:1b30:b0:2b0:708f:4dc7 with SMTP id d9443c01a7336-2b98742796emr14684505ad.29.1777421794116;
+        Tue, 28 Apr 2026 17:16:34 -0700 (PDT)
+Received: from archlinux (S010680dac2bce256.cg.shawcable.net. [174.0.186.197])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b98897edefsm3493465ad.74.2026.04.28.17.16.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 28 Apr 2026 17:16:33 -0700 (PDT)
+From: auth <skunkolee@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org (open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER),
+	linux-staging@lists.linux.dev (open list:STAGING SUBSYSTEM),
+	linux-kernel@vger.kernel.org (open list)
+Cc: auth <skunkolee@gmail.com>
+Subject: [PATCH] sm750fb: fix spelling typo in comment
+Date: Tue, 28 Apr 2026 18:15:56 -0600
+Message-ID: <20260429001557.71737-1-skunkolee@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-0-0caade5fdb32@linaro.org>
- <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-2-0caade5fdb32@linaro.org>
-In-Reply-To: <20260428-topic-sm8650-ayaneo-pocket-s2-sy7758-v1-2-0caade5fdb32@linaro.org>
-From: Gyeyoung Baek <gye976@gmail.com>
-Date: Wed, 29 Apr 2026 08:35:41 +0900
-X-Gm-Features: AVHnY4IUG0aEhSqiUeS0javv0LFZ7gitoer-tm54oLakxbwVeIPwDa7HUcbCYTI
-Message-ID: <CAKbEznvPAYFUt-ykH7rCQwMFUq6N68B9x7Dd97WRDm3Mvj34fw@mail.gmail.com>
-Subject: Re: [PATCH 2/2] backlight: Add SY7758 6-channel High Efficiency LED
- Driver support
-To: Neil Armstrong <neil.armstrong@linaro.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, KancyJoe <kancy2333@outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi,
+Fixed suspected typo in comment ("programe" -> "program").
 
-> +
-> +static int sy7758_probe(struct i2c_client *client)
-> +{
+Signed-off-by: auth <skunkolee@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_mode.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> +
-> +       /* try read and check device id */
-> +       ret = regmap_read(sydev->regmap, REG_DEV_ID, &dev_id);
-> +       if (ret < 0)
-> +               return dev_err_probe(dev, -EPROBE_DEFER,
-> +                                    "failed to read device id\n");
-
-regmap_read() seems it can return errors other than -EPROBE_DEFER
-(like -EINVAL,), and hardcoding -EPROBE_DEFER here might drop the
-actual error.
-And maybe would keep retrying probe forever
-
-How about this?
-> +               return dev_err_probe(dev, ret, "failed to read device id\n");
-
-
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 7163232c0701..6363a66d5570 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -82,7 +82,7 @@ static void program_mode_registers(struct mode_parameter *mode_param,
+ 	unsigned int tmp, reg;
+ 
+ 	if (pll->clock_type == SECONDARY_PLL) {
+-		/* programe secondary pixel clock */
++		/* program secondary pixel clock */
+ 		poke32(CRT_PLL_CTRL, sm750_format_pll_reg(pll));
+ 
+ 		tmp = ((mode_param->horizontal_total - 1) <<
 -- 
-Thanks,
-Gyeyoung
+2.54.0
+

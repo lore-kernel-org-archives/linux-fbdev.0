@@ -1,35 +1,49 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5DAC3939C9;
-	Thu, 30 Apr 2026 03:26:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 630F16FC5;
+	Thu, 30 Apr 2026 06:01:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777519598; cv=none; b=sAq3dsw2ONxWvsR/vsb+Fq16CVhmrcbRlaJJTht4oevy/91xXQP+jSq7HOPOY/NAglTfe37VYOAifC3Q3H279XeCpHVUJR2GXFrXLX0xALuDghLzKKLvEjZDrgZtL3pWVHzz+AfWkgXKLfrgvQbD2fRUOjfg9iCln9lNkCQWHQ8=
+	t=1777528907; cv=none; b=FWUIjR8oowP6Oeii6fdy964B6eIZaalhhPxyK21dSWpiRqQXUMRe2OVu2i9d391DJzcVxsRotdu6BIIlr0bQHjV8A2NrEvziTSzCRPVGIFlEMoZJ+VgNf4fEI4rNw54nH6FDp5RmupIHlc+z1Bb7YL7eY1yCHYwDCKwjjtm2Ly0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777519598; c=relaxed/simple;
-	bh=l9exXaykMZZr58ApvA3wgjdBqbjJXmcg2LD51E1L2d8=;
-	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=fHRh6fOO7W95GgKPTjcVjtirDJIml6iMBeUMVNOGZj5zvcj07ltbJpuXMmQrHHUYOpU5+oVHS1EdvrrCDrrhR9I4tPgRVo48z3oYhJj+9TrZEVJ5NVXJGYeljLkjw4YqrdRquQsSOc9Z7wixpouDQGRwmJO2gbnrMqLtI1PlIfw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=VQ5fUnGV; arc=none smtp.client-ip=10.30.226.201
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="VQ5fUnGV"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A3B0C2BCC6;
-	Thu, 30 Apr 2026 03:26:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777519598;
-	bh=l9exXaykMZZr58ApvA3wgjdBqbjJXmcg2LD51E1L2d8=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=VQ5fUnGVnOy9olGba/PpFhmIOWwrvE63bg7wf8QD1oVMBU1BxMtz5Q5sq/JwQ9xtx
-	 FBCndWX7NJpcwHQS2uh8ZRD+UwKJS8Nf/xOjB7kKUPQy858zCbkge2oAV6lxAQf625
-	 gG1qodBE+N3L2UtwgzEs5J0HoMAeFALuJQm6hAGuvkiAJgkXb28kjlalsRs3n3a2TF
-	 29IamRcKDsnYhlWjglq3Ko8zPoEuXsWpPSgFQW5Uw0WEZ3PhmG1Et2p+yJY2KivWmR
-	 Vv+BDgeCmlfDBpvBGUWuK6vk0BLhwJE3vHWgs2Tf1Bq4zcCUvorNfflKfJA4kV/UO2
-	 SQxIDV5JK1LdQ==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id B9F3C3809A07;
-	Thu, 30 Apr 2026 03:25:54 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	s=arc-20240116; t=1777528907; c=relaxed/simple;
+	bh=Os2X++cj3HNUfvqVn7n7PcsOOi64ihdj36ERIxNfuvk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=TdtQGzA5es+ELkXktI7Eh7hM7TJxQwp3n49XK19pW3vkilKnMMs3XF3bv985SjxVOh591m/RaY3jMG4bTLCsrgsGqVJL6LGabIGpm54vgGJgj+UlE9iQMAfGeq1D7hQW99+6U8qWD/S4lPQuI9Yhiw6phTYfOYb/WdJHDDnN0f0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 0eb9ac86445a11f1aa26b74ffac11d73-20260430
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:7b426810-9e7d-407f-951f-abdfb5810312,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:e7bac3a,CLOUDID:c130f4c0ec06df3c7f4d462a8b4d6f0c,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102|123|850|898,TC:nil,Content:0|15|50,E
+	DM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA
+	:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 0eb9ac86445a11f1aa26b74ffac11d73-20260430
+X-User: yaolu@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <yaolu@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 20162764; Thu, 30 Apr 2026 14:01:40 +0800
+From: yaolu@kylinos.cn
+To: deller@gmx.de,
+	tzimmermann@suse.de,
+	simona@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Lu Yao <yaolu@kylinos.cn>
+Subject: [PATCH] fbcon: don't suspend/resume when vc is graphics mode
+Date: Thu, 30 Apr 2026 14:01:37 +0800
+Message-Id: <20260430060137.131107-1-yaolu@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -37,63 +51,52 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 0/8] firmware: sysfb: Consolidate config/code wrt.
- sysfb_primary_screen
-From: patchwork-bot+linux-riscv@kernel.org
-Message-Id: 
- <177751955329.2274119.12779807302343885295.git-patchwork-notify@kernel.org>
-Date: Thu, 30 Apr 2026 03:25:53 +0000
-References: <20260402092305.208728-1-tzimmermann@suse.de>
-In-Reply-To: <20260402092305.208728-1-tzimmermann@suse.de>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: linux-riscv@lists.infradead.org, javierm@redhat.com, arnd@arndb.de,
- ardb@kernel.org, ilias.apalodimas@linaro.org, chenhuacai@kernel.org,
- kernel@xen0n.name, maarten.lankhorst@linux.intel.com, mripard@kernel.org,
- airlied@gmail.com, simona@ffwll.ch, kys@microsoft.com,
- haiyangz@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
- longli@microsoft.com, deller@gmx.de, linux-arm-kernel@lists.infradead.org,
- loongarch@lists.linux.dev, linux-efi@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-hyperv@vger.kernel.org,
- linux-fbdev@vger.kernel.org
 
-Hello:
+From: Lu Yao <yaolu@kylinos.cn>
 
-This series was applied to riscv/linux.git (fixes)
-by Ard Biesheuvel <ardb@kernel.org>:
+Don't need to do suspend/resume for fbcon in graphic mode.
 
-On Thu,  2 Apr 2026 11:09:14 +0200 you wrote:
-> The global state sysfb_primary_screen holds information about the
-> framebuffer provided by EFI/BIOS systems. It is part of the sysfb
-> module, but used in several places without direct connection to
-> sysfb. Fix this by making users of sysfb_primary_screen depend on
-> CONFIG_SYSFB. Fix a few issues in the process.
-> 
-> Patches 1 and 2 fix general errors in the Kconfig rules. In any case,
-> these patches should be considered even without the rest of the series.
-> 
-> [...]
+Doing this may cause error, eg:
+  At the beginning, starting the Xorg with single screen and then an
+  external screen was plugged in. After logging out in Xorg, fbdev
+  info may using screen which is connected later on for info always
+  using first connected connector in list in func 'drm_setup_crtcs_fb'.
+  Then, S3 executed, fbcon found that the information did not match
+  and do atomic to switch fb. However, Xorg will not re-bind the crtc
+  fb but continues doing ioctl. At this time, the fb is incorrect.
 
-Here is the summary with links:
-  - [1/8] hv: Select CONFIG_SYSFB only for CONFIG_HYPERV_VMBUS
-    https://git.kernel.org/riscv/c/d33db956c961
-  - [2/8] firmware: efi: Never declare sysfb_primary_display on x86
-    https://git.kernel.org/riscv/c/5241c2ca33bb
-  - [3/8] firmware: sysfb: Make CONFIG_SYSFB a user-selectable option
-    (no matching commit)
-  - [4/8] firmware: sysfb: Split sysfb.c into sysfb_primary.c and sysfb_pci.c
-    (no matching commit)
-  - [5/8] firmware: sysfb: Implement screen_info relocation for primary display
-    (no matching commit)
-  - [6/8] firmware: sysfb: Avoid forward-declaring sysfb_parent_dev()
-    (no matching commit)
-  - [7/8] firmware: efi: Make CONFIG_EFI_EARLYCON depend on CONFIG_SYSFB; clean up
-    (no matching commit)
-  - [8/8] firmware: sysfb: Move CONFIG_FIRMWARE_EDID to firmware options
-    (no matching commit)
+Signed-off-by: Lu Yao <yaolu@kylinos.cn>
+---
+ drivers/video/fbdev/core/fbcon.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-You are awesome, thank you!
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index b0e3e765360d..450e690d0bd2 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2602,8 +2602,9 @@ void fbcon_suspended(struct fb_info *info)
+ 		return;
+ 	vc = vc_cons[par->currcon].d;
+ 
+-	/* Clear cursor, restore saved data */
+-	fbcon_cursor(vc, false);
++	/* Don't need to clear cursor and restore saved data in graphic mode */
++	if (vc->vc_mode != KD_GRAPHICS)
++		fbcon_cursor(vc, false);
+ }
+ 
+ void fbcon_resumed(struct fb_info *info)
+@@ -2615,7 +2616,9 @@ void fbcon_resumed(struct fb_info *info)
+ 		return;
+ 	vc = vc_cons[par->currcon].d;
+ 
+-	update_screen(vc);
++	/* Graphics mode is managed by userspace */
++	if (vc->vc_mode != KD_GRAPHICS)
++		update_screen(vc);
+ }
+ 
+ static void fbcon_modechanged(struct fb_info *info)
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.25.1
 

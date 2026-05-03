@@ -1,323 +1,872 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dl1-f67.google.com (mail-dl1-f67.google.com [74.125.82.67])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F0F828FFF6;
-	Sun,  3 May 2026 04:36:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18C5640DFD9
+	for <linux-fbdev@vger.kernel.org>; Sun,  3 May 2026 04:57:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.67
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777782968; cv=none; b=Pd+RLJ9uJ6yKHCx9bcyLsOwEpYEBD92lnO2Uls2h3XqtaiGTs3H33Uh7/BrtCKo/MkwxFyW/J2OJeQiujnl8Ff5oQbYdj72TNIc/JvrKFIDsSgBNXTxKET4q1iBL99/dZPR22woM8YhJPdcHicGUzla24ijgTYK11kV/dOCcqjM=
+	t=1777784236; cv=none; b=bmMoWMq8KqXBvay9a4Lv80BuAuX0opTpJixIWXbtjY5MxJtQJDpPl8fv7+G8QnjssX6qT8AEOXQan/uoXdNLBehDWtaOAvFT2bUldXWl96RsQwNqm4CujG/LkrwhwnAEazGzrPl+DofCHYPPqgpQfcRCTAtNIgj6qxAvQHWRaKk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777782968; c=relaxed/simple;
-	bh=/pyQZj7FC8oNhzRhXoOBMmrjWxg1NmrQl/03YK4qAY0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DX0CB2NAn0RgQmgfEFPIdPqdOHQKTzwPgJ6gHEAu9621IZPssRXYo/NAUok8NZrpTVt14o3WaVbIXCGKPc3+rCXI13DjRXqty6GI8mZTJAn3kpN22dh6G1WXbV8vWGEiOW9vsP6U3dqD9fnc/PrUft2qNPM/OpY/QaO0Z9igFtg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=CDbHxfXS; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1777784236; c=relaxed/simple;
+	bh=wuGVpWcYtVq1kzOYQrvXow1/3mvKxAeIc0+YHjcnbuE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JO9zBWplVTyX/EN7DvdsY/cLkOKjmIW1R/cKrR+2J6xydJCu2nw5g9QwclhQE/1nUPflYOPE/vjyRX5UO2X3O6Z0ZkpKobhyflEUgF4SMdW7sTkKpfZ8kNQMsrey0QtFOkxk6aTNFRUz8SrfbKemD1N3NAivfn/BH3HP80qnCs8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Fz+XCvG4; arc=none smtp.client-ip=74.125.82.67
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="CDbHxfXS"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777782967; x=1809318967;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=/pyQZj7FC8oNhzRhXoOBMmrjWxg1NmrQl/03YK4qAY0=;
-  b=CDbHxfXSxlJuZOWTfktJwUtTNywSVd2PodC5qVHXx4qKmCsSzHpzOTnR
-   cSQOjEx7Ugw0LvXCxUTGvAIGDEbmPJp6KZKQnTE5Qc3ANydMG5pZ7z3L+
-   7Kx2zkCFHfAa5NC1aOWBxiHX7fDw0hTAcP61Cv3WLov74eX6A3Y1Eain+
-   zNiOnNESA35d1Z4kdNNjsVKjShZCBWQbTOzV96JhTw5smRMzrJqq5Lxg3
-   3GP8AEoYMPtm5QnrRFZ7Gt9bFi2/IwE6YSjuH8zL3OPPw84DZpv9428Mq
-   3XYq/ejgjtuXT9F0B6bsjNqNdfOJbWhxabKRuXoUrynXysTLC5K0534hq
-   g==;
-X-CSE-ConnectionGUID: wujM91/uRCuqRRkj0qGZaQ==
-X-CSE-MsgGUID: 6scep1IxQUmYT9HeHmjxkg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11774"; a="82536754"
-X-IronPort-AV: E=Sophos;i="6.23,213,1770624000"; 
-   d="scan'208";a="82536754"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 May 2026 21:36:06 -0700
-X-CSE-ConnectionGUID: VntB84jRR9OB6wJc95WZeg==
-X-CSE-MsgGUID: 5HQ1XK+YQ3qkGJb7vxhCqQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,213,1770624000"; 
-   d="scan'208";a="234345644"
-Received: from lkp-server01.sh.intel.com (HELO 781826d00641) ([10.239.97.150])
-  by orviesa010.jf.intel.com with ESMTP; 02 May 2026 21:36:03 -0700
-Received: from kbuild by 781826d00641 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wJOYi-0000000029N-3bGY;
-	Sun, 03 May 2026 04:36:00 +0000
-Date: Sun, 3 May 2026 12:35:48 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ilai Levin <levinilai972@gmail.com>, sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com
-Cc: oe-kbuild-all@lists.linux.dev, gregkh@linuxfoundation.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org, Ilai Levin <levinilai972@gmail.com>
-Subject: Re: [PATCH] staging: sm750fb: fix const pointer array declaration
-Message-ID: <202605031219.ZJk8DDJm-lkp@intel.com>
-References: <20260428122501.100696-1-levinilai972@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Fz+XCvG4"
+Received: by mail-dl1-f67.google.com with SMTP id a92af1059eb24-12dfee30612so2739418c88.0
+        for <linux-fbdev@vger.kernel.org>; Sat, 02 May 2026 21:57:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777784233; x=1778389033; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xl8FU//cuFfGW1+FWwk5qwHmHqVNqdjezTOErHBxEaM=;
+        b=Fz+XCvG4LmSvSJ473GBRTtaJU/qNtl6jBEBu2lyVveG6JtAL5wt2zNcFXdm/2y0DVH
+         GMtbUaujebha4XN+23IgQbMU+yU5t/nOFPfZhMtpvZIdf6nIU9ifcz8zoqdrTAu+CLAF
+         rUZJ1c0JwfWwonOLcc3uzFbjq1ToEN+1BMVqVRgtvoS9rGrjHEOfnh2WPqXH1gvVcjgz
+         O8LR7WTw4q1vSREyy6mXg2O552OcEO6s+161fop37g+j+H7X8BZUEHfX0rF2I7O7zijp
+         uOvtoWftS+oQL56ySvDEiIs9uJ5sSWAvTI/Ek3bkYLoL85aOPTXZQLvG8NIFfzsM+jRJ
+         jg7g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777784233; x=1778389033;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xl8FU//cuFfGW1+FWwk5qwHmHqVNqdjezTOErHBxEaM=;
+        b=ABso2owbjxUHH8o8zHa814NHNkW2n6akDj8qNV2/Foh2bD6Z7oLCRENM9JTiwUokwi
+         qGzqAYpDXEvi29I5AosBFydEuK3xopM45xbA30DjcCtHY8PvG+WhJHqsr3SBySGTX1vO
+         YtrJjI1cPsyoUCSbT4BiGvBap0QYG52bDC8UTu8b3zGWkrLLZri0Gl5+iwFrcGBc+/20
+         vft/K/lOpIXOCTLptAF2RkdOwfUpFaeTy4ZQgS12GumXMBdIznvty8OAnGXbAy74kEuq
+         /kIDdxsnojIQYOJtvjOKiPcdfUPJ72tmwZxK66y/uZoeYHa5RUq2vcqhs44Myc/YAFna
+         jCPQ==
+X-Gm-Message-State: AOJu0YxRCSo3OXfT1iuzHBbqrFSdKMxa3HWO6Fxi2NeGlMf5oTnA3Igu
+	i/GlPzK9qhCGK3xWHt9+nQajJQeBlSf2Ri6zVj2whr0oSviOrCb1WjS/EdkvM3eZ
+X-Gm-Gg: AeBDies+Ma3X0VJ1FazX8ktOj7oqfqCCCbn+eCUVYWKikNWcMbe4upb20j4BskjqGYV
+	54EGSrdYdJKiCmCXQKVxLi+hiXhIWWqfs130hEaNV/lvtoS1faTVY+ah9yHceEXgqsLP6VB0I19
+	tbJhNXCu1DwEOdnCQ9+H4tgNEUTfYynbUrGOTy9B/v56jogAYAmKrIs/JJ1OGg+hNxmQ5MUw+Rq
+	KsNcKId7K8GTlVuLZgq4Rh1ZEeErjWt6WSYPp+XLV+O2U6UK4+M1njWDGngoXHx402tEQFbGzxz
+	APco/4E6V+MAoGyXAW5ds2zQsKjpD09QrVknO1TnQ30IlUYFQBhcthNPhRY7Odtzh3RPBFWEIg9
+	c5Kz8rm0hhmavwwQakzBdXItoXan6Iw9uC3C0yZLWLU9KNU1svW+7/vd9ebADFJTZNjmHIFUW0J
+	W+TlGgtSmKG+5wN+JLtzB1o3vO63cMd+n9cfyTUp+vUnKphrnrNZ2kNiwXX7flvTOH7OyKXxYoi
+	Kkk5zrstet2llT/HeqqOjTg2Ew4CuKHR76RTyOx1dlpCnw7nAYVRvmhiEsRWyquD7HxoqjxOCLn
+	5WxhNW/MyDhLG72Ag0pj1OVwJwB0
+X-Received: by 2002:a05:7022:6729:b0:128:ccaf:85d5 with SMTP id a92af1059eb24-12dfd7c9fd0mr2087856c88.15.1777784232907;
+        Sat, 02 May 2026 21:57:12 -0700 (PDT)
+Received: from ethan-latitude5420.. (host-127-24.cafrjco.fresno.ca.us.clients.pavlovmedia.net. [68.180.127.24])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-12df8278e7dsm9692750c88.2.2026.05.02.21.57.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 02 May 2026 21:57:12 -0700 (PDT)
+From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
+	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Namjae Jeon <linkinjeon@kernel.org>,
+	Hisam Mehboob <hisamshar@gmail.com>,
+	=?UTF-8?q?Martin=20Kepplinger-Novakovi=C4=87?= <martink@posteo.de>,
+	Diego Viola <diego.viola@gmail.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Wei Liu <wei.liu@kernel.org>,
+	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+	robgithub <rob.github@jumpstation.co.uk>,
+	Hardik Phalet <hardik.phalet@pm.me>
+Subject: [PATCH] video: fbdev: remove Hercules monochrome ISA graphics adapter driver
+Date: Sat,  2 May 2026 21:56:34 -0700
+Message-ID: <20260503045653.33522-1-enelsonmoore@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260428122501.100696-1-levinilai972@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Ilai,
+The hgafb supports graphics adapters compatible with the Hercules
+adapter from 1984. These were ISA cards or onboard devices that
+supported monochrome 720x348 graphics. This driver was created in 1999
+by Ferenc Bakonyi. In the entire Git history (since Linux 2.6.12-rc2),
+there has only been one commit in 2010 which indicated that the driver
+was in use, commit 529ed806d454 ("video: Fix the HGA framebuffer
+driver"). The commit message states:
+    Only tested with fbcon, since most fbdev-based software appears
+    to only support 12bpp and up. It does not appear that this driver has
+    worked for at least the entire 2.6.x series, perhaps since 2002.
+Given the age and limited capabilities of the hardware and the lack of
+users, remove this driver and move the former maintainer to CREDITS.
 
-kernel test robot noticed the following build errors:
+Signed-off-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+---
+ CREDITS                      |   3 +
+ MAINTAINERS                  |   7 -
+ drivers/video/fbdev/Kconfig  |  13 -
+ drivers/video/fbdev/Makefile |   1 -
+ drivers/video/fbdev/hgafb.c  | 685 -----------------------------------
+ 5 files changed, 3 insertions(+), 706 deletions(-)
+ delete mode 100644 drivers/video/fbdev/hgafb.c
 
-[auto build test ERROR on staging/staging-testing]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Ilai-Levin/staging-sm750fb-fix-const-pointer-array-declaration/20260501-103116
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20260428122501.100696-1-levinilai972%40gmail.com
-patch subject: [PATCH] staging: sm750fb: fix const pointer array declaration
-config: alpha-allyesconfig (https://download.01.org/0day-ci/archive/20260503/202605031219.ZJk8DDJm-lkp@intel.com/config)
-compiler: alpha-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260503/202605031219.ZJk8DDJm-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605031219.ZJk8DDJm-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/staging/sm750fb/sm750.c: In function 'lynxfb_set_fbinfo':
->> drivers/staging/sm750fb/sm750.c:785:33: error: assignment of read-only location 'g_fbmode[index]'
-     785 |                 g_fbmode[index] = g_def_fbmode;
-         |                                 ^
-   drivers/staging/sm750fb/sm750.c:787:41: error: assignment of read-only location 'g_fbmode[index]'
-     787 |                         g_fbmode[index] = g_fbmode[0];
-         |                                         ^
-   drivers/staging/sm750fb/sm750.c: In function 'sm750fb_setup':
->> drivers/staging/sm750fb/sm750.c:896:45: error: assignment of read-only location 'g_fbmode[0]'
-     896 |                                 g_fbmode[0] = opt;
-         |                                             ^
-   drivers/staging/sm750fb/sm750.c:900:45: error: assignment of read-only location 'g_fbmode[1]'
-     900 |                                 g_fbmode[1] = opt;
-         |                                             ^
-
-
-vim +785 drivers/staging/sm750fb/sm750.c
-
-81dee67e215b23 Sudip Mukherjee      2015-03-03  719  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  720  static int lynxfb_set_fbinfo(struct fb_info *info, int index)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  721  {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  722  	int i;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  723  	struct lynxfb_par *par;
-e359b6a863e19f Mike Rapoport        2015-10-26  724  	struct sm750_dev *sm750_dev;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  725  	struct lynxfb_crtc *crtc;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  726  	struct lynxfb_output *output;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  727  	struct fb_var_screeninfo *var;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  728  	struct fb_fix_screeninfo *fix;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  729  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  730  	const struct fb_videomode *pdb[] = {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  731  		lynx750_ext, NULL, vesa_modes,
-81dee67e215b23 Sudip Mukherjee      2015-03-03  732  	};
-81dee67e215b23 Sudip Mukherjee      2015-03-03  733  	int cdb[] = {ARRAY_SIZE(lynx750_ext), 0, VESA_MODEDB_SIZE};
-d0856045f0e9fc Hungyu Lin           2026-04-01  734  	static const char * const fix_id[2] = {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  735  		"sm750_fb1", "sm750_fb2",
-81dee67e215b23 Sudip Mukherjee      2015-03-03  736  	};
-81dee67e215b23 Sudip Mukherjee      2015-03-03  737  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  738  	int ret, line_length;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  739  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  740  	ret = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  741  	par = (struct lynxfb_par *)info->par;
-e359b6a863e19f Mike Rapoport        2015-10-26  742  	sm750_dev = par->dev;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  743  	crtc = &par->crtc;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  744  	output = &par->output;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  745  	var = &info->var;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  746  	fix = &info->fix;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  747  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  748  	/* set index */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  749  	par->index = index;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  750  	output->channel = &crtc->channel;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  751  	sm750fb_set_drv(par);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  752  
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  753  	/*
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  754  	 * set current cursor variable and proc pointer,
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  755  	 * must be set after crtc member initialized
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  756  	 */
-fdc234d85210d9 Benjamin Philip      2021-07-28  757  	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
-e359b6a863e19f Mike Rapoport        2015-10-26  758  	crtc->cursor.mmio = sm750_dev->pvReg +
-e359b6a863e19f Mike Rapoport        2015-10-26  759  		0x800f0 + (int)crtc->channel * 0x140;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  760  
-cd33da26036ea5 Christopher Carbone  2022-08-23  761  	crtc->cursor.max_h = 64;
-cd33da26036ea5 Christopher Carbone  2022-08-23  762  	crtc->cursor.max_w = 64;
-39f9137268ee3d Benjamin Philip      2021-07-26  763  	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
-e359b6a863e19f Mike Rapoport        2015-10-26  764  	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  765  
-3de08a2d14ff8c Lorenzo Stoakes      2015-03-20  766  	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  767  	if (!g_hwcursor)
-52d0744d751d8f Arnd Bergmann        2016-11-09  768  		sm750_hw_cursor_disable(&crtc->cursor);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  769  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  770  	/* set info->fbops, must be set before fb_find_mode */
-e359b6a863e19f Mike Rapoport        2015-10-26  771  	if (!sm750_dev->accel_off) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  772  		/* use 2d acceleration */
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  773  		if (!g_hwcursor)
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  774  			info->fbops = &lynxfb_ops_accel;
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  775  		else
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  776  			info->fbops = &lynxfb_ops_accel_with_cursor;
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  777  	} else {
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  778  		if (!g_hwcursor)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  779  			info->fbops = &lynxfb_ops;
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  780  		else
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  781  			info->fbops = &lynxfb_ops_with_cursor;
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  782  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  783  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  784  	if (!g_fbmode[index]) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03 @785  		g_fbmode[index] = g_def_fbmode;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  786  		if (index)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  787  			g_fbmode[index] = g_fbmode[0];
-81dee67e215b23 Sudip Mukherjee      2015-03-03  788  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  789  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  790  	for (i = 0; i < 3; i++) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  791  		ret = fb_find_mode(var, info, g_fbmode[index],
-81dee67e215b23 Sudip Mukherjee      2015-03-03  792  				   pdb[i], cdb[i], NULL, 8);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  793  
-db7fb3588ab492 Artem Lytkin         2026-02-23  794  		if (ret == 1 || ret == 2)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  795  			break;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  796  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  797  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  798  	/* set par */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  799  	par->info = info;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  800  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  801  	/* set info */
-e3a3f9f5123683 Mike Rapoport        2015-10-26  802  	line_length = ALIGN((var->xres_virtual * var->bits_per_pixel / 8),
-e3a3f9f5123683 Mike Rapoport        2015-10-26  803  			    crtc->line_pad);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  804  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  805  	info->pseudo_palette = &par->pseudo_palette[0];
-cc59bde1c920ab Benjamin Philip      2021-07-28  806  	info->screen_base = crtc->v_screen;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  807  	info->screen_size = line_length * var->yres_virtual;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  808  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  809  	/* set info->fix */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  810  	fix->type = FB_TYPE_PACKED_PIXELS;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  811  	fix->type_aux = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  812  	fix->xpanstep = crtc->xpanstep;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  813  	fix->ypanstep = crtc->ypanstep;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  814  	fix->ywrapstep = crtc->ywrapstep;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  815  	fix->accel = FB_ACCEL_SMI;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  816  
-8c475735085a7d Tim Wassink          2025-12-21  817  	strscpy(fix->id, fix_id[index], sizeof(fix->id));
-81dee67e215b23 Sudip Mukherjee      2015-03-03  818  
-fdc234d85210d9 Benjamin Philip      2021-07-28  819  	fix->smem_start = crtc->o_screen + sm750_dev->vidmem_start;
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  820  	/*
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  821  	 * according to mmap experiment from user space application,
-81dee67e215b23 Sudip Mukherjee      2015-03-03  822  	 * fix->mmio_len should not larger than virtual size
-81dee67e215b23 Sudip Mukherjee      2015-03-03  823  	 * (xres_virtual x yres_virtual x ByPP)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  824  	 * Below line maybe buggy when user mmap fb dev node and write
-81dee67e215b23 Sudip Mukherjee      2015-03-03  825  	 * data into the bound over virtual size
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  826  	 */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  827  	fix->smem_len = crtc->vidmem_size;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  828  	info->screen_size = fix->smem_len;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  829  	fix->line_length = line_length;
-e359b6a863e19f Mike Rapoport        2015-10-26  830  	fix->mmio_start = sm750_dev->vidreg_start;
-e359b6a863e19f Mike Rapoport        2015-10-26  831  	fix->mmio_len = sm750_dev->vidreg_size;
-b610e1193a917f Matej Dujava         2020-04-30  832  
-b610e1193a917f Matej Dujava         2020-04-30  833  	lynxfb_set_visual_mode(info);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  834  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  835  	/* set var */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  836  	var->activate = FB_ACTIVATE_NOW;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  837  	var->accel_flags = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  838  	var->vmode = FB_VMODE_NONINTERLACED;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  839  
-61c507cf652da1 Michel von Czettritz 2015-03-26  840  	ret = fb_alloc_cmap(&info->cmap, 256, 0);
-61c507cf652da1 Michel von Czettritz 2015-03-26  841  	if (ret < 0) {
-fbab250eb51d6d Artem Lytkin         2026-02-07  842  		dev_err(info->device, "Could not allocate memory for cmap.\n");
-81dee67e215b23 Sudip Mukherjee      2015-03-03  843  		goto exit;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  844  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  845  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  846  exit:
-81dee67e215b23 Sudip Mukherjee      2015-03-03  847  	lynxfb_ops_check_var(var, info);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  848  	return ret;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  849  }
-81dee67e215b23 Sudip Mukherjee      2015-03-03  850  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  851  /*	chip specific g_option configuration routine */
-700591a9adc8b1 Mike Rapoport        2015-10-26  852  static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  853  {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  854  	char *opt;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  855  	int swap;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  856  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  857  	swap = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  858  
-cc34db609ff98c Madhumitha Sundar    2026-01-27  859  	sm750_dev->init_parm.chip_clk = 0;
-cc34db609ff98c Madhumitha Sundar    2026-01-27  860  	sm750_dev->init_parm.mem_clk = 0;
-cc34db609ff98c Madhumitha Sundar    2026-01-27  861  	sm750_dev->init_parm.master_clk = 0;
-cc34db609ff98c Madhumitha Sundar    2026-01-27  862  	sm750_dev->init_parm.powerMode = 0;
-cc34db609ff98c Madhumitha Sundar    2026-01-27  863  	sm750_dev->init_parm.setAllEngOff = 0;
-cc34db609ff98c Madhumitha Sundar    2026-01-27  864  	sm750_dev->init_parm.resetMemory = 1;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  865  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  866  	/* defaultly turn g_hwcursor on for both view */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  867  	g_hwcursor = 3;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  868  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  869  	if (!src || !*src) {
-c56de0967a658c Elise Lennion        2016-10-31  870  		dev_warn(&sm750_dev->pdev->dev, "no specific g_option.\n");
-81dee67e215b23 Sudip Mukherjee      2015-03-03  871  		goto NO_PARAM;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  872  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  873  
-0fa96e39279988 Sudip Mukherjee      2015-03-10  874  	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-c56de0967a658c Elise Lennion        2016-10-31  875  		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
-c56de0967a658c Elise Lennion        2016-10-31  876  		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  877  
-144634a6b42146 Katie Dunne          2017-02-19  878  		if (!strncmp(opt, "swap", strlen("swap"))) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  879  			swap = 1;
-144634a6b42146 Katie Dunne          2017-02-19  880  		} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
-1757d106a9ce8c Mike Rapoport        2015-10-26  881  			sm750_dev->nocrt = 1;
-144634a6b42146 Katie Dunne          2017-02-19  882  		} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
-94c938a0c15863 Shubham Chakraborty  2026-04-07  883  			sm750_dev->pnltype = SM750_DOUBLE_TFT;
-144634a6b42146 Katie Dunne          2017-02-19  884  		} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
-94c938a0c15863 Shubham Chakraborty  2026-04-07  885  			sm750_dev->pnltype = SM750_DUAL_TFT;
-144634a6b42146 Katie Dunne          2017-02-19  886  		} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
-94c938a0c15863 Shubham Chakraborty  2026-04-07  887  			sm750_dev->pnltype = SM750_24TFT;
-144634a6b42146 Katie Dunne          2017-02-19  888  		} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  889  			g_hwcursor &= ~0x1;
-144634a6b42146 Katie Dunne          2017-02-19  890  		} else if (!strncmp(opt, "nohwc1", strlen("nohwc1"))) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  891  			g_hwcursor &= ~0x2;
-144634a6b42146 Katie Dunne          2017-02-19  892  		} else if (!strncmp(opt, "nohwc", strlen("nohwc"))) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  893  			g_hwcursor = 0;
-144634a6b42146 Katie Dunne          2017-02-19  894  		} else {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  895  			if (!g_fbmode[0]) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03 @896  				g_fbmode[0] = opt;
-cee9ba1c30d051 Abdul Rauf           2017-01-08  897  				dev_info(&sm750_dev->pdev->dev,
-cee9ba1c30d051 Abdul Rauf           2017-01-08  898  					 "find fbmode0 : %s\n", g_fbmode[0]);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  899  			} else if (!g_fbmode[1]) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  900  				g_fbmode[1] = opt;
-cee9ba1c30d051 Abdul Rauf           2017-01-08  901  				dev_info(&sm750_dev->pdev->dev,
-cee9ba1c30d051 Abdul Rauf           2017-01-08  902  					 "find fbmode1 : %s\n", g_fbmode[1]);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  903  			} else {
-c56de0967a658c Elise Lennion        2016-10-31  904  				dev_warn(&sm750_dev->pdev->dev, "How many view you wann set?\n");
-81dee67e215b23 Sudip Mukherjee      2015-03-03  905  			}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  906  		}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  907  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  908  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  909  NO_PARAM:
-e359b6a863e19f Mike Rapoport        2015-10-26  910  	if (sm750_dev->revid != SM750LE_REVISION_ID) {
-a3f92cc94c6126 Mike Rapoport        2016-01-17  911  		if (sm750_dev->fb_count > 1) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  912  			if (swap)
-1757d106a9ce8c Mike Rapoport        2015-10-26  913  				sm750_dev->dataflow = sm750_dual_swap;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  914  			else
-1757d106a9ce8c Mike Rapoport        2015-10-26  915  				sm750_dev->dataflow = sm750_dual_normal;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  916  		} else {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  917  			if (swap)
-1757d106a9ce8c Mike Rapoport        2015-10-26  918  				sm750_dev->dataflow = sm750_simul_sec;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  919  			else
-1757d106a9ce8c Mike Rapoport        2015-10-26  920  				sm750_dev->dataflow = sm750_simul_pri;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  921  		}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  922  	} else {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  923  		/* SM750LE only have one crt channel */
-1757d106a9ce8c Mike Rapoport        2015-10-26  924  		sm750_dev->dataflow = sm750_simul_sec;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  925  		/* sm750le do not have complex attributes */
-1757d106a9ce8c Mike Rapoport        2015-10-26  926  		sm750_dev->nocrt = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  927  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  928  }
-81dee67e215b23 Sudip Mukherjee      2015-03-03  929  
-
+diff --git a/CREDITS b/CREDITS
+index 17962bdd6dbd..59d5de3eeb5b 100644
+--- a/CREDITS
++++ b/CREDITS
+@@ -197,6 +197,9 @@ S: Hauptstrasse 19
+ S: 79837 St. Blasien
+ S: Germany
+ 
++N: Ferenc Bakonyi
++D: Hercules graphics adapter framebuffer driver
++
+ N: Krishna Balasubramanian
+ E: balasub@cis.ohio-state.edu
+ D: Wrote SYS V IPC (part of standard kernel since 0.99.10)
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 882214b0e7db..3194befa6a13 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -11373,13 +11373,6 @@ F:	Documentation/filesystems/hfsplus.rst
+ F:	fs/hfsplus/
+ F:	include/linux/hfs_common.h
+ 
+-HGA FRAMEBUFFER DRIVER
+-M:	Ferenc Bakonyi <fero@drama.obuda.kando.hu>
+-L:	linux-nvidia@lists.surfsouth.com
+-S:	Maintained
+-W:	http://drama.obuda.kando.hu/~fero/cgi-bin/hgafb.shtml
+-F:	drivers/video/fbdev/hgafb.c
+-
+ HIBERNATION (aka Software Suspend, aka swsusp)
+ M:	"Rafael J. Wysocki" <rafael@kernel.org>
+ R:	Pavel Machek <pavel@kernel.org>
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 1c73d560f196..085d3a202148 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -453,19 +453,6 @@ config FB_N411
+ 	  This enables support for the Apollo display controller in its
+ 	  Hecuba form using the n411 devkit.
+ 
+-config FB_HGA
+-	tristate "Hercules mono graphics support"
+-	depends on FB && X86
+-	select FB_IOMEM_FOPS
+-	help
+-	  Say Y here if you have a Hercules mono graphics card.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called hgafb.
+-
+-	  As this card technology is at least 25 years old,
+-	  most people will answer N here.
+-
+ config FB_GBE
+ 	bool "SGI Graphics Backend frame buffer support"
+ 	depends on (FB = y) && HAS_IOMEM
+diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
+index 36a18d958ba0..0b17c878154d 100644
+--- a/drivers/video/fbdev/Makefile
++++ b/drivers/video/fbdev/Makefile
+@@ -59,7 +59,6 @@ obj-$(CONFIG_FB_ATARI)            += atafb.o c2p_iplan2.o atafb_mfb.o \
+ obj-$(CONFIG_FB_MAC)              += macfb.o
+ obj-$(CONFIG_FB_HECUBA)           += hecubafb.o
+ obj-$(CONFIG_FB_N411)             += n411.o
+-obj-$(CONFIG_FB_HGA)              += hgafb.o
+ obj-$(CONFIG_FB_XVR500)           += sunxvr500.o
+ obj-$(CONFIG_FB_XVR2500)          += sunxvr2500.o
+ obj-$(CONFIG_FB_XVR1000)          += sunxvr1000.o
+diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
+deleted file mode 100644
+index d32fd1c5217c..000000000000
+--- a/drivers/video/fbdev/hgafb.c
++++ /dev/null
+@@ -1,685 +0,0 @@
+-/*
+- * linux/drivers/video/hgafb.c -- Hercules graphics adaptor frame buffer device
+- *
+- *      Created 25 Nov 1999 by Ferenc Bakonyi (fero@drama.obuda.kando.hu)
+- *      Based on skeletonfb.c by Geert Uytterhoeven and
+- *               mdacon.c by Andrew Apted
+- *
+- * History:
+- *
+- * - Revision 0.1.8 (23 Oct 2002): Ported to new framebuffer api.
+- *
+- * - Revision 0.1.7 (23 Jan 2001): fix crash resulting from MDA only cards
+- *				   being detected as Hercules.	 (Paul G.)
+- * - Revision 0.1.6 (17 Aug 2000): new style structs
+- *                                 documentation
+- * - Revision 0.1.5 (13 Mar 2000): spinlocks instead of saveflags();cli();etc
+- *                                 minor fixes
+- * - Revision 0.1.4 (24 Jan 2000): fixed a bug in hga_card_detect() for
+- *                                  HGA-only systems
+- * - Revision 0.1.3 (22 Jan 2000): modified for the new fb_info structure
+- *                                 screen is cleared after rmmod
+- *                                 virtual resolutions
+- *                                 module parameter 'nologo={0|1}'
+- *                                 the most important: boot logo :)
+- * - Revision 0.1.0  (6 Dec 1999): faster scrolling and minor fixes
+- * - First release  (25 Nov 1999)
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License.  See the file COPYING in the main directory of this archive
+- * for more details.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/spinlock.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/delay.h>
+-#include <linux/fb.h>
+-#include <linux/init.h>
+-#include <linux/ioport.h>
+-#include <linux/platform_device.h>
+-#include <asm/io.h>
+-#include <asm/vga.h>
+-
+-#if 0
+-#define DPRINTK(args...) printk(KERN_DEBUG __FILE__": " ##args)
+-#else
+-#define DPRINTK(args...)
+-#endif
+-
+-#if 0
+-#define CHKINFO(ret) if (info != &fb_info) { printk(KERN_DEBUG __FILE__": This should never happen, line:%d \n", __LINE__); return ret; }
+-#else
+-#define CHKINFO(ret)
+-#endif
+-
+-/* Description of the hardware layout */
+-
+-static void __iomem *hga_vram;			/* Base of video memory */
+-static unsigned long hga_vram_len;		/* Size of video memory */
+-
+-#define HGA_ROWADDR(row) ((row%4)*8192 + (row>>2)*90)
+-#define HGA_TXT			0
+-#define HGA_GFX			1
+-
+-static inline u8 __iomem * rowaddr(struct fb_info *info, u_int row)
+-{
+-	return info->screen_base + HGA_ROWADDR(row);
+-}
+-
+-static int hga_mode = -1;			/* 0 = txt, 1 = gfx mode */
+-
+-static enum { TYPE_HERC, TYPE_HERCPLUS, TYPE_HERCCOLOR } hga_type;
+-static char *hga_type_name;
+-
+-#define HGA_INDEX_PORT		0x3b4		/* Register select port */
+-#define HGA_VALUE_PORT		0x3b5		/* Register value port */
+-#define HGA_MODE_PORT		0x3b8		/* Mode control port */
+-#define HGA_STATUS_PORT		0x3ba		/* Status and Config port */
+-#define HGA_GFX_PORT		0x3bf		/* Graphics control port */
+-
+-/* HGA register values */
+-
+-#define HGA_CURSOR_BLINKING	0x00
+-#define HGA_CURSOR_OFF		0x20
+-#define HGA_CURSOR_SLOWBLINK	0x60
+-
+-#define HGA_MODE_GRAPHICS	0x02
+-#define HGA_MODE_VIDEO_EN	0x08
+-#define HGA_MODE_BLINK_EN	0x20
+-#define HGA_MODE_GFX_PAGE1	0x80
+-
+-#define HGA_STATUS_HSYNC	0x01
+-#define HGA_STATUS_VSYNC	0x80
+-#define HGA_STATUS_VIDEO	0x08
+-
+-#define HGA_CONFIG_COL132	0x08
+-#define HGA_GFX_MODE_EN		0x01
+-#define HGA_GFX_PAGE_EN		0x02
+-
+-/* Global locks */
+-
+-static DEFINE_SPINLOCK(hga_reg_lock);
+-
+-/* Framebuffer driver structures */
+-
+-static const struct fb_var_screeninfo hga_default_var = {
+-	.xres		= 720,
+-	.yres 		= 348,
+-	.xres_virtual 	= 720,
+-	.yres_virtual	= 348,
+-	.bits_per_pixel = 1,
+-	.red 		= {0, 1, 0},
+-	.green 		= {0, 1, 0},
+-	.blue 		= {0, 1, 0},
+-	.transp 	= {0, 0, 0},
+-	.height 	= -1,
+-	.width 		= -1,
+-};
+-
+-static struct fb_fix_screeninfo hga_fix = {
+-	.id 		= "HGA",
+-	.type 		= FB_TYPE_PACKED_PIXELS,	/* (not sure) */
+-	.visual 	= FB_VISUAL_MONO10,
+-	.xpanstep 	= 8,
+-	.ypanstep 	= 8,
+-	.line_length 	= 90,
+-	.accel 		= FB_ACCEL_NONE
+-};
+-
+-/* Don't assume that tty1 will be the initial current console. */
+-static int release_io_port = 0;
+-static int release_io_ports = 0;
+-static bool nologo = 0;
+-
+-/* -------------------------------------------------------------------------
+- *
+- * Low level hardware functions
+- *
+- * ------------------------------------------------------------------------- */
+-
+-static void write_hga_b(unsigned int val, unsigned char reg)
+-{
+-	outb_p(reg, HGA_INDEX_PORT);
+-	outb_p(val, HGA_VALUE_PORT);
+-}
+-
+-static void write_hga_w(unsigned int val, unsigned char reg)
+-{
+-	outb_p(reg,   HGA_INDEX_PORT); outb_p(val >> 8,   HGA_VALUE_PORT);
+-	outb_p(reg+1, HGA_INDEX_PORT); outb_p(val & 0xff, HGA_VALUE_PORT);
+-}
+-
+-static int test_hga_b(unsigned char val, unsigned char reg)
+-{
+-	outb_p(reg, HGA_INDEX_PORT);
+-	outb  (val, HGA_VALUE_PORT);
+-	udelay(20); val = (inb_p(HGA_VALUE_PORT) == val);
+-	return val;
+-}
+-
+-static void hga_clear_screen(void)
+-{
+-	unsigned char fillchar = 0xbf; /* magic */
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&hga_reg_lock, flags);
+-	if (hga_mode == HGA_TXT)
+-		fillchar = ' ';
+-	else if (hga_mode == HGA_GFX)
+-		fillchar = 0x00;
+-	spin_unlock_irqrestore(&hga_reg_lock, flags);
+-	if (fillchar != 0xbf)
+-		memset_io(hga_vram, fillchar, hga_vram_len);
+-}
+-
+-static void hga_txt_mode(void)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&hga_reg_lock, flags);
+-	outb_p(HGA_MODE_VIDEO_EN | HGA_MODE_BLINK_EN, HGA_MODE_PORT);
+-	outb_p(0x00, HGA_GFX_PORT);
+-	outb_p(0x00, HGA_STATUS_PORT);
+-
+-	write_hga_b(0x61, 0x00);	/* horizontal total */
+-	write_hga_b(0x50, 0x01);	/* horizontal displayed */
+-	write_hga_b(0x52, 0x02);	/* horizontal sync pos */
+-	write_hga_b(0x0f, 0x03);	/* horizontal sync width */
+-
+-	write_hga_b(0x19, 0x04);	/* vertical total */
+-	write_hga_b(0x06, 0x05);	/* vertical total adjust */
+-	write_hga_b(0x19, 0x06);	/* vertical displayed */
+-	write_hga_b(0x19, 0x07);	/* vertical sync pos */
+-
+-	write_hga_b(0x02, 0x08);	/* interlace mode */
+-	write_hga_b(0x0d, 0x09);	/* maximum scanline */
+-	write_hga_b(0x0c, 0x0a);	/* cursor start */
+-	write_hga_b(0x0d, 0x0b);	/* cursor end */
+-
+-	write_hga_w(0x0000, 0x0c);	/* start address */
+-	write_hga_w(0x0000, 0x0e);	/* cursor location */
+-
+-	hga_mode = HGA_TXT;
+-	spin_unlock_irqrestore(&hga_reg_lock, flags);
+-}
+-
+-static void hga_gfx_mode(void)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&hga_reg_lock, flags);
+-	outb_p(0x00, HGA_STATUS_PORT);
+-	outb_p(HGA_GFX_MODE_EN, HGA_GFX_PORT);
+-	outb_p(HGA_MODE_VIDEO_EN | HGA_MODE_GRAPHICS, HGA_MODE_PORT);
+-
+-	write_hga_b(0x35, 0x00);	/* horizontal total */
+-	write_hga_b(0x2d, 0x01);	/* horizontal displayed */
+-	write_hga_b(0x2e, 0x02);	/* horizontal sync pos */
+-	write_hga_b(0x07, 0x03);	/* horizontal sync width */
+-
+-	write_hga_b(0x5b, 0x04);	/* vertical total */
+-	write_hga_b(0x02, 0x05);	/* vertical total adjust */
+-	write_hga_b(0x57, 0x06);	/* vertical displayed */
+-	write_hga_b(0x57, 0x07);	/* vertical sync pos */
+-
+-	write_hga_b(0x02, 0x08);	/* interlace mode */
+-	write_hga_b(0x03, 0x09);	/* maximum scanline */
+-	write_hga_b(0x00, 0x0a);	/* cursor start */
+-	write_hga_b(0x00, 0x0b);	/* cursor end */
+-
+-	write_hga_w(0x0000, 0x0c);	/* start address */
+-	write_hga_w(0x0000, 0x0e);	/* cursor location */
+-
+-	hga_mode = HGA_GFX;
+-	spin_unlock_irqrestore(&hga_reg_lock, flags);
+-}
+-
+-static void hga_show_logo(struct fb_info *info)
+-{
+-/*
+-	void __iomem *dest = hga_vram;
+-	char *logo = linux_logo_bw;
+-	int x, y;
+-
+-	for (y = 134; y < 134 + 80 ; y++) * this needs some cleanup *
+-		for (x = 0; x < 10 ; x++)
+-			writeb(~*(logo++),(dest + HGA_ROWADDR(y) + x + 40));
+-*/
+-}
+-
+-static void hga_pan(unsigned int xoffset, unsigned int yoffset)
+-{
+-	unsigned int base;
+-	unsigned long flags;
+-
+-	base = (yoffset / 8) * 90 + xoffset;
+-	spin_lock_irqsave(&hga_reg_lock, flags);
+-	write_hga_w(base, 0x0c);	/* start address */
+-	spin_unlock_irqrestore(&hga_reg_lock, flags);
+-	DPRINTK("hga_pan: base:%d\n", base);
+-}
+-
+-static void hga_blank(int blank_mode)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&hga_reg_lock, flags);
+-	if (blank_mode) {
+-		outb_p(0x00, HGA_MODE_PORT);	/* disable video */
+-	} else {
+-		outb_p(HGA_MODE_VIDEO_EN | HGA_MODE_GRAPHICS, HGA_MODE_PORT);
+-	}
+-	spin_unlock_irqrestore(&hga_reg_lock, flags);
+-}
+-
+-static int hga_card_detect(struct platform_device *pdev)
+-{
+-	int count = 0;
+-	void __iomem *p, *q;
+-	unsigned short p_save, q_save;
+-
+-	hga_vram_len  = 0x08000;
+-
+-	if (!devm_request_mem_region(&pdev->dev, 0xb0000, hga_vram_len, "hgafb")) {
+-		dev_err(&pdev->dev, "cannot reserve video memory at 0xb0000\n");
+-		return -EBUSY;
+-	}
+-
+-	hga_vram = ioremap(0xb0000, hga_vram_len);
+-	if (!hga_vram)
+-		return -ENOMEM;
+-
+-	if (request_region(0x3b0, 12, "hgafb"))
+-		release_io_ports = 1;
+-	if (request_region(0x3bf, 1, "hgafb"))
+-		release_io_port = 1;
+-
+-	/* do a memory check */
+-
+-	p = hga_vram;
+-	q = hga_vram + 0x01000;
+-
+-	p_save = readw(p); q_save = readw(q);
+-
+-	writew(0xaa55, p); if (readw(p) == 0xaa55) count++;
+-	writew(0x55aa, p); if (readw(p) == 0x55aa) count++;
+-	writew(p_save, p);
+-
+-	if (count != 2)
+-		goto error;
+-
+-	/* Ok, there is definitely a card registering at the correct
+-	 * memory location, so now we do an I/O port test.
+-	 */
+-
+-	if (!test_hga_b(0x66, 0x0f))	    /* cursor low register */
+-		goto error;
+-
+-	if (!test_hga_b(0x99, 0x0f))     /* cursor low register */
+-		goto error;
+-
+-	/* See if the card is a Hercules, by checking whether the vsync
+-	 * bit of the status register is changing.  This test lasts for
+-	 * approximately 1/10th of a second.
+-	 */
+-
+-	p_save = q_save = inb_p(HGA_STATUS_PORT) & HGA_STATUS_VSYNC;
+-
+-	for (count=0; count < 50000 && p_save == q_save; count++) {
+-		q_save = inb(HGA_STATUS_PORT) & HGA_STATUS_VSYNC;
+-		udelay(2);
+-	}
+-
+-	if (p_save == q_save)
+-		goto error;
+-
+-	switch (inb_p(HGA_STATUS_PORT) & 0x70) {
+-		case 0x10:
+-			hga_type = TYPE_HERCPLUS;
+-			hga_type_name = "HerculesPlus";
+-			break;
+-		case 0x50:
+-			hga_type = TYPE_HERCCOLOR;
+-			hga_type_name = "HerculesColor";
+-			break;
+-		default:
+-			hga_type = TYPE_HERC;
+-			hga_type_name = "Hercules";
+-			break;
+-	}
+-	return 0;
+-error:
+-	if (release_io_ports)
+-		release_region(0x3b0, 12);
+-	if (release_io_port)
+-		release_region(0x3bf, 1);
+-
+-	iounmap(hga_vram);
+-
+-	pr_err("hgafb: HGA card not detected.\n");
+-
+-	return -EINVAL;
+-}
+-
+-/**
+- *	hgafb_open - open the framebuffer device
+- *	@info: pointer to fb_info object containing info for current hga board
+- *	@init: open by console system or userland.
+- *
+- *	Returns: %0
+- */
+-
+-static int hgafb_open(struct fb_info *info, int init)
+-{
+-	hga_gfx_mode();
+-	hga_clear_screen();
+-	if (!nologo) hga_show_logo(info);
+-	return 0;
+-}
+-
+-/**
+- *	hgafb_release - open the framebuffer device
+- *	@info: pointer to fb_info object containing info for current hga board
+- *	@init: open by console system or userland.
+- *
+- *	Returns: %0
+- */
+-
+-static int hgafb_release(struct fb_info *info, int init)
+-{
+-	hga_txt_mode();
+-	hga_clear_screen();
+-	return 0;
+-}
+-
+-/**
+- *	hgafb_setcolreg - set color registers
+- *	@regno:register index to set
+- *	@red:red value, unused
+- *	@green:green value, unused
+- *	@blue:blue value, unused
+- *	@transp:transparency value, unused
+- *	@info:unused
+- *
+- *	This callback function is used to set the color registers of a HGA
+- *	board. Since we have only two fixed colors only @regno is checked.
+- *	A zero is returned on success and 1 for failure.
+- *
+- *	Returns: %0
+- */
+-
+-static int hgafb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+-			   u_int transp, struct fb_info *info)
+-{
+-	if (regno > 1)
+-		return 1;
+-	return 0;
+-}
+-
+-/**
+- *	hgafb_pan_display - pan or wrap the display
+- *	@var:contains new xoffset, yoffset and vmode values
+- *	@info:pointer to fb_info object containing info for current hga board
+- *
+- *	This function looks only at xoffset, yoffset and the %FB_VMODE_YWRAP
+- *	flag in @var. If input parameters are correct it calls hga_pan() to
+- *	program the hardware. @info->var is updated to the new values.
+- *
+- *	Returns: %0 on success or %-EINVAL for failure.
+- */
+-
+-static int hgafb_pan_display(struct fb_var_screeninfo *var,
+-			     struct fb_info *info)
+-{
+-	if (var->vmode & FB_VMODE_YWRAP) {
+-		if (var->yoffset >= info->var.yres_virtual ||
+-		    var->xoffset)
+-			return -EINVAL;
+-	} else {
+-		if (var->xoffset + info->var.xres > info->var.xres_virtual
+-		 || var->yoffset + info->var.yres > info->var.yres_virtual
+-		 || var->yoffset % 8)
+-			return -EINVAL;
+-	}
+-
+-	hga_pan(var->xoffset, var->yoffset);
+-	return 0;
+-}
+-
+-/**
+- *	hgafb_blank - (un)blank the screen
+- *	@blank_mode:blanking method to use
+- *	@info:unused
+- *
+- *	Blank the screen if blank_mode != 0, else unblank.
+- *	Implements VESA suspend and powerdown modes on hardware that supports
+- *	disabling hsync/vsync:
+- *		@blank_mode == 2 means suspend vsync,
+- *		@blank_mode == 3 means suspend hsync,
+- *		@blank_mode == 4 means powerdown.
+- *
+- * Returns: %0
+- */
+-
+-static int hgafb_blank(int blank_mode, struct fb_info *info)
+-{
+-	hga_blank(blank_mode);
+-	return 0;
+-}
+-
+-/*
+- * Accel functions
+- */
+-static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+-{
+-	u_int rows, y;
+-	u8 __iomem *dest;
+-
+-	y = rect->dy;
+-
+-	for (rows = rect->height; rows--; y++) {
+-		dest = rowaddr(info, y) + (rect->dx >> 3);
+-		switch (rect->rop) {
+-		case ROP_COPY:
+-			memset_io(dest, rect->color, (rect->width >> 3));
+-			break;
+-		case ROP_XOR:
+-			fb_writeb(~(fb_readb(dest)), dest);
+-			break;
+-		}
+-	}
+-}
+-
+-static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+-{
+-	u_int rows, y1, y2;
+-	u8 __iomem *src;
+-	u8 __iomem *dest;
+-
+-	if (area->dy <= area->sy) {
+-		y1 = area->sy;
+-		y2 = area->dy;
+-
+-		for (rows = area->height; rows--; ) {
+-			src = rowaddr(info, y1) + (area->sx >> 3);
+-			dest = rowaddr(info, y2) + (area->dx >> 3);
+-			memmove(dest, src, (area->width >> 3));
+-			y1++;
+-			y2++;
+-		}
+-	} else {
+-		y1 = area->sy + area->height - 1;
+-		y2 = area->dy + area->height - 1;
+-
+-		for (rows = area->height; rows--;) {
+-			src = rowaddr(info, y1) + (area->sx >> 3);
+-			dest = rowaddr(info, y2) + (area->dx >> 3);
+-			memmove(dest, src, (area->width >> 3));
+-			y1--;
+-			y2--;
+-		}
+-	}
+-}
+-
+-static void hgafb_imageblit(struct fb_info *info, const struct fb_image *image)
+-{
+-	u8 __iomem *dest;
+-	u8 *cdat = (u8 *) image->data;
+-	u_int rows, y = image->dy;
+-	u_int x;
+-	u8 d;
+-
+-	for (rows = image->height; rows--; y++) {
+-		for (x = 0; x < image->width; x+= 8) {
+-			d = *cdat++;
+-			dest = rowaddr(info, y) + ((image->dx + x)>> 3);
+-			fb_writeb(d, dest);
+-		}
+-	}
+-}
+-
+-static const struct fb_ops hgafb_ops = {
+-	.owner		= THIS_MODULE,
+-	.fb_open	= hgafb_open,
+-	.fb_release	= hgafb_release,
+-	__FB_DEFAULT_IOMEM_OPS_RDWR,
+-	.fb_setcolreg	= hgafb_setcolreg,
+-	.fb_pan_display	= hgafb_pan_display,
+-	.fb_blank	= hgafb_blank,
+-	.fb_fillrect	= hgafb_fillrect,
+-	.fb_copyarea	= hgafb_copyarea,
+-	.fb_imageblit	= hgafb_imageblit,
+-	__FB_DEFAULT_IOMEM_OPS_MMAP,
+-};
+-
+-/* ------------------------------------------------------------------------- *
+- *
+- * Functions in fb_info
+- *
+- * ------------------------------------------------------------------------- */
+-
+-/* ------------------------------------------------------------------------- */
+-
+-	/*
+-	 *  Initialization
+-	 */
+-
+-static int hgafb_probe(struct platform_device *pdev)
+-{
+-	struct fb_info *info;
+-	int ret;
+-
+-	ret = hga_card_detect(pdev);
+-	if (ret)
+-		return ret;
+-
+-	printk(KERN_INFO "hgafb: %s with %ldK of memory detected.\n",
+-		hga_type_name, hga_vram_len/1024);
+-
+-	info = framebuffer_alloc(0, &pdev->dev);
+-	if (!info) {
+-		iounmap(hga_vram);
+-		return -ENOMEM;
+-	}
+-
+-	hga_fix.smem_start = (unsigned long)hga_vram;
+-	hga_fix.smem_len = hga_vram_len;
+-
+-	info->flags = FBINFO_HWACCEL_YPAN;
+-	info->var = hga_default_var;
+-	info->fix = hga_fix;
+-	info->monspecs.hfmin = 0;
+-	info->monspecs.hfmax = 0;
+-	info->monspecs.vfmin = 10000;
+-	info->monspecs.vfmax = 10000;
+-	info->monspecs.dpms = 0;
+-	info->fbops = &hgafb_ops;
+-	info->screen_base = hga_vram;
+-
+-        if (register_framebuffer(info) < 0) {
+-		framebuffer_release(info);
+-		iounmap(hga_vram);
+-		return -EINVAL;
+-	}
+-
+-	fb_info(info, "%s frame buffer device\n", info->fix.id);
+-	platform_set_drvdata(pdev, info);
+-	return 0;
+-}
+-
+-static void hgafb_remove(struct platform_device *pdev)
+-{
+-	struct fb_info *info = platform_get_drvdata(pdev);
+-
+-	hga_txt_mode();
+-	hga_clear_screen();
+-
+-	if (info) {
+-		unregister_framebuffer(info);
+-		framebuffer_release(info);
+-	}
+-
+-	iounmap(hga_vram);
+-
+-	if (release_io_ports)
+-		release_region(0x3b0, 12);
+-
+-	if (release_io_port)
+-		release_region(0x3bf, 1);
+-}
+-
+-static struct platform_driver hgafb_driver = {
+-	.probe = hgafb_probe,
+-	.remove = hgafb_remove,
+-	.driver = {
+-		.name = "hgafb",
+-	},
+-};
+-
+-static struct platform_device *hgafb_device;
+-
+-static int __init hgafb_init(void)
+-{
+-	int ret;
+-
+-	if (fb_get_options("hgafb", NULL))
+-		return -ENODEV;
+-
+-	ret = platform_driver_register(&hgafb_driver);
+-
+-	if (!ret) {
+-		hgafb_device = platform_device_register_simple("hgafb", 0, NULL, 0);
+-
+-		if (IS_ERR(hgafb_device)) {
+-			platform_driver_unregister(&hgafb_driver);
+-			ret = PTR_ERR(hgafb_device);
+-		}
+-	}
+-
+-	return ret;
+-}
+-
+-static void __exit hgafb_exit(void)
+-{
+-	platform_device_unregister(hgafb_device);
+-	platform_driver_unregister(&hgafb_driver);
+-}
+-
+-/* -------------------------------------------------------------------------
+- *
+- *  Modularization
+- *
+- * ------------------------------------------------------------------------- */
+-
+-MODULE_AUTHOR("Ferenc Bakonyi <fero@drama.obuda.kando.hu>");
+-MODULE_DESCRIPTION("FBDev driver for Hercules Graphics Adaptor");
+-MODULE_LICENSE("GPL");
+-
+-module_param(nologo, bool, 0);
+-MODULE_PARM_DESC(nologo, "Disables startup logo if != 0 (default=0)");
+-module_init(hgafb_init);
+-module_exit(hgafb_exit);
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0
+

@@ -1,122 +1,87 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EEDD3E51F0;
-	Mon,  4 May 2026 14:25:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CB873DF019;
+	Mon,  4 May 2026 14:59:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777904700; cv=none; b=g6GVZx/pngT7YQZFPxjIGLUoDe8dUpaVaZ1uDdzdJFF/MmV7PtqAAyN2MOVOwe1LycTFo2iIxGwsD2Tdp6jvjA19U8pddpeJWptmsWBT0KMGAUgQ0nuazXwkuWDmR49MCdLCVPZIX0oosLKQPP1pawQ7upV9Y2F5WzuBk3RcqQo=
+	t=1777906754; cv=none; b=aT0CWJHk7sMYnHYAzWJR4m5brEW8ksfXooQi20H1hgCXxW2D0ZD5cfd3jjv3sMS2dX+zkoRTVk2zzXlq79IkFaaRNx3yFCf1LA2gAdIIFZ1YhOKvVH2gCFgAtq9lN6hAj5zoS3Rl4b+/v6Mfmit9E4UfG/I7sqymtErF1opSh10=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777904700; c=relaxed/simple;
-	bh=/YR6w9Cd/NH2f4RdpEJJ57enQ3LRY297wpXUGq9eRFU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XIrraHdO+kwHn+zGXm431f+JNTXc8G8tb3QeDIhOIwOWM+YOkaCA6NXY0eOq5NL6Ejcj5UNZ9KQtPpU28t9BuJzlpuWAqHPqDlJy2B+pPRdLV2dohWgjz8OVUrJ4eRQcNHFGGpsbIqSh8UnZpL13vUzUGqDoZhwPVLNoV+CFNjY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=NiVDp5ej; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1777906754; c=relaxed/simple;
+	bh=SgzRQTnzKPXhoBbZSVqEKQqoUPBysO/3wr+yAp6wIC4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=flYxJrbW3SpUEhsExVxrEhKMqFyDooGnCLUSZuW4D1sE954CSe09sodtxC5pYfuY6xdZLsY8SwcZjppdGw12lVP3a3yrALAGi05+568KM5jda3aG4EjV774mtLB4sfy30EL5ic+PT/zmU7zx5YPnFUV34NfPYWb81d3t+1O4gyQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=oFKJKgzW; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="NiVDp5ej"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FEB7C2BCB8;
-	Mon,  4 May 2026 14:24:59 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="oFKJKgzW"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6ED64C2BCF5;
+	Mon,  4 May 2026 14:59:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1777904700;
-	bh=/YR6w9Cd/NH2f4RdpEJJ57enQ3LRY297wpXUGq9eRFU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=NiVDp5ejFdoxoUNtEdd4270P/FlFHzH0SO+DMYq0LxWvN5ghJjVdr9bARIUqex7QM
-	 RobrwuaINAjIWL1kCNE0ui3/oNE7bc8mNZ03rOxS0fVBCPnXCpspsjfrYmsRKrHVdf
-	 99BTuxWnzNwADiQ6edGkF0mGe4vZOdJW9AqLNE34=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Tzung-Bi Shih <tzungbi@kernel.org>,
-	Julius Werner <jwerner@chromium.org>,
-	Javier Martinez Canillas <javierm@redhat.com>,
-	Hans de Goede <hansg@kernel.org>,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH 6.12 107/215] firmware: google: framebuffer: Do not unregister platform device
-Date: Mon,  4 May 2026 15:52:06 +0200
-Message-ID: <20260504135134.059961733@linuxfoundation.org>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260504135130.169210693@linuxfoundation.org>
-References: <20260504135130.169210693@linuxfoundation.org>
-User-Agent: quilt/0.69
-X-stable: review
-X-Patchwork-Hint: ignore
+	s=korg; t=1777906753;
+	bh=SgzRQTnzKPXhoBbZSVqEKQqoUPBysO/3wr+yAp6wIC4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=oFKJKgzWCx92OUjWTe1fG5o4g+AXjOzVUAbVC6QKAi/HcH3hqfjgfEN+P0GLWdyAP
+	 SNDbLn6e9a1ovRZrWAZVQaWeTbBiQsw8oL06Yu/fm8WtktyiIMrAW2BwM74iZHQJXq
+	 H4jOODz0mJATx6uIqw/jD+ZPKZiHb5gyZMqsI5hk=
+Date: Mon, 4 May 2026 16:55:25 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Francisco Maestre <francisco@maestretorreblanca.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] staging: sm750fb: add const qualifier to string
+ pointer arrays
+Message-ID: <2026050401-opposite-contently-15eb@gregkh>
+References: <20260503005744.68974-1-francisco@maestretorreblanca.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260503005744.68974-1-francisco@maestretorreblanca.com>
 
-6.12-stable review patch.  If anyone has any objections, please let me know.
+On Sat, May 02, 2026 at 07:57:44PM -0500, Francisco Maestre wrote:
+> Add 'const' qualifier to 'g_fbmode' and 'g_def_fbmode' pointer
+> declarations to make them 'static const char * const', as the
+> pointers themselves are not modified after initialization.
+> 
+> This fixes the following checkpatch.pl warning:
+>   WARNING: static const char * array should probably be
+>   static const char * const
+> 
+> Signed-off-by: Francisco Maestre <francisco@maestretorreblanca.com>
+> ---
+> v2: Resend as individual patch, not part of an unrelated series.
+>  drivers/staging/sm750fb/sm750.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> index 62f6e0cdff4d..dc9653ed2108 100644
+> --- a/drivers/staging/sm750fb/sm750.c
+> +++ b/drivers/staging/sm750fb/sm750.c
+> @@ -33,8 +33,8 @@
+>  static int g_hwcursor = 1;
+>  static int g_noaccel;
+>  static int g_nomtrr;
+> -static const char *g_fbmode[] = {NULL, NULL};
+> -static const char *g_def_fbmode = "1024x768-32@60";
+> +static const char * const g_fbmode[] = {NULL, NULL};
+> +static const char * const g_def_fbmode = "1024x768-32@60";
+>  static char *g_settings;
+>  static int g_dualview;
+>  static char *g_option;
+> -- 
+> 2.50.1 (Apple Git-155)
+> 
+> 
 
-------------------
+Any reason why you did not test build this patch?  Always do so so that
+you don't get grumpy maintainers asking why you didn't test build your
+patch :)
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+thanks,
 
-commit 5cd28bd28c8ce426b56ce4230dbd17537181d5ad upstream.
-
-The native driver takes over the framebuffer aperture by removing the
-system- framebuffer platform device. Afterwards the pointer in drvdata
-is dangling. Remove the entire logic around drvdata and let the kernel's
-aperture helpers handle this. The platform device depends on the native
-hardware device instead of the coreboot device anyway.
-
-When commit 851b4c14532d ("firmware: coreboot: Add coreboot framebuffer
-driver") added the coreboot framebuffer code, the kernel did not support
-device-based aperture management. Instead native driviers only removed
-the conflicting fbdev device. At that point, unregistering the framebuffer
-device most likely worked correctly. It was definitely broken after
-commit d9702b2a2171 ("fbdev/simplefb: Do not use struct
-fb_info.apertures"). So take this commit for the Fixes tag. Earlier
-releases might work depending on the native hardware driver.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: d9702b2a2171 ("fbdev/simplefb: Do not use struct fb_info.apertures")
-Acked-by: Tzung-Bi Shih <tzungbi@kernel.org>
-Acked-by: Julius Werner <jwerner@chromium.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Hans de Goede <hansg@kernel.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: <stable@vger.kernel.org> # v6.3+
-Link: https://patch.msgid.link/20260217155836.96267-2-tzimmermann@suse.de
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/firmware/google/framebuffer-coreboot.c |   10 ----------
- 1 file changed, 10 deletions(-)
-
---- a/drivers/firmware/google/framebuffer-coreboot.c
-+++ b/drivers/firmware/google/framebuffer-coreboot.c
-@@ -67,19 +67,10 @@ static int framebuffer_probe(struct core
- 						 sizeof(pdata));
- 	if (IS_ERR(pdev))
- 		pr_warn("coreboot: could not register framebuffer\n");
--	else
--		dev_set_drvdata(&dev->dev, pdev);
- 
- 	return PTR_ERR_OR_ZERO(pdev);
- }
- 
--static void framebuffer_remove(struct coreboot_device *dev)
--{
--	struct platform_device *pdev = dev_get_drvdata(&dev->dev);
--
--	platform_device_unregister(pdev);
--}
--
- static const struct coreboot_device_id framebuffer_ids[] = {
- 	{ .tag = CB_TAG_FRAMEBUFFER },
- 	{ /* sentinel */ }
-@@ -88,7 +79,6 @@ MODULE_DEVICE_TABLE(coreboot, framebuffe
- 
- static struct coreboot_driver framebuffer_driver = {
- 	.probe = framebuffer_probe,
--	.remove = framebuffer_remove,
- 	.drv = {
- 		.name = "framebuffer",
- 	},
-
-
+greg k-h

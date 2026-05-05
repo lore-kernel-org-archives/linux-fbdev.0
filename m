@@ -1,258 +1,380 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AFFCC3E7176;
-	Tue,  5 May 2026 08:12:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94B4A18BC3B;
+	Tue,  5 May 2026 09:49:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777968773; cv=none; b=Xj373Kvry6eWgtFXgotoUUWStWmlr+ROkYXY3fKYCDyB1EUlQViKENyRgAnhhNpbIjhjP9v+hMSq7tbdpjFMrEXhCfpucKhYUg5yBXKNl8Xnzw6iCP0Gci5F0KM4OnGCc/4SbbkdQntSdH/C23sCcC6pDG8NFO187bSzLkvpByo=
+	t=1777974581; cv=none; b=lYxhO71RRMH0yLzb7/9XVgMftmH6ZnKQ/vum//dEwO8QwqoQr5+S5jAKIgPHCXkGuUcr/DYGCfVA61nRGbWAq0duXdK+SU3GnCPC6hDhPzdjvtsZn+4Ho11wnQ5DzJ86CechaPvCbNC9WFvL5V6Lz2NbVKyby2icP6H9GFGO2LM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777968773; c=relaxed/simple;
-	bh=f+LCiamBvDv8dAL5pEQbx4dHj5knkE8cqEdvuYsHteU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Acf/V+DrilKALdqDmWnK2arB2Bg7pG/5TwUD8waBt+ku65VR8qEQzSV6rHwmB9aIvx0f/7nHhsw3nuOS4BRKINwmSTNNoI6EkvIrx46RYuSbdOb051ft5zyh6EF4BFxEsveRmB8q0Susw8G9enUMw9X4pVPQCx2OVHQWaSSZrW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=l31+BBgY; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1777974581; c=relaxed/simple;
+	bh=sbbUvTWpiLLBjBltGQyy7i5lDyEOVQHoJ2Esr5Xtl/c=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MZH64lZLSl4ljai+FMo1usvWSL3cArzO85fOhoEY0nQa2cwVq1+9X3x0j+uyAYMV+DknV3oh33jlbsZVxSQNAPPZVh4J5CdOPWHkN73nsa+kLTRAimh7SjzC2umyEXhJyeMsB8UcvCV9n8SzetyfPkftDRX4WbozE5Z28ygiMv4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=r/lRB4SC; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="l31+BBgY"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777968770; x=1809504770;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=f+LCiamBvDv8dAL5pEQbx4dHj5knkE8cqEdvuYsHteU=;
-  b=l31+BBgYfMniurSUC82rieam228DkceJOKViBQWHWVQstitmLkCdH009
-   N2Wbv1svqjQzpzz7s8y973VsP9oEbkEju70yGhDMElPFtjNakkxTt7iR4
-   UGsgRN6JEHGx/OT/+qEQCM4xsRrDc8KFQJ6CTKNpB4sTwSJPoW7L9rdgP
-   rS0xKLAVZtURv88cAlQaXZvUpwmoPimwmbUIKpBkBtYtp/laCJLct4jMJ
-   3cYIE4w8HWSPqwdi6sT0/Cpvtuk2Caf8hi5YtmpOaWA53iu5ZMOuQuTyL
-   uFVnbOEyovmWOzwS70cSOXKc+LIi5LiG3i16nxsAh1UL3VWJsBiHMC7s4
-   w==;
-X-CSE-ConnectionGUID: Cq1LX7SJQuq/Oj8w5gm0Kg==
-X-CSE-MsgGUID: H/9a5tNLRaieN/6U04H7xQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11776"; a="78882408"
-X-IronPort-AV: E=Sophos;i="6.23,217,1770624000"; 
-   d="scan'208";a="78882408"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 May 2026 01:12:50 -0700
-X-CSE-ConnectionGUID: E3QWLVgnQ0u11hWb8tV01A==
-X-CSE-MsgGUID: NxUjHUJCT4elHSezVWSDuw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,217,1770624000"; 
-   d="scan'208";a="237522065"
-Received: from lkp-server01.sh.intel.com (HELO 781826d00641) ([10.239.97.150])
-  by fmviesa004.fm.intel.com with ESMTP; 05 May 2026 01:12:47 -0700
-Received: from kbuild by 781826d00641 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wKAtZ-000000004NN-0u2k;
-	Tue, 05 May 2026 08:12:45 +0000
-Date: Tue, 5 May 2026 16:11:52 +0800
-From: kernel test robot <lkp@intel.com>
-To: Francisco Maestre <francisco@maestretorreblanca.com>,
-	sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Francisco Maestre <francisco@maestretorreblanca.com>
-Subject: Re: [PATCH v2] staging: sm750fb: add const qualifier to string
- pointer arrays
-Message-ID: <202605051602.dWbzp24c-lkp@intel.com>
-References: <20260503005744.68974-1-francisco@maestretorreblanca.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="r/lRB4SC"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE9F7C2BCC7;
+	Tue,  5 May 2026 09:49:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777974581;
+	bh=sbbUvTWpiLLBjBltGQyy7i5lDyEOVQHoJ2Esr5Xtl/c=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=r/lRB4SCFTNPs3azqxkCaYRsG94mKLZoSf4r+caqgow3uVQ3A8EZ/pPW8MucNCrUo
+	 pjpudOjV63jiV0oVskiC+CQe/dXCLXkiLcni5x25SY4p6PlvewiL7gZgVwAZ9tic45
+	 s0Y05IA+G+OWGc7VlQDZSjI0BNoffHHKSxTvCxH8xy89Dcr5sPB6o6Dp0k9eEfmlq8
+	 TgpR6oROILGi9sTU07i6JAIng0ZLMmmzsEaQFpS1H8CdUqHCnoUc2XBVkaBgp5Ugma
+	 aNm5hKpS58s/3W/MOpltKLBILLcjhWdLh5Y3a1RWgAezegtwyDgP3IlbJtur9uythg
+	 Jg9P4ajYg21LA==
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 5.15.y] fbdev: defio: Disconnect deferred I/O from the lifetime of struct fb_info
+Date: Tue,  5 May 2026 05:49:37 -0400
+Message-ID: <20260505094937.506038-1-sashal@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <2026050117-upper-unhelpful-d8a9@gregkh>
+References: <2026050117-upper-unhelpful-d8a9@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260503005744.68974-1-francisco@maestretorreblanca.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Francisco,
+From: Thomas Zimmermann <tzimmermann@suse.de>
 
-kernel test robot noticed the following build errors:
+[ Upstream commit 9ded47ad003f09a94b6a710b5c47f4aa5ceb7429 ]
 
-[auto build test ERROR on staging/staging-testing]
+Hold state of deferred I/O in struct fb_deferred_io_state. Allocate an
+instance as part of initializing deferred I/O and remove it only after
+the final mapping has been closed. If the fb_info and the contained
+deferred I/O meanwhile goes away, clear struct fb_deferred_io_state.info
+to invalidate the mapping. Any access will then result in a SIGBUS
+signal.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Francisco-Maestre/staging-sm750fb-add-const-qualifier-to-string-pointer-arrays/20260503-215917
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20260503005744.68974-1-francisco%40maestretorreblanca.com
-patch subject: [PATCH v2] staging: sm750fb: add const qualifier to string pointer arrays
-config: loongarch-allmodconfig (https://download.01.org/0day-ci/archive/20260505/202605051602.dWbzp24c-lkp@intel.com/config)
-compiler: clang version 19.1.7 (https://github.com/llvm/llvm-project cd708029e0b2869e80abe31ddb175f7c35361f90)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260505/202605051602.dWbzp24c-lkp@intel.com/reproduce)
+Fixes a long-standing problem, where a device hot-unplug happens while
+user space still has an active mapping of the graphics memory. The hot-
+unplug frees the instance of struct fb_info. Accessing the memory will
+operate on undefined state.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605051602.dWbzp24c-lkp@intel.com/
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fixes: 60b59beafba8 ("fbdev: mm: Deferred IO support")
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: stable@vger.kernel.org # v2.6.22+
+Signed-off-by: Helge Deller <deller@gmx.de>
+[ replaced `kzalloc_obj()` with `kzalloc(sizeof(*fbdefio_state), GFP_KERNEL)` ]
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fb_defio.c | 152 ++++++++++++++++++++++++----
+ include/linux/fb.h                  |   4 +-
+ 2 files changed, 138 insertions(+), 18 deletions(-)
 
-All errors (new ones prefixed by >>):
-
->> drivers/staging/sm750fb/sm750.c:785:19: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
-     785 |                 g_fbmode[index] = g_def_fbmode;
-         |                 ~~~~~~~~~~~~~~~ ^
-   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
-      36 | static const char * const g_fbmode[] = {NULL, NULL};
-         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/staging/sm750fb/sm750.c:787:20: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
-     787 |                         g_fbmode[index] = g_fbmode[0];
-         |                         ~~~~~~~~~~~~~~~ ^
-   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
-      36 | static const char * const g_fbmode[] = {NULL, NULL};
-         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/staging/sm750fb/sm750.c:896:17: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
-     896 |                                 g_fbmode[0] = opt;
-         |                                 ~~~~~~~~~~~ ^
-   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
-      36 | static const char * const g_fbmode[] = {NULL, NULL};
-         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-   drivers/staging/sm750fb/sm750.c:900:17: error: cannot assign to variable 'g_fbmode' with const-qualified type 'const char *const[2]'
-     900 |                                 g_fbmode[1] = opt;
-         |                                 ~~~~~~~~~~~ ^
-   drivers/staging/sm750fb/sm750.c:36:27: note: variable 'g_fbmode' declared const here
-      36 | static const char * const g_fbmode[] = {NULL, NULL};
-         | ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-   4 errors generated.
-
-
-vim +785 drivers/staging/sm750fb/sm750.c
-
-81dee67e215b23 Sudip Mukherjee      2015-03-03  719  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  720  static int lynxfb_set_fbinfo(struct fb_info *info, int index)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  721  {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  722  	int i;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  723  	struct lynxfb_par *par;
-e359b6a863e19f Mike Rapoport        2015-10-26  724  	struct sm750_dev *sm750_dev;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  725  	struct lynxfb_crtc *crtc;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  726  	struct lynxfb_output *output;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  727  	struct fb_var_screeninfo *var;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  728  	struct fb_fix_screeninfo *fix;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  729  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  730  	const struct fb_videomode *pdb[] = {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  731  		lynx750_ext, NULL, vesa_modes,
-81dee67e215b23 Sudip Mukherjee      2015-03-03  732  	};
-81dee67e215b23 Sudip Mukherjee      2015-03-03  733  	int cdb[] = {ARRAY_SIZE(lynx750_ext), 0, VESA_MODEDB_SIZE};
-d0856045f0e9fc Hungyu Lin           2026-04-01  734  	static const char * const fix_id[2] = {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  735  		"sm750_fb1", "sm750_fb2",
-81dee67e215b23 Sudip Mukherjee      2015-03-03  736  	};
-81dee67e215b23 Sudip Mukherjee      2015-03-03  737  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  738  	int ret, line_length;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  739  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  740  	ret = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  741  	par = (struct lynxfb_par *)info->par;
-e359b6a863e19f Mike Rapoport        2015-10-26  742  	sm750_dev = par->dev;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  743  	crtc = &par->crtc;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  744  	output = &par->output;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  745  	var = &info->var;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  746  	fix = &info->fix;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  747  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  748  	/* set index */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  749  	par->index = index;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  750  	output->channel = &crtc->channel;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  751  	sm750fb_set_drv(par);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  752  
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  753  	/*
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  754  	 * set current cursor variable and proc pointer,
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  755  	 * must be set after crtc member initialized
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  756  	 */
-fdc234d85210d9 Benjamin Philip      2021-07-28  757  	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
-e359b6a863e19f Mike Rapoport        2015-10-26  758  	crtc->cursor.mmio = sm750_dev->pvReg +
-e359b6a863e19f Mike Rapoport        2015-10-26  759  		0x800f0 + (int)crtc->channel * 0x140;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  760  
-cd33da26036ea5 Christopher Carbone  2022-08-23  761  	crtc->cursor.max_h = 64;
-cd33da26036ea5 Christopher Carbone  2022-08-23  762  	crtc->cursor.max_w = 64;
-39f9137268ee3d Benjamin Philip      2021-07-26  763  	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
-e359b6a863e19f Mike Rapoport        2015-10-26  764  	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  765  
-3de08a2d14ff8c Lorenzo Stoakes      2015-03-20  766  	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  767  	if (!g_hwcursor)
-52d0744d751d8f Arnd Bergmann        2016-11-09  768  		sm750_hw_cursor_disable(&crtc->cursor);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  769  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  770  	/* set info->fbops, must be set before fb_find_mode */
-e359b6a863e19f Mike Rapoport        2015-10-26  771  	if (!sm750_dev->accel_off) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  772  		/* use 2d acceleration */
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  773  		if (!g_hwcursor)
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  774  			info->fbops = &lynxfb_ops_accel;
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  775  		else
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  776  			info->fbops = &lynxfb_ops_accel_with_cursor;
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  777  	} else {
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  778  		if (!g_hwcursor)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  779  			info->fbops = &lynxfb_ops;
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  780  		else
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  781  			info->fbops = &lynxfb_ops_with_cursor;
-f7c8a046577e09 Thomas Zimmermann    2023-11-27  782  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  783  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  784  	if (!g_fbmode[index]) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03 @785  		g_fbmode[index] = g_def_fbmode;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  786  		if (index)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  787  			g_fbmode[index] = g_fbmode[0];
-81dee67e215b23 Sudip Mukherjee      2015-03-03  788  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  789  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  790  	for (i = 0; i < 3; i++) {
-81dee67e215b23 Sudip Mukherjee      2015-03-03  791  		ret = fb_find_mode(var, info, g_fbmode[index],
-81dee67e215b23 Sudip Mukherjee      2015-03-03  792  				   pdb[i], cdb[i], NULL, 8);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  793  
-db7fb3588ab492 Artem Lytkin         2026-02-23  794  		if (ret == 1 || ret == 2)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  795  			break;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  796  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  797  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  798  	/* set par */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  799  	par->info = info;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  800  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  801  	/* set info */
-e3a3f9f5123683 Mike Rapoport        2015-10-26  802  	line_length = ALIGN((var->xres_virtual * var->bits_per_pixel / 8),
-e3a3f9f5123683 Mike Rapoport        2015-10-26  803  			    crtc->line_pad);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  804  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  805  	info->pseudo_palette = &par->pseudo_palette[0];
-cc59bde1c920ab Benjamin Philip      2021-07-28  806  	info->screen_base = crtc->v_screen;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  807  	info->screen_size = line_length * var->yres_virtual;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  808  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  809  	/* set info->fix */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  810  	fix->type = FB_TYPE_PACKED_PIXELS;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  811  	fix->type_aux = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  812  	fix->xpanstep = crtc->xpanstep;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  813  	fix->ypanstep = crtc->ypanstep;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  814  	fix->ywrapstep = crtc->ywrapstep;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  815  	fix->accel = FB_ACCEL_SMI;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  816  
-8c475735085a7d Tim Wassink          2025-12-21  817  	strscpy(fix->id, fix_id[index], sizeof(fix->id));
-81dee67e215b23 Sudip Mukherjee      2015-03-03  818  
-fdc234d85210d9 Benjamin Philip      2021-07-28  819  	fix->smem_start = crtc->o_screen + sm750_dev->vidmem_start;
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  820  	/*
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  821  	 * according to mmap experiment from user space application,
-81dee67e215b23 Sudip Mukherjee      2015-03-03  822  	 * fix->mmio_len should not larger than virtual size
-81dee67e215b23 Sudip Mukherjee      2015-03-03  823  	 * (xres_virtual x yres_virtual x ByPP)
-81dee67e215b23 Sudip Mukherjee      2015-03-03  824  	 * Below line maybe buggy when user mmap fb dev node and write
-81dee67e215b23 Sudip Mukherjee      2015-03-03  825  	 * data into the bound over virtual size
-d11ac7cbcc266c Sudip Mukherjee      2015-08-07  826  	 */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  827  	fix->smem_len = crtc->vidmem_size;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  828  	info->screen_size = fix->smem_len;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  829  	fix->line_length = line_length;
-e359b6a863e19f Mike Rapoport        2015-10-26  830  	fix->mmio_start = sm750_dev->vidreg_start;
-e359b6a863e19f Mike Rapoport        2015-10-26  831  	fix->mmio_len = sm750_dev->vidreg_size;
-b610e1193a917f Matej Dujava         2020-04-30  832  
-b610e1193a917f Matej Dujava         2020-04-30  833  	lynxfb_set_visual_mode(info);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  834  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  835  	/* set var */
-81dee67e215b23 Sudip Mukherjee      2015-03-03  836  	var->activate = FB_ACTIVATE_NOW;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  837  	var->accel_flags = 0;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  838  	var->vmode = FB_VMODE_NONINTERLACED;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  839  
-61c507cf652da1 Michel von Czettritz 2015-03-26  840  	ret = fb_alloc_cmap(&info->cmap, 256, 0);
-61c507cf652da1 Michel von Czettritz 2015-03-26  841  	if (ret < 0) {
-fbab250eb51d6d Artem Lytkin         2026-02-07  842  		dev_err(info->device, "Could not allocate memory for cmap.\n");
-81dee67e215b23 Sudip Mukherjee      2015-03-03  843  		goto exit;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  844  	}
-81dee67e215b23 Sudip Mukherjee      2015-03-03  845  
-81dee67e215b23 Sudip Mukherjee      2015-03-03  846  exit:
-81dee67e215b23 Sudip Mukherjee      2015-03-03  847  	lynxfb_ops_check_var(var, info);
-81dee67e215b23 Sudip Mukherjee      2015-03-03  848  	return ret;
-81dee67e215b23 Sudip Mukherjee      2015-03-03  849  }
-81dee67e215b23 Sudip Mukherjee      2015-03-03  850  
-
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index c2a0a936d5fb6..e348f4c15d81a 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -23,6 +23,75 @@
+ #include <linux/rmap.h>
+ #include <linux/pagemap.h>
+ 
++/*
++ * struct fb_deferred_io_state
++ */
++
++struct fb_deferred_io_state {
++	struct kref ref;
++
++	struct mutex lock; /* mutex that protects the pageref list */
++	/* fields protected by lock */
++	struct fb_info *info;
++};
++
++static struct fb_deferred_io_state *fb_deferred_io_state_alloc(void)
++{
++	struct fb_deferred_io_state *fbdefio_state;
++
++	fbdefio_state = kzalloc(sizeof(*fbdefio_state), GFP_KERNEL);
++	if (!fbdefio_state)
++		return NULL;
++
++	kref_init(&fbdefio_state->ref);
++	mutex_init(&fbdefio_state->lock);
++
++	return fbdefio_state;
++}
++
++static void fb_deferred_io_state_release(struct fb_deferred_io_state *fbdefio_state)
++{
++	mutex_destroy(&fbdefio_state->lock);
++
++	kfree(fbdefio_state);
++}
++
++static void fb_deferred_io_state_get(struct fb_deferred_io_state *fbdefio_state)
++{
++	kref_get(&fbdefio_state->ref);
++}
++
++static void __fb_deferred_io_state_release(struct kref *ref)
++{
++	struct fb_deferred_io_state *fbdefio_state =
++		container_of(ref, struct fb_deferred_io_state, ref);
++
++	fb_deferred_io_state_release(fbdefio_state);
++}
++
++static void fb_deferred_io_state_put(struct fb_deferred_io_state *fbdefio_state)
++{
++	kref_put(&fbdefio_state->ref, __fb_deferred_io_state_release);
++}
++
++/*
++ * struct vm_operations_struct
++ */
++
++static void fb_deferred_io_vm_open(struct vm_area_struct *vma)
++{
++	struct fb_deferred_io_state *fbdefio_state = vma->vm_private_data;
++
++	fb_deferred_io_state_get(fbdefio_state);
++}
++
++static void fb_deferred_io_vm_close(struct vm_area_struct *vma)
++{
++	struct fb_deferred_io_state *fbdefio_state = vma->vm_private_data;
++
++	fb_deferred_io_state_put(fbdefio_state);
++}
++
+ static struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs)
+ {
+ 	void *screen_base = (void __force *) info->screen_base;
+@@ -93,17 +162,31 @@ static void fb_deferred_io_pageref_put(struct fb_deferred_io_pageref *pageref,
+ /* this is to find and return the vmalloc-ed fb pages */
+ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
+ {
++	struct fb_info *info;
+ 	unsigned long offset;
+ 	struct page *page;
+-	struct fb_info *info = vmf->vma->vm_private_data;
++	vm_fault_t ret;
++	struct fb_deferred_io_state *fbdefio_state = vmf->vma->vm_private_data;
++
++	mutex_lock(&fbdefio_state->lock);
++
++	info = fbdefio_state->info;
++	if (!info) {
++		ret = VM_FAULT_SIGBUS; /* our device is gone */
++		goto err_mutex_unlock;
++	}
+ 
+ 	offset = vmf->pgoff << PAGE_SHIFT;
+-	if (offset >= info->fix.smem_len)
+-		return VM_FAULT_SIGBUS;
++	if (offset >= info->fix.smem_len) {
++		ret = VM_FAULT_SIGBUS;
++		goto err_mutex_unlock;
++	}
+ 
+ 	page = fb_deferred_io_page(info, offset);
+-	if (!page)
+-		return VM_FAULT_SIGBUS;
++	if (!page) {
++		ret = VM_FAULT_SIGBUS;
++		goto err_mutex_unlock;
++	}
+ 
+ 	get_page(page);
+ 
+@@ -115,8 +198,14 @@ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
+ 	BUG_ON(!page->mapping);
+ 	page->index = vmf->pgoff; /* for page_mkclean() */
+ 
++	mutex_unlock(&fbdefio_state->lock);
++
+ 	vmf->page = page;
+ 	return 0;
++
++err_mutex_unlock:
++	mutex_unlock(&fbdefio_state->lock);
++	return ret;
+ }
+ 
+ int fb_deferred_io_fsync(struct file *file, loff_t start, loff_t end, int datasync)
+@@ -143,8 +232,9 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
+ static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
+ {
+ 	struct page *page = vmf->page;
+-	struct fb_info *info = vmf->vma->vm_private_data;
+-	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct fb_deferred_io_state *fbdefio_state = vmf->vma->vm_private_data;
++	struct fb_info *info;
++	struct fb_deferred_io *fbdefio;
+ 	struct fb_deferred_io_pageref *pageref;
+ 	unsigned long offset;
+ 	vm_fault_t ret;
+@@ -160,7 +250,15 @@ static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
+ 	file_update_time(vmf->vma->vm_file);
+ 
+ 	/* protect against the workqueue changing the page list */
+-	mutex_lock(&fbdefio->lock);
++	mutex_lock(&fbdefio_state->lock);
++
++	info = fbdefio_state->info;
++	if (!info) {
++		ret = VM_FAULT_SIGBUS; /* our device is gone */
++		goto err_mutex_unlock;
++	}
++
++	fbdefio = info->fbdefio;
+ 
+ 	/* first write in this cycle, notify the driver */
+ 	if (fbdefio->first_io && list_empty(&fbdefio->pagereflist))
+@@ -182,18 +280,20 @@ static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
+ 	 */
+ 	lock_page(pageref->page);
+ 
+-	mutex_unlock(&fbdefio->lock);
++	mutex_unlock(&fbdefio_state->lock);
+ 
+ 	/* come back after delay to process the deferred IO */
+ 	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
+ 	return VM_FAULT_LOCKED;
+ 
+ err_mutex_unlock:
+-	mutex_unlock(&fbdefio->lock);
++	mutex_unlock(&fbdefio_state->lock);
+ 	return ret;
+ }
+ 
+ static const struct vm_operations_struct fb_deferred_io_vm_ops = {
++	.open		= fb_deferred_io_vm_open,
++	.close		= fb_deferred_io_vm_close,
+ 	.fault		= fb_deferred_io_fault,
+ 	.page_mkwrite	= fb_deferred_io_mkwrite,
+ };
+@@ -215,7 +315,10 @@ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
+ 	if (!(info->flags & FBINFO_VIRTFB))
+ 		vma->vm_flags |= VM_IO;
+-	vma->vm_private_data = info;
++	vma->vm_private_data = info->fbdefio_state;
++
++	fb_deferred_io_state_get(info->fbdefio_state); /* released in vma->vm_ops->close() */
++
+ 	return 0;
+ }
+ 
+@@ -225,9 +328,10 @@ static void fb_deferred_io_work(struct work_struct *work)
+ 	struct fb_info *info = container_of(work, struct fb_info, deferred_work.work);
+ 	struct fb_deferred_io_pageref *pageref, *next;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct fb_deferred_io_state *fbdefio_state = info->fbdefio_state;
+ 
+ 	/* here we mkclean the pages, then do all deferred IO */
+-	mutex_lock(&fbdefio->lock);
++	mutex_lock(&fbdefio_state->lock);
+ 	list_for_each_entry(pageref, &fbdefio->pagereflist, list) {
+ 		struct page *cur = pageref->page;
+ 		lock_page(cur);
+@@ -242,12 +346,13 @@ static void fb_deferred_io_work(struct work_struct *work)
+ 	list_for_each_entry_safe(pageref, next, &fbdefio->pagereflist, list)
+ 		fb_deferred_io_pageref_put(pageref, info);
+ 
+-	mutex_unlock(&fbdefio->lock);
++	mutex_unlock(&fbdefio_state->lock);
+ }
+ 
+ int fb_deferred_io_init(struct fb_info *info)
+ {
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct fb_deferred_io_state *fbdefio_state;
+ 	struct fb_deferred_io_pageref *pagerefs;
+ 	unsigned long npagerefs, i;
+ 	int ret;
+@@ -257,7 +362,11 @@ int fb_deferred_io_init(struct fb_info *info)
+ 	if (WARN_ON(!info->fix.smem_len))
+ 		return -EINVAL;
+ 
+-	mutex_init(&fbdefio->lock);
++	fbdefio_state = fb_deferred_io_state_alloc();
++	if (!fbdefio_state)
++		return -ENOMEM;
++	fbdefio_state->info = info;
++
+ 	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
+ 	INIT_LIST_HEAD(&fbdefio->pagereflist);
+ 	if (fbdefio->delay == 0) /* set a default of 1 s */
+@@ -276,10 +385,12 @@ int fb_deferred_io_init(struct fb_info *info)
+ 	info->npagerefs = npagerefs;
+ 	info->pagerefs = pagerefs;
+ 
++	info->fbdefio_state = fbdefio_state;
++
+ 	return 0;
+ 
+ err:
+-	mutex_destroy(&fbdefio->lock);
++	fb_deferred_io_state_release(fbdefio_state);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_init);
+@@ -320,11 +431,18 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_release);
+ 
+ void fb_deferred_io_cleanup(struct fb_info *info)
+ {
+-	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct fb_deferred_io_state *fbdefio_state = info->fbdefio_state;
+ 
+ 	fb_deferred_io_lastclose(info);
+ 
++	info->fbdefio_state = NULL;
++
++	mutex_lock(&fbdefio_state->lock);
++	fbdefio_state->info = NULL;
++	mutex_unlock(&fbdefio_state->lock);
++
++	fb_deferred_io_state_put(fbdefio_state);
++
+ 	kvfree(info->pagerefs);
+-	mutex_destroy(&fbdefio->lock);
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index b79a833524efc..9b3c198b06826 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -213,12 +213,13 @@ struct fb_deferred_io {
+ 	unsigned long delay;
+ 	bool sort_pagereflist; /* sort pagelist by offset */
+ 	int open_count; /* number of opened files; protected by fb_info lock */
+-	struct mutex lock; /* mutex that protects the pageref list */
+ 	struct list_head pagereflist; /* list of pagerefs for touched pages */
+ 	/* callback */
+ 	void (*first_io)(struct fb_info *info);
+ 	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
+ };
++
++struct fb_deferred_io_state;
+ #endif
+ 
+ /*
+@@ -480,6 +481,7 @@ struct fb_info {
+ 	unsigned long npagerefs;
+ 	struct fb_deferred_io_pageref *pagerefs;
+ 	struct fb_deferred_io *fbdefio;
++	struct fb_deferred_io_state *fbdefio_state;
+ #endif
+ 
+ 	const struct fb_ops *fbops;
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.53.0
+

@@ -1,94 +1,63 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8440B2F0661;
-	Tue,  5 May 2026 20:52:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 721363264C2;
+	Tue,  5 May 2026 23:56:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778014358; cv=none; b=UBkigvsQnHbf9eHRnfedS3Gj2PhAYzRZqH/b94CXcvR76w6eN5nqTbFmmZKAOU1mUyfsSA2d7K5vT4CuuPBc7qkNBrv2DAX1WfAh3tAHaiQ1Y5oP0RCjHJxuRexxAsYw7fmE5OOa7DT/UMeMn9D1+8TPDCRbgg6TYwXplDDTroM=
+	t=1778025402; cv=none; b=MWjKotOt7qJ0nxuiZ5/P5/Be5ijo2U+1VVzAJowi8r5VwAlQxeOx8tkUL0sKJPg+YKu6+2s8nY0YDD59B4leYH+WnM26gSpIY8lN+heNzk3oqHWM6U0t2AEg6xKieyUC4Rjj3JaaOPS9OJQDzWbqzNz/CGBiDBAnplHCs5soTzE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778014358; c=relaxed/simple;
-	bh=HChXrytaKurFkc9WqOBSK4ESIOzp4TbVSdtmIumCorE=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=B2oxO9ns4RV4O+6lZeCeNUDGKmfJpsQp8CZGW3/IXSoG3sXuufAa0Zuwb/Gexry9moDmXpe339DQsi17N/v4uDWdE9dLy6b83Dzyp+o6/c3QXHATgnZ2egbAngFeTsX/cfXHAqup/ZI3vgkAnm8goP8u2wcaOwZ5N22yMBEpvRU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NvMLujDa; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778025402; c=relaxed/simple;
+	bh=SKxPzwOs2LUU6XS+S+cwge8LKnZfV+kTiCd5PwTtSI8=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=Swz8VFXXL1XYxrKXO4wAhamVdqH8cFEs6lKR5bwoUeH8aYPxr5MGV+2Y5wKMo7yPtiAB5BVkCf7HGVKyRfDBX1dYAbVn/5bBjLm3QxnotQInHtPS/7I4AYhpvj9Cxq2dpqsPeoELqDb535ff+GlMRsNL6+UCqCPTRyTlmv6r17g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WadBA/rB; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NvMLujDa"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0166DC2BCB4;
-	Tue,  5 May 2026 20:52:36 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WadBA/rB"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56117C2BCB4;
+	Tue,  5 May 2026 23:56:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778014358;
-	bh=HChXrytaKurFkc9WqOBSK4ESIOzp4TbVSdtmIumCorE=;
-	h=Date:From:To:Subject:From;
-	b=NvMLujDalHQBRmPaPYRCs27vCTglfQJZmYSrmi1+HuoRaT+iJi3NMSR43QcuhkB+b
-	 zz5bY448GrhOrZr7lDUq3fD0G2B6q0M0mxAW340wZDIc8l0B8/0kpH0weiumiSaQa2
-	 Ei4YJkyaOZn1ma5RMOEgddSkOG/oQq6HCKiZiILGol/ySM5EfkMlIBCTIor/mtyHdL
-	 W13GpjOdcUI/SBd1Cevj3OhZaDvd1eAoo3GXRPIlr8zmGtFAwb2NYk5oeJVTuEYfO/
-	 eKVZFVCHxS11BAF8cORt8WEJRaGiY5sVIiBUMS81dn2gTK+SiK5EdnnYqUZBT+Mq9A
-	 7ZKTZV/8MH61Q==
-Date: Tue, 5 May 2026 22:52:33 +0200
-From: Helge Deller <deller@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] fbdev fixes and updates for v7.1-rc3
-Message-ID: <afpYkddCLxIsicwb@carbonx1>
+	s=k20201202; t=1778025402;
+	bh=SKxPzwOs2LUU6XS+S+cwge8LKnZfV+kTiCd5PwTtSI8=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=WadBA/rBzHYS46Pec0DntriiezSHraNm6KxHDixqZSe/fu3WK+UIJqXHmDyIJn4PL
+	 xKE/Q2jqJzyNDNzIVKp5q+gskYTP7e1nn5JKe560rFGASnisTaujcscUHoZRC2m/AW
+	 S9J71ns2z0tPbg+SEH6sv4aGPCjWjIk+vKLQ2tEIcLXCPTcpA698oTFJb5rB5opPCS
+	 5Fw7bbYXoXAst9aaOTN3HDl32HDaGF5Dt1kiX+01UWng/20yFf/KOwgrxnG4rdQZS+
+	 Z/zFQPz35V0JEMHSDe3fIEmdPgMhLq6iv+1qgCHM/L3u+3NsopOsmAkje17ze2HWTR
+	 eQR1SVpLzIBig==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id B9FE439302FF;
+	Tue,  5 May 2026 23:55:53 +0000 (UTC)
+Subject: Re: [GIT PULL] fbdev fixes and updates for v7.1-rc3
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <afpYkddCLxIsicwb@carbonx1>
+References: <afpYkddCLxIsicwb@carbonx1>
+X-PR-Tracked-List-Id: <linux-fbdev.vger.kernel.org>
+X-PR-Tracked-Message-Id: <afpYkddCLxIsicwb@carbonx1>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.1-rc3
+X-PR-Tracked-Commit-Id: 8de779dc40d35d39fa07387b6f921eb11df0f511
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 13ad98eaabef611f042d49a9077be060ad03284d
+Message-Id: <177802535232.2314843.2129849224623926149.pr-tracker-bot@kernel.org>
+Date: Tue, 05 May 2026 23:55:52 +0000
+To: Helge Deller <deller@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-Hi Linus,
+The pull request you sent on Tue, 5 May 2026 22:52:33 +0200:
 
-please pull four small patches for fbdev, of which two are important:
-One fixes the bitmap font generation and the other prevents a possible
-use-after-free in udlfb.
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.1-rc3
 
-Thanks!
-Helge
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/13ad98eaabef611f042d49a9077be060ad03284d
 
-----------------------------------------------------------------
+Thank you!
 
-The following changes since commit 254f49634ee16a731174d2ae34bc50bd5f45e731:
-
-  Linux 7.1-rc1 (2026-04-26 14:19:00 -0700)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.1-rc3
-
-for you to fetch changes up to 8de779dc40d35d39fa07387b6f921eb11df0f511:
-
-  fbdev: udlfb: add vm_ops to dlfb_ops_mmap to prevent use-after-free (2026-05-04 10:35:55 +0200)
-
-----------------------------------------------------------------
-fbdev fixes & cleanups for 7.1-rc3:
-
-- Fix rotating fonts by 180 degrees [Thomas Zimmermann]
-- Drop duplicate include of linux/module.h in fb_defio [Chen Ni]
-- Add vm_ops in udlfb to prevent use-after-free [Rajat Gupta]
-- ipu-v3: clean up kernel-doc warnings [Randy Dunlap]
-
-----------------------------------------------------------------
-Chen Ni (1):
-      fbdev: defio: Remove duplicate include of linux/module.h
-
-Rajat Gupta (1):
-      fbdev: udlfb: add vm_ops to dlfb_ops_mmap to prevent use-after-free
-
-Randy Dunlap (1):
-      fbdev: ipu-v3: clean up kernel-doc warnings
-
-Thomas Zimmermann (1):
-      lib/fonts: Fix bit position when rotating by 180 degrees
-
- drivers/video/fbdev/core/fb_defio.c   |  1 -
- drivers/video/fbdev/udlfb.c           | 31 ++++++++++++++++++++++++++++++-
- include/video/imx-ipu-image-convert.h | 16 +++++++++++-----
- include/video/udlfb.h                 |  1 +
- lib/fonts/font_rotate.c               |  2 +-
- 5 files changed, 43 insertions(+), 8 deletions(-)
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8F493C3451;
-	Tue,  5 May 2026 06:00:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 051D73E4C97;
+	Tue,  5 May 2026 07:31:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1777960806; cv=none; b=lDC8pInyMFr4PPE95p9CqHu33/tbQaEkBX1syLKJiTNdxIE5Mka+X3lBWI96Z/HPiaCgujDQOIoe9fPciip+vHsVYO8tPWujUhNbDXIpjXNpC7MHWNJOqyBPzWPfqeW90o13MFEKjOGB4wzQ3knjz1NYyqN3fVrZORYAKQobNW4=
+	t=1777966296; cv=none; b=UKHVPijC3pkAcWMhQBxx25+a5Wx/6AHPipjXKHC3hgZPGexmh4/kvoNLwktapKOoaTjtBe8zYlzpllIM2MORNFEiYutUASnl2akPvcbdKosHyYBUBFPDqNs90a0F22OE1BEWJ0Rl480JOdi4693Jpd645F7Vo7un+gXKmYym+SM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1777960806; c=relaxed/simple;
-	bh=nR2AIUeDgBfsBW4PZ/I/TxdqbxVUjUE2ABXgSI72aM4=;
+	s=arc-20240116; t=1777966296; c=relaxed/simple;
+	bh=9gOsdwvhHrbZhGP74GCYkzafcjxSWWQ4PZ9lonxqf2o=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=uC8YfKrzuZoIsTz1maS3J7zKC2O44C9cvN5iiXGi9KyHuGeJURtLBMje1wxBSpqaVnKO851qzWsJVrbRFLdx3tb5qXZ16JMPfo1cBDIquEJwLRrTBAPdOrYU+bP1bWqV/ve2yAE1FxJxekzQUTjwT7EURzrH3N3Vcw4xUaQ7NHo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MN2D4c96; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=YIole1Sfb+P00e/PYcrQuIh9Ec+B3zptg2NuMavd4UW26wASvGLpYjRwXMfIqsQTVaxiW5lJAX3PKD8MbAhmwi4eHAwg2hfyw7Arld1HO4gUauTN4rhO8cAS1gezoQjbX1X7i50Tl6Rluc48dTnvOwH9k7n4jBEEQw18Y0y/Tfk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ex/bm3ug; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MN2D4c96"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC46BC2BCB4;
-	Tue,  5 May 2026 06:00:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ex/bm3ug"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51CDAC2BCB4;
+	Tue,  5 May 2026 07:31:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777960806;
-	bh=nR2AIUeDgBfsBW4PZ/I/TxdqbxVUjUE2ABXgSI72aM4=;
+	s=k20201202; t=1777966295;
+	bh=9gOsdwvhHrbZhGP74GCYkzafcjxSWWQ4PZ9lonxqf2o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=MN2D4c969nKJosYRZ+bm1lC9B3UlitRkkPICeugeu3W4tPGCkWr7iXM3yD0J31qh0
-	 VhSR1VsL4ldmG8CLCOLXF2kHQV/5U0JfaseB4nQ6jTIG8DKRwBaVEasAQxjLLybMG3
-	 6kHgKMS1gZXLBb9+5/ek4w8zQU6xjmTmSPZDuxFh5p6nuyqWAEcUUrCnLCseMS7Ef8
-	 yE7CZbUM9rqxiMJaNS9Y2GRK2wTVPMqvHB5ye3xwzsiJPjqGuHv7H4lmn7Oa7bF4GM
-	 EZuKBBMTECEi8UAFEQXU32rCXuFq7/NCA3V1b6moRqDHjWtZSRNgpbi7ZZWxhR+jBK
-	 tLZhDuo8fqBZA==
+	b=Ex/bm3ugvPQf79namjCWn+vHMhYTjzvjRmx+9G/z0hxDQpNppeV4dkpGrx4/uK9fI
+	 qOyH1zF1IAnb8IOMPymAg0PC96X5f2dfCzPFJ7scxprQEcagPfzVwfhMG2TfQCfYyl
+	 EkKshwxzlrjniN7KRVrdCQh6n6x/GrEk6RhAf7KpMSSvZAR6GN416d35P38iX3Zg7/
+	 gPZpgS0qyr2ndWaMf8qtlir0zdQn9aVROX0vdeyg66sOmIkZrGkjWYKHq2pPfDqu3m
+	 tVUc1zdCMS7ZKss4ojcEMM+6q4pEB5jYO9K5WavtYcGvbQgxJVgasGUGkNDHc+fKX3
+	 C0xYKnAj27q1A==
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org
 Cc: Thomas Zimmermann <tzimmermann@suse.de>,
@@ -33,12 +33,12 @@ Cc: Thomas Zimmermann <tzimmermann@suse.de>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.6.y] fbdev: defio: Disconnect deferred I/O from the lifetime of struct fb_info
-Date: Tue,  5 May 2026 02:00:00 -0400
-Message-ID: <20260505060001.225157-1-sashal@kernel.org>
+Subject: [PATCH 6.1.y] fbdev: defio: Disconnect deferred I/O from the lifetime of struct fb_info
+Date: Tue,  5 May 2026 03:31:29 -0400
+Message-ID: <20260505073129.414475-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <2026050116-clean-cure-c52e@gregkh>
-References: <2026050116-clean-cure-c52e@gregkh>
+In-Reply-To: <2026050117-caravan-atrocious-ee79@gregkh>
+References: <2026050117-caravan-atrocious-ee79@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -70,15 +70,15 @@ Cc: linux-fbdev@vger.kernel.org
 Cc: dri-devel@lists.freedesktop.org
 Cc: stable@vger.kernel.org # v2.6.22+
 Signed-off-by: Helge Deller <deller@gmx.de>
-[ replaced `kzalloc_obj` with `kzalloc`, and dropped `mutex_destroy(&fbdefio->lock)` ]
+[ context + _obj() conversion ]
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/core/fb_defio.c | 179 ++++++++++++++++++++++------
+ drivers/video/fbdev/core/fb_defio.c | 164 ++++++++++++++++++++++++----
  include/linux/fb.h                  |   4 +-
- 2 files changed, 145 insertions(+), 38 deletions(-)
+ 2 files changed, 145 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-index b9607d5a370d4..f4812a76c3cc0 100644
+index 3b376345d4d47..7ac0bf4766b34 100644
 --- a/drivers/video/fbdev/core/fb_defio.c
 +++ b/drivers/video/fbdev/core/fb_defio.c
 @@ -23,6 +23,75 @@
@@ -237,9 +237,9 @@ index b9607d5a370d4..f4812a76c3cc0 100644
 +
 +	fbdefio = info->fbdefio;
  
- 	pageref = fb_deferred_io_pageref_get(info, offset, page);
- 	if (WARN_ON_ONCE(!pageref)) {
-@@ -169,50 +268,38 @@ static vm_fault_t fb_deferred_io_track_page(struct fb_info *info, unsigned long
+ 	/* first write in this cycle, notify the driver */
+ 	if (fbdefio->first_io && list_empty(&fbdefio->pagereflist))
+@@ -173,14 +272,14 @@ static vm_fault_t fb_deferred_io_track_page(struct fb_info *info, unsigned long
  	 */
  	lock_page(pageref->page);
  
@@ -256,20 +256,10 @@ index b9607d5a370d4..f4812a76c3cc0 100644
  	return ret;
  }
  
--/*
-- * fb_deferred_io_page_mkwrite - Mark a page as written for deferred I/O
-- * @fb_info: The fbdev info structure
-- * @vmf: The VM fault
-- *
-- * This is a callback we get when userspace first tries to
-- * write to the page. We schedule a workqueue. That workqueue
-- * will eventually mkclean the touched pages and execute the
-- * deferred framebuffer IO. Then if userspace touches a page
-- * again, we repeat the same scheme.
-- *
-- * Returns:
-- * VM_FAULT_LOCKED on success, or a VM_FAULT error otherwise.
-- */
+@@ -198,25 +297,28 @@ static vm_fault_t fb_deferred_io_track_page(struct fb_info *info, unsigned long
+  * Returns:
+  * VM_FAULT_LOCKED on success, or a VM_FAULT error otherwise.
+  */
 -static vm_fault_t fb_deferred_io_page_mkwrite(struct fb_info *info, struct vm_fault *vmf)
 +static vm_fault_t fb_deferred_io_page_mkwrite(struct fb_deferred_io_state *fbdefio_state,
 +					      struct vm_fault *vmf)
@@ -283,7 +273,7 @@ index b9607d5a370d4..f4812a76c3cc0 100644
 +	return fb_deferred_io_track_page(fbdefio_state, offset, page);
  }
  
--/* vm_ops->page_mkwrite handler */
+ /* vm_ops->page_mkwrite handler */
  static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
  {
 -	struct fb_info *info = vmf->vma->vm_private_data;
@@ -299,10 +289,10 @@ index b9607d5a370d4..f4812a76c3cc0 100644
  	.fault		= fb_deferred_io_fault,
  	.page_mkwrite	= fb_deferred_io_mkwrite,
  };
-@@ -227,7 +314,10 @@ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
+@@ -231,7 +333,10 @@ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
  	if (!(info->flags & FBINFO_VIRTFB))
- 		vm_flags_set(vma, VM_IO);
+ 		vma->vm_flags |= VM_IO;
 -	vma->vm_private_data = info;
 +	vma->vm_private_data = info->fbdefio_state;
 +
@@ -311,7 +301,7 @@ index b9607d5a370d4..f4812a76c3cc0 100644
  	return 0;
  }
  EXPORT_SYMBOL_GPL(fb_deferred_io_mmap);
-@@ -238,9 +328,10 @@ static void fb_deferred_io_work(struct work_struct *work)
+@@ -242,9 +347,10 @@ static void fb_deferred_io_work(struct work_struct *work)
  	struct fb_info *info = container_of(work, struct fb_info, deferred_work.work);
  	struct fb_deferred_io_pageref *pageref, *next;
  	struct fb_deferred_io *fbdefio = info->fbdefio;
@@ -323,7 +313,7 @@ index b9607d5a370d4..f4812a76c3cc0 100644
  	list_for_each_entry(pageref, &fbdefio->pagereflist, list) {
  		struct page *cur = pageref->page;
  		lock_page(cur);
-@@ -255,12 +346,13 @@ static void fb_deferred_io_work(struct work_struct *work)
+@@ -259,12 +365,13 @@ static void fb_deferred_io_work(struct work_struct *work)
  	list_for_each_entry_safe(pageref, next, &fbdefio->pagereflist, list)
  		fb_deferred_io_pageref_put(pageref, info);
  
@@ -338,7 +328,7 @@ index b9607d5a370d4..f4812a76c3cc0 100644
  	struct fb_deferred_io_pageref *pagerefs;
  	unsigned long npagerefs, i;
  	int ret;
-@@ -270,7 +362,11 @@ int fb_deferred_io_init(struct fb_info *info)
+@@ -274,7 +381,11 @@ int fb_deferred_io_init(struct fb_info *info)
  	if (WARN_ON(!info->fix.smem_len))
  		return -EINVAL;
  
@@ -351,7 +341,7 @@ index b9607d5a370d4..f4812a76c3cc0 100644
  	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
  	INIT_LIST_HEAD(&fbdefio->pagereflist);
  	if (fbdefio->delay == 0) /* set a default of 1 s */
-@@ -289,10 +385,12 @@ int fb_deferred_io_init(struct fb_info *info)
+@@ -293,10 +404,12 @@ int fb_deferred_io_init(struct fb_info *info)
  	info->npagerefs = npagerefs;
  	info->pagerefs = pagerefs;
  
@@ -365,7 +355,7 @@ index b9607d5a370d4..f4812a76c3cc0 100644
  	return ret;
  }
  EXPORT_SYMBOL_GPL(fb_deferred_io_init);
-@@ -333,11 +431,18 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_release);
+@@ -337,11 +450,18 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_release);
  
  void fb_deferred_io_cleanup(struct fb_info *info)
  {
@@ -387,16 +377,17 @@ index b9607d5a370d4..f4812a76c3cc0 100644
  }
  EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 322b4d20afa55..8a9d949cc7e2d 100644
+index c7f0f14e1f74b..5f94c58c4672e 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
-@@ -214,11 +214,12 @@ struct fb_deferred_io {
+@@ -213,12 +213,13 @@ struct fb_deferred_io {
  	unsigned long delay;
  	bool sort_pagereflist; /* sort pagelist by offset */
  	int open_count; /* number of opened files; protected by fb_info lock */
 -	struct mutex lock; /* mutex that protects the pageref list */
  	struct list_head pagereflist; /* list of pagerefs for touched pages */
  	/* callback */
+ 	void (*first_io)(struct fb_info *info);
  	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
  };
 +
@@ -404,7 +395,7 @@ index 322b4d20afa55..8a9d949cc7e2d 100644
  #endif
  
  /*
-@@ -476,6 +477,7 @@ struct fb_info {
+@@ -479,6 +480,7 @@ struct fb_info {
  	unsigned long npagerefs;
  	struct fb_deferred_io_pageref *pagerefs;
  	struct fb_deferred_io *fbdefio;

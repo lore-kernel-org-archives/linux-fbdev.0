@@ -1,163 +1,103 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+Received: from mail-pg1-f180.google.com (mail-pg1-f180.google.com [209.85.215.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A73C3361DD0
-	for <linux-fbdev@vger.kernel.org>; Sat,  9 May 2026 13:58:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DF7B2D949F
+	for <linux-fbdev@vger.kernel.org>; Sat,  9 May 2026 16:41:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778335089; cv=none; b=tp7l9PF+q4a07183Gtl+A/GXxO1+ax4xGtgmOyI0DkdZY7EpJhP0QrQyy3Ufnl3dcg63bnKfF5+BtNSydMkJJYzeb15Dv91IDj2in87uJq5yHtF8V+GRfqPpg50r4GgdqHsuJhBjdR70Hqy71n0buI93KjUzadzoZSVCeFGFQH4=
+	t=1778344904; cv=none; b=a8aBtS+Vx85tVL//lD8zlSHs5IjamRayAtfCERZn2UWyJEpE6JI2o2yqER9dW1qoTgwuWsrHiRIC18kpshEANSaOG7TycJXzFIXNTQGtT7EcO9CpjOcmos9pkAx5lFBk1XPuJhbQNauVMX2yEnOjwJal97lHiQJAyHJQG3PPohY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778335089; c=relaxed/simple;
-	bh=zIpT8yZ3M5XwJMWP5PLyD7I/o2enwmiwMF5etMhXeBA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=cE4Yjb74Av095CIuyrJP5t7+Qy8mnnfveqjMJSa5O0ViCBDKHKmyKABJJnfEmG4Rk4gwi84lJukqD8W3657KN8l+pe/qFIrg3IlfulpbCaJOzQV4orG6UzQpP55V6ryUdNRLwLUzaePTXGYnDiWfIU77maMQkMd5bGEnWkOYXs4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gmKEHi6z; arc=none smtp.client-ip=209.85.128.44
+	s=arc-20240116; t=1778344904; c=relaxed/simple;
+	bh=VRiwiTz8XNaEWhGT75/QXzn+AVRkunNE+SP20l/5r3k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NipUMm7ayKHC5ehJMeDtZpegsmIgdyFPTdQ3LBSeQHyO4tkKbVFbHY03+73fNybreFx3SM7l4PIS2COuXsY08+m/zEwts5EvSk1GfI+NV6zbdqJ1G3F0Xw4F/lA7QqUtXteKfLyT/TWqtx1pjfDLY0QechH2etAn29Savb8Y/gk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KMJc0JJL; arc=none smtp.client-ip=209.85.215.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gmKEHi6z"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4891c0620bcso20249955e9.1
-        for <linux-fbdev@vger.kernel.org>; Sat, 09 May 2026 06:58:07 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KMJc0JJL"
+Received: by mail-pg1-f180.google.com with SMTP id 41be03b00d2f7-b6ce6d1d3dcso1173061a12.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 09 May 2026 09:41:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778335086; x=1778939886; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1778344902; x=1778949702; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=JUti0+dSrRWKVryrgT/4Dh3EjusVIM58YtILlWK34V8=;
-        b=gmKEHi6zbujjornk6AjwkKx1VPBDSlS6SartOyLhR+EU/VNfpr64/tFv97S7weiYeN
-         eHbh4eMHRlDbxFP+FiGsJ7lB+NgzANDPQPo7GwfIwExH6YuuSsDtaM/Om0gpWUreIVzJ
-         KFFt7Co31dTH+95Qg94rjVnJfhHVRdDO0Nku0HHZvPzwCum1TWzQI4hrw0K3uJEHb3Aq
-         gZFD1ixM5L4WDYH2DauUjauB0PZqEQjXvB2IN+0Uyqs+Trx+KdfedfQGJ3TpmpfaGqoc
-         h1d1qKyoRpJVD9f0Me11m1r9proo5WkXnZpckEs3CgtfzWLrViEFCa1oF44xlRiq3rkP
-         3hWQ==
+        bh=qgvIJWE+YLkGRHO2Knnp95ExlejblRDIiVbXUYy3bQ4=;
+        b=KMJc0JJLOFV54UIvAUfQWiwwckkd49SBYqHCkX/vixgIg5lkkACwasEYGRz1Q73oEU
+         5a2/Tbwt/Yy42yvsYlxK4RO82zz7/Z22dnn91bAged/wriZxmhFYAk2L1+FpRGYBCKf1
+         AhCrTOmTVzXGJJRg1nc5MF7lOFR9DOMe7pMOv4eg0gvgkivOvl29CcXnbLhkVty3iyNe
+         eykO9TCCAV5CISFt8eghk3cRzodKAQSsv1LkYKYPV/R2dFcGLQa3lM+a6NxVrIEvh/z3
+         D31y5jDi4Zo/qBzvhxGqUqxm4OPIlQZSBFBx1lcBRMI4f3j0cLYOf1tCAue+MXzaL/wL
+         wxJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778335086; x=1778939886;
+        d=1e100.net; s=20251104; t=1778344902; x=1778949702;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=JUti0+dSrRWKVryrgT/4Dh3EjusVIM58YtILlWK34V8=;
-        b=i5+2ADj+pBh2JHUZF4CM+EuTOysfFo5wX0oprDIEehnDNnKYP5OuLMrmE6wtxJgCph
-         1K1b1XgiX9l4CoR1GOLzcuv6glrF8uqE7aVAJK4/V04vUyWfUGprCguUKnk11wVV9tkt
-         jToXCXBYTWj5SclGaUFLt+6FSK8i2jXINrSv+NRn9yEFdaNMtWKMwheM0a2mYWzNbY5E
-         x5uUep35CpRg7iAKhDsUasBtgYf+9xQjXjsdaPRedq4q5TWHxJUNM3bClMvN0YgOQS6a
-         cjY9uclj6clHnelr08zVVPBtQchQ0vGRqsitgdPNcoeEfxQP7J4nIYAmSTwIWlo07eNF
-         2s+g==
-X-Gm-Message-State: AOJu0YxgdZNQ3XAI7V0oIWwTYo32yb0LLkkeAAxGV35FoTjTMwMPCbdn
-	NThJObqTTOr6a6Cmq/33WdeubxiBp3OSudA1tNzMFMZdY5om6ejdG7QNz7K+8cZ8jWs=
-X-Gm-Gg: Acq92OH2L04V6hKgouQh+fmHQTe9IgrI+gKuT97l+5h5xdIMKH6PEuY7OWZ9wtuIq2Z
-	YbW5I8D7HXA7pcBxuMp1nmKlO2R38WnCI26l6NUbtm8pEAvQvbpppJOzoSMtIPHFdkPpKdcIkGR
-	Od7oAmUZ+j+bPmO0pSUTDw9plp50sBsJuxU/RIouBmQrKpNuuWIP14UiL+WKXYuUwKvFGv0bjmh
-	9bu6eKnxmtyuKPlZ5HEsXpqVzBhUBjrsF59KeD/+UW57eMjEt72MnY9OP16NrbbQ+dv6RIdXPDC
-	POcOMrwwPD7XfKzshlaMhi7uCFOFckXf8jwoRmIE2Po+m21F4urxH/jMYqh0FlVADdHCQvOLu/V
-	eFyr7O7MBUjv++qixxhuKMh8TO+vwBC+54I5mx/uCeln7VoSd1R7d6rt62KJUMlJ5UmdFkrHKSz
-	pEwrD00QNhd0axXPdGIeYoK25meL/x5p/s7sMD9FX+Sy9v
-X-Received: by 2002:a05:600c:8908:b0:48e:6275:27ec with SMTP id 5b1f17b1804b1-48e676b6393mr72783285e9.24.1778335085773;
-        Sat, 09 May 2026 06:58:05 -0700 (PDT)
-Received: from RM.localdomain ([92.53.30.157])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48e702e5614sm53450105e9.9.2026.05.09.06.58.04
+        bh=qgvIJWE+YLkGRHO2Knnp95ExlejblRDIiVbXUYy3bQ4=;
+        b=fvhvzo/aXiLOrMKW2JbFIPTDa7q0+lDhRDPWENjAhLh7iNGgDj5nNqOcvjaQqUZD7A
+         aWFTZhKNPnPFQqPSSEnj4zMMNBd6pd4RksxwG3zri4A4ZFpkKddt2o7nh3w8J+b6FB4t
+         DRYPUlReO5CasnXWE+iFmh/OUAcD4wYDUwA2L+JwAG2F75+tq0jTOxebAn6FM08PpDeP
+         ttJyLSjI+kiuhNgcuXN5+DQd2OoPEWQJRkMddRELgKQa6n9vFG87T0CY0NhIcNRJbzBm
+         EHpJMBAu49pv83hwkEiobQMHSo2HahG1rFYp5yCSgN7GdSgXhyY/EH/P29blCcmYgvtf
+         v2Vg==
+X-Gm-Message-State: AOJu0YxSNnVFOieU+GMqCd8olLkUshldIqjZ2P/qdBSQut2WwMFLXtzH
+	HTMBC9J9/A/0hXpswUmMca2OtF5Vj+u6koVLwQD1GjYP/ZqA7PDIQKfo
+X-Gm-Gg: Acq92OFV1srl2iTUFGOdzUq50IGQW2eFuCrKvFRPJvprCP8ubnbuGmGcM+ErW0mg2gc
+	wBFzOSIAwTeQ+jVK9WJtSt/oIpGAa/l7b2ou0B4pAN0PjmxDF6QEPbJN2Jv0/sAfa2s3Bt4M8Id
+	tAZkK86WU9FDpypOaDeepvsPIRTTOpsDZMGz4+UKJY6KrzYGSK/T54BAPzRS0hEPnxuW+FDwQJZ
+	pjoTASZNxAtCjhLgv2sLfW2q+vcDEFI87RrbF7Qg8QSFxflq5O7cbbKb4Ey5WnSSFbTZIozTwUV
+	QRutPiKle9wUqjhCgUmind0vghuIua4S1f81CDmkfDmv7uj4vpg5OTvZbdwMnWzE4mUOGty3lVP
+	G//i0J+O5/ktY6S1DpO4d8SFSfsqHSN6+kbPwvywm+l4Tv6Gpa1jgnZk4BUmjAN/NF6lulNa4F2
+	0xyQ6nhnxypWU+k40p2F5tkjv465k8+sxPtfgwp3IakPPv
+X-Received: by 2002:a17:903:32ca:b0:2ba:1756:aea7 with SMTP id d9443c01a7336-2bc7a990937mr30488865ad.2.1778344902446;
+        Sat, 09 May 2026 09:41:42 -0700 (PDT)
+Received: from localhost.localdomain ([2404:7c00:52:5f25:aae2:91ff:fe57:5e15])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1d27330sm54722285ad.17.2026.05.09.09.41.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 09 May 2026 06:58:05 -0700 (PDT)
-From: =?UTF-8?q?Rahman=20Mahmutovi=C4=87?= <mahmutovicrahman5@gmail.com>
-To: linux-fbdev@vger.kernel.org
-Cc: deller@gmx.de,
-	dri-devel@lists.freedesktop.org,
+        Sat, 09 May 2026 09:41:42 -0700 (PDT)
+From: Alone <yogeshdangal66@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	=?UTF-8?q?Rahman=20Mahmutovi=C4=87?= <mahmutovicrahman5@gmail.com>
-Subject: [PATCH] fbdev: sunxvr2500: replace printk with device-aware logging functions
-Date: Sat,  9 May 2026 15:57:59 +0200
-Message-ID: <20260509135759.1391-1-mahmutovicrahman5@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	Chhabilal Dangal <yogeshdangal66@gmail.com>
+Subject: [PATCH] staging: sm750fb: Add const to g_fbmode array
+Date: Sat,  9 May 2026 22:25:57 +0545
+Message-ID: <20260509164057.71722-1-yogeshdangal66@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Replace all printk() calls with appropriate device-aware logging
-functions to properly associate log messages with the PCI device.
+From: Chhabilal Dangal <yogeshdangal66@gmail.com>
 
-- Use pci_err() for errors where struct pci_dev is available
-- Use pci_info() for info messages where struct pci_dev is available
-- Use dev_err() for errors where only struct fb_info is available
+Add const qualifier to g_fbmode array since the array
+itself is not modified after initialization.
 
-Remove redundant 's3d:' prefix and pci_name() calls as device-aware
-functions include device identification automatically.
-
-Assisted-by: Claude:claude-sonnet-4-6
-Signed-off-by: Rahman Mahmutović <mahmutovicrahman5@gmail.com>
+Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
 ---
- drivers/video/fbdev/sunxvr2500.c | 19 +++++++------------
- 1 file changed, 7 insertions(+), 12 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/sunxvr2500.c b/drivers/video/fbdev/sunxvr2500.c
-index 42426d09b..3a36e7524 100644
---- a/drivers/video/fbdev/sunxvr2500.c
-+++ b/drivers/video/fbdev/sunxvr2500.c
-@@ -38,8 +38,7 @@ static int s3d_get_props(struct s3d_info *sp)
- 	sp->depth = of_getintprop_default(sp->of_node, "depth", 8);
- 
- 	if (!sp->width || !sp->height) {
--		printk(KERN_ERR "s3d: Critical properties missing for %s\n",
--		       pci_name(sp->pdev));
-+		pci_err(sp->pdev, "Critical properties missing\n");
- 		return -EINVAL;
- 	}
- 
-@@ -107,7 +106,7 @@ static int s3d_set_fbinfo(struct s3d_info *sp)
- 	var->transp.length = 0;
- 
- 	if (fb_alloc_cmap(&info->cmap, 256, 0)) {
--		printk(KERN_ERR "s3d: Cannot allocate color map.\n");
-+		dev_err(info->dev, "Cannot allocate color map\n");
- 		return -ENOMEM;
- 	}
- 
-@@ -127,8 +126,7 @@ static int s3d_pci_register(struct pci_dev *pdev,
- 
- 	err = pci_enable_device(pdev);
- 	if (err < 0) {
--		printk(KERN_ERR "s3d: Cannot enable PCI device %s\n",
--		       pci_name(pdev));
-+		pci_err(pdev, "Cannot enable PCI device\n");
- 		goto err_out;
- 	}
- 
-@@ -143,8 +141,7 @@ static int s3d_pci_register(struct pci_dev *pdev,
- 	sp->pdev = pdev;
- 	sp->of_node = pci_device_to_OF_node(pdev);
- 	if (!sp->of_node) {
--		printk(KERN_ERR "s3d: Cannot find OF node of %s\n",
--		       pci_name(pdev));
-+		pci_err(pdev, "Cannot find OF node\n");
- 		err = -ENODEV;
- 		goto err_release_fb;
- 	}
-@@ -153,8 +150,7 @@ static int s3d_pci_register(struct pci_dev *pdev,
- 
- 	err = pci_request_region(pdev, 1, "s3d framebuffer");
- 	if (err < 0) {
--		printk("s3d: Cannot request region 1 for %s\n",
--		       pci_name(pdev));
-+		pci_err(pdev, "Cannot request region 1\n");
- 		goto err_release_fb;
- 	}
- 
-@@ -194,12 +190,11 @@ static int s3d_pci_register(struct pci_dev *pdev,
- 
- 	pci_set_drvdata(pdev, info);
- 
--	printk("s3d: Found device at %s\n", pci_name(pdev));
-+	pci_info(pdev, "Found device\n");
- 
- 	err = register_framebuffer(info);
- 	if (err < 0) {
--		printk(KERN_ERR "s3d: Could not register framebuffer %s\n",
--		       pci_name(pdev));
-+		pci_err(pdev, "Could not register framebuffer\n");
- 		goto err_unmap_fb;
- 	}
- 
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 9f3e3d37e..19c3da654 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -33,7 +33,7 @@
+ static int g_hwcursor = 1;
+ static int g_noaccel;
+ static int g_nomtrr;
+-static const char *g_fbmode[] = {NULL, NULL};
++static const char * const g_fbmode[] = {NULL, NULL};
+ static const char *g_def_fbmode = "1024x768-32@60";
+ static char *g_settings;
+ static int g_dualview;
 -- 
-2.43.0
+2.54.0
 

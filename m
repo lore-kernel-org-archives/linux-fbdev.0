@@ -1,103 +1,110 @@
-Received: from mail-pg1-f180.google.com (mail-pg1-f180.google.com [209.85.215.180])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from forward200b.mail.yandex.net (forward200b.mail.yandex.net [178.154.239.157])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DF7B2D949F
-	for <linux-fbdev@vger.kernel.org>; Sat,  9 May 2026 16:41:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F01D82F1FEC;
+	Sat,  9 May 2026 18:38:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.157
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778344904; cv=none; b=a8aBtS+Vx85tVL//lD8zlSHs5IjamRayAtfCERZn2UWyJEpE6JI2o2yqER9dW1qoTgwuWsrHiRIC18kpshEANSaOG7TycJXzFIXNTQGtT7EcO9CpjOcmos9pkAx5lFBk1XPuJhbQNauVMX2yEnOjwJal97lHiQJAyHJQG3PPohY=
+	t=1778351926; cv=none; b=jL2sSEBGH+cwH5UK0ekb5U2EanYTUpyvXqKAk4Z7cDkEj+NtBI1+CDvtHdubUXFQqSyTMtczQecvYK/h2zjF+i1wEZSP4nuX7uJqYB6IKshn+jZfxlE4Dknyosv/WH3vwf1nXtEFOH33YwtIt6QJhroSpblHEuseNq1TUhYch38=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778344904; c=relaxed/simple;
-	bh=VRiwiTz8XNaEWhGT75/QXzn+AVRkunNE+SP20l/5r3k=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NipUMm7ayKHC5ehJMeDtZpegsmIgdyFPTdQ3LBSeQHyO4tkKbVFbHY03+73fNybreFx3SM7l4PIS2COuXsY08+m/zEwts5EvSk1GfI+NV6zbdqJ1G3F0Xw4F/lA7QqUtXteKfLyT/TWqtx1pjfDLY0QechH2etAn29Savb8Y/gk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KMJc0JJL; arc=none smtp.client-ip=209.85.215.180
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778351926; c=relaxed/simple;
+	bh=Y/xnyxEFbHZBKB2MVM4dgWEgVG1WzqN3nPRzGJcwfVI=;
+	h=Message-Id:From:Date:Subject:To:Cc; b=B+o4VqvxOyZ1ryEuZRWeguBBpEoqXb/11Qxwjg3JfLXluUAft65hkD+wPEshPWhjxdr3iscx7X2TA/zXu4jt6DfxEq80ElOwCIMfppdjLGgWFtbLrPThYiZZ7iE0Wh5nqTHxzOa0ICRvhFUFvPPuSFG9MfNwPeOgvqQrarTgsSg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=noirlang.tr; spf=pass smtp.mailfrom=noirlang.tr; dkim=pass (1024-bit key) header.d=noirlang.tr header.i=@noirlang.tr header.b=QlDCuGws; arc=none smtp.client-ip=178.154.239.157
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=noirlang.tr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=noirlang.tr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KMJc0JJL"
-Received: by mail-pg1-f180.google.com with SMTP id 41be03b00d2f7-b6ce6d1d3dcso1173061a12.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 09 May 2026 09:41:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778344902; x=1778949702; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=qgvIJWE+YLkGRHO2Knnp95ExlejblRDIiVbXUYy3bQ4=;
-        b=KMJc0JJLOFV54UIvAUfQWiwwckkd49SBYqHCkX/vixgIg5lkkACwasEYGRz1Q73oEU
-         5a2/Tbwt/Yy42yvsYlxK4RO82zz7/Z22dnn91bAged/wriZxmhFYAk2L1+FpRGYBCKf1
-         AhCrTOmTVzXGJJRg1nc5MF7lOFR9DOMe7pMOv4eg0gvgkivOvl29CcXnbLhkVty3iyNe
-         eykO9TCCAV5CISFt8eghk3cRzodKAQSsv1LkYKYPV/R2dFcGLQa3lM+a6NxVrIEvh/z3
-         D31y5jDi4Zo/qBzvhxGqUqxm4OPIlQZSBFBx1lcBRMI4f3j0cLYOf1tCAue+MXzaL/wL
-         wxJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778344902; x=1778949702;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=qgvIJWE+YLkGRHO2Knnp95ExlejblRDIiVbXUYy3bQ4=;
-        b=fvhvzo/aXiLOrMKW2JbFIPTDa7q0+lDhRDPWENjAhLh7iNGgDj5nNqOcvjaQqUZD7A
-         aWFTZhKNPnPFQqPSSEnj4zMMNBd6pd4RksxwG3zri4A4ZFpkKddt2o7nh3w8J+b6FB4t
-         DRYPUlReO5CasnXWE+iFmh/OUAcD4wYDUwA2L+JwAG2F75+tq0jTOxebAn6FM08PpDeP
-         ttJyLSjI+kiuhNgcuXN5+DQd2OoPEWQJRkMddRELgKQa6n9vFG87T0CY0NhIcNRJbzBm
-         EHpJMBAu49pv83hwkEiobQMHSo2HahG1rFYp5yCSgN7GdSgXhyY/EH/P29blCcmYgvtf
-         v2Vg==
-X-Gm-Message-State: AOJu0YxSNnVFOieU+GMqCd8olLkUshldIqjZ2P/qdBSQut2WwMFLXtzH
-	HTMBC9J9/A/0hXpswUmMca2OtF5Vj+u6koVLwQD1GjYP/ZqA7PDIQKfo
-X-Gm-Gg: Acq92OFV1srl2iTUFGOdzUq50IGQW2eFuCrKvFRPJvprCP8ubnbuGmGcM+ErW0mg2gc
-	wBFzOSIAwTeQ+jVK9WJtSt/oIpGAa/l7b2ou0B4pAN0PjmxDF6QEPbJN2Jv0/sAfa2s3Bt4M8Id
-	tAZkK86WU9FDpypOaDeepvsPIRTTOpsDZMGz4+UKJY6KrzYGSK/T54BAPzRS0hEPnxuW+FDwQJZ
-	pjoTASZNxAtCjhLgv2sLfW2q+vcDEFI87RrbF7Qg8QSFxflq5O7cbbKb4Ey5WnSSFbTZIozTwUV
-	QRutPiKle9wUqjhCgUmind0vghuIua4S1f81CDmkfDmv7uj4vpg5OTvZbdwMnWzE4mUOGty3lVP
-	G//i0J+O5/ktY6S1DpO4d8SFSfsqHSN6+kbPwvywm+l4Tv6Gpa1jgnZk4BUmjAN/NF6lulNa4F2
-	0xyQ6nhnxypWU+k40p2F5tkjv465k8+sxPtfgwp3IakPPv
-X-Received: by 2002:a17:903:32ca:b0:2ba:1756:aea7 with SMTP id d9443c01a7336-2bc7a990937mr30488865ad.2.1778344902446;
-        Sat, 09 May 2026 09:41:42 -0700 (PDT)
-Received: from localhost.localdomain ([2404:7c00:52:5f25:aae2:91ff:fe57:5e15])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1d27330sm54722285ad.17.2026.05.09.09.41.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 09 May 2026 09:41:42 -0700 (PDT)
-From: Alone <yogeshdangal66@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Chhabilal Dangal <yogeshdangal66@gmail.com>
-Subject: [PATCH] staging: sm750fb: Add const to g_fbmode array
-Date: Sat,  9 May 2026 22:25:57 +0545
-Message-ID: <20260509164057.71722-1-yogeshdangal66@gmail.com>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (1024-bit key) header.d=noirlang.tr header.i=@noirlang.tr header.b="QlDCuGws"
+Received: from forward100b.mail.yandex.net (forward100b.mail.yandex.net [IPv6:2a02:6b8:c02:900:1:45:d181:d100])
+	by forward200b.mail.yandex.net (Yandex) with ESMTPS id C6B8E816E2;
+	Sat, 09 May 2026 21:30:51 +0300 (MSK)
+Received: from mail-nwsmtp-smtp-production-main-71.sas.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-71.sas.yp-c.yandex.net [IPv6:2a02:6b8:c24:2310:0:640:2452:0])
+	by forward100b.mail.yandex.net (Yandex) with ESMTPS id D59008066C;
+	Sat, 09 May 2026 21:30:42 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-71.sas.yp-c.yandex.net (smtp) with ESMTPSA id dUMYMmJYG0U0-BqkXfeyP;
+	Sat, 09 May 2026 21:30:41 +0300
+Message-Id: <20260509213041.BqkXfeyP@66089470-6549-4c3e-ae4b-211f3f79ee1e>
+X-Yandex-Fwd: 1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=noirlang.tr; s=mail;
+	t=1778351441; bh=Bp1lpEdGx5nyLUEtZLqEmurnQKaZI2oN+0ztgGaM980=;
+	h=Cc:Date:To:Subject:From;
+	b=QlDCuGwsT5jyUpLK8gDBBtdZODJBr8CQb5L/+uem7FC9HRG2chmeOOdZzKirn/YOG
+	 Z3iGg1gVOWu9r4LBQDSd1M9dNkbDTF3yP5JYTfml8z/f5h+MkezEHOA/Pp0cSxKiH7
+	 er9yLXllR//RHyKFiM9o9oJol8Wuk8yLJq+o88eM=
+Authentication-Results: mail-nwsmtp-smtp-production-main-71.sas.yp-c.yandex.net; dkim=pass header.i=@noirlang.tr
+From: Melih Emik <melihemik@noirlang.tr>
+Date: Sat, 9 May 2026 21:27:44 +0300
+Subject: [PATCH] fbdev: make sh_mobile_lcdc independent of FB_DEVICE
+To: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, Wei Liu <wei.liu@kernel.org>,
+ Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+ Zsolt Kajtar <soci@c64.rulez.org>,
+ Mukesh Rathor <mrathor@linux.microsoft.com>, linux-kernel@vger.kernel.org
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-From: Chhabilal Dangal <yogeshdangal66@gmail.com>
+CONFIG_FB_DEVICE controls the fbdev character device interface. SH Mobile
+LCDC does not need that interface to build framebuffer support. Tying the
+driver option to FB_DEVICE unnecessarily prevents it from being enabled
+where device node support is disabled.
 
-Add const qualifier to g_fbmode array since the array
-itself is not modified after initialization.
+Relax the Kconfig dependency so the driver can be built independently of
+the fbdev device interface.
 
-Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
+Signed-off-by: Melih Emik <melihemik@noirlang.tr>
 ---
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/Kconfig            | 1 -
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 6 ++++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 9f3e3d37e..19c3da654 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -33,7 +33,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel;
- static int g_nomtrr;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview;
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 085d3a202148..762c4369e00f 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1521,7 +1521,6 @@ config FB_SH_MOBILE_LCDC
+ 	tristate "SuperH Mobile LCDC framebuffer support"
+ 	depends on FB && HAVE_CLK && HAS_IOMEM
+ 	depends on SUPERH || COMPILE_TEST
+-	depends on FB_DEVICE
+ 	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_BACKLIGHT
+ 	select FB_DEFERRED_IO
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index 72969fe8e513..b522b76b402d 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1511,7 +1511,7 @@ sh_mobile_lcdc_overlay_fb_unregister(struct sh_mobile_lcdc_overlay *ovl)
+ {
+ 	struct fb_info *info = ovl->info;
+ 
+-	if (info == NULL || info->dev == NULL)
++	if (!info || !refcount_read(&info->count))
+ 		return;
+ 
+ 	unregister_framebuffer(ovl->info);
+@@ -1983,7 +1983,7 @@ static const struct fb_ops sh_mobile_lcdc_ops = {
+ static void
+ sh_mobile_lcdc_channel_fb_unregister(struct sh_mobile_lcdc_chan *ch)
+ {
+-	if (ch->info && ch->info->dev)
++	if (ch->info && refcount_read(&ch->info->count))
+ 		unregister_framebuffer(ch->info);
+ }
+ 
+@@ -2640,7 +2640,9 @@ static int sh_mobile_lcdc_probe(struct platform_device *pdev)
+ static struct platform_driver sh_mobile_lcdc_driver = {
+ 	.driver		= {
+ 		.name		= "sh_mobile_lcdc_fb",
++#ifdef CONFIG_FB_DEVICE
+ 		.dev_groups	= overlay_sysfs_groups,
++#endif
+ 		.pm		= &sh_mobile_lcdc_dev_pm_ops,
+ 	},
+ 	.probe		= sh_mobile_lcdc_probe,
 -- 
 2.54.0
 

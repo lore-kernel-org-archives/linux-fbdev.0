@@ -1,239 +1,306 @@
-Received: from mail-dy1-f194.google.com (mail-dy1-f194.google.com [74.125.82.194])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF78118859B
-	for <linux-fbdev@vger.kernel.org>; Sun, 10 May 2026 03:11:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FC51253B42;
+	Sun, 10 May 2026 17:08:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778382673; cv=none; b=j53zNFc1gk+vhiaox6N6tCXMbzhzjbCKsqniCHgo7fRFnGBYOEy0TynWPx1UEhnaln/eNfp65TnNY6FHvkHNQb9HF+LhIivJyMTnhoUIpOm0SN45jl3wKHrbrnoGs2BhZ9ErG3bOZvMO98MQEZ48h4nUpVAGBllQwLiinMTokqM=
+	t=1778432886; cv=none; b=IJ6n0Kr8psBVt9MprO1XEnRYAlfy5kKGJ2CaR/tDXQGPfr6XnsF8tterEKJWZZFv5a6nRjnN41odk4CtPQuRQCkMaLSW2k3jz3PV2izmYv0h5TE/B7m7FBg+Mvz1sI4zlFgwT2suPZuuXlvkSMjmf/3NCk0XOREXw5fDQZ5erNs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778382673; c=relaxed/simple;
-	bh=gQA4Z0I4dAD3lpM3WcSiD7Z4kubZPjVnKPmZMkhI4ag=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=IWY/xZ3mXn7jubz5egOfYz8qGknwdPuTWljk8qI/nWPaqTZankK6aOmVk+1KAPvzXEUeZsJB6JCuefIimK++1hmdAV1Lo3rdgt85I1uJJveDjNJ1O1VeAqXNVPvcpaHP/Ihrx3FvVeTxH8A+QRYy0dwh5HnDb6TB85FVUbA3gr8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=n1nf/1s/; arc=none smtp.client-ip=74.125.82.194
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778432886; c=relaxed/simple;
+	bh=DmaaqQ+1IvWQqu/QWIYcpgG+vPszNRveAj7JBVSE7Jc=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=DcMT2ogx4YuvXkEylEOy1JgUZvifSvQYmZba0BVax98OCQ9g/7VLO5zvquMRt8IK6/H2VWLIgOHOjU88rP5JEY2oZqMPGtEQ+sNp3vLMkkiVZkE4+KeXUxZdZ8krDE1X3i1Mn7N9wtkBzaTZwXsWyua5QAMAO+eSdtJhflxvS4s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=vItAYTbN; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n1nf/1s/"
-Received: by mail-dy1-f194.google.com with SMTP id 5a478bee46e88-2f30a4601bbso3387308eec.1
-        for <linux-fbdev@vger.kernel.org>; Sat, 09 May 2026 20:11:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778382671; x=1778987471; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Fk9eeAKn3FhBbqVLjcl9tAfYozaTPwOkZxBuF5GgNhQ=;
-        b=n1nf/1s/mmOfVkB99s2fuIwoBaOBAhPFqdR1w8kElU8IlrnF7QZQxLf0HBuu4iC8Gi
-         DGdtnEzOe1PcJBiz+ijnoOZzpxIOpgqh8KOq8UlRxQsSjnZGkEQuLYRdaQu9y+unlq/s
-         ThopCnq2h1dDW5+fWQQrgCP2xD+x4Fmw+wMS7fJaofkgfeQNAw7KFDYscrhpAO4RRArR
-         56XEGFXzjd6unfVJYv+mHx9gGNw0p5dMCaVQyZwztflXvK02e8uHbFsQRXDJfx9qAmts
-         QqDq2Mdr0i159/CTYGooGsS558V23XUyxWezosfU9KaTW8xgDzktzFRVPrFu/0z/msC1
-         X1zA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778382671; x=1778987471;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Fk9eeAKn3FhBbqVLjcl9tAfYozaTPwOkZxBuF5GgNhQ=;
-        b=d3RG/FT10iNnMiqYeGPoopLUPaEs2+yibUT1XQpSjRAgcBcPcsRy2XEggY+xXC2Ka0
-         Cuf1LZpQL7M04+mQKVlf6+QJN//rI7XsKq+gvafZ/gzGc2z6w+S5xVbkfGRhEPdphBk/
-         9i56pSxzyQRWHocNFwkUiKGx9IdmPcg5d3ggbsnxxcQ62WHeRelXbs1m/1Ud8Cy1df5W
-         G75Biqg8geWJlWub/cnhJrNpgWSqqQe0F+WiM+iHspc7TBzO1HS8eLSXkknF7yS/HmPk
-         h/boGKRWs08RDBiTGRL6LqxLMrAJ3ofzhF51y0r6mzSIvLxFXzphsAvEwArj01GYxgx/
-         yQ/g==
-X-Forwarded-Encrypted: i=1; AFNElJ+hLkVrmGV7wRw0xg4T7p+V28lYUgW+A7r+fAy1bLG+3StvCjLQszcPtlCd3gtq1+LwuTGy2oUVNmFoNQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzmFPKopbKEJ0nUZBj6xrsMRt57oMEnxYiSDEXfdknLZ0WxC+Ju
-	yjtfTPXE/4vlIs1KfAwYQEFI1W2e8Sk09Rr5gxiExGWTc+PzAxN8AECe
-X-Gm-Gg: Acq92OF/dCVJTDhZjksQqXr9fCjIQGDOjG2xH8DHHF6cKktdBCa3BKve/im1OJUvf7q
-	8E9j6C+i04fm124cBGqNFM5bOm0+xrz8VtbvH41Hhb39ytoREMEoL8E5PBbGsLBtpKna2i11U5d
-	s9ezMTpo5mT3+IvIBN2tsd/WdnnSC2WhBMan+/mt8A3DB5tqKKJ1j1H5+W30nwgw9qYoO+X60rg
-	YR4sJj+Yx2ae3wNfxBJ5NUqLDyQGernhNuhFcZDnD6Sb/G+9/ItG/C3tSBomn2Rqw8GQWD9r8vz
-	X0/YZ9akANcNi7tKIIbEwnxkev7a60ArSDppAfC+cM4dKJYrnYTXERgC2OSdGUKOfLedNWVk4xy
-	8zA/0dS1Lp39y98jjz2uA+D6mDqx0MvJ66dKZoxBDC8SilhTeWAMkwCs2gVo8fRP3ksyPZADTzq
-	bgxdxFKWQdEWHEYDScTxGmv9qTc7LMvN4vkRVHL5ndyyZ+M1G3TwzkQF0K2t0c52h/I969KVU4d
-	lzcPlPGuUCnguYu/PVNuMxCJzvx2Ny9hwu8qepxMkgxKrdqb2ZEkFWgReHseOCuetzbA/QNE3/z
-	lkP3AQnnF4Kj0xA7qw==
-X-Received: by 2002:a05:7300:a987:b0:2df:c5bb:3720 with SMTP id 5a478bee46e88-2f54c587faemr9231006eec.15.1778382670966;
-        Sat, 09 May 2026 20:11:10 -0700 (PDT)
-Received: from ethan-latitude5420.. (host-127-24.cafrjco.fresno.ca.us.clients.pavlovmedia.net. [68.180.127.24])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2f888c469b6sm8433793eec.24.2026.05.09.20.11.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 09 May 2026 20:11:10 -0700 (PDT)
-From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-To: linux-arm-kernel@lists.infradead.org,
-	linux-i2c@vger.kernel.org,
-	linux-input@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Cc: Russell King <linux@armlinux.org.uk>,
-	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Helge Deller <deller@gmx.de>,
-	Kees Cook <kees@kernel.org>
-Subject: [PATCH] ARM: move Risc PC-specific <asm/hardware/iomd.h> header into mach-rpc
-Date: Sat,  9 May 2026 20:10:36 -0700
-Message-ID: <20260510031100.255248-1-enelsonmoore@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="vItAYTbN"
+Received: by smtp.kernel.org (Postfix) with ESMTPS id E7400C2BCFD;
+	Sun, 10 May 2026 17:08:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778432886;
+	bh=DmaaqQ+1IvWQqu/QWIYcpgG+vPszNRveAj7JBVSE7Jc=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=vItAYTbNtUJb1wu0vLc92nOO+85liWr+hYHETrAoA52Wzop7+b+8F/zNCZu1xaP0m
+	 tGR1qeiUyuNJP7Qek48MrpdNxezbiywVVw64yEbstiABMYllTf02pLOPN8ZJT1A1K+
+	 SREH2gIszn6B9Xxenc79xtUCXitIIKvzfHM0K8CeQZFUgW9kqFn22H4p8TRMo/R1/4
+	 O/szN2FhobHNoqncXUshGmqUaNR6c/Cyh6bJbJZaok5+cmhsTW6f65i4EyhQ56Ag08
+	 ik3lQlT0MJT8gHMvd0gIVT1wQEa3JjDfvTXnS5ouFMgX5bzKm/ph5c7uYMapZ2l+Jx
+	 QdbWKCOoJ3NwQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9724CD37BE;
+	Sun, 10 May 2026 17:08:05 +0000 (UTC)
+From: Alexandre Hamamdjian via B4 Relay <devnull+azkali.limited.gmail.com@kernel.org>
+Date: Mon, 11 May 2026 00:08:03 +0700
+Subject: [PATCH 2/2] backlight: sy7758: add Silergy SY7758 backlight driver
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260511-sy7758-v1-2-999a33081304@gmail.com>
+References: <20260511-sy7758-v1-0-999a33081304@gmail.com>
+In-Reply-To: <20260511-sy7758-v1-0-999a33081304@gmail.com>
+To: Philippe Simons <simons.philippe@gmail.com>, Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+ Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-fbdev@vger.kernel.org, 
+ Alexandre Hamamdjian <azkali.limited@gmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1778432883; l=7264;
+ i=azkali.limited@gmail.com; s=20260510; h=from:subject:message-id;
+ bh=9XCTIbMoV49y1xex8SxBrgLyf7GaS0QW2nGCwz+d0Fo=;
+ b=w4H2miBquw/vmK2oBk/P8SIhaq7vtIOc/wuxLqy86jD5m7ltkZiQxcjgmCFBNgBFKnldsN/BO
+ fcTis5LJoKpBXYppCZ6M53MTP2DNEAyOuwxpjFdBL2UR9TNFq50R97r
+X-Developer-Key: i=azkali.limited@gmail.com; a=ed25519;
+ pk=I0Z0IdCdQJqNGX+FQUnXhrHg950u3cM6Xzz3YT6JOyQ=
+X-Endpoint-Received: by B4 Relay for azkali.limited@gmail.com/20260510 with
+ auth_id=774
+X-Original-From: Alexandre Hamamdjian <azkali.limited@gmail.com>
+Reply-To: azkali.limited@gmail.com
 
-The <asm/hardware/iomd.h> header is specific to the IOMD chip used on
-the Risc PC. Move it into mach-rpc to avoid polluting asm/hardware/
-with machine-specific headers.
+From: Alexandre Hamamdjian <azkali.limited@gmail.com>
 
-Also take the opportunity to remove a comment with the file path from
-the header, which is bad style.
+Add a driver for the Silergy SY7758 I2C-controlled multi-channel LED
+backlight controller. The chip drives the edge-lit LED strings of LCD
+panels in handheld and embedded devices, and is for example present on
+the Ayaneo Pocket DS handheld where it drives the panel backlight.
 
-Signed-off-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+The driver registers a backlight class device with a 12-bit linear
+brightness range. On the first non-zero update, the chip's mode and
+current configuration registers are programmed; subsequent brightness
+updates only rewrite the two brightness registers. A mutex serialises
+concurrent updates against the deferred init path.
+
+Co-developed-by: Philippe Simons <simons.philippe@gmail.com>
+Signed-off-by: Philippe Simons <simons.philippe@gmail.com>
+Signed-off-by: Alexandre Hamamdjian <azkali.limited@gmail.com>
 ---
- MAINTAINERS                                                     | 1 -
- arch/arm/mach-rpc/dma.c                                         | 2 +-
- arch/arm/{include/asm/hardware => mach-rpc/include/mach}/iomd.h | 2 --
- arch/arm/mach-rpc/irq.c                                         | 2 +-
- arch/arm/mach-rpc/riscpc.c                                      | 2 +-
- arch/arm/mach-rpc/time.c                                        | 2 +-
- drivers/i2c/busses/i2c-acorn.c                                  | 2 +-
- drivers/input/mouse/rpcmouse.c                                  | 2 +-
- drivers/input/serio/rpckbd.c                                    | 2 +-
- drivers/video/fbdev/acornfb.h                                   | 2 +-
- 10 files changed, 8 insertions(+), 11 deletions(-)
- rename arch/arm/{include/asm/hardware => mach-rpc/include/mach}/iomd.h (98%)
+ drivers/video/backlight/Kconfig  |  14 ++++
+ drivers/video/backlight/Makefile |   1 +
+ drivers/video/backlight/sy7758.c | 169 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 184 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 211cc683e25b..6a1da8903c04 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3398,7 +3398,6 @@ M:	Russell King <linux@armlinux.org.uk>
- L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
- S:	Maintained
- W:	http://www.armlinux.org.uk/
--F:	arch/arm/include/asm/hardware/iomd.h
- F:	arch/arm/mach-rpc/
- F:	drivers/net/ethernet/8390/etherh.c
- F:	drivers/net/ethernet/i825xx/ether1*
-diff --git a/arch/arm/mach-rpc/dma.c b/arch/arm/mach-rpc/dma.c
-index 50e0f97afd75..717a81475670 100644
---- a/arch/arm/mach-rpc/dma.c
-+++ b/arch/arm/mach-rpc/dma.c
-@@ -20,7 +20,7 @@
- #include <linux/uaccess.h>
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index a7a3fbaf7c29..c529d2861525 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -461,6 +461,20 @@ config BACKLIGHT_SKY81452
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called sky81452-backlight
  
- #include <asm/mach/dma.h>
--#include <asm/hardware/iomd.h>
-+#include <mach/iomd.h>
- 
- struct iomd_dma {
- 	struct dma_struct	dma;
-diff --git a/arch/arm/include/asm/hardware/iomd.h b/arch/arm/mach-rpc/include/mach/iomd.h
-similarity index 98%
-rename from arch/arm/include/asm/hardware/iomd.h
-rename to arch/arm/mach-rpc/include/mach/iomd.h
-index e3f130345ebc..2a3f4a5f3fd9 100644
---- a/arch/arm/include/asm/hardware/iomd.h
-+++ b/arch/arm/mach-rpc/include/mach/iomd.h
-@@ -1,7 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0-only */
- /*
-- *  arch/arm/include/asm/hardware/iomd.h
-- *
-  *  Copyright (C) 1999 Russell King
-  *
-  *  This file contains information out the IOMD ASIC used in the
-diff --git a/arch/arm/mach-rpc/irq.c b/arch/arm/mach-rpc/irq.c
-index e924c9b813ab..649d81874c86 100644
---- a/arch/arm/mach-rpc/irq.c
-+++ b/arch/arm/mach-rpc/irq.c
-@@ -4,7 +4,7 @@
- #include <linux/io.h>
- 
- #include <asm/mach/irq.h>
--#include <asm/hardware/iomd.h>
-+#include <mach/iomd.h>
- #include <asm/irq.h>
- #include <asm/fiq.h>
- 
-diff --git a/arch/arm/mach-rpc/riscpc.c b/arch/arm/mach-rpc/riscpc.c
-index f70fb9c4b0cb..d068f5e4873d 100644
---- a/arch/arm/mach-rpc/riscpc.c
-+++ b/arch/arm/mach-rpc/riscpc.c
-@@ -22,7 +22,7 @@
- #include <asm/elf.h>
- #include <asm/mach-types.h>
- #include <mach/hardware.h>
--#include <asm/hardware/iomd.h>
-+#include <mach/iomd.h>
- #include <asm/page.h>
- #include <asm/domain.h>
- #include <asm/setup.h>
-diff --git a/arch/arm/mach-rpc/time.c b/arch/arm/mach-rpc/time.c
-index ad93c4dfafcd..566113f9774f 100644
---- a/arch/arm/mach-rpc/time.c
-+++ b/arch/arm/mach-rpc/time.c
-@@ -17,7 +17,7 @@
- #include <linux/io.h>
- 
- #include <mach/hardware.h>
--#include <asm/hardware/iomd.h>
-+#include <mach/iomd.h>
- 
- #include <asm/mach/time.h>
- 
-diff --git a/drivers/i2c/busses/i2c-acorn.c b/drivers/i2c/busses/i2c-acorn.c
-index 99b6b1c3fd9e..703b4a42f466 100644
---- a/drivers/i2c/busses/i2c-acorn.c
-+++ b/drivers/i2c/busses/i2c-acorn.c
-@@ -13,7 +13,7 @@
- #include <linux/io.h>
- 
- #include <mach/hardware.h>
--#include <asm/hardware/iomd.h>
-+#include <mach/iomd.h>
- 
- #define FORCE_ONES	0xdc
- #define SCL		0x02
-diff --git a/drivers/input/mouse/rpcmouse.c b/drivers/input/mouse/rpcmouse.c
-index 6774029e0a1a..475c3ca22fd4 100644
---- a/drivers/input/mouse/rpcmouse.c
-+++ b/drivers/input/mouse/rpcmouse.c
-@@ -23,7 +23,7 @@
- 
- #include <mach/hardware.h>
- #include <asm/irq.h>
--#include <asm/hardware/iomd.h>
-+#include <mach/iomd.h>
- 
- MODULE_AUTHOR("Vojtech Pavlik, Russell King");
- MODULE_DESCRIPTION("Acorn RiscPC mouse driver");
-diff --git a/drivers/input/serio/rpckbd.c b/drivers/input/serio/rpckbd.c
-index 4d817850ba3b..e452ad07e2fa 100644
---- a/drivers/input/serio/rpckbd.c
-+++ b/drivers/input/serio/rpckbd.c
-@@ -17,7 +17,7 @@
- #include <linux/slab.h>
- 
- #include <mach/hardware.h>
--#include <asm/hardware/iomd.h>
-+#include <mach/iomd.h>
- 
- MODULE_AUTHOR("Vojtech Pavlik, Russell King");
- MODULE_DESCRIPTION("Acorn RiscPC PS/2 keyboard controller driver");
-diff --git a/drivers/video/fbdev/acornfb.h b/drivers/video/fbdev/acornfb.h
-index f8df4ecb4fd7..e65388587f80 100644
---- a/drivers/video/fbdev/acornfb.h
-+++ b/drivers/video/fbdev/acornfb.h
-@@ -7,7 +7,7 @@
-  *  Frame buffer code for Acorn platforms
-  */
- #if defined(HAS_VIDC20)
--#include <asm/hardware/iomd.h>
-+#include <mach/iomd.h>
- #define VIDC_PALETTE_SIZE	256
- #define VIDC_NAME		"VIDC20"
- #endif
++config BACKLIGHT_SY7758
++	tristate "Backlight Driver for Silergy SY7758"
++	depends on I2C
++	select REGMAP_I2C
++	help
++	  This enables support for the Silergy SY7758 I2C-controlled
++	  multi-channel LED backlight driver, commonly used to drive the
++	  edge-lit LED strings of LCD panels in handheld and embedded
++	  devices. The driver exposes a 12-bit linear brightness control
++	  through the standard backlight class.
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called sy7758.
++
+ config BACKLIGHT_TPS65217
+ 	tristate "TPS65217 Backlight"
+ 	depends on MFD_TPS65217
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 794820a98ed4..00d3e379b297 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -57,6 +57,7 @@ obj-$(CONFIG_BACKLIGHT_QCOM_WLED)	+= qcom-wled.o
+ obj-$(CONFIG_BACKLIGHT_RT4831)		+= rt4831-backlight.o
+ obj-$(CONFIG_BACKLIGHT_SAHARA)		+= kb3886_bl.o
+ obj-$(CONFIG_BACKLIGHT_SKY81452)	+= sky81452-backlight.o
++obj-$(CONFIG_BACKLIGHT_SY7758)		+= sy7758.o
+ obj-$(CONFIG_BACKLIGHT_TPS65217)	+= tps65217_bl.o
+ obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
+ obj-$(CONFIG_BACKLIGHT_ARCXCNN) 	+= arcxcnn_bl.o
+diff --git a/drivers/video/backlight/sy7758.c b/drivers/video/backlight/sy7758.c
+new file mode 100644
+index 000000000000..6a318bd62030
+--- /dev/null
++++ b/drivers/video/backlight/sy7758.c
+@@ -0,0 +1,169 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Backlight driver for the Silergy sy7758
++ *
++ * Copyright (C) 2025 Kancy Joe <kancy2333@outlook.com>
++ */
++
++#include <linux/backlight.h>
++#include <linux/err.h>
++#include <linux/gpio/consumer.h>
++#include <linux/i2c.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/regmap.h>
++
++#define DEFAULT_BRIGHTNESS 1500
++#define MAX_BRIGHTNESS 4080
++#define REG_MAX 0xa9
++
++#define BL_BRT_L 0x10
++#define BL_BRT_H 0x11
++
++static DEFINE_MUTEX(sy7758_update_backlight_mutex);
++
++struct sy7758 {
++	struct i2c_client *client;
++	struct regmap *regmap;
++	bool led_on;
++};
++
++static void sy7758_init(struct sy7758 *sydev);
++
++static const struct regmap_config sy7758_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 8,
++	.max_register = REG_MAX,
++};
++
++static int sy7758_write(struct sy7758 *sydev, unsigned int reg,
++			 unsigned int val)
++{
++	return regmap_write(sydev->regmap, reg, val);
++}
++
++static int sy7758_backlight_update_status(struct backlight_device *backlight_dev)
++{
++	struct sy7758 *sydev = bl_get_data(backlight_dev);
++	unsigned int brightness = backlight_get_brightness(backlight_dev);
++
++	mutex_lock(&sy7758_update_backlight_mutex);
++
++	if (!sydev->led_on && brightness > 0) {
++		sy7758_init(sydev);
++		sydev->led_on = true;
++	} else if (brightness == 0) {
++		sydev->led_on = false;
++	}
++
++	sy7758_write(sydev, BL_BRT_L, brightness & 0xf0);
++
++	sy7758_write(sydev, BL_BRT_H, (brightness >> 8) & 0xf);
++
++	mutex_unlock(&sy7758_update_backlight_mutex);
++	return 0;
++}
++
++static const struct backlight_ops sy7758_backlight_ops = {
++	.options = BL_CORE_SUSPENDRESUME,
++	.update_status = sy7758_backlight_update_status,
++};
++
++static void sy7758_init(struct sy7758 *sydev)
++{
++	sy7758_write(sydev, 0x01, 0x85);
++	sy7758_write(sydev, 0x10, 0x00);
++	sy7758_write(sydev, 0x11, 0x00);
++	sy7758_write(sydev, 0xa5, 0x64);
++	sy7758_write(sydev, 0xa0, 0x55);
++	sy7758_write(sydev, 0xa1, 0x9a);
++	sy7758_write(sydev, 0xa9, 0x80);
++	sy7758_write(sydev, 0xa2, 0x28);
++
++	usleep_range(10000, 11000);
++
++	sy7758_write(sydev, 0x10, 0x40);
++	sy7758_write(sydev, 0x11, 0x01);
++	// Max brightness
++	// 0x10: 0xf0 Low
++	// 0x11: 0x0f High
++
++	// Min brightness
++	// 0x10: 0x10  Low
++	// 0x11: 0x00  High
++	sydev->led_on = true;
++}
++
++static int sy7758_probe(struct i2c_client *client)
++{
++	struct backlight_device *backlight_dev;
++	struct backlight_properties props;
++	struct sy7758 *sydev;
++
++	sydev = devm_kzalloc(&client->dev, sizeof(*sydev), GFP_KERNEL);
++	if (!sydev)
++		return -ENOMEM;
++
++	sydev->client = client;
++	sydev->regmap = devm_regmap_init_i2c(client, &sy7758_regmap_config);
++	if (IS_ERR(sydev->regmap))
++		return dev_err_probe(&client->dev, PTR_ERR(sydev->regmap),
++			"failed to init regmap\n");
++
++	memset(&props, 0, sizeof(props));
++	props.type = BACKLIGHT_RAW;
++	props.max_brightness = MAX_BRIGHTNESS;
++	props.brightness = DEFAULT_BRIGHTNESS;
++	props.scale = BACKLIGHT_SCALE_LINEAR;
++
++	backlight_dev = devm_backlight_device_register(&client->dev, "sy7758-backlight",
++					&client->dev, sydev, &sy7758_backlight_ops, &props);
++	if (IS_ERR(backlight_dev))
++		return dev_err_probe(&client->dev, PTR_ERR(backlight_dev),
++				"failed to register backlight device\n");
++
++	sy7758_init(sydev);
++
++	i2c_set_clientdata(client, backlight_dev);
++	backlight_update_status(backlight_dev);
++
++	return 0;
++}
++
++static void sy7758_remove(struct i2c_client *client)
++{
++	struct backlight_device *backlight_dev = i2c_get_clientdata(client);
++
++	backlight_dev->props.brightness = 0;
++	backlight_update_status(backlight_dev);
++}
++
++static const struct i2c_device_id sy7758_ids[] = {
++	{ "sy7758" },
++	{}
++};
++MODULE_DEVICE_TABLE(i2c, sy7758_ids);
++
++static const struct of_device_id sy7758_match_table[] = {
++	{
++		.compatible = "silergy,sy7758",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, sy7758_match_table);
++
++static struct i2c_driver sy7758_driver = {
++	.driver = {
++		.name = "sy7758",
++		.of_match_table = sy7758_match_table,
++	},
++	.probe = sy7758_probe,
++	.remove = sy7758_remove,
++	.id_table = sy7758_ids,
++};
++
++module_i2c_driver(sy7758_driver);
++
++MODULE_DESCRIPTION("Silergy sy7758 Backlight Driver");
++MODULE_AUTHOR("Kancy Joe <kancy2333@outlook.com>");
++MODULE_LICENSE("GPL");
+
 -- 
-2.43.0
+2.54.0
+
 

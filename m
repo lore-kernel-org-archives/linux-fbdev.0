@@ -1,324 +1,385 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B271B37C914;
-	Mon, 11 May 2026 20:43:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF4454F7964;
+	Mon, 11 May 2026 22:20:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778532187; cv=none; b=WmqfTjH4ff/SV233r08TCLopZNnitseh5gDlLlAEaQ5WUWtio8aoMro1gMBjoi/Zr5XFi/OvAGTezpAW+lg9lcyEk7aQVMVEm3kfQopgN3gYiCVHaVyXLHXiy1Qok7ad4vUDGmhZeEIIRIeu4usrwWddFR5e86EBu0BM8+tBaC8=
+	t=1778538003; cv=none; b=ZBUmlynbZx7Q6Xdk31bu1SuabtKBdqbn97vI5TCSjTYxfjN6Nc1Xp16oEEvCckZSjEG3WKhDboDQD6DKmNUlF1FVjYhua8Nch8zCoveeZFHEKsIVWhpQ8IcMmokJyYRTs0i6cKNEyVgPdhyzXnugqTZkHtputCcKOmD3lmpgOB8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778532187; c=relaxed/simple;
-	bh=67SPvg3yiYKzTo54n1Y6foF5cbwYKVi9H2uevMHI7Pk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qvh4ZShzFYDTe3y9ZUzxezOAnfyWGcW9FEY9l4z5l1O75pgUAP+XaKi9ocuBsNUGTFSvkjwKNeLeA2ZJBkrEUdEIPhxZa301BYA1tlc2HsEXnOOcpUDZmNYKpaibOormHmuOq8EclyT71YkI9UdCOdkddPw0ZDpFQ4RoAhI35SU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=OZvY5KUC; arc=none smtp.client-ip=192.198.163.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1778538003; c=relaxed/simple;
+	bh=1Oxyfd1/v7O27frv8bMTIM++jJRA0r8gE2wj5UKC5ek=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=a47hQnFJAKWiMuvxypy/9u/agHPGNWI4eGPLGud675yYMzrIAz0N6th+bngC2EecXv6Wf5sekKKQXZhSVtinNmeSGnE4YUzVUqqog81gDENjHsaTBM5WupXCmIg5csmykie0K63F2IbY01yPlJ8I9oKeYL9z9Xemyb09EmMKtAU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IvCYSscA; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="OZvY5KUC"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778532184; x=1810068184;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=67SPvg3yiYKzTo54n1Y6foF5cbwYKVi9H2uevMHI7Pk=;
-  b=OZvY5KUCYN2daoZ7IkrkLV01Y6yGgcmKLPRX8eSRxVM8PlAhrdVaI5ET
-   ceI2zWCgZqHEmIXVkpX9APf1FWg2GooZgchXNocibTxuNNfmDUN2ZT6Gx
-   v34qdTOTHZ23mHwe0bO8MrM/3w9Zj18xGJlDnSOFxr8GFOh7hOR3Ow4KG
-   DIuzimDLqZEZEAugoZMx6/uL9ZRY1nBqCRsEvlwyEIH/A0ppyX22WunCC
-   QdjjhBjMM6X7GjrKnrXSdnAm5WJLSMZcOKAxBHDALtiHrw7UNvN8WI64m
-   yQ19reELO2rkA1Gnlz408R/4KK8OpbfgaLZI71seB+QaH5l2ScBEMBrKB
-   Q==;
-X-CSE-ConnectionGUID: Csvoc6gqR6uqPvfsNj1OoQ==
-X-CSE-MsgGUID: p2bQOlMoTJWieNzvTzeFfQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11783"; a="81996034"
-X-IronPort-AV: E=Sophos;i="6.23,229,1770624000"; 
-   d="scan'208";a="81996034"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 May 2026 13:43:03 -0700
-X-CSE-ConnectionGUID: rUJcvrXFSOa7+7Cv9T/Keg==
-X-CSE-MsgGUID: EkCGXHZNQFuNA9rSAUegxQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,229,1770624000"; 
-   d="scan'208";a="241553507"
-Received: from lkp-server01.sh.intel.com (HELO dca79079c3eb) ([10.239.97.150])
-  by orviesa003.jf.intel.com with ESMTP; 11 May 2026 13:43:01 -0700
-Received: from kbuild by dca79079c3eb with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wMXSs-0000000019J-0m9B;
-	Mon, 11 May 2026 20:42:58 +0000
-Date: Tue, 12 May 2026 04:42:49 +0800
-From: kernel test robot <lkp@intel.com>
-To: Chaitanya Sabnis <chaitanya.msabnis@gmail.com>,
-	sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: oe-kbuild-all@lists.linux.dev, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	Chaitanya Sabnis <chaitanya.msabnis@gmail.com>
-Subject: Re: [PATCH] staging: sm750fb: add const to g_fbmode array
-Message-ID: <202605120426.9EKM6cs7-lkp@intel.com>
-References: <20260506035641.5060-1-chaitanya.msabnis@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IvCYSscA"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1869BC2BCF5;
+	Mon, 11 May 2026 22:20:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778538003;
+	bh=1Oxyfd1/v7O27frv8bMTIM++jJRA0r8gE2wj5UKC5ek=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=IvCYSscAn8WdA/IX8qh23AmPZJXNkD0GVm76HSc7v8H2JLhXWyn5I28EMXQfOZGNV
+	 KXGjR2bGWv9gsF5cjOdRGM2Bl042d4z/WDShDJsrCTk+jbdSDD9QYB5yneBY8/i03H
+	 G1PgMSW2PrpvG+cfQE3hQnC/4LYzxXH8yaI8PkiC5Pd6saKJLmnxjdgdbYeWriaxsJ
+	 Opd2kHhTxb1/GOqop7ARjA7yTLo0ABt933gWsesDkxkpRVaBp4kjh3EMrgyZkhoYE0
+	 qO62RIu1WrYCG6B9oCzytR3+WPvVZiIWu+J0bloJjtvDikeihP5ylo/f1qd/y54cnw
+	 RuabEskLr1m5w==
+From: Sasha Levin <sashal@kernel.org>
+To: patches@lists.linux.dev,
+	stable@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Helge Deller <deller@gmx.de>,
+	Sasha Levin <sashal@kernel.org>,
+	shawnguo@kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH AUTOSEL 7.0-5.10] fbdev: ipu-v3: clean up kernel-doc warnings
+Date: Mon, 11 May 2026 18:19:20 -0400
+Message-ID: <20260511221931.2370053-21-sashal@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260511221931.2370053-1-sashal@kernel.org>
+References: <20260511221931.2370053-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260506035641.5060-1-chaitanya.msabnis@gmail.com>
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 7.0.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hi Chaitanya,
+From: Randy Dunlap <rdunlap@infradead.org>
 
-kernel test robot noticed the following build errors:
+[ Upstream commit f1fb23a0a0fcbdb66672da51d7d63a259f6396ca ]
 
-[auto build test ERROR on staging/staging-testing]
+Correct all kernel-doc warnings:
+- fix a typedef kernel-doc comment
+- mark a list_head as private
+- use Returns: for function return values
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Chaitanya-Sabnis/staging-sm750fb-add-const-to-g_fbmode-array/20260509-141744
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20260506035641.5060-1-chaitanya.msabnis%40gmail.com
-patch subject: [PATCH] staging: sm750fb: add const to g_fbmode array
-config: i386-randconfig-053-20260511 (https://download.01.org/0day-ci/archive/20260512/202605120426.9EKM6cs7-lkp@intel.com/config)
-compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260512/202605120426.9EKM6cs7-lkp@intel.com/reproduce)
+Warning: include/video/imx-ipu-image-convert.h:31 struct member 'list' not
+ described in 'ipu_image_convert_run'
+Warning: include/video/imx-ipu-image-convert.h:40 function parameter
+ 'ipu_image_convert_cb_t' not described in 'void'
+Warning: include/video/imx-ipu-image-convert.h:40 expecting prototype for
+ ipu_image_convert_cb_t(). Prototype was for void() instead
+Warning: include/video/imx-ipu-image-convert.h:66 No description found for
+ return value of 'ipu_image_convert_verify'
+Warning: include/video/imx-ipu-image-convert.h:90 No description found for
+ return value of 'ipu_image_convert_prepare'
+Warning: include/video/imx-ipu-image-convert.h:125 No description found for
+ return value of 'ipu_image_convert_queue'
+Warning: include/video/imx-ipu-image-convert.h:163 No description found for
+ return value of 'ipu_image_convert'
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605120426.9EKM6cs7-lkp@intel.com/
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
 
-All errors (new ones prefixed by >>):
+LLM Generated explanations, may be completely bogus:
 
-   drivers/staging/sm750fb/sm750.c: In function 'lynxfb_set_fbinfo':
->> drivers/staging/sm750fb/sm750.c:785:33: error: assignment of read-only location 'g_fbmode[index]'
-     785 |                 g_fbmode[index] = g_def_fbmode;
-         |                                 ^
-   drivers/staging/sm750fb/sm750.c:787:41: error: assignment of read-only location 'g_fbmode[index]'
-     787 |                         g_fbmode[index] = g_fbmode[0];
-         |                                         ^
-   drivers/staging/sm750fb/sm750.c: In function 'sm750fb_setup':
->> drivers/staging/sm750fb/sm750.c:896:45: error: assignment of read-only location 'g_fbmode[0]'
-     896 |                                 g_fbmode[0] = opt;
-         |                                             ^
-   drivers/staging/sm750fb/sm750.c:900:45: error: assignment of read-only location 'g_fbmode[1]'
-     900 |                                 g_fbmode[1] = opt;
-         |                                             ^
+## Phase 1: Commit Message Forensics
+Step 1.1 Record: subsystem `fbdev: ipu-v3`; action verb `clean up`;
+intent is to correct kernel-doc warnings in `include/video/imx-ipu-
+image-convert.h`.
 
+Step 1.2 Record: tags in committed message are `Signed-off-by: Randy
+Dunlap <rdunlap@infradead.org>`, `Reviewed-by: Philipp Zabel
+<p.zabel@pengutronix.de>`, and `Signed-off-by: Helge Deller
+<deller@gmx.de>`. No `Fixes:`, `Reported-by:`, `Tested-by:`, `Acked-
+by:`, `Link:`, or `Cc: stable@vger.kernel.org` tag is present in the
+committed message.
 
-vim +785 drivers/staging/sm750fb/sm750.c
+Step 1.3 Record: the described problem is seven kernel-doc warnings: one
+undocumented/private list member, malformed typedef documentation, and
+missing `Returns:` sections. The visible symptom is documentation
+tooling warnings, not a runtime crash, hang, data corruption, or
+security issue. No affected kernel version is stated. Root cause is
+incorrect kernel-doc comment syntax.
 
-81dee67e215b23f Sudip Mukherjee      2015-03-03  719  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  720  static int lynxfb_set_fbinfo(struct fb_info *info, int index)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  721  {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  722  	int i;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  723  	struct lynxfb_par *par;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  724  	struct sm750_dev *sm750_dev;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  725  	struct lynxfb_crtc *crtc;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  726  	struct lynxfb_output *output;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  727  	struct fb_var_screeninfo *var;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  728  	struct fb_fix_screeninfo *fix;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  729  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  730  	const struct fb_videomode *pdb[] = {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  731  		lynx750_ext, NULL, vesa_modes,
-81dee67e215b23f Sudip Mukherjee      2015-03-03  732  	};
-81dee67e215b23f Sudip Mukherjee      2015-03-03  733  	int cdb[] = {ARRAY_SIZE(lynx750_ext), 0, VESA_MODEDB_SIZE};
-d0856045f0e9fc9 Hungyu Lin           2026-04-01  734  	static const char * const fix_id[2] = {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  735  		"sm750_fb1", "sm750_fb2",
-81dee67e215b23f Sudip Mukherjee      2015-03-03  736  	};
-81dee67e215b23f Sudip Mukherjee      2015-03-03  737  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  738  	int ret, line_length;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  739  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  740  	ret = 0;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  741  	par = (struct lynxfb_par *)info->par;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  742  	sm750_dev = par->dev;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  743  	crtc = &par->crtc;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  744  	output = &par->output;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  745  	var = &info->var;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  746  	fix = &info->fix;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  747  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  748  	/* set index */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  749  	par->index = index;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  750  	output->channel = &crtc->channel;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  751  	sm750fb_set_drv(par);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  752  
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  753  	/*
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  754  	 * set current cursor variable and proc pointer,
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  755  	 * must be set after crtc member initialized
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  756  	 */
-fdc234d85210d91 Benjamin Philip      2021-07-28  757  	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  758  	crtc->cursor.mmio = sm750_dev->pvReg +
-e359b6a863e19f2 Mike Rapoport        2015-10-26  759  		0x800f0 + (int)crtc->channel * 0x140;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  760  
-cd33da26036ea54 Christopher Carbone  2022-08-23  761  	crtc->cursor.max_h = 64;
-cd33da26036ea54 Christopher Carbone  2022-08-23  762  	crtc->cursor.max_w = 64;
-39f9137268ee3df Benjamin Philip      2021-07-26  763  	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  764  	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  765  
-3de08a2d14ff8c7 Lorenzo Stoakes      2015-03-20  766  	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  767  	if (!g_hwcursor)
-52d0744d751d8f1 Arnd Bergmann        2016-11-09  768  		sm750_hw_cursor_disable(&crtc->cursor);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  769  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  770  	/* set info->fbops, must be set before fb_find_mode */
-e359b6a863e19f2 Mike Rapoport        2015-10-26  771  	if (!sm750_dev->accel_off) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  772  		/* use 2d acceleration */
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  773  		if (!g_hwcursor)
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  774  			info->fbops = &lynxfb_ops_accel;
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  775  		else
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  776  			info->fbops = &lynxfb_ops_accel_with_cursor;
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  777  	} else {
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  778  		if (!g_hwcursor)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  779  			info->fbops = &lynxfb_ops;
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  780  		else
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  781  			info->fbops = &lynxfb_ops_with_cursor;
-f7c8a046577e09d Thomas Zimmermann    2023-11-27  782  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  783  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  784  	if (!g_fbmode[index]) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03 @785  		g_fbmode[index] = g_def_fbmode;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  786  		if (index)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  787  			g_fbmode[index] = g_fbmode[0];
-81dee67e215b23f Sudip Mukherjee      2015-03-03  788  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  789  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  790  	for (i = 0; i < 3; i++) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  791  		ret = fb_find_mode(var, info, g_fbmode[index],
-81dee67e215b23f Sudip Mukherjee      2015-03-03  792  				   pdb[i], cdb[i], NULL, 8);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  793  
-db7fb3588ab4920 Artem Lytkin         2026-02-23  794  		if (ret == 1 || ret == 2)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  795  			break;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  796  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  797  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  798  	/* set par */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  799  	par->info = info;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  800  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  801  	/* set info */
-e3a3f9f5123683b Mike Rapoport        2015-10-26  802  	line_length = ALIGN((var->xres_virtual * var->bits_per_pixel / 8),
-e3a3f9f5123683b Mike Rapoport        2015-10-26  803  			    crtc->line_pad);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  804  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  805  	info->pseudo_palette = &par->pseudo_palette[0];
-cc59bde1c920ab6 Benjamin Philip      2021-07-28  806  	info->screen_base = crtc->v_screen;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  807  	info->screen_size = line_length * var->yres_virtual;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  808  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  809  	/* set info->fix */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  810  	fix->type = FB_TYPE_PACKED_PIXELS;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  811  	fix->type_aux = 0;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  812  	fix->xpanstep = crtc->xpanstep;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  813  	fix->ypanstep = crtc->ypanstep;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  814  	fix->ywrapstep = crtc->ywrapstep;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  815  	fix->accel = FB_ACCEL_SMI;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  816  
-8c475735085a7db Tim Wassink          2025-12-21  817  	strscpy(fix->id, fix_id[index], sizeof(fix->id));
-81dee67e215b23f Sudip Mukherjee      2015-03-03  818  
-fdc234d85210d91 Benjamin Philip      2021-07-28  819  	fix->smem_start = crtc->o_screen + sm750_dev->vidmem_start;
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  820  	/*
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  821  	 * according to mmap experiment from user space application,
-81dee67e215b23f Sudip Mukherjee      2015-03-03  822  	 * fix->mmio_len should not larger than virtual size
-81dee67e215b23f Sudip Mukherjee      2015-03-03  823  	 * (xres_virtual x yres_virtual x ByPP)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  824  	 * Below line maybe buggy when user mmap fb dev node and write
-81dee67e215b23f Sudip Mukherjee      2015-03-03  825  	 * data into the bound over virtual size
-d11ac7cbcc266c6 Sudip Mukherjee      2015-08-07  826  	 */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  827  	fix->smem_len = crtc->vidmem_size;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  828  	info->screen_size = fix->smem_len;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  829  	fix->line_length = line_length;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  830  	fix->mmio_start = sm750_dev->vidreg_start;
-e359b6a863e19f2 Mike Rapoport        2015-10-26  831  	fix->mmio_len = sm750_dev->vidreg_size;
-b610e1193a917f4 Matej Dujava         2020-04-30  832  
-b610e1193a917f4 Matej Dujava         2020-04-30  833  	lynxfb_set_visual_mode(info);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  834  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  835  	/* set var */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  836  	var->activate = FB_ACTIVATE_NOW;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  837  	var->accel_flags = 0;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  838  	var->vmode = FB_VMODE_NONINTERLACED;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  839  
-61c507cf652da1b Michel von Czettritz 2015-03-26  840  	ret = fb_alloc_cmap(&info->cmap, 256, 0);
-61c507cf652da1b Michel von Czettritz 2015-03-26  841  	if (ret < 0) {
-fbab250eb51d6d6 Artem Lytkin         2026-02-07  842  		dev_err(info->device, "Could not allocate memory for cmap.\n");
-81dee67e215b23f Sudip Mukherjee      2015-03-03  843  		goto exit;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  844  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  845  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  846  exit:
-81dee67e215b23f Sudip Mukherjee      2015-03-03  847  	lynxfb_ops_check_var(var, info);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  848  	return ret;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  849  }
-81dee67e215b23f Sudip Mukherjee      2015-03-03  850  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  851  /*	chip specific g_option configuration routine */
-700591a9adc8b1b Mike Rapoport        2015-10-26  852  static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
-81dee67e215b23f Sudip Mukherjee      2015-03-03  853  {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  854  	char *opt;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  855  	int swap;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  856  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  857  	swap = 0;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  858  
-cc34db609ff98c1 Madhumitha Sundar    2026-01-27  859  	sm750_dev->init_parm.chip_clk = 0;
-cc34db609ff98c1 Madhumitha Sundar    2026-01-27  860  	sm750_dev->init_parm.mem_clk = 0;
-cc34db609ff98c1 Madhumitha Sundar    2026-01-27  861  	sm750_dev->init_parm.master_clk = 0;
-cc34db609ff98c1 Madhumitha Sundar    2026-01-27  862  	sm750_dev->init_parm.powerMode = 0;
-cc34db609ff98c1 Madhumitha Sundar    2026-01-27  863  	sm750_dev->init_parm.setAllEngOff = 0;
-cc34db609ff98c1 Madhumitha Sundar    2026-01-27  864  	sm750_dev->init_parm.resetMemory = 1;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  865  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  866  	/* defaultly turn g_hwcursor on for both view */
-81dee67e215b23f Sudip Mukherjee      2015-03-03  867  	g_hwcursor = 3;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  868  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  869  	if (!src || !*src) {
-c56de0967a658cb Elise Lennion        2016-10-31  870  		dev_warn(&sm750_dev->pdev->dev, "no specific g_option.\n");
-81dee67e215b23f Sudip Mukherjee      2015-03-03  871  		goto NO_PARAM;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  872  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  873  
-0fa96e39279988b Sudip Mukherjee      2015-03-10  874  	while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-c56de0967a658cb Elise Lennion        2016-10-31  875  		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
-c56de0967a658cb Elise Lennion        2016-10-31  876  		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  877  
-144634a6b421468 Katie Dunne          2017-02-19  878  		if (!strncmp(opt, "swap", strlen("swap"))) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  879  			swap = 1;
-144634a6b421468 Katie Dunne          2017-02-19  880  		} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
-1757d106a9ce8cc Mike Rapoport        2015-10-26  881  			sm750_dev->nocrt = 1;
-144634a6b421468 Katie Dunne          2017-02-19  882  		} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
-94c938a0c158635 Shubham Chakraborty  2026-04-07  883  			sm750_dev->pnltype = SM750_DOUBLE_TFT;
-144634a6b421468 Katie Dunne          2017-02-19  884  		} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
-94c938a0c158635 Shubham Chakraborty  2026-04-07  885  			sm750_dev->pnltype = SM750_DUAL_TFT;
-144634a6b421468 Katie Dunne          2017-02-19  886  		} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
-94c938a0c158635 Shubham Chakraborty  2026-04-07  887  			sm750_dev->pnltype = SM750_24TFT;
-144634a6b421468 Katie Dunne          2017-02-19  888  		} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  889  			g_hwcursor &= ~0x1;
-144634a6b421468 Katie Dunne          2017-02-19  890  		} else if (!strncmp(opt, "nohwc1", strlen("nohwc1"))) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  891  			g_hwcursor &= ~0x2;
-144634a6b421468 Katie Dunne          2017-02-19  892  		} else if (!strncmp(opt, "nohwc", strlen("nohwc"))) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  893  			g_hwcursor = 0;
-144634a6b421468 Katie Dunne          2017-02-19  894  		} else {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  895  			if (!g_fbmode[0]) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03 @896  				g_fbmode[0] = opt;
-cee9ba1c30d0517 Abdul Rauf           2017-01-08  897  				dev_info(&sm750_dev->pdev->dev,
-cee9ba1c30d0517 Abdul Rauf           2017-01-08  898  					 "find fbmode0 : %s\n", g_fbmode[0]);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  899  			} else if (!g_fbmode[1]) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  900  				g_fbmode[1] = opt;
-cee9ba1c30d0517 Abdul Rauf           2017-01-08  901  				dev_info(&sm750_dev->pdev->dev,
-cee9ba1c30d0517 Abdul Rauf           2017-01-08  902  					 "find fbmode1 : %s\n", g_fbmode[1]);
-81dee67e215b23f Sudip Mukherjee      2015-03-03  903  			} else {
-c56de0967a658cb Elise Lennion        2016-10-31  904  				dev_warn(&sm750_dev->pdev->dev, "How many view you wann set?\n");
-81dee67e215b23f Sudip Mukherjee      2015-03-03  905  			}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  906  		}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  907  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  908  
-81dee67e215b23f Sudip Mukherjee      2015-03-03  909  NO_PARAM:
-e359b6a863e19f2 Mike Rapoport        2015-10-26  910  	if (sm750_dev->revid != SM750LE_REVISION_ID) {
-a3f92cc94c6126d Mike Rapoport        2016-01-17  911  		if (sm750_dev->fb_count > 1) {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  912  			if (swap)
-1757d106a9ce8cc Mike Rapoport        2015-10-26  913  				sm750_dev->dataflow = sm750_dual_swap;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  914  			else
-1757d106a9ce8cc Mike Rapoport        2015-10-26  915  				sm750_dev->dataflow = sm750_dual_normal;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  916  		} else {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  917  			if (swap)
-1757d106a9ce8cc Mike Rapoport        2015-10-26  918  				sm750_dev->dataflow = sm750_simul_sec;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  919  			else
-1757d106a9ce8cc Mike Rapoport        2015-10-26  920  				sm750_dev->dataflow = sm750_simul_pri;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  921  		}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  922  	} else {
-81dee67e215b23f Sudip Mukherjee      2015-03-03  923  		/* SM750LE only have one crt channel */
-1757d106a9ce8cc Mike Rapoport        2015-10-26  924  		sm750_dev->dataflow = sm750_simul_sec;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  925  		/* sm750le do not have complex attributes */
-1757d106a9ce8cc Mike Rapoport        2015-10-26  926  		sm750_dev->nocrt = 0;
-81dee67e215b23f Sudip Mukherjee      2015-03-03  927  	}
-81dee67e215b23f Sudip Mukherjee      2015-03-03  928  }
-81dee67e215b23f Sudip Mukherjee      2015-03-03  929  
+Step 1.4 Record: this is not a hidden runtime bug fix. The body and diff
+both show a documentation/comment-only cleanup.
 
+## Phase 2: Diff Analysis
+Step 2.1 Record: one file changed: `include/video/imx-ipu-image-
+convert.h`, 11 insertions and 5 deletions. Modified documentation covers
+`struct ipu_image_convert_run`, `ipu_image_convert_cb_t`,
+`ipu_image_convert_verify()`, `ipu_image_convert_prepare()`,
+`ipu_image_convert_queue()`, and `ipu_image_convert()`. Scope is single-
+file, header-only, surgical.
+
+Step 2.2 Record: hunk behavior:
+- `struct ipu_image_convert_run`: before, `list` was documented neither
+  as a member nor private; after, `/* private: */` tells kernel-doc to
+  ignore it as an API member.
+- `ipu_image_convert_cb_t`: before, kernel-doc treated the typedef
+  comment as a function prototype mismatch; after, it is marked as a
+  typedef comment.
+- Return docs: before, several returns were plain prose or missing;
+  after, they use kernel-doc `Returns:` syntax.
+- `ipu_image_convert_prepare()`: before, the V4L2 usage note followed
+  the return prose; after, the return section is last and formatted for
+  kernel-doc.
+
+Step 2.3 Record: bug category is documentation/kernel-doc warning
+cleanup. No error-path, synchronization, refcount, memory-safety,
+initialization, type, logic, or hardware workaround change exists.
+
+Step 2.4 Record: fix quality is high for the stated documentation issue:
+small, obviously correct kernel-doc syntax changes. Runtime regression
+risk is effectively zero because no C declarations, types, function
+bodies, data layout, or APIs are changed. Documentation rendering risk
+is very low.
+
+## Phase 3: Git History Investigation
+Step 3.1 Record: `git blame` shows the affected header comments and
+declarations came from `cd98e85a6b786d` by Steve Longerbeam, dated
+2016-09-17. `git describe --contains cd98e85a6b786d` reports it as
+present by `v4.9-rc1~41^2~24^2`.
+
+Step 3.2 Record: no `Fixes:` tag is present, so there is no tagged
+introducing commit to follow. Blame identifies `cd98e85a6b786d` as the
+source of the documented preimage; `git show` confirms that commit added
+queued IPU image conversion support and the API documentation.
+
+Step 3.3 Record: recent local history for the file shows `96e9d754b35e8`
+removing unused `ipu_image_convert_*` functions, `c942fddf8793b` adding
+SPDX boilerplate conversion, and `cd98e85a6b786d` adding the header/API.
+No prerequisite commit is needed for this documentation-only patch.
+
+Step 3.4 Record: `git log --author='Randy Dunlap'` under fbdev/include
+areas shows Randy has related cleanup/documentation work such as `fbdev:
+hgafb: fix kernel-doc comments` and `fbdev: fbmon: fix function name in
+kernel-doc`. The patch was reviewed by Philipp Zabel and committed by
+Helge Deller, verified from the commit and lore thread.
+
+Step 3.5 Record: no dependencies found. The diff changes only comments
+and applies locally with `git apply --check`.
+
+## Phase 4: Mailing List And External Research
+Step 4.1 Record: `b4 dig -c f1fb23a0a0fcbdb66672da51d7d63a259f6396ca`
+failed to find a lore match by patch-id, author/subject, or in-body
+From. External fetch found the v3 discussion at
+`https://yhbt.net/lore/dri-
+devel/20260427183236.656902-1-rdunlap@infradead.org/T/`. The v3 thread
+has Helge Deller replying “applied to fbdev git tree.” Web search/fetch
+also found v2 and a v2 ping. No NAKs or objections were found.
+
+Step 4.2 Record: `b4 dig -w` also failed for the same reason. The v3
+lore mirror shows recipients included `dri-devel`, Philipp Zabel, DRM
+maintainers, `imx`, `linux-arm-kernel`, Helge Deller, and `linux-fbdev`.
+
+Step 4.3 Record: no `Reported-by:` or bug-report `Link:` tags exist. No
+external crash/security bug report applies.
+
+Step 4.4 Record: this is a standalone one-patch documentation cleanup.
+v2 added the reviewed-by and updated Cc list; v3 rebased and resent.
+
+Step 4.5 Record: direct `lore.kernel.org/stable` fetch was blocked by
+Anubis. Web search for the exact subject plus `stable` found patch-
+thread results but no stable-specific discussion or stable nomination.
+
+## Phase 5: Code Semantic Analysis
+Step 5.1 Record: modified documented symbols are
+`ipu_image_convert_run`, `ipu_image_convert_cb_t`,
+`ipu_image_convert_verify()`, `ipu_image_convert_prepare()`,
+`ipu_image_convert_queue()`, and `ipu_image_convert()`.
+
+Step 5.2 Record: `rg` found callers in `drivers/staging/media/imx/imx-
+media-csc-scaler.c` for `ipu_image_convert_abort()`,
+`ipu_image_convert_queue()`, `ipu_image_convert_adjust()`,
+`ipu_image_convert_unprepare()`, and `ipu_image_convert_prepare()`.
+Runtime callers are unaffected because only comments changed.
+
+Step 5.3 Record: reading `drivers/gpu/ipu-v3/ipu-image-convert.c`
+confirms the documented functions perform image format
+adjustment/verification, context allocation, queueing, abort/unprepare,
+and single conversion setup. None of those function bodies are touched.
+
+Step 5.4 Record: runtime path is reachable through IPU image conversion
+users, but the patch changes no runtime path. The affected path for the
+fix is kernel-doc/documentation generation.
+
+Step 5.5 Record: no related same-header kernel-doc fix was found by `git
+log --grep='kernel-doc' -- include/video/imx-ipu-image-convert.h`.
+
+## Phase 6: Stable Tree Analysis
+Step 6.1 Record: version tags `v5.10`, `v5.15`, `v6.1`, `v6.6`, `v6.12`,
+`v6.15`, `v6.16`, and `v6.17` all contain `include/video/imx-ipu-image-
+convert.h` with the old kernel-doc text. The API was introduced before
+`v4.9-rc1`, so active stable trees checked contain the documentation
+issue.
+
+Step 6.2 Record: expected backport difficulty is clean or minor. `git
+apply --check` succeeds against the current local tree, and the checked
+stable tags contain representative preimage lines. Full per-stable
+worktree application was not run.
+
+Step 6.3 Record: no related stable fix for this header was found in
+local `git log --grep` searches.
+
+## Phase 7: Subsystem Context
+Step 7.1 Record: subsystem is fbdev/gpu IPU-v3 image conversion
+documentation in an include header. Runtime criticality is
+peripheral/driver-specific; documentation-build criticality is low.
+
+Step 7.2 Record: local subsystem history shows ongoing cleanup/removal
+activity in `drivers/gpu/ipu-v3` and the header, including unused-
+function removals and treewide cleanup. This patch is not part of a
+required functional series.
+
+## Phase 8: Impact And Risk
+Step 8.1 Record: affected population is kernel documentation builders,
+maintainers, and users consuming generated kernel-doc. Runtime users of
+IPU-v3 are not affected by behavior.
+
+Step 8.2 Record: trigger is running kernel-doc/documentation tooling
+over this header. It is not triggered by boot, device probe, syscalls,
+or ordinary runtime use. Unprivileged runtime trigger does not apply.
+
+Step 8.3 Record: failure mode is documentation warnings only. Severity
+is LOW. I did not verify any configuration where these warnings are
+fatal, so that does not drive the decision.
+
+Step 8.4 Record: benefit is low but real under the documentation-fix
+exception: it makes stable documentation builds cleaner. Risk is
+extremely low because only comments change. Risk/benefit is favorable if
+stable accepts documentation corrections.
+
+## Phase 9: Final Synthesis
+Step 9.1 Record: evidence for backporting: pure documentation
+correction, explicitly fixes listed kernel-doc warnings, tiny single-
+file patch, reviewed by Philipp Zabel, applied by Helge Deller, old text
+exists in active stable tags checked, and documentation/comment fixes
+are an allowed stable exception. Evidence against: no runtime bug, no
+crash/security/data-corruption impact, no stable nomination found, and
+b4 could not match the thread. Unresolved: direct stable-lore search was
+blocked; full apply checks on every stable branch were not run.
+
+Step 9.2 Record:
+1. Obviously correct and tested? Mostly yes for documentation syntax;
+   reviewed and applied, but no `Tested-by`.
+2. Fixes a real bug that affects users? Yes, a real kernel-doc warning
+   issue; not a runtime bug.
+3. Important issue? No runtime severity; LOW documentation-build
+   severity.
+4. Small and contained? Yes, 11 additions and 5 deletions in one header.
+5. No new features or APIs? Yes, comments only.
+6. Can apply to stable trees? Likely yes; local apply check passed and
+   stable tags checked contain the preimage.
+
+Step 9.3 Record: exception category applies: documentation/comment fix.
+This is the main reason to accept despite lack of runtime impact.
+
+Step 9.4 Decision: backporting is appropriate under the stable
+documentation-fix exception. It is not a stability/security fix, but it
+is a correct, reviewed, zero-runtime-risk cleanup of real kernel-doc
+warnings in code present across active stable trees.
+
+## Verification
+- Phase 1: fetched and inspected committed metadata for
+  `f1fb23a0a0fcbdb66672da51d7d63a259f6396ca`; confirmed tags and
+  message.
+- Phase 2: `git show --stat --patch` confirmed one header, 11
+  insertions, 5 deletions, comments only.
+- Phase 3: `git blame` confirmed changed comment preimage from
+  `cd98e85a6b786d`; `git describe --contains` placed it before
+  `v4.9-rc1`; `git show cd98e85a6b786d` confirmed original API addition.
+- Phase 3: `git log` on the header/subsystem found no prerequisite
+  functional series.
+- Phase 4: `b4 dig`, `b4 dig -a`, and `b4 dig -w` all failed to match;
+  recorded as a tool limitation/failure.
+- Phase 4: WebFetch of the v3 lore mirror confirmed the patch thread and
+  Helge Deller’s applied reply; Spinics fetch confirmed v2 and a later
+  ping.
+- Phase 5: `rg` found runtime users; `ReadFile` of implementation
+  confirmed function bodies exist but are not changed.
+- Phase 6: tag checks confirmed the header and old doc text in `v5.10`,
+  `v5.15`, `v6.1`, `v6.6`, `v6.12`, `v6.15`, `v6.16`, and `v6.17`; `git
+  apply --check` succeeded locally.
+- Phase 8: severity/risk assessment is derived from the verified
+  comments-only diff.
+- UNVERIFIED: direct `lore.kernel.org/stable` search content was blocked
+  by Anubis; no actual `make htmldocs` run was performed; full patch
+  application against every individual stable branch was not performed.
+
+**YES**
+
+ include/video/imx-ipu-image-convert.h | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/include/video/imx-ipu-image-convert.h b/include/video/imx-ipu-image-convert.h
+index 003b3927ede5c..6b77968a6a150 100644
+--- a/include/video/imx-ipu-image-convert.h
++++ b/include/video/imx-ipu-image-convert.h
+@@ -27,12 +27,13 @@ struct ipu_image_convert_run {
+ 
+ 	int status;
+ 
++	/* private: */
+ 	/* internal to image converter, callers don't touch */
+ 	struct list_head list;
+ };
+ 
+ /**
+- * ipu_image_convert_cb_t - conversion callback function prototype
++ * typedef ipu_image_convert_cb_t - conversion callback function prototype
+  *
+  * @run:	the completed conversion run pointer
+  * @ctx:	a private context pointer for the callback
+@@ -60,7 +61,7 @@ void ipu_image_convert_adjust(struct ipu_image *in, struct ipu_image *out,
+  * @out:	output image format
+  * @rot_mode:	rotation mode
+  *
+- * Returns 0 if the formats and rotation mode meet IPU restrictions,
++ * Returns: 0 if the formats and rotation mode meet IPU restrictions,
+  * -EINVAL otherwise.
+  */
+ int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
+@@ -77,11 +78,11 @@ int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
+  * @complete:	run completion callback
+  * @complete_context:	a context pointer for the completion callback
+  *
+- * Returns an opaque conversion context pointer on success, error pointer
++ * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
++ *
++ * Returns: an opaque conversion context pointer on success, error pointer
+  * on failure. The input/output formats and rotation mode must already meet
+  * IPU retrictions.
+- *
+- * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
+  */
+ struct ipu_image_convert_ctx *
+ ipu_image_convert_prepare(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+@@ -122,6 +123,8 @@ void ipu_image_convert_unprepare(struct ipu_image_convert_ctx *ctx);
+  * In V4L2, drivers should call ipu_image_convert_queue() while
+  * streaming to queue the conversion of a received input buffer.
+  * For example mem2mem devices this would be called in .device_run.
++ *
++ * Returns: 0 on success or -errno on error.
+  */
+ int ipu_image_convert_queue(struct ipu_image_convert_run *run);
+ 
+@@ -155,6 +158,9 @@ void ipu_image_convert_abort(struct ipu_image_convert_ctx *ctx);
+  * On successful return the caller can queue more run requests if needed, using
+  * the prepared context in run->ctx. The caller is responsible for unpreparing
+  * the context when no more conversion requests are needed.
++ *
++ * Returns: pointer to the created &struct ipu_image_convert_run that has
++ * been queued on success; an ERR_PTR(errno) on error.
+  */
+ struct ipu_image_convert_run *
+ ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.53.0
+

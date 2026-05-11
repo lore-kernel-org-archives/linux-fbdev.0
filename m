@@ -1,81 +1,71 @@
-Received: from forward100b.mail.yandex.net (forward100b.mail.yandex.net [178.154.239.147])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2ACDB43634C;
-	Mon, 11 May 2026 17:18:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.147
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 523432E62B7;
+	Mon, 11 May 2026 17:27:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778519895; cv=none; b=CEDAREeAa48oJKi7aU1McNSE5n+bXKEkekrOFqb2oYZf3oVg2JWg+WrAZF9TjgOAfBJKOYdZkaDv8ev4jB7k2Vgc5e3cMQyyLZSBJ6x9yRjbignauq7odr8fglddLMcIyxQxeiSc6genrBGJGv0PL/3wYhc58zeR1HWuC0YMiDA=
+	t=1778520446; cv=none; b=BcG2vwNndOO9oEtV1U/oMofLKqr4B/4MyUXqhhd404FWLtI6HKxccL+bEqykwKb0WZLp43O+id41Bd5bV0IbHsPd05qUywbKAUKco6ERPpVO686vaW0b91OfF4VfaVyatkOm4iynVgWLN8r91KEWDoZDrGTg3bVMYHW6pIdJ1Gk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778519895; c=relaxed/simple;
-	bh=3b1ey4s+j/rcHtrlueColybGTzJobJglJFXkqb/Z498=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lgS5LjcUZ8q+l0TB+O0ga+n7NhYRwLutdv+QMcgzVBIK1iXQkTJUF7lUffl9FAiPrqyaEUd06U3lYThHg2Epufnn+4EQy1B2nUoex/vNoFbCyyZWab3O6ARXEzbgv0bJK23ELaE0U6N2Bvn6vu6r3WPz10xwYsW1rm9kgON/JDc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net; spf=pass smtp.mailfrom=sezginduran.net; dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b=X1XPaZLp; arc=none smtp.client-ip=178.154.239.147
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sezginduran.net
+	s=arc-20240116; t=1778520446; c=relaxed/simple;
+	bh=2L9KK+ZWLDyIXULS6w4ZoFWIXYgFx/hafimk4GWrCFE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JN66P4CaSLnAemnnHIdsxq0Ia4O7GgwVJapogjxCIWoigaATT8qoyVQ0EmjWatxUHNEOrQ1Eyq3vzldlZKDyJI9fJWWS+HbmaA52PaXjjWSI6CL6iADRgsMTatKsbtvbQh1tMWadxMgYVkn+CUKDI0LsXAJvfR4n04899Hkenwk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=GoolCDnV; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b="X1XPaZLp"
-Received: from mail-nwsmtp-smtp-production-canary-88.sas.yp-c.yandex.net (mail-nwsmtp-smtp-production-canary-88.sas.yp-c.yandex.net [IPv6:2a02:6b8:c1c:2e1d:0:640:64e7:0])
-	by forward100b.mail.yandex.net (Yandex) with ESMTPS id CE08D806BB;
-	Mon, 11 May 2026 20:18:01 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-canary-88.sas.yp-c.yandex.net (smtp) with ESMTPSA id wHNYhLuS98c0-Dh88qiOc;
-	Mon, 11 May 2026 20:18:01 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sezginduran.net;
-	s=mail; t=1778519881;
-	bh=ZwCHnhMOtidX/cU4ul598k9ai+zQLtAAXVLmm5J9OXo=;
-	h=Message-ID:Date:Cc:Subject:To:From;
-	b=X1XPaZLpXGd0YmJjmZcaN3+ceNFWBcDG2uCdKFmKPLhk1N4pbqXqNCty5yaN/y8Ly
-	 0Pvd+yAn0IkRHAHEvztj14mYbtgr6c0ufxURLg8GoIaVQ0QZOovZ/NJH8KQ3cM6luS
-	 orXpmWi8AfpVArEZN6eqseRXP7KD/itEtEZZIra0=
-Authentication-Results: mail-nwsmtp-smtp-production-canary-88.sas.yp-c.yandex.net; dkim=pass header.i=@sezginduran.net
-From: Ahmet Sezgin Duran <ahmet@sezginduran.net>
-To: gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Ahmet Sezgin Duran <ahmet@sezginduran.net>
-Subject: [PATCH] staging: sm750fb: remove unnecessary initializations
-Date: Mon, 11 May 2026 20:17:45 +0300
-Message-ID: <20260511171745.79646-1-ahmet@sezginduran.net>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="GoolCDnV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8543BC2BCB0;
+	Mon, 11 May 2026 17:27:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1778520445;
+	bh=2L9KK+ZWLDyIXULS6w4ZoFWIXYgFx/hafimk4GWrCFE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=GoolCDnVxve+p7I9GgHBcNS3xJ9Q57RaXL+iUTX717MaDsdYkxigvuxMIAsmFHOET
+	 QZ1I6Y/a7jPdLPUo5STVn4azw7igo2Cr5vQLXn97BAzbDpUXxpCIslL2cvm7h0pfLY
+	 kMNb2K6q4A+rTiMLmqWfBWRb8kIHkr65nsVC1ahI=
+Date: Mon, 11 May 2026 19:27:23 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Chhabilal Dangal <yogeshdangal66@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] staging: sm750fb: Keep g_fbmode array non-const
+Message-ID: <2026051150-yearbook-detention-49d8@gregkh>
+References: <20260511170245.53556-1-yogeshdangal66@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260511170245.53556-1-yogeshdangal66@gmail.com>
 
-Remove two instances of `de_ctrl = 0` initializations since the
-variable is overridden unconditionally before being used.
+On Mon, May 11, 2026 at 10:47:45PM +0545, Chhabilal Dangal wrote:
+> The g_fbmode array is modified at runtime, so it must remain
+> non-const. Added clarifying comment.
+> 
+> Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> index 9f3e3d37e82a..a553099f42f3 100644
+> --- a/drivers/staging/sm750fb/sm750.c
+> +++ b/drivers/staging/sm750fb/sm750.c
+> @@ -33,6 +33,7 @@
+>  static int g_hwcursor = 1;
+>  static int g_noaccel;
+>  static int g_nomtrr;
+> +/* intentionally non-const since array is modified at runtime */
 
-Signed-off-by: Ahmet Sezgin Duran <ahmet@sezginduran.net>
----
- drivers/staging/sm750fb/sm750_accel.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+No comment is needed, if you change the code, it breaks the build, so
+that is very obvious as you would never submit a patch that you did not
+build, right?  :)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index ec2f0a6aa57d..5ba1af274730 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -159,7 +159,6 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 
- 	direction = LEFT_TO_RIGHT;
- 	/* Direction of ROP2 operation: 1 = Left to Right, (-1) = Right to Left */
--	de_ctrl = 0;
- 
- 	/* If source and destination are the same surface, need to check for overlay cases */
- 	if (source_base == dest_base && source_pitch == dest_pitch) {
-@@ -326,7 +325,7 @@ int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
- 	unsigned int bytes_per_scan;
- 	unsigned int words_per_scan;
- 	unsigned int bytes_remain;
--	unsigned int de_ctrl = 0;
-+	unsigned int de_ctrl;
- 	unsigned char remain[4];
- 	int i, j;
- 	int ret;
--- 
-2.54.0
+thanks,
 
+greg k-h

@@ -1,80 +1,107 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 712573C9ED8;
-	Tue, 12 May 2026 05:38:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A38C4C9561
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 May 2026 06:10:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778564300; cv=none; b=fEeLs0R5H6iE8zjntqMcHw2K7fpO3plA2bDvXgTh1enW/RDX+RQ+skUbnRmPc+T+n5MhURB/BUkowcF1dg08q8QGTAsMbBc7UsNjzqlO4RnA/7FKgV8M5g8kC9G3lqWoJUjMlIlOroZrPxCe1+pQY17cD5YtlOx0DZF57q3x8wQ=
+	t=1778566254; cv=none; b=k8PJbnGGsfc4ACijaxIzD4PlHKmQULMRPliNhotntGimSFhYgWCfrrz4HOnYd4DJMZpuXVuH1gNhMz8iW3/e2OGca9aLrmMqJbe5ixV/kLdxBAQcYr+TOmlZIREjR+gkOi0coaxuEpUhUTQNai6ATigAMFxGTD7LfPDtsstTPxo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778564300; c=relaxed/simple;
-	bh=16fmh/53jLOcSRwr5NGl7E1RhDPXNfW4uNvhC37G5pk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aysuPNQE/g23zROg3/7kV+4jsfjGDaHovi/aGr4ipG8vOycbVj5j/3fJxpFMW7+Rs/QK3e18xBJS/BdtyOoweNSQoHMOQCkA2sriKeTHwhfgKjfLQUWHpMJ9JvvyKtc6X7mryJK5P7oyukpzEhNQ9808m0qppkBdbYGEz1GY37s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=FL674Njf; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778566254; c=relaxed/simple;
+	bh=VKAyXQlpHLqNcdXY9pwoEmItmyKJQQ2HVqeu7CYCxPs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=S6EETjf+wOtbCn0KdFIz1E9aTKdV//x9uzkxK/PyS7hONvCuZoUDGUc0KBOny55c6aLWhJ5Z5/AA/W5GpSherDLPrRIjl9eWd9+CXC2ya1SzuzgUXUxcvfH39Vj+k6oh01WXASl0XEXMvuqqwy1VkkKcXW3RzL//tSpvCXIzX1k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=am6q5E4s; arc=none smtp.client-ip=209.85.216.45
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="FL674Njf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22FB9C2BCC7;
-	Tue, 12 May 2026 05:38:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1778564299;
-	bh=16fmh/53jLOcSRwr5NGl7E1RhDPXNfW4uNvhC37G5pk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FL674Njf+cCxYewyyKqU4rEKKXwczXoyBhO5qkMs9ZRPPuFvkvEk/69CqAVE3xlTs
-	 pfulEvd0CCIRdfAjgtFcKmqIK4V/dtRgeaquq2Ge6+N3ptO6wgmPGzBHcW1vIhd+GY
-	 2ArdEPLDpu+Y/ySJOyZlg92+4DuwMEIUUvKJWZCM=
-Date: Tue, 12 May 2026 07:37:35 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Chhabilal Dangal <yogeshdangal66@gmail.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="am6q5E4s"
+Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-3664df30f53so2295401a91.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 11 May 2026 23:10:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778566234; x=1779171034; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=4Zj5mcHoGCb5n/eSvfW+GLHRF1PYTpVVH8V9CqFbdRI=;
+        b=am6q5E4s+rqZzV3VneU5Uk2NCmd8GrlGKpHfzRRtG3kv0YTjrcOBnQGm6NLlWpa1mv
+         p8yoczcrApcEY6WjCBiH6h4EViXP4FI71qmb+mtrL+nw8ni5H+j9zIimXUvraRWQQiKp
+         hVpM4ltrQRhByJf4B/s6NMx2kttB/pOI6SkkzLiOJODdqILbcBDmoxcOISAdUb344E8V
+         lzhTJBNj5VGaCXXw/qdP50hfZ/Z3I4QU+EVReK5zdTF/jMUdAgHJb1lTzW9RG0TktQsN
+         4B7Kbwbt9Ceo39E1KNO6dnHURZox4HkQf0JIiI1OmizTvDu7ZG8ucFNYN4iSDIQthiTo
+         ZvvQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778566234; x=1779171034;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4Zj5mcHoGCb5n/eSvfW+GLHRF1PYTpVVH8V9CqFbdRI=;
+        b=gskZwUXD3Hy9hm7tBLaFyzJPKsJJd5NfJUgLm20sjGT04MISgtiA4mS91lL40wCrKf
+         wW5ywnhBkHsjF8OBWKxdU8fgNA7nItQ9nmyd/Zm1XUDBe6weJq+MPTgoOUjHxgihAQa/
+         bUz/NO/LRGFpeA18VFnFgtyxK3EubkAor21AH5uzoFNqWAI5whN8GjM8dESpUBGcM6I9
+         M2Mqv0FTagOBQhEFNmrXKvPM+ObVdPVA1oHkjgu1AXB1dN1N/ugMY9KhprwIQxW24eTR
+         rxyRDDpB4KV3MrYQ00XCrnhm6B0KR3F48xBYxnMKN2kKlgOvOKRYKosJwQp3SCm+vee6
+         Onfw==
+X-Gm-Message-State: AOJu0YyX/TPf3Nlkl8z3N7Ns05RphKx1PzXrap7qgt4b0kSeBnqYMeE3
+	PxnO1+CEtEQ0pZOGB4bNBCQvGoLSiuQtZit9ct+7uE9HVroYS8tN1BMYaieLNeeSSFE=
+X-Gm-Gg: Acq92OF2RySJzDM7iLKmSwBxLKwvYxQoZQCmfSKETM+6EK7sxAeXo49EfWWMWIV+w0S
+	qR3Tib40/FmnSG99Lbz/0dlxPm/F2t29gz1jkgk47+nFuY9irhd50rsfQCjS/RjWXpulP1v3XPN
+	gRvz6YR301jSSYJKB28i3i34toom/W95HDzM/ScTgqDZYu/MfAYTWRIGC5TuwE/ZGOTfFtZV4/D
+	bpDUYF3wndbGrw/vDHaWGHQgxASgt69OUaDHxgl3CsB2jbMz1YGFOReQMmkYExby9SEmG4p8ra2
+	zcVlPYUnV7THthL37+YkuZWulGbL7cUd9c0hi5Ygs4MSFwrORgSLVljDPu6USdnniBSxjaoZ+bc
+	KBVSQLKLVgSF0ENKq4woRRjROSNhdBnXc7UIk2ZzdSzC/T31qQR4s1SmU3dchXbjbxWOfZfH2Dk
+	ZzvE+OD7DAczQSLsVP7kva5yfKg9JXgPmuCmrA3LjPbj8PyAOmB6nKv35ZY8vVP2N0Au6ncsvwm
+	uBG
+X-Received: by 2002:a17:90b:33c2:b0:35c:30a8:330 with SMTP id 98e67ed59e1d1-368b17b7935mr1893015a91.0.1778566233926;
+        Mon, 11 May 2026 23:10:33 -0700 (PDT)
+Received: from localhost.localdomain ([2404:7c00:52:d485:aae2:91ff:fe57:5e15])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-367d628474dsm9827915a91.8.2026.05.11.23.10.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 May 2026 23:10:33 -0700 (PDT)
+From: Chhabilal Dangal <yogeshdangal66@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1 1/2] staging: sm750fb: remove unused #include
- directives
-Message-ID: <2026051203-slurp-slain-7458@gregkh>
-References: <20260512044732.56417-1-yogeshdangal66@gmail.com>
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Chhabilal Dangal <yogeshdangal66@gmail.com>
+Subject: [PATCH v2 1/2] staging: sm750fb: remove unused <asm/mtrr.h> include
+Date: Tue, 12 May 2026 11:55:11 +0545
+Message-ID: <20260512061012.76252-1-yogeshdangal66@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260512044732.56417-1-yogeshdangal66@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, May 12, 2026 at 10:32:31AM +0545, Chhabilal Dangal wrote:
-> sm750_hw.c includes <asm/mtrr.h> under #ifdef CONFIG_MTRR, but no
-> mtrr_add/mtrr_del calls exist in the file; the driver uses
-> arch_phys_wc_add/arch_phys_wc_del in sm750.c instead.
-> 
-> sm750_hw.c, sm750_accel.c, and sm750_cursor.c all include
-> <linux/platform_device.h>, but none use any platform device APIs.
-> This is a PCI driver.
+sm750_hw.c includes <asm/mtrr.h> under CONFIG_MTRR but calls no
+mtrr_add() or mtrr_del() functions. The driver instead uses the
+architecture-independent arch_phys_wc_add/arch_phys_wc_del in sm750.c.
 
-These are statements that don't really describe anything :(
+Remove the dead include.
 
-> Remove these dead includes per the TODO item to refine the code
-> and remove unused code.
-> 
-> Tested by building the full kernel and module with CONFIG_FB_SM750=m
-> on x86_64:
->   make -j$(nproc)
->   make M=drivers/staging/sm750fb modules
+Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_hw.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-You don't need to have these lines, it is assumed you test-built this.
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index a2798d428663..f491d3aca468 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -13,10 +13,6 @@
+ #include <linux/vmalloc.h>
+ #include <linux/pagemap.h>
+ #include <linux/console.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-#include <linux/platform_device.h>
+ #include <linux/sizes.h>
+ 
+ #include "sm750.h"
+-- 
+2.54.0
 
-> Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
-
-You need a blank line before this line.
-
-Also, your patches were not properly connected, please use a tool like
-git send-email to send them out.
-
-Also, you are doing multiple things in this patch, please, only one
-logical thing per commit.
-
-thanks,
-
-greg k-h

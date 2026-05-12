@@ -1,385 +1,189 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF4454F7964;
-	Mon, 11 May 2026 22:20:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 900561DF980
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 May 2026 04:49:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778538003; cv=none; b=ZBUmlynbZx7Q6Xdk31bu1SuabtKBdqbn97vI5TCSjTYxfjN6Nc1Xp16oEEvCckZSjEG3WKhDboDQD6DKmNUlF1FVjYhua8Nch8zCoveeZFHEKsIVWhpQ8IcMmokJyYRTs0i6cKNEyVgPdhyzXnugqTZkHtputCcKOmD3lmpgOB8=
+	t=1778561371; cv=none; b=YH9r++4Fo3mFLYebZeJ7VqivJVdNeE216sk/XwgmkS0L8zFjoUg/AaTXyYJHGnCwlq227/Jtxolf0ByYymrIHVWoIlLQ1okkftxoDqcHoMfsDsUT9UszwuzD8KBrscEBXz5x0RA+jUJvclWQzQ2RsXmpillA2tuTtDogH9rDuNQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778538003; c=relaxed/simple;
-	bh=1Oxyfd1/v7O27frv8bMTIM++jJRA0r8gE2wj5UKC5ek=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=a47hQnFJAKWiMuvxypy/9u/agHPGNWI4eGPLGud675yYMzrIAz0N6th+bngC2EecXv6Wf5sekKKQXZhSVtinNmeSGnE4YUzVUqqog81gDENjHsaTBM5WupXCmIg5csmykie0K63F2IbY01yPlJ8I9oKeYL9z9Xemyb09EmMKtAU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IvCYSscA; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778561371; c=relaxed/simple;
+	bh=Ma0BSUg9bsTO/AFUYgwKn9V2eUxec5cfDk/klMLGG78=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CzQcRJUcf68teOC2PcTo36mwO+erPb61Nz30BHiTx7VIETO/XaNyeigPwEKR+Bv22jZ9i1btFYOkST0ueyaufQ5Wc/v5rX9WUu3fF77qrhliEKgrLhwuRq7eDDhtcbf15drOU+z9+BZtW+NIcviSZ8rCRrIy1mjePH7Xre7IFv0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=p2IpsZ1Q; arc=none smtp.client-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IvCYSscA"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1869BC2BCF5;
-	Mon, 11 May 2026 22:20:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778538003;
-	bh=1Oxyfd1/v7O27frv8bMTIM++jJRA0r8gE2wj5UKC5ek=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IvCYSscAn8WdA/IX8qh23AmPZJXNkD0GVm76HSc7v8H2JLhXWyn5I28EMXQfOZGNV
-	 KXGjR2bGWv9gsF5cjOdRGM2Bl042d4z/WDShDJsrCTk+jbdSDD9QYB5yneBY8/i03H
-	 G1PgMSW2PrpvG+cfQE3hQnC/4LYzxXH8yaI8PkiC5Pd6saKJLmnxjdgdbYeWriaxsJ
-	 Opd2kHhTxb1/GOqop7ARjA7yTLo0ABt933gWsesDkxkpRVaBp4kjh3EMrgyZkhoYE0
-	 qO62RIu1WrYCG6B9oCzytR3+WPvVZiIWu+J0bloJjtvDikeihP5ylo/f1qd/y54cnw
-	 RuabEskLr1m5w==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Helge Deller <deller@gmx.de>,
-	Sasha Levin <sashal@kernel.org>,
-	shawnguo@kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-5.10] fbdev: ipu-v3: clean up kernel-doc warnings
-Date: Mon, 11 May 2026 18:19:20 -0400
-Message-ID: <20260511221931.2370053-21-sashal@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260511221931.2370053-1-sashal@kernel.org>
-References: <20260511221931.2370053-1-sashal@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="p2IpsZ1Q"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-2baef9f5ecdso28979115ad.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 11 May 2026 21:49:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778561370; x=1779166170; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=YGtucP5dOBTG4jR9fIrSqVWI8MpzdYIq/BvnyuqHI4E=;
+        b=p2IpsZ1Qnl+KmFkv1LBVV9DX2+6kafx67HUz6CKtkrpNGN/gYw8yJohOVaUd7bNhxM
+         zT/G/80WhZpZgPMDNULdtcbBquAX96dWNjydnph3svosHd85NRnz7i/pAHEHapCNN778
+         My1jWOIuD9pxZvydfDdKUkYl8rgpOy9WvTztCgdPy3eh1P2seGvYrVTWOJ5cH6AklwIc
+         d6R0PeGUgsm4RyiPx3sQ/YffPYXcF68aZ9gZ6j/TKy9CtQT2vddfgWwYC/djfXTtv/Wd
+         MIS4q2Uucwyl3NB3uRz3mRKCjXdDjDHNMrnzEN/Puqau/P/ZZkFlGBTinVlGGII0C9Se
+         R03g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778561370; x=1779166170;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=YGtucP5dOBTG4jR9fIrSqVWI8MpzdYIq/BvnyuqHI4E=;
+        b=RikI7aTemHiKw7l5fdn0fvq/MT5QnP61GmvWf6uWDPOBjQ5MJ1HBRIZRdC5H2F7DeS
+         2MLL5CZfvOtpvIFla4Q9UAoJ8ndl1b28EdlrNBzpYXGlrrOb6YAAj7NCHU1QIEfYzhUx
+         m66Yhbg/A4fFEgjwQ6dx7XKDXjMC5wMn1N8NmaQ7VzEnDjDZiUxySDOV8m49gPx6XYSz
+         LXjKPdwda9Vc9V7TtwgfUIX1JL2b+DKxhpxpDA+oRNZy5lZ3FSb4DL36ck3OjEJdjEL7
+         7IcKSr8mhrGSL+2To0qB5GcNNDgrSPTftRiaSCjawPj1uro2Yb6eytl/Q6xzAndrDhNE
+         m2KQ==
+X-Gm-Message-State: AOJu0Yy3IUwhDpyEKLC/1WeT2kpk9gYS7TmOy6pvuU0tG5rTiSpOFFrx
+	bge0n8QEYAMtH36wt1Q0kZLwjPxS7w8pIx0PmR49cb9fs0vjpWlyxJdI
+X-Gm-Gg: Acq92OHij6R1sqOFpl6wjfBOsuRdxY9E7xHveDCCgq+pWDg6M2pDHA4J7710/NJwW3c
+	Tz+3UDhFulaecsgucZGcNh9S3piwbMHSUN4aSpfP0CAndUcNw2/sb1dObn56+f1UBYDhwcvOaf8
+	ftSBbgErZ+2qEuktdmE+wFKUdqtw5rAiYfxQ+w9yqJHsN3NoFactyI9tX9Mst1j+L3e/oV/z+ka
+	tUL4FCOb/28Jh9b7Y8PVPej1MVq8tCmrE1FovV45+xvixdneSVWMcau0ZEYkiXt7M79bRWCYrXd
+	oVJ9BvikirREONPyQuKw1F9jMNq3Jn+aUO6YVPLW/pzNPKCGHUEWKcu3XygrhbOBxzdNVtrjZbQ
+	3yQZLZ+KQHPWp3G3MquKevxLUTxXxG1iMlWgRYLadOKyTrerFUbWo4++sQ3M8xTvpl0KEokyUE+
+	yiP6O4vbr7QZ/LCMwihJPE45QLYmkIAkRFAm39fxZBGvsieOcoS6fDUFYR2IB8s1j7zDFnCNQjE
+	KU4
+X-Received: by 2002:a17:903:248:b0:2bc:8ebd:af76 with SMTP id d9443c01a7336-2bc8ebdc2b7mr115945355ad.0.1778561369949;
+        Mon, 11 May 2026 21:49:29 -0700 (PDT)
+Received: from localhost.localdomain ([2404:7c00:52:d485:aae2:91ff:fe57:5e15])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1d2700dsm123919925ad.2.2026.05.11.21.49.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 May 2026 21:49:29 -0700 (PDT)
+From: Chhabilal Dangal <yogeshdangal66@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Chhabilal Dangal <yogeshdangal66@gmail.com>
+Subject: [PATCH v1 1/2] staging: sm750fb: remove unused #include directives
+Date: Tue, 12 May 2026 10:32:31 +0545
+Message-ID: <20260512044732.56417-1-yogeshdangal66@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 7.0.6
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Randy Dunlap <rdunlap@infradead.org>
+sm750_hw.c includes <asm/mtrr.h> under #ifdef CONFIG_MTRR, but no
+mtrr_add/mtrr_del calls exist in the file; the driver uses
+arch_phys_wc_add/arch_phys_wc_del in sm750.c instead.
 
-[ Upstream commit f1fb23a0a0fcbdb66672da51d7d63a259f6396ca ]
+sm750_hw.c, sm750_accel.c, and sm750_cursor.c all include
+<linux/platform_device.h>, but none use any platform device APIs.
+This is a PCI driver.
 
-Correct all kernel-doc warnings:
-- fix a typedef kernel-doc comment
-- mark a list_head as private
-- use Returns: for function return values
+Remove these dead includes per the TODO item to refine the code
+and remove unused code.
 
-Warning: include/video/imx-ipu-image-convert.h:31 struct member 'list' not
- described in 'ipu_image_convert_run'
-Warning: include/video/imx-ipu-image-convert.h:40 function parameter
- 'ipu_image_convert_cb_t' not described in 'void'
-Warning: include/video/imx-ipu-image-convert.h:40 expecting prototype for
- ipu_image_convert_cb_t(). Prototype was for void() instead
-Warning: include/video/imx-ipu-image-convert.h:66 No description found for
- return value of 'ipu_image_convert_verify'
-Warning: include/video/imx-ipu-image-convert.h:90 No description found for
- return value of 'ipu_image_convert_prepare'
-Warning: include/video/imx-ipu-image-convert.h:125 No description found for
- return value of 'ipu_image_convert_queue'
-Warning: include/video/imx-ipu-image-convert.h:163 No description found for
- return value of 'ipu_image_convert'
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Tested by building the full kernel and module with CONFIG_FB_SM750=m
+on x86_64:
+  make -j$(nproc)
+  make M=drivers/staging/sm750fb modules
+Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
 ---
+ drivers/staging/sm750fb/sm750_accel.c  |  1 -
+ drivers/staging/sm750fb/sm750_cursor.c | 44 --------------------------
+ drivers/staging/sm750fb/sm750_hw.c     |  4 ---
+ 3 files changed, 49 deletions(-)
 
-LLM Generated explanations, may be completely bogus:
-
-## Phase 1: Commit Message Forensics
-Step 1.1 Record: subsystem `fbdev: ipu-v3`; action verb `clean up`;
-intent is to correct kernel-doc warnings in `include/video/imx-ipu-
-image-convert.h`.
-
-Step 1.2 Record: tags in committed message are `Signed-off-by: Randy
-Dunlap <rdunlap@infradead.org>`, `Reviewed-by: Philipp Zabel
-<p.zabel@pengutronix.de>`, and `Signed-off-by: Helge Deller
-<deller@gmx.de>`. No `Fixes:`, `Reported-by:`, `Tested-by:`, `Acked-
-by:`, `Link:`, or `Cc: stable@vger.kernel.org` tag is present in the
-committed message.
-
-Step 1.3 Record: the described problem is seven kernel-doc warnings: one
-undocumented/private list member, malformed typedef documentation, and
-missing `Returns:` sections. The visible symptom is documentation
-tooling warnings, not a runtime crash, hang, data corruption, or
-security issue. No affected kernel version is stated. Root cause is
-incorrect kernel-doc comment syntax.
-
-Step 1.4 Record: this is not a hidden runtime bug fix. The body and diff
-both show a documentation/comment-only cleanup.
-
-## Phase 2: Diff Analysis
-Step 2.1 Record: one file changed: `include/video/imx-ipu-image-
-convert.h`, 11 insertions and 5 deletions. Modified documentation covers
-`struct ipu_image_convert_run`, `ipu_image_convert_cb_t`,
-`ipu_image_convert_verify()`, `ipu_image_convert_prepare()`,
-`ipu_image_convert_queue()`, and `ipu_image_convert()`. Scope is single-
-file, header-only, surgical.
-
-Step 2.2 Record: hunk behavior:
-- `struct ipu_image_convert_run`: before, `list` was documented neither
-  as a member nor private; after, `/* private: */` tells kernel-doc to
-  ignore it as an API member.
-- `ipu_image_convert_cb_t`: before, kernel-doc treated the typedef
-  comment as a function prototype mismatch; after, it is marked as a
-  typedef comment.
-- Return docs: before, several returns were plain prose or missing;
-  after, they use kernel-doc `Returns:` syntax.
-- `ipu_image_convert_prepare()`: before, the V4L2 usage note followed
-  the return prose; after, the return section is last and formatted for
-  kernel-doc.
-
-Step 2.3 Record: bug category is documentation/kernel-doc warning
-cleanup. No error-path, synchronization, refcount, memory-safety,
-initialization, type, logic, or hardware workaround change exists.
-
-Step 2.4 Record: fix quality is high for the stated documentation issue:
-small, obviously correct kernel-doc syntax changes. Runtime regression
-risk is effectively zero because no C declarations, types, function
-bodies, data layout, or APIs are changed. Documentation rendering risk
-is very low.
-
-## Phase 3: Git History Investigation
-Step 3.1 Record: `git blame` shows the affected header comments and
-declarations came from `cd98e85a6b786d` by Steve Longerbeam, dated
-2016-09-17. `git describe --contains cd98e85a6b786d` reports it as
-present by `v4.9-rc1~41^2~24^2`.
-
-Step 3.2 Record: no `Fixes:` tag is present, so there is no tagged
-introducing commit to follow. Blame identifies `cd98e85a6b786d` as the
-source of the documented preimage; `git show` confirms that commit added
-queued IPU image conversion support and the API documentation.
-
-Step 3.3 Record: recent local history for the file shows `96e9d754b35e8`
-removing unused `ipu_image_convert_*` functions, `c942fddf8793b` adding
-SPDX boilerplate conversion, and `cd98e85a6b786d` adding the header/API.
-No prerequisite commit is needed for this documentation-only patch.
-
-Step 3.4 Record: `git log --author='Randy Dunlap'` under fbdev/include
-areas shows Randy has related cleanup/documentation work such as `fbdev:
-hgafb: fix kernel-doc comments` and `fbdev: fbmon: fix function name in
-kernel-doc`. The patch was reviewed by Philipp Zabel and committed by
-Helge Deller, verified from the commit and lore thread.
-
-Step 3.5 Record: no dependencies found. The diff changes only comments
-and applies locally with `git apply --check`.
-
-## Phase 4: Mailing List And External Research
-Step 4.1 Record: `b4 dig -c f1fb23a0a0fcbdb66672da51d7d63a259f6396ca`
-failed to find a lore match by patch-id, author/subject, or in-body
-From. External fetch found the v3 discussion at
-`https://yhbt.net/lore/dri-
-devel/20260427183236.656902-1-rdunlap@infradead.org/T/`. The v3 thread
-has Helge Deller replying “applied to fbdev git tree.” Web search/fetch
-also found v2 and a v2 ping. No NAKs or objections were found.
-
-Step 4.2 Record: `b4 dig -w` also failed for the same reason. The v3
-lore mirror shows recipients included `dri-devel`, Philipp Zabel, DRM
-maintainers, `imx`, `linux-arm-kernel`, Helge Deller, and `linux-fbdev`.
-
-Step 4.3 Record: no `Reported-by:` or bug-report `Link:` tags exist. No
-external crash/security bug report applies.
-
-Step 4.4 Record: this is a standalone one-patch documentation cleanup.
-v2 added the reviewed-by and updated Cc list; v3 rebased and resent.
-
-Step 4.5 Record: direct `lore.kernel.org/stable` fetch was blocked by
-Anubis. Web search for the exact subject plus `stable` found patch-
-thread results but no stable-specific discussion or stable nomination.
-
-## Phase 5: Code Semantic Analysis
-Step 5.1 Record: modified documented symbols are
-`ipu_image_convert_run`, `ipu_image_convert_cb_t`,
-`ipu_image_convert_verify()`, `ipu_image_convert_prepare()`,
-`ipu_image_convert_queue()`, and `ipu_image_convert()`.
-
-Step 5.2 Record: `rg` found callers in `drivers/staging/media/imx/imx-
-media-csc-scaler.c` for `ipu_image_convert_abort()`,
-`ipu_image_convert_queue()`, `ipu_image_convert_adjust()`,
-`ipu_image_convert_unprepare()`, and `ipu_image_convert_prepare()`.
-Runtime callers are unaffected because only comments changed.
-
-Step 5.3 Record: reading `drivers/gpu/ipu-v3/ipu-image-convert.c`
-confirms the documented functions perform image format
-adjustment/verification, context allocation, queueing, abort/unprepare,
-and single conversion setup. None of those function bodies are touched.
-
-Step 5.4 Record: runtime path is reachable through IPU image conversion
-users, but the patch changes no runtime path. The affected path for the
-fix is kernel-doc/documentation generation.
-
-Step 5.5 Record: no related same-header kernel-doc fix was found by `git
-log --grep='kernel-doc' -- include/video/imx-ipu-image-convert.h`.
-
-## Phase 6: Stable Tree Analysis
-Step 6.1 Record: version tags `v5.10`, `v5.15`, `v6.1`, `v6.6`, `v6.12`,
-`v6.15`, `v6.16`, and `v6.17` all contain `include/video/imx-ipu-image-
-convert.h` with the old kernel-doc text. The API was introduced before
-`v4.9-rc1`, so active stable trees checked contain the documentation
-issue.
-
-Step 6.2 Record: expected backport difficulty is clean or minor. `git
-apply --check` succeeds against the current local tree, and the checked
-stable tags contain representative preimage lines. Full per-stable
-worktree application was not run.
-
-Step 6.3 Record: no related stable fix for this header was found in
-local `git log --grep` searches.
-
-## Phase 7: Subsystem Context
-Step 7.1 Record: subsystem is fbdev/gpu IPU-v3 image conversion
-documentation in an include header. Runtime criticality is
-peripheral/driver-specific; documentation-build criticality is low.
-
-Step 7.2 Record: local subsystem history shows ongoing cleanup/removal
-activity in `drivers/gpu/ipu-v3` and the header, including unused-
-function removals and treewide cleanup. This patch is not part of a
-required functional series.
-
-## Phase 8: Impact And Risk
-Step 8.1 Record: affected population is kernel documentation builders,
-maintainers, and users consuming generated kernel-doc. Runtime users of
-IPU-v3 are not affected by behavior.
-
-Step 8.2 Record: trigger is running kernel-doc/documentation tooling
-over this header. It is not triggered by boot, device probe, syscalls,
-or ordinary runtime use. Unprivileged runtime trigger does not apply.
-
-Step 8.3 Record: failure mode is documentation warnings only. Severity
-is LOW. I did not verify any configuration where these warnings are
-fatal, so that does not drive the decision.
-
-Step 8.4 Record: benefit is low but real under the documentation-fix
-exception: it makes stable documentation builds cleaner. Risk is
-extremely low because only comments change. Risk/benefit is favorable if
-stable accepts documentation corrections.
-
-## Phase 9: Final Synthesis
-Step 9.1 Record: evidence for backporting: pure documentation
-correction, explicitly fixes listed kernel-doc warnings, tiny single-
-file patch, reviewed by Philipp Zabel, applied by Helge Deller, old text
-exists in active stable tags checked, and documentation/comment fixes
-are an allowed stable exception. Evidence against: no runtime bug, no
-crash/security/data-corruption impact, no stable nomination found, and
-b4 could not match the thread. Unresolved: direct stable-lore search was
-blocked; full apply checks on every stable branch were not run.
-
-Step 9.2 Record:
-1. Obviously correct and tested? Mostly yes for documentation syntax;
-   reviewed and applied, but no `Tested-by`.
-2. Fixes a real bug that affects users? Yes, a real kernel-doc warning
-   issue; not a runtime bug.
-3. Important issue? No runtime severity; LOW documentation-build
-   severity.
-4. Small and contained? Yes, 11 additions and 5 deletions in one header.
-5. No new features or APIs? Yes, comments only.
-6. Can apply to stable trees? Likely yes; local apply check passed and
-   stable tags checked contain the preimage.
-
-Step 9.3 Record: exception category applies: documentation/comment fix.
-This is the main reason to accept despite lack of runtime impact.
-
-Step 9.4 Decision: backporting is appropriate under the stable
-documentation-fix exception. It is not a stability/security fix, but it
-is a correct, reviewed, zero-runtime-risk cleanup of real kernel-doc
-warnings in code present across active stable trees.
-
-## Verification
-- Phase 1: fetched and inspected committed metadata for
-  `f1fb23a0a0fcbdb66672da51d7d63a259f6396ca`; confirmed tags and
-  message.
-- Phase 2: `git show --stat --patch` confirmed one header, 11
-  insertions, 5 deletions, comments only.
-- Phase 3: `git blame` confirmed changed comment preimage from
-  `cd98e85a6b786d`; `git describe --contains` placed it before
-  `v4.9-rc1`; `git show cd98e85a6b786d` confirmed original API addition.
-- Phase 3: `git log` on the header/subsystem found no prerequisite
-  functional series.
-- Phase 4: `b4 dig`, `b4 dig -a`, and `b4 dig -w` all failed to match;
-  recorded as a tool limitation/failure.
-- Phase 4: WebFetch of the v3 lore mirror confirmed the patch thread and
-  Helge Deller’s applied reply; Spinics fetch confirmed v2 and a later
-  ping.
-- Phase 5: `rg` found runtime users; `ReadFile` of implementation
-  confirmed function bodies exist but are not changed.
-- Phase 6: tag checks confirmed the header and old doc text in `v5.10`,
-  `v5.15`, `v6.1`, `v6.6`, `v6.12`, `v6.15`, `v6.16`, and `v6.17`; `git
-  apply --check` succeeded locally.
-- Phase 8: severity/risk assessment is derived from the verified
-  comments-only diff.
-- UNVERIFIED: direct `lore.kernel.org/stable` search content was blocked
-  by Anubis; no actual `make htmldocs` run was performed; full patch
-  application against every individual stable branch was not performed.
-
-**YES**
-
- include/video/imx-ipu-image-convert.h | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
-
-diff --git a/include/video/imx-ipu-image-convert.h b/include/video/imx-ipu-image-convert.h
-index 003b3927ede5c..6b77968a6a150 100644
---- a/include/video/imx-ipu-image-convert.h
-+++ b/include/video/imx-ipu-image-convert.h
-@@ -27,12 +27,13 @@ struct ipu_image_convert_run {
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 0f94d859e91c..0100fec6533b 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -13,7 +13,6 @@
+ #include <linux/vmalloc.h>
+ #include <linux/pagemap.h>
+ #include <linux/console.h>
+-#include <linux/platform_device.h>
  
- 	int status;
+ #include "sm750.h"
+ #include "sm750_accel.h"
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 7ede144905c9..552fd30e0d38 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -13,7 +13,6 @@
+ #include <linux/vmalloc.h>
+ #include <linux/pagemap.h>
+ #include <linux/console.h>
+-#include <linux/platform_device.h>
  
-+	/* private: */
- 	/* internal to image converter, callers don't touch */
- 	struct list_head list;
- };
+ #include "sm750.h"
+ #include "sm750_cursor.h"
+@@ -130,46 +129,3 @@ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
+ 		}
+ 	}
+ }
+-
+-void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
+-			       const u8 *pcol, const u8 *pmsk)
+-{
+-	int i, j, count, pitch, offset;
+-	u8 color, mask;
+-	u16 data;
+-	void __iomem *pbuffer, *pstart;
+-
+-	/*  in byte*/
+-	pitch = cursor->w >> 3;
+-
+-	/* in byte	*/
+-	count = pitch * cursor->h;
+-
+-	/* in byte */
+-	offset = cursor->max_w * 2 / 8;
+-
+-	data = 0;
+-	pstart = cursor->vstart;
+-	pbuffer = pstart;
+-
+-	for (i = 0; i < count; i++) {
+-		color = *pcol++;
+-		mask = *pmsk++;
+-		data = 0;
+-
+-		for (j = 0; j < 8; j++) {
+-			if (mask & (1 << j))
+-				data |= ((color & (1 << j)) ? 1 : 2) << (j * 2);
+-		}
+-		iowrite16(data, pbuffer);
+-
+-		/* assume pitch is 1,2,4,8,...*/
+-		if (!(i & (pitch - 1))) {
+-			/* need a return */
+-			pstart += offset;
+-			pbuffer = pstart;
+-		} else {
+-			pbuffer += sizeof(u16);
+-		}
+-	}
+-}
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index a2798d428663..f491d3aca468 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -13,10 +13,6 @@
+ #include <linux/vmalloc.h>
+ #include <linux/pagemap.h>
+ #include <linux/console.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
+-#include <linux/platform_device.h>
+ #include <linux/sizes.h>
  
- /**
-- * ipu_image_convert_cb_t - conversion callback function prototype
-+ * typedef ipu_image_convert_cb_t - conversion callback function prototype
-  *
-  * @run:	the completed conversion run pointer
-  * @ctx:	a private context pointer for the callback
-@@ -60,7 +61,7 @@ void ipu_image_convert_adjust(struct ipu_image *in, struct ipu_image *out,
-  * @out:	output image format
-  * @rot_mode:	rotation mode
-  *
-- * Returns 0 if the formats and rotation mode meet IPU restrictions,
-+ * Returns: 0 if the formats and rotation mode meet IPU restrictions,
-  * -EINVAL otherwise.
-  */
- int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
-@@ -77,11 +78,11 @@ int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
-  * @complete:	run completion callback
-  * @complete_context:	a context pointer for the completion callback
-  *
-- * Returns an opaque conversion context pointer on success, error pointer
-+ * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
-+ *
-+ * Returns: an opaque conversion context pointer on success, error pointer
-  * on failure. The input/output formats and rotation mode must already meet
-  * IPU retrictions.
-- *
-- * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
-  */
- struct ipu_image_convert_ctx *
- ipu_image_convert_prepare(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
-@@ -122,6 +123,8 @@ void ipu_image_convert_unprepare(struct ipu_image_convert_ctx *ctx);
-  * In V4L2, drivers should call ipu_image_convert_queue() while
-  * streaming to queue the conversion of a received input buffer.
-  * For example mem2mem devices this would be called in .device_run.
-+ *
-+ * Returns: 0 on success or -errno on error.
-  */
- int ipu_image_convert_queue(struct ipu_image_convert_run *run);
- 
-@@ -155,6 +158,9 @@ void ipu_image_convert_abort(struct ipu_image_convert_ctx *ctx);
-  * On successful return the caller can queue more run requests if needed, using
-  * the prepared context in run->ctx. The caller is responsible for unpreparing
-  * the context when no more conversion requests are needed.
-+ *
-+ * Returns: pointer to the created &struct ipu_image_convert_run that has
-+ * been queued on success; an ERR_PTR(errno) on error.
-  */
- struct ipu_image_convert_run *
- ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+ #include "sm750.h"
 -- 
-2.53.0
+2.54.0
 

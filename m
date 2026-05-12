@@ -1,61 +1,61 @@
-Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
+Received: from mail-pf1-f180.google.com (mail-pf1-f180.google.com [209.85.210.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 900561DF980
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 May 2026 04:49:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 687B51B87C9
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 May 2026 05:08:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778561371; cv=none; b=YH9r++4Fo3mFLYebZeJ7VqivJVdNeE216sk/XwgmkS0L8zFjoUg/AaTXyYJHGnCwlq227/Jtxolf0ByYymrIHVWoIlLQ1okkftxoDqcHoMfsDsUT9UszwuzD8KBrscEBXz5x0RA+jUJvclWQzQ2RsXmpillA2tuTtDogH9rDuNQ=
+	t=1778562486; cv=none; b=qfWjAL4qzSJK8gmnQ+DpNAmm+q2d2DjceBZg4miZope0Y7lJPSoSEC4kJQHIVEi2jYc9f0PGgOl8jd6fFc0XQQ61OXLXMipLYn9BNFGnoifqfBk5WoVdTQdWyUjQ5yKxmTLl7/v1oHU11MIgpTy3gP27SloB0iGPQheb6wMelm8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778561371; c=relaxed/simple;
-	bh=Ma0BSUg9bsTO/AFUYgwKn9V2eUxec5cfDk/klMLGG78=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CzQcRJUcf68teOC2PcTo36mwO+erPb61Nz30BHiTx7VIETO/XaNyeigPwEKR+Bv22jZ9i1btFYOkST0ueyaufQ5Wc/v5rX9WUu3fF77qrhliEKgrLhwuRq7eDDhtcbf15drOU+z9+BZtW+NIcviSZ8rCRrIy1mjePH7Xre7IFv0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=p2IpsZ1Q; arc=none smtp.client-ip=209.85.214.178
+	s=arc-20240116; t=1778562486; c=relaxed/simple;
+	bh=BAuthF2Z16WH+zfDEHk3KKdJ2eXOVPk1jSTNkvFdwRk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Bxv3FWr31xjMuvHYpc14UZE3jkHDK/uF66HPOgBaLMQ4PpDbWEZrrSDjBSAEz6IoxO5c5EiPqNfdl1/P09AIPs452DT0EzQXgatbN0/v+FrqGwqZWhXBy05qlAQ9qV2e6x0Zds0wwr89Dg/BzwhYtMrOh/gRrqdKCYhw/dAJ8i4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=D1eFl37/; arc=none smtp.client-ip=209.85.210.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="p2IpsZ1Q"
-Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-2baef9f5ecdso28979115ad.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 11 May 2026 21:49:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D1eFl37/"
+Received: by mail-pf1-f180.google.com with SMTP id d2e1a72fcca58-83945063f70so2719272b3a.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 11 May 2026 22:08:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778561370; x=1779166170; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1778562485; x=1779167285; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=YGtucP5dOBTG4jR9fIrSqVWI8MpzdYIq/BvnyuqHI4E=;
-        b=p2IpsZ1Qnl+KmFkv1LBVV9DX2+6kafx67HUz6CKtkrpNGN/gYw8yJohOVaUd7bNhxM
-         zT/G/80WhZpZgPMDNULdtcbBquAX96dWNjydnph3svosHd85NRnz7i/pAHEHapCNN778
-         My1jWOIuD9pxZvydfDdKUkYl8rgpOy9WvTztCgdPy3eh1P2seGvYrVTWOJ5cH6AklwIc
-         d6R0PeGUgsm4RyiPx3sQ/YffPYXcF68aZ9gZ6j/TKy9CtQT2vddfgWwYC/djfXTtv/Wd
-         MIS4q2Uucwyl3NB3uRz3mRKCjXdDjDHNMrnzEN/Puqau/P/ZZkFlGBTinVlGGII0C9Se
-         R03g==
+        bh=upF+QNLvJv5Mrb2znPY+HkCjKz2u/xiqje/4qNyRhbA=;
+        b=D1eFl37/xQBJMgrXHEcTK0g6LC+BzwhyqLqu5Pdglj5ZSXK+q+9luZ0EctU8sQFDIr
+         VhkPUZJMtHDcCR/EJ5Y5CTPBRLF2NmocXKmMHOQJ44eLgODSX6n9FAEFkseotTwyJ+s6
+         qrvTZEsa1MB2UF7uN80bOPTQYvyn/g7Ae7UyQcFrNNmxqpEsAKQNsE50RtYkGTIMNAvG
+         0DJM/xV0OO/yeZyub7iMLaByauvNaRcc2o40qHfI6sY2x1jQlr1fEDrq9xay/xOsBbKg
+         dumZGaGmopKy9HBJ+rIV+WypnJi+y4DrMGfw192WP4kVJ9q0Y+TLa2HIpvTecLJE81Fe
+         RDYw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778561370; x=1779166170;
+        d=1e100.net; s=20251104; t=1778562485; x=1779167285;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=YGtucP5dOBTG4jR9fIrSqVWI8MpzdYIq/BvnyuqHI4E=;
-        b=RikI7aTemHiKw7l5fdn0fvq/MT5QnP61GmvWf6uWDPOBjQ5MJ1HBRIZRdC5H2F7DeS
-         2MLL5CZfvOtpvIFla4Q9UAoJ8ndl1b28EdlrNBzpYXGlrrOb6YAAj7NCHU1QIEfYzhUx
-         m66Yhbg/A4fFEgjwQ6dx7XKDXjMC5wMn1N8NmaQ7VzEnDjDZiUxySDOV8m49gPx6XYSz
-         LXjKPdwda9Vc9V7TtwgfUIX1JL2b+DKxhpxpDA+oRNZy5lZ3FSb4DL36ck3OjEJdjEL7
-         7IcKSr8mhrGSL+2To0qB5GcNNDgrSPTftRiaSCjawPj1uro2Yb6eytl/Q6xzAndrDhNE
-         m2KQ==
-X-Gm-Message-State: AOJu0Yy3IUwhDpyEKLC/1WeT2kpk9gYS7TmOy6pvuU0tG5rTiSpOFFrx
-	bge0n8QEYAMtH36wt1Q0kZLwjPxS7w8pIx0PmR49cb9fs0vjpWlyxJdI
-X-Gm-Gg: Acq92OHij6R1sqOFpl6wjfBOsuRdxY9E7xHveDCCgq+pWDg6M2pDHA4J7710/NJwW3c
-	Tz+3UDhFulaecsgucZGcNh9S3piwbMHSUN4aSpfP0CAndUcNw2/sb1dObn56+f1UBYDhwcvOaf8
-	ftSBbgErZ+2qEuktdmE+wFKUdqtw5rAiYfxQ+w9yqJHsN3NoFactyI9tX9Mst1j+L3e/oV/z+ka
-	tUL4FCOb/28Jh9b7Y8PVPej1MVq8tCmrE1FovV45+xvixdneSVWMcau0ZEYkiXt7M79bRWCYrXd
-	oVJ9BvikirREONPyQuKw1F9jMNq3Jn+aUO6YVPLW/pzNPKCGHUEWKcu3XygrhbOBxzdNVtrjZbQ
-	3yQZLZ+KQHPWp3G3MquKevxLUTxXxG1iMlWgRYLadOKyTrerFUbWo4++sQ3M8xTvpl0KEokyUE+
-	yiP6O4vbr7QZ/LCMwihJPE45QLYmkIAkRFAm39fxZBGvsieOcoS6fDUFYR2IB8s1j7zDFnCNQjE
-	KU4
-X-Received: by 2002:a17:903:248:b0:2bc:8ebd:af76 with SMTP id d9443c01a7336-2bc8ebdc2b7mr115945355ad.0.1778561369949;
-        Mon, 11 May 2026 21:49:29 -0700 (PDT)
+        bh=upF+QNLvJv5Mrb2znPY+HkCjKz2u/xiqje/4qNyRhbA=;
+        b=frvybZQoF/5zuIuqQBFevKhiv157VnBbEclel5mCZm0n0lpG+9DHM2RxpA68jBjmDG
+         0JTNEWSnjAmy9gCRD6gGzV7BjMyKZPH/gXG2oU+d7CXasIIF2kfDkS8YgufRfhJvxF99
+         v0uZiEkdsPRjTX40WVLDhf/oy/0jt4oqeul2Gq1WXqqYNu/ecZMsHivlZs/L6GY7zahA
+         Kky+aNGpUbnA37/pnj/mps7LGHXiW/imTlJ9bX5X+Oq/3OOZO83887KPj1n/N4QIe5wv
+         11ZPcavIJHSjoA1hXSuOuaotU39wrEFnV2FLge1XBiOuA80/SUsisnLDniWkg/VJRlWk
+         iaRQ==
+X-Gm-Message-State: AOJu0Yw5Y7MsI7XKNpvLdkvfaz10MuromuYBv5g2BCw1nsjEx29SKFAj
+	KDKbjkdhKhZaqnHk1eO9Lp0BQM0fKMJjvm4cacFW9ip06kvQ5xC2xnbo
+X-Gm-Gg: Acq92OF4KBMH38ZADC1DiGjoKL8JYU/ZrI56mpvjHpJanMzd9rDl/iqeeWgucMrUw0K
+	W8KDV7XguDD4xLk4hPfK1SropkvJN3rB9MUCSywhKl/enstxbYnGTS/TSH9k/oVx55n2wH6i4k/
+	hzTjL19p0s1/0zfl6jlPawW1OCFpX2EEknDLS6mTfZPgA6gP9mAG+hYH7W1iGjAgWaFr+DG7Trl
+	oMx4HRzbf2ci6cj6UmND7zTjBm2JBt5iFVJn02zANZCY7LapR7OBE11mCHUAc5KnIjRmzZCLIFd
+	Ih1lN7xgfDYPvpbnclbrXh0tilINwnKfKK9FOlRzvh1UBUolJAXSXN2a6MVmdTCzQ/3hSUhwk3O
+	0kKUXY48dEZMYGdVjdVlCGK2SiwJHFy0NBEhOQP3n44RjPmSWeCjy/mzagvXQmbFr9mJRuToUOQ
+	I2Wap1BGJkCbtFUmXMtzU2lu7QzKf6bYjNTb5YWGcazl/OV++9cWDYcWcy0WJRNnlZKtF9jvmMv
+	hZgO0G0iQlBnnk=
+X-Received: by 2002:a05:6a00:3981:b0:82f:39df:dd54 with SMTP id d2e1a72fcca58-83ee83021e3mr2137334b3a.8.1778562484707;
+        Mon, 11 May 2026 22:08:04 -0700 (PDT)
 Received: from localhost.localdomain ([2404:7c00:52:d485:aae2:91ff:fe57:5e15])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2baf1d2700dsm123919925ad.2.2026.05.11.21.49.26
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-839679c7b92sm21645449b3a.29.2026.05.11.22.08.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2026 21:49:29 -0700 (PDT)
+        Mon, 11 May 2026 22:08:04 -0700 (PDT)
 From: Chhabilal Dangal <yogeshdangal66@gmail.com>
 To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>,
@@ -64,9 +64,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Chhabilal Dangal <yogeshdangal66@gmail.com>
-Subject: [PATCH v1 1/2] staging: sm750fb: remove unused #include directives
-Date: Tue, 12 May 2026 10:32:31 +0545
-Message-ID: <20260512044732.56417-1-yogeshdangal66@gmail.com>
+Subject: [PATCH v1 2/2] staging: sm750fb: remove unused functions
+Date: Tue, 12 May 2026 10:52:25 +0545
+Message-ID: <20260512050725.58408-1-yogeshdangal66@gmail.com>
 X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -76,16 +76,15 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-sm750_hw.c includes <asm/mtrr.h> under #ifdef CONFIG_MTRR, but no
-mtrr_add/mtrr_del calls exist in the file; the driver uses
-arch_phys_wc_add/arch_phys_wc_del in sm750.c instead.
+sm750_hw_cursor_set_data2() in sm750_cursor.c is defined and declared
+but never called anywhere in the driver.
 
-sm750_hw.c, sm750_accel.c, and sm750_cursor.c all include
-<linux/platform_device.h>, but none use any platform device APIs.
-This is a PCI driver.
+sm750_enable_i2c() in ddk750_power.c is similarly defined and declared
+but has no callers. The software I2C implementation (ddk750_swi2c.c)
+uses GPIO directly rather than the I2C gate.
 
-Remove these dead includes per the TODO item to refine the code
-and remove unused code.
+Remove both dead functions and their declarations per the TODO item
+to refine the code and remove unused code.
 
 Tested by building the full kernel and module with CONFIG_FB_SM750=m
 on x86_64:
@@ -93,97 +92,60 @@ on x86_64:
   make M=drivers/staging/sm750fb modules
 Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_accel.c  |  1 -
- drivers/staging/sm750fb/sm750_cursor.c | 44 --------------------------
- drivers/staging/sm750fb/sm750_hw.c     |  4 ---
- 3 files changed, 49 deletions(-)
+ drivers/staging/sm750fb/ddk750_power.c | 16 ----------------
+ drivers/staging/sm750fb/ddk750_power.h |  5 -----
+ drivers/staging/sm750fb/sm750_cursor.h |  2 --
+ 3 files changed, 23 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 0f94d859e91c..0100fec6533b 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -13,7 +13,6 @@
- #include <linux/vmalloc.h>
- #include <linux/pagemap.h>
- #include <linux/console.h>
--#include <linux/platform_device.h>
- 
- #include "sm750.h"
- #include "sm750_accel.h"
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 7ede144905c9..552fd30e0d38 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -13,7 +13,6 @@
- #include <linux/vmalloc.h>
- #include <linux/pagemap.h>
- #include <linux/console.h>
--#include <linux/platform_device.h>
- 
- #include "sm750.h"
- #include "sm750_cursor.h"
-@@ -130,46 +129,3 @@ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
- 		}
- 	}
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index 12834f78eef7..1f7e0ec1d02b 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -127,19 +127,3 @@ void sm750_enable_gpio(unsigned int enable)
+ 	sm750_set_current_gate(gate);
  }
--
--void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
--			       const u8 *pcol, const u8 *pmsk)
--{
--	int i, j, count, pitch, offset;
--	u8 color, mask;
--	u16 data;
--	void __iomem *pbuffer, *pstart;
--
--	/*  in byte*/
--	pitch = cursor->w >> 3;
--
--	/* in byte	*/
--	count = pitch * cursor->h;
--
--	/* in byte */
--	offset = cursor->max_w * 2 / 8;
--
--	data = 0;
--	pstart = cursor->vstart;
--	pbuffer = pstart;
--
--	for (i = 0; i < count; i++) {
--		color = *pcol++;
--		mask = *pmsk++;
--		data = 0;
--
--		for (j = 0; j < 8; j++) {
--			if (mask & (1 << j))
--				data |= ((color & (1 << j)) ? 1 : 2) << (j * 2);
--		}
--		iowrite16(data, pbuffer);
--
--		/* assume pitch is 1,2,4,8,...*/
--		if (!(i & (pitch - 1))) {
--			/* need a return */
--			pstart += offset;
--			pbuffer = pstart;
--		} else {
--			pbuffer += sizeof(u16);
--		}
--	}
--}
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index a2798d428663..f491d3aca468 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -13,10 +13,6 @@
- #include <linux/vmalloc.h>
- #include <linux/pagemap.h>
- #include <linux/console.h>
--#ifdef CONFIG_MTRR
--#include <asm/mtrr.h>
--#endif
--#include <linux/platform_device.h>
- #include <linux/sizes.h>
  
- #include "sm750.h"
+-/*
+- * This function enable/disable the I2C Engine
+- */
+-void sm750_enable_i2c(unsigned int enable)
+-{
+-	u32 gate;
+-
+-	/* Enable I2C Gate */
+-	gate = peek32(CURRENT_GATE);
+-	if (enable)
+-		gate |= CURRENT_GATE_I2C;
+-	else
+-		gate &= ~CURRENT_GATE_I2C;
+-
+-	sm750_set_current_gate(gate);
+-}
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index 5cbb11986bb8..1c4f054d7276 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -33,9 +33,4 @@ void sm750_enable_dma(unsigned int enable);
+  */
+ void sm750_enable_gpio(unsigned int enable);
+ 
+-/*
+- * This function enable/disable the I2C Engine
+- */
+-void sm750_enable_i2c(unsigned int enable);
+-
+ #endif
+diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
+index 88fa02f6377a..51ba0da0270c 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.h
++++ b/drivers/staging/sm750fb/sm750_cursor.h
+@@ -10,6 +10,4 @@ void sm750_hw_cursor_set_pos(struct lynx_cursor *cursor, int x, int y);
+ void sm750_hw_cursor_set_color(struct lynx_cursor *cursor, u32 fg, u32 bg);
+ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
+ 			      const u8 *data, const u8 *mask);
+-void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
+-			       const u8 *data, const u8 *mask);
+ #endif
 -- 
 2.54.0
 

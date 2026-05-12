@@ -1,62 +1,60 @@
-Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4371357CE4
-	for <linux-fbdev@vger.kernel.org>; Tue, 12 May 2026 06:35:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81A9D367286
+	for <linux-fbdev@vger.kernel.org>; Tue, 12 May 2026 06:35:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778567721; cv=none; b=ST80w/ArsJGD1J/RcP0BRuh/axzMpsQfbrrhEv5uwWMFmJFDerwTG7NI/yf0dNK/6eLg1hWaYyRyLBt7hDRunYntmrHxh/S0pSajOFvtKIC7Sug+IVl4zxnKRZ+6sJXm/wDxNv7U4eFKYOKCj65imfAFnyOWexJcJkL/xgJxt4E=
+	t=1778567720; cv=none; b=nNRF8xEen0X2K0YSqJCbcIvcr2DEooExA6zr22kC3ssiP4Vd5zhpxtmqRx1mjWz7pPytbBc9jqrrju2l/ZA3HCjIw/PMceb1iEMCg03N4SUPTFCehpPTyufmpaR3dM2F6A0DAN5bZqp788Hj3b285ZGMW2/c2g0hG9cjvXo9kZY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778567721; c=relaxed/simple;
-	bh=CQ0Pqhp/4QAbSk8gZsBCYrlwBk8J/VBMcD/nYEp7h/k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XOmsGmJ/Saj9QSom8/soFSPRznqZa+i4bYeNcPdsYkDAWWyECUT5d7S9PfSrvVavdUynBl+LjWc6K5TlyS9v6qftCI8xSeMT0wg3lz5a1ru8LDu420+TpE2KLdEVH0jxZnrC27g+/zYicH4qI+O74JTMtEPgcexCBynGOd5M0Lg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JQK9GKIl; arc=none smtp.client-ip=209.85.210.181
+	s=arc-20240116; t=1778567720; c=relaxed/simple;
+	bh=2doWczqNtnCVGsUAUmmyk0SfDHaoSrWEhkfH1ShARKw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DdcyTlDKrg+gIhqsA8viGxdvETmIeIT2SHCz1+qVaddCPRfolrur8HPhEqZIpufJalebE3MxAtMlNSBSlsi6koCHtz6Y/i9k+WLfftd6Ohke9i3HMZDKVp4dNzzcLf3nrjVfDebRPBWvtG3IjaBmPBjtjJY9+kJxIRyRWrHlxME=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mHi2LtKB; arc=none smtp.client-ip=209.85.210.173
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JQK9GKIl"
-Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-82f8893bff3so2319740b3a.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 11 May 2026 23:35:10 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mHi2LtKB"
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-83ef1d17904so175023b3a.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 11 May 2026 23:35:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778567709; x=1779172509; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7bfTIHcuxdABvkVe+pMs5cot1hi6l98N1mvQQvDnmrQ=;
-        b=JQK9GKIlWD/Yjc6PPDDmDufh2s1Ec8cD4XAKnjK32/Qq19rbkfncdHKSyZBA8pOApv
-         8MIK8w+wZvEtJkbZSuSE5mDtxNI9mWY/84eCUDdm4jYMcWwNcafyGnqLtFFEWKD+KhWT
-         p5T12AGL7Aimn1PVfzu+wti8uohznIoUCDcMPEK47t14vav82xufQXUOOOR8GdLCPMAM
-         Mqhch1v+7rrW/6iavZrn9hqmYfBhs8y2gfmgHqTUAWFfEY4fuK6Mj51NpbOKodlofP/K
-         VOGkpLmd4b0JAgVL5Mn78KT+bk021nTI7DvPEbslDhCY36Q1a81OHU4b74Kvu6eZW2f5
-         LQgQ==
+        d=gmail.com; s=20251104; t=1778567703; x=1779172503; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=hdBRmXm0EN9CDrqJgubz6nI5ID1Ljz0DfpQ5I23ebu4=;
+        b=mHi2LtKB/ARUaHLFyAG5h+TB605ZbcDuEzgDkfRb99hUlgcpl/6RbMzuQtUS8TdcKV
+         CkOVv/QeTbQ/jR2Cp9j+xAIl8W2FyQnqMPu1l3VT52ul0M8DjpVjsXbzmQCX/4bgo16J
+         JcH5Wj/LTSyh//9r/npxB4Fhv/B9see4W/IdycUVmPs3ywigonaYdDa+0WdBuyY2Imhq
+         YzIyV8KQGCxMm7vbkz5s3XLfhx2sCbun8bGRPpJ174qDEcLtD4lKy4E9XdiFseugDt1P
+         guY2/tGbeqYR8Dol+sb4ZmlZebz9gUtGP/WVlgXj4E/G1Ug3Ij8J1RG45jfyMQPObsMN
+         1yzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778567709; x=1779172509;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=7bfTIHcuxdABvkVe+pMs5cot1hi6l98N1mvQQvDnmrQ=;
-        b=EtW/fn4lFlFbTEF6PT9sn0NracMoGP3XAxksCSyzx54lZqrEmZsPTrKUliBKiMPv/a
-         BZJvaFrefJnsnWqNvM6+l3Nb0QcnfDmtq9w563H0DFYjOvpZrtsGDmKV1p28ZSgDysL6
-         HpkWz7Sw7VgiAKVBv0Ue2QefR+l0V1DjiQpynI+OJbRvPwXsaDvkbX3rsWF4Xqj9EGEC
-         cyON9rojYzIBb0nxsidlkST/JNwYp2htD4J5Qz/BnKUxHaI7AEa0gXUWIb8GO/g+wl+T
-         B0BlmbK1C1iBE2lHhS/XdX7ZzrRFx6Kr9cjpOZqK06tbA8IXfQBTW4pnRr9JVcw1iK3I
-         LqXw==
-X-Gm-Message-State: AOJu0YzLd87vn/w7uZ7HY3S5G9eqXSBbqP3y/+drTaqol5ScmKdTSojG
-	NzwUPPIXC+Add47JGa5wOd+VCMEyMJKpzK57h2IFmXnrNmAsbS6bAfkB
-X-Gm-Gg: Acq92OGk8wO39ohoF1x7+TBS9tm9ocNyzLvq9DcEDZwCDv/oUcLEfoAmF/K2ZDKIn0B
-	rPPc+6Yflw6ymjlXtKLdQ/GCSJE33aWzMLdtmrwQ5dhWMqIWjgpwUX3PwlGRq7dTEzKRH9Wsl8K
-	L0+vNiF3qYE3ZFbHzfs+NDuTZr+R732Cm+ws1Z7F7+xyKRq5HJgQ8g1KUGj9zaWlntcoMCggBBN
-	BZAQxbGCg7Pi+zJYOtrK1ceA+na6qkJ4CTEunDPEs7tFBsIe6MgljSQFylGRY0SXJY/O/kawDyV
-	qMKPMt0GAoJnRbK3jcllXIt6/51qLyClJNdHLBGGbLK07eMFYqeJ0JC1Q/cO8X6BCegCeWU1XD0
-	a3pQ8OnFbB5+Rz6AA5ZE3qBvWqu2BRaocS/4theWhpVgOWqV28Xm0Il81MSw0MsF/yzaNVAz96P
-	SNNP9qDDVEWYff2MyiH45TceotxhgJXMYQR/2RUywi+X0+673ngE0OMwrnQ2M1
-X-Received: by 2002:a05:6a00:4ac4:b0:82c:6da7:2d3d with SMTP id d2e1a72fcca58-83e39c3312cmr12860106b3a.11.1778567709152;
-        Mon, 11 May 2026 23:35:09 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1778567703; x=1779172503;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hdBRmXm0EN9CDrqJgubz6nI5ID1Ljz0DfpQ5I23ebu4=;
+        b=q0Bupo5hB3JIdD+Zpz06mkJifvVovK5mCEcdRmgdXrpqK0ZBcz79jm6Y8P/HzVesnD
+         fd1iBBu40lQKcW+i/zQL5uS7MhfC2z9GJA81o7bVRFhCgu9Z2kIBDFwQBVOdgiwsnT5y
+         lZX0aFHFqPiUrNcA+yNBEh1xT5YFIzovy/bdnKJg6rwoH/f6Vetu5rfWZaOc1nv39yY1
+         rkT+Up4GUs14gbYw4cAgP4OB512QemOQEaZ0088KVztq7bEXOxx9wujtcEyByuW4+N7+
+         lFxpT3MrVcjZtayWAeyHIqjst3FcdXWahmuJ9IbyURICBmKORGn0KJBLKciEJ04A4Tvy
+         f5eQ==
+X-Gm-Message-State: AOJu0YzfldMzfDGk1iHdeewjiNdtRNliSsBcm3rECN/dDt1YrqghtW7T
+	1m7n46M8bcvL/kDvmroq1OP/QCnmA8HkKsTZ/p4Rl7ZgfpONMroTMuYU
+X-Gm-Gg: Acq92OHGltmL/bjmObn1q2KAzBqeXYdjYeeLS0oYW78/1FgW52qZzQWkbJEZuk2gsQg
+	Y6w9weBGNDZuujzfkX1j6HkOlsg5ZPBZ3SanNavwKjGLO1EIw034zBiUgObooqbVBU7dRgGfu6x
+	zai9R/6p3aSrbjMUxR9/13OUeaMm8Pp6NNUETx3InL3BEHmqxAPNVZwQWze0K4bIOkPoh87w8EV
+	llR2q7CUCPMd1ATFbStld0GIJuWI2n9DdM5/K+MKW5L91H8AylBYel1PbYYKBY16MeQhuivQ/Yu
+	7E5+gbXCvH03ARhVPH8g44uzGT3zCWJQhPALg9i1+LxaF2OMJIJ2ryxEmt9yiSEPSqj0cgtZ73q
+	uo4Tg+8gisETAuODdImlolmIUkfbLCo9uA/9x+rG2NN/lR93BlLX+nKz0YzS/Qa2PBMmktZ1dIp
+	FlAulPePvCjZEy0NH5lN7HmYGbrtLvoudN1yXS3swFejlKLJ2M7SGOJe51rZ5z1m3zqovfwIo=
+X-Received: by 2002:a05:6a00:2e87:b0:82f:5034:77a4 with SMTP id d2e1a72fcca58-83a5c4be2eemr27641558b3a.21.1778567703220;
+        Mon, 11 May 2026 23:35:03 -0700 (PDT)
 Received: from localhost ([2404:7c00:52:d485:aae2:91ff:fe57:5e15])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83967dbee14sm29994346b3a.48.2026.05.11.23.35.08
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83965d36c10sm27475783b3a.25.2026.05.11.23.35.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2026 23:35:08 -0700 (PDT)
+        Mon, 11 May 2026 23:35:02 -0700 (PDT)
 From: Chhabilal Dangal <yogeshdangal66@gmail.com>
 To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>,
@@ -65,12 +63,10 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Chhabilal Dangal <yogeshdangal66@gmail.com>
-Subject: [PATCH v3 2/3] staging: sm750fb: remove unused <linux/platform_device.h> include
-Date: Tue, 12 May 2026 12:19:56 +0545
-Message-ID: <20260512063457.80882-2-yogeshdangal66@gmail.com>
+Subject: [PATCH v3 1/3] staging: sm750fb: remove unused <asm/mtrr.h> include
+Date: Tue, 12 May 2026 12:19:55 +0545
+Message-ID: <20260512063457.80882-1-yogeshdangal66@gmail.com>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260512063457.80882-1-yogeshdangal66@gmail.com>
-References: <20260512063457.80882-1-yogeshdangal66@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -79,88 +75,32 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-sm750_accel.c and sm750_cursor.c include <linux/platform_device.h>
-but never call any platform device APIs. This is a PCI driver.
+sm750_hw.c includes <asm/mtrr.h> under CONFIG_MTRR, but no
+mtrr_add/mtrr_del calls exist in the file; the driver uses
+arch_phys_wc_add/arch_phys_wc_del in sm750.c instead.
 
-Remove the dead includes.
+Remove the dead include.
 
 Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
 ---
- drivers/staging/sm750fb/sm750_accel.c  |  1 -
- drivers/staging/sm750fb/sm750_cursor.c | 44 --------------------------
- 2 files changed, 45 deletions(-)
+ drivers/staging/sm750fb/sm750_hw.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 0f94d859e91c..0100fec6533b 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -13,7 +13,6 @@
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index a2798d428663..f491d3aca468 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -13,10 +13,6 @@
  #include <linux/vmalloc.h>
  #include <linux/pagemap.h>
  #include <linux/console.h>
+-#ifdef CONFIG_MTRR
+-#include <asm/mtrr.h>
+-#endif
 -#include <linux/platform_device.h>
+ #include <linux/sizes.h>
  
  #include "sm750.h"
- #include "sm750_accel.h"
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index 7ede144905c9..552fd30e0d38 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -13,7 +13,6 @@
- #include <linux/vmalloc.h>
- #include <linux/pagemap.h>
- #include <linux/console.h>
--#include <linux/platform_device.h>
- 
- #include "sm750.h"
- #include "sm750_cursor.h"
-@@ -130,46 +129,3 @@ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
- 		}
- 	}
- }
--
--void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
--			       const u8 *pcol, const u8 *pmsk)
--{
--	int i, j, count, pitch, offset;
--	u8 color, mask;
--	u16 data;
--	void __iomem *pbuffer, *pstart;
--
--	/*  in byte*/
--	pitch = cursor->w >> 3;
--
--	/* in byte	*/
--	count = pitch * cursor->h;
--
--	/* in byte */
--	offset = cursor->max_w * 2 / 8;
--
--	data = 0;
--	pstart = cursor->vstart;
--	pbuffer = pstart;
--
--	for (i = 0; i < count; i++) {
--		color = *pcol++;
--		mask = *pmsk++;
--		data = 0;
--
--		for (j = 0; j < 8; j++) {
--			if (mask & (1 << j))
--				data |= ((color & (1 << j)) ? 1 : 2) << (j * 2);
--		}
--		iowrite16(data, pbuffer);
--
--		/* assume pitch is 1,2,4,8,...*/
--		if (!(i & (pitch - 1))) {
--			/* need a return */
--			pstart += offset;
--			pbuffer = pstart;
--		} else {
--			pbuffer += sizeof(u16);
--		}
--	}
--}
 -- 
 2.54.0
 

@@ -1,420 +1,163 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 508563EDE57;
-	Tue, 12 May 2026 18:01:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F41EA3D5C1B;
+	Wed, 13 May 2026 07:43:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778608884; cv=none; b=LOu1ksODGzWQrv0d3PRnrk21xCFQTvrxqCczxZgeGtuZDDV8ak8ZpFpXN71DeWHg0rfTPkDGBFG1ofn1ZbKVv6xK8WVqIaAEN9sInZu7PLk1bLrV5Ez66NYB1PETYzjp5BUTA+PL2AklX3Ii18mB3A0V3bgcA1pxTG9LC842UWA=
+	t=1778658187; cv=none; b=ccA/loh0pG68Yn59LUSBlnO0hwSJbnWnpTiER+iybiq3uVv8qV0sYZCyq6wbpaPVjtLiTsjZ4OuRfsMV5/5k/6l+vThS8UvH1pB8hzs8t3ik7vqfpBDFMhlMbh1PAyJPH5fTZ4+hnY/0NgWz9NLytfHvVqXPHwH7ddnKGJVW7FY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778608884; c=relaxed/simple;
-	bh=AdAp6jBzAfpm9E3kyLLovs3kOMMilT45qH4IrmSCOnk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=tSS5ZnlY0T5M3o8rZq+RJGArHZFj5SmkAyvtwqkn5kybaAdrjK7K8r47F7xGrzbfs+XX+Btri2fF9uz9O+8ABA1lIdc6BoxUeVZoVPZytJ6esJdlL2ecVgbU7FgyCR7wKOlcl09gOB04TBUQlIFJk2N4GPr4k/wdP4glFOYLpyY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=WwO3m3bO; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778658187; c=relaxed/simple;
+	bh=TKIRWVOLQGmRSLSxOp4ZdNKhRgrjTEEnbWY6atM2t+o=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DdZuPzj5iM+qcl/sO4gpO5qv+fkMMIbh5jOj6sw9FPccjQQEbb3UUY7NIT/dbkUdZDZpwKfR7FbZ1+kHRP/s4ZkIFOfILpKPP81CwYgYqxiDc7dkxd7TmjqDflKAvSrHKthqg5/e3xMgxzpGwr64GDBeVd6UoQ4rab1H5xlS1m0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=B9t+S3Jh; arc=none smtp.client-ip=192.198.163.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="WwO3m3bO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC678C2BCB0;
-	Tue, 12 May 2026 18:01:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1778608884;
-	bh=AdAp6jBzAfpm9E3kyLLovs3kOMMilT45qH4IrmSCOnk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=WwO3m3bO05Mv2k0CgyxRn0EHRcgb9c4JoWpsw7iYBGTuWUDdyNXlQ5w0YmSUJF3UL
-	 ENK8QMAw2FF6KJchGgfaSHKJaizwvjaE5G+df7hvDfHTdWl9/J7Rs3dBNJifv9ZF/Z
-	 TyhtrrQY/iHbIxWiNGauixXusn7GFDF9P6Ls2ytE=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.18 250/270] fbdev: defio: Disconnect deferred I/O from the lifetime of struct fb_info
-Date: Tue, 12 May 2026 19:40:51 +0200
-Message-ID: <20260512173943.703462693@linuxfoundation.org>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260512173938.452574370@linuxfoundation.org>
-References: <20260512173938.452574370@linuxfoundation.org>
-User-Agent: quilt/0.69
-X-stable: review
-X-Patchwork-Hint: ignore
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="B9t+S3Jh"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1778658186; x=1810194186;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=TKIRWVOLQGmRSLSxOp4ZdNKhRgrjTEEnbWY6atM2t+o=;
+  b=B9t+S3JhHslHJriB8P9jEZnv4bkjYjqia/SCjdWtXGhc+kjV0vb7Pl+f
+   LLpU6nKPoveOFRrSSlD1ZBy1wWpMJOvGacszkZv3tpBnaoTF/pNHUI+J5
+   fdaPSdlQkCICG253gmt4TFCtHQf5cg2Ib5fcMN+4uAPvHmF0B7A2YqAyF
+   55WU50BxCayc4/mx9iafPjmyIKJHpJzbdt0YLTCF2pNKxxUPUw0lno9mm
+   etOf5BYvPZtZreQgn3KRtm+exam6tpdrNBJQVGjqEnSgp7ZVSaSn4sXXB
+   oudLInQFTwcfWyIU3PyUf7O5/3ZgLavIwO35mjmi3WacgM9qz+YKnZQJW
+   A==;
+X-CSE-ConnectionGUID: r/q2ybW+QwC7rN0K+C9+9Q==
+X-CSE-MsgGUID: PCe0SAXJSLSmtTekMsf0YQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="79434654"
+X-IronPort-AV: E=Sophos;i="6.23,232,1770624000"; 
+   d="scan'208";a="79434654"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2026 00:43:04 -0700
+X-CSE-ConnectionGUID: etY6YsZNQ+2KOAxeE+d6UA==
+X-CSE-MsgGUID: OX9chYK2S6KzFnE7qhylLA==
+X-ExtLoop1: 1
+Received: from lkp-server01.sh.intel.com (HELO dca79079c3eb) ([10.239.97.150])
+  by fmviesa003.fm.intel.com with ESMTP; 13 May 2026 00:43:01 -0700
+Received: from kbuild by dca79079c3eb with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1wN4F8-000000003gh-2C10;
+	Wed, 13 May 2026 07:42:58 +0000
+Date: Wed, 13 May 2026 15:41:58 +0800
+From: kernel test robot <lkp@intel.com>
+To: Melih Emik <melihemik@noirlang.tr>, Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: oe-kbuild-all@lists.linux.dev, Thomas Zimmermann <tzimmermann@suse.de>,
+	Wei Liu <wei.liu@kernel.org>,
+	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+	Zsolt Kajtar <soci@c64.rulez.org>,
+	Mukesh Rathor <mrathor@linux.microsoft.com>,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fbdev: make sh_mobile_lcdc independent of FB_DEVICE
+Message-ID: <202605131530.ZsNIZEco-lkp@intel.com>
+References: <20260509213041.BqkXfeyP@66089470-6549-4c3e-ae4b-211f3f79ee1e>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260509213041.BqkXfeyP@66089470-6549-4c3e-ae4b-211f3f79ee1e>
 
-6.18-stable review patch.  If anyone has any objections, please let me know.
+Hi Melih,
 
-------------------
+kernel test robot noticed the following build errors:
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+[auto build test ERROR on drm-misc/drm-misc-next]
+[also build test ERROR on drm-tip/drm-tip linus/master v7.1-rc3 next-20260508]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-[ Upstream commit 9ded47ad003f09a94b6a710b5c47f4aa5ceb7429 ]
+url:    https://github.com/intel-lab-lkp/linux/commits/Melih-Emik/fbdev-make-sh_mobile_lcdc-independent-of-FB_DEVICE/20260512-235223
+base:   https://gitlab.freedesktop.org/drm/misc/kernel.git drm-misc-next
+patch link:    https://lore.kernel.org/r/20260509213041.BqkXfeyP%4066089470-6549-4c3e-ae4b-211f3f79ee1e
+patch subject: [PATCH] fbdev: make sh_mobile_lcdc independent of FB_DEVICE
+config: powerpc64-randconfig-r111-20260513 (https://download.01.org/0day-ci/archive/20260513/202605131530.ZsNIZEco-lkp@intel.com/config)
+compiler: powerpc64-linux-gcc (GCC) 8.5.0
+sparse: v0.6.5-rc1
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260513/202605131530.ZsNIZEco-lkp@intel.com/reproduce)
 
-Hold state of deferred I/O in struct fb_deferred_io_state. Allocate an
-instance as part of initializing deferred I/O and remove it only after
-the final mapping has been closed. If the fb_info and the contained
-deferred I/O meanwhile goes away, clear struct fb_deferred_io_state.info
-to invalidate the mapping. Any access will then result in a SIGBUS
-signal.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202605131530.ZsNIZEco-lkp@intel.com/
 
-Fixes a long-standing problem, where a device hot-unplug happens while
-user space still has an active mapping of the graphics memory. The hot-
-unplug frees the instance of struct fb_info. Accessing the memory will
-operate on undefined state.
+All errors (new ones prefixed by >>):
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: 60b59beafba8 ("fbdev: mm: Deferred IO support")
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: stable@vger.kernel.org # v2.6.22+
-Signed-off-by: Helge Deller <deller@gmx.de>
-[ replaced kzalloc_obj(*fbdefio_state) with kzalloc(sizeof(*fbdefio_state), GFP_KERNEL) ]
-Signed-off-by: Sasha Levin <sashal@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/video/fbdev/core/fb_defio.c |  178 ++++++++++++++++++++++++++++--------
- include/linux/fb.h                  |    4 
- 2 files changed, 145 insertions(+), 37 deletions(-)
-
---- a/drivers/video/fbdev/core/fb_defio.c
-+++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -24,6 +24,75 @@
- #include <linux/rmap.h>
- #include <linux/pagemap.h>
- 
-+/*
-+ * struct fb_deferred_io_state
-+ */
-+
-+struct fb_deferred_io_state {
-+	struct kref ref;
-+
-+	struct mutex lock; /* mutex that protects the pageref list */
-+	/* fields protected by lock */
-+	struct fb_info *info;
-+};
-+
-+static struct fb_deferred_io_state *fb_deferred_io_state_alloc(void)
-+{
-+	struct fb_deferred_io_state *fbdefio_state;
-+
-+	fbdefio_state = kzalloc(sizeof(*fbdefio_state), GFP_KERNEL);
-+	if (!fbdefio_state)
-+		return NULL;
-+
-+	kref_init(&fbdefio_state->ref);
-+	mutex_init(&fbdefio_state->lock);
-+
-+	return fbdefio_state;
-+}
-+
-+static void fb_deferred_io_state_release(struct fb_deferred_io_state *fbdefio_state)
-+{
-+	mutex_destroy(&fbdefio_state->lock);
-+
-+	kfree(fbdefio_state);
-+}
-+
-+static void fb_deferred_io_state_get(struct fb_deferred_io_state *fbdefio_state)
-+{
-+	kref_get(&fbdefio_state->ref);
-+}
-+
-+static void __fb_deferred_io_state_release(struct kref *ref)
-+{
-+	struct fb_deferred_io_state *fbdefio_state =
-+		container_of(ref, struct fb_deferred_io_state, ref);
-+
-+	fb_deferred_io_state_release(fbdefio_state);
-+}
-+
-+static void fb_deferred_io_state_put(struct fb_deferred_io_state *fbdefio_state)
-+{
-+	kref_put(&fbdefio_state->ref, __fb_deferred_io_state_release);
-+}
-+
-+/*
-+ * struct vm_operations_struct
-+ */
-+
-+static void fb_deferred_io_vm_open(struct vm_area_struct *vma)
-+{
-+	struct fb_deferred_io_state *fbdefio_state = vma->vm_private_data;
-+
-+	fb_deferred_io_state_get(fbdefio_state);
-+}
-+
-+static void fb_deferred_io_vm_close(struct vm_area_struct *vma)
-+{
-+	struct fb_deferred_io_state *fbdefio_state = vma->vm_private_data;
-+
-+	fb_deferred_io_state_put(fbdefio_state);
-+}
-+
- static struct page *fb_deferred_io_get_page(struct fb_info *info, unsigned long offs)
- {
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-@@ -121,25 +190,46 @@ static void fb_deferred_io_pageref_put(s
- /* this is to find and return the vmalloc-ed fb pages */
- static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
- {
-+	struct fb_info *info;
- 	unsigned long offset;
- 	struct page *page;
--	struct fb_info *info = vmf->vma->vm_private_data;
-+	vm_fault_t ret;
-+	struct fb_deferred_io_state *fbdefio_state = vmf->vma->vm_private_data;
-+
-+	mutex_lock(&fbdefio_state->lock);
-+
-+	info = fbdefio_state->info;
-+	if (!info) {
-+		ret = VM_FAULT_SIGBUS; /* our device is gone */
-+		goto err_mutex_unlock;
-+	}
- 
- 	offset = vmf->pgoff << PAGE_SHIFT;
--	if (offset >= info->fix.smem_len)
--		return VM_FAULT_SIGBUS;
-+	if (offset >= info->fix.smem_len) {
-+		ret = VM_FAULT_SIGBUS;
-+		goto err_mutex_unlock;
-+	}
- 
- 	page = fb_deferred_io_get_page(info, offset);
--	if (!page)
--		return VM_FAULT_SIGBUS;
-+	if (!page) {
-+		ret = VM_FAULT_SIGBUS;
-+		goto err_mutex_unlock;
-+	}
- 
- 	if (!vmf->vma->vm_file)
- 		fb_err(info, "no mapping available\n");
- 
- 	BUG_ON(!info->fbdefio->mapping);
- 
-+	mutex_unlock(&fbdefio_state->lock);
-+
- 	vmf->page = page;
-+
- 	return 0;
-+
-+err_mutex_unlock:
-+	mutex_unlock(&fbdefio_state->lock);
-+	return ret;
- }
- 
- int fb_deferred_io_fsync(struct file *file, loff_t start, loff_t end, int datasync)
-@@ -166,15 +256,24 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
-  * Adds a page to the dirty list. Call this from struct
-  * vm_operations_struct.page_mkwrite.
-  */
--static vm_fault_t fb_deferred_io_track_page(struct fb_info *info, unsigned long offset,
--					    struct page *page)
-+static vm_fault_t fb_deferred_io_track_page(struct fb_deferred_io_state *fbdefio_state,
-+					    unsigned long offset, struct page *page)
- {
--	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct fb_info *info;
-+	struct fb_deferred_io *fbdefio;
- 	struct fb_deferred_io_pageref *pageref;
- 	vm_fault_t ret;
- 
- 	/* protect against the workqueue changing the page list */
--	mutex_lock(&fbdefio->lock);
-+	mutex_lock(&fbdefio_state->lock);
-+
-+	info = fbdefio_state->info;
-+	if (!info) {
-+		ret = VM_FAULT_SIGBUS; /* our device is gone */
-+		goto err_mutex_unlock;
-+	}
-+
-+	fbdefio = info->fbdefio;
- 
- 	pageref = fb_deferred_io_pageref_get(info, offset, page);
- 	if (WARN_ON_ONCE(!pageref)) {
-@@ -192,50 +291,38 @@ static vm_fault_t fb_deferred_io_track_p
- 	 */
- 	lock_page(pageref->page);
- 
--	mutex_unlock(&fbdefio->lock);
-+	mutex_unlock(&fbdefio_state->lock);
- 
- 	/* come back after delay to process the deferred IO */
- 	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
- 	return VM_FAULT_LOCKED;
- 
- err_mutex_unlock:
--	mutex_unlock(&fbdefio->lock);
-+	mutex_unlock(&fbdefio_state->lock);
- 	return ret;
- }
- 
--/*
-- * fb_deferred_io_page_mkwrite - Mark a page as written for deferred I/O
-- * @fb_info: The fbdev info structure
-- * @vmf: The VM fault
-- *
-- * This is a callback we get when userspace first tries to
-- * write to the page. We schedule a workqueue. That workqueue
-- * will eventually mkclean the touched pages and execute the
-- * deferred framebuffer IO. Then if userspace touches a page
-- * again, we repeat the same scheme.
-- *
-- * Returns:
-- * VM_FAULT_LOCKED on success, or a VM_FAULT error otherwise.
-- */
--static vm_fault_t fb_deferred_io_page_mkwrite(struct fb_info *info, struct vm_fault *vmf)
-+static vm_fault_t fb_deferred_io_page_mkwrite(struct fb_deferred_io_state *fbdefio_state,
-+					      struct vm_fault *vmf)
- {
- 	unsigned long offset = vmf->pgoff << PAGE_SHIFT;
- 	struct page *page = vmf->page;
- 
- 	file_update_time(vmf->vma->vm_file);
- 
--	return fb_deferred_io_track_page(info, offset, page);
-+	return fb_deferred_io_track_page(fbdefio_state, offset, page);
- }
- 
--/* vm_ops->page_mkwrite handler */
- static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
- {
--	struct fb_info *info = vmf->vma->vm_private_data;
-+	struct fb_deferred_io_state *fbdefio_state = vmf->vma->vm_private_data;
- 
--	return fb_deferred_io_page_mkwrite(info, vmf);
-+	return fb_deferred_io_page_mkwrite(fbdefio_state, vmf);
- }
- 
- static const struct vm_operations_struct fb_deferred_io_vm_ops = {
-+	.open		= fb_deferred_io_vm_open,
-+	.close		= fb_deferred_io_vm_close,
- 	.fault		= fb_deferred_io_fault,
- 	.page_mkwrite	= fb_deferred_io_mkwrite,
- };
-@@ -252,7 +339,10 @@ int fb_deferred_io_mmap(struct fb_info *
- 	vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
- 	if (!(info->flags & FBINFO_VIRTFB))
- 		vm_flags_set(vma, VM_IO);
--	vma->vm_private_data = info;
-+	vma->vm_private_data = info->fbdefio_state;
-+
-+	fb_deferred_io_state_get(info->fbdefio_state); /* released in vma->vm_ops->close() */
-+
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_mmap);
-@@ -263,9 +353,10 @@ static void fb_deferred_io_work(struct w
- 	struct fb_info *info = container_of(work, struct fb_info, deferred_work.work);
- 	struct fb_deferred_io_pageref *pageref, *next;
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct fb_deferred_io_state *fbdefio_state = info->fbdefio_state;
- 
- 	/* here we wrprotect the page's mappings, then do all deferred IO. */
--	mutex_lock(&fbdefio->lock);
-+	mutex_lock(&fbdefio_state->lock);
- #ifdef CONFIG_MMU
- 	list_for_each_entry(pageref, &fbdefio->pagereflist, list) {
- 		struct page *page = pageref->page;
-@@ -283,12 +374,13 @@ static void fb_deferred_io_work(struct w
- 	list_for_each_entry_safe(pageref, next, &fbdefio->pagereflist, list)
- 		fb_deferred_io_pageref_put(pageref, info);
- 
--	mutex_unlock(&fbdefio->lock);
-+	mutex_unlock(&fbdefio_state->lock);
- }
- 
- int fb_deferred_io_init(struct fb_info *info)
- {
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct fb_deferred_io_state *fbdefio_state;
- 	struct fb_deferred_io_pageref *pagerefs;
- 	unsigned long npagerefs;
- 	int ret;
-@@ -298,7 +390,11 @@ int fb_deferred_io_init(struct fb_info *
- 	if (WARN_ON(!info->fix.smem_len))
- 		return -EINVAL;
- 
--	mutex_init(&fbdefio->lock);
-+	fbdefio_state = fb_deferred_io_state_alloc();
-+	if (!fbdefio_state)
-+		return -ENOMEM;
-+	fbdefio_state->info = info;
-+
- 	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
- 	INIT_LIST_HEAD(&fbdefio->pagereflist);
- 	if (fbdefio->delay == 0) /* set a default of 1 s */
-@@ -315,10 +411,12 @@ int fb_deferred_io_init(struct fb_info *
- 	info->npagerefs = npagerefs;
- 	info->pagerefs = pagerefs;
- 
-+	info->fbdefio_state = fbdefio_state;
-+
- 	return 0;
- 
- err:
--	mutex_destroy(&fbdefio->lock);
-+	fb_deferred_io_state_release(fbdefio_state);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_init);
-@@ -352,11 +450,19 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_release
- void fb_deferred_io_cleanup(struct fb_info *info)
- {
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct fb_deferred_io_state *fbdefio_state = info->fbdefio_state;
- 
- 	fb_deferred_io_lastclose(info);
- 
-+	info->fbdefio_state = NULL;
-+
-+	mutex_lock(&fbdefio_state->lock);
-+	fbdefio_state->info = NULL;
-+	mutex_unlock(&fbdefio_state->lock);
-+
-+	fb_deferred_io_state_put(fbdefio_state);
-+
- 	kvfree(info->pagerefs);
--	mutex_destroy(&fbdefio->lock);
- 	fbdefio->mapping = NULL;
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -217,13 +217,14 @@ struct fb_deferred_io {
- 	unsigned long delay;
- 	bool sort_pagereflist; /* sort pagelist by offset */
- 	int open_count; /* number of opened files; protected by fb_info lock */
--	struct mutex lock; /* mutex that protects the pageref list */
- 	struct list_head pagereflist; /* list of pagerefs for touched pages */
- 	struct address_space *mapping; /* page cache object for fb device */
- 	/* callback */
- 	struct page *(*get_page)(struct fb_info *info, unsigned long offset);
- 	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
- };
-+
-+struct fb_deferred_io_state;
- #endif
- 
- /*
-@@ -490,6 +491,7 @@ struct fb_info {
- 	unsigned long npagerefs;
- 	struct fb_deferred_io_pageref *pagerefs;
- 	struct fb_deferred_io *fbdefio;
-+	struct fb_deferred_io_state *fbdefio_state;
- #endif
- 
- 	const struct fb_ops *fbops;
+   In file included from include/linux/device.h:15,
+                    from include/linux/backlight.h:12,
+                    from drivers/video/fbdev/sh_mobile_lcdcfb.c:12:
+   drivers/video/fbdev/sh_mobile_lcdcfb.c: In function 'sh_mobile_lcdc_release':
+>> drivers/video/fbdev/sh_mobile_lcdcfb.c:1787:14: error: 'struct fb_info' has no member named 'dev'
+     dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
+                 ^~
+   include/linux/dev_printk.h:139:23: note: in definition of macro 'dev_no_printk'
+       _dev_printk(level, dev, fmt, ##__VA_ARGS__); \
+                          ^~~
+   drivers/video/fbdev/sh_mobile_lcdcfb.c:1787:2: note: in expansion of macro 'dev_dbg'
+     dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
+     ^~~~~~~
+   drivers/video/fbdev/sh_mobile_lcdcfb.c: In function 'sh_mobile_lcdc_open':
+   drivers/video/fbdev/sh_mobile_lcdcfb.c:1810:14: error: 'struct fb_info' has no member named 'dev'
+     dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
+                 ^~
+   include/linux/dev_printk.h:139:23: note: in definition of macro 'dev_no_printk'
+       _dev_printk(level, dev, fmt, ##__VA_ARGS__); \
+                          ^~~
+   drivers/video/fbdev/sh_mobile_lcdcfb.c:1810:2: note: in expansion of macro 'dev_dbg'
+     dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
+     ^~~~~~~
+   drivers/video/fbdev/sh_mobile_lcdcfb.c: In function 'sh_mobile_lcdc_set_par':
+   drivers/video/fbdev/sh_mobile_lcdcfb.c:1894:15: error: 'struct fb_info' has no member named 'dev'
+      dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
+                  ^~
+   include/linux/dev_printk.h:110:11: note: in definition of macro 'dev_printk_index_wrap'
+      _p_func(dev, fmt, ##__VA_ARGS__);   \
+              ^~~
+   drivers/video/fbdev/sh_mobile_lcdcfb.c:1894:3: note: in expansion of macro 'dev_err'
+      dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
+      ^~~~~~~
 
 
+vim +1787 drivers/video/fbdev/sh_mobile_lcdcfb.c
+
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1777  
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1778  /*
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1779   * Locking: both .fb_release() and .fb_open() are called with info->lock held if
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1780   * user == 1, or with console sem held, if user == 0.
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1781   */
+d7ad3342186330 drivers/video/sh_mobile_lcdcfb.c Laurent Pinchart      2011-11-22  1782  static int sh_mobile_lcdc_release(struct fb_info *info, int user)
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1783  {
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1784  	struct sh_mobile_lcdc_chan *ch = info->par;
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1785  
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1786  	mutex_lock(&ch->open_lock);
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14 @1787  	dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1788  
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1789  	ch->use_count--;
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1790  
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1791  	/* Nothing to reconfigure, when called from fbcon */
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1792  	if (user) {
+ac751efa6a0d70 drivers/video/sh_mobile_lcdcfb.c Torben Hohn           2011-01-25  1793  		console_lock();
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1794  		sh_mobile_fb_reconfig(info);
+ac751efa6a0d70 drivers/video/sh_mobile_lcdcfb.c Torben Hohn           2011-01-25  1795  		console_unlock();
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1796  	}
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1797  
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1798  	mutex_unlock(&ch->open_lock);
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1799  
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1800  	return 0;
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1801  }
+dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1802  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

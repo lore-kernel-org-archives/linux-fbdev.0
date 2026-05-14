@@ -1,163 +1,115 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F41EA3D5C1B;
-	Wed, 13 May 2026 07:43:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.17
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEDC33A8741
+	for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 08:03:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778658187; cv=none; b=ccA/loh0pG68Yn59LUSBlnO0hwSJbnWnpTiER+iybiq3uVv8qV0sYZCyq6wbpaPVjtLiTsjZ4OuRfsMV5/5k/6l+vThS8UvH1pB8hzs8t3ik7vqfpBDFMhlMbh1PAyJPH5fTZ4+hnY/0NgWz9NLytfHvVqXPHwH7ddnKGJVW7FY=
+	t=1778745806; cv=none; b=M8GRVfXGAiAC810l6YospEjDsAtFcYX+eOmXToiNt6k1GPV4SYvS8gcdRsRBRjAtcZFzF5ocI1+OZiUfGJiTqPdDrYxBsjcWlJR+iPI4aKiWPTXSvaIX6l7ajUcAbyv/wHdC+g/52jSg7SjzLL5BDEBb/1ejO8Q95Xc2Vjq6cHI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778658187; c=relaxed/simple;
-	bh=TKIRWVOLQGmRSLSxOp4ZdNKhRgrjTEEnbWY6atM2t+o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DdZuPzj5iM+qcl/sO4gpO5qv+fkMMIbh5jOj6sw9FPccjQQEbb3UUY7NIT/dbkUdZDZpwKfR7FbZ1+kHRP/s4ZkIFOfILpKPP81CwYgYqxiDc7dkxd7TmjqDflKAvSrHKthqg5/e3xMgxzpGwr64GDBeVd6UoQ4rab1H5xlS1m0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=B9t+S3Jh; arc=none smtp.client-ip=192.198.163.17
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1778745806; c=relaxed/simple;
+	bh=r31U3mmNfI2l91+C7Oi83eBww+uDGQFp8X9UzhipXl8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jCqxh0nASwFA7uqvuTWab4Jy5q00kWrR6HlBTw9GpTwRBswcxw+2THmiunnDxwulQ5dk/tzYMWVymBhpu87tS3jebAiZBVMhI2z4U8dOUSbC90C8GTf2z1ghJQB+vMps1wcJYFlA4GVLCYCWfFSIEzOdDTNksGKXdimXo0pzB5E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pN3ZSxu/; arc=none smtp.client-ip=209.85.215.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="B9t+S3Jh"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778658186; x=1810194186;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=TKIRWVOLQGmRSLSxOp4ZdNKhRgrjTEEnbWY6atM2t+o=;
-  b=B9t+S3JhHslHJriB8P9jEZnv4bkjYjqia/SCjdWtXGhc+kjV0vb7Pl+f
-   LLpU6nKPoveOFRrSSlD1ZBy1wWpMJOvGacszkZv3tpBnaoTF/pNHUI+J5
-   fdaPSdlQkCICG253gmt4TFCtHQf5cg2Ib5fcMN+4uAPvHmF0B7A2YqAyF
-   55WU50BxCayc4/mx9iafPjmyIKJHpJzbdt0YLTCF2pNKxxUPUw0lno9mm
-   etOf5BYvPZtZreQgn3KRtm+exam6tpdrNBJQVGjqEnSgp7ZVSaSn4sXXB
-   oudLInQFTwcfWyIU3PyUf7O5/3ZgLavIwO35mjmi3WacgM9qz+YKnZQJW
-   A==;
-X-CSE-ConnectionGUID: r/q2ybW+QwC7rN0K+C9+9Q==
-X-CSE-MsgGUID: PCe0SAXJSLSmtTekMsf0YQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11784"; a="79434654"
-X-IronPort-AV: E=Sophos;i="6.23,232,1770624000"; 
-   d="scan'208";a="79434654"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 May 2026 00:43:04 -0700
-X-CSE-ConnectionGUID: etY6YsZNQ+2KOAxeE+d6UA==
-X-CSE-MsgGUID: OX9chYK2S6KzFnE7qhylLA==
-X-ExtLoop1: 1
-Received: from lkp-server01.sh.intel.com (HELO dca79079c3eb) ([10.239.97.150])
-  by fmviesa003.fm.intel.com with ESMTP; 13 May 2026 00:43:01 -0700
-Received: from kbuild by dca79079c3eb with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wN4F8-000000003gh-2C10;
-	Wed, 13 May 2026 07:42:58 +0000
-Date: Wed, 13 May 2026 15:41:58 +0800
-From: kernel test robot <lkp@intel.com>
-To: Melih Emik <melihemik@noirlang.tr>, Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: oe-kbuild-all@lists.linux.dev, Thomas Zimmermann <tzimmermann@suse.de>,
-	Wei Liu <wei.liu@kernel.org>,
-	Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
-	Zsolt Kajtar <soci@c64.rulez.org>,
-	Mukesh Rathor <mrathor@linux.microsoft.com>,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fbdev: make sh_mobile_lcdc independent of FB_DEVICE
-Message-ID: <202605131530.ZsNIZEco-lkp@intel.com>
-References: <20260509213041.BqkXfeyP@66089470-6549-4c3e-ae4b-211f3f79ee1e>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pN3ZSxu/"
+Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-c795f441ff7so5637843a12.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 01:03:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778745804; x=1779350604; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=u7GNIvyzCgZi0OvfLvXfLsDC6btZO2C2Y4XrgU5NUV0=;
+        b=pN3ZSxu/gj2+gqm5e7Ha1KeeUA2bLbZxFk+E8/2T+qijOla/TkohmbVRhUQEGXE6Qw
+         cRPfn3jy037CtPRD2+KAWSM8k1RNlbIzdxymdwOaaBHQE6yzKLDmd+Qrw44AJk+OKLoz
+         Q3SJSjBiAE0EhPUUkwNE/tBoEn9trvFSXExNBNlYbOui4b9rA2FQk6QqQ2tiyrPEtV2l
+         b6zFLkUBiDulexfUOBetbX2vZ8zb43Dqfi/wop5Zul6jD3QIrh7odx+39oXSdd1Y892Y
+         T1Bs3dsTczPsWs4Rg2omPImCRssb4UnS+91VjLSk4I4+s4Fu14jHe3b0siHiiN4yg5k9
+         MygQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778745804; x=1779350604;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=u7GNIvyzCgZi0OvfLvXfLsDC6btZO2C2Y4XrgU5NUV0=;
+        b=JMoh42aeIsr5sLhI8hYKG6UgdkgAb3Z5wG9Ig5qsyvhEuz/Hgi/6/266jrJjCQPcNN
+         tkeY59STMu1MXEDsSncKsynemARZJK93jgoSwFRMirtr+M1h/aZHg65o6MS6f7Bbm4J3
+         Y3pUNpeS3/294xAjUa/5YwQuiLea57wcOZskgK/AdCmeWGrGIk3YC9Snt9rqIiUH67hm
+         ZYkZIvhAATc0XUCGLujZPusORXctF01EfonKPuBzbKHKtoywUsTjqUwqRVHrZS1o8/2R
+         Phe9kuFAUgCYWmWnP5k0gWc9E/QXqt3vI/H5ixAROKX8qgyIh6T5TsSBcgRu0Z3LU8Xm
+         r5+A==
+X-Gm-Message-State: AOJu0Ywy6WxcsaMA7ttcc4UIntiizAM/n4mGHpA+zRb+baTgpWIztEBM
+	S8CgeUVz2DaKh4LFTxiX0F6N6dxpnIU2S1QE3SbJ1vFgJqj8umYqBSRb
+X-Gm-Gg: Acq92OFg11jlAt4W0VanNGay1cCbgonnkjcsPDqcMf+WSbQg0aUDmNDXB/+XRi+Wq22
+	YjrmKkn6ND4VnUiBpKbCxQ5bb7RiNvH5SO+PIQuMhBVQBDzK5km8dTL3VEHDaECNiD32hwBpGMA
+	6KE6IOP7GZhyEDO3RfBh0hQmLhUbFiiCDRcQanHCZOQwnIDoznBZFekevsZOtPH3DjnFma5W8bA
+	pbScYflDOmr3ekKItipRYEe08XnLH7OCMssjcRzF38V3B0H5I5/fyrXMm4CyTwZbbMGlNoxMht2
+	KivJqBOJE6II3LoavVsiY0J2oQyBwkthlg1pmWSVFieuT6rpLST/BE3AHrI0RbWWBFHTNC6S0/n
+	RLuho2v2McVOSX4OEM3ObNFvdoFQd9QK1TMsE7NqT1+KN9wrtPZfroaUbuCUWOcocxqrrlL4sDC
+	oDNNJulWLYPzUaiLw8AYE542gf61p1PHN72I45EBgrnPWhdTLAGdw/TnbphRowQKf+f7D/VXg=
+X-Received: by 2002:a17:902:fac3:b0:2ba:6ffa:bde0 with SMTP id d9443c01a7336-2bd30210e76mr47839485ad.19.1778745803654;
+        Thu, 14 May 2026 01:03:23 -0700 (PDT)
+Received: from localhost ([2404:7c00:52:8f0e:aae2:91ff:fe57:5e15])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5c16ac4asm15236865ad.33.2026.05.14.01.03.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 14 May 2026 01:03:23 -0700 (PDT)
+From: Chhabilal Dangal <yogeshdangal66@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Chhabilal Dangal <yogeshdangal66@gmail.com>
+Subject: [PATCH] staging: sm750fb: add missing FBINFO_STATE_RUNNING checks in copyarea and imageblit
+Date: Thu, 14 May 2026 13:48:18 +0545
+Message-ID: <20260514080318.39332-1-yogeshdangal66@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260509213041.BqkXfeyP@66089470-6549-4c3e-ae4b-211f3f79ee1e>
+Content-Transfer-Encoding: 8bit
 
-Hi Melih,
+lynxfb_ops_fillrect() correctly checks info->state before accessing the hardware 2D accelerator, returning early if the framebuffer is not in FBINFO_STATE_RUNNING state. However, lynxfb_ops_copyarea() and lynxfb_ops_imageblit() omit this guard despite using the same hardware accelerator through identical code paths.
 
-kernel test robot noticed the following build errors:
+Without this check, the 2D engine could be accessed while the device is suspended (state set to FBINFO_STATE_SUSPENDED via fb_set_suspend()), potentially causing bus errors or system hangs.
 
-[auto build test ERROR on drm-misc/drm-misc-next]
-[also build test ERROR on drm-tip/drm-tip linus/master v7.1-rc3 next-20260508]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Add the missing state checks to both functions, matching the existing pattern in lynxfb_ops_fillrect().
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Melih-Emik/fbdev-make-sh_mobile_lcdc-independent-of-FB_DEVICE/20260512-235223
-base:   https://gitlab.freedesktop.org/drm/misc/kernel.git drm-misc-next
-patch link:    https://lore.kernel.org/r/20260509213041.BqkXfeyP%4066089470-6549-4c3e-ae4b-211f3f79ee1e
-patch subject: [PATCH] fbdev: make sh_mobile_lcdc independent of FB_DEVICE
-config: powerpc64-randconfig-r111-20260513 (https://download.01.org/0day-ci/archive/20260513/202605131530.ZsNIZEco-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 8.5.0
-sparse: v0.6.5-rc1
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260513/202605131530.ZsNIZEco-lkp@intel.com/reproduce)
+Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605131530.ZsNIZEco-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   In file included from include/linux/device.h:15,
-                    from include/linux/backlight.h:12,
-                    from drivers/video/fbdev/sh_mobile_lcdcfb.c:12:
-   drivers/video/fbdev/sh_mobile_lcdcfb.c: In function 'sh_mobile_lcdc_release':
->> drivers/video/fbdev/sh_mobile_lcdcfb.c:1787:14: error: 'struct fb_info' has no member named 'dev'
-     dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
-                 ^~
-   include/linux/dev_printk.h:139:23: note: in definition of macro 'dev_no_printk'
-       _dev_printk(level, dev, fmt, ##__VA_ARGS__); \
-                          ^~~
-   drivers/video/fbdev/sh_mobile_lcdcfb.c:1787:2: note: in expansion of macro 'dev_dbg'
-     dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
-     ^~~~~~~
-   drivers/video/fbdev/sh_mobile_lcdcfb.c: In function 'sh_mobile_lcdc_open':
-   drivers/video/fbdev/sh_mobile_lcdcfb.c:1810:14: error: 'struct fb_info' has no member named 'dev'
-     dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
-                 ^~
-   include/linux/dev_printk.h:139:23: note: in definition of macro 'dev_no_printk'
-       _dev_printk(level, dev, fmt, ##__VA_ARGS__); \
-                          ^~~
-   drivers/video/fbdev/sh_mobile_lcdcfb.c:1810:2: note: in expansion of macro 'dev_dbg'
-     dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
-     ^~~~~~~
-   drivers/video/fbdev/sh_mobile_lcdcfb.c: In function 'sh_mobile_lcdc_set_par':
-   drivers/video/fbdev/sh_mobile_lcdcfb.c:1894:15: error: 'struct fb_info' has no member named 'dev'
-      dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
-                  ^~
-   include/linux/dev_printk.h:110:11: note: in definition of macro 'dev_printk_index_wrap'
-      _p_func(dev, fmt, ##__VA_ARGS__);   \
-              ^~~
-   drivers/video/fbdev/sh_mobile_lcdcfb.c:1894:3: note: in expansion of macro 'dev_err'
-      dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
-      ^~~~~~~
-
-
-vim +1787 drivers/video/fbdev/sh_mobile_lcdcfb.c
-
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1777  
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1778  /*
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1779   * Locking: both .fb_release() and .fb_open() are called with info->lock held if
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1780   * user == 1, or with console sem held, if user == 0.
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1781   */
-d7ad3342186330 drivers/video/sh_mobile_lcdcfb.c Laurent Pinchart      2011-11-22  1782  static int sh_mobile_lcdc_release(struct fb_info *info, int user)
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1783  {
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1784  	struct sh_mobile_lcdc_chan *ch = info->par;
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1785  
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1786  	mutex_lock(&ch->open_lock);
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14 @1787  	dev_dbg(info->dev, "%s(): %d users\n", __func__, ch->use_count);
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1788  
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1789  	ch->use_count--;
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1790  
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1791  	/* Nothing to reconfigure, when called from fbcon */
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1792  	if (user) {
-ac751efa6a0d70 drivers/video/sh_mobile_lcdcfb.c Torben Hohn           2011-01-25  1793  		console_lock();
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1794  		sh_mobile_fb_reconfig(info);
-ac751efa6a0d70 drivers/video/sh_mobile_lcdcfb.c Torben Hohn           2011-01-25  1795  		console_unlock();
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1796  	}
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1797  
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1798  	mutex_unlock(&ch->open_lock);
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1799  
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1800  	return 0;
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1801  }
-dd210503b77ae0 drivers/video/sh_mobile_lcdcfb.c Guennadi Liakhovetski 2010-09-14  1802  
-
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 9f3e3d37e..025ac8fe3 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -204,6 +204,9 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
+ 	struct sm750_dev *sm750_dev;
+ 	unsigned int base, pitch, bpp;
+ 
++	if (info->state != FBINFO_STATE_RUNNING)
++		return;
++
+ 	par = info->par;
+ 	sm750_dev = par->dev;
+ 
+@@ -239,6 +242,9 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 	struct lynxfb_par *par;
+ 	struct sm750_dev *sm750_dev;
+ 
++	if (info->state != FBINFO_STATE_RUNNING)
++		return;
++
+ 	par = info->par;
+ 	sm750_dev = par->dev;
+ 	/*
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.54.0
+

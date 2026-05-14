@@ -1,66 +1,67 @@
-Received: from mail-pg1-f180.google.com (mail-pg1-f180.google.com [209.85.215.180])
+Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4078F3D8120
-	for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 08:26:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.180
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 772103D7D8C
+	for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 08:26:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778747190; cv=none; b=kagm+08swQNfsPHNwqwtSa8D21n6FYg4Baw2ibQQCSFca8I7M7QSq8/cjTr8EE55QY9nAziXwDa2UGubhBQaVDxyg8jbeBUNhCoGl3Hdi/a6TeFSkKaRJsCvb3Gyqk4j4Lha3quKz7m5TLosdH+4T6Lrbe+FAuCzcDjFDnnkNRM=
+	t=1778747199; cv=none; b=DQs0wXy7CBdJzmPkf9jbJOJUBXXKTABsvCy+Qyit232N/a06Oi8SlZUeJPQL0/SXhhkfjv3lkOb33Q8xvPFI1P0Jw83B0jW+eXkVZHL8YejGqXgo/sOXzIq/9KbuenLQy+hPLTwKY90WC5c6PBSznUN3odruCNOq45vacwhecb4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778747190; c=relaxed/simple;
-	bh=zPOhLPdshjE8pq0yGg4SKIgXmW4mTNuSf+gp1KyIA98=;
+	s=arc-20240116; t=1778747199; c=relaxed/simple;
+	bh=q9srtjbJ1sl6JcRmZJxPPbCeBahKD3KQiyJ6bLfY+1o=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=A6lIMtx19ioJdAzlgAQoajNfY62fxN2yHa2sRZAUppfpcc2/5m3gptgtKu4z3dBNE5Q+FnMRFG+H31R30re8YYnWddNaFPZmeOpjobMiTOEQYyzyZ+mKAEXFa+H9n5d9TlD4HR/Rr9FBQ9AlXozJDcoibsjO06vOwv98hMP7OMY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b=h76T2dX6; arc=none smtp.client-ip=209.85.215.180
+	 In-Reply-To:To:Cc; b=OFOT4PFzJimojn4oKcuZnrPaEJBLjtuhTU34wBO8XCTTDb0nlQP5eCW+spl7i1cR9kb42k57JBMyXtJaSgdfADJNn4sf3sSh8GRZUW6owIN7Sc6Cu/FNm4xzeWiq8kjGneqrlN96/NLvPnX+tHahpvskPWe2F4N3HBmKhIBSNuk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b=hvGHDXkj; arc=none smtp.client-ip=209.85.216.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cse.iitm.ac.in
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b="h76T2dX6"
-Received: by mail-pg1-f180.google.com with SMTP id 41be03b00d2f7-c8173b2af32so5658664a12.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 01:26:28 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b="hvGHDXkj"
+Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-365eecc5885so7633389a91.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 01:26:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cse-iitm-ac-in.20251104.gappssmtp.com; s=20251104; t=1778747187; x=1779351987; darn=vger.kernel.org;
+        d=cse-iitm-ac-in.20251104.gappssmtp.com; s=20251104; t=1778747194; x=1779351994; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=okp+cmZfIVDgj/1rQL2V5ef2DxZfT0YRw0dNkTRuA+Y=;
-        b=h76T2dX6rzwGflgANlozqXzsxg4uiWSuBqieZVRcYKqyXWeEfu4JkBFZxfQV/+x4CA
-         rIHcN4UoGHUtxBdD18N30WdNfC66AVGrFck+/6qGgMNYReuGT8DYIQw2eE6trGJw+IR1
-         WxuRO4/ueeJIDYHZFPaHjlT8btsJMIl2Fjty1YyIL25KHKOW0qDJWyfRlehZCy7Qbc8p
-         QxZnx/kYyLFbDygLhJoCF99KocQzjRZR3uNGPAGVLikMmNw6lJL2WAyaQ33hPTQbO1fL
-         0ZoFaBkgji4g2oZrM6nflQIYUW6doM6KGgvVK903AMg3p1XCj98CPCU8AYRb28wfok5+
-         tSYA==
+        bh=t5YZ5/RDTjOVXbQmmL0DlnfYt163pcXn6d4m+SJiGG8=;
+        b=hvGHDXkjIELYCviN+Dh/i0sb1VCRO4LwW3LYrdsWb+hpuUt17mCpevOp2jy3HeR9La
+         8+SPx/sw70ZIWNTLy3LQmVFMBMkPh6CFXW1IjHlu8dnEbU3gxKeqLW96x6G2JiHXZcdW
+         IdddwPuhLi2XDGuEumXYxN1Jg1L554pO54TiNvqg604WhC8IgMUkZMtnWdoZJEM2qve8
+         3RQnh4DCLcSQOo6D184mG909f3Fd5j6lU6SmQ9a9EaM8kmpfuqfpUcjG9vlaO15RJRBw
+         w06LvlQ+ubil2N3GunYnMpxOlfgJfyWZLuxgKhEYb6o9xt4cRnMuuBnRKpJtTUigcvgS
+         jxSw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778747187; x=1779351987;
+        d=1e100.net; s=20251104; t=1778747194; x=1779351994;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=okp+cmZfIVDgj/1rQL2V5ef2DxZfT0YRw0dNkTRuA+Y=;
-        b=JL6gDmOLUDUGCARm6AJg/LGj2cFMq1iBuL4eMy5ha7lHFf8YSnwBzZrPjA2vIbSSpq
-         4CXyAQ+gmK2aSf24rwxYCjEdvD10kmHglkSs9T3X8AzBQ27r/LV5HcPYKNKDjvqy6d8P
-         bS3SjzUcFsitHw8QVN9w7hA7E14qtGqbCykYN7xQ3BCAdD6FsvIoehMtzeek8CgzbD2d
-         IK9Qsz7k3XSNpyEPbt8cZoDNjihzzxiudg0ZlJ6Y3ZZic7qGpqRl0M/h1BLCNCZE7xhz
-         CvjI+59O/sycTIQ1SDipmuBYhM2lKNcKzwVeoTP8Vl9Iy5l3yvzXFDa+7wG8vICnNWoj
-         eqAA==
-X-Gm-Message-State: AOJu0YzBtnSubE7KgZajI69M3d7d/Iq4t9nKaYX6OeA3IT1bG4+mOsaH
-	L8h+J/LRDFA1RKYvJAuas1wvC4jvMI3BNBxbbGebUWL4vOm68AEfyZEjpOhzY+cYTVo=
-X-Gm-Gg: Acq92OHCEJg/R/rsIXJO/eUGLODjO4HyCsGQReRPzTuxC4nz1XYXBnxfEZZUEQ/I8DG
-	viwD172IC+UDHxy9uaRzzbVDChfVjiL0pIf3DFks4bqTTdtg9cjwX3iMAhfrMp0uyQi3+b+fgkd
-	OGsxs+MK1fjpATHDz/gPF1iGGo+MnMwrinGCO+KAEpcGnq/IRjwHDIfzrd1ncP45mfQip5KwB9t
-	UycKvdiRoBwfiuE4sDVDkLJionJWVhBOiHXbZzFI+baTvBZJY3NT6/+GPuNoJtsmiOS0oILqXVc
-	/SXbfDHe0HQUpXo9NWxDlcbbdBRH6NcoY4KdXdGhsfv/sU1NxSrgg5LFHvnMbwx9fj6sN699+1S
-	QnftuTbo9vKPojSCt17+U/Iubw3LrH03ZGIyy0dkZixmKMFrRcPi675vw8wsTHyc3u17kgBQD2E
-	Fr5PFiXGdOMrxVB7VbUQ2pmIfhjEbER/uAUHF1d7b/k+jCba8ffvMFLdCFoTvpPLdyt78oG421/
-	fv6N6I6jWpDZTUngwjp3sGSKrDJ8mj+zU7ZKXMrF96S
-X-Received: by 2002:a05:6a20:12ce:b0:366:19e9:f43 with SMTP id adf61e73a8af0-3af80079e2bmr8359899637.6.1778747186893;
-        Thu, 14 May 2026 01:26:26 -0700 (PDT)
+        bh=t5YZ5/RDTjOVXbQmmL0DlnfYt163pcXn6d4m+SJiGG8=;
+        b=JsQkavXBp4ayg8EyUaUBYhZke7BgC/mksZ65h2hOW0T6p6eOgZfkB+ehp7RQNqsnNu
+         ensNZcqVEDHsVVJgf7VkApvBKOE7PSY2p+N/8t8sV5bY9kHLneHlqktj82fM2F3acxTv
+         uNHLGmTBYaAqAQPzW4PJ8AhTwSN4nLbqAIWErCbEY3/NpLrRHmOegbPJGs1vXoJAXgtA
+         xjnRNkLdxtLiQxA195J0EuHMjt1aoepobQf/jeviuX/1Z9Cv9z/dqZjMJ5Ip7aJZ48VG
+         +2DQ8YfVWlhOWXcv82fE/sJc7ohCj4BI0zsNArvEKkfP2EADdDohYs/OVLcrOhJYco5I
+         3Riw==
+X-Gm-Message-State: AOJu0YzyWlE59p+5kcYL9X8unzB8YY1DhLMuYZH6CBEmRFcyVmToOycs
+	ixN0445CLYnrzSp3EgisRlTku3qbgSixXu8Rb9BV1U2Y7HroQPAzbyOURNC3/egejGQ=
+X-Gm-Gg: Acq92OFBOmVLvwFJcP18pBZSs9YnhFCyoK4Wl8Lsbgvsr4EBKTRiwHWNhGckdTv+pEQ
+	8bJ3bDUTBZcTK4ZGwyFATRaTmQS02n5iVc1rnv6/xbJpBIx+DumeOYsTy0Wmm5Nd9auZziY8w2p
+	fh7c5ZxbNTDdbX8XisTHaNgEM/leTXbNlPNij/7fqbBF/JxRTxhDu7lIBHJmyocHpjhMWZPXtoh
+	03UIRIPls7IpdZS7g3LgwoUpyQtH0TqmwWPFoRM6klpcl/hP0rBXh1NEqduBkItkQT9r5nfBPnF
+	TR7UxRywHldm+8iH5B8WaX79AKq6XlN9q1xRG4qBNYFuP9zplBaKo8qGnVDxnKXIQxbafEe6z7+
+	Lk50+hSmgFSfGs/gcESbe8VA+DKJmqOHb/sFCdmb5ck//m937qrI2t4aBYGuhRy9/4/29OJxVwN
+	vaaJCqsuelO8yUHV7/dMKUXNRc+1Q4uquwMtDec39l1UaMnAO0h8UlmjfOgCWn0bcU4HgpGD54R
+	tbJk+Cdyc4Uy+0B0Hd50CIP1gd1Qbpe/JH/k6bjUDKb
+X-Received: by 2002:a05:6a20:4306:b0:39b:e6af:2d8 with SMTP id adf61e73a8af0-3af8016e0f6mr7940447637.4.1778747194198;
+        Thu, 14 May 2026 01:26:34 -0700 (PDT)
 Received: from [127.0.1.1] ([103.158.43.41])
-        by smtp.googlemail.com with ESMTPSA id 41be03b00d2f7-c82bb06875bsm1589102a12.3.2026.05.14.01.26.19
+        by smtp.googlemail.com with ESMTPSA id 41be03b00d2f7-c82bb06875bsm1589102a12.3.2026.05.14.01.26.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 May 2026 01:26:26 -0700 (PDT)
+        Thu, 14 May 2026 01:26:33 -0700 (PDT)
 From: Abdun Nihaal <nihaal@cse.iitm.ac.in>
-Date: Thu, 14 May 2026 13:54:42 +0530
-Subject: [PATCH 13/14] fbdev: vesafb: fix memory leak in vesafb_probe()
+Date: Thu, 14 May 2026 13:54:43 +0530
+Subject: [PATCH 14/14] fbdev: sm501fb: fix potential memory leak in
+ sm501fb_probe()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -69,7 +70,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260514-fbdev-v1-13-b3a2474fa720@cse.iitm.ac.in>
+Message-Id: <20260514-fbdev-v1-14-b3a2474fa720@cse.iitm.ac.in>
 References: <20260514-fbdev-v1-0-b3a2474fa720@cse.iitm.ac.in>
 In-Reply-To: <20260514-fbdev-v1-0-b3a2474fa720@cse.iitm.ac.in>
 To: Helge Deller <deller@gmx.de>, 
@@ -89,30 +90,31 @@ Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  Abdun Nihaal <nihaal@cse.iitm.ac.in>
 X-Mailer: b4 0.13.0
 
-Since commit 73ce73c30ba9 ("fbdev: Transfer video= option strings to
-caller; clarify ownership") the string returned from fb_get_options()
-is expected to be freed by the caller. But the string is not freed in
-vesafb_probe(). Fix that by freeing the option string after setup.
+The memory allocated for info->edid_data in sm501fb_probe() when
+CONFIG_OF is defined is not freed in the subsequent error paths.
+Fix that by freeing it in the error path if CONFIG_OF is defined.
 
-Fixes: 73ce73c30ba9 ("fbdev: Transfer video= option strings to caller; clarify ownership")
+Fixes: 4295f9bf74a8 ("video, sm501: add OF binding to support SM501")
 Cc: stable@vger.kernel.org
 Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
 ---
- drivers/video/fbdev/vesafb.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/sm501fb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-index f84f4db244bf..f1902056bd73 100644
---- a/drivers/video/fbdev/vesafb.c
-+++ b/drivers/video/fbdev/vesafb.c
-@@ -269,6 +269,7 @@ static int vesafb_probe(struct platform_device *dev)
- 	/* ignore error return of fb_get_options */
- 	fb_get_options("vesafb", &option);
- 	vesafb_setup(option);
-+	kfree(option);
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index fee4b9f84592..1ee7842517b8 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -2048,6 +2048,9 @@ static int sm501fb_probe(struct platform_device *pdev)
+ 	framebuffer_release(info->fb[HEAD_CRT]);
  
- 	if (si->orig_video_isVGA != VIDEO_TYPE_VLFB)
- 		return -ENODEV;
+ err_alloc:
++#if defined(CONFIG_OF)
++	kfree(info->edid_data);
++#endif
+ 	kfree(info);
+ 
+ 	return ret;
 
 -- 
 2.43.0

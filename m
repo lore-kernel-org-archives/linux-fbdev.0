@@ -1,67 +1,67 @@
-Received: from mail-pg1-f172.google.com (mail-pg1-f172.google.com [209.85.215.172])
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2593F3D812B
-	for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 08:25:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF6603D75AB
+	for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 08:25:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778747119; cv=none; b=unUwhDUxW3MF8kCiIiVP0kcyzliSzNhwJ1Nj91SFl6SpT+oTccCfN8RPI2dMxKZdDWbmeIE+ahV2zbTuVJ+v3AbJQcMMQ0/sQskGxJUlJSyExP9O7NHQBN158+YH+P5TnsBnBA01b3YcaaTBpQEkZ1adh1iUCDFkq8xazBNRqJo=
+	t=1778747127; cv=none; b=Usz0SsNmaV8yUXEC1NjyusCPIG5BWfikUI+UAybaZ5XB/iB1BZ7prXZy4N78YaIPmn6IJaJOke0cDO3oHYClFjWKmFSjuR3qA+e/8cYlC8tiBzPJJiqU3C9RgoGcQFYopNDVSV0yFY3DSttkCE1MPslBoXa0F8aqFTJ+iYK1IWs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778747119; c=relaxed/simple;
-	bh=s7vOJa8zQULdRpt82vMyDCCkIAR3Vt7Pe6/FpWy2FrI=;
+	s=arc-20240116; t=1778747127; c=relaxed/simple;
+	bh=7dxxrzbqdG+D1liscZGC4J7GXbPSfqu94rWrjh7Aoes=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=FMaJ72eyzy9+VDl84sU+IJIB5i17BXqVMC4u3ESF8Eg5l19ubGi7jCT5i7/TNMhrS869uD/vKFGGoSUXaVMFU9U/wV78dDx9eyE+GwcV/nj3hOugoLADuE/QzRGXgkVjGRPE1FYmCOYX3oOUtcd9S3GmGxJ3mfP+h0+eXrBiwHE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b=tcuT8auE; arc=none smtp.client-ip=209.85.215.172
+	 In-Reply-To:To:Cc; b=FKHonjundBd/qnr7r6jUQ4mrxhnKnbgch1EcBckOgwksR51W/POeWTsD+wZZOsjAzlsvhE+JQw/cyJtce/RQwCOBf+JUKswItHC97/PfIpyZQxEHf9Q2SwjRoONkLY3BdFDYGZwgwvOhAR+jvsN4epBEFGFwXlCdy+GEekYieTo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b=Om9xZZjh; arc=none smtp.client-ip=209.85.216.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cse.iitm.ac.in
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b="tcuT8auE"
-Received: by mail-pg1-f172.google.com with SMTP id 41be03b00d2f7-c80203b9d7bso3208316a12.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 01:25:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b="Om9xZZjh"
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-36900945df5so1021729a91.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 01:25:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cse-iitm-ac-in.20251104.gappssmtp.com; s=20251104; t=1778747117; x=1779351917; darn=vger.kernel.org;
+        d=cse-iitm-ac-in.20251104.gappssmtp.com; s=20251104; t=1778747125; x=1779351925; darn=vger.kernel.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=fJh4Y1vJpYq92CQsC3/GcBHFFxqYLe8usjdVpu9K90E=;
-        b=tcuT8auEbn6gOYZ72sU9YTaYv0dH8GExcpdHV4HPr82hDl83wGoqCpq43XY8XTrpQb
-         3wRlqXczsJDiswRLRSVMa3vIH6EgaL/j96QJT6fWcswSUlAZc2h3M8J+fS2fnd4qhnRx
-         KGm8ZcH86jrR3d1hwrW7KU5W68xrECBHMU+GkQgFDMMXBboLVa4jT45FQl7otf4IEUM4
-         +bdYLwZGsNy6KUPiAkZ9SaJ3k0NpThHzLoiKoFarbFIGXb3Y9EAcTUenHT6ZVFJspBus
-         7U6KkLYf5Y0LfPsTBo2ncYJMbmtctcuhbhtH3DWUcMyFyVQmZ/tGe6T9fXggBNHe8sWZ
-         0EJg==
+        bh=Cj4tsYfpJn1h72OjlKL8YrS/bESA9WMb/nnrThUnbQ0=;
+        b=Om9xZZjh2bxdxmVNCiYljIo6TEXd0J4seAO8DMoA8QqiHAAoS5TJmjXsFgeTQSAKTV
+         YY0Fbnwc6Adxo5JCmEUU23QUdl27ML8rnMntB5Tr2n4iiuc1czbhLqiLGE8i1csg7oGK
+         c/dzGAOP4uEGt9eW/rJggM17RmUPWqPwEqCEyMCru0ZnazRwJInWSLBebCuSdLFuTTSd
+         a9A6EL5rDoDWL9gPS+AzElv/NnFkkOnnicS3jApYybmvX4XNDxgCpNM6uWnQq0+Ddb4b
+         ukXf9upoU8AYTKIa+L09XXOAUoPgypiklhfMJ+1P5vdYZ7g21byhK0vLuumwEyHKn5Oz
+         /Xlw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778747117; x=1779351917;
+        d=1e100.net; s=20251104; t=1778747125; x=1779351925;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=fJh4Y1vJpYq92CQsC3/GcBHFFxqYLe8usjdVpu9K90E=;
-        b=a+icVVJZ+llrPXieSC5MJPDrgSInFigaz2mst28Mn9XqbQ1ta/SPIU2gSJMdjL+2Po
-         Kxtwm0TiunGsFGAEWI5sl9cY1Ea2ZXUFMP6i6OEcYXf+2NT/kB7SGxv+JTd+cRvcun8u
-         YonfpJlvEhwSbvytz3cklK7nQ5fHJM+YOIXH9Wqf87+HC3XaOU9rW3lRZ0EnHzgDDZ2Q
-         W2d3yI8b/D/FmT6BzcKaR3vebKPQt+x+Dn7eH8Huozxl8f+YGy33HHnOiOD5LyuMPSRL
-         5VvAuUTFhWesvsGXWWZjPASDWc8Zsn8XLmGdKNiIxAXCQSkQ6PWsfzebM15F+geSR7+U
-         LBLQ==
-X-Gm-Message-State: AOJu0YxVLXzzkMfYLJutcownqOzk+eR92EhOHPrLk943myqmyESiC/TW
-	pyinhwdzmAWB+m8p4g5f3fjx0Hf3j5D4ku+ny8+Juo+1UfrZlS+WsgQC/Qhai6u1GAM=
-X-Gm-Gg: Acq92OHHA5i6Wn36O6CDVkRPS8BO9rTUx3UE8njxSL6d0D/iTBqkoQ6JwReYXCTqur6
-	PUOle3e66uIpF50zfnB/PfSsgoxHDR/WghIx23bRVFOOxGNYQjhLKvamOqwyOtavnvUzqhX0sUL
-	Sg7PMzsRlvH9f90WlFhLOswtF0zq5atgcJNejvxEN+/x5rMFOU85dEvbMOrcIylmc5M3SjzWXVl
-	jaw7B7PMmsTMrDLcYs6OhbnqPxPfzneIN8xi4uZW6DuQlqDGU1kR7eOjtL2BpLc6uyvRA7nPSrx
-	FxHE3374XY+bD3tdKFJZEb1pNb6rc3BJH142roqR8NkgWD0KLhwdQfxpTE6gipdTT0nW4c8viEF
-	VGlNDPAWZDlnLaABVPWKJ0EhIM8YwEwelXipAsL+30cjWpgAv9QNA3cu0d/slD9nDgt8AuF4/Ib
-	LWF1h9CIJSdxHM7DALtVfj7K+ebbqA8ilplnXcmCVGJBTd4a71dLzrSLd2eDlzK6v8b6x7A0qVq
-	KCYoyiiJqt04xaiH9J7RZGfV8pwISEx9ozCpMEE7BxrAGs//IjtUN8=
-X-Received: by 2002:a05:6a20:939e:b0:3aa:c99b:5c63 with SMTP id adf61e73a8af0-3af7f25ba7fmr7209249637.18.1778747117417;
-        Thu, 14 May 2026 01:25:17 -0700 (PDT)
+        bh=Cj4tsYfpJn1h72OjlKL8YrS/bESA9WMb/nnrThUnbQ0=;
+        b=LSu1rCaoXP2QUnsOM0GBs00f5+EjJ65pgSU05phitArlJLC17YRRjDiJnC3Qlt53lG
+         WWwaVqE9eGKo2GPunVQy0SrxjCI2trG6wnmmk5xKFXqtwqUebejz3MbVAnz0bJxs+AaL
+         D5pOEkcS5LQRCHq4I9DMGHa10VXbKns7JJcYGBi8r2kZAg3rpnhv6DU1LTd9EraLxknj
+         VOqEeXJ3qUbvGmVOlsnGIOKY0BdN/6XR7/TzN0kk9WKwsZLC2p8e0Vn7teFbD7uVcQsw
+         2pOyvGAh709L5Ys6cxj+vRN3WJnVtLkZiIvV3u44HMD4Z09IMREXAaLO+yIxJOFdeIMF
+         Eukw==
+X-Gm-Message-State: AOJu0YwUBwSy+u5ecbyXp4zrKjPUPaquvtOdnT7SZqBwLe7wXhSVRqv6
+	ssfKMS7POS2c7yTTTbmQP8tOrdE8OB14erA0fhNNrWPaKNmJ4/uGDf4e2TI7AwO065g=
+X-Gm-Gg: Acq92OHLafgZoWMJZlJ3db4pb3QqemUzPDDi5BAwXqJyJlOur6hFL7oDfIIj25HGVY6
+	AvRv/v/gJxzfvg/wcQZLmk+lCIipKtPdnGfRfV+CfVnBFYtb/mpJGDjDu3ZxLJMnvIh69Y6H83v
+	TgB9YF3aIREvNOgnRn3Wn4dsBPt4gTTZoG3Vo46jucemmINBCnLxNkT+ozlT86yhhpcjwPwCbQt
+	hQVHLhD1R2iZtVQDtLd+V5yg6T79E3FPbDN6xkPiQwMMROW52w9O+eBK87IZL/R1CbKP79+IUD6
+	oCjr7oJOj35xJJeULpZWkTz4yu9CS6MG6o6YROCgsk/wJ0qmIBOjovMM9kZd/kAEpQ+oY/Q3Lw6
+	FPofbe5EH/cmdwAwfx5+kFX+YobobSNuqSjqol44kxfZ4oqOgo/wIBOFj4sc3OoMOxMKXMpPDVe
+	BOzw52/aZKSvdmDG/2qfNcfzWkSzMvWKCEOqWelwycPe3tYPZb0RtzjhSKcxwK1bgult203DnZL
+	NfUveCNwNvMaEdZNvEPzqNSMDrwTD+kTY0Gn7OgX7CJ
+X-Received: by 2002:a17:90b:2e4f:b0:368:30bf:e51a with SMTP id 98e67ed59e1d1-368f782f1c3mr6794705a91.12.1778747125031;
+        Thu, 14 May 2026 01:25:25 -0700 (PDT)
 Received: from [127.0.1.1] ([103.158.43.41])
-        by smtp.googlemail.com with ESMTPSA id 41be03b00d2f7-c82bb06875bsm1589102a12.3.2026.05.14.01.25.10
+        by smtp.googlemail.com with ESMTPSA id 41be03b00d2f7-c82bb06875bsm1589102a12.3.2026.05.14.01.25.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 May 2026 01:25:16 -0700 (PDT)
+        Thu, 14 May 2026 01:25:24 -0700 (PDT)
 From: Abdun Nihaal <nihaal@cse.iitm.ac.in>
-Date: Thu, 14 May 2026 13:54:33 +0530
-Subject: [PATCH 04/14] fbdev: radeon: fix potential memory leak in
- radeonfb_pci_register()
+Date: Thu, 14 May 2026 13:54:34 +0530
+Subject: [PATCH 05/14] fbdev: carminefb: fix potential memory leak in
+ alloc_carmine_fb()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -70,7 +70,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260514-fbdev-v1-4-b3a2474fa720@cse.iitm.ac.in>
+Message-Id: <20260514-fbdev-v1-5-b3a2474fa720@cse.iitm.ac.in>
 References: <20260514-fbdev-v1-0-b3a2474fa720@cse.iitm.ac.in>
 In-Reply-To: <20260514-fbdev-v1-0-b3a2474fa720@cse.iitm.ac.in>
 To: Helge Deller <deller@gmx.de>, 
@@ -90,30 +90,29 @@ Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
  Abdun Nihaal <nihaal@cse.iitm.ac.in>
 X-Mailer: b4 0.13.0
 
-The function radeonfb_pci_register() allocates memory for modelist
-(by calling radeon_check_modes() which calls fb_add_videomode()).
-The memory is appended to info->modelist, but is not freed in subsequent
-error paths. Fix this by calling fb_destroy_modelist().
+The memory allocated for modelist in fb_videomode_to_modelist() is not
+freed in the subsequent error path.
+Fix that by calling fb_destroy_modelist()
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Fixes: 2ece5f43b041 ("fbdev: add the carmine FB driver")
 Cc: stable@vger.kernel.org
 Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
 ---
- drivers/video/fbdev/aty/radeon_base.c | 1 +
+ drivers/video/fbdev/carminefb.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index adb03489bedf..b6b058cee751 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -2476,6 +2476,7 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+diff --git a/drivers/video/fbdev/carminefb.c b/drivers/video/fbdev/carminefb.c
+index 5f13f1cc79d3..fca50b7961eb 100644
+--- a/drivers/video/fbdev/carminefb.c
++++ b/drivers/video/fbdev/carminefb.c
+@@ -589,6 +589,7 @@ static int alloc_carmine_fb(void __iomem *regs, void __iomem *smem_base,
  	return 0;
- err_unmap_fb:
- 	iounmap(rinfo->fb_base);
+ 
+ err_dealloc_cmap:
 +	fb_destroy_modelist(&info->modelist);
- err_unmap_rom:
- 	kfree(rinfo->mon1_EDID);
- 	kfree(rinfo->mon2_EDID);
+ 	fb_dealloc_cmap(&info->cmap);
+ err_free_fb:
+ 	framebuffer_release(info);
 
 -- 
 2.43.0

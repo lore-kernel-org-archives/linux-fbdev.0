@@ -1,46 +1,71 @@
-Received: from canpmsgout10.his.huawei.com (canpmsgout10.his.huawei.com [113.46.200.225])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2A9A3DE434;
-	Thu, 14 May 2026 08:56:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=113.46.200.225
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF4841FD4
+	for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 10:30:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778749017; cv=none; b=g7JD87HafBKUndpmY47ky7ABYTxBgZPV68JSdTRRjzd7mpNKjEyr1LbfctC59/sT3VR8aPlu7c7e2+JTltbrW20JZUcZi7b1M4hLxvEcw9kwzcaSGeaBr/saImVGFiMlUzEuqQcd/CfQ65VHIPSGgfw///UVJgu9jcffiiEW1QY=
+	t=1778754653; cv=none; b=pOKnGFHhxA9DdEouw0C4XYpENg78FJCY9rT87XD7Ksyw6koC86HHAvEhS2ZeWNC5hj1/QRfZGO+XqKwCsXkvtcEP2lfAtg+FG0cmHVlpFSY9uMDjF8TyEqCWJhx9JojYYLthnC5PTWKKC8Zk/6U0+8sa8Bi6S5JBCqRPRhGbJ1Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778749017; c=relaxed/simple;
-	bh=4ckolnik1QU/BiDznbYuVH0yfh0dnAnH4Tldd7Bq9z8=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=uWHPx27K+PPblby7LVWg4CPCe4wYf3h4T65uuPd2gXGUv5cEGbKdDWgABBG3Xv+zMEx9eehj9aOyENKM8A6TcFhXo1QRVqI8OYS3P55pzUOllyDcynMW5BOyH99h7hQ7evVzv2XqKyO2Cfi7O8/v526PYC5Pir5+w3QmBVieY4s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass smtp.mailfrom=huawei.com; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b=mFb+5fkT; arc=none smtp.client-ip=113.46.200.225
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huawei.com
+	s=arc-20240116; t=1778754653; c=relaxed/simple;
+	bh=7DRUcn1z1lAVxDX2oROhlzkd/x33hcrvonRVFJgizJc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Xbcq+KSwJ75WuzfIu9pIk33i47c/Vsi0XYwZTH7Tht31TJEO5BFItrOJJo0pCg3We3KvT9FbLJ04TbcMbb95PCbjAfQTjarBetiAZkDWsrwrb5XtOjcqaBFfVQazfcKoyea4bUUEBrrRjChZYcgigChyCodpO5zT/WDbx9Fb5Eg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=P+Ih7++X; arc=none smtp.client-ip=209.85.216.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.b="mFb+5fkT"
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=JanbdM56CkwBqJ6g/H1kv8/ziSFNkUIn/j0QG690EJs=;
-	b=mFb+5fkT7AH65DQImojKQzSLQDBYrAYFC6/4xWScuPyOQvxrl5MxTR/TDlA93aVW8VwB6POD4
-	KHqIxWN/P6cuwNCLryxNK4H3P1pNWMDetoLjOhFrmuDPwD8nCXBsnEtp5pZexjHkJtZE6LHdLRn
-	4pqMvPJ/P3/xi7ywv35Tei0=
-Received: from mail.maildlp.com (unknown [172.19.163.200])
-	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4gGPBy2MWlz1K98N;
-	Thu, 14 May 2026 16:49:14 +0800 (CST)
-Received: from kwepemk100016.china.huawei.com (unknown [7.202.194.64])
-	by mail.maildlp.com (Postfix) with ESMTPS id A345F40563;
-	Thu, 14 May 2026 16:56:50 +0800 (CST)
-Received: from localhost.localdomain (10.50.85.180) by
- kwepemk100016.china.huawei.com (7.202.194.64) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.36; Thu, 14 May 2026 16:56:50 +0800
-From: Jiacheng Yu <yujiacheng3@huawei.com>
-To: <deller@gmx.de>, <tzimmermann@suse.de>, <simona@ffwll.ch>
-CC: <sravankumarlpu@gmail.com>, <dri-devel@lists.freedesktop.org>,
-	<linux-fbdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<liuyongqiang13@huawei.com>
-Subject: [PATCH] fbcon: Use correct type for vc_resize() return value
-Date: Thu, 14 May 2026 17:19:18 +0800
-Message-ID: <20260514091918.1607234-1-yujiacheng3@huawei.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P+Ih7++X"
+Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-36643b96b99so5576626a91.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 03:30:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1778754651; x=1779359451; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=fdFlkFOWt/jZ2tS4R334p9A28Ma1mptG39Xac/iq1co=;
+        b=P+Ih7++XM5CwC3JagG+Ev4+HipXxK3NB6nc6IOQ+sYnio7qCOFxtpsYMmPwul2EOdC
+         dg7Dpys1rp3d+Vbus5fH+Q35y4YgvoX1T/cGYzjHfCqef6TA8rySU+rJZxIb4Zuwg9oa
+         Y9SjmdgqSo9+arpSv6r2IGcLXYesvTy0EOWxz2ZTWJsGVZOg7Cl+hPDD9KMNae0KADcJ
+         pJ6R0uzX97Md71NJ7bG7GFSJIB4Gsl9/CQOSsEe45K3ejQ/6q6kJBrbuA+HX9Pul/Yp4
+         x5DyIUOdfyvnj0o8E+Cs9iL+g5Ci5Kht3ulWE4kKugKc+Fzsd0CfbBzhNAKyTlbwTuy8
+         oZNg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1778754651; x=1779359451;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fdFlkFOWt/jZ2tS4R334p9A28Ma1mptG39Xac/iq1co=;
+        b=HJ47pHe4nI0+sRS/8RBckWUk5cqAbe8Q0n16w66GukYSQ7su7M9Max0XhNP6UUoc3T
+         QcmzPYQx56+y57bq42JMQGlmbtfFluoktfKfQ1acc4BsfBNZk/gWyoktd+nYcC18knWB
+         B0DL5GAoIrt+IR86JKGVv8nycPRD89Vg/7UsqF9hNPogbAaBIZ+N44hkVLRpmK8CNcuY
+         /JsV8zqUnNuZ1pJD9hE4SeCCrmTq8p1ynKaVMPKZfch31g5lv9VgXqeWCE0ae3jrm/5R
+         FXyyGhscqm/717S4pRedJAFvemKSQTKvbtwPV8C2Q96uci4iYoXi203qNxkMKAMVbLQ/
+         Wqfw==
+X-Gm-Message-State: AOJu0Yx4j4QK1qEtM+2FItmwPhvKf8FDe8w77Hz8o7Jix90ZcLlwlrVk
+	aNegdqI7cvtan9LPFhPGhb1YF9U91+7QuwZ48fpz+0U1t/GQx0wXjyMU
+X-Gm-Gg: Acq92OEb5dvyVRLw97665jCDYojDarm+UEqXy9Pv8Dcte0Lt1AL6/ihUu9exZUi1hiW
+	48wISog7PzIJg4rlulxL9Q/NN57L6gc6UjD42Sy0kbQpyyxo4bc65NrYve+74qFViHdywhSDjRl
+	bFRzvqxeAhIM6CDoh83ij0r7rxgg93Ub4MtaUdNfrASToVZxf71S8bTPlxrSL7Hcb3LEoNg35tD
+	PTB+P/Dr6O2X1x5Uwo6hJBsXn/9bbG/PnTIJRLXe+7abm1Cw7lDuJ/LapN8rKHp0AioU//15lNZ
+	C9GYXaXkD6psGA/i0tkXC/LtnjGSkR27qqusAolRycLl83Ok2Dohjpwgh4U/Glhd/cSn0BghmA+
+	qjpBW1cODLJv52E4YrcuPeM1VFue4a39ELNj4rlOSAahAnUeGB/0+Ve7qXtMig/YBA5NCvoiXXt
+	un0lhMMklcPqgEbwgSO64+zIR3X3E92ewuSsXW3ctAqZS8LSwI/j8wcRYvsTsV
+X-Received: by 2002:a17:903:46c4:b0:2bd:2de3:51ad with SMTP id d9443c01a7336-2bd3043ca95mr74387675ad.34.1778754651014;
+        Thu, 14 May 2026 03:30:51 -0700 (PDT)
+Received: from localhost ([2404:7c00:52:8f0e:aae2:91ff:fe57:5e15])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5c05f5d2sm20493615ad.23.2026.05.14.03.30.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 14 May 2026 03:30:50 -0700 (PDT)
+From: Chhabilal Dangal <yogeshdangal66@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
+Cc: linux-fbdev@vger.kernel.org,
+	devel@driverdev.osuosl.org,
+	linux-kernel@vger.kernel.org,
+	Chhabilal Dangal <yogeshdangal66@gmail.com>
+Subject: [PATCH] staging: sm750fb: Add suspend checks to copyarea and imageblit
+Date: Thu, 14 May 2026 16:15:42 +0545
+Message-ID: <20260514103042.55313-1-yogeshdangal66@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -48,40 +73,44 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- kwepemk100016.china.huawei.com (7.202.194.64)
 
-The return value of vc_resize() is int, but fbcon_set_disp() stores it
-in an unsigned long variable. While the !ret check happens to work
-correctly by coincidence (negative values become large positive values),
-the types should match. Use int instead.
+lynxfb_ops_fillrect() already checks info->state before accessing
+the hardware 2D engine, but lynxfb_ops_copyarea() and
+lynxfb_ops_imageblit() do not.
 
-Eliminates the following W=3 warning:
+The suspend path calls fb_set_suspend(), which sets the framebuffer
+state to FBINFO_STATE_SUSPENDED. Add matching state checks in the
+remaining accelerated callbacks for consistency with fillrect().
 
-  drivers/video/fbdev/core/fbcon.c: In function 'fbcon_set_disp':
-  drivers/video/fbdev/core/fbcon.c:1494:14: warning: implicit conversion from 'int' to 'unsigned long' [-Wconversion]
-
-Fixes: af0db3c1f898 ("fbdev: Fix vmalloc out-of-bounds write in fast_imageblit")
-Signed-off-by: Jiacheng Yu <yujiacheng3@huawei.com>
+This patch was developed with AI assistance and is compile-tested only.
 ---
- drivers/video/fbdev/core/fbcon.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index b0e3e765360d..641687a734d5 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1440,8 +1440,7 @@ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
- 	struct vc_data **default_mode, *vc;
- 	struct vc_data *svc;
- 	struct fbcon_par *par = info->fbcon_par;
--	int rows, cols;
--	unsigned long ret = 0;
-+	int rows, cols, ret;
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 9f3e3d37e..025ac8fe3 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -204,6 +204,9 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
+ 	struct sm750_dev *sm750_dev;
+ 	unsigned int base, pitch, bpp;
  
- 	p = &fb_display[unit];
++	if (info->state != FBINFO_STATE_RUNNING)
++		return;
++
+ 	par = info->par;
+ 	sm750_dev = par->dev;
  
+@@ -239,6 +242,9 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 	struct lynxfb_par *par;
+ 	struct sm750_dev *sm750_dev;
+ 
++	if (info->state != FBINFO_STATE_RUNNING)
++		return;
++
+ 	par = info->par;
+ 	sm750_dev = par->dev;
+ 	/*
 -- 
-2.34.1
+2.54.0
 

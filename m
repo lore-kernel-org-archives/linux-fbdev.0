@@ -1,115 +1,166 @@
-Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
+Received: from mail-pg1-f179.google.com (mail-pg1-f179.google.com [209.85.215.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEDC33A8741
-	for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 08:03:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34B343D7D65
+	for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 08:24:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778745806; cv=none; b=M8GRVfXGAiAC810l6YospEjDsAtFcYX+eOmXToiNt6k1GPV4SYvS8gcdRsRBRjAtcZFzF5ocI1+OZiUfGJiTqPdDrYxBsjcWlJR+iPI4aKiWPTXSvaIX6l7ajUcAbyv/wHdC+g/52jSg7SjzLL5BDEBb/1ejO8Q95Xc2Vjq6cHI=
+	t=1778747090; cv=none; b=jSmRAhfhRCAmbsG40exVj1v+8NNjOe8KloMzXiNIWLLLm/6FH/SgCKTpEGk+akGpG74org0Dk4tvM1bEjSBZUJdgmfmePYq66I7elAHLkKj0Pnht1jXlI+UPoqS52tJrjzFRuoyLALCsc8N+zEsXdcpAkqA9vaYZNQPMbQyS5Xs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778745806; c=relaxed/simple;
-	bh=r31U3mmNfI2l91+C7Oi83eBww+uDGQFp8X9UzhipXl8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jCqxh0nASwFA7uqvuTWab4Jy5q00kWrR6HlBTw9GpTwRBswcxw+2THmiunnDxwulQ5dk/tzYMWVymBhpu87tS3jebAiZBVMhI2z4U8dOUSbC90C8GTf2z1ghJQB+vMps1wcJYFlA4GVLCYCWfFSIEzOdDTNksGKXdimXo0pzB5E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pN3ZSxu/; arc=none smtp.client-ip=209.85.215.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1778747090; c=relaxed/simple;
+	bh=pQaCeYC0L+OsOx7Di+u7X+3Jw59KU+5kmLZBiKVWt2s=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=JYQdjnNicYGesUzA7bUDFPf3ZCLo6JY8UPuqYspJyb1Zze9eO8DXlR2SIZi9ytGdy+BqVFFzEYLZH5onbhG198XHZxFTdOX+uV2xZGWujbJAEGjbQSEiCarmEgF0QxMKf+QySgzoFw4E1MBkfnll7TVwCtcinV7teAHflphljUw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b=Rmq8yOMq; arc=none smtp.client-ip=209.85.215.179
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cse.iitm.ac.in
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pN3ZSxu/"
-Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-c795f441ff7so5637843a12.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 01:03:24 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b="Rmq8yOMq"
+Received: by mail-pg1-f179.google.com with SMTP id 41be03b00d2f7-c802803ac17so3486920a12.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 14 May 2026 01:24:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1778745804; x=1779350604; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=u7GNIvyzCgZi0OvfLvXfLsDC6btZO2C2Y4XrgU5NUV0=;
-        b=pN3ZSxu/gj2+gqm5e7Ha1KeeUA2bLbZxFk+E8/2T+qijOla/TkohmbVRhUQEGXE6Qw
-         cRPfn3jy037CtPRD2+KAWSM8k1RNlbIzdxymdwOaaBHQE6yzKLDmd+Qrw44AJk+OKLoz
-         Q3SJSjBiAE0EhPUUkwNE/tBoEn9trvFSXExNBNlYbOui4b9rA2FQk6QqQ2tiyrPEtV2l
-         b6zFLkUBiDulexfUOBetbX2vZ8zb43Dqfi/wop5Zul6jD3QIrh7odx+39oXSdd1Y892Y
-         T1Bs3dsTczPsWs4Rg2omPImCRssb4UnS+91VjLSk4I4+s4Fu14jHe3b0siHiiN4yg5k9
-         MygQ==
+        d=cse-iitm-ac-in.20251104.gappssmtp.com; s=20251104; t=1778747086; x=1779351886; darn=vger.kernel.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=4mgvCm8MfJh47lqaqPNfqzc/xfynw7OZOiaI/rFvWqY=;
+        b=Rmq8yOMqZYztneBTFB08g0ydIO+lue4teTAjYKrx0C4xgLcEBTWDD57MTSzVwdOWZ0
+         MlbldvkvlF7j/mSvsQKQwJpyWQhamjbFMTZqi0WNJkxXqEfHRQQ9RIEew36JmwTqiag3
+         Q3sPCIuD/OSyEit+HBnZiYDJK6GMymxdT3DrWoj0+kNG+dGvGG6TIeJADb+FNpqa/kAW
+         vYp128wG1OP4QGEQKWF/ixHwiKChMf5slEOzMlEm5XkxkgGb+QKMhuadWh+BKv18nIOR
+         bKwxHAinDKuPFXpQZsVuyODdcgevIOg42e4iBwr/haeHR6OsZUH4XatUmhGGO75D8DS8
+         NSrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1778745804; x=1779350604;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1778747086; x=1779351886;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=u7GNIvyzCgZi0OvfLvXfLsDC6btZO2C2Y4XrgU5NUV0=;
-        b=JMoh42aeIsr5sLhI8hYKG6UgdkgAb3Z5wG9Ig5qsyvhEuz/Hgi/6/266jrJjCQPcNN
-         tkeY59STMu1MXEDsSncKsynemARZJK93jgoSwFRMirtr+M1h/aZHg65o6MS6f7Bbm4J3
-         Y3pUNpeS3/294xAjUa/5YwQuiLea57wcOZskgK/AdCmeWGrGIk3YC9Snt9rqIiUH67hm
-         ZYkZIvhAATc0XUCGLujZPusORXctF01EfonKPuBzbKHKtoywUsTjqUwqRVHrZS1o8/2R
-         Phe9kuFAUgCYWmWnP5k0gWc9E/QXqt3vI/H5ixAROKX8qgyIh6T5TsSBcgRu0Z3LU8Xm
-         r5+A==
-X-Gm-Message-State: AOJu0Ywy6WxcsaMA7ttcc4UIntiizAM/n4mGHpA+zRb+baTgpWIztEBM
-	S8CgeUVz2DaKh4LFTxiX0F6N6dxpnIU2S1QE3SbJ1vFgJqj8umYqBSRb
-X-Gm-Gg: Acq92OFg11jlAt4W0VanNGay1cCbgonnkjcsPDqcMf+WSbQg0aUDmNDXB/+XRi+Wq22
-	YjrmKkn6ND4VnUiBpKbCxQ5bb7RiNvH5SO+PIQuMhBVQBDzK5km8dTL3VEHDaECNiD32hwBpGMA
-	6KE6IOP7GZhyEDO3RfBh0hQmLhUbFiiCDRcQanHCZOQwnIDoznBZFekevsZOtPH3DjnFma5W8bA
-	pbScYflDOmr3ekKItipRYEe08XnLH7OCMssjcRzF38V3B0H5I5/fyrXMm4CyTwZbbMGlNoxMht2
-	KivJqBOJE6II3LoavVsiY0J2oQyBwkthlg1pmWSVFieuT6rpLST/BE3AHrI0RbWWBFHTNC6S0/n
-	RLuho2v2McVOSX4OEM3ObNFvdoFQd9QK1TMsE7NqT1+KN9wrtPZfroaUbuCUWOcocxqrrlL4sDC
-	oDNNJulWLYPzUaiLw8AYE542gf61p1PHN72I45EBgrnPWhdTLAGdw/TnbphRowQKf+f7D/VXg=
-X-Received: by 2002:a17:902:fac3:b0:2ba:6ffa:bde0 with SMTP id d9443c01a7336-2bd30210e76mr47839485ad.19.1778745803654;
-        Thu, 14 May 2026 01:03:23 -0700 (PDT)
-Received: from localhost ([2404:7c00:52:8f0e:aae2:91ff:fe57:5e15])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5c16ac4asm15236865ad.33.2026.05.14.01.03.22
+        bh=4mgvCm8MfJh47lqaqPNfqzc/xfynw7OZOiaI/rFvWqY=;
+        b=mJz7UNTm0dmvrsCVcgUn/YeDWpyC6ILammzcYWQXLVXr5d/JtGlk6QQBKJ/iDQyfF7
+         +3HDeCXegDWWlOMVOV0nkPfVXu2XiJnh0aPVqCN6bvTL3yaDKp01JshqvS9aoSb2QVw3
+         lnJ3wLXyFT7FwwlrYEob21pM4P+mxxzVZFUuTQmHrWi3xpGIFCfoc3zX+VF9Wd4gJmLr
+         t8xE+R0D5Qm2wS7dn7Wi4WLhWT+YVwEdiYjat30VIxEPxOnxRnct1G0yNAI5aZ8SG89R
+         0sMODM4t7xvR9QvDnYMGuFKWfOXTzp1zuNLK1qYzEVWwRuce7hM+Rrk/2XtUq5qQM1RW
+         FWew==
+X-Gm-Message-State: AOJu0Yx9msh6gIJIQToLVmlKJb1URkQXF+ov/uI9t6usOY12fvC68a7t
+	M46eCB5yjijw6TKTKT/oWvKbkoZfMshP/keAjgwEMo0kZJhqH0/SweilBbcxO7xVs98=
+X-Gm-Gg: Acq92OHQk6cuLISgmARIQyCjpHlonB5Q0yeQ+jEcvCtn6AZcD/Mnj72UPXAxJz5+ut5
+	1Pgt+USL4QlD/PRUcGHxKj8GKF34O+slWvotzwPQLewZo6Dr/bGXieAi3wSav9bc3bPzf1nWVl9
+	/HvDF5xGb1QwIRbgOD7UZYZ5+72YehvhApvbiQLdjDL7yLC95MA+evrV79s9U00ael389OvTkio
+	gL/2olWNh0Ha08bxE55+D4kvoAaw84dqcK0VB62h76jSeNv3b0oH0hHFtLSiteN2i59t2aHbJSF
+	Ic/pyPqGBwP+ooAAUxeO3Ce7JKx/go0WzYU6W3I1XePLjn+sYZ0AiZtBWNeR/Y6fc+kCaM17Z7y
+	s3ejtNUlMHXOgLtF18q8rkDmqzrY5wWd27drNU6hI4ya5sjlgTlKXeU474bZWl+jf7CVhdCa+Lw
+	q3ABFOTC9C32/GOALZcJAtosuOxYRNO9WOPvda59PGTHQyRzMhyJ3pQzPKH/c4WE4D/hDtlkNls
+	bKdaeg8WqcUWJL5HHiGJAO2XUCls+l0TkH1lss9hHGcNQTtZO7kcLc=
+X-Received: by 2002:a05:6300:218d:b0:395:ce56:4448 with SMTP id adf61e73a8af0-3af7f97ae44mr7226883637.25.1778747085948;
+        Thu, 14 May 2026 01:24:45 -0700 (PDT)
+Received: from [127.0.1.1] ([103.158.43.41])
+        by smtp.googlemail.com with ESMTPSA id 41be03b00d2f7-c82bb06875bsm1589102a12.3.2026.05.14.01.24.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 May 2026 01:03:23 -0700 (PDT)
-From: Chhabilal Dangal <yogeshdangal66@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Chhabilal Dangal <yogeshdangal66@gmail.com>
-Subject: [PATCH] staging: sm750fb: add missing FBINFO_STATE_RUNNING checks in copyarea and imageblit
-Date: Thu, 14 May 2026 13:48:18 +0545
-Message-ID: <20260514080318.39332-1-yogeshdangal66@gmail.com>
-X-Mailer: git-send-email 2.54.0
+        Thu, 14 May 2026 01:24:45 -0700 (PDT)
+From: Abdun Nihaal <nihaal@cse.iitm.ac.in>
+Subject: [PATCH 00/14] fbdev: fix various memory leaks
+Date: Thu, 14 May 2026 13:54:29 +0530
+Message-Id: <20260514-fbdev-v1-0-b3a2474fa720@cse.iitm.ac.in>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAL2GBWoC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDU0Nj3bSklNQyXUvLRFPjlGQDc1OTNCWg2oKi1LTMCrA50bG1tQBF/GH
+ kVwAAAA==
+To: Helge Deller <deller@gmx.de>, 
+ Javier Martinez Canillas <javierm@redhat.com>, 
+ Thomas Zimmermann <tzimmermann@suse.de>, 
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+ Andrew Morton <akpm@linux-foundation.org>, 
+ Sebastian Siewior <bigeasy@linutronix.de>, 
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, 
+ Ondrej Zary <linux@rainbow-software.org>, 
+ Antonino Daplas <adaplas@gmail.com>, Paul Mundt <lethal@linux-sh.org>, 
+ Krzysztof Helt <krzysztof.h1@wp.pl>, Tomi Valkeinen <tomi.valkeinen@ti.com>, 
+ Michal Januszewski <spock@gentoo.org>, Heiko Schocher <hs@denx.de>, 
+ Peter Jones <pjones@redhat.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
+ Abdun Nihaal <nihaal@cse.iitm.ac.in>
+X-Mailer: b4 0.13.0
 
-lynxfb_ops_fillrect() correctly checks info->state before accessing the hardware 2D accelerator, returning early if the framebuffer is not in FBINFO_STATE_RUNNING state. However, lynxfb_ops_copyarea() and lynxfb_ops_imageblit() omit this guard despite using the same hardware accelerator through identical code paths.
+This patchset fixes some memory leak issues present in fbdev drivers.
 
-Without this check, the 2D engine could be accessed while the device is suspended (state set to FBINFO_STATE_SUSPENDED via fb_set_suspend()), potentially causing bus errors or system hangs.
+Since commit 56c134f7f1b5 ("fbdev: Track deferred-I/O pages in pageref struct")
+fb_deferred_io_init() allocated memory for pagerefs and returned an
+error code, but the existing drivers which call fb_deferred_io_init()
+were not updated to do cleanup. The first three commits address this.
+- fbdev: hecubafb: fix potential memory leak in hecubafb_probe()
+- fbdev: broadsheetfb: fix potential memory leak in broadsheetfb_probe()
+- fbdev: metronomefb: fix potential memory leak in metronomefb_probe()
 
-Add the missing state checks to both functions, matching the existing pattern in lynxfb_ops_fillrect().
+Probe functions that call fb_add_videomode() or fb_videomode_to_modelist() 
+sometimes did not call fb_destry_modelist() to free the allocated
+memory. The following patches address this issue.
+- fbdev: radeon: fix potential memory leak in radeonfb_pci_register()
+- fbdev: carminefb: fix potential memory leak in alloc_carmine_fb()
+- fbdev: i740fb: fix potential memory leak in i740fb_probe()
+- fbdev: nvidia: fix potential memory leak in nvidiafb_probe()
+- fbdev: s3fb: fix potential memory leak in s3_pci_probe()
+- fbdev: tdfxfb: fix potential memory leak in tdfxfb_probe()
+- fbdev: tridentfb: fix potential memory leak in trident_pci_probe()
+- fbdev: uvesafb: fix potential memory leak in uvesafb_probe()
 
-Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
+Since commit 73ce73c30ba9 ("fbdev: Transfer video= option strings to caller; clarify ownership")
+the fb_get_options() function transfers ownership of the memory
+allocated for options, and so the caller is expected to free it. The
+following two patches address this issue.
+- fbdev: efifb: fix memory leak in efifb_probe()
+- fbdev: vesafb: fix memory leak in vesafb_probe()
+
+The following commit fixes a simple memory leak.
+- fbdev: sm501fb: fix potential memory leak in sm501fb_probe()
+
+All the patches were only compile tested.
+The issues were found using static analysis.
+
+Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
 ---
- drivers/staging/sm750fb/sm750.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+Abdun Nihaal (14):
+      fbdev: hecubafb: fix potential memory leak in hecubafb_probe()
+      fbdev: broadsheetfb: fix potential memory leak in broadsheetfb_probe()
+      fbdev: metronomefb: fix potential memory leak in metronomefb_probe()
+      fbdev: radeon: fix potential memory leak in radeonfb_pci_register()
+      fbdev: carminefb: fix potential memory leak in alloc_carmine_fb()
+      fbdev: i740fb: fix potential memory leak in i740fb_probe()
+      fbdev: nvidia: fix potential memory leak in nvidiafb_probe()
+      fbdev: s3fb: fix potential memory leak in s3_pci_probe()
+      fbdev: tdfxfb: fix potential memory leak in tdfxfb_probe()
+      fbdev: tridentfb: fix potential memory leak in trident_pci_probe()
+      fbdev: uvesafb: fix potential memory leak in uvesafb_probe()
+      fbdev: efifb: fix memory leak in efifb_probe()
+      fbdev: vesafb: fix memory leak in vesafb_probe()
+      fbdev: sm501fb: fix potential memory leak in sm501fb_probe()
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 9f3e3d37e..025ac8fe3 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -204,6 +204,9 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
- 	struct sm750_dev *sm750_dev;
- 	unsigned int base, pitch, bpp;
- 
-+	if (info->state != FBINFO_STATE_RUNNING)
-+		return;
-+
- 	par = info->par;
- 	sm750_dev = par->dev;
- 
-@@ -239,6 +242,9 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
- 	struct lynxfb_par *par;
- 	struct sm750_dev *sm750_dev;
- 
-+	if (info->state != FBINFO_STATE_RUNNING)
-+		return;
-+
- 	par = info->par;
- 	sm750_dev = par->dev;
- 	/*
+ drivers/video/fbdev/aty/radeon_base.c | 1 +
+ drivers/video/fbdev/broadsheetfb.c    | 8 ++++++--
+ drivers/video/fbdev/carminefb.c       | 1 +
+ drivers/video/fbdev/efifb.c           | 1 +
+ drivers/video/fbdev/hecubafb.c        | 6 +++++-
+ drivers/video/fbdev/i740fb.c          | 1 +
+ drivers/video/fbdev/metronomefb.c     | 8 ++++++--
+ drivers/video/fbdev/nvidia/nvidia.c   | 1 +
+ drivers/video/fbdev/s3fb.c            | 1 +
+ drivers/video/fbdev/sm501fb.c         | 3 +++
+ drivers/video/fbdev/tdfxfb.c          | 1 +
+ drivers/video/fbdev/tridentfb.c       | 1 +
+ drivers/video/fbdev/uvesafb.c         | 4 ++--
+ drivers/video/fbdev/vesafb.c          | 1 +
+ 14 files changed, 31 insertions(+), 7 deletions(-)
+---
+base-commit: ba2e787b4814ebf9ab5f6a84181678b67eb3677b
+change-id: 20260513-fbdev-99a53dc0754f
+
+Best regards,
 -- 
-2.54.0
+Abdun Nihaal <nihaal@cse.iitm.ac.in>
 

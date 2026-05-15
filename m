@@ -1,186 +1,78 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from forward501a.mail.yandex.net (forward501a.mail.yandex.net [178.154.239.81])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A91E3F58CD;
-	Fri, 15 May 2026 16:28:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80CB63DA5C1;
+	Fri, 15 May 2026 17:19:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778862500; cv=none; b=oUdQYo5OH2MWsoj+mzknLYTQtVncr+x6hRl9kasNwlCVUVpjkFhGU9XOzhhrZg1LvMwmYiQjw7US9SozmGWnFnVsT2VYX2CHFDTAxj4mKwmzT8qywwEPx8boB36emBwqitA/ab7wNFWOTNM23tWWuvxRNYe6zn8U7l7zd5ChoBg=
+	t=1778865569; cv=none; b=gWlmOgMLoXHt5U43ZD3FVYbrlr5taxOPoc2pFl0Br4KeOwArbFz2+HMGElOA8ckg/bcMNoScs+CjzqW1Mf/qeXxsWGxd/VyI1hLHtTMZLVHZNIEb/uzirw3RPcP9C94xb3oe9HhJvBy9VGou5oMAjof7UPxBKdmuNPbogsJwBmk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778862500; c=relaxed/simple;
-	bh=fevXNOMD2wqSxfojs9FldeJgBr0Sp/Q5mbdpF+ByygA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=njVs0wLWkojoToP7BX3BM2IMezF5wKO407mGNrUHm8aA0PGpXrgSnemKRhnrJtw7FVUsN/meAkG4k+mXieeaEraWovt0inzEshtBb5H9h/CjqMmEV2pELZeZaUaZWUTKA8dVsGTzA9wQ4tjzF0AGY0jQ0C+BW/lt+uApmaI7ewA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aQrWa2oN; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778865569; c=relaxed/simple;
+	bh=7iXCUGOuHyC11W5gE7ry1sNNs+9n1w7vxQxIVcT4Sl8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QuZd3v/JrcvxgjZoL6OKmgdJ9NtQTRfqh8f8cge2CXeT9RxL9FLpDL9w2mmPpQoJNaFANJoexgshpG4GdRNlTGWAL/DPw+ddDgTHNGNVQj+7eowT0yXWTzuTnNeZcRs55TqTWmwgRXMwQLT3QPQ5R4r1xjYwU4b1SxfzqNaaWaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net; spf=pass smtp.mailfrom=sezginduran.net; dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b=Q9qnXaRL; arc=none smtp.client-ip=178.154.239.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sezginduran.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aQrWa2oN"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CFC9CC2BCF5;
-	Fri, 15 May 2026 16:28:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1778862500;
-	bh=fevXNOMD2wqSxfojs9FldeJgBr0Sp/Q5mbdpF+ByygA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aQrWa2oNCgb6cyENrUHkmbLCtQl2opci189wPhgJ0aXRcJPBsjgEdHbZYtGu03OeM
-	 ZmqrbV+Bpotd6rlwGLZvoIROgWLXDMK9c+zBvvu+yRam4SRNocCX4yYXWIw1dOjUlb
-	 7g8vi25C8aV0gGVYYKWzreSgCyYVdwk982rH3OP6RK00rULGKjJ0locZj7+iAzKzbG
-	 EKsHXKEX0Wk3075Wd4InovCyadkG9Yyg1qTvkSIXTrkQoilUoY2Na9HYK+MqZITNGy
-	 atHED3uLIk58X/0D5LNKotSeh27RnQbm/kAgJ4MDMVeESERuc0xqRFiFm0zz9ubfRM
-	 NzrGTEdH9RgyQ==
-Date: Fri, 15 May 2026 17:28:14 +0100
-From: Daniel Thompson <danielt@kernel.org>
-To: Neil Armstrong <neil.armstrong@linaro.org>
-Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, KancyJoe <kancy2333@outlook.com>
-Subject: Re: [PATCH v2 2/2] backlight: Add SY7758 6-channel High Efficiency
- LED Driver support
-Message-ID: <agdJnpz9O00lywRm@aspen.lan>
-References: <20260430-topic-sm8650-ayaneo-pocket-s2-sy7758-v2-0-308140640de9@linaro.org>
- <20260430-topic-sm8650-ayaneo-pocket-s2-sy7758-v2-2-308140640de9@linaro.org>
+	dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b="Q9qnXaRL"
+Received: from mail-nwsmtp-smtp-production-main-74.vla.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-74.vla.yp-c.yandex.net [IPv6:2a02:6b8:c22:d15:0:640:87c2:0])
+	by forward501a.mail.yandex.net (Yandex) with ESMTPS id 400F080D1D;
+	Fri, 15 May 2026 20:19:19 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-74.vla.yp-c.yandex.net (smtp) with ESMTPSA id EJRC07jSQOs0-iLHY1ast;
+	Fri, 15 May 2026 20:19:18 +0300
+X-Yandex-Fwd: 1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sezginduran.net;
+	s=mail; t=1778865558;
+	bh=pBAJbbudwvyAJovxTpvy8uAsMGe3p0Kwq2rypGEqgGs=;
+	h=From:In-Reply-To:Cc:Date:References:To:Subject:Message-ID;
+	b=Q9qnXaRLCGcI/yS6cw7EL0d4k3r+QNUD9IITRDhoGycxLYaiSb3z6CYZetx4Sox/V
+	 zTVVKZGliDarrTJsihjgEEURICnHnwAX0iRbT5W6zCLJ7nOAxS1v3ZM6/dUbwuXyYz
+	 rHMyU2bgbka30bhFlV2Guuc5ssYwhY1KuSAYYSpk=
+Authentication-Results: mail-nwsmtp-smtp-production-main-74.vla.yp-c.yandex.net; dkim=pass header.i=@sezginduran.net
+Message-ID: <8b04159a-86aa-4180-974c-80636673d1a5@sezginduran.net>
+Date: Fri, 15 May 2026 20:19:14 +0300
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260430-topic-sm8650-ayaneo-pocket-s2-sy7758-v2-2-308140640de9@linaro.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] staging: sm750: rename CamelCase variable in sm750.c
+To: Rupert Zoone <zoone.rupert@gmail.com>,
+ Greg KH <gregkh@linuxfoundation.org>
+Cc: "M.samet Duman" <dumanmehmetsamet@icloud.com>,
+ sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+ linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+ linux-kernel@vger.kernel.org
+References: <03e9e75a-c63c-4a63-88b8-2287daf6c4ad@sezginduran.net>
+ <5A8D2A45-3C03-4D41-96BB-4F2ECC499813@icloud.com>
+ <2026051510-marbles-last-b661@gregkh>
+ <CABpb+S7EcSUnmnCn_aRURnVON39Jyrxe3oktnPphyOFzpaTU0g@mail.gmail.com>
+Content-Language: tr
+From: Ahmet Sezgin Duran <ahmet@sezginduran.net>
+In-Reply-To: <CABpb+S7EcSUnmnCn_aRURnVON39Jyrxe3oktnPphyOFzpaTU0g@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 30, 2026 at 11:47:16AM +0200, Neil Armstrong wrote:
-> From: KancyJoe <kancy2333@outlook.com>
->
-> Implement support for the Silergy SY7758 6-channel High Efficiency LED
-> Driver used for backlight brightness control in the Ayaneo Pocket S2
-> dual-DSI panel.
->
-> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
-> Signed-off-by: KancyJoe <kancy2333@outlook.com>
-> ---
->  drivers/video/backlight/Kconfig  |   8 +
->  drivers/video/backlight/Makefile |   1 +
->  drivers/video/backlight/sy7758.c | 311 +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 320 insertions(+)
-> <snip>
-> diff --git a/drivers/video/backlight/sy7758.c b/drivers/video/backlight/sy7758.c
-> new file mode 100644
-> index 000000000000..9b2d3bbb4ded
-> --- /dev/null
-> +++ b/drivers/video/backlight/sy7758.c
-> @@ -0,0 +1,311 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Silergy SY7758 6-channel High Efficiency LED Driver
-> + *
-> + * Copyright (C) 2025 Kancy Joe <kancy2333@outlook.com>
-> + * Copyright (C) 2026 Linaro Limited
-> + * Author: Neil Armstrong <neil.armstrong@linaro.org>
+On 5/15/26 7:37 PM, Rupert Zoone wrote:
+> Hi Ahmet,
+> Yes, I compiled the patch successfully without errors and warnings.
+> rupesh@yantra:~/patches/staging$ grep -n "pv_reg\|set_all_eng_off"
+> drivers/staging/sm750fb/sm750.c | head -10
+> 758: crtc->cursor.mmio = sm750_dev->pv_reg +
+> 863: sm750_dev->init_parm.set_all_eng_off = 0;
+> 1062: iounmap(sm750_dev->pv_reg);
+> 
 
-I'm a bit confused by this comment. The git author and the
-MODULE_AUTHOR() is Kancy Joe. What does this comment signify?
+I asked if you compiled it, you wrote the grep results of variable names.
 
+You might have forgotten to enable the sm750fb module. Make sure that 
+you enable it, then please, actually compile the changes, using `make` 
+or whatever actual command you use in order to compile.
 
-> + */
-> <snip>
-> +/* OTP memory */
-> +#define REG_OTP_CFG98 0x98
-> +#define REG_OTP_CFG9E 0x9E
-> +#define REG_OTP_CFG0 0xA0
-> +#define REG_OTP_CFG1 0xA1
-> +#define REG_OTP_CFG2 0xA2
-> +#define REG_OTP_CFG3 0xA3
-> +#define REG_OTP_CFG4 0xA4
-> +#define REG_OTP_CFG5 0xA5
-> +#define REG_OTP_CFG6 0xA6
-> +#define REG_OTP_CFG7 0xA7
-> +#define REG_OTP_CFG9 0xA9
-> +#define REG_OTP_CFGA 0xAA
-> +#define REG_OTP_CFGE 0xAE
+Spoiler alert: No, it does not compile.
 
-There seems to be a lot of unused macros here, especially
-combined with the unused bitfields that tell us how to interpret
-the values.
-
-Do we need them?
-
-
-> <snip>
-> +static int sy7758_probe(struct i2c_client *client)
-> +{
-> +	struct backlight_properties props = { };
-> +	struct device *dev = &client->dev;
-> +	struct sy7758 *sydev;
-> +	unsigned int dev_id;
-> +	int ret;
-> +
-> +	sydev = devm_kzalloc(dev, sizeof(*sydev), GFP_KERNEL);
-> +	if (!sydev)
-> +		return -ENOMEM;
-> +
-> +	i2c_set_clientdata(client, sydev);
-> +
-> +	/* Initialize regmap */
-> +	sydev->client = client;
-> +	sydev->regmap = devm_regmap_init_i2c(client, &sy7758_regmap_config);
-> +	if (IS_ERR(sydev->regmap))
-> +		return dev_err_probe(dev, PTR_ERR(sydev->regmap),
-> +				     "failed to init regmap\n");
-> +
-> +	/* Get and enable regulators */
-> +	ret = devm_regulator_get_enable(dev, "vddio");
-> +	if (ret)
-> +		return dev_err_probe(dev, ret, "failed to get regulator\n");
-> +
-> +	usleep_range(100, 200);
-
-Any reason not to use fsleep() here?
-
-
-> +	/* Get enable GPIO and set to high */
-> +	sydev->gpio = devm_gpiod_get(dev, "enable", GPIOD_OUT_HIGH);
-> +	if (IS_ERR(sydev->gpio))
-> +		return dev_err_probe(dev, PTR_ERR(sydev->gpio),
-> +				     "failed to get enable GPIO\n");
-> +
-> +	/* Let some time for HW to settle */
-> +	usleep_range(10000, 11000);
-
-And here?
-
-
-> +
-> +	/* try read and check device id */
-> +	ret = regmap_read(sydev->regmap, REG_DEV_ID, &dev_id);
-> +	if (ret < 0)
-> +		return dev_err_probe(dev, ret, "failed to read device id\n");
-> +	if (dev_id != 0x63) {
-> +		dev_err(dev, "unexpected device id: 0x%02x\n", dev_id);
-> +		return -ENODEV;
-> +	}
-> +
-> +	/* Initialize and set default brightness */
-> +	ret = sy7758_init(sydev);
-> +	if (ret)
-> +		return ret;
-> +
-> +	props.type = BACKLIGHT_RAW;
-> +	props.max_brightness = MAX_BRIGHTNESS;
-> +	props.brightness = DEFAULT_BRIGHTNESS;
-> +	props.scale = BACKLIGHT_SCALE_LINEAR;
-> +
-> +	sydev->bl = devm_backlight_device_register(dev, "sy7758-backlight",
-> +						   dev, sydev, &sy7758_backlight_ops,
-> +						   &props);
-> +	if (IS_ERR(sydev->bl))
-> +		return dev_err_probe(dev, PTR_ERR(sydev->bl),
-> +				     "failed to register backlight device\n");
-> +
-> +	return backlight_update_status(sydev->bl);
-> +}
-
-
-Daniel.
+Regards,
+Ahmet Sezgin Duran

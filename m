@@ -1,118 +1,82 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB5E23C13EF;
-	Thu, 14 May 2026 12:41:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from outbound.baidu.com (mx15.baidu.com [111.202.115.100])
+	by smtp.subspace.kernel.org (Postfix) with SMTP id A97A126ED3E;
+	Fri, 15 May 2026 01:10:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=111.202.115.100
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778762515; cv=none; b=fpnWwTqNjJscRZ8gvvHeJyP+RuWHpvAUn1fmr//b2TV1DCr8yqyzQKuxh+UxXufE/7hzgaZlWwuRB63wEBNBpajpXaqYcdopR1v4ZC1CY6uGKVcpoQ+7wJ5h1+WiCrJcf2Ea3za+d2ICeviW0JykLwWSPESVUKjfzRsGcfRvXbs=
+	t=1778807437; cv=none; b=XVwfopzvuGGX5xOmTgRGeRIFfjxY/zrGLvtvnEDuMRx9dMA4dasInztOTMtbFKzVR465bYXS9R7mX4bMyKcQydpXKZdLE0NA8L7Y2xfoVXnkaoQJJ57+OhdMzcz8UxnksGCU40NC+aT2BOVsaGBy1IAb3B9CVCPwuoTdMTelq0w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778762515; c=relaxed/simple;
-	bh=WijtTe8uSs9JsujZPjhv0DUy0mOjITrzfiwWnQWJ6Zg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=qClPw3PjyNwXKMp2g6N+DZv9Q3YMvhVEsrtVQEk8au6ba6rxvFJNGjnTmjjB3P2A/CXKwq0ChbgLyIeiLlnB/Pz4p+Jo1SINo/ZbEdGDAOlqgRT7ElgL+FObb4rvg9i11GxR/LlIigsC3IU2+3+TBI70fIazvAKf+KP1xoU7jnQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=DTBE/Yhm; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1778807437; c=relaxed/simple;
+	bh=kJWh4w5vZCjf/kZGYMO1H5ykydBwztdkarrI35PKxFM=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=J74SnsFDaB4zem5aoTmB6054qbUplfW7IZgxYqRTyB1y4cqjcdqDfRpxAW7KIaRgjAJgsllLA/THBLaNsQY+ySwHVgjKS1pJN3SR77ugGhXTHpS8AEfLCeCp9rupk0xLlH1wmrLQTOHM5o5G35yYUher109jfO5/JxP/O8LIRWs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass smtp.mailfrom=baidu.com; dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b=mqc3bCRF; arc=none smtp.client-ip=111.202.115.100
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="DTBE/Yhm"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 368BBC2BCB3;
-	Thu, 14 May 2026 12:41:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1778762515;
-	bh=WijtTe8uSs9JsujZPjhv0DUy0mOjITrzfiwWnQWJ6Zg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=DTBE/YhmLrYtj9u2UjuKJ70DFR0sFsnJty2sGn4Zfg/fWvvGx9r0W+89fwpkr1moE
-	 f3esmI+7WkRdKm0+BE+QKeOnp7zMAHirm/SeGf97HwbIwhxfZjLX8PZohlR3DmvPOy
-	 Ra1zkvD6cRYDJm2XuGERlY/cZvVq7zhrRxvVG7a0=
-Date: Thu, 14 May 2026 14:41:59 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Chhabilal Dangal <yogeshdangal66@gmail.com>
-Cc: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	devel@driverdev.osuosl.org
-Subject: Re: [PATCH] staging: sm750fb: Add suspend checks to copyarea and
- imageblit
-Message-ID: <2026051449-default-unhearing-c7c7@gregkh>
-References: <20260514120102.71615-1-yogeshdangal66@gmail.com>
+	dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b="mqc3bCRF"
+X-MD-Sfrom: lirongqing@baidu.com
+X-MD-SrcIP: 172.31.50.47
+From: lirongqing <lirongqing@baidu.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang
+	<teddy.wang@siliconmotion.com>, Helge Deller <deller@gmx.de>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, <linux-fbdev@vger.kernel.org>,
+	<dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
+CC: Li RongQing <lirongqing@baidu.com>
+Subject: [PATCH] video: fbdev: sm712: Fix operator precedence in big_swap macro
+Date: Thu, 14 May 2026 21:02:02 -0400
+Message-ID: <20260515010202.2506-1-lirongqing@baidu.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260514120102.71615-1-yogeshdangal66@gmail.com>
+Content-Type: text/plain
+X-ClientProxiedBy: bjkjy-exc3.internal.baidu.com (172.31.50.47) To
+ bjkjy-exc3.internal.baidu.com (172.31.50.47)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
+	s=selector1; t=1778806934;
+	bh=O6Y4gE06UetHw8c2Elza5KyEZBIyhBBNgcSOAK46jGk=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
+	b=mqc3bCRFxyXrye9YxL/vMYDn5vvs0gzhk7KdA9qr9PnYAH7URMlgicdsY4eUqY8xn
+	 7uKsmZK9Vw6/6ENQiXBfImaU+WxP7UPyVXyBwg9fdF34hsDvyGKbHkrwfyoiHIKqLw
+	 Z4kdPJhgYpJu/yKxMo2ofu/xo93yKX1+lIYJcrU+PM9NBo3ZjaE1EHkcTuVM10AANZ
+	 A+2Sm3BVWscH9J7R4r9DQveAZQnM8ukEPbE8U08iBsDwbTFcDTDQ9cjeZi+N+pSvJm
+	 UDhK+ZCC17bUbon+J0UhEqpgipnEkHsa2ti0l6cMd0DGR6NnxcK7H9Nwhs6atwCWtL
+	 k45qNYGpWGj0A==
 
-On Thu, May 14, 2026 at 05:46:02PM +0545, Chhabilal Dangal wrote:
-> lynxfb_ops_fillrect() already checks info->state before accessing
-> the hardware 2D engine, but lynxfb_ops_copyarea() and
-> lynxfb_ops_imageblit() do not.
-> 
-> The suspend path calls fb_set_suspend(), which sets the framebuffer
-> state to FBINFO_STATE_SUSPENDED. Add matching state checks in the
-> remaining accelerated callbacks for consistency with fillrect().
-> 
-> Assisted-by: Claude Opus 4.6 (Anthropic LLM)
-> Compile-tested only.
-> 
-> Signed-off-by: Chhabilal Dangal <yogeshdangal66@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index 9f3e3d37e..025ac8fe3 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -204,6 +204,9 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
->  	struct sm750_dev *sm750_dev;
->  	unsigned int base, pitch, bpp;
->  
-> +	if (info->state != FBINFO_STATE_RUNNING)
-> +		return;
-> +
->  	par = info->par;
->  	sm750_dev = par->dev;
->  
-> @@ -239,6 +242,9 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
->  	struct lynxfb_par *par;
->  	struct sm750_dev *sm750_dev;
->  
-> +	if (info->state != FBINFO_STATE_RUNNING)
-> +		return;
-> +
->  	par = info->par;
->  	sm750_dev = par->dev;
->  	/*
-> -- 
-> 2.54.0
-> 
-> 
+From: Li RongQing <lirongqing@baidu.com>
 
-Hi,
+The big_swap(p) macro was intended to swap bytes within 16-bit halves
+of a 32-bit value. However, because the bitwise shift operators (<<, >>)
+have higher precedence than the bitwise AND operator (&), the original
+code failed to perform any shifting on the masked bits.
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+For example, 'p & 0xff00ff00 >> 8' was evaluated as 'p &
+(0xff00ff00 >> 8)', effectively neutralizing the intended swap.
 
-You are receiving this message because of the following common error(s)
-as indicated below:
+Fix this by adding parentheses to ensure the bitwise AND is performed
+before the shift, correctly implementing the byte swap logic.
 
-- This looks like a new version of a previously submitted patch, but you
-  did not list below the --- line any changes from the previous version.
-  Please read the section entitled "The canonical patch format" in the
-  kernel file, Documentation/process/submitting-patches.rst for what
-  needs to be done here to properly describe this.
+Fixes: 1461d66728648 ("staging: sm7xxfb: merge sm712fb with fbdev")
+Signed-off-by: Li RongQing <lirongqing@baidu.com>
+---
+ drivers/video/fbdev/sm712.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
+diff --git a/drivers/video/fbdev/sm712.h b/drivers/video/fbdev/sm712.h
+index c7ebf03..83fe25f 100644
+--- a/drivers/video/fbdev/sm712.h
++++ b/drivers/video/fbdev/sm712.h
+@@ -101,7 +101,7 @@ struct modeinit {
+ #define mmio_addr		0x00800000
+ #define seqw17()		smtc_seqw(0x17, 0x30)
+ #define big_pixel_depth(p, d)	{if (p == 24) {p = 32; d = 32; } }
+-#define big_swap(p)		((p & 0xff00ff00 >> 8) | (p & 0x00ff00ff << 8))
++#define big_swap(p)		(((p & 0xff00ff00) >> 8) | ((p & 0x00ff00ff) << 8))
+ #else
+ #define pal_rgb(r, g, b, val)	val
+ #define big_addr		0
+-- 
+2.9.4
 
-thanks,
-
-greg k-h's patch email bot

@@ -1,324 +1,170 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05D77405C21;
-	Fri, 15 May 2026 23:48:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E8582C375A;
+	Sat, 16 May 2026 14:24:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778888941; cv=none; b=sgOox0EhydEnB4vAEEuo4N6KX5f4oBMeXRmasnfj0xC29cOUAa6CIJ0bkekUtkW+FFIm2pcSbweo7t+r0K3gapnZ4moYywn/84bk39QZPLY2Nu+ZjAoOsAd3+UuoST0cWQb9mtEc60hSF7OAjoemkKh9+5hBEq53QDE+O+3GpzI=
+	t=1778941449; cv=none; b=byndkcIwRzlY91L05qSzcwx1ubqTuBicHRzQoY4tv5B2ozCAXYkLrzDJFrFepLqYY1LKsQ5IZzG5jw+Hd0N/WasFE/VxDSkvrrVMY75sv5mkG39FgAtiodorhuzZEZpWgOCYV0KmkJMn5dpk0JP4PjY5dLwfpyjCU0mUntNz6dg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778888941; c=relaxed/simple;
-	bh=d1xUV3LYwn2Bxm7M0wWJinu2epoQTclEe/MFl5Y2zf8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=uajGb5tMehBscQIU270eWY7yEUO1A2eoT9us1+veDWidNU7oh+d/Pux+fq4eUCE3iZEzUBk3re4D/vvIjJIQmjvPKcsF0HxYTeKeHKEsIo+KQjNwfMVJtgLFr1ot3HLEvAW/mfZYLXb32pl+sNTN+2xAXsWDkx6KrTwQxf8e0Og=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Zy45wDIF; arc=none smtp.client-ip=192.198.163.9
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1778941449; c=relaxed/simple;
+	bh=gqMCGQm151Hxsrv0pMo6X5oCLu7WeEnPdt1/Hp1rqbo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=IpBojBSMiZfxxLfQGzTVhweVOw4kJGYhCAqCQu7ch5rb868HvITtpQmCMbVHHpKL0eQzhf3QtAvwOPRwjxRMaMvmf/4hCydLh89OzN8rEsC/Odae4tjZn61Uh+WL/T5I2r3hbFd9ruJ3yT3tfJ6fi1DybG2SClsPyrHoygB23L0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.us; spf=pass smtp.mailfrom=gmx.us; dkim=pass (2048-bit key) header.d=gmx.us header.i=len.bao@gmx.us header.b=S35CLtRs; arc=none smtp.client-ip=212.227.17.22
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.us
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.us
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Zy45wDIF"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1778888939; x=1810424939;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=d1xUV3LYwn2Bxm7M0wWJinu2epoQTclEe/MFl5Y2zf8=;
-  b=Zy45wDIFM1G01/BB5UFGoXm511GZ+cwds/1zmwZ3mHJ2QxsHFOWoV5YC
-   tUfBqfj31/Bd421EkKnLq8N1zHBudznTstSfSwxuxlsmrq/4tgeVnjgHB
-   ACAx1WN1/IcdYUuh1p6BL2diF+jAEBCb7WlUFQzekNuV5f9O60OH1IbOn
-   FsApuEck9g5WZwD5Hu/ayn819h0fds7kX+f1Yk5pVTbkkAN2KSiQLmAr+
-   K3+niZMec153RFJmb8gCW2CPgWqT/ezmVAYVGhUquLaY2BAmVmI7YMaBv
-   J/baE76XRe0knbzdhCgb6FxKE+HwfFgKzuQFjqE0oSNUZ35QUFuh4HH0n
-   A==;
-X-CSE-ConnectionGUID: cejyp2B/SBiw4P7fOdSs0Q==
-X-CSE-MsgGUID: VVN/HemiTAu9+b36BgHBXA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11787"; a="90545782"
-X-IronPort-AV: E=Sophos;i="6.23,237,1770624000"; 
-   d="scan'208";a="90545782"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 May 2026 16:48:58 -0700
-X-CSE-ConnectionGUID: sLChG9qcQpiyBu/nSLdIJg==
-X-CSE-MsgGUID: GLJszDl/Q56fwFseRVRihA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,237,1770624000"; 
-   d="scan'208";a="238949691"
-Received: from lkp-server01.sh.intel.com (HELO d94e5e629b2d) ([10.239.97.150])
-  by orviesa009.jf.intel.com with ESMTP; 15 May 2026 16:48:56 -0700
-Received: from kbuild by d94e5e629b2d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wO2Gz-000000000F3-24nA;
-	Fri, 15 May 2026 23:48:53 +0000
-Date: Sat, 16 May 2026 07:48:38 +0800
-From: kernel test robot <lkp@intel.com>
-To: Rupesh Majhi <zoone.rupert@gmail.com>, gregkh@linuxfoundation.org
-Cc: oe-kbuild-all@lists.linux.dev, sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	Rupesh Majhi <zoone.rupert@gmail.com>
-Subject: Re: [PATCH] staging: sm750: rename CamelCase variable in sm750.c
-Message-ID: <202605160741.A9M01x77-lkp@intel.com>
-References: <20260515103811.2808620-1-zoone.rupert@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmx.us header.i=len.bao@gmx.us header.b="S35CLtRs"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.us;
+	s=s31663417; t=1778941435; x=1779546235; i=len.bao@gmx.us;
+	bh=gqMCGQm151Hxsrv0pMo6X5oCLu7WeEnPdt1/Hp1rqbo=;
+	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-ID:
+	 MIME-Version:Content-Transfer-Encoding:cc:
+	 content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=S35CLtRsLKotepI95fIcq4huQZTorSzBcqJ2+EJXU5Sr2tpI08rpnR+AcAcvGkkd
+	 Yxo9d5LkB2+hi6cN8/GPDUpVlX7Dh0ygb5fU7PgU/wrF/1kgx1MENAOG1Tjl87ANu
+	 0AV2uzZG1aM2Hm3GZ2SiWIz35A23ClpvehXTs5m2oTtcz94qdVU5wUKZMRQkXVTNB
+	 BywWfrlbNcrhw8k0WsYpMqncHTzZTO7C9kLr0NmBw//M+rjUjVmiV2sdwX/90Cdwl
+	 mp1/smwxsTJYQ+p4nEGbScqCy+ypzFKSjLRSsJrAX1nL/rKGBj36Dd07lk51xIWBS
+	 zus/04Klwd6g0JGSnA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
+ [212.227.17.174]) with ESMTPSA (Nemesis) id 1MmUHp-1x6d5e0k3l-00hkva; Sat, 16
+ May 2026 16:23:55 +0200
+From: Len Bao <len.bao@gmx.us>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Len Bao <len.bao@gmx.us>,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: sm750fb: Mark g_noaccel, g_nomtrr and g_dualview as __ro_after_init
+Date: Sat, 16 May 2026 14:23:21 +0000
+Message-ID: <20260516142326.36018-1-len.bao@gmx.us>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260515103811.2808620-1-zoone.rupert@gmail.com>
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:KdCZJDmQ63Ik0X+IVAIoPbqkJCdRRGRLF86LmrYwomC9tJBoagh
+ 4SQxR/rqDzvhgr6GSLlG0hgwDmwPXwnN9ENHdoxul8lkcGtIqweiy42l80qvzfkgKkbNGZL
+ 0r8KJBZt5fMKHFKImYiOSV0FMUh0q2XEPtl+S47LEqzRe/rt7rcnoSmXFa+uIkB7WQdAN3E
+ YX+0Zgj8TsdbCyXHE6SHQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:VfOhk5MWQSo=;/tHg413n2pb9xv/BaxEwgeOKWxe
+ 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
+ sbjTqQGUs7CjXnxHIMd+Cf6GJNVNuhZcdY7k=
 
-Hi Rupesh,
+The 'g_noaccel', 'g_nomtrr' and 'g_dualview' variables are initialized
+only during the init phase in the 'lynxfb_setup' function and never
+changed. So, mark them as __ro_after_init.
 
-kernel test robot noticed the following build errors:
+Signed-off-by: Len Bao <len.bao@gmx.us>
+=2D--
+ drivers/staging/sm750fb/sm750.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-[auto build test ERROR on staging/staging-testing]
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm7=
+50.c
+index 9f3e3d37e..99f5269f1 100644
+=2D-- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -31,12 +31,12 @@
+=20
+ /* common var for all device */
+ static int g_hwcursor =3D 1;
+-static int g_noaccel;
+-static int g_nomtrr;
++static int g_noaccel __ro_after_init;
++static int g_nomtrr __ro_after_init;
+ static const char *g_fbmode[] =3D {NULL, NULL};
+ static const char *g_def_fbmode =3D "1024x768-32@60";
+ static char *g_settings;
+-static int g_dualview;
++static int g_dualview __ro_after_init;
+ static char *g_option;
+=20
+ static const struct fb_videomode lynx750_ext[] =3D {
+=2D-=20
+2.43.0
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Rupesh-Majhi/staging-sm750-rename-CamelCase-variable-in-sm750-c/20260515-213450
-base:   staging/staging-testing
-patch link:    https://lore.kernel.org/r/20260515103811.2808620-1-zoone.rupert%40gmail.com
-patch subject: [PATCH] staging: sm750: rename CamelCase variable in sm750.c
-config: mips-allyesconfig (https://download.01.org/0day-ci/archive/20260516/202605160741.A9M01x77-lkp@intel.com/config)
-compiler: mips-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260516/202605160741.A9M01x77-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202605160741.A9M01x77-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/staging/sm750fb/sm750.c: In function 'lynxfb_set_fbinfo':
->> drivers/staging/sm750fb/sm750.c:758:40: error: 'struct sm750_dev' has no member named 'pv_reg'; did you mean 'pvReg'?
-     758 |         crtc->cursor.mmio = sm750_dev->pv_reg +
-         |                                        ^~~~~~
-         |                                        pvReg
-   drivers/staging/sm750fb/sm750.c: In function 'sm750fb_setup':
->> drivers/staging/sm750fb/sm750.c:863:30: error: 'struct init_status' has no member named 'set_all_eng_off'; did you mean 'setAllEngOff'?
-     863 |         sm750_dev->init_parm.set_all_eng_off = 0;
-         |                              ^~~~~~~~~~~~~~~
-         |                              setAllEngOff
-   drivers/staging/sm750fb/sm750.c: In function 'lynxfb_pci_remove':
-   drivers/staging/sm750fb/sm750.c:1062:28: error: 'struct sm750_dev' has no member named 'pv_reg'; did you mean 'pvReg'?
-    1062 |         iounmap(sm750_dev->pv_reg);
-         |                            ^~~~~~
-         |                            pvReg
-
-
-vim +758 drivers/staging/sm750fb/sm750.c
-
-   719	
-   720	static int lynxfb_set_fbinfo(struct fb_info *info, int index)
-   721	{
-   722		int i;
-   723		struct lynxfb_par *par;
-   724		struct sm750_dev *sm750_dev;
-   725		struct lynxfb_crtc *crtc;
-   726		struct lynxfb_output *output;
-   727		struct fb_var_screeninfo *var;
-   728		struct fb_fix_screeninfo *fix;
-   729	
-   730		const struct fb_videomode *pdb[] = {
-   731			lynx750_ext, NULL, vesa_modes,
-   732		};
-   733		int cdb[] = {ARRAY_SIZE(lynx750_ext), 0, VESA_MODEDB_SIZE};
-   734		static const char * const fix_id[2] = {
-   735			"sm750_fb1", "sm750_fb2",
-   736		};
-   737	
-   738		int ret, line_length;
-   739	
-   740		ret = 0;
-   741		par = (struct lynxfb_par *)info->par;
-   742		sm750_dev = par->dev;
-   743		crtc = &par->crtc;
-   744		output = &par->output;
-   745		var = &info->var;
-   746		fix = &info->fix;
-   747	
-   748		/* set index */
-   749		par->index = index;
-   750		output->channel = &crtc->channel;
-   751		sm750fb_set_drv(par);
-   752	
-   753		/*
-   754		 * set current cursor variable and proc pointer,
-   755		 * must be set after crtc member initialized
-   756		 */
-   757		crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
- > 758		crtc->cursor.mmio = sm750_dev->pv_reg +
-   759			0x800f0 + (int)crtc->channel * 0x140;
-   760	
-   761		crtc->cursor.max_h = 64;
-   762		crtc->cursor.max_w = 64;
-   763		crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
-   764		crtc->cursor.vstart = sm750_dev->vmem + crtc->cursor.offset;
-   765	
-   766		memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
-   767		if (!g_hwcursor)
-   768			sm750_hw_cursor_disable(&crtc->cursor);
-   769	
-   770		/* set info->fbops, must be set before fb_find_mode */
-   771		if (!sm750_dev->accel_off) {
-   772			/* use 2d acceleration */
-   773			if (!g_hwcursor)
-   774				info->fbops = &lynxfb_ops_accel;
-   775			else
-   776				info->fbops = &lynxfb_ops_accel_with_cursor;
-   777		} else {
-   778			if (!g_hwcursor)
-   779				info->fbops = &lynxfb_ops;
-   780			else
-   781				info->fbops = &lynxfb_ops_with_cursor;
-   782		}
-   783	
-   784		if (!g_fbmode[index]) {
-   785			g_fbmode[index] = g_def_fbmode;
-   786			if (index)
-   787				g_fbmode[index] = g_fbmode[0];
-   788		}
-   789	
-   790		for (i = 0; i < 3; i++) {
-   791			ret = fb_find_mode(var, info, g_fbmode[index],
-   792					   pdb[i], cdb[i], NULL, 8);
-   793	
-   794			if (ret == 1 || ret == 2)
-   795				break;
-   796		}
-   797	
-   798		/* set par */
-   799		par->info = info;
-   800	
-   801		/* set info */
-   802		line_length = ALIGN((var->xres_virtual * var->bits_per_pixel / 8),
-   803				    crtc->line_pad);
-   804	
-   805		info->pseudo_palette = &par->pseudo_palette[0];
-   806		info->screen_base = crtc->v_screen;
-   807		info->screen_size = line_length * var->yres_virtual;
-   808	
-   809		/* set info->fix */
-   810		fix->type = FB_TYPE_PACKED_PIXELS;
-   811		fix->type_aux = 0;
-   812		fix->xpanstep = crtc->xpanstep;
-   813		fix->ypanstep = crtc->ypanstep;
-   814		fix->ywrapstep = crtc->ywrapstep;
-   815		fix->accel = FB_ACCEL_SMI;
-   816	
-   817		strscpy(fix->id, fix_id[index], sizeof(fix->id));
-   818	
-   819		fix->smem_start = crtc->o_screen + sm750_dev->vidmem_start;
-   820		/*
-   821		 * according to mmap experiment from user space application,
-   822		 * fix->mmio_len should not larger than virtual size
-   823		 * (xres_virtual x yres_virtual x ByPP)
-   824		 * Below line maybe buggy when user mmap fb dev node and write
-   825		 * data into the bound over virtual size
-   826		 */
-   827		fix->smem_len = crtc->vidmem_size;
-   828		info->screen_size = fix->smem_len;
-   829		fix->line_length = line_length;
-   830		fix->mmio_start = sm750_dev->vidreg_start;
-   831		fix->mmio_len = sm750_dev->vidreg_size;
-   832	
-   833		lynxfb_set_visual_mode(info);
-   834	
-   835		/* set var */
-   836		var->activate = FB_ACTIVATE_NOW;
-   837		var->accel_flags = 0;
-   838		var->vmode = FB_VMODE_NONINTERLACED;
-   839	
-   840		ret = fb_alloc_cmap(&info->cmap, 256, 0);
-   841		if (ret < 0) {
-   842			dev_err(info->device, "Could not allocate memory for cmap.\n");
-   843			goto exit;
-   844		}
-   845	
-   846	exit:
-   847		lynxfb_ops_check_var(var, info);
-   848		return ret;
-   849	}
-   850	
-   851	/*	chip specific g_option configuration routine */
-   852	static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
-   853	{
-   854		char *opt;
-   855		int swap;
-   856	
-   857		swap = 0;
-   858	
-   859		sm750_dev->init_parm.chip_clk = 0;
-   860		sm750_dev->init_parm.mem_clk = 0;
-   861		sm750_dev->init_parm.master_clk = 0;
-   862		sm750_dev->init_parm.power_mode = 0;
- > 863		sm750_dev->init_parm.set_all_eng_off = 0;
-   864		sm750_dev->init_parm.reset_memory = 1;
-   865	
-   866		/* defaultly turn g_hwcursor on for both view */
-   867		g_hwcursor = 3;
-   868	
-   869		if (!src || !*src) {
-   870			dev_warn(&sm750_dev->pdev->dev, "no specific g_option.\n");
-   871			goto NO_PARAM;
-   872		}
-   873	
-   874		while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-   875			dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
-   876			dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
-   877	
-   878			if (!strncmp(opt, "swap", strlen("swap"))) {
-   879				swap = 1;
-   880			} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
-   881				sm750_dev->nocrt = 1;
-   882			} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
-   883				sm750_dev->pnltype = SM750_DOUBLE_TFT;
-   884			} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
-   885				sm750_dev->pnltype = SM750_DUAL_TFT;
-   886			} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
-   887				sm750_dev->pnltype = SM750_24TFT;
-   888			} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
-   889				g_hwcursor &= ~0x1;
-   890			} else if (!strncmp(opt, "nohwc1", strlen("nohwc1"))) {
-   891				g_hwcursor &= ~0x2;
-   892			} else if (!strncmp(opt, "nohwc", strlen("nohwc"))) {
-   893				g_hwcursor = 0;
-   894			} else {
-   895				if (!g_fbmode[0]) {
-   896					g_fbmode[0] = opt;
-   897					dev_info(&sm750_dev->pdev->dev,
-   898						 "find fbmode0 : %s\n", g_fbmode[0]);
-   899				} else if (!g_fbmode[1]) {
-   900					g_fbmode[1] = opt;
-   901					dev_info(&sm750_dev->pdev->dev,
-   902						 "find fbmode1 : %s\n", g_fbmode[1]);
-   903				} else {
-   904					dev_warn(&sm750_dev->pdev->dev, "How many view you wann set?\n");
-   905				}
-   906			}
-   907		}
-   908	
-   909	NO_PARAM:
-   910		if (sm750_dev->revid != SM750LE_REVISION_ID) {
-   911			if (sm750_dev->fb_count > 1) {
-   912				if (swap)
-   913					sm750_dev->dataflow = sm750_dual_swap;
-   914				else
-   915					sm750_dev->dataflow = sm750_dual_normal;
-   916			} else {
-   917				if (swap)
-   918					sm750_dev->dataflow = sm750_simul_sec;
-   919				else
-   920					sm750_dev->dataflow = sm750_simul_pri;
-   921			}
-   922		} else {
-   923			/* SM750LE only have one crt channel */
-   924			sm750_dev->dataflow = sm750_simul_sec;
-   925			/* sm750le do not have complex attributes */
-   926			sm750_dev->nocrt = 0;
-   927		}
-   928	}
-   929	
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki

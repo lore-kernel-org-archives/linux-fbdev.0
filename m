@@ -1,198 +1,162 @@
-Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 312993AD51C
-	for <linux-fbdev@vger.kernel.org>; Sun, 17 May 2026 13:19:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99C7426F29B;
+	Sun, 17 May 2026 13:45:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779023984; cv=none; b=EBcycaqeBoMoDKex2dFpmX2mFFUHtviso0DscpjemLGgIeTpLitwUR+kQ5TJdTeaWv92jaOFgeGkEfp+9mP8JVXKLSm/sFXRtfS6HzTuLW21KmYcgtb+1mTi9lDZmk2HaTGVP6N6W0WroulV++pHqP/0Yg8t4WSsilwqC4VoDX4=
+	t=1779025506; cv=none; b=LS8C4jnA49ahhfNxthauB1yuPai8cYeEWbRi7n/I9wgJ7XdNzvDTz1BGVFTeswy1Us13hdniwqPevp74NMcNga50pp5CWwWkjJcoG7kYFAATValJjuBYoJ2V2iSLmahK2QuAZp+GIHgBOoDFRA/OZmjZZdskyI2rP2lcPSJIAkk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779023984; c=relaxed/simple;
-	bh=jruy9C0+DAnIeXUwqu79F+yBCJJKuZ1rEfyvwUris4s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nVd0ZL+wijRWpwLEhoG69t/oL3I9jATBK0uD4FxcaxpM4M7Chtomh5a7ivGNLicXlAs8sqFseoTxcoP7UfpBMzsL6kRFu/9J+vzES+olDSlIGzTSH+OL7fi41B1Iwfk5/0MXapVGELl2kmnhCmnJF8M5eeLyxKdWOH4Wk6E0Gzg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BFNZynXz; arc=none smtp.client-ip=209.85.167.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1779025506; c=relaxed/simple;
+	bh=Yhlx+peDKSMRGYl8zT9YWqABpdNepHKaSStG0Z7fuZQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=gSR7WBkwvvyIlpSHbRMybh7qWgAiHlkl2+UZkTfdF5WJJcXOCi6n04ZOSD3zXBrZEKT9f2+ecBbvtqV3O0cE15lK81+x7eR9Wtk3dqQVuPUeJmiLs5YQypf1KwYYat/ZaPz/KbLvM8XSB8/WHF2B29opteinBqt2EgVoP3W8eeE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PwLTCZ45; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BFNZynXz"
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-5a8891f0c88so892945e87.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 17 May 2026 06:19:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779023974; x=1779628774; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=7/dqCYjDfAnPwhsU6wCw9vMKNTZiUIqNFGfHG4kAM7s=;
-        b=BFNZynXzXjoI3rFrrO/jXkVN4OJ+8i+32owClj9iaZjueUqxY7ZhMXTHCQogpMt1su
-         Ycxa11OcHvq+JwCCmYPLcQEUcHIG0wy6ZuwJEwztQZHByHFvIBNOOUH7HX9praHiaqda
-         RLj+Gvn0s4PEizUvmXTpojVxrHO6Sv38iPTkxIry6+VhCEf5rcVOkiaeMuZ2sZrrj/4D
-         CaKrlmIoDHG3x44u27GbVkI6kli0sFM7gCZ3xTEE0lEsXR/XNXQ0PrvRJj2tfV1BTbnN
-         cWTQ0+v1bHRaweK3p/s3nHxwtkWsHny6e8k9J84xZyfuO/JDXSplaAW3w0MhGPpflf+6
-         gS/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779023974; x=1779628774;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7/dqCYjDfAnPwhsU6wCw9vMKNTZiUIqNFGfHG4kAM7s=;
-        b=Xm/Bq8qpn+VpE05INkofosEw2/VhMEzfWGFk7/2UTytBXLpCdKvSCM00ptbg5Nbdii
-         onQtv/SxlWZRER37xl0GkILn5oKRGuqjivqbd6mfxNfNG2rVSDoAzH2RlWHypQQjt+L2
-         Kv8odq05dMjWuMfIYYxkNKXRfR130PNAbB2SZp+iuvOXPcq3H4bMEE5qKA4Apv8seql0
-         1MXX8tKlUv+xD1Z3bFHETH6CGphH9ojqu8I70K9g0nyvJRa6NQEzWQnIdjYQagMLOW2L
-         Jfoum359c2sK7ZzUgDddpdanZrfuC961Z5FIgH9aNmdZ6a6TmZBQ7neOQ3pEI6izFU6i
-         QgVA==
-X-Forwarded-Encrypted: i=1; AFNElJ/hcejpoVRgF0mNTZUHKHrhJ8QVPWu87jgUi5msCn7aTviT2y++MR1Nv53sAbsQl9hf9OEvvBZ0q5aciQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw14sty5HfAV+6yQM5t2Bqm53FVG6lVph0kq5bCMl8UIXDXSpia
-	HtY3REDfFgE48q1YRLIBitHo5xoT8gr4uoWPBqpp3SB3NUGJDba4xO1t
-X-Gm-Gg: Acq92OE0hvGdgaa2QoEreqldPlFb7kfypUuCpMWqP2L+v/xBEVaXFAUbml3SDsP4tpz
-	Vp3Kps4XUfqxuTaFC608owwOJotj5YaMWHo9gn/qEz/XIMknrvjf57SBcUSW1hO/svcZM1FX6YM
-	D9wE2tMUhczn00KaEyYSMPPsRwZzDvalNxSr5lT04D2eeR/Ff/4np5LjFf5/nW20VBwWNmntWB+
-	EHDYhswIknn4O+YzuPnDnz5ZFE0qzybSU4dNxfYaWJjOi2A/B7b57py/+sEGXagSZy9z5SfyzrA
-	5pNtPuefAfS+XWRw1R1PYRZZRYjGDeI2PJzuf7FoaKq23YTYsVQAA8GKVZVHsHu8bourIN6UFzB
-	GMI32ZU3/uAcsPJoKBnZNXSAQRt8rp0/lukM0duBGHwGAq+GdKMP2dJdEir3BAg+sebbo2SUm7M
-	MYCVv6Wmu1SuXxhGkM4hWsAt670JjwzkeJ3l6zq2PDIbJp4Vn/YS0YgOz5q20My12y9tauQ2A76
-	67glVY+zl2Wo7wwanIIl+kbaroAPSsfnA==
-X-Received: by 2002:a05:6512:1321:b0:5a4:1a2:1d39 with SMTP id 2adb3069b0e04-5aa0e5ffab1mr2864465e87.6.1779023973716;
-        Sun, 17 May 2026 06:19:33 -0700 (PDT)
-Received: from yantra.. (dsl-trebng21-58c187-236.dhcp.inet.fi. [88.193.135.236])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5a9164bc440sm2686166e87.51.2026.05.17.06.19.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 17 May 2026 06:19:32 -0700 (PDT)
-From: Rupesh Majhi <zoone.rupert@gmail.com>
-To: gregkh@linuxfoundation.org
-Cc: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Rupesh Majhi <zoone.rupert@gmail.com>
-Subject: [PATCH] staging: sm750: rename CamelCase variable Bpp to bpp
-Date: Sun, 17 May 2026 16:19:18 +0300
-Message-ID: <20260517131918.197943-1-zoone.rupert@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PwLTCZ45"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE23EC2BCB0;
+	Sun, 17 May 2026 13:44:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779025506;
+	bh=Yhlx+peDKSMRGYl8zT9YWqABpdNepHKaSStG0Z7fuZQ=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=PwLTCZ45pGDzdvmztnoD8yfkeN6fRVyVzZng8MUKQ1zxWLWv6zS8BA84KMl5CX3Ti
+	 M8EK73nR+FFWDPXHOLp64pZ2JPF2xLkQrzMu3Xef3xWYVqtz1j/jPY16A6aRLqeqai
+	 Cs2Cq59jvw4pcdRQ0MUI2tm2njYat8dxH7XDZbZH3exfu6JKe9pG37lA21CLYGhSAL
+	 q3pB1JkygH6zROInk6TUopqNxKWpQ9OpTEb+AHA3UHJtaE5KYfN9kl+u5j2+sXpoPM
+	 g6iMe6lH3mcp/8A/c8ZZfFYrgUgW+ASD2B+yzexi/ILtawigG9Lwq1IwFo02G6IBPh
+	 +ZKN5rYAzmmzw==
+Date: Sun, 17 May 2026 14:44:53 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo
+ Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, David Lechner <dlechner@baylibre.com>, Nuno
+ =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>,
+ Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v1 1/6] dt-bindings: leds: Document TI LM3533 LED
+ controller
+Message-ID: <20260517144453.61cc210c@jic23-huawei>
+In-Reply-To: <20260517074306.30937-2-clamor95@gmail.com>
+References: <20260517074306.30937-1-clamor95@gmail.com>
+	<20260517074306.30937-2-clamor95@gmail.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Rename the CamelCase variable 'Bpp' to 'bpp' in both the header
-and implementation files to comply with Linux kernel coding style.
+On Sun, 17 May 2026 10:43:01 +0300
+Svyatoslav Ryhel <clamor95@gmail.com> wrote:
 
-Issue found by checkpatch.
+> Document the LM3533 - a complete power source for backlight, keypad and
+> indicator LEDs in smartphone handsets. The high-voltage inductive boost
+> converter provides the power for two series LED strings display backlight
+> and keypad functions.
+> 
+> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+Hi Svyatoslav,
 
-Signed-off-by: Rupesh Majhi <zoone.rupert@gmail.com>
----
- drivers/staging/sm750fb/sm750_accel.c | 22 +++++++++++-----------
- drivers/staging/sm750fb/sm750_accel.h |  6 +++---
- 2 files changed, 14 insertions(+), 14 deletions(-)
+I focused on the ALS part.. A few comments.
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index ec2f0a6aa57d..59449a84728a 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -85,7 +85,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt)
- }
- 
- int sm750_hw_fillrect(struct lynx_accel *accel,
--		      u32 base, u32 pitch, u32 Bpp,
-+		      u32 base, u32 pitch, u32 bpp,
- 		      u32 x, u32 y, u32 width, u32 height,
- 		      u32 color, u32 rop)
- {
-@@ -103,14 +103,14 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
- 
- 	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, base); /* dpr40 */
- 	write_dpr(accel, DE_PITCH,
--		  ((pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
-+		  ((pitch / bpp << DE_PITCH_DESTINATION_SHIFT) &
- 		   DE_PITCH_DESTINATION_MASK) |
--		  (pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
-+		  (pitch / bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
- 
- 	write_dpr(accel, DE_WINDOW_WIDTH,
--		  ((pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
-+		  ((pitch / bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
- 		   DE_WINDOW_WIDTH_DST_MASK) |
--		   (pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
-+		   (pitch / bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
- 
- 	write_dpr(accel, DE_FOREGROUND, color); /* DPR14 */
- 
-@@ -139,7 +139,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
-  * @sy: Starting y coordinate of source surface
-  * @dest_base: Address of destination: offset in frame buffer
-  * @dest_pitch: Pitch value of destination surface in BYTE
-- * @Bpp: Color depth of destination surface
-+ * @bpp: Color depth of destination surface
-  * @dx: Starting x coordinate of destination surface
-  * @dy: Starting y coordinate of destination surface
-  * @width: width of rectangle in pixel value
-@@ -150,7 +150,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 		      unsigned int source_base, unsigned int source_pitch,
- 		      unsigned int sx, unsigned int sy,
- 		      unsigned int dest_base, unsigned int dest_pitch,
--		      unsigned int Bpp, unsigned int dx, unsigned int dy,
-+		      unsigned int bpp, unsigned int dx, unsigned int dy,
- 		      unsigned int width, unsigned int height,
- 		      unsigned int rop2)
- {
-@@ -251,9 +251,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 	 * pixel values. Need Byte to pixel conversion.
- 	 */
- 	write_dpr(accel, DE_PITCH,
--		  ((dest_pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
-+		  ((dest_pitch / bpp << DE_PITCH_DESTINATION_SHIFT) &
- 		   DE_PITCH_DESTINATION_MASK) |
--		  (source_pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
-+		  (source_pitch / bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
- 
- 	/*
- 	 * Screen Window width in Pixels.
-@@ -261,9 +261,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 	 * for a given point.
- 	 */
- 	write_dpr(accel, DE_WINDOW_WIDTH,
--		  ((dest_pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
-+		  ((dest_pitch / bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
- 		   DE_WINDOW_WIDTH_DST_MASK) |
--		  (source_pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
-+		  (source_pitch / bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
- 
- 	ret = accel->de_wait();
- 	if (ret)
-diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
-index 2c79cb730a0a..d15a40cacb84 100644
---- a/drivers/staging/sm750fb/sm750_accel.h
-+++ b/drivers/staging/sm750fb/sm750_accel.h
-@@ -190,7 +190,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt);
- void sm750_hw_de_init(struct lynx_accel *accel);
- 
- int sm750_hw_fillrect(struct lynx_accel *accel,
--		      u32 base, u32 pitch, u32 Bpp,
-+		      u32 base, u32 pitch, u32 bpp,
- 		      u32 x, u32 y, u32 width, u32 height,
- 		      u32 color, u32 rop);
- 
-@@ -202,7 +202,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
-  * @sy: Starting y coordinate of source surface
-  * @dBase: Address of destination: offset in frame buffer
-  * @dPitch: Pitch value of destination surface in BYTE
-- * @Bpp: Color depth of destination surface
-+ * @bpp: Color depth of destination surface
-  * @dx: Starting x coordinate of destination surface
-  * @dy: Starting y coordinate of destination surface
-  * @width: width of rectangle in pixel value
-@@ -213,7 +213,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 		      unsigned int sBase, unsigned int sPitch,
- 		      unsigned int sx, unsigned int sy,
- 		      unsigned int dBase, unsigned int dPitch,
--		      unsigned int Bpp, unsigned int dx, unsigned int dy,
-+		      unsigned int bpp, unsigned int dx, unsigned int dy,
- 		      unsigned int width, unsigned int height,
- 		      unsigned int rop2);
- 
--- 
-2.43.0
+> +# see ti,lm3533.yaml for an example
+> diff --git a/Documentation/devicetree/bindings/leds/ti,lm3533.yaml b/Documentation/devicetree/bindings/leds/ti,lm3533.yaml
+> new file mode 100644
+> index 000000000000..2e200f172400
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/ti,lm3533.yaml
+> @@ -0,0 +1,190 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/leds/ti,lm3533.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: TI LM3533 Complete Lighting Power Solution
+> +
+> +description: >
+> +  The LM3533 is a complete power source for backlight, keypad, and indicator LEDs
+> +  in smartphone handsets. The high-voltage inductive boost converter provides the
+> +  power for two high voltage series LED strings for display backlight and four low
+> +  voltage control banks for individual LEDs. Additionally, LM3533 features an ALS
+> +  sensor support.
+Mention it is an interface for an external ALS.
+
+> +  light-sensor:
+> +    type: object
+> +    additionalProperties: false
+> +
+> +    properties:
+> +      compatible:
+> +        const: ti,lm3533-als
+> +
+> +      interrupts:
+> +        maxItems: 1
+> +
+> +      ti,resistor-ohm:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        description:
+> +          Internal configuration resister value when ALS is in Analog Sensor
+> +          mode and PWM mode is disabled.
+
+Good to note why this is a firmware thing rather than a userspace controlled
+thing. I looked it up, it's because expectation is the input is a current from
+the external analog ALS and these are used to convert it to a voltage with target
+range.
+
+> +        minimum: 1575
+> +        maximum: 200000
+> +
+> +      ti,pwm-mode:
+> +        type: boolean
+> +        description:
+> +          Switch for mode in which ALS is running. If this property is set
+> +          then ALS is running in PWM mode, internal resistor value is set to
+> +          high-impedance (0) and ti,resistor-ohm property is ignored.
+I'd mention the ALS is an external device - so this is saying what interface thing
+thing connected is using.
+
+> +
+> +    required:
+> +      - compatible
+> +
+> +    anyOf:
+> +      - required:
+> +          - ti,resistor-ohm
+> +      - required:
+> +          - ti,pwm-mode
+> +
+> +patternProperties:
+> +  "^backlight@[01]$":
+> +    $ref: /schemas/leds/backlight/ti,lm3533-backlight.yaml#
+> +
+> +  "^led@[2-5]$":
+> +    $ref: /schemas/leds/ti,lm3533-leds.yaml#
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - light-sensor
+> +  - backlight@0
+> +  - backlight@1
+
+Similar for the led nodes.
+
+> +  - led@2
+> +  - led@3
+> +  - led@4
+> +  - led@5
+
+Curious - why are all the led nodes required?  What if some aren't wired to anything?
+
+> +
+> +additionalProperties: false
 

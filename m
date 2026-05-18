@@ -1,73 +1,73 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9772948C3F5
-	for <linux-fbdev@vger.kernel.org>; Mon, 18 May 2026 16:08:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52671296BCF
+	for <linux-fbdev@vger.kernel.org>; Mon, 18 May 2026 16:14:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779120514; cv=none; b=Y7VO5AXcpU7Oyv472N3es6T5ryIHQkFhCRPACjpL7ocQFh2pzbrlVT0UkSTmKbipedFU/7+B5lddoDljgWOcCSPY7A0oZ7dQECLcEQ8OdrBy/T6qhR+/bqtKyETzePqtGCaF3d9qfImh6lozDFBq9X0Uz6g9mlYlmn/WONY23WY=
+	t=1779120893; cv=none; b=HYZCqu8EQvDFF0oAJ1H2mVjfFZu1Wxy3oIi4oDW2PTeyUyLaCR+hQiwHFy4JQOPZkVRoiBB6CxpeAhiQcvo59j/gN20UXAHSCl1QsYGxVAv8nA6grBkvwpzQHqCEnK45/6AVIjTAzOnqOvL/juJP8m8Z94r7pHgJLpuaVOUqdbI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779120514; c=relaxed/simple;
-	bh=OGkgFGp6LugTlj9h3s9yMhDwtp+l0mAgRR7UVtWHGOk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=qQ6TGPbYc5Bua0xhVDLMB7SjMFVqhBU+HDZjuqOi7v3yIG4R8vlypg0U6emqyZWPR2r/uY5lO8E1Nt1pIT4mfVizgWxCJnjX3crbGfRh/8AsEw6/vd1BcBF6+pk2p2peL1o+bj3swr1nH6KLBgK/I9CmphF7+m1C3EhkcrQaiAo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=k65BiRkA; arc=none smtp.client-ip=209.85.128.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1779120893; c=relaxed/simple;
+	bh=9TXq6OAKtTy29c2ZSYYSiFXHX6iuG3bFkK7SUcGbhSE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=bKZ1gYCydXYDk7ZdZEcD68DJsWx6s8dgLQFZQ4sGhr1jGRG6NS2DnJbanbuZGi/WDLZnGY8610xNgG+K/xV8VyJdj4SzVn5fcssDjE3998ELQRfH3+F09nQRPJ4NhlpppPHSmAYtbAGuDrA8VIY3RlbqWoJ9RH9RBDsQLrNCovg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QypHied7; arc=none smtp.client-ip=209.85.221.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="k65BiRkA"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-48a3e9862f0so14316875e9.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 18 May 2026 09:08:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QypHied7"
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-43d7e23defbso1385928f8f.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 18 May 2026 09:14:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1779120497; x=1779725297; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=klhCbReF4bvwraqj5tgeEa8fE21QJBvT1nSsOgsaMQ0=;
-        b=k65BiRkA7UFXVCsSYQyd03//rVgbTjfTNcCdXAPq2ZuZ06CfACBs0PmuY8KKqbCXQy
-         dK7QTZ4voub4np2hKsn7H7D4tDwcZWvORuZ7xwcLHJ6kZdc6XVDfMAYjePgyMhs96msd
-         XwM+KbqymiB9BqL6e298Zp5k2QvEqcOpX6Wyn+z6zNDu2B0koPKALvna+KaNCz0eKfYv
-         0lox7R0q+u0gEgqFdR7iEijMOFpEey7k5jSTErXI7Y/hGiqUHVxFdUH1k+T3Gx9+2nMb
-         R/cp6i8pubZIs3eU1qDce3OWuXCwfL339khovsLX8rgyTO0vH5nzyjluNyJqMWvMFuMR
-         v45g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779120497; x=1779725297;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1779120882; x=1779725682; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=klhCbReF4bvwraqj5tgeEa8fE21QJBvT1nSsOgsaMQ0=;
-        b=GKjBOZSdJ3f0enYKv/cP9iNwPWlIAF7AJ9m1R0tDafJ9hRy3Y5uu8KjC4NjgkBQ+am
-         /gLzdRfH2zcHLyycLi3hzhij7UZahURGCT2rehHhCrzQIIBdI2Vv+GxpikOQapmkUTEw
-         rVszW9Z/28Aj3tKqUwMgK67tafxxsyaJLfFR97p33Y1piPJWfUy5WiUuSTWKDEAqAISZ
-         gxDydgXJwWKznYRN1StUUeZsyVC41uXY3d2JZHbUnnRRBIU5GN1g7HkA+dsAYIvg99Wr
-         GYBjEpKpX0tI8G6L//Lc+F8eP0BMzHIJdzzRpUk3E8VWVa88GddA48HsQ64wulZgLmI9
-         tkYQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9W3W+RYEC35dL/tfUo8jC4jsrMNj65pfDDFRhsJ1Dy6aTnC9ZVmnP1kIk4B+nir/4G1r4Xb1xZJYcyOg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyZ5L49j34pUIJgiuqjYJTx8gInMaJwSQQbZQwYlAZmWsj4vmw4
-	eJdjt2mBZsSsUsZ/2hbwgexOXrGnE6YoMlcy/H7xvgxN6GqPZS8tF+qaMLrKT3Gb3kY=
-X-Gm-Gg: Acq92OGAC5UfbidIRoFxchE3C7MLCQ7X6cLyF/JT7KWt0B+Ax8aecFHhecqFCpL7qe7
-	z9Gf+9dfi7U6IwoHhIh0IWQPyZ+vwGSFS2TNgayO9jGUVq77nx/Z4gN1E3fe6HIVxx/L4zHjMSv
-	ae4teUPsJ/XWMBIDRoYEVOVcwjGdlSL4Haq1UDKQaLrQ/6v3MoBozE2ddCyh5l5v8jKdPXidCiS
-	lsIkG63P1S5BizDmKuLXPGUskk1kIFGStsSj6JEcp93pufvHgFc3aSfG6NierGRGxeKO2xNoAj6
-	VePpvIo7B5zPYmab4I6I5Zzl5AvJU/tE8JUOgAvLA8YsP6F7oGgK/utifjWiM1BULodZCmgEY0C
-	SkGT70/8/BZSGEPBAGXOJgBjP+mftA6SV7KnZBA8IHHer6renzq6qMwOrAiEICIq5Xs59hPNDSG
-	t4/GAeR8d6g7JZYUhdTZlv272KTGuHhzAVCv3l35dJ5gCIVvggq3JYjelDAhNHUagBS+c/agKVy
-	pum0rikcFCOlQ==
-X-Received: by 2002:a05:600c:5010:b0:486:faa8:9e4 with SMTP id 5b1f17b1804b1-48fe5388407mr229341615e9.12.1779120496908;
-        Mon, 18 May 2026 09:08:16 -0700 (PDT)
-Received: from localhost (p200300f65f47db041bee4d0e08e9609b.dip0.t-ipconnect.de. [2003:f6:5f47:db04:1bee:4d0e:8e9:609b])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-48fe4c8344asm451511985e9.1.2026.05.18.09.08.16
+        bh=9TXq6OAKtTy29c2ZSYYSiFXHX6iuG3bFkK7SUcGbhSE=;
+        b=QypHied78Cd+861e1PQzHdGeGL8Kp7gKsO4tXrdVUBQb6tEefgi7oR4ri02ltZA2n4
+         wcbmOwcIQazxMM6yKxWwXlCBRCAxV/bpV5FF+B3zE0pJfG75mA7tlV5RshFcv3lSYXcR
+         Z5smczQBdU5beJEmzn+EPBhOG+LBnfLdQZGHER3q/GfBJYnoNDBCmDaq/ivWCFmkHu90
+         EkVGaCewV5K4vSQMRinkqCDfNtUvHkF9u6Q2FTZUrKPlBfI8OeIELp4x6r4oaC6t9Hzo
+         y30akrD9HWEw4sED+Hqy0ca86FWS/zkpoQ1YwFG9zJPEyM/wxiHSjdVvADsy7Pgndi+x
+         GLFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779120882; x=1779725682;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=9TXq6OAKtTy29c2ZSYYSiFXHX6iuG3bFkK7SUcGbhSE=;
+        b=Lcn0Tt8E//6T4BCJOnlbLWp8l68ai5mpn4QPJ1/kgihGVkjAyxzqjC0PPudlHIiTGl
+         i9t+2BCea6vPkJKrNlIjxjF2KBzaXYeGX4hjGJUewSxBIke4ou5vxjGXr7WJY/eiMUoY
+         aAqF+4ZnQBzsJL8NoyZkaF7700YsqKAbQ7A+e6e0lYaWBGEbNxKoLomf+Y8NeyHbYbR8
+         99ihbkxNhNEAdUeBXgBZKLr2td1ra0QTeGHfNFdmoQmkHs6KfhcgIgCbs+br1eSIGyEs
+         ykgaDm33R1eo57iAr+AMILZ3uVRBWGIdQ3fkK5avx5S1XTPemiWVJ3BFJlu5MkNPn0cQ
+         n4yw==
+X-Gm-Message-State: AOJu0YyfWzIS52dQ5P3UzZcFCoboxy1NNh7Puehegw5acQxT+JQto95P
+	fH2iRJBj0xtZOEK//U7cJBMvoaTJ7M+Yws/3eh3JmerXFO8TMJtB06KrNPSDhcMRhvs=
+X-Gm-Gg: Acq92OE4NcM5WwlrDz8XBnMX/7l4aZiUl3pJdjG5NDACE7DRivh7rtPLuiXpi0ufSvo
+	n1qb44iEKuWATil7LIZSLczM8dTk1l+NFQ72LcrwWStjiEYQ7yPGlRb7Ty44eOpqkU1nVGiAtP9
+	JKAN2Puf46Iy2YSkb7AnwBYXnBu0KXqls6gQ0NUrvGOQi0ZQUQYUCasU85DTVyTkfl9d1bJ+vU6
+	eDjsLKrSFYu4X7/x9Mififlt4tAzRPwR6N1tVZ7ItMRlG3DG5zCd8XvtDh1grLf9dzZlP+oIp9O
+	ys77tZ3JGBPA79dK/G0zT8Kwx0R3nhhngjiFnqoodtHAYgiQiTJK0CqAI7qEkvyq95cgC70UazZ
+	4StsKnjH2k8HmRy/1ZmkLZLqLQLYdWqc2o9gc2H1bFyaoSZCpYUG8Syqmql1fz/9+KW5lyFwgW6
+	qpI8syPKweawm/q6GiEenXc6MBzPUfF1IBqg==
+X-Received: by 2002:a05:6000:1aca:b0:43c:f247:4792 with SMTP id ffacd0b85a97d-45e5c5be70cmr24447586f8f.12.1779120881786;
+        Mon, 18 May 2026 09:14:41 -0700 (PDT)
+Received: from RM.localdomain ([92.53.30.157])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45d9ec3acf7sm38316771f8f.12.2026.05.18.09.14.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 May 2026 09:08:16 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Kees Cook <kees@kernel.org>,
-	Abdun Nihaal <nihaal@cse.iitm.ac.in>,
-	linux-fbdev@vger.kernel.org,
+        Mon, 18 May 2026 09:14:41 -0700 (PDT)
+From: =?UTF-8?q?Rahman=20Mahmutovi=C4=87?= <mahmutovicrahman5@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Cc: deller@gmx.de,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v1] fbdev: Use named initializers for struct i2c_device_id
-Date: Mon, 18 May 2026 18:08:08 +0200
-Message-ID: <20260518160808.802423-2-u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.47.3
+Subject: Re: [PATCH] fbdev: chipsfb: add missing MODULE_DESCRIPTION() macro
+Date: Mon, 18 May 2026 18:14:36 +0200
+Message-ID: <20260518161439.556-1-mahmutovicrahman5@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260509131831.1073-1-mahmutovicrahman5@gmail.com>
+References: <20260509131831.1073-1-mahmutovicrahman5@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -75,77 +75,11 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2363; i=u.kleine-koenig@baylibre.com; h=from:subject; bh=OGkgFGp6LugTlj9h3s9yMhDwtp+l0mAgRR7UVtWHGOk=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqCzloUdKnlf1Nt0f9T2X5K0WZQuKiEsuchNCdO p0WhYruJqqJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCags5aAAKCRCPgPtYfRL+ ToDpCAChu7Mt0FJO95cXoBAYIIM3KUwcbBPBDeu8Kca9LfxWt9XVv2BUjY5QtNspxJu6Ez2N2TP Z2cURRnOBwE8O3KjdbwNJjr+lVk8AH38Y3mCbdWfWkEcTCJj5cODfIkEqc8A2QGpQFkdP08iTyT BUNRyt/cYfrrdb9ec9MAvxZLNKlsOgAAsOct7FQJ6nG0z5x16P6LHSviAmX/UPEWI2T1a+tlsxh fAbHKNLPAChBddKlLJSwj/vOL+NlI0MiJMMxz8o7wpQosPDwHqE66VWm1xc+iGYN/K1FBqKuqX+ ag/qOmumGPWQovBtXg6ImIw+bF/pAqpZrUzGm3DQ84SwdX+0
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-While being less compact, using named initializers allows to more easily
-see which members of the structs are assigned which value without having
-to lookup the declaration of the struct. And it's also more robust
-against changes to the struct definition.
+Hi Helge,
 
-While touching all these arrays, unify usage of whitespace in the list
-terminator.
+Can you check my patches and let me know if any changes are needed?
 
-This patch doesn't modify the compiled arrays, only their representation
-in source form benefits. The former was confirmed with x86 and arm64
-builds.
-
-Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
----
-Hello,
-
-this patch is part of a bigger quest to use named initializers for
-mainly struct i2c_device_id::driver_data to be able to modify
-i2c_device_id. See e.g.
-https://lore.kernel.org/all/20260518111203.639603-2-u.kleine-koenig@baylibre.com/
-for the details.
-
-This patch here isn't critical for this quest, as no driver makes use of
-.driver_data, so apart from the better readability this is only about
-consistency with other subsystems.
-
-Best regards
-Uwe
-
- drivers/video/fbdev/matrox/matroxfb_maven.c | 2 +-
- drivers/video/fbdev/ssd1307fb.c             | 8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/video/fbdev/matrox/matroxfb_maven.c b/drivers/video/fbdev/matrox/matroxfb_maven.c
-index 2ea65da6075c..fe057a0b57ec 100644
---- a/drivers/video/fbdev/matrox/matroxfb_maven.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_maven.c
-@@ -1282,7 +1282,7 @@ static void maven_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id maven_id[] = {
--	{ "maven" },
-+	{ .name = "maven" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, maven_id);
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 83dd31fa1fab..644b8d97b381 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -784,10 +784,10 @@ static void ssd1307fb_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id ssd1307fb_i2c_id[] = {
--	{ "ssd1305fb" },
--	{ "ssd1306fb" },
--	{ "ssd1307fb" },
--	{ "ssd1309fb" },
-+	{ .name = "ssd1305fb" },
-+	{ .name = "ssd1306fb" },
-+	{ .name = "ssd1307fb" },
-+	{ .name = "ssd1309fb" },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, ssd1307fb_i2c_id);
-
-base-commit: 254f49634ee16a731174d2ae34bc50bd5f45e731
--- 
-2.47.3
-
+Thanks,
+Rahman Mahmutović

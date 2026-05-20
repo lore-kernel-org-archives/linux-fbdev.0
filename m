@@ -1,121 +1,176 @@
-Received: from mail-qv1-f67.google.com (mail-qv1-f67.google.com [209.85.219.67])
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A02EE2C3266
-	for <linux-fbdev@vger.kernel.org>; Wed, 20 May 2026 04:49:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.219.67
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779252552; cv=pass; b=A7p9f/FWIurFscIkHmm+0K50fEJUcYo6nbdeXIprV3vhkqA7IYoAUWU1E4zORk/oovo5FJKgzSQHxw4x74uipl9Z0OLYjj2tE701K6wqGGNKMTOO+2PxF+ZAYQljeQykG+ojIFhElycf1H1QR677gd0bNLzWFHTklo0xSXeHHCk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779252552; c=relaxed/simple;
-	bh=iX9DgFfgjdBAl007JWxmgssbqGhgCd0Hmt9BlGMfEVM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=THQcbSmARARDH5+qKCj2QwhsWuhU7bxVDtMWoGUNL0ztpPVGdDzhXO3NetMzfhHE8lYUVGg5VV2+lVct8GYpt2cwlMR478ce8PcJdFokm6/GiJe9xp+VYQ6cAGVsCzUqRpMY0KXlE9Ko+CZeSWrNuQg3YdP2q0BnHb85NaVhB0Y=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=F6JIs4g5; arc=pass smtp.client-ip=209.85.219.67
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D9FE34D4EA
+	for <linux-fbdev@vger.kernel.org>; Wed, 20 May 2026 08:46:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779266804; cv=none; b=MVcJ7cymFlQj7TC53grL54x0LBde6WWauOY0GPR6mmhX1DIpPHrXER4NgItwxmJqbjJMl5A1s+yY9yXP9klbP8R6mq7App5C8vqcE+hIt+omYWzpEpWKrwJxve1z6VwcKuLDujQEPZrjEHVZhwO5OzZrdTC51J+KAJ8EbyhN57I=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779266804; c=relaxed/simple;
+	bh=EuNb7c+M5izNWaIX3sDUu+oSgbsnPpwC3h9wiA6CPGY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=M/iy/phpubayqZFzGKsDVD0whkkUpGSierZN9eSAM+WRxcK6P4rtlVMHCRbw8RJnmQ85hqxx3R3wxlLP+Rn8lp3LMVs2p2CI6X3VvZ/rn8RtBQ5vF6N6Jmoeg5ZkD3lC1sfNCJeYFx5NbkGwaalguKkfCY2JZRBVle5pDwHBPpY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=WJdF61jH; arc=none smtp.client-ip=209.85.221.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="F6JIs4g5"
-Received: by mail-qv1-f67.google.com with SMTP id 6a1803df08f44-8b4298d271fso96029016d6.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 19 May 2026 21:49:11 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779252550; cv=none;
-        d=google.com; s=arc-20240605;
-        b=fLg3eacYNukC0u08vtc4ZT379GVyedlf0PwWFrdw66r9mLirh9PEswAKPBS0Q95SON
-         uR2YGhrGM/eUGBw02eGbDlUcbjkIEUm7qJ17/nFzm9OhuC5psEhr+trGoppab/+BjC/N
-         +pLoGjgzj9BcomsWghfcnCXx8JoiKX6JJEmJZnmfkYiVVCz/8llWaIqbmZfKahG9I7OS
-         d5LDcOBybSWz76n5I0pS3wMygzgTGi4ZTAMGSqbO95zNg+E9UzaZl5F7PQCNqAcphyaf
-         X6Bg7UQ5rKlNSfxPQmy3tdz8la8IUIE/AIXcqJRGpbwXY5yxrsWo3Yx9zz40MNgA0W5s
-         iffQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=iX9DgFfgjdBAl007JWxmgssbqGhgCd0Hmt9BlGMfEVM=;
-        fh=HQC8TibF6W5tj88HaONdh6ouvCntlVwxKzp6h0tlCco=;
-        b=DCucR+pmhNbA27xtr6UcQ08c9k+QG5lv+wGQWLOlsHDt5Ts4Xff5H1F7pvMFYaKYEB
-         ZY55sV5tT1atK2HITVdfea+EvNPgM25ULDbRFDwmpXsB2g3KGthXeIz0slan54WxKetT
-         oQwJMFzZXRbhv8E7AZsWFeUPbYwYTLLH5bTYlutvrLqgADZRSCBM2CKsJqNUVZjvPCEt
-         7eO9AIFLA4K429hrowwYn07fsJWAfqe5hiVdE+IfFtYmIloptGpD3AFshgxGhXsViejT
-         QvRDBqySAmGoMshQ3rqqz+jtrY8bAsNtKJzU8/QJCjKn2C0Y3I6Z2d4N3BH//LYp5GBr
-         qKVw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="WJdF61jH"
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-43eb05b1875so2499538f8f.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 May 2026 01:46:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779252550; x=1779857350; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=iX9DgFfgjdBAl007JWxmgssbqGhgCd0Hmt9BlGMfEVM=;
-        b=F6JIs4g5EcZETyCCwjtT7UOhJCeIvVhqTQdAhwkeXx6k4sPKYncZvtBCffqMBHDPo8
-         X9w4r8LCrUTSGvkZU4+ncWT4Aj6dFKJZuOJlr1HtSTZnynvwJunZEmQQkhjrdOdz1Kbi
-         BZ0sTqaXixCbrHcw3hv56jAHoroAPfph8f8h5dzpOQ4178BshYbzRMsaTJ3jHiEB4UK8
-         gu7/ZH7ZSplTvk1cfj2FhX2aQBesjRcNc+fxtbqQPDOosKW3NYRVOLlcYYLeHgt4JqkG
-         LcCR27oCqCgg3OwviNTYKIoqB7oUTooLkZjna7t7XdhhJ002tQEOXaMu7TZqkp0F84HW
-         o4tQ==
+        d=baylibre.com; s=google; t=1779266800; x=1779871600; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=U53nOZsze2BOUUWxn8xrqWn0udiJAimX6PJ2o0xVGTg=;
+        b=WJdF61jHG2kyvi6q/MrZRQrtCPML/KMtNakZx1H93IhZ8YGI6Eti3U6XPurZjnnR9T
+         YRe2g3iMBF6VuhXQohMGttOO162iPe0pEiacJZnXNGDfcnBJNLE+RZ4SEdWgwiXuNmZH
+         H0uGPS1Jpsl/mBwFpsML7G7dUAGycqyjC7YK9S4fSfGAc9xNNSTRdbjLIDNRtQ3RC+7D
+         h9vXDlhL6Dh7DwXmPtg2+1ugJmkzj6v+lhVV+FoCbjwHo3MjSQOa9CkWLLky4DLJL7Hy
+         mdTTRAnCzhdVHMvwSGsm7T0r5SLHkJc/sGVZGyOvXeEguvh8GktAIaGqUP/CwXJPwaor
+         m7MQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779252550; x=1779857350;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=iX9DgFfgjdBAl007JWxmgssbqGhgCd0Hmt9BlGMfEVM=;
-        b=mUFki5ev0fPmOi8Y2Az8AwZ2GxkB/OrPsvxf7Qr6pWWW3HFSLtS6j/nnB99E8CaLPj
-         FiDYDz2eXO7uZGL8XPM3YoZAmkmdeID2VhJi8h2thjS47iYnkZAM3qTJ0gURM3aLjU0x
-         l1ZmZzOftH+2tYtnzt4wx3kSOSx05LPWG/Zim0Ejxptp7eauDLDSXyxcD0Iv4Z1Zwa3o
-         g+jaOQf4FljbLWqMwIjeRK9TnxHPkI5reWzOt/7ghXq0CcqAiCqNXAAIh4ZQOz6IJkxt
-         MphfLlM2f/sv5HQ8UITf2Ge5Oaptin8afVvM4b7/R/DVjNrClIQEQTJYrU7BwHT+877T
-         tRBw==
-X-Forwarded-Encrypted: i=1; AFNElJ8/DDJjikoCQZPCNva5VXTFkydYQ11srgaARy1ampyDU6QKPRj+74fR46RqysgST4oNUV7nKsDLJQajfg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwCg9DBZbznEUitl4teBsycUXQBXJxBg6jEdhwlETvhrmZbUhj8
-	hDo4kj+U1jpBZsbRWKjZ0ctGLlH98JjgF+tGvLlbe43Yl4JOy2zM+DaDLeHtWWLtRtUSSDEKVoY
-	HgPsL29u0z3NYOP3C22qBSm/hbuK2Ql0wdNr02iaf4w==
-X-Gm-Gg: Acq92OFFkDpJx3F3NovuuDFOM7bQRoMkvIP3LRn6ntk3PyquxzO6XfDnmw+bTWHO3I5
-	FnOT7esGjl1Wh6QfpRKxElAHRx9ThNSkjjJesz9XqR7VjxZHxkG8t7QN6ImRyarTKAXI6EiEqU/
-	ebLpe19jrqjgiRdBh/Omkja07XtGa98IV/l1WG0v/oNgPbvL5rIwjqjq8TS0/xK7TVg8RILGOoI
-	3CZZHeusIr0EQB3S7tWvPNvVv5rVUljnhLQmEEYyWsiAwv/RlaG+ck8766hEmK+UMZ8Kb531vSS
-	JOAx/FWQ71vdfFqoflud30pkkStYgGg1uL9afI0r8FusNKzfeDW5CtlWTzfrrcHQkYil
-X-Received: by 2002:a05:6214:478e:b0:8ca:f47:25ea with SMTP id
- 6a1803df08f44-8ca0f4fcfb8mr351820016d6.0.1779252550653; Tue, 19 May 2026
- 21:49:10 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1779266800; x=1779871600;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=U53nOZsze2BOUUWxn8xrqWn0udiJAimX6PJ2o0xVGTg=;
+        b=Q+3i/xHKOY7LQ0nKQDY4rYRdPiAkmwcRk0yMouHqlA+1ziLo0OmCGF2Ptl7KT5iWkU
+         i/0Po7uN8JexKcdzB2bF3RIFbexIUaZwJ06MFKbOoHpTdqzeLsX4rE/MNuzKwsmdWK+b
+         RhjHrhz9p0I6vci3FqDG9XOTAS0vHr2Zo7Vg3FVJwg52bDCCHp5Ag2iBLKZ2XTlFrYGF
+         oCoYxW5am1jdy9FrnukXcc5OGolehcRiO4q18k4mI7hzG4jGTPSCgtDKUoFUF0Xlb4p1
+         GNSyXRXCwfWgTbDsmY40Wv4OJFI36iYqMYulgnBW8dUYXiOJzXM6nuNYWSART1C2V67B
+         t5rg==
+X-Forwarded-Encrypted: i=1; AFNElJ+cH597jwN/QJMDrdkKFCS4+XRCP/fi2mI/cNR4ACXynqaLtT+ovj6TBS9c5UClB3INGIi2d+60NWwtHQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxHaBKg79IY5AcyY8a5TiSMENjzRUw/HwWeATDQURZ6QHMePELq
+	STQZhMC1nbzVoZLVZPmrL+u3HzuKyudntkjR4nxIwgUKRBLHS/aNsh/VhXirsQTSwYEZB+EtQOW
+	KWHByQ1NpRw==
+X-Gm-Gg: Acq92OHHfJHxRVJWQdB+7l+bMbHy5cNn19MTGAwbs1l1rb5oVuXIoSFtEePV+NVv7g7
+	xOv2f11Up0j5FUaFK4hpBC/uTn2qfgNGM2cHGaDo9Q2g6okxlW47qyRPLCPkI/FaaVGvU2UfDiN
+	ceMJYs06W2H1oVI/aZEYC4RKSGpRtFS+oaXvB8DVpyoxUOhkcbGdx8FI7y8S8pxoE3vte8fzUiJ
+	scMVEYIGwE011XkJFuJXEWuZk0ccqKrOgUteVngOHRMrM4DFRlw7syoHB3xJMh0B3IHslHit+wW
+	uabhfqsd/pz/sVRnpj8sc+QNPZLTzBiihs0D7HHO9rv9j4KS8mpCZKFWrAUKBFBwbzd0vCvXQWY
+	GZ6V6blJ6/QC3aOXQIgnWNPCKcDZYdtg5/7A7JwtgTUDySz1UIUy4+GxTAy1M5zug3IgXWTBOYg
+	wwaXiYKPGEwtm9ao4WGlkQgosjuqSTtyA/9ng+ir4NcDAp7mVx3Z3bYC2Yp+aLb/aksLpPFYps7
+	YAPxrXWs0J5iS8=
+X-Received: by 2002:a5d:5d82:0:b0:439:c299:4d8f with SMTP id ffacd0b85a97d-45e5c5cbe4bmr36382479f8f.17.1779266800378;
+        Wed, 20 May 2026 01:46:40 -0700 (PDT)
+Received: from localhost (p200300f65f47db04a02ef40d8e5825ac.dip0.t-ipconnect.de. [2003:f6:5f47:db04:a02e:f40d:8e58:25ac])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-45da0a19b1dsm51573666f8f.17.2026.05.20.01.46.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 20 May 2026 01:46:39 -0700 (PDT)
+Date: Wed, 20 May 2026 10:46:38 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+	Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, 
+	Antonino Daplas <adaplas@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-geode@lists.infradead.org, Markus Schneider-Pargmann <msp@baylibre.com>
+Subject: Re: [PATCH] fbdev: Consistently define pci_device_ids using named
+ initializers
+Message-ID: <ag1xQVCCzXkc_Ucu@monoceros>
+References: <20260430111637.211336-2-u.kleine-koenig@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260510023941.190396-1-enelsonmoore@gmail.com>
- <d0bb399f-1285-495b-babe-8bae608729e8@gmx.de> <agwpPFGkN3zHKdCj@carbonx1>
-In-Reply-To: <agwpPFGkN3zHKdCj@carbonx1>
-From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Date: Tue, 19 May 2026 21:49:00 -0700
-X-Gm-Features: AVHnY4JqLEwFuVkjtY2Lbvna297TfZ51kPMwwQBMs7y6OuNbOahusQtJV32GfeA
-Message-ID: <CADkSEUhhLL6WxUWBChdA=LFrYZQJsCLKOFJoXA_Jsdpab6qx0A@mail.gmail.com>
-Subject: Re: [PATCH] ARM: mach-rpc: fix zImage build after recent font-related changes
-To: Helge Deller <deller@kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, 
-	Russell King <linux@armlinux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="4j765bpqgzr2splh"
+Content-Disposition: inline
+In-Reply-To: <20260430111637.211336-2-u.kleine-koenig@baylibre.com>
+
+
+--4j765bpqgzr2splh
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH] fbdev: Consistently define pci_device_ids using named
+ initializers
+MIME-Version: 1.0
 
-Hi, Helge,
+Hello,
 
-Thanks for investigating this issue.
+On Thu, Apr 30, 2026 at 01:16:36PM +0200, Uwe Kleine-K=F6nig (The Capable H=
+ub) wrote:
+> diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/f=
+bdev/matrox/matroxfb_base.c
+> index e1a4bc7c2318..22774eb1b14c 100644
+> --- a/drivers/video/fbdev/matrox/matroxfb_base.c
+> +++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+> @@ -1642,7 +1642,7 @@ static int initMatrox2(struct matrox_fb_info *minfo=
+, struct board *b)
+>  	int err;
+> =20
+>  	static const struct pci_device_id intel_82437[] =3D {
+> -		{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82437) },
+> +		{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_82437) },
+>  		{ },
+>  	};
+> =20
 
-On Tue, May 19, 2026 at 2:11=E2=80=AFAM Helge Deller <deller@kernel.org> wr=
-ote:
-> Ethan, does this compile-only-tested patch fix the issue?
-It almost does - I also had to remove #include <linux/math.h> from
-include/linux/font.h.
-This is probably because of the following highly questionable code in
-arch/arm/boot/compressed/Makefile:
-CFLAGS_font.o :=3D -Dstatic=3D
-which is causing unused static functions to not be optimized out. (The
-real purpose of it is to make the acorndata_8x8 array non-static so
-the decompressor can use it.) Really, the decompressor should be fixed
-to not use this hack.
+after further sharpening my tooling there is an additional change that
+IMHO should be done here:
 
-> Maybe only the first hunk is necessary.
-You're right. The kernel links successfully with only the #include
-<linux/math.h> removal and the first hunk applied.
+-		{ },
++		{ }
 
-Have a nice day!
+and ...
 
-Ethan
+> diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+> index 3f6384e631b1..06aefad75f46 100644
+> --- a/drivers/video/fbdev/pvr2fb.c
+> +++ b/drivers/video/fbdev/pvr2fb.c
+> @@ -993,9 +993,8 @@ static void pvr2fb_pci_remove(struct pci_dev *pdev)
+>  }
+> =20
+>  static const struct pci_device_id pvr2fb_pci_tbl[] =3D {
+> -	{ PCI_VENDOR_ID_NEC, PCI_DEVICE_ID_NEC_NEON250,
+> -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+> -	{ 0, },
+> +	{ PCI_VDEVICE(NEC, PCI_DEVICE_ID_NEC_NEON250), },
+> +	{ },
+>  };
+> =20
+>  MODULE_DEVICE_TABLE(pci, pvr2fb_pci_tbl);
+
+=2E.. here:
+
+-	{ PCI_VDEVICE(NEC, PCI_DEVICE_ID_NEC_NEON250), },
++	{ PCI_VDEVICE(NEC, PCI_DEVICE_ID_NEC_NEON250) },
+-	{ },
++	{ }
+
+Would you mind squashing that into the patch you already applied, maybe
+adding:
+
+	While touching all these arrays, unify usage of whitespace and
+	comma in a few drivers.
+
+to the commit log? I can also send a v2 of the patch with these changes
+included if that's easier for you.
+
+Otherwise I will put sending these modifications separately on my todo
+list.
+
+Best regards
+Uwe
+
+--4j765bpqgzr2splh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmoNdOsACgkQj4D7WH0S
+/k7n3AgAmiu0dkGSmVN5iwDMsbx9u5oGpxoTfYsBdf+ieZ5EzDYhZzjAd5M4GNMS
+dajrNSdkatRRbEZFE3PYDscIkW69PVck72sxOJdTDyAVSPf2hgi3mbElPpXW5ZEl
+V5s0iKhXHTafmLPl+5cAsDOdMG19WulP1A3QfTepuM0kOEAKsQ4UwUV4AWlpBgH6
+GMiJdyUX4viX+gD8zOIgyKPCjqvBa8CMPkgQORFA1fuD+eEbv1Iw1b0xDr/AinyG
+8Jfn/ZzaAAnTJje43x8rP+Q5hw6uVI6bBHTrhypMFQ0C9ofIZBsv2BUyQ8Hp5i85
+TX3Z+lJoWmwknV9WI68+rtnMMOgSCg==
+=on22
+-----END PGP SIGNATURE-----
+
+--4j765bpqgzr2splh--

@@ -1,84 +1,83 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f71.google.com (mail-oa1-f71.google.com [209.85.160.71])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D46C63A9D83;
-	Wed, 20 May 2026 11:47:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1554133A033
+	for <linux-fbdev@vger.kernel.org>; Wed, 20 May 2026 12:32:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.71
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779277673; cv=none; b=kSohrtu6aI/Xq0eGEm5qKLL5wawwpUQd8LUqK94sw+mxMVkbHGcU1uoySrFeglDqA7rR5mL7JNS7uMPwgX0dknZtWXhj4rXM/9S+NJ6iOGRIHEY0COCOYD7zk45pm+SN5ENgnaAptUSTi2s2cygGKlydx1SOJkgssPtv4RwmcWI=
+	t=1779280368; cv=none; b=sEErYp52z0KR088ocP8GrHuCkOJA5SXqxuhfYW72NkYvHALg64J/Gc0lg09SbCWl/JWqzknUjeMXqc1gACkP3CNvFIwEKsth4RQqIBCy1a1zw7TUJeAoZXPzgwcK4q4RNKZi8teHQZnXR02jtW6KlxlTktECWHrCIJorC+ccn6k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779277673; c=relaxed/simple;
-	bh=t+iwayKXEpw+1wMdev1ak8k0IMLe8fLfYmyzFuBv8Vw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rzDLyaCHiLhHl0Qcmj5MnqlLxv7tMgJZjaSHteel7Dpxgkux0uQJKBAIn0sB3x653ZommxK4Ur6LuT407BEb1ZgguiQEmhtodO/88/lTEsrGaCr5EWXnl2Fc/ef2DUgCb1mC4ZN0Onh6/wS/bWmHoFrUHMbdJq5ACMwcDMqmtWY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bOFCMVGJ; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bOFCMVGJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C29D1F000E9;
-	Wed, 20 May 2026 11:47:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779277672;
-	bh=u0lWDGQPsgD8Yt+SND0PZatIJxC14109hDfaKdLRGZc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=bOFCMVGJXFHkVeFNfzqsvgVmMLrcUtaCiVj1Y7yJ1pOPV9H/G+h2qeXk6km5b7MpQ
-	 v2n5pWvHXYW+qs78HBeFlxsLKMtZJs+42RdZcHqWzkc/0v3Pf8lO9qOl5rc49Gxl3I
-	 ROZYhYEySzTKD4OERMpijGA8BoMH9dFv9cbZYRRQagM3LC9foWUzqYNDTiJBPRmRX+
-	 ctetoItSkshyFzA3B21q2QfjUSeMpgY5yfinoqAxG3ELfqo5Y8ZTPQQwuGpIcvHPOm
-	 apuh7k1/sh7QNvdzuV8NtzaPloSps9JQZPHRF/5Va0X/GL2Sjsmg7eDtGRlpCSq86q
-	 PGuISNquSI0FQ==
-Date: Wed, 20 May 2026 12:47:45 +0100
-From: Lee Jones <lee@kernel.org>
-To: Frank Li <Frank.li@nxp.com>
-Cc: Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Maud Spierings <maudspierings@gocontroll.com>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: (subset) [PATCH v8 1/4] dt-bindings: backlight: Add max25014
- support
-Message-ID: <20260520114745.GX305027@google.com>
-References: <20260407-max25014-v8-1-14eac7ed673a@gocontroll.com>
- <177755722019.2606736.10749503716773482329.b4-ty@b4>
- <agyxLnTYstqRwGva@lizhi-Precision-Tower-5810>
+	s=arc-20240116; t=1779280368; c=relaxed/simple;
+	bh=zWFebkPkyBuYoXPnkQCGPFv9zsWkRSxDMWEuk0rfPf0=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=iO+rk6G2y1YGCuRogWEbnXB4Zp+cuXkjiu7+sNsPFEJCz7iFQpMbOP/tlGUHzhmb8v2rWxj+IFfcdv1TD75tnSCpXUqyQ1CHYEqyXlhBJD1Bqo8G2lH+xdZ47QYH2ZwZEtd/5kclonZc9S1bxMvK3gD3gMS/Lb4GSr/B5nr68VA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.160.71
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oa1-f71.google.com with SMTP id 586e51a60fabf-439be67c0c2so5359338fac.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 May 2026 05:32:46 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779280366; x=1779885166;
+        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=5TC7lSyjrD13LRclT9+bptPhmnvLezFlV6rbC6PKVOE=;
+        b=ZzTMrQazcpSTYF+6uZxX6KNUBRSh7BXC4lk9RWeFK7P2p/mIuWX53Cb+NHjIIQt7x9
+         hyMcBX/xuklvkjtuLZn4ay+b08It+Q1UCbxWbebJl+scwl7QPFRnFcupHtGK3CpLSqGE
+         yKyz+B/U6vVDLYhHzik3TxaTMRcZI8clIQH2WnFURoj7GPOxlp//jqTyAA9HqRIPuf9u
+         Fgaak+LzvKJQAoYmC0kqyJY7OJQhZEtGVRudkVvEPaLAPGPwYh0PadL03YM4tGczEEXf
+         hwS7P6n1zxLTDJxWjncj91IOJRv3DzzjMtX9NclsDENaAw6D4W+zMzbVL5KcFEm9fRjC
+         8qCw==
+X-Forwarded-Encrypted: i=1; AFNElJ/c54ChgowSN7GzhwjMA5lK8BoJQ/wrzpram9C94C3I2M3YkexIDOUlAAZZHWpm2945LXVSR11APVM9Yw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwVPxAVuHWV+RleAiAVxzPYcvT0rX2RSiAnkOwJghz9Z3JUNZVk
+	LO9oaQFGXU9p35f1m+ngtIvgga/lwNh/tAhgZBHVto7NP8OFXdIwtkVu5/4WpDF5OFZgHfZqmmQ
+	3sZBeb2Sl5hkxnnnu74ce9KP7Epumveli4Hj1aoUa9wr93Ox/3V8SLeewi9Y=
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <agyxLnTYstqRwGva@lizhi-Precision-Tower-5810>
+X-Received: by 2002:a05:6820:3103:b0:69b:5486:e85 with SMTP id
+ 006d021491bc7-69c9bfd479emr14642792eaf.36.1779280366120; Wed, 20 May 2026
+ 05:32:46 -0700 (PDT)
+Date: Wed, 20 May 2026 05:32:46 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6a0da9ee.170a0220.1f6c2d.0009.GAE@google.com>
+Subject: [syzbot] Monthly fbdev report (May 2026)
+From: syzbot <syzbot+list6f29fe22f06f2b7fbccd@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, 19 May 2026, Frank Li wrote:
+Hello fbdev maintainers/developers,
 
-> On Thu, Apr 30, 2026 at 02:53:40PM +0100, Lee Jones wrote:
-> > On Tue, 07 Apr 2026 16:41:42 +0200, Maud Spierings wrote:
-> > > The Maxim MAX25014 is a 4-channel automotive grade backlight driver IC
-> > > with integrated boost controller.
-> >
-> > Applied, thanks!
-> >
-> > [1/4] dt-bindings: backlight: Add max25014 support
-> >       commit: 5fcbbedec9dfce78044eee922bf2030e1bd03faa
-> 
-> Lee Jones:
-> 
-> 	I have not seen it in linux-next. Anything wrong?
+This is a 31-day syzbot report for the fbdev subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/fbdev
 
-I don't know why Backlight hasn't been added to Linux Next.
+During the period, 0 new issues were detected and 0 were fixed.
+In total, 4 issues are still open and 29 have already been fixed.
 
-Rest assured, it's applied to the Backlight tree.
+Some of the still happening issues:
 
--- 
-Lee Jones
+Ref Crashes Repro Title
+<1> 4265    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
+                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
+<2> 1591    Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
+                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
+<3> 258     No    KASAN: vmalloc-out-of-bounds Write in fillrect
+                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
+
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
+
+You may send multiple commands in a single email message.

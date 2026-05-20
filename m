@@ -1,260 +1,386 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 773C83D47D3;
-	Wed, 20 May 2026 10:11:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91EE23F23B5;
+	Wed, 20 May 2026 11:20:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779271904; cv=none; b=PGbPm8uvjeptMNWK54yzMU7mb6p0XUq2ib7X5pmog8dCYTxMlqTvWWZzsM+K8Z39uanORSVPKju9h2SRJnPu/rHDDUTa2HnNIHkGn63a7DnpvKT8PSkPPrUJfYCJDv9g3vElFf1nyrM64/2IiTx7josfDdStYg7oSCYbsYBYwC8=
+	t=1779276048; cv=none; b=G07XYmiUuSZr148vYTP1lyrr8GORvYPeP5667EbmlAcgPdWWAX8lpjBSfylCAjUipETHRoD83woMWEWhbMLyYNA6TAMeubBcIOlVTeK1CnTtck/raSXaICL/YzQcvhMOfmwgpk0WgebwrqoFqLwup+v0TsKivGbh1L5eDkob+Yc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779271904; c=relaxed/simple;
-	bh=cumtjCa8QwrCrkYkP/kSqm1+mOlUg9j/RdhZCXpxwTg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=c4fYIBIB3egs7Ok58StfIjl69HEUE9hVsXWFtfk9N1G/fBe/FH+jsM4STnTrKP/RMF4atUJ+oUuVReEXhvYVdL9xjShrt98UqxfevnSGFtg5qRGtsd846tzOlzvR8liwJOyO0m3XRIGuHFp8J0Kv23qvXObPG/Yt49LDNuf5qGA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=CK65Sxxs; arc=none smtp.client-ip=212.227.15.15
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1779276048; c=relaxed/simple;
+	bh=1Oxyfd1/v7O27frv8bMTIM++jJRA0r8gE2wj5UKC5ek=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hgF0hrheDjKQJYO+xJPUh+RQ7DQDuN0p7ZQcXd53ezvO8Ngvbr/xpjf3iH22gT7lQ0jxQQgzqeRLxmSUUmWWzExv11NhegZuaQMFvNsm9Ta3Cy6pR8RBjmRidab2chIXFmaxAE5iUpDctPoQC7SS3OVijVNa86tZz32v2+fyf78=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JodNbaba; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="CK65Sxxs"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1779271880; x=1779876680; i=deller@gmx.de;
-	bh=JEtRmAEGAUw0HgCmHSGKGPve2zkA65121FWaYFQvDKU=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=CK65Sxxs4qOKIfw/ILpZbm2eTDxR46tc2fISgPb522AYocZljGLstX9IS9T6VSkK
-	 46mF3ZJ5PVDdBCmryiX/RlR2z4rCxtXwTtuuSVFx5+R3bFkH4dxEpt4EBuK+1/ZgK
-	 OVm0PBz9KzPmmJ5HTprzfxGPE7hYo3mNti+MzqwAWtYtANwwxjpcN3+uZVo5qKcpv
-	 uPfAOarQtmh/U84qgGlptc0wKTmWioGQobAGw5cPwTsU3VP7Hn4VUoHZndJ4ZKee6
-	 A3rhVgKRV+QSdaZ/f5XDQawcNU+cgDEXO6LPgn9agJec8JJ3Lca7yJdaIAXBEFH3H
-	 PUEFnqTQfl2SCKAW+g==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MwwZd-1xIr9H0hD9-010xd4; Wed, 20
- May 2026 12:11:20 +0200
-Message-ID: <6f1e1da5-a086-4261-aacb-f1117e22146b@gmx.de>
-Date: Wed, 20 May 2026 12:11:16 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JodNbaba"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33D9A1F000E9;
+	Wed, 20 May 2026 11:20:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1779276046;
+	bh=t9GJjxz7MXEZbqV6+5d9dAOL2Akoh9f4mOaXvcGs6WQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=JodNbabahQ4KYNtVtaEeBI4WLvAJ/LGW2bWd64MPM8do1ht2NHdkP6+pUwVEkSnGc
+	 4x4wkRN+xAdjUVeK+rOhWvKzJqngVW8TN6jq5mN8OfujT12OtLkPxPOv4RLRBTl2Bz
+	 ZDDe5ePuZWLHr063elD3jN+l1gZjzuprCfnfLLoVcVGIUKKHvxhwRdnexsrAKLzoZ2
+	 PQwapcqW/eEBrp4VlGnOtABMC5rvTDsghWaKGxZjK18fR1vPntGb02pxyp0jzNHaCm
+	 3anYNVPhLafF/SJQaT8/PhHre5wsRmiIiQNShU6dQ/E+XXabMYjlp8nB/3wz6+Ptlh
+	 +4iRUfbEyw9RQ==
+From: Sasha Levin <sashal@kernel.org>
+To: patches@lists.linux.dev,
+	stable@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Helge Deller <deller@gmx.de>,
+	Sasha Levin <sashal@kernel.org>,
+	Frank.Li@nxp.com,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH AUTOSEL 7.0-5.10] fbdev: ipu-v3: clean up kernel-doc warnings
+Date: Wed, 20 May 2026 07:19:15 -0400
+Message-ID: <20260520111944.3424570-43-sashal@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260520111944.3424570-1-sashal@kernel.org>
+References: <20260520111944.3424570-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: Consistently define pci_device_ids using named
- initializers
-To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29?=
- <u.kleine-koenig@baylibre.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>,
- Antonino Daplas <adaplas@gmail.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-geode@lists.infradead.org,
- Markus Schneider-Pargmann <msp@baylibre.com>
-References: <20260430111637.211336-2-u.kleine-koenig@baylibre.com>
- <ag1xQVCCzXkc_Ucu@monoceros>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
- HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
- r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
- CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
- 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
- dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
- Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
- GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
- aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
- 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
- ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
- FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
- uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
- uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
- REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
- qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
- iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
- gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
- Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
- qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
- 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
- dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
- rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
- UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
- eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
- ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
- dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
- lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
- 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
- xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
- wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
- fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
- Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
- l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
- RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
- BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
- Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
- XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
- MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
- FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
- 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
- ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <ag1xQVCCzXkc_Ucu@monoceros>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:S62MKqJETVPKDPugYV2lzkWccfOMXOhv25ADUBSRL6/RURD3bdA
- mkzHbgB96Wh9IESIlTDq2RVLnDmyqaJ7BSVYTbqUdali5l63JTpQNTQW1EgZ3Ma864jYUjf
- NEQXwOgyjrB3hyF58RchRK0NfPUu0auEWx6Xurw1IICTYBiF/LNcolut9t3iIoBE9IurdYO
- HaEL+Yxe4TBlAnmR9kSmw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:xu2onO/S+Bg=;PWNfM4qLCCZNlO04DENVNCcXuct
- 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
- AFv7Zw==
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 7.0.9
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On 5/20/26 10:46, Uwe Kleine-K=C3=B6nig (The Capable Hub) wrote:
-> Hello,
->=20
-> On Thu, Apr 30, 2026 at 01:16:36PM +0200, Uwe Kleine-K=C3=B6nig (The Cap=
-able Hub) wrote:
->> diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video=
-/fbdev/matrox/matroxfb_base.c
->> index e1a4bc7c2318..22774eb1b14c 100644
->> --- a/drivers/video/fbdev/matrox/matroxfb_base.c
->> +++ b/drivers/video/fbdev/matrox/matroxfb_base.c
->> @@ -1642,7 +1642,7 @@ static int initMatrox2(struct matrox_fb_info *min=
-fo, struct board *b)
->>   	int err;
->>  =20
->>   	static const struct pci_device_id intel_82437[] =3D {
->> -		{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82437) },
->> +		{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_82437) },
->>   		{ },
->>   	};
->>  =20
->=20
-> after further sharpening my tooling there is an additional change that
-> IMHO should be done here:
->=20
-> -		{ },
-> +		{ }
->=20
-> and ...
->=20
->> diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.=
-c
->> index 3f6384e631b1..06aefad75f46 100644
->> --- a/drivers/video/fbdev/pvr2fb.c
->> +++ b/drivers/video/fbdev/pvr2fb.c
->> @@ -993,9 +993,8 @@ static void pvr2fb_pci_remove(struct pci_dev *pdev)
->>   }
->>  =20
->>   static const struct pci_device_id pvr2fb_pci_tbl[] =3D {
->> -	{ PCI_VENDOR_ID_NEC, PCI_DEVICE_ID_NEC_NEON250,
->> -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
->> -	{ 0, },
->> +	{ PCI_VDEVICE(NEC, PCI_DEVICE_ID_NEC_NEON250), },
->> +	{ },
->>   };
->>  =20
->>   MODULE_DEVICE_TABLE(pci, pvr2fb_pci_tbl);
->=20
-> ... here:
->=20
-> -	{ PCI_VDEVICE(NEC, PCI_DEVICE_ID_NEC_NEON250), },
-> +	{ PCI_VDEVICE(NEC, PCI_DEVICE_ID_NEC_NEON250) },
-> -	{ },
-> +	{ }
->=20
-> Would you mind squashing that into the patch you already applied, maybe
-> adding:
->=20
-> 	While touching all these arrays, unify usage of whitespace and
-> 	comma in a few drivers.
->=20
-> to the commit log? I can also send a v2 of the patch with these changes
-> included if that's easier for you.
->=20
-> Otherwise I will put sending these modifications separately on my todo
-> list.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-No need to resend anything. I'll clean it up manually during the next few =
-hours....
+[ Upstream commit f1fb23a0a0fcbdb66672da51d7d63a259f6396ca ]
 
-Helge
+Correct all kernel-doc warnings:
+- fix a typedef kernel-doc comment
+- mark a list_head as private
+- use Returns: for function return values
+
+Warning: include/video/imx-ipu-image-convert.h:31 struct member 'list' not
+ described in 'ipu_image_convert_run'
+Warning: include/video/imx-ipu-image-convert.h:40 function parameter
+ 'ipu_image_convert_cb_t' not described in 'void'
+Warning: include/video/imx-ipu-image-convert.h:40 expecting prototype for
+ ipu_image_convert_cb_t(). Prototype was for void() instead
+Warning: include/video/imx-ipu-image-convert.h:66 No description found for
+ return value of 'ipu_image_convert_verify'
+Warning: include/video/imx-ipu-image-convert.h:90 No description found for
+ return value of 'ipu_image_convert_prepare'
+Warning: include/video/imx-ipu-image-convert.h:125 No description found for
+ return value of 'ipu_image_convert_queue'
+Warning: include/video/imx-ipu-image-convert.h:163 No description found for
+ return value of 'ipu_image_convert'
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+
+LLM Generated explanations, may be completely bogus:
+
+## Phase 1: Commit Message Forensics
+Step 1.1 Record: subsystem `fbdev: ipu-v3`; action verb `clean up`;
+intent is to correct kernel-doc warnings in `include/video/imx-ipu-
+image-convert.h`.
+
+Step 1.2 Record: tags in committed message are `Signed-off-by: Randy
+Dunlap <rdunlap@infradead.org>`, `Reviewed-by: Philipp Zabel
+<p.zabel@pengutronix.de>`, and `Signed-off-by: Helge Deller
+<deller@gmx.de>`. No `Fixes:`, `Reported-by:`, `Tested-by:`, `Acked-
+by:`, `Link:`, or `Cc: stable@vger.kernel.org` tag is present in the
+committed message.
+
+Step 1.3 Record: the described problem is seven kernel-doc warnings: one
+undocumented/private list member, malformed typedef documentation, and
+missing `Returns:` sections. The visible symptom is documentation
+tooling warnings, not a runtime crash, hang, data corruption, or
+security issue. No affected kernel version is stated. Root cause is
+incorrect kernel-doc comment syntax.
+
+Step 1.4 Record: this is not a hidden runtime bug fix. The body and diff
+both show a documentation/comment-only cleanup.
+
+## Phase 2: Diff Analysis
+Step 2.1 Record: one file changed: `include/video/imx-ipu-image-
+convert.h`, 11 insertions and 5 deletions. Modified documentation covers
+`struct ipu_image_convert_run`, `ipu_image_convert_cb_t`,
+`ipu_image_convert_verify()`, `ipu_image_convert_prepare()`,
+`ipu_image_convert_queue()`, and `ipu_image_convert()`. Scope is single-
+file, header-only, surgical.
+
+Step 2.2 Record: hunk behavior:
+- `struct ipu_image_convert_run`: before, `list` was documented neither
+  as a member nor private; after, `/* private: */` tells kernel-doc to
+  ignore it as an API member.
+- `ipu_image_convert_cb_t`: before, kernel-doc treated the typedef
+  comment as a function prototype mismatch; after, it is marked as a
+  typedef comment.
+- Return docs: before, several returns were plain prose or missing;
+  after, they use kernel-doc `Returns:` syntax.
+- `ipu_image_convert_prepare()`: before, the V4L2 usage note followed
+  the return prose; after, the return section is last and formatted for
+  kernel-doc.
+
+Step 2.3 Record: bug category is documentation/kernel-doc warning
+cleanup. No error-path, synchronization, refcount, memory-safety,
+initialization, type, logic, or hardware workaround change exists.
+
+Step 2.4 Record: fix quality is high for the stated documentation issue:
+small, obviously correct kernel-doc syntax changes. Runtime regression
+risk is effectively zero because no C declarations, types, function
+bodies, data layout, or APIs are changed. Documentation rendering risk
+is very low.
+
+## Phase 3: Git History Investigation
+Step 3.1 Record: `git blame` shows the affected header comments and
+declarations came from `cd98e85a6b786d` by Steve Longerbeam, dated
+2016-09-17. `git describe --contains cd98e85a6b786d` reports it as
+present by `v4.9-rc1~41^2~24^2`.
+
+Step 3.2 Record: no `Fixes:` tag is present, so there is no tagged
+introducing commit to follow. Blame identifies `cd98e85a6b786d` as the
+source of the documented preimage; `git show` confirms that commit added
+queued IPU image conversion support and the API documentation.
+
+Step 3.3 Record: recent local history for the file shows `96e9d754b35e8`
+removing unused `ipu_image_convert_*` functions, `c942fddf8793b` adding
+SPDX boilerplate conversion, and `cd98e85a6b786d` adding the header/API.
+No prerequisite commit is needed for this documentation-only patch.
+
+Step 3.4 Record: `git log --author='Randy Dunlap'` under fbdev/include
+areas shows Randy has related cleanup/documentation work such as `fbdev:
+hgafb: fix kernel-doc comments` and `fbdev: fbmon: fix function name in
+kernel-doc`. The patch was reviewed by Philipp Zabel and committed by
+Helge Deller, verified from the commit and lore thread.
+
+Step 3.5 Record: no dependencies found. The diff changes only comments
+and applies locally with `git apply --check`.
+
+## Phase 4: Mailing List And External Research
+Step 4.1 Record: `b4 dig -c f1fb23a0a0fcbdb66672da51d7d63a259f6396ca`
+failed to find a lore match by patch-id, author/subject, or in-body
+From. External fetch found the v3 discussion at
+`https://yhbt.net/lore/dri-
+devel/20260427183236.656902-1-rdunlap@infradead.org/T/`. The v3 thread
+has Helge Deller replying “applied to fbdev git tree.” Web search/fetch
+also found v2 and a v2 ping. No NAKs or objections were found.
+
+Step 4.2 Record: `b4 dig -w` also failed for the same reason. The v3
+lore mirror shows recipients included `dri-devel`, Philipp Zabel, DRM
+maintainers, `imx`, `linux-arm-kernel`, Helge Deller, and `linux-fbdev`.
+
+Step 4.3 Record: no `Reported-by:` or bug-report `Link:` tags exist. No
+external crash/security bug report applies.
+
+Step 4.4 Record: this is a standalone one-patch documentation cleanup.
+v2 added the reviewed-by and updated Cc list; v3 rebased and resent.
+
+Step 4.5 Record: direct `lore.kernel.org/stable` fetch was blocked by
+Anubis. Web search for the exact subject plus `stable` found patch-
+thread results but no stable-specific discussion or stable nomination.
+
+## Phase 5: Code Semantic Analysis
+Step 5.1 Record: modified documented symbols are
+`ipu_image_convert_run`, `ipu_image_convert_cb_t`,
+`ipu_image_convert_verify()`, `ipu_image_convert_prepare()`,
+`ipu_image_convert_queue()`, and `ipu_image_convert()`.
+
+Step 5.2 Record: `rg` found callers in `drivers/staging/media/imx/imx-
+media-csc-scaler.c` for `ipu_image_convert_abort()`,
+`ipu_image_convert_queue()`, `ipu_image_convert_adjust()`,
+`ipu_image_convert_unprepare()`, and `ipu_image_convert_prepare()`.
+Runtime callers are unaffected because only comments changed.
+
+Step 5.3 Record: reading `drivers/gpu/ipu-v3/ipu-image-convert.c`
+confirms the documented functions perform image format
+adjustment/verification, context allocation, queueing, abort/unprepare,
+and single conversion setup. None of those function bodies are touched.
+
+Step 5.4 Record: runtime path is reachable through IPU image conversion
+users, but the patch changes no runtime path. The affected path for the
+fix is kernel-doc/documentation generation.
+
+Step 5.5 Record: no related same-header kernel-doc fix was found by `git
+log --grep='kernel-doc' -- include/video/imx-ipu-image-convert.h`.
+
+## Phase 6: Stable Tree Analysis
+Step 6.1 Record: version tags `v5.10`, `v5.15`, `v6.1`, `v6.6`, `v6.12`,
+`v6.15`, `v6.16`, and `v6.17` all contain `include/video/imx-ipu-image-
+convert.h` with the old kernel-doc text. The API was introduced before
+`v4.9-rc1`, so active stable trees checked contain the documentation
+issue.
+
+Step 6.2 Record: expected backport difficulty is clean or minor. `git
+apply --check` succeeds against the current local tree, and the checked
+stable tags contain representative preimage lines. Full per-stable
+worktree application was not run.
+
+Step 6.3 Record: no related stable fix for this header was found in
+local `git log --grep` searches.
+
+## Phase 7: Subsystem Context
+Step 7.1 Record: subsystem is fbdev/gpu IPU-v3 image conversion
+documentation in an include header. Runtime criticality is
+peripheral/driver-specific; documentation-build criticality is low.
+
+Step 7.2 Record: local subsystem history shows ongoing cleanup/removal
+activity in `drivers/gpu/ipu-v3` and the header, including unused-
+function removals and treewide cleanup. This patch is not part of a
+required functional series.
+
+## Phase 8: Impact And Risk
+Step 8.1 Record: affected population is kernel documentation builders,
+maintainers, and users consuming generated kernel-doc. Runtime users of
+IPU-v3 are not affected by behavior.
+
+Step 8.2 Record: trigger is running kernel-doc/documentation tooling
+over this header. It is not triggered by boot, device probe, syscalls,
+or ordinary runtime use. Unprivileged runtime trigger does not apply.
+
+Step 8.3 Record: failure mode is documentation warnings only. Severity
+is LOW. I did not verify any configuration where these warnings are
+fatal, so that does not drive the decision.
+
+Step 8.4 Record: benefit is low but real under the documentation-fix
+exception: it makes stable documentation builds cleaner. Risk is
+extremely low because only comments change. Risk/benefit is favorable if
+stable accepts documentation corrections.
+
+## Phase 9: Final Synthesis
+Step 9.1 Record: evidence for backporting: pure documentation
+correction, explicitly fixes listed kernel-doc warnings, tiny single-
+file patch, reviewed by Philipp Zabel, applied by Helge Deller, old text
+exists in active stable tags checked, and documentation/comment fixes
+are an allowed stable exception. Evidence against: no runtime bug, no
+crash/security/data-corruption impact, no stable nomination found, and
+b4 could not match the thread. Unresolved: direct stable-lore search was
+blocked; full apply checks on every stable branch were not run.
+
+Step 9.2 Record:
+1. Obviously correct and tested? Mostly yes for documentation syntax;
+   reviewed and applied, but no `Tested-by`.
+2. Fixes a real bug that affects users? Yes, a real kernel-doc warning
+   issue; not a runtime bug.
+3. Important issue? No runtime severity; LOW documentation-build
+   severity.
+4. Small and contained? Yes, 11 additions and 5 deletions in one header.
+5. No new features or APIs? Yes, comments only.
+6. Can apply to stable trees? Likely yes; local apply check passed and
+   stable tags checked contain the preimage.
+
+Step 9.3 Record: exception category applies: documentation/comment fix.
+This is the main reason to accept despite lack of runtime impact.
+
+Step 9.4 Decision: backporting is appropriate under the stable
+documentation-fix exception. It is not a stability/security fix, but it
+is a correct, reviewed, zero-runtime-risk cleanup of real kernel-doc
+warnings in code present across active stable trees.
+
+## Verification
+- Phase 1: fetched and inspected committed metadata for
+  `f1fb23a0a0fcbdb66672da51d7d63a259f6396ca`; confirmed tags and
+  message.
+- Phase 2: `git show --stat --patch` confirmed one header, 11
+  insertions, 5 deletions, comments only.
+- Phase 3: `git blame` confirmed changed comment preimage from
+  `cd98e85a6b786d`; `git describe --contains` placed it before
+  `v4.9-rc1`; `git show cd98e85a6b786d` confirmed original API addition.
+- Phase 3: `git log` on the header/subsystem found no prerequisite
+  functional series.
+- Phase 4: `b4 dig`, `b4 dig -a`, and `b4 dig -w` all failed to match;
+  recorded as a tool limitation/failure.
+- Phase 4: WebFetch of the v3 lore mirror confirmed the patch thread and
+  Helge Deller’s applied reply; Spinics fetch confirmed v2 and a later
+  ping.
+- Phase 5: `rg` found runtime users; `ReadFile` of implementation
+  confirmed function bodies exist but are not changed.
+- Phase 6: tag checks confirmed the header and old doc text in `v5.10`,
+  `v5.15`, `v6.1`, `v6.6`, `v6.12`, `v6.15`, `v6.16`, and `v6.17`; `git
+  apply --check` succeeded locally.
+- Phase 8: severity/risk assessment is derived from the verified
+  comments-only diff.
+- UNVERIFIED: direct `lore.kernel.org/stable` search content was blocked
+  by Anubis; no actual `make htmldocs` run was performed; full patch
+  application against every individual stable branch was not performed.
+
+**YES**
+
+ include/video/imx-ipu-image-convert.h | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/include/video/imx-ipu-image-convert.h b/include/video/imx-ipu-image-convert.h
+index 003b3927ede5c..6b77968a6a150 100644
+--- a/include/video/imx-ipu-image-convert.h
++++ b/include/video/imx-ipu-image-convert.h
+@@ -27,12 +27,13 @@ struct ipu_image_convert_run {
+ 
+ 	int status;
+ 
++	/* private: */
+ 	/* internal to image converter, callers don't touch */
+ 	struct list_head list;
+ };
+ 
+ /**
+- * ipu_image_convert_cb_t - conversion callback function prototype
++ * typedef ipu_image_convert_cb_t - conversion callback function prototype
+  *
+  * @run:	the completed conversion run pointer
+  * @ctx:	a private context pointer for the callback
+@@ -60,7 +61,7 @@ void ipu_image_convert_adjust(struct ipu_image *in, struct ipu_image *out,
+  * @out:	output image format
+  * @rot_mode:	rotation mode
+  *
+- * Returns 0 if the formats and rotation mode meet IPU restrictions,
++ * Returns: 0 if the formats and rotation mode meet IPU restrictions,
+  * -EINVAL otherwise.
+  */
+ int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
+@@ -77,11 +78,11 @@ int ipu_image_convert_verify(struct ipu_image *in, struct ipu_image *out,
+  * @complete:	run completion callback
+  * @complete_context:	a context pointer for the completion callback
+  *
+- * Returns an opaque conversion context pointer on success, error pointer
++ * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
++ *
++ * Returns: an opaque conversion context pointer on success, error pointer
+  * on failure. The input/output formats and rotation mode must already meet
+  * IPU retrictions.
+- *
+- * In V4L2, drivers should call ipu_image_convert_prepare() at streamon.
+  */
+ struct ipu_image_convert_ctx *
+ ipu_image_convert_prepare(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+@@ -122,6 +123,8 @@ void ipu_image_convert_unprepare(struct ipu_image_convert_ctx *ctx);
+  * In V4L2, drivers should call ipu_image_convert_queue() while
+  * streaming to queue the conversion of a received input buffer.
+  * For example mem2mem devices this would be called in .device_run.
++ *
++ * Returns: 0 on success or -errno on error.
+  */
+ int ipu_image_convert_queue(struct ipu_image_convert_run *run);
+ 
+@@ -155,6 +158,9 @@ void ipu_image_convert_abort(struct ipu_image_convert_ctx *ctx);
+  * On successful return the caller can queue more run requests if needed, using
+  * the prepared context in run->ctx. The caller is responsible for unpreparing
+  * the context when no more conversion requests are needed.
++ *
++ * Returns: pointer to the created &struct ipu_image_convert_run that has
++ * been queued on success; an ERR_PTR(errno) on error.
+  */
+ struct ipu_image_convert_run *
+ ipu_image_convert(struct ipu_soc *ipu, enum ipu_ic_task ic_task,
+-- 
+2.53.0
+

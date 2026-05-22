@@ -1,338 +1,224 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E74238228E
-	for <linux-fbdev@vger.kernel.org>; Fri, 22 May 2026 12:30:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C8E5406289
+	for <linux-fbdev@vger.kernel.org>; Fri, 22 May 2026 13:59:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779453052; cv=none; b=f630nI5AAHhhOOl6KjTCebVqrF8k5f9wLBu2xdr5fuwBPjX8unh411pF+BBi1OOq5wuQ5Qsu0bJnODKDotnGTb02TI3/RElGnx9X06HR6yj36rSt8XxVV0Lsb52pEAK7rC3wcnclHqKGHnmUKvAK4NtpgAPVt+/OU26+Lwl0Dww=
+	t=1779458347; cv=none; b=gqwbB6T2bVLTctzfM0Gp5M5WUkB/6XECcQiD5rZl84AYMweVjT59mvE0+MnMlj8eQJxT/Q3NlR9duamWMWzuSRa4ziyeCNwbDy7uKJdt5vm8XROg4NMuBywKW5D3rBppfDHXzedAoV9zYP/kvXUvE59uUF74RheLXPmGsJIwoWI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779453052; c=relaxed/simple;
-	bh=H+9D8wMtl1URE172finxRG3a1cop0rDG+Y+BT4QZUws=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=rHXimXjv6OI28X4Z70BK7oupdpAWkqebEjen963rfSAntuV+DJSqcxTZJNK30aqs7kuHFmsiMYYneYwuKU1vIhgQeEAyfQNZ86O63wzKkyVy2Z2BjIrfGDs/WUkLuh47NQAIlKmr8EKeRp9FEQPUOyUTxosgeKHswSK7sA6dioA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=KWNrr3SG; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=jYJ5Gux7; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=KWNrr3SG; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=jYJ5Gux7; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1779458347; c=relaxed/simple;
+	bh=IKXBBmwkH6WYhvjDQwD2qII5ZQPdQ7IjKLTaUHmA/20=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KuHZv3JOKWR/f5hpsZdYCNHpgDHZzVPlPsmHqbWtAaCw2LdgxzgdlbdC87KKvsM6frVEsnDPDLhSCrpQBxTk3Z9ZIj3mhPdxlIk8GsBUEl+NbPRaMxnOwKeWdVj/yWheHm/FxANGAnN9ejVx8KFRKe26DXaurchfijojq6zWPrQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=qxWpXiyQ; arc=none smtp.client-ip=212.227.17.21
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="KWNrr3SG";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="jYJ5Gux7";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="KWNrr3SG";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="jYJ5Gux7"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 4078367CD6;
-	Fri, 22 May 2026 12:30:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779453029; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	b=KWNrr3SGun+JUo91FFxQ2B6VAOg9V5cX+9Eb2YNZlg4szMTeqItdPJibs9f6e4Vf0RQNS6
-	J2/zP73rWBaC4/Eu39i9dyZf2VRg9AQxykRkRW2t8RUjWhY4ttaUQj9sDVfxDtfCfKCVnk
-	De3/szNjsnAbdpgyB4Isi2oOCoGK4Hg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779453029;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	b=jYJ5Gux7lgD0D7y9dRKgYJeTxOYiuIRF5DzIk68cCqwlv7B1++xn4NB1MKNxeQ+FIfwfPl
-	V1kwNYO7HOfXTLDQ==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779453029; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	b=KWNrr3SGun+JUo91FFxQ2B6VAOg9V5cX+9Eb2YNZlg4szMTeqItdPJibs9f6e4Vf0RQNS6
-	J2/zP73rWBaC4/Eu39i9dyZf2VRg9AQxykRkRW2t8RUjWhY4ttaUQj9sDVfxDtfCfKCVnk
-	De3/szNjsnAbdpgyB4Isi2oOCoGK4Hg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779453029;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vBtaE/SLft/7bYaH+tW5iBuZ4PwLUahf4IAUa7S3OcI=;
-	b=jYJ5Gux7lgD0D7y9dRKgYJeTxOYiuIRF5DzIk68cCqwlv7B1++xn4NB1MKNxeQ+FIfwfPl
-	V1kwNYO7HOfXTLDQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E2B31593A8;
-	Fri, 22 May 2026 12:30:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id oF0mNmRMEGqqeQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 22 May 2026 12:30:28 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	simona@ffwll.ch,
-	airlied@gmail.com,
-	lukas@wunner.de,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 4/4] fbdev: Do not export fbcon from fbdev
-Date: Fri, 22 May 2026 14:28:16 +0200
-Message-ID: <20260522123019.211059-5-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260522123019.211059-1-tzimmermann@suse.de>
-References: <20260522123019.211059-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="qxWpXiyQ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1779458342; x=1780063142; i=deller@gmx.de;
+	bh=KMvj1aWLuME+cEJb5+X2gqSdfvUyTzaMWJ39Wcv6FfE=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=qxWpXiyQJJzGuqGd10NL1vlIHWZm/Bg58XmQwseJvIJWeZ8Ow2GX55WiSbmWCvWc
+	 UGdEEZvHo/xH3d9mKlyAt1IH8+cdd2/Np+qgqVZ+Bp5pN6eC2v0afLsGBaxouLOL4
+	 1QasVKNjQgpIl7lu27JY77XP7jPRbdDlZ10VTteGS6nKZUzSrqscmrsI710KAuYIn
+	 1hxk/7Nz2AfNtsmiWeAa+WIYI7aTxLSABJmRA1b56vdXGncUNv9L4Q2N1NaToxQLK
+	 OADRb7kkuDo1tcLLQIf+97wxsQOYikUYPtmA+w1o3TTyGE3SSl2nKmsNk8tHKbBy4
+	 DIN0y92xXAxtfRprMw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MN5eX-1wjKjL17Th-00PZJY; Fri, 22
+ May 2026 15:59:02 +0200
+Message-ID: <8e37cd60-4886-4018-83bc-8c6720264ecd@gmx.de>
+Date: Fri, 22 May 2026 15:59:00 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -2.80
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[12];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:mid,imap1.dmz-prg2.suse.org:helo];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch,gmail.com,wunner.de,linux.ibm.com,ellerman.id.au,kernel.org];
-	RCVD_TLS_ALL(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RL3i8gi83d8iemn6cxmyh4cqsd)];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
-X-Spam-Level: 
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/4] fbdev: Internalize fbcon
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20260522123019.211059-1-tzimmermann@suse.de>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
+ HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
+ r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
+ CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
+ 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
+ dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
+ Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
+ GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
+ aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
+ 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
+ ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
+ FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
+ uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
+ uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
+ REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
+ qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
+ iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
+ gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
+ Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
+ qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
+ 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
+ dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
+ rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
+ UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
+ eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
+ ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
+ dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
+ lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
+ 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
+ xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
+ wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
+ fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
+ Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
+ l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
+ RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
+ BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
+ Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
+ XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
+ MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
+ FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
+ 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
+ ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
+In-Reply-To: <20260522123019.211059-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:PhttPxjbtarZX/dn2e5bcyXGol4bkp3O5paNGZSi5UW2R5YckDk
+ ZueNxWYguIhBF4QUMwGeuF5Br4UBa7nMv5M/1Mw1GLep9V1OMKjYIi5KvbmcHh4xJVJKh68
+ RRLm9wvk1ExDSkBYYU+INmpQULSoc2Z5hgWpqMVXnEq/GkcbxFAKMlgB+0hyzNfOg327Lxa
+ GgX6rMtXrkKOgHx2LtuMw==
 X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:z2frKFNg8Fo=;lNNosPOz9KzvwjKwcN0t64SnhBc
+ 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
 
-There are no callers of fbcon outside fbdev. Move the declarations
-into the internal header.
+On 5/22/26 14:28, Thomas Zimmermann wrote:
+> Turn fbcon into an internal client of fbdev. Manage all interactions
+> with graphics drivers within fbdev. Add helpers for these tasks and
+> convert drivers.
+>=20
+> Fbdev's PS3 and SH-Mobile drivers update fbcon as part of user-invoked
+> mode changes. Call the new helpers, which also fix inconsistencies
+> among the various code paths.
+>=20
+> Vga-switcheroo remaps the fbcon terminals when switching physical
+> outputs. For now, hide this in another helper. The call will later
+> move into DRM's fbdev emulation.
+>=20
+> When all refactoring in place, fbdev manages fbcon interactions by
+> itself. Remove the public interfaces.
+>=20
+> v2:
+> - use '#if defined' (Helge)
+>=20
+> Thomas Zimmermann (4):
+>    fbdev: Wrap user-invoked calls to fb_set_var() in helper
+>    fbdev: Wrap user-invoked calls to fb_blank() in helper
+>    fbdev: Wrap fbcon updates from vga-switcheroo in helper
+>    fbdev: Do not export fbcon from fbdev
+>=20
+>   MAINTAINERS                            |  1 -
+>   drivers/gpu/vga/vga_switcheroo.c       |  6 +--
+>   drivers/video/fbdev/core/fb_chrdev.c   | 12 ++----
+>   drivers/video/fbdev/core/fb_internal.h |  1 +
+>   drivers/video/fbdev/core/fbcon.c       |  3 --
+>   drivers/video/fbdev/core/fbcon.h       | 50 +++++++++++++++++++++++
+>   drivers/video/fbdev/core/fbmem.c       | 35 +++++++++++++++-
+>   drivers/video/fbdev/core/fbsysfs.c     |  9 +----
+>   drivers/video/fbdev/ps3fb.c            |  5 +--
+>   drivers/video/fbdev/sh_mobile_lcdcfb.c |  5 +--
+>   include/linux/fb.h                     |  3 ++
+>   include/linux/fbcon.h                  | 55 --------------------------
+>   12 files changed, 98 insertions(+), 87 deletions(-)
+>   delete mode 100644 include/linux/fbcon.h
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- MAINTAINERS                          |  1 -
- drivers/video/fbdev/core/fb_chrdev.c |  2 +-
- drivers/video/fbdev/core/fbcon.c     |  1 -
- drivers/video/fbdev/core/fbcon.h     | 50 +++++++++++++++++++++++++
- drivers/video/fbdev/core/fbmem.c     |  2 +-
- include/linux/fbcon.h                | 55 ----------------------------
- 6 files changed, 52 insertions(+), 59 deletions(-)
- delete mode 100644 include/linux/fbcon.h
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6810710e7a57..0ed3ef0b466a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10147,7 +10147,6 @@ F:	drivers/video/fbdev/core/fbcon_rotate.h
- F:	drivers/video/fbdev/core/fbcon_ud.c
- F:	drivers/video/fbdev/core/softcursor.c
- F:	drivers/video/fbdev/core/tileblit.c
--F:	include/linux/fbcon.h
- F:	include/linux/font.h
- F:	lib/fonts/
- 
-diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
-index 035e67d2c28f..ba1d0bc214c5 100644
---- a/drivers/video/fbdev/core/fb_chrdev.c
-+++ b/drivers/video/fbdev/core/fb_chrdev.c
-@@ -3,10 +3,10 @@
- #include <linux/compat.h>
- #include <linux/console.h>
- #include <linux/fb.h>
--#include <linux/fbcon.h>
- #include <linux/major.h>
- 
- #include "fb_internal.h"
-+#include "fbcon.h"
- 
- /*
-  * We hold a reference to the fb_info in file->private_data,
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 50b84cd32938..853b52b40d01 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -70,7 +70,6 @@
- #include <linux/printk.h>
- #include <linux/slab.h>
- #include <linux/fb.h>
--#include <linux/fbcon.h>
- #include <linux/vt_kern.h>
- #include <linux/selection.h>
- #include <linux/font.h>
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 321cc7f44baa..407d207b14f1 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -11,6 +11,7 @@
- #ifndef _VIDEO_FBCON_H
- #define _VIDEO_FBCON_H
- 
-+#include <linux/compiler_types.h>
- #include <linux/font.h>
- #include <linux/types.h>
- #include <linux/vt_buffer.h>
-@@ -19,6 +20,11 @@
- 
- #include <asm/io.h>
- 
-+struct fb_blit_caps;
-+struct fb_info;
-+struct fb_var_screeninfo;
-+struct fb_videomode;
-+
-    /*
-     *    This is the interface between the low-level console driver and the
-     *    low-level frame buffer device
-@@ -233,4 +239,48 @@ static inline int get_attribute(struct fb_info *info, u16 c)
-         (void) (&_r == &_v); \
-         (i == FB_ROTATE_UR || i == FB_ROTATE_UD) ? _r : _v; })
- 
-+#ifdef CONFIG_FRAMEBUFFER_CONSOLE
-+void __init fb_console_init(void);
-+void __exit fb_console_exit(void);
-+int fbcon_fb_registered(struct fb_info *info);
-+void fbcon_fb_unregistered(struct fb_info *info);
-+void fbcon_fb_unbind(struct fb_info *info);
-+void fbcon_suspended(struct fb_info *info);
-+void fbcon_resumed(struct fb_info *info);
-+int fbcon_mode_deleted(struct fb_info *info,
-+		       struct fb_videomode *mode);
-+void fbcon_delete_modelist(struct list_head *head);
-+void fbcon_new_modelist(struct fb_info *info);
-+void fbcon_get_requirement(struct fb_info *info,
-+			   struct fb_blit_caps *caps);
-+void fbcon_fb_blanked(struct fb_info *info, int blank);
-+int  fbcon_modechange_possible(struct fb_info *info,
-+			       struct fb_var_screeninfo *var);
-+void fbcon_update_vcs(struct fb_info *info, bool all);
-+void fbcon_remap_all(struct fb_info *info);
-+int fbcon_set_con2fb_map_ioctl(void __user *argp);
-+int fbcon_get_con2fb_map_ioctl(void __user *argp);
-+#else
-+static inline void fb_console_init(void) {}
-+static inline void fb_console_exit(void) {}
-+static inline int fbcon_fb_registered(struct fb_info *info) { return 0; }
-+static inline void fbcon_fb_unregistered(struct fb_info *info) {}
-+static inline void fbcon_fb_unbind(struct fb_info *info) {}
-+static inline void fbcon_suspended(struct fb_info *info) {}
-+static inline void fbcon_resumed(struct fb_info *info) {}
-+static inline int fbcon_mode_deleted(struct fb_info *info,
-+				     struct fb_videomode *mode) { return 0; }
-+static inline void fbcon_delete_modelist(struct list_head *head) {}
-+static inline void fbcon_new_modelist(struct fb_info *info) {}
-+static inline void fbcon_get_requirement(struct fb_info *info,
-+					 struct fb_blit_caps *caps) {}
-+static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
-+static inline int  fbcon_modechange_possible(struct fb_info *info,
-+				struct fb_var_screeninfo *var) { return 0; }
-+static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
-+static inline void fbcon_remap_all(struct fb_info *info) {}
-+static inline int fbcon_set_con2fb_map_ioctl(void __user *argp) { return 0; }
-+static inline int fbcon_get_con2fb_map_ioctl(void __user *argp) { return 0; }
-+#endif
-+
- #endif /* _VIDEO_FBCON_H */
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index ecadbc58abff..e5221653ec2b 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -14,13 +14,13 @@
- #include <linux/console.h>
- #include <linux/export.h>
- #include <linux/fb.h>
--#include <linux/fbcon.h>
- #include <linux/lcd.h>
- #include <linux/leds.h>
- 
- #include <video/nomodeset.h>
- 
- #include "fb_internal.h"
-+#include "fbcon.h"
- 
-     /*
-      *  Frame buffer device initialization and setup routines
-diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-deleted file mode 100644
-index f206370060e1..000000000000
---- a/include/linux/fbcon.h
-+++ /dev/null
-@@ -1,55 +0,0 @@
--#ifndef _LINUX_FBCON_H
--#define _LINUX_FBCON_H
--
--#include <linux/compiler_types.h>
--
--struct fb_blit_caps;
--struct fb_info;
--struct fb_var_screeninfo;
--struct fb_videomode;
--
--#ifdef CONFIG_FRAMEBUFFER_CONSOLE
--void __init fb_console_init(void);
--void __exit fb_console_exit(void);
--int fbcon_fb_registered(struct fb_info *info);
--void fbcon_fb_unregistered(struct fb_info *info);
--void fbcon_fb_unbind(struct fb_info *info);
--void fbcon_suspended(struct fb_info *info);
--void fbcon_resumed(struct fb_info *info);
--int fbcon_mode_deleted(struct fb_info *info,
--		       struct fb_videomode *mode);
--void fbcon_delete_modelist(struct list_head *head);
--void fbcon_new_modelist(struct fb_info *info);
--void fbcon_get_requirement(struct fb_info *info,
--			   struct fb_blit_caps *caps);
--void fbcon_fb_blanked(struct fb_info *info, int blank);
--int  fbcon_modechange_possible(struct fb_info *info,
--			       struct fb_var_screeninfo *var);
--void fbcon_update_vcs(struct fb_info *info, bool all);
--void fbcon_remap_all(struct fb_info *info);
--int fbcon_set_con2fb_map_ioctl(void __user *argp);
--int fbcon_get_con2fb_map_ioctl(void __user *argp);
--#else
--static inline void fb_console_init(void) {}
--static inline void fb_console_exit(void) {}
--static inline int fbcon_fb_registered(struct fb_info *info) { return 0; }
--static inline void fbcon_fb_unregistered(struct fb_info *info) {}
--static inline void fbcon_fb_unbind(struct fb_info *info) {}
--static inline void fbcon_suspended(struct fb_info *info) {}
--static inline void fbcon_resumed(struct fb_info *info) {}
--static inline int fbcon_mode_deleted(struct fb_info *info,
--				     struct fb_videomode *mode) { return 0; }
--static inline void fbcon_delete_modelist(struct list_head *head) {}
--static inline void fbcon_new_modelist(struct fb_info *info) {}
--static inline void fbcon_get_requirement(struct fb_info *info,
--					 struct fb_blit_caps *caps) {}
--static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
--static inline int  fbcon_modechange_possible(struct fb_info *info,
--				struct fb_var_screeninfo *var) { return 0; }
--static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
--static inline void fbcon_remap_all(struct fb_info *info) {}
--static inline int fbcon_set_con2fb_map_ioctl(void __user *argp) { return 0; }
--static inline int fbcon_get_con2fb_map_ioctl(void __user *argp) { return 0; }
--#endif
--
--#endif /* _LINUX_FBCON_H */
--- 
-2.54.0
-
+series applied to fbdev git tree.
+Thanks!
+Helge

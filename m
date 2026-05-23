@@ -1,33 +1,34 @@
-Received: from forward103d.mail.yandex.net (forward103d.mail.yandex.net [178.154.239.214])
+Received: from forward100d.mail.yandex.net (forward100d.mail.yandex.net [178.154.239.211])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA9E8277C96;
-	Sat, 23 May 2026 15:35:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.214
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D4ED314A86;
+	Sat, 23 May 2026 15:35:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.211
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779550512; cv=none; b=Xx/nFIh2ARDaC3UbeHvkXnlJyFbFeZAkenFl270er8GM7WaVDnRGtpqXkdqs3JyuD8gfPgO0gYHpOAVC/kXP0miLsI25bWX0nCj+AxRPdwrrHppZdjEMAXtPckF5pWvuZzmIEilUrJRaKG/MsxTzYEDglYyhjAbjypjIuwcXwno=
+	t=1779550513; cv=none; b=swmG0LPC6LzC9F0VtAY+I68XAwb+m0ExdIcfyYTS30bRMWKtWdJag6UmpxWrSKR+AbE2JnE8mgiAE9fHVMB3n7bg5aABQ0xD2i4jlkXEQrAceE3Xnt5zsNcIjlGaZxxVY35cHkDTvOCkbYg8GCJND8UCyuYOxFsZwynUExDPvIM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779550512; c=relaxed/simple;
-	bh=9j51KcnQqO/hzcrvIcEEIe7yAPccc4JE0GqrANWKFtU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bqNgqRLXikojvIaCZY0nywz/Z8v5XwaMPnEKzxWVFwLD1UzOnRxEEKiogtsTNFU/hQxV2wItxTweoJZLvtdnkpcyLd48dKoBeTtlIrIHflsaGsjo9HhUPIc65ePWHQkoeq0e+BAmFB4Lkp2vLKJEOl1Y5mbItusH9I1Gc+bdDb0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net; spf=pass smtp.mailfrom=sezginduran.net; dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b=mK1ktyCV; arc=none smtp.client-ip=178.154.239.214
+	s=arc-20240116; t=1779550513; c=relaxed/simple;
+	bh=Wjadc35WcyCRyJQkobvIgVt6g7yrhLQ73KYo1vbHSxM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=r6FNOq4OeZAtdc9qAQ8vxelmOOMhcuMV7h6ze5DoyEstNNnB/ecBw9AkfMz0/l9lnJDeLMMfspPvvUHZMWpszS/8BoEgQbjcCsA4ybujrqcd2lXhJDu3Lb+vle0DBTCoJlrcALE+lpPeteDxlQyCkHD6d+hC5l1UDgS6qZxzoBU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net; spf=pass smtp.mailfrom=sezginduran.net; dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b=eoe+MrWw; arc=none smtp.client-ip=178.154.239.211
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sezginduran.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b="mK1ktyCV"
+	dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b="eoe+MrWw"
 Received: from mail-nwsmtp-smtp-production-main-99.klg.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-99.klg.yp-c.yandex.net [IPv6:2a02:6b8:c42:eaca:0:640:4fc0:0])
-	by forward103d.mail.yandex.net (Yandex) with ESMTPS id E390CC009B;
-	Sat, 23 May 2026 18:35:04 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-99.klg.yp-c.yandex.net (smtp) with ESMTPSA id 1ZXKP9PgKKo0-QkxHiJbk;
-	Sat, 23 May 2026 18:35:04 +0300
+	by forward100d.mail.yandex.net (Yandex) with ESMTPS id AE01EC0051;
+	Sat, 23 May 2026 18:35:10 +0300 (MSK)
+Received: by mail-nwsmtp-smtp-production-main-99.klg.yp-c.yandex.net (smtp) with ESMTPSA id 1ZXKP9PgKKo0-RgVynCwS;
+	Sat, 23 May 2026 18:35:10 +0300
 X-Yandex-Fwd: 1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sezginduran.net;
-	s=mail; t=1779550504;
-	bh=55rKda37+9P8+aIKvnZzZS7sKx4mXnkI6oxyQkvpmtM=;
-	h=Message-ID:Date:Cc:Subject:To:From;
-	b=mK1ktyCVmyt4oCyufO7XQ2NUyEvKnSsjKPoXOAX8894/zHuadehPM5br2F5XLDdyC
-	 YbOIpBKr2tzM36hQjBv116TObkGGlHw4RH8ZZDukS4PefFftWb5L5YzX1hNZMNXA3Q
-	 Z9pXswawd+//GiSg8MKoDPi+KKx4sum8vUfIJibk=
+	s=mail; t=1779550510;
+	bh=J/yxEt3eIebvZXTjKlRrPlybwNWvVjWnftLRPHwzLRI=;
+	h=Message-ID:Date:In-Reply-To:Cc:Subject:References:To:From;
+	b=eoe+MrWwOVLOsNHVE8229DbiFd0ObQdMDSrCmh4ZGJi6QsHBxy4q4/39/5asPEm9L
+	 25Nz9ZQhk63nSc5UY/rVgpf03756NwNzGFZdrLBPaz4YG8WE1SghCJYBgOmwLIu1S4
+	 YlM8UQX2+U6LBCRUUKMqG3zFwQ9j3w2nkbEY2aYk=
 Authentication-Results: mail-nwsmtp-smtp-production-main-99.klg.yp-c.yandex.net; dkim=pass header.i=@sezginduran.net
 From: Ahmet Sezgin Duran <ahmet@sezginduran.net>
 To: gregkh@linuxfoundation.org
@@ -36,10 +37,12 @@ Cc: error27@gmail.com,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Ahmet Sezgin Duran <ahmet@sezginduran.net>
-Subject: [PATCH v2 0/4] staging: sm750fb: various code cleanups
-Date: Sat, 23 May 2026 15:34:55 +0000
-Message-ID: <20260523153459.177488-1-ahmet@sezginduran.net>
+Subject: [PATCH v2 4/4] staging: sm750fb: deduplicate fbinfo loop in suspend/resume
+Date: Sat, 23 May 2026 15:34:59 +0000
+Message-ID: <20260523153459.177488-5-ahmet@sezginduran.net>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260523153459.177488-1-ahmet@sezginduran.net>
+References: <20260523153459.177488-1-ahmet@sezginduran.net>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -48,38 +51,87 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series performs several cleanups on the sm750fb staging driver
-to improve code readability and remove redundancy.
+lynxfb_suspend() and lynxfb_resume() both walk sm750_dev->fbinfo[]
+via duplicated per-index blocks for fbinfo[0] and fbinfo[1].
 
-The changes include:
-- Removing a block of commented-out forward declarations.
-- Removing redundant variable initializations.
-- Removing unused struct fields.
-- Deduplicating per-index fbinfo handling in suspend/resume using
-  a loop.
+Replace each pair of blocks with a for-loop bounded by
+sm750_dev->fb_count, the number of successfully registered
+framebuffers.
 
-No functional changes are intended.
+No functional changes intended.
 
-Changes since v1:
-- Dropped "staging: sm750fb: use ARRAY_SIZE macro in fb_find_mode
-  loop" per Dan Carpenter's review.
-  Link: <https://lore.kernel.org/linux-staging/ahF8dacOkX0tdxGf@stanley.mountain/>
+Signed-off-by: Ahmet Sezgin Duran <ahmet@sezginduran.net>
+---
+v2: No changes.
 
-v1: <https://lore.kernel.org/all/20260523051509.166152-1-ahmet@sezginduran.net>
+ drivers/staging/sm750fb/sm750.c | 34 +++++++++++++--------------------
+ 1 file changed, 13 insertions(+), 21 deletions(-)
 
-
-Ahmet Sezgin Duran (4):
-  staging: sm750fb: remove commented-out forward declarations
-  staging: sm750fb: remove unnecessary initializations
-  staging: sm750fb: remove unused struct fields
-  staging: sm750fb: deduplicate fbinfo loop in suspend/resume
-
- drivers/staging/sm750fb/sm750.c | 45 ++++++++++-----------------------
- drivers/staging/sm750fb/sm750.h |  3 ---
- 2 files changed, 13 insertions(+), 35 deletions(-)
-
-
-base-commit: 7cb1c5b32a2bfde961fff8d5204526b609bcb30a
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index fff9c35ee7b0..12703fc4bf0c 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -388,18 +388,18 @@ static int __maybe_unused lynxfb_suspend(struct device *dev)
+ {
+ 	struct fb_info *info;
+ 	struct sm750_dev *sm750_dev;
++	int i;
+ 
+ 	sm750_dev = dev_get_drvdata(dev);
+ 
+ 	console_lock();
+-	info = sm750_dev->fbinfo[0];
+-	if (info)
+-		/* 1 means do suspend */
+-		fb_set_suspend(info, 1);
+-	info = sm750_dev->fbinfo[1];
+-	if (info)
+-		/* 1 means do suspend */
+-		fb_set_suspend(info, 1);
++
++	for (i = 0; i < sm750_dev->fb_count; i++) {
++		info = sm750_dev->fbinfo[i];
++		if (info)
++			/* 1 means do suspend */
++			fb_set_suspend(info, 1);
++	}
+ 
+ 	console_unlock();
+ 	return 0;
+@@ -414,6 +414,7 @@ static int __maybe_unused lynxfb_resume(struct device *dev)
+ 	struct lynxfb_par *par;
+ 	struct lynxfb_crtc *crtc;
+ 	struct lynx_cursor *cursor;
++	int i;
+ 
+ 	sm750_dev = pci_get_drvdata(pdev);
+ 
+@@ -421,21 +422,12 @@ static int __maybe_unused lynxfb_resume(struct device *dev)
+ 
+ 	hw_sm750_inithw(sm750_dev, pdev);
+ 
+-	info = sm750_dev->fbinfo[0];
+-
+-	if (info) {
+-		par = info->par;
+-		crtc = &par->crtc;
+-		cursor = &crtc->cursor;
+-		memset_io(cursor->vstart, 0x0, cursor->size);
+-		memset_io(crtc->v_screen, 0x0, crtc->vidmem_size);
+-		lynxfb_ops_set_par(info);
+-		fb_set_suspend(info, 0);
+-	}
++	for (i = 0; i < sm750_dev->fb_count; i++) {
++		info = sm750_dev->fbinfo[i];
+ 
+-	info = sm750_dev->fbinfo[1];
++		if (!info)
++			continue;
+ 
+-	if (info) {
+ 		par = info->par;
+ 		crtc = &par->crtc;
+ 		cursor = &crtc->cursor;
 -- 
 2.53.0
 

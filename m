@@ -1,136 +1,96 @@
-Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com [209.85.221.169])
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C14AE3E1687
-	for <linux-fbdev@vger.kernel.org>; Mon, 25 May 2026 09:32:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9D0F34A786
+	for <linux-fbdev@vger.kernel.org>; Mon, 25 May 2026 16:13:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779701533; cv=none; b=InVZVZTzwjtRBkOI3yG+45RcDl5QdIEoC1doXMN0MojeH5pL4F6c/sLSYYf+/A7NE/AePl8/xCUYu04e6iuDHMoB5jBPSaXuiHZ7WGo36LoUiG/X1O3q0NPSDFoiU/SKvjsd8GdFcAu9157aqWceus+ave9sccYYe4i0pli7rQg=
+	t=1779725634; cv=none; b=pEGE6gnKYhyzNQPcIco1ae8Q0BKFYlpKkmgscCL5Sy76Hkuzld0oQIQqz8Q9X71JFDYUG6Bm5bxjOJUkiy7yFgYGGqWl16yZeGMkbxiXuLHhtN+8HKVTYvYXuwXMy2eTEZYnxAi4dQi35mJRajtTGOITZUY1F/Rz48AYIcwJMT0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779701533; c=relaxed/simple;
-	bh=F3j8bn8C23dyjaICaMthGn3o+lmAmfGBHoEEw/K40wI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=V5GMLQCz9/+7AOsBZy198PU1qb3FYe3+DUtxswU6smJmaLQojjdR5NahenB5z87NhvK4V0C0erOWNWpjA1Yv8yoTbPhj1nBpG+dTOV2Jjl606jiip/2m62W26hcREFilkSNHKvL1oK0ueMum4nnwMwd6+jizFZeCoxcsB+ru8Qk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	s=arc-20240116; t=1779725634; c=relaxed/simple;
+	bh=JzjiaMqvE6FAwKJVfStKuwbHiv1l5iHnK2iRBi/Jtic=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=brQeIaBP3z4OA5sMxtqgrDL4JBYhW/oW4/jca6NqcAajLQ2VUxWWasxMaQOdua5s8PhLQvbrIyZd+8px2JEJlfcEWfl6hVVNDHal0a1dfaU9C1Dx2mmcHVUNNs8dAgxx4ils/UVqWa92Dte7luEMRgBKkoJp3Q7nhOL4Ga1zZrE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=P9igVaic; arc=none smtp.client-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vk1-f169.google.com with SMTP id 71dfb90a1353d-57524e52a3dso7930137e0c.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 25 May 2026 02:32:11 -0700 (PDT)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P9igVaic"
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-48a563e4ef7so71983245e9.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 25 May 2026 09:13:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779725631; x=1780330431; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=gmb4w9ug6rV3MhwyPHJsQp6I0uLZIGzYTMG8YoeZqok=;
+        b=P9igVaicxryAXDr5qsu+pQ8i3X+blGg4WzaIAOHE8xDl04/ef+WJBBZiP2GJG8J/dq
+         l5XD7qqbncGTQTSkyafzLGh1lkN7nzyXSBuKvjKhIRXWmsk+LVQv9T0gU4yG0iPC0/w/
+         MC/SgXNS52CGocufGOEQt/UApnRICNqSqMxzX85towwirk181zIgpnKaEvc+AXHqMQiv
+         v4Nw+xUKbF9orNAMqDJvbtZCv7QEOGQwk7x23hPM86KY4GJqxVVCziQ4Ie8dxO0JCa6l
+         5HGJjl1RQ6jnXFFE/t99uSIVf24Ei5WIsgmPWhMrwc7bcX0SiKCOXsHrGQ1TpXa1tV1E
+         3Wiw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779701531; x=1780306331;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=6rWcIUH/SvbVRnVZe/oNltSq1THolH7A9MSmV5+ZKew=;
-        b=AaowIwn2NNPxeEURexVHgnLr+3DFiGi/gy+mbfNWjWOgqg2YQ8ie8vq/4HNdYPupiP
-         DltBz3SxwiN6UtN0IicPzXVABP+mY0RNTfdoUdV6LL7hW4k6Ar+AMv5BPOm0Tb3Bhcnm
-         EC9J4Tt0x9kImnS/fhIx8MuV/kKimtPumCVX1Xdrl82v3vZfAdsPrqhT/SVlYevobUD6
-         2hYHwbvyvffF+VbEj2zZ1hYRPCfo+KIXShcGgmuAVi6eXG3vSt4TK+Uv6rHoeHVx/j9G
-         6YorM0/PrgvaCKIjhIjUav7jxYoCbMwoN+Z2S8ZhHE7peJAhs7rRvNxOldfeqmYu/SNp
-         0dHg==
-X-Forwarded-Encrypted: i=1; AFNElJ9WTEn2TQak6dw9s6Nj0P3RaGhJwE4uByGAXEgjKq9QNJTW8cpnAAaQ2czsBnzP0BiOpYFRY/onnNVgJQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyJDc0xpZk1iWBBAuWU9k2S5v9yTgjHihQQWhBppjH/HwG2yJfg
-	kz+Jlp6wBcUnYPfaA5nr0WkrSrq2jOXF5sxKcb0g614wZqDZpQMceQhzquclGnqc
-X-Gm-Gg: Acq92OGBRb5TjgObpLckdl8jAXEa3JkRJp3OYlqY1iBRuH3TKMelptdjW2gbzzqmZP+
-	iNNikrlKl3DwBmnWw8lUvqjou/wPS1yI1idgqy2AXQEka/S5/9wRH31ZjI8ZU1WV2IQz3p+qHSZ
-	qVl0n7m8WLuLe0DhvJsVX8iS3IxIMkoxmLmfJ68hR2FLJD+vXWhneGp+sXBAOaDyflTtTu9EAFM
-	TT6/SARGKmxgfClZ3X1ksIPwvuH5Y74oDWPcRXY6XhMLETiiD6fGjQyg0/GOSwiJ0Kj1awMwZik
-	4ISv4/diSSnknQApchUf8WnQxElku+c3aECOeJ9uNCyDRCljRKaK8WZXtl8Ob0pcEinHmYF+c/B
-	ORR0qsE40Tj5ZSSooSdF79OGYDab2uq3BQ6wXmIRquee90wSc2eQUzZzLzTe5QyvzRr743t/C9N
-	9vAaG16twNZfDFcznEOUUgF+N9F+8gkd2GGG4KpHUB924HKKUSgh0jhVMh6CDnSM5x
-X-Received: by 2002:a05:6122:2203:b0:56e:e80c:bb25 with SMTP id 71dfb90a1353d-586649efacfmr7350808e0c.13.1779701530696;
-        Mon, 25 May 2026 02:32:10 -0700 (PDT)
-Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com. [209.85.221.182])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-586f2f791d1sm11162818e0c.5.2026.05.25.02.32.08
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 25 May 2026 02:32:08 -0700 (PDT)
-Received: by mail-vk1-f182.google.com with SMTP id 71dfb90a1353d-56f70865797so5922548e0c.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 25 May 2026 02:32:08 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+MWNVajDSuZBUcVgH0HbFvR1s07+ZSmuEd3YQeSQOW9rh9mi/k5vLnX7DxqQ1mjLMIZfIMSLWOOXkN8Q==@vger.kernel.org
-X-Received: by 2002:a05:6102:3f4c:b0:5ff:f4ae:a154 with SMTP id
- ada2fe7eead31-67c70e6750amr7086176137.1.1779701528081; Mon, 25 May 2026
- 02:32:08 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1779725631; x=1780330431;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gmb4w9ug6rV3MhwyPHJsQp6I0uLZIGzYTMG8YoeZqok=;
+        b=fBg7WQvZdP4xwtLg5pu42agZ4ElYPyTRu/hj7sl0sAeDyXXCH1VmDasxivk9iv0uRS
+         u3QJQo3daae/g8ixXktcL7piuDEKl9pVbfoCCQWRXKhVgLv25nqiBCYyZ/0uoe1oYJ6s
+         ht4hr4QsiQWS0Ibn6DlPva99ZBbUyx31JtwTuRCsohni4R32DIv4BAVpChsh/D4tCtRs
+         qSQ80yygBZVkI0YTXV29UJhK+CfDNyKym6+/VZ007OvPJTNGqGFhdH5DFqM/FusQpuFE
+         qNCmeYM358g45CdeqWr9JrINLt8S2JIWnauNpfxJDIgw8moL6GaPP5JCviQXu0EEpT/V
+         Nd4Q==
+X-Forwarded-Encrypted: i=1; AFNElJ/dR2iN0aACBVPSjRBHYeVszEeCfYynUW3rSQYfc5mXqAQ5PxbvZMG9NcdrfWTWOX71INaaEruJtRcJDg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzMVC9dt0PRPovbsF8QMaAUpocxfWpoYWjU66Q2XjjiGazqUJGK
+	PNVlukfDtg1rrLt2fcyIpYuCjZYaruxPHfZKDCjx4IWFpeR9bYRKrIeW
+X-Gm-Gg: Acq92OH+BSZr0yPUnLsfG6O6KCm6mH9R8LKs94iAcsmv/O/sKyWEe20xkpm8d90jKoe
+	ugyTRzrFgkuzUpu8rI/z1aXc2J9mO0nXY1Kiwv695U6lhdd6yL0x0vwyWMd395Wpezn242ppujK
+	FgV5+1S+l4awBzmzuxISRLXIT5duOwCebHqXdE5ppBJWKV0vtDAt1+8rz5UYWJ3DTCY/3I+RwIW
+	AbDX2pcfhwzakCSbohyDfn0sJDYI95e84MrlcFmYg7hxTOI/kQRP0/tqA3S1yWK2hq7yH46aARR
+	yRZUZMqN0MB42tg3e4cGnPnMMVRsbjjcX4w8rwE4c3jwFhAHZVciYN/p6tK2S8lpt5cXaoxa40v
+	UMPlSfM2WacupwpxA4SBgktqkw0KhVDM0HUPKeB+kzHm14eAEJ0pakgRtkaGCrsMqsQipXAVVqL
+	RQAauKE8gz0Cp8qMOQ5JV5fJQ=
+X-Received: by 2002:a05:600c:8b84:b0:490:5466:8576 with SMTP id 5b1f17b1804b1-490546689a7mr190155205e9.1.1779725631134;
+        Mon, 25 May 2026 09:13:51 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4904179c615sm90065985e9.4.2026.05.25.09.13.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 25 May 2026 09:13:50 -0700 (PDT)
+Date: Mon, 25 May 2026 19:13:47 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Ahmet Sezgin Duran <ahmet@sezginduran.net>
+Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] staging: sm750fb: deduplicate fbinfo loop in
+ suspend/resume
+Message-ID: <ahR1O_dF9XyVEmPo@stanley.mountain>
+References: <20260523051509.166152-1-ahmet@sezginduran.net>
+ <20260523051509.166152-6-ahmet@sezginduran.net>
+ <ahQB8C1gTr7LF0FO@stanley.mountain>
+ <86216e7d-7867-4041-892b-aafeb39781b8@sezginduran.net>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260522123019.211059-1-tzimmermann@suse.de> <20260522123019.211059-4-tzimmermann@suse.de>
-In-Reply-To: <20260522123019.211059-4-tzimmermann@suse.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 25 May 2026 11:31:57 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXKF=fSZLqQiOuxDvygBDVSZKD+CQ3Rj+R4E_rYrz-WtA@mail.gmail.com>
-X-Gm-Features: AVHnY4KfFcrlo4zm05PN319uvgzumHDBn_61S2KqpCQpRdYnyThN8ALdwa-6KzM
-Message-ID: <CAMuHMdXKF=fSZLqQiOuxDvygBDVSZKD+CQ3Rj+R4E_rYrz-WtA@mail.gmail.com>
-Subject: Re: [PATCH v2 3/4] fbdev: Wrap fbcon updates from vga-switcheroo in helper
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: deller@gmx.de, simona@ffwll.ch, airlied@gmail.com, lukas@wunner.de, 
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86216e7d-7867-4041-892b-aafeb39781b8@sezginduran.net>
 
-Hi Thomas,
+On Mon, May 25, 2026 at 11:23:43AM +0300, Ahmet Sezgin Duran wrote:
+> On 5/25/26 11:01 AM, Dan Carpenter wrote:
+> > I was waiting to see if anyone had other comments bout this patchset
+> > to decide if I should mention these minor nits.  But then I was
+> > confused about v2 so I think there might end up being comments... :P
+> 
+> v2 was only about dropping another patch from series, no change for this
+> patch. (would be better to talk this in v2 mails, but I guess it's no big
+> deal.)
 
-On Fri, 22 May 2026 at 15:11, Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Handle console remapping in fbcon in fb_switch_output(). Vga-switcheroo
-> invokes this functionality before switching physical outputs to a new
-> graphics device. Open-coding fbcon state in vga-switcheroo exposed fbdev
-> implementation details.
->
-> Vga-switcheroo is used for switching physical outputs among graphics
-> hardware. This functionality is only supported by DRM drivers. A later
-> update will further move fb_switch_output() into DRM's fbdev emulation;
-> thus fully decoupling vga-switcheroo from fbdev.
->
-> v2:
-> - use '#if defined' (Helge)
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+I thought you were going to to abandon the ARRAY_SIZE(cdb) in v2.
 
-Thanks for your patch, which is now commit 91458b3f2a84bc7b ("fbdev:
-Wrap fbcon updates from vga-switcheroo in helper") in fbdev/for-next.
+regards,
+dan carpenter
 
-> --- a/drivers/gpu/vga/vga_switcheroo.c
-> +++ b/drivers/gpu/vga/vga_switcheroo.c
-> @@ -31,11 +31,9 @@
->  #define pr_fmt(fmt) "vga_switcheroo: " fmt
->
->  #include <linux/apple-gmux.h>
-> -#include <linux/console.h>
->  #include <linux/debugfs.h>
->  #include <linux/fb.h>
->  #include <linux/fs.h>
-> -#include <linux/fbcon.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
->  #include <linux/pm_domain.h>
-> @@ -735,8 +733,10 @@ static int vga_switchto_stage2(struct vga_switcheroo_client *new_client)
->         if (!active->driver_power_control)
->                 set_audio_state(active->id, VGA_SWITCHEROO_OFF);
->
-> +#if defined(CONFIG_FB)
->         if (new_client->fb_info)
-> -               fbcon_remap_all(new_client->fb_info);
-> +               fb_switch_outputs(new_client->fb_info);
-> +#endif
-
-What if CONFIG_FB is modular?
-CONFIG_VGA_SWITCHEROO is bool.
-
->
->         mutex_lock(&vgasr_priv.mux_hw_lock);
->         ret = vgasr_priv.handler->switchto(new_client->id);
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

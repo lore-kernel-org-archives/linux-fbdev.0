@@ -1,143 +1,136 @@
-Received: from forward102d.mail.yandex.net (forward102d.mail.yandex.net [178.154.239.213])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com [209.85.221.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A91523E5A24;
-	Mon, 25 May 2026 09:02:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.154.239.213
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C14AE3E1687
+	for <linux-fbdev@vger.kernel.org>; Mon, 25 May 2026 09:32:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779699732; cv=none; b=jlGoACUm0ITyRqNF+CLlRhW2OqSDAn543qmQEGUI5bDIMRwSGnJNwZze1ii/KuP3l8fL5D1dXR4aFwcNIEofHz8kj/UvsaH422iK1MO7lHqSaiIav/q6fbsi7yVXcMLurV5T9VOrYzsqd9n+uF6n/IFIFpZetXjetwOUqdVxGYM=
+	t=1779701533; cv=none; b=InVZVZTzwjtRBkOI3yG+45RcDl5QdIEoC1doXMN0MojeH5pL4F6c/sLSYYf+/A7NE/AePl8/xCUYu04e6iuDHMoB5jBPSaXuiHZ7WGo36LoUiG/X1O3q0NPSDFoiU/SKvjsd8GdFcAu9157aqWceus+ave9sccYYe4i0pli7rQg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779699732; c=relaxed/simple;
-	bh=bKIOcjeTKtuzzrrQ+uACwiXgTYqZfklyisEbOyEJKf0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=n/bp5y0BqZvGOiLqBv0D+kBz9GGPkrvMgVMVGC56losYTdTAkwpW+DqcHsOpgCxKv2M1fIP7Gimxny141VTqlPPj8uYYCODhGhzHsg4qIRJKcA1r/06BBUDRb+uK/Tanh5g3iJN7qRQsrYqgkK1nfrEFjS5vZHAOTDpLG0bAnyU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net; spf=pass smtp.mailfrom=sezginduran.net; dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b=e8qTzzZK; arc=none smtp.client-ip=178.154.239.213
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=sezginduran.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=sezginduran.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=sezginduran.net header.i=@sezginduran.net header.b="e8qTzzZK"
-Received: from mail-nwsmtp-smtp-production-main-95.iva.yp-c.yandex.net (mail-nwsmtp-smtp-production-main-95.iva.yp-c.yandex.net [IPv6:2a02:6b8:c0c:1f87:0:640:a06a:0])
-	by forward102d.mail.yandex.net (Yandex) with ESMTPS id DF19AC0131;
-	Mon, 25 May 2026 12:02:00 +0300 (MSK)
-Received: by mail-nwsmtp-smtp-production-main-95.iva.yp-c.yandex.net (smtp) with ESMTPSA id m1TmE1aggiE0-NknztBpr;
-	Mon, 25 May 2026 12:02:00 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sezginduran.net;
-	s=mail; t=1779699720;
-	bh=l/Y8MqxgP8cHThtgUHGreggx6yNi71NGQJ3DsYcQqNE=;
-	h=Message-ID:Date:In-Reply-To:Cc:Subject:References:To:From;
-	b=e8qTzzZK3F0iXmnZE+1oXULa6Rw3yzePt9QrXinLlpKyBuQiQSevSWu3jQXBatqgU
-	 Qc08NqQDq8M+59apTGppwcLGIL/aeN6u0xAgLt4MVVQVHURgCiSwDpE82NP7TprLkh
-	 WjheEQqEpibsoHE3OhimxmM1pRIJFOzPrTbmiQ5w=
-Authentication-Results: mail-nwsmtp-smtp-production-main-95.iva.yp-c.yandex.net; dkim=pass header.i=@sezginduran.net
-From: Ahmet Sezgin Duran <ahmet@sezginduran.net>
-To: gregkh@linuxfoundation.org
-Cc: error27@gmail.com,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Ahmet Sezgin Duran <ahmet@sezginduran.net>
-Subject: [PATCH v3 4/4] staging: sm750fb: deduplicate fbinfo loop in suspend/resume
-Date: Mon, 25 May 2026 08:58:08 +0000
-Message-ID: <20260525085808.171974-5-ahmet@sezginduran.net>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260525085808.171974-1-ahmet@sezginduran.net>
-References: <20260525085808.171974-1-ahmet@sezginduran.net>
+	s=arc-20240116; t=1779701533; c=relaxed/simple;
+	bh=F3j8bn8C23dyjaICaMthGn3o+lmAmfGBHoEEw/K40wI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=V5GMLQCz9/+7AOsBZy198PU1qb3FYe3+DUtxswU6smJmaLQojjdR5NahenB5z87NhvK4V0C0erOWNWpjA1Yv8yoTbPhj1nBpG+dTOV2Jjl606jiip/2m62W26hcREFilkSNHKvL1oK0ueMum4nnwMwd6+jizFZeCoxcsB+ru8Qk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f169.google.com with SMTP id 71dfb90a1353d-57524e52a3dso7930137e0c.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 25 May 2026 02:32:11 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779701531; x=1780306331;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=6rWcIUH/SvbVRnVZe/oNltSq1THolH7A9MSmV5+ZKew=;
+        b=AaowIwn2NNPxeEURexVHgnLr+3DFiGi/gy+mbfNWjWOgqg2YQ8ie8vq/4HNdYPupiP
+         DltBz3SxwiN6UtN0IicPzXVABP+mY0RNTfdoUdV6LL7hW4k6Ar+AMv5BPOm0Tb3Bhcnm
+         EC9J4Tt0x9kImnS/fhIx8MuV/kKimtPumCVX1Xdrl82v3vZfAdsPrqhT/SVlYevobUD6
+         2hYHwbvyvffF+VbEj2zZ1hYRPCfo+KIXShcGgmuAVi6eXG3vSt4TK+Uv6rHoeHVx/j9G
+         6YorM0/PrgvaCKIjhIjUav7jxYoCbMwoN+Z2S8ZhHE7peJAhs7rRvNxOldfeqmYu/SNp
+         0dHg==
+X-Forwarded-Encrypted: i=1; AFNElJ9WTEn2TQak6dw9s6Nj0P3RaGhJwE4uByGAXEgjKq9QNJTW8cpnAAaQ2czsBnzP0BiOpYFRY/onnNVgJQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyJDc0xpZk1iWBBAuWU9k2S5v9yTgjHihQQWhBppjH/HwG2yJfg
+	kz+Jlp6wBcUnYPfaA5nr0WkrSrq2jOXF5sxKcb0g614wZqDZpQMceQhzquclGnqc
+X-Gm-Gg: Acq92OGBRb5TjgObpLckdl8jAXEa3JkRJp3OYlqY1iBRuH3TKMelptdjW2gbzzqmZP+
+	iNNikrlKl3DwBmnWw8lUvqjou/wPS1yI1idgqy2AXQEka/S5/9wRH31ZjI8ZU1WV2IQz3p+qHSZ
+	qVl0n7m8WLuLe0DhvJsVX8iS3IxIMkoxmLmfJ68hR2FLJD+vXWhneGp+sXBAOaDyflTtTu9EAFM
+	TT6/SARGKmxgfClZ3X1ksIPwvuH5Y74oDWPcRXY6XhMLETiiD6fGjQyg0/GOSwiJ0Kj1awMwZik
+	4ISv4/diSSnknQApchUf8WnQxElku+c3aECOeJ9uNCyDRCljRKaK8WZXtl8Ob0pcEinHmYF+c/B
+	ORR0qsE40Tj5ZSSooSdF79OGYDab2uq3BQ6wXmIRquee90wSc2eQUzZzLzTe5QyvzRr743t/C9N
+	9vAaG16twNZfDFcznEOUUgF+N9F+8gkd2GGG4KpHUB924HKKUSgh0jhVMh6CDnSM5x
+X-Received: by 2002:a05:6122:2203:b0:56e:e80c:bb25 with SMTP id 71dfb90a1353d-586649efacfmr7350808e0c.13.1779701530696;
+        Mon, 25 May 2026 02:32:10 -0700 (PDT)
+Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com. [209.85.221.182])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-586f2f791d1sm11162818e0c.5.2026.05.25.02.32.08
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 25 May 2026 02:32:08 -0700 (PDT)
+Received: by mail-vk1-f182.google.com with SMTP id 71dfb90a1353d-56f70865797so5922548e0c.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 25 May 2026 02:32:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+MWNVajDSuZBUcVgH0HbFvR1s07+ZSmuEd3YQeSQOW9rh9mi/k5vLnX7DxqQ1mjLMIZfIMSLWOOXkN8Q==@vger.kernel.org
+X-Received: by 2002:a05:6102:3f4c:b0:5ff:f4ae:a154 with SMTP id
+ ada2fe7eead31-67c70e6750amr7086176137.1.1779701528081; Mon, 25 May 2026
+ 02:32:08 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260522123019.211059-1-tzimmermann@suse.de> <20260522123019.211059-4-tzimmermann@suse.de>
+In-Reply-To: <20260522123019.211059-4-tzimmermann@suse.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 25 May 2026 11:31:57 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXKF=fSZLqQiOuxDvygBDVSZKD+CQ3Rj+R4E_rYrz-WtA@mail.gmail.com>
+X-Gm-Features: AVHnY4KfFcrlo4zm05PN319uvgzumHDBn_61S2KqpCQpRdYnyThN8ALdwa-6KzM
+Message-ID: <CAMuHMdXKF=fSZLqQiOuxDvygBDVSZKD+CQ3Rj+R4E_rYrz-WtA@mail.gmail.com>
+Subject: Re: [PATCH v2 3/4] fbdev: Wrap fbcon updates from vga-switcheroo in helper
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: deller@gmx.de, simona@ffwll.ch, airlied@gmail.com, lukas@wunner.de, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 
-lynxfb_suspend() and lynxfb_resume() both walk sm750_dev->fbinfo[]
-via duplicated per-index blocks for fbinfo[0] and fbinfo[1].
+Hi Thomas,
 
-Replace each pair of blocks with a for-loop bounded by
-sm750_dev->fb_count, the number of successfully registered
-framebuffers.
+On Fri, 22 May 2026 at 15:11, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Handle console remapping in fbcon in fb_switch_output(). Vga-switcheroo
+> invokes this functionality before switching physical outputs to a new
+> graphics device. Open-coding fbcon state in vga-switcheroo exposed fbdev
+> implementation details.
+>
+> Vga-switcheroo is used for switching physical outputs among graphics
+> hardware. This functionality is only supported by DRM drivers. A later
+> update will further move fb_switch_output() into DRM's fbdev emulation;
+> thus fully decoupling vga-switcheroo from fbdev.
+>
+> v2:
+> - use '#if defined' (Helge)
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-No functional changes intended.
+Thanks for your patch, which is now commit 91458b3f2a84bc7b ("fbdev:
+Wrap fbcon updates from vga-switcheroo in helper") in fbdev/for-next.
 
-Signed-off-by: Ahmet Sezgin Duran <ahmet@sezginduran.net>
----
-v3: Add braces around the multi-line if (info) body in the
-    suspend loop per Dan Carpenter's review.
-    Remove a stray blank line left behind in lynxfb_resume()
-    after the dedup.
-    Link: <https://lore.kernel.org/linux-staging/ahQB8C1gTr7LF0FO@stanley.mountain/>
-v2: No changes.
+> --- a/drivers/gpu/vga/vga_switcheroo.c
+> +++ b/drivers/gpu/vga/vga_switcheroo.c
+> @@ -31,11 +31,9 @@
+>  #define pr_fmt(fmt) "vga_switcheroo: " fmt
+>
+>  #include <linux/apple-gmux.h>
+> -#include <linux/console.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/fb.h>
+>  #include <linux/fs.h>
+> -#include <linux/fbcon.h>
+>  #include <linux/module.h>
+>  #include <linux/pci.h>
+>  #include <linux/pm_domain.h>
+> @@ -735,8 +733,10 @@ static int vga_switchto_stage2(struct vga_switcheroo_client *new_client)
+>         if (!active->driver_power_control)
+>                 set_audio_state(active->id, VGA_SWITCHEROO_OFF);
+>
+> +#if defined(CONFIG_FB)
+>         if (new_client->fb_info)
+> -               fbcon_remap_all(new_client->fb_info);
+> +               fb_switch_outputs(new_client->fb_info);
+> +#endif
 
- drivers/staging/sm750fb/sm750.c | 36 +++++++++++++--------------------
- 1 file changed, 14 insertions(+), 22 deletions(-)
+What if CONFIG_FB is modular?
+CONFIG_VGA_SWITCHEROO is bool.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index fff9c35ee7b0..1f6f92473c80 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -388,18 +388,19 @@ static int __maybe_unused lynxfb_suspend(struct device *dev)
- {
- 	struct fb_info *info;
- 	struct sm750_dev *sm750_dev;
-+	int i;
- 
- 	sm750_dev = dev_get_drvdata(dev);
- 
- 	console_lock();
--	info = sm750_dev->fbinfo[0];
--	if (info)
--		/* 1 means do suspend */
--		fb_set_suspend(info, 1);
--	info = sm750_dev->fbinfo[1];
--	if (info)
--		/* 1 means do suspend */
--		fb_set_suspend(info, 1);
-+
-+	for (i = 0; i < sm750_dev->fb_count; i++) {
-+		info = sm750_dev->fbinfo[i];
-+		if (info) {
-+			/* 1 means do suspend */
-+			fb_set_suspend(info, 1);
-+		}
-+	}
- 
- 	console_unlock();
- 	return 0;
-@@ -414,6 +415,7 @@ static int __maybe_unused lynxfb_resume(struct device *dev)
- 	struct lynxfb_par *par;
- 	struct lynxfb_crtc *crtc;
- 	struct lynx_cursor *cursor;
-+	int i;
- 
- 	sm750_dev = pci_get_drvdata(pdev);
- 
-@@ -421,21 +423,11 @@ static int __maybe_unused lynxfb_resume(struct device *dev)
- 
- 	hw_sm750_inithw(sm750_dev, pdev);
- 
--	info = sm750_dev->fbinfo[0];
--
--	if (info) {
--		par = info->par;
--		crtc = &par->crtc;
--		cursor = &crtc->cursor;
--		memset_io(cursor->vstart, 0x0, cursor->size);
--		memset_io(crtc->v_screen, 0x0, crtc->vidmem_size);
--		lynxfb_ops_set_par(info);
--		fb_set_suspend(info, 0);
--	}
--
--	info = sm750_dev->fbinfo[1];
-+	for (i = 0; i < sm750_dev->fb_count; i++) {
-+		info = sm750_dev->fbinfo[i];
-+		if (!info)
-+			continue;
- 
--	if (info) {
- 		par = info->par;
- 		crtc = &par->crtc;
- 		cursor = &crtc->cursor;
+>
+>         mutex_lock(&vgasr_priv.mux_hw_lock);
+>         ret = vgasr_priv.handler->switchto(new_client->id);
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.54.0
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

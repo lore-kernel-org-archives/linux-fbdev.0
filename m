@@ -1,159 +1,168 @@
-Received: from mx1.riseup.net (mx1.riseup.net [198.252.153.129])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48ED931E821;
-	Tue, 26 May 2026 13:18:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.252.153.129
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02FE93B9935
+	for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 14:17:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779801489; cv=none; b=gs9BJtbJqfqfOx50mb2BSFFHAx3ME/0WSK4OJOTWKI7JzlkTrV5CoGK3mmADaCyat/SJD1ELWP5FwO2NFlg1u/ii7ozjT/FBEkOXz2Gf9/iWMYqIEtPcToDds908CYhCOVArmFt+mi7U9BxwK6f/GIlUxy8npjwIcUUBjXrm5gk=
+	t=1779805082; cv=none; b=CmlCXKc/0OiLNEVjp3+BS0vt2eYECwqLgLDGfw0Pu8QPSGowtBJGEWZP78YoMnELnMUHbOo0SHI5v4MNKzp0gneTj9S7w41be9floWXO3hVxjo5VCtIjjSUZB3Q8S1eaF1gTCwVVQcRXTYO75VKTNw6bDFyswGWTuEvKP1iEdXE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779801489; c=relaxed/simple;
-	bh=WOqPLVN7X4Oo+1a+nab4tkzFF5fHoRWbMCV4jSw1A4s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nkLO+JEv2ehiiQEd93NqnlL5mhVzvp1dwn8Z2N0BdsURAOVl6reZq0VK+Z4wkI5OSU0vyujZJ9eBkwkFdaxQM9L8/Cr4+b80wO6hDJ+4rNLtxvEZyga8gFywIuB456b2zcwk2cKBTqzRT+bnia7sDI1Cy4wYdg8z7Z8+gfTJNI4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riseup.net; spf=pass smtp.mailfrom=riseup.net; dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b=mrxLSmvj; arc=none smtp.client-ip=198.252.153.129
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riseup.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riseup.net
+	s=arc-20240116; t=1779805082; c=relaxed/simple;
+	bh=Kybdz7vMHfQVHVOh6L5fYiSlCH/4zeDGpuUchAH7Tmw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DZEa7aHelPyMfhIuRlTJZxgMWzwnin25dcyQsoHz6q+6QjbqNnghfytiZGikQzLNLqsbP8VtTaNj6GjKBGNNBIjNt2BOcK9XNO0TY1tmVkMiZ9/Ale92GBhLQP4GYC3kBM6kmyA+YEbhKKoligzeDEnV2N8lngnQm9KhSp8iuwM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=jUCdy8Gi; arc=none smtp.client-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="mrxLSmvj"
-Received: from fews01-sea.riseup.net (fews01-sea-pn.riseup.net [10.0.1.109])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx1.riseup.net (Postfix) with ESMTPS id 4gPtbZ13fgzDqMW;
-	Tue, 26 May 2026 13:18:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=riseup.net; s=squak;
-	t=1779801482; bh=lnOoqjI214ZQ8PlbotMcBXTWTRo2UP+8mBP1lS2kcDw=;
-	h=From:To:Cc:Subject:Date:From;
-	b=mrxLSmvjrIyVxLRNB5y95IMw2y7JvbXtGQ20DEeTyVKUKPGOhREWDOfNKASPPFbVX
-	 aH91IYBKGYfxTAPeupIISWjnliI8tzwq4feqrJCMcZaCEya8g3NZN/wQBIhkUpmdb/
-	 lWQOkXGWLVl7TZTv/WXC7hd89oN6pZOEJiPXRXak=
-X-Riseup-User-ID: ABD3F563F590011991F7C13206586327EBD1F9D74A031D10523104A80F0E1BEB
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-	 by fews01-sea.riseup.net (Postfix) with ESMTPSA id 4gPtbR2tWqz1xxY;
-	Tue, 26 May 2026 13:17:55 +0000 (UTC)
-From: Emmanuel Arias <eamanu@riseup.net>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="jUCdy8Gi"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-48d146705b4so112749305e9.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 07:17:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre.com; s=google; t=1779805077; x=1780409877; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=g7+ZEzN34eEHBV2XeA10qliUnFt9aIEOrlvbEy+ooC0=;
+        b=jUCdy8Gipkt5y1MdcWslWRDMUj8JgIufk+P9hRE/YWr9GaQcjwOmoEt5qBgAPYQJGm
+         fhMyOvwnNEu2gT8q+Lvv/ezwTrgG/MzOvWku/AH/ansOg9CipsEdrlnMwU34y8l1KOBS
+         yGCk8FHKq99skBMwZv+iY8FPTRruC2IxSIZkuxVmDp5uxYMpN4MARnAqHIs+sktvOObc
+         1pxwsRdd+M+ZTolUYkhoBNwfPxVjPj78KRVjKsOlwraDzdYlRmft0W6ufYl0lF/ZAH12
+         Csw9U/m2LL0Qt0h8RSMnL6ZGFWkI2K+NcSD0GZMMl1stByq7jSkFkJqHVHn5f1SOp/o/
+         VBxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779805077; x=1780409877;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=g7+ZEzN34eEHBV2XeA10qliUnFt9aIEOrlvbEy+ooC0=;
+        b=CCY/Ka8JrBEeeaTDlZxhW9AutFm7cioHoylrjWDmJCPY0NikiQVxsDqZEp99xsl8Y6
+         Rs2VrR9wzFGZd4FtjKyC5HHJs4Rzhv/YrlcTC8ES1tiDxaSHLQ1YpZIjfuBTPgQ5Sl/8
+         2Q6gUa1EX/XBTtcFOL1zVKJZSdK9pZtkAnG1sZrjCn7VD9UdiA/KhYAZXJhe9XLdWlv7
+         S8qLJH24NWcyhmte1SraYvXc4pG36eA0jtX+sBc51W2Bbb7hrsYzQzgqPbOtqXM3EFDw
+         IGGmRf3pQhiCSovpEjmm+AtLtVQSFgBQPSR9mfgBXLeCXHL/wWq3uMdGGmDo5W3I0N2M
+         ePzQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/dgotUH0MYt4+8ADZMgbLXOd8wTB7T52KDBKZp71HH9fXwfdWCKhDciyR5OrG7cJctKgxyG3fD5iTreg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx658cGezGRDmqajjazysgyr0Hws2cUdyzjlIfYqSapqy1T8F6+
+	2teczkT5ZXBK8jFaKxRn0uvan2p4eRWZEeya5sk7joGbu8AqNq/RpyespW9BvdCmCtI=
+X-Gm-Gg: Acq92OFjqlim853nSRa7D19/zJrPE2gmltnp8o9gUGFUlp8F8bRltIE9C9lGPMZFGIV
+	roqKpZrFJBJJH1OE418k5QqEDHC16kbSXiwJ3PDxPNiKlSoPKIuP4oLddsSKwwofte4mT5Y63XI
+	Cl6Syf6x0j0pgxkbV4pHHllkLaXqq6fy0bXrDZItwDAbcVKH3QICh/krz0XRelupK6zA10xmpDd
+	Mq1281+TEZOtxi+U+jd/cZ+3jHRmsXzq/pcVhdJbItV+wkAwIRTqyBCIjviNJEy1GZ42o8ioo2j
+	biWa5cxKO6yUZcAze1FKDO1M58P7E/u9KIeZtoMBHQUn7AaD/mglX9Uf+5E7o4tYtjbeuEK8Or+
+	Nbv4/mVieTJZgdnEGrcnpfGKGM5eY3XmA9Q1yf9dl5Qf64h97h/87CRL5rn3rxJILXZ6P2+vDhV
+	svb7NRr343xv6Z/GXH9q8zSdq5w2CeFhTw9ar+yRXzQ1oP5qlF/hwARg5MX9VjUdQZ87k9CGoXB
+	DvRLLrsWKWeKzsbOs/GQgOIbA==
+X-Received: by 2002:a05:600c:8484:b0:48a:906b:14ca with SMTP id 5b1f17b1804b1-490426cd8c4mr332344195e9.20.1779805076904;
+        Tue, 26 May 2026 07:17:56 -0700 (PDT)
+Received: from localhost (p200300f65f47db04a716d2bdeddb4813.dip0.t-ipconnect.de. [2003:f6:5f47:db04:a716:d2bd:eddb:4813])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4904526ca21sm323690885e9.3.2026.05.26.07.17.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 26 May 2026 07:17:56 -0700 (PDT)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@kernel.org>,
+	Max Staudt <max@enpas.org>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Helge Deller <deller@gmx.de>
+Cc: linux-ide@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
 	linux-kernel@vger.kernel.org,
-	Emmanuel Arias <eamanu@riseup.net>,
-	kernel test robot <lkp@intel.com>
-Subject: [PATCH v2] staging: sm750fb: fix CamelCase variables name in sm750
-Date: Tue, 26 May 2026 10:16:31 -0300
-Message-ID: <20260526131631.1237672-1-eamanu@riseup.net>
+	linux-scsi@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-i2c@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	"Christian A. Ehrhardt" <christian.ehrhardt@codasip.com>,
+	"Christian A. Ehrhardt" <lk@c--e.de>
+Subject: [PATCH v1 0/8] zorro: Improve handling of pointers in zorro_device_id::driver_data
+Date: Tue, 26 May 2026 16:17:26 +0200
+Message-ID: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2934; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=Kybdz7vMHfQVHVOh6L5fYiSlCH/4zeDGpuUchAH7Tmw=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqFat2pwUr5NuB2EXH5DJBMYu0MFsCRZClzwm2T O9dYlR4RvKJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCahWrdgAKCRCPgPtYfRL+ TkGXB/437E8f30EKdaE8q56oaJt5WlihQ7/3LiGG3zpapj74Iu08O8/GcyZKo9eVo8NUFaoQUo0 0hif3fK8HhAxSruKgus+1EQhLy4QeBS7zZsfKLyQOA2B83qRv2SA46ZptWCnVfQXneJtq5rnt/p z+XAhB5HNmZ0vPCrnsT8fL9BH8Yuh3zYqxT9eUnhr+pmthPLdEZiphMZPNHOU/10eCiEJb0TQUX jspmFLtmTRiWApFBZdcAJAZ22LyP1Ls51jKz1i9KFNk3U1cVVN3KNX/HmgRm8an2jPEYqs0Aq03 oaSi8UN/pRU/wOeZjcBFx1K5Dq0XXmkIHLJB0BQbJ8js9PWI
+X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-Replace CamelCase variable name with snake_case:
-- pvReg -> pv_reg
-- setAllEngOff -> set_all_eng_off
+Hello,
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202605171049.KbaBnrJV-lkp@intel.com/
-Signed-off-by: Emmanuel Arias <eamanu@riseup.net>
----
- drivers/staging/sm750fb/sm750.c    |  6 +++---
- drivers/staging/sm750fb/sm750.h    |  4 ++--
- drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
- 3 files changed, 11 insertions(+), 11 deletions(-)
+this series is about improving the handling of pointers in struct
+zorro_device_id's driver_data.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 996a586a3727..9b30627a19d0 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -755,7 +755,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	 * must be set after crtc member initialized
- 	 */
- 	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
--	crtc->cursor.mmio = sm750_dev->pvReg +
-+	crtc->cursor.mmio = sm750_dev->pv_reg +
- 		0x800f0 + (int)crtc->channel * 0x140;
- 
- 	crtc->cursor.max_h = 64;
-@@ -860,7 +860,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
- 	sm750_dev->init_parm.mem_clk = 0;
- 	sm750_dev->init_parm.master_clk = 0;
- 	sm750_dev->init_parm.power_mode = 0;
--	sm750_dev->init_parm.setAllEngOff = 0;
-+	sm750_dev->init_parm.set_all_eng_off = 0;
- 	sm750_dev->init_parm.reset_memory = 1;
- 
- 	/* defaultly turn g_hwcursor on for both view */
-@@ -1059,7 +1059,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
- 	sm750fb_framebuffer_release(sm750_dev);
- 	arch_phys_wc_del(sm750_dev->mtrr.vram);
- 
--	iounmap(sm750_dev->pvReg);
-+	iounmap(sm750_dev->pv_reg);
- 	iounmap(sm750_dev->vmem);
- 	pci_release_region(pdev, 1);
- 	kfree(g_settings);
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index d2c522e67f26..e8885133da2e 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -44,7 +44,7 @@ struct init_status {
- 	ushort chip_clk;
- 	ushort mem_clk;
- 	ushort master_clk;
--	ushort setAllEngOff;
-+	ushort set_all_eng_off;
- 	ushort reset_memory;
- };
- 
-@@ -97,7 +97,7 @@ struct sm750_dev {
- 	unsigned long vidreg_start;
- 	__u32 vidmem_size;
- 	__u32 vidreg_size;
--	void __iomem *pvReg;
-+	void __iomem *pv_reg;
- 	unsigned char __iomem *vmem;
- 	/* locks*/
- 	spinlock_t slock;
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 6f7c354a34a1..2e2c7cffddab 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -40,18 +40,18 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	}
- 
- 	/* now map mmio and vidmem */
--	sm750_dev->pvReg =
-+	sm750_dev->pv_reg =
- 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
--	if (!sm750_dev->pvReg) {
-+	if (!sm750_dev->pv_reg) {
- 		dev_err(&pdev->dev, "mmio failed\n");
- 		ret = -EFAULT;
- 		goto err_release_region;
- 	}
- 
--	sm750_dev->accel.dpr_base = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
--	sm750_dev->accel.dp_port_base = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
-+	sm750_dev->accel.dpr_base = sm750_dev->pv_reg + DE_BASE_ADDR_TYPE1;
-+	sm750_dev->accel.dp_port_base = sm750_dev->pv_reg + DE_PORT_ADDR_TYPE1;
- 
--	mmio750 = sm750_dev->pvReg;
-+	mmio750 = sm750_dev->pv_reg;
- 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
- 
- 	sm750_dev->vidmem_start = pci_resource_start(pdev, 0);
-@@ -75,7 +75,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	return 0;
- 
- err_unmap_reg:
--	iounmap(sm750_dev->pvReg);
-+	iounmap(sm750_dev->pv_reg);
- err_release_region:
- 	pci_release_region(pdev, 1);
- 	return ret;
+While it's ok on all current Linux platforms to store a pointer in an
+unsigned long variable, it involves casting that loses type information.
+This can be nicely seen in patch #7 where after profiting from patch #6
+the compiler notices a missing const.
+
+Preparing for that change, all zorro_device_ids are converted to use
+named initializers, which is also a nice cleanup that could stand for
+itself, as it improves readability for humans. (That is necessary
+because an anonymous union can be initialized by name, but not using a
+list initializer.)
+
+My motivation for this series is the CHERI hardware extension. With that
+pointers are bigger than longs and thus you cannot store pointers in
+zorro_device_id::driver_data. So this series is also about getting
+support for CHERI into the mainline, but I hope the clean up effects
+mentioned above are justification enough to accept this series.
+
+The dependencies in this series are as follows:
+
+ - Patch #5 depends on #1, #2
+ - Patches #7 and #8 depend on patch #6.
+
+So if the ata maintainers agreed to merge their patch #1 via scsi, and
+Geert agrees to patch #5 and that it's also merged via scsi, patches #1,
+#2, #6 and #7 can go in without further coordination.
+
+Patches #3, #4 and #5 are only about using the same initialization style
+for all zorro_device_id and can go in without coordination.
+
+Best regards
+Uwe
+
+Uwe Kleine-König (The Capable Hub) (8):
+  ata: pata_budda: Use named initializer for zorro_device_id
+  scsi: Use named initializer for zorro_device_id
+  net: Use named initializer for zorro_device_id arrays
+  i2c: icy: Use named initializer for zorro_device_id arrays
+  video: fm2fb: Use named initializer for zorro_device_id array
+  zorro: Simplify storing pointers in device id struct
+  scsi: zorro7xx: Make use of struct zorro_device_id::driver_data_ptr
+  video: cirrusfb: Make use of struct zorro_device_id::driver_data_ptr
+
+ drivers/ata/pata_buddha.c             |  8 ++++----
+ drivers/i2c/busses/i2c-icy.c          |  4 ++--
+ drivers/net/ethernet/8390/hydra.c     |  4 ++--
+ drivers/net/ethernet/8390/xsurf100.c  |  4 ++--
+ drivers/net/ethernet/8390/zorro8390.c |  6 +++---
+ drivers/net/ethernet/amd/a2065.c      |  8 ++++----
+ drivers/net/ethernet/amd/ariadne.c    |  4 ++--
+ drivers/scsi/a2091.c                  |  6 +++---
+ drivers/scsi/gvp11.c                  | 17 ++++++++--------
+ drivers/scsi/zorro7xx.c               | 16 +++++++--------
+ drivers/scsi/zorro_esp.c              |  2 +-
+ drivers/video/fbdev/cirrusfb.c        | 28 +++++++++++++--------------
+ drivers/video/fbdev/fm2fb.c           |  6 +++---
+ include/linux/mod_devicetable.h       |  6 +++++-
+ 14 files changed, 62 insertions(+), 57 deletions(-)
+
+
+base-commit: d387b06f7c15b4639244ad66b4b0900c6a02b430
 -- 
-2.53.0
+2.47.3
 

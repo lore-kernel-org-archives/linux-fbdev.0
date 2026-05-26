@@ -1,152 +1,153 @@
-Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE773402439
-	for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 14:18:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4A4740315A
+	for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 15:09:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779805091; cv=none; b=AxYGRo4gJEERQSBx3hoU9FGwNNsOWml2DUmh06oEQ5iGBmTG4oy+Yzk3vakPVgxlQDHOhH4jN4/Fv6I9Y8bh125XY3zUe9E0QbBOkN4AjE93L6E6Zs4c3cry9CEylxNwPbt5bY/BbM/kMy7+VkCF1CulsUEnNRTV0c/+nyQJmUU=
+	t=1779808152; cv=none; b=bkksjnb0PIGdWfFIoR07RqaAUL4D6ZD/OWnuaQBRewdjR01pdI0g3LrW4mcORX/HwXelz00aASO7bvEwDgepGVphjogvd5urYHNEq3DpC0rrdOC4Whaz/wDaziMWnOeejF2f+sKdn/hwAowY448g7DcT7Kyigqjzia13BsMTf7M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779805091; c=relaxed/simple;
-	bh=K/rLWEjDKkHsJ9bxXPZI9DKSp87tpARRFywudt2h+mw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=TqkqHroJQRWqPoicPqjYNxSqAXeIO+HEA1xE7vUCw2j4iKuG6oXqvExvp7JuKDQFK6cPO4LDBkoao9VLr8K7j0KsU9iQk1CmtvQ58wpVjEY6MBdQaa1mve+iJ+4TenjDspg6ddif0upKdz/ZuJ4LPtEfrKKMPrFLwdSX0ioOMBE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=A0ve1CZ4; arc=none smtp.client-ip=209.85.221.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="A0ve1CZ4"
-Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-45ea19f412aso3129611f8f.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 07:18:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1779805088; x=1780409888; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+l0tXTe0JtsE6kljkXV/yKiUveLQAvzo0OxqjuzKVB0=;
-        b=A0ve1CZ4jaWuO8xcusGXNMNBA8d42OWSykl4/E6IwkelKM+VKtAzjkDU12GjSD+1Jb
-         5q/JMMyspYGwN0dmf60lTnxKCWglUbJXmQ0Sf79syIzGHlzSQz654qhqqoEtx58/27Ls
-         j0KnelJs0llTw20KlZmMw9F258h/iEHdNQS4nUyUtNuCsb4vbozI4szw4TIJ+gYLJLBQ
-         /jUDaiXKopkYUoI/oasNEUP5aaNAnbwIpVHXwb/LpcOwvg0YqYbpfymevUfEELVbDm9E
-         GBaZ+amJPKbhQxCroDn5ap1vKpoGkEjarQAwBYc6NOhUHl8f4XNo9iMB2/CNpXny0QMr
-         cbeQ==
+	s=arc-20240116; t=1779808152; c=relaxed/simple;
+	bh=yb+0omux6d1zyLgvLzeZABk2GNuWtKQ1yrpCoQCsmR0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=dtj2XobihtkXU1Egu1AKMcfrw2S7BCdq4iKeObF8vxlVUByVMOf4o2P45iDtAzv2HvacgE4/OTllB8d2hK94nOAyHPMA5nzL1uJBFmGqwpH0n9612W90ZVbvfV0pd+sCDfBd8kgcevi7BSQ6xXW8F8SY8hzNoC8U2r1fDFzjJm0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.218.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-bdbcc6c4500so860789966b.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 08:09:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779805088; x=1780409888;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1779808149; x=1780412949;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=+l0tXTe0JtsE6kljkXV/yKiUveLQAvzo0OxqjuzKVB0=;
-        b=N2LcOp2Dz/+q8d39KD56NkzqzzYKTNag6jrzzFJav8TDOhqy0VvmGHsuKf7OjUwQMS
-         5RKtLveSagwPMHqyMDd3h5G+SGh29FRBrmTTVObk4Ikkm57xvUd3IjUGTpfHeAf6rdsj
-         FWtm/gdSjuwv1T8HqX8bbWjXo8zbqb1AB2FJrgzbg+GGvC9QLFB+f/j24Zvzt+P17qx8
-         eGnR3dXTMbQGbFy7TmJ59ERjmN7+RBU6n26QQZg5zEixqq9v2gjhXehE3EWTDKENQ5zy
-         F3Hf9DzvlurZ7Wy1rwtFMYLpb50ZpvfuszmqwsqOo206Zzz5VyaYp79zgv/YV9urEwxZ
-         h47w==
-X-Gm-Message-State: AOJu0Ywn8anplmfnsq9vhc4Ik3C/te4k6mwHm4S9q32/Arre02fs8sJ0
-	4WvNBxTdQa7zNnHAxPiQCowMNcw5j3OA4OGza7q1iMoOmkff52inWoyKMR3CN5ncxMs=
-X-Gm-Gg: Acq92OHi5jWvr46TRk23pvx+mFNbhWiOI+yl5nIQwWrlRc1Gu29oi5OvsCSwCTLpWHv
-	+uRmHogCFcH5wZZpFmT7dAuxHpOtesnBinq6UXw4hBGXexcZkZMy+ZcxBkOdUvp+viC3n9uwI93
-	1hOle3mw2KizGg171Nwb0KnJABcH3rWWYZlWpVdgMpcMvZ9VA5Qth7JmSb/RufS9ZaNAwvfHWUs
-	bIpgNMxz/Osys44Sfx0sNNO20/KRbXIdAI3KX1ZzyFck2L6YBTDEIM6iH4y+qEbMJpnQaEUzTkZ
-	L3yTr9ZRXncwdXCdBQ+JlTmEvSp/FNxsuOq9Aw5LrsBgHeNGiPBE9FzjdginUSl2EnLZdBu9NN0
-	xzU+8o1+bzgh8BTARUAPMyU162Mv7P+xp6HFfolgLLG4t7kExzOQdarBQYPsng3tf4gjD+ND6la
-	Kny3k0CJK8UAcZdn1dWSeJYUrJwe8xxTMoshRgTofJC3cuPG3qcuu9vjS2VofySm5VN3Pi8I84a
-	xMyiR842FiljR8=
-X-Received: by 2002:a05:6000:2003:b0:43b:4136:1e6f with SMTP id ffacd0b85a97d-45eb38e4b46mr32569170f8f.38.1779805088108;
-        Tue, 26 May 2026 07:18:08 -0700 (PDT)
-Received: from localhost (p200300f65f47db04a716d2bdeddb4813.dip0.t-ipconnect.de. [2003:f6:5f47:db04:a716:d2bd:eddb:4813])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-45ec7fcd7f9sm22348657f8f.37.2026.05.26.07.18.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 May 2026 07:18:07 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-m68k@lists.linux-m68k.org,
-	linux-kernel@vger.kernel.org,
-	"Christian A. Ehrhardt" <christian.ehrhardt@codasip.com>,
-	"Christian A. Ehrhardt" <lk@c--e.de>
-Subject: [PATCH v1 8/8] video: cirrusfb: Make use of struct zorro_device_id::driver_data_ptr
-Date: Tue, 26 May 2026 16:17:34 +0200
-Message-ID:  <72b515651ab8df2f464deb620fd7b24370d6fb1a.1779803053.git.u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
-References: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
+        bh=MLTPgXz6PTE+WNmbiors/d1TQS2Sqmrm+U6hNBea8hs=;
+        b=enGLBODRQ/xj/7FKob+VRhCRCmmx6xykbm9JqI8yVzaUEoJG/74Z3+BrQwUMQadN3H
+         Kg0wKmt3wx0h4GmLx1MTm13SCGzBGxpVnnTEoAF0cEusNqzse60NdeembWgoQdWNaZCS
+         GvINk70iy6KbJU7YU+q9bnCjDdaV2DxigAAz5xxIEO9BpAZWUld37GPcOJFpCUPJC3se
+         /I7eh6ghpZIJqxzc80Dv9HtX0FGMlhaJdHSNV28H8ZV/5v0ewnU8c33VvOtz9Psf1FQ7
+         gioqA6tB4Fa9mUsjb0eb+oTDqsBhofedHoI8eWXxzvhIE4QIPbu4LU28Qzh/0lwu349U
+         jerQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8CakKihKFueKCKDAWZSTAlktIcRDOwQsjPPaDlmJSP0HtIDci1fwPUvYVu5s51oS6M84qF1Tf+rf4fZA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz4LWlpGA9Xyyiya588wMFgJMXXcBPzyRGxTMuRT3MeYUN4I8um
+	N/Pq5EFRgTMFH2txa3cUPDOLQDqv2U9o6OH5zO4PeS/55XSZUaaOjUnUw96wz9nS+Vg=
+X-Gm-Gg: Acq92OG3wo3twPgQ9P3qZ3chS/GseY8RCXwT0mVHDkm4eLNnTApFp9znFP842rqacne
+	p08zvcNaRY2wTD5qEKalbqHpccntCFBS4Qj269xwJrjvbMMp4b4pi0pa2+gFYAS1gD5PXo6mqio
+	dmM4KbGVaH7zg50QcehVdrwGSC1dSp2g3fjX+P0fjyQTAp7w3S/difie/sPFrfakh1zkkDU0/ei
+	A3OEwYTXAoYgxGLnNflzCzvqKVCq1UrX+oE+QfbS0K50KLkdmnZpv4YiVXz0grkF1KB18fju18m
+	3eXSx14OacmktZXhCGx4Up9Cwer9DoUlUewtUVgG9CNSEZT4cS0izDRAJmOhJQE7AMslPI9zOlk
+	PLMDrI9t56cXadD8sqe9iUFfx+CD+jRsg306ekggtXdOzmyTsOKwf8AJBqXh7pzNixziN8eEK0h
+	ufb4SpHCAee3BIioqwlFkog/96enB2qfzvs/mMy49Yw92ZKSF+qA/nTVEy3G4/
+X-Received: by 2002:a17:906:9918:b0:bdd:52ef:73e3 with SMTP id a640c23a62f3a-bdd52ef77c4mr875895966b.12.1779808148914;
+        Tue, 26 May 2026 08:09:08 -0700 (PDT)
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com. [209.85.218.47])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bddc5ece286sm504648266b.40.2026.05.26.08.09.08
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 26 May 2026 08:09:08 -0700 (PDT)
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-bd4d7f4fa02so1800922066b.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 08:09:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ9+IKRcx9Xyr8r71PEaf5nvnJCCUnBI5O9rDeUzeEAPTt88MT5OMtBI49ORT2d4HzXJutzXq+oTULsDVw==@vger.kernel.org
+X-Received: by 2002:a05:6402:360a:b0:674:40c3:f047 with SMTP id
+ 4fb4d7f45d1cf-6889ca4520cmr9385916a12.12.1779807721391; Tue, 26 May 2026
+ 08:02:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2338; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=K/rLWEjDKkHsJ9bxXPZI9DKSp87tpARRFywudt2h+mw=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqFauKEYSHWUZfQM/7o+z0zP1g8ExpBrH3mhgHl +PAjlqxotOJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCahWrigAKCRCPgPtYfRL+ TiO5B/9L+NQiEbboLQhnRBDWb9kWCznt9081jTJD52DjSXIbOimq9lDExC1+m0zHI2vR23OtAz5 rYKvMs5BII8C3sPjydO9HflKm+0HGBoxNHyFcBRx7nMD9YMRu0oEL1KgUF5aYOJDw3EZHWDojMB lD0vp9qtN/T5HfKs2Sh/ySwqhx90V07yB8/WO6csBHNoZKyJ5crGE/3+EXpuwm9iLdG7ro9/WqW 252nXum67dBmt2ECelLNWuOkHKOPjUDQ82WHUAqobOpqwWWtT8BqDC/PsBofb8nn9ZBDxydS9Eu V55nk2HDzDn0IRAJmoktE3+whV9/arrbjN0Wx39DREREqzRp
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
+References: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
+In-Reply-To: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 26 May 2026 17:01:48 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUVoNg-rSV_hDcvi6KCosmE=SMcxUj2Y8fkoJ=33zMSXw@mail.gmail.com>
+X-Gm-Features: AVHnY4KG1TJnpMipnk7rqdd9LGhhF-uK_MvXjYFynbh1jLKZ-eyBikYr9yO02y4
+Message-ID: <CAMuHMdUVoNg-rSV_hDcvi6KCosmE=SMcxUj2Y8fkoJ=33zMSXw@mail.gmail.com>
+Subject: Re: [PATCH v1 0/8] zorro: Improve handling of pointers in zorro_device_id::driver_data
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+Cc: Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K. Petersen" <martin.petersen@oracle.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Thomas Gleixner <tglx@kernel.org>, 
+	Ingo Molnar <mingo@kernel.org>, Max Staudt <max@enpas.org>, Andi Shyti <andi.shyti@kernel.org>, 
+	Helge Deller <deller@gmx.de>, linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	netdev@vger.kernel.org, linux-i2c@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	"Christian A. Ehrhardt" <christian.ehrhardt@codasip.com>, "Christian A. Ehrhardt" <lk@c--e.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Usage of .driver_data_ptr allows to drop several casts and so make the
-driver a bit more type safe.
+Hi Uwe,
 
-While touching the zorro_device_id array, drop an unneeded explicit zero
-in the list terminator.
+On Tue, 26 May 2026 at 16:17, Uwe Kleine-K=C3=B6nig (The Capable Hub)
+<u.kleine-koenig@baylibre.com> wrote:
+> this series is about improving the handling of pointers in struct
+> zorro_device_id's driver_data.
+>
+> While it's ok on all current Linux platforms to store a pointer in an
+> unsigned long variable, it involves casting that loses type information.
+> This can be nicely seen in patch #7 where after profiting from patch #6
+> the compiler notices a missing const.
+>
+> Preparing for that change, all zorro_device_ids are converted to use
+> named initializers, which is also a nice cleanup that could stand for
+> itself, as it improves readability for humans. (That is necessary
+> because an anonymous union can be initialized by name, but not using a
+> list initializer.)
+>
+> My motivation for this series is the CHERI hardware extension. With that
+> pointers are bigger than longs and thus you cannot store pointers in
+> zorro_device_id::driver_data. So this series is also about getting
+> support for CHERI into the mainline, but I hope the clean up effects
+> mentioned above are justification enough to accept this series.
 
-Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
----
- drivers/video/fbdev/cirrusfb.c | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+Thanks for your series!
 
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index 2693b5cc053f..7e07e775b393 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -321,25 +321,25 @@ static const struct zorrocl zcl_picasso4_z2 = {
- 
- static const struct zorro_device_id cirrusfb_zorro_table[] = {
- 	{
--		.id		= ZORRO_PROD_HELFRICH_SD64_REG,
--		.driver_data	= (unsigned long)&zcl_sd64,
-+		.id = ZORRO_PROD_HELFRICH_SD64_REG,
-+		.driver_data_ptr = &zcl_sd64,
- 	}, {
--		.id		= ZORRO_PROD_HELFRICH_PICCOLO_REG,
--		.driver_data	= (unsigned long)&zcl_piccolo,
-+		.id = ZORRO_PROD_HELFRICH_PICCOLO_REG,
-+		.driver_data_ptr = &zcl_piccolo,
- 	}, {
--		.id	= ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_REG,
--		.driver_data	= (unsigned long)&zcl_picasso,
-+		.id = ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_REG,
-+		.driver_data_ptr = &zcl_picasso,
- 	}, {
--		.id		= ZORRO_PROD_GVP_EGS_28_24_SPECTRUM_REG,
--		.driver_data	= (unsigned long)&zcl_spectrum,
-+		.id = ZORRO_PROD_GVP_EGS_28_24_SPECTRUM_REG,
-+		.driver_data_ptr = &zcl_spectrum,
- 	}, {
--		.id		= ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z3,
--		.driver_data	= (unsigned long)&zcl_picasso4_z3,
-+		.id = ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z3,
-+		.driver_data_ptr = &zcl_picasso4_z3,
- 	}, {
--		.id		= ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_REG,
--		.driver_data	= (unsigned long)&zcl_picasso4_z2,
-+		.id = ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_REG,
-+		.driver_data_ptr = &zcl_picasso4_z2,
- 	},
--	{ 0 }
-+	{ }
- };
- MODULE_DEVICE_TABLE(zorro, cirrusfb_zorro_table);
- #endif /* CONFIG_ZORRO */
-@@ -2208,7 +2208,7 @@ static int cirrusfb_zorro_register(struct zorro_dev *z,
- 	if (!info)
- 		return -ENOMEM;
- 
--	zcl = (const struct zorrocl *)ent->driver_data;
-+	zcl = ent->driver_data_ptr;
- 	btype = zcl->type;
- 	regbase = zorro_resource_start(z) + zcl->regoffset;
- 	ramsize = zcl->ramsize;
--- 
-2.47.3
+> The dependencies in this series are as follows:
+>
+>  - Patch #5 depends on #1, #2
 
+s/5/6/?
+
+>  - Patches #7 and #8 depend on patch #6.
+>
+> So if the ata maintainers agreed to merge their patch #1 via scsi, and
+> Geert agrees to patch #5 and that it's also merged via scsi, patches #1,
+
+s/5/6/?
+
+> #2, #6 and #7 can go in without further coordination.
+>
+> Patches #3, #4 and #5 are only about using the same initialization style
+> for all zorro_device_id and can go in without coordination.
+>
+> Best regards
+> Uwe
+>
+> Uwe Kleine-K=C3=B6nig (The Capable Hub) (8):
+>   ata: pata_budda: Use named initializer for zorro_device_id
+>   scsi: Use named initializer for zorro_device_id
+>   net: Use named initializer for zorro_device_id arrays
+>   i2c: icy: Use named initializer for zorro_device_id arrays
+>   video: fm2fb: Use named initializer for zorro_device_id array
+>   zorro: Simplify storing pointers in device id struct
+>   scsi: zorro7xx: Make use of struct zorro_device_id::driver_data_ptr
+>   video: cirrusfb: Make use of struct zorro_device_id::driver_data_ptr
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

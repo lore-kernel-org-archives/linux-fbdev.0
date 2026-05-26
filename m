@@ -1,92 +1,78 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02FE93B9935
-	for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 14:17:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68DB13FFAB1
+	for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 14:18:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779805082; cv=none; b=CmlCXKc/0OiLNEVjp3+BS0vt2eYECwqLgLDGfw0Pu8QPSGowtBJGEWZP78YoMnELnMUHbOo0SHI5v4MNKzp0gneTj9S7w41be9floWXO3hVxjo5VCtIjjSUZB3Q8S1eaF1gTCwVVQcRXTYO75VKTNw6bDFyswGWTuEvKP1iEdXE=
+	t=1779805087; cv=none; b=oiyJ6Kg6rG79f8240KY2mR59zrgubkUHMVv0crGbXvO2pQ8lxaTujLgz6VMi3Sai83lDAR9d550+SOS7CCCHJNwCKONBx0uv+MtqZQmt6zR0pv0c3KfCyogoRZmkoJPewBgZm9P8OAVTjvpujB3OStCaqHAGtsADNlC9xJ6IC+U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779805082; c=relaxed/simple;
-	bh=Kybdz7vMHfQVHVOh6L5fYiSlCH/4zeDGpuUchAH7Tmw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DZEa7aHelPyMfhIuRlTJZxgMWzwnin25dcyQsoHz6q+6QjbqNnghfytiZGikQzLNLqsbP8VtTaNj6GjKBGNNBIjNt2BOcK9XNO0TY1tmVkMiZ9/Ale92GBhLQP4GYC3kBM6kmyA+YEbhKKoligzeDEnV2N8lngnQm9KhSp8iuwM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=jUCdy8Gi; arc=none smtp.client-ip=209.85.128.47
+	s=arc-20240116; t=1779805087; c=relaxed/simple;
+	bh=vLYhva7TFPlfvxBS6GmaWUTUrenc6YRKtxASZZ8jZAs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=IoKOTX3TS4A56eHSZDglA08njxi/WV1dgKH3Lu9GxcqB6P2nhH6U8BoVZiS4JG9qJVVec91KjqJOzLLjcbEkhSuy5T0aa3izxqMGPTtOENGzWf0Hx0fjb/kf3leI34tbh/nEcm3zIBRzModpgWzS2RRfckzZJD4RnKLPb07EncA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=CUCW2NgG; arc=none smtp.client-ip=209.85.221.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="jUCdy8Gi"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-48d146705b4so112749305e9.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 07:17:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="CUCW2NgG"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-45e8a834cc2so6026987f8f.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 07:18:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1779805077; x=1780409877; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=g7+ZEzN34eEHBV2XeA10qliUnFt9aIEOrlvbEy+ooC0=;
-        b=jUCdy8Gipkt5y1MdcWslWRDMUj8JgIufk+P9hRE/YWr9GaQcjwOmoEt5qBgAPYQJGm
-         fhMyOvwnNEu2gT8q+Lvv/ezwTrgG/MzOvWku/AH/ansOg9CipsEdrlnMwU34y8l1KOBS
-         yGCk8FHKq99skBMwZv+iY8FPTRruC2IxSIZkuxVmDp5uxYMpN4MARnAqHIs+sktvOObc
-         1pxwsRdd+M+ZTolUYkhoBNwfPxVjPj78KRVjKsOlwraDzdYlRmft0W6ufYl0lF/ZAH12
-         Csw9U/m2LL0Qt0h8RSMnL6ZGFWkI2K+NcSD0GZMMl1stByq7jSkFkJqHVHn5f1SOp/o/
-         VBxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779805077; x=1780409877;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=baylibre.com; s=google; t=1779805084; x=1780409884; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=g7+ZEzN34eEHBV2XeA10qliUnFt9aIEOrlvbEy+ooC0=;
-        b=CCY/Ka8JrBEeeaTDlZxhW9AutFm7cioHoylrjWDmJCPY0NikiQVxsDqZEp99xsl8Y6
-         Rs2VrR9wzFGZd4FtjKyC5HHJs4Rzhv/YrlcTC8ES1tiDxaSHLQ1YpZIjfuBTPgQ5Sl/8
-         2Q6gUa1EX/XBTtcFOL1zVKJZSdK9pZtkAnG1sZrjCn7VD9UdiA/KhYAZXJhe9XLdWlv7
-         S8qLJH24NWcyhmte1SraYvXc4pG36eA0jtX+sBc51W2Bbb7hrsYzQzgqPbOtqXM3EFDw
-         IGGmRf3pQhiCSovpEjmm+AtLtVQSFgBQPSR9mfgBXLeCXHL/wWq3uMdGGmDo5W3I0N2M
-         ePzQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/dgotUH0MYt4+8ADZMgbLXOd8wTB7T52KDBKZp71HH9fXwfdWCKhDciyR5OrG7cJctKgxyG3fD5iTreg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx658cGezGRDmqajjazysgyr0Hws2cUdyzjlIfYqSapqy1T8F6+
-	2teczkT5ZXBK8jFaKxRn0uvan2p4eRWZEeya5sk7joGbu8AqNq/RpyespW9BvdCmCtI=
-X-Gm-Gg: Acq92OFjqlim853nSRa7D19/zJrPE2gmltnp8o9gUGFUlp8F8bRltIE9C9lGPMZFGIV
-	roqKpZrFJBJJH1OE418k5QqEDHC16kbSXiwJ3PDxPNiKlSoPKIuP4oLddsSKwwofte4mT5Y63XI
-	Cl6Syf6x0j0pgxkbV4pHHllkLaXqq6fy0bXrDZItwDAbcVKH3QICh/krz0XRelupK6zA10xmpDd
-	Mq1281+TEZOtxi+U+jd/cZ+3jHRmsXzq/pcVhdJbItV+wkAwIRTqyBCIjviNJEy1GZ42o8ioo2j
-	biWa5cxKO6yUZcAze1FKDO1M58P7E/u9KIeZtoMBHQUn7AaD/mglX9Uf+5E7o4tYtjbeuEK8Or+
-	Nbv4/mVieTJZgdnEGrcnpfGKGM5eY3XmA9Q1yf9dl5Qf64h97h/87CRL5rn3rxJILXZ6P2+vDhV
-	svb7NRr343xv6Z/GXH9q8zSdq5w2CeFhTw9ar+yRXzQ1oP5qlF/hwARg5MX9VjUdQZ87k9CGoXB
-	DvRLLrsWKWeKzsbOs/GQgOIbA==
-X-Received: by 2002:a05:600c:8484:b0:48a:906b:14ca with SMTP id 5b1f17b1804b1-490426cd8c4mr332344195e9.20.1779805076904;
-        Tue, 26 May 2026 07:17:56 -0700 (PDT)
+        bh=HcGq1XrISl74r5Iag0hCS2Wz/dm0EE2zh+iieQwt2tE=;
+        b=CUCW2NgGBgzP3kkvHa1V4GFLHx80UTkLGSN0k+8p+Xtn/1vNfeK/qhcHuhyTUXJEKF
+         3fQQ+qOELTrFh70NT88K7oYEFY4N3csPa0/lmJt9BcmvcgHTuEz8HEJeFaH/HXd7rayc
+         gFpnZ/ZPqvsgRjQ0S/GYSyAVpFTFetFHzdqtZjBCY9LkgMfwSNE0Uzxw/ySMgU98GX6V
+         sCGnAQwqI84Q8hcoAstCidgyCAUYrc3XyDsjCMHZoRtkgFDftzsf/PEA1dg3MBAi63b1
+         KLLPIG0Jq1YyVxc0gO9D3A+8MqCR1/eInYoHkoXRGN4x/aqUFxRKQHXMjJgBHUSqQMsI
+         k3Ww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779805084; x=1780409884;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=HcGq1XrISl74r5Iag0hCS2Wz/dm0EE2zh+iieQwt2tE=;
+        b=ADj25x21mg73lm0pfzHLX7c8L5aegoA2231vEYtRmm3x29ALYIygzCiah3XdMmbw37
+         Wlwy2VoA2GQM63Rd7Xfu7/xRwVr0BjvFf13z9tWrZqFuiw3R9CAWlBY7GxQiCOFjh/1U
+         Nf2nfUYdzYNng4wiHKYRm7hbWPXuRn4BrRB2sjjty5skjtmWn+EyUuBc5egalVuxqyoI
+         hFl9PR1VcpTvfY6jv/VMV1y00IJ7isKm+lKDXtespeZERV3/ECPvWqMYi9Via/3Psqmx
+         ETLclgyKWOETpBryPo34IAQIWxSJz0M/osS0BpqvTpsyJCnonV2/JvNOt+ORa4MaAdTR
+         XeCA==
+X-Gm-Message-State: AOJu0Yy87Bz2GunXcnV1x6e1hqNTzjRw994xw317EUkGBNX0pyW2cwD0
+	hw1Ac7rWRhYXn1sEUigx8J5Xlra7fNyWfNq459GKzD7CH++x6Pr84hyGRFijOxpsSGg=
+X-Gm-Gg: Acq92OGKYWq4929NCNYMAFJKYT0CFz9Kg/+yi31oXk8nMiQXKBCwuhfq0JdCCrQA/64
+	OW4z0MrOfvkYrGIuYW5iUNFtMgfFBnEH1pa5TGPUhUIRyqarYCP3DDHPgiT+aDvEpQQzGX3S+dp
+	/qDS1IunNR2p/D57L/DTxZfIM1/3R8+rgw8K/G9odXUNZ1xffnNr79H9wHGwSOl6uCVlONQgbSZ
+	DtmrzV5Q/uXRKrQCavBZQ7S1iX9bbCDkSuwEYqyof1rCG69KDvLZGSILgoLbNPZcgUgzh5zyhJS
+	UGdvtglglr6KYTY4f4VC9QSW9a7W3DknqH7NR3xc0x2RlvmJma2wJJDgcCsbd2cmfblqviw8hdy
+	PjqJs9fZferGAX/4Y+xmWjNor9ySSnEroJAJB/VtpPj8KEmTPM8sT8Z5l2nvCcGFvpgBMnjh8YJ
+	bIO65w/qZG+BPr1TK0wCSisH0TjmV9zELQK3FOxysSZ5bH/1QcDjrrKlTEtW+kvW05XBL0JldRD
+	Uivml81S3Z7MPE=
+X-Received: by 2002:a5d:588d:0:b0:43d:a37f:8d5c with SMTP id ffacd0b85a97d-45eb36a860amr35484418f8f.17.1779805083801;
+        Tue, 26 May 2026 07:18:03 -0700 (PDT)
 Received: from localhost (p200300f65f47db04a716d2bdeddb4813.dip0.t-ipconnect.de. [2003:f6:5f47:db04:a716:d2bd:eddb:4813])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4904526ca21sm323690885e9.3.2026.05.26.07.17.55
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-45eb6cce0a4sm35446032f8f.12.2026.05.26.07.18.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 May 2026 07:17:56 -0700 (PDT)
+        Tue, 26 May 2026 07:18:03 -0700 (PDT)
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
 To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@kernel.org>,
-	Max Staudt <max@enpas.org>,
-	Andi Shyti <andi.shyti@kernel.org>,
 	Helge Deller <deller@gmx.de>
-Cc: linux-ide@vger.kernel.org,
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
 	linux-m68k@lists.linux-m68k.org,
 	linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linux-i2c@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
 	"Christian A. Ehrhardt" <christian.ehrhardt@codasip.com>,
 	"Christian A. Ehrhardt" <lk@c--e.de>
-Subject: [PATCH v1 0/8] zorro: Improve handling of pointers in zorro_device_id::driver_data
-Date: Tue, 26 May 2026 16:17:26 +0200
-Message-ID: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
+Subject: [PATCH v1 5/8] video: fm2fb: Use named initializer for zorro_device_id array
+Date: Tue, 26 May 2026 16:17:31 +0200
+Message-ID:  <12911d2a1dfc4e482bbc0a417df73748283d04ee.1779803053.git.u.kleine-koenig@baylibre.com>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
+References: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -94,75 +80,40 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2934; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=Kybdz7vMHfQVHVOh6L5fYiSlCH/4zeDGpuUchAH7Tmw=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBqFat2pwUr5NuB2EXH5DJBMYu0MFsCRZClzwm2T O9dYlR4RvKJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCahWrdgAKCRCPgPtYfRL+ TkGXB/437E8f30EKdaE8q56oaJt5WlihQ7/3LiGG3zpapj74Iu08O8/GcyZKo9eVo8NUFaoQUo0 0hif3fK8HhAxSruKgus+1EQhLy4QeBS7zZsfKLyQOA2B83qRv2SA46ZptWCnVfQXneJtq5rnt/p z+XAhB5HNmZ0vPCrnsT8fL9BH8Yuh3zYqxT9eUnhr+pmthPLdEZiphMZPNHOU/10eCiEJb0TQUX jspmFLtmTRiWApFBZdcAJAZ22LyP1Ls51jKz1i9KFNk3U1cVVN3KNX/HmgRm8an2jPEYqs0Aq03 oaSi8UN/pRU/wOeZjcBFx1K5Dq0XXmkIHLJB0BQbJ8js9PWI
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1095; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=vLYhva7TFPlfvxBS6GmaWUTUrenc6YRKtxASZZ8jZAs=; b=owGbwMvMwMXY3/A7olbonx/jabUkhizR1U3u1mK5E3TLryob8TbMXBf7Meys0fYbv3Zb72143 3vnx1XHTkZjFgZGLgZZMUUW+8Y1mVZVcpGda/9dhhnEygQyhYGLUwAmIn2Yg2FmQtmKN5sOa66d rJ39ZNfE2ot/OA2maOQlfn6hfan1i8Mb4SIfoZq/cUIZGvkL54m+vZ7BXv+uMskjeJbmFLOL0ge i121P2PLYp/i5QtlVhXVqG52cctz7l9vnZS38pPBF91FWn9T5+RVBSk62Nu9Dklb/T7DRamzO05 Ws7ZzWfPdGfHXDwb73Nx04dA3T4rvVFhXvkzGM97/dY/gncmbLuv/qzy+5NTMns0fkBx5iyGj59 ujvn7LK/lfNL5l53ikZMQTw3+D4s/H93QKxqaUlit7rQ9amBjunr++0kjj7/1d7xiy7L9K+UnEF nCeFvxe0nPmySbTYOCDD7DST1Ns1rbkRO5akO9YE8W8DAA==
 X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
 
-Hello,
+Using named initializers is more explicit and thus easier to parse for a
+human.
 
-this series is about improving the handling of pointers in struct
-zorro_device_id's driver_data.
+While touching this array, drop the explicit zero from the list terminator.
 
-While it's ok on all current Linux platforms to store a pointer in an
-unsigned long variable, it involves casting that loses type information.
-This can be nicely seen in patch #7 where after profiting from patch #6
-the compiler notices a missing const.
+This change doesn't introduce changes to the compiled zorro_device_id
+array.
 
-Preparing for that change, all zorro_device_ids are converted to use
-named initializers, which is also a nice cleanup that could stand for
-itself, as it improves readability for humans. (That is necessary
-because an anonymous union can be initialized by name, but not using a
-list initializer.)
+Signed-off-by: Uwe Kleine-König (The Capable Hub) <u.kleine-koenig@baylibre.com>
+---
+ drivers/video/fbdev/fm2fb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-My motivation for this series is the CHERI hardware extension. With that
-pointers are bigger than longs and thus you cannot store pointers in
-zorro_device_id::driver_data. So this series is also about getting
-support for CHERI into the mainline, but I hope the clean up effects
-mentioned above are justification enough to accept this series.
-
-The dependencies in this series are as follows:
-
- - Patch #5 depends on #1, #2
- - Patches #7 and #8 depend on patch #6.
-
-So if the ata maintainers agreed to merge their patch #1 via scsi, and
-Geert agrees to patch #5 and that it's also merged via scsi, patches #1,
-#2, #6 and #7 can go in without further coordination.
-
-Patches #3, #4 and #5 are only about using the same initialization style
-for all zorro_device_id and can go in without coordination.
-
-Best regards
-Uwe
-
-Uwe Kleine-König (The Capable Hub) (8):
-  ata: pata_budda: Use named initializer for zorro_device_id
-  scsi: Use named initializer for zorro_device_id
-  net: Use named initializer for zorro_device_id arrays
-  i2c: icy: Use named initializer for zorro_device_id arrays
-  video: fm2fb: Use named initializer for zorro_device_id array
-  zorro: Simplify storing pointers in device id struct
-  scsi: zorro7xx: Make use of struct zorro_device_id::driver_data_ptr
-  video: cirrusfb: Make use of struct zorro_device_id::driver_data_ptr
-
- drivers/ata/pata_buddha.c             |  8 ++++----
- drivers/i2c/busses/i2c-icy.c          |  4 ++--
- drivers/net/ethernet/8390/hydra.c     |  4 ++--
- drivers/net/ethernet/8390/xsurf100.c  |  4 ++--
- drivers/net/ethernet/8390/zorro8390.c |  6 +++---
- drivers/net/ethernet/amd/a2065.c      |  8 ++++----
- drivers/net/ethernet/amd/ariadne.c    |  4 ++--
- drivers/scsi/a2091.c                  |  6 +++---
- drivers/scsi/gvp11.c                  | 17 ++++++++--------
- drivers/scsi/zorro7xx.c               | 16 +++++++--------
- drivers/scsi/zorro_esp.c              |  2 +-
- drivers/video/fbdev/cirrusfb.c        | 28 +++++++++++++--------------
- drivers/video/fbdev/fm2fb.c           |  6 +++---
- include/linux/mod_devicetable.h       |  6 +++++-
- 14 files changed, 62 insertions(+), 57 deletions(-)
-
-
-base-commit: d387b06f7c15b4639244ad66b4b0900c6a02b430
+diff --git a/drivers/video/fbdev/fm2fb.c b/drivers/video/fbdev/fm2fb.c
+index 25d2e716edf2..a62c8d86bf69 100644
+--- a/drivers/video/fbdev/fm2fb.c
++++ b/drivers/video/fbdev/fm2fb.c
+@@ -212,9 +212,9 @@ static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ static int fm2fb_probe(struct zorro_dev *z, const struct zorro_device_id *id);
+ 
+ static const struct zorro_device_id fm2fb_devices[] = {
+-	{ ZORRO_PROD_BSC_FRAMEMASTER_II },
+-	{ ZORRO_PROD_HELFRICH_RAINBOW_II },
+-	{ 0 }
++	{ .id = ZORRO_PROD_BSC_FRAMEMASTER_II },
++	{ .id = ZORRO_PROD_HELFRICH_RAINBOW_II },
++	{ }
+ };
+ MODULE_DEVICE_TABLE(zorro, fm2fb_devices);
+ 
 -- 
 2.47.3
 

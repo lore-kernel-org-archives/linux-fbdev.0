@@ -1,73 +1,48 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx1.riseup.net (mx1.riseup.net [198.252.153.129])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D2703D1CA5
-	for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 09:15:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48ED931E821;
+	Tue, 26 May 2026 13:18:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.252.153.129
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779786921; cv=none; b=CXtvT7DUHHb2Aqn2AbC+PgQvnkAWzBELMaS0p0QlRAQikJxU4BC8TloKl+TNxBrVnezkEypYF48KTUnrZ9KXoIrDEo/dTF1NZK3A/lqSISfK1FiPKJ/550bxOX4yKa9kUtFuCFAAgfZySoDA5u2LO6QRrO2wy83MBX7wn8XunLo=
+	t=1779801489; cv=none; b=gs9BJtbJqfqfOx50mb2BSFFHAx3ME/0WSK4OJOTWKI7JzlkTrV5CoGK3mmADaCyat/SJD1ELWP5FwO2NFlg1u/ii7ozjT/FBEkOXz2Gf9/iWMYqIEtPcToDds908CYhCOVArmFt+mi7U9BxwK6f/GIlUxy8npjwIcUUBjXrm5gk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779786921; c=relaxed/simple;
-	bh=CiLQjT1Qr58oChrYxcBkoC3zl+AdJy660/8iBarPYl0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dIbYkkA72c+IEDbOUHsbHWaYM0JbGZVyxPVNz/0p4UG0ZJHvbdCGysiFL/7cjKa/jb9wSZwO2ayHQISg37HR4g7Q407J+71mviYJP+/mw7FsNDQl9ZTNga7gxJ8jLNkPgWr8MeJjQE1U8rVfKVhpvkA4uDTs0pB/FcKix4XfaNs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=i8oF1erT; arc=none smtp.client-ip=209.85.214.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1779801489; c=relaxed/simple;
+	bh=WOqPLVN7X4Oo+1a+nab4tkzFF5fHoRWbMCV4jSw1A4s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nkLO+JEv2ehiiQEd93NqnlL5mhVzvp1dwn8Z2N0BdsURAOVl6reZq0VK+Z4wkI5OSU0vyujZJ9eBkwkFdaxQM9L8/Cr4+b80wO6hDJ+4rNLtxvEZyga8gFywIuB456b2zcwk2cKBTqzRT+bnia7sDI1Cy4wYdg8z7Z8+gfTJNI4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riseup.net; spf=pass smtp.mailfrom=riseup.net; dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b=mrxLSmvj; arc=none smtp.client-ip=198.252.153.129
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riseup.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riseup.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i8oF1erT"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2ba3e3c4f87so108162765ad.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 May 2026 02:15:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779786920; x=1780391720; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=zcJdTmTjfiBuviJiW8pIvbqp3hR7VDqq1Y5TAU3hp2Q=;
-        b=i8oF1erTwKURoEkn7vkh/rScaeWUJYHNTqucxtDGmiA3WFAWSIy8c1cm+0ZAwxYypy
-         5xtWYhsxv0KZgK6ekfEqBC+stqbkMSigA+ONcbfqY2/oYJYiJH9qZiWWxwZTWAzGkqyq
-         TC3/oX3rXBwm+l0Emqx/aD2J0xFYkKjl8UciSfmgbC/y+Uy64MVmB9ldLFGCxLTp1Qi/
-         f7vT470aAuApQmgOYFlmRkRfv9w2AvgSQV8elTmJA5L8/5AfwyA7f4KrpwFYRZLGPFAd
-         2mT+Ibx6Vte9QiEcUHnd2DUUrm7lBkMSs64MJPfcpmgS/medDQZ6Bd6egleD0xQ+SSul
-         Chbw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779786920; x=1780391720;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zcJdTmTjfiBuviJiW8pIvbqp3hR7VDqq1Y5TAU3hp2Q=;
-        b=AUaAAnOYn8EYPF5qQAf61DPd7wblhgRam+gE502wpwTiUlLF/SHmZ8gHbIZXhzPrrL
-         3DNQ7hRfCX7ReYzfS7z3Y8LiK0cIICR5yPl7C3xrCHej+rg6+l30XVXCEK2LqNWrexHX
-         PeXhBMH+wMA9ZQnEtdPUMfZsdVIctVxFJ9/XCglJ1fJ7nLKuVVU7JDo0r5Y4EAy2dtnw
-         nu58ZWWkkWCbi2GfI3LvphZ6fZ7+Xp6NWM+vpEJQRJPphkw8JxKD9HRD6demeJjiDWUg
-         JWFLayaoLWGKVSsC1d4yovAb1xCf8SbfXuno8yxG/FAymrUKzoaMRBJgevp25KQk9G42
-         v2Sw==
-X-Gm-Message-State: AOJu0YytnHNnuZg65qPfgti3mliJFOnNGeCOVmkChgXlNxjF0rUV6SX0
-	pwB++CbHHMVXYsUEbZ9m7WT0mVOdl1nMNtFCAXXYnfhI6JbALY6k/vgr
-X-Gm-Gg: Acq92OH1HiUENq3zqVSQaqOO8Bx0F7QW5JCv3LRqg5pZBDEwtgruEi9uI/tEqvlb+Cq
-	rJq1udySGco02MyVf0JeyVmhuRFX+Y/xwX/bxrQweZImrcrJbKNQ8yDSB39xZjDhoKzdbPwsAqA
-	Bqd4j2DTcjVArzCSHBLBDGHvR006EWftCxvOL/zMPRRYh1KAqt3KLi9DsTvkYlRd3XAKBG8aEUK
-	lyL7EEGN20Sau4nLhifMtNaUkmz2JYdUSHRiCtW4oEjkYhDigg93qcj2BPIcm7wS6igcIicRPy3
-	isTgeV3upmxJYbFntpJ1f0Xr8+fzRP0bMKSsND2/R2RrJvKWxCUGv81EtFJRudgzbnewpGPWT5t
-	ZnGyOj6XGm+xIBYHx6RMQTzZHtkE1d7niM2+uBdCG6HkI/h8UYL3QK8xmUNl6LAjS/ouL6o9CL7
-	/6tTONgehulatwEA/ByEsLeNMsTrBsHgiCjlQ8IB6DVLN5er7zpofJuKYUQw==
-X-Received: by 2002:a17:903:faf:b0:2bd:2439:25fc with SMTP id d9443c01a7336-2beb033f460mr169505875ad.7.1779786919586;
-        Tue, 26 May 2026 02:15:19 -0700 (PDT)
-Received: from oslab.. (n058152109154.netvigator.com. [58.152.109.154])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2beca535bc1sm71381615ad.56.2026.05.26.02.15.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 May 2026 02:15:19 -0700 (PDT)
-From: Tuo Li <islituo@gmail.com>
-To: simona@ffwll.ch,
-	deller@gmx.de,
-	kees@kernel.org,
-	tzimmermann@suse.de
+	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="mrxLSmvj"
+Received: from fews01-sea.riseup.net (fews01-sea-pn.riseup.net [10.0.1.109])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx1.riseup.net (Postfix) with ESMTPS id 4gPtbZ13fgzDqMW;
+	Tue, 26 May 2026 13:18:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=riseup.net; s=squak;
+	t=1779801482; bh=lnOoqjI214ZQ8PlbotMcBXTWTRo2UP+8mBP1lS2kcDw=;
+	h=From:To:Cc:Subject:Date:From;
+	b=mrxLSmvjrIyVxLRNB5y95IMw2y7JvbXtGQ20DEeTyVKUKPGOhREWDOfNKASPPFbVX
+	 aH91IYBKGYfxTAPeupIISWjnliI8tzwq4feqrJCMcZaCEya8g3NZN/wQBIhkUpmdb/
+	 lWQOkXGWLVl7TZTv/WXC7hd89oN6pZOEJiPXRXak=
+X-Riseup-User-ID: ABD3F563F590011991F7C13206586327EBD1F9D74A031D10523104A80F0E1BEB
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+	 by fews01-sea.riseup.net (Postfix) with ESMTPSA id 4gPtbR2tWqz1xxY;
+	Tue, 26 May 2026 13:17:55 +0000 (UTC)
+From: Emmanuel Arias <eamanu@riseup.net>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
 Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
+	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	Tuo Li <islituo@gmail.com>
-Subject: [PATCH] fbdev:modedb: fix a possible UAF in fb_find_mode()
-Date: Tue, 26 May 2026 17:15:07 +0800
-Message-ID: <20260526091507.421730-1-islituo@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	Emmanuel Arias <eamanu@riseup.net>,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH v2] staging: sm750fb: fix CamelCase variables name in sm750
+Date: Tue, 26 May 2026 10:16:31 -0300
+Message-ID: <20260526131631.1237672-1-eamanu@riseup.net>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -76,77 +51,109 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-If mode_option is NULL, it is assigned from mode_option_buf:
+Replace CamelCase variable name with snake_case:
+- pvReg -> pv_reg
+- setAllEngOff -> set_all_eng_off
 
-  if (!mode_option) {
-    fb_get_options(NULL, &mode_option_buf);
-    mode_option = mode_option_buf;
-  }
-
-Later, name is assigned from mode_option:
-
-  const char *name = mode_option;
-
-However, mode_option_buf is freed before name is no longer used:
-
-  kfree(mode_option_buf);
-
-while name is still accessed by:
-
-  if ((name_matches(db[i], name, namelen) ||
-
-Since name aliases mode_option_buf, this may result in a
-use-after-free.
-
-Fix this by moving the kfree(mode_option_buf) call behind the access, and
-add corresponding cleanup before early returns.
-
-Signed-off-by: Tuo Li <islituo@gmail.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202605171049.KbaBnrJV-lkp@intel.com/
+Signed-off-by: Emmanuel Arias <eamanu@riseup.net>
 ---
- drivers/video/fbdev/core/modedb.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/staging/sm750fb/sm750.c    |  6 +++---
+ drivers/staging/sm750fb/sm750.h    |  4 ++--
+ drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
-index 703d0b7aec32..91f6c78f9e19 100644
---- a/drivers/video/fbdev/core/modedb.c
-+++ b/drivers/video/fbdev/core/modedb.c
-@@ -724,7 +724,6 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 			res_specified = 1;
- 		}
- done:
--		kfree(mode_option_buf);
- 		if (cvt) {
- 			struct fb_videomode cvt_mode;
- 			int ret;
-@@ -749,6 +748,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 996a586a3727..9b30627a19d0 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -755,7 +755,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	 * must be set after crtc member initialized
+ 	 */
+ 	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
+-	crtc->cursor.mmio = sm750_dev->pvReg +
++	crtc->cursor.mmio = sm750_dev->pv_reg +
+ 		0x800f0 + (int)crtc->channel * 0x140;
  
- 			if (!ret && !fb_try_mode(var, info, &cvt_mode, bpp)) {
- 				DPRINTK("modedb CVT: CVT mode ok\n");
-+				kfree(mode_option_buf);
- 				return 1;
- 			}
+ 	crtc->cursor.max_h = 64;
+@@ -860,7 +860,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 	sm750_dev->init_parm.mem_clk = 0;
+ 	sm750_dev->init_parm.master_clk = 0;
+ 	sm750_dev->init_parm.power_mode = 0;
+-	sm750_dev->init_parm.setAllEngOff = 0;
++	sm750_dev->init_parm.set_all_eng_off = 0;
+ 	sm750_dev->init_parm.reset_memory = 1;
  
-@@ -793,8 +793,10 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 				if (!interlace_specified ||
- 				    db_interlace == interlace)
- 					if (refresh_specified &&
--					    db[i].refresh == refresh)
-+					    db[i].refresh == refresh) {
-+						kfree(mode_option_buf);
- 						return 1;
-+					}
+ 	/* defaultly turn g_hwcursor on for both view */
+@@ -1059,7 +1059,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
+ 	sm750fb_framebuffer_release(sm750_dev);
+ 	arch_phys_wc_del(sm750_dev->mtrr.vram);
  
- 				if (score < diff) {
- 					diff = score;
-@@ -802,6 +804,8 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 				}
- 			}
- 		}
-+
-+		kfree(mode_option_buf);
- 		if (best != -1) {
- 			fb_try_mode(var, info, &db[best], bpp);
- 			return (refresh_specified) ? 2 : 1;
+-	iounmap(sm750_dev->pvReg);
++	iounmap(sm750_dev->pv_reg);
+ 	iounmap(sm750_dev->vmem);
+ 	pci_release_region(pdev, 1);
+ 	kfree(g_settings);
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index d2c522e67f26..e8885133da2e 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -44,7 +44,7 @@ struct init_status {
+ 	ushort chip_clk;
+ 	ushort mem_clk;
+ 	ushort master_clk;
+-	ushort setAllEngOff;
++	ushort set_all_eng_off;
+ 	ushort reset_memory;
+ };
+ 
+@@ -97,7 +97,7 @@ struct sm750_dev {
+ 	unsigned long vidreg_start;
+ 	__u32 vidmem_size;
+ 	__u32 vidreg_size;
+-	void __iomem *pvReg;
++	void __iomem *pv_reg;
+ 	unsigned char __iomem *vmem;
+ 	/* locks*/
+ 	spinlock_t slock;
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 6f7c354a34a1..2e2c7cffddab 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -40,18 +40,18 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	}
+ 
+ 	/* now map mmio and vidmem */
+-	sm750_dev->pvReg =
++	sm750_dev->pv_reg =
+ 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
+-	if (!sm750_dev->pvReg) {
++	if (!sm750_dev->pv_reg) {
+ 		dev_err(&pdev->dev, "mmio failed\n");
+ 		ret = -EFAULT;
+ 		goto err_release_region;
+ 	}
+ 
+-	sm750_dev->accel.dpr_base = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
+-	sm750_dev->accel.dp_port_base = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
++	sm750_dev->accel.dpr_base = sm750_dev->pv_reg + DE_BASE_ADDR_TYPE1;
++	sm750_dev->accel.dp_port_base = sm750_dev->pv_reg + DE_PORT_ADDR_TYPE1;
+ 
+-	mmio750 = sm750_dev->pvReg;
++	mmio750 = sm750_dev->pv_reg;
+ 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
+ 
+ 	sm750_dev->vidmem_start = pci_resource_start(pdev, 0);
+@@ -75,7 +75,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	return 0;
+ 
+ err_unmap_reg:
+-	iounmap(sm750_dev->pvReg);
++	iounmap(sm750_dev->pv_reg);
+ err_release_region:
+ 	pci_release_region(pdev, 1);
+ 	return ret;
 -- 
-2.43.0
+2.53.0
 

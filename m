@@ -1,98 +1,70 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC11D303C93
-	for <linux-fbdev@vger.kernel.org>; Wed, 27 May 2026 15:16:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E91F640149B
+	for <linux-fbdev@vger.kernel.org>; Wed, 27 May 2026 15:39:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779894979; cv=none; b=hhoxAdFhI+7U6BFIN7jdqdLLX8Ky7g1c1eoXSsQIyYRtlghPFrX9QG944efML5pn4+UdhsuMornr0ro+F3J6oSDSYDnLSKKT0cOlHud+7+0M1mFT+ModxVZsW5aXv3mRV5iEaa5vgUFHondIk62BJbAAd2fDW9zWdcVB7XcuxPs=
+	t=1779896369; cv=none; b=uWafd215mIevzy4kuL+pVpnbWTbT/ZN8QQzRomxpwRxz6S7O0kZsHU1MQ6qRcj0W26zXaW70wMJEeOa1ZXxlobBjgKqPsGY8jIgq7oUQew10IN1BKOlb9uNwgd7bLTruy+ZQixQNuGAyVRJRZSBwZU07+W4a5Nh7rvtrlHw/tic=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779894979; c=relaxed/simple;
-	bh=pkiJyYVsXq5JSBa8qLrBpXahukC3tHncLwdt5fYWLhA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EjWrpaivESwtqNXQZSPiXzZzDzov9YzBgTc2y+yA+G9QtYY/uf2IXlJUQwYXKMyxXUC4PakQigkrU/RPAdLGIjahuzMAWpeZIGQNTtPumAgdXhiSBb1fMJXG7ul2kVvEG2EOP/aD258O7J5FWoK8DN3WBOiUq+HUgWGHZe2gkoA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=INON9EyJ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=tUgvpzHS; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=INON9EyJ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=tUgvpzHS; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1779896369; c=relaxed/simple;
+	bh=SZl0ZZ7Nk5+70c1aao78jyHVyCFkqKgvd/ZaC6sV7gw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=vCkWCS1KsRhxi/ZBWEvYKU9tyqei2VjzoCck/EJFg1E1RNgygCq+Wx1E5uPIuOP/dZADwE25lVca/PpWlfI0DP/TrrTMOEJZPF/g5a4H3hSeFKfQS+T957Il7PEm3I+VsSUkzySaL+iWx2awdvm8NlxNTDuV5Z2G9g2DA549VWE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Mampa31n; arc=none smtp.client-ip=209.85.128.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="INON9EyJ";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="tUgvpzHS";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="INON9EyJ";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="tUgvpzHS"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 625206AA59;
-	Wed, 27 May 2026 15:15:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779894956; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Y6S6cB8ObGQfuJNgjDJMW2rq8gvqvaymXV0iZZjEyf4=;
-	b=INON9EyJSuB4kEF8tdsnv6R6M9gPeEeoAI/y9MGdG4m/UulsYFUpyi1ow291JOCQ1cGDUY
-	JKApHL2Z5nm89K0cT5tJpfeZsBbUZVnSjJQEH1Hwm9Mu97bZM7Gp3rcrmmoCrT8h56ods3
-	+9tnPEV0TpiqLVKr7SwFESG2jEuEOQw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779894956;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Y6S6cB8ObGQfuJNgjDJMW2rq8gvqvaymXV0iZZjEyf4=;
-	b=tUgvpzHSgmFK8y/MfhPE5nbE5O32GhHCZ/DWdv4QqjUEHK9PnU17uzXqUyM8LpiceE39gg
-	zo/L8bVEuGp80mBg==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1779894956; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Y6S6cB8ObGQfuJNgjDJMW2rq8gvqvaymXV0iZZjEyf4=;
-	b=INON9EyJSuB4kEF8tdsnv6R6M9gPeEeoAI/y9MGdG4m/UulsYFUpyi1ow291JOCQ1cGDUY
-	JKApHL2Z5nm89K0cT5tJpfeZsBbUZVnSjJQEH1Hwm9Mu97bZM7Gp3rcrmmoCrT8h56ods3
-	+9tnPEV0TpiqLVKr7SwFESG2jEuEOQw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1779894956;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Y6S6cB8ObGQfuJNgjDJMW2rq8gvqvaymXV0iZZjEyf4=;
-	b=tUgvpzHSgmFK8y/MfhPE5nbE5O32GhHCZ/DWdv4QqjUEHK9PnU17uzXqUyM8LpiceE39gg
-	zo/L8bVEuGp80mBg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 124965A8C3;
-	Wed, 27 May 2026 15:15:56 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id aA5KA6wKF2p6FQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 27 May 2026 15:15:56 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	geert@linux-m68k.org,
-	simona@ffwll.ch,
-	airlied@gmail.com,
-	lukas@wunner.de,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 3/4] fbdev: Wrap fbcon updates from vga-switcheroo in helper
-Date: Wed, 27 May 2026 17:14:04 +0200
-Message-ID: <20260527151551.258659-4-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260527151551.258659-1-tzimmermann@suse.de>
-References: <20260527151551.258659-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Mampa31n"
+Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-49048f70faaso4010605e9.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 May 2026 08:39:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779896366; x=1780501166; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ADHAKXLPSV+B46SoR3AVK3+w80ncz+/VZrd71fy3Anc=;
+        b=Mampa31nK2C3CaNVzQKmW1TuqaqxPQ3JYp1i8wF9Iz4RB++d8vOI9btDAh4Rs2YA5y
+         Qgi44NwkRcqlcAn0FWN6sWql93LWLn2wPyoqzad544EfpwDc+VK0XLtIFqf92S/aNcq3
+         D3oykZb+NL4e/6/BuD9iGpkMMK69WDC7R0W5LidboGJWZG8XIQUmySfCyFxCvq0fe7dI
+         vfQMQrGZSSwi123fQs3vnIwmFP+adOltnp8mXw3SvReQcAGu94STDRwrsmXMZy40suhX
+         LDWL5RwdpQ16kBAkeabFvSgRIulXWP/d2zrCyoibpVfEXh5ReU4wR42EkqDX2Ul2xPTh
+         IM3A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779896366; x=1780501166;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ADHAKXLPSV+B46SoR3AVK3+w80ncz+/VZrd71fy3Anc=;
+        b=tHPfYCPwPQIm7wh5tW9qu43tWMe8D9vwg2aPbyaenMeHAYgKN7dEOlLjO8j+XC66Ua
+         7PcHddkwRUcqoB6vjAvcESV7otBw4Mb1Rwg7aNT3ZQ/rybPjgdGtuhxoQxVZEX6ScdrY
+         Q6hLZlg4UGlpOOB9iAKvmyf+zNUca0FD8Qozx4Lx09AJw5cUDSTBUzBR6ZqBBPfC9Coz
+         NaY1EbLy2vUgrGbYtXclj0cB5SDc1BE3epr5aFG0EiAAIqTGy2l1v0fkU2GOJFV8JXYP
+         9wr0VAJAVpIVDk6GAAuTnwzha99XtcNeeRguINSjP3WZ274DtqjETBNstYGHH4EdXuhQ
+         pJIw==
+X-Gm-Message-State: AOJu0YyH1jyV8dcgS8pcYgfTWa1X3XQBz8jObFp0kw5BL0xh0ytZl5gD
+	AKKAv7QCz9LfUbGKqD5C9a+gT6zX4GhlLOitC2H/r3k9jkeDR/h89M2Q
+X-Gm-Gg: Acq92OFHI++C9FoBQvze3mMxTiKX264T00p8k8Jbrwck2EH3kMJDRs0Uxy69diPcdj4
+	P7dL3zcTZw/e2GekCn5Yg7SawHj/c2nsF41Kra9EgaSeKdT4C9+rP1toxYfkX8hR1PYGyGYJ8s3
+	V9yRCch8BsvreT5XVvqlP/JaaZI7FjAWwbpfh35PMwwAafOhYRbh7UKY/bZqPopkluNyc9NGuv3
+	XsP6L9LtXEPjHL6FzyePsfvzXEkH668CzCbZ4rbuHOvIuCJpWrP10qc4OO02XpDB1BpgMypJvyg
+	nlSacttTm3nLAHrfH1BlKaD5L5uwuRBf1wdH8G2Ers2LKRXfW4NiuD7yft8Aj9ZIIsUyDDdAFzP
+	GuAV4ZUTPusEXMOTBHkLpZOSY4RSpyuLVkLjVylcBQxgDl/2lEnGwmald1dFJLQ2ajlAmOifAG9
+	ppHdRaipCs3j86OKeKUcdhVe+qwaCiznLwPh658G8Uak3DC9W+2R/3KoqzWAjcp9/Wd9VefCT28
+	qogbuMeA1M=
+X-Received: by 2002:a05:600c:4ecc:b0:490:502:8422 with SMTP id 5b1f17b1804b1-490428e2ceamr162598325e9.6.1779896366116;
+        Wed, 27 May 2026 08:39:26 -0700 (PDT)
+Received: from simuladores.arostegui.proxmox (178.pool85-58-80.dynamic.orange.es. [85.58.80.178])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45edb54a6cdsm7241937f8f.2.2026.05.27.08.39.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 27 May 2026 08:39:25 -0700 (PDT)
+From: =?UTF-8?q?Alberto=20Ar=C3=B3stegui?= <aarosteguig@gmail.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	AlbertoArostegui <aarosteguig@gmail.com>
+Subject: [PATCH] fbdev: pxa168fb: use devm_ioremap_resource() for MMIO
+Date: Wed, 27 May 2026 15:39:13 +0000
+Message-ID: <20260527153913.33342-1-aarosteguig@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -100,131 +72,38 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Spam-Score: -6.80
-X-Spam-Flag: NO
-X-Spamd-Result: default: False [-6.80 / 50.00];
-	REPLY(-4.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:mid];
-	RCPT_COUNT_TWELVE(0.00)[13];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_TO(0.00)[gmx.de,linux-m68k.org,ffwll.ch,gmail.com,wunner.de,linux.ibm.com,ellerman.id.au,kernel.org];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RL3i8gi83d8iemn6cxmyh4cqsd)];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
 
-Handle console remapping in fbcon in fb_switch_output(). Vga-switcheroo
-invokes this functionality before switching physical outputs to a new
-graphics device. Open-coding fbcon state in vga-switcheroo exposed fbdev
-implementation details.
+From: AlbertoArostegui <aarosteguig@gmail.com>
 
-Vga-switcheroo is used for switching physical outputs among graphics
-hardware. This functionality is only supported by DRM drivers. A later
-update will further move fb_switch_output() into DRM's fbdev emulation;
-thus fully decoupling vga-switcheroo from fbdev.
+pxa168fb maps the LCD controller register resource with devm_ioremap(),
+which does not request the memory region. Use devm_ioremap_resource()
+instead so the MMIO range is claimed before being mapped.
 
-v3:
-- remove Kconfig dependency related to fbcon (Geert)
-v2:
-- use '#if defined' (Helge)
+This also handles cleanup automatically.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: AlbertoArostegui <aarosteguig@gmail.com>
 ---
- drivers/gpu/vga/Kconfig          |  2 +-
- drivers/gpu/vga/vga_switcheroo.c |  6 +++---
- drivers/video/fbdev/core/fbmem.c | 10 ++++++++++
- include/linux/fb.h               |  1 +
- 4 files changed, 15 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/pxa168fb.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/vga/Kconfig b/drivers/gpu/vga/Kconfig
-index eb8b14ab22c3..bad4bcee313f 100644
---- a/drivers/gpu/vga/Kconfig
-+++ b/drivers/gpu/vga/Kconfig
-@@ -4,7 +4,7 @@ config VGA_SWITCHEROO
- 	depends on X86
- 	depends on ACPI
- 	depends on PCI
--	depends on (FRAMEBUFFER_CONSOLE=n || FB=y)
-+	depends on FB=y
- 	select VGA_ARB
- 	help
- 	  Many laptops released in 2008/9/10 have two GPUs with a multiplexer
-diff --git a/drivers/gpu/vga/vga_switcheroo.c b/drivers/gpu/vga/vga_switcheroo.c
-index 8fe1ae3c71bb..22cf52b78b75 100644
---- a/drivers/gpu/vga/vga_switcheroo.c
-+++ b/drivers/gpu/vga/vga_switcheroo.c
-@@ -31,11 +31,9 @@
- #define pr_fmt(fmt) "vga_switcheroo: " fmt
+diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
+index ec602f7776eb..6784888d93c9 100644
+--- a/drivers/video/fbdev/pxa168fb.c
++++ b/drivers/video/fbdev/pxa168fb.c
+@@ -653,10 +653,9 @@ static int pxa168fb_probe(struct platform_device *pdev)
+ 	/*
+ 	 * Map LCD controller registers.
+ 	 */
+-	fbi->reg_base = devm_ioremap(&pdev->dev, res->start,
+-					     resource_size(res));
+-	if (fbi->reg_base == NULL) {
+-		ret = -ENOMEM;
++	fbi->reg_base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(fbi->reg_base)) {
++		ret = PTR_ERR(fbi->reg_base);
+ 		goto failed_free_info;
+ 	}
  
- #include <linux/apple-gmux.h>
--#include <linux/console.h>
- #include <linux/debugfs.h>
- #include <linux/fb.h>
- #include <linux/fs.h>
--#include <linux/fbcon.h>
- #include <linux/module.h>
- #include <linux/pci.h>
- #include <linux/pm_domain.h>
-@@ -735,8 +733,10 @@ static int vga_switchto_stage2(struct vga_switcheroo_client *new_client)
- 	if (!active->driver_power_control)
- 		set_audio_state(active->id, VGA_SWITCHEROO_OFF);
- 
-+#if defined(CONFIG_FB)
- 	if (new_client->fb_info)
--		fbcon_remap_all(new_client->fb_info);
-+		fb_switch_outputs(new_client->fb_info);
-+#endif
- 
- 	mutex_lock(&vgasr_priv.mux_hw_lock);
- 	ret = vgasr_priv.handler->switchto(new_client->id);
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 1a6758653b64..ecadbc58abff 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -684,6 +684,16 @@ void fb_set_suspend(struct fb_info *info, int state)
- }
- EXPORT_SYMBOL(fb_set_suspend);
- 
-+/**
-+ * fb_switch_outputs - framebuffer got the outputs from vga-switcheroo
-+ * @info: framebuffer
-+ */
-+void fb_switch_outputs(struct fb_info *info)
-+{
-+	fbcon_remap_all(info);
-+}
-+EXPORT_SYMBOL(fb_switch_outputs);
-+
- static int __init fbmem_init(void)
- {
- 	int ret;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 88680a7cabd5..e9a26e82322a 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -608,6 +608,7 @@ void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, const u8 *src, u32 idx, u32 h
- 			     u32 shift_high, u32 shift_low, u32 mod);
- void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, const u8 *src, u32 s_pitch, u32 height);
- extern void fb_set_suspend(struct fb_info *info, int state);
-+extern void fb_switch_outputs(struct fb_info *info);
- extern int fb_get_color_depth(struct fb_var_screeninfo *var,
- 			      struct fb_fix_screeninfo *fix);
- extern int fb_get_options(const char *name, char **option);
 -- 
-2.54.0
+2.43.0
 

@@ -1,133 +1,105 @@
-Received: from mx0.riseup.net (mx0.riseup.net [198.252.153.6])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com [209.85.217.46])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34D882264D6;
-	Tue, 26 May 2026 20:31:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.252.153.6
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D96E63F0756
+	for <linux-fbdev@vger.kernel.org>; Wed, 27 May 2026 13:17:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779827465; cv=none; b=cd3IouMHjBiUtOQ72T8F030DedOAkcr48kGSP7DILUZCAZ8WxOkhxtUec/N5CXfKCs9VgNvC2gn5oR6L2u3PuLDWu3M98N1vqMJ0GtP5txNE7IdIp5rFZl1pRa4EvpeasOUVdKmCI2qjUmCqbazOgRsCmufpj+SCR1GQksEy94A=
+	t=1779887853; cv=none; b=Nr+qfbIzYrxHoFZvCqNN71SWNsNP367STifJQM1hd4DsOV9m+CBK9fysZ4G/cIgGwNMlXSFcWFTIJuSIq3cCsd5hfh3m6CSCPvj0RQacftbphqE3JLgJm6z1AZc3pTQKTvW2XVITN/RlGYLpEgp7bbxFva7SUiw9besq3OcSPJ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779827465; c=relaxed/simple;
-	bh=qcQtkeH6/tM2xUlisial8/6XUL4ycOWoDtS8uvilLw4=;
-	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
-	 Message-ID:Content-Type; b=Qm83lVZCFfzTqQH7CXCiZjKVvWsXeizeRKID+pV2yykBS9zIgIdXbyLYrVsxGMWTzzurryT/LOBniGUb2hUm0qPCa8cIt5LARVJ7bv04Its/8NJ+x1h0gJ24fTgBHKlOOjk98L+O0UpSsUP2juqIqMT7xT9QZrUrOuV/9sK7EfM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riseup.net; spf=pass smtp.mailfrom=riseup.net; dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b=qe+D0Fim; arc=none smtp.client-ip=198.252.153.6
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riseup.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riseup.net
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="qe+D0Fim"
-Received: from fews04-sea.riseup.net (fews04-sea-pn.riseup.net [10.0.1.154])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx0.riseup.net (Postfix) with ESMTPS id 4gQ4C52NCfz9sJ2;
-	Tue, 26 May 2026 20:30:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=riseup.net; s=squak;
-	t=1779827457; bh=G7iBtbjg2uatkVEsxmQ8Z2QnSNE8lWO8CArC3nodSJI=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=qe+D0Fiml+6dnobQa6Ek/gjFZESZSbJX51HpHWtPCDll8wF937+tTL1b2uxkhp/xJ
-	 iB0QoCh9bSKRMSCrakZTRSDDleO1UWOkFqfptQoGB0BasYHOkBMepKJPEW+AUTLWnd
-	 O3u5qVW8J+koPP7KdddMSM1CIWoKE8PGGwdQxzBg=
-X-Riseup-User-ID: CE33B557F9E4490FC29B27A0FB3BBC0C95897F3EFFB9FE11010CA93D7C5C4802
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-	 by fews04-sea.riseup.net (Postfix) with ESMTPSA id 4gQ4C450Lmz5w1G;
-	Tue, 26 May 2026 20:30:56 +0000 (UTC)
+	s=arc-20240116; t=1779887853; c=relaxed/simple;
+	bh=81bZPJ37mn7A1nrBTaGVCfLUM4t8SEKkTzKdMLIZgMY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=QDKp4NsjXnW1VSG2spCLuUYBApvh2OkSxXLgRWfGPp8LoYlrOzgFU8rPopxiD0W5MK/JrAc+Kvp0i5KAeVMv5+iW4omZWhygUmOu/ph0scZ1CruwyMr4g1iSsN9vKG2avVLs1O1ySt/I0bNx5meYZWtugrcpf7Q0kNmhcsbQyhw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-631333ee9e4so3673116137.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 May 2026 06:17:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779887850; x=1780492650;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=JRCmfpq1b4R+1qcl85pdAn5PhWzGoG97LYi2GdYmC1E=;
+        b=bD9P8ApX7rnp5BtndiZ+VACYX+NbDzwMjNFKKx4wv6nq0JjTbbjt2q9wND6O6+ldKI
+         94okG0GMZDM50YCqsF61gx5USqDZlLQvmxMZYrkRgnE3TYfikawX2zHdvyceq3rM4nQ0
+         mBZ1mDmjg6NN6eVkp7VbvDugX9k/i9h14UJohUe4N4qxt5fuSwAKDL/Ks1lTFUr2bCsV
+         nm6wi2Cylx+eopyKTrbJPNivtsOOfJ73CZxHXUvxClek2zDnhjk4/pxHVuHkIde9TR2M
+         6k4FVxVD4CmRLr+9uY9t4YGjs7W03PFZW7D/CYjwiU8nlNKCewBWrj7/hFOxdgmsDO6h
+         ZpRg==
+X-Forwarded-Encrypted: i=1; AFNElJ/weDxp7UiySE/+CCVuiCO+xhye1og7h5xAOi0EQ8tuV5ZaxTaK/oA5fM9kU+QhCze1eKHieJupBzxt7g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzlbrzgOEX3dBsdmgeZT6LIymy8KGkLnQYVsQv4Hw4emd/DV5aJ
+	kei9YSYlG1mS52JxUxWzdPiT3yVug1ppsoBRC39BVZflXHAWIILV25v3Wlv4xjBqSlM=
+X-Gm-Gg: Acq92OHDOaugVe9FjlbaiQsxFhNyaz+1o6EuxnDaSZGZNebbDRVr01v25rU7GYRwcTx
+	Gudj4vA62K63XlDMtKgSrJWMMUPiyYlvxOqZVmhjD8BE93cw/h6Qt2WQUP9Ccz87p8UCZxxvbF8
+	49m+I6BwWYZ7Rws+Hvmm3ggichkNvu8NCe6jUvw4WbaHRs8JKVjhttoa8N0rziZwnphWOds+v5+
+	+a4GWxYuSY5rz4wyg+o5yY+0SMcRDw7XRDNVwCKV80DBUykBGjlg00HTzS0Ivuc7g5NGsFl9UC9
+	CZqNY0tmrdNDram2pPUpZ68ENLf/URxfyjA+H72zoeoz3D/wOb8yVLUlosa8phBUHp6zUYtg5Lb
+	dTLjwv3J8XyOlMFdb3kzseL53ROQ/3kioID2/jj/f7vIck23BcquXHcMeCIB60SfJ2jYLKJuymq
+	afIDq35vhVKsdHhh6E1p1DG0cyFkLdtcAJaG8aVObFkC03DiyGXIUS1BjQhz9jSJBtF3bjEzg=
+X-Received: by 2002:a05:6102:c07:b0:631:2f82:c3ce with SMTP id ada2fe7eead31-67c77ff1283mr10060468137.10.1779887850147;
+        Wed, 27 May 2026 06:17:30 -0700 (PDT)
+Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com. [209.85.222.41])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-96173af3e82sm16977702241.10.2026.05.27.06.17.28
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 27 May 2026 06:17:29 -0700 (PDT)
+Received: by mail-ua1-f41.google.com with SMTP id a1e0cc1a2514c-9618b8bdc51so1316404241.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 May 2026 06:17:28 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8g0w9+Als91rITW27nLTlC+G84dtOho9QoBuju1Bc5NH+IqDq9d5PKsDyK52N7kkjyKwKHv0+EWSAdCg==@vger.kernel.org
+X-Received: by 2002:a05:6102:3ec6:b0:631:4580:6a3f with SMTP id
+ ada2fe7eead31-67c767cb843mr10676067137.7.1779887848413; Wed, 27 May 2026
+ 06:17:28 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Tue, 26 May 2026 20:30:56 +0000
-From: eamanu@riseup.net
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
- linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
-Subject: Re: [PATCH v2] staging: sm750fb: fix CamelCase variables name in
- sm750
-In-Reply-To: <2026052623-cause-region-02e3@gregkh>
-References: <20260526131631.1237672-1-eamanu@riseup.net>
- <2026052623-cause-region-02e3@gregkh>
-Message-ID: <b69100263ea16141b31a7dc240ccdc91@riseup.net>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <cover.1779803053.git.u.kleine-koenig@baylibre.com> <12911d2a1dfc4e482bbc0a417df73748283d04ee.1779803053.git.u.kleine-koenig@baylibre.com>
+In-Reply-To: <12911d2a1dfc4e482bbc0a417df73748283d04ee.1779803053.git.u.kleine-koenig@baylibre.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 27 May 2026 15:17:16 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXZZi9MVEnS1VjugLCY-18Rxq9FcrtzR7x3=MdbcmTiHg@mail.gmail.com>
+X-Gm-Features: AVHnY4IGd02q56r2qfPhmxXv4tp6c-mV5aR4QFnr15yhVjYq6uruWZtcFagWHm4
+Message-ID: <CAMuHMdXZZi9MVEnS1VjugLCY-18Rxq9FcrtzR7x3=MdbcmTiHg@mail.gmail.com>
+Subject: Re: [PATCH v1 5/8] video: fm2fb: Use named initializer for
+ zorro_device_id array
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+Cc: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org, 
+	linux-kernel@vger.kernel.org, 
+	"Christian A. Ehrhardt" <christian.ehrhardt@codasip.com>, "Christian A. Ehrhardt" <lk@c--e.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Tue, 26 May 2026 at 16:18, Uwe Kleine-K=C3=B6nig (The Capable Hub)
+<u.kleine-koenig@baylibre.com> wrote:
+> Using named initializers is more explicit and thus easier to parse for a
+> human.
+>
+> While touching this array, drop the explicit zero from the list terminato=
+r.
+>
+> This change doesn't introduce changes to the compiled zorro_device_id
+> array.
+>
+> Signed-off-by: Uwe Kleine-K=C3=B6nig (The Capable Hub) <u.kleine-koenig@b=
+aylibre.com>
 
-thanks for your reply
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-On 2026-05-26 13:20, Greg KH wrote:
-> On Tue, May 26, 2026 at 10:16:31AM -0300, Emmanuel Arias wrote:
->> Replace CamelCase variable name with snake_case:
->> - pvReg -> pv_reg
-> 
-> Why are you keeping the "pv_"?  What does that mean?
+Gr{oetje,eeting}s,
 
-Sorry, I'm trying to start contributing in the kernel. I run
+                        Geert
 
-  scripts/checkpatch.pl --file drivers/staging/sm750fb/*.c 
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
-And the output was:
-
-drivers/staging/sm750fb/sm750.c
--------------------------------
-WARNING: static const char * array should probably be static const char
-* const
-#36: FILE: drivers/staging/sm750fb/sm750.c:36:
-+static const char *g_fbmode[] = {NULL, NULL};
-
-CHECK: Avoid CamelCase: <pvReg>
-#758: FILE: drivers/staging/sm750fb/sm750.c:758:
-+       crtc->cursor.mmio = sm750_dev->pvReg +
-
-CHECK: Avoid CamelCase: <setAllEngOff>
-#863: FILE: drivers/staging/sm750fb/sm750.c:863:
-+       sm750_dev->init_parm.setAllEngOff = 0;
-
-total: 0 errors, 1 warnings, 2 checks, 1171 lines checked
-
-NOTE: For some of the reported defects, checkpatch may be able to
-      mechanically convert to the typical style using --fix or
---fix-inplace.
-
-So I tried to change pvReg for pv_reg and the same for setAllEngOff.
-
-> 
->> - setAllEngOff -> set_all_eng_off
->> 
->> Reported-by: kernel test robot <lkp@intel.com>
-> 
-> The test robot told you to make this change?
-
-As I understand the test robot failed because:
-
-
-   drivers/staging/sm750fb/sm750_hw.c: In function 'hw_sm750_map':
->> drivers/staging/sm750fb/sm750_hw.c:43:13: error: 'struct sm750_dev' has no member named 'pvReg'; did you mean 'pv_reg'?
-     sm750_dev->pvReg =
-                ^~~~~
-                pv_reg
-
-> 
->> Closes: https://lore.kernel.org/oe-kbuild-all/202605171049.KbaBnrJV-lkp@intel.com/
->> Signed-off-by: Emmanuel Arias <eamanu@riseup.net>
->> ---
->>  drivers/staging/sm750fb/sm750.c    |  6 +++---
->>  drivers/staging/sm750fb/sm750.h    |  4 ++--
->>  drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
->>  3 files changed, 11 insertions(+), 11 deletions(-)
-> 
-> What changed from v1?
-
-So, in this v2 I added sm750_hw.c.
-
-Please let me know if I misunderstood the workflow
-
-> 
-> thanks,
-> 
-> greg k-h
-
-Cheers,
-Emmanuel
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

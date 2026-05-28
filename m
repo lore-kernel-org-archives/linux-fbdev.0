@@ -1,320 +1,175 @@
-Received: from mail-dy1-f173.google.com (mail-dy1-f173.google.com [74.125.82.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail-106118.protonmail.ch (mail-106118.protonmail.ch [79.135.106.118])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0629F28CF77
-	for <linux-fbdev@vger.kernel.org>; Thu, 28 May 2026 15:03:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.173
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1779980633; cv=pass; b=LZnDoDV/z5StGvvYx40ycyzYNK/062embf7zQPFln3CchTCChY+t4NeAjBjgx5Sw8uGZYhlEzK1S8LUaZGj0xbPThz0gHhnOTOXVj7X1HqqoxEfwhNwKhk5uz9eQ54JV8xAAECdl5Y26srCxgc0y/PKyxFe1Ul0ttSc7WjdkUJ0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1779980633; c=relaxed/simple;
-	bh=s3vC6wnoLZ1XKUWcUoScolE5ZeO4GGneFSy9sZNGveU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=C07iEZPs76zMkTgcrdVrAmE87ulwg1vNvWccFAmDqxGaxx2AbSH6Of0l3OSIB0Y+Wx6+uKAzfimVrxSQQibXoLcZB3d4z5nxASI5Zdkr6jvuLQByiZn2z9fh52+VI3Vob6BNzJur3kMVEAW1MHTpcUeBTVm5+x0uE6MuSgFq3Kg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fuVjPwSE; arc=pass smtp.client-ip=74.125.82.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D9DF421EED;
+	Thu, 28 May 2026 18:36:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.118
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1779993419; cv=none; b=S0V5sFF23Nowq4AbpHDO+xGkvhei+W2WvncooKzVcm/QVL8AjGg0f2HheBGRu1SWQj9htlJQrIlQjJKsnV0P3VyccJW6obA0CSsxrI+FErNR4L9FaTMzD0qUvzd/WLQVG7CEgmDUmaQVgyeHzJlPCV2eHH2QqW3FFkdsMQNkkPw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1779993419; c=relaxed/simple;
+	bh=FtCHS5ApOptDXAaYgyUzMGHQY3mB60VC48bf5WynBXE=;
+	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=Nw2qPw6Fvh3wcgDWOWSB5lvVv+8097hT/rLsJpG5wIp0aH9+G896KAxd3uZSgBSsvv7cED8G2lz088dejQLzet5GnglDLLwlU957KQPyn30xqM02JmxSYFxXCTbp3vaG0E4M1Kczaq92p+DYpvcqZeZmLv6Xd/bpm071OHS6ZC8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=L4rgiWfN; arc=none smtp.client-ip=79.135.106.118
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fuVjPwSE"
-Received: by mail-dy1-f173.google.com with SMTP id 5a478bee46e88-304e58292d3so240948eec.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 28 May 2026 08:03:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779980623; cv=none;
-        d=google.com; s=arc-20240605;
-        b=lpiavKQPD9N8HuDY08xf+pMVSuZIT5cja4aX4svMUjvOFw515XsXLA7KZpZCD6pc4W
-         kFvippoMEHDyecd8X7Oj6sxWvw40a1pGwuZlswMf7B4dWvoptVVzVFm0NXkyRXjPzSOK
-         h0j6MsNVR9nZKGpq7MUV9NijJpJX/2r+k4k5Y+dMuOrMS7Ja9oFJ0pYo4y6s+4s9Jr4H
-         wMdy3wjlbVDSBlfK6rrEmgIrT6X9ps5ZUs9Lf/o+VJfRnTzyFziaMcCzdR2uPWqxfkFb
-         PB6HX3elU9BUYUZeyVGwAY7o1GaXaWCG42v38i8P2Y9z2S+kQk4/Af5Ie37GR2XZgGU2
-         S4jg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=999rZWGlrRMiFPTcWjsNb4DI/hC1DrKVLDhSSMIwam0=;
-        fh=+ZI2FCyDizCBu8warw9KfYJFOtwN7gvRf7x9hTyf/qs=;
-        b=jCsp75guSAtECUL5Xw9OZmKd+VgighhiQM5cRCK78pO/1nGtOJm0SVU2/q+bRZX3jM
-         sAiugwmvbNNgfZ27MvIofA5wmNdtxhEWh71UkUmdAFnJeqG1ZyY5bQQ3jW0YpugvNxcj
-         K7sBJ9e/6YDxky3cuJ6HRDZoO0nmQawldPhk2k6z4FAca8bO+7oy2BuUkLD+IGqyVTHg
-         Od4xW34Er3r9cMv3O4TEwZ2PXXZtDLXD741QRjqQ+kQcpU/bTz7jGlKgH1ga67wBQYWu
-         +AgI2/5Ihfwnp18EssE7meQrYgqLW/5WgCYojCBipzQjxc8JW84UOtBfoQVEa28AhS+6
-         Bbdg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779980623; x=1780585423; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=999rZWGlrRMiFPTcWjsNb4DI/hC1DrKVLDhSSMIwam0=;
-        b=fuVjPwSEbktOykrRELN/cZftb6kIQsBcY83Isn0NjFaQGapKKFBb4rbpbh5I5mJINE
-         eXUBy+gIboUF1wwiFdEt+D0YT0LG8KIdxdvcFAaC9sq+ocUwf55CUxujMo/CaDMLUWtX
-         qnk+FpTobIjOFMk/Be7YvchW7TINllERCKZ2DZW1mnAWLP5qGz9b91lKyBrgYynd0KbT
-         uQVwmTwGcNm4+v0qTce3bv7Bv97wUUCDJVvhvAHzOXPL3cQ64+zKGrvyuakLfl3Qw+6i
-         SkqoBsLgUimHb81i1SeA3hsVIf40qYuN8z6moa1D7RGCjLc9ydxsME3fPLU17m9DWkjF
-         ACHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779980623; x=1780585423;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=999rZWGlrRMiFPTcWjsNb4DI/hC1DrKVLDhSSMIwam0=;
-        b=L7p7wiuSTgTHzp1VEJEWadetLsJy/QOkYSvVddowRHz4aHDRiS6yfD9x9R4rCsNrWg
-         r8HRdqHTgGMwKCFHcjKRnMkbnhOskE0zuxZv0695DFSg0v21zAOTU2i82GVr9j+aJTAg
-         ae/IJ5wbu2AmOT1MI7lyhI421SKvN3qkT3MhjzBNUyKBXnEPc7ziTcjxJhzO/qxoty8v
-         +cVM1Ye+sKjhGQoK/nwrfjG3iwCIIQtrLcV4Q44Viq8HjrBNkeXqRwrguW711n9HOB4p
-         8ccdTWw8Mn2EqkodgCdpwQCqS4iTbPdS2R01Rk07T7C/wkjfxCPBb4evIBrjKEtc79h3
-         r0kw==
-X-Forwarded-Encrypted: i=1; AFNElJ/7WU/kmKGG23ZScSL+GeM0kJ81+dSJYoz0dE6q0ReslX9EyXPAU/eUqGVAvaQKY00JkCekGENMgMcEKA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwTLR94tKSDhN4krflj3Pmsww/gavf6CEb5mtT2RS3u1Ps1vVEf
-	YwjfBoVq/ujVMCjua7qTHp94GNlv1DD9trMUCPGuUYjNRF/CnJIkU+nUyUn7wrSULuVXgA1MsiY
-	00eNZwGAjVhOME9QauYsltpCCGFAJ2NA=
-X-Gm-Gg: Acq92OFdWVjYwqUnmYfX6IiIxAE8Camc/crTv8mnddyhmYLD+9bMcn2aqImw9J1A1Uk
-	Bj8nSrY02DoEhyHMloe63/mT4i3iFugXwwbqf0XCo+e4n1YMoEKDmWB/vFgNHdulvUY8dGTx8Ht
-	XVfL+rY0EnVjzwTnI6Uc6FJf3Q3cUaeLa2YKS2G/qGi2D2mgnUjNCQVHoUys+mQe4CtSQT1uquu
-	mwsZpynAdPulhN1V/nMIi9+B76M7uouBwFRXxTt0++GtoX0sqH7xl1NoR1UMI0oY2n5hNorsPEi
-	F7usl6kz4lISbTlJT6A=
-X-Received: by 2002:a05:7301:fa04:b0:304:d82f:be10 with SMTP id
- 5a478bee46e88-304d82fe55fmr1288739eec.11.1779980623129; Thu, 28 May 2026
- 08:03:43 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="L4rgiWfN"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
+	s=j4xjwnoogrghpd4lbo5tq72bce.protonmail; t=1779993410; x=1780252610;
+	bh=FtCHS5ApOptDXAaYgyUzMGHQY3mB60VC48bf5WynBXE=;
+	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
+	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=L4rgiWfNjH7WO5iGN53ZA5RoCDaPi11XGvsNqOgYRXR1redOCsuf5Rl93hYqDyMt9
+	 KfwC9pR9xjOE6kerDWTkoSMbryiV2iRha7DDmOWu2pmCSoibxQaw5d+17dIaBlYJp+
+	 DaYnitocYDc8gzgzAGeefuXz1YxorSbIWBmx0CQunmsC3i0C0La6K7iTzkRLKDYp9/
+	 Y+wrMq5rYVSBAg6u+E4r2EbhmZv4VpBMQ/b//oE8qysdyqlVYEcNJguwDBx1ZLQ417
+	 Scg8ewzlEMQCNCxwOC/juOhGeVNaQ6qyM166fM+9dE1w5nUoESscfo9g2fw0gi0BMW
+	 xMvQnO/ECqshQ==
+Date: Thu, 28 May 2026 18:36:45 +0000
+To: "sudipm.mukherjee@gmail.com" <sudipm.mukherjee@gmail.com>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+From: Gabry <Gabry.256@proton.me>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging: sm750fb: rename Bpp parameter to bpp
+Message-ID: <hpslpD7esY-xE37Tvrz0V8gD8YoZwdu6IlQ8LjUz5fY5mevEeDxM-dLC64t43G4mpVfHB_xCDUESoNFZ7ua9k7B_k2NrY2u-P6NYIJSuGt4=@proton.me>
+Feedback-ID: 103051392:user:proton
+X-Pm-Message-ID: b09bde1e8660b13c9c0cd7e31c3a17c4fa32c7a3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260528135123.103745-1-clamor95@gmail.com> <20260528135123.103745-3-clamor95@gmail.com>
- <20260528155001.2bcb7003@jic23-huawei>
-In-Reply-To: <20260528155001.2bcb7003@jic23-huawei>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Thu, 28 May 2026 18:03:31 +0300
-X-Gm-Features: AVHnY4JOZH_BBdJBd0wzIDDW2UO693Byl1wIIcPrxkbXcQMPI-6wgD9ANvHg0-o
-Message-ID: <CAPVz0n0qCekQVGGyAyBuYv+RKC6bpydYBLJNGfPrgTYjtOJOuA@mail.gmail.com>
-Subject: Re: [PATCH v2 2/6] mfd: lm3533: Convert to use OF bindings
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>, Johan Hovold <johan@kernel.org>, 
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-=D1=87=D1=82, 28 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 17:5=
-0 Jonathan Cameron <jic23@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Thu, 28 May 2026 16:51:19 +0300
-> Svyatoslav Ryhel <clamor95@gmail.com> wrote:
->
-> > Since there are no users of this driver via platform data, remove the
-> > platform data support and switch to using Device Tree bindings.
-> > Additionally, optimize functions used only by platform data.
->
->
-> At least the IIO ones would have made much the same amount of sense for
-> dt, just that they weren't having in the first place. I'd prefer that
-> as a precursor patch to make the rest much more readable.
->
+The Linux kernel coding style prefers snake_case over CamelCase foridentifi=
+er names.
 
-I can add you preferences into this commit, I don't mind.
+Rename the 'Bpp' parameter (bytes per pixel) of sm750_hw_fillrect()
+and sm750_hw_copyarea() to 'bpp' to comply with this standard. Update
+the function prototypes in sm750_accel.h and the corresponding
+kernel-doc descriptions accordingly.
 
-> >
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
->
-> I only looked in detail at the iio bit. A few changes requested.
->
-> > ---
-> >  drivers/iio/light/lm3533-als.c      |  95 ++++------
-> >  drivers/leds/leds-lm3533.c          |  51 ++++--
-> >  drivers/mfd/lm3533-core.c           | 268 ++++++++++------------------
-> >  drivers/video/backlight/lm3533_bl.c |  52 ++++--
-> >  include/linux/mfd/lm3533.h          |  51 +-----
-> >  5 files changed, 212 insertions(+), 305 deletions(-)
-> >
-> > diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm3533-=
-als.c
-> > index 99f0b903018c..cbd337b73bd9 100644
-> > --- a/drivers/iio/light/lm3533-als.c
-> > +++ b/drivers/iio/light/lm3533-als.c
->
-> > @@ -714,59 +720,33 @@ static const struct attribute_group lm3533_als_at=
-tribute_group =3D {
-> >       .attrs =3D lm3533_als_attributes
-> >  };
-> >
-> > -static int lm3533_als_set_input_mode(struct lm3533_als *als, bool pwm_=
-mode)
-> > +static int lm3533_als_setup(struct lm3533_als *als)
-> >  {
-> > -     u8 mask =3D LM3533_ALS_INPUT_MODE_MASK;
-> > -     u8 val;
-> > +     struct device *dev =3D &als->pdev.dev;
-> >       int ret;
-> >
-> > -     if (pwm_mode)
-> > -             val =3D mask;     /* pwm input */
-> > -     else
-> > -             val =3D 0;        /* analog input */
-> > -
-> > -     ret =3D lm3533_update(als->lm3533, LM3533_REG_ALS_CONF, val, mask=
-);
-> > -     if (ret) {
-> > -             dev_err(&als->pdev->dev, "failed to set input mode %d\n",
-> > -                                                             pwm_mode)=
-;
-> > -             return ret;
-> > -     }
-> > -
-> > -     return 0;
-> > -}
-> > -
-> > -static int lm3533_als_set_resistor(struct lm3533_als *als, u8 val)
-> > -{
-> > -     int ret;
-> > -
-> > -     if (val < LM3533_ALS_RESISTOR_MIN || val > LM3533_ALS_RESISTOR_MA=
-X) {
-> > -             dev_err(&als->pdev->dev, "invalid resistor value\n");
-> > -             return -EINVAL;
-> > -     }
-> > -
-> > -     ret =3D lm3533_write(als->lm3533, LM3533_REG_ALS_RESISTOR_SELECT,=
- val);
-> > -     if (ret) {
-> > -             dev_err(&als->pdev->dev, "failed to set resistor\n");
-> > -             return ret;
-> > -     }
-> > +     device_property_read_u32(dev, "ti,resistor-value-ohm",
-> > +                              &als->r_select);
-> Does this have a default?  If so the pattern we've recently be setting on=
- for IIO
-> is
->         if (device_property_present(dev, "ti,resistor-value-ohm"))
->                 ret =3D device_property_read_u32();
->                 if (ret) //corrupt property in some fashion
->                         return ret;
->         } else {
->                 //set default
->         }
-> If there is no default then check it unconditionally.
+This is a pure rename with no functional change, and addresses a
+checkpatch.pl warning:
 
-default value is LM3533_ALS_RESISTOR_MIN and if no property is present
-clamp will ensure that als->r_select will be set to
-LM3533_ALS_RESISTOR_MIN
+=C2=A0 CHECK: Avoid CamelCase: <Bpp>
 
->
-> >
-> > -     return 0;
-> > -}
-> > +     als->r_select =3D clamp(als->r_select, LM3533_ALS_RESISTOR_MIN,
-> > +                           LM3533_ALS_RESISTOR_MAX);
-> > +     als->r_select =3D DIV_ROUND_UP(2 * MICRO, 10 * als->r_select);
-> >
-> > -static int lm3533_als_setup(struct lm3533_als *als,
-> > -                         const struct lm3533_als_platform_data *pdata)
-> > -{
-> > -     int ret;
-> > +     als->pwm_mode =3D device_property_read_bool(dev, "ti,pwm-mode");
-> >
-> > -     ret =3D lm3533_als_set_input_mode(als, pdata->pwm_mode);
-> > +     ret =3D lm3533_update(lm3533, LM3533_REG_ALS_CONF, als->pwm_mode =
-?
-> > +                         LM3533_ALS_INPUT_MODE_MASK : 0,
->
-> That's ugly.  Better as
->
->         ret =3D lm3533_update(lm3533, LM3533_REG_ALS_CONF,
->                             als->pwm_mode ? LM3533_ALS_INPUT_MODE_MASK : =
-0,
->
+Signed-off-by: Gabriele Rizzo <gabry.256@proton.me>
+---
+=C2=A0drivers/staging/sm750fb/sm750_accel.c | 22 +++++++++++-----------
+=C2=A0drivers/staging/sm750fb/sm750_accel.h | =C2=A06 +++---
+=C2=A02 files changed, 14 insertions(+), 14 deletions(-)
 
-Yes sure, just followed 80 char limit.
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750f=
+b/sm750_accel.c
+index 0f94d859e91c..4beabe1053f9 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -85,7 +85,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int f=
+mt)
+=C2=A0}
 
-> Though if there wasn't a layer hiding the regmap, it could just have been
->
->         ret =3D regmap_assign_bits(lm3533->regmap, LM3533_REG_ALS_CONF,
->                                  LM3533_ALS_INPUT_MODE_MASK, als->pwm_mod=
-e);;
->
-> which would have been nicer.
->
-> I'm not particularly keen on the swashing of the helpers being in a patch
-> that is about switching the binding type as feels largely unrelated.
-> Should really have been a precursor, easier to review patch.
->
+=C2=A0int sm750_hw_fillrect(struct lynx_accel *accel,
+- =C2=A0 =C2=A0 u32 base, u32 pitch, u32 Bpp,
++ =C2=A0 =C2=A0 u32 base, u32 pitch, u32 bpp,
+=C2=A0 =C2=A0 =C2=A0 u32 x, u32 y, u32 width, u32 height,
+=C2=A0 =C2=A0 =C2=A0 u32 color, u32 rop)
+=C2=A0{
+@@ -102,14 +102,14 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
 
-Removing of lm3533_update layer is not the scope of this patchset.
+=C2=A0 write_dpr(accel, DE_WINDOW_DESTINATION_BASE, base); /* dpr40 */
+=C2=A0 write_dpr(accel, DE_PITCH,
+- ((pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
++ ((pitch / bpp << DE_PITCH_DESTINATION_SHIFT) &
+=C2=A0 =C2=A0DE_PITCH_DESTINATION_MASK) |
+- (pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
++ (pitch / bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
 
->
-> > +                         LM3533_ALS_INPUT_MODE_MASK);
-> >       if (ret)
-> > -             return ret;
-> > +             return dev_err_probe(dev, ret, "failed to set input mode =
-%d\n",
-> > +                                  als->pwm_mode);
-> >
-> >       /* ALS input is always high impedance in PWM-mode. */
-> > -     if (!pdata->pwm_mode) {
-> > -             ret =3D lm3533_als_set_resistor(als, pdata->r_select);
-> > +     if (!als->pwm_mode) {
-> > +             ret =3D lm3533_write(lm3533, LM3533_REG_ALS_RESISTOR_SELE=
-CT,
-> > +                                (u8)als->r_select);
->
-> Same applies here. Mostly an unrelated change as the only thing switching=
- that
-> is related to the patch is one parameter.
->
+=C2=A0 write_dpr(accel, DE_WINDOW_WIDTH,
+- ((pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
++ ((pitch / bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
+=C2=A0 =C2=A0DE_WINDOW_WIDTH_DST_MASK) |
+- =C2=A0(pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
++ =C2=A0(pitch / bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
 
-Removing of lm3533_write layer is not the scope of this patchset.
+=C2=A0 write_dpr(accel, DE_FOREGROUND, color); /* DPR14 */
 
-> >               if (ret)
-> > -                     return ret;
-> > +                     return dev_err_probe(dev, ret, "failed to set res=
-istor\n");
-> >       }
-> >
-> >       return 0;
->
-> > @@ -852,25 +825,28 @@ static int lm3533_als_probe(struct platform_devic=
-e *pdev)
-> >       indio_dev->channels =3D lm3533_als_channels;
-> >       indio_dev->num_channels =3D ARRAY_SIZE(lm3533_als_channels);
-> >       indio_dev->name =3D dev_name(&pdev->dev);
-> > -     iio_device_set_parent(indio_dev, pdev->dev.parent);
->
-> I'm not sure why this was there in the first place.  Hence not sure if it
-> is safe to remove.
->
+@@ -138,7 +138,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+=C2=A0 * @sy: Starting y coordinate of source surface
+=C2=A0 * @dest_base: Address of destination: offset in frame buffer
+=C2=A0 * @dest_pitch: Pitch value of destination surface in BYTE
+- * @Bpp: Color depth of destination surface
++ * @bpp: Color depth of destination surface
+=C2=A0 * @dx: Starting x coordinate of destination surface
+=C2=A0 * @dy: Starting y coordinate of destination surface
+=C2=A0 * @width: width of rectangle in pixel value
+@@ -149,7 +149,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+=C2=A0 =C2=A0 =C2=A0 unsigned int source_base, unsigned int source_pitch,
+=C2=A0 =C2=A0 =C2=A0 unsigned int sx, unsigned int sy,
+=C2=A0 =C2=A0 =C2=A0 unsigned int dest_base, unsigned int dest_pitch,
+- =C2=A0 =C2=A0 unsigned int Bpp, unsigned int dx, unsigned int dy,
++ =C2=A0 =C2=A0 unsigned int bpp, unsigned int dx, unsigned int dy,
+=C2=A0 =C2=A0 =C2=A0 unsigned int width, unsigned int height,
+=C2=A0 =C2=A0 =C2=A0 unsigned int rop2)
+=C2=A0{
+@@ -249,9 +249,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+=C2=A0 * pixel values. Need Byte to pixel conversion.
+=C2=A0 */
+=C2=A0 write_dpr(accel, DE_PITCH,
+- ((dest_pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
++ ((dest_pitch / bpp << DE_PITCH_DESTINATION_SHIFT) &
+=C2=A0 =C2=A0DE_PITCH_DESTINATION_MASK) |
+- (source_pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
++ (source_pitch / bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
 
-This is directly related to OF conversion. The iio_device_set_parent
-bound indio_dev to parent, and it causes problems with OF now since
-als output has its own node and binding it to parent if wrong. Same
-story for backlight and leds btw.
+=C2=A0 /*
+=C2=A0 * Screen Window width in Pixels.
+@@ -259,9 +259,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+=C2=A0 * for a given point.
+=C2=A0 */
+=C2=A0 write_dpr(accel, DE_WINDOW_WIDTH,
+- ((dest_pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
++ ((dest_pitch / bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
+=C2=A0 =C2=A0DE_WINDOW_WIDTH_DST_MASK) |
+- (source_pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
++ (source_pitch / bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
 
->
-> > diff --git a/drivers/leds/leds-lm3533.c b/drivers/leds/leds-lm3533.c
-> > index 45795f2a1042..d707d43d5526 100644
-> > --- a/drivers/leds/leds-lm3533.c
-> > +++ b/drivers/leds/leds-lm3533.c
->
-> >
-> >       led->cb.dev =3D led->cdev.dev;
-> >
-> > -     ret =3D lm3533_led_setup(led, pdata);
-> > +     device_property_read_u32(&pdev->dev, "led-max-microamp",
-> > +                              &led->max_current);
->
-> I'd prefer explicit setting of the default to be visible before this, or
-> the property_present pattern I mention in the IIO review above.
->
+=C2=A0 if (accel->de_wait() !=3D 0)
+=C2=A0 return -1;
+diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750f=
+b/sm750_accel.h
+index 2c79cb730a0a..d15a40cacb84 100644
+--- a/drivers/staging/sm750fb/sm750_accel.h
++++ b/drivers/staging/sm750fb/sm750_accel.h
+@@ -190,7 +190,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int=
+ fmt);
+=C2=A0void sm750_hw_de_init(struct lynx_accel *accel);
 
-clamp will ensure that led->max_current will be set to
-LM3533_LED_MAX_CURRENT_MIN regardless if it it present
+=C2=A0int sm750_hw_fillrect(struct lynx_accel *accel,
+- =C2=A0 =C2=A0 u32 base, u32 pitch, u32 Bpp,
++ =C2=A0 =C2=A0 u32 base, u32 pitch, u32 bpp,
+=C2=A0 =C2=A0 =C2=A0 u32 x, u32 y, u32 width, u32 height,
+=C2=A0 =C2=A0 =C2=A0 u32 color, u32 rop);
 
-> > +     led->max_current =3D clamp(led->max_current, LM3533_LED_MAX_CURRE=
-NT_MIN,
-> > +                              LM3533_LED_MAX_CURRENT_MAX);
->
-> I didn't look any further (busy day!)
+@@ -202,7 +202,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+=C2=A0 * @sy: Starting y coordinate of source surface
+=C2=A0 * @dBase: Address of destination: offset in frame buffer
+=C2=A0 * @dPitch: Pitch value of destination surface in BYTE
+- * @Bpp: Color depth of destination surface
++ * @bpp: Color depth of destination surface
+=C2=A0 * @dx: Starting x coordinate of destination surface
+=C2=A0 * @dy: Starting y coordinate of destination surface
+=C2=A0 * @width: width of rectangle in pixel value
+@@ -213,7 +213,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+=C2=A0 =C2=A0 =C2=A0 unsigned int sBase, unsigned int sPitch,
+=C2=A0 =C2=A0 =C2=A0 unsigned int sx, unsigned int sy,
+=C2=A0 =C2=A0 =C2=A0 unsigned int dBase, unsigned int dPitch,
+- =C2=A0 =C2=A0 unsigned int Bpp, unsigned int dx, unsigned int dy,
++ =C2=A0 =C2=A0 unsigned int bpp, unsigned int dx, unsigned int dy,
+=C2=A0 =C2=A0 =C2=A0 unsigned int width, unsigned int height,
+=C2=A0 =C2=A0 =C2=A0 unsigned int rop2);
+
+--
+2.54.0

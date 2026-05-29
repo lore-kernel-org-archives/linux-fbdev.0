@@ -1,159 +1,167 @@
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8F573BD225
-	for <linux-fbdev@vger.kernel.org>; Fri, 29 May 2026 09:51:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88C7823504B
+	for <linux-fbdev@vger.kernel.org>; Fri, 29 May 2026 09:53:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780048274; cv=none; b=VRTTW8oj3aAoopAEp9CExIVOPiwram0bolVEozYQkylXdGcO2TGBGx1V9K3yVeOZPVqrCZzqEYrfrbjlaMqydf3rxRPIVJV0flHrp0qQPoSNmOK3b2QtUunnukJO5nXbau6IGFQURxsJm5zz5HXGzYviFtRGA9UZsT4xeOG73dw=
+	t=1780048406; cv=none; b=PBMY2Ao4NIqdDDwhhxCn6lY/KBp08FyMsDiDmBQ9dCfTZlfBR9KwZuXZQeu4KinPqGFN+3rVJzYjhSZVMyAG82Az4J5PDoZxfad9L3WQ/q74UfvvIfnd/QXmwVJGCn81CKjbvKMkpLw3lYMoI+VR271EA8TBMUlux8DB77ps1z0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780048274; c=relaxed/simple;
-	bh=ZfaOPPNYNFKKgWBQ0CjGxfImqDjPcW4gKYAlO7OIXQA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UhnyiVrxFtwuEI2YGaZsMTLZbue1aDRODa2QjIbkyFxtYeEAGDyqJ1YA0uP/drzhxOLVtf1DT1NsfwtRNzF9u0J3Vz0UZ0iaeI2/1U5XZpTY/NglcMJ4v1rzE5qbMX9zE2M20TQ7ccZ6E/VcIIRa/Dpxx5nmkDa6/WzyfMgbMiY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b=l2x5qOnh; arc=none smtp.client-ip=209.85.221.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
+	s=arc-20240116; t=1780048406; c=relaxed/simple;
+	bh=fWAdnNp6S9fa7yC7p4RxMwzLXSQupmIgT4NcZ1R7fAs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=aphIV1p1e0VlZH2dtmmagfR0MZ+RH4X2KMu4l7c2Sv4TdYzPDVtQlVxTfT4P9K+ArKPST7XSDVPRFlYUdKGV1fxj+I0E1cRE278QuJHM9NsFmSAo1Q8NSAMjWJMlqRwxU84GC5Jq/YYr0MQq0w+hZ36D9myIDjvDly8HtgnS/f8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ydh2HE//; arc=none smtp.client-ip=209.85.216.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b="l2x5qOnh"
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-45eec22fab7so821329f8f.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 29 May 2026 02:51:11 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ydh2HE//"
+Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-36a8ee1e28cso5944135a91.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 29 May 2026 02:53:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1780048270; x=1780653070; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=qf1xsznGow3Mq8kqI6r2C6YXYEYFaDdBn6M5Ic+GMxw=;
-        b=l2x5qOnhQAeQWbCt0fRrLXN5kKMUm2CiyrjUh/s2Fj8zHvf2xij7eSMCUhxE3lQDEd
-         qIGJUaAzDLsNapuDn0LXCbJJYcNv64DsJ7db394VhYzB2B0eqV/GgDg74iineSIgwDEp
-         Y/iKr4C0+HYEblMJxqm9qVgJMo2V5u3J/UVVrzdvF6sqeImXcrrcSgbhDvGQhvKL2wXJ
-         z/cBT/TMUy37AKq9QwM5ucGgZmguqgt0Gs26bRyEGBovXnXu1VyuVhOWxzfCAry4ejMf
-         0Jw/ymcCd9bViXEbuRshUd2rQeM5aDi7+Ej96/n8vWfoIHisfgedD2Yejcr/RggzWX4i
-         lu6A==
+        d=gmail.com; s=20251104; t=1780048405; x=1780653205; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=kpuWQIio79Op9n9NGUwcLhgNaTc0EoKJH55R45RoEes=;
+        b=Ydh2HE//Uxd9tOYJJwsaP8iFd3ywW9KmeGmGWe1kRRe059VRc077gC3wbU5JKmFKAJ
+         Btb/D6LVQUfNNgSWe46RUTgcM5AxxAHYFLZcLpVGres440wnU7EbqvkYPdaEG6JZXuIp
+         rJLeIGPX1DLgQyejPLvF3wDzrRxLUWgv51jAsTuUedmuGu/y1yykNwWPce3Zl+EV7Z0+
+         4bd+yBLA2WSKjPK5g60IYKcSNgDYB14fDtyiXLRjvwbHAOPCDg4v7C9cEDHSJNncyu5n
+         7JHF0V3DBOzXnZv+mokrgQ6gz3kzuOUu0+JhLUuDFwwGNRCXRiB315gPGQIFsXFELKCA
+         hdYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780048270; x=1780653070;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=qf1xsznGow3Mq8kqI6r2C6YXYEYFaDdBn6M5Ic+GMxw=;
-        b=LodsvkAfPtsRO73zgC3SP2ffY4FNjhFxBSyDAS5pkwS6iVKveIVZEW6lmtk1wAd6yY
-         CXqBClPpxtLizv44cJLDHLOhslFx0K2zNJ/Q4ftPdB4nME1o/7nGGDp/yd/S1p3zh/wy
-         J5VF6G3ui2IzPyGBmzkAjcYfRCUQr7UbYI70ILRjNUk81SV7NPqjvOj23mYCRtHjZsGD
-         Eah/FVzILPrA98RFxVc77chOAu1JKNyjYsDbRoNnTO8hFOY2lfQ6kg1G8FmA4c+pKbEz
-         9ehnZqfDnvF1gNoQREwYA5aWEJpnvfFMC+ZtI2dJp8EdhtMtsZVOGAK+ChEg0G5hIUgM
-         nYqQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+0HX5sA5qtvSPt5Al6QHmsCFZ+7+OrCos6IdUc89a506Wk3HX4Zr8FitQe6Hrype+HomZaMWBh0RFqZw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxQXUBX55K8ttm+leEIth+PsEkCWay30SO3y8peAIcVMbrAmggG
-	E11cWwVW86JlrJ1F3mHt8WF8p3EaC6HriQcU/lBuIU5PXRl2ucZZON5X/VCxBezLQWw=
-X-Gm-Gg: Acq92OHiZpg8J63my9G4110T2RcmNUl8R1zShPwjB4q5fft5rhwQb/PtnSeESdLeIyo
-	LW4cq7FSEtnLX+Gb0vQjd6BU0ndWgNgW7hYiIomZ8vOl+IqDqXVh1ZUJF3V+mvH+YGOiq9Ut+zD
-	JGXBzIhWwamm7Mn6AjgV9f2Y5LiHM5c3vbAxv+SR3XFpFU6yQZYaW90UvlhvnjgpwHvCcB9iFnm
-	UuIe3Pmyv16nHRq7MF8SfgKMr6+5gZ9DZczH5pul7v99RA5SPHYl+z05zDr085IozESJKaAjHI8
-	ts6pLSLQgCMSyfEDcWO85UZmBvpxrVYZAB7tYp8GzOKoA3TB5wKGNf3VVKVKJl7OHn6L43KRK9O
-	AEAsP9QOmVqH/kw4l1ckLmtF85QH0rQojMnlMkRw27JsctjRq44Y5ZvSLtS1VwPF2g7Sp9HjGX6
-	+J+yxMxvnaKISTukFzq2Uj0eOBXZfRqzhqdAkvTguZM71Ae4hEigHTBOkyUJdo+Iq2szHjgMTtD
-	n7uhsK4OIFZuw/R/ndWEQvGclvct0HAtxua5ZTT6oU2qqSUVdbkhQTPZfnu81ajyxVEsJ0Vr8pw
-	RRWAcJlig/vHioqKb1Q=
-X-Received: by 2002:a05:600c:12d1:b0:48a:5970:1fe1 with SMTP id 5b1f17b1804b1-4909c091fd2mr22900055e9.4.1780048269850;
-        Fri, 29 May 2026 02:51:09 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45ef3563cb9sm2337806f8f.29.2026.05.29.02.51.08
+        d=1e100.net; s=20251104; t=1780048405; x=1780653205;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=kpuWQIio79Op9n9NGUwcLhgNaTc0EoKJH55R45RoEes=;
+        b=kamk2zuw6sramLzxbp9HoHxEjV93c2UZTRM2BPy4sDnoZOLxQpghnOquHxrtVgSE69
+         fTNDlc41wEdjqupPBWW1+SHGi7AAm6dIuCNbNLEiclb+UkJ5kGDT3OBTxtVxvTfKaHF7
+         mwwpb5oKkd6VHWZIKc9mB1DBnVexLP59XybKiol/mfKYHgzLM9O/PFXv9p9C+piMbiPZ
+         avQdKHCv+bK5svjINt9jIlVdx/63w05dffH/ABBhNTtnkAHGlZqLWCRPmYnS18cUhc/7
+         OIoVJLKIJxBSDuBBG7+cv7R6emHJsgEQCJ34zr3vw6cSSkKHEgxGKm6yHF2FiWTENgCe
+         bfPw==
+X-Forwarded-Encrypted: i=1; AFNElJ8in4UPjSW6DeFmcgC4chFv7ynAR5wcxGoWXJyxU+xMQnYuKAsoGQ0G6D862skQj8yWutjEqAQ0fBo3QA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YypsaR32qPdAjhafxDqPlol5/L+T6HC/H4FOdZ+1Cm2QYlXp3AK
+	0GA+Pe8Zei6mQ8ZOjpAl5o42pIELrpxspXzArnx2JtHA+ndohCIB/kVV
+X-Gm-Gg: Acq92OGKz8h82t1rll9TzUryr+LAhw99QD0n6R/MU8cx1aFvJ0K/FKDijDfit+hYIgS
+	vyWY1iqzpNmmfKBZaLCno2lfuaaqpW3Z9QoGeEG+TseGxvOroBfzHYt+32kb4pjkjdmK8eQ2jjq
+	p5nO2kEhCTuG6Xp45sHCBSLEUOLCcB6P/VMVRXmS7scthh+zE9Bnt5lqqWMr9C2reDop1mTKX/F
+	IV/0vTEckLjTeGAbZsYmYI9eumG7DK+39sty8QOOu9Q2JxSREmJ8eWAeqKoKDHObhpco9HKoFcL
+	C8QCz79cD4+dadGnQrtmwyiOB0IfEAyOB9UAVtc/p+N8J30Qgk0QmZmo0r2wzn5U4XohoUYFP7m
+	a90cNRR/vxvYreR8pGWnb/lhpvvCKtf2NmFAJX+eZ/czTaVP7Z5wpLWVgc5o1/BuP1uym8b7rbT
+	HrOL9f+zp4DIFzf6bn60o2r7Ru3lzLFAA+
+X-Received: by 2002:a17:90b:3c8c:b0:36b:a0fa:ff96 with SMTP id 98e67ed59e1d1-36bbcd99b10mr2981231a91.12.1780048404665;
+        Fri, 29 May 2026 02:53:24 -0700 (PDT)
+Received: from onish ([2404:7c80:75:55f3:d423:9757:6acf:6ef9])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36bc1d9f2bbsm993497a91.2.2026.05.29.02.53.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 29 May 2026 02:51:08 -0700 (PDT)
-Date: Fri, 29 May 2026 10:51:06 +0100
-From: Daniel Thompson <daniel@riscstar.com>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>,
-	Johan Hovold <johan@kernel.org>, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 1/6] dt-bindings: leds: Document TI LM3533 LED
- controller
-Message-ID: <ahlhinOh3NxB7FY_@aspen.lan>
-References: <20260528135123.103745-1-clamor95@gmail.com>
- <20260528135123.103745-2-clamor95@gmail.com>
+        Fri, 29 May 2026 02:53:24 -0700 (PDT)
+From: Onish Sharma <neharora23587@gmail.com>
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Onish Sharma <neharora23587@gmail.com>
+Subject: [PATCH v2] staging: sm750fb: rename pv_reg to io_base
+Date: Fri, 29 May 2026 15:22:33 +0530
+Message-ID: <20260529095233.9015-1-neharora23587@gmail.com>
+X-Mailer: git-send-email 2.54.0
+In-Reply-To: <ahhN_kiSb-yRWfiI@stanley.mountain>
+References: <ahhN_kiSb-yRWfiI@stanley.mountain>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260528135123.103745-2-clamor95@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Thu, May 28, 2026 at 04:51:18PM +0300, Svyatoslav Ryhel wrote:
-> Document the LM3533 - a complete power source for backlight, keypad and
-> indicator LEDs in smartphone handsets. The high-voltage inductive boost
-> converter provides the power for two series LED strings display backlight
-> and keypad functions.
->
-> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> ---
->  .../leds/backlight/ti,lm3533-backlight.yaml   |  68 +++++++
->  .../bindings/leds/ti,lm3533-leds.yaml         |  66 +++++++
->  .../devicetree/bindings/leds/ti,lm3533.yaml   | 170 ++++++++++++++++++
->  3 files changed, 304 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/backlight/ti,lm3533-backlight.yaml
->  create mode 100644 Documentation/devicetree/bindings/leds/ti,lm3533-leds.yaml
->  create mode 100644 Documentation/devicetree/bindings/leds/ti,lm3533.yaml
->
-> diff --git a/Documentation/devicetree/bindings/leds/backlight/ti,lm3533-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/ti,lm3533-backlight.yaml
-> new file mode 100644
-> index 000000000000..866b0fb8ed04
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/leds/backlight/ti,lm3533-backlight.yaml
-> @@ -0,0 +1,68 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/leds/backlight/ti,lm3533-backlight.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: TI LM3533 high voltage series LED strings
-> +
-> +description:
-> +  This is part of the TI LM3533 MFD device. It represents two high voltage series
-> +  LED strings for display backlight controlled by the TI LM3533.
-> +
-> +maintainers:
-> +  - Svyatoslav Ryhel <clamor95@gmail.com>
-> +
-> +allOf:
-> +  - $ref: /schemas/leds/backlight/common.yaml#
-> +
-> +properties:
-> +  compatible:
-> +    const: ti,lm3533-backlight
-> +
-> +  reg:
-> +    description: Control bank selection (0 = bank A, 1 = bank B).
-> +    maximum: 1
->    <snip>
-> +  ti,pwm-config-mask:
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +    description: |
-> +      Control Bank PWM Configuration Register mask that allows to configure
-> +      PWM input in Zones 0-4
-> +      BIT(0) - PWM Input is enabled
-> +      BIT(1) - PWM Input is enabled in Zone 0
-> +      BIT(2) - PWM Input is enabled in Zone 1
-> +      BIT(3) - PWM Input is enabled in Zone 2
-> +      BIT(4) - PWM Input is enabled in Zone 3
-> +      BIT(5) - PWM Input is enabled in Zone 4
+Rename pv_reg to io_base to follow kernel naming style and improve
+readability.
 
-This is optional and the drive implements a default (zero) that is not
-documented here.
+No functional changes intended.
+---
+ drivers/staging/sm750fb/sm750.c    |  4 ++--
+ drivers/staging/sm750fb/sm750.h    |  2 +-
+ drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-Is zero a sane default from a DT binding point of view?
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 716a8935f58d..c2d2864f135b 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -743,7 +743,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	 * must be set after crtc member initialized
+ 	 */
+ 	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
+-	crtc->cursor.mmio = sm750_dev->pv_reg +
++	crtc->cursor.mmio = sm750_dev->io_base +
+ 		0x800f0 + (int)crtc->channel * 0x140;
+ 
+ 	crtc->cursor.max_h = 64;
+@@ -1047,7 +1047,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
+ 	sm750fb_framebuffer_release(sm750_dev);
+ 	arch_phys_wc_del(sm750_dev->mtrr.vram);
+ 
+-	iounmap(sm750_dev->pv_reg);
++	iounmap(sm750_dev->io_base);
+ 	iounmap(sm750_dev->vmem);
+ 	pci_release_region(pdev, 1);
+ 	kfree(g_settings);
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index e8885133da2e..c42800313c6a 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -97,7 +97,7 @@ struct sm750_dev {
+ 	unsigned long vidreg_start;
+ 	__u32 vidmem_size;
+ 	__u32 vidreg_size;
+-	void __iomem *pv_reg;
++	void __iomem *io_base;
+ 	unsigned char __iomem *vmem;
+ 	/* locks*/
+ 	spinlock_t slock;
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 95f797e5776a..dc1118808b4f 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -23,18 +23,18 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	}
+ 
+ 	/* now map mmio and vidmem */
+-	sm750_dev->pv_reg =
++	sm750_dev->io_base =
+ 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
+-	if (!sm750_dev->pv_reg) {
++	if (!sm750_dev->io_base) {
+ 		dev_err(&pdev->dev, "mmio failed\n");
+ 		ret = -EFAULT;
+ 		goto err_release_region;
+ 	}
+ 
+-	sm750_dev->accel.dpr_base = sm750_dev->pv_reg + DE_BASE_ADDR_TYPE1;
+-	sm750_dev->accel.dp_port_base = sm750_dev->pv_reg + DE_PORT_ADDR_TYPE1;
++	sm750_dev->accel.dpr_base = sm750_dev->io_base + DE_BASE_ADDR_TYPE1;
++	sm750_dev->accel.dp_port_base = sm750_dev->io_base + DE_PORT_ADDR_TYPE1;
+ 
+-	mmio750 = sm750_dev->pv_reg;
++	mmio750 = sm750_dev->io_base;
+ 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
+ 
+ 	sm750_dev->vidmem_start = pci_resource_start(pdev, 0);
+@@ -58,7 +58,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	return 0;
+ 
+ err_unmap_reg:
+-	iounmap(sm750_dev->pv_reg);
++	iounmap(sm750_dev->io_base);
+ err_release_region:
+ 	pci_release_region(pdev, 1);
+ 	return ret;
+-- 
+2.54.0
 
-
-Daniel.

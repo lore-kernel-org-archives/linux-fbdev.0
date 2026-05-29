@@ -1,90 +1,311 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11BDE356748;
-	Fri, 29 May 2026 01:20:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 41C433AFAEA;
+	Fri, 29 May 2026 09:08:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780017615; cv=none; b=JHzTwgu7Wt75zWfThBN5fcCIHUPqFDLUxzpfnrqcR55r5boZQQ67oG5ckUiTuzifa+xBNsJx7rD65Sdblo2ubOAt8N2ZnhUIRpyDd87aO4SLRpBfynRVVsldCKrYGw/DXYezWbag90nSfquLBOG2zTl/1Ck/uILks6JMBeYFJ2Y=
+	t=1780045713; cv=none; b=uwjWYFkW8VD8N4QajlV/yS50vBvqLVFPoDbDtVXDXGZmr1zIx0mcQpIFkbAvWGy1WHpSD05nBXCfpiO35pf6M5M/CNnMGIywWYtBFIwnLmV7/ZUhe78TXr2Ghgs6jxRZy72GzgssCWbm1qllYAUvRnqgr6j6bZ5IO1HZIwxCFqA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780017615; c=relaxed/simple;
-	bh=kc6nYMTZ15ADkL2c3/owXt8ybjc/HA+x3q8GPHZ/JeY=;
-	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=Mucuf1T2o9rilYt+0LtS6V6ute9g9KomgYHn9y+eKl1AZv3hICeLqetoqN+A/AgcusmNhH5DROAK0YINnpN2d6QoSIZvnQx4DtJwjMiaaxrL/2GCIVuWEks8rSHr1i42xpAthnpZsispuok87erNQ555BE9XCXhSBmRhPNsxIg0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cbd4O6b2; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1780045713; c=relaxed/simple;
+	bh=pRg9Vtd183dHhOU3Ypb1ilDIzo7KsV7UFoQRfmBll5o=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=pIRwnAXtVZZ87ZU5hvzzGQBkAvpbrP42HFwclIt5wYjPXs/u7YUngOuoFIx7UPaINuwzevaGrhutPG7YwtXv+IE6+MwgeDT9MWcPsiiLotueoyfZ9UBwdJ1fc971vNLhOL6C5SeJipL2FPzMGele4WKNskHIMab1CHPHgeyTspE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=X1KsMRvl; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cbd4O6b2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C48BB1F00A3A;
-	Fri, 29 May 2026 01:20:13 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="X1KsMRvl"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C55181F00893;
+	Fri, 29 May 2026 09:08:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1780017613;
-	bh=daVD7h+JJCInltDYMlUpsr01UGPhOz1107R+/8g1GTw=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc;
-	b=cbd4O6b25jNSiwHzC9tH6sPaVqcHXPLvjJ47C9KcyfA6pUwKpLaiRsnTbXEF0UZKr
-	 NrkjKXHLp0yRDGS9Rc1RvUVmTSicK8iip/MbWWcx6I0cixnzJ1gCYmHHNKPKI27pME
-	 O0BKTzvxvD+MnDvZteCkF9w2MHTxsW2nY7xuTrv0/KIjy+te1K+T4hf4Zf9H8fY8v6
-	 FNBLyqcQmGOA1a1fls+y+g9MyxD80XFJKCok+8FtEF2/TwRLzQpDdujoVR6UycPPDL
-	 LKYxReBnDyG81Fi54bLu+NuYxzFiyCrpY1Sj6s2rxY2Vky1JRbKF4eTOGouic2eG/+
-	 7hd0dj5MCeAYA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 19BC1392FFFE;
-	Fri, 29 May 2026 01:20:19 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	s=k20260515; t=1780045711;
+	bh=SJhCBNK1z06eHdQUaoXs+yc4q80tlftXqJh3f219zPs=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=X1KsMRvlEDqxH6HNt/sLZgqvC6pDIHPcOnX3zD0c2VF1uncQ83dO7ICSK4kHtlu6y
+	 txTfvgvkcC5u4WQ3Ic2CcKYtM2Vt5r+5HVL+gbsCV/AOXWpv6WgQEdkmnAARpTqMrZ
+	 0knmKymZLqVmnD5eJWszccrsioEQX5Tnf+S7y759DKhWLq/2pjPTlGrfUw32OTGqC7
+	 x0BKMy7E/SnaQ8nvlkNq3mGvcMKOwdDwHw8yDYCVt8gBjRm6IhIhFkCJjQ1Z6bUBjq
+	 5vpfX8fdsIezybD6WxANkb0tYH1L1r4NuCiBjv4AwrEjJxapFBlYQz1bZfyrulY3Yh
+	 EsxthgMwu0iAw==
+Date: Fri, 29 May 2026 10:08:19 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo
+ Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, David Lechner <dlechner@baylibre.com>, Nuno
+ =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>,
+ Helge Deller <deller@gmx.de>, Johan Hovold <johan@kernel.org>,
+ dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v2 2/6] mfd: lm3533: Convert to use OF bindings
+Message-ID: <20260529100819.1823ebb3@jic23-huawei>
+In-Reply-To: <CAPVz0n0qCekQVGGyAyBuYv+RKC6bpydYBLJNGfPrgTYjtOJOuA@mail.gmail.com>
+References: <20260528135123.103745-1-clamor95@gmail.com>
+	<20260528135123.103745-3-clamor95@gmail.com>
+	<20260528155001.2bcb7003@jic23-huawei>
+	<CAPVz0n0qCekQVGGyAyBuYv+RKC6bpydYBLJNGfPrgTYjtOJOuA@mail.gmail.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v1 0/8] zorro: Improve handling of pointers in
- zorro_device_id::driver_data
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <178001761763.1584301.12785828078106314359.git-patchwork-notify@kernel.org>
-Date: Fri, 29 May 2026 01:20:17 +0000
-References: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
-In-Reply-To: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
-To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig_=28The_Capable_Hub=29_=3Cu=2Ekleine-koenig?=@aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org,
-	=?utf-8?q?=40baylibre=2Ecom=3E?=@aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org
-Cc: geert@linux-m68k.org, dlemoal@kernel.org, cassel@kernel.org,
- James.Bottomley@HansenPartnership.com, martin.petersen@oracle.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, tglx@kernel.org, mingo@kernel.org,
- max@enpas.org, andi.shyti@kernel.org, deller@gmx.de,
- linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
- netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- christian.ehrhardt@codasip.com, lk@c--e.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Hello:
+On Thu, 28 May 2026 18:03:31 +0300
+Svyatoslav Ryhel <clamor95@gmail.com> wrote:
 
-This series was applied to netdev/net-next.git (main)
-by Jakub Kicinski <kuba@kernel.org>:
+> =D1=87=D1=82, 28 =D1=82=D1=80=D0=B0=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 17=
+:50 Jonathan Cameron <jic23@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+> >
+> > On Thu, 28 May 2026 16:51:19 +0300
+> > Svyatoslav Ryhel <clamor95@gmail.com> wrote:
+> > =20
+> > > Since there are no users of this driver via platform data, remove the
+> > > platform data support and switch to using Device Tree bindings.
+> > > Additionally, optimize functions used only by platform data. =20
+> >
+> >
+> > At least the IIO ones would have made much the same amount of sense for
+> > dt, just that they weren't having in the first place. I'd prefer that
 
-On Tue, 26 May 2026 16:17:26 +0200 you wrote:
-> Hello,
-> 
-> this series is about improving the handling of pointers in struct
-> zorro_device_id's driver_data.
-> 
-> While it's ok on all current Linux platforms to store a pointer in an
-> unsigned long variable, it involves casting that loses type information.
-> This can be nicely seen in patch #7 where after profiting from patch #6
-> the compiler notices a missing const.
-> 
-> [...]
+Gah. I write gibberish after too much reviewing.  having/helping!
 
-Here is the summary with links:
-  - [v1,net-next,3/8] net: Use named initializer for zorro_device_id arrays
-    https://git.kernel.org/netdev/net-next/c/4933a658369a
-  - [v1,6/8] zorro: Simplify storing pointers in device id struct
-    (no matching commit)
+> > as a precursor patch to make the rest much more readable.
+> > =20
+>=20
+> I can add you preferences into this commit, I don't mind.
+>=20
+> > >
+> > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com> =20
+> >
+> > I only looked in detail at the iio bit. A few changes requested.
+> > =20
+> > > ---
+> > >  drivers/iio/light/lm3533-als.c      |  95 ++++------
+> > >  drivers/leds/leds-lm3533.c          |  51 ++++--
+> > >  drivers/mfd/lm3533-core.c           | 268 ++++++++++----------------=
+--
+> > >  drivers/video/backlight/lm3533_bl.c |  52 ++++--
+> > >  include/linux/mfd/lm3533.h          |  51 +-----
+> > >  5 files changed, 212 insertions(+), 305 deletions(-)
+> > >
+> > > diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm353=
+3-als.c
+> > > index 99f0b903018c..cbd337b73bd9 100644
+> > > --- a/drivers/iio/light/lm3533-als.c
+> > > +++ b/drivers/iio/light/lm3533-als.c =20
+> > =20
+> > > @@ -714,59 +720,33 @@ static const struct attribute_group lm3533_als_=
+attribute_group =3D {
+> > >       .attrs =3D lm3533_als_attributes
+> > >  };
+> > >
+> > > -static int lm3533_als_set_input_mode(struct lm3533_als *als, bool pw=
+m_mode)
+> > > +static int lm3533_als_setup(struct lm3533_als *als)
+> > >  {
+> > > -     u8 mask =3D LM3533_ALS_INPUT_MODE_MASK;
+> > > -     u8 val;
+> > > +     struct device *dev =3D &als->pdev.dev;
+> > >       int ret;
+> > >
+> > > -     if (pwm_mode)
+> > > -             val =3D mask;     /* pwm input */
+> > > -     else
+> > > -             val =3D 0;        /* analog input */
+> > > -
+> > > -     ret =3D lm3533_update(als->lm3533, LM3533_REG_ALS_CONF, val, ma=
+sk);
+> > > -     if (ret) {
+> > > -             dev_err(&als->pdev->dev, "failed to set input mode %d\n=
+",
+> > > -                                                             pwm_mod=
+e);
+> > > -             return ret;
+> > > -     }
+> > > -
+> > > -     return 0;
+> > > -}
+> > > -
+> > > -static int lm3533_als_set_resistor(struct lm3533_als *als, u8 val)
+> > > -{
+> > > -     int ret;
+> > > -
+> > > -     if (val < LM3533_ALS_RESISTOR_MIN || val > LM3533_ALS_RESISTOR_=
+MAX) {
+> > > -             dev_err(&als->pdev->dev, "invalid resistor value\n");
+> > > -             return -EINVAL;
+> > > -     }
+> > > -
+> > > -     ret =3D lm3533_write(als->lm3533, LM3533_REG_ALS_RESISTOR_SELEC=
+T, val);
+> > > -     if (ret) {
+> > > -             dev_err(&als->pdev->dev, "failed to set resistor\n");
+> > > -             return ret;
+> > > -     }
+> > > +     device_property_read_u32(dev, "ti,resistor-value-ohm",
+> > > +                              &als->r_select); =20
+> > Does this have a default?  If so the pattern we've recently be setting =
+on for IIO
+> > is
+> >         if (device_property_present(dev, "ti,resistor-value-ohm"))
+> >                 ret =3D device_property_read_u32();
+> >                 if (ret) //corrupt property in some fashion
+> >                         return ret;
+> >         } else {
+> >                 //set default
+> >         }
+> > If there is no default then check it unconditionally. =20
+>=20
+> default value is LM3533_ALS_RESISTOR_MIN and if no property is present
+> clamp will ensure that als->r_select will be set to
+> LM3533_ALS_RESISTOR_MIN
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+I don't see that default in the binding doc and relying in the 0 being clam=
+ped
+isn't particularly readable - I'd set it explicitly.
 
+
+>=20
+> > =20
+> > >
+> > > -     return 0;
+> > > -}
+> > > +     als->r_select =3D clamp(als->r_select, LM3533_ALS_RESISTOR_MIN,
+> > > +                           LM3533_ALS_RESISTOR_MAX);
+> > > +     als->r_select =3D DIV_ROUND_UP(2 * MICRO, 10 * als->r_select);
+> > >
+> > > -static int lm3533_als_setup(struct lm3533_als *als,
+> > > -                         const struct lm3533_als_platform_data *pdat=
+a)
+> > > -{
+> > > -     int ret;
+> > > +     als->pwm_mode =3D device_property_read_bool(dev, "ti,pwm-mode");
+> > >
+> > > -     ret =3D lm3533_als_set_input_mode(als, pdata->pwm_mode);
+> > > +     ret =3D lm3533_update(lm3533, LM3533_REG_ALS_CONF, als->pwm_mod=
+e ?
+> > > +                         LM3533_ALS_INPUT_MODE_MASK : 0, =20
+> >
+> > That's ugly.  Better as
+> >
+> >         ret =3D lm3533_update(lm3533, LM3533_REG_ALS_CONF,
+> >                             als->pwm_mode ? LM3533_ALS_INPUT_MODE_MASK =
+: 0,
+> > =20
+>=20
+> Yes sure, just followed 80 char limit.
+>=20
+> > Though if there wasn't a layer hiding the regmap, it could just have be=
+en
+> >
+> >         ret =3D regmap_assign_bits(lm3533->regmap, LM3533_REG_ALS_CONF,
+> >                                  LM3533_ALS_INPUT_MODE_MASK, als->pwm_m=
+ode);;
+> >
+> > which would have been nicer.
+> >
+> > I'm not particularly keen on the swashing of the helpers being in a pat=
+ch
+
+smashing.  (this definitely wasn't my best effort at English!)
+
+> > that is about switching the binding type as feels largely unrelated.
+> > Should really have been a precursor, easier to review patch.
+> > =20
+>=20
+> Removing of lm3533_update layer is not the scope of this patchset.
+
+Understood.  I'm fine with just the refactor you are doing brought out as a=
+ precursor
+patch.
+
+>=20
+> > =20
+> > > +                         LM3533_ALS_INPUT_MODE_MASK);
+> > >       if (ret)
+> > > -             return ret;
+> > > +             return dev_err_probe(dev, ret, "failed to set input mod=
+e %d\n",
+> > > +                                  als->pwm_mode);
+> > >
+> > >       /* ALS input is always high impedance in PWM-mode. */
+> > > -     if (!pdata->pwm_mode) {
+> > > -             ret =3D lm3533_als_set_resistor(als, pdata->r_select);
+> > > +     if (!als->pwm_mode) {
+> > > +             ret =3D lm3533_write(lm3533, LM3533_REG_ALS_RESISTOR_SE=
+LECT,
+> > > +                                (u8)als->r_select); =20
+> >
+> > Same applies here. Mostly an unrelated change as the only thing switchi=
+ng that
+> > is related to the patch is one parameter.
+> > =20
+>=20
+> Removing of lm3533_write layer is not the scope of this patchset.
+>=20
+> > >               if (ret)
+> > > -                     return ret;
+> > > +                     return dev_err_probe(dev, ret, "failed to set r=
+esistor\n");
+> > >       }
+> > >
+> > >       return 0; =20
+> > =20
+> > > @@ -852,25 +825,28 @@ static int lm3533_als_probe(struct platform_dev=
+ice *pdev)
+> > >       indio_dev->channels =3D lm3533_als_channels;
+> > >       indio_dev->num_channels =3D ARRAY_SIZE(lm3533_als_channels);
+> > >       indio_dev->name =3D dev_name(&pdev->dev);
+> > > -     iio_device_set_parent(indio_dev, pdev->dev.parent); =20
+> >
+> > I'm not sure why this was there in the first place.  Hence not sure if =
+it
+> > is safe to remove.
+> > =20
+>=20
+> This is directly related to OF conversion. The iio_device_set_parent
+> bound indio_dev to parent, and it causes problems with OF now since
+> als output has its own node and binding it to parent if wrong. Same
+> story for backlight and leds btw.
+
+Is there any risk anyone was using the canonical path to get to the iio dev?
+/sys/bus/platform/devices/..../iio\:deviceX
+This is technically an ABI change be it a subtle one.
+
+
+>=20
+> > =20
+> > > diff --git a/drivers/leds/leds-lm3533.c b/drivers/leds/leds-lm3533.c
+> > > index 45795f2a1042..d707d43d5526 100644
+> > > --- a/drivers/leds/leds-lm3533.c
+> > > +++ b/drivers/leds/leds-lm3533.c =20
+> > =20
+> > >
+> > >       led->cb.dev =3D led->cdev.dev;
+> > >
+> > > -     ret =3D lm3533_led_setup(led, pdata);
+> > > +     device_property_read_u32(&pdev->dev, "led-max-microamp",
+> > > +                              &led->max_current); =20
+> >
+> > I'd prefer explicit setting of the default to be visible before this, or
+> > the property_present pattern I mention in the IIO review above.
+> > =20
+>=20
+> clamp will ensure that led->max_current will be set to
+> LM3533_LED_MAX_CURRENT_MIN regardless if it it present
+
+As above, I'd prefer it set explicitly.
+
+>=20
+> > > +     led->max_current =3D clamp(led->max_current, LM3533_LED_MAX_CUR=
+RENT_MIN,
+> > > +                              LM3533_LED_MAX_CURRENT_MAX); =20
+> >
+> > I didn't look any further (busy day!) =20
+>=20
 

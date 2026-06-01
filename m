@@ -1,92 +1,52 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20476298CAB
-	for <linux-fbdev@vger.kernel.org>; Sun, 31 May 2026 14:03:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE63E38837C;
+	Mon,  1 Jun 2026 07:54:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780236217; cv=none; b=PR0PeLlruNHpOoPBDz880TS6PKJiyxFyR8wq8Jfvqk1Nx8i8gzirjM1byiKxKGLX1shYGnVcOBLt/1WI944QQpRQKvxwZfYgDM2sWpUi4mgbPXq+ZTbcWCL2tsjtMcsU7yNbB/fpeKWMt1LbPtx/ZsHLWy3HPpW8oQxhOnjAObU=
+	t=1780300478; cv=none; b=M6q4DIsIkon6GFq8G3Q8rzq7j89a4YDciALpB3mFgJvyeRen22eX5iE7692JMS81BR5x0v/FM8COfjHm8EjqDDHs+Ao8sYffvngUMfoWQgRMGUF2xrGHv5CwAvH7lXGevAsdgE7fjhHaS5AHmbCyj1oqeVUGFN2mkQmxhstKU0s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780236217; c=relaxed/simple;
-	bh=6KxXEU4mM4Etl4EqYEr6dcFBIew34rXPGITTvbtaPVg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UV2RBTkGnGB7zgKIpyfTBS8G4WC7Pa/KlLBHdV5AuQwpqDCk4XlslbU/w97EBBcC65XG6YgzUSP6AnwO4io8VWV8f1/kLsEreW0Rc/I75J78GRjZLpUopYh+nCDBY5rwSI9SxBFYs1ORH3SuJlPhsF/8WduiyuP60UppENmjlS0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Gbo4U12o; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=SnbBwGwe; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Gbo4U12o";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="SnbBwGwe"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1780236215;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=oXRHDWuf7kdsdZ+4dW4PM86Io+i5QtdP1dIiEDt0g1c=;
-	b=Gbo4U12ozvjN5631d+8vuEcs1K6QrmdGdqKlnP2YaVYU9i/Vfm5PbIaMe8H+D5FzBc5DV3
-	cPUI7lDu7gDxt4iqHbo2KYu2sbbfaw6N5BulWV1mIqSUjmEc6PDeO7VXiGbq0gGQ7ddhZ9
-	n5riMSYCjOcAkU+I2bJwpeodW73gD+Y=
-Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com
- [209.85.222.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-382-gpM25ldpPPe0pWSKeyE5Nw-1; Sun, 31 May 2026 10:03:33 -0400
-X-MC-Unique: gpM25ldpPPe0pWSKeyE5Nw-1
-X-Mimecast-MFC-AGG-ID: gpM25ldpPPe0pWSKeyE5Nw_1780236213
-Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-914aa174c3aso1681854485a.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 31 May 2026 07:03:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1780236213; x=1780841013; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=oXRHDWuf7kdsdZ+4dW4PM86Io+i5QtdP1dIiEDt0g1c=;
-        b=SnbBwGwech0hsYmnDRbtZVqTJNiZBh2j5lAyLQMUeo9pm02eRDC+eIylCBPrMHMEnJ
-         3hYA4nMc6w7YQyu3xHJODejYhimTIEsz6Q22qozG9n07dIJqzJGzI2dNjMiD9l1//yb6
-         y2e8y2HQk9aveqLxWx1ttdKvZNZgfOvk2XrrB+UEvaaimrUVUIG0szjba8hBh987up9g
-         Nn2oEAB46AUg2V8Q5CRRTkyxutNY04IfnsK8kiiW2ucFd4j7f2Q3UPPGnBVMCaLGpeI6
-         +5+jTZFA8SkD/FSIr6k8nyd4ytw/49QITT25uFT0uKeD8J9ZiUS5zGC2cxgJpZNJVkU8
-         j0gQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780236213; x=1780841013;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=oXRHDWuf7kdsdZ+4dW4PM86Io+i5QtdP1dIiEDt0g1c=;
-        b=hPrQ1WR2VShT31/SrZGCt7VpYyooDScRpBUDPDEKYOWOStAKIW70qpPbWXa6Vngfln
-         t7xWkKh1mitDi29nCksXKElWlTzWc5yhktCEqB98fpDc9q6Y5n+DfnbSyz8Sy6AU8no/
-         kCJqzNAsDI8SBNIeXQI0bPb5WTDYZUC1dyU4km3lzZT44VbwIpvjvPhDHsl96v7HCVOx
-         lMUQ/tEUHHd/R5Pg1P3zSZ1WNPMdCiLmZxY/lChVs7UJzOsakNtrUfTj4Pm1jal5t07u
-         4dkTfvLBiVnqdh4r1YviPwE+SZHXbOo3QKhkzU65Kh/8Z/QyLWRLvhTsfKydaEGCWuGh
-         jSAQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9ziVcWaG0c9QLMiXp9OnSVwFodu3CtVZeV2calMazTxaTw4CNkgxhio8Ed5hqPHPqrUMmdC+RAUMq55A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx3ZbzqFvJux1vnSVaG7F1ABLwh/JTDm7XlE1eqZhQJwbyTGtze
-	r5hQrlxTjTbGkjxCTam1AlsMp9VpLOKn6rJy6rx5bzR2pTzJ8UcfKtCdeprti32ujwjyy/7vwYs
-	Oc2f9kADDNLTNO1PKf0u78Y1BllnTCCIFa82K7Iza1Ib7Dyb6pE5h1VEcSoMitCdH
-X-Gm-Gg: Acq92OG1Kpn19OzXNvsio7FxSqCEwppefob4uhd9YtLHLDhQcqxO8mY05FawfnYiYKY
-	RUb6+lG1hbEbZ+TVIxvZ0Fm7oXaSJlloiDEK4XSOBlV2jWSoxBI267XpVY72BB6IBNKPNFX5vMk
-	8HxmSJT8ilRcOS2PAlnyzJSsNqcuVf2F2u7VGJBeFv9Q7Rsad4qfgytAkrfQrd3YgOcvlUYeM1m
-	EDw505G2xh6YIDzm0/Nyzd1MCUXZT6kFjf7zgfVvw8+818iBR658JB9zCEeMEYu8M42O6oUJq8F
-	KfLjuAxKER4fqNTtkugJi+eR/e+2IvF3G7a8akVB0YflAhyk5rdyDMK5A/LwBRYnhjV769+2Bd0
-	KT+PFWDYZ6rY/Q5evhC664tqDDA2bxx2GZZ8rC46Q50qh3A==
-X-Received: by 2002:a05:620a:458f:b0:911:9e67:44cb with SMTP id af79cd13be357-9153d9f5e56mr1146957685a.38.1780236213062;
-        Sun, 31 May 2026 07:03:33 -0700 (PDT)
-X-Received: by 2002:a05:620a:458f:b0:911:9e67:44cb with SMTP id af79cd13be357-9153d9f5e56mr1146953685a.38.1780236212601;
-        Sun, 31 May 2026 07:03:32 -0700 (PDT)
-Received: from costa-tp.bos2.lab ([2a00:a041:e223:1b00:fe51:8bb:7986:c897])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-9153249a5fbsm799732285a.20.2026.05.31.07.03.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 31 May 2026 07:03:31 -0700 (PDT)
-From: Costa Shulyupin <costa.shul@redhat.com>
-To: Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	linux-omap@vger.kernel.org,
+	s=arc-20240116; t=1780300478; c=relaxed/simple;
+	bh=UA6lVnaUVFnSloqLbYBnYV5Y1adVW3NBuBmUfd7DNq8=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=QG3Rh6w2MeM6GkGiTPAIWTVnUIUQ8pD1GWkeW9uL6NqrujeVDERMo3xj+PCuqTGt3wTzPaawAfsb5e/VYru/VuvwFMzgDOpqhGwZPIeOOCyBgQMQU2sdY669pkt2gWkb0A/mpAIZPzq8hQt4cWHYWQhxZa3IPNYNfP2cJiT8kJc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 1d3be2805d8f11f1aa26b74ffac11d73-20260601
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:fedfcc34-84aa-469c-a9e9-4b4170d56118,IP:0,U
+	RL:0,TC:0,Content:0,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:25
+X-CID-META: VersionHash:e7bac3a,CLOUDID:c9f868013bde326e382fa55a7c858271,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|123|850|865|898,TC:nil,Content
+	:0|15|50,EDM:5,IP:nil,URL:99|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL
+	:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 1d3be2805d8f11f1aa26b74ffac11d73-20260601
+X-User: yaolu@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <yaolu@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1752011668; Mon, 01 Jun 2026 15:54:27 +0800
+From: yaolu@kylinos.cn
+To: deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Costa Shulyupin <costa.shul@redhat.com>
-Subject: [PATCH v1] docs: omap/dss: Fix stale modedb.c path
-Date: Sun, 31 May 2026 17:03:22 +0300
-Message-ID: <20260531140325.4115024-1-costa.shul@redhat.com>
-X-Mailer: git-send-email 2.53.0
+	linux-kernel@vger.kernel.org,
+	simona@ffwll.ch,
+	tzimmermann@suse.de,
+	yaolu@kylinos.cn
+Subject: [PATCH v2] fbcon: do suspend/resume only when vc is text mode and visible
+Date: Mon,  1 Jun 2026 15:54:23 +0800
+Message-Id: <20260601075423.543611-1-yaolu@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <67a1f756-996c-404b-8eff-f705ff151ed3@gmx.de>
+References: <67a1f756-996c-404b-8eff-f705ff151ed3@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -95,28 +55,55 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The modedb.c file was moved from drivers/video/ to
-drivers/video/fbdev/core/. Update the reference.
+From: Lu Yao <yaolu@kylinos.cn>
 
-Assisted-by: Claude:claude-opus-4-6
-Signed-off-by: Costa Shulyupin <costa.shul@redhat.com>
+Don't need to do suspend/resume for fbcon in graphic mode.
+
+Doing this may cause error, eg:
+  At the beginning, starting the Xorg with single screen and then an
+  external screen was plugged in. After logging out in Xorg, fbdev
+  info may using screen which is connected later on for info always
+  using first connected connector in list in func 'drm_setup_crtcs_fb'.
+  Then, S3 executed, fbcon found that the information did not match
+  and do atomic to switch fb. However, Xorg will not re-bind the crtc
+  fb but continues doing ioctl. At this time, the fb is incorrect.
+
+Signed-off-by: Lu Yao <yaolu@kylinos.cn>
 ---
- Documentation/arch/arm/omap/dss.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v1->v2: change to '==KD_TEXT' rather than '!=KD_GRAPHICS' and add
+visible judgement suggested by Helge.
+  Link: https://lore.kernel.org/all/67a1f756-996c-404b-8eff-f705ff151ed3@gmx.de
 
-diff --git a/Documentation/arch/arm/omap/dss.rst b/Documentation/arch/arm/omap/dss.rst
-index a40c4d9c717a..9d39679235a3 100644
---- a/Documentation/arch/arm/omap/dss.rst
-+++ b/Documentation/arch/arm/omap/dss.rst
-@@ -314,7 +314,7 @@ Kernel boot arguments
+ drivers/video/fbdev/core/fbcon.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index b0e3e765360d..ab460ba9264c 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2602,8 +2602,9 @@ void fbcon_suspended(struct fb_info *info)
+ 		return;
+ 	vc = vc_cons[par->currcon].d;
  
- omapfb.mode=<display>:<mode>[,...]
- 	- Default video mode for specified displays. For example,
--	  "dvi:800x400MR-24@60".  See drivers/video/modedb.c.
-+	  "dvi:800x400MR-24@60".  See drivers/video/fbdev/core/modedb.c.
- 	  There are also two special modes: "pal" and "ntsc" that
- 	  can be used to tv out.
+-	/* Clear cursor, restore saved data */
+-	fbcon_cursor(vc, false);
++	/* Only in TEXT mode and visible, need to clear cursor, restore saved data */
++	if ((vc->vc_mode == KD_TEXT) && con_is_visible(vc))
++		fbcon_cursor(vc, false);
+ }
  
+ void fbcon_resumed(struct fb_info *info)
+@@ -2615,7 +2616,9 @@ void fbcon_resumed(struct fb_info *info)
+ 		return;
+ 	vc = vc_cons[par->currcon].d;
+ 
+-	update_screen(vc);
++	/* Graphics mode is managed by userspace */
++	if ((vc->vc_mode == KD_TEXT) && con_is_visible(vc))
++		update_screen(vc);
+ }
+ 
+ static void fbcon_modechanged(struct fb_info *info)
 -- 
-2.53.0
+2.25.1
 

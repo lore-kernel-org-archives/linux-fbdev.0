@@ -1,109 +1,98 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f44.google.com (mail-ej1-f44.google.com [209.85.218.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE63E38837C;
-	Mon,  1 Jun 2026 07:54:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B045838AC9A
+	for <linux-fbdev@vger.kernel.org>; Mon,  1 Jun 2026 11:09:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780300478; cv=none; b=M6q4DIsIkon6GFq8G3Q8rzq7j89a4YDciALpB3mFgJvyeRen22eX5iE7692JMS81BR5x0v/FM8COfjHm8EjqDDHs+Ao8sYffvngUMfoWQgRMGUF2xrGHv5CwAvH7lXGevAsdgE7fjhHaS5AHmbCyj1oqeVUGFN2mkQmxhstKU0s=
+	t=1780312156; cv=none; b=jp6FQfI8mpbjCO8nNTZvh38wFUk51CkM0ZhLRgBL8hQ8Qzc/9KNsHz2grwPs61IqvSOXKUDc17l1kWI14O/1SzOl8R7P4dfCZTjtrCkUoS29bJeMnf10NF+ul+fsb3rm6cY79bejXO3CbuP8eXIryXiMe8TjdKTYICuLeR4wpis=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780300478; c=relaxed/simple;
-	bh=UA6lVnaUVFnSloqLbYBnYV5Y1adVW3NBuBmUfd7DNq8=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=QG3Rh6w2MeM6GkGiTPAIWTVnUIUQ8pD1GWkeW9uL6NqrujeVDERMo3xj+PCuqTGt3wTzPaawAfsb5e/VYru/VuvwFMzgDOpqhGwZPIeOOCyBgQMQU2sdY669pkt2gWkb0A/mpAIZPzq8hQt4cWHYWQhxZa3IPNYNfP2cJiT8kJc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 1d3be2805d8f11f1aa26b74ffac11d73-20260601
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.12,REQID:fedfcc34-84aa-469c-a9e9-4b4170d56118,IP:0,U
-	RL:0,TC:0,Content:0,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:25
-X-CID-META: VersionHash:e7bac3a,CLOUDID:c9f868013bde326e382fa55a7c858271,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|123|850|865|898,TC:nil,Content
-	:0|15|50,EDM:5,IP:nil,URL:99|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL
-	:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 1d3be2805d8f11f1aa26b74ffac11d73-20260601
-X-User: yaolu@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <yaolu@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 1752011668; Mon, 01 Jun 2026 15:54:27 +0800
-From: yaolu@kylinos.cn
-To: deller@gmx.de
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	simona@ffwll.ch,
-	tzimmermann@suse.de,
-	yaolu@kylinos.cn
-Subject: [PATCH v2] fbcon: do suspend/resume only when vc is text mode and visible
-Date: Mon,  1 Jun 2026 15:54:23 +0800
-Message-Id: <20260601075423.543611-1-yaolu@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <67a1f756-996c-404b-8eff-f705ff151ed3@gmx.de>
-References: <67a1f756-996c-404b-8eff-f705ff151ed3@gmx.de>
+	s=arc-20240116; t=1780312156; c=relaxed/simple;
+	bh=QpnjQudDF58V1/FPsPcDplOMFvOALDVksNq/0qRLSds=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=alDlfLBZzf/1uAAu0AquaimvKuxM+yRJzxYM/OMFalbOjszCOaPy6IIh+mpeg9ZtDBSAHznrsD+wiHtFmqiQ/UbEAHuHGWvKCHV5C6g7TCFUIMBFX6y/FN1vxzR0PkyeSkhz59aQmRlQbZuAXeGbgvSqVuVeMTvB7D8y6xq3fA8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=X5YsJ8Xj; arc=none smtp.client-ip=209.85.218.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X5YsJ8Xj"
+Received: by mail-ej1-f44.google.com with SMTP id a640c23a62f3a-bd9a71b565aso2088289066b.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 01 Jun 2026 04:09:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780312154; x=1780916954; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=nvWyF+YOv3aLEiatSz6/qAj4smg4GeRiDdaf9XLf71g=;
+        b=X5YsJ8XjvEqAff7VG9CFVQcQwOHENrto7PPqIFG+gGnOGT02mhkOsN2BVJl9eZoDVW
+         eKDNvIZh2F/kj0VB1kYhAtsSTJqZ8vrfEsrDfrOJZWpbh5qRuJx1wSuZbco3lbVg1b0c
+         6J3KdGrpUM7uP0a90zoiKqq8pqRFV37cPP7Xt2W1XH/mh3d6RLB2roA5RDLab/gh8/aJ
+         YlkyLzNUx84YccOU97mKCVKri7LxUz1uTjM2tnbajdmBBkHReXvreTURBIGyn8zEwhD8
+         MArHC77w4411elSSe6Jj7xo1QR0EAltoozRZEFFEvGfxbPq34n0OdT99+pQHkH/0W7xQ
+         X3xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780312154; x=1780916954;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nvWyF+YOv3aLEiatSz6/qAj4smg4GeRiDdaf9XLf71g=;
+        b=aG1y68+uJNLPUyTY5NB+I5CooFqn0EM1BhSMM/HnpIqUWTtnmoCtpdCBd6jGV/mhNw
+         XmhpMcsbDhTN0zDPXvAb2Z1OwDHDzTTYlNzpuj9Iu3E6V9UFjdWe2eouiBiuyXfJ2+nu
+         LWuZNQNadEjWvl5gTsRlCWtTI+5zuPTrYsK5Bd6ICPfGcX2K90Sjv6lYR0lWJ2y2ueYq
+         4pnRDXva58uvSR4k3OIAKkVDku4Q9kKVimDsdpShHClg/k6yJCVhsp8gEp0c0nKYKwV3
+         XLoXCwLPo8p5i0vOEInvRYCfMgH++BhXpwo6QTnB1T+FyM8zqiDZWPn/y5qebuoEuXE3
+         0yDA==
+X-Forwarded-Encrypted: i=1; AFNElJ+9KiVdmEWw1t3qWY7vFhtVXMGs5AR0citlthLbysq3fnyvpitHpD3ARIyxvOXkITy2McF6LyedT7OKMg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxSe6XYv7k88UhomiVofK2AkQxLQ5pNxHMxZg5JaAvKCwaXugXx
+	U7mkhKLlxmnzGatlbc3x25OzQWTFh4GgRphKzSJRt9x9MScDXKM2Gf1ekZtBrA==
+X-Gm-Gg: Acq92OErnG7Jud2Lc/nwv5cmpVYBxPn/A9r+Se/ISw8/bke8XoKanRHasmm3dtEjmye
+	1vtInlt6uoF1sgEnZEwBfRlBifrh856pF6PibF/yKcqZQ8YFxBPHSS6vh4jdiNjBphQamh3aUki
+	b/dSjAZU23BTJkeg1emq9EyMSi/HB1eako55Dnej5AIB/CqalzT8X7DsOfzIqQOZwNmVmXiUJd/
+	zL/83pbKOqMlAnWqK5Y8ngq4RI+gCoHMKDsxEsFgGu1bVONdQ6T+KrJHr0XPDyXXPlIZQdGDpvd
+	2XvHW15vI3p9Fa8JdgDHJ5ztbHIeyM8cQQRMQ8sbeLpkI7vzNtDbCfj1G6F06Ytw0XzXf0f5nLR
+	ZBtPQWS4LgtNJJvEA75CumOKOnrVS145W6oKYF8NYVJMd869iqbKz3DhONq3xxh0c80RAaofdKN
+	EvnttrYXv94cbZ+iuXLyMxRMmUI0UsZwVFkg==
+X-Received: by 2002:a17:907:2843:b0:bec:64d4:3872 with SMTP id a640c23a62f3a-bec64e37d56mr245047366b.24.1780312153930;
+        Mon, 01 Jun 2026 04:09:13 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bed94f9f82asm78921366b.20.2026.06.01.04.09.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 01 Jun 2026 04:09:13 -0700 (PDT)
+Date: Mon, 1 Jun 2026 14:09:09 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Hungyu Lin <dennylin0707@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: remove duplicate init_status structure
+Message-ID: <ah1oVeRAQMeaLJN-@stanley.mountain>
+References: <20260530222432.4303-1-dennylin0707@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260530222432.4303-1-dennylin0707@gmail.com>
 
-From: Lu Yao <yaolu@kylinos.cn>
+On Sat, May 30, 2026 at 10:24:32PM +0000, Hungyu Lin wrote:
+> struct init_status duplicates struct initchip_param and is only used
+> within the sm750fb driver.
+> 
+> Replace the remaining users of struct init_status with
+> struct initchip_param, remove the duplicate structure and eliminate
+> the unnecessary cast in hw_sm750_inithw().
+> 
+> No functional change intended.
+> 
+> Signed-off-by: Hungyu Lin <dennylin0707@gmail.com>
+> ---
 
-Don't need to do suspend/resume for fbcon in graphic mode.
+Looks good to me.  :)
 
-Doing this may cause error, eg:
-  At the beginning, starting the Xorg with single screen and then an
-  external screen was plugged in. After logging out in Xorg, fbdev
-  info may using screen which is connected later on for info always
-  using first connected connector in list in func 'drm_setup_crtcs_fb'.
-  Then, S3 executed, fbcon found that the information did not match
-  and do atomic to switch fb. However, Xorg will not re-bind the crtc
-  fb but continues doing ioctl. At this time, the fb is incorrect.
+Reviewed-by: Dan Carpenter <error27@gmail.com>
 
-Signed-off-by: Lu Yao <yaolu@kylinos.cn>
----
-v1->v2: change to '==KD_TEXT' rather than '!=KD_GRAPHICS' and add
-visible judgement suggested by Helge.
-  Link: https://lore.kernel.org/all/67a1f756-996c-404b-8eff-f705ff151ed3@gmx.de
-
- drivers/video/fbdev/core/fbcon.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index b0e3e765360d..ab460ba9264c 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2602,8 +2602,9 @@ void fbcon_suspended(struct fb_info *info)
- 		return;
- 	vc = vc_cons[par->currcon].d;
- 
--	/* Clear cursor, restore saved data */
--	fbcon_cursor(vc, false);
-+	/* Only in TEXT mode and visible, need to clear cursor, restore saved data */
-+	if ((vc->vc_mode == KD_TEXT) && con_is_visible(vc))
-+		fbcon_cursor(vc, false);
- }
- 
- void fbcon_resumed(struct fb_info *info)
-@@ -2615,7 +2616,9 @@ void fbcon_resumed(struct fb_info *info)
- 		return;
- 	vc = vc_cons[par->currcon].d;
- 
--	update_screen(vc);
-+	/* Graphics mode is managed by userspace */
-+	if ((vc->vc_mode == KD_TEXT) && con_is_visible(vc))
-+		update_screen(vc);
- }
- 
- static void fbcon_modechanged(struct fb_info *info)
--- 
-2.25.1
+regards,
+dan carpenter
 

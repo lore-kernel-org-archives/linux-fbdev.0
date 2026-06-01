@@ -1,63 +1,63 @@
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02D8C3DD875
-	for <linux-fbdev@vger.kernel.org>; Mon,  1 Jun 2026 15:19:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6746A3DEFF3
+	for <linux-fbdev@vger.kernel.org>; Mon,  1 Jun 2026 15:19:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780327169; cv=none; b=GPWVX+3VqZJhp1wIDGFS/g4/gEHHM77Di9pn3VGtddmW2QvEKfXmb9R83dBFC1isTvnm6rr3FJPEKLitw6z6VanShABA3VZEUuGu2tifmoAZFizjUx1R8tEKoHPtkDcblg02/SM8gUdgQr7T4m6WV7e6/iWeg7f53y3tpLQTNig=
+	t=1780327170; cv=none; b=gMf9zjrbXaH1vNFC+2BdO7xwrfodylAc9zkFA5s2dO157vgZI5X0VWWWdW8Ax7GelTva6nQx7AGKPNcrer3dCPXYfHmG++i80AfQdCxLcYZMti1HKMJHfGtt9Y3dg7UvW9VNoFXo4ejVA9VprjEwc6XX/Y7aTsWq2K24etza61o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780327169; c=relaxed/simple;
-	bh=S8Y/SLmqiOO5N/roCezf9U+wAzAxng5Uw10f73gGxPo=;
+	s=arc-20240116; t=1780327170; c=relaxed/simple;
+	bh=Gqs7G7t00pywVX3rRhClLifko2DwPlgtzGf6OODWNOY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=sqSi7zjJBStW/EbKT8AJwWWE3PgDO1v3ZBAlaLrOoXNpV7hGDi8W9dsHXS1eug9pfzeNM3r2q1kl2tplMqIUoZI/bBUoU3I1QkiR7fL2ADKu0A59C/McNatBEkYCOZD3e28bIljTH0D1kem3Lbk5m1H9lOjt8Bm7vVgN5T6PaQg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ez3BPqnQ; arc=none smtp.client-ip=209.85.221.49
+	 MIME-Version; b=qLQwAPEtgAJ5hUq7bo//C1ZeDwWD9CQOOzdJyk47AN5GiuzYE28VdB8j637/YGcL4GcK48fkkRLQCxjhe5YtDgTpYSCPZDETTvkHFcOiMj1UWs+20sPDE6P+AI0o4kXFBq26EEivK+T4W92lPudOI7xV9JIwyf/OKM1KGtbueMU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SlWReqmt; arc=none smtp.client-ip=209.85.128.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ez3BPqnQ"
-Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-45eedc94d37so2038913f8f.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 01 Jun 2026 08:19:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SlWReqmt"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4908b92904fso50656345e9.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 01 Jun 2026 08:19:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780327151; x=1780931951; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1780327153; x=1780931953; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=nMbWeeGe7TfgpPAVjQgWggP+Fym0ITJZjA/DygAtKOs=;
-        b=ez3BPqnQg6HprkBZSv6xqhsXTAShRms5YEHj4EaMCgbYcbWvGXfZUTUmqmUQte3P4b
-         nPA8+O1jPMuHQp/QQm9dUIyUORq45UXNKBxrkJ6My5DWTT8x7wg9GCZwml6Qdy4bpBE0
-         YMgRlxbmfH38ctG9mgfNrYKTSeKOFwqjfON8ih0tbbrT6RsysRZkkEHGEfQ5rCPaAvKq
-         eI0JJRWbFRv/dOAYZxVVQXwuF3SvUZ+yv4IgvjQjFo+AGstLGO5ZNfNnbNwMdJcnv8fY
-         FCjQbKE9j1PAzBSKMlrrj/GXDW8onJB1MT7O2keqxEBh7r7RCI3tzHSxKrb+hD2eQKfS
-         OWhg==
+        bh=33jV+tJR7Nm5ReUL1Jncj608Et9Ag1X54glyJfKp5cY=;
+        b=SlWReqmtNBJgpuPqFBJ12rBdSTE7NTWat1EwcxNlvUeN/Q1Vmuq084pYnUVAPpNXTh
+         K/7XijqDSNVP7JleW6xrVBhilYT/7pjmhsYeZF9ykncXIuFMw/AtI6IpMBZR6qIu4CtJ
+         alpPerpSV5LkvxU/kBG54B0uhhRDRFWkd5FMNNar2kl+3CugOLVhYN6/sc2ugYKu+TAw
+         GEE5AbOxDZlxbR00XBDHRloB4HW4NFOiKkUllyhnpOAiKzdCZtt3ofTzfdmmP4Uul2G0
+         L0AR5zkgyJnyrnDlY7WwxlOVcK0V5rKis71rON1FV69F0QFYRmo/K1JgOYetuUizzmJG
+         jEtA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780327151; x=1780931951;
+        d=1e100.net; s=20251104; t=1780327153; x=1780931953;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=nMbWeeGe7TfgpPAVjQgWggP+Fym0ITJZjA/DygAtKOs=;
-        b=lTbZNv/cNNve7ZnpzNNiVYUdysCMPz3GZ7HynwnW074MMvTgb2r2pYufiPZXKa6Q9Z
-         h06auJbpOpxFit+PzLedyeX1uqsF9G8m8YG2QEb9ez16KFHa4M9RJ6BmPEemjHzpccWr
-         Txfx1hvybqpSsz/orzkU4Td3o5LKDwKuGg7KMYFAbZ9A9uFkrmLGKhSROC4AQfSasJpL
-         Kr7R2JV5l1r7qO1o9fGg1noOlx/S8aoDrSYJDxzNTi7aE3dwD8Eciazzo9jbmi32Oivo
-         ETg9udIGp3/pJhflEdDb23wwyKrgPwYRdfQbbos/Y797dPeo1A5bRbKnmwj/0jBAktU7
-         yjyA==
-X-Forwarded-Encrypted: i=1; AFNElJ+IqrJVkIYugcCMSuPAw+Zb/90ethkDrY7YjvFTgLyjczQcMd5fLtU1gJXw80TyG6/tydY4YkSB80RrCA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwOAvuGgcgX8rOltn4P1vRcZsPAcBxMhfp6TftCLSjT2TQ9sBFM
-	cn+1VrMhHi8cz2nvKW2O7tsLuA9K5RpNfuB5NFw69/hwXqC9DVoXaBhp
-X-Gm-Gg: Acq92OFpSBITPfCpUxK2k50ZQaQ8YlMQlJBg7ux40eybVOqCTGmadpxTKZGkldciRro
-	Nabnu9zc2FpIk3Ksxj6g8TDbj+481No2ivmdS2+r22mIDYC2H+iAno5EKlny75FKX8cNWT4IoSR
-	7GsyhlSmAEHApiDm8g48NioUYxFvdLBb031P5xytabfu9de5sKD67Rg2sto/toJUxX7WRJi7c7E
-	CimC/E2ipUPXyvoWyHpfZwCbKqJFMRcfZUN3+HNmwC1xQlFjWUKk5fxrDRb7RRMmGm0+mgITDQo
-	1tYjQa4NFNdwh1fZToPsr5N0tkDxwj9jmZZiwv6z8YzGZgC/DncUmwXLwgD2+6llTQcCdm16V2l
-	ac2RfxiLu2CqaPUKAip3hZrjet6hRX0bZP8VTv/CVD3Ceu7D4AyK8DfqskPamCByk8L8bxVVpUK
-	ymOy6YHmZLVduyAjrW8XMpui8=
-X-Received: by 2002:adf:f190:0:b0:44f:9b70:2996 with SMTP id ffacd0b85a97d-45ef6b4f4f5mr15476481f8f.21.1780327151236;
-        Mon, 01 Jun 2026 08:19:11 -0700 (PDT)
+        bh=33jV+tJR7Nm5ReUL1Jncj608Et9Ag1X54glyJfKp5cY=;
+        b=ev2lh7AcpJP6REiFNw0/d7zlc0mnUU2UBjg0KalC6Bl02izx8YRdQhawzI2OErErOf
+         7voSmkBXn9ZgM0jzeNuZE97IYetxfLISrGgcVg22JG0Rg75Jt2RA7f6PwONDF1umgNXX
+         3PSGqXknOajzlRFw/xoxq0TTqtZZJFkHl0NiHCVU1YZa0v3VH3oc7/BaQgPQvcEMZmfO
+         T2Ea0GDcZgeLLDhjprlQ0RyzzY9BT9w+2+UzdIdAziOmjX8nWyD47NDEPVfH1qOh0Wx6
+         N/U7a1L+BPACml9N9X/ydUeVhVf72hjnAWVk9NUpWAjU/rE7DhfXqPhWQWaY6borBUDp
+         RrjA==
+X-Forwarded-Encrypted: i=1; AFNElJ8QUhvM4hoivjCmb+gLFwnBuqNBQ383iLbDBjU+R0HPF3YPunvxtUSGWv5v1SzQECB8O2qwyokC2LwpdQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxRnRdKcUrQ0Ve1PhkpbSf20VaXFEpH1hKiROHwkH4lhC7coqwX
+	JowsDqz5tUs8zjFkfaZfJr8jXnQTcyJMuBptV2WuUohR+DO65SVzBvEC
+X-Gm-Gg: Acq92OFJplq4g4Gf3/qMVYCM81iZUetzibYhp0PpnmG6fCuBguU8Z7hsBUAbL6dDHeR
+	E1w7R0LGBhF3RPhG9pXqqw59jfGg1ilBM575NxCqsg8rXnBz6AEV6UbP2puL+wiM23rvS9c0MnD
+	XREkA/nDvAeeoOkJ7Q1GRs5C/UwiYLhN+bAFdyxjLWYd5X/WastewRP4e0RSfNN69mx6Y8RAOWG
+	bsuCD92w4RQX9XREel+wuZM2dHGAdzNVOlY4VXoja84475uYyPIUog17IlZSmapw2J6OSxrtoIX
+	OTXBMQYJvTcnVKawiPbVqHw8FW0jV6hqtbO3HgQYyrA4pAFEW6XzZSiwqWb13miYJ9OWJy5o2hx
+	7cotYUrOA+uOGvf3YSB4Hs/AdZ3rFODl9EkUYhH/8fk2vo+RP9776SDAR7nmm3lyYSu7aqwU3Bc
+	IXD/9fqb832cSUkz++MnL+TdEBI1W8gLPWFQ==
+X-Received: by 2002:a05:600c:6385:b0:490:40f1:5314 with SMTP id 5b1f17b1804b1-490a290ec08mr258749965e9.1.1780327152708;
+        Mon, 01 Jun 2026 08:19:12 -0700 (PDT)
 Received: from xeon ([188.163.112.61])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45ef354cd7csm25753103f8f.18.2026.06.01.08.19.09
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45ef354cd7csm25753103f8f.18.2026.06.01.08.19.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Jun 2026 08:19:10 -0700 (PDT)
+        Mon, 01 Jun 2026 08:19:12 -0700 (PDT)
 From: Svyatoslav Ryhel <clamor95@gmail.com>
 To: Lee Jones <lee@kernel.org>,
 	Daniel Thompson <danielt@kernel.org>,
@@ -79,9 +79,9 @@ Cc: Johan Hovold <johan@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	linux-iio@vger.kernel.org,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH v3 09/11] video: backlight: lm3533_bl: Set initial mapping mode from DT
-Date: Mon,  1 Jun 2026 18:18:29 +0300
-Message-ID: <20260601151831.76350-10-clamor95@gmail.com>
+Subject: [PATCH v3 10/11] video: backlight: lm3533_bl: Implement backlight_scale property
+Date: Mon,  1 Jun 2026 18:18:30 +0300
+Message-ID: <20260601151831.76350-11-clamor95@gmail.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20260601151831.76350-1-clamor95@gmail.com>
 References: <20260601151831.76350-1-clamor95@gmail.com>
@@ -93,52 +93,45 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add support to obtain the initial mapping mode from DT instead of leaving
-it unconfigured.
+Since the device supports linear and non-linear modes, implement the
+backlight_scale property to describe this state.
 
 Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
 ---
- drivers/video/backlight/lm3533_bl.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/video/backlight/lm3533_bl.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
-index 36e6f027613a..f0d88b7bc229 100644
+index f0d88b7bc229..945625c54fc4 100644
 --- a/drivers/video/backlight/lm3533_bl.c
 +++ b/drivers/video/backlight/lm3533_bl.c
-@@ -34,6 +34,7 @@ struct lm3533_bl {
- 
- 	u32 max_current;
- 	u32 pwm;
-+	bool linear;
- };
- 
- 
-@@ -247,8 +248,15 @@ static struct attribute_group lm3533_bl_attribute_group = {
- 
- static int lm3533_bl_setup(struct lm3533_bl *bl)
+@@ -161,6 +161,7 @@ static ssize_t store_linear(struct device *dev,
+ 					const char *buf, size_t len)
  {
-+	int id = lm3533_bl_get_ctrlbank_id(bl);
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
++	struct backlight_device *bd = bl->bd;
+ 	int id = lm3533_bl_get_ctrlbank_id(bl);
+ 	unsigned long linear;
  	int ret;
- 
-+	ret = regmap_update_bits(bl->lm3533->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
-+				 CTRLBANK_AB_BCONF_MODE(id),
-+				 bl->linear ? CTRLBANK_AB_BCONF_MODE(id) : 0);
-+	if (ret)
-+		return ret;
-+
- 	ret = lm3533_ctrlbank_set_max_current(&bl->cb, bl->max_current);
+@@ -174,6 +175,9 @@ static ssize_t store_linear(struct device *dev,
  	if (ret)
  		return ret;
-@@ -299,6 +307,9 @@ static int lm3533_bl_probe(struct platform_device *pdev)
- 	device_property_read_u32(&pdev->dev, "default-brightness",
- 				 &props.brightness);
  
-+	bl->linear = device_property_read_bool(&pdev->dev,
-+					       "ti,linear-mapping-mode");
++	bd->props.scale = linear ? BACKLIGHT_SCALE_LINEAR :
++				   BACKLIGHT_SCALE_NON_LINEAR;
 +
+ 	return len;
+ }
+ 
+@@ -309,6 +313,8 @@ static int lm3533_bl_probe(struct platform_device *pdev)
+ 
+ 	bl->linear = device_property_read_bool(&pdev->dev,
+ 					       "ti,linear-mapping-mode");
++	props.scale = bl->linear ? BACKLIGHT_SCALE_LINEAR :
++				   BACKLIGHT_SCALE_NON_LINEAR;
+ 
  	bd = devm_backlight_device_register(&pdev->dev, name, &pdev->dev,
  					    bl, &lm3533_bl_ops, &props);
- 	if (IS_ERR(bd)) {
 -- 
 2.51.0
 

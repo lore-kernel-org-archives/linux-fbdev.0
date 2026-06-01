@@ -1,85 +1,85 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29E673A2E00
-	for <linux-fbdev@vger.kernel.org>; Mon,  1 Jun 2026 11:19:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A93E3A2E00
+	for <linux-fbdev@vger.kernel.org>; Mon,  1 Jun 2026 11:19:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780312762; cv=none; b=VR456m1xSccdG+AlKlU/Qp9TJz7/j2VRdKwKUSkct5Gi5TySiW5XNEt+n87S07cTtlHAS+Mpnam+5DiCsIIoQRe/F+D8oRiit0fIE4tR3pZiY0zLgjrI6FH/gRTgLsj8K5FY0smFo5PGf8fy3bR6cV1LCxlH4PQmMvLb/2xzDIw=
+	t=1780312785; cv=none; b=pvxTgV2RGjaUaSAB+EN6hOFMEjNwXpnDN4KgrxPOlRLsHukU0/20zYx0gIm+ViiBpPDNyQDsHFobBi1uzot+76ZIrYSjVBqGaeKo+ccpybL6jMLFjTwCjtIvjjMlHRR9R+GsJ8HhF9DkX+5niyPnzBdfY1g1qEQq+d3RJTKK2eE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780312762; c=relaxed/simple;
-	bh=LBeAgGXN9DeqPFRA3jWITJt8FVXfB280YLfc0k7DRiM=;
+	s=arc-20240116; t=1780312785; c=relaxed/simple;
+	bh=eyBesLCqPk9h4NOFzG4PiF0VzIdhvWW/kPhNdNMmyf0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JKFh+c9zx951KGYHFLpg3nF66F4vNN/rEIBfm5qMb2dpVKytGis0yOp1QnUj2kRzGHdtqE5TcslwHTu+QZpfg+amjMKGFP+a+ofxk2dTNdirBsI3zwnz8ffUA3pDtFaIAcK43A0fkNqye6KnqOWX2Vj7D+JdQw9ig3ZIZ/qn8ic=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=L/LiVARy; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=LrTKS4Iu; arc=none smtp.client-ip=170.10.133.124
+	 In-Reply-To:Content-Type; b=qJ5Q4QM9zOj0CaX9WDq61/uc3U1gceQAKX46NnxHEV+UpJrttAgWBXwPPHYMOMwCXi8V9phtK65bMkoSFwB4HBxuoU6zgfWuO5sjruPfnGF1FlyJLp2wcHBc3hxVPfSdJ8zGNcSjx/pDm7hr3V4g1lT4aKfrzmMhunZU/YjOuXQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=P2dznWA4; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=lxfZ/fMA; arc=none smtp.client-ip=170.10.129.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="L/LiVARy";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="LrTKS4Iu"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="P2dznWA4";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="lxfZ/fMA"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1780312759;
+	s=mimecast20190719; t=1780312783;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=GuGEK1SkcuHAPgz9gEDQStCi7pNGC+sChcUFL1++fKI=;
-	b=L/LiVARyXdW0owASpM8S8EHxdOpQRST5UGFnJzrxrkIKEP8PDy3zKaHNCck199jWKmU2HF
-	aloY16pjnSzKaR+rl/ns8pSI9dCg4u1BQLLuPEydxp+YuQPltGAya9JbKqLZHlC+LrmR2g
-	OZNdY3mTODwN2GXIaeBslLjdCsfofk4=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=rDdMHQ4QMIhEirSuORxkFsO4/PRX5BsSB4zaAcWgpLM=;
+	b=P2dznWA4MbbgKI65B1lDfyvBbC+pAzcQgor3had1cEynNAlFWx29CxMRk24KjRDtKJHBi1
+	RvuMSRkK9FXZEjJ66RwaQ+5DlQhH3d/mlnHvJR7JUmiLm9jENhj+FQIR2ZXDBcKSvE85iR
+	dyUYXxigg9WifvdID/dGncFfXEhXjt0=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-342-WTe83pmhOXeTGuYa3CTvIQ-1; Mon, 01 Jun 2026 07:19:18 -0400
-X-MC-Unique: WTe83pmhOXeTGuYa3CTvIQ-1
-X-Mimecast-MFC-AGG-ID: WTe83pmhOXeTGuYa3CTvIQ_1780312758
-Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-490a767c7dcso9848325e9.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 01 Jun 2026 04:19:18 -0700 (PDT)
+ us-mta-115-0T9Pys3jN6yFGS-o7LPyCw-1; Mon, 01 Jun 2026 07:19:41 -0400
+X-MC-Unique: 0T9Pys3jN6yFGS-o7LPyCw-1
+X-Mimecast-MFC-AGG-ID: 0T9Pys3jN6yFGS-o7LPyCw_1780312781
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-490a767c7dcso9862935e9.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 01 Jun 2026 04:19:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1780312757; x=1780917557; darn=vger.kernel.org;
+        d=redhat.com; s=google; t=1780312780; x=1780917580; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=GuGEK1SkcuHAPgz9gEDQStCi7pNGC+sChcUFL1++fKI=;
-        b=LrTKS4Iu3OxR6jNqPy3QbG/5HwHaEJKITNIRY7Ya0+JTRnRGF80/vhp6xWnqzex0od
-         e0m54GPDyP1AYYENPUkPCTVyL30ehCrM+0anCATZbSH/MBh+Hu4qnrdwpwK2cMDFvAId
-         btdmKOKUNu4lt2gfnuaAM+3YepbyYmkrydwrKvfJszMuYTGUZWfFikQv4DbwVQ6HkkQM
-         mVJqRQ2IykS2spUieESIgZ0+oshMNPieVHVZ3YiUBnFjoMQtFv2C+qOr7UQHjtBMERnT
-         OMYwQYFDCJCgy5OxJtt93fvpG30qghGGRs+GB8lsTwIU+vNSUlrTog2c/aXaEZRsS2vn
-         BYJg==
+        bh=rDdMHQ4QMIhEirSuORxkFsO4/PRX5BsSB4zaAcWgpLM=;
+        b=lxfZ/fMAruZdmnV6Ogk+kHaJuF/DATpYff/bnvLoMQuOw4DkqHxyekodDu+tZpqXcp
+         X6LFXnpKTIpK7dQH++jSsT4eTOdbOc1j9NBfeZGX05BMsQAFg5QebljDHBAIPTZ3Idtl
+         8PrpO4jiotZ1bzMzliu6da8SOFJqa6N+FIsNNU3zcyLBdqgdsD1VnF9mdGVZe7GCBUJB
+         M1gQIa10URIzLWhbNRvkM6UkwRHTAb0NagcA2HfDxHvB3Du+2rcitp6UVu+b/zPVju21
+         e0E6aZ+3omejOodAhYMulGrtQLEB+AooqfS8XcvRp2FlS4x9SdWBjJV72e+2g9x0htGj
+         YmHQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780312757; x=1780917557;
+        d=1e100.net; s=20251104; t=1780312780; x=1780917580;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=GuGEK1SkcuHAPgz9gEDQStCi7pNGC+sChcUFL1++fKI=;
-        b=JiD6vHg2wDf5XfWwTxulNxNBV9fNbHH8+T40RPHlpwmV+Ie6ZPfPIRhNiDc8l51iHt
-         KAoVg/8IHavx98g0pIa7ZYyn930uKzuEwd3WPX5TPJaRSiyWPlf9maFDa4dzZnT9aLm+
-         siB4uHGSP4KIdXct8MotbkWMazr/kcq7RWc7wIACL+6RmXZFcX08IcIiiPf7/FkR97Mh
-         3qtDR8vG1LzzL1WiYAGn8263TMTfy1RyFpQccJcFqOpMBtvkD7OaD4yrvQaNxZNLyX5j
-         En/nuYRR57+3qGBmnvh0MQ3oOKJabUNAmVJ9Z02fPmeNHMEwqJqFYk17xX4eKJj7kQZP
-         d8mQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+OBAkz8GGze7q+oa9VN7g07n/Zj5py+hQWoM3yEip3PMVJZwKc8hhnaD77lYJLprrgDnn7wZbiFsKTZg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxniafRlQL33C5DkukKUZ/uk5AbsEf5YNqwE+djDLkgFDC5nXmx
-	oMwOjA99Bkigl3L3/LyrnxbpsdBiObahyRCSjpuidZtXTihNfuwKgZswdC2UCtDN2x8YBRgqLWx
-	q+nhPN8y/9WIwNnQ9YPD7YKcE+UkBE80MS6IxIMSqA6GEzQABXzyQYpPKeqOzK4tw
-X-Gm-Gg: Acq92OHsLhHF5dxz26PZ719/8t+tGXKjGwHls5LblOm8yqc6L6JQNvx8weH5bkVU5Rn
-	MjSeH4+K4gov1bhUSzDr8LQQokao5eG3SgH2m08J3o2vm1pwIv3o1TNs2AUSJL5LKHcjnzfOT++
-	Ss1hDvvOEc+QCjjUfyhLPKIPu8AeW3Z24Unm+zXAHWkC/3FDlxI65caBzm74LOt1RTqMEWTAxef
-	ukFjKMZXzjd9IbHTnZA6kgKKCD2Oqcj4lgr1syM64vcl4zeG5bhMl+FIqajgSpZFz/cnfZGiflr
-	keCKb7ou7XN6qWbj3fU6XDq8689Vm/eDMFO9mX+FBbR85hPDVwCl5lqwi2u7Tg9xJ0ij5bd/tNQ
-	YYzMSw2u0zLjR+ZV/+7zDEMbUa9kmvTudV0CR8TGqbY9OeeRQEjUkrCT8FFLtixY5RgH4i+xN
-X-Received: by 2002:a05:600c:1d2a:b0:490:a964:14f8 with SMTP id 5b1f17b1804b1-490a9641586mr78813415e9.8.1780312756560;
-        Mon, 01 Jun 2026 04:19:16 -0700 (PDT)
-X-Received: by 2002:a05:600c:1d2a:b0:490:a964:14f8 with SMTP id 5b1f17b1804b1-490a9641586mr78811755e9.8.1780312755336;
-        Mon, 01 Jun 2026 04:19:15 -0700 (PDT)
+        bh=rDdMHQ4QMIhEirSuORxkFsO4/PRX5BsSB4zaAcWgpLM=;
+        b=PjRDZ3NZH8XE6es7/S8661vyXe7SV6TYaeKII41l9aa9Ot5oEO+TaKWWjem3+QY2lx
+         Eszz8DKLgmx3Ovtzwq9pwHzeL+NQ7D3odu0FOC0tkOToOVXGn9M/SwKU4TYNS1Mf9zDj
+         aHDw7niBTky6x4hr1XPHzTY0C1SX2TvpGa2sTaJ0iT4fPeLo0/97L/woftjsKkk6c9wM
+         h2Emof9FWDHzTPF/FFWYMXI3W39iJi9b7n8Paq6D6H06m+rrPCQzgTbX+jYUgNCORQks
+         rGuSsejTzayKsHs98HBcgk54S3Fxqa0pRngWeMeazBNx+/53i1fGxU63jvRUWuW7BiaW
+         cnUQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/PgRtPY5KDUHGIZhg1DGoFX4lx9fyZwfM4LBAB+DSe+H8/NZ6LXWfb093fVSKh3xe9X2VSdIf9cK2p8g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyRXawGQXNx9DFnpn9tOGrPDSkAWuD+D5r6qzTJeKtV7kJr3iNq
+	iIy7Nsio4rqPG2h7e4vnKEIwx5JjnfsU3dZuRZMXDIyywM7OqQm4zW11OIaJkFjOGESNrSsVqiA
+	NiEuhkVoUQ47zUTwPJGTOIMAg0i3cTW7X31r/ckfvR+j81O209Lly9XYx5nmyrwrw
+X-Gm-Gg: Acq92OEzJ1Ar6LV2VDMPgaLPy0o8VlbUO0TiAbEoi+uG+iCxImPd2me0R0GSEVZbrZc
+	X9uKbiYvZIz2mimlQ+EGwuJ+m1q/gWEdxxKRtfK/OzE8EglguWYMliYxP9G2HaC2vitLgZQk9Ta
+	O0pJv4AQHbpR546XYeKrwU2AOiH0o6uGFnLakp5BoWyysryNbvpQ1m3ZlE1pvARxH1i1SAdmUej
+	n1Ez0H+94gtTWpmjAJ5r9MQAjzVfQmL21PCYL6r9IdLxnkUoyvSIT1pHX+i8ubntslkOzRFmicr
+	wiySBeexElHC6G5wH6le+qtKa5CUrSWo+blGsvzt1k+Ol7M1RPvkeTRe94OuvzbPfKQhqlA6VIz
+	xnNQ/c+x4212aClwVwLzWHMP3HD6OKLzqcQ9LCmGIMDZ3wPb6NDRsQo5H7w+f5EIuEB8dW9/H
+X-Received: by 2002:a05:600c:8b10:b0:490:5cb3:e94a with SMTP id 5b1f17b1804b1-490a2900d9dmr190001835e9.2.1780312780532;
+        Mon, 01 Jun 2026 04:19:40 -0700 (PDT)
+X-Received: by 2002:a05:600c:8b10:b0:490:5cb3:e94a with SMTP id 5b1f17b1804b1-490a2900d9dmr190001155e9.2.1780312780147;
+        Mon, 01 Jun 2026 04:19:40 -0700 (PDT)
 Received: from ?IPV6:2a01:e0a:c:37e0:ec71:10ae:399e:d3c8? ([2a01:e0a:c:37e0:ec71:10ae:399e:d3c8])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4909c0e8c1bsm100153935e9.3.2026.06.01.04.19.14
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4909d68a925sm372611805e9.2.2026.06.01.04.19.39
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 01 Jun 2026 04:19:14 -0700 (PDT)
-Message-ID: <864d92ed-3f54-45c4-8000-167ccc343f11@redhat.com>
-Date: Mon, 1 Jun 2026 13:19:13 +0200
+        Mon, 01 Jun 2026 04:19:39 -0700 (PDT)
+Message-ID: <f66a0169-305b-4b72-a9bb-c114a81ed30e@redhat.com>
+Date: Mon, 1 Jun 2026 13:19:38 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -87,16 +87,16 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/4] drm/client: log: Look up glyph shape with font helper
+Subject: Re: [PATCH 3/4] drm/panic: Look up glyph shape with font helper
 To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
  deller@gmx.de, maarten.lankhorst@linux.intel.com, mripard@kernel.org,
  airlied@gmail.com, simona@ffwll.ch
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 References: <20260529140759.529929-1-tzimmermann@suse.de>
- <20260529140759.529929-3-tzimmermann@suse.de>
+ <20260529140759.529929-4-tzimmermann@suse.de>
 Content-Language: en-US, fr
 From: Jocelyn Falempe <jfalempe@redhat.com>
-In-Reply-To: <20260529140759.529929-3-tzimmermann@suse.de>
+In-Reply-To: <20260529140759.529929-4-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -107,31 +107,30 @@ On 29/05/2026 16:01, Thomas Zimmermann wrote:
 Thanks, it looks good to me.
 
 Reviewed-by: Jocelyn Falempe <jfalempe@redhat.com>
+
+
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->   drivers/gpu/drm/clients/drm_log.c | 10 ++++++----
->   1 file changed, 6 insertions(+), 4 deletions(-)
+>   drivers/gpu/drm/drm_panic.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/gpu/drm/clients/drm_log.c b/drivers/gpu/drm/clients/drm_log.c
-> index 8d21b785bead..e3e02c84a4cf 100644
-> --- a/drivers/gpu/drm/clients/drm_log.c
-> +++ b/drivers/gpu/drm/clients/drm_log.c
-> @@ -122,10 +122,12 @@ static void drm_log_draw_line(struct drm_log_scanout *scanout, const char *s,
->   	iosys_map_incr(&map, r.y1 * fb->pitches[0]);
->   	for (i = 0; i < len && i < scanout->columns; i++) {
->   		u32 color = (i < prefix_len) ? scanout->prefix_color : scanout->front_color;
-> -		src = drm_draw_get_char_bitmap(font, s[i], font_pitch);
-> -		drm_log_blit(&map, fb->pitches[0], src, font_pitch,
-> -			     scanout->scaled_font_h, scanout->scaled_font_w,
-> -			     px_width, color);
-> +		src = font_data_glyph_buf(font->data, font->width, font->height,
-> +					  (unsigned char)s[i]);
-> +		if (src)
-> +			drm_log_blit(&map, fb->pitches[0], src, font_pitch,
-> +				     scanout->scaled_font_h, scanout->scaled_font_w,
-> +				     px_width, color);
->   		iosys_map_incr(&map, scanout->scaled_font_w * px_width);
->   	}
+> diff --git a/drivers/gpu/drm/drm_panic.c b/drivers/gpu/drm/drm_panic.c
+> index d6d3b8d85dea..e576c4791861 100644
+> --- a/drivers/gpu/drm/drm_panic.c
+> +++ b/drivers/gpu/drm/drm_panic.c
+> @@ -443,9 +443,11 @@ static void draw_txt_rectangle(struct drm_scanout_buffer *sb,
+>   			rec.x1 += (drm_rect_width(clip) - (line_len * font->width)) / 2;
 >   
+>   		for (j = 0; j < line_len; j++) {
+> -			src = drm_draw_get_char_bitmap(font, msg[i].txt[j], font_pitch);
+> +			src = font_data_glyph_buf(font->data, font->width, font->height,
+> +						  (unsigned char)msg[i].txt[j]);
+>   			rec.x2 = rec.x1 + font->width;
+> -			drm_panic_blit(sb, &rec, src, font_pitch, 1, color);
+> +			if (src)
+> +				drm_panic_blit(sb, &rec, src, font_pitch, 1, color);
+>   			rec.x1 += font->width;
+>   		}
+>   	}
 

@@ -1,94 +1,95 @@
-Received: from mail-dy1-f172.google.com (mail-dy1-f172.google.com [74.125.82.172])
+Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F9473CA493
-	for <linux-fbdev@vger.kernel.org>; Tue,  2 Jun 2026 10:18:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D24603D6CB7
+	for <linux-fbdev@vger.kernel.org>; Tue,  2 Jun 2026 10:19:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.174
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780395514; cv=pass; b=m4Gs0F10f919G4SskttsKlLGam5+ALHlys86yJdlxbaT9lUHjfm3rOf9GdM1m5jSG2ppy/xjya43NsqIp5Za22eJrUtbVqquQtdz9YlL9PLOqI4fIUfPmsyPZwe4Em+1sBqSaRNgIljRS9AAO++AsmgJMz+P72ndMH8VRj1pRbc=
+	t=1780395554; cv=pass; b=nd7Ht4kPL7xOhAodLWlUuhQHsXuYoHXVbB3KbjgE8asztlz4TW41rXxMnBqO9W2gvdXCpt5u/ojg656wLCHAEI/32lVnCcWyzwyWC0A/cvVWsRzlrKkbNgov0srOvOATrjhjyiRBYas4yyiWcFITuN7GLzMHMR47UfMy7jcTdBY=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780395514; c=relaxed/simple;
-	bh=tsb+ShdNHjPhqRT+1y1ob/npW7bqLOA6CccHz+MAA/Y=;
+	s=arc-20240116; t=1780395554; c=relaxed/simple;
+	bh=3B3t6ptcOYLW8i15s/yZOStzPGXLE8YErZRu0mWiPrk=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=T+qvpnqwlfoxk/S4c9SgVuyqGPJ6J6xKd7/j2QmIUERmvi0mP1DdImESdRJhvoFttPtkv9Afn7Q0UeuvdA0EXrfkfctgHykS+3DeyTUc/u3xAYRYjcNNSSoguz38g8cFeeUbQ9lOO7HK8633Ck0YglPap1RjbTMlqorFKLwmT50=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LylQJDHM; arc=pass smtp.client-ip=74.125.82.172
+	 To:Cc:Content-Type; b=nIY6bPJlITMrxPoHBGStj3k0pInbEopzTF/G61dA0VRIQOcVJG7NG2UB5Hiwe2JOe5OxHCjN9W61t1vPrgrZakQ49C7ZnmSGvBhsn+pcxF6/a3PbUjLTm8qd+vWExRJKi7qr+/oEfPr4sR0sm3yUOtfVD3jQlyPslaseEXMlZ3I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AyUwTwsC; arc=pass smtp.client-ip=74.125.82.174
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LylQJDHM"
-Received: by mail-dy1-f172.google.com with SMTP id 5a478bee46e88-304e6c6464dso419227eec.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 02 Jun 2026 03:18:33 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780395512; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AyUwTwsC"
+Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-304d8e3bb72so7814555eec.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 02 Jun 2026 03:19:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780395552; cv=none;
         d=google.com; s=arc-20240605;
-        b=b7MDUnUVUkT8znG+fcodf5uPGwQyDYpNiXP1rSujurH85/6sZttyi9iUoAlgW3Bhp1
-         AfNWwPXW8IbeyhTKZdwEs71tOMBxf14WD9/C7Kg5/PmAMS/MamTHDhKEkOrn2fRBTxxS
-         n0GpHX5eH0SOj01tbasl9X0QT4NrQaxUZYKU2jJ4KAKdS3TFT/cUjxBIJIDxtA6kmvJw
-         qfiV0/47X9Xap4e2xrJ/TGgiP9tziVMN6wPFVweMYFg4AlOBh5X32qGpRttc3uiP/7z1
-         z3g9PMtyZar1pTix10DBrXDOr5+LrLW50k2XglvOIByXgNKLjzHaTrAuDAvPYQu0GNdO
-         Z/sA==
+        b=JThN/+5cFoLa6+xHYnnXWb8OCTFeMqjoa4FhaKOlAaXO7rHbH/qg5Pt/SgpJPo7Ebp
+         JwwdvS5YxeR10U3Zra728oX3BLIL5hDOhBcn77HZ7JtmbfVUB6U3zERR/ZmfMjpupJe7
+         B6BisJ/uQl8YDnC8djd6Wq6w4swwi7GXPWPU+38KUdvUdtSubTwKKIs47StGkIzFHX0x
+         RepT8CEB1nxedWBVIJJfaZ9Y+taDy6BOfOVqnsSdGC20+y2DEBLDlTuhIhJie3OrSAMh
+         5oyJsBJQ+LOjyezp4AJrB0oWHo611mROCWTFcKktYkS0N5vNERH1UAbL8Xa/dukRgpVF
+         bV0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=OFZUuzZ+0IS+9EDZyoznNJZXjuYIGtdVqC67r/Z0ScE=;
-        fh=kaSe8adCorQnRm5IH7sGbUt0LzwFGyLvbGrE6I9XERQ=;
-        b=g3SZQDdpommJCY7+oBuFktrb00/2D5KT5yV+jwWdKd+FpqQq9IIIi4L64VfOhzMTZX
-         IdAo1tRiE2NDUPxelSOoF3u5/iPXcZK/5IKY5meW3PwGCLDqMkcY9EkoOcIOf7ixOmFp
-         3ozKGb9D2jig39yBK0C0sp+HfTaQZENKQYut0P255tZLdUG4CV0ZUMOm5viIfx8Ii0lL
-         d9jtcmyu3F2V8ZIZGChW/2XRnNY1l45U8Hxo5dMUv+wS1sUBDjhI2lvF+89RsYgUjdB7
-         xgHiHTCZ+D/iGjbjtyr5qGG8bpmTKSSQILYUoQderyVz7hafvXjI8wDwb9Y3ikyGCRo/
-         v9KA==;
+        bh=+Rz2DgaRr0tqOwLOIkcbJ3/5tQrroNwxRI/2HG/tAbU=;
+        fh=jFqyBeWfEhwZbe8YVcPRf1TsZF6U+GJltCAkiwfz+2s=;
+        b=bTavC3Kn6TNChs+WTN99LiFJ+3SM0B+qQqF9pprqMyshtAFxXCBdUkVVuN+HctrlWk
+         aWwrLq/+29eXY08ZPxYHlzkjD5L9LGLhvGDSM9T2nt4s3higUCn0rCDiEJepwzfv6CJM
+         Jg/UAWGQFnoJu3WbGfPqm+hBCnFBFmY9Y/bRG9/qg6VNdv5ddmu6r0HG6Q9CJP1SEMDA
+         qfI60x4muLFOIoqtuGkBIJddsE6JvyGaprkRPLZX80GRo8UYQvHgpnd5IlGonlJaHUu3
+         e5keErVj2uNqqcfLVIKb/RlP5vUZ8sPYU7seDEEGrH5nyXIGx0Ax3g+7YzsrAoWwXKic
+         kymQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780395512; x=1781000312; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1780395552; x=1781000352; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=OFZUuzZ+0IS+9EDZyoznNJZXjuYIGtdVqC67r/Z0ScE=;
-        b=LylQJDHM7J3/c/sYuUUvJyKb0EF1e5Rl9EUfysxJVUAuGxlqlY7a+pI9K6pjiG4X6J
-         q/3cWwz79o2Qxuir0eyyzKacKHOnNhh4k6bNnUrL1XZFRqgVAPYcuWDH9vw7Z2ZYFUms
-         v62n8tEG782bboDoZdrAnJKQweTrNEgVMUyF7yo4ZQWk5Z3gtVUnFqYXQM+6bxci/yNw
-         1riH9bioEJi/Vj3THhDWpzOkP06fmWgFm1tP6hV4hF/V2CDUofxrvycCfEX8sEZ05dBh
-         zVHBYXWqsq7+r7CIW+5ZehlYiO+OLcqmHBWMKTKzB6NB8L5c5E1i3MzFm2ZSQLOSnMWa
-         iwaA==
+        bh=+Rz2DgaRr0tqOwLOIkcbJ3/5tQrroNwxRI/2HG/tAbU=;
+        b=AyUwTwsCHthjP6xub1kYtxw/LI3RE35opRdOgCOuDfMit/QnFgIeUTShTZZIpe7lBF
+         qRQWCXiVBDsalYrzAVptKLel2m0TfNtWh7rlB/0YfAa0JxZpFTBMXmCqjgmyp6XYUC2h
+         QjJ6fthhtIhDtpCkrreEsYzND+1a/XPf++2mHd6EuNSDjeEjI7/TXRDIJKyO1emHRWQd
+         zZIsyiRQ76oy+WEZjmkjDAgD1tRWUqjXZbd+Fs1Ujp7llqA6OFqX3OzWrDW1ZFoisIF0
+         yd6l2WV2jaXKT5SEz13bXNf+ZxlWNte7M/NODRmIIqX/pt8TiBLOFbw5Wg3xJht71mBr
+         S/Uw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780395512; x=1781000312;
+        d=1e100.net; s=20251104; t=1780395552; x=1781000352;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=OFZUuzZ+0IS+9EDZyoznNJZXjuYIGtdVqC67r/Z0ScE=;
-        b=PHRDtKPAzJIrHdcNyYhSlhwQ8FmdiFttqLbzb7zls8KOytP9R6wFZaL/1q5qp2QAjI
-         OYEgsyvo/h1URP2+hchcHNubUkaYd16HNar8gPSdrbHuUVK7FXTylnn6Bma0q3sTM+DN
-         HqW3xFX+Wifqp7DT8omVOzTNpHl10TwWPhN1aQqRAz0ocDdov6jtjNv2V/l+WWWyM1YB
-         8FVrm7VGNh0b4mokUHzYM+RLlUtPZHpWFoY1AVvh7M9/Op2UUCTkXK9HKTSiXr42BIgZ
-         fcu+VCnuxgQNXifnyzbbcZ4WoUK+TPs89Eq1fE0ybbIMB7y3w+1sPuO2WhNYQO1oh/Q/
-         HFjA==
-X-Forwarded-Encrypted: i=1; AFNElJ+2idugkoTXOYgDQ1zDWhKIYmacAPkbWNEHZPTUc4/q4BlAyLZ0k2C5Df3+BWkmZzxQTou6kEM+Fs0O5w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxTL41nlL++xND14ZPWPnbhj7uR8pIrDlS/CQDZDICk0VnyeGx2
-	l1iMuKtxbkQmdl36OBUXRg09u+rtUqC+aKfdt+6QRxU6KiCktq1W7jNCV02lwDpu62nZauGf6dP
-	jLoak6kGCQJGkChGxPkBPV8m9bNcpRsg=
-X-Gm-Gg: Acq92OHYP2x7Sy8Si2U4EbIKZ4XyKPVyDbPWgXQ0U1ZSUwbnFNmFwmdJ0tEWec9XKOs
-	DjPqgE1oRjJ648Zkf9k7e6qNSZbtBhezBXoEoTsYh7vEU7/dlIwD+FFT3b4Oycm4lXSbnBwDCSi
-	ybes899ncX5CCTTBOjqz53yFlBPTo9zlZIWwnQilbTN5qIxS7NXA/3OXPLhqY2UrNZ1BQ7ARsOn
-	IPRBYxGmnBWXaxvbasbk1V+vQFwGWISmlewY9ruF+vk+IHBJEjOp2RUtj+68x8CaJJY8r2iRHUK
-	+XD1q7Ffr/BlVEePgx8hjBaRb1BNlQ==
-X-Received: by 2002:a05:7300:5726:b0:2e2:3381:2fba with SMTP id
- 5a478bee46e88-304fa523d3amr7629148eec.3.1780395512175; Tue, 02 Jun 2026
- 03:18:32 -0700 (PDT)
+        bh=+Rz2DgaRr0tqOwLOIkcbJ3/5tQrroNwxRI/2HG/tAbU=;
+        b=b8SP5cuMj6c9rYHiwhlCUzv26CC1FZR/eYUt+9ada06rA9IvXvnIxoRXS47iQ/iro4
+         MC1ro8C9JRzHS0mh/h0J+Ai48VFhoCLSNvAXFD+r5m4Ftges65CQDWeotbHcPOSVcoGM
+         WC1orlPP5scxmvOxMCVJ22Z0xVpcxFrxLb/KUWWNFDL6yq/IC2pPAKOkXqxdmuagJhgO
+         QivMMJYrDwvLpwLBO2BzC9jfZoHA2AEejQzmpGUlTsf0jJ5Wem+EdMbrH3RzFl/vDeu5
+         E91RhOO7TNkzKoX9YHkot7SsUgZ8wvmN+Xb1Tts2HPwQZ3YtYonIgPwbIT4Z7czTzfwU
+         dUMw==
+X-Forwarded-Encrypted: i=1; AFNElJ/W9kgPQ9XD3apQ77RMyP6PNLDu04AmSO2mRdnEq4v/NaiMfLWxE0QLQf6uZiIXHoiG58rh+cjCSczylQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxyOXdCh+uxbnXpoTDK+IUHBVlfexpCkvq3yDK2vmFORQF+zyCx
+	4ms9ur31uJ3WGt3uVKQrvKWK2fH+Ok6xqX+9JAvaUPKScFXiO39r4zK23cEV8oc/JHPAYsfzFxH
+	VSkgiYMfrpzuvVg2Wb0Bdq0oR+WSZ38Y=
+X-Gm-Gg: Acq92OFdt/l8SikukQe2nAlW+uE4wkAJv8F/2WVt2SvocEXz06ZzFybnY075epUlnlt
+	iYOPe5b10YcqdIJzmJhgRAzwaobyntQ7drQ/OihIhRt59YpLMCOnOcku+k5IoNWHes94TeBHlzS
+	mBn7NghKB/L9qFbUad+f9sdtZljYhIi7EGa0dxYSE027qMHHpKTICooGDqZdz6nqQcgT43W6OWQ
+	MuNLp0RvhO7+7+ylJ6jX24cCLy5nZgW3EtgrJhxdnlLZbxaVa6m1bB1mM9tC40raePd30XxdRH+
+	nJJZ4lxZWBfsf1K8n2g=
+X-Received: by 2002:a05:7300:6427:b0:2df:919f:ce59 with SMTP id
+ 5a478bee46e88-304fa67ee46mr6895369eec.19.1780395552116; Tue, 02 Jun 2026
+ 03:19:12 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260601151831.76350-1-clamor95@gmail.com> <20260601151831.76350-3-clamor95@gmail.com>
- <ah6O1h8SPwjf3rV1@ashevche-desk.local>
-In-Reply-To: <ah6O1h8SPwjf3rV1@ashevche-desk.local>
+References: <20260601151831.76350-1-clamor95@gmail.com> <20260601151831.76350-9-clamor95@gmail.com>
+ <ah6PxFtoJUWkd79P@ashevche-desk.local>
+In-Reply-To: <ah6PxFtoJUWkd79P@ashevche-desk.local>
 From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Tue, 2 Jun 2026 13:18:20 +0300
-X-Gm-Features: AVHnY4JHC1yQblwim_AIT-fQGP6xAd5YIyw3Q9PUntQ6X-j1sNWq1k3TeFJP-_c
-Message-ID: <CAPVz0n2vRFMKagLP+Ssq7n0ECp4_4mT6k7Bo9z=rxrSNCfCRKg@mail.gmail.com>
-Subject: Re: [PATCH v3 02/11] mfd: lm3533: Remove driver specific regmap wrappers
+Date: Tue, 2 Jun 2026 13:19:00 +0300
+X-Gm-Features: AVHnY4KArfWMr0jnHoh9vtR5UqW4K7jQ3330Z8FTAYXvtwkDG99A7ncLjymdKC8
+Message-ID: <CAPVz0n0P7Jk17cM2M1zuHZfySo2=Uibr5izwKU2tqiBpBcg0FQ@mail.gmail.com>
+Subject: Re: [PATCH v3 08/11] video: backlight: lm3533_bl: Improve linear
+ sysfs logic
 To: Andy Shevchenko <andriy.shevchenko@intel.com>
 Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
 	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -102,169 +103,40 @@ Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-=D0=B2=D1=82, 2 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 11:05=
+=D0=B2=D1=82, 2 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 11:09=
  Andy Shevchenko <andriy.shevchenko@intel.com> =D0=BF=D0=B8=D1=88=D0=B5:
 >
-> On Mon, Jun 01, 2026 at 06:18:22PM +0300, Svyatoslav Ryhel wrote:
-> > Remove driver-specific regmap wrappers in favor of using regmap helpers
-> > directly. The wrappers are mostly equivalent to the standard helpers, w=
-ith
-> > two exceptions: regmap_read requires an unsigned int pointer, and
-> > regmap_update_bits has the mask and value arguments swapped. These
-> > differences were accounted for and adjusted accordingly.
+> On Mon, Jun 01, 2026 at 06:18:28PM +0300, Svyatoslav Ryhel wrote:
+> > Simplify the sysfs logic of the linear property by switching to a macro
+> > and a ternary operator.
 >
-> We refer to functions as func(), exempli gratia, regmap_read().
->
-
-Noted.
-
 > ...
 >
-> > static int lm3533_als_get_current(struct iio_dev *indio_dev, unsigned c=
-hannel,
-> >                                                               int *val)
-> >  {
-> >       u8 zone;
-> > -     u8 target;
-> > +     u32 target;
-> >       int ret;
+> >       if (kstrtoul(buf, 0, &linear))
+> >               return -EINVAL;
 >
-> While at it, move towards reversed xmas tree order
+> Besides _assign_bits() in the below, side note here to unshadow error cod=
+es:
 >
->         u32 target;
->         u8 zone;
->         int ret;
+>         ret =3D kstrtoul(buf, 0, &linear);
+>         if (ret)
+>                 return ret;
 >
+> (obviously in a separate change).
 
-Noted.
+Won't happen in this patches.
 
 >
 > ...
 >
-> > -     ret =3D lm3533_update(als->lm3533, LM3533_REG_ALS_ZONE_INFO, val,=
- mask);
-> > +     ret =3D regmap_update_bits(als->lm3533->regmap, LM3533_REG_ALS_ZO=
-NE_INFO,
-> > +                              val, mask);
->
-> It's better to replace this to use _set_bits()/_clear_bits() or even move=
- from
-> the above conditional (not in this context) to _assign_bits().
->
-
-I will take a look.
-
-> ...
->
-> >       else
-> >               val =3D 0;        /* analog input */
-> >
-> > -     ret =3D lm3533_update(als->lm3533, LM3533_REG_ALS_CONF, val, mask=
-);
-> > +     ret =3D regmap_update_bits(als->lm3533->regmap, LM3533_REG_ALS_CO=
-NF,
-> > +                              mask, val);
->
-> Ditto.
->
-> >       if (ret) {
-> >               dev_err(&als->pdev->dev, "failed to set input mode %d\n",
-> >                                                               pwm_mode)=
+> >       ret =3D regmap_update_bits(bl->lm3533->regmap, LM3533_REG_CTRLBAN=
+K_AB_BCONF,
+> > -                              mask, val);
+> > +                              CTRLBANK_AB_BCONF_MODE(id),
+> > +                              linear ? CTRLBANK_AB_BCONF_MODE(id) : 0)=
 ;
->
-> ...
->
-> >       /* Make sure interrupts are disabled. */
-> > -     ret =3D lm3533_update(als->lm3533, LM3533_REG_ALS_ZONE_INFO, 0, m=
-ask);
-> > +     ret =3D regmap_update_bits(als->lm3533->regmap, LM3533_REG_ALS_ZO=
-NE_INFO,
-> > +                              mask, 0);
->
-> _clear_bits().
->
-> >       if (ret) {
-> >               dev_err(&als->pdev->dev, "failed to disable interrupts\n"=
-);
+> >       if (ret)
 > >               return ret;
->
-> ...
->
-> >       u8 mask =3D LM3533_ALS_ENABLE_MASK;
-> >       int ret;
-> >
-> > -     ret =3D lm3533_update(als->lm3533, LM3533_REG_ALS_CONF, mask, mas=
-k);
-> > +     ret =3D regmap_update_bits(als->lm3533->regmap, LM3533_REG_ALS_CO=
-NF,
-> > +                              mask, mask);
->
-> _set_bits()
->
-> >       if (ret)
-> >               dev_err(&als->pdev->dev, "failed to enable ALS\n");
-> >
->
-> ...
->
-> >       u8 mask =3D LM3533_ALS_ENABLE_MASK;
-> >       int ret;
-> >
-> > -     ret =3D lm3533_update(als->lm3533, LM3533_REG_ALS_CONF, 0, mask);
-> > +     ret =3D regmap_update_bits(als->lm3533->regmap, LM3533_REG_ALS_CO=
-NF,
-> > +                              mask, 0);
->
-> _clear_bits()
->
-> >       if (ret)
-> >               dev_err(&als->pdev->dev, "failed to disable ALS\n");
->
-> ...
->
-> >       else
-> >               val =3D 0;
-> >
-> > -     ret =3D lm3533_update(led->lm3533, LM3533_REG_PATTERN_ENABLE, val=
-, mask);
-> > +     ret =3D regmap_update_bits(led->lm3533->regmap,
-> > +                              LM3533_REG_PATTERN_ENABLE, mask, val);
->
-> _assign_bits() and so on...
->
-> >       if (ret) {
-> >               dev_err(led->cdev.dev, "failed to enable pattern %d (%d)\=
-n",
-> >                                                       pattern, enable);
->
-> ...
->
-> >  extern int lm3533_ctrlbank_set_brightness(struct lm3533_ctrlbank *cb, =
-u8 val);
-> > -extern int lm3533_ctrlbank_get_brightness(struct lm3533_ctrlbank *cb, =
-u8 *val);
-> > +extern int lm3533_ctrlbank_get_brightness(struct lm3533_ctrlbank *cb, =
-u32 *val);
->
-> We don't need to keep 'extern' for ages.
->
-
-I will no inflate this patchset further
-
-> >  extern int lm3533_ctrlbank_set_max_current(struct lm3533_ctrlbank *cb,
-> >                                                               u16 imax)=
-;
-> >  extern int lm3533_ctrlbank_set_pwm(struct lm3533_ctrlbank *cb, u8 val)=
-;
-> > -extern int lm3533_ctrlbank_get_pwm(struct lm3533_ctrlbank *cb, u8 *val=
-);
-> > -
-> > -extern int lm3533_read(struct lm3533 *lm3533, u8 reg, u8 *val);
-> > -extern int lm3533_write(struct lm3533 *lm3533, u8 reg, u8 val);
-> > -extern int lm3533_update(struct lm3533 *lm3533, u8 reg, u8 val, u8 mas=
-k);
-> > +extern int lm3533_ctrlbank_get_pwm(struct lm3533_ctrlbank *cb, u32 *va=
-l);
 >
 > --
 > With Best Regards,

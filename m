@@ -1,68 +1,51 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81853359A81
-	for <linux-fbdev@vger.kernel.org>; Mon,  1 Jun 2026 19:47:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BB043BE147;
+	Tue,  2 Jun 2026 08:04:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780343227; cv=none; b=bjZKKjPpBUwV2Utk8dTceazAyaslVbTfsuGxZqKt12qfhPzo9Cif8FixqX0rMan8N4aRrDbZm/Et47GCPl98hnv9DiJPpQNA2WcKkQyPiEVklo3l2YtNN7xpB4dncr5gqr/+8dYzZgBXIwJHU/Qu7hmQ68o1Z+MNiM3Lyjk9zzQ=
+	t=1780387473; cv=none; b=DlKoeP3U+32sVb9A9irPSEldSmxrPKVifrMUDjIbpwf/6XyW0ZQUN3kzmXBEfgpxdNoAXn91PTnh/IlQdeY+ZJcP4ppCaZFlI5RdAzFUTHLZv927EWFdxXB+TLMJoCB9roqW364AD4ekQApdG4aK2qNFeQjGzUz0uTZRM0XLfWI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780343227; c=relaxed/simple;
-	bh=M16nz1qb1nkOkk8U27EY1VaByNCLIjEENT79INbLNnk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Ea04xFmC+/cK9+EF0i78rnM5WLzSrjz8pFQy1sG6Q1Lnoy30mIoTfP2tRBdtmCFornOula6oGalXspfMaDmewtKC51W5yTRAJ6NUNW0gunPltsNsfbNMRA/EPqfs/v0WkrGfTR24GoYCFt+UYDtbf8aOiCceNhPdczIkxml7ykI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PZR1NzU2; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PZR1NzU2"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-49041fb8c23so80274085e9.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 01 Jun 2026 12:47:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780343225; x=1780948025; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=LAHPjEOPJLBbaq5NjMaRW8Wr9IuufyCksNsjf8BBwYw=;
-        b=PZR1NzU2i0n6hTCq+mcU48IXoZAdiYqxRSqS4APgEhRTgYR5FuhtIungJtnC3+90lK
-         49z5fdyszXE4zzCT0Rvzi2ivrIskc947MN//HeMNNAqQCzBeuKIaQmkwH5t242hcl4B6
-         8TKLDBbmpAzPuoMpt2or+GM+c6gsXB9H8YHmS7lFBbryv/MIgzByMJSFNamCOetbiOul
-         bqya7PUaTmSKD3MFiQkZfyiADXI7NlCC2lmRlQfwKNmW/fdljaUVYkQWI1rJclpyW+lf
-         4GYZX1MIHWZ5swgis7w6rUfSmAX+N6OUqRXpHy8HyEh+jcQVK3CNv9w/bKkmlzodrD7D
-         KEww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780343225; x=1780948025;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=LAHPjEOPJLBbaq5NjMaRW8Wr9IuufyCksNsjf8BBwYw=;
-        b=NBrtEMJH8ZakJ7KZGzqUbYgMRegbAMNDLTgCfeAUbUSmDyXYa0JToKeDpykXi9knUK
-         HVZgFdnW++l2fJYSFWCmwopKemov4/aZDBRt3mZfMhXazgAc7ZIbvjwxRPVaxGYkLxs8
-         nf3bZimjOWcxY67KU5ozpALhoSpaOawpwUypLGEF+D31GwaBxBHmGANN34tl+rL/aL/p
-         O+QomvFoKTU2u65rdfVxFDddA3F7ha89bwnTVSTyLKfInevw51FfS1W/m85M+DMDmQhx
-         SpkpClhwWYdKxlbOFOsNYwlKXA2RD04CZICNNm1JI1LwGzkYkdzbVvz+UX81P99IbSRc
-         ptZQ==
-X-Gm-Message-State: AOJu0YyIgaBlML5puz8WI7mQ0yns8Ms3J3dpAaRJ90lrCzM8K7Ocdwv2
-	zfzB/w5pgX0ZC13+sgN+SAeU2TWkOVglRNGEcmmGj+hTkLi2w3SISuzP
-X-Gm-Gg: Acq92OG2vXYL1vVDVfmybtAHU+vpwL866o7UdNCNJW8nKuTwAvkFHkbgYg1vHF32rBp
-	Ql5r0H5tds/vNmh/KfOuWVaZ521FqHz86PP65W+tZ4F1rAmh/teC+8ix39IIgqdub18GJZeaUhZ
-	1yJim1as3YIX2SRAJA28jT0PuFNB4rhlXk6Nt48kpZfGcOXKlBtPBxBFY3f1m65vBPvN7s30+Jv
-	hvo4wPW6vbShWHlZ8Z724GmsLf9JsB+Fw4+vqAyY/vgswqZsexScrlcx4yuB+WbQZBNsolPDdVB
-	JzkSJ1ZaIkCYNNndA6q1zgJfoYjwByPOjU2DJVBjK6gMSbUmx7RRmW6R7AB4QXJqhG8SmX7GV2S
-	lhWlawLKj1DzEBII+JTGtToJiQXERpq3z0qtd1lcWnFfBZ2rAPyi+rXdrcV221R2vNRYLO2D16V
-	wNZCJ2Xp8dfY2TnBACKSj++MsKFcVq5GabQ+AU5PZtUQ4u8zF6WhJjnV3y5XM9QTCxKY0=
-X-Received: by 2002:a05:600d:640f:10b0:489:2005:b36e with SMTP id 5b1f17b1804b1-490a2941d4emr170704985e9.19.1780343224596;
-        Mon, 01 Jun 2026 12:47:04 -0700 (PDT)
-Received: from eduardo79silva (ad96e068c.dsl.de.colt.net. [217.110.6.140])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45ef34b7d6bsm28802972f8f.10.2026.06.01.12.47.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Jun 2026 12:47:04 -0700 (PDT)
-From: Eduardo Silva <eduardo4silva@gmail.com>
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	Eduardo Silva <eduardo4silva@gmail.com>
-Subject: [PATCH] fbdev: grvga: Fix CLUT register address offset in comment
-Date: Mon,  1 Jun 2026 21:46:44 +0200
-Message-ID: <20260601194644.275346-1-eduardo4silva@gmail.com>
-X-Mailer: git-send-email 2.54.0
+	s=arc-20240116; t=1780387473; c=relaxed/simple;
+	bh=OETo9jbPAvqC90MNsOMYY31pyLMfQavt0YIuX8WZ1iU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=T9JN46WLoZ8wgS71Fj1YYHJEr409VV0jpjC6BeGfGBc6FjxCFI3D+ynBaE0IMdcUVbUFDUObrfVPybO69GQne/XX3FhHajtyT8DqBuMfsJNq7yXMnLHXGPLD8yFgEX/fPh9bRYiVY9QvPCuw46NPUceyLZPHXMXCoGQMdpwORrA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: a86d62fa5e5911f1aa26b74ffac11d73-20260602
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.12,REQID:2f781195-e581-4dbf-9a50-258240510d26,IP:0,U
+	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:e7bac3a,CLOUDID:93f029c7c46a1e7e9f12274d0a1f2f49,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:102|850|865|898,TC:nil,Content:0|15|50,E
+	DM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA
+	:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: a86d62fa5e5911f1aa26b74ffac11d73-20260602
+X-User: zenghongling@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <zenghongling@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 369047598; Tue, 02 Jun 2026 16:04:19 +0800
+From: Hongling Zeng <zenghongling@kylinos.cn>
+To: deller@gmx.de,
+	kees@kernel.org
+Cc: linux-omap@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	zhongling0719@126.com,
+	Hongling Zeng <zenghongling@kylinos.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] fbdev: omap2: fix use-after-free in omapfb_mmap
+Date: Tue,  2 Jun 2026 16:04:15 +0800
+Message-Id: <20260602080415.171378-1-zenghongling@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -71,28 +54,55 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The comment does not match the actual address offset. According
-to the GRLIB IP Library Reference Manual (p. 2119), the CLUT register
-is at offset 0x28, not the value stated in the comment.
+omapfb_mmap() has a race condition with OMAPFB_SETUP_PLANE ioctl that
+can lead to use-after-free:
 
-Signed-off-by: Eduardo Silva <eduardo4silva@gmail.com>
+The fb_mmap() entry point holds mm_lock but not lock (fb_info->lock),
+while ioctl handlers like OMAPFB_SETUP_PLANE hold lock but not mm_lock.
+This allows concurrent execution.
+
+In omapfb_mmap():
+1. rg = omapfb_get_mem_region(ofbi->region);      // Get old region ref
+2. start = omapfb_get_region_paddr(ofbi);          // Read from NEW region
+3. len = fix->smem_len;                             // Read from NEW region
+4. vm_iomap_memory(vma, start, len);               // Map NEW region memory
+5. atomic_inc(&rg->map_count);                      // Increment OLD region!
+
+Concurrently, OMAPFB_SETUP_PLANE can:
+- Reassign ofbi->region = new_rg
+- Update fix->smem_len
+- OMAPFB_SETUP_MEM then checks NEW region's map_count (0!) and frees it
+
+This leaves userspace with a mapping to freed physical memory.
+
+The fix is to read all required values (start, len) from the same
+region reference (rg) that will have its map_count incremented,
+preventing the region from being freed while still mapped.
+
+Cc: stable@vger.kernel.org
+Signed-off-by: Hongling Zeng <zenghongling@kylinos.cn>
 ---
- drivers/video/fbdev/grvga.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
-index de8ab817d406..a6594bcd74e8 100644
---- a/drivers/video/fbdev/grvga.c
-+++ b/drivers/video/fbdev/grvga.c
-@@ -33,7 +33,7 @@ struct grvga_regs {
- 	u32 line_length;	/* 0x10 */
- 	u32 fb_pos;		/* 0x14 */
- 	u32 clk_vector[4];	/* 0x18 */
--	u32 clut;	        /* 0x20 */
-+	u32 clut;	        /* 0x28 */
- };
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index d70deb6a9150..853bd55621ec 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -1099,8 +1099,11 @@ static int omapfb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
  
- struct grvga_par {
+ 	rg = omapfb_get_mem_region(ofbi->region);
+ 
+-	start = omapfb_get_region_paddr(ofbi);
+-	len = fix->smem_len;
++	if (ofbi->rotation_type == OMAP_DSS_ROT_VRFB)
++		start = rg->vrfb.paddr[0];
++	else
++		start = rg->paddr;
++	len = rg->size;
+ 
+ 	DBG("user mmap region start %lx, len %d, off %lx\n", start, len,
+ 			vma->vm_pgoff << PAGE_SHIFT);
 -- 
-2.54.0
+2.25.1
 

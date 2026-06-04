@@ -1,126 +1,196 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44A84477998
-	for <linux-fbdev@vger.kernel.org>; Wed,  3 Jun 2026 12:48:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59C2730D3E8
+	for <linux-fbdev@vger.kernel.org>; Thu,  4 Jun 2026 22:24:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780490894; cv=none; b=uWccZjEWtX9Xx3e7YtuPzuiavehyENdqrn8Hey3gCyqBzg6IMARGtIE3rKDKi6DJbSTSEmJeYUwkqXxg5vFzPFLVYsSrjVKVRPa3YXciNMl/VnbqTV4KQpkwnZNCwxeHCPXrlIOspRrTlf3x/5QsNILhTeY2ktT+0VVpFp1Sjjw=
+	t=1780611898; cv=none; b=cXbqCxSYsumwsA8WfLeLKmAyJWBP7pdIywZBVSIejFyOo0WJso8sbFTJsIfIbhtPlNqr4SPBQsoorQARLFY42DyRYGghsTKKnkXSRdf4d86JJrxaZg0jini9hFUhNyKgBmrwHE2c3NISMoreAEIQ+EYJtlUXUqQC6y8TRf4OEpM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780490894; c=relaxed/simple;
-	bh=xlOXLAxObYM0H755ypmNgwyw2u8sfHRzxCVxtOPiR6U=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=eavfd1sY7fbWkkFnF8ZEK+mdvmYySku5qjJ0yrxgTwZ8hm1mMFfZlYurNInW1SnH230y4G0AvMIqG6uxXzvy0Xzk/e3SH7zVVcs/4+wP4+ftRD9Q48j/PWzY2mIKjpaqBvF1ly+zS01yVXUPz/eVMeqW4/tqCP5Xffjs6Os5UGM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cFRqvq6p; arc=none smtp.client-ip=209.85.128.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1780611898; c=relaxed/simple;
+	bh=f3idzuawa6vsrS3BW0FmCxNUYgCnZU6q7pv/InHLaWY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TmXlVaOgEpMS9DiZJsfOr8evb1b68q12G8LGOjHJFMNoPT3PZ4RzlNA4t+z67auGl0SVR8lxOQkCNtoZb0LYx9ZZJsxdBkH3Gb3ZfB/hJnBuV6VXWEK10QeO6qp1C5koPboNv1MCC+h9QhDnmU3bIeQ/HYGVaI6/8VNvzI7MnXM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=o4VNOv3c; arc=none smtp.client-ip=212.227.15.15
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cFRqvq6p"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-490ace40f4bso38605675e9.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 03 Jun 2026 05:48:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780490888; x=1781095688; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HVsxgh2ujbRwP+s61o1Lj96pnFL7ang79UkYU7JexyA=;
-        b=cFRqvq6plQZnwjW1N10E+4jlpg1bKDo3EqO+vO8sjh9OHZhIedszNF+NAhokMnyyDh
-         qI3qO8sBZ/GXjCzS9F4FQ54h31PbGN6AZYBSHSOPqI051BXvXugtP4bwzzpGMl+HYK6H
-         IndiXj8r2LBFHDUPaIMHxbqnC14UENlglKPipY295Qt4LjuXDv4xQCjVmu9OWF2Vek+e
-         u+MYhvHbwv+FEWfxLYMzZlP+5CcAxP1PSNuQVvJOIlwVO5t9KN4cVhzE9StIImU/j6Ly
-         43bY9LVD46ucBV0BG0NH5rNxVHrNxWCIKnkhWuhoyxQKXEsevavlsqt3Vfew+q/utvP1
-         wYOw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780490888; x=1781095688;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=HVsxgh2ujbRwP+s61o1Lj96pnFL7ang79UkYU7JexyA=;
-        b=s9bf+KMNhQ5hXjZatvY+fGlYWJMtGZGiZVPmCNVpqkgvwvpEtRiGiIUeYgRiPiw1ic
-         nUTfVoyPJEL6Rv9T1JlRAECZNrcQKvOyhY2ouqDtue3PLJzch8vIanJoV+Qoe/IXAhPl
-         uCDMISE5kiCVcKCbqI6lxP5YHZHOLVwBq/DwjHKA3RS+qLxErYzJ31WQoQGRDkd8JxyE
-         7+i0fyYK6aias6NB5u80VXO4MUqk680tW3u2XGuM0cA7q1CyyT64T8dk8qn6vk3gXKPw
-         kuwvJ2wKDLqpj2u249GXRQeXzk1ivVUgKnQ1eRBcMYQy6nX1wsiQwDY3/fwwBdYuTlKy
-         7gZg==
-X-Forwarded-Encrypted: i=1; AFNElJ9TMQwmeoU7s+trSeOy7nP90vXNb5X6DPqT7YCWc+wq1Rkj5q4tT11YRT2q5ka0WEqpYAUiV1WN4LhVTg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxhxB6u97E4SyHicRHbIOp1X5MrdA7r9KTmHXlcHqnlrmULmWz4
-	RYnlXdU7N2/6yNDfy1HnBlRrTboWG15tbG0TREcsxuwtbQbkH+JaE6/N
-X-Gm-Gg: Acq92OEMyYp0vD8WyeOCHRpnHJXM3J8bLBiQM8uXi09VTg9pIKGgK7kIILBMh+kjyeB
-	lp+2tcF/xiTPmoXw2VjP65JV6uqHXLSHONi5HzIqBp9NLWuj40vblMwQ6zMEKJg54fwzcLcw5aT
-	ksyT31XaAfToR3Ux4GFZJcVnSJkJryf4VSeQZuJmFGM+oBAaixThMnIm0py6QNoREtBIrTL56Qr
-	0HiOcxA6Wkc3GcKP2kGuP7LdSGidYfXNJPto0uY2lZroT71tNS+nOxuG9DsEuqMHBqHpvbi8VYU
-	tcUpN4Q23k2LT1S8g7IYjFld9iM0sS0UodnlFBKpA3UCDEVdVhWeY0T3lsr+V5ol68nwkXt0m04
-	79scQVjR83Hcqs1j6v9TRetXUYX0jX2bQ6nqhoKZFa9HNO0c5hBXYpEPylsKf1cB9V9BJOkj8wm
-	36t1t3WotclqhQYau3Gw4MHUBk4n0WwJhkr3fcVPDEuKNSHqRMR86FplAGKnXpj94q63ZX82I=
-X-Received: by 2002:a05:600c:8b2e:b0:490:50c5:8153 with SMTP id 5b1f17b1804b1-490b5e73ed4mr48400975e9.2.1780490888332;
-        Wed, 03 Jun 2026 05:48:08 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490b6d16f0csm59311625e9.15.2026.06.03.05.48.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jun 2026 05:48:08 -0700 (PDT)
-Date: Wed, 3 Jun 2026 13:48:06 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: Dan Carpenter <error27@gmail.com>, Thomas Petazzoni
- <thomas.petazzoni@free-electrons.com>, Andy Shevchenko <andy@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
- <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>, Chintan Patel
- <chintanlike@gmail.com>, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
- linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: Use sysfs_emit_at() to print to sysfs
- file
-Message-ID: <20260603134806.69df0b01@pumpkin>
-In-Reply-To: <ah_cd9Ax4fzOhBp7@ashevche-desk.local>
-References: <ah_Y_Y2RtqeGxchF@stanley.mountain>
-	<ah_cd9Ax4fzOhBp7@ashevche-desk.local>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="o4VNOv3c"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1780611894; x=1781216694; i=deller@gmx.de;
+	bh=h2m/IXeC2IY+nlUCv/cOKpVzApra9Y0KTBvqHblKcQI=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=o4VNOv3c+OoTKeEHXTI2vKhGLSMgymImAHuSbRd9iScbk13fgUGnFK2IBboFcf2j
+	 67TnTWJ5uJu7yN6+XulCWvbcv+p+oehNnr36mWGCBOyQsOvHek2kg9uAaToAQXkcz
+	 BrC8MNok0xlVK6b5kwx8IbVB4d4OsmEB58QjAqkUlc/w0unIsAR4B4FJCzXLYsLYP
+	 OQsaGZoQ6G5Hv/PGKBKPcPNG/q42Sr0su1quzoRpUjY3MAgj7u4UoGfVzI/yu97uo
+	 Y8B/Q7Y9XxU6C0u/VcpqzfDVNg9OweVQgaPyoe9jk0DB4WHJXye9BMMJ7xr5RWBAK
+	 LLjdtWJehLcTfDt4nA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M89Gj-1wZv3W3sgd-003kBa; Fri, 05
+ Jun 2026 00:24:53 +0200
+Message-ID: <9469adb9-d8de-476e-a99d-46dad49c783c@gmx.de>
+Date: Fri, 5 Jun 2026 00:24:53 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: grvga: Fix CLUT register address offset in comment
+To: Eduardo Silva <eduardo4silva@gmail.com>
+Cc: linux-fbdev@vger.kernel.org
+References: <20260601194644.275346-1-eduardo4silva@gmail.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20260601194644.275346-1-eduardo4silva@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:jj7zLl2wEeMVbGBGAJDp+RFrIwLlTm+1JBOON1D0qpimlxTJsuc
+ aJrjrTg7ygo8Dc1F71WzdnMKTz4/1Ol7MlZA6C7H32lByZ4n/AoA/cv0tqv5762PVrSDK8V
+ ySBVG3za6AtEAPuXuPJhpGrUb8BO74aO08582UpgvXh5V8NIGKMIy3IZxHmd1EM0Ut9qKUP
+ uHeFb28itdC31Pwmyjwsw==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:CLNtHm64RqE=;DsHoFm4nm503iE8nWDhpoXSm3W/
+ 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
 
-On Wed, 3 Jun 2026 10:49:11 +0300
-Andy Shevchenko <andriy.shevchenko@intel.com> wrote:
+On 6/1/26 21:46, Eduardo Silva wrote:
+> The comment does not match the actual address offset. According
+> to the GRLIB IP Library Reference Manual (p. 2119), the CLUT register
+> is at offset 0x28, not the value stated in the comment.
+>=20
+> Signed-off-by: Eduardo Silva <eduardo4silva@gmail.com>
+> ---
+>   drivers/video/fbdev/grvga.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 
-> On Wed, Jun 03, 2026 at 10:34:21AM +0300, Dan Carpenter wrote:
-> > This scnprintf() uses the wrong limit.  It should be "PAGE_SIZE - len"
-> > instead of just PAGE_SIZE.  We're not going to hit the limit in real
-> > life since we are printing at most FBTFT_GAMMA_MAX_VALUES_TOTAL (128)
-> > u32 values, however, it's still worth fixing.
-> > 
-> > Use sysfs_emit_at() to fix this since this is a sysfs file.  
-> 
-> OK,
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
-> 
-> ...
-> 
-> >  	for (i = 0; i < par->gamma.num_curves; i++) {
-> >  		for (j = 0; j < par->gamma.num_values; j++)
-> > -			len += scnprintf(&buf[len], PAGE_SIZE,
-> > +			len += sysfs_emit_at(buf, len,
-> >  			     "%04x ", curves[i * par->gamma.num_values + j]);  
-> 
-> Can we switch to use hex_dump_to_buffer() at some point?
-> 
+applied.
 
-That gets hard when you really want to aim for something nearer seq_printf().
-
-Oh, the way the loops in the code are written doesn't look like
-it gives the compiler much chance of optimising it very well.
-This is probably equivalent:
-	for (i = par->gamma.num_curves; i--;) {
-		for (j = par->gamma.num_values; j--;)
-			len += sysfs_emit_at(buf, len, "%04x ", *curves++);
-		buf[len - 1] = '\n';
-	}
-and will generate much better code.
-(Although most of the cost inside the snprintf() function - which is horrid.)
-num_values better be non-zero.
-
--- David
+Thanks!
+Helge

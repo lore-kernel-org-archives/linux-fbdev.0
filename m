@@ -1,123 +1,206 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C256C3B19AB;
-	Fri,  5 Jun 2026 03:35:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7111B4C77CF
+	for <linux-fbdev@vger.kernel.org>; Fri,  5 Jun 2026 11:56:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780630525; cv=none; b=axtdwSugkqWD7kTLtRGtJruvXI/U85MWMHctCLJG8gogkBS/mHgQRkCvw6r4nX6YbIlonQzQq4d3LkqBfmBLH44Mumy3RSX5ykkTj8cHjdL8+mX6SOGnP4MaxdkYd2Wyg2XCG5/mwoRNoawJsb49KAak41LRmm3nBNvCRs5UdyQ=
+	t=1780660585; cv=none; b=XBfasfeoh+xT9Pt9FxBBSmk7ld2/xXsayuHjYXnoW4htmgH6OU9FlnMRUZfRLSrs76OD8raxLDcBtT3UY6ogDDEfQiv81xLPBBFdDAyId/C3Rdd0znjust1QQphIAh7FOasWgS24V6GkIbhrUCp/UGqwSdbTRi3fQgT6fhnjh68=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780630525; c=relaxed/simple;
-	bh=SvJvA/e9k9vGe4aXJUlBcZXnljr/0vPmGwJ4jUWSqW0=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 MIME-Version:Message-ID; b=RzZVR2phHT7vwLiC9SqyOSxkBpILZdnLmjdHnIhAhe6kz9xGoccxuNiL+jQwHHJCcvFwCmmbDB/VoaZA3AjhAMpAreqJAMemAXZhRKpAzHxOsjjPr3200jlmxzjGjxXQohvL/7KU+l5KgO/1E6JtvdYb8bSKWDXEqUrfXNFnnI0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=ZDUQcx+I; arc=none smtp.client-ip=220.197.31.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1780660585; c=relaxed/simple;
+	bh=RUeXkJiOC5YOIHyl10EHg1neCRlJCG9AqHP1nNGld8M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=r64lsm1dIkjSj6lp9mCtgUxtY22lESFC2g4Rv43hhkv91dtAsZBIyA8ASJDgZIWYePxqKRBsm5+Pga526QvocuXyJCXdsK4hFLqgjpumqCtcUIEMbupj0Bsjtyz2L5ktbgRTXsrW8812eY3IaWluI+q0VkVxn92LThFCeJmG1Qs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=WPk4LjV2; arc=none smtp.client-ip=209.85.128.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="ZDUQcx+I"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:To:Subject:Content-Type:MIME-Version:
-	Message-ID; bh=SvJvA/e9k9vGe4aXJUlBcZXnljr/0vPmGwJ4jUWSqW0=; b=Z
-	DUQcx+IHbLlU4W0m370Vraf6wd4ojU81nTyn5V+xXDr8MEddJms5lRZlfRAJ9MLG
-	r9QMJvc4DgR74320qcAaJd4vWiFkSqEAg0+wzAk5TQTwOw+HUT3y1YDOyPrG6NEd
-	p8HrNQjksqe4U3xN6NDj7q4OYG2CNEnlGK/khacesw=
-Received: from w15303746062$163.com ( [113.200.174.80] ) by
- ajax-webmail-wmsvr-40-113 (Coremail) ; Fri, 5 Jun 2026 11:33:51 +0800 (CST)
-Date: Fri, 5 Jun 2026 11:33:51 +0800 (CST)
-From: w15303746062  <w15303746062@163.com>
-To: simona@ffwll.ch, deller@gmx.de
-Cc: tzimmermann@suse.de, ville.syrjala@linux.intel.com, sam@ravnborg.org,
-	kees@kernel.org, yanquanmin1@huawei.com, syoshida@redhat.com,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	"Mingyu Wang" <25181214217@stu.xidian.edu.cn>,
-	stable@vger.kernel.org
-Subject: Re:[PATCH 7.0] fbdev: fbcon: fix memory leak in error path of
- fbcon_do_set_font()
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2023.4-cmXT build
- 20260403(27802f6d) Copyright (c) 2002-2026 www.mailtech.cn 163com
-In-Reply-To: <20260525082741.600003-1-w15303746062@163.com>
-References: <20260525082741.600003-1-w15303746062@163.com>
-X-NTES-SC: AL_Qu2TAvqYv0wo5yKaYukfmU0Qguw9Xcq5uPkj34FWN5t8jDrp5QodX0JFHVfbys6/Dy2ItRqsex1+1f9nQoZgZZ0JCInp9NpD3NFD8/e0sH7bUQ==
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=GBK
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="WPk4LjV2"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-490c0c92cffso9900425e9.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 05 Jun 2026 04:56:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre.com; s=google; t=1780660581; x=1781265381; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=+kMxhX4dP4R/LjY4CwrRq2xMY3d+unBriPLMp8xLnLc=;
+        b=WPk4LjV23jxnahAgWyU3SDAR/6VvX1WbfQplE0M5hwrKobgCUdMlIgh98Q6Gjw53cK
+         Ucem92i0wYtq9gOBRtze4GqMsVHM4khWVXtfu9kglV7LPd3vA6k0aryBRZhoAVtyLnRr
+         dl8CtJOvuqkIxSeBJ7OiWygIoohnk98UJoKsplWZalRynW1h4UUxBJmU/5xNbV+wry6K
+         2wjZLNm5HNm4rifBcYbOxWZkroP8JW6sftHCQLKDD1Mz8YMvQGWe4Jzme4Rm7P3zx5f/
+         fb3st2sU5OFPght7xhRb5lPriVWHU5YGYicn4arAskw2JjdPa1izKTBYi9u4TOxZYL8z
+         FkPw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780660581; x=1781265381;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+kMxhX4dP4R/LjY4CwrRq2xMY3d+unBriPLMp8xLnLc=;
+        b=B2MV4Hw2xIxUzjGgFW9PMZUnuhkAsE2JjwPCJtWys7LTnZxbg3Kl+rQ7KNAhO5p4/w
+         eaJ7dd0dAOtEm9FNUU1zc/9xmb8x9XG/uONBKh5keWoRL/++Z5ImVu7NBR1ggGpxfLcx
+         BGv9lllan2ZxgVXzaTtNiiTvlTO3pcM3x8SuM3ZQ6rajr6Iof+7ipeU+rdZ7f0hQ3p7o
+         SQ4hYucrcz+loMxNwc86u/yZ4HyXcmSnerwlG/EL3uHDQ9GOA4hajyDkDooI5952/opl
+         ECBss5VQZCDzOJpT4MSl+XarFpoCR8BIBbq3hIba3GkK8gUtUpc9xqe+hmGqi21stl1z
+         KpuQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+YAlO3DPsHZIc34uLCNMX4pL8YXw6zqr+E6+merTfDI7VYCMhTLehKKJIHesaTdnjneJMn0Dx3DiimPA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzcAuUvanjjVORr+709u/y/nELB+pLA+qFj29EJ2R67x+YXvRLY
+	A7pqR2zh71QDw6fVH3kzwIYi/vnfYk772hnhkBtHoR5uHhKskzxvW66c8niPvW+N2cM=
+X-Gm-Gg: Acq92OE8pfJcQ4n0QNJm/qlJLNrAiN1lpVTZtXTTGewb8B0oaSrOOMVtnrZc1UR28pr
+	zPh0ZGtax3oRXCetbl/JVpr/lwdPmuL3M7REgjDPg2BrrZ5fnwWyYWO3Bu93hIVZmC4IFjEmaV2
+	NaElH9vl9ZbG7/TuVonCi2VDrD/z5nEAhqS6gIwJvfyOWS/j9+o4aSaEJgQgxeDGdUn3ybgzGp+
+	WPQhGgiCzmLcJJ9yM2YTLm1y4Luk4E9MBl/YTiiJygdr835GIvJgtvQjM3hHDx3lH+QoQLPDcYk
+	h8aS8FkFW+fU4xwUIYqOgrh8MBqTKQWVu3aWOciX8Xbnvdp1VDtS32j9Yu9YZkMjwPtWXuIZ2o5
+	1OBwARdyuNTXR2cp8nLHcA8/1KhC+W2Jj3kUUeHonchtjz4dxnHEtiBzU46jAWkKbiVhEaP0Q1Z
+	TM4J27JSg8R23x9/Qs+ITZzTt7SVrQufir
+X-Received: by 2002:a05:600c:8705:b0:488:ac01:72de with SMTP id 5b1f17b1804b1-490c25898efmr60737855e9.5.1780660580944;
+        Fri, 05 Jun 2026 04:56:20 -0700 (PDT)
+Received: from localhost ([212.133.41.47])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-490bc3fd502sm147344695e9.11.2026.06.05.04.56.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 05 Jun 2026 04:56:20 -0700 (PDT)
+Date: Fri, 5 Jun 2026 13:56:17 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+To: Helge Deller <deller@gmx.de>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-i2c@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	"Christian A. Ehrhardt" <christian.ehrhardt@codasip.com>, "Christian A. Ehrhardt" <lk@c--e.de>
+Subject: Re: [PATCH v1 0/8] zorro: Improve handling of pointers in
+ zorro_device_id::driver_data
+Message-ID: <aiKyB-28VEg1kp7W@monoceros>
+References: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
+ <a3f9e96e-3bbb-4cfc-845c-58649405a1cf@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <5b288246.378d.19e95d82602.Coremail.w15303746062@163.com>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:cSgvCgD3lz6fQyJqvyQDAA--.30408W
-X-CM-SenderInfo: jzrvjiatxuliiws6il2tof0z/xtbC4x8b-moiQ5+8hQAA30
-X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="22tuv3cnyx6wf3bq"
+Content-Disposition: inline
+In-Reply-To: <a3f9e96e-3bbb-4cfc-845c-58649405a1cf@gmx.de>
 
-CkhpIEhlbGdlLCBTaW1vbmEsIGFuZCBhbGwsCgpBIGdlbnRsZSBwaW5nIG9uIHRoaXMgcGF0Y2gu
-CgpTaW5jZSB0aGlzIGlzc3VlIHdhcyBpbmhlcmVudGx5IHJlc29sdmVkIGluIHRoZSBtYWlubGlu
-ZSB0cmVlIHZpYSBhIHJlY2VudCByZWZhY3RvciwgdGhpcyBzcGVjaWZpYyBmaXggaXMgaW50ZW5k
-ZWQgb25seSBmb3IgdGhlIDcuMCBhbmQgb2xkZXIgc3RhYmxlIGJyYW5jaGVzIHdoZXJlIHRoZSBs
-ZWdhY3kgdXNlcmZvbnQgbG9naWMgaXMgc3RpbGwgcHJlc2VudCBhbmQgdnVsbmVyYWJsZSB0byB0
-aGlzIG1lbW9yeSBsZWFrLgoKQ291bGQgdGhlIGZiZGV2IG1haW50YWluZXJzIHBsZWFzZSB0YWtl
-IGEgbG9vayBhbmQgcHJvdmlkZSBhbiBBY2tlZC1ieT8gVGhpcyB3aWxsIGFsbG93IHRoZSBzdGFi
-bGUgdGVhbSB0byBzYWZlbHkgcGljayBpdCB1cCBmb3IgdGhlIG9sZGVyIHRyZWVzLgoKKCtDYyBz
-dGFibGVAdmdlci5rZXJuZWwub3JnKQoKQmVzdCByZWdhcmRzLApNaW5neXUKCkF0IDIwMjYtMDUt
-MjUgMTY6Mjc6NDEsIHcxNTMwMzc0NjA2MkAxNjMuY29tIHdyb3RlOgo+RnJvbTogTWluZ3l1IFdh
-bmcgPDI1MTgxMjE0MjE3QHN0dS54aWRpYW4uZWR1LmNuPgo+Cj5bIE5vdGU6IFRoaXMgaXNzdWUg
-d2FzIGRpc2NvdmVyZWQgb24gdGhlIDcuMCBrZXJuZWwuIFdoaWxlIHRoZSBjdXJyZW50Cj4gIG1h
-aW5saW5lIGhhcyBhbHJlYWR5IGJlZW4gcmVmYWN0b3JlZCB0byB1c2UgYGZvbnRfZGF0YV90YCAo
-d2hpY2ggCj4gIGluYWR2ZXJ0ZW50bHkgcmVzb2x2ZWQgdGhpcyBidWcpLCB0aGlzIHZ1bG5lcmFi
-aWxpdHkgc3RpbGwgYWN0aXZlbHkgCj4gIGFmZmVjdHMgdGhlIDcuMCBicmFuY2ggYW5kIG9sZGVy
-IHN0YWJsZSB0cmVlcyB0aGF0IHJlbHkgb24gdGhlIGxlZ2FjeSAKPiAgdXNlcmZvbnQgbG9naWMu
-IFRoaXMgcGF0Y2ggcHJvdmlkZXMgYSB0YXJnZXRlZCBmaXggZm9yIHRoZXNlIHN0YWJsZSAKPiAg
-YnJhbmNoZXMuIF0KPgo+V2hlbiBmYmNvbl9kb19zZXRfZm9udCgpIGZhaWxzIChlLmcuLCBkdWUg
-dG8gYSB2Y19yZXNpemUoKSBmYWlsdXJlIHVuZGVyCj5mYXVsdCBpbmplY3Rpb24pLCBpdCBqdW1w
-cyB0byB0aGUgYGVycl9vdXRgIGxhYmVsIHRvIHJvbGwgYmFjayB0aGUKPmNvbnNvbGUgc3RhdGUu
-Cj4KPkhvd2V2ZXIsIHRoZSByZXN0b3JhdGlvbiBvZiB0aGUgcHJldmlvdXMgZm9udCBzdGF0ZSAo
-YHAtPnVzZXJmb250ID0KPm9sZF91c2VyZm9udGApIGlzIGVycm9uZW91c2x5IHBsYWNlZCBpbnNp
-ZGUgdGhlIGBpZiAodXNlcmZvbnQpYCBibG9jay4KPklmIHRoZSBmYWlsZWQgb3BlcmF0aW9uIHdh
-cyBhdHRlbXB0aW5nIHRvIHNldCB0aGUgZGVmYXVsdCBidWlsdGluIGZvbnQKPihgdXNlcmZvbnQg
-PT0gMGApLCB0aGUgcmVzdG9yYXRpb24gaXMgY29tcGxldGVseSBza2lwcGVkLgo+Cj5UaGlzIGNh
-dXNlcyBhIHN0YXRlIG1hY2hpbmUgY29ycnVwdGlvbiB3aGVyZSBgcC0+dXNlcmZvbnRgIHJlbWFp
-bnMgYDBgCj53aGlsZSBgcC0+Zm9udGRhdGFgIHN0aWxsIHBvaW50cyB0byB0aGUgcHJldmlvdXNs
-eSBhbGxvY2F0ZWQgdXNlciBmb250Cj5tZW1vcnkuIExhdGVyLCB3aGVuIHRoZSBjb25zb2xlIGlz
-IGRlc3Ryb3llZCAoZS5nLiwgdmlhIFZUX0RJU0FMTE9DQVRFKSwKPmZiY29uX2ZyZWVfZm9udCgp
-IGZhaWxzIHRvIGZyZWUgdGhpcyBtZW1vcnkgYmVjYXVzZSBpdHMgYGlmIChwLT51c2VyZm9udClg
-Cj5jaGVjayBmYWlscywgcmVzdWx0aW5nIGluIGEgbWVtb3J5IGxlYWsgY2F1Z2h0IGJ5IGttZW1s
-ZWFrOgo+Cj4gIHVucmVmZXJlbmNlZCBvYmplY3QgMHhmZmZmODg4MTI3ZWEwMDAwIChzaXplIDMz
-Mjk2KToKPiAgICBjb21tICJzeXouMC44NzI2IiwgcGlkIDMzMjI0LCBqaWZmaWVzIDQyOTc3NTQ2
-NDMKPiAgICBoZXggZHVtcCAoZmlyc3QgMzIgYnl0ZXMpOgo+ICAgICAgYTYgZTQgZjkgZGQgMDAg
-MDAgMDAgMDAgMDAgODIgMDAgMDAgMDEgMDAgMDAgMDAgIC4uLi4uLi4uLi4uLi4uLi4KPiAgICAg
-IGQyIDA5IDZjIGJmIDUyIDhhIDdkIGQ0IGVmIDFkIDU5IDE2IDUxIDg2IDMyIGJmICAuLmwuUi59
-Li4uWS5RLjIuCj4gICAgYmFja3RyYWNlIChjcmMgNGEwYTU3ZGQpOgo+ICAgICAgX19fa21hbGxv
-Y19sYXJnZV9ub2RlKzB4ZTcvMHgxODAgbW0vc2x1Yi5jOjUyMTQKPiAgICAgIF9fa21hbGxvY19s
-YXJnZV9ub2RlX25vcHJvZisweDI5LzB4MTMwIG1tL3NsdWIuYzo1MjMyCj4gICAgICBfX2RvX2tt
-YWxsb2Nfbm9kZSBtbS9zbHViLmM6NTI0OCBbaW5saW5lXQo+ICAgICAgX19rbWFsbG9jX25vcHJv
-ZisweDVmYy8weDdjMCBtbS9zbHViLmM6NTI3Mgo+ICAgICAga21hbGxvY19ub3Byb2YgaW5jbHVk
-ZS9saW51eC9zbGFiLmg6OTU0IFtpbmxpbmVdCj4gICAgICBmYmNvbl9zZXRfZm9udCsweDQzMS8w
-eGE2MCBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJjb24uYzoyNTI1Cj4gICAgICBjb25fZm9u
-dF9zZXQgZHJpdmVycy90dHkvdnQvdnQuYzo0OTE4IFtpbmxpbmVdCj4gICAgICBjb25fZm9udF9v
-cCsweDk0ZC8weGU4MCBkcml2ZXJzL3R0eS92dC92dC5jOjQ5NTgKPiAgICAgIHZ0X2tfaW9jdGwg
-ZHJpdmVycy90dHkvdnQvdnRfaW9jdGwuYzo0NzIgW2lubGluZV0KPiAgICAgIHZ0X2lvY3RsKzB4
-NjNjLzB4MmVlMCBkcml2ZXJzL3R0eS92dC92dF9pb2N0bC5jOjc0Mwo+Cj5GaXggdGhpcyBieSBt
-b3ZpbmcgdGhlIGBwLT51c2VyZm9udCA9IG9sZF91c2VyZm9udGAgYXNzaWdubWVudCBvdXRzaWRl
-Cj50aGUgYGlmICh1c2VyZm9udClgIGJsb2NrIHNvIHRoYXQgdGhlIHRlcm1pbmFsIHN0YXRlIGlz
-IHVuY29uZGl0aW9uYWxseQo+YW5kIGNvcnJlY3RseSByZXN0b3JlZCByZWdhcmRsZXNzIG9mIHdo
-aWNoIGZvbnQgc2V0dGluZyB0cmlnZ2VyZWQgdGhlCj5lcnJvci4KPgo+Rml4ZXM6IGE1YTkyMzAz
-OGQ3MCAoImZiZGV2OiBmYmNvbjogUHJvcGVybHkgcmV2ZXJ0IGNoYW5nZXMgd2hlbiB2Y19yZXNp
-emUoKSBmYWlsZWQiKQo+U2lnbmVkLW9mZi1ieTogTWluZ3l1IFdhbmcgPDI1MTgxMjE0MjE3QHN0
-dS54aWRpYW4uZWR1LmNuPgo+LS0tCj4gZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMg
-fCA0ICsrKy0KPiAxIGZpbGUgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0p
-Cj4KPmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJjb24uYyBiL2RyaXZl
-cnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jCj5pbmRleCA2NjYyNjFhZTU5ZDguLmEzODU0NWRj
-ODQxNiAxMDA2NDQKPi0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jCj4rKysg
-Yi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJjb24uYwo+QEAgLTI0NjEsOCArMjQ2MSwxMCBA
-QCBzdGF0aWMgaW50IGZiY29uX2RvX3NldF9mb250KHN0cnVjdCB2Y19kYXRhICp2YywgaW50IHcs
-IGludCBoLCBpbnQgY2hhcmNvdW50LAo+IAlwLT5mb250ZGF0YSA9IG9sZF9kYXRhOwo+IAl2Yy0+
-dmNfZm9udC5kYXRhID0gb2xkX2RhdGE7Cj4gCj4rCS8qIFVuY29uZGl0aW9uYWxseSByZXN0b3Jl
-IHRoZSBwcmV2aW91cyB1c2VyZm9udCBzdGF0ZSAqLwo+KwlwLT51c2VyZm9udCA9IG9sZF91c2Vy
-Zm9udDsKPisKPiAJaWYgKHVzZXJmb250KSB7Cj4tCQlwLT51c2VyZm9udCA9IG9sZF91c2VyZm9u
-dDsKPiAJCWlmICgtLVJFRkNPVU5UKGRhdGEpID09IDApCj4gCQkJa2ZyZWUoZGF0YSAtIEZPTlRf
-RVhUUkFfV09SRFMgKiBzaXplb2YoaW50KSk7Cj4gCX0KPi0tIAo+Mi4zNC4xCg==
+
+--22tuv3cnyx6wf3bq
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v1 0/8] zorro: Improve handling of pointers in
+ zorro_device_id::driver_data
+MIME-Version: 1.0
+
+Hello Helge,
+
+On Fri, Jun 05, 2026 at 12:44:04AM +0200, Helge Deller wrote:
+> On 5/26/26 16:17, Uwe Kleine-K=C3=B6nig (The Capable Hub) wrote:
+
+Your MUA seems to interpret my UTF-8 encoded name as latin1 and
+converted it to UTF-8 making my =F6 appear as =C3=B6. I *think* the problem=
+ is
+on your side.
+
+> > this series is about improving the handling of pointers in struct
+> > zorro_device_id's driver_data.
+> >=20
+> > While it's ok on all current Linux platforms to store a pointer in an
+> > unsigned long variable, it involves casting that loses type information.
+> > This can be nicely seen in patch #7 where after profiting from patch #6
+> > the compiler notices a missing const.
+> >=20
+> > Preparing for that change, all zorro_device_ids are converted to use
+> > named initializers, which is also a nice cleanup that could stand for
+> > itself, as it improves readability for humans. (That is necessary
+> > because an anonymous union can be initialized by name, but not using a
+> > list initializer.)
+> >=20
+> > My motivation for this series is the CHERI hardware extension. With that
+> > pointers are bigger than longs and thus you cannot store pointers in
+> > zorro_device_id::driver_data. So this series is also about getting
+> > support for CHERI into the mainline, but I hope the clean up effects
+> > mentioned above are justification enough to accept this series.
+> >=20
+> > The dependencies in this series are as follows:
+> >=20
+> >   - Patch #5 depends on #1, #2
+> >   - Patches #7 and #8 depend on patch #6.
+> >=20
+> > So if the ata maintainers agreed to merge their patch #1 via scsi, and
+> > Geert agrees to patch #5 and that it's also merged via scsi, patches #1,
+> > #2, #6 and #7 can go in without further coordination.
+> >=20
+> > Patches #3, #4 and #5 are only about using the same initialization style
+> > for all zorro_device_id and can go in without coordination.
+> >=20
+> > Best regards
+> > Uwe
+> >=20
+> > Uwe Kleine-K=F6nig (The Capable Hub) (8):
+> >    ata: pata_budda: Use named initializer for zorro_device_id
+> >    scsi: Use named initializer for zorro_device_id
+> >    net: Use named initializer for zorro_device_id arrays
+> >    i2c: icy: Use named initializer for zorro_device_id arrays
+> >    video: fm2fb: Use named initializer for zorro_device_id array
+> >    zorro: Simplify storing pointers in device id struct
+> >    scsi: zorro7xx: Make use of struct zorro_device_id::driver_data_ptr
+> >    video: cirrusfb: Make use of struct zorro_device_id::driver_data_ptr
+> >=20
+> >   drivers/ata/pata_buddha.c             |  8 ++++----
+> >   drivers/i2c/busses/i2c-icy.c          |  4 ++--
+> >   drivers/net/ethernet/8390/hydra.c     |  4 ++--
+> >   drivers/net/ethernet/8390/xsurf100.c  |  4 ++--
+> >   drivers/net/ethernet/8390/zorro8390.c |  6 +++---
+> >   drivers/net/ethernet/amd/a2065.c      |  8 ++++----
+> >   drivers/net/ethernet/amd/ariadne.c    |  4 ++--
+> >   drivers/scsi/a2091.c                  |  6 +++---
+> >   drivers/scsi/gvp11.c                  | 17 ++++++++--------
+> >   drivers/scsi/zorro7xx.c               | 16 +++++++--------
+> >   drivers/scsi/zorro_esp.c              |  2 +-
+> >   drivers/video/fbdev/cirrusfb.c        | 28 +++++++++++++--------------
+> >   drivers/video/fbdev/fm2fb.c           |  6 +++---
+> >   include/linux/mod_devicetable.h       |  6 +++++-
+> >   14 files changed, 62 insertions(+), 57 deletions(-)
+>=20
+> you may add to the series:
+> Acked-by: Helge Deller <deller@gmx.de>
+
+Thanks!
+
+> Since it touches various subtrees, I assume you will merge it though your=
+ tree?
+
+Well, my plan is that the scsi maintainers pick up patches #1, #2, #6
+and #7 and I remind you once #6 (i.e. the dependency for #8) is in
+Linus' tree. But with your ack the two fb patches can also go in via
+scsi.
+
+To James and Martin: I didn't hear from you about my merge suggestion up
+to now. The other affected maintainers agreed so far that (assuming
+you're using b4) and interpreting Helge's ack as agreement that you also
+pick up the fb patches, you can go for
+
+	b4 am -l -t -3 -P1,2,5-8 cover.1779803053.git.u.kleine-koenig@baylibre.com
+
+If you like I can also pick up these patches (then with your ack please)
+and send them to Linus for the next merge window. Just tell me about
+your preference.
+
+Best regards
+Uwe
+
+--22tuv3cnyx6wf3bq
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmoiuV8ACgkQj4D7WH0S
+/k6cwgf+IBJ8XPNUSo4d38q7fIjSN9Kio+eF/i1F0XZFkTXu/snZAgAhVec4a9nQ
+0tReoiNbPZL5k1kFhyjqoVSmH2A6Oe8hDK/rHeszhxosEzgOuGyGVmM1cDKfUkNQ
++nhcan81Bf43fZgyFWoOlxns+20U6kjBBAksZHGYgm6L41w0tjVYLHTN9Pv1jTWz
+TK+k3WMkM0Sln7O6Rk2DBDBNJ8/lz82tGZkcfgmaM8P8WffD91LeUDcXvTBNYFJR
+9P0mISJgM+Qt5WaJwzW0k/h0Vu3HPh3P3wPIGiYQGLV7jfcHFG2xvWIwxONopqV5
+MD78q/W31G+Q1Z796Ms01uQxrzyWaQ==
+=ZKbW
+-----END PGP SIGNATURE-----
+
+--22tuv3cnyx6wf3bq--

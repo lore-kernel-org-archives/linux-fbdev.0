@@ -1,206 +1,181 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7111B4C77CF
-	for <linux-fbdev@vger.kernel.org>; Fri,  5 Jun 2026 11:56:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96B912F8EA8
+	for <linux-fbdev@vger.kernel.org>; Sat,  6 Jun 2026 04:58:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780660585; cv=none; b=XBfasfeoh+xT9Pt9FxBBSmk7ld2/xXsayuHjYXnoW4htmgH6OU9FlnMRUZfRLSrs76OD8raxLDcBtT3UY6ogDDEfQiv81xLPBBFdDAyId/C3Rdd0znjust1QQphIAh7FOasWgS24V6GkIbhrUCp/UGqwSdbTRi3fQgT6fhnjh68=
+	t=1780721887; cv=none; b=tEIXdUwkoDSwMwv60w0nDYq9kVFyZROPfsy196XUI593HHjSPqlSn5ahp9hvsKrCwcEK/V4O+1lFZfGpSRWOcqUUfNNaZvAROsb5eMrhbn+Lx72N6/dpfuQ+/HPvsRRdaX6qoyeqlF5VDU1HkPZlSmfsYbOAcMVoa0tpak3BqeA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780660585; c=relaxed/simple;
-	bh=RUeXkJiOC5YOIHyl10EHg1neCRlJCG9AqHP1nNGld8M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=r64lsm1dIkjSj6lp9mCtgUxtY22lESFC2g4Rv43hhkv91dtAsZBIyA8ASJDgZIWYePxqKRBsm5+Pga526QvocuXyJCXdsK4hFLqgjpumqCtcUIEMbupj0Bsjtyz2L5ktbgRTXsrW8812eY3IaWluI+q0VkVxn92LThFCeJmG1Qs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=WPk4LjV2; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1780721887; c=relaxed/simple;
+	bh=sChSctaNk/iJ7rMo4OneEoqRj9NRpGu5gBeih5JX6Jg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lb+rzEFTjVBAAnWhTTeosiFfHGoERTHvJSebIKoZbKcLfiUojL+XaDq8WDn0GJlnxnuNsvJePU11Ewx7SLRYsbxkfOFXnCES//V4nVeQIME/KQqngQpcRnAGSWgtqkl7YA/4JiwTcUi5QRsb8k4myEYVltiDDHTvarY8k99TI08=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=sSfs//8t; arc=none smtp.client-ip=209.85.218.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="WPk4LjV2"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-490c0c92cffso9900425e9.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 05 Jun 2026 04:56:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sSfs//8t"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-bed2b9bfa02so363435166b.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 05 Jun 2026 21:58:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1780660581; x=1781265381; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=+kMxhX4dP4R/LjY4CwrRq2xMY3d+unBriPLMp8xLnLc=;
-        b=WPk4LjV23jxnahAgWyU3SDAR/6VvX1WbfQplE0M5hwrKobgCUdMlIgh98Q6Gjw53cK
-         Ucem92i0wYtq9gOBRtze4GqMsVHM4khWVXtfu9kglV7LPd3vA6k0aryBRZhoAVtyLnRr
-         dl8CtJOvuqkIxSeBJ7OiWygIoohnk98UJoKsplWZalRynW1h4UUxBJmU/5xNbV+wry6K
-         2wjZLNm5HNm4rifBcYbOxWZkroP8JW6sftHCQLKDD1Mz8YMvQGWe4Jzme4Rm7P3zx5f/
-         fb3st2sU5OFPght7xhRb5lPriVWHU5YGYicn4arAskw2JjdPa1izKTBYi9u4TOxZYL8z
-         FkPw==
+        d=gmail.com; s=20251104; t=1780721884; x=1781326684; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ijiDIJoRq4DW5gmq2cKgL9VuesBVH2zWjg+vtHwI5sw=;
+        b=sSfs//8t7+hi4vevAcVnNjxy1AQom4JuITz2efSHK9eMjRSjnhpigeGBbwFOXFrODK
+         Z/GiP+EFP3SMYvbl4RrWp2DnpUEOX0iMA5Q/A2irlBbF9bhlwDPTzhgHtcuqUHU8s+82
+         mkv1VTrkmYfkGhYaxh9vnrs4JLVn/LsLDpnUd7r/6F4PIaRIyKXQfh2mkrPhtDJnAKAk
+         nTbRKpBufwY78nqOkIVVvt2hNHNMKNJBXqN0r7tKtMRW5LIRcH+8ojfBz7eKgb/OP7X8
+         ODt15qnp7y9J9fLIctqWHekiPiqRPH2rcCdxN7sd4EFopcLlVydJPXxJ42T5rVSnDS72
+         IrIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780660581; x=1781265381;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+kMxhX4dP4R/LjY4CwrRq2xMY3d+unBriPLMp8xLnLc=;
-        b=B2MV4Hw2xIxUzjGgFW9PMZUnuhkAsE2JjwPCJtWys7LTnZxbg3Kl+rQ7KNAhO5p4/w
-         eaJ7dd0dAOtEm9FNUU1zc/9xmb8x9XG/uONBKh5keWoRL/++Z5ImVu7NBR1ggGpxfLcx
-         BGv9lllan2ZxgVXzaTtNiiTvlTO3pcM3x8SuM3ZQ6rajr6Iof+7ipeU+rdZ7f0hQ3p7o
-         SQ4hYucrcz+loMxNwc86u/yZ4HyXcmSnerwlG/EL3uHDQ9GOA4hajyDkDooI5952/opl
-         ECBss5VQZCDzOJpT4MSl+XarFpoCR8BIBbq3hIba3GkK8gUtUpc9xqe+hmGqi21stl1z
-         KpuQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+YAlO3DPsHZIc34uLCNMX4pL8YXw6zqr+E6+merTfDI7VYCMhTLehKKJIHesaTdnjneJMn0Dx3DiimPA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzcAuUvanjjVORr+709u/y/nELB+pLA+qFj29EJ2R67x+YXvRLY
-	A7pqR2zh71QDw6fVH3kzwIYi/vnfYk772hnhkBtHoR5uHhKskzxvW66c8niPvW+N2cM=
-X-Gm-Gg: Acq92OE8pfJcQ4n0QNJm/qlJLNrAiN1lpVTZtXTTGewb8B0oaSrOOMVtnrZc1UR28pr
-	zPh0ZGtax3oRXCetbl/JVpr/lwdPmuL3M7REgjDPg2BrrZ5fnwWyYWO3Bu93hIVZmC4IFjEmaV2
-	NaElH9vl9ZbG7/TuVonCi2VDrD/z5nEAhqS6gIwJvfyOWS/j9+o4aSaEJgQgxeDGdUn3ybgzGp+
-	WPQhGgiCzmLcJJ9yM2YTLm1y4Luk4E9MBl/YTiiJygdr835GIvJgtvQjM3hHDx3lH+QoQLPDcYk
-	h8aS8FkFW+fU4xwUIYqOgrh8MBqTKQWVu3aWOciX8Xbnvdp1VDtS32j9Yu9YZkMjwPtWXuIZ2o5
-	1OBwARdyuNTXR2cp8nLHcA8/1KhC+W2Jj3kUUeHonchtjz4dxnHEtiBzU46jAWkKbiVhEaP0Q1Z
-	TM4J27JSg8R23x9/Qs+ITZzTt7SVrQufir
-X-Received: by 2002:a05:600c:8705:b0:488:ac01:72de with SMTP id 5b1f17b1804b1-490c25898efmr60737855e9.5.1780660580944;
-        Fri, 05 Jun 2026 04:56:20 -0700 (PDT)
-Received: from localhost ([212.133.41.47])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-490bc3fd502sm147344695e9.11.2026.06.05.04.56.19
+        d=1e100.net; s=20251104; t=1780721884; x=1781326684;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ijiDIJoRq4DW5gmq2cKgL9VuesBVH2zWjg+vtHwI5sw=;
+        b=orGI3kVMV/KxGK2+/3u1yOB8c18VUx/feYf1PIbTZWoTjBvd/MVYze2yjEi6jKrtWL
+         W+0urhdifS/uaFys0z8HwnhuP+33CpZBEzfGZBy1RCt+a7O0GAQzJEHhEeQxF1utpk/P
+         +mnxJ1FJcw6bK4G/XGAC6akE7ZFG2X4SyQXSPqWuhTlgPIZRTQx8IHO7RXjHAB9JTnHH
+         q1sX0/W8PEEJGzX7U53Lwtbd21teltsALt98FuLKdjN7OOyNGjT3honfZ3DMv6Bw0oPU
+         V89jHMkji+31HXI4I2Jpt16OQzSdNmIeaJ0PkrsZ4CVzWaYkWmtkjM90gCG4GlfMeebz
+         x28A==
+X-Forwarded-Encrypted: i=1; AFNElJ95auG+ZxSK1PRsgAidivrjM6qkmc3v5nnf6W3LbzX3qWZXpUPHCMwNlFSe8STZjrK5Y6E27ToN2KMHAg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzPoiTB/Pq5UnSikG2Ru/1cx3eEVwCRt/tXX6OcJZvdyeS9n4ve
+	Jr8CK/luaWXpm62s4r7zL0EhCTOq0Wch+At62fisQFyr2ze7xLatWHpt
+X-Gm-Gg: Acq92OEwtyC/qBMkVWf6gHEB+v6NzgcOtvwbcFS6Uh+EYlBZlp1CNJNFLByTpffwvzh
+	pmwOIDpVdB4NYKNVmIQGgmPcrOLA7dmCKSfdG2uGSZygIdKBQSBwSTK5/8jOGKvGak30eH2G/T5
+	Wgk4gch30KTsMjFZj6J3q0MPAuyQqXI/+0a35B0f26EhJ9mOeMweKIwGiHRpC/6JOPmcQO7SvCL
+	wucwM3xb0ZqYlr2dj+IMHUiydvxYvLS+ej9kDg7tBLqgQyoonzHtbgyAfT83cK7jqQztJ5w0W4g
+	xEecDg1+mHsEqTe1nkRNHzRlmfGdlyT9ySyLaCEarzdvBEwAQdLqbQkEkUNFHE/Y1mVDXwcXh0e
+	T0w7RNfQFZ/shj8HjtVHdpzQXcZxh0ggL8ttSjLC6jusnaevqG0e2vbNn0YQMaB7TlHq/LdeufE
+	I50LXRIofJsSEPBFZYFr435VU3BcYZiAns8Q==
+X-Received: by 2002:a17:906:8a79:b0:bee:bcf6:6a23 with SMTP id a640c23a62f3a-bf3749d7f03mr231807166b.43.1780721883699;
+        Fri, 05 Jun 2026 21:58:03 -0700 (PDT)
+Received: from xeon ([188.163.112.61])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bf054e086fesm570597166b.32.2026.06.05.21.57.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 05 Jun 2026 04:56:20 -0700 (PDT)
-Date: Fri, 5 Jun 2026 13:56:17 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
-To: Helge Deller <deller@gmx.de>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, 
-	linux-i2c@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	"Christian A. Ehrhardt" <christian.ehrhardt@codasip.com>, "Christian A. Ehrhardt" <lk@c--e.de>
-Subject: Re: [PATCH v1 0/8] zorro: Improve handling of pointers in
- zorro_device_id::driver_data
-Message-ID: <aiKyB-28VEg1kp7W@monoceros>
-References: <cover.1779803053.git.u.kleine-koenig@baylibre.com>
- <a3f9e96e-3bbb-4cfc-845c-58649405a1cf@gmx.de>
+        Fri, 05 Jun 2026 21:58:01 -0700 (PDT)
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Helge Deller <deller@gmx.de>,
+	Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Johan Hovold <johan@kernel.org>,
+	dri-devel@lists.freedesktop.org,
+	linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-iio@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v4 00/14] mfd: lm3533: convert to OF bindings, improve support
+Date: Sat,  6 Jun 2026 07:57:24 +0300
+Message-ID: <20260606045738.21050-1-clamor95@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="22tuv3cnyx6wf3bq"
-Content-Disposition: inline
-In-Reply-To: <a3f9e96e-3bbb-4cfc-845c-58649405a1cf@gmx.de>
+Content-Transfer-Encoding: 8bit
 
+Convert LM3533 to OF bindings, add missing VIN supply, add support for
+setting mapping mode and LED sources based on device tree. 
 
---22tuv3cnyx6wf3bq
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH v1 0/8] zorro: Improve handling of pointers in
- zorro_device_id::driver_data
-MIME-Version: 1.0
+---
+Changes in v2:
 
-Hello Helge,
+schema
+- maximum led sources for leds set to 4
+- anyOf > oneOf in ALS
+- improved ALS descriptions
+- adjusted example
+drivers
+- dropped devm convertion of irq and mfd helpers
+- all als configuration moved into lm3533_als_setup
+- added regulator/consumer.h
+- lm3533_bl_setup set before sysfs_create_group in backlight
+- added check if LVLED is valid
+- LM3533_REG_OUTPUT_CONF1 > LM3533_REG_OUTPUT_CONF2 for LVLED4 and LVLED5
 
-On Fri, Jun 05, 2026 at 12:44:04AM +0200, Helge Deller wrote:
-> On 5/26/26 16:17, Uwe Kleine-K=C3=B6nig (The Capable Hub) wrote:
+Changes in v3:
 
-Your MUA seems to interpret my UTF-8 encoded name as latin1 and
-converted it to UTF-8 making my =F6 appear as =C3=B6. I *think* the problem=
- is
-on your side.
+- ohm -> ohms
+- added default PWM mask to schema
+- added commit removing driver regmap wrappers
+- added commits which flatten pdata helpers
+- adjusted check if als->irq > 0 since als->irq can be negative if error/missing
+- added count for children defined in device tree and mfd_cell is allocated
+  via devm_kcalloc to be able to contain all of them
+- fixed backlight boundary check
+- fixed count increased unconditionally
+- dev_err returns node name instead of reg value
+- LM3533_MAX_CURRENT_* defines moved to common header since they are used to clamp
+  current values read from the tree
+- mapping mode commit splitted into 2 (sysfs logic improvement > mode from DT)
+- backlight mode configuration set before sysfs group is created
+- fixed LVLED check on LEDs setup
+- added check if HVLED is valid
+- fixed wrong err_sysfs_remove goto in lm3533_bl
+- added commit implementing backlight_scale property
 
-> > this series is about improving the handling of pointers in struct
-> > zorro_device_id's driver_data.
-> >=20
-> > While it's ok on all current Linux platforms to store a pointer in an
-> > unsigned long variable, it involves casting that loses type information.
-> > This can be nicely seen in patch #7 where after profiting from patch #6
-> > the compiler notices a missing const.
-> >=20
-> > Preparing for that change, all zorro_device_ids are converted to use
-> > named initializers, which is also a nice cleanup that could stand for
-> > itself, as it improves readability for humans. (That is necessary
-> > because an anonymous union can be initialized by name, but not using a
-> > list initializer.)
-> >=20
-> > My motivation for this series is the CHERI hardware extension. With that
-> > pointers are bigger than longs and thus you cannot store pointers in
-> > zorro_device_id::driver_data. So this series is also about getting
-> > support for CHERI into the mainline, but I hope the clean up effects
-> > mentioned above are justification enough to accept this series.
-> >=20
-> > The dependencies in this series are as follows:
-> >=20
-> >   - Patch #5 depends on #1, #2
-> >   - Patches #7 and #8 depend on patch #6.
-> >=20
-> > So if the ata maintainers agreed to merge their patch #1 via scsi, and
-> > Geert agrees to patch #5 and that it's also merged via scsi, patches #1,
-> > #2, #6 and #7 can go in without further coordination.
-> >=20
-> > Patches #3, #4 and #5 are only about using the same initialization style
-> > for all zorro_device_id and can go in without coordination.
-> >=20
-> > Best regards
-> > Uwe
-> >=20
-> > Uwe Kleine-K=F6nig (The Capable Hub) (8):
-> >    ata: pata_budda: Use named initializer for zorro_device_id
-> >    scsi: Use named initializer for zorro_device_id
-> >    net: Use named initializer for zorro_device_id arrays
-> >    i2c: icy: Use named initializer for zorro_device_id arrays
-> >    video: fm2fb: Use named initializer for zorro_device_id array
-> >    zorro: Simplify storing pointers in device id struct
-> >    scsi: zorro7xx: Make use of struct zorro_device_id::driver_data_ptr
-> >    video: cirrusfb: Make use of struct zorro_device_id::driver_data_ptr
-> >=20
-> >   drivers/ata/pata_buddha.c             |  8 ++++----
-> >   drivers/i2c/busses/i2c-icy.c          |  4 ++--
-> >   drivers/net/ethernet/8390/hydra.c     |  4 ++--
-> >   drivers/net/ethernet/8390/xsurf100.c  |  4 ++--
-> >   drivers/net/ethernet/8390/zorro8390.c |  6 +++---
-> >   drivers/net/ethernet/amd/a2065.c      |  8 ++++----
-> >   drivers/net/ethernet/amd/ariadne.c    |  4 ++--
-> >   drivers/scsi/a2091.c                  |  6 +++---
-> >   drivers/scsi/gvp11.c                  | 17 ++++++++--------
-> >   drivers/scsi/zorro7xx.c               | 16 +++++++--------
-> >   drivers/scsi/zorro_esp.c              |  2 +-
-> >   drivers/video/fbdev/cirrusfb.c        | 28 +++++++++++++--------------
-> >   drivers/video/fbdev/fm2fb.c           |  6 +++---
-> >   include/linux/mod_devicetable.h       |  6 +++++-
-> >   14 files changed, 62 insertions(+), 57 deletions(-)
->=20
-> you may add to the series:
-> Acked-by: Helge Deller <deller@gmx.de>
+Changes in v4:
 
-Thanks!
+- fixed regmap_update_bits val and mask swap in lm3533_als_set_int_mode
+- fixed als->irq check in store_thresh_either_en
+- removed clamping of r_select in als driver
+- added use_of_reg and of_reg for backlight and leds registration
+- added intermediate step in asigning props.brightness
+- fixed HVLED/LVLED configuration overwriting
+- added bounds check for num_leds in leds and backlight driver
+- switched to regmap_clean/set/assign/test_bits helpers where appropriate
+- dropped extern from header function declartions
+- switched lm3533 pointer in cell structures to regmap
+- sysfs_create_group > device_add_group
+- changes in backlight sysfs were expanded to all properties
+---
 
-> Since it touches various subtrees, I assume you will merge it though your=
- tree?
+Svyatoslav Ryhel (14):
+  dt-bindings: leds: Document TI LM3533 LED controller
+  mfd: lm3533: Remove driver specific regmap wrappers
+  mfd: lm3533: Remove extern from shared functions in the header
+  mfd: lm3533: Pass only regmap and light sensor presence to child
+    devices
+  iio: light: lm3533-als: Remove redundant pdata helpers
+  mfd: lm3533-core: Remove redundant pdata helpers
+  mfd: lm3533: Switch sysfs_create_group() to device_add_group()
+  mfd: lm3533: Convert to use OF bindings
+  mfd: lm3533: Add support for VIN power supply
+  mfd: lm3533: Set DMA mask
+  video: backlight: lm3533_bl: Improve logic of sysfs functions
+  video: backlight: lm3533_bl: Set initial mapping mode from DT
+  video: backlight: lm3533_bl: Implement backlight_scale property
+  video: leds: backlight: lm3533: Support getting LED sources from DT
 
-Well, my plan is that the scsi maintainers pick up patches #1, #2, #6
-and #7 and I remind you once #6 (i.e. the dependency for #8) is in
-Linus' tree. But with your ack the two fb patches can also go in via
-scsi.
+ .../leds/backlight/ti,lm3533-backlight.yaml   |  69 ++++
+ .../bindings/leds/ti,lm3533-leds.yaml         |  67 ++++
+ .../devicetree/bindings/leds/ti,lm3533.yaml   | 169 ++++++++
+ drivers/iio/light/lm3533-als.c                | 179 ++++-----
+ drivers/leds/leds-lm3533.c                    | 181 ++++++---
+ drivers/mfd/lm3533-core.c                     | 365 +++++++-----------
+ drivers/mfd/lm3533-ctrlbank.c                 |  27 +-
+ drivers/video/backlight/lm3533_bl.c           | 223 ++++++-----
+ include/linux/mfd/lm3533.h                    |  75 +---
+ 9 files changed, 806 insertions(+), 549 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/ti,lm3533-backlight.yaml
+ create mode 100644 Documentation/devicetree/bindings/leds/ti,lm3533-leds.yaml
+ create mode 100644 Documentation/devicetree/bindings/leds/ti,lm3533.yaml
 
-To James and Martin: I didn't hear from you about my merge suggestion up
-to now. The other affected maintainers agreed so far that (assuming
-you're using b4) and interpreting Helge's ack as agreement that you also
-pick up the fb patches, you can go for
+-- 
+2.53.0
 
-	b4 am -l -t -3 -P1,2,5-8 cover.1779803053.git.u.kleine-koenig@baylibre.com
-
-If you like I can also pick up these patches (then with your ack please)
-and send them to Linus for the next merge window. Just tell me about
-your preference.
-
-Best regards
-Uwe
-
---22tuv3cnyx6wf3bq
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmoiuV8ACgkQj4D7WH0S
-/k6cwgf+IBJ8XPNUSo4d38q7fIjSN9Kio+eF/i1F0XZFkTXu/snZAgAhVec4a9nQ
-0tReoiNbPZL5k1kFhyjqoVSmH2A6Oe8hDK/rHeszhxosEzgOuGyGVmM1cDKfUkNQ
-+nhcan81Bf43fZgyFWoOlxns+20U6kjBBAksZHGYgm6L41w0tjVYLHTN9Pv1jTWz
-TK+k3WMkM0Sln7O6Rk2DBDBNJ8/lz82tGZkcfgmaM8P8WffD91LeUDcXvTBNYFJR
-9P0mISJgM+Qt5WaJwzW0k/h0Vu3HPh3P3wPIGiYQGLV7jfcHFG2xvWIwxONopqV5
-MD78q/W31G+Q1Z796Ms01uQxrzyWaQ==
-=ZKbW
------END PGP SIGNATURE-----
-
---22tuv3cnyx6wf3bq--

@@ -1,54 +1,70 @@
-Received: from mailtransmit04.runbox.com (mailtransmit04.runbox.com [185.226.149.37])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dl1-f68.google.com (mail-dl1-f68.google.com [74.125.82.68])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2A893CEB9B
-	for <linux-fbdev@vger.kernel.org>; Sat,  6 Jun 2026 20:28:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.226.149.37
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A8C2F9E8
+	for <linux-fbdev@vger.kernel.org>; Sun,  7 Jun 2026 01:58:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.68
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780777682; cv=none; b=SLN3U/WtlzSw71gYA1HjJAwE/3JH1ZpXoXClw4hMp7Oz6MwhJtSaBM1gX/sEisrPzO5mMXbH1ybUzgVLmDhsbXAwNWnz09vzDNdrqBH7NmI9vSxhVbA56s4wTvJBZZEJ2xYoqKRdfiA10gCbJCvy7Ue4qNUVAarNSu76ranTkzk=
+	t=1780797527; cv=none; b=aQPQIIv8zMoZAAo6MUNS6xFMPsWP2HU2cr22o9mYlGWYXt52xe11h+pjrz0Ndo9Hd/4Fjmxy8Y5EYgf/At1Z78fuIkLVu4HqVyIU4+aP/lbTNBSzBG0Yd1mN/99+ckBdSStTEcInlHzPLqFRODFvTJgXOdyVJcLJ9MjK4VbYrZA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780777682; c=relaxed/simple;
-	bh=uOBtuBXG1NR1T3WLW02bOCfhg8z/JVE2MOuVzIlDmgg=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=VnaIjb7BwjJS3/jh2J71RRlntgf83Hbb1hi81LhpMAosrB8PRDF5okD1a3dRrTicS9jO+2nD/tVsxaM3pi41NFrAlO5Guhu7JWv/15DKoEK0DmOw/4ICoQQC1l8HoIiBTU5Vr9GVgwakPd5obrz4K4P7yYXstRgkAEO0BmENxi4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=runbox.com; dkim=pass (2048-bit key) header.d=runbox.com header.i=@runbox.com header.b=g8NobXqt; arc=none smtp.client-ip=185.226.149.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=runbox.com
+	s=arc-20240116; t=1780797527; c=relaxed/simple;
+	bh=/gQsxsPoG8H7fJAPTnomgnSs2pBROEufsRWc34w2WYE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Uc5v8xJrs2OEA/fGmjYNoEMbM29Gv1OgfSKnOfMGGYqG26mDTczNwZWC8x8M+cu2ggfhslKosd4Y8vVgcxyfkf4LOfCv60sWzu1GlSrLfTA5YyfhFiXqK942dobwrZHnMPgMH0J5qNOgJirbyyPioCznHw4pY+WB6NgitVKlYO8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AAS75nZy; arc=none smtp.client-ip=74.125.82.68
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=runbox.com header.i=@runbox.com header.b="g8NobXqt"
-Received: from mailtransmit02.runbox ([10.9.9.162] helo=aibo.runbox.com)
-	by mailtransmit04.runbox.com with esmtps  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-	(Exim 4.93)
-	(envelope-from <david.laight.linux_spam@runbox.com>)
-	id 1wVxcb-007NWf-5J; Sat, 06 Jun 2026 22:27:57 +0200
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=runbox.com;
-	 s=selector1; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:
-	Subject:Cc:To:From; bh=w9rfQJKe+zMqlTtxFH4kG9pticirwoJsZRsMjcLrr3M=; b=g8NobX
-	qtYWBBba5XBa9T5+Aw9bQksIMtU6/TN4yIclBY4ZpUdbRddz+FPA41ptxkEnBQ3sTFjeuzjxO68rQ
-	LRmlr8y2lXUz3DcOcpNsjGJQCMl+Ew4NcCFGRLVRBmP2qWsc6bQCi462DBU3V6CEyPCRUhboqFRm6
-	XlnXYfZAQ60S/ryRYsIwkV33z6TH+47/JusWKBRcWnZrGZ9I58UdjhnS5cwfYMR4Wr90EFRQSKP8F
-	SQGzqILzWVesD2SKnS89mAbjl2TKpWhNahTe7+j0XRU/cW6ag7hZM6uhy1ZNeQqr6czEyM8FuOcXW
-	gSOuvN8cVHBTesSCV/JLfC+QQvhQ==;
-Received: from [10.9.9.74] (helo=submission03.runbox)
-	by mailtransmit02.runbox with esmtp (Exim 4.86_2)
-	(envelope-from <david.laight.linux_spam@runbox.com>)
-	id 1wVxca-0000vh-QW; Sat, 06 Jun 2026 22:27:56 +0200
-Received: by submission03.runbox with esmtpsa  [Authenticated ID (1493616)]  (TLS1.2:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.95)
-	id 1wVxcU-006elj-DT;
-	Sat, 06 Jun 2026 22:27:50 +0200
-From: david.laight.linux@gmail.com
-To: Kees Cook <kees@kernel.org>,
-	linux-hardening@vger.kernel.org,
-	Arnd Bergmann <arnd@kernel.org>,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Helge Deller <deller@gmx.de>,
-	David Laight <david.laight.linux@gmail.com>
-Subject: [PATCH next] drivers/video/fbdev/sis: Replace strlen() strcpy() pair with strscpy()
-Date: Sat,  6 Jun 2026 21:27:41 +0100
-Message-Id: <20260606202744.5113-2-david.laight.linux@gmail.com>
-X-Mailer: git-send-email 2.39.5
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AAS75nZy"
+Received: by mail-dl1-f68.google.com with SMTP id a92af1059eb24-137bd9ed2b1so1898830c88.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 06 Jun 2026 18:58:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780797524; x=1781402324; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=bKAxnEjb4A7lUPDPHjD2MEbeNWHRIi+8nEnxtyhGQh8=;
+        b=AAS75nZyx+w608bGUUVqp10PeDeY/SERMDTAOiEmOULEW6Al5UQTCRsUn0CMvqNkP/
+         VNC7jXilrKpY8nItdEPByYId4w8XFQBNjA86otlNvNkZbz/KsAylfHdKeOlGTcxqLUHz
+         fjXD8Uop9Oql1i8G7zS+iS8YJH2oRaoWXm8SSSlb0dKWpZljKA4vF3iil4aDG6Tdv/Az
+         XZd0p6TKrQaNWXhpBcxQwRWiud+EA9cczuFYiE/6XjGgi2qG1DSCUBSmE2eS4ZKj0RJ2
+         oR6io1e362AmnM+FvTRv6ytEvfXkVW8p7mPRD7Mt2Rr4buAV/VYzEM1Tz4w24MyX8+K/
+         CRuw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780797524; x=1781402324;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bKAxnEjb4A7lUPDPHjD2MEbeNWHRIi+8nEnxtyhGQh8=;
+        b=PN6hi1GRcXyHBFsqxH3olnlwTkZ0FUx69tKYUH8dEQpgceqaIDoM0RSxirz0Q/FkZj
+         JdwQ1eyvw55aa1WcuFtxzxjEW46ADZDT2iac0MAQvkLj7EjmaAEsayxjmxxz/kNjCzlJ
+         we0A7WL3NvX2tJWaipywyamIiX+jhY0c/7wT3l+Y4D8wHMJ4hfys3ER337LNWO50zEJH
+         x2VgchBChrd1SJdiHn4qH36reps/8VTHxiyDb9mzjdN5RkQaD9biCCo21qeebSWgmyF4
+         G5EtNmaoSDMjM6mapbmdiHZSyGnc1s5kvGOG1IpFooVhM6UO6hGxAOuFpHAHD7seR78K
+         dToQ==
+X-Gm-Message-State: AOJu0Yy/0Xf/zD65Bc4sp2WlJiuZVOQI+YdoiYHSC6pMSCDDBjXY9544
+	aas6WZ6xRxTyWm+mD8IDS44OW07cxHXhCS1EUS6CzhEdCKL+vVqMmyXpygd+SBA/
+X-Gm-Gg: Acq92OGTI2EsN4m8AYv6hdVCS+Q0JUfU+RuIJ/X9wV9BElzh/NJkOr4omoU9rbtSPDb
+	ka4BwhUMxbShXigG2vFkfKxMlcnW9Vi7h/TnMulJTJyAgp8/0yM/QchIxMzGJN9tE7bTuInNjdR
+	V8fuYmiJm9R2/gE/OqwvhuJ/+E+T3vC6sM4Wx674aQWmKDu6h7B45PptwQ/fz/OMCdBHrnjd1vm
+	8s4u+w6f7V+c3VIlp95qFxbVojawCS8Qih2iZE/8wixtQ53voPY9pmhadmJHyle94WZtvcnLO9u
+	mFc9UCkF88EtF8FxTKAdDx4LHVNE26sC+9RTAEeSwOdr6jaSdh16LcKCLAYx1Q6Rxy0TE/0AaYr
+	aFDi2LaihwDI+KO4pr98FHExFrisHFY0DMwoOS+P3Bn9FkB85EFbsqgMhkXKhozJEX0uc1EILbs
+	1oOGfuLEqWbMGwn8T+RVN2NaQAIRwtxFoqFovbaQ/I6AmT2k/GxLcAC0CYZGWu4FqpRGGvitJvm
+	9KRXZUr1ge7JoI8pzqUlIv5F57CmY8ZUHu0AxapOHODoYBkWRex3/lFljH1VPGprsYqJJf8IhB3
+	WSfXVfA99wvWFpWiNtcI8mlo6r5Lhch4EfATN+E=
+X-Received: by 2002:a05:7022:2397:b0:12d:de3e:cbfe with SMTP id a92af1059eb24-13806767673mr5606913c88.37.1780797523469;
+        Sat, 06 Jun 2026 18:58:43 -0700 (PDT)
+Received: from ethan-latitude5420.. (host-127-24.cafrjco.fresno.ca.us.clients.pavlovmedia.net. [68.180.127.24])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-137f553ab33sm8870425c88.10.2026.06.06.18.58.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 06 Jun 2026 18:58:43 -0700 (PDT)
+From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Cc: Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Helge Deller <deller@gmx.de>
+Subject: [PATCH] video: fbdev: remove skeletonfb example driver with no remaining purpose
+Date: Sat,  6 Jun 2026 18:58:33 -0700
+Message-ID: <20260607015840.11006-1-enelsonmoore@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -57,51 +73,1056 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: David Laight <david.laight.linux@gmail.com>
+The skeletonfb driver is intended to serve as an example for writing
+new framebuffer drivers. However, new framebuffer drivers are no longer
+accepted into the kernel because DRM has obsoleted fbdev, so it no
+longer has a purpose. In spite of this, it continues to be updated to
+reflect fbdev API changes, wasting maintainers' time. Remove it.
 
-Use the result of strscpy() for the overflow check.
-
-Signed-off-by: David Laight <david.laight.linux@gmail.com>
+Signed-off-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
 ---
-This is one of a group of patches that remove potentially unbounded
-strcpy() calls.
+ drivers/video/fbdev/skeletonfb.c | 1032 ------------------------------
+ 1 file changed, 1032 deletions(-)
+ delete mode 100644 drivers/video/fbdev/skeletonfb.c
 
-They are mostly replaced by strscpy() or, when strlen() has just been
-called, with memcpy() (usually including the '\0').
-
-Calls with copy string literals into arrays are left unchanged.
-They are safe and easily detected as such.
-
-The changes were made by getting the compiler to detect the calls and
-then fixing the code by hand.
-
-Note that all the changes are only compile tested.
-
-Some Makefiles were changed to allow files to contain strcpy().
-As well as 'difficult to fix' files, this included 'show' functions
-as they really need to use sysfs_emit() or seq_printf().
-
-All the patches are being sent individually to avoid very long cc lists.
-Apologies for the terse commit messages and likely unexpected tags.
-(There are about 100 patches in total.)
-
- drivers/video/fbdev/sis/sis_main.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 84567d67f71d..95f976b49143 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -204,8 +204,7 @@ static void sisfb_search_mode(char *name, bool quiet)
- 		return;
- 	}
- 
--	if(strlen(name) <= 19) {
--		strcpy(strbuf1, name);
-+	if (strscpy(strbuf1, name) > 0) {
- 		for(i = 0; i < strlen(strbuf1); i++) {
- 			if(strbuf1[i] < '0' || strbuf1[i] > '9') strbuf1[i] = ' ';
- 		}
+diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
+deleted file mode 100644
+index 7e98850d9bde..000000000000
+--- a/drivers/video/fbdev/skeletonfb.c
++++ /dev/null
+@@ -1,1032 +0,0 @@
+-/*
+- * linux/drivers/video/skeletonfb.c -- Skeleton for a frame buffer device
+- *
+- *  Modified to new api Jan 2001 by James Simmons (jsimmons@transvirtual.com)
+- *
+- *  Created 28 Dec 1997 by Geert Uytterhoeven
+- *
+- *
+- *  I have started rewriting this driver as a example of the upcoming new API
+- *  The primary goal is to remove the console code from fbdev and place it
+- *  into fbcon.c. This reduces the code and makes writing a new fbdev driver
+- *  easy since the author doesn't need to worry about console internals. It
+- *  also allows the ability to run fbdev without a console/tty system on top
+- *  of it.
+- *
+- *  First the roles of struct fb_info and struct display have changed. Struct
+- *  display will go away. The way the new framebuffer console code will
+- *  work is that it will act to translate data about the tty/console in
+- *  struct vc_data to data in a device independent way in struct fb_info. Then
+- *  various functions in struct fb_ops will be called to store the device
+- *  dependent state in the par field in struct fb_info and to change the
+- *  hardware to that state. This allows a very clean separation of the fbdev
+- *  layer from the console layer. It also allows one to use fbdev on its own
+- *  which is a bounus for embedded devices. The reason this approach works is
+- *  for each framebuffer device when used as a tty/console device is allocated
+- *  a set of virtual terminals to it. Only one virtual terminal can be active
+- *  per framebuffer device. We already have all the data we need in struct
+- *  vc_data so why store a bunch of colormaps and other fbdev specific data
+- *  per virtual terminal.
+- *
+- *  As you can see doing this makes the con parameter pretty much useless
+- *  for struct fb_ops functions, as it should be. Also having struct
+- *  fb_var_screeninfo and other data in fb_info pretty much eliminates the
+- *  need for get_fix and get_var. Once all drivers use the fix, var, and cmap
+- *  fbcon can be written around these fields. This will also eliminate the
+- *  need to regenerate struct fb_var_screeninfo, struct fb_fix_screeninfo
+- *  struct fb_cmap every time get_var, get_fix, get_cmap functions are called
+- *  as many drivers do now.
+- *
+- *  This file is subject to the terms and conditions of the GNU General Public
+- *  License. See the file COPYING in the main directory of this archive for
+- *  more details.
+- */
+-
+-#include <linux/aperture.h>
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/slab.h>
+-#include <linux/delay.h>
+-#include <linux/fb.h>
+-#include <linux/init.h>
+-#include <linux/pci.h>
+-
+-    /*
+-     *  This is just simple sample code.
+-     *
+-     *  No warranty that it actually compiles.
+-     *  Even less warranty that it actually works :-)
+-     */
+-
+-/*
+- * Driver data
+- */
+-static char *mode_option;
+-
+-/*
+- *  If your driver supports multiple boards, you should make the
+- *  below data types arrays, or allocate them dynamically (using kmalloc()).
+- */
+-
+-/*
+- * This structure defines the hardware state of the graphics card. Normally
+- * you place this in a header file in linux/include/video. This file usually
+- * also includes register information. That allows other driver subsystems
+- * and userland applications the ability to use the same header file to
+- * avoid duplicate work and easy porting of software.
+- */
+-struct xxx_par;
+-
+-/*
+- * Here we define the default structs fb_fix_screeninfo and fb_var_screeninfo
+- * if we don't use modedb. If we do use modedb see xxxfb_init how to use it
+- * to get a fb_var_screeninfo. Otherwise define a default var as well.
+- */
+-static const struct fb_fix_screeninfo xxxfb_fix = {
+-	.id =		"FB's name",
+-	.type =		FB_TYPE_PACKED_PIXELS,
+-	.visual =	FB_VISUAL_PSEUDOCOLOR,
+-	.xpanstep =	1,
+-	.ypanstep =	1,
+-	.ywrapstep =	1,
+-	.accel =	FB_ACCEL_NONE,
+-};
+-
+-    /*
+-     * 	Modern graphical hardware not only supports pipelines but some
+-     *  also support multiple monitors where each display can have
+-     *  its own unique data. In this case each display could be
+-     *  represented by a separate framebuffer device thus a separate
+-     *  struct fb_info. Now the struct xxx_par represents the graphics
+-     *  hardware state thus only one exist per card. In this case the
+-     *  struct xxx_par for each graphics card would be shared between
+-     *  every struct fb_info that represents a framebuffer on that card.
+-     *  This allows when one display changes it video resolution (info->var)
+-     *  the other displays know instantly. Each display can always be
+-     *  aware of the entire hardware state that affects it because they share
+-     *  the same xxx_par struct. The other side of the coin is multiple
+-     *  graphics cards that pass data around until it is finally displayed
+-     *  on one monitor. Such examples are the voodoo 1 cards and high end
+-     *  NUMA graphics servers. For this case we have a bunch of pars, each
+-     *  one that represents a graphics state, that belong to one struct
+-     *  fb_info. Their you would want to have *par point to a array of device
+-     *  states and have each struct fb_ops function deal with all those
+-     *  states. I hope this covers every possible hardware design. If not
+-     *  feel free to send your ideas at jsimmons@users.sf.net
+-     */
+-
+-    /*
+-     *  If your driver supports multiple boards or it supports multiple
+-     *  framebuffers, you should make these arrays, or allocate them
+-     *  dynamically using framebuffer_alloc() and free them with
+-     *  framebuffer_release().
+-     */
+-static struct fb_info info;
+-
+-    /*
+-     * Each one represents the state of the hardware. Most hardware have
+-     * just one hardware state. These here represent the default state(s).
+-     */
+-static struct xxx_par __initdata current_par;
+-
+-/**
+- *	xxxfb_open - Optional function. Called when the framebuffer is
+- *		     first accessed.
+- *	@info: frame buffer structure that represents a single frame buffer
+- *	@user: tell us if the userland (value=1) or the console is accessing
+- *	       the framebuffer.
+- *
+- *	This function is the first function called in the framebuffer api.
+- *	Usually you don't need to provide this function. The case where it
+- *	is used is to change from a text mode hardware state to a graphics
+- * 	mode state.
+- *
+- *	Returns negative errno on error, or zero on success.
+- */
+-static int xxxfb_open(struct fb_info *info, int user)
+-{
+-    return 0;
+-}
+-
+-/**
+- *	xxxfb_release - Optional function. Called when the framebuffer
+- *			device is closed.
+- *	@info: frame buffer structure that represents a single frame buffer
+- *	@user: tell us if the userland (value=1) or the console is accessing
+- *	       the framebuffer.
+- *
+- *	Thus function is called when we close /dev/fb or the framebuffer
+- *	console system is released. Usually you don't need this function.
+- *	The case where it is usually used is to go from a graphics state
+- *	to a text mode state.
+- *
+- *	Returns negative errno on error, or zero on success.
+- */
+-static int xxxfb_release(struct fb_info *info, int user)
+-{
+-    return 0;
+-}
+-
+-/**
+- *      xxxfb_check_var - Optional function. Validates a var passed in.
+- *      @var: frame buffer variable screen structure
+- *      @info: frame buffer structure that represents a single frame buffer
+- *
+- *	Checks to see if the hardware supports the state requested by
+- *	var passed in. This function does not alter the hardware state!!!
+- *	This means the data stored in struct fb_info and struct xxx_par do
+- *      not change. This includes the var inside of struct fb_info.
+- *	Do NOT change these. This function can be called on its own if we
+- *	intent to only test a mode and not actually set it. The stuff in
+- *	modedb.c is a example of this. If the var passed in is slightly
+- *	off by what the hardware can support then we alter the var PASSED in
+- *	to what we can do.
+- *
+- *      For values that are off, this function must round them _up_ to the
+- *      next value that is supported by the hardware.  If the value is
+- *      greater than the highest value supported by the hardware, then this
+- *      function must return -EINVAL.
+- *
+- *      Exception to the above rule:  Some drivers have a fixed mode, ie,
+- *      the hardware is already set at boot up, and cannot be changed.  In
+- *      this case, it is more acceptable that this function just return
+- *      a copy of the currently working var (info->var). Better is to not
+- *      implement this function, as the upper layer will do the copying
+- *      of the current var for you.
+- *
+- *      Note:  This is the only function where the contents of var can be
+- *      freely adjusted after the driver has been registered. If you find
+- *      that you have code outside of this function that alters the content
+- *      of var, then you are doing something wrong.  Note also that the
+- *      contents of info->var must be left untouched at all times after
+- *      driver registration.
+- *
+- *	Returns negative errno on error, or zero on success.
+- */
+-static int xxxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+-{
+-    /* ... */
+-    return 0;
+-}
+-
+-/**
+- *      xxxfb_set_par - Optional function. Alters the hardware state.
+- *      @info: frame buffer structure that represents a single frame buffer
+- *
+- *	Using the fb_var_screeninfo in fb_info we set the resolution of the
+- *	this particular framebuffer. This function alters the par AND the
+- *	fb_fix_screeninfo stored in fb_info. It doesn't not alter var in
+- *	fb_info since we are using that data. This means we depend on the
+- *	data in var inside fb_info to be supported by the hardware.
+- *
+- *      This function is also used to recover/restore the hardware to a
+- *      known working state.
+- *
+- *	xxxfb_check_var is always called before xxxfb_set_par to ensure that
+- *      the contents of var is always valid.
+- *
+- *	Again if you can't change the resolution you don't need this function.
+- *
+- *      However, even if your hardware does not support mode changing,
+- *      a set_par might be needed to at least initialize the hardware to
+- *      a known working state, especially if it came back from another
+- *      process that also modifies the same hardware, such as X.
+- *
+- *      If this is the case, a combination such as the following should work:
+- *
+- *      static int xxxfb_check_var(struct fb_var_screeninfo *var,
+- *                                struct fb_info *info)
+- *      {
+- *              *var = info->var;
+- *              return 0;
+- *      }
+- *
+- *      static int xxxfb_set_par(struct fb_info *info)
+- *      {
+- *              init your hardware here
+- *      }
+- *
+- *	Returns negative errno on error, or zero on success.
+- */
+-static int xxxfb_set_par(struct fb_info *info)
+-{
+-    struct xxx_par *par = info->par;
+-    /* ... */
+-    return 0;
+-}
+-
+-/**
+- *  	xxxfb_setcolreg - Optional function. Sets a color register.
+- *      @regno: Which register in the CLUT we are programming
+- *      @red: The red value which can be up to 16 bits wide
+- *	@green: The green value which can be up to 16 bits wide
+- *	@blue:  The blue value which can be up to 16 bits wide.
+- *	@transp: If supported, the alpha value which can be up to 16 bits wide.
+- *      @info: frame buffer info structure
+- *
+- *  	Set a single color register. The values supplied have a 16 bit
+- *  	magnitude which needs to be scaled in this function for the hardware.
+- *	Things to take into consideration are how many color registers, if
+- *	any, are supported with the current color visual. With truecolor mode
+- *	no color palettes are supported. Here a pseudo palette is created
+- *	which we store the value in pseudo_palette in struct fb_info. For
+- *	pseudocolor mode we have a limited color palette. To deal with this
+- *	we can program what color is displayed for a particular pixel value.
+- *	DirectColor is similar in that we can program each color field. If
+- *	we have a static colormap we don't need to implement this function.
+- *
+- *	Returns negative errno on error, or zero on success.
+- */
+-static int xxxfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+-			   unsigned blue, unsigned transp,
+-			   struct fb_info *info)
+-{
+-    if (regno >= 256)  /* no. of hw registers */
+-       return -EINVAL;
+-    /*
+-     * Program hardware... do anything you want with transp
+-     */
+-
+-    /* grayscale works only partially under directcolor */
+-    if (info->var.grayscale) {
+-       /* grayscale = 0.30*R + 0.59*G + 0.11*B */
+-       red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
+-    }
+-
+-    /* Directcolor:
+-     *   var->{color}.offset contains start of bitfield
+-     *   var->{color}.length contains length of bitfield
+-     *   {hardwarespecific} contains width of DAC
+-     *   pseudo_palette[X] is programmed to (X << red.offset) |
+-     *                                      (X << green.offset) |
+-     *                                      (X << blue.offset)
+-     *   RAMDAC[X] is programmed to (red, green, blue)
+-     *   color depth = SUM(var->{color}.length)
+-     *
+-     * Pseudocolor:
+-     *    var->{color}.offset is 0 unless the palette index takes less than
+-     *                        bits_per_pixel bits and is stored in the upper
+-     *                        bits of the pixel value
+-     *    var->{color}.length is set so that 1 << length is the number of
+-     *                        available palette entries
+-     *    pseudo_palette is not used
+-     *    RAMDAC[X] is programmed to (red, green, blue)
+-     *    color depth = var->{color}.length
+-     *
+-     * Static pseudocolor:
+-     *    same as Pseudocolor, but the RAMDAC is not programmed (read-only)
+-     *
+-     * Mono01/Mono10:
+-     *    Has only 2 values, black on white or white on black (fg on bg),
+-     *    var->{color}.offset is 0
+-     *    white = (1 << var->{color}.length) - 1, black = 0
+-     *    pseudo_palette is not used
+-     *    RAMDAC does not exist
+-     *    color depth is always 2
+-     *
+-     * Truecolor:
+-     *    does not use RAMDAC (usually has 3 of them).
+-     *    var->{color}.offset contains start of bitfield
+-     *    var->{color}.length contains length of bitfield
+-     *    pseudo_palette is programmed to (red << red.offset) |
+-     *                                    (green << green.offset) |
+-     *                                    (blue << blue.offset) |
+-     *                                    (transp << transp.offset)
+-     *    RAMDAC does not exist
+-     *    color depth = SUM(var->{color}.length})
+-     *
+-     *  The color depth is used by fbcon for choosing the logo and also
+-     *  for color palette transformation if color depth < 4
+-     *
+-     *  As can be seen from the above, the field bits_per_pixel is _NOT_
+-     *  a criteria for describing the color visual.
+-     *
+-     *  A common mistake is assuming that bits_per_pixel <= 8 is pseudocolor,
+-     *  and higher than that, true/directcolor.  This is incorrect, one needs
+-     *  to look at the fix->visual.
+-     *
+-     *  Another common mistake is using bits_per_pixel to calculate the color
+-     *  depth.  The bits_per_pixel field does not directly translate to color
+-     *  depth. You have to compute for the color depth (using the color
+-     *  bitfields) and fix->visual as seen above.
+-     */
+-
+-    /*
+-     * This is the point where the color is converted to something that
+-     * is acceptable by the hardware.
+-     */
+-#define CNVT_TOHW(val,width) ((((val)<<(width))+0x7FFF-(val))>>16)
+-    red = CNVT_TOHW(red, info->var.red.length);
+-    green = CNVT_TOHW(green, info->var.green.length);
+-    blue = CNVT_TOHW(blue, info->var.blue.length);
+-    transp = CNVT_TOHW(transp, info->var.transp.length);
+-#undef CNVT_TOHW
+-    /*
+-     * This is the point where the function feeds the color to the hardware
+-     * palette after converting the colors to something acceptable by
+-     * the hardware. Note, only FB_VISUAL_DIRECTCOLOR and
+-     * FB_VISUAL_PSEUDOCOLOR visuals need to write to the hardware palette.
+-     * If you have code that writes to the hardware CLUT, and it's not
+-     * any of the above visuals, then you are doing something wrong.
+-     */
+-    if (info->fix.visual == FB_VISUAL_DIRECTCOLOR ||
+-	info->fix.visual == FB_VISUAL_TRUECOLOR)
+-	    write_{red|green|blue|transp}_to_clut();
+-
+-    /* This is the point were you need to fill up the contents of
+-     * info->pseudo_palette. This structure is used _only_ by fbcon, thus
+-     * it only contains 16 entries to match the number of colors supported
+-     * by the console. The pseudo_palette is used only if the visual is
+-     * in directcolor or truecolor mode.  With other visuals, the
+-     * pseudo_palette is not used. (This might change in the future.)
+-     *
+-     * The contents of the pseudo_palette is in raw pixel format.  Ie, each
+-     * entry can be written directly to the framebuffer without any conversion.
+-     * The pseudo_palette is (void *).  However, if using the generic
+-     * drawing functions (cfb_imageblit, cfb_fillrect), the pseudo_palette
+-     * must be casted to (u32 *) _regardless_ of the bits per pixel. If the
+-     * driver is using its own drawing functions, then it can use whatever
+-     * size it wants.
+-     */
+-    if (info->fix.visual == FB_VISUAL_TRUECOLOR ||
+-	info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
+-	    u32 v;
+-
+-	    if (regno >= 16)
+-		    return -EINVAL;
+-
+-	    v = (red << info->var.red.offset) |
+-		    (green << info->var.green.offset) |
+-		    (blue << info->var.blue.offset) |
+-		    (transp << info->var.transp.offset);
+-
+-	    ((u32*)(info->pseudo_palette))[regno] = v;
+-    }
+-
+-    /* ... */
+-    return 0;
+-}
+-
+-/**
+- *      xxxfb_pan_display - NOT a required function. Pans the display.
+- *      @var: frame buffer variable screen structure
+- *      @info: frame buffer structure that represents a single frame buffer
+- *
+- *	Pan (or wrap, depending on the `vmode' field) the display using the
+- *  	`xoffset' and `yoffset' fields of the `var' structure.
+- *  	If the values don't fit, return -EINVAL.
+- *
+- *      Returns negative errno on error, or zero on success.
+- */
+-static int xxxfb_pan_display(struct fb_var_screeninfo *var,
+-			     struct fb_info *info)
+-{
+-    /*
+-     * If your hardware does not support panning, _do_ _not_ implement this
+-     * function. Creating a dummy function will just confuse user apps.
+-     */
+-
+-    /*
+-     * Note that even if this function is fully functional, a setting of
+-     * 0 in both xpanstep and ypanstep means that this function will never
+-     * get called.
+-     */
+-
+-    /* ... */
+-    return 0;
+-}
+-
+-/**
+- *      xxxfb_blank - NOT a required function. Blanks the display.
+- *      @blank_mode: the blank mode we want.
+- *      @info: frame buffer structure that represents a single frame buffer
+- *
+- *      Blank the screen if blank_mode != FB_BLANK_UNBLANK, else unblank.
+- *      Return 0 if blanking succeeded, != 0 if un-/blanking failed due to
+- *      e.g. a video mode which doesn't support it.
+- *
+- *      Implements VESA suspend and powerdown modes on hardware that supports
+- *      disabling hsync/vsync:
+- *
+- *      FB_BLANK_NORMAL = display is blanked, syncs are on.
+- *      FB_BLANK_HSYNC_SUSPEND = hsync off
+- *      FB_BLANK_VSYNC_SUSPEND = vsync off
+- *      FB_BLANK_POWERDOWN =  hsync and vsync off
+- *
+- *      If implementing this function, at least support FB_BLANK_UNBLANK.
+- *      Return !0 for any modes that are unimplemented.
+- *
+- */
+-static int xxxfb_blank(int blank_mode, struct fb_info *info)
+-{
+-    /* ... */
+-    return 0;
+-}
+-
+-/* ------------ Accelerated Functions --------------------- */
+-
+-/*
+- * We provide our own functions if we have hardware acceleration
+- * or non packed pixel format layouts. If we have no hardware
+- * acceleration, we can use a generic unaccelerated function. If using
+- * a pack pixel format just use the functions in cfb_*.c. Each file
+- * has one of the three different accel functions we support.
+- */
+-
+-/**
+- *      xxxfb_fillrect - REQUIRED function. Can use generic routines if
+- *		 	 non acclerated hardware and packed pixel based.
+- *			 Draws a rectangle on the screen.
+- *
+- *      @info: frame buffer structure that represents a single frame buffer
+- *	@region: The structure representing the rectangular region we
+- *		 wish to draw to.
+- *
+- *	This drawing operation places/removes a retangle on the screen
+- *	depending on the rastering operation with the value of color which
+- *	is in the current color depth format.
+- */
+-void xxxfb_fillrect(struct fb_info *p, const struct fb_fillrect *region)
+-{
+-/*	Meaning of struct fb_fillrect
+- *
+- *	@dx: The x and y corrdinates of the upper left hand corner of the
+- *	@dy: area we want to draw to.
+- *	@width: How wide the rectangle is we want to draw.
+- *	@height: How tall the rectangle is we want to draw.
+- *	@color:	The color to fill in the rectangle with.
+- *	@rop: The raster operation. We can draw the rectangle with a COPY
+- *	      of XOR which provides erasing effect.
+- */
+-}
+-
+-/**
+- *      xxxfb_copyarea - REQUIRED function. Can use generic routines if
+- *                       non acclerated hardware and packed pixel based.
+- *                       Copies one area of the screen to another area.
+- *
+- *      @info: frame buffer structure that represents a single frame buffer
+- *      @area: Structure providing the data to copy the framebuffer contents
+- *	       from one region to another.
+- *
+- *      This drawing operation copies a rectangular area from one area of the
+- *	screen to another area.
+- */
+-void xxxfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+-{
+-/*
+- *      @dx: The x and y coordinates of the upper left hand corner of the
+- *	@dy: destination area on the screen.
+- *      @width: How wide the rectangle is we want to copy.
+- *      @height: How tall the rectangle is we want to copy.
+- *      @sx: The x and y coordinates of the upper left hand corner of the
+- *      @sy: source area on the screen.
+- */
+-}
+-
+-
+-/**
+- *      xxxfb_imageblit - REQUIRED function. Can use generic routines if
+- *                        non acclerated hardware and packed pixel based.
+- *                        Copies a image from system memory to the screen.
+- *
+- *      @info: frame buffer structure that represents a single frame buffer
+- *	@image:	structure defining the image.
+- *
+- *      This drawing operation draws a image on the screen. It can be a
+- *	mono image (needed for font handling) or a color image (needed for
+- *	tux).
+- */
+-void xxxfb_imageblit(struct fb_info *p, const struct fb_image *image)
+-{
+-/*
+- *      @dx: The x and y coordinates of the upper left hand corner of the
+- *	@dy: destination area to place the image on the screen.
+- *      @width: How wide the image is we want to copy.
+- *      @height: How tall the image is we want to copy.
+- *      @fg_color: For mono bitmap images this is color data for
+- *      @bg_color: the foreground and background of the image to
+- *		   write directly to the frmaebuffer.
+- *	@depth:	How many bits represent a single pixel for this image.
+- *	@data: The actual data used to construct the image on the display.
+- *	@cmap: The colormap used for color images.
+- */
+-
+-/*
+- * The generic function, cfb_imageblit, expects that the bitmap scanlines are
+- * padded to the next byte.  Most hardware accelerators may require padding to
+- * the next u16 or the next u32.  If that is the case, the driver can specify
+- * this by setting info->pixmap.scan_align = 2 or 4.  See a more
+- * comprehensive description of the pixmap below.
+- */
+-}
+-
+-/**
+- *	xxxfb_cursor - 	OPTIONAL. If your hardware lacks support
+- *			for a cursor, leave this field NULL.
+- *
+- *      @info: frame buffer structure that represents a single frame buffer
+- *	@cursor: structure defining the cursor to draw.
+- *
+- *      This operation is used to set or alter the properities of the
+- *	cursor.
+- *
+- *	Returns negative errno on error, or zero on success.
+- */
+-int xxxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+-{
+-/*
+- *      @set: 	Which fields we are altering in struct fb_cursor
+- *	@enable: Disable or enable the cursor
+- *      @rop: 	The bit operation we want to do.
+- *      @mask:  This is the cursor mask bitmap.
+- *      @dest:  A image of the area we are going to display the cursor.
+- *		Used internally by the driver.
+- *      @hot:	The hot spot.
+- *	@image:	The actual data for the cursor image.
+- *
+- *      NOTES ON FLAGS (cursor->set):
+- *
+- *      FB_CUR_SETIMAGE - the cursor image has changed (cursor->image.data)
+- *      FB_CUR_SETPOS   - the cursor position has changed (cursor->image.dx|dy)
+- *      FB_CUR_SETHOT   - the cursor hot spot has changed (cursor->hot.dx|dy)
+- *      FB_CUR_SETCMAP  - the cursor colors has changed (cursor->fg_color|bg_color)
+- *      FB_CUR_SETSHAPE - the cursor bitmask has changed (cursor->mask)
+- *      FB_CUR_SETSIZE  - the cursor size has changed (cursor->width|height)
+- *      FB_CUR_SETALL   - everything has changed
+- *
+- *      NOTES ON ROPs (cursor->rop, Raster Operation)
+- *
+- *      ROP_XOR         - cursor->image.data XOR cursor->mask
+- *      ROP_COPY        - curosr->image.data AND cursor->mask
+- *
+- *      OTHER NOTES:
+- *
+- *      - fbcon only supports a 2-color cursor (cursor->image.depth = 1)
+- *      - The fb_cursor structure, @cursor, _will_ always contain valid
+- *        fields, whether any particular bitfields in cursor->set is set
+- *        or not.
+- */
+-}
+-
+-/**
+- *	xxxfb_sync - NOT a required function. Normally the accel engine
+- *		     for a graphics card take a specific amount of time.
+- *		     Often we have to wait for the accelerator to finish
+- *		     its operation before we can write to the framebuffer
+- *		     so we can have consistent display output.
+- *
+- *      @info: frame buffer structure that represents a single frame buffer
+- *
+- *      If the driver has implemented its own hardware-based drawing function,
+- *      implementing this function is highly recommended.
+- */
+-int xxxfb_sync(struct fb_info *info)
+-{
+-	return 0;
+-}
+-
+-    /*
+-     *  Frame buffer operations
+-     */
+-
+-static const struct fb_ops xxxfb_ops = {
+-	.owner		= THIS_MODULE,
+-	.fb_open	= xxxfb_open,
+-	.fb_read	= xxxfb_read,
+-	.fb_write	= xxxfb_write,
+-	.fb_release	= xxxfb_release,
+-	.fb_check_var	= xxxfb_check_var,
+-	.fb_set_par	= xxxfb_set_par,
+-	.fb_setcolreg	= xxxfb_setcolreg,
+-	.fb_blank	= xxxfb_blank,
+-	.fb_pan_display	= xxxfb_pan_display,
+-	.fb_fillrect	= xxxfb_fillrect, 	/* Needed !!! */
+-	.fb_copyarea	= xxxfb_copyarea,	/* Needed !!! */
+-	.fb_imageblit	= xxxfb_imageblit,	/* Needed !!! */
+-	.fb_cursor	= xxxfb_cursor,		/* Optional !!! */
+-	.fb_sync	= xxxfb_sync,
+-	.fb_ioctl	= xxxfb_ioctl,
+-	.fb_mmap	= xxxfb_mmap,
+-};
+-
+-/* ------------------------------------------------------------------------- */
+-
+-    /*
+-     *  Initialization
+-     */
+-
+-/* static int __init xxfb_probe (struct platform_device *pdev) -- for platform devs */
+-static int xxxfb_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+-{
+-    struct fb_info *info;
+-    struct xxx_par *par;
+-    struct device *device = &dev->dev; /* or &pdev->dev */
+-    int cmap_len, retval;
+-
+-    /*
+-     * Remove firmware-based drivers that create resource conflicts.
+-     */
+-    retval = aperture_remove_conflicting_pci_devices(pdev, "xxxfb");
+-    if (retval)
+-	    return retval;
+-
+-    /*
+-     * Dynamically allocate info and par
+-     */
+-    info = framebuffer_alloc(sizeof(struct xxx_par), device);
+-
+-    if (!info) {
+-	    /* goto error path */
+-    }
+-
+-    par = info->par;
+-
+-    /*
+-     * Here we set the screen_base to the virtual memory address
+-     * for the framebuffer. Usually we obtain the resource address
+-     * from the bus layer and then translate it to virtual memory
+-     * space via ioremap. Consult ioport.h.
+-     */
+-    info->screen_base = framebuffer_virtual_memory;
+-    info->fbops = &xxxfb_ops;
+-    info->fix = xxxfb_fix;
+-    info->pseudo_palette = pseudo_palette; /* The pseudopalette is an
+-					    * 16-member array
+-					    */
+-    /*
+-     * Set up flags to indicate what sort of acceleration your
+-     * driver can provide (pan/wrap/copyarea/etc.) and whether it
+-     * is a module -- see FBINFO_* in include/linux/fb.h
+-     *
+-     * If your hardware can support any of the hardware accelerated functions
+-     * fbcon performance will improve if info->flags is set properly.
+-     *
+-     * FBINFO_HWACCEL_COPYAREA - hardware moves
+-     * FBINFO_HWACCEL_FILLRECT - hardware fills
+-     * FBINFO_HWACCEL_IMAGEBLIT - hardware mono->color expansion
+-     * FBINFO_HWACCEL_YPAN - hardware can pan display in y-axis
+-     * FBINFO_HWACCEL_YWRAP - hardware can wrap display in y-axis
+-     * FBINFO_HWACCEL_DISABLED - supports hardware accels, but disabled
+-     * FBINFO_READS_FAST - if set, prefer moves over mono->color expansion
+-     * FBINFO_MISC_TILEBLITTING - hardware can do tile blits
+-     *
+-     * NOTE: These are for fbcon use only.
+-     */
+-    info->flags = 0;
+-
+-/********************* This stage is optional ******************************/
+-     /*
+-     * The struct pixmap is a scratch pad for the drawing functions. This
+-     * is where the monochrome bitmap is constructed by the higher layers
+-     * and then passed to the accelerator.  For drivers that uses
+-     * cfb_imageblit, you can skip this part.  For those that have a more
+-     * rigorous requirement, this stage is needed
+-     */
+-
+-    /* PIXMAP_SIZE should be small enough to optimize drawing, but not
+-     * large enough that memory is wasted.  A safe size is
+-     * (max_xres * max_font_height/8). max_xres is driver dependent,
+-     * max_font_height is 32.
+-     */
+-    info->pixmap.addr = kmalloc(PIXMAP_SIZE, GFP_KERNEL);
+-    if (!info->pixmap.addr) {
+-	    /* goto error */
+-    }
+-
+-    info->pixmap.size = PIXMAP_SIZE;
+-
+-    /*
+-     * FB_PIXMAP_SYSTEM - memory is in system ram
+-     * FB_PIXMAP_IO     - memory is iomapped
+-     * FB_PIXMAP_SYNC   - if set, will call fb_sync() per access to pixmap,
+-     *                    usually if FB_PIXMAP_IO is set.
+-     *
+-     * Currently, FB_PIXMAP_IO is unimplemented.
+-     */
+-    info->pixmap.flags = FB_PIXMAP_SYSTEM;
+-
+-    /*
+-     * scan_align is the number of padding for each scanline.  It is in bytes.
+-     * Thus for accelerators that need padding to the next u32, put 4 here.
+-     */
+-    info->pixmap.scan_align = 4;
+-
+-    /*
+-     * buf_align is the amount to be padded for the buffer. For example,
+-     * the i810fb needs a scan_align of 2 but expects it to be fed with
+-     * dwords, so a buf_align = 4 is required.
+-     */
+-    info->pixmap.buf_align = 4;
+-
+-    /* access_align is how many bits can be accessed from the framebuffer
+-     * ie. some epson cards allow 16-bit access only.  Most drivers will
+-     * be safe with u32 here.
+-     *
+-     * NOTE: This field is currently unused.
+-     */
+-    info->pixmap.access_align = 32;
+-/***************************** End optional stage ***************************/
+-
+-    /*
+-     * This should give a reasonable default video mode. The following is
+-     * done when we can set a video mode.
+-     */
+-    if (!mode_option)
+-	mode_option = "640x480@60";
+-
+-    retval = fb_find_mode(&info->var, info, mode_option, NULL, 0, NULL, 8);
+-
+-    if (!retval || retval == 4)
+-	return -EINVAL;
+-
+-    /* This has to be done! */
+-    if (fb_alloc_cmap(&info->cmap, cmap_len, 0))
+-	return -ENOMEM;
+-
+-    /*
+-     * The following is done in the case of having hardware with a static
+-     * mode. If we are setting the mode ourselves we don't call this.
+-     */
+-    info->var = xxxfb_var;
+-
+-    /*
+-     * For drivers that can...
+-     */
+-    xxxfb_check_var(&info->var, info);
+-
+-    /*
+-     * Does a call to fb_set_par() before register_framebuffer needed?  This
+-     * will depend on you and the hardware.  If you are sure that your driver
+-     * is the only device in the system, a call to fb_set_par() is safe.
+-     *
+-     * Hardware in x86 systems has a VGA core.  Calling set_par() at this
+-     * point will corrupt the VGA console, so it might be safer to skip a
+-     * call to set_par here and just allow fbcon to do it for you.
+-     */
+-    /* xxxfb_set_par(info); */
+-
+-    if (register_framebuffer(info) < 0) {
+-	fb_dealloc_cmap(&info->cmap);
+-	return -EINVAL;
+-    }
+-    fb_info(info, "%s frame buffer device\n", info->fix.id);
+-    pci_set_drvdata(dev, info); /* or platform_set_drvdata(pdev, info) */
+-    return 0;
+-}
+-
+-    /*
+-     *  Cleanup
+-     */
+-/* static void xxxfb_remove(struct platform_device *pdev) */
+-static void xxxfb_remove(struct pci_dev *dev)
+-{
+-	struct fb_info *info = pci_get_drvdata(dev);
+-	/* or platform_get_drvdata(pdev); */
+-
+-	if (info) {
+-		unregister_framebuffer(info);
+-		fb_dealloc_cmap(&info->cmap);
+-		/* ... */
+-		framebuffer_release(info);
+-	}
+-}
+-
+-#ifdef CONFIG_PCI
+-#ifdef CONFIG_PM
+-/**
+- *	xxxfb_suspend - Optional but recommended function. Suspend the device.
+- *	@dev: PCI device
+- *	@msg: the suspend event code.
+- *
+- *      See Documentation/driver-api/pm/devices.rst for more information
+- */
+-static int xxxfb_suspend(struct device *dev)
+-{
+-	struct fb_info *info = dev_get_drvdata(dev);
+-	struct xxxfb_par *par = info->par;
+-
+-	/* suspend here */
+-	return 0;
+-}
+-
+-/**
+- *	xxxfb_resume - Optional but recommended function. Resume the device.
+- *	@dev: PCI device
+- *
+- *      See Documentation/driver-api/pm/devices.rst for more information
+- */
+-static int xxxfb_resume(struct device *dev)
+-{
+-	struct fb_info *info = dev_get_drvdata(dev);
+-	struct xxxfb_par *par = info->par;
+-
+-	/* resume here */
+-	return 0;
+-}
+-#else
+-#define xxxfb_suspend NULL
+-#define xxxfb_resume NULL
+-#endif /* CONFIG_PM */
+-
+-static const struct pci_device_id xxxfb_id_table[] = {
+-	{ PCI_VENDOR_ID_XXX, PCI_DEVICE_ID_XXX,
+-	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
+-	  PCI_CLASS_MASK, 0 },
+-	{ 0, }
+-};
+-
+-static SIMPLE_DEV_PM_OPS(xxxfb_pm_ops, xxxfb_suspend, xxxfb_resume);
+-
+-/* For PCI drivers */
+-static struct pci_driver xxxfb_driver = {
+-	.name =		"xxxfb",
+-	.id_table =	xxxfb_id_table,
+-	.probe =	xxxfb_probe,
+-	.remove =	xxxfb_remove,
+-	.driver.pm =	xxxfb_pm_ops, /* optional but recommended */
+-};
+-
+-MODULE_DEVICE_TABLE(pci, xxxfb_id_table);
+-
+-static int __init xxxfb_init(void)
+-{
+-	/*
+-	 *  For kernel boot options (in 'video=xxxfb:<options>' format)
+-	 */
+-#ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("xxxfb", &option))
+-		return -ENODEV;
+-	xxxfb_setup(option);
+-#endif
+-
+-	return pci_register_driver(&xxxfb_driver);
+-}
+-
+-static void __exit xxxfb_exit(void)
+-{
+-	pci_unregister_driver(&xxxfb_driver);
+-}
+-#else /* non PCI, platform drivers */
+-#include <linux/platform_device.h>
+-/* for platform devices */
+-
+-#ifdef CONFIG_PM
+-/**
+- *	xxxfb_suspend - Optional but recommended function. Suspend the device.
+- *	@dev: platform device
+- *	@msg: the suspend event code.
+- *
+- *      See Documentation/driver-api/pm/devices.rst for more information
+- */
+-static int xxxfb_suspend(struct platform_device *dev, pm_message_t msg)
+-{
+-	struct fb_info *info = platform_get_drvdata(dev);
+-	struct xxxfb_par *par = info->par;
+-
+-	/* suspend here */
+-	return 0;
+-}
+-
+-/**
+- *	xxxfb_resume - Optional but recommended function. Resume the device.
+- *	@dev: platform device
+- *
+- *      See Documentation/driver-api/pm/devices.rst for more information
+- */
+-static int xxxfb_resume(struct platform_dev *dev)
+-{
+-	struct fb_info *info = platform_get_drvdata(dev);
+-	struct xxxfb_par *par = info->par;
+-
+-	/* resume here */
+-	return 0;
+-}
+-#else
+-#define xxxfb_suspend NULL
+-#define xxxfb_resume NULL
+-#endif /* CONFIG_PM */
+-
+-static struct platform_device_driver xxxfb_driver = {
+-	.probe = xxxfb_probe,
+-	.remove = xxxfb_remove,
+-	.suspend = xxxfb_suspend, /* optional but recommended */
+-	.resume = xxxfb_resume,   /* optional but recommended */
+-	.driver = {
+-		.name = "xxxfb",
+-	},
+-};
+-
+-static struct platform_device *xxxfb_device;
+-
+-#ifndef MODULE
+-    /*
+-     *  Setup
+-     */
+-
+-/*
+- * Only necessary if your driver takes special options,
+- * otherwise we fall back on the generic fb_setup().
+- */
+-static int __init xxxfb_setup(char *options)
+-{
+-    /* Parse user specified options (`video=xxxfb:') */
+-}
+-#endif /* MODULE */
+-
+-static int __init xxxfb_init(void)
+-{
+-	int ret;
+-	/*
+-	 *  For kernel boot options (in 'video=xxxfb:<options>' format)
+-	 */
+-#ifndef MODULE
+-	char *option = NULL;
+-#endif
+-
+-	if (fb_modesetting_disabled("xxxfb"))
+-		return -ENODEV;
+-
+-#ifndef MODULE
+-	if (fb_get_options("xxxfb", &option))
+-		return -ENODEV;
+-	xxxfb_setup(option);
+-#endif
+-	ret = platform_driver_register(&xxxfb_driver);
+-
+-	if (!ret) {
+-		xxxfb_device = platform_device_register_simple("xxxfb", 0,
+-								NULL, 0);
+-
+-		if (IS_ERR(xxxfb_device)) {
+-			platform_driver_unregister(&xxxfb_driver);
+-			ret = PTR_ERR(xxxfb_device);
+-		}
+-	}
+-
+-	return ret;
+-}
+-
+-static void __exit xxxfb_exit(void)
+-{
+-	platform_device_unregister(xxxfb_device);
+-	platform_driver_unregister(&xxxfb_driver);
+-}
+-#endif /* CONFIG_PCI */
+-
+-/* ------------------------------------------------------------------------- */
+-
+-
+-    /*
+-     *  Modularization
+-     */
+-
+-module_init(xxxfb_init);
+-module_exit(xxxfb_exit);
+-
+-MODULE_LICENSE("GPL");
 -- 
-2.39.5
+2.43.0
 

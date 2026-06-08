@@ -1,178 +1,114 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qv1-f68.google.com (mail-qv1-f68.google.com [209.85.219.68])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B26D28727D
-	for <linux-fbdev@vger.kernel.org>; Sun,  7 Jun 2026 21:02:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780866128; cv=none; b=IXMQRHpaj/LoFDgLc206N4FnsBkR2Uf+jxkumJgJTYR4q5RKR/G1kCoJRFfCl4XlI/1eHDP+zJEXd/Tsa96LbyCO1plGgGcWkLPyqpIp5F2DVdWVLb/KgkJhLiIuDNMw2+wszOQg0MrCiKnz8CRErYhGftEPi4XgEwEeyin6DWk=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780866128; c=relaxed/simple;
-	bh=iXxfi1wcbtxr1d11aScq42jTi7wlD79gVImEYB4u67s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DuqLFIl3H7yAd5BEslqHWbzEz0OKuu+naez/nX6QgPc3czgvvqSgm4Sx8bLw8B9eUDxiLyY+sj3Yz+0aGulBiwF8QEsR02kKlwX9GirKEMQ5JT/VzT/8p84TGKoxU3m8r4tp5Qgr2SqvR0xqYxK3+wNh5FE/1CVhtZpsEUMILDw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=aaqtDv2Z; arc=none smtp.client-ip=212.227.15.19
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CCC22EB5A6
+	for <linux-fbdev@vger.kernel.org>; Mon,  8 Jun 2026 04:51:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.219.68
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780894264; cv=pass; b=h3sxig9hfveLOA28k+CWCkwdkXQFrZ+krDzB5vWYJkDYg8THCypc27qTU1vyP92laGC0W57JLuCn6w5I5A8a3d3QPXoJV8ixNc6gCK3y+LNrcjGb3tAMCNMkkkLroW44Ws95Toh2xsko5E0GEDVlC0hC5ADmzjuIYXblFuxbqpg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780894264; c=relaxed/simple;
+	bh=ruLdARqDCni48cQOkidWdNO1xRKIushOB4xhN0tsI6Q=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TrRJojBDDHv1R7bK65wOde8kBvGGSihhvkL1bPmcnp6Y6ac8WLzj4r/S7x5oRAVQNGx3fll8gGnBeihytUHsMhrGx6QKgfGXSZ5FE4cwQHYdAcrh3Frq3m9juEWzcqZBxqRA8C6vZMEycY4JAVo6omIU3jqMvR6QqcnOybnHiIg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Dh0Wr71H; arc=pass smtp.client-ip=209.85.219.68
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="aaqtDv2Z"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1780866124; x=1781470924; i=deller@gmx.de;
-	bh=p2xWpZVBhxwbeMjpSopR2RGaZvmMmu2NdGj2i5TYV6k=;
-	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-ID:
-	 MIME-Version:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=aaqtDv2ZDhUchb73gvJ9E2UIilD1l8/2OURY7SfeTqQTXYOZmo4Oib6Wf/qUnOrB
-	 IIQXQlWIxUvx/7GximnVRV2ngU+Q2vWPG1NoitFHgRU54Zy/vO8u7aWFWnuZHxxRF
-	 13+zJLFT0D8oNUzSBHbJolgdOrlD655aLCjhXKqKaKK0pSYQlLVScKVS26R0HwTEP
-	 f2/eXdgg/x2pgP59FJgNblufRbGomx2n4yw4L8PbQGrFZkVw5kl61USpjJb+KLQmw
-	 opMsVNy9GEf8h3C4jRj++q8B26gX4tuYSqQCCcAVeAiE0rIq8dNfOku7snbiJE7+n
-	 414+ufIc0S4oC4L7Zw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MDysg-1wMSk416bU-00Fxiw; Sun, 07
- Jun 2026 23:02:04 +0200
-From: Helge Deller <deller@gmx.de>
-To: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Cc: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Subject: [PATCH] lib/fonts: Avoid unncessary 64-bit math in font code
-Date: Sun,  7 Jun 2026 23:02:03 +0200
-Message-ID: <20260607210203.229613-1-deller@gmx.de>
-X-Mailer: git-send-email 2.54.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Dh0Wr71H"
+Received: by mail-qv1-f68.google.com with SMTP id 6a1803df08f44-8ccdef9f3d4so45560656d6.2
+        for <linux-fbdev@vger.kernel.org>; Sun, 07 Jun 2026 21:51:03 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780894262; cv=none;
+        d=google.com; s=arc-20240605;
+        b=D7mPZ+9aOWCSX+paboqUK4sV+oTY0H46swO1M8eNoFfkST/vGu1GYX7Jw+1zxyog2D
+         cp20lcwW4Pek735Suecz0V6zb5nlwLZaKFlPomAEQYNjsnqPZ8i1erx7h1tgwHAjDJpX
+         z6lhzS56WeWgygdLzQ2GiZGQF//orUUFdWi5Jh/dx2ZFJaaw5HHkQO75e420yHfFJpB5
+         HQcF89v3xfz+V9a1ns0LR/2hjVnSKtApQRAPhHSbanLC7uFr2wo0NZRfUQ7uqNIBJnGS
+         RgzhsRGQnCbJMw6Goh+VrmZv/HUjv7+mDNsT6RfIQZm6eXwybdJ0+sJEgD1VfQ34jbZi
+         ARFw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=ruLdARqDCni48cQOkidWdNO1xRKIushOB4xhN0tsI6Q=;
+        fh=UYd4uBD9KpDVLhI5XK6oUbpv2nkluIKT2vzTPI491l4=;
+        b=KQQ717zmu9BkVPps5H+4C+nbx+pb5RKe6SDqZhTcdxU510DbQj+3Bl0GT+TFmfTSy6
+         6tnehLCyOVEzOAGVR0xSR4iHigBUrKE08kBmJyXmEEfsWDE2fCKeobRctDYo/VkUddyZ
+         O0jiZNY7IYr4si6gdKw4h8Nk9aTknZbdB05k5PAW+yBKu0CpnM6uBI/wg4nF/9ntf4EY
+         jUTqcq0sqYeE6SX6qFyIAd0klNrAMdnUeOpgyY4gGVnjbqDVgLclVbf8+B9GkcGKPtxy
+         RWe/esqoMemLCgBB+RDIQ7/s+FA9uixz/X8aeY72h80TMH8uHDnmoQb0aSFMl55ZzMvq
+         cT+Q==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1780894262; x=1781499062; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ruLdARqDCni48cQOkidWdNO1xRKIushOB4xhN0tsI6Q=;
+        b=Dh0Wr71HmyJQEJPpZpMJG01oYy5iShDjxyzfG6H56MWe71pS0x4dQD6VWahtokXE5n
+         aBYwG0AZdjDl+f4+Kc+4GFz4vyE93rkYKJD6qiBpt8dAviT/fMVN8CceD8YFSw1rqvlp
+         5VqeS3sGyMlqUTQP9z0IgTolnErllz7MR7bc7j/cfceSAz5x8n/CDyDQ2nomYv+SMEGf
+         fT3Hy/38A6fYW1ETiEehRlGGDp3ZVdYzTvp040QiZsehEk+zuqAM4v63D5zxbGuHkMSN
+         7N8lL+KSq5uSv5kKcfjxgwjynQakMMjScBOr8gadW2B6hPyHc+hr1qBaoA2MXvvpLZwG
+         0CBg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1780894262; x=1781499062;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=ruLdARqDCni48cQOkidWdNO1xRKIushOB4xhN0tsI6Q=;
+        b=X4VfC9/r4Ih3i6rYBx4/YcqmjXrQrL62G7zF3c0Mc7kmE68rcQMYExSwzwCXGZED7+
+         z+KZrwiBxR8/aKDXDG9D9qDPDEgDp/kyPFS21anm3DU19utDB0ktimnH59RCAtuGMAK1
+         VtfOZ2AeJtBa9RhmkDmig8akuohAeACOVQzdaQ6+phOQq7A5AFN4mPUssyVf7DwDI8TN
+         wVDvHB3l2e7Xm3ktX9XYTYl/jiD70E3Pf4KfQR17PoYf8YRerIu8S7zeC/9IBjzOjddP
+         C/yXIxevM9tDu6UmJIb1PRuS2ferpHTElX9i3+mnYsIW4KZMYQ83TBQRkid8HsnQZl0B
+         hRFQ==
+X-Gm-Message-State: AOJu0YwqZdHRUTGhamfMMQT52PrMc0jZSeumLaZdsnbw89Rng8iu7y3v
+	Q+E5O8mgUsXWFe0CMCKELoChiMQ0T0B2LzPcTE+Ysv/u2DLguXHikRYnqkkF7Ac/xJLWusC++zh
+	/APnHv+dtmHGa8A5fi2kPc5R19yiXKDXy/t06
+X-Gm-Gg: Acq92OEu7BNwR6i7GFykOB88Go4qhMtwuT9OCO8SQ+861jmbjDSJAnxb76cdFfBPJzv
+	DkWpz7ZpLZwC9mQtzy4Z5ppmohKzxPhSHL6VZDH52+F9fju6QPMVddolQsDyGqCnJfKMygVTLZg
+	mJyc12Vk5vBc9OJ4LIYHNL9pvsLJFhtQzU9yINH2Mv4Teq1MmxuNE80fmFi98uDewO8EAArB5fj
+	wYSRn4ND7U+c1hDAFsZjzPbs+uv17WgfnD1xx/xeRTfo/gtqSxR2jaYS/hNpyejxEa+j8eFfyYb
+	JmVukq/4bgRlhrkcHpu0J3lO7+hNlLf/hj2o2y8+1ODbiyRttuC1h8mKxf70ENnEhbuga/u/8fB
+	T5q4=
+X-Received: by 2002:ad4:424d:0:b0:8ca:25d3:bf41 with SMTP id
+ 6a1803df08f44-8cee5fb6f45mr156665376d6.8.1780894262219; Sun, 07 Jun 2026
+ 21:51:02 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+References: <20260607210203.229613-1-deller@gmx.de>
+In-Reply-To: <20260607210203.229613-1-deller@gmx.de>
+From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+Date: Sun, 7 Jun 2026 21:50:51 -0700
+X-Gm-Features: AVVi8CfzWmWWxt3SB7pXX23oNZUjMnDgx_nKjpLYDIPyHFfppWEBqDIhw4T6cu4
+Message-ID: <CADkSEUjJErZyBQtGDpdbt4iTx6hHZhizRJV1mRONrHjV0W1WUg@mail.gmail.com>
+Subject: Re: [PATCH] lib/fonts: Avoid unncessary 64-bit math in font code
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:WOvRLrJZH2fMsLz0p1TR50u4KJMnjSVZyAge0lxD1vOf9uHZLIE
- pr0h1v0mlsEqKhkasB1OPK9nV/+keAJB4/+b/FT4BxN3ezE6jmbbEs9pjsXsOB1mzjUBHgm
- LDW6cyLd7RlXvP33EzuDXDdBCQJk8ADMRU0MtY3fUHz5YLEpUglTyUjZskiIw0VrSA+U1VT
- gKvA/FctfsKAVbwKX8yqg==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:Xb6DGd7uGTQ=;ANp5u/YJxeDUNL7RG5vqoUycBCu
- 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
 
-The text display code used in the Risc PC kernel image decompression
-code uses arch/arm/boot/compressed/font.c, which includes
-lib/fonts/font_acorn_8x8.c, which further includes <linux/font.h>.
+On Sun, Jun 7, 2026 at 2:02=E2=80=AFPM Helge Deller <deller@gmx.de> wrote:
+> The text display code used in the Risc PC kernel image decompression
+> code uses arch/arm/boot/compressed/font.c, which includes
+> lib/fonts/font_acorn_8x8.c, which further includes <linux/font.h>.
+>
+> Since commit 97df8960240a ("lib/fonts: Provide helpers for calculating
+> glyph pitch and size") <linux/font.h> contains inline functions that
+> require __do_div64, which is not linked into the ARM kernel
+> decompressor. This makes Risc PC zImages fail to build.
+>
+> There is no need to use 64-bit division code here, so resolve this issue
+> by using plain standard addition and shift maths.
 
-Since commit 97df8960240a ("lib/fonts: Provide helpers for calculating
-glyph pitch and size") <linux/font.h> contains inline functions that
-require __do_div64, which is not linked into the ARM kernel
-decompressor. This makes Risc PC zImages fail to build.
+Hi, Helge,
 
-There is no need to use 64-bit division code here, so resolve this issue
-by using plain standard addition and shift maths.
+I can confirm that this patch fixes the issue. Thank you for your
+thorough investigation.
 
-Fixes: 97df8960240a ("lib/fonts: Provide helpers for calculating glyph pit=
-ch and size")
-Reported-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Signed-off-by: Helge Deller <deller@gmx.de>
-=2D--
- include/linux/font.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/include/linux/font.h b/include/linux/font.h
-index 6845f02d739a..67d32268989d 100644
-=2D-- a/include/linux/font.h
-+++ b/include/linux/font.h
-@@ -11,7 +11,6 @@
- #ifndef _VIDEO_FONT_H
- #define _VIDEO_FONT_H
-=20
--#include <linux/math.h>
- #include <linux/types.h>
-=20
- struct console_font;
-@@ -35,7 +34,7 @@ struct console_font;
-  */
- static inline unsigned int font_glyph_pitch(unsigned int width)
- {
--	return DIV_ROUND_UP(width, 8);
-+	return (width + 7) >> 3;
- }
-=20
- /**
-=2D-=20
-2.54.0
-
+Ethan

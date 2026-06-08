@@ -1,114 +1,112 @@
-Received: from mail-qv1-f68.google.com (mail-qv1-f68.google.com [209.85.219.68])
+Received: from mail-ed1-f43.google.com (mail-ed1-f43.google.com [209.85.208.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5CCC22EB5A6
-	for <linux-fbdev@vger.kernel.org>; Mon,  8 Jun 2026 04:51:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.219.68
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA3F13016E0
+	for <linux-fbdev@vger.kernel.org>; Mon,  8 Jun 2026 06:07:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.43
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780894264; cv=pass; b=h3sxig9hfveLOA28k+CWCkwdkXQFrZ+krDzB5vWYJkDYg8THCypc27qTU1vyP92laGC0W57JLuCn6w5I5A8a3d3QPXoJV8ixNc6gCK3y+LNrcjGb3tAMCNMkkkLroW44Ws95Toh2xsko5E0GEDVlC0hC5ADmzjuIYXblFuxbqpg=
+	t=1780898878; cv=pass; b=ravrd84nxoZAm3jwUxHZExXSqJCfwoQm03Su8MyN4Fe2BecEVijvu80qT9XudN4ho4EP8gBaXY0eFVCD56wNqQEaUVckuv0I8Xdev7xqN1z3Xp+mQjHrAKn/HteY9W7G82LJU95HWRR2CypoU3ZoqQ6C7g89z0S+1/6h0wUCOII=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780894264; c=relaxed/simple;
-	bh=ruLdARqDCni48cQOkidWdNO1xRKIushOB4xhN0tsI6Q=;
+	s=arc-20240116; t=1780898878; c=relaxed/simple;
+	bh=aQx1aBx3pJAjf7b+AK6aN2nd9CeKmSYl8X/XBRVssB8=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TrRJojBDDHv1R7bK65wOde8kBvGGSihhvkL1bPmcnp6Y6ac8WLzj4r/S7x5oRAVQNGx3fll8gGnBeihytUHsMhrGx6QKgfGXSZ5FE4cwQHYdAcrh3Frq3m9juEWzcqZBxqRA8C6vZMEycY4JAVo6omIU3jqMvR6QqcnOybnHiIg=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Dh0Wr71H; arc=pass smtp.client-ip=209.85.219.68
+	 To:Cc:Content-Type; b=nXoHjbu7jVfaggfSO/Q4n6hFSgE64Etx/JxtGv6Gdpw8yggMaC5cWZRmEeZFSTOOw5iq0FU/Rtj7OUfdnrVoroxSfzzgFfO82C2qwZcKsxk9Txz9wTo8dg3SsGV6NScFhE/RKnZ/mSPq1Kj/oWg89/Q0h24Rpkuf7RscAVqBjhE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EktuT57U; arc=pass smtp.client-ip=209.85.208.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Dh0Wr71H"
-Received: by mail-qv1-f68.google.com with SMTP id 6a1803df08f44-8ccdef9f3d4so45560656d6.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 07 Jun 2026 21:51:03 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780894262; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EktuT57U"
+Received: by mail-ed1-f43.google.com with SMTP id 4fb4d7f45d1cf-6912f4acca4so3616181a12.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 07 Jun 2026 23:07:57 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1780898876; cv=none;
         d=google.com; s=arc-20240605;
-        b=D7mPZ+9aOWCSX+paboqUK4sV+oTY0H46swO1M8eNoFfkST/vGu1GYX7Jw+1zxyog2D
-         cp20lcwW4Pek735Suecz0V6zb5nlwLZaKFlPomAEQYNjsnqPZ8i1erx7h1tgwHAjDJpX
-         z6lhzS56WeWgygdLzQ2GiZGQF//orUUFdWi5Jh/dx2ZFJaaw5HHkQO75e420yHfFJpB5
-         HQcF89v3xfz+V9a1ns0LR/2hjVnSKtApQRAPhHSbanLC7uFr2wo0NZRfUQ7uqNIBJnGS
-         RgzhsRGQnCbJMw6Goh+VrmZv/HUjv7+mDNsT6RfIQZm6eXwybdJ0+sJEgD1VfQ34jbZi
-         ARFw==
+        b=W3MsHFLS+abB3gRS4EhC7ISCZcOtXtIf5nm6SiHePwdIT6wYLqhr6grmSF/5Q3g8KI
+         1fvLsnSkG4CO0m36BCgebWLAJ2Jx2gvVkipv6vsyx6UNWlHeeVVadj42wHoo0wPsAFmO
+         SRSJi8wWsB7PUtZBkR+HhOnXd4BUn2LLW5H3agOkuWWjEwG8gEOQRCUhKfUuckmmCKot
+         fW5Sq9ibBcs/hXp4BynPxyt9iLI8PvLrJnFv5Pg2HqSUWmnW2/WWZ5BhqldvGsgMMBMg
+         ne6RoPdzmVtVl7Z736lc9IyPYyuKCIRyqEvklzkOasVBwBYb6fRgxHWMnxPN2vhQiSqY
+         rMsQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=ruLdARqDCni48cQOkidWdNO1xRKIushOB4xhN0tsI6Q=;
-        fh=UYd4uBD9KpDVLhI5XK6oUbpv2nkluIKT2vzTPI491l4=;
-        b=KQQ717zmu9BkVPps5H+4C+nbx+pb5RKe6SDqZhTcdxU510DbQj+3Bl0GT+TFmfTSy6
-         6tnehLCyOVEzOAGVR0xSR4iHigBUrKE08kBmJyXmEEfsWDE2fCKeobRctDYo/VkUddyZ
-         O0jiZNY7IYr4si6gdKw4h8Nk9aTknZbdB05k5PAW+yBKu0CpnM6uBI/wg4nF/9ntf4EY
-         jUTqcq0sqYeE6SX6qFyIAd0klNrAMdnUeOpgyY4gGVnjbqDVgLclVbf8+B9GkcGKPtxy
-         RWe/esqoMemLCgBB+RDIQ7/s+FA9uixz/X8aeY72h80TMH8uHDnmoQb0aSFMl55ZzMvq
-         cT+Q==;
+        bh=aQx1aBx3pJAjf7b+AK6aN2nd9CeKmSYl8X/XBRVssB8=;
+        fh=DpVtPqYZ1ERwNFzSabns4AtLox/JMYzgjChk9232fT4=;
+        b=khJaPjy3pxCWIGIXyruhztI+b3Slw9w1dlh0pWLxthUdA3j6EuQcIrDnBmpqEaql6S
+         s9e3k6KiiiRVqgYerdNYMlWf5I5saM/ny7UFmOHtGi4gOgWnZavvSQz1OsV9/lHTYj4D
+         Xz+2D/41QMZAIYxSpFS1C9X0vPSJj+Oq8W7MRvoM77X241SBNAcvSWleczvb33cJEqMJ
+         qLuua13ehbgRcJQ5I7Ij3gJUfwBdqPJgDzmJarCUqQky3PHzQsP1DIGIzZanZ7sFzB3G
+         7EiXO181SggQZr3m/8JBNFznveVSxxqC9cE5T1LSLndqJeGuFThhhbT6Ud+WFc7/n46/
+         fMLw==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780894262; x=1781499062; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1780898876; x=1781503676; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ruLdARqDCni48cQOkidWdNO1xRKIushOB4xhN0tsI6Q=;
-        b=Dh0Wr71HmyJQEJPpZpMJG01oYy5iShDjxyzfG6H56MWe71pS0x4dQD6VWahtokXE5n
-         aBYwG0AZdjDl+f4+Kc+4GFz4vyE93rkYKJD6qiBpt8dAviT/fMVN8CceD8YFSw1rqvlp
-         5VqeS3sGyMlqUTQP9z0IgTolnErllz7MR7bc7j/cfceSAz5x8n/CDyDQ2nomYv+SMEGf
-         fT3Hy/38A6fYW1ETiEehRlGGDp3ZVdYzTvp040QiZsehEk+zuqAM4v63D5zxbGuHkMSN
-         7N8lL+KSq5uSv5kKcfjxgwjynQakMMjScBOr8gadW2B6hPyHc+hr1qBaoA2MXvvpLZwG
-         0CBg==
+        bh=aQx1aBx3pJAjf7b+AK6aN2nd9CeKmSYl8X/XBRVssB8=;
+        b=EktuT57UrHDF56mV/UyEJkZ9yA8K+zTm2SG54EBfm4IxmDm1lBBjbbIjNGQz2WbVrG
+         DGM0j5z8DJXpKX5sgOUnOJVBKAGZKGyZVZ8p7gOKTUM+TDYrT99vJz49oGX+3QHVMnsR
+         s2839hL+0Qh13NZbXcq8RJD9xnr94NoQgM/f8VIdHQrgs1rKFPeTFDLQ1eYqGmmdhzfv
+         kd3Tpfzk4lNdO9vf6ihO6N7hCtePvj3lU7sNnzpCSMiYamgMUOOG9b6+ENQ2l3yQSnhQ
+         sh+AHyzLrLK9yFekf0LEGTLDUgRwy8AkW1xSmIfeBTNsenMyaf6tgEcI3c6xBlatGvvY
+         421w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780894262; x=1781499062;
+        d=1e100.net; s=20251104; t=1780898876; x=1781503676;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=ruLdARqDCni48cQOkidWdNO1xRKIushOB4xhN0tsI6Q=;
-        b=X4VfC9/r4Ih3i6rYBx4/YcqmjXrQrL62G7zF3c0Mc7kmE68rcQMYExSwzwCXGZED7+
-         z+KZrwiBxR8/aKDXDG9D9qDPDEgDp/kyPFS21anm3DU19utDB0ktimnH59RCAtuGMAK1
-         VtfOZ2AeJtBa9RhmkDmig8akuohAeACOVQzdaQ6+phOQq7A5AFN4mPUssyVf7DwDI8TN
-         wVDvHB3l2e7Xm3ktX9XYTYl/jiD70E3Pf4KfQR17PoYf8YRerIu8S7zeC/9IBjzOjddP
-         C/yXIxevM9tDu6UmJIb1PRuS2ferpHTElX9i3+mnYsIW4KZMYQ83TBQRkid8HsnQZl0B
-         hRFQ==
-X-Gm-Message-State: AOJu0YwqZdHRUTGhamfMMQT52PrMc0jZSeumLaZdsnbw89Rng8iu7y3v
-	Q+E5O8mgUsXWFe0CMCKELoChiMQ0T0B2LzPcTE+Ysv/u2DLguXHikRYnqkkF7Ac/xJLWusC++zh
-	/APnHv+dtmHGa8A5fi2kPc5R19yiXKDXy/t06
-X-Gm-Gg: Acq92OEu7BNwR6i7GFykOB88Go4qhMtwuT9OCO8SQ+861jmbjDSJAnxb76cdFfBPJzv
-	DkWpz7ZpLZwC9mQtzy4Z5ppmohKzxPhSHL6VZDH52+F9fju6QPMVddolQsDyGqCnJfKMygVTLZg
-	mJyc12Vk5vBc9OJ4LIYHNL9pvsLJFhtQzU9yINH2Mv4Teq1MmxuNE80fmFi98uDewO8EAArB5fj
-	wYSRn4ND7U+c1hDAFsZjzPbs+uv17WgfnD1xx/xeRTfo/gtqSxR2jaYS/hNpyejxEa+j8eFfyYb
-	JmVukq/4bgRlhrkcHpu0J3lO7+hNlLf/hj2o2y8+1ODbiyRttuC1h8mKxf70ENnEhbuga/u/8fB
-	T5q4=
-X-Received: by 2002:ad4:424d:0:b0:8ca:25d3:bf41 with SMTP id
- 6a1803df08f44-8cee5fb6f45mr156665376d6.8.1780894262219; Sun, 07 Jun 2026
- 21:51:02 -0700 (PDT)
+        bh=aQx1aBx3pJAjf7b+AK6aN2nd9CeKmSYl8X/XBRVssB8=;
+        b=FYkBnuIFARSlM8l9ikl11U1W9CvWpsUte98ad+1b8Zai3oGVXJ2mR8h2eh1uhd+3Ih
+         2sOjiP+dbO6tTPDWXg5uBnnkGTD6zGc14vku+h9ZQVgm6eMlvv6xMsC2PdNqpXDuMK9U
+         guic/StXgtAgC8zAa1xSohhhXOWGFxEX1UVnCit6TLEh5PXDn5aiL2k4Rn0jMLNpF5iZ
+         GWmai5qtW8AI5Rdwksxttph05LdFwpeJG+aptUGRPybUZka39CHTLITyI++LW4d6hjvi
+         BuEvBtZ5aKK1uAQlYi13596m4/K2QVKuBfN76qxaFVrz1wjGCgW0+77STgPYdRD2hsSz
+         Yjog==
+X-Forwarded-Encrypted: i=1; AFNElJ8mOO6JgRYLxtlSUJK4mIQ9VMNtmozIbpmzJMLe/47+L3ig3GbYhWBXYf/SeIaCYvFjYGouiOLwTjUrDg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzLtoNfPOHEoCX4mqA2TAQuGHMD0R8MxA9NrfXfoJvX7VzjTmkT
+	/bjqRyjj81Efr+r3aJFQXnjddVSHKYweMapXPM5rWNGOfqDpeCrjiBrmPwmT3uDvlNUSYOeTMTY
+	KfgzJV4ivs3jmP307VE69LgnSg9xltpQ=
+X-Gm-Gg: Acq92OGLd49YxCrzzxzC+TWkzHXo/e1Lv74YN+NRTswJPggB+D90Zf0FtsIJo4lvh9F
+	ERkJ+0S4pPeinelOXdEsI24wMWYRp6+ZPQ8/NeMJFDvD06WLchEWh5gyylMxEpzspcHGkORDw88
+	3wLRfI7PW7wHljEaX8talXzP+FSD5CDYc4ImQ7+s2M1B4C9sBYWfIUpbEOxq+bwJLgFkhC08GVA
+	vm66PTn6OVj4KQItnM8N5cxPmrRmwlFYhGFU3z5o1XVEsMTdFjHRObEMnhNFASP8WHK3p6KQj7/
+	+V+97AWBwVWQdpsJ8B25VX4bilk1C3d89X6/JcF9KCCVrDVjrYZ5P3BElK1j1FbVntcOJ6hlJXT
+	LH3sCyya0LvrwLWtGgYXrbpRTTF/w0rzxxV5GRSQSk3NTUwoiQWlrlV5OqJDSf7mbRQHnuj7fy0
+	Te+F4=
+X-Received: by 2002:a17:906:8a62:b0:bea:a8c2:3d02 with SMTP id
+ a640c23a62f3a-bf36fba1b5dmr514497466b.4.1780898875739; Sun, 07 Jun 2026
+ 23:07:55 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260607210203.229613-1-deller@gmx.de>
-In-Reply-To: <20260607210203.229613-1-deller@gmx.de>
-From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Date: Sun, 7 Jun 2026 21:50:51 -0700
-X-Gm-Features: AVVi8CfzWmWWxt3SB7pXX23oNZUjMnDgx_nKjpLYDIPyHFfppWEBqDIhw4T6cu4
-Message-ID: <CADkSEUjJErZyBQtGDpdbt4iTx6hHZhizRJV1mRONrHjV0W1WUg@mail.gmail.com>
-Subject: Re: [PATCH] lib/fonts: Avoid unncessary 64-bit math in font code
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20260607201708.88644-1-ilovelinuxgames@gmail.com>
+In-Reply-To: <20260607201708.88644-1-ilovelinuxgames@gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Mon, 8 Jun 2026 09:07:19 +0300
+X-Gm-Features: AVVi8CdSZ41x6EBhGrW-maqYqFvmYxaB5rlMq92vcxyr-Rwo3G25Posh805oQgQ
+Message-ID: <CAHp75VfcrHn5R47PCDOoNnmLNbKA8sX3Jz9T-AoMSnbmqqyP1A@mail.gmail.com>
+Subject: Re: [PATCH 1/2] staging: fbtft: fb_ra8875: prefer usleep_range over udelay
+To: Georgii Druzhinin <ilovelinuxgames@gmail.com>
+Cc: andy@kernel.org, gregkh@linuxfoundation.org, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jun 7, 2026 at 2:02=E2=80=AFPM Helge Deller <deller@gmx.de> wrote:
-> The text display code used in the Risc PC kernel image decompression
-> code uses arch/arm/boot/compressed/font.c, which includes
-> lib/fonts/font_acorn_8x8.c, which further includes <linux/font.h>.
+On Sun, Jun 7, 2026 at 11:17=E2=80=AFPM Georgii Druzhinin
+<ilovelinuxgames@gmail.com> wrote:
 >
-> Since commit 97df8960240a ("lib/fonts: Provide helpers for calculating
-> glyph pitch and size") <linux/font.h> contains inline functions that
-> require __do_div64, which is not linked into the ARM kernel
-> decompressor. This makes Risc PC zImages fail to build.
->
-> There is no need to use 64-bit division code here, so resolve this issue
-> by using plain standard addition and shift maths.
+> Replace udelay(100) with usleep_range(100, 120) to avoid busy-waiting
+> and allow the scheduler to utilize the CPU during the delay.
 
-Hi, Helge,
+Nice, now go to the lore.kernel.org mailing list archives and check
+what was done previously on this and why none of the similar patches
+have been applied so far. Also read README in the driver's folder.
 
-I can confirm that this patch fixes the issue. Thank you for your
-thorough investigation.
-
-Ethan
+--=20
+With Best Regards,
+Andy Shevchenko

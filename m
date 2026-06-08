@@ -1,107 +1,209 @@
-Received: from mailtransmit04.runbox.com (mailtransmit04.runbox.com [185.226.149.37])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 569083B961F
-	for <linux-fbdev@vger.kernel.org>; Mon,  8 Jun 2026 09:55:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.226.149.37
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8FE5833F8A1
+	for <linux-fbdev@vger.kernel.org>; Mon,  8 Jun 2026 11:25:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780912547; cv=none; b=gF1jRKAA5HVJY2ljL0RuB+++qecX23mitsCbIjmBnGJXwYxocez7/X8AHnwcepC8hL3NsesawiK6JLTtiurHDTDixxmKYaGF0R350koss/GzpVRR8dRxWgFxrB7GmZtEwWsmZOU57tyCOteDfk5BpmMLLsvmIn40Qrruipcn9A4=
+	t=1780917931; cv=none; b=axNvHH57PV2r+tnukJ8fZwnnwcH2zpy+sDcBq2ULfbf/bXMu8M4BktwP4X9o+E1HJoJqxKcIn1PM++NxqLxTWrar1quhX/pYhYqD7+PApb72ukjH+CeIpXV7JPJfp/woz18eDM4fk8X0dQGXAVnV+/plrED5ADEuwcIz6qw4Pt4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780912547; c=relaxed/simple;
-	bh=lG+l0nz/ofB6PBeznJSwBYG0oHFN3QzTOtQ++iVjL58=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=k8UWae4IOFQ7u+JW53KapRv9ZJcXMVSeHt9r0Pt0toj08+7EnC/2g7HOHFUZ5tBRg7HX958Wlqa8n7XiXhmm86Ny6fFAo9kqoDCBgcpTznn+8HZc4aXFe9TAef1ioFjcF+h8Bv+kPjuEvlp9tgq6+W5o87AODrHr08kfoxTdsIk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=runbox.com; dkim=pass (2048-bit key) header.d=runbox.com header.i=@runbox.com header.b=ss2jFuUo; arc=none smtp.client-ip=185.226.149.37
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=runbox.com
+	s=arc-20240116; t=1780917931; c=relaxed/simple;
+	bh=i2b+3bPZ8RoN7vVT5mlEo4uHWNWJQZ2xpQwObOajr3U=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=h+DERLsfe7unvt/o7KOqf6/LenE60+I3lBdc6BUaXwaFQnsJneY5s6jm7HxnxlLYize2oLm8qDIUX3gBWXUwDPX5AytMda8NlfE5y2YMS7wmf6eiB95ybF1rAMpNtur+0qYp2kvmfxfa+gscoJRYehVoriWU1NrQFHjiEUOXk6E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=R3ygMS8J; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=UuQ4bQXA; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=R3ygMS8J; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=UuQ4bQXA; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=runbox.com header.i=@runbox.com header.b="ss2jFuUo"
-Received: from mailtransmit02.runbox ([10.9.9.162] helo=aibo.runbox.com)
-	by mailtransmit04.runbox.com with esmtps  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-	(Exim 4.93)
-	(envelope-from <david.laight.linux_spam@runbox.com>)
-	id 1wWWhn-00BRwV-76; Mon, 08 Jun 2026 11:55:39 +0200
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=runbox.com;
-	 s=selector1; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:
-	Subject:Cc:To:From; bh=xVqIb0lvImaOng2149ntOf4c24J0oVttsRUjwn998OA=; b=ss2jFu
-	UoSPCSfsvNjOtKrKuBsaSmNNXpZzPLZ1OPg3SSZn90OQzIZHR1k6Ho5AYn895gXTd37Wvao53SUTT
-	1eSo+QKS8hk1QzJs6ZfLPrudDBjavGd8aiRLyYOe23MtifvfbiV0IMXimPno8HsfSIq93c9Y4+bJ/
-	lnjaudWvPqENSfYuMShPZxJ6WdW5xV4bbhIuDq0StU0O8bLnEDlT6DYyjRJNoF9NhnMVUA6UDKApe
-	ym6cQige3cy9e1tMqlUO3aYRv29xx2YG7iPCqaOrE0CuxuLpsZb/HCcYp8Nfid18FDMthzqRliaR2
-	QBdKueAJOD4HfFOZvuRePAzxWDJA==;
-Received: from [10.9.9.73] (helo=submission02.runbox)
-	by mailtransmit02.runbox with esmtp (Exim 4.86_2)
-	(envelope-from <david.laight.linux_spam@runbox.com>)
-	id 1wWWhm-0000Cn-HZ; Mon, 08 Jun 2026 11:55:38 +0200
-Received: by submission02.runbox with esmtpsa  [Authenticated ID (1493616)]  (TLS1.2:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.95)
-	id 1wWWhd-00Ag6G-RJ;
-	Mon, 08 Jun 2026 11:55:29 +0200
-From: david.laight.linux@gmail.com
-To: Kees Cook <kees@kernel.org>,
-	linux-hardening@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Arnd Bergmann <arnd@kernel.org>,
-	Helge Deller <deller@gmx.de>,
-	David Laight <david.laight.linux@gmail.com>
-Subject: [PATCH next] drivers/video/fbdev/s3fb: Use strscpy() to copy strings into arrays
-Date: Mon,  8 Jun 2026 10:54:55 +0100
-Message-Id: <20260608095523.2606-11-david.laight.linux@gmail.com>
-X-Mailer: git-send-email 2.39.5
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="R3ygMS8J";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="UuQ4bQXA";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="R3ygMS8J";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="UuQ4bQXA"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id DC81A6A8C4;
+	Mon,  8 Jun 2026 11:25:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1780917927; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=5PhUKRNrkFo6QJIIpFgB6mvHPtqJ+3EPkKVjktRuz+Q=;
+	b=R3ygMS8JBDzEcakqmn6JWQjquy5PKia1xVyQS/cz7W5zCEVE0EwWcCcsUbtrkoLRwlcSV6
+	3tB/hfkP4ypdeTka4vFXkXjuJGCdztCRy4jD5TOxwj9PT/wrLhWSOf4BTpdoUZhI/CdBeo
+	7zZPWuShePGc8de6K5Pb/zFqcuSM66U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1780917927;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=5PhUKRNrkFo6QJIIpFgB6mvHPtqJ+3EPkKVjktRuz+Q=;
+	b=UuQ4bQXAnAOYMZ1I/JxpIuag5+M73jsmDyFZCVImKXPE/4xEMjcO+9RBQVXgMs7TvXPbBj
+	oBKjqSMHvQ6d40Bg==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1780917927; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=5PhUKRNrkFo6QJIIpFgB6mvHPtqJ+3EPkKVjktRuz+Q=;
+	b=R3ygMS8JBDzEcakqmn6JWQjquy5PKia1xVyQS/cz7W5zCEVE0EwWcCcsUbtrkoLRwlcSV6
+	3tB/hfkP4ypdeTka4vFXkXjuJGCdztCRy4jD5TOxwj9PT/wrLhWSOf4BTpdoUZhI/CdBeo
+	7zZPWuShePGc8de6K5Pb/zFqcuSM66U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1780917927;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=5PhUKRNrkFo6QJIIpFgB6mvHPtqJ+3EPkKVjktRuz+Q=;
+	b=UuQ4bQXAnAOYMZ1I/JxpIuag5+M73jsmDyFZCVImKXPE/4xEMjcO+9RBQVXgMs7TvXPbBj
+	oBKjqSMHvQ6d40Bg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id B93B7779A7;
+	Mon,  8 Jun 2026 11:25:27 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id oN3rK6emJmobfAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 08 Jun 2026 11:25:27 +0000
+Message-ID: <b80a379d-87e4-45c4-a078-09e84a840895@suse.de>
+Date: Mon, 8 Jun 2026 13:25:27 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] lib/fonts: Avoid unncessary 64-bit math in font code
+To: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+References: <20260607210203.229613-1-deller@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20260607210203.229613-1-deller@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_TLS_ALL(0.00)[];
+	FREEMAIL_TO(0.00)[gmx.de,vger.kernel.org,lists.freedesktop.org];
+	ARC_NA(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[gmail.com];
+	RCPT_COUNT_THREE(0.00)[4];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	URIBL_BLOCKED(0.00)[gmx.de:email,suse.com:url,suse.de:mid,imap1.dmz-prg2.suse.org:helo];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[gmx.de:email,imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:mid]
+X-Spam-Level: 
+X-Spam-Score: -4.30
 
-From: David Laight <david.laight.linux@gmail.com>
+Hi
 
-Replacing strcpy() with strscpy() ensures that overflow of the target
-buffer cannot happen.
+Am 07.06.26 um 23:02 schrieb Helge Deller:
+> The text display code used in the Risc PC kernel image decompression
+> code uses arch/arm/boot/compressed/font.c, which includes
+> lib/fonts/font_acorn_8x8.c, which further includes <linux/font.h>.
+>
+> Since commit 97df8960240a ("lib/fonts: Provide helpers for calculating
+> glyph pitch and size") <linux/font.h> contains inline functions that
+> require __do_div64, which is not linked into the ARM kernel
+> decompressor. This makes Risc PC zImages fail to build.
+>
+> There is no need to use 64-bit division code here, so resolve this issue
+> by using plain standard addition and shift maths.
 
-Signed-off-by: David Laight <david.laight.linux@gmail.com>
----
-This is one of a group of patches that remove potentially unbounded
-strcpy() calls.
+Why is there a 64-bit division at all?
 
-They are mostly replaced by strscpy() or, when strlen() has just been
-called, with memcpy() (usually including the '\0').
+>
+> Fixes: 97df8960240a ("lib/fonts: Provide helpers for calculating glyph pitch and size")
+> Reported-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> ---
+>   include/linux/font.h | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/include/linux/font.h b/include/linux/font.h
+> index 6845f02d739a..67d32268989d 100644
+> --- a/include/linux/font.h
+> +++ b/include/linux/font.h
+> @@ -11,7 +11,6 @@
+>   #ifndef _VIDEO_FONT_H
+>   #define _VIDEO_FONT_H
+>   
+> -#include <linux/math.h>
+>   #include <linux/types.h>
+>   
+>   struct console_font;
+> @@ -35,7 +34,7 @@ struct console_font;
+>    */
+>   static inline unsigned int font_glyph_pitch(unsigned int width)
+>   {
+> -	return DIV_ROUND_UP(width, 8);
+> +	return (width + 7) >> 3;
 
-Calls with copy string literals into arrays are left unchanged.
-They are safe and easily detected as such.
+Ok by me, if that's what's necessary. But can we try to keep a 
+documented macro for the division to make the code explain itself? Does 
+it work with DIV_ROUND_UP_POW2() ?
 
-The changes were made by getting the compiler to detect the calls and
-then fixing the code by hand.
+Best regards
+Thomas
 
-Note that all the changes are only compile tested.
+>   }
+>   
+>   /**
 
-Some Makefiles were changed to allow files to contain strcpy().
-As well as 'difficult to fix' files, this included 'show' functions
-as they really need to use sysfs_emit() or seq_printf().
-
-All the patches are being sent individually to avoid very long cc lists.
-Apologies for the terse commit messages and likely unexpected tags.
-(There are about 100 patches in total.)
-
- drivers/video/fbdev/s3fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
-index ba30e5568cab..b679ccdb38e2 100644
---- a/drivers/video/fbdev/s3fb.c
-+++ b/drivers/video/fbdev/s3fb.c
-@@ -1333,7 +1333,7 @@ static int s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	vga_wcrt(par->state.vgabase, 0x38, cr38);
- 	vga_wcrt(par->state.vgabase, 0x39, cr39);
- 
--	strcpy(info->fix.id, s3_names [par->chip]);
-+	strscpy(info->fix.id, s3_names[par->chip]);
- 	info->fix.mmio_start = 0;
- 	info->fix.mmio_len = 0;
- 	info->fix.type = FB_TYPE_PACKED_PIXELS;
 -- 
-2.39.5
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
+
 

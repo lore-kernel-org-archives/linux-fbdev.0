@@ -1,109 +1,104 @@
-Received: from mail-qt1-f195.google.com (mail-qt1-f195.google.com [209.85.160.195])
+Received: from mail-dy1-f195.google.com (mail-dy1-f195.google.com [74.125.82.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86A9B313E34
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Jun 2026 01:50:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.195
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780969830; cv=pass; b=BkTjbxDap6NDj8Ce8DMYeJtpDP9Kbfxkne398fUHEJy+SAmPRrnce1N+CZDt/kAisES9M9ERyy7opDwArizIfA7wiC3vdoH03zNUubX7mK9UqUNUgKydJU6sn2w/6q3xPVLciz6k3tqVFktcw/zinlIubN5Moeh5uI0nm58YXGc=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780969830; c=relaxed/simple;
-	bh=9+dm8iyl1FFmimzn8mWDuy0qsUo+/kaFvq9DAaWHktc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kRly2CvwIiiMPzfPsqwdZS8JCAhPswwkEXfu7+PEm4hQFPJJIJZMq5wZxck/LAlwhBRo4M/L7KNdWSfTxgO36kxNZITWh/GP7efN0oimaQ5aKJ7RbsiydmGTIheHwHenwKQRaaMPQs6cm4VZudwaI97h4jA//Fh+oac2t3K20SM=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hu+5XBn9; arc=pass smtp.client-ip=209.85.160.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5AC1377009
+	for <linux-fbdev@vger.kernel.org>; Tue,  9 Jun 2026 03:35:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.195
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780976109; cv=none; b=F0UR4qwq9AiUHWvESreTGEfiP5OYsLuP8Rz7ImwPJmKfB/jGpejeU/a5uw2F29O5n5TO5vpBVXuSGrvCvv2P6zJyjOfYzCwYk/hS6HxxyImhHVmNPUhBdliF5rbrK5QejamaqlSHXOpNx9icepDpPBjeB3fUY40ZeouLifix4Xo=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780976109; c=relaxed/simple;
+	bh=QsQueFw37kXDbAmyr891bkVvaKKgXOEBtdQZoqCQrh8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=qK9/q0A+l6JKEJIHgqHaO06jc+dwHuVAlizmM+Fz61D4eEjgMHIu/080HRI4iehmhthomripk+YWY2WDWxDFjA1mNLrT95V3d9EWW6zarfnO620TFGqqoDeylOoOVhABONr+ZNUwFxkPnGhDJIYqNbVou0oTOiKI9bXqgOH7GvI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=A+dRn/Qu; arc=none smtp.client-ip=74.125.82.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hu+5XBn9"
-Received: by mail-qt1-f195.google.com with SMTP id d75a77b69052e-516d0db9372so40051351cf.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 08 Jun 2026 18:50:29 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780969828; cv=none;
-        d=google.com; s=arc-20240605;
-        b=aNVrwjVznzjj/Wfauiwr3RUjgS2SfpkGX+en9MRXiI7qf5IITeG6UwHNSV1jjaFc4U
-         6NHG3OF7hgKcbTk9VzWeOqO1wwxGrPGwaf72hxymAsQOjgS+MeEtMJsQgiK4Alfy8AHu
-         TtoaNuJE6elgIe0zLSDelQ/WWGSEG8w19Xc/FWGTWagV3ja0RqM5bncY2ZRB7kLXwuPq
-         VEN9uMPgi/Wv1KDj8+Sp4g5iduG/W4v3Hi0aZ+iV14wYwOwX2uIRdCQR9hRwRbZukas9
-         /PCBFV8cc6Fb1kiLKdGniLHPyBsDpFPDfpnl5/mw0CDJB8PvTCjyUA2QCNhvghDLtJLV
-         Jfog==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=9+dm8iyl1FFmimzn8mWDuy0qsUo+/kaFvq9DAaWHktc=;
-        fh=wUrc7LKjnuiRa44oThUbsWf6jbbhmJnOxJ4OqI6EtRk=;
-        b=V1UpUGlZ/BTcLhxCurQEuSdJm699C/kXhqC+x1md7BNYr/RZyyAsPTBJo+C55GFgYc
-         wLma2FtVsLXqa3ZkoM7s4ujPlq6eHvNicgKBtZoHlVzH29T+p8QTZbnICVUO+002RD7p
-         Y4NdhXyZ3XW7KJondY684Yeu/unK6bpQFw3+ScgfinRtNBcvOdD2z0YxOeanX4dgnWOK
-         52aqjSfgMDb9kIIBrcsA6XPvtjEKHF4EcQsDod/hNSD5FZFIP/rUHVnm4qKWBeQHil0o
-         5msmu9yyT0CLS1aVy0cpC1NitrUGi+DNbqQpiWZaAN2kaTT77pSRK/dj7Yn0BcyUxUo3
-         sumw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A+dRn/Qu"
+Received: by mail-dy1-f195.google.com with SMTP id 5a478bee46e88-304d0ac5e3cso9210865eec.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 08 Jun 2026 20:35:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780969828; x=1781574628; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9+dm8iyl1FFmimzn8mWDuy0qsUo+/kaFvq9DAaWHktc=;
-        b=hu+5XBn9fRRE9Nbjistl9sr/gyzBk0tRwV1hPGpYJIQ0Vw1z1LtHlmM3pyHa2hZPYj
-         6LojUuIC0eaJGQBvGnXh+u7u1NzI7c98XJ3+RWtgYMI2iz3x2FqwbtteCG2kaJYwyspf
-         6+4vfG91lPM+vDZG0Omhn49f1weQ01o905JaOhFUxEiQ+VG99FW+g2/gJI1M0qlZrNQy
-         vCxs59XabnmFW+I60HZEyIokoL9Rm2vQ8mtyprdJiTlY+CVhDAlp0spEYz0P7UeNLYOl
-         FexGNfBmwZXTQYo2MWU6HNEEflVsJB8STef16/4ymgvcDZFSqfSJWVpkXAU77UHWYbMs
-         XZOQ==
+        d=gmail.com; s=20251104; t=1780976107; x=1781580907; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=l0FrDzqtpvFgOtY7tXcpwwbPEIGNUsVT1eB/jZYLDxM=;
+        b=A+dRn/QurObOTPLQl+zbvKiFm0PdLNuLXPlgV/Fh6qd4NZf9Bt6T8iLsodB1YJkqPJ
+         altQmnHsdAlsJgYsAkPwzZ2DLnQ1ihiSQPbuLu44fVIQQAItG7KqQIJnSvEOi3IJ40ju
+         Lv33OgvfzxpNVJQRy3+GrWTaq7NZVJYCN6gwnsrOW4FYuhomhZjCice+syXBBPTkbp2g
+         ntbthR7V53dsotzNaeuPv6jsa9NpYWU+1Ri3GBQFBtf8fwLvqI5getgzo+FVRXwPDdAJ
+         u4m4/iUKQE+QU9U/+1ADe6Rug4eIZMlT8TRNk4APizgyREaOW7mt+71m4bhpLQ83Ust7
+         y5VA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780969828; x=1781574628;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=9+dm8iyl1FFmimzn8mWDuy0qsUo+/kaFvq9DAaWHktc=;
-        b=NvqtEKE6s9xnxTqi3C7M8p2rYTJnjYhKtk/gIU1DT3TXTMOgDr8EyQFUPVXMIKekUn
-         3H9fwHq51X5eQrDXRnjzZ+y/WEcHfLfJc59VQfHyt2ln5qRLRnEYQfvMWLhuyG8T/A0I
-         8inrqzomSDLkv4kgV5cjx22UOGdzfv+dMGSNNFmpdtONQ8nUWluOqdhKRAgOzVE+2fAg
-         bkZgF3KkEPi4v+pJWhnIO+MJ555xc/laZE4w/0+hPo1GGfAx+ncgPZ4n8H3HLuR/vDvq
-         00Hnwq6teMeQDgSRg5qfPbAvhwkY+8HSLfXCxyXW33V8/0YYhfZ/ismpK3mYXnDgBT7q
-         aLOA==
-X-Forwarded-Encrypted: i=1; AFNElJ+ykWpL6fXz9zS3x2GmLOnUg3+/PF7cETLS4VF5vun5tXhMbpmuSgW1XaoEgXp6bCKbnaeXSoaHl7ipoQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy/N228TNfinGChOWDf8nqLoBH/+XmlgzceTcvbj5afIhf0ErWa
-	AaorXPwwKeJ7mm/MryhLUA84NGrIGt8I9rJVas3ZjLHUfhPArpS71uv2Q9XJ9vKYJD4Mt4iXTvq
-	D5W122A98r19aa1GNFxbv9RcRhJfeJ0A=
-X-Gm-Gg: Acq92OFaOrb6n2/LTiR6zqc94tfvt3fHtNCbTbZFLFIpKaIN6Vd5kBgk5fPFf7Gmuaw
-	9X3sGR/+anHf0JXZ1cJeExRAdBdAvdImVOBVFfaj8a5lRVoJMxFsohGBxnQzGTMxDwhF64r2eN4
-	tLrE4c9o22aYy0wUiXHwTcU4GaI97Tpkc9FDJ7la18vReVPpSwe4BspEqqQJ3WmzoQy2NDc9p5Q
-	T1mpvSoDO6qI68ZCWZDEd8l8J6qNzQajdTImk7XhAoGvJ9me4kRrCekoWmCEJVRIFHk7g7k0fPT
-	Ne15GOROd0NUNePHxHwsiyKaH2LXdPXMQI+fPlkjE7oTGTGSEzFi9BFBaqVJFV3nJBJHeJCMTaL
-	8Ifw=
-X-Received: by 2002:a05:622a:1b09:b0:50e:631c:c390 with SMTP id
- d75a77b69052e-51795c5be37mr269805601cf.44.1780969828323; Mon, 08 Jun 2026
- 18:50:28 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1780976107; x=1781580907;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=l0FrDzqtpvFgOtY7tXcpwwbPEIGNUsVT1eB/jZYLDxM=;
+        b=J72396gHXHwgSoFzF/7zErYkrHDN+MXflco2pkVJY1SZ6Bgwm15S6FlB4amK99nUfe
+         SwG2im2SyCBv2nHjj7UOv5s3e4pjOovBNCRDUUkZvK91XA/ZiSAjuLcHk6+HApCmO4aA
+         bcGMAL0HZ1TKviNDmbmQjl9vYtYfuKFlhz96P6HTEwMMQI/PRJmO9TAM5gjCnUJ7y3GP
+         a+uS1QPt4WGWeDu9e4krhcBA22Y9HGXOX5MscEuN0JIY+SlHiYnL7xADtqoOEqpfIH6h
+         erK72qjJr/L27Dm/uQZxHj2R775yWykvIFZ26t+4r/9txUCevaZkMtNSDgSp+XCD7Ma3
+         wBFw==
+X-Gm-Message-State: AOJu0Yw0AChQRjAs3nsVU/hbNhiTCr3Rrjvo5kcg1ECmdWuc1kQr4s3a
+	mafxypOeCB5yEBn4jDqSEkQhPqyJ56vruOpMiPOmsHyzt2L5HMO9Flt8sKv8Wqlv
+X-Gm-Gg: Acq92OGxwRJ9JIE1Q0qoyqowWbufPET0m0xp2+HvLMJEQ1TzqR9BO9aSRvmlm5xoKF9
+	x6czkIkOeAnsmevSPh0w1dz//2v4bVMUEHEokxGwcXCHLEhWv173pjl23dwPrXDP6dhUYxL9yPr
+	OagOK6zdIlREKdYcKf9KaABr5wGevlGW5xnuNnot7DxbxSK1U/i8OW7QEM4DuS+8DAHeuUrZoIt
+	6pqJj0BSXXK/1kuiqWFtnN9rXOC9ycYpcjoU7SjhWHvr5ORKgRocfjDeZyFvM4UP9JyPdPl0vPP
+	+WFkq4Zjk19/2AoWihWrVq0L6pFbyo+dXE8mxP0CH61Ccmec1GAydi+t8Q3YYsmZLzLtYSibLhG
+	weVjMCNahMwIQnvSahCwG3TM+TwQitJJrx0+iMe3paCEj0v5foCb0VWxNCVCv2WbCkLUxTFNWAq
+	IMoVU5djooAJl0N0+WQf1hNbh/G50cSFX6613AoaokQeRVb9vmNbNyYGJJCehGPMl754RMsJ5i2
+	H+HGj7nUi3rW7X7xEu60lPGB2pV4bIGhsbDzWdlaTsrntbNus0JtqgwMfEFdLKNpiRZf6Kos1pu
+	DWVDxXoWEjA0/LpQhujx7fQXHf6i
+X-Received: by 2002:a05:7300:3216:b0:2c8:6361:ab2e with SMTP id 5a478bee46e88-3077af39140mr10750847eec.8.1780976106557;
+        Mon, 08 Jun 2026 20:35:06 -0700 (PDT)
+Received: from ethan-latitude5420.. (host-127-24.cafrjco.fresno.ca.us.clients.pavlovmedia.net. [68.180.127.24])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3074db85f60sm24362844eec.8.2026.06.08.20.35.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 Jun 2026 20:35:06 -0700 (PDT)
+From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+To: linux-fbdev@vger.kernel.org
+Cc: Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Simona Vetter <simona@ffwll.ch>
+Subject: [PATCH] fbcon: correct CONFIG_FB_TILEBLITTING macro name in #endif comment
+Date: Mon,  8 Jun 2026 20:35:02 -0700
+Message-ID: <20260609033503.23428-1-enelsonmoore@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260607210203.229613-1-deller@gmx.de> <b80a379d-87e4-45c4-a078-09e84a840895@suse.de>
- <1492766a-c349-4cca-932e-bf608b922b6b@gmx.de> <CADkSEUg948W-XT3_ODe_6p4i5Y8AKEcP=rmJ+7qJq30Uq0d_EQ@mail.gmail.com>
- <aiclYUfQvMokMu64@carbonx1>
-In-Reply-To: <aiclYUfQvMokMu64@carbonx1>
-From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Date: Mon, 8 Jun 2026 18:50:17 -0700
-X-Gm-Features: AVVi8CclBz3tJGvpm6QTFFfs_QYSfEhhbHcxbqfMUuBKjZ3-CDGVL-ri5mElbOA
-Message-ID: <CADkSEUiU07XkMkvoyTTxn0VXprKok5tKj80fFnc4k=JHeK8FvQ@mail.gmail.com>
-Subject: Re: [PATCH] lib/fonts: Avoid unncessary 64-bit math in font code
-To: Helge Deller <deller@kernel.org>
-Cc: Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi, Helge,
+A comment in drivers/video/fbdev/core/fbcon.c incorrectly refers to
+CONFIG_MISC_TILEBLITTING instead of CONFIG_FB_TILEBLITTING. Correct it.
 
-On Mon, Jun 8, 2026 at 1:26=E2=80=AFPM Helge Deller <deller@kernel.org> wro=
-te:
-> Does this patch fix the issue then?
+Discovered while searching for CONFIG_* symbols referenced in code but
+not defined in any Kconfig file.
 
-Yes, it does. I remember you suggested this solution a while ago. Thank you=
-.
+Signed-off-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
+---
+ drivers/video/fbdev/core/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Ethan
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index b0e3e765360d..07eab2729895 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -769,7 +769,7 @@ static int fbcon_invalid_charcount(struct fb_info *info, unsigned charcount)
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_MISC_TILEBLITTING */
++#endif /* CONFIG_FB_TILEBLITTING */
+ 
+ static void fbcon_release(struct fb_info *info)
+ {
+-- 
+2.43.0
+

@@ -1,80 +1,80 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9243B318BB3
-	for <linux-fbdev@vger.kernel.org>; Tue,  9 Jun 2026 06:14:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E65B2F5A0E
+	for <linux-fbdev@vger.kernel.org>; Tue,  9 Jun 2026 06:16:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780985693; cv=none; b=qHrsWb8UDgUvBhvOHeWq0UFaXWa/njxZ/x0w2Gst9dSQkgwYvw98qhDO2t7/0RZsYUo1W4OuaPXwjsPxvM17QHBVx5F/URjZYwv5avEMH4lM99s8/m2bRP3stbOUIWcjD1n9NG5+JJhdLHLeC3HbrsIyMkgokI7/QO1baJ9o3gg=
+	t=1780985814; cv=none; b=sqCMurREzO+bd30nBPCBQlSIc8e7mFWTumOQVhdP2QPwbTxR3+FHnDtZVQ4yLBzopapqwdwlyAMEw7ClvZ1G6EJ3xcHgosL3Fl1Fyth1DQF3UiskHI7pVE+t+7j1nEb7ZBgYo9BrARMKypFctnB3r9FXU40Qtsz6aNFw/fyI9lw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780985693; c=relaxed/simple;
-	bh=o+nzNBckO/z3Jtcjnql7PVG3SN9IdI+zurOeS/NJ22A=;
+	s=arc-20240116; t=1780985814; c=relaxed/simple;
+	bh=n91LapINfjma9uc2SSZ4n17CalVS06NAo9fkyMkJ/aI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=owsLmkfMDC7aR98XMzpYrV+tEO6SqPg+OggWDe98AirHGmmanNhmeUj97aALf9E9tkg5wHdKcyYNEvMEQFS9PPEcFD6beDq3TH2+DzwIAnNwOePgNzugfWYG29cCyxPGytG1lmvGiIQ1KfUGNTgFY1JuaoisWK0NHiRH7PMWqhs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=qudDzkMG; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=WlibRiNa; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=El2rKelc; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=2Hws68a0; arc=none smtp.client-ip=195.135.223.131
+	 In-Reply-To:Content-Type; b=omLNeJfJp8llm5jJfwZdBKmRluX+gB/5uIviCFRpydZ51xgAJldNbAeJKLNVcti4q2noMZRhoRPkiTcz0SBP9ziunWxpEaZxQB4QabgD3LNPKd4cjLPeYf2fTJP+e1JSluPdErTvsBAwpIrpg0piem/YKoaofm4GYBJ9ZPbn3RQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=n7cnPKKi; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=xFNacBBQ; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=TxTkGiCI; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=sXzA9dp2; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="qudDzkMG";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="WlibRiNa";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="El2rKelc";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="2Hws68a0"
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="n7cnPKKi";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="xFNacBBQ";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="TxTkGiCI";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="sXzA9dp2"
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 5736067D6D;
-	Tue,  9 Jun 2026 06:14:44 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8DA0E6A7FD;
+	Tue,  9 Jun 2026 06:16:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1780985685; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1780985811; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=6dArV38iGqF9GXJ/TV27PoGxLpG8ZojqfWws79F99Yg=;
-	b=qudDzkMGLhMnB3kLZJrb2OmFoW0MxPinrB1iR8wfKdNHpczzyfM9D6QLolYGqnHWNdwnvY
-	i/QclpRY3auF1vPvH5gD3pVDnN90ZinIR+AIZYr3OFkFbS8MO/8RaBTfACMRUV4Ik0A9+c
-	/obk+yMCCirrDWobno4A5Hg9GTgVKI4=
+	bh=Q4EkHWkZfCXFhZ8jvbkcSnmrQcELJaziDMqkg4fgZ3E=;
+	b=n7cnPKKi3kVEx39mHk1yfn7wxO/owQ/6Ex3a9zPgaWOuYyxiRPc0t31jOi/cQw+2W7S0wx
+	Y3lpMYEUMmC3hBNm68ulRNaHsC42DTHw4gn2gDC3ot2hZf4el8V+vPjd7EzhfvpsvvZv3Y
+	qGOklIwOSc0zqz9dGvnfe6syic3GGEw=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1780985685;
+	s=susede2_ed25519; t=1780985811;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=6dArV38iGqF9GXJ/TV27PoGxLpG8ZojqfWws79F99Yg=;
-	b=WlibRiNa5CwdGCtRUuRjMQjqtM/NY8Qtv8rxifl9xB/pfrACfqpcSMB8oLoAEuBtl1+I3x
-	HrjfAgS/w0256sAg==
-Authentication-Results: smtp-out2.suse.de;
+	bh=Q4EkHWkZfCXFhZ8jvbkcSnmrQcELJaziDMqkg4fgZ3E=;
+	b=xFNacBBQs6QLrkPfYtphcPGq/h8Layn/ck651UPiD6s48vVZYnxfCTEGgyTAwwzVE9LHZ5
+	fe8vYs7+whM942CA==
+Authentication-Results: smtp-out1.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1780985684; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1780985810; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=6dArV38iGqF9GXJ/TV27PoGxLpG8ZojqfWws79F99Yg=;
-	b=El2rKelc3gdu9lt3ec1AfHViZoCiJfdCI45nLNHps1NblkCUvSY7dl5+9xErMHnmew2wpo
-	gRufPkER31sLx5o76AqBinK5jGML/uYt85aSi7MpM8OgRUXBYI2lNquVcliP4REMqkyHnL
-	5cvxknwD3LldG58TEny/iOdzq1C4SuQ=
+	bh=Q4EkHWkZfCXFhZ8jvbkcSnmrQcELJaziDMqkg4fgZ3E=;
+	b=TxTkGiCIlxtrlx6XixF5HtMwZllt89+zxzXDvtbZvtpzy+ZhiGlGEaFGR4K+vJrxkurvdB
+	17ousbm0bD58R725sYzNIUu63VaUNKeeSrlgck4rNFJ/+0uRPL8jXnkWuRgw3asRC/LpJ4
+	1uR0WVCos5ncu8dAtan1zbHv12sj+y8=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1780985684;
+	s=susede2_ed25519; t=1780985810;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=6dArV38iGqF9GXJ/TV27PoGxLpG8ZojqfWws79F99Yg=;
-	b=2Hws68a0+497qKHIUCOjpaUFOn49UeK32AiL8Dg/YjSwVVnLQta43JTgaM+Dlk5hZx+99I
-	YU1xUWlgBFhwzXDA==
+	bh=Q4EkHWkZfCXFhZ8jvbkcSnmrQcELJaziDMqkg4fgZ3E=;
+	b=sXzA9dp2PHvgH6Lpra6q00F/N2Ns7Q1xPS6+fLEOx66KFOjNjDp6GKfKKGekBxnJ5ERJxT
+	/aCTVneROcA5RaBA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2B950779A7;
-	Tue,  9 Jun 2026 06:14:44 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6CAD3779A7;
+	Tue,  9 Jun 2026 06:16:50 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id o1PsCFSvJ2rwVQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 09 Jun 2026 06:14:44 +0000
-Message-ID: <aaf75c58-c9d5-464a-9651-0021e6784e09@suse.de>
-Date: Tue, 9 Jun 2026 08:14:43 +0200
+	id KkJCGdKvJ2oqWAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 09 Jun 2026 06:16:50 +0000
+Message-ID: <64b807ea-649c-4ee6-9db4-631e310465ff@suse.de>
+Date: Tue, 9 Jun 2026 08:16:49 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,16 +82,11 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] lib/fonts: Avoid unncessary 64-bit math in font code
-To: Helge Deller <deller@kernel.org>,
- Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Cc: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org
-References: <20260607210203.229613-1-deller@gmx.de>
- <b80a379d-87e4-45c4-a078-09e84a840895@suse.de>
- <1492766a-c349-4cca-932e-bf608b922b6b@gmx.de>
- <CADkSEUg948W-XT3_ODe_6p4i5Y8AKEcP=rmJ+7qJq30Uq0d_EQ@mail.gmail.com>
- <aiclYUfQvMokMu64@carbonx1>
+Subject: Re: [PATCH] fbcon: correct CONFIG_FB_TILEBLITTING macro name in
+ #endif comment
+To: Ethan Nelson-Moore <enelsonmoore@gmail.com>, linux-fbdev@vger.kernel.org
+Cc: Helge Deller <deller@gmx.de>, Simona Vetter <simona@ffwll.ch>
+References: <20260609033503.23428-1-enelsonmoore@gmail.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -118,7 +113,7 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <aiclYUfQvMokMu64@carbonx1>
+In-Reply-To: <20260609033503.23428-1-enelsonmoore@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Spam-Flag: NO
@@ -126,7 +121,7 @@ X-Spam-Score: -4.30
 X-Spamd-Result: default: False [-4.30 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.998];
+	NEURAL_HAM_SHORT(-0.20)[-0.997];
 	MIME_GOOD(-0.10)[text/plain];
 	RCVD_TLS_ALL(0.00)[];
 	ARC_NA(0.00)[];
@@ -135,75 +130,48 @@ X-Spamd-Result: default: False [-4.30 / 50.00];
 	FUZZY_RATELIMITED(0.00)[rspamd.com];
 	TO_DN_SOME(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[kernel.org,gmail.com];
+	FREEMAIL_TO(0.00)[gmail.com,vger.kernel.org];
 	MID_RHS_MATCH_FROM(0.00)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[gmx.de,vger.kernel.org,lists.freedesktop.org];
-	RCPT_COUNT_FIVE(0.00)[5];
+	FREEMAIL_CC(0.00)[gmx.de,ffwll.ch];
+	RCPT_COUNT_THREE(0.00)[4];
 	FROM_EQ_ENVFROM(0.00)[];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:mid,gmx.de:email,imap1.dmz-prg2.suse.org:helo,suse.com:url]
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:mid,suse.com:url]
 X-Spam-Level: 
 
-Hi,
 
-thanks for the fix.
 
-Am 08.06.26 um 22:26 schrieb Helge Deller:
-> * Ethan Nelson-Moore <enelsonmoore@gmail.com>:
->> Hi, Helge and Thomas,
->>
->> On Mon, Jun 8, 2026 at 12:58 PM Helge Deller <deller@gmx.de> wrote:
->>> On 6/8/26 13:25, Thomas Zimmermann wrote:
->>>> Why is there a 64-bit division at all?
->>> Not sure. Might be platform specific.
->>> Maybe, because you add two integers and divide by an integer, that the
->>> compiler then chooses to use 64-bit integer division by 32-bit integer.
->> Actually, I think the real issue is that
->> arch/arm/boot/compressed/Makefile defines "static" to nothing when
->> compiling its copy of lib/fonts/font_acorn_8x8.c (via font.c), so that
->> the font array is available outside of the object file. I assume that
->> this causes various unused static inline functions in the headers it
->> includes (such as <linux/math.h>) to be included in the object file
->> because they become normal inline functions.
-> Does this patch fix the issue then?
+Am 09.06.26 um 05:35 schrieb Ethan Nelson-Moore:
+> A comment in drivers/video/fbdev/core/fbcon.c incorrectly refers to
+> CONFIG_MISC_TILEBLITTING instead of CONFIG_FB_TILEBLITTING. Correct it.
 >
-> diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-> index a159120d1e42..e3f550d62857 100644
-> --- a/arch/arm/boot/compressed/Makefile
-> +++ b/arch/arm/boot/compressed/Makefile
-> @@ -157,4 +157,4 @@ $(obj)/piggy_data: $(obj)/../Image FORCE
->   
->   $(obj)/piggy.o: $(obj)/piggy_data
->   
-> -CFLAGS_font.o := -Dstatic=
-> +CFLAGS_font.o := -DBOOTLOADER
-> diff --git a/lib/fonts/font_acorn_8x8.c b/lib/fonts/font_acorn_8x8.c
-> index 36c51016769d..3327aa6d161d 100644
-> --- a/lib/fonts/font_acorn_8x8.c
-> +++ b/lib/fonts/font_acorn_8x8.c
-> @@ -5,7 +5,11 @@
->   
->   #define FONTDATAMAX 2048
->   
-> +#ifndef BOOTLOADER
->   static const struct font_data acorndata_8x8 = {
-> +#else
-> +const struct font_data acorndata_8x8 = {
-> +#endif
->   { 0, 0, FONTDATAMAX, 0 }, {
->   /* 00 */  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* ^@ */
->   /* 01 */  0x7e, 0x81, 0xa5, 0x81, 0xbd, 0x99, 0x81, 0x7e, /* ^A */
+> Discovered while searching for CONFIG_* symbols referenced in code but
+> not defined in any Kconfig file.
+>
+> Signed-off-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
 
 Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-I do like this better than the other patch.
-
-Best regards
-Thomas
-
+> ---
+>   drivers/video/fbdev/core/fbcon.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index b0e3e765360d..07eab2729895 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -769,7 +769,7 @@ static int fbcon_invalid_charcount(struct fb_info *info, unsigned charcount)
+>   	return 0;
+>   }
+>   
+> -#endif /* CONFIG_MISC_TILEBLITTING */
+> +#endif /* CONFIG_FB_TILEBLITTING */
+>   
+>   static void fbcon_release(struct fb_info *info)
+>   {
 
 -- 
 --

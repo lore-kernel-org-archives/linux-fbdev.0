@@ -1,127 +1,115 @@
-Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
+Received: from sonic.asd.mail.yahoo.com (sonic-euwe1-0017.asd.mail.yahoo.com [34.2.82.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBC8D331ECF
-	for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 03:53:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE6FA36CE1C
+	for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 07:52:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.2.82.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781149986; cv=none; b=ZN1JKb6b4MHeW8CR/eTXwWoxGhFBHlr2oKvaJmXqPGKJwHUC9/JB3uYdM1lp2m0KXiDKLMP4DVgCYVEZnj0pq0coK0eJ7FztZONRfJvG2LBZovX66Tp5bMf8/3+Y+zNlXKOOHiHL1v4OkDpvSu2zgY3A6n4jdHX9ZHlccPvH+Ow=
+	t=1781164332; cv=none; b=OelsQWuBD0Xsd7i6etEFaYkUFOgFDbj3BM+ibRjal5CbyxFi9iXhxPK7n7AC0cLzeMT9lz30kon6aps+PD81g9vf9RQawEp2OiaPVrlzIHJYBvB36l2yclzKGi2E5gbEo0xJ9TD6CUCqyFk/GNI2rBy25Xeh7yRD/+D4JXDEKQ0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781149986; c=relaxed/simple;
-	bh=J3cjpUXt0gbpqgODBiZhOxcRUP+t1AJfgHhw2YU7dmM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WGDt7xFCB4Fk/T3+oBf2HDEUKAAkb4/+Zf7ZLM/CXLvtM0+UWda0xGdXkA1Eqky22wAnclnXbCXU/6q+AfEnirvHSkNBzjp0ETwAbRH7hHPm970G9QFSP3Y4dhiT5gq2LJwBgYwI0WVC2s9Pvv7foYXT2IqyTn9LcFFs2matFEk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fVYVrVL5; arc=none smtp.client-ip=209.85.210.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1781164332; c=relaxed/simple;
+	bh=UbHzhBK5ueIVwUpYA1gmOCE4iKkRQO9gwwiEYBEwhF0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc:
+	 References; b=iRuf/Cqmg8WwkvzpbWPPrwNtUih0p77djyAwCCTg5Q1BQx+2DLqPXjPfiNweVVzn394v+y8oaEPZPrAsT2/W0zdl8Jn3PcwCK1VsCqklMR1JwON79DExDpo0bhmPMbi2GnX65kWI4l8KWqVCJOzf0vSBSuQ10fjZnwfV3duF8pQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl; spf=pass smtp.mailfrom=yahoo.pl; dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b=TFULjtqb; arc=none smtp.client-ip=34.2.82.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fVYVrVL5"
-Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-842273a2c4dso5115537b3a.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 10 Jun 2026 20:53:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781149985; x=1781754785; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=nuLe52twcTi+x/X3rOvTkNMFrTH5BVuejVrED6FOMYc=;
-        b=fVYVrVL5YFjdAyt4dQuDStGV1aREsSP7emzdyAJOapEUmPqxqpr1OvoEr1pVESBPb+
-         WlyGf+8YHjIsYkHCWAcgJpzvVvOOkdZg/lZIhHcEuU6I/UfmUDSO04kLuH2ZEvDyAQYR
-         m9vdQp0aa4Dl/zJLMnLkBroxaTRwE3HE5htx+4wPi7psNFyOFbOnQOppjROktr/BKWek
-         dM9vL0H3Y5RtfEZ2GyPSq/1/2DBR/pdxlUFN9t2jSgI0A2+rW/734LAlmxkZCRFxPtTo
-         VJ3XnyyKO+kMnn+MJN1RnTcn5oGcjnTFrWhgQWRnkKk0lWdRmIfF6aOW0nP0jOdOZFLd
-         pfqw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781149985; x=1781754785;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nuLe52twcTi+x/X3rOvTkNMFrTH5BVuejVrED6FOMYc=;
-        b=KMH6ZhFV73si8yNYl464erVRzEmGVwRtLP9ka7yo6p4kIza21vfS41qZ4mMp7dW4qY
-         Lv+76Vz0S04Uxsb+cTAL9keEQwkZY+eS/AAE/0kX+b8CH2PLFT3ZhfxI8uDzNdejuTjJ
-         oFIhINqzZZ0BkmB0U4Rrlb8itzTCVFlvZGOV9ytqVnyazyRCRRcO+wyJOMWWEJvFPoiB
-         taHDCY3D6W3YNMYd6WPdpMNQJHjtDGt8YZEfSqiC3AGSkkcC8tkHBx/os7+vI1nkqqqk
-         wgK9m8P8mXcm5lE/S4z+ywBXvnBPtIOFJ9usgsw4y+QZKi7hMTa2xPK4WF7z7nxRk4jb
-         1nBQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+9Vpaci/gwrV1YZ5JhfGfu6hxkli3A6mWZDPdlcjad8DEeTgV+xfjr+5CQaKqiwea+OTHTyUyUIkw4zA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzkA7rQiqde7cQ/2Nmp5WkOrNJllrZQIEAM8Qp05tjm+WLowlML
-	ePeTdJGAXNWmN+ulQyCBo9EEOOUvUUAxdBmuHEV+Ukofte7bZZCjjE73
-X-Gm-Gg: Acq92OEc6T/N3oo+KRzI/cwPt2tvXEit7NiyFUzqOwtnO5f1H5chKYimY8XcSokAXNJ
-	KhCjEC49iTQh5XtXfmFIYQkZqdJqJvHW7EnkbF+sb1r/ajtgaJfk1dp+qg3TERc/bg1a9jMPIOU
-	U93WpS1hgUBGnm2usBT/KpfsXf4iic9ekjIH5VYfdYilf6llJgX1sUVlKGFLu7HIOV5UQnSO8DE
-	RyiOwE6n228eNH50i+wLhGSmiu2sQao1g3pO1Kijk5Q373tmdgmw2cucrq30fQgvOXG8xMZotuW
-	DJpuiW09uKP647WEv0WeUfVTLToBUR5mwVnQWqD+36JZUNb3Ko4WTUt7onpFOssZC2FD/iRsuaa
-	G79Rq/xiilWiYsRdixkLNfCx+NiShGCmDBukm4eBwN3v7/+rxZsehx8NKNXnkmOmsQx3P9OSLHT
-	JVF7RE8kGIO7xHZZsp7VGCHagjr1WhF93iNmsz4AK3CtVl11P5LkuaUCxs63VsB5Os8RTJlSUzr
-	4bKIqYUQFTRRoQaSIi4hMgH8JeePr4fJEdQ1rbwKzLjO0ddU9vtpZdfhGk/BUKgrxUwgZZY3Jos
-	zjLCyylP4NW5oRKCYghx2a5Vhws=
-X-Received: by 2002:a05:6a00:12c5:b0:842:6004:3fce with SMTP id d2e1a72fcca58-84336bba668mr1064103b3a.26.1781149985157;
-        Wed, 10 Jun 2026 20:53:05 -0700 (PDT)
-Received: from cmpatel-home.hsd1.or.comcast.net ([2601:1c0:5780:9200:5dea:bbec:bf0c:d151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84337bb6cb2sm380130b3a.15.2026.06.10.20.53.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Jun 2026 20:53:04 -0700 (PDT)
-From: Chintan Patel <chintanlike@gmail.com>
-To: linux@armlinux.org.uk
-Cc: deller@gmx.de,
-	tzimmermann@suse.de,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Chintan Patel <chintanlike@gmail.com>
-Subject: [PATCH] fbdev: claim Cyber2000 SPARC I/O aperture before ioremap
-Date: Wed, 10 Jun 2026 20:52:42 -0700
-Message-ID: <20260611035243.16192-1-chintanlike@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b="TFULjtqb"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.pl; s=s2048; t=1781164328; bh=td4MoN7K9s24ukzJBlhdtmKhHco6aekAK2zFbF5/+fw=; h=From:Date:Subject:To:Cc:References:From:Subject:Reply-To; b=TFULjtqbZH0RGcCnbEmifhQs7k0BiYdORaRYUTXe/mPCOQ+e0n/B+9znBBQYlQOfA/UvZfFfx9z27U6qc/puZsUJmi2K9PEphWTIWjVSduuugzi1uaUTa2jy/veslp7eNfnPv/sS5+2zhpeF9McklaxnXwGX1KJ+w1tGPtQXgZd73Litv4Xgnz7dlVMo91J1pAhAvvQ2o10SKNBSuUIWn9KmrviqghLtvi2NR1+/LgvyQcRDjHNT7u1+t+CN/fLuZx24j+74Jtjb/K9/GnvpgALoWKXsiRgGYd3+8J1G2o/yBd4eLb2utpKXn0oAOcYDnE9A2dXkoUX1UZ2+IDsAmA==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1781164328; bh=w4nbHAniWsPpZw3LTJfkzAqbqul4CyBdUhwuiMpbcJZ=; h=X-Sonic-MF:From:Date:Subject:To:From:Subject; b=bTpuW2bfHTRybMZLljNOmkBDWkndrnNPm87gpLqUX3v04j7nyGfwiCfzGVB9+E6dw+VhN+eeTEbEoZ31FJBobY6ndNHCBWcLVwb572571OzWOA9SKu+PD57SzeoHxaB3ZTMIeC4mWOuS8pGgVdeWqST4sSsHweenECzhSxHZm0jnjScDgookv836A+ME2swyYep+f6uEoam2kx8A3UBfX8Ud96QjyglnHs98ylFsA12f+5JQNYRS5HF1DbWzFQsg/v7LJ0tWv6L7fnvg4hwM9gqsfXEzWRzBU2jciOye0o5EG4+WGf6tK5bp6Ue2PTP91v+tTFakDr+4Cl4t2cN+7g==
+X-YMail-OSG: NQ25FvoVM1kus0RK0Sbd.m02M9JBeOVn0mkRwdvjJebtoet14qwW3rAK99g7z.R
+ LODd48Z3v4y_RgKl6AzItN.Zhpj_eRe.GGotwDTfJQkbpWSsFsJnRAK_gNft6X.3Pji5RNsn5tNX
+ 33XhFrrxrHuvhZ62g_AEUDkiOuBrfl_rILwVBjiuoh2nFjzN4sMkukASc6FJdKzkHvV_FLk5rcc3
+ r0LscfUBGDV4WTENpLSVd4TMqgBRbm545iSi43QtECHds9ZoXL2WhoDAjfbrKfCld0mwPWMJo0pD
+ KfhCMNMZM3gvAoKo3ekN1RS.dZ.GKNWUeOdmy4mfRpRuBBbuzLMdPHuf.80eKUpaKQL43g0IeUae
+ hJCmlo8o2ZvQO7TAvrwLu0ABMWWA1o_sY8NW05OMlAu.7LvDgjGOfsuAEMWoGJApErEG6JN7ycwj
+ 9TM.GA8zC3bwIQQdm2AZYxEb2kRTvDsbCtJDtYWRZHa0joi2362EFD5GVkkuGyEweJu.HHULV3bD
+ g7CpymfLuLqoxZDY_X6qdDEx0MP5PtPdgFnUmwuKEvBwICgJdOkSpsZA99pURp9cTMlNXbWEyJcj
+ Kt0jMF8b__2_qr.U.Zc76IUn7yKkJMsvDeYVlLXI2kPofGjX8jcTsBuHRZilqqwWwa_zr5spxUBY
+ FHmULrUNVUZci9EiuVxIEYqZ9ufAvGAkcHCimPim9Tl2TzgOPf5M8hyGwHv3yYOHkWUKfl7CXZu.
+ Tr0E9VRp9NVMjL8t1wdd3a3QjbUiqoA6It698htPbdeqB3J3WOVdlh4qvKW2vtps7ZHpYJcKvXSD
+ KJeVvNW1ShvWZgOxnadDOiIqBFNncnOl.e61WSYo4SXHUPSR1CzST7wBRDMGffzBXU9tpLqziEiG
+ VAP1qFhhbKNJxX_wuGHxFwQstxryXgxJJIMOkyGvOjX0qX8EdH9B5.NeD0iaVZKrqsLqZk3X4NCO
+ svxN4AGzruP37hzrdZmEZ.wb5DUfbF3jcAfhwl_2zp6pOv.k5AXUwZim4G2OQFyezMTYgT0MVmQh
+ Lz7DedyjM..a8GVs8DPfSTsporOtQ8n2EL0pyL0bN4l0BTmuWexGgyTj2d7Dj64FmuF_PVZO1cwl
+ 9L2bf9CeuEhhEEVeFlP5c8WUF9kysftcoJqgHORJlA0XmWs1bdJvXjYuCBkCKZ.ClKfyHkt_DeiY
+ LXB4jzpAohCBk3JtQOhWbf6pNvW7_DydDWpfN4r.u4KIDdoVMhyRtfJKoXUTXYd54Rfe2Tv5YuNE
+ DMegChmt6RFG.4tRqtcA3EpGWLj8vYHWU6QBtzOHut_2QFn5UMCo4JEvXhkWUto5gdQhb4yTq0Yf
+ UL0zXkHxppVn15BOOTm.hFSxoVy6.MqTudBcFR7EcGj2t7zbBuxM0b2Mew2f_1FrJ.8ob1oOnOuQ
+ k.mH8zzw5x9lb9Ww9ehHIcor1zE0ntBjnf9N9ln3yU8AiNCQVqtQtybMPwH3ldHS8j1SteLftgJo
+ N3hTUZuqMlU2Dr4iGCuKxleIPWKp3XEeruGfDaVrf9xBsKSlwGCR0wd9GhqWDrwjZMba4I8h_Z6d
+ Ff9EE8TUYU4dwmv4XaXWTJqGEfO2kV9tkdG8snp6StQAwhaH6m4d18En28yb6AL.rH8juK82rKS7
+ bkIYXfeSSBOe3ggLhtaYqHz0kPHKFgtaqq.JkCqEjctJJOolxwCvXkrG53XG9ayrJO9C_Gu8Pu3.
+ saUJbiljjYK8kkc_e.Ie5yyZv5fHyfGmKFAdXaX8cTNkxPHQ6buyKCdI8Sb5bBQTwtfzGjgrUhFk
+ _4ihdbfznmTFJrONa0OUx2MpPGLxILdjSEO5YJZGMOXXGeK1QZbRFxFlz_um6a1N6LzmLzYncf2Q
+ Y74NPP6WhD38RZZRIYe9XqMcW8tYfJoIFNa3mngfcQG0rMLOpeAgXpw0fC.n42x_KQlp5VXzQgvx
+ bP3Tqgz0JhbrbWCk57oM0JW2ZxGNgkDTtd9C4VGsgILmXN_GqkE7ypMenSMcsL6sc0dsh8j7I3YQ
+ d.vtqiR29k62CCOIhtpCXiDIVW1eOR0NDsb9xilCZuiht.USdWFVgAQdwTrSoMl7tVtrFk0hus8I
+ AwKUqIC7QLWSsFGQ-
+X-Sonic-MF: <tomasz.unger@yahoo.pl>
+X-Sonic-ID: d49a8197-82d0-45d2-b752-f7036781b8dc
+Received: from sonic.gate.mail.ne1.yahoo.com by mail-asdoutdeli-p-cin-euwe1-prod-sonicconsumer-svc-101 with HTTP; Thu, 11 Jun 2026 07:52:08 +0000
+Received: from dip97.lsn.ir2.yahoo.com ([87.248.99.106])
+          by hello (SMTP) with SMTP ID a80727083dd622cc70cfbd829a387288;
+          Thu, 11 Jun 2026 07:52:02 +0000 (UTC)
+From: Tomasz Unger <tomasz.unger@yahoo.pl>
+Date: Thu, 11 Jun 2026 09:53:40 +0200
+Subject: [PATCH] staging: fbtft: fix typo in comment in fb_upd161704.c
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260611-upd161704-typo-v1-1-2e51387c3b28@yahoo.pl>
+X-B4-Tracking: v=1; b=H4sIAINpKmoC/yXMwQ5EMBCA4VeROWsyY2mz+yriQA3GgaZFbMS7K
+ 47f4f8PCOyFA/ySAzxvEmSeIihNwA711LOSNhoyzDRqIrW6ljQZzNXyd7MyWHQfY1F/8wZi5Dx
+ 3sj/Dsnod1mZku9wXOM8LtD+0x3IAAAA=
+X-Change-ID: 20260611-upd161704-typo-705f37c0694b
+To: Andy Shevchenko <andy@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, 
+ Tomasz Unger <tomasz.unger@yahoo.pl>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781164428; l=1088;
+ i=tomasz.unger@yahoo.pl; s=20260611; h=from:subject:message-id;
+ bh=UbHzhBK5ueIVwUpYA1gmOCE4iKkRQO9gwwiEYBEwhF0=;
+ b=5NupvzPIJeYUQ1C5aeVNom+5T+wmKugKxc+uWGkSC4iwFuoigxDT4hvQkRj1gJDqI8qo9K35j
+ lS4i5MF2LqKA5ALnSITMr+XAwYQE5Vu3WRpldOcmVpRWwDq8ZDJskC5
+X-Developer-Key: i=tomasz.unger@yahoo.pl; a=ed25519;
+ pk=elW+gk1cZhyVAkPUfX4QaVHbxERM6w8ByGYxz0Rijl0=
+References: <20260611-upd161704-typo-v1-1-2e51387c3b28.ref@yahoo.pl>
 
-Claim the memory resource associated with the Cyber2000 SPARC MMIO
-aperture before accessing it.
+Fix spelling mistake found by codespell: "cencter" -> "center".
 
-This is part of the effort to request memory regions in fbdev drivers.
-
-Signed-off-by: Chintan Patel <chintanlike@gmail.com>
+Signed-off-by: Tomasz Unger <tomasz.unger@yahoo.pl>
 ---
- drivers/video/fbdev/cyber2000fb.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/staging/fbtft/fb_upd161704.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
-index 2d12f8e96c7e..16ed56180ce2 100644
---- a/drivers/video/fbdev/cyber2000fb.c
-+++ b/drivers/video/fbdev/cyber2000fb.c
-@@ -47,6 +47,7 @@
- #include <linux/io.h>
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
-+#include <linux/ioport.h>
+diff --git a/drivers/staging/fbtft/fb_upd161704.c b/drivers/staging/fbtft/fb_upd161704.c
+index c680160d6380..7288140e7c3e 100644
+--- a/drivers/staging/fbtft/fb_upd161704.c
++++ b/drivers/staging/fbtft/fb_upd161704.c
+@@ -67,7 +67,7 @@ static int init_display(struct fbtft_par *par)
+ 	write_reg(par, 0x001D, 0x0000);	/* Regulator current setting */
+ 	write_reg(par, 0x001E, 0x0009);	/* VCOM output setting */
+ 	write_reg(par, 0x001F, 0x0035);	/* VCOM amplitude setting */
+-	write_reg(par, 0x0020, 0x0015);	/* VCOMM cencter setting */
++	write_reg(par, 0x0020, 0x0015);	/* VCOMM center setting */
+ 	write_reg(par, 0x0018, 0x1E7B);	/* DC/DC operation setting */
  
- #ifdef __arm__
- #include <asm/mach-types.h>
-@@ -1620,9 +1621,14 @@ static int cyberpro_pci_enable_mmio(struct cfb_info *cfb)
- 	 */
- 	unsigned char __iomem *iop;
- 
-+	if (!request_mem_region(0x3000000, 0x5000, "cyber2000fb iop")) {
-+		printk(KERN_ERR "iga5000: cannot reserve I/O area 0x3000000\n");
-+		return -EBUSY;
-+	}
- 	iop = ioremap(0x3000000, 0x5000);
- 	if (iop == NULL) {
- 		printk(KERN_ERR "iga5000: cannot map I/O\n");
-+		release_mem_region(0x3000000, 0x5000);
- 		return -ENOMEM;
- 	}
- 
-@@ -1633,6 +1639,7 @@ static int cyberpro_pci_enable_mmio(struct cfb_info *cfb)
- 	writeb(EXT_BIU_MISC_LIN_ENABLE, iop + 0x3cf);
- 
- 	iounmap(iop);
-+	release_mem_region(0x3000000, 0x5000);
- #else
- 	/*
- 	 * Most other machine types are "normal", so
--- 
-2.43.0
+ 	/* windows setting */
+
+---
+base-commit: 7cb1c5b32a2bfde961fff8d5204526b609bcb30a
+change-id: 20260611-upd161704-typo-705f37c0694b
+
+Best regards,
+--  
+Tomasz Unger <tomasz.unger@yahoo.pl>
 

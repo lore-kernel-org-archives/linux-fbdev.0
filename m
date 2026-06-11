@@ -1,95 +1,96 @@
-Received: from mail-dy1-f179.google.com (mail-dy1-f179.google.com [74.125.82.179])
+Received: from mail-dy1-f177.google.com (mail-dy1-f177.google.com [74.125.82.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 237002C0F93
-	for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 12:31:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEE623F0763
+	for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 12:33:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.82.177
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781181115; cv=pass; b=ZSvkTleYgBxosQ8lwDyJclnfynpE9Isib3ArQeHTNBkdJTjXfhuqxSU9w52cvPzf7rMs8LTyfquvZbKegkHpgv/dCWQ67GxA9FwfeZQIr2CH12UuFQO0G3/Qs+ZzqAz7irVFJkBeUtlWQblpgwrZFN8PH7Oa4VvvwK+EmM4e0f8=
+	t=1781181238; cv=pass; b=nTmFRur5Psk9MZJJ0tz51PR4YdFPGzrRA3X7XyI9vJ9tEWry9+2HuBy8XLS3DQ3X7oHzxDFVF+np5vRQ9DaDxFH0kdQrhCa6XWW0bx5M7sjHyRvGZEES3Z6Cv6uSPvWqU27vqI4zWJd9Be1nuooW+F+pF4fFQ6IlEfGi3L/jnvE=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781181115; c=relaxed/simple;
-	bh=N9w8AQ/izAnL6SZkvE0t7Zg95S0t93+i10d7C13tBDk=;
+	s=arc-20240116; t=1781181238; c=relaxed/simple;
+	bh=L22iIiqclocvOudTWkPISdls3zO04nkf5zEFM94Gfhk=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=OiOrWSWf02pnG7jpDIp+gCkHr7ma5bGzFbSrDsFWLCbT+6s7Z6ysiwW70kHXmqZrZKeg8IXYj2tvmM46YSi0ARhYP4eBlGAHAFnCq5dY15HGYx/8DK3ePsYNCAttm9sOPCjeT9gEtsbPoxoVGuoBEJOLk+grn6t+7yBV0TbhptU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jMrjbGU/; arc=pass smtp.client-ip=74.125.82.179
+	 To:Cc:Content-Type; b=gPdXLit3Z8RcXNBY+wKxmHeV4L2Bob6MR7z0DpN98JmIaDy9379J6uS2L2NDMBlRId/Ng6avEjsQ3sDBQsIN1WbGjv8k6NszUYWUQOGB0jtZmPddv2Jy4hDcHsFrCEcHgPVdCo0crpq/e13uzUxLtvMNhQ9CI9TMsrwDVmQY5HE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=oDu0fAqG; arc=pass smtp.client-ip=74.125.82.177
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jMrjbGU/"
-Received: by mail-dy1-f179.google.com with SMTP id 5a478bee46e88-304d7f31215so7095477eec.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 05:31:54 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781181113; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oDu0fAqG"
+Received: by mail-dy1-f177.google.com with SMTP id 5a478bee46e88-3074adb8fcaso3174449eec.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 05:33:57 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781181237; cv=none;
         d=google.com; s=arc-20240605;
-        b=Lh2mZT8lCc6sCuAc4itW5xc5mAiKOeo4xu75I8NrQjrSO4L96xWcvhq5ytTQTnSB6F
-         1K8Elb+9ThPegTMTxAVD8FJMjeXSXxSNwvBbFrGkoVnLAnl587ZRGKNTzwHlo7pbEuCl
-         qbHWk9G/vVUS4XM8RfeQbFpi8uvnabDHGQ3NguonCttsaa/I3wbqzARj0KC7frEwfzy4
-         sIWDMmEi9oCy2Acqk01/Y01HxDn+xvC/JLEiFpQe0k+W7z57aMNvJ+JUILLgDk35ISiz
-         /rvEeZbc50tCtm3IL5C8BBAKk7v2CUN8B6TLcXqFSWWxdHOR3z6iTk5sN1J005RpmBK+
-         THdQ==
+        b=VSWt4oC/7tRYbXZsOrvl2RlhlPVmnXcQN6C45mUeo9fxpngZNws0wVIV37gVK1ld9O
+         XmPnMzw2IKuAmAeEHS6DpxrlPMynF/L/aBmgtjCWNAYGqtNigm8zp8vYmSqJUaXAkoF9
+         v8Ib4wXb8T/EauwCQI5Ir6mLts9Mbe4EhRh3mpH6M1QRHz2umCVhoVUNiBUidxvWKvnD
+         iXK/sF8M72izz6e0DCobtuAynMLz0fhqysa5YtuiPttdqeBcpbID84Qvp6rNptQriqW8
+         sqqjcb2YbhKwEltLCFwjoWRUZG42grAI+a7U3Ywmv6yP8VUKHs1K+x+ZDmEqVO6OhB9A
+         YgiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=w4CyzohY6NxCIsHAPrysIwJ2ZeDEULVaTSdexi5v2m4=;
-        fh=nCXFLHX2eqPaKb4hyC2KzZBsarjMU0gIKvkEzYpx590=;
-        b=FtbnB7Lhifs5P5AL0nFXeCZcsAC9E/z1GVqqsYIGyB7mkLvBoLwlqwx1xk5B3U2Z1N
-         PLaz6y2vyrxSlain3q4IaaEdoAn/i48XwLdVS3ER0wSka7KRlC5Z1SnS257gUwNNJzdQ
-         7ZYn4XbhLo3zEgi6XSEd+Ahb8lJPVoHRIyrgFQznpzvCaIer+duEm2/gRmAlxO8YC57d
-         VJ0AwAw/ZuszzZE3+7QaH+Y0F0P/5mgnau4K5yL1OxvMUxGVl4E9GABHwFV4rQt97Fwj
-         ArMld6O8a2lI0c46rkeErcuFepLxGHZdISDupTDkUe0Ldo1WYomgmKbBq+ty5Gohn0ZJ
-         JjYQ==;
+        bh=ofA25PebqL4AsSYn/VWzRODqpKmh1tVfH1mE+QYxUbM=;
+        fh=1qYfcWUiv+V74lNVIVpukEeSj4q2rRlOnznfB+yCPoU=;
+        b=FceU9aq8vzszFQlvF+rUAq4x5zNckPtC7mqrFfDFnPpw89G1nD7qd/KP4fCR+HpXeg
+         Sw93V7jvH/URdFI9O9wmmlEKDfj6aSGw+3SZLVYgav0Ykdkv3FTS42H9+FBxuWmrf1xL
+         fgtEd1bA5oyESPMDzQ9hoE/RO5N/nbS7lKPb3MUpg8wN2nYIgzbLk27ejAryDDhj1xq2
+         7PhzY/YQGYwXfwKyVHhiD52iNOq1/YzukyhvM2LqyuTnS35M4tiETvTcdA2GObMVHLFM
+         GjWvvRRRWYF5ZWZkXHGfzByqvHg8FSylkih0Kw+CpuE6Y6UDQExRnqjA7LXXaYSnAG3O
+         9xUw==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781181113; x=1781785913; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1781181237; x=1781786037; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=w4CyzohY6NxCIsHAPrysIwJ2ZeDEULVaTSdexi5v2m4=;
-        b=jMrjbGU/K/MiY2zpDfjCinZekRAjsHLsioZc4nj7eI4VhBvHnKb1u0mEDXZ6rpWSDc
-         AFAhW+U8S/DDVHpdGjmLBtrX60cuCucbfedeMIigZmiyxFnFldmIr6MZ4nxTnrDPDhNk
-         Djj0Yrjtf3uuX4fjdVvrEtKWaucr1c71MLU6RrNKuPHywTKCL2i7fnDs79eHmkqVkxgc
-         7cwj57+IS/kQ+HMIFG5awsEfTAzAS6H/XvUC0URVujIuLj0WoxmR81MdiiNc0TVjTVbU
-         p0UEzyUbVf42N3mVisgHO8vf2ahgMH92KtQOYVcdOJc6n20hj5gecF2MxtIDBesF9yVi
-         3sOA==
+        bh=ofA25PebqL4AsSYn/VWzRODqpKmh1tVfH1mE+QYxUbM=;
+        b=oDu0fAqGLc15HSViIqhHK3eGlstvY2ZUf7YvgQkx7b/q6iRWhSuUKkQCbTtle2QEZi
+         PXF8UWXM1NossznlpNcC818lenPYJ/hop38uSGIfgqwgaz2nVZV4S/9MSY0bJjZDIfAx
+         tqh9VLntTjcB/P3hgofxBOU1pTZxzmKlmPO8FTy6hu5Ag5QjfvN4gvMgwMR4Y+hxQgR3
+         I15fpSg1BXU23WScjg3GstcfCVDmQDhTuR58SAuKtbgpwXx8hq2sA8IUaMHZcxL/d7Ul
+         xUqYDvf6oRzMk6+F6MXcV10HGBz/0XmAYOLULZoC9i9Klcu6iQqBv+38kw5sx1bDT0FT
+         0LLQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781181113; x=1781785913;
+        d=1e100.net; s=20251104; t=1781181237; x=1781786037;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=w4CyzohY6NxCIsHAPrysIwJ2ZeDEULVaTSdexi5v2m4=;
-        b=YG5IqsIwYO3Yoid2E59abFdtO4pNERT4145zTGoDO0e8/46oU4Mskg7+OCVuD+5R8C
-         N3hXxUUOEZOR3rBwETNOQOrZpi6v4SDo8Wx/K4nEM1pDbf58f8PSaQwZEaJUOaNEg2R7
-         tg/7UfclqymueuxcFrTR3UpKTyIEbVWe4DGtt6oWc5nTVBT75F2pdb5axorCcLN+MkOW
-         D21CNqOVECIYqxuzkJcaP9tN5i3p8Kh6xAI3WAfyc9sfQC3R1e1VRR6PeMxXHmg6P4yy
-         OS6rwT4QAUyQesvUpZr8e6y4hgzXs8KSXsQCM2mQcQOQfy679C6yQzz+u2Dc6n2YnSVM
-         raOA==
-X-Forwarded-Encrypted: i=1; AFNElJ/Ron5//aviPOhzZDM2Mpqzl34+8JomNbv8hdhRZYYlAV4xaaFi5jTzXj3Li5yrIoqhRAnCDxmt+k0kCg==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzpxP97viNvJw+uIe+ZeZzDvXbbtjKRPb8o0CxB1n4tEpC1Y96f
-	Fc59luErDv8eDJ8knbCPhoSteTmKETwPzZ04GTMfwTU9oucOmdO4UPp3rmEAnH6l0O/EpFlESC2
-	jO2Ujy8UFPa1E6jw+czht+bVdkZhyGd8=
-X-Gm-Gg: Acq92OFteQDP4HwDr60g4+XxYfv/Wz/X/hcEReWhGE51JYteLT4QIIdjz3cOuP+VElq
-	4MJaWd+nLvdX13m15kO8uuZQN7SEF5YcHt2Z6rGP0MSIcD71m+VCr4of76VKfjr+R6lYY5ToWPn
-	zM4AJRN50tjRLHmkwyW0zZLPBVThoxMAvWwQiaPH4zjacmtzUHXUATetuVG6sz/+vaNN5N6y02C
-	VyNrcig5bY5AszNZ/s8oB+VeDJ85ENo4i+LfbZ7ihEryBJc1+3CAol17XU2QQSqSyJ1jRW+AJwY
-	QMI05tCi3MvAs8X08hA=
-X-Received: by 2002:a05:7300:2205:b0:304:13f3:e461 with SMTP id
- 5a478bee46e88-308047892c8mr1778310eec.3.1781181113170; Thu, 11 Jun 2026
- 05:31:53 -0700 (PDT)
+        bh=ofA25PebqL4AsSYn/VWzRODqpKmh1tVfH1mE+QYxUbM=;
+        b=iGQrnF6PIHgqOLtr8TqekjR2BUK0Xi/nKCix+tI9gH+9Yra000Bn/Xu1ZoUjhBPlRw
+         bJuu+gPfmcmeoAaR3bkY97AGR8bVQqiWKjtqsBkMCxZrRhnsdMuvumYOWVLlXZBFaIIw
+         6hC1x/EjG/tEJ+5U6QfM3SI1LV5R1oxkes3/Q4xXtjtqC7HQTc/p0qRNoR13jLiaJtyv
+         S6Bvq7O9uyPJndVjDfgTwNVFmZvlRJjC4rlaz/+uStkDjEzWsFluSV9i4ozJptB4BCMN
+         mOmIv6vP4N/iJNLpe4cjIz9kmlR903ZxLgMeiQSS9vMDFDeKW+5zMTXtbF9aEgXcB+fe
+         fIxQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+hJSdfsmywgl8Twve0cZhSdcHze6okSeZaVbuLtIWo4zQOIheN/d4r9ccTPOZTJBxS4jMF6Abv1Yd8AQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzDEqy0jr4T5xrMUnCXf4WCgv7joVsx4k666Kgom6LqraTcUNbK
+	6KxFauOyrjoyz6OvaGqijrzTPYePlV5381IeGQXRRal8rTYsP8bHw9cTceUMpzPXtf6t6gk1z80
+	6xfrdMBVZ4xepqEUXyY2NZFQ/jKZj47o=
+X-Gm-Gg: Acq92OGlbw3xLIMU0TSpEeWFbAx3EscVpxsBnUOdCAfMCkOnBfcLilUO61xLERKE9Gf
+	ISIjLRbaoKs7SHfSlhc8SHTtbp8sBQ9QI8resPDtcAbIBHmI2IYlN3pJqRniQhkhFgm9yOhrUl8
+	q0xRftAJyNK2s2+UxGbDKRukjuZXv6xBVPtQXho0RUbF+B5SNHymKt8XyZhT4PuEo6FpQGwZj07
+	pfuIkTcbA2NGOaU4X/fveJN5guEh8F5iP2ERnQrWnTAhWxb+cwemV30CCqTg7B+d9E7P0N+sDjX
+	JGsoslIhGQ1z51Qf0oU=
+X-Received: by 2002:a05:7300:6da6:b0:2d1:d434:cfe3 with SMTP id
+ 5a478bee46e88-3080411cef8mr2308986eec.0.1781181236808; Thu, 11 Jun 2026
+ 05:33:56 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260606045738.21050-1-clamor95@gmail.com> <20260606045738.21050-8-clamor95@gmail.com>
- <aihl9yIqN3adKWLr@ashevche-desk.local> <CAPVz0n2+27QVeWNgPm3PH6V2Ceuym6sbMtUrh7hSHe9PcRmfMA@mail.gmail.com>
- <aimxK3asZjebYrNt@ashevche-desk.local>
-In-Reply-To: <aimxK3asZjebYrNt@ashevche-desk.local>
+References: <20260606045738.21050-1-clamor95@gmail.com> <20260606045738.21050-15-clamor95@gmail.com>
+ <aihoH9Pmzufa9pnE@ashevche-desk.local> <CAPVz0n0m+i7wexfC0BWwvdOuJxDk_=x+EpxEbNmoHN1AsEmfNg@mail.gmail.com>
+ <aimy3BxBaXQ3Uigd@ashevche-desk.local>
+In-Reply-To: <aimy3BxBaXQ3Uigd@ashevche-desk.local>
 From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Thu, 11 Jun 2026 15:31:41 +0300
-X-Gm-Features: AVVi8CfaCeDkKO_UpXhT478yTj8VjHK953EzmbL2Rc52Hp0WrpWg7gTbUSSSXw4
-Message-ID: <CAPVz0n0z_6fuoxBzLcN0VdUBUWZB1c0VGsAkDW3xXnPuwZj-3w@mail.gmail.com>
-Subject: Re: [PATCH v4 07/14] mfd: lm3533: Switch sysfs_create_group() to device_add_group()
+Date: Thu, 11 Jun 2026 15:33:42 +0300
+X-Gm-Features: AVVi8CeX4OO_pI5sFq7qWhCQuBWbqnNi5DWXxYDyaE3k8yybACe4K7ODLE9J31I
+Message-ID: <CAPVz0n0bpo6PAfdN+LGEgPYhEx8mqtu_SL=WnDxhWn-Cq4rQKA@mail.gmail.com>
+Subject: Re: [PATCH v4 14/14] video: leds: backlight: lm3533: Support getting
+ LED sources from DT
 To: Andy Shevchenko <andriy.shevchenko@intel.com>
 Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
 	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -103,56 +104,47 @@ Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-=D1=81=D1=80, 10 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 21:4=
-7 Andy Shevchenko <andriy.shevchenko@intel.com> =D0=BF=D0=B8=D1=88=D0=B5:
+=D1=81=D1=80, 10 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 21:5=
+4 Andy Shevchenko <andriy.shevchenko@intel.com> =D0=BF=D0=B8=D1=88=D0=B5:
 >
-> On Wed, Jun 10, 2026 at 05:38:38PM +0300, Svyatoslav Ryhel wrote:
+> On Wed, Jun 10, 2026 at 05:45:28PM +0300, Svyatoslav Ryhel wrote:
 > > =D0=B2=D1=82, 9 =D1=87=D0=B5=D1=80=D0=B2. 2026=E2=80=AF=D1=80. =D0=BE 2=
-2:14 Andy Shevchenko <andriy.shevchenko@intel.com> =D0=BF=D0=B8=D1=88=D0=B5=
+2:23 Andy Shevchenko <andriy.shevchenko@intel.com> =D0=BF=D0=B8=D1=88=D0=B5=
 :
-> > > On Sat, Jun 06, 2026 at 07:57:31AM +0300, Svyatoslav Ryhel wrote:
-> > > > Switch from sysfs_create_group() to device_add_group() including de=
-vice
-> > > > managed where appropriate.
-> > >
-> > > This should use .dev_groups member of struct device_driver.
-> >
-> > Specify pls, device_add_group literally uses dev_groups, I don't
-> > understand what is wrong.
->
-> dev_groups of the struct device_driver. It means that the data should be
-> static and be available before driver probe is called.
+> > > On Sat, Jun 06, 2026 at 07:57:38AM +0300, Svyatoslav Ryhel wrote:
+> > > > Add Control Bank to HVLED/LVLED muxing support based on the led-sou=
+rces
+> > > > defined in the device tree.
 >
 > ...
 >
-> > > > +     ret =3D devm_device_add_group(&bd->dev, &lm3533_bl_attribute_=
-group);
+> > > > +     int ret, i;
 > > >
-> > > This will make Greg KH very grumpy. (For the record, original code as=
- well
-> > > but it already is in upstream. So, thanks for trying to address this,=
- just
-> > > needs a bit more of work.)
+> > > No need to add 'i'.
 > >
-> > In the prev iteration YOU asked to me to adjust this. I have adjusted
-> > and now you say that this is not appropriate. I will just drop this
-> > commit altogether.
+> > This is personal preference as well. There is no strict rule that
+> > iteration variable must be defined strictly in the for loop.
 >
-> Yes, and I still tell that this is the way to fix that issue.
->
-> You can even do it yourself in a few clicks (hint: `git log --grep` is th=
-e tool
-> of the day): 93afe8ba9b01 ("ACPI: TAD: Use dev_groups in struct device_dr=
-iver").
-> This is an example of what I meant.
+> This is a preference by Linus who is the leader of the project.
+> Also in IIO we have some set of maintainer preferences.
 >
 
-Oh, very nice, thanks!
+Well, this is not meant for IIO, though it seems that Lee is also in
+favor if this approach.
 
-> > > > +     if (ret < 0)
-> > > > +             return dev_err_probe(&pdev->dev, ret,
-> > > > +                                  "failed to create sysfs attribut=
-es\n");
+> > > > +             for (i =3D 0; i < led->num_leds; i++) {
+> > >
+> > >                 for (unsigned int i =3D 0; i < led->num_leds; i++) {
+> > >
+> > > > +                     if (led->leds[i] >=3D LM3533_LVCTRLBANK_MAX)
+> > > > +                             continue;
+> > > > +
+> > > > +                     output_cfg_shift =3D led->leds[i] * 2;
+> > > > +                     output_cfg_val |=3D led->id << output_cfg_shi=
+ft;
+> > > > +                     output_cfg_mask |=3D OUTPUT_LVLED_MASK << out=
+put_cfg_shift;
+> > > > +             }
 >
 > --
 > With Best Regards,

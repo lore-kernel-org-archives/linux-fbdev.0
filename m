@@ -1,129 +1,159 @@
-Received: from mail-ua1-f51.google.com (mail-ua1-f51.google.com [209.85.222.51])
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2DFC376463
-	for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 08:10:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DBFF3C9EEF
+	for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 10:24:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781165449; cv=none; b=HoE5URUBwW5HioXRAYuYo8/9+OgAP8lWofwKatEXuPhrHxiGBRDvbeA8/7R1QqHiu9RMM2lOC9TWXSLz6uUBzDIHoKt9XunRTtNBapTrm/cC6Q292YH8c7FKLnTE5mM14whTm4f6xerTRNISIAaoY+EFdJjrrcNnRsxRmje3RRw=
+	t=1781173487; cv=none; b=Q+xNSY2+Z+rCnufHGr8y/8EtdHILPgcxDnhNUxC+kl6xXQZwQlr58mAdGrvYWnpCeouKNYpx6IMdxvi0KXqu8NUNl6M/QBjxVgucLCNMrdpUH2ZZKYKg8bHt7sWX+v6x7lfVq0wp87TR+KZ+xi2Tcdb3qmBwlK5kNyzb9owKoWs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781165449; c=relaxed/simple;
-	bh=5/G/melH4q341EMTbiew8MEq5fXijt7ym+q2DgIM6is=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rdKzXqmhX1F9MPOhhu9x5lgBImrtGGlw+IJ1JasBwPD17XPAgJwaemPJrK0M+kJyc5teVhDgvFyfA/huosi7+pvpWdJNTIXJzQZ+frhK8QtHD6V3mwm2syUn8JO0cDfq8u1q3In7KNlFlTxAsJcbyMjRUtWJQkypwyDvXNVXS2I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.222.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	s=arc-20240116; t=1781173487; c=relaxed/simple;
+	bh=hlfMl8YRaJvwDqi/+iqxrs0r1tbx3KXyGipQCqVE0hg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NMQ83PMn/i621P1a3EDOAJJfBRUdwU9aGK+lPhZODvNQtzpzW+IE5UMsZX3MLwAusVYoXa7qRRVcMhGkpFsAryq914EngwQT2WhQ6rzJBM90uOQQnwtPWSzmhS5Sm5fWhJH6z34htGW5LJDH9IKwkqYkbrE82kiEgX22w1y8Kko=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UQq+rGIQ; arc=none smtp.client-ip=209.85.214.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-ua1-f51.google.com with SMTP id a1e0cc1a2514c-96358d0a024so5205723241.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 01:10:47 -0700 (PDT)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UQq+rGIQ"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2c168baac83so37095525ad.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 03:24:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781173486; x=1781778286; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ouPpwQMT501sab37XIOkk8CD2y0PoAbrmxd6qozXfMQ=;
+        b=UQq+rGIQM/zuhZjb1KqhheEcrIeOWtPlhxRQ3FIIYC5ZxmO7KPWwqZLViZbEQIvkvH
+         VIit9u0F9pPy+lXnfp8Bsc5yKY2HG/C5A3G1hiY23mtmHYtA1vBkfJhn53waw/q2gsAS
+         MvaIqiznp2AY77c6LBaJvk8MB5oGvKMbskd/Ayg+Oqr7MQFt1MCyY47AdJLDP/XgcTpj
+         8Ncyh5yJ5It2kFdJ54F5JMflBNZCwTLBEJ6g8ESkHcroVg+Fm5L65zfMeHqtLhHPLBgf
+         I9HL6yo+2MxQoRAI8AzhtQKcuxneHtl1h2QHlJZyTVIpuWxjJ9hQZtCKUhf7ikIHNAHB
+         7cLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781165445; x=1781770245;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1781173486; x=1781778286;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=DIoi3XPcNIb2wKg/vVIZMhNixDSLEl80pAhTezj3BuE=;
-        b=l6J4U8DQ1fKj98Ni7nrMNwHJ+yp2CNnYwC22rrk5bRaKm5w1K8HJLiZf3OT+Gw2/7T
-         vowtSrUk6R6eiEK2mHrAQ4ki8mIwl1gMuL40sN0f2BavdYl0bAdweoF0meRYbB1xn9de
-         RBJ4fDf+QasODUWQlWLFvwnoWMH/FIRJ//tDR6BgDWYifL6lpFF/LLV7FRIUP7vCXtZq
-         SKRWhpgjZCiQZ3T97PXieVDVCnDfm76j92v8CXPixPOENfQovnzzTa+Bagk9BUIvCF3B
-         WJKs1GqNnEuSxxuTvMGDCXM6VYhyXTdNXSF7T3O0r1+/FfHtbnWd1kOOy8BKnDSMDaqc
-         tIXQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8Qv+IipxDCSrPboXtOkHgYnjWlETG2RPeA6bWI1BOHGp3Awi8Efm0yuZ8mz4XVGwG+AEcQjMgGkbJibA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwLUEgvmpmBUpFVtusYtF+akUsUpuWd+MrAdhx3srD1y6niV3gp
-	OY1ssAJKMyG13uApWAPzP5kzh7FZN7sJZh+zh0cwvJrCUFJp+MjqhNM5+FBAHpuieJM=
-X-Gm-Gg: Acq92OGO9eF2iY4MyLqxnpFYxq2/KmEjvLcnZftms3NRHWbEcYNzOQFV0jUN331usY7
-	mH0W42myK4xnCGkD4HGDMu0oyB0YrHy8NWwehEFqAJMvxYnXVxD3JU+JW90yOq29GcjZ5LryZwK
-	0nLRqIPUuT+IVOtVWJdEH5+YJrNFY1MD+N2zG2/f//eAe5YWT2tOU2tb2GZDAWMGrwvcmyDm6u1
-	W+jNdu712xyjvrUgCblSGxUekSJkb9D+3HNMHLKVItOOTb8iXuIt33x1fnkjZ9IjfR2EDzkkzD6
-	nO+GnMVLT/nnA4oCpQ2HJV0DFMDPuoxj7WnSP6ms6o0QWGorGm+QsYk6S7DnN6Oiw0Ns0jgvU2S
-	bxLc2jC6JQopVyt8Oud16HFSv3iQuevTj6C0K2FFvlIc2RsgqivXOd20ZsZ4hYeooIsODh/AQS7
-	vn0V0GHER1SRdtMDLQOGokM1dfKlLnVztfi0pGB1s7E/QsvPGkm3euCeAvwEl+iv47pRLIeLVRw
-	Tb0lBddcQ==
-X-Received: by 2002:a05:6102:598d:b0:6cf:f288:f372 with SMTP id ada2fe7eead31-71d5d29891bmr547553137.28.1781165444712;
-        Thu, 11 Jun 2026 01:10:44 -0700 (PDT)
-Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com. [209.85.217.44])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-71d906f0fd8sm499530137.4.2026.06.11.01.10.44
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 11 Jun 2026 01:10:44 -0700 (PDT)
-Received: by mail-vs1-f44.google.com with SMTP id ada2fe7eead31-6cfb0a137c9so4696295137.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 01:10:44 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ/V895mpnqhfIIN+UnGSoI6U/SdJ3RBueuEOTQkJLO8cp0d0ddh27gsU2GZeYitEZNr4Wkga1s6MXdd4A==@vger.kernel.org
-X-Received: by 2002:a05:6102:a50:b0:631:26f6:7021 with SMTP id
- ada2fe7eead31-71d5d08c7e6mr549819137.26.1781165443791; Thu, 11 Jun 2026
- 01:10:43 -0700 (PDT)
+        bh=ouPpwQMT501sab37XIOkk8CD2y0PoAbrmxd6qozXfMQ=;
+        b=fe83giq86Ot3VnSCaxbYUwH3usvr8Kdyyks3MjSuMOS0D3AghoJCaFwbJFLZVZCczx
+         n4cYOZ8UIflDZl2o4YPl6YMezgel3n7CzpZliwtbxu579DbWp1gq0U3tQUXH3/WQS76R
+         RXbsFrW4wiuN/mywJZu1JthYrSPvIfbrox+raPTo+mXqTHHFOh0LBj7e3xgYhgQgiB5A
+         DVsUuy8s7JdQPcC7mOw8ugGOSrdU0GzJCDMfK+Cc4asHTE2nC4uxvCecjufuvO8spFnD
+         sh4gjOS2CXDKurX5d0LTWZFO4q3lG7dqNStRsaOqSlRm1eNlJ//FLreMdGVtgJZq8qFq
+         TYng==
+X-Gm-Message-State: AOJu0YzZNEB7gHPTnvH5ikCLSX4a7dWehtnYAYveeZxVIz2kTGb9mcZH
+	H5pbH0gK2ZrZsZmyAF9KeNPiG4iSB4fyPzHa38sT/ADFcLkDFodgSeKW
+X-Gm-Gg: Acq92OFIKIqRR0OgRQVN5oh72vMXsc1Opmi2/NJ5aH/OWjx9PXiQsTE9PFvbmKzo+6b
+	zphwF0DPhPvYOgUw/FqB+xNRDwjRwE45nyEw871KnI/vKs3AwZDjv0X8rDe7PpK6ld10zw2dMcf
+	2ar2L2QomjchBlJY3bi5bz4sF9gGQaAqSHllQXmrSnGF1UTMcy4GJNADCNzkR/UN+ZuujYHnK3e
+	jMdtxD5WZXGrZQS4Fr5lahnuW95HrRJswb1NIAIvG7P2bufPgPY+dsBl1F5tKN6CdNK/ZF0asD1
+	u4mlGty01OVlqqQL3TQ4Lu576BmQkiQZAL+7PVWN0PArqo1D+9pFyQYSp/SrfZr9kDX1B6VOgs/
+	WPGwo/uf5pbPZ4o+NLqb4rz+gIOVOxPJ0xEnGQJzTVdLazaL5VkS3Obg0v9N5F7m1EXG89vipPC
+	03Rvn5bbrJO8t+QnTIRiqRRcvBrGLRizjk
+X-Received: by 2002:a17:903:3b8b:b0:2be:e3bc:e8e4 with SMTP id d9443c01a7336-2c2f2a77e4fmr24126845ad.18.1781173485714;
+        Thu, 11 Jun 2026 03:24:45 -0700 (PDT)
+Received: from 192.168.1.10 ([43.248.69.41])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c16629d55esm279641675ad.63.2026.06.11.03.24.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 11 Jun 2026 03:24:45 -0700 (PDT)
+From: Xebec77 <ixebec777@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Xebec77 <ixebec777@gmail.com>
+Subject: [PATCH] staging: sm750fb: fix CamelCase variable name Bpp to bpp
+Date: Thu, 11 Jun 2026 15:50:27 +0530
+Message-ID: <20260611102027.28137-1-ixebec777@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260610025014.5913-1-islituo@gmail.com>
-In-Reply-To: <20260610025014.5913-1-islituo@gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 11 Jun 2026 10:10:32 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdW_+WE2uUyqAEhSqT7F4pWseO6Gygbw3tCo7LpAJB2C4Q@mail.gmail.com>
-X-Gm-Features: AVVi8CdVNKXrG0x1HHGz_rLBLe8j66H4QINxyVuJFwMPwOBF3fyFXz7IkA4-6yQ
-Message-ID: <CAMuHMdW_+WE2uUyqAEhSqT7F4pWseO6Gygbw3tCo7LpAJB2C4Q@mail.gmail.com>
-Subject: Re: [PATCH v2] fbdev:modedb: fix a possible UAF in fb_find_mode()
-To: Tuo Li <islituo@gmail.com>, deller@gmx.de
-Cc: simona@ffwll.ch, tzimmermann@suse.de, kees@kernel.org, 
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Tuo, Helge,
+Signed-off-by: Xebec77 <ixebec777@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_accel.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-On Wed, 10 Jun 2026 at 04:50, Tuo Li <islituo@gmail.com> wrote:
-> If mode_option is NULL, it is assigned from mode_option_buf:
->
->   if (!mode_option) {
->     fb_get_options(NULL, &mode_option_buf);
->     mode_option = mode_option_buf;
->   }
->
-> Later, name is assigned from mode_option:
->
->   const char *name = mode_option;
->
-> However, mode_option_buf is freed before name is no longer used:
->
->   kfree(mode_option_buf);
->
-> while name is still accessed by:
->
->   if ((name_matches(db[i], name, namelen) ||
->
-> Since name aliases mode_option_buf, this may result in a
-> use-after-free.
->
-> Fix this by extending the lifetime of mode_option_buf until the end of the
-> function and using scope-based resource management for cleanup.
->
-> Signed-off-by: Tuo Li <islituo@gmail.com>
-> ---
-> v2:
-> * Use scope-based resource management instead of manual kfree() calls.
->   Thanks to Helge Deller for the helpful advice.
-
-Thanks for your patch, which is now commit 85b6256469cebdac ("fbdev:
-modedb: fix a possible UAF in fb_find_mode()") in fbdev/for-next, and has:
-
-    Cc: stable@vger.kernel.org # v6.5+
-
-I believe it needs:
-Fixes: 089d924d03d5c17b ("fbdev: Read video= option with
-fb_get_option() in modedb")
-
-and that commit entered v6.4-rc1, i.e. not v6.5?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 0f94d859e..4beabe105 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -85,7 +85,7 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt)
+ }
+ 
+ int sm750_hw_fillrect(struct lynx_accel *accel,
+-		      u32 base, u32 pitch, u32 Bpp,
++		      u32 base, u32 pitch, u32 bpp,
+ 		      u32 x, u32 y, u32 width, u32 height,
+ 		      u32 color, u32 rop)
+ {
+@@ -102,14 +102,14 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+ 
+ 	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, base); /* dpr40 */
+ 	write_dpr(accel, DE_PITCH,
+-		  ((pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
++		  ((pitch / bpp << DE_PITCH_DESTINATION_SHIFT) &
+ 		   DE_PITCH_DESTINATION_MASK) |
+-		  (pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
++		  (pitch / bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
+ 
+ 	write_dpr(accel, DE_WINDOW_WIDTH,
+-		  ((pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
++		  ((pitch / bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
+ 		   DE_WINDOW_WIDTH_DST_MASK) |
+-		   (pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
++		   (pitch / bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr44 */
+ 
+ 	write_dpr(accel, DE_FOREGROUND, color); /* DPR14 */
+ 
+@@ -138,7 +138,7 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+  * @sy: Starting y coordinate of source surface
+  * @dest_base: Address of destination: offset in frame buffer
+  * @dest_pitch: Pitch value of destination surface in BYTE
+- * @Bpp: Color depth of destination surface
++ * @bpp: Color depth of destination surface
+  * @dx: Starting x coordinate of destination surface
+  * @dy: Starting y coordinate of destination surface
+  * @width: width of rectangle in pixel value
+@@ -149,7 +149,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 		      unsigned int source_base, unsigned int source_pitch,
+ 		      unsigned int sx, unsigned int sy,
+ 		      unsigned int dest_base, unsigned int dest_pitch,
+-		      unsigned int Bpp, unsigned int dx, unsigned int dy,
++		      unsigned int bpp, unsigned int dx, unsigned int dy,
+ 		      unsigned int width, unsigned int height,
+ 		      unsigned int rop2)
+ {
+@@ -249,9 +249,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 	 * pixel values. Need Byte to pixel conversion.
+ 	 */
+ 	write_dpr(accel, DE_PITCH,
+-		  ((dest_pitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
++		  ((dest_pitch / bpp << DE_PITCH_DESTINATION_SHIFT) &
+ 		   DE_PITCH_DESTINATION_MASK) |
+-		  (source_pitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
++		  (source_pitch / bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
+ 
+ 	/*
+ 	 * Screen Window width in Pixels.
+@@ -259,9 +259,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 	 * for a given point.
+ 	 */
+ 	write_dpr(accel, DE_WINDOW_WIDTH,
+-		  ((dest_pitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
++		  ((dest_pitch / bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
+ 		   DE_WINDOW_WIDTH_DST_MASK) |
+-		  (source_pitch / Bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
++		  (source_pitch / bpp & DE_WINDOW_WIDTH_SRC_MASK)); /* dpr3c */
+ 
+ 	if (accel->de_wait() != 0)
+ 		return -1;
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.54.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

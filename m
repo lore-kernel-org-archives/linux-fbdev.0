@@ -1,113 +1,127 @@
-Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
+Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68B1330FC0F
-	for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 03:25:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBC8D331ECF
+	for <linux-fbdev@vger.kernel.org>; Thu, 11 Jun 2026 03:53:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781148331; cv=none; b=jH9YSUm6xS6cvT02L+7+CYyahP5kiWLaHZ9y5G47Dktm6e7Wypnh3ij3ZXkpM0DM3T0yeGtWGvcb8FVGPWa0T/gnbHULLw72pLLt8FJ34ACWTG72weTAwtPL5p05dwreL0DzfG/q3CG2Wx+Dq2JyRPoipCGnweaI5DllBkb0ssA=
+	t=1781149986; cv=none; b=ZN1JKb6b4MHeW8CR/eTXwWoxGhFBHlr2oKvaJmXqPGKJwHUC9/JB3uYdM1lp2m0KXiDKLMP4DVgCYVEZnj0pq0coK0eJ7FztZONRfJvG2LBZovX66Tp5bMf8/3+Y+zNlXKOOHiHL1v4OkDpvSu2zgY3A6n4jdHX9ZHlccPvH+Ow=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781148331; c=relaxed/simple;
-	bh=3hyfCmJRx4ApDUtcdbeOOmuTOI5THvLq0nWuf+M3bss=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=t366Biz2K8+2kvBVgu22g484brk2VRB99DTddkR64bBEHV7oGlJkvVEhuTWBzWNQONdlfH8sVzSjSQ/lbUAb0Ac420N119idD9DM3hljr43nG7Kukzvs7iCR4sxSbwP/OrjusVeqL7pIIbSyZMG3PafUOdCrPiMNvKe+4H06Sy4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fJiLoQWB; arc=none smtp.client-ip=209.85.216.48
+	s=arc-20240116; t=1781149986; c=relaxed/simple;
+	bh=J3cjpUXt0gbpqgODBiZhOxcRUP+t1AJfgHhw2YU7dmM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WGDt7xFCB4Fk/T3+oBf2HDEUKAAkb4/+Zf7ZLM/CXLvtM0+UWda0xGdXkA1Eqky22wAnclnXbCXU/6q+AfEnirvHSkNBzjp0ETwAbRH7hHPm970G9QFSP3Y4dhiT5gq2LJwBgYwI0WVC2s9Pvv7foYXT2IqyTn9LcFFs2matFEk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fVYVrVL5; arc=none smtp.client-ip=209.85.210.174
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fJiLoQWB"
-Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-36babe2c4bdso4538472a91.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 10 Jun 2026 20:25:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fVYVrVL5"
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-842273a2c4dso5115537b3a.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 10 Jun 2026 20:53:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781148330; x=1781753130; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=f2GJ++vtr7dhS8zlrS3HSQgJOj3cbCaOsrJkEpIrNqQ=;
-        b=fJiLoQWBrANkubZKNzuoS7b77Gi4gLuvDSvh0jYdhj6Bb/9WF9VErXRAM4o/0qvu+Z
-         TMn3SJQqemq1B4m66OQfSIUsX8CVgZXzKIT2Vpr9s39oymBzNKiXvy5FlroO1NtsCOze
-         IZ+LP8Fi01MSPjeFWhwtysFo5gySR/qt+zjv81IJPODbyO2zgo+vY4hModPKFVJuSO/+
-         OdkcSOK9bNwruvEhWVc4ub1aUFYu56/0Dv1MsVNmAHaZ35rCkgKEP4FW9Sa80jZO8IJw
-         fhtnvPvIe/IWhSizuba33f+jtOMgXeOhtbC8UFjFyXemL8xo/WYryyd30F6CWToaWKf/
-         uF5Q==
+        d=gmail.com; s=20251104; t=1781149985; x=1781754785; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=nuLe52twcTi+x/X3rOvTkNMFrTH5BVuejVrED6FOMYc=;
+        b=fVYVrVL5YFjdAyt4dQuDStGV1aREsSP7emzdyAJOapEUmPqxqpr1OvoEr1pVESBPb+
+         WlyGf+8YHjIsYkHCWAcgJpzvVvOOkdZg/lZIhHcEuU6I/UfmUDSO04kLuH2ZEvDyAQYR
+         m9vdQp0aa4Dl/zJLMnLkBroxaTRwE3HE5htx+4wPi7psNFyOFbOnQOppjROktr/BKWek
+         dM9vL0H3Y5RtfEZ2GyPSq/1/2DBR/pdxlUFN9t2jSgI0A2+rW/734LAlmxkZCRFxPtTo
+         VJ3XnyyKO+kMnn+MJN1RnTcn5oGcjnTFrWhgQWRnkKk0lWdRmIfF6aOW0nP0jOdOZFLd
+         pfqw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781148330; x=1781753130;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=f2GJ++vtr7dhS8zlrS3HSQgJOj3cbCaOsrJkEpIrNqQ=;
-        b=ef5Cgyowj7RYTxfpsd/zCyLx/DoQTJobj72kaw3JIMxlbxPvyYZkFq+rKOodwjCEO9
-         SQvX+MxlA2pS0zbgjHpvYfDKMEFiNJq8DJMjcXBpMMxXybRPRq+U0JussuduiEz0zfBk
-         QSg6C5QeNtoNPxL/DykBSOCU5qu1tBYgDL8k++/HUhV32EKveqZpwh409PUTK3xFWcOC
-         9UdQ5Uoauv0bdboLI0lN/1qj2SAWySDyH6stqUBPMS5/mh3e7CkGJy9JpU5RbDUHc8py
-         +SRCh/LGf8f1waUYVkhUpMGmg6A2TMuRYM88KLf9IXSCqqjuEbkd+miGxVJG/w2HpkEq
-         lCHA==
-X-Forwarded-Encrypted: i=1; AFNElJ/HSM0nnG1FUcfqMG+6ukGW4ojEfp1wtl5NkBn3VI6PvxntT0yzv9Oaf5T2jXRuFW90hgsacKRxCHkgpA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwL9TAY59oVm3QYJkrDaT2A/qvc/kqngJODqzWRL5WprWQg9+8I
-	5+XBb0w3dhmLZmYpeqcsctQtA0S0Wuov7bxMPWTJojKtgbcuSaGWcGoc7v+C/Q==
-X-Gm-Gg: Acq92OFaZESt9PcN7nezW336qOpoyc/rYkhcEM+xoegQMO5EQkuRUco2W/Y5KA2Bp+0
-	Dk4Ao8RXpTFbOGJw4n/m2km6BFqXAdZyQKio5WlqdZd1XO1Deg72r95hw+zCqVdt48sa+Y3ECsZ
-	L33FGg/ifW0bGq0Ska6IXPhkjJpSMYSdlOiGR9gDFLmblvG13oqJoB5/34htjEMchS3mGWBSQUx
-	Req70+5/t+R+74J2EWVphwya31P/0HDuuXM/bEGYzRgKIK9vv+/+rt7LFesys2qAfJWTqtvhlee
-	G3V3+jZMGERfhJAJ5cC78ynMznPiLiOM1FYtCWNuYk6IbYhRQinVrpP65/J+cgtAD3rZSr+lY+r
-	CdfhJ5+l6I2KQmeU/HUSdeyJ6OfwzpZZD5Sa3KpgIrKqxXhWwZ76j9kNYOxPSroca+DeuSpuwRW
-	aAx3su7sTCGXLYgd2F+EYlgTRsgLzy1kRaxyl6GyZdt+MAvj6VQSaLPLw4dTXjCXAY98TnGmLpw
-	1oh9rJuBu7p45PSgOmRKyJMKLximfMujlnOv133W3jcBpgcmchXsjds5BQkn4sNfqmv8M+otoNc
-	2dHJ6R401MPNkfRtUQQMqY7aSSUeNOv2qxBz4gVi8ovu
-X-Received: by 2002:a17:90b:2e03:b0:36b:bb66:fbd0 with SMTP id 98e67ed59e1d1-3779c38096amr1253215a91.4.1781148329676;
-        Wed, 10 Jun 2026 20:25:29 -0700 (PDT)
-Received: from ?IPV6:2601:1c0:5780:9200:5dea:bbec:bf0c:d151? ([2601:1c0:5780:9200:5dea:bbec:bf0c:d151])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-377540f7ec2sm862940a91.15.2026.06.10.20.25.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 10 Jun 2026 20:25:29 -0700 (PDT)
-Message-ID: <8aea6824-bf84-46e7-bba1-f6dd94327775@gmail.com>
-Date: Wed, 10 Jun 2026 20:25:28 -0700
+        d=1e100.net; s=20251104; t=1781149985; x=1781754785;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nuLe52twcTi+x/X3rOvTkNMFrTH5BVuejVrED6FOMYc=;
+        b=KMH6ZhFV73si8yNYl464erVRzEmGVwRtLP9ka7yo6p4kIza21vfS41qZ4mMp7dW4qY
+         Lv+76Vz0S04Uxsb+cTAL9keEQwkZY+eS/AAE/0kX+b8CH2PLFT3ZhfxI8uDzNdejuTjJ
+         oFIhINqzZZ0BkmB0U4Rrlb8itzTCVFlvZGOV9ytqVnyazyRCRRcO+wyJOMWWEJvFPoiB
+         taHDCY3D6W3YNMYd6WPdpMNQJHjtDGt8YZEfSqiC3AGSkkcC8tkHBx/os7+vI1nkqqqk
+         wgK9m8P8mXcm5lE/S4z+ywBXvnBPtIOFJ9usgsw4y+QZKi7hMTa2xPK4WF7z7nxRk4jb
+         1nBQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+9Vpaci/gwrV1YZ5JhfGfu6hxkli3A6mWZDPdlcjad8DEeTgV+xfjr+5CQaKqiwea+OTHTyUyUIkw4zA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzkA7rQiqde7cQ/2Nmp5WkOrNJllrZQIEAM8Qp05tjm+WLowlML
+	ePeTdJGAXNWmN+ulQyCBo9EEOOUvUUAxdBmuHEV+Ukofte7bZZCjjE73
+X-Gm-Gg: Acq92OEc6T/N3oo+KRzI/cwPt2tvXEit7NiyFUzqOwtnO5f1H5chKYimY8XcSokAXNJ
+	KhCjEC49iTQh5XtXfmFIYQkZqdJqJvHW7EnkbF+sb1r/ajtgaJfk1dp+qg3TERc/bg1a9jMPIOU
+	U93WpS1hgUBGnm2usBT/KpfsXf4iic9ekjIH5VYfdYilf6llJgX1sUVlKGFLu7HIOV5UQnSO8DE
+	RyiOwE6n228eNH50i+wLhGSmiu2sQao1g3pO1Kijk5Q373tmdgmw2cucrq30fQgvOXG8xMZotuW
+	DJpuiW09uKP647WEv0WeUfVTLToBUR5mwVnQWqD+36JZUNb3Ko4WTUt7onpFOssZC2FD/iRsuaa
+	G79Rq/xiilWiYsRdixkLNfCx+NiShGCmDBukm4eBwN3v7/+rxZsehx8NKNXnkmOmsQx3P9OSLHT
+	JVF7RE8kGIO7xHZZsp7VGCHagjr1WhF93iNmsz4AK3CtVl11P5LkuaUCxs63VsB5Os8RTJlSUzr
+	4bKIqYUQFTRRoQaSIi4hMgH8JeePr4fJEdQ1rbwKzLjO0ddU9vtpZdfhGk/BUKgrxUwgZZY3Jos
+	zjLCyylP4NW5oRKCYghx2a5Vhws=
+X-Received: by 2002:a05:6a00:12c5:b0:842:6004:3fce with SMTP id d2e1a72fcca58-84336bba668mr1064103b3a.26.1781149985157;
+        Wed, 10 Jun 2026 20:53:05 -0700 (PDT)
+Received: from cmpatel-home.hsd1.or.comcast.net ([2601:1c0:5780:9200:5dea:bbec:bf0c:d151])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84337bb6cb2sm380130b3a.15.2026.06.10.20.53.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 Jun 2026 20:53:04 -0700 (PDT)
+From: Chintan Patel <chintanlike@gmail.com>
+To: linux@armlinux.org.uk
+Cc: deller@gmx.de,
+	tzimmermann@suse.de,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Chintan Patel <chintanlike@gmail.com>
+Subject: [PATCH] fbdev: claim Cyber2000 SPARC I/O aperture before ioremap
+Date: Wed, 10 Jun 2026 20:52:42 -0700
+Message-ID: <20260611035243.16192-1-chintanlike@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: Patch submission preferences: request_mem_region changes in fbdev
- drivers
-To: Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-References: <c82b582e-2aeb-41c6-8389-25aeeaf46704@gmail.com>
- <f15b9e11-b77d-4af7-9287-233268aa2b77@suse.de>
-Content-Language: en-US
-From: Chintan Patel <chintanlike@gmail.com>
-In-Reply-To: <f15b9e11-b77d-4af7-9287-233268aa2b77@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
+Claim the memory resource associated with the Cyber2000 SPARC MMIO
+aperture before accessing it.
 
+This is part of the effort to request memory regions in fbdev drivers.
 
-On 6/10/26 00:47, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 10.06.26 um 05:58 schrieb Chintan Patel:
->> Hello Thomas,
->>
->> I'm preparing patches to add proper memory-region requests across 
->> legacy fbdev drivers (use of request_mem_region/pci_request_region/ 
->> devm_request_mem_region where appropriate) to avoid conflicts between 
->> fbdev and DRM drivers. I’ve started making changes (examples: 
->> pvr2fb.c, macfb.c, cyber2000fb.c, xilinxfb.c).
->>
->> Before I prepare a patch series, could you please advise:
->>
->> Preferred format: a single combined patch or a series of smaller 
->> patches? If a series, do you prefer one patch per driver file, per 
->> driver family, or grouped another way?
->> Any drivers or areas to exclude or treat specially (e.g., vga16fb or 
->> VGA-exclusive ranges)?
->> Any tests or checks you expect before posting (build, boot smoke 
->> tests, Kconfig options to verify)?
->> I can prepare an initial series and send it for review; I’ll follow 
->> your preferred format. Thanks for guidance.
-> 
-> Please send one patch per driver. The rest is up to you.
-> 
-Thank you ! Will send soon!
+Signed-off-by: Chintan Patel <chintanlike@gmail.com>
+---
+ drivers/video/fbdev/cyber2000fb.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
+index 2d12f8e96c7e..16ed56180ce2 100644
+--- a/drivers/video/fbdev/cyber2000fb.c
++++ b/drivers/video/fbdev/cyber2000fb.c
+@@ -47,6 +47,7 @@
+ #include <linux/io.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-algo-bit.h>
++#include <linux/ioport.h>
+ 
+ #ifdef __arm__
+ #include <asm/mach-types.h>
+@@ -1620,9 +1621,14 @@ static int cyberpro_pci_enable_mmio(struct cfb_info *cfb)
+ 	 */
+ 	unsigned char __iomem *iop;
+ 
++	if (!request_mem_region(0x3000000, 0x5000, "cyber2000fb iop")) {
++		printk(KERN_ERR "iga5000: cannot reserve I/O area 0x3000000\n");
++		return -EBUSY;
++	}
+ 	iop = ioremap(0x3000000, 0x5000);
+ 	if (iop == NULL) {
+ 		printk(KERN_ERR "iga5000: cannot map I/O\n");
++		release_mem_region(0x3000000, 0x5000);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -1633,6 +1639,7 @@ static int cyberpro_pci_enable_mmio(struct cfb_info *cfb)
+ 	writeb(EXT_BIU_MISC_LIN_ENABLE, iop + 0x3cf);
+ 
+ 	iounmap(iop);
++	release_mem_region(0x3000000, 0x5000);
+ #else
+ 	/*
+ 	 * Most other machine types are "normal", so
+-- 
+2.43.0
+

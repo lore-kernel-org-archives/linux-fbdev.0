@@ -1,131 +1,93 @@
-Received: from mail-pg1-f171.google.com (mail-pg1-f171.google.com [209.85.215.171])
+Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E035C3C06
-	for <linux-fbdev@vger.kernel.org>; Mon, 15 Jun 2026 04:05:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E981B3BB685
+	for <linux-fbdev@vger.kernel.org>; Mon, 15 Jun 2026 07:04:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781496332; cv=none; b=c/cxYSiaiN1Us7Zd1/WLdRfzX+6926ui/uS8s/hr5e8t4gEbOv+Ew3niHfGykuxqlK8Iu0hLiDcP1tbPE9pu1rLQRsuOBMHnwM888xCudCAjcIncg2d6fWww200RDxWDoiJSoXDpIoZD3nsk67z3xMxD41FjtXCqCKlfIOjOdDw=
+	t=1781507074; cv=none; b=eUw+mCtHC1J2niSPOY+3PqFQLVQkW6TzuJogX8hlDgxZMSusEvWqEtr1yag8WzOuUMAWhZcJPdQbRoo13UARO9tm1cxBhbo7q8mEddREZ7mznH9piOqAbLqDWCkEhgl514CL/CDbH3+8SJmniqHbwBjkHpLhiu4kip8oKvLiHsw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781496332; c=relaxed/simple;
-	bh=B8KpBZqy3pC97YxiknXglJWsMAZBDEIxBmMupYgIfs8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WMfVvna2kyaaYTDm3FmoHz9r8gAtaIKo7FekfpFx3hwacS75W+Yg1KfHrJzlE7psagMAG2cF14ILpwRuHgKfkZF6dIrSXsStnRrNvryiebB4vj5/ah9j2BQB6OzNSzspyGdwE+QemgtGE2h5v2DEKykS3Tey43GRp8RwJcKcBb0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=s0D+96Mi; arc=none smtp.client-ip=209.85.215.171
+	s=arc-20240116; t=1781507074; c=relaxed/simple;
+	bh=BS+zjw4eLL+0rpZ4fo0H95h1h9szhgSOmNArPS1Fd2U=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QUQ6e/R9geuwYnITdlN17Fze1QHmT6dUj9PlLmibM2UUBEiwlhmYS8PAM1FyLQE1kzNrrkLknddGhlLOExbV0MhhvPsudowafm1qbcRrl10tZbyAg246UgCwVkGMSb4GHDPN8PGpBds4ODWg2hTIg3kSk4F8BQ9bExXD1Eb+yWU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LY42v0CI; arc=none smtp.client-ip=209.85.160.179
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="s0D+96Mi"
-Received: by mail-pg1-f171.google.com with SMTP id 41be03b00d2f7-c859878eb48so1029020a12.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 14 Jun 2026 21:05:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LY42v0CI"
+Received: by mail-qt1-f179.google.com with SMTP id d75a77b69052e-5177b1a7441so43283381cf.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 15 Jun 2026 00:04:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781496330; x=1782101130; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Il3yPCA60ecMhKNK7A4W8smtXWdIja1/mHJ4Opu/D+o=;
-        b=s0D+96MiD8wYa0S4sNXkx0cRh2ZF9t7u0nNGm6qM8KDrCsVecH/Rym+EQM/xjtSlKf
-         oYXp2Rf5cWT3lAU4OLh5vmfSqWH1054j1ttkvH+D10VjV2hvAwFDVStQ66Sn6Yd0niCO
-         BpK03yowDTk972FzUa8seaK0Wq9F1ODtzjqTPNKCkboxKtMekOwMJ4flFPPpjPkLfCvD
-         40yS3aHcSjNwKyOiyDN4rjoMkemCeJAKi38HNjtFN++EgZLt8o6xg0b6De2UWJaNQzo6
-         iQT4rN3L/RkWHWJzo6Z3KvFglYJuM2tOqwhypVcGty6z1CdrsCyTqLCgm90Mxve4AXV1
-         71HQ==
+        d=gmail.com; s=20251104; t=1781507071; x=1782111871; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=+RENlgkMWjL7wUhEcHLmNILGCKgCfCzFao/ekYQxfiE=;
+        b=LY42v0CIKtOiECIuwgdL5XHi6ZI6U8s64CSiYrwPA4gUmJ3NHn0uw31T9Bgjs+mHXD
+         q2HqdbcQflQk/2ulzP7llXAZAZJeJUlPme5LlkihQ5ak4dPZNjHdrouoAMFeWL2cFYKB
+         4mnfvA3ULhhUV8VPxnUHCfv85GR0lhqknVwtFvrY4GvxdkkJ71pVqoFThCCuY4zbSnQz
+         EoIIbjsF7RN9v78MO9dkaylQDqT8xYcGNHlzplV6VbHRF4OsX90dtypNjH0y0nk73Zy+
+         HyQ5qqns9wmoR0jghEhSShv2nuoT4v1zdKQO8MW6VKun5pVIZLr7KqwXfTDPDa3pzUvD
+         +CsQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781496330; x=1782101130;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Il3yPCA60ecMhKNK7A4W8smtXWdIja1/mHJ4Opu/D+o=;
-        b=KHaXVwhXz88JPIf3zavu86M7op+QYJnltpdfXQFLLBm6K9dooyTIeObwSB1YSCHKk4
-         YVGkkbWRM84qMldzcZdMJtgQErQHMy6ReelMd4o4w6V85Ugcbfgrb9/a8yZC7oNb6bat
-         QZYD0rNvLqnyL5rC4bYiHqVErAlW/I+ZI8A1fUOY8WiXs1L2S2xYLvj3t89YldaeEzGT
-         qwFtMBRd4s3vTkPwZS6cJwZMd03HTd1VKgIEm1E0TtXSn0FkrcdzLJz37iqb0jzVnw3C
-         cMS5nvPATvXDoRTKab5j7P0EXWfGgJiD5v08D+ArMkv0FVSgQeE/sQeod30yAOC+E7W2
-         GEjw==
-X-Forwarded-Encrypted: i=1; AFNElJ/E4FQCUhWNSBLPDKplQvzAiWwTsKvvKtxT2hKRYD0UdQgg+E0QBXP5kzXenHP66myRL9rFjirrRq618A==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx3nnv0Ff88EIDzM020RyIbf3w82FjBSBHQmXXICcK9d9uSXNi3
-	mF2eTBpUd29MeACSnK5nCs2bQvaBNLjVlkx+p6Wn0fXn9LXOfvGmvmV3
-X-Gm-Gg: Acq92OHkqgKcGtwEd2OHxXy4qBmaiZ30JtldBQeJTm4Clgk0ZeBi5leWiq/FWWDyb6f
-	sLjdCyC7KblPprsfR3EB/nfIIm4huqkcmIKJCjOLr3BcKL/qXoZFLzLEyhhZa9qeaG5D/3xVozl
-	MRGtfRkAkieVtrjTN1ALZKLRBXV7wvNi1T/ZH0NibayN4xyVmK9X8MwTeTC2Yq7ALaNgYkLM1F/
-	uU2FUEYLn9eJqVWiSRufEFjZDuM+wY9SOueZ+MqAWrlBUKZBcOTDkVlaqsF9usIWbYbR0OHMEVL
-	JOAKUffT5gn8arxsHrs5j19MdCiB4wgcxZcsCLKNaFIayOsHUdJdxGGzMELrpDpG2qLNh8Fz4Jg
-	nlj8Dig7O4zF+q4Y4+oOJDDwoL+y5FtSZmnlT/3I/nykfOsvmMKu4Zd9jKMaZEz7eNT5GQAMUnP
-	7rHTKOVvvOP9MgQLpxThl+kbXWNVpopIeBrrX3I9nB4HCmvuO/iwvfrDDZUq8wPIqzNCFV2zP3G
-	HezMoVAtAaIzGbFgmVt1ArOOKYLYNkB45blEn9EtwMrAeJSxSCWDjWaaiLaZ5bzuFjwwv0Bp68S
-	DJJikhl72y7LhKGK
-X-Received: by 2002:a05:6a21:7107:b0:3b3:2703:115 with SMTP id adf61e73a8af0-3b79625bfbemr10526987637.16.1781496330174;
-        Sun, 14 Jun 2026 21:05:30 -0700 (PDT)
-Received: from cmpatel-home.hsd1.or.comcast.net ([2601:1c0:5780:9200:e093:9ee8:780e:953b])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c86651adc16sm7044892a12.31.2026.06.14.21.05.29
+        d=1e100.net; s=20251104; t=1781507071; x=1782111871;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+RENlgkMWjL7wUhEcHLmNILGCKgCfCzFao/ekYQxfiE=;
+        b=WLIKvUno7jSe7YR9a4gjnVCaaeCzR39O49udZFbROssmc7nxYTPcYpsWBZCkMWPi55
+         24msnpgdshYL7Jzn4nJyTYGypEL8NI/vNb5aqlRWSXme5Jrj+qFB8EJa6XuzeyXCzij9
+         kX5E1e4IOLf7z7r7f0tkl5C/dqgDXynhRtUywOfWQvUzSK1XNhKVcoTq1tw+JkKv72dj
+         QPfbk85eCe/V2HmVQHTxUZt3wYo5CVrhEUakLUAm1JXew8optABNZF8antncY8r1NKy3
+         n6hihSJ77bN3luRMryw4jaxY6Og1RcV1/pu8NXOO6STJ0nampZ5pMrga+Qa3gh4tNA6X
+         /s2w==
+X-Forwarded-Encrypted: i=1; AFNElJ/cGgnZCQerbYe6H6WR+Lyebww7ekEmqW+OwxtNnr0hYJjeHGrHPW+JZUSmjk5uRdRjxYN+eKEIebU/Ng==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxlz0rgKy5JsJBFVNC2sXK8tVw1mINQYCkaPvbDJDvYIeind34o
+	rH7TFLfmn3bDxIIIy7yRROCg7kWoQ1ZEX1fCm2rtaqanIHaB5x/vn5ox
+X-Gm-Gg: Acq92OGD1qWpkyMkUxuqupufqz9giKdF8nG52amwSBt52KlkhOh2EZ2eS9Zwnzfpmjq
+	g94fUq1mkDd1cSQNgZF11w9fvSjxUi+w7Ukm4UAw2j99+xqcoGBJWs7vlz2PM3uyScyAOLCdb2H
+	adGiaegXfetjlgpvB0xttYYqtevA7n35nvicJb3we+i0fcfjiGqwk9SEq61sqJ3LDf6f+ue8q7J
+	cStrK2RPpFBtLq3FXSHaAqla3J2BaY4wWPGK13zikcacqtrA2r6yTsVpPci/mKsGAWOivGJkkLn
+	Nd0dTJsR0VC9XfoUPyYn9yiLC9m+A8xNSwfhlGTEbX0zOdP/JsysQpEYcbNo8+qZ8o5sSohPoQC
+	gbkFdeq1GSR7owBwQRkGPzNVFAIn9EGhtRkTvfA6DwoMsWQCJsaNHiDA9GytFlNQCqZNVV+G1uB
+	O1qABFmkAe/aaCME0Dux5FuzmLEOg=
+X-Received: by 2002:ac8:7d55:0:b0:517:6350:ed4b with SMTP id d75a77b69052e-519535366bemr150581661cf.36.1781507070757;
+        Mon, 15 Jun 2026 00:04:30 -0700 (PDT)
+Received: from localhost ([43.225.189.75])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-517fb61eaf4sm99229171cf.4.2026.06.15.00.04.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 14 Jun 2026 21:05:29 -0700 (PDT)
-From: Chintan Patel <chintanlike@gmail.com>
-To: linux@armlinux.org.uk
-Cc: deller@gmx.de,
-	tzimmermann@suse.de,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Chintan Patel <chintanlike@gmail.com>
-Subject: [PATCH v2] fbdev: claim Cyber2000 SPARC I/O aperture before ioremap
-Date: Sun, 14 Jun 2026 21:05:10 -0700
-Message-ID: <20260615040510.9299-1-chintanlike@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        Mon, 15 Jun 2026 00:04:29 -0700 (PDT)
+Date: Mon, 15 Jun 2026 10:04:23 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: neha arora <neharora23587@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] staging: sm750fb: rename pv_reg to io_base
+Message-ID: <ai-j96dVwtPMERVM@stanley.mountain>
+References: <20260529111927.14138-1-neharora23587@gmail.com>
+ <CAOWJOptv1JcOGcEt39HVy7LkpAsvzbw9yj64kJG+X5J=VbWrMA@mail.gmail.com>
+ <CAOWJOps9RBNAGsPFsBCbzFkEUN1=75YvwmqJX6RdQBbt1C6W-Q@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAOWJOps9RBNAGsPFsBCbzFkEUN1=75YvwmqJX6RdQBbt1C6W-Q@mail.gmail.com>
 
-Claim the memory resource associated with the Cyber2000 SPARC MMIO
-aperture before accessing it.
+On Sun, Jun 14, 2026 at 12:45:05AM +0530, neha arora wrote:
+> Hi everyone,
+> 
+> Just following up on this patch to ensure it didn't get lost in the queue.
+> Please let me know if any changes or a V4 are needed.
+> 
 
-This is part of the effort to request memory regions in fbdev drivers.
+It doesn't apply to linux-next.  Did you work against the lastest
+devel-next tree?
 
-Signed-off-by: Chintan Patel <chintanlike@gmail.com>
----
-v2:
-- Use pci_err() for error reporting instead of printk().
-
- drivers/video/fbdev/cyber2000fb.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
-index 2d12f8e96c7e..0b362842cab3 100644
---- a/drivers/video/fbdev/cyber2000fb.c
-+++ b/drivers/video/fbdev/cyber2000fb.c
-@@ -47,6 +47,7 @@
- #include <linux/io.h>
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
-+#include <linux/ioport.h>
- 
- #ifdef __arm__
- #include <asm/mach-types.h>
-@@ -1620,9 +1621,14 @@ static int cyberpro_pci_enable_mmio(struct cfb_info *cfb)
- 	 */
- 	unsigned char __iomem *iop;
- 
-+	if (!request_mem_region(0x3000000, 0x5000, "cyber2000fb iop")) {
-+		pci_err(cfb->dev, "cannot reserve I/O area 0x3000000\n");
-+		return -EBUSY;
-+	}
- 	iop = ioremap(0x3000000, 0x5000);
- 	if (iop == NULL) {
--		printk(KERN_ERR "iga5000: cannot map I/O\n");
-+		pci_err(cfb->dev, "cannot map I/O area\n");
-+		release_mem_region(0x3000000, 0x5000);
- 		return -ENOMEM;
- 	}
- 
-@@ -1633,6 +1639,7 @@ static int cyberpro_pci_enable_mmio(struct cfb_info *cfb)
- 	writeb(EXT_BIU_MISC_LIN_ENABLE, iop + 0x3cf);
- 
- 	iounmap(iop);
-+	release_mem_region(0x3000000, 0x5000);
- #else
- 	/*
- 	 * Most other machine types are "normal", so
--- 
-2.43.0
+regards,
+dan carpenter
 

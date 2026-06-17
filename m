@@ -1,63 +1,63 @@
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
+Received: from mail-ej1-f49.google.com (mail-ej1-f49.google.com [209.85.218.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED6AF3D4132
-	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 08:00:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 247AC3D091A
+	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 08:01:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781683272; cv=none; b=BZ5cD2bnoo6sogPYvfCEee0t4AlolU8UfgRI3MKAzCcLJXa7AFjX+CptLV7H1f6jPCCAQQ9KOwgTrF43YvqO6mplF4tp5kpQuoIaL3IO1BLkFLPWUZtlPi81FCu3WMZF8/rSikCLsOUpJf5ADvqGwysVOqIOeahUuep6qdYIxmo=
+	t=1781683273; cv=none; b=UqpctI7hyqPh2H0Ry5L1hgmDXn7sfNXbNjFMJIKJbA/K5ywITTGUcE1bTgzS1w8fXzRwtecO9+5maXqP6jTsfJP8WoFHYJJjz52swHqfGCbrZGIr28Kuxlp0VoLf6v0fMDunAzAmM4kn/KI4lOrTHMRmtNJaEB+GWFL6ZIgnJoQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781683272; c=relaxed/simple;
-	bh=KKu9vuzjNh2iqUZwT5xjE/o1dLesFPk+03y2gSGMhFU=;
+	s=arc-20240116; t=1781683273; c=relaxed/simple;
+	bh=Q1JWkYH2GSDGMyhqdA0zssbSLknV+F95UIDG9qxluu8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bsMwUfxyZ5V36qNWdwJmCLkalaGJ3fYEVtSqSRLnN+d3Vvb6hXJs86kHIdaOS+TGVejZpme8U2p6oz0Vcyl83otydCAieT8n1/48c91RPmAPTpB04t1ja8mLgCZi/dGg5JPldaySUYW+QGfOw8RLt9ninuhxXQJQnLuFigOzT9o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Seuj2uvl; arc=none smtp.client-ip=209.85.218.43
+	 MIME-Version; b=cS2nad4I7ad/lRnbeUGiKc2t/FHpNKYfDyn+yvOGOQDlzrr9cWDtth6/J7HKWEBnOFPznrRfxixSCCtI7BG8RNJSAv120ORD/fdShPVoCwMcKAsixlKr8DzUPFhc7qpcb7HRTv/Q2OoDG9UV+2ZfQV6Xz510SHhggBOa5xf77xA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bIfIV5sb; arc=none smtp.client-ip=209.85.218.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Seuj2uvl"
-Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-bf0170c80f7so929906866b.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 01:00:59 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bIfIV5sb"
+Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-bebac79fff8so682806066b.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 01:01:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781683258; x=1782288058; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1781683261; x=1782288061; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=2i1k8AoyDEf4+SEcMRPttiYCfUlkSwT7R4ZGBXCsSZk=;
-        b=Seuj2uvl/9+wEOZEUExytld1ZS+46/FfLivxy3+PSQsYqdTMvu7F6JRigSUqqFDFAP
-         Y7OVmlqKdgycRsE2yddzapgI+c5E/Pleyu5ALZJ/fQjqyLf3/T8cuLzI5FgmkK6wi1kG
-         E/WIi+EDZfZHMhzOTYJCfhzlDYQELq3ly+gVdfr3xy0U5wlYY+lL38bpA72TAV13KwTV
-         zcLq+AcHDslSWCp405e4eUG+FdrMkIXyoQORl7drXR6ao4R6Flp8EU4fEBGratJPYAbL
-         cMzJCJIO9bGKDUISVufjCR17iW8CUViJadOQY0ePhKRqvoF4oMMK4uVLYpxzdoEe3/yR
-         blag==
+        bh=Bd9XYaCysxrts0G4Y5wJXzVAEaPGW9YIawHblvLTeko=;
+        b=bIfIV5sbroPAw97RqiqgQ+MThuJpMEFyw3O3WLVQIPxPBnMkmGKvcckah2q+aG22su
+         Hgmu89MMq7FKnF/RBTR/EIkxp3yzNf8cpiT9jadV2zJ0sQgWQzDcB0eR8A+PP4kvrBFD
+         ehGD1ARdat+lrWTL2WY0pl0udfmrBZapVacR/nZaDbV6OQwC+UwJ5fr5t2akXDbiRGc5
+         oDxCtuaBRg4BNdGWlH/nuwZvWVqEs9safzkRibC7R1w3ntqa2i3iKlY0ToA6sdFxzk4/
+         xqGc2N1VWEERlHYnerLklN6fiGGXQoPT3JpgmYb4w6c4euT35PSjs8+wjBJ6tQ1yo88j
+         8Raw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781683258; x=1782288058;
+        d=1e100.net; s=20251104; t=1781683261; x=1782288061;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=2i1k8AoyDEf4+SEcMRPttiYCfUlkSwT7R4ZGBXCsSZk=;
-        b=W+tB8eAR3ktCEa2eFYxVsgCoPPJhizunyl8feBl/RJguA6FpvrqGcnzok0WIXjE1Sa
-         x1FiaPmmEzpTyjdawVnGdbIjFc3AqjrMc40C90CGS7R1Ge0mUxpZoyrS3zbSLFGZj4v0
-         m+ykqOVJCyVCqGvaV/wp4SVb9IeYF8IdSdrNaYp8kC4eEGtc3GM/ChD0K6om9ooLinJw
-         t1lP75sJYNyuo68G23RtBAwTPiUz+fFH5m6U9F497DNj1fP73JfNF+5uGQnoqaDW2QyH
-         Ln0w3+UqignWzsz+2ZOhdzz/iKxIn+q38UYw1iOhw8DA4DUNP6ZI1V2jb7Zuk6wzlm+O
-         MEkA==
-X-Forwarded-Encrypted: i=1; AFNElJ8EbsWaisw6QiCT/cnw7nm0IH81VXyOiLmsLt3/kU7TvrSpumxpC9i/KIS0mYTjhWFUv5FjwsTRuz4quA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzgvKmGnIknhGx8xQEUURXp18STq2cEXsDiAZkqoQHT0DQgn8wT
-	uifcRnQzWD5eqiCieRq8BpHgL+qLzuly3i3cyPE9Xaz9XGIQQyGeT8YR
-X-Gm-Gg: Acq92OFFZiQPuzqSbXM6UT3oSc0UrC2HVZ9tgHGVd51vU9aNgf4jbfe0yvKS1gaF6Sk
-	iC6P2IxRH6FSVKlyhQCVvENn9h2udpYkB6wGRNj4xA9DDqav2reOgbJagFH+txE677LXFvbZLgb
-	793uddxXWtMquCKyfZEPUgulrUDhCfajON23CWxW/gnYBouTaMJXSDrdRVd6XU14A1cgNR+UO5d
-	hgBlxxSxYQYjKDjPLmr8PLe5TEE2V51DdImUfsI6XebtKoj06kXvs/gcgbboIYxmBLlvBwVJ3oW
-	CJ2WygnIC8VXYMC2GL8k3foQmxxLNQEepx/1s5ZuVB0IWpVGrT8KR9aI4DyKRgVQBwouMYD0smQ
-	vPBV+Z0YPrKhxFqoEPqZEEDXR7zlqpVxOSDkkGYFtPaeEfZsWRGm2UJOQKQMRlAXlD92/EHvWIU
-	H7pQ==
-X-Received: by 2002:a17:907:9305:b0:bfe:ed06:5a1f with SMTP id a640c23a62f3a-c05a83a199dmr195494666b.52.1781683257844;
-        Wed, 17 Jun 2026 01:00:57 -0700 (PDT)
+        bh=Bd9XYaCysxrts0G4Y5wJXzVAEaPGW9YIawHblvLTeko=;
+        b=inq6iut8wCKHl6b5m2X0BqDCjboza47kcmdDqh33Hm69vZq+QGeLNaUJcSRqBRXoXt
+         auK++qhGu3AiduQOrMn9Sjo0YQOGIkaZutEMZaVj5Vh3Zz5mxKniS2grAWgrc1mOPChR
+         3ETtUVN1GahHIQQoyuqz89c9G2D3F1dfVs6H0ld31QP0WmikqFmSExjRZIS4LmSlcZyB
+         D7zWG1gLN6qXX4rprzuiX0sY+k068cIoB7Rikose0Y1NsiZH0iO3bno6ZMN3XtkEPXmP
+         54VFGM9bvWzSyhW0opnHB3cB9Nn9nioxAzlnXgRQZuVvOlIVY7jHUfv9s2x3SoFPAWGj
+         T0ow==
+X-Forwarded-Encrypted: i=1; AFNElJ8lQxQfaGi0jyrpz1aGKpEFClsbU09aH2Fn09cnjBxIwNMobLestqz9iJuDfivohQMe64TzMaBgyeP+eQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz5WYvCjA5AIQGctuNSmg1OLWY1WJy2P+c8zR4KeRGV/ByvoHsS
+	Oe1X7sN81ZIPXZGhca3+xLmM7J1iruszDDim1kJqmaPcCjNkghA5vWqN
+X-Gm-Gg: Acq92OEVRC8DR2gqlEeu3TgEcxCpQhpk3bJIni+GwkEntHZx6hlqhMYCFcIB92RFj21
+	2z16iK2j3juVKo61Mv/rtcB8/InrORKIP4qpRIA7x4VRkpsERsKzH4PPa7e3u9a/zMvw68HtWqB
+	0iewzqJTkjtFOSzymIY5DmJYEEuK7CTHhzjeEbAKuCgnJyRv0k9aO0er9G3CcfpKmDlwQfm4Dq2
+	zjbvDjZVcR8HSHOWhNb+Bf+SQdtZFIlvXML9UffhGmrjcwatiwLKArPdT8fbZSfRxL3afMDRbpI
+	xkST+BQFjLahBD0VI5v1KmKpxmKX7RsAL1EORrRYyKQqOuWEcPjIX/YsU5i2jlbhO8z4Hf69P4B
+	WLVOJnhhUEhXC/i2Cq7PHP3j+ZyOwcLDk/XTq1oxk7vkAFCsheNJf6zsoj3jVi/fRncJg6VI9eB
+	kXow==
+X-Received: by 2002:a17:907:b03:b0:bee:875d:af12 with SMTP id a640c23a62f3a-c05a09bc11dmr128164966b.0.1781683260892;
+        Wed, 17 Jun 2026 01:01:00 -0700 (PDT)
 Received: from xeon ([188.163.112.61])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bfdb058fa59sm755339766b.0.2026.06.17.01.00.56
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bfdb058fa59sm755339766b.0.2026.06.17.01.00.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 17 Jun 2026 01:00:57 -0700 (PDT)
+        Wed, 17 Jun 2026 01:01:00 -0700 (PDT)
 From: Svyatoslav Ryhel <clamor95@gmail.com>
 To: Lee Jones <lee@kernel.org>,
 	Daniel Thompson <danielt@kernel.org>,
@@ -79,9 +79,9 @@ Cc: Johan Hovold <johan@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	linux-iio@vger.kernel.org,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH v5 11/14] video: backlight: lm3533_bl: Improve logic of sysfs functions
-Date: Wed, 17 Jun 2026 11:00:28 +0300
-Message-ID: <20260617080031.99156-12-clamor95@gmail.com>
+Subject: [PATCH v5 13/14] video: backlight: lm3533_bl: Implement backlight_scale property
+Date: Wed, 17 Jun 2026 11:00:30 +0300
+Message-ID: <20260617080031.99156-14-clamor95@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260617080031.99156-1-clamor95@gmail.com>
 References: <20260617080031.99156-1-clamor95@gmail.com>
@@ -93,137 +93,46 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Simplify the sysfs logic of properties by switching to macros and proper
-regmap helpers.
+Since the device supports linear and non-linear modes, implement the
+backlight_scale property to describe this state.
 
 Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
 Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
 ---
- drivers/video/backlight/lm3533_bl.c | 62 ++++++++++-------------------
- 1 file changed, 22 insertions(+), 40 deletions(-)
+ drivers/video/backlight/lm3533_bl.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
-index 2c24647fc17a..9eb0db640948 100644
+index d003d5802508..c99fc68cb669 100644
 --- a/drivers/video/backlight/lm3533_bl.c
 +++ b/drivers/video/backlight/lm3533_bl.c
-@@ -23,6 +23,8 @@
- #define LM3533_BL_MAX_BRIGHTNESS	255
- 
- #define LM3533_REG_CTRLBANK_AB_BCONF	0x1a
-+#define   CTRLBANK_AB_BCONF_ALS(n)	BIT(2 * (n))
-+#define   CTRLBANK_AB_BCONF_MODE(n)	BIT(2 * (n) + 1)
- 
- 
- struct lm3533_bl {
-@@ -85,88 +87,68 @@ static ssize_t show_als_channel(struct device *dev,
- 	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
- }
- 
--static ssize_t show_als_en(struct device *dev,
--				struct device_attribute *attr, char *buf)
-+static ssize_t show_als_en(struct device *dev, struct device_attribute *attr,
-+			   char *buf)
+@@ -142,6 +142,7 @@ static ssize_t store_linear(struct device *dev, struct device_attribute *attr,
  {
  	struct lm3533_bl *bl = dev_get_drvdata(dev);
  	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
--	u32 val;
--	u8 mask;
--	bool enable;
++	struct backlight_device *bd = bl->bd;
+ 	unsigned long linear;
  	int ret;
  
--	ret = regmap_read(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF, &val);
--	if (ret)
-+	ret = regmap_test_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
-+			       CTRLBANK_AB_BCONF_ALS(ctrlbank));
-+	if (ret < 0)
- 		return ret;
- 
--	mask = 1 << (2 * ctrlbank);
--	enable = val & mask;
--
--	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
-+	return scnprintf(buf, PAGE_SIZE, "%d\n", ret);
- }
- 
--static ssize_t store_als_en(struct device *dev,
--					struct device_attribute *attr,
--					const char *buf, size_t len)
-+static ssize_t store_als_en(struct device *dev, struct device_attribute *attr,
-+			    const char *buf, size_t len)
- {
- 	struct lm3533_bl *bl = dev_get_drvdata(dev);
- 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
- 	int enable;
--	u8 mask;
- 	int ret;
- 
- 	if (kstrtoint(buf, 0, &enable))
- 		return -EINVAL;
- 
--	mask = 1 << (2 * ctrlbank);
--
- 	ret = regmap_assign_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
--				 mask, enable);
-+				 CTRLBANK_AB_BCONF_ALS(ctrlbank), enable);
+@@ -153,6 +154,9 @@ static ssize_t store_linear(struct device *dev, struct device_attribute *attr,
  	if (ret)
  		return ret;
  
++	bd->props.scale = linear ? BACKLIGHT_SCALE_LINEAR :
++				   BACKLIGHT_SCALE_NON_LINEAR;
++
  	return len;
  }
  
--static ssize_t show_linear(struct device *dev,
--				struct device_attribute *attr, char *buf)
-+static ssize_t show_linear(struct device *dev, struct device_attribute *attr,
-+			   char *buf)
- {
- 	struct lm3533_bl *bl = dev_get_drvdata(dev);
--	u32 val;
--	u8 mask;
--	int linear;
-+	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
- 	int ret;
+@@ -295,6 +299,8 @@ static int lm3533_bl_probe(struct platform_device *pdev)
  
--	ret = regmap_read(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF, &val);
--	if (ret)
-+	ret = regmap_test_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
-+			       CTRLBANK_AB_BCONF_MODE(ctrlbank));
-+	if (ret < 0)
- 		return ret;
+ 	bl->linear = device_property_read_bool(&pdev->dev,
+ 					       "ti,linear-mapping-mode");
++	props.scale = bl->linear ? BACKLIGHT_SCALE_LINEAR :
++				   BACKLIGHT_SCALE_NON_LINEAR;
  
--	mask = 1 << (2 * lm3533_bl_get_ctrlbank_id(bl) + 1);
--
--	if (val & mask)
--		linear = 1;
--	else
--		linear = 0;
--
--	return scnprintf(buf, PAGE_SIZE, "%x\n", linear);
-+	return scnprintf(buf, PAGE_SIZE, "%x\n", ret);
- }
- 
--static ssize_t store_linear(struct device *dev,
--					struct device_attribute *attr,
--					const char *buf, size_t len)
-+static ssize_t store_linear(struct device *dev, struct device_attribute *attr,
-+			    const char *buf, size_t len)
- {
- 	struct lm3533_bl *bl = dev_get_drvdata(dev);
-+	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
- 	unsigned long linear;
--	u8 mask;
- 	int ret;
- 
- 	if (kstrtoul(buf, 0, &linear))
- 		return -EINVAL;
- 
--	mask = 1 << (2 * lm3533_bl_get_ctrlbank_id(bl) + 1);
--
- 	ret = regmap_assign_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
--				 mask, linear);
-+				 CTRLBANK_AB_BCONF_MODE(ctrlbank), linear);
- 	if (ret)
- 		return ret;
- 
+ 	bd = devm_backlight_device_register(&pdev->dev, name, &pdev->dev,
+ 					    bl, &lm3533_bl_ops, &props);
 -- 
 2.53.0
 

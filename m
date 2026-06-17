@@ -1,90 +1,82 @@
-Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AA273C555C
-	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 08:01:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8231137F728
+	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 08:18:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781683278; cv=none; b=XD4Cpj2T+6CoY1mfmiPE8scxyHxPGsiOQaDN4WoZtDbQ1TKpbV+8UVHHeEpMoXn1Zq6UHiYA04dnfYJWe8QF+Cmts8KsY2ATPLXE6SaWV3F3IazJl/NscwK/USEAv9TxaHaB588nY1zmpYfa0KfDY4rFXfIiFXFQ6D67g8PLPe4=
+	t=1781684299; cv=none; b=ckaV0vIXZPvhIA+mu/fPCLlcVXTC2Bu+O4aJ/+aWpfk5kzrHhLNnlCSWtiZL1G74i0cFlawqFkmf+B01XjP4yn9UsHR7+ZzRGZ465+wEtfNoZBdBMgPMtXndf/9PASyPL4JwRuu4/p1pUDugjBdOWot8VSDbFuHnaFUCmeIq/O0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781683278; c=relaxed/simple;
-	bh=/uzMDa/Qq+h3z+mWxCj74u9KaQuuNkmAuhmbHq8QMFQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TqLhQ2z80u4TdhqwFPR2sPlKA2+y3R37j3Z8jixgTOib6TtYGE0Rfkda1WanW+8OILhaCUztnCk0PFqePGfMDg+u7o4tdqsw+zPU3wl+YZeroijBvTCrO9Bzt7sBCKpVwrsZrEepyC8iHSgMrp4NF9seSEQmragXP5LyaT53TL4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MIhj4OO9; arc=none smtp.client-ip=209.85.208.44
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1781684299; c=relaxed/simple;
+	bh=M3nGlV25xlY/XCP50D0hp4GSrRFQVUIWFhrDelFZGW8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tVjdCDV6XL0b+T38L3K0CT4BKdNh0mrMt1nEy4QXxYaEle+IkMczr1osl+/rIs63d8+Jr+ULS0ihklBJHRfAzoBbV+7szHtnuDwPDrwSGyhUm5ZG1n7mS381aQjxriCOe0myumXAbXlg+JYzMr0lXBX7JTLxXrSoUU8mW4WrzxY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=CNeN5JzP; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=eIJON0xp; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=r34xocFn; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=FF7VjZEP; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MIhj4OO9"
-Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-6957f9ca440so264568a12.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 01:01:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781683264; x=1782288064; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=SSD+o5Il4q3N15GHNpu+Bn3w6lF4AaqNR4K4QWPriYo=;
-        b=MIhj4OO9jXtutz0acSiwlbCRMKJXNqVi6GY9VagYQBArS2qx6eRRcBdhf9Y1ZpOUBr
-         AzJYakjD6QnJmr4xBoXAKQGUbwcsNrYM4TTyvC5fxf3jMNbOobKv3Zsbr10iUYxf5zP+
-         TDtw6EW6ARF2sISKC5ksSPqakWRB8DH94Qc9Y8xjSZigmr1ewcoagdkxjrFSn8D9t3e1
-         qvKfCRGKo803MImW9Pom9hgrsvr+5wHuXtC8K1GlRuOD3CStmjmD8xd1EzOxR3j4bM0V
-         jXNXlVg7xl/wqQEpV9Lj4yEgJKwpQOI4JryuEBsrv9YmjQw5QZZ+uEvaqyEFNBnVzRxD
-         /vFw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781683264; x=1782288064;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=SSD+o5Il4q3N15GHNpu+Bn3w6lF4AaqNR4K4QWPriYo=;
-        b=NUHBCvVSHJCknvlmgBx7fxpjEhJgIMv6dc8Ju/b/oq1/zy/mc4gkuonZm6hbXValQ7
-         r9RspGQD1iOTyN7XIaCLfWMi3WsgWpi6l9NH3hNPKQN4857rwa0Fx+gkSu81dnw7KNAV
-         xfGFO0Fi3+aY3J6yBeTLvyXnSUv0PicxlPhz00+0Lr3KXbP+Nr5UoMdIvMTRmZsZqYVs
-         efBKWLsGBnh9qmHjyAt0af394Wn13xaoeQZy3TVtLNwSQNNqXXnj7Q+xnyar2d6nTuc0
-         h86lw9r3q1bGfu0gHErbOZvf9k6d8lDKsbRQLb23Cv7MGM+a0OPnivGvvwDTinZuuLF+
-         HgEg==
-X-Forwarded-Encrypted: i=1; AFNElJ+3G00eCraRcgrdWaHNbCxO87sgWCtXRyz4u/76tycnsbw5L3gV4eszevsINUW66A+r3dTEt+8PIJeYzg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw0vOzk8q/vfOtxdOfloXoHk/QCZ2A9BcajrjFuz3iHB2wQde4J
-	PmcN3s1qUCyND/9qVgO1aeCgDejzUHCez3arYA01CP7AbskELFD350sG
-X-Gm-Gg: AfdE7clUHxq6dAkWSj7aPOrq6LK9oR75/qxSgddRXkGC8Vl9B/BwsvvytcFcNSG2QnP
-	xHtu1b350+HeGU381qyOp41ggEtxIx/TWiaKgLw65P3nOepEKQsYbk/FsZA7iS8BGyJqrntWBiG
-	iNmYPS8h6b9H7eGRU7EL3SRh/9nT+Mv7hvGOdtziqU0O496hteNbj5r3H+9CzzOjmgf7sEdDaL4
-	lkawm/Z+01XjOseDJ1k8/3JrLiWIv9R0vAaXqSA5ciTnXzHeOalQ1xYPrn3EaGeeXP+exH8aBls
-	OsJEGQQWoBBv+D8yzPDrGl+D2VBPPdr++DdsvJendJY7S9oA5gCI3dvMfiN29ZvvssyUvZ6nLuS
-	R64oILpdS3OAo3bMVbqPTkD53+NH8+vG3vhC0Esw/qziF1vbHN6zzXYAfIBNRYV3wwbuiUHMusx
-	ZSfw==
-X-Received: by 2002:a17:907:9452:b0:bee:bcf6:6a22 with SMTP id a640c23a62f3a-c05a511eb50mr157102166b.44.1781683262372;
-        Wed, 17 Jun 2026 01:01:02 -0700 (PDT)
-Received: from xeon ([188.163.112.61])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bfdb058fa59sm755339766b.0.2026.06.17.01.01.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 17 Jun 2026 01:01:01 -0700 (PDT)
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-To: Lee Jones <lee@kernel.org>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Helge Deller <deller@gmx.de>,
-	Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Johan Hovold <johan@kernel.org>,
-	dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="CNeN5JzP";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="eIJON0xp";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="r34xocFn";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="FF7VjZEP"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 794E46B0B8;
+	Wed, 17 Jun 2026 08:18:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1781684296; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=2TtoswugBtWLTyZu9WCP46btm2WvVd85BjtaTUVZdgY=;
+	b=CNeN5JzPh0v6P/cW30YUfXl/HvXu5rsfvjpExaKprxEnfjlGvd+urTV7tTLAdah1UmqPJF
+	2sItDL2QbklQyS2ZB9s4z2aAAxBTGVaVbWKTiVaAXP/No+5p2pJCXpwGpo8vjfe7ICEQut
+	NY5cA9eprr7hwJ4fnfCZPfWqhQk8YXA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1781684296;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=2TtoswugBtWLTyZu9WCP46btm2WvVd85BjtaTUVZdgY=;
+	b=eIJON0xp0Wdu/R6Tzv4x6UhPHDtebj2fXMfPHaRf5fz/EQaYmbRBvfXCXmVx1kBeIfeTC1
+	6j89rOk/Tw4ZlNBA==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=r34xocFn;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=FF7VjZEP
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1781684295; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=2TtoswugBtWLTyZu9WCP46btm2WvVd85BjtaTUVZdgY=;
+	b=r34xocFnSGcBYTku1RSpXjkzP91gF8XReNLbf1hxfrkCnJdry1ETnKzYlqeRjwPuwhegb2
+	CC7k1p8wrKTdKo0bQGJ4i0BmW6zVvsvg6XcUoIjbiqqUeBkXnVm5I5NQdkHGwZ6HY1fQYw
+	3CnUwvKuuchxDTRZipk6RcVsWvMnanA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1781684295;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=2TtoswugBtWLTyZu9WCP46btm2WvVd85BjtaTUVZdgY=;
+	b=FF7VjZEPsP0A52Taitc3UsjslK4inCzndqGDW6f/wLswBZ4M7EfChEwAyG6WwgI5TWwcED
+	k+fLVIyVXMQNC1Cg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 473D9779A8;
+	Wed, 17 Jun 2026 08:18:15 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id LnguEEdYMmrJIQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 17 Jun 2026 08:18:15 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	sima@ffwll.ch,
+	airlied@gmail.com
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-iio@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH v5 14/14] video: leds: backlight: lm3533: Support getting LED sources from DT
-Date: Wed, 17 Jun 2026 11:00:31 +0300
-Message-ID: <20260617080031.99156-15-clamor95@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260617080031.99156-1-clamor95@gmail.com>
-References: <20260617080031.99156-1-clamor95@gmail.com>
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH] firmware: sysfb: Mark CONFIG_SYSFB_SIMPLEFB as deprecated
+Date: Wed, 17 Jun 2026 10:17:29 +0200
+Message-ID: <20260617081810.218168-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -92,201 +84,100 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Rspamd-Action: no action
+X-Spam-Level: 
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_TO(0.00)[redhat.com,ffwll.ch,gmail.com];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:email,suse.de:dkim,suse.de:mid];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com]
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: 794E46B0B8
+X-Spam-Score: -3.01
 
-Add Control Bank to HVLED/LVLED muxing support based on the led-sources
-defined in the device tree.
+Mark CONFIG_SYSFB_SIMPLEFB as deprecated. Enabling it allows to
+run simpledrm and simplefb on EFI/VESA framebuffers. Doing this
+is discouraged in favor of using efidrm and vesadrm.
 
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/leds/leds-lm3533.c          | 60 +++++++++++++++++++++++++++++
- drivers/video/backlight/lm3533_bl.c | 45 ++++++++++++++++++++++
- 2 files changed, 105 insertions(+)
+ drivers/firmware/Kconfig | 33 ++++++++++++---------------------
+ 1 file changed, 12 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/leds/leds-lm3533.c b/drivers/leds/leds-lm3533.c
-index ed810c23f30f..9e07953814fd 100644
---- a/drivers/leds/leds-lm3533.c
-+++ b/drivers/leds/leds-lm3533.c
-@@ -27,6 +27,11 @@
- #define LM3533_ALS_CHANNEL_LV_MIN	1
- #define LM3533_ALS_CHANNEL_LV_MAX	2
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index bbd2155d8483..b4e705abdc8f 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -184,32 +184,23 @@ config SYSFB
+ 	select SCREEN_INFO
  
-+#define LM3533_REG_OUTPUT_CONF1			0x10
-+#define   OUTPUT_CONF1_SHIFT			2
-+#define   OUTPUT_LVLED_MASK			0x3
-+#define LM3533_REG_OUTPUT_CONF2			0x11
-+#define   OUTPUT_CONF2_SHIFT			6
- #define LM3533_REG_CTRLBANK_BCONF_BASE		0x1b
- #define LM3533_REG_PATTERN_ENABLE		0x28
- #define LM3533_REG_PATTERN_LOW_TIME_BASE	0x71
-@@ -55,6 +60,9 @@ struct lm3533_led {
- 	u32 max_current;
- 	u32 pwm;
+ config SYSFB_SIMPLEFB
+-	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
++	bool "Mark VGA/VBE/EFI FB as generic system framebuffer (deprecated)"
+ 	depends on X86 || EFI
+ 	select SYSFB
+ 	help
+ 	  Firmwares often provide initial graphics framebuffers so the BIOS,
+ 	  bootloader or kernel can show basic video-output during boot for
+-	  user-guidance and debugging. Historically, x86 used the VESA BIOS
+-	  Extensions and EFI-framebuffers for this, which are mostly limited
+-	  to x86 BIOS or EFI systems.
+-	  This option, if enabled, marks VGA/VBE/EFI framebuffers as generic
+-	  framebuffers so the new generic system-framebuffer drivers can be
+-	  used instead. If the framebuffer is not compatible with the generic
+-	  modes, it is advertised as fallback platform framebuffer so legacy
+-	  drivers like efifb, vesafb and uvesafb can pick it up.
+-	  If this option is not selected, all system framebuffers are always
+-	  marked as fallback platform framebuffers as usual.
+-
+-	  Note: Legacy fbdev drivers, including vesafb, efifb, uvesafb, will
+-	  not be able to pick up generic system framebuffers if this option
+-	  is selected. You are highly encouraged to enable simplefb as
+-	  replacement if you select this option. simplefb can correctly deal
+-	  with generic system framebuffers. But you should still keep vesafb
+-	  and others enabled as fallback if a system framebuffer is
+-	  incompatible with simplefb.
+-
+-	  If unsure, say Y.
++	  user-guidance and debugging.
++
++	  This option, if enabled, marks VBE/EFI framebuffers as system
++	  framebuffers so the generic simpledrm driver can be used. If the
++	  framebuffer is not compatible with the generic modes, it is
++	  advertised as fallback platform framebuffer so regular drivers like
++	  efidrm, vesadrm can pick it up.
++
++	  This option is deprecated and will be removed in the near future. If
++	  unsure, say N and select efidrm, vesadrm instead. The dedicated DRM
++	  drivers provide the same functionality plus additional features.
  
-+	int num_leds;
-+	u32 leds[LM3533_LVCTRLBANK_MAX];
-+
- 	bool have_als;
- };
- 
-@@ -623,8 +631,36 @@ static const struct attribute_group *lm3533_led_attribute_groups[] = {
- 
- static int lm3533_led_setup(struct lm3533_led *led)
- {
-+	u32 output_cfg_shift = 0;
-+	u32 output_cfg_val = 0;
-+	u32 output_cfg_mask = 0;
- 	int ret;
- 
-+	if (led->num_leds) {
-+		for (int i = 0; i < led->num_leds; i++) {
-+			if (led->leds[i] >= LM3533_LVCTRLBANK_MAX)
-+				continue;
-+
-+			output_cfg_shift = led->leds[i] * 2;
-+			output_cfg_val |= led->id << output_cfg_shift;
-+			output_cfg_mask |= OUTPUT_LVLED_MASK << output_cfg_shift;
-+		}
-+
-+		/* LVLED1, LVLED2 and LVLED3 */
-+		ret = regmap_update_bits(led->regmap, LM3533_REG_OUTPUT_CONF1,
-+					 output_cfg_mask << OUTPUT_CONF1_SHIFT,
-+					 output_cfg_val << OUTPUT_CONF1_SHIFT);
-+		if (ret)
-+			return ret;
-+
-+		/* LVLED4 and LVLED5 */
-+		ret = regmap_update_bits(led->regmap, LM3533_REG_OUTPUT_CONF2,
-+					 output_cfg_mask >> OUTPUT_CONF2_SHIFT,
-+					 output_cfg_val >> OUTPUT_CONF2_SHIFT);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	ret = lm3533_ctrlbank_set_max_current(&led->cb, led->max_current);
- 	if (ret)
- 		return ret;
-@@ -699,6 +735,30 @@ static int lm3533_led_probe(struct platform_device *pdev)
- 
- 	device_property_read_u32(&pdev->dev, "ti,pwm-config-mask", &led->pwm);
- 
-+	/*
-+	 * If led-sources property is not set then either this Control Bank uses
-+	 * its default LVLED or is not linked to any LVLED at all.
-+	 */
-+	led->num_leds = device_property_count_u32(&pdev->dev, "led-sources");
-+	if (led->num_leds > LM3533_LVCTRLBANK_MAX) {
-+		dev_err(&pdev->dev, "num of LED sources exceeds max %d: %d\n",
-+			LM3533_LVCTRLBANK_MAX, led->num_leds);
-+		ret = -EINVAL;
-+		goto err_deregister;
-+	}
-+
-+	if (led->num_leds < 0)
-+		led->num_leds = 0;
-+
-+	if (led->num_leds > 0) {
-+		ret = device_property_read_u32_array(&pdev->dev, "led-sources",
-+						     led->leds, led->num_leds);
-+		if (ret) {
-+			dev_err(&pdev->dev, "failed to get led-sources\n");
-+			goto err_deregister;
-+		}
-+	}
-+
- 	ret = lm3533_led_setup(led);
- 	if (ret)
- 		goto err_deregister;
-diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
-index c99fc68cb669..b3e5b3042d34 100644
---- a/drivers/video/backlight/lm3533_bl.c
-+++ b/drivers/video/backlight/lm3533_bl.c
-@@ -7,6 +7,7 @@
-  * Author: Johan Hovold <jhovold@gmail.com>
-  */
- 
-+#include <linux/bits.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/mod_devicetable.h>
-@@ -22,6 +23,7 @@
- #define LM3533_HVCTRLBANK_COUNT		2
- #define LM3533_BL_MAX_BRIGHTNESS	255
- 
-+#define LM3533_REG_OUTPUT_CONF1		0x10
- #define LM3533_REG_CTRLBANK_AB_BCONF	0x1a
- #define   CTRLBANK_AB_BCONF_ALS(n)	BIT(2 * (n))
- #define   CTRLBANK_AB_BCONF_MODE(n)	BIT(2 * (n) + 1)
-@@ -36,6 +38,9 @@ struct lm3533_bl {
- 	u32 max_current;
- 	u32 pwm;
- 
-+	int num_leds;
-+	u32 led_strings[LM3533_HVCTRLBANK_COUNT];
-+
- 	bool have_als;
- 	bool linear;
- };
-@@ -237,6 +242,8 @@ static const struct attribute_group *lm3533_bl_attribute_groups[] = {
- static int lm3533_bl_setup(struct lm3533_bl *bl)
- {
- 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
-+	u32 output_cfg_val = 0;
-+	u32 output_cfg_mask = 0;
- 	int ret;
- 
- 	ret = regmap_assign_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
-@@ -244,6 +251,21 @@ static int lm3533_bl_setup(struct lm3533_bl *bl)
- 	if (ret)
- 		return ret;
- 
-+	if (bl->num_leds) {
-+		for (int i = 0; i < bl->num_leds; i++) {
-+			if (bl->led_strings[i] >= LM3533_HVCTRLBANK_COUNT)
-+				continue;
-+
-+			output_cfg_val |= ctrlbank << bl->led_strings[i];
-+			output_cfg_mask |= BIT(bl->led_strings[i]);
-+		}
-+
-+		ret = regmap_update_bits(bl->regmap, LM3533_REG_OUTPUT_CONF1,
-+					 output_cfg_mask, output_cfg_val);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	ret = lm3533_ctrlbank_set_max_current(&bl->cb, bl->max_current);
- 	if (ret)
- 		return ret;
-@@ -321,6 +343,29 @@ static int lm3533_bl_probe(struct platform_device *pdev)
- 
- 	device_property_read_u32(&pdev->dev, "ti,pwm-config-mask", &bl->pwm);
- 
-+	/*
-+	 * If led-sources property is not set then either this Control Bank uses
-+	 * its default HVLED or is not linked to any HVLED at all.
-+	 */
-+	bl->num_leds = device_property_count_u32(&pdev->dev, "led-sources");
-+	if (bl->num_leds > LM3533_HVCTRLBANK_COUNT) {
-+		dev_err(&pdev->dev, "num of LED sources %d exceeds max %d\n",
-+			bl->num_leds, LM3533_HVCTRLBANK_COUNT);
-+		return -EINVAL;
-+	}
-+
-+	if (bl->num_leds < 0)
-+		bl->num_leds = 0;
-+
-+	if (bl->num_leds > 0) {
-+		ret = device_property_read_u32_array(&pdev->dev, "led-sources",
-+						     bl->led_strings,
-+						     bl->num_leds);
-+		if (ret)
-+			return dev_err_probe(&pdev->dev, ret,
-+					     "failed to get led-sources\n");
-+	}
-+
- 	ret = lm3533_bl_setup(bl);
- 	if (ret)
- 		return ret;
+ config TH1520_AON_PROTOCOL
+ 	tristate "Always-On firmware protocol"
 -- 
-2.53.0
+2.54.0
 

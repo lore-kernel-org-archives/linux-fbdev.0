@@ -1,63 +1,63 @@
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com [209.85.218.43])
+Received: from mail-ed1-f44.google.com (mail-ed1-f44.google.com [209.85.208.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB4103CF21C
-	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 08:00:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 134EF3CE0B4
+	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 08:00:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781683261; cv=none; b=ZERDlGU040Z9wI1Lym0cAUFXeG+Sxj/kHdAJ/f2Rh53nDVPRJ9o72s5SA5g285Bl+yp8JuZHipuVNSFF75OfXGoEiix53h8UjVcC/WF4CKn1mEz00SHqWHrQS510jcQkhsrTqwfS2FST4DpD2EXdkFizILN0BDHibrXfjXWRGik=
+	t=1781683267; cv=none; b=uJIRJ+BM2vdkz7xHPUeeF3JXndu1XOqc9kvZupr6/jmxwlyoTV9qWb2SMpiq/4e7niuKBkRwifawCi4EJEtpkJ9onE9zJk9dB17YohkdazcQZN8IUiV4B7SmNLYCufsWFtG2p+0yYayMuHOqRqOc3Ut+sKjcozHO4SxMlSVI0/s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781683261; c=relaxed/simple;
-	bh=EErEa+xTvRrMlTfCICTBeucwWtahnLN9Dg/ExT+D1y8=;
+	s=arc-20240116; t=1781683267; c=relaxed/simple;
+	bh=4WjmiWfFTCp+1bBNDrcHv5gGqTRg8YPvmqnJ/PwH9+s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ITFJ73jSEP3xNuPVHr+ZrNatWI3JEkllqPBkSm7IQOWRzeZSvUfuiM/HeQg4vztyZ1dWQWunPb/GAhv1aLI6uIrokSTsnmC3RCEze0clFF+h5YQnpvvWdOY8ZhpuTDBRbTCU1bui4/6B99pQDm3q+r8aTks9/YtiWk/lNUguZkk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UQK9yjFt; arc=none smtp.client-ip=209.85.218.43
+	 MIME-Version; b=H4OnzdIhccSlsfuEmm9kpf7JpLogHU0Zg55zd7ERcpN+AO9TivxtPf1lkKL0o1ZVkOE9fb7L6xf6DqQ1evMfwRObf195H2EzGV1HbjpIdk9PUUOPObiJK0p3VCj8btfGcp56tavrbjfGTtpd7zxp1YNqwTHeA/pUPTRJ9XZP/mU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HVF+bSHq; arc=none smtp.client-ip=209.85.208.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UQK9yjFt"
-Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-bec429c2bb1so784992466b.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 01:00:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HVF+bSHq"
+Received: by mail-ed1-f44.google.com with SMTP id 4fb4d7f45d1cf-68d23396ed3so9231379a12.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 01:00:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781683251; x=1782288051; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1781683256; x=1782288056; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=0zcYkBqsgtm7crDvyj+FVJGVI8rwwbt6ayEuo6Ql52s=;
-        b=UQK9yjFt9W/l/gnodv7PROtIDTvHGJKgOXovy2Cy15yiDA6YO2lmeVtIL5lGz2h26j
-         YkGPTwFA9NeYqU5TWWS/8iTmZ4WbCSWWTeEvYBAYRG2OPh7yuvtEJ7A7vLobt+LoDttI
-         6MQbCmriupTGKgkRvOkvCz2DF0K/SKHRCmaL1WjkKUj1kklGXeS6SQUys5S0/ZUS0Nou
-         kbFpIHQsdMiV6qfUitY9/cBvIVLVRKnNWLr6mCjYa4sTDcjT7f8Rk8G+zhb1P0YlqbSD
-         peIct/+llBU1722YeW+RecV7siZ25vV0kaV3nRWXrg8NQGC7wom+cow1IYLOhAPNNQ9V
-         frLg==
+        bh=bDbkv4yENGcso8lbBuowMRR6EhhW3sM2nEWvZfEX0tI=;
+        b=HVF+bSHqNdQvwqLcn9tqAERPwc90kPjvY1ZlbO9x4CEynUEdYqSkotKSHBTysqh1xa
+         f0Nz9C1tt9TuXyQ0YZ13rtHlKkt2q23ZE22a0rO1zvJTB0ecXWc6xyp5tIu6Ju9YRBW3
+         4U+gjnfRkDhoYlipuhzNKy6NfC+UXWTaWKzhknJeV4Atb5dU8wHDWScavvsAzrZ05stY
+         F/SwjhQ+AX4yLCqOeHfW+ml3x+Lq8gz5WrV1eHpVV7iWuK2yn+nSwW2HrRGoj3XNT4pF
+         K0/ltZ+jBPHoG8OIpo3bYyIMmjVqezRifhdb5Q6pLRk74EOfwjw1NS4lmoogwi6+jkWS
+         88Zg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781683251; x=1782288051;
+        d=1e100.net; s=20251104; t=1781683256; x=1782288056;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=0zcYkBqsgtm7crDvyj+FVJGVI8rwwbt6ayEuo6Ql52s=;
-        b=DqwXJjisuCK6a3qAk+qgsy596x5mPpl84Mw48gQV/7qU8xH5euViGQCrNXg5pt5LYw
-         94Jub3CYtXu625gyVYogimO/9494oZimgSiOoB+u2Z5vIyV/THnvPNsK6iGnGYylDc/l
-         /vlrlacahkyfsQNPkBSRsQRrXhepJZKZ+WvMXdqK3PQZCWCQHPEFS2kRuxFV9QS8RfRr
-         jGplKHRyiZNKjxDmYrW+6u2veOAv61ohqiTuQWhXjJJUB3W1GKMXoEanSjosdf7zPIj8
-         K47gTqFAi/Y9L7bYMc2ZiHayCTqGm2NDmLWnbuFuUH/BEjTpNdFF28rPNTBvMYLLT9/v
-         o0xw==
-X-Forwarded-Encrypted: i=1; AFNElJ9oWuUwvuePUyAbtiF1OulB6zVGaJulfrEyFZcip3k5zWtISsGkjbK8wFIvDrdSDmy77cVrneL9scFfMg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywm6+L4rwzIC9Di2SkXgFFGQr/HdI4iDG42T3cIDrlOvPTNsN2P
-	4RKk6tpJtlXpeTutClxkvqd9Zb14SymmjDvnKUm9D6OIh5PoCwEOCXLOHVBF5vGW
-X-Gm-Gg: Acq92OHgrDr12b0JaSZVUQNYTDJG9UDDcE5A61DM1ccPaVCrNyoQiWdO7stXvx7ZES6
-	3b4soY/coMYYlgjXSLzh3fTGSXqNC3xSC/RyhLu2cA4WyKKtnKtUksw+xycYvraRj3jDvctC+zM
-	3kP/oT3TDG+Q+kq6WedbliWvO61ogR7B2IWqHckWaHPIOxhcLmHCDg7IxvqY53iFFHrywMb2yK3
-	lHBXynFzh9quG5a2E2rin0o8rxgQEHccVHVCrB0lfAyQemxHfFJnOLE9/Pa+XRlxfVEHyhM3N07
-	oofaoRSgYu179XP7nM/xNT06DzC63JFPBExe8FPxi2J6R9AAFsuvyXj4UMDMjgP4qF10BTiP+9E
-	u8uJYOkmcW0r0JFfd1Tgj+RuMpO/1GCU2ZBrxF8HK+rs6cVL50LK/sdAS7f8veW7oi8DKG0hyP9
-	SNdg==
-X-Received: by 2002:a17:906:9fca:b0:c03:b8c6:cc27 with SMTP id a640c23a62f3a-c05a6bded8bmr163827566b.24.1781683249238;
-        Wed, 17 Jun 2026 01:00:49 -0700 (PDT)
+        bh=bDbkv4yENGcso8lbBuowMRR6EhhW3sM2nEWvZfEX0tI=;
+        b=b7N2WYN0/BFbbSqr3x3wb1oJvM49HC23kkINi1g/iI1sk+/v8Z1iFkn601g5exG57w
+         xDm/+ABMZyRgD2dI8xj4vBcmm0PajW8Hy3ZOkQzGIBeRu5e238t6TJX9W/ghGv12YVWC
+         q6oSlfv/PEetzNrCmXjJNeOC2JZKCd0y0fSrmFdfzZgfxJvk1k9nRiodfq6KFY8VUIy8
+         tNvspcei0XtO4GDP+O5bLdqo0c0i5ldaKUERV1IfNUQUxH8BV+DuFhMAhguVmv4SBTUV
+         Xa5o4AyNrkJscET8cYL5gC7Gx8FCsEOXCzuhlS2RRBST/1nWoKLKOpeOzMsIZpnHDQLs
+         emKQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/stKRX2CUVCto/eJMF/9c7AP4zrgaInPyTQ4dI697/7ZElOBKPnF5uY6Y5U+dJOhx5jq/Lp0/asjwg3g==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxodcEzEMdQoaL40/Dy+n5Jw84my6XawgPpA67HROK+Rxb2uSLI
+	VfnGkNtK6FcA3pPlsnVQsPdatVyHE4n5tdxBA5EmFouGliIgTC6k8lAl
+X-Gm-Gg: Acq92OHxTSap1kWnx23tdE4JqJbbzcsH9RGVoZcz4VfOUX66doSLjag9NwUidr+arg+
+	NAt30sRHt6YJvPk44zsfBSsrpyfOOEEuqDqbJE8Qd+ntIdgTM/t9zjWXdukHCtKfWp4dO2A3hSJ
+	/C9xaWgvXQzgoFobRz8Douqwa5JL6g/Fethbxxz/Ukl3mEfUEixc0KgexD9DrUZyFuQ0v8SJ/f6
+	ZhU9+UhdCCfSofsrNBBloBdomwWQXG381aM34mdezHhE4zYioSNZCQWsqF+wtRLe4kpkIicb4a9
+	/3VBmm6rDGkw3FAoexsXIJ+eWMMPpiYMQZw4eCGGL5zacL3IV76yLynFjLO0Pc1kuc975I6tqm4
+	B43fA2Y6Iy4y3UvYSaOKRi8ySo29Huvw5fZ8H2G+X+IzmD5ae2DWPv48ms3B6lUX5h1X1j3f91h
+	stEQYEZFs0YvYu
+X-Received: by 2002:a17:907:94d6:b0:bec:b4e3:e930 with SMTP id a640c23a62f3a-c05a511f1ccmr158862466b.12.1781683255042;
+        Wed, 17 Jun 2026 01:00:55 -0700 (PDT)
 Received: from xeon ([188.163.112.61])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bfdb058fa59sm755339766b.0.2026.06.17.01.00.47
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-bfdb058fa59sm755339766b.0.2026.06.17.01.00.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 17 Jun 2026 01:00:48 -0700 (PDT)
+        Wed, 17 Jun 2026 01:00:54 -0700 (PDT)
 From: Svyatoslav Ryhel <clamor95@gmail.com>
 To: Lee Jones <lee@kernel.org>,
 	Daniel Thompson <danielt@kernel.org>,
@@ -79,9 +79,9 @@ Cc: Johan Hovold <johan@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	linux-iio@vger.kernel.org,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH v5 05/14] iio: light: lm3533-als: Remove redundant pdata helpers
-Date: Wed, 17 Jun 2026 11:00:22 +0300
-Message-ID: <20260617080031.99156-6-clamor95@gmail.com>
+Subject: [PATCH v5 09/14] mfd: lm3533: Add support for VIN power supply
+Date: Wed, 17 Jun 2026 11:00:26 +0300
+Message-ID: <20260617080031.99156-10-clamor95@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260617080031.99156-1-clamor95@gmail.com>
 References: <20260617080031.99156-1-clamor95@gmail.com>
@@ -93,91 +93,96 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The lm3533_als_set_input_mode() and lm3533_als_set_resistor() functions
-are used only in lm3533_als_setup(). Incorporate their code into
-lm3533_als_setup() directly to simplify driver readability.
+Add support for 2.7V-5.5V VIN power supply.
 
 Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
 ---
- drivers/iio/light/lm3533-als.c | 56 ++++++++++------------------------
- 1 file changed, 16 insertions(+), 40 deletions(-)
+ drivers/mfd/lm3533-core.c  | 23 +++++++++++++++++++++--
+ include/linux/mfd/lm3533.h |  2 ++
+ 2 files changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm3533-als.c
-index a9af8e2b965f..69bac1b202f1 100644
---- a/drivers/iio/light/lm3533-als.c
-+++ b/drivers/iio/light/lm3533-als.c
-@@ -708,55 +708,31 @@ static const struct attribute_group lm3533_als_attribute_group = {
- 	.attrs = lm3533_als_attributes
- };
- 
--static int lm3533_als_set_input_mode(struct lm3533_als *als, bool pwm_mode)
-+static int lm3533_als_setup(struct lm3533_als *als,
-+			    const struct lm3533_als_platform_data *pdata)
- {
-+	struct device *dev = &als->pdev->dev;
- 	int ret;
- 
- 	ret = regmap_assign_bits(als->regmap, LM3533_REG_ALS_CONF,
--				 LM3533_ALS_INPUT_MODE_MASK, pwm_mode);
--	if (ret) {
--		dev_err(&als->pdev->dev, "failed to set input mode %d\n",
--								pwm_mode);
--		return ret;
--	}
--
--	return 0;
--}
-+				 LM3533_ALS_INPUT_MODE_MASK, pdata->pwm_mode);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to set input mode %d\n",
-+				     pdata->pwm_mode);
- 
--static int lm3533_als_set_resistor(struct lm3533_als *als, u8 val)
--{
--	int ret;
-+	/* Bail out when in PWM-mode */
-+	if (pdata->pwm_mode)
-+		return 0;
- 
--	if (val < LM3533_ALS_RESISTOR_MIN || val > LM3533_ALS_RESISTOR_MAX) {
--		dev_err(&als->pdev->dev, "invalid resistor value\n");
--		return -EINVAL;
--	}
-+	if (pdata->r_select < LM3533_ALS_RESISTOR_MIN ||
-+	    pdata->r_select > LM3533_ALS_RESISTOR_MAX)
-+		return dev_err_probe(dev, -EINVAL,
-+				     "invalid resistor value\n");
- 
- 	ret = regmap_write(als->regmap, LM3533_REG_ALS_RESISTOR_SELECT,
--			   val);
--	if (ret) {
--		dev_err(&als->pdev->dev, "failed to set resistor\n");
--		return ret;
--	}
--
--	return 0;
--}
--
--static int lm3533_als_setup(struct lm3533_als *als,
--			    const struct lm3533_als_platform_data *pdata)
--{
--	int ret;
--
--	ret = lm3533_als_set_input_mode(als, pdata->pwm_mode);
-+			   pdata->r_select);
- 	if (ret)
--		return ret;
--
--	/* ALS input is always high impedance in PWM-mode. */
--	if (!pdata->pwm_mode) {
--		ret = lm3533_als_set_resistor(als, pdata->r_select);
--		if (ret)
--			return ret;
--	}
-+		return dev_err_probe(dev, ret, "failed to set resistor\n");
- 
- 	return 0;
+diff --git a/drivers/mfd/lm3533-core.c b/drivers/mfd/lm3533-core.c
+index a5aa7da9668b..4b5d94e9ed27 100644
+--- a/drivers/mfd/lm3533-core.c
++++ b/drivers/mfd/lm3533-core.c
+@@ -17,6 +17,7 @@
+ #include <linux/mod_devicetable.h>
+ #include <linux/property.h>
+ #include <linux/regmap.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/seq_file.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
+@@ -113,14 +114,25 @@ static int lm3533_set_lvled_config(struct lm3533 *lm3533, u8 lvled, u8 led)
+ 	return ret;
  }
+ 
+-static void lm3533_enable(struct lm3533 *lm3533)
++static int lm3533_enable(struct lm3533 *lm3533)
+ {
++	int ret;
++
++	ret = regulator_enable(lm3533->vin_supply);
++	if (ret) {
++		dev_err(lm3533->dev, "failed to enable vin power supply\n");
++		return ret;
++	}
++
+ 	gpiod_set_value(lm3533->hwen, 1);
++
++	return 0;
+ }
+ 
+ static void lm3533_disable(struct lm3533 *lm3533)
+ {
+ 	gpiod_set_value(lm3533->hwen, 0);
++	regulator_disable(lm3533->vin_supply);
+ }
+ 
+ enum lm3533_attribute_type {
+@@ -333,7 +345,9 @@ static int lm3533_device_init(struct lm3533 *lm3533)
+ 		}
+ 	}
+ 
+-	lm3533_enable(lm3533);
++	ret = lm3533_enable(lm3533);
++	if (ret)
++		return ret;
+ 
+ 	ret = regmap_update_bits(lm3533->regmap, LM3533_REG_BOOST_PWM,
+ 				 LM3533_BOOST_FREQ_MASK,
+@@ -447,6 +461,11 @@ static int lm3533_i2c_probe(struct i2c_client *i2c)
+ 		return dev_err_probe(lm3533->dev, PTR_ERR(lm3533->hwen),
+ 				     "failed to get HWEN GPIO\n");
+ 
++	lm3533->vin_supply = devm_regulator_get(lm3533->dev, "vin");
++	if (IS_ERR(lm3533->vin_supply))
++		return dev_err_probe(lm3533->dev, PTR_ERR(lm3533->vin_supply),
++				     "failed to get vin-supply\n");
++
+ 	device_property_read_u32(lm3533->dev, "ti,boost-ovp-microvolt",
+ 				 &lm3533->boost_ovp);
+ 
+diff --git a/include/linux/mfd/lm3533.h b/include/linux/mfd/lm3533.h
+index 5710e88da45d..8f72dd41e8f0 100644
+--- a/include/linux/mfd/lm3533.h
++++ b/include/linux/mfd/lm3533.h
+@@ -22,6 +22,7 @@
+ struct device;
+ struct gpio_desc;
+ struct regmap;
++struct regulator;
+ 
+ struct lm3533 {
+ 	struct device *dev;
+@@ -29,6 +30,7 @@ struct lm3533 {
+ 	struct regmap *regmap;
+ 
+ 	struct gpio_desc *hwen;
++	struct regulator *vin_supply;
+ 
+ 	u32 boost_ovp;
+ 	u32 boost_freq;
 -- 
 2.53.0
 

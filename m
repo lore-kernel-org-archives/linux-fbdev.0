@@ -1,127 +1,101 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9231E30674D;
-	Wed, 17 Jun 2026 10:32:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B417C478E36
+	for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 16:45:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781692379; cv=none; b=WKtDJ18efILzbum0kWYlnUOrbzHwB1o9EFUw5iXrwb//2u/zfNm1KHtKpU1CnmoiF1bj0RwXeO3Gi4qwHQ1Wdm+oPwpbYbzqk05r1JDYKh+NZbLfcfcvkI9OqGhBX0AUVsLQgwbEe5rUkNGAb2Nx72sJBf01EOOaPS/oehl+rDI=
+	t=1781714736; cv=none; b=NBW9kt+XyV5ESbKASmmenNkVX6eHh3BGErnuQULZskrLwtMh1ZU5SE+38v51d8muSgfACVOnwWTVp8LH+ias9XRSV4A3hPEY9gud3x874o/lQEJK37AvPtBHrXKTO0KSi0s4aP4ORIZ2el3zWWQByy8mWDEN/MAqyADQlijJz/8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781692379; c=relaxed/simple;
-	bh=X3winq5qm2HIT6UC0/yxmrF0jTAu33Gl4aE30OAa1oI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Cx1nVbjJ4QcRWGCGEdc3NBw7nwVV5ycwaUlBJo7N759M1PLbROwYxFdDBokp4xrPU9q/ED2ljiADzotaYGSxGwaCQuJOaH7QsC0AYVxVAfR4OhQKjbHpMEuJD/b5Wpr+7bXJfsKyovrB4hd0ESD1P/yIE6sSTcp3kBGNAWqk1Jo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=kAlEW2mZ; arc=none smtp.client-ip=198.175.65.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1781714736; c=relaxed/simple;
+	bh=bavFeLFEpqC4Yg1c8I7L8oQhFIGVzqkuA2wOFOlRsQc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NLBNxXtyG0rXYFHvp68kWpERBAXscgDE9XBYtyxqGXwmuuyhZki9O2fqyiRmCtuORFPJ6DaGfSHt6Qb1DqD0jKF2qdvMzMaiDS6+YGynzFn1zLjmRsd65kuapNl7hKW9ecTSDEPaYYm57DrfV7r4jO9jWwprlkOz18+XDdsp9HA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Zl7yPVeC; arc=none smtp.client-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="kAlEW2mZ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1781692377; x=1813228377;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=X3winq5qm2HIT6UC0/yxmrF0jTAu33Gl4aE30OAa1oI=;
-  b=kAlEW2mZ3uZngNOBMtaNvhBeyWkA7uhdlSO9KJL000T459Mmv8rJphOs
-   76D+hamhhVKLHIoWzEDkbwOzahCRV4UH1lCrVtOKpWI8WnFATq3M6t04E
-   s3XVML4tSvItwDI7cHgG/dwTXeKu4KKXrcjUblZk/gGZ1VK5DANfj/N4o
-   +zxN+MD962PFEEF9bcVVPkl7EmS9j0u5q4WroC+BG4fA9n2SxhCgYUoqz
-   IK3eH3jdhv38N8Yrm2CPRFCpyJYD2w3E6G/aQDFiDiQhor1aEm3RyzMbm
-   CUwyOY8oyCRqgJZ+tqSUziZ/OX7WZHNicSY6inVqZXd1Wx4mtk5KsSAFl
-   Q==;
-X-CSE-ConnectionGUID: VU2zsj0lQC2AxCYJ51w9Ww==
-X-CSE-MsgGUID: 29+8XFCgQCmEeh6slDi6mA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11819"; a="93594475"
-X-IronPort-AV: E=Sophos;i="6.24,209,1774335600"; 
-   d="scan'208";a="93594475"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jun 2026 03:32:57 -0700
-X-CSE-ConnectionGUID: leLgKuVYTtSbL+4Q82bKlQ==
-X-CSE-MsgGUID: Uko2CTWXRUGLJxZ5qEEMcA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,209,1774335600"; 
-   d="scan'208";a="247139272"
-Received: from fpallare-mobl4.ger.corp.intel.com (HELO localhost) ([10.245.245.69])
-  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jun 2026 03:32:53 -0700
-Date: Wed, 17 Jun 2026 13:32:50 +0300
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>,
-	Johan Hovold <johan@kernel.org>, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v5 02/14] mfd: lm3533: Remove driver specific regmap
- wrappers
-Message-ID: <ajJ30lHG5lEXri7I@ashevche-desk.local>
-References: <20260617080031.99156-1-clamor95@gmail.com>
- <20260617080031.99156-3-clamor95@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Zl7yPVeC"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4903d730b1fso76239745e9.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Jun 2026 09:45:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781714733; x=1782319533; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=A1zq+Wkffhwt6DPuMr/sNaZlD6xfxWLIc+V5gFViAHY=;
+        b=Zl7yPVeC9VUFdzLfGDh7Lh2+FP6cxeXmH7RIW32q8hKJaAXHH9WAxgHD0gr/lCHy6N
+         OQE0HyYvKecbh2ZSu/lqalbxdbe4Atc3jW+Cgu/UdLKXXMQ6dWowASXyf5mBhyH+qERw
+         onY7twZfrQ4KWEXnT7ZXVg+RMFb8qTX1CN7ZQNqeqCNdP+1Jc1Dmkd1ytz4AJppxcQe4
+         Aht8WpspE2TGkevINRtxPMoA9PnOho1NJ3+anLKl5wq4gsxY7PlZBqWiZjgsa8hLy9LW
+         NhpZcfx3OnrXFF7ltRuKlmyUvrckAKV27RsUWeQQwU4mjJEMjhrndSHtnYMEEk5CaUsM
+         oHuQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781714733; x=1782319533;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=A1zq+Wkffhwt6DPuMr/sNaZlD6xfxWLIc+V5gFViAHY=;
+        b=sB3BpA8ysWOfiwwBecS6HohlUHfmoSTSiT5YNGcZwDqplcle3UmaiX1dqFC1QAaJYq
+         3e+wcJpN+UZ+yyK6l7ft4AgxNsUSudCGeRUxEQediBizZPVGH/mU0kyBhuRXlGyURgn2
+         0e2qEbBHTiqBFk47KGnzoYld+S5lX8cdKUrHgFdPTSo+8UOeHOsjckTgfBcK7wico1Mh
+         2V/BjSrzViZBiUUc+XvGa5b7+hMKGdlAxCTLZDbpcST0hVzOgbFC3+0J8SryFyOD6GXw
+         OuOJJUI4Czo/4hmYupM2D19gpFgAAUJeSOUnO3pE8aXDHPAaLnlvh16uXzyefm8TzjMY
+         Mdtw==
+X-Forwarded-Encrypted: i=1; AFNElJ8cnmNOeHPYUQ0gRex/I0wA/wU6hdOCQtTvdtAId3BeBuyAmuS0QbExTYOkyMJVG+lUMyG6g3ifEbFzNw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yya33nOPI2KZG7Xbuf7xUdbaOrHafS8iX3z4l7xI6g4wZMcqOOi
+	yQLGkqve3dybpzb0g1rfqmIMNKQu6HLJiy2PV2Ec6lrvADuwRpVUSZCa
+X-Gm-Gg: Acq92OHXnszZq8JqjdNA9z9Eoh69JOD5E7N1DhMb1CjVnAjH3y7gyYHGwIN1WI6VKkI
+	Zy7ceqCL43W6UvOlzClQZeHsOij5OiwslyLXBiKWb3NPoeeFDy5O0a7WSLeav2VZNyy3+VV2z5B
+	jiozlOp/pFreXy4Dav++iXXDWAIOpLod5Bt1kyh2f4M5FHZWz0G9LVIDiQX3CGAhdHx08ZmKHgG
+	IC4FBQBrurLr4+rh6eNKiLo8DyKofVCfaoNKWp6yR7uj0UbVrhS8t424tJUioz8HfyITdrMkoz8
+	f8Dg7VESKhGNkypOS7KR96e41l7vSGxzUIgQKfu1Lc+LY0hYDcUQGEty4ruW5ujL+zLsczg4/y+
+	iwBpWAE9bTh80Ff4OvCq17xKdpgCjzKGqfqPH6lIk1hs8fd6SWbzxNsyf0Uj3Xh7zgI2Zb9bkn9
+	4tJ2nn9L1BCOazzoZKu0LwIU+eaTnnLWlQ3/ygW9EIUKo4F+xRopSstHmVJZaVtEtQWftU0/4or
+	LoPb0Y=
+X-Received: by 2002:a05:600c:c16a:b0:490:58ef:cea7 with SMTP id 5b1f17b1804b1-49238226b0amr3695935e9.22.1781714732879;
+        Wed, 17 Jun 2026 09:45:32 -0700 (PDT)
+Received: from [10.128.11.42] (195-23-151-163.net.novis.pt. [195.23.151.163])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4606f2b0c10sm54827640f8f.21.2026.06.17.09.45.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 17 Jun 2026 09:45:31 -0700 (PDT)
+Sender: Julian Braha <julian.braha@gmail.com>
+Message-ID: <7da7d892-3b3c-4f83-b3b0-93eafe14e15e@gmail.com>
+Date: Wed, 17 Jun 2026 17:45:30 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260617080031.99156-3-clamor95@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] firmware: sysfb: Mark CONFIG_SYSFB_SIMPLEFB as deprecated
+To: Thomas Zimmermann <tzimmermann@suse.de>, javierm@redhat.com,
+ sima@ffwll.ch, airlied@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260617081810.218168-1-tzimmermann@suse.de>
+Content-Language: en-US
+From: Julian Braha <julianbraha@gmail.com>
+In-Reply-To: <20260617081810.218168-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 17, 2026 at 11:00:19AM +0300, Svyatoslav Ryhel wrote:
-> Remove driver-specific regmap wrappers in favor of using regmap helpers
-> directly.
+Hi Thomas,
 
-OK, let's go with this variant.
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
+On 6/17/26 09:17, Thomas Zimmermann wrote:
+> Mark CONFIG_SYSFB_SIMPLEFB as deprecated. Enabling it allows to
 
-Some side notes below for the record.
+>  config SYSFB_SIMPLEFB
+> -	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
+> +	bool "Mark VGA/VBE/EFI FB as generic system framebuffer (deprecated)"
 
-...
+In v2, I think it also makes sense to add the 'transitional' attribute
+to the Kconfig entry to help phase it out.
 
->  	struct lm3533_led *led = to_lm3533_led(led_cdev);
->  	unsigned enable;
+Also see this patch message for an explanation of 'transitional':
+https://lore.kernel.org/all/20250923213422.1105654-2-kees@kernel.org/
 
-Oh, besides using the old way of declaring unsigned int, it most likely
-just needs to be kstrtobool().
-
->  	u8 reg;
-> -	u8 mask;
-> -	u8 val;
->  	int ret;
->  
->  	if (kstrtouint(buf, 0, &enable))
->  		return -EINVAL;
-
-We should unshadow error codes (it may return more than -EINVAL).
-
->  	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
-> -	mask = LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK;
->  
-> -	if (enable)
-> -		val = mask;
-> -	else
-> -		val = 0;
-> -
-
-...
-
-> -	if (kstrtou8(buf, 0, &val))
-> +	if (kstrtou32(buf, 0, &val))
->  		return -EINVAL;
-
-Like in the previous case we should unshadow error codes.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
+- Julian Braha
 

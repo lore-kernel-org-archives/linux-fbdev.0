@@ -1,188 +1,121 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from flow-b1-smtp.messagingengine.com (flow-b1-smtp.messagingengine.com [202.12.124.136])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B8FD3A8736
-	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jun 2026 07:21:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 793C2310763;
+	Thu, 18 Jun 2026 10:35:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.136
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781767268; cv=none; b=GLUQ88/xbysbnnJtRoiFNeFOtYrwguw8iWUm/YhZehWRScTJLUxW2RPIqYemdEqobRqnrgOD4CMqup3NWaH6aEUCb6cDtwDc75h5gsFmkkh8OVRC2+2pWOGOO6kMogxwNW4CwASUW/7stz5RjaTYJ/jDO6lsuOnohJ9ZPhBRM3Q=
+	t=1781778927; cv=none; b=Fy7093DjwhbjUqHSDWuKcYh9ZHOhWReU/PsxcSGTwgDNk1K7waEGdWBR5gMCb1dQI1mRV0ZKyZzRlTFY7Agea5lotiPZQv4OnVna8C+gh6gWerE/+N7di3mbP+zbLjHbbYe6V8+pVNN9kOCE8VczdO9q0DdSO9yb4w7F2RXXvbM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781767268; c=relaxed/simple;
-	bh=nmAvwoXoC+LM2DCI6VdozPb8YMqyeiALv1uLCf+ZrRw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FXXADFnjBJ7Rpt6dfn8sU9a5Jl4Ewh/HuJmSXhOvlYcb+0SD69TCsvwlykSUuPEdTFAiH2kszSYuuXFxRgq1aG4UCS/hUQS7oNZshLTjJwd3qRKRF/BRN22GeMmfa37YUEJXiqxeI9yp8W9MeJIs3hVq6X8TAAeY38L99M0bIW8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tlM+QPup; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mgTl60Bw; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tlM+QPup; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mgTl60Bw; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1781778927; c=relaxed/simple;
+	bh=0xfIjTO0RWsLfP/KT2Av7niNAq3U56p3TGwTb9L2U7c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sVAhaaQOXGRK9t31qhwP4sHcK6HYPWtZZ0hQYTpf8NGyFcEm6cJmIiNZR1TU+tkwoSana9Y4xzaVxqGLOVtCzxA2EgjDk9PUHM6ZLuIVPAP8vYqlQcxavxKEhGt4t09jGFkoBlbFkor+8Ck5q8bqnvwrO1K/JTL9uC2lCkQMCz0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com; spf=pass smtp.mailfrom=kroah.com; dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b=giUpVldr; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=DV9Hxf1t; arc=none smtp.client-ip=202.12.124.136
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kroah.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tlM+QPup";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mgTl60Bw";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tlM+QPup";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mgTl60Bw"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 5760275EE2;
-	Thu, 18 Jun 2026 07:21:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1781767265; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=SCi9F1ns4cl45Fk4TqHGu6Ax28aQgPnFbqHpo5+blms=;
-	b=tlM+QPup870Bkz9uXcx9hTH0abiMImWVq0iB4snZBqneEb6BFpei6edtnxgXVUw+t0IiKE
-	320ubZYx7DhC/kq1+JaWEHbYidurl6+wS4U23Q/t2bRRZuCHfl5aHEmYWynyTMhQL9l/Pe
-	rxQpn0KeG3Y8qLFWfP2qNHbwZv6uCpw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1781767265;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=SCi9F1ns4cl45Fk4TqHGu6Ax28aQgPnFbqHpo5+blms=;
-	b=mgTl60BwbVEoavRFIpUqCXNtKhQP3j5JvDmluvyjb5dbRKZ6YY805U01CBYkQgYU6n8Tt4
-	DxVaSMisoKLDD9CQ==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1781767265; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=SCi9F1ns4cl45Fk4TqHGu6Ax28aQgPnFbqHpo5+blms=;
-	b=tlM+QPup870Bkz9uXcx9hTH0abiMImWVq0iB4snZBqneEb6BFpei6edtnxgXVUw+t0IiKE
-	320ubZYx7DhC/kq1+JaWEHbYidurl6+wS4U23Q/t2bRRZuCHfl5aHEmYWynyTMhQL9l/Pe
-	rxQpn0KeG3Y8qLFWfP2qNHbwZv6uCpw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1781767265;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=SCi9F1ns4cl45Fk4TqHGu6Ax28aQgPnFbqHpo5+blms=;
-	b=mgTl60BwbVEoavRFIpUqCXNtKhQP3j5JvDmluvyjb5dbRKZ6YY805U01CBYkQgYU6n8Tt4
-	DxVaSMisoKLDD9CQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1C48C779A8;
-	Thu, 18 Jun 2026 07:21:05 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id RJp+BWGcM2o+awAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 18 Jun 2026 07:21:05 +0000
-Message-ID: <1ec067ee-a8ab-4249-95df-280eba42fef4@suse.de>
-Date: Thu, 18 Jun 2026 09:21:04 +0200
+	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="giUpVldr";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="DV9Hxf1t"
+Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
+	by mailflow.stl.internal (Postfix) with ESMTP id 295211300A85;
+	Thu, 18 Jun 2026 06:35:24 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-06.internal (MEProxy); Thu, 18 Jun 2026 06:35:24 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:subject
+	:subject:to:to; s=fm1; t=1781778923; x=1781786123; bh=c+JFVYRbkx
+	6rCQdKVL0JqSwq3chaKNZzvhRn0PAwsOw=; b=giUpVldr5njeIFaRPz2fkJfBjT
+	GhKbRWCiVZKb4jS8dX4t2KoJ9VQX7slJhG+hwWwM4a5/PWEcYmHfsfuMCXw0oxBW
+	tmrYE9MmuJSaf/ZiDWKMo8WuD7ESHJLSLbAx4AlSPIqutIsDH5+K6UIjKCCgPyjD
+	5q1DaE+UYnWko3qz8eD96eXhMdEcwpP5HDtMFQQ2OY8kEr7KkPo82oRbm5USmTue
+	2C+oFj6auO1JiNPjeoAItiBc1mhXO43IIelpS3Czt16ytHBaeBcxOynCWjepa8Q8
+	lcFlP5aeYHB92gqfkeECduY/JRYe+/lYpI/dqNM5sLcflpdYN+8AdX58tQSA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
+	1781778923; x=1781786123; bh=c+JFVYRbkx6rCQdKVL0JqSwq3chaKNZzvhR
+	n0PAwsOw=; b=DV9Hxf1t9L2Aywf1VjFPD4vnhnRw9AWIBtfWpXtbTCy8kSto64S
+	TIT2HabyGQ0H27FI6IGLNX2gDz1a8/ynkMWgkqCOHc1x7xwXxQKP1ir96ssL/3Mr
+	Wk5AG6GSA82SPlfksMeUrkuWbpTnL/akRh4gQqMAcyGszYahvFiiQG1ZaL4xJkEE
+	o5FPKjsf7lm+yrpqvniV/VnRBnau0x3yU3US+8PBlv6F0gl946OF2THWGgNlxn0c
+	ongIlAghgq1nLanj//cWto3TKttcxim6EXE4MDrH+sras/Qw8f5Krul5Bq/Z5exN
+	SJOv0pVhZvRnTGlM/nMBVgP+uH4S6J+QJpA==
+X-ME-Sender: <xms:68kzat-I270Q1pj-MjYOL21Vj4OeBqz1-9AR2ZRrUskb8KfkKhkeGQ>
+    <xme:68kzatnvCH8slU1aCoEuzXfBv1BnZIFV0MdbUeG7rCwovH-ZHq67nYEZw5tCU6I_R
+    3dAqsxbmuOvMxonJXAr1gipV4ai_sZOnrXYs2TeB0rUF8ttyg>
+X-ME-Received: <xmr:68kzamj8anE5ePz182Yz8jn61bkh5I3sRPOuLk3U9D6CswgngBXj4y5scoMfBT7nXuXrES0z5qp4VPfPkSpPFaZ7Xw>
+X-ME-Proxy-Cause: dmFkZTEOAOj02d/ZKUn9vAh5IMWX/a/uWTsZrk95sDIEQElrszD8yGRvVRq+MI8mGf8LjP
+    RQVAV4njIE8vYUg0goHwoGnl1iWxq8UGXbDqqjrag/z22f0/NhXpEN6hcQjlDAy9rpmdwq
+    Zr4XhfoQV5UBarJI95cR+MDwdvIlZYvLx/eI5R2J+F8RJio5GUOKD3Pf32WygkS2LK9naU
+    VT5X+URE547nGLXQVfokPS0MKuxGGSt+bF3NPPw3TdMwn9OwZNPBkNzoSam2VcrZhZDp79
+    pP6QHUG+Wt9kjx7pEc4SaEPdDTYuonhGN44aBOEqoW9U4OEjNop98QT0CgsFAGlh+EdaBU
+    aznMH0YR6o4dS6lzTzQcx/EY1/dFQ+nbru5vUO9GIHrFmwT9LKxuZtBlugvIyGblR0VnB9
+    83A7yQ6njTnM1nUg9zNNAodmzzySA7Umh9Kmzu/vOmHQM6mQ3bMZUrrvCYV8cGoH8r8n81
+    NSzfkBZnopQiCr3LbRnglYY/uPaVVBJdolSFmorJbDosmG/g/NJcRTZ85xYvq5Ilh8ADFc
+    DgiW94m7dD9oIgL28h73pIj4FYWydQvTRuHDsEChOnvYfS4zvXHzJ+xUKAhFhY5NMDGA6n
+    srVAAjZuQIr5n5249kEjmd/sYUDeCkCt7lf0V+V6vuJC4c6U91y9C/o2wuvQ
+X-ME-Proxy: <xmx:68kzalbSpZznxiMMdkYpxB_L_TLpY49c3pYnbAPw6d1IG9gDwhgpPQ>
+    <xmx:68kzaqGLR6TjdFE4ZmSPcUebQhfcVoUbxkXLsD7IMLwCosZsFux1VQ>
+    <xmx:68kzaiawsFDcMdl35khrpckGfKR4BUdG1gxvWn2M4YWHbq_RFDJ2FA>
+    <xmx:68kzar1FT3olSv0W8VVzCgp7R3w2K515k-rH261mx7vlhIWfiuyFqQ>
+    <xmx:68kzanBDuY2CPyhevtmRL9HcntqUlK9ytbnx3BpDRbwP-kG8INNXDES9>
+Feedback-ID: i787e41f1:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
+ 18 Jun 2026 06:35:22 -0400 (EDT)
+Date: Thu, 18 Jun 2026 12:35:36 +0200
+From: Greg KH <greg@kroah.com>
+To: rdhan@smu.edu.sg
+Cc: Andrew Morton <akpm@osdl.org>, Antonino Daplas <adaplas@pol.net>,
+	stable@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] fbcon: Avoid OOB font access if console rotation fails
+Message-ID: <2026061826-yield-reemerge-7fe9@gregkh>
+References: <20260618-prep-base-v5-15-209-v1-1-cfcf596dca7a@smu.edu.sg>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] firmware: sysfb: Mark CONFIG_SYSFB_SIMPLEFB as deprecated
-To: Julian Braha <julianbraha@gmail.com>, javierm@redhat.com, sima@ffwll.ch,
- airlied@gmail.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260617081810.218168-1-tzimmermann@suse.de>
- <7da7d892-3b3c-4f83-b3b0-93eafe14e15e@gmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <7da7d892-3b3c-4f83-b3b0-93eafe14e15e@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Spam-Score: -4.30
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FREEMAIL_TO(0.00)[gmail.com,redhat.com,ffwll.ch];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,suse.de:mid,imap1.dmz-prg2.suse.org:helo]
-X-Spam-Level: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260618-prep-base-v5-15-209-v1-1-cfcf596dca7a@smu.edu.sg>
 
-Hi
+On Thu, Jun 18, 2026 at 02:30:17PM +0800, HAN Ruidong via B4 Relay wrote:
+> From: HAN Ruidong <rdhan@smu.edu.sg>
+> 
+> [ Upstream commit e4ef723d8975a2694cc90733a6b888a5e2841842 ]
+> 
+> Clear the font buffer if the reallocation during console rotation fails
+> in fbcon_rotate_font(). The putcs implementations for the rotated buffer
+> will return early in this case. See [1] for an example.
+> 
+> Currently, fbcon_rotate_font() keeps the old buffer, which is too small
+> for the rotated font. Printing to the rotated console with a high-enough
+> character code will overflow the font buffer.
+> 
+> v2:
+> - fix typos in commit message
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Fixes: 6cc50e1c5b57 ("[PATCH] fbcon: Console Rotation - Add support to rotate font bitmap")
+> Cc: stable@vger.kernel.org # v2.6.15+
+> Link: https://elixir.bootlin.com/linux/v6.19/source/drivers/video/fbdev/core/fbcon_ccw.c#L144 # [1]
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> [ renamed `par` to `ops` to match the v5.15 local pointer name ]
+> Signed-off-by: HAN Ruidong <rdhan@smu.edu.sg>
+> ---
+>  drivers/video/fbdev/core/fbcon_rotate.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
-Am 17.06.26 um 18:45 schrieb Julian Braha:
-> Hi Thomas,
->
-> On 6/17/26 09:17, Thomas Zimmermann wrote:
->> Mark CONFIG_SYSFB_SIMPLEFB as deprecated. Enabling it allows to
->>   config SYSFB_SIMPLEFB
->> -	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
->> +	bool "Mark VGA/VBE/EFI FB as generic system framebuffer (deprecated)"
-> In v2, I think it also makes sense to add the 'transitional' attribute
-> to the Kconfig entry to help phase it out.
->
-> Also see this patch message for an explanation of 'transitional':
-> https://lore.kernel.org/all/20250923213422.1105654-2-kees@kernel.org/
+What stable tree(s) is this for?
 
-Thanks for this pointer; I wasn't aware of this feature. This will be 
-really useful to not accidentally leave users without display output.
+thanks,
 
-I've played with the option, but it does not work are purely as shown in 
-the example. I think it's because EFIDRM and VESADRM are existing 
-options. So they already have a value.
-
-What I did instead was to add new internal config options. They depend 
-on the now-transitional SYSFB_SIMPLEFB and select the correct drivers. 
-Once SYSFB_SIMPLEFB goes away, these options can go away as well.
-
-Best regards
-Thomas
-
->
-> - Julian Braha
->
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
-
+greg k-h

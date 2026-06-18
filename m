@@ -1,125 +1,188 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD1DC29405;
-	Thu, 18 Jun 2026 06:30:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B8FD3A8736
+	for <linux-fbdev@vger.kernel.org>; Thu, 18 Jun 2026 07:21:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781764224; cv=none; b=dtpUI0T46pjfHLANN63OMi3sxLzOFxSHA1QMYgt29YlrZC9Ca9xIC7jrTu5uy7PXD7eyggkNProwxdQGJeqfI1PwaAdas66Dv71dZmrIZCbEG+vXVoz1OevNXIBEAKoW/FDvpTm3UfVS6PjqOXBEwdm2k7rCXq3xNge9+PbJElw=
+	t=1781767268; cv=none; b=GLUQ88/xbysbnnJtRoiFNeFOtYrwguw8iWUm/YhZehWRScTJLUxW2RPIqYemdEqobRqnrgOD4CMqup3NWaH6aEUCb6cDtwDc75h5gsFmkkh8OVRC2+2pWOGOO6kMogxwNW4CwASUW/7stz5RjaTYJ/jDO6lsuOnohJ9ZPhBRM3Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781764224; c=relaxed/simple;
-	bh=2AXvxyAImZLWIbVapZ+mESkLjtssGF0r7mGVvapmQw0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=oBS11QBCG2HdBRDCc6AZv3fnE3kIH6luMqA4CyLQReQ/hLcgPY55mf4WrTtedewz9Vb8NPMOsaTDFLXKJ/y/nsP/muxRUYrVq8MsDL8EaPRXSvYB4glv5+QBwS+yci7e4ZbPsGeFz81eirNJffCquClofrduait5Y7IQgFJRE2w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=WUCXSPv5; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1781767268; c=relaxed/simple;
+	bh=nmAvwoXoC+LM2DCI6VdozPb8YMqyeiALv1uLCf+ZrRw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FXXADFnjBJ7Rpt6dfn8sU9a5Jl4Ewh/HuJmSXhOvlYcb+0SD69TCsvwlykSUuPEdTFAiH2kszSYuuXFxRgq1aG4UCS/hUQS7oNZshLTjJwd3qRKRF/BRN22GeMmfa37YUEJXiqxeI9yp8W9MeJIs3hVq6X8TAAeY38L99M0bIW8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tlM+QPup; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mgTl60Bw; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=tlM+QPup; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=mgTl60Bw; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="WUCXSPv5"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 67F2FC2BCB0;
-	Thu, 18 Jun 2026 06:30:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1781764224;
-	bh=2AXvxyAImZLWIbVapZ+mESkLjtssGF0r7mGVvapmQw0=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=WUCXSPv5UeomtCGpLlYI8T3qjhW7qjNCJdnOjN22uCjxQcbGGVZh/B8CmwsczZ6o3
-	 1mtIy4fks5ksQblIOiWiSNfitF4FBjQWlvtfhQCrnlDdBKRxewhtXDQIT76sbnofkQ
-	 XjiX3qCFM0O8KoKFTyvuLcNU93hAVKZYcMJF91zLuUTusu+GTKqER6oxuRUVxcTSlP
-	 9IlMGhXYPm2Nlp3Dmng5+8mFDqMTyrsbpJf1QwIoFmsQd3czZFCMRShTAwON7yLgN+
-	 Lbyj2pDw6+XXf7ZcOnlb8NBrBCTS4jfvRPVYzIV6QjNIwPmRuxtSJvtEdD3fSHwC4T
-	 +B0BbYdhnMoDA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 488B2CD98ED;
-	Thu, 18 Jun 2026 06:30:24 +0000 (UTC)
-From: HAN Ruidong via B4 Relay <devnull+rdhan.smu.edu.sg@kernel.org>
-Date: Thu, 18 Jun 2026 14:30:17 +0800
-Subject: [PATCH] fbcon: Avoid OOB font access if console rotation fails
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tlM+QPup";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mgTl60Bw";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="tlM+QPup";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="mgTl60Bw"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 5760275EE2;
+	Thu, 18 Jun 2026 07:21:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1781767265; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SCi9F1ns4cl45Fk4TqHGu6Ax28aQgPnFbqHpo5+blms=;
+	b=tlM+QPup870Bkz9uXcx9hTH0abiMImWVq0iB4snZBqneEb6BFpei6edtnxgXVUw+t0IiKE
+	320ubZYx7DhC/kq1+JaWEHbYidurl6+wS4U23Q/t2bRRZuCHfl5aHEmYWynyTMhQL9l/Pe
+	rxQpn0KeG3Y8qLFWfP2qNHbwZv6uCpw=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1781767265;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SCi9F1ns4cl45Fk4TqHGu6Ax28aQgPnFbqHpo5+blms=;
+	b=mgTl60BwbVEoavRFIpUqCXNtKhQP3j5JvDmluvyjb5dbRKZ6YY805U01CBYkQgYU6n8Tt4
+	DxVaSMisoKLDD9CQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1781767265; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SCi9F1ns4cl45Fk4TqHGu6Ax28aQgPnFbqHpo5+blms=;
+	b=tlM+QPup870Bkz9uXcx9hTH0abiMImWVq0iB4snZBqneEb6BFpei6edtnxgXVUw+t0IiKE
+	320ubZYx7DhC/kq1+JaWEHbYidurl6+wS4U23Q/t2bRRZuCHfl5aHEmYWynyTMhQL9l/Pe
+	rxQpn0KeG3Y8qLFWfP2qNHbwZv6uCpw=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1781767265;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SCi9F1ns4cl45Fk4TqHGu6Ax28aQgPnFbqHpo5+blms=;
+	b=mgTl60BwbVEoavRFIpUqCXNtKhQP3j5JvDmluvyjb5dbRKZ6YY805U01CBYkQgYU6n8Tt4
+	DxVaSMisoKLDD9CQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1C48C779A8;
+	Thu, 18 Jun 2026 07:21:05 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id RJp+BWGcM2o+awAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 18 Jun 2026 07:21:05 +0000
+Message-ID: <1ec067ee-a8ab-4249-95df-280eba42fef4@suse.de>
+Date: Thu, 18 Jun 2026 09:21:04 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260618-prep-base-v5-15-209-v1-1-cfcf596dca7a@smu.edu.sg>
-X-B4-Tracking: v=1; b=H4sIAHiQM2oC/yXMQQqDMBCF4avIrB1IUhONVyldaBx1urCSaUNBv
- LtRlx+8928gFJkE2mKDSImFP0uGLgsIc7dMhDxkg1HGKacbXCOt2HdCmCxqi0Z5tN4NVR184x4
- 15GfejPy/qs/Xbfn1bwrfMwX7fgDVFM0GdwAAAA==
-X-Change-ID: 20260618-prep-base-v5-15-209-596d47c98637
-To: Andrew Morton <akpm@osdl.org>, Antonino Daplas <adaplas@pol.net>, 
- stable@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, 
- Helge Deller <deller@gmx.de>, HAN Ruidong <rdhan@smu.edu.sg>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1989; i=rdhan@smu.edu.sg;
- h=from:subject:message-id;
- bh=pCtdGjG+ab6vAzMlyNVdJgcjHkRUp/+84n9btP5SAHM=;
- b=owGbwMvMwCG27fhf/yDP2WsYT6slMWQZT6g7of1/Y8mMJOa/t+R4pJPbfD78X7/VX4Gj9HhHv
- eMCDcvtHaUsDGIcDLJiiiw5Nbps8Wedr5ze/qsHZg4rE8gQBi5OAZhIZyLD/2Q31iC5+8qZF8+7
- WsVdqoh9pN8wW2Buv6dIsdUKmfaHHxgZTjWy+4b8/nKk7d0Fk6Z1YeImp9z3HLTb5RTucunk5wg
- mFgA=
-X-Developer-Key: i=rdhan@smu.edu.sg; a=openpgp;
- fpr=6C7C2D065FCD43D4CBB7FA8CB6C7FD4F52499BAC
-X-Endpoint-Received: by B4 Relay for rdhan@smu.edu.sg/default with
- auth_id=829
-X-Original-From: HAN Ruidong <rdhan@smu.edu.sg>
-Reply-To: rdhan@smu.edu.sg
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] firmware: sysfb: Mark CONFIG_SYSFB_SIMPLEFB as deprecated
+To: Julian Braha <julianbraha@gmail.com>, javierm@redhat.com, sima@ffwll.ch,
+ airlied@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20260617081810.218168-1-tzimmermann@suse.de>
+ <7da7d892-3b3c-4f83-b3b0-93eafe14e15e@gmail.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <7da7d892-3b3c-4f83-b3b0-93eafe14e15e@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spam-Score: -4.30
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_TO(0.00)[gmail.com,redhat.com,ffwll.ch];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,suse.de:mid,imap1.dmz-prg2.suse.org:helo]
+X-Spam-Level: 
 
-From: HAN Ruidong <rdhan@smu.edu.sg>
+Hi
 
-[ Upstream commit e4ef723d8975a2694cc90733a6b888a5e2841842 ]
+Am 17.06.26 um 18:45 schrieb Julian Braha:
+> Hi Thomas,
+>
+> On 6/17/26 09:17, Thomas Zimmermann wrote:
+>> Mark CONFIG_SYSFB_SIMPLEFB as deprecated. Enabling it allows to
+>>   config SYSFB_SIMPLEFB
+>> -	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
+>> +	bool "Mark VGA/VBE/EFI FB as generic system framebuffer (deprecated)"
+> In v2, I think it also makes sense to add the 'transitional' attribute
+> to the Kconfig entry to help phase it out.
+>
+> Also see this patch message for an explanation of 'transitional':
+> https://lore.kernel.org/all/20250923213422.1105654-2-kees@kernel.org/
 
-Clear the font buffer if the reallocation during console rotation fails
-in fbcon_rotate_font(). The putcs implementations for the rotated buffer
-will return early in this case. See [1] for an example.
+Thanks for this pointer; I wasn't aware of this feature. This will be 
+really useful to not accidentally leave users without display output.
 
-Currently, fbcon_rotate_font() keeps the old buffer, which is too small
-for the rotated font. Printing to the rotated console with a high-enough
-character code will overflow the font buffer.
+I've played with the option, but it does not work are purely as shown in 
+the example. I think it's because EFIDRM and VESADRM are existing 
+options. So they already have a value.
 
-v2:
-- fix typos in commit message
+What I did instead was to add new internal config options. They depend 
+on the now-transitional SYSFB_SIMPLEFB and select the correct drivers. 
+Once SYSFB_SIMPLEFB goes away, these options can go away as well.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: 6cc50e1c5b57 ("[PATCH] fbcon: Console Rotation - Add support to rotate font bitmap")
-Cc: stable@vger.kernel.org # v2.6.15+
-Link: https://elixir.bootlin.com/linux/v6.19/source/drivers/video/fbdev/core/fbcon_ccw.c#L144 # [1]
-Signed-off-by: Helge Deller <deller@gmx.de>
-[ renamed `par` to `ops` to match the v5.15 local pointer name ]
-Signed-off-by: HAN Ruidong <rdhan@smu.edu.sg>
----
- drivers/video/fbdev/core/fbcon_rotate.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Best regards
+Thomas
 
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
-index ec3c883400f7..4a06e71ae443 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.c
-+++ b/drivers/video/fbdev/core/fbcon_rotate.c
-@@ -46,6 +46,10 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- 		info->fbops->fb_sync(info);
- 
- 	if (ops->fd_size < d_cellsize * len) {
-+		kfree(ops->fontbuffer);
-+		ops->fontbuffer = NULL;
-+		ops->fd_size = 0;
-+
- 		dst = kmalloc_array(len, d_cellsize, GFP_KERNEL);
- 
- 		if (dst == NULL) {
-@@ -54,7 +58,6 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- 		}
- 
- 		ops->fd_size = d_cellsize * len;
--		kfree(ops->fontbuffer);
- 		ops->fontbuffer = dst;
- 	}
- 
+>
+> - Julian Braha
+>
 
----
-base-commit: dc027a595035729e290c0adffae363a653acde7c
-change-id: 20260618-prep-base-v5-15-209-596d47c98637
-
-Best regards,
---  
-HAN Ruidong <rdhan@smu.edu.sg>
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
 
 

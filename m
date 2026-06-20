@@ -1,121 +1,152 @@
-Received: from flow-b1-smtp.messagingengine.com (flow-b1-smtp.messagingengine.com [202.12.124.136])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 793C2310763;
-	Thu, 18 Jun 2026 10:35:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.136
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781778927; cv=none; b=Fy7093DjwhbjUqHSDWuKcYh9ZHOhWReU/PsxcSGTwgDNk1K7waEGdWBR5gMCb1dQI1mRV0ZKyZzRlTFY7Agea5lotiPZQv4OnVna8C+gh6gWerE/+N7di3mbP+zbLjHbbYe6V8+pVNN9kOCE8VczdO9q0DdSO9yb4w7F2RXXvbM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781778927; c=relaxed/simple;
-	bh=0xfIjTO0RWsLfP/KT2Av7niNAq3U56p3TGwTb9L2U7c=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sVAhaaQOXGRK9t31qhwP4sHcK6HYPWtZZ0hQYTpf8NGyFcEm6cJmIiNZR1TU+tkwoSana9Y4xzaVxqGLOVtCzxA2EgjDk9PUHM6ZLuIVPAP8vYqlQcxavxKEhGt4t09jGFkoBlbFkor+8Ck5q8bqnvwrO1K/JTL9uC2lCkQMCz0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com; spf=pass smtp.mailfrom=kroah.com; dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b=giUpVldr; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=DV9Hxf1t; arc=none smtp.client-ip=202.12.124.136
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kroah.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6D6034A77D
+	for <linux-fbdev@vger.kernel.org>; Sat, 20 Jun 2026 07:43:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.53
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1781941428; cv=pass; b=I1kF7nEomZ81MvKNVGOEc04iS/oVn6A8ssv02D/bO0Sd5mjdUF5XBk4SnN60F+xxv0GLRDJjgF7Jf3h05+sZlgprN+sApeXSgOP4efiSlkOKTdCnaP/+sM6wcw1CeRdscxun40QKMIzw0oanOPvAs+B507JoBY3yMiP8iVROHtY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1781941428; c=relaxed/simple;
+	bh=DzV/Bz091e8nL5SyiOpv/VkEA+1Mi8KwLdzoRNONtSw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=dZMXrid2u0IXcLkTlLTF68c2Yj9+cKbju9Ql1/f940cbpmnjOjZOACtYhuZYI78H/HojCgAJYgnXunym/p7YYEWRoixOfovHjbkZvEZ++gzWFhTCePZzqCVgQVknRdIRCpqJuFB5J+Lt5owBAAEueZdd7r7yIEt52OJOEsLYedY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EzaQuBFy; arc=pass smtp.client-ip=209.85.218.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="giUpVldr";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="DV9Hxf1t"
-Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailflow.stl.internal (Postfix) with ESMTP id 295211300A85;
-	Thu, 18 Jun 2026 06:35:24 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-06.internal (MEProxy); Thu, 18 Jun 2026 06:35:24 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:subject
-	:subject:to:to; s=fm1; t=1781778923; x=1781786123; bh=c+JFVYRbkx
-	6rCQdKVL0JqSwq3chaKNZzvhRn0PAwsOw=; b=giUpVldr5njeIFaRPz2fkJfBjT
-	GhKbRWCiVZKb4jS8dX4t2KoJ9VQX7slJhG+hwWwM4a5/PWEcYmHfsfuMCXw0oxBW
-	tmrYE9MmuJSaf/ZiDWKMo8WuD7ESHJLSLbAx4AlSPIqutIsDH5+K6UIjKCCgPyjD
-	5q1DaE+UYnWko3qz8eD96eXhMdEcwpP5HDtMFQQ2OY8kEr7KkPo82oRbm5USmTue
-	2C+oFj6auO1JiNPjeoAItiBc1mhXO43IIelpS3Czt16ytHBaeBcxOynCWjepa8Q8
-	lcFlP5aeYHB92gqfkeECduY/JRYe+/lYpI/dqNM5sLcflpdYN+8AdX58tQSA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
-	1781778923; x=1781786123; bh=c+JFVYRbkx6rCQdKVL0JqSwq3chaKNZzvhR
-	n0PAwsOw=; b=DV9Hxf1t9L2Aywf1VjFPD4vnhnRw9AWIBtfWpXtbTCy8kSto64S
-	TIT2HabyGQ0H27FI6IGLNX2gDz1a8/ynkMWgkqCOHc1x7xwXxQKP1ir96ssL/3Mr
-	Wk5AG6GSA82SPlfksMeUrkuWbpTnL/akRh4gQqMAcyGszYahvFiiQG1ZaL4xJkEE
-	o5FPKjsf7lm+yrpqvniV/VnRBnau0x3yU3US+8PBlv6F0gl946OF2THWGgNlxn0c
-	ongIlAghgq1nLanj//cWto3TKttcxim6EXE4MDrH+sras/Qw8f5Krul5Bq/Z5exN
-	SJOv0pVhZvRnTGlM/nMBVgP+uH4S6J+QJpA==
-X-ME-Sender: <xms:68kzat-I270Q1pj-MjYOL21Vj4OeBqz1-9AR2ZRrUskb8KfkKhkeGQ>
-    <xme:68kzatnvCH8slU1aCoEuzXfBv1BnZIFV0MdbUeG7rCwovH-ZHq67nYEZw5tCU6I_R
-    3dAqsxbmuOvMxonJXAr1gipV4ai_sZOnrXYs2TeB0rUF8ttyg>
-X-ME-Received: <xmr:68kzamj8anE5ePz182Yz8jn61bkh5I3sRPOuLk3U9D6CswgngBXj4y5scoMfBT7nXuXrES0z5qp4VPfPkSpPFaZ7Xw>
-X-ME-Proxy-Cause: dmFkZTEOAOj02d/ZKUn9vAh5IMWX/a/uWTsZrk95sDIEQElrszD8yGRvVRq+MI8mGf8LjP
-    RQVAV4njIE8vYUg0goHwoGnl1iWxq8UGXbDqqjrag/z22f0/NhXpEN6hcQjlDAy9rpmdwq
-    Zr4XhfoQV5UBarJI95cR+MDwdvIlZYvLx/eI5R2J+F8RJio5GUOKD3Pf32WygkS2LK9naU
-    VT5X+URE547nGLXQVfokPS0MKuxGGSt+bF3NPPw3TdMwn9OwZNPBkNzoSam2VcrZhZDp79
-    pP6QHUG+Wt9kjx7pEc4SaEPdDTYuonhGN44aBOEqoW9U4OEjNop98QT0CgsFAGlh+EdaBU
-    aznMH0YR6o4dS6lzTzQcx/EY1/dFQ+nbru5vUO9GIHrFmwT9LKxuZtBlugvIyGblR0VnB9
-    83A7yQ6njTnM1nUg9zNNAodmzzySA7Umh9Kmzu/vOmHQM6mQ3bMZUrrvCYV8cGoH8r8n81
-    NSzfkBZnopQiCr3LbRnglYY/uPaVVBJdolSFmorJbDosmG/g/NJcRTZ85xYvq5Ilh8ADFc
-    DgiW94m7dD9oIgL28h73pIj4FYWydQvTRuHDsEChOnvYfS4zvXHzJ+xUKAhFhY5NMDGA6n
-    srVAAjZuQIr5n5249kEjmd/sYUDeCkCt7lf0V+V6vuJC4c6U91y9C/o2wuvQ
-X-ME-Proxy: <xmx:68kzalbSpZznxiMMdkYpxB_L_TLpY49c3pYnbAPw6d1IG9gDwhgpPQ>
-    <xmx:68kzaqGLR6TjdFE4ZmSPcUebQhfcVoUbxkXLsD7IMLwCosZsFux1VQ>
-    <xmx:68kzaiawsFDcMdl35khrpckGfKR4BUdG1gxvWn2M4YWHbq_RFDJ2FA>
-    <xmx:68kzar1FT3olSv0W8VVzCgp7R3w2K515k-rH261mx7vlhIWfiuyFqQ>
-    <xmx:68kzanBDuY2CPyhevtmRL9HcntqUlK9ytbnx3BpDRbwP-kG8INNXDES9>
-Feedback-ID: i787e41f1:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 18 Jun 2026 06:35:22 -0400 (EDT)
-Date: Thu, 18 Jun 2026 12:35:36 +0200
-From: Greg KH <greg@kroah.com>
-To: rdhan@smu.edu.sg
-Cc: Andrew Morton <akpm@osdl.org>, Antonino Daplas <adaplas@pol.net>,
-	stable@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH] fbcon: Avoid OOB font access if console rotation fails
-Message-ID: <2026061826-yield-reemerge-7fe9@gregkh>
-References: <20260618-prep-base-v5-15-209-v1-1-cfcf596dca7a@smu.edu.sg>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EzaQuBFy"
+Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-c0840dc2859so233778766b.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 20 Jun 2026 00:43:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1781941425; cv=none;
+        d=google.com; s=arc-20240605;
+        b=ZZ3WfFuH1AFRCYThsxo1ZPPnLF4Ml/IloWH/dT+fVGwyidLwZwdBZz8j4M1Id0Dh7I
+         2aKIBhSueKk7Np2jaXWxdYefR6qrib14Ux4R/Rtg4UOkFlTaRroRrkxFF+zDBryOigDf
+         vkGdbuwC7CNFOMoRCJGa0QVRNfEpYIfyuoMOavYHItYSA9j3Q6RQy4P5d4+DbqovELOy
+         1f5FLFJdrF8g1Uc/LncW5D9MRvhCfSHRnUy2/8Lw8j/dGc09+eeznkvEOsb0rHTXALAX
+         6XGevEncDE1YL4W+H909633fjf6GZVZArDpSz9qY/NmZK+1IoaKVf286Ap096/Tq/9nG
+         d2IQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=RwJUzJkFOp4tAmfXA6KJ4MrErpiHytjtZyfzG3vrPY0=;
+        fh=Bq+vQpijbWfygwhlqB1DHkPXm5LquFA27ITKY4T/BAU=;
+        b=AtV0bWjLHiKPyTzf0KgCcXSU8tBJEsqr4oHy+Q2zXrcPYdI2kD/wtQ9dqFpPXcfZOi
+         xs2C2uN8SCcwwRQIfC47doNE2nwjZ6/XS2J5w80mtIDPN5n95Zsk8bhCS4GBHP/s8xNF
+         yQ6wUyq6/pELUiqqKfQbqlhUuuWlxXCBEN+xKhm3LJGkj5kfb/xxTVagHic7J+0h+ZCH
+         sV6oI8/0UWM5I1tq6WOgmi4drVsiXmNM9R8Z4GjVdWXleOWE4OiaSJZBOBXttSrls4vr
+         b1yMqk8MSV8d5Yss7J/urpkfmRgCCExP35Hr1tn9KaRUP6Ac2COuf9xEbvlCEwo2QH3t
+         rHqQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1781941425; x=1782546225; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=RwJUzJkFOp4tAmfXA6KJ4MrErpiHytjtZyfzG3vrPY0=;
+        b=EzaQuBFyshUSpUYE+dcI4d24qfugPMpTsorIB7TBCNlFSLBv7AvwVycCZTyw1cATP1
+         ZUBLMbxGMeYrVMvtr9z7Y3oCRQgY0r6gVIBrse0QelhGwdkeYDPQkVWOcvwaZ8Wr+yu3
+         vI8lJGAkBRY+aRIJZwqRGWRO8Ju7ikXotzr+MKlOF2XknPe11PkeoA0UTgIWMfNPeGm+
+         1WVc4VHvSNJXQ4mMAxOhGpbPA9n4Mx9YU1l6E7bEoPk0DtUOlonuKkYTfC5Kx4oyRfKh
+         EEArI7kGGx0OnsATcqNyvzyYEovIz/VjPUyOaAnBPJI2UGLWUagacQ6szGFQkxZTUC4y
+         SOjw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781941425; x=1782546225;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=RwJUzJkFOp4tAmfXA6KJ4MrErpiHytjtZyfzG3vrPY0=;
+        b=Gd0L70avzJzZMkZnsqPE5YWkRFEu7bP9ss90C/8woNx8/dISLrrJZYeuwYKI9TKkR2
+         uoY1RCnlKqjhtqqgxxxtDPvawx+UHPWjqwwu/jRpbnGpfmKWG3K2iCesias86VxwI5KT
+         IqNSpSWU4Bv7hz7q3+QkvGhOC/1REL/DSgIkcRNT1lYBUXQ1RM4BAUAmeIVDrfzq0VhZ
+         VTUYWDL3Uwa2ZrrlV6fzxESyNX/pvuXX2mojG4o1g51d42a1RywFB+3Tr5DOJoffbBjt
+         LGza5NtaRVTyyWW11H1/kKbGFVvNJ0b9UzGv7SFZx6OWADouf1o6Cxu10phZMs03KCxP
+         0OxQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+09KpbItt2oGb+xD1i3GDLTSlUPx/TaQfSIl8K4aCl3grDfyih7TP9gTK0W5o/8NZ1Hd/gqNJt+s/OnA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwMBYDTlf0sYgIxAQ/X/Fi++miRMGgpP7HPLQtXfuLw6t/+bWDG
+	56WcXhqA9ufiLkPXGI5qsTVUfd2PSa7CPL0vCC94XfAJI2LxnucsJuVX3qBKrONZD2CxW4MyP4e
+	nHPmwnOcUgb0CTiveUbNG1qEV4m8RSTM=
+X-Gm-Gg: AfdE7ck3iYhdr7gzNLwWcwtqjuaI3cSk3n11qq6glM/RhB8AXuN1Yz8z3cE+MlWg5IZ
+	yPgyMkHrpNgIwy5oURWf2FqrgF3UGLDMQWy72lHvGP1uwZzYV8d/TZtOFXKDEr/0iq+RK6aAIVj
+	MunRjtTwvq+xrNR94pvM9c7/O0TVUI94KZqG+pGUa/kUa2WCFM3pZIzVMOc5a9g5/7uhiwOHlcT
+	y3+4Gcw5QKASk1QznMjsdPbUaSsqt2UZ8JHr4WU+Ox0SYWQ3O3qMb+BG0/JybiYLojWe8X1xw==
+X-Received: by 2002:a17:907:1c84:b0:c08:695:8819 with SMTP id
+ a640c23a62f3a-c094ab06232mr347376166b.0.1781941424883; Sat, 20 Jun 2026
+ 00:43:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260618-prep-base-v5-15-209-v1-1-cfcf596dca7a@smu.edu.sg>
+References: <20260529111927.14138-1-neharora23587@gmail.com>
+ <CAOWJOptv1JcOGcEt39HVy7LkpAsvzbw9yj64kJG+X5J=VbWrMA@mail.gmail.com>
+ <CAOWJOps9RBNAGsPFsBCbzFkEUN1=75YvwmqJX6RdQBbt1C6W-Q@mail.gmail.com>
+ <ai-j96dVwtPMERVM@stanley.mountain> <CAOWJOpt2CW=-zybOrPr2pwfPVQFcd+j3YoNP+rMyAar_2kJtbw@mail.gmail.com>
+In-Reply-To: <CAOWJOpt2CW=-zybOrPr2pwfPVQFcd+j3YoNP+rMyAar_2kJtbw@mail.gmail.com>
+From: neha arora <neharora23587@gmail.com>
+Date: Sat, 20 Jun 2026 13:13:33 +0530
+X-Gm-Features: AVVi8CcREoyjcHXowOc7Bxi7M8cmts4kYSlT8u6k6tHdF-PG1aMmVvHCxP8n4jA
+Message-ID: <CAOWJOpuObcnFMW_abhZVjLbkUSyiGMbgQwB6FPekgSU5Bn6eFA@mail.gmail.com>
+Subject: Re: [PATCH v3] staging: sm750fb: rename pv_reg to io_base
+To: Dan Carpenter <error27@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, 
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 18, 2026 at 02:30:17PM +0800, HAN Ruidong via B4 Relay wrote:
-> From: HAN Ruidong <rdhan@smu.edu.sg>
-> 
-> [ Upstream commit e4ef723d8975a2694cc90733a6b888a5e2841842 ]
-> 
-> Clear the font buffer if the reallocation during console rotation fails
-> in fbcon_rotate_font(). The putcs implementations for the rotated buffer
-> will return early in this case. See [1] for an example.
-> 
-> Currently, fbcon_rotate_font() keeps the old buffer, which is too small
-> for the rotated font. Printing to the rotated console with a high-enough
-> character code will overflow the font buffer.
-> 
-> v2:
-> - fix typos in commit message
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Fixes: 6cc50e1c5b57 ("[PATCH] fbcon: Console Rotation - Add support to rotate font bitmap")
-> Cc: stable@vger.kernel.org # v2.6.15+
-> Link: https://elixir.bootlin.com/linux/v6.19/source/drivers/video/fbdev/core/fbcon_ccw.c#L144 # [1]
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> [ renamed `par` to `ops` to match the v5.15 local pointer name ]
-> Signed-off-by: HAN Ruidong <rdhan@smu.edu.sg>
-> ---
->  drivers/video/fbdev/core/fbcon_rotate.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+Hi everyone,
 
-What stable tree(s) is this for?
+After further investigation, and feedback from maintainers, I have
+concluded that porting DRM to the SM750, will cause a huge performance
+regression as DRM has no interface for 2D acceleration, making the CPU
+do graphics, which is slow, the only way to expose 2D acceleration is
+custom IOCTLs, which is not preferable.
 
-thanks,
+So, it is best to keep using the fbdev stack for the SM750.
 
-greg k-h
+Regards,
+Onish
+
+On Wed, Jun 17, 2026 at 8:30=E2=80=AFAM neha arora <neharora23587@gmail.com=
+> wrote:
+>
+> Hi Dan,
+>
+> Please disregard my previous patch submission.
+>
+> I am currently working on a complete rewrite of the sm750fb staging
+> driver into a modern, KMS-based DRM driver (sm750drm). Because this
+> is a complete architectural overhaul, I am building it outside the
+> staging tree structure.
+>
+> Once the sm750drm driver framework is stable and ready for a RFC
+> (Request for Comments), I will submit the entire new subsystem patch seri=
+es
+> directly to the dri-devel mailing list and CC you.
+>
+> Thank you for your review and your time!
+>
+> Regards,
+> Onish
+>
+>
+> On Mon, Jun 15, 2026 at 12:34=E2=80=AFPM Dan Carpenter <error27@gmail.com=
+> wrote:
+> >
+> > On Sun, Jun 14, 2026 at 12:45:05AM +0530, neha arora wrote:
+> > > Hi everyone,
+> > >
+> > > Just following up on this patch to ensure it didn't get lost in the q=
+ueue.
+> > > Please let me know if any changes or a V4 are needed.
+> > >
+> >
+> > It doesn't apply to linux-next.  Did you work against the lastest
+> > devel-next tree?
+> >
+> > regards,
+> > dan carpenter
+> >

@@ -1,83 +1,109 @@
-Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
+Received: from mail-pg1-f181.google.com (mail-pg1-f181.google.com [209.85.215.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3671615E97
-	for <linux-fbdev@vger.kernel.org>; Sat, 20 Jun 2026 12:32:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.198
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EED7817B505
+	for <linux-fbdev@vger.kernel.org>; Sun, 21 Jun 2026 04:44:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781958760; cv=none; b=bwm1hHbSg1PNeDBzxZyOjuOC7nk7lpJVf7nrwR5Y3IfGkMfaQ05ZcJJ/PP2hqhhp/zKF3rbgsFy+QQMnEZbDqFbhVNNw5bVQG5I765S9IBzdCjZ7fxl5oF0c2hdSmMzx5vMyKs+o1tUOkhzMehNI/WDAxe2l/xH7VmLRwQ3SG7c=
+	t=1782017061; cv=none; b=NxqmeCxjskE74mkOzwSznUMCTuj6Wqe64GeEADuKNJXSJQAOW91NCYlejYN9YSWUHSBJRkhQCVrRbtig2Zwk1G1J1qGgonFatwilOBQem3oRAuLGzAAaxWKn9CTXmvve89dVHls/DspmwKEGchg1Hw/4235JJdNb31Ozvm30kyQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781958760; c=relaxed/simple;
-	bh=ACbZp9bZQnvW1VM7JiUbibRjlcUwrPplAGNOgQT+xwI=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=FpXusrwayOPDQdSMA5OKeEDsxrDFBfB+DzvMOK9ZJG1D1H2dvmZ9ABzdcvUkZRZCJReztGVYVbr3ZYe2jHv1yHhqFQs1uDfznK/S0jTjdeKP085v6L+hov8v3xPWxM4xKeKXwed5Ind7BuzDybB765pT6/UE4i4XeGsaaaP1+rA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.198
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-48b60638021so545528b6e.1
-        for <linux-fbdev@vger.kernel.org>; Sat, 20 Jun 2026 05:32:39 -0700 (PDT)
+	s=arc-20240116; t=1782017061; c=relaxed/simple;
+	bh=7nGutUcq2VrKigcc39HyZQ+8PAOqGMQFi4USpUy1Gyk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=cGjGck4NYvWy+emsgEVKmuO/KKq8MSFY69KhoybAgc9AjgbHtEcofbdb2+zJHBk+lzE0jJjrVJDDeTRO3k9lNgnUkgFhaId7eLRIEXW6H3IMjajhK6bR1m0NGMemC9O17KfXhXtkb5q28+Kw6LJ3K2zJ3eQjXRMqf/I2HU27KSQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QaNVqP+r; arc=none smtp.client-ip=209.85.215.181
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QaNVqP+r"
+Received: by mail-pg1-f181.google.com with SMTP id 41be03b00d2f7-c89636920a3so1101934a12.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 20 Jun 2026 21:44:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782017059; x=1782621859; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=JfmyrTP4wLvqMTAPFh7dYzDX+Rx+a8MkxKB88LU4IMY=;
+        b=QaNVqP+rN7Nv0u/bNZZguHyX27BHJvzb38R3zIk6J7haPBHkSWBMASQYl2dhjrfyNT
+         AYVxGAtsW61O7JApLaIJyLxV/kYovW3gXX2BKVLOn9jVYDLzUwKBooxN79iqZteqAuQF
+         d3yOMjctvXjMYNXcFyzID8kRyL1CmxLcImb/JIH/x/mjslSNFSZnm2Z035OLnee9CR8y
+         eJYKI7S5rzWGQ5rMHPEpiImpMDC5nARo2fhO+QyHNhRjcTUHjxZpHaM2VVCZ7rB3dOH3
+         2NKiIYaI12kthTHf8wzAQAAf+usph+mE0Un20DaZ08WeFSGxGrGXn1MbTPtdRZDLV3KD
+         oF/g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781958758; x=1782563558;
-        h=to:from:subject:message-id:date:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=bSDyNQhONyaGcj2p3z2sF0BPIBl1KdxlWijRwtEeTDk=;
-        b=MIPZJNKQa/Nzb6rwSCEWZOcQqjwr30Dr6LRFPPq5qGTy11ko4b2t42mUzxe6tOMYxo
-         CDOS+HOuMn4Y195iPMD4H1Of1IZ6w3ZGxDjNRruhL1oSq6HskOzJWXX5uK7XxhG9/x7m
-         DW9KtzRqN9jES+dbD1RdxyZL3MTu/PkjAoWjWHHvhn8lZGUfYMce6we1Bzwwn75JZtal
-         wYmaDtIe4Kp9Aq6fEsatM3fEdA1EUvUQ2a26ZgJTEUM93hXlrR0GiX9LJ8QH2yLVrAUq
-         KTtajbEE254v9D37s+IR0ClrnlENAsxMxFUgOmmyRsw871RRt7by8XtTvzk/4BslwHBm
-         7beA==
-X-Forwarded-Encrypted: i=1; AFNElJ8gmBa+lVB6OwA7Z36fSNMGLsKWuiffbd9lYtlChZpJ/nIlESMdnp4VqLmcHna2/jdcySnDm0o2Wshn3Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz5w8CUZYz6N80Ds1Tq2i4F2Yl83FXGFzxCTXrLY5SmLQeAhT+Q
-	fKqS6fw/uJnJisnCfNIjrGry/HQodr9DRrieRY9zPFOntp0g2QpAbQFufx+3tFvQKrlFpWKKqQF
-	hzWE/Bx2j0AXtiTYJipb1jqQ7VhFNI8UnZXEBbDecVjMkO040Vp4LEgwttts=
+        d=1e100.net; s=20251104; t=1782017059; x=1782621859;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=JfmyrTP4wLvqMTAPFh7dYzDX+Rx+a8MkxKB88LU4IMY=;
+        b=hvsIITX7iccyRVfYCaJsW2m/93bT7Nz9qU15aOJCjHznIlvetbR2jXPvpbjAXo0UN2
+         3jvZ7ZtSkeQqFI6dHpO6OI02IPvAf2XI0Hy1t6Lgx/RDrzhD4Wix5Fo9i6NYRTgkVpiI
+         5lScgwmBOyxVR5doWvaEPiSgn2wwBkUfdRhJtXdnhKdXmAtd+IlWKo0bFOlHePmor6j1
+         8A2b0j7leeO18M/Uadoff2dhkBhAmWaRCwXFkfKpYn+iOn2haOlf4PXiive/ztrg+WyT
+         uspUO8ymv4D38+NdVjRVcvhpjiR9+PnrPAqzYnzWz8qmYSXbRAwfqMazT3kGDYjDIZVY
+         WuXg==
+X-Forwarded-Encrypted: i=1; AFNElJ9blLGDe+LeCIU6ponqZrhASyL9K+JecJlRtHS3bbzna6IxZtPt7rnsdQtQL47r40gyKAUKgjux0gCSZQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyZv9GJTHVwf4DXRmM1HJjZDy9K7yxeQ0ABmLb8AYdOONwbYLaK
+	uZeBN54a6SNmAfn8Gdq/fjaIPcoAY9y1cDxMJQp+qQt2QXu8vzSdPQJm
+X-Gm-Gg: AfdE7cn9xe9zQlO/HituQvX6UwtUNS0SONQDgMMV5ut0oPFdBJghElhhmYee20q0qRV
+	4kkT/PH+1lJMw4O85Q7YWPL8weJmnpfjEoCMU7QppdVWAZB3/3sDSZoPOUySh63GtHiToHU1RkH
+	LC51CF+An+hbNiOC42AeMAQnNf3hKULvz2G0rUxiHINE8pbvCLTWAB3de8csw6cgCSWcvTbCcmR
+	znhMschppWGrX78j0ai38fsjP7qatZ8tfHgjjXAOcgfJ7YHJzO/gOd2S6mg7FkitIlWvly8hAn9
+	OmfYq70AG0W71mvs9/H1ROPx2niIZcPjWzw3qXbT+Tlrb/WX40SlZXN+ts56LCATMlbR/GyXZtu
+	2wqb3kCD9nxtBB0b7KpEgScaHDLihqptDcSykSwX9Xv1cJR0YFQNegzF/rNZ6P/s6tULigXYIn+
+	lz1w61ZvBtk/0F0PbXn1EENoGkEUuHc2ibs8gW2y7mNQ8OSO/JEk3xosnpTD/K7m6mW+aK8M6cJ
+	LN81Ym8C51uNun9hpRwciQeOcxwTlvKt8NJrmuozmu0Gjdk+VegCv3nLA==
+X-Received: by 2002:a05:6a21:e098:b0:3b5:489c:7bb5 with SMTP id adf61e73a8af0-3bb34456674mr10131242637.28.1782017059185;
+        Sat, 20 Jun 2026 21:44:19 -0700 (PDT)
+Received: from kapoor.mahindrauniversity.edu.in ([122.184.65.229])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8bc3172827sm3545116a12.9.2026.06.20.21.44.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 20 Jun 2026 21:44:18 -0700 (PDT)
+From: Arnav Kapoor <kapoorarnav43@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org (open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER),
+	linux-staging@lists.linux.dev (open list:STAGING SUBSYSTEM),
+	linux-kernel@vger.kernel.org (open list)
+Cc: Arnav Kapoor <kapoorarnav43@gmail.com>,
+	linux-fbdev@vger.kernel.org (open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER),
+	linux-staging@lists.linux.dev (open list:STAGING SUBSYSTEM),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] staging: sm750fb: make g_fbmode array const
+Date: Sun, 21 Jun 2026 10:14:09 +0530
+Message-ID: <20260621044410.57823-1-kapoorarnav43@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:181b:b0:467:15ad:9de5 with SMTP id
- 5614622812f47-4896aa63456mr6366277b6e.13.1781958758313; Sat, 20 Jun 2026
- 05:32:38 -0700 (PDT)
-Date: Sat, 20 Jun 2026 05:32:38 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6a368866.5c48295d.477b4.0019.GAE@google.com>
-Subject: [syzbot] Monthly fbdev report (Jun 2026)
-From: syzbot <syzbot+list4b2fb95ff146ecfb29b2@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hello fbdev maintainers/developers,
+From: arnavk23 <kapoorarnav43@gmail.com>
 
-This is a 31-day syzbot report for the fbdev subsystem.
-All related reports/information can be found at:
-https://syzkaller.appspot.com/upstream/s/fbdev
+checkpatch complains that a static const char * array should
+probably be static const char * const.
 
-During the period, 1 new issues were detected and 0 were fixed.
-In total, 5 issues are still open and 29 have already been fixed.
-
-Some of the still happening issues:
-
-Ref Crashes Repro Title
-<1> 5429    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
-                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
-<2> 1600    Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
-                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
-<3> 271     No    KASAN: vmalloc-out-of-bounds Write in fillrect
-                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
-
+Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
+Signed-off-by: arnavk23 <kapoorarnav43@gmail.com>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-To disable reminders for individual bugs, reply with the following command:
-#syz set <Ref> no-reminders
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 9f3e3d37e..19c3da654 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -33,7 +33,7 @@
+ static int g_hwcursor = 1;
+ static int g_noaccel;
+ static int g_nomtrr;
+-static const char *g_fbmode[] = {NULL, NULL};
++static const char * const g_fbmode[] = {NULL, NULL};
+ static const char *g_def_fbmode = "1024x768-32@60";
+ static char *g_settings;
+ static int g_dualview;
+-- 
+2.53.0
 
-To change bug's subsystems, reply with:
-#syz set <Ref> subsystems: new-subsystem
-
-You may send multiple commands in a single email message.

@@ -1,62 +1,62 @@
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FB6C30C146
-	for <linux-fbdev@vger.kernel.org>; Sun, 21 Jun 2026 04:50:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DE5553E0B
+	for <linux-fbdev@vger.kernel.org>; Sun, 21 Jun 2026 04:53:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782017460; cv=none; b=hkHtS+FRaHBM6ik0xYGMNULP30kQ6Qt1Zgkzdh9wAZeaX3e895LoCX+rHHl+jQk9re6SGKPJcdoIoelMrsyfKIVptSvNjFyq13wCYD8h57mUA6LbuRCSkASQWc2Iz9IcdWU8PyZ8rGitSac6gwwlrNtWSAOyifyNgH6M+v3wP0o=
+	t=1782017631; cv=none; b=ZLaUWXEzD91VOr1HYQYp/f6kooLH9KDSE+8Ni7iyDBFTFFbwqjAF9hkL3adR4i4e/VIDErde84ml1CwN2jBxSYUV6Ec+JN3LN6+cpmblxm5XSr5ta6IEGo6FiF05C6G1MuUGMLVVuW0LC4tTBYRIkbeamzGL+DVq+nvu7neTbfI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782017460; c=relaxed/simple;
-	bh=YFAUHjBXI+kFetjkLd/b3rCtVjUhrXZxxVWHVWINm2o=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=uOApPGeWtxkcCTnFo76z51bQWTLbSx8Y2E9eli6OueDo2tKLjenKcfgizHn12MZ4tRd+mwOy6rg7A4pPuz4TPVxbQqXeUOP0fV5dXij82JKih6Ca0fnI6Y/79qfts5z9udi8A21GZlY5CQEiEkFo+/c184NyLt/jz768I8p4jgw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jIcgstsw; arc=none smtp.client-ip=209.85.214.177
+	s=arc-20240116; t=1782017631; c=relaxed/simple;
+	bh=ysODE48MG38Ze7E7lc6OSDgmmH6AUYqISUF/OUOmkLA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=a7AH0hfZR35P//349m3R0E9rWTabQufPzlY2zWUbPzHg/OHpO7SBxw4CV49S6/HLMZclbgC0GV7QDToAabj6eTFcaf7nR3QsapQ6Zm6Q/iwTp5G9vbauaPimTf/+PQKlr1HAtrGo6fHyzj22KYP0fLYoSDmmKMyA5Jvj9s6lMnQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hkI9G8PI; arc=none smtp.client-ip=209.85.216.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jIcgstsw"
-Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2c6d3851e09so16919525ad.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 20 Jun 2026 21:50:59 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hkI9G8PI"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-36babe2c4bdso1720444a91.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 20 Jun 2026 21:53:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782017459; x=1782622259; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1782017629; x=1782622429; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=s5y1GPeu5P5j8qh7qGP62ln0SsVrjPHUxMxNHCrsfkI=;
-        b=jIcgstswG9JShXSchc/eXXyBsO8G2WxIe+P4d53djEK6E001QDo+D7jVbUKP6FE5aZ
-         ve6peHJbWBEx1QXcIbjHApTohux2ggtPiZlIH5t5lOxM7CQm7s2nqTMb5DYQEfs9Pqfv
-         7T0YCWiLawZr2u7FoS/YDgHOe2V3OM3urga6RDp4n9lzLD1XsRHcvM7UoTmqDu7uXrN6
-         xL2Wea0D5YX5+dsVO9XetUzwgbQ5cyzEBGPJ0lRtRSaMMdN3TIK8brFidXlrsua2beG8
-         j34hmkyLYAzx0XaJ34MwxmUk/WZQ1kWrVTW3a/bRR/+yUC4ZqohJDFOazb1x38yUDYdU
-         mF8g==
+        bh=7G/nkYZdx0E/SLt2rECUHCRRofMdYVLWGsUUXwSGwrk=;
+        b=hkI9G8PIevXko3h3BAcKsRww4I+lPKjetanLW4zX+iIQGrm5Fpvpt/cvMg4+3BmaAy
+         SbFepdJrAYAHUi11ltR6VxD0muJrrdyPk8eJcOUP7YQZTFY4Fc/Al8cDjS6tGdWMxyTE
+         vMbfiEsBp/iY4wi7ecGh9d87LU1cRCoizSL8iRn4hHfvMv8zRdu9sXR0w3+s3EEuIpMA
+         6PNZO6wKMpKFPX3TmSiv/inZGATprJCgM3dgeIzOkz4cG7VQXEF82iwQPhxJ2GrLm3Oz
+         Xllj1ewrq09RQ3gM/9yVn/WYyVv99Tq7tyq6vDm80Qj6nYGZgerFe39fv41S6nSinq8a
+         OkNw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782017459; x=1782622259;
+        d=1e100.net; s=20251104; t=1782017629; x=1782622429;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=s5y1GPeu5P5j8qh7qGP62ln0SsVrjPHUxMxNHCrsfkI=;
-        b=PT3KyotDUcc3lMES0R/15Us/5h6nkga2ch4JPXB4Dh/YwssGmK8mHtGzQfUqkKuiAm
-         MFBGWTCOUOT+zd1XYYSVHk+pLasOS3bLh5n3c6KuOiAVnZX3UdLIenpMQVr+ltyXRDwW
-         YJb003m/oNG9tdvehMqm9BeL8A2WxtEhfVCMRO5InK+sw4u9wLC7vAKunjttAa7VPV+P
-         zLjAp5acRno3Rx34KJSrZjSWX1Jm4bXeIRnjxTlzWsYvnwNlKy2C+jIGkmEj8sc5BSuq
-         tNV/irKclo4ownSZvqiOGKLsrbG3C4o3H0VgA0kmzm1+RIBR25LOflK2k1uGkPOr2tWj
-         3low==
-X-Forwarded-Encrypted: i=1; AHgh+Rq+KJZFhJgQo5av9A9LFmKqWbOXc2DhA2JbNzLQkdYGxiyjFWzBFGFkdVkIXiVNofTL7uCRj5vjkiBJyQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz/s9LnjUmDAOw+4Z3v64D0J9EfzXp4j+JxV7nbKp6B0CBX0kii
-	ifXIi3uCGF/9exoZE2j29VspNeNq27S5ZDp7Y/mR9vwWjktxZO4GSw/b
-X-Gm-Gg: AfdE7ckT0f1/Ch2KYZdiWI6ECDXvhEJjnBypzdfGjIYeFL5UrZX436qlsOoMe3aL8XT
-	zrRw24Wbj390dCTDQ4BrQX8sYOjeXi0p3Gz2AIC9Zg028x2ayE+0T6CGu/kSL93eSIpgLEAX5yM
-	cs1vveiaOfc/iParMi3DoA8FWypW0wm1qzSQDOXJ3YIDAWm4bYGPW8Nojr84A2JUGLEr/aCDfOH
-	wtmxoT3dl8Vd+zKHPqvhVFB/CXSw4bJaYXJU/gmEbve2X6d081Y9kl4WpTeOZ7Ai+ZNJNo0DMyQ
-	TC3Ix9wa5k0vtlPlnSP6LhPzEzPn8Pd2fALRXmWh7lUaNeGB0vzD8yEHdVXZxyT3Kk93FXZdWnd
-	kZ8OTt2CPE5B5RmcvCCycOpnwqmxkIWVhW6u21ZCIDoLmsfo82aYXQ+lzTc6I//Ohok2iXnXF83
-	a24WrKV75O3M6ie3kJKTfrP6FfoQ++4X12HriopKtWWO0aBpar8waZI5wrvLVN5SR7fJcYUx2E0
-	B3eAnYWcdbLLk0/Ue0Ms/bmh5XpcW0DRLyxC+wkOxXeAsTE4YknzwWBMw==
-X-Received: by 2002:a17:902:fc8f:b0:2c6:5bae:f9ab with SMTP id d9443c01a7336-2c718f65447mr104983075ad.22.1782017458605;
-        Sat, 20 Jun 2026 21:50:58 -0700 (PDT)
+        bh=7G/nkYZdx0E/SLt2rECUHCRRofMdYVLWGsUUXwSGwrk=;
+        b=dFGZvwXOmvHxEWWbME+MDXPfcEz+b45XOt0G6v63qLWOgv52ZLNXg3c9BdGonVcJoF
+         YZnSEP+/NUbW3qnj7Xpxw2TjgKyzgIvl/VoOgVVTP4Avc2BbQb88Qf2y2N9GXPtv434Y
+         KlpUZxK5HyagQ9Ol+5O3T95ykTKgrPdZpMLsc89rCZSbcrvVG4KFpMCom+J85bEroAjj
+         0VDgb+zr0Lkn9ubV6cs4X4z9Th6JLlw50dNK4ietlPDNgYyHFgsTN/WsH5pN2lTwEkai
+         P4+X7wxiF2m14hO24q4aawYCjs4fsWsN/3d9nMViBaroW9PyAgBYOfZ/qxfh+NYN/SdR
+         FLUw==
+X-Forwarded-Encrypted: i=1; AHgh+RovmWTBtZ1O2LobJZQObkRpQXf2f83ETJTTrLgtJrML8ZD9TBH0LLEjDfNS9kj6g7OmFOLFEffcgfz8NA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw5XiA8jlwVjquKKhNHrgov+4+S+862aXgPmFb9h7VGbiRw2OF7
+	wHarEUUzqrhm0mENrV2XoeQejELF+7umtRAu01XYxBxCOQ+RQjLKeEfy
+X-Gm-Gg: AfdE7cm8PEKbB4QDRJTusmWM8tt+fZ3+ZGsTLmFdz/MQt9cW9pm0onZ/xmhav39MZCt
+	Fs28ALNLKTbumraahhdCRIwKC2EE/uXMWCgC4PMh6DB0HqqjQ1ydO0AvZCChTkcpuT3T/bQG1Qg
+	rAiQp3WGboSTvtVlelREDkO/HFKJPKY/wHZrF7z9PEdaJl38HSXNVtNLytn4KcAM6t4hHMwwaCL
+	f9t7BYZT/6gkOWzdDFFrsHV8Btnn9Q5YKxqhpRrJJ97y/jplFtR0lb5hHHNElml+lH4d7azWRbD
+	YgNYwf4H/s/6eWjy+l4V9B31jbhYuOyzFzBi341n2CmSk3ZO0Bu+OVR6MP5cpc3Yr4WPJEncM09
+	mR+j/5szbGxQ6xIEM5z1epgRZNFjg2BClbvmddSJ2JFd5NKnb651P97xX8/LziwN2TT6SRpwFVH
+	4vQ0x81GHDumyRNgfLqrABACS6d5+xs6pySZZ2gvtOJFoRvsWfciePRyOF72Ej6bex4LqJrw4sW
+	4KE0bGZpnmT0KwEGp1V5W6f8/DQM7a/qAWq1bhTxa1iNOd9ZHusMvnWlA==
+X-Received: by 2002:a17:902:db0e:b0:2c6:8e82:977c with SMTP id d9443c01a7336-2c718cbdd0bmr100658595ad.15.1782017628373;
+        Sat, 20 Jun 2026 21:53:48 -0700 (PDT)
 Received: from kapoor.mahindrauniversity.edu.in ([122.184.65.229])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c7444aa5f1sm44061025ad.78.2026.06.20.21.50.55
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c7436f90d4sm36864575ad.34.2026.06.20.21.53.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 20 Jun 2026 21:50:58 -0700 (PDT)
+        Sat, 20 Jun 2026 21:53:47 -0700 (PDT)
 From: Arnav Kapoor <kapoorarnav43@gmail.com>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
@@ -65,9 +65,9 @@ Cc: linux-staging@lists.linux.dev,
 	linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Arnav Kapoor <kapoorarnav43@gmail.com>
-Subject: [staging] staging: sm750fb: rename pvMem to vram and pvReg to reg
-Date: Sun, 21 Jun 2026 10:20:50 +0530
-Message-ID: <20260621045050.63460-1-kapoorarnav43@gmail.com>
+Subject: [staging] staging: sm750fb: fix remaining CamelCase issues
+Date: Sun, 21 Jun 2026 10:23:40 +0530
+Message-ID: <20260621045340.65872-1-kapoorarnav43@gmail.com>
 X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -75,105 +75,51 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Fix CamelCase issues reported by checkpatch.
+Rename the remaining CamelCase variables and constants to follow
+kernel coding style:
+- powerMode → power_mode
+- setAllEngOff → set_all_eng_off
+- resetMemory → reset_memory
+- sm750_doubleTFT → SM750_DOUBLE_TFT
+- sm750_dualTFT → SM750_DUAL_TFT
 
-Signed-off-by: arnavk23 <kapoorarnav43@gmail.com>
 Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 19c3da654..125ad1062 100644
+index 125ad1062..f034d3278 100644
 --- a/drivers/staging/sm750fb/sm750.c
 +++ b/drivers/staging/sm750fb/sm750.c
-@@ -622,26 +622,26 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_primary;
- 		crtc->o_screen = 0;
--		crtc->v_screen = sm750_dev->pvMem;
-+		crtc->v_screen = sm750_dev->vram;
- 		break;
- 	case sm750_simul_sec:
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_secondary;
- 		crtc->o_screen = 0;
--		crtc->v_screen = sm750_dev->pvMem;
-+		crtc->v_screen = sm750_dev->vram;
- 		break;
- 	case sm750_dual_normal:
- 		if (par->index == 0) {
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_primary;
- 			crtc->o_screen = 0;
--			crtc->v_screen = sm750_dev->pvMem;
-+			crtc->v_screen = sm750_dev->vram;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_secondary;
- 			/* not consider of padding stuffs for o_screen,need fix */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->v_screen = sm750_dev->pvMem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->vram + crtc->o_screen;
- 		}
- 		break;
- 	case sm750_dual_swap:
-@@ -649,7 +649,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_secondary;
- 			crtc->o_screen = 0;
--			crtc->v_screen = sm750_dev->pvMem;
-+			crtc->v_screen = sm750_dev->vram;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_primary;
-@@ -657,7 +657,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			 * need fix
- 			 */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->v_screen = sm750_dev->pvMem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->vram + crtc->o_screen;
- 		}
- 		break;
- 	default:
-@@ -755,13 +755,13 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	 * must be set after crtc member initialized
- 	 */
- 	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
--	crtc->cursor.mmio = sm750_dev->pvReg +
-+	crtc->cursor.mmio = sm750_dev->reg +
- 		0x800f0 + (int)crtc->channel * 0x140;
+@@ -859,9 +859,9 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 	sm750_dev->init_parm.chip_clk = 0;
+ 	sm750_dev->init_parm.mem_clk = 0;
+ 	sm750_dev->init_parm.master_clk = 0;
+-	sm750_dev->init_parm.powerMode = 0;
+-	sm750_dev->init_parm.setAllEngOff = 0;
+-	sm750_dev->init_parm.resetMemory = 1;
++	sm750_dev->init_parm.power_mode = 0;
++	sm750_dev->init_parm.set_all_eng_off = 0;
++	sm750_dev->init_parm.reset_memory = 1;
  
- 	crtc->cursor.max_h = 64;
- 	crtc->cursor.max_w = 64;
- 	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
--	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
-+	crtc->cursor.vstart = sm750_dev->vram + crtc->cursor.offset;
- 
- 	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
- 	if (!g_hwcursor)
-@@ -1028,7 +1028,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 		sm750_dev->mtrr.vram = arch_phys_wc_add(sm750_dev->vidmem_start,
- 							sm750_dev->vidmem_size);
- 
--	memset_io(sm750_dev->pvMem, 0, sm750_dev->vidmem_size);
-+	memset_io(sm750_dev->vram, 0, sm750_dev->vidmem_size);
- 
- 	pci_set_drvdata(pdev, sm750_dev);
- 
-@@ -1059,8 +1059,8 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
- 	sm750fb_framebuffer_release(sm750_dev);
- 	arch_phys_wc_del(sm750_dev->mtrr.vram);
- 
--	iounmap(sm750_dev->pvReg);
--	iounmap(sm750_dev->pvMem);
-+	iounmap(sm750_dev->reg);
-+	iounmap(sm750_dev->vram);
- 	pci_release_region(pdev, 1);
- 	kfree(g_settings);
- }
+ 	/* defaultly turn g_hwcursor on for both view */
+ 	g_hwcursor = 3;
+@@ -880,9 +880,9 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
+ 			sm750_dev->nocrt = 1;
+ 		} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
+-			sm750_dev->pnltype = sm750_doubleTFT;
++			sm750_dev->pnltype = SM750_DOUBLE_TFT;
+ 		} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
+-			sm750_dev->pnltype = sm750_dualTFT;
++			sm750_dev->pnltype = SM750_DUAL_TFT;
+ 		} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
+ 			sm750_dev->pnltype = sm750_24TFT;
+ 		} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
 -- 
 2.53.0
 

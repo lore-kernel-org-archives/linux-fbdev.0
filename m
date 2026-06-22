@@ -1,61 +1,63 @@
-Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFA023750BC
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jun 2026 15:25:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D65ED376A17
+	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jun 2026 15:25:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782141921; cv=none; b=c1J7LC5ehLktu17svlrGucVW4a8RvQMKnRloF1OtdXsHeZZoKuTsCa9PRz3YRFBOwGh6BpprLlQJsBcs/Gg0d8c2w3gvD5o0aLIdKOseLNq/k0urbdhKWYri+/arcKtv+9EGaEB9zEGjaRPNcMLihW3Gtq+YvyRT2SXNa00k5GI=
+	t=1782141923; cv=none; b=lDgxujAYClmLSQZjVV0ZK657Vk//UKxzDhAuGKVr5hsxPUozHMKzC9SL7INh5bHE7pzqp9gr39s6lA5Oo2g+hrNvHYHuV4Ym/Oi46VdtYXj5BfAVdcQKIAw5IqTrMdLpJc0oz3ZYLuGaCbBSbEa7j4eHV0tW8mO6RAlI0CH2lbE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782141921; c=relaxed/simple;
-	bh=FjFXJ5dUGr72R4YaGkKyaIYzexfp4gxj3M1jHMlRFI8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rvukQQcS1leLAmDgRv4anK8SsFzVaK6Rw95peeX69bnJggj8+7NplpZgpKLBIKClUwgeifdlOTD08IAHrb3GlhFTP+sbsSDXNQ5CBAgyDp1i/pJSSBhD7r75UVC/vLZvjrMl+N9wcAh6eyg/t42drIEKbG1NBv+Bx+NTXX8iI9k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=oCVMOuqO; arc=none smtp.client-ip=209.85.221.50
+	s=arc-20240116; t=1782141923; c=relaxed/simple;
+	bh=pemz1FNNs0kpzhepFGC9w+PchSrHijunkMIG4FZdyOQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=DoRN+IwFXkjRzXnSDphLv2UOZ0dsvai6K78kNGozbfztScyLcTlECej88YRX6svnpTGUBG8YrScEXX6zPrnv6lQPbiNahX790WNWCg2fj0JT9LAjWLV3cUwlc+MDKQXk/Fkqia6X8Ry7Ey6DzFuaLIE6yjZ4b0M+mQosE3MicEc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Yj2z23wa; arc=none smtp.client-ip=209.85.128.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oCVMOuqO"
-Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-46255b269c2so3506929f8f.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Jun 2026 08:25:19 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Yj2z23wa"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-490aaeabdb4so26863975e9.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 22 Jun 2026 08:25:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782141918; x=1782746718; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=kL1tj/BLw05+tMmUXWpE7p03gE32TyonQg4lQC1zuNQ=;
-        b=oCVMOuqODYuueS51P7A97np0ij6118fitVxcxc9RKMB7fqwOK1XNwXlyIjRV4u9vJj
-         8XXtyC4bNPsdnXupYpd5r20X4jNJ0mS+kT1+N9asGB3BF4bUrEKkiWLOW7ziiPEMKYAc
-         MF7OTq59nCF9PONs/PDQh3U2mg1cjnQ/ato2xm/iXxjfT25Sg/XQszzNLF9tB/5k4E99
-         48azXwDiXJILdluP1cLNEhGpwgUTJvs6kypMfSgHAnKpnE8jebAl97Dz42KQm4muLvwl
-         R9HOPUYmUztnpNOp87HjaTdmTL8L+6K++wyfMez6Rsc4AWaPgYac33HLAkvg2NSJUk2J
-         CPZg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782141918; x=1782746718;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1782141920; x=1782746720; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=kL1tj/BLw05+tMmUXWpE7p03gE32TyonQg4lQC1zuNQ=;
-        b=az1NOeIBYB8/3SA3WpEqxEXScKmOxPeJV8vSgoig0Tsk+0C1diMIMefUzTv5rv/nrr
-         a0Ls44hiR18bHVoOVk7OFhL7pUCt+oRepc0A37jfD47dy9DxcC5J52nUmzERY6mZSMBs
-         a2nvmmV87xMKnscLx/CN0hrAsHH9yDC9XIpqbjLXNu1cGfUMZR8eCj6HgojTfkgqq1Fb
-         JfxFnaOZsmzlFGzoHonteUCreXtQqTXDSyl/21rRBIerQn9Wml7qCRI3pPul107jCCP/
-         B5PpbYDEtagq1OQyFYsBIVisTJlhItjxEmiOxHv9AVxatPyrih8bIrFsw/uL/ZSJCTeH
-         NrSg==
-X-Forwarded-Encrypted: i=1; AFNElJ8kVZqnysEoxPcOFD0/fLjDl36cNNoNAUCYn+FFj7tIQzKO+inIx+G0lZZnn1rruSUct2tgJjK9D59Xnw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw0MLZmNlaBNHOk7v//1QAG0ieI416eIETdxuUNd/rWgLeGl76y
-	YedSlU8TODQ4zEvwixBAg2zTFqYz4owZUTH+deTqb075E4mD542JAVXA
-X-Gm-Gg: AfdE7clAqxs9vxEldnhoPmpuRWdUea8BfFa9CiD93qeHrpZKrNcPsg4uojx+drizAw2
-	g4hYE/mAE+ChIwN0sb1TfJANLi5Fc+Vwd6mO/yh6bz2KGK6gksFf+UO0akdmu4u07+XbreIfYmZ
-	gnkLaexTXmD2OKR9oNEJrnDqHOaMMdCEA3esRZOTiOsAKxOyWPU92CoWSxMEZB1X3uXDEm5xhO3
-	wGLh0hp/WCd7ZhYpISxDeIybY5z7celJtRGfUJ47z/eSJMfeLZ/fU2U0wUbDdax2P44sABaYRVb
-	KIeRaTrlXzLQcW6PhHj0/d7h7/yy5ffx1MuNVM98mz1pm7Rr7r6uMaPLihQ85kK2C8LlK8mDLF5
-	HhnCOXSiDptLxcotUsKEONprY4P1KdQg+oKFKzITw3hjBFz5iliSntoaam9V/Q8A+rP6kdTz0DH
-	v8lbFmJHvQrp5pNw2c8FU54XK1lpA=
-X-Received: by 2002:a05:600c:45c5:b0:492:41a1:f217 with SMTP id 5b1f17b1804b1-49241a1f31fmr221649685e9.1.1782141917981;
-        Mon, 22 Jun 2026 08:25:17 -0700 (PDT)
+        bh=z0qw7KTWnyC881EwxaOjThj92Q0RuccaSWAdkHLFKrM=;
+        b=Yj2z23waq+NALnA19SSDhi6xbiqyTgQNy2HLPg2C9ZaCojDbU3Ht53/2GMoB15BCk2
+         +IHqGKg5sxsfoIK8cSP7iPF3OLQifrLNod+XUP3NwyC+/14amaSAG8ihwOFYma+xV0Q3
+         F+w6kI2aK5fpA0Der8RU3rjtVIe0v+XJb+46BZxvfjD8ltYQyKd9W0uiUwNa76Nm/pvm
+         kkalPMd9wRN4+BzjECvgqLlwdCOEfOTPtutnrZZlwLTVmI1BdFTpyDIbap0f7gL+IQSe
+         cdUwSTmhLj5o8EouDdhIMYKQN6kPNS7dbNzehzYvg7dcK9efamGlKHXkj5lJKIalAoxP
+         oz4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782141920; x=1782746720;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=z0qw7KTWnyC881EwxaOjThj92Q0RuccaSWAdkHLFKrM=;
+        b=mN1zPVa87cGrTzBQq9d+eVKIK8LuZVgFmp0DstkAM3AmvAsYFaHFOLEqxt/cjyu8sy
+         QdAaHZo/Xu1OCjWH4tnBIj1rpPqpKAlOkyhI7EzHqNvJ7vnx3fgTVUz6pZ0XHuw4uCbI
+         tz6eK+azYkiyuzknJolk9hRI3e4HXFxhvBWO7aMrIKQZfJ/8gZv3x446h/TxYug9P2gJ
+         G7PnAoSWV9HlUYWBqwV/Mqn1TsBNWfHIrEaJiFI7k8m7AEXMUKIgFA8kvP5qkY5+7P6M
+         FpJbz1yGJALwuayvzw4Csok8ZHQG2UE0ti21bOlkzyc9tF3AGAQwLW7MkcY/3ixETUEf
+         nAXA==
+X-Forwarded-Encrypted: i=1; AFNElJ/9l2w6uTg43NPjeC19JyR9ZYrRyAtC9JV3+6+FI9SQbKU9C+NCFMSHQue80aUwxndax425+poNhEAUuw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwAi5KzAmOyifRgAT68yxOhluNH16c9laqcca8qWhQdn1BDkugI
+	63jNw/6A4aRCZw3Jy+5Lrt58WPWwPCxDO5ls/blAz1Bkp2RI2Q/FsAtD
+X-Gm-Gg: AfdE7cngC870gSeu6IhXcVHx5F0auJtuQeZ2QcSHGOjwAFZNGZYLATI4lz6K3dPN/ht
+	0LIRlj7QRukgmk7MJ8YQWFoKH6uxKdHSa3VyDZePY+qjE4UnArsPC6m4ZwrAMDjLY++ni3pZZKf
+	Y7NkBROzkIqq+hLPGck2HYbx5EDcDDE4QyEEnjqe/BaNCcGGR6cOIOnTvD4lm+460zDWw26hZyi
+	TkvvfeczBdDuqPQ9/TXFZ8+No7SfwKTwsiAYGyuRfwUAQMhfSd8ZootR35I2fO4jE3QI2NCbhoB
+	GtjO9KRyNH4XMHuXpp3Wj/0b5Rkybhrtn31B1nbJ+zyboIV9VLFp972O25m+06LTEPjQDnnR1S/
+	ZEN2N6pjDH+hipzr4e3qpI8mj3OfrCOeqEW3eioMysBa20Jh8LZ0zKhcC4V3kv0rZSFJ+X2nGUR
+	EVDWVWxnJmdzlV4bcEJrvGBTBmCwU=
+X-Received: by 2002:a05:600c:3b15:b0:490:d38c:7836 with SMTP id 5b1f17b1804b1-4923ef47e73mr298830265e9.3.1782141920248;
+        Mon, 22 Jun 2026 08:25:20 -0700 (PDT)
 Received: from anthony.local ([2a06:c701:49b2:4c00:12ff:e0ff:fea5:3d2e])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-492492338dasm217883655e9.1.2026.06.22.08.25.15
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-492492338dasm217883655e9.1.2026.06.22.08.25.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jun 2026 08:25:17 -0700 (PDT)
+        Mon, 22 Jun 2026 08:25:19 -0700 (PDT)
 From: Amit Barzilai <amit.barzilai22@gmail.com>
 To: javierm@redhat.com,
 	maarten.lankhorst@linux.intel.com,
@@ -77,10 +79,12 @@ Cc: azuddinadam@gmail.com,
 	linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	Amit Barzilai <amit.barzilai22@gmail.com>
-Subject: [PATCH v2 0/4] drm/ssd130x: Add support for the Solomon SSD1351 OLED controller
-Date: Mon, 22 Jun 2026 18:25:02 +0300
-Message-ID: <20260622152506.78627-1-amit.barzilai22@gmail.com>
+Subject: [PATCH v2 1/4] dt-bindings: display: Add Solomon SSD1351 OLED controller
+Date: Mon, 22 Jun 2026 18:25:03 +0300
+Message-ID: <20260622152506.78627-2-amit.barzilai22@gmail.com>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20260622152506.78627-1-amit.barzilai22@gmail.com>
+References: <20260622152506.78627-1-amit.barzilai22@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -89,87 +93,67 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series adds support for the Solomon SSD1351, a 128x128 65k-color
-RGB OLED controller, to the ssd130x DRM driver, and removes the legacy
-fbtft fb_ssd1351 driver it supersedes.
+Add a device tree binding for the Solomon SSD1351, a 128x128 65k-color
+RGB OLED display controller driven over a 4-wire SPI bus. The binding
+builds on the shared solomon,ssd-common.yaml properties already used by
+the other Solomon display controllers.
 
-v1 [1] was a self-contained ssd1351.c driver. Following Javier's review,
-the SSD1351 is instead folded into ssd130x as a new color family, which
-also brings 65k color to the existing SSD1331. The work is split as:
-
-  - Patch 1 adds the device tree binding. It was previously posted
-    standalone as a v2 [2]; it is folded into this series here, as Conor
-    asked, so the binding lands together with the driver and the fbtft
-    removal.
-
-  - Patch 2 changes the SSD133X family to drive RGB565 instead of
-    RGB332, via a per-variant flag in deviceinfo. The SSD1331 is the
-    only current member and gains 65k color from this.
-
-  - Patch 3 adds the SSD1351 as a new SSD135X_FAMILY, reusing the
-    SSD133X plane/CRTC and blit/clear helpers. The only data-path
-    difference is the explicit Write RAM command (0x5c) the SSD1351
-    needs before pixel data; it also gets its own init sequence and a
-    longer post-reset settle delay.
-
-  - Patch 4 removes the now-redundant staging fbtft fb_ssd1351 driver.
-
-Testing:
-
-  - The SSD1351 (patches 1 and 3) is tested on hardware.
-  - The SSD1331 RGB565 change (patch 2) is compile-tested only; I do not
-    currently have a working SSD1331 panel. Javier has kindly offered to
-    test it on his SSD1331.
-
-Dependency:
-
-  The SSD1351 reuses ssd133x_update_rect(), which programs the column
-  and row *end* address as a relative offset rather than an absolute
-  coordinate. This breaks partial updates that do not start at (0,0). A
-  separate fix is posted at [3]; until it lands, the SSD1351 shows the
-  same partial-redraw artifacts. This series applies independently of
-  that fix, but the two are best merged together.
-
-Based on drm-misc-next.
-
-[1] standalone v1 driver:
-    https://lore.kernel.org/dri-devel/20260615181253.97551-1-amit.barzilai22@gmail.com
-[2] standalone v2 binding:
-    https://lore.kernel.org/dri-devel/20260615175620.88828-1-amit.barzilai22@gmail.com
-[3] ssd132x/ssd133x update_rect end-address fix:
-    https://lore.kernel.org/dri-devel/20260622122604.32500-1-amit.barzilai22@gmail.com
-
+Assisted-by: Claude:claude-opus-4-8
+Signed-off-by: Amit Barzilai <amit.barzilai22@gmail.com>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
-
-Changes since v1:
-- Fold the SSD1351 into ssd130x as a new SSD135X family instead of a
-  standalone ssd1351.c driver (per Javier).
-- Add RGB565 to the SSD133X family, so the SSD1331 also gains 65k color.
-- Drop native 256k color (no matching DRM fourcc) and the 0/180
-  rotation support, to keep the series focused; both can return later.
-- Binding: drop solomon,width / solomon,height (deducible from the
-  compatible) and the rotation property (no consumer), per Krzysztof;
-  use dt-bindings/gpio/gpio.h flag defines in the example.
-- Remove the staging fbtft fb_ssd1351 driver in the same series (per
-  Conor).
-
-Amit Barzilai (4):
-  dt-bindings: display: Add Solomon SSD1351 OLED controller
-  drm/ssd130x: Add RGB565 support to SSD133X family
-  drm/ssd130x: Add SSD135X_FAMILY and SSD1351 support
-  staging: fbtft: remove fb_ssd1351 driver
-
- .../bindings/display/solomon,ssd1351.yaml     |  42 +++
- drivers/gpu/drm/solomon/ssd130x-spi.c         |   7 +
- drivers/gpu/drm/solomon/ssd130x.c             | 269 +++++++++++++++---
- drivers/gpu/drm/solomon/ssd130x.h             |  12 +-
- drivers/staging/fbtft/Kconfig                 |   5 -
- drivers/staging/fbtft/Makefile                |   1 -
- drivers/staging/fbtft/fb_ssd1351.c            | 240 ----------------
- 7 files changed, 283 insertions(+), 293 deletions(-)
+ .../bindings/display/solomon,ssd1351.yaml     | 42 +++++++++++++++++++
+ 1 file changed, 42 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/display/solomon,ssd1351.yaml
- delete mode 100644 drivers/staging/fbtft/fb_ssd1351.c
 
+diff --git a/Documentation/devicetree/bindings/display/solomon,ssd1351.yaml b/Documentation/devicetree/bindings/display/solomon,ssd1351.yaml
+new file mode 100644
+index 000000000000..80850c2ab5b3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/display/solomon,ssd1351.yaml
+@@ -0,0 +1,42 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/display/solomon,ssd1351.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Solomon SSD1351 OLED Display Controller
++
++maintainers:
++  - Amit Barzilai <amit.barzilai22@gmail.com>
++  - Javier Martinez Canillas <javierm@redhat.com>
++
++allOf:
++  - $ref: solomon,ssd-common.yaml#
++
++properties:
++  compatible:
++    enum:
++      - solomon,ssd1351
++
++required:
++  - compatible
++  - reg
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    spi {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        oled@0 {
++            compatible = "solomon,ssd1351";
++            reg = <0x0>;
++            reset-gpios = <&gpio2 7 GPIO_ACTIVE_LOW>;
++            dc-gpios = <&gpio2 8 GPIO_ACTIVE_HIGH>;
++            spi-max-frequency = <10000000>;
++        };
++    };
 -- 
 2.54.0
 

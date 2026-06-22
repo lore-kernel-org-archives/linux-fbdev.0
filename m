@@ -1,384 +1,248 @@
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from flow-b2-smtp.messagingengine.com (flow-b2-smtp.messagingengine.com [202.12.124.137])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5837E375F87
-	for <linux-fbdev@vger.kernel.org>; Mon, 22 Jun 2026 15:25:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AE76313545;
+	Mon, 22 Jun 2026 15:40:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.137
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782141931; cv=none; b=diJ0gkOR6KBc3nNF1K3xKzytNwZekAiNHGVX5y0f6RcCK5JyJitG86s8ttN0zOnIi75/BK+OFkwBTRRTIxlDmN47K0Q5WZXXYNJcnNtWbITo9tZ4NGi0ego3p9+bGg5VKR4q3Oe+DWS7V4LIlyJ1ww13AIOQb3PB452/Yd32bfQ=
+	t=1782142827; cv=none; b=jz7KpzXQtxa3ttzvipEz25IFpv5GlPAffV2dDPWagyt/wu+jBwRccBUq9TL1teweJH8uEw9VoXNyJRg9j1483eyWT0EA73OY/MFZl4pNQMvRdSvc86SWmZ+Twmj0kJICK80i1ZVpP+OtCjbETrvYSvjWOkify/YdogX9FJe7LPg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782141931; c=relaxed/simple;
-	bh=UCCfXZMcMcEqgqVI6OLL/m0AKWbn2PnFEVkzPy7MuGM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gVlnXw3zSITeUYm7uUiI7ndP4XVxym74j0o+l8Tt9ytIiLJCd03uuOx4U6cMOGu9obwSaGDv7g1KlV+s0euGODjDl5XPTjzsqYRnwylZRkBm9qn8p4Q6MigmAZ9xWQEYf9F8a9C5NAbJtVMdWk2Wj5iBoXenFHqdeiBFtpKqkY4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Md8AR45t; arc=none smtp.client-ip=209.85.128.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782142827; c=relaxed/simple;
+	bh=u0/SXsldoKxXhIiV9Qp4QD1E4AUPEUcopctnN58PXgU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Hk+znltbxNpKsopu3FhuQlz7viNfEJk+FMDBvBK2GrAVCHh/mixYyPzFeQO24rtBV/d1lgqolF5KYsgdrJ5fDK8+SRlApFN8fQbvDkTCPjg/vFizRal2wBNBAS9SfKB0DlsDH7QSgdR+y1Y1F6VzpkQ59Y0EaMNy+WQY/BgOJ5U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fastmail.org; spf=pass smtp.mailfrom=fastmail.org; dkim=pass (2048-bit key) header.d=fastmail.org header.i=@fastmail.org header.b=c2JhUSCw; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=Mz/h77Hz; arc=none smtp.client-ip=202.12.124.137
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fastmail.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fastmail.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Md8AR45t"
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-490bc6a7958so41938065e9.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Jun 2026 08:25:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782141928; x=1782746728; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=FubD6UUHNGPZZFitz5KoKNPu5pJn+5BFMUFMa6xOq3M=;
-        b=Md8AR45t4S0mSvw/qz2aTM6kKpY4KTwdBJ91MOiDfzpHEM4J07ogCKohxYT5NsB4fS
-         mhfJuDSFLgI6gtwxpl9nSFLogzlxsRqLim8dNAbpJb9Px99Xv2xqyBhBrB/kas3CbCSn
-         x08qoTs/JiDuo46W/DMEbEvTwvIvNQxhmGSd4OWLovO/QN3XdXeIx2LvK/EGrwVaWqqB
-         fk+oK/UnQEdoiO50iuGYhwdxdM/uYTITymlsDr9051kI2cNRHLJuR40ymaVgT0P6wCmx
-         3XUkUETmPsP+L070v4kwu/EJx29p5JL40NpKvEmIjJ5cHhnjtaR9Phy5EmCQSp/r07Q5
-         c0rw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782141928; x=1782746728;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=FubD6UUHNGPZZFitz5KoKNPu5pJn+5BFMUFMa6xOq3M=;
-        b=kr0YCFj2uc6700QeIgRQIMXEsnWvzv/Pt1UMmwoydmmE4trqlM4oDlo3gbXQr53JXh
-         hZlNPJJkKTFlSATPFeGNJ8YLf5N/z++f6/1R3KZp7q9Oki8x2jmXGFeYI7ocpaBlfjYz
-         5OULgXLfUyY2vyr6HZYuAZWCF060b3XhCa16nCBpuTxGMh7XJDVCoK5cXiijAEqGs+2l
-         FiOX0/MjbS9wdxfxATfsCKOp4GHm4j0sxMhUvRP4pqEvLlPBYe/e463fZsiOIn8RQRiL
-         hPO4tkOOl0uj0ut0Gz+yg8kcnlURy0imsH+y2rzUYNSiEBoEco4vPBUE5QdV74SBAc6F
-         bz0w==
-X-Forwarded-Encrypted: i=1; AFNElJ9GoHl6t2VkmhU1llEeLyLQ9z+COPyCK4iimawwlQx6j7fMS4bpW6KKgCpydE1p+CBV80v8TydewmAy7g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwIYbxAQVTYuVpnn0OLyDwROscrCytX+MKpif7SSnf9lyKhkttn
-	ub3KueiJgJm1zaKHtvhnNQ+iBTLY0sUdDG27gS0m4gggiV+2DOp+YIUv
-X-Gm-Gg: AfdE7cnuiTBY5sKQlRxDQD+Nl7e5liYrdILkgEEd+LbVNMGSiC2371O4Y+i8ov21On5
-	s/o4H1qZ/1NAcx1BBOXG5uTZokv9BcpnFLbLkGhpbfiqX0YBLGiYNN+IvdTjECXfRo9BPiaGbd+
-	b4nJToHIEX0PW39f7PfcbRqKalP6qiFv/Qi/LLlh/HS0SkTy2PnHwEC9rzRZUVD48aKVouCziwi
-	wWHtB0Yf2ppzRzEutSMeho+BPywUGNnLE0uq4Ns+ufdvKGFRPDsqoQe3VrrmxwIg9FKWA2lZ3R/
-	d5czvM4XZHWdX3EgjsgZscbfhhdNvZCQ0zPxbNOPArCvcSlDe3sDlOCq2sW0WTKfJ8ORSDevglG
-	XF5CXoAYxZgls6eDacoEVGV2/5rITyrrVgp66Bc7ZPTMjspMyuUBHsXuSIReMsMoCh8zf8d/qP9
-	wd5RpOvXVRZuPocgs1IEBup+cbTKo=
-X-Received: by 2002:a05:600d:4448:20b0:489:32b:ac0b with SMTP id 5b1f17b1804b1-49240a09f71mr161160105e9.6.1782141927772;
-        Mon, 22 Jun 2026 08:25:27 -0700 (PDT)
-Received: from anthony.local ([2a06:c701:49b2:4c00:12ff:e0ff:fea5:3d2e])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-492492338dasm217883655e9.1.2026.06.22.08.25.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jun 2026 08:25:27 -0700 (PDT)
-From: Amit Barzilai <amit.barzilai22@gmail.com>
-To: javierm@redhat.com,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	tzimmermann@suse.de,
-	airlied@gmail.com,
-	simona@ffwll.ch,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	andy@kernel.org,
-	gregkh@linuxfoundation.org,
-	deller@gmx.de
-Cc: azuddinadam@gmail.com,
-	chintanlike@gmail.com,
-	dri-devel@lists.freedesktop.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	Amit Barzilai <amit.barzilai22@gmail.com>
-Subject: [PATCH v2 4/4] staging: fbtft: remove fb_ssd1351 driver
-Date: Mon, 22 Jun 2026 18:25:06 +0300
-Message-ID: <20260622152506.78627-5-amit.barzilai22@gmail.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260622152506.78627-1-amit.barzilai22@gmail.com>
-References: <20260622152506.78627-1-amit.barzilai22@gmail.com>
+	dkim=pass (2048-bit key) header.d=fastmail.org header.i=@fastmail.org header.b="c2JhUSCw";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Mz/h77Hz"
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailflow.stl.internal (Postfix) with ESMTP id 78C7E1300525;
+	Mon, 22 Jun 2026 11:40:23 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-01.internal (MEProxy); Mon, 22 Jun 2026 11:40:23 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=fastmail.org; h=
+	cc:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1782142823;
+	 x=1782146423; bh=HdXmiLjFCtewYnaNmICznmxrLACPW5YYb76z+fsRb18=; b=
+	c2JhUSCw2ny1UvfLXkcr4RWrVQ8QHarN0TwJd+2QEQBOKxSKtf1mlNNPiQWnY2Zl
+	5edogZs5DeDEIQXs8TL1O4lcxEf6VmaDjxe+gSp3Muyu5sTSMIQx57u19S1OZTjG
+	29UJeW9xc5loUXC3ldRKwusRSXzfIBa+G7cbwtUE4TSzbrJ+CEdDEqDvkCbC2TmP
+	P8fILzW864Em+nypoNolIpc/vb3RvIA3uBCDdQ4SNdld24bwu2e5+tDix6qhBf49
+	w+9Bm+nfJ752sdjZhr1ZtMcqrpXv6w/3oLIHQDW0mD6F7tskfXMcX86dXo/MSKb3
+	hW8fcTPt60Qx6V4wro2TfQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1782142823; x=
+	1782146423; bh=HdXmiLjFCtewYnaNmICznmxrLACPW5YYb76z+fsRb18=; b=M
+	z/h77HzLhkLrTAJMvhyrn0vxwItuI2Ellq4HFa1jv9gEW2uPeNnEGAo7zUb5VrkW
+	sRxvgwpGFiLKBhbnbTnsaoBDgLBc1dYFxSkdBMG0iIP2bPAtimpM8BGyXHnOr0Pb
+	Qndwvvbbepgo5Zprncbe+or2lqNGIkm49LnxKl/AKfRUaaUYlyjZxbgJmMYRgtka
+	mnbEt35M4n8KPfyI0l+tEwohLiDn5Zx5O1211bparbi4iDE5M6H6BEq6kI/OtQHE
+	8pSCrqK4b4HKXvjRoojnV6b00i/klxvoQHvArZyI2QQnG7rOk+CTc/cS2mAVmSVO
+	+cMfDjzIpu4Z+1L0yKzOw==
+X-ME-Sender: <xms:Zlc5alLBLBVKBly1TqhSTE70zdfsF8JN6RcBEGysqGure2VqL-BHMg>
+    <xme:Zlc5ajYAJIyOQRvo0fcMf-Sgz2ySASW8EgFYBYM9XzO84kr7tigLyFZ5B5jdUDAxT
+    NIUTJeazMJNOAVC5ycHbOaDWpXIv9AgSJ7Xx6XZLnDh1dQgdvT28ZA>
+X-ME-Received: <xmr:Zlc5av92kPTiW5VQI22tfipKxc3tl6YmuVAXIJvNoVhJrcJZcDmfT-wuUJM>
+X-ME-Proxy-Cause: dmFkZTFbSqkzJcDuTJ6NXheCBDU8nHXFmKAvMGPiYbtwFQOeJRVaI++l2BH7FF00TAVvJj
+    ssN5ST8jPIkYKr4nrtzIDG3wTa3y+3110hJWizubP/a7XSVsQxl9pMB9U/k1dqr1ywlpP9
+    4gPlaPPO0HnKcPb9RXvN8xTdcRxW8xb7rP7pEUHeeUSb5XQqFSuudYero8/6WOTLO4LYUe
+    93+l0KugHcnRW7JMHo4KasW0ZqaH14srkulEB3Nsa33kGwnD+hFOlhvQ14D3Z3J0srDbdX
+    tQ/HCS/yTD9q45tguGkGug8dO64d1QJB1Qvdlkmd3F3HSO4P1oPtc5H0c1Y0ARrAp41ClJ
+    88nqTVZc4pjOx4Kxt7hOEwkXr2dVlvq8qp+HGWDlOD6cuZ0gaxeVfrL6fA5ckSlN/P/r7F
+    Fys8Jj/vAV4JHIPWfhcwntpcTiWBKyKyPdCBarQQyuDhzQYs+S2TzYn/4yS0CrnUWXFlSM
+    +KzUbxN5t3jA9RtF4MZDO44zBh1f1xxuJ5Bvdn9PFzaQtUdjaSwksb4YHvEorB+brMwObB
+    VJgIaU2SA/HwqnzL2Y6k8quIok6JN9H7FvR1WZexhENK/drS5GeTZU244zMxJJFnDPwbKS
+    ZLZ3iCTYPasakSLPAHDOMutafZDKWcYrxka6pguCAofdhZqRtQuntSGMIoJg
+X-ME-Proxy: <xmx:Zlc5asYyL1B8W2ppg19mSqNSdl-UAfvthGvMxR2oRp3_J8n7g18yfQ>
+    <xmx:Zlc5arNW81VrUdlyhfGdt5Mwa9bVXlhmdGHTPqxedMVTkOZFnjqu-g>
+    <xmx:Zlc5agAc0rEFKsJj-pGrVDPFoIMcfyMeeh_MHEUGRalD_jf5BbRVlg>
+    <xmx:Zlc5aqJHeL9hb5sVabQ8M51Cb9S_J5GMvr86l0d5dw8Z653umjHTVQ>
+    <xmx:Zlc5asGwe6nukOJLHXqg-czX5yPWEWw5bwRPSj17oU5RQwirZnD0snAW>
+Feedback-ID: ib53e4b78:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 22 Jun 2026 11:40:22 -0400 (EDT)
+Date: Mon, 22 Jun 2026 10:40:20 -0500
+From: Ian Bridges <icb@fastmail.org>
+To: sashiko-reviews@lists.linux.dev
+Cc: Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fbdev: fix use-after-free of fb_display[i].mode in
+ store_modes()
+Message-ID: <ajlXZL7nVHxH6mxh@dev>
+References: <ajjoDhAi2y4ArSlz@dev>
+ <20260622080749.D7FC61F000E9@smtp.kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260622080749.D7FC61F000E9@smtp.kernel.org>
 
-The SSD1351 support was added to the ssd130x DRM driver. To avoid
-confusion and irrelevant updates, the staging fb_ssd1351 driver is
-removed.
+On Mon, Jun 22, 2026 at 08:07:49AM +0000, sashiko-bot@kernel.org wrote:
 
-Signed-off-by: Amit Barzilai <amit.barzilai22@gmail.com>
----
- drivers/staging/fbtft/Kconfig      |   5 -
- drivers/staging/fbtft/Makefile     |   1 -
- drivers/staging/fbtft/fb_ssd1351.c | 240 -----------------------------
- 3 files changed, 246 deletions(-)
- delete mode 100644 drivers/staging/fbtft/fb_ssd1351.c
+I'm new to submitting kernel patches, so please correct me if I have
+handled this wrong. All four findings are pre-existing and none are
+introduced by this patch, which I scoped to the reported
+fb_display[i].mode use-after-free. Responses inline.
 
-diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
-index 92943564cb91..c8ea1a0f3fb0 100644
---- a/drivers/staging/fbtft/Kconfig
-+++ b/drivers/staging/fbtft/Kconfig
-@@ -133,11 +133,6 @@ config FB_TFT_SSD1331
- 	help
- 	  Framebuffer support for SSD1331
- 
--config FB_TFT_SSD1351
--	tristate "FB driver for the SSD1351 LCD Controller"
--	help
--	  Framebuffer support for SSD1351
--
- config FB_TFT_ST7735R
- 	tristate "FB driver for the ST7735R LCD Controller"
- 	help
-diff --git a/drivers/staging/fbtft/Makefile b/drivers/staging/fbtft/Makefile
-index e9cdf0f0a7da..c230bf008fc7 100644
---- a/drivers/staging/fbtft/Makefile
-+++ b/drivers/staging/fbtft/Makefile
-@@ -28,7 +28,6 @@ obj-$(CONFIG_FB_TFT_SSD1305)     += fb_ssd1305.o
- obj-$(CONFIG_FB_TFT_SSD1306)     += fb_ssd1306.o
- obj-$(CONFIG_FB_TFT_SSD1305)     += fb_ssd1325.o
- obj-$(CONFIG_FB_TFT_SSD1331)     += fb_ssd1331.o
--obj-$(CONFIG_FB_TFT_SSD1351)     += fb_ssd1351.o
- obj-$(CONFIG_FB_TFT_ST7735R)     += fb_st7735r.o
- obj-$(CONFIG_FB_TFT_ST7789V)     += fb_st7789v.o
- obj-$(CONFIG_FB_TFT_TINYLCD)     += fb_tinylcd.o
-diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
-deleted file mode 100644
-index 6736b09b2f45..000000000000
---- a/drivers/staging/fbtft/fb_ssd1351.c
-+++ /dev/null
-@@ -1,240 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--
--#include <linux/backlight.h>
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/spi/spi.h>
--#include <linux/delay.h>
--#include <linux/string_choices.h>
--
--#include "fbtft.h"
--
--#define DRVNAME		"fb_ssd1351"
--#define WIDTH		128
--#define HEIGHT		128
--#define GAMMA_NUM	1
--#define GAMMA_LEN	63
--#define DEFAULT_GAMMA	"0 2 2 2 2 2 2 2 " \
--			"2 2 2 2 2 2 2 2 " \
--			"2 2 2 2 2 2 2 2 " \
--			"2 2 2 2 2 2 2 2 " \
--			"2 2 2 2 2 2 2 2 " \
--			"2 2 2 2 2 2 2 2 " \
--			"2 2 2 2 2 2 2 2 " \
--			"2 2 2 2 2 2 2" \
--
--static void register_onboard_backlight(struct fbtft_par *par);
--
--static int init_display(struct fbtft_par *par)
--{
--	if (par->pdata &&
--	    par->pdata->display.backlight == FBTFT_ONBOARD_BACKLIGHT) {
--		/* module uses onboard GPIO for panel power */
--		par->fbtftops.register_backlight = register_onboard_backlight;
--	}
--
--	par->fbtftops.reset(par);
--
--	write_reg(par, 0xfd, 0x12); /* Command Lock */
--	write_reg(par, 0xfd, 0xb1); /* Command Lock */
--	write_reg(par, 0xae); /* Display Off */
--	write_reg(par, 0xb3, 0xf1); /* Front Clock Div */
--	write_reg(par, 0xca, 0x7f); /* Set Mux Ratio */
--	write_reg(par, 0x15, 0x00, 0x7f); /* Set Column Address */
--	write_reg(par, 0x75, 0x00, 0x7f); /* Set Row Address */
--	write_reg(par, 0xa1, 0x00); /* Set Display Start Line */
--	write_reg(par, 0xa2, 0x00); /* Set Display Offset */
--	write_reg(par, 0xb5, 0x00); /* Set GPIO */
--	write_reg(par, 0xab, 0x01); /* Set Function Selection */
--	write_reg(par, 0xb1, 0x32); /* Set Phase Length */
--	write_reg(par, 0xb4, 0xa0, 0xb5, 0x55); /* Set Segment Low Voltage */
--	write_reg(par, 0xbb, 0x17); /* Set Precharge Voltage */
--	write_reg(par, 0xbe, 0x05); /* Set VComH Voltage */
--	write_reg(par, 0xc1, 0xc8, 0x80, 0xc8); /* Set Contrast */
--	write_reg(par, 0xc7, 0x0f); /* Set Master Contrast */
--	write_reg(par, 0xb6, 0x01); /* Set Second Precharge Period */
--	write_reg(par, 0xa6); /* Set Display Mode Reset */
--	write_reg(par, 0xaf); /* Set Sleep Mode Display On */
--
--	return 0;
--}
--
--static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
--{
--	write_reg(par, 0x15, xs, xe);
--	write_reg(par, 0x75, ys, ye);
--	write_reg(par, 0x5c);
--}
--
--static int set_var(struct fbtft_par *par)
--{
--	unsigned int remap;
--
--	if (par->fbtftops.init_display != init_display) {
--		/* don't risk messing up register A0h */
--		return 0;
--	}
--
--	remap = 0x60 | (par->bgr << 2); /* Set Colour Depth */
--
--	switch (par->info->var.rotate) {
--	case 0:
--		write_reg(par, 0xA0, remap | 0x00 | BIT(4));
--		break;
--	case 270:
--		write_reg(par, 0xA0, remap | 0x03 | BIT(4));
--		break;
--	case 180:
--		write_reg(par, 0xA0, remap | 0x02);
--		break;
--	case 90:
--		write_reg(par, 0xA0, remap | 0x01);
--		break;
--	}
--
--	return 0;
--}
--
--/*
-- * Grayscale Lookup Table
-- * GS1 - GS63
-- * The driver Gamma curve contains the relative values between the entries
-- * in the Lookup table.
-- *
-- * From datasheet:
-- * 8.8 Gray Scale Decoder
-- *
-- *	there are total 180 Gamma Settings (Setting 0 to Setting 180)
-- *	available for the Gray Scale table.
-- *
-- *	The gray scale is defined in incremental way, with reference
-- *	to the length of previous table entry:
-- *		Setting of GS1 has to be >= 0
-- *		Setting of GS2 has to be > Setting of GS1 +1
-- *		Setting of GS3 has to be > Setting of GS2 +1
-- *		:
-- *		Setting of GS63 has to be > Setting of GS62 +1
-- *
-- */
--static int set_gamma(struct fbtft_par *par, u32 *curves)
--{
--	unsigned long tmp[GAMMA_NUM * GAMMA_LEN];
--	int i, acc = 0;
--
--	for (i = 0; i < 63; i++) {
--		if (i > 0 && curves[i] < 2) {
--			dev_err(par->info->device,
--				"Illegal value in Grayscale Lookup Table at index %d : %d. Must be greater than 1\n",
--				i, curves[i]);
--			return -EINVAL;
--		}
--		acc += curves[i];
--		tmp[i] = acc;
--		if (acc > 180) {
--			dev_err(par->info->device,
--				"Illegal value(s) in Grayscale Lookup Table. At index=%d : %d, the accumulated value has exceeded 180\n",
--				i, acc);
--			return -EINVAL;
--		}
--	}
--
--	write_reg(par, 0xB8,
--		  tmp[0],  tmp[1],  tmp[2],  tmp[3],
--		  tmp[4],  tmp[5],  tmp[6],  tmp[7],
--		  tmp[8],  tmp[9],  tmp[10], tmp[11],
--		  tmp[12], tmp[13], tmp[14], tmp[15],
--		  tmp[16], tmp[17], tmp[18], tmp[19],
--		  tmp[20], tmp[21], tmp[22], tmp[23],
--		  tmp[24], tmp[25], tmp[26], tmp[27],
--		  tmp[28], tmp[29], tmp[30], tmp[31],
--		  tmp[32], tmp[33], tmp[34], tmp[35],
--		  tmp[36], tmp[37], tmp[38], tmp[39],
--		  tmp[40], tmp[41], tmp[42], tmp[43],
--		  tmp[44], tmp[45], tmp[46], tmp[47],
--		  tmp[48], tmp[49], tmp[50], tmp[51],
--		  tmp[52], tmp[53], tmp[54], tmp[55],
--		  tmp[56], tmp[57], tmp[58], tmp[59],
--		  tmp[60], tmp[61], tmp[62]);
--
--	return 0;
--}
--
--static int blank(struct fbtft_par *par, bool on)
--{
--	fbtft_par_dbg(DEBUG_BLANK, par, "(%s=%s)\n",
--		      __func__, str_true_false(on));
--	if (on)
--		write_reg(par, 0xAE);
--	else
--		write_reg(par, 0xAF);
--	return 0;
--}
--
--static struct fbtft_display display = {
--	.regwidth = 8,
--	.width = WIDTH,
--	.height = HEIGHT,
--	.gamma_num = GAMMA_NUM,
--	.gamma_len = GAMMA_LEN,
--	.gamma = DEFAULT_GAMMA,
--	.fbtftops = {
--		.init_display = init_display,
--		.set_addr_win = set_addr_win,
--		.set_var = set_var,
--		.set_gamma = set_gamma,
--		.blank = blank,
--	},
--};
--
--static int update_onboard_backlight(struct backlight_device *bd)
--{
--	struct fbtft_par *par = bl_get_data(bd);
--	bool on;
--
--	fbtft_par_dbg(DEBUG_BACKLIGHT, par, "%s: power=%d\n", __func__, bd->props.power);
--
--	on = !backlight_is_blank(bd);
--	/* Onboard backlight connected to GPIO0 on SSD1351, GPIO1 unused */
--	write_reg(par, 0xB5, on ? 0x03 : 0x02);
--
--	return 0;
--}
--
--static const struct backlight_ops bl_ops = {
--	.update_status = update_onboard_backlight,
--};
--
--static void register_onboard_backlight(struct fbtft_par *par)
--{
--	struct backlight_device *bd;
--	struct backlight_properties bl_props = { 0, };
--
--	bl_props.type = BACKLIGHT_RAW;
--	bl_props.power = BACKLIGHT_POWER_OFF;
--
--	bd = backlight_device_register(dev_driver_string(par->info->device),
--				       par->info->device, par, &bl_ops,
--				       &bl_props);
--	if (IS_ERR(bd)) {
--		dev_err(par->info->device,
--			"cannot register backlight device (%ld)\n",
--			PTR_ERR(bd));
--		return;
--	}
--	par->info->bl_dev = bd;
--
--	if (!par->fbtftops.unregister_backlight)
--		par->fbtftops.unregister_backlight = fbtft_unregister_backlight;
--}
--
--FBTFT_REGISTER_DRIVER(DRVNAME, "solomon,ssd1351", &display);
--
--MODULE_ALIAS("spi:" DRVNAME);
--MODULE_ALIAS("platform:" DRVNAME);
--MODULE_ALIAS("spi:ssd1351");
--MODULE_ALIAS("platform:ssd1351");
--
--MODULE_DESCRIPTION("SSD1351 OLED Driver");
--MODULE_AUTHOR("James Davies");
--MODULE_LICENSE("GPL");
--- 
-2.54.0
+> Thank you for your contribution! Sashiko AI review found 4 potential issue(s) to consider:
+> 
+> Pre-existing issues:
+> - [High] Use-After-Free in show_mode() due to dangling fb_info->mode pointer.
+> - [High] Data Race and potential Use-After-Free / list corruption when iterating fb_info->modelist.
+> - [High] NULL pointer dereference in fbcon_new_modelist() for unallocated consoles.
+> - [Medium] Data Race and locking violation modifying fb_display in do_unregister_framebuffer().
+> --
+> 
+> commit 5e256dfc1372231ec16feb6ee8a3218859b0dd4f
+> Author: Ian Bridges <icb@fastmail.org>
+> 
+> fbdev: fix use-after-free of fb_display[i].mode in store_modes()
+> 
+> store_modes() replaces a framebuffer's modelist and frees the old entries
+> with fb_destroy_modelist(), but fb_display[i].mode was left dangling.
+> This commit fixes the use-after-free by clearing the stale pointers with
+> fbcon_delete_modelist() before freeing the old list.
+> 
+> Closes: https://syzkaller.appspot.com/bug?extid=81c7c6b52649fd07299d
+> 
+> > diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+> > index baa2bae0fb5b3..c761dcf21dafb 100644
+> > --- a/drivers/video/fbdev/core/fbsysfs.c
+> > +++ b/drivers/video/fbdev/core/fbsysfs.c
+> > @@ -111,8 +111,10 @@ static ssize_t store_modes(struct device *device,
+> >  	if (fb_new_modelist(fb_info)) {
+> 
+> [Severity: High]
+> This isn't a bug introduced by this patch, but can this fb_new_modelist()
+> call lead to a NULL pointer dereference for unallocated consoles?
+> 
+> If an unallocated console (where vc_cons[i].d is NULL) is mapped to a
+> framebuffer, fbcon_set_disp() populates fb_display[i].mode and returns early.
+> 
+> When store_modes() calls fb_new_modelist() -> fbcon_new_modelist(),
+> it checks if con2fb_map and fb_display[i].mode are set. Could it then fetch
+> vc = vc_cons[i].d and unconditionally dereference vc->vc_num?
+> 
+> drivers/video/fbdev/core/fbcon.c:fbcon_new_modelist() {
+>     ...
+>     vc = vc_cons[i].d;
+>     ...
+>     fbcon_set_disp(info, &var, vc->vc_num);
+>     ...
+> }
 
+Confirmed. fbcon_new_modelist() dereferences vc_cons[i].d without a NULL
+check, and a console can have con2fb_map and fb_display[i].mode set while
+vc_cons[i].d is NULL. I hit this while writing the reproducer for this bug.
+It is a separate issue, so I'd argue it needs its own patch adding the NULL
+check.
+
+> 
+> >  		fb_destroy_modelist(&fb_info->modelist);
+> >  		list_splice(&old_list, &fb_info->modelist);
+> > -	} else
+> > +	} else {
+> > +		fbcon_delete_modelist(&old_list);
+> 
+> [Severity: Medium]
+> This is a pre-existing issue, but since we are properly calling
+> fbcon_delete_modelist() under console_lock() here, should other callers do
+> the same?
+> 
+> Looking at do_unregister_framebuffer(), it executes without holding
+> console_lock():
+> 
+> drivers/video/fbdev/core/fbmem.c:do_unregister_framebuffer() {
+>     ...
+>     fbcon_delete_modelist(&fb_info->modelist);
+>     ...
+> }
+
+Agreed. do_unregister_framebuffer() runs under registration_lock, not
+console_lock, so the fbcon_delete_modelist() call added by a1f305893074
+writes fb_display[] without console_lock. The call this patch adds to
+store_modes() runs under console_lock and is safe. The unregister call site
+looks worth a separate fix.
+
+> 
+> Since fbcon_delete_mode() iterates the global fb_display array and locklessly
+> assigns NULL to fb_display[i].mode, could this cause a data race with
+> concurrent readers like FBIOPUT_VSCREENINFO?
+> 
+> >  		fb_destroy_modelist(&old_list);
+> 
+> [Severity: High]
+> This is a pre-existing issue, but does destroying old_list leave
+> fb_info->mode dangling?
+> 
+> If fb_info->mode was previously set to point into a struct fb_modelist
+> element from this list, it doesn't appear to be cleared before the list
+> is freed.
+> 
+> Could a subsequent read of the sysfs mode attribute trigger a use-after-free
+> here:
+> 
+> drivers/video/fbdev/core/fbsysfs.c:show_mode() {
+>     ...
+>     return mode_string(buf, 0, fb_info->mode);
+> }
+
+Confirmed, and it still reproduces with this patch applied. store_modes()
+frees the old modelist that fb_info->mode points into, and this patch only
+clears fb_display[i].mode. Writing a mode to /sys/class/graphics/fb0/mode,
+then a new list to /sys/class/graphics/fb0/modes, then reading
+/sys/class/graphics/fb0/mode faults in mode_string() called from
+show_mode(). Since it is the same free in store_modes(), I will fold the
+fix into a v2 of this patch and clear fb_info->mode alongside
+fb_display[i].mode.
+
+> 
+> [Severity: High]
+> This is also a pre-existing issue, but does modifying fb_info->modelist
+> under lock_fb_info() race with sysfs readers?
+> 
+> Looking at show_modes() and store_mode(), they appear to iterate
+> fb_info->modelist locklessly:
+> 
+> drivers/video/fbdev/core/fbsysfs.c:show_modes() {
+>     ...
+>     list_for_each_entry(modelist, &fb_info->modelist, list) {
+>     ...
+> }
+
+Agreed. show_modes() and store_mode() walk fb_info->modelist without
+lock_fb_info(), so they can race the splice and free in store_modes(). This
+looks like a separate locking fix.
+
+> 
+> Since store_modes() splices, modifies, and destroys this list, could a
+> concurrent sysfs read/write follow corrupted pointers into freed memory?
+> 
+> > +	}
+> >  
+> >  	unlock_fb_info(fb_info);
+> >  	console_unlock();
+> 
+> -- 
+> Sashiko AI review · https://sashiko.dev/#/patchset/ajjoDhAi2y4ArSlz@dev?part=1
+
+To summarise, I will send a v2 of this patch that clears both stale pointers
+in store_modes() (fb_display[i].mode and fb_info->mode), and keep the
+fbcon_new_modelist() NULL check and the two locking issues as separate
+patches.
+
+Thanks,
+Ian

@@ -1,168 +1,350 @@
-Received: from mout.web.de (mout.web.de [212.227.15.3])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16AA425393E;
-	Tue, 23 Jun 2026 09:05:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.3
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F081394792;
+	Tue, 23 Jun 2026 09:37:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782205535; cv=none; b=Ldy8cPJnSENWzOphZxCuzMyCz4w7oVYk2dfomhZkjzjoTP2faDpDi9XKepZOApwm9EmUL0qDzQe9pwQGWRw/6DUfXfvM6Hj2P9zYdWJxChKivxYpBd9E5MiOWjpPyRTnROdrlWOdwiXSUcXr0dMsURlhaYNIeofM9DfiRPq74X8=
+	t=1782207459; cv=none; b=iU0Obesz3HibO7pVz3Yp3gWchbpsgcjOPykQJDBVhv4sYduJF5l2Djg5NrqI16OpxVtb5puk5WNczqd9+5vyfooQs2RRFoOT3hI7+XlUX+UE497qxX35M2RnyWBMHqXy6UcnuEOWecMkoe21GFu4gJZkwT49hO6gSnfdn0lNLb0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782205535; c=relaxed/simple;
-	bh=GC9l4vENqo8WYm6DRb2RP7x429iwqTvChbLL9iVDRnQ=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=RkeA43qpAKDmzOsHIZOkUnjzVov074Fp/RDbWlpx1zVO2WL4OjRF9RT1d3yZ9OCbQiBgW2YmHov4/hu3cYHRXan777e/D2P/FHNE02F2efeANCx2xMx7ytq1Ma/gNiLDI2QvQPW4tNz9PV+sSBO2ibQyz+hBWy84tdDzWjbygvM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=eNiiKZNb; arc=none smtp.client-ip=212.227.15.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
+	s=arc-20240116; t=1782207459; c=relaxed/simple;
+	bh=JksADWb34Msa6pz390S5qh5F2TMVd8PTqSrktgyXJvQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mZA7ClkJGczfvQowG9ec0c+UoZ+Sv6uPouMj/Use0AjuVKyqdWXKDAWPwOm39oS5JKBRxXX5/ErcAxadRGmS0vCytLwHUpsJG7NeAnolBDKVj+JkErwSZZZRxqlIJBD8dJ3Uiq2UgIR/fcP/yQ/zEEsu9myoxZV+zY2Ne7nkc/Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=fWbK/2Se; arc=none smtp.client-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="eNiiKZNb"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1782205525; x=1782810325; i=markus.elfring@web.de;
-	bh=k6gMzOPqXTS+G90vyYHscI8fx+phyEQvJwJPse6tYYg=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
-	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=eNiiKZNbcDT1WqaGZBit2aAMREz3PlIyUG/VxH8M6vLYLBJ1No4DUsW/MSqgE60M
-	 ZNBe4RX9q1SzNZcXPzBYZ9o6eeF2LAx9coQCiSASFXOZPgQ4uDv6HaTocoGOYdXY1
-	 xOv61bONsrBSxju0N11fTMXkaSoiKO/RFTDxdWSnvCzYDOPdWDu69OZdcWPJuWjB3
-	 kiohRp5duKX5IcBM+A0XdTbHlD3Tv67v3t6d9HOV7e9NgkiuFvGdBmPR2lyadp1WR
-	 s2BNgTbzCk63BNqOevHrQk+DXBuETbPG1o8OAB7lQiKMVE6KTkZGG1DDCuFh3AkXI
-	 vIkEwZSIXyl56V5I1g==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from client.hidden.invalid by smtp.web.de (mrweb005
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1MbCE0-1x94xx0JgG-00mBG1; Tue, 23
- Jun 2026 11:05:25 +0200
-Message-ID: <16a86f3d-caf0-46d0-97a4-c9585bdaa06c@web.de>
-Date: Tue, 23 Jun 2026 11:05:12 +0200
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="fWbK/2Se"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1782207458; x=1813743458;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=JksADWb34Msa6pz390S5qh5F2TMVd8PTqSrktgyXJvQ=;
+  b=fWbK/2SenuwJCpmAHaKcLOdObaZdQM47lDvELZEBvP2aIpD5lfklnOE9
+   3J+d9FyKs+kEKeSKMKTTDL72s1iCjEqkWBUK/837xDBPruaFym97wzoBd
+   NWn8Y/fyvU09WbxUdVhZnWWroQgMMLLp/8GOYDctqG8DZdU/RDOG+JLsa
+   hHnBs3fFwBtU68N8XPjtc7vt9yVTcXWyeHboTm9cOJQ7jEP/VZ2QSql5x
+   7bFY2FlkdA4NhLT1CFEO1R0THYhdSNsGCoD/uJAKaI3cpXnHwt5JhHszL
+   qeog7LMjT6JVbr2VkDDyoBS9aSKhqGe04WLP1n6xLyEIO/PcIFhWuRa+5
+   w==;
+X-CSE-ConnectionGUID: M0LUMtoPRRSGb37B2LyH7Q==
+X-CSE-MsgGUID: TEmZjMe5RGWX6XrOn7zzxw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11825"; a="93601374"
+X-IronPort-AV: E=Sophos;i="6.24,220,1774335600"; 
+   d="scan'208";a="93601374"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 02:37:38 -0700
+X-CSE-ConnectionGUID: NYS6AyGOQLat9wdWX+4nDg==
+X-CSE-MsgGUID: 4Ud/jYYTQ4KM1DK9TFbu3A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,220,1774335600"; 
+   d="scan'208";a="251405333"
+Received: from klitkey1-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.7])
+  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 02:37:33 -0700
+Date: Tue, 23 Jun 2026 12:37:31 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Amit Barzilai <amit.barzilai22@gmail.com>
+Cc: javierm@redhat.com, maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com,
+	simona@ffwll.ch, robh@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, andy@kernel.org, gregkh@linuxfoundation.org,
+	deller@gmx.de, azuddinadam@gmail.com, chintanlike@gmail.com,
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev
+Subject: Re: [PATCH v2 3/4] drm/ssd130x: Add SSD135X_FAMILY and SSD1351
+ support
+Message-ID: <ajpT24VIdrZdEzel@ashevche-desk.local>
+References: <20260622152506.78627-1-amit.barzilai22@gmail.com>
+ <20260622152506.78627-4-amit.barzilai22@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Amit Barzilai <amit.barzilai22@gmail.com>,
- dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
- Andy Shevchenko <andy@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
- David Airlie <airlied@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
- <deller@gmx.de>, Javier Martinez Canillas <javierm@redhat.com>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Rob Herring <robh@kernel.org>,
- Simona Vetter <simona@ffwll.ch>, Thomas Zimmermann <tzimmermann@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adam Azuddin
- <azuddinadam@gmail.com>, Chintan Patel <chintanlike@gmail.com>
-References: <20260622152506.78627-4-amit.barzilai22@gmail.com>
-Subject: Re: [PATCH v2 3/4] drm/ssd130x: Add SSD135X_FAMILY and SSD1351
- support
-Content-Language: en-GB, de-DE
-From: Markus Elfring <Markus.Elfring@web.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20260622152506.78627-4-amit.barzilai22@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:O5rVX9YN2GyeY2Sk83RD+qXyH06OJTyAXKtdn8cNlqe3WepRpFA
- 4HvlpsW3A65TGmW7quxv4Up08ieumgF1GXncjmyHj6e2JzC08ugCxHHjiAE/I1ifbyMWhb1
- 4mUrMY0138Udz3zBgzrDPHESjBKl75MMlDqDdvaIVtYBWyJ3oCuNZCTE2h22CCjNvEo3wrS
- TlyCtgho8h7M0t77f1Wuw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:IB047I2Ja28=;eUb2xQLtkNtGWO/9ucz3J+tdfvC
- 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
- ngi7mQ==
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-=E2=80=A6
-> +++ b/drivers/gpu/drm/solomon/ssd130x.c
-> @@ -146,6 +146,33 @@
->  #define SSD133X_COLOR_DEPTH_256			0x0
->  #define SSD133X_COLOR_DEPTH_65K			0x1
-> =20
-> +/* ssd135x commands */
-> +#define SSD135X_SET_COL_RANGE			0x15
-> +#define SSD135X_WRITE_RAM			0x5c
-> +#define SSD135X_SET_ROW_RANGE			0x75
-=E2=80=A6
+On Mon, Jun 22, 2026 at 06:25:05PM +0300, Amit Barzilai wrote:
+> The Solomon SSD1351 is a 128x128 RGB color OLED controller. It shares
+> the SSD133X data path: a column/row addressing window followed by a bulk
+> RGB565 pixel write. Add it as a new SSD135X_FAMILY rather than a separate
+> driver, reusing the SSD133X plane, CRTC and blit/clear helpers.
+> 
+> The only data-path difference is that the SSD1351 requires an explicit
+> Write RAM command (0x5c) after the address window is programmed, before
+> pixel data is accepted, whereas the SSD133X enters data mode implicitly.
+> This is emitted from a shared ssd133x_write_pixels() helper so both the
+> damage-update and clear-screen paths cover it.
+> 
+> The SSD1351 also needs its own init sequence (ssd135x_init), dispatched
+> via ssd135x_encoder_atomic_enable, and a longer post-reset settle delay.
+> The re-map byte is fixed at 0 degrees, 65k color, COM split, BGR
+> sub-pixel order; rotation is not supported.
+> 
+> The SSD1351 is SPI-only, so only the SPI transport match tables gain an
+> entry; no new config symbol is needed.
 
-How do you think about to use an enumeration for such data?
-https://en.wikipedia.org/wiki/Enumerated_type#C_and_syntactically_similar_=
-languages
+...
 
-Regards,
-Markus
+> const struct ssd130x_deviceinfo ssd130x_variants[] = {
+
+>  		.default_height = 64,
+>  		.format_rgb565 = 1,
+>  		.family_id = SSD133X_FAMILY,
+> +	},
+> +	/* ssd135x family */
+> +	[SSD1351_ID] = {
+> +		.default_width = 128,
+> +		.default_height = 128,
+> +		.format_rgb565 = 1,
+> +		.family_id = SSD135X_FAMILY,
+>  	}
+
+While it's not a problem _in this case_, the rule of thumb is always to have a
+trailing comma for non-terminator entry.
+
+...
+
+>  /*
+>   * Helper to write data (SSD13XX_DATA) to the device.
+>   */
+> -static int ssd130x_write_data(struct ssd130x_device *ssd130x, u8 *values, int count)
+> +static int ssd130x_write_data(struct ssd130x_device *ssd130x, const u8 *values, int count)
+>  {
+>  	return regmap_bulk_write(ssd130x->regmap, SSD13XX_DATA, values, count);
+>  }
+
+Stray change. If needed, either explain in the commit message or create
+a separate patch (depending on the dependencies).
+
+...
+
+>  	unsigned int i;
+>  	int ret;
+>  
+> +	/*
+> +	 * The SSD135X family latches command parameters with D/C# HIGH (i.e.
+> +	 * clocked in as data), unlike the other families where the opcode and
+> +	 * all of its parameters are sent as commands (D/C# LOW). Send the
+> +	 * opcode as a command and any following parameter bytes as data.
+> +	 */
+> +	if (ssd130x->device_info->family_id == SSD135X_FAMILY) {
+> +		if (len == 0)
+> +			return 0;
+> +		ret = regmap_write(ssd130x->regmap, SSD13XX_COMMAND, cmd[0]);
+> +		if (ret || len == 1)
+> +			return ret;
+> +
+> +		return ssd130x_write_data(ssd130x, cmd + 1, len - 1);
+> +	}
+
+>  	for (i = 0; i < len; i++) {
+
+This loop seems for the len, so it will be the same for both devices as far as
+I can see the context. I can't find this piece in the original driver, perhaps
+it's some dependency?
+
+>  		ret = regmap_write(ssd130x->regmap, SSD13XX_COMMAND, cmd[i]);
+>  		if (ret)
+
+...
+
+> +/*
+> + * Variadic wrapper around ssd130x_write_cmds(). The first variadic argument is
+> + * the command opcode and the following ones are its options/parameters.
+> + */
+> +static int ssd130x_write_cmd(struct ssd130x_device *ssd130x, int count,
+> +			     /* u8 cmd, u8 option, ... */...)
+> +{
+> +	u8 buf[8];
+> +	va_list ap;
+> +	int i;
+> +
+> +	if (count > ARRAY_SIZE(buf))
+> +		return -EINVAL;
+> +
+> +	va_start(ap, count);
+
+> +	for (i = 0; i < count; i++)
+
+Can be
+
+	for (int i = 0; i < count; i++)
+
+> +		buf[i] = va_arg(ap, int);
+> +	va_end(ap);
+> +
+> +	return ssd130x_write_cmds(ssd130x, buf, count);
+> +}
+
+...
+
+> +static int ssd135x_init(struct ssd130x_device *ssd130x)
+> +{
+> +	/*
+> +	 * Horizontal address increment, COM split, reversed COM scan direction,
+> +	 * BGR sub-pixel order and 65k (RGB565) color depth. Rotation is not
+> +	 * supported, so the remap byte is fixed.
+> +	 */
+> +	u8 remap = SSD135X_SET_REMAP_65K | SSD135X_SET_REMAP_COM_SPLIT |
+> +		   SSD135X_SET_REMAP_COLOR_BGR | SSD135X_SET_REMAP_COM_SCAN;
+
+> +	const u8 cmds[] = {
+
+Why not static?
+
+> +		2, SSD135X_SET_COMMAND_LOCK, 0x12,
+> +		2, SSD135X_SET_COMMAND_LOCK, 0xb1,
+> +		1, SSD13XX_DISPLAY_OFF,
+> +		2, SSD135X_SET_CLOCK_FREQ, 0xf1,
+> +		2, SSD135X_SET_MUX_RATIO, ssd130x->height - 1,
+> +		3, SSD135X_SET_COL_RANGE, 0x00, ssd130x->width - 1,
+> +		3, SSD135X_SET_ROW_RANGE, 0x00, ssd130x->height - 1,
+> +		2, SSD135X_SET_DISPLAY_START, 0x00,
+> +		2, SSD135X_SET_DISPLAY_OFFSET, 0x00,
+> +		2, SSD135X_SET_GPIO, 0x00,
+> +		2, SSD135X_SET_FUNCTION, 0x01,
+> +		2, SSD135X_SET_PHASE_LENGTH, 0x32,
+> +		4, SSD135X_SET_VSL, 0xa0, 0xb5, 0x55,
+> +		2, SSD135X_SET_PRECHARGE, 0x17,
+> +		2, SSD135X_SET_VCOMH_VOLTAGE, 0x05,
+> +		4, SSD135X_SET_CONTRAST, 0xc8, 0x80, 0xc8,
+> +		2, SSD135X_SET_CONTRAST_MASTER, 0x0f,
+> +		2, SSD135X_SET_PRECHARGE2, 0x01,
+> +		1, SSD135X_SET_DISPLAY_NORMAL,
+> +		2, SSD13XX_SET_SEG_REMAP, remap,
+
+> +		0,
+
+No trailing comma for the terminator entry.
+
+> +	};
+> +
+> +	/*
+> +	 * ssd130x_power_on() issues a short reset pulse, but the SSD1351 is not
+> +	 * ready to accept commands immediately afterwards. Give the controller
+> +	 * time to settle before sending the init sequence.
+> +	 */
+
+Any reference to the datasheet?
+
+> +	msleep(120);
+> +
+> +	return ssd130x_run_cmd_seq(ssd130x, cmds);
+> +}
+
+...
+
+> +/*
+> + * Write a run of pixel data to the controller's display RAM. The SSD135X
+> + * family requires an explicit Write RAM command once the address window has
+> + * been set, before any pixel data is accepted; the SSD133X family enters data
+> + * mode implicitly after the column/row range is programmed.
+> + */
+> +static int ssd133x_write_pixels(struct ssd130x_device *ssd130x,
+> +				u8 *data_array, unsigned int count)
+> +{
+> +	if (ssd130x->device_info->family_id == SSD135X_FAMILY) {
+
+> +		int ret = ssd130x_write_cmd(ssd130x, 1, SSD135X_WRITE_RAM);
+> +
+> +		if (ret < 0)
+> +			return ret;
+
+This style is discouraged as it's harder to maintain. Better to split
+assignment and definition
+
+		int ret;
+
+		ret = ssd130x_write_cmd(ssd130x, 1, SSD135X_WRITE_RAM);
+		if (ret < 0)
+			return ret;
+
+> +	}
+> +
+> +	return ssd130x_write_data(ssd130x, data_array, count);
+> +}
+
+...
+
+> static const struct drm_plane_helper_funcs ssd130x_primary_plane_helper_funcs[]
+
+>  		.atomic_check = ssd133x_primary_plane_atomic_check,
+>  		.atomic_update = ssd133x_primary_plane_atomic_update,
+>  		.atomic_disable = ssd133x_primary_plane_atomic_disable,
+> +	},
+> +	[SSD135X_FAMILY] = {
+> +		DRM_GEM_SHADOW_PLANE_HELPER_FUNCS,
+> +		.atomic_check = ssd133x_primary_plane_atomic_check,
+> +		.atomic_update = ssd133x_primary_plane_atomic_update,
+> +		.atomic_disable = ssd133x_primary_plane_atomic_disable,
+>  	}
+
+As per another similar case.
+
+>  };
+
+...
+
+> static const struct drm_encoder_helper_funcs ssd130x_encoder_helper_funcs[] = {
+
+>  	[SSD133X_FAMILY] = {
+>  		.atomic_enable = ssd133x_encoder_atomic_enable,
+>  		.atomic_disable = ssd130x_encoder_atomic_disable,
+> +	},
+> +	[SSD135X_FAMILY] = {
+> +		.atomic_enable = ssd135x_encoder_atomic_enable,
+> +		.atomic_disable = ssd130x_encoder_atomic_disable,
+>  	}
+>  };
+
+Ditto.
+
+...
+
+
+> diff --git a/drivers/gpu/drm/solomon/ssd130x.h b/drivers/gpu/drm/solomon/ssd130x.h
+> index b0b487c06e04..da89d4455270 100644
+> --- a/drivers/gpu/drm/solomon/ssd130x.h
+> +++ b/drivers/gpu/drm/solomon/ssd130x.h
+> @@ -26,7 +26,8 @@
+>  enum ssd130x_family_ids {
+>  	SSD130X_FAMILY,
+>  	SSD132X_FAMILY,
+> -	SSD133X_FAMILY
+> +	SSD133X_FAMILY,
+> +	SSD135X_FAMILY
+
+Ditto, and this is exactly the whole point why non-terminator entries should
+have a trailing comma.
+
+>  };
+
+...
+
+>  enum ssd130x_variants {
+
+>  	SSD1327_ID,
+>  	/* ssd133x family */
+>  	SSD1331_ID,
+> +	/* ssd135x family */
+> +	SSD1351_ID,
+>  	NR_SSD130X_VARIANTS
+
+See the difference? Here is terminator, which is clear. The above cases are
+not.
+
+>  };
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+

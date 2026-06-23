@@ -1,85 +1,71 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E18EE389DEC;
-	Tue, 23 Jun 2026 08:41:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2BAE3CEB8D;
+	Tue, 23 Jun 2026 08:43:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782204116; cv=none; b=PxuZ/5lHxPcnHXqVRlAuP+AgSXHgaFT6OFOflDuD8pjXFzFFu1t4TeX6wSmqJCGN4IaG3afFsuIkpIEq0zilsXptnr7BAGwkWOgp7HbmH6naEi2CJ9wDuc2RE3OxxwK/QEy6nQlsOTeRYJE+WB33vm6ir59CZCAgQUeqhkFuGpU=
+	t=1782204234; cv=none; b=Uol4adDtVNxGs6XH7LDx/J26fcpT4b6hXNQ+IDfilx4umZQob2GKB/nxYgraqkZJP88puujxBvsVIoKiNJi8iAVD5beJDxr+xqUdRLbFNmwTgh7sQRW9T/wbHJZRtWWuiDJnFlikwFTlGwLlCC3LU+PMsyHzh5KrQ8heDYJcVLw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782204116; c=relaxed/simple;
-	bh=NVU1esyolU7WLFj8gLpesagVKS9aEicy5xSrvy+QSIE=;
+	s=arc-20240116; t=1782204234; c=relaxed/simple;
+	bh=BtyTOmTB6jsKnLzsaKNVwFFXbcizT+Rax8+sy9JZ5rE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Pp+bOlIZsIUsDjCQtX64QFqY4X+YwzkNuGfIGmPFCIeU1dLOHLbtlrY/kf7BuzLXFfykC8jRRHFjnIo/cD2AKoZY1rv6puYAmqKHr7GvpaEdKDGn5MNyCBtF0FNqDGOqeChRVgt4AbGdrBSGpoEfJ3ni2+bR1riQpxbD09uHwjM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Uv14a83H; arc=none smtp.client-ip=192.198.163.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=kLBAZyrAWY4tLXhjGg7kcFoCufkh3vT7cf1OImM1+CzmWQVzrkUn6vNP6KM56p29MlezGaqUrOfJpBJTQGRLwpGF0+9CpvPm8jo2PW1EygUuGrtdWq/BEm0ihGW0sLwAZ8M6ojNuQcnKDwaieGvrHNn1+U3YwxW+KIr9R5c+qcw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R0u4f0vm; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Uv14a83H"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782204115; x=1813740115;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=NVU1esyolU7WLFj8gLpesagVKS9aEicy5xSrvy+QSIE=;
-  b=Uv14a83H09LXRWiJxF959aa4MbcxdmMrQ4G6mavmMK0tD5haeWENb6/e
-   ZTeSAodxsil2XksaivDZJd0KL1GPylbSgQ4f9v819JQRglbulugiNeTyo
-   HAUqw+tfivPKMQIXkgD3OoNbf0GLXkoSS/URBjZOjmK7FET857zr/Kj6d
-   p3js7Eo/N0m29qBC7+FySBuAS+Gr+sxWuNYdP+1B407Mh3O+DWDfB+HKK
-   gO+YDEPCBTtuVOJllk9B0hVAAzSzmcO2x/jGF7Bs/VfikjT1Ii6I+RIhY
-   Dk8amslVzEKJ7Cmduu1fjtYRkaPb3e7zZZPRGDLytxhOtXpl6QWw3B//j
-   A==;
-X-CSE-ConnectionGUID: GDSWS/LITFC8Lo60Fbx4GA==
-X-CSE-MsgGUID: Y0DoXXD9SP+0EBNIwzJHng==
-X-IronPort-AV: E=McAfee;i="6800,10657,11825"; a="86784129"
-X-IronPort-AV: E=Sophos;i="6.24,220,1774335600"; 
-   d="scan'208";a="86784129"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 01:41:54 -0700
-X-CSE-ConnectionGUID: 51sPTZeLQISJJsimKa2cqw==
-X-CSE-MsgGUID: 0NozmO/VT3O6HKbZ6+vsYw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,220,1774335600"; 
-   d="scan'208";a="253803495"
-Received: from klitkey1-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.7])
-  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 01:41:50 -0700
-Date: Tue, 23 Jun 2026 11:41:47 +0300
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R0u4f0vm"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93FB51F000E9;
+	Tue, 23 Jun 2026 08:43:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782204233;
+	bh=9N7Z/t3yS/fJOyNmuIzO1Bt4wNfsxzy25SOgFyC2mdQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=R0u4f0vm++dpzVcMtZGMaEUor0mZo4RbD9F8Ws0y+OR8CSmusOJvIV/yg6VpnpPOH
+	 UTxSf9Er79H2Mi+/K0PWjVCg5j0xMoLeY0VLb64CfaJ4AAZay+kbNA31urbSW9YpHL
+	 8pVsyxHG41J5ee9VZjRYYV4UNR48aKO7by0P3ubMouhfz/4nYvTPZqEUMiVHDg4ftC
+	 T+nwBesuiiBsScOqLCmsQlbX9Obzq6GVBayK/KB1CGKD7zFXZJ3wXPtl0x8ysWEzQg
+	 8mZihPskb4J5pDTWA7SOQuIbjobbsQr/2aWrMa+nw6DgE0FxDIhEMmXAeasNDKx9Si
+	 bnsQ02SRcuJfA==
+Date: Tue, 23 Jun 2026 10:43:48 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Amit Barzilai <amit.barzilai22@gmail.com>
-Cc: javierm@redhat.com, maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com,
-	simona@ffwll.ch, robh@kernel.org, krzk+dt@kernel.org,
-	conor+dt@kernel.org, andy@kernel.org, gregkh@linuxfoundation.org,
-	deller@gmx.de, azuddinadam@gmail.com, chintanlike@gmail.com,
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev
-Subject: Re: [PATCH v2 4/4] staging: fbtft: remove fb_ssd1351 driver
-Message-ID: <ajpGy7K4eM8oJIfD@ashevche-desk.local>
+Cc: javierm@redhat.com, maarten.lankhorst@linux.intel.com, 
+	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, andy@kernel.org, 
+	gregkh@linuxfoundation.org, deller@gmx.de, azuddinadam@gmail.com, chintanlike@gmail.com, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+Subject: Re: [PATCH v2 1/4] dt-bindings: display: Add Solomon SSD1351 OLED
+ controller
+Message-ID: <20260623-debonair-wonderful-bug-e8abb3@quoll>
 References: <20260622152506.78627-1-amit.barzilai22@gmail.com>
- <20260622152506.78627-5-amit.barzilai22@gmail.com>
+ <20260622152506.78627-2-amit.barzilai22@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260622152506.78627-5-amit.barzilai22@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+In-Reply-To: <20260622152506.78627-2-amit.barzilai22@gmail.com>
 
-On Mon, Jun 22, 2026 at 06:25:06PM +0300, Amit Barzilai wrote:
-> The SSD1351 support was added to the ssd130x DRM driver. To avoid
-> confusion and irrelevant updates, the staging fb_ssd1351 driver is
-> removed.
+On Mon, Jun 22, 2026 at 06:25:03PM +0300, Amit Barzilai wrote:
+> Add a device tree binding for the Solomon SSD1351, a 128x128 65k-color
+> RGB OLED display controller driven over a 4-wire SPI bus. The binding
+> builds on the shared solomon,ssd-common.yaml properties already used by
+> the other Solomon display controllers.
+> 
+> Assisted-by: Claude:claude-opus-4-8
+> Signed-off-by: Amit Barzilai <amit.barzilai22@gmail.com>
+> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> ---
+>  .../bindings/display/solomon,ssd1351.yaml     | 42 +++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/display/solomon,ssd1351.yaml
 
-NAK, the fbtft has two drivers in one (SPI + parallel), plus as Maxime said,
-it has its own binding.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
--- 
-With Best Regards,
-Andy Shevchenko
-
+Best regards,
+Krzysztof
 

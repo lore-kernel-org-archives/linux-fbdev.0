@@ -1,122 +1,125 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84382351C1E
-	for <linux-fbdev@vger.kernel.org>; Tue, 23 Jun 2026 08:50:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 683EB25393E;
+	Tue, 23 Jun 2026 09:03:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782204627; cv=none; b=lEdGXZf3RUCjLKSS6C8l2zQ7oPgUls4MwBpQv4p/arsgfwCY2ltyK1UWNoal5caF5p2uKUzGBCfLnBIIgltLsdWP5xHikp7k8gg5gpU97NIBkRjXXRpn2jx+7JmMMtcIMnSYGF4ixGwPjRhHAFKpDff7PXfluVe253S0UQ26bHc=
+	t=1782205394; cv=none; b=SM0rcvFeBVn4zraQbC0GA9xd8nPF8vLEicW5Jm6hjYhYKrJELzXF5ZHiDDnRqNtgQ5prbUrCsBi95LzbHkSC3mM80Y9LUCPE6cz+qdItfKG/Tk9aH2/w9l0f6r0iI1vV7cwmpVd7wnCv3dy0BN01S3QAc65r/6/fQN5do/mldzI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782204627; c=relaxed/simple;
-	bh=TZ0+5146xwe6OT/CbQdW0d6uHCZxJf8UjdEd5HflsKE=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=NpMOVh1fCcVYEiZEOAnPYyGrfJXWLI2P3HSZyCXg9mmWU0SrbEu1XlsgsS39/4lYZafPp5hgrsmdF5Ic6CYpuMgr+zv7oHpfaYtjKQafNlvNoIpOxMy3uPIXF9ryi7ezDI2Mi36ptET2EjHavBvIVaRDJgBSgdWBsSJIJsGxKFQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=YVS+Hz7U; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=eFRKYZqf; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1782205394; c=relaxed/simple;
+	bh=PPCpMq7lYRc/Iu6FOHaKbGMIYgwijB1RSueN/w0Qn5M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=W8LOAp/+KBkOam58ETJG4Rj0+ZNES6NPM7MuTQ4eI+7H8a2w9gYa46rC3CR0dz7C8bK4x4I+VVQXaVGofMDEjTQWij3v6F0D4qNWKDCdDNIFWCsKyiUcYCixacbGq++TXgLKpz2g8/gjOamuaRutXDYPWzWc56kyDpgjrBFZjVk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=YZTPqk47; arc=none smtp.client-ip=198.175.65.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="YVS+Hz7U";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="eFRKYZqf"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1782204625;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BuoRitIZndRdwR/IA+zUZeOYUkqVtr5e2wU2WIH4U+g=;
-	b=YVS+Hz7U8F9d9rj7BnA4z+BzVB+g0apBKbVVieZPywox+7O0SzCfGPZ9jfCxdTAVUZ5HL6
-	nctU/nkmmPLS801t1bdx43e0OZxAtS1QDxPCU7c+XZ/pCOb6I8Y7L2W4n4SfKP6yUr/tTo
-	N+D/Hny29EaK/IUq049Xflifyk0UJ2k=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-696-gH-D00sFPjida6nAhwSuUw-1; Tue, 23 Jun 2026 04:50:24 -0400
-X-MC-Unique: gH-D00sFPjida6nAhwSuUw-1
-X-Mimecast-MFC-AGG-ID: gH-D00sFPjida6nAhwSuUw_1782204623
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-4923411f041so43244585e9.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 23 Jun 2026 01:50:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1782204623; x=1782809423; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=BuoRitIZndRdwR/IA+zUZeOYUkqVtr5e2wU2WIH4U+g=;
-        b=eFRKYZqfEI4d2Ou1bhQqmi/QNCxjvMsJWN8mPBRzgAE+UqsoMXJj30zi3lY++wtvg8
-         ZcaFoJuvUPR/7qck1mL4PuhmQkJ2Wpir85Oi19FVC/PHyxZztb51IvpePSN/jn7ajwFT
-         5kOdmo3JYHKA7Dw8QA47JhZpwZAdXSNSq/6VE2ivTR3CwWCwcDJyc2eDCJJPY3NlSEjR
-         u/I9RYcGDE+USlg5BXroQOqnyiMdZMozp0wp62IdGYh02oOstrrpERwwToe1hvziW2a6
-         hz17mfmC1UDoOfYpARPyPty3Ak6v4hkCGn5GpnHmNcEDC5ZqP+fSrGIoLh/gG1agenQp
-         wKbg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782204623; x=1782809423;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BuoRitIZndRdwR/IA+zUZeOYUkqVtr5e2wU2WIH4U+g=;
-        b=DhaLS8XWSB2TQv6yny/3rLpmg8a5V2Hpv4qJkWpdU9dJMbiZOMpw8KKbtvTUQzMYz6
-         jn9QaRlr2mFT+q5Q/4l2gxSH4xkmFrdkSEnDoCywYajJ4aALl2AY0M6KJFEAbRyLdedy
-         FvB/O/Q/6SsIPsbI3R7JBzV96odQPyn2ppG/crtQ1pZJNq6mrHCP+hf31g27utug4vIp
-         BjB8x6VRzvaRDNRMda8Zb7uYUUDcd+yovkQTXG9vRSETlWrHtV01pqDirp6kVZgp7QWC
-         cS5wytZxQBVDkcy/h6NHvDiIZhga2JXCZbkcr6Cu1ntd3fy0qdqPR5d29YCinOHw1lZJ
-         d6LA==
-X-Forwarded-Encrypted: i=1; AFNElJ92Riq1pZa8Rn75RO3/1BqLnIt6iGKHQ0fxNEiMX/7zO9nEBlwLCky0FaMSRron1G6a4AS3lr/vkm79SA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzAk8Mu9WEZn6V9akt6hfn5lI7IRpYUOdzPzZHPypKB3cofbOPq
-	H5xOqWwQ22h/7PaYHAYrd4lOkvMtbhBQgWFGAMoSDMcIk6INTpU8mBCm9ASIa71e+LU6j7pVGab
-	lWWGINovnxA2Gt9rhXN6ImHvOTyk8aJtf/PGReYwV8OQgUaIdo203tsDk6dc3ey0Z
-X-Gm-Gg: AfdE7ck6tD30cmtYyg3IYQatZFi/mr/6WQD5/INbnYKAnluiQ4oQm4jodu80ALvC8wz
-	/QLIORpVQQCLPIBHfo971BzZaL4b2ljX6em1yr6KpQIr1gfKJTxY2RJw0CKIMXn0aGzci7Ra4vM
-	3YF77nmYgDGRQlU35cD/JRVIqDRx8rAZdhAGOGFH/3OfkhAdoSNTTfDABkUe7CkxrGqpiGXtZfy
-	OMuQihI6Y9aTxOepVSrQYjskX49dFpEvBk42bMZkp3EJkpm94BbMFpDVN6nlXOb80zrtqME62/t
-	JwS8B+9WQ2cQlpt4g95kXdEf1ohIAQ/+4aUBLPjYP4pOkfwnKRHnUr6YRCAgQljbJ8kzlweVCvg
-	kFbw4ZPiNyldpI2WR5+MRMIcWeE1H2FjEeb/ERRdMpjfNoAoWL1REMzkXhmlV/RCjlTMKMA==
-X-Received: by 2002:a05:600c:4503:b0:490:50c5:8153 with SMTP id 5b1f17b1804b1-4925b3896ffmr24629375e9.2.1782204623016;
-        Tue, 23 Jun 2026 01:50:23 -0700 (PDT)
-X-Received: by 2002:a05:600c:4503:b0:490:50c5:8153 with SMTP id 5b1f17b1804b1-4925b3896ffmr24628745e9.2.1782204622485;
-        Tue, 23 Jun 2026 01:50:22 -0700 (PDT)
-Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4923ff8a9e3sm389322615e9.14.2026.06.23.01.50.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jun 2026 01:50:21 -0700 (PDT)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Andy Shevchenko <andriy.shevchenko@intel.com>, Amit Barzilai
- <amit.barzilai22@gmail.com>
-Cc: maarten.lankhorst@linux.intel.com, mripard@kernel.org,
- tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, robh@kernel.org,
- krzk+dt@kernel.org, conor+dt@kernel.org, andy@kernel.org,
- gregkh@linuxfoundation.org, deller@gmx.de, azuddinadam@gmail.com,
- chintanlike@gmail.com, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
-Subject: Re: [PATCH v2 4/4] staging: fbtft: remove fb_ssd1351 driver
-In-Reply-To: <ajpGy7K4eM8oJIfD@ashevche-desk.local>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="YZTPqk47"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1782205394; x=1813741394;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=PPCpMq7lYRc/Iu6FOHaKbGMIYgwijB1RSueN/w0Qn5M=;
+  b=YZTPqk47brywJZQzIPjKthF0j58+ifHQAdNgNGI79qIH/Ff9g5TEsuyJ
+   ORiyhMOzsFAQd6H/Mkd6nEtrnfs7V8p0AWkmeQXU3Xn5qTd7ROR6CHL9q
+   Y8DADY2fwD4bmk9gD+U6t8J6FFP+mAy/9q3J9413uPz6N9yyYw5PNUKlq
+   jbrEjo/GSbkEBH1ga0Tt79OncL0GBwoZA2/aE6zv+OoxJqpiOAUdMmdSH
+   oyvVK4rGlOpqKhXRFC780XXaz28go/IqGeRIo04dnZ7NEspPNPxNaVQ8F
+   LNSBaACw2SpvMg3uOfwv7fk54mcgBZ4K+iFAuCRIBxQSKW5ak9fdI4DrR
+   g==;
+X-CSE-ConnectionGUID: HPCO5SdCQtimfd6GE0cBMw==
+X-CSE-MsgGUID: 7KDfMFnjSJ6cc4appWa+aA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11825"; a="93307765"
+X-IronPort-AV: E=Sophos;i="6.24,220,1774335600"; 
+   d="scan'208";a="93307765"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 02:03:13 -0700
+X-CSE-ConnectionGUID: NBgyK0lZRCGMzmoTmLttMQ==
+X-CSE-MsgGUID: +5fEtc7WSbOdM/6RvOjruw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,220,1774335600"; 
+   d="scan'208";a="287598339"
+Received: from klitkey1-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.7])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 02:03:08 -0700
+Date: Tue, 23 Jun 2026 12:03:06 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Amit Barzilai <amit.barzilai22@gmail.com>
+Cc: javierm@redhat.com, maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com,
+	simona@ffwll.ch, robh@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, andy@kernel.org, gregkh@linuxfoundation.org,
+	deller@gmx.de, azuddinadam@gmail.com, chintanlike@gmail.com,
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev
+Subject: Re: [PATCH v2 2/4] drm/ssd130x: Add RGB565 support to SSD133X family
+Message-ID: <ajpLyronl7a-yxh-@ashevche-desk.local>
 References: <20260622152506.78627-1-amit.barzilai22@gmail.com>
- <20260622152506.78627-5-amit.barzilai22@gmail.com>
- <ajpGy7K4eM8oJIfD@ashevche-desk.local>
-Date: Tue, 23 Jun 2026 10:50:20 +0200
-Message-ID: <87ik79iqsz.fsf@ocarina.mail-host-address-is-not-set>
+ <20260622152506.78627-3-amit.barzilai22@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260622152506.78627-3-amit.barzilai22@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-Andy Shevchenko <andriy.shevchenko@intel.com> writes:
+On Mon, Jun 22, 2026 at 06:25:04PM +0300, Amit Barzilai wrote:
+> SSD133X screens were getting 8bpp (RGB332) instead of the 16bpp
+> (RGB565) that they support. This change adds a boolean to the
+> deviceinfo struct selecting whether the variant is driven at
+> DRM_FORMAT_RGB565.
+> 
+> Changed SSD133X to now utilize 65k color (RGB565).
 
-> On Mon, Jun 22, 2026 at 06:25:06PM +0300, Amit Barzilai wrote:
->> The SSD1351 support was added to the ssd130x DRM driver. To avoid
->> confusion and irrelevant updates, the staging fb_ssd1351 driver is
->> removed.
->
-> NAK, the fbtft has two drivers in one (SPI + parallel), plus as Maxime said,
-> it has its own binding.
->
+...
 
-Yes, I agree that we don't want to delete the fbtft driver.
+> -	 * Each Segment has a 8-bit pixel and each Common output has a
+> -	 * row of pixels. When using the (default) horizontal address
+> -	 * increment mode, each byte of data sent to the controller has
+> -	 * a Segment (e.g: SEG0).
+> +	 * Each Segment holds one pixel and each Common output has a row
+> +	 * of pixels. A pixel is 8 bits (one byte) in the 256 color
+> +	 * (RGB332) format or 16 bits (two bytes) in the 65k color
+> +	 * (RGB565) format. When using the (default) horizontal address
+> +	 * increment mode, the pixel data is sent Segment by Segment
+> +	 * (e.g: SEG0 first).
+>  	 *
+>  	 * When using the 256 color depth format, each pixel contains 3
+>  	 * sub-pixels for color A, B and C. These have 3 bit, 3 bit and
+>  	 * 2 bits respectively.
+
+Something wrong with the plural. There is a difference between "3-bit" and
+"3 bits", but "3 bit" is odd.
+
+> +	 *
+> +	 * When using the 65k color depth format, each pixel contains 3
+> +	 * sub-pixels for color A, B and C. These have 5 bit, 6 bit and
+> +	 * 5 bits respectively.
+
+Same mistake is repeated here.
+
+...
+
+> +	/*
+> +	 * Per-variant output format selector for the SSD133X data path. The
+> +	 * hardware can drive the panel in RGB332 (1 byte/pixel) or RGB565
+> +	 * (2 bytes/pixel); this is a policy choice per variant, not a
+
+In other comments it was spelled fully, be consistent "1 byte per pixel",
+"2 bytes per pixel".
+
+> +	 * capability probe. When set, the variant is driven at RGB565.
+> +	 */
 
 -- 
-Best regards,
+With Best Regards,
+Andy Shevchenko
 
-Javier Martinez Canillas
-Core Platforms
-Red Hat
 

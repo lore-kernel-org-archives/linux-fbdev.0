@@ -1,68 +1,67 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31D1B39E9DD
-	for <linux-fbdev@vger.kernel.org>; Tue, 23 Jun 2026 20:28:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CBC0C8EB
+	for <linux-fbdev@vger.kernel.org>; Tue, 23 Jun 2026 21:35:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782246529; cv=none; b=n9THIs51QMSTusfTi124dIOMlFKyghT2E0c/yq1un0uCoRgfWKixVbrzPjVSmNueMpxariLPhsJ8SiNBvTx7fsV9g6hMctsJ5d85krciHPK16QlIVG5lFP43XDKt4iZSqG3SN8TQBsX4y4vP/FKG0myTdhXv0dAZXJbI5VF37kU=
+	t=1782250518; cv=none; b=ftry0CBE1SuHCxvFExbT9B8qaNVBU/teUGwz22RWQKHJvhsfFM9U14xPnr2/eN8XlK4YJd9SVx2QN5mBhypn4W4jiaLSfS1f8CoynEVQEUnv6MLsg2KJdE4bi6RWatvG41XdaTX1kBHkCEBgHKbPeb6T2HXYIJ5CQW/eV9u7WZY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782246529; c=relaxed/simple;
-	bh=t8xcItmxlUvZa4FfZZJt06O8z78xeEb1VcfkqELMyB0=;
+	s=arc-20240116; t=1782250518; c=relaxed/simple;
+	bh=aUOlwUMmvUxeWUajWHyxa6VY5afRmReJOBvfaFefO1s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=sg9rBJBfcloF/uSaTHeyAXsNmFc7jCkPDWcEk+3amp6klMWgLzAWgM3AbjIL9V9IcNeqtg4aXzGnp3qglUJBBRpioRCoV8dFSxOhTZ5+/N+o1+26tyt1wgFSbJ9LiEnVGcVyoQbQqHw6cQEGFRrhrF++otbP0VmWFfvphCiQOBA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GzMKrlnC; arc=none smtp.client-ip=209.85.128.43
+	 MIME-Version; b=kvcePm8xjUXQlAGbq6VGIRkxu3HlH/nDFC8zS/ZCwbsAUJmWSfpBsj1Lz9yJV3PvazYcbCIVTOUNnl0zrwBVznLmc6PURzSh6x5cjcouqw8LncLQnJZZLgmwX4oCbI4j2X1dqUYxVhHtr/0do4lcca7lmUl9oREODDcsWNRGHBo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kxXQe4kh; arc=none smtp.client-ip=209.85.221.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GzMKrlnC"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-490b7866869so2579875e9.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 23 Jun 2026 13:28:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kxXQe4kh"
+Received: by mail-wr1-f44.google.com with SMTP id ffacd0b85a97d-464192ab2e1so267143f8f.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 23 Jun 2026 14:35:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782246527; x=1782851327; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1782250515; x=1782855315; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=HUvOpAp1AnoH/UC2gSkhKh0euuT0oHxArLADJwiZt64=;
-        b=GzMKrlnCNbDqiN+34vOHhKJBiOI1b86rKRjkiVlf0haZlFOusdIQknG6HIQ8E0y2UE
-         RiVeLRQWrFayEIaPQiQJHLO1IViOBx5cmd5BXARBiloO7xF133aWJLITM7ZTkJd5XEec
-         EL00S0gLbBzdRyK61dr69zzu1aFg6uJlUuozg90UxbWK9NfIu/Dy92HnRfeetxi3FIFO
-         Q+ImbYYTk2sZ3Clknrx7uZPBcBUes1IXI7VGpQTiiom9FnBzj//9t/t+XAjDYgu597Af
-         Vjb8e0mDS5Owg/VYlaDDa9bzdrlqnflfkRtQ5f8sV29yIwgAbW8F7iXEEhoy279E79LU
-         XaBQ==
+        bh=npX1zE3oC8B9i4AqwB/UnRyXW+2tBx9spPlY9cjsius=;
+        b=kxXQe4khNHhsZuZYLfHoNMuyD8he9Pm5qCSWmoJ37d2BOJ32e71EOoxMNQuH47+LDC
+         P4lRRdy3QI4G1GaR4tAB0D0nDqjEjbibO1byHCiVUKUeHTnESuoWwQMdjd5/TGfq90qn
+         0AV85RuUi2n1S6BxmjzeKuFkaiXnOOBzos5QGY5NDhTxzQmC5pS943OvZCliAnbExjlF
+         2fru3vIAsOIMKXeE1luxuISphiWOerwU0mkhZ+7e2Drcbow7eEN/I9BIxk5I7cunfBex
+         lfDvESZ0ZX1NfPozqDPQLIfrkzK1pjPdE1rXiIVP74K4XKyAk6oyMBYUEdsmuwG3x4FV
+         geOg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782246527; x=1782851327;
+        d=1e100.net; s=20251104; t=1782250515; x=1782855315;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=HUvOpAp1AnoH/UC2gSkhKh0euuT0oHxArLADJwiZt64=;
-        b=XroNSEkybF+6R/fS3JGbDzq6Cq1WKi6gycP3QkFH1wq4KbWFW77PwSipw8G2fBsr/B
-         CoswYgglK31iCc3tJtmSY/ClKNxpzM+r/nMkpITnJTlhURqYJOTckmOzTS3ExYyVOU5w
-         nJ5E3zbgRC85t5PVXGEfxppSmjS3j8nd1fTrR84oC+UN/BJW1fRGzHLMLKKCynoshY8Q
-         0RONCOUfRHcQVvT5oOAd88GXCB0WJKNVmXQPdTgVQhbfgld0qneJ1OK4od5a+66iV6IT
-         kR31DNQiU9vWvFUZsW3/IrY+A0z7ymECXJ4JgCX+JJi7eEQ/PiDlanghCtiFLBQB6zZS
-         qvvg==
-X-Forwarded-Encrypted: i=1; AFNElJ+pAvu/EZLDxzKWR8ybNxEHD5U0uZ8jysKBF5nN94EO7uxtFDDDa6ix1lZttbjlVZRPV/U4oX7MIO+QrQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yzhsl7/uzkImUyojfEpngNzKKUZ2qycswvOSdeSEwPfIcRMJArH
-	lKDSpeZJyQMdzSxgz0ZwAQ9P9kc+UNl7g7Jn7fcibvZwugUuvubNI7h/
-X-Gm-Gg: AfdE7clRtd647o0pg951HCV/gg0muROdccl5Ma7KYvbhawhRI8Y2U/HdR1MtVSpvqGD
-	IOFsSRRJgIujPOXZ3qRHfjXhqHORJV5pfwjpkqIcxGywj6SbKMp3tJxFgGxEmT18Gc6IIbAdKkP
-	M+PGdqN9RvQKdyFWn7BgmFJYWoI6vp11OsXlXO2v1bPRdC5HlqVbnB0oE3rVj5gKB1d9NizLpWM
-	62ItPCFsBzV8Bld/S10hk9Sg8V9XhZiSnXeLoKEBb+scONuqBoitwA6zSo2pzbWIiMgPgCPDj52
-	zcK+S1iVKFO6qByXeSbPE+CSvlzEVfrSXMsSQOCfKjs18MJENA9VlTsuQQt50UewW6jsO+HS/fH
-	2sXaIBcaOtvwgnhJ3pNTeBzad5Y5By3u6TzmD220TddVsnOXFYLcmeZ9PzoxAoPH9rl3RWJTEoS
-	fsiPavYN2iSL5IJkk55h2uC/74M14/7FmeOFR/oA==
-X-Received: by 2002:a05:600c:6308:b0:490:b8c0:d470 with SMTP id 5b1f17b1804b1-4925b37eb4emr62966205e9.19.1782246526525;
-        Tue, 23 Jun 2026 13:28:46 -0700 (PDT)
+        bh=npX1zE3oC8B9i4AqwB/UnRyXW+2tBx9spPlY9cjsius=;
+        b=p3tm5h+NjOsvHFjxcyWesUiYvWrTe0aa85fZZ2ydyB96+8eTsj8wlYBELJAoDGm2ph
+         gP6gFBUUDOYUAZ18IfwBgSK6u1Fy+YFQV5H2AJiNKWV9fE+cY2RDzLf+ZcWxazZilmUI
+         0d2aRTQ00B37gI1S9toetXeXDovBNRnBTVzvuxjIhNYm7yFm1973na4iV2Ce7dfzYeHz
+         yLN+omamwqcAeLHZyB4LNQ/gEdeh/LbF2NPJ4WK1s+yukzPidXrJehfepQz527Ucjeoq
+         IuYOG7YFuV+hdDlIXSbvgrJzfKgIgy4ueF6S609NW6xXDfoLoZlfhOCTTCz/CfabL1kY
+         qG9w==
+X-Forwarded-Encrypted: i=1; AFNElJ8ANQKAkDE4g5ymwicfo2ZzYfZ8+MptBDii5mro9YQbsCGlRkT+88AUcNohRKiAPIXt9enCalvEsGMmLA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzaFQEqaRbZ1ZknULzTWU5NWC3bEjSkVgFR8DYfy9y+sMomuQbU
+	lLhSUhsHWjOBGJdOP2H8KBLk/u0Hme/pC3n0tpkCPzmUT7KyZxCxSV0Z
+X-Gm-Gg: AfdE7cl2yWzjX0mPYHAyXLLdMHoaS2F5kFj1g5r67i4x/7ApVrW4BS5tJ7g/DlIjVRl
+	qdUnFb942eycKKIn2DPXCyAddcY6q05U9imn//NzVDXwZkpSYSQAR1vyzlm4ndM1y5C6vLmBtzK
+	SB6ZuzMNu8cEx1gn+AQo75UYo1HQii4WtGmGvIgRRDd5zUdeE3zXJ3CFIo8GATB6116KvEf/+nz
+	rwJcFAUR9VUUyuIAeVxG75C0Td2TMtp5ezdCAjnJegSHFFstY0YV+V5ffaeJjINbismtMWV849K
+	uYO9uat8aZoXR4LfFd5vWqMsx+BO7+ju8aUh03shr6sBlmrfI9Csb+fGLjPPelT9e5rpMJE68AQ
+	CndgxfMWlzURanaJcOyQzvWGsMN6pkpJBXDpXa4T4V0MHMTQcJwiAZgq+euI5/gzlKzEa/M4s8I
+	zmMJx8o37ionhlQk0c1obexKLs+3LzYD4MNm2AoQ==
+X-Received: by 2002:a05:600d:10b:b0:490:b642:ce31 with SMTP id 5b1f17b1804b1-49260840c5amr3352535e9.2.1782250514831;
+        Tue, 23 Jun 2026 14:35:14 -0700 (PDT)
 Received: from anthony.local ([2a06:c701:49b2:4c00:12ff:e0ff:fea5:3d2e])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49249207dabsm570397635e9.0.2026.06.23.13.28.43
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46c221d93d8sm1059435f8f.23.2026.06.23.14.35.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jun 2026 13:28:45 -0700 (PDT)
+        Tue, 23 Jun 2026 14:35:13 -0700 (PDT)
 From: Amit Barzilai <amit.barzilai22@gmail.com>
-To: javierm@redhat.com,
-	andriy.shevchenko@intel.com,
-	mripard@kernel.org
+To: markus.elfring@web.de
 Cc: airlied@gmail.com,
+	amit.barzilai22@gmail.com,
 	andy@kernel.org,
 	azuddinadam@gmail.com,
 	chintanlike@gmail.com,
@@ -71,20 +70,22 @@ Cc: airlied@gmail.com,
 	devicetree@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	gregkh@linuxfoundation.org,
+	javierm@redhat.com,
 	krzk+dt@kernel.org,
 	linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
 	robh@kernel.org,
 	simona@ffwll.ch,
 	tzimmermann@suse.de
-Subject: Re: [PATCH v2 4/4] staging: fbtft: remove fb_ssd1351 driver
-Date: Tue, 23 Jun 2026 23:28:11 +0300
-Message-ID: <20260623202811.16262-1-amit.barzilai22@gmail.com>
+Subject: Re: [PATCH v2 3/4] drm/ssd130x: Add SSD135X_FAMILY and SSD1351 support
+Date: Wed, 24 Jun 2026 00:34:47 +0300
+Message-ID: <20260623213447.30196-1-amit.barzilai22@gmail.com>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <87ik79iqsz.fsf@ocarina.mail-host-address-is-not-set>
-References: <87ik79iqsz.fsf@ocarina.mail-host-address-is-not-set>
+In-Reply-To: <16a86f3d-caf0-46d0-97a4-c9585bdaa06c@web.de>
+References: <16a86f3d-caf0-46d0-97a4-c9585bdaa06c@web.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -93,24 +94,28 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Javier Martinez Canillas <javierm@redhat.com> writes:
+Markus Elfring <Markus.Elfring@web.de> writes:
 
-> Andy Shevchenko <andriy.shevchenko@intel.com> writes:
+>> +++ b/drivers/gpu/drm/solomon/ssd130x.c
+>> @@ -146,6 +146,33 @@
+>>  #define SSD133X_COLOR_DEPTH_256			0x0
+>>  #define SSD133X_COLOR_DEPTH_65K			0x1
+>>  
+>> +/* ssd135x commands */
+>> +#define SSD135X_SET_COL_RANGE			0x15
+>> +#define SSD135X_WRITE_RAM			0x5c
+>> +#define SSD135X_SET_ROW_RANGE			0x75
+> [...]
 >
->> On Mon, Jun 22, 2026 at 06:25:06PM +0300, Amit Barzilai wrote:
->>> The SSD1351 support was added to the ssd130x DRM driver. To avoid
->>> confusion and irrelevant updates, the staging fb_ssd1351 driver is
->>> removed.
->>
->> NAK, the fbtft has two drivers in one (SPI + parallel), plus as Maxime said,
->> it has its own binding.
->>
->
-> Yes, I agree that we don't want to delete the fbtft driver.
+> How do you think about to use an enumeration for such data?
+> https://en.wikipedia.org/wiki/Enumerated_type#C_and_syntactically_similar_languages
 
-I will remove this patch from the next version.
+Thank you for the suggestion.
 
-Thank you Javier, Andy and Maxime for the feedback and explanations.
+I used #define to stay consistent with the rest of ssd130x.c, where the
+command constants for the other families are all defined the same way.
+In my opinion an enum could be a readable solution for these values, but I
+don't think the switch should be included in this series.
 
 -- 
 Thanks,

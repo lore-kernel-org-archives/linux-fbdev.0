@@ -1,259 +1,186 @@
-Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com [209.85.210.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25CA3263C8C
-	for <linux-fbdev@vger.kernel.org>; Wed, 24 Jun 2026 04:46:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05E7C38758F;
+	Wed, 24 Jun 2026 06:27:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782276379; cv=none; b=cgv2BtxhnEhx1gqpCDqWZhkHe60IOhGMupoGu2DzHVuvi0rGDpHhYoR2dcSMR4TopbB5+a25lEnKUpPU5gXcfYMk7oAv3t+88n527RNlpp1a9w+dXJNAREc2KPL0wzxGYrghTD3QRLkNV+rtOel5mar2xpZJiKd/RA65ld2wnxg=
+	t=1782282461; cv=none; b=dymkNoN+GkdjMbVuQQ50SRJ1DY3gyVklfsQu93BkpuVtnsTctoFjZwD/QW2Qt+CwIMcVLUhqmoU3UvJCoQrxNt4nHLovmBk0bPrGFK2iJy5hoFlrVnEob26feBf4CblCdP86MA0fpuRenvbIGLIEK29X0yvnudIBKYERv6x3MR8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782276379; c=relaxed/simple;
-	bh=Ip1s9CHl8ZzsdAveDPfvFvSCDHHCgPFS/WQP8N+uSTw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BHyKFvzhjaXOp3xChsJ4IKNpS62Dcb8ffBx36TOQgTrOrHcaHGaA3uTC01VjoFWL/G3HxbfBXbjvYYzenS3voIUq93wqkvaZuz7JN8H341X95ahXmR+t40iD+xkeLNr2dkQCKzckzRLG4cxj7N60ddSSZHawge30f+YMEEPtCZo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Km6a8UGE; arc=none smtp.client-ip=209.85.210.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782282461; c=relaxed/simple;
+	bh=WUZy6Ph7CUZX2NYOR3i5hc7ReisbEfq/xzPC28bY1/8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=YbGeln7+jivv/tcWV9U8my/Y1WXtPt0EH9uuuzY6ozQiHcgesm6GP2B1WzyPV4cXvykMGzStc7dNNtOd/mxKfpJF+UQ8G8O53eBD3kvu1W5KJuqVaaMCrsIUCLpYjzQ9+mVxrpRASAqEbXgxB4xOZhdiKA2sa+qrOySjpheqmHA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=CAYQE8+6; arc=none smtp.client-ip=212.227.17.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Km6a8UGE"
-Received: by mail-pf1-f170.google.com with SMTP id d2e1a72fcca58-8422871b42dso386906b3a.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 23 Jun 2026 21:46:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782276377; x=1782881177; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vHCLB8AQgq5vY37BJcIWdXKDYn7/wlkr75J7OWaF0kQ=;
-        b=Km6a8UGEVSnC6MJmu53gZEJe3etvg/VRtZU9Hr7RVU1qGK3FYlutnC9BhBfPuScTWL
-         lMMDyRvzuNZv8XvVXGBSd98ThNUoAbfMERMPVNPrnO8KeWXNuX+UNtNR/QcA8aS89Cck
-         wVcBUWZZ9EZIzJGcHTB/jzikyKGB+qREPzJ2LheXaYJqwMLA9R1lltsX1TacoRsJ3+ru
-         EzJeGVJgiCEmfJCn6ljjgNPvzjQKlfyoIcNye9gRmLemfB9R+qcw8RNm5fuWOLf5oJ2a
-         teoOi4WGDbRyEFk0jmqcDwM6ZvDVjDmyLNfLOzgwMpC2m02q819BMRB4CNQHsYCySj4P
-         eNsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782276377; x=1782881177;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=vHCLB8AQgq5vY37BJcIWdXKDYn7/wlkr75J7OWaF0kQ=;
-        b=tUFRSr/bZ/cVF3vuqleA9ZtspMsJih3jlKW6satHll3suGdqBXjEXdBhof2/TiPyi9
-         8YT4PFkbNIY4kkyAnkwlqbwbtQk8YR87RPEtwaKffI0/MiocMrVVz6c4ZP6FUFX58eCT
-         3iiZHZ4edt35ROwH1LqSBelWTupt5MpbN0m6D7ZJ2F6ycsmdTSpvVuxJ/cIkOb/qzDja
-         JDi4FSXhz3OPli5ODF3W9jws7hGZB+soWchktBcW2ACNyH8cz5Z5Ej00BJigXLjCbFdh
-         xXhnzE8AFFsI6GmvVpH9+Yc00R6/RPUFR9SpjnaMNOd2kiG4RF4cQg1br9K4c+fw9Sn4
-         RQqA==
-X-Gm-Message-State: AOJu0YzYIYOFQ0nXDGzydoNdNLo5IR82M2tuuSxevrAmHnG0YflCT09o
-	nj7rvkOtj7X7VFXADfSFrrhztbnc0aA4WBc3Vv3LE64O/hfr84ub9o4L
-X-Gm-Gg: AfdE7cnKqBRwQAvjQqqpzQP8yeLoJmDtPiFSWHi2sKOsuBeUY078xEuXF382+tGl8Ux
-	mOI4LwJl3eMK5TDix5N8mDuqBrlLFibmXijeCo4iq9yFmJpPSxuZFMrvysYr5bQEjXsr+0NpNWV
-	YVq6kiBZVOq5Np9B7ZVHNowUIp8v8cQy/iigDPHMv3xCkuoBKVBh/WlL4gici8MVNGiV0Cf4QOH
-	meClW4SEhCZuCKWT2jFz/yo9Mvp3Hl6jUEZIctTnBk6n9Ohae/iwfJQPW+a96g8JvH7nwN2sMR2
-	i/XjASQ02U3fFm9JP84dqRb/VgPsw9vZD8x9kCH26vPiRH1qW6kQ0QuERPQBdLI/01sHPdt1jjp
-	mWFVvGGxGJK13C+qPoMK0S3LyBpR11gAphdnr0RcJBVm8W61pDXnLxsnNNjZe/EZqEyjiqmTFuQ
-	iwaTSt+TDwoo/3B9DXIBAj2GOAIxmytoSyqXKGmYTNQsmDicJXSCxODtyj2+yz89aTtFOdDjQ/M
-	/rDHNzg5j87ZDm6mQ4ocYNqxonWL6hCNq5aiuSEG2icjgqYHrJMqEeagj35ofxu/rYC
-X-Received: by 2002:a05:6a00:2e1f:b0:845:3b0a:aa06 with SMTP id d2e1a72fcca58-84595235580mr6925257b3a.17.1782276377293;
-        Tue, 23 Jun 2026 21:46:17 -0700 (PDT)
-Received: from kapoor.mahindrauniversity.edu.in ([122.184.65.229])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-845a3fcc839sm859703b3a.10.2026.06.23.21.46.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jun 2026 21:46:16 -0700 (PDT)
-From: Arnav Kapoor <kapoorarnav43@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Arnav Kapoor <kapoorarnav43@gmail.com>,
-	kernel test robot <lkp@intel.com>
-Subject: [PATCH v2] staging: sm750fb: rename CamelCase pvMem and pvReg
-Date: Wed, 24 Jun 2026 10:16:10 +0530
-Message-ID: <20260624044610.69708-1-kapoorarnav43@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260621045050.63460-1-kapoorarnav43@gmail.com>
-References: <20260621045050.63460-1-kapoorarnav43@gmail.com>
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="CAYQE8+6"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1782282439; x=1782887239; i=markus.elfring@web.de;
+	bh=Yqq4XWp+p3kifceGORFd2jQBDj3RjzcTWpq6JZ3BTW4=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=CAYQE8+6wUYX3qfivZLzLC/FgzmzG4xYYJAFr/xuQ4FnFbtpTE2Plaf+GpSnlk/R
+	 cj0v2AMJv0mgUy7jBcBUcDo6bC4UM7KJdn4WE36gSEHBIloGtugCh26mG6+bX07ni
+	 6WuR2W4il7f8d6UFu8gtDwKd+6Fnpwx+RXiZNrfxAwyq+YYXmby1NpNPesgRHtxbf
+	 2489g9QGQDMj0j3O1lt239OCrT60mYVpTe4C72Q9kQwW/uKwn3yM0DedQherE/jLV
+	 fOFqGOg15QAdRMO6BiXWS8hH+vGMd90aANM+cl+PzOmDl+0IsebrPvSon5TaWgKwg
+	 04XKBNWUFYYMgnjLtQ==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from client.hidden.invalid by smtp.web.de (mrweb105
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MZB4F-1wgHPq1I93-00Wnzw; Wed, 24
+ Jun 2026 08:27:19 +0200
+Message-ID: <6194fe38-1f49-4190-a508-87d7b379e59e@web.de>
+Date: Wed, 24 Jun 2026 08:27:04 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 3/4] drm/ssd130x: Add SSD135X_FAMILY and SSD1351
+ support
+To: Amit Barzilai <amit.barzilai22@gmail.com>,
+ dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+Cc: LKML <linux-kernel@vger.kernel.org>, Adam Azuddin
+ <azuddinadam@gmail.com>, Andy Shevchenko <andy@kernel.org>,
+ Chintan Patel <chintanlike@gmail.com>, Conor Dooley <conor+dt@kernel.org>,
+ David Airlie <airlied@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller
+ <deller@gmx.de>, Javier Martinez Canillas <javierm@redhat.com>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Rob Herring <robh@kernel.org>,
+ Simona Vetter <simona@ffwll.ch>, Thomas Zimmermann <tzimmermann@suse.de>
+References: <16a86f3d-caf0-46d0-97a4-c9585bdaa06c@web.de>
+ <20260623213447.30196-1-amit.barzilai22@gmail.com>
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <20260623213447.30196-1-amit.barzilai22@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:FPSVt/JoKekDlA+VAEpC/+JR8z9XsVR+MLZFN+TWShm+AMKT8aN
+ uaOkEvu5GNDyaszfkxmccPbrS0LmH7cTQ2Fuxn12cuMuF3Fn+SwxACrSyiq6bQmgBpjARGG
+ QfQOCwg5AgDfJDlzgP765P/WVFF8dyD/YmBt0k6O717tQIbnoVG0AO36XXdyaKFcBoXa8vq
+ 60B7MtFDI7C/DTNjicbhQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:ZjnPpbG9fCw=;66QYnYZSLekJbUJa0TYcJn7Ofik
+ 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
+ oNB9Z2yin1IOvrRdaU=
 
-Rename the remaining CamelCase structure members
-to follow kernel coding style.
+>>> +++ b/drivers/gpu/drm/solomon/ssd130x.c
+>>> @@ -146,6 +146,33 @@
+>>>  #define SSD133X_COLOR_DEPTH_256			0x0
+>>>  #define SSD133X_COLOR_DEPTH_65K			0x1
+>>> =20
+>>> +/* ssd135x commands */
+>>> +#define SSD135X_SET_COL_RANGE			0x15
+>>> +#define SSD135X_WRITE_RAM			0x5c
+>>> +#define SSD135X_SET_ROW_RANGE			0x75
+>> [...]
+>>
+>> How do you think about to use an enumeration for such data?
+>> https://en.wikipedia.org/wiki/Enumerated_type#C_and_syntactically_simil=
+ar_languages
+>=20
+> Thank you for the suggestion.
+>=20
+> I used #define to stay consistent with the rest of ssd130x.c, where the
+> command constants for the other families are all defined the same way.
 
-Rename:
+Will any further adjustments become more interesting?
 
-* pvMem -> vram
-* pvReg -> reg
 
-Fix build errors by renaming the corresponding
-structure members in sm750.h as well.
+> In my opinion an enum could be a readable solution for these values,
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202606240823.hWXfYyPf-lkp@intel.com/
-Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
----
- drivers/staging/sm750fb/sm750.c    | 22 +++++++++++-----------
- drivers/staging/sm750fb/sm750.h    |  4 ++--
- drivers/staging/sm750fb/sm750_hw.c | 16 ++++++++--------
- 3 files changed, 21 insertions(+), 21 deletions(-)
+This is nice.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 858eda551..efadb9c73 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -622,26 +622,26 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_primary;
- 		crtc->o_screen = 0;
--		crtc->v_screen = sm750_dev->pvMem;
-+		crtc->v_screen = sm750_dev->vram;
- 		break;
- 	case sm750_simul_sec:
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_secondary;
- 		crtc->o_screen = 0;
--		crtc->v_screen = sm750_dev->pvMem;
-+		crtc->v_screen = sm750_dev->vram;
- 		break;
- 	case sm750_dual_normal:
- 		if (par->index == 0) {
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_primary;
- 			crtc->o_screen = 0;
--			crtc->v_screen = sm750_dev->pvMem;
-+			crtc->v_screen = sm750_dev->vram;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_secondary;
- 			/* not consider of padding stuffs for o_screen,need fix */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->v_screen = sm750_dev->pvMem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->vram + crtc->o_screen;
- 		}
- 		break;
- 	case sm750_dual_swap:
-@@ -649,7 +649,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_secondary;
- 			crtc->o_screen = 0;
--			crtc->v_screen = sm750_dev->pvMem;
-+			crtc->v_screen = sm750_dev->vram;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_primary;
-@@ -657,7 +657,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			 * need fix
- 			 */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->v_screen = sm750_dev->pvMem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->vram + crtc->o_screen;
- 		}
- 		break;
- 	default:
-@@ -755,13 +755,13 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	 * must be set after crtc member initialized
- 	 */
- 	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
--	crtc->cursor.mmio = sm750_dev->pvReg +
-+	crtc->cursor.mmio = sm750_dev->reg +
- 		0x800f0 + (int)crtc->channel * 0x140;
- 
- 	crtc->cursor.max_h = 64;
- 	crtc->cursor.max_w = 64;
- 	crtc->cursor.size = crtc->cursor.max_h * crtc->cursor.max_w * 2 / 8;
--	crtc->cursor.vstart = sm750_dev->pvMem + crtc->cursor.offset;
-+	crtc->cursor.vstart = sm750_dev->vram + crtc->cursor.offset;
- 
- 	memset_io(crtc->cursor.vstart, 0, crtc->cursor.size);
- 	if (!g_hwcursor)
-@@ -1028,7 +1028,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 		sm750_dev->mtrr.vram = arch_phys_wc_add(sm750_dev->vidmem_start,
- 							sm750_dev->vidmem_size);
- 
--	memset_io(sm750_dev->pvMem, 0, sm750_dev->vidmem_size);
-+	memset_io(sm750_dev->vram, 0, sm750_dev->vidmem_size);
- 
- 	pci_set_drvdata(pdev, sm750_dev);
- 
-@@ -1059,8 +1059,8 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
- 	sm750fb_framebuffer_release(sm750_dev);
- 	arch_phys_wc_del(sm750_dev->mtrr.vram);
- 
--	iounmap(sm750_dev->pvReg);
--	iounmap(sm750_dev->pvMem);
-+	iounmap(sm750_dev->reg);
-+	iounmap(sm750_dev->vram);
- 	pci_release_region(pdev, 1);
- 	kfree(g_settings);
- }
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 9da154f1a..dadf5874a 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -97,8 +97,8 @@ struct sm750_dev {
- 	unsigned long vidreg_start;
- 	__u32 vidmem_size;
- 	__u32 vidreg_size;
--	void __iomem *pvReg;
--	unsigned char __iomem *pvMem;
-+	void __iomem *reg;
-+	unsigned char __iomem *vram;
- 	/* locks*/
- 	spinlock_t slock;
- 
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 59fb3a207..1b768be20 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -42,18 +42,18 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	}
- 
- 	/* now map mmio and vidmem */
--	sm750_dev->pvReg =
-+	sm750_dev->reg =
- 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
--	if (!sm750_dev->pvReg) {
-+	if (!sm750_dev->reg) {
- 		dev_err(&pdev->dev, "mmio failed\n");
- 		ret = -EFAULT;
- 		goto err_release_region;
- 	}
- 
--	sm750_dev->accel.dpr_base = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
--	sm750_dev->accel.dp_port_base = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
-+	sm750_dev->accel.dpr_base = sm750_dev->reg + DE_BASE_ADDR_TYPE1;
-+	sm750_dev->accel.dp_port_base = sm750_dev->reg + DE_PORT_ADDR_TYPE1;
- 
--	mmio750 = sm750_dev->pvReg;
-+	mmio750 = sm750_dev->reg;
- 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
- 
- 	sm750_dev->vidmem_start = pci_resource_start(pdev, 0);
-@@ -66,9 +66,9 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	sm750_dev->vidmem_size = ddk750_get_vm_size();
- 
- 	/* reserve the vidmem space of smi adaptor */
--	sm750_dev->pvMem =
-+	sm750_dev->vram =
- 		ioremap_wc(sm750_dev->vidmem_start, sm750_dev->vidmem_size);
--	if (!sm750_dev->pvMem) {
-+	if (!sm750_dev->vram) {
- 		dev_err(&pdev->dev, "Map video memory failed\n");
- 		ret = -EFAULT;
- 		goto err_unmap_reg;
-@@ -77,7 +77,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	return 0;
- 
- err_unmap_reg:
--	iounmap(sm750_dev->pvReg);
-+	iounmap(sm750_dev->reg);
- err_release_region:
- 	pci_release_region(pdev, 1);
- 	return ret;
--- 
-2.53.0
 
+> but I don't think the switch should be included in this series.
+What does hinder you to take another design option better into account?
+
+Regards,
+Markus

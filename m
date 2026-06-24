@@ -1,64 +1,63 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2AAA30C150;
-	Wed, 24 Jun 2026 00:44:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72143248893;
+	Wed, 24 Jun 2026 01:27:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782261842; cv=none; b=trhoJYso/2KGyyQb+9qLDnQsa1dtnBMnU6dlbHWIVuBTWM1BuG3iaDnkhqRTtKCOJVOxHk1fnD4OJX7Utrz+e+S0wA+KcFlGYq+rEpQA6xWcCHIdWCVDJHIqV0wYr/5kUyZH/z7nLKMe2C1j6S+BxHcTwaLG017fAmr5fTNiG5M=
+	t=1782264472; cv=none; b=eZxBXVClF7MXipyVA01SFGPPv8/pJmz/LDW2a0mvnpYpCvUpKvjldA33SMn3qTYTpXia+jzfL47fUHZN6sqI8Gqo2/T/j2rQkoIDQ5S8D98qsu8mAnlk/8arjWuPbgNBrHzBVM890Y+XmG19hrp+PDJsqTOFG3IeguDGMf/ndfY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782261842; c=relaxed/simple;
-	bh=0kJgBdQZwqTp6CCPuGIVCZDVrN5TpaPVbyPSlpqbtH0=;
+	s=arc-20240116; t=1782264472; c=relaxed/simple;
+	bh=/G7nupcsSNhXzQve9M/3Jdo7R8Sxc2CotcT6dA2JQ+4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=KGAM8viVTQml4nKKv6LfvPWu9iLjK7NeCHqCsXQMY7BMc6lxxJhON8APFMpSkvKS+3xfajhogqYPT0pFIqF9/urL+6F8Wb4b9J582yp7eIB56D0C6eed0lUG5NZys7jr79dtNKBCr8ML5L9g74Ji1Wyz8dNj3Wo74ZV/pHR4B+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=h8k23vh4; arc=none smtp.client-ip=198.175.65.21
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZNutYL8FQ5fnaBwoCWgPid2Ev8i0CXSexjfi8FMTGD/JEyKJK0BhvvlLF9E4Vm8rZAVjNc6udKAPsUXhNDkpQxfVEOfA2n9+ItrHtL+UePf5nqugu2tvTeuyJrvFna3ntzPma/1CU2LtwUWgVfKjHlpkHbKnLBJhZKhDzrpayS4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DsieqWl6; arc=none smtp.client-ip=198.175.65.20
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="h8k23vh4"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DsieqWl6"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782261841; x=1813797841;
+  t=1782264471; x=1813800471;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=0kJgBdQZwqTp6CCPuGIVCZDVrN5TpaPVbyPSlpqbtH0=;
-  b=h8k23vh4toY/ox9Ydy//A3qVtHUli0J5tkdwOWraXQIoeEHaZUAmp2W1
-   Yy+/hks2QMXRf4NThpnACJyeF1JMPSvnRxaO3Mh+tbpB39ckmlJnUSmPD
-   gtOwX062kLSrIyfjSfjucXKekPmZEHh4/VseV921nLBXt0DzUBu6c6l9k
-   YIx8YlOq93/Z6bDpt4oIfIgI7ckS3nweh8fIr+q2fZcKYz5qyEAECeWnG
-   DtPWIXHrgEDSysPoe97t2PlGBL7DymLftgbtRUUgPKEmW2nKm5ZTQky08
-   vN7sUxIxa79hLpIWLggntSPal7yKTXrdnhZPxWPocO56EQZhGBOlIgnXA
+  bh=/G7nupcsSNhXzQve9M/3Jdo7R8Sxc2CotcT6dA2JQ+4=;
+  b=DsieqWl62oxojC4pMIYhDIeiB7ljPLT52GB6+JzkllIeF7qXYuWebQpY
+   O+MvSjVnmHrAFld/BjbPhwTtE5E/CCJBM/WObj6mgISJA96lr067NKk2X
+   LjjU27K9vGG8kSntySOvDJtwxcu/HyX1aV/4tTSWGfjxvC91NX3rhwyZN
+   Z5lyEtTg6wUXStR5wC9Y5DTfawzTEtsnKVxXBHOwGBfhl1OWbpQkk1HfY
+   eJhVKnqht6HOPC/RfIN3QnE/PruNLcW1SDioUqqah4g5fSo+ual5XbBVk
+   yqDBpHOJtjJJGdSaeMUArj1Of3cxpyOxyxzHtFeUzJqC4lryLI5t+cnbs
    w==;
-X-CSE-ConnectionGUID: 4pyaoAQqTKKn1wLSDHZf8g==
-X-CSE-MsgGUID: L2bXEdFGRTWX6pLr2e2Xwg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11826"; a="82898962"
+X-CSE-ConnectionGUID: SMDZnHPCRKqXf6aKgVl23A==
+X-CSE-MsgGUID: zAhvthXTTE6Oe2xStnVsqA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11826"; a="82783593"
 X-IronPort-AV: E=Sophos;i="6.24,221,1774335600"; 
-   d="scan'208";a="82898962"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 17:44:00 -0700
-X-CSE-ConnectionGUID: oR+PeYKnQUSTfgz9f7Npzg==
-X-CSE-MsgGUID: QoriA6SrRkC8nw8w5ASfOw==
+   d="scan'208";a="82783593"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 18:27:50 -0700
+X-CSE-ConnectionGUID: qtHTYfWvTDWey6+ab2kALg==
+X-CSE-MsgGUID: DiqRx3VnSqSa28sgZ/sirQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,221,1774335600"; 
-   d="scan'208";a="248776199"
+   d="scan'208";a="248506849"
 Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by orviesa010.jf.intel.com with ESMTP; 23 Jun 2026 17:43:57 -0700
+  by orviesa006.jf.intel.com with ESMTP; 23 Jun 2026 18:27:48 -0700
 Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1wcBic-0000000031p-3q05;
-	Wed, 24 Jun 2026 00:43:54 +0000
-Date: Wed, 24 Jun 2026 08:43:00 +0800
+	id 1wcCP3-0000000032X-0h3B;
+	Wed, 24 Jun 2026 01:27:45 +0000
+Date: Wed, 24 Jun 2026 09:27:09 +0800
 From: kernel test robot <lkp@intel.com>
 To: Arnav Kapoor <kapoorarnav43@gmail.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+Cc: oe-kbuild-all@lists.linux.dev, linux-staging@lists.linux.dev,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
 	Arnav Kapoor <kapoorarnav43@gmail.com>
 Subject: Re: [staging] staging: sm750fb: rename pvMem to vram and pvReg to reg
-Message-ID: <202606240823.hWXfYyPf-lkp@intel.com>
+Message-ID: <202606240932.nfoefhT9-lkp@intel.com>
 References: <20260621045050.63460-1-kapoorarnav43@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -85,51 +84,54 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Arnav-Kapoor/staging-sm75
 base:   staging/staging-linus
 patch link:    https://lore.kernel.org/r/20260621045050.63460-1-kapoorarnav43%40gmail.com
 patch subject: [staging] staging: sm750fb: rename pvMem to vram and pvReg to reg
-config: sparc64-allmodconfig (https://download.01.org/0day-ci/archive/20260624/202606240823.hWXfYyPf-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260624/202606240823.hWXfYyPf-lkp@intel.com/reproduce)
+config: mips-allyesconfig (https://download.01.org/0day-ci/archive/20260624/202606240932.nfoefhT9-lkp@intel.com/config)
+compiler: mips-linux-gcc (GCC) 16.1.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260624/202606240932.nfoefhT9-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202606240823.hWXfYyPf-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202606240932.nfoefhT9-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
->> drivers/staging/sm750fb/sm750.c:625:31: error: no member named 'vram' in 'struct sm750_dev'
+   drivers/staging/sm750fb/sm750.c: In function 'sm750fb_set_drv':
+>> drivers/staging/sm750fb/sm750.c:625:43: error: 'struct sm750_dev' has no member named 'vram'
      625 |                 crtc->v_screen = sm750_dev->vram;
-         |                                  ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:631:31: error: no member named 'vram' in 'struct sm750_dev'
+         |                                           ^~
+   drivers/staging/sm750fb/sm750.c:631:43: error: 'struct sm750_dev' has no member named 'vram'
      631 |                 crtc->v_screen = sm750_dev->vram;
-         |                                  ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:638:32: error: no member named 'vram' in 'struct sm750_dev'
+         |                                           ^~
+   drivers/staging/sm750fb/sm750.c:638:51: error: 'struct sm750_dev' has no member named 'vram'
      638 |                         crtc->v_screen = sm750_dev->vram;
-         |                                          ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:644:32: error: no member named 'vram' in 'struct sm750_dev'
+         |                                                   ^~
+   drivers/staging/sm750fb/sm750.c:644:51: error: 'struct sm750_dev' has no member named 'vram'
      644 |                         crtc->v_screen = sm750_dev->vram + crtc->o_screen;
-         |                                          ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:652:32: error: no member named 'vram' in 'struct sm750_dev'
+         |                                                   ^~
+   drivers/staging/sm750fb/sm750.c:652:51: error: 'struct sm750_dev' has no member named 'vram'
      652 |                         crtc->v_screen = sm750_dev->vram;
-         |                                          ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:660:32: error: no member named 'vram' in 'struct sm750_dev'
+         |                                                   ^~
+   drivers/staging/sm750fb/sm750.c:660:51: error: 'struct sm750_dev' has no member named 'vram'
      660 |                         crtc->v_screen = sm750_dev->vram + crtc->o_screen;
-         |                                          ~~~~~~~~~  ^
->> drivers/staging/sm750fb/sm750.c:758:33: error: no member named 'reg' in 'struct sm750_dev'
+         |                                                   ^~
+   drivers/staging/sm750fb/sm750.c: In function 'lynxfb_set_fbinfo':
+>> drivers/staging/sm750fb/sm750.c:758:38: error: 'struct sm750_dev' has no member named 'reg'
      758 |         crtc->cursor.mmio = sm750_dev->reg +
-         |                             ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:764:35: error: no member named 'vram' in 'struct sm750_dev'
+         |                                      ^~
+   drivers/staging/sm750fb/sm750.c:764:40: error: 'struct sm750_dev' has no member named 'vram'
      764 |         crtc->cursor.vstart = sm750_dev->vram + crtc->cursor.offset;
-         |                               ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:1031:23: error: no member named 'vram' in 'struct sm750_dev'
+         |                                        ^~
+   drivers/staging/sm750fb/sm750.c: In function 'lynxfb_pci_probe':
+   drivers/staging/sm750fb/sm750.c:1031:28: error: 'struct sm750_dev' has no member named 'vram'
     1031 |         memset_io(sm750_dev->vram, 0, sm750_dev->vidmem_size);
-         |                   ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:1062:21: error: no member named 'reg' in 'struct sm750_dev'
+         |                            ^~
+   drivers/staging/sm750fb/sm750.c: In function 'lynxfb_pci_remove':
+   drivers/staging/sm750fb/sm750.c:1062:26: error: 'struct sm750_dev' has no member named 'reg'
     1062 |         iounmap(sm750_dev->reg);
-         |                 ~~~~~~~~~  ^
-   drivers/staging/sm750fb/sm750.c:1063:21: error: no member named 'vram' in 'struct sm750_dev'
+         |                          ^~
+   drivers/staging/sm750fb/sm750.c:1063:26: error: 'struct sm750_dev' has no member named 'vram'
     1063 |         iounmap(sm750_dev->vram);
-         |                 ~~~~~~~~~  ^
-   11 errors generated.
+         |                          ^~
 
 
 vim +625 drivers/staging/sm750fb/sm750.c
@@ -195,7 +197,7 @@ vim +625 drivers/staging/sm750fb/sm750.c
    649				output->paths = sm750_panel;
    650				crtc->channel = sm750_secondary;
    651				crtc->o_screen = 0;
-   652				crtc->v_screen = sm750_dev->vram;
+ > 652				crtc->v_screen = sm750_dev->vram;
    653			} else {
    654				output->paths = sm750_crt;
    655				crtc->channel = sm750_primary;

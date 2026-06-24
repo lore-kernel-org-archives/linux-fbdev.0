@@ -1,63 +1,76 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f172.google.com (mail-pg1-f172.google.com [209.85.215.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9701217993;
-	Wed, 24 Jun 2026 03:27:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 606C130C144
+	for <linux-fbdev@vger.kernel.org>; Wed, 24 Jun 2026 04:25:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782271646; cv=none; b=ubXlgYQxxCFB8BesO43+/kbDzVQobZrA6E2hjkr1KXVsF4xNQzPjTduC0NEhO8X0cUGjRhdqt1fUWcm8Ld3OUmUumHqvA1Nz4lkjALUG7cmbe+Kbhu3p/KBUGcMCrvi89JKwFHXgjsoRlJkEx+y2SnJIacJOkpsPatog0bbeOu0=
+	t=1782275152; cv=none; b=PRK487xMmFuo8ls0Hn7/qkWzv5a1mARfQxpwGMAKcMKnsB464X3dLUtjtzz8LY0Hlp7NMcd+ucf0FTu4cVVYOw+B+kzdQBVS6Tz5TM4JmJ7KSa+Bf9wxUQj959Co0u7IBEYs4P9TVk14mcOBltoiDAPeuXSPPz1kzjMN4e8pmEc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782271646; c=relaxed/simple;
-	bh=2SS3ol4ylJdY7CvZq08xhkuj5RZgxQvy20V6aDvoQac=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=tAGhpXgLJX5eJ/fTq7sK8eEaZaLPXsGdo2SKPFmIm/BTeIDvzY2rugB55tuaLnzR1qOwlV9qucCI4rHhAr/5g5r/lAkJ4qSX6MrlQ7xW9ZxJZ+Ud16LCSxI0pjtqM52NWJ5CirWYFJOcSXSt7OCYco4XFpweYtnftd9Bb8pmp1I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=MXeVr+8R; arc=none smtp.client-ip=192.198.163.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1782275152; c=relaxed/simple;
+	bh=2Mf5YzI9FOUIILwcsDlxPx9GVkUDSpsOMBsA8x6mwQg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=fMeGNsntKdC9C0091z5ks853PjO2NhjBqmEaFo9cGHvpnw8ZkcF/FPM2RbV2qDvTFwz1AiG1mkIYYXIi6nP757fIPI8GYw6rhGr0+sgRiYggQcllXdBSpnFMTd8r4K2mKoXdZWACZxKcCZfTAgrUeVYESa7GySI7aUx6DXB8UsY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=i2n5rur8; arc=none smtp.client-ip=209.85.215.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="MXeVr+8R"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782271645; x=1813807645;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=2SS3ol4ylJdY7CvZq08xhkuj5RZgxQvy20V6aDvoQac=;
-  b=MXeVr+8RHOxParSdSqlvFLGxnkRYhs8IEkwSbxMeYWUkXiC0VfcPBXL5
-   1bglD95ONhgawTT/EuFVCsl6C/qSUb9Yyr295LwohAW5F+3R9APpQp/bM
-   C7oTg+mNmutkOWcKGZ96fnbW3kyq0OTXvFOCzt0eJ6ZMzv5e1ng0Mj/p9
-   0d6RKEdAaeFxfHf9tvkevzQd01S2TL9dgMrfu5l8hUJgjx8IhpKH48T+t
-   1cWkIthip2VuBLsXuumh3YW/2jwC38AnAt3OaT3eWL+UWg7G4nNUBsCem
-   maQ4TSusGFlIlqKqBfJB/vt8rm4ljS870SQx7/ECE7dGhIDoIoBtvUu0f
-   A==;
-X-CSE-ConnectionGUID: jV6hARhHSLSXai2P5Bc7jQ==
-X-CSE-MsgGUID: 9Y2VIh1QQ1GFctCAdw0bsg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11826"; a="85578764"
-X-IronPort-AV: E=Sophos;i="6.24,221,1774335600"; 
-   d="scan'208";a="85578764"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 20:27:24 -0700
-X-CSE-ConnectionGUID: QJ9MHrLBQLuEAJi7Ow/kyg==
-X-CSE-MsgGUID: G5PvuoVCQSKsJM4vqRFECQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,221,1774335600"; 
-   d="scan'208";a="248803287"
-Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by orviesa010.jf.intel.com with ESMTP; 23 Jun 2026 20:27:22 -0700
-Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wcEGl-0000000035x-18lo;
-	Wed, 24 Jun 2026 03:27:19 +0000
-Date: Wed, 24 Jun 2026 11:26:46 +0800
-From: kernel test robot <lkp@intel.com>
-To: Arnav Kapoor <kapoorarnav43@gmail.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: oe-kbuild-all@lists.linux.dev, linux-staging@lists.linux.dev,
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i2n5rur8"
+Received: by mail-pg1-f172.google.com with SMTP id 41be03b00d2f7-c85a2c012e5so220585a12.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 23 Jun 2026 21:25:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1782275150; x=1782879950; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wKeA8pkNSXwNkj1KAdbmazDlkEII0Ozzls/ozBP1lc0=;
+        b=i2n5rur8QAMaSRZ2XQJUoxJNetMYeVPgpe6oHtLt+GLDhMzIVmy+XppKaZjXq17esi
+         4YyWkoEZNuQjD0phEyAAetZhr5wRFnc4sUqmxgQ16evS2uGhUUTyTjmeoVOwlj49BB2b
+         MezdUELEodLadewSY/S0/UtvuX07qVEz32RiJObBiN66jpd/bld3LzkioBJiJZIUiXiH
+         9Hj7zeySIeEcbzfPSU5x8IoMyKJtHcaqi6s/WWJVBIQlVdlCTUv5sSYmnAaVwwLRYMQ9
+         35sgdrjLevAxo5Hxi0I4Pe/QDWh8ingMpwlsEc36kx2nDybUqy5khbSI26VTVxEDS7Jn
+         Ysjw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782275150; x=1782879950;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=wKeA8pkNSXwNkj1KAdbmazDlkEII0Ozzls/ozBP1lc0=;
+        b=DLFX+ePtMHGI5n+qdFNc6W3o4NU+HYn0Pg/Z9Wu8ikPigJM08+y8KL6ghYcoJO3GTE
+         QZwifrIcrw96zcNqiQ7zrvq+bZvXMTW/qNvYkkVJXmczWkziWiLzcsAfhk+oeWN6fWEX
+         kcuI2gE5j+E0AdIPIbjNEELxykYPKQFgkBP/Lvom/pf42d95vpSNmiY+DeNAm+f8Ldvt
+         KLG9HMNGaygOChAKl8oxj6BPFUhEndrMXtrd55L8EvTmkfuAI2Ot+nzYfHY3N3z7J8wr
+         pDsOsJyco9vQAC2pIeftBX/PlwyZTdbbZs6EX+s2JbNcdSpx93R9f8pW4N6Wud+cnes7
+         kquQ==
+X-Gm-Message-State: AOJu0YxsEDOJz42VOAMNsO4JibckqbOqcbVQsdpV1D48Ugkiljcf2Iti
+	YDREUpxwauEe+ThlXPG5PHmiIJk5O/UUxYPCVfhz5jW/mF2GOTpb9eY+
+X-Gm-Gg: AfdE7ck8ol0Y1kj48i2/1IKoESDkZ0suTlwquNiuwDTm1QuHCVEijbnJHifpOcPIpPH
+	Jh80CJB+vqnFMqiAPfw0o8UOZkRh12p89Fhes3KUFTe68cAV7N4xP9xEwqgKg5q+s5RKTFZ7XjT
+	lBNbAvY1lQGWdbyNUIqfZ7Wj8xyYnX/WChuDh33riYhwqPCaTaFfVfwIeI6/TXz+maRV2mMSdB8
+	c4TW3gOOumHkdDAvHt1pfAX697fJOw+F1ljCcU2QitsETgE/ycqre7BQBimw9UCjAwiiKaPaEM4
+	ibwOfUiSObazHrb6e9/mqK88qw98VhLVo+nHb8+hTZPfFZxwR/og4VQA8zdzSzkCiBM3t4gpyrb
+	f66G+Ksu/mC5Pm5V3bue5KKa6ugCQrzvqfOO/dX9s3x8u+lvJxcLIzlHDqzOpikJC/Y5DJIf+Cv
+	Am+neGVz04t0J1t2GkiyZgzP+944RHfWUutSujFCtOqqleaggZFZoWuvpPqvGOq5kdJO98DRibC
+	oiUBPIO+az6W6ZBXfw1Q+OMQpmoFXPC7yfY5NFVes1/ua6AsgLhcoUAXQEJLcHHd8Fn
+X-Received: by 2002:a05:6a20:a111:b0:3b3:1ee3:2794 with SMTP id adf61e73a8af0-3bc51818e1bmr20766782637.5.1782275150486;
+        Tue, 23 Jun 2026 21:25:50 -0700 (PDT)
+Received: from kapoor.mahindrauniversity.edu.in ([122.184.65.229])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c8bc3743bbbsm10889998a12.14.2026.06.23.21.25.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 23 Jun 2026 21:25:49 -0700 (PDT)
+From: Arnav Kapoor <kapoorarnav43@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
 	Arnav Kapoor <kapoorarnav43@gmail.com>
-Subject: Re: [staging] staging: sm750fb: fix remaining CamelCase issues
-Message-ID: <202606241142.LlZq0AN1-lkp@intel.com>
+Subject: [PATCH v2] staging: sm750fb: fix remaining CamelCase issues
+Date: Wed, 24 Jun 2026 09:55:43 +0530
+Message-ID: <20260624042543.38925-1-kapoorarnav43@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260621045340.65872-1-kapoorarnav43@gmail.com>
 References: <20260621045340.65872-1-kapoorarnav43@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -65,143 +78,109 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260621045340.65872-1-kapoorarnav43@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Arnav,
+Rename the remaining CamelCase variables and constants
+to follow kernel coding style.
 
-kernel test robot noticed the following build errors:
+Rename:
 
-[auto build test ERROR on staging/staging-linus]
-[also build test ERROR on v7.1]
-[cannot apply to staging/staging-testing staging/staging-next linus/master next-20260623]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+* powerMode -> power_mode
+* setAllEngOff -> set_all_eng_off
+* resetMemory -> reset_memory
+* sm750_doubleTFT -> SM750_DOUBLE_TFT
+* sm750_dualTFT -> SM750_DUAL_TFT
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Arnav-Kapoor/staging-sm750fb-fix-remaining-CamelCase-issues/20260622-235207
-base:   staging/staging-linus
-patch link:    https://lore.kernel.org/r/20260621045340.65872-1-kapoorarnav43%40gmail.com
-patch subject: [staging] staging: sm750fb: fix remaining CamelCase issues
-config: mips-allyesconfig (https://download.01.org/0day-ci/archive/20260624/202606241142.LlZq0AN1-lkp@intel.com/config)
-compiler: mips-linux-gcc (GCC) 16.1.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260624/202606241142.LlZq0AN1-lkp@intel.com/reproduce)
+Fix build errors by renaming the corresponding
+declarations and enum values as well.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202606241142.LlZq0AN1-lkp@intel.com/
+Reported-by: kernel test robot [lkp@intel.com](mailto:lkp@intel.com)
+Closes: https://lore.kernel.org/oe-kbuild-all/202606240916.wIIrdOzC-lkp@intel.com/
+Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c    | 10 +++++-----
+ drivers/staging/sm750fb/sm750.h    | 10 +++++-----
+ drivers/staging/sm750fb/sm750_hw.c |  4 ++--
+ 3 files changed, 12 insertions(+), 12 deletions(-)
 
-All errors (new ones prefixed by >>):
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 9f3e3d37e..858eda551 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -859,9 +859,9 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 	sm750_dev->init_parm.chip_clk = 0;
+ 	sm750_dev->init_parm.mem_clk = 0;
+ 	sm750_dev->init_parm.master_clk = 0;
+-	sm750_dev->init_parm.powerMode = 0;
+-	sm750_dev->init_parm.setAllEngOff = 0;
+-	sm750_dev->init_parm.resetMemory = 1;
++	sm750_dev->init_parm.power_mode = 0;
++	sm750_dev->init_parm.set_all_eng_off = 0;
++	sm750_dev->init_parm.reset_memory = 1;
+ 
+ 	/* defaultly turn g_hwcursor on for both view */
+ 	g_hwcursor = 3;
+@@ -880,9 +880,9 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 		} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
+ 			sm750_dev->nocrt = 1;
+ 		} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
+-			sm750_dev->pnltype = sm750_doubleTFT;
++			sm750_dev->pnltype = SM750_DOUBLE_TFT;
+ 		} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
+-			sm750_dev->pnltype = sm750_dualTFT;
++			sm750_dev->pnltype = SM750_DUAL_TFT;
+ 		} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
+ 			sm750_dev->pnltype = sm750_24TFT;
+ 		} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 67b9bfa23..9da154f1a 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -14,8 +14,8 @@
+ 
+ enum sm750_pnltype {
+ 	sm750_24TFT = 0,	/* 24bit tft */
+-	sm750_dualTFT = 2,	/* dual 18 bit tft */
+-	sm750_doubleTFT = 1,	/* 36 bit double pixel tft */
++	SM750_DUAL_TFT = 2,	/* dual 18 bit tft */
++	SM750_DOUBLE_TFT = 1,	/* 36 bit double pixel tft */
+ };
+ 
+ /* vga channel is not concerned  */
+@@ -39,13 +39,13 @@ enum sm750_path {
+ };
+ 
+ struct init_status {
+-	ushort powerMode;
++	ushort power_mode;
+ 	/* below three clocks are in unit of MHZ*/
+ 	ushort chip_clk;
+ 	ushort mem_clk;
+ 	ushort master_clk;
+-	ushort setAllEngOff;
+-	ushort resetMemory;
++	ushort set_all_eng_off;
++	ushort reset_memory;
+ };
+ 
+ struct lynx_accel {
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index a2798d428..59fb3a207 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -130,10 +130,10 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 		switch (sm750_dev->pnltype) {
+ 		case sm750_24TFT:
+ 			break;
+-		case sm750_doubleTFT:
++		case SM750_DOUBLE_TFT:
+ 			val |= PANEL_DISPLAY_CTRL_DOUBLE_PIXEL;
+ 			break;
+-		case sm750_dualTFT:
++		case SM750_DUAL_TFT:
+ 			val |= PANEL_DISPLAY_CTRL_DUAL_DISPLAY;
+ 			break;
+ 		}
+-- 
+2.53.0
 
-   drivers/staging/sm750fb/sm750.c: In function 'sm750fb_setup':
->> drivers/staging/sm750fb/sm750.c:862:30: error: 'struct init_status' has no member named 'power_mode'; did you mean 'powerMode'?
-     862 |         sm750_dev->init_parm.power_mode = 0;
-         |                              ^~~~~~~~~~
-         |                              powerMode
->> drivers/staging/sm750fb/sm750.c:863:30: error: 'struct init_status' has no member named 'set_all_eng_off'; did you mean 'setAllEngOff'?
-     863 |         sm750_dev->init_parm.set_all_eng_off = 0;
-         |                              ^~~~~~~~~~~~~~~
-         |                              setAllEngOff
->> drivers/staging/sm750fb/sm750.c:864:30: error: 'struct init_status' has no member named 'reset_memory'; did you mean 'resetMemory'?
-     864 |         sm750_dev->init_parm.reset_memory = 1;
-         |                              ^~~~~~~~~~~~
-         |                              resetMemory
->> drivers/staging/sm750fb/sm750.c:883:46: error: 'SM750_DOUBLE_TFT' undeclared (first use in this function); did you mean 'sm750_doubleTFT'?
-     883 |                         sm750_dev->pnltype = SM750_DOUBLE_TFT;
-         |                                              ^~~~~~~~~~~~~~~~
-         |                                              sm750_doubleTFT
-   drivers/staging/sm750fb/sm750.c:883:46: note: each undeclared identifier is reported only once for each function it appears in
->> drivers/staging/sm750fb/sm750.c:885:46: error: 'SM750_DUAL_TFT' undeclared (first use in this function); did you mean 'sm750_dualTFT'?
-     885 |                         sm750_dev->pnltype = SM750_DUAL_TFT;
-         |                                              ^~~~~~~~~~~~~~
-         |                                              sm750_dualTFT
-
-
-vim +862 drivers/staging/sm750fb/sm750.c
-
-   850	
-   851	/*	chip specific g_option configuration routine */
-   852	static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
-   853	{
-   854		char *opt;
-   855		int swap;
-   856	
-   857		swap = 0;
-   858	
-   859		sm750_dev->init_parm.chip_clk = 0;
-   860		sm750_dev->init_parm.mem_clk = 0;
-   861		sm750_dev->init_parm.master_clk = 0;
- > 862		sm750_dev->init_parm.power_mode = 0;
- > 863		sm750_dev->init_parm.set_all_eng_off = 0;
- > 864		sm750_dev->init_parm.reset_memory = 1;
-   865	
-   866		/* defaultly turn g_hwcursor on for both view */
-   867		g_hwcursor = 3;
-   868	
-   869		if (!src || !*src) {
-   870			dev_warn(&sm750_dev->pdev->dev, "no specific g_option.\n");
-   871			goto NO_PARAM;
-   872		}
-   873	
-   874		while ((opt = strsep(&src, ":")) != NULL && *opt != 0) {
-   875			dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
-   876			dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
-   877	
-   878			if (!strncmp(opt, "swap", strlen("swap"))) {
-   879				swap = 1;
-   880			} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
-   881				sm750_dev->nocrt = 1;
-   882			} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
- > 883				sm750_dev->pnltype = SM750_DOUBLE_TFT;
-   884			} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
- > 885				sm750_dev->pnltype = SM750_DUAL_TFT;
-   886			} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
-   887				sm750_dev->pnltype = sm750_24TFT;
-   888			} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
-   889				g_hwcursor &= ~0x1;
-   890			} else if (!strncmp(opt, "nohwc1", strlen("nohwc1"))) {
-   891				g_hwcursor &= ~0x2;
-   892			} else if (!strncmp(opt, "nohwc", strlen("nohwc"))) {
-   893				g_hwcursor = 0;
-   894			} else {
-   895				if (!g_fbmode[0]) {
-   896					g_fbmode[0] = opt;
-   897					dev_info(&sm750_dev->pdev->dev,
-   898						 "find fbmode0 : %s\n", g_fbmode[0]);
-   899				} else if (!g_fbmode[1]) {
-   900					g_fbmode[1] = opt;
-   901					dev_info(&sm750_dev->pdev->dev,
-   902						 "find fbmode1 : %s\n", g_fbmode[1]);
-   903				} else {
-   904					dev_warn(&sm750_dev->pdev->dev, "How many view you wann set?\n");
-   905				}
-   906			}
-   907		}
-   908	
-   909	NO_PARAM:
-   910		if (sm750_dev->revid != SM750LE_REVISION_ID) {
-   911			if (sm750_dev->fb_count > 1) {
-   912				if (swap)
-   913					sm750_dev->dataflow = sm750_dual_swap;
-   914				else
-   915					sm750_dev->dataflow = sm750_dual_normal;
-   916			} else {
-   917				if (swap)
-   918					sm750_dev->dataflow = sm750_simul_sec;
-   919				else
-   920					sm750_dev->dataflow = sm750_simul_pri;
-   921			}
-   922		} else {
-   923			/* SM750LE only have one crt channel */
-   924			sm750_dev->dataflow = sm750_simul_sec;
-   925			/* sm750le do not have complex attributes */
-   926			sm750_dev->nocrt = 0;
-   927		}
-   928	}
-   929	
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki

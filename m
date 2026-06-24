@@ -1,114 +1,132 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.4])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vk1-f174.google.com (mail-vk1-f174.google.com [209.85.221.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3D8F31F9A5;
-	Wed, 24 Jun 2026 08:33:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D13593939B0
+	for <linux-fbdev@vger.kernel.org>; Wed, 24 Jun 2026 08:51:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782290036; cv=none; b=RkpYk3qomMGo5wOg8YJ+7pykWpYf3DD3PzqK/SbNHOFizdu+dzmPJ6bt2E/vuIFi3joSAebg7YsG03HZ+JnawcUQQ8rNfyZ0q8jNh4W2ROPlpc4bM0lVHzJnSn9HZ+cXZPLl9reiWnX1tFIimoFGi6Y5kBJkcJaT1WCDdTFbTdg=
+	t=1782291078; cv=none; b=ISVhJUjxRRTeyWnA3KPU4PxsrognQobQo8Azd/2M6XRJDs7fQk3gtW4vBunjDqHrP69KICPTq9n9mdzCqz2Ry6EIdiPKdGmtvgUEfBFFrw4Kg2Zqtfdn3EZvCTrDLplAbOQS6M4CBG1qu24w39AiUbCPl5Qdp4S4qceqv0pu0cM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782290036; c=relaxed/simple;
-	bh=vJTNC8A0MkcNHYkuv4H8UnfJcYK38I2Z6SyNAqP+Xks=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Aq4zj97IiB6ohnTFN3o6iAiPYgkizOlC795Fz1yiNLS9hkTtSc0z36yTdkHB5OHUnvl97sFLmNXoea5ge0tWLx0XGZf7bJggl7jcnUo1kL5MO1QI/oUFYDxCdFt1pXgusyjFM+ZQaLCOexWRWDTl91PN62+3p2dW5jr6AHE94yY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=BcyLReX7; arc=none smtp.client-ip=220.197.31.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="BcyLReX7"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=M0
-	yyVVLf6YjrZtZ/GI81jVYzh2dTbOxLY0Y7vtCZdlQ=; b=BcyLReX7rdK2398iDs
-	ZBaOlyGJYiODRv4UL2QENLR/BgzoTrz18bqKqEubU0UGi+xKVGXQUrKLSb5xt+h1
-	zOnJ3gWc8jvk7qmXLSB/3jl0/Ld1JxaoD7ZEh6cBUGRgOYqYi+abL4GUlEq42G7B
-	Wdz0oYxuEXd8bwkIrTaL1sJMM=
-Received: from 163.com (unknown [])
-	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wD3O0dPljtqZF_NFQ--.56523S2;
-	Wed, 24 Jun 2026 16:33:22 +0800 (CST)
-From: w15303746062@163.com
-To: deller@gmx.de,
-	tzimmermann@suse.de,
-	simona@ffwll.ch
-Cc: syoshida@redhat.com,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Mingyu Wang <25181214217@stu.xidian.edu.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] fbdev: fbcon: fix out-of-bounds read in err_out of fbcon_do_set_font()
-Date: Wed, 24 Jun 2026 16:33:16 +0800
-Message-Id: <20260624083316.389677-1-w15303746062@163.com>
-X-Mailer: git-send-email 2.34.1
+	s=arc-20240116; t=1782291078; c=relaxed/simple;
+	bh=I23H8PBd+djMh4SrB4v4JdwvU9KzRMoMagFE7hs+N1w=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RMdnNAfkn71YTpfHkzMmcWzdl9G+ykibVg4PDRu4Tx1fz5KvVrtR650KnKi+g+I5Ou1x1QNUqSkBUHAufk1gs764Rr9JGoOMhb624rnwYvyjd2D5Ng1t7JW4Z3+XAvsXzGmvLXECUcg3SvNN5xCCpRlmxATNLTOhSamKY/sWalw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.221.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vk1-f174.google.com with SMTP id 71dfb90a1353d-5bbc6c99c3aso549103e0c.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 24 Jun 2026 01:51:16 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782291076; x=1782895876;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=BqytCPnwBH27Ys1F84xwvi9+7+D3fwtua39hc9A5h9k=;
+        b=Km9wyUGf8aDBkgVzQ0OMmZzYwhSqLnR8ep2jk/B8tKfWX+RR/HQcxFRZVpQxSduS6z
+         vc/psS7xDrRtawtaDbnFLVQ9K3PeEkoiSRH5F8uZoWJ65Du88ui69eUuC7VJpYHUpGwl
+         xTiHiSsiOzzo8ZXFqevq3kRYGqm7h3FknX7PLlacorm0Djo+WC/50KD0RrKZRarGRQYy
+         2dxl4CrFYnrkBe2vKG4fP4Kr1g6o8jMF4TL9/0iO23ndyUZkiT+C9kYNxDlHK7cZpQ7m
+         Dab54byferwUe7LN7CQ3ubGHIHGWA2Hc6avvRAPIQGAfRvJnuM7ZnCL+2JIs2+AGy++c
+         coeA==
+X-Forwarded-Encrypted: i=1; AFNElJ+cnQJ6kRj9AyuJARBaKJy+q6w3jI2sPK1LD6Pmnw7QFqHFLL9Brfr0G3TgSZ92SqrrZjsFsHGben3Cpw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyA9TYcnua456wTUDrXaNZUGJSwI6DnrbWhlX+pMg+zSTfLhhIS
+	RO5LovLAAH5za+ad7aJHsyHpR0XyLGOSEBNOdcQHWYIKFV6AkpaTEItWpBB3D+9b
+X-Gm-Gg: AfdE7cky/yIc63wQEmWT9P4fNdNAVlaWJyPPegsqWRDK8jU20/29sEOkUnxj8Cu8t73
+	n0JOKQkiMS82D7Yuq5uBLfeh/CKD3SPs2BLEYkqqK2HPW9KemraAFE+eXYjxzXz4vQbfao5MSFc
+	6J/GYTjgak+Bb5yhvVO14iUAjZl4DLb4SEExunVkKFIQyp2B9JEOX/ORIXscqLNSLTcZryML8sb
+	JL1qz3Ev7hA7G9SUzgFX822Z6jdnsFOhuo668Px1iw76fomFlR8o2qbsEa4U0ZFNaYVZnodFAFV
+	MiayZ7chAVCLusSKNw4eotlst1K++GWLql5PMtPvPwo+OJwpa3I6iE1Dg8IvhmMTOhAvg8YuA1o
+	b3p7863i1YfyyDVFq85tSfpY9sdzYoak5tQu3HizM1yq1UWBKtykGpmGIz4VEGvBlFRpmYKhXrL
+	e+xRIbpdtzSAG6w9Qb4JJCGyVzX1DJhkDL/8kVfOjjeYyoX7wzQTfQyeOo0bN/
+X-Received: by 2002:a05:6122:a1a:b0:576:1a8d:8989 with SMTP id 71dfb90a1353d-5bc3eb1484bmr1127420e0c.0.1782291075788;
+        Wed, 24 Jun 2026 01:51:15 -0700 (PDT)
+Received: from mail-ua1-f52.google.com (mail-ua1-f52.google.com. [209.85.222.52])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5bbfba739d2sm10451381e0c.15.2026.06.24.01.51.13
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 24 Jun 2026 01:51:14 -0700 (PDT)
+Received: by mail-ua1-f52.google.com with SMTP id a1e0cc1a2514c-9670c23ca7fso455795241.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 24 Jun 2026 01:51:13 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8IHDX0TSV6jXzUQBozo4EejE5WwD/8ij/hBI2ZTXbLZfW+i9BPjEVhHjuZuyZ6+wuzmLPNBGcRpwFxuQ==@vger.kernel.org
+X-Received: by 2002:a05:6102:1628:b0:726:cd42:d039 with SMTP id
+ ada2fe7eead31-7311593bc40mr980150137.24.1782291073707; Wed, 24 Jun 2026
+ 01:51:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wD3O0dPljtqZF_NFQ--.56523S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxGFW7Ww13WFWxCr1DJr1rtFb_yoW5Jw15p3
-	9xKw13Kr1ktr1rGa10gw4vkF15Wan7A34YqayxK34rKw13Gr4UXay0yFyYvas8C3srXF10
-	qw1vg34q9FyDuw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07j5_-PUUUUU=
-X-CM-SenderInfo: jzrvjiatxuliiws6il2tof0z/xtbC5BIjB2o7llIsJAAA3P
+References: <20260622064915.767194-1-haoxiang_li2024@163.com>
+In-Reply-To: <20260622064915.767194-1-haoxiang_li2024@163.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 24 Jun 2026 10:51:02 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUSVacMR2Lb-VwkeZMrS=wKz9y+XtF=nAOCuSLbDs-HdQ@mail.gmail.com>
+X-Gm-Features: AVVi8CdAnFBD23v1TZLF1N6maP__8rBsA0F0VCuhXPs6KKGubkqUcrjbf5oJASY
+Message-ID: <CAMuHMdUSVacMR2Lb-VwkeZMrS=wKz9y+XtF=nAOCuSLbDs-HdQ@mail.gmail.com>
+Subject: Re: [PATCH] video: hpfb: Unregister DIO driver on init failure
+To: Haoxiang Li <haoxiang_li2024@163.com>
+Cc: deller@gmx.de, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+	Philip Blundell <philb@gnu.org>, Kars de Jong <jongk@linux-m68k.org>, 
+	linux-m68k <linux-m68k@lists.linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 
-From: Mingyu Wang <25181214217@stu.xidian.edu.cn>
+Hi Haoxiang,
 
-When fbcon_do_set_font() fails (e.g., due to a memory allocation failure 
-inside vc_resize() under heavy memory pressure), it jumps to the `err_out` 
-label to roll back the console state. However, the current rollback logic 
-forgets to restore the `hi_font` state, leading to a severe state machine 
-corruption.
+CC hp300
 
-Earlier in the function, `set_vc_hi_font()` might be called to change
-`vc->vc_hi_font_mask` and mutate the screen buffer. If `vc_resize()`
-subsequently fails, the `err_out` path restores `vc_font.charcount`
-but entirely skips rolling back the `vc_hi_font_mask` and the screen
-buffer.
+On Tue, 23 Jun 2026 at 06:41, Haoxiang Li <haoxiang_li2024@163.com> wrote:
+> hpfb_init() registers the DIO driver via dio_register_driver().
+> If a later error occurs, the function returns directly without
+> unregistering the DIO driver. Unregister the DIO driver before
+> returning from these error paths.
+>
+> Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
 
-This mismatch leaves the terminal in a desynchronized state. Because
-`vc_hi_font_mask` remains set, the VT subsystem will still accept
-character indices greater than 255 from userspace and write them to the
-screen buffer. Subsequent rendering calls (e.g., `fbcon_putcs()`) will
-then use these inflated indices to access the reverted, 256-character
-font array, leading to a deterministic out-of-bounds read and potential
-kernel memory disclosure.
+Thanks for your patch, which is now commit d6c3e2402523ce01 ("fbdev:
+hpfb: Unregister DIO driver on init failure") in fbdev/for-next
 
-Fix this by adding the missing rollback logic for the `hi_font` mask
-and screen buffer in the error path.
+> --- a/drivers/video/fbdev/hpfb.c
+> +++ b/drivers/video/fbdev/hpfb.c
+> @@ -407,10 +407,13 @@ static int __init hpfb_init(void)
 
-Fixes: a5a923038d70 ("fbdev: fbcon: Properly revert changes when vc_resize() failed")
-Cc: stable@vger.kernel.org
-Signed-off-by: Mingyu Wang <25181214217@stu.xidian.edu.cn>
----
- drivers/video/fbdev/core/fbcon.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+As per the comment out-of-context above, this driver supports devices
+on two types of buses:
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 9077d3b99357..5880ab9f3cde 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2405,6 +2405,7 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
- 	int resize, ret, old_width, old_height, old_charcount;
- 	font_data_t *old_fontdata = p->fontdata;
- 	const u8 *old_data = vc->vc_font.data;
-+	int old_hi_font_mask = vc->vc_hi_font_mask;
- 
- 	font_data_get(data);
- 
-@@ -2451,6 +2452,12 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
- 	vc->vc_font.height = old_height;
- 	vc->vc_font.charcount = old_charcount;
- 
-+	/* Restore the hi_font state and screen buffer */
-+	if (old_hi_font_mask && !vc->vc_hi_font_mask)
-+		set_vc_hi_font(vc, true);
-+	else if (!old_hi_font_mask && vc->vc_hi_font_mask)
-+		set_vc_hi_font(vc, false);
-+
- 	font_data_put(data);
- 
- 	return ret;
+        /* Topcats can be on the internal IO bus or real DIO devices.
+         * The internal variant sits at 0x560000; it has primary
+         * and secondary ID registers just like the DIO version.
+         * So we merge the two detection routines.
+
+>         err = copy_from_kernel_nofault(&i, (unsigned char *)INTFBVADDR + DIO_IDOFF, 1);
+>
+>         if (!err && (i == DIO_ID_FBUFFER) && topcat_sid_ok(sid = DIO_SECID(INTFBVADDR))) {
+> -               if (!request_mem_region(INTFBPADDR, DIO_DEVSIZE, "Internal Topcat"))
+> +               if (!request_mem_region(INTFBPADDR, DIO_DEVSIZE, "Internal Topcat")) {
+> +                       dio_unregister_driver(&hpfb_driver);
+>                         return -EBUSY;
+> +               }
+>                 printk(KERN_INFO "Internal Topcat found (secondary id %02x)\n", sid);
+>                 if (hpfb_init_one(INTFBPADDR, INTFBVADDR)) {
+> +                       dio_unregister_driver(&hpfb_driver);
+>                         return -ENOMEM;
+>                 }
+>         }
+
+Hence if the detection or initialization on the internal bus fails,
+other devices on the DIO bus must not be force-unbound.
+
+This is also the reason why any error returned by
+copy_from_kernel_nofault() is not considered fatal.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.34.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

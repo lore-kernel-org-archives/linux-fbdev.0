@@ -1,103 +1,188 @@
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from flow-a3-smtp.messagingengine.com (flow-a3-smtp.messagingengine.com [103.168.172.138])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E90591F1534;
-	Wed, 24 Jun 2026 14:43:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2259332601;
+	Wed, 24 Jun 2026 21:11:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.138
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782312201; cv=none; b=pJxNeo0I0O9Kvy+1erdylXNNprMKA3HeXo6kBuKCgbI2DGVfBNXuHPh3BfkRsEJ26EWOvIgwRSWAetH0qsb5oucFaNOXOlT6aoF2kqADcNKd7F/9dwn3irv/PbLBBVQX7+NU7ufkRHQkNm8So/40T3qX0XfXSRValyvAg/V/Axg=
+	t=1782335501; cv=none; b=KVP4AKyqIw/oJ3MZ3rvdmrjO2FrtMaTqd2X3HSKubk/0wI7vOGirt9458mvx8eHnBLbKlSZYjmZyPd4D5wqD8GM87F70EljqRTF9Umt8Y/8/8p4nlTIvjRV0BH8w47f70SQDKOt5wXn+dcWmKiY/wJAgmLiscelPAopiGQpDaXo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782312201; c=relaxed/simple;
-	bh=kf5uyTN/incFT33s6ISHAxywr1O9xht/oae2KHZYYe0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NJdWF9WcQx7DVErX7xDW74YFnpufZDr5vOBB+8VY9wrxtt8mTUogdeUVWX58m1qybKTnP/9591Qedhvh/nXusl691RFNgG9kGNsesLeu1mlXGQVNgF7qX7h3qj6nEcmVu5b5F7cn5IrCwXgzif67MEfLFBXterxRjrTrKefmuPQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from localhost.localdomain (unknown [111.196.245.140])
-	by APP-05 (Coremail) with SMTP id zQCowADXYQUD7Ttq0YoHFQ--.42917S2;
-	Wed, 24 Jun 2026 22:43:15 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-	Helge Deller <deller@gmx.de>
-Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: via: return an error when DMA copy times out
-Date: Wed, 24 Jun 2026 22:43:13 +0800
-Message-ID: <20260624144313.79291-1-pengpeng@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1
+	s=arc-20240116; t=1782335501; c=relaxed/simple;
+	bh=zld49VFo9D4gahRzAqq5D+oUQbNLIsgSUErbnTiM04o=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=iOAiUbMZZfdIhLR40wAikDCqMuI5LgqfpBfMY/Yy26ufiHeGbkwze4wzq0VRtUY9PLPpvUoDaMjysIbAJAEGsY8U7Jvq6/aGeYRqyjVOzVsFa1j3zBW9l4zsWmWkSd+5jaSv9KpvbuoL4BSiseFQ6figYBJncUmO8SAHvy2qHDM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fastmail.org; spf=pass smtp.mailfrom=fastmail.org; dkim=pass (2048-bit key) header.d=fastmail.org header.i=@fastmail.org header.b=MFBx5/t3; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=aXKg3ZQb; arc=none smtp.client-ip=103.168.172.138
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fastmail.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fastmail.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=fastmail.org header.i=@fastmail.org header.b="MFBx5/t3";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="aXKg3ZQb"
+Received: from phl-compute-07.internal (phl-compute-07.internal [10.202.2.47])
+	by mailflow.phl.internal (Postfix) with ESMTP id C546313806D7;
+	Wed, 24 Jun 2026 17:11:38 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-07.internal (MEProxy); Wed, 24 Jun 2026 17:11:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=fastmail.org; h=
+	cc:content-type:content-type:date:date:from:from:in-reply-to
+	:message-id:mime-version:reply-to:subject:subject:to:to; s=fm1;
+	 t=1782335498; x=1782339098; bh=HLvIbEEh4LRcXndYsesxCx6snQfBdL+u
+	rW4VdjcGabI=; b=MFBx5/t3bDYp1v4eLJ0wdxfgxFFCywm49fVzIiIfFZm1nPJ7
+	vuxMwsb/CdAYXSB8O/7pJJitubIPZx+IaQXiPrPUwft/oT1Km6e4EWrBx1gMFb7J
+	IOQM11kK7keQfklGc7/eOAw3hdPaAx5zZ0Qaekzl8wkyATwsgGi3pEmFMyVdf7p5
+	r6cmanEsPcHr1bzwUpnE5Qo09R3kCXg7Zl05BDK4k5hVZhuP8Ifv7vXTDZSiBu/y
+	6yzf05RbMT8n/BxWEvF5NsEIjUwYUZ11rew7rCKe9K/l0W9dp3YREnO8/ZGc4rGA
+	vn97VYGLJsQan4UtCpLbaDmcBrlI3xYMzR3IqQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:message-id
+	:mime-version:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1782335498; x=
+	1782339098; bh=HLvIbEEh4LRcXndYsesxCx6snQfBdL+urW4VdjcGabI=; b=a
+	XKg3ZQbnXTZwQRCFg2XqvVo6IBgR0dkKRqheaJKiI5UNhsyf9+ZqCUO1+Nsv3Psj
+	JC3jUSisdi9Wrf9glUBy+uauWNge1ciFpAyifOUA5cd73QFe/IjiqRj1b2PLsHtm
+	GCIupW9p1HXinriB6DVSvOYsI+ffBYT9bjSJbinLV3Y5sdk8qliDawglKRvbG9gv
+	uABoubV4sYPiO8LtE2x0ptZE+enrOfeK+OaiHxJ2JawMNUj6U8pELp2aeOziaKO1
+	tHCQBFlc8t9uGitA6zbuKLznx8tbxaey3ZkSe/tBVBOVCjBUoqlxiHxJNVSFjR9V
+	NmXsnQCim0lK2qiHyKkMw==
+X-ME-Sender: <xms:Ckg8aibLDL6qVcZMY67fHExBIFJPLCKOGe1F3PpFUfj_dEmV4j410Q>
+    <xme:Ckg8agXCLjRKQZvmYlOm1KoIzk7Q16XVvWTj6NY-2KVb3bTuzpUaHjr3736zm_Vqz
+    pRYb6Bqm6FWSdgItMeOLOvXfLitULafP2kyf0wg5BGN9I88l0OWJyZ6>
+X-ME-Received: <xmr:Ckg8ar-Q3XoSIX-QVEXeo9mVKqCyMRD2NJmeD8l6BxwHDlc4LKEX9jsXLiA>
+X-ME-Proxy-Cause: dmFkZTEoJUJZAbIrMiuSeodSbMwEfc4MOjLc8W4PcGDO69zM/tp1kxpSFKNl05EZ+oYspp
+    9s5vDWghVzHBTnV+6rRNv2VDSyt8wl9UPm9OTDQPsenMFy4zHsUa6UijWeXrH/MFHm6z/T
+    kDtDDwk7nXVSNYBpHua5sIQYeN9Pu6vaXlyfA1RSmY1DoXmA823EcoLjVZ0IrVaSgkbKc4
+    cn2HD3hK3axHZi0AKBEuquYDzX9JY+BAC05NcRLYkoqjtMQsycOBmFS6pu3k5cyuNkk6Og
+    zFzFWJQzGuFlLbMdLWYiC4RhWzrhzOk6TyRD04nrUyE4IgGNQpRzTG3jTNUCOKhnaL4zWs
+    Z5LPENRPZAOQTb5hw/zUecu+URwE4BDoM/Fx5UBZC7e90eeKAF6ODKWBjbrNw3M3AT9iiK
+    8D8ONuTAF3XmDbXg4yB1WlpBWXwCIHrmStOHwMlV8rnFxcBRlUDiawY7pFdgOBjxYGs+R8
+    mTNEphw6ts8io0Mny1EFp+R/gMGOt9/G7BGvuAQtBBKJif7lV4vtS7V6tVKQkDMPjCrDUl
+    PhH7/aLTFvmEsCNPrGGP2qP0gK2XyJqjiQztDPJ1A0yKszDWGmQizFbq9CK5O19M2gjqe8
+    jO5b1kDzPJ9W6tD/CiedCHnrZK7lesyygYeO11MxQmw4nYy91k4sA+CfdMVQ
+X-ME-Proxy: <xmx:Ckg8ap8_RHHF5hchWpNVSuTF3MupdNfvB9FlMZue9FMuk5Yjx8LNLA>
+    <xmx:Ckg8arTMD_9uxo6uSofBVVHF8zKHVx2_dTL-E2K_UzPLaUep8NYPNA>
+    <xmx:Ckg8atdOQygom_5CoLGH5KEZUuPlXYdw83WlY-iwzgRVrMOo6P6Zhw>
+    <xmx:Ckg8avCPZgWj3Pj3Q7U-O14oD6-9UmWDmFevBMfjtO-J-eAZDFqslw>
+    <xmx:Ckg8atCKT2eaGq88AfJqwn6JbCiFq0RwZUaPRj9vSRZOSzLfNXgt_62A>
+Feedback-ID: ib53e4b78:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 24 Jun 2026 17:11:37 -0400 (EDT)
+Date: Wed, 24 Jun 2026 16:11:36 -0500
+From: Ian Bridges <icb@fastmail.org>
+To: Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>,
+	Simona Vetter <simona@ffwll.ch>, dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fbcon: fix NULL pointer dereference for a console without
+ vc_data
+Message-ID: <ajxICA0v-_5NrqhS@dev>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowADXYQUD7Ttq0YoHFQ--.42917S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7tFW3trW3Zr4kXr4xJr48tFb_yoW8WFW7pF
-	98Ga4avFy3tr1vkw4UKF40gFy5CFyfJFWfGFWxC3s09w4ayr45ury5tFyjqrW5uF9akF4x
-	XFyDt34rur4Y9aDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUkK14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
-	6r4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
-	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
-	I7IYx2IY67AKxVWUAVWUtwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r
-	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwCY1x0262kKe7AKxVWU
-	AVWUtwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14
-	v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_JF0_Jw1lIxkG
-	c2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUCVW8JwCI42IY6xIIjxv20xvEc7CjxVAFwI
-	0_Cr0_Gr1UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWx
-	JwCI42IY6I8E87Iv6xkF7I0E14v26r4UJVWxJrUvcSsGvfC2KfnxnUUI43ZEXa7VUj2YLD
-	UUUUU==
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-viafb_dma_copy_out_sg() logs a VIA DMA timeout when the DONE bit is not
-set after the completion wait and grace delay, but still returns success
-to the caller.
+fbcon_new_modelist() runs when a framebuffer's modelist changes. For each
+console mapped to it with fb_display[i].mode set, it reads vc_cons[i].d and
+passes the vc_num to fbcon_set_disp(). This assumes a console with a mode
+set has a vc_data, but it can be NULL. fbcon_set_disp() sets
+fb_display[i].mode before it checks vc_data, and fbcon_deinit() leaves the
+mode set after the vc_data is freed. fbcon_new_modelist() then dereferences
+the NULL vc_data.
 
-Preserve the existing cleanup sequence and return -ETIMEDOUT when the DMA
-engine did not report completion.
+Keep fb_display[i].mode set only while the console has a vc_data. Check
+vc_data before setting the mode in fbcon_set_disp(), and clear the mode in
+fbcon_deinit(). The existing mode check in fbcon_new_modelist() then skips
+such consoles.
 
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Reported-by: syzbot+42525d636f430fd5d983@syzkaller.appspotmail.com
+Closes: https://syzkaller.appspot.com/bug?extid=42525d636f430fd5d983
+Cc: stable@vger.kernel.org
+Assisted-by: Claude:claude-opus-4-8
+Signed-off-by: Ian Bridges <icb@fastmail.org>
 ---
- drivers/video/fbdev/via/via-core.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+This patch fixes a NULL pointer dereference in the framebuffer console code.
+fbcon_new_modelist() dereferences a NULL vc_data. It was found while writing
+a reproducer for a separate use-after-free in store_modes(). Sashiko
+independently flagged the same dereference in its review of the fix for that
+use-after-free [1].
 
-diff --git a/drivers/video/fbdev/via/via-core.c b/drivers/video/fbdev/via/via-core.c
-index a8d4a3e2c..ff691f83e 100644
---- a/drivers/video/fbdev/via/via-core.c
-+++ b/drivers/video/fbdev/via/via-core.c
-@@ -234,6 +234,7 @@ int viafb_dma_copy_out_sg(unsigned int offset, struct scatterlist *sg, int nsg)
- 	dma_addr_t descr_handle;
- 	unsigned long flags;
- 	int i;
-+	int ret = 0;
- 	struct scatterlist *sgentry;
- 	dma_addr_t nextdesc;
+The dereference happens when a console has fb_display[i].mode set but no
+vc_data, and the modelist is then replaced, as follows.
+
+1. A console ends up with fb_display[i].mode set while vc_cons[i].d is NULL.
+   Either fbcon_set_disp() sets the mode (fbcon.c:1446) before it checks
+   vc_data, so mapping an unused console with FBIOPUT_CON2FBMAP leaves the
+   mode set, or fbcon_deinit() (fbcon.c:1268) frees the vc_data but keeps the
+   mode.
+2. A write to the modes attribute calls store_modes() (fbsysfs.c:91), which
+   replaces the modelist and calls fb_new_modelist() (fbsysfs.c:108).
+3. fb_new_modelist() calls fbcon_new_modelist() (fbmem.c:770).
+4. fbcon_new_modelist() walks the consoles mapped to the framebuffer, takes
+   vc = vc_cons[i].d for the one with the mode set, and reads vc->vc_num with
+   vc NULL (fbcon.c:3046). This is a NULL pointer dereference.
+
+This patch does not change that line:
+
+    fbcon_set_disp(info, &var, vc->vc_num);
+
+vc is vc_cons[i].d, which is NULL.
+
+syzbot reported the same crash, with the call stack store_modes() ->
+fb_new_modelist() -> fbcon_new_modelist() [2]. That report had no reproducer
+and was closed as obsolete.
+
+It reproduces on a KASAN kernel with two framebuffers, two ways:
+
+1. Map an unused console to one framebuffer and back to the other with
+   FBIOPUT_CON2FBMAP, then write a modelist to that framebuffer's modes
+   attribute.
+2. Open and close /dev/ttyN, then write a modelist to its framebuffer's
+   modes attribute.
+
+The reproducer was written with the help of a coding agent (Claude Code). The
+patch is against commit 3726ce7f6cef on the for-next branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git. The
+file offsets above are from that commit. The dereference is present in the
+initial 2.6.12-rc2 import, so there is no Fixes tag.
+
+[1] https://lore.kernel.org/all/20260622080749.D7FC61F000E9@smtp.kernel.org/
+[2] https://syzkaller.appspot.com/bug?extid=42525d636f430fd5d983
+
+ drivers/video/fbdev/core/fbcon.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 9077d3b99357..97d4b836b26a 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -1273,6 +1273,7 @@ static void fbcon_deinit(struct vc_data *vc)
+ 	int idx;
  
-@@ -290,8 +291,10 @@ int viafb_dma_copy_out_sg(unsigned int offset, struct scatterlist *sg, int nsg)
- 	 */
- 	wait_for_completion_timeout(&viafb_dma_completion, 1);
- 	msleep(1);
--	if ((viafb_mmio_read(VDMA_CSR0)&VDMA_C_DONE) == 0)
-+	if ((viafb_mmio_read(VDMA_CSR0) & VDMA_C_DONE) == 0) {
- 		printk(KERN_ERR "VIA DMA timeout!\n");
-+		ret = -ETIMEDOUT;
-+	}
- 	/*
- 	 * Clean up and we're done.
- 	 */
-@@ -301,7 +304,7 @@ int viafb_dma_copy_out_sg(unsigned int offset, struct scatterlist *sg, int nsg)
- 	dma_free_coherent(&global_dev.pdev->dev,
- 			nsg*sizeof(struct viafb_vx855_dma_descr), descrpages,
- 			descr_handle);
--	return 0;
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(viafb_dma_copy_out_sg);
- #endif /* CONFIG_VIDEO_VIA_CAMERA */
+ 	fbcon_free_font(p);
++	p->mode = NULL;
+ 	idx = con2fb_map[vc->vc_num];
+ 
+ 	if (idx == -1)
+@@ -1443,14 +1444,14 @@ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
+ 
+ 	p = &fb_display[unit];
+ 
+-	if (var_to_display(p, var, info))
+-		return;
+-
+ 	vc = vc_cons[unit].d;
+ 
+ 	if (!vc)
+ 		return;
+ 
++	if (var_to_display(p, var, info))
++		return;
++
+ 	default_mode = vc->vc_display_fg;
+ 	svc = *default_mode;
+ 	t = &fb_display[svc->vc_num];
 -- 
-2.50.1 (Apple Git-155)
+2.47.3
 

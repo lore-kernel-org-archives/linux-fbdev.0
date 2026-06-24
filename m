@@ -1,64 +1,63 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CFDA22425B;
-	Wed, 24 Jun 2026 01:51:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9701217993;
+	Wed, 24 Jun 2026 03:27:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.13
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782265901; cv=none; b=cuuhBxPaCojLhGLOwsBZuTmZ77IiAlTLqZfE9OaAVj43xrAuo31E3mVG/V7Tm0GJ3ORndSnCcJjyzKMPmlt9O8jAFKjmdpKt1v28eMngFxXVQ+jHNKbW1xNElC2o5ZAoUiT3C9EJCTKCmWKUkKiOYenY4nuj+1ZoCphhXszp3RU=
+	t=1782271646; cv=none; b=ubXlgYQxxCFB8BesO43+/kbDzVQobZrA6E2hjkr1KXVsF4xNQzPjTduC0NEhO8X0cUGjRhdqt1fUWcm8Ld3OUmUumHqvA1Nz4lkjALUG7cmbe+Kbhu3p/KBUGcMCrvi89JKwFHXgjsoRlJkEx+y2SnJIacJOkpsPatog0bbeOu0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782265901; c=relaxed/simple;
-	bh=YlgPqTFyJmjtQ+5qud7Cj+WUJVCW+Asvb2it3eB2Mzs=;
+	s=arc-20240116; t=1782271646; c=relaxed/simple;
+	bh=2SS3ol4ylJdY7CvZq08xhkuj5RZgxQvy20V6aDvoQac=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ETQ+Q9qJWZA1EqKvm0FvZjBpHBv+o4q/b7TJOs7hS7B5Mmdo4jJiEzfnsAW9+tcnHZgkpgFYZezoZ7v7R5fukpHTjOh1WScQwV5LrWxveB2d7gJ8FeBv7udUfZAJfZK8dr8AWCDP4h1oy2dJ08XtoTAfAIcWuDmNQS/XvPvlAaA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=Gsoyge7x; arc=none smtp.client-ip=198.175.65.10
+	 Content-Type:Content-Disposition:In-Reply-To; b=tAGhpXgLJX5eJ/fTq7sK8eEaZaLPXsGdo2SKPFmIm/BTeIDvzY2rugB55tuaLnzR1qOwlV9qucCI4rHhAr/5g5r/lAkJ4qSX6MrlQ7xW9ZxJZ+Ud16LCSxI0pjtqM52NWJ5CirWYFJOcSXSt7OCYco4XFpweYtnftd9Bb8pmp1I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=MXeVr+8R; arc=none smtp.client-ip=192.198.163.13
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="Gsoyge7x"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="MXeVr+8R"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782265899; x=1813801899;
+  t=1782271645; x=1813807645;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=YlgPqTFyJmjtQ+5qud7Cj+WUJVCW+Asvb2it3eB2Mzs=;
-  b=Gsoyge7xjvVOIphP9ScqXpGVU8aiSNHBtCGnN0QLhau4wq9ihfb3OjJQ
-   rZ1CRFFTwNKIqrIoQTCKHSZ0Y3XKZoTzFaeKs+WHpzV9wLzFoYjlsbT+W
-   9mDZA4/egUewivq62NIWvpyqy6ESSmyZ9IlcgRHOlVb5DIqdJigKiNstF
-   SwCo5aLYaiW33eMC/V7hr9acM49FIfVJT3pIB6L+qruzTSVi2eDd/B1Ty
-   RAg0g+B2CxqycDDTLGrrk2eNZG3FCT0BYh73QFDobpI2bo0ESQTJqmwsW
-   zmnO2vrUVqt4VHsLM6S7sJEFbU2yoczkv1Wlkk8JZYLbZvJvFFinQZiop
+  bh=2SS3ol4ylJdY7CvZq08xhkuj5RZgxQvy20V6aDvoQac=;
+  b=MXeVr+8RHOxParSdSqlvFLGxnkRYhs8IEkwSbxMeYWUkXiC0VfcPBXL5
+   1bglD95ONhgawTT/EuFVCsl6C/qSUb9Yyr295LwohAW5F+3R9APpQp/bM
+   C7oTg+mNmutkOWcKGZ96fnbW3kyq0OTXvFOCzt0eJ6ZMzv5e1ng0Mj/p9
+   0d6RKEdAaeFxfHf9tvkevzQd01S2TL9dgMrfu5l8hUJgjx8IhpKH48T+t
+   1cWkIthip2VuBLsXuumh3YW/2jwC38AnAt3OaT3eWL+UWg7G4nNUBsCem
+   maQ4TSusGFlIlqKqBfJB/vt8rm4ljS870SQx7/ECE7dGhIDoIoBtvUu0f
    A==;
-X-CSE-ConnectionGUID: zd6fepehSDC0pjsKFaqIJA==
-X-CSE-MsgGUID: 8Y5Z/a+6RAijcwi22rr29g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11826"; a="100443621"
+X-CSE-ConnectionGUID: jV6hARhHSLSXai2P5Bc7jQ==
+X-CSE-MsgGUID: 9Y2VIh1QQ1GFctCAdw0bsg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11826"; a="85578764"
 X-IronPort-AV: E=Sophos;i="6.24,221,1774335600"; 
-   d="scan'208";a="100443621"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 18:51:38 -0700
-X-CSE-ConnectionGUID: zOZulX3eSkCcuYF3WnP3aw==
-X-CSE-MsgGUID: UROBMCKGQ62dEqQwtR/2iQ==
+   d="scan'208";a="85578764"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2026 20:27:24 -0700
+X-CSE-ConnectionGUID: QJ9MHrLBQLuEAJi7Ow/kyg==
+X-CSE-MsgGUID: G5PvuoVCQSKsJM4vqRFECQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.24,221,1774335600"; 
-   d="scan'208";a="287812282"
+   d="scan'208";a="248803287"
 Received: from lkp-server02.sh.intel.com (HELO ea128546eb3d) ([10.239.97.151])
-  by orviesa001.jf.intel.com with ESMTP; 23 Jun 2026 18:51:35 -0700
+  by orviesa010.jf.intel.com with ESMTP; 23 Jun 2026 20:27:22 -0700
 Received: from kbuild by ea128546eb3d with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1wcCm5-0000000032v-07Ea;
-	Wed, 24 Jun 2026 01:51:33 +0000
-Date: Wed, 24 Jun 2026 09:51:24 +0800
+	id 1wcEGl-0000000035x-18lo;
+	Wed, 24 Jun 2026 03:27:19 +0000
+Date: Wed, 24 Jun 2026 11:26:46 +0800
 From: kernel test robot <lkp@intel.com>
 To: Arnav Kapoor <kapoorarnav43@gmail.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+Cc: oe-kbuild-all@lists.linux.dev, linux-staging@lists.linux.dev,
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
 	Arnav Kapoor <kapoorarnav43@gmail.com>
 Subject: Re: [staging] staging: sm750fb: fix remaining CamelCase issues
-Message-ID: <202606240916.wIIrdOzC-lkp@intel.com>
+Message-ID: <202606241142.LlZq0AN1-lkp@intel.com>
 References: <20260621045340.65872-1-kapoorarnav43@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -85,41 +84,39 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Arnav-Kapoor/staging-sm75
 base:   staging/staging-linus
 patch link:    https://lore.kernel.org/r/20260621045340.65872-1-kapoorarnav43%40gmail.com
 patch subject: [staging] staging: sm750fb: fix remaining CamelCase issues
-config: sparc64-allmodconfig (https://download.01.org/0day-ci/archive/20260624/202606240916.wIIrdOzC-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260624/202606240916.wIIrdOzC-lkp@intel.com/reproduce)
+config: mips-allyesconfig (https://download.01.org/0day-ci/archive/20260624/202606241142.LlZq0AN1-lkp@intel.com/config)
+compiler: mips-linux-gcc (GCC) 16.1.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260624/202606241142.LlZq0AN1-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202606240916.wIIrdOzC-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202606241142.LlZq0AN1-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
->> drivers/staging/sm750fb/sm750.c:862:23: error: no member named 'power_mode' in 'struct init_status'; did you mean 'powerMode'?
+   drivers/staging/sm750fb/sm750.c: In function 'sm750fb_setup':
+>> drivers/staging/sm750fb/sm750.c:862:30: error: 'struct init_status' has no member named 'power_mode'; did you mean 'powerMode'?
      862 |         sm750_dev->init_parm.power_mode = 0;
          |                              ^~~~~~~~~~
          |                              powerMode
-   drivers/staging/sm750fb/sm750.h:42:9: note: 'powerMode' declared here
-      42 |         ushort powerMode;
-         |                ^
->> drivers/staging/sm750fb/sm750.c:863:23: error: no member named 'set_all_eng_off' in 'struct init_status'
+>> drivers/staging/sm750fb/sm750.c:863:30: error: 'struct init_status' has no member named 'set_all_eng_off'; did you mean 'setAllEngOff'?
      863 |         sm750_dev->init_parm.set_all_eng_off = 0;
-         |         ~~~~~~~~~~~~~~~~~~~~ ^
->> drivers/staging/sm750fb/sm750.c:864:23: error: no member named 'reset_memory' in 'struct init_status'; did you mean 'resetMemory'?
+         |                              ^~~~~~~~~~~~~~~
+         |                              setAllEngOff
+>> drivers/staging/sm750fb/sm750.c:864:30: error: 'struct init_status' has no member named 'reset_memory'; did you mean 'resetMemory'?
      864 |         sm750_dev->init_parm.reset_memory = 1;
          |                              ^~~~~~~~~~~~
          |                              resetMemory
-   drivers/staging/sm750fb/sm750.h:48:9: note: 'resetMemory' declared here
-      48 |         ushort resetMemory;
-         |                ^
->> drivers/staging/sm750fb/sm750.c:883:25: error: use of undeclared identifier 'SM750_DOUBLE_TFT'
+>> drivers/staging/sm750fb/sm750.c:883:46: error: 'SM750_DOUBLE_TFT' undeclared (first use in this function); did you mean 'sm750_doubleTFT'?
      883 |                         sm750_dev->pnltype = SM750_DOUBLE_TFT;
-         |                                              ^
->> drivers/staging/sm750fb/sm750.c:885:25: error: use of undeclared identifier 'SM750_DUAL_TFT'
+         |                                              ^~~~~~~~~~~~~~~~
+         |                                              sm750_doubleTFT
+   drivers/staging/sm750fb/sm750.c:883:46: note: each undeclared identifier is reported only once for each function it appears in
+>> drivers/staging/sm750fb/sm750.c:885:46: error: 'SM750_DUAL_TFT' undeclared (first use in this function); did you mean 'sm750_dualTFT'?
      885 |                         sm750_dev->pnltype = SM750_DUAL_TFT;
-         |                                              ^
-   5 errors generated.
+         |                                              ^~~~~~~~~~~~~~
+         |                                              sm750_dualTFT
 
 
 vim +862 drivers/staging/sm750fb/sm750.c

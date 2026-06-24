@@ -1,73 +1,43 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.4])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2593C25B091
-	for <linux-fbdev@vger.kernel.org>; Wed, 24 Jun 2026 07:38:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3D8F31F9A5;
+	Wed, 24 Jun 2026 08:33:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782286719; cv=none; b=JJN3/9YlxTBaGfRni8wVWAQUhMtGiRWWI6gHqDeDitxm2Azt+MX598lYoCujuxc6eRzu0ZBlc3lRU+0RJEBTDDGV2mn0Bvhp3D7Xtd0WeeXJK8WfqFrZeqE4nv9eoSA1MKdym4m73Hm6aXmlpbEc+z3dqwvfxS5bJxQj9zgvrd8=
+	t=1782290036; cv=none; b=RkpYk3qomMGo5wOg8YJ+7pykWpYf3DD3PzqK/SbNHOFizdu+dzmPJ6bt2E/vuIFi3joSAebg7YsG03HZ+JnawcUQQ8rNfyZ0q8jNh4W2ROPlpc4bM0lVHzJnSn9HZ+cXZPLl9reiWnX1tFIimoFGi6Y5kBJkcJaT1WCDdTFbTdg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782286719; c=relaxed/simple;
-	bh=5Z/CZfn0CfC8QFnMep1ReEO8WH6JJMbMm3qMgD2ezDU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gKtxBDirGwAHjGv8P/vPDxI6paXRqTdJObvP5Ks4A1cWc5gz7IwAt4CyfDPkFhOzXwYzgDGUVdN7rgdlYf6Dj7ZGOXMnCIxkbE9JU9DrAMRuM44w6knp1SRjQWSkuZZZ3//TlMKfftARzFzMmozivtvHQQYdODBy0hJnYMoZseE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=rge2GwKP; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1782290036; c=relaxed/simple;
+	bh=vJTNC8A0MkcNHYkuv4H8UnfJcYK38I2Z6SyNAqP+Xks=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Aq4zj97IiB6ohnTFN3o6iAiPYgkizOlC795Fz1yiNLS9hkTtSc0z36yTdkHB5OHUnvl97sFLmNXoea5ge0tWLx0XGZf7bJggl7jcnUo1kL5MO1QI/oUFYDxCdFt1pXgusyjFM+ZQaLCOexWRWDTl91PN62+3p2dW5jr6AHE94yY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=BcyLReX7; arc=none smtp.client-ip=220.197.31.4
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rge2GwKP"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-4926046fbc5so5543295e9.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 24 Jun 2026 00:38:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782286716; x=1782891516; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=vk2iYqcO7LMBB/0161whJq3oPaKM69uvROOVp1OGQZM=;
-        b=rge2GwKPFwGUfU0enP3jF2DEQOugFPUrW1uJnUViGCRm+evlFVAHPF0D6e0l9RkkRF
-         4drDXjWRMEhOhXmSburn6vs0s3lpBWmFfbgqiNkesCW+TdV1vxRcrZ436g6F1Drz92HZ
-         pK0wYxWIjis1mk8SL920NpguKv1eRmZ3nQtCzpaWKWW1ooY3yRyyC+CadE+lH57xK12z
-         Jd2j5s5idQMz6h8rpRy9GOGc5vbeJwKhR71+IRQa8b1FpmkJ4bnk6dZjnyE7jeJoOaRt
-         +phQw+XcH6BjhyOFmTw+ltyQN+ve2scpnDdNc3GMw/DOxJLP7EmTp0gULmWGvVpEVQu/
-         1heQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782286716; x=1782891516;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vk2iYqcO7LMBB/0161whJq3oPaKM69uvROOVp1OGQZM=;
-        b=OXypV2p3A2bGZhLc6ot0UjY1Nt9r75bDNxR2eAW3VkM8psFmvW8ZNEjSKE1QGb3WD2
-         /xTgGeld4YBBsHIKDNewgmfJEqb92NKAPM8n63ClYOtBCNYAaY2PvFPuV5wUr10Iiin2
-         22t2xzuZW6h8se9mDdbaAwjo1uJuOJ6Nl+eCmwvXEQ3/NPI2P+2cZEiYFjKLqIGmFsUO
-         JwUs0rq4yZ55IilAfeKA8KMTFEktBt7HsWmE111OO8SycZnXaloJJVgFRem3y+W0s+5P
-         xopfiUJEtFs/+3USKq0BZDBKa/2bs4BBVu+6ruiD8W2F+ZLceGKGDVVNVDFaguz7t5N3
-         zcpw==
-X-Forwarded-Encrypted: i=1; AFNElJ+IME5khhgyKiOATrtBEGHZyjHRDY+VlNfdAGSuczz51njXn1PoTcLCvWlQha9rXPmVghF3yAvqm8PWYA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyXgts4bvAUFOpQ2IAlSlyLnCzH9tNlzvD23iO2ag59hhycD6FB
-	ytYObcyxYOF8riexsuh3avw0VlQsm9X6z68UvHd+dNHy+p7spc0yYqwJ
-X-Gm-Gg: AfdE7ckjcEU1TCsfztH6msDtKVaY7K3hOCk329xrwtQpK9W/2xUKVkR5rArSslF85gc
-	ptzJrihYGYc90iqGO/PxwU1PDtkCGHaAUAc5ltY8m4LxIriuNq83j1ApFZ9+8FMDdirq7sqMVFn
-	2DljMz1nJAC/fuop+GElLFe3nzMB+U4DfS0qNTLwidrH7IHt4U/t1/akCDjnAGeLpDwXUjaf3MF
-	w35RfD0e0H9a8P0UZLPxZZBgv9sEg9T0vHmJL8VquaMl6aVh9c5Nns7IEBtGS0VFQwb0Q2ny5Tp
-	0NU5rk9xi2masilO2YpNdG57kdeJW1qRGSo+oK4obFqMIMPey++VVCRJp0G+4tQ7h/jw5S6gDp+
-	ftLi7t0tApsF/+tPq9b46S95C/+ln+SctKif5JS51B6wilpA60PcvARujKOmk7seFWEjDwu+gyi
-	VIBPYFnxWs2NYO2UcffrRWRVxc6g==
-X-Received: by 2002:a05:600c:348e:b0:48f:e230:29f5 with SMTP id 5b1f17b1804b1-4925a0c564dmr93840065e9.16.1782286716400;
-        Wed, 24 Jun 2026 00:38:36 -0700 (PDT)
-Received: from localhost.localdomain ([115.187.36.107])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49260915286sm78796755e9.1.2026.06.24.00.38.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jun 2026 00:38:36 -0700 (PDT)
-From: Joyeta Modak <joyetamdk@gmail.com>
-To: andy@kernel.org,
-	gregkh@linuxfoundation.org
-Cc: dri-devel@lists.freedesktop.org,
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="BcyLReX7"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=M0
+	yyVVLf6YjrZtZ/GI81jVYzh2dTbOxLY0Y7vtCZdlQ=; b=BcyLReX7rdK2398iDs
+	ZBaOlyGJYiODRv4UL2QENLR/BgzoTrz18bqKqEubU0UGi+xKVGXQUrKLSb5xt+h1
+	zOnJ3gWc8jvk7qmXLSB/3jl0/Ld1JxaoD7ZEh6cBUGRgOYqYi+abL4GUlEq42G7B
+	Wdz0oYxuEXd8bwkIrTaL1sJMM=
+Received: from 163.com (unknown [])
+	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wD3O0dPljtqZF_NFQ--.56523S2;
+	Wed, 24 Jun 2026 16:33:22 +0800 (CST)
+From: w15303746062@163.com
+To: deller@gmx.de,
+	tzimmermann@suse.de,
+	simona@ffwll.ch
+Cc: syoshida@redhat.com,
+	dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	Joyeta Modak <joyetamdk@gmail.com>
-Subject: [PATCH] staging: fbtft: use ARRAY_SIZE() in NUMARGS macro
-Date: Wed, 24 Jun 2026 13:08:04 +0530
-Message-ID: <20260624073804.4391-1-joyetamdk@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	Mingyu Wang <25181214217@stu.xidian.edu.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] fbdev: fbcon: fix out-of-bounds read in err_out of fbcon_do_set_font()
+Date: Wed, 24 Jun 2026 16:33:16 +0800
+Message-Id: <20260624083316.389677-1-w15303746062@163.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -75,41 +45,70 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wD3O0dPljtqZF_NFQ--.56523S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxGFW7Ww13WFWxCr1DJr1rtFb_yoW5Jw15p3
+	9xKw13Kr1ktr1rGa10gw4vkF15Wan7A34YqayxK34rKw13Gr4UXay0yFyYvas8C3srXF10
+	qw1vg34q9FyDuw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07j5_-PUUUUU=
+X-CM-SenderInfo: jzrvjiatxuliiws6il2tof0z/xtbC5BIjB2o7llIsJAAA3P
 
-NUMARGS() computes the number of arguments by dividing the size of a
-temporary int array by sizeof(int). Using the standard ARRAY_SIZE()
-macro is the correct way to count array elements in the kernel, and
-ARRAY_SIZE() also provides a __must_be_array() compile time check. There
-are no functional changes.
+From: Mingyu Wang <25181214217@stu.xidian.edu.cn>
 
-Found using make coccicheck (scripts/coccinelle/misc/array_size.cocci).
+When fbcon_do_set_font() fails (e.g., due to a memory allocation failure 
+inside vc_resize() under heavy memory pressure), it jumps to the `err_out` 
+label to roll back the console state. However, the current rollback logic 
+forgets to restore the `hi_font` state, leading to a severe state machine 
+corruption.
 
-Signed-off-by: Joyeta Modak <joyetamdk@gmail.com>
+Earlier in the function, `set_vc_hi_font()` might be called to change
+`vc->vc_hi_font_mask` and mutate the screen buffer. If `vc_resize()`
+subsequently fails, the `err_out` path restores `vc_font.charcount`
+but entirely skips rolling back the `vc_hi_font_mask` and the screen
+buffer.
+
+This mismatch leaves the terminal in a desynchronized state. Because
+`vc_hi_font_mask` remains set, the VT subsystem will still accept
+character indices greater than 255 from userspace and write them to the
+screen buffer. Subsequent rendering calls (e.g., `fbcon_putcs()`) will
+then use these inflated indices to access the reverted, 256-character
+font array, leading to a deterministic out-of-bounds read and potential
+kernel memory disclosure.
+
+Fix this by adding the missing rollback logic for the `hi_font` mask
+and screen buffer in the error path.
+
+Fixes: a5a923038d70 ("fbdev: fbcon: Properly revert changes when vc_resize() failed")
+Cc: stable@vger.kernel.org
+Signed-off-by: Mingyu Wang <25181214217@stu.xidian.edu.cn>
 ---
- drivers/staging/fbtft/fbtft.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbcon.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index c7afb0fd3..48da1503f 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -4,6 +4,7 @@
- #ifndef __LINUX_FBTFT_H
- #define __LINUX_FBTFT_H
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 9077d3b99357..5880ab9f3cde 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2405,6 +2405,7 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
+ 	int resize, ret, old_width, old_height, old_charcount;
+ 	font_data_t *old_fontdata = p->fontdata;
+ 	const u8 *old_data = vc->vc_font.data;
++	int old_hi_font_mask = vc->vc_hi_font_mask;
  
-+#include <linux/array_size.h>
- #include <linux/fb.h>
- #include <linux/spinlock.h>
- #include <linux/spi/spi.h>
-@@ -233,7 +234,7 @@ struct fbtft_par {
- 	bool polarity;
- };
+ 	font_data_get(data);
  
--#define NUMARGS(...)  (sizeof((int[]){__VA_ARGS__}) / sizeof(int))
-+#define NUMARGS(...)  ARRAY_SIZE(((int[]){__VA_ARGS__}))
+@@ -2451,6 +2452,12 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
+ 	vc->vc_font.height = old_height;
+ 	vc->vc_font.charcount = old_charcount;
  
- #define write_reg(par, ...)                                            \
- 	((par)->fbtftops.write_register(par, NUMARGS(__VA_ARGS__), __VA_ARGS__))
++	/* Restore the hi_font state and screen buffer */
++	if (old_hi_font_mask && !vc->vc_hi_font_mask)
++		set_vc_hi_font(vc, true);
++	else if (!old_hi_font_mask && vc->vc_hi_font_mask)
++		set_vc_hi_font(vc, false);
++
+ 	font_data_put(data);
+ 
+ 	return ret;
 -- 
-2.53.0
+2.34.1
 

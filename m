@@ -1,61 +1,63 @@
-Received: from mail-dy1-f179.google.com (mail-dy1-f179.google.com [74.125.82.179])
+Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB1353CF05D
-	for <linux-fbdev@vger.kernel.org>; Thu, 25 Jun 2026 10:31:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CB6738C400
+	for <linux-fbdev@vger.kernel.org>; Thu, 25 Jun 2026 11:02:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782383467; cv=none; b=VOpyxvCfq3ZzBH9oBqhpT9qWU4i1kifGaLN1mX8T1f8OS0w6pF/YcUocYdTCGorxlN8L/y0tWApnwpPNwZeppJGrXO1d9xOSPQ0am9fqO/5PnCPeZEseX71GJf9X4QHcovJRNuBCbr+iawi4x95CB7gZuFDbvDodlzF/+PEeAQA=
+	t=1782385374; cv=none; b=ZpJV9/wK5suo9ihVTXxpALWIq2IZ29j6bKv4TSkaQxMKgGp5J9mNkU3HxMNvcTWMvowXA3cZd0ND6rBNjjXn1CYEMkAhWu3y3QcTLzn3FFJHbP4DXbchRQ1qVeNCiWBMMZXwURRz1WQ1K7KfeQAnD0rwyrlPKaVg30RkN+ji+uE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782383467; c=relaxed/simple;
-	bh=MC81b1n8cWE023+2RKmMuPWPjQOWGqTfXMyWCkJ8a/k=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Wy8yUc4qf/CiM73xXjnQ7LLhq9lH6TW43Gs7iGne9fWzlFEw6W9PZCae0PUZDLYysRRNUdfoNnIHSmsxAdjNWvwzBX/mPLUMaRGqm97w/mZ1u1WP7+3Oeo5v24KwpvE+AZVm7muqwMppI74/Y6iGn61efE5XRhJsX591htMIy0I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=oUvbsmqY; arc=none smtp.client-ip=74.125.82.179
+	s=arc-20240116; t=1782385374; c=relaxed/simple;
+	bh=NR4F+ieQeaovMU2nyAUcUaMtGH8xlJq5lhLjB9nQPQM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=mCJ40xpGIMTYZcePpi/EpQymMpezR+o7gpcCI/h+Bim3+P/42S4puft5D41u53A5TNb255fVF08EE+iWewyIR/rJ/+CzKkEN+2gHqBAl0W5Ql7nQqMbmP5VeCYYVAv8Wnyz/HfwRScwc3hzrZtPbwHrAqFByuUXFuAa3EG/uwhk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=AxL9MgvF; arc=none smtp.client-ip=74.125.82.170
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oUvbsmqY"
-Received: by mail-dy1-f179.google.com with SMTP id 5a478bee46e88-30c713f37c2so711014eec.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 25 Jun 2026 03:31:05 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AxL9MgvF"
+Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-30bc806fcf8so2590964eec.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 25 Jun 2026 04:02:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782383465; x=1782988265; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=TKJsVWDIVCaWALiuCSmxIi+GmrzYP0RWrh9s3UMN5KM=;
-        b=oUvbsmqYrnIT5w6bYroQd4S0QWhisudiCUju/8yfzhqIzEEEy4mjeoC++ZxzXcMreS
-         kqDfGfaSF2XhjPFEU4dC6+tm6C9XoRDqmEVH9XH89GhG2HlTp3QAruuRJZycIYYlnxhe
-         uOWXZU+W9Z/He4DMU2+fZwgcT95p5kg9fhuYq+OPSGtjjRgi1Nri7DI2MGzLMZA7/zPp
-         nx0ntXYngghr7+GzVzLPVFDxHmxFzkxa/0ZHae/G8TQQ2Eu3Fv1Guqc82SY5hMJlrq26
-         4eLqfYlzFHotnSDjadu4o0Lj2TzuzBs/Wl59ZYHEinc7FFO9E1wwshUlo7yNHXeTdpkp
-         uh7A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782383465; x=1782988265;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1782385369; x=1782990169; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=TKJsVWDIVCaWALiuCSmxIi+GmrzYP0RWrh9s3UMN5KM=;
-        b=j8AEPmuS4EP44B4GSAjhjJEyE/hRPsztuUa0BNLHABERwkyfN7Kdk91S6/L4K/FW1q
-         VhZM1tGfVYQdD0+UYWTHjecsv0/8b6CY+4UU4OLIUNXb+yNDbsz0VNtrOSJ6pU3io6NE
-         yn93uL5vTj3e+WbopdYMOMcl4URhjWG3EshusIG7WXhqpXKM7SNkAlcC0PWKDgwkXCF1
-         +KRHegNnYx0jhNp756Zh9PZOL/3vrY3AOJIISpafCvC2KY21gBcBUBG614nJyblkA40Y
-         7W1T/v9S4m/9UHvAvKWpW4qax8/FZvt83arHmSk9B5vqouoxMDBR9Zc6Luf2gTost4ho
-         IsNQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rre2lV/+LEPBHCETCI7hln63Z9k8ZPllHggh90TGmfABI0NI+gCBhBUleWIvijzhf/isGwmFSmAEx6SHw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzPeWJJpoMhbkUcA6MY4OofFDrq+07uucA8Q6KGGvSnR5QnoczK
-	ERuyyAUOq6m4EWPGb+ICE14tA/q6UY4XTsdXSmmTb01wO+ymhxrxkDcZ
-X-Gm-Gg: AfdE7cmqmGIcT7wYCnDuN7zvRgF+7lblYqhbdvaHZHZtzVm3ALxAgY1HI6SFsjnA/8Q
-	BB7Pg4kaR0VRGfcvpUA5x4uCKJMQnzGUqLMrWd6j6W3NR6BsORtnpIz/f5vbEN5MEps3VPG2Yv0
-	IFCruyzYgXJHUNKHbGBmWh8V75He2fAwn+FcVI45HIAEBxWvl4yO4f9rWp9RUJ497xtFXHnBfaE
-	fJeTA+sGtuOEpXp4Pv8ZtyKXKnGIkMQyKXnrm+QIAVqivCKyVnuuk/CQFolfkbFa2cNszRqOzuh
-	F5R+nM/BEv19rKEFyUcNjf3epSfisJilH7VLjDwDjbJOe5hMn1MZzj6wS6j4ChXkz/krbOEsJnX
-	wQAO4fAGKUImOaKjqV44Br0CdX6NqOKqZcS2cVxRK3J/fl300bBG6QY/CNf4syx/kh4auLPfksi
-	F1iWN5h7szaRn0v3oGP5OeqUTvySKOlXHrrw==
-X-Received: by 2002:a05:7300:a485:b0:30b:8878:9c8e with SMTP id 5a478bee46e88-30c85468412mr1914301eec.2.1782383464754;
-        Thu, 25 Jun 2026 03:31:04 -0700 (PDT)
+        bh=dzVXIO2M/zZGRMQrA3as78zSud+6/fQ7nehrf8i6Zh4=;
+        b=AxL9MgvFZxxMyng/kLtQZDESdOFV3GFWZXaxkSB6UYO5L6y5XcMM1ZxnD9/2vMUrxV
+         jqsClJpTBPPkX3F+7pF6JEGkrf0HDdZ7y/6ARplIiNOmspHR/qGVlbvli1Ik5TZwJhU6
+         r+JLdE91628bzcZSJzdubtP60k1ng39afA1sj0rimiLs2kFDKOmGv64miiZMXqVJ7mem
+         60tKGD/5wMrQRAZErxeSnia4NpCnZ68xS6aUAXFh0rwiq3S8mzqRIgIXgqGccDyX3Oi+
+         TOuSvex9tZg3jcaNx159Av/ZwlIJ89APdLFRt74OSEDRAnRTjdimd9tH8Ihd6LQT/jEr
+         sF+A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782385369; x=1782990169;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=dzVXIO2M/zZGRMQrA3as78zSud+6/fQ7nehrf8i6Zh4=;
+        b=pO6k0qIGePGFnvt/FDr9Z15Rq62y5hH81TWJNA5HmUZcLM8AD6oNG1dMQhA/Jd5LQA
+         wHcExqU4aMzByhwV1JbDCkrsx/bUpDaCoRN3AlIpGIBOwsxZVM+dk5DsYoF0hsrk0PVH
+         9hVqNdpXrru9ZYOlnC4tVh/68oT3/qgruX752V2urqHZfwGrDK1chPVQ+p6NXgydN8f6
+         KV/BAZuCckzXXCjYgMFVscNjTtP8ZIx6K1SEQX2o9LIg7RuuF+BqCWLEitPtrEC5fxa7
+         GbWVSE3YKEaUh7b+mDzyrc8+0iQHoHlyI8sAepIk/BajJ4ZgacY8iVlinb1QSmG+jRdP
+         l/xw==
+X-Forwarded-Encrypted: i=1; AHgh+Ro6kK368BJYgykDp1z+0JHSuntdqO6ZJR4hxW3SrQCzUOZSRXolqXvq+s0N2L0MZbsB1o7eRNHXjz5x9Q==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx8x0qIiATSq5bnNJZeOmVuFO+mMpOnfma7jUXZjeTMeimyHZEb
+	8jW6SyZFFXRvAiTnJZ6esNAFsPTFvqOKWnXsbrLWSNzWd4PPZJ3Qn3yB
+X-Gm-Gg: AfdE7cnO0givP0LpTFc6VnJUWtbn5QvaVplSk6Vz97Y5wNRAiquk/RmhEwrH6gdN/o2
+	6rHA6zCt51Pi8GbigLn3Q7cLBb3gKXmLDcKmTNnsKQp8VL/6pON3pDAnotjap6b1/5Yd5pO8InP
+	czJQOADngygTaHmgQ8An8KznIraGXEu3CLLjIuKJ4iHVd/FzCwTOv1Chs8bxqvkxjjoyJgRtQsq
+	xJQ0xkaHQScyRTfCtTG9wIV1vEnyjZn8ePWihujHUrkpk8JTtYvcjibWtM/OF2YNfaS1Yk8Px2m
+	F3qSARZZU9gro+6tqmLxuB4AfFRVVby1Qj/eNhk4dGD+M3I/9KOdS2RvZZ5zdMXOmsA+efsedfi
+	gv/YPcZnQ7B7tNoh5ZWIqWkPvKzJkc3VGvx31e4GNUGDTqpneLO+lkks8UQTv5bwnciIBu4+8ks
+	033W9Med7rg8NmHbm8Jg7SgASm54EQUSCZ0S4vJew+4mvM
+X-Received: by 2002:a05:7300:8606:b0:30c:5807:abc7 with SMTP id 5a478bee46e88-30c84cac264mr2452317eec.17.1782385368531;
+        Thu, 25 Jun 2026 04:02:48 -0700 (PDT)
 Received: from 10-86-27-11.ban-spse ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30c7ca5e601sm7458658eec.25.2026.06.25.03.31.02
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30c7ca87caasm7229314eec.27.2026.06.25.04.02.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 25 Jun 2026 03:31:04 -0700 (PDT)
+        Thu, 25 Jun 2026 04:02:48 -0700 (PDT)
 From: suryasaimadhu <suryasaimadhu369@gmail.com>
 To: andy@kernel.org
 Cc: gregkh@linuxfoundation.org,
@@ -64,10 +66,12 @@ Cc: gregkh@linuxfoundation.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	suryasaimadhu <suryasaimadhu369@gmail.com>
-Subject: [PATCH] staging: fbtft: fix unaligned access and buffer size when startbyte is used
-Date: Thu, 25 Jun 2026 18:30:41 +0800
-Message-ID: <20260625103041.281190-1-suryasaimadhu369@gmail.com>
+Subject: [PATCH] staging: fbtft: fix unaligned vmem writes when txbuf is byte-offset
+Date: Thu, 25 Jun 2026 19:02:37 +0800
+Message-ID: <20260625110237.304435-1-suryasaimadhu369@gmail.com>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260625104220.21E5A1F00A3D@smtp.kernel.org>
+References: <20260625104220.21E5A1F00A3D@smtp.kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -76,62 +80,53 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-When par->startbyte is non-zero, buf is advanced by one byte creating
-an unaligned pointer for 16-bit types (u16, __be16). Dereferencing this
-unaligned pointer can cause a kernel panic on strict-alignment
-architectures.
+fbtft_write_vmem16_bus8() and fb_ra8875's write_vmem16_bus8() offset
+txbuf16 by one byte for a command/start prefix, then store 16-bit pixel
+data via txbuf16[i]. On strict-alignment architectures this can fault
+the same way as the write_reg path fixed in the previous patch.
 
-Fix by using put_unaligned() instead of direct pointer dereference.
-
-Also fix incorrect buffer size calculation in fbtft_write_buf_dc() call:
-  len * (sizeof(data_type) + offset)  /* wrong: multiplies offset by len */
-  len * sizeof(data_type) + offset    /* correct: one startbyte +
-                                         len items */
+Use put_unaligned() for these stores.
 
 Signed-off-by: suryasaimadhu <suryasaimadhu369@gmail.com>
 ---
- drivers/staging/fbtft/fbtft-bus.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/staging/fbtft/fb_ra8875.c | 3 ++-
+ drivers/staging/fbtft/fbtft-bus.c | 2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
+index 0ab1de664..5b95b0095 100644
+--- a/drivers/staging/fbtft/fb_ra8875.c
++++ b/drivers/staging/fbtft/fb_ra8875.c
+@@ -10,6 +10,7 @@
+ #include <linux/delay.h>
+ 
+ #include <linux/gpio/consumer.h>
++#include <linux/unaligned.h>
+ #include "fbtft.h"
+ 
+ #define DRVNAME "fb_ra8875"
+@@ -262,7 +263,7 @@ static int write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
+ 			to_copy, remain - to_copy);
+ 
+ 		for (i = 0; i < to_copy; i++)
+-			txbuf16[i] = cpu_to_be16(vmem16[i]);
++			put_unaligned(cpu_to_be16(vmem16[i]), &txbuf16[i]);
+ 
+ 		vmem16 = vmem16 + to_copy;
+ 		ret = par->fbtftops.write(par, par->txbuf.buf,
 diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
-index 2169f8d1d..cfcf4d7e7 100644
+index cfcf4d7e7..fc3faab7d 100644
 --- a/drivers/staging/fbtft/fbtft-bus.c
 +++ b/drivers/staging/fbtft/fbtft-bus.c
-@@ -4,6 +4,7 @@
- #include <linux/gpio/consumer.h>
- #include <linux/spi/spi.h>
- #include "fbtft.h"
-+#include <linux/unaligned.h>
+@@ -158,7 +158,7 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
+ 			to_copy, remain - to_copy);
  
- /*****************************************************************************
-  *
-@@ -40,7 +41,7 @@ void func(struct fbtft_par *par, int len, ...)                                \
- 		offset = 1;                                                   \
- 	}                                                                     \
- 									      \
--	*buf = modifier((data_type)va_arg(args, unsigned int));               \
-+	put_unaligned(modifier((data_type)va_arg(args, unsigned int)), buf);  \
- 	ret = fbtft_write_buf_dc(par, par->buf, sizeof(data_type) + offset,   \
- 				 0);                                          \
- 	if (ret < 0)							      \
-@@ -52,11 +53,13 @@ void func(struct fbtft_par *par, int len, ...)                                \
- 									      \
- 	if (len) {                                                            \
- 		i = len;                                                      \
--		while (i--)						      \
--			*buf++ = modifier((data_type)va_arg(args,             \
--							    unsigned int));   \
-+		while (i--) {                                                 \
-+			put_unaligned(modifier((data_type)va_arg(args,        \
-+					       unsigned int)), buf);          \
-+			buf++;                                                \
-+		}                                                             \
- 		fbtft_write_buf_dc(par, par->buf,			      \
--				   len * (sizeof(data_type) + offset), 1);    \
-+				   len * sizeof(data_type) + offset, 1);      \
- 	}                                                                     \
- out:									      \
- 	va_end(args);                                                         \
+ 		for (i = 0; i < to_copy; i++)
+-			txbuf16[i] = cpu_to_be16(vmem16[i]);
++			put_unaligned(cpu_to_be16(vmem16[i]), &txbuf16[i]);
+ 
+ 		vmem16 = vmem16 + to_copy;
+ 		ret = par->fbtftops.write(par, par->txbuf.buf,
 -- 
 2.47.3
 

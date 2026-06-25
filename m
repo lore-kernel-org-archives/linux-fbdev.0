@@ -1,196 +1,204 @@
-Received: from flow-a5-smtp.messagingengine.com (flow-a5-smtp.messagingengine.com [103.168.172.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AEE9233704;
-	Thu, 25 Jun 2026 04:13:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.140
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AC473C0A08
+	for <linux-fbdev@vger.kernel.org>; Thu, 25 Jun 2026 06:57:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782360799; cv=none; b=ZprLTfJri/x/OBY1R2P4JFbG5AJXeptBQmajZi0MD5fNWFXJMrRVQ5Yzt7KKFCKZIJWs0hNEOjyMoBOwVUHyCFK1B7Hcp/PKkUCpoy2N7iIRuu/obOfH5ryQ7kyge+7bSW/7ZUBjy6TIfL34CqbEle6GMJUqGZVD/2DsnQGo6To=
+	t=1782370651; cv=none; b=VEYgr7bRnaBwKIptG6sk2K1qUe7dIIBvQuH/C22b4vTEFpDL9qwrFC1zKGj3NderWbSs/YosLV0i344iNe1WZFoq4FE8zkzTqvKjFMdwuUl3+qqk8gH2gHHBwImq2CsyzexkQCaISGSXx3CbpNhho1yCwyL0Rg+CAD3juR0ph4E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782360799; c=relaxed/simple;
-	bh=NqeW7pC8dMnDpjJzHKrjU3eIy3DJMaLpNV+izuRHY9Q=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=eEeYsnUouOdsEUmKqJKbw+2V31X4siwxg1YRjiEn7jGhNWeAdqiUFDochLuAiD41p3wcs5Dux9agimiFRH9Q18MmcP6yK+9Pm1ZvA1ozGujCLV4bqUMc237mcMYP6X5EfiX+a6OkFuX6qizIUafQ3NLJiuNwLSdIxyqEeQDV7eU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fastmail.org; spf=pass smtp.mailfrom=fastmail.org; dkim=pass (2048-bit key) header.d=fastmail.org header.i=@fastmail.org header.b=KrzK3w2D; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=VoHavp4c; arc=none smtp.client-ip=103.168.172.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=fastmail.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fastmail.org
+	s=arc-20240116; t=1782370651; c=relaxed/simple;
+	bh=hkfs/0maQJWiDjLodKkJ3k+CSbUzbUkq6s+FnZGFa44=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZpetmBpO0O+6U3k7qazolXsDVThtU/gTSfIaYuAs3SHiKqnzXeaPv8OzNDiN9Syz48nNXnK9Kb+1fs54b4jy+Bc6Kg4PsHU/4aI8+5HUBY0QZxu9y/hFuBixzlclmVscYGSTxO8Mzknj19FleszFdTEdq9FeeVSY2oJFInp6jWk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=O5MthQ/h; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=vWJhHJIl; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=O5MthQ/h; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=vWJhHJIl; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=fastmail.org header.i=@fastmail.org header.b="KrzK3w2D";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="VoHavp4c"
-Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
-	by mailflow.phl.internal (Postfix) with ESMTP id 6782A13803BC;
-	Thu, 25 Jun 2026 00:13:16 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-05.internal (MEProxy); Thu, 25 Jun 2026 00:13:16 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=fastmail.org; h=
-	cc:content-type:content-type:date:date:from:from:in-reply-to
-	:message-id:mime-version:reply-to:subject:subject:to:to; s=fm1;
-	 t=1782360796; x=1782364396; bh=oIov2InzFrXnsVaxp1cxfQru10Cyooue
-	4oYFo+7Wk7k=; b=KrzK3w2DKxlOenpxJAYpTHLM9ErKVFlS5Caxf1zO+H45fo+w
-	7iIVyhDf8b0jutCASaH9wZ0Rwoo69XdkOeHIBRBM8bjKdbZmDJHxjZgP29CNggkr
-	i0V4MdcVVPSL9AAwF/yHRkF0wX2hEG2ti3Snbe9QPvl8uIDcg1ys3ReeX80zZ3ec
-	ZvADrXmu2LpgGRE3b6dWL9ysnwcXPQDfaWR8tCYLteKV/MWaDF55SiVY4kkZTzLz
-	RTxO06hbY7CBjcedH83QPWlmT3Q1k68a3+u1gPKgIwNRAYW92YDxEtUdaTyRSYRQ
-	YbxswP/zg33EHJeJDrN9VN3jPAWi8yjBaUuK/g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:message-id
-	:mime-version:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1782360796; x=
-	1782364396; bh=oIov2InzFrXnsVaxp1cxfQru10Cyooue4oYFo+7Wk7k=; b=V
-	oHavp4ctilH55rRx19FnNJlt2S1fUBJ43KKBoXKhPqSvi0vPxOiVKho8ye6DDAeg
-	cnPfureFbJI77vaVQDaKlVBgpsglAzW3vn2PYpTUOmGSOFY8hX3eNaGRTU1jIgg0
-	7Pi5R8d6I5/P0k6GLybsQVtkzO5FeBg1HETSG+oXm6iRcSV0Nan1pLry1mWbHwxN
-	SnOlRaRVm76xMnWJk0MpurSh/oUElY/z+0nV1CjRjYsAK+wU7200XKLTJU2wT0b2
-	dR4HeScN9Zn4bMIBbiAL+/MdVmjOfidigLNn0wcDUSaJ4T7uCJPeQg/JaY4I9SJE
-	9ragUg6u9ls83A+yt1g4g==
-X-ME-Sender: <xms:3Ko8aj3LThjdokhwSNQo3yjsSeLrz2yJDD5RaC6r_Rvd2QTWDYslSg>
-    <xme:3Ko8arCwXWrEAUWKUeSF8vW-j4UTFgbQi7Ew0YOcsW55LfRwbcdgtN1b6vmzLuPjX
-    D6T2kyrPLnohemDDTSOLfDQvLaFmorghaNJvpRi62bAJt7Ojkg803c>
-X-ME-Received: <xmr:3Ko8aveiG087GwMF-wRrfvar51ljffeShJiRPK7Y294hSvvZMlQpvtWOE0s>
-X-ME-Proxy-Cause: dmFkZTFFDB7hD4CYMJYInpomOqdKSTXPf1B9fZNTsvQHvPJKV2pMaM6uhg4aZF2l9g7Wqi
-    0BkvuDexx3wnoF1UlBS/yVt75HgPvZh2aNB5ISjgaZ2V/n2EVyDcSGKHnwDfRkA7YCSMEa
-    C2dg6dX0b5tMSPkHx+iBRIT8HjPmdMsp1/SZMVRw/IoIHutCl8FnncI2ikijbClOw4/4Pq
-    Frra+ShyAhLTmnUy58ziFg3bo0WQIJV69RQgAMN4GDl2gkC7i9F7ZO7yESTONGxg15hCdF
-    VZ4+0miwQmCG2uE5jjkA5E5Ejo6gQk8LR6NshEiFDXzypqD6cQDNDJwBgcosIIswGlb8Ne
-    1z68qiYw0fNwyEH8c/Tjd87jotovmvSILACF9nejwEGMR+IkOtAfHVxwTZ2PbmKslKusNF
-    TCt9p8dZzQ8v2zMqiWIBBmQNBnFIXqb2iHKy2pVtwpBaNm6BXxXS7JkyJlbFD0YQyLzrJ/
-    f0w3zojbsz283FOV2TH5bYyFigZaU1ZYr+MYNdxWJevP36dXxtAuLTmMdnFpQ7yTL2PedB
-    R32S7VvCuXgVG3OboAQG3gknUuxk+KCuHa4XnPyhnKb8UWl1FEcB2BdLM2vuSQ4L//hy3I
-    hv4csw87oygv0jZwOIWa8TrcArJL0VbpLW7TqE+Do2JIOInSgSSODz+bWWVg
-X-ME-Proxy: <xmx:3Ko8ao6OU-hPHxVT38Pkd2rOZKhmnXEJDLTtRLkCC7uAeJRoo_-M0w>
-    <xmx:3Ko8aiWhUtX5lK1ShLzg-SyOnemqOq1jmVZCaCzVHmdecMPPtxnHFg>
-    <xmx:3Ko8an5K_5iVny4Snuz0c4VsxFLO0UkyqVoe-gI00S7TmfIrQ1D38A>
-    <xmx:3Ko8atq6PdgFzl_AeiGUiI5gvoB_YilGeeud4tEyF8cT2vKmURge-w>
-    <xmx:3Ko8as8u-VwL5k_gdk6IPKYSFOUnXHirWe6wpQhBKVjSb8Z42kWTtZVI>
-Feedback-ID: ib53e4b78:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 25 Jun 2026 00:13:15 -0400 (EDT)
-Date: Wed, 24 Jun 2026 23:13:12 -0500
-From: Ian Bridges <icb@fastmail.org>
-To: Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: Fix fb_new_modelist to prevent null-ptr-deref in
- fb_videomode_to_var
-Message-ID: <ajyq2Fr-2fMfftGC@dev>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="O5MthQ/h";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="vWJhHJIl";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="O5MthQ/h";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="vWJhHJIl"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 4ECFC6D657;
+	Thu, 25 Jun 2026 06:57:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782370648; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=6Kuy+DjRoMpZxnjvh50ZtLtAigTPF82vLQB0yflVfNk=;
+	b=O5MthQ/hwI3FAL6lCyZmLo5PlIDzyy1mSb9KUzjkX4qy2j3QZAFz4WP4lvj4Bcyse1WsGv
+	LK/XQNDdQBMlaZx0eKPPMQplBjndo7uYxPvkqXAxpmJ3QkXHPo+ExD4BRtCGGjsw1/6a29
+	7u/agUw2Xw1daKUYQ1Tbm3r1eBJ73lE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782370648;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=6Kuy+DjRoMpZxnjvh50ZtLtAigTPF82vLQB0yflVfNk=;
+	b=vWJhHJIlbi+oiyMZ58vd6qsWP32XivbeI3sPEagxHEQX38Mih0Zn4pJD/RQNdWq6VWIN0I
+	LA2goXr1AAgAn8CA==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="O5MthQ/h";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=vWJhHJIl
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1782370648; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=6Kuy+DjRoMpZxnjvh50ZtLtAigTPF82vLQB0yflVfNk=;
+	b=O5MthQ/hwI3FAL6lCyZmLo5PlIDzyy1mSb9KUzjkX4qy2j3QZAFz4WP4lvj4Bcyse1WsGv
+	LK/XQNDdQBMlaZx0eKPPMQplBjndo7uYxPvkqXAxpmJ3QkXHPo+ExD4BRtCGGjsw1/6a29
+	7u/agUw2Xw1daKUYQ1Tbm3r1eBJ73lE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1782370648;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=6Kuy+DjRoMpZxnjvh50ZtLtAigTPF82vLQB0yflVfNk=;
+	b=vWJhHJIlbi+oiyMZ58vd6qsWP32XivbeI3sPEagxHEQX38Mih0Zn4pJD/RQNdWq6VWIN0I
+	LA2goXr1AAgAn8CA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 13400779A8;
+	Thu, 25 Jun 2026 06:57:28 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id lTB+A1jRPGo1YgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 25 Jun 2026 06:57:28 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: javierm@redhat.com,
+	julianbraha@gmail.com,
+	sima@ffwll.ch,
+	airlied@gmail.com
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	sashiko-reviews@lists.linux.dev,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v2] firmware: sysfb: Mark CONFIG_SYSFB_SIMPLEFB as deprecated
+Date: Thu, 25 Jun 2026 08:57:04 +0200
+Message-ID: <20260625065724.15794-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Rspamd-Action: no action
+X-Spam-Level: 
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_TO(0.00)[redhat.com,gmail.com,ffwll.ch];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:email,suse.de:dkim,suse.de:mid];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com]
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: 4ECFC6D657
+X-Spam-Score: -3.01
 
-info->var, a framebuffer's current mode, is expected to have a matching
-entry in info->modelist. var_to_display() relies on this and treats a
-failed fb_match_mode() as "This should not happen". fb_set_var() keeps it
-true by adding the mode to the list on every change, and
-do_register_framebuffer() does the same at registration.
+Mark CONFIG_SYSFB_SIMPLEFB as deprecated. Enabling it allows to
+run simpledrm and simplefb on EFI/VESA framebuffers. Doing this
+is discouraged in favor of using efidrm and vesadrm.
 
-store_modes() replaces the modelist from userspace. fb_new_modelist()
-validates the new modes but does not check that info->var still has a
-match. It relies on fbcon_new_modelist() to re-point consoles, but that
-only handles consoles mapped to the framebuffer. With fbcon unbound there
-are none, so info->var is left describing a mode that is no longer in the
-list.
+v2:
+- resolve conflicting help texts (Sashiko)
 
-A later console takeover runs var_to_display(), where fb_match_mode()
-returns NULL and leaves fb_display[i].mode NULL. fbcon_switch() passes it
-to display_to_var(), and fb_videomode_to_var() dereferences the NULL mode.
-
-Keep the current mode in the list in fb_new_modelist(), the same way
-fb_set_var() does.
-
-Cc: stable@vger.kernel.org
-Assisted-by: Claude:claude-opus-4-8
-Signed-off-by: Ian Bridges <icb@fastmail.org>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
-This patch fixes a NULL pointer dereference in fb_videomode_to_var(), reached
-through the framebuffer console. The fix is in fb_new_modelist(). Sashiko
-flagged this dereference while reviewing the fix for a separate NULL pointer
-dereference in fbcon_new_modelist() [1].
+ drivers/firmware/Kconfig      | 32 ++++++++++----------------------
+ drivers/gpu/drm/sysfb/Kconfig |  7 ++-----
+ 2 files changed, 12 insertions(+), 27 deletions(-)
 
-The dereference happens when a framebuffer's current mode is dropped from its
-modelist while fbcon is unbound, and a console is then taken over onto it, as
-follows.
-
-1. With fbcon unbound, a write to the modes attribute calls store_modes()
-   (fbsysfs.c:91), which replaces the modelist and calls fb_new_modelist()
-   (fbsysfs.c:108). fb_new_modelist() (fbmem.c:746) validates the new modes but
-   does not keep info->var in the list, and the fbcon_new_modelist() it calls
-   (fbmem.c:770) only re-points consoles mapped to the framebuffer. With fbcon
-   unbound there are none, so info->var is left describing a mode no longer in
-   the list.
-2. Mapping a console with FBIOPUT_CON2FBMAP takes the framebuffer over,
-   set_con2fb_map() -> do_fbcon_takeover() (fbcon.c:930).
-3. The takeover initialises the console, fbcon_init() -> var_to_display()
-   (fbcon.c:1113). fb_match_mode() finds no entry for info->var, so
-   var_to_display() leaves fb_display[i].mode NULL (fbcon.c:988).
-4. The takeover switches to the console, fbcon_switch() -> display_to_var()
-   (fbcon.c:2181), and fb_videomode_to_var() reads the NULL mode
-   (modedb.c:905). This is a NULL pointer dereference.
-
-The faulting line is not touched by this patch:
-
-    var->xres = mode->xres;
-
-mode is the fb_display[i].mode passed by display_to_var(). Instead of guarding
-this read, the patch keeps info->var in the modelist in fb_new_modelist(),
-so the mode is never NULL here.
-
-The same dereference, fb_videomode_to_var() on a NULL mode, was fixed twice
-before, by CVE-2025-38214 in fb_set_var() and CVE-2025-38215 in
-do_register_framebuffer(). Both keep info->var in the modelist, and both are
-already in this base. This bug reaches the same line through a different
-path, a modelist replacement, and this fix keeps info->var in the list
-the same way.
-
-It reproduces on a KASAN kernel with two framebuffers:
-
-1. Unbind fbcon, so the store in step 3 does not re-sync the mode.
-2. Set a video mode on fb0 with FBIOPUT_VSCREENINFO.
-3. Write a different modelist to /sys/class/graphics/fb0/modes, so the mode
-   from step 2 is no longer in the modelist.
-4. Map a console to fb0 with FBIOPUT_CON2FBMAP. With fbcon unbound this takes
-   fb0 over, sets the console mode to NULL (the mode is not in the modelist),
-   and switches to the console.
-
-The reproducer was written with the help of a coding agent (Claude Code). The
-patch is against commit 3726ce7f6cef on the for-next branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git. The
-file offsets above are from that commit. The defect is present in the initial
-2.6.12-rc2 import, so there is no Fixes tag.
-
-[1] https://lore.kernel.org/all/20260624213027.6C1E01F000E9@smtp.kernel.org/
-
- drivers/video/fbdev/core/fbmem.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index e5221653ec2b..2f1c56e5a7a2 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -767,6 +767,18 @@ int fb_new_modelist(struct fb_info *info)
- 	if (list_empty(&info->modelist))
- 		return 1;
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index bbd2155d8483..637e3bb5549e 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -184,32 +184,20 @@ config SYSFB
+ 	select SCREEN_INFO
  
-+	/*
-+	 * The new modelist may not contain the current mode (info->var), and
-+	 * fbcon_new_modelist() below only re-points consoles mapped to this
-+	 * framebuffer. Add the current mode here so info->var keeps a match
-+	 * even when fbcon is unbound.
-+	 */
-+	if (!fb_match_mode(&info->var, &info->modelist)) {
-+		fb_var_to_videomode(&mode, &info->var);
-+		if (fb_add_videomode(&mode, &info->modelist))
-+			return 1;
-+	}
+ config SYSFB_SIMPLEFB
+-	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
++	bool "Mark VGA/VBE/EFI FB as generic system framebuffer (deprecated)"
+ 	depends on X86 || EFI
+ 	select SYSFB
+ 	help
+-	  Firmwares often provide initial graphics framebuffers so the BIOS,
++	  Firmware often provides initial graphics framebuffers so the BIOS,
+ 	  bootloader or kernel can show basic video-output during boot for
+-	  user-guidance and debugging. Historically, x86 used the VESA BIOS
+-	  Extensions and EFI-framebuffers for this, which are mostly limited
+-	  to x86 BIOS or EFI systems.
+-	  This option, if enabled, marks VGA/VBE/EFI framebuffers as generic
+-	  framebuffers so the new generic system-framebuffer drivers can be
+-	  used instead. If the framebuffer is not compatible with the generic
+-	  modes, it is advertised as fallback platform framebuffer so legacy
+-	  drivers like efifb, vesafb and uvesafb can pick it up.
+-	  If this option is not selected, all system framebuffers are always
+-	  marked as fallback platform framebuffers as usual.
+-
+-	  Note: Legacy fbdev drivers, including vesafb, efifb, uvesafb, will
+-	  not be able to pick up generic system framebuffers if this option
+-	  is selected. You are highly encouraged to enable simplefb as
+-	  replacement if you select this option. simplefb can correctly deal
+-	  with generic system framebuffers. But you should still keep vesafb
+-	  and others enabled as fallback if a system framebuffer is
+-	  incompatible with simplefb.
+-
+-	  If unsure, say Y.
++	  user-guidance and debugging.
 +
- 	fbcon_new_modelist(info);
++	  This option, if enabled, marks VBE/EFI framebuffers as system
++	  framebuffers so the generic simpledrm driver can be used.
++
++	  This option is deprecated and will be removed in the near future. If
++	  unsure, say N and select efidrm, vesadrm instead. The dedicated DRM
++	  drivers provide the same functionality plus additional features.
  
- 	return 0;
+ config TH1520_AON_PROTOCOL
+ 	tristate "Always-On firmware protocol"
+diff --git a/drivers/gpu/drm/sysfb/Kconfig b/drivers/gpu/drm/sysfb/Kconfig
+index 2559ead6cf1f..f7e48178885e 100644
+--- a/drivers/gpu/drm/sysfb/Kconfig
++++ b/drivers/gpu/drm/sysfb/Kconfig
+@@ -67,11 +67,8 @@ config DRM_SIMPLEDRM
+ 
+ 	  This driver assumes that the display hardware has been initialized
+ 	  by the firmware or bootloader before the kernel boots. Scanout
+-	  buffer, size, and display format must be provided via device tree,
+-	  UEFI, VESA, etc.
+-
+-	  On x86 BIOS or UEFI systems, you should also select SYSFB_SIMPLEFB
+-	  to use UEFI and VESA framebuffers.
++	  buffer, size, and display format must be provided via device tree's
++	  simple-framebuffer node.
+ 
+ config DRM_VESADRM
+ 	tristate "VESA framebuffer driver"
 -- 
-2.47.3
+2.54.0
 

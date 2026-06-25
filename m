@@ -1,81 +1,32 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A1A23E7141
-	for <linux-fbdev@vger.kernel.org>; Thu, 25 Jun 2026 15:04:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5715A367B62;
+	Thu, 25 Jun 2026 15:18:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.243.164.118
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782399899; cv=none; b=f9N1JxZ0jgaMAxSNgkjFQhVR6v3yVtJsOc+mQBpNY+vmD7H9Sei+DBqZ8xBK5QSQdi7JbgWVGUjtSah2AKoYUoXCiNXqKUNaQkT2yXTA+O2k61RDRcaoT2NA7rXUaJajP6VBmUntgPK/fVrFrUsl0I4D6MnIFqa07fZhJcxBro8=
+	t=1782400718; cv=none; b=thXsFHxNgXjzbfPXbFthuDxIl9caByQ7Emc/1nh8BhrFRNyoTtrEdPPrXCOqAwNARQ1hlooyLW/+MMHpfXT9+IKhlnS3kmPMid446rRCfg+lEaORm+QIRkSG2TV18AYm0oO1cWCtkCncMj+fuqV+WWaLjNVW1MyHqtfNfglfS5A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782399899; c=relaxed/simple;
-	bh=6tx4Bj5p/W5ZyYRHsOq0eMuZbcediTREx9mrc3HpU/c=;
+	s=arc-20240116; t=1782400718; c=relaxed/simple;
+	bh=gF7cN1XBfU+vYIAiMKMGthjfqnRBxkJi+XdTR3JVbbo=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BNSIV0Ljr6RuL3lZWX7MMHnJOAP89zbsQUAEc9Bz886kpuiOViymXi8FGWjJHikMWk2iYGo7gf7k33oHJ/zGQqUnLXF5tfMTZhEmbp+8f6GXBHPUfYQ4lOFKM52h964KEji9ndoZFPUB+JrvH6a6AkoKlGBjf6YruohgptsLeiI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=BPfrj+sv; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=HKRm90AE; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=aw+WTHqT; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=I/773ghd; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=b4qnFsPVQctL8k3Ay7xEk2SXKfmn1Gw3V9ZQrVuBejMcR7hvC2Ci3EDvuL1h/T2f09MPi8ne4TBs9keWf94i5KrLb9bNhL9K+NDKxmKRGWe+QWp1/O+KlKRmUh7KKhC7cS00o2YwGVPGlOGFhEnhaV0d4FnjqUU1XymN3XJwZ1s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn; spf=pass smtp.mailfrom=stu.xidian.edu.cn; dkim=fail (0-bit key) header.d=stu.xidian.edu.cn header.i=@stu.xidian.edu.cn header.b=NwZRwZFb reason="key not found in DNS"; arc=none smtp.client-ip=162.243.164.118
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stu.xidian.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="BPfrj+sv";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="HKRm90AE";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="aw+WTHqT";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="I/773ghd"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id AC4D871C6A;
-	Thu, 25 Jun 2026 15:04:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1782399895; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=KzggUgTvPO75sojZnEGWKA6d2yXkTbrwYEONUppR//8=;
-	b=BPfrj+sv6w7n+gmiG2iIdGXmJxUlDbu3HSpcquG2SAcsnFeyp17ZidKBm/D46BZHt7EUUb
-	THUg5zqBz0Nj+5Ct+/Arm25WxQx93eaFxCwCr2Z3QYZXucGx3diYMMH9iq6PggoB0E6Xzk
-	PKLb8tBZbnpNV4yRhpD+JWAo7mxgzHs=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1782399895;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=KzggUgTvPO75sojZnEGWKA6d2yXkTbrwYEONUppR//8=;
-	b=HKRm90AEAb+BVSkFlsfYRXtYho6u4uL+vtQv9mZVZ7utmzu2VYLoKfnognyftVimbpvzWb
-	UzxP9KzFkrqdnJCg==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=aw+WTHqT;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="I/773ghd"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1782399891; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=KzggUgTvPO75sojZnEGWKA6d2yXkTbrwYEONUppR//8=;
-	b=aw+WTHqTaud8aM2myU4+DWvoJBJfDfIwzNdUuRID+AnyTEbLB4FtAHI3E4aWc4dYzyYZSw
-	DFBHJfbqJmZ15BXgIOPxR4GD3+MUanJDmtLAQUaWSrLCXKaHpF4LtSno0+1mNxO8hGEnDk
-	JIIJ7mUu2qaOrAr1kHQ93Z+ymtVXgL8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1782399891;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=KzggUgTvPO75sojZnEGWKA6d2yXkTbrwYEONUppR//8=;
-	b=I/773ghdFNhqVT7xorQZLCxBA31dTB7MWLqkneyXb6Z71BdxfWLoCpH9SSP6ukb/2IcuJ6
-	0P+HN6vNhtRf5HCg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 73CA0779A8;
-	Thu, 25 Jun 2026 15:04:51 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 7E/SGpNDPWrSOAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 25 Jun 2026 15:04:51 +0000
-Message-ID: <7dd87e55-5170-4317-8c9e-38a7868f68fc@suse.de>
-Date: Thu, 25 Jun 2026 17:04:50 +0200
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=stu.xidian.edu.cn header.i=@stu.xidian.edu.cn header.b="NwZRwZFb"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=stu.xidian.edu.cn; s=dkim; h=Received:Message-ID:Date:
+	MIME-Version:User-Agent:Subject:To:Cc:References:From:
+	In-Reply-To:Content-Type:Content-Transfer-Encoding; bh=4kyyfjN9B
+	zKx+wWFPMXdh5wL3oVfa81GTY/BlCtYCN4=; b=NwZRwZFbveEg2cIwkElfUH350
+	CqSGnoMlU+hn0xl4+lqON55BJftz9GkDhDdQtEj2o8vFvxldOCJTbeI1QSiEfS07
+	A576vR1q7xHhS4j6km8gqyEYgc1E9tBTWWotcLyhMwla9EUucx3uOaouFa7xKeEc
+	dpV3dDBnssKI6vPKvM=
+Received: from [10.196.180.86] (unknown [113.200.174.80])
+	by hzbj-edu-front-2.icoremail.net (Coremail) with SMTP id BLQMCkDGDzW5Rj1qp6gAAA--.2760S3;
+	Thu, 25 Jun 2026 23:18:19 +0800 (CST)
+Message-ID: <d8e82639-c112-41bd-8ab3-f3f5fa9f80d6@stu.xidian.edu.cn>
+Date: Thu, 25 Jun 2026 23:18:17 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -85,156 +36,53 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] fbdev: fbcon: fix out-of-bounds read in err_out of
  fbcon_do_set_font()
-To: w15303746062@163.com, deller@gmx.de, simona@ffwll.ch
+To: Thomas Zimmermann <tzimmermann@suse.de>, w15303746062@163.com,
+ deller@gmx.de, simona@ffwll.ch
 Cc: syoshida@redhat.com, dri-devel@lists.freedesktop.org,
  linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Mingyu Wang <25181214217@stu.xidian.edu.cn>, stable@vger.kernel.org
+ stable@vger.kernel.org
 References: <20260624083316.389677-1-w15303746062@163.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260624083316.389677-1-w15303746062@163.com>
+ <7dd87e55-5170-4317-8c9e-38a7868f68fc@suse.de>
+From: Mingyu Wang <25181214217@stu.xidian.edu.cn>
+In-Reply-To: <7dd87e55-5170-4317-8c9e-38a7868f68fc@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: AC4D871C6A
-X-Spam-Flag: NO
-X-Spam-Score: -4.50
-X-Spam-Level: 
-X-Spamd-Result: default: False [-4.50 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.19)[-0.975];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_ENVRCPT(0.00)[163.com,gmx.de];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[163.com,gmx.de,ffwll.ch];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email,suse.de:mid,xidian.edu.cn:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.com:url]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+Content-Transfer-Encoding: 7bit
+X-CM-TRANSID:BLQMCkDGDzW5Rj1qp6gAAA--.2760S3
+X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
+	VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUUYd7k0a2IF6F4UM7kC6x804xWl14x267AK
+	xVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0rVWrJVCq3wAFIxvE14AKwVWUJVWUGw
+	A2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK021l84ACjcxK6xIIjxv20xvE14v26r1j
+	6r1xM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j6F4UM28EF7xvwVC2z280aVAFwI0_Gr
+	1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gr1j6F4UJwAac4AC62xK8xCEY4vEwIxC
+	4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7
+	IYx2IY67AKxVWUGVWUXwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4U
+	M4x0Y48IcVAKI48JMxkIecxEwVAFwVW5WwCF04k20xvY0x0EwIxGrwCF54CYxVCY1x0262
+	kKe7AKxVWUtVW8ZwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18
+	MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr4
+	1lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1l
+	IxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4
+	A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07jwPEfUUUUU=
+X-CM-SenderInfo: qsvrmiqsrujiux6v33wo0lvxldqovvfxof0/1tbiAgUPEWo9P0QD-wABsI
 
-Hi
+Hi Thomas,
 
-Am 24.06.26 um 10:33 schrieb w15303746062@163.com:
-> From: Mingyu Wang <25181214217@stu.xidian.edu.cn>
+
 >
-> When fbcon_do_set_font() fails (e.g., due to a memory allocation failure
-> inside vc_resize() under heavy memory pressure), it jumps to the `err_out`
-> label to roll back the console state. However, the current rollback logic
-> forgets to restore the `hi_font` state, leading to a severe state machine
-> corruption.
+> The email in your S-o-b tag differs from the one in the mail's From: 
+> line. I think this is not accepted in the kernel. Can you please 
+> resubmit with the email addresses synchronized.
 >
-> Earlier in the function, `set_vc_hi_font()` might be called to change
-> `vc->vc_hi_font_mask` and mutate the screen buffer. If `vc_resize()`
-> subsequently fails, the `err_out` path restores `vc_font.charcount`
-> but entirely skips rolling back the `vc_hi_font_mask` and the screen
-> buffer.
 >
-> This mismatch leaves the terminal in a desynchronized state. Because
-> `vc_hi_font_mask` remains set, the VT subsystem will still accept
-> character indices greater than 255 from userspace and write them to the
-> screen buffer. Subsequent rendering calls (e.g., `fbcon_putcs()`) will
-> then use these inflated indices to access the reverted, 256-character
-> font array, leading to a deterministic out-of-bounds read and potential
-> kernel memory disclosure.
->
-> Fix this by adding the missing rollback logic for the `hi_font` mask
-> and screen buffer in the error path.
->
-> Fixes: a5a923038d70 ("fbdev: fbcon: Properly revert changes when vc_resize() failed")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Mingyu Wang <25181214217@stu.xidian.edu.cn>
 
-The email in your S-o-b tag differs from the one in the mail's From: 
-line. I think this is not accepted in the kernel. Can you please 
-resubmit with the email addresses synchronized.
+Thank you very much for the review and the Reviewed-by tag!
 
-Apart from that:
+The email mismatch was due to my university's SMTP server restrictions, 
+which forced me to use my personal 163 email to route the patch. I 
+apologize for the confusion.
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+I will synchronize my git authorship and Signed-off-by tags, and send a 
+v2 patch shortly with your Reviewed-by tag included.
 
-Thanks for fixing this problem.
-
-Best regards
-Thomas
-
-> ---
->   drivers/video/fbdev/core/fbcon.c | 7 +++++++
->   1 file changed, 7 insertions(+)
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 9077d3b99357..5880ab9f3cde 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -2405,6 +2405,7 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
->   	int resize, ret, old_width, old_height, old_charcount;
->   	font_data_t *old_fontdata = p->fontdata;
->   	const u8 *old_data = vc->vc_font.data;
-> +	int old_hi_font_mask = vc->vc_hi_font_mask;
->   
->   	font_data_get(data);
->   
-> @@ -2451,6 +2452,12 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
->   	vc->vc_font.height = old_height;
->   	vc->vc_font.charcount = old_charcount;
->   
-> +	/* Restore the hi_font state and screen buffer */
-> +	if (old_hi_font_mask && !vc->vc_hi_font_mask)
-> +		set_vc_hi_font(vc, true);
-> +	else if (!old_hi_font_mask && vc->vc_hi_font_mask)
-> +		set_vc_hi_font(vc, false);
-> +
->   	font_data_put(data);
->   
->   	return ret;
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
+Best regards,
+Mingyu
 

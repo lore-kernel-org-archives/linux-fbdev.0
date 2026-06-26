@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 347902C0299;
-	Fri, 26 Jun 2026 13:02:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F04483EBF3D;
+	Fri, 26 Jun 2026 13:12:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782478973; cv=none; b=kOp6uuYvPSjw5puukD78nCC8WMTw73AdNxgzIQntEP/DoZ+lJcVeC318s9cRf/p2a3ylzFRcU2jVa0M+SnesZmvKNazeEPQEHS0MqtwZiV4pGzeQUj4fTBqy0nwBsfNprxu3Wb4wZJF5DCXNORGJK7mOB03De6D37X/kKWfYzEg=
+	t=1782479523; cv=none; b=Xlc5hvSgUcjclFRDXAqVPgMJdlqpzPPpkklsMCJg77x5ox2Sfo8chH6zeZ7fcmVz+kyBA76t1Lpwx/+cvbX9tEmipPG8lgoH8IPKpvC/tijPDP2ZUBL74xtOPx04m9xNJA1N0ybyUnDBkMPzoNQHpm/fjWpO5RdvXGRUiXBCrPY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782478973; c=relaxed/simple;
-	bh=SMpgi+Krdj5XNekOFuTSUfulMq0I3yFatFlpO3JFmPA=;
+	s=arc-20240116; t=1782479523; c=relaxed/simple;
+	bh=HgeIzDSuPim7mj9E+RHm6MK59B45bjskaJShoD2Na0c=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=Koh+jnso7zfvE/gdwhBjmWLhuhqsLr0hZ3LH16cd3D81UOuf08DVCARX1rrB5mHc/nk08NvY0wAAClUCJfB40v2nQuwdallJZH5mY3fRsudRmNZfQGANhKDWdcO9OmB0QjwZlLmErkCfoYA4aarIXHchoYQsSIN5TJMB66MGmbM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=fPzmHy5N; arc=none smtp.client-ip=212.227.15.19
+	 In-Reply-To:Content-Type; b=tSv43gMP4BrRbmiNplg68BVAUsA1PbvHqj2FPyE9/0Rn4McVFz/GiTQI8+SA7UtJ7FFzaodA+99/xtzgchumsOvXJi3qcdW3+/59cCNKTg0XD+VK68btLmOIh4sU+FH1AQos7NMjh7ukTVWvfC5jznQIX9y45H8/eC+RA1uDqho=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=me3CdhPW; arc=none smtp.client-ip=212.227.15.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="fPzmHy5N"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="me3CdhPW"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1782478961; x=1783083761; i=deller@gmx.de;
-	bh=wcTgOtBc2+vUVvg7eNQzUqDaf5OUo9LAK7WunvHqHo0=;
+	s=s31663417; t=1782479517; x=1783084317; i=deller@gmx.de;
+	bh=AjSVO+3w7YHc0BBsKrWWzGvDXmfX8rVTtFxUUFkwtzA=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=fPzmHy5NBdZNAhg77LEFOS1g1AsWAZWGGljOB3diETnSPd8qmBHPOi58B/KIrA06
-	 Q5ZbahPTHTGEzQIP8gje9OM+xQvOmc45Z/NPaMLb4peDiPYFatWwwFQegD1o2SgBs
-	 s50WHwek99yfIT+0hHZ7wdqJb+1B4hkkUZUAHj7S+crcYiaOJAlDi8pDpnrsETBB7
-	 rLOneEnEIDelEFhAwN0cL3hLdUp15jRbYRwhccpHpqwfhaEpqCUk5s1OtqhuToFg2
-	 /ApgHtJ0CxmaYO3eqH8rb/Ya3B/t1AYGIBbtqmg4I2m222NoNjw+I2rOm6HU/fKex
-	 e76YDUa+ETgYitC7mw==
+	b=me3CdhPWZ0on8QVS/gUWuddZMycBjoSb0GH9ZGXucn41Ii7HosoTDqtfqSXbgV4s
+	 O6hapk9A66TgVjbtWX2nKBDV4HAMRiJ/ySyXNtWfwf792gUMIH8uuLpfC07LzbPHO
+	 zYWRYK+eLZKuMMmRi4hRaMM9bCWTX4QKkC694gEWZDdbfnUvqP/Kymj8rWVM2UJia
+	 mN290RIL7Zu1b1nmpz5S9eJ1KbTqTYaiIwO7hypj8Nq/0dciDYI+Lk1Lwhb0UVTG6
+	 ypkUwOqTnsXYx7YU62H76KaVUZikuth8idjitfIoJ2H2tRfuW1DVVJN8W/Qj/tMda
+	 q/E45n6EQSbvHpR0Fg==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MAwXr-1wSKgy0MFl-001PCd; Fri, 26
- Jun 2026 15:02:41 +0200
-Message-ID: <adf1cfc7-6107-49f1-9d2e-7865a8a3ca27@gmx.de>
-Date: Fri, 26 Jun 2026 15:02:38 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MOiDd-1wmdPO0gVr-00Vjgz; Fri, 26
+ Jun 2026 15:11:57 +0200
+Message-ID: <e94105dc-dd3d-4b07-a310-85ebc298230e@gmx.de>
+Date: Fri, 26 Jun 2026 15:11:56 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,12 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbdev: fix use-after-free in store_modes()
-To: Ian Bridges <icb@fastmail.org>, Simona Vetter <simona@ffwll.ch>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <aj4FKJtIuU97rEA4@dev>
+Subject: Re: [PATCH] fbcon: fix NULL pointer dereference for a console without
+ vc_data
+To: Ian Bridges <icb@fastmail.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ Simona Vetter <simona@ffwll.ch>, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <ajxICA0v-_5NrqhS@dev>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,144 +94,189 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <aj4FKJtIuU97rEA4@dev>
+In-Reply-To: <ajxICA0v-_5NrqhS@dev>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:axc9K6R5FvKufBWXHHBBGhUwpNZNNuYtT+Q77Xd/MZKkmaY1V3E
- curvunZXuEPrc5xcVtC7DEVnbAwIuvG2gLyGcoCUIVHVcxC325497lahC2QlLLzjNTQEdcF
- 6ofZ7GA16RbAsFUmntd15tCFqmY0h/Ufs3Ots0PVUYFEwYUXJJFCmrMu72y2XPBTcppmqCE
- XldGwwA+rT9OSA0GSrTRA==
+X-Provags-ID: V03:K1:41fPp1Bls+JBDUFkK1G7VL3IsO9y/toK8nRPEa4GZ3mbs6LU7WZ
+ Vxmt5q2q2PEXKYjlfzvC20rXzV7Q4lTT9lf4bBAdv5jyuJU14w4G2NyqXInchyobRLjQZ42
+ Ze1LafLC9F92sBgy7IddaYVsOEu1RTjpUBK3EB6uzNUbgas4mHNxo74i8jjnB4vDSR4fiLS
+ +BtYsOqHd2iiIOi58ALEg==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:7XYudANVYZc=;JQTICf7tNgpqa9VMqH1KOGyqB5M
- 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
- YJefvnEEDCCNG49nwM=
+UI-OutboundReport: notjunk:1;M01:P0:tTOrcn6SO1E=;j5h4SDR8IBWz1b13Wd1uRLzet5r
+ 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
+ 8Gog0Bfis4GReiBFRD5HzzyUm+jZOcMMDlUdnqh
 
-On 6/26/26 06:50, Ian Bridges wrote:
-> store_modes() replaces a framebuffer's modelist with modes from userspac=
-e.
-> On success it frees the old modelist with fb_destroy_modelist(). Two
-> fields still point into that freed list.
+On 6/24/26 23:11, Ian Bridges wrote:
+> fbcon_new_modelist() runs when a framebuffer's modelist changes. For eac=
+h
+> console mapped to it with fb_display[i].mode set, it reads vc_cons[i].d =
+and
+> passes the vc_num to fbcon_set_disp(). This assumes a console with a mod=
+e
+> set has a vc_data, but it can be NULL. fbcon_set_disp() sets
+> fb_display[i].mode before it checks vc_data, and fbcon_deinit() leaves t=
+he
+> mode set after the vc_data is freed. fbcon_new_modelist() then dereferen=
+ces
+> the NULL vc_data.
 >=20
-> One pointer is fb_display[i].mode, the mode a console is using.
-> fbcon_new_modelist() moves these pointers to the new list. It only does =
-so
-> for consoles still mapped to the framebuffer. An unmapped console is
-> skipped and keeps its stale pointer. Unbinding fbcon, for example, sets
-> con2fb_map[i] to -1 but leaves fb_display[i].mode set. An
-> FBIOPUT_VSCREENINFO ioctl with FB_ACTIVATE_INV_MODE later reaches
-> fbcon_mode_deleted(). That function reads the stale fb_display[i].mode
-> through fb_mode_is_equal(). The read is a use-after-free.
+> Keep fb_display[i].mode set only while the console has a vc_data. Check
+> vc_data before setting the mode in fbcon_set_disp(), and clear the mode =
+in
+> fbcon_deinit(). The existing mode check in fbcon_new_modelist() then ski=
+ps
+> such consoles.
 >=20
-> The other pointer is fb_info->mode, the current mode. It is set through
-> the mode sysfs attribute. store_modes() does not update fb_info->mode, s=
-o
-> it is left pointing into the freed list. show_mode(), the attribute's re=
-ad
-> handler, dereferences the stale fb_info->mode through mode_string(). The
-> read is a use-after-free.
->=20
-> Clear both pointers before freeing the list. Commit a1f305893074 ("fbcon=
-:
-> Set fb_display[i]->mode to NULL when the mode is released") added the
-> helper fbcon_delete_modelist(). It clears every fb_display[i].mode that
-> points into a given list. So far it is called only from the unregister
-> path. Call it from store_modes() too, and set fb_info->mode to NULL.
->=20
-> Reported-by: syzbot+81c7c6b52649fd07299d@syzkaller.appspotmail.com
-> Closes: https://syzkaller.appspot.com/bug?extid=3D81c7c6b52649fd07299d
+> Reported-by: syzbot+42525d636f430fd5d983@syzkaller.appspotmail.com
+> Closes: https://syzkaller.appspot.com/bug?extid=3D42525d636f430fd5d983
 > Cc: stable@vger.kernel.org
-> Link: https://lore.kernel.org/all/ajjoDhAi2y4ArSlz@dev/
 > Assisted-by: Claude:claude-opus-4-8
 > Signed-off-by: Ian Bridges <icb@fastmail.org>
 > ---
-> Added in v2: clear fb_info->mode, which is left dangling by the same fre=
+> This patch fixes a NULL pointer dereference in the framebuffer console c=
+ode.
+> fbcon_new_modelist() dereferences a NULL vc_data. It was found while wri=
+ting
+> a reproducer for a separate use-after-free in store_modes(). Sashiko
+> independently flagged the same dereference in its review of the fix for =
+that
+> use-after-free [1].
+>=20
+> The dereference happens when a console has fb_display[i].mode set but no
+> vc_data, and the modelist is then replaced, as follows.
+>=20
+> 1. A console ends up with fb_display[i].mode set while vc_cons[i].d is N=
+ULL.
+>     Either fbcon_set_disp() sets the mode (fbcon.c:1446) before it check=
+s
+>     vc_data, so mapping an unused console with FBIOPUT_CON2FBMAP leaves =
+the
+>     mode set, or fbcon_deinit() (fbcon.c:1268) frees the vc_data but kee=
+ps the
+>     mode.
+> 2. A write to the modes attribute calls store_modes() (fbsysfs.c:91), wh=
+ich
+>     replaces the modelist and calls fb_new_modelist() (fbsysfs.c:108).
+> 3. fb_new_modelist() calls fbcon_new_modelist() (fbmem.c:770).
+> 4. fbcon_new_modelist() walks the consoles mapped to the framebuffer, ta=
+kes
+>     vc =3D vc_cons[i].d for the one with the mode set, and reads vc->vc_=
+num with
+>     vc NULL (fbcon.c:3046). This is a NULL pointer dereference.
+>=20
+> This patch does not change that line:
+>=20
+>      fbcon_set_disp(info, &var, vc->vc_num);
+>=20
+> vc is vc_cons[i].d, which is NULL.
+>=20
+> syzbot reported the same crash, with the call stack store_modes() ->
+> fb_new_modelist() -> fbcon_new_modelist() [2]. That report had no reprod=
+ucer
+> and was closed as obsolete.
+>=20
+> It reproduces on a KASAN kernel with two framebuffers, two ways:
+>=20
+> 1. Map an unused console to one framebuffer and back to the other with
+>     FBIOPUT_CON2FBMAP, then write a modelist to that framebuffer's modes
+>     attribute.
+> 2. Open and close /dev/ttyN, then write a modelist to its framebuffer's
+>     modes attribute.
+>=20
+> The reproducer was written with the help of a coding agent (Claude Code)=
+. The
+> patch is against commit 3726ce7f6cef on the for-next branch of
+> git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git. Th=
 e
-> in store_modes(). Sashiko flagged that second pointer while reviewing
-> v1 [1].
+> file offsets above are from that commit. The dereference is present in t=
+he
+> initial 2.6.12-rc2 import, so there is no Fixes tag.
 >=20
 > [1] https://lore.kernel.org/all/20260622080749.D7FC61F000E9@smtp.kernel.=
 org/
+> [2] https://syzkaller.appspot.com/bug?extid=3D42525d636f430fd5d983
 >=20
->   drivers/video/fbdev/core/fbsysfs.c | 10 +++++++++-
->   1 file changed, 9 insertions(+), 1 deletion(-)
+>   drivers/video/fbdev/core/fbcon.c | 7 ++++---
+>   1 file changed, 4 insertions(+), 3 deletions(-)
 
 applied.
+
 Thanks!
 Helge

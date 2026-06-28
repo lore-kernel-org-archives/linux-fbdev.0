@@ -1,67 +1,66 @@
-Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 744343A873E
-	for <linux-fbdev@vger.kernel.org>; Sun, 28 Jun 2026 15:43:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D9091E2858
+	for <linux-fbdev@vger.kernel.org>; Sun, 28 Jun 2026 16:30:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782661431; cv=none; b=XjJEIGJb3eYH3R3rW53b108iL2Okv+fQ0JpNPXFUff7dPUBHvFmaBiO7FsuGcppB4pbwTZs2s/lci+udr1pjqOSX4OnurczbdIqXMKU+elirObpIXhwecBm4KF/XBFdpXYlhaKtDY1ZJ9urGQ0If/Y3VWPmnTXUq8dhDbGsDjNg=
+	t=1782664232; cv=none; b=ce7TEajt3Owt9HQQO1L4XhcRpIXeCF0xn/JS6ir+f1yHihCKGJH0tPa1OJkc03z9tF9O9AWqL0UolvXkSUvDUS5HXihrGbjxQdN/Vw0CAEKF1CvWQGcKWI/1pSZS/WsnirxFGUrz8toqfyKQ/H6nkCn1+f12euVk7MFZ+2NIRhQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782661431; c=relaxed/simple;
-	bh=40arCt8NqhJaNl0q9UQATGJjGRq/MsPHGOmI0715nXg=;
+	s=arc-20240116; t=1782664232; c=relaxed/simple;
+	bh=AwLmTjHbrcU+SOVQa01R8c+bODe7xXJZIanI/IfDJtA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CiO08o5+/d4ZylSFgHBV995b1bxqh9dNecmKN9YsK0pmNaIITABhFyyzeBfKC4wNvKzsvdmn/2ritiZnjoHV+ujRKstTOqrWG3q1Gi6TEBFHSHP/3cLf3gBkehJyBBrmppnEG17kWjyFctf5E1GzLADLMRrKt0B1FqvVZ1x4UvE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kdbx36tl; arc=none smtp.client-ip=209.85.128.53
+	 MIME-Version; b=ZukFiqSB9AC44kuP9ubfs5jcJvfh5+Tcaji+6WuobKpHUPk1oPITZQacoAj68ORQAWs29sbUH9yhPMmMY5/svWbA56M4aYnVSzzHAzcwGZUtEPh+SlZ4SS/RJK9qFRAwAKQnCBswh87J3/N9X/ngIh02e9Waxi630qlJl1AUK3g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=qAslV0OY; arc=none smtp.client-ip=209.85.128.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kdbx36tl"
-Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-49395888c7bso14895795e9.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 28 Jun 2026 08:43:50 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qAslV0OY"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-4926ee9e8d9so10156855e9.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 28 Jun 2026 09:30:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782661429; x=1783266229; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1782664229; x=1783269029; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=D+OMJP0P0VJX23QejDNAiRcdNcoGaSYxL+867MSgbJA=;
-        b=kdbx36tlfNDxUQBxYZ1/cmzaiRwCp/ZIpHKSdSXAJ6tqDYDHOdNCC2eulwTFf5IDyo
-         WLZ1g9mKmXj07fKfQgcLRQCKlWcPf/74SLBGgGwoVBhZ/zP7G9PZeXAI77QbrFw3SJlF
-         yAiajpBNSEHlJxVULNOGR/kzX0zQvliIWvsxLmmNn1DI/7EX5yDnP7Af5QR+nRSqwwJL
-         QiNYXZsw0xv9wxeFJFpeWPHMsE44izZrCQtEl6rOsvFph9uQ+beN8Ue2xhM2vtO7mgvf
-         z7ndX0OffxkjaGqFKz27+rkmbZ0ShszXCUQS++/khpIRLPwXNYt9RCWvRXhMPIzLeaLb
-         iuJg==
+        bh=fMnBtmnHmhK3jg0PxdbXqkHYJjM0gMd6xqD4YPFeDWU=;
+        b=qAslV0OY1RR3QE+/3XPt75MHqz4pqPi8eBz4uS1tY1L/9Azg8W3mQpmKYOskpIYkgm
+         2JYcfhArOkkD5+wB3fQ5wMGajEVb6lUjMkpD1UN1x4wh7dd88SCj0NkUB8e7Zf8AXp2M
+         Jqv9gQtG9nDLNzKFOpTDS/BS1Y0THgyk45zNdkHWe75AVt3dlt43m1D7qjFfB3wpuji1
+         YPXwuxeKHsEf5e3byYQiNS9psCJOwWLF7rrqVL+GGig1D0ElNSeA/yaDApTxCy222Zxg
+         I+Ls3E/3QyFJsD8fIPAFBdiNgPqttJThO/Z/V9Lb4Rz63xDjR0qgZNQLeOKKKsVEG3/1
+         +ENw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782661429; x=1783266229;
+        d=1e100.net; s=20251104; t=1782664229; x=1783269029;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=D+OMJP0P0VJX23QejDNAiRcdNcoGaSYxL+867MSgbJA=;
-        b=B707GIMkocA9wGbH72Oqt4cIDp7jgAcqkWJ0QHUh4rwJye7OtAxrmmi01a0VdQ7RfD
-         oKFbnGTfDlnl+zJPqcvm0eHHbtRL9gdQQSW5DxbYuBim2sIoyCcRqmGNtfE4dDEBP2Q/
-         FrzRMIOIsVe+mwjYoBnhsd1fR7lxtpaHSGVjMP2REzQQ4hkNNks+u0/5Za4meh6KyL4x
-         fRlRGcA6hZhg0tYZOqBCU/Ldo4jMqTMwD3a3JOazhmxt4YsR4L1beiDvVz1f9uZMOIPd
-         ICV2jsTeFg4EjvXUzgIFktx2EVt8fkNdeE9xxqr18NWSzAXHthCDDgRULbTaY5DDznNM
-         TmZA==
-X-Forwarded-Encrypted: i=1; AFNElJ8S9UFUlJab5G2/UgIzUUEVMWu1yywDbxTeX8VnWSyhH/Sa9Gu828Qh7XWnQWAsoSU99STh2TDD8yC3/A==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxLe5+RN4WF8idZySA9yQHfbRX4W3ZQ7WJ/GfAVrpBEzGlo9azq
-	7GiRGhsufnJNq5/ztpqCaBj54sPQav13gehUDL95ZwT7NPblrJCWB3o9
-X-Gm-Gg: AfdE7cmNnGlDNZw9YfF7mATTymsqhzzCg92eK06/dhLbPqbMy6A7quuOwPRxBNCrgKO
-	j13Zdq5jwjDW0+IeAzBCkxG7TxelSDPEqQWjzDDoNvV/TKfYPmU3x1o6lZs1XRuOwAbekeuZLLQ
-	hewsapIE80AUrz0+SewLCyy2LvKyeVLjtnc3ifVnKzI8A+ok/0mYCNA8h2xU6LNEmJ5CaR2YBtL
-	whfxQS7a8ROvyT6bminrelAYBHiYk92C/yiXMAcAlQtS0rrgun/JG1BZ41ryGPO4orwxszPMJbG
-	aFLqU5DvxWqniC/XgAbWoKlfyuaFln6M9UMpooIVxlJ+elJ/rcxTt/ahanVP3AkEGuPIN+MN07x
-	+FNqUkYK8m866sirNd7zl3NniUht02CNJ1SMlAoDh92c6CVIFE48oTFT+hZjfBm4jKyiCP/zFQC
-	MPn3tJ7w8yOA6nsm9dfLwipl61Np0=
-X-Received: by 2002:a05:600c:3e19:b0:492:4c5d:4db3 with SMTP id 5b1f17b1804b1-492668322camr202514645e9.5.1782661428588;
-        Sun, 28 Jun 2026 08:43:48 -0700 (PDT)
+        bh=fMnBtmnHmhK3jg0PxdbXqkHYJjM0gMd6xqD4YPFeDWU=;
+        b=NRJf6Mo7NGN9RVZOO5T84Y6zFLZOkhFxI6XPKJZVYx1a9nx+XvPDYYUUjlm1GLQdzN
+         MuPFcohrbO9ebDdttCfPUbDjovNSNl3kidYMELneCgkbilzMhIhUQLfmiZbFzm81tydz
+         DUeKKFOLKylM5z68PYpbP2m740MxuiCuAkhSVx/OtrQeICuKSZ7aizOEcWWaOaFxeYyB
+         095lOOuI9/WeX1hV+E1DA1SrLkwjHnYNsn1FjX3rwGLPis6X+BFeGpfitqITgG/Y0OYD
+         t1GUfn6ZUspRFNxJsYOTOC+uc9kkgedWUzWm09Hdd6Yx0IrnpAssNWTmZscbzzK/8IB6
+         cXWg==
+X-Forwarded-Encrypted: i=1; AFNElJ+nR2WEQe0d666jgd8EdyLA5JfmvzIQiRgs56IJZBZH804wK6ggU9wLuK6/nKUiGazvggO+eEBcFVmezQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy9v8AbzQYIn8znPqlzBvzl2nQRT/qShqrK+1r9lqLVxnVtMk1V
+	oz2L6cRn1yddvyjvA+AV6eyp0zCJ170yEr5VXH5Qpj8Qd+FsXqZqpxDT
+X-Gm-Gg: AfdE7cnq3/ei96j92G/uRTkwvZI/EM50Za85kxvVH+JxvQiZ5+lZBJ6j26RnSPHzAIp
+	BPBIULuzP6f2MtVs8PG1oN2pw9nKve74kHH8x+sZun6QKgl1gELQYA6RxZtC9J4k7OjE57p92Ms
+	YE8iIntGTo9h/2vrSTADHHqWa1R0CWrf33zFNbaLGX+5X8jay+L5Xv0u/NKaF8i++pyCheos2j5
+	IZLzLSwLmGno8GERrsIAU0+qXnvQFK3q+pr6ctOI89WuSxstDoRAkwREb7U/L1pvAL7+oLd5b39
+	3Jjnsdxww0QfCOe7QqGB75WofULizdTxtrnhmkEIhiZ0aCtSqq9nPfED+eIfUC9WMoj5c1jYI/u
+	7m9KlvTDpcSPFueEJPdgarCqfGM2W2zcQFEg+Dxyq7s9H9QaEkmua7C4Euh/aaagbUSirCrHVq0
+	UqIOeN3vm+Vo1vDIIK6vSkIsq2qo4=
+X-Received: by 2002:a05:600c:e54a:20b0:492:3fb5:3a17 with SMTP id 5b1f17b1804b1-492663f5bc7mr127559565e9.2.1782664228533;
+        Sun, 28 Jun 2026 09:30:28 -0700 (PDT)
 Received: from anthony.local ([2a06:c701:49b2:4c00:12ff:e0ff:fea5:3d2e])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-46f8d6f10absm32384608f8f.5.2026.06.28.08.43.46
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49268fde98csm261474625e9.6.2026.06.28.09.30.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 28 Jun 2026 08:43:48 -0700 (PDT)
+        Sun, 28 Jun 2026 09:30:26 -0700 (PDT)
 From: Amit Barzilai <amit.barzilai22@gmail.com>
 To: andriy.shevchenko@intel.com
 Cc: airlied@gmail.com,
-	amit.barzilai22@gmail.com,
 	andy@kernel.org,
 	azuddinadam@gmail.com,
 	chintanlike@gmail.com,
@@ -80,9 +79,9 @@ Cc: airlied@gmail.com,
 	robh@kernel.org,
 	simona@ffwll.ch,
 	tzimmermann@suse.de
-Subject: Re: [PATCH v2 3/4] drm/ssd130x: Add SSD135X_FAMILY and SSD1351 support
-Date: Sun, 28 Jun 2026 18:43:12 +0300
-Message-ID: <20260628154312.46185-1-amit.barzilai22@gmail.com>
+Subject: Re: [PATCH v2 2/4] drm/ssd130x: Add RGB565 support to SSD133X family
+Date: Sun, 28 Jun 2026 19:30:02 +0300
+Message-ID: <20260628163002.56829-1-amit.barzilai22@gmail.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <ajpLyronl7a-yxh-@ashevche-desk.local>
 References: <ajpLyronl7a-yxh-@ashevche-desk.local>
@@ -94,160 +93,57 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Firstly, I'd like to thank you for the review.
+Thanks for the review.
 
-On Tue, 23 Jun 2026 12:37:31 +0300, Andy Shevchenko wrote:
-> While it's not a problem _in this case_, the rule of thumb is always to have a
-> trailing comma for non-terminator entry.
-
-This was a repeating comment in the review of this patch.
-I will be sending a v3 for this series, I will fix this point in
-each location you mentioned in your reviews. This also covers the plane-helper
-and encoder-helper arrays and the SSD133X_FAMILY enum entry. The terminator
-entries (NR_SSD130X_VARIANTS and the trailing 0 in the command arrays) will be
-left without a trailing comma.
-
->>  /*
->>   * Helper to write data (SSD13XX_DATA) to the device.
->>   */
->> -static int ssd130x_write_data(struct ssd130x_device *ssd130x, u8 *values, int count)
->> +static int ssd130x_write_data(struct ssd130x_device *ssd130x, const u8 *values, int count)
->>  {
->>  	return regmap_bulk_write(ssd130x->regmap, SSD13XX_DATA, values, count);
->>  }
+On Tue, 23 Jun 2026 12:03:06 +0300, Andy Shevchenko wrote:
+>> + * Each Segment holds one pixel and each Common output has a row
+>> + * of pixels. A pixel is 8 bits (one byte) in the 256 color
+>> + * (RGB332) format or 16 bits (two bytes) in the 65k color
+>> + * (RGB565) format. When using the (default) horizontal address
+>> + * increment mode, the pixel data is sent Segment by Segment
+>> + * (e.g: SEG0 first).
+>>   *
+>>   * When using the 256 color depth format, each pixel contains 3
+>>   * sub-pixels for color A, B and C. These have 3 bit, 3 bit and
+>>   * 2 bits respectively.
 >
-> Stray change. If needed, either explain in the commit message or create
-> a separate patch (depending on the dependencies).
+> Something wrong with the plural. There is a difference between "3-bit" and
+> "3 bits", but "3 bit" is odd.
 
-The SSD135X branch I add in ssd130x_write_cmds() passes its const u8 *cmd buffer
-to ssd130x_write_data(), which took a non-const u8 *. Rather than cast away const
-at the call site, I propagated it into ssd130x_write_data(). I will explain this
-in the commit message in v3.
+You're right. This is pre-existing context, but since I'm reworking the block
+I'll fix it. In v3 it will read:
 
->>  	unsigned int i;
->>  	int ret;
->>  
->> +	/*
->> +	 * The SSD135X family latches command parameters with D/C# HIGH (i.e.
->> +	 * clocked in as data), unlike the other families where the opcode and
->> +	 * all of its parameters are sent as commands (D/C# LOW). Send the
->> +	 * opcode as a command and any following parameter bytes as data.
->> +	 */
->> +	if (ssd130x->device_info->family_id == SSD135X_FAMILY) {
->> +		if (len == 0)
->> +			return 0;
->> +		ret = regmap_write(ssd130x->regmap, SSD13XX_COMMAND, cmd[0]);
->> +		if (ret || len == 1)
->> +			return ret;
->> +
->> +		return ssd130x_write_data(ssd130x, cmd + 1, len - 1);
->> +	}
+	 * These have 3, 3 and 2 bits respectively.
+
+>> + *
+>> + * When using the 65k color depth format, each pixel contains 3
+>> + * sub-pixels for color A, B and C. These have 5 bit, 6 bit and
+>> + * 5 bits respectively.
 >
->>  	for (i = 0; i < len; i++) {
->
-> This loop seems for the len, so it will be the same for both devices as far as
-> I can see the context. I can't find this piece in the original driver, perhaps
-> it's some dependency?
+> Same mistake is repeated here.
 
-Correct, it's a dependency. The for loop is unchanged context, not added by this
-patch. ssd130x_write_cmds() was introduced in commit 208211646fb3 ("drm/solomon: add
-ssd130x_run_cmd_seq() for batch command execution"). It is in drm-misc-next,
-but not yet in the mainline.
-That loop is the existing command path used by every family except SSD135X:
-it clocks each byte out as a command (D/C# LOW). This patch only adds the SSD135X
-branch above it, which returns early, so for SSD135X the loop is never reached.
+Fixing it the same way in v3:
 
-The v3 cover letter will explicitly state that this series is based on drm-misc-next,
-hopefully avoiding any future confusion.
+	 * These have 5, 6 and 5 bits respectively.
 
 >> +/*
->> + * Variadic wrapper around ssd130x_write_cmds(). The first variadic argument is
->> + * the command opcode and the following ones are its options/parameters.
->> + */
->> +static int ssd130x_write_cmd(struct ssd130x_device *ssd130x, int count,
->> +			     /* u8 cmd, u8 option, ... */...)
->> +{
->> +	u8 buf[8];
->> +	va_list ap;
->> +	int i;
->> +
->> +	if (count > ARRAY_SIZE(buf))
->> +		return -EINVAL;
->> +
->> +	va_start(ap, count);
+>> + * Per-variant output format selector for the SSD133X data path. The
+>> + * hardware can drive the panel in RGB332 (1 byte/pixel) or RGB565
+>> + * (2 bytes/pixel); this is a policy choice per variant, not a
 >
->> +	for (i = 0; i < count; i++)
->
-> Can be
-> 
-> 	for (int i = 0; i < count; i++)
+> In other comments it was spelled fully, be consistent "1 byte per pixel",
+> "2 bytes per pixel".
 
-Fixed in v3.
+Good catch. Rather than spell it out, I'll switch to "bpp" (bits per pixel),
+which is more concise and matches the wording already used in the commit
+message. For consistency I'll update both this comment and the
+ssd133x_format_info() one in ssd130x.c. In v3:
 
-
->> +	const u8 cmds[] = {
->
-> Why not static?
-
-This array can't be made static. It is initialised with runtime values
-(ssd130x->width - 1 and ssd130x->height - 1), so it is not a compile-time
-constant and a static/file-scope definition wouldn't compile.
-The other ssd13xx_init() functions are non-static for exactly the same
-reason.
-
->> +		4, SSD135X_SET_CONTRAST, 0xc8, 0x80, 0xc8,
->> +		2, SSD135X_SET_CONTRAST_MASTER, 0x0f,
->> +		2, SSD135X_SET_PRECHARGE2, 0x01,
->> +		1, SSD135X_SET_DISPLAY_NORMAL,
->> +		2, SSD13XX_SET_SEG_REMAP, remap,
->
->> +		0,
->
-> No trailing comma for the terminator entry.
-
-Removing it in v3. The other init arrays in drm-misc-next still carry the
-terminator comma, but that's pre-existing code outside this series -- I've left
-it alone to avoid unrelated churn. Happy to send a separate cleanup if you'd
-prefer.
-
->> +	};
->> +
->> +	/*
->> +	 * ssd130x_power_on() issues a short reset pulse, but the SSD1351 is not
->> +	 * ready to accept commands immediately afterwards. Give the controller
->> +	 * time to settle before sending the init sequence.
->> +	 */
->
-> Any reference to the datasheet?
-
-It's not a datasheet figure. fb_ssd1351 doesn't do it in init_display() either;
-it inherits it from the shared fbtft_reset() helper, which deasserts reset and
-then does msleep(120) before any command is sent. The 120 ms is a generic fbtft
-blanket value, not an SSD1351 number -- the SSD1351 datasheet's reset timing is
-microsecond-scale.
-
-I removed the msleep() and retested this on the hardware. The panel still 
-initialises reliably.
-I'll drop the msleep() in v3.
-
->> +		int ret = ssd130x_write_cmd(ssd130x, 1, SSD135X_WRITE_RAM);
->> +
->> +		if (ret < 0)
->> +			return ret;
->
-> This style is discouraged as it's harder to maintain. Better to split
-> assignment and definition
-> 
-> 		int ret;
-> 
-> 		ret = ssd130x_write_cmd(ssd130x, 1, SSD135X_WRITE_RAM);
-> 		if (ret < 0)
-> 			return ret;
-
-Noted. Will fix for v3.
+	 * hardware can drive the panel in RGB332 (8bpp) or RGB565 (16bpp);
+	 * this is a policy choice per variant, not a
 
 
 
--- 
+--
 Thanks,
 Amit

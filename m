@@ -1,96 +1,61 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CF79344029
-	for <linux-fbdev@vger.kernel.org>; Mon, 29 Jun 2026 10:13:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 725413EF640;
+	Mon, 29 Jun 2026 10:26:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782728011; cv=none; b=U+o0Erpu8BgVws70k3Fd1YLrq5p5lpyOmrTvE4k5ioy1JZl+dxziuYuF4DHsRFjdn/FH7Rx6F8NKz/Jw1QWzvdEPPyStAnJ/YV8ho03S8QOCIAMHKfxtz5iEkQZjlCbhIeea4T2IOypV7IoGJcSQDv+dPb927/9RKp/hYrWuHPQ=
+	t=1782728818; cv=none; b=e0iQUwZeo9ha0M2BpmD4wm8rYczVcH3GX/xWJm/SY2i2Bvd3JxeIkOVgpnWSxDHbnFm92mJ9GmUX8yj/xhJmUSR+wVOXbOeu8aLf3Wfu2boRY9dlGCzP2Lus0khc9XBThohcPnydgNoxw4mgCiNzTKMOSayjK2jvxle0XHlZKFw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782728011; c=relaxed/simple;
-	bh=q5jIXaSxCjuxSv6Etj3isb1WoEQFQTRoZE/y/N6SYms=;
+	s=arc-20240116; t=1782728818; c=relaxed/simple;
+	bh=LLnFYXp11vlHjc2JhLXWGsdV2adwnb847wZ90jKFlok=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Gc02LeJsMTAVWXwvmVYtQMW6YOlFiJXvsIW14PVraeweWj029/ja/qqsBh8Pao4FWG29I1MepJOUFGQ9AVYui6uFhZGVQWEY1f7cVI8+/kEUO4nrbtyxxsyO3xc+94pNtThA3rWiMsJHux/d6MM1aHrynMYi7RhAxGNbUdqlzc0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=D/drcOTe; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=Ux9Rdt89; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	 MIME-Version:Content-Type; b=NKMvP/60hqn8nluQM8vz6Au5UT4H60zMl9QIRZ9+9wGlpfdvjWyvkcedRCV7SDOvOBexfVU33Em/6cXe4DmHx7YFL6VIiFoWzJk+xUxIsaudwusQnYHU2kFUhgwEVwCMeollFYiN9BGAFNpXs8jXN8N3B/Q8L+Z4XhRxuXhMIoo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=JRt5q7p7; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="D/drcOTe";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="Ux9Rdt89"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1782728009;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=xm3lnF8OGUYYjPMf1XDMCVfIs1+U/YDcq+T0Pc20cjo=;
-	b=D/drcOTeMth0uxGeaihuQGZll0SbVNu1KnCSULdUvTTXQsOTWRwmd5jy4pze52WFojNaxt
-	Pj1NhNsxLvrktmTumR+743cBkwIR9k8WTDAvY4S3tQsuZIm8OjugToUnH/41CsOv7WzE2B
-	ClfntYZcTybKiZWqJQXkJngRp60KFm8=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-691-v1owirBJMl6VnalfwEJrNg-1; Mon, 29 Jun 2026 06:13:27 -0400
-X-MC-Unique: v1owirBJMl6VnalfwEJrNg-1
-X-Mimecast-MFC-AGG-ID: v1owirBJMl6VnalfwEJrNg_1782728007
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-473bc66c837so589184f8f.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 29 Jun 2026 03:13:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1782728006; x=1783332806; darn=vger.kernel.org;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=xm3lnF8OGUYYjPMf1XDMCVfIs1+U/YDcq+T0Pc20cjo=;
-        b=Ux9Rdt898vLTFDGDzWsLNWO4o4J1o8nxzfpHYj6NOtDnZd/diBY0W2dXGGqa8rFMp4
-         QLKY6O/kLwAlCmQsaFgMAcdMF/tLObMfLleAkntkI/XlRW8qDX3lbSD70tn+1OAhoW2U
-         YoPd5Hl1hz23MiXcS+9ww0IbpeXcouaBqTiLqzA79a7XMNfVB77x/zWgkMqpdPLhOEx7
-         g/1SL+6rHg3BZoMWDfgpQvavhOwdfNN/oOrf2UyZU+prnFtQilqckM2ZSQPuJDm50iW8
-         ZRKfeWDf694WLZ+R3goW5oP92Jrz0Ev90kTAfaKdbLXnN+3n/xYZYNYwqJhasXfnB2L+
-         appg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782728006; x=1783332806;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=xm3lnF8OGUYYjPMf1XDMCVfIs1+U/YDcq+T0Pc20cjo=;
-        b=C1hSwqzXmJqs8NE3jPkl3V1wj9gbL2Zs5cl1XL21vrt8EdVPCz7kVcRpycm04SV9Tn
-         YLpMI1ZAfBFbiLyHf8J92CkYsD6vtZFdUYC379MaTS6I9FoGIfSsQU5SdvOsyK4jA1dZ
-         kXmXTgYmGJtcO2lPgvvdJ9WCsREQY2PIUsyzk5Hp9OtWJf3MxAUkIkSgKuplai5RPlNp
-         NJwG+zyKSiaX1ndvBlR17oS0JjUKyA70adwL0MFj2uSZfKnlkrWaCwmUv6XqpK+mTRt0
-         y8CRRQ+w7VJ3hlslarUW1EW8IOyELxoPhF03IN0u/7sD43qID1wkPVAINLgF2mJBVqWM
-         D2jA==
-X-Forwarded-Encrypted: i=1; AFNElJ9O9x7P3nxSO3Q0xlNPxwDXPkue2tOOo8xcTjizNPJBFd0BafI/DfIiqAER3SyXrGbRVpJQVPpbgFoIGw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy9K8mkh5MXz81IGTBv88YED8vOw/peKWl2Zu+QvoUdJmWSa1EJ
-	m9T1c+32IqgzienGG+2iI/xTG8jw7+3xXnGSAUGrChGfAxJjr/WU02sud3KiU4GHNZau652SSPy
-	qSPH25VDr+myyaRc4ANxIn/G2Mxm93W3ZeYzESON+QIX/Vgiqq03Uce6hUUJcRXz+
-X-Gm-Gg: AfdE7cl3Zj5y0AErwUCpzfAdWs9xPCQb8OJAosuFeroUWakYBdxo44Rnt7+rsmQI/7P
-	xtSMpaBB6nmHJpZTwxCPrNueBw2sb/UqLsU24ae9bW7zNOD7+pWdjUa8fRCEAaDaDcxmSRV6riQ
-	Yk1sICiaE3qwLfx/CqIwfuOkNGN/Kqy6DIe/Oxvr4s9S84QZZxzRWdLOrM69IUR2mxWpaUGLq0b
-	iAQgvEQaw0hbNtechmZzq3oBxVzIzt61PgnFtobZvC8TtnsZQR90e95zEx6qfRG4ch/0SR3Yf/3
-	iM1jrIAGdjJMyfoPGm5x0PMKtCGs1AlWKAy9dpRYTSV0dFwsgQCRvrvy6hdUvXy/PRCZi1huQ1z
-	HngyBVGGuRh9xfL17ZWDzIVg92FCVNFjyJBey84ycB/y4oEwdIw8kdY3tNFu2GC/PZUDy0A==
-X-Received: by 2002:a05:600c:6218:b0:492:700b:deea with SMTP id 5b1f17b1804b1-493b71a21c5mr1717715e9.13.1782728006532;
-        Mon, 29 Jun 2026 03:13:26 -0700 (PDT)
-X-Received: by 2002:a05:600c:6218:b0:492:700b:deea with SMTP id 5b1f17b1804b1-493b71a21c5mr1717385e9.13.1782728006067;
-        Mon, 29 Jun 2026 03:13:26 -0700 (PDT)
-Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4734df60acesm11346521f8f.25.2026.06.29.03.13.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jun 2026 03:13:25 -0700 (PDT)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Amit Barzilai <amit.barzilai22@gmail.com>,
- maarten.lankhorst@linux.intel.com, mripard@kernel.org,
- tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, robh@kernel.org,
- krzk+dt@kernel.org, conor+dt@kernel.org, andy@kernel.org,
- gregkh@linuxfoundation.org, deller@gmx.de
-Cc: azuddinadam@gmail.com, chintanlike@gmail.com,
- dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev, Amit Barzilai <amit.barzilai22@gmail.com>
-Subject: Re: [PATCH v2 2/4] drm/ssd130x: Add RGB565 support to SSD133X family
-In-Reply-To: <20260622152506.78627-3-amit.barzilai22@gmail.com>
-References: <20260622152506.78627-1-amit.barzilai22@gmail.com>
- <20260622152506.78627-3-amit.barzilai22@gmail.com>
-Date: Mon, 29 Jun 2026 12:13:24 +0200
-Message-ID: <87jyrhd58b.fsf@ocarina.mail-host-address-is-not-set>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="JRt5q7p7"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1782728816; x=1814264816;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=LLnFYXp11vlHjc2JhLXWGsdV2adwnb847wZ90jKFlok=;
+  b=JRt5q7p7TGPqRLR9BlhVfFAKmEkGkFVgbLVtNJKfqEc48TihHZueuUy7
+   m5X2EFxJ4zFMrE+F/CuLvl0XjUKb6kJZKim+Nx9Gx6LGRkQyM0U3JYzug
+   pxNfOjq5RWHv6bHNkrTf5qsjLRriLKkRNVVk+LSDqbD7j51rsEFUctIrU
+   o6umijNABTAlZUGgPlc9L7WjMGuHh6TVrdCNnUQKPmtEYTOV16V64W1z/
+   pTEW9KsbQ2Y6r59sb67DcYqZrU9kI0gzZ6DIG/zLozUrjlt2MgcDL622u
+   +mW6o/XqcQ55Mx8sOwhijwJt744TqQUFlRbYtbZ0e98k1I2Xvxx1lN2E8
+   w==;
+X-CSE-ConnectionGUID: rXxMgL1UTZ22ybHjoGc7OQ==
+X-CSE-MsgGUID: Za32zi5OT9iMEkWJiXebtg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11831"; a="83502937"
+X-IronPort-AV: E=Sophos;i="6.24,231,1774335600"; 
+   d="scan'208";a="83502937"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 03:26:56 -0700
+X-CSE-ConnectionGUID: kGXHeZoNR2m3ch57AQpCyw==
+X-CSE-MsgGUID: MKx6NBcYQ4WBkHanQSlhCg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.24,231,1774335600"; 
+   d="scan'208";a="253822147"
+Received: from carterle-desk.ger.corp.intel.com (HELO localhost) ([10.245.244.253])
+  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2026 03:26:54 -0700
+From: Jani Nikula <jani.nikula@linux.intel.com>
+To: Helge Deller <deller@gmx.de>, WenTao Liang <vulab@iscas.ac.cn>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] fix: drivers/video: __screen_info_pci_dev: leaked
+ pci_dev references in pci_get_base_class loop
+In-Reply-To: <c9c60382-e6eb-4ff8-8756-a48a39924d46@gmx.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park,
+ 6 krs Bertel Jungin Aukio 5, 02600 Espoo, Finland
+References: <20260627034428.59479-1-vulab@iscas.ac.cn>
+ <c9c60382-e6eb-4ff8-8756-a48a39924d46@gmx.de>
+Date: Mon, 29 Jun 2026 13:26:51 +0300
+Message-ID: <bfeb8e783cd749e4439a4a82546c7bfe63e9a3d8@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -99,58 +64,47 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain
 
-Amit Barzilai <amit.barzilai22@gmail.com> writes:
-
-Hello Amit,
-
-Thanks for doing a re-spin and adding the SSD1351 support to the
-ssd130x driver. This is much closer to what I had in mind than v1.
-
-[...]
-
->  
->  const struct ssd130x_deviceinfo ssd130x_variants[] = {
-> @@ -206,6 +212,7 @@ const struct ssd130x_deviceinfo ssd130x_variants[] = {
->  	[SSD1331_ID] = {
->  		.default_width = 96,
->  		.default_height = 64,
-> +		.format_rgb565 = 1,
->  		.family_id = SSD133X_FAMILY,
->  	}
-
-[...]
-
->  
->  	iosys_map_set_vaddr(&dst, data_array);
-> -	drm_fb_xrgb8888_to_rgb332(&dst, &dst_pitch, vmap, fb, rect, fmtcnv_state);
-> +	if (ssd130x->device_info->format_rgb565)
-> +		drm_fb_xrgb8888_to_rgb565be(&dst, &dst_pitch, vmap, fb, rect, fmtcnv_state);
-> +	else
-> +		drm_fb_xrgb8888_to_rgb332(&dst, &dst_pitch, vmap, fb, rect, fmtcnv_state);
+On Sat, 27 Jun 2026, Helge Deller <deller@gmx.de> wrote:
+> On 6/27/26 05:44, WenTao Liang wrote:
+>> In __screen_info_pci_dev(), the loop uses pci_get_base_class() with a
+>> non-NULL starting device pdev. Each iteration returns a new device
+>> reference but does not release the previous one. When a non-matching
+>> device is found, pdev is overwritten and the previous reference leaks.
+>> When no match is found, all acquired references are leaked.
+>> 
+>> Add pci_dev_put(pdev) for non-matching devices before continuing the loop.
+>> 
+>> Cc: stable@vger.kernel.org
+>> Fixes: 036105e3a776 ("video: Provide screen_info_get_pci_dev() to find screen_info's PCI device")
+>> Signed-off-by: WenTao Liang <vulab@iscas.ac.cn>
+>> ---
+>>   drivers/video/screen_info_pci.c | 4 ++++
+>>   1 file changed, 4 insertions(+)
+>> 
+>> diff --git a/drivers/video/screen_info_pci.c b/drivers/video/screen_info_pci.c
+>> index 8f34d8a74f09..c821101e9304 100644
+>> --- a/drivers/video/screen_info_pci.c
+>> +++ b/drivers/video/screen_info_pci.c
+>> @@ -123,6 +123,10 @@ static struct pci_dev *__screen_info_pci_dev(struct resource *res)
+>>   
+>>   	while (!r && (pdev = pci_get_base_class(PCI_BASE_CLASS_DISPLAY, pdev))) {
+>>   		r = pci_find_resource(pdev, res);
+>> +		if (!r) {
+>> +			pci_dev_put(pdev);
+>> +			pdev = NULL;
+>> +		}
 >
+> Have you tested the code?
+> If pdev gets assigned NULL, doesn't that introduce an endless loop?
+> And, similar code is in amdgpu*  and google's framebuffer-coreboot.c files, so if
+> this is correct, don't they need fixing as well?
 
-Since you are changing the SSD1331_ID to use .format_rgb565, what's the
-value of keeping the RGB323 support ? It's not used by any other Solomon
-family supported by the driver.
+More specifically, pci_get_base_class() decrements the passed in "from"
+refcount if it's not NULL.
 
-Ideally, we would like the driver to expose native formats besides the
-virtualized XRGB8888. Geert posted some patches for SSD1301 some time ago:
+BR,
+Jani.
 
-https://lists.freedesktop.org/archives/dri-devel/2023-August/419937.html
-
-but that never landed.
-
-If that was the case, then SSD130X could expose DRM_FORMAT_XRGB8888 and
-DRM_FORMAT_R1; SSD132X would expose DRM_FORMAT_XRGB8888 and DRM_FORMAT_R4 and
-SSD133X expose DRM_FORMAT_XRGB8888, DRM_FORMAT_RGB332 and DRM_FORMAT_RGB565.
-
-Given that we don't have that, I suppose that we could just get rid of the
-DRM_FORMAT_RGB332 support for SSD133X and just default to DRM_FORMAT_RGB565.
 
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
-
+Jani Nikula, Intel

@@ -1,196 +1,156 @@
-Received: from flow-a2-smtp.messagingengine.com (flow-a2-smtp.messagingengine.com [103.168.172.137])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC3ED3F5BD7;
-	Mon, 29 Jun 2026 08:39:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.137
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CF79344029
+	for <linux-fbdev@vger.kernel.org>; Mon, 29 Jun 2026 10:13:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782722348; cv=none; b=CtVCGy2gySlaU3YnT9DzDuR10K+PZNAJvp+uvfnTbutfc2eUxpfPnbXqySKae5S4yJHwGwdwT9DONe+x8cEIouT694TynLz12HvdLtYnZmYnqY5VmEs6xVVbzn9DsEsCNiZASsoSCf3U2BCWHFUSvyenONmAqJtXldvC/cQuIWM=
+	t=1782728011; cv=none; b=U+o0Erpu8BgVws70k3Fd1YLrq5p5lpyOmrTvE4k5ioy1JZl+dxziuYuF4DHsRFjdn/FH7Rx6F8NKz/Jw1QWzvdEPPyStAnJ/YV8ho03S8QOCIAMHKfxtz5iEkQZjlCbhIeea4T2IOypV7IoGJcSQDv+dPb927/9RKp/hYrWuHPQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782722348; c=relaxed/simple;
-	bh=rdZ86aUfALzyRtzacvcgkegXDBksip2sdcpEEPNGzdw=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=jlxbUD4NrENS1tfZKlJKZdLuyMN1VpwAcxxpQh8El0+IoyNRicS4406VtvPsMXpkd6r3wihKlBWxdujTtoeIrMWMlfH/UBeF/J6yMAdcjK2sar21gZm9Q3B0QRMDyO4crt1mRkm/jD6l/FFwqMHd21wAXPD41yFI5QD+Zh884oc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=gYKRp3Mk; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=TmoJafjB; arc=none smtp.client-ip=103.168.172.137
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
+	s=arc-20240116; t=1782728011; c=relaxed/simple;
+	bh=q5jIXaSxCjuxSv6Etj3isb1WoEQFQTRoZE/y/N6SYms=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Gc02LeJsMTAVWXwvmVYtQMW6YOlFiJXvsIW14PVraeweWj029/ja/qqsBh8Pao4FWG29I1MepJOUFGQ9AVYui6uFhZGVQWEY1f7cVI8+/kEUO4nrbtyxxsyO3xc+94pNtThA3rWiMsJHux/d6MM1aHrynMYi7RhAxGNbUdqlzc0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=D/drcOTe; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=Ux9Rdt89; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="gYKRp3Mk";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="TmoJafjB"
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.phl.internal (Postfix) with ESMTP id ED49E1380289;
-	Mon, 29 Jun 2026 04:39:05 -0400 (EDT)
-Received: from phl-imap-05 ([10.202.2.95])
-  by phl-compute-04.internal (MEProxy); Mon, 29 Jun 2026 04:39:05 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1782722345;
-	 x=1782729545; bh=/vdY4J8WqpgsSSAPKxCtlbdJGPE0BXIq61EW+S6j6P4=; b=
-	gYKRp3MkalTZcfjiyB1FWwOhagCvw7SptaL4XpUAHt9qYHSGuoiB6JpTDfeluC3Q
-	rh4Aal4qSJB9FlmFMuZBGVV3Dx7WxE4URmh/8SrliuKwrNTUxDpN5M0oqIvsfjsi
-	v/1VEbMFCoVKG4zgmmv8bWa1ApMxljOc9oVaEnz9RMWWBfn1NNGGQG4h+0zPBM2t
-	iE4ZNSm4dlaaqkxGqpIYsAjT7stL06NVaG0wkBIsDJ79kINTzAEWrhL8L7qa9xLg
-	O3+f3LvOp1joCWZj+Qj+cokk9VL0UCCg+7t2GAEkDKyIX138l7MoA7c6+0ANJpex
-	b+u4XAzlz6AfSSaqRN2B+w==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1782722345; x=
-	1782729545; bh=/vdY4J8WqpgsSSAPKxCtlbdJGPE0BXIq61EW+S6j6P4=; b=T
-	moJafjBCQd2OcjAkPYpzobQBAomX1YnWDBRu3nLVcnTUyhNbi9yqP7rAKao74kvK
-	W9Pyd82evV5x0oejCQ0bKAnh1OzcJ+lyR04VaBZ2mhymZiRP3GIGHdp3wRdPJAA2
-	qlGUDJUJqr9OHkULgg6JVf2xPVApuQhlXvg2QIeF+hrIx5wofbMZ7ViQL+Q14vqD
-	thuwp23CCztH4wo0hMRwalZDAOtGeBL9A3r2yk/KroDYmS7keKhb+A+1OFjil0iN
-	BkaqZbBQ3aEgZtPAPZ9N1KDwfQ/I6E2wqsbVnBvR4gpiegR3RSa67VUyYlbj9RXz
-	NOlJ/GRInhzHItsNT5WuQ==
-X-ME-Sender: <xms:Jy9CajGgRjsplzBg2AtFgVQfIg8_cVyBgfhU3z9iIIWNAladEIyTng>
-    <xme:Jy9CarIOubeU2rUQNxElTNzHTUc1VSiC0q76P0JncQ51McW6xYkKnxEdv3WLCricH
-    AoTGPUTTEMZF6yAdwb8oDGyXnmPuUbczXMANRC2Ne84a15jGqlpK04>
-X-ME-Proxy-Cause: dmFkZTGQ1+/zMJ6FRO/nrenBVaK3dgNV80cEWVcq9a0FUfwQpoRgAtHfD6iB9yAigOgUR+
-    jj7UAkKII4IB5gEkT+Gq3x2a1TlJ8/9Us6NCf+Z6ozVZwwfkmtIK8B6WD3KkL3WjRWyNlq
-    RY0/S5hiTmQ6/MWQZUqPxfXAFF22LmbgigARUbvZheMrxzFjsfmoo1zWrVptpHF0V+jwar
-    WA4RBlo40U0z1fWy4AebOsp8HnYzB68Slr7XO9JmQmLKgIV8Fjf814MXW+8uJ77ByBAQuJ
-    BGA9VM2uzadc0UNHVRSjRdmVsmOH4QsX2FHPkz6ZWqk9Mgajdyl3+bXK90tycrhFehfmXt
-    Fn1W9kCa2R5qpJDYtP8FRGr1MDXzZevPPYc1/sMmYgs8yRZCCQEwPqkd6EtSRnZrYDpqiX
-    r83RR5Axps70SB/YmbIacE3AvmD3xsZz6p9dt8AkDdsOc4PoBCQp+2L4l6Jczg6Hv+mjus
-    wDNXfIn1FImLLVX6BBE/OD945b3OnLpEQHvjR6yFG8qsjgmGutFbt6SDv0KgUxVeb4fL5C
-    4ryLUX6BjWQwb2s9pTrOmAipI+MJOoWjtsdHbN1E9hLWMLIym+D+jilNl4niSZiN/vQal8
-    sGsjvTbjRleHQMEsz8fFh1nDAI8nT1w6DiLhtWhC1MqN9cKnNagMl1USoB+A
-X-ME-Proxy: <xmx:Jy9CaiU4saJaD8ZZTc3oT4aVP9FZ-2KzZY1OMbt54FSVdp8C4GojwQ>
-    <xmx:Jy9CarAKcIjUEzh0n01SmH8Fvdf-c-CEw6HC4kX3-wpjrz_bK_Gd2A>
-    <xmx:Jy9CalRy7x7F70ztTSBlebo27l1W3InI7iznAUqc9uqjK3_xcNs__g>
-    <xmx:Jy9CavcxY2931rRj96HnQy4Q94ZUMjaepmrx-pZGBtzBliSD2KlD8g>
-    <xmx:KS9CaoujF5_4WrC5b_ziAcwJh2y7aclJij4MlWb0bwqEh9ZP_Ar7Yvo4>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 770CC182007E; Mon, 29 Jun 2026 04:39:03 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="D/drcOTe";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="Ux9Rdt89"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1782728009;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=xm3lnF8OGUYYjPMf1XDMCVfIs1+U/YDcq+T0Pc20cjo=;
+	b=D/drcOTeMth0uxGeaihuQGZll0SbVNu1KnCSULdUvTTXQsOTWRwmd5jy4pze52WFojNaxt
+	Pj1NhNsxLvrktmTumR+743cBkwIR9k8WTDAvY4S3tQsuZIm8OjugToUnH/41CsOv7WzE2B
+	ClfntYZcTybKiZWqJQXkJngRp60KFm8=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-691-v1owirBJMl6VnalfwEJrNg-1; Mon, 29 Jun 2026 06:13:27 -0400
+X-MC-Unique: v1owirBJMl6VnalfwEJrNg-1
+X-Mimecast-MFC-AGG-ID: v1owirBJMl6VnalfwEJrNg_1782728007
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-473bc66c837so589184f8f.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 29 Jun 2026 03:13:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=redhat.com; s=google; t=1782728006; x=1783332806; darn=vger.kernel.org;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=xm3lnF8OGUYYjPMf1XDMCVfIs1+U/YDcq+T0Pc20cjo=;
+        b=Ux9Rdt898vLTFDGDzWsLNWO4o4J1o8nxzfpHYj6NOtDnZd/diBY0W2dXGGqa8rFMp4
+         QLKY6O/kLwAlCmQsaFgMAcdMF/tLObMfLleAkntkI/XlRW8qDX3lbSD70tn+1OAhoW2U
+         YoPd5Hl1hz23MiXcS+9ww0IbpeXcouaBqTiLqzA79a7XMNfVB77x/zWgkMqpdPLhOEx7
+         g/1SL+6rHg3BZoMWDfgpQvavhOwdfNN/oOrf2UyZU+prnFtQilqckM2ZSQPuJDm50iW8
+         ZRKfeWDf694WLZ+R3goW5oP92Jrz0Ev90kTAfaKdbLXnN+3n/xYZYNYwqJhasXfnB2L+
+         appg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782728006; x=1783332806;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xm3lnF8OGUYYjPMf1XDMCVfIs1+U/YDcq+T0Pc20cjo=;
+        b=C1hSwqzXmJqs8NE3jPkl3V1wj9gbL2Zs5cl1XL21vrt8EdVPCz7kVcRpycm04SV9Tn
+         YLpMI1ZAfBFbiLyHf8J92CkYsD6vtZFdUYC379MaTS6I9FoGIfSsQU5SdvOsyK4jA1dZ
+         kXmXTgYmGJtcO2lPgvvdJ9WCsREQY2PIUsyzk5Hp9OtWJf3MxAUkIkSgKuplai5RPlNp
+         NJwG+zyKSiaX1ndvBlR17oS0JjUKyA70adwL0MFj2uSZfKnlkrWaCwmUv6XqpK+mTRt0
+         y8CRRQ+w7VJ3hlslarUW1EW8IOyELxoPhF03IN0u/7sD43qID1wkPVAINLgF2mJBVqWM
+         D2jA==
+X-Forwarded-Encrypted: i=1; AFNElJ9O9x7P3nxSO3Q0xlNPxwDXPkue2tOOo8xcTjizNPJBFd0BafI/DfIiqAER3SyXrGbRVpJQVPpbgFoIGw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy9K8mkh5MXz81IGTBv88YED8vOw/peKWl2Zu+QvoUdJmWSa1EJ
+	m9T1c+32IqgzienGG+2iI/xTG8jw7+3xXnGSAUGrChGfAxJjr/WU02sud3KiU4GHNZau652SSPy
+	qSPH25VDr+myyaRc4ANxIn/G2Mxm93W3ZeYzESON+QIX/Vgiqq03Uce6hUUJcRXz+
+X-Gm-Gg: AfdE7cl3Zj5y0AErwUCpzfAdWs9xPCQb8OJAosuFeroUWakYBdxo44Rnt7+rsmQI/7P
+	xtSMpaBB6nmHJpZTwxCPrNueBw2sb/UqLsU24ae9bW7zNOD7+pWdjUa8fRCEAaDaDcxmSRV6riQ
+	Yk1sICiaE3qwLfx/CqIwfuOkNGN/Kqy6DIe/Oxvr4s9S84QZZxzRWdLOrM69IUR2mxWpaUGLq0b
+	iAQgvEQaw0hbNtechmZzq3oBxVzIzt61PgnFtobZvC8TtnsZQR90e95zEx6qfRG4ch/0SR3Yf/3
+	iM1jrIAGdjJMyfoPGm5x0PMKtCGs1AlWKAy9dpRYTSV0dFwsgQCRvrvy6hdUvXy/PRCZi1huQ1z
+	HngyBVGGuRh9xfL17ZWDzIVg92FCVNFjyJBey84ycB/y4oEwdIw8kdY3tNFu2GC/PZUDy0A==
+X-Received: by 2002:a05:600c:6218:b0:492:700b:deea with SMTP id 5b1f17b1804b1-493b71a21c5mr1717715e9.13.1782728006532;
+        Mon, 29 Jun 2026 03:13:26 -0700 (PDT)
+X-Received: by 2002:a05:600c:6218:b0:492:700b:deea with SMTP id 5b1f17b1804b1-493b71a21c5mr1717385e9.13.1782728006067;
+        Mon, 29 Jun 2026 03:13:26 -0700 (PDT)
+Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4734df60acesm11346521f8f.25.2026.06.29.03.13.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Jun 2026 03:13:25 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Amit Barzilai <amit.barzilai22@gmail.com>,
+ maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+ tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, andy@kernel.org,
+ gregkh@linuxfoundation.org, deller@gmx.de
+Cc: azuddinadam@gmail.com, chintanlike@gmail.com,
+ dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-staging@lists.linux.dev, Amit Barzilai <amit.barzilai22@gmail.com>
+Subject: Re: [PATCH v2 2/4] drm/ssd130x: Add RGB565 support to SSD133X family
+In-Reply-To: <20260622152506.78627-3-amit.barzilai22@gmail.com>
+References: <20260622152506.78627-1-amit.barzilai22@gmail.com>
+ <20260622152506.78627-3-amit.barzilai22@gmail.com>
+Date: Mon, 29 Jun 2026 12:13:24 +0200
+Message-ID: <87jyrhd58b.fsf@ocarina.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: ApSqBjiSqQZ-
-Date: Mon, 29 Jun 2026 10:38:16 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Juergen Gross" <jgross@suse.com>, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org,
- "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>, x86@kernel.org,
- linux-acpi@vger.kernel.org, kvm@vger.kernel.org, linux-coco@lists.linux.dev,
- linux-pci@vger.kernel.org, virtualization@lists.linux.dev,
- linux-ide@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-crypto@vger.kernel.org,
- "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
- linux-hyperv@vger.kernel.org, linux-hwmon@vger.kernel.org,
- linux-perf-users@vger.kernel.org, linux-mtd@lists.infradead.org,
- platform-driver-x86@vger.kernel.org
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
- "Daniel Lezcano" <daniel.lezcano@kernel.org>,
- "Zhang Rui" <rui.zhang@intel.com>,
- "lukasz.luba@arm.com" <lukasz.luba@arm.com>,
- "Jason Baron" <jbaron@akamai.com>, "Borislav Petkov" <bp@alien8.de>,
- "Tony Luck" <tony.luck@intel.com>,
- "Yazen Ghannam" <yazen.ghannam@amd.com>, "Len Brown" <lenb@kernel.org>,
- "Pavel Machek" <pavel@kernel.org>, "Thomas Gleixner" <tglx@kernel.org>,
- "Ingo Molnar" <mingo@redhat.com>,
- "Dave Hansen" <dave.hansen@linux.intel.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "Sean Christopherson" <seanjc@google.com>,
- "Paolo Bonzini" <pbonzini@redhat.com>,
- "Kirill A. Shutemov" <kas@kernel.org>,
- "Rick Edgecombe" <rick.p.edgecombe@intel.com>, "Pu Wen" <puwen@hygon.cn>,
- "Bjorn Helgaas" <bhelgaas@google.com>,
- "Ajay Kaher" <ajay.kaher@broadcom.com>,
- "Alexey Makhalov" <alexey.makhalov@broadcom.com>,
- "Broadcom internal kernel review list"
- <bcm-kernel-feedback-list@broadcom.com>,
- "Viresh Kumar" <viresh.kumar@linaro.org>,
- "Reinette Chatre" <reinette.chatre@intel.com>,
- "Dave Martin" <Dave.Martin@arm.com>, "James Morse" <james.morse@arm.com>,
- "Babu Moger" <babu.moger@amd.com>,
- "Tony W Wang-oc" <TonyWWang-oc@zhaoxin.com>,
- "Damien Le Moal" <dlemoal@kernel.org>,
- "Niklas Cassel" <cassel@kernel.org>, "Dave Airlie" <airlied@redhat.com>,
- "Helge Deller" <deller@gmx.de>, linux-geode@lists.infradead.org,
- "Olivia Mackall" <olivia@selenic.com>,
- "Herbert Xu" <herbert@gondor.apana.org.au>,
- "Linus Walleij" <linusw@kernel.org>,
- "Bartosz Golaszewski" <brgl@kernel.org>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- "Haiyang Zhang" <haiyangz@microsoft.com>, "Wei Liu" <wei.liu@kernel.org>,
- "Dexuan Cui" <decui@microsoft.com>, "Long Li" <longli@microsoft.com>,
- "Guenter Roeck" <linux@roeck-us.net>,
- "Peter Zijlstra" <peterz@infradead.org>,
- "Arnaldo Carvalho de Melo" <acme@kernel.org>,
- "Namhyung Kim" <namhyung@kernel.org>,
- "Mark Rutland" <mark.rutland@arm.com>,
- "Alexander Shishkin" <alexander.shishkin@linux.intel.com>,
- "Jiri Olsa" <jolsa@kernel.org>, "Ian Rogers" <irogers@google.com>,
- "Adrian Hunter" <adrian.hunter@intel.com>,
- "James Clark" <james.clark@linaro.org>,
- "Josh Poimboeuf" <jpoimboe@kernel.org>,
- "Pawan Gupta" <pawan.kumar.gupta@linux.intel.com>,
- "Vitaly Kuznetsov" <vkuznets@redhat.com>,
- "Andy Lutomirski" <luto@kernel.org>,
- "Boris Ostrovsky" <boris.ostrovsky@oracle.com>,
- "Huang Rui" <ray.huang@amd.com>,
- "Mario Limonciello" <mario.limonciello@amd.com>,
- "Perry Yuan" <perry.yuan@amd.com>,
- "K Prateek Nayak" <kprateek.nayak@amd.com>,
- "srinivas.pandruvada@linux.intel.com"
- <srinivas.pandruvada@linux.intel.com>,
- "Artem Bityutskiy" <artem.bityutskiy@linux.intel.com>,
- "Artem Bityutskiy" <dedekind1@gmail.com>,
- "Miquel Raynal" <miquel.raynal@bootlin.com>,
- "Richard Weinberger" <richard@nod.at>,
- "Vignesh Raghavendra" <vigneshr@ti.com>,
- "Ashok Raj" <ashok.raj.linux@gmail.com>,
- "Hans de Goede" <hansg@kernel.org>,
- =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
- "Rajneesh Bhardwaj" <irenic.rajneesh@gmail.com>,
- "David E Box" <david.e.box@intel.com>, xen-devel@lists.xenproject.org
-Message-Id: <d315e0a8-e4e9-4f7e-80a9-7c236849eabd@app.fastmail.com>
-In-Reply-To: <9acced19-573d-4923-9329-8be408d2e555@suse.com>
-References: <20260629060526.3638272-1-jgross@suse.com>
- <d7c1db52-529a-43cc-ac7d-38b52627e8bc@app.fastmail.com>
- <c1608c48-13c2-4290-826b-28b5ca51eaf7@suse.com>
- <7332feff-2649-496c-8e49-b0a19eb54a32@app.fastmail.com>
- <9acced19-573d-4923-9329-8be408d2e555@suse.com>
-Subject: Re: [PATCH 00/32] x86/msr: Drop 32-bit MSR interfaces
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 
-On Mon, Jun 29, 2026, at 10:15, J=C3=BCrgen Gro=C3=9F wrote:
-> On 29.06.26 10:06, Arnd Bergmann wrote:
->> On Mon, Jun 29, 2026, at 09:01, J=C3=BCrgen Gro=C3=9F wrote:
->>> On 29.06.26 08:52, Arnd Bergmann wrote:
->>>> On Mon, Jun 29, 2026, at 08:04, Juergen Gross wrote:
->>>>
->>>> I assume this is fine, but since you don't mention it explicitly he=
-re,
->>>> please clarify what this means for 32-bit CPUs without the rdmsrq
->>>> instruction. Those will continue using the same instructions as bef=
-ore
->>>> and just change the calling conventions, right?
->>>
->>> Yes. I thought this would be clear from the following:
->>>
->>>     - They are based on primitives using 64-bit sized values anyway.
->>=20
->> Right, that was my reading of it as well, but it's not entirely
->> clear when the function name is the same as the mnemonic of an
->> instruction that only exists on newer CPUs and the later patch
+Amit Barzilai <amit.barzilai22@gmail.com> writes:
+
+Hello Amit,
+
+Thanks for doing a re-spin and adding the SSD1351 support to the
+ssd130x driver. This is much closer to what I had in mind than v1.
+
+[...]
+
+>  
+>  const struct ssd130x_deviceinfo ssd130x_variants[] = {
+> @@ -206,6 +212,7 @@ const struct ssd130x_deviceinfo ssd130x_variants[] = {
+>  	[SSD1331_ID] = {
+>  		.default_width = 96,
+>  		.default_height = 64,
+> +		.format_rgb565 = 1,
+>  		.family_id = SSD133X_FAMILY,
+>  	}
+
+[...]
+
+>  
+>  	iosys_map_set_vaddr(&dst, data_array);
+> -	drm_fb_xrgb8888_to_rgb332(&dst, &dst_pitch, vmap, fb, rect, fmtcnv_state);
+> +	if (ssd130x->device_info->format_rgb565)
+> +		drm_fb_xrgb8888_to_rgb565be(&dst, &dst_pitch, vmap, fb, rect, fmtcnv_state);
+> +	else
+> +		drm_fb_xrgb8888_to_rgb332(&dst, &dst_pitch, vmap, fb, rect, fmtcnv_state);
 >
-> There is no RDMSRQ instruction on any x86 CPU. Are you mixing this up =
-with
-> WRMSRNS/RDMSR using an immediate for addressing the MSR?
 
-Yes, I was just confused about the exact definition here and assumed
-the single-register output version was actually called rdmsrq.
+Since you are changing the SSD1331_ID to use .format_rgb565, what's the
+value of keeping the RGB323 support ? It's not used by any other Solomon
+family supported by the driver.
 
-     Arnd
+Ideally, we would like the driver to expose native formats besides the
+virtualized XRGB8888. Geert posted some patches for SSD1301 some time ago:
+
+https://lists.freedesktop.org/archives/dri-devel/2023-August/419937.html
+
+but that never landed.
+
+If that was the case, then SSD130X could expose DRM_FORMAT_XRGB8888 and
+DRM_FORMAT_R1; SSD132X would expose DRM_FORMAT_XRGB8888 and DRM_FORMAT_R4 and
+SSD133X expose DRM_FORMAT_XRGB8888, DRM_FORMAT_RGB332 and DRM_FORMAT_RGB565.
+
+Given that we don't have that, I suppose that we could just get rid of the
+DRM_FORMAT_RGB332 support for SSD133X and just default to DRM_FORMAT_RGB565.
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Core Platforms
+Red Hat
+

@@ -1,120 +1,137 @@
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43EF53A8FE6;
-	Tue, 30 Jun 2026 10:24:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A38B23D7DF;
+	Tue, 30 Jun 2026 13:50:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782815047; cv=none; b=OL5HJPr9/p4QJKHBNG+w6ks5T9QV51e2BJ1s/um9CAxpJc72aRvOzBx/Cm0y2OKAnzJNMX+cB5vHD3kQlymaOFyRmBJBEmiNCqeAcTXumR7zvcyjnKuX4AsXDg0R19/blGLgdgo0wozn6GK6lpHDRUrJwv4CIuL52rk4+gbQDM8=
+	t=1782827421; cv=none; b=gOrMKHn4lZVi+Sl2jDQmrW6mFAEJwt1iTMkgRgUCun3FWq0QVOgh07m81gi03MrgNrCFqdGuaxyXX4s2SArQpJgBZKwKsz5LC806Q8FXXofOgJRqCk2Tl55WOt8OpGFNE7mwAYLT8yGeGxHakWmTRgMVmlBS9Zl0PRwWkeHN8Lk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782815047; c=relaxed/simple;
-	bh=ktunQaDDS5EVOVO47fVPmptPD5p+avnAGjEgEXLkbp0=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Rbim+d2YDrsCp8zJtdpnKdjWr+gnTyq6k4rY0xoWhpqSlfbnAglWRWB2JH0JOBXojHbSwFWYxzdTsDoRfUxG23XUWIUlyqsTEReODRCBeKVj9qoRNpZCoBnOL0tJAxQDsyR+XQ9hHj8CbUEyiyfF35frfoJC1g75gqTws8HFxJw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=icQ/wQmM; arc=none smtp.client-ip=192.198.163.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	s=arc-20240116; t=1782827421; c=relaxed/simple;
+	bh=wKKfI6rfHepZWj931Iie8JnqM3m9gU1e0VmuJG7Mgmk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=RnYi3m50xoHDCHHd73LUZxQv7ADp25AbrRvX3Pnd49eSkKC7lGBbK+aApHyiKXesn1Lni4ahZhkMrhQ5ac4pSub9IRbe6/eNQHBwjmMdbUD42fSWb5qCITck1Ehuu5lLQvCFdYtXXeGDkr89rX987R9u3r3/7YtYJrVm1v6c8K8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nhYqmEaN; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="icQ/wQmM"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1782815045; x=1814351045;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=ktunQaDDS5EVOVO47fVPmptPD5p+avnAGjEgEXLkbp0=;
-  b=icQ/wQmMyVZEeQ41y0s/RD11IysL84RlqYL/arY/vH1/dWVzn1+QLLrf
-   ueBMWmMjezVhy+WaJXO+3iNQGGIcbJzXI6eieapAM1kBIjGjhhVCaXSQm
-   TOdxhxZcTJ6IN/W0mgmM+fsTXj3LXTIHco9RasSd9cPj/qGSeyCO0W2Wz
-   KbLi3LZ7d4xjSij4MOQWw89C0LFz2W4TDpD3vv6oGlWF6PGxSVzs/7RtK
-   R4U6BszKlVT+/8x5p+jGiXmDLemCjiVPuYg/rmmaXKWDznfJUbi98POac
-   d+XGxySUIzljPn21oJFt6BBAIK0pXw+4U1qaOJf6g5aG7EdN+AsAIzC0X
-   w==;
-X-CSE-ConnectionGUID: u+aCKVkgTeGawSelnWB4hg==
-X-CSE-MsgGUID: ElGvpXLJS5OtmCjngCQmbg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11832"; a="83581389"
-X-IronPort-AV: E=Sophos;i="6.24,233,1774335600"; 
-   d="scan'208";a="83581389"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2026 03:24:04 -0700
-X-CSE-ConnectionGUID: jgq2xSQuTZCC6QLcUYS3Dw==
-X-CSE-MsgGUID: Tgh3e1tLRQ2N4h0xSzOsDw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.24,233,1774335600"; 
-   d="scan'208";a="245877673"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.148])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Jun 2026 03:23:47 -0700
-From: Jani Nikula <jani.nikula@linux.intel.com>
-To: Lorenzo Stoakes <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Maarten
- Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
- <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David
- Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Lucas Stach
- <l.stach@pengutronix.de>, Inki Dae <inki.dae@samsung.com>, Seung-Woo Kim
- <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
- Krzysztof Kozlowski <krzk@kernel.org>, Peter Griffin
- <peter.griffin@linaro.org>, Joonas Lahtinen
- <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Tvrtko Ursulin <tursulin@ursulin.net>, Rob Clark
- <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, Lyude
- Paul <lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>, Tomi
- Valkeinen <tomi.valkeinen@ideasonboard.com>, Sandy Huang
- <hjc@rock-chips.com>, Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>,
- Andy Yan
- <andy.yan@rock-chips.com>, Thierry Reding <thierry.reding@kernel.org>,
- Mikko Perttunen <mperttunen@nvidia.com>, Jonathan Hunter
- <jonathanh@nvidia.com>, Gerd Hoffmann <kraxel@redhat.com>, Dmitry Osipenko
- <dmitry.osipenko@collabora.com>, Zack Rusin <zack.rusin@broadcom.com>,
- Matthew Brost <matthew.brost@intel.com>, Thomas Hellstrom
- <thomas.hellstrom@linux.intel.com>, Oleksandr Andrushchenko
- <oleksandr_andrushchenko@epam.com>, Helge Deller <deller@gmx.de>, Benjamin
- LaHaise <bcrl@kvack.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Muchun Song
- <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, David
- Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>, Baolin Wang
- <baolin.wang@linux.alibaba.com>, "Liam R . Howlett" <liam@infradead.org>,
- Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>, Dev
- Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang
- <lance.yang@linux.dev>, Hugh Dickins <hughd@google.com>, Vlastimil Babka
- <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan
- <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn
- <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Kees Cook
- <kees@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
- <tiwai@suse.com>, linux-mips@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- dri-devel@lists.freedesktop.org, etnaviv@lists.freedesktop.org,
- linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
- intel-gfx@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
- freedreno@lists.freedesktop.org, nouveau@lists.freedesktop.org,
- linux-rockchip@lists.infradead.org, linux-tegra@vger.kernel.org,
- virtualization@lists.linux.dev, intel-xe@lists.freedesktop.org,
- xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org,
- linux-aio@kvack.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
- linux-sound@vger.kernel.org
-Subject: Re: [PATCH 08/13] mm: introduce vma_get_page_prot() and use it
-In-Reply-To: <3bb8bdc4788230c33102166d56cbc5abfad9d4cb.1782760670.git.ljs@kernel.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park,
- 6 krs Bertel Jungin Aukio 5, 02600 Espoo, Finland
-References: <cover.1782760670.git.ljs@kernel.org>
- <3bb8bdc4788230c33102166d56cbc5abfad9d4cb.1782760670.git.ljs@kernel.org>
-Date: Tue, 30 Jun 2026 13:23:44 +0300
-Message-ID: <d6d75626287ddd46d7da136cf013f7b21b1afc06@intel.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nhYqmEaN"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19CFF1F000E9;
+	Tue, 30 Jun 2026 13:50:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782827418;
+	bh=r5/XEfDRgRNyeD3IF0mg0cZuaZMASN03u9kVorM3GNI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=nhYqmEaN4wmBNsZUU8bKra5Imi5s/cf3NZTFsYJHnC9ANATTSlzBlyiq15+sOcFBf
+	 hH3EEr9IiReV4GshzevMtkVog9DbbxPJbfkLn6q/mhhwLi8qffyASXUGZ9V3Q0YiKG
+	 jGmGKjX9qFvlLR3zH6VX8aumoTt9j+QBqVERLcpG5XXaDGjegKba4+2jSCoRLvHuAD
+	 9UPmRGRC3lrVz/FJBPfWWCnzj7EsL3OyzN0p3APlsVDRHRt8Rd8QY8izt/AxXOasor
+	 I0/PobwDtqMJEsUy3y8Ls9v9o+AYIxZOOdmTOe5/c3mK2FIy+0fe6eyYy40tP2pp3/
+	 oE1970hKzUkzA==
+Date: Tue, 30 Jun 2026 08:50:17 -0500
+From: Rob Herring <robh@kernel.org>
+To: "A. Sverdlin" <alexander.sverdlin@siemens.com>
+Cc: linux-leds@vger.kernel.org, Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	Andrew Davis <afd@ti.com>, dri-devel@lists.freedesktop.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 1/3] dt-bindings: backlight: ti,lp8864: Add backlight
+ class properties
+Message-ID: <20260630135017.GA2948054-robh@kernel.org>
+References: <20260615120353.3409035-1-alexander.sverdlin@siemens.com>
+ <20260615120353.3409035-2-alexander.sverdlin@siemens.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260615120353.3409035-2-alexander.sverdlin@siemens.com>
 
-On Mon, 29 Jun 2026, Lorenzo Stoakes <ljs@kernel.org> wrote:
->  drivers/gpu/drm/i915/gem/i915_gem_mman.c    | 12 ++++++------
+On Mon, Jun 15, 2026 at 02:03:47PM +0200, A. Sverdlin wrote:
+> From: Alexander Sverdlin <alexander.sverdlin@siemens.com>
+> 
+> Extend the TI LP8864/LP8866 device-tree binding to support backlight
+> class properties alongside the existing LED class child node.
+> 
+> This is a preparatory change for converting the LP8864 driver from a
+> pure LED class driver to additionally register a backlight class device,
 
-For i915,
+That's fine, but should have little to do with the binding. The h/w is 
+not changing.
 
-Acked-by: Jani Nikula <jani.nikula@intel.com>
+> motivated by a use case on a hot-pluggable segment of an I2C bus. The
+> generic led-backlight driver (led_bl.c) is a platform driver and thus
+> inherently non-hotpluggable, which makes it unsuitable for hardware
+> topologies where the backlight controller resides on a hot-pluggable I2C
+> bus segment. By making the LP8864 driver itself register a backlight
+> class device, it becomes a native I2C driver that properly supports
+> hot-plug/unplug events.
+> 
+> The binding is updated to:
+> - Reference backlight common.yaml at the top level, making
+>   default-brightness and max-brightness valid optional properties
+> - Make the "led" child node optional rather than required, since the
+>   backlight class device is now the primary interface
+> - Use unevaluatedProperties instead of additionalProperties to properly
+>   allow properties inherited from the referenced common schema
+> 
+> The LED child node is preserved for backward compatibility with existing
+> device-trees. No in-tree device-trees reference this binding, so this
+> change has no impact on existing mainline users.
+> 
+> Signed-off-by: Alexander Sverdlin <alexander.sverdlin@siemens.com>
+> ---
+>  .../bindings/leds/backlight/ti,lp8864.yaml       | 16 ++++++++++++----
+>  1 file changed, 12 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/ti,lp8864.yaml b/Documentation/devicetree/bindings/leds/backlight/ti,lp8864.yaml
+> index d44232d462bde..11d7e3840c6fb 100644
+> --- a/Documentation/devicetree/bindings/leds/backlight/ti,lp8864.yaml
+> +++ b/Documentation/devicetree/bindings/leds/backlight/ti,lp8864.yaml
+> @@ -4,7 +4,7 @@
+>  $id: http://devicetree.org/schemas/leds/backlight/ti,lp8864.yaml#
+>  $schema: http://devicetree.org/meta-schemas/core.yaml#
+>  
+> -title: Texas Instruments - LP8864/LP8866 4/6-Channel LED Driver family
+> +title: Texas Instruments - LP8864/LP8866 4/6-Channel LED Backlight Driver family
+>  
+>  maintainers:
+>    - Andrew Davis <afd@ti.com>
+> @@ -21,6 +21,9 @@ description: |
+>      https://www.ti.com/product/LP8866-Q1
+>      https://www.ti.com/product/LP8866S-Q1
+>  
+> +allOf:
+> +  - $ref: common.yaml#
+> +
+>  properties:
+>    compatible:
+>      const: ti,lp8864
+> @@ -36,9 +39,15 @@ properties:
+>    vled-supply:
+>      description: LED supply
+>  
+> +  default-brightness:
+> +    maximum: 65535
+> +
+> +  max-brightness:
+> +    maximum: 65535
+> +
+>    led:
+>      type: object
+> -    $ref: common.yaml#
+> +    $ref: /schemas/leds/common.yaml#
 
+This was already supporting backlight properties. Changing it to leds is 
+an ABI break.
 
+The binding was designed to have a child node. Make that work for 
+whatever you want to do with the driver. I see no reason to support with 
+*and* without a child node.
 
--- 
-Jani Nikula, Intel
+Rob

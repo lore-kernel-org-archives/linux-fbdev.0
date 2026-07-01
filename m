@@ -1,71 +1,72 @@
-Received: from mail-lj1-f182.google.com (mail-lj1-f182.google.com [209.85.208.182])
+Received: from mail-lj1-f178.google.com (mail-lj1-f178.google.com [209.85.208.178])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCC45239085
-	for <linux-fbdev@vger.kernel.org>; Wed,  1 Jul 2026 23:42:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CC3E40E8E2
+	for <linux-fbdev@vger.kernel.org>; Wed,  1 Jul 2026 23:43:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782949376; cv=none; b=kgaY0d/Drulbnw+nxNNlKdYNTOxqt2d/jTz0KOMYMgjQY1Xq8adTb47fGnxpe88RE5At3qnGFgUt4r0UdpZeSt1E1xIov+K3CMUX6cekKdy5eh5H48HjSBpIOe1VgaQqKrtpdvyzSjWzI7v5eUEgjPm0j4HtVuZk9JPTsoCUdjo=
+	t=1782949381; cv=none; b=DERS2ZHivtK6m4BhOaMsFaYH39rjBbm24SySn/4PGMT9reGZKEM0DDkoGUlNNYnTfeqveioLmabfcjcc+5josdiqsr/uD3v2b+UB4kUG9fP8njB0Yf7W7DwM6RQi7W0wxrg9DUhcVgYwGmKZdqRUH9G0NjKf0anFh4IjGFNfGE0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782949376; c=relaxed/simple;
-	bh=mNWeivU1LTCLtzAmnPXhb/l3Ii27zsURXKeeXn07BtI=;
+	s=arc-20240116; t=1782949381; c=relaxed/simple;
+	bh=WnsrtSFE/x7Xk+CkzGyBv+fIdfu0V4x8ofh2A/QrZmA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=UZbPpQoHO5UjoeQlpaGxxyyiaa0owUjYSxC3LMjNmd5kOg5YR+VYTwv9il7x83jHnPIWPBehQ0QJhA6fOKcEYXrNz3LrFGkC55zDgtaMV43Bu/Xw/wM6WrgFLuXwQnB4e+qnzHAzuQHxPRYht0zEXMXZxT+yiwQW55vSkP/+n0A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=K0SeM34J; arc=none smtp.client-ip=209.85.208.182
+	 MIME-Version; b=t2nUXhN/zppDFlk0pFimxIrXJzzC6wlU8J1S5r1BTbilJIUs57Y+bIYxVgLhsjJQEe041X2gioKNjH0ivK5yZBWimUVDI7b8FaZPEmsBrPbY53Bf9dqY2zb46Sz1m6fO2AlLszSu0XAtkPxBFisvn2Q2TkbZVA68SyJu7Ii6EZ4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lerfMJd/; arc=none smtp.client-ip=209.85.208.178
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="K0SeM34J"
-Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-39b22d0e488so11394441fa.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jul 2026 16:42:54 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lerfMJd/"
+Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-39669bcaadfso12460971fa.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jul 2026 16:43:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782949373; x=1783554173; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1782949379; x=1783554179; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ycdmV2nQEP91NkF/uwFJLP2QOp24ehuy24vYh15fuUM=;
-        b=K0SeM34JksRPlffkf2lxVjGmjzNuykbSmF/WCYvg5wUY2HxSIHU1YEIcS2ajdZSKb8
-         xDatJkOpsSr8QhQVuXEMTpSlC0bZ7XItYCKsFUaPFr9KVRXU6VS+vqxQcZ28QfbtopMy
-         n9fbZZX/aefAv+oXQGcFiUENx2pqe6mTF+qQJ8EDDL0XdtFrQGpYyDMoGMGSY1cscOjA
-         MzwwwRuP/6dElpoZb4GmFQ26RpT3eSnz2knkBKKTuV57FgT9sTvXdjIpdAACoIcPDlSB
-         FfOrTF1/GbfLMusS2ZcSlKbwiVdq/SfHpN2ONZ0ylOS1/gTARwTPDLjQiPtUVbfX4VEJ
-         0YTw==
+         :message-id:reply-to:content-type;
+        bh=H89fQeWF4USszu35fjU3+dXnbx3hBALzbUBMMlx2Xyo=;
+        b=lerfMJd/h25uX/XEW0yBsPtRT7r2G41b5FkBJLeW0IILN2Id+fMm6WyUts+ov8Pkp6
+         vGxHnpr4RDw8cyBYSHBI8FYJ5IqU/MjYa5qGYwkiWOJQOwwb2eSeh6em/eFXRl7Cz0mJ
+         MwtSy7mS7U3IKqKPwOUuX9cTHKaygy54GrndVosP42l2NfuVw2NBpYs4e4izqA6gYd8C
+         RmvobQejefX3Qb983d5xKE85I89cCNz0Btt9ChiRnZ9DrAy72iUg0B84SCPbDiZEb7Ff
+         LUNBG+33KWCWpzVa11Z1GJyt7w21UQq5Eh1275oezPjEl39qfksyOEqI/xYMZLoMAJiA
+         jF3w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782949373; x=1783554173;
+        d=1e100.net; s=20251104; t=1782949379; x=1783554179;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=ycdmV2nQEP91NkF/uwFJLP2QOp24ehuy24vYh15fuUM=;
-        b=oZfTiXL6UBKxSc/6rwX8I1lUv3kllI28UnqCP5IdnyRvybNV6ZQq2ZWsD+gejR6dOH
-         oeSkSmqlqlf75q52HiT8f/vetoecXCOoM5hVNyEJQ/Nypw885MxCB/L6sE+2vZqZXnfZ
-         179okIuCofEEydLUpOfQmWbBR7wQXwzfErXmc9L5LlTXPJJ/UjlqZjpFVerEvIbRSod7
-         Fs6D1MxDv06HRNzaRIp1+fQOCg+d/a8i/H1bCa60T3b5/qEuOTXerBUGPZtMCaj2cCws
-         68ojbDMIQUFS+fE6lCbVmCiIcuHD7i5pbyziQaP67Vx0/6Yf1UWW7KgfUjIem0TcCSCw
-         i1+g==
-X-Gm-Message-State: AOJu0Yx4vUk4os8Cfo1m2tArPnUM9jf8KU5s01IaH6udFAttqN4A/Df7
-	HHyRFYMPJODHlRsbXVBuOh0VVyyisSFcBExnyMnOMDdTl/EhwJGmtHw/
-X-Gm-Gg: AfdE7cm1UN3KmNRBi7YcBY7ziK7gpTKK2HMO+2k5iVWTSS5wKOckIyQHeAlibH3/ixm
-	R4ViAtnlZa5CeCLZdsIte9a/rb2SqLNAYN+ncjE1HeI9OcEv7hMEqAo89dd25EcgTAAk2kcgRZx
-	3DGUYmiiq67ASbI6P94Ies8GcrjWUAyAqIYFFZ6awpTWIz2iFxmRyTP8ZKsN60ZVag0qY5XPPPK
-	Kbv+YKSZSHXHzmB7r1UjNiQhlD6FQ7SqegKPzXnQuuDNX4Igqup8VIa7POWa55injcnl5ZpEjsY
-	KWWWp81LSXC7KBgX4d1obK+dsJFDp9KYEW0qBQFgTPSsW3VPnwNlIQc1CeZggk0Vlg8tAGLJL7w
-	hRsPGocRTHzau0YIfzkFyx9OR9xO7MxjIIJOoVkKFko2dBSamtKXmAluimDQy8jBPq/wNg4Mw8T
-	oeafe+ydZIqb1EvSbJhLzdsn2ppoKL4zw=
-X-Received: by 2002:a2e:9e08:0:b0:39a:e29b:9a2d with SMTP id 38308e7fff4ca-39b34102c99mr5958141fa.39.1782949372729;
-        Wed, 01 Jul 2026 16:42:52 -0700 (PDT)
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=H89fQeWF4USszu35fjU3+dXnbx3hBALzbUBMMlx2Xyo=;
+        b=CTChKfIoUCpxtXi7CjlxBUjwGnHgE35tdD4X4HEH5kFvjs35v3wSq5yChtv0hC0gLH
+         u+p315ULmzSEzKTogdQb6eXs95PbjSmHsQJqMWsIxKaEtj4ytUdk8Et+doAWUtbp8/p1
+         kZgd2kABQZj3Bg6S6EdyUcmZQPHwl3L3JciItlolcs/0YWx8VnZ6iVW0ApvJRoeeu7l5
+         G3/+XEXy2u0JRpWJXVGGb9cN4w0thbWw3m2G7UlLRhGGkJXYrM7F44cdTzt5J+0/U/8l
+         srPu0nfJ2x4ZAmwhoik62wpUppbEs0tU1DKYfh2wgnQeOVCsVQFOQcC4irmhkDArydgR
+         sTOQ==
+X-Gm-Message-State: AOJu0YwFGbjAdnw8G4bQJv5yRRkDwYdEsICEwgRDKyNreppkuFUhWf6i
+	SlOZVe77NKjYO0KarJS/BBw8ywjl4Fan9s3jSjHbJy8l0e+eB3AY6Laz8Ixede4UjJw=
+X-Gm-Gg: AfdE7clunR63BRa26LTlP0jo/t+YqH1Icb6nkAKrp///mCieLQwvar0QgGK+aMsYPOi
+	yN+/N5lSLstOsWPOhsKNmIt6VsfeQP68iA3eSXFofWuGySHo4QxcQfGXWyzlUOwa7lFrlJBTFQX
+	/hhfDxRDT/A/cikGf4eft3gCrz5zd9jIUGSNUX4avVwbd5NlKHDr3gx1LuBM7eMqcZnFDGQyjN1
+	2Qu7u9prv0evEuMDsgorknfN3xunt0ZtpU4F21ON9HEBNNO9aQ2XBkV04nf0jdKcuzEfa+EAHZM
+	taR+I0kzo/hulOLBKh/8Fph0tdg+1QEvq1wtXRF2hUou1s3TNSxQuHGDBicm1S/Wmaj3SAndnzI
+	4i712FWneT0GPwmm2KVHzaAydalpr3C9iNZy2JVnnRIihAUv/VWo4mNpsRXjpiXc0eF7ghiJD1F
+	OYlrByNtUqk3kTWeYOADewq7xO7hAi/nA=
+X-Received: by 2002:a05:651c:889:b0:399:87c9:459a with SMTP id 38308e7fff4ca-39b36de5658mr6680111fa.9.1782949378486;
+        Wed, 01 Jul 2026 16:42:58 -0700 (PDT)
 Received: from localhost.localdomain ([2a01:4f9:2a:1c13::2])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39b37fda160sm2836261fa.29.2026.07.01.16.42.49
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39b37fda160sm2836261fa.29.2026.07.01.16.42.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2026 16:42:50 -0700 (PDT)
+        Wed, 01 Jul 2026 16:42:56 -0700 (PDT)
 From: Melbin K Mathew <mlbnkm1@gmail.com>
 To: deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
-	Melbin K Mathew <mlbnkm1@gmail.com>
-Subject: [PATCH v3 0/3] fbdev: fix mode sysfs lifetime and bounds issues
-Date: Thu,  2 Jul 2026 01:42:45 +0200
-Message-Id: <20260701234248.236023-1-mlbnkm1@gmail.com>
+	Melbin K Mathew <mlbnkm1@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH v3 2/3] fbdev: clear fb_info->mode before deleting a videomode
+Date: Thu,  2 Jul 2026 01:42:47 +0200
+Message-Id: <20260701234248.236023-3-mlbnkm1@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20260701231706.234715-1-mlbnkm1@gmail.com>
 References: <20260701231706.234715-1-mlbnkm1@gmail.com>
@@ -77,31 +78,41 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This v3 adds a patch to clear fb_info->mode before deleting a
-videomode through FBIOPUT_VSCREENINFO with FB_ACTIVATE_INV_MODE.
+fb_set_var() can delete a mode from info->modelist when userspace
+passes FB_ACTIVATE_INV_MODE through FBIOPUT_VSCREENINFO. The code
+checks that the mode being deleted is not the current info->var and
+that fbcon is not using it, but it does not check fb_info->mode.
 
-Patch 1 bounds mode sysfs output so show_modes() cannot advance the
-sysfs buffer offset past PAGE_SIZE.
+fb_info->mode may still point into the modelist entry being deleted.
+If the entry is freed, later mode sysfs reads through show_mode() can
+dereference a stale pointer.
 
-Patch 2 clears fb_info->mode before fb_delete_videomode() when it
-matches the mode being removed via the FBIOPUT_VSCREENINFO ioctl.
+Clear fb_info->mode before calling fb_delete_videomode() when it
+matches the mode being removed.
 
-Patch 3 serializes mode sysfs access with lock_fb_info(), including
-store_mode(), show_mode(), and show_modes().
+Cc: stable@vger.kernel.org
+Signed-off-by: Melbin K Mathew <mlbnkm1@gmail.com>
+---
+ drivers/video/fbdev/core/fbmem.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Changes in v3:
-- Add patch to clear fb_info->mode in fb_set_var() INV_MODE path.
-
-
-Melbin K Mathew (3):
-  fbdev: bound mode sysfs output to the sysfs buffer
-  fbdev: clear fb_info->mode before deleting a videomode
-  fbdev: serialize mode sysfs access with lock_fb_info()
-
- drivers/video/fbdev/core/fbmem.c   |  5 ++-
- drivers/video/fbdev/core/fbsysfs.c | 59 ++++++++++++++++++++++++------
- 2 files changed, 51 insertions(+), 13 deletions(-)
-
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 2f1c56e5a7..c8aa163b0e 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -246,8 +246,11 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ 		ret = fb_mode_is_equal(&mode1, &mode2);
+ 		if (!ret) {
+ 			ret = fbcon_mode_deleted(info, &mode1);
+-			if (!ret)
++			if (!ret) {
++				if (info->mode && fb_mode_is_equal(info->mode, &mode1))
++					info->mode = NULL;
+ 				fb_delete_videomode(&mode1, &info->modelist);
++			}
+ 		}
+ 
+ 		return ret ? -EINVAL : 0;
 -- 
 2.39.5
 

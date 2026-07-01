@@ -1,62 +1,62 @@
-Received: from mail-lj1-f178.google.com (mail-lj1-f178.google.com [209.85.208.178])
+Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com [209.85.167.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CC3E40E8E2
-	for <linux-fbdev@vger.kernel.org>; Wed,  1 Jul 2026 23:43:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E81AE3F23D1
+	for <linux-fbdev@vger.kernel.org>; Wed,  1 Jul 2026 23:42:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782949381; cv=none; b=DERS2ZHivtK6m4BhOaMsFaYH39rjBbm24SySn/4PGMT9reGZKEM0DDkoGUlNNYnTfeqveioLmabfcjcc+5josdiqsr/uD3v2b+UB4kUG9fP8njB0Yf7W7DwM6RQi7W0wxrg9DUhcVgYwGmKZdqRUH9G0NjKf0anFh4IjGFNfGE0=
+	t=1782949382; cv=none; b=m4FNaChyrVnMFuj3NpfCU932juZa7mPtAqnM3R/TMupjlmmeIZtIr1Pq+jhnpZH9P0fAtz02TlHzlJ5uPwQbyXJCo01lpMlI2fLGsdQehm3Rimoj+Sn9UWpTt2vVMlphczzS/Z11I4SjCbh6o91EwldpadPhh5t3LHBOWVAhcg8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782949381; c=relaxed/simple;
-	bh=WnsrtSFE/x7Xk+CkzGyBv+fIdfu0V4x8ofh2A/QrZmA=;
+	s=arc-20240116; t=1782949382; c=relaxed/simple;
+	bh=NwvngB55nrQuY2zsw+u/UlQ+ziOq9i4AgvNGIC5B8qg=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=t2nUXhN/zppDFlk0pFimxIrXJzzC6wlU8J1S5r1BTbilJIUs57Y+bIYxVgLhsjJQEe041X2gioKNjH0ivK5yZBWimUVDI7b8FaZPEmsBrPbY53Bf9dqY2zb46Sz1m6fO2AlLszSu0XAtkPxBFisvn2Q2TkbZVA68SyJu7Ii6EZ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lerfMJd/; arc=none smtp.client-ip=209.85.208.178
+	 MIME-Version; b=lrFRpu2Vdq2/y0Z7c4lu94Xqnrw/oOJ4sMe34/u77s+byHFH/6MDPEMOMnEWuXz0s7s1hXkJ76C4ZhBGyJ7XrxhKrdvJJ36ngE0qVRwGajB1Xa6h2/TXHV/HVugRi6SqT9TEMGuCcNf7cBAiAke0WYwmTyvyzNqdsSRpdy0MlqE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=T68td7Dc; arc=none smtp.client-ip=209.85.167.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lerfMJd/"
-Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-39669bcaadfso12460971fa.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jul 2026 16:43:00 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T68td7Dc"
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5aeb89359a3so953298e87.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jul 2026 16:42:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782949379; x=1783554179; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1782949375; x=1783554175; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=H89fQeWF4USszu35fjU3+dXnbx3hBALzbUBMMlx2Xyo=;
-        b=lerfMJd/h25uX/XEW0yBsPtRT7r2G41b5FkBJLeW0IILN2Id+fMm6WyUts+ov8Pkp6
-         vGxHnpr4RDw8cyBYSHBI8FYJ5IqU/MjYa5qGYwkiWOJQOwwb2eSeh6em/eFXRl7Cz0mJ
-         MwtSy7mS7U3IKqKPwOUuX9cTHKaygy54GrndVosP42l2NfuVw2NBpYs4e4izqA6gYd8C
-         RmvobQejefX3Qb983d5xKE85I89cCNz0Btt9ChiRnZ9DrAy72iUg0B84SCPbDiZEb7Ff
-         LUNBG+33KWCWpzVa11Z1GJyt7w21UQq5Eh1275oezPjEl39qfksyOEqI/xYMZLoMAJiA
-         jF3w==
+        bh=HjOEsE0qEDjFyTwl3K+CtParcmWNsl4rWJyxgaM5lGk=;
+        b=T68td7DcIeSQXbb7LNevtAYMB3InXe2EW5aCNI5m/JIAaf+B1nAdfL/rnNERZrIvXB
+         aIkQoS09lnSuCUOQB2U0Tv6vb3lOG1U+h7HhKLgZTidsXh38B+RmG7JXd+xxQMh5Qoaj
+         fOo69VyGYfm+VYi22t2tX/zg2ml/s3tGqq+TfKIOpq6GAXhyOkzufC6n9mKdZmT5Vowg
+         dJyvSPj6nLe70KZMtK4E6qBTzCH20KfupjDYYABe6eYnLdKNQTM7Ua8aGI7iYYs+5df/
+         Hys0oSTaVqZU6qs5ln+h9NLb4ANzmBa68vHA2yW5w5t1oAimTFHMK8KQzO9QzCYx4R9o
+         pxYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782949379; x=1783554179;
+        d=1e100.net; s=20251104; t=1782949375; x=1783554175;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=H89fQeWF4USszu35fjU3+dXnbx3hBALzbUBMMlx2Xyo=;
-        b=CTChKfIoUCpxtXi7CjlxBUjwGnHgE35tdD4X4HEH5kFvjs35v3wSq5yChtv0hC0gLH
-         u+p315ULmzSEzKTogdQb6eXs95PbjSmHsQJqMWsIxKaEtj4ytUdk8Et+doAWUtbp8/p1
-         kZgd2kABQZj3Bg6S6EdyUcmZQPHwl3L3JciItlolcs/0YWx8VnZ6iVW0ApvJRoeeu7l5
-         G3/+XEXy2u0JRpWJXVGGb9cN4w0thbWw3m2G7UlLRhGGkJXYrM7F44cdTzt5J+0/U/8l
-         srPu0nfJ2x4ZAmwhoik62wpUppbEs0tU1DKYfh2wgnQeOVCsVQFOQcC4irmhkDArydgR
-         sTOQ==
-X-Gm-Message-State: AOJu0YwFGbjAdnw8G4bQJv5yRRkDwYdEsICEwgRDKyNreppkuFUhWf6i
-	SlOZVe77NKjYO0KarJS/BBw8ywjl4Fan9s3jSjHbJy8l0e+eB3AY6Laz8Ixede4UjJw=
-X-Gm-Gg: AfdE7clunR63BRa26LTlP0jo/t+YqH1Icb6nkAKrp///mCieLQwvar0QgGK+aMsYPOi
-	yN+/N5lSLstOsWPOhsKNmIt6VsfeQP68iA3eSXFofWuGySHo4QxcQfGXWyzlUOwa7lFrlJBTFQX
-	/hhfDxRDT/A/cikGf4eft3gCrz5zd9jIUGSNUX4avVwbd5NlKHDr3gx1LuBM7eMqcZnFDGQyjN1
-	2Qu7u9prv0evEuMDsgorknfN3xunt0ZtpU4F21ON9HEBNNO9aQ2XBkV04nf0jdKcuzEfa+EAHZM
-	taR+I0kzo/hulOLBKh/8Fph0tdg+1QEvq1wtXRF2hUou1s3TNSxQuHGDBicm1S/Wmaj3SAndnzI
-	4i712FWneT0GPwmm2KVHzaAydalpr3C9iNZy2JVnnRIihAUv/VWo4mNpsRXjpiXc0eF7ghiJD1F
-	OYlrByNtUqk3kTWeYOADewq7xO7hAi/nA=
-X-Received: by 2002:a05:651c:889:b0:399:87c9:459a with SMTP id 38308e7fff4ca-39b36de5658mr6680111fa.9.1782949378486;
-        Wed, 01 Jul 2026 16:42:58 -0700 (PDT)
+        bh=HjOEsE0qEDjFyTwl3K+CtParcmWNsl4rWJyxgaM5lGk=;
+        b=Rrt1K5gfpgnmK71OfLVH20mldkJmohVp8WSCd49ceg+hfrmQhfF9jzBfB3Z9DtyTXB
+         KW1L+0rx51fDD2CyqhlXOGBiiklFhARnmPKM98i4ROao5X1cqRGinQEZEsrxGl45Vp8W
+         RaQs2eVE99y1fL4MQc1a08fVsYoDo/YUvGOHdrJBgW8rGDNUs1L0fpTqhS2bVuuhkRjh
+         YPzMNiTVDE8NV1kT2jBy5yNUpHyHo/mSr5Uiw8TNx87aW5x5LhCitrUCBx+z+FKSd6/G
+         vLCFNGNuTTeVHd2pXB9qL2SucRtEBATdHHXb3k55wZw5wEX/pD6wusTNyAKjwOREd9fg
+         sLNA==
+X-Gm-Message-State: AOJu0YwZwtZSC/XWGwHHU4IzVEnpCwYO95wC5iXv0BdjkUMQJqwZXZ2C
+	dvRhmq9MCWwxu/jOtdpCGU86OBGlRHKiFtv1AKPU2suyh/DdTye03JAR
+X-Gm-Gg: AfdE7clMxUJ1x6X3x2SArjw8NIVDRWKKU96n0/fEZoFZYSOkQLaBvMgIgBNl9Asq2q8
+	nSUdBypoNL8wovl3mog+05S0XyEnT4U6aTDLOEw5qC2tiSoR7D5WcF2K7p6tfO+YeC2Mdlv6E5E
+	ZIHXmYkcO6L2xnpLJ+GGXE7NBnfXsSMmvoMoRQi8qEQC03Tomdzj3W6pavLaTzVFaZBOpSIdOeA
+	Woy9F770erD+csGSW5C76n/ft4p4E/lkIXMuRWfxmRHb2LWfqFOIIn0sp8QTuvv+jpB62PSbKWr
+	79bYRsZb3KKK89jkmuRRCR+UrBMCWX5+Izra0D6Dhwb+C6LDFOvzox6RteN2Nsx7+xltGoPHhLl
+	logP5rHPWAdXmemoSqGcmvOxqQb4339CgF/4TgJMrh3Qs9DmHl6it5P/dOVbzznUp3ZN29jbka3
+	vkXUHZGtEGq6kcJe993dhSwpONuUub6yaj/QTVQ/iLJg==
+X-Received: by 2002:a05:6512:4481:b0:5ae:c201:c3d7 with SMTP id 2adb3069b0e04-5aec801063cmr603820e87.8.1782949374962;
+        Wed, 01 Jul 2026 16:42:54 -0700 (PDT)
 Received: from localhost.localdomain ([2a01:4f9:2a:1c13::2])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39b37fda160sm2836261fa.29.2026.07.01.16.42.55
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39b37fda160sm2836261fa.29.2026.07.01.16.42.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2026 16:42:56 -0700 (PDT)
+        Wed, 01 Jul 2026 16:42:53 -0700 (PDT)
 From: Melbin K Mathew <mlbnkm1@gmail.com>
 To: deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
@@ -64,9 +64,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Melbin K Mathew <mlbnkm1@gmail.com>,
 	stable@vger.kernel.org
-Subject: [PATCH v3 2/3] fbdev: clear fb_info->mode before deleting a videomode
-Date: Thu,  2 Jul 2026 01:42:47 +0200
-Message-Id: <20260701234248.236023-3-mlbnkm1@gmail.com>
+Subject: [PATCH v3 1/3] fbdev: bound mode sysfs output to the sysfs buffer
+Date: Thu,  2 Jul 2026 01:42:46 +0200
+Message-Id: <20260701234248.236023-2-mlbnkm1@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20260701231706.234715-1-mlbnkm1@gmail.com>
 References: <20260701231706.234715-1-mlbnkm1@gmail.com>
@@ -78,41 +78,81 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-fb_set_var() can delete a mode from info->modelist when userspace
-passes FB_ACTIVATE_INV_MODE through FBIOPUT_VSCREENINFO. The code
-checks that the mode being deleted is not the current info->var and
-that fbcon is not using it, but it does not check fb_info->mode.
+mode_string() uses snprintf() which can return a value larger than the
+remaining buffer space. show_modes() accumulates the return value into i
+without checking whether i has reached PAGE_SIZE, causing the offset to
+advance past the sysfs buffer if the modelist is long enough.
 
-fb_info->mode may still point into the modelist entry being deleted.
-If the entry is freed, later mode sysfs reads through show_mode() can
-dereference a stale pointer.
-
-Clear fb_info->mode before calling fb_delete_videomode() when it
-matches the mode being removed.
+Add a size parameter to mode_string() and use scnprintf() to return
+only the bytes actually written. Add an early return when offset
+already exceeds the buffer. In show_modes(), stop accumulating once
+the buffer is full.
 
 Cc: stable@vger.kernel.org
 Signed-off-by: Melbin K Mathew <mlbnkm1@gmail.com>
 ---
- drivers/video/fbdev/core/fbmem.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbsysfs.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 2f1c56e5a7..c8aa163b0e 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -246,8 +246,11 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- 		ret = fb_mode_is_equal(&mode1, &mode2);
- 		if (!ret) {
- 			ret = fbcon_mode_deleted(info, &mode1);
--			if (!ret)
-+			if (!ret) {
-+				if (info->mode && fb_mode_is_equal(info->mode, &mode1))
-+					info->mode = NULL;
- 				fb_delete_videomode(&mode1, &info->modelist);
-+			}
- 		}
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index ea196603c7..af21dc5052 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -27,12 +27,15 @@ static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
+ 	return 0;
+ }
  
- 		return ret ? -EINVAL : 0;
+-static int mode_string(char *buf, unsigned int offset,
++static int mode_string(char *buf, size_t size, unsigned int offset,
+ 		       const struct fb_videomode *mode)
+ {
+ 	char m = 'U';
+ 	char v = 'p';
+ 
++	if (offset >= size)
++		return 0;
++
+ 	if (mode->flag & FB_MODE_IS_DETAILED)
+ 		m = 'D';
+ 	if (mode->flag & FB_MODE_IS_VESA)
+@@ -45,7 +48,7 @@ static int mode_string(char *buf, unsigned int offset,
+ 	if (mode->vmode & FB_VMODE_DOUBLE)
+ 		v = 'd';
+ 
+-	return snprintf(&buf[offset], PAGE_SIZE - offset, "%c:%dx%d%c-%d\n",
++	return scnprintf(&buf[offset], size - offset, "%c:%dx%d%c-%d\n",
+ 	                m, mode->xres, mode->yres, v, mode->refresh);
+ }
+ 
+@@ -64,7 +67,7 @@ static ssize_t store_mode(struct device *device, struct device_attribute *attr,
+ 
+ 	list_for_each_entry(modelist, &fb_info->modelist, list) {
+ 		mode = &modelist->mode;
+-		i = mode_string(mstr, 0, mode);
++		i = mode_string(mstr, sizeof(mstr), 0, mode);
+ 		if (strncmp(mstr, buf, max(count, i)) == 0) {
+ 
+ 			var = fb_info->var;
+@@ -86,7 +89,7 @@ static ssize_t show_mode(struct device *device, struct device_attribute *attr,
+ 	if (!fb_info->mode)
+ 		return 0;
+ 
+-	return mode_string(buf, 0, fb_info->mode);
++	return mode_string(buf, PAGE_SIZE, 0, fb_info->mode);
+ }
+ 
+ static ssize_t store_modes(struct device *device,
+@@ -136,7 +139,9 @@ static ssize_t show_modes(struct device *device, struct device_attribute *attr,
+ 	i = 0;
+ 	list_for_each_entry(modelist, &fb_info->modelist, list) {
+ 		mode = &modelist->mode;
+-		i += mode_string(buf, i, mode);
++		i += mode_string(buf, PAGE_SIZE, i, mode);
++		if (i >= PAGE_SIZE - 1)
++			break;
+ 	}
+ 	return i;
+ }
 -- 
 2.39.5
 

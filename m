@@ -1,62 +1,62 @@
-Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com [209.85.167.43])
+Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E81AE3F23D1
-	for <linux-fbdev@vger.kernel.org>; Wed,  1 Jul 2026 23:42:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BF813F825B
+	for <linux-fbdev@vger.kernel.org>; Wed,  1 Jul 2026 23:43:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782949382; cv=none; b=m4FNaChyrVnMFuj3NpfCU932juZa7mPtAqnM3R/TMupjlmmeIZtIr1Pq+jhnpZH9P0fAtz02TlHzlJ5uPwQbyXJCo01lpMlI2fLGsdQehm3Rimoj+Sn9UWpTt2vVMlphczzS/Z11I4SjCbh6o91EwldpadPhh5t3LHBOWVAhcg8=
+	t=1782949384; cv=none; b=WzivpdlqvlXPVJknxWQ8Kadhi68nM7sm6mAjhbnms6nDBF+ka4NrU9hAfrD5S9mhDcBI5kd+zgDTasyBPgwcL8nDyMUjxarX86h7GsurmMixE5sZkV0X84RIgEEQ6IsQlNRvKj+4hCGaZl+xMkaC6FgUnqdxbPD9O2OiJ8D3U0s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782949382; c=relaxed/simple;
-	bh=NwvngB55nrQuY2zsw+u/UlQ+ziOq9i4AgvNGIC5B8qg=;
+	s=arc-20240116; t=1782949384; c=relaxed/simple;
+	bh=LCQ5ybY2W5wSNed4JctAr7mTZXfrxHe+bWEoILZJZwg=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=lrFRpu2Vdq2/y0Z7c4lu94Xqnrw/oOJ4sMe34/u77s+byHFH/6MDPEMOMnEWuXz0s7s1hXkJ76C4ZhBGyJ7XrxhKrdvJJ36ngE0qVRwGajB1Xa6h2/TXHV/HVugRi6SqT9TEMGuCcNf7cBAiAke0WYwmTyvyzNqdsSRpdy0MlqE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=T68td7Dc; arc=none smtp.client-ip=209.85.167.43
+	 MIME-Version; b=hhGYVyqbI2cR7HOTeoESa3GfbE8yEg0/9UEh6lPZo2JBffNburNKIWv9/Vp6EnGVfuRKGpRA5oCanLyFe7QIsfdlzSkbpZGaILotBqYUsVvvYJRS1XlUTG4+6RpRTy7HnOt/loPVUjweG03P501zIDgd5FiiixgUf+jYWgsXczc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JkPdlsBd; arc=none smtp.client-ip=209.85.167.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T68td7Dc"
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5aeb89359a3so953298e87.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jul 2026 16:42:56 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JkPdlsBd"
+Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5aebbeba529so1152185e87.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jul 2026 16:43:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782949375; x=1783554175; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1782949381; x=1783554181; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=HjOEsE0qEDjFyTwl3K+CtParcmWNsl4rWJyxgaM5lGk=;
-        b=T68td7DcIeSQXbb7LNevtAYMB3InXe2EW5aCNI5m/JIAaf+B1nAdfL/rnNERZrIvXB
-         aIkQoS09lnSuCUOQB2U0Tv6vb3lOG1U+h7HhKLgZTidsXh38B+RmG7JXd+xxQMh5Qoaj
-         fOo69VyGYfm+VYi22t2tX/zg2ml/s3tGqq+TfKIOpq6GAXhyOkzufC6n9mKdZmT5Vowg
-         dJyvSPj6nLe70KZMtK4E6qBTzCH20KfupjDYYABe6eYnLdKNQTM7Ua8aGI7iYYs+5df/
-         Hys0oSTaVqZU6qs5ln+h9NLb4ANzmBa68vHA2yW5w5t1oAimTFHMK8KQzO9QzCYx4R9o
-         pxYA==
+         :message-id:reply-to;
+        bh=/M9QqAmY7Pg8H8gQnrUHA/IfrEsurxPK03ttJdgNJSc=;
+        b=JkPdlsBdf4cS+C34AVRyVeY3zM/jZPOIUkRashaM+siqNDXniGcnvK9Fhqbd48HBh7
+         JUe7dhYfMWHfHJScIFdeNX7Kgjtu4LMEA0KLhQuKXGYGa5sasKtqQmk3lnp4SAb6jIjX
+         WaeGf195f9mJ/hvZh4ZRF/iWedOKIOk8sXBpp9F9JIyovRfkS3+XOaqqVcC8TmFLJB8X
+         h5zd8Vt0rPMZtCj49sTziglB7NCwfxTN5DLeuji0vGXB5t+1dNbi7Uey22KLiUi+qw2z
+         HoeRlHX4WedKs6Q3lEcb5v52X4q+Y/fhdlzq9uWJD6riSf/riIrLe2yYzkV5PCAZzZ3m
+         71nA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782949375; x=1783554175;
+        d=1e100.net; s=20251104; t=1782949381; x=1783554181;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=HjOEsE0qEDjFyTwl3K+CtParcmWNsl4rWJyxgaM5lGk=;
-        b=Rrt1K5gfpgnmK71OfLVH20mldkJmohVp8WSCd49ceg+hfrmQhfF9jzBfB3Z9DtyTXB
-         KW1L+0rx51fDD2CyqhlXOGBiiklFhARnmPKM98i4ROao5X1cqRGinQEZEsrxGl45Vp8W
-         RaQs2eVE99y1fL4MQc1a08fVsYoDo/YUvGOHdrJBgW8rGDNUs1L0fpTqhS2bVuuhkRjh
-         YPzMNiTVDE8NV1kT2jBy5yNUpHyHo/mSr5Uiw8TNx87aW5x5LhCitrUCBx+z+FKSd6/G
-         vLCFNGNuTTeVHd2pXB9qL2SucRtEBATdHHXb3k55wZw5wEX/pD6wusTNyAKjwOREd9fg
-         sLNA==
-X-Gm-Message-State: AOJu0YwZwtZSC/XWGwHHU4IzVEnpCwYO95wC5iXv0BdjkUMQJqwZXZ2C
-	dvRhmq9MCWwxu/jOtdpCGU86OBGlRHKiFtv1AKPU2suyh/DdTye03JAR
-X-Gm-Gg: AfdE7clMxUJ1x6X3x2SArjw8NIVDRWKKU96n0/fEZoFZYSOkQLaBvMgIgBNl9Asq2q8
-	nSUdBypoNL8wovl3mog+05S0XyEnT4U6aTDLOEw5qC2tiSoR7D5WcF2K7p6tfO+YeC2Mdlv6E5E
-	ZIHXmYkcO6L2xnpLJ+GGXE7NBnfXsSMmvoMoRQi8qEQC03Tomdzj3W6pavLaTzVFaZBOpSIdOeA
-	Woy9F770erD+csGSW5C76n/ft4p4E/lkIXMuRWfxmRHb2LWfqFOIIn0sp8QTuvv+jpB62PSbKWr
-	79bYRsZb3KKK89jkmuRRCR+UrBMCWX5+Izra0D6Dhwb+C6LDFOvzox6RteN2Nsx7+xltGoPHhLl
-	logP5rHPWAdXmemoSqGcmvOxqQb4339CgF/4TgJMrh3Qs9DmHl6it5P/dOVbzznUp3ZN29jbka3
-	vkXUHZGtEGq6kcJe993dhSwpONuUub6yaj/QTVQ/iLJg==
-X-Received: by 2002:a05:6512:4481:b0:5ae:c201:c3d7 with SMTP id 2adb3069b0e04-5aec801063cmr603820e87.8.1782949374962;
-        Wed, 01 Jul 2026 16:42:54 -0700 (PDT)
+         :to:cc:subject:date:message-id:reply-to;
+        bh=/M9QqAmY7Pg8H8gQnrUHA/IfrEsurxPK03ttJdgNJSc=;
+        b=VbQq0o5solvaeJ4phKu5yhziDyo/YjfC/lfDlYxcCmNHHfCZQEhTOD4OL2+spzLb/O
+         3GbsXJu2aYF+uJ2XzsADcgodT65EHtBLPHzBvWt6ocIrdzeuRfK/Mhtn2Y+8X4Xm+ybK
+         0DPVZAswvzWu0xQ+nCFvkAZx9uc4cC7xANjLX4HUfw/Egvl1K8fMKQSLBlA1fA9SDZeu
+         ziGgOplgRTMV0sQxxvZSSYWbehu9jhsVbeiyMsYfNACC1q1GrUbKzBCCviXR3hcA2JRm
+         s6guGi+abbeDga1Qjd8mVxtJ4WkK31SbkAta7HZgwmWkRcsqCUYXVCXZUT2TdQHPFZ+G
+         S+Qw==
+X-Gm-Message-State: AOJu0YwlG4fddGOO/a6sHDTI01sP/9Ni/8sxbNGrj8vunM/xLXQZ7uzm
+	ZbQ7mKCQKZD6vQLK7cbvzf10aDG7P6/dMqPBRir7MWr80bRS+0hew0na
+X-Gm-Gg: AfdE7cnljtnUcROGOgpG8gg20KMY5yKMzler8acyCaB7Jyi7ZCqTu2N6SZmbWE8x/5K
+	IicfG5TQTcTOxu1Ysw1J9B4n23Fc0wfPyVSHIgKC3yPb+PkhBNBOAZSiJznVQNwF+lsxvO5Knxn
+	vX8s5rOUilaakNl98DbtiqbgMsirRMo9Pv5tdBvE/I0r3HB1NqgngurwWVvAzhg789mcVwBwNwF
+	HFQWDPWCffGiVhCIqfdVyuJ2ChB6HJ/pAJS8Qd1jbSM/NQ/BBeeRe28L9ncdqZxdmJYqeU16QYa
+	GDl3l9RaQ3UkHo/FsFxu+ZHV7AEKXqY1ix7tdSoiWbiIOrDJuAqPN7HdivqNkROrEk7fSM2Fb81
+	KWRWAXIK1Ke8UKWGXPutd8HKyAxbQHRaau1B5KMObsT7bThDv4GFzV7w/UuVJIlEBYVaslMD/Bx
+	YvMAm0y4C+0QWDbzCyg6AEfmd6U371HI4=
+X-Received: by 2002:a05:6512:66c1:10b0:5aa:8822:b1ee with SMTP id 2adb3069b0e04-5aec68b7f97mr677361e87.48.1782949380696;
+        Wed, 01 Jul 2026 16:43:00 -0700 (PDT)
 Received: from localhost.localdomain ([2a01:4f9:2a:1c13::2])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39b37fda160sm2836261fa.29.2026.07.01.16.42.52
+        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39b37fda160sm2836261fa.29.2026.07.01.16.42.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2026 16:42:53 -0700 (PDT)
+        Wed, 01 Jul 2026 16:42:58 -0700 (PDT)
 From: Melbin K Mathew <mlbnkm1@gmail.com>
 To: deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
@@ -64,9 +64,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Melbin K Mathew <mlbnkm1@gmail.com>,
 	stable@vger.kernel.org
-Subject: [PATCH v3 1/3] fbdev: bound mode sysfs output to the sysfs buffer
-Date: Thu,  2 Jul 2026 01:42:46 +0200
-Message-Id: <20260701234248.236023-2-mlbnkm1@gmail.com>
+Subject: [PATCH v3 3/3] fbdev: serialize mode sysfs access with lock_fb_info()
+Date: Thu,  2 Jul 2026 01:42:48 +0200
+Message-Id: <20260701234248.236023-4-mlbnkm1@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20260701231706.234715-1-mlbnkm1@gmail.com>
 References: <20260701231706.234715-1-mlbnkm1@gmail.com>
@@ -78,81 +78,134 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-mode_string() uses snprintf() which can return a value larger than the
-remaining buffer space. show_modes() accumulates the return value into i
-without checking whether i has reached PAGE_SIZE, causing the offset to
-advance past the sysfs buffer if the modelist is long enough.
+show_mode(), show_modes(), and store_mode() access fb_info->modelist
+and fb_info->mode without holding lock_fb_info(). store_modes() takes
+lock_fb_info() while replacing the modelist and freeing the old one.
 
-Add a size parameter to mode_string() and use scnprintf() to return
-only the bytes actually written. Add an early return when offset
-already exceeds the buffer. In show_modes(), stop accumulating once
-the buffer is full.
+A concurrent reader or writer can load a pointer to an old modelist
+entry before store_modes() frees it, then dereference freed memory or
+store a stale freed pointer in fb_info->mode.
+
+Take lock_fb_info() in show_mode(), show_modes(), and store_mode() to
+serialize with store_modes(). In show_mode(), copy the mode to the
+stack and format after dropping the lock. In store_mode(), split
+activate() into a _locked variant to avoid double-locking, and hold
+the locks for the modelist walk, mode conversion, activation, and
+fb_info->mode assignment together.
 
 Cc: stable@vger.kernel.org
 Signed-off-by: Melbin K Mathew <mlbnkm1@gmail.com>
 ---
- drivers/video/fbdev/core/fbsysfs.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/core/fbsysfs.c | 46 ++++++++++++++++++++++++------
+ 1 file changed, 38 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index ea196603c7..af21dc5052 100644
+index af21dc5052..d3d60c555b 100644
 --- a/drivers/video/fbdev/core/fbsysfs.c
 +++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -27,12 +27,15 @@ static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
- 	return 0;
- }
+@@ -12,19 +12,24 @@
+ #include "fb_internal.h"
+ #include "fbcon.h"
  
--static int mode_string(char *buf, unsigned int offset,
-+static int mode_string(char *buf, size_t size, unsigned int offset,
- 		       const struct fb_videomode *mode)
- {
- 	char m = 'U';
- 	char v = 'p';
- 
-+	if (offset >= size)
-+		return 0;
++static int activate_locked(struct fb_info *fb_info,
++			    struct fb_var_screeninfo *var)
++{
++	var->activate |= FB_ACTIVATE_FORCE;
++	return fb_set_var_from_user(fb_info, var);
++}
 +
- 	if (mode->flag & FB_MODE_IS_DETAILED)
- 		m = 'D';
- 	if (mode->flag & FB_MODE_IS_VESA)
-@@ -45,7 +48,7 @@ static int mode_string(char *buf, unsigned int offset,
- 	if (mode->vmode & FB_VMODE_DOUBLE)
- 		v = 'd';
+ static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
+ {
+ 	int err;
  
--	return snprintf(&buf[offset], PAGE_SIZE - offset, "%c:%dx%d%c-%d\n",
-+	return scnprintf(&buf[offset], size - offset, "%c:%dx%d%c-%d\n",
- 	                m, mode->xres, mode->yres, v, mode->refresh);
+-	var->activate |= FB_ACTIVATE_FORCE;
+ 	console_lock();
+ 	lock_fb_info(fb_info);
+-	err = fb_set_var_from_user(fb_info, var);
++	err = activate_locked(fb_info, var);
+ 	unlock_fb_info(fb_info);
+ 	console_unlock();
+-	if (err)
+-		return err;
+-	return 0;
++
++	return err;
  }
  
-@@ -64,7 +67,7 @@ static ssize_t store_mode(struct device *device, struct device_attribute *attr,
+ static int mode_string(char *buf, size_t size, unsigned int offset,
+@@ -65,6 +70,9 @@ static ssize_t store_mode(struct device *device, struct device_attribute *attr,
  
+ 	memset(&var, 0, sizeof(var));
+ 
++	console_lock();
++	lock_fb_info(fb_info);
++
  	list_for_each_entry(modelist, &fb_info->modelist, list) {
  		mode = &modelist->mode;
--		i = mode_string(mstr, 0, mode);
-+		i = mode_string(mstr, sizeof(mstr), 0, mode);
- 		if (strncmp(mstr, buf, max(count, i)) == 0) {
+ 		i = mode_string(mstr, sizeof(mstr), 0, mode);
+@@ -72,12 +80,22 @@ static ssize_t store_mode(struct device *device, struct device_attribute *attr,
  
  			var = fb_info->var;
-@@ -86,7 +89,7 @@ static ssize_t show_mode(struct device *device, struct device_attribute *attr,
- 	if (!fb_info->mode)
+ 			fb_videomode_to_var(&var, mode);
+-			if ((err = activate(fb_info, &var)))
++			err = activate_locked(fb_info, &var);
++			if (err) {
++				unlock_fb_info(fb_info);
++				console_unlock();
+ 				return err;
++			}
+ 			fb_info->mode = mode;
++			unlock_fb_info(fb_info);
++			console_unlock();
+ 			return count;
+ 		}
+ 	}
++
++	unlock_fb_info(fb_info);
++	console_unlock();
++
+ 	return -EINVAL;
+ }
+ 
+@@ -85,11 +103,20 @@ static ssize_t show_mode(struct device *device, struct device_attribute *attr,
+ 			 char *buf)
+ {
+ 	struct fb_info *fb_info = dev_get_drvdata(device);
++	struct fb_videomode mode;
++	bool have_mode = false;
+ 
+-	if (!fb_info->mode)
++	lock_fb_info(fb_info);
++	if (fb_info->mode) {
++		mode = *fb_info->mode;
++		have_mode = true;
++	}
++	unlock_fb_info(fb_info);
++
++	if (!have_mode)
  		return 0;
  
--	return mode_string(buf, 0, fb_info->mode);
-+	return mode_string(buf, PAGE_SIZE, 0, fb_info->mode);
+-	return mode_string(buf, PAGE_SIZE, 0, fb_info->mode);
++	return mode_string(buf, PAGE_SIZE, 0, &mode);
  }
  
  static ssize_t store_modes(struct device *device,
-@@ -136,7 +139,9 @@ static ssize_t show_modes(struct device *device, struct device_attribute *attr,
+@@ -137,12 +164,15 @@ static ssize_t show_modes(struct device *device, struct device_attribute *attr,
+ 	const struct fb_videomode *mode;
+ 
  	i = 0;
++	lock_fb_info(fb_info);
  	list_for_each_entry(modelist, &fb_info->modelist, list) {
  		mode = &modelist->mode;
--		i += mode_string(buf, i, mode);
-+		i += mode_string(buf, PAGE_SIZE, i, mode);
-+		if (i >= PAGE_SIZE - 1)
-+			break;
+ 		i += mode_string(buf, PAGE_SIZE, i, mode);
+ 		if (i >= PAGE_SIZE - 1)
+ 			break;
  	}
++	unlock_fb_info(fb_info);
++
  	return i;
  }
+ 
 -- 
 2.39.5
 

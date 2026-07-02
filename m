@@ -1,148 +1,148 @@
-Received: from out-187.mta1.migadu.com (out-187.mta1.migadu.com [95.215.58.187])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79FD33909BF;
-	Thu,  2 Jul 2026 07:28:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.187
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18C2144E021;
+	Thu,  2 Jul 2026 10:07:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782977297; cv=none; b=ISPbTQvjKDjg6ulZapZVOj0xNfCb0gp1t0urFAOHrEonij8lCS38Gz+Hp4W55h9Yw9Zh5diJKjEkVGu+NKoj620co/wdFU8VYUHHzOp5PQOQBTYjGgqaiermLighcXOw3t39VaKNtsgPQVsGCVZPqZQYPBbH1cUmaOs/YB/CPBs=
+	t=1782986860; cv=none; b=daVpg8CL1XxXODi/4vMGftI8ify2qUM571jjSdXjsJj6ndLonLH2+iJpseZSMjdF85vnzqb7vznL+6UswhvKl0xALF/YSkedZHBWwbaiQrXg/Xch/BNEH6vp6XeY912XhLLSoa4RsSelp/1dQLZaJ07qnUXhFyCEJnNAFq6J26Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782977297; c=relaxed/simple;
-	bh=cdXAMvaGTLXZ4tRHqX+15mFjqPO5NJv7/lbzInUeZeM=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=S0Ixgx6bojeVx8KXvdWw5velIlcmsXI2VBKXuWGTh6AXLMuiS9SghHYaIfmHGZf9xWsz1yF6QnEDiZF3qqf6bHLXb86HxtXFtnEKtgmFrjnCOHCdy3kHzUhrlcxFtWjWpH6S+n+c+2GZNQCgKFJP1R2qNxdwpur0Z+UTDZFNdII=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=UUw36nfQ; arc=none smtp.client-ip=95.215.58.187
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1782986860; c=relaxed/simple;
+	bh=/9b8XhRdxlUi0LGnAzYPhCpgKuVEuoSHdRJkABgQExM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=df6LXzJyfKFvKbWr7Ymf3QY1RMbco/cbQLybValhkhK/AxQx3BsiUtMHBtyER0khJAkC3Amm/9706r4+CKNxctCewBX7+TpXk9t+gCYwyreuflgMpnt8u70Hl6JY7/OqFn0s8dyIo7nKtp4U0FXn1+97RUNyOFAKN74kr7tTu10=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=AUJ2SDXv; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="UUw36nfQ"
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1782977290;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cdXAMvaGTLXZ4tRHqX+15mFjqPO5NJv7/lbzInUeZeM=;
-	b=UUw36nfQUDO4ek5W5MoGxv/bQdNbTQycY1qQKAEoJymjql+ZXc8a2FUo9eNrafl6xDrEni
-	1302Z8Y+Ma+0qxdUDhBISoxry5nus7uGAN8fTkB0ZcU/zUf+14Ol9iIljWhjg5Yh/mt933
-	8BhSh84bNWygA1To4TaXOltx56F5hgs=
-From: Lance Yang <lance.yang@linux.dev>
-To: ljs@kernel.org
-Cc: akpm@linux-foundation.org,
-	tsbogend@alpha.franken.de,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	tzimmermann@suse.de,
-	airlied@gmail.com,
-	simona@ffwll.ch,
-	l.stach@pengutronix.de,
-	inki.dae@samsung.com,
-	sw0312.kim@samsung.com,
-	kyungmin.park@samsung.com,
-	krzk@kernel.org,
-	peter.griffin@linaro.org,
-	jani.nikula@linux.intel.com,
-	joonas.lahtinen@linux.intel.com,
-	rodrigo.vivi@intel.com,
-	tursulin@ursulin.net,
-	robin.clark@oss.qualcomm.com,
-	lumag@kernel.org,
-	lyude@redhat.com,
-	dakr@kernel.org,
-	tomi.valkeinen@ideasonboard.com,
-	hjc@rock-chips.com,
-	heiko@sntech.de,
-	andy.yan@rock-chips.com,
-	thierry.reding@kernel.org,
-	mperttunen@nvidia.com,
-	jonathanh@nvidia.com,
-	kraxel@redhat.com,
-	dmitry.osipenko@collabora.com,
-	zack.rusin@broadcom.com,
-	matthew.brost@intel.com,
-	thomas.hellstrom@linux.intel.com,
-	oleksandr_andrushchenko@epam.com,
-	deller@gmx.de,
-	bcrl@kvack.org,
-	viro@zeniv.linux.org.uk,
-	brauner@kernel.org,
-	muchun.song@linux.dev,
-	osalvador@suse.de,
-	david@kernel.org,
-	ziy@nvidia.com,
-	baolin.wang@linux.alibaba.com,
-	liam@infradead.org,
-	npache@redhat.com,
-	ryan.roberts@arm.com,
-	dev.jain@arm.com,
-	baohua@kernel.org,
-	lance.yang@linux.dev,
-	hughd@google.com,
-	vbabka@kernel.org,
-	rppt@kernel.org,
-	surenb@google.com,
-	mhocko@suse.com,
-	jannh@google.com,
-	pfalcato@suse.de,
-	kees@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-mips@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
-	etnaviv@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-samsung-soc@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org,
-	linux-arm-msm@vger.kernel.org,
-	freedreno@lists.freedesktop.org,
-	nouveau@lists.freedesktop.org,
-	linux-rockchip@lists.infradead.org,
-	linux-tegra@vger.kernel.org,
-	virtualization@lists.linux.dev,
-	intel-xe@lists.freedesktop.org,
-	xen-devel@lists.xenproject.org,
-	linux-fbdev@vger.kernel.org,
-	linux-aio@kvack.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 01/13] mm: introduce vma_flags_can_grow() and vma_can_grow()
-Date: Thu,  2 Jul 2026 15:27:50 +0800
-Message-Id: <20260702072750.45641-1-lance.yang@linux.dev>
-In-Reply-To: <f2e8c32515d328db62279cc8bab8398ea278d74f.1782760670.git.ljs@kernel.org>
-References: <f2e8c32515d328db62279cc8bab8398ea278d74f.1782760670.git.ljs@kernel.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="AUJ2SDXv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D4E71F000E9;
+	Thu,  2 Jul 2026 10:07:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782986859;
+	bh=rYlxsT3EfvvJVMSpiElkKSMRxs3TOqthCAywxBW0128=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=AUJ2SDXvs0VEdi5h/Kivbi3brTHkQLZzOc+/NAV87+f7C+JbSJugMOeorpgT3tHNL
+	 p58+v4CbXSREtEJG3hLwTa5n8p6G+p8Uf6kuVPNIUtEb3lILgd1rLCgiUeDjzt2+mZ
+	 zGpUePOrV+YiczwnsZiA+nTEa+dq7dVC2Ri5VUVSthC4z19IRHYTorV302BUc8jnc8
+	 lzbpbbTR/gUCNSPcKQ4CL0UIE7YEz9VRE1nLkcyV3m++qYsnaX7iOq8PztYSNv6FrO
+	 w1VeEKbpH/fT7kvqY9QrCvgHPHHPFXTLBTuAr9eAkNY5WqMk3S9O4fQkBovR+Lq+yS
+	 W5zmwAV0MlSzg==
+Date: Thu, 2 Jul 2026 12:07:15 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Sean Christopherson <seanjc@google.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Juergen Gross <jgross@suse.com>,
+	linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+	"linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+	x86@kernel.org, linux-acpi@vger.kernel.org, kvm@vger.kernel.org,
+	linux-coco@lists.linux.dev, linux-pci@vger.kernel.org,
+	virtualization@lists.linux.dev, linux-ide@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-crypto@vger.kernel.org,
+	"open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+	linux-hyperv@vger.kernel.org, linux-hwmon@vger.kernel.org,
+	linux-perf-users@vger.kernel.org, linux-mtd@lists.infradead.org,
+	platform-driver-x86@vger.kernel.org,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	"lukasz.luba@arm.com" <lukasz.luba@arm.com>,
+	Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>,
+	Tony Luck <tony.luck@intel.com>,
+	Yazen Ghannam <yazen.ghannam@amd.com>, Len Brown <lenb@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	"Kirill A. Shutemov" <kas@kernel.org>,
+	Rick Edgecombe <rick.p.edgecombe@intel.com>,
+	Pu Wen <puwen@hygon.cn>, Bjorn Helgaas <bhelgaas@google.com>,
+	Ajay Kaher <ajay.kaher@broadcom.com>,
+	Alexey Makhalov <alexey.makhalov@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Reinette Chatre <reinette.chatre@intel.com>,
+	Dave Martin <Dave.Martin@arm.com>,
+	James Morse <james.morse@arm.com>, Babu Moger <babu.moger@amd.com>,
+	Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>, Dave Airlie <airlied@redhat.com>,
+	Helge Deller <deller@gmx.de>, linux-geode@lists.infradead.org,
+	Olivia Mackall <olivia@selenic.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"K. Y. Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	Long Li <longli@microsoft.com>, Guenter Roeck <linux@roeck-us.net>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	James Clark <james.clark@linaro.org>,
+	Josh Poimboeuf <jpoimboe@kernel.org>,
+	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+	Vitaly Kuznetsov <vkuznets@redhat.com>,
+	Andy Lutomirski <luto@kernel.org>,
+	Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+	Huang Rui <ray.huang@amd.com>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Perry Yuan <perry.yuan@amd.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	"srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>,
+	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+	Artem Bityutskiy <dedekind1@gmail.com>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Ashok Raj <ashok.raj.linux@gmail.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
+	David E Box <david.e.box@intel.com>, xen-devel@lists.xenproject.org
+Subject: Re: [PATCH 00/32] x86/msr: Drop 32-bit MSR interfaces
+Message-ID: <akY4U0jUZm4HOGZ_@gmail.com>
+References: <20260629060526.3638272-1-jgross@suse.com>
+ <d7c1db52-529a-43cc-ac7d-38b52627e8bc@app.fastmail.com>
+ <c1608c48-13c2-4290-826b-28b5ca51eaf7@suse.com>
+ <7332feff-2649-496c-8e49-b0a19eb54a32@app.fastmail.com>
+ <akJUz0kYkEBdLSZ3@gmail.com>
+ <akQR9YMtMHReJTfB@google.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <akQR9YMtMHReJTfB@google.com>
 
 
-On Mon, Jun 29, 2026 at 08:25:24PM +0100, Lorenzo Stoakes wrote:
->These test whether the VMA has stack sematics, i.e. is able to grow upwards
->or downwards depending on the architecture.
->
->In order to account for arches which do not support upward-growing stacks,
->introduce VMA_GROWSUP whose definition depends on the architecture
->supporting it, and use vma_flags_test_single_mask() in vma_flags_can_grow()
->to account for this.
->
->Update the VMA userland tests to reflect the changes
->
->No functional change intended.
->
->Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
->---
+* Sean Christopherson <seanjc@google.com> wrote:
 
-Nice cleanup! Feel free to add:
+> > Note that the individual patches are IMO significantly easier to review
+> > through the actual 32-bit => 64-bit variable assignment changes done
+> > in isolation (which sometimes include minor cleanups), while
+> > the Coccinelle semantic patch:
+> > 
+> >    { a(b,c) => c = a(b) }
+> > 
+> > which changes both the function signature and the order of terms as
+> > well, is just a single add-on treewide patch.
+> 
+> Is the plan for subsystem maintainers to pick up the relevant patches,
+> and then do the treewide change one release cycle later?
 
-Reviewed-by: Lance Yang <lance.yang@linux.dev>
+I'll try to keep the patches in a single tree (tip:x86/msr)
+in the hope of not prolonging the pain two cycles - but it's
+of course fine for maintainers to pick up the patches too
+(most of them are standalone), we'll sort it all out in the end.
+
+Thanks,
+
+	Ingo

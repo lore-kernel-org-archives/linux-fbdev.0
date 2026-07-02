@@ -1,32 +1,32 @@
-Received: from out-184.mta0.migadu.com (out-184.mta0.migadu.com [91.218.175.184])
+Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [91.218.175.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45AC6477983;
-	Thu,  2 Jul 2026 11:42:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.184
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7702A399377
+	for <linux-fbdev@vger.kernel.org>; Thu,  2 Jul 2026 12:10:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782992534; cv=none; b=tnflN95slrdSiD86Xx9QFNW4utc3KJZaJf4DhmHcMztvUFFhfIEdeyiF0QjN+bIRlii0GyCYoAbDScQPDekAIJkHHHffmwPoJy0/1PA147AKsZ92Ao8M74qTFZQgQJruZF2BwsLK/tyhIFGBh1sPeUrg88hlv2SORDVTT/C353M=
+	t=1782994260; cv=none; b=RyX4UbmvAG5XAftU9PyNz12aRRM3k8Ns1IoRHKfvCE5S+MfjZURSGoek8jOB/fIzL4fC6gIgHqIE4u7l+BTv42rf8FzEuqRBYBTdTcW4Y81/5DZvKdBhF4j8lHSo8gknpDgbHL1raVxIb2MYlMacG+I7VhI+gTOjMJM3BhsHPxM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782992534; c=relaxed/simple;
-	bh=vPHtV6pxZdlKjLiAMh+TI96h/MjbfgTMGiJB5aRI1Dw=;
+	s=arc-20240116; t=1782994260; c=relaxed/simple;
+	bh=kq0EROHRAMyH30t9/IFYi2AfFSrm3TyBHx9kn2N5NhY=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=n4j839cl63dq5PcgJS7O51vge+yecy1R7PuhxdSD8Z/AB/XUCVOfhJqBxzb63EVvNgo6G78/dc6bP7quJTIbf+xCjhOQVoonGt8e/lHxkxNxWiwvdF1rWWMHWl3pglePCS73fgPZcZdfcGkXJ1W8CoMNCi5mB7MEplFiqypIIGk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=ElylzNP2; arc=none smtp.client-ip=91.218.175.184
+	 MIME-Version:Content-Type; b=VrSf2Ta1LnlZPOaTjs6ZyZPdGxcLGFaxdvV+8OYzXDnoU8Afl6eiWCvyJ8mY3jXfM3x+lE40OHdi7uQXK+2KiJznKqB+nSLyzRLsFTtHh8IijFkSvi3O/rvpnF39fvhZ+q8Yp534sSq1gifKFuW8c4RZtkHt6CNYMcIKk3tZlmM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=o2h14zEv; arc=none smtp.client-ip=91.218.175.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="ElylzNP2"
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="o2h14zEv"
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1782992513;
+	t=1782994254;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vPHtV6pxZdlKjLiAMh+TI96h/MjbfgTMGiJB5aRI1Dw=;
-	b=ElylzNP2HZvUF6FtGgLgsW4vT0OTcdy2XorLGs6M4jbsXqc3kVIN25VDlrp06Kwp+MnkF0
-	7eCUNpZQUAu53ooUNOnYLe8bcSqU2lbFmJuaAoucdQs+qEK4yKsjIpHuYOtBIHp/EvNPEl
-	ujU0zKbwsKGW+OA8vv+O0JU4vozY/FA=
+	bh=szYxJDyUXLwpHCPYtdT5QZRTamk7ohIwjDiVPC1pzUs=;
+	b=o2h14zEvKcQ49vaQ50LBNnbgHGGpFBTA0OsIFCWdpiUc7gYaraiUcJHgmdFM4mBzY7pBJH
+	3Nawgn9WkBzIHxRb3Nw1H0UdEQI7UMwMGIksMhfoUjYHvm6uqPS5csZAIdTgWkWJ0NxwiR
+	+fbu3PSBP2IvpsY/0wNqYNag0+1ZZPU=
 From: Lance Yang <lance.yang@linux.dev>
 To: ljs@kernel.org
 Cc: akpm@linux-foundation.org,
@@ -111,11 +111,11 @@ Cc: akpm@linux-foundation.org,
 	linux-fsdevel@vger.kernel.org,
 	linux-mm@kvack.org,
 	linux-sound@vger.kernel.org
-Subject: Re: [PATCH 04/13] mm: update generic_get_unmapped_area[_topdown]() to use vma_flags_t
-Date: Thu,  2 Jul 2026 19:41:35 +0800
-Message-Id: <20260702114135.4189-1-lance.yang@linux.dev>
-In-Reply-To: <cef55b19f86c110952f13829aefa4859db3a70ed.1782760670.git.ljs@kernel.org>
-References: <cef55b19f86c110952f13829aefa4859db3a70ed.1782760670.git.ljs@kernel.org>
+Subject: Re: [PATCH 05/13] mm: prefer mm->def_vma_flags in mm logic
+Date: Thu,  2 Jul 2026 20:10:22 +0800
+Message-Id: <20260702121022.49113-1-lance.yang@linux.dev>
+In-Reply-To: <3b4ccdc38819b42ddc79ee5a795831208ac7986c.1782760670.git.ljs@kernel.org>
+References: <3b4ccdc38819b42ddc79ee5a795831208ac7986c.1782760670.git.ljs@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -127,20 +127,44 @@ Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
 
-On Mon, Jun 29, 2026 at 08:25:27PM +0100, Lorenzo Stoakes wrote:
->As part of the changes converting VMA flags from a system word size to a
->bitmap, extend this change to generic_get_unmapped_area() and
->generic_get_unmapped_area_topdown(), which also allows us to convert
->stack_guard_placement() as well.
+On Mon, Jun 29, 2026 at 08:25:28PM +0100, Lorenzo Stoakes wrote:
+>Currently mm->def_flags (of type vm_flags_t) is union'd with
+>mm->def_vma_flags (of type vma_flags_t).
 >
->We retain arch_get_unmapped_area() and arch_get_unmapped_area_topdown()
->as-is for now, using legacy_to_vma_flags() as necessary to do so.
+>As part of the effort to convert vm_flags_t usage to vma_flags_t (in order
+>to no longer be arbitrarily limited to a system word size for VMA flags),
+>prefer mm->def_vma_flags to mm->def_flags throughout the mm logic.
 >
 >No functional change intended.
 >
 >Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 >---
+> mm/debug.c |  2 +-
+> mm/mlock.c | 13 +++++++------
+> mm/mmap.c  | 11 ++++++-----
+> mm/vma.c   |  4 ++--
+> 4 files changed, 16 insertions(+), 14 deletions(-)
+>
+>diff --git a/mm/debug.c b/mm/debug.c
+>index 497654b36f1a..f0a354a9496a 100644
+>--- a/mm/debug.c
+>+++ b/mm/debug.c
+>@@ -226,7 +226,7 @@ void dump_mm(const struct mm_struct *mm)
+> 		mm->numa_next_scan, mm->numa_scan_offset, mm->numa_scan_seq,
+> #endif
+> 		atomic_read(&mm->tlb_flush_pending),
+>-		mm->def_flags, &mm->def_flags
+>+		vma_flags_to_legacy(mm->def_vma_flags), &mm->def_vma_flags
+> 	);
 
-Nothing jumped out at me ;) Feel free to add:
+While at it, one thing for later: dump_mm() still assumes one-world VMA
+flags. That works today since vma_flags_t is one word. Maybe worth a
+BUILD_BUG_ON() here, before that stops being true?
+
+Not a big deal though. Feel free to add:
 
 Reviewed-by: Lance Yang <lance.yang@linux.dev>
+
+> }
+> EXPORT_SYMBOL(dump_mm);
+[...]

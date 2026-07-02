@@ -1,84 +1,68 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA25A339844;
-	Thu,  2 Jul 2026 16:18:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 043A4348C53;
+	Thu,  2 Jul 2026 16:31:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783009115; cv=none; b=jHgxesjydP+TroYSxWTyjhyYNvO46JiDmzELgiBouQMj4KekOJzBfcCzDrfsXZCKs3sTh3y+0gU+60zah0d4g9OXY2dU+igqcGLT9x+OFhYMkDCwjdPzL6PuqKEVHISS7VZhRzRLB9CjTVtJb4A1Y7zznmtLkPF5RWIjEhLgMwc=
+	t=1783009907; cv=none; b=qbv63i2PZZTX/MAD56B7/Q61USqQZkZlb6Ci+zruQJHzMicrJbFSgMOcmSqEoA0d1hVXqXhVrxq1kgpBz/Z00PpylkZFYdkb3LNIpSA3caWgDOY8UoIBMpIFZIkF149ZqeKKuFiJEU1kuDue2Nh4R8lDZ/AJ8q7E9J/9dO+PDik=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783009115; c=relaxed/simple;
-	bh=kbMVKXOX8SCr6JbCks28PC928ssdxo4qHNutrvGZHUY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hJDfaqLzjP92B8QvZZ8NYrOPXfLIRfPgkNYM/22n7JcfcljSLCbkRixiFQqgY51lFIyZv3BL79Vx1xWjxNjUMeyzsEluFAftgTziGlhYs3k11AFOKbihmgq1y6Fr4L17RdRGd8+rbvGo829y8KSszh8uyDVSSdRKwYQF3ZBVp3k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Boem+Th2; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783009907; c=relaxed/simple;
+	bh=6p9oJw5MFDn+kSUamq/zaTSh6Mx38EjNSlPb/ngjyHw=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=fNmEWJF+vTdwzBUox2dpXb++YQfsKLQVGN7ZTQ7mVP7OPcwvqMJdQL8PC8j2Qx2stwBB9gRLdWYmd+3QONyeI6ncCeIMuLfjEE7vQXlc9Dfx68wf+fHSyMe+LyjdgkYiZ4LoZRnkHt/zMgLXT7zy/zAn2OnWlKLEDOlKx7d8E4s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=FpMAF901; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Boem+Th2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB8181F000E9;
-	Thu,  2 Jul 2026 16:18:30 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="FpMAF901"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B82AB1F000E9;
+	Thu,  2 Jul 2026 16:31:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783009114;
-	bh=IkM3i77YEX756C+1EiUCu7s5eiNq08LZMZb9R/S6UVM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Boem+Th2L4HdoWEQTaxNWFMH7uToI7We2Tpm4ZgaNjG5LlRIJUY59A8IPMjF7fuhn
-	 FNE0C0yd6ubUt3G98s90QSUZrdIuHvGW7kWfKgYyZgkZiTLdMByC56vhyoJaImJUDe
-	 C1eRQUPxmaUs2CusAXna5pu46Bz0iVlySFCQlG1h5NN86hZRcBUZtBUOZG4Da/m2MY
-	 qvSi4aUyUC2kuecKH3CO+8AlyeI5SbDa26w2X35rhmihRNIxRf+F1PW5kfZVBWewhC
-	 Ej/Xgj74nB1y+sO3gHPQV0yR3w/aEsGvkzN/zsUWAht8t6Qh+ZX5ewdeaZYrWj2TRn
-	 Kh1cP2ydiQvaQ==
-Date: Thu, 2 Jul 2026 17:18:28 +0100
+	s=k20260515; t=1783009906;
+	bh=RzzfmIogOoChfCuB1Ba9o2vBi864tKCQNnuaaTtA2d0=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=FpMAF901KOCXsLd9Peup0g2nFxlws6YELsM6AeOcDUdHrNZTxBbYwbFPemRHFOrPm
+	 WeoMU7b24n0MLm0SN62gtXKt6cOaVz1trQF1m6P6xawmpvqbHMtuekkcUE2BKRN8oy
+	 iNtPaMFUFktzbSTbZSgrhOaVguNpvX0/clrZNEZoRJ0UeEkYhXB6HmPh5Q6K/0Tn2w
+	 dlbUR0TG0l/hGuupWcYnV6+Ze6hQtoQIOx0dbDSduHKInlWJ5HkcVqY8dh6h1xsZp8
+	 1SO7zYM2TcWCJjyBxxdwyQ66uyj2W11jhZ3BZHot3XYroQmTM1PHfj2EoYrca9LoZL
+	 U6evvTzS2aACA==
 From: Lee Jones <lee@kernel.org>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>,
-	Johan Hovold <johan@kernel.org>, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v5 00/14] mfd: lm3533: convert to OF bindings, improve
- support
-Message-ID: <20260702161828.GB2108533@google.com>
-References: <20260617080031.99156-1-clamor95@gmail.com>
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+ Neil Armstrong <neil.armstrong@linaro.org>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-fbdev@vger.kernel.org, KancyJoe <kancy2333@outlook.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+In-Reply-To: <20260529-topic-sm8650-ayaneo-pocket-s2-sy7758-v5-0-03aacd49747c@linaro.org>
+References: <20260529-topic-sm8650-ayaneo-pocket-s2-sy7758-v5-0-03aacd49747c@linaro.org>
+Subject: Re: [PATCH v5 0/2] backlight: Add SY7758 6-channel High Efficiency
+ LED Driver support
+Message-Id: <178300990349.2239788.13080024963462152507.b4-ty@b4>
+Date: Thu, 02 Jul 2026 17:31:43 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260617080031.99156-1-clamor95@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.16-dev-ad80c
 
-On Wed, 17 Jun 2026, Svyatoslav Ryhel wrote:
+On Fri, 29 May 2026 21:23:07 +0200, Neil Armstrong wrote:
+> Implement support for the Silergy SY7758 6-channel High Efficiency LED Driver
+> used for backlight brightness control in the Ayaneo Pocket S2 dual-DSI panel.
 
-> Convert LM3533 to OF bindings, add missing VIN supply, add support for
-> setting mapping mode and LED sources based on device tree. 
-> 
-> ---
-> Changes in v2:
-> 
-> schema
-> - maximum led sources for leds set to 4
-> - anyOf > oneOf in ALS
-> - improved ALS descriptions
-> - adjusted example
-> drivers
-> - dropped devm convertion of irq and mfd helpers
-> - all als configuration moved into lm3533_als_setup
-> - added regulator/consumer.h
-> - lm3533_bl_setup set before sysfs_create_group in backlight
-> - added check if LVLED is valid
-> - LM3533_REG_OUTPUT_CONF1 > LM3533_REG_OUTPUT_CONF2 for LVLED4 and LVLED5
+Applied, thanks!
 
-This set looks good to me now.
+[1/2] dt-bindings: leds: backlight: document the SY7758 6-channel High Efficiency LED Driver
+      commit: 2019a2a7268f6f7387f052110558b9f90b500324
+[2/2] backlight: Add SY7758 6-channel High Efficiency LED Driver support
+      commit: 110d67699a430daf0316f941254c46221e3f0914
 
-Let me know when you have all of the Acks and I'll merge it via MFD.
+--
+Lee Jones [李琼斯]
 
--- 
-Lee Jones

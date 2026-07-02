@@ -1,211 +1,148 @@
-Received: from mail-lf1-f49.google.com (mail-lf1-f49.google.com [209.85.167.49])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from out-187.mta1.migadu.com (out-187.mta1.migadu.com [95.215.58.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BF813F825B
-	for <linux-fbdev@vger.kernel.org>; Wed,  1 Jul 2026 23:43:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79FD33909BF;
+	Thu,  2 Jul 2026 07:28:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.187
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782949384; cv=none; b=WzivpdlqvlXPVJknxWQ8Kadhi68nM7sm6mAjhbnms6nDBF+ka4NrU9hAfrD5S9mhDcBI5kd+zgDTasyBPgwcL8nDyMUjxarX86h7GsurmMixE5sZkV0X84RIgEEQ6IsQlNRvKj+4hCGaZl+xMkaC6FgUnqdxbPD9O2OiJ8D3U0s=
+	t=1782977297; cv=none; b=ISPbTQvjKDjg6ulZapZVOj0xNfCb0gp1t0urFAOHrEonij8lCS38Gz+Hp4W55h9Yw9Zh5diJKjEkVGu+NKoj620co/wdFU8VYUHHzOp5PQOQBTYjGgqaiermLighcXOw3t39VaKNtsgPQVsGCVZPqZQYPBbH1cUmaOs/YB/CPBs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782949384; c=relaxed/simple;
-	bh=LCQ5ybY2W5wSNed4JctAr7mTZXfrxHe+bWEoILZJZwg=;
+	s=arc-20240116; t=1782977297; c=relaxed/simple;
+	bh=cdXAMvaGTLXZ4tRHqX+15mFjqPO5NJv7/lbzInUeZeM=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=hhGYVyqbI2cR7HOTeoESa3GfbE8yEg0/9UEh6lPZo2JBffNburNKIWv9/Vp6EnGVfuRKGpRA5oCanLyFe7QIsfdlzSkbpZGaILotBqYUsVvvYJRS1XlUTG4+6RpRTy7HnOt/loPVUjweG03P501zIDgd5FiiixgUf+jYWgsXczc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JkPdlsBd; arc=none smtp.client-ip=209.85.167.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=S0Ixgx6bojeVx8KXvdWw5velIlcmsXI2VBKXuWGTh6AXLMuiS9SghHYaIfmHGZf9xWsz1yF6QnEDiZF3qqf6bHLXb86HxtXFtnEKtgmFrjnCOHCdy3kHzUhrlcxFtWjWpH6S+n+c+2GZNQCgKFJP1R2qNxdwpur0Z+UTDZFNdII=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=UUw36nfQ; arc=none smtp.client-ip=95.215.58.187
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JkPdlsBd"
-Received: by mail-lf1-f49.google.com with SMTP id 2adb3069b0e04-5aebbeba529so1152185e87.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 01 Jul 2026 16:43:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782949381; x=1783554181; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=/M9QqAmY7Pg8H8gQnrUHA/IfrEsurxPK03ttJdgNJSc=;
-        b=JkPdlsBdf4cS+C34AVRyVeY3zM/jZPOIUkRashaM+siqNDXniGcnvK9Fhqbd48HBh7
-         JUe7dhYfMWHfHJScIFdeNX7Kgjtu4LMEA0KLhQuKXGYGa5sasKtqQmk3lnp4SAb6jIjX
-         WaeGf195f9mJ/hvZh4ZRF/iWedOKIOk8sXBpp9F9JIyovRfkS3+XOaqqVcC8TmFLJB8X
-         h5zd8Vt0rPMZtCj49sTziglB7NCwfxTN5DLeuji0vGXB5t+1dNbi7Uey22KLiUi+qw2z
-         HoeRlHX4WedKs6Q3lEcb5v52X4q+Y/fhdlzq9uWJD6riSf/riIrLe2yYzkV5PCAZzZ3m
-         71nA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782949381; x=1783554181;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=/M9QqAmY7Pg8H8gQnrUHA/IfrEsurxPK03ttJdgNJSc=;
-        b=VbQq0o5solvaeJ4phKu5yhziDyo/YjfC/lfDlYxcCmNHHfCZQEhTOD4OL2+spzLb/O
-         3GbsXJu2aYF+uJ2XzsADcgodT65EHtBLPHzBvWt6ocIrdzeuRfK/Mhtn2Y+8X4Xm+ybK
-         0DPVZAswvzWu0xQ+nCFvkAZx9uc4cC7xANjLX4HUfw/Egvl1K8fMKQSLBlA1fA9SDZeu
-         ziGgOplgRTMV0sQxxvZSSYWbehu9jhsVbeiyMsYfNACC1q1GrUbKzBCCviXR3hcA2JRm
-         s6guGi+abbeDga1Qjd8mVxtJ4WkK31SbkAta7HZgwmWkRcsqCUYXVCXZUT2TdQHPFZ+G
-         S+Qw==
-X-Gm-Message-State: AOJu0YwlG4fddGOO/a6sHDTI01sP/9Ni/8sxbNGrj8vunM/xLXQZ7uzm
-	ZbQ7mKCQKZD6vQLK7cbvzf10aDG7P6/dMqPBRir7MWr80bRS+0hew0na
-X-Gm-Gg: AfdE7cnljtnUcROGOgpG8gg20KMY5yKMzler8acyCaB7Jyi7ZCqTu2N6SZmbWE8x/5K
-	IicfG5TQTcTOxu1Ysw1J9B4n23Fc0wfPyVSHIgKC3yPb+PkhBNBOAZSiJznVQNwF+lsxvO5Knxn
-	vX8s5rOUilaakNl98DbtiqbgMsirRMo9Pv5tdBvE/I0r3HB1NqgngurwWVvAzhg789mcVwBwNwF
-	HFQWDPWCffGiVhCIqfdVyuJ2ChB6HJ/pAJS8Qd1jbSM/NQ/BBeeRe28L9ncdqZxdmJYqeU16QYa
-	GDl3l9RaQ3UkHo/FsFxu+ZHV7AEKXqY1ix7tdSoiWbiIOrDJuAqPN7HdivqNkROrEk7fSM2Fb81
-	KWRWAXIK1Ke8UKWGXPutd8HKyAxbQHRaau1B5KMObsT7bThDv4GFzV7w/UuVJIlEBYVaslMD/Bx
-	YvMAm0y4C+0QWDbzCyg6AEfmd6U371HI4=
-X-Received: by 2002:a05:6512:66c1:10b0:5aa:8822:b1ee with SMTP id 2adb3069b0e04-5aec68b7f97mr677361e87.48.1782949380696;
-        Wed, 01 Jul 2026 16:43:00 -0700 (PDT)
-Received: from localhost.localdomain ([2a01:4f9:2a:1c13::2])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-39b37fda160sm2836261fa.29.2026.07.01.16.42.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2026 16:42:58 -0700 (PDT)
-From: Melbin K Mathew <mlbnkm1@gmail.com>
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="UUw36nfQ"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1782977290;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cdXAMvaGTLXZ4tRHqX+15mFjqPO5NJv7/lbzInUeZeM=;
+	b=UUw36nfQUDO4ek5W5MoGxv/bQdNbTQycY1qQKAEoJymjql+ZXc8a2FUo9eNrafl6xDrEni
+	1302Z8Y+Ma+0qxdUDhBISoxry5nus7uGAN8fTkB0ZcU/zUf+14Ol9iIljWhjg5Yh/mt933
+	8BhSh84bNWygA1To4TaXOltx56F5hgs=
+From: Lance Yang <lance.yang@linux.dev>
+To: ljs@kernel.org
+Cc: akpm@linux-foundation.org,
+	tsbogend@alpha.franken.de,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	maarten.lankhorst@linux.intel.com,
+	mripard@kernel.org,
+	tzimmermann@suse.de,
+	airlied@gmail.com,
+	simona@ffwll.ch,
+	l.stach@pengutronix.de,
+	inki.dae@samsung.com,
+	sw0312.kim@samsung.com,
+	kyungmin.park@samsung.com,
+	krzk@kernel.org,
+	peter.griffin@linaro.org,
+	jani.nikula@linux.intel.com,
+	joonas.lahtinen@linux.intel.com,
+	rodrigo.vivi@intel.com,
+	tursulin@ursulin.net,
+	robin.clark@oss.qualcomm.com,
+	lumag@kernel.org,
+	lyude@redhat.com,
+	dakr@kernel.org,
+	tomi.valkeinen@ideasonboard.com,
+	hjc@rock-chips.com,
+	heiko@sntech.de,
+	andy.yan@rock-chips.com,
+	thierry.reding@kernel.org,
+	mperttunen@nvidia.com,
+	jonathanh@nvidia.com,
+	kraxel@redhat.com,
+	dmitry.osipenko@collabora.com,
+	zack.rusin@broadcom.com,
+	matthew.brost@intel.com,
+	thomas.hellstrom@linux.intel.com,
+	oleksandr_andrushchenko@epam.com,
+	deller@gmx.de,
+	bcrl@kvack.org,
+	viro@zeniv.linux.org.uk,
+	brauner@kernel.org,
+	muchun.song@linux.dev,
+	osalvador@suse.de,
+	david@kernel.org,
+	ziy@nvidia.com,
+	baolin.wang@linux.alibaba.com,
+	liam@infradead.org,
+	npache@redhat.com,
+	ryan.roberts@arm.com,
+	dev.jain@arm.com,
+	baohua@kernel.org,
+	lance.yang@linux.dev,
+	hughd@google.com,
+	vbabka@kernel.org,
+	rppt@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	jannh@google.com,
+	pfalcato@suse.de,
+	kees@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-mips@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Melbin K Mathew <mlbnkm1@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH v3 3/3] fbdev: serialize mode sysfs access with lock_fb_info()
-Date: Thu,  2 Jul 2026 01:42:48 +0200
-Message-Id: <20260701234248.236023-4-mlbnkm1@gmail.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20260701231706.234715-1-mlbnkm1@gmail.com>
-References: <20260701231706.234715-1-mlbnkm1@gmail.com>
+	linuxppc-dev@lists.ozlabs.org,
+	dri-devel@lists.freedesktop.org,
+	etnaviv@lists.freedesktop.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-samsung-soc@vger.kernel.org,
+	intel-gfx@lists.freedesktop.org,
+	linux-arm-msm@vger.kernel.org,
+	freedreno@lists.freedesktop.org,
+	nouveau@lists.freedesktop.org,
+	linux-rockchip@lists.infradead.org,
+	linux-tegra@vger.kernel.org,
+	virtualization@lists.linux.dev,
+	intel-xe@lists.freedesktop.org,
+	xen-devel@lists.xenproject.org,
+	linux-fbdev@vger.kernel.org,
+	linux-aio@kvack.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-sound@vger.kernel.org
+Subject: Re: [PATCH 01/13] mm: introduce vma_flags_can_grow() and vma_can_grow()
+Date: Thu,  2 Jul 2026 15:27:50 +0800
+Message-Id: <20260702072750.45641-1-lance.yang@linux.dev>
+In-Reply-To: <f2e8c32515d328db62279cc8bab8398ea278d74f.1782760670.git.ljs@kernel.org>
+References: <f2e8c32515d328db62279cc8bab8398ea278d74f.1782760670.git.ljs@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-show_mode(), show_modes(), and store_mode() access fb_info->modelist
-and fb_info->mode without holding lock_fb_info(). store_modes() takes
-lock_fb_info() while replacing the modelist and freeing the old one.
 
-A concurrent reader or writer can load a pointer to an old modelist
-entry before store_modes() frees it, then dereference freed memory or
-store a stale freed pointer in fb_info->mode.
+On Mon, Jun 29, 2026 at 08:25:24PM +0100, Lorenzo Stoakes wrote:
+>These test whether the VMA has stack sematics, i.e. is able to grow upwards
+>or downwards depending on the architecture.
+>
+>In order to account for arches which do not support upward-growing stacks,
+>introduce VMA_GROWSUP whose definition depends on the architecture
+>supporting it, and use vma_flags_test_single_mask() in vma_flags_can_grow()
+>to account for this.
+>
+>Update the VMA userland tests to reflect the changes
+>
+>No functional change intended.
+>
+>Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
+>---
 
-Take lock_fb_info() in show_mode(), show_modes(), and store_mode() to
-serialize with store_modes(). In show_mode(), copy the mode to the
-stack and format after dropping the lock. In store_mode(), split
-activate() into a _locked variant to avoid double-locking, and hold
-the locks for the modelist walk, mode conversion, activation, and
-fb_info->mode assignment together.
+Nice cleanup! Feel free to add:
 
-Cc: stable@vger.kernel.org
-Signed-off-by: Melbin K Mathew <mlbnkm1@gmail.com>
----
- drivers/video/fbdev/core/fbsysfs.c | 46 ++++++++++++++++++++++++------
- 1 file changed, 38 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index af21dc5052..d3d60c555b 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -12,19 +12,24 @@
- #include "fb_internal.h"
- #include "fbcon.h"
- 
-+static int activate_locked(struct fb_info *fb_info,
-+			    struct fb_var_screeninfo *var)
-+{
-+	var->activate |= FB_ACTIVATE_FORCE;
-+	return fb_set_var_from_user(fb_info, var);
-+}
-+
- static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
- {
- 	int err;
- 
--	var->activate |= FB_ACTIVATE_FORCE;
- 	console_lock();
- 	lock_fb_info(fb_info);
--	err = fb_set_var_from_user(fb_info, var);
-+	err = activate_locked(fb_info, var);
- 	unlock_fb_info(fb_info);
- 	console_unlock();
--	if (err)
--		return err;
--	return 0;
-+
-+	return err;
- }
- 
- static int mode_string(char *buf, size_t size, unsigned int offset,
-@@ -65,6 +70,9 @@ static ssize_t store_mode(struct device *device, struct device_attribute *attr,
- 
- 	memset(&var, 0, sizeof(var));
- 
-+	console_lock();
-+	lock_fb_info(fb_info);
-+
- 	list_for_each_entry(modelist, &fb_info->modelist, list) {
- 		mode = &modelist->mode;
- 		i = mode_string(mstr, sizeof(mstr), 0, mode);
-@@ -72,12 +80,22 @@ static ssize_t store_mode(struct device *device, struct device_attribute *attr,
- 
- 			var = fb_info->var;
- 			fb_videomode_to_var(&var, mode);
--			if ((err = activate(fb_info, &var)))
-+			err = activate_locked(fb_info, &var);
-+			if (err) {
-+				unlock_fb_info(fb_info);
-+				console_unlock();
- 				return err;
-+			}
- 			fb_info->mode = mode;
-+			unlock_fb_info(fb_info);
-+			console_unlock();
- 			return count;
- 		}
- 	}
-+
-+	unlock_fb_info(fb_info);
-+	console_unlock();
-+
- 	return -EINVAL;
- }
- 
-@@ -85,11 +103,20 @@ static ssize_t show_mode(struct device *device, struct device_attribute *attr,
- 			 char *buf)
- {
- 	struct fb_info *fb_info = dev_get_drvdata(device);
-+	struct fb_videomode mode;
-+	bool have_mode = false;
- 
--	if (!fb_info->mode)
-+	lock_fb_info(fb_info);
-+	if (fb_info->mode) {
-+		mode = *fb_info->mode;
-+		have_mode = true;
-+	}
-+	unlock_fb_info(fb_info);
-+
-+	if (!have_mode)
- 		return 0;
- 
--	return mode_string(buf, PAGE_SIZE, 0, fb_info->mode);
-+	return mode_string(buf, PAGE_SIZE, 0, &mode);
- }
- 
- static ssize_t store_modes(struct device *device,
-@@ -137,12 +164,15 @@ static ssize_t show_modes(struct device *device, struct device_attribute *attr,
- 	const struct fb_videomode *mode;
- 
- 	i = 0;
-+	lock_fb_info(fb_info);
- 	list_for_each_entry(modelist, &fb_info->modelist, list) {
- 		mode = &modelist->mode;
- 		i += mode_string(buf, PAGE_SIZE, i, mode);
- 		if (i >= PAGE_SIZE - 1)
- 			break;
- 	}
-+	unlock_fb_info(fb_info);
-+
- 	return i;
- }
- 
--- 
-2.39.5
-
+Reviewed-by: Lance Yang <lance.yang@linux.dev>

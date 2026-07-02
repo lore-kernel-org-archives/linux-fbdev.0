@@ -1,503 +1,262 @@
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F02D255E43
-	for <linux-fbdev@vger.kernel.org>; Thu,  2 Jul 2026 16:01:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F3CC337105;
+	Thu,  2 Jul 2026 16:07:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783008083; cv=none; b=r2WheXp3LSRwZ148+300RSFOzV7l964LuQi+9eIClfnu4du8KVYAnQzrnSD8Eat4Pe5KLOY9oqq1cx89SILLnv3OLBtPkznwmrd6+q/PYu5l5C/3WYP9wL4BE7+9JURKwSEdl/U/J2pUXcJPMhYeLiLuEHgB1R17CqM4+lNoMdY=
+	t=1783008461; cv=none; b=hLVfPx9FkbGGVR6QFlDbPG9G6qthms3b1evkV/Yh9BUcajv7sOSLYU+ela/FRpW6dwZNhd6+muwOB6ElHhjzhN4xdgld5M1S+wKo4a2Gsg04mFNSAHfceFpHU0C2XdavN0L8eBfCTSPaCjdtA9WQgIjVNrqC1v5SKc0RvHRRj9A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783008083; c=relaxed/simple;
-	bh=Wi7FTA7/FWqXYIGy0SyezV0+LAlg4PCtYmH5TCN9lNQ=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=LQRgLku5q0miLPa9N/he5593V+35cTul9LZJ0rmjChg5K9QhafZIPL8z1iqgmdnJ2tZ8UCPuUOeTPSzct3fyJLKJqyVA+z2rmBgAH7B+PQRhZyiQAwnuTopruxbeFvzq3hLyDNvV8yYDLxYYAZYUgLEDuaWazybHlwHFH22vQmI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org; spf=pass smtp.mailfrom=linaro.org; dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b=qcvu0ze9; arc=none smtp.client-ip=209.85.221.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	s=arc-20240116; t=1783008461; c=relaxed/simple;
+	bh=68NmACw8V9kZ9Aq+1Kxesug2P51w5JThIGuO8iCMqZI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=upxE2gJs1uOmKBaZcWqKcKrXixCt0vh8KApzVYytY0FnFLsitscP97z00xj312NZ6EzgNKmqZrrQWKAJ+XqAadLOjLrf9XxQ+rLi5ZBW/KM7Ln4uHHpZ1uYCdQsZhxheCyn4eOUaaK+5uC/hk3gveRuVSmRN/vW4q9HSsFWu534=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RZKUR0qn; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qcvu0ze9"
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-470174001a0so1471225f8f.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 02 Jul 2026 09:01:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1783008079; x=1783612879; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:references:cc:to:subject:reply-to:from:user-agent
-         :mime-version:date:message-id:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=hyBy6M8pfJIet42O2HWF6w856c4etTz6bW2vlxGM7bE=;
-        b=qcvu0ze9knQdyy7XSpg0RxIBvyDILTQ1jwB++2I7RgGltyi6TfCMP4RFvEa51zlhpm
-         vjlNcgjYyD8BaLM29TzSfc1EWh1YTddYZkZlu8zZbnwiOhP0VFM29mJLOna5hDPKlAYt
-         +kmbM5KOmW+l5JCP+PKge4LTd1SESq/M5LgyA8zoxqleLTb4cLepiG80Riu6oJXRd+4n
-         dQekd6oLKSusQp1Itjb1HsXRvVTgRRZxKbnfmHT28lh3cAcjz9h0TpLgwEjEUveLpyGX
-         dethFK015mZqebhXYxROzoxDo9dfbQIrxHbVPVV19es5tr7ENZvUluVoFNKWOIr6IKaP
-         CYcA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783008079; x=1783612879;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:references:cc:to:subject:reply-to:from:user-agent
-         :mime-version:date:message-id:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hyBy6M8pfJIet42O2HWF6w856c4etTz6bW2vlxGM7bE=;
-        b=Z8dGP4zhbSEInRDTrE9OeWPuoE0b86RWjoPo6BjnXjlhjGEESGNN7saSXi5jQxRt4Y
-         Q3MvSZxqHBg7nLEDJ35LX4jGYBZTdOVkg4wJuFcnHig6yZO4JHT1EIfdUx++X1MGUFVd
-         beEstoZ+AHPvT7AQ46PqxQBRLNPMS+y2jGfCkyWsjgcv8icaNyhFi0RlvRRMcG11aoRa
-         GLwV54tM69rJkrJ1YsIyAqTq1MsT8dfDz2te3AkYXOsHMhFHUCNDO/BcBmLufrKlYPOZ
-         A0fa2BGyr79hED1p2YNwwe6Vk2KsztEinfafkCTdCx1CzZyNg1crUko2Q1e0XhgIs9mh
-         9u5g==
-X-Forwarded-Encrypted: i=1; AHgh+Rp7fd3+lx9IX3uq90/rm5sdzRcYfTra1cDrOQQqMPI5RvhwRiKuFKQ9Zsw5hF1w2MfP9a7LumYy1gRv6w==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyI206xyzbkJnjS0TFcs8XHtdiEgaUczyDOZkimzvZVtCTEBUyp
-	djpwCnRHrhpTMqUN9oDztKC43feaTATvluJ55PE/KhvRUMoYA6oCswa18aESxDi7hCo=
-X-Gm-Gg: AfdE7cnLBfCuszv2Srt76hJIaGkLDHMJhRsHdZKJR8hq3Yn0b8lD4tcNWLMDjZPrQT2
-	kfNAuzCU3Wj2W/g3LKmZzUl4QSUwe4jS1e5+UOF4SQzv2yMpGfjsHkIrNlaIQVnQ15sfE+J3fHB
-	lJ6PQ7rUtk2Q7t+szRYJxSrW8y5tgW25KUDbS9HrJM2spRoKH3bsYVhCcfrjN6tN5LZCktJbBzs
-	DIcKD4OeTG+ig1sz/SfMXi9yuOjubOLoo2wVfqbSP/vv+6cfw2/9HGe06vjNbTxLWXrOt9+kG2l
-	urPSoU9zN7/hS1Lvpt5NC6X2BdvcNPY0siS4FcLSNx2ZHslcQEzvhPWTqeod9ViYDtPPeJhzLu/
-	MV2D+Q4th+FKEYruvKiUa9jf7K/wPMS80m8+WBnG1O49XNrEI2Yy/fXQvv9/ylN8Lik7flEDx5c
-	vSxvZIw6buaHxzUbT26dAxFe79GABKnpaME+k6tx9W+JBGVal7xzw+/qgKQ1PFm6a4LwCk
-X-Received: by 2002:a05:6000:2c0d:b0:460:3234:4472 with SMTP id ffacd0b85a97d-477b5487cb9mr8516113f8f.40.1783008079349;
-        Thu, 02 Jul 2026 09:01:19 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:106d:1080:bbc2:d1c5:84fa:44fb? ([2a01:e0a:106d:1080:bbc2:d1c5:84fa:44fb])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-477db8a4b73sm10118644f8f.15.2026.07.02.09.01.16
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 02 Jul 2026 09:01:17 -0700 (PDT)
-Message-ID: <a3c69349-2be8-486e-adba-55df32c291db@linaro.org>
-Date: Thu, 2 Jul 2026 18:01:14 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RZKUR0qn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C8A31F000E9;
+	Thu,  2 Jul 2026 16:07:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783008453;
+	bh=TfvR3Muaq7o+afYbXjsDSvqRy7FxUVckvz1k4Hxbez0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=RZKUR0qnMCX1lVPMLegWDJwvMR3XwPOjgqmuDlY8+1sNyGBX6G0WNkOyriJ+PtG6y
+	 WoL1rkJ4u0k6Z/pcI27Q9cfN5qit8W5zrOm26I9VdyLr6cW2bUvNsdF/9cAdED/TO5
+	 AhCJxe7BVGNUURRd3IeizZOkboEYr9oFtXUUDXIMY549O+sfZleE5cdwLHHY1Mnd5w
+	 fUEwk8w3Bqh1uArvHx8Wkw0ChPSb59uuaQpmYgj0hIESSw8+X4zGBfFv8Mg5ixvDOI
+	 z8XtFU+Dq4mFlmkaOHGXh7hbxcLj3TzRDApEJrIOyiLSNEjyj9JwDrdlVKeNPP3pCm
+	 r9BU9h8EBQzqg==
+Date: Thu, 2 Jul 2026 17:07:10 +0100
+From: Lorenzo Stoakes <ljs@kernel.org>
+To: Lance Yang <lance.yang@linux.dev>
+Cc: akpm@linux-foundation.org, tsbogend@alpha.franken.de, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, maarten.lankhorst@linux.intel.com, 
+	mripard@kernel.org, tzimmermann@suse.de, airlied@gmail.com, simona@ffwll.ch, 
+	l.stach@pengutronix.de, inki.dae@samsung.com, sw0312.kim@samsung.com, 
+	kyungmin.park@samsung.com, krzk@kernel.org, peter.griffin@linaro.org, 
+	jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, 
+	tursulin@ursulin.net, robin.clark@oss.qualcomm.com, lumag@kernel.org, lyude@redhat.com, 
+	dakr@kernel.org, tomi.valkeinen@ideasonboard.com, hjc@rock-chips.com, 
+	heiko@sntech.de, andy.yan@rock-chips.com, thierry.reding@kernel.org, 
+	mperttunen@nvidia.com, jonathanh@nvidia.com, kraxel@redhat.com, 
+	dmitry.osipenko@collabora.com, zack.rusin@broadcom.com, matthew.brost@intel.com, 
+	thomas.hellstrom@linux.intel.com, oleksandr_andrushchenko@epam.com, deller@gmx.de, bcrl@kvack.org, 
+	viro@zeniv.linux.org.uk, brauner@kernel.org, muchun.song@linux.dev, osalvador@suse.de, 
+	david@kernel.org, ziy@nvidia.com, baolin.wang@linux.alibaba.com, 
+	liam@infradead.org, npache@redhat.com, ryan.roberts@arm.com, dev.jain@arm.com, 
+	baohua@kernel.org, hughd@google.com, vbabka@kernel.org, rppt@kernel.org, 
+	surenb@google.com, mhocko@suse.com, jannh@google.com, pfalcato@suse.de, 
+	kees@kernel.org, perex@perex.cz, tiwai@suse.com, linux-mips@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, 
+	etnaviv@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
+	linux-samsung-soc@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-arm-msm@vger.kernel.org, 
+	freedreno@lists.freedesktop.org, nouveau@lists.freedesktop.org, 
+	linux-rockchip@lists.infradead.org, linux-tegra@vger.kernel.org, virtualization@lists.linux.dev, 
+	intel-xe@lists.freedesktop.org, xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org, 
+	linux-aio@kvack.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, 
+	linux-sound@vger.kernel.org
+Subject: Re: [PATCH 13/13] mm/mremap: convert mremap code to use vma_flags_t
+Message-ID: <akaJx8Zt8kazlrjq@lucifer>
+References: <380f761d35a3faa4370f8b3f92e3d4af3d4c7110.1782760670.git.ljs@kernel.org>
+ <20260702134947.25189-1-lance.yang@linux.dev>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Neil Armstrong <neil.armstrong@linaro.org>
-Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
-Subject: Re: [PATCH v5 2/2] backlight: Add SY7758 6-channel High Efficiency
- LED Driver support
-To: Lee Jones <lee@kernel.org>
-Cc: Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
- Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
- dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, KancyJoe <kancy2333@outlook.com>
-References: <20260529-topic-sm8650-ayaneo-pocket-s2-sy7758-v5-0-03aacd49747c@linaro.org>
- <20260529-topic-sm8650-ayaneo-pocket-s2-sy7758-v5-2-03aacd49747c@linaro.org>
- <20260702155157.GX2108533@google.com>
-Content-Language: en-US, fr
-Autocrypt: addr=neil.armstrong@linaro.org; keydata=
- xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
- GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
- BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
- qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
- 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
- AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
- OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
- Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
- YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
- GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
- UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
- GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
- yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
- QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
- SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
- 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
- Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
- oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
- M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
- 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
- KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
- 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
- QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
-Organization: Linaro
-In-Reply-To: <20260702155157.GX2108533@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260702134947.25189-1-lance.yang@linux.dev>
 
-Hi Lee,
+On Thu, Jul 02, 2026 at 09:49:47PM +0800, Lance Yang wrote:
+>
+> On Mon, Jun 29, 2026 at 08:25:36PM +0100, Lorenzo Stoakes wrote:
+> >Replace use of the legacy vm_flags_t flags with vma_flags_t values
+> >throughout the mremap logic.
+> >
+> >Additionally update comments to reflect the changes to be consistent.
+> >
+> >No functional change intended.
+> >
+> >Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
+> >---
+>
+> The vm_flags_set() cases below spell out vma_start_write(), but the
+> vm_flags_clear() cases don't?
 
-On 7/2/26 17:51, Lee Jones wrote:
-> Please consider these:
-> 
-> /* Sashiko Automation: Issues Found (4 Findings) */
-> 
-> On Fri, 29 May 2026, Neil Armstrong wrote:
-> 
->> From: KancyJoe <kancy2333@outlook.com>
->>
->> Implement support for the Silergy SY7758 6-channel High Efficiency LED
->> Driver used for backlight brightness control in the Ayaneo Pocket S2
->> dual-DSI panel.
->>
->> Signed-off-by: KancyJoe <kancy2333@outlook.com>
->> Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
->> ---
->>   drivers/video/backlight/Kconfig  |   8 ++
->>   drivers/video/backlight/Makefile |   1 +
->>   drivers/video/backlight/sy7758.c | 259 +++++++++++++++++++++++++++++++++++++++
->>   3 files changed, 268 insertions(+)
->>
->> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
->> index a7a3fbaf7c29..a1f70a2bae99 100644
->> --- a/drivers/video/backlight/Kconfig
->> +++ b/drivers/video/backlight/Kconfig
->> @@ -207,6 +207,14 @@ config BACKLIGHT_KTZ8866
->>   		Say Y to enable the backlight driver for the Kinetic KTZ8866
->>   		found in Xiaomi Mi Pad 5 series.
->>   
->> +config BACKLIGHT_SY7758
->> +	tristate "Backlight Driver for Silergy SY7758"
->> +	depends on I2C
->> +	select REGMAP_I2C
->> +	help
->> +	  Say Y to enable the backlight driver for the Silergy SY7758
->> +	  backlight controller found in Ayaneo Pocket S2.
->> +
->>   config BACKLIGHT_LM3533
->>   	tristate "Backlight Driver for LM3533"
->>   	depends on MFD_LM3533
->> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
->> index 794820a98ed4..39ef588b1cf2 100644
->> --- a/drivers/video/backlight/Makefile
->> +++ b/drivers/video/backlight/Makefile
->> @@ -56,6 +56,7 @@ obj-$(CONFIG_BACKLIGHT_PWM)		+= pwm_bl.o
->>   obj-$(CONFIG_BACKLIGHT_QCOM_WLED)	+= qcom-wled.o
->>   obj-$(CONFIG_BACKLIGHT_RT4831)		+= rt4831-backlight.o
->>   obj-$(CONFIG_BACKLIGHT_SAHARA)		+= kb3886_bl.o
->> +obj-$(CONFIG_BACKLIGHT_SY7758)		+= sy7758.o
->>   obj-$(CONFIG_BACKLIGHT_SKY81452)	+= sky81452-backlight.o
->>   obj-$(CONFIG_BACKLIGHT_TPS65217)	+= tps65217_bl.o
->>   obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
->> diff --git a/drivers/video/backlight/sy7758.c b/drivers/video/backlight/sy7758.c
->> new file mode 100644
->> index 000000000000..786589cb8df9
->> --- /dev/null
->> +++ b/drivers/video/backlight/sy7758.c
->> @@ -0,0 +1,259 @@
->> +// SPDX-License-Identifier: GPL-2.0-only
->> +/*
->> + * Silergy SY7758 6-channel High Efficiency LED Driver
->> + *
->> + * Copyright (C) 2025 Kancy Joe <kancy2333@outlook.com>
->> + * Copyright (C) 2026 Linaro Limited
->> + * Author: Neil Armstrong <neil.armstrong@linaro.org>
->> + */
->> +#include <linux/backlight.h>
->> +#include <linux/module.h>
->> +#include <linux/i2c.h>
->> +#include <linux/of.h>
->> +#include <linux/err.h>
->> +#include <linux/bits.h>
->> +#include <linux/delay.h>
->> +#include <linux/regmap.h>
->> +#include <linux/bitfield.h>
->> +#include <linux/gpio/consumer.h>
->> +#include <linux/regulator/consumer.h>
->> +
->> +#define DEFAULT_BRIGHTNESS	1024
->> +#define MAX_BRIGHTNESS		4080
->> +#define REG_MAX			0xAE
->> +
->> +/* Registers */
->> +#define REG_DEV_CTL		0x01
->> +#define REG_DEV_ID		0x03
->> +#define REG_BRT_12BIT_L		0x10
->> +#define REG_BRT_12BIT_H		0x11
->> +
->> +/* OTP memory */
->> +#define REG_OTP_CFG0		0xA0
->> +#define REG_OTP_CFG1		0xA1
->> +#define REG_OTP_CFG2		0xA2
->> +#define REG_OTP_CFG5		0xA5
->> +#define REG_OTP_CFG9		0xA9
->> +
->> +/* Fields */
->> +#define BIT_DEV_CTL_FAST	BIT(7)
->> +#define MSK_DEV_CTL_BRT_MODE	GENMASK(2, 1)
->> +#define BIT_DEV_CTL_BL_CTLB	BIT(0)
->> +
->> +#define MSK_BRT_12BIT_L		GENMASK(7, 0)
->> +#define MSK_BRT_12BIT_H		GENMASK(3, 0)
->> +
->> +#define MSK_CFG0_CURRENT_LOW	GENMASK(7, 0)
->> +
->> +#define BIT_CFG1_PDET_STDBY	BIT(7)
->> +#define MSK_CFG1_CURRENT_MAX	GENMASK(6, 4)
->> +#define MSK_CFG1_CURRENT_HIGH	GENMASK(3, 0)
->> +
->> +#define BIT_CFG2_UVLO_EN	BIT(5)
->> +#define BIT_CFG2_UVLO_TH	BIT(4)
->> +#define BIT_CFG2_BL_ON		BIT(3)
->> +#define BIT_CFG2_ISET_EN	BIT(2)
->> +#define BIT_CFG2_BST_ESET_EN	BIT(1)
->> +
->> +#define BIT_CFG5_PWM_DIRECT	BIT(7)
->> +#define MSK_CFG5_PS_MODE	GENMASK(6, 4)
->> +#define MSK_CFG5_PWM_FREQ	GENMASK(3, 0)
->> +
->> +#define MSK_CFG9_VBST_MAX	GENMASK(7, 5)
->> +#define BIT_CFG9_JUMP_EN	BIT(4)
->> +#define MSK_CFG9_JUMP_TH	GENMASK(3, 2)
->> +#define MSK_CFG9_JUMP_VOLTAGE	GENMASK(1, 0)
->> +
->> +struct sy7758 {
->> +	struct i2c_client *client;
->> +	struct regmap *regmap;
->> +	struct gpio_desc *gpio;
->> +	struct backlight_device *bl;
->> +};
->> +
->> +static const struct regmap_config sy7758_regmap_config = {
->> +	.reg_bits = 8,
->> +	.val_bits = 8,
->> +	.max_register = REG_MAX,
->> +};
->> +
->> +static int sy7758_backlight_update_status(struct backlight_device *backlight_dev)
->> +{
->> +	struct sy7758 *sydev = bl_get_data(backlight_dev);
->> +	unsigned int brightness = backlight_get_brightness(backlight_dev);
->> +	int ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_BRT_12BIT_L,
->> +			   FIELD_PREP(MSK_BRT_12BIT_L,
->> +				      brightness & 0xff));
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_BRT_12BIT_H,
->> +			   FIELD_PREP(MSK_BRT_12BIT_H,
->> +				      (brightness >> 8) & 0xf));
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
->> +}
->> +
->> +static const struct backlight_ops sy7758_backlight_ops = {
->> +	.options = BL_CORE_SUSPENDRESUME,
->> +	.update_status = sy7758_backlight_update_status,
->> +};
-> 
-> [Severity: High]
-> This driver sets the BL_CORE_SUSPENDRESUME option, which relies on the
-> backlight core to blank and unblank the brightness on suspend and resume.
-> However, if the system's power management cuts power to the vdd regulator
-> during suspend, won't the device lose all the configuration state established
-> in sy7758_init()?
+Yep as I said elsewhere, implicitly taking the lock is terrible and me doing
+this is completely on purpose to get rid of that :)
 
-This will never happen, if we don't disable the regulators they will stay on during system suspend.
+But I haven't been clear enough clearly, so I should put the argument as to why
+that's ok in the commit message.
 
-> 
-> Because there are no standard pm_ops to re-apply this initialization sequence
-> upon resume, it seems the backlight might operate with incorrect parameters or
-> fail to turn on. Should this driver implement a resume callback to restore the
-> volatile hardware configuration?
-> 
-> 
-> 
->> +
->> +static int sy7758_init(struct sy7758 *sydev)
->> +{
->> +	int ret = 0;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_DEV_CTL,
->> +			   BIT_DEV_CTL_FAST | BIT_DEV_CTL_BL_CTLB |
->> +			   FIELD_PREP(MSK_DEV_CTL_BRT_MODE, 2));
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_BRT_12BIT_L,
->> +			   FIELD_PREP(MSK_BRT_12BIT_L,
->> +				      DEFAULT_BRIGHTNESS & 0xff));
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_BRT_12BIT_H,
->> +			   FIELD_PREP(MSK_BRT_12BIT_H,
->> +				      (DEFAULT_BRIGHTNESS >> 8)));
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_OTP_CFG5,
->> +			   FIELD_PREP(MSK_CFG5_PS_MODE, 6) |
->> +			   FIELD_PREP(MSK_CFG5_PWM_FREQ, 4));
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_OTP_CFG0,
->> +			   FIELD_PREP(MSK_CFG0_CURRENT_LOW, 85));
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_OTP_CFG1,
->> +			   BIT_CFG1_PDET_STDBY |
->> +			   FIELD_PREP(MSK_CFG1_CURRENT_MAX, 1) |
->> +			   FIELD_PREP(MSK_CFG1_CURRENT_HIGH, 10));
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_OTP_CFG9,
->> +			   FIELD_PREP(MSK_CFG9_VBST_MAX, 4));
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(sydev->regmap, REG_OTP_CFG2,
->> +			   BIT_CFG2_BL_ON | BIT_CFG2_UVLO_EN);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
->> +}
->> +
->> +static int sy7758_probe(struct i2c_client *client)
->> +{
->> +	struct backlight_properties props = { };
->> +	struct device *dev = &client->dev;
->> +	struct sy7758 *sydev;
->> +	unsigned int dev_id;
->> +	int ret;
->> +
->> +	sydev = devm_kzalloc(dev, sizeof(*sydev), GFP_KERNEL);
->> +	if (!sydev)
->> +		return -ENOMEM;
->> +
->> +	i2c_set_clientdata(client, sydev);
->> +
->> +	/* Initialize regmap */
->> +	sydev->client = client;
->> +	sydev->regmap = devm_regmap_init_i2c(client, &sy7758_regmap_config);
->> +	if (IS_ERR(sydev->regmap))
->> +		return dev_err_probe(dev, PTR_ERR(sydev->regmap),
->> +				     "failed to init regmap\n");
->> +
->> +	/* Get and enable regulator */
->> +	ret = devm_regulator_get_enable(dev, "vdd");
->> +	if (ret)
->> +		return dev_err_probe(dev, ret, "failed to get regulator\n");
->> +
->> +	fsleep(100);
->> +
->> +	/* Get enable GPIO and set to high */
->> +	sydev->gpio = devm_gpiod_get(dev, "enable", GPIOD_OUT_HIGH);
->> +	if (IS_ERR(sydev->gpio))
->> +		return dev_err_probe(dev, PTR_ERR(sydev->gpio),
->> +				     "failed to get enable GPIO\n");
-> 
-> [Severity: Medium]
-> Is it possible for the enable pin to be hardwired to a power rail on some
-> hardware designs? Using devm_gpiod_get() makes this GPIO strictly mandatory
-> and fails the probe if the enable-gpios property is absent in the Device Tree.
-> Would devm_gpiod_get_optional() be more appropriate here?
-> 
+Will do so on respin.
 
-This makes no sense, the enable gpio is required per the spec, and is required in the bindings.
+>
+> Thanks, Lance
+>
+> > mm/mremap.c | 38 ++++++++++++++++++++------------------
+> > 1 file changed, 20 insertions(+), 18 deletions(-)
+> >
+> >diff --git a/mm/mremap.c b/mm/mremap.c
+> >index 079a0ba0c4a7..0ea43302b7ed 100644
+> >--- a/mm/mremap.c
+> >+++ b/mm/mremap.c
+> >@@ -68,7 +68,7 @@ struct vma_remap_struct {
+> > 	bool populate_expand;		/* mlock()'d expanded, must populate. */
+> > 	enum mremap_type remap_type;	/* expand, shrink, etc. */
+> > 	bool mmap_locked;		/* Is mm currently write-locked? */
+> >-	unsigned long charged;		/* If VM_ACCOUNT, # pages to account. */
+> >+	unsigned long charged;		/* If VMA_ACCOUNT_BIT, # pgs to account */
+> > 	bool vmi_needs_invalidate;	/* Is the VMA iterator invalidated? */
+> > };
+> >
+> >@@ -954,7 +954,7 @@ static unsigned long vrm_set_new_addr(struct vma_remap_struct *vrm)
+> >
+> > 	if (vrm->flags & MREMAP_FIXED)
+> > 		map_flags |= MAP_FIXED;
+> >-	if (vma->vm_flags & VM_MAYSHARE)
+> >+	if (vma_test(vma, VMA_MAYSHARE_BIT))
+> > 		map_flags |= MAP_SHARED;
+> >
+> > 	res = get_unmapped_area(vma->vm_file, new_addr, vrm->new_len, pgoff,
+> >@@ -976,7 +976,7 @@ static bool vrm_calc_charge(struct vma_remap_struct *vrm)
+> > {
+> > 	unsigned long charged;
+> >
+> >-	if (!(vrm->vma->vm_flags & VM_ACCOUNT))
+> >+	if (!vma_test(vrm->vma, VMA_ACCOUNT_BIT))
+> > 		return true;
+> >
+> > 	/*
+> >@@ -1003,7 +1003,7 @@ static bool vrm_calc_charge(struct vma_remap_struct *vrm)
+> >  */
+> > static void vrm_uncharge(struct vma_remap_struct *vrm)
+> > {
+> >-	if (!(vrm->vma->vm_flags & VM_ACCOUNT))
+> >+	if (!vma_test(vrm->vma, VMA_ACCOUNT_BIT))
+> > 		return;
+> >
+> > 	vm_unacct_memory(vrm->charged);
+> >@@ -1023,7 +1023,7 @@ static void vrm_stat_account(struct vma_remap_struct *vrm,
+> > 	struct vm_area_struct *vma = vrm->vma;
+> >
+> > 	vm_stat_account(mm, vma->vm_flags, pages);
+> >-	if (vma->vm_flags & VM_LOCKED)
+> >+	if (vma_test(vma, VMA_LOCKED_BIT))
+> > 		mm->locked_vm += pages;
+> > }
+> >
+> >@@ -1167,7 +1167,7 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
+> > 	 * arose, in which case we _do_ wish to unmap the _new_ VMA, which means
+> > 	 * we actually _do_ want it be unaccounted.
+> > 	 */
+> >-	bool accountable_move = (vma->vm_flags & VM_ACCOUNT) &&
+> >+	bool accountable_move = vma_test(vma, VMA_ACCOUNT_BIT) &&
+> > 		!(vrm->flags & MREMAP_DONTUNMAP);
+> >
+> > 	/*
+> >@@ -1186,7 +1186,7 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
+> > 	 * portions of the original VMA that remain.
+> > 	 */
+> > 	if (accountable_move) {
+> >-		vm_flags_clear(vma, VM_ACCOUNT);
+> >+		vma_clear_flags(vma, VMA_ACCOUNT_BIT);
 
-> 
-> [Severity: High]
-> The enable GPIO is asserted high here, but is there a mechanism to ensure it
-> is explicitly driven low during driver removal or if the probe fails later?
+This is called from move_vma() which holds the VMA write lock on vma.
 
-This is not an issue, the enable is required to be high when operating the IC
-which depends on vdd to be on. No need to put it back.
+> > 		/* We are about to split vma, so store the start/end. */
+> > 		vm_start = vma->vm_start;
+> > 		vm_end = vma->vm_end;
+> >@@ -1211,8 +1211,8 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
+> > 	 * |             |
+> > 	 * |-------------|
+> > 	 *
+> >-	 * Having cleared VM_ACCOUNT from the whole VMA, after we unmap above
+> >-	 * we'll end up with:
+> >+	 * Having cleared VMA_ACCOUNT_BIT from the whole VMA, after we unmap
+> >+	 * above we'll end up with:
+> > 	 *
+> > 	 *    addr  end
+> > 	 *     |     |
+> >@@ -1232,13 +1232,15 @@ static void unmap_source_vma(struct vma_remap_struct *vrm)
+> > 		if (vm_start < addr) {
+> > 			struct vm_area_struct *prev = vma_prev(&vmi);
+> >
+> >-			vm_flags_set(prev, VM_ACCOUNT); /* Acquires VMA lock. */
+> >+			vma_start_write(prev);
+> >+			vma_set_flags(prev, VMA_ACCOUNT_BIT);
+> > 		}
+> >
+> > 		if (vm_end > end) {
+> > 			struct vm_area_struct *next = vma_next(&vmi);
+> >
+> >-			vm_flags_set(next, VM_ACCOUNT); /* Acquires VMA lock. */
+> >+			vma_start_write(next);
+> >+			vma_set_flags(next, VMA_ACCOUNT_BIT);
 
-> 
-> If devres automatically disables the vdd regulator while the host is still
-> driving the GPIO high, couldn't this back-power the chip through its internal
-> ESD protection diodes and cause hardware damage? Using
-> devm_add_action_or_reset() to drive the GPIO low before the regulator is
-> disabled might prevent this.
+These need vma_start_write() as referencing other, unlocked VMAs.
 
-No, spec says this won't happen and is safe.
+> > 		}
+> > 	}
+> > }
+> >@@ -1321,8 +1323,8 @@ static void dontunmap_complete(struct vma_remap_struct *vrm,
+> > 	unsigned long old_start = vrm->vma->vm_start;
+> > 	unsigned long old_end = vrm->vma->vm_end;
+> >
+> >-	/* We always clear VM_LOCKED[ONFAULT] on the old VMA. */
+> >-	vm_flags_clear(vrm->vma, VM_LOCKED_MASK);
+> >+	/* We always clear VMA_LOCKED[ONFAULT]_BIT on the old VMA. */
+> >+	vma_clear_flags_mask(vrm->vma, VMA_LOCKED_MASK);
+-
+Same as above, called from move_vma() with VMA write lock held.
 
-> 
-> 
-> 
->> +
->> +	/* Let some time for HW to settle */
->> +	fsleep(10000);
->> +
->> +	/* try read and check device id */
->> +	ret = regmap_read(sydev->regmap, REG_DEV_ID, &dev_id);
->> +	if (ret < 0)
->> +		return dev_err_probe(dev, ret, "failed to read device id\n");
->> +	if (dev_id != 0x63) {
->> +		dev_err(dev, "unexpected device id: 0x%02x\n", dev_id);
->> +		return -ENODEV;
->> +	}
->> +
->> +	/* Initialize and set default brightness */
->> +	ret = sy7758_init(sydev);
->> +	if (ret)
->> +		return ret;
->> +
->> +	props.type = BACKLIGHT_RAW;
->> +	props.max_brightness = MAX_BRIGHTNESS;
->> +	props.brightness = DEFAULT_BRIGHTNESS;
->> +	props.scale = BACKLIGHT_SCALE_LINEAR;
->> +
->> +	sydev->bl = devm_backlight_device_register(dev, "sy7758-backlight",
->> +						   dev, sydev, &sy7758_backlight_ops,
->> +						   &props);
->> +	if (IS_ERR(sydev->bl))
->> +		return dev_err_probe(dev, PTR_ERR(sydev->bl),
->> +				     "failed to register backlight device\n");
->> +
->> +	return backlight_update_status(sydev->bl);
->> +}
->> +
->> +static void sy7758_remove(struct i2c_client *client)
->> +{
->> +	struct sy7758 *sydev = i2c_get_clientdata(client);
->> +
->> +	backlight_disable(sydev->bl);
->> +}
-> 
-> [Severity: Medium]
-> Since the backlight was registered using devm_backlight_device_register(),
-> devres will unregister the sysfs interface after sy7758_remove() returns.
+> >
+> > 	/*
+> > 	 * anon_vma links of the old vma is no longer needed after its page
+> >@@ -1758,14 +1760,14 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
+> > 	 * based on the original.  There are no known use cases for this
+> > 	 * behavior.  As a result, fail such attempts.
+> > 	 */
+> >-	if (!old_len && !(vma->vm_flags & (VM_SHARED | VM_MAYSHARE))) {
+> >+	if (!old_len && !vma_test_any(vma, VMA_SHARED_BIT, VMA_MAYSHARE_BIT)) {
+> > 		pr_warn_once("%s (%d): attempted to duplicate a private mapping with mremap.  This is not supported.\n",
+> > 			     current->comm, current->pid);
+> > 		return -EINVAL;
+> > 	}
+> >
+> > 	if ((vrm->flags & MREMAP_DONTUNMAP) &&
+> >-			(vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP)))
+> >+	    vma_test_any(vma, VMA_DONTEXPAND_BIT, VMA_PFNMAP_BIT))
+> > 		return -EINVAL;
+> >
+> > 	/*
+> >@@ -1795,7 +1797,7 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
+> > 		return 0;
+> >
+> > 	/* We are expanding and the VMA is mlock()'d so we need to populate. */
+> >-	if (vma->vm_flags & VM_LOCKED)
+> >+	if (vma_test(vma, VMA_LOCKED_BIT))
+> > 		vrm->populate_expand = true;
+> >
+> > 	/* Need to be careful about a growing mapping */
+> >@@ -1803,10 +1805,10 @@ static int check_prep_vma(struct vma_remap_struct *vrm)
+> > 	if (pgoff + (new_len >> PAGE_SHIFT) < pgoff)
+> > 		return -EINVAL;
+> >
+> >-	if (vma->vm_flags & (VM_DONTEXPAND | VM_PFNMAP))
+> >+	if (vma_test_any(vma, VMA_DONTEXPAND_BIT, VMA_PFNMAP_BIT))
+> > 		return -EFAULT;
+> >
+> >-	if (!mlock_future_ok(mm, vma->vm_flags & VM_LOCKED, vrm->delta))
+> >+	if (!mlock_future_ok(mm, vma_test(vma, VMA_LOCKED_BIT), vrm->delta))
+> > 		return -EAGAIN;
+> >
+> > 	if (!may_expand_vm(mm, &vma->flags, vrm->delta >> PAGE_SHIFT))
+> >--
+> >2.54.0
+> >
+> >
 
-this will never happen.
-
-> 
-> Does this leave a race window where userspace could concurrently write to the
-> sysfs brightness file and re-enable the hardware right after
-> backlight_disable() turns it off?
-> 
->> +
->> +static const struct i2c_device_id sy7758_ids[] = {
->> +	{ "sy7758" },
->> +	{ }
->> +};
->> +MODULE_DEVICE_TABLE(i2c, sy7758_ids);
->> +
->> +static const struct of_device_id sy7758_match_table[] = {
->> +	{ .compatible = "silergy,sy7758", },
->> +	{ },
->> +};
->> +MODULE_DEVICE_TABLE(of, sy7758_match_table);
->> +
->> +static struct i2c_driver sy7758_driver = {
->> +	.driver = {
->> +		.name = "sy7758",
->> +		.of_match_table = sy7758_match_table,
->> +	},
->> +	.probe = sy7758_probe,
->> +	.remove = sy7758_remove,
->> +	.id_table = sy7758_ids,
->> +};
->> +
->> +module_i2c_driver(sy7758_driver);
->> +
->> +MODULE_DESCRIPTION("Silergy SY7758 Backlight Driver");
->> +MODULE_AUTHOR("Kancy Joe <kancy2333@outlook.com>");
->> +MODULE_AUTHOR("Neil Armstrong <neil.armstrong@linaro.org>");
->> +MODULE_LICENSE("GPL");
->>
->> -- 
->> 2.34.1
->>
-> 
-
-Thanks,
-Neil
+Cheers, Lorenzo

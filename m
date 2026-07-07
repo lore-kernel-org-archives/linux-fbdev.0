@@ -1,182 +1,85 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0278C42252D
-	for <linux-fbdev@vger.kernel.org>; Tue,  7 Jul 2026 13:58:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9AF63F4824;
+	Tue,  7 Jul 2026 14:17:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783432684; cv=none; b=CKbpuFvCQYokLjciIamU7KVnJKZCiVcuriW++WBiob5DPOpfz7BkIwcpz714VLMwZvW2EQkyAqeAJKbWMJBvqnfUmTL0xGiLCVwssngS10SryAwnGG70ymkzlvmPS1Ct9OvgP5nhs3yq0F3ZmkbmqYjWZ9zxC7RIkwADyieVXrc=
+	t=1783433855; cv=none; b=nuH0qabSszVHVkpnjT2m54ZM9TWTdpr03C9tAxLLrNpkrbBJWppzFvSeBP6YnKIU+u4OMJrGxFHRk9VXCVZjhnYLWBuk3iJuCMIJrMkY8Fs3DEJCimEz4VOC5yyyhDrRQ5BXTsEiMP/ywh+JN8hRIN9cvHLCpKEXuNprKbxY5WM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783432684; c=relaxed/simple;
-	bh=tmeRXeJNfg2VeObxWKXrULMSOLvSZELw4ccb2cY65fM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mXt06KkC+OAcEL1O8Vqem0xsapzp9UMCnQfvBNEmSoKbaoIOIxjHFTA1yZ3hFLf/V/LrpBaqICTGRKWsBaEZwwUM0g07KHib4nZ0vxajBYdd7zUboBuXX6VzOv2cKDbb4d4lVteP7QQuvxioYszcGzoUzBnqOM0zVnKk0tEWvzU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zrv2jo0Y; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=nA3CUPqh; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zrv2jo0Y; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=nA3CUPqh; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1783433855; c=relaxed/simple;
+	bh=eajTuACd/4IgS5su39Ql1WyiKQbMRkIT0R0MD1NPBh4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ApQSBS94IP21KSv+9Jlsega4rXMF00GvQ577QpnuSJSlnXnBXHTCeSz8iMBE8UloLOSulzncEanqhvQqNUlRxyOqYc+1mZq2E+Pv6d/tXl6Zj0c3LZt6ie/bFNtii1gaTG7gVIYNu3IVsPLOmwyHhJJPi4pKKDZbsfLzVkvaTH4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=MHjbv5Ph; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zrv2jo0Y";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="nA3CUPqh";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zrv2jo0Y";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="nA3CUPqh"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 2DC9D75CC4;
-	Tue,  7 Jul 2026 13:57:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783432655; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gezhe42hCPuf8EJ5YT9wfwNAIh+Y34zKtMBp5FToaFc=;
-	b=zrv2jo0Y9kQ8hic3l6dlQwiACP+CSHn3K9S8zHi0UAHt2qeH+2JfmKogqKEQB7lwPGQg9b
-	NNufZTCUl5VV5EPL9+6+x3EpEkIOrFtxUYccLmTsyvyBxkumHzfBdNGoAGnP1h1siaF8RY
-	2uDGAu+ycwXVH6J+3jcmhS/p4YDtsIw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783432655;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gezhe42hCPuf8EJ5YT9wfwNAIh+Y34zKtMBp5FToaFc=;
-	b=nA3CUPqhNNZV29K9KCZwdEMICNzKf14++DVHz3lQM1in+eCBjFVcXK0dtBAOWTcAmlDoGB
-	TzyOEyioQpKHp/Bw==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=zrv2jo0Y;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=nA3CUPqh
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783432655; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gezhe42hCPuf8EJ5YT9wfwNAIh+Y34zKtMBp5FToaFc=;
-	b=zrv2jo0Y9kQ8hic3l6dlQwiACP+CSHn3K9S8zHi0UAHt2qeH+2JfmKogqKEQB7lwPGQg9b
-	NNufZTCUl5VV5EPL9+6+x3EpEkIOrFtxUYccLmTsyvyBxkumHzfBdNGoAGnP1h1siaF8RY
-	2uDGAu+ycwXVH6J+3jcmhS/p4YDtsIw=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783432655;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gezhe42hCPuf8EJ5YT9wfwNAIh+Y34zKtMBp5FToaFc=;
-	b=nA3CUPqhNNZV29K9KCZwdEMICNzKf14++DVHz3lQM1in+eCBjFVcXK0dtBAOWTcAmlDoGB
-	TzyOEyioQpKHp/Bw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 40AA1779AF;
-	Tue,  7 Jul 2026 13:57:34 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id AISQDs4FTWoFSgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 07 Jul 2026 13:57:34 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: lukas@wunner.de,
-	jfalempe@redhat.com,
-	alexander.deucher@amd.com,
-	christian.koenig@amd.com,
-	airlied@gmail.com,
-	simona@ffwll.ch,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	jani.nikula@linux.intel.com,
-	joonas.lahtinen@linux.intel.com,
-	rodrigo.vivi@intel.com,
-	tursulin@ursulin.net,
-	lyude@redhat.com,
-	dakr@kernel.org,
-	deller@gmx.de
-Cc: dri-devel@lists.freedesktop.org,
-	amd-gfx@lists.freedesktop.org,
-	intel-gfx@lists.freedesktop.org,
-	nouveau@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	sashiko-reviews@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 09/10] drm/radeon: Implement struct vga_switcheroo_client_ops.pre_switch
-Date: Tue,  7 Jul 2026 15:38:16 +0200
-Message-ID: <20260707135724.247562-10-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260707135724.247562-1-tzimmermann@suse.de>
-References: <20260707135724.247562-1-tzimmermann@suse.de>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="MHjbv5Ph"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41E5D1F00A3D;
+	Tue,  7 Jul 2026 14:17:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1783433843;
+	bh=Jm32KnLzXJKqXIkeeFi/CJ1wSCoIc/iBf+3ICTnzYYM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=MHjbv5PhULcWiA3+yqNuQL3c3LwEzOakR8EgQAj5JTpAj1nGA219NfhM5vcgr9k4Q
+	 KG2vzT7K0DqifDRcgXn83s9GsNpLGiVVjnQT2XV7ZOWcfMOsc3mLQfwvH9jySdBtMK
+	 z5ejGeI9PV3/nrhXmmFjjwZt7+nsqgm/0ugxvR2I=
+Date: Tue, 7 Jul 2026 16:17:21 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: =?iso-8859-1?Q?Andr=E9?= Moreira <andrem.33333@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] staging: sm750fb: rename variables to comply with
+ kernel style
+Message-ID: <2026070751-user-kitten-e1a6@gregkh>
+References: <2026070710-exact-unveiling-e321@gregkh>
+ <20260707131529.38340-1-andrem.33333@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: 2DC9D75CC4
-X-Spam-Flag: NO
-X-Spam-Score: -3.01
-X-Spam-Level: 
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[99.99%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-0.998];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	ARC_NA(0.00)[];
-	FREEMAIL_TO(0.00)[wunner.de,redhat.com,amd.com,gmail.com,ffwll.ch,linux.intel.com,kernel.org,intel.com,ursulin.net,gmx.de];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	MIME_TRACE(0.00)[0:+];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCPT_COUNT_TWELVE(0.00)[22];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,suse.de:email,suse.de:mid];
-	FROM_EQ_ENVFROM(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RLgosu6qu4h11rje89ht7rjgg5)];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+In-Reply-To: <20260707131529.38340-1-andrem.33333@gmail.com>
 
-Call drm_client_dev_acquire_outputs() from vga_switcheroo's pre_switch
-callback. Pushes fbcon updates from vga_switcheroo into DRM's fbdev
-emulation.
+On Tue, Jul 07, 2026 at 10:15:28AM -0300, André Moreira wrote:
+> Rename 'setAllEngOff' to 'set_all_eng_off' within the 'init_status'
+> struct to avoid CamelCase and comply with the Linux kernel coding style.
+> 
+> Signed-off-by: André Moreira <andrem.33333@gmail.com>
+> ---
+> v4:
+>   - Drop register renames 'pvReg' to 'regs' as they were merged via another upstream patch.
+>   - Keep only the 'init_status' CamelCase cleanup.
+> 
+> drivers/staging/sm750fb/sm750.h | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+> index 0324778768cbc..3a1bd38ab347a 100644
+> --- a/drivers/staging/sm750fb/sm750.h
+> +++ b/drivers/staging/sm750fb/sm750.h
+> @@ -39,6 +39,15 @@ enum sm750_path {
+>  	sm750_pnc = 3,	/* panel and crt */
+>  };
+>  
+> +struct init_status {
+> +	ushort power_mode;
+> +	/* below three clocks are in unit of MHZ*/
+> +	ushort chip_clk;
+> +	ushort mem_clk;
+> +	ushort master_clk;
+> +	ushort set_all_eng_off;
+> +	ushort reset_memory;
+> +};
+>  
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/gpu/drm/radeon/radeon_device.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+The description of this patch seems to have nothing to do with the diff
+itself :(
 
-diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
-index 705c012fcf9e..8697a9eb5d13 100644
---- a/drivers/gpu/drm/radeon/radeon_device.c
-+++ b/drivers/gpu/drm/radeon/radeon_device.c
-@@ -1258,10 +1258,18 @@ static bool radeon_switcheroo_can_switch(struct pci_dev *pdev)
- 	return atomic_read(&dev->open_count) == 0;
- }
- 
-+static void radeon_switcheroo_pre_switch(struct pci_dev *pdev)
-+{
-+	struct drm_device *dev = pci_get_drvdata(pdev);
-+
-+	drm_client_dev_acquire_outputs(dev);
-+}
-+
- static const struct vga_switcheroo_client_ops radeon_switcheroo_ops = {
- 	.set_gpu_state = radeon_switcheroo_set_state,
- 	.reprobe = NULL,
- 	.can_switch = radeon_switcheroo_can_switch,
-+	.pre_switch = radeon_switcheroo_pre_switch,
- };
- 
- /**
--- 
-2.54.0
+Did something go wrong?
 

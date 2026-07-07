@@ -1,81 +1,118 @@
-Received: from mail.andi.de1.cc (mail.andi.de1.cc [178.238.236.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com [209.85.222.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AF723FFF8C;
-	Tue,  7 Jul 2026 12:32:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=178.238.236.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDF272E7F3E
+	for <linux-fbdev@vger.kernel.org>; Tue,  7 Jul 2026 13:17:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783427580; cv=none; b=kv/+8k0X5R443xGD2W+zYHvscb4VvTL6fprtqnaIjSM3p7QqyH23U+otMQw/FXaf5V2avqkcDfA6DD97Cl7MGNabnPjWjwN6YNd6vqATNKEQneMCAjJoj4jWCFc5RmSgXwTb60AxcNFqHPQDcBhrt9gcfaIAT6ziJFpcg5C72ZM=
+	t=1783430260; cv=none; b=Y2NUw6WpUcwLKw8SS9blnooEmPWd6ie3KDIxrvZDTHDnjjpIDf9GgI6cWLIPTsKAqPxfPjpu/Zc5fiemcpmX4ToOXD2pNEaJDlVCRRcWtrTV/rPJoNQCjbLbG/9Mo3/oFNKt7KklLu5HftaUZYEZ4R/IwbvRV1Txks84ZGHrk5M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783427580; c=relaxed/simple;
-	bh=jjBM9uBg4GNRJAA5jD9ZbVotfoOzWeYAB0imw5MTdIk=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=MsufLgOdtKb3P6AlcO8H9mLz6FpAMa0q0gOk+La7fsS0w2R2qs9+Vm4XKD0Ov1MAy2DEL7G3f9s7XZ6XQ3B3bdOnTGhUpgB4whB6kQclt5s5i5KsDkYhHGKnHlHJHwcQrsQeJAzohoRK4GqWPqraQ1nVAcpXjE53CUeLk9vVZc0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info; spf=pass smtp.mailfrom=kemnade.info; dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b=ZeWlRbob; arc=none smtp.client-ip=178.238.236.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kemnade.info
+	s=arc-20240116; t=1783430260; c=relaxed/simple;
+	bh=JmZtsug5WtgXf6JhdOF69IW+9iNbUv2Fp4dY8g9+V6g=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=sFXN2cKUMQ/8RwCJuX3yL3PsVAItgUmLdcP0NSTmcsWtsYQAHtO0n/WtoY4jbhhnXimkTYyeinarAv8td+r8oRzHCmzFtEEeLhPpoty0okYOHEzwyWNTlDvYY1XLbs5XCqq8ejMXRBdbzkWq8y0Zc5WVlc5gpMQUGnzVlTKA+KM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=aJJfOcHr; arc=none smtp.client-ip=209.85.222.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="ZeWlRbob"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=kemnade.info; s=20220719; h=References:In-Reply-To:Subject:Cc:To:From:
-	Reply-To:Content-ID:Content-Description;
-	bh=WhKnRiGBppKNpN86Hrh1BNfq/F8SUBk6UDvxQS7rtwE=; t=1783427579; x=1784637179; 
-	b=ZeWlRbobYriXf4b8YciyeYjCsLBeSQ+I1oFounRqs8PDkCuc0ZLdxln6pej6OAYPs0dqjObivhz
-	aiQM46xnqHxGfRW7ra8QBkUV7rT8Ko4ZlwGzunqoy7wXeQab5XfVVDfzDBIwYJ740VW9juLvQQ6tw
-	vbonoqMBK6vaPDrx1gVJl8DEPBJWwoDMQVxINAPP8KM8xVDafjfc1W8wZ2LaSipCbZ+3q1acTnVN4
-	YEyIC08Hgoc2GQ5HGahpKLMqcTq4LnhAVqG7+M9IwHvWAP7B+EngVmmiSistLfc96PaFOc4xK5nAi
-	3wVZuyXt37Le/5Z71ZbJOFnH3edojQArn6xg==;
-Date: Tue, 7 Jul 2026 14:32:54 +0200
-From: Andreas Kemnade <andreas@kemnade.info>
-To: sashiko-bot@kernel.org, Helge Deller <deller@gmx.de>
-Cc: sashiko-reviews@lists.linux.dev, dri-devel@lists.freedesktop.org,
- linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- sashiko-bot@kernel.org, Andreas Kemnade <andreas@kemnade.info>
-Subject: Re: [PATCH] fb: omap2: dsi: do not copy isr table
-Message-ID: <20260707143254.76bbb791@kemnade.info>
-In-Reply-To: <20260702160541.340B11F000E9@smtp.kernel.org>
-References: <20260702-fbomap-uaf-fix-v1-1-6417edf9d3e7@kemnade.info>
-	<20260702160541.340B11F000E9@smtp.kernel.org>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; aarch64-unknown-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aJJfOcHr"
+Received: by mail-ua1-f43.google.com with SMTP id a1e0cc1a2514c-9673385b1efso1388183241.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 07 Jul 2026 06:17:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783430258; x=1784035058; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dnKl9zDr4Iq4r6JmBf9gQDMvv/B9gbWj5R0POi5eeEc=;
+        b=aJJfOcHriH5y1LswskmnsddYhvx19WnW2G/FileYvtXqMVUfMUfGZszTYmlOk6iRBM
+         IlGf+GMnJu+KQCvqxP5C/EVlvRpl2LLMtuptwW5CmuT/cMTtSPMoZoKM/jUfuTPCjlHL
+         FEusaWKslqKbB6uda8PDq5kymwEA3lKTuPoEkMn0jVS9PP9QhVpt4AJbzidvruAsCDYF
+         QP3JXwBmX39VblP0OqkoXcPpYg68btjE8q1e1HeEVeQcMbibnnq6zljAmWsn6K90ea/1
+         8UrxmvQ78BCuUAxCwDfN0d645+bdC9vrAFzX+W+GaCyWmSmX3EPvirdV3rA1s5UuhLhr
+         12rw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783430258; x=1784035058;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=dnKl9zDr4Iq4r6JmBf9gQDMvv/B9gbWj5R0POi5eeEc=;
+        b=I09i+ccMf+hQ6P90T91WsIjFpXCHM3r8VvNRPDfjzHJxbmDYmKzRjsIcSPhjxwqghy
+         Rjgz1s64nq+P6h1B/UhepiifQTbOXyZ9sdUBqD01lgtSQMGRi419Q5vqM6cbZQxhxIeE
+         d2m18ExODeHZOT9Hg3HXXfPt3HrbGXEvEc239Mc1uVDHaINJMN7EwR9OavfmOtxiZrNi
+         LWVwoJ/c04pOEk6ltgPCUa75x83Hk8iM9mZ/A7spFKpUrdz9FeF8BcYnBbqhzgrboRyB
+         vCCjGfPW+DHq+U6JheK+Q2EFpcT85ByS1W9XnsL0Z+2RhSVZd5YyTQ8TLfEQMIh3SlS5
+         Pr1Q==
+X-Forwarded-Encrypted: i=1; AHgh+RpcLzO2/2bVThhnI7txsKvsMksOWKA1Ei3b7EtVWN1DJXAH3bqg/LP07OaeDNbNe2VP37wUL/qk3MfKZw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzfGBiQqUchy6NRZya59NW6vVMk0buFiDvhdb4C5e+A6DG0B4n1
+	1/3uRN1nTKcBzWcb8gE2gRhLnTXewmtBzMpAQCsYzUWER3bX9sr4ySrO
+X-Gm-Gg: AfdE7cm/M8wEQEYRR1Zj2jaoDkXggHexYmrkKz8hs48ODwWyAh7w6uLhPLiTnT4lr6Z
+	PrHz+OpPj1kHqXS8q28c/y8/1n8KLT4G6pwmUpPsmSE7x2+isJCP2keir4Ace6Zuo4/z3zjzzZr
+	kxrO91RaquOlDAT3aXshNhkVZ+PYwrhjMnjHLLyNhkA3q4ClP67n8VZvQUGG0+tsTa0hEZL5yHo
+	5gzBNrl6WZTzC54X8b/cdaCYBmDckjnXmaHrcLRoxZezX7MX7hvolVESRXc4RxmoVddbcEJEEh8
+	IPqVyKgp4vfLWS30hOdj6KPbAXQN5HsbtmDknZz0S651CHSWdAY3KtbRBLUHqJc6sjI94RUkOLz
+	33qU0VuEgE+SGLK02Ev0RUUvlaPGXdr5Yx7Jd3Bbz2VbtdOcLhzEPq0/EbGNAKRWl6EwWdVlpF/
+	ML5NBaNbsPXlcsaUVWRg==
+X-Received: by 2002:a05:6122:e183:b0:5bd:a7e6:10bd with SMTP id 71dfb90a1353d-5be8953be12mr2766521e0c.0.1783430257549;
+        Tue, 07 Jul 2026 06:17:37 -0700 (PDT)
+Received: from adr.. ([103.216.221.83])
+        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5be02c5d487sm7425810e0c.14.2026.07.07.06.17.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Jul 2026 06:17:37 -0700 (PDT)
+From: =?UTF-8?q?Andr=C3=A9=20Moreira?= <andrem.33333@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	=?UTF-8?q?Andr=C3=A9=20Moreira?= <andrem.33333@gmail.com>
+Subject: [PATCH v4] staging: sm750fb: rename variables to comply with kernel style
+Date: Tue,  7 Jul 2026 10:15:28 -0300
+Message-ID: <20260707131529.38340-1-andrem.33333@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <2026070710-exact-unveiling-e321@gregkh>
+References: <2026070710-exact-unveiling-e321@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Thu, 02 Jul 2026 16:05:40 +0000
-sashiko-bot@kernel.org wrote:
+Rename 'setAllEngOff' to 'set_all_eng_off' within the 'init_status'
+struct to avoid CamelCase and comply with the Linux kernel coding style.
 
-> [Severity: High]
-> This isn't a bug introduced by this patch, but it appears the identical
-> use-after-free vulnerability you are fixing here remains unpatched in the
-> equivalent DRM driver.
-> 
-> Does drivers/gpu/drm/omapdrm/dss/dsi.c:omap_dsi_irq_handler() need the same
-> fix? It still copies the table and drops the lock:
-> 
-> drivers/gpu/drm/omapdrm/dss/dsi.c:omap_dsi_irq_handler() {
->     ...
->     memcpy(&dsi->isr_tables_copy, &dsi->isr_tables, sizeof(dsi->isr_tables));
->     spin_unlock(&dsi->irq_lock);
->     dsi_handle_isrs(&dsi->isr_tables_copy, irqstatus, vcstatus, ciostatus);
->     ...
-> }
-> 
-> This could still race with a timeout in dsi_sync_vc_vp(), which creates a
-> completion on the stack:
-> 
-> drivers/gpu/drm/omapdrm/dss/dsi.c:dsi_sync_vc_vp() {
->     DECLARE_COMPLETION_ONSTACK(completion);
->     ...
-> }
+Signed-off-by: André Moreira <andrem.33333@gmail.com>
+---
+v4:
+  - Drop register renames 'pvReg' to 'regs' as they were merged via another upstream patch.
+  - Keep only the 'init_status' CamelCase cleanup.
 
-Enitities with access to cerebral richness can find the link in the patch
-to the version for the drm driver.
+drivers/staging/sm750fb/sm750.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Regards,
-Andreas
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 0324778768cbc..3a1bd38ab347a 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -39,6 +39,15 @@ enum sm750_path {
+ 	sm750_pnc = 3,	/* panel and crt */
+ };
+ 
++struct init_status {
++	ushort power_mode;
++	/* below three clocks are in unit of MHZ*/
++	ushort chip_clk;
++	ushort mem_clk;
++	ushort master_clk;
++	ushort set_all_eng_off;
++	ushort reset_memory;
++};
+ 
+ struct lynx_accel {
+ 	/* base virtual address of DPR registers */
+-- 
+2.43.0
+

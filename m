@@ -1,72 +1,71 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52706390229;
-	Tue,  7 Jul 2026 09:11:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 869893914ED;
+	Tue,  7 Jul 2026 09:13:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783415494; cv=none; b=JZ6cGoeMXlY95hvZtZSm6DpJ3JceLGALmNOBK2HIHaQyVYEAQXeLuqtqt3xUr7pxRGXPOrqaz4FijPABbMICVv5PTmWjGc8q2P1V540gmC4KfLvXfqR8EspCC4/+zPmlrQXDUi9TvDW3Zd7oR7DsQcTlPTSDQFqjpFRfUorkA9Q=
+	t=1783415598; cv=none; b=LbceigZ0bL5+F9U/qceJS2ep0Qzs9GtKry6KiWtBJj7zmb0pq6XDGyxGxHGsAy3JFgNAen5KqEdBXsW+DQC4eDIE3MYjggtAR4NpXoc15mf7UXYkUMtZ/Q6550upC0ddiclNaNJb3pvDXO0QlXdqy9YnYIEeQHg+Gzu12bGkIVw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783415494; c=relaxed/simple;
-	bh=q6QRrlmtPDSpiE2ZSnszpV7TJrXeqexn1Wr4WbJ6FHw=;
+	s=arc-20240116; t=1783415598; c=relaxed/simple;
+	bh=wyOdB9KbOxmtWx3A7FEKhU4nEKKqXjuWLFR2iciPMTs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PKxEsW40g6+P855NKX+UUZD8kgRuXZXUxL9MOZwR8XQboFIf9/Ryj1DgwG4Crfkmhxx/YHWTGlzfwi0TW4UQG5x2Q/YOzuLolFIgExgXAj2spL/BTC+YjZstvtFX6z3Ybon8FKT0sHZfBxTXfu6ySKdN6hPXbO/F8jlN1AX2CJc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=sgs5GRzo; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ms6iFo5RcluC9mXdFG5RSKuo5Nd0xtDH3wK/+x4WVuOdY9UOQaoipxscVva1ovTPMdE2VeoORD3poFBXI2FxJbYS3H1MgiZkjr+kbFyzdhh7roFCaUnWEnre85dcJ9LpmUWxU+JpSCLnNRTNb68Msv/WNqWjXqs/vVg24ydxVLM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=MDSmu+Ps; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="sgs5GRzo"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 290731F000E9;
-	Tue,  7 Jul 2026 09:11:32 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="MDSmu+Ps"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFC7D1F000E9;
+	Tue,  7 Jul 2026 09:13:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1783415492;
-	bh=wKkSJtuFmWOgT7B+qzyHht6dHGZjWtnBBwfPVn+a4uY=;
+	s=korg; t=1783415597;
+	bh=6smUS6s6HWwUwjxx51MxkZYCbfe6mmOxZoJeGBmIFPw=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=sgs5GRzooulbS5YmnllK0uNG8G7A0/+/gquqdZVE6OR1nlxyMo8iyhcm7QhPTWXUk
-	 IqVvDK3n4h91tyFX22hR893mndGQpAMhLNh35qsVmX47Df3K3WK2xpnFi+me7b7G+S
-	 PVOokQn3Awde8QL4PxWud/XmIC4rQc8kXr/hUPAQ=
-Date: Tue, 7 Jul 2026 11:11:30 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: =?iso-8859-1?Q?Andr=E9?= Moreira <andrem.33333@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: rename variables to avoid CamelCase
-Message-ID: <2026070710-exact-unveiling-e321@gregkh>
-References: <20260623220614.29682-1-andrem.33333@gmail.com>
+	b=MDSmu+PsXxeAlxDjrodZV54Ve4T+o6oVP3qPZEiJnwa/P/QOWMIrE61/4Z6Bv3ZSi
+	 XAVuu+AcexML8Pu0bSXXQSyYBytI1LpmmOkekT+Ond2IT+Hhg6FCu8oYs43uEykH/L
+	 yn9wEmEOB7tAUotPhMc6m2xd2AFmyPBpqF5sprws=
+Date: Tue, 7 Jul 2026 11:13:14 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Noah Adkins <noahcadkins@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	"open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER" <linux-fbdev@vger.kernel.org>,
+	"open list:STAGING SUBSYSTEM" <linux-staging@lists.linux.dev>,
+	open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] staging: sm750fb: convert camelCase parameters to
+ snake_case
+Message-ID: <2026070710-amusing-gecko-a39f@gregkh>
+References: <20260615012837.90113-2-noahcadkins@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260623220614.29682-1-andrem.33333@gmail.com>
+In-Reply-To: <20260615012837.90113-2-noahcadkins@gmail.com>
 
-On Tue, Jun 23, 2026 at 07:06:14PM -0300, André Moreira wrote:
-> Rename 'pvReg' to 'pv_reg' and 'setAllEngOff' to 'set_all_eng_off'
-> throughout the driver to comply with the Linux kernel coding style.
-> 
-> Signed-off-by: André Moreira <andrem.33333@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c    |  6 +++---
->  drivers/staging/sm750fb/sm750.h    |  4 ++--
->  drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
->  3 files changed, 11 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index 89c811e0806c4..716a8935f58d1 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -743,7 +743,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
->  	 * must be set after crtc member initialized
->  	 */
->  	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
-> -	crtc->cursor.mmio = sm750_dev->pvReg +
-> +	crtc->cursor.mmio = sm750_dev->pv_reg +
+On Sun, Jun 14, 2026 at 09:28:38PM -0400, Noah Adkins wrote:
+> Convert the camelCase parameters in the 2D acceleration helper
+> prototypes to snake_case to conform to the kernel coding style
+> and to make them consistent with the parameter names in the
+> corresponding implementations.
 
-This variable name is still in hungarian notation, which is not allowed
-in kernel variable names.
+But they don't seem to match up with what the .c file says, right?  Why
+not?
+
+For example:
+
+>  int sm750_hw_copyarea(struct lynx_accel *accel,
+> -		      unsigned int sBase, unsigned int sPitch,
+> +		      unsigned int source_base, unsigned int source_pitch,
+>  		      unsigned int sx, unsigned int sy,
+> -		      unsigned int dBase, unsigned int dPitch,
+> +		      unsigned int d_base, unsigned int d_pitch,
+
+"d_base" is "dest_base" in the .c file.
+
+Same for some other variables.
 
 thanks,
 

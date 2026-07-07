@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DF9639DBE0;
-	Tue,  7 Jul 2026 06:25:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 319763A168F;
+	Tue,  7 Jul 2026 06:25:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783405536; cv=none; b=iQDowWyP2eL+TCAO+taQUTe9Fn1Fu3ZJGZpKW/9fV5rFAyk31soLdnJwdiYoMC+uH/o46B1l8jXmAF/KO7Wk3S4Q45emgEo2F1TsBgehCHG7tjQYverSU4yEupy15jUedKvOzxZ/1VPychRk9TY4w6N4v5/PnIgAHlH5DxfmM+g=
+	t=1783405554; cv=none; b=YAkdzVZO2xu7Ym46/xNw8xBGknGvM/r7HUycWLtxRCagSzGeMxU9DnbJz6bqEQAeKRhh2CUa/NkSUZ5+2CNnYuqg7cxJ4gBaKDY2qs+k11H/ycwtrWI4d5LoJd0AqEcJcbjg7yxIQvtqU/iFmGOtrpKT2jvTcRsyqE630zzlP5E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783405536; c=relaxed/simple;
-	bh=2mrhu+mzr3r1ylLjmXQJu/+tDv3Hf4ktNPp8zbuxXRo=;
+	s=arc-20240116; t=1783405554; c=relaxed/simple;
+	bh=mA5UtQohvvg8OshJRtRj4I9DeD69NeX09biGlu64/Fg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PwIQsd/I1Lpj1GWuwNbkur2F6qG0LAslvrYJOje7y4uX4D/BoSv/rjB2wWaRoa90Yw2D974dTl7uc16/BtYBYuspdfvS6yiXX0ydWMiDmQMguQQpy+GKzwAHK82XO64VGAstDTOD1e6jIpB6l+5pPh+MKyFxU0rz72DR//qAdnk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fUx959Fl; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=DNftgmk9RtAGEWg2AmCsUpkR3DJyZAqqDepdxpLvsQkpsvyde7R1MhIbk3BJod6Z67ZmLo3W0ghoto7HfO+CwbpLSHYEP/QY6YL7eyQJ4oOV+YVJOs5hDwo2Hm6yEWC2JTOBCryG2BKJiF9hxEfIHqv1/yUDrgZ7bnNaEQpek1M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bxCxhAJZ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fUx959Fl"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D15C1F000E9;
-	Tue,  7 Jul 2026 06:25:31 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bxCxhAJZ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 600E81F000E9;
+	Tue,  7 Jul 2026 06:25:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783405535;
-	bh=g9loFmhI5Ph6B0kODBgukh6UmdkZeqqIAOGSwnjsAQU=;
+	s=k20260515; t=1783405552;
+	bh=KibwUGio/FQLe0X19LH+thqRGi0+pup4XTEK2YftfSo=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=fUx959FlG+tS9kVtYEAGzHk0Vmai4d/YAFMYwoQVnCV+ztdvLDNrpZ1C0V3P8wpxQ
-	 VXHrSUSataoLNI53I1O5LC7UEe0ViDX6S0xjd8DOfBmuRtB25Ao+o7YppWCp9zpSz0
-	 F8e14S7DpsGkjSLrH0mP2wkBHPdGaiM4vNVYvfN5cJNbxUy7/fpaOSylo5UYGrOZ+a
-	 zW/5PqJ6lLi0L+xGke21scnixXNsuRYBReu3uIG5BS9p6w4NnElk8EYOZWi/WIf3fP
-	 7nuPKyG5JMx5EUHZy2YRFPhoTef2tmmQPOwc5FyWC1Hlwarb+A38NJtDOox+fiK/Y+
-	 rsbZYT99jYhbg==
-Message-ID: <b0fc412e-719b-452d-ae24-2b600924ee0f@kernel.org>
-Date: Tue, 7 Jul 2026 08:25:29 +0200
+	b=bxCxhAJZpgR7lDR5mwgYDDZ+Pi1XWXcgKCN7GTiN63qfiyLPfUhSEYp4P0FD/VeYN
+	 Ygd/2SffPxjp0UVB2FzbVPCSbLscVcgM4sUT4KWUSXyQpGLuvb5aNgLGkmG+xwYCtJ
+	 sqArYhm7/kVggVmJKGbqMxWvUWHt9wrM9u65pY984kNsT3Qc9v+mfR7b0gdWK8DciD
+	 yfPhE/bW4j5hZ4c8arngP3ytG8emd8lu+OZ4xhGX1BpMXLSBjqYaTIFu8Az5oxUaWd
+	 20yIXPZ6WY0YFEC2hdMxftizFepzRq6tICp76tZCJymWwD8QvazUdThb6gG82MdHBJ
+	 BNht25CRGMh6w==
+Message-ID: <1ba3f12f-f05d-4301-81b8-2cb1703d0e72@kernel.org>
+Date: Tue, 7 Jul 2026 08:25:46 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -35,14 +35,15 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] staging: sm750fb: rename CamelCase pvMem and pvReg
+Subject: Re: [PATCH v2] staging: sm750fb: fix remaining CamelCase issues
 To: Arnav Kapoor <kapoorarnav43@gmail.com>,
  Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
  Teddy Wang <teddy.wang@siliconmotion.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
- linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
-References: <MESSAGE-ID> <20260624044412.67464-1-kapoorarnav43@gmail.com>
+ linux-kernel@vger.kernel.org
+References: <20260621045340.65872-1-kapoorarnav43@gmail.com>
+ <20260624042543.38925-1-kapoorarnav43@gmail.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -88,26 +89,28 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260624044412.67464-1-kapoorarnav43@gmail.com>
+In-Reply-To: <20260624042543.38925-1-kapoorarnav43@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 24/06/2026 06:44, Arnav Kapoor wrote:
-> Rename the remaining CamelCase structure members
+On 24/06/2026 06:25, Arnav Kapoor wrote:
+> Rename the remaining CamelCase variables and constants
 > to follow kernel coding style.
 > 
 > Rename:
 > 
-> * pvMem -> vram
-> * pvReg -> reg
+> * powerMode -> power_mode
+> * setAllEngOff -> set_all_eng_off
+> * resetMemory -> reset_memory
+> * sm750_doubleTFT -> SM750_DOUBLE_TFT
+> * sm750_dualTFT -> SM750_DUAL_TFT
 > 
 > Fix build errors by renaming the corresponding
-> structure members in sm750.h as well.
+> declarations and enum values as well.
 > 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202606240823.hWXfYyPf-lkp@intel.com/
-
-Please stop sending multiple duplicates of the same patch.
+> Reported-by: kernel test robot [lkp@intel.com](mailto:lkp@intel.com)
+> Closes: https://lore.kernel.org/oe-kbuild-all/202606240916.wIIrdOzC-lkp@intel.com/
+> Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
 
 Same comments.
 

@@ -1,155 +1,178 @@
-Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ED6B428859
-	for <linux-fbdev@vger.kernel.org>; Wed,  8 Jul 2026 18:13:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C16333F787B
+	for <linux-fbdev@vger.kernel.org>; Wed,  8 Jul 2026 21:56:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783534414; cv=none; b=M0xRemPsbpuzsUEqP85lWHOID01XVnk4mh6wLSvyG11KIBOKFSsMJgrI+VtpL1V+fMkw8Wu8YVIpdo8H2H1ItbXSz1lNyIAbMTWHD/Mxmuq76BSk4A70D3VkdxIb4Ni14MzYcCd1c/2TGBjp22NSW5XwyM0uhHecsseWHyddf7s=
+	t=1783547792; cv=none; b=dfMd1lzRF0vnmXCFEGUFiZcOzzdnrVZg6KanyXl4VtOF1HdjElrOKxViParzHiw4iG+ZvDZIBhXFcUeCBgOY0JF9mVFcW938t0ZzWSji0xCG8luQCbSjGDsAuSxv6js/oeaEdZoV/VLGWYESQL6ES9JDMDUNts1/JeFAYcA5LEI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783534414; c=relaxed/simple;
-	bh=mKB64eFzBwevlbfHP4GHbGCdzZzNbk41FGpjUYsfux4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=N13KV6sVdKh3NW09o7XSA2mrk8bAUvqLi1JvfEnS8VHlrpa3Vcj+FS8bd41z8w1QdCK8PXEHhY+XxRUCeLGGDRPuFodJenDrduH+QFtEfBuRLaNLlowxRU9LYYuGStxCBMcrP+TzA1wWjdKFE8fovYJUOs89dXeSIH8h7Z/gQYU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=NXY/JxGv; arc=none smtp.client-ip=209.85.221.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1783547792; c=relaxed/simple;
+	bh=btjBlfn1gEh32xkLC16toOwaofpK3E2AbdoJxAP/F/4=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=WvsSqL8ke/3CDGCikmOaqsT0dc9JJ/lnjsj1Id49zCK81iO7Y41mearxlgV7ndUtiZ+VXGyoads9u6Hbb4QYI6lvl527I/0tGuVhR3uTApOyy3vLnOk/xWDQa2d3mdppyqI4BBX1Wc1M5M5OPd4e00T/OcF/ITAzCUJv7ZkmO/w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=JOoddEpW; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=dCNGK80Z; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="NXY/JxGv"
-Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-4720f3bf164so64211f8f.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 08 Jul 2026 11:13:29 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="JOoddEpW";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="dCNGK80Z"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1783547789;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=btjBlfn1gEh32xkLC16toOwaofpK3E2AbdoJxAP/F/4=;
+	b=JOoddEpW9Tb0/6eKbkj2lDDfo+YHD8u0RR9zx65OqXXdUtL4ETe5C5KMzULjE5CGGiuro+
+	9/bS9aAvA5n3FQV2HfqKpg9pAYTdm+GPH+Junv03FCBEEqc3p82LNn98OEM2+kh4VFrUVJ
+	NLHAWv9zXT+STJw9PWvFYGlUQY2hlU8=
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com
+ [209.85.222.198]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-528-dWcmzbD8PSy_9rSzt_icbQ-1; Wed, 08 Jul 2026 17:56:28 -0400
+X-MC-Unique: dWcmzbD8PSy_9rSzt_icbQ-1
+X-Mimecast-MFC-AGG-ID: dWcmzbD8PSy_9rSzt_icbQ_1783547788
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-92e63df032bso34792285a.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 08 Jul 2026 14:56:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1783534407; x=1784139207; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=WEMJWE1zcwQ4UkLGDHzDIo1wA9TMgoKtQk475YCTe6o=;
-        b=NXY/JxGvymDRFrsijRMZ9tHdf1vok229JiWLzBHZwp/af9/Y7FHShzV1p28lfGDO0P
-         Zjbde5zb79XSg/jwyzfbIjMg0JbSsUD456xvuSBgfX9elPAfqtA7LRQ4E5uq5/7exmey
-         EqK3Ef4oiDQgW7SogTWxwIn9DFaDCNwAlfxgMTUAGHE1yhxkzaZ+/aNgxXqr5PJhJTbk
-         YJ3U/xgt0mK8BckXQ4KsDSdGzsNpqaB1DoJXAjYrfk/nUDVL5XmP9eQo6rp9dUT4uRxU
-         WqEtlylEfFx/GQK85wL6RWzG+tt8Cl+7EtXP6XzSYBHRNjkC+HgLsWCbnvW7fF2s9gZo
-         WeaA==
+        d=redhat.com; s=google; t=1783547788; x=1784152588; darn=vger.kernel.org;
+        h=mime-version:user-agent:content-transfer-encoding:content-type
+         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=btjBlfn1gEh32xkLC16toOwaofpK3E2AbdoJxAP/F/4=;
+        b=dCNGK80Z37CZVB7Cs5E4oqPSmRHPVhpfT/yXieehof08Mm/yr1PClJeL4kswxWouuy
+         eDoML5BR9MEYjFV1ggSN5tNATKSyEmpKf7OUn+znFu/oauuL25Oub1+KHHJ5QNFTAiO5
+         uCsbEQAbTNOJAEldkFC4ugt+Kw5SHu+QFgtmxlEh92ndXN/EZqbHCHwlSpDM6xNslUEc
+         9fPZEcVOBRvoRd17g2JdLJO0ga+YRwFB/z1X0xq8Zq024zn6sH4WOHTxmVtS/yhr/X0I
+         ivJZZMMrkVd3VNUE7WIs6A1G8Qpj/lVOggmZs9V0RODe/F5WJbBK0TBWGKvF5xgtSPHw
+         cggg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783534407; x=1784139207;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20251104; t=1783547788; x=1784152588;
+        h=mime-version:user-agent:content-transfer-encoding:content-type
+         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=WEMJWE1zcwQ4UkLGDHzDIo1wA9TMgoKtQk475YCTe6o=;
-        b=Jvv4Afp9k5/X44hkoyAdUbXhjdiR3Ji/U0jyKKlxeGd9yMtovlmJp5NlMzTsznTBkb
-         2QvR9NeZU3iSd+yVy6RScHLfjWsCn2RQzOcs0SQcmSAi9Dpozj1mmCEWKMUolN8WvyEv
-         ISs1xzWmtfhhDWPCih6h6sTDAtYRYFSF7A/6NWlXbdGn41TOoY0X8e/gEktREc6QSKm2
-         Tdqe8chlsCTnsWgNmgc/9NcJA3/f1i4dexk6/FI2YIG5XzCWVZGdoEf7iPK/hd6KOgOk
-         /VTndolfiRl4IgadIq0KypisWqWNpHzXCge1Cbtj3MKb9K+zkw/vIATuVljndhqj/NuU
-         LrLw==
-X-Forwarded-Encrypted: i=1; AHgh+RrYk56aWiT9Hf1DzTqPVvXLTcM74Fqg7fkzxvCdUTELiBnG/dG/5ZCoAWOFRt9HyL/mnTAUuKjrfCX+tQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyak4MUPapIH6H/SUxlgQ0JILBG95AhrgeI3DFW6C0Wycu64bMA
-	MzTAiYJxJEsM7nR0onk/uXBrpxh4ixfRF5o/WyTmgiyyszmsaUAitxMkx5EyZmc26E0=
-X-Gm-Gg: AfdE7cmCNMcrmpcKl90de0kyxK3f7e8RGTqPLxibEeBiAgOnBGuSrJ6Be+X019ZxUpi
-	T1pSFlDCY7SC5HJgE2VOqZ/1WGE5GLGuXMjrYmBVpdwI6EcAo7niTScpwyUrc/EgL6DDT3W4bPU
-	LLBdMf21T1mqvOFP51sMNB+N/1I9AcMFHBxQKLNSrRtoOXGqlW4Lh4agBnRgGem8vFKlNZ5IOeV
-	qRmgNtGitqK/75ubDeCN0OoFWwE/yc6Cu+t5h1uSbDX0GaDQkktkQBYscN0Viqaz+rD8ocGhpaF
-	K6LARCbSDPX58jZU/N4G7Qlw9PE0l3vuCFwqnjHR8fceVtETlXto6QYdlhTB53pqqyDaPwuXlmc
-	DJ94W1/JWswV+8xaF2qM3r3Fm/MJsASpdCOwRR/a2I8WQMULrEOTaYNXuaX/T72TPaPDi2qM8xR
-	wJNijKcj6Hpi3D6kPW/sVEz2cgsDzce7KgVfOa4A==
-X-Received: by 2002:a05:6000:460c:b0:473:c608:eeb5 with SMTP id ffacd0b85a97d-47de9a4f159mr9196162f8f.29.1783534406837;
-        Wed, 08 Jul 2026 11:13:26 -0700 (PDT)
-Received: from localhost.localdomain (nat2.prg.suse.com. [195.250.132.146])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47a9de1d910sm43325516f8f.6.2026.07.08.11.13.24
+        bh=btjBlfn1gEh32xkLC16toOwaofpK3E2AbdoJxAP/F/4=;
+        b=RTY+n1YQ7V74McuVKJlL5II5MryJ/DToVdcvaKA+ntYOq/EkIba0lYDXNzPLa8EkKl
+         15Bz3klEKt6pjl5nm1cBZgQIaoA2pGcsmE6A+hKUkT3AaGi/WqRAPwIAXG3VUtACxC9Q
+         qqi/PfgnBipVdVWTaH+ccl5pJKdU64aSLkZrI4S1DcxG7aBjLc1C7dvTkvM5y6hYu7MZ
+         VimRltcQm9uwgV9LL09wovge0FOlFJ3WHixNq0s1fUX3H5pCdU8922rUt4u1B99tS46l
+         5+umxD3bldYa96VFUOocgBRO3/ppiZl85eYEBw5VyIQT+0hLNdczl3H/FzmQqAMvHjaj
+         aOqw==
+X-Forwarded-Encrypted: i=1; AHgh+RoiGPJpbZ5edB+SnVmflXz9M7DI3afl4vVLg6yhe2l6tumCZa8tJ2veSN4P5/mCgSL7276uvvqp61jFzw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxhnhnCC3Z0YaBF/tV+YV+SyK3SwF9Kg8gKJELIwjiSzbU4rVBy
+	gDxveGUR2mou83z/CVbpgjE9MUG/PBqpf+VME9z6mlXuz3TQ5MyPkR89yPp9Hz3A/omT8Y/q+7m
+	lfv4TvDVQUrPsp0ncldPBXNOOpFkJIuxXLlLjBX3r+O3yuzDWN2pYGZJoA0KGe3sv
+X-Gm-Gg: AfdE7clB31qjEgiYaYr+UUPvD0xeHYMNL6UYK9tGEjIHJB6/T8zecrwL4wCT93HZvgn
+	3yF1cs8xfFfYuIQFy4mxkxpfxjwuYwiASFprjcNSrbr3d5GxdeAtzYXAcDLfAiWvrnd8kGy5/5j
+	K8DgTVXwyfFpa+6N/tBMGAS9+amiCOrjB195mszZoqRx00HGzcbNR2RBgmc9M3QiaQFxIML3New
+	l5KNBGwc0UPWH6MvNOST8DgdVTiUNQdofgMSS6cdsHZ9EERR6nb2vfWDb3tBnKOHMbR7jhg7bR6
+	RQX8KaddMuyN3QXh3utXALyFHcvdeWDUXyh+VRfbEBFIFMtdA7jF8WlaeVe69J2QBiehepTywlT
+	BzAv7Icw=
+X-Received: by 2002:a05:620a:444a:b0:911:e11e:dc0d with SMTP id af79cd13be357-92edac0d694mr13100985a.24.1783547788074;
+        Wed, 08 Jul 2026 14:56:28 -0700 (PDT)
+X-Received: by 2002:a05:620a:444a:b0:911:e11e:dc0d with SMTP id af79cd13be357-92edac0d694mr13096985a.24.1783547787628;
+        Wed, 08 Jul 2026 14:56:27 -0700 (PDT)
+Received: from [192.168.8.4] ([100.0.180.93])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-92e90ca90a5sm1483479985a.32.2026.07.08.14.56.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Jul 2026 11:13:26 -0700 (PDT)
-Date: Wed, 8 Jul 2026 20:13:23 +0200
-From: Michal =?utf-8?Q?Koutn=C3=BD?= <mkoutny@suse.com>
-To: Petr Pavlu <petr.pavlu@suse.com>
-Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
-	Philipp Reisner <philipp.reisner@linbit.com>, Lars Ellenberg <lars.ellenberg@linbit.com>, 
-	Christoph =?utf-8?Q?B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>, 
-	Alex Elder <elder@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Michal Januszewski <spock@gentoo.org>, 
-	Helge Deller <deller@gmx.de>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Trond Myklebust <trondmy@kernel.org>, 
-	Anna Schumaker <anna@kernel.org>, Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
-	NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>, 
-	Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>, Mark Fasheh <mark@fasheh.com>, 
-	Joel Becker <jlbec@evilplan.org>, Joseph Qi <joseph.qi@linux.alibaba.com>, 
-	Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>, 
-	Luis Chamberlain <mcgrof@kernel.org>, Daniel Gomez <da.gomez@kernel.org>, 
-	Sami Tolvanen <samitolvanen@google.com>, Aaron Tomlin <atomlin@atomlin.com>, 
-	Pavel Machek <pavel@kernel.org>, Len Brown <lenb@kernel.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Nikolay Aleksandrov <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, 
-	David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>, 
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
-	"Serge E. Hallyn" <serge@hallyn.com>, Kentaro Takeda <takedakn@nttdata.co.jp>, 
-	Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	drbd-dev@lists.linux.dev, linux-block@vger.kernel.org, greybus-dev@lists.linaro.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org, 
-	ocfs2-devel@lists.linux.dev, cgroups@vger.kernel.org, linux-modules@vger.kernel.org, 
-	linux-pm@vger.kernel.org, driver-core@lists.linux.dev, bridge@lists.linux.dev, 
-	netdev@vger.kernel.org, keyrings@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 1/2] umh, treewide: Explicitly include linux/umh.h where
- needed
-Message-ID: <ak6STbqZd-Q-c56v@localhost.localdomain>
-References: <20260708154510.6794-1-petr.pavlu@suse.com>
- <20260708154510.6794-2-petr.pavlu@suse.com>
+        Wed, 08 Jul 2026 14:56:26 -0700 (PDT)
+Message-ID: <b6b58477af57eb25e28eefb1a979a65aa250dc45.camel@redhat.com>
+Subject: Re: [PATCH 00/10] vga_switcheroo, drm: Push fbcon handling into DRM
+ clients
+From: lyude@redhat.com
+To: Thomas Zimmermann <tzimmermann@suse.de>, lukas@wunner.de, 
+	jfalempe@redhat.com, alexander.deucher@amd.com, christian.koenig@amd.com, 
+	airlied@gmail.com, simona@ffwll.ch, maarten.lankhorst@linux.intel.com, 
+	mripard@kernel.org, jani.nikula@linux.intel.com,
+ joonas.lahtinen@linux.intel.com, 	rodrigo.vivi@intel.com,
+ tursulin@ursulin.net, dakr@kernel.org, deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org, amd-gfx@lists.freedesktop.org, 
+	intel-gfx@lists.freedesktop.org, nouveau@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, sashiko-reviews@lists.linux.dev
+Date: Wed, 08 Jul 2026 17:56:25 -0400
+In-Reply-To: <20260707135724.247562-1-tzimmermann@suse.de>
+References: <20260707135724.247562-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.3 (3.58.3-1.fc43) 
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="kijzkd5xnaepafl2"
-Content-Disposition: inline
-In-Reply-To: <20260708154510.6794-2-petr.pavlu@suse.com>
 
+For both nouveau patches:
 
---kijzkd5xnaepafl2
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH 1/2] umh, treewide: Explicitly include linux/umh.h where
- needed
-MIME-Version: 1.0
+Reviewed-by: Lyude Paul <lyude@redhat.com>
 
-Hi Petr.
+On Tue, 2026-07-07 at 15:38 +0200, Thomas Zimmermann wrote:
+> Vga_switcheroo currently invokes fb_switch_outputs() to inform fbcon
+> about switching of the physical outputs among framebuffer devices.
+> But
+> new DRM clients to not use fbdev/fbcon and might require their own
+> vga_switcheroo support. Let's strictly separate them from each other.
+>=20
+> Remove fbdev/fbcon from vga_switcheroo. Introduce a pre_switch
+> callback
+> for vga_switcheroo clients to do the fbcon update. Allows for
+> removing
+> all direct interactions between vga_switcheroo and fbdev/fbcon.
+>=20
+> Also replace the existing reprobe hook with post_switch for symetry.
+>=20
+> At the same time, push the fbcon update into DRM's client for fbdev
+> emulation. Do this with the new DRM client callback acquire_outputs,
+> so that other clients can have their own handling of vga_switcheroo.
+>=20
+> There are only four drivers that support vga_switcheroo: amdgpu,
+> radeon, i915 and nouveau. Update each of them with the new callbacks.
+> When vga_switcheroo now invokes pre_switch, each DRM driver forwards
+> to aquire_outputs and lets the DRM clients handle the new outputs.
+>=20
+> Tested with radeon on a notebook with Radeon HD 4225 and HD 5430.
+>=20
+> Thomas Zimmermann (10):
+> =C2=A0 drm/edid: Include <linux/fb.h>
+> =C2=A0 drm/client: Add acquire_outputs callback; implement for fbdev
+> =C2=A0=C2=A0=C2=A0 emulation
+> =C2=A0 vga_switcheroo: Add pre_switch callback to client ops
+> =C2=A0 vga_switcheroo: Add post_switch callback to client ops
+> =C2=A0 drm/amdgpu: Implement struct vga_switcheroo_client_ops.pre_switch
+> =C2=A0 drm/i915: Implement vga_switcheroo_client_ops.pre_switch
+> =C2=A0 drm/nouveau: Implement vga_switcheroo_client_ops.pre_switch
+> =C2=A0 drm/nouveau: Implement vga_switcheroo_client_ops.post_switch
+> =C2=A0 drm/radeon: Implement struct vga_switcheroo_client_ops.pre_switch
+> =C2=A0 vga-switcheroo: Remove unused interfaces
+>=20
+> =C2=A0drivers/gpu/drm/amd/amdgpu/amdgpu_device.c |=C2=A0 9 ++++-
+> =C2=A0drivers/gpu/drm/clients/drm_fbdev_client.c | 23 ++++++++----
+> =C2=A0drivers/gpu/drm/drm_client_event.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0 | 18 ++++++++++
+> =C2=A0drivers/gpu/drm/drm_edid.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 1 +
+> =C2=A0drivers/gpu/drm/i915/i915_switcheroo.c=C2=A0=C2=A0=C2=A0=C2=A0 | 11=
+ +++++-
+> =C2=A0drivers/gpu/drm/nouveau/nouveau_vga.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+ | 28 +++++++++------
+> =C2=A0drivers/gpu/drm/radeon/radeon_device.c=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
+=A0 9 ++++-
+> =C2=A0drivers/gpu/vga/vga_switcheroo.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 41 +++++---------------
+> --
+> =C2=A0drivers/video/fbdev/core/fbcon.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 8 -----
+> =C2=A0include/drm/drm_client.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 14 +++=
++++++
+> =C2=A0include/drm/drm_client_event.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 3 ++
+> =C2=A0include/linux/vga_switcheroo.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 30 +++++++++-------
+> =C2=A012 files changed, 122 insertions(+), 73 deletions(-)
+>=20
+>=20
+> base-commit: cd8abe2554ec7eba16c1d48ab508732bf93534eb
 
-On Wed, Jul 08, 2026 at 05:44:29PM +0200, Petr Pavlu <petr.pavlu@suse.com> =
-wrote:
-> diff --git a/kernel/cgroup/cgroup-v1.c b/kernel/cgroup/cgroup-v1.c
-> index a4337c9b5287..60eb994c32ae 100644
-> --- a/kernel/cgroup/cgroup-v1.c
-> +++ b/kernel/cgroup/cgroup-v1.c
-> @@ -16,6 +16,7 @@
->  #include <linux/pid_namespace.h>
->  #include <linux/cgroupstats.h>
->  #include <linux/fs_parser.h>
-> +#include <linux/umh.h>
-> =20
->  #include <trace/events/cgroup.h>
-
-There is kmod.h in here too but it's unnecessary, no module lazy loading
-in this code.
-
-Thanks,
-Michal
-
---kijzkd5xnaepafl2
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iJEEABYKADkWIQRCE24Fn/AcRjnLivR+PQLnlNv4CAUCak6TOhsUgAAAAAAEAA5t
-YW51MiwyLjUrMS4xMiwyLDIACgkQfj0C55Tb+AgY2gEAgOkCGIEUNQ8/AFfxYtdb
-0XG1ZQXkD0d1Rm0cAq1+u8cBANw3nWI/wHkp5zcHmZWevxdnweU507gsyVTXzMGQ
-ZwsB
-=k+w6
------END PGP SIGNATURE-----
-
---kijzkd5xnaepafl2--

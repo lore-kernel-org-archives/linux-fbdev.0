@@ -1,33 +1,39 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mout.web.de (mout.web.de [212.227.17.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A3F4385519;
-	Mon, 13 Jul 2026 09:42:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5401E3DDDBB;
+	Mon, 13 Jul 2026 10:18:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783935780; cv=none; b=N+kDx765Fxtt4t8md5sQQ1+IJiHevrpHPsI2djdRvjg5zSaE9A15TZd4w8oilVdr4h38idEcdX/5vTDC3PuPcBAi+Vcc1y/V5rOQQXhMSw5uK2QahoM2qMUzE6PRInioU4Re6aAzcNSKLv6Fpl03Qw6cFDtZ1paoRnhP7WKq90A=
+	t=1783937903; cv=none; b=BLQLU4lyp0Xy8qspoTXaHiqj2kPpaEe73kfxaFeJleLhhFsSm/qsg4FqU9lQRhmb7YFK8C+TGhxFCaJan1o/26crCHq4IhVZYZ35GC/NiYYwCxZOFV0L/I94aZbuOvoZGGE7qbGs2ZnHrmJn0ovroNrvlt+7vmEkr7noJDFXPmw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783935780; c=relaxed/simple;
-	bh=KpGTbwVrV07M/ON5Blc+NfYMvyXGUiwxd5jRPdUSpLQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JWwOZktkLs5C7LqEVoTzDgypF4Br5gJtPQefZhL02Im/o4Y0zltDZSatll/wilp1eWJs98uX3Ek/Z4u+279Mf76RKIEZQDSuYroWrXgLqFqe1QK1DbwhaxcANLtaw5+Gee2ksf9tWASUKGtjWYwzRJnQXq4Tvnz/5KjoYKRnJGA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZUvkTzB6; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783937903; c=relaxed/simple;
+	bh=8Kv61KO/aRAx/RhbDQiw3BI7NxMrUEwFtpk8yMiw/no=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=VhPc5ZYf8omu7rtU45IZS7mG2SalrJUPtBumCIVnSXgrxGL1THoz1m2Q/oVMxN76aQifE6dOAdThYy7+jg1UpuHweN/fE+H3jwpmHQ8oU2U/ClCaa9huxFykoh6Bn2yFQ8lkLvH1YGZlRCQ9/MLs4CllBPyZGJjzCt0f38msGVo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=QU1hSfS9; arc=none smtp.client-ip=212.227.17.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZUvkTzB6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E9321F000E9;
-	Mon, 13 Jul 2026 09:42:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783935779;
-	bh=N/NEsg97ESxWviKB3N8M2VOUIX1MYSodWT+/FDsMwVc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=ZUvkTzB6DzrS7C/pL/ThRvqAycIXRupKAOhccO88GKDdKKpefs2N+SHt9uFFdNZCo
-	 w2l4BouVRhLJoDRvLmD3l0wCDiBdSWnMkUhVxEC8+HHshlfv4uyhkgvduvMnyxvrp9
-	 P3p6v1rgWnRMSkXxroCGB/RprqCuSSrBm/fM7caWLZqjCVyMECH38/nwhPc24OApHx
-	 qxmHKVot8h+6wfJ1tTIKn5modem0JzLchLUiwX91Jr5iA6FXlWEvLbEE196lcJNBUV
-	 TS/nUDmqL7TaYNVx+nshUZ4r4LYtLwSmwDr+6JwMihRJNbU+HnziPHD36+v7hGnoYB
-	 rnYDoMxeagx1w==
-Message-ID: <741706c6-e6ff-4bc2-8ea1-28ebada6032c@kernel.org>
-Date: Mon, 13 Jul 2026 11:42:44 +0200
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="QU1hSfS9"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1783937892; x=1784542692; i=markus.elfring@web.de;
+	bh=bCFTcLrIfbS67Q8Dxj6lfchLKQ7pfKN0vMLQi3APqeY=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
+	 Subject:Content-Type:Content-Transfer-Encoding:cc:
+	 content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=QU1hSfS9Q+XwXRSZATJ50WwDaeiCjWLKSXzzzf2tSrqQrnpVjblHH2J9u2kJh1Zc
+	 DiQW88B+BdjnqCptxcGjxpV6776DuEI0bXTjEUQv2G3VOWQn3crGxZ/UTuOVBWM5W
+	 U/p9X3lVNn+/1NH7xpyxvKtpLa0SWSOa5yT81/ciBkLiTeXRRxVaLn257Rf0euJRa
+	 bvZqM3gtZs8Dj9myW7VnNkEN5ANvgkZpAYcWGCvonKNWtCWJYkrTWM56qKF06GDMT
+	 Akq66ev2pZA2TJjsyFuBgsLxGwnsBZXcKwII4ccK7SEPJT2q17Jr0KeLJfqTdgJn3
+	 7Q3zFfuOHl+KcXrPBw==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from client.hidden.invalid by smtp.web.de (mrweb105
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1MNOQy-1wQ0pq1Pzu-00Q09L; Mon, 13
+ Jul 2026 12:18:12 +0200
+Message-ID: <36d0eba7-e78d-4a06-95bc-c97d9b91f8f0@web.de>
+Date: Mon, 13 Jul 2026 12:18:10 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -35,123 +41,143 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 09/16] ASoC: dt-bindings: add OpenPandora Sound Card
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Grond <grond66@riseup.net>, Stefan Leichter <sle85276@gmx.de>,
- Grazvydas Ignotas <notasas@gmail.com>, Tony Lindgren <tony@atomide.com>,
- Ethan Nelson-Moore <enelsonmoore@gmail.com>,
- Jarkko Nikula <jarkko.nikula@bitmer.com>,
- Sascha Hauer <s.hauer@pengutronix.de>, Andreas Kemnade
- <andreas@kemnade.info>, Lee Jones <lee@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Aaro Koskinen <aaro.koskinen@iki.fi>,
- Kevin Hilman <khilman@baylibre.com>, Roger Quadros <rogerq@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Daniel Thompson <danielt@kernel.org>,
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Sen Wang <sen@ti.com>, Richard Fitzgerald <rf@opensource.cirrus.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- Charles Keepax <ckeepax@opensource.cirrus.com>,
- Niranjan H Y <niranjan.hy@ti.com>, letux-kernel@openphoenux.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-sound@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, kernel@pyra-handheld.com, mfd@lists.linux.dev
-References: <cover.1783749722.git.hns@goldelico.com>
- <7989e699de400c0fe3f0cb7af77a54077784df78.1783749722.git.hns@goldelico.com>
- <20260713-infallible-capable-dormouse-aaaebe@quoll>
- <BF2B6C4A-A4CC-48D7-9854-DC014950184B@goldelico.com>
- <5667350d-cc3f-421d-899f-f353b05c5ea1@kernel.org>
- <8A0C119B-7885-4538-8D4F-AC60E5C91B7E@goldelico.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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
-In-Reply-To: <8A0C119B-7885-4538-8D4F-AC60E5C91B7E@goldelico.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Helge Deller <deller@gmx.de>, Kees Cook <kees@kernel.org>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Content-Language: en-GB, de-DE
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: Markus Elfring <Markus.Elfring@web.de>
+Subject: [PATCH] fbdev: arkfb: Move a variable assignment behind a condition
+ check in ics5342_init()
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:4VBd3fn+X2oA7NYVn4bnuoMq/q3dM9IlcWBnxAeRnBsEFp89iZP
+ h+5qhXgFJ8IpR/EorSXFdn4uBrJlG0gKwLjpWtyRRDryKza/yoE1pC3CohWYh4j99uV+ql4
+ I8g60hH4CNYDt13paPZbXqrGBsgVjy9x6o8waI/OFq5tgJfeoQPQgq0yY6L5tSsZMCzu8aM
+ YIA0G7SUc1BHC9Hk/k/eQ==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:IgK3AsApLzA=;y2FLiTygFYjUEKtTlUnZM213f+q
+ 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
+ 7WrvkNgjNKBgp7VjQtjn+
 
-On 13/07/2026 11:38, H. Nikolaus Schaller wrote:
-> 
-> 
->> Am 13.07.2026 um 11:21 schrieb Krzysztof Kozlowski <krzk@kernel.org>:
->>
->> On 13/07/2026 10:27, H. Nikolaus Schaller wrote:
->>> Hi Krzysztof,
->>>
->>> Thank you for the feedback.
->>>
->>>
->>> It does not emit any C compiler issues or runtime problems so it remained unnoticed.
->>
->> I do not believe.
->>
->> There is a clear warning from Rob's bot.
->>
->> You just did not follow the process of building the code (compiler has
->> nothing to do here). Read submitting patches in DT dir and then writing
->> schema for further instructions. This is ABSOLUTE MINIMUM. We are not
->> your build test service.
->>
->>>
->>> It was notified by the sahiko-bot and will be fixed in v2.
->>
->> Sashiko has nothing to do with that.
->>
->> You DID NOT BUILD the code.
-> 
-> Hm. You are confusing me. I did "make" and did not get any errors...
-> And the resulting code works as intended.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 13 Jul 2026 12:12:52 +0200
 
-'make' alone does not build that, just like other pieces of code they
-have own - well documented and always expected - build processes.
+The address of a data structure member was determined before
+a corresponding null pointer check in the implementation of
+the function =E2=80=9Cics5342_init=E2=80=9D.
 
-I don't know what is confusing in my message, since I pointed you to
-SPECIFIC guide telling you EXACTLY what to do (and which you did not do).
+Thus avoid the risk for undefined behaviour by moving the assignment
+for the variable =E2=80=9Cinfo=E2=80=9D behind a condition check.
 
-Best regards,
-Krzysztof
+This issue was detected by using the Coccinelle software.
+
+Fixes: ede481f6dad47d40b7e561cfbc6c04286a9faf1a ("fbdev: arkfb: Cast ics53=
+42_init() allocation type")
+Cc: stable@vger.kernel.org
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+=2D--
+ drivers/video/fbdev/arkfb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index 195dbf4a5142..9658f407b79a 100644
+=2D-- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
+@@ -432,11 +432,12 @@ static struct dac_ops ics5342_ops =3D {
+ static struct dac_info * ics5342_init(dac_read_regs_t drr, dac_write_regs=
+_t dwr, void *data)
+ {
+ 	struct ics5342_info *ics_info =3D kzalloc_obj(struct ics5342_info);
+-	struct dac_info *info =3D &ics_info->dac;
++	struct dac_info *info;
+=20
+ 	if (!ics_info)
+ 		return NULL;
+=20
++	info =3D &ics_info->dac;
+ 	info->dacops =3D &ics5342_ops;
+ 	info->dac_read_regs =3D drr;
+ 	info->dac_write_regs =3D dwr;
+=2D-=20
+2.55.0
+

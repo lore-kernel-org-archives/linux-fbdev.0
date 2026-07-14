@@ -1,62 +1,64 @@
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8D6433557D
-	for <linux-fbdev@vger.kernel.org>; Tue, 14 Jul 2026 19:11:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32C684D90CC
+	for <linux-fbdev@vger.kernel.org>; Tue, 14 Jul 2026 19:11:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784056272; cv=none; b=UiRlZ9GgOpVQDgowZzeYtjAYWE9YB094Y/gUrZIhG0+cZW1yUGYihkQ+AsPKP17YS885CfCEMfW7Zyn2AxER6Oux61/cIMFyti19oxGJ5aIt7RUbAz9fCKxxNYzLKl/zEeoJEgwPm8SrdstK5MEDxzbsfPYEmJwfISP8Mhtayvo=
+	t=1784056287; cv=none; b=JrQMRJB986h+Eeu3J2D7men0kwr1eFiMAXppuKCLOfiw06knf52NxxGzlv3EZsK8Sp2xT+mUXUEOGkbjUei8TR2LYSwDu6zwcR1v3eh8uGu2KgadOx1k7rCrUYmF0ve4P2Aij3Ku/zAtG3Uglu7upBL+/j5Wyk49oMvPLg/BnwQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784056272; c=relaxed/simple;
-	bh=dL6AZe8iK0ixK2a7le+Esh6ltnlPeThUu0kyhVtloNI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rvBQpKkc4ch+wTgDUd/LlF/Y+ROHWud96lWvTfs35OrXcaUGaVv9WFlJyBTHRU0K8iem+4CiRIxsYQtEDOw/6R8M3qRqslqj6h/WGbgWvYZ5lrZN8CQUOBfntC1/P3duDC1YDMiQxVDIjCGPxdy57lztek2BQm36DCyZNn30pms=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=FkLq2RDP; arc=none smtp.client-ip=209.85.128.44
+	s=arc-20240116; t=1784056287; c=relaxed/simple;
+	bh=nOCQSFW7CSkNoMWM8fbJpg3119zaBvpzWx6xv/iqRPc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=baNxbzxB4Wu511Q/mgsPesVd1C1TPnliGobyPFI5xRee6GJAPw12KdrZT4w27VhByhhrH6DBAGLQ47MSx/1ycOGSs2/xW28RkbmJsKeWmwT3duu1SX6WuX+2wPEvnmOtULcJFwDOR0fVOsht+Z9uK8E8giVEHZF/6Uy3F4kfVbE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NUH22C4a; arc=none smtp.client-ip=209.85.128.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FkLq2RDP"
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-493b27c7451so15691985e9.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 14 Jul 2026 12:11:08 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NUH22C4a"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-493e4cccd8dso6660845e9.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 14 Jul 2026 12:11:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784056266; x=1784661066; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=V8cflk1NhiWz6I9y7ZdfFj/dVqPOluavFLdFslOwS/8=;
-        b=FkLq2RDPUxWanNEL1MpKsr7bwRtYYBHcNxcumLK+Pmjbxgef//lp4jnWnRwp+XjMSk
-         h8U7Xd+fCjns1WTaL8ahEZMw80IVqnaBelP6lSIhRJPDuekpIq0xl0GSYcSPumSCIG6A
-         gqkLHOnheTNe5dM+8Ul4ZrbqACmlAQSND2iE5OBNtzgEdgxPAbbpDA90spRprgPlgwsb
-         qlHIhV+HObFz0z6Zns8hs685p29i0ZNvwhpLwbXbsikktXY6EcxQGgbRhjbJ9vMGlLKc
-         sHHqQTMbKUrL50Js4HJfi465wAQ3U9S2/Dkp8V3hnmiEMCjbaAjj4kv9oWDAa0AYXtOt
-         QaQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784056266; x=1784661066;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1784056282; x=1784661082; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=V8cflk1NhiWz6I9y7ZdfFj/dVqPOluavFLdFslOwS/8=;
-        b=HhnUQvH/FH5Btf95gzsUyX+FxC7TkHY2RnKmZZ+AFKsz1DIecP4tBJQ1fqYsTBfgEB
-         bIRLFvzbKxxIxGxaTJfZeZkUDJQbNqufWCDJzUm6qB9Q12RR4ngCF03PfXaT7yhTIO19
-         0u9Pl/6f241K2HZ+2vD2f1o85r4NlI7EAh9pgxiShAwg+PSLDxURfdT76a7F+P3Xg+j2
-         d5d1mIPgcMXt+1Dn/FDQfXgILox7UFFTOm9QC3b/wuLRG3eaKOi7wl2qR5535O7eTzSx
-         H6PTyGdn6vMdwNLh76MwyJij5CxcDst8aAXOLTg7V8GFeeO4d3t8w9yHIaqfntrJRt8y
-         IB8w==
-X-Forwarded-Encrypted: i=1; AHgh+RqZz9oRFFYVJif9gXROTR/redc1CaYwshBvBvdXL3SkpzS2YEeZCey11qRO+Gnr50XlCY0h10byGpKQYA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw1g6IDKvRbjhdGRxn1fPO/O+67NRnfrueRLK6iml4C6T36EajB
-	Hv6KCRFUTEGJrNcL86uIFv5OWOyE0l7eAbv8qN8SQ2Lwi3E9f+ryyoakGxosZ74vXH4=
-X-Gm-Gg: AfdE7cmnaVlD8SlYdh0Ozxsp9vBJA0FiIs+y0NzBKCp/u3ehcvBsH2lv8R0+pkOLTUV
-	dZOgcD2MhntY1BCepluft1gcs+xBWrHCr/9JCrdx6i9jJ3ITfoTlAZ4xxXWJ+aKie7tPNDOKMvW
-	NAE+opyJoHhTFEL+vRDdqk4ZOR8JazAJ1kC/4eJUR4c4acL1f/h9t5c9XtvEzWt1i+/exQcHFas
-	7iQlmt/RHr/e7+L5BC9JpcrtgVtTCaP3vjJ+QpfOFWcOeRNCn2hog7AtnNfdy182a5hH4N7r/Fx
-	FyAA1LeUMfW28l5L70IV6F55oHsnO7W9qpH1qrddqOS2fZKxpCgl+eKgC6oFjYlNk07hO24nIpi
-	0p0o3XXVE+eq3imHGNlYNBoBnaUi1nlZc3tx4m10XdP8hkr5WHXWp0vRi4G+wAekG1rYoLz68rZ
-	GLhpDfJHEpMI6X4Kxcrp+ZTgDVklrlTkxZakWEXR5wyDYUNm1PG5ECsbb3uTHhzzKtdi8H7NEkS
-	vQ3Vukw4fkxNTEA1FUvVA==
-X-Received: by 2002:a05:600d:8444:20b0:493:e2c3:af25 with SMTP id 5b1f17b1804b1-493f88bd90emr119328685e9.12.1784056266292;
-        Tue, 14 Jul 2026 12:11:06 -0700 (PDT)
+        bh=8SgW7Vtvc0tFBeUiDAXyhdKRnHwKhXWugDI8a8LDJqs=;
+        b=NUH22C4aMM3oCrbvhPdrpOaZ13SWKojvq4gVq//O9Kh1+v0JIbVIIJbqCxnx8VsS+V
+         wl2m7W8WgJ98ezwtAvNdzKB6qybzxwQl84XyD1kcSArSrIlZ7oR/gb0C/gUvDfr84Djo
+         V3BkoRoY477VMv0afpzm1WUUWg0mOuQ4zZOo/Gvx82KTDfcKQ455zNPvD2EitvhMnVka
+         3CXs+OI9ssYNmOFA+n84hur6oK7If9JtDxAu+X2WeCW9I0hBNrLbaiGRu41Lx5u8hj2p
+         ujOTLJVirxUQ9vkyWl74qgw1Qv3qF6zdLlRqhzUtixuRgccHXZihYaWBA7sOqkLDK4sy
+         2KaQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784056282; x=1784661082;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=8SgW7Vtvc0tFBeUiDAXyhdKRnHwKhXWugDI8a8LDJqs=;
+        b=CvAjUmsfXc//YAgC3VZrmiBNla+SJR64m58WHvTTaav8mgHS38gTl4Ttcn5it28F4N
+         b0klXgcFWm0aGamE5iM4FuEu7upBmK13dqYAvhsABCjpvOECQz8zjSKArNmc4AaqEL9u
+         JaP2uidR2gyea6RGpeogOTIKjmE+DcJ86vv04LTFubQB6x4wh6F6onOoU9rMGRYlJ+at
+         hS6x+7WaJo8h3tWHrfxUm8/fu5ggQ9TRezA7QAbBmSWdlh6me9WhzCL8B4k3HxRxDZ9p
+         zRhsVnvRNQbaxo/9DFke3/eEedsagcYkmiC1rpEkk6mK4lg6fKbfe3SqCC7ktTbZMYTZ
+         gMPw==
+X-Forwarded-Encrypted: i=1; AHgh+RoEE44hWwvlFrDxRs+2o5z5fmfi+0rMvVbaR+AmK2VEF3oHHNN/wbGdYyEOOOK+Mn8DFsP1yqo4uyFVPQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxuu3P0lL6ZNwMyUqHt7kvwNbd3iWld5sBvGpZqnl8yGKQAhKrs
+	1nxE6jwpefpgG0cFYiuZq2iouGjSTRl0/PjlwxUKfVK4xPkpIQqaos+K
+X-Gm-Gg: AfdE7cmHk1RvJVfFecUd7O2kfmXuxEOUiJ2wQdkpZ20w131dy0v/WVY9P8HgbTUED7E
+	JnuBj4tRkamCo1cmWKl/EttC+V6Q290W3c90n+tZgrqUDMgfwWucb/dtdrxm5eh6AP1dDaHgige
+	MqfVhUCAGLVXDbzXU9ZZBH+omMmQUUAq5wANtkfXpsDWqRZrVx50UNRqAzXb1cmdk2Q8RtW7nJO
+	g+e639n0BWktmqGs49cljT1ks0aWrrZEpJcD2Xf+mkAn7yOAO824Rw/C1Hprx9nJO4u8CV12H4h
+	2PbPVQhP3ZAeU2QdXo2HXlxppjs5a6Z6qRrZsas3TetYsYWoHtbSZIaM8lKpVOyB2JEtHab7JXb
+	K7D3+iIcRzUhf6rLLdlzWxWMB5PHv65QsanABQdEt6N0r2Ov5wR0QwK5WV3+HHbKjizwmHgFuHd
+	VufDY4ZKY6dYh0+ZHofJ06M0vyYFAt8/gHdwncR/SiV+WVDteWAM3Bt7v+1I5qM9CYhAcYTfqpX
+	cUHckCH5d8=
+X-Received: by 2002:a05:600c:310f:b0:493:ee3a:f05b with SMTP id 5b1f17b1804b1-493f87d7fcdmr147477765e9.7.1784056281449;
+        Tue, 14 Jul 2026 12:11:21 -0700 (PDT)
 Received: from evil-archie.tail5479a9.ts.net ([2a02:1388:23c0:16c0:aa41:f4ff:fec6:26e2])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4950a2f951asm100677815e9.14.2026.07.14.12.11.04
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4950a2f951asm100677815e9.14.2026.07.14.12.11.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 12:11:05 -0700 (PDT)
+        Tue, 14 Jul 2026 12:11:21 -0700 (PDT)
 From: Panagiotis Gravias <graviaspanagiotis1@gmail.com>
 To: andy@kernel.org,
 	gregkh@linuxfoundation.org
@@ -67,10 +69,12 @@ Cc: namcao@linutronix.de,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Panagiotis Gravias <graviaspanagiotis1@gmail.com>
-Subject: [PATCH 0/3] staging/fbtft: Minor cleanups.
-Date: Tue, 14 Jul 2026 22:09:38 +0300
-Message-ID: <20260714190958.219437-2-graviaspanagiotis1@gmail.com>
+Subject: [PATCH 1/3] staging/fbtft: Remove prohibited space before close parenthesis
+Date: Tue, 14 Jul 2026 22:09:40 +0300
+Message-ID: <20260714190958.219437-4-graviaspanagiotis1@gmail.com>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260714190958.219437-2-graviaspanagiotis1@gmail.com>
+References: <20260714190958.219437-2-graviaspanagiotis1@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -79,24 +83,30 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Solved some style errors,
-parenthesis spacing, aligning arguments, replacing udelay() with
-usleep_range().
+Fix checkpatch error: "space prohibited before that close parenthesis"
+in the define_fbtft_write_reg macro.
 
-I hope this makes future checks with the style script cleaner and more
-helpfull.
+Signed-off-by: Panagiotis Gravias <graviaspanagiotis1@gmail.com>
+---
+ drivers/staging/fbtft/fbtft-bus.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Panagiotis Gravias (3):
-  staging/fbtft: Remove prohibited space before close parenthesis
-  staging/fbtft: Align arguments to match open parenthesis
-  staging: fbtft: Replace udelay with usleep_range
-
- drivers/staging/fbtft/fb_ra8875.c    |  4 ++--
- drivers/staging/fbtft/fb_tinylcd.c   |  2 +-
- drivers/staging/fbtft/fb_upd161704.c | 18 +++++++++---------
- drivers/staging/fbtft/fbtft-bus.c    |  4 ++--
- 4 files changed, 14 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 30e436ff19e4..38697992f5e1 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -62,9 +62,9 @@ out:									      \
+ }                                                                             \
+ EXPORT_SYMBOL(func);
+ 
+-define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
++define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8,)
+ define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+-define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
++define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16,)
+ 
+ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+ {
 -- 
 2.55.0
 

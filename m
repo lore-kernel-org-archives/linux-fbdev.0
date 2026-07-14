@@ -1,95 +1,96 @@
-Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
+Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1455934CFCF
-	for <linux-fbdev@vger.kernel.org>; Tue, 14 Jul 2026 13:27:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.215.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CD3D34F497
+	for <linux-fbdev@vger.kernel.org>; Tue, 14 Jul 2026 13:28:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.182
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784035643; cv=pass; b=AKly7gQSFhNQJeO2FwBpCqsS2KNhAJ0kQ11iZXCWo+GcoetWq3CDEfxt1eGxwYoMRJS5vV1bWMMAHX5XLpDlqJc0JFpMhTmfC4F4XHIikP4vtTwezZq6KRabVFQh+wdQnDQJqC5ixZB4YW2DVp7livcZcjtaDKjk8ZCjpSbG/bQ=
+	t=1784035723; cv=pass; b=iyrjyL0DK1+IjheWlyV1DZlxOKA2PQRWmBLnL94wyAZMJ/Q1bI7gjjk+atSPIx7G0fIGd3Q7yCK+yhRaPYFte5DtWeMsyls6ygauK8J2hIlJRpn6/6nbpM0n89sNdQGF4D1ZPSkUc4Qhy+ZsLcgDs8FdEOvgVq41vH7ok1OfjEc=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784035643; c=relaxed/simple;
-	bh=Hqx+/2gwUQf5oktWMVU1iaI86zBAPEpohyRmf9hMejs=;
+	s=arc-20240116; t=1784035723; c=relaxed/simple;
+	bh=ue6jFvPPvjqPgIpHsXNu6T7RM+b3RNh8Y6zW7p+85hQ=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=uDGmVzPsBx7VJwTYOzDd8viyav0gYsjfekBUToqayzdVwEKRTkvQHmcIEP4NGfxOPOvwcLCEyxWG6KKMNsW59Zw+9CORD3HIx9uSgyUKq+fU7R2RqHGRAi0ex6QGnja6b5KOkFA8I/nXIH+WwXER4mfKYcoK4iyrOlvQa5ixol8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=egSKewjS; arc=pass smtp.client-ip=209.85.215.176
+	 To:Cc:Content-Type; b=QJxGrYEeAhUhYLAZ5YTfvyWO+iyOttk/TWgpr56M54fMo5jTyKrwF7YGF5wdNxyyaQNSWwiuJZJh3CAapI6Z7Ej9xhM5aL+ZZKzAn9bdfPku25EvpIC4JnFIfgofwLeqkSTZ/D5B9qksJwn/6P+7htFhXSvKwa+6d/0/Kgc9Sy4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HAMoLggN; arc=pass smtp.client-ip=209.85.214.182
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="egSKewjS"
-Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-c96bfabc8d4so594982a12.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 14 Jul 2026 06:27:21 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784035641; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HAMoLggN"
+Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2caed617615so47266465ad.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 14 Jul 2026 06:28:39 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784035717; cv=none;
         d=google.com; s=arc-20260327;
-        b=BJIExlE2YXbOqxKLoob74SiJIaxF7tWA2gyAG6oTE+yBqpbPwICJOrAKBDgGxI2z7n
-         4A2hLSZK5rd7xV7Ms9aK69XiCGd+J/Z8YAYeJbM+RyzNnLMGbl3Map5YwzYnrVUzHDRK
-         U4ZR/Hks/0fwjPz/AH+Dz2Whko0JhilgokqE37otz2kdyGR+8b7gE1l+lZuvgUMeYtgb
-         IXWEuBUw2X1d2Fu2Ek9yzV3u0dYV/bwSpADGez1G6Fp7ul7EMs7W4t1+748vp9yY59pN
-         sRgCahFVVd3IosP1zdpNVEitB9QeUQu5CuTdP//mtCkaaSVlv6BWcEfTL17XvvlXd6jj
-         baBg==
+        b=Xve7tVih7fXVIw+4xdNLN7npNPiH8s19IZfTc5tjTh+hLvXLAnBEmhKZtKAkuCSFBz
+         2gAuiPVxsgu8Ft+sTAI2N1r6HxZMtz/76wr74lHyuko59ot1I0xDkOJ19o9/W0xirBuc
+         BU+4FQkA6jCfoc9qh5XQryWVJki/QLQ/qfYaQzXzfyhBdZ1GbhGZgnRQI3pRfzEcQO4h
+         bzcmD3tadyY9ufzGc7M0VcFkxdRUlTjScrIAJP7XqysEhq2H2GH2FDekRU3Nog9IdpGS
+         SZ/3lFgEa0x8oUI58P8i2vTuvT3KXtq44KRB7hW+lqtQuFEWvbnp0Ik6FtuYx3a1gvF5
+         cKqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=PSq/mUWM2YvpW32XDTn1fQtxRJbdlACjQCMNg3wpfiM=;
-        fh=fhksic2wzSW1jy/GThxSAI4PZtjGZLm2xYbc7Gemhiw=;
-        b=i1H+FbZejG25ZdXGK2mCnQw0t3DaB/kdtHzkzLTnKOM/ajijTZgrJSJ4LZ14x7kRgy
-         uBVYwNIp4et0pKX3itAMnohQqePeKhVauOabsysPpCY55mjhMBAzNm2z2pFjDv9Jt8Qq
-         QiILLK0mE12LAxtWlu4sbh9Kps+DTVJ1LVDii543oFEnjnIux22nRww4TE00yaNtUVh0
-         7p+U3tF8kGsu0JBnmgPRSA0OheGx835BDYGAnA3WbxOQsLayKCqECy8YNqzAIyq0jDzZ
-         CFbchDqojvD1yPfFOtujhE0CCSno+MdHrCi3923LZnaBb1nUiL5aqhT1F+nN76UGhSH1
-         pKZA==;
+        bh=ue6jFvPPvjqPgIpHsXNu6T7RM+b3RNh8Y6zW7p+85hQ=;
+        fh=JtqS+liBoOBtvLp4NfiFvkq/HoO9gj1E0wMLOeFhgV8=;
+        b=Gvip5a+3/rNjszCZPj343kQAMeq8E7F4xdN9jcJ7CnwIAy65S2dhGopzMewV5mfi87
+         RTsnPT/2IHjcsD4sbrw0QgBSjo+zwUMAY6wU1RSM8A9Ul6Ou+Lnnzpf3LUKbGo5PoQo4
+         ssCTTL32kM69hPdJo/qrbD9vDkj0v0dk/DAG7llumGiwXsIn5SpljFM5PRW1qLug1Yl2
+         Q96AOIgKl5geYiKWpwwJoSjyRtoSG6hLM12o2va8puPhkvI6LRy9/L01YL5tef6CTTJn
+         ZjpNQQ1VwP4ST9SbemsDdXeiyHjW6CFfmrZ4fDjJmMBylHFzrfrqZ3QWVQb1Xz592xzV
+         JD2w==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784035641; x=1784640441; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1784035717; x=1784640517; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=PSq/mUWM2YvpW32XDTn1fQtxRJbdlACjQCMNg3wpfiM=;
-        b=egSKewjSB9QKWsQQJRVJxdBUYM87L3b2NzHjTXY2e4Lyrhp2z86pdRrS8fcXMNTw3m
-         EXgJDomP8VGJNhY6mFQX3GG4onLh2IeZQaS7sh1lgkvjgT2vWxMR/eICi0cUg8kz7xv2
-         r5c9voSjZr145JyTG74rT2ZgPcvogC5asUowiQ+oum+MXEuQzsLme9xiAk28xOZruLIa
-         +YMgud91p92rVOdeACWN8wzl7tVSMLbF2oYYaUdUrr/qqq88DJE4ZN5Ni1h7BTnQBNMM
-         i2OG54H6DA//CUQ08xfVEiYxayqkjHU5Y+uzlQcbs9v61CbLoF8FD7MaKOJ9oij+Jcvp
-         T+HQ==
+        bh=ue6jFvPPvjqPgIpHsXNu6T7RM+b3RNh8Y6zW7p+85hQ=;
+        b=HAMoLggNikNfjMaUSjRVs0LKsdZLYv3PPjXr/y1n/bgfeuEWuMbtBEeSeu3Mo4dpnb
+         xBWJuI9zz+8g/MpuGUW6WoFposV5HBQV4iEtgMSAkhvsuNGWlsSPZJ+Fq4weUHTdF1ht
+         XldyK/rSwsiVV3E4u9TlNCjlt3Ou2fkoLA8RZMEXYqBzcpAXQghG1Qs88zaAroZ2yqX1
+         KfYl0+I7ARIkLrHU0obMlW/vLijtNhknmn+ZjZif4tfwcvWHHaYWf5/HzYpfEvh+Ad63
+         +uKJ5fbN33gdlEzUd3aolfkrLr4UALNV4xPZv1zsgyrd7pe6vjxEn/lPRxc7yPMrnTkh
+         cEsg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784035641; x=1784640441;
+        d=1e100.net; s=20251104; t=1784035717; x=1784640517;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=PSq/mUWM2YvpW32XDTn1fQtxRJbdlACjQCMNg3wpfiM=;
-        b=gbNf2Zf6D5OkT9CITrHCkfZk9FyzEqEn03sZvCOcJe1qpKL7vhrIXRPiaczNlxV9wA
-         Weg4b3R5rGpec7raoK/V4TUPMP47OOUClXYhFLYvVxn+lq2FBaFtRF0HEXenIfWeL9pQ
-         f66F0+v1bXJ4VMKc6drLfKsgVkoayVhvfsVO+PMbG/a9hjGMnWDmXeNL5p3bxKE1TJQI
-         tuJY16f/Tj5Hw9D156N9XBIXahHBpyMKSzgPtR4TsbXtmtTDWMIZo0kvYhKweGkbmTx5
-         ldxk9n4aD9tDJy2IBRFwBJ857UGu7mpGXkVMt/aPNPAqwOBz5V0zqS1LAW1DcG8dZVPm
-         2Lmg==
-X-Forwarded-Encrypted: i=1; AHgh+RpWw9Im0VUBoyaxv0N3qxhLCmmPfCZusmk+Y8li8ubKUlukjUFvvw4xKTC99Tp7NbDQeyiFC9s00A6EWw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyFGEBVLq2KkfxjsjZ4ZS6GvzaTr21lRmJRksPu76VjgUAfUuHV
-	nhrhCeWeOQ9BQQuRuXV2JV/NPDY2Nm38v4pSb/lqDonJPUKuPBhJ05dOd/oJcluvuprJKpJqJqH
-	U8/mTw3EaLv9IbPe1ik8q/4tfx+DJ2ZU=
-X-Gm-Gg: AfdE7clwdE3y59g/c9W++3bfR7D/c/W2FxzvxDpnZgjxyrldMggU++FrKtHVnQS0HN/
-	xfLg60VLN8nEvE2B3s/li4hn6UueMyrcmJvXgHh7aXj4Wxi893Ei84MeHdGKD1xJZLEic/JT35G
-	dX1+biZ9jP5852bdaZs9OiRsIXr5GqSEBh19FhYhVMZ1ETG9cC3kk5a8O4VTEfkkx4GGvltwXoy
-	25BZVpo9ASlrvahTox9ZS6OaRJWUfeo7G377eRO8ZyuEn4Ousm4LidjA/EUgFNFhQ/AaU4pAgPX
-	H1jSbeIr7sMv3f6NiVm/1ONq0/VtmQ==
-X-Received: by 2002:a05:6a20:d70a:b0:3c0:b55a:80ff with SMTP id
- adf61e73a8af0-3c11063d595mr14450342637.24.1784035641387; Tue, 14 Jul 2026
- 06:27:21 -0700 (PDT)
+        bh=ue6jFvPPvjqPgIpHsXNu6T7RM+b3RNh8Y6zW7p+85hQ=;
+        b=LT49Tt2QjlAV7tYGIBQp2HOJJfLLn72B1z9qFFRtRpjsb4cV3Ga0Y96pHhACYq62Ig
+         Pbqtn1CZ/+YX/4cVw3iAqAggdHGerYoDr04jX5p85TURWDkhO/uozYkuqnOpkT0A7Vjy
+         tpPEtjFy3iNcVjrCprpZCyIouB+qPt0oQz8/OX2ROUV4shjuq341kIP7roJPzU9uDTSz
+         VO0j/IAva3WS38P4bEt4NMr2KeddduSje2dMBGLZ4Z78Dsnrn+mOjEkpU3I/2RYeN8Mc
+         Dhm58OsOWWtup6vOwGB988n8FXB/gThJLAZWNjTjuI6HNuawpT5vZ4P5GhmTGGNb9jnc
+         e2eQ==
+X-Forwarded-Encrypted: i=1; AHgh+RoGlOFT1TSDgy64ru/orjikx7E6TUXuOE3gdmKNPiwhkTZFuAS/I3QaTEocMkJHlmyGvqWQq181gf7Wvw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy6KkFXnikxrSa6Y5MHfq5IsXCF4n4s+1F9zC29Wb4Z59qkepJf
+	pU7XZy5MTO9h0YnGrrPPw4ewbDEizO2bnDD1uftsHV00foCQ+fei7f7fMRahkjAOU41AO/yDclV
+	yhQ38IkacYKi7S9oPFsnMkcrGs+vSgEI=
+X-Gm-Gg: AfdE7clZAMwnop5UGv6wQhfERjGWcdyqD7m8GVAtBrA81hGdtS+/xFXc68iqLbFCRDy
+	WZAIN8S3DiJRamrtL+rB9I1JpYfYCSUOXc8xu/BhrL5ahF9Wb1r31041T7qCuV3nZiO1DjtSeSP
+	CTehO/1JcA+w4/SW3i5bLWkAwqSnoQ6sOnhoaua2wnf1TKPYOd48+B5vv8Mb0wqrsBtaGG4Dbbn
+	lBp5di33UPESik9KkqA9gRhZM7MibmGZClXaPtJ0Rnl38l35WQPeibK4kPoPKxobRv/mPG4JEB+
+	7tLlkWYj11fnikcmZTgrQFIdTqu+Tw==
+X-Received: by 2002:a05:6a21:7486:b0:3b4:b6d7:a992 with SMTP id
+ adf61e73a8af0-3c11062f70cmr15032381637.8.1784035717203; Tue, 14 Jul 2026
+ 06:28:37 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260617080031.99156-1-clamor95@gmail.com> <20260617080031.99156-2-clamor95@gmail.com>
- <akeFmMQ_S1Y18hlu@hovoldconsulting.com>
-In-Reply-To: <akeFmMQ_S1Y18hlu@hovoldconsulting.com>
+References: <20260617080031.99156-1-clamor95@gmail.com> <20260617080031.99156-5-clamor95@gmail.com>
+ <akeF_VrijPbebz3I@hovoldconsulting.com>
+In-Reply-To: <akeF_VrijPbebz3I@hovoldconsulting.com>
 From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Tue, 14 Jul 2026 16:27:08 +0300
-X-Gm-Features: AUfX_myw9KUnmAWsWcXDIJL61TlrVu8UIEI1kefy-2iSBs3h-OI28TD8pRQoND4
-Message-ID: <CAPVz0n23=F2Q2fSJJx1E_mST2zhomKcvhKtOy-Af3aoq-pZ-Zw@mail.gmail.com>
-Subject: Re: [PATCH v5 01/14] dt-bindings: leds: Document TI LM3533 LED controller
+Date: Tue, 14 Jul 2026 16:28:24 +0300
+X-Gm-Features: AUfX_mzREZozvqJIpCZw-bv1kiFlmVezGQdepbPdfuQMwUIt-LOogON_yq372Iw
+Message-ID: <CAPVz0n1+wrq+g3p3UTc3hzHcsz8k02=QsvmseBD45d+SoSFsBw@mail.gmail.com>
+Subject: Re: [PATCH v5 04/14] mfd: lm3533: Pass only regmap and light sensor
+ presence to child devices
 To: Johan Hovold <johan@kernel.org>
 Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
 	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -103,95 +104,17 @@ Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-=D0=BF=D1=82, 3 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 12:49 Johan=
+=D0=BF=D1=82, 3 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 12:50 Johan=
  Hovold <johan@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
 >
-> On Wed, Jun 17, 2026 at 11:00:18AM +0300, Svyatoslav Ryhel wrote:
-> > Document the LM3533 - a complete power source for backlight, keypad and
-> > indicator LEDs in smartphone handsets. The high-voltage inductive boost
-> > converter provides the power for two series LED strings display backlig=
-ht
-> > and keypad functions.
-> >
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-> > Reviewed-by: Jonathan Cameron <jic23@kernel.org> #for light sensor
-> > Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org> #for backl=
-ight
-> > Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+> On Wed, Jun 17, 2026 at 11:00:21AM +0300, Svyatoslav Ryhel wrote:
+> > Instead of passing the entire lm3533 core data structure, only pass the
+> > regmap and the light sensor presence flag to child devices.
 >
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/gpio/gpio.h>
-> > +    #include <dt-bindings/interrupt-controller/irq.h>
-> > +
-> > +    i2c {
-> > +        #address-cells =3D <1>;
-> > +        #size-cells =3D <0>;
-> > +
-> > +        led-controller@36 {
-> > +            compatible =3D "ti,lm3533";
-> > +            reg =3D <0x36>;
-> > +
-> > +            enable-gpios =3D <&gpio 110 GPIO_ACTIVE_HIGH>;
-> > +            vin-supply =3D <&vdd_3v3_bat>;
-> > +
-> > +            ti,boost-ovp-microvolt =3D <24000000>;
-> > +            ti,boost-freq-hz =3D <500000>;
-> > +
-> > +            #address-cells =3D <1>;
-> > +            #size-cells =3D <0>;
-> > +
-> > +            backlight@0 {
-> > +                compatible =3D "ti,lm3533-backlight";
-> > +                reg =3D <0>;
-> > +
-> > +                default-brightness =3D <113>;
-> > +
-> > +                led-max-microamp =3D <23400>;
-> > +                led-sources =3D <0 1>;
-> > +            };
-> > +
-> > +            led@2 {
-> > +                compatible =3D "ti,lm3533-leds";
-> > +                reg =3D <2>;
-> > +
-> > +                led-max-microamp =3D <23400>;
-> > +                led-sources =3D <0 1>;
-> > +            };
-> > +
-> > +            led@4 {
-> > +                compatible =3D "ti,lm3533-leds";
-> > +                reg =3D <4>;
-> > +
-> > +                led-max-microamp =3D <23400>;
-> > +                led-sources =3D <2>;
-> > +            };
-> > +
-> > +            led@5 {
-> > +                compatible =3D "ti,lm3533-leds";
-> > +                reg =3D <5>;
-> > +
-> > +                led-max-microamp =3D <23400>;
-> > +                led-sources =3D <3 4>;
-> > +            };
-> > +
-> > +            light-sensor {
->
-> Doesn't the binding (or dts) checker complain about this node not having
-> an address?
+> Again, why?
 >
 
-No it does not
+Because none of the child cells needs entire parents private
+structure, regmap is all that is used.
 
-> > +                compatible =3D "ti,lm3533-als";
-> > +
-> > +                interrupt-parent =3D <&gpio>;
-> > +                interrupts =3D <80 IRQ_TYPE_LEVEL_LOW>;
-> > +
-> > +                ti,pwm-mode;
-> > +            };
-> > +        };
-> > +    };
-> > +...
->
 > Johan

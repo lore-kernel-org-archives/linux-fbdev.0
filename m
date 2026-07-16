@@ -1,162 +1,165 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
+Received: from mail-pj2-f3.google.com (mail-pj2-f3.google.com [74.125.227.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0EF82D5922
-	for <linux-fbdev@vger.kernel.org>; Thu, 16 Jul 2026 00:29:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ACF7C283FE6
+	for <linux-fbdev@vger.kernel.org>; Thu, 16 Jul 2026 04:46:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784161746; cv=none; b=Z9VB52dWuQnP3sE/ssiN1+XJd2Tuaii8TRiE56LydG8CNozOY4F1bYfrj8l5cnpAvI7Kv8ASdSRGqOBT3yZn53wplRKaMVgLP5yQTN22rwT0zE5BBELgFgAPBAOdZ3N7qzU3nYapGHggAWVTV2rRLor1X4qehvB2LuqpWqPw/is=
+	t=1784177195; cv=none; b=fmi/QXlFCCBa2jnytil+eTgOEfnRVffPxEx95dKwfPl41JCjWsaYzRl2nNj1UWnP00Gll5jvUz8rxJDGgTD+Hanj3pnRRJUeXpNW6ku3xkmWYxy4EDMrqXja0RfflxZUlK2hMZnPuVRxGthU7izWtajBggRk08e8efMBBuf091U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784161746; c=relaxed/simple;
-	bh=Pn412DYiAzxCT+4OPjStksFO/tbSj/zMlkHkGBtPatE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Efv0+Pg/7P9epfAmB5IKSHYtsFboliFJ1eJ+HsjERCRfzrKToxSnwspOOb52EnG3vc0Zb4JEieHWuQd+BoCdlk16bZu8bDXSqqXO0B5Qgi2Mrtu1GL92PSGIu9G/q6wBOZWAx++4xrTvqzQsd1YjxF9FPn+Z8JolXbYtM1sexMQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cmd+edKm; arc=none smtp.client-ip=209.85.214.182
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	s=arc-20240116; t=1784177195; c=relaxed/simple;
+	bh=jLsncUXgsxf2LHonIcXGrctbpjoU4r/DWZEFpHjfutg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VhIXWT6h8dL0IWgAON0zYr4Se+NLKObZ6Z8F6HXL6FAIvURrxRFMigprJsgMtUOSfLLdZoo15OUyjeJmh/9ImR3qSgCi4c6Z3HHo5MSV+XiLrNT44A7OOXWVqJDfp9/3URqf6yfTi1Aqw0Lsk7g8bj86IJbpCLdqrPJmdi0j0yM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RgA9lj3x; arc=none smtp.client-ip=74.125.227.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cmd+edKm"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2c6b67d5fa1so100374705ad.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 15 Jul 2026 17:29:04 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RgA9lj3x"
+Received: by mail-pj2-f3.google.com with SMTP id d9443c01a7336-2cc8ed77bbcso33310495ad.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 15 Jul 2026 21:46:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784161744; x=1784766544; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=OGQ6x2eWb0kXOAnv/GgXof7PDNge2C09gVvctRHhkCQ=;
-        b=cmd+edKmzKMPZggls0FDrWBDODabc9rJtrdobsoPsNoxEc9BKSZfGXCLzcTJq0+cHK
-         e1WfPqWDtA3jFpxSy+obtSQv5BrATtpz6kjW8Qlt29gcpr1uuZCKHtWtIWif0ceuh67Q
-         Zflci0J8UK88Ldd3y09dIo2emaskL5z+h+oLZarokmgaHnO4ZDq0XV0bTq8UxG07/ofk
-         rbNeLajf8Uz0xN0EZPtmTXjB86HFwRehGK6o+RhddP/xtNshX8tAKvwkl02w+ewCQqKy
-         iTZBcCh8uaalgOUBAfBdvSkGpIWTqXHmME8X1X0waha3N9gNd3m96MqQp49luQ/q/Udf
-         UWYQ==
+        d=gmail.com; s=20251104; t=1784177192; x=1784781992; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=enEY90CGFOJDQcplxBar2hJV6yl0T0mtmkQgs1NewkI=;
+        b=RgA9lj3xKgJzkPZPSji9PAxw2oC+aCzAYFt2AYTV0doYyQ/aXZHdPPpMZXgDotYCjC
+         zM0AvcCLOT7ztvjGos4k8QqhgXMK6avSZcriS26brHedCRGdcdoXddZUbnN73Mnb3+8L
+         bRsaMkcq7hvhVwo4KOITB+9/veePzOA35JIOPZDmWgchjc+NumuVYR4FdofOic6K8wO1
+         sPNTSfTwSzkghMLFOelFQjENJUCKn+0BUmYYTtb0ZIro4nDwpy0IhgxMqWjsvPReluAL
+         bvdL0gU9EDX2r+Uu612PhFH8N6+Ukh3hzR9VhrA2+2lWwLN5X84+gz2O/b3CTj/5ps2T
+         Hm1g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784161744; x=1784766544;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=OGQ6x2eWb0kXOAnv/GgXof7PDNge2C09gVvctRHhkCQ=;
-        b=mF3smWIrvdX4D1MeN53UH246QYyuIvQ30iSvoRj0kSx4NKReiS7m4QERsXER9wj6W2
-         B8fLDDHxR1EUEMKvTHLRDN9HNr/gYdTE36bzNQc6Y/jRpPelzJoLS/1NPB8L0zD1ZVzm
-         3UHb/fjOK3c/+SklNhjWoDl/PHBom7PZ7Jj2GWT/Ci1AKB65j1+zCHc0U+Fv1UU2J0nG
-         0g8P6yfiGKyFZOjF7kTTVWm187sGtwaHWgn2fUaygRhmDuq5KHVBqAoEMQNf70NObt0d
-         abxlx/CSLMKL6KYGVBunz87h9CdtpSmxHvrQqCiV8i4NhMu69gbifL7pvzbnjBc7B8Su
-         +S+w==
-X-Forwarded-Encrypted: i=1; AHgh+Rowo+jfHjHFkKxUHFqg7XdFKIPVMCa+Yah4FVD0qU9TrWGBdARnZfZVUHx0J+8v0PknoO5qf3sLhI9i1g==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyrOvEqdR35DEjR1NPLP+UFGO3X/F3ohMAz+iJsEaqjo//9JyoT
-	BPCfIFkurGMI0RQf13GMB9tyFLAU9BXway4XAynRu3CYXh04/C2VQfVg
-X-Gm-Gg: AfdE7cnRGCoUvJAiQut2ReL4Y90uaaLLnT6Ek8VE1CgsBuCWlbelJ1uTsRYINbJYdbz
-	HnldlRMjhunbhUSu6qAyEh+m1vB0/5FN2DCufwtaaIC0JLDnRoEQu/BHkvaaiUrVgD8XkwNIc8A
-	9zQUtPAA3LnS0atMD2kdI1OpIQwSi1S2JKz9yMF/7r9w7FEWxXr7YQ6w8VCuxAP6X17RKkF7ZEA
-	6WsAznyGFqIg0EexXtp9uoYKykQCyyCjdQpVZGlpEeD/eZCHyo1rUgSiOw8FzYJDe7Ayt6Y5uTJ
-	SNI+ARhuNjy2iDZDnAmP+fGFpyhLeceWuSTeFRxIOAwUHE+269Iy04JjntIswLUNziAOOGndPh6
-	n6zRui4jSnxYbAmgqOCYtPIlN7J/so3rW8iLSIiSbVKOHhryeZIim4GrLVJX2fCF/gAwFlkjzJ+
-	mpIXkZ5OwPovceam7G/seNlqE6bDQPtn8OF2TYVQ0CA7ZnTsF5zzA=
-X-Received: by 2002:a17:902:f683:b0:2ca:1479:d9dc with SMTP id d9443c01a7336-2cef1326596mr78291255ad.12.1784161744012;
-        Wed, 15 Jul 2026 17:29:04 -0700 (PDT)
-Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf10591d3dsm10278195ad.56.2026.07.15.17.29.02
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 15 Jul 2026 17:29:03 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <b7171173-aa64-4393-b9cf-77d92f2ec932@roeck-us.net>
-Date: Wed, 15 Jul 2026 17:29:01 -0700
+        d=1e100.net; s=20251104; t=1784177192; x=1784781992;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=enEY90CGFOJDQcplxBar2hJV6yl0T0mtmkQgs1NewkI=;
+        b=dhXNdQdWz4Epl4HEyvzpfBM9E44kjJ2YXTA4pCSvnvhGIStSuvdYv75u7Sa3NPFWTw
+         Y7aKcll8RWg3uRbbm1qeHWkrIWxdsKtj+Em8g7R0zhW5XnptQITTLzghhHNn3Wkyp/9a
+         8MQ4MPSFiOwlAD4ws5iJXRyOlB8MsD2egIwwNlv+nbAkYQRrOxFr+HEsL3PgFnjIIqy7
+         Q6Ugu2bYsoRZLSEjd4lEZrekwd5TNhHV2RjNSkCjO1k/Wv/uoxwwnnpUqxlvSCyO/JFV
+         Ic03gPRLIcieGSK1kY6CKpIuv3jlhmvRZW9m8XBjO9ZnNXpyNAexqxx60xkGIVqzmQVt
+         A7fw==
+X-Forwarded-Encrypted: i=1; AHgh+RrGwl+AlkhHC6zUkDSAHm6s/u6P51tJQ+AUqnV92+9IM0QiEufHwNUOOp0I5rjdYV/ca/R24fweDvtw/w==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwUhKQZlhTiySLrl3N633B+AGvKdXdfAp5gHROVs2ZotvVL9XVY
+	asjhkF+KdwWsc6JZaZ02s7V+lDdwfuURYf+hQRBcQ9+uyVAz5xyxfctp
+X-Gm-Gg: AfdE7clCoRJMcJ4X2NuxtqabGPcSmGaF1cfF/UlkYCQa6QRWdT840Tj21MTT+gLrau7
+	aFbjGzsVIS0k7oQRcvC0vscSMAy/+d6PTY/nhB8DHmd+M14qzrnf9/LaeV8s42PL/Vgus0xGEkP
+	2BfTssJALhm8eUaMt8H3vwydS7jZKjckac1WfLe9KXNoOd1mnKUnYjvYAPUFFcjaSsgTsuwlDr4
+	ykmvUd4Hpj7nxSfqRsAtsyDFRnaKYSz4ZigJRo7kCzhCLqQ7KTIZTeLE7xAPf66EadsYEVRMoaH
+	cz+T+142tvSmm4QZs0ENDB/85P704pRXeLfP+k57qbIuUmspWLXHK3hnt7Z79N87ollrw+rzL3C
+	5Lony6w0KFeWj5kE5G0llRIALvk3YPO1kLvfJ0wkLyriDHFUPxxPnrzpRxWUiPVRVqrqRWrvLSH
+	n/bn7mSrjXlW2H16LH5/Z7M4BU40P/bWyw2w==
+X-Received: by 2002:a05:6a20:eec2:20b0:3c3:75ff:95b6 with SMTP id adf61e73a8af0-3c375ff9bc9mr2981268637.31.1784177192013;
+        Wed, 15 Jul 2026 21:46:32 -0700 (PDT)
+Received: from localhost.localdomain ([76.32.119.210])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3140e538368sm10282930eec.12.2026.07.15.21.46.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 15 Jul 2026 21:46:31 -0700 (PDT)
+From: Hungyu Lin <dennylin0707@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Dan Carpenter <error27@gmail.com>,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Hungyu Lin <dennylin0707@gmail.com>
+Subject: [PATCH] staging: sm750fb: remove unused set_all_eng_off field
+Date: Thu, 16 Jul 2026 04:46:13 +0000
+Message-ID: <20260716044613.2659-1-dennylin0707@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/8] Add Advantech EIO Hardware Monitor driver
-To: Ramiro Oliveira <ramiro.oliveira@advantech.com>,
- Lee Jones <lee@kernel.org>, Linus Walleij <linusw@kernel.org>,
- Bartosz Golaszewski <brgl@kernel.org>, Andi Shyti <andi.shyti@kernel.org>,
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
- Helge Deller <deller@gmx.de>, Wim Van Sebroeck <wim@linux-watchdog.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-kernel@vger.kernel.org, mfd@lists.linux.dev,
- linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
- linux-i2c@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org,
- linux-pm@vger.kernel.org, Wenkai Chung <wenkai.chung@advantech.com.tw>,
- Francisco Aragon-Trivino <francisco.aragon-trivino@advantech.com>,
- Hongzhi Wang <hongzhi.wang@advantech.com>,
- Mikhail Tsukerman <mikhail.tsukerman@advantech.com>,
- Thomas Kastner <thomas.kastner@advantech.com>
-References: <20260714-upstream-v2-v2-0-76e5e41026db@advantech.com>
- <20260714-upstream-v2-v2-3-76e5e41026db@advantech.com>
-Content-Language: en-US
-From: Guenter Roeck <linux@roeck-us.net>
-Autocrypt: addr=linux@roeck-us.net; keydata=
- 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
- np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
-In-Reply-To: <20260714-upstream-v2-v2-3-76e5e41026db@advantech.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 7/14/26 08:54, Ramiro Oliveira wrote:
-> This driver controls the Hardware Monitor block of the Advantech EIO chip.
-> 
-> There is a separate driver for the thermal device driver
-> since it's a use case we support currently, but if it's
-> really necessary we can move it to the same driver.
-> 
-> Signed-off-by: Ramiro Oliveira <ramiro.oliveira@advantech.com>
+The set_all_eng_off field is only initialized to 0 and is never set by
+any caller.
 
-Normally there would be a hwmon driver instantiating the thermal zone(s)
-using HWMON_C_REGISTER_TZ. If the driver actively controls thermal zones
-since it also handles fans, that would be instantiated from the hwmon driver.
+Remove the unused field together with the dead cleanup path guarded by
+it.
 
-Since you have both thermal temperature and thermal fan drivers, I am very
-concerned that there is functionality overlap andor even conflicts. You
-should drop this driver and configure the thermal temperature driver
-to instantiate a hwmon device from it if so desired.
+No functional change intended.
 
-Thanks,
-Guenter
+Signed-off-by: Hungyu Lin <dennylin0707@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 27 ---------------------------
+ drivers/staging/sm750fb/ddk750_chip.h |  7 -------
+ drivers/staging/sm750fb/sm750.c       |  1 -
+ 3 files changed, 35 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 0bb56bbec43f..aa78d0bc1d87 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -263,33 +263,6 @@ int ddk750_init_hw(struct initchip_param *p_init_param)
+ 		poke32(MISC_CTRL, reg);
+ 	}
+ 
+-	if (p_init_param->set_all_eng_off == 1) {
+-		sm750_enable_2d_engine(0);
+-
+-		/* Disable Overlay, if a former application left it on */
+-		reg = peek32(VIDEO_DISPLAY_CTRL);
+-		reg &= ~DISPLAY_CTRL_PLANE;
+-		poke32(VIDEO_DISPLAY_CTRL, reg);
+-
+-		/* Disable video alpha, if a former application left it on */
+-		reg = peek32(VIDEO_ALPHA_DISPLAY_CTRL);
+-		reg &= ~DISPLAY_CTRL_PLANE;
+-		poke32(VIDEO_ALPHA_DISPLAY_CTRL, reg);
+-
+-		/* Disable alpha plane, if a former application left it on */
+-		reg = peek32(ALPHA_DISPLAY_CTRL);
+-		reg &= ~DISPLAY_CTRL_PLANE;
+-		poke32(ALPHA_DISPLAY_CTRL, reg);
+-
+-		/* Disable DMA Channel, if a former application left it on */
+-		reg = peek32(DMA_ABORT_INTERRUPT);
+-		reg |= DMA_ABORT_INTERRUPT_ABORT_1;
+-		poke32(DMA_ABORT_INTERRUPT, reg);
+-
+-		/* Disable DMA Power, if a former application left it on */
+-		sm750_enable_dma(0);
+-	}
+-
+ 	/* We can add more initialization as needed. */
+ 
+ 	return 0;
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index ee2e9d90f7dd..2a13debc179f 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -76,13 +76,6 @@ struct initchip_param {
+ 	 */
+ 	unsigned short master_clock;
+ 
+-	/*
+-	 * 0 = leave all engine state untouched.
+-	 * 1 = make sure they are off: 2D, Overlay,
+-	 * video alpha, alpha, hardware cursors
+-	 */
+-	unsigned short set_all_eng_off;
+-
+ 	/*
+ 	 * 0 = Do not reset the memory controller
+ 	 * 1 = Reset the memory controller
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index a2f244878f85..039e2033f84e 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -837,7 +837,6 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 	sm750_dev->init_parm.mem_clock = 0;
+ 	sm750_dev->init_parm.master_clock = 0;
+ 	sm750_dev->init_parm.power_mode = 0;
+-	sm750_dev->init_parm.set_all_eng_off = 0;
+ 	sm750_dev->init_parm.reset_memory = 1;
+ 
+ 	/* defaultly turn g_hwcursor on for both view */
+-- 
+2.43.0
 

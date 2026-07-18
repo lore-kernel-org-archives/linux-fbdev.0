@@ -1,76 +1,74 @@
-Received: from mail-wr1-f67.google.com (mail-wr1-f67.google.com [209.85.221.67])
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2481730566E
-	for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 21:47:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.67
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49ED3374E45
+	for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 21:57:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784411278; cv=none; b=A7dXTeVdgotx3sdIv1wrlRSo4PiejaMnyM4WPQ6onWCntoehNKwOfyCjTZFz4GuG9ls30PXCuSVgdGJ+EY3HI/T+r3DEsAql0w65v4AuK3EjezrHUhJb3YYTdaOsrzAtub67iIfkqIJB6IHUgZ3mdw7N3TNbjPqU2mHLeiakbt8=
+	t=1784411866; cv=none; b=tXIikj5FBY8vmliTu2u2o1wxDnuJXlPRmWylWmxkEY0sC4bUf2aDFuZjQwTRnL8i0kw8KIESKpAul/sKrbKY5LNFo2JjvN0KlAE7Dh7uygM5uM59CMRJ5gw0rCQXZUSjlHe0BdaGv3fca/pTxWcUSdiTX04qWwhV1V6NDKJ6bj0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784411278; c=relaxed/simple;
-	bh=LSej48dHmbtGy45nBhv0MbNaCCnVPoeB1r++WlGI0W4=;
+	s=arc-20240116; t=1784411866; c=relaxed/simple;
+	bh=wa93jje6EgHUk7Zt2ECfepwMi/iCuz+0PNAnYeWTQUc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TPJtapph5G7aG9KPONSUEYqWsrhS+iFAvQQbWcwbnn69uFoXPn/C94KsTDQYhAZ+tjH9t4NPBAS0KzmA6KFN15vOTkK+BoE+RidBkFhpRi6hV9lfJopjYVYQ0ezJXxMITTQzRECAPckzxeqRCyEdJg+R2iEzLl+3GdOZxhPHL2E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=gr4yElkQ; arc=none smtp.client-ip=209.85.221.67
+	 Content-Type:Content-Disposition:In-Reply-To; b=Hb7NWPddDY4Ipqpl3CMxz3hj2BjDUPcF7CuHHp8sPVuUI48NVgCIGBuoISlfC+cBdA10Meq8LdUI1ZLhSSGKMxPEhkmTu7zrj3y65oAUSyjCGevcoLJ6p5oSBJsz9nFlbpPsF52jDq2GGbW9k/FuEBQ0r49BCqH+s7fhXI2Ifrs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=TlVkOKo9; arc=none smtp.client-ip=209.85.221.43
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="gr4yElkQ"
-Received: by mail-wr1-f67.google.com with SMTP id ffacd0b85a97d-4758bd3731bso2211642f8f.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 14:47:56 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="TlVkOKo9"
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-4703bc0a99aso6097063f8f.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 14:57:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1784411275; x=1785016075; darn=vger.kernel.org;
+        d=baylibre.com; s=google; t=1784411862; x=1785016662; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=LSej48dHmbtGy45nBhv0MbNaCCnVPoeB1r++WlGI0W4=;
-        b=gr4yElkQxRKMTEdSowsfeHiVMXyt4TCAUj0tJpuJUvTNiyYqcJpk5Tyl5u9wQmCnc8
-         t2IfJvCN7sKJQkWyKQ9V4N25a5LqmMQ2sRH4J14ZQwqGhwYmWbiK1jCZWOiRY4cewihO
-         BQo7QnLibH8NTPmotrVIhY2+ymzAqAaExI4TeYlV7QT2/rqBkwWHZIFIjmLxj6jkWCeq
-         dIxZjEVMfnJ+BTl1Kr+wUwQRjLGagexb1z8LPU3jvddArJT9vGbb25RxasDJnKLBICzm
-         Jeu67852MtoSjC7xiWdVkwBn9cxiclALfmViEITrkq1Bgc6HF59XeFViM0oHOWlEE5LO
-         t/0Q==
+        bh=wa93jje6EgHUk7Zt2ECfepwMi/iCuz+0PNAnYeWTQUc=;
+        b=TlVkOKo9vf0EXi5ST7U97oZ/YE9QOwu/dXAcpCa4x1RwzD4nl9rVJSJcCqWgSkVFrl
+         JPXL2aSk/AIxBjERmihCj7mP2ielysI6OdvdN5X/QH03LeKOPrCQxFtQBhaoDDI9qdbe
+         eT9Aoa9x/Tz7cPcd29PPh/B+UPvWadMqYPjOtbGyVHW5Oas+HekerYK8peiXGfqIyRak
+         5kQogHvp5tLZDzHLdbmR70pElL+7KsObKtjXMPfBNHpGXOgCFPo8fOum+JQ5yMiogE/Z
+         aYQx2OzM3VxJmlcV384exK02GTApIYSt7J+zTekblkNAr2JV2DHyw06rxI6Ws/DPIbrI
+         Dg/A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784411275; x=1785016075;
+        d=1e100.net; s=20251104; t=1784411862; x=1785016662;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=LSej48dHmbtGy45nBhv0MbNaCCnVPoeB1r++WlGI0W4=;
-        b=mkgrYOx+IuJWBjHqOfAIthPm9FptmDSN8K0fG0SjbiQTkkSQuchNwYk1KaGBDfFGqi
-         FV2aPiRJB+ALGJC7hQJnWOhJy7SXajsccGUfR9PfhEKLFLVkZ2nUIt4RHsnSBphQTBkE
-         ereFU8w92q47+6C1wxGnkUpvM/UstyvoqscZAOf09fxnwfcM89yBfNeM0B9L36cPeXQG
-         PVBpi/vjsae5su+2AYisx7CSMJK60LLnFYlYfPRSwIX16HYgSmqN8gfX0EMeqF2lTV10
-         pwoE0cDIpFhQj7SXSDJ4a+mWQX9I8X1pJirSmPp6eNod890gs/Y+wkuPeTBoJAu2IxtX
-         lYMA==
-X-Forwarded-Encrypted: i=1; AHgh+RqjdKnLajL/i7yHzU2TauSdiwbdndY9KBJNrdPFAyU7YrXjgNncX+ONWoKEEocRVTh+C2xAIilRsA0g5Q==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxGexO9IVBMJYn93k9BZVG9xFpFEUU6twRkHXhaXl8v5TWM9xTt
-	bTPBGQ4CPR8LoikA0ETZ79yTIip1iOfynZTdg2L3Esp2kEgzmhTanjrGG2dCOO+k+Zc=
-X-Gm-Gg: AfdE7clLHc74r2yNneSZ9PBntrEnLzSJoXzlfsWTBJ0VQACBduh3ypkR5tP1qB2PRUY
-	4hRy0MCF5GY1cc058YpB/GNRjP8wSOtjWSzdq0hg/+GUr4vPx1dop4bFkKZkK8vYRLuL1wBp2Lm
-	ZU/qp7O8Fs3VKzNXZk5FdX/1H11wfRWXz6SfIiwGIz3xFRZil3R9u+RnvojjPW0woOyO+oWZzUg
-	x4k+hPlW6ZfmmgI5wMZVl3U9INhtiCLNNzPCMdtF0d9St8iJQnj5/Vp5sb84fubaq0JQpLJy3UL
-	OWFzvCkS2d5/W3IWKhc28RYeCQiT14G8PQWh1uktE41Qpp9xXQfLT23QvXCS2/SAOnLAVqP9Lsj
-	24fVlpoWTYs65EA6fVWPOnZ3y8YgoGRzf54adzrON0ZG61FSBetqe4OoJFma5frIMhKhk20yb27
-	rOaXd1jbU=
-X-Received: by 2002:a05:6000:2509:b0:46f:1b89:999 with SMTP id ffacd0b85a97d-47f5a676c8emr16623315f8f.30.1784411274957;
-        Sat, 18 Jul 2026 14:47:54 -0700 (PDT)
+        bh=wa93jje6EgHUk7Zt2ECfepwMi/iCuz+0PNAnYeWTQUc=;
+        b=FPIiXRF8kmIFJ6QslBKlNKdi193hZvrnmFUgKYCs62IlsbeUBIqOXznOBawTqvxWXk
+         WomYkYPi7K+qSj3Sf4+24ZXCEcUA40n8nbhh/oV2qxJ9J744/b4wgOtfWsYEudyHQ8pi
+         cIoOHP1ZAChJbFqIFVExyqiArapy8lZEKXNUM//Lnv40fEKK+7/F1B4QgUXkjTv0sue4
+         2NF76yswvPJMHpk+fRF4TivB8xbaDTiP3+vAt6IJl7Wznr52HUH1Zi3Zn4ewlqqedVjA
+         1PRKDgQzgGrM8fRFijpom7MB+CNKB7Jnb3gsQPgoFo1VDLw3t4W43Jc7xtpeCqYQZQc6
+         hEkA==
+X-Forwarded-Encrypted: i=1; AHgh+Rpm9DvgM7dQ9/DUKDxcTDBeHkFbZ+3bQE2g4wtyY6JrgwoLMTzeOlYLsjyfGNuACoabdWsg8amUrsCykA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwtyN9SlhTYOR11h8h9gFqDsl/Nxx5+B9hWWeBLhzWkK6POYbgd
+	EzFhnIADUyBmTnIUUU3igOKv+4LGYmWCfm12o0lUovGObFBnpO1XmHxZM3XJiZjMglw=
+X-Gm-Gg: AfdE7cmhOdWiQSCoPfM3z+SIBQFhPs+z6cfnKOPw2AuphDeilQ6QBbGQjZ65elLO8tF
+	SKTaNsU+vgd/ED20WGOLl+l1kjQiyYxISC+Y/eln1bOC8XqLkW4VocXOWgKT9VFH3Qa7DfYi12S
+	as4+lEOREyv2sNrevuFC/2rmDg/G363j4IK72ZdTpAVhvmtIyCrNiOYAx7muHTXdjYVfAvW7via
+	piTGi5P1EjgOsG3aRubwLtpMOiVyr+AcJNtaKJWvaeJiE+Hx//qvB4srFDNJTM83C0cHob59LC1
+	QvEw7KndNZOicBJOY7Ht3dU/UgQi6FCO9B7Fsxs+h8yZOmiMCLwlQ/6FQcDzvxU77ql2+DBIr3i
+	OX+MKQGRldQsthsx3rbeNcehEBYNS3JdnTK9KDiYUFV0d9V8I93hMdPaXGXFhk3o0tY0gtyOZmJ
+	3Mv4lzC+4vsfyI+c5hzg==
+X-Received: by 2002:a05:6000:1844:b0:47f:4e42:669 with SMTP id ffacd0b85a97d-47f623169eemr9423338f8f.22.1784411862534;
+        Sat, 18 Jul 2026 14:57:42 -0700 (PDT)
 Received: from localhost ([2a02:8071:56d1:2de0:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-47f63eeb360sm16216646f8f.34.2026.07.18.14.47.52
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-47f63edcd13sm15085022f8f.26.2026.07.18.14.57.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Jul 2026 14:47:54 -0700 (PDT)
-Date: Sat, 18 Jul 2026 23:47:47 +0200
+        Sat, 18 Jul 2026 14:57:41 -0700 (PDT)
+Date: Sat, 18 Jul 2026 23:57:40 +0200
 From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Markus Elfring <Markus.Elfring@web.de>
-Cc: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, Kees Cook <kees@kernel.org>, kernel-janitors@vger.kernel.org, 
-	LKML <linux-kernel@vger.kernel.org>
-Subject: Re: fbdev: arkfb: Move a variable assignment behind a condition
- check in ics5342_init()
-Message-ID: <alvzxjwBr1gxu3Eb@monoceros>
-References: <36d0eba7-e78d-4a06-95bc-c97d9b91f8f0@web.de>
- <40d5e392-3f99-44c9-b30a-3481f60143ba@gmx.de>
- <550584cc-863d-48c3-813b-3a0cb45d9084@web.de>
+To: Florian Fuchs <fuchsfl@gmail.com>
+Cc: Helge Deller <deller@gmx.de>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
+Subject: Re: [PATCH] fbdev: pvr2fb: correct user pointer annotation and
+ sentinel initializer
+Message-ID: <alv10qYL3K8_Tjqv@monoceros>
+References: <20260713101638.600333-1-fuchsfl@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -78,61 +76,49 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="f3fkxfadp6qkpugc"
+	protocol="application/pgp-signature"; boundary="kf7otoxip247seh3"
 Content-Disposition: inline
-In-Reply-To: <550584cc-863d-48c3-813b-3a0cb45d9084@web.de>
+In-Reply-To: <20260713101638.600333-1-fuchsfl@gmail.com>
 
 
---f3fkxfadp6qkpugc
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
+--kf7otoxip247seh3
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: fbdev: arkfb: Move a variable assignment behind a condition
- check in ics5342_init()
+Subject: Re: [PATCH] fbdev: pvr2fb: correct user pointer annotation and
+ sentinel initializer
 MIME-Version: 1.0
 
-Hallo Markus,
+On Mon, Jul 13, 2026 at 12:16:38PM +0200, Florian Fuchs wrote:
+> Add __user annotation to buf, as it is passed as a user pointer in
+> pin_user_pages_fast(). Use an empty initializer for the sentinel
+> board-table entry to avoid initializing a function pointer with an
+> integer literal.
 
-On Sat, Jul 18, 2026 at 10:34:33PM +0200, Markus Elfring wrote:
-> >> The address of a data structure member was determined before
-> >> a corresponding null pointer check in the implementation of
-> >> the function =E2=80=9Cics5342_init=E2=80=9D.
-> >>
-> >> Thus avoid the risk for undefined behaviour by moving the assignment
-> >> for the variable =E2=80=9Cinfo=E2=80=9D behind a condition check.
-> >>
-> >> This issue was detected by using the Coccinelle software.
-> >=20
-> > There is no "risk" here.
-> > It just adds an offset to a potential NULL value (which isn't then used=
- afterwards).
-> Does your understanding of programming language details differ from the v=
-iew of
-> SEI CERT C Coding Standard (from the Carnegie Mellon University)?
-> https://cmu-sei.github.io/secure-coding-standards/sei-cert-c-coding-stand=
-ard/rules/expressions-exp/exp34-c/
+FTR: Using 0 in an initializer is covered by the C standard. Anyhow, I
+agree that { } is nicer.
 
-We recently discussed a similar case where several people told you that
-the "problem" you fixed wasn't actually a problem. This patch is in the
-same category and your reference doesn't match the code touched here.
+Having said that, I think the right thing to do here is to drop the
+sentinel entry, because board_driver[] is only used in for loops that
+iterate between 0 (inclusive) and ARRAY_SIZE(board_driver) (exclusive).
 
-Please stop to absorb maintainer attention with useless stuff.
+Also I would split this patch in two.
 
+Best regards
 Uwe
 
---f3fkxfadp6qkpugc
+--kf7otoxip247seh3
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmpb9IAACgkQj4D7WH0S
-/k4yugf/X7EoA2Tt7mChQ8eG4wWf3eTDK6E37TtKWLPT3R1witunWCOP7nOhxZc3
-D139hRqc3qXlbwDBHpZTY0c+y7G2EE/7aBrnnhF73GmWLJaSb+CQ2WVCbUuMJ4kC
-qPGNY/7HaxPwlylhjJSxmeBt1JtxWDy6qAOgR78JEDzCVSN9+aWL5fFL3SFQOJhR
-OjLghlkWaKckJbm//CWA3NLVNHAgFZq58ozqVfTKmXKmKqvYH+iARxU8+V8jfPyV
-nFaA9mHT7NuhT+oLzm6orz0tQTgvszXI6SpaGBxiXoe1gbvexg+4MArqV19Gb11W
-7j6X45B9ImkYY6zrD6JK3heICJiHbA==
-=5CWK
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmpb9tIACgkQj4D7WH0S
+/k6qngf9HPcjOLFf9ebMiIVzfNiUMnp3nKAf85kikPbocb6uZIoVWVmOOAbdaj/C
+Tt7C7ycDzH1+PbhZFJ+1x3bKOQdYwHpeejamFt/nD2ZAeBxz+9n3ffyHgl2A1mtz
+NG5iP2KvP12HrLUBl77GyHrNRc8lSNQPDjNoig1hoD/BXQovkL+vHqmarxeGO0b1
+8mM+IEnlVfafEVlywlgSPst6xDnp75HoXQeBxEn0URZosnkm5V6qQklbEpIYXc3E
+MN5ANqf3R7WzP2B2QTJl/fmW5c3QwxhwBUrNHp4GPC3MQI6o5zYgfQ6Ma9RGsTEv
+j32/Xe/K4MPfVPlfaJrPyCX4JjJmtg==
+=FAiA
 -----END PGP SIGNATURE-----
 
---f3fkxfadp6qkpugc--
+--kf7otoxip247seh3--

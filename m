@@ -1,67 +1,71 @@
-Received: from mail-10630.protonmail.ch (mail-10630.protonmail.ch [79.135.106.30])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DD9020E6E2
-	for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 06:31:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.30
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F077235B62C;
+	Sat, 18 Jul 2026 06:32:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784356308; cv=none; b=Mt/vITzMMyCLZbl7i/RxKCMlo0puKz+Vpbm+/YV6dLZUHMYLjSsTSnPy3eSvfhG0DQlkIp27ryQ+XSKdQ0RuglUBjQ9n22JDWj4kiIVRYd7i4Ont1e3foqwxkOjhix52/0/bucPQdr7Xntwwnd9lZ8WYUC6i5D+NYdBDgU1pr+o=
+	t=1784356343; cv=none; b=Az65qiILUZnKb6FYIwjFvqQoBbTULN+m8Tmh4ko1vWMcQ1b+Y0bwzeL2kgG+HKBdnNgYlM1EFzTD6sFrJivNnk1WCXLYyoz80iezcqZH0BEk2HI7/xF17tmnJK003Eqvg+g1M9fmFuj00OpwiCohPSBFZstu76jlyP8TNYCAjRs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784356308; c=relaxed/simple;
-	bh=mMtIswAhI8qZcuduakcR5UZIN95rcBY4NgjYYxIhNpc=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=S2rk+TM6hsSqE99UZM4JEQJ0oTtZWqsSzMbxIOKSGXBlDU8z5T1F0rS1AVzUPcTI1Hac05W5wfhrzNSFSKQPHVlQClBwgJY5cY7KpqDBy4evViU2xwYtW0uHjdwtmBtFJHGWeApTndZTzm+P/DLqGLs27+62CSvw2vmEI03f/r8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=H/Rmkl7Q; arc=none smtp.client-ip=79.135.106.30
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
+	s=arc-20240116; t=1784356343; c=relaxed/simple;
+	bh=Im2Yf9B8OaageFHL0JxiK1QFFNipQv7vux9iPsQYp7w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hs/4e+/EPVR5jvC8PvJbjXP1dCEcb6DmCjk7gzFOPQ1C/wt+f9lpZeS7lHLQX/yfv0ei5aDPGyuZrsZYW7cfbra9bus30E7lvO7PXUsdlvcT2+BhtZUkFYQ2HbX9dGQk8RYZzN5HZV0pP+ZnQbsD+C1qaUkykwQ9yn1ie7qGOUg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=cxey0Vtn; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="H/Rmkl7Q"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
-	s=protonmail; t=1784356297; x=1784615497;
-	bh=mMtIswAhI8qZcuduakcR5UZIN95rcBY4NgjYYxIhNpc=;
-	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-	 Message-ID:BIMI-Selector;
-	b=H/Rmkl7QBjA7tWYgd+WlyAZ1xaZjmsrF5k+SZSp5AslPCFywlYKMaZFKfkDkjFrA0
-	 se40bBGUA6skSnKjAzg45pmpWFY+c4JPLEvDcWhqTpYu2RmdR4tSbvd4TS9CBF3hh2
-	 ElanWYXPY5kiOSWr8yUIBAmxa8maS0zFuKrvq879v4WkfgJZKD8yWo4f9XwtcGGTWH
-	 JIuLyj2aUMFYA1BEiPgqEdaQPQYVKc/N1FrS8A1gN7pCFoYl8yBat5mNJWYkr69Pht
-	 TVRaXHhN19LFLANMkhdc+MsN0HFKl2qy2EWua82rV9AW2C9Y4D8uq/+Bdhz58j3T39
-	 +eAmI/PD972Lw==
-Date: Sat, 18 Jul 2026 06:31:33 +0000
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-From: Nils Lehnen <nils.lehnen@proton.me>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] staging: sm750fb: unindent defines left by conditional removal
-Message-ID: <20260718063105.5980-1-nils.lehnen@proton.me>
-In-Reply-To: <2026071810-reprogram-decade-7537@gregkh>
-References: <20260718055132.441-1-nils.lehnen@proton.me> <20260718055709.466-1-nils.lehnen@proton.me> <20260718055709.466-2-nils.lehnen@proton.me> <2026071810-reprogram-decade-7537@gregkh>
-Feedback-ID: 188354734:user:proton
-X-Pm-Message-ID: 357e90e13e5b494685bcf0824b52a62b09bf9af2
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="cxey0Vtn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F101E1F000E9;
+	Sat, 18 Jul 2026 06:32:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1784356341;
+	bh=NrPUAhwbfkjMaSatZXfXLRB1QEGM+S+xRTaSlGMCCVE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=cxey0Vtn1+/zHJsHWGdpdl5UJ+ap76/sI30t83Ox1oaqsYEurCO0+tOjApwgJvb07
+	 oE9MLK1vWpQBt1XoFH0n4YlfGs0BbkID56UmBkk/wJ3IJ69fX6YCEP6kl5d7AO8B6p
+	 ah1LscVeRoEZ6mZWP+P6vBsw1DGsjMPZEKq0Jme4=
+Date: Sat, 18 Jul 2026 08:31:00 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Nils Lehnen <nils.lehnen@proton.me>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/2] staging: sm750fb: remove dead VALIDATION_CHIP code
+Message-ID: <2026071837-ferocity-sixtyfold-7a4e@gregkh>
+References: <20260718062027.5850-1-nils.lehnen@proton.me>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260718062027.5850-1-nils.lehnen@proton.me>
 
-On Sat, Jul 18, 2026 at 08:20:36AM +0200, Greg Kroah-Hartman wrote:
-> No, this is not correct, the indentation gives you context of what is
-> happening.
+On Sat, Jul 18, 2026 at 06:20:56AM +0000, Nils Lehnen wrote:
+> VALIDATION_CHIP is defined nowhere in the tree, yet fourteen
+> preprocessor conditionals in the sm750fb DDK files still test it.
+> Patch 1 resolves all of them (dead branches dropped, always-true
+> branches kept), as the driver TODO asks under "remove unused code";
+> patch 2 cleans up the indentation and blank lines the removal leaves
+> behind.
+> 
+> Verification, both patches: the disassembly of all ten sm750fb object
+> files (objdump -d, x86, CONFIG_FB_SM750=m) is bit-identical across the
+> series. Compile-tested only; no SM750 hardware available.
+> 
+> All English text in this series (cover letter, commit messages, code
+> comments) was translated from a German draft with the assistance of
+> Claude Fable 5.
+> 
+> v2: resend of v1 -- patch 1/2 of v1 arrived with an empty subject due
+> to a local send mishap; no code changes.
+> v1: https://lore.kernel.org/r/20260718055132.441-1-nils.lehnen@proton.me
 
-Right, the indented defines are the values of the field define right
-above them, and unindenting throws that context away. I'll drop this
-patch.
+Please wait a day or so between new versions, gives people a chance to
+review what you sent and you to make changes based on it.
 
-A v2 of the series crossed with your review -- please disregard its
-patch 2/2 as well. A v3 with only the conditional removal follows.
+thanks,
 
-Sorry also for the subject-less 1/2 in this thread; that was a local
-send-email mishap on my side.
-
-Thanks for the review,
-
-Nils
-
+greg k-h

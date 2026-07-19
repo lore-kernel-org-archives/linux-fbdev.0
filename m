@@ -1,124 +1,117 @@
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49ED3374E45
-	for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 21:57:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC46D1E2858
+	for <linux-fbdev@vger.kernel.org>; Sun, 19 Jul 2026 02:49:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784411866; cv=none; b=tXIikj5FBY8vmliTu2u2o1wxDnuJXlPRmWylWmxkEY0sC4bUf2aDFuZjQwTRnL8i0kw8KIESKpAul/sKrbKY5LNFo2JjvN0KlAE7Dh7uygM5uM59CMRJ5gw0rCQXZUSjlHe0BdaGv3fca/pTxWcUSdiTX04qWwhV1V6NDKJ6bj0=
+	t=1784429351; cv=none; b=AHTbwBCGs998F+FpOK088IUpaGCV+DQsnLlVot7W9FQUeTjELTn/yX4v2ldd/K9rhFH9RG+2altEtTYVzczke14UnHzX91d67xhoYMe9gHipIXaPZaLQqQf72ArOsdwJd19S140O7fKPoDLs7ZRhY+PQ8s448aDz4sbtQwEqyPk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784411866; c=relaxed/simple;
-	bh=wa93jje6EgHUk7Zt2ECfepwMi/iCuz+0PNAnYeWTQUc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Hb7NWPddDY4Ipqpl3CMxz3hj2BjDUPcF7CuHHp8sPVuUI48NVgCIGBuoISlfC+cBdA10Meq8LdUI1ZLhSSGKMxPEhkmTu7zrj3y65oAUSyjCGevcoLJ6p5oSBJsz9nFlbpPsF52jDq2GGbW9k/FuEBQ0r49BCqH+s7fhXI2Ifrs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=TlVkOKo9; arc=none smtp.client-ip=209.85.221.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1784429351; c=relaxed/simple;
+	bh=MXxB4GZiKHFAI1sL9yi81rfTb4Lw1/BnRWZYPDzq1KA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rc/0xRBmpNhXJbtZiHJAhH9hFoN9wlp4J8j1SpN0CUuaoI0TYrSPpoY3BCiCV8SZp0Z59lHUf2rqgMq+F99w4TJWMYhrjTr1svjY++P55GWfrgDh6D5P9XCuEWE6lHxbHwD+DPJ1ogjJd8P0bmAgyfC97bSz1B0rojRzo58qUEg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CVQEgyin; arc=none smtp.client-ip=209.85.128.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="TlVkOKo9"
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-4703bc0a99aso6097063f8f.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 14:57:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CVQEgyin"
+Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-8114a4542b2so40670317b3.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 19:49:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1784411862; x=1785016662; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=wa93jje6EgHUk7Zt2ECfepwMi/iCuz+0PNAnYeWTQUc=;
-        b=TlVkOKo9vf0EXi5ST7U97oZ/YE9QOwu/dXAcpCa4x1RwzD4nl9rVJSJcCqWgSkVFrl
-         JPXL2aSk/AIxBjERmihCj7mP2ielysI6OdvdN5X/QH03LeKOPrCQxFtQBhaoDDI9qdbe
-         eT9Aoa9x/Tz7cPcd29PPh/B+UPvWadMqYPjOtbGyVHW5Oas+HekerYK8peiXGfqIyRak
-         5kQogHvp5tLZDzHLdbmR70pElL+7KsObKtjXMPfBNHpGXOgCFPo8fOum+JQ5yMiogE/Z
-         aYQx2OzM3VxJmlcV384exK02GTApIYSt7J+zTekblkNAr2JV2DHyw06rxI6Ws/DPIbrI
-         Dg/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784411862; x=1785016662;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1784429348; x=1785034148; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:sender:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=wa93jje6EgHUk7Zt2ECfepwMi/iCuz+0PNAnYeWTQUc=;
-        b=FPIiXRF8kmIFJ6QslBKlNKdi193hZvrnmFUgKYCs62IlsbeUBIqOXznOBawTqvxWXk
-         WomYkYPi7K+qSj3Sf4+24ZXCEcUA40n8nbhh/oV2qxJ9J744/b4wgOtfWsYEudyHQ8pi
-         cIoOHP1ZAChJbFqIFVExyqiArapy8lZEKXNUM//Lnv40fEKK+7/F1B4QgUXkjTv0sue4
-         2NF76yswvPJMHpk+fRF4TivB8xbaDTiP3+vAt6IJl7Wznr52HUH1Zi3Zn4ewlqqedVjA
-         1PRKDgQzgGrM8fRFijpom7MB+CNKB7Jnb3gsQPgoFo1VDLw3t4W43Jc7xtpeCqYQZQc6
-         hEkA==
-X-Forwarded-Encrypted: i=1; AHgh+Rpm9DvgM7dQ9/DUKDxcTDBeHkFbZ+3bQE2g4wtyY6JrgwoLMTzeOlYLsjyfGNuACoabdWsg8amUrsCykA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwtyN9SlhTYOR11h8h9gFqDsl/Nxx5+B9hWWeBLhzWkK6POYbgd
-	EzFhnIADUyBmTnIUUU3igOKv+4LGYmWCfm12o0lUovGObFBnpO1XmHxZM3XJiZjMglw=
-X-Gm-Gg: AfdE7cmhOdWiQSCoPfM3z+SIBQFhPs+z6cfnKOPw2AuphDeilQ6QBbGQjZ65elLO8tF
-	SKTaNsU+vgd/ED20WGOLl+l1kjQiyYxISC+Y/eln1bOC8XqLkW4VocXOWgKT9VFH3Qa7DfYi12S
-	as4+lEOREyv2sNrevuFC/2rmDg/G363j4IK72ZdTpAVhvmtIyCrNiOYAx7muHTXdjYVfAvW7via
-	piTGi5P1EjgOsG3aRubwLtpMOiVyr+AcJNtaKJWvaeJiE+Hx//qvB4srFDNJTM83C0cHob59LC1
-	QvEw7KndNZOicBJOY7Ht3dU/UgQi6FCO9B7Fsxs+h8yZOmiMCLwlQ/6FQcDzvxU77ql2+DBIr3i
-	OX+MKQGRldQsthsx3rbeNcehEBYNS3JdnTK9KDiYUFV0d9V8I93hMdPaXGXFhk3o0tY0gtyOZmJ
-	3Mv4lzC+4vsfyI+c5hzg==
-X-Received: by 2002:a05:6000:1844:b0:47f:4e42:669 with SMTP id ffacd0b85a97d-47f623169eemr9423338f8f.22.1784411862534;
-        Sat, 18 Jul 2026 14:57:42 -0700 (PDT)
-Received: from localhost ([2a02:8071:56d1:2de0:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-47f63edcd13sm15085022f8f.26.2026.07.18.14.57.41
+        bh=eUctq526SauCU2PxPCwSw6FjrhWQ6qRSV04+u+gtfls=;
+        b=CVQEgyinN9swTCRAcMLpRhpaPxdtyApGgIg/hXiHYNE86z4gXg98RmqL/gTiAzp9aE
+         MG0scfSxO7xjJIMK0n/ldsF3lulx4R9UM/EBfoTBtfu/EuiV7EbdI//5YyndqMut1OtW
+         ++ryC4hquSHlmWEQ5LZr+v3Tbg6T6AyonKudC4hZtS9Hnqu8lvnvzke/tT5O7XBwd0+5
+         orGPQYSQViy2FclekBaMFop4AGDBzOOT5p3IXbsZIAuvGh3aCbfkWc+KW9r91hlzlKzj
+         pcafhv7fR6BNkiTNkHQY2HKKqMS8nnpo3dqJei9gl/eKN8fQBVRbkY5eCvJU1I5QDr8H
+         eoEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784429348; x=1785034148;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=eUctq526SauCU2PxPCwSw6FjrhWQ6qRSV04+u+gtfls=;
+        b=bri+1KTUJJVwgfXXq74ingAigRxqlZ8nVDoUwg07YF6X69KW6hcIGQMCqb2hGTEPeo
+         uQxtFsbKUW6lpAXQ5O/EDgvgPS/rIhtXjQVwb/IaQxcX+JaKv4bqmRsF36kwpqh1RPzl
+         daY4k9/krESCVtDgw/+EsRIVq3ulgCwvpis4FSfrQD/4ylhaBTrFCogLTMwIJbYR7MEM
+         vTR3Z6USM7IX6zdwMzFcr7st2NlyFLJmaYOZKwxgySUNQERKhTxeMAwiRdtcPJ8qWVhX
+         L7WVLPpluJxt9nxVxadG8jiNa3Uf6oKV7xpGEkChOC6g+28Sb3/cjSIzBiLCtCw745bW
+         X4YA==
+X-Forwarded-Encrypted: i=1; AHgh+Rp54tnLI/u8WaO+Lv/8EUpyIfInFLpEsrpcyqG0IoNWgwu0M9/6Iyl7M/8i8ykMwK7/5+UHOdCAFhl2CA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YziwjljR80I0rl2fZT2wLqJlwuM+AqObSpMxlZr8RyzFRrVRazN
+	Vx5vaWX6qQaZhQ1A7cFf2DW1sGqFZ+/MjousRw0bDzmfetuEQZdwfaC6VMX9Ee/l
+X-Gm-Gg: AfdE7cl0jSidqL6YSg6M5uYTZcsdvBCbXCwVCSkjk57sl4zYID27loRBoAdkaEEXqVz
+	j/Kytg+do1GJ2C/V9lEaeVIOrK1kJ7X5xvcZqqnPDJNtjFpDQKjKWPgplaD07TJ4wgkuClcd5we
+	vN0cecmDaRCarTQQEM94fYZgvc2z0/PQQZu/iKlv5Ut0jQmMTTFtv5+ut36S1YzSa7PdXy2Y9gW
+	ic/SaWw+gT3PViX6dEzhNjsUyonfNRI/BJHIxiBkxi1yxl05UBRXxM5cQIRfC2y1tRviUx6W6fo
+	0A/eLAtx9vFGE5H6YP5g2277xYrGmODU7AqjDCx8kKara/jDKNrOCrG3Em8Sa8BDNwM/+IY0ckw
+	J1xlncv2UPlR5eK0LGd8rX+HvqauTZ08EFEIFozNSU3vRXxZoQO4bYoRMxYqVEIdV8N9aM6aShL
+	8zy3bPAggPpP5IZ4KxRX62au4X25mtExM5LyZS1wmLQrx78H0OLdgO5yETV3c=
+X-Received: by 2002:a05:690c:6607:b0:7a2:842a:db7e with SMTP id 00721157ae682-81ef2857f78mr33203787b3.35.1784429347849;
+        Sat, 18 Jul 2026 19:49:07 -0700 (PDT)
+Received: from nixos-office.attlocal.net ([2600:1700:566e:ba00:173e:d781:2a07:621c])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-81ef42eb72asm36996117b3.47.2026.07.18.19.49.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Jul 2026 14:57:41 -0700 (PDT)
-Date: Sat, 18 Jul 2026 23:57:40 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Florian Fuchs <fuchsfl@gmail.com>
-Cc: Helge Deller <deller@gmx.de>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
-Subject: Re: [PATCH] fbdev: pvr2fb: correct user pointer annotation and
- sentinel initializer
-Message-ID: <alv10qYL3K8_Tjqv@monoceros>
-References: <20260713101638.600333-1-fuchsfl@gmail.com>
+        Sat, 18 Jul 2026 19:49:06 -0700 (PDT)
+Sender: Julian Braha <julian.braha@gmail.com>
+From: Julian Braha <julianbraha@gmail.com>
+To: lee@kernel.org,
+	danielt@kernel.org,
+	jingoohan1@gmail.com,
+	deller@gmx.de
+Cc: rdunlap@infradead.org,
+	duje@dujemihanovic.xyz,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	arnd@arndb.de,
+	Julian Braha <julianbraha@gmail.com>
+Subject: [PATCH] backlight: ktd2801: fix unmet dependency on GPIOLIB
+Date: Sun, 19 Jul 2026 03:49:02 +0100
+Message-ID: <20260719024902.151710-1-julianbraha@gmail.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="kf7otoxip247seh3"
-Content-Disposition: inline
-In-Reply-To: <20260713101638.600333-1-fuchsfl@gmail.com>
+Content-Transfer-Encoding: 8bit
 
+LEDS_EXPRESSWIRE depends on GPIOLIB, so its selector, BACKLIGHT_KTD2801
+also needs to ensure GPIOLIB is enabled. Otherwise:
 
---kf7otoxip247seh3
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Subject: Re: [PATCH] fbdev: pvr2fb: correct user pointer annotation and
- sentinel initializer
-MIME-Version: 1.0
+WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
+  Depends on [n]: NEW_LEDS [=n] && GPIOLIB [=n]
+  Selected by [y]:
+  - BACKLIGHT_KTD2801 [=y] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE [=y]
 
-On Mon, Jul 13, 2026 at 12:16:38PM +0200, Florian Fuchs wrote:
-> Add __user annotation to buf, as it is passed as a user pointer in
-> pin_user_pages_fast(). Use an empty initializer for the sentinel
-> board-table entry to avoid initializing a function pointer with an
-> integer literal.
+This unmet dependency was found by kconfirm, a static analysis tool for
+Kconfig.
 
-FTR: Using 0 in an initializer is covered by the C standard. Anyhow, I
-agree that { } is nicer.
+Fixes: d95963e309bc ("backlight: ktd2801: Depend on GPIOLIB")
+Signed-off-by: Julian Braha <julianbraha@gmail.com>
+---
+ drivers/video/backlight/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Having said that, I think the right thing to do here is to drop the
-sentinel entry, because board_driver[] is only used in for loops that
-iterate between 0 (inclusive) and ARRAY_SIZE(board_driver) (exclusive).
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 7c66b8840d88..dbf4ca23a9b6 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -193,7 +193,7 @@ config BACKLIGHT_KTD253
+ 
+ config BACKLIGHT_KTD2801
+ 	tristate "Backlight Driver for Kinetic KTD2801"
+-	depends on GPIOLIB || COMPILE_TEST
++	depends on GPIOLIB
+ 	select LEDS_EXPRESSWIRE
+ 	help
+ 	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
+-- 
+2.54.0
 
-Also I would split this patch in two.
-
-Best regards
-Uwe
-
---kf7otoxip247seh3
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmpb9tIACgkQj4D7WH0S
-/k6qngf9HPcjOLFf9ebMiIVzfNiUMnp3nKAf85kikPbocb6uZIoVWVmOOAbdaj/C
-Tt7C7ycDzH1+PbhZFJ+1x3bKOQdYwHpeejamFt/nD2ZAeBxz+9n3ffyHgl2A1mtz
-NG5iP2KvP12HrLUBl77GyHrNRc8lSNQPDjNoig1hoD/BXQovkL+vHqmarxeGO0b1
-8mM+IEnlVfafEVlywlgSPst6xDnp75HoXQeBxEn0URZosnkm5V6qQklbEpIYXc3E
-MN5ANqf3R7WzP2B2QTJl/fmW5c3QwxhwBUrNHp4GPC3MQI6o5zYgfQ6Ma9RGsTEv
-j32/Xe/K4MPfVPlfaJrPyCX4JjJmtg==
-=FAiA
------END PGP SIGNATURE-----
-
---kf7otoxip247seh3--

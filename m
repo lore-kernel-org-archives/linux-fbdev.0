@@ -1,163 +1,178 @@
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.web.de (mout.web.de [212.227.17.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9A081DE2A5
-	for <linux-fbdev@vger.kernel.org>; Sun, 19 Jul 2026 06:46:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 451AA2E738C;
+	Sun, 19 Jul 2026 06:51:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.11
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784443605; cv=none; b=iY90G02zRiOl+95GF6z+ibUsWkeE7K7e097m1yqGe0z72IzCm3OK54zLESOztz8FWzROi0x+/fSjsrJooojf5wHeev/r77dyUU+LiTaEeCgopBL8tCqfF7uqw7/JPE95IX8M8bd3/7lGtGTkzZdhf3KjZOL/aNKxWj3y3b4Ef7s=
+	t=1784443899; cv=none; b=oIpHKebiZfh2d0se0w2t23FURmuZNVdkq/uxwRXdr2OR1rfOU3F+IkkcRQAjajMT//4Us8lyZzWO8HqQUjD+hDQfHQy4v/xnwOPnfapA5A1Pn8glwT6Zbi20tosIiiB7Foj67pl1RWxD5zeO4ZkF76uikYhvI6JZKEhdHSM5zHc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784443605; c=relaxed/simple;
-	bh=fnnC+vlyEjUrD9X16zPRa2oHzbXWLC7N3ScazD4URT8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BbX18RzfTL3KXe9AtaTiFpPVaPwpJKX6kAjs303LzBoElQqNEDAHJs5ApFprvdTXxe8LF5FCSTBG/GcX8M6jeB/Cb78bey0M/gqEUI3DwRFtPD2C7YWFuFd7znqakhlJ+4zlch89xmFwilp7FeQM7807IV7cHS9X0bFJdCSrGuU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=sd7ruUKU; arc=none smtp.client-ip=209.85.214.175
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1784443899; c=relaxed/simple;
+	bh=x0bRRoQ2JTr0tcWgIGPMZT4Q3r0pcv3jRdhW/blErhE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=r5bEhx2nzBOlQfXAMkTnSxTPuQSasVnV1TgNo/EXiGYhqtrToJiHOSdWCmaKrtKP8C5SD7pulXOdFAdjR98X9nL10hc1xTo9siJuk+1VkcZsvIEixhdjhKfowkhPFQ1DHVH+dCFoDlDLJRt4bYhnBrkaTFkAJ4tnHu+9HBHqhOg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; spf=pass smtp.mailfrom=web.de; dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b=k2Vgcppk; arc=none smtp.client-ip=212.227.17.11
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sd7ruUKU"
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2cc97653887so101168405ad.1
-        for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 23:46:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784443603; x=1785048403; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=X9y4maNSu9c0ZLymsFbxk/rrYyHzr8mr1Czws/Zz3XA=;
-        b=sd7ruUKUSkubLsvEylGVaB1WszSbP5pYrymsvTguYBZMjUirteVp82QXM4wVgiUVtR
-         exHiGJaE9Q9+y1duha2CIG9ZBcEmciuFwo60QUUyqg63uiQVXRT98g3sGPkFu7jyWIBM
-         DfTZ3CLGR3ksl5Rlm5HKvmgIbmM5gqeW0e7Uz2YHaHWgewvVVF23djyrQqQydG0bKoGS
-         o5jMjm/Any0MxPYPyyKYXk0LkU4wVS4S9QoVoWY3jPfgd7gQeKTgmQP6qicR+xGB6fd7
-         g6+dHMOKPExobE/hcF3myUVzYjFuVSGLO/sh7XLtwku8SkuzklOaDQYdM7bUnIbk+3kU
-         8CCA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784443603; x=1785048403;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=X9y4maNSu9c0ZLymsFbxk/rrYyHzr8mr1Czws/Zz3XA=;
-        b=Hy92gUTxnUOUs1rLNNIBS6J3bFEAvUmqa18aGWx0A50R4IT6s3KBOiDYlNkLrGofin
-         hzcMjuylvYCmQo+flBeH7Fzca3Y+udbmZf7ldCxux/R0d8jR0dLKwc+204ucrlSQOGqc
-         Xb2vC2wXzz3wAMg6vkho6Az9l5xsH5w7i4PVxclKPsPXymuLzGCjN/ANkk7HxS3r4mKa
-         EKTxPMROVkIF9DUAS+PG/XD+U9Hhx0iRvL/jbVscsvWuDYcnnjqQzXblgCIfPRuXy4Fv
-         LvKWcIkiPVfVMNNw9Gm0dd2KPYTZZ1cdLl1b/cOyNb+DKiBxP+xeqWKrukOj9m4c4+Ej
-         hqiw==
-X-Gm-Message-State: AOJu0Yyu4JjLGtF9uz79vzhJXaUfAi+BM8vz8BnFF0AMsmihNZM2WvTo
-	1rXO/XbYEQ5L91/woMJ53oEADAIRLImnDinlXjB16EOtzx5QRButmruJZ6nv8hnh
-X-Gm-Gg: AfdE7cnE4xkIpLH0UW18Pbj8/s/ThDQvLHIeQEeQpfPqa8pMiH3LBmVXJNAUHN8lTeX
-	HoUG2F09EjHwK7dLYLur6OimjCjjhU3Pw1onbdMBGacQu5AR/ItykTkEZ/TMZKb2zyBjK4dOOtN
-	YSeF2qki4CkgmBfMujzmjfPKR55W5idYegfN3ZXlnmNghCU6jvdZOjN4ws/fiisWar+87kZxeXi
-	MWhSI8DFnO2US0F7OELUbQcaELmu7t1affpa1dMmfYG4247/DYmCtjJgEg2IGcZHjaJi23+TDlA
-	55GMaFqZI0sH3A5xnDy+DdnkwWiGfkKi+gjAItXwelZRahIV/Anblkn2ZO/V+9AFUQqgdGLLub/
-	4oL8DGRH/xj2gIgq90PQyOvw0LNcx1IDB7XV8hiFmdxyu/HUOyasKprqf+54ENX5055L41hMg6X
-	Kh3XoMEN5kg0+oncK3hqDNojIucQ7vgj4TWwi3ccHZgK0nBuTrvGnv6PLuTHFoyZq7+aGpggQUv
-	ctCYeLA262FkbfpSlRGXgdulNVoFvM6xfhvmnYqCzAer4Vz3vsDc1zE
-X-Received: by 2002:a17:903:2a8b:b0:2c2:bd0d:3cf0 with SMTP id d9443c01a7336-2cf3497f5dfmr105825405ad.25.1784443603113;
-        Sat, 18 Jul 2026 23:46:43 -0700 (PDT)
-Received: from localhost.localdomain (c-67-170-60-64.hsd1.wa.comcast.net. [67.170.60.64])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf3474692asm37073735ad.70.2026.07.18.23.46.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 18 Jul 2026 23:46:42 -0700 (PDT)
-From: Gabriel Changamire <gaberashawn@gmail.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Gabriel Changamire <gaberashawn@gmail.com>
-Subject: [PATCH] staging: sm750fb: rename CamelCase parameters in sm750_accel.h
-Date: Sun, 19 Jul 2026 06:46:01 +0000
-Message-ID: <20260719064601.12223-1-gaberashawn@gmail.com>
-X-Mailer: git-send-email 2.47.3
+	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.b="k2Vgcppk"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1784443879; x=1785048679; i=markus.elfring@web.de;
+	bh=lIps0HOHENxVGVif295u+dbj3hNezSiqmWuWj399Zoo=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=k2Vgcppk99pMmyoHRgavYV1+a8QbT7/xkDXx7gMuGNScxUBqlnFixTvJ9pV4U5Jh
+	 sdtMZteU7nZo7yggEBF9Ir7NRDM0ev1cHIoH8ejFV0AjI5u81/deMjAwPM/D+yGAs
+	 6zEVyLme9056LPuhlwATAc5phbmb9TSYOFL30ESwdKU84K1/myfWB6P2icA1ptYhw
+	 qaDMeD+d+dVkM7tDnX1fkBaT8G+hlxrWoUHvgF1kSfBIuXZsDgAlIrHcZh7vVcioy
+	 MyVN/0GtApLVX9bwlCyBsFpiaeDJ4VAj0LtRuNnEUcOrDwW5tZil1iEIYgK+D0CDD
+	 Aq/5OdnvFk+GCC6jow==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from client.hidden.invalid by smtp.web.de (mrweb106
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1N1d7i-1x9aHP2q4m-00rOwp; Sun, 19
+ Jul 2026 08:51:19 +0200
+Message-ID: <7a146cd8-76db-4e5a-ac34-43b19176e509@web.de>
+Date: Sun, 19 Jul 2026 08:50:57 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: fbdev: arkfb: Move a variable assignment behind a condition check
+ in ics5342_init()
+To: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Kees Cook <kees@kernel.org>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+ kernel-janitors@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <36d0eba7-e78d-4a06-95bc-c97d9b91f8f0@web.de>
+ <40d5e392-3f99-44c9-b30a-3481f60143ba@gmx.de>
+ <550584cc-863d-48c3-813b-3a0cb45d9084@web.de>
+ <5a13f19d-4ba0-40d4-b061-0d17156b1686@gmx.de>
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <5a13f19d-4ba0-40d4-b061-0d17156b1686@gmx.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:+RcRAEho/4XvAHHZdIFvYgCaFoICprnQhkqJYny1wNfoR0QJ79G
+ 3bw6WEQXdCSOL7CtESywXqtVzRe1arC/XpWKCjBwzZFQV135Het8j/rmtFWpsSzf/NLtJbJ
+ ga1Wti1aRjdOGqwPVidvCEFIntI05s/PKcA9Jeqh/Wye8vJ09wqBHyPXOWL2qgpcM8sbtON
+ JZLCyg+phiC1usUif+f4w==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:hn8EbyhDKjU=;fReC3GefOwhHejyCp/3U35jH7VO
+ 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
 
-The prototypes and kernel-doc comments for sm750_hw_copyarea() and
-sm750_hw_imageblit() still use the old CamelCase parameter names,
-while the function definitions in sm750_accel.c already use
-snake_case. Rename the header parameters to match the definitions.
+>> Does your understanding of programming language details differ from the=
+ view of
+>> SEI CERT C Coding Standard (from the Carnegie Mellon University)?
+>> https://cmu-sei.github.io/secure-coding-standards/sei-cert-c-coding-sta=
+ndard/rules/expressions-exp/exp34-c/
+> My statement still stands.
+> Try to find the difference between the code and the examples on that web=
+site yourself.
+> Tip: The relevant part is the "&"
 
-Fixes 10 checkpatch "Avoid CamelCase" checks. No functional change.
+Which functionality would you expect for the operator =E2=80=9Caddress of=
+=E2=80=9D?
 
-Signed-off-by: Gabriel Changamire <gaberashawn@gmail.com>
----
- drivers/staging/sm750fb/sm750_accel.h | 36 +++++++++++++--------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+Is it applied only after a pointer dereference attempt in this case?
+https://en.cppreference.com/c/language/operator_member_access
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
-index d15a40cacb84..3d3d93d4b308 100644
---- a/drivers/staging/sm750fb/sm750_accel.h
-+++ b/drivers/staging/sm750fb/sm750_accel.h
-@@ -196,12 +196,12 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
- 
- /**
-  * sm750_hm_copyarea
-- * @sBase: Address of source: offset in frame buffer
-- * @sPitch: Pitch value of source surface in BYTE
-+ * @source_base: Address of source: offset in frame buffer
-+ * @source_pitch: Pitch value of source surface in BYTE
-  * @sx: Starting x coordinate of source surface
-  * @sy: Starting y coordinate of source surface
-- * @dBase: Address of destination: offset in frame buffer
-- * @dPitch: Pitch value of destination surface in BYTE
-+ * @dest_base: Address of destination: offset in frame buffer
-+ * @dest_pitch: Pitch value of destination surface in BYTE
-  * @bpp: Color depth of destination surface
-  * @dx: Starting x coordinate of destination surface
-  * @dy: Starting y coordinate of destination surface
-@@ -210,34 +210,34 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
-  * @rop2: ROP value
-  */
- int sm750_hw_copyarea(struct lynx_accel *accel,
--		      unsigned int sBase, unsigned int sPitch,
-+		      unsigned int source_base, unsigned int source_pitch,
- 		      unsigned int sx, unsigned int sy,
--		      unsigned int dBase, unsigned int dPitch,
-+		      unsigned int dest_base, unsigned int dest_pitch,
- 		      unsigned int bpp, unsigned int dx, unsigned int dy,
- 		      unsigned int width, unsigned int height,
- 		      unsigned int rop2);
- 
- /**
-  * sm750_hw_imageblit
-- * @pSrcbuf: pointer to start of source buffer in system memory
-- * @srcDelta: Pitch value (in bytes) of the source buffer, +ive means top down
-+ * @src_buf: pointer to start of source buffer in system memory
-+ * @src_delta: Pitch value (in bytes) of the source buffer, +ive means top down
-  *>-----      and -ive mean button up
-- * @startBit: Mono data can start at any bit in a byte, this value should be
-+ * @start_bit: Mono data can start at any bit in a byte, this value should be
-  *>-----      0 to 7
-- * @dBase: Address of destination: offset in frame buffer
-- * @dPitch: Pitch value of destination surface in BYTE
-- * @bytePerPixel: Color depth of destination surface
-+ * @dest_base: Address of destination: offset in frame buffer
-+ * @dest_pitch: Pitch value of destination surface in BYTE
-+ * @byte_per_pixel: Color depth of destination surface
-  * @dx: Starting x coordinate of destination surface
-  * @dy: Starting y coordinate of destination surface
-  * @width: width of rectangle in pixel value
-  * @height: height of rectangle in pixel value
-- * @fColor: Foreground color (corresponding to a 1 in the monochrome data
-- * @bColor: Background color (corresponding to a 0 in the monochrome data
-+ * @fg_color: Foreground color (corresponding to a 1 in the monochrome data
-+ * @bg_color: Background color (corresponding to a 0 in the monochrome data
-  * @rop2: ROP value
-  */
--int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
--		       u32 srcDelta, u32 startBit, u32 dBase, u32 dPitch,
--		       u32 bytePerPixel, u32 dx, u32 dy, u32 width,
--		       u32 height, u32 fColor, u32 bColor, u32 rop2);
-+int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
-+		       u32 src_delta, u32 start_bit, u32 dest_base, u32 dest_pitch,
-+		       u32 byte_per_pixel, u32 dx, u32 dy, u32 width,
-+		       u32 height, u32 fg_color, u32 bg_color, u32 rop2);
- 
- #endif
--- 
-2.47.3
 
+>                                   and in doubt look at the generated ass=
+embly code.
+
+Can development interests grow also according to another clarification app=
+roach?
+
+Does &((struct name *)NULL -> b) cause undefined behaviour in C11?
+https://stackoverflow.com/questions/26906621/does-struct-name-null-b-cause=
+-undefined-behaviour-in-c11
+
+Regards,
+Markus

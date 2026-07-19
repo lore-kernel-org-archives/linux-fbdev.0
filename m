@@ -1,103 +1,163 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA51143F084;
-	Sun, 19 Jul 2026 03:32:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9A081DE2A5
+	for <linux-fbdev@vger.kernel.org>; Sun, 19 Jul 2026 06:46:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784431925; cv=none; b=N0cfrjAPOi3z3GpWvEEcLaPv+L/oBMOBOUgjgfrHhcCcc54WzuCIN8w0b1w+xECB0D701vHwfiHcOrI9VaI1SCoOFVlbrwXS3fkEdmaqsclT6Ay42rttEe/0SZq7g/vQPbAt8kreA/OqRAj06Xtgofqnmt8WUsTOHsW/GoZloww=
+	t=1784443605; cv=none; b=iY90G02zRiOl+95GF6z+ibUsWkeE7K7e097m1yqGe0z72IzCm3OK54zLESOztz8FWzROi0x+/fSjsrJooojf5wHeev/r77dyUU+LiTaEeCgopBL8tCqfF7uqw7/JPE95IX8M8bd3/7lGtGTkzZdhf3KjZOL/aNKxWj3y3b4Ef7s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784431925; c=relaxed/simple;
-	bh=q5w5X4NZWaApqAwCacls8/fv15P//ZF9wlA+e0rVim8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EnCF2gjfUoJ4xX8n8Isll91Xh1pljyY+XeqroaCvZVfbMgv2CTAhCJ9PAwBp3Xd6G74zFzkp3ftMCICB6pCCJGwoW70RWzSHs595JcUt7lzGdXPLTWtnAFkZycUl55j21iUCke7Fk7xUnCC7Gm/izz0Q3AuPwX2fMfQ52ayfCdY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=FlEH7EpI; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	s=arc-20240116; t=1784443605; c=relaxed/simple;
+	bh=fnnC+vlyEjUrD9X16zPRa2oHzbXWLC7N3ScazD4URT8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BbX18RzfTL3KXe9AtaTiFpPVaPwpJKX6kAjs303LzBoElQqNEDAHJs5ApFprvdTXxe8LF5FCSTBG/GcX8M6jeB/Cb78bey0M/gqEUI3DwRFtPD2C7YWFuFd7znqakhlJ+4zlch89xmFwilp7FeQM7807IV7cHS9X0bFJdCSrGuU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=sd7ruUKU; arc=none smtp.client-ip=209.85.214.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="FlEH7EpI"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=Rjc+gerhmCYCzaJXtcxnv4SN3FPtKy2qexZHFwrRceo=; b=FlEH7EpIwbSOZSMe23Qkbfs4TC
-	SFUvXVlrMFg873exOk9drhpldlXq/jqZPSVj5NAioI7plec3AaE8IkQQndedtI3+XT9CUjvLnDkgU
-	gLTANWBTwmR02A803BNCdCOIAKNCGjrwfsEzj6kNJVH23B9b7TsamzGBq+dVbxzhGikTxsubnVd5u
-	yAEDJOdFmCtlohK7agc1yVws533s46PTBJ9s3lJiaq1MumVBdBMEQARYYpab/WKVPKiOV/iQPMo22
-	67/BT4hlIkPiJ2O+HahupDgMqadFLvepH6zXQnlx1qJfcqEYBQdKJ4nABUXsXf2p1+SGuEu4QbY47
-	CH1MDF2Q==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wlIFu-00000004iVh-2jcs;
-	Sun, 19 Jul 2026 03:31:54 +0000
-Message-ID: <ccb5e897-6974-4492-887f-62aea074c62e@infradead.org>
-Date: Sat, 18 Jul 2026 20:31:54 -0700
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sd7ruUKU"
+Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2cc97653887so101168405ad.1
+        for <linux-fbdev@vger.kernel.org>; Sat, 18 Jul 2026 23:46:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784443603; x=1785048403; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=X9y4maNSu9c0ZLymsFbxk/rrYyHzr8mr1Czws/Zz3XA=;
+        b=sd7ruUKUSkubLsvEylGVaB1WszSbP5pYrymsvTguYBZMjUirteVp82QXM4wVgiUVtR
+         exHiGJaE9Q9+y1duha2CIG9ZBcEmciuFwo60QUUyqg63uiQVXRT98g3sGPkFu7jyWIBM
+         DfTZ3CLGR3ksl5Rlm5HKvmgIbmM5gqeW0e7Uz2YHaHWgewvVVF23djyrQqQydG0bKoGS
+         o5jMjm/Any0MxPYPyyKYXk0LkU4wVS4S9QoVoWY3jPfgd7gQeKTgmQP6qicR+xGB6fd7
+         g6+dHMOKPExobE/hcF3myUVzYjFuVSGLO/sh7XLtwku8SkuzklOaDQYdM7bUnIbk+3kU
+         8CCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784443603; x=1785048403;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=X9y4maNSu9c0ZLymsFbxk/rrYyHzr8mr1Czws/Zz3XA=;
+        b=Hy92gUTxnUOUs1rLNNIBS6J3bFEAvUmqa18aGWx0A50R4IT6s3KBOiDYlNkLrGofin
+         hzcMjuylvYCmQo+flBeH7Fzca3Y+udbmZf7ldCxux/R0d8jR0dLKwc+204ucrlSQOGqc
+         Xb2vC2wXzz3wAMg6vkho6Az9l5xsH5w7i4PVxclKPsPXymuLzGCjN/ANkk7HxS3r4mKa
+         EKTxPMROVkIF9DUAS+PG/XD+U9Hhx0iRvL/jbVscsvWuDYcnnjqQzXblgCIfPRuXy4Fv
+         LvKWcIkiPVfVMNNw9Gm0dd2KPYTZZ1cdLl1b/cOyNb+DKiBxP+xeqWKrukOj9m4c4+Ej
+         hqiw==
+X-Gm-Message-State: AOJu0Yyu4JjLGtF9uz79vzhJXaUfAi+BM8vz8BnFF0AMsmihNZM2WvTo
+	1rXO/XbYEQ5L91/woMJ53oEADAIRLImnDinlXjB16EOtzx5QRButmruJZ6nv8hnh
+X-Gm-Gg: AfdE7cnE4xkIpLH0UW18Pbj8/s/ThDQvLHIeQEeQpfPqa8pMiH3LBmVXJNAUHN8lTeX
+	HoUG2F09EjHwK7dLYLur6OimjCjjhU3Pw1onbdMBGacQu5AR/ItykTkEZ/TMZKb2zyBjK4dOOtN
+	YSeF2qki4CkgmBfMujzmjfPKR55W5idYegfN3ZXlnmNghCU6jvdZOjN4ws/fiisWar+87kZxeXi
+	MWhSI8DFnO2US0F7OELUbQcaELmu7t1affpa1dMmfYG4247/DYmCtjJgEg2IGcZHjaJi23+TDlA
+	55GMaFqZI0sH3A5xnDy+DdnkwWiGfkKi+gjAItXwelZRahIV/Anblkn2ZO/V+9AFUQqgdGLLub/
+	4oL8DGRH/xj2gIgq90PQyOvw0LNcx1IDB7XV8hiFmdxyu/HUOyasKprqf+54ENX5055L41hMg6X
+	Kh3XoMEN5kg0+oncK3hqDNojIucQ7vgj4TWwi3ccHZgK0nBuTrvGnv6PLuTHFoyZq7+aGpggQUv
+	ctCYeLA262FkbfpSlRGXgdulNVoFvM6xfhvmnYqCzAer4Vz3vsDc1zE
+X-Received: by 2002:a17:903:2a8b:b0:2c2:bd0d:3cf0 with SMTP id d9443c01a7336-2cf3497f5dfmr105825405ad.25.1784443603113;
+        Sat, 18 Jul 2026 23:46:43 -0700 (PDT)
+Received: from localhost.localdomain (c-67-170-60-64.hsd1.wa.comcast.net. [67.170.60.64])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf3474692asm37073735ad.70.2026.07.18.23.46.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 18 Jul 2026 23:46:42 -0700 (PDT)
+From: Gabriel Changamire <gaberashawn@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Gabriel Changamire <gaberashawn@gmail.com>
+Subject: [PATCH] staging: sm750fb: rename CamelCase parameters in sm750_accel.h
+Date: Sun, 19 Jul 2026 06:46:01 +0000
+Message-ID: <20260719064601.12223-1-gaberashawn@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] backlight: ktd2801: fix unmet dependency on GPIOLIB
-To: Julian Braha <julianbraha@gmail.com>, lee@kernel.org, danielt@kernel.org,
- jingoohan1@gmail.com, deller@gmx.de
-Cc: duje@dujemihanovic.xyz, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, arnd@arndb.de
-References: <20260719024902.151710-1-julianbraha@gmail.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20260719024902.151710-1-julianbraha@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-Hi,
+The prototypes and kernel-doc comments for sm750_hw_copyarea() and
+sm750_hw_imageblit() still use the old CamelCase parameter names,
+while the function definitions in sm750_accel.c already use
+snake_case. Rename the header parameters to match the definitions.
 
-On 7/18/26 7:49 PM, Julian Braha wrote:
-> LEDS_EXPRESSWIRE depends on GPIOLIB, so its selector, BACKLIGHT_KTD2801
-> also needs to ensure GPIOLIB is enabled. Otherwise:
-> 
-> WARNING: unmet direct dependencies detected for LEDS_EXPRESSWIRE
->   Depends on [n]: NEW_LEDS [=n] && GPIOLIB [=n]
->   Selected by [y]:
->   - BACKLIGHT_KTD2801 [=y] && HAS_IOMEM [=y] && BACKLIGHT_CLASS_DEVICE [=y]
-> 
-> This unmet dependency was found by kconfirm, a static analysis tool for
-> Kconfig.
+Fixes 10 checkpatch "Avoid CamelCase" checks. No functional change.
 
-or it can be hand-crafted and the warning seen by 'make oldconfig' etc.
+Signed-off-by: Gabriel Changamire <gaberashawn@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_accel.h | 36 +++++++++++++--------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-
-> Fixes: d95963e309bc ("backlight: ktd2801: Depend on GPIOLIB")
-> Signed-off-by: Julian Braha <julianbraha@gmail.com>
-> ---
->  drivers/video/backlight/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 7c66b8840d88..dbf4ca23a9b6 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -193,7 +193,7 @@ config BACKLIGHT_KTD253
->  
->  config BACKLIGHT_KTD2801
->  	tristate "Backlight Driver for Kinetic KTD2801"
-> -	depends on GPIOLIB || COMPILE_TEST
-> +	depends on GPIOLIB
->  	select LEDS_EXPRESSWIRE
->  	help
->  	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
-
-Well, ktd2801.ko is being built for me with no warnings and I have:
-COMPILE_TEST=y
-GPIOLIB=n
-BACKLIGHT_KTD2801=m
-
-but we do want to eliminate the warning, so:
-
-Tested-by: Randy Dunlap <rdunlap@infradead.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-
-thanks.
+diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
+index d15a40cacb84..3d3d93d4b308 100644
+--- a/drivers/staging/sm750fb/sm750_accel.h
++++ b/drivers/staging/sm750fb/sm750_accel.h
+@@ -196,12 +196,12 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+ 
+ /**
+  * sm750_hm_copyarea
+- * @sBase: Address of source: offset in frame buffer
+- * @sPitch: Pitch value of source surface in BYTE
++ * @source_base: Address of source: offset in frame buffer
++ * @source_pitch: Pitch value of source surface in BYTE
+  * @sx: Starting x coordinate of source surface
+  * @sy: Starting y coordinate of source surface
+- * @dBase: Address of destination: offset in frame buffer
+- * @dPitch: Pitch value of destination surface in BYTE
++ * @dest_base: Address of destination: offset in frame buffer
++ * @dest_pitch: Pitch value of destination surface in BYTE
+  * @bpp: Color depth of destination surface
+  * @dx: Starting x coordinate of destination surface
+  * @dy: Starting y coordinate of destination surface
+@@ -210,34 +210,34 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+  * @rop2: ROP value
+  */
+ int sm750_hw_copyarea(struct lynx_accel *accel,
+-		      unsigned int sBase, unsigned int sPitch,
++		      unsigned int source_base, unsigned int source_pitch,
+ 		      unsigned int sx, unsigned int sy,
+-		      unsigned int dBase, unsigned int dPitch,
++		      unsigned int dest_base, unsigned int dest_pitch,
+ 		      unsigned int bpp, unsigned int dx, unsigned int dy,
+ 		      unsigned int width, unsigned int height,
+ 		      unsigned int rop2);
+ 
+ /**
+  * sm750_hw_imageblit
+- * @pSrcbuf: pointer to start of source buffer in system memory
+- * @srcDelta: Pitch value (in bytes) of the source buffer, +ive means top down
++ * @src_buf: pointer to start of source buffer in system memory
++ * @src_delta: Pitch value (in bytes) of the source buffer, +ive means top down
+  *>-----      and -ive mean button up
+- * @startBit: Mono data can start at any bit in a byte, this value should be
++ * @start_bit: Mono data can start at any bit in a byte, this value should be
+  *>-----      0 to 7
+- * @dBase: Address of destination: offset in frame buffer
+- * @dPitch: Pitch value of destination surface in BYTE
+- * @bytePerPixel: Color depth of destination surface
++ * @dest_base: Address of destination: offset in frame buffer
++ * @dest_pitch: Pitch value of destination surface in BYTE
++ * @byte_per_pixel: Color depth of destination surface
+  * @dx: Starting x coordinate of destination surface
+  * @dy: Starting y coordinate of destination surface
+  * @width: width of rectangle in pixel value
+  * @height: height of rectangle in pixel value
+- * @fColor: Foreground color (corresponding to a 1 in the monochrome data
+- * @bColor: Background color (corresponding to a 0 in the monochrome data
++ * @fg_color: Foreground color (corresponding to a 1 in the monochrome data
++ * @bg_color: Background color (corresponding to a 0 in the monochrome data
+  * @rop2: ROP value
+  */
+-int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
+-		       u32 srcDelta, u32 startBit, u32 dBase, u32 dPitch,
+-		       u32 bytePerPixel, u32 dx, u32 dy, u32 width,
+-		       u32 height, u32 fColor, u32 bColor, u32 rop2);
++int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
++		       u32 src_delta, u32 start_bit, u32 dest_base, u32 dest_pitch,
++		       u32 byte_per_pixel, u32 dx, u32 dy, u32 width,
++		       u32 height, u32 fg_color, u32 bg_color, u32 rop2);
+ 
+ #endif
 -- 
-~Randy
+2.47.3
+

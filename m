@@ -1,80 +1,81 @@
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 79738407599
-	for <linux-fbdev@vger.kernel.org>; Mon, 20 Jul 2026 11:58:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A8A741B36D
+	for <linux-fbdev@vger.kernel.org>; Mon, 20 Jul 2026 12:54:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784548714; cv=none; b=tgmPa9opLHhAkpPSdvfbgiUj1NrpXXBBEGDW++WCzZOFxujBwNXnM4dQ7Dn8pz/kgxTQPs/0qjya9umSEOOVCPOwCYrI4yr6++zFvByIX73dbY9HUjRWV2NuI2yExzgc8oR60kq7p19yoFgtaG6QoWD2f0IFhboz/N+s4gJluL4=
+	t=1784552051; cv=none; b=tXsUa02CUB0SLwuJiRpx2tiGX6jcB4KirFFdNMPIO88v9/qAflI6+MJ3jbFtkOy4NL5UOy3UKxEPhwBUtVSbvrX51ADWdL+dS9WBIzgg+bb5a+JyMoCcyucwpiQhzAwJRzZ2zQlNbNoxgh/P7t2Ip7X9JcpJ6eXlj5HzgTV1vks=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784548714; c=relaxed/simple;
-	bh=CrAWmIyTW88xjipuv0GFErPI+kUynJV/XAiC777Cv6o=;
+	s=arc-20240116; t=1784552051; c=relaxed/simple;
+	bh=3BXpfUn1GcNUGBvgl/Za+gVq96XyatWLFY3TTnu82lY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LpA94WWw1V63e9AjwcxU7IhRNp6vYxW+PW9LKsa04tw6dN6gWIq5J1ebuLFvzwsi0HHv31N0hTfE42VWJ/XH3UHmkJEw6ifeYJtxk7ByO1ZIgl6hG2TUutAuJSE6aDjgAXhZ8HAsAuNcTC8C5T/ynC7NyH6EBLdVEMwm1UeGE88=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jraAyO9l; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=uxASTd7k; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=jraAyO9l; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=uxASTd7k; arc=none smtp.client-ip=195.135.223.131
+	 In-Reply-To:Content-Type; b=JYjqfldwOK+FCu+ZE/pOoqXSLR5wU2jWpKEkF7c3gS8JV0EzEQ1VggHxC+ZSDd28kbSwAiRGFBe8a2jTu8y+0C6Sh/DFlRAdOqDLmo1ieFkw6tTAq3+paqb1RyOIITFOc1bLwOIadcfvPerd3Y07GK1uVOQ4ez3GQgms1/j5dYA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=WYY/+mA9; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=yMjSEUZb; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=afmOYx48; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=tBCU2I2O; arc=none smtp.client-ip=195.135.223.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jraAyO9l";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="uxASTd7k";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="jraAyO9l";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="uxASTd7k"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="WYY/+mA9";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="yMjSEUZb";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="afmOYx48";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="tBCU2I2O"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 52DA03DFC;
-	Mon, 20 Jul 2026 11:58:30 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id F1DEE3E18;
+	Mon, 20 Jul 2026 12:54:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1784548710; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1784552044; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=akfTilc+0fib5FYWb+g/y+K8rkZXkEd403H7R21K+ew=;
-	b=jraAyO9lWN1hfhaw228+vTtrfCzYZLTFDOfFD+GUqZ4TiCiRFLQe42qsI+tIhGDDd9qeZd
-	Epx9fOPDxxn8qi745Un9z8WHDPybik2gthrhkiPFadiRUtlgYwveXev7eUebeHdddZldQK
-	gQdeFeMrGSNOFK+p1ijoAbvbhbBMqOQ=
+	bh=Nu3HVN4UCPqGvSnbqRZyKknycEPtWdY/cFAQumZSAZQ=;
+	b=WYY/+mA9gK/eaLkt20F8CpGx+RuvG8Nrxd8XFxluP1mmNo3p1gqR1nsquvknzxdyH4HACT
+	Z+4REy11Wb8qfS8aVveD74Hf2D8sJxY0mv2M90eX1sDleS/P9F70RiD26a+SaZ/A0qbQaj
+	DG3DJH6796PjfzkO7Ocn441qrSSQEfo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1784548710;
+	s=susede2_ed25519; t=1784552044;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=akfTilc+0fib5FYWb+g/y+K8rkZXkEd403H7R21K+ew=;
-	b=uxASTd7kbKtoEhpHAHN4mM+LpXC3w6EL1+RUqwbVkngkoF4+erpVnaLDTjkt0kl9e3Uall
-	VAErmAfGxTCruXBw==
+	bh=Nu3HVN4UCPqGvSnbqRZyKknycEPtWdY/cFAQumZSAZQ=;
+	b=yMjSEUZbhFWjs/wa61mmFA/oE8FMk+FHDTEx3vBaaZyRR3+vgc8KZgap5R0ftIlRFghEgR
+	Of8EjNQpz2fCpbAA==
 Authentication-Results: smtp-out2.suse.de;
-	none
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=afmOYx48;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=tBCU2I2O
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1784548710; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1784552043; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=akfTilc+0fib5FYWb+g/y+K8rkZXkEd403H7R21K+ew=;
-	b=jraAyO9lWN1hfhaw228+vTtrfCzYZLTFDOfFD+GUqZ4TiCiRFLQe42qsI+tIhGDDd9qeZd
-	Epx9fOPDxxn8qi745Un9z8WHDPybik2gthrhkiPFadiRUtlgYwveXev7eUebeHdddZldQK
-	gQdeFeMrGSNOFK+p1ijoAbvbhbBMqOQ=
+	bh=Nu3HVN4UCPqGvSnbqRZyKknycEPtWdY/cFAQumZSAZQ=;
+	b=afmOYx48quxDVRFBjuswy3o+BgHT9dZZgh5AtPQAFxiC2o+mJa2GFnn+daUdHfS0AFBuMW
+	g/dneCHFaXa6h7yIeGuQbz/Mn2bvw14bZhLzlb/5L6Sr5RZSivqB794Y6BaWdky7OVRE5X
+	4su+BeSrGZ8jLi/uQwfl/sNiuDhg9YU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1784548710;
+	s=susede2_ed25519; t=1784552043;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=akfTilc+0fib5FYWb+g/y+K8rkZXkEd403H7R21K+ew=;
-	b=uxASTd7kbKtoEhpHAHN4mM+LpXC3w6EL1+RUqwbVkngkoF4+erpVnaLDTjkt0kl9e3Uall
-	VAErmAfGxTCruXBw==
+	bh=Nu3HVN4UCPqGvSnbqRZyKknycEPtWdY/cFAQumZSAZQ=;
+	b=tBCU2I2OUXTAZLg7VbfznJNS9/rWwQMW0IeuRrDry14NZVE6/T28EiNNCLxwj5gP5Jhtq5
+	my9vRpSKKtVmZ1Dw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 36B45779AA;
-	Mon, 20 Jul 2026 11:58:30 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CA025779AB;
+	Mon, 20 Jul 2026 12:54:03 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id QBciDGYNXmrTNwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 20 Jul 2026 11:58:30 +0000
-Message-ID: <345d7f81-e86e-48ef-af23-277dc0ae16d1@suse.de>
-Date: Mon, 20 Jul 2026 13:58:29 +0200
+	id oqQfMGsaXmrEbgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 20 Jul 2026 12:54:03 +0000
+Message-ID: <4e6880b7-0d25-458c-acec-9afce925ce01@suse.de>
+Date: Mon, 20 Jul 2026 14:54:03 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -82,12 +83,10 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/7] vga_switcheroo, drm: Push fbcon handling into DRM
- clients
-To: Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20260709092215.168172-1-tzimmermann@suse.de>
- <88fa0f85-0960-464a-a602-f797785f0c2e@gmx.de>
+Subject: Re: [PATCH] fonts: fixup font.h kernel-doc warnings
+To: Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org
+Cc: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
+References: <20260718191326.1907423-1-rdunlap@infradead.org>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -114,111 +113,88 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <88fa0f85-0960-464a-a602-f797785f0c2e@gmx.de>
+In-Reply-To: <20260718191326.1907423-1-rdunlap@infradead.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Spam-Flag: NO
-X-Spam-Score: -4.30
-X-Spamd-Result: default: False [-4.30 / 50.00];
+X-Rspamd-Action: no action
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.51 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.996];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_TO(0.00)[gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	FREEMAIL_CC(0.00)[gmx.de,vger.kernel.org];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_THREE(0.00)[3];
 	RCVD_TLS_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,suse.de:mid]
-X-Spam-Level: 
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCPT_COUNT_THREE(0.00)[4];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,suse.de:mid,infradead.org:email,gmx.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.com:url]
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: F1DEE3E18
+X-Spam-Score: -4.51
 
-Hi
 
-Am 18.07.26 um 21:08 schrieb Helge Deller:
-> Hi Thomas,
+
+Am 18.07.26 um 21:13 schrieb Randy Dunlap:
+> Use the typedef keyword when describing a typedef.
+> Add the missing function return value for font_glyph_size().
 >
-> On 7/9/26 11:15, Thomas Zimmermann wrote:
->> Vga_switcheroo currently invokes fb_switch_outputs() to inform fbcon
->> about switching of the physical outputs among framebuffer devices. But
->> new DRM clients to not use fbdev/fbcon and might require their own
->> vga_switcheroo support. Let's strictly separate them from each other.
->>
->> Remove fbdev/fbcon from vga_switcheroo. Introduce a pre_switch callback
->> for vga_switcheroo clients to do the fbcon update. Allows for removing
->> all direct interactions between vga_switcheroo and fbdev/fbcon.
->>
->> There are only four drivers that support vga_switcheroo: amdgpu,
->> radeon, i915 and nouveau. Update each of them with the new callback.
->> When vga_switcheroo now invokes pre_switch, each DRM driver forwards
->> to aquire_outputs and lets the DRM clients handle the new outputs.
->>
->> At the same time, push the fbcon update into DRM's client for fbdev
->> emulation. Do this with the new DRM client callback acquire_outputs,
->> so that other clients can have their own handling of vga_switcheroo.
->>
->> Also replace the existing reprobe hook with post_switch for symetry.
->> For nouveau, this is merely a rename of the helper function. The other
->> drivers dor not implement reprobe.
->>
->> Tested with radeon on a notebook with Radeon HD 4225 and HD 5430.
->>
->> v2:
->> - implement all of pre_switch in a single commit to avoid possible
->>    deadlock in intermediate state (Sashiko)
->> - fix erroneous docs (Sashiko)
->>
->> Thomas Zimmermann (7):
->>    drm/edid: Include <linux/fb.h>
->>    drm/client: Add acquire_outputs callback; implement for fbdev
->>      emulation
->>    vga_switcheroo: Add pre_switch callback to client ops
->>    vga_switcheroo: Add post_switch callback to client ops
->>    drm: Implement struct vga_switcheroo_client_ops.pre_switch
->>    drm: Implement vga_switcheroo_client_ops.post_switch
->>    vga-switcheroo: Remove unused interfaces
->>
->>   drivers/gpu/drm/amd/amdgpu/amdgpu_device.c |  9 ++++-
->>   drivers/gpu/drm/clients/drm_fbdev_client.c | 23 ++++++++----
->>   drivers/gpu/drm/drm_client_event.c         | 18 ++++++++++
->>   drivers/gpu/drm/drm_edid.c                 |  1 +
->>   drivers/gpu/drm/i915/i915_switcheroo.c     | 11 +++++-
->>   drivers/gpu/drm/nouveau/nouveau_vga.c      | 28 +++++++++------
->>   drivers/gpu/drm/radeon/radeon_device.c     |  9 ++++-
->>   drivers/gpu/vga/vga_switcheroo.c           | 41 +++++-----------------
->>   drivers/video/fbdev/core/fbcon.c           |  8 -----
->>   include/drm/drm_client.h                   | 14 ++++++++
->>   include/drm/drm_client_event.h             |  3 ++
->>   include/linux/vga_switcheroo.h             | 29 ++++++++-------
->>   12 files changed, 121 insertions(+), 73 deletions(-)
-> You may add a
-> Acked-by: Helge Deller <deller@gmx.de>
-> to the series.
-
-Thank you so much.
-
+> Warning: include/linux/font.h:84 cannot understand function prototype:
+>    'typedef const unsigned char font_data_t;'
+> Warning: include/linux/font.h:53 No description found for return value
+>    of 'font_glyph_size'
 >
-> Just in case you want me to take the series through the fbdev git tree,
-> please let me know.
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 
-The series is supposed to go though DRM trees. I'm still waiting for 
-reviews from the rsp devs.
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-Best regards
-Thomas
+Thanks a lot for the bug fix.
 
-
+> ---
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: linux-fbdev@vger.kernel.org
 >
-> Helge
+>   include/linux/font.h |    4 +++-
+>   1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> --- linux-next-20260717.orig/include/linux/font.h
+> +++ linux-next-20260717/include/linux/font.h
+> @@ -49,6 +49,8 @@ static inline unsigned int font_glyph_pi
+>    * scanlines, which is usually the glyph's height in scanlines. Fonts
+>    * coming from user space can sometimes have a different vertical pitch
+>    * with empty scanlines between two adjacent glyphs.
+> + *
+> + * Returns: the number of bytes per glyph
+>    */
+>   static inline unsigned int font_glyph_size(unsigned int width, unsigned int vpitch)
+>   {
+> @@ -60,7 +62,7 @@ static inline unsigned int font_glyph_si
+>    */
+>   
+>   /**
+> - * font_data_t - Raw font data
+> + * typedef font_data_t - Raw font data
+>    *
+>    * Values of type font_data_t store a pointer to raw font data. The format
+>    * is monochrome. Each bit sets a pixel of a stored glyph. Font data does
 
 -- 
 --

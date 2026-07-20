@@ -1,39 +1,72 @@
-Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 95D6041B34C;
-	Mon, 20 Jul 2026 13:55:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.243.164.118
+Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72F2A3DD870
+	for <linux-fbdev@vger.kernel.org>; Mon, 20 Jul 2026 14:26:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784555750; cv=none; b=GQo1/ddKOnQzzRpr9mYajCXWi5ef4YZ9n/UM13SapZcCjMWEgjDAzKiyU5t8RM1Hc/JD3NHoK4ArVQUrgemu65HEEKly3THw3yCQoyC3VBX+cqaJ6rZI6YY3o0CS7JtT1ZkliHxVO7G4tZoWHX70h/r3j0NSLhs8flI9RkdXHms=
+	t=1784557602; cv=none; b=HdPcyPsJ9m2nRhUvZFiPzd3J1Jql0DItfp7Bam75lzlgNlRWccdHNZ5oe2BT+mpByxxDN6ThzBC+sqhlTd9pT7JGFIG7CqxQrsktAevdXavHRM0vDdShYahq7ZtqOUEadrupsjFnX7c55a+lk+vi6tW6+AsyTqTX+4xoxAPHj3Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784555750; c=relaxed/simple;
-	bh=NJ0AtoIkyHbN2cS0WJ0FiOrJXuHN92dmpaPZ797DCac=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=WibWTYn40zlkVpnzTZzyO1KR3HOttRlY3mkXotNZLtNKntyFNkRg+2bFGAk2zE3KpyOvr3oqG9VuUGi4weGNn8d0deCUdXocI5N8O3bh94pnv5+CB/HD5K8R1fn+DP9k5l+pVtxmTFxbtnCerxXRdL6Cxyu1RZT9WYrYxKsn8aI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn; spf=pass smtp.mailfrom=stu.xidian.edu.cn; dkim=fail (0-bit key) header.d=stu.xidian.edu.cn header.i=@stu.xidian.edu.cn header.b=wRhRoWgX reason="key not found in DNS"; arc=none smtp.client-ip=162.243.164.118
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stu.xidian.edu.cn
+	s=arc-20240116; t=1784557602; c=relaxed/simple;
+	bh=p/jPcTmkeeX77iSaCsL7N9400sQYSGpluXtQkUOG47c=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=iRB4UTw4ibvjJ2HSjzN4BxJODCFXdNnYGafBgNOJT7ibcL19LIA9kI+KD+XdA7wzDbBs9qHvEtEAu5UdaUgnl6KGVg75XbDoCB5yIJ+Mv2DfzBm5wEG0D0Y7FwMF3D9KV69bCgI+UIPFONMJZPOkELbEcSSHaYxGMNm3akECdf0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=LbPYsl1n; arc=none smtp.client-ip=209.85.215.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=stu.xidian.edu.cn header.i=@stu.xidian.edu.cn header.b="wRhRoWgX"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LbPYsl1n"
+Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-c95d0a54ea5so7460461a12.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 20 Jul 2026 07:26:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=stu.xidian.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-	Message-Id:MIME-Version:Content-Transfer-Encoding; bh=2DX0IGdpE5
-	v2MDecZAGaKeD6g+xf+olxBRMjdHPEnYA=; b=wRhRoWgXLUf2cRITzDDeH4dESY
-	CcVFYWflYmuQ6nC8ZJXhh5IaiejuFTGRLNplQFmYxlqJ7LRf7bsGQq9gKwmXCI6r
-	cAASkNw4SLPIeg2TOb0rJM2oyGT1c3zpr3Tt8a8Jq7P9mzb/ELZP5qIvU+rM3eAk
-	HnUB3s+Z2uPI5UDAc=
-Received: from wmy.localdomain (unknown [115.53.184.36])
-	by hzbj-edu-front-4.icoremail.net (Coremail) with SMTP id BrQMCkAGKxHXKF5qGFg9AQ--.7751S2;
-	Mon, 20 Jul 2026 21:55:38 +0800 (CST)
-From: Mingyu Wang <25181214217@stu.xidian.edu.cn>
-To: simona@ffwll.ch,
-	deller@gmx.de
+        d=gmail.com; s=20251104; t=1784557601; x=1785162401; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=QpEdeGGLeSN9RZd1dNw8hRrHTwjmNFcu+OQpMNS+88Y=;
+        b=LbPYsl1n63Jr6qhgMWoR5B3Z6O0UgO3MeYuiFXJ+zeE4Hl4L1rjoY4HTQYMRJn6364
+         ZBue+uqmPzHj82c5EuLaNRLu99eXFmpjbUYxNgzld7rp79xY32QzmpM571B/9R/57XIi
+         nrkL8983Bp0wp6VwDholNtlLF0DoEFS+1LGpNfIhFXi2kf53gmeDfz3JMVYxCelsZVAD
+         425zmJCqpRYEcHZj43JGK2RRi6EaIOZt6Ur/kSb3CTyyIlD89JafqRWimPJifgtMe6av
+         5+6p53ziy/MAn0EsPlqdaryUmR23qR8YHxbTCYrqyasrCoiuLalnS/otPoS43eSvHKb5
+         myDA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784557601; x=1785162401;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=QpEdeGGLeSN9RZd1dNw8hRrHTwjmNFcu+OQpMNS+88Y=;
+        b=Ie8ekb/DWC8mhxh6R8+XGfsXUmg1tp8q9TXs9rclEuGW+aGX2zhah1sc0VsBE94LLr
+         YKAPaP62DU0s2h9fEOz4dU3VC3YEfSQCQwll/LkmShTqD+B4grt8IRdfZgNRHph8KjyE
+         D+WkVttEi+nL5/j/lp/wkHRdYrHSuf62PkQmTCauHpvkO9qsbtF5uuuLDxSosap7SMgt
+         VZn9SnQdeC5DJkWw4g8ZG2dHdkm0ZotZeLLMQXwEn5RIb5wkPc4WWemtPp2H8FbIW6xX
+         HX+BXhlm6yhLTqXPHhRrlJ4dYKPTtbDX5Y6PjJ9oSl79QokZ0RAEXM0jeY1JdOVpPiaz
+         vPmA==
+X-Gm-Message-State: AOJu0YwL3BbT3sGuD2pqQtyuTRZ6licJBD8u4oS5gfnvuphdRfYOURhQ
+	LlvjU0xdHygYwkmR6pL+TEqJEU4YJcfKqiU7tQ2gO6oR9TgwQheNNGQY
+X-Gm-Gg: AfdE7cnbWYBkzk9/5keJ86ncmqDGI+jBHZGHA7MfYs9EUezq1doOBU7xwkG5DQHxiFc
+	iZUZBBFnwqdYpG5kQEFysF11hyqaUyDQn2a+KasWSPBVlATPyXqgNGqCvyyIciFZ/K1i15YmP9/
+	qxcp4L++YdSo2sIR3+79xvIXq0sRJXXYk3SFCH1E3X9QZqQtsOrTr2bww+Y18GhGRfyAoFVos7n
+	4TJZ3BJdgK7vocMmLDGvSU83ORA1lR5OK5NI2pSNKcKzK7AV2VtiDipNF38pdKBOG5cqO+kQqsF
+	y+bYAQov6QKTOXHHlhFsUw8wvWGKYmlfbe+ZkYO0h83q10GtNWhQ2dGHfjwOnmaZhdyg0LIPMPg
+	pEu/TX6d1kZYtihLka/sPjuD53zUI1UfkauoZEwDi7x7ImvySZgmyWz+p2H4lTVV8qdXCE9hyuZ
+	IgvA==
+X-Received: by 2002:a05:6a21:484:b0:398:6ea8:21d2 with SMTP id adf61e73a8af0-3c3ad7a2ebamr16040253637.19.1784557600692;
+        Mon, 20 Jul 2026 07:26:40 -0700 (PDT)
+Received: from PC.. ([103.172.209.188])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31429f9d444sm43228050eec.6.2026.07.20.07.26.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 20 Jul 2026 07:26:39 -0700 (PDT)
+From: Mohit Mishra <mishraloopmohit@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
+	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	Mingyu Wang <25181214217@stu.xidian.edu.cn>
-Subject: [PATCH] fbdev: core: Clamp total_size to smem_len in fb_io_read/write
-Date: Mon, 20 Jul 2026 21:55:34 +0800
-Message-Id: <20260720135534.103599-1-25181214217@stu.xidian.edu.cn>
-X-Mailer: git-send-email 2.34.1
+	Mohit Mishra <mishraloopmohit@gmail.com>
+Subject: [PATCH] staging: sm750fb: Align prototype parameter names to implementation
+Date: Mon, 20 Jul 2026 19:56:05 +0530
+Message-ID: <20260720142605.63454-1-mishraloopmohit@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -41,74 +74,78 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:BrQMCkAGKxHXKF5qGFg9AQ--.7751S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7CryDCrW5JF4xKFyfZr1DWrg_yoW8Cw13pF
-	48uF93Jry5JF1xGFn2k3W3Way5ta1kCr98K343X34ayrsxArsI934xJa4akFW8A398Xr1f
-	JrykJryxuFyDCrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9j14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r1I6r4UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Cr
-	1j6rxdM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVAC
-	Y4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJV
-	W8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI2
-	0VAGYxC7MxkF7I0En4kS14v26r126r1DMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4
-	AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE
-	17CEb7AF67AKxVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMI
-	IF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4l
-	IxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvf
-	C2KfnxnUUI43ZEXa7VUjJ3vUUUUUU==
-X-CM-SenderInfo: qsvrmiqsrujiux6v33wo0lvxldqovvfxof0/1tbiAQUAEWpc6mud3wABsh
 
-Some legacy fbdev drivers may incorrectly set info->screen_size to a
-value larger than the actual mapped framebuffer size (info->fix.smem_len)
-during mode switches. This could allow out-of-bounds I/O accesses in
-fb_io_read() and fb_io_write().
+The declarations for sm750_hw_copyarea and sm750_hw_imageblit in sm750_accel.h
+use legacy CamelCase parameters, which do not match the snake_case names
+in the actual implementation in sm750_accel.c. The de_copyarea and
+de_imageblit function pointers in struct lynx_accel (sm750.h) also use
+outdated parameter names.
 
-Prevent this by clamping total_size to smem_len when smem_len is non-zero.
-Virtual framebuffers (smem_len == 0) are unaffected.
+Rename these prototype parameters to match their implementation names.
 
-This is a hardening measure; no specific crash is fixed by this patch.
-
-Signed-off-by: Mingyu Wang <25181214217@stu.xidian.edu.cn>
+Signed-off-by: Mohit Mishra <mishraloopmohit@gmail.com>
 ---
- drivers/video/fbdev/core/fb_io_fops.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/staging/sm750fb/sm750.h       | 10 +++++-----
+ drivers/staging/sm750fb/sm750_accel.h | 12 ++++++------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fb_io_fops.c b/drivers/video/fbdev/core/fb_io_fops.c
-index 6ab60fcd0050..335f16d2cc23 100644
---- a/drivers/video/fbdev/core/fb_io_fops.c
-+++ b/drivers/video/fbdev/core/fb_io_fops.c
-@@ -24,6 +24,14 @@ ssize_t fb_io_read(struct fb_info *info, char __user *buf, size_t count, loff_t
- 	if (total_size == 0)
- 		total_size = info->fix.smem_len;
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 0324778768cb..cd34d7f82c64 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -57,17 +57,17 @@ struct lynx_accel {
+ 			   u32 color, u32 rop);
  
-+	/*
-+	 * Security Hardening: Defend against buggy legacy drivers that may
-+	 * calculate a malformed screen_size. Clamp total_size to the actual
-+	 * hardware mapped memory limit (smem_len) to prevent OOB access.
-+	 */
-+	if (info->fix.smem_len && total_size > info->fix.smem_len)
-+		total_size = info->fix.smem_len;
-+
- 	if (p >= total_size)
- 		return 0;
+ 	int (*de_copyarea)(struct lynx_accel *accel,
+-			   u32 s_base, u32 s_pitch,
++			   u32 source_base, u32 source_pitch,
+ 			   u32 sx, u32 sy,
+-			   u32 d_base, u32 d_pitch,
++			   u32 dest_base, u32 dest_pitch,
+ 			   u32 bpp, u32 dx, u32 dy,
+ 			   u32 width, u32 height,
+ 			   u32 rop2);
  
-@@ -88,6 +96,14 @@ ssize_t fb_io_write(struct fb_info *info, const char __user *buf, size_t count,
- 	if (total_size == 0)
- 		total_size = info->fix.smem_len;
+-	int (*de_imageblit)(struct lynx_accel *accel, const char *p_srcbuf,
+-			    u32 src_delta, u32 start_bit, u32 d_base, u32 d_pitch,
++	int (*de_imageblit)(struct lynx_accel *accel, const char *src_buf,
++			    u32 src_delta, u32 start_bit, u32 dest_base, u32 dest_pitch,
+ 			    u32 byte_per_pixel, u32 dx, u32 dy, u32 width,
+-			    u32 height, u32 f_color, u32 b_color, u32 rop2);
++			    u32 height, u32 fg_color, u32 bg_color, u32 rop2);
  
-+	/*
-+	 * Security Hardening: Defend against buggy legacy drivers that may
-+	 * calculate a malformed screen_size. Clamp total_size to the actual
-+	 * hardware mapped memory limit (smem_len) to prevent OOB access.
-+	 */
-+	if (info->fix.smem_len && total_size > info->fix.smem_len)
-+		total_size = info->fix.smem_len;
-+
- 	if (p > total_size)
- 		return -EFBIG;
+ };
  
+diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
+index d15a40cacb84..25e5703b6774 100644
+--- a/drivers/staging/sm750fb/sm750_accel.h
++++ b/drivers/staging/sm750fb/sm750_accel.h
+@@ -210,9 +210,9 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+  * @rop2: ROP value
+  */
+ int sm750_hw_copyarea(struct lynx_accel *accel,
+-		      unsigned int sBase, unsigned int sPitch,
++		      unsigned int source_base, unsigned int source_pitch,
+ 		      unsigned int sx, unsigned int sy,
+-		      unsigned int dBase, unsigned int dPitch,
++		      unsigned int dest_base, unsigned int dest_pitch,
+ 		      unsigned int bpp, unsigned int dx, unsigned int dy,
+ 		      unsigned int width, unsigned int height,
+ 		      unsigned int rop2);
+@@ -235,9 +235,9 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+  * @bColor: Background color (corresponding to a 0 in the monochrome data
+  * @rop2: ROP value
+  */
+-int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
+-		       u32 srcDelta, u32 startBit, u32 dBase, u32 dPitch,
+-		       u32 bytePerPixel, u32 dx, u32 dy, u32 width,
+-		       u32 height, u32 fColor, u32 bColor, u32 rop2);
++int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
++		       u32 src_delta, u32 start_bit, u32 dest_base, u32 dest_pitch,
++		       u32 byte_per_pixel, u32 dx, u32 dy, u32 width,
++		       u32 height, u32 fg_color, u32 bg_color, u32 rop2);
+ 
+ #endif
 -- 
-2.34.1
+2.43.0
 

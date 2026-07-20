@@ -1,207 +1,184 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazon11012034.outbound.protection.outlook.com [52.101.126.34])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A8A741B36D
-	for <linux-fbdev@vger.kernel.org>; Mon, 20 Jul 2026 12:54:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784552051; cv=none; b=tXsUa02CUB0SLwuJiRpx2tiGX6jcB4KirFFdNMPIO88v9/qAflI6+MJ3jbFtkOy4NL5UOy3UKxEPhwBUtVSbvrX51ADWdL+dS9WBIzgg+bb5a+JyMoCcyucwpiQhzAwJRzZ2zQlNbNoxgh/P7t2Ip7X9JcpJ6eXlj5HzgTV1vks=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784552051; c=relaxed/simple;
-	bh=3BXpfUn1GcNUGBvgl/Za+gVq96XyatWLFY3TTnu82lY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JYjqfldwOK+FCu+ZE/pOoqXSLR5wU2jWpKEkF7c3gS8JV0EzEQ1VggHxC+ZSDd28kbSwAiRGFBe8a2jTu8y+0C6Sh/DFlRAdOqDLmo1ieFkw6tTAq3+paqb1RyOIITFOc1bLwOIadcfvPerd3Y07GK1uVOQ4ez3GQgms1/j5dYA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=WYY/+mA9; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=yMjSEUZb; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=afmOYx48; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=tBCU2I2O; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 513CB3BBFB5;
+	Mon, 20 Jul 2026 13:43:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.126.34
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784555040; cv=fail; b=oUS4r6bZL4V9mhJJIWZqoQUpnhWN4Kh11vILhabZppgSCWLGhVW7pKXi6e1kZg0FgKqR1vvQSMeBsjdXt7Bo1NawNjyqTWfLP8j8kPMDwp2xnJstExjfRVSANSKT7ehhW1NhflwPzZFpyRH4GsystWxhacVcmC1rxFgAiCayC3w=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784555040; c=relaxed/simple;
+	bh=KSVxylB7xC81f7CONc18cQhi6TFTl3Qgq1LtPWdpZb4=;
+	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=Xvs/EdRoFGoT/n/G5cIXnwLq040ShXbfq+g06gQJfqFWN+aF0ANdvmM112BMOkwVtrrQIP7sHufyT6p3urNwk49tOce5VLZDqbEM7vKZQy0Z0WHrlUyFxKIF9bFkfmrvS4NgusrN/GIkxhIfWa7JyiaUd/9w3S871NSgkp0YFEw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=BgcLdhIi; arc=fail smtp.client-ip=52.101.126.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=vivo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="WYY/+mA9";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="yMjSEUZb";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="afmOYx48";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="tBCU2I2O"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id F1DEE3E18;
-	Mon, 20 Jul 2026 12:54:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1784552044; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Nu3HVN4UCPqGvSnbqRZyKknycEPtWdY/cFAQumZSAZQ=;
-	b=WYY/+mA9gK/eaLkt20F8CpGx+RuvG8Nrxd8XFxluP1mmNo3p1gqR1nsquvknzxdyH4HACT
-	Z+4REy11Wb8qfS8aVveD74Hf2D8sJxY0mv2M90eX1sDleS/P9F70RiD26a+SaZ/A0qbQaj
-	DG3DJH6796PjfzkO7Ocn441qrSSQEfo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1784552044;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Nu3HVN4UCPqGvSnbqRZyKknycEPtWdY/cFAQumZSAZQ=;
-	b=yMjSEUZbhFWjs/wa61mmFA/oE8FMk+FHDTEx3vBaaZyRR3+vgc8KZgap5R0ftIlRFghEgR
-	Of8EjNQpz2fCpbAA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=afmOYx48;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=tBCU2I2O
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1784552043; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Nu3HVN4UCPqGvSnbqRZyKknycEPtWdY/cFAQumZSAZQ=;
-	b=afmOYx48quxDVRFBjuswy3o+BgHT9dZZgh5AtPQAFxiC2o+mJa2GFnn+daUdHfS0AFBuMW
-	g/dneCHFaXa6h7yIeGuQbz/Mn2bvw14bZhLzlb/5L6Sr5RZSivqB794Y6BaWdky7OVRE5X
-	4su+BeSrGZ8jLi/uQwfl/sNiuDhg9YU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1784552043;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Nu3HVN4UCPqGvSnbqRZyKknycEPtWdY/cFAQumZSAZQ=;
-	b=tBCU2I2OUXTAZLg7VbfznJNS9/rWwQMW0IeuRrDry14NZVE6/T28EiNNCLxwj5gP5Jhtq5
-	my9vRpSKKtVmZ1Dw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CA025779AB;
-	Mon, 20 Jul 2026 12:54:03 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id oqQfMGsaXmrEbgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 20 Jul 2026 12:54:03 +0000
-Message-ID: <4e6880b7-0d25-458c-acec-9afce925ce01@suse.de>
-Date: Mon, 20 Jul 2026 14:54:03 +0200
+	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="BgcLdhIi"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=GXrQi8fkXo8by9HgFuuy/LcquIrTdl0M2RHkje7KX111w6XVRvt3cNjTGYCizsjZ6v9//JcnLS4jPRWWq6gwHJelPQvSEYIXI0kQvFLzXwOZe4yuGo9gnu8vVrWeNFKu32YGMlrNV6CNTWAN3fMpg7X68gqmmsaAm4fGgV3jvUVfQ++zBrYoioY2LUdAtMqjO4ICybPuLAz2UhSd0m01vuWIM2ua4jcQfJCbRACZ44Sh3rZMjDKYU5PJ/MaV3X9XigV0SvJ2Dc17FVsqsqFsTYlchwST4yxebsQSYkEmXLKI2uE5FQov4mIBzFEAdWxZCd981ezwGB19DSaNa5tszA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ALDttZivWxmOZIL+ZHrZVHYTZdcZEObk3B199fjRsMU=;
+ b=TFbKph5HfACJLmyufpbVgChwMaDfBtP6KDpPRkdJX8BHs5ZZUIequQV9BJpBMOQ/FWnI9jT6enIfQXrAh5xwKlCQ6NCVMpxjp2NeZs0PyRwey7g2bXMyiZQnapCN2Cp51j+v6EKSdrcLeAt0UMaYzDm+GsDbpr9UMjG/ZYe9JCypZHpHDgk3wt1CCulbQVDPnfJbvOSsdUi4CIDna+S/q7vRl9KlxFs+MVJR0rBonl91AOil74p+1a3YIgtYy8PeEfKLS/fCNJptxQLLGpdVQLNDi9aowBlPCa0r8xJVNJaQXbhLuak06yO+QysijomOyUlyhjRT09Yc/xlP8oBVsQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ALDttZivWxmOZIL+ZHrZVHYTZdcZEObk3B199fjRsMU=;
+ b=BgcLdhIi9fwUB1cxSpIpqHREMTDkhYqYs0K8+dx8R5wf6r0qPJ5DWLWlxputN+je23d9djJnoWl5QXusJB+BgnTVYIzTaePCbAWFOApZhIOQKiexRvq5JNPHEiC/NE21oBs9LHX5A23kbU3wmOWrkQKVzqrJvz+Wt788AgOFdj9E5y5HmUam6141CUDS0npsMSSobVSrnU4Fb3SsOt9q+PARZ+W2BT1CxC6NZrco7OWIIID/eR68GoMyatjZVLI6XzSrjHHk8oPzcU7oIFUfvQ7gMYskOHq3rltl5QaaXNZhfWSpTYIXWZXNMaOorA67h4YTDQRLDbmLhnM2ErBC5Q==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SEZPR06MB5832.apcprd06.prod.outlook.com (2603:1096:101:c8::12)
+ by TY0PR06MB5457.apcprd06.prod.outlook.com (2603:1096:400:32a::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.18; Mon, 20 Jul
+ 2026 13:43:48 +0000
+Received: from SEZPR06MB5832.apcprd06.prod.outlook.com
+ ([fe80::f98:5e32:4ccb:d07b]) by SEZPR06MB5832.apcprd06.prod.outlook.com
+ ([fe80::f98:5e32:4ccb:d07b%6]) with mapi id 15.21.0223.017; Mon, 20 Jul 2026
+ 13:43:48 +0000
+From: Pan Chuang <panchuang@vivo.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Andy Shevchenko <andy@kernel.org>,
+	Vaibhav Hiremath <hvaibhav.linux@gmail.com>,
+	Johan Hovold <johan@kernel.org>,
+	Alex Elder <elder@kernel.org>,
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Michael Hennerich <Michael.Hennerich@analog.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Parthiban Veerasooran <parthiban.veerasooran@microchip.com>,
+	Christian Gromm <christian.gromm@microchip.com>,
+	Marc Dietrich <marvin24@gmx.de>,
+	Ovidiu Panait <ovidiu.panait.oss@gmail.com>,
+	Dan Carpenter <error27@gmail.com>,
+	Gustavo Piaz da Silva <gustavopiazdasilva2102@gmail.com>,
+	Pan Chuang <panchuang@vivo.com>,
+	Chelsy Ratnawat <chelsyratnawat2001@gmail.com>,
+	Gabriel Rondon <grondon@gmail.com>,
+	Artem Lytkin <iprintercanon@gmail.com>,
+	Zeeshan Ahmad <zeeshanahmad022019@gmail.com>,
+	Rajveer Chaudhari <rajveer.chaudhari.linux@gmail.com>,
+	Ethan Tidmore <ethantidmore06@gmail.com>,
+	Batu Ada Tutkun <batuadatutkun@gmail.com>,
+	linux-staging@lists.linux.dev (open list:STAGING SUBSYSTEM),
+	linux-kernel@vger.kernel.org (open list),
+	dri-devel@lists.freedesktop.org (open list:FBTFT Framebuffer drivers),
+	linux-fbdev@vger.kernel.org (open list:FBTFT Framebuffer drivers),
+	greybus-dev@lists.linaro.org (moderated list:GREYBUS SUBSYSTEM),
+	linux@analog.com (open list:ANALOG DEVICES INC IIO DRIVERS),
+	linux-iio@vger.kernel.org (open list:STAGING - INDUSTRIAL IO),
+	linux-media@vger.kernel.org (open list:STAGING - ATOMISP DRIVER),
+	ac100@lists.launchpad.net (moderated list:STAGING - NVIDIA COMPLIANT EMBEDDED CONTROLLER...),
+	linux-tegra@vger.kernel.org (open list:STAGING - NVIDIA COMPLIANT EMBEDDED CONTROLLER...)
+Subject: [PATCH 0/7] staging: Remove redundant error messages on IRQ request failure
+Date: Mon, 20 Jul 2026 21:43:06 +0800
+Message-Id: <20260720134324.239391-1-panchuang@vivo.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: TP0P295CA0038.TWNP295.PROD.OUTLOOK.COM
+ (2603:1096:910:4::11) To SEZPR06MB5832.apcprd06.prod.outlook.com
+ (2603:1096:101:c8::12)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fonts: fixup font.h kernel-doc warnings
-To: Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org
-Cc: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org
-References: <20260718191326.1907423-1-rdunlap@infradead.org>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260718191326.1907423-1-rdunlap@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Rspamd-Action: no action
-X-Spam-Level: 
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_CC(0.00)[gmx.de,vger.kernel.org];
-	DKIM_TRACE(0.00)[suse.de:+];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,suse.de:mid,infradead.org:email,gmx.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.com:url]
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: F1DEE3E18
-X-Spam-Score: -4.51
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SEZPR06MB5832:EE_|TY0PR06MB5457:EE_
+X-MS-Office365-Filtering-Correlation-Id: 81441a04-cfc5-469d-2d3a-08dee664ecfd
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|23010399003|1800799024|52116014|7416014|376014|6133799003|10067099003|56012099006|11063799006|921020|38350700014|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	gxi76lH1d2v053sMnoagBqMtN1PZb7kh/Vl+IqoySmVNjINVBRS1mtBZYSgYnAfkaZKbP0PX4I7LFS6UyZ45BunYsXNbqOSu/nUQKEKRxob/FWZBocV5j5k8eQgMLVSJbeUOYepuPjuo5KKZTMLg57tJ6TroBmqDcWJtfNuLcoWSG+ZaEGuSI1RAgQaCNXfxqh1vXDJCLS5lKFymCUMIWwUxYe9cU4nYkCq3kMl6LnrWL7XW81BByDt0x1k6jvIDLo+Kt2jAECIk2zSKDwiBW6/a5jLYkhVqBeE2UlrZsy3LWYkKPa41Iha4urS46BJxdK+tvZIJQMPqJfHZYo69hUllVS7n48LQLsVFT//xBwMrIH//RxQU2gsH4dFIgSFWJ5juXSfpZgVGWSRMTzzdVx2gz98LJ2JhbK+7Um+91QvfJN6gf87UXZI+smhJhDQ6tslb+DjeJKy31Nu6o03Z8kR60TCPR0sg11Ej+AMCcmOlYCTZNotEie1Moxdm/9zbMFj9M/yAT3MqJZ0T0w2rh1Sdz6EKBpN1dUE3GiHFuvV19LnH/p0knsXBFqMB5yaaaFGz6GinILVrVFUf6GnPGuWx7rQlR6oPKVerzeDnRtASZc3P2fP+f5M4YeNe01t9Bh87ZKXE/lPgOWplorlkle/VDBonT0uhQAg8AkhBHkux8/vqb5rW60OmaW60Y1c8g2Zwse1I9rOLFrcIzwAvQ3yFPZOY0fyHnD1cCBXbhT8qInT5LPioMRGmRbVXO2B8
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5832.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(52116014)(7416014)(376014)(6133799003)(10067099003)(56012099006)(11063799006)(921020)(38350700014)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?yRsb34bav0IOQBAlF6AmyemAmAK2Jb7Gl21pxr4wilBDtFQzP97jAbus3h1b?=
+ =?us-ascii?Q?Ps4UKYvhV5HdhknwTfSBcrTeXFZNE46I/RA0+jLRlJTtPlrVa9Sb2EpUJ+dg?=
+ =?us-ascii?Q?g9UoaTgVhEpAiDTm6SakU5zwTc1tYTBSxoyCh83HBTm+Rk194OnBne6zTevs?=
+ =?us-ascii?Q?c0TB+yKH07GLmjJeLZdp+0v+tyyciUGm0Ss1EpD5Nutbsaqaw+9iSNRtqswL?=
+ =?us-ascii?Q?18vsgYB0C5K1sA9ik7Lr1os3EGejZh8Xam0ynhpT4P6GbXKt6gvwA1H45hTM?=
+ =?us-ascii?Q?5Lae7jZVX7Ta02dl+gDcBcRws+UGArgW2bF87gvV9DrEa2ECMPKhDJRBaW8D?=
+ =?us-ascii?Q?ljUYNOS7lpd1Ur960RtVy/4LVkDp/7LhF/tIEWB3jV0sNL9/v9JKMJMIktub?=
+ =?us-ascii?Q?+4vNSS2NOL5H6lhn6S2EClzwm4AOhqv+qVlc4ts7YDokErHK/lMEjR3MHn5t?=
+ =?us-ascii?Q?Cayj+9+RPdRrccRZmc2kYCZuOOn7N4KqVYhSHQflh9N01beLEesdJIonKTgI?=
+ =?us-ascii?Q?p77FWDbGElfR7Q6736fLRONyZrk7NSd+1QQABIoXD2Vg6pCO1FfUmH00t9Zy?=
+ =?us-ascii?Q?EcHTCzEQ6K8rJksqj0DPJjZfsu57rkoPz6J3SeVE2koaBeJ46RT1BMHCWitW?=
+ =?us-ascii?Q?n/7//xUNKf8pUaK60KHAmgN216adtcicp6CDiN4OvBHQo1kSzzlUQUbxKU1W?=
+ =?us-ascii?Q?J9GHJQCg5DbnCoyI6Uq/8Rs50BgrygA9LP6BodDCjm4k5jbWL3W1d4pPpv40?=
+ =?us-ascii?Q?pTxKR/8fsnIPllnNQpzEOHqWuvyn6sm8AZiU7Cm3dYWSRquLbpfC08M8KfZF?=
+ =?us-ascii?Q?kNeYTa6ON/Jxiu/W5GNCgBP1wUoyCcP/gq9Z+hwya70okJ6w6lV1kmV6kZdv?=
+ =?us-ascii?Q?R03hwmq39EfVz4OosRiHniLgnkyzTem54iPouWhnUTm1lSKLS+nAFMFJK8Eh?=
+ =?us-ascii?Q?emuJriZFNtOWv4xid/ap5zvnAps+X8hxjhm4ksL4nfAduPqej7AS9WbfqkCt?=
+ =?us-ascii?Q?JolVCJHfJd142HNgxh/GB60iZLIeHOJVs6jHSpST51QgxsnEBMjGQKPrx0Ss?=
+ =?us-ascii?Q?r9zYbWArZ77qAoaX5Q6tDpfIIbr9dfph2Upi7+0g7CFydIiLN5JPOFowmXah?=
+ =?us-ascii?Q?xjjosFifja4WENz1TooyCpaS6VggDPKkBhD64uReGXeTYpbqOMCruaI97gJY?=
+ =?us-ascii?Q?Si5unNmYhB9vw4skFFjEelAmdo0YY/b6lH8GzMF3+xu+WaqqtqVgnLLOsgdq?=
+ =?us-ascii?Q?BjnhxyZ3mUmOoYlGseHpX4cQ/zkPhKQDFJukV3V8wxjhDdQfiQWDV9XlIpmp?=
+ =?us-ascii?Q?IXULEfaB5xg+0RCWQDM4adt6FR+OhqxRtQLY/I3wIQn/LgUdKdXJq+ZeNyI9?=
+ =?us-ascii?Q?jlUlf/2NxqlhPMxCb65+RnL7LWXLFn3vtAbTigAdwOP+oTlBviYrHPUbZz/l?=
+ =?us-ascii?Q?uicSAWCH7lIOsTA6goMjU0mB4ZfDUhUiH3NDPUxsWo90b3SRJ6b0/ptGOUpG?=
+ =?us-ascii?Q?llPiZ76DlBtU5yiMMLtVBjvYaLQ4kUH+NKnco9GyF7P2ZVXjmiYlAu1E1lg0?=
+ =?us-ascii?Q?9wPdbWbzTPSP3RLeYG+WxpkgjdDNSXBGg/K3UwxvX+SkFH/1ySh1M9mdU0KT?=
+ =?us-ascii?Q?lDeq7/GiI/9pemBrwUOwye11VGKzF9+JEYJ/5I2hqJnA3us64ecJirTS7Yyc?=
+ =?us-ascii?Q?26y0PWXyBH+tvFu2QRnVHUNtw1JvEnxrBQBdG+0WnkNNFCBPUpGLJgLn1xm3?=
+ =?us-ascii?Q?9ad88LimZg=3D=3D?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 81441a04-cfc5-469d-2d3a-08dee664ecfd
+X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5832.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2026 13:43:48.2695
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: O+xdQ6/p1ZVuxblzp+BggmP7+q1koUHNHGMMliUst2k4jzN+sZ0as6qStYVpmGuYPXjF/BwwGwF/yL8Whrra8w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY0PR06MB5457
 
+devm_request_threaded_irq() and devm_request_any_context_irq()
+automatically log detailed error messages on failure via
+the devm_request_result() helper, which prints device
+name, IRQ number, handler functions, and error code.
 
+Since devm_request_irq() is a static inline wrapper around
+devm_request_threaded_irq(), it also benefits from this
+automatic logging.
 
-Am 18.07.26 um 21:13 schrieb Randy Dunlap:
-> Use the typedef keyword when describing a typedef.
-> Add the missing function return value for font_glyph_size().
->
-> Warning: include/linux/font.h:84 cannot understand function prototype:
->    'typedef const unsigned char font_data_t;'
-> Warning: include/linux/font.h:53 No description found for return value
->    of 'font_glyph_size'
->
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Remove the now-redundant dev_err() and dev_err_probe() calls
+in staging drivers that follow these devm_request_*_irq()
+functions, as the core now provides more detailed diagnostic
+information on failure.
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+Pan Chuang (7):
+  staging: axis-fifo: Remove redundant dev_err()
+  staging: fbtft: Remove redundant dev_err_probe()
+  staging: greybus: arche-platform: Remove redundant dev_err()
+  staging: iio: adt7316: Remove redundant dev_err()
+  media: atomisp: Remove redundant dev_err()
+  staging: most: dim2: Remove redundant dev_err()
+  staging: nvec: Remove redundant dev_err_probe()
 
-Thanks a lot for the bug fix.
-
-> ---
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: linux-fbdev@vger.kernel.org
->
->   include/linux/font.h |    4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
->
-> --- linux-next-20260717.orig/include/linux/font.h
-> +++ linux-next-20260717/include/linux/font.h
-> @@ -49,6 +49,8 @@ static inline unsigned int font_glyph_pi
->    * scanlines, which is usually the glyph's height in scanlines. Fonts
->    * coming from user space can sometimes have a different vertical pitch
->    * with empty scanlines between two adjacent glyphs.
-> + *
-> + * Returns: the number of bytes per glyph
->    */
->   static inline unsigned int font_glyph_size(unsigned int width, unsigned int vpitch)
->   {
-> @@ -60,7 +62,7 @@ static inline unsigned int font_glyph_si
->    */
->   
->   /**
-> - * font_data_t - Raw font data
-> + * typedef font_data_t - Raw font data
->    *
->    * Values of type font_data_t store a pointer to raw font data. The format
->    * is monochrome. Each bit sets a pixel of a stored glyph. Font data does
+ drivers/staging/axis-fifo/axis-fifo.c            | 5 +----
+ drivers/staging/fbtft/fb_st7789v.c               | 2 +-
+ drivers/staging/greybus/arche-platform.c         | 4 +---
+ drivers/staging/iio/addac/adt7316.c              | 5 +----
+ drivers/staging/media/atomisp/pci/atomisp_v4l2.c | 4 +---
+ drivers/staging/most/dim2/dim2.c                 | 8 ++------
+ drivers/staging/nvec/nvec.c                      | 2 +-
+ 7 files changed, 8 insertions(+), 22 deletions(-)
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
-
+2.34.1
 

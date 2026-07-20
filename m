@@ -1,148 +1,113 @@
-Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazon11012034.outbound.protection.outlook.com [52.101.126.34])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 131393BD644;
-	Mon, 20 Jul 2026 13:44:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.126.34
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784555054; cv=fail; b=hPBqb84072AlspPL2Pu7ChiAhTzQj5Ls6anGKkp44bMCnU3hfayhjKRtAlDFTApdZWR5kq/RuWYsGqJLa+6lVDBBYE0M7m4FBuudZ4w3Ijuw07YNcZF0iXR/hXsyLl6ZXpJZCKSB5sYhWv2CrHAeOcb4Qvf8YZ+OhxwLTEMpLNU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784555054; c=relaxed/simple;
-	bh=phAF/pbeTjIs6KAJwBg/SwlY6EyRHZZXS8NjuMCvOLA=;
-	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=culMIXU1OQuFkZcxJXgpaGNX1Gzb2IFTj9cYFeuJ5F10Sl5EZ3cDzO4jFk6a73LgfKdcClu24sbwtqv+Tfs9GbhBrZEU+i7vG0bQwQfA+bQoBbqVsVfL8q+Em+b8vFN+eQBTelvrdO05j/Jb9aFFA2HAXKuVVC24c0xudSmOnRE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=oMnyjGPT; arc=fail smtp.client-ip=52.101.126.34
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=vivo.com
+Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 95D6041B34C;
+	Mon, 20 Jul 2026 13:55:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.243.164.118
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784555750; cv=none; b=GQo1/ddKOnQzzRpr9mYajCXWi5ef4YZ9n/UM13SapZcCjMWEgjDAzKiyU5t8RM1Hc/JD3NHoK4ArVQUrgemu65HEEKly3THw3yCQoyC3VBX+cqaJ6rZI6YY3o0CS7JtT1ZkliHxVO7G4tZoWHX70h/r3j0NSLhs8flI9RkdXHms=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784555750; c=relaxed/simple;
+	bh=NJ0AtoIkyHbN2cS0WJ0FiOrJXuHN92dmpaPZ797DCac=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=WibWTYn40zlkVpnzTZzyO1KR3HOttRlY3mkXotNZLtNKntyFNkRg+2bFGAk2zE3KpyOvr3oqG9VuUGi4weGNn8d0deCUdXocI5N8O3bh94pnv5+CB/HD5K8R1fn+DP9k5l+pVtxmTFxbtnCerxXRdL6Cxyu1RZT9WYrYxKsn8aI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn; spf=pass smtp.mailfrom=stu.xidian.edu.cn; dkim=fail (0-bit key) header.d=stu.xidian.edu.cn header.i=@stu.xidian.edu.cn header.b=wRhRoWgX reason="key not found in DNS"; arc=none smtp.client-ip=162.243.164.118
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stu.xidian.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="oMnyjGPT"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=vL/g199xAtv1sM/mFXDtNbkzojizodPfJh79xN4+Kt0/NysbCuC9QmgpV5Lz2EhgzDXjAVwW8WRIjIygpez5Wa5b8i1mtMivB7e9GGbY/nP00Vo2yAHo3Wo7e61NaW0QuDcYB3LQ5Qz2q7pri90iiONGJHB2dlK2dahM1BQNMjMYyORRJDvL6LdHncuysLg3dGdBEcHZUjcJIx+QYxDrcGBy7y9y9pmGgpjiC8O0qPRUfNd1SrDUQV9NXndHBtG4WxqwW9n8hxgdh55XTqgBgGRdpgPxR0426JT4SLp0w90gqIbPTYzuVA6CMvCY05ggUzDXb5JJM1F8C5K89IukMw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=bXYp47D+LGPSx3kYUrThkKd8Mn9eBaQ4Dd5UtW+c9+s=;
- b=fhoMXAGG7LxqQ7QMc3Q0HuLLRH2gtevxV9qb4sG5gpsFMJrss6rM5mnTBtozTeustgrBMrI8SMz86Z98sW4+qrn4nBxj+f8jcpDqnD9m8KQDfnbkJRRxh+O0GWNkg64BbJanZtfIwlDxk0BVrrVzK16ouPMB7aRCTY46hi7OeMPfA57jO0hTD0iga6JxZR785aQ2Oc4ifBxLmSoosqUJFM3vBkqNmT1R7ZN/t7mslmB5xlZ/tZFgUL8RP0AKlDYETiP+56wJTCKSNnyDprmdhzL2UuhXEUoo9dIcmE/a4+GYk94WFyBXfnepiKSjDMStKmiaoDI74TNjpbUvukk0jw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=bXYp47D+LGPSx3kYUrThkKd8Mn9eBaQ4Dd5UtW+c9+s=;
- b=oMnyjGPTXoCKuWyzzcuGoQ2XHYYM10qChHacoXyp5IpOgi3svsSRWx81f+OkY3+A02BVL+7bhk1jjlkHpBUCUCbKoINKtpx19GcO3USYvUm/HRlVe2OAFL+/AwKbE8UDzpivroytRsFL/t2TwrFbxGUFJCffOSpxmEsx6Bou2U+5E+7sIiyiI4a5Syi7SlPZaR8+gcuUMYV8cO4I8157WpRfvH9lTsZKXIOOt90yWkHeix4ONnPzR5L+GQM/gdjv+f9+C4U1yhuFWt5oR0NClER9VFND5TLEGSI7F5VbBHlqu8XFkOvNooF9EfaEKyukRe1jbG7ZkxDc3vZFex7wdQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SEZPR06MB5832.apcprd06.prod.outlook.com (2603:1096:101:c8::12)
- by TY0PR06MB5457.apcprd06.prod.outlook.com (2603:1096:400:32a::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.223.18; Mon, 20 Jul
- 2026 13:43:56 +0000
-Received: from SEZPR06MB5832.apcprd06.prod.outlook.com
- ([fe80::f98:5e32:4ccb:d07b]) by SEZPR06MB5832.apcprd06.prod.outlook.com
- ([fe80::f98:5e32:4ccb:d07b%6]) with mapi id 15.21.0223.017; Mon, 20 Jul 2026
- 13:43:56 +0000
-From: Pan Chuang <panchuang@vivo.com>
-To: Andy Shevchenko <andy@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Pan Chuang <panchuang@vivo.com>,
-	dri-devel@lists.freedesktop.org (open list:FBTFT Framebuffer drivers),
-	linux-fbdev@vger.kernel.org (open list:FBTFT Framebuffer drivers),
-	linux-staging@lists.linux.dev (open list:STAGING SUBSYSTEM),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 2/7] staging: fbtft: Remove redundant dev_err_probe()
-Date: Mon, 20 Jul 2026 21:43:08 +0800
-Message-Id: <20260720134324.239391-3-panchuang@vivo.com>
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=stu.xidian.edu.cn header.i=@stu.xidian.edu.cn header.b="wRhRoWgX"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=stu.xidian.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
+	Message-Id:MIME-Version:Content-Transfer-Encoding; bh=2DX0IGdpE5
+	v2MDecZAGaKeD6g+xf+olxBRMjdHPEnYA=; b=wRhRoWgXLUf2cRITzDDeH4dESY
+	CcVFYWflYmuQ6nC8ZJXhh5IaiejuFTGRLNplQFmYxlqJ7LRf7bsGQq9gKwmXCI6r
+	cAASkNw4SLPIeg2TOb0rJM2oyGT1c3zpr3Tt8a8Jq7P9mzb/ELZP5qIvU+rM3eAk
+	HnUB3s+Z2uPI5UDAc=
+Received: from wmy.localdomain (unknown [115.53.184.36])
+	by hzbj-edu-front-4.icoremail.net (Coremail) with SMTP id BrQMCkAGKxHXKF5qGFg9AQ--.7751S2;
+	Mon, 20 Jul 2026 21:55:38 +0800 (CST)
+From: Mingyu Wang <25181214217@stu.xidian.edu.cn>
+To: simona@ffwll.ch,
+	deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Mingyu Wang <25181214217@stu.xidian.edu.cn>
+Subject: [PATCH] fbdev: core: Clamp total_size to smem_len in fb_io_read/write
+Date: Mon, 20 Jul 2026 21:55:34 +0800
+Message-Id: <20260720135534.103599-1-25181214217@stu.xidian.edu.cn>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260720134324.239391-1-panchuang@vivo.com>
-References: <20260720134324.239391-1-panchuang@vivo.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: TP0P295CA0038.TWNP295.PROD.OUTLOOK.COM
- (2603:1096:910:4::11) To SEZPR06MB5832.apcprd06.prod.outlook.com
- (2603:1096:101:c8::12)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SEZPR06MB5832:EE_|TY0PR06MB5457:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6f94b486-374f-4c4d-3572-08dee664f1ee
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|23010399003|1800799024|52116014|376014|6133799003|10067099003|56012099006|11063799006|38350700014|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	I64wgd3CfSowWIxdtQcapqoJ+GEwmloMFVAoIdP5FHsGLMIzmZKNAlX/0uiuNpZ8otdDTBl5RGaAo10T0Kg0qC8ox4RJFVPYtMHoPtN43CipBRi2YJlxJMe8TjdFLqclleRjcdQE571zXNKPwePlHRQsNPYvzBB+HVK3p9gmjDcpgXxFwoLp5bYEm/pyaoRGcPl6x5bpxMx0+F47wFenRipsvVzOxAfi2O3LmBN2ect48J41DdxUmNPHaVrAUAh6uBZzU6Qr4UZ8UYwYmiNeyhAQgZQk0hDFQZboWjll5bjW1VOL4rVksgmw+12fdI8f47/d85Ot3U25LsJEQ5w+R78+VZxZs4+O7qwlNisPjUPR4GF8jinMvhBiXOF5jK7xLHr/thEgFS2fOurDJcgLTFKPm9JC8vbmUqNEZ2OBWaRuDQVc4Rcwo67LWPdXakH7P462eg8L1FQg5jgEdQYj33iM/tk7ewIeF3YbWm5hWmN82WSr/NY9PFS83MUr1Th9RIlQcyySJ6OYgK23U5MnMhjLFK4OYbMFqqkLFtXeNwLLA3aViRApapX3z3ZUfkjeIZdjjtfrhXmSxfs3kymfLuxWBToiPsNDFkldKPCOorspKy7moPwnZqZr/dmC7Z63ci+JElUetRRhm28Zi01VHr2h3PT8i/AjDmhOzIgmy8tgBLrDJoSCA/W5cGACHqUtMLSE6DGzdoZaTTqIADFj7bhiRB/HOIoWGiA8VaSyNUk=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5832.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(52116014)(376014)(6133799003)(10067099003)(56012099006)(11063799006)(38350700014)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Ajp4NSe1Jj6qkYLrpFNWFIE/udF9XEGA2DvxJ/nyyS9ZQSdXnvki2pW8Py/R?=
- =?us-ascii?Q?EivAPblzHAmdn979cv3vBj6t+9CkSPOnsTq2n3fmJ9khqOdniNIf1q+v53sm?=
- =?us-ascii?Q?xO2Wc26+HE5+UEKhjIQU6w4XZ3cQD6oBCGKGWO0r38e4qljnMwakS38MKjg+?=
- =?us-ascii?Q?6Yf23GrWjc1KQm1rVEKfAS4ubAPg4HcIugmIOdo8DhGJS5YGxuXGg5FReKR8?=
- =?us-ascii?Q?EKRsX98tRZ0t0Ar4N/IlCjEtUCcDwOzpVGLsDwIGjcauUA3/T+5e1m/w8tId?=
- =?us-ascii?Q?R6LgI4cEGgTCq3Wrsbo9hR0lP0gK0yJ5NuThKCa5GYxCJuKLK1U8ksN/Z9cK?=
- =?us-ascii?Q?8Y41BSehT4hZjZKe9f6OWROJDCrj0pMQCdKmePcXU1fRVFNzZplVw5ctdFna?=
- =?us-ascii?Q?99K4Oj85Tl6JrZ4hvQkxv7nOJBrD8LqF8prXuIez/wHRwCEWRFKGHvWEE1k5?=
- =?us-ascii?Q?R/QFcJw0TPlgck+w5oBSFEWrxjTcJbPdurpkFK0SwaGBIQs8eNsQ6TsTdFQW?=
- =?us-ascii?Q?b3RTUlpPI9RJtEGAGKO7ZrXuFUUL9DxhsrH6hNn31nSqCKMNLpTMKL4mI0k5?=
- =?us-ascii?Q?vnpSr4NNc9QofEVVIRBqGVBdWe0qC42KIFRLo/nXZURbqT88xq49O8puTK7s?=
- =?us-ascii?Q?nEwQ7tEzV+uJci5OfZLikzKRPoQ5dnG41JtG2qMGLn9wrvgYOr7aTN6dODKq?=
- =?us-ascii?Q?MEPs5VTD4SqWODIAZHujyyh/oYBAhy2UvZYw/PwUz89KPZhu8Pkz++ULf/Ik?=
- =?us-ascii?Q?3vnUGZjhGlnSvxXpfR+IlCgRsBcb5mcxmsJOM8O+kW4h1MTQl6xA7ZY6Gi3r?=
- =?us-ascii?Q?7mZxZJpaEoREf4S+XiTb59+8GJaegLdxxFrqDXK5d6etZHqBwgTfZEc3PKW3?=
- =?us-ascii?Q?7y5d/mXTQjRghSWreQTMqRd0DKN2chxMpN3KVzKaAkB7mOPMFXEnH6jlsA2G?=
- =?us-ascii?Q?VPMf0cRJogtPxIB96236mmgyP0C2JvQ8cy/aIV3Ko+4cYcTWbDIpweuw6uAC?=
- =?us-ascii?Q?ephf8xyeC6SsO826CB8drLsUv1DuAnq6JQBakhd110G7i5Bp0Tdrtu06ZPVX?=
- =?us-ascii?Q?VJhzO6nxXw6tryDoFvZw/qUvqyIPcjCqTuwxs5bbdTOdJix3TQ8UGM/iBINU?=
- =?us-ascii?Q?aIxL6DyQ2Q9jvSUaKSG1yzxryUXU2qOCdqHRkECxCXe9ULdV+WldQ8/j3RUq?=
- =?us-ascii?Q?jdlv1dIzxbVAZK9wkUvCHovJluh9k4V7FEIIrR2REYVPzDYDaMZzowNPMGcF?=
- =?us-ascii?Q?tz7jjgJ1eHOv4k42kv4l77hf8oCgh8I5RG/62GZFT9jDHD0fwyVkQrdPjOyR?=
- =?us-ascii?Q?41ApvqmvUUnKqreZe819UjzxNwDGFYIuPuAUPRaxy5a4AGEk6OzxEvDSuwSC?=
- =?us-ascii?Q?ANdPlzsSn5JahpJaFMh+sI4I9YB/gk5O2QTZF3aKiU/Y297G3FqbTgBAEVkI?=
- =?us-ascii?Q?N37XM6TfaXukGFRGGjVkA+BcVZ80u26Rbt/WpEl87VRTd7sjQQfFSS6OSvlI?=
- =?us-ascii?Q?ueokk2NS41iz44q288ugO1JYoAPAbOWaRN2siiJO11Q66UH9oE99jWcrNTN9?=
- =?us-ascii?Q?Z0kn+dOanq6C2hLhAPHVt7dbXVnq+tIRTrrS9soJkcANh6fkK2G1N8H9K6ev?=
- =?us-ascii?Q?Jgqa913Ui1SXNB6Wp581sERJBKg9QdMqEEymb3FU43113OxwKZcCywRdCVeQ?=
- =?us-ascii?Q?+EsNLolGR1ICgcw8SV4kBetSNYRL+A39R4qCdbafgza1IzmB/oYzFt0q7zLO?=
- =?us-ascii?Q?dLeyN7/fIA=3D=3D?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6f94b486-374f-4c4d-3572-08dee664f1ee
-X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5832.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jul 2026 13:43:56.4884
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 6Me0/yqj9GMuN1rj1+ZnOwDsDnWpigN4E89wL5aSyLE3PDY4IOb96DXMyvr2m4kPjeTGF7z/5IIW85fwuk909Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY0PR06MB5457
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:BrQMCkAGKxHXKF5qGFg9AQ--.7751S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7CryDCrW5JF4xKFyfZr1DWrg_yoW8Cw13pF
+	48uF93Jry5JF1xGFn2k3W3Way5ta1kCr98K343X34ayrsxArsI934xJa4akFW8A398Xr1f
+	JrykJryxuFyDCrJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9j14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r1I6r4UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Cr
+	1j6rxdM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVAC
+	Y4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJV
+	W8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI2
+	0VAGYxC7MxkF7I0En4kS14v26r126r1DMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4
+	AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE
+	17CEb7AF67AKxVWUAVWUtwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMI
+	IF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4l
+	IxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvf
+	C2KfnxnUUI43ZEXa7VUjJ3vUUUUUU==
+X-CM-SenderInfo: qsvrmiqsrujiux6v33wo0lvxldqovvfxof0/1tbiAQUAEWpc6mud3wABsh
 
-Since commit
-55b48e23f5c4 ("genirq/devres: Add error handling in devm_request_*_irq()"),
-devm_request_irq() automatically logs detailed error messages on
-failure. Remove the now-redundant driver-specific dev_err_probe() calls.
+Some legacy fbdev drivers may incorrectly set info->screen_size to a
+value larger than the actual mapped framebuffer size (info->fix.smem_len)
+during mode switches. This could allow out-of-bounds I/O accesses in
+fb_io_read() and fb_io_write().
 
-Signed-off-by: Pan Chuang <panchuang@vivo.com>
+Prevent this by clamping total_size to smem_len when smem_len is non-zero.
+Virtual framebuffers (smem_len == 0) are unaffected.
+
+This is a hardening measure; no specific crash is fixed by this patch.
+
+Signed-off-by: Mingyu Wang <25181214217@stu.xidian.edu.cn>
 ---
- drivers/staging/fbtft/fb_st7789v.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/core/fb_io_fops.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-index 861a154144e6..ec46ad3f6a91 100644
---- a/drivers/staging/fbtft/fb_st7789v.c
-+++ b/drivers/staging/fbtft/fb_st7789v.c
-@@ -119,7 +119,7 @@ static int init_tearing_effect_line(struct fbtft_par *par)
- 	rc = devm_request_irq(dev, irq_te, panel_te_handler,
- 			      IRQF_TRIGGER_RISING, "TE_GPIO", par);
- 	if (rc)
--		return dev_err_probe(dev, rc, "TE IRQ request failed.\n");
-+		return rc;
+diff --git a/drivers/video/fbdev/core/fb_io_fops.c b/drivers/video/fbdev/core/fb_io_fops.c
+index 6ab60fcd0050..335f16d2cc23 100644
+--- a/drivers/video/fbdev/core/fb_io_fops.c
++++ b/drivers/video/fbdev/core/fb_io_fops.c
+@@ -24,6 +24,14 @@ ssize_t fb_io_read(struct fb_info *info, char __user *buf, size_t count, loff_t
+ 	if (total_size == 0)
+ 		total_size = info->fix.smem_len;
  
- 	disable_irq_nosync(irq_te);
++	/*
++	 * Security Hardening: Defend against buggy legacy drivers that may
++	 * calculate a malformed screen_size. Clamp total_size to the actual
++	 * hardware mapped memory limit (smem_len) to prevent OOB access.
++	 */
++	if (info->fix.smem_len && total_size > info->fix.smem_len)
++		total_size = info->fix.smem_len;
++
+ 	if (p >= total_size)
+ 		return 0;
+ 
+@@ -88,6 +96,14 @@ ssize_t fb_io_write(struct fb_info *info, const char __user *buf, size_t count,
+ 	if (total_size == 0)
+ 		total_size = info->fix.smem_len;
+ 
++	/*
++	 * Security Hardening: Defend against buggy legacy drivers that may
++	 * calculate a malformed screen_size. Clamp total_size to the actual
++	 * hardware mapped memory limit (smem_len) to prevent OOB access.
++	 */
++	if (info->fix.smem_len && total_size > info->fix.smem_len)
++		total_size = info->fix.smem_len;
++
+ 	if (p > total_size)
+ 		return -EFBIG;
  
 -- 
 2.34.1

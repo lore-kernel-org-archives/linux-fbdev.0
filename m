@@ -1,43 +1,143 @@
-Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id E90063AB5CA;
-	Tue, 21 Jul 2026 08:20:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=162.243.164.118
+Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBC9E342173
+	for <linux-fbdev@vger.kernel.org>; Tue, 21 Jul 2026 13:12:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784622014; cv=none; b=fIM+nOtu2j+hWzVRgGKsO+QMHiZZrjZJZyyxJ9163aHhBms+wkm8ZUfLF4m+GIfLZ0WeQO8h75NXA/LJI7bscezBrhtDF6zYnBVTFr67lB8ike6WNa+t7HWdgPc4vqI2CqfWYl8mWYFqaPoYWPzdMgA4a0p8dgq7hiWVv3QPr4w=
+	t=1784639564; cv=none; b=B4P/aX1pmgA5a3moDYJ8t51izRkFsgVQHMpaUEhAI6rq9haDiMvcqBStMCDXEJZoLEM6ElZuCqDUzk0q9kYHQS4b7KeKbidwSOra6Nk1C4TuDjne67Y4hd2aA4KGXmoPY2UOWxhmmXObwSrSUXMIAmQtvL1dVG9d2V6wpPcDGpc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784622014; c=relaxed/simple;
-	bh=EBmyS7Ev7QwLlk7pTfqWrf57IGoxnA0THVWhEw6+O08=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=l3fw/PcjASR/c8yncB+3Gt7lXjMdjy1bAyzDFhCawUuU5rH3TobRSMcUrYzkq47uwoTwbUIKFFLcrSTE+5e0/Q4R333rEgSmJZTK+4wJO7iuIapXe99GAr/AJ0RtsD3opmIUKNTcdecekWLJzRAa0RMixDRe2XafdQrcgPSKm1g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn; spf=pass smtp.mailfrom=stu.xidian.edu.cn; dkim=fail (0-bit key) header.d=stu.xidian.edu.cn header.i=@stu.xidian.edu.cn header.b=Y9Fl8EVI reason="key not found in DNS"; arc=none smtp.client-ip=162.243.164.118
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stu.xidian.edu.cn
+	s=arc-20240116; t=1784639564; c=relaxed/simple;
+	bh=nS5SJQmwq8NU5ulEg4x+lVkufqolSp3mR/z1Mkjawbc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WODga1VkHDQpIHm2Cb4vNOhR5SX3UHRY7S1Jeuq+yOB9uE9sQWPReH3YPX9o+lAGj7EGOJMVL40zSHPhhWAXbFL7a5FoNIWRte4NTaQfPBiZqASYMPaSIjVRE7ZJmPQi6fyMrybbssGdKFR97LeLc7sOGEcGrMtVo2Iht2kpU1M=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=dEanDhrt; arc=none smtp.client-ip=209.85.221.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=stu.xidian.edu.cn header.i=@stu.xidian.edu.cn header.b="Y9Fl8EVI"
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="dEanDhrt"
+Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-47f81a3ccf9so409819f8f.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 21 Jul 2026 06:12:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=stu.xidian.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-	Message-Id:MIME-Version:Content-Transfer-Encoding; bh=slkMB1n5lL
-	18xVarizCiSrf3pbimSGms9jOIwlPcuPE=; b=Y9Fl8EVIROLgzAT7Q1/vyVB3pR
-	N/chrl4/htKfVUiZQa7dRl8MLJh7OxlCAbDMBo2jfE9B3hGOozqoDn/gmrObv/nd
-	0fgBfK3F9SE4IfJMakBJBdL7ojfCUMtHJdqJS/1aG7AIGt4B0woOG7EEfsb4STr1
-	Pn/UaB1nN5jVt/2cE=
-Received: from wmy.localdomain (unknown [115.51.78.210])
-	by hzbj-edu-front-4.icoremail.net (Coremail) with SMTP id BrQMCkC23xWgK19q0zBKAQ--.7875S2;
-	Tue, 21 Jul 2026 16:19:46 +0800 (CST)
-From: Mingyu Wang <25181214217@stu.xidian.edu.cn>
-To: simona@ffwll.ch,
-	deller@gmx.de
-Cc: tzimmermann@suse.de,
-	sam@ravnborg.org,
-	javierm@redhat.com,
+        d=suse.com; s=google; t=1784639559; x=1785244359; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=vXH/AcaDYaWjD1D7W7UeWMormFqpNiZzAjn7k+W0SEQ=;
+        b=dEanDhrt+jUSTiBzkZBe0IDLwLG75pM5Ej1XjXee8zrpLAmD21ET04fM4I4lSVGfIW
+         Q+my3B99PjL/v3z/hKeBaEWBvESw9aih0ETnhmnxgmsV8yWAICVR863KOzNO3Q6s3zEa
+         AsP7Etn7j7ODIbZAjvTfuEYqOUEIsm7vfo3jqniyHInAEsa8pv3nsw27xExEGpRa3Y9x
+         MfXam53sX3lIDX0uGAnDaqX6iiaAP5givXlPKLnjV9hK/UcKtu3pnpVVebROttjRDlly
+         xxuIg53CAha66tiu3ZOo2YqVicN5ea8F68oJW63P6K3AXhXD14C5DsdnTeOlMgWZtwiA
+         bODA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784639559; x=1785244359;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=vXH/AcaDYaWjD1D7W7UeWMormFqpNiZzAjn7k+W0SEQ=;
+        b=nIpoIQGGDSedp367/V5hsJeLoO9v2yS+jzoL1z1luPcF/CrS3sXqMgdTvAwkB3XSFG
+         2ENPpvjsSXphcTF5Z1ZaYcT8hmHKupoHYbzhollWi5Es/8qkE8AQAyGgFT1jOijQfwwk
+         KmHoU9/qEUyzkzYWj48L+M2sBAUIbqJk6GNZKslSMCZkPoG5ozpEe1ESEv2kjqQGRfwY
+         uqOL6EtbaT/ggASyzLDKmiYlUW7iQysf/Itn9pUIoM7lNWwE8VujxBilAZvlxxbmvzTK
+         gzA5I9mSOnwS1KruaYYY5RQNdxWVmSKjSdq6qgxrvPAYNwgiz3zpb7FHKec551sHsK0S
+         0p5A==
+X-Forwarded-Encrypted: i=1; AHgh+RrWNPfHcMMNbfeK5souBmhk3a5vBtSgGzsVrFzY0Ug3gdbSoyJUDKVTI0nJlwL780BPtajEPgECAK3Bug==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzFEwD9LqAwZAgchUZkRW75RzDdvc19IuxYj/+9QnYb43WFVIQC
+	Ag4uAlR/VTAJzEZSTgwl46FrSLuUJzOGoa9VzRZcRLhxrvn+VbNjEihwBRuFcOGfAUg=
+X-Gm-Gg: AR+sD12CZY/X6+gkQQLvI2yEJLRUmk83sHRE1fZWG29nh1HFRsMvvG4l1QOx5x6Lg6P
+	uLKvvAIuoGaKjpiJ+Q/hank9poYSjzST5toNdrcrCeFXpZESEF2nJYnqM5D4OSaej5KzNHZQLAE
+	lDhre2kM884+h8mC/5f4U+kgp5C/MX6ke8CU5kFh4lcvZgUHTdsVGrpgI8/+Z5tiuIcA7n/nYGq
+	9i1pw+JoLwur+rh3usdhzgAKdvqCdcV3SyszSOcCdbFqcxpnwb3tb0cz3ka+GdWrAMWqc0pGuIf
+	T6QLdnGqV3SQE1UhZynuEPTNc/t9Ykt2xFVvhL4wQM4xq0RGnSkElf08y1WnuieaXhbWDpKT7gd
+	VJ23zmiKaFr52p1JIldvd0CWVvevElS5bqBY3+HmnOrL2l9wbS5VceghT7hMY2nbT+pBREnoEEg
+	==
+X-Received: by 2002:a05:6000:2084:b0:47e:81aa:3832 with SMTP id ffacd0b85a97d-47f6230e614mr22543209f8f.16.1784639559042;
+        Tue, 21 Jul 2026 06:12:39 -0700 (PDT)
+Received: from zovi.suse.cz ([2001:af0:8000:1409:193:86:92:181])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47f63ee9281sm42070938f8f.36.2026.07.21.06.12.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Jul 2026 06:12:38 -0700 (PDT)
+From: Petr Pavlu <petr.pavlu@suse.com>
+To: Tony Luck <tony.luck@intel.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Philipp Reisner <philipp.reisner@linbit.com>,
+	Lars Ellenberg <lars.ellenberg@linbit.com>,
+	=?UTF-8?q?Christoph=20B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
+	Jens Axboe <axboe@kernel.dk>,
+	Johan Hovold <johan@kernel.org>,
+	Alex Elder <elder@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Michal Januszewski <spock@gentoo.org>,
+	Helge Deller <deller@gmx.de>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Jan Kara <jack@suse.cz>,
+	Trond Myklebust <trondmy@kernel.org>,
+	Anna Schumaker <anna@kernel.org>,
+	Chuck Lever <cel@kernel.org>,
+	Jeff Layton <jlayton@kernel.org>,
+	NeilBrown <neil@brown.name>,
+	Olga Kornievskaia <okorniev@redhat.com>,
+	Dai Ngo <Dai.Ngo@oracle.com>,
+	Tom Talpey <tom@talpey.com>,
+	Mark Fasheh <mark@fasheh.com>,
+	Joel Becker <jlbec@evilplan.org>,
+	Joseph Qi <joseph.qi@linux.alibaba.com>,
+	Tejun Heo <tj@kernel.org>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	=?UTF-8?q?Michal=20Koutn=C3=BD?= <mkoutny@suse.com>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Pavel Machek <pavel@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Nikolay Aleksandrov <razor@blackwall.org>,
+	Ido Schimmel <idosch@nvidia.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	David Howells <dhowells@redhat.com>,
+	Jarkko Sakkinen <jarkko@kernel.org>,
+	Paul Moore <paul@paul-moore.com>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Kentaro Takeda <takedakn@nttdata.co.jp>,
+	Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-edac@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	drbd-dev@lists.linux.dev,
+	linux-block@vger.kernel.org,
+	greybus-dev@lists.linaro.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-acpi@vger.kernel.org,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Mingyu Wang <25181214217@stu.xidian.edu.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] fbdev: core: Fix pointer desynchronization in fb_io_read()
-Date: Tue, 21 Jul 2026 16:19:42 +0800
-Message-Id: <20260721081942.107024-1-25181214217@stu.xidian.edu.cn>
-X-Mailer: git-send-email 2.34.1
+	linux-fsdevel@vger.kernel.org,
+	linux-nfs@vger.kernel.org,
+	ocfs2-devel@lists.linux.dev,
+	cgroups@vger.kernel.org,
+	linux-modules@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	bridge@lists.linux.dev,
+	netdev@vger.kernel.org,
+	keyrings@vger.kernel.org,
+	linux-security-module@vger.kernel.org
+Subject: [PATCH v2 0/3] Bring includes in linux/kmod.h up to date
+Date: Tue, 21 Jul 2026 15:11:24 +0200
+Message-ID: <20260721131207.803760-1-petr.pavlu@suse.com>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,69 +145,62 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:BrQMCkC23xWgK19q0zBKAQ--.7875S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Ar17WFyfCFWrZr4kXryrJFb_yoW8Cr15pF
-	43KFyfKFn8XwsrAw4DCa12qa4Fka1xZF98WFWvk3WYv3s8tr1Y9348KFyjgrWfAF4xGry0
-	qan7Kw1FvF9xuFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUPF14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r1I6r4UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gr
-	1j6F4UJwAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40E
-	FcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr
-	0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8v
-	x2IErcIFxwACI402YVCY1x02628vn2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCY02Avz4
-	vE14v_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG
-	67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MI
-	IYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E
-	14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJV
-	W8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUeYLv
-	DUUUU
-X-CM-SenderInfo: qsvrmiqsrujiux6v33wo0lvxldqovvfxof0/1tbiAgUBEWpeO3mHWgAAs8
 
-In fb_io_read(), if copy_to_user() performs a partial copy (e.g., due to
-a faulty user buffer), the loop adjusts the chunk size 'c' and updates
-the remaining 'count'. However, the hardware 'src' pointer has already
-been eagerly advanced by the original chunk size.
+The usermode helper declarations were previously provided by linux/kmod.h
+but commit c1f3fa2a4fde ("kmod: split off umh headers into its own file")
+moved them to linux/umh.h in 2017. Add explicit includes of linux/umh.h to
+files that use usermode helpers and remove linux/kmod.h where it is no
+longer needed.
 
-If the loop is allowed to continue, the read will resume from an
-incorrect, over-advanced offset. Since the remaining 'count' was only
-decremented by the successful bytes, this desynchronization causes the
-next iterations to execute more hardware reads than originally bounded,
-eventually leading to out-of-bounds I/O reads.
+Also add a missing include of linux/sysctl.h to kernel/time/jiffies.c.
 
-Fix this by breaking out of the loop immediately upon a partial
-copy_to_user(). A partial copy indicates a faulty user buffer, making
-subsequent read attempts futile. Breaking out ensures we return the
-number of successfully read bytes without risking out-of-bounds hardware
-accesses in subsequent mismatched iterations.
+Finally, clean up linux/kmod.h so that it includes only the headers that it
+actually requires, importantly removing the compat linux/umh.h include.
 
-Fixes: 6121cd9ef911 ("fbdev: Move I/O read and write code into helper functions")
-Cc: stable@vger.kernel.org
-Signed-off-by: Mingyu Wang <25181214217@stu.xidian.edu.cn>
----
- drivers/video/fbdev/core/fb_io_fops.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+This cleanup is motivated by trying to reduce the preprocessed size of
+linux/module.h, which includes linux/kmod.h. The linux/module.h header is
+included by every *.mod.c file to provide `struct module` and other related
+definitions, so it should avoid pulling in unnecessary dependencies. Note
+that this series doesn't immediately improve the situation, since most of
+the files included by linux/kmod.h are, for now, also included by
+linux/module.h through other paths.
 
-diff --git a/drivers/video/fbdev/core/fb_io_fops.c b/drivers/video/fbdev/core/fb_io_fops.c
-index 6ab60fcd0050..0798e88799eb 100644
---- a/drivers/video/fbdev/core/fb_io_fops.c
-+++ b/drivers/video/fbdev/core/fb_io_fops.c
-@@ -61,6 +61,14 @@ ssize_t fb_io_read(struct fb_info *info, char __user *buf, size_t count, loff_t
- 		buf += c;
- 		cnt += c;
- 		count -= c;
-+
-+		/*
-+		 * If there was a partial copy, the user buffer is faulty.
-+		 * Break out to avoid over-advancing the src pointer and
-+		 * reading out of bounds in the next iteration.
-+		 */
-+		if (trailing)
-+			break;
- 	}
- 
- 	kfree(buffer);
+Apologies for the wide distribution. Acked-bys are appreciated.
+
+Changes in v2:
+- Remove the linux/kmod.h include from kernel/cgroup/cgroup-v1.c.
+- Add a missing include of linux/sysctl.h to kernel/time/jiffies.c.
+- Link to v1: https://lore.kernel.org/linux-modules/20260708154510.6794-1-petr.pavlu@suse.com/
+
+Petr Pavlu (3):
+  umh, treewide: Explicitly include linux/umh.h where needed
+  time/jiffies: Include linux/sysctl.h for proc_int_u2k_conv_uop(), ...
+  module: Bring includes in linux/kmod.h up to date
+
+ arch/x86/kernel/cpu/mce/dev-mcelog.c |  2 +-
+ drivers/block/drbd/drbd_nl.c         |  1 +
+ drivers/greybus/svc_watchdog.c       |  1 +
+ drivers/macintosh/windfarm_core.c    |  1 +
+ drivers/pnp/pnpbios/core.c           |  2 +-
+ drivers/video/fbdev/uvesafb.c        |  1 +
+ fs/coredump.c                        |  2 +-
+ fs/nfs/cache_lib.c                   |  2 +-
+ fs/nfsd/nfs4layouts.c                |  2 +-
+ fs/nfsd/nfs4recover.c                |  1 +
+ fs/ocfs2/stackglue.c                 |  1 +
+ include/linux/kmod.h                 | 12 ++----------
+ kernel/cgroup/cgroup-v1.c            |  2 +-
+ kernel/module/kmod.c                 |  1 +
+ kernel/power/process.c               |  2 +-
+ kernel/reboot.c                      |  2 +-
+ kernel/time/jiffies.c                |  1 +
+ kernel/umh.c                         |  2 +-
+ lib/kobject_uevent.c                 |  2 +-
+ net/bridge/br_stp_if.c               |  2 +-
+ security/keys/request_key.c          |  2 +-
+ security/tomoyo/common.h             |  2 +-
+ 22 files changed, 23 insertions(+), 23 deletions(-)
+
 -- 
-2.34.1
+2.54.0
 

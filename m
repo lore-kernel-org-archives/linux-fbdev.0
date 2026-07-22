@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4358343BDD4;
-	Wed, 22 Jul 2026 15:43:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F16133BCD13;
+	Wed, 22 Jul 2026 15:52:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784734994; cv=none; b=QU0KVXHKBUo8o9Olx8WgiHXzyXMcpAcqx+XHfsABmG0gP2O/ClFs/NIAHJcWBk7yQUfTMrww3Cal/k+zTkTQn+jjLCJUX4uTxCn/ezxFTjVRYn4hm+7cRCWZut6JAkTUpShQ0npeLTBDUQFoM1Ul5nD5eh8i128CfCY8KEE2zY0=
+	t=1784735577; cv=none; b=Yw19o9/syz9uopZ+U0lLmGs1gFaM8L+oWzFcRhkiAnbiAzqeZndAaILb2KqRkm7ooKiVwKzVh4oAQtRcyixqyvt+IyttBwSAOhCtWWSWVcP1fPxg54iOiKUOZ9GpbED72ck5+d0nIvJ8sC5fzpFL1iw1C3Fmc6nS2QnELyGbWtk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784734994; c=relaxed/simple;
-	bh=mBFLFVFffpX3sBe5RLViCnoS1wBcAEUdd0R2wLYoPDI=;
+	s=arc-20240116; t=1784735577; c=relaxed/simple;
+	bh=+qZGwqGphy0QHhR7QioqZcrFiPH53V4loJ6lyPtanLg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Sz+68OJbPlhebZglF/y0swNsmOoFCX7aC/SlYKFYsxbU6UTZWeVxtjsE2Qio9YnKvu0vEsKgOnsXdWHiWVcIWveLJjCdNkmg5wdFLSQS3kT7TO08EImrXldeqnFQnduCL0/plEouKJD05m0enJGM44wzXQ46ktEQC6RQ7euvoKs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CLM0aR9e; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=ZAmfofjNEmb/3zBjk+6USsibz15TO6anrSgGJFY/+5h8j4k1OEvYbrTZiG3PL1TLVXtPu92nE0ZFg/kztV2Aow3nJMN2gX9HLoOROnqwQjDKALACu+KApAA02EcPJoYXAW/pyBNwWMQmuay5v1HDauh5DOKs0TQiEJBI5ib3RWg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lzeLJ+Mk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CLM0aR9e"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 604121F000E9;
-	Wed, 22 Jul 2026 15:42:51 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lzeLJ+Mk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D900D1F000E9;
+	Wed, 22 Jul 2026 15:52:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784734992;
-	bh=z8WqCRRmqZNU6m++x/hJd+wI7SHuI+FdIhlbamrdG1A=;
+	s=k20260515; t=1784735575;
+	bh=ufiVbs4gFZoTgyjZH/ZnFnJ99kcRuL/B6RsmsdF3mq8=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=CLM0aR9eFhPZ9spOJaHdGqkYPBvjwdadVJYlKZTl2YKiFfjcVhRSxPh1PIcdSZLqF
-	 2uDQVrjKOL7KmFktl7pClbl7cKII+MRZc9/6UaOyQfALqfqRWzhAtz2P2hISt6DjII
-	 CWqB/cDSvIql3IGoYwtilPu5JaZMRbvxlUgx/GqldGAVbyRwWh0ci6cxI6Nrz0fqLU
-	 /E1KAynocQ7mEgmRpP4IShX5p2k0UIxlo2mteluahBk9DcIHRIpb9ZDQ/ba/6DRjn5
-	 oYakHop6ZZ+DFl5M5Rcin/qKgqClJMkqtRONWZt8Qxm6ThTbv5R0wMwmL93ssw6GKd
-	 eiwmeo4mk1lEw==
-Message-ID: <2eb7b45e-0bf6-4b09-9b8a-ecc0f57f2c39@kernel.org>
-Date: Wed, 22 Jul 2026 17:42:49 +0200
+	b=lzeLJ+MkKsdPmOuFrEroytGywJNyjc5go9z+BRGANnrrerkTLT/cUGS0MryhpCrCz
+	 JdnKkJXBXQDM1y9cnTXkAr+L8PkN74T9bfVYvVLVxwI2l26MDbErHm0dHSRnCdonnL
+	 RS8BbhjVo2GZtG/uKLPlYNjbwXf0EqigSTo9sTrTgwAXfegti5hbCb82Ksax3+7W+n
+	 QT+A4kOxO47PX305QOEXl/P2XsuHb7+PKLUJ9j688+bgVNRQrqfPt/YGk7hqqkhk7v
+	 RW33FQF/uI3VdGs/EfFg+aU8yARX/BME5FRohcAXZwHejlJ9HpNhFnfFCSrg51Y2pZ
+	 5PZGfjggIWn2Q==
+Message-ID: <f241a140-cb65-4a77-8dc9-dfa450b2e0fa@kernel.org>
+Date: Wed, 22 Jul 2026 17:52:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -35,7 +35,8 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 08/13] mm: introduce vma_get_page_prot() and use it
+Subject: Re: [PATCH v2 09/13] mm/vma: update create_init_stack_vma() to use
+ vma_flags_t
 Content-Language: en-US
 To: Lorenzo Stoakes <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -101,9 +102,9 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  nouveau@lists.freedesktop.org, linux-tegra@vger.kernel.org,
  virtualization@lists.linux.dev, intel-xe@lists.freedesktop.org,
  xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org,
- linux-sound@vger.kernel.org, Jani Nikula <jani.nikula@intel.com>
+ linux-sound@vger.kernel.org
 References: <20260711-b4-vma-flags-mm-v2-0-0fa2357d5431@kernel.org>
- <20260711-b4-vma-flags-mm-v2-8-0fa2357d5431@kernel.org>
+ <20260711-b4-vma-flags-mm-v2-9-0fa2357d5431@kernel.org>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
 Autocrypt: addr=vbabka@kernel.org; keydata=
  xsFNBFZdmxYBEADsw/SiUSjB0dM+vSh95UkgcHjzEVBlby/Fg+g42O7LAEkCYXi/vvq31JTB
@@ -144,23 +145,22 @@ Autocrypt: addr=vbabka@kernel.org; keydata=
  NcaZ+c6J4H+nEJGi2SkHAUJz5oBzuThvPudLvPA/SK8sKoM01IRxSihev/S/5WLazXB1PGem
  OCbvzC1IjWJJraxiDJ5IygokapUa2RP7+WBR22skQ3SSl6G107QgWKSyTOGWEaRmV53vxQLV
  jXuCmzSSasTL60zq5yGrT4/DYQVSNEUiUbG4pYekxJujNeEDkUlky0Y=
-In-Reply-To: <20260711-b4-vma-flags-mm-v2-8-0fa2357d5431@kernel.org>
+In-Reply-To: <20260711-b4-vma-flags-mm-v2-9-0fa2357d5431@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 7/11/26 20:45, Lorenzo Stoakes wrote:
-> There's a large number of vm_get_page_prot(vma->vm_flags) invocations. Make
-> life easier by introducing vma_get_page_prot() parameterised by the VMA.
+> Replace use of the legacy vm_flags_t flags with vma_flags_t values in
+> create_init_stack_vma().
 > 
-> This also makes converting vm_get_page_prot() to vma_flags_t easier.
-> 
-> Also update the userland VMA tests to reflect the change.
+> As part of this change we add VMA_STACK_EARLY and VMA_STACK_INCOMPLETE
+> vma_flags_t defines, and slightly rework create_init_stack_vma() for
+> clarity.
 > 
 > No functional change intended.
 > 
-> Acked-by: Zi Yan <ziy@nvidia.com>
-> Acked-by: Jani Nikula <jani.nikula@intel.com> # for i915
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de> # for DRM
+> Reviewed-by: Zi Yan <ziy@nvidia.com>
+> Reviewed-by: Lance Yang <lance.yang@linux.dev>
 > Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 
 Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>

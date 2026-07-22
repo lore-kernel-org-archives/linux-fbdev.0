@@ -1,232 +1,148 @@
-Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
+Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazon11012053.outbound.protection.outlook.com [52.101.126.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9CAB35C183;
-	Wed, 22 Jul 2026 06:30:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.56
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784701859; cv=none; b=iwTbrTmQ7tJMMqAOJaNqE2RzC4WsyeAb2XAGEQx5ujt359CHUr5nnjNoH6qGd3uA4ExG/O11p3FvGNrp/ZrmLSCVdZP200MALzyrxd8W5kvA0GD7oCHeyLz2bCdRtvU/D4G3aTTU8J8bUc0OMJiRVr81iAGjb/x6azohosstEq8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784701859; c=relaxed/simple;
-	bh=VRVJgeWJkN6pOa6QfDnWbD3axb8vtIkbwfDQLtR6L4w=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KQSE6bSoFihDRc+iZFWp3ldcFyJsM4T5eu1clrTFJuzhTtacH55XnvqJr447zFXOIQdSejlluBTUbyDjw8jxLszV3Ht+PNdMA3m4NZ9HaYuL6qZZqiCBCF5/6MZ1gGHHg1kANagGo+2phwiq2MhQpczR77WD9V+KPjMMCsqEXwI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=none smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=huaweicloud.com
-Received: from mail.maildlp.com (unknown [172.19.163.170])
-	by dggsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4h4krd5xr1zKHMRH;
-	Wed, 22 Jul 2026 14:30:09 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.112])
-	by mail.maildlp.com (Postfix) with ESMTP id 1AAAC40561;
-	Wed, 22 Jul 2026 14:30:53 +0800 (CST)
-Received: from huaweicloud.com (unknown [10.50.85.155])
-	by APP1 (Coremail) with UTF8SMTPSA id cCh0CgCX8W2bY2BqWgB7CA--.42682S4;
-	Wed, 22 Jul 2026 14:30:52 +0800 (CST)
-From: Zizhi Wo <wozizhi@huaweicloud.com>
-To: simona@ffwll.ch,
-	deller@gmx.de,
-	tzimmermann@suse.de,
-	sam@ravnborg.org,
-	ville.syrjala@linux.intel.com
-Cc: linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	yangerkun@huawei.com,
-	chengzhihao1@huawei.com,
-	wozizhi@huawei.com
-Subject: [PATCH V2] fbdev: Fix out-of-bounds access when rotating console after font resize
-Date: Wed, 22 Jul 2026 14:22:16 +0800
-Message-ID: <20260722062216.2574546-1-wozizhi@huaweicloud.com>
-X-Mailer: git-send-email 2.52.0
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD45144AB6A;
+	Wed, 22 Jul 2026 06:57:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.126.53
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1784703446; cv=fail; b=tiBZQXcC5ChLCBJLMqKMm4Mwrmbosvxt0CKCTDsEpwZFbZhLMLpnb6ixxK4KEclWsRtI0XUYzB7Ya1RGBsrtLz2GRN1ZNje4SKYIU+XoUweB7hxTxvKGH63oU03XtAO+7iuu7SslkoYSHKvtX/zH2K90WUSTGJBuFN1Tdq7L1QA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1784703446; c=relaxed/simple;
+	bh=UOmD88/3z54w+EA3ia4nmQwzma/GafbeeRgMA/DjMm4=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=XuluNG116M7uVPMEqW4mSWzpTINP4jx7M6GRz0QDgQVuSf73Gap6z8QS7YI464GeefZAiKj6ibZHKNQScuoog0B/6/zsfxqCcZOEafNyliFQtJ5uzHhzusuam9tqFtfv84TXUuFhdOgtgOid4Q+VWTRJYfS/R3fBAixD3qBHj/E=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=UOkU8yuB; arc=fail smtp.client-ip=52.101.126.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=vivo.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="UOkU8yuB"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=LG8fC6uboCkDojSxdhVkwxSAf6PwqmaD29kRfYx0FtdYUG9/ZXgavwGuNlTmZ5AguwjrrRRZmKo6kqZPaARo/KifsHCbZTo8Dzx7Oyj9c02yAHYzSmz0C63+dbxagFo/zhJcT+BJc5vfhvZ8W6HUz3GbVHgq9JpNhDJeKohVdCoPlCTvFJ8gEPLoV3bkPBvCwtuqXiharDXa4xHakkMS+hC223IqiX4uB2ET4q4y0YN1drut2VdMBJWRIQkCV9FAmaiB15yECHq+hLtZHqjLB3FcQStGvLjvJWsrAY26jIM55KGwSLS2Qj5Xyvpxya8A6f6ZDe85ONtbxfHJgrInmg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=NPJYAulmgxtDwd04OtbMV0I9ljJr4lfhPbBaJqyPiKI=;
+ b=LbcAR7LGr8rpwq+YjQFg2JHBVliKCYDQ9mVrJtoEGEts3Ta9GrUpPj1VAhUETPcGGq1QCht1Q8WLvI4abLejVGAQzN5Mg+HY98bU7bKqwO0WaKxB7oQSIXxPrWI8qnc3dvBYuddPmJeDo7E4+o3+aQuTeHP9xDX4L2Cb0HOpP+HpZajulXLPG7ePmMpmsjRFy4JdQJStHvYUIkRKPjb2kk21H4T9pNIZ/L/e892pk3Uvn4VaNrMN6Ce8I+4DsZeXEnHa0YXEGXrXqWjpBe1UwiGPZ+XMGAcikaTq4FjJLs8DdjvFtbe++ZHvu1tfYVF+/elgYuWZCoNFdk8RZ3YAFQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=NPJYAulmgxtDwd04OtbMV0I9ljJr4lfhPbBaJqyPiKI=;
+ b=UOkU8yuBlC0mH4isjlC45FmpnR6Hye2BIFZzK5F3aN0VhIlpAk1d7Jbh9fw98KuIHkv6m1AoXqhvHkDUqVJgRcp8CFJeexKXV8sJ2wrYkhUrngpxFLlBJsOu0NnbZDZLm7GEqdMJXlG+gJW37h0pBsS52BMv8Y3FHIiaiQvjdgLmenAA1OErxw074NAVpIKSqRr7Pv9RgMC3veySkKKWd7XVogk6FtbGnoDY+ZMyqH7oc+pjV4vkpw4F71Mzi8TYLPlGmNjNCa2QWFBJTUjrnATX+OvZ5tAIltk/TwIVw7JGl4PD5g+nSMyqnx/M+LXElnw0/x9GsUsnf0dugGvKCA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SEZPR06MB5832.apcprd06.prod.outlook.com (2603:1096:101:c8::12)
+ by SEYPR06MB5014.apcprd06.prod.outlook.com (2603:1096:101:3f::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.245.10; Wed, 22 Jul
+ 2026 06:57:19 +0000
+Received: from SEZPR06MB5832.apcprd06.prod.outlook.com
+ ([fe80::f98:5e32:4ccb:d07b]) by SEZPR06MB5832.apcprd06.prod.outlook.com
+ ([fe80::f98:5e32:4ccb:d07b%6]) with mapi id 15.21.0245.009; Wed, 22 Jul 2026
+ 06:57:19 +0000
+From: Pan Chuang <panchuang@vivo.com>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	linux-arm-msm@vger.kernel.org (open list:ARM/QUALCOMM MAILING LIST),
+	dri-devel@lists.freedesktop.org (open list:BACKLIGHT CLASS/SUBSYSTEM),
+	linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER),
+	linux-kernel@vger.kernel.org (open list)
+Cc: Pan Chuang <panchuang@vivo.com>
+Subject: [PATCH] backlight: qcom-wled: Remove redundant dev_err()
+Date: Wed, 22 Jul 2026 14:57:08 +0800
+Message-Id: <20260722065709.346072-1-panchuang@vivo.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: TY4P301CA0101.JPNP301.PROD.OUTLOOK.COM
+ (2603:1096:405:37b::8) To SEZPR06MB5832.apcprd06.prod.outlook.com
+ (2603:1096:101:c8::12)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:cCh0CgCX8W2bY2BqWgB7CA--.42682S4
-X-Coremail-Antispam: 1UD129KBjvJXoWxKFy5AryUGry8JryfGF43Awb_yoW7trWUpF
-	12kr17Krs0q3Z3Zr4qgr45uF1aqw4DJry5WrZ3t3WYya45ZFWvv3ZrJFyDurW8urn3Cryr
-	Z3WrKrW2kayq9aDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUv2b4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k2
-	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4
-	vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Jr0_JF4l84ACjcxK6xIIjxv20xvEc7Cj
-	xVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x
-	0267AKxVW0oVCq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG
-	6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFV
-	Cjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0E
-	n4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I
-	0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWU
-	tVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcV
-	CY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAF
-	wI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa
-	7IU17KsUUUUUU==
-X-CM-SenderInfo: pzr2x6tkl6x35dzhxuhorxvhhfrp/
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SEZPR06MB5832:EE_|SEYPR06MB5014:EE_
+X-MS-Office365-Filtering-Correlation-Id: b250ac26-c653-45b4-9a60-08dee7be78a8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|52116014|23010399003|366016|1800799024|38350700014|18002099003|56012099006|6133799003|11063799006|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	+pU9oL4VR6/jkOsa/Bc/PMVpBARUcsXK+6Kh1Z9DBivPDl1VzT08jeXH+XtTxzudxUrD3uwnmpD8PA5GNZelrSgV+I+muyh7l8hkjx62qnt/NKv4suolIV9BzYXzWITsKnIi37ehaFEvG75HGUTgvf7Ry6NFrBn2ZMeR385hPQbV1IhyzLaYxRdXw0T+lJW2+3J+6p6zMxG4HxLqyZ8AzAnmvhUi7Prf8PJGRE1G/ZuXoopRAQJlZvEi83+clssYNuRdQuOrx9d3w1vxaAbVJ+6eSXrTowXHFMUQwaFlkFkQvia179Xqr4/DAFb/JHyCbW5BCTLSzSYp6s2ZWuIQUQJgKE9lguS9BLrYuo8D3qtYeEC2avKrAT9DkVBj1rHTXXrdd5ZISAjJxSF8Pj+Rqu/BiVI38zZ7EBAiDT+zCqQTo8zxGYwPzcaMgOZFV4Gf8UiyAxAsPHbYQuB7+rHLtpdvlQVSyN7As8UTiU7bBHho8pTpgXRRZSjCnNGUplTC4zygXP6wc8TlKAA8ZX2NE8AWTPUeGF1iHGkV+H4EwbO9YF7bmM+mQUSENoJm7VbFlW9YNP45WEhhzN124hOzn8SKC5qKzkQg+SBILQFlaEJPsWXmulPoIvMkhTasIDItCn5OFnaWyt3X/wpEhEzp4pHIl9IoWjUXpserQGmm2gYtx8z8xS27Xa38OTJDfgmlYcVi6WLrAwKB5BpQ9IdqiKKjzDhq+w5Bx51Fi+fMzAk=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5832.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(52116014)(23010399003)(366016)(1800799024)(38350700014)(18002099003)(56012099006)(6133799003)(11063799006)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?A1kqtMYfl/nSLYdcYIwaIJf2uW6PdtlOZCBm3q4sTzbzbfHXY24jzEGv+17i?=
+ =?us-ascii?Q?9DtjhMzsaZ609ePrjbB3iKP07tvqPcMW8/34EELKj4N8hJiFY0Try9HxnGuT?=
+ =?us-ascii?Q?3cytOwNiUcUUQjJVY76HH2F2GISDmgVrZZLswh0CQ/9NE1iR4zNMSOdTAzLj?=
+ =?us-ascii?Q?DVLg8s3y/b3cjvIomrCsvbNhnCSSy6olxFBba2QcmRkWj7wwDClWQU3otufv?=
+ =?us-ascii?Q?5hc1TRfYl9AYNESFJlpD3flriskP379lPCVDurmhLDPDj7HR22W1V+1lzBU/?=
+ =?us-ascii?Q?GKfXorZJrMAVxbS0DoGVhAuQqMrcHVEt+vlW2J8YMSNtonivJsYOvjRPAEQ7?=
+ =?us-ascii?Q?fGoN1eNSHwHdIkMivQPR10Vnf1JkN6MfWspMNC7ASqOKrPdK9wiwgRE0y1OY?=
+ =?us-ascii?Q?n5N1wjtJc9wI5/4st9s9Qq9idhyLQx/4Gb6DT1ZPkA9tZLD9ivJfPAraa7kf?=
+ =?us-ascii?Q?l79rX0+3MP6xTdgzvin4LxeW0Eh3RKmpXI48+JOMeSIuBm8JXyrebRHb5FpJ?=
+ =?us-ascii?Q?AQDqMnvkCIvk8hJSrrNRxJKbNjpaLy9P9tvqwcJf9CYIHDLjZoda3SmCY9kg?=
+ =?us-ascii?Q?IXVzGEu+wm7Bh3aIq4covln4KT6frTJxKuFbJsHuYu/SCtU9hHD6V35kzO1s?=
+ =?us-ascii?Q?aNEMNOKERQrV/HPAxdiHQEYO864ZaoRmdiSgRrCJBBtQUOoCpH63A3khV5Xc?=
+ =?us-ascii?Q?AFvOeYUu3XyAHBYSu7BOLEnKedfD5LXqsFCAEZrQMFhT+B+vrQueZnBBbzx6?=
+ =?us-ascii?Q?r95N3mCvN+Q1lvfIEUNLfujyXxrsTNs9SSMI/dIDoBEzAfAdQjEJ7MAjSGw3?=
+ =?us-ascii?Q?3RJKERjUjynxE3WTeuDL7lSvRhoYTsQ1FTrTN/q7PFsfUInu2l+IB7LD0eHt?=
+ =?us-ascii?Q?igmGoSxl/kBDpgW17p4SaYCpabcjIoJMBzgX3h3wmHgfg+JK3ISwwctEU7Xj?=
+ =?us-ascii?Q?f59h8Cgj6ZUy59haekUKCbDofL9WaAe8zBwlVbKWJFTC6ahkahF+40P1lHrF?=
+ =?us-ascii?Q?BmplZVsEyM+HJtK926NC8A4AnvetGAzSEM81XQXZTo6wGg+nMsM165WZKOA/?=
+ =?us-ascii?Q?Qbft1uHb3dLmdSQuKdbGgf3zFALhn2VpcIfajv3/75W+gRBLZo37Wz4QhFfB?=
+ =?us-ascii?Q?iErVem2u8AeVXwHKi0SijyKHJyOr9G8keq6SkoyWAo4DWDJY+E2FWPrDnHfT?=
+ =?us-ascii?Q?w+EvwmpmVHwQpvgrkSJCpIJNG0Dd6RPZnYVsbdTk2ZTgO3fBAZcnYLDuSCnH?=
+ =?us-ascii?Q?YX2TFvow3juF6CZS8cg/23afFz8yNaO/fcGPmKsHnthJqyNUKZQVI66JuqjC?=
+ =?us-ascii?Q?Q6sg8bvncsb2Y+2PjygxpQkYy6x7FljMr7ixGPDDd9eEKCQbdWzs7LJrc798?=
+ =?us-ascii?Q?q2yNkWaYgzoqY5/4SQ3q6xzhMXZOaEUetm4IRJLHFE668Kwz4CPp0dut6EfU?=
+ =?us-ascii?Q?Oidt5SQfgMNlRlPAYJHwFY/aLY/9tmZGuwot6PblsDIprwCV2xgiAMnWiPgH?=
+ =?us-ascii?Q?2na8G9hiTS0e9NXptnH3mcPku8wVpR5fZFxu3GvN27vSvWsgYFDeRjuoL+PJ?=
+ =?us-ascii?Q?8EMH5Oiz/es3X8ddGF4ppFnCqMNimT4PrFYhpGwMbhOCK1VialTmI2V12NXp?=
+ =?us-ascii?Q?+D9MB8WvT1GvPrXyNOnS3UN43nrMq4/MFz3UucySe75qaspXlDXYzzDndM5T?=
+ =?us-ascii?Q?3d4Os0zUvb2C7/cxsZvCUDHpbtkiJGj4cSL6XnTuzNcXxU5LDDvGlOEn9rdo?=
+ =?us-ascii?Q?FLoliGe25A=3D=3D?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b250ac26-c653-45b4-9a60-08dee7be78a8
+X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5832.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Jul 2026 06:57:19.0091
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ALs3fESBj/oCnDmgi3qJp36EIwHN00CpCNOqWu73dgyi4Y79lwUIwZXFWTIsgQdj0G8Hne6Gs1k0oquNhyi7Ow==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR06MB5014
 
-From: Zizhi Wo <wozizhi@huawei.com>
+Since commit 55b48e23f5c4 ("genirq/devres: Add error handling in
+devm_request_*_irq()"), devm_request_threaded_irq() automatically logs
+detailed error messages on failure. Remove the now-redundant
+driver-specific dev_err() calls.
 
-[BUG]
-Recently, we encountered a KASAN warning as follows:
-
-BUG: KASAN: slab-out-of-bounds in ccw_putcs+0x8bd/0xa80
-Read of size 1 at addr ff11000110067100 by task bash/1209
-CPU: 10 UID: 0 PID: 1209 Comm: bash Not tainted 7.2.0-rc3 #69 PREEMPT(full)
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.17.0-4.fc41 04/01/2014
- Call Trace:
-  <TASK>
-  ...
-  kasan_report+0xf0/0x120
-  ? ccw_putcs+0x8bd/0xa80
-  ccw_putcs+0x8bd/0xa80
-  ? __pfx_ccw_putcs+0x10/0x10
-  fbcon_putcs+0x338/0x410
-  ? __pfx_ccw_putcs+0x10/0x10
-  do_update_region+0x21d/0x450
-  invert_screen+0x29d/0x5e0
-  ? __kmalloc_noprof+0x493/0x640
-  ? vc_do_resize+0x17c/0xe50
-  clear_selection+0x4c/0x60
-  vc_do_resize+0xaee/0xe50
-  fbcon_modechanged+0x2bd/0x640
-  rotate_all_store+0x298/0x380
-  ...
-
-reproduce:
-1) issue two ioctls: first a KDFONTOP ioctl with op.op = KD_FONT_OP_SET,
-op.width = 1 and op.height = 1, then a TIOCL_SETSEL ioctl
-2) echo 2 > /sys/devices/virtual/graphics/fbcon/rotate_all
-3) issue two ioctls: first a KDFONTOP ioctl with op.op = KD_FONT_OP_SET,
-op.width = 8 and op.height = 1, then a TIOCL_SETSEL ioctl
-4) echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
-
-[CAUSE]
-The root cause is that fbcon_modechanged() first sets the current rotate's
-corresponding ops. Subsequently, during vc_resize(), it may trigger
-clear_selection(), and in fbcon_putcs->ccw_putcs[rotate=3], this can result
-in an out-of-bounds access to "src". This happens because par->rotated.buf
-is reallocated in fbcon_rotate_font():
-1) When rotate=2, its size is (width + 7) / 8 * height
-2) When rotate=3, its size is (height + 7) / 8 * width
-
-And the call to fbcon_rotate_font() occurs after clear_selection(). In
-other words, the fontbuffer is allocated using the size calculated from the
-previous rotation 2, but before reallocating it with the new size,
-con_putcs is already using the new rotation 3:
-
-rotate_all_store
- fbcon_rotate_all
-  fbcon_set_all_vcs
-   fbcon_modechanged
-    set_blitting_type
-    ...
-     par->bitops = &ccw_fbcon_bitops
-    vc_resize
-    ...
-     clear_selection
-      highlight
-      ...
-       do_update_region
-	fbcon_putcs
-	...
-	 image.dy = vyres - ((xx + count) * vc->vc_font.width) [1]  // overflow!
-	 ccw_putcs_aligned
-	  // old buf size is still being used during the read!
-	  src = par->rotated.buf + (scr_readw(s--) & charmask) * cellsize
-	  fb_pad_aligned_buffer----[src KASAN!!!]	[2]
-	  info->fbops->fb_imageblit(info, image)
-	   sys_imageblit
-	    fb_imageblit
-	     fb_address_forward
-	      // offset: image->dy * bits_per_line + image->dx * bpp
-	      unsigned int bits = (unsigned int)adr->bits + offset
-	      adr->address += (bits & ~(BITS_PER_LONG - 1u)) / BITS_PER_BYTE	[3]
-	     fb_bitmap_imageblit
-	     ...
-	      fb_read_offset	// page fault!	[4]
-    update_screen
-     redraw_screen
-     ...
-      ccw_cursor
-       soft_cursor
-        memcpy(src, image->data, dsize)----[src KASAN again!!!]	[5]
-     fbcon_switch
-      fbcon_rotate_font
-       font_data_rotate
-	dst = kmalloc_array(charcount, d_cellsize, GFP_KERNEL)
-       // the new size is allocated only here!
-       par->rotated.buf = buf	[6]
-
-[FIX]
-A fairly obvious approach is to follow fbcon_switch(): in
-fbcon_modechanged(), call rotate_font() before vc_resize() so that a
-correctly sized buffer is allocated in time, as done in [6]. This fix is
-necessary, but it is not sufficient on its own.
-
-In [1] it causes an image.dy overflow (ccw_putcs: vyres = 768,
-image.dy = 4294967040), because vc_cols has not been updated in time at
-this point (it is likewise only updated after clear_selection()). This
-allows (xx + count) * width to exceed vyres, causing image.dy to overflow.
-Subsequently, address in [3] is incremented by an even larger amount, which
-triggers a page fault at [4].
-
-Therefore, a second fix is required in combination with the first: move
-clear_selection() earlier, before set_blitting_type() in
-fbcon_set_all_vcs(), to prevent the out-of-bounds access. fbcon_rotate()
-has a similar problem, so add the same clear there. Since vc_is_sel() is
-not exported, the fbdev side is currently forced to call clear_selection()
-unconditionally, causing the global selection to be cleared prematurely.
-And this will not cause any other significant impact.
-
-Signed-off-by: Zizhi Wo <wozizhi@huawei.com>
+Signed-off-by: Pan Chuang <panchuang@vivo.com>
 ---
-v2:
-Fixed the issue by calling clear_selection() earlier, and updated the
-related description in the commit message.
+ drivers/video/backlight/qcom-wled.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-v1: https://lore.kernel.org/all/20250905024340.337521-1-wozizhi@huaweicloud.com/
----
- drivers/video/fbdev/core/fbcon.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 9f5c4c101581..3361479d139d 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2639,13 +2639,20 @@ static void fbcon_modechanged(struct fb_info *info)
- 	vc = vc_cons[par->currcon].d;
- 	if (vc->vc_mode != KD_TEXT ||
- 	    fbcon_info_from_console(par->currcon) != info)
- 		return;
- 
-+	clear_selection();
-+
- 	p = &fb_display[vc->vc_num];
- 	set_blitting_type(vc, info);
- 
-+	if (par->bitops->rotate_font && par->bitops->rotate_font(info, vc)) {
-+		par->rotate = FB_ROTATE_UR;
-+		set_blitting_type(vc, info);
-+	}
-+
- 	if (con_is_visible(vc)) {
- 		var_to_display(p, &info->var, info);
- 		cols = FBCON_SWAP(par->rotate, info->var.xres, info->var.yres);
- 		rows = FBCON_SWAP(par->rotate, info->var.yres, info->var.xres);
- 		cols /= vc->vc_font.width;
-@@ -2673,10 +2680,12 @@ static void fbcon_set_all_vcs(struct fb_info *info)
- 	int i, rows, cols, fg = -1;
- 
- 	if (!par || par->currcon < 0)
- 		return;
- 
-+	clear_selection();
-+
- 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
- 		vc = vc_cons[i].d;
- 		if (!vc || vc->vc_mode != KD_TEXT ||
- 		    fbcon_info_from_console(i) != info)
- 			continue;
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 8054e4787725..650dd95f06ef 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1639,8 +1639,6 @@ static int wled_configure_ovp_irq(struct wled *wled,
+ 				       wled_ovp_irq_handler, IRQF_ONESHOT,
+ 				       "wled_ovp_irq", wled);
+ 	if (rc < 0) {
+-		dev_err(wled->dev, "Unable to request ovp_irq (err:%d)\n",
+-			rc);
+ 		wled->ovp_irq = 0;
+ 		return 0;
+ 	}
 -- 
-2.52.0
+2.34.1
 

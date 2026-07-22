@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A1AA3655CC;
-	Wed, 22 Jul 2026 14:36:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4358343BDD4;
+	Wed, 22 Jul 2026 15:43:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784730980; cv=none; b=RiZ8MVPkr9HEa/pLhRlbUkL5+U0lKgpLtCPtTeXBR4dbT556R1kGqvX0vMNcBEW0y2VMrUDakfQctMWdYaHZEbiEnxczdPEXZtkJq0XDRABM+d1oTU+ibQjTTdsVHy+2eAiBzmwJLU3OT8gkew0vhBmVYzD8kHlh6O1LNGq98jY=
+	t=1784734994; cv=none; b=QU0KVXHKBUo8o9Olx8WgiHXzyXMcpAcqx+XHfsABmG0gP2O/ClFs/NIAHJcWBk7yQUfTMrww3Cal/k+zTkTQn+jjLCJUX4uTxCn/ezxFTjVRYn4hm+7cRCWZut6JAkTUpShQ0npeLTBDUQFoM1Ul5nD5eh8i128CfCY8KEE2zY0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784730980; c=relaxed/simple;
-	bh=OzKhpL/xCcLDtrs/vE76e2SHBeM0GhDirW4fjbn1y10=;
+	s=arc-20240116; t=1784734994; c=relaxed/simple;
+	bh=mBFLFVFffpX3sBe5RLViCnoS1wBcAEUdd0R2wLYoPDI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=sR3TEdhtjEZt878lnhmnTR+JGi5gjPJJtuHZRaeROGUqfhDJVTdizEBE8rel85DLdY21kovf4sj7wbuubb7zbZzZ2eFeYPCzbvPyFX8zILQRi9Mu2VBvUh0ZQlMXMtZKMAbzfWi2IDOZby/dqPSM56dDh2Zs+7t6OsnadaSJLGg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=cFGra5uf; arc=none smtp.client-ip=100.103.45.18
+	 In-Reply-To:Content-Type; b=Sz+68OJbPlhebZglF/y0swNsmOoFCX7aC/SlYKFYsxbU6UTZWeVxtjsE2Qio9YnKvu0vEsKgOnsXdWHiWVcIWveLJjCdNkmg5wdFLSQS3kT7TO08EImrXldeqnFQnduCL0/plEouKJD05m0enJGM44wzXQ46ktEQC6RQ7euvoKs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CLM0aR9e; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="cFGra5uf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A298F1F000E9;
-	Wed, 22 Jul 2026 14:36:01 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CLM0aR9e"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 604121F000E9;
+	Wed, 22 Jul 2026 15:42:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784730979;
-	bh=rncOYEHNQZnCerUEAUIKUY0kxzd/Rst4GSYy3YkGBiE=;
+	s=k20260515; t=1784734992;
+	bh=z8WqCRRmqZNU6m++x/hJd+wI7SHuI+FdIhlbamrdG1A=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=cFGra5ufilocIuJfM8gSzW60rH5UffaGWTjVoku9icCvdKfbGshoBgtpoU9J4TBAR
-	 Ns3ac9kv1Th/g54QOx5z56SLMZe2ySiEIv65XpPoMjA3UFpsdZzi0oJqofN4x98D2p
-	 m4lZ9oMMil7zMd9k9+rzQMvGQdzHReyfYjjBBm955F4gkk4KFjIQOOT/mPUzrrmxtD
-	 43IiL1O3Fmq0qqGqb9k2MDnCWisp77KJ0x6mk3tstlzQOGQrq1aJdtHXn8pW6ulVrO
-	 jeZk5ldH2UFluVUmoTqWL6jsrRH19TDzr1NKw9PWN4J5MDMUhRoM2zp1AiEyGdBH8q
-	 UANALHWmfhrFQ==
-Message-ID: <7b43e8e2-eb03-4c44-b7a9-1f0640141612@kernel.org>
-Date: Wed, 22 Jul 2026 16:36:00 +0200
+	b=CLM0aR9eFhPZ9spOJaHdGqkYPBvjwdadVJYlKZTl2YKiFfjcVhRSxPh1PIcdSZLqF
+	 2uDQVrjKOL7KmFktl7pClbl7cKII+MRZc9/6UaOyQfALqfqRWzhAtz2P2hISt6DjII
+	 CWqB/cDSvIql3IGoYwtilPu5JaZMRbvxlUgx/GqldGAVbyRwWh0ci6cxI6Nrz0fqLU
+	 /E1KAynocQ7mEgmRpP4IShX5p2k0UIxlo2mteluahBk9DcIHRIpb9ZDQ/ba/6DRjn5
+	 oYakHop6ZZ+DFl5M5Rcin/qKgqClJMkqtRONWZt8Qxm6ThTbv5R0wMwmL93ssw6GKd
+	 eiwmeo4mk1lEw==
+Message-ID: <2eb7b45e-0bf6-4b09-9b8a-ecc0f57f2c39@kernel.org>
+Date: Wed, 22 Jul 2026 17:42:49 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -35,8 +35,7 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 07/13] mm/vma: rename vma_get_page_prot to
- vma_flags_to_page_prot
+Subject: Re: [PATCH v2 08/13] mm: introduce vma_get_page_prot() and use it
 Content-Language: en-US
 To: Lorenzo Stoakes <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -99,12 +98,12 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  dri-devel@lists.freedesktop.org, etnaviv@lists.freedesktop.org,
  linux-samsung-soc@vger.kernel.org, intel-gfx@lists.freedesktop.org,
  linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
- nouveau@lists.freedesktop.org, linux-rockchip@lists.infradead.org,
- linux-tegra@vger.kernel.org, virtualization@lists.linux.dev,
- intel-xe@lists.freedesktop.org, xen-devel@lists.xenproject.org,
- linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org
+ nouveau@lists.freedesktop.org, linux-tegra@vger.kernel.org,
+ virtualization@lists.linux.dev, intel-xe@lists.freedesktop.org,
+ xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org,
+ linux-sound@vger.kernel.org, Jani Nikula <jani.nikula@intel.com>
 References: <20260711-b4-vma-flags-mm-v2-0-0fa2357d5431@kernel.org>
- <20260711-b4-vma-flags-mm-v2-7-0fa2357d5431@kernel.org>
+ <20260711-b4-vma-flags-mm-v2-8-0fa2357d5431@kernel.org>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
 Autocrypt: addr=vbabka@kernel.org; keydata=
  xsFNBFZdmxYBEADsw/SiUSjB0dM+vSh95UkgcHjzEVBlby/Fg+g42O7LAEkCYXi/vvq31JTB
@@ -145,21 +144,23 @@ Autocrypt: addr=vbabka@kernel.org; keydata=
  NcaZ+c6J4H+nEJGi2SkHAUJz5oBzuThvPudLvPA/SK8sKoM01IRxSihev/S/5WLazXB1PGem
  OCbvzC1IjWJJraxiDJ5IygokapUa2RP7+WBR22skQ3SSl6G107QgWKSyTOGWEaRmV53vxQLV
  jXuCmzSSasTL60zq5yGrT4/DYQVSNEUiUbG4pYekxJujNeEDkUlky0Y=
-In-Reply-To: <20260711-b4-vma-flags-mm-v2-7-0fa2357d5431@kernel.org>
+In-Reply-To: <20260711-b4-vma-flags-mm-v2-8-0fa2357d5431@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 7/11/26 20:45, Lorenzo Stoakes wrote:
-> Having vma_get_page_prot() refer to VMA flags and vma_set_page_prot() refer
-> to a VMA is confusing.
+> There's a large number of vm_get_page_prot(vma->vm_flags) invocations. Make
+> life easier by introducing vma_get_page_prot() parameterised by the VMA.
 > 
-> Rename vma_get_page_prot() to vma_flags_to_page_prot() to resolve this
-> confusion.
+> This also makes converting vm_get_page_prot() to vma_flags_t easier.
+> 
+> Also update the userland VMA tests to reflect the change.
 > 
 > No functional change intended.
 > 
-> Reviewed-by: Lance Yang <lance.yang@linux.dev>
-> Reviewed-by: Zi Yan <ziy@nvidia.com>
+> Acked-by: Zi Yan <ziy@nvidia.com>
+> Acked-by: Jani Nikula <jani.nikula@intel.com> # for i915
+> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de> # for DRM
 > Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
 
 Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>

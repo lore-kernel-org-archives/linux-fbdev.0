@@ -1,84 +1,100 @@
-Received: from mail-ot1-f71.google.com (mail-ot1-f71.google.com [209.85.210.71])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ED46199920
-	for <linux-fbdev@vger.kernel.org>; Tue, 21 Jul 2026 20:32:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.71
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 700D62236EE;
+	Wed, 22 Jul 2026 01:25:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784665965; cv=none; b=Eemqtg09XNGv9dBeo4amaJ4G7ICJmHtvLvtX46FZhVFanoOuoOg/iqZX0GLP3bFFfOMy5HGjtV6Zsfh4VJf487VsllHfANjnJvPle+FgTidMT5nmBEnzsBu2nDOBBjavFvRAYKQ0E8SydG8qGcz5xPYEcRhfYGQP2j4wfd/qLVc=
+	t=1784683529; cv=none; b=tAcpnRhXaJiT9eOWSj4N0D6FsnxzZhP7t0MRF2+NIdhyjcqciJFUGP9EJZ4uMh3ABWQ5MCTXdDLJwuilUE/dROadOccMu627DpUoTQ0sz7uzBmgkl2NPlhLfdWsOs+GbZKifUcbmVJNS821Nu9feDT6L69Owml9tLDd/DTY7rCM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784665965; c=relaxed/simple;
-	bh=qqM9zE4ndG0Y9nRMp8k421yz4StpVcIMMbR+JXMrwWY=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=H7p8tGSzPlLWIENQanWJhAPtkq6o8MlAw5OFxMi5Qq6iCRU5Nz8aBgg76fjl3wJ9OtQOC+rk+SrBQc25GPmwnlap5uasuJsag9mxg6lOVsHj9GD5DcAbQI1zWq7Qe7GqfcKwjI5jObsnDr4UfE0/UjddxdARcu+Bz5Yw+uNR+IU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.210.71
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-ot1-f71.google.com with SMTP id 46e09a7af769-7eb6a8c61deso8943906a34.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 21 Jul 2026 13:32:43 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784665963; x=1785270763;
-        h=content-type:to:from:subject:message-id:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=mhzdGWNIgCsOpXo2Hq0aKouupzEmWAxumDwrNCDD2uc=;
-        b=jfdKotJzDDQxocahaJCpz7AmQgH9RQlIrJiOlk68wm9ghJp135LCi8tXuLALOuacnU
-         YWdGxWxvsXzMXw+hmkKZ+Si5idgLThbZQv+ThlrqbI8vNbu9/7gt33b5NE78xNJwvy3l
-         msLwhzWSV9Hn5GHWCv/UNaYxB68796PbgCDkfXUoiabYdOGvU5aOaRDuU2Vgb8Fz71B7
-         eHP6u80HOHI7Gf+XV4hTEdByI2zhfUsG5es76o2/9Kze98IH6T9cOrXvXN5nxrdSPE1p
-         1ei5FJlW1qEsLYdewK9aHgQCV0MF7PAJjSD6oEWSHZnYEcX6LYiSids1UU0FAu6wFOdQ
-         KxEA==
-X-Forwarded-Encrypted: i=1; AHgh+Rqs0nJ1BR8xsT4nW5lw2ekoz343ugq9ZKWtuaczQuFUs/wyrTrln58je73Vuxsgo2LkDv5TaJU+Ky+7CQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxUhKRH7c447wIe/KqHyj8yZe/Mkzj6yVBhJet9WEGOAN62WZPR
-	BBAQLUO7Izt26ora8vVC/QX70aAHjqj38IaCHnms/mT2d/8xKLtwMWzwdWIXxz8MScJ9DSyjfK8
-	y2o7vkG1zKgzc/QmE15o/4kEylsvTd5QlyrjTVp8rwBkWpfQKB+OEGkGybIg=
+	s=arc-20240116; t=1784683529; c=relaxed/simple;
+	bh=ivTrIKDfkPt2OM3ODn/+YgLslgQIcl3AcMNyWAZ0tEg=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=XVL6kpMfTLkszTDWd7cgF6vEJuEJG899muSEYBN0tOf8HvAK2FMopJVi3EhKbLyKOm7hX3VgcuJPSdKGIwMNZOQlNhdkIYNp8Loh+ijhCg6lXmPcxm/8baZHeag0HhLeuL54nfeG474S0dokoZapFDGYgOP4WIhLE9xi7H7LneU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KrzEEtp8; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KrzEEtp8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D33A61F000E9;
+	Wed, 22 Jul 2026 01:25:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784683527;
+	bh=9JQDuIPMRGm1AZBtkGOnYehCcEprY2pwmL3Pl10VzPg=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=KrzEEtp8KLGRhZLa23sHMQkSZkQARgkrTuXfo7+bgykg941ep7a1dOer7hfDEdtgX
+	 i3a7qXPBxL70T8S1za8y3xhbo3oAhcysl8b3q/x+Hp1jqDCjELLOg8U6K6FyB1Y41e
+	 Si+HkdkALZdVWmLFnlhQlE5sQWHaecnD6xkgqYCXoL3zD54CMBfhxBMAlH2fVzyapP
+	 Wh4BbK9ygcdDC8Urom+mkq52dTiPfcv+bo2jD3/93YuLKhlgklT42L5YqtrFTin4hd
+	 +F8v/E0zhYxbeerwwElAK8OfuC45YCoj82cly3pJTTdOTTf4SoJs+C7D1feQiPJLGQ
+	 +zFV2rq62/DyA==
+Date: Wed, 22 Jul 2026 02:25:19 +0100
+From: Jonathan Cameron <jic23@kernel.org>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo
+ Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, David Lechner <dlechner@baylibre.com>, Nuno
+ =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>,
+ Helge Deller <deller@gmx.de>, Johan Hovold <johan@kernel.org>,
+ dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v5 06/14] mfd: lm3533-core: Remove redundant pdata
+ helpers
+Message-ID: <20260722022519.3b1e4fd3@jic23-huawei>
+In-Reply-To: <20260617080031.99156-7-clamor95@gmail.com>
+References: <20260617080031.99156-1-clamor95@gmail.com>
+	<20260617080031.99156-7-clamor95@gmail.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6808:3442:b0:4a4:c64e:c7e with SMTP id
- 5614622812f47-4a4d05984admr10840818b6e.30.1784665962954; Tue, 21 Jul 2026
- 13:32:42 -0700 (PDT)
-Date: Tue, 21 Jul 2026 13:32:42 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6a5fd76a.42649fcc.22d900.0007.GAE@google.com>
-Subject: [syzbot] Monthly fbdev report (Jul 2026)
-From: syzbot <syzbot+listc08b34ae2f4b2a2fb064@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hello fbdev maintainers/developers,
+On Wed, 17 Jun 2026 11:00:23 +0300
+Svyatoslav Ryhel <clamor95@gmail.com> wrote:
 
-This is a 31-day syzbot report for the fbdev subsystem.
-All related reports/information can be found at:
-https://syzkaller.appspot.com/upstream/s/fbdev
+> The lm3533_set_boost_freq() and lm3533_set_boost_ovp() functions are used
+> only in lm3533_device_setup(), which in turn is only called by
+> lm3533_device_init(). Incorporate their code directly into
+> lm3533_device_init() to simplify driver readability.
+> 
+> Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
 
-During the period, 0 new issues were detected and 1 were fixed.
-In total, 3 issues are still open and 30 have already been fixed.
+>  static int lm3533_device_init(struct lm3533 *lm3533)
+>  {
+>  	struct lm3533_platform_data *pdata = dev_get_platdata(lm3533->dev);
+> @@ -437,9 +396,21 @@ static int lm3533_device_init(struct lm3533 *lm3533)
+>  
+>  	lm3533_enable(lm3533);
+>  
+> -	ret = lm3533_device_setup(lm3533, pdata);
+> -	if (ret)
+> +	ret = regmap_update_bits(lm3533->regmap, LM3533_REG_BOOST_PWM,
+> +				 LM3533_BOOST_FREQ_MASK,
+> +				 pdata->boost_freq << LM3533_BOOST_FREQ_SHIFT);
 
-Some of the still happening issues:
+As you are touching this maybe get rid of the shifts and have one source
+of info on where the field lies in the register.
 
-Ref Crashes Repro Title
-<1> 6706    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
-                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
-<2> 1601    Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
-                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
-<3> 285     No    KASAN: vmalloc-out-of-bounds Write in fillrect
-                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+				 FIELD_PREP(LM3533_BOOST_FREQ_MASK, pdata->boost_freq));
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+> +	if (ret) {
+> +		dev_err(lm3533->dev, "failed to set boost frequency\n");
+>  		goto err_disable;
+> +	}
+> +
+> +	ret = regmap_update_bits(lm3533->regmap, LM3533_REG_BOOST_PWM,
+> +				 LM3533_BOOST_OVP_MASK,
+> +				 pdata->boost_ovp << LM3533_BOOST_OVP_SHIFT);
+> +	if (ret) {
+> +		dev_err(lm3533->dev, "failed to set boost ovp\n");
+> +		goto err_disable;
+> +	}
+>  
+>  	lm3533_device_als_init(lm3533);
+>  	lm3533_device_bl_init(lm3533);
 
-To disable reminders for individual bugs, reply with the following command:
-#syz set <Ref> no-reminders
-
-To change bug's subsystems, reply with:
-#syz set <Ref> subsystems: new-subsystem
-
-You may send multiple commands in a single email message.

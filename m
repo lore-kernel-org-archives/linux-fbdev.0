@@ -1,176 +1,145 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2768F23C8AE;
-	Wed, 22 Jul 2026 16:15:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D888349CC1
+	for <linux-fbdev@vger.kernel.org>; Wed, 22 Jul 2026 17:58:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.169
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784736934; cv=none; b=EUQq5FMzKE0H6ckrMq3m4/skkQ1WLdLqmjq+TvMpeckA/xtv4JfDDwZqv+8D1UxpJn0UhVlekj0Z2WWe/dxjySnVG3jnwMu+M5QVJ7o97Y9RGryrI3P8MoGRQbPm3iB+4TmDHSwKKzbcV462ql5uOJUprsW7/Ye2vqW28SMN6NU=
+	t=1784743123; cv=none; b=DGkjjf/p+n6QLo2rvkPR9xytPbcIhHiy27hbaP7U3yJQc+gKKo7MYIBuHP3qPvj6lmUdrDVc9w/hKvX3eSQxz2Sx6mtDGyxzbH4NuaffFeD2DYgwr59irH6IgyDPev2wnclCG/2MelYiTq9kcSfSHGQvf4s1ZnHf8R69NMqtN4E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784736934; c=relaxed/simple;
-	bh=l6waauqbvZ9fTvDHa+GP5PMKycTldx9oe0/F+z40GQs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=g2RVo/RLup9SkuhwmYpA59XLVS3Qf0Bf9Ju8qVvqRnpeIZzQG9M7xAZr50sMbcD+5D+3BilExJfh+JmKivJQosCsuRyB1ju+J7ADKmXmcDlXgr+pPmNwqyCkUjcnbBwKsdDsP7Zx764EwUHEIj/Qme0I/g4C/jU6XBBdAKKt0io=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DZFALzRw; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1784743123; c=relaxed/simple;
+	bh=ecT2gO/ZzAVIeRznVChrDRyBlm+Tx7VAthNScxo4f4g=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VeeJjl3E5p7M8tEsH3JivMP0oOhQV4qpVvI1TUTYssLqIW0LQSrHlmfoOiwtQ66P2RZVuTPG40bucg6dS1ymk/0m6K1MrrqgFCaI91wZnl2pFLOsz66ryeTCUNG1xKQS2ltObxeWry8wZFxpSHHyGUpUZ5NbP77wkypdNSdjFYg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gYZkUzCw; arc=none smtp.client-ip=209.85.215.169
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DZFALzRw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3F941F000E9;
-	Wed, 22 Jul 2026 16:15:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1784736932;
-	bh=YtoXCA62CyJBNC7Tbkqm6QUVmIJyF8vWZgzG8HkNlzI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=DZFALzRwUkrcWF32RmBloDBG4APMVkGxhtgaZyfkfq4w77n6RpNrdAHXIykI0LwMX
-	 tGTerPv7RnSpnWTQAISeMEzjQWr0uGJk7k+k1pIaGnKeBR4YxJpt9RyDLS1Ii9bIGB
-	 43/hCcIIVUkgRJS7+JSbLJBvsJXvM8ST2ld2ORuO4pGg5dZ4eXczqK6/TJ9lcC7zTV
-	 184NzHUANyj1upIfiufIzTzgFXEU4ol0nH+6Z9pEAlACTIbjzOLfqyhBSUIaxXrwXh
-	 gLiKpiTLLNgHpkBvl6V4zRf6clxml/U/1TOwopiR7NwCRl7coCul519YgSFNAZ8pPL
-	 5ogQPeJG8QmfA==
-Message-ID: <fd9defdf-5d82-4f07-a496-4fe8064710ff@kernel.org>
-Date: Wed, 22 Jul 2026 18:15:11 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gYZkUzCw"
+Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-c96c92c0980so6284126a12.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 22 Jul 2026 10:58:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784743122; x=1785347922; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=FT23JezC0wXJyWPJrB8NdF3ihbQYF5YfS1BycISojdM=;
+        b=gYZkUzCwAEJ+joVKrmVnlq196v/uaTZ9KXol2hoFVMrY4/hnZv3WnSGqvT0igQ8RnJ
+         P4VYfgAY27yXJMAyFjJ3ORSTFr0dxwt60mHvN4sSnCLxleGfOfwLzH16NDFs0krPWEAs
+         IZxZoUZEw55fvXDRPQQivOtGjJyoerPgbi/L4t/WSzACOR3IJhKO80WJXn4IRCqpNEZH
+         B2BP829EcQEKxS8VchopWb7dlgYw1/VaVf2BKj2pAP2ftlLzBfdicwyuDJ92TRrNK2en
+         Y+CvEHouIcg9insLEY7D0ei85toXlnyac+EuDmSlhLTx+yYGO7R9RW+A2U7EEOdQ5v6b
+         8d0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784743122; x=1785347922;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=FT23JezC0wXJyWPJrB8NdF3ihbQYF5YfS1BycISojdM=;
+        b=XVW2T9aykiDCrChXtiPDmojZOwLddxnKkpT1NoNxMSCDPKa+CMoZ5JewAeTOa63PbQ
+         O0wb0FyepjgEhWZBcC3n5N56X61JdILUkPI4XAXYWI4bk0LSEoz8Anfm7GT0Q7xBf1on
+         Z5f0ebWTG0UB1aNfHUH3RPO4GpbJvzTGyWcExNPhu/Rkow81z+GN5Umq7SFrPdunQjIa
+         Ufi/OEKPAmNjog8mdvzSQmfCYl3aR+4An5Q8LnQYT+J4yGldwL+aWkaoGTrP15LjFxaX
+         bOq1P555kIQ+R6YiPoZZsktMFeOY/zpyancaPcKof+35d9Plpu8J59LM2n0EDg/aMk5/
+         OcjQ==
+X-Gm-Message-State: AOJu0YxJ/S1EU0FBnbwMpH1ETFOnnor+TJc4YIKLMSdZZv3QiEEIeBib
+	qv8CD95TTcwBAi2DC70Ntqn6lUfx+lFlYdKOHULDc2mNBG9433Tihxxe
+X-Gm-Gg: AR+sD12OU+Lz7J1ajhBPTgoSJSpNF+I817Mk2JcX1WwwNf8Ol1CG5spHOAJVugudzpz
+	cmBMHuxX49LYyFeRLjFyueAhwpdi0itgigsndPDV1OOS8NWq0pcS6+hRKP+yCKFJo8bhlLOw69Z
+	Fdes3JsjVrvwqQovC8dsGX6G7ULg6r/JJnE4o3QQLt0zCYhIMrTmJHm6BG57vUvpzoXO051h5yN
+	JEOtmbWp6aGqCwP2FLFfuyVkIU7rm3HyhWquuqe2UBPCHsYrDWHYXn5qT7jydJ5PQWHBR3jQrLt
+	paYyMryfUn9hPEzS1XMiGOZOPj1h72GnB2SAPOAiESn5mJSFH/YX9MK4VProumkNMrhL7vnMXvr
+	IlW/lye02QdTL7yXwQfoODkcncF/ig0ZbrfZ1yJn2HfhJycmH3kTK9Ft8z7FG190nWXsIUwQwI1
+	XqoA==
+X-Received: by 2002:a05:6a20:e292:b0:39f:59c8:f302 with SMTP id adf61e73a8af0-3c3ada195ebmr26645657637.37.1784743121546;
+        Wed, 22 Jul 2026 10:58:41 -0700 (PDT)
+Received: from PC.. ([103.172.209.188])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3147dc1a67esm12057690eec.2.2026.07.22.10.58.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 22 Jul 2026 10:58:40 -0700 (PDT)
+From: Mohit Mishra <mishraloopmohit@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Mohit Mishra <mishraloopmohit@gmail.com>
+Subject: [PATCH 1/2] staging: sm750fb: Remove legacy kernel-doc comments from header
+Date: Wed, 22 Jul 2026 23:28:16 +0530
+Message-ID: <20260722175817.213235-1-mishraloopmohit@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 13/13] mm/mremap: convert mremap code to use
- vma_flags_t
-Content-Language: en-US
-To: Lorenzo Stoakes <ljs@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, "Liam R. Howlett"
- <liam@infradead.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Benjamin LaHaise <bcrl@kvack.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Hugh Dickins <hughd@google.com>, Baolin Wang
- <baolin.wang@linux.alibaba.com>, Jann Horn <jannh@google.com>,
- Pedro Falcato <pfalcato@suse.de>, Muchun Song <muchun.song@linux.dev>,
- Oscar Salvador <osalvador@suse.de>, Zi Yan <ziy@nvidia.com>,
- Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>,
- Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
- Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Lucas Stach <l.stach@pengutronix.de>,
- Russell King <linux+etnaviv@armlinux.org.uk>,
- Christian Gmeiner <christian.gmeiner@gmail.com>,
- Inki Dae <inki.dae@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Krzysztof Kozlowski <krzk@kernel.org>,
- Peter Griffin <peter.griffin@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, Rob Clark <robin.clark@oss.qualcomm.com>,
- Dmitry Baryshkov <lumag@kernel.org>, Abhinav Kumar
- <abhinav.kumar@linux.dev>, Jessica Zhang <jesszhan0024@gmail.com>,
- Sean Paul <sean@poorly.run>, Marijn Suijten <marijn.suijten@somainline.org>,
- Lyude Paul <lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>,
- Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
- Sandy Huang <hjc@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?=
- <heiko@sntech.de>, Andy Yan <andy.yan@rock-chips.com>,
- Thierry Reding <thierry.reding@kernel.org>,
- Mikko Perttunen <mperttunen@nvidia.com>,
- Jonathan Hunter <jonathanh@nvidia.com>, Gerd Hoffmann <kraxel@redhat.com>,
- Dmitry Osipenko <dmitry.osipenko@collabora.com>,
- Gurchetan Singh <gurchetansingh@chromium.org>, Chia-I Wu
- <olvaffe@gmail.com>, Zack Rusin <zack.rusin@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>,
- Matthew Brost <matthew.brost@intel.com>,
- =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
- Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
- Helge Deller <deller@gmx.de>, Kees Cook <kees@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Boris Brezillon <boris.brezillon@collabora.com>,
- Steven Price <steven.price@arm.com>, Liviu Dudau <liviu.dudau@arm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-aio@kvack.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- dri-devel@lists.freedesktop.org, etnaviv@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org, intel-gfx@lists.freedesktop.org,
- linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
- nouveau@lists.freedesktop.org, linux-tegra@vger.kernel.org,
- virtualization@lists.linux.dev, intel-xe@lists.freedesktop.org,
- xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org,
- linux-sound@vger.kernel.org
-References: <20260711-b4-vma-flags-mm-v2-0-0fa2357d5431@kernel.org>
- <20260711-b4-vma-flags-mm-v2-13-0fa2357d5431@kernel.org>
-From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-Autocrypt: addr=vbabka@kernel.org; keydata=
- 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
-In-Reply-To: <20260711-b4-vma-flags-mm-v2-13-0fa2357d5431@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 7/11/26 20:45, Lorenzo Stoakes wrote:
-> Replace use of the legacy vm_flags_t flags with vma_flags_t values
-> throughout the mremap logic.
-> 
-> Note that, in replacing vm_flags_clear() (which takes the VMA write lock)
-> with vma_clear_flags() and vma_clear_flags_mask() (which do not)
-> respectively in unmap_source_vma() and dontunmap_complete(), we do not add
-> a VMA write lock to account for htis.
-> 
-> This is because, in both cases, move_vma() is their calling function and
-> this has already acquired the VMA write lock on vrm->vma whose VMA flags
-> are being cleared.
-> 
-> In the case of vma_set_flags() in unmap_source_vma() we do need to do this
-> - as prev and next were not necessarily write locked at this point.
-> 
-> Additionally update comments to reflect the changes to be consistent.
-> 
-> No functional change intended.
-> 
-> Reviewed-by: Zi Yan <ziy@nvidia.com>
-> Signed-off-by: Lorenzo Stoakes <ljs@kernel.org>
+The header file sm750_accel.h contains duplicate kernel-doc comments for
+sm750_hw_copyarea and sm750_hw_imageblit. These comments are outdated,
+still reference legacy CamelCase parameters, and generate kernel-doc
+warnings because they do not document the 'accel' parameter.
 
-Reviewed-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
+Since the correct and updated kernel-doc comments are already present
+in the actual implementation file (sm750_accel.c), remove the duplicate
+and outdated comments from the header.
+
+Signed-off-by: Mohit Mishra <mishraloopmohit@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_accel.h | 33 ---------------------------
+ 1 file changed, 33 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
+index 25e5703b6774..e98cf8f9fb2e 100644
+--- a/drivers/staging/sm750fb/sm750_accel.h
++++ b/drivers/staging/sm750fb/sm750_accel.h
+@@ -194,21 +194,6 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+ 		      u32 x, u32 y, u32 width, u32 height,
+ 		      u32 color, u32 rop);
+ 
+-/**
+- * sm750_hm_copyarea
+- * @sBase: Address of source: offset in frame buffer
+- * @sPitch: Pitch value of source surface in BYTE
+- * @sx: Starting x coordinate of source surface
+- * @sy: Starting y coordinate of source surface
+- * @dBase: Address of destination: offset in frame buffer
+- * @dPitch: Pitch value of destination surface in BYTE
+- * @bpp: Color depth of destination surface
+- * @dx: Starting x coordinate of destination surface
+- * @dy: Starting y coordinate of destination surface
+- * @width: width of rectangle in pixel value
+- * @height: height of rectangle in pixel value
+- * @rop2: ROP value
+- */
+ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 		      unsigned int source_base, unsigned int source_pitch,
+ 		      unsigned int sx, unsigned int sy,
+@@ -217,24 +202,6 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 		      unsigned int width, unsigned int height,
+ 		      unsigned int rop2);
+ 
+-/**
+- * sm750_hw_imageblit
+- * @pSrcbuf: pointer to start of source buffer in system memory
+- * @srcDelta: Pitch value (in bytes) of the source buffer, +ive means top down
+- *>-----      and -ive mean button up
+- * @startBit: Mono data can start at any bit in a byte, this value should be
+- *>-----      0 to 7
+- * @dBase: Address of destination: offset in frame buffer
+- * @dPitch: Pitch value of destination surface in BYTE
+- * @bytePerPixel: Color depth of destination surface
+- * @dx: Starting x coordinate of destination surface
+- * @dy: Starting y coordinate of destination surface
+- * @width: width of rectangle in pixel value
+- * @height: height of rectangle in pixel value
+- * @fColor: Foreground color (corresponding to a 1 in the monochrome data
+- * @bColor: Background color (corresponding to a 0 in the monochrome data
+- * @rop2: ROP value
+- */
+ int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
+ 		       u32 src_delta, u32 start_bit, u32 dest_base, u32 dest_pitch,
+ 		       u32 byte_per_pixel, u32 dx, u32 dy, u32 width,
+-- 
+2.43.0
 

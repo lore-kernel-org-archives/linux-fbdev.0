@@ -1,118 +1,103 @@
-Received: from fhigh-a7-smtp.messagingengine.com (fhigh-a7-smtp.messagingengine.com [103.168.172.158])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 198F035F189;
-	Thu, 23 Jul 2026 06:44:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.158
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB92E432E83
+	for <linux-fbdev@vger.kernel.org>; Thu, 23 Jul 2026 10:10:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784789066; cv=none; b=mhAULN08JypiF02zc6+wCIIniIv27LMwH9jy8cw8nXBsMHgAJCnF81vMg6K5zbhV1WyC+h5QSSzff/7PNmh74arLMKntYU3pxe85giJQ+iJom3GzJgo7mNk+MXR6lMl/8+pMVcv0zkDYPfYih9mGcKyCAixvqzw83x9s1LiRRt4=
+	t=1784801428; cv=none; b=V0EgRULKrj/fR3aPWhgp387E0hzcxpPP4tPwc0vOl0G6BoZVGCuguKTFsy9mTmf42uCYSKzgwskJ2+4BQHs9ekoW3k2SNngQQ7glfYhFW6+LXGPNP2Di8JgE+BV4KKneEEuyPrPdjxMtkbtmZQW6/RQr96b1RNbkxsse14lgfNw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784789066; c=relaxed/simple;
-	bh=45JXXy9qkNKYjUa8SmtcrV5/E35scfQqjbCO0yENcyA=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=FApZsp8XeshVxIe1qnwlVRHAjXyRN2LHJkHBA7T+XjM97BtqeP80GlFj8dVDsYzYdS2QeyH4BIxJTm3j2EFDsFRgzqM+w2ocatnVhwaycYkuE6qHfC6TDrNJ8y+SQ1XybL8gJWyUsf47UdR4YJxcbxiOwYx9Hgb9wcF9gG9MQKI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=jXOCscFB; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=G9KqN6vh; arc=none smtp.client-ip=103.168.172.158
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
+	s=arc-20240116; t=1784801428; c=relaxed/simple;
+	bh=ZB447XxCBqH89cLA+iAMyBEOgv3a3ukggHt0biRRmDI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GR9e85l5okV34kMn/7cXb9pab9xf9ZE4C4upO5tmF23zC+rMeJ/q2PDE9CB8b+HJyUZuDvQF83D3A30gP3La5a1Ie4XL77yUNEEtZ1UlgEEcmAzjVXv7GvNe3bpMadzR/D5BOPMxmZPkPR6JlaeE6LdJzIUSdtViqvhrAxrkBTY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BcwoaSVP; arc=none smtp.client-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="jXOCscFB";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="G9KqN6vh"
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id 14D4114000ED;
-	Thu, 23 Jul 2026 02:44:24 -0400 (EDT)
-Received: from phl-imap-05 ([10.202.2.95])
-  by phl-compute-04.internal (MEProxy); Thu, 23 Jul 2026 02:44:24 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1784789064;
-	 x=1784875464; bh=HTbkVd6Wq6Ip4RQIXSUsnzOc5fWskilI0JTEv1l2AMo=; b=
-	jXOCscFBczbYwISru5b0WlMcuYHyvtRqw2pmaH6OT3Lb6EnHg4e5bng8wUhqQiKK
-	xgZt4o2JM5wf3TSoNfko74u0BizEFMJQcpUB0xyt8rUK/uh0Wxe3w6pkwJtMDrFp
-	2HFxjBDBUBlRZvVzyIWpyQUitKEm+U1I5DX+S6phKqy8tKkeFuFQXiULWI7ls1Ae
-	AMVYgGqBwdmK19Vue5knOzfL5SV2TX+U5sHBRjIZLXqHipbTDbd1YByau6/qxdI0
-	523mhrbGTm+JGVSd3rQslUvS4VT8zeFVOfHFKqvXdGKTGdxMmayAvZTQUTJMgdkI
-	9IeP9BOPkpalxWOxw2UeCA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1784789064; x=
-	1784875464; bh=HTbkVd6Wq6Ip4RQIXSUsnzOc5fWskilI0JTEv1l2AMo=; b=G
-	9KqN6vhM/GhgdF8t3p/RBW3V+i7nfswuhNpM9vscPu0k/KZlQRZKvmTqWXWthJWG
-	wjO50yIoRaycr1bp3LBthGGuET/plJ+OyZ0YmXXUz81pH/xNb0NTEeeCKoXOnZeG
-	LtDE7OKaQetYzrQUCg4RBHuIwQbY2vndGA+bFHSyNaDrSmgytmYTAFwjLnmQZCSG
-	aUtJiXVukz/lO3jPDMfD2379ljH2+FhlRlN21wcjWJ9OOSxMy+p4PKphqEvbnoxY
-	yUOX7sM7Sg0MvhUlAXrvq1VBwwcrh7Bi4x2Fw1CApahvhRV7ZabgVejC2ytijVyI
-	TO5CV3cA11ehOG2y4YngA==
-X-ME-Sender: <xms:R7hhagKj-Zpuv1jlefp8cJ7niGwEwOjxShIUSP2rnCsmtRLMT4LKXg>
-    <xme:R7hhaq8HJSIluZXkhqZZydCpLGICihC5N3oMhhK898use9lPVR9zb528zRcCNSGxd
-    KVKZNoOM5Aa9pU76zN_ydY0rwa1nYbZ9e4PQL2qfKiXhATTq83Jik8>
-X-ME-Proxy-Cause: dmFkZTE6QZb+iHWpL1mO+WsK28M5HOJ6jSDCRX4MJVUuJmHkrp8fjQqcnHFMOWQPUMjSZ5
-    0s8AasFJxawL3drXqEA4wDRNhL64B0zge06O2h3kUM5afAxmuuvgb8Qx08+jzxeNyg4/dI
-    1C509wUMH/JyAZay4iFmSDPW1zzc9Nun5e7N8rEQs0a7yRhtOTjAyuNmL4Me2yxh5SgAvp
-    r0zUoj/aqBjFaNW/Jz4ckeuWIPcdBo3ePlbRtqlskTSCkN6XNQftiAi3lJsoYPVY0kozXf
-    ofydBXq4yrDomyA8hJ2sCZPhpfTdxDEyEAvfcGgizTxQVjP+6AwT252IobqADl7wftU0o/
-    gXOFbQFdLQPN6Hq6O9Slz5YZNemy/9SzKBmLpsIJv247uq99NafRJUJs6UPMzWEAjKmXPP
-    NWoq/3xjwKITazN5kSscyqH9sKe4rH5gwQ7T9Psi5qKNf6OBxMpexcyhEoylbCeWXu0E39
-    MYedRrKHgFiXHo3bz1DjXVInFZxijiLT/E9VI8JFu7QETP3PrXNbEa3bHdM/qgJSgG1Ild
-    /LfmHTZOU+8lLBEMJsQpFJ2wG2wNiQ0ht7ec336hH1SESCBgbPKVcMBrd5CJonKBBMdcS2
-    VClczfly6pNpgG9pgAw68pejhtlHxQgzR8Y42k+9AtXcqpb9KKLcp2+hlUOQ
-X-ME-Proxy: <xmx:R7hhanYltOus9jeW9PUOYpZ_XJN1B91raAupijg09bYoM4YE8GYRdg>
-    <xmx:R7hhaj7aEYzRyHTIC-reNM0ynROz06C8gW_QzCK2zQoaSkaxBqRH-g>
-    <xmx:R7hhasmTm0AqrqFNy8nDxKe-rnPZFyu2gaMzW51nqyEqXlWRU8XUsQ>
-    <xmx:R7hhajHQx5v4uZGsRIavqVQZ9Lu3um34IE_eNR7FluBRij1opvW1GQ>
-    <xmx:SLhhagizdM4t9BqIHhjFmoEGNfEAADeOSlJiNGCG5o8gcKRecpTFC-DJ>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id AACB6182007E; Thu, 23 Jul 2026 02:44:23 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BcwoaSVP"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-49556f97a9dso3026845e9.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 23 Jul 2026 03:10:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784801425; x=1785406225; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=VlMWE9xZkorwpxL9EbIVt9uDSDnZ20C3ZODwFQe3gZ4=;
+        b=BcwoaSVPa8oIQDNaHuRM5qHgObZX933GWrEWeYI3Vb6ekB6kpEu/Y4omFq8RWirgcj
+         cB43pDW9+Psl5tZsR21pP40BbuWbRYjP4C7mx4LDHQcagIRbpXCJLxda2PORlr/BfmD7
+         4R8WsJxPs2IEPJ/mX/ZHKz4ymlu2oGvejUmT9X22VR3/FVJlwo4UtcfyRiaEbP+1M7K3
+         hPMe9kpGKb1gDID6Y7JoOHTQuUe2PCJVsUTfWMySC0Is99oViwsY7Py6A9/kMr1TxL4U
+         /2crRAtWOEssOMunbNFLDgOK1c5zA7IGN4wonISlagUH1VS2tx0+XK8b1TiS1yEeipFz
+         2YyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784801425; x=1785406225;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=VlMWE9xZkorwpxL9EbIVt9uDSDnZ20C3ZODwFQe3gZ4=;
+        b=QlY9LRKGZAcxCHtcUS7aqWKb3n5QkJ01PsND+/8ps7ZNZRHySOgBx35A/22IY40+Z2
+         yIE41KPqeV9KenI4uTHRmoHELjX2rLm8mij0/kLRJpukaa9qhoibkgmE2P+MEoJtdSGY
+         1IIHqZuIfcyGYtAMknNY8qylRbDDyQsdZcUTTvaYzkaOAuHpifvDvE76slOY57oIvlEH
+         2dIAoe3k/AKTAmnJLlaENhp27G6HIRN/BNmyu5w/AXYIJGxpz+NTlbI3jTW62sitdEX5
+         7R120En63fSJ1YfTyIQgZyP4KcOf8k3u7rWczt1k8gefxFOVHJHifHq4B1AoKXsZvX1A
+         /pkw==
+X-Forwarded-Encrypted: i=1; AHgh+Ron3rNy6Pi2EawCUcjqWfmm8GMptlrsMkxlcMW5XQov/qEfRT7u0ii1rDgcHmo34gPi9nejtzojK+uZGw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwF18piukTQSRqw7YwEHmJbxjkshAs/HTV4skUr6OgDjHh15HX4
+	gljZTfj5YFSJQbBOqmHLxIYy98TdoofFXjPFhSYg3/kA1hVG93u2Fx06
+X-Gm-Gg: AR+sD10Mrf/g4nPMEc44WYRz9KmtmqL7X+4jeJqcaVA+VV5USLZ7ZoERZr7AmiqxxBa
+	kbTAciOEw4GC26uc6QbKIFhHOofkrbMdXRYbpyhChv01odcb8HiAF7FAKUvhFyRcEifCBPWGcvU
+	bTSzlNmvn//JcEIapvAeKEayFJeR9YbN7Lwom7cZR5v8Og7Ohq0wJgX1RhhiWcr0DE/ScJuwAIT
+	nA+BMwAUgVznckGPa2Nd4V3/EBbOxh0fgOCO27JIGOenQNrf7ih6YS7sC41PCvR3SJu/1qeew3K
+	ZM07UCYlUBOtC8o5Wo4F7LxrB0zUPgJmx5SI4VAzB/ztSJHG83YAzpLBIolDfOlSNHRFmvkzUlq
+	kdfi7iz/JAjzWZEMXWKAoU8U5hOCW6t/ympycoqV0IsZc0cAU6CG40fMpi16XS5rjRSwRTWOcBw
+	==
+X-Received: by 2002:a05:600c:190a:b0:495:6e68:5df2 with SMTP id 5b1f17b1804b1-49573c9995bmr27760195e9.12.1784801424740;
+        Thu, 23 Jul 2026 03:10:24 -0700 (PDT)
+Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-495653bfed7sm229252705e9.11.2026.07.23.03.10.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Jul 2026 03:10:24 -0700 (PDT)
+Date: Thu, 23 Jul 2026 11:25:55 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Mohit Mishra <mishraloopmohit@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] staging: sm750fb: Remove legacy kernel-doc comments
+ from header
+Message-ID: <amHQE1sKtB9rxoiA@stanley.mountain>
+References: <20260722175817.213235-1-mishraloopmohit@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: ADWwDUKQibi3
-Date: Thu, 23 Jul 2026 08:44:03 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Julian Braha" <julianbraha@gmail.com>, "Helge Deller" <deller@gmx.de>
-Cc: "Thomas Zimmermann" <tzimmermann@suse.de>, "Wei Liu" <wei.liu@kernel.org>,
- ptsm@linux.microsoft.com,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
- hsukrut3@gmail.com, rob.github@jumpstation.co.uk,
- "Ethan Nelson-Moore" <enelsonmoore@gmail.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Message-Id: <99391074-24d8-4725-8e8d-ac310a666f29@app.fastmail.com>
-In-Reply-To: <20260722220023.196029-1-julianbraha@gmail.com>
-References: <20260722220023.196029-1-julianbraha@gmail.com>
-Subject: Re: [PATCH] fbdev: replace dead select with dependency
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260722175817.213235-1-mishraloopmohit@gmail.com>
 
-On Thu, Jul 23, 2026, at 00:00, Julian Braha wrote:
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index 085d3a202148..1ed4506c0cb2 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -1717,8 +1717,8 @@ config FB_MB862XX_PCI_GDC
->  config FB_MB862XX_LIME
->  	bool "Lime GDC"
->  	depends on OF && PPC
-> -	select FB_FOREIGN_ENDIAN
-> -	select FB_LITTLE_ENDIAN
-> +	depends on FB_FOREIGN_ENDIAN
-> +	depends on FB_LITTLE_ENDIAN
->  	help
->  	  Framebuffer support for Fujitsu Lime GDC on host CPU bus.
+On Wed, Jul 22, 2026 at 11:28:16PM +0530, Mohit Mishra wrote:
+> The header file sm750_accel.h contains duplicate kernel-doc comments for
+> sm750_hw_copyarea and sm750_hw_imageblit. These comments are outdated,
+> still reference legacy CamelCase parameters, and generate kernel-doc
+> warnings because they do not document the 'accel' parameter.
+> 
+> Since the correct and updated kernel-doc comments are already present
+> in the actual implementation file (sm750_accel.c), remove the duplicate
+> and outdated comments from the header.
+> 
+> Signed-off-by: Mohit Mishra <mishraloopmohit@gmail.com>
+> ---
 
-I would make this one
+Acked-by: Dan Carpenter <error27@gmail.com>
 
-       select FB_FOREIGN_ENDIAN
-       depends on FB_LITTLE_ENDIAN || FB_BOTH_ENDIAN
+Because nothing pisses me off more than comments...  :P  LOL.
 
-to avoid breanking defconfig files. The default choice is
-FB_BOTH_ENDIAN, and that should work fine here.
+regards,
+dan carpenter
 
-     Arnd

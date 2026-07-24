@@ -1,82 +1,62 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from send262.i.mail.ru (send262.i.mail.ru [95.163.59.101])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BBAC7476CCA
-	for <linux-fbdev@vger.kernel.org>; Thu, 23 Jul 2026 12:28:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6375265CA8;
+	Fri, 24 Jul 2026 00:44:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.163.59.101
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784809705; cv=none; b=ufLN6hSd5Iy9GLyNCwWOs35xRSlIfU6aA0iM3jmbEQL2lPHtCrxp/gHY89ydf+zwnxDOThnkeo4+/DyhT37rlt+GF459iKveYqo79/aBc07lo0xWdlR2xtHtcwevbLfJN7bxmP/SBrwly1inuXBUX0w+5xez/hWoWF+3MRVOpk0=
+	t=1784853884; cv=none; b=O1kAXtig/UMQA2SHpwO6AtK/x9d3A/m24EJl8JOYVwNGpLhsvx/7bvmQ4dFGrH/Lo4dxhjxgSUOIeYmZ3P5Km34F/s8+eipSUJI7qSRXnS54gUp1V2FmYRZksnAdfNrk6YVc+pFV05EC3IzZaSo6D1rtl4dlkaRCcFo8HZRd4J4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784809705; c=relaxed/simple;
-	bh=qJeWLqqHGhywHLzf/EYgOC1kFld80TPrXuXaJUKz/v0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PRzpfZHjEfsTcAuzIOoXj+Xope+OL8uAytk4aGHFNjBxiBxSm03O1HFd20Nm6hm3dDd/IZgtmnTfV2OY2DvsiBgmJsm1bho817aei7gHUtq8O9SFEeuniX280Br9oLF0H+X9H1YVTohbPfYCYKGshpi5S75IIO41SbkYApfZiYY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PhIv7P2h; arc=none smtp.client-ip=209.85.128.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1784853884; c=relaxed/simple;
+	bh=DyfGA2fp/aae2SD7IMeD2UKNsVJCRfVtV4oP9f1MsEc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=TqrtRUMSM0UDsdSaXQ0/cZmf8n+4QlDK0J+SfCgPt7n3CvD5Eb8TS8yppvEkOQlSbT1TnoBn8wVzXaUYItZIJZ+macnNjb5Ixh142YtLi5mfA5u6nd4VFISdZ1VARHacFfeGS3E9Wq2PdzhdlfgQLfi4tPuRqn/TuaATAzVkKQY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mail.ru; spf=pass smtp.mailfrom=mail.ru; dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b=SYbe26xE; dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b=e8GtYPXp; arc=none smtp.client-ip=95.163.59.101
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mail.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PhIv7P2h"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-495590dde14so6891545e9.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 23 Jul 2026 05:28:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784809702; x=1785414502; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=kHSxDwM0Y6FUMCJyC98ds2ox0gHcqUAID04qqyOi0zE=;
-        b=PhIv7P2hbQza2paTo+jnAX9VUHTpoWyg/QmI4r/scIuMu5g9GtcTOxjpm6kMy0511h
-         CxHI2uwrHLy/sHY9d14X7ESSbuuRcN1gqfGvOLiaxzm0JYBqbrIohhM0CYWNDPH1ZxZT
-         IFKLSTMH0rRqPy+TrxFOq4xr1/6uE3fvGcWwsHoOlRMUxHQL0rpqVJCPzMfJOzU6Xy7o
-         ZnhCYK4wpllKk0/4cIltdGChwGYPZxxNtJUNRDYoRcCKT3WMqt6hdFXGveAI1jNyBLyW
-         qEinVfhpGsbxz8F5tqhmbU/ACIY50gc9SZzvp8c8/QX6G62C9uG1wgbZDCWFnoISJbDw
-         w/1A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784809702; x=1785414502;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=kHSxDwM0Y6FUMCJyC98ds2ox0gHcqUAID04qqyOi0zE=;
-        b=emgl4f5HXqgOYFN7wjhy+gs7MPFe38qL8nP+Qp3Hh+S44a9srkX3FqQVCChPrrsyLy
-         9Fjt1QRTBNPB5I827UrTxLyOgHRyaKjI20K9y9LaabtMs2kixK9Z2DfR8HlNIL85CzE9
-         OGod9wlAHIjc75Vn0Hd9SMpV7E392tkAWRqK5ZKIjsWsS2bFaIQlVMIMUyy48Dmh6yEq
-         wzUAh80BkdH6psR9YQDYEBFi/ED4VWwiJIFH/XoltHpimKg06CmDbK4A70HeFtilzFqG
-         +ZyxyOib/sD4tGqTsTMUCBM5AsWj+R8/7EC6PNyZ1sMVUrhlKSxoCbcee+XoVg4i+p/9
-         bE9g==
-X-Forwarded-Encrypted: i=1; AHgh+RqoZrstFwpDx42thDI0YLmrTPe1ujJuISG0cXBIbwga0ZeOgy4ZYuscQzlbBA8qMaNZp/cyl8zGs+2/ew==@vger.kernel.org
-X-Gm-Message-State: AOJu0YzmyOiqmqD0R816yHFSZJuxvnePil/4WlUlt1g2AK2mZ1AMAQ8k
-	UT21S3tiLt64xDX3Q5+fM6r3bR+imbu5fj1WPfQSjhzN+sCEUtBNsmmm
-X-Gm-Gg: AR+sD10cnSZ8WJw6HY+/vmJB39yWS9e6ZZQTtguP/6V+2KNmzkooiOFzzZTwMQiLsF/
-	Lj9Uq0Ybw1QCudIbsrC9Rc+HuDUhfrmz8grQjJAk6znszpk4HBrVlgftDKWC9pOGlG5NYVv4cSr
-	DwJHFV4mSs5GNBgEyae2sPRWawqyeqg7YKW0LSxLwaTGtWNrPet8QeurkdX1dEmjJDeHM4bJJkU
-	h6GxLKzuGoCmS4IAjlYOugbbSJXQ+URcsfqt+Swxidcq2OBE+gLYeyFYwChNfWZLAbR3ZaSCf92
-	m9Col39bszxfDbJ4pHye5RLWvgzJl55pI1G64ZkS6R9QPkzVNI8KVoglEDpNDxEcHco5hJb5P96
-	rGreFBRX+35hmvXRkJbdwoETTISMCTf+O1oH6cueSs3q/bH5JqDn6F/et1QDCQahqqlmZWMk50S
-	njAhN/EyICXkbIDkei0kGmlj8gW49pOo+8xsEd2CX5EX9fGAwgC8tBwAT1vl5BS//hytGpzmyvl
-	tmX
-X-Received: by 2002:a05:600c:a218:b0:495:6788:c229 with SMTP id 5b1f17b1804b1-49573cb99bamr18898445e9.4.1784809701703;
-        Thu, 23 Jul 2026 05:28:21 -0700 (PDT)
-Received: from nixos-office (195-23-151-163.net.novis.pt. [195.23.151.163])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4956a509901sm255799575e9.8.2026.07.23.05.28.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Jul 2026 05:28:21 -0700 (PDT)
-Sender: Julian Braha <julian.braha@gmail.com>
-From: Julian Braha <julianbraha@gmail.com>
-To: deller@gmx.de
-Cc: tzimmermann@suse.de,
-	wei.liu@kernel.org,
-	ptsm@linux.microsoft.com,
-	arnd@arndb.de,
-	u.kleine-koenig@baylibre.com,
-	hsukrut3@gmail.com,
-	rob.github@jumpstation.co.uk,
-	enelsonmoore@gmail.com,
+	dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b="SYbe26xE";
+	dkim=pass (2048-bit key) header.d=mail.ru header.i=@mail.ru header.b="e8GtYPXp"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mail.ru;
+	s=mail4; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:Cc:
+	To:From:Sender:Reply-To:Content-Type:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive:X-Cloud-Ids;
+	bh=Rtd8ky7Tg6XlaV1TWUuNmrWi3E8gwM7nMZLhgv4MPPc=; t=1784853879; x=1784943879; 
+	b=SYbe26xEdG0odvwWgdrotK2IlxjkFq2EMFBmuhaFFXHGXes4DF+fXrIUIzmJHLi44eP7nBMtT8d
+	lkLus/hf0bP4NjWK8PQDTpKCbLY5/RwYdHrGlF5FfX45nfuPSEaIX+bLmPCVC3fdkI0rdKpGkYU6J
+	tWq5SDk2JYLlwABoIMSVxLEvNSqxlYIuSUpsySMMt8fJ91XxWoWugNAaI5+L1l7cm+wB6kcrSO7UE
+	fJJJqsKpKfuWiVX+0nla2XiaKuvjU1xLEU+/rgAyINCuAXd6OwUinAe27Ch6pAcdm+xhHRndRihMt
+	y5KLdfpyO19DByADG3syjOsIIrahrLuNYhpQ==;
+Received: from [10.113.250.159] (port=35298 helo=send197.i.mail.ru)
+	by exim-fallback-5cf4fc9bf6-r2bvk with esmtp (envelope-from <listdansp@mail.ru>)
+	id 1wn41f-00000000GpX-01lz; Fri, 24 Jul 2026 03:44:31 +0300
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mail.ru;
+	s=mail4; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:Cc:
+	To:From:From:Sender:Reply-To:To:Cc:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive:
+	X-Cloud-Ids:Disposition-Notification-To;
+	bh=Rtd8ky7Tg6XlaV1TWUuNmrWi3E8gwM7nMZLhgv4MPPc=; t=1784853871; x=1784943871; 
+	b=e8GtYPXp1Fau+dtSeAB+4EikvQ/t0Uz6WjhRs8EKYCWH/qqgWl+QkMTUTVgiFsXPBtzQXQDsxrs
+	ob/dXg7XpTuL0L2xjxCGLgg8/3VNspzwVDOmN+GPTYG9giFeVOcVdD9LWFaagKPwEtsUOYUhEPm5t
+	obD+BD6CZvsA1mHBRQxC1h1CYJ2YoHgr6NjV6ZZvojFs0+iOUmgZhbCqMct1huNt2V6lVTThLbl/r
+	2TQ9sLbJMrdSuKgV4iIxzDbBeonrjeXbHe36XQlGEfESKAXVzkr50V730CCoAdeRvEhRVRvDiWnuW
+	nkKmVymS1ZapexpOHYywOB3JPe2WVGtUICuA==;
+Received: by exim-smtp-6c76488b9f-8v22z with esmtpa (envelope-from <listdansp@mail.ru>)
+	id 1wn41V-00000000DVg-35hX; Fri, 24 Jul 2026 03:44:22 +0300
+From: Danila Chernetsov <listdansp@mail.ru>
+To: Helge Deller <deller@gmx.de>
+Cc: Danila Chernetsov <listdansp@mail.ru>,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
-	Julian Braha <julianbraha@gmail.com>
-Subject: [PATCH v2] fbdev: replace dead select with dependency
-Date: Thu, 23 Jul 2026 13:28:18 +0100
-Message-ID: <20260723122818.437802-1-julianbraha@gmail.com>
-X-Mailer: git-send-email 2.54.0
+	lvc-project@linuxtesting.org
+Subject: [PATCH] video: fbdev: kyro: Validate overlay viewport coordinates
+Date: Fri, 24 Jul 2026 00:42:45 +0000
+Message-Id: <20260724004245.86764-1-listdansp@mail.ru>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -84,44 +64,90 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Mailru-Src: smtp
+X-7564579A: B8F34718100C35BD
+X-77F55803: 4F1203BC0FB41BD93ED3C6BF6FFA701FD3C8ECD4FF8890A5380F22FAED472B72182A05F538085040F0329FB34171AA1C3DE06ABAFEAF6705B2F25C2E3F6C2D406E7FBB2604E51819C892232EBC88F8E3
+X-7FA49CB5: FF5795518A3D127A4AD6D5ED66289B5278DA827A17800CE79E448936ADEE6ED1C2099A533E45F2D0395957E7521B51C2CFCAF695D4D8E9FCEA1F7E6F0F101C6759CC434672EE6371C2A783ECEC0211ADC4224003CC836476D5A39DEEDB180909611E41BBFE2FEB2B425B3C7DD974D21E99D8ED0A570A0D9E3541874920DF14D8AC0BAA1718A056FB0C819B32DFABC24A725E5C173C3A84C30AA277257C6A5E3D117882F4460429724CE54428C33FAD305F5C1EE8F4F765FC47272755C61AA17BA471835C12D1D9774AD6D5ED66289B52BA9C0B312567BB23117882F44604297287769387670735201E561CDFBCA1751F6FD1C55BDD38FC3FD2E47CDBA5A96583BA9C0B312567BB2376E601842F6C81A19E625A9149C048EEB28585415E75ADA945B9AC499A3C791CD8FC6C240DEA76429C9F4D5AE37F343AA9539A8B242431040A6AB1C7CE11FEE31DAA61796BF5227BC0837EA9F3D19764C4224003CC836476E2F48590F00D11D6E2021AF6380DFAD1A18204E546F3947CB11811A4A51E3B096D1867E19FE1407959CC434672EE6371089D37D7C0E48F6C8AA50765F79006371F786DB530BF6A41EFF80C71ABB335746BA297DBC24807EABDAD6C7F3747799A
+X-C1DE0DAB: 0D63561A33F958A5FF06105F19F045E55002B1117B3ED696446AD625B662FB47886DC9BC01168B20823CB91A9FED034534781492E4B8EEADF1165EFABA1780A6C79554A2A72441328621D336A7BC284946AD531847A6065A535571D14F44ED41
+X-C8649E89: 1C3962B70DF3F0AD73CAD6646DEDE191716CD42B3DD1D34C77DD89D51EBB774225B6776AC983F447FC0B9F89525902EE6F57B2FD27647F25E66C117BDB76D659D9211A6C063DF336D10A79C6D5479CC65398BA23D8F2FEFB5FB40F1AB36D860F9B42238A6BB07B20B8341EE9D5BE9A0ABE27447A2D41BFB87F99C81D8AE6C234641E20B7D76C708C721D270AA2B885D14C41F94D744909CE04437D853D7CD20871FE3B1D98EC473624A389F0E278DBF4
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu53w8ahmwBjZKM/YPHZyZHvz5uv+WouB9+ObcCpyrx6l7KImUglyhkEat/+ysWwi0gdhEs0JGjl6ggRWTy1haxBpVdbIX1nthFXMZebaIdHP2ghjoIc/363UZI6Kf1ptIMVYrk7BQKFwEtRb0VZaIGsl7/HKcDglhOzA==
+X-Mailru-Sender: 4CE1109FD677D277C46683902DBBBB3CADBD7FD9A065D1F43DE06ABAFEAF6705B2F25C2E3F6C2D40977EED7048DEDC7C8A08967417F2D5E3FB559BB5D741EB96C31AF20DAA089319D7A14DD9E34ECE7467EA787935ED9F1B
+X-Mras: Ok
+X-Mailru-Src: fallback
+X-7564579A: B8F34718100C35BD
+X-77F55803: 6242723A09DB00B486472E5A48B460E48232B7BA1535077BC45AB681B994A4B2049FFFDB7839CE9E426FEB9BE7554530A20C0A4E4655530875365ED4D4FD200EE5DB799F969F6D522813E4807F0BFD26
+X-7FA49CB5: 0D63561A33F958A5E997EACC6F49A31F5002B1117B3ED696951B7014FDAC8C054E82D2634811542802ED4CEA229C1FA827C277FBC8AE2E8B54F520D093A0DF28
+X-87b9d050: 1
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu53w8ahmwBjZKM/YPHZyZHvz5uv+WouB9+OYcBso8Zm+oliTz8oZwnDrFsY77LZRcHyw5ht0smWrfSeTW5FiI8avd9v29gUBslpEZ9wIMwqVP4jLQVQ+dVm7x9BpDHadBV9RMjI809PraZZPCF/+5TxQBDWC0la/4ZPg==
+X-Mailru-MI: 20000000020000000000000800
+X-Mras: Ok
 
-'select' does not work on config options in a 'choice', so currently it is
-possible to enable FB_MB862XX_LIME without FB_LITTLE_ENDIAN.
+The overlay viewport end coordinates are computed from the viewport
+origin and dimensions using 32-bit unsigned arithmetic. Large input
+values can cause these calculations to wrap around before the resulting
+coordinates are passed to SetOverlayViewPort().
 
-We cannot replace the 'select FB_LITTLE_ENDIAN' without also changing
-FB_FOREIGN_ENDIAN from 'select' to 'depends on', otherwise we will get
-a recursive dependency.
+SetOverlayViewPort() packs the viewport coordinates into 16-bit
+register fields. The X coordinates are additionally adjusted by +2
+and +1 before being written. Validate the coordinate calculations
+for 32-bit wraparound and ensure that the adjusted coordinates fit
+within their 16-bit register fields before calling
+SetOverlayViewPort().
 
-Since the default choice is FB_BOTH_ENDIAN, let's use:
-'depends on FB_LITTLE_ENDIAN || FB_BOTH_ENDIAN'
-to avoid breaking defconfig.
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
 
-This dead select was found by kconfirm, a static analysis tool for Kconfig.
-
-Suggested-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Julian Braha <julianbraha@gmail.com>
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Signed-off-by: Danila Chernetsov <listdansp@mail.ru>
 ---
-Changes since v1: support the default FB_BOTH_ENDIAN
-Link:
-https://lore.kernel.org/all/20260722220023.196029-1-julianbraha@gmail.com/
----
- drivers/video/fbdev/Kconfig | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/kyro/fbdev.c | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 085d3a202148..e8cd8cb76874 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1717,8 +1717,7 @@ config FB_MB862XX_PCI_GDC
- config FB_MB862XX_LIME
- 	bool "Lime GDC"
- 	depends on OF && PPC
--	select FB_FOREIGN_ENDIAN
--	select FB_LITTLE_ENDIAN
-+	depends on FB_LITTLE_ENDIAN || FB_BOTH_ENDIAN
- 	help
- 	  Framebuffer support for Fujitsu Lime GDC on host CPU bus.
+diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
+index d756b3603fa6..133c91716c49 100644
+--- a/drivers/video/fbdev/kyro/fbdev.c
++++ b/drivers/video/fbdev/kyro/fbdev.c
+@@ -369,6 +369,9 @@ static int kyro_dev_overlay_create(u32 ulWidth,
  
+ static int kyro_dev_overlay_viewport_set(u32 x, u32 y, u32 ulWidth, u32 ulHeight)
+ {
++	u32 right;
++	u32 bottom;
++
+ 	if (deviceInfo.ulOverlayOffset == 0)
+ 		/* probably haven't called CreateOverlay yet */
+ 		return -EINVAL;
+@@ -378,11 +381,30 @@ static int kyro_dev_overlay_viewport_set(u32 x, u32 y, u32 ulWidth, u32 ulHeight
+ 	    (x < 2 && ulWidth + 2 == 0))
+ 		return -EINVAL;
+ 
++	/*
++	 * SetOverlayViewPort() adjusts X coordinates by +2 (left) and +1
++	 * (right) before packing them into 16-bit register fields.
++	 */
++	if (x > U16_MAX - 2 || y > U16_MAX)
++		return -EINVAL;
++
++	right = x + ulWidth;
++	bottom = y + ulHeight;
++
++	if (right < x || bottom < y)
++		return -EINVAL;
++
++	right--;
++	bottom--;
++
++	if (right > U16_MAX - 1 || bottom > U16_MAX)
++		return -EINVAL;
++
+ 	/* Stop Ramdac Output */
+ 	DisableRamdacOutput(deviceInfo.pSTGReg);
+ 
+ 	SetOverlayViewPort(deviceInfo.pSTGReg,
+-			   x, y, x + ulWidth - 1, y + ulHeight - 1);
++			x, y, right, bottom);
+ 
+ 	EnableOverlayPlane(deviceInfo.pSTGReg);
+ 	/* Start Ramdac Output */
 -- 
-2.54.0
+2.25.1
 

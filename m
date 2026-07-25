@@ -1,75 +1,75 @@
-Received: from mail-pf1-f179.google.com (mail-pf1-f179.google.com [209.85.210.179])
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2EA4396560
-	for <linux-fbdev@vger.kernel.org>; Sat, 25 Jul 2026 09:08:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D67F39C62F
+	for <linux-fbdev@vger.kernel.org>; Sat, 25 Jul 2026 09:22:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784970493; cv=none; b=DBPT3ke03zOS8rr6pFAKjCz4tQ4EC2yBR5uANZnAICTtjIp74IOZ3jjplWtxaNw7EDBfMJFz/lSWcBa4bNqI+xIriDioq0E3kquiNEyrO5OuwaWme5EWtDrmWE/CxGPg2MUwHu7/q6E6PFdpT5ugeBXspxm/AyaftlEwDfUYuaY=
+	t=1784971341; cv=none; b=LdDI2EYWXQ4goMto6ufxA7ZWwE0AV31Ywr0PQpbKzjqm7NOZWvQoymljlXFT9UZi6SCjT08d1xBbrxUPNf1xa4Fmwsc0L9UJymtg85+lZUzvpduYHet28R9+0GAvsAs7pnAt72AscbBdgq+Fm4fir0Q06GOl3ssIBTBxd1/eQMI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784970493; c=relaxed/simple;
-	bh=KxHoVKT+TYBFpNxZl1pnAv0TCcwh76xyAHIqQ9FzO34=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mJc91IfP0/e2O3JGdjiKX6xWms3JwawVZzMMdLXJKO/AMQiUpa5VIck432gnXPGNzVaSwbDUkC5q07ZEm4V/eHsXYJRqwJ7X/mRVuNk3emouOu9AagPwhLBpevTIo4RTx8q85HHv/ebxIflvWG7+2c5+5urHqYacHmKPp85muUc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=j01sTibK; arc=none smtp.client-ip=209.85.210.179
+	s=arc-20240116; t=1784971341; c=relaxed/simple;
+	bh=vLtnKlLR558kkLw4Vnro/1D4DLDqf/ycb8bYPU3aI0M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jvYoCuk+3guHI1ZEA4b/HEcL4rxjimknrT/1f5N6xlqMhRO+0G02jOxdKAcF6n9dxH5/mSCNfwZIEOuzZmXmEt5LMcma/5+5H1Hpm+5uoAWEtQY7GlZD71cVhlmLMKaUksgnkbpek3DGKx5hRaOvZPk2IlLGWTLqT8GowiYegHs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hR8NWsv0; arc=none smtp.client-ip=209.85.216.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="j01sTibK"
-Received: by mail-pf1-f179.google.com with SMTP id d2e1a72fcca58-8484f229529so823373b3a.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jul 2026 02:08:11 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hR8NWsv0"
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-38759bcd877so868702a91.2
+        for <linux-fbdev@vger.kernel.org>; Sat, 25 Jul 2026 02:22:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784970491; x=1785575291; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=/dhpaHA58wTtBJFoLpIdqnrVEV4rKMcURpQAdaZKTc4=;
-        b=j01sTibKJIIUS/cO3r/IJdAFX0G5EY69pxsuJ6e6IEEGW+/Ob/F1BGJ+CREx+p/hDQ
-         cPH82Jx9du5NaV7EnZcU8swn/3bVSnGxMZGaHA3kMNCeyLfjoArX4Qdds+puyeksYKJf
-         P/+NNthQzyTgdKGXdI5bbdYvms/Ev9PfRDCA8eRHR7uCUNBlkzlHkLCtgAV3WQAXUQZx
-         iWB8iniY94mo9Qb6UEs6xupXlANZTIgW7Ko+WRiGBX/M1MplRQFp4rcLoojVvq9xqGol
-         x7WzVC1hYw2JfDlwkymLVE/R4RhEYZ01Z36MIZ7SxJuznKl1Lfq/dska9j0YDYzX1c+Y
-         eIFA==
+        d=gmail.com; s=20251104; t=1784971340; x=1785576140; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=sTuqPKFq7mh1Y2qEAeGPo3pQ2Q0OiViZEunk17weov8=;
+        b=hR8NWsv0yLMm8RcnNDrj3yQ6EIDXlTgW9yp58tt8i1xNujUXXJ4TTzohmCBg0n31T5
+         M0G9RedGgYzj2xIHbGx5qBx1BwchVo9zWxn4QrtQ62pjegKoOU98MpW7fRk384NVzMoP
+         QId2ysKr4a8QpqsX1SOH8SrMPExIrNaoDq/HreM1gMigkHNfFz0eWwbU2BTekcSfF3CA
+         Tt0Zy1zgEoKQn85IUo7YTzNMJ20SrDOJMG3DKtjba6gb+BzvvaiPuXgiQJ0Nz7xnkgk4
+         RdYNL0ZAnIgBASyeabF5wYAQgu7JhaGSAMe6fayyr+Cd3ztigIjEv8KrlcORtJ4i5eww
+         cZIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784970491; x=1785575291;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=/dhpaHA58wTtBJFoLpIdqnrVEV4rKMcURpQAdaZKTc4=;
-        b=aJzydPA5HEjAvEU90caXMPUHqN2ApENVd8SBFHIC2HiLJuRo3Go1Cnrk5q+3UzGu95
-         p4VCAHY9m4XSD9Z5AY/eNM9p1VD43VJVfv3dECHSeGKyJbZgr8KrsQcqNKYVdjVMebt5
-         FBYbqTqa3cSlZiYxUq25LIn0TCHoK/Dq7bMjqhAyOFB+tkM4fJqmh3YpuBsyUDA2zBlY
-         MylNQLxRsoL7TF//FFJ1HaOt/zefsnXQ5NPN15fS17vDMXmXMVzM+yy4DfW1dUU/t7mp
-         57W+E2ZAibX7jWq0cGDkMZrhRAs4LNDdpBLvspGg06LHQwXp/MY6uxlnDc3Me/2v/3fe
-         Z/Pw==
-X-Gm-Message-State: AOJu0YwdG/R9j7a8Da9oEJMNbW/HQ3Y1d51AQ1KsxBhL5jMo9kAPVoyn
-	B8oxsxKT7m4HIJQSgs8LZLld3N3fYc1QwhTdRgBbJsR4ntWJmHQTlw08fVbvNRE8
-X-Gm-Gg: AR+sD115ICmVIryoFx4k/xRrTbqAx4htvnCufXYnFUglHsM27wz1oRlldrqSGJ454Ov
-	RqgiQUv5zizPIcvu2U+EWmjiF99gSCPsliUDeBCL5sIQLxcCSbh/9wMDIBJTJgSxEkiT6HKFb4r
-	3Y/21oveV/8n0AtS3QpAjFu1mOJ2H7zBH+Y3wWVOH3uBVwU/s5Q5OGihJlz4MOs7zXdyeDGFLs9
-	a8ru7MPh90a751JMzQ+V41iPHFPkN1v9vayI/VELCIlcGmMnWb+ep8owLUhhZci2O9QHUbgcOQk
-	X4hB6zQ9ga0BiHCGWgPFjigxTDCt4TStXANrYu9TxqHEIVVbQcmiv0PiYOHkLymizFweS7ic3So
-	fz+1UA8yJdWYiYUW0ypB9I+j+gBbb5haJPFq2Xs1FhUWQJHB2XpvQ4uu/vbucmYzmzGYpMnULyI
-	Qbgg==
-X-Received: by 2002:a05:6a21:4784:b0:3c3:990b:2292 with SMTP id adf61e73a8af0-3c67dfe6723mr1497205637.57.1784970491169;
-        Sat, 25 Jul 2026 02:08:11 -0700 (PDT)
-Received: from PC.. ([103.172.209.188])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-314bc447f6bsm9198169eec.12.2026.07.25.02.08.08
+        d=1e100.net; s=20251104; t=1784971340; x=1785576140;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=sTuqPKFq7mh1Y2qEAeGPo3pQ2Q0OiViZEunk17weov8=;
+        b=qVkjwZf3jyDTWuBz7nCt2jlFzMhTa5Z3IYPFr64utGBSnFOcunBwvuz72Uer7Uxg2+
+         ETD4gj/5Pvr7IT/ch98BqBA8m9mgpToT/q8El6Z6HtVRuCsdNHqBUja0HBooVXSPZRNU
+         laJOGzggkJs5UHT27zK1DMA2dENhTZ2lWxq5EEfhRt30/23L+wyMCnmg3cYIpv/RJJSP
+         3h2WHeZG/DNwn3iPwux8+TASj7JMLkwiiRk6dO61HQOrVNf6xzpXpUiogEiMXXoLhRO+
+         feqTNwXbp2tp+QO6jR4g7SIpeYW8w9dtlnY9Yqk9if9yVzv6P5IUhSfI2iL46ACfxiVU
+         r4Kg==
+X-Forwarded-Encrypted: i=1; AHgh+RrBFR6uB33xq43ufQogbysgAZ+o0GxEdru5gj6N8Juo2YN2jPgZokzRSH9fvVFZC8l+58HXNMjE/4LXPA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzElUOzF7Se8FJi4sPELoQEhfutmfWJVi0KF6hrD46bqBJKHBUY
+	bN2CTgRS2Y7hx7J8g9l+fOwqQcBlbcHwMfD795vFTEogezyzjkUo32J+
+X-Gm-Gg: AR+sD13YWRMyO6Gx/HOezEk9+9of9ZEf7GFqlNsMPQtD9H/1BFYAy9qU+W7/lc7U1Bv
+	PKDdVSyhQJ2h731+6a1CisepJaac63WrrPRpDAScLmppFHGeTs1DHpCm3GSZEvOl5NtTX+n9bKZ
+	b30iqTKUO2Ocwxv4eS79iNna6UD9iG59CmpP1SLdVsUeULq4akFDgqbX3/qg+lrYK0RrTVuBP+9
+	nKNnZ0IibOvg0bCVbmfutLEX+y3zTGFKdr2y0J/mdJxzuEHf3Es5HeZN5Qj/vFfCr6HpySf/RIy
+	Sq87wQ0Rl77+DOZWBT2J+vj/rylNBbTSBjwD6Mf+D8Nd4SyQCBn3DbFwR7kvHDNnDUJRsrqu/Pv
+	KyJSq6d6mBlTshzv4Ipzu5ZUu/ZxfUr2kFMzKQWjD1VYW0I35sfoTsH34WaBSI/ak55VGsoKD3v
+	MWlJKmapQ=
+X-Received: by 2002:a17:90b:398d:b0:38f:18f9:785 with SMTP id 98e67ed59e1d1-38f293a17b6mr1913634a91.8.1784971339675;
+        Sat, 25 Jul 2026 02:22:19 -0700 (PDT)
+Received: from localhost ([172.216.252.11])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38f08df8a94sm1249949a91.2.2026.07.25.02.22.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 25 Jul 2026 02:08:10 -0700 (PDT)
-From: Mohit Mishra <mishraloopmohit@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Sat, 25 Jul 2026 02:22:18 -0700 (PDT)
+Date: Sat, 25 Jul 2026 12:22:12 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Mohit Mishra <mishraloopmohit@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Mohit Mishra <mishraloopmohit@gmail.com>
-Subject: [PATCH v2 2/2] staging: sm750fb: Remove unused function sm750_enable_dma
-Date: Sat, 25 Jul 2026 14:37:49 +0530
-Message-ID: <20260725090750.113598-2-mishraloopmohit@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260725090750.113598-1-mishraloopmohit@gmail.com>
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] staging: sm750fb: Remove dead VALIDATION_CHIP
+ preprocessor blocks
+Message-ID: <amSARNiX3UpPVY-w@stanley.mountain>
 References: <20260725090750.113598-1-mishraloopmohit@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -77,65 +77,26 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260725090750.113598-1-mishraloopmohit@gmail.com>
 
-The function sm750_enable_dma is defined in ddk750_power.c and declared
-in ddk750_power.h, but it is not called anywhere in the driver.
+On Sat, Jul 25, 2026 at 02:37:48PM +0530, Mohit Mishra wrote:
+> The macro VALIDATION_CHIP is not defined anywhere in the kernel source
+> tree. Hence, '#ifdef VALIDATION_CHIP' blocks are dead code, and '#ifndef
+> VALIDATION_CHIP' blocks are always active.
+> 
+> Remove the dead conditional blocks, keeping only the active paths, and
+> clean up the unused macro definitions.
+> 
+> This addresses the first task in the drivers/staging/sm750fb/TODO list:
+> "- refine the code and remove unused code".
+> 
+> Signed-off-by: Mohit Mishra <mishraloopmohit@gmail.com>
+> ---
 
-Remove the unused definition and declaration.
+Reviewed-by: Dan Carpenter <error27@gmail.com>
 
-This addresses the first task in the drivers/staging/sm750fb/TODO list:
-"- refine the code and remove unused code".
-
-Signed-off-by: Mohit Mishra <mishraloopmohit@gmail.com>
----
-v2: Remove double blank line flagged by checkpatch -f (Dan Carpenter).
-
- drivers/staging/sm750fb/ddk750_power.c | 14 --------------
- drivers/staging/sm750fb/ddk750_power.h |  5 -----
- 2 files changed, 19 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index 36fde3bcf1b7..59ded1163052 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -89,20 +89,6 @@ void sm750_enable_2d_engine(unsigned int enable)
- 	sm750_set_current_gate(gate);
- }
- 
--void sm750_enable_dma(unsigned int enable)
--{
--	u32 gate;
--
--	/* Enable DMA Gate */
--	gate = peek32(CURRENT_GATE);
--	if (enable)
--		gate |= CURRENT_GATE_DMA;
--	else
--		gate &= ~CURRENT_GATE_DMA;
--
--	sm750_set_current_gate(gate);
--}
--
- /*
-  * This function enable/disable the GPIO Engine
-  */
-diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
-index 1c4f054d7276..0c4ab2120385 100644
---- a/drivers/staging/sm750fb/ddk750_power.h
-+++ b/drivers/staging/sm750fb/ddk750_power.h
-@@ -23,11 +23,6 @@ void sm750_set_current_gate(unsigned int gate);
-  */
- void sm750_enable_2d_engine(unsigned int enable);
- 
--/*
-- * This function enable/disable the DMA Engine
-- */
--void sm750_enable_dma(unsigned int enable);
--
- /*
-  * This function enable/disable the GPIO Engine
-  */
--- 
-2.43.0
+regards,
+dan carpenter
 

@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66614328B7B;
-	Sat, 25 Jul 2026 15:30:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D14D94908A9;
+	Sat, 25 Jul 2026 15:37:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784993409; cv=none; b=Lr28kqx802sricPDEFVNFceX/xpow6naecu4PUofPykbnOOjK/+/Q/gTe1v4HRXRiQXGUrNtlGbrEk90+bYpOpLYZSMIXXX4uH1NzEQzE7j0fw/gtgRlGJDmZt9wY24y/QHXmuo0I0PUpAYkJHHSCvi1OMAP++PKC/AseFD+EIg=
+	t=1784993877; cv=none; b=B0pE31oeon6NaePAuZ31PnNgG8PBGEjYZtOLO01YDRvFWvR4U2lmpjakHPHOWbweWGnejf24Y6zOyuTqZv3f3vXrqobpnfQRYU/KGmSqe3mGcB0OS2TOvVHjD8wdNgYh2Coc2kKAUofoiBXOEIvE+Mz3AHfRCun8OsqjQ5pkVVU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784993409; c=relaxed/simple;
-	bh=rkqTou5VFECwHgA95jzYON9zXj7OoPsWnOM67tU8Koc=;
+	s=arc-20240116; t=1784993877; c=relaxed/simple;
+	bh=iiKm1QSlyliTLmTdOzFCLqMgefQ7Be6WTr0lT1ml9uM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ta0V5PuRaDhfKNyNNxusG7AShA4aV4YFgqbfVnM2lusvz278pvfwCIBqy5IbV7q8KvEbQmQS0SioX+cSXQNm/JdC/EzOW81kqq+BfaEa16pcwIVCryrD+Ik7KCRrRayJNizEvOS4LZQOHP+c8wMbFx7sJfuF4mj2cTb0AwXlCa0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=igG4JFbX; arc=none smtp.client-ip=212.227.15.18
+	 In-Reply-To:Content-Type; b=FPoEhFpKtCbDjtTaxqNa4oX3UTrsoSGUiyKgPWD61oRMUsIrUYJw7nVFmQicg2J5LOP5pSibLRJYQ6HVUy+A6N1rvqY0An2IPvlDWwEVN2c4uQA/PUzHX0756v02jUxNrnvfsoOkH19pQH0EDIP6Wb3zgh7B/FWDMLPqG40QFTA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=pu12xz8E; arc=none smtp.client-ip=212.227.15.19
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="igG4JFbX"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="pu12xz8E"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1784993400; x=1785598200; i=deller@gmx.de;
-	bh=5jH0ii7UHgwikPFMsv0g2mLL/BI9qapzarRmv/m/hv0=;
+	s=s31663417; t=1784993838; x=1785598638; i=deller@gmx.de;
+	bh=IN0g1ar0S1Fg/x0rGIU8Wo3TQa6LM7zjlaYWzMNjNHY=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=igG4JFbX7bt8oYD8JXt8Y54y8B3Cbpd9UeGvu1gFKUjga6RW5mETLxlv7Yb9H/Lj
-	 eB8+AUIbbe9bOp7xo2I8RSSTKDaO+RxiM9x9iPU+nwkljHZ9YFMd41ozKUhKHe9O8
-	 nDcQvaqyvvpE/T1PyRaKTmDyuN4L990assaAUDH6yLEWmTMEciVUJj/7MzzrQVZPj
-	 akGxD/Jg0WiKeKzi7wOLHDYyvvoisWD4V+qFT3hKAUVzOUB0KfhYDrv6DpikAaPsq
-	 ym6lRiMw0VQtOFTDI29IC7WJL5YQkE5r4QE1N76Pyz3NkjOw2mZ/IF0T7/r1nfp9G
-	 q+jCdGu50WYw4VatDA==
+	b=pu12xz8EZmcQr67qTKI6URydO7O3LP9VcqBYqPqZKU3O6BIDerfDiTCmakcslo1a
+	 00TQa98Z8LYdi4g1VgC+aHNmHSTqjkczOeV1BMeTLScPC6W7xEPjhAqhogW+YcImA
+	 YTbsmbRKzgSAz8sM+O57UraB3TjN0wzFac8sM0dUeFnPGMiT0G+ePg1XTK2i2t1Yq
+	 Lu6m9I0qK4RXKIcrhETCy+tK7DaGoWFFs4OgfOlgMAaZ1MbDkJBglEmFI4B1vIKI7
+	 5ZPBrs/aampNEXIxiYhrHgQCU6GROTCsXS5qVCZINNx6t+rngaAks1/d8NWMFN6MP
+	 TJAuS6f6kRsYHH7SLA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1N5VHM-1x3PqP3MRm-00uJWl; Sat, 25
- Jul 2026 17:29:59 +0200
-Message-ID: <bb8a8d13-07fb-4ee9-aed2-172c86cf3ac0@gmx.de>
-Date: Sat, 25 Jul 2026 17:29:58 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MDhhN-1wecPZ26fn-004gWf; Sat, 25
+ Jul 2026 17:37:18 +0200
+Message-ID: <125aed01-4a98-4424-9276-c105c839fb7f@gmx.de>
+Date: Sat, 25 Jul 2026 17:37:10 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,12 +43,14 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbdev: core: Clamp total_size to smem_len in
- read/write functions
-To: Mingyu Wang <25181214217@stu.xidian.edu.cn>, simona@ffwll.ch
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20260721071522.106306-1-25181214217@stu.xidian.edu.cn>
+Subject: Re: [PATCH V2] fbdev: Fix out-of-bounds access when rotating console
+ after font resize
+To: Zizhi Wo <wozizhi@huaweicloud.com>, simona@ffwll.ch, tzimmermann@suse.de,
+ sam@ravnborg.org, ville.syrjala@linux.intel.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, yangerkun@huawei.com,
+ chengzhihao1@huawei.com, wozizhi@huawei.com
+References: <20260722062216.2574546-1-wozizhi@huaweicloud.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -94,203 +96,265 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20260721071522.106306-1-25181214217@stu.xidian.edu.cn>
+In-Reply-To: <20260722062216.2574546-1-wozizhi@huaweicloud.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:af7SGvPzDI5Z4Wq8txheByJH4TozpWMyidPl+AJ4tX8UdnzraBy
- imwg3z0SQxVd9teLnImKz3f+vmNwrfHXqFVTfRgyplFQUtCIcQCbytr9VZjmt1urGtmDOua
- P4nMLp0cHvVDQFo93d3j+xehQgGkl2V2kMnhDfLAYAoF6FA0OsoGOhpSUDD7gockPRJyGbA
- THfdKQzonhA9h3wherNgw==
+X-Provags-ID: V03:K1:zA3lhcdiiF/5wOUPHKj8yFegvGCjT9/snltpHihDtnBatLGT/as
+ uC8jUP93nvZRpweOxazvXV+B2bxh+6ydV4qIxED6P3cwJnQiobtAobhMiOMZ+Vrf7uo8Akr
+ dE9RadrJfTWH906iUaqBbIzxNIFVhNPkNwY5FYtCFuU8EnuHhVdzrHQFC1LcB+o5L9Tf0Ys
+ 57HkkDX14M0dSaJm0vGPw==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:3ex+zhN5Tow=;40XJ2YSBEn94wL4CknKJiDnCCOO
- 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
+UI-OutboundReport: notjunk:1;M01:P0:ci9ryCvwlog=;u6AWYAf/iXLW+PViPXs1aYvH7kb
+ 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
+ q+B48+mNphbbNSGN84YGWXuykMDMr9FIyg==
 
-On 7/21/26 09:15, Mingyu Wang wrote:
-> Some legacy fbdev drivers may incorrectly set info->screen_size to a
-> value larger than the actual mapped framebuffer size (info->fix.smem_len=
-)
-> during mode switches. This could allow out-of-bounds I/O and system
-> memory accesses in fb_io_read(), fb_io_write(), fb_sys_read(), and
-> fb_sys_write().
+On 7/22/26 08:22, Zizhi Wo wrote:
+> From: Zizhi Wo <wozizhi@huawei.com>
 >=20
-> Prevent this by clamping total_size to smem_len when smem_len is non-zer=
-o.
-> Virtual framebuffers (smem_len =3D=3D 0) are unaffected.
+> [BUG]
+> Recently, we encountered a KASAN warning as follows:
 >=20
-> This is a hardening measure; no specific crash is fixed by this patch.
+> BUG: KASAN: slab-out-of-bounds in ccw_putcs+0x8bd/0xa80
+> Read of size 1 at addr ff11000110067100 by task bash/1209
+> CPU: 10 UID: 0 PID: 1209 Comm: bash Not tainted 7.2.0-rc3 #69 PREEMPT(fu=
+ll)
+> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.17.0-4.fc4=
+1 04/01/2014
+>   Call Trace:
+>    <TASK>
+>    ...
+>    kasan_report+0xf0/0x120
+>    ? ccw_putcs+0x8bd/0xa80
+>    ccw_putcs+0x8bd/0xa80
+>    ? __pfx_ccw_putcs+0x10/0x10
+>    fbcon_putcs+0x338/0x410
+>    ? __pfx_ccw_putcs+0x10/0x10
+>    do_update_region+0x21d/0x450
+>    invert_screen+0x29d/0x5e0
+>    ? __kmalloc_noprof+0x493/0x640
+>    ? vc_do_resize+0x17c/0xe50
+>    clear_selection+0x4c/0x60
+>    vc_do_resize+0xaee/0xe50
+>    fbcon_modechanged+0x2bd/0x640
+>    rotate_all_store+0x298/0x380
+>    ...
 >=20
-> Signed-off-by: Mingyu Wang <25181214217@stu.xidian.edu.cn>
+> reproduce:
+> 1) issue two ioctls: first a KDFONTOP ioctl with op.op =3D KD_FONT_OP_SE=
+T,
+> op.width =3D 1 and op.height =3D 1, then a TIOCL_SETSEL ioctl
+> 2) echo 2 > /sys/devices/virtual/graphics/fbcon/rotate_all
+> 3) issue two ioctls: first a KDFONTOP ioctl with op.op =3D KD_FONT_OP_SE=
+T,
+> op.width =3D 8 and op.height =3D 1, then a TIOCL_SETSEL ioctl
+> 4) echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
+>=20
+> [CAUSE]
+> The root cause is that fbcon_modechanged() first sets the current rotate=
+'s
+> corresponding ops. Subsequently, during vc_resize(), it may trigger
+> clear_selection(), and in fbcon_putcs->ccw_putcs[rotate=3D3], this can r=
+esult
+> in an out-of-bounds access to "src". This happens because par->rotated.b=
+uf
+> is reallocated in fbcon_rotate_font():
+> 1) When rotate=3D2, its size is (width + 7) / 8 * height
+> 2) When rotate=3D3, its size is (height + 7) / 8 * width
+>=20
+> And the call to fbcon_rotate_font() occurs after clear_selection(). In
+> other words, the fontbuffer is allocated using the size calculated from =
+the
+> previous rotation 2, but before reallocating it with the new size,
+> con_putcs is already using the new rotation 3:
+>=20
+> rotate_all_store
+>   fbcon_rotate_all
+>    fbcon_set_all_vcs
+>     fbcon_modechanged
+>      set_blitting_type
+>      ...
+>       par->bitops =3D &ccw_fbcon_bitops
+>      vc_resize
+>      ...
+>       clear_selection
+>        highlight
+>        ...
+>         do_update_region
+> 	fbcon_putcs
+> 	...
+> 	 image.dy =3D vyres - ((xx + count) * vc->vc_font.width) [1]  // overfl=
+ow!
+> 	 ccw_putcs_aligned
+> 	  // old buf size is still being used during the read!
+> 	  src =3D par->rotated.buf + (scr_readw(s--) & charmask) * cellsize
+> 	  fb_pad_aligned_buffer----[src KASAN!!!]	[2]
+> 	  info->fbops->fb_imageblit(info, image)
+> 	   sys_imageblit
+> 	    fb_imageblit
+> 	     fb_address_forward
+> 	      // offset: image->dy * bits_per_line + image->dx * bpp
+> 	      unsigned int bits =3D (unsigned int)adr->bits + offset
+> 	      adr->address +=3D (bits & ~(BITS_PER_LONG - 1u)) / BITS_PER_BYTE	=
+[3]
+> 	     fb_bitmap_imageblit
+> 	     ...
+> 	      fb_read_offset	// page fault!	[4]
+>      update_screen
+>       redraw_screen
+>       ...
+>        ccw_cursor
+>         soft_cursor
+>          memcpy(src, image->data, dsize)----[src KASAN again!!!]	[5]
+>       fbcon_switch
+>        fbcon_rotate_font
+>         font_data_rotate
+> 	dst =3D kmalloc_array(charcount, d_cellsize, GFP_KERNEL)
+>         // the new size is allocated only here!
+>         par->rotated.buf =3D buf	[6]
+>=20
+> [FIX]
+> A fairly obvious approach is to follow fbcon_switch(): in
+> fbcon_modechanged(), call rotate_font() before vc_resize() so that a
+> correctly sized buffer is allocated in time, as done in [6]. This fix is
+> necessary, but it is not sufficient on its own.
+>=20
+> In [1] it causes an image.dy overflow (ccw_putcs: vyres =3D 768,
+> image.dy =3D 4294967040), because vc_cols has not been updated in time a=
+t
+> this point (it is likewise only updated after clear_selection()). This
+> allows (xx + count) * width to exceed vyres, causing image.dy to overflo=
+w.
+> Subsequently, address in [3] is incremented by an even larger amount, wh=
+ich
+> triggers a page fault at [4].
+>=20
+> Therefore, a second fix is required in combination with the first: move
+> clear_selection() earlier, before set_blitting_type() in
+> fbcon_set_all_vcs(), to prevent the out-of-bounds access. fbcon_rotate()
+> has a similar problem, so add the same clear there. Since vc_is_sel() is
+> not exported, the fbdev side is currently forced to call clear_selection=
+()
+> unconditionally, causing the global selection to be cleared prematurely.
+> And this will not cause any other significant impact.
+>=20
+> Signed-off-by: Zizhi Wo <wozizhi@huawei.com>
 > ---
 > v2:
->   - Apply the clamp to fb_sys_read() and fb_sys_write() as well to preve=
-nt
->     similar OOB accesses in system memory framebuffers (Reported by Sash=
-iko).
->   - Update commit message to clearly state this is a hardening measure.
+> Fixed the issue by calling clear_selection() earlier, and updated the
+> related description in the commit message.
+>=20
+> v1: https://lore.kernel.org/all/20250905024340.337521-1-wozizhi@huaweicl=
+oud.com/
 > ---
->   drivers/video/fbdev/core/fb_io_fops.c  | 16 ++++++++++++++++
->   drivers/video/fbdev/core/fb_sys_fops.c | 16 ++++++++++++++++
->   2 files changed, 32 insertions(+)
+>   drivers/video/fbdev/core/fbcon.c | 9 +++++++++
+>   1 file changed, 9 insertions(+)
+>=20
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
+/fbcon.c
+> index 9f5c4c101581..3361479d139d 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -2639,13 +2639,20 @@ static void fbcon_modechanged(struct fb_info *in=
+fo)
+>   	vc =3D vc_cons[par->currcon].d;
+>   	if (vc->vc_mode !=3D KD_TEXT ||
+>   	    fbcon_info_from_console(par->currcon) !=3D info)
+>   		return;
+>  =20
+> +	clear_selection();
+> +
+>   	p =3D &fb_display[vc->vc_num];
+>   	set_blitting_type(vc, info);
+>  =20
+> +	if (par->bitops->rotate_font && par->bitops->rotate_font(info, vc)) {
 
-Sounds reasonable.
-I've added it to fbdev git tree for wider testing.
+Do you mind adding some comments before this rotate_font(), so that people
+may understand why you rotate the font here?
 
-Thanks!
+Same for the two added clear_selection() calls.... A short comment which e=
+xplains
+why the selection is cleared.
+
+Thank you!
 Helge
-
-
- =20
-> diff --git a/drivers/video/fbdev/core/fb_io_fops.c b/drivers/video/fbdev=
-/core/fb_io_fops.c
-> index 6ab60fcd0050..335f16d2cc23 100644
-> --- a/drivers/video/fbdev/core/fb_io_fops.c
-> +++ b/drivers/video/fbdev/core/fb_io_fops.c
-> @@ -24,6 +24,14 @@ ssize_t fb_io_read(struct fb_info *info, char __user =
-*buf, size_t count, loff_t
->   	if (total_size =3D=3D 0)
->   		total_size =3D info->fix.smem_len;
->  =20
-> +	/*
-> +	 * Security Hardening: Defend against buggy legacy drivers that may
-> +	 * calculate a malformed screen_size. Clamp total_size to the actual
-> +	 * hardware mapped memory limit (smem_len) to prevent OOB access.
-> +	 */
-> +	if (info->fix.smem_len && total_size > info->fix.smem_len)
-> +		total_size =3D info->fix.smem_len;
-> +
->   	if (p >=3D total_size)
->   		return 0;
->  =20
-> @@ -88,6 +96,14 @@ ssize_t fb_io_write(struct fb_info *info, const char =
-__user *buf, size_t count,
->   	if (total_size =3D=3D 0)
->   		total_size =3D info->fix.smem_len;
->  =20
-> +	/*
-> +	 * Security Hardening: Defend against buggy legacy drivers that may
-> +	 * calculate a malformed screen_size. Clamp total_size to the actual
-> +	 * hardware mapped memory limit (smem_len) to prevent OOB access.
-> +	 */
-> +	if (info->fix.smem_len && total_size > info->fix.smem_len)
-> +		total_size =3D info->fix.smem_len;
-> +
->   	if (p > total_size)
->   		return -EFBIG;
->  =20
-> diff --git a/drivers/video/fbdev/core/fb_sys_fops.c b/drivers/video/fbde=
-v/core/fb_sys_fops.c
-> index be96b3b3942e..e97cf02f7c70 100644
-> --- a/drivers/video/fbdev/core/fb_sys_fops.c
-> +++ b/drivers/video/fbdev/core/fb_sys_fops.c
-> @@ -35,6 +35,14 @@ ssize_t fb_sys_read(struct fb_info *info, char __user=
- *buf, size_t count,
->   	if (total_size =3D=3D 0)
->   		total_size =3D info->fix.smem_len;
->  =20
-> +	/*
-> +	 * Security Hardening: Defend against buggy legacy drivers that may
-> +	 * calculate a malformed screen_size. Clamp total_size to the actual
-> +	 * hardware mapped memory limit (smem_len) to prevent OOB access.
-> +	 */
-> +	if (info->fix.smem_len && total_size > info->fix.smem_len)
-> +		total_size =3D info->fix.smem_len;
-> +
->   	if (p >=3D total_size)
->   		return 0;
->  =20
-> @@ -80,6 +88,14 @@ ssize_t fb_sys_write(struct fb_info *info, const char=
- __user *buf,
->   	if (total_size =3D=3D 0)
->   		total_size =3D info->fix.smem_len;
->  =20
-> +	/*
-> +	 * Security Hardening: Defend against buggy legacy drivers that may
-> +	 * calculate a malformed screen_size. Clamp total_size to the actual
-> +	 * hardware mapped memory limit (smem_len) to prevent OOB access.
-> +	 */
-> +	if (info->fix.smem_len && total_size > info->fix.smem_len)
-> +		total_size =3D info->fix.smem_len;
-> +
->   	if (p > total_size)
->   		return -EFBIG;
->  =20
 

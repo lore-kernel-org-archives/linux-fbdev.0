@@ -1,247 +1,128 @@
-Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B06154908D7;
-	Mon, 27 Jul 2026 01:10:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56DD43DB332;
+	Mon, 27 Jul 2026 07:01:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785114633; cv=none; b=QUvORZ1PHuOYdaQll/MgbuX+Y24zrN2MYhl+TTyeUArmAQuBK7+PuoB8aO7Hxo5rUAQPRlecDdRCUOQHq5X0q0q6J/RARvV1zlGuFgL7hdXNizt9iuQw9dUN1/fMW1OfJxcZFy1wBt1tn31B1DPrSyJmqApHN5CrOVJUZrLhmKE=
+	t=1785135698; cv=none; b=M++Kk2HuaUTe4n9X6EZsVyJnc/7ti+0VGsfTRHHLnbExvIHqO/qFi39mu7Rtv1cYawlaJyD43TL47/HeSOewlNKacVaXYCAqMwb2J7+K+CfuEcFoQS9YtwYyD7BENbUEIThJlFLFT8AmgwLGaT94gRpH8/N20jea1EA4cXFwHIY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785114633; c=relaxed/simple;
-	bh=MHW719x5Zt4bSDfUlERu8/Rt6gCGf9Oguw9726P1e4Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aBfKsZ0bQc0WtKqPBXlI0SKRjAqqm4qIMmoh0wqGHHeWckuhOTQ27A5h2qFaAxWguzo35jjnhA6nDEuJNu45eRj6RuBmBHdo/22lsnT6cjBsmAE3a2p2mDHhVAuBkMdpHTcA19nJpcpdxTAri2rUyRORq2MMLVeIgOkwBFkq2Mw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.56
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huaweicloud.com
-Received: from mail.maildlp.com (unknown [172.19.163.170])
-	by dggsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4h7gVD3btqzKHMP0;
-	Mon, 27 Jul 2026 09:09:24 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.252])
-	by mail.maildlp.com (Postfix) with ESMTP id 85A0340561;
-	Mon, 27 Jul 2026 09:10:15 +0800 (CST)
-Received: from [10.174.176.179] (unknown [10.174.176.179])
-	by APP3 (Coremail) with UTF8SMTPSA id _Ch0CgC3pkXzr2ZqufZSAA--.19931S3;
-	Mon, 27 Jul 2026 09:10:12 +0800 (CST)
-Message-ID: <69302a3f-c11c-403f-9bf6-8449a592f6ad@huaweicloud.com>
-Date: Mon, 27 Jul 2026 09:10:10 +0800
+	s=arc-20240116; t=1785135698; c=relaxed/simple;
+	bh=0m92iWj1q46DlQQFw64jYwjKipaArwf4wGnpKPmeRfU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
+	 MIME-Version:Message-ID; b=AhX8l8jBxl6e+3lkj4CXwILI94fXvnFPXINuCkfFlRbxJ3bnZXSh42wkNjQRA8Zh3jA5d1gSdDr2TItNu6VBhYzZ9mU66MN8MxMGberkBQks6JxBf2aMaIgDqe2Cs0eiN2nauUwKvgyvnt9C624FfHv0Hq0snT378mo3ExgrRW0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=l/FAWrmb; arc=none smtp.client-ip=220.197.31.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="l/FAWrmb"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=Date:From:To:Subject:Content-Type:MIME-Version:
+	Message-ID; bh=0m92iWj1q46DlQQFw64jYwjKipaArwf4wGnpKPmeRfU=; b=l
+	/FAWrmbt7naXRpZniJ/idUns8rskWcLA936Jvhka1Wclwc2TVkGIFwI1+xf0yvlJ
+	/CCP715Y0gTeIYQpm2Rwxrb2gHyf3mIYeRnSYyTf8YAIwgwm2vvvGCt34UWgAxq+
+	+qxn3YoLHqi5yKa+RwKvqbbdJcS++9JkkP5F540Fu4=
+Received: from w15303746062$163.com ( [115.53.141.25] ) by
+ ajax-webmail-wmsvr-40-117 (Coremail) ; Mon, 27 Jul 2026 15:00:34 +0800
+ (CST)
+Date: Mon, 27 Jul 2026 15:00:34 +0800 (CST)
+From: w15303746062  <w15303746062@163.com>
+To: simona@ffwll.ch, deller@gmx.de
+Cc: tzimmermann@suse.de, ville.syrjala@linux.intel.com, sam@ravnborg.org,
+	kees@kernel.org, yanquanmin1@huawei.com, syoshida@redhat.com,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	"Mingyu Wang" <25181214217@stu.xidian.edu.cn>,
+	stable@vger.kernel.org
+Subject: Re:Re:[PATCH 7.0] fbdev: fbcon: fix memory leak in error path of
+ fbcon_do_set_font()
+X-Priority: 3
+X-Mailer: Coremail Webmail Server Version 2023.4-cmXT build
+ 20260511(2e539873) Copyright (c) 2002-2026 www.mailtech.cn 163com
+In-Reply-To: <5b288246.378d.19e95d82602.Coremail.w15303746062@163.com>
+References: <20260525082741.600003-1-w15303746062@163.com>
+ <5b288246.378d.19e95d82602.Coremail.w15303746062@163.com>
+X-NTES-SC: AL_Qu2TB/2Yuk4o4iCYbekfmU0Qguw9Xcq5uPkj34FWN5t8jD/p6wkiclhFBGTN39q/NymWkiiSQiFv8MdmQoVpcpIoCx+rIl7O5HqSMBHkEks80Q==
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=GBK
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V2] fbdev: Fix out-of-bounds access when rotating console
- after font resize
-To: Helge Deller <deller@gmx.de>, Zizhi Wo <wozizhi@huaweicloud.com>,
- simona@ffwll.ch, tzimmermann@suse.de, sam@ravnborg.org,
- ville.syrjala@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, yangerkun@huawei.com,
- chengzhihao1@huawei.com
-References: <20260722062216.2574546-1-wozizhi@huaweicloud.com>
- <125aed01-4a98-4424-9276-c105c839fb7f@gmx.de>
-From: Zizhi Wo <wozizhi@huaweicloud.com>
-In-Reply-To: <125aed01-4a98-4424-9276-c105c839fb7f@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_Ch0CgC3pkXzr2ZqufZSAA--.19931S3
-X-Coremail-Antispam: 1UD129KBjvJXoW3Jw1kJw1rtFy7Cr1DKrWxZwb_yoWxZF15pr
-	1vyry7trW5Crn5Ar1jgr45WFyjqr4kJ3WDGrWrJFyUtFW5ZryvqF4UWr1q9rWkJrs7Gr18
-	J3WUtr47Za1DZw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9Y14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxV
-	WxJr0_GcWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2Wl
-	Yx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbV
-	WUJVW8JwACjcxG0xvEwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
-	Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
-	0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
-	zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF
-	4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWU
-	CwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCT
-	nIWIevJa73UjIFyTuYvjfUonmRUUUUU
-X-CM-SenderInfo: pzr2x6tkl6x35dzhxuhorxvhhfrp/
+Message-ID: <726d129f.53bd.19fa2601661.Coremail.w15303746062@163.com>
+X-Coremail-Locale: zh_CN
+X-CM-TRANSID:dSgvCgD3PzASAmdqMBEmAA--.8488W
+X-CM-SenderInfo: jzrvjiatxuliiws6il2tof0z/xtbC4xL43GpnAhJpowAA3C
+X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
 
-
-
-在 2026/7/25 23:37, Helge Deller 写道:
-> On 7/22/26 08:22, Zizhi Wo wrote:
->> From: Zizhi Wo <wozizhi@huawei.com>
->>
->> [BUG]
->> Recently, we encountered a KASAN warning as follows:
->>
->> BUG: KASAN: slab-out-of-bounds in ccw_putcs+0x8bd/0xa80
->> Read of size 1 at addr ff11000110067100 by task bash/1209
->> CPU: 10 UID: 0 PID: 1209 Comm: bash Not tainted 7.2.0-rc3 #69 
->> PREEMPT(full)
->> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 
->> 1.17.0-4.fc41 04/01/2014
->>   Call Trace:
->>    <TASK>
->>    ...
->>    kasan_report+0xf0/0x120
->>    ? ccw_putcs+0x8bd/0xa80
->>    ccw_putcs+0x8bd/0xa80
->>    ? __pfx_ccw_putcs+0x10/0x10
->>    fbcon_putcs+0x338/0x410
->>    ? __pfx_ccw_putcs+0x10/0x10
->>    do_update_region+0x21d/0x450
->>    invert_screen+0x29d/0x5e0
->>    ? __kmalloc_noprof+0x493/0x640
->>    ? vc_do_resize+0x17c/0xe50
->>    clear_selection+0x4c/0x60
->>    vc_do_resize+0xaee/0xe50
->>    fbcon_modechanged+0x2bd/0x640
->>    rotate_all_store+0x298/0x380
->>    ...
->>
->> reproduce:
->> 1) issue two ioctls: first a KDFONTOP ioctl with op.op = KD_FONT_OP_SET,
->> op.width = 1 and op.height = 1, then a TIOCL_SETSEL ioctl
->> 2) echo 2 > /sys/devices/virtual/graphics/fbcon/rotate_all
->> 3) issue two ioctls: first a KDFONTOP ioctl with op.op = KD_FONT_OP_SET,
->> op.width = 8 and op.height = 1, then a TIOCL_SETSEL ioctl
->> 4) echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
->>
->> [CAUSE]
->> The root cause is that fbcon_modechanged() first sets the current 
->> rotate's
->> corresponding ops. Subsequently, during vc_resize(), it may trigger
->> clear_selection(), and in fbcon_putcs->ccw_putcs[rotate=3], this can 
->> result
->> in an out-of-bounds access to "src". This happens because par- 
->> >rotated.buf
->> is reallocated in fbcon_rotate_font():
->> 1) When rotate=2, its size is (width + 7) / 8 * height
->> 2) When rotate=3, its size is (height + 7) / 8 * width
->>
->> And the call to fbcon_rotate_font() occurs after clear_selection(). In
->> other words, the fontbuffer is allocated using the size calculated 
->> from the
->> previous rotation 2, but before reallocating it with the new size,
->> con_putcs is already using the new rotation 3:
->>
->> rotate_all_store
->>   fbcon_rotate_all
->>    fbcon_set_all_vcs
->>     fbcon_modechanged
->>      set_blitting_type
->>      ...
->>       par->bitops = &ccw_fbcon_bitops
->>      vc_resize
->>      ...
->>       clear_selection
->>        highlight
->>        ...
->>         do_update_region
->>     fbcon_putcs
->>     ...
->>      image.dy = vyres - ((xx + count) * vc->vc_font.width) [1]  // 
->> overflow!
->>      ccw_putcs_aligned
->>       // old buf size is still being used during the read!
->>       src = par->rotated.buf + (scr_readw(s--) & charmask) * cellsize
->>       fb_pad_aligned_buffer----[src KASAN!!!]    [2]
->>       info->fbops->fb_imageblit(info, image)
->>        sys_imageblit
->>         fb_imageblit
->>          fb_address_forward
->>           // offset: image->dy * bits_per_line + image->dx * bpp
->>           unsigned int bits = (unsigned int)adr->bits + offset
->>           adr->address += (bits & ~(BITS_PER_LONG - 1u)) / 
->> BITS_PER_BYTE    [3]
->>          fb_bitmap_imageblit
->>          ...
->>           fb_read_offset    // page fault!    [4]
->>      update_screen
->>       redraw_screen
->>       ...
->>        ccw_cursor
->>         soft_cursor
->>          memcpy(src, image->data, dsize)----[src KASAN again!!!]    [5]
->>       fbcon_switch
->>        fbcon_rotate_font
->>         font_data_rotate
->>     dst = kmalloc_array(charcount, d_cellsize, GFP_KERNEL)
->>         // the new size is allocated only here!
->>         par->rotated.buf = buf    [6]
->>
->> [FIX]
->> A fairly obvious approach is to follow fbcon_switch(): in
->> fbcon_modechanged(), call rotate_font() before vc_resize() so that a
->> correctly sized buffer is allocated in time, as done in [6]. This fix is
->> necessary, but it is not sufficient on its own.
->>
->> In [1] it causes an image.dy overflow (ccw_putcs: vyres = 768,
->> image.dy = 4294967040), because vc_cols has not been updated in time at
->> this point (it is likewise only updated after clear_selection()). This
->> allows (xx + count) * width to exceed vyres, causing image.dy to 
->> overflow.
->> Subsequently, address in [3] is incremented by an even larger amount, 
->> which
->> triggers a page fault at [4].
->>
->> Therefore, a second fix is required in combination with the first: move
->> clear_selection() earlier, before set_blitting_type() in
->> fbcon_set_all_vcs(), to prevent the out-of-bounds access. fbcon_rotate()
->> has a similar problem, so add the same clear there. Since vc_is_sel() is
->> not exported, the fbdev side is currently forced to call 
->> clear_selection()
->> unconditionally, causing the global selection to be cleared prematurely.
->> And this will not cause any other significant impact.
->>
->> Signed-off-by: Zizhi Wo <wozizhi@huawei.com>
->> ---
->> v2:
->> Fixed the issue by calling clear_selection() earlier, and updated the
->> related description in the commit message.
->>
->> v1: https://lore.kernel.org/all/20250905024340.337521-1- 
->> wozizhi@huaweicloud.com/
->> ---
->>   drivers/video/fbdev/core/fbcon.c | 9 +++++++++
->>   1 file changed, 9 insertions(+)
->>
->> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/ 
->> core/fbcon.c
->> index 9f5c4c101581..3361479d139d 100644
->> --- a/drivers/video/fbdev/core/fbcon.c
->> +++ b/drivers/video/fbdev/core/fbcon.c
->> @@ -2639,13 +2639,20 @@ static void fbcon_modechanged(struct fb_info 
->> *info)
->>       vc = vc_cons[par->currcon].d;
->>       if (vc->vc_mode != KD_TEXT ||
->>           fbcon_info_from_console(par->currcon) != info)
->>           return;
->> +    clear_selection();
->> +
->>       p = &fb_display[vc->vc_num];
->>       set_blitting_type(vc, info);
->> +    if (par->bitops->rotate_font && par->bitops->rotate_font(info, 
->> vc)) {
-> 
-> Do you mind adding some comments before this rotate_font(), so that people
-> may understand why you rotate the font here?
-> 
-> Same for the two added clear_selection() calls.... A short comment which 
-> explains
-> why the selection is cleared.
-> 
-> Thank you!
-> Helge
-> 
-
-Thanks for the review. I missed the comments here. I'll add them in the
-next version :)
-
-Thanks,
-Zizhi Wo
-
-
-
-
-
+CkZyb206IE1pbmd5dSBXYW5nIDwyNTE4MTIxNDIxN0BzdHUueGlkaWFuLmVkdS5jbj4KCkhpIEhl
+bGdlLCBTaW1vbmEsIGFuZCBhbGwsCgpSZXNlbmRpbmcgdGhpcyBwYXRjaCBhcyBhIGdlbnRsZSBy
+ZW1pbmRlciwgc2luY2UgaXQgaGFzIGJlZW4gYSB3aGlsZSAKZnJvbSB0aGUgb3JpZ2luYWwgc3Vi
+bWlzc2lvbiAoTWF5IDI1KSBhbmQgbXkgcHJldmlvdXMgcGluZyAoSnVuZSA1KS4KCkFzIGEgcXVp
+Y2sgbm90ZSwgc2luY2UgdGhpcyBtZW1vcnkgbGVhayB3YXMgaW1wbGljaXRseSByZXNvbHZlZCBp
+biAKbWFpbmxpbmUgdmlhIGEgcmVjZW50IHJlZmFjdG9yLCB0aGlzIGZpeCBpcyBzcGVjaWZpY2Fs
+bHkgdGFyZ2V0ZWQgYXQgCjcuMCBhbmQgb2xkZXIgc3RhYmxlIGJyYW5jaGVzIHVzaW5nIHRoZSBs
+ZWdhY3kgdXNlcmZvbnQgbG9naWMuCgpDb3VsZCB5b3UgcGxlYXNlIHRha2UgYSBsb29rIHdoZW4g
+eW91IGhhdmUgYSBtb21lbnQ/IEFueSBmZWVkYmFjayBvciAKZ3VpZGFuY2Ugb24gaG93IGJlc3Qg
+dG8gcHJvY2VlZCB3aXRoIHRoaXMgc3RhYmxlLW9ubHkgZml4IHdvdWxkIGJlIApncmVhdGx5IGFw
+cHJlY2lhdGVkLgoKQmVzdCByZWdhcmRzLAoKTWluZ3l1Cgo+QXQgMjAyNi0wNS0yNSAxNjoyNzo0
+MSwgdzE1MzAzNzQ2MDYyQDE2My5jb20gd3JvdGU6Cj4+RnJvbTogTWluZ3l1IFdhbmcgPDI1MTgx
+MjE0MjE3QHN0dS54aWRpYW4uZWR1LmNuPgo+Pgo+PlsgTm90ZTogVGhpcyBpc3N1ZSB3YXMgZGlz
+Y292ZXJlZCBvbiB0aGUgNy4wIGtlcm5lbC4gV2hpbGUgdGhlIGN1cnJlbnQKPj4gIG1haW5saW5l
+IGhhcyBhbHJlYWR5IGJlZW4gcmVmYWN0b3JlZCB0byB1c2UgYGZvbnRfZGF0YV90YCAod2hpY2gg
+Cj4+ICBpbmFkdmVydGVudGx5IHJlc29sdmVkIHRoaXMgYnVnKSwgdGhpcyB2dWxuZXJhYmlsaXR5
+IHN0aWxsIGFjdGl2ZWx5IAo+PiAgYWZmZWN0cyB0aGUgNy4wIGJyYW5jaCBhbmQgb2xkZXIgc3Rh
+YmxlIHRyZWVzIHRoYXQgcmVseSBvbiB0aGUgbGVnYWN5IAo+PiAgdXNlcmZvbnQgbG9naWMuIFRo
+aXMgcGF0Y2ggcHJvdmlkZXMgYSB0YXJnZXRlZCBmaXggZm9yIHRoZXNlIHN0YWJsZSAKPj4gIGJy
+YW5jaGVzLiBdCj4+Cj4+V2hlbiBmYmNvbl9kb19zZXRfZm9udCgpIGZhaWxzIChlLmcuLCBkdWUg
+dG8gYSB2Y19yZXNpemUoKSBmYWlsdXJlIHVuZGVyCj4+ZmF1bHQgaW5qZWN0aW9uKSwgaXQganVt
+cHMgdG8gdGhlIGBlcnJfb3V0YCBsYWJlbCB0byByb2xsIGJhY2sgdGhlCj4+Y29uc29sZSBzdGF0
+ZS4KPj4KPj5Ib3dldmVyLCB0aGUgcmVzdG9yYXRpb24gb2YgdGhlIHByZXZpb3VzIGZvbnQgc3Rh
+dGUgKGBwLT51c2VyZm9udCA9Cj4+b2xkX3VzZXJmb250YCkgaXMgZXJyb25lb3VzbHkgcGxhY2Vk
+IGluc2lkZSB0aGUgYGlmICh1c2VyZm9udClgIGJsb2NrLgo+PklmIHRoZSBmYWlsZWQgb3BlcmF0
+aW9uIHdhcyBhdHRlbXB0aW5nIHRvIHNldCB0aGUgZGVmYXVsdCBidWlsdGluIGZvbnQKPj4oYHVz
+ZXJmb250ID09IDBgKSwgdGhlIHJlc3RvcmF0aW9uIGlzIGNvbXBsZXRlbHkgc2tpcHBlZC4KPj4K
+Pj5UaGlzIGNhdXNlcyBhIHN0YXRlIG1hY2hpbmUgY29ycnVwdGlvbiB3aGVyZSBgcC0+dXNlcmZv
+bnRgIHJlbWFpbnMgYDBgCj4+d2hpbGUgYHAtPmZvbnRkYXRhYCBzdGlsbCBwb2ludHMgdG8gdGhl
+IHByZXZpb3VzbHkgYWxsb2NhdGVkIHVzZXIgZm9udAo+Pm1lbW9yeS4gTGF0ZXIsIHdoZW4gdGhl
+IGNvbnNvbGUgaXMgZGVzdHJveWVkIChlLmcuLCB2aWEgVlRfRElTQUxMT0NBVEUpLAo+PmZiY29u
+X2ZyZWVfZm9udCgpIGZhaWxzIHRvIGZyZWUgdGhpcyBtZW1vcnkgYmVjYXVzZSBpdHMgYGlmIChw
+LT51c2VyZm9udClgCj4+Y2hlY2sgZmFpbHMsIHJlc3VsdGluZyBpbiBhIG1lbW9yeSBsZWFrIGNh
+dWdodCBieSBrbWVtbGVhazoKPj4KPj4gIHVucmVmZXJlbmNlZCBvYmplY3QgMHhmZmZmODg4MTI3
+ZWEwMDAwIChzaXplIDMzMjk2KToKPj4gICAgY29tbSAic3l6LjAuODcyNiIsIHBpZCAzMzIyNCwg
+amlmZmllcyA0Mjk3NzU0NjQzCj4+ICAgIGhleCBkdW1wIChmaXJzdCAzMiBieXRlcyk6Cj4+ICAg
+ICAgYTYgZTQgZjkgZGQgMDAgMDAgMDAgMDAgMDAgODIgMDAgMDAgMDEgMDAgMDAgMDAgIC4uLi4u
+Li4uLi4uLi4uLi4KPj4gICAgICBkMiAwOSA2YyBiZiA1MiA4YSA3ZCBkNCBlZiAxZCA1OSAxNiA1
+MSA4NiAzMiBiZiAgLi5sLlIufS4uLlkuUS4yLgo+PiAgICBiYWNrdHJhY2UgKGNyYyA0YTBhNTdk
+ZCk6Cj4+ICAgICAgX19fa21hbGxvY19sYXJnZV9ub2RlKzB4ZTcvMHgxODAgbW0vc2x1Yi5jOjUy
+MTQKPj4gICAgICBfX2ttYWxsb2NfbGFyZ2Vfbm9kZV9ub3Byb2YrMHgyOS8weDEzMCBtbS9zbHVi
+LmM6NTIzMgo+PiAgICAgIF9fZG9fa21hbGxvY19ub2RlIG1tL3NsdWIuYzo1MjQ4IFtpbmxpbmVd
+Cj4+ICAgICAgX19rbWFsbG9jX25vcHJvZisweDVmYy8weDdjMCBtbS9zbHViLmM6NTI3Mgo+PiAg
+ICAgIGttYWxsb2Nfbm9wcm9mIGluY2x1ZGUvbGludXgvc2xhYi5oOjk1NCBbaW5saW5lXQo+PiAg
+ICAgIGZiY29uX3NldF9mb250KzB4NDMxLzB4YTYwIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9m
+YmNvbi5jOjI1MjUKPj4gICAgICBjb25fZm9udF9zZXQgZHJpdmVycy90dHkvdnQvdnQuYzo0OTE4
+IFtpbmxpbmVdCj4+ICAgICAgY29uX2ZvbnRfb3ArMHg5NGQvMHhlODAgZHJpdmVycy90dHkvdnQv
+dnQuYzo0OTU4Cj4+ICAgICAgdnRfa19pb2N0bCBkcml2ZXJzL3R0eS92dC92dF9pb2N0bC5jOjQ3
+MiBbaW5saW5lXQo+PiAgICAgIHZ0X2lvY3RsKzB4NjNjLzB4MmVlMCBkcml2ZXJzL3R0eS92dC92
+dF9pb2N0bC5jOjc0Mwo+Pgo+PkZpeCB0aGlzIGJ5IG1vdmluZyB0aGUgYHAtPnVzZXJmb250ID0g
+b2xkX3VzZXJmb250YCBhc3NpZ25tZW50IG91dHNpZGUKPj50aGUgYGlmICh1c2VyZm9udClgIGJs
+b2NrIHNvIHRoYXQgdGhlIHRlcm1pbmFsIHN0YXRlIGlzIHVuY29uZGl0aW9uYWxseQo+PmFuZCBj
+b3JyZWN0bHkgcmVzdG9yZWQgcmVnYXJkbGVzcyBvZiB3aGljaCBmb250IHNldHRpbmcgdHJpZ2dl
+cmVkIHRoZQo+PmVycm9yLgo+Pgo+PkZpeGVzOiBhNWE5MjMwMzhkNzAgKCJmYmRldjogZmJjb246
+IFByb3Blcmx5IHJldmVydCBjaGFuZ2VzIHdoZW4gdmNfcmVzaXplKCkgZmFpbGVkIikKPj5TaWdu
+ZWQtb2ZmLWJ5OiBNaW5neXUgV2FuZyA8MjUxODEyMTQyMTdAc3R1LnhpZGlhbi5lZHUuY24+Cj4+
+LS0tCj4+IGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jIHwgNCArKystCj4+IDEgZmls
+ZSBjaGFuZ2VkLCAzIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPj4KPj5kaWZmIC0tZ2l0
+IGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2
+L2NvcmUvZmJjb24uYwo+PmluZGV4IDY2NjI2MWFlNTlkOC4uYTM4NTQ1ZGM4NDE2IDEwMDY0NAo+
+Pi0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jCj4+KysrIGIvZHJpdmVycy92
+aWRlby9mYmRldi9jb3JlL2ZiY29uLmMKPj5AQCAtMjQ2MSw4ICsyNDYxLDEwIEBAIHN0YXRpYyBp
+bnQgZmJjb25fZG9fc2V0X2ZvbnQoc3RydWN0IHZjX2RhdGEgKnZjLCBpbnQgdywgaW50IGgsIGlu
+dCBjaGFyY291bnQsCj4+IAlwLT5mb250ZGF0YSA9IG9sZF9kYXRhOwo+PiAJdmMtPnZjX2ZvbnQu
+ZGF0YSA9IG9sZF9kYXRhOwo+PiAKPj4rCS8qIFVuY29uZGl0aW9uYWxseSByZXN0b3JlIHRoZSBw
+cmV2aW91cyB1c2VyZm9udCBzdGF0ZSAqLwo+PisJcC0+dXNlcmZvbnQgPSBvbGRfdXNlcmZvbnQ7
+Cj4+Kwo+PiAJaWYgKHVzZXJmb250KSB7Cj4+LQkJcC0+dXNlcmZvbnQgPSBvbGRfdXNlcmZvbnQ7
+Cj4+IAkJaWYgKC0tUkVGQ09VTlQoZGF0YSkgPT0gMCkKPj4gCQkJa2ZyZWUoZGF0YSAtIEZPTlRf
+RVhUUkFfV09SRFMgKiBzaXplb2YoaW50KSk7Cj4+IAl9Cj4+LS0gCj4+Mi4zNC4xCg==

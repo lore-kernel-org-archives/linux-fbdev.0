@@ -1,128 +1,117 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
+Received: from flow-b6-smtp.messagingengine.com (flow-b6-smtp.messagingengine.com [202.12.124.141])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56DD43DB332;
-	Mon, 27 Jul 2026 07:01:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1F9CE3BF667;
+	Mon, 27 Jul 2026 07:11:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785135698; cv=none; b=M++Kk2HuaUTe4n9X6EZsVyJnc/7ti+0VGsfTRHHLnbExvIHqO/qFi39mu7Rtv1cYawlaJyD43TL47/HeSOewlNKacVaXYCAqMwb2J7+K+CfuEcFoQS9YtwYyD7BENbUEIThJlFLFT8AmgwLGaT94gRpH8/N20jea1EA4cXFwHIY=
+	t=1785136301; cv=none; b=EXXSFVy5u9nbax0/kNLA6h56uZnxlJbQ+zYm/uXZgQ188V/2l7Sl/FT7iIakGsUspJM60QeWcsLaxXnwoZA3K4K4aoxrbjG6tbIb0wqoD5oFjHldz9m/sLp0NoTrsAvhFWNdIr8bBugX5aYQAyX9TFyP+Kib5Zfwb/MBL4I/c5k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785135698; c=relaxed/simple;
-	bh=0m92iWj1q46DlQQFw64jYwjKipaArwf4wGnpKPmeRfU=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 MIME-Version:Message-ID; b=AhX8l8jBxl6e+3lkj4CXwILI94fXvnFPXINuCkfFlRbxJ3bnZXSh42wkNjQRA8Zh3jA5d1gSdDr2TItNu6VBhYzZ9mU66MN8MxMGberkBQks6JxBf2aMaIgDqe2Cs0eiN2nauUwKvgyvnt9C624FfHv0Hq0snT378mo3ExgrRW0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=l/FAWrmb; arc=none smtp.client-ip=220.197.31.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1785136301; c=relaxed/simple;
+	bh=C0s2eFAjgzRhE3+JjzuQJNvy+gPOyuBvhIv/luAsODE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HQBbfK4qfKfY173qiIcgkYBh/3ofiN/W1UunsbSdGISx8ARBEzhE1C8j4SbkIpdD/usqd9oCVFeiHdjl9wrnzh9OIiP2uGj+ROR8dYttykp2nHfA9bCvYHjxTbbukxctrUlbxKyS3W5rlGKr0mAk0/Fc3OMghpTYG7PIFjdHVTQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com; spf=pass smtp.mailfrom=kroah.com; dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b=BgcRkWFU; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=nZXeGPSr; arc=none smtp.client-ip=202.12.124.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kroah.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="l/FAWrmb"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:To:Subject:Content-Type:MIME-Version:
-	Message-ID; bh=0m92iWj1q46DlQQFw64jYwjKipaArwf4wGnpKPmeRfU=; b=l
-	/FAWrmbt7naXRpZniJ/idUns8rskWcLA936Jvhka1Wclwc2TVkGIFwI1+xf0yvlJ
-	/CCP715Y0gTeIYQpm2Rwxrb2gHyf3mIYeRnSYyTf8YAIwgwm2vvvGCt34UWgAxq+
-	+qxn3YoLHqi5yKa+RwKvqbbdJcS++9JkkP5F540Fu4=
-Received: from w15303746062$163.com ( [115.53.141.25] ) by
- ajax-webmail-wmsvr-40-117 (Coremail) ; Mon, 27 Jul 2026 15:00:34 +0800
- (CST)
-Date: Mon, 27 Jul 2026 15:00:34 +0800 (CST)
-From: w15303746062  <w15303746062@163.com>
-To: simona@ffwll.ch, deller@gmx.de
-Cc: tzimmermann@suse.de, ville.syrjala@linux.intel.com, sam@ravnborg.org,
-	kees@kernel.org, yanquanmin1@huawei.com, syoshida@redhat.com,
+	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="BgcRkWFU";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="nZXeGPSr"
+Received: from phl-compute-09.internal (phl-compute-09.internal [10.202.2.49])
+	by mailflow.stl.internal (Postfix) with ESMTP id 53CCF13001F8;
+	Mon, 27 Jul 2026 03:11:38 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-09.internal (MEProxy); Mon, 27 Jul 2026 03:11:39 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:subject
+	:subject:to:to; s=fm2; t=1785136298; x=1785143498; bh=Oau7zTBRfe
+	BegPseqDZeDB212RGIQQLGKQmVFhznbEs=; b=BgcRkWFUH2cTGqyOJFRqaCdY69
+	S/Exgl1z2l+FHhto0nJDiBsYtdJmu7Qw4DPme+W85EEXOxICs8Qox97f13xrjZXf
+	Ch3MPSZYoUO8RnOj+yWbH+87c3FhYCYSzlj8piho2tmENk0z8pVoCWc5UVnLgOPr
+	k+U/5MxVujDBwrfLAZfBOpG/kKN29Ue0szF6aBCbCMz7joj2uHalpOeAJxVXgoUV
+	5jyOURVPXHxG3W1LZxre15Qr6yTdN0ila/+hysAdaUdEGrezqLboU330nnsfuWjG
+	ek3WxEHnfrME4XWvRefx+hAS7ZjMOAa7NA8FVIGYPB/3hOTn3vTmwQ2WhhWQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
+	1785136298; x=1785143498; bh=Oau7zTBRfeBegPseqDZeDB212RGIQQLGKQm
+	VFhznbEs=; b=nZXeGPSrwXB4jWuArzgzSJBo1tVYTkRqPCqBOXX3bzoDCVrOmW3
+	OstjmrQZmsy/Kw7WgylN9eCCD7kaD3NagBANj+gktbnVhH67gMZy6ZDGVgNFAko3
+	NcgyVq/UCHu+zwoQ7+63Jffj++EOr5McyMaGguEh3wfj7zuafgcywsIklu/XDUmg
+	Lfb1skb89DGVBy4Ua7zIkwXr1GMENLazQXFUvw5zQYK4sEp+5+2P8KLZ41HeFc2B
+	5II7yg/O7h56SUKE1cYM9bQq7Vrx1V/bWygYea0rq79OEmBtR2LnAvWnEth61SSy
+	HqVi6DxnQVuv+E7NQuUwEqGHUl1duUagMaw==
+X-ME-Sender: <xms:pwRnaj5-ptMYOmYhc9EgW-ShQHlIl-5X4Rrj9Kh7J-J8GOWD57BAWg>
+    <xme:pwRnahvkii9-kLUDF_iGnVJX0vfZGT9pEtEpOyGO7d2zBtOuw4ENywJcT5yG8S_Qz
+    5-7eO3p5xP0dWBKRW4FDEpnO-IA-kh4nfM9XF6rh2Q2Ycw-NeI>
+X-ME-Received: <xmr:pwRnahYczLuKNA_I-VUBBZpb1ZtwQ1GFR5iO5-P062LK1F7d37rJ_SL_p-MuLFK7mun9vXn6mmh7jLNsmzgduwGrlA>
+X-ME-Proxy-Cause: dmFkZTFcCLGTTvefrkqyt9VNZWvOW1szuT+YRFxeR6Dr6jH/9g5UsOuPfyZrUbiQrF/WJ+
+    /VKHPD2kBMZJXxgQnQf9KjPNrvJzuZ7HTi8CUPSfgqe1SniCRgRJ8Im+viBrIWe+IfBKQX
+    28WULmlcQfs8OtOg3Y/hR76pvBYBWYgK/iZBWfTPByuUXUZxl/kv8eeFGiCYqQcoJTYQF8
+    1AWS8FLzAsYZ5gZ95djKtlAjBgHRKDpor3aM3+j+jSyYQqj1cNFbCYvhQ2kCR5kRTUh0ji
+    YX/p35vDiAYJHITMQNTfIVV4FQ3EAReQyrP58zETvuhqEmHPfPsCRBWoEooogIOBVLOhXU
+    I0UbsbAqoudV0tBUuBS9hA5tXCLEPAsnz12YdyHuBXcb/fWPv33Rhp0l5sYqKXR0Zrog3w
+    x2kFSV1qjrnW/5L1/sVDJpRPiakF5wldTqRBHwptGHcrnAZa3GKEYZVXjruFdbhrnVTwJq
+    5tZEXnapVIkUP0uS2a6XtEDLjlhgbRRHleQ76xLMbWdzi7yM/fuI8c4CZRXhG0e1dCDMnh
+    eJaN6HGNDkkiKFmV2NSVBeo9oWMJJSD1EKH3agDBfpUBRO+jBCLUnvdm2vLDBdNbjjg3A2
+    6TBahsdjg0LPNzyMaVXPSOOslc6C8C0na3qDRRsnaWxrt3F813uFfFn+ETyA
+X-ME-Proxy: <xmx:pwRnatvu3hnOLiNCSXKobVLM0a7CQ6OzftoiAtOoR-5PpLnNRjYZqg>
+    <xmx:pwRnagBtNsd97MFgSAQv442vM-q0S5Y9mxbJEcDNicoRvvHq9zm4ig>
+    <xmx:pwRnasNLpxHfXdUisBvYyEwZuG08wf3uPjRawKnf3yHe_sxKlvjiqA>
+    <xmx:pwRnai61ccNFkFvHMMLxoAFGphz1plw79-l9IFjHquwTgtlSyIPlKQ>
+    <xmx:qgRnarQurDVV25Cj7AskAmnYyYp-otAIA1QE6g3WgUap69g5NvrVqjnq>
+Feedback-ID: i787e41f1:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 27 Jul 2026 03:11:35 -0400 (EDT)
+Date: Mon, 27 Jul 2026 09:11:23 +0200
+From: Greg KH <greg@kroah.com>
+To: w15303746062 <w15303746062@163.com>
+Cc: simona@ffwll.ch, deller@gmx.de, tzimmermann@suse.de,
+	ville.syrjala@linux.intel.com, sam@ravnborg.org, kees@kernel.org,
+	yanquanmin1@huawei.com, syoshida@redhat.com,
 	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
-	"Mingyu Wang" <25181214217@stu.xidian.edu.cn>,
-	stable@vger.kernel.org
-Subject: Re:Re:[PATCH 7.0] fbdev: fbcon: fix memory leak in error path of
+	Mingyu Wang <25181214217@stu.xidian.edu.cn>, stable@vger.kernel.org
+Subject: Re: Re:[PATCH 7.0] fbdev: fbcon: fix memory leak in error path of
  fbcon_do_set_font()
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2023.4-cmXT build
- 20260511(2e539873) Copyright (c) 2002-2026 www.mailtech.cn 163com
-In-Reply-To: <5b288246.378d.19e95d82602.Coremail.w15303746062@163.com>
+Message-ID: <2026072719-kissable-antonym-d31e@gregkh>
 References: <20260525082741.600003-1-w15303746062@163.com>
  <5b288246.378d.19e95d82602.Coremail.w15303746062@163.com>
-X-NTES-SC: AL_Qu2TB/2Yuk4o4iCYbekfmU0Qguw9Xcq5uPkj34FWN5t8jD/p6wkiclhFBGTN39q/NymWkiiSQiFv8MdmQoVpcpIoCx+rIl7O5HqSMBHkEks80Q==
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=GBK
+ <726d129f.53bd.19fa2601661.Coremail.w15303746062@163.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <726d129f.53bd.19fa2601661.Coremail.w15303746062@163.com>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:dSgvCgD3PzASAmdqMBEmAA--.8488W
-X-CM-SenderInfo: jzrvjiatxuliiws6il2tof0z/xtbC4xL43GpnAhJpowAA3C
-X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <726d129f.53bd.19fa2601661.Coremail.w15303746062@163.com>
 
-CkZyb206IE1pbmd5dSBXYW5nIDwyNTE4MTIxNDIxN0BzdHUueGlkaWFuLmVkdS5jbj4KCkhpIEhl
-bGdlLCBTaW1vbmEsIGFuZCBhbGwsCgpSZXNlbmRpbmcgdGhpcyBwYXRjaCBhcyBhIGdlbnRsZSBy
-ZW1pbmRlciwgc2luY2UgaXQgaGFzIGJlZW4gYSB3aGlsZSAKZnJvbSB0aGUgb3JpZ2luYWwgc3Vi
-bWlzc2lvbiAoTWF5IDI1KSBhbmQgbXkgcHJldmlvdXMgcGluZyAoSnVuZSA1KS4KCkFzIGEgcXVp
-Y2sgbm90ZSwgc2luY2UgdGhpcyBtZW1vcnkgbGVhayB3YXMgaW1wbGljaXRseSByZXNvbHZlZCBp
-biAKbWFpbmxpbmUgdmlhIGEgcmVjZW50IHJlZmFjdG9yLCB0aGlzIGZpeCBpcyBzcGVjaWZpY2Fs
-bHkgdGFyZ2V0ZWQgYXQgCjcuMCBhbmQgb2xkZXIgc3RhYmxlIGJyYW5jaGVzIHVzaW5nIHRoZSBs
-ZWdhY3kgdXNlcmZvbnQgbG9naWMuCgpDb3VsZCB5b3UgcGxlYXNlIHRha2UgYSBsb29rIHdoZW4g
-eW91IGhhdmUgYSBtb21lbnQ/IEFueSBmZWVkYmFjayBvciAKZ3VpZGFuY2Ugb24gaG93IGJlc3Qg
-dG8gcHJvY2VlZCB3aXRoIHRoaXMgc3RhYmxlLW9ubHkgZml4IHdvdWxkIGJlIApncmVhdGx5IGFw
-cHJlY2lhdGVkLgoKQmVzdCByZWdhcmRzLAoKTWluZ3l1Cgo+QXQgMjAyNi0wNS0yNSAxNjoyNzo0
-MSwgdzE1MzAzNzQ2MDYyQDE2My5jb20gd3JvdGU6Cj4+RnJvbTogTWluZ3l1IFdhbmcgPDI1MTgx
-MjE0MjE3QHN0dS54aWRpYW4uZWR1LmNuPgo+Pgo+PlsgTm90ZTogVGhpcyBpc3N1ZSB3YXMgZGlz
-Y292ZXJlZCBvbiB0aGUgNy4wIGtlcm5lbC4gV2hpbGUgdGhlIGN1cnJlbnQKPj4gIG1haW5saW5l
-IGhhcyBhbHJlYWR5IGJlZW4gcmVmYWN0b3JlZCB0byB1c2UgYGZvbnRfZGF0YV90YCAod2hpY2gg
-Cj4+ICBpbmFkdmVydGVudGx5IHJlc29sdmVkIHRoaXMgYnVnKSwgdGhpcyB2dWxuZXJhYmlsaXR5
-IHN0aWxsIGFjdGl2ZWx5IAo+PiAgYWZmZWN0cyB0aGUgNy4wIGJyYW5jaCBhbmQgb2xkZXIgc3Rh
-YmxlIHRyZWVzIHRoYXQgcmVseSBvbiB0aGUgbGVnYWN5IAo+PiAgdXNlcmZvbnQgbG9naWMuIFRo
-aXMgcGF0Y2ggcHJvdmlkZXMgYSB0YXJnZXRlZCBmaXggZm9yIHRoZXNlIHN0YWJsZSAKPj4gIGJy
-YW5jaGVzLiBdCj4+Cj4+V2hlbiBmYmNvbl9kb19zZXRfZm9udCgpIGZhaWxzIChlLmcuLCBkdWUg
-dG8gYSB2Y19yZXNpemUoKSBmYWlsdXJlIHVuZGVyCj4+ZmF1bHQgaW5qZWN0aW9uKSwgaXQganVt
-cHMgdG8gdGhlIGBlcnJfb3V0YCBsYWJlbCB0byByb2xsIGJhY2sgdGhlCj4+Y29uc29sZSBzdGF0
-ZS4KPj4KPj5Ib3dldmVyLCB0aGUgcmVzdG9yYXRpb24gb2YgdGhlIHByZXZpb3VzIGZvbnQgc3Rh
-dGUgKGBwLT51c2VyZm9udCA9Cj4+b2xkX3VzZXJmb250YCkgaXMgZXJyb25lb3VzbHkgcGxhY2Vk
-IGluc2lkZSB0aGUgYGlmICh1c2VyZm9udClgIGJsb2NrLgo+PklmIHRoZSBmYWlsZWQgb3BlcmF0
-aW9uIHdhcyBhdHRlbXB0aW5nIHRvIHNldCB0aGUgZGVmYXVsdCBidWlsdGluIGZvbnQKPj4oYHVz
-ZXJmb250ID09IDBgKSwgdGhlIHJlc3RvcmF0aW9uIGlzIGNvbXBsZXRlbHkgc2tpcHBlZC4KPj4K
-Pj5UaGlzIGNhdXNlcyBhIHN0YXRlIG1hY2hpbmUgY29ycnVwdGlvbiB3aGVyZSBgcC0+dXNlcmZv
-bnRgIHJlbWFpbnMgYDBgCj4+d2hpbGUgYHAtPmZvbnRkYXRhYCBzdGlsbCBwb2ludHMgdG8gdGhl
-IHByZXZpb3VzbHkgYWxsb2NhdGVkIHVzZXIgZm9udAo+Pm1lbW9yeS4gTGF0ZXIsIHdoZW4gdGhl
-IGNvbnNvbGUgaXMgZGVzdHJveWVkIChlLmcuLCB2aWEgVlRfRElTQUxMT0NBVEUpLAo+PmZiY29u
-X2ZyZWVfZm9udCgpIGZhaWxzIHRvIGZyZWUgdGhpcyBtZW1vcnkgYmVjYXVzZSBpdHMgYGlmIChw
-LT51c2VyZm9udClgCj4+Y2hlY2sgZmFpbHMsIHJlc3VsdGluZyBpbiBhIG1lbW9yeSBsZWFrIGNh
-dWdodCBieSBrbWVtbGVhazoKPj4KPj4gIHVucmVmZXJlbmNlZCBvYmplY3QgMHhmZmZmODg4MTI3
-ZWEwMDAwIChzaXplIDMzMjk2KToKPj4gICAgY29tbSAic3l6LjAuODcyNiIsIHBpZCAzMzIyNCwg
-amlmZmllcyA0Mjk3NzU0NjQzCj4+ICAgIGhleCBkdW1wIChmaXJzdCAzMiBieXRlcyk6Cj4+ICAg
-ICAgYTYgZTQgZjkgZGQgMDAgMDAgMDAgMDAgMDAgODIgMDAgMDAgMDEgMDAgMDAgMDAgIC4uLi4u
-Li4uLi4uLi4uLi4KPj4gICAgICBkMiAwOSA2YyBiZiA1MiA4YSA3ZCBkNCBlZiAxZCA1OSAxNiA1
-MSA4NiAzMiBiZiAgLi5sLlIufS4uLlkuUS4yLgo+PiAgICBiYWNrdHJhY2UgKGNyYyA0YTBhNTdk
-ZCk6Cj4+ICAgICAgX19fa21hbGxvY19sYXJnZV9ub2RlKzB4ZTcvMHgxODAgbW0vc2x1Yi5jOjUy
-MTQKPj4gICAgICBfX2ttYWxsb2NfbGFyZ2Vfbm9kZV9ub3Byb2YrMHgyOS8weDEzMCBtbS9zbHVi
-LmM6NTIzMgo+PiAgICAgIF9fZG9fa21hbGxvY19ub2RlIG1tL3NsdWIuYzo1MjQ4IFtpbmxpbmVd
-Cj4+ICAgICAgX19rbWFsbG9jX25vcHJvZisweDVmYy8weDdjMCBtbS9zbHViLmM6NTI3Mgo+PiAg
-ICAgIGttYWxsb2Nfbm9wcm9mIGluY2x1ZGUvbGludXgvc2xhYi5oOjk1NCBbaW5saW5lXQo+PiAg
-ICAgIGZiY29uX3NldF9mb250KzB4NDMxLzB4YTYwIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9m
-YmNvbi5jOjI1MjUKPj4gICAgICBjb25fZm9udF9zZXQgZHJpdmVycy90dHkvdnQvdnQuYzo0OTE4
-IFtpbmxpbmVdCj4+ICAgICAgY29uX2ZvbnRfb3ArMHg5NGQvMHhlODAgZHJpdmVycy90dHkvdnQv
-dnQuYzo0OTU4Cj4+ICAgICAgdnRfa19pb2N0bCBkcml2ZXJzL3R0eS92dC92dF9pb2N0bC5jOjQ3
-MiBbaW5saW5lXQo+PiAgICAgIHZ0X2lvY3RsKzB4NjNjLzB4MmVlMCBkcml2ZXJzL3R0eS92dC92
-dF9pb2N0bC5jOjc0Mwo+Pgo+PkZpeCB0aGlzIGJ5IG1vdmluZyB0aGUgYHAtPnVzZXJmb250ID0g
-b2xkX3VzZXJmb250YCBhc3NpZ25tZW50IG91dHNpZGUKPj50aGUgYGlmICh1c2VyZm9udClgIGJs
-b2NrIHNvIHRoYXQgdGhlIHRlcm1pbmFsIHN0YXRlIGlzIHVuY29uZGl0aW9uYWxseQo+PmFuZCBj
-b3JyZWN0bHkgcmVzdG9yZWQgcmVnYXJkbGVzcyBvZiB3aGljaCBmb250IHNldHRpbmcgdHJpZ2dl
-cmVkIHRoZQo+PmVycm9yLgo+Pgo+PkZpeGVzOiBhNWE5MjMwMzhkNzAgKCJmYmRldjogZmJjb246
-IFByb3Blcmx5IHJldmVydCBjaGFuZ2VzIHdoZW4gdmNfcmVzaXplKCkgZmFpbGVkIikKPj5TaWdu
-ZWQtb2ZmLWJ5OiBNaW5neXUgV2FuZyA8MjUxODEyMTQyMTdAc3R1LnhpZGlhbi5lZHUuY24+Cj4+
-LS0tCj4+IGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jIHwgNCArKystCj4+IDEgZmls
-ZSBjaGFuZ2VkLCAzIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPj4KPj5kaWZmIC0tZ2l0
-IGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2
-L2NvcmUvZmJjb24uYwo+PmluZGV4IDY2NjI2MWFlNTlkOC4uYTM4NTQ1ZGM4NDE2IDEwMDY0NAo+
-Pi0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jCj4+KysrIGIvZHJpdmVycy92
-aWRlby9mYmRldi9jb3JlL2ZiY29uLmMKPj5AQCAtMjQ2MSw4ICsyNDYxLDEwIEBAIHN0YXRpYyBp
-bnQgZmJjb25fZG9fc2V0X2ZvbnQoc3RydWN0IHZjX2RhdGEgKnZjLCBpbnQgdywgaW50IGgsIGlu
-dCBjaGFyY291bnQsCj4+IAlwLT5mb250ZGF0YSA9IG9sZF9kYXRhOwo+PiAJdmMtPnZjX2ZvbnQu
-ZGF0YSA9IG9sZF9kYXRhOwo+PiAKPj4rCS8qIFVuY29uZGl0aW9uYWxseSByZXN0b3JlIHRoZSBw
-cmV2aW91cyB1c2VyZm9udCBzdGF0ZSAqLwo+PisJcC0+dXNlcmZvbnQgPSBvbGRfdXNlcmZvbnQ7
-Cj4+Kwo+PiAJaWYgKHVzZXJmb250KSB7Cj4+LQkJcC0+dXNlcmZvbnQgPSBvbGRfdXNlcmZvbnQ7
-Cj4+IAkJaWYgKC0tUkVGQ09VTlQoZGF0YSkgPT0gMCkKPj4gCQkJa2ZyZWUoZGF0YSAtIEZPTlRf
-RVhUUkFfV09SRFMgKiBzaXplb2YoaW50KSk7Cj4+IAl9Cj4+LS0gCj4+Mi4zNC4xCg==
+On Mon, Jul 27, 2026 at 03:00:34PM +0800, w15303746062 wrote:
+> 
+> From: Mingyu Wang <25181214217@stu.xidian.edu.cn>
+> 
+> Hi Helge, Simona, and all,
+> 
+> Resending this patch as a gentle reminder, since it has been a while 
+> from the original submission (May 25) and my previous ping (June 5).
+> 
+> As a quick note, since this memory leak was implicitly resolved in 
+> mainline via a recent refactor, this fix is specifically targeted at 
+> 7.0 and older stable branches using the legacy userfont logic.
+
+Why not just take the same upstream commits for older kernels as well?
+
+Whenever you do "one off" patches like this, it makes backporting future
+changes/fixes almost impossible, and we almost always get it wrong.  So
+backporting the same changes is almost always the best idea.
+
+Also note that the 7.0.y kernel is long end-of-life.
+
+thanks,
+
+greg k-h

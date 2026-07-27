@@ -1,160 +1,172 @@
-Received: from mail-pg1-f170.google.com (mail-pg1-f170.google.com [209.85.215.170])
+Received: from mail-pg1-f169.google.com (mail-pg1-f169.google.com [209.85.215.169])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83BAD3E1713
-	for <linux-fbdev@vger.kernel.org>; Mon, 27 Jul 2026 08:22:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.215.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15CAB3E168F
+	for <linux-fbdev@vger.kernel.org>; Mon, 27 Jul 2026 08:24:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.215.169
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785140558; cv=pass; b=J1twrktDxXiJE2EMipjZIz12peKMSqrNaJMRkVCLMZ+PWi73KjMNiaTRewIwgCmpHTEjt54KxJcE5jgboGVzcR2vh9+EvVE7mO53VtYJbW+DMvzTrubqrUXzGcmEZJefWIlBbu6G4spoCp3fstz17lcpyohqAaTf4BRoRPD7G7w=
+	t=1785140691; cv=pass; b=BuiewMZQiRvRvfbzxrGPumwqEHoiMJA/5+74NHnepwlGbE2ImDs5Zx0dTonoNpBgITbeJAb679G7ZxBXzZjbj1kC2ckKtF+y9eslxTpsEcPMrrQ+XkeqjFbnfD9dEUCYj0mDtcQL9XXzVJc9nvQd20aoCXyfAanxY+LVMPg+s3M=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785140558; c=relaxed/simple;
-	bh=mw92Hf/dQnuOO4mzXGCnNoSoSNZ4XLCDu5vbV5GvF2c=;
+	s=arc-20240116; t=1785140691; c=relaxed/simple;
+	bh=fkQtSqlmS9bP4148tvn2U0aV7x97yBRmtgLuyiKo4kA=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ugpKP0s572zWezfrqjGojQuPgyLAQXPJqareufOdRMdlLHjTbqGaL+MkYypyBVjRrO2lTuuxPGrJVps9Ucxym8rct4AY3GMGbbhwKTS0dvO7IfOc4E66CZw6m2upg0CTIadNSraZ8cLoAh9rXsqCqbrD0UD4nu5p4lfH22eDIes=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WACiFu7z; arc=pass smtp.client-ip=209.85.215.170
+	 To:Cc:Content-Type; b=rLQx6t+07LTQ8tSTWmDDlTKrk/W27yNZyoRWhifA2kFmatCg5nRP7GhDyotHJlCMgPXbof2OQ5fuVxBkeZh4p/C8NL+NjUUwJ2qAnXPFyctjtyiuyuL6bZpWkwpxptgUJHs03zF9RAG5id43SlmBEy8pz7KooXLSBS3S38AKGKw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lu7N5Fkw; arc=pass smtp.client-ip=209.85.215.169
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WACiFu7z"
-Received: by mail-pg1-f170.google.com with SMTP id 41be03b00d2f7-c9e30214d8fso1856463a12.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Jul 2026 01:22:36 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1785140556; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lu7N5Fkw"
+Received: by mail-pg1-f169.google.com with SMTP id 41be03b00d2f7-ca913a601fbso1770716a12.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 27 Jul 2026 01:24:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785140689; cv=none;
         d=google.com; s=arc-20260327;
-        b=IqupVxLFmv2anL+BtnR7Kl5XmAxaS0EMS5Si1Cec8Wbf2mc1J+UdbdbMdEsV7PyTAo
-         ZJMbWmpTL/lwEADhgGFnx3nkReH/tFrD+LGwF09OlYWr43qBnP9Shz37NBSYezYIeRdv
-         gd+YniyYfrzZmWZIF021eQ/WrauWDYd/OsRBrLDcoWgVXQyaoLJ6ExPXuzsnGIgrhDHJ
-         +b4vgF2FsF5r3jt0nIA2Y8Jn8EzDQ6FGfRBlvPjzWUWx3eHUzjKwuOh1alxW80YOZmNr
-         OcMq9T8lBwwbxNjJFrkoik/CvUmP66tbL8saWJBihAXvXh9aqILa1s3krldYvbbUxy8v
-         ghuA==
+        b=r96AH5VACAGlSf+2CoEV8V+u4Z4+H5VTrS3jPMYx6AlweUdOOewy8hNNwc1+I/HXYt
+         EDRaDIK1J4LZdQ2zo1cWZty0bkpbLmLTwa4mtFQt1GCAUEXA6HvzGbrVHk6fubd7gjtg
+         72fbQbBK1IN3ymKzMcqFdOqAd/MJzuGNjCuxlaWcbwX8yrEhDIQpppMQOSUL1yehzEfy
+         awyOVajxAc2bxVm637ipzI5V5UXYrkAfAEdYJucHXpsYLf8RHEOIwlJVDc0odxg8Vs/Q
+         +SCeTYsmgn/uzOU9lOC4pEQ2jfrsVwFFUR8EoI/16EXnlHpKPDzewnkDQU1o3PZbsSse
+         hKfQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=jiiyofhSvlGJbOk+zjioYY1U+uBRekjwWzmE0lyF8KY=;
-        fh=2M585kseO9fSb5No48Xq44cU1veTlyJI8foPGsiyaW0=;
-        b=ftOrssMpieMtFQEbaXaylWXYGcyCaGFPINK8qlGFiy8haXbzQzkOrU+Uqgx7UxdQfw
-         2oggHUng4M3CnsxWWFkiwkOKPT4m+63pakK7grGaKsa5HyBi6G/Yk0NBHU0WmbHmdq7m
-         pDs/M6ojGoG+oYTiEG+PHS0QfwlFa55ig+oIbJGikqcXFXVgL8dz4pKFA6iEKUZxYnMu
-         1ApS3KR9Sp/YJuOMNIkiesm6WIamnFtwkoUibi3oOYj8/gnyXBi5Fk9+pMhP9a7EZq/F
-         O3R8yDdZcdhxlExnLDW9D7YIeh3sfhaG0EYtCPF48YYAZzq19Z8D0XaLkNNDbYavIdbJ
-         FL+A==;
+        bh=/9ukOamIO2gMXk9qWFix4f5rPWog946EHuIuaO8IQn0=;
+        fh=3PmF6X4UsYzwm9qQ7MqaPkyVB4sddR9DfG80rliIPDY=;
+        b=iX9enSvG861sUIja4G7yjY+AHBDcY9gPJD8uKzdgDPcI5pQMky4TZLlpHehDJxu0Xz
+         i+REy2SwoGrzDjHl/LDFq+uqPk7h8te9l3t+DCJ565fKEDwUPjNT57ZoFuE2rzQ3BFpz
+         D/tes/YURHmXRRH3rfSlRNumjlYvUX2g8tGMu3AKP6N2JOcXr3LjcjDAXqMX6zzN/i5T
+         O+wTZlTCtQIX6mNen0n32+/yDjzih8PdlmUOuoQ/u3nnyNdXfRHlZRAAmb7gjtu3GZTa
+         P14H/bDSrO28E00ylfTcx4ZK79PT3es2E2IqV7zfVqJvAoeUyxQnhkRc4+D3yn/Vl1A8
+         JHBQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785140556; x=1785745356; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1785140689; x=1785745489; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=jiiyofhSvlGJbOk+zjioYY1U+uBRekjwWzmE0lyF8KY=;
-        b=WACiFu7zKLA7BiL2tpISJ0tGgW8Q7+/skiRVtyUHYBi1b43cDK4VZyHLREaMb22n+C
-         qCJwpIvJFwIzFatu6RchWr++GLOFdvA6og0DgwtoCQ7TbK00pC/o9wlQRLf2vAHipe9L
-         x5NQTLcPenfEXWOVPE/CXXmATcyuxKKLpBrwSlDMnQBZvr+MiSxbN7EFGsowUyn02eUz
-         8fAenl2u1hS88bHRfmejE7cVjj58XkT6yLs/xSilKEvTVrbBkK1AUqdX+WPUpsg9+CDF
-         WgNWQeMvk8GC7lsJbMiZdXV+KZUEIuTk8Zhfdom+YA44W2fT3A9ip4Y0hTlzBT8IeR5v
-         IewQ==
+        bh=/9ukOamIO2gMXk9qWFix4f5rPWog946EHuIuaO8IQn0=;
+        b=lu7N5Fkwr8FCMNgMaaxNdwucjP31CfVDYVlf/pQZMo+eVdn1FBl6kpF5hpR94lshhe
+         A8S4sYp3ZJ/sDaX8ltGAX5YkPKMYoB+SQRE3rrLftwE/hhZq/YX35j3z2xqVJBsJMO0I
+         bjJMJTNTAVmqWGrdQKmLfsrTKPbnY18aNSfClHxuMdTJ9vvP5PGN+Yw4PWNatKgg3Tkl
+         +7AZqQzU3JNXDp37qbMcIHq1W2BSX55SZs2vQvR27KQiFN/4ZTT2vuoqNc/K9v/dHDtX
+         Yub8gUqCA5nl1rQq/ybRTGVfK1pHh6XqpvywyF/0SMfOc/iRhSqzTWhHdh99lBp1kDn8
+         YL/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785140556; x=1785745356;
+        d=1e100.net; s=20251104; t=1785140689; x=1785745489;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=jiiyofhSvlGJbOk+zjioYY1U+uBRekjwWzmE0lyF8KY=;
-        b=rQlOOs4FgJMNRQRvn8z5yJTeNkAQmBuXCn7lAcmMIV186fVrRPMdMA+z35A3mi4abd
-         Mu71Ilk4lHHKo6rI4XUIZX7HwjGMbLMWJ2gYYA2t16CzrD20TSzZenPORZdtsOQy5Z42
-         tuMTkDIVvDfWGCsUQ2v7e1yk2OKQr6XQ9s8PQgWxm0teNKOneYgjNwch/YG99EYqK6yB
-         5DkCYkfu0Zc/TtJZ1g69te2BwTtgwWt5SI3fjwzauVNlSDz0s5VoGYNTrP1suwkEG3/l
-         o1wEsKkT+HJVth0UmbjuBbx8qFlhK8Q0CyebMlBtpUogVxE8SwcDw57XnCDgUDst1sO7
-         Ir0w==
-X-Forwarded-Encrypted: i=1; AHgh+Ro2N3dk0MN2xdm62riqio4aKXmXYMqTiLmf2ujYsukJIrkTQEFPZ9q2hA1qQvz8abs6yMfUas5kTngFkQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyQJuDTRCHVGVMh2gbGv4BNJOYGK0H7Is0yN/S1GZ827mj1mtv4
-	11H5zSKZ61a2nExQLqq84wnDvw3LkXtoiJK6g1r87j+ZrHzKWO4HLgLrNpC8ST1i9Kfc/w0y2vN
-	qvmO0QuFGKExWuKpIiS7en6QHU/1ykjY=
-X-Gm-Gg: AR+sD12zfTDgSjXn8yFpuqnTDAk9dPInbSB6pxU1HIL2/MZJLD4OoFHJGnuLDgvpjmg
-	S3KVacdkxsmMM18qGe76qCIbYIW8o3b5cxtkNh2Q4ZGUlulw3B0xlUBZp5Yt9YfOPQsiIFouimm
-	x+J+6qEXz8y2hzIXyMzJ/LnvRaI9M9aZBfwS3NXsKmWqjktMldRGJ09x4fUGzj4jorn4oxEYvc+
-	/LeN9UYBI/D4vxaWimjvf+KqAaAAf2AnsYAiJKd6RQOUyqJL4eWuffXTN8Nsj4gugEzWYOzx9xn
-	plezvBxl4A9KAgK6Ibs=
-X-Received: by 2002:a05:6a20:7291:b0:3c3:a9ad:a747 with SMTP id
- adf61e73a8af0-3c67da6cbabmr7867709637.26.1785140555737; Mon, 27 Jul 2026
- 01:22:35 -0700 (PDT)
+        bh=/9ukOamIO2gMXk9qWFix4f5rPWog946EHuIuaO8IQn0=;
+        b=jwT4ngWACBPri/KjlEp/AUQHvwg89gjtJeVSX8ltBzgFRmB64u0CrWIGgGrGgdkT+j
+         C5kngvEhd3h/sfUXphYvgpiWBC7wW0q26cr6L21rrPWLm+LgpM0jsmAQp0bG/SzMJTUG
+         pdfxmbwB5RwQaCME/pATpwfkQquVzC4yVRcSwHs9j2zJiuJdhWlDWW/xvMUb7CJG7b7L
+         AtEZ3r5QrE11yww5k2ju+7B6lyuyRMGjDCVQm3194uZUOPw09vo5+ffr1PqMErA1BitY
+         wzARzLT9VZtdOzDWil9hLrBwPY3dAoKi3cPEfNjDusjssiBW4zNUOUJStpTHjfERmpaa
+         0cMw==
+X-Forwarded-Encrypted: i=1; AHgh+RrLBdGtEVLpmtmKNGrVEXNdQQonVtwCejGjaoCHquDHbWi5LkXtdqMo2WWuuLn4pkGm6+sq446HzyboKQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy/zgoLU6vaKKczrsYAFNDOT4ttMf4v1adlUZ67/zQyGtaYrpjn
+	m/175Nh+hdUhaoPKys6rxcdjeG9N+4PTtAvPUqHhn2AT9a8Ho+7rqDq9P43MaA3AqzQ0WjpZ8ZS
+	AkJfB4Wpb49Nhrhf3CMTQNgEiR798Qq0=
+X-Gm-Gg: AR+sD10Bw6oaNG8PGhPxbOPRQeDbOKOM9aapULJHJ1Ws9usKacoJJ+o/cRvqjxfe8xw
+	NAcgOkoPFl6JUqrUvrtBa7LxuGEc0A0tWXxSoTX5tmpFnoHKlbm+TclMPvGY5OZFNrZGCadAw7U
+	3KbCzrCHcpwaZ5wCAa6qpIst9a5cFt9zOc7hmE1epbi2a24RMhb96r4uilv8BrJ7f/8jh9FgYMu
+	7+ZAyZbOkswbkJwWQx/+5ADLQQ0Kjd+QB8CUFMXZMQ/KzmMD/b0S196TqcGOFHFvkjR1LAtumMV
+	KL5rykkeUyEOB1F20jI=
+X-Received: by 2002:a05:6a21:7002:b0:3c3:7ac4:dac0 with SMTP id
+ adf61e73a8af0-3c67dae969dmr7046276637.13.1785140689346; Mon, 27 Jul 2026
+ 01:24:49 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260617080031.99156-1-clamor95@gmail.com> <20260617080031.99156-7-clamor95@gmail.com>
- <20260722022519.3b1e4fd3@jic23-huawei>
-In-Reply-To: <20260722022519.3b1e4fd3@jic23-huawei>
+References: <20260617080031.99156-1-clamor95@gmail.com> <20260617080031.99156-9-clamor95@gmail.com>
+ <akeXAOpb13hupUGM@hovoldconsulting.com> <CAPVz0n2trouADTziWXnpt=-hwKdsZWGQib+-nVCLaSLibTbATg@mail.gmail.com>
+ <20260722023037.776f4bcb@jic23-huawei>
+In-Reply-To: <20260722023037.776f4bcb@jic23-huawei>
 From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Mon, 27 Jul 2026 11:22:22 +0300
-X-Gm-Features: AUfX_myZ-uH2FsBg2M-NpEbqqEjSB6AkjRrQi_JMKQ0vOPgoMTtIwPKkN8lpkdE
-Message-ID: <CAPVz0n2JBNRW3EP+b8Nk1C2MbJnszLiC3hSwEsV7r1ga8obX3g@mail.gmail.com>
-Subject: Re: [PATCH v5 06/14] mfd: lm3533-core: Remove redundant pdata helpers
+Date: Mon, 27 Jul 2026 11:24:36 +0300
+X-Gm-Features: AUfX_mx8whI7gSCba0GgBVBHpAVLRZADgHNcCPlSfBxfKQKn1EgxosjjezqzeSY
+Message-ID: <CAPVz0n1dnoe=Xw2V-nZtm3ggD5KLO6PVrhXOAoPnqvJn+C3L-A@mail.gmail.com>
+Subject: Re: [PATCH v5 08/14] mfd: lm3533: Convert to use OF bindings
 To: Jonathan Cameron <jic23@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+Cc: Johan Hovold <johan@kernel.org>, Lee Jones <lee@kernel.org>, 
+	Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
 	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
 	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>, Johan Hovold <johan@kernel.org>, 
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, 
+	linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-=D1=81=D1=80, 22 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 04:25 Jona=
+=D1=81=D1=80, 22 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 04:30 Jona=
 than Cameron <jic23@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
 >
-> On Wed, 17 Jun 2026 11:00:23 +0300
+> On Tue, 14 Jul 2026 16:57:01 +0300
 > Svyatoslav Ryhel <clamor95@gmail.com> wrote:
 >
-> > The lm3533_set_boost_freq() and lm3533_set_boost_ovp() functions are us=
-ed
-> > only in lm3533_device_setup(), which in turn is only called by
-> > lm3533_device_init(). Incorporate their code directly into
-> > lm3533_device_init() to simplify driver readability.
+> > =D0=BF=D1=82, 3 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 14:03 J=
+ohan Hovold <johan@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
+> > >
+> > > On Wed, Jun 17, 2026 at 11:00:25AM +0300, Svyatoslav Ryhel wrote:
+> > > > Since there are no users of this driver via platform data, remove t=
+he
+> > > > platform data support and switch to using Device Tree bindings.
+> > > >
+> > > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > > Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org> #for b=
+acklight
+> > > >       indio_dev->name =3D dev_name(&pdev->dev);
+> > > > -     iio_device_set_parent(indio_dev, pdev->dev.parent);
+> > >
+> > > Why are you reparenting the iio device here?
+> > >
 > >
-> > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > Because every cell has its own binding now and using phandle to parent
+> > when device has its own node is not a good practice.
 >
-> >  static int lm3533_device_init(struct lm3533 *lm3533)
-> >  {
-> >       struct lm3533_platform_data *pdata =3D dev_get_platdata(lm3533->d=
-ev);
-> > @@ -437,9 +396,21 @@ static int lm3533_device_init(struct lm3533 *lm353=
-3)
-> >
-> >       lm3533_enable(lm3533);
-> >
-> > -     ret =3D lm3533_device_setup(lm3533, pdata);
-> > -     if (ret)
-> > +     ret =3D regmap_update_bits(lm3533->regmap, LM3533_REG_BOOST_PWM,
-> > +                              LM3533_BOOST_FREQ_MASK,
-> > +                              pdata->boost_freq << LM3533_BOOST_FREQ_S=
-HIFT);
->
-> As you are touching this maybe get rid of the shifts and have one source
-> of info on where the field lies in the register.
->
->                                  FIELD_PREP(LM3533_BOOST_FREQ_MASK, pdata=
-->boost_freq));
+> It is however a good point.  So should at very least the ABI break should
+> be called out in the patch description with a brief mention of what the
+> path change actually is.
 >
 
-Very decent suggestion, thanks!
+Ok, this is a good idea to add chapter into commit description.
 
-> > +     if (ret) {
-> > +             dev_err(lm3533->dev, "failed to set boost frequency\n");
-> >               goto err_disable;
-> > +     }
-> > +
-> > +     ret =3D regmap_update_bits(lm3533->regmap, LM3533_REG_BOOST_PWM,
-> > +                              LM3533_BOOST_OVP_MASK,
-> > +                              pdata->boost_ovp << LM3533_BOOST_OVP_SHI=
-FT);
-> > +     if (ret) {
-> > +             dev_err(lm3533->dev, "failed to set boost ovp\n");
-> > +             goto err_disable;
-> > +     }
 > >
-> >       lm3533_device_als_init(lm3533);
-> >       lm3533_device_bl_init(lm3533);
+> > > That's an ABI break.
+> > >
+> >
+> > This driver does not have any active users in the kernel and no
+> > activity for more then 2 years.
 >
+> ...
+>
+> > > > +     u32 count =3D 0, reg, nchilds;
+> > >
+> > > Don't mix multiple declarations with initialisation like this.
+> > >
+> >
+> > Checkpatch does not complain on style issue, hence this is not prohibit=
+ed.
+>
+> Prohibition vs taste.  I fully agree with John on this one!  Those mixes =
+are
+> messy and hard to read.
+>
+> Checkpatch is a helpful tool but there are both rules and preferred style=
+ things
+> it does not catch.
+>
+
+Ok, fine.
+
+> Jonathan
+>
+> >
+> > > >       int ret;
+> > > >

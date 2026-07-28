@@ -1,163 +1,112 @@
-Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE18B412C1E
-	for <linux-fbdev@vger.kernel.org>; Mon, 27 Jul 2026 14:58:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53DA43C6A5C;
+	Tue, 28 Jul 2026 07:11:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785164298; cv=none; b=Jv4nX6f0QAHt/CrWMFSRToVfgdTRQ6v52yH1RvIwHhOGZDy5CUJBk7o7wtCR4JMr8Fu59MxdDEONi99UlI60S4P6H7msmUjvPBOTVA66UL3OcEE26CMcN4n+BtqIt9L2nJCf2HfJI5LCOg1jzpctSTjSc6KOo/xK6+qNneSIx68=
+	t=1785222672; cv=none; b=lewXfytzzs8SWIuOwC3UBQuD87LqdMjd6Q+JDHkn5H6q2EZy78PDgMAprHzqemVe9jxtsloR5gNL5skusyxEpOGg20SUVqhPt55aorL159DyV2OoUxxIskMklL6LJGMi20e2fENJyFZ2kVxLKGAaR73jsZbupdzlSmQCKFnRZ0E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785164298; c=relaxed/simple;
-	bh=/pHEhqhHim6zbvXlXGSytIteuWLfY5Kr9gwBWC8fFio=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XjuW+99uEnggCvVVNP7MWOWWwnScKqboQ3ATpqsmVftljFpHEZt8WysaMgS+RT0INucsT+ZEfGvgcRiMhE9X05xbJ2fvZmYZ8/psG/GuikpmCQ/aY4Ru4O+DK6AYxUUnYyUnGf8JG8kP29Vixi7imoeM8PCQdfRYEPrnQ7oRVoo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=WtIrJspU; arc=none smtp.client-ip=209.85.221.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1785222672; c=relaxed/simple;
+	bh=+apUkxdCKjqMtfmkb7nweZraUi/j27BdOVzzz1rCJC8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sqR0ABx1QRJcfZNxNYtMdQESokSUOsyGFQGoWyahzUzOzWkAdWSXDm0b2Oy0fAsFoOQ3XO8S7gkGoVIBkUlTC95wy3reOJi7YQYR9EoPTUfM92UWGK/a1cPx5dXMMI/SzJc7Z2RfzkBLn1AjoiSGkZ0KIc8rUkYgcrnQmKjXFp8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=pSCbBnP8; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="WtIrJspU"
-Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-47ddf7b09e5so2882309f8f.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Jul 2026 07:58:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1785164294; x=1785769094; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=cdTAOusKdU7cIGVdiXhGRlX7Lluomu67uAna+oJrbLI=;
-        b=WtIrJspUFDv9uYL8E4OhCURfnCutsSkbOm+juL/6yCshO8FMCiFZrYMSEpcfsdW4Nh
-         iKdHsW3hXXVC8Pl4kUTysqT9Zr8oF1RzlXcRzFSGc2UBRbewwmpIc4cUdB8jmp3pl1An
-         f6O93wZ1uT86BMhjp0hkFyCYKEgWqWi968vQRJXARDoAz7+tu8TEFguRFWLq/na2hZxb
-         h+/lKgJgJ7KvEmuOlPlx1TgAEAOP3gxpUS2jY/c4WBF4cEndQhBSKAsMyUFZVAH/YqQT
-         oXvZ+5VFrjrP5i1FIj+Vs0SajlFsW+dWgVvOzDcsFpUW8FB2tzSLDDUFkca3REdCvM53
-         ZAVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785164294; x=1785769094;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=cdTAOusKdU7cIGVdiXhGRlX7Lluomu67uAna+oJrbLI=;
-        b=o16fcdrg+zylfnUBNbOZcxUu8kOdnWlJlonpQZqL3WWNIPAVnGku3CydTJVL0cQlgk
-         x9eGtF0qi1pIc9iTf9PMBwWxTFFAu8a25EFD2LEUM4UiRYf1GJyuO7g8b5a8CPk86I/8
-         ZQyuWEPzL1/9a57hT+3KJke57dthU2Ti+ccb2Rfcr0erVNMjt1HappHrJMrzL5MNKbzY
-         9FMTBtY7ahGy24y/bnS8qRvSAawH4SBo/C4zKKHKlDPfDtfIQeWFZem167f91TPtNclK
-         9W8Jyxj6/rys8cypTr+e+R33Dh3fPkHIrWv8yrvDIQ6PHFdg5st36C5QwIY+jqvTE9aW
-         V/uw==
-X-Forwarded-Encrypted: i=1; AHgh+RpdsQl1STOkSeFC9dAuby/fgKRvvQF0nbJLN3iqvLEadlz8WJbKQ+yivy5EDOHbixH6CJFYp6hTjPUpDw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxtNyViCGfXay7TCkTXtbb2M1Lq2BanABIrMkTPoJPbNZSt0q13
-	6rl3+ZUqSGAqpAUoJ6BPrWcdbrfs2SRX+wuv02CXISG0chO5XmIdCb8HoEBTUauQQWE=
-X-Gm-Gg: AR+sD12fdHklfiBosdT0y1DQljKIJs76EoIjlgDM5ocB1U31jisA8INV7yTpblDa7LV
-	U27Ahp4gOuxsS2D6ponxuUlvanOUTFpjD/CUhm6tEPsGYOMgV1zwtuIZsV6VVEU4DtaMNFPOn0z
-	7HqXaX9PDXn+UjoN8l31kAlO0yxWQ6Sj8hWrWCn15yLKhg8M93NRRa4bH22boy3tmAoqEW1f/oF
-	EtaS1Vt8RhIYAqyG+Dw1L7MerkzBYLXQoWlATPHdi7yaGac2JD/9dmsyEEO00dqv6MP11Oztsqp
-	BIsz/5NaDLiB2Y1nSq5hboMmQYGk2iIfUKodfdg1Edaz4eHakOVtyDKlcLx+/vJAe+XQuekAqZf
-	KtJ9raZRYHQyy9iBQJWMbRObkB4bpTh2VDRWgItF5L4VbeaWgias1MNejyNNv8D25xXFuqCoSiN
-	PdtMsOYFbJWSC78GB/xzKQyiZOzrKXUZkJSmULpYU=
-X-Received: by 2002:a05:600c:1553:b0:493:e97c:216e with SMTP id 5b1f17b1804b1-496b5731987mr114339235e9.39.1785164294020;
-        Mon, 27 Jul 2026 07:58:14 -0700 (PDT)
-Received: from ?IPV6:2a07:de40:8100:0:fc6c:f9a2:4a0a:6354? ([2001:af0:8000:1409:193:86:92:181])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-496b4ee0e91sm231594995e9.4.2026.07.27.07.58.11
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 27 Jul 2026 07:58:13 -0700 (PDT)
-Message-ID: <ead73f81-26ef-4a46-9ad8-fcd2915563e1@suse.com>
-Date: Mon, 27 Jul 2026 16:58:11 +0200
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="pSCbBnP8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5DBFE1F000E9;
+	Tue, 28 Jul 2026 07:11:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1785222670;
+	bh=eblHaWPv+q84B7y2xKhUJZcQkR1enp7NetvdCnw0+CA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=pSCbBnP8o4a9yAy6YFmG3VgMxhsLL1SJed+JxbIvWDTJSUMB46UBN3VqPozck95yb
+	 6vQ6UQJ5AEvZ5VtQsgk4gYlOpr/507EvPaEujiQMGAgrJUBx5PuTtBJOrefvElbi+x
+	 AjOJWPt9N4fF2IDDAh9D407cT15V5JDHZWOVeLJA=
+Date: Tue, 28 Jul 2026 09:10:58 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Muhammad Bilal <meatuni001@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] staging: sm750fb: fix mono image source stride
+ mismatch in lynxfb_ops_imageblit()
+Message-ID: <2026072843-deafening-stream-a902@gregkh>
+References: <20260718103103.18082-1-meatuni001@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/3] time/jiffies: Include linux/sysctl.h for
- proc_int_u2k_conv_uop(), ...
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
- Ingo Molnar <mingo@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Philipp Reisner <philipp.reisner@linbit.com>,
- Lars Ellenberg <lars.ellenberg@linbit.com>,
- =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
- Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>,
- Alex Elder <elder@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Michal Januszewski <spock@gentoo.org>, Helge Deller <deller@gmx.de>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
- Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
- Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
- Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>,
- Joseph Qi <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>,
- Johannes Weiner <hannes@cmpxchg.org>, =?UTF-8?Q?Michal_Koutn=C3=BD?=
- <mkoutny@suse.com>, Luis Chamberlain <mcgrof@kernel.org>,
- Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
- Aaron Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Nikolay Aleksandrov
- <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, David Howells <dhowells@redhat.com>,
- Jarkko Sakkinen <jarkko@kernel.org>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Kentaro Takeda <takedakn@nttdata.co.jp>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
- drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
- greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
- cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
- linux-security-module@vger.kernel.org
-References: <20260721131207.803760-1-petr.pavlu@suse.com>
- <20260721131207.803760-3-petr.pavlu@suse.com> <874ihmke0k.ffs@fw13>
-Content-Language: en-US
-From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <874ihmke0k.ffs@fw13>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260718103103.18082-1-meatuni001@gmail.com>
 
-On 7/25/26 10:31 PM, Thomas Gleixner wrote:
-> On Tue, Jul 21 2026 at 15:11, Petr Pavlu wrote:
+On Sat, Jul 18, 2026 at 03:31:03PM +0500, Muhammad Bilal wrote:
+> sm750_hw_imageblit() advances its monochrome source pointer by
+> src_delta per scanline, and computes the correct rounded-up stride
+> internally as:
 > 
->> The kernel/time/jiffies.c file uses proc_int_u2k_conv_uop(),
+> 	bytes_per_scan = (width + start_bit + 7) / 8;
 > 
-> jiffies.c uses ...
+> Its only caller, lynxfb_ops_imageblit(), instead passed src_delta as
+> image->width >> 3. For widths not a multiple of 8 this under-counted
+> the stride, so the source pointer fell further behind the real
+> per-scanline layout on every line, corrupting the rendered image.
 > 
->> proc_int_k2u_conv_kop(), proc_int_conv(), proc_dointvec_conv() and
->> proc_doulongvec_minmax_conv(), which are declared in linux/sysctl.h. It
->> currently relies on this header being included indirectly through
->> linux/module.h -> linux/kmod.h. Add the missing include in preparation for
->> removing the linux/sysctl.h include from linux/kmod.h.
+> Rather than just fixing the caller's calculation, remove src_delta
+> as a parameter entirely and have sm750_hw_imageblit() advance by the
+> bytes_per_scan it already computes for itself. There has only ever
+> been one caller, and that caller was passing an out-of-sync
+> derivative of the same width/start_bit values sm750_hw_imageblit()
+> already has, so keeping stride as a separate parameter served no
+> purpose beyond letting the two calculations drift apart, which is
+> exactly what happened here.
 > 
-> Can you please split that spaghetti sentence into paragraphs?
+> Fixes: 81dee67e215b2 ("staging: sm750fb: add sm750 to staging")
+> Signed-off-by: Muhammad Bilal <meatuni001@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750.c       | 2 +-
+>  drivers/staging/sm750fb/sm750.h       | 2 +-
+>  drivers/staging/sm750fb/sm750_accel.c | 6 ++----
+>  drivers/staging/sm750fb/sm750_accel.h | 4 +---
+>  4 files changed, 5 insertions(+), 9 deletions(-)
 > 
-> https://docs.kernel.org/process/maintainer-tip.html#changelog
 
-I will update it to:
+Hi,
 
-    jiffies.c uses proc_int_u2k_conv_uop(), proc_int_k2u_conv_kop(),
-    proc_int_conv(), proc_dointvec_conv() and proc_doulongvec_minmax_conv(),
-    which are declared in linux/sysctl.h. It currently gets that header
-    indirectly through linux/module.h -> linux/kmod.h, but the latter no longer
-    needs to include linux/sysctl.h.
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
-    Include linux/sysctl.h directly in jiffies.c ahead of removing the
-    unnecessary include from linux/kmod.h.
+You are receiving this message because of the following common error(s)
+as indicated below:
 
-> 
->> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
-> 
-> Other than that.
-> 
-> Acked-by: Thomas Gleixner <tglx@kernel.org>
+- This looks like a new version of a previously submitted patch, but you
+  did not list below the --- line any changes from the previous version.
+  Please read the section entitled "The canonical patch format" in the
+  kernel file, Documentation/process/submitting-patches.rst for what
+  needs to be done here to properly describe this.
 
--- 
-Thanks,
-Petr
+- You have marked a patch with a "Fixes:" tag for a commit that is in an
+  older released kernel, yet you do not have a cc: stable line in the
+  signed-off-by area at all, which means that the patch will not be
+  applied to any older kernel releases.  To properly fix this, please
+  follow the documented rules in the
+  Documentation/process/stable-kernel-rules.rst file for how to resolve
+  this.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot

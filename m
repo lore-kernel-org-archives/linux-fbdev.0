@@ -1,146 +1,118 @@
-Received: from mail-pj1-f47.google.com (mail-pj1-f47.google.com [209.85.216.47])
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1912632939C
-	for <linux-fbdev@vger.kernel.org>; Tue, 28 Jul 2026 15:45:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7CC0C3AFCF8
+	for <linux-fbdev@vger.kernel.org>; Tue, 28 Jul 2026 22:40:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785253560; cv=none; b=Gt27FxW8oik0hYGzI7ICg3uyrT+CbkulqoSCoVnIuteHwVV841tbthrmWsaH0VIQVDqqr7H8H1WK0A4DATS/h/Cj+tjUzcByQ34aFUXs/z4HBqjHIDfyq/xu/lQMEySnek6pm2yvVl+FZmfnwc04+pg8CqXGwUxwnqFB3j5B1hU=
+	t=1785278407; cv=none; b=fUdIU3DIX40VCk+mAYCDt3oAxp5X57zGOUY9e5yY7jFRG9iwrGzjw4byQa0vfHxDYTXaYv9MMYN0Q3EnKP4Z3k5UAi7FTL1QdVGUDi9TVhARWlF4UAFizT8t3QdVUxjzaMUzN+T9f1/9OlCKXcLHDV00UpZJORcdM12S4p9IywY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785253560; c=relaxed/simple;
-	bh=VDo4it9UlR4Ioy8LhcAXVYqM6+ETaNhl9l00CrRvZx4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LodpB1nWSIeG+9cja1/wEVsYP1RKoWPII35GxsSZRx+UQpmyZyC9asLYGER7BlESfH7gtp07DUHZg1zQ1nEawA56We7GdNi7sMFAbvJv+hNBpaILK/g/0ynqvkqLD5rw0zyPddB15HGR01toh34SqkKv2ZfaiObhw/pvwNF4fVA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mxJc9hF/; arc=none smtp.client-ip=209.85.216.47
+	s=arc-20240116; t=1785278407; c=relaxed/simple;
+	bh=2se3aOv9/5GrHaham5C+DJtZbUroCRjXB7PwS1jc+U4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fUR6CWefTo+3mwi54+gTtFg0WovHJ1QAbdZWg/3ITicycN+GXAR0K3XM8AP4oNXF/nRprCcAwMuIJ0cBAZ3o+xN2tNHJSC2AisB38yA7MazBU8XXCkDffA5ixBJC68Wids+ZHMjgABvJPsHhYlBiRJiK6McwD/u1oUfG7f5rF+A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jxEGVz/U; arc=none smtp.client-ip=209.85.216.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mxJc9hF/"
-Received: by mail-pj1-f47.google.com with SMTP id 98e67ed59e1d1-38759bcd877so2691781a91.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 28 Jul 2026 08:45:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jxEGVz/U"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-38e07ebd263so212572a91.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 28 Jul 2026 15:40:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785253558; x=1785858358; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=MWiV0+CUdqlaiqVq42BuBLs9iZw1MGlogw86iDmjrO8=;
-        b=mxJc9hF/zxbWGE1gS/oggdyOMS7wlw+pFNLjGvnVgvNO343noTPL824nJTMleJx+w6
-         VSHzF+n1jCyzI72lbMkvwdPoIoYHEYr8XKQBypdjRTrp8zuOmNcwxqiwWeTouHkkLlKx
-         kRwIHoSOQHBdZkKBSh5iuyK8V7lio6nL764IOr6y9SPuBVq+wa5CgdS7QV34mJU5nuPG
-         hIxJwqPPeLaYkG9VZ5sX3jgSrr8COOmb7xMaWZ6uAqlMusQ3ca/NHr3ap2r5iVMT0w6+
-         PX+zeeU+EcNGQf64EEgU6ET9LxUxyBbQXucAnBDuflXHYAQfRM1GcCn5ynSSLSmtIVso
-         VlTg==
+        d=gmail.com; s=20251104; t=1785278406; x=1785883206; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=HFtUghgVXhXCFuPyxhJvt/ikNqme5a7AZrChDZVSnc0=;
+        b=jxEGVz/UxR9iEpbApI/JKEWZbi9e5wkjVoTt5X8W4iQt6DAyUmGzkKwC7NCNwbhCeQ
+         VmOU4Gho3LKnWtz0hexhiEh8FZLyaoCuAZ0EOlZ18ckvM0n/mWklmCnriIf4eeOWebhd
+         Ydpxb9ZzGTp0qnCS8ZIb6/2krxM40kBsnmxhhgWK6aFXbZGXYNTU652A/jDAMAQUikOi
+         R/Be13iRyjN+JNGUj6o26pCdJLA+/hHWwNW6mEZug/IiLx38Nd6/32F1vm2SEFZfHnWh
+         C5V120YFbLAT5KZeK9AkXUv+iplfP/OYpHtjxsUzeC0Iq6WcWFmNYJe1POvMwL9vvEEA
+         RJIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785253558; x=1785858358;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=MWiV0+CUdqlaiqVq42BuBLs9iZw1MGlogw86iDmjrO8=;
-        b=HGREPCLPU8u9eiEaTrPRjiLcOGbwJ5nC69c6Xqc60D54a70QOqPA7HpHZyv314f52o
-         PYa+3e8a+aXxmGHxigOMqenq8jXuezeYT9miY2y93hgxdxg3CenbPvo+TBDQISBI+Y/v
-         NTzPc+hp6JhVztYd5WverDCNlr1V/PHHDaxA1vCKfohJteBiCkQURAwX3MpwvVX7+HA0
-         pWAZpKIOngMxIbWC/3PKOsmkVbwl1ebzYgYpiDD5sP3txk1Cfv/Ldgnb5MdfvYsx8L2e
-         fMRHCBHS1O6Y85UFm+wBDvNQNOkXFkakiPp2Tx4GVGV1bK93+NJv72MLPSP2Rq1hhDjp
-         Gg+w==
-X-Forwarded-Encrypted: i=1; AHgh+RoM/0hsm2S2hkcNZEzUEpLD8GS2xzQcAkLJf8zF+gBNzaaH7CGh50gBmTNjBkwL1rNsg+EJ8CEAJE0bEw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxzHOp1r41jVRSD0x+Kt5vZ2dIDqcf6Tddk0eYrg2AgQJjgTXFX
-	wfW3HaLyvN1F5WihFL5+iX67YkBJul2/BXgx7H8bi9DTvMlV2+KIUR7t
-X-Gm-Gg: AR+sD10zr49UkXM9zfuNDXFrwIasgAv+F9QH/ynqS6MlzxSCHrKm30ZSEdQl0lx8dFy
-	+3IMuxlmqRkIj9CexlxJIXunTFeIU4uwL0fXlx/WAlcWKN/aTBQ5D7oNtvUpmwMvDvQq9ESn1kw
-	VS5RD+0cpJa3B5KNbfpkXNOtOvjApPpdpPwJKIV5maYbEPDY/XE9R5U68G6hg6Sk4ybynqPuqsi
-	G+Sb7+lnmMOZlFw3syScx/OW2ENfarPL90vZIdLzvAPmY62/f0Ee1gSt7qGBOIv5Jjy0x1H69Jo
-	2p1vr95dTbnYs8B5BnfLB2+E5uGgr3JMUN1RltI+qbWj21Y+2yBsrIJI2S/m+ijF1qOJ/zJu4P7
-	K0IXE4CC3xJ/oXeMDRJYPPfcfyM/q7zIWCTXnacsnsR6qHVNu4sqxr59ZxQ96QpkCEa6SNqIW+H
-	RdeE8cbAY=
-X-Received: by 2002:a17:90b:33cb:b0:38d:c74d:29c5 with SMTP id 98e67ed59e1d1-38f6a37699emr3215736a91.19.1785253558298;
-        Tue, 28 Jul 2026 08:45:58 -0700 (PDT)
-Received: from localhost ([172.216.252.23])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38f056202cesm4465321a91.0.2026.07.28.08.45.56
+        d=1e100.net; s=20251104; t=1785278406; x=1785883206;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=HFtUghgVXhXCFuPyxhJvt/ikNqme5a7AZrChDZVSnc0=;
+        b=cyqn8isItufFUZIlXX/T5GwT9on1PvnBbFTPwgMXn0nYn7gUez0FFnfapHKaIylepj
+         hFkvpXGGK2e68W2KPbBU3YscKqUUZBaHJXNDmTCF2O7+JshkxT6nuLR1dAPr0QV9KheO
+         qTZ4D1v9CZGedvbbBxsndfuC8Efx4aiDXLDvm8+zA8Y/NllH89ujfJg69P3ahT16e6wT
+         KC5v2pAZce5EJuOj6WUYjiFmkoG7GFUCnCITFlRk1VMtDKZBlu83VlkSyybErva89b0r
+         4XhWxWkU+uz4mMqsfNKhHAgjpA9TqM6X+4FCDtqM173wPsD7hVLD+kiHKc4lsPkAP8Go
+         QUEQ==
+X-Gm-Message-State: AOJu0YxxuItbIrdxSlzm4+exfSR+t6yxxcCvOPGlTvgYS7pGVgIr6qpY
+	pCmnS+vbRl9IeHxj48irbq7PSTIdWNx7ivGaUVXNNjmD9l75pJ5BmJ0e
+X-Gm-Gg: AR+sD10K6SuNFd3SwmDEbkmcNQgi4XBW4HnFA5fHqJKMKMFyFyxDu6uaf1xKKsFcUGY
+	8I7hYshNSvRgAF7K6rayNstBKHnFEYi/cBhhxXmMrSXaLKA7oFDdLc5g8siMN0gr2tBA8R1R8+e
+	PCdqmIGKZkVTvxm511dUpwuOMlrBp4jR5Qovwfp6PcmRT0HhFH7hwM4zH3rqI8k2VXAK6X54sAn
+	bC5s6Nl2YeBac1Epxd/N2wFQUSAymsoq1yCL3my8cg3gx9gmuDNswXzLSV3NULF+5zX7bSsaqgw
+	UkYcHc6Uo8udNo+D51qV3N3HgN7AteyivxLFkEynpS3jt/3Z3La+jxomuPpi+EG1LWJNoD0t3iD
+	VQUFxY4aj3ZHtVxmeNatVRgJvvW52Wsfv1E2vvgHfIfxPTPbsQReYvzkm5G98I7QdyNK7J+piaf
+	CpBz26PhiPEMbGgdNh/iF2mLxo5QnPmSVV64R140CQ8I6HM7BBWzWI8eny/p9FSpVHO2jy4eGKJ
+	dHzAv0uKL2AnosLbUAjLhLvH7kIKks33OGTozw6WDdjbzO51vtjIH1VdrYJglzZ9Rw5nW2TlQfl
+	/b6VIp0Krgr0Lhz17QRM96PTkuajRsxzz2FP2s0=
+X-Received: by 2002:a17:90b:3848:b0:38e:4e62:f998 with SMTP id 98e67ed59e1d1-38f6a556542mr4751169a91.23.1785278405697;
+        Tue, 28 Jul 2026 15:40:05 -0700 (PDT)
+Received: from localhost.localdomain (c-67-170-60-64.hsd1.wa.comcast.net. [67.170.60.64])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38f7f12f965sm480915a91.5.2026.07.28.15.40.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Jul 2026 08:45:57 -0700 (PDT)
-Date: Tue, 28 Jul 2026 18:45:51 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Muhammad Bilal <meatuni001@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH v3] staging: sm750fb: fix mono image source stride
- mismatch in lynxfb_ops_imageblit()
-Message-ID: <amjOr0NiY8OMNaRf@stanley.mountain>
-References: <20260728131050.37032-1-meatuni001@gmail.com>
+        Tue, 28 Jul 2026 15:40:04 -0700 (PDT)
+From: Gabriel Changamire <gaberashawn@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Gabriel Changamire <gaberashawn@gmail.com>
+Subject: [PATCH] staging: sm750fb: fix kernel-doc comments in sm750_accel.h
+Date: Tue, 28 Jul 2026 22:39:06 +0000
+Message-ID: <20260728223906.350-1-gaberashawn@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260728131050.37032-1-meatuni001@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Jul 28, 2026 at 06:10:50PM +0500, Muhammad Bilal wrote:
-> sm750_hw_imageblit() advances its monochrome source pointer by
-> src_delta per scanline, and computes the correct rounded-up stride
-> internally as:
-> 
->         bytes_per_scan = (width + start_bit + 7) / 8;
-> 
-> Its only caller, lynxfb_ops_imageblit(), instead passed src_delta as
-> image->width >> 3. For widths not a multiple of 8 this under-counted
-> the stride, so the source pointer fell further behind the real
-> per-scanline layout on every line, corrupting the rendered image.
-> 
-> Rather than just fixing the caller's calculation, remove src_delta
-> as a parameter entirely and have sm750_hw_imageblit() advance by the
-> bytes_per_scan it already computes for itself. There has only ever
-> been one caller, and that caller was passing an out-of-sync
-> derivative of the same width/start_bit values sm750_hw_imageblit()
-> already has, so keeping stride as a separate parameter served no
-> purpose beyond letting the two calculations drift apart, which is
-> exactly what happened here.
-> 
-> Rounding up, rather than down, is the direction consistent with the
-> rest of the fbdev core: struct fb_image mono bitmap data (the same
-> image->data this driver receives) is walked elsewhere with byte
-> strides derived from a ceiling division of width by 8. The generic
-> mono bit iterator in drivers/video/fbdev/core/fb_imageblit.h advances
-> scanlines with "iter->data += BITS_TO_BYTES(iter->width)", and
-> BITS_TO_BYTES() (include/linux/bitops.h) is a ceiling division.
-> sm750_hw_imageblit()'s own "(width + start_bit + 7) / 8" is that same
-> ceiling division with an added start_bit offset, so the caller's
-> ">> 3" (floor) was the one calculation out of step with how this data
-> layout is handled everywhere else.
-> 
-> Found by code review of sm750_hw_imageblit()'s internal stride
-> calculation against what its only caller was passing in, and
-> confirmed with a clean -Werror build. I do not have this hardware,
-> so this has not been exercised at runtime on real sm750 silicon.
-> 
-> Fixes: 81dee67e215b2 ("staging: sm750fb: add sm750 to staging")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Muhammad Bilal <meatuni001@gmail.com>
-> ---
-> v3: Added the version notes below, which Dan pointed out were
->     missing from v2. Added Cc: stable@vger.kernel.org, flagged by
->     Greg's patch-bot since the Fixes: tag targets an old (2015)
->     commit. Added the rounding-direction justification Dan asked
->     about, citing fb_imageblit.h's BITS_TO_BYTES() as the existing
->     kernel-wide convention for this same struct fb_image layout.
->     Moved the "no hardware" disclosure from an email reply into the
->     commit message itself, per Dan's request.
+Fix the function name typo in the kernel-doc comment for
+sm750_hw_copyarea() (sm750_hm_copyarea) and add the missing @accel
+parameter descriptions for sm750_hw_copyarea() and
+sm750_hw_imageblit(), using the same wording as the corresponding
+comments in sm750_accel.c.
 
-Generally the no hardware disclosure would come here under the
---- cut off line.  But I'm not going to nit pick about that, it's
-fine.
+This silences the kernel-doc warnings about the mismatched function
+name and the undescribed accel parameters. No functional change.
 
-I see also that the "Pitch value (in bytes)" comment supports rounding
-up so this looks good to me.
+Signed-off-by: Gabriel Changamire <gaberashawn@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_accel.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Reviewed-by: Dan Carpenter <error27@gmail.com>
-
-regards,
-dan carpenter
-
+diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
+index 617885431661..e76928bf260f 100644
+--- a/drivers/staging/sm750fb/sm750_accel.h
++++ b/drivers/staging/sm750fb/sm750_accel.h
+@@ -195,7 +195,8 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
+ 		      u32 color, u32 rop);
+ 
+ /**
+- * sm750_hm_copyarea
++ * sm750_hw_copyarea
++ * @accel: Acceleration device data
+  * @source_base: Address of source: offset in frame buffer
+  * @source_pitch: Pitch value of source surface in BYTE
+  * @sx: Starting x coordinate of source surface
+@@ -219,6 +220,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 
+ /**
+  * sm750_hw_imageblit
++ * @accel: Acceleration device data
+  * @src_buf: pointer to start of source buffer in system memory
+  * @src_delta: Pitch value (in bytes) of the source buffer, +ive means top down
+  *>-----      and -ive mean button up
+-- 
+2.47.3
 

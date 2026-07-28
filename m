@@ -1,39 +1,39 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9986D3546D6;
-	Tue, 28 Jul 2026 07:13:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69C603C9893;
+	Tue, 28 Jul 2026 07:14:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785222817; cv=none; b=m5oEoD/WytcMD1I2NpFQPycrF9QoGhaQO6asGJs5t3gLAXftsRXD10EM6ef/eS5oEBm/Lwxlj5Ru+EHzM5z8EO7oBGI8j92KlwT99pb3kwUVBxKGGGcryGm8Ei3qnruY7fVSG+gw/BghUgmSwG/B/5ooTZS6ByQCm3pceH+awpk=
+	t=1785222883; cv=none; b=mOsQWE2XO100FHNHMF6MSX4rYl3aPvljKQPCinXm7mK7O4nfx14cUMnnQokJaPFjdOj1wAocgMJisu4wNdnJDONqrPsBMl/lSkv3SqmVWIHxwVICD3bRLKsKZSQ5TQ9Ew58zvMOBJnmtm6eqO5ADKzkBu0A67PMPHNAAPr+LxEo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785222817; c=relaxed/simple;
-	bh=TY4fAbumHIzRl2Kmeuh+HbeT2kCSI/nAGHP1tukmNLs=;
+	s=arc-20240116; t=1785222883; c=relaxed/simple;
+	bh=pH+aYJgbOn0P0qKWIwglvbJdVlGjKnKkjw9IseUdwvM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=N+1kEN9TBGYyt2+Dr0bKL83cyBEefUmjC1Tvah/k+FAkNLuaQ6uqTGlyQ8XSWDZvWb4yNzeoOcnylsk4OOcn2nwX/aKpArMWChNS9aryynYu466CBgFgD5O180+DlqgA96Ibg0HcfhudzePVY2ZG2vezqnV80ufg1RMBtGZlw9s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=Ut2QWjG/; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=XW46gSOaaFP/jR1QTUz75KtCgtmslEtaSlJQPRHnOGjin0qj9tPgdC8UL1F2/kVuUuoZ7ABoMJxJxYrJn0O7Soh4X4pP9WlzmL/vwXjRUzmOW/lUfS2mxBipbZqlCdnb+VRv/XAhOyJaSkjelme9fdegcPJSATycIcOBEpRGN4E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=QVdXfW0r; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="Ut2QWjG/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88F891F000E9;
-	Tue, 28 Jul 2026 07:13:35 +0000 (UTC)
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="QVdXfW0r"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B59571F000E9;
+	Tue, 28 Jul 2026 07:14:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1785222816;
-	bh=8grsjfEHRYE9amg7lq609+UDA5ow4FV3/sky6nA0x08=;
+	s=korg; t=1785222882;
+	bh=bLOm4DZuYRPGDME/xcXZ2fDFNEQdpE2f6dkBtC2gS/w=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Ut2QWjG/SMxCpEZCzXRn4ImiTyS4Ak6cJGafORVCQ/f3WNo8UYYlS2eGfa8WLPjmn
-	 Fajx6oDg0jmnFLtDf+9s/6GLBGkgWmDpwEvw7+IwH2y3K98vSLHT51qTxzZiTmWdun
-	 IbXF1PKo8RiMk3wQAqOm45LnTUyV6WZLqe/7r43U=
-Date: Tue, 28 Jul 2026 09:13:22 +0200
+	b=QVdXfW0rVp7kOZSPQnaDbpF6I78PHzOHutXdrb1xb0b6hH9FEXtOReUIYCsA9djAM
+	 2UtiTPKO+V20kzxMPzsTog4Etzuboc2rON5m+IjO/1nMYIwUIr2uW3F/qpx83uZ6FD
+	 jUYggNfqGKEYTIiSHG2PyaDCsCSKgenERGriuzlQ=
+Date: Tue, 28 Jul 2026 09:14:29 +0200
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Nils Lehnen <nils.lehnen@proton.me>
+To: Mohit Mishra <mishraloopmohit@gmail.com>
 Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
 	Teddy Wang <teddy.wang@siliconmotion.com>,
 	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] staging: sm750fb: remove dead VALIDATION_CHIP
- conditionals
-Message-ID: <2026072845-curliness-overcook-68a0@gregkh>
-References: <20260724131121.438-1-nils.lehnen@proton.me>
+Subject: Re: [PATCH v2 1/2] staging: sm750fb: Remove dead VALIDATION_CHIP
+ preprocessor blocks
+Message-ID: <2026072852-whole-commuting-cd30@gregkh>
+References: <20260725090750.113598-1-mishraloopmohit@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -42,10 +42,10 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260724131121.438-1-nils.lehnen@proton.me>
+In-Reply-To: <20260725090750.113598-1-mishraloopmohit@gmail.com>
 
-On Fri, Jul 24, 2026 at 01:12:59PM +0000, Nils Lehnen wrote:
-> @@ -1020,9 +996,7 @@
+On Sat, Jul 25, 2026 at 02:37:48PM +0530, Mohit Mishra wrote:
+> @@ -1020,9 +994,7 @@
 >  #define CRT_DISPLAY_CTRL_CRTSELECT                    BIT(25)
 >  #define CRT_DISPLAY_CTRL_RGBBIT                       BIT(24)
 >  
@@ -53,12 +53,12 @@ On Fri, Jul 24, 2026 at 01:12:59PM +0000, Nils Lehnen wrote:
 >      #define CRT_DISPLAY_CTRL_CENTERING                BIT(24)
 > -#endif
 
-But this define isn't used anywhere.
+The indentation makes no sense here now, right?
 
 >  #define CRT_DISPLAY_CTRL_LOCK_TIMING                  BIT(23)
 >  #define CRT_DISPLAY_CTRL_EXPANSION                    BIT(22)
 >  #define CRT_DISPLAY_CTRL_VERTICAL_MODE                BIT(21)
-> @@ -1121,22 +1095,17 @@
+> @@ -1121,22 +1093,17 @@
 >  
 >  /* This vertical expansion below start at 0x080240 ~ 0x080264 */
 >  #define CRT_VERTICAL_EXPANSION                        0x080240
@@ -66,8 +66,11 @@ But this define isn't used anywhere.
 >      #define CRT_VERTICAL_CENTERING_VALUE_MASK         (0xff << 24)
 > -#endif
 
-And neither is this.  And now the indentation for all of these does not
-make any sense, right?
+Same here :(
+
+And elsewhere in this patch.
+
+Always look at the end result of your change please.
 
 thanks,
 

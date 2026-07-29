@@ -1,254 +1,115 @@
-Received: from dggsgout11.his.huawei.com (dggsgout11.his.huawei.com [45.249.212.51])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from sonic.asd.mail.yahoo.com (sonic-euwe1-0017.asd.mail.yahoo.com [34.2.82.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B65D030DD2F;
-	Wed, 29 Jul 2026 02:21:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.249.212.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83900448D02
+	for <linux-fbdev@vger.kernel.org>; Wed, 29 Jul 2026 10:49:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.2.82.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785291678; cv=none; b=TAgO9OHtznRDPJJXagzds25U2oi3HiZwXTBU9domE0P7Vu2lMRBlfoySBsl7TjNYpP/osGNpiIq77qqzdbIQS9H444bmP6dMxq8G9HS8T+unxXMb4/HRZmcRaibCYJrCCmF5TxNzjaEolVGazbpTtP3Ce0s+/sllVQkt/0iPN/o=
+	t=1785322180; cv=none; b=XoUiEk2fUJ+WtSVTTjXyQZlNO9Imj9Abs+qAZae9sGoRYafeNjoTJV7zJhpPi3cy3DfgDqxxyZ24xX68ZUACtaF+Y7LCFXx1FxoHcbSnpepwfciXfFchaLPp+YSM3yF3j39n+xGo861G7OrXyqwnBrgWy994Li5m0dhr9HmiZOU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785291678; c=relaxed/simple;
-	bh=JJbGbivsw4XQYj/mzzN/Cx6IBxvCJVp4A6pgg/3Vbh0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=L8UmZV0HPhRJq15np1QGglU9TgJFqaIkkwOS6q90sJ/fs5C/jPP7WsRuUXK/EiFwPDJKuIpnV0pYTK1G9SCG0zSoHsUUgRu5iyTCpHc+/2UA9/xVAIKnJhb9acnzo3xnM60r3YU4G5N6v3i5f+KsIS2u7XpAcWSc0pul8vchqEc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=pass smtp.mailfrom=huaweicloud.com; arc=none smtp.client-ip=45.249.212.51
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=huaweicloud.com
-Received: from mail.maildlp.com (unknown [172.19.163.177])
-	by dggsgout11.his.huawei.com (SkyGuard) with ESMTPS id 4h8wzC5jt1zYQtlV;
-	Wed, 29 Jul 2026 10:20:23 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.252])
-	by mail.maildlp.com (Postfix) with ESMTP id 1A6E84058D;
-	Wed, 29 Jul 2026 10:21:04 +0800 (CST)
-Received: from huaweicloud.com (unknown [10.50.85.155])
-	by APP3 (Coremail) with UTF8SMTPSA id _Ch0CgD35kWOY2lqY7JLAQ--.62045S4;
-	Wed, 29 Jul 2026 10:21:03 +0800 (CST)
-From: Zizhi Wo <wozizhi@huaweicloud.com>
-To: simona@ffwll.ch,
-	deller@gmx.de,
-	tzimmermann@suse.de,
-	sam@ravnborg.org,
-	ville.syrjala@linux.intel.com
-Cc: linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	yangerkun@huawei.com,
-	chengzhihao1@huawei.com,
-	wozizhi@huawei.com
-Subject: [PATCH V3] fbdev: Fix out-of-bounds access when rotating console after font resize
-Date: Wed, 29 Jul 2026 10:12:04 +0800
-Message-ID: <20260729021204.3385299-1-wozizhi@huaweicloud.com>
-X-Mailer: git-send-email 2.52.0
+	s=arc-20240116; t=1785322180; c=relaxed/simple;
+	bh=csNuAcxNQxEm0JFQBbE30OkWlqKgkmwFKZ1ttNV2frY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc:
+	 References; b=WOcx1jIs0uVO84XgxL0HeBdEaVhSYTu4Vsq+LMmrkTtX2aSCzYDh1Wx3eyrbxexHmy1MGVYTkzrRQ157uViy4t09b/AAOy0w+PnFUxXqN9hyOyQqNe3UqtKu6V6dZIa4z5gdJjGiJvmMYqpXYoDo/FkVZPel6bgKZwx3JBtWBPM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl; spf=pass smtp.mailfrom=yahoo.pl; dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b=r/oLO9AF; arc=none smtp.client-ip=34.2.82.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.pl
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b="r/oLO9AF"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.pl; s=s2048; t=1785322176; bh=uxve866BWF4htd0+CpMI2/Yr/XqQcHixAEiZK3UmVoQ=; h=From:Date:Subject:To:Cc:References:From:Subject:Reply-To; b=r/oLO9AFViCRBKgswai6DoE1qp59XiIj8hlVP2eKJYE3tSduf5kvRojeCRrA9COfStVLsfMd257vNcb8O28ok+XHS4f/9fEcKbn5JVSXXelAzYNnqtjuOoDdsk+Ze1L7zDCU6JF2HpT7CCTQz32r6T0FFsDQirpE6uIlYNtCZqbq6uAZG8T48IBRudH1v7FZgmmwcXShtXhQo1KsDPMYaXIbKqEKskTUZ+pXnpEOTcc7dHshZioupLsjyFdS2tUpmhZEbmIlmosw1aVzOivs6ZQXohxcTmrCRUx10oP6vaZ8uLpbQmv3YgExFIUbNzras/PmzE1+IJSJJF74dx/FMw==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1785322176; bh=0txDAdqkQeVMnTeBx7ONn8K1Mad+UlpB9gvmCojtVMV=; h=X-Sonic-MF:From:Date:Subject:To:From:Subject; b=VqGjtUaGaJUV/LsGrf3xMIO+qw8tsZC5iOEpV99Ek9dd9fiap/CC1U5g14TOMjI6/aM6Z52alebpYEguzV1XOtGFM2SScE6apXm3loRVsw43WkgUCnnGgsIHE2V4axs1PS7kpvLxx/K517CKiVXDwbkrjPcRdTYOgTG9Ozbr5uw9kR1iPkopq/gmGT1xla3z3Pw4buFQP4uS8Gv5hHe0j2f2kNWj43+eulA6ErnP2qKFymW3WRIH6SMc9wc5utZBSYqid4ntJk8UteJDd2vCGZLklMbD4WciEmBxxwfRR6sP0JZSvIxCV5FHzACDIwvzu70CO6KT1S51KNih5rZk+A==
+X-YMail-OSG: VUJu24IVM1mEqiOHtHeWkIGRHPvkQHCoy0RQnbWt7J6oM2M0Ju6S1_TKpxFfD6G
+ F6wR6lVinD6HSIyN19YwqYhkKxNPctz5Taf9WLROw0Wp8n6JXN9mO4JguRU3uqX4mGLpRAgs0zGT
+ ypw5VNbzUaCjd489fHgUCyrYGym43gEiNNog9FmjsG5TkSR6DH1t.lVu_bArHfWsHg7hYB_0Ifxd
+ oCJY0EKeqMHWPnSGgbmcaQGPg3VqcthkjM3QpJmHi6cV52W6tqMO0Svwihyan0vKjC.lMvUccqSO
+ iRa9BdZnYHvXJX8mUkI4W.zNyacPqbGktlTkJlwhioXUeiDxl2_uJv_v1fPfubjCA.dJs7n3z.n0
+ jUPLFw3SmvNV.9KXNxGPbNEX76GRviHEjKRhdjFOv8kVNe9r_2NInbkZyst9oMcQgpYH7xya1dmb
+ ayf_3PWvmQs1e9c0PvkUNjgIDIbQu8UfONuiCTdMH_7Kb.rK7MD_fax6MPr6v3PNuho4O5upBYDt
+ Eh9mJA0CPa4yw4ibF5rBgHuiRVZlpndq8hZhZcuxD8n8D74QFsVCK0.Vh8Ia6YPZxPg_6RDgOkuK
+ KnPpuKuKUPL4L3MlIyOUQTbFIL4YPwFfNrHRQ.v0RjfOlvUZe.8k_Dv98vGrXBTlR6znoNzlrsZy
+ P5KQSyoJ51dQyJubAama52HRLPz3l6Lp9xaqYJ9BkU7gJDTcVnOMeHHO9XhzaMC.EHjZlBtD5LPW
+ eVrambySjBI.iDZS1lAas6XjbF5nuHceBinc7sZ99lsdLpfSSUCJDIxN.dSxonCdn_y4xZ63HpmR
+ UJv1dcPfwxM8l_nyEEGfFbmlzQl30g1gbDjEJE4VE1nw5fpZEZ58qpiNZQ1j1b2sgprQzNrFAZ31
+ lEW5X5odav27Qe39Bu6rmvjzkUcxevIOAShXonNhPvbGx9oS.xL2fhSV3.ao.MHXRCK6Gf4oUWCG
+ L.pnAkkqwvVSQ4B4LjG7xy8C9GyCZb_n9GZ0eZ7r3iQGTj4kTrwME_nvltourCyjbHfKoilKnGdd
+ .UoEU1kIjQ6TUGCi3Tuj4CaLkJkmYBOo6wN.3ZHd1vyfUwmezRQvQwmpluQbPXoEKhaI5qErfhY0
+ k3l4Ey5a7jLuitrtmHBmJdzcsQGy1gbZj5fENOuW11iF7_hGLqsOa8eVRO9VTVDnwZb.QJ5omVAq
+ RPCDRTYLBVWErgLbGXXmEuhpprWkwcUyFyC5qMU4Hb26QpoAp7I1mDx0tG5F8TrSkhBC1wTCoAYz
+ MgiNzK.qRJn_yFmabQyLuRba.9TRYg3da8LtV27y5CBkiIvmo.iEZf1AeghKvgg9KUgwyeriQK0N
+ yqWIxD6L6lBaq0l_njg.Nkf5Xi3JPWjUKJlv2To2gYobZmh6avkgaqO7.q2EB_K1Tgjizz1yqyJv
+ rjHQyCbSMnSKRuN7ycVf_zaxDbxHScrg4foV1JSkSIHydvVraCyYWC3r37.9Sy64w7mf4LYWTUW_
+ OLZp3.WMAU6xck9pFJSr4hDjxBPmwYMxris7ctbwDViWHwWZOVIcyPRnrDS7CdbMBVAncarq48fB
+ TDmeD8JalCDVq.rAbdRyJKL1NV8vITwzehkbI2XvnpMMzrDrVtaDG5x9romujTW8hZVE.XKSu3DV
+ 2RhSF.7slSR5ua6hZOpDoIyyfuSXylKyh4u9Zl8kDdpaJS0rxY07mg4XsEOi7HLeuudPyQvbfyit
+ mLXMm5HrNdjifkBKqIYYitj5fAuhkLNDVgtJe5bP_NOBn.NwITE33HPohi1LI3qkn_VZBhEl.p0A
+ AshhgUVSaru_XAFaRE8o.uZu61Czbvxc4u8O3bNiep_6koDIAfyaXfE5Q_jigrNIBx6KWO.QpYrO
+ OujqLLzvGHhw5ZE4R9ezYCNCNbFDws4JozxRGsRVYdhRFgePqS05qt49g_unBHg0asoiHYi_EF1s
+ tSdpMjExD_nGeuJHCO9zVdnyIJE7bTcCAm3zjHcRyB1k_84VzHHxQIqTVNC29UFlac3gNffI3aO2
+ Tt7qRS.2lmzXFJsxrV.jSWcDvZ6_xBlYbl43MVLEtGH6m9eJxt0_qKDdtIzo.Hn627A5QbMGKoKM
+ DWBm3
+X-Sonic-MF: <tomasz.unger@yahoo.pl>
+X-Sonic-ID: 9838cddb-c3db-4c47-8765-365365e09484
+Received: from sonic.gate.mail.ne1.yahoo.com by mail-asdoutdeli-p-cin-euwe1-prod-sonicconsumer-svc-102 with HTTP; Wed, 29 Jul 2026 10:49:36 +0000
+Received: from dip182.lsn.ir2.yahoo.com ([87.248.99.191])
+          by hello (SMTP) with SMTP ID 55ed7eb25d4b538459b72a781fc4e23e;
+          Wed, 29 Jul 2026 10:49:34 +0000 (UTC)
+From: Tomasz Unger <tomasz.unger@yahoo.pl>
+Date: Wed, 29 Jul 2026 12:49:35 +0200
+Subject: [PATCH] staging: fbtft: fix typo in fb_upd161704.c comment
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_Ch0CgD35kWOY2lqY7JLAQ--.62045S4
-X-Coremail-Antispam: 1UD129KBjvJXoWxKFy5AryUGry8JryfGF43Awb_yoWxZr47pF
-	1akr17trs8Jwn3ZrsFgw4ruF1aqw4kJrW5GrWft3WYyFy5ZFWvvasrKryDurW8Crn3CryY
-	v3WrKrW2kayUuaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUv2b4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k2
-	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4
-	vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7Cj
-	xVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x
-	0267AKxVW0oVCq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG
-	6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFV
-	Cjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0E
-	n4kS14v26r1q6r43MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I
-	0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWU
-	tVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcV
-	CY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAF
-	wI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa
-	7IU17KsUUUUUU==
-X-CM-SenderInfo: pzr2x6tkl6x35dzhxuhorxvhhfrp/
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260729-upd161704-typo-v3-v1-1-69c962e35d59@yahoo.pl>
+X-B4-Tracking: v=1; b=H4sIAL7aaWoC/yXMTQ6DIBBA4auYWTsJPxaSXqXpQnBspwskIEZjv
+ LtUl9/ivR0yJaYMz2aHRAtnnkKFbBvw3z58CHmoBiWUEVZZLHGQRlrR4bzFCReNJI2mR++0dwZ
+ qFxONvF7P1/t2Lu5Hfv6P4DhO05YSrHUAAAA=
+X-Change-ID: 20260727-upd161704-typo-v3-e163e5ab3cb6
+To: Andy Shevchenko <andy@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, 
+ Tomasz Unger <tomasz.unger@yahoo.pl>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1785322179; l=1089;
+ i=tomasz.unger@yahoo.pl; s=20260611; h=from:subject:message-id;
+ bh=csNuAcxNQxEm0JFQBbE30OkWlqKgkmwFKZ1ttNV2frY=;
+ b=G47v76Ny6yUZ7ibrRTdY5NkJWZTUwHVOvWCnpBnqpgt9J+OBIpTkcz7L9OBRxDg5rsbOvcF9Y
+ Bb4ZLnBBvbyB5yBUaubzhwssd5KaqpTlbW/+FZlPR5xWLGz/Sj85fD1
+X-Developer-Key: i=tomasz.unger@yahoo.pl; a=ed25519;
+ pk=elW+gk1cZhyVAkPUfX4QaVHbxERM6w8ByGYxz0Rijl0=
+References: <20260729-upd161704-typo-v3-v1-1-69c962e35d59.ref@yahoo.pl>
 
-From: Zizhi Wo <wozizhi@huawei.com>
+Fix 'cencter' typo to 'center' in a register setting comment.
 
-[BUG]
-Recently, we encountered a KASAN warning as follows:
-
-BUG: KASAN: slab-out-of-bounds in ccw_putcs+0x8bd/0xa80
-Read of size 1 at addr ff11000110067100 by task bash/1209
-CPU: 10 UID: 0 PID: 1209 Comm: bash Not tainted 7.2.0-rc3 #69 PREEMPT(full)
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.17.0-4.fc41 04/01/2014
- Call Trace:
-  <TASK>
-  ...
-  kasan_report+0xf0/0x120
-  ? ccw_putcs+0x8bd/0xa80
-  ccw_putcs+0x8bd/0xa80
-  ? __pfx_ccw_putcs+0x10/0x10
-  fbcon_putcs+0x338/0x410
-  ? __pfx_ccw_putcs+0x10/0x10
-  do_update_region+0x21d/0x450
-  invert_screen+0x29d/0x5e0
-  ? __kmalloc_noprof+0x493/0x640
-  ? vc_do_resize+0x17c/0xe50
-  clear_selection+0x4c/0x60
-  vc_do_resize+0xaee/0xe50
-  fbcon_modechanged+0x2bd/0x640
-  rotate_all_store+0x298/0x380
-  ...
-
-reproduce:
-1) issue two ioctls: first a KDFONTOP ioctl with op.op = KD_FONT_OP_SET,
-op.width = 1 and op.height = 1, then a TIOCL_SETSEL ioctl
-2) echo 2 > /sys/devices/virtual/graphics/fbcon/rotate_all
-3) issue two ioctls: first a KDFONTOP ioctl with op.op = KD_FONT_OP_SET,
-op.width = 8 and op.height = 1, then a TIOCL_SETSEL ioctl
-4) echo 3 > /sys/devices/virtual/graphics/fbcon/rotate_all
-
-[CAUSE]
-The root cause is that fbcon_modechanged() first sets the current rotate's
-corresponding ops. Subsequently, during vc_resize(), it may trigger
-clear_selection(), and in fbcon_putcs->ccw_putcs[rotate=3], this can result
-in an out-of-bounds access to "src". This happens because par->rotated.buf
-is reallocated in fbcon_rotate_font():
-1) When rotate=2, its size is (width + 7) / 8 * height
-2) When rotate=3, its size is (height + 7) / 8 * width
-
-And the call to fbcon_rotate_font() occurs after clear_selection(). In
-other words, the fontbuffer is allocated using the size calculated from the
-previous rotation 2, but before reallocating it with the new size,
-con_putcs is already using the new rotation 3:
-
-rotate_all_store
- fbcon_rotate_all
-  fbcon_set_all_vcs
-   fbcon_modechanged
-    set_blitting_type
-    ...
-     par->bitops = &ccw_fbcon_bitops
-    vc_resize
-    ...
-     clear_selection
-      highlight
-      ...
-       do_update_region
-	fbcon_putcs
-	...
-	 image.dy = vyres - ((xx + count) * vc->vc_font.width) [1]  // overflow!
-	 ccw_putcs_aligned
-	  // old buf size is still being used during the read!
-	  src = par->rotated.buf + (scr_readw(s--) & charmask) * cellsize
-	  fb_pad_aligned_buffer----[src KASAN!!!]	[2]
-	  info->fbops->fb_imageblit(info, image)
-	   sys_imageblit
-	    fb_imageblit
-	     fb_address_forward
-	      // offset: image->dy * bits_per_line + image->dx * bpp
-	      unsigned int bits = (unsigned int)adr->bits + offset
-	      adr->address += (bits & ~(BITS_PER_LONG - 1u)) / BITS_PER_BYTE	[3]
-	     fb_bitmap_imageblit
-	     ...
-	      fb_read_offset	// page fault!	[4]
-    update_screen
-     redraw_screen
-     ...
-      ccw_cursor
-       soft_cursor
-        memcpy(src, image->data, dsize)----[src KASAN again!!!]	[5]
-     fbcon_switch
-      fbcon_rotate_font
-       font_data_rotate
-	dst = kmalloc_array(charcount, d_cellsize, GFP_KERNEL)
-       // the new size is allocated only here!
-       par->rotated.buf = buf	[6]
-
-[FIX]
-A fairly obvious approach is to follow fbcon_switch(): in
-fbcon_modechanged(), call rotate_font() before vc_resize() so that a
-correctly sized buffer is allocated in time, as done in [6]. This fix is
-necessary, but it is not sufficient on its own.
-
-In [1] it causes an image.dy overflow (ccw_putcs: vyres = 768,
-image.dy = 4294967040), because vc_cols has not been updated in time at
-this point (it is likewise only updated after clear_selection()). This
-allows (xx + count) * width to exceed vyres, causing image.dy to overflow.
-Subsequently, address in [3] is incremented by an even larger amount, which
-triggers a page fault at [4].
-
-Therefore, a second fix is required in combination with the first: move
-clear_selection() earlier, before set_blitting_type() in
-fbcon_set_all_vcs(), to prevent the out-of-bounds access. fbcon_rotate()
-has a similar problem, so add the same clear there. Since vc_is_sel() is
-not exported, the fbdev side is currently forced to call clear_selection()
-unconditionally, causing the global selection to be cleared prematurely.
-And this will not cause any other significant impact.
-
-Signed-off-by: Zizhi Wo <wozizhi@huawei.com>
+Signed-off-by: Tomasz Unger <tomasz.unger@yahoo.pl>
 ---
-v3:
-Add comments.
+ drivers/staging/fbtft/fb_upd161704.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v2:
-Fixed the issue by calling clear_selection() earlier, and updated the
-related description in the commit message.
-https://lore.kernel.org/all/20260722062216.2574546-1-wozizhi@huaweicloud.com/
+diff --git a/drivers/staging/fbtft/fb_upd161704.c b/drivers/staging/fbtft/fb_upd161704.c
+index c680160d6380..7288140e7c3e 100644
+--- a/drivers/staging/fbtft/fb_upd161704.c
++++ b/drivers/staging/fbtft/fb_upd161704.c
+@@ -67,7 +67,7 @@ static int init_display(struct fbtft_par *par)
+ 	write_reg(par, 0x001D, 0x0000);	/* Regulator current setting */
+ 	write_reg(par, 0x001E, 0x0009);	/* VCOM output setting */
+ 	write_reg(par, 0x001F, 0x0035);	/* VCOM amplitude setting */
+-	write_reg(par, 0x0020, 0x0015);	/* VCOMM cencter setting */
++	write_reg(par, 0x0020, 0x0015);	/* VCOMM center setting */
+ 	write_reg(par, 0x0018, 0x1E7B);	/* DC/DC operation setting */
+ 
+ 	/* windows setting */
 
-v1:
-https://lore.kernel.org/all/20250905024340.337521-1-wozizhi@huaweicloud.com/
 ---
----
- drivers/video/fbdev/core/fbcon.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+base-commit: f5098b6bae761e346ebcd9da7f95622c04733cff
+change-id: 20260727-upd161704-typo-v3-e163e5ab3cb6
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 9f5c4c101581..23b3c536d53d 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2639,13 +2639,35 @@ static void fbcon_modechanged(struct fb_info *info)
- 	vc = vc_cons[par->currcon].d;
- 	if (vc->vc_mode != KD_TEXT ||
- 	    fbcon_info_from_console(par->currcon) != info)
- 		return;
- 
-+	/*
-+	 * Clear the selection before switching bitops.  Without this, the
-+	 * clear_selection() inside vc_resize() below repaints the highlighted
-+	 * cells through the new bitops while the console geometry(vc_rows/vc_cols)
-+	 * has not been updated to match, so the repaint is computed from a
-+	 * half-switched geometry and overflows the framebuffer address.
-+	 * Pre-clearing makes that repaint a no-op.
-+	 */
-+	clear_selection();
-+
- 	p = &fb_display[vc->vc_num];
- 	set_blitting_type(vc, info);
- 
-+	/*
-+	 * Rebuild par->rotated.buf for the new rotation now that bitops have
-+	 * switched.  The new putcs/cursor ops read this buffer; if it is still
-+	 * sized for the old rotation, fbcon_putcs() and the cursor path reached
-+	 * via update_screen() below overflow it.  Mirrors fbcon_switch(); fall
-+	 * back to unrotated rendering on allocation failure.
-+	 */
-+	if (par->bitops->rotate_font && par->bitops->rotate_font(info, vc)) {
-+		par->rotate = FB_ROTATE_UR;
-+		set_blitting_type(vc, info);
-+	}
-+
- 	if (con_is_visible(vc)) {
- 		var_to_display(p, &info->var, info);
- 		cols = FBCON_SWAP(par->rotate, info->var.xres, info->var.yres);
- 		rows = FBCON_SWAP(par->rotate, info->var.yres, info->var.xres);
- 		cols /= vc->vc_font.width;
-@@ -2673,10 +2695,13 @@ static void fbcon_set_all_vcs(struct fb_info *info)
- 	int i, rows, cols, fg = -1;
- 
- 	if (!par || par->currcon < 0)
- 		return;
- 
-+	/* See the comment in fbcon_modechanged(). */
-+	clear_selection();
-+
- 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
- 		vc = vc_cons[i].d;
- 		if (!vc || vc->vc_mode != KD_TEXT ||
- 		    fbcon_info_from_console(i) != info)
- 			continue;
--- 
-2.52.0
+Best regards,
+--  
+Tomasz Unger <tomasz.unger@yahoo.pl>
 

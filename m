@@ -1,115 +1,110 @@
-Received: from sonic.asd.mail.yahoo.com (sonic-euwe1-0017.asd.mail.yahoo.com [34.2.82.16])
+Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83900448D02
-	for <linux-fbdev@vger.kernel.org>; Wed, 29 Jul 2026 10:49:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.2.82.16
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785322180; cv=none; b=XoUiEk2fUJ+WtSVTTjXyQZlNO9Imj9Abs+qAZae9sGoRYafeNjoTJV7zJhpPi3cy3DfgDqxxyZ24xX68ZUACtaF+Y7LCFXx1FxoHcbSnpepwfciXfFchaLPp+YSM3yF3j39n+xGo861G7OrXyqwnBrgWy994Li5m0dhr9HmiZOU=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785322180; c=relaxed/simple;
-	bh=csNuAcxNQxEm0JFQBbE30OkWlqKgkmwFKZ1ttNV2frY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc:
-	 References; b=WOcx1jIs0uVO84XgxL0HeBdEaVhSYTu4Vsq+LMmrkTtX2aSCzYDh1Wx3eyrbxexHmy1MGVYTkzrRQ157uViy4t09b/AAOy0w+PnFUxXqN9hyOyQqNe3UqtKu6V6dZIa4z5gdJjGiJvmMYqpXYoDo/FkVZPel6bgKZwx3JBtWBPM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl; spf=pass smtp.mailfrom=yahoo.pl; dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b=r/oLO9AF; arc=none smtp.client-ip=34.2.82.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.pl
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B05FB3D3D10
+	for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 09:11:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.50
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785402711; cv=pass; b=CABSmkhtE0zqz76w/5dnPXAVqVU7vqoFXttaQvnlIxvPXMyRgLh/QmKXCXAN2cRWxRna9hEPuqXRmpBwbUEIsQTK1sg7XIdsf5An6pvahlPncteefjrGHD6fifg03DdbQsDjPeykiUK3u6pHcXt64UO5DPqlgg5RRNfhSwZVof8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785402711; c=relaxed/simple;
+	bh=rNT8uuAYIOIz9by9aY3qoAX6TR1FHkQuOah2tZDQCkE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hEFTBLGSMLzlbxqAVlXSmG+/h5+5idzaxyjVoRc+GH//QQiW/+hHkPWLrT7lRB8U0V+tzQ0ZxsaF+CFfBEGceMC1CRxMqkf5RvaUO8WzZdCS0LbIyjknKfCQZArcc/x1qKUlwJGDTba8zMuqMGIg/RM/Qq2zZdPIrHT+3u+7ZTQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RfZzEIeQ; arc=pass smtp.client-ip=209.85.218.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b="r/oLO9AF"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.pl; s=s2048; t=1785322176; bh=uxve866BWF4htd0+CpMI2/Yr/XqQcHixAEiZK3UmVoQ=; h=From:Date:Subject:To:Cc:References:From:Subject:Reply-To; b=r/oLO9AFViCRBKgswai6DoE1qp59XiIj8hlVP2eKJYE3tSduf5kvRojeCRrA9COfStVLsfMd257vNcb8O28ok+XHS4f/9fEcKbn5JVSXXelAzYNnqtjuOoDdsk+Ze1L7zDCU6JF2HpT7CCTQz32r6T0FFsDQirpE6uIlYNtCZqbq6uAZG8T48IBRudH1v7FZgmmwcXShtXhQo1KsDPMYaXIbKqEKskTUZ+pXnpEOTcc7dHshZioupLsjyFdS2tUpmhZEbmIlmosw1aVzOivs6ZQXohxcTmrCRUx10oP6vaZ8uLpbQmv3YgExFIUbNzras/PmzE1+IJSJJF74dx/FMw==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1785322176; bh=0txDAdqkQeVMnTeBx7ONn8K1Mad+UlpB9gvmCojtVMV=; h=X-Sonic-MF:From:Date:Subject:To:From:Subject; b=VqGjtUaGaJUV/LsGrf3xMIO+qw8tsZC5iOEpV99Ek9dd9fiap/CC1U5g14TOMjI6/aM6Z52alebpYEguzV1XOtGFM2SScE6apXm3loRVsw43WkgUCnnGgsIHE2V4axs1PS7kpvLxx/K517CKiVXDwbkrjPcRdTYOgTG9Ozbr5uw9kR1iPkopq/gmGT1xla3z3Pw4buFQP4uS8Gv5hHe0j2f2kNWj43+eulA6ErnP2qKFymW3WRIH6SMc9wc5utZBSYqid4ntJk8UteJDd2vCGZLklMbD4WciEmBxxwfRR6sP0JZSvIxCV5FHzACDIwvzu70CO6KT1S51KNih5rZk+A==
-X-YMail-OSG: VUJu24IVM1mEqiOHtHeWkIGRHPvkQHCoy0RQnbWt7J6oM2M0Ju6S1_TKpxFfD6G
- F6wR6lVinD6HSIyN19YwqYhkKxNPctz5Taf9WLROw0Wp8n6JXN9mO4JguRU3uqX4mGLpRAgs0zGT
- ypw5VNbzUaCjd489fHgUCyrYGym43gEiNNog9FmjsG5TkSR6DH1t.lVu_bArHfWsHg7hYB_0Ifxd
- oCJY0EKeqMHWPnSGgbmcaQGPg3VqcthkjM3QpJmHi6cV52W6tqMO0Svwihyan0vKjC.lMvUccqSO
- iRa9BdZnYHvXJX8mUkI4W.zNyacPqbGktlTkJlwhioXUeiDxl2_uJv_v1fPfubjCA.dJs7n3z.n0
- jUPLFw3SmvNV.9KXNxGPbNEX76GRviHEjKRhdjFOv8kVNe9r_2NInbkZyst9oMcQgpYH7xya1dmb
- ayf_3PWvmQs1e9c0PvkUNjgIDIbQu8UfONuiCTdMH_7Kb.rK7MD_fax6MPr6v3PNuho4O5upBYDt
- Eh9mJA0CPa4yw4ibF5rBgHuiRVZlpndq8hZhZcuxD8n8D74QFsVCK0.Vh8Ia6YPZxPg_6RDgOkuK
- KnPpuKuKUPL4L3MlIyOUQTbFIL4YPwFfNrHRQ.v0RjfOlvUZe.8k_Dv98vGrXBTlR6znoNzlrsZy
- P5KQSyoJ51dQyJubAama52HRLPz3l6Lp9xaqYJ9BkU7gJDTcVnOMeHHO9XhzaMC.EHjZlBtD5LPW
- eVrambySjBI.iDZS1lAas6XjbF5nuHceBinc7sZ99lsdLpfSSUCJDIxN.dSxonCdn_y4xZ63HpmR
- UJv1dcPfwxM8l_nyEEGfFbmlzQl30g1gbDjEJE4VE1nw5fpZEZ58qpiNZQ1j1b2sgprQzNrFAZ31
- lEW5X5odav27Qe39Bu6rmvjzkUcxevIOAShXonNhPvbGx9oS.xL2fhSV3.ao.MHXRCK6Gf4oUWCG
- L.pnAkkqwvVSQ4B4LjG7xy8C9GyCZb_n9GZ0eZ7r3iQGTj4kTrwME_nvltourCyjbHfKoilKnGdd
- .UoEU1kIjQ6TUGCi3Tuj4CaLkJkmYBOo6wN.3ZHd1vyfUwmezRQvQwmpluQbPXoEKhaI5qErfhY0
- k3l4Ey5a7jLuitrtmHBmJdzcsQGy1gbZj5fENOuW11iF7_hGLqsOa8eVRO9VTVDnwZb.QJ5omVAq
- RPCDRTYLBVWErgLbGXXmEuhpprWkwcUyFyC5qMU4Hb26QpoAp7I1mDx0tG5F8TrSkhBC1wTCoAYz
- MgiNzK.qRJn_yFmabQyLuRba.9TRYg3da8LtV27y5CBkiIvmo.iEZf1AeghKvgg9KUgwyeriQK0N
- yqWIxD6L6lBaq0l_njg.Nkf5Xi3JPWjUKJlv2To2gYobZmh6avkgaqO7.q2EB_K1Tgjizz1yqyJv
- rjHQyCbSMnSKRuN7ycVf_zaxDbxHScrg4foV1JSkSIHydvVraCyYWC3r37.9Sy64w7mf4LYWTUW_
- OLZp3.WMAU6xck9pFJSr4hDjxBPmwYMxris7ctbwDViWHwWZOVIcyPRnrDS7CdbMBVAncarq48fB
- TDmeD8JalCDVq.rAbdRyJKL1NV8vITwzehkbI2XvnpMMzrDrVtaDG5x9romujTW8hZVE.XKSu3DV
- 2RhSF.7slSR5ua6hZOpDoIyyfuSXylKyh4u9Zl8kDdpaJS0rxY07mg4XsEOi7HLeuudPyQvbfyit
- mLXMm5HrNdjifkBKqIYYitj5fAuhkLNDVgtJe5bP_NOBn.NwITE33HPohi1LI3qkn_VZBhEl.p0A
- AshhgUVSaru_XAFaRE8o.uZu61Czbvxc4u8O3bNiep_6koDIAfyaXfE5Q_jigrNIBx6KWO.QpYrO
- OujqLLzvGHhw5ZE4R9ezYCNCNbFDws4JozxRGsRVYdhRFgePqS05qt49g_unBHg0asoiHYi_EF1s
- tSdpMjExD_nGeuJHCO9zVdnyIJE7bTcCAm3zjHcRyB1k_84VzHHxQIqTVNC29UFlac3gNffI3aO2
- Tt7qRS.2lmzXFJsxrV.jSWcDvZ6_xBlYbl43MVLEtGH6m9eJxt0_qKDdtIzo.Hn627A5QbMGKoKM
- DWBm3
-X-Sonic-MF: <tomasz.unger@yahoo.pl>
-X-Sonic-ID: 9838cddb-c3db-4c47-8765-365365e09484
-Received: from sonic.gate.mail.ne1.yahoo.com by mail-asdoutdeli-p-cin-euwe1-prod-sonicconsumer-svc-102 with HTTP; Wed, 29 Jul 2026 10:49:36 +0000
-Received: from dip182.lsn.ir2.yahoo.com ([87.248.99.191])
-          by hello (SMTP) with SMTP ID 55ed7eb25d4b538459b72a781fc4e23e;
-          Wed, 29 Jul 2026 10:49:34 +0000 (UTC)
-From: Tomasz Unger <tomasz.unger@yahoo.pl>
-Date: Wed, 29 Jul 2026 12:49:35 +0200
-Subject: [PATCH] staging: fbtft: fix typo in fb_upd161704.c comment
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RfZzEIeQ"
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-c12614b81c9so338935066b.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 02:11:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785402708; cv=none;
+        d=google.com; s=arc-20260327;
+        b=ZMuis74npNq2/B4BKlRgcgaBhbfeAFDLELpaYyePyHy3KvQU1/IyKt5EJ2FLObmN+b
+         RyWJ+K+8Yhk0sRmEFwLK6KWAc7HSS0WO2MKJhu/CIta3cZVg/mo6v3BIGnC09EOn2YzS
+         cqRZBlFS1wCGHlvC4+5Vl+MCVgJ9z/UABobhBkQk+hJLQ6+oi/StBzMzAIsz3hGa7S+J
+         Wii88rJY+dfSLI5mDQovespenVGVywaCwcM/w15WSdl9oPmTmAOe2yEfAoMbGfbfPoc8
+         /9SBIy9n3yKeId6Z2yv/XJWQNmPE/p4bUf9d5pbSfm+l3q6hdawMMjTD0FuMzy8jKQD3
+         uTBg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=rNT8uuAYIOIz9by9aY3qoAX6TR1FHkQuOah2tZDQCkE=;
+        fh=0Qs9nnxSRrTeH7JAiI1M9EwfadjAk/6skM1xKvdgubE=;
+        b=kO4Rek8jotSjOxo/G4pI7w7B8bn1BwF0OL77JNvdCxnLHn2NNKP1PVZQhS+vIE+KP1
+         xQ111rmInrXw9l9vMuaAr8bs021pPWjlnWS24ibYgpxzjCddZmnjhwz+JGdFa2YxQwi3
+         8cW/oAEKDPoClQrThnmBiwSxXQ1a+pClDacZqmq9It1lYELmfuzw0DsynVf7MS+/Ocuj
+         qxsIuzsTFJhnG/C2NK7lYSs6hH1N/uIvA1gEb2Mb1Janm40vAxQH1RZKbF0v+EinHUJ0
+         S5VwLlMCB2NFOgyVtRLfd/kz9jxFLZqCs0FgMmuSD+tu2vQ5QcMib/tKVp1T/x3prMtK
+         c+8w==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785402708; x=1786007508; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=rNT8uuAYIOIz9by9aY3qoAX6TR1FHkQuOah2tZDQCkE=;
+        b=RfZzEIeQBT65N84UE/w0M4NeymShgP+ypv938Sg3tUpIkw29zXaLhd8vsTOFFIdWMu
+         6UC9jXFh0zvcLrave0O7qdJ4G1lMPpgDS87ZVwfcvL8ZGbUDIBAFbQYtoS75znrhg0fk
+         N/s2q1nlBCFGpCJGdQtw67pXfBI+tKHkXcY5968nGCyfYLOfc9E4K3SOPZhhWcRWtA1Y
+         hjWxBb+KtV+FaOy9GBa7qtsVNADilgzLiVSqaLQWOveCI2sBq7kA5YmhFTNx+bTZwcV2
+         qDL80E47sGfufU2Cp76XVOhyUHkyHXMSj3vWme/o3DLLniZuhPtMaNh9HPVeT90jjiCs
+         QgvQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785402708; x=1786007508;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=rNT8uuAYIOIz9by9aY3qoAX6TR1FHkQuOah2tZDQCkE=;
+        b=ScdHNr3W75/sRMSlo7t1RAi45RkEoSj0s1AycvtqOzTck2ewqZiiOjMeg4cLWYYpEG
+         a5UcDdoHBvXNJ6yZ3O85W7IrwN1jhvvEmWFLV0YAUJdL6K2b2JQkPjzN3BiCkLwMUouP
+         Ws0DE3/K4Bvkhv2Y8M7LGbIpwpsRVsW+eQZO8QbXbg0JNmGeZCnYzsZT1pK4MUYXxyan
+         dlVhUB4AVUR1BMjvnpdkWhpETJizu7PL+lFiP36YNdp35rJGDjOTpA51R4tKh8Qpozws
+         OPFYMKvtlMiB+tAehmqV4sOqSozjMv3zWBv5BQinaymNX1QtL5L5jxxMdmfc0WovJwgd
+         u+lA==
+X-Forwarded-Encrypted: i=1; AHgh+Rp0o6ZPksv1XjDXOsdbN+1Z+yhtnH9kBLnJg7MJvetkoIUTir/1qdm0boLz2igcZt5lWvoO7OUjVIz+SQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YzDTpJDNH+lFHm8qqzFKos2Jh69wRxeCQH19y1QwEWIJkDoMT6i
+	TbX2UX2TdiWcPTv68TuEX53mkIaFLW/7X2Y6CBNF5Ax+ZAGkDIfEZvplWRvEEo8gCfziZupXws7
+	Fptzw9SHC3xaF03PveUb5LkaZF4yfIpS0jnK8
+X-Gm-Gg: AR+sD119m7eQvDkKrpaLOcq9ApsFr1LG3eYRixExG+PqIjTltjnajjQ9BG8QYslr9Jc
+	REPbJPDhvYG4dZMmEoCi1LlyPmA12/2NGBEGK66S4UfKDttIykIcO86/kRO790W1PmLzeQ5EbFd
+	cZ7hrF1aPQ/mJOCU9yNqPYIuoiEu7n7v1x8BGyppvMqZdMCEj0kKbOghjtGCZaAjx5MAhCBC3id
+	3y+baFtsbNBkKE5fjWToAzT2ovK3hHj63eD5wAtzev7MQooEdgWclSWwYwb04wZkUWx6Qdn9EMz
+	4nCIp+KmloNJOTo014VQUEyBhs9Mr+DgiEMmFPKaSKUWTcx2duSkzXRwO11d3OFGEZzDzruQDYz
+	I7EkSK6zRkj3q60pe4W0vc7Uw/FYcKlM6AazCGAE9R4sfVQM2kwKvvgb/43r118gr8FCQu/E6x5
+	1Nr3NWhJqeEImSt8KdIq2Ld93peAgUrFxSoUsSpVEraqKJl3WOV1l5mSUljhhIzes=
+X-Received: by 2002:a17:907:3ea0:b0:c12:631c:67c6 with SMTP id
+ a640c23a62f3a-c1fa554de59mr85960866b.1.1785402707552; Thu, 30 Jul 2026
+ 02:11:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260729-upd161704-typo-v3-v1-1-69c962e35d59@yahoo.pl>
-X-B4-Tracking: v=1; b=H4sIAL7aaWoC/yXMTQ6DIBBA4auYWTsJPxaSXqXpQnBspwskIEZjv
- LtUl9/ivR0yJaYMz2aHRAtnnkKFbBvw3z58CHmoBiWUEVZZLHGQRlrR4bzFCReNJI2mR++0dwZ
- qFxONvF7P1/t2Lu5Hfv6P4DhO05YSrHUAAAA=
-X-Change-ID: 20260727-upd161704-typo-v3-e163e5ab3cb6
-To: Andy Shevchenko <andy@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, 
- Tomasz Unger <tomasz.unger@yahoo.pl>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785322179; l=1089;
- i=tomasz.unger@yahoo.pl; s=20260611; h=from:subject:message-id;
- bh=csNuAcxNQxEm0JFQBbE30OkWlqKgkmwFKZ1ttNV2frY=;
- b=G47v76Ny6yUZ7ibrRTdY5NkJWZTUwHVOvWCnpBnqpgt9J+OBIpTkcz7L9OBRxDg5rsbOvcF9Y
- Bb4ZLnBBvbyB5yBUaubzhwssd5KaqpTlbW/+FZlPR5xWLGz/Sj85fD1
-X-Developer-Key: i=tomasz.unger@yahoo.pl; a=ed25519;
- pk=elW+gk1cZhyVAkPUfX4QaVHbxERM6w8ByGYxz0Rijl0=
-References: <20260729-upd161704-typo-v3-v1-1-69c962e35d59.ref@yahoo.pl>
+References: <20260729-upd161704-typo-v3-v1-1-69c962e35d59.ref@yahoo.pl> <20260729-upd161704-typo-v3-v1-1-69c962e35d59@yahoo.pl>
+In-Reply-To: <20260729-upd161704-typo-v3-v1-1-69c962e35d59@yahoo.pl>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Thu, 30 Jul 2026 12:11:11 +0300
+X-Gm-Features: AUfX_mzEOHyV3oJOY8-a69g92QJquL9A0mM8T77huwsnnp9py7IaA1ToOIFpAFg
+Message-ID: <CAHp75VeHW7bB+0fSqO3fX=Wkb-216cdLfmd2W8dYD7Q2_hx1eA@mail.gmail.com>
+Subject: Re: [PATCH] staging: fbtft: fix typo in fb_upd161704.c comment
+To: Tomasz Unger <tomasz.unger@yahoo.pl>
+Cc: Andy Shevchenko <andy@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Fix 'cencter' typo to 'center' in a register setting comment.
+On Wed, Jul 29, 2026 at 1:49=E2=80=AFPM Tomasz Unger <tomasz.unger@yahoo.pl=
+> wrote:
+>
+> Fix 'cencter' typo to 'center' in a register setting comment.
 
-Signed-off-by: Tomasz Unger <tomasz.unger@yahoo.pl>
----
- drivers/staging/fbtft/fb_upd161704.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Reviewed-by: Andy Shevchenko <andy@kernel.org>
 
-diff --git a/drivers/staging/fbtft/fb_upd161704.c b/drivers/staging/fbtft/fb_upd161704.c
-index c680160d6380..7288140e7c3e 100644
---- a/drivers/staging/fbtft/fb_upd161704.c
-+++ b/drivers/staging/fbtft/fb_upd161704.c
-@@ -67,7 +67,7 @@ static int init_display(struct fbtft_par *par)
- 	write_reg(par, 0x001D, 0x0000);	/* Regulator current setting */
- 	write_reg(par, 0x001E, 0x0009);	/* VCOM output setting */
- 	write_reg(par, 0x001F, 0x0035);	/* VCOM amplitude setting */
--	write_reg(par, 0x0020, 0x0015);	/* VCOMM cencter setting */
-+	write_reg(par, 0x0020, 0x0015);	/* VCOMM center setting */
- 	write_reg(par, 0x0018, 0x1E7B);	/* DC/DC operation setting */
- 
- 	/* windows setting */
-
----
-base-commit: f5098b6bae761e346ebcd9da7f95622c04733cff
-change-id: 20260727-upd161704-typo-v3-e163e5ab3cb6
-
-Best regards,
---  
-Tomasz Unger <tomasz.unger@yahoo.pl>
-
+--=20
+With Best Regards,
+Andy Shevchenko

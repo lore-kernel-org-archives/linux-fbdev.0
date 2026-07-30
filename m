@@ -1,68 +1,69 @@
-Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com [209.85.210.170])
+Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com [209.85.210.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18FB5374A1D
-	for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 18:27:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AC8F451047
+	for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 18:27:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785436025; cv=none; b=mkI8Zr9SkiCCsWf16x/UrxVG5ULrDaluAznz+vwq6+oIsKGiNPIhiDsHBLhYkUZZFp+2TXEpPDcGHvXeZSVrAaiom1FlfWVHpCydJ+6lRZdZXgsw9y1N8qdFy7rtwvCmxLaTHdD2e3ZgFdACHyPdtpYDLF3KMFpeoiVwnunSNic=
+	t=1785436026; cv=none; b=amYNy/YORvTfT6+XQtD33ciCxMuCRJRsGJMmvcntPlHgUcezP3rmHqUrXeUH4IeE2Dgc2IIw7ZCrdzv2+e8e8uesWI+oZCZdhqyZ81+vCnxSxX+99o2p3SdH8bnJpW7Hu3KXtKWAfPV8acbuz4zAb9fLjfRIwv0daJGC/kIeLbM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785436025; c=relaxed/simple;
-	bh=GTK2THP7MWJ0yof2BVUNAFv+47a5FW3it4lWqBn2RZw=;
+	s=arc-20240116; t=1785436026; c=relaxed/simple;
+	bh=XS7Qs4QsnRKqZN6IJuYlNM42sb9shnXftjUIHrca3FY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ot2EPQ9QmLppmcjXkpc+RJ7VBeGifrgiXbfae3LJCOMIEMSBrhb9GcEVdnbTTTHbjVYlVUoIVM9Y0+CvDlerSHTmdcpsnr1YfCDgg3WsamNcKYbh58qDc+l5sufuK9aviIRrnENx7Nzo23Pi7hpCL9HO2PwGsydzHfx9ZZLFD7I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=HtFZC8+N; arc=none smtp.client-ip=209.85.210.170
+	 MIME-Version; b=dNSSxs/oAfTR77phc0OVglddPAOK3TD072xP5kVeezdiuLWBFvf7YFCOFWfDHUoha2ZiBi0f2cd7Z0umRRwPl0OaUQytIyCO4pq0tZZ9ckW4SV2KAP0ccPRmdkSUsS43XQd77+x1qlmkjXp2hnztrBBaAedQ80/QHsODQ30Bt98=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=h7OZEaSi; arc=none smtp.client-ip=209.85.210.176
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="HtFZC8+N"
-Received: by mail-pf1-f170.google.com with SMTP id d2e1a72fcca58-84867f07d63so244492b3a.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 11:27:01 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="h7OZEaSi"
+Received: by mail-pf1-f176.google.com with SMTP id d2e1a72fcca58-8485ef63b68so252462b3a.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 11:27:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=0x0f.com; s=google; t=1785436021; x=1786040821; darn=vger.kernel.org;
+        d=0x0f.com; s=google; t=1785436023; x=1786040823; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=kDb2lpOWcTmtm+d/TFdlb5UDpwayQCJmDNQmiV6VIlg=;
-        b=HtFZC8+NvLNTWUuHsui+N/YiWDeN2bo9kuW1sZw8jpkwD7kWinNUe9obmRKx7pwaCY
-         2uDMKa7UZR4QlHDfzRBjWOg9TeE6rgfVq6cWZo+xrlAA7OnxMiBa+nE6PFkEUMqeR/ow
-         go7LbIkw0DEUHXPYzbKUoeormWbQWjgytHGcc=
+        bh=ah2rwf0hV1PovcGf/j0qIadVcdG1awQwiOMYTwXzGks=;
+        b=h7OZEaSi5zhfnCTT98EH3xFxCmAz2mrc19HFBJAIEIhXoYyOXxLpnTt8fjSbc/kLwh
+         AGsw2P/qcR2CIG0WIgrpd7mn/8uoMC4idKaM+IhZKQvcohdfRWstGC2KT+2anATkzo4T
+         N7UBiLnxoXC4isCzbzzbkMH3BRq8uG8xRmcSk=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785436021; x=1786040821;
+        d=1e100.net; s=20251104; t=1785436023; x=1786040823;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=kDb2lpOWcTmtm+d/TFdlb5UDpwayQCJmDNQmiV6VIlg=;
-        b=TFsHWTqclcpfdk2yshYlOfr1+EB484V7aRekGnojsXwP1UygLGNU2cyjXRp2mwZlaD
-         oADcROayfxCCgiSmohNURAxHPVsjwnzCKwY8a5OUmb/TRjxl6fh/rnoR7lAEN8HeKLxV
-         Cw0HutjE6ppeY9nmD3MateDGWDdC2UoNft4qxJjSPGPeBUp85dCCs/GawR0J+PHBImrj
-         +GozGaDRN+rpp0xPWIBls5lypBXKiNw68Cz5p9b8JfUb60x4hM5DPKS3AV9OS1ymETk6
-         gPbfteNkDVYligoo8DwBmV9b1xg/Mgzok8ae5YU21ylPiAb6djmm9vJZmxkJR35sVwbN
-         tqZA==
-X-Gm-Message-State: AOJu0YzPI8TWAPS74RK/xt3VGmgINVGkLCv9kDe3RkGtpSWEIi7AYHj9
-	+vN2KXBZzcZ2V2CSraWjgxFtM48kF3ldtzIBA/JWSTWYagAS16gC9+29Du9VrqVu+mc=
-X-Gm-Gg: AR+sD13Ol9vvkGyZwTEYG0NoEGvIUuZcY8bE4cYLLrpWYBo4Ztr/xKIWwfqkL6Eymhv
-	agIZ3vNpb279ee8d/HAh7WoG1h38OprN0KIZC8mCcy492Jg3T7/PVvcTjD/yoxBxi5n20T10po0
-	+R5iWnXpHJDTk/34zWBwr3+VXSbTMpXiYhiwxPDqiArweh19L2awUfSdOpxhaW11HTlVP2oO8jJ
-	FAs8du3sxdVRxqifMzHFIVIDMI/xegn/i/QEBjXjlVTjrrFSrJ4km3+d7cecnXd0KZhNIXFthLs
-	XZO9ZYqT5TLNY0vCTCQqBdf0euAzdkoeoWG0CrXE7o3QDrx6ABzNuIV3p2XPk6dK9y0Xu9tuY15
-	wn93iFIoMlNIR9ivxt39Wxa3DIYE3AgdoFZH47UPQZaNXgdIxFmoxU9oKVZBsCSpGF4EG7CmwfU
-	Z05Nc8TZkmMO6lbYpYIjjGvavPexK/B5Ysxs/xbk5W9/S3836V00k=
-X-Received: by 2002:a05:6a00:4143:b0:848:2f7a:2e58 with SMTP id d2e1a72fcca58-84ebc4471aemr3293938b3a.71.1785436021391;
-        Thu, 30 Jul 2026 11:27:01 -0700 (PDT)
+        bh=ah2rwf0hV1PovcGf/j0qIadVcdG1awQwiOMYTwXzGks=;
+        b=C1jBLRhJhcFh8tV9Px9nobFThVuRjTRG6Pz8w85Y3w8A09xS8uT/AX0+3XLoIZrHlY
+         z6TrZrfEzTDZCi2bliqF7Rr8TdaresNWfdd3gb3ARu5qfcsCJJrZOn//CSq7Cw04I7Ck
+         2pDKhNxR0X2XcsvK3WQLaxlrE0FTz8hzBGZ6kKssXishRjon69aLMHrQ35D242Rdxrq8
+         PxFgtqKBoSaN511dJ0PZk332PY4U3WqPdpG2mvt8B0AZOERtQ+dM2tJSmPSGhgRsKe3P
+         n+71+IG6I0oDvB5cjQeM0q6jt59c5atfv/x3iYZs+iqgm7yEYXqDdPjxSHikzSLgJ680
+         gSzw==
+X-Gm-Message-State: AOJu0YxmiJcqaDqLmcAKFGildjN4jaONGX8kNllX0JKEGDBKveih+p+3
+	0V9ieHeokw1nF7qtwEz2+VK3NQYy5qjMR9FbByjP129bvZ2vl72F+mXS1TI/KSSW8gYYkE8VjRB
+	x53NW
+X-Gm-Gg: AR+sD12vWB+k5Jq1lxQXkecYgZ1GO507Il2sI4eyfTWy11nWBdcPsyN1HJtfKKFmteD
+	09oR4qRoiU5kj35lIw6otKCFLEAxNHvtY5g7yM26rR+6BOZF1D6PIJaP2T/HJx/0ptb1nPwFXji
+	hDLMDq7PwXoYL3oWC89f72G+gGuWMOwtXgXxDd4pxVIJi/AcgMTgjtfuNcA0rLID7htClG4TtNc
+	151tVygybhWnXcJAXSfcno0dStaGjRsIFuTPaXXukAbrb7Y6fxMr1b2orCA4DCOOIfX36uBdKKn
+	l8ITv6f+SGAn32AkbVqyRtOICmdoAahqRxKe56JXyqlUwbTJom2kfCbmmw2VNJ3Lzy3JY9C/lUK
+	RJgNX8vljGeoD/4AKFc+MQeEzfekaD4Lib3B/WaKjx2ALM//mqapod2yAmcOPcz7SHpZYWE2eJI
+	O+n/VWTchlQsOGX+ZedqiQXIgnxWFKg4EF/ymLalN2MkLGKy4ZO30=
+X-Received: by 2002:a05:6a00:99b:b0:847:7f3c:b5f5 with SMTP id d2e1a72fcca58-84ebc1ee58dmr3508630b3a.11.1785436023495;
+        Thu, 30 Jul 2026 11:27:03 -0700 (PDT)
 Received: from shiro ([2400:4162:2428:2ffe:f84d:1f36:28ac:c15e])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-84ea0378b18sm3428806b3a.48.2026.07.30.11.26.59
+        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-84ea0378b18sm3428806b3a.48.2026.07.30.11.27.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jul 2026 11:27:00 -0700 (PDT)
+        Thu, 30 Jul 2026 11:27:02 -0700 (PDT)
 From: Daniel Palmer <daniel@0x0f.com>
 To: deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Daniel Palmer <daniel@0x0f.com>
-Subject: [PATCH 1/5] fbdev: tdfxfb: Add helper to read config table from BIOS
-Date: Fri, 31 Jul 2026 03:26:36 +0900
-Message-ID: <20260730182640.2808572-2-daniel@0x0f.com>
+Subject: [PATCH 2/5] fbdev: tdfxfb: Attempt to detect if the card wasn't booted
+Date: Fri, 31 Jul 2026 03:26:37 +0900
+Message-ID: <20260730182640.2808572-3-daniel@0x0f.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260730182640.2808572-1-daniel@0x0f.com>
 References: <20260730182640.2808572-1-daniel@0x0f.com>
@@ -74,111 +75,63 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In the case that the video BIOS didn't run because the card isn't the
-primary card, the BIOS doesn't support running old skool video BIOS
-(modern BIOS without CSM), or the machine isn't x86 it needs to be
-booted manually. To do this the config table in the BIOS is needed.
+Until now a card had to have been booted by its video BIOS
+otherwise the driver would probe, create the fb etc but there
+would be no output on the display.
 
-Add a helper to get the config table in preparation for manually
-booting cards.
+There doesn't seem to be a documented way work out if the BIOS
+ran or not. Checking if the values in registers match what is
+in the config table in the BIOS seems to be the only option.
+
+On my 16MB Voodoo 3 3000 the registers show 4MB of memory when
+unbooted. Checking 4MB != 16MB is enough decide if to reject
+the card or not for my machine at least.
 
 Signed-off-by: Daniel Palmer <daniel@0x0f.com>
 ---
- drivers/video/fbdev/tdfxfb.c | 74 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 74 insertions(+)
+ drivers/video/fbdev/tdfxfb.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
 diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
-index cc6a074f3165..fa554b09a0a6 100644
+index fa554b09a0a6..1d8bffe1e9fd 100644
 --- a/drivers/video/fbdev/tdfxfb.c
 +++ b/drivers/video/fbdev/tdfxfb.c
-@@ -71,6 +71,7 @@
- #include <linux/string.h>
- #include <linux/mm.h>
- #include <linux/slab.h>
-+#include <linux/vmalloc.h>
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/pci.h>
-@@ -336,6 +337,79 @@ static u32 do_calc_pll(int freq, int *freq_out)
- 	return (n << 8) | (m << 2) | k;
+@@ -410,6 +410,25 @@ static bool tdfxfb_get_bios_cfg(struct pci_dev *pdev,
+ 	return false;
  }
  
 +/*
-+ * Convert a pllctrl register value back to a frequency in kHz.
-+ * Formula from 3dfx documentation.
++ * Try to work out if the card was booted or not, just checks
++ * if the register reported memory amount matches what the BIOS
++ * reports for now.
 + */
-+static u32 tdfx_pll_to_khz(u32 pll)
++static int tdfxfb_hw_init(struct fb_info *info, struct pci_dev *pdev)
 +{
-+	return (14318 * (((pll >> 8) & 0xff) + 2) /
-+		(((pll >> 2) & 0x3f) + 2)) >> (pll & 3);
-+}
++	struct tdfx_par *par = info->par;
++	struct tdfx_bios_cfg cfg;
 +
-+/* Layout of the "OEM config" table in voodoo 3 BIOS */
-+struct tdfx_bios_cfg {
-+	__le32 pciinit0;	/* 0x00 */
-+	__le32 miscinit0;	/* 0x04 */
-+	__le32 miscinit1;	/* 0x08 */
-+	__le32 draminit0;	/* 0x0c */
-+	__le32 draminit1;	/* 0x10 */
-+	__le32 agpinit0;	/* 0x14 */
-+	__le32 pllctrl1;	/* 0x18 - memory PLL */
-+	__le32 pllctrl2;	/* 0x1c - graphics PLL */
-+	__le32 sgrammode;	/* 0x20 - SGRAM/SDRAM mode register data */
-+} __packed;
++	if (tdfxfb_get_bios_cfg(pdev, &cfg) &&
++	    tdfx_inl(par, DRAMINIT0) == le32_to_cpu(cfg.draminit0))
++		return 0;
 +
-+#define TDFX_ROM_CFG_PTR	0x50
-+
-+static bool tdfxfb_get_bios_cfg(struct pci_dev *pdev,
-+				struct tdfx_bios_cfg *cfg)
-+{
-+	u16 romcfg, oemcfg;
-+	void __iomem *rom;
-+	size_t romsize;
-+	u8 *image;
-+	u32 khz;
-+
-+	rom = pci_map_rom(pdev, &romsize);
-+	if (!rom || !romsize)
-+		return false;
-+
-+	image = vmalloc(romsize);
-+	if (!image) {
-+		pci_unmap_rom(pdev, rom);
-+		return false;
-+	}
-+	memcpy_fromio(image, rom, romsize);
-+	pci_unmap_rom(pdev, rom);
-+
-+	/* ROM[0x50] -> ROM config table -> OEM config table */
-+	if (TDFX_ROM_CFG_PTR + 2 > romsize)
-+		goto out;
-+	romcfg = image[TDFX_ROM_CFG_PTR] | image[TDFX_ROM_CFG_PTR + 1] << 8;
-+	if (romcfg == 0xffff || romcfg + 2 > romsize)
-+		goto out;
-+	oemcfg = image[romcfg] | image[romcfg + 1] << 8;
-+	if (oemcfg == 0xffff || oemcfg + sizeof(*cfg) > romsize)
-+		goto out;
-+	memcpy(cfg, image + oemcfg, sizeof(*cfg));
-+	vfree(image);
-+
-+	/*
-+	 * Make sure we didn't read garbage from the BIOS and will
-+	 * end up setting a frequency that explodes someone's expensive
-+	 * card.
-+	 */
-+	khz = tdfx_pll_to_khz(le32_to_cpu(cfg->pllctrl1));
-+	if (khz < 40000 || khz > 250000 || !le32_to_cpu(cfg->draminit0))
-+		return false;
-+	return true;
-+
-+out:
-+	vfree(image);
-+	return false;
++	dev_err(&pdev->dev,
++		"Card hasn't booted and is unusable\n");
++	return -ENODEV;
 +}
 +
  static void do_write_regs(struct fb_info *info, struct banshee_reg *reg)
  {
  	struct tdfx_par *par = info->par;
+@@ -1505,6 +1524,9 @@ static int tdfxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 		goto out_err_regbase;
+ 	}
+ 
++	if (tdfxfb_hw_init(info, pdev))
++		goto out_err_regbase;
++
+ 	info->fix.smem_start = pci_resource_start(pdev, 1);
+ 	info->fix.smem_len = do_lfb_size(default_par, pdev->device);
+ 	if (!info->fix.smem_len) {
 -- 
 2.53.0
 

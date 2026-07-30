@@ -1,68 +1,68 @@
 Received: from mail-pf1-f174.google.com (mail-pf1-f174.google.com [209.85.210.174])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 75493453A31
-	for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 18:27:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A2C9C44C67B
+	for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 18:27:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.174
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785436031; cv=none; b=O24twBX53v2bCerg8YLmF9yMvyPtIC/rL2KjA0eeo72IsXUdR3kv5vBPBUVKd+znZTm+On0aNSXaWIR3gjWLi8TvjO9aURLBw2uDp2shtDP7qRe4to3BKjvpx6EPpTCaPhGu96Zv7M4b8w3Bm+IMQQvuYSbUv4/e3j6r3cDdNcI=
+	t=1785436034; cv=none; b=Q3Z9yHPU0dv18WEBZQC9dxCwIFN8I3v28J41IQF3FYmdvuWxZSNh4Ajiz/ViOuPkvy65EDOKPT2bvBMVIdyYeWc71S4Vk6pSSUPvvUXA0Vq9rcMH8Vg4W1fI5NvJUUDzXMKnjyAmepEIuwpWEVMphvi5ssnEnIccXYhoo1RrImE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785436031; c=relaxed/simple;
-	bh=hnYtda8JlxtGVwcwnTy5tbE+3Fv+maoisubV7hqJGGc=;
+	s=arc-20240116; t=1785436034; c=relaxed/simple;
+	bh=yVpcirTfEpf2H96K4E6NdKgRE9Q5aIeQxaEN6w0gwyo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=pn5EyVgrewbuVoTezp+zx7cMcH/0vbCQrxjtX6l6g4T16JEiqZ58suA2Y3M5m2zJ/LmooJnzsIs5mU1KiSvQguv1Fpv/Oemeh3geTSyBe+j2hLGwtmYO8IfZnjct2cxkyq8GZE/dJo/SS4+5ceEmUzM2g0OXEjgjbKdRCbupJ4E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=ruo54feF; arc=none smtp.client-ip=209.85.210.174
+	 MIME-Version; b=hplWbhjaQkIra4pKniQFKRbCJZyFjAgARVIL4obA5ZYObscXrwQ8oON8pKg7F8bvMtjBhg+J880Es9JjnKXAJ0Ha8azvkb9yGCThmEqvPp9qRG/onRwwHUFRgkwn41SknXJQchjyK6uYr6whjdUqGivMhC9mrRUBBl3Lyu0tlIM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=mDoOsYVH; arc=none smtp.client-ip=209.85.210.174
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="ruo54feF"
-Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-848d21bbaffso273693b3a.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 11:27:10 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="mDoOsYVH"
+Received: by mail-pf1-f174.google.com with SMTP id d2e1a72fcca58-84536ecfc5bso236185b3a.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 30 Jul 2026 11:27:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=0x0f.com; s=google; t=1785436030; x=1786040830; darn=vger.kernel.org;
+        d=0x0f.com; s=google; t=1785436032; x=1786040832; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=JhElDLQZHukV2QsaThv4BOaHBxc1XzjF+Kx9MuUiQB0=;
-        b=ruo54feFvtb91TCQljMGR45jQUYzvkxf3+6ubwE/dYS9dXuMDoNkqQFO1dDnPslI80
-         TK0Ngw+FO+GYfTlMCNu7sFKoch4UW1qbmVcyvcmd0SVb9/YZHIsAjnUANbqD/vfXxSnU
-         9gSgIZliDdYMx6Ihbgc5YSBnISlmhJUJUOk6A=
+        bh=XFQ1vlo/U5kPhUKDIkSFcUBW9GP6124E7pQ5VM7OJ4I=;
+        b=mDoOsYVHh5LqOmzMB4RUDlaUH9Kn3Ga9rMHHmMq9PgL30NcJa229KMrSu4wY2vUpaO
+         Dv3//fcJvC6jh+IZEjSGicxeGVPxBILr9mftrXIXsHe2dH9Nx7Qq678eGp+OobHMmG2R
+         FjY73m+JSgoJWPTPOCRfaLaFdBlKt4DPirHMY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785436030; x=1786040830;
+        d=1e100.net; s=20251104; t=1785436032; x=1786040832;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=JhElDLQZHukV2QsaThv4BOaHBxc1XzjF+Kx9MuUiQB0=;
-        b=tGEoOtsGWy9QMJSst4OD2CZmleb92dmm2V474o4XGd/GnSLfQq5vQEmTGvOPBmk6Bj
-         NiYkfjTb7MBW9y1PKM3tuVdK0BgZy5lXrY+W5Br7Bs86QAiGq/OsEAvLB1TALsLU3fzz
-         Y1Kj07xJl9fK20J81KHqZs4xz9XeIQ/Aycq4AoHgLGLZxKEQUep44NtUmr0l2gQCI7vd
-         RrlpEaa01AoO9yz35Pr0R/QSof+e6/tCLx+Zj66VGXF8yZLyJXhtpGwLmSWvZMcOCOUL
-         r67ctfRnCaKrdpU7rZbkFxFkzjmpadrBYNzDb/Aqy5qAwrR+ZQXU23B96AH8kbmjgsHf
-         zQAA==
-X-Gm-Message-State: AOJu0YzhyS9OKFZrF4ahKfThgv0cPkJKXQio0yBJAPn6i2SjAySKAb/p
-	DfOmkkNOr2nz8nVnSJYv+Bg2JXFr1oirskTSw7vXOyrYMEDQiv2cmyZPG5uh9g+wyFo=
-X-Gm-Gg: AR+sD12ar8TJ+Oq2q/PW2RHXzqTtXHfL0sk+6qyKS+V1okRDoc4Fpf5t87wp0kwqS9I
-	JJAc19s5IbUhGVNXnPGIV6sERegjS9R8/0lyXqRpKY+uQYHVbS1bXHJRZCTHm/LhhYe3MPJwCCZ
-	oUmC8M96M6wkZXoiWL/uNKydbvKzXe/OJK3jghwdSyrN3D3yRE5pwEICm0Fu1Gd+BEpnCVDh2C7
-	KMeL/sCl8qGMqhzp3DuagpeEF4HRVY5FM3fLWru7fa2s/2rxzeaYjiagqxI6dWKphTSBkN7huGV
-	GM95nRK8aj42AHXgsTkuyS31wuan9ja4pLASaKYH5AWCPoyaF+DMFx15ae/nlAu+Hp+3eDcLdKa
-	GfUJDemskl0MMEUhgIIydrkzcyfv++qZq2EkFT4RIqNRO14a3O4qbVWJVIsXIM1FGnO+JLU9TCC
-	40l1p0qA4ZDnGVJ6nY36ilJtyJ3ndg6e+Ds7a/aVICc4/l7ZWUk2M=
-X-Received: by 2002:a05:6a00:a16:b0:847:968c:a0f1 with SMTP id d2e1a72fcca58-84ebc3d0aa4mr3376460b3a.43.1785436029678;
-        Thu, 30 Jul 2026 11:27:09 -0700 (PDT)
+        bh=XFQ1vlo/U5kPhUKDIkSFcUBW9GP6124E7pQ5VM7OJ4I=;
+        b=Mz4gj+WTcIOpnIfqHIi4OKkRSU8wMK8DODqGnenux8Pca1kh+eatl69ccczeeDBJvJ
+         YdXFxyZ/ZaSaEbWpxoOHRnR5QTcGxe9SzsHmczD9ZPI2hYntnjC5YGAejlBcLXW1vfYJ
+         V5b/gY2KB9qUyt/XN2olZXkFbVzchOPVceGAcAbnhQdCpyh2yYYAFRsQYv0UsjzzN56+
+         m3a7oPO8kb9lE7lgOd404wXpBtofrVCHmWa121lHE8S0oaFXMmnTr1kQD1liJOWmuzCz
+         IjdQ/Q0jGesgAg4/uFPslyfWUS3FWnbnAdUSAm19g8rPXkZCgutcfhVvpHap3HqYBsf4
+         sBcQ==
+X-Gm-Message-State: AOJu0Yy5Myl7kD7yQOMgI8sQ4oeGvbbobF6a2hDRsSAE5kCw4JnCKRyB
+	3vcA77pJQ3BbTvF17ah14qMDag5+1frI+4Eb4pReM640AS1TnNMzfGRGsyK9DLa+m5c=
+X-Gm-Gg: AR+sD13TUZDjCCDiF2ldlU4SzvBV/RuXyzc9z4EnUr51B8d2C0mOhdr6UnumTIxNFES
+	ex6qymIwloE1PxX9HWZctTXkK9Bvkb9sEM5OV3cepM6Orr/S11pIBU5dZGJ9v/30n3HEmfEsmsF
+	CPHZUeOP2otJH1OolIZlYrRSGYRkB7jtRBmb+g6ZRZ7AJfMP6gAWnrtHAPBjz+XTeDYUMBXsT7l
+	KXXtMkdTr6wmAuYItKSr5fPLZ1ofgWLWJj9QDM7xKHqxCfPZJyJ04P0/2xABEi+yIE6tbWe7YWu
+	Yfnyn4Fb4W1nFQKLIiTxTfvQkh8tk8s9hUiNB8vZJXZWUymrO6L3gFfH2R6pd1oGtnc7ttik3wT
+	AzihjZlJLTZOWZWS0ALErskggZD3EGdywlfQ4UF2R8yYBKxFJdNg3puEoULv/RPovfjJw7pkR+9
+	7XwrbaIvE9DVJCJKWpREPK2eDPwDC7OV3zcJ/XMgbm9DvLXrejW2I=
+X-Received: by 2002:a05:6a00:1391:b0:847:8b1d:230d with SMTP id d2e1a72fcca58-84ebc1f5bb4mr3620610b3a.3.1785436031780;
+        Thu, 30 Jul 2026 11:27:11 -0700 (PDT)
 Received: from shiro ([2400:4162:2428:2ffe:f84d:1f36:28ac:c15e])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-84ea0378b18sm3428806b3a.48.2026.07.30.11.27.06
+        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-84ea0378b18sm3428806b3a.48.2026.07.30.11.27.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jul 2026 11:27:08 -0700 (PDT)
+        Thu, 30 Jul 2026 11:27:10 -0700 (PDT)
 From: Daniel Palmer <daniel@0x0f.com>
 To: deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Daniel Palmer <daniel@0x0f.com>
-Subject: [PATCH 4/5] fbdev: tdfxfb: Wake the VGA core before programming the CRTC
-Date: Fri, 31 Jul 2026 03:26:39 +0900
-Message-ID: <20260730182640.2808572-5-daniel@0x0f.com>
+Subject: [PATCH 5/5] fbdev: tdfxfb: Program the initial video mode
+Date: Fri, 31 Jul 2026 03:26:40 +0900
+Message-ID: <20260730182640.2808572-6-daniel@0x0f.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260730182640.2808572-1-daniel@0x0f.com>
 References: <20260730182640.2808572-1-daniel@0x0f.com>
@@ -74,29 +74,36 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-If the card was unbooted the VGA core needs to be woken up before
-poking at it.
+If the card does not get bound to by fbcon set_par() never happens
+and the initial video mode is not setup and the display detects
+no signal.
+
+Program the video mode and also clear the framebuffer memory so
+random garbage isn't displayed.
 
 Signed-off-by: Daniel Palmer <daniel@0x0f.com>
 ---
- drivers/video/fbdev/tdfxfb.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/video/fbdev/tdfxfb.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
-index 4c1d847c89c9..9d55efd2c934 100644
+index 9d55efd2c934..d03cb47b34a5 100644
 --- a/drivers/video/fbdev/tdfxfb.c
 +++ b/drivers/video/fbdev/tdfxfb.c
-@@ -482,6 +482,10 @@ static void do_write_regs(struct fb_info *info, struct banshee_reg *reg)
- 
- 	tdfx_outl(par, MISCINIT1, tdfx_inl(par, MISCINIT1) | 0x01);
- 
-+	/* Wake the VGA core if it hasn't already been woken up */
-+	tdfx_outl(par, VGAINIT0, reg->vgainit0);
-+	vga_outb(par, 0x3c3, 0x01);
+@@ -1692,6 +1692,13 @@ static int tdfxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 	 * Our driver data
+ 	 */
+ 	pci_set_drvdata(pdev, info);
 +
- 	crt_outb(par, 0x11, crt_inb(par, 0x11) & 0x7f); /* CRT unprotect */
++	/* Program a video mode so the display detects a signal */
++	tdfxfb_set_par(info);
++
++	/* Don't scare the user with random garbage on their display */
++	memset_io(info->screen_base, 0, info->fix.smem_len);
++
+ 	return 0;
  
- 	banshee_make_room(par, 3);
+ out_err_iobase:
 -- 
 2.53.0
 

@@ -1,121 +1,121 @@
-Received: from mail.elsta.tech (mail.elsta.tech [194.150.96.10])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9261C430CEE;
-	Fri, 31 Jul 2026 14:45:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.150.96.10
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC7D04279EA;
+	Fri, 31 Jul 2026 14:46:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785509129; cv=none; b=pWubCynR7GqftDPk/Cnd2SjN7TDpEp5tECmPVqRBAgmBwR9W3+DMJjbHQLhXYnVfEWAuWvmXDQk9nf+KJyr0PaWyUoOdWoioSfb+kaNe0tYBgtH94PgX7POBB99jjMFhXurSgE2BWk2qHtQwQ2/xDAlfbsyszQQfxfMma06c7bU=
+	t=1785509183; cv=none; b=j2VHlpTsqCFOsOuPI5DNsIgdbD+EXswAG/7yMLVuezQwP8uH+d5oaaiHthfnlKq3+kEv8Ba5GFqK8MYNSRkbvb4Oig1kGh7dOZpSghEH2ZFu6K0lMQKWG/T/9TPhE7sR+vcFVcdwe145dZw3ni058sV2NqULmShyzwlSXDTFg28=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785509129; c=relaxed/simple;
-	bh=SyH2q9vmycLZI/swJsr2rVqoKZXRwUBo6NMiaIM18DM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=gyn4fs2KQNQfU//rlPk6OOxHEqAZNfEbiztfZHdSZxJsT349ICnr37y9iloadZILciVHOot3vJlclKemjezLLG7NtAYF+3RUOELk9LgvaBEqgf+LQmhOtAvrL5iJ7x4Bz0+mjosHertyqIIgmEMqN6G6YKjVtvdXLwfBPKh5Xns=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=elsta.tech; spf=pass smtp.mailfrom=elsta.tech; dkim=pass (2048-bit key) header.d=elsta.tech header.i=@elsta.tech header.b=zUEPY/xR; arc=none smtp.client-ip=194.150.96.10
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=elsta.tech
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=elsta.tech
+	s=arc-20240116; t=1785509183; c=relaxed/simple;
+	bh=hH9LIbv0xoQ8R+oxKCOWd537tY6AqtCP8plFYjN3lXA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=I8k8kXPwwJLzq5rCF4H1Vn49Qg/HP8AmxJXbabCd4Kp4gW+CXce8hc3ENBZmN5k0mj1rMkEk3RSzwahm2nmiTYgh6XVrh0ZMqZAoUhOZw/8wsLaUWaV/Rd70TG05cT+P7+UlNWk1giLK9ldFbpaQeHM5QjrM6IDmE8zN/gHXyMQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=bUYCfbjj; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=elsta.tech header.i=@elsta.tech header.b="zUEPY/xR"
-Received: from localhost (localhost [127.0.0.1])
-	by mail.elsta.tech (Postfix) with ESMTP id 702148D54A1;
-	Fri, 31 Jul 2026 16:45:22 +0200 (CEST)
-Authentication-Results: mail.elsta.tech (amavis); dkim=pass (2048-bit key)
- header.d=elsta.tech
-Received: from mail.elsta.tech ([127.0.0.1])
- by localhost (mail.elsta.tech [127.0.0.1]) (amavis, port 10032) with ESMTP
- id UPyd-3Okll7O; Fri, 31 Jul 2026 16:45:22 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.elsta.tech (Postfix) with ESMTP id 32A788D549D;
-	Fri, 31 Jul 2026 16:45:22 +0200 (CEST)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.elsta.tech 32A788D549D
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=elsta.tech;
-	s=0883730E-C77C-11E9-9DA4-0BE9876769AA; t=1785509122;
-	bh=a9WFruF+jsbK+yzittr0qjwlm/b207TqVHPmsDedzSA=;
-	h=From:Date:MIME-Version:Message-Id:To;
-	b=zUEPY/xRwyqCntX9Qm5l8Otu2Ws+n8DYHz+64OMPXAF8gQ9ZS4HKME99UdSWbwDOd
-	 rlx1cNodimLGL39sT4/nBcssxS9/90OPg9rBPqRcig2L9pz+o0oS20dxD5wKxcaSUn
-	 TMCAru6V0BURZsdzBrNETWyt83Gjk3kzk7rioxTebe1cupcowQBFYznsdkL5FUgG5m
-	 IjgsN9FQCJ5L6tGm+mQWyyCIpYdn0yVYXrG4G+lhi35djU+o32yu+MaWibtHOJDIWK
-	 RPIkJtT/8wgpPXEGf8HyFYJslw0OzQDAWp5AqUx95CyWeKjsnJAVpg1ywGMR2HxV2x
-	 O6HEQvV77MKWQ==
-X-Virus-Scanned: amavis at elsta.tech
-Received: from mail.elsta.tech ([127.0.0.1])
- by localhost (mail.elsta.tech [127.0.0.1]) (amavis, port 10026) with ESMTP
- id W-S8EvgvH-sr; Fri, 31 Jul 2026 16:45:22 +0200 (CEST)
-Received: from [127.0.1.1] (unknown [172.31.0.125])
-	by mail.elsta.tech (Postfix) with ESMTPSA id 026608D54A1;
-	Fri, 31 Jul 2026 16:45:22 +0200 (CEST)
-From: Jakub Turek <jakub.turek@elsta.tech>
-Date: Fri, 31 Jul 2026 16:45:14 +0200
-Subject: [PATCH v2 2/2] dt-bindings: display: solomon,ssd1307fb: add SH1107
- compatible
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="bUYCfbjj"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9CA051F000E9;
+	Fri, 31 Jul 2026 14:46:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785509181;
+	bh=qG/OmpWCAQteab0hofCuuF8fPYpRZjFgEHkFgtcTxN4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=bUYCfbjjz6CBkVZG6CjFk+v8OjANmC0l6/xMo4pQuhn0W0C7QeeyGdC699jnav8FU
+	 A8I5Z8tplWQ2MddCEvIcICFaQ4qkY22pKppG0X54bzUwWNgVyx14YKM9hiuc2QPngD
+	 6IQ9YJKLKvo2nnW6nlx9OcjRRZhYuHGmEPPqNpvwOYVxnsr43bqTfVIs8z7gOVFk4A
+	 aK8zmq2rJt1v4hUvTpeInkiLRbVw+XJASYUuZ4LHOfl33vLRmngB1njFhEhVymze89
+	 XRK9K2Bl5sevivTnJUYTlbM3YKFmhtpSomN5xjIFZ6B+cPG5+dTIrcTfgakHPg0D4/
+	 Wz7sLq56QUdKA==
+Received: from johan by xi.lan with local (Exim 4.99.4)
+	(envelope-from <johan@kernel.org>)
+	id 1wpoV9-00000000XhR-0X8O;
+	Fri, 31 Jul 2026 16:46:19 +0200
+Date: Fri, 31 Jul 2026 16:46:19 +0200
+From: Johan Hovold <johan@kernel.org>
+To: Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>,
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v5 05/14] iio: light: lm3533-als: Remove redundant pdata
+ helpers
+Message-ID: <amy1O7xaLlO_UOZv@hovoldconsulting.com>
+References: <20260617080031.99156-1-clamor95@gmail.com>
+ <20260617080031.99156-6-clamor95@gmail.com>
+ <akeHC-OA8tqM941f@hovoldconsulting.com>
+ <CAPVz0n2DPia=nfvd3W-rHy91OvZNO6jdSczT7kyvH-G138KJyg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260731-feat-sh1107-v2-2-0d2893e44ebd@elsta.tech>
-References: <20260731-feat-sh1107-v2-0-0d2893e44ebd@elsta.tech>
-In-Reply-To: <20260731-feat-sh1107-v2-0-0d2893e44ebd@elsta.tech>
-To: Helge Deller <deller@gmx.de>, 
- Javier Martinez Canillas <javierm@redhat.com>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
- Jakub Turek <jakub.turek@elsta.tech>
-X-Mailer: b4 0.15.2
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAPVz0n2DPia=nfvd3W-rHy91OvZNO6jdSczT7kyvH-G138KJyg@mail.gmail.com>
 
-Update the device tree documentation to include "sinowealth,sh1107" as a
-recognized compatible string.
+On Tue, Jul 14, 2026 at 04:31:08PM +0300, Svyatoslav Ryhel wrote:
+> пт, 3 лип. 2026 р. о 12:55 Johan Hovold <johan@kernel.org> пише:
+> >
+> > On Wed, Jun 17, 2026 at 11:00:22AM +0300, Svyatoslav Ryhel wrote:
+> > > The lm3533_als_set_input_mode() and lm3533_als_set_resistor() functions
+> > > are used only in lm3533_als_setup(). Incorporate their code into
+> > > lm3533_als_setup() directly to simplify driver readability.
+> >
+> > That's a debatable claim.
+> >
+> 
+> Adding helpers to wrap custom regmap wrappers seems redundant twice.
+> 
+> > > Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+> > > ---
+> > >  drivers/iio/light/lm3533-als.c | 56 ++++++++++------------------------
+> > >  1 file changed, 16 insertions(+), 40 deletions(-)
+> > >
+> > > diff --git a/drivers/iio/light/lm3533-als.c b/drivers/iio/light/lm3533-als.c
+> > > index a9af8e2b965f..69bac1b202f1 100644
+> > > --- a/drivers/iio/light/lm3533-als.c
+> > > +++ b/drivers/iio/light/lm3533-als.c
+> >
+> > > -static int lm3533_als_setup(struct lm3533_als *als,
+> > > -                         const struct lm3533_als_platform_data *pdata)
+> > > -{
+> > > -     int ret;
+> > > -
+> > > -     ret = lm3533_als_set_input_mode(als, pdata->pwm_mode);
+> > > +                        pdata->r_select);
+> > >       if (ret)
+> > > -             return ret;
+> > > -
+> > > -     /* ALS input is always high impedance in PWM-mode. */
+> > > -     if (!pdata->pwm_mode) {
+> > > -             ret = lm3533_als_set_resistor(als, pdata->r_select);
+> > > -             if (ret)
+> > > -                     return ret;
+> > > -     }
+> > > +             return dev_err_probe(dev, ret, "failed to set resistor\n");
+> > >       return 0;
+> > >  }
+> >
+> > There's nothing hard to read about the above. To the contrary the logic
+> > is more obvious this way.
+> >
+> > You also remove the high-impedance comment for no good reason.
+> >
+> 
+> Removing one level of indentations without obscuring readability is
+> always a good idea.
 
-Signed-off-by: Jakub Turek  <jakub.turek@elsta.tech>
----
- .../devicetree/bindings/display/solomon,ssd1307fb.yaml  | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+Again, no. You're obscuring the current logic which is perfectly fine as
+is.
 
-diff --git a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-index 153ff86fb405..6b17a701bbaa 100644
---- a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-+++ b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-@@ -22,6 +22,7 @@ properties:
-         deprecated: true
-       - enum:
-           - sinowealth,sh1106
-+          - sinowealth,sh1107
-           - solomon,ssd1305
-           - solomon,ssd1306
-           - solomon,ssd1307
-@@ -140,6 +141,22 @@ allOf:
-         solomon,dclk-frq:
-           default: 5
- 
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: sinowealth,sh1107
-+    then:
-+      properties:
-+        solomon,width:
-+          default: 128
-+        solomon,height:
-+          default: 64
-+        solomon,dclk-div:
-+          default: 1
-+        solomon,dclk-frq:
-+          default: 8
-+
-   - if:
-       properties:
-         compatible:
-
--- 
-2.34.1
-
+Johan

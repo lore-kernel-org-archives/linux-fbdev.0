@@ -1,68 +1,68 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
+Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 970684189DD
-	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 12:19:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9751441A4E8
+	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 12:19:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785500375; cv=none; b=EMEaH94VSY3wNQfQNyOwnW2VRnD8MD0RYSAoT15RGxAi/stgJm74FCvvdJFyipfZSbB5Ur4nXGOe46whEgnDfpPYK20Gu4h+tyKT40BSlihl9R5FnVTOvNyX+JxZwL6UwvIIsHlZGvuZ42EpYaOsmwmxGvTvKT6iUEybMP3PdOI=
+	t=1785500376; cv=none; b=qV7Uz3uObnqSiGpLiHB+ZG6iYp4Fzl9bJ0r7JFeVHO69qI3DzcwOWqrJXxSTCSQk81bf/lvZkJNpdkW+lTSukC8LIOISjy3DuTwjHSnRltQS902n/+HD745Jje6PFgmG0HH/lkIlRLvANwDOK040FRO+F8F/xRWYeYeL7FwAf90=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785500375; c=relaxed/simple;
-	bh=UWUqxiHy7gFxk+c6H2K9YnLPMNAZarkqKR1p4gyNXJ4=;
+	s=arc-20240116; t=1785500376; c=relaxed/simple;
+	bh=6MXkkFX809Dcdreee2nhHD69edsUNx0ehY2U76SPV98=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KK/y6cxXlwz+mp9hShRdfYxaEhVT9sk3vpTZhl/iSdW2fh/t8447JmRNDfgtfbHLN8xCMWp3l0LA/3vL4QhsVXr2j/ggrcfeY9SRejBGq0CjNe2gCBkyRxqX+A4yM8mk0u7nJ6C0vsww8h+DcXSRIEd8nZM+7cAV6oQr2WDCJt8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=HX2gDhMm; arc=none smtp.client-ip=209.85.214.182
+	 MIME-Version; b=E071ZBgLpx+FiBXK5kUSjKy2DjOvs23JQpl42Wiw/HLeeBP77aNYsIg3XGf7mql7a95ehtE4mNQUVJDjzlQlLa04mZ+a4BV/Q/prikgtCrIiq47NpiuJNCkrW/3RefsClSZqNtcI4BPncCm14LMVqvbfaekgTEEcgIR2UmhWJrc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=YhJRbizw; arc=none smtp.client-ip=209.85.216.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="HX2gDhMm"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2d0407aedd6so8777585ad.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 05:19:32 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="YhJRbizw"
+Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-38e88b60121so746274a91.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 05:19:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=0x0f.com; s=google; t=1785500372; x=1786105172; darn=vger.kernel.org;
+        d=0x0f.com; s=google; t=1785500374; x=1786105174; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=2f94xloHl4xvf0KqfbafdGgU1JTOpluCmeN1ZaakJsw=;
-        b=HX2gDhMmrCcYippymw695bl3E7SesdM+QJZY1vRT1ZERsm+UvRJiYZ/BUKEZxSWVzy
-         0lIsY3x8ZH7S/VHglL00rGjGz86Dbl1OY1gY3TOir/W2zYTt0ZvlMh6nd1VdnbrQT6KX
-         sbJ0+p6C3ydTAnwxKMUK7Iv52bNWW5GS0+J/o=
+        bh=EcvBzuwsOWXd7sSY+ibZHDp7um7F6zB3s/KkWEJX80M=;
+        b=YhJRbizwiHSFfbN6vFVIKKWd4rtHRg6LceLUm6TwB1FKUngzmey6ER67bE/ozwFtww
+         01ETQsXO0KBXwQ/pN2jqWeux9FZU3thLPzquhbNCFVRFdAIHmU1Ci8hrdJB33El9BJcD
+         /R+/ssoPm+VvdkXJFQNqozbIz3qAwlgcrVUS0=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785500372; x=1786105172;
+        d=1e100.net; s=20251104; t=1785500374; x=1786105174;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=2f94xloHl4xvf0KqfbafdGgU1JTOpluCmeN1ZaakJsw=;
-        b=o2qj/1+jT5Q5tSFihxcGOP/byFX6kdU0nWGUy3xxh09542GzjhUxFoWd8VxJJuwbPL
-         nQTdbHZeyZLs16/1HKckfNGtr9O5vfybrNDCjT2nWax8njUmlAQL193fC/jsyM9jiOp9
-         P0Bul7yR3SylZKQlE0P3EAlEg6fY5OrqGdNUplVUAgf0fUDdaXesOK+Furty90kfxCdG
-         vd1zdKkepr9vfhjDmUcBc06x6Gf1NVFOif4U6H/5YbVwHEMzsiJKHydrElo9TWoFVH7G
-         3ieaG5RwF2PlvS5yJwhvXiu9mSfy/SXHaNne6ZxNUi+OTKurxEK1kExlfL5ecJXZR6Vw
-         vOKg==
-X-Gm-Message-State: AOJu0Yy4WNgE+h3Ek3+fFwq7jrS13ADSynKwJFKVbDhscEy2tkIzDa8c
-	zHJfJZAlPEKodNWnZrl7mTFGkm5dAVhdCzzJY5gXz9572CN3RgkYxRSsEdldwJNaQvE=
-X-Gm-Gg: AR+sD11ybOhtIzbrE4TIrkgKt0PWUG8f7SjItfgL7pFQDBc5TafAbul3MqfLeaGCZKV
-	0suKo5FrmvNCYqL53yAqD11XlBD9FD25f+8IZHbtdIoqbwV73f1xE9ZIBt94P8Pwn/8XeOEVNXJ
-	muJF4UKKqdCkM2NNQPhRtNCabqWnPq254P2tVUxqIwdCCTLS7avndkHtbfgQmJvDNCGR3pubv3z
-	ppXT5tyW0HkD5PxwQffEoeSqe0XLT/9zN9GIKwGrv4UP33SCqGRw0vEIIX5bQxxitC/trpN3Q0H
-	uJ+VSpm/ZDFSTqZ+1f4nkh2dTgQ27nY5S1AWZ07cb5ima2aXUc1qALX56ESkvlRcrKSMiTjl18C
-	LHtolnuGva9EhWgEivk6Zcly1Tq7uDckFZ4u87AvD9NWBRKAZKhkX6vp+xBA6QFoQmIuFuD3dUv
-	X4jnQTLbIUblsIxMJVBZy8aazvq01wak78ZfHvgNp9zlnE79CqTpV9UOP0owGrR0c=
-X-Received: by 2002:a17:90b:57c7:b0:384:5dbc:cba5 with SMTP id 98e67ed59e1d1-38fb1378a80mr1615857a91.26.1785500371570;
-        Fri, 31 Jul 2026 05:19:31 -0700 (PDT)
+        bh=EcvBzuwsOWXd7sSY+ibZHDp7um7F6zB3s/KkWEJX80M=;
+        b=YxVXL2c/eO+bEctDyP2OgndIfMUZkH3QLM62dRZ6X6i77a0suW9A6fkzrdYPJuJOhH
+         lAd49epGfLCVxMsgmi1Liz4lnYoBMyKFi06WQTWpmWtYDBNQyovib6p81rN6QFBlTQwy
+         xvZvottqhuqC55PX4tctHLZr/slJo3Xq7YAT94dqvObLU8QpQ7Q2gfAKjbtE76Hliz6U
+         vhlGGLTeG2cvCWqh1PeSiltfAnc95EWtT+eLbLRPNTijCKWF0LI+7sTqznJEmYg7F/eh
+         XehSjH2VFcuGzOsiUL74Hu16aL6URUAeCgFN6KpDGhrlIibaORtOTS7F5BzB7+yn97wX
+         IOkw==
+X-Gm-Message-State: AOJu0Yxtq4m4XM4hCUiA5suq2g6KUqVybZd72dBGz6FEbwcAAePb3ba5
+	AHN/Z1IcpnmmI3DEt2jebgXX6KCNByyytArZKcpjjpnsbzGCUXzDQ+tIFrXrL/wDMr0=
+X-Gm-Gg: AR+sD11NVZw5Cl/3JcSs9+QzgvIhA9PLdycEYGLmTAB4lFdLTom4uNvkhJvShvOAnMz
+	1MGaYF62Zi8vnVgF+3ZYn2liYZW/zMHLDAK0G0sBT1XjwRPfHj4uyh7o+ET2JvhvImnc+InffNx
+	QzC4iz7HCp8WuEIjmuIdJUHJaRapCDRBoIWAAItA8ql+l3xe2OzXGWdtoCVSnJ34lJsY9yXL/Qf
+	NwV9Fk+5jFJf4VAloybMJ97UKbFEVUoX2k2JiP/5nITqz7STW/atCWT9Jpp0nkJ9uhvlwPJSdiO
+	58Pyop1IIPtaPEYeQRmYeMPtAslAEAZG9yZFoDWn43eiws3v1tFBhy+9QqM9wlhHzeV2iw1B6u/
+	n47CVqx7TeZH2fwii+Ltwz3xFxDjPBr4Sz6Y98I0sMT5W9C/ArmyjWHCPT3ITYKPEFMXnw1M3kc
+	/Z1NAkix4k/ZKcqcGKa81wUUOmIO2gG0ctlFTZG5TaNVPcnYNaThsbno3L5G/gdQ==
+X-Received: by 2002:a17:90b:3bc8:b0:382:5c31:1f8a with SMTP id 98e67ed59e1d1-38fb13bfd7bmr1819215a91.27.1785500373635;
+        Fri, 31 Jul 2026 05:19:33 -0700 (PDT)
 Received: from shiro ([2400:4162:2428:2ffe:77cc:841c:1fc1:22d4])
-        by smtp.googlemail.com with ESMTPSA id 98e67ed59e1d1-38fb2b8c5c5sm321981a91.4.2026.07.31.05.19.29
+        by smtp.googlemail.com with ESMTPSA id 98e67ed59e1d1-38fb2b8c5c5sm321981a91.4.2026.07.31.05.19.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Jul 2026 05:19:31 -0700 (PDT)
+        Fri, 31 Jul 2026 05:19:32 -0700 (PDT)
 From: Daniel Palmer <daniel@0x0f.com>
 To: deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Daniel Palmer <daniel@0x0f.com>
-Subject: [PATCH v2 4/5] fbdev: tdfxfb: Wake the VGA core before programming the CRTC
-Date: Fri, 31 Jul 2026 21:19:13 +0900
-Message-ID: <20260731121915.3362232-5-daniel@0x0f.com>
+Subject: [PATCH v2 5/5] fbdev: tdfxfb: Program the initial video mode
+Date: Fri, 31 Jul 2026 21:19:14 +0900
+Message-ID: <20260731121915.3362232-6-daniel@0x0f.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260731121915.3362232-1-daniel@0x0f.com>
 References: <20260731121915.3362232-1-daniel@0x0f.com>
@@ -74,29 +74,37 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-If the card was unbooted the VGA core needs to be woken up before
-poking at it.
+If the card does not get bound to by fbcon set_par() never happens
+and the initial video mode is not setup and the display detects
+no signal.
+
+Program the video mode and also clear the framebuffer memory so
+random garbage isn't displayed.
 
 Signed-off-by: Daniel Palmer <daniel@0x0f.com>
 ---
- drivers/video/fbdev/tdfxfb.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/video/fbdev/tdfxfb.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
-index 4d92ab5b5430..f2b658a47135 100644
+index f2b658a47135..cb1c2e9f37db 100644
 --- a/drivers/video/fbdev/tdfxfb.c
 +++ b/drivers/video/fbdev/tdfxfb.c
-@@ -485,6 +485,10 @@ static void do_write_regs(struct fb_info *info, struct banshee_reg *reg)
+@@ -1686,6 +1686,14 @@ static int tdfxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ 		goto out_err_iobase;
+ 	}
  
- 	tdfx_outl(par, MISCINIT1, tdfx_inl(par, MISCINIT1) | 0x01);
- 
-+	/* Wake the VGA core if it hasn't already been woken up */
-+	tdfx_outl(par, VGAINIT0, reg->vgainit0);
-+	vga_outb(par, 0x3c3, 0x01);
++	/*
++	 * Program a video mode and clear the framebuffer now, this
++	 * ensures the display comes up even if fbcon doesn't bind
++	 * when the framebuffer is registered.
++	 */
++	tdfxfb_set_par(info);
++	memset_io(info->screen_base, 0, info->fix.smem_len);
 +
- 	crt_outb(par, 0x11, crt_inb(par, 0x11) & 0x7f); /* CRT unprotect */
- 
- 	banshee_make_room(par, 3);
+ 	if (register_framebuffer(info) < 0) {
+ 		printk(KERN_ERR "tdfxfb: can't register framebuffer\n");
+ 		fb_dealloc_cmap(&info->cmap);
 -- 
 2.53.0
 

@@ -1,64 +1,64 @@
-Received: from mail-ej1-f45.google.com (mail-ej1-f45.google.com [209.85.218.45])
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BA003FDBF8
-	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 11:37:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F02844192FC
+	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 11:37:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785497839; cv=none; b=TLHcGQxizXLEhPH7T7LYDI+YkSp8z4mIO1GqbAEKYFg6IBCLqzFrt6Vnk0Ofir+l+jQOHliqcsUAXzoMuWWsC+pAuD/ODzRzJNosa0lyGl1aAQ105+htJw3V4ulYCpvQ+SyvrIIYTn8jv9Bi+IUZwZJMc4rceQVktlu4m3ccs5o=
+	t=1785497845; cv=none; b=qi6dYObU2lTlh4yPXgKAltXWsLzTndEZxq9aZEAUgYmuSlWJYOevCFCODCeIFOVO7XMnsn0rJkWPEsMY/hQRK4kq4/mC/jLBQf47F43U/VC3aRWAs3WK5RAAfZTWjH8VIpjfxzxPGnFuSrm3ALHN+erpjK6iLDSO6EAG5qbI7TM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785497839; c=relaxed/simple;
-	bh=Fsi9naHLvq24ntJl8U1aGARdwDxfue5n7pfYhUOdjEs=;
+	s=arc-20240116; t=1785497845; c=relaxed/simple;
+	bh=Fz4O9nNI+mBOWsonwfBBh3DSW/u0KKHFtWGWtm4D2KI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AqLeNgHmbWtjjSutd15UfUIyDPf1CEY4skDIhdRiBI+Uni/4cfwkntJb92ZgyZch/GrGEZXO49twzDCuyY8IEWdPd2cjjmDcK3pbPX6YIAXWLE1JjW9W0eCUoxVqipC0wE6XfP16LPrP8pXarq1qo5NJ9ahdQOLkHxWPe51kfuw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=A95vPldS; arc=none smtp.client-ip=209.85.218.45
+	 MIME-Version; b=ejSFL+Y3U1635rHsQZlIroimmS8FNZm3dOXsU4GxDuBrt1mXE3DEnm5wGWuLFsEMX2REKed2LoI5kvr6he45mMeZUA+Zn7GAKyKM41Gek7vNYrA7WTkJzta1E40ebyiNKWK303mjlKwL/cqlc6b2PC12xjTsXPv+BO6Pt7cBWOI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VKctgs+n; arc=none smtp.client-ip=209.85.221.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A95vPldS"
-Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-c1677c91969so103016566b.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 04:37:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VKctgs+n"
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-476a130c138so1069718f8f.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 04:37:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785497832; x=1786102632; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1785497837; x=1786102637; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=HoJ5QEzgIc1R//Ldk+eAj0/fHRhzYHI0+TPDQsoclNc=;
-        b=A95vPldSdrEKSwrXHx+iMhHhdBfisS9tpnWPOflxrJLJZIPH0r1wtS2TDjDMg+Ult+
-         v7rOWz9LKBtts4zSX0o1BOouk7Kx8qlwxWXE3Fx/m89bkEUQ6g+bXcRozJh54J4hMv0v
-         HCS5PlrQ24CWu2VyyG74Jp8g1Y66adoBx8Kucuvw32CAxqufcywm6cvz90PSDn1t+ri8
-         qfhgA6y7QfkwLXGuQpCpNsCqpKBdd1ECEuY6F/nYmcny9urYKRMJ6D/WMG5+bfoZPegD
-         Qi9wfHv1sVRvB7LGjQP9kciplQisaj8FosdMrlueI6B+Dh7WkcUBfFj+dWSSCxN4h5iA
-         ZYZw==
+        bh=0PyVHQRL/Wspv3Qk4s8DBLC6Ax3FJKAvcclZCqUsci0=;
+        b=VKctgs+nPvqDRdEsrjwAWnrhgFxTLSxrVPe3OkVD0iDZ7U/LvAp5X5rlDl0Jv68c00
+         +Nh91hWgWXkuM+gbupI5dDQ2J9ey4kCOXO3ROEbILCO7YmAFrmfo9ofkftiB2FOdFs9f
+         nzgjOaEPfHp0iEEA2C8qtp7f/eYWMhXnNm8/U219PH5Pep7GDq6lxsyMHJqjtUEAE5RZ
+         D5fP/g7u0iY4zjBeP7tPELhOte2qqxQlMYAnlg+/G44Y4UAfOQzZoK0bOhHEUixMi5L5
+         ROwWPOFc8yW45I8C/Ak+zgI7c9RZs5f5oFtV91wzr0Bbc0pj+y0oGRSOcHq7TNQjS0P7
+         hpzw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785497832; x=1786102632;
+        d=1e100.net; s=20251104; t=1785497837; x=1786102637;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=HoJ5QEzgIc1R//Ldk+eAj0/fHRhzYHI0+TPDQsoclNc=;
-        b=ZPVudlXxW4SZ9QkWUSWb/1SRZlty6vm20nXgE3OtEMHjcyzx6XYgtLw/nFp0mntKJT
-         DmenWW1hA/dB3zACVvnhsOodbsZGBRaeHabeobG0+o3yvIXnaF/oKzmnG5hk/Tve29p3
-         C8thF8TyV1ax2k+2Wp00QRYjUne1xH6Fu7NSFsSrLSknJ3+ICVFEp8yUg0TZy7UJX7ep
-         o5nWjAtcObgXKKPi5mYR+mnuWFg8wXV4heu1i5FxOhrDj38qSZUaZrIDWmDAGAMt7QD4
-         Lyu8qD3wbmiKK+ptiCFVho/aAn4+yqvEPmnt36X7OaiRhtuOsC2VUwKUK8NN6su4mU97
-         i6Aw==
-X-Forwarded-Encrypted: i=1; AHgh+RoKBoxPtK4U9iGydxv1z6ZyAZNdfxDVpnQhT6kkpL6aWerLPy7CK4rU5SVwoHF5AALjxkIvS+7nwHCDMw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxFZBXbMXktgUco+zlL8crmIi4yjy9cUtyTArbQUTsfbJWaST1o
-	6pOiSGpUm5uzJRo1EcyPXM/oZQmpMU5c5Az5AYRDtV1rLhROrxvcadxL
-X-Gm-Gg: AR+sD10aETyFja0TLDuNCjlPzyyFMJoJKgft8aH/KG1FEI0u+EDs5zG5YPEaPGA5+wg
-	9MwsasuJGZoAYXfzehhtY3i7/dJDfJrc35AzFV6Tim1ea1/TIR0vwN7riWo2IPuQCPZGZ5y5frx
-	HwcZfYf13Ml87UIZNnrMlzzMJfBenE4T7Wx7y9BPxABkIHgrf6rKo2mz23FpLOfxkk6riBa4R3o
-	8sYtCsBMIOUKD+TBoxyMKpfD8xtn0xHzKqkc6m8LHYNyDYHQbIK4UQa+t+mY1dni3WSKx5ztTvg
-	RVQC6cebMq6eeNM/3nsT80nI/Le2oRLqBf7g45EC8a+K1aDqpxA10dHP3LZ9vMreiAYVm+Y0QN0
-	z32Ukmehy1Pe7/j5ubwLKmToHC49QLYc63YSHBWPgIQVyyEwfewjC68ala1L4lbiG9plmBJsH7B
-	XjVfblyMBGK4Gs3cGvd/EFduiJbup5XMrH4rDsw7aqIUMhIF2ipKdaGjQjc0OesUCcJySOER2iC
-	UcDmGfJ1A==
-X-Received: by 2002:a17:907:c78e:b0:c12:7934:52fd with SMTP id a640c23a62f3a-c1fd250eeb8mr91901366b.32.1785497831684;
-        Fri, 31 Jul 2026 04:37:11 -0700 (PDT)
+        bh=0PyVHQRL/Wspv3Qk4s8DBLC6Ax3FJKAvcclZCqUsci0=;
+        b=OjEoTYEQ7Z0EDPKQImtWHSmoB/anI8c8h0M3dROW2dV4826l+NmnHkdp8Iz4chPFyM
+         cPBCHH3PE5XY8XhH0JShG5MaHsYT5xkMMz5x52BmLN/9pW3xczsSVRPMgL05rqC9SRXT
+         JdzoE5LV+y4gYC7ibjjM4D3Nw1UIxGeTaitOR5BE7KcEhsXtMJOvggWlOhiQtL9ZFD++
+         EzMAek0Ty78XW1/6VUy9igkpflsheWc2X9MNu9Plexj3iAli17FNzs8safIum/+6YYzo
+         G8KmcnZcIw6+WZp0PRZ0wOpB6y0EgPj1+z1SZMtweP+mhhYQwVq+Wo/0BQ5i4UpQZyDZ
+         8M0A==
+X-Forwarded-Encrypted: i=1; AHgh+RrfhznArOiKD+oPWYdMRUyOpI+zH9KdU+8Ex09oudGyEljmV3G2mxdLKophjacU4CIFiPKC+s2NEuHRQw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw313jgU9aRuhN/NVHNiwwXP76WRpmrILBT8G7tSWLR1ddVY4qL
+	fV9tmapuB/FoIYPSMhW33kg7E3tT7I9RMarfakFcV9b1qbzL2bpDZLwe
+X-Gm-Gg: AR+sD12IBEKJpqOqWgA8Auq++oDXuWf3zKkmjn3DoPbErakfdFt7wCvaggJu8KK7CFi
+	Kx9jW1bhHTNhCzuOjcWdeK/XC0jHEriCsDrPEgjB5okQjb+aa4FII6HZohhMsTSbKey9XRiOHrx
+	LlonpZWHmVFDgTHnYxV7oX1aHfxT8qPkYzHnLZVE7PQ3kccBo/ItDO1lgf6qZFAoMlC+cWe8tLG
+	ukGgjAO8pXV7lCDjtMuePEqkLTT3uszSp7E4mclRSvTL7CrXrLK5RgVNKozY8/qVpdesP2peM52
+	KQ/9KlbV3JOZtcGpkMoJ1F/csmOhFbgxU4pVlDSxnA2zgJ/KimJ0+wGB+ApPwa92IWIGuTeeFWv
+	pMqPDVJOZuCVGiEzM9dCoAyjSwkFzI04/9M7LVowL3iipsXO4I1sPxlj/1+jsSJpJVetjF2FGuW
+	tetlMDIVXItp58BkLFbdTW50xy1VsZxpRBkOci//40QLho6r9Ij+srpAXmqi4qWqEEmJQw/IxjL
+	bUlfYPR/g==
+X-Received: by 2002:a05:6000:220d:b0:47f:93a1:1126 with SMTP id ffacd0b85a97d-47fd2b6b0cdmr3767923f8f.61.1785497837511;
+        Fri, 31 Jul 2026 04:37:17 -0700 (PDT)
 Received: from xeon ([188.163.112.51])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47fd45a0c8bsm3670646f8f.34.2026.07.31.04.37.08
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47fd45a0c8bsm3670646f8f.34.2026.07.31.04.37.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Jul 2026 04:37:10 -0700 (PDT)
+        Fri, 31 Jul 2026 04:37:16 -0700 (PDT)
 From: Svyatoslav Ryhel <clamor95@gmail.com>
 To: Lee Jones <lee@kernel.org>,
 	Daniel Thompson <danielt@kernel.org>,
@@ -81,9 +81,9 @@ Cc: Johan Hovold <johan@kernel.org>,
 	linux-iio@vger.kernel.org,
 	mfd@lists.linux.dev,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH v6 09/14] mfd: lm3533: Add support for VIN power supply
-Date: Fri, 31 Jul 2026 14:36:27 +0300
-Message-ID: <20260731113632.158440-10-clamor95@gmail.com>
+Subject: [PATCH v6 11/14] video: backlight: lm3533_bl: Improve logic of sysfs functions
+Date: Fri, 31 Jul 2026 14:36:29 +0300
+Message-ID: <20260731113632.158440-12-clamor95@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260731113632.158440-1-clamor95@gmail.com>
 References: <20260731113632.158440-1-clamor95@gmail.com>
@@ -95,96 +95,137 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add support for 2.7V-5.5V VIN power supply.
+Simplify the sysfs logic of properties by switching to macros and proper
+regmap helpers.
 
 Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
 ---
- drivers/mfd/lm3533-core.c  | 23 +++++++++++++++++++++--
- include/linux/mfd/lm3533.h |  2 ++
- 2 files changed, 23 insertions(+), 2 deletions(-)
+ drivers/video/backlight/lm3533_bl.c | 62 ++++++++++-------------------
+ 1 file changed, 22 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/mfd/lm3533-core.c b/drivers/mfd/lm3533-core.c
-index c7c7e71719ae0..2a63df034171e 100644
---- a/drivers/mfd/lm3533-core.c
-+++ b/drivers/mfd/lm3533-core.c
-@@ -17,6 +17,7 @@
- #include <linux/mfd/core.h>
- #include <linux/property.h>
- #include <linux/regmap.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/seq_file.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-@@ -111,14 +112,25 @@ static int lm3533_set_lvled_config(struct lm3533 *lm3533, u8 lvled, u8 led)
- 	return ret;
+diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
+index 5ce237cb42190..2e31a79628d6b 100644
+--- a/drivers/video/backlight/lm3533_bl.c
++++ b/drivers/video/backlight/lm3533_bl.c
+@@ -22,6 +22,8 @@
+ #define LM3533_BL_MAX_BRIGHTNESS	255
+ 
+ #define LM3533_REG_CTRLBANK_AB_BCONF	0x1a
++#define   CTRLBANK_AB_BCONF_ALS(n)	BIT(2 * (n))
++#define   CTRLBANK_AB_BCONF_MODE(n)	BIT(2 * (n) + 1)
+ 
+ 
+ struct lm3533_bl {
+@@ -84,88 +86,68 @@ static ssize_t show_als_channel(struct device *dev,
+ 	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
  }
  
--static void lm3533_enable(struct lm3533 *lm3533)
-+static int lm3533_enable(struct lm3533 *lm3533)
+-static ssize_t show_als_en(struct device *dev,
+-				struct device_attribute *attr, char *buf)
++static ssize_t show_als_en(struct device *dev, struct device_attribute *attr,
++			   char *buf)
  {
-+	int ret;
-+
-+	ret = regulator_enable(lm3533->vin_supply);
-+	if (ret) {
-+		dev_err(lm3533->dev, "failed to enable vin power supply\n");
-+		return ret;
-+	}
-+
- 	gpiod_set_value(lm3533->hwen, 1);
-+
-+	return 0;
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
+ 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
+-	u32 val;
+-	u8 mask;
+-	bool enable;
+ 	int ret;
+ 
+-	ret = regmap_read(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF, &val);
+-	if (ret)
++	ret = regmap_test_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
++			       CTRLBANK_AB_BCONF_ALS(ctrlbank));
++	if (ret < 0)
+ 		return ret;
+ 
+-	mask = 1 << (2 * ctrlbank);
+-	enable = val & mask;
+-
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
++	return scnprintf(buf, PAGE_SIZE, "%d\n", ret);
  }
  
- static void lm3533_disable(struct lm3533 *lm3533)
+-static ssize_t store_als_en(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
++static ssize_t store_als_en(struct device *dev, struct device_attribute *attr,
++			    const char *buf, size_t len)
  {
- 	gpiod_set_value(lm3533->hwen, 0);
-+	regulator_disable(lm3533->vin_supply);
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
+ 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
+ 	int enable;
+-	u8 mask;
+ 	int ret;
+ 
+ 	if (kstrtoint(buf, 0, &enable))
+ 		return -EINVAL;
+ 
+-	mask = 1 << (2 * ctrlbank);
+-
+ 	ret = regmap_assign_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
+-				 mask, enable);
++				 CTRLBANK_AB_BCONF_ALS(ctrlbank), enable);
+ 	if (ret)
+ 		return ret;
+ 
+ 	return len;
  }
  
- enum lm3533_attribute_type {
-@@ -332,7 +344,9 @@ static int lm3533_device_init(struct lm3533 *lm3533)
- 		}
- 	}
+-static ssize_t show_linear(struct device *dev,
+-				struct device_attribute *attr, char *buf)
++static ssize_t show_linear(struct device *dev, struct device_attribute *attr,
++			   char *buf)
+ {
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
+-	u32 val;
+-	u8 mask;
+-	int linear;
++	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
+ 	int ret;
  
--	lm3533_enable(lm3533);
-+	ret = lm3533_enable(lm3533);
-+	if (ret)
-+		return ret;
+-	ret = regmap_read(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF, &val);
+-	if (ret)
++	ret = regmap_test_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
++			       CTRLBANK_AB_BCONF_MODE(ctrlbank));
++	if (ret < 0)
+ 		return ret;
  
- 	ret = regmap_update_bits(lm3533->regmap, LM3533_REG_BOOST_PWM,
- 				 LM3533_BOOST_FREQ_MASK,
-@@ -446,6 +460,11 @@ static int lm3533_i2c_probe(struct i2c_client *i2c)
- 		return dev_err_probe(lm3533->dev, PTR_ERR(lm3533->hwen),
- 				     "failed to get HWEN GPIO\n");
+-	mask = 1 << (2 * lm3533_bl_get_ctrlbank_id(bl) + 1);
+-
+-	if (val & mask)
+-		linear = 1;
+-	else
+-		linear = 0;
+-
+-	return scnprintf(buf, PAGE_SIZE, "%x\n", linear);
++	return scnprintf(buf, PAGE_SIZE, "%x\n", ret);
+ }
  
-+	lm3533->vin_supply = devm_regulator_get(lm3533->dev, "vin");
-+	if (IS_ERR(lm3533->vin_supply))
-+		return dev_err_probe(lm3533->dev, PTR_ERR(lm3533->vin_supply),
-+				     "failed to get vin-supply\n");
-+
- 	device_property_read_u32(lm3533->dev, "ti,boost-ovp-microvolt",
- 				 &lm3533->boost_ovp);
+-static ssize_t store_linear(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t len)
++static ssize_t store_linear(struct device *dev, struct device_attribute *attr,
++			    const char *buf, size_t len)
+ {
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
++	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
+ 	unsigned long linear;
+-	u8 mask;
+ 	int ret;
  
-diff --git a/include/linux/mfd/lm3533.h b/include/linux/mfd/lm3533.h
-index 5710e88da45d2..8f72dd41e8f02 100644
---- a/include/linux/mfd/lm3533.h
-+++ b/include/linux/mfd/lm3533.h
-@@ -22,6 +22,7 @@
- struct device;
- struct gpio_desc;
- struct regmap;
-+struct regulator;
+ 	if (kstrtoul(buf, 0, &linear))
+ 		return -EINVAL;
  
- struct lm3533 {
- 	struct device *dev;
-@@ -29,6 +30,7 @@ struct lm3533 {
- 	struct regmap *regmap;
+-	mask = 1 << (2 * lm3533_bl_get_ctrlbank_id(bl) + 1);
+-
+ 	ret = regmap_assign_bits(bl->regmap, LM3533_REG_CTRLBANK_AB_BCONF,
+-				 mask, linear);
++				 CTRLBANK_AB_BCONF_MODE(ctrlbank), linear);
+ 	if (ret)
+ 		return ret;
  
- 	struct gpio_desc *hwen;
-+	struct regulator *vin_supply;
- 
- 	u32 boost_ovp;
- 	u32 boost_freq;
 -- 
 2.53.0
 

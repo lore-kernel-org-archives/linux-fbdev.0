@@ -1,67 +1,71 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
+Received: from mail-pj1-f46.google.com (mail-pj1-f46.google.com [209.85.216.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8F0F2EEE9D
-	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 12:19:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 558873A6F1A
+	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 12:19:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785500367; cv=none; b=gJAx/aaGXyHpCxE2xkqWF5ykU5VRwOApRRY0gzVr0GXsOG8PTkgw5+zYuDwAsDjH1FX7XO23Kqbg3pdRp/t81u1acuyeid4Xw+mijtyq0LkPkPcbBo3cJpgENGcJc5bgP8x4YS3sbcss0lN6aVWHsXTuNq60ti2cFsfIgfLIkNo=
+	t=1785500367; cv=none; b=YM5FyP2YNQ0QrRPc+w5D3zncyEUSbYEnncvHKoqroOq6TSTuKvxj2s+kMW8sD2drrub9PXj25jsU8RvXZ2qYaoaXPZ3yvSffahrAjA1NPzs1yWAiA8dEghnMJS4th1uPjTevSesEkVbShZ0v9J17ukXjzEEPWSitAo71RF8DITM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1785500367; c=relaxed/simple;
-	bh=bnhNzO3Xy8mHR74f90xbWQJw1wFb5MM+YbuZQoS3mcw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=B1hdtDXDzu7xeZmoCvX0GdZywB08bCg7SF+WMnx0VLviNiZaB15AqoBODd6fK3CEVIvMn3+l3xx9a5X6BKiLof34/cQA4HzsnS4hfnNa8hJD727XJLGneVoEO4YiKfNa59TpaiFT7KreUthhscd1wlTqKh3PQkQH7Pb8TKMK2uQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=Dn7giSnF; arc=none smtp.client-ip=209.85.216.51
+	bh=h9qalZIArzdoQAUY+7lzxjQ2sUlIYUk+R1bFw7ABpoc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=UTDd7byYIYIP5YWHFGHqc2z5/pxSUUw/fGJY+VpnkRwfesJnn/2FjJmMeqF6MS/BB83Q8ryKOBelUOteyf4T/VqwTRsqvMZXxQhLVOGSaYN4V5wZp3QiyU9f9L58DsQTE8O819o1qxZIUGk4GGlgP9zNh6qOvOyr3o8aRjAvZYY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=QFvDM4xw; arc=none smtp.client-ip=209.85.216.46
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="Dn7giSnF"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-38dc4553f62so901208a91.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 05:19:24 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="QFvDM4xw"
+Received: by mail-pj1-f46.google.com with SMTP id 98e67ed59e1d1-384930ca5e2so921289a91.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 05:19:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=0x0f.com; s=google; t=1785500364; x=1786105164; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=hRCEkgyL5maguOe88SdUQWVzbN/lQncmrY8r9dbt88k=;
-        b=Dn7giSnFmIKEd1VNEBCiA4tlz7hncM8DsgvDVZ6aJovIz2wBKWTDmj5sCe4FeChWoG
-         UrlEgZ9F93/2s6Cp72/foARs5F7PD9HClUxndReV0xpfiJoR0WB+t3dmlsJiU+o/AfNI
-         GPIQxvwgloovNHFqIP7UEzN33CzAR3WEqlFfA=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785500364; x=1786105164;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=0x0f.com; s=google; t=1785500366; x=1786105166; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=hRCEkgyL5maguOe88SdUQWVzbN/lQncmrY8r9dbt88k=;
-        b=l9bhLLDK3SG/mDbG+pLKXuW5f3LfvsTBkeKjyuRbFtAsYFA0l/RGAFrgeHHoRBKMGE
-         dC6m8Ly52BCYEbSEDW/tuUxDuZXGNYS/AH6tS+pJYcjlCdrsH8czZTU/pp/GnOE6oard
-         RszkmmKH4a0W25il+Xr+5ixcY5yFO0Ju2Dvh7pfmVzKzthzgw6zn0Q2UIjfbAp/PZeix
-         1CVwJgLGTLC3YIqTTlvMAHggHExSHmOdjyR2Z09wL/G9KE+n9y4zXtD5HTH6r55xU+U6
-         5LnrEyF2fgMwAKccoLQqxzS0JBnEd5bEJZrchAW903lMdnnces2YLD7zk+cvFbMaxkhK
-         Vt6A==
-X-Gm-Message-State: AOJu0YzEfAn9Y4oSiHeKA6BL85oNmhg1YLcoaftUY05CloU92Lzh14F3
-	/x/6YfZCZEri6d+VS1JQUp26/pKaoNugXpwXzOArE9HakzanbdyBW/yj/uXCeQdqkO8=
-X-Gm-Gg: AR+sD13vsqZzGbY7VVnTNz5qxFKC2aR/G9ooNhmxmpXTYatZnRs7bKJkLXipGV7lzuN
-	cNpK5M+mHb6PiYLjPz9svaZvsZsitl+XlqxPOmq7x+UYODFuMDnZjoRFPKplSvVcVLIi6Zkjx7Q
-	rJSwGpXTguqM+xG/fRABWvxhcfWRuNnODlRiHBD0Mns1kRKGUHin8pA1Dx48rrcTLI6Z7AGSAwG
-	ZJYBnDD/J+3w6qPWO30zIvAtKsqkcwYsZQPMomZJPOAlziZLjqMJMyaOmCBQr3d4PniIjDn3bz7
-	aruDKPUCIoiAA0Vgls2vRWONtB9EA6uOa2c6LL9Q+21JERWDnZ9zQA1yAOfntU32EC6xf06ow5N
-	pTXq/jljpFlOKjuZ2CTpyQPff+7VB16eiw1RJY1tORziiiBjD+mIaQ3+SbnbzOKW0FCzdlVNknJ
-	6GQeA2dMneTT0oZLFvLMxci7rNR/dsOoDJ2onKQTkilyXEIzTNW5A=
-X-Received: by 2002:a17:90b:5290:b0:38d:c0f9:30be with SMTP id 98e67ed59e1d1-38fb1429190mr1671305a91.38.1785500363814;
-        Fri, 31 Jul 2026 05:19:23 -0700 (PDT)
+        bh=/zgk2khl+gAzXyZ3o1YPLCn48UL/rzoP7NqltzArtxk=;
+        b=QFvDM4xwKL00MpyJaHx5JTpn9I+1mPCU+74vI+dAiEMejgcuHVjRnkccaqxH0/XozZ
+         LMNpKb4xWP5ZvkIp0oDepmdIXo10Pxf9e+Cbp1YxY7sGfdBVwqM269Z3Amf6s/XJ711P
+         +vBSx7FwlDyVyxFx/IIxKpb9a2WJ5DNnVLn4Q=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785500366; x=1786105166;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=/zgk2khl+gAzXyZ3o1YPLCn48UL/rzoP7NqltzArtxk=;
+        b=oxCi/YV9xTRczHmWjjLsuR2qaFTjg5Fdszd680fn2tpZJEZazfuJOVAMjjimPeIp69
+         vNTaYkiVzUGPrJPRmRQw9jR4LDm7RjaktiRLXer18MZdDx//KEyU3s0GS3SjWExNXP3z
+         z6TYOtU2lCHTvqJ3U+5OzALw7+7IVpCIIANOumG1MgNYU1+0x8INf4jNz561PL+CZ3o+
+         IvmGT4Xk0TMlIUFdCmxKutOHok6ZjN83uUaD6nDE99o6XHNQOwbTfMdgCXB2lMG6EDzh
+         L3DntzHnIAUsySpNfP+hOVfliD58Ff+E1dudKqEImH/gojPpuP/rDrqwoBrypTSEwT93
+         KhAw==
+X-Gm-Message-State: AOJu0YwDvfobUSG8mqXt3i1pgFdGbPywc492O2XSfB/kQkaecVVZR2Qg
+	LfMBWlGttE651kd46yeQ7qDsZY5xGJS8E66jfrGtsR+E3LuIq3ZC0VvF8DTFITuIlHE=
+X-Gm-Gg: AR+sD10lAMUlmYpcZMsK15OxONGJtMYYwlbKZAknpny4M1HJ3tlDEfRZ2mKdoolKY9M
+	13dfNMCCCyXBfGsYpLijbEYkybY8fPDh2paVxCywJHzLkFctAPhkSFDGGDI/S3+Kr/r6A+QX+Ty
+	00SNrqYv0tZDgqM4MbILy8ghAAwGx4vKEhua6MKDld6CI1CUaF5GPHnSlyemgrotsR+62W1Y0S1
+	UtK1NAQDNb/rokAjL4adYB7wdLx00owh4Xic5MZlrVUc8lrFVkERDGj4K6yV8zktc3ybFpK98em
+	q+Sh/xR60gMc1lDYEzxktHdHAtBACeA1t/L1wkv8fI4Vrd9cJcSFoMkTxXjd/4wRZkvHlppQOqr
+	EMUzMDXp4x74ubcJYYSE/o7WmfyRkKJz89w1CmaM0LfCeqhq1bqo3atCO74eV9LII29+FJEtXZF
+	zkWIc39is6NsHDLrcr1bkPMsM6UAODZW7s1D+ehQwpCjb6nVVshAY=
+X-Received: by 2002:a17:90b:582c:b0:37f:bfa2:1887 with SMTP id 98e67ed59e1d1-38fb1117e8cmr1766904a91.8.1785500365608;
+        Fri, 31 Jul 2026 05:19:25 -0700 (PDT)
 Received: from shiro ([2400:4162:2428:2ffe:77cc:841c:1fc1:22d4])
-        by smtp.googlemail.com with ESMTPSA id 98e67ed59e1d1-38fb2b8c5c5sm321981a91.4.2026.07.31.05.19.22
+        by smtp.googlemail.com with ESMTPSA id 98e67ed59e1d1-38fb2b8c5c5sm321981a91.4.2026.07.31.05.19.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Jul 2026 05:19:23 -0700 (PDT)
+        Fri, 31 Jul 2026 05:19:25 -0700 (PDT)
 From: Daniel Palmer <daniel@0x0f.com>
 To: deller@gmx.de
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Daniel Palmer <daniel@0x0f.com>
-Subject: [PATCH v2 0/5] fbdev: tdfxfb: Make "unbooted" cards work
-Date: Fri, 31 Jul 2026 21:19:09 +0900
-Message-ID: <20260731121915.3362232-1-daniel@0x0f.com>
+Subject: [PATCH v2 1/5] fbdev: tdfxfb: Add helper to read config table from BIOS
+Date: Fri, 31 Jul 2026 21:19:10 +0900
+Message-ID: <20260731121915.3362232-2-daniel@0x0f.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260731121915.3362232-1-daniel@0x0f.com>
+References: <20260731121915.3362232-1-daniel@0x0f.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -70,51 +74,115 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Currently voodoo cards that weren't booted by the video BIOS aren't
-usable because the hardware is never brought up.
+In the case that the video BIOS didn't run because the card isn't the
+primary card, the BIOS doesn't support running old skool video BIOS
+(modern BIOS without CSM), or the machine isn't x86 it needs to be
+booted manually. To do this the config table in the BIOS is needed.
 
-This means if you happen to have a proper - non-x86 - computer,
-another card is the primary or you have a new BIOS that cannot
-run the video BIOS tdfxfb would probe but you will be staring at
-"no signal detected".
+Add a helper to get the config table in preparation for manually
+booting cards.
 
-This series implements manually booting cards using the
-values from the video BIOS' own table. Currently this only works
-for the voodoo 3.
+Signed-off-by: Daniel Palmer <daniel@0x0f.com>
+---
+ drivers/video/fbdev/tdfxfb.c | 78 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 78 insertions(+)
 
-Debugging was partially assisted by Claude Fable 5. I could not
-work out why this would not work for months so I told it to
-create a voodoo 3 emulation for QEMU to compare the BIOS against
-my code. That made it obvious my init sequence matched the BIOS
-but the VGA core wasn't running.
-
-This has been tested on a real voodoo 3 in an x86-64 board and
-an Amiga 4000 with a mediator PCI bridge.
-
-I have some patches to add an interface for doing 3D rendering
-that are not included in this series and 3D rendering is also
-working so as far as I can tell everything is good.
-
-v2:
-  - Fix up some poor 3am English mistakes in the cover letter.
-  - Limit this to the voodoo 3. The BIOS layout is different
-    for the 4/5 apparently.
-  - Fixed the valid sashiko complaints - mainly clearing the
-    framebuffer memory before fbcon might have bound, retaining
-    the current behaviour if we can't get the video BIOS to get
-    the config parameters.
-  - Tweaked the wording of some of the commit messages.
-
-Daniel Palmer (5):
-  fbdev: tdfxfb: Add helper to read config table from BIOS
-  fbdev: tdfxfb: Attempt to detect if the card wasn't booted
-  fbdev: tdfxfb: Manually boot unbooted cards
-  fbdev: tdfxfb: Wake the VGA core before programming the CRTC
-  fbdev: tdfxfb: Program the initial video mode
-
- drivers/video/fbdev/tdfxfb.c | 155 +++++++++++++++++++++++++++++++++++
- 1 file changed, 155 insertions(+)
-
+diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
+index cc6a074f3165..e92658274411 100644
+--- a/drivers/video/fbdev/tdfxfb.c
++++ b/drivers/video/fbdev/tdfxfb.c
+@@ -71,6 +71,7 @@
+ #include <linux/string.h>
+ #include <linux/mm.h>
+ #include <linux/slab.h>
++#include <linux/vmalloc.h>
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+@@ -336,6 +337,83 @@ static u32 do_calc_pll(int freq, int *freq_out)
+ 	return (n << 8) | (m << 2) | k;
+ }
+ 
++/*
++ * Convert a pllctrl register value back to a frequency in kHz.
++ * Formula from 3dfx documentation.
++ */
++static u32 tdfx_pll_to_khz(u32 pll)
++{
++	return (14318 * (((pll >> 8) & 0xff) + 2) /
++		(((pll >> 2) & 0x3f) + 2)) >> (pll & 3);
++}
++
++/* Layout of the "OEM config" table in voodoo 3 BIOS */
++struct tdfx_bios_cfg {
++	__le32 pciinit0;	/* 0x00 */
++	__le32 miscinit0;	/* 0x04 */
++	__le32 miscinit1;	/* 0x08 */
++	__le32 draminit0;	/* 0x0c */
++	__le32 draminit1;	/* 0x10 */
++	__le32 agpinit0;	/* 0x14 */
++	__le32 pllctrl1;	/* 0x18 - memory PLL */
++	__le32 pllctrl2;	/* 0x1c - graphics PLL */
++	__le32 sgrammode;	/* 0x20 - SGRAM/SDRAM mode register data */
++} __packed;
++
++#define TDFX_ROM_CFG_PTR	0x50
++
++static bool tdfxfb_get_bios_cfg(struct pci_dev *pdev,
++				struct tdfx_bios_cfg *cfg)
++{
++	u16 romcfg, oemcfg;
++	void __iomem *rom;
++	size_t romsize;
++	u8 *image;
++	u32 khz;
++
++	/* This only works for the Voodoo 3 for now */
++	if (pdev->device != PCI_DEVICE_ID_3DFX_VOODOO3)
++		return false;
++
++	rom = pci_map_rom(pdev, &romsize);
++	if (!rom || !romsize)
++		return false;
++
++	image = vmalloc(romsize);
++	if (!image) {
++		pci_unmap_rom(pdev, rom);
++		return false;
++	}
++	memcpy_fromio(image, rom, romsize);
++	pci_unmap_rom(pdev, rom);
++
++	/* ROM[0x50] -> ROM config table -> OEM config table */
++	if (TDFX_ROM_CFG_PTR + 2 > romsize)
++		goto out;
++	romcfg = image[TDFX_ROM_CFG_PTR] | image[TDFX_ROM_CFG_PTR + 1] << 8;
++	if (romcfg == 0xffff || romcfg + 2 > romsize)
++		goto out;
++	oemcfg = image[romcfg] | image[romcfg + 1] << 8;
++	if (oemcfg == 0xffff || oemcfg + sizeof(*cfg) > romsize)
++		goto out;
++	memcpy(cfg, image + oemcfg, sizeof(*cfg));
++	vfree(image);
++
++	/*
++	 * Make sure we didn't read garbage from the BIOS and will
++	 * end up setting a frequency that explodes someone's expensive
++	 * card.
++	 */
++	khz = tdfx_pll_to_khz(le32_to_cpu(cfg->pllctrl1));
++	if (khz < 40000 || khz > 250000 || !le32_to_cpu(cfg->draminit0))
++		return false;
++	return true;
++
++out:
++	vfree(image);
++	return false;
++}
++
+ static void do_write_regs(struct fb_info *info, struct banshee_reg *reg)
+ {
+ 	struct tdfx_par *par = info->par;
 -- 
 2.53.0
 

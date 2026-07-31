@@ -1,81 +1,103 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mail.elsta.tech (mail.elsta.tech [194.150.96.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D847442F6ED;
-	Fri, 31 Jul 2026 14:43:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92577430CE9;
+	Fri, 31 Jul 2026 14:45:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=194.150.96.10
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785509017; cv=none; b=NFg812UcGzMAySrDUsO22Plzve1MpIRKEgfg4u47WuBayj8yfB6h6PpseGk/88jXwYrCI6r+go93w8Bw4pLrJbYGT4RbnxdvNExdqgZ4DZkrozTY2v07dOGdIAvZsdo0vahXZlfEVjIdGnVcUcnkKJWhOz+WkZMcM7MZFB/AmGE=
+	t=1785509128; cv=none; b=BIZXv2OHF6PZ/Jer02nlrPm7sXiSxvyjYsI45al/LeSr1r2Yyg0AynTJlsDrDTYiT3ejWRxMsrMRvaW/e/uypL61yqOHawYtdLbhKhYsi1TZYd5PegdV6H7Uflslz/rKqXDtzNYM2XDA9CdBQalJBlyH5lE52wTBNrxVfjXCNgI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785509017; c=relaxed/simple;
-	bh=KS1e1a+U+sb99UzCmbBACw9ymiMSvnKnefigVOuL5IA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ou9Lbbu8VKT1uMmOwGd1Q8DlZG7nCZC6jYflPqu/JPFfz5K7grn8QvdAYcwrzuErNz3nf3xcocDk8HV4pXkp0U7iWxt9a7qxEFCg0fmDa9LWIb4Vv3ObAMtjGXFhUNOpdY2m72HTn/Q98ciVCFcdTlNz7UeP2Kjy2Gp6JnFeX54=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=YlY9V6Z6; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785509128; c=relaxed/simple;
+	bh=uCs7PTUAAJGsUASMMiVztX189sok921HLyGAywFmXxg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=EUBt9hs5aKFM18SgKBE2sDOIj1rJefe23w9qD1bXVdEYdXQKhJH7sFAqEqPaNUnrQd8u3p1VrFvSkfy1+ZAv1AbWazVbJFR6du2boVzR1jsVB5M6AClCOqwtcJnqtm9+nZi29Uo3+hVXJ/V07j4lUJIV6gFUqYSK4JxYTW8W6M0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=elsta.tech; spf=pass smtp.mailfrom=elsta.tech; dkim=pass (2048-bit key) header.d=elsta.tech header.i=@elsta.tech header.b=JJg6Nkky; arc=none smtp.client-ip=194.150.96.10
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=elsta.tech
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=elsta.tech
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="YlY9V6Z6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 722C01F00A3A;
-	Fri, 31 Jul 2026 14:43:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785509015;
-	bh=GNY36rin3dwLur+0LRzxKLX3kZHncZvjakN/xZMe7+o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=YlY9V6Z6kU1oDHrFwCbqNs5bVFZkOKRc5FU8HOVMEQz47vfb2XZ/Dx2ZHik8o5VJC
-	 U+TpIt/MiJHYMnhSKHK/rATf6ZGsO87Wfm86Dw1Tk42/Dlm3aASAYP0FERPL98OOUs
-	 fI8HiF1AD8GsHmwAklfoyFjydG43UJ5b+8P1Gh7Ma0hN9XZypyfmORKpIfvez2M6AY
-	 xxtIIT/I9fTkgW2o6EU1hE2PTI0NRWhGXE6YZquWg1cT0LQDXXbBTTB3PGAFoKVDYl
-	 MrDeXGL2fYMPfWFYJDIDnghs4O/Z56haE4GrzTg/4GG6N/VnR8SEAa8Em74w2/kSV1
-	 +ZNKw1+nHusAg==
-Received: from johan by xi.lan with local (Exim 4.99.4)
-	(envelope-from <johan@kernel.org>)
-	id 1wpoST-00000000XdU-17IA;
-	Fri, 31 Jul 2026 16:43:33 +0200
-Date: Fri, 31 Jul 2026 16:43:33 +0200
-From: Johan Hovold <johan@kernel.org>
-To: Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v5 04/14] mfd: lm3533: Pass only regmap and light sensor
- presence to child devices
-Message-ID: <amy0lU289vvQzslO@hovoldconsulting.com>
-References: <20260617080031.99156-1-clamor95@gmail.com>
- <20260617080031.99156-5-clamor95@gmail.com>
- <akeF_VrijPbebz3I@hovoldconsulting.com>
- <CAPVz0n1+wrq+g3p3UTc3hzHcsz8k02=QsvmseBD45d+SoSFsBw@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=elsta.tech header.i=@elsta.tech header.b="JJg6Nkky"
+Received: from localhost (localhost [127.0.0.1])
+	by mail.elsta.tech (Postfix) with ESMTP id 4F9C38D54A4;
+	Fri, 31 Jul 2026 16:45:22 +0200 (CEST)
+Authentication-Results: mail.elsta.tech (amavis); dkim=pass (2048-bit key)
+ header.d=elsta.tech
+Received: from mail.elsta.tech ([127.0.0.1])
+ by localhost (mail.elsta.tech [127.0.0.1]) (amavis, port 10032) with ESMTP
+ id Gl-KCpIJaSGg; Fri, 31 Jul 2026 16:45:22 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.elsta.tech (Postfix) with ESMTP id 0C71A8D54A2;
+	Fri, 31 Jul 2026 16:45:22 +0200 (CEST)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.elsta.tech 0C71A8D54A2
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=elsta.tech;
+	s=0883730E-C77C-11E9-9DA4-0BE9876769AA; t=1785509122;
+	bh=a3oX5Y9vckIJeDx5jb2nrEOVorfbmSUri7o0WdMM75w=;
+	h=From:Date:Message-Id:MIME-Version:To;
+	b=JJg6NkkybOeBnqfHO26lHJnWUZH8urp7FURDaC2453l1GnaJXFT52nbDcLNtJd05t
+	 PlOt9ommnXMkK9XO7nKcVBO/+BWIBj2l7eAF7lrdDbvs78CwePKIzlrzoEDSrN7bnG
+	 nnvhoENgRDYH75QJ6ekHzxl/oT3jzfVSBZi4WZ9E0bF92S4cTToeNJN7bVT1boDu15
+	 EsHDSPz3kOK8QDgJ2DyW6Do89LMr/FrC+MCdL/UclDXv5EhJrTo1eth4QILsEQDpII
+	 tncEukZ4FaSGmblICW9vva/XnKd5hobJWveWCyJpB0AJF+xgecki34SbTUmYlU8+9A
+	 bBp+JJ1A95L+Q==
+X-Virus-Scanned: amavis at elsta.tech
+Received: from mail.elsta.tech ([127.0.0.1])
+ by localhost (mail.elsta.tech [127.0.0.1]) (amavis, port 10026) with ESMTP
+ id L_nV2XvecfPl; Fri, 31 Jul 2026 16:45:21 +0200 (CEST)
+Received: from [127.0.1.1] (unknown [172.31.0.125])
+	by mail.elsta.tech (Postfix) with ESMTPSA id BA4148D549D;
+	Fri, 31 Jul 2026 16:45:21 +0200 (CEST)
+From: Jakub Turek <jakub.turek@elsta.tech>
+Subject: [PATCH v2 0/2] fbdev: ssd1307fb: add SH1107 support
+Date: Fri, 31 Jul 2026 16:45:12 +0200
+Message-Id: <20260731-feat-sh1107-v2-0-0d2893e44ebd@elsta.tech>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPVz0n1+wrq+g3p3UTc3hzHcsz8k02=QsvmseBD45d+SoSFsBw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAPi0bGoC/yXMQQ5AMBBA0avIrDVpRyiuIhbFYCyQDiIRd1cs3
+ +L/C4Q8k0AZXeDpYOFlDsA4gnZ080CKu2BAjZm2iVE9uU3JaIy2Kk8LjRbzFAsDoVg99Xx+t6r
+ +LXszUbu9C7jvB4seMQRvAAAA
+X-Change-ID: 20260731-feat-sh1107-859027285291
+To: Helge Deller <deller@gmx.de>, 
+ Javier Martinez Canillas <javierm@redhat.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+ Jakub Turek <jakub.turek@elsta.tech>
+X-Mailer: b4 0.15.2
 
-On Tue, Jul 14, 2026 at 04:28:24PM +0300, Svyatoslav Ryhel wrote:
-> пт, 3 лип. 2026 р. о 12:50 Johan Hovold <johan@kernel.org> пише:
-> >
-> > On Wed, Jun 17, 2026 at 11:00:21AM +0300, Svyatoslav Ryhel wrote:
-> > > Instead of passing the entire lm3533 core data structure, only pass the
-> > > regmap and the light sensor presence flag to child devices.
-> >
-> > Again, why?
-> >
-> 
-> Because none of the child cells needs entire parents private
-> structure, regmap is all that is used.
+This series adds support for the Sino Wealth SH1107 OLED controller
+to the ssd1307fb driver.
 
-Just because you can do something doesn't necessarily mean you should.
+Patch 1 implements SH1107 support in the ssd1307 driver.
+Patch 2 adds the device tree compatible string.
 
-Johan
+Changes in v2:
+- Removed unrelated whitespace cleanups from the driver patch.
+- Kept only functional SH1107 changes.
+
+Signed-off-by: Jakub Turek <jakub.turek@elsta.tech>
+
+Signed-off-by: Jakub Turek <jakub.turek@elsta.tech>
+---
+Jakub Turek (2):
+      fbdev: ssd1307fb: add support for Sino Wealth SH1107 controller
+      dt-bindings: display: solomon,ssd1307fb: add SH1107 compatible
+
+ .../bindings/display/solomon,ssd1307fb.yaml        | 17 +++++
+ drivers/video/fbdev/ssd1307fb.c                    | 87 +++++++++++++++++++---
+ 2 files changed, 93 insertions(+), 11 deletions(-)
+---
+base-commit: 8ba098e6b6ff0db8edf28528d1552be261af30d4
+change-id: 20260731-feat-sh1107-859027285291
+
+Best regards,
+--  
+Jakub Turek <jakub.turek@elsta.tech>
+

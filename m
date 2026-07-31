@@ -1,92 +1,67 @@
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com [209.85.221.53])
+Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1E1953FD960
-	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 11:37:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8F0F2EEE9D
+	for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 12:19:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785497847; cv=none; b=Y5owPfafBfEd0WoG1VSzfqcwVwa9S4qd+GPRscZA22PjGuo0d4Wf6jpspe091WpLEX7F46urXNPLgWiNpiQqU286PGBbo0MLomAEYL8LRG02FshtgyDHk8wW0NYfeSDGlF0RHabFjzZXStR7MS+Yl45k4hL847BSF41m9ESpOb0=
+	t=1785500367; cv=none; b=gJAx/aaGXyHpCxE2xkqWF5ykU5VRwOApRRY0gzVr0GXsOG8PTkgw5+zYuDwAsDjH1FX7XO23Kqbg3pdRp/t81u1acuyeid4Xw+mijtyq0LkPkPcbBo3cJpgENGcJc5bgP8x4YS3sbcss0lN6aVWHsXTuNq60ti2cFsfIgfLIkNo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785497847; c=relaxed/simple;
-	bh=XJPW9wWVGIYK13Jj227Wper/L2IcVnCSHBbetNAUY0o=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bxCaz5hCrgutqoBP9XJVOoUBDMCs2zn6MgNuvLGA+FuTX0xwMbk+5H1VHxONEpazvi9CTJMRaEYT9PX2OQer0xA0gZMVC6iKz0Ug0A9COWRT5hzSkYFk9eKdT4ODZQvMSrvjZcRTSHN+FoHzwUOP0qTIzkrGpTA4BZ6+b14Fmo4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QbucWX2v; arc=none smtp.client-ip=209.85.221.53
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1785500367; c=relaxed/simple;
+	bh=bnhNzO3Xy8mHR74f90xbWQJw1wFb5MM+YbuZQoS3mcw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=B1hdtDXDzu7xeZmoCvX0GdZywB08bCg7SF+WMnx0VLviNiZaB15AqoBODd6fK3CEVIvMn3+l3xx9a5X6BKiLof34/cQA4HzsnS4hfnNa8hJD727XJLGneVoEO4YiKfNa59TpaiFT7KreUthhscd1wlTqKh3PQkQH7Pb8TKMK2uQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com; spf=pass smtp.mailfrom=0x0f.com; dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b=Dn7giSnF; arc=none smtp.client-ip=209.85.216.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=0x0f.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=0x0f.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QbucWX2v"
-Received: by mail-wr1-f53.google.com with SMTP id ffacd0b85a97d-47f92e3c14bso176280f8f.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 04:37:24 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=0x0f.com header.i=@0x0f.com header.b="Dn7giSnF"
+Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-38dc4553f62so901208a91.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 31 Jul 2026 05:19:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785497842; x=1786102642; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=PPCwNXXQzUx5SzGc5RGFQWtwM4MIgHKgBLvTAnTdtiI=;
-        b=QbucWX2vUkkVvgFOpAgNC9g4ykz22qPanhiYrqlinSt8/GfMk+dld9sTzfSoMBtCGq
-         OHsoc5dxVD1Zp6yyObFQ1d1RtCGnKlKYyhGmvtBDQ6CsPFvL3zBk/NAOFSV9+65LbXBs
-         Qz+ozBtWfMjzk3+BjbLbRN2fud6uSo7VEtIW6+iKXyDadQfUB/fZJgXK8sGC8DMzzBg7
-         9erfpBa2w8qQ561kHoBrCyPl4iVO0ILzy+IbJrJXSYdRSWhNCTt+UOfR0/t74p9INGeC
-         yxU8x2GmI9uRiyjzIxrjCcjcrrbGju1zjDGQnbAUAH+3OiRVlcvuCePM+/qYQFXKzmXi
-         eZ9Q==
+        d=0x0f.com; s=google; t=1785500364; x=1786105164; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=hRCEkgyL5maguOe88SdUQWVzbN/lQncmrY8r9dbt88k=;
+        b=Dn7giSnFmIKEd1VNEBCiA4tlz7hncM8DsgvDVZ6aJovIz2wBKWTDmj5sCe4FeChWoG
+         UrlEgZ9F93/2s6Cp72/foARs5F7PD9HClUxndReV0xpfiJoR0WB+t3dmlsJiU+o/AfNI
+         GPIQxvwgloovNHFqIP7UEzN33CzAR3WEqlFfA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785497842; x=1786102642;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=PPCwNXXQzUx5SzGc5RGFQWtwM4MIgHKgBLvTAnTdtiI=;
-        b=OFXTT9/9IZ2gnwUv+6nVlhtRKS0Wf1QvpU46JCpk0he82tLdxUPn8+9oMrnd4YlJBB
-         hfvzZmxi789LSH1ihYW/a1tU1WpVLKgang0yWIxVU7ID8j9QIjPJi18ZKedNrzWq8QW3
-         bz7QKJ+kM68UxW7GFBZCzBHFcOWTfR8h0axTZAgKx2KSRag3iEbtR0VucGjA56awHLjB
-         51oMvhXwmn+CfvByUVTEIeqZjq1YJbKMjY4EgEOgIXgoI1iJjUHuEfc1JLCQME7cswO+
-         5Nv6VJ5oaxUc+KyPGqeZAikyaVbyuFkpI09CjZQFORowq1NdtJfNRZLNQFHzxkufWATc
-         /krg==
-X-Forwarded-Encrypted: i=1; AHgh+RpDT8CRvwlQeiKB55pa8jw0qQ2EbGvIBbMm3pjLzcgCdGfDNWv/a7ntKuXv+sWjUh0lxCWAzNp62XQ0EQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy2tqSmH6jhWD/F9KF/aIKuwer1/dpbXkf/0LuXb8xwBrHbKS7/
-	dlBG1/KXK9f7F1VYmvHHnCzI3DHKnnOxB08jBeIbdms7BVls6i1LzVoH
-X-Gm-Gg: AR+sD10aZTMvOogxF2hGZWon22dJwrThIooVZv4RAGLWFuU7J3p1yWAgZnqNfKqiGze
-	LqjiXyLb80V1kArViU/FDHBB0AAJVnCeNLEc0NHrQl8szLIJI222WRD0SXscu1P0KDdn4orylXQ
-	hzVvHKL0T2tnH+VSNYB/vlABQmcRW6aiFnB6LL/mMRzDOSHejVsMLKsfz8s/iwKefVmLHrOBNnE
-	1P5+8JxjoMrcSZ6KNSY9mV4cFIcSAL5Zy+0oii+RMY0bw/moEpZRwhHkDNZdH+U6lV6GWbk2S0A
-	+/pcbaLbpWbdIrG0iQVRXR1rcpPQb+4MrQA1+d6gEdnRZ+dRtDoasCEErTXRXN4HCYfEQoj9ytc
-	fIsFPIkB/iTKjm1/maYThICNbl4pt9thqi+uxinxGBINn6GrpVz3krq0HZx+5v9qg9uX8hb+Sgo
-	c02SO+CHTn/mz2BrVf5A6SlfetBYQnaPR6aiedju5+p3ildyZX+Ap/jDBPWaUXRqJa/ZUIgVSCG
-	9OG3nqNaQ==
-X-Received: by 2002:a05:6000:29c2:b0:478:4de8:9b91 with SMTP id ffacd0b85a97d-47fd2b55e06mr2408925f8f.41.1785497841644;
-        Fri, 31 Jul 2026 04:37:21 -0700 (PDT)
-Received: from xeon ([188.163.112.51])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-47fd45a0c8bsm3670646f8f.34.2026.07.31.04.37.19
+        d=1e100.net; s=20251104; t=1785500364; x=1786105164;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=hRCEkgyL5maguOe88SdUQWVzbN/lQncmrY8r9dbt88k=;
+        b=l9bhLLDK3SG/mDbG+pLKXuW5f3LfvsTBkeKjyuRbFtAsYFA0l/RGAFrgeHHoRBKMGE
+         dC6m8Ly52BCYEbSEDW/tuUxDuZXGNYS/AH6tS+pJYcjlCdrsH8czZTU/pp/GnOE6oard
+         RszkmmKH4a0W25il+Xr+5ixcY5yFO0Ju2Dvh7pfmVzKzthzgw6zn0Q2UIjfbAp/PZeix
+         1CVwJgLGTLC3YIqTTlvMAHggHExSHmOdjyR2Z09wL/G9KE+n9y4zXtD5HTH6r55xU+U6
+         5LnrEyF2fgMwAKccoLQqxzS0JBnEd5bEJZrchAW903lMdnnces2YLD7zk+cvFbMaxkhK
+         Vt6A==
+X-Gm-Message-State: AOJu0YzEfAn9Y4oSiHeKA6BL85oNmhg1YLcoaftUY05CloU92Lzh14F3
+	/x/6YfZCZEri6d+VS1JQUp26/pKaoNugXpwXzOArE9HakzanbdyBW/yj/uXCeQdqkO8=
+X-Gm-Gg: AR+sD13vsqZzGbY7VVnTNz5qxFKC2aR/G9ooNhmxmpXTYatZnRs7bKJkLXipGV7lzuN
+	cNpK5M+mHb6PiYLjPz9svaZvsZsitl+XlqxPOmq7x+UYODFuMDnZjoRFPKplSvVcVLIi6Zkjx7Q
+	rJSwGpXTguqM+xG/fRABWvxhcfWRuNnODlRiHBD0Mns1kRKGUHin8pA1Dx48rrcTLI6Z7AGSAwG
+	ZJYBnDD/J+3w6qPWO30zIvAtKsqkcwYsZQPMomZJPOAlziZLjqMJMyaOmCBQr3d4PniIjDn3bz7
+	aruDKPUCIoiAA0Vgls2vRWONtB9EA6uOa2c6LL9Q+21JERWDnZ9zQA1yAOfntU32EC6xf06ow5N
+	pTXq/jljpFlOKjuZ2CTpyQPff+7VB16eiw1RJY1tORziiiBjD+mIaQ3+SbnbzOKW0FCzdlVNknJ
+	6GQeA2dMneTT0oZLFvLMxci7rNR/dsOoDJ2onKQTkilyXEIzTNW5A=
+X-Received: by 2002:a17:90b:5290:b0:38d:c0f9:30be with SMTP id 98e67ed59e1d1-38fb1429190mr1671305a91.38.1785500363814;
+        Fri, 31 Jul 2026 05:19:23 -0700 (PDT)
+Received: from shiro ([2400:4162:2428:2ffe:77cc:841c:1fc1:22d4])
+        by smtp.googlemail.com with ESMTPSA id 98e67ed59e1d1-38fb2b8c5c5sm321981a91.4.2026.07.31.05.19.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 Jul 2026 04:37:20 -0700 (PDT)
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-To: Lee Jones <lee@kernel.org>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,
-	Helge Deller <deller@gmx.de>,
-	Svyatoslav Ryhel <clamor95@gmail.com>
-Cc: Johan Hovold <johan@kernel.org>,
+        Fri, 31 Jul 2026 05:19:23 -0700 (PDT)
+From: Daniel Palmer <daniel@0x0f.com>
+To: deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-iio@vger.kernel.org,
-	mfd@lists.linux.dev,
-	linux-fbdev@vger.kernel.org
-Subject: [PATCH v6 13/14] video: backlight: lm3533_bl: Implement backlight_scale property
-Date: Fri, 31 Jul 2026 14:36:31 +0300
-Message-ID: <20260731113632.158440-14-clamor95@gmail.com>
+	Daniel Palmer <daniel@0x0f.com>
+Subject: [PATCH v2 0/5] fbdev: tdfxfb: Make "unbooted" cards work
+Date: Fri, 31 Jul 2026 21:19:09 +0900
+Message-ID: <20260731121915.3362232-1-daniel@0x0f.com>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260731113632.158440-1-clamor95@gmail.com>
-References: <20260731113632.158440-1-clamor95@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -95,46 +70,51 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Since the device supports linear and non-linear modes, implement the
-backlight_scale property to describe this state.
+Currently voodoo cards that weren't booted by the video BIOS aren't
+usable because the hardware is never brought up.
 
-Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
-Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
----
- drivers/video/backlight/lm3533_bl.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+This means if you happen to have a proper - non-x86 - computer,
+another card is the primary or you have a new BIOS that cannot
+run the video BIOS tdfxfb would probe but you will be staring at
+"no signal detected".
 
-diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
-index 666213cab667a..adcd6ac7cf229 100644
---- a/drivers/video/backlight/lm3533_bl.c
-+++ b/drivers/video/backlight/lm3533_bl.c
-@@ -141,6 +141,7 @@ static ssize_t store_linear(struct device *dev, struct device_attribute *attr,
- {
- 	struct lm3533_bl *bl = dev_get_drvdata(dev);
- 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
-+	struct backlight_device *bd = bl->bd;
- 	unsigned long linear;
- 	int ret;
- 
-@@ -152,6 +153,9 @@ static ssize_t store_linear(struct device *dev, struct device_attribute *attr,
- 	if (ret)
- 		return ret;
- 
-+	bd->props.scale = linear ? BACKLIGHT_SCALE_LINEAR :
-+				   BACKLIGHT_SCALE_NON_LINEAR;
-+
- 	return len;
- }
- 
-@@ -294,6 +298,8 @@ static int lm3533_bl_probe(struct platform_device *pdev)
- 
- 	bl->linear = device_property_read_bool(&pdev->dev,
- 					       "ti,linear-mapping-mode");
-+	props.scale = bl->linear ? BACKLIGHT_SCALE_LINEAR :
-+				   BACKLIGHT_SCALE_NON_LINEAR;
- 
- 	bd = devm_backlight_device_register(&pdev->dev, name, &pdev->dev,
- 					    bl, &lm3533_bl_ops, &props);
+This series implements manually booting cards using the
+values from the video BIOS' own table. Currently this only works
+for the voodoo 3.
+
+Debugging was partially assisted by Claude Fable 5. I could not
+work out why this would not work for months so I told it to
+create a voodoo 3 emulation for QEMU to compare the BIOS against
+my code. That made it obvious my init sequence matched the BIOS
+but the VGA core wasn't running.
+
+This has been tested on a real voodoo 3 in an x86-64 board and
+an Amiga 4000 with a mediator PCI bridge.
+
+I have some patches to add an interface for doing 3D rendering
+that are not included in this series and 3D rendering is also
+working so as far as I can tell everything is good.
+
+v2:
+  - Fix up some poor 3am English mistakes in the cover letter.
+  - Limit this to the voodoo 3. The BIOS layout is different
+    for the 4/5 apparently.
+  - Fixed the valid sashiko complaints - mainly clearing the
+    framebuffer memory before fbcon might have bound, retaining
+    the current behaviour if we can't get the video BIOS to get
+    the config parameters.
+  - Tweaked the wording of some of the commit messages.
+
+Daniel Palmer (5):
+  fbdev: tdfxfb: Add helper to read config table from BIOS
+  fbdev: tdfxfb: Attempt to detect if the card wasn't booted
+  fbdev: tdfxfb: Manually boot unbooted cards
+  fbdev: tdfxfb: Wake the VGA core before programming the CRTC
+  fbdev: tdfxfb: Program the initial video mode
+
+ drivers/video/fbdev/tdfxfb.c | 155 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 155 insertions(+)
+
 -- 
 2.53.0
 

@@ -1,274 +1,180 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD027364927;
-	Sat,  1 Aug 2026 20:44:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785617072; cv=none; b=CU8fIoeiI4HhxJOVaSZSOnYAKliC2Am5zwo+NhReCKrQZsF8ZiMxndFRIhc7EKOg1D3lxkaWvUUeufclTeeo3OVL3WPLBRxceFGZF/GuPAjAqmhfWPS20YA59wvDSqviRt80EgWjxNWnmWUkojjhAXVNxowfZIQwDfYqvlAe98M=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785617072; c=relaxed/simple;
-	bh=5i7D6nyJh9QdHOxnzroeomGD9HcJRV7tWDplYvatH+0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=X/Zur+gbVFUCPUIXGayI9bYlc0PzcKAq5BiBf7VVCP/s43xMBBKx3y/le47Eo+/QUtMbkW/bE17t+FBK2Sk8/ifUEZ9NPWY6jnbJecHnCbv/JfNph4zaJwuCAc6ZGGbATgIOSVx1ngc2Qt8UVNZRLSTj2bKpvbhRLGTchKVq0qM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=rPS8vXVQ; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34E4E30FC03
+	for <linux-fbdev@vger.kernel.org>; Sat,  1 Aug 2026 22:02:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785621735; cv=pass; b=i1dGB5DBYcQ0C14ZMNhVFpPJlqYMdRRWVr1J/wS9zGQ6TibOWrpmKRNqn8hUcdipPZYgJkxF+/Kj6YwtOYuNp32cEJ9IgPZvcHr+qSb62eoA+heHtcLUedjghbE7E6TD+tyWYe4NJDOlofO5eePIgBwb08GxEa6DLCU+dV/P+YI=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785621735; c=relaxed/simple;
+	bh=mRPnZZvS2qFMF4MYzT26qlGn6HblvmPRKe4fqm9r0Zk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=PX4RzkFKEe6Jmw5kpRHQcgEIuYWLQOBE8mwC+KKJTD1Y784i0dqyrcN8LbaoeAkTHYoyLfCJX0ORrou6NjMHxc9T4zzKRDgbBFvd7Du5jBUYmq9RxDgwjKSgk0ay1ZwEOZwqCsHBpuq6jeinHAhQvXYbYPcbTKAU10InsqvayXA=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=azhtwLQT; arc=pass smtp.client-ip=209.85.208.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="rPS8vXVQ"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1785617052; x=1786221852; i=deller@gmx.de;
-	bh=NvrhWkw1lcE6D+/2NuFSPm+YZdUC3tVSowLVpSRgUss=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=rPS8vXVQDHt/GEUJ2tEhUy+ZWUQgpo3vcLWMAOH+jEE3dso1wFxiP5was5xtArpV
-	 yY6yJYim19r15usewgTPDzbCOB0aAUqWT4wy0580ZquPKwAfzQZOP7beNEJsIPoj3
-	 ktUJrwFYtck4M3EtlZqFv56kOfcbBRpla4sr+iIgi1RZdduwj8bUyDlP4MyPfV/yx
-	 BhD00SRvV9f7+JJEHFPt+9Q8ZqfArqFA97wWhprAJJXcI8nM+sFmnAAiNPyza0puw
-	 Wts3ptNzlZQEbLrx5M2qPC5aRtRrFKSOPYM8Cg7cmJPlfXKtU4zz7DC+vyTunzlVX
-	 BLIwDFygHjQepKSW8A==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MTiTt-1wMo1R1eBh-00MBXH; Sat, 01
- Aug 2026 22:44:12 +0200
-Message-ID: <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
-Date: Sat, 1 Aug 2026 22:44:10 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="azhtwLQT"
+Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-698acd36d67so3757937a12.0
+        for <linux-fbdev@vger.kernel.org>; Sat, 01 Aug 2026 15:02:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785621730; cv=none;
+        d=google.com; s=arc-20260327;
+        b=QKO6OIZQEpWppa2DbtHsr9puL4539fZncEjgKQzbjeHlnt4Yi0WL5eYjl1uHtrwhMF
+         f1sWEyiXMSacysMuHiAwmNxkgcikcR14BCxvE7WNHErZ9HegkWoCzGLTbaUUvqpqjOZO
+         Cd1AHEsu2MiJvUtGTHT2tOpnxeHOIoYk8SjrNCJWLL/G80TXTiMbwv90kYTkrBwqwE9P
+         xchZRGZKtdUaH7CjsrYfdY2Y9/0hOXY1ZXd19rtFYxa7ePEgAecLPeqL0+JPNvRMbJJ4
+         9fRTPzy4iiR7Tnm3YtbJ3J5G60wjJkBffZmaXetN519qB2jqfTls+8saZH/lXHC77iBF
+         Lfiw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=mRPnZZvS2qFMF4MYzT26qlGn6HblvmPRKe4fqm9r0Zk=;
+        fh=QzTuoCTz6/PFbi+wWxN0EhE8fIrVqvqttmKEts5DLks=;
+        b=U7La45noMT9YaBmtLpYUN8KCLgjServnn9BGaaBGkydJQXd2lpqOSFD/ptUjK4kfiu
+         F6L53INfQ/y+Dyb+buC9pXp+c1mRq4dN3c9iEZ32gAJh/Ys4Di1XdoR1kOdUo39cnUBj
+         J9arWHS2KIG/EqcF20aaOu5YNCB4OTD9dClTgoxEVwJCt3PmOjNRm42FUHaQEm6kxhF6
+         wOZHlyT3bsEnQuyFdMy25jgi1n5JH1tyOOXP6I/cDrE9d1cMAoIqHXUl5L0zSJPt6lLz
+         secV6nF/CW2EYOKjhvSinaT+DJ6BRZ51oNRofZofqW/eo4dRWtbf1IpL//ELcip68bB+
+         L2qA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1785621730; x=1786226530; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=mRPnZZvS2qFMF4MYzT26qlGn6HblvmPRKe4fqm9r0Zk=;
+        b=azhtwLQTMEO5+BlV41w1gHvonWDe1ABeivKg697/1yilFA592LJRW8gEUCc2Kpi/oZ
+         RsirJmHqMGTlRddLiKftG1cyXojtQgHWdt7W9naAujN71T4UdOy+KiAUEtbXdZpwvUON
+         2qgYWkDmUGhHV1DTbciIEPDNWmIzEE6W195SRY3UwO6d/By/6zUd3ib8Iru3W3cXBDNi
+         d/2dfTIYcVvqtU2X3PtTtzemRA3D/fPvJ/EUTOLAyb9rnUmc1ad8lEWdi07FoV5fCkuZ
+         pmLR2V4+ZuYlu6tDLr0drITrS9t8ffy41peTCw+SctGOrxXUVCKII/v7oLM2ffurB+L7
+         lCjQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785621730; x=1786226530;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=mRPnZZvS2qFMF4MYzT26qlGn6HblvmPRKe4fqm9r0Zk=;
+        b=lfjDLtR0SMN6cIaUP9U7MxzGz6um33Nyd13DDFsO+bTtZ25bNcv8JWKpRCPOxAGNgy
+         94rxCcP1Ggt+jLk3WsO42i+YiPGd7+DV+38XTDG+iU2aKb2q7AqNV04R7DnKDwmfv1mU
+         KbFWJuJhArAHX9EZyOQC6JD7HCJL47IBtMK0HOAxMqbTSGykTMl9x7U7U00UQQIlpDNP
+         eUphqJXCVigkkEC5oM/+G1teiaiM2dt7goC0KTD2HiXDawv0Z0BuBqdFN+PP+fHkhnWj
+         +HtGQMORLxQhl5gJ/OSLkqef8bAMXyFtI/BwT6OMSsJiOB38R4u/UJuPbeGJhy3b54Ok
+         PVVw==
+X-Forwarded-Encrypted: i=1; AHgh+RqghJ26OTipTlwIbVSk6gNnSSJGxo+J1/ZaRCTPE49YXEuUKSc0uGMvZs3eGTvVuW+2SciRcyNeEatttg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yx2EGpPpI7P6acfVujwpH3L4Hwdu26QiUTsEdpVPpRciUEAeG6N
+	Ao40Eav/CGUPDRAsszq3QF8tpQmbEbFjtKrnSGKPe1J+hKp6O1dUf+oGRsliXKSYXZGe06gruYn
+	nFQB3uo59nTZUmpRZV8fq/PwzImxJpaU=
+X-Gm-Gg: AR+sD11FebuYrB0BO6RoK5E97Po9JNLhU1muOkbduMqIqzE9m9JpFwyLTCFtgpVXfDy
+	vAna+V2s5MXSONxWUX1DKJfltEEjCWcBAomBl3TIegRRw/I18uhjQnIA6vi09h19IQY7VP3rWOD
+	Ism5hAqnkedrHCOSK6ITkHFv0pG3qcMiuRKvvITIDe+DRAIPjh9qV/+zZD+jErM7sgCLxrjBrWS
+	i6v09rIEH944X46L9MO7+z8WPqnT73OhnwAR0H68epvK+oFNL/Bd0/1NuU3RHzWsw1EJnxo/GPo
+	4cIYqxKqEtSdB2jMKFBh/mXLIqnCG2U9tbk8ZiAQIi0=
+X-Received: by 2002:a05:6402:a0c5:b0:6a0:a560:f6d with SMTP id
+ 4fb4d7f45d1cf-6a0a7c5ef88mr3046152a12.6.1785621730054; Sat, 01 Aug 2026
+ 15:02:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-To: Max Pedraza <maximpedraza@gmail.com>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
- Max Pedraza <maximpedraza@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, kernel@pengutronix.de
 References: <20260731215043.30392-1-maximpedraza@gmail.com>
- <am2mvECnCcO9IxuI@monoceros>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <am2mvECnCcO9IxuI@monoceros>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ <am2mvECnCcO9IxuI@monoceros> <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
+In-Reply-To: <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
+From: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>
+Date: Sun, 2 Aug 2026 00:01:58 +0200
+X-Gm-Features: AUfX_mwycUF1fY8pRphTmL8dbgwqxDow6kFrZA_PElLtzrxC-GpVrweyge4UTDw
+Message-ID: <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
+To: Helge Deller <deller@gmx.de>
+Cc: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:DZgpxvYNCqmBhloe22Jtfzvg7uV9+JQ0y6/5Xj/iFXayJ+7V04W
- YSpwyMEZBf95gI6nXT96FhEnqbY0eQio0AuNWmBO66mKB4bAH+fsee4fiY4HuUAZZYQPlyZ
- EatG7Mx7QTMxBrHxVmjq33flVb6Qw00xJk2DWmL14z4LnPvbu11VHk4HLjzDS5JJIcOJ5SP
- aXmsswjCtkQNHF3e3CAKQ==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:NdZ019In8xs=;V7P0oM4psMoKPYxVifBP/Zp6InG
- 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
- uKyADYU5zJ6mmhqiXxvtnohGZolqWiaWuGNmI=
 
-Hello Max,
-
-On 8/1/26 10:08, Uwe Kleine-K=C3=B6nig wrote:
-> On Fri, Jul 31, 2026 at 11:50:37PM +0200, Max Pedraza wrote:
->> Embedded products routinely need their own boot logo. Today the only wa=
-y to
->> get one is to replace one of the logo_*_clut224.ppm files in the kernel
->> source tree, which bakes the image into the kernel image. Two products =
-that
->> share a board support package but differ in branding therefore need two
->> kernel builds, and rebranding an existing product means rebuilding and
->> requalifying a kernel for what is purely a cosmetic change.
->>
->> This series lets the logo be described by the device tree instead: a no=
-de
->> compatible with "linux,boot-logo-clut224" supplies the image in the sam=
-e
->> paletted format the built-in CLUT224 logos already use, and the kernel
->> prefers it over the built-in ones when it is present and enabled. If th=
-e
->> node is absent or disabled, nothing changes.
->>
->> The image can come from the node itself (patches 1-2) or from a reserve=
-d
->> memory region the bootloader filled in (patches 4-5), because the image=
- and
->> its placement are independent axes of variation. One board sold to seve=
-ral
->> customers wants several device trees differing in the logo. One custome=
-r
->> with several products built on that board, with different panels, wants=
- the
->> same logo placed differently on each: there the image belongs in a shar=
-ed
->> binary and only the placement belongs in the device tree. Patch 3 adds =
-that
->> placement.
->>
->> We have been carrying a cruder version of this downstream on an AM335x
->> product since 2020, across a handful of board revisions, and it has rem=
-oved
->> a real maintenance burden for us. This is an attempt to find out whethe=
-r
->> something along these lines is wanted upstream, and if so in what shape=
- --
->> hence RFC.
->>
->> I am aware of the contentious part: a bitmap is not hardware, and the d=
-evice
->> tree is not an obvious place to put one. The argument for it is that th=
-e
->> logo identifies the board in the same way the model property does, it i=
-s
->> available before any filesystem is mounted, and it is per board rather =
-than
->> per kernel. The argument against is presumably that this is policy and
->> belongs in userspace or in the bootloader. I would rather hear that
->> explicitly than keep the patch downstream on a guess, and if the concep=
-t is
->> rejected I would still like to know whether a smaller subset -- say the
->> placement properties driven from the fbcon command line, without any im=
-age
->> in the device tree -- would be worth submitting separately.
->=20
-> My 0.02=E2=82=AC: Usually you want to use the display using drm and not =
-fb once
+Uwe Kleine-K=C3=B6nig wrote:
+> My 0.02=E2=82=AC: Usually you want to use the display using drm and not f=
+b once
 > the machine is fully booted. If you're using fb during boot to display a
 > logo, it's hardly possible to switch to drm later in the boot process
 > without flicker.
->=20
+>
 > So my recommendation for your usecase is to not use the kernel boot logo
-> stuff, but something like https://github.com/pengutronix/platsch.  Then
-> all the configuration is in userspace and modifyable using kernel
-> parameters. Or you create your own application using libplatsch that
-> selects the image based on the actual product derived from the dt
-> compatible or some EEPROM's content.
-Max, is this a viable option for your usecase?
+> stuff, but something like https://github.com/pengutronix/platsch.
 
-Helge
+Thanks for the pointer, I did not know platsch and it looks like a good
+fit for the problem it solves. It does not solve mine, though, and I
+think the reason is worth spelling out, because it is not about how the
+image gets drawn but about when.
+
+These are industrial units, and the requirement is time to first pixel
+after power is applied. If the panel stays dark for more than a moment
+the unit reads as dead, and that is a support call. Anything running in
+userspace is by construction later than the kernel: it needs the kernel
+booted, the rootfs mounted and init far enough along to exec it. I can
+measure the exact difference on our hardware if that is useful for the
+discussion.
+
+We do already paint a BMP from U-Boot, which is as early as we can
+possibly be. The problem is the gap that follows: once the display
+driver probes, the panel is cleared, and nothing puts anything back
+until userspace is running. Moving the logo further out into userspace
+widens that gap rather than closing it. The kernel boot logo is what
+fills it, and that is the whole reason this series exists.
+
+For completeness, since it is the usual answer to the U-Boot handover
+problem: a simple-framebuffer node plus simpledrm does keep the
+bootloader image on screen. It moves the gap rather than removing it,
+though, because the real driver still has to take over at some point,
+and it makes the logo a property of the bootloader instead of the board
+description. The two are complementary rather than alternatives:
+simpledrm covers up to the driver handover, the boot logo covers from
+there.
+
+> If you're using fb during boot to display a logo, it's hardly possible
+> to switch to drm later in the boot process without flicker.
+
+You are right in the general case, but I should be precise about what
+happens here, because there is no fbdev to DRM switch on this hardware.
+The display driver is tilcdc, which is a DRM driver; the logo ends up in
+the fbdev emulation that drm_fb_helper provides, so DRM is scanning out
+from the first pixel. Userspace then takes DRM over directly. The
+transition that remains is the same one any solution has when the
+application starts.
+
+> Max, is this a viable option for your usecase?
+
+Not for the reason above, no. Let me also be explicit about something
+the cover letter only mentions in passing, because it is directly
+relevant to Uwe's point and I would rather raise it myself.
+
+This series does not draw anything anywhere new. It only teaches the
+existing fbdev logo code where the image may come from: a device tree
+node instead of a built-in PPM. With CONFIG_FRAMEBUFFER_CONSOLE the
+drawing is still done by fbcon, exactly as it is today.
+
+The piece that matters for a product with no text console is a separate
+two patch series I have deliberately not posted yet. It exports a
+fb_draw_logo() helper from fbdev and calls it from drm_fb_helper when
+fbcon is not built in. I am aware that is pushing against the direction
+fbdev dependencies are being removed from DRM, which is precisely why I
+kept it out of this series: I did not want that discussion to decide the
+fate of the binding.
+
+So the honest summary of where I stand: if the device tree part is
+acceptable I will post the drawing part separately to dri-devel and let
+it be judged on its own merits. If the conclusion there is that DRM
+should grow its own way to put an image on screen before userspace
+exists, rather than reaching into fbdev, I would rather help build that
+than carry a hook downstream forever. What I cannot do is wait for
+userspace.
+
+Thanks both for looking at this,
+Max

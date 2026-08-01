@@ -1,174 +1,144 @@
-Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A507520010A
-	for <linux-fbdev@vger.kernel.org>; Sat,  1 Aug 2026 08:08:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 354D2212F89
+	for <linux-fbdev@vger.kernel.org>; Sat,  1 Aug 2026 18:12:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785571687; cv=none; b=V3qh2cAYsfdmTRralhg5a6BYWXZl5Wbvd8dhRyZhsN6JsE/m4ovrC0ojb1nb1ic7lCxfoYMFOrhxQyNqi2sL8SFs3YqMu1+iApYT4MFrDXBLhRrwYbJpXuDqmc87PPJh/VuYXqvCJah8lIGYFo8nL3t1OgThJdYsdRA+XkGstgQ=
+	t=1785607925; cv=none; b=V1OOH+Sou3HBjTJJ6tv50ZRziyISWCQkl2zfLwy+SbMtlfeoQdq6cUcGBylWoYVnlX/9lvlAcPdXE5g+bdPUR6O7crKXqTBPWu0TyUN9uq2q7PRsNraZpF4FjtWMZ1UDkYwky4ULMnyzTk29tb7gnLZUM+mfn2bvoFkHM9YOflo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785571687; c=relaxed/simple;
-	bh=aJERZKn9pUO/LyXiAcdkBQpZOBFw4wewj6Byjw4taMs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=L5ccwIaefP8sAl/4KODXEUjf7+pG/4hXC1rC3q1UP2TNPQKfaLYmd/cU6oNjlXzb1LYcshROQwFPG8ZdRmaIDv8o+ginBrBpiWTKQ/Jw6Lp2ebveCuhLNMnapaUOjF7IrwQUBAwvFxOkMT+JqdEVCqP4nDAdFDSrI5Ik2zJwNC0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=FMlt/0WA; arc=none smtp.client-ip=209.85.128.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1785607925; c=relaxed/simple;
+	bh=hD/EMiZZTXqKgxjrDpfBRRAJ1kAx9ywWk+DQrs1OG88=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=A+BcXKFcGbowSZPiwQIItKyEIjEbz0vvtoT6671t3oyK9UjQlncnikQa8WwGfIxFreYCtzgywRQPNxSGmVsmRzyVEUsBu8pC1u8/Rgivyt/RKF8e5hf/qju+Nb8FD0zsbaNg628HD4v4CnX5hsmJ9niE4UxO8d1Y07eVdVZkM0g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=VsJ1Mlt4; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=sA1vCC2s; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="FMlt/0WA"
-Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4954a32cf1eso2112355e9.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 01 Aug 2026 01:08:04 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="VsJ1Mlt4";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="sA1vCC2s"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1785607923;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QuTNiFWTTsXb3gAvFi53MKk8btbhasMaATEQzE79DwE=;
+	b=VsJ1Mlt45tmQM6mNKZAcHo/isWyA56noSToIFFAiEhX7/3knzuMXgfDhAbr3VPqzppvp/c
+	/zZSF9Y/HB768a4BcH9+ERJBZpUCuvWagHC856JY6oFfcTTY37oNrcxKvU9VdoV6rlITBt
+	ldYKhAWnGlr1KnLrsEDLGhVYAlJLsPg=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-636-mMQDW2DwMlmx6pylDNdKcw-1; Sat, 01 Aug 2026 14:12:01 -0400
+X-MC-Unique: mMQDW2DwMlmx6pylDNdKcw-1
+X-Mimecast-MFC-AGG-ID: mMQDW2DwMlmx6pylDNdKcw_1785607921
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-496bbcf7d1eso5390135e9.0
+        for <linux-fbdev@vger.kernel.org>; Sat, 01 Aug 2026 11:12:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1785571683; x=1786176483; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=BhbXt57FHs7QvkLjuDbwFmPJXue3peGLZ2pH9/2qYXs=;
-        b=FMlt/0WAXrF3pFQX8vPxYFdkC2rmhzmJGulCggX8iYc2mG+/Jei1V+HwS+J3werhvv
-         eMPIhXewfF9KBQf5LHuii6h4WAZtzRuVVaUgAJJu1iwZ//wO8DsvL4AMkVRTcY/gROny
-         bnQ1P5CWCE0W/jrKCz7rUWtLWOrf18wzWllHyZ+n8M2t/lJ0kE3U5BYEpvqbsYX8ikT5
-         F5K87unJb2l+y5L5B1n9ddHIVGtHAs1N/BZi1BzNI0RtktqDKTS/6SfaibC9tGoA2f7E
-         6jqWPM20B02Uv3q695HXD7izuYmuX/FvNMt8XgPrCiDQoEXzYiNjoACfxoorueVRsGVO
-         tjxQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785571683; x=1786176483;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=redhat.com; s=google; t=1785607921; x=1786212721; darn=vger.kernel.org;
+        h=content-type:mime-version:message-id:date:references:in-reply-to
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=BhbXt57FHs7QvkLjuDbwFmPJXue3peGLZ2pH9/2qYXs=;
-        b=YYoqGkBeT3uAoj2uKNLsUGmSnV9WJ8oPtqAk22EemEtpt/eII2WeEj/VDl4EedPBUU
-         NVeKTvgyXTaX2VLuCjzdYI/CudJ1Av4HMOTlkjEa8oKRpTpZL3SJTfDSdR+sWy0r4lia
-         rnVU6QMAV0JolWCYdOxvbnVFyc3GYDy3IPno3/2Jq4Vejc55AFcTrxS6FDCZEU4HNVhh
-         Ur8Z33YZqfmA1dAUGpiUckx+ePlaZwOkNAgWpvzPym3LWE3u17wMX3IuXIg+ubTL9shv
-         eCXivtYn5vHrV8qyn5lO86Iccb+6w6apPW364kL3qMATjMEdQLahF15X31rUb0KKJWF9
-         bXOQ==
-X-Forwarded-Encrypted: i=1; AHgh+Rru3kWlmIC91YEck0Zy1kp/L0aKRcscJB60Tzh2MI2LS7hQzim7Ss5OuPhe/Noz4TReIjgk+gajUiaUDA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yx7HcKCCT/8RCsAA8pkgyzBvFo3Hu+dURH/guWDGm59DAJn0CfR
-	flPjegu6+RweQMwcG1PoQJcMHkmZMZTeVqBg6ZJ4wlQnd19VSJOPXGTvyiwLYEuyES0=
-X-Gm-Gg: AR+sD11gzFE0SECEpk+jgdSFfvJITW0EHY9B4pcvn/Me2zWASPKbIMCX+jYuw98wPBW
-	wSZENWsDFYkMBCWhOKvZ3ttgJ8CNYmJN6MznYLVTNmLUbNX+p6IfG+2reT8rk6H2CA2bsxPZ1gL
-	8VTD+9jB7jY3U6bn2/zZDcoUMocMpTVKrmEv1s+3hfgNgJJDZ2pCp3Z9eCoxDq+3m87nlwjR6te
-	8wpgKg3f8Ka4d5/9DQbtgrZE75a9zklJUO4RV+k1HvrfHPn9FrkT/rTBwe6CmWgeQBhg66OUCy1
-	LzHdeDKhQ6KugkwzTpcNS5jRaWb0BGjVLRGBOgKLZB/Dh30/yLz6Pt7gvvn7209KnrioXwRj1zc
-	6kJ7aio/C4giLY4xTnClrDMVdP9Sye084xCr/bRw5y1Fgwu5Xl8IGHGs3M/H0/oiSIS1yxSMbxo
-	xD/pmeZio7opdZjI/tBQ3MB+dUgyl41Zh3ECafx/SAgYX1P+BusQF1EPEk6lMLfuhk3A==
-X-Received: by 2002:a05:600c:e48a:b0:493:bacb:1341 with SMTP id 5b1f17b1804b1-4980c66b53bmr17150785e9.4.1785571682507;
-        Sat, 01 Aug 2026 01:08:02 -0700 (PDT)
-Received: from localhost ([2a02:8071:56d1:2de0:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-49808191ef9sm37069725e9.1.2026.08.01.01.08.01
+        bh=QuTNiFWTTsXb3gAvFi53MKk8btbhasMaATEQzE79DwE=;
+        b=sA1vCC2sJmT0ew0CfXEtF+3jGOZLXxTRYX5RGg49g+5wRIWrwEjsFZTNGp4urfTyrO
+         6rHOOThguVzq/Hp36oRA/e5ZS7tQdGhXTYwL5HlnhX7Ylyyo/615kvOwDyGh3hRLr84a
+         URTyA8o/+N6RmyQomvtCWQ/EY7BEn/mpBmn2pnWysT1RZZpMU7FlCsa27OhFVVcnTHih
+         ypZYvBIhLlpFpbHhV94VZfHxt5BxwYToEj/+uX7ovnEysXZat9binM7TUntN5P1y4Udl
+         dD/qb6SodwnBHXMSZHWitVe/hvpJMv+yg10x6PqIDJM6ZWf15uE3NsJRtOTsvzmYrRaH
+         OTOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785607921; x=1786212721;
+        h=content-type:mime-version:message-id:date:references:in-reply-to
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=QuTNiFWTTsXb3gAvFi53MKk8btbhasMaATEQzE79DwE=;
+        b=gQD7LQ6NaEcOkWgZBOjPPoCyMuwIXLwDz/Z6AqpaIat4+/DsiGWoCkebib7bHaksHC
+         M40+vUP2hP39yQp0eq5gSi1iglLQu8SCLoKpTL9hWCujRLr73bAtDyJqRbRO5NYFIiog
+         PvvsLf4oqbdt7xHUVl4EXYBlODnekL3vV91P29S86s5Jh4baGOQP1UUbWDm6ZUONy8dC
+         XL7qU8la62gfKdvJC5xSx/ygqdESxSP19oBCfXPu1TTsLEw0mp4Mx4oDlMwmDB5gTKMS
+         jnfYZlbe6A9c59pZRuwBk7NF5/JMp9MIicxAO2TAAehKB9HDBj0JNnSTVaKJrWiMDQls
+         19OQ==
+X-Gm-Message-State: AOJu0Yz91l/hD7GivyUa+gIQyCCAljm3yw41M1JKXkvNDxqhjR7LBTZq
+	+UMIn0FRBhCjT2Dzlwc688mCcaNHFtThSFboq45AdUSDiuIEbrcRijI0ZVCCPlPY7UHAEaYiyrn
+	bS/cTdyGOf90NaF0eW7BHjZz6IlHxCZXhjvRCNSMqYr4aZ6L4xeTHuPeF80GkWQ6M
+X-Gm-Gg: AR+sD10xvcgL+x4FihobSlxc0aMriOfok0LLmaRkQvleqWAlDLDrQx4rgen/MOGsbjL
+	9FIkwck48TvRv5+wrmcwakm5XtRiQu/ArUKKTedD0/1S+vf4q9jk/rQgFvCTJNxfeA3tm24kB/N
+	vge8Ma/2Th6GKjoadTI8Bo6wtZda3r4txiWM9YY448lL1AfpWKTorltctYrXsh7NrFKggHlBY3K
+	U7eVKp5rEqlV3pEtUQah/slFb7vwgEpJrQkeQBKu86/vajQeClm2Nq6rOtImupTBxoQpDFKmKMa
+	ycqwrZhuEPqG4UjfIclOqlgjIL9vYNQAwIwenK89dH0Bi3HwlnlxF6za6JkEQXvU/MVjAhwHnCp
+	j0JWcJThM+76Q3UdwHWJPvygIRjhO9JXiBxYWnQ5Sm/3QKMsrWpsZLnEvRgA=
+X-Received: by 2002:a05:600c:840f:b0:493:c42e:5be0 with SMTP id 5b1f17b1804b1-4980c60705amr64842375e9.0.1785607920491;
+        Sat, 01 Aug 2026 11:12:00 -0700 (PDT)
+X-Received: by 2002:a05:600c:840f:b0:493:c42e:5be0 with SMTP id 5b1f17b1804b1-4980c60705amr64841705e9.0.1785607919932;
+        Sat, 01 Aug 2026 11:11:59 -0700 (PDT)
+Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4980878dcb4sm117791635e9.13.2026.08.01.11.11.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 01 Aug 2026 01:08:01 -0700 (PDT)
-Date: Sat, 1 Aug 2026 10:08:00 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Max Pedraza <maximpedraza@gmail.com>
-Cc: Helge Deller <deller@gmx.de>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	kernel@pengutronix.de
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-Message-ID: <am2mvECnCcO9IxuI@monoceros>
-References: <20260731215043.30392-1-maximpedraza@gmail.com>
+        Sat, 01 Aug 2026 11:11:58 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Helge Deller <deller@gmx.de>, Jakub Turek <jakub.turek@elsta.tech>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
+ <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David
+ Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] fbdev: ssd1307fb: add support for Sino Wealth
+ SH1107 controller
+In-Reply-To: <a90747ae-e2c0-4add-9fff-1ff473d1b410@gmx.de>
+References: <20260731-feat-sh1107-v2-0-0d2893e44ebd@elsta.tech>
+ <20260731-feat-sh1107-v2-1-0d2893e44ebd@elsta.tech>
+ <a90747ae-e2c0-4add-9fff-1ff473d1b410@gmx.de>
+Date: Sat, 01 Aug 2026 20:11:57 +0200
+Message-ID: <87y0epd82a.fsf@ocarina.mail-host-address-is-not-set>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="y7euzt5xlmsr2onq"
-Content-Disposition: inline
-In-Reply-To: <20260731215043.30392-1-maximpedraza@gmail.com>
+Content-Type: text/plain
 
+Helge Deller <deller@gmx.de> writes:
 
---y7euzt5xlmsr2onq
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-MIME-Version: 1.0
+Hello Helge,
 
-Hello Max,
+> On 7/31/26 16:45, Jakub Turek wrote:
+>> The SH1107 display controller is very similar to SSD1307 but the main
+>> difference is that SH1107 has different memory layout and uses page mode
+>> adressation only.
+>> 
+>> The SH1107 relies primarily on vertical page addressing mode where the
+>> internal 128x128 GDDRAM is split into 16 vertical pages, rather than
+>> the horizontal/tile addressing modes natively utilized by the
+>> SSD1306/SSD1307.
+>> 
+>> Signed-off-by: Jakub Turek <jakub.turek@elsta.tech>
+>> ---
+>>   drivers/video/fbdev/ssd1307fb.c | 87 +++++++++++++++++++++++++++++++++++------
+>>   1 file changed, 76 insertions(+), 11 deletions(-)
+> series applied.
+>
 
-On Fri, Jul 31, 2026 at 11:50:37PM +0200, Max Pedraza wrote:
-> Embedded products routinely need their own boot logo. Today the only way =
-to
-> get one is to replace one of the logo_*_clut224.ppm files in the kernel
-> source tree, which bakes the image into the kernel image. Two products th=
-at
-> share a board support package but differ in branding therefore need two
-> kernel builds, and rebranding an existing product means rebuilding and
-> requalifying a kernel for what is purely a cosmetic change.
->=20
-> This series lets the logo be described by the device tree instead: a node
-> compatible with "linux,boot-logo-clut224" supplies the image in the same
-> paletted format the built-in CLUT224 logos already use, and the kernel
-> prefers it over the built-in ones when it is present and enabled. If the
-> node is absent or disabled, nothing changes.
->=20
-> The image can come from the node itself (patches 1-2) or from a reserved
-> memory region the bootloader filled in (patches 4-5), because the image a=
-nd
-> its placement are independent axes of variation. One board sold to several
-> customers wants several device trees differing in the logo. One customer
-> with several products built on that board, with different panels, wants t=
-he
-> same logo placed differently on each: there the image belongs in a shared
-> binary and only the placement belongs in the device tree. Patch 3 adds th=
-at
-> placement.
->=20
-> We have been carrying a cruder version of this downstream on an AM335x
-> product since 2020, across a handful of board revisions, and it has remov=
-ed
-> a real maintenance burden for us. This is an attempt to find out whether
-> something along these lines is wanted upstream, and if so in what shape --
-> hence RFC.
->=20
-> I am aware of the contentious part: a bitmap is not hardware, and the dev=
-ice
-> tree is not an obvious place to put one. The argument for it is that the
-> logo identifies the board in the same way the model property does, it is
-> available before any filesystem is mounted, and it is per board rather th=
-an
-> per kernel. The argument against is presumably that this is policy and
-> belongs in userspace or in the bootloader. I would rather hear that
-> explicitly than keep the patch downstream on a guess, and if the concept =
-is
-> rejected I would still like to know whether a smaller subset -- say the
-> placement properties driven from the fbcon command line, without any image
-> in the device tree -- would be worth submitting separately.
+Why did you apply the series? I mentioned in v1 that Jakub instead should
+use the KMS ssd130x driver that already support variants that use page
+addressing, such as the SH1106 (adding SSH1107 should be trivial).
 
-My 0.02=E2=82=AC: Usually you want to use the display using drm and not fb =
-once
-the machine is fully booted. If you're using fb during boot to display a
-logo, it's hardly possible to switch to drm later in the boot process
-without flicker.
+Also, Sashiko correctly pointed out that the fbdev driver doesn't support
+most of the properties mentioned in the DT binding schema.
 
-So my recommendation for your usecase is to not use the kernel boot logo
-stuff, but something like https://github.com/pengutronix/platsch.  Then
-all the configuration is in userspace and modifyable using kernel
-parameters. Or you create your own application using libplatsch that
-selects the image based on the actual product derived from the dt
-compatible or some EEPROM's content.
+Now is the opposite given that you merged the DT binding patch. The ssd130x
+driver doesn't have support for the "sinowealth,sh1107" compatible string
+that is being added by patch 2/2.
 
-Best regards
-Uwe
+I guess that should post a patch to delete the ssd1307fb, to make clear that
+shouldn't be used anymore since we have a KMS driver that has better support.
 
---y7euzt5xlmsr2onq
-Content-Type: application/pgp-signature; name="signature.asc"
+-- 
+Best regards,
 
------BEGIN PGP SIGNATURE-----
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmptqV0ACgkQj4D7WH0S
-/k6bUwf/b3R5nKZ+dHyzlIKZ+XN6rpMjgW3Dl0H1qu406Hg4yhjBwvx8FmRpc3W2
-O6jYub6BAi5oZj+FpvzdR63pWRetwzGpigOqsGlUeGjjIrHbCJWONwOCAu3Q8ynB
-CfnK2Hg/gWfPSbnzglGMcvjMnOkkBEV9c07rG72C7qPJClOD5n4qPQhh2TwlVHuV
-w2uooARlVezImhDjrexVlRSF8RfZ6tfpHG7Tvingt92i/AnRVb233p6a+8cb4nbY
-VTJeBWgsBPTUYC3OQYjgqtHPA1ZE+G6ZZCukwZii7myk+Y7Xdf4EaYVnnI69vrGM
-4yeJ1GaCsfsBHz5Himv00/m5LkZR0Q==
-=xd2+
------END PGP SIGNATURE-----
-
---y7euzt5xlmsr2onq--

@@ -1,144 +1,84 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from mail2-relais-roc.national.inria.fr (mail2-relais-roc.national.inria.fr [192.134.164.83])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 354D2212F89
-	for <linux-fbdev@vger.kernel.org>; Sat,  1 Aug 2026 18:12:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4ACEF3A254D;
+	Sat,  1 Aug 2026 19:10:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.134.164.83
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785607925; cv=none; b=V1OOH+Sou3HBjTJJ6tv50ZRziyISWCQkl2zfLwy+SbMtlfeoQdq6cUcGBylWoYVnlX/9lvlAcPdXE5g+bdPUR6O7crKXqTBPWu0TyUN9uq2q7PRsNraZpF4FjtWMZ1UDkYwky4ULMnyzTk29tb7gnLZUM+mfn2bvoFkHM9YOflo=
+	t=1785611430; cv=none; b=G10YHJdlLfZEkFakCPzgQW8HMzRfCcs7Ga7gBK+IPPLjY1IYZ4JodRuD6qvqh5kK1Dj0gQnWKmGg/+Zr1sA9pDq6xjhp1LR+8wdn6lLaoJD2k9igcNcu5CmDKi2VeoPVaKuMeWDUbot1xXcnMQK0HrxYlHe7+j20NkdhnA/0FPY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785607925; c=relaxed/simple;
-	bh=hD/EMiZZTXqKgxjrDpfBRRAJ1kAx9ywWk+DQrs1OG88=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=A+BcXKFcGbowSZPiwQIItKyEIjEbz0vvtoT6671t3oyK9UjQlncnikQa8WwGfIxFreYCtzgywRQPNxSGmVsmRzyVEUsBu8pC1u8/Rgivyt/RKF8e5hf/qju+Nb8FD0zsbaNg628HD4v4CnX5hsmJ9niE4UxO8d1Y07eVdVZkM0g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=VsJ1Mlt4; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=sA1vCC2s; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1785611430; c=relaxed/simple;
+	bh=nLxkyXOVH77n4UIw8DlmeUNyLMAGobPDCY21NNsP5+o=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=kqMxHUrX7id3nZHLFXqBamN5hCaLRYEpFB4PoNr0yqG4HoB6JeZm1GDB6wvTw3zaoU4+xFPACvq19wp5mgYF28IQb+huVDkrvGS7rCcStt790UGuBCt1+wjtMcDsjvKQ8W/ycs3yMBbGdukaj3YgFprCwXfT4iyElIz7kNUFOZg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=inria.fr; spf=pass smtp.mailfrom=inria.fr; dkim=pass (1024-bit key) header.d=inria.fr header.i=@inria.fr header.b=PvW93Bdv; arc=none smtp.client-ip=192.134.164.83
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=inria.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=inria.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="VsJ1Mlt4";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="sA1vCC2s"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1785607923;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QuTNiFWTTsXb3gAvFi53MKk8btbhasMaATEQzE79DwE=;
-	b=VsJ1Mlt45tmQM6mNKZAcHo/isWyA56noSToIFFAiEhX7/3knzuMXgfDhAbr3VPqzppvp/c
-	/zZSF9Y/HB768a4BcH9+ERJBZpUCuvWagHC856JY6oFfcTTY37oNrcxKvU9VdoV6rlITBt
-	ldYKhAWnGlr1KnLrsEDLGhVYAlJLsPg=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-636-mMQDW2DwMlmx6pylDNdKcw-1; Sat, 01 Aug 2026 14:12:01 -0400
-X-MC-Unique: mMQDW2DwMlmx6pylDNdKcw-1
-X-Mimecast-MFC-AGG-ID: mMQDW2DwMlmx6pylDNdKcw_1785607921
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-496bbcf7d1eso5390135e9.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 01 Aug 2026 11:12:01 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=inria.fr header.i=@inria.fr header.b="PvW93Bdv"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1785607921; x=1786212721; darn=vger.kernel.org;
-        h=content-type:mime-version:message-id:date:references:in-reply-to
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=QuTNiFWTTsXb3gAvFi53MKk8btbhasMaATEQzE79DwE=;
-        b=sA1vCC2sJmT0ew0CfXEtF+3jGOZLXxTRYX5RGg49g+5wRIWrwEjsFZTNGp4urfTyrO
-         6rHOOThguVzq/Hp36oRA/e5ZS7tQdGhXTYwL5HlnhX7Ylyyo/615kvOwDyGh3hRLr84a
-         URTyA8o/+N6RmyQomvtCWQ/EY7BEn/mpBmn2pnWysT1RZZpMU7FlCsa27OhFVVcnTHih
-         ypZYvBIhLlpFpbHhV94VZfHxt5BxwYToEj/+uX7ovnEysXZat9binM7TUntN5P1y4Udl
-         dD/qb6SodwnBHXMSZHWitVe/hvpJMv+yg10x6PqIDJM6ZWf15uE3NsJRtOTsvzmYrRaH
-         OTOQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785607921; x=1786212721;
-        h=content-type:mime-version:message-id:date:references:in-reply-to
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=QuTNiFWTTsXb3gAvFi53MKk8btbhasMaATEQzE79DwE=;
-        b=gQD7LQ6NaEcOkWgZBOjPPoCyMuwIXLwDz/Z6AqpaIat4+/DsiGWoCkebib7bHaksHC
-         M40+vUP2hP39yQp0eq5gSi1iglLQu8SCLoKpTL9hWCujRLr73bAtDyJqRbRO5NYFIiog
-         PvvsLf4oqbdt7xHUVl4EXYBlODnekL3vV91P29S86s5Jh4baGOQP1UUbWDm6ZUONy8dC
-         XL7qU8la62gfKdvJC5xSx/ygqdESxSP19oBCfXPu1TTsLEw0mp4Mx4oDlMwmDB5gTKMS
-         jnfYZlbe6A9c59pZRuwBk7NF5/JMp9MIicxAO2TAAehKB9HDBj0JNnSTVaKJrWiMDQls
-         19OQ==
-X-Gm-Message-State: AOJu0Yz91l/hD7GivyUa+gIQyCCAljm3yw41M1JKXkvNDxqhjR7LBTZq
-	+UMIn0FRBhCjT2Dzlwc688mCcaNHFtThSFboq45AdUSDiuIEbrcRijI0ZVCCPlPY7UHAEaYiyrn
-	bS/cTdyGOf90NaF0eW7BHjZz6IlHxCZXhjvRCNSMqYr4aZ6L4xeTHuPeF80GkWQ6M
-X-Gm-Gg: AR+sD10xvcgL+x4FihobSlxc0aMriOfok0LLmaRkQvleqWAlDLDrQx4rgen/MOGsbjL
-	9FIkwck48TvRv5+wrmcwakm5XtRiQu/ArUKKTedD0/1S+vf4q9jk/rQgFvCTJNxfeA3tm24kB/N
-	vge8Ma/2Th6GKjoadTI8Bo6wtZda3r4txiWM9YY448lL1AfpWKTorltctYrXsh7NrFKggHlBY3K
-	U7eVKp5rEqlV3pEtUQah/slFb7vwgEpJrQkeQBKu86/vajQeClm2Nq6rOtImupTBxoQpDFKmKMa
-	ycqwrZhuEPqG4UjfIclOqlgjIL9vYNQAwIwenK89dH0Bi3HwlnlxF6za6JkEQXvU/MVjAhwHnCp
-	j0JWcJThM+76Q3UdwHWJPvygIRjhO9JXiBxYWnQ5Sm/3QKMsrWpsZLnEvRgA=
-X-Received: by 2002:a05:600c:840f:b0:493:c42e:5be0 with SMTP id 5b1f17b1804b1-4980c60705amr64842375e9.0.1785607920491;
-        Sat, 01 Aug 2026 11:12:00 -0700 (PDT)
-X-Received: by 2002:a05:600c:840f:b0:493:c42e:5be0 with SMTP id 5b1f17b1804b1-4980c60705amr64841705e9.0.1785607919932;
-        Sat, 01 Aug 2026 11:11:59 -0700 (PDT)
-Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4980878dcb4sm117791635e9.13.2026.08.01.11.11.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 01 Aug 2026 11:11:58 -0700 (PDT)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: Helge Deller <deller@gmx.de>, Jakub Turek <jakub.turek@elsta.tech>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
- <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David
- Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Rob Herring
- <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] fbdev: ssd1307fb: add support for Sino Wealth
- SH1107 controller
-In-Reply-To: <a90747ae-e2c0-4add-9fff-1ff473d1b410@gmx.de>
-References: <20260731-feat-sh1107-v2-0-0d2893e44ebd@elsta.tech>
- <20260731-feat-sh1107-v2-1-0d2893e44ebd@elsta.tech>
- <a90747ae-e2c0-4add-9fff-1ff473d1b410@gmx.de>
-Date: Sat, 01 Aug 2026 20:11:57 +0200
-Message-ID: <87y0epd82a.fsf@ocarina.mail-host-address-is-not-set>
+  d=inria.fr; s=dc;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=Obf+OAwdCbGTMg5s8OMIUCRXXMLFg7TjgwLzcmwd1Hk=;
+  b=PvW93Bdv2aVz7I9Ur0XKzFex8YvgHW7R30T5j8keacmHsr5vdbh5Y00W
+   bVET7D0PbHpLZCN1h5CsOsrnACHouyovfMsQOZJIfWM6tn+LLowD1nyL7
+   5LC+NofowRfjUCE+BwKn9SQmAJSNGz9tAt7jv6D5L/si4k6h+f3yXLyHW
+   U=;
+X-CSE-ConnectionGUID: 8JUcfgo3QPuyUUTvvQfNYA==
+X-CSE-MsgGUID: OlJOKjkRQ/exrGUcgFwTEg==
+Authentication-Results: mail2-relais-roc.national.inria.fr; dkim=none (message not signed) header.i=none; spf=SoftFail smtp.mailfrom=Julia.Lawall@inria.fr; dmarc=fail (p=none dis=none) d=inria.fr
+X-IronPort-AV: E=Sophos;i="6.25,198,1779141600"; 
+   d="scan'208";a="288769004"
+Received: from i80.paris.inria.fr (HELO i80.paris.inria.fr.) ([128.93.102.196])
+  by mail2-relais-roc.national.inria.fr with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Aug 2026 21:10:08 +0200
+From: Julia Lawall <Julia.Lawall@inria.fr>
+To: Helge Deller <deller@gmx.de>
+Cc: kernel-janitors@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: au1100fb: drop unneeded semicolon
+Date: Sat,  1 Aug 2026 21:09:49 +0200
+Message-Id: <20260801191002.1383835-3-Julia.Lawall@inria.fr>
+X-Mailer: git-send-email 2.39.5
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
-Helge Deller <deller@gmx.de> writes:
+When a function-like macro expands to an expression, that expression
+doesn't need a semicolon after it.  All uses have been verified to
+have their own semicolons.
 
-Hello Helge,
+This was found using the following Coccinelle semantic patch:
 
-> On 7/31/26 16:45, Jakub Turek wrote:
->> The SH1107 display controller is very similar to SSD1307 but the main
->> difference is that SH1107 has different memory layout and uses page mode
->> adressation only.
->> 
->> The SH1107 relies primarily on vertical page addressing mode where the
->> internal 128x128 GDDRAM is split into 16 vertical pages, rather than
->> the horizontal/tile addressing modes natively utilized by the
->> SSD1306/SSD1307.
->> 
->> Signed-off-by: Jakub Turek <jakub.turek@elsta.tech>
->> ---
->>   drivers/video/fbdev/ssd1307fb.c | 87 +++++++++++++++++++++++++++++++++++------
->>   1 file changed, 76 insertions(+), 11 deletions(-)
-> series applied.
->
+@r@
+identifier i : script:ocaml() { String.lowercase_ascii i = i };
+expression e;
+@@
 
-Why did you apply the series? I mentioned in v1 that Jakub instead should
-use the KMS ssd130x driver that already support variants that use page
-addressing, such as the SH1106 (adding SSH1107 should be trivial).
+*#define i(...) e;
 
-Also, Sashiko correctly pointed out that the fbdev driver doesn't support
-most of the properties mentioned in the DT binding schema.
+Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
 
-Now is the opposite given that you merged the DT binding patch. The ssd130x
-driver doesn't have support for the "sinowealth,sh1107" compatible string
-that is being added by patch 2/2.
+---
+ drivers/video/fbdev/au1100fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I guess that should post a patch to delete the ssd1307fb, to make clear that
-shouldn't be used anymore since we have a KMS driver that has better support.
-
--- 
-Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
+diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
+index c54cfcd83..39f86ffb1 100644
+--- a/drivers/video/fbdev/au1100fb.c
++++ b/drivers/video/fbdev/au1100fb.c
+@@ -393,7 +393,7 @@ static struct au1100fb_panel known_lcd_panels[] =
+ #define DRIVER_DESC "LCD controller driver for AU1100 processors"
+ 
+ #define to_au1100fb_device(_info) \
+-	  (_info ? container_of(_info, struct au1100fb_device, info) : NULL);
++	  (_info ? container_of(_info, struct au1100fb_device, info) : NULL)
+ 
+ /* Bitfields format supported by the controller. Note that the order of formats
+  * SHOULD be the same as in the LCD_CONTROL_SBPPF field, so we can retrieve the
 

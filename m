@@ -1,151 +1,168 @@
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
+Received: from mail-ed1-f43.google.com (mail-ed1-f43.google.com [209.85.208.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49BDD381AE5
-	for <linux-fbdev@vger.kernel.org>; Sun,  2 Aug 2026 13:35:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785677747; cv=none; b=YD5w9ilceOcsRfqDNSXqITsw8qXNqmwISh7lBulyhpYS8j9USHSlY/5+S69KN8pa75ufM9Q/O/ul70uUTwPJAOaFo8eAdrID7TsvaZUWgKdsKuorUA3Ts9HBlesNMFEqaC34Pg6++ST9RH7Kmd8InlQ7FHMW1WjVK+kYtDOq1Gc=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785677747; c=relaxed/simple;
-	bh=UlAe688FL5SqYvNdYPiubZv5Vup2lbXf0/HgRirxAQY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=pt0S8/Q8zmG9IAWyRi3r93ph6Q3rOEtu3TfHYZPwr/ozXGrsHvCHC5llPHgI8x+CY56FXN00YbQl8pFlbnh8iD0r7EftegX1GH9Vy5cUD5RgQTYKw1K0xj4KPONB8opi/7gZTQ85aG4JScaXucaSSZVq35ZS+xT0RMrLvMJDdTw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=LdCEIrQ8; arc=none smtp.client-ip=209.85.128.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D66E634041C
+	for <linux-fbdev@vger.kernel.org>; Sun,  2 Aug 2026 22:56:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.43
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785711404; cv=pass; b=E/FZoCU5uB3L2mzP22Cxehh6BUHK2wcoYknYdQlUSh0UvlCW8IXOCMbgVwUD4grzqQwN3BXnVIbA243LEna93fHFB5qLL3iZGOfRANqRWMkWV0ppMZnBqt6uPY6LmbminWY49vPPAwi0Zcydc1GcQqOubSmxhIJ0rc3lP/Ci8wc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785711404; c=relaxed/simple;
+	bh=RuFP9W4Bh5Ik9VVQIRnJcCOdTJDK250ksApEnRBF5eI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Uo7nbbu3CZspVnaH4+SJt1SugL5U+N6bn7qyP0wAMoGL5CIRK0zI6uhxGdGblVQC1dQshGxi5HlXYRNf7DxJjJcGDVyL4jsTVXMz75gML4BJbzRH7e8uc/Xu1T1fQvZ8BgJtA4/Tf5KBx5bUSaQvlYDilnVfLWRrS+qK+uHgRVs=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pY5DKIjx; arc=pass smtp.client-ip=209.85.208.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="LdCEIrQ8"
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4954a9e8490so10740635e9.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 02 Aug 2026 06:35:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pY5DKIjx"
+Received: by mail-ed1-f43.google.com with SMTP id 4fb4d7f45d1cf-6a0cb6e96dcso1466064a12.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 02 Aug 2026 15:56:42 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785711401; cv=none;
+        d=google.com; s=arc-20260327;
+        b=fuEQQYJuvd2js/zM38Oyk/obt8N/ZNtKgwOGzV9VUh/kTbRTxiT7Qfc4oXe1dfAchN
+         VjPIRve0Xl3vibhUK8M4ZHpabSjNJpFB3Ju5QK2CFSXO+ap1zujmPQIHvRi1pzw5EkLD
+         JbiaKoHyXOVhZFmZOEVifxgFH01JPvRLTU1tAAxUxZhGOlvPcfhbnyypFf9RwUoBcDfz
+         YWIwkjUUJa9HkIAUJLKHD6HrZddiZAVx37thF02jrWWMbRu/Ybu4UVPDbr5+NvtyzZ0Z
+         f7BYpVmsQKI+isGPoY5SPSwzxLc+RSuZmJuZzgDNLa4GLu7IaD3kTxPHxN7I+IjRbwIc
+         xFqA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=L/rMtwPDxsC52fx+U9UwvVtcGVHIIpAAwX8W2NzxXeY=;
+        fh=z1ZE7V5dfXOHB2AM4EcibsNumoYFqdopS28Dip0RlLo=;
+        b=nhm7dIUi+3zxpNIveisAm8htDARm5HaCZZBncgZixXdx9S7Q6N0KbiVmd4aaCHdM+2
+         SGr7GoQpVxVtzquAPyOOeszc9MLt4jHSVDkOk6OepyRvhCPUeuy+hTvjZx84Z/27fcaK
+         Udhm/h/+tpWix3H+tVRgGaWyfkRbWJUFmN7du/6f5CMehrzQ/FAQ04/PF00Fc+xjuAw4
+         mgsU7zn8UAUDZRmki6yWjl5Js/16l4hUhN/M44FYIT+aVkD0r+67WlUB7DLPb/dt1TBT
+         RO8ZTfsBc3/pPjI1wdklXtA+YIfu80GQ1fZ0CWlYRc1w4CRVhhH013PFFimJ0hxwlJJl
+         4cdw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1785677742; x=1786282542; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=gmail.com; s=20251104; t=1785711401; x=1786316201; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=UlAe688FL5SqYvNdYPiubZv5Vup2lbXf0/HgRirxAQY=;
-        b=LdCEIrQ8ptjQNgEeXZXwT8yRl8hjPKh9CzcJi/Yv1ob3p3kNXCxTDXDkqbIMHAc43e
-         Uqrj72HWGtTUo99XgZhc7XpyB1c1+fJ4tYfHzHHarkhzYoSXo29RgRfFMF3uT6ae/2uG
-         eCH9svGgky8X0y74jopfPzfpth3CemP1jj39HYZmdQcLsQ+THYilcN8keeFfImSkTrPE
-         y+rvHTeze3S8EQ3ytoILEjl6KaMnTkFHVl/UoaIs5viICG3CsHQYEPp/ARHkwCSq8J7f
-         m+CIjUPqgVaexQ0u7ZxOnE3Hr0NEUiW6wa26UzZbdO0WKvGHxKMvnBUBYKoBheDFkR4/
-         mkiQ==
+        bh=L/rMtwPDxsC52fx+U9UwvVtcGVHIIpAAwX8W2NzxXeY=;
+        b=pY5DKIjxmaUwSJ5I+m9/Kz7n4fqOq3UfZ3xTgnzTKl166C73xVLRdIod34cYP/qSBY
+         oHCn10sBMZRnLd2oP77SBVXqN5ygYav5EU2+mFf9+2eP2EmGXNNoCUZrMc0A2Y9dUx9S
+         fgbRINpGG1S9+brhNwxjubSDpg1lMNPKeLtUbehlaR1xaMJag0P/5eO3SPXOCip3GDps
+         YgoPn9Im/hqaiwbsKYH/drUKgbrEcfgxUdzMDhBQmYNzitlbenv0MNkRIedqtLigt1T+
+         DbBa3W7ZUpALPc8jHWFGKYfE7GXlIdpvdsDzzG2Jmxa5Yb2kYeQM8E6B5cFkgN4QT6M5
+         X6eQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785677742; x=1786282542;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20251104; t=1785711401; x=1786316201;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=UlAe688FL5SqYvNdYPiubZv5Vup2lbXf0/HgRirxAQY=;
-        b=PtPJ5dwiKVGfN3H9rs6q08ffK8ZZw8g5Hv/lqCzzhTzrMFH1V7sQkjncYBCnaq6l91
-         AOF6v63g2ozd6XQIq50CNqY1zr1oVrXNTccYudt+h8dnTp1dFUKTLlBEWNYGHVjGoMiG
-         JSjJA0sjZTTCuwyrVPl2l10/dpVAVgg3atcBTLzR8aqAn6cR95NF75H3EIe1lXlZB3vZ
-         qVmm6rBLIa0/e72EouCd8hW5R9xArg83QB0fPwnm3QM7fCBvHipygH+oftP0pFcZecfS
-         Hvj483+Vor52c3wFsmLXk1t/freGd9g49fwRZgpZnyJM15tm2OpJ9cjgRtV0g6p0Ny/a
-         yd7A==
-X-Forwarded-Encrypted: i=1; AHgh+RrEVky3vxFVr87Esh7exl+jqNZJG+jRtL406uL1Y7HB71E6MjKKFQUKUR4tvrffEt9gN5I/en3RhO/ElA==@vger.kernel.org
-X-Gm-Message-State: AOJu0YxaKeYw+yYCwmYfWiXy0XEx3dmOn+61m0F9Lc15ZVDdPUMNrzup
-	RpBWNeNlkSpAqlbF46ZQ49LG7/rrI78Nv0AKuI+zTXMIJSHpfxtEZM+AjEL69KwgpMg=
-X-Gm-Gg: AR+sD12U2UjI5cGV3W3mtxC/NQcirFolmQ+bQ27Xc+uVoqVRp7IGMDHrO6WDnXRcAwM
-	uyxxZlNQQ04U9OAnQ87ZfomZ32kjdHB0rs61Rcgc3kFBqtGtuPOPxW2kSqiVEBETUuaHtrCEN7m
-	0zZBN223JHsihl0blRbsDy4s54KsGhDaM3IO8PCUJ6r+B1SG5u2qIMB+roRBX7Pi3fQL7DpPg5g
-	aLAI0V+ouV60BKI0BSWKfdVOS1jh8NJHlEWORpdXrDY+lDoxW+itvbBHVLPU8ExIz63Mhvs2e1r
-	q7zZj9cAa+OyovzboWIcG60g4DDTDw0Jz+b7VwgCTLPzP1nAk6+nwOWdXMhztslw5TU07T+BI+q
-	WTMnUlhs4gG0DOYGugd4P5alaYyP/Y8Sba/fWo9HdJaHVMnbnrjT6BJb7sRMPewqByIJM8y+f6I
-	INmYcZs4huCRWxPWf5Pmckr/xJaTZ/MW/pzibeEhZnV34DWIkb0QbAGT40Bevi0Pixjg==
-X-Received: by 2002:a05:600c:3150:b0:495:3c6f:7c18 with SMTP id 5b1f17b1804b1-4980eb8c4c9mr97559055e9.3.1785677742549;
-        Sun, 02 Aug 2026 06:35:42 -0700 (PDT)
-Received: from localhost ([2a02:8071:56d1:2de0:1d24:d58d:2b65:c291])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4980819a030sm144499215e9.6.2026.08.02.06.35.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 02 Aug 2026 06:35:41 -0700 (PDT)
-Date: Sun, 2 Aug 2026 15:35:40 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: =?utf-8?B?TcOgeGlt?= Pedraza Padilla <maximpedraza@gmail.com>
-Cc: Helge Deller <deller@gmx.de>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	kernel@pengutronix.de
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-Message-ID: <am9DGQFk6JfR6bXl@monoceros>
-References: <20260731215043.30392-1-maximpedraza@gmail.com>
- <am2mvECnCcO9IxuI@monoceros>
- <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
- <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
+        bh=L/rMtwPDxsC52fx+U9UwvVtcGVHIIpAAwX8W2NzxXeY=;
+        b=Y9vZoRKof2aViI0Rtsu0zU9kwQKWeQItfnFzkfZgBuU5UZm0qM95hvWauuLCRrWYfz
+         1P1dUx5b3Zlllk/6cCsCbKdohiuhaoE+Qh25ycYQtd7dMIN29KcKXxvXcu+mU205bqSB
+         /gkZeHAoY6GZQs2ZWJiva/vQGH0UfwQMtEijoBT/4JgNFxNDGF1uFh5oNdrmIqpKvf7V
+         p53UZjkQJIkjnhUNKKbqfGNPGUBZNSxOHEcQv910naHaXolo1VLGiOKQpcP2DMWsdSf6
+         GZA9yo4xNoP1zxjzLj/QQAhHai2ap3vWglWaus91ZtyoUKyVBHJHLT5D+IGY3l/VoO8L
+         BPBw==
+X-Forwarded-Encrypted: i=1; AHgh+Rppq0G9u3Ht6Uu60TvcGjZghKurEpBtf8CXROGQrkQ7fHxWO7Q1YUQO9/r5gfT+6S08jbB24KksAC2dJw==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxWlDayIyYZQ4GLmVhPtNvCxylvLMoX+FlIzDSVKIZCfOKsTAbA
+	K6pdNHHRzPudTRygvGF+5lV05b4fmYf7vZAHeMJFQqmQ9SySnbyxAo74WgVp8bj1s9tIaakuPWn
+	q2bSi2d2PVjkT1PQUOHHqto8crdW4i4w=
+X-Gm-Gg: AR+sD11nZUe053Zi9YhtdvYFdfEVJG7h1HsHBjcHDNkX/5FD2S2JaqpxVOZZRrTypNq
+	Q+UvjHFGBOgjLU/SFRiqI55N0ZRfsl6kJ2T4yEiuH98/tSAxd62U8TurgKwt03SAAlZ2d3WdMUT
+	TNR64PsvgsAQZb3OopvIsqdpOhhxcizzXdCu1KwGu4pRrX7cfKcN6IcxLyWsp9ust6KN+1MPQZe
+	wyMnWeit+YAn/OLtnTeLYG1mdxIaYcO8w/s1GVpjrbFX3Cn6YX6LJKJP/5xLCRnT3ndlg6TDxd0
+	7XctoIFeF93B86fj9eE+TUF1jLmTH2xrW1C1GP/ZSoIl5FpceVNpaWbGdJ9zOZAqsg==
+X-Received: by 2002:a05:6402:5046:b0:699:fbe4:16d4 with SMTP id
+ 4fb4d7f45d1cf-6a0a7cb31e1mr5338151a12.18.1785711400839; Sun, 02 Aug 2026
+ 15:56:40 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="6rrxlhjbsv2gpeab"
-Content-Disposition: inline
-In-Reply-To: <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
-
-
---6rrxlhjbsv2gpeab
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+References: <20260731215043.30392-1-maximpedraza@gmail.com>
+ <am2mvECnCcO9IxuI@monoceros> <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
+ <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com> <am9DGQFk6JfR6bXl@monoceros>
+In-Reply-To: <am9DGQFk6JfR6bXl@monoceros>
+From: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>
+Date: Mon, 3 Aug 2026 00:56:29 +0200
+X-Gm-Features: AUfX_mxll1BnAASKTkWyMod9VELF2y9V2Qxa3BymFTVuaD1zfm5wy-U_j9CAbIY
+Message-ID: <CAEUXW=Gut0oN6VN1XouegJsQzwNYGqhAjVotGJbQdXk5bVuZwg@mail.gmail.com>
 Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-MIME-Version: 1.0
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: Helge Deller <deller@gmx.de>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hello M=C3=A0xim,
+Hi Uwe,
 
-On Sun, Aug 02, 2026 at 12:01:58AM +0200, M=C3=A0xim Pedraza Padilla wrote:
-> Uwe Kleine-K=C3=B6nig wrote:
-> > My 0.02=E2=82=AC: Usually you want to use the display using drm and not=
- fb once
-> > the machine is fully booted. If you're using fb during boot to display a
-> > logo, it's hardly possible to switch to drm later in the boot process
-> > without flicker.
-> >
-> > So my recommendation for your usecase is to not use the kernel boot logo
-> > stuff, but something like https://github.com/pengutronix/platsch.
->=20
-> Thanks for the pointer, I did not know platsch and it looks like a good
-> fit for the problem it solves. It does not solve mine, though, and I
-> think the reason is worth spelling out, because it is not about how the
-> image gets drawn but about when.
->=20
-> These are industrial units, and the requirement is time to first pixel
-> after power is applied. If the panel stays dark for more than a moment
-> the unit reads as dead, and that is a support call. Anything running in
-> userspace is by construction later than the kernel: it needs the kernel
-> booted, the rootfs mounted and init far enough along to exec it. I can
-> measure the exact difference on our hardware if that is useful for the
-> discussion.
 
-No need to wait for init, the idea is to use init=3D/usr/sbin/platsch so
-it starts before init (and once the display is setup execve()s
-/sbin/init). Also you can put it in an initramfs which gets rid of the
-dependency on "rootfs mounted". And if your kernel is modular apart from
-what is needed for the display the time difference between kernel boot
-image and platsch might be negligible compared to the simplification of
-the software architecture.
+El dom, 2 ago 2026 a las 15:35, Uwe Kleine-K=C3=B6nig
+(<u.kleine-koenig@baylibre.com>) escribi=C3=B3:
+> No need to wait for init, the idea is to use init=3D/usr/sbin/platsch so
+> it starts before init (and once the display is setup execve()s
+> /sbin/init).
 
-Having said that, I'm against putting boot splash info in the device
-tree as the pointed out alternative is IMHO good enough. But my opinion
-probably isn't the one that eventually counts.
+I think I caused a misunderstanding here: when I wrote "init" I meant
+PID 1 itself, not the init system getting far enough to start a service.
+Running platsch as PID 1 does not change the part that hurts, because
+PID 1 is exactly what I am waiting for.
 
-Best regards
-Uwe
+Numbers from a shipping board, our 4.19 product kernel on an AM335x:
 
---6rrxlhjbsv2gpeab
-Content-Type: application/pgp-signature; name="signature.asc"
+  [    1.065931] tilcdc 4830e000.lcdc: fb0: DRM emulated frame buffer devic=
+e
+  [    3.522118] Run /sbin/init as init process
 
------BEGIN PGP SIGNATURE-----
+The display is up and can be drawn on at 1.07 s. PID 1 does not exist
+until 3.52 s. Whatever runs as PID 1, platsch included, is roughly 2.4 s
+late on this hardware. That gap is the entire problem: the panel is
+alive and black while the customer is looking at it.
 
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmpvR6YACgkQj4D7WH0S
-/k55+wf+LNETFlaOPhwExqKupPUo/OH39ybKdaQJ9uAkqBo70lHb+Xm37TY6D1sa
-P6+sFxOwFR6mGxWni4QEila6hAYHRNzqqp1o4Rl8mpnPTbG6vkJrRaT4vFCnOie+
-6Y+yocUerh6JqqjAim+X+SGrIjaJ/54KtfaQ6dGBUxGFHr0q/pThdXedHep4ZcB6
-viwOGBykkKZpx1gNKR09GiA8PlxG00jkAvA9ay3cvlzMg7zwU0nRjjIDp1d+lo7K
-ef908NB2SG1R1TNMBEYy9T103E2VidGZ7bA9NsIqYLiCEGo3z1smJcAVdaXl1iTy
-hyLG+z6x2P06fk2+cllcwxaOEU/dXQ==
-=CFkM
------END PGP SIGNATURE-----
+> Also you can put it in an initramfs which gets rid of the dependency on
+> "rootfs mounted".
 
---6rrxlhjbsv2gpeab--
+Agreed, and that would remove part of those 2.4 s. But not the shape of
+it: PID 1 runs after the built-in initcalls have finished, while the
+logo is drawn as soon as the display driver's own probe is done. Any
+userspace solution is structurally behind that point, and an initramfs
+moves it closer without crossing it.
+
+> And if your kernel is modular apart from what is needed for the display
+> the time difference between kernel boot image and platsch might be
+> negligible compared to the simplification of the software architecture.
+
+That is worth evaluating, and it may well be the right choice for a new
+design. It does not change the ordering, though: the display driver has
+to stay built in either way, so its probe finishes before PID 1 exists.
+Making the rest modular moves PID 1 closer to that moment without ever
+reaching it. The kernel logo draws at the earliest point where there is
+something to draw on, and nothing in userspace can be earlier than that.
+
+To be clear about what I am not claiming: platsch is the better answer
+for anything that can tolerate the delay, it is more flexible, and I
+will very likely use it for the parts of our UI that come after the
+splash. The kernel logo is not competing with it, it covers the window
+platsch cannot reach.
+
+> Having said that, I'm against putting boot splash info in the device
+> tree as the pointed out alternative is IMHO good enough. But my opinion
+> probably isn't the one that eventually counts.
+
+Understood, and thanks for saying it plainly, it is useful to know where
+you stand. For what it is worth, the objection I expected was exactly
+that one and I would rather have it on the record than guess at it. If
+the conclusion is that a bitmap does not belong in the device tree, the
+fallback I would still like to explore is keeping the placement
+properties and the reserved memory path while dropping the in-tree
+image, since that removes the "bitmap in DT" part while keeping the
+early drawing. But that is for Helge and the DT maintainers to weigh.
+
+Thanks for taking the time,
+Max

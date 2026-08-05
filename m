@@ -1,550 +1,138 @@
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
+Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59E53428830
-	for <linux-fbdev@vger.kernel.org>; Tue,  4 Aug 2026 20:56:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.45
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785876999; cv=none; b=gbEPqEgcq6XwNwuUfc2HX+U5TP/1N07Av/R9HOCXtBVMaw6XAwajQUxFxJEMC2awsv3MXWJ8PpsXQulKDncz3TAux1q1FgIXih9JgrHzt3QGHmAlltacsbh1bhFPyXNuvtTC5BKA5iI9HHH4d/Oa/Pz7riT3blKtiu5E0iXSYIg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785876999; c=relaxed/simple;
-	bh=Sc3RdNoHAxHHoHapSrdLmmJERSIsY5kD1xNxOX6do8c=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=khHbO87/gjuwjKEyShpf+kkYzJPtk7hUQwP7xAjFJqkHVc8WN+s4U7bxmRhPoWCYjcWQXwKMYfVZj3cP+IvV7DimhBFEelcLBj/yTm45J8ffnCihPDq2N5tPHdq4YNZtbgrZKfen99IA41t7xdAREMSSrVdJXxEbMw6+rrMsFXs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WwnEmM8L; arc=none smtp.client-ip=209.85.128.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50756331A4C
+	for <linux-fbdev@vger.kernel.org>; Tue,  4 Aug 2026 22:15:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.52
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1785881732; cv=pass; b=PBGghfccQGvMtMKK4rHN9KwkbJz3oGMRU3Y9NAbunClg7T0GHUr5+v/ljb2166GeHqX78bnjIxXVt/jesbP91hK8R3cB/6M4+zjKyJH87uiSERfBcZrhKOiHeNjFBY5x8hpJSP9CLNw1qUha7d9ehPU626JsgRGJ4nRcDW+ypMU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1785881732; c=relaxed/simple;
+	bh=ef3eP2ZfvS4QgihgygcbC4UqPqMKPMjYnWKL4nfyJxQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=rqdCrbjy4UiKS2bPFdwNwduEBQwHNzEEzCxYBYLA+5hIVqbUG/wqo4RF8VkaCDuU8y17ALxw3u7G16uCSQLJDfHbTtJGdNJPb7zYramc2eaTPaP0HHNAA5JHiZP30bz7ExZrf4DU2kCX6P6DX/b4rYvYUR/d8Jz3gIVkM82rT/k=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=U/PJL+1o; arc=pass smtp.client-ip=209.85.208.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WwnEmM8L"
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-49800c6a846so2013665e9.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 04 Aug 2026 13:56:37 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U/PJL+1o"
+Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-6a0794669a6so142509a12.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 04 Aug 2026 15:15:30 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1785881728; cv=none;
+        d=google.com; s=arc-20260327;
+        b=f1xZz4zCVV5PlqyZPdHtjHHtqTlEf2Uur2mk3MVdlcWgOeE2WT2dHkla3gSyOnMNXw
+         sKi28D7xYOo1SHkWQJCcyFTa3xKlIYcZ+gByXhlyl9vOzjMLJKdcoMhWj6bdCjnZdmJC
+         /HRObDCWMOWS+Ry6oWfuZafkxL/Dneyv7zFWaWqnIaO4cr2stg6juiM0z4B+AVmGn0bg
+         +5sSq9V1+DVQ9VFYfzJLK+wHCq5bhPHaeca4ucdQ5vFgh1gX2rXwz0B7TQaiSkHyhmiB
+         +HR0RmrcFBi43d+CAzqXkfJKwec25gveKAUGTMwEDA5SYZII1la9lU7YSRx6SqMfmiVp
+         K5Hg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=ef3eP2ZfvS4QgihgygcbC4UqPqMKPMjYnWKL4nfyJxQ=;
+        fh=S/aGKMX8PjglOwcU3hiwbtvKASiQ8/6yhUJl4/abKhU=;
+        b=XmifnSUsH0YZ5OekrCwKBCeD1nt8blj7V5rsCi8cMpKf/bNvyB8xpFSxswB8F3+zZy
+         Dca69vvNQ6k7oXVC13eGdq0QkCU6K0NnOFTceX4Nq2XKw16Lt64r6WXjOaaCV0UCHdRo
+         QR7OV6gausNytKchNi5W2jbaR0Bc7q7MIhodEDR/cskOHQbFbU1unj6a/ZVz1iCFYj/5
+         s4hAb3Z1314v7EXwhTTt8wrB9xtPJK/S6uJneBUgowaZwO7uAD1lr0C2CXBG2bRhkRw0
+         BLVTQkaF6GaAD/TUZ+hWn33XxQCBN0NgMcgLudYpkM2vpYm06OpSz4gd4XByLC138TtC
+         fEJA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785876992; x=1786481792; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=0rdtrk8XXOPPUZBCUeUX/HYP4M8McVi1CQOTrbTXLV8=;
-        b=WwnEmM8LJQPLjY1BDkLpyYPIs/YcLAVU1NDYe5W7nrwPBVoc4OiFF255kC+U/gx+bo
-         78KAMOyslLFWh6DOu07N5J64/bQBRrDQtMrPsyBEX6/Nbg6K+0Lj/OZdAGbKsXjc6rcw
-         cxXaEgS1xT9ncbjrVssBx3GLp9tEHiZCJpREiCjxBx42bpMQrwIE2zmqJg4y0GxYFRh7
-         8LmPR8WU+86zVSJSdblIZXMUKpdOPdzgYaqMMS1Lnvou52vmjWEbYloNvMvNZo5MsZGV
-         iOudiMAQgbVHbAwzMV2QNDcDAbgQzwdJ7a27MI1WvmQEZcm2X+QP6vUWOPs0AzGAoi+d
-         Uv6A==
+        d=gmail.com; s=20251104; t=1785881728; x=1786486528; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=ef3eP2ZfvS4QgihgygcbC4UqPqMKPMjYnWKL4nfyJxQ=;
+        b=U/PJL+1oE0dcUkU8sgWS74BBDvtTojCsLYFO4TYVNL+SO96zN5q2w0E07Iokg70kn0
+         jo70X3nttFJudn1F8kOj/oiaAlWaf3tXtvxGeQx8KcmFr8vEu5tMwubfyEbMs8HKmXjL
+         4aHdN+aAlE8eEb6BDNUIjtVbUCY/NxaK9gJJHRFLh5qOs8gnBjWThy+5yjNptkrPydwP
+         1/Cfvt27gyRDIIZ1ZPbH3mL15Cg76jzb7Qd1t32nUPjS2kvtTpNAyFM2lBGK8DCZLmMI
+         wQYpFP3l/0Ue1eawz/tMV0vHpt8CivT4CBD3bn281qi3mueSvrPwxTyaG4vw6Mmp7tGY
+         DJBA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785876992; x=1786481792;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=0rdtrk8XXOPPUZBCUeUX/HYP4M8McVi1CQOTrbTXLV8=;
-        b=JWTUIEdhVsGcL7l2WcboSEu+kCbaK36/irepLiVG1h+k1zf6oKZbSiT/JO7E78u2z9
-         zuaHtte/1DRRLHzcLNhWtIC6XcRP2GhfGJeijTyeJxX6H57DDYceejP6/FzGbXBjv025
-         QMnVlnAGrwGy8H7V75KW1mfoM4ObQDn6duNgPBwBZZEJ/8mudWTSrJ/JK8Mad6WL28Rf
-         4cGHcFZh2a+XMXYxtNrqW7AtoOg0JjGb4Mf7gUTcYeK/TjsdOkxZ0te32y4LeCRZwrwx
-         dKzY68wjlKgBUCJhHQskDhTgVWCQpCdIo0YWADQCc7uW1j91UbjQhFFT+HZ6+NssBoi/
-         u80w==
-X-Forwarded-Encrypted: i=1; AHgh+RofSL3G+oflmp9j6P62JCeK14HU8qw1//S4R9PHgVYuvMayOtw1rnAUnIOu/KJ6bjpcL3IMGWbFEr5/Kw==@vger.kernel.org
-X-Gm-Message-State: AOJu0YyFFO7zaEnOGQsR/7GBQb1KgGDbIrOIaDOM9tq+oiHxAQqs1Xdv
-	giJwAoli1IZxw/pydBhcWGLXQvAZv9Zi89s1hFWcGKSyszkjj9WUMpAL
-X-Gm-Gg: AR+sD12i/QTfhEEA9kIgq/tTojn2R+IQ3qUNKOiVoKcnonFlMNIuI0pY+d+kdCT2Y0Y
-	X6He3MlDySXp0gUY2NJWfdQ6mhjkjBLdf/DFoZMMUJ3cVy07WK4Uan/gVyQdwPWoLsG0Tn7ZcjB
-	yUIrzes0xmDD2qUo1MF3BjMiRzmSEUPXTO1VyzgU2kvNyb7FygYPo3ApNFC0il3/j6ndJLadWqD
-	FxuB3rtsaG0jG+1MHuAL85FRuT7NwQIG8kEcC/dXOeqZjEWskcPY3jp05GkFtm9zQn+/yQ2NqU5
-	uN/j4abL9s5iDbpCDHQMMDGYc9jxxUo8aa+WKswAhLGoopDDWUv5CNyn4M5Fnl3XTQ/F6K7A2sP
-	rX85dNVokzraM43bJx8KNrIDRM8JRGZJf2+BoA+wX0sdVbJBMnu/AmzGadTozbEQdplUF36mJxA
-	SLcRbN+a9n3CWNI2UnBw1GFpzRq2hEH6aoD+S3cc/a27bks31ayiRBHhcJVtYL0sObt1hBGft+T
-	tOZz0OJC4VPC9I=
-X-Received: by 2002:a05:600c:8582:b0:492:3e69:a86f with SMTP id 5b1f17b1804b1-4994e79b93fmr11058805e9.1.1785876991477;
-        Tue, 04 Aug 2026 13:56:31 -0700 (PDT)
-Received: from ingenieria31.oficinasStQ.local ([79.116.176.33])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4994e4bf820sm12070645e9.0.2026.08.04.13.56.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Aug 2026 13:56:31 -0700 (PDT)
-From: Max Pedraza <maximpedraza@gmail.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Maxime Ripard <mripard@kernel.org>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Max Pedraza <maximpedraza@gmail.com>
-Subject: [PATCH v2 6/6] video: logo: add ppmtodtlogo host tool
-Date: Wed,  5 Aug 2026 00:56:17 +0200
-Message-Id: <20260804225617.264861-7-maximpedraza@gmail.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20260804225617.264861-1-maximpedraza@gmail.com>
-References: <20260804225617.264861-1-maximpedraza@gmail.com>
+        d=1e100.net; s=20251104; t=1785881728; x=1786486528;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ef3eP2ZfvS4QgihgygcbC4UqPqMKPMjYnWKL4nfyJxQ=;
+        b=k+DXZhzYOdalBycmtehd72vI1zUhikqBh3QRExzHYfEH/01NSorDV11a8ZIphbBvRT
+         6uAuyIWwTiYQ/3P0iUloFE7QMyJniNz2e+Xul/PDMOQWEcMcmkB6WE1fcXKhXm+4R8zh
+         Kcelf+sXT3F7AQMhWb5Otq2n5CmkDim0a0XgaJGW/oz+07+LANoXEhLxyrG07o6QX8wz
+         Rc5IJPAO9Mb+rFPi4xFJLbEhVcUTASM08JbEk8Kkh/3rhq+1bx/mVEC4505XTnB4AKNc
+         9pDIEmqgmM2oR/5e0BO5jfwTR8wGMueEzWoxBwz+l9oPwIeK8CTFC5VAfCgyIN+EAqhj
+         8q5g==
+X-Forwarded-Encrypted: i=1; AHgh+Rq7gT1DfjFJFsSQYZ/cifBthENRcdA9SKBf3PMi2+9NsKjbH6lPazB0Qw2NSTvPoYkZH0DNa583nTuYuw==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yyfemduuvw69mGuMckVKM0oDGsHLKY6RUFVfowT/ILFirT9mcDU
+	oOl/wh9FDN8Thb89ikFYK+ZShXQ4HFTYOqcEpvz0YiTWzcPbJK8p0J6tcG2p8NNxxHCxj2BZRHn
+	KZjQ9byR6BUbabFRLooua4YwLBMMcgjo=
+X-Gm-Gg: AR+sD13vHyZaOvoT3BCOxU7tjptMv1I72qV2FCBGnyGZIcN89teDNCJb1aveGhuEE0H
+	VBM3d+FMWqPdMG+xe6IekNUEXi6bTLSbuKwOrW6d+4JEfubmzWZokFg49FwCYy1lwtJqOl7UhD+
+	pzigEOBj7G9NX3Nj8u+TyY0CF77kqPLdlzFCMdnqNrRjx0saOJpFYT0AedFYNSKhChbyp7wMwKs
+	eQObVEs9a6//Nn6G8jvZewSRZdXtbYtHJokOrwLyDXFMi6GTRTjrWKXPg7DKaLWgh9oOtH22evy
+	5aykPKntI/OGYDdNtXUHeoGmaa5/Zn/NE1GC+7uJkW4M
+X-Received: by 2002:a05:6402:448a:b0:69f:b52e:7484 with SMTP id
+ 4fb4d7f45d1cf-6a14f254d4bmr1202877a12.19.1785881728391; Tue, 04 Aug 2026
+ 15:15:28 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260804225617.264861-1-maximpedraza@gmail.com>
+ <20260804225617.264861-2-maximpedraza@gmail.com> <204c2805-346d-4935-8e2e-1538b79ea995@gmx.de>
+In-Reply-To: <204c2805-346d-4935-8e2e-1538b79ea995@gmx.de>
+From: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>
+Date: Wed, 5 Aug 2026 02:15:15 +0200
+X-Gm-Features: AUfX_mxQbUNLor7Pu65Fya-T6kupsatV09gVQoaRffyeGIYc9D-fDFpjiNF7eXo
+Message-ID: <CAEUXW=E+fcewEHoOan49f9TS4EHq8u3j1+ac0rSYXv+7TiP8ow@mail.gmail.com>
+Subject: Re: [PATCH v2 1/6] dt-bindings: display: add a device tree supplied
+ boot logo
+To: Helge Deller <deller@gmx.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Maxime Ripard <mripard@kernel.org>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <ukleinek@kernel.org>, 
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The byte arrays a "linux,boot-logo-clut224" node carries are not meant to
-be written by hand. Add a host tool that converts a PPM image into the
-node, along the lines of the existing pnmtologo: plain C, no dependencies,
-and no quantization of its own -- the image must already use at most 224
-distinct colours, and the tool points at ImageMagick when it does not.
+El mar, 4 ago 2026 a las 23:18, Helge Deller (<deller@gmx.de>) escribi=C3=
+=B3:
+> Instead of adding logo-centered, couldn't use a value of -1 into
+> logo-position.x to mark the logo centered in X-Axis (and .y=3D-1 for
+> y-axis)?
+>
+> I don't know if this is better or not though....
 
-Three output flavours:
+It is better, and for one more reason than you give.
 
-  ppmtodtlogo logo.ppm                  a complete overlay
-  ppmtodtlogo -t dtsi logo.ppm          a bare node, for inclusion
-  ppmtodtlogo -t bin -o logo.bin ...    the blob for a reserved memory
-                                        region, header included
+The binding as posted says logo-centered centres the logo "overriding
+logo-position". That is two properties where one silently wins over the
+other, which the schema cannot express and which leaves a device tree
+setting both with no defined meaning. Folding it into logo-position
+removes the contradiction rather than documenting it.
 
-The devicetree outputs also carry the optional placement properties,
-commented out unless requested on the command line, so the generated file
-documents what can be tuned without regenerating the image.
+The per-axis part is not just a tidier spelling either. A boolean can
+only centre both axes or neither, so "centred horizontally, at the top"
+currently has to be written as logo-centered plus a logo-offset computed
+from the logo height. That is impossible for the reserved memory form,
+where the height lives in the blob and the device tree does not know it.
+With -1 per axis it is just <(-1) 0>.
 
-The tool is built when CONFIG_LOGO_DT_CLUT224 is enabled but is not used
-by the kernel build itself.
+So v3 drops logo-centered and logo-position becomes an int32-array with
+a minimum of -1, where -1 on an axis means centre on that axis and any
+other negative value is rejected by the schema.
 
-Signed-off-by: Max Pedraza <maximpedraza@gmail.com>
----
- drivers/video/logo/Makefile      |   6 +-
- drivers/video/logo/ppmtodtlogo.c | 408 +++++++++++++++++++++++++++++++
- 2 files changed, 413 insertions(+), 1 deletion(-)
- create mode 100644 drivers/video/logo/ppmtodtlogo.c
+logo-offset stays, for the same reason the per-axis case needs it: our
+own panel is 800x480 with only the bottom 320 rows visible, so the logo
+is centred and then displaced, and that displacement cannot be folded
+into an absolute position when the logo size comes from the blob.
 
-diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
-index 937b37d3b..49954272e 100644
---- a/drivers/video/logo/Makefile
-+++ b/drivers/video/logo/Makefile
-@@ -10,7 +10,11 @@ obj-$(CONFIG_SPU_BASE)			+= logo_spe_clut224.o
- 
- # How to generate logo's
- 
--hostprogs := pnmtologo
-+hostprogs := pnmtologo ppmtodtlogo
-+
-+# Not used by the build itself: converts a user's image into the devicetree
-+# node or memory blob the "linux,boot-logo-clut224" binding consumes.
-+always-$(CONFIG_LOGO_DT_CLUT224) += ppmtodtlogo
- 
- # Create commands like "pnmtologo -t mono -n logo_linux_mono -o ..."
- quiet_cmd_logo = LOGO    $@
-diff --git a/drivers/video/logo/ppmtodtlogo.c b/drivers/video/logo/ppmtodtlogo.c
-new file mode 100644
-index 000000000..a52c61cec
---- /dev/null
-+++ b/drivers/video/logo/ppmtodtlogo.c
-@@ -0,0 +1,408 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Convert a PPM image into a devicetree boot logo node, or into the binary
-+ * blob the "linux,boot-logo-clut224" binding reads from a reserved memory
-+ * region.
-+ *
-+ * Like pnmtologo, this tool does not quantize: the image must already use
-+ * at most 224 distinct colours. Reduce it first if needed, for instance:
-+ *
-+ *	magick logo.png -colors 224 logo.ppm
-+ *
-+ * The node is emitted under /chosen, where the binding expects it: a logo is
-+ * configuration handed over by firmware rather than a description of the
-+ * hardware.
-+ *
-+ * The devicetree output stores plain palette indices; the 32 entry offset
-+ * the frame buffer layer reserves for the console is applied by the kernel.
-+ */
-+
-+#include <ctype.h>
-+#include <errno.h>
-+#include <stdarg.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <unistd.h>
-+
-+#define MAX_CLUT_COLORS	224
-+#define MAX_PIXELS	(32U * 1024 * 1024)
-+#define BLOB_MAGIC	0x4f474f4cU	/* "LOGO", little endian */
-+#define BYTES_PER_LINE	12
-+
-+static const char *programname;
-+static const char *filename;
-+static const char *outputname;
-+static FILE *out;
-+
-+enum output_type {
-+	OUTPUT_DTS,	/* complete overlay */
-+	OUTPUT_DTSI,	/* bare node, for inclusion */
-+	OUTPUT_BIN,	/* blob for a reserved memory region */
-+};
-+
-+static enum output_type output_type = OUTPUT_DTS;
-+
-+/* Placement options, emitted into the node */
-+static int opt_centered;
-+static char *opt_position;
-+static char *opt_offset;
-+static const char *opt_rotation;
-+
-+struct color {
-+	unsigned char red;
-+	unsigned char green;
-+	unsigned char blue;
-+};
-+
-+static unsigned int logo_width;
-+static unsigned int logo_height;
-+static unsigned char *logo_data;
-+static struct color logo_clut[MAX_CLUT_COLORS];
-+static unsigned int logo_clutsize;
-+
-+static void die(const char *fmt, ...)
-+{
-+	va_list ap;
-+
-+	va_start(ap, fmt);
-+	vfprintf(stderr, fmt, ap);
-+	va_end(ap);
-+	exit(1);
-+}
-+
-+static void usage(void)
-+{
-+	die("Usage: %s [options] <filename>\n"
-+	    "\n"
-+	    "Convert a PPM image into a \"linux,boot-logo-clut224\" node.\n"
-+	    "The image must use at most %d distinct colours.\n"
-+	    "\n"
-+	    "    -o <output>     write to file instead of stdout\n"
-+	    "    -t <type>       dts (default), dtsi or bin\n"
-+	    "    -c              centre the logo (logo-centered)\n"
-+	    "    -p <x>,<y>      logo-position\n"
-+	    "    -f <dx>,<dy>    logo-offset\n"
-+	    "    -r <rotation>   logo-rotation: cw, ccw, ud or none\n"
-+	    "    -h              this help\n",
-+	    programname, MAX_CLUT_COLORS);
-+}
-+
-+static unsigned int get_number(FILE *fp)
-+{
-+	int c;
-+	unsigned int val;
-+
-+	/* Skip leading whitespace */
-+	do {
-+		c = fgetc(fp);
-+		if (c == EOF)
-+			die("%s: end of file\n", filename);
-+		if (c == '#') {
-+			/* Ignore comments 'till end of line */
-+			do {
-+				c = fgetc(fp);
-+				if (c == EOF)
-+					die("%s: end of file\n", filename);
-+			} while (c != '\n');
-+		}
-+	} while (isspace(c));
-+
-+	if (!isdigit(c))
-+		die("%s: expected a number\n", filename);
-+
-+	/* Parse decimal number */
-+	val = 0;
-+	while (isdigit(c)) {
-+		val = 10 * val + c - '0';
-+		c = fgetc(fp);
-+		if (c == EOF)
-+			break;
-+	}
-+	return val;
-+}
-+
-+static unsigned char get_byte(FILE *fp)
-+{
-+	int c = fgetc(fp);
-+
-+	if (c == EOF)
-+		die("%s: end of file\n", filename);
-+	return c;
-+}
-+
-+static unsigned int find_clut_entry(struct color color)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < logo_clutsize; i++)
-+		if (logo_clut[i].red == color.red &&
-+		    logo_clut[i].green == color.green &&
-+		    logo_clut[i].blue == color.blue)
-+			return i;
-+
-+	if (logo_clutsize == MAX_CLUT_COLORS)
-+		die("%s: more than %d colors, reduce the image first, e.g.\n"
-+		    "    magick %s -colors %d out.ppm\n",
-+		    filename, MAX_CLUT_COLORS, filename, MAX_CLUT_COLORS);
-+
-+	logo_clut[logo_clutsize] = color;
-+	return logo_clutsize++;
-+}
-+
-+static void read_image(void)
-+{
-+	unsigned int i, npixels, maxval;
-+	int magic, raw;
-+	FILE *fp;
-+
-+	fp = fopen(filename, "rb");
-+	if (!fp)
-+		die("Cannot open file %s: %s\n", filename, strerror(errno));
-+
-+	if (fgetc(fp) != 'P')
-+		die("%s is not a PPM file\n", filename);
-+
-+	magic = fgetc(fp);
-+	switch (magic) {
-+	case '3':
-+		raw = 0;
-+		break;
-+	case '6':
-+		raw = 1;
-+		break;
-+	default:
-+		die("%s is not a PPM file (only P3 and P6 are supported)\n",
-+		    filename);
-+	}
-+
-+	logo_width = get_number(fp);
-+	logo_height = get_number(fp);
-+	maxval = get_number(fp);
-+	if (maxval != 255)
-+		die("%s: maximum color value must be 255\n", filename);
-+
-+	if (!logo_width || !logo_height)
-+		die("%s: zero sized image\n", filename);
-+	if ((unsigned long long)logo_width * logo_height > MAX_PIXELS)
-+		die("%s: image too large\n", filename);
-+
-+	npixels = logo_width * logo_height;
-+	logo_data = malloc(npixels);
-+	if (!logo_data)
-+		die("%s\n", strerror(errno));
-+
-+	for (i = 0; i < npixels; i++) {
-+		struct color color;
-+
-+		if (raw) {
-+			color.red = get_byte(fp);
-+			color.green = get_byte(fp);
-+			color.blue = get_byte(fp);
-+		} else {
-+			color.red = get_number(fp);
-+			color.green = get_number(fp);
-+			color.blue = get_number(fp);
-+		}
-+		logo_data[i] = find_clut_entry(color);
-+	}
-+
-+	fclose(fp);
-+}
-+
-+static void write_bytes(const unsigned char *data, unsigned int len,
-+			const char *indent)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < len; i++) {
-+		if (i % BYTES_PER_LINE == 0)
-+			fprintf(out, "%s%s", i ? "\n" : "", indent);
-+		else
-+			fputc(' ', out);
-+		fprintf(out, "0x%02x", data[i]);
-+	}
-+}
-+
-+static void write_placement(const char *indent)
-+{
-+	fprintf(out, "%s/* Placement. logo-centered and logo-position are exclusive;\n",
-+		indent);
-+	fprintf(out, "%s * logo-offset is added after either of the two. */\n",
-+		indent);
-+
-+	fprintf(out, "%s%slogo-centered;\n", indent, opt_centered ? "" : "// ");
-+	fprintf(out, "%s%slogo-position = <%s>;\n", indent,
-+		opt_position ? "" : "// ", opt_position ? opt_position : "0 0");
-+	fprintf(out, "%s%slogo-offset = <%s>;\n", indent,
-+		opt_offset ? "" : "// ", opt_offset ? opt_offset : "0 0");
-+	fprintf(out, "%s%slogo-rotation = \"%s\";\t/* cw, ccw, ud, none */\n",
-+		indent, opt_rotation ? "" : "// ",
-+		opt_rotation ? opt_rotation : "ccw");
-+}
-+
-+static void write_node(const char *indent)
-+{
-+	char subindent[16];
-+
-+	snprintf(subindent, sizeof(subindent), "%s\t\t", indent);
-+
-+	fprintf(out, "%scompatible = \"linux,boot-logo-clut224\";\n", indent);
-+	fprintf(out, "\n");
-+	write_placement(indent);
-+	fprintf(out, "\n");
-+	fprintf(out, "%swidth = <%u>;\n", indent, logo_width);
-+	fprintf(out, "%sheight = <%u>;\n", indent, logo_height);
-+	fprintf(out, "\n");
-+	fprintf(out, "%sclut = /bits/ 8 <", indent);
-+	write_bytes((const unsigned char *)logo_clut, logo_clutsize * 3,
-+		    subindent);
-+	fprintf(out, ">;\n");
-+	fprintf(out, "\n");
-+	fprintf(out, "%sdata = /bits/ 8 <", indent);
-+	write_bytes(logo_data, logo_width * logo_height, subindent);
-+	fprintf(out, ">;\n");
-+}
-+
-+static void write_header_comment(void)
-+{
-+	fprintf(out, "/*\n");
-+	fprintf(out, " * Boot logo generated by ppmtodtlogo from %s\n",
-+		filename);
-+	fprintf(out, " * %ux%u pixels, %u colours.\n", logo_width, logo_height,
-+		logo_clutsize);
-+	fprintf(out, " */\n");
-+}
-+
-+static void write_dts(void)
-+{
-+	fprintf(out, "/dts-v1/;\n/plugin/;\n\n");
-+	write_header_comment();
-+	fprintf(out, "\n");
-+	fprintf(out, "/ {\n");
-+	fprintf(out, "\tfragment@101 {\n");
-+	fprintf(out, "\t\ttarget-path = \"/chosen\";\n");
-+	fprintf(out, "\n");
-+	fprintf(out, "\t\t__overlay__ {\n");
-+	fprintf(out, "\t\t\tlogo {\n");
-+	write_node("\t\t\t\t");
-+	fprintf(out, "\t\t\t};\n");
-+	fprintf(out, "\t\t};\n");
-+	fprintf(out, "\t};\n");
-+	fprintf(out, "};\n");
-+}
-+
-+static void write_dtsi(void)
-+{
-+	write_header_comment();
-+	fprintf(out, "\n");
-+	fprintf(out, "chosen {\n");
-+	fprintf(out, "\tlogo {\n");
-+	write_node("\t\t");
-+	fprintf(out, "\t};\n");
-+	fprintf(out, "};\n");
-+}
-+
-+static void put_le32(unsigned int val)
-+{
-+	fputc(val & 0xff, out);
-+	fputc((val >> 8) & 0xff, out);
-+	fputc((val >> 16) & 0xff, out);
-+	fputc((val >> 24) & 0xff, out);
-+}
-+
-+static void write_bin(void)
-+{
-+	put_le32(BLOB_MAGIC);
-+	put_le32(logo_width);
-+	put_le32(logo_height);
-+	put_le32(logo_clutsize);
-+	fwrite(logo_clut, 3, logo_clutsize, out);
-+	fwrite(logo_data, 1, logo_width * logo_height, out);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	int opt;
-+	char *p;
-+
-+	programname = argv[0];
-+
-+	while ((opt = getopt(argc, argv, "o:t:cp:f:r:h")) != -1) {
-+		switch (opt) {
-+		case 'o':
-+			outputname = optarg;
-+			break;
-+		case 't':
-+			if (!strcmp(optarg, "dts"))
-+				output_type = OUTPUT_DTS;
-+			else if (!strcmp(optarg, "dtsi"))
-+				output_type = OUTPUT_DTSI;
-+			else if (!strcmp(optarg, "bin"))
-+				output_type = OUTPUT_BIN;
-+			else
-+				usage();
-+			break;
-+		case 'c':
-+			opt_centered = 1;
-+			break;
-+		case 'p':
-+			opt_position = optarg;
-+			break;
-+		case 'f':
-+			opt_offset = optarg;
-+			break;
-+		case 'r':
-+			if (strcmp(optarg, "cw") && strcmp(optarg, "ccw") &&
-+			    strcmp(optarg, "ud") && strcmp(optarg, "none"))
-+				usage();
-+			opt_rotation = optarg;
-+			break;
-+		default:
-+			usage();
-+		}
-+	}
-+	if (optind != argc - 1)
-+		usage();
-+	filename = argv[optind];
-+
-+	/* "10,20" and "10 20" are both accepted for -p and -f */
-+	for (p = opt_position; p && *p; p++)
-+		if (*p == ',')
-+			*p = ' ';
-+	for (p = opt_offset; p && *p; p++)
-+		if (*p == ',')
-+			*p = ' ';
-+
-+	read_image();
-+
-+	if (outputname) {
-+		out = fopen(outputname,
-+			    output_type == OUTPUT_BIN ? "wb" : "w");
-+		if (!out)
-+			die("Cannot create file %s: %s\n", outputname,
-+			    strerror(errno));
-+	} else {
-+		out = stdout;
-+	}
-+
-+	switch (output_type) {
-+	case OUTPUT_DTS:
-+		write_dts();
-+		break;
-+	case OUTPUT_DTSI:
-+		write_dtsi();
-+		break;
-+	case OUTPUT_BIN:
-+		write_bin();
-+		break;
-+	}
-+
-+	if (outputname)
-+		fclose(out);
-+
-+	fprintf(stderr, "%s: %ux%u pixels, %u colours\n", filename, logo_width,
-+		logo_height, logo_clutsize);
-+
-+	return 0;
-+}
--- 
-2.39.5
+Thanks, this is a clear simplification.
 
+Max

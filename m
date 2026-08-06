@@ -1,35 +1,37 @@
 Received: from meve.dewith.io (meve.dewith.io [157.90.20.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BC05479872;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50AEF3EC684;
 	Thu,  6 Aug 2026 20:26:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=157.90.20.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786048005; cv=none; b=i6AkdDXdafduGzkWPBKXSyCz5WWKMkFxcuyitbInXv/+U1Z/uYMde/ia2cPUUY5U2Mozq1HswZYlrrsPQeZejwQHhC4aPGkpA0FoaO8TVFVBqOswujsnkeQWdtuxX3caS3H+dMrGQQpPn5gYSJ7VFczZpUkxJ2tnLgEPCdLfTx0=
+	t=1786048005; cv=none; b=mWAC9lnEuN2Zbl9ocBKJkCSwjdxOiA+LWTFHKECsqvLKLvvlYRcN9yH/GyRt79nLDal/wUASXU+eD3kfUkaBNMKOHdSMGj1qnQ/hR8R1i5Jcsx19ZZujHaeDhFCFQ+r1qcJwTVOqRtAdfIaLjfWb2U7+KIyFrMNkK/kjT2FE9TQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1786048005; c=relaxed/simple;
-	bh=F1A/QHz5hbGeDMZiRvNopgtKoOjegOK3cdF/c05Q/Qs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tvjF6tYdai7fA+/l5Br6wrt68rZ1PHGdcPVl5ToooToK6e5bbVkRN+cEXlkQe0fYHeMKcBNbBebCePiBlVzo44sP9PFyhrNepYyGAQjB2fFRw1sKp0hmqkt18nx3uuYGlJFrnUWmEWPMNduQOeN5QATgSdo+iWjxRMQA7iqgfpk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=OYP2+wss; arc=none smtp.client-ip=157.90.20.64
+	bh=Yn+oIzGhCZTVXVa4R1W95r1dJqolFU+pDig5dULDJZI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=pfSvbPhVVlc9q5ZT1WjXb723ld0WYwLLBdcqbd2ccfxSmLZN1VTU/PqFzTP5xLAwjemVKw9upeeiqDhOjKe4bcd72ll6rhyj++T+J8JX+RdzB6iKrXB2AfJaFH62+les4cz/Wo9W1899FdGaidd6eu9bOjff9mer4YzPQryBEUA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=c2KFB9AP; arc=none smtp.client-ip=157.90.20.64
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dewith.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="OYP2+wss"
+	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="c2KFB9AP"
 Received: from localhost (70-26-208-87.ftth.glasoperator.nl [87.208.26.70])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by meve.dewith.io (Postfix) with ESMTPSA id 402B223D90;
+	by meve.dewith.io (Postfix) with ESMTPSA id D5BA823DB7;
 	Thu,  6 Aug 2026 20:19:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dewith.io; s=default;
-	t=1786047591;
+	t=1786047592;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=X1dLP/FEQKxT40U9k4SifBNc/F8DQLWHwpEry3VU43g=;
-	b=OYP2+wsszoD4nkj5o+EnNtlwsJovLvNEJdG4ICx50cUdAh00lLG2ew3smBWEgvC3VeIEG5
-	pu6WhLKFda5RrTTpAWFgcxN1IAzXRDpvfjLlw6Envy2yvLZBVZZG2C+tVL5v0DNpxwb2OL
-	oHzMIv04SgiYTQi0i3glVL+qFT8kRwU=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=s5yjnroszKmN21UAW1H7HqiZrAkJFktgUtYKWcKU+Mk=;
+	b=c2KFB9AP1k2+nj5OdvKz5Afoec2qDVItgKelt+fmG6k7f05ZWXHhUHiVS8GheVBCYRrQJz
+	bYJ/opefN9W65NSxq+G+MunqLXjozBG58n/5LYSUS7AcY4lE6iuERrXPItwe5Keyun06uj
+	s64Ze0H54wyAcQ1Q3U1ENSRmCfBspsE=
 From: Wim de With <wf@dewith.io>
 To: Lee Jones <lee@kernel.org>,
 	Daniel Thompson <danielt@kernel.org>,
@@ -45,10 +47,12 @@ Cc: Wim de With <wf@dewith.io>,
 	devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH 0/2] backlight: Add support for Orient Chip OCP8178
-Date: Thu,  6 Aug 2026 22:15:39 +0200
-Message-ID: <20260806201541.101304-1-wf@dewith.io>
+Subject: [PATCH 1/2] dt-bindings: backlight: Add Orient Chip OCP8178
+Date: Thu,  6 Aug 2026 22:15:40 +0200
+Message-ID: <20260806201541.101304-2-wf@dewith.io>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260806201541.101304-1-wf@dewith.io>
+References: <20260806201541.101304-1-wf@dewith.io>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -57,46 +61,84 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The ClockworkPi uConsole[1] is a modular handheld console manufactured
-by Clockwork Tech that runs Linux. It consists of a mainboard which
-connects a number of peripherals, such as the screen, batteries and
-keyboard. This mainboard hosts a system on a module (SoM), such as the
-Raspberry Pi Compute Module as a so-called core to provide the compute
-for the device. The device supports different kinds of SoM as cores. The
-mainboard is shared between different devices, such as the DevTerm[2].
+Add device tree bindings for the Orient Chip OCP8178 LED backlight
+driver.
 
-Currently, the uConsole requires a number of out-of-tree drivers to
-support the hardware. In addition, most (if not all) supported SoMs
-require vendor kernels. In practice, this means that kernel support for
-the device is scattered across various repositories in the form of
-patches with dubious quality.
-
-This patch series is the first in an attempt to upstream as many of the
-needed drivers as possible. The goal is to support at least the
-mainboard and the peripherals of the uConsole in the upstream kernel.
-These drivers should find their way downstream to the SoM vendor kernels
-eventually.
-
-This series adds the driver for the backlight controller, the Orient
-Chip OCP8178. I wrote the driver from scratch using the datasheet, to
-avoid any copyright or attribution problems.
-
-[1]: https://www.clockworkpi.com/home-uconsole
-[2]: https://www.clockworkpi.com/home-devterm
-
-Wim de With (2):
-  dt-bindings: backlight: Add Orient Chip OCP8178 bindings
-  backlight: Add support for Orient Chip OCP8178
-
- .../bindings/leds/backlight/ocs,ocp8178.yaml  |  46 ++++
- MAINTAINERS                                   |   6 +
- drivers/video/backlight/Kconfig               |  10 +
- drivers/video/backlight/Makefile              |   1 +
- drivers/video/backlight/ocp8178_bl.c          | 243 ++++++++++++++++++
- 5 files changed, 306 insertions(+)
+Signed-off-by: Wim de With <wf@dewith.io>
+---
+ .../bindings/leds/backlight/ocs,ocp8178.yaml  | 46 +++++++++++++++++++
+ MAINTAINERS                                   |  5 ++
+ 2 files changed, 51 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
- create mode 100644 drivers/video/backlight/ocp8178_bl.c
 
+diff --git a/Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml b/Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
+new file mode 100644
+index 0000000000000..9a4df1ef91edd
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
+@@ -0,0 +1,46 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/ocs,ocp8178.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Orient Chip OCP8178 backlight
++
++maintainers:
++  - Wim de With <wf@dewith.io>
++
++description: |
++  The Orient Chip OCP8178 is a white LED backlight driver controlled by a single
++  GPIO line with a vendor-specific onewire protocol.
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: ocs,ocp8178
++
++  enable-gpios:
++    description: GPIO to use to enable/disable and dim the backlight.
++    maxItems: 1
++
++  default-brightness:
++    maximum: 31
++  max-brightness:
++    maximum: 31
++
++required:
++  - compatible
++  - enable-gpios
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    backlight {
++        compatible = "ocs,ocp8178";
++        enable-gpios = <&gpio2 5 GPIO_ACTIVE_HIGH>;
++        default-brightness = <13>;
++        max-brightness = <31>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cfee5d47b214d..3ca99d9c32ef1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -19678,6 +19678,11 @@ F:	drivers/mfd/ocelot*
+ F:	drivers/net/dsa/ocelot/ocelot_ext.c
+ F:	include/linux/mfd/ocelot.h
+ 
++OCP8178 BACKLIGHT DRIVER
++M:	Wim de With <wf@dewith.io>
++S:	Maintained
++F:	Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
++
+ OCXL (Open Coherent Accelerator Processor Interface OpenCAPI) DRIVER
+ M:	Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+ R:	Andrew Donnellan <andrew+kernel@donnellan.id.au>
 -- 
 2.55.0
 

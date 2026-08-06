@@ -1,100 +1,95 @@
-Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com [209.85.160.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65BA6346E7A
-	for <linux-fbdev@vger.kernel.org>; Thu,  6 Aug 2026 00:43:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 669941F2B88;
+	Thu,  6 Aug 2026 04:50:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785977028; cv=none; b=Gut26RotANpZMiWRwnnVKUb1ziaqSnxL6rGDZIbaZtdUx2GruzcklMXQvGoCGQZg1mEQ3CN+nOrL5cFAYgiCPSI1uvWGVgNwghEeQTAtwTcATJX6gprSYXvzPKvP2Wt0xegAiBO5kc7+yClgp8LbimxaicQxyxRkGpJkwfosgbw=
+	t=1785991808; cv=none; b=SiwoNJzIEasSludPRqsGngVQxtbRcPgEHnO1umj2Fee5t5zh5p90iFFLc7/8LDvCkt3bPufd/4XM80dazc2glI1mfb0bJdVpH8YHJMTZdUKwC40X5dQeZRikn5TlsMKoKQo0GnfFdth0wBNY4+zWFQo6ZUo1n3fvm8oL+V/CMzg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785977028; c=relaxed/simple;
-	bh=f/C38F7jfyhiNamhgj+2J3Uarv9zAZn+JoHs8l44B5s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fLWNl7YUrMdUpt/qjEhMqK5WtUdf5Z8ej5matPzli8VW9T5Ci1e6pdykhRwzXbTxmaVHemMcrwxGIlU3zsLytpfG1K5z76YjN6wtZKlPysQocu+7tdqdbSOo408+0mQZaZg2+Q/GouOu5HuXEIRNXBc2Jl5Bu0rrQ5ondfUl7lQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=tMYa/p4+; arc=none smtp.client-ip=209.85.160.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1785991808; c=relaxed/simple;
+	bh=EZf+vJhqSz6csPir/JjkCdabQTbJ5qG4drgghSirdCo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=OlDS0zPjdgvf2ZUZXSo7c2wM4c7+wf/8mkXOlKTQDw5eYVcqIHhdD2fV8dUwPWAd5hN4TBSmxySoYxZZ/5RkKUox+giZxZK44EgN/iWrV/f5LIjmrDES5rEHehs6nC2lymuvkRAb2sRH5BFI7MknnYC4zkQGT3CfGxpMAJ259kE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=sVr+ipO/; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tMYa/p4+"
-Received: by mail-qt1-f177.google.com with SMTP id d75a77b69052e-529a1ee0e62so10674481cf.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 05 Aug 2026 17:43:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785977024; x=1786581824; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=64E9cSA7smKn17NrMcFh/iNHZ8v+Am6PSKOl3YRRdE8=;
-        b=tMYa/p4+YmOOHIZp9CtmIYZbLF/fAfM/l+pkunD3N6NwvrWUWIkhMhKyYLYB69ryX+
-         owYgHbYhrdZTt1WlOwRQPney+EB+qkYLhVogjWjYe/NpKb+ewxMTC+1S9pKa7xwQXQkj
-         b3wv1p/ETnGz7p1C/lJWu7e7YalGT4GkOZq/o3yAdeQxjJIyG1EW6G+v2STF3Qjb8KU1
-         3g14kD9TkI37MvJwgqH6ey17zuFg1fATm+fvbRx3o0Fz2PB7h8/o70p7KMnAIf2uiUDe
-         h1TrMgNnXxdvUWnRX8SL78LWQitfzX3atRfM2S6anLgcvR7ghfczzdeZ7NXTrmvOMJLq
-         Gkcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785977024; x=1786581824;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=64E9cSA7smKn17NrMcFh/iNHZ8v+Am6PSKOl3YRRdE8=;
-        b=WyENIYZMK/IQTnfqehPFALX4VWd5aGZlYRly72A9wrBED7X+ANfiZDBngSD6IQH5wQ
-         a8oY7Zo30zETJ9+pLoXTO95WGwj1OFa4HzOmESOVRv5YPmIsQixOmhzbgZJCQWSO9oSe
-         C3xhlikfDvKjpyAfAjtKVUBdQ0MR8thjZCB0Z1xnHGA+RnHFD5NvBwDB3AAiDmsnkjt1
-         nOIi9yIuuA1KlRYOaFm4InSKiQow9zk1LCSPFZ1zB8+vfzFCwOnizB7yoaCVT8ERzaHm
-         r3ZTI7SlmYRma6ODN5tXt7sUp3LwAO38mfQgy5XcAIErlr4VE/CQhw6JfTSo292OXqlD
-         0hSg==
-X-Gm-Message-State: AOJu0YyHCd3rIcxWqHHvApN5INiY0y1H3pkbeLDpANbw3g+Gk41UzZ+F
-	TBcUNszDHYvFb0FpnPAdOHI8Exf/IQOW9GcudblQ/aGmN3xlGyHUSVfK/FiWuIWCoh/gQA==
-X-Gm-Gg: AR+sD12dAjhffymjv1TUylTNxP8Tx+tUnxe3TfuObS+WcWQ9bgZNhSxnRmySE7ske3j
-	Av4CFIhcjijaaUzHbETiluSIAMKhott369b4dUc8ocY40zQURyh4nIppnuJznZWO9zs6RNzcnPx
-	lprgi48uVJV+KYEZ8KigHwev84ihSwCDjIDdEiViECVl9vnRqgFNCT+WL6Wba8EM1vLywnVKJLC
-	ngSNT6cXfehrsDS8u1+8n7L1n1FPKWhs8W+p4Kh0dF6lZtyr9ByybG92n5HkhN3tT0axMfCmoCz
-	phUAS/ldnKIhBhvvsi7l2uSMTaZBfFEGI2nEh7uf7aB6YmI1vIBuKbQi1GXWTLqkOpqJamxh0Ik
-	AbHFGlSZs+Z9v3E5UMcg2DdnFOBOR024jg84Ap2Ok2b4HJAy8Nv1Z0F6GfcPj05kzrIRgZsly0D
-	39wN3whGj9yWlJhyjbxZ2jnM/umMd/V3KfzxgvyCRGRdyUy7b1OtLD8ql0uVAj2WIFmRYeAQrfb
-	uIxp1jmXq38F1EnqtjHAVCeigu+eyEZGPGWv3lHeNy1tysj6I53w6TOR4eh0E+mg1+IknM+XVXV
-	VY6twu/1WERv2GDsW4AdBRTXPkSOQOrM4f6bJxUZOKYWehOQpDpwiAN3xdVZ6nKNyg==
-X-Received: by 2002:ac8:6f08:0:b0:51c:1e46:711a with SMTP id d75a77b69052e-52ce614523emr127663011cf.24.1785977024279;
-        Wed, 05 Aug 2026 17:43:44 -0700 (PDT)
-Received: from alex ([143.244.44.172])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-52ce892a695sm30989811cf.14.2026.08.05.17.43.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Aug 2026 17:43:43 -0700 (PDT)
-From: Alexandros Xanthakis <xanthakis.alexandre@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Alexandros Xanthakis <xanthakis.alexandre@gmail.com>
-Subject: [PATCH] staging: sm750fb: make g_fbmode array pointers const;prevent accidental modification of entries.
-Date: Thu,  6 Aug 2026 03:43:25 +0300
-Message-ID: <20260806004325.3253-1-xanthakis.alexandre@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="sVr+ipO/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55B4D1F000E9;
+	Thu,  6 Aug 2026 04:50:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1785991806;
+	bh=5lIuzoGDWXzz9NJIb0Wk8g7wqTXY2T7fXs6ynkFuBuw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=sVr+ipO/hMowX1MzyJVGgZS8exci5ftLE4FmUZENYbjblPirzul/Zr5ruT9NrbaOv
+	 2C+ZcTRSRqejd1Hi2hbWdcrHmjMfcFW/R3Bigg9t9M5vqAbE5ky6Jg/1g3fvHuVeyQ
+	 SnXI/yGNMQYlu16fIuQhsig6wFAParXdTiHW7noA=
+Date: Thu, 6 Aug 2026 06:49:49 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Alexandros Xanthakis <xanthakis.alexandre@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: make g_fbmode array pointers
+ const;prevent accidental modification of entries.
+Message-ID: <2026080634-catfish-basics-b381@gregkh>
+References: <20260806004325.3253-1-xanthakis.alexandre@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260806004325.3253-1-xanthakis.alexandre@gmail.com>
 
-Signed-off-by: Alexandros Xanthakis <xanthakis.alexandre@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Thu, Aug 06, 2026 at 03:43:25AM +0300, Alexandros Xanthakis wrote:
+> Signed-off-by: Alexandros Xanthakis <xanthakis.alexandre@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> index 89c811e0806c..8f533f3b1b42 100644
+> --- a/drivers/staging/sm750fb/sm750.c
+> +++ b/drivers/staging/sm750fb/sm750.c
+> @@ -21,7 +21,7 @@
+>  static int g_hwcursor = 1;
+>  static int g_noaccel __ro_after_init;
+>  static int g_nomtrr __ro_after_init;
+> -static const char *g_fbmode[] = {NULL, NULL};
+> +static const char * const g_fbmode[] = {NULL, NULL};
+>  static const char *g_def_fbmode = "1024x768-32@60";
+>  static char *g_settings;
+>  static int g_dualview __ro_after_init;
+> -- 
+> 2.55.0
+> 
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 89c811e0806c..8f533f3b1b42 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -21,7 +21,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel __ro_after_init;
- static int g_nomtrr __ro_after_init;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview __ro_after_init;
--- 
-2.55.0
+Hi,
 
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
+
+You are receiving this message because of the following common error(s)
+as indicated below:
+
+- You did not specify a description of why the patch is needed, or
+  possibly, any description at all, in the email body.  Please read the
+  section entitled "The canonical patch format" in the kernel file,
+  Documentation/process/submitting-patches.rst for what is needed in
+  order to properly describe the change.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot

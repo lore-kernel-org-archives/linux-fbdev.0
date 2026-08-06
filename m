@@ -1,39 +1,54 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from meve.dewith.io (meve.dewith.io [157.90.20.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 584074483A8;
-	Thu,  6 Aug 2026 15:05:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BC05479872;
+	Thu,  6 Aug 2026 20:26:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=157.90.20.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786028714; cv=none; b=AmzBZwKFZ6Qm9CyepjoMi179RVEQAE63nfyzfzg02n282pzZb/eLve3peYSHvtLdRkL+wZXLqUPtKuJCfhRgncqzzocZ3F3eH2EWbkGa+7Y6RsFgh9UGuCh1EvYQMH9Gqp25j4RU9RbQHRz1GpSllENH0lNf0FN3WZkgIdUQFiQ=
+	t=1786048005; cv=none; b=i6AkdDXdafduGzkWPBKXSyCz5WWKMkFxcuyitbInXv/+U1Z/uYMde/ia2cPUUY5U2Mozq1HswZYlrrsPQeZejwQHhC4aPGkpA0FoaO8TVFVBqOswujsnkeQWdtuxX3caS3H+dMrGQQpPn5gYSJ7VFczZpUkxJ2tnLgEPCdLfTx0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786028714; c=relaxed/simple;
-	bh=orgLGllWh2lnoEBQ4JYQUYZM9EAqFWvuC1DruRncWG8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=omKDqZ+sihK2PuAYr17EcRqo8kzfpXVq6XYS6hdS9/aY0+A63Fw6O0GYyAiFyJiS1fYHxts/bOTZxYVKORr4BioZa38pe7jhpKnVtnuABVB3sdpHRDXGWauxaTuRl44TlLIs1PSdnJkhFjcLtwlSZUOdiW8sHC1ejejGKcGbxIg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F8EpqDP/; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786048005; c=relaxed/simple;
+	bh=F1A/QHz5hbGeDMZiRvNopgtKoOjegOK3cdF/c05Q/Qs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tvjF6tYdai7fA+/l5Br6wrt68rZ1PHGdcPVl5ToooToK6e5bbVkRN+cEXlkQe0fYHeMKcBNbBebCePiBlVzo44sP9PFyhrNepYyGAQjB2fFRw1sKp0hmqkt18nx3uuYGlJFrnUWmEWPMNduQOeN5QATgSdo+iWjxRMQA7iqgfpk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=OYP2+wss; arc=none smtp.client-ip=157.90.20.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dewith.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F8EpqDP/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAA171F000E9;
-	Thu,  6 Aug 2026 15:05:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786028712;
-	bh=1Z3Rij5Y2TDRcGbge5gJ16K4Ai71Dj0D517MtFEVucY=;
-	h=From:To:Cc:Subject:Date;
-	b=F8EpqDP/NZMcNWBNq4noLlupXQnF+W/i3Gc+5RcOJhOkLaR+ektD3WjacvDW+2Nda
-	 TTNZp1cEYJr1gE0/68MEOAtWOB4mTae23hMEfgIXo0M0k0IYflkdZuYkXYJgFB65PR
-	 pymSWrdLXTlCFm5kWOplWPyfR+15bGbwjgxcRqfwaz4Q2Jj990zVIMYObN0TUyq1sv
-	 lKzrOYXB67clExPvld6JCIFVdB8K7f7qjKjVpJ+Sk4DobMVPi4RKPAu59nO2fbx9wf
-	 trjoX1siXf6FjQsMiul76Oe+pScxgBuk273t1ryYcOEl/cuBXeXLs7C/ZAxCOgAKlg
-	 /W1kQASeNegGw==
-From: Helge Deller <deller@kernel.org>
-To: linux-fbdev@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="OYP2+wss"
+Received: from localhost (70-26-208-87.ftth.glasoperator.nl [87.208.26.70])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by meve.dewith.io (Postfix) with ESMTPSA id 402B223D90;
+	Thu,  6 Aug 2026 20:19:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dewith.io; s=default;
+	t=1786047591;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=X1dLP/FEQKxT40U9k4SifBNc/F8DQLWHwpEry3VU43g=;
+	b=OYP2+wsszoD4nkj5o+EnNtlwsJovLvNEJdG4ICx50cUdAh00lLG2ew3smBWEgvC3VeIEG5
+	pu6WhLKFda5RrTTpAWFgcxN1IAzXRDpvfjLlw6Envy2yvLZBVZZG2C+tVL5v0DNpxwb2OL
+	oHzMIv04SgiYTQi0i3glVL+qFT8kRwU=
+From: Wim de With <wf@dewith.io>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Pavel Machek <pavel@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Helge Deller <deller@gmx.de>
+Cc: Wim de With <wf@dewith.io>,
 	dri-devel@lists.freedesktop.org,
-	linux-parisc@vger.kernel.org
-Cc: deller@gmx.de
-Subject: [PATCH v2] sticon/parisc: Detect default STI graphics card for console output
-Date: Thu,  6 Aug 2026 17:04:15 +0200
-Message-ID: <20260806150414.7870-2-deller@kernel.org>
-X-Mailer: git-send-email 2.54.0
+	linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH 0/2] backlight: Add support for Orient Chip OCP8178
+Date: Thu,  6 Aug 2026 22:15:39 +0200
+Message-ID: <20260806201541.101304-1-wf@dewith.io>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -42,71 +57,46 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Helge Deller <deller@gmx.de>
+The ClockworkPi uConsole[1] is a modular handheld console manufactured
+by Clockwork Tech that runs Linux. It consists of a mainboard which
+connects a number of peripherals, such as the screen, batteries and
+keyboard. This mainboard hosts a system on a module (SoM), such as the
+Raspberry Pi Compute Module as a so-called core to provide the compute
+for the device. The device supports different kinds of SoM as cores. The
+mainboard is shared between different devices, such as the DevTerm[2].
 
-If a machine has multiple graphic cards, detect the graphic card which is used
-to display firmware messages and use that one as the default graphic card for
-sticon and fbcon.
+Currently, the uConsole requires a number of out-of-tree drivers to
+support the hardware. In addition, most (if not all) supported SoMs
+require vendor kernels. In practice, this means that kernel support for
+the device is scattered across various repositories in the form of
+patches with dubious quality.
 
-On parisc machines the default graphic card used for BCH (boot console
-handler, aka BIOS menu) is stored in the stable storage (equivalent to CMOS
-storage on x86) or in the console path in page zero. Extract that path and
-store it as default STI path for later comparism. Take care that the graphic
-card can be a GSC or a PCI card which use different path strings.
+This patch series is the first in an attempt to upstream as many of the
+needed drivers as possible. The goal is to support at least the
+mainboard and the peripherals of the uConsole in the upstream kernel.
+These drivers should find their way downstream to the SoM vendor kernels
+eventually.
 
-Increase max string size for default_sti_path to 32 chars as the
-print_pa_hwpath() function formats a hardware path using unbounded sprintf
-calls for up to 6 bus converter components and 1 module component (e.g.,
-255/255/...), which can produce a string up to 28 bytes long.
+This series adds the driver for the backlight controller, the Orient
+Chip OCP8178. I wrote the driver from scratch using the datasheet, to
+avoid any copyright or attribution problems.
 
-Signed-off-by: Helge Deller <deller@gmx.de>
----
- drivers/video/sticore.c | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+[1]: https://www.clockworkpi.com/home-uconsole
+[2]: https://www.clockworkpi.com/home-devterm
 
-v2: increase default_sti_path and take care of PCU cards as reported by
-    the Sashiko AI bot review.
+Wim de With (2):
+  dt-bindings: backlight: Add Orient Chip OCP8178 bindings
+  backlight: Add support for Orient Chip OCP8178
 
-diff --git a/drivers/video/sticore.c b/drivers/video/sticore.c
-index 0d37e4b10447..1d4477f20450 100644
---- a/drivers/video/sticore.c
-+++ b/drivers/video/sticore.c
-@@ -325,7 +325,7 @@ static void sti_rom_copy(unsigned long base, unsigned long count, void *dest)
- 
- 
- 
--static char default_sti_path[21] __read_mostly;
-+static char default_sti_path[32] __read_mostly;
- 
- #ifndef MODULE
- static int __init sti_setup(char *str)
-@@ -1148,6 +1148,26 @@ static void sti_init_roms(void)
- 	pr_info("STI GSC/PCI core graphics driver "
- 			STI_DRIVERVERSION "\n");
- 
-+	/*
-+	 * Find default console by hardware path which is either stored in
-+	 * console entry in stable storage or alternatively from console path
-+	 * in PAGE0 used by BCH and PDC.
-+	 */
-+	if (!default_sti_path[0]) {
-+		struct pdc_module_path conspath;
-+		struct device *dev = NULL;
-+
-+		if (pdc_stable_read(0x60, &conspath, sizeof(conspath)) == PDC_OK)
-+			dev = hwpath_to_device(&conspath.path);
-+		if (!dev)
-+			dev = hwpath_to_device(&PAGE0->mem_cons.dp.path);
-+		if (dev && dev_is_pci(dev))
-+			print_pci_hwpath(to_pci_dev(dev), default_sti_path);
-+		else if (dev && !dev_is_pci(dev))
-+			print_pa_hwpath(to_parisc_device(dev), default_sti_path);
-+		pr_debug("default graphic card: %s\n", default_sti_path);
-+	}
-+
- 	/* Register drivers for native & PCI cards */
- 	register_parisc_driver(&pa_sti_driver);
- 	WARN_ON(pci_register_driver(&pci_sti_driver));
+ .../bindings/leds/backlight/ocs,ocp8178.yaml  |  46 ++++
+ MAINTAINERS                                   |   6 +
+ drivers/video/backlight/Kconfig               |  10 +
+ drivers/video/backlight/Makefile              |   1 +
+ drivers/video/backlight/ocp8178_bl.c          | 243 ++++++++++++++++++
+ 5 files changed, 306 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
+ create mode 100644 drivers/video/backlight/ocp8178_bl.c
+
 -- 
-2.54.0
+2.55.0
 

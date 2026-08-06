@@ -1,95 +1,112 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 669941F2B88;
-	Thu,  6 Aug 2026 04:50:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 584074483A8;
+	Thu,  6 Aug 2026 15:05:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785991808; cv=none; b=SiwoNJzIEasSludPRqsGngVQxtbRcPgEHnO1umj2Fee5t5zh5p90iFFLc7/8LDvCkt3bPufd/4XM80dazc2glI1mfb0bJdVpH8YHJMTZdUKwC40X5dQeZRikn5TlsMKoKQo0GnfFdth0wBNY4+zWFQo6ZUo1n3fvm8oL+V/CMzg=
+	t=1786028714; cv=none; b=AmzBZwKFZ6Qm9CyepjoMi179RVEQAE63nfyzfzg02n282pzZb/eLve3peYSHvtLdRkL+wZXLqUPtKuJCfhRgncqzzocZ3F3eH2EWbkGa+7Y6RsFgh9UGuCh1EvYQMH9Gqp25j4RU9RbQHRz1GpSllENH0lNf0FN3WZkgIdUQFiQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785991808; c=relaxed/simple;
-	bh=EZf+vJhqSz6csPir/JjkCdabQTbJ5qG4drgghSirdCo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OlDS0zPjdgvf2ZUZXSo7c2wM4c7+wf/8mkXOlKTQDw5eYVcqIHhdD2fV8dUwPWAd5hN4TBSmxySoYxZZ/5RkKUox+giZxZK44EgN/iWrV/f5LIjmrDES5rEHehs6nC2lymuvkRAb2sRH5BFI7MknnYC4zkQGT3CfGxpMAJ259kE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=sVr+ipO/; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786028714; c=relaxed/simple;
+	bh=orgLGllWh2lnoEBQ4JYQUYZM9EAqFWvuC1DruRncWG8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=omKDqZ+sihK2PuAYr17EcRqo8kzfpXVq6XYS6hdS9/aY0+A63Fw6O0GYyAiFyJiS1fYHxts/bOTZxYVKORr4BioZa38pe7jhpKnVtnuABVB3sdpHRDXGWauxaTuRl44TlLIs1PSdnJkhFjcLtwlSZUOdiW8sHC1ejejGKcGbxIg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=F8EpqDP/; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="sVr+ipO/"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55B4D1F000E9;
-	Thu,  6 Aug 2026 04:50:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1785991806;
-	bh=5lIuzoGDWXzz9NJIb0Wk8g7wqTXY2T7fXs6ynkFuBuw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=sVr+ipO/hMowX1MzyJVGgZS8exci5ftLE4FmUZENYbjblPirzul/Zr5ruT9NrbaOv
-	 2C+ZcTRSRqejd1Hi2hbWdcrHmjMfcFW/R3Bigg9t9M5vqAbE5ky6Jg/1g3fvHuVeyQ
-	 SnXI/yGNMQYlu16fIuQhsig6wFAParXdTiHW7noA=
-Date: Thu, 6 Aug 2026 06:49:49 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Alexandros Xanthakis <xanthakis.alexandre@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: make g_fbmode array pointers
- const;prevent accidental modification of entries.
-Message-ID: <2026080634-catfish-basics-b381@gregkh>
-References: <20260806004325.3253-1-xanthakis.alexandre@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="F8EpqDP/"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAA171F000E9;
+	Thu,  6 Aug 2026 15:05:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786028712;
+	bh=1Z3Rij5Y2TDRcGbge5gJ16K4Ai71Dj0D517MtFEVucY=;
+	h=From:To:Cc:Subject:Date;
+	b=F8EpqDP/NZMcNWBNq4noLlupXQnF+W/i3Gc+5RcOJhOkLaR+ektD3WjacvDW+2Nda
+	 TTNZp1cEYJr1gE0/68MEOAtWOB4mTae23hMEfgIXo0M0k0IYflkdZuYkXYJgFB65PR
+	 pymSWrdLXTlCFm5kWOplWPyfR+15bGbwjgxcRqfwaz4Q2Jj990zVIMYObN0TUyq1sv
+	 lKzrOYXB67clExPvld6JCIFVdB8K7f7qjKjVpJ+Sk4DobMVPi4RKPAu59nO2fbx9wf
+	 trjoX1siXf6FjQsMiul76Oe+pScxgBuk273t1ryYcOEl/cuBXeXLs7C/ZAxCOgAKlg
+	 /W1kQASeNegGw==
+From: Helge Deller <deller@kernel.org>
+To: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-parisc@vger.kernel.org
+Cc: deller@gmx.de
+Subject: [PATCH v2] sticon/parisc: Detect default STI graphics card for console output
+Date: Thu,  6 Aug 2026 17:04:15 +0200
+Message-ID: <20260806150414.7870-2-deller@kernel.org>
+X-Mailer: git-send-email 2.54.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260806004325.3253-1-xanthakis.alexandre@gmail.com>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Aug 06, 2026 at 03:43:25AM +0300, Alexandros Xanthakis wrote:
-> Signed-off-by: Alexandros Xanthakis <xanthakis.alexandre@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index 89c811e0806c..8f533f3b1b42 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -21,7 +21,7 @@
->  static int g_hwcursor = 1;
->  static int g_noaccel __ro_after_init;
->  static int g_nomtrr __ro_after_init;
-> -static const char *g_fbmode[] = {NULL, NULL};
-> +static const char * const g_fbmode[] = {NULL, NULL};
->  static const char *g_def_fbmode = "1024x768-32@60";
->  static char *g_settings;
->  static int g_dualview __ro_after_init;
-> -- 
-> 2.55.0
-> 
+From: Helge Deller <deller@gmx.de>
 
-Hi,
+If a machine has multiple graphic cards, detect the graphic card which is used
+to display firmware messages and use that one as the default graphic card for
+sticon and fbcon.
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+On parisc machines the default graphic card used for BCH (boot console
+handler, aka BIOS menu) is stored in the stable storage (equivalent to CMOS
+storage on x86) or in the console path in page zero. Extract that path and
+store it as default STI path for later comparism. Take care that the graphic
+card can be a GSC or a PCI card which use different path strings.
 
-You are receiving this message because of the following common error(s)
-as indicated below:
+Increase max string size for default_sti_path to 32 chars as the
+print_pa_hwpath() function formats a hardware path using unbounded sprintf
+calls for up to 6 bus converter components and 1 module component (e.g.,
+255/255/...), which can produce a string up to 28 bytes long.
 
-- You did not specify a description of why the patch is needed, or
-  possibly, any description at all, in the email body.  Please read the
-  section entitled "The canonical patch format" in the kernel file,
-  Documentation/process/submitting-patches.rst for what is needed in
-  order to properly describe the change.
+Signed-off-by: Helge Deller <deller@gmx.de>
+---
+ drivers/video/sticore.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
 
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
+v2: increase default_sti_path and take care of PCU cards as reported by
+    the Sashiko AI bot review.
 
-thanks,
+diff --git a/drivers/video/sticore.c b/drivers/video/sticore.c
+index 0d37e4b10447..1d4477f20450 100644
+--- a/drivers/video/sticore.c
++++ b/drivers/video/sticore.c
+@@ -325,7 +325,7 @@ static void sti_rom_copy(unsigned long base, unsigned long count, void *dest)
+ 
+ 
+ 
+-static char default_sti_path[21] __read_mostly;
++static char default_sti_path[32] __read_mostly;
+ 
+ #ifndef MODULE
+ static int __init sti_setup(char *str)
+@@ -1148,6 +1148,26 @@ static void sti_init_roms(void)
+ 	pr_info("STI GSC/PCI core graphics driver "
+ 			STI_DRIVERVERSION "\n");
+ 
++	/*
++	 * Find default console by hardware path which is either stored in
++	 * console entry in stable storage or alternatively from console path
++	 * in PAGE0 used by BCH and PDC.
++	 */
++	if (!default_sti_path[0]) {
++		struct pdc_module_path conspath;
++		struct device *dev = NULL;
++
++		if (pdc_stable_read(0x60, &conspath, sizeof(conspath)) == PDC_OK)
++			dev = hwpath_to_device(&conspath.path);
++		if (!dev)
++			dev = hwpath_to_device(&PAGE0->mem_cons.dp.path);
++		if (dev && dev_is_pci(dev))
++			print_pci_hwpath(to_pci_dev(dev), default_sti_path);
++		else if (dev && !dev_is_pci(dev))
++			print_pa_hwpath(to_parisc_device(dev), default_sti_path);
++		pr_debug("default graphic card: %s\n", default_sti_path);
++	}
++
+ 	/* Register drivers for native & PCI cards */
+ 	register_parisc_driver(&pa_sti_driver);
+ 	WARN_ON(pci_register_driver(&pci_sti_driver));
+-- 
+2.54.0
 
-greg k-h's patch email bot

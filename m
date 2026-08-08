@@ -1,180 +1,193 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B748836A358
-	for <linux-fbdev@vger.kernel.org>; Sat,  8 Aug 2026 08:36:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.22
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8824DF6C;
+	Sat,  8 Aug 2026 09:44:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786178216; cv=none; b=Z0QEgLuajEzeJG8kTxD2Yy/lmzQSuXHryhr+a9rcyUoU/gP+6+UXd6dsK+ZPQKl3CCL9DGpBUaCUpDYCO+wDY2NctXY2zJNjLi76+RrYvZpe2XomrHiZSWyPiM7yt73hy8lKlU4EHHRyeGGZutvM5zxGuyG4X8ijQoOj5v3nJa0=
+	t=1786182275; cv=none; b=A8LL1B7NhWvc9YAlbtsxK5tph5f1TM3n+AO8swy1pOPsaqjGpORzZfojQ2lXX1k1tyE0yDdwFACE38WjQnW0FfmESE18mA+i66u/GISjNdv7/m9v+gybTonaKK0Qdefid2J0+lTIuTf0zZh0QfPii0Wn3QP75o27GtiUBuf3k0o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786178216; c=relaxed/simple;
-	bh=gUoCwS35Iv8YpN6/FLIUnmj1Z+uEdT85eJcBPnkeM6M=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=EVeG7xPtB6QbgoJiRWq4fhIy/7c3f6cgGqgMhXLLAYInFyrFjcPAix1EXRjQvlF89ZhQkbb2OiHBPA9Sdx+8quM/dmqdjf4DQNvrzkYBhbPoxexuA+bLXcH5y5FZBdFFhgOqrOJ2fw/6NkWRsRpQBqZ6SmnkYlUyNIVxt2ZZRt8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=deRp98zq; arc=none smtp.client-ip=212.227.17.22
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1786182275; c=relaxed/simple;
+	bh=KWMahonpNxEKYLakzjmTxnXtuRP97ZjParICPPjr4lU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=rgz86Sv+XOlwcqHZpbPub07aGIrCEOS1wv7NqFX1b1pvX4QrQlxYXi79a1kwWmjW05z9u9NgNndCHhOCXYN7VtWvenstDXxfK5Ovgpqts0UR69tblmKOICQPwQ2y3Hv6ZFI5xayuNFqO9w2L85revTPYe/bHd3Inr42s1ZVht9I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Jt/2OQU4; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="deRp98zq"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1786178209; x=1786783009; i=deller@gmx.de;
-	bh=P4tzviaFiVDrss1maZl/RhNlyenuKmb8eizSlmcmoug=;
-	h=X-UI-Sender-Class:From:To:Subject:Date:Message-ID:MIME-Version:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=deRp98zqXcniCitnlZsi0RoHLhLiatgC7uFXrWi2J5pMlZWVarRtrNl9qQ7h28U6
-	 5C1VWNiSO/+9hBj3RNTrsSo96gVc1x+tl/b1nbBX2cGoC/h7wS52eLcn/B/N9ftEI
-	 5uTe3+B1iyEWVPMhixcqsigHWgScBWUrqZmZ/GxLMdOLtD60OZihdZIbrm67i4NZr
-	 e0R1lTy93it2FjmvDNxNo2YjLL/TwUWrkrA1N/M0fcrDEaDKRXm5YnbnEm79IIw6W
-	 1Lk1crhqvPbjTamFoDTZ9JeTA4B8ad6o7QOv6/P6vUJ2RnllrIB+kGBgBnkVQDYxC
-	 w0wQ8n7qlXZtQ2zKxQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MvsEx-1x8dpW1qfH-016z52; Sat, 08
- Aug 2026 10:36:49 +0200
-From: Helge Deller <deller@gmx.de>
-To: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH] fbdev: mb862xxfb: Silence possibly unused functions
-Date: Sat,  8 Aug 2026 10:36:48 +0200
-Message-ID: <20260808083648.257464-1-deller@gmx.de>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jt/2OQU4"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 555271F000E9;
+	Sat,  8 Aug 2026 09:44:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786182273;
+	bh=FhC3d/llWNsxYmoeWJvfdD4dJDNrtRf2RYqgYv6VDI0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Jt/2OQU4rObcGyPyzfFtRCwI0SSLUs86NGKAJU+/lfXyghcXCG89xopbk5048KmCn
+	 6wvYf1xINbTYPMp0XBolLLbotXpKrF5uGLL4/ArDvle6Nd+htl08ajPVEjZtYJSTnw
+	 aDeyUNlCyjCf2+vLoyw+Mbg1T1M+6kafts/3xQPnASFBTASw5L3U8ixxe7n0UI54+D
+	 /KvXHj7qlDZt2esSipLLl6vyUiphv6FZn/tV6Vy+umugaitVO2TTQ3jO7t/Gzqp1nd
+	 y5yBx3eqqsDjWbV+UHhdl7WxR4h+UtfHvxIvDvm6VMOT7gmrHlxnuQVCto5W2rJWv6
+	 MvwFKyXdyQr3A==
+Date: Sat, 8 Aug 2026 11:44:26 +0200
+From: Helge Deller <deller@kernel.org>
+To: Max Pedraza <maximpedraza@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Helge Deller <deller@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Maxime Ripard <mripard@kernel.org>,
+	Uwe =?iso-8859-15?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
+	devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 2/6] video: logo: allow the boot logo to come from the
+ device tree
+Message-ID: <anb6ejVQMPqD7G3r@carbonx1>
+References: <20260804225617.264861-1-maximpedraza@gmail.com>
+ <20260804225617.264861-3-maximpedraza@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:5Y4Ml/w3Xu1q4YvkyrB90TBl1ImzdXTQHVU6q++358X1HexZUIP
- 6w739XB2x8okcOWZ6N1vtX8YhkPY2dPkKCYnLHHeKIeasjbHFKYV3nuE6irOlVwTwJkgprq
- MYn+iXwE4f1geJigf6zzOLsmjVPVUp7gjwfU5VBhhYx6zTmNXYQkW1BfIpwJs9o21TmoX9M
- jM5IZB/tPwx4jKRJ0trkg==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:ApWbUjf4Fo8=;vSZQkwIsJacUyPCcrMj85X12Z5t
- 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
- c6PoPgYBCu9lw5hrtftaBLc9chJg=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260804225617.264861-3-maximpedraza@gmail.com>
 
-When CONFIG_PCI=3Dn, the kernel test robot reports that on powerpc some
-functions and variables may possibly be unused. Silence those warnings.
+* Max Pedraza <maximpedraza@gmail.com>:
+> Add CONFIG_LOGO_DT_CLUT224, which makes fb_find_logo() look for a node
+> compatible with "linux,boot-logo-clut224" under /chosen before falling
+> back to the logos built into the kernel image.
+> 
+> The image is validated before it is used: the palette must have at most
+> 224 entries, the pixel data length must match the geometry, and every
+> pixel must reference an entry that exists. A malformed node is reported
+> and ignored rather than drawn, so a bad device tree cannot take the
+> display down with it.
+> 
+> The image is copied out of the device tree so that the 32 entry offset
+> the frame buffer layer reserves for the console can be applied to the
+> pixels, and the copy is released from fb_logo_late_init() alongside the
+> built-in logos.
+> 
+> The node lives under /chosen because a logo is configuration handed over
+> by firmware rather than a description of the hardware, which is also
+> where simple-framebuffer nodes live for the same reason.
+> 
+> Signed-off-by: Max Pedraza <maximpedraza@gmail.com>
+> ---
+>  drivers/video/logo/Kconfig |  12 +++
+>  drivers/video/logo/logo.c  | 160 +++++++++++++++++++++++++++++++++++++
+>  2 files changed, 172 insertions(+)
+> 
+> diff --git a/drivers/video/logo/Kconfig b/drivers/video/logo/Kconfig
+> index cda15b958..215afa7ef 100644
+> --- a/drivers/video/logo/Kconfig
+> +++ b/drivers/video/logo/Kconfig
+> @@ -76,4 +76,16 @@ config LOGO_LINUX_CLUT224_FILE
+>  
+>  	    magick source_image -compress none -colors 224 destination.ppm
+>  
+> +config LOGO_DT_CLUT224
+> +	bool "224-color logo supplied by the device tree"
+> +	depends on OF
+> +	help
+> +	  Look for a boot logo in the device tree, in a node compatible with
+> +	  "linux,boot-logo-clut224" under /chosen, instead of using one of
+> +	  the logos built into the kernel image. This allows a single kernel
+> +	  image to be used by several products that only differ in branding.
+> +
+> +	  If no such node is present, or it is disabled, the built-in logo
+> +	  selected above is used, so saying Y here is safe.
+> +
+>  endif # LOGO
+> diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
+> index 91535f884..7f8b04ecf 100644
+> --- a/drivers/video/logo/logo.c
+> +++ b/drivers/video/logo/logo.c
+> @@ -11,6 +11,9 @@
+>   */
+>  
+>  #include <linux/linux_logo.h>
+> +#include <linux/of.h>
+> +#include <linux/sizes.h>
+> +#include <linux/slab.h>
+>  #include <linux/stddef.h>
+>  #include <linux/module.h>
+>  
+> @@ -22,6 +25,155 @@ static bool nologo;
+>  module_param(nologo, bool, 0);
+>  MODULE_PARM_DESC(nologo, "Disables startup logo");
+>  
+> +#ifdef CONFIG_LOGO_DT_CLUT224
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202608081537.o23Goj8d-lkp@in=
-tel.com/
-Signed-off-by: Helge Deller <deller@gmx.de>
-=2D--
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fb=
-dev/mb862xx/mb862xxfbdrv.c
-index 676c6d3ccc12..99c404dbc832 100644
-=2D-- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -408,7 +408,7 @@ static struct fb_ops mb862xxfb_ops =3D {
- };
-=20
- /* initialize fb_info data */
--static int mb862xxfb_init_fbinfo(struct fb_info *fbi)
-+static int __maybe_unused mb862xxfb_init_fbinfo(struct fb_info *fbi)
+With the #ifdef above, your logo code will only be compiled when
+people enable CONFIG_LOGO_DT_CLUT224, and as such coding errors
+(maybe even introduced by other patches) will only show up randomly.
+
+I usually prefer if people use the IS_ENABLED(CONFIG_XXX) macro instead
+and put it at specific entry places, so that while the compiler can do
+compile-time checking the code, it can optimize it away too, when the
+option isn't enabled.
+
+As an *example*, see my patch below (on top you your code). It compiles cleanly
+for me and does the compile-time checking as well.
+
+While respinning your other patches, maybe you can check if something similiar
+can be used there too (but only if it makes sense there!).
+
+Helge
+
+
+diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
+index 66bcb37e78d5..f68ded458d2e 100644
+--- a/drivers/video/logo/logo.c
++++ b/drivers/video/logo/logo.c
+@@ -27,7 +27,8 @@ static bool nologo;
+ module_param(nologo, bool, 0);
+ MODULE_PARM_DESC(nologo, "Disables startup logo");
+ 
+-#ifdef CONFIG_LOGO_DT_CLUT224
++
++/* LOGO in devicetree: */
+ 
+ #define LOGO_DT_COMPATIBLE	"linux,boot-logo-clut224"
+ #define LOGO_DT_MAX_CLUT	224
+@@ -229,6 +230,9 @@ static const struct linux_logo *logo_dt_find(void)
+ 	struct device_node *np;
+ 	int ret;
+ 
++	if (!IS_ENABLED(CONFIG_LOGO_DT_CLUT224))
++		return NULL;
++
+ 	if (probed)
+ 		return logo_dt_data ? &logo_dt_clut224 : NULL;
+ 
+@@ -252,6 +256,9 @@ static const struct linux_logo *logo_dt_find(void)
+ 
+ static void logo_dt_free(void)
  {
- 	struct mb862xxfb_par *par =3D fbi->par;
- 	struct mb862xx_gc_mode *mode =3D par->gc_mode;
-@@ -568,9 +568,9 @@ static ssize_t dispregs_show(struct device *dev,
- 	return ptr - buf;
++	if (!IS_ENABLED(CONFIG_LOGO_DT_CLUT224))
++		return;
++
+ 	logo_dt_clut224.clut = NULL;
+ 	logo_dt_clut224.data = NULL;
+ 
+@@ -262,17 +269,6 @@ static void logo_dt_free(void)
+ 	logo_dt_data = NULL;
  }
-=20
--static DEVICE_ATTR_RO(dispregs);
-+static DEVICE_ATTR_RO(dispregs) __maybe_unused;
-=20
--static irqreturn_t mb862xx_intr(int irq, void *dev_id)
-+static irqreturn_t __maybe_unused mb862xx_intr(int irq, void *dev_id)
- {
- 	struct mb862xxfb_par *par =3D (struct mb862xxfb_par *) dev_id;
- 	unsigned long reg_ist, mask;
-=2D-=20
-2.55.0
-
+ 
+-#else /* !CONFIG_LOGO_DT_CLUT224 */
+-
+-static inline const struct linux_logo *logo_dt_find(void)
+-{
+-	return NULL;
+-}
+-
+-static inline void logo_dt_free(void) { }
+-
+-#endif /* CONFIG_LOGO_DT_CLUT224 */
+-
+ /*
+  * Logos are located in the initdata, and will be freed in kernel_init.
+  * Use late_init to mark the logos as freed to prevent any further use.

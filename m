@@ -1,143 +1,141 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.5])
+Received: from shelob.surriel.com (shelob.surriel.com [96.67.55.147])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A2BF18E02A;
-	Fri,  7 Aug 2026 15:12:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73DE210F0;
+	Sat,  8 Aug 2026 02:20:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=96.67.55.147
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786115578; cv=none; b=c88k32XlNZooz1uewGFS1zJ0AXpPeAJsV62xVJvh/PA6RxWpTwLPQUbHa6gOcCe0xsjv055TcFpxAZd8m/yqUbdqNDso1Hd/Y1WgeeDvpZVEp2Aiqy7EV6hjt9lwmTFzzZS4IOrpfKt/l4+dRwW5BTaQh9PzkBZOG31iebhTrWk=
+	t=1786155633; cv=none; b=M9xqe2eQYafG+mB16b1DVdjVe03EpULE/knk9VsKtirNhqwASyk9OsGhEi0ZtlrmglZAGqBR2/iFiK1dl+hdLEhnU/DL0/dZt834Um3/fCxBjUchoFpNw5S78d4aYKIUXqwGmHuZGz4AO82xiOEJiL2kDIxAfeErgwonlRyPjcY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786115578; c=relaxed/simple;
-	bh=xAlgKOanZUO69crIf5zuK3Jgn+0S9XV3E+Q195wuKPg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Q7ARLexGgmzJyyhH7OeVQ6WrCPyZoFs7bILjfK66d5u4EqhOpuqeVw+PhJRJ+utRaUbyiyiYkK6ENeBev1juWOLH3zC0cWILcFt68CsixY0UjphU339qwSXy0jDTD/vpFLN++1FK6nv+AEhJ8wBkfxgE0RwBiVFP4rDo/OJqhlA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=Q5+hOW5b; arc=none smtp.client-ip=117.135.210.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1786155633; c=relaxed/simple;
+	bh=8uCLBB/OnV0ikbfo2dzBEcBPbAmLEodXNE8xsM16Lfk=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=PQZT8qJ62zbV9n83XSUc6tbHqFYdE2EQpSi0aB/TBCTJrpS7IDjq/CgmWV2nzD/DWJ29NxvDqzjneomZ2xnInJHmRLmNeeoOYrvPQK9wnYFYHRszmD6Zr5VaPJ7bzmpIF2R3tecKODbCVqY7RvX3dd1lfSE4K0Xik1GcgqvEpeA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=surriel.com; spf=pass smtp.mailfrom=surriel.com; dkim=pass (2048-bit key) header.d=surriel.com header.i=@surriel.com header.b=ScPc/lfG; arc=none smtp.client-ip=96.67.55.147
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=surriel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=surriel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="Q5+hOW5b"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=IO
-	i80gEkYM4uCYQ1/ilhSdZhfEjteUdqJwxT+1+Y4ak=; b=Q5+hOW5bHEPF45VC9E
-	CLuFGpNP1vh5huW4DQWktedM9B0wFzwuT5mg7PeeGkvrhWvXwjCkNuEz5bt1LWbV
-	BgP+918a6Avap/TKHW/7ZtOVZCIddij2ezvv3qRxA4vQNcioqGsbXxmWCS4uiS74
-	xChi4hOQU16InFy6O0zJ5ukgI=
-Received: from localhost (unknown [])
-	by gzga-smtp-mtada-g1-4 (Coremail) with SMTP id _____wA3v_+c9XVqE1XXOQ--.26426S2;
-	Fri, 07 Aug 2026 23:11:24 +0800 (CST)
-From: Hui Su <sh_def@163.com>
-To: andy@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	namcao@linutronix.de,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	sh_def@163.com,
-	thomas.petazzoni@free-electrons.com,
-	notro@tronnes.org
-Subject: [PATCH v2] staging: fbtft: make dirty_lock IRQ-safe
-Date: Fri,  7 Aug 2026 23:09:55 +0800
-Message-ID: <20260807150953.2811933-3-sh_def@163.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=surriel.com header.i=@surriel.com header.b="ScPc/lfG"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=surriel.com
+	; s=mail; h=Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=aS+8umnirCVOqmOWTTwMPe+YY743AtN0N7MiTrBSQLk=; b=ScPc/lfGajyFfBoJq6VglFRe1f
+	yhP5bGG04OuW9UT+eOJozTVRSM37YKwzbG1oBqu/MCuVip0RI1vdgga3sKKXcYsz2cUTs7LaAV65+
+	Fwa4z9xgTgGXNRSkMnuC0pk5XU/z+ZDzkBhvxinV8wq53wFsK+GmgOpHvnEoE/+cBRZ1LGC4+XvKy
+	7ZETNeoqq6Kyvg5IWTOt/2gVx3Sxi+YONov4YRM731B1BLNInkAKbTGvHA8XZGRUau+0lASnG0wWl
+	DP974VYl1RbUpa69Bz3EVoqi4dxVBzXAoveWHIgvgH6HCDfaWEGPg3vN4PVWew6PTK2SKxrNZbUeX
+	4BvgF2nQ==;
+Received: from [2601:18c:8100:a0e0:5a47:caff:fe78:8708] (helo=fangorn)
+	by shelob.surriel.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.97.1)
+	(envelope-from <riel@surriel.com>)
+	id 1wsWfF-0000000035Y-1DX1;
+	Fri, 07 Aug 2026 22:19:57 -0400
+Date: Fri, 7 Aug 2026 22:19:56 -0400
+From: Rik van Riel <riel@surriel.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, Simona Vetter
+ <simona@ffwll.ch>, Junjie Cao <junjie.cao@intel.com>,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: bitblit: bound-check glyph index in bit_cursor()
+Message-ID: <20260807221956.4e9dde5c@fangorn>
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; x86_64-redhat-linux-gnu)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wA3v_+c9XVqE1XXOQ--.26426S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxGF15ZF48WF48urW8GFWkCrg_yoW5Zw15pa
-	17ta45Ar48Ga1Fvr43Gr4DZF1a939Fkr4qkry0kw1fZ3W3Crs7WrykJFyrX3W0yrZxtrn5
-	CrWrK34fJw4UCw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRiYFJUUUUU=
-X-CM-SenderInfo: xvkbvvri6rljoofrz/xtbC6R2c+2p19Z08UwAA3L
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-fbtft_mkdirty() can be reached from the fbcon rendering path while
-processing printk() in hardirq context. Meanwhile, dirty_lock is also
-taken by fbtft_deferred_io() in workqueue context with local interrupts
-enabled.
+bit_cursor() fetches the glyph under the cursor with
 
-Lockdep reports a possible IRQ lock inversion involving dirty_lock and
-console_owner. A hardirq can interrupt a CPU holding dirty_lock and
-enter the console rendering path, which can attempt to acquire
-dirty_lock again.
+	c =3D scr_readw(vc_pos);
+	src =3D vc_font.data + ((c & charmask) * w * height);
 
-The following lockdep report was observed on an RK3566 system with
-CONFIG_PROVE_LOCKING enabled:
+where charmask is 0x1ff when vc_hi_font_mask is set. The screen buffer
+value comes directly from scr_readw() and may be larger than the current
+font's glyph count.
 
-  WARNING: possible irq lock inversion dependency detected
-  swapper/2/0 just changed the state of lock:
-  (console_owner){-...}-{0:0}
-  but this lock took another, HARDIRQ-unsafe lock in the past:
-  (&par->dirty_lock){+.+.}-{2:2}
+Syzkaller triggers this via vcs_write(). The Call Trace shows
+vcs_write() in vc_screen.c writing an arbitrary 16-bit value with
+writev() to /dev/vcsa, which vcs_write_buf() in vc_screen.c stores via
+vcs_scr_writew() without checking charcount. The stored value is later
+read in bit_cursor() in bitblit.c.
 
-  CPU0                    CPU1
-  ----                    ----
-  lock(&par->dirty_lock);
-                         local_irq_disable();
-                         lock(console_owner);
-                         lock(&par->dirty_lock);
-  <Interrupt>
-    lock(console_owner);
+When the font is changed from a font with 512 glyphs to a font with
+256 glyphs, the screen buffer can retain characters with the high
+bit set from the previous mode, which could also produce the same=20
+out-of-bounds access.
 
-  *** DEADLOCK ***
+  BUG: KASAN: global-out-of-bounds in soft_cursor+0x378/0x6bc drivers/video=
+/fbdev/core/softcursor.c:70
+  Read of size 16 at addr ffff800086c57970
 
-Use spin_lock_irqsave() for fbtft_mkdirty() and spin_lock_irq() for
-fbtft_deferred_io(). They only access the dirty line range, so the
-IRQ-off regions remain short.
+  Call Trace:
+   soft_cursor+0x378/0x6bc drivers/video/fbdev/core/softcursor.c:70
+   bit_cursor+0xa90/0x1108 drivers/video/fbdev/core/bitblit.c:365
+   fbcon_cursor+0x344/0x498 drivers/video/fbdev/core/fbcon.c:1427
+   hide_cursor+0xdc/0x2d0 drivers/tty/vt/vt.c:883
+   update_region+0x100/0x18c drivers/tty/vt/vt.c:669
+   vcs_write+0x8ec/0xaf0 drivers/tty/vt/vc_screen.c:685
 
-Fixes: c296d5f9957c ("staging: fbtft: core support")
-Signed-off-by: Hui Su <sh_def@163.com>
+bit_putcs_aligned() and bit_putcs_unaligned() already clamp the glyph
+index to vc_font.charcount. Apply the same clamp in bit_cursor() after
+extracting the attribute and masking, before indexing fontdata.
+
+The fix completes the bounds checking started in commit 18c4ef4e765a
+("fbdev: bitblit: bound-check glyph index in bit_putcs*"), which missed
+the cursor path.
+
+This change should be safe because the clamp reuses the existing
+contract from fbcon: charcount is maintained under console_lock in
+con_font_set() and fbcon_font_set(), and hi_font_mask is cleared when
+switching from 512 to 256 glyphs. When stale screen data with high bits
+remains after a font switch, or when vcs_write() stores an arbitrary
+value, clamping the index to 0 prevents the out-of-bounds read without
+changing cursor semantics =E2=80=94 the same fallback bit_putcs uses.
+
+Reported-by: syzbot+61b1db46218109869c14@syzkaller.appspotmail.com
+Closes: https://syzkaller.appspot.com/bug?extid=3D61b1db46218109869c14
+Link: https://lore.kernel.org/all/6a75205c.01d0871a.3a0d52.0032.GAE@google.=
+com/
+Fixes: 18c4ef4e765a ("fbdev: bitblit: bound-check glyph index in bit_putcs*=
+")
+Cc: stable@vger.kernel.org
+Assisted-by: Hermes:muse-spark-1.2 syzkaller
+Signed-off-by: Rik van Riel <riel@surriel.com>
 ---
-Changes in v2:
-- Drop the comment explaining the lock ordering in fbtft_mkdirty().
-- Use spin_lock_irq() in fbtft_deferred_io(), since it runs in workqueue
-  context with interrupts enabled.
+ drivers/video/fbdev/core/bitblit.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-v1: https://lore.kernel.org/lkml/20260804173712.176017-1-sh_def@163.com/
-
- drivers/staging/fbtft/fbtft-core.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index ca0c38221c16..7925d974de80 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -298,14 +298,15 @@ static void fbtft_mkdirty(struct fb_info *info, int y, int height)
- {
- 	struct fbtft_par *par = info->par;
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	unsigned long flags;
- 
- 	/* Mark display lines/area as dirty */
--	spin_lock(&par->dirty_lock);
-+	spin_lock_irqsave(&par->dirty_lock, flags);
- 	if (y < par->dirty_lines_start)
- 		par->dirty_lines_start = y;
- 	if (y + height - 1 > par->dirty_lines_end)
- 		par->dirty_lines_end = y + height - 1;
--	spin_unlock(&par->dirty_lock);
-+	spin_unlock_irqrestore(&par->dirty_lock, flags);
- 
- 	/* Schedule deferred_io to update display (no-op if already on queue)*/
- 	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
-@@ -318,13 +319,13 @@ static void fbtft_deferred_io(struct fb_info *info, struct list_head *pagereflis
- 	struct fb_deferred_io_pageref *pageref;
- 	unsigned int y_low = 0, y_high = 0;
- 
--	spin_lock(&par->dirty_lock);
-+	spin_lock_irq(&par->dirty_lock);
- 	dirty_lines_start = par->dirty_lines_start;
- 	dirty_lines_end = par->dirty_lines_end;
- 	/* set display line markers as clean */
- 	par->dirty_lines_start = par->info->var.yres - 1;
- 	par->dirty_lines_end = 0;
--	spin_unlock(&par->dirty_lock);
-+	spin_unlock_irq(&par->dirty_lock);
- 
- 	/* Mark display lines as dirty */
- 	list_for_each_entry(pageref, pagereflist, list) {
--- 
-2.43.0
+diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/=
+bitblit.c
+index 65681dcc5930..39f44258d793 100644
+--- a/drivers/video/fbdev/core/bitblit.c
++++ b/drivers/video/fbdev/core/bitblit.c
+@@ -273,9 +273,14 @@ static void bit_cursor(struct vc_data *vc, struct fb_i=
+nfo *info, bool enable,
+ 	if (!vc->vc_font.data)
+ 		return;
+=20
+- 	c =3D scr_readw((u16 *) vc->vc_pos);
++	c =3D scr_readw((u16 *) vc->vc_pos);
+ 	attribute =3D get_attribute(info, c);
+-	src =3D vc->vc_font.data + ((c & charmask) * (w * vc->vc_font.height));
++	c &=3D charmask;
++
++	/* Clamp to font size, same as bit_putcs_aligned() */
++	if (c >=3D vc->vc_font.charcount)
++		c =3D 0;
++	src =3D vc->vc_font.data + (c * (w * vc->vc_font.height));
+=20
+ 	if (par->cursor_state.image.data !=3D (const char *)src ||
+ 	    par->cursor_reset) {
+--=20
+2.55.0
 

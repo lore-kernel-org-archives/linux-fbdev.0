@@ -1,115 +1,165 @@
-Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177])
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com [209.85.208.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AAAA4B04B4
-	for <linux-fbdev@vger.kernel.org>; Sun,  9 Aug 2026 05:33:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.177
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786253608; cv=none; b=jDd6rx1nFLhneY2r13YPmh6988R7STDkZ3k1Doy1J6BPnlHhz3VlRcanTatEsdEDgJeeajpPl0IK7MhB70ertJCOiseVKXyQ13PmYJ4K+IPEYyxQxmBll0tv515lmdW6jsfdcjZO0YSA5r1t28GzdbxpE7CGUbziPTB1DHnOvx4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786253608; c=relaxed/simple;
-	bh=hgdPB8jY0/nbgIb+GxDil7LuMbJzymt/E6nktr5HChg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Y+wSP7NCaGCfOPW0XQcyUoXp29FdiYnnkJIUPDqwOg7SPBSao3TjuJa3FA20KlL0s0WWC1X06rxhS62qA4oefBBVTdtrE1hItEWlFCy3bNqTOkixGq067idwo2A1Op2reAzqN2r5yiaeGbaPR4jzCEpTLKLOuOGbBf26AB0cNOE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GqWzNYvJ; arc=none smtp.client-ip=209.85.214.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C3432FFF90
+	for <linux-fbdev@vger.kernel.org>; Sun,  9 Aug 2026 21:47:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.45
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786312055; cv=pass; b=XmPFQ8Juj5A/16ztyczuHAE2DV00irPV28tN+sQuXSKeDGRQHREN1kOdcq2oDscS6BfIJgJAjVC6THWAIkGNwyMn1SzZgu4Y5VuOa7RFzasdLJJGAdS0QyD+fcL9Pqkf4HXOdPVNSea/WYDjlh960lo/71JaAM6dstkRVqH3ipk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786312055; c=relaxed/simple;
+	bh=y1udmsBEzAQtkixw39R/oiQFVpMr+tk/0BM/vlqjjHw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=fhypND1eCH/ixvDQ14c0gqwv444el98rcRpgu/LiyH50T7ZYShWbFSpNwsIem4TSrouIdp79RWjFEI64IfJ0X8jNR1boGOFkc3OeG7kM6EvczlTBzniMZYj4V6RBp8tPPZHNjicE1RigX+i8oQc1o/MqdrAbOCf0ylSD/QNTUJs=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SptmK6J8; arc=pass smtp.client-ip=209.85.208.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GqWzNYvJ"
-Received: by mail-pl1-f177.google.com with SMTP id d9443c01a7336-2cc61541f8cso36410785ad.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 08 Aug 2026 22:33:27 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SptmK6J8"
+Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-6a063d211ebso1360427a12.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 09 Aug 2026 14:47:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786312052; cv=none;
+        d=google.com; s=arc-20260327;
+        b=AX1FijctHGuKTby42xtSZ+TfztWvmiDx5T9T9SiB7IYPoSs5VVvUO2TkB89yZ3aE1j
+         FIRmg1HtP563eoaF+0UUkOS3RbaLUG3JiEg1JNopkOcl2+NUbMU8JaXEsD7SlLHs930+
+         y7gzO2ap8XkTTwFPS+IpcVnjYH/vNWkMjsuR6vnI2A56qjIKG0FDaPyefZN/sHlCC8FL
+         zUZx1xHr5rLc/elsLlekCMvNug0zWSR15n4sVQqEk2o+NETMZVWFmSUtYRqdnsxFbqNS
+         sUidFL8HGSwcM5t8rPwksvFe8z+a6xftgM+oeTEIMq59lIXA1oTAUSdVE5nhv4GQiEf0
+         q5oA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=kFa6zcCkY2hKTR0O+eW7i6R9ggV2gSRqn9c14SMG6lw=;
+        fh=C+YI0kED4uNhs0BdolELG/10nujK6pggL/J/ZaQAsWk=;
+        b=kD+w314LmO7/J33UOsPOXTumiGwwHgx9SfuNjoAjAbcIKLcJ//gm3rQ1o3dPL+nOEM
+         dgAfxtfFn/JtUMQ8wBd/26iulhD0WC3eXH6jI/ZewI9FVAh4oxNpZfS2qmpvtEjJbz/i
+         qu9Fk6LzaoMurh1YK/aiq8bbfggIUf32ntiRTkhLHerPE38yVPkhCfmxkVOCOsge4BuH
+         3GfpA0Sh7otrcNOoTf6AinCBmrIZIxAUoDr2HAf4pfqX+PJKhR6xJoQQrbl1MVPJ1Cw2
+         DaDDshHuFwOCBBAHdEmfpzHtDCbOmNgfeInYvKfFfJDcG39yWRQzSjnTHCN2evhL/ZmE
+         oAlg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786253607; x=1786858407; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Iiw60go6Fssc+w6jEvdK+NtF+fsX/PqKIb7cNVI3nSc=;
-        b=GqWzNYvJPrOYcdN0xxKbdLqkcAfUYOWWGf0sVVYwEjq4FIqiLXEElt05OtmGYTDZee
-         HU23wsmWW1ONBB4fKBAXuGSBMyefRe4ixE6GMOaP82uiG+YWr0hu6dzOIKckT98QdE/V
-         eVR0xl4RQWku7XVu/jdYRWgS8j4w6TGYJ9lIIbsxiX5c81RNwC2ZWpCm2TTe6sR0BkkU
-         WCDCq3DisboYdXX5RtqaPKWgVryOjcludmyVSxO/g4aeH0pOPOUX1iwhZapoiuJd/11J
-         DnID/vswq2E05lN7jdPOnffVv41d7XKrqHf5YQjhv+mzI+fiI7pg0LwNr4km28NNCHv7
-         G7Jg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786253607; x=1786858407;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+        d=gmail.com; s=20251104; t=1786312052; x=1786916852; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=Iiw60go6Fssc+w6jEvdK+NtF+fsX/PqKIb7cNVI3nSc=;
-        b=sbShQsoEd+UlUsv47pqcvMB0ht5me41epPFZxUxj6hdFNzv05m9sCxu38ZZZpQ8EJk
-         oi4z5LhHm13VK/sWQ9ecgKL0ajwVFgNoatpvgmWYMKAQM9D3jvr35qZltX7qHymJ2PDu
-         TMa3tc7fl8ZgK0yPvSOKARkI9RnhNcdA7jvqN+nGmt64ZQhSymkFvBm6a6NudAKy3I/H
-         ABHv/3/WUHUSApjXViiEtTF91V9zWEyBejkxMHY0AZ8r23JAIRKBfrDrv2nInubY3E2J
-         5tMybStfDHMwLJEBb43prXRAsPXTq3rUq4EMaJ6tW3mPnAHPXX6VtRDPggf2EsjhMMUL
-         Qk8g==
-X-Forwarded-Encrypted: i=1; AHgh+Ro093Wnm5s5BeYaJQezqbRqs4UkT63pUgOJzfs4IB+jqJVIvCB9iOSd5uHHUPCwc/lLYQmq5kLBTvzCEw==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxz9js2yCOspueJObvrurgbDDj/ft3iuG1wyUb+hnF6VVYL3AHv
-	Nfch058qzD4BY5iAQ2FeiCaBsvGqhGFKA8dqszWiDU6H/QTzPZTBh3Rk
-X-Gm-Gg: AR+sD138DxgD+fzb1gI5lrkgSkU4imRdG8F1wI6jjPjZWgSV/1uSTFBzdMEgi7Gh+7L
-	DHmvNUDbMF9+dXaCGlUJ9hNSBsFzQQ1vquzmobAk05tuNwpXZRlc2duCsVWiD/7M9TiHR8JIDFP
-	/YNKgJ55lCyRKL+dabimnrWXGmz/Nk09aB3Lyp01v8ARVfRbVy+QDEuzJSXAm/MB03OrutH9F4u
-	sifGgWDDCJNK/brRz3J/vO1iSqLySy7HQtB5Na1SCkm6RKvbDXQ8SIQV7PJmDU1XHlL5gUt/sIE
-	xCFDi0+110NCgvP6k7BEMr3f4SwqF/bRcILUwiNDXPfVnT8Kg1OSeL9B3JnRyS+kUTYi/2i7cEz
-	Ji3BwSHz51Z+JoApaie+ZdRQt7cboKiXD8hPBDWUPwYHkTCaF3gForI62UT80huA8ip5IKhCTEY
-	RBfYEfYihj8uKjBp2GMDu9q0A4Tjv8RjPJkjP7YqMZyNtdqwJmkQMOk6gLGHGG
-X-Received: by 2002:a05:6a20:7fa6:b0:3bf:ee42:192 with SMTP id adf61e73a8af0-3cbd37eeb4emr10610214637.6.1786253606859;
-        Sat, 08 Aug 2026 22:33:26 -0700 (PDT)
-Received: from preetish-pc.. ([36.255.86.159])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315beb88413sm44390386eec.18.2026.08.08.22.33.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 08 Aug 2026 22:33:26 -0700 (PDT)
-From: Preetish Amballi <amballip@gmail.com>
-To: andy@kernel.org,
-	gregkh@linuxfoundation.org
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Preetish Amballi <amballip@gmail.com>
-Subject: [PATCH] staging: fbtft: Fix wrong controller name in fb_bd663474
-Date: Sun,  9 Aug 2026 11:02:53 +0530
-Message-ID: <20260809053253.14537-1-amballip@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        bh=kFa6zcCkY2hKTR0O+eW7i6R9ggV2gSRqn9c14SMG6lw=;
+        b=SptmK6J80H4u0YjRuUn+UWrZLYdNILBlIyLTGcH54BP5NF7eVpLbZ7tLdNk+xSuwe6
+         fZ+rw2oH+YEUEZv6Cslbor1usE4IYugU2i0itFAggZ+proV9ZsPYcwnNSXIhRGAm39+N
+         45WZMicJKeBCKD2aZy1C3sCh6j2VK3+mrWIeHgCAkIgz5w9nYLh8hXQ2wWi0Kf33S/TW
+         Aj/5SWFFz0gW8TeEW6dnH6mT7foMeTdiFT1EyQKHE7RuA3WB24WU5uP3nlNFUkLxbNdl
+         tf/6rc5ZC8JZdMGgTqDY09/rlksTBKtxVt3MBVAdLEIkA8ZoeUbZDoLYZKoJtg/+USTi
+         mYmw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786312052; x=1786916852;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=kFa6zcCkY2hKTR0O+eW7i6R9ggV2gSRqn9c14SMG6lw=;
+        b=VZbdLibX/QUK5nExipLO3+ZKqzzUPSoMD3c9y7d6bpb0PHUzxGu1ADi6qzhikeSEK4
+         B06buJ2e73GLK0CT5cZmXJmrbOUhK2nFbjewv4RpG2Tf3/o7Wk3kwLfjAEcGHAydOXrb
+         GlONQhpMcBrgMWuhxA/x11ZCpQeIHNDhvUj6izp4I9HfEl5LEE6mREMSzYkeWCGZO6+r
+         Ekz9Vs1FFyQK/swfU6Gl7qQlSM8D5wQdUlkVP/U4e/g6z1+nahs7PARhFaaPbnwprsLM
+         c42RXBADYrVlGS4dF5K0xF9+W4lrt3Klz8n01zraORjUJbzLCyzBiNnSBldDMM61CRez
+         us7Q==
+X-Forwarded-Encrypted: i=1; AHgh+Rr9Xx2+mwohinR9jxse5YlrkYVK5I2VIre6w/HZHit4ZyqRfm4NWBo/eW/xnSdWWyTekh9RVa1WCY2tBA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxvm+Q6v6zw4SWuYQyEJp9wPIX28VhCVg7wDqcj0Y3UijVxnHeJ
+	n6OALUYSaYCiXUHFWpEkh00O8s633gtDFrufNYOY86x3wLZfCkwP7cjWiKjPWHwLRT5DLF6fLDN
+	pCcMmomprYH00To7iKW+h4rP7mWC2rS8=
+X-Gm-Gg: AR+sD12sGoB8LjIfEJkSWT+vwSkyMN1G+Nm+/LCpO8S5teSviuxxQX4ArjhKA8cE657
+	XXqgv/wTgFeIIfvG/LmYMbqxJZgzOmgbLH2lNEhi+pfs/goNo9xtPk1bsH6/1A1oDK9GhEHlrOk
+	7s9Ep1phnjBjgqSPi3rLNAZIBM+hN/EB4h3E8De/d3fS0nD7iUsNtQCofcYwF+3ExrbTk8P5Tah
+	v3LwZbivdQmGrp6nJt0nROu1uSGEwLXBVa+ZD8f6x0qx1GJgdayop62liXNdKXnMvsZ2loo80FF
+	VlX8s7MAOpbKFGJYaj9lDVHivp+uLOFcnMJ2wD4DVPHO
+X-Received: by 2002:a05:6402:3215:b0:6a0:ffb0:273b with SMTP id
+ 4fb4d7f45d1cf-6a14f00169fmr20000239a12.0.1786312052321; Sun, 09 Aug 2026
+ 14:47:32 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20260804225617.264861-1-maximpedraza@gmail.com>
+ <20260804225617.264861-3-maximpedraza@gmail.com> <anb6ejVQMPqD7G3r@carbonx1>
+In-Reply-To: <anb6ejVQMPqD7G3r@carbonx1>
+From: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>
+Date: Mon, 10 Aug 2026 01:47:16 +0200
+X-Gm-Features: AUfX_mzKCodxQvroNt5kk61f8zcTHiHxpI_vZk2XUB7pEBxAz8egjMYfztdkV_Y
+Message-ID: <CAEUXW=GPXiGaShnDp4X8UrK+2_cgd2NS3XPZyJCP4i83wOdGEw@mail.gmail.com>
+Subject: Re: [PATCH v2 2/6] video: logo: allow the boot logo to come from the
+ device tree
+To: Helge Deller <deller@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, Maxime Ripard <mripard@kernel.org>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <ukleinek@kernel.org>, 
+	devicetree@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The file fb_bd663474.c is a driver for the BD663474 LCD controller,
-but the comment header and MODULE_DESCRIPTION incorrectly reference
-'uPD161704' — a copy-paste error from fb_upd161704.c.
+El s=C3=A1b, 8 ago 2026 a las 11:44, Helge Deller (<deller@kernel.org>) esc=
+ribi=C3=B3:
+> This patch feels "stamped in" into the existing code.
+> I do understand that it is by itself clean, but maybe merging it
+> better with the existing code makes sense.
 
-Fix the comment and MODULE_DESCRIPTION to say 'BD663474' instead of
-'uPD161704'.
+You were right. The placement is now a patch of its own at the front of the
+series, with no device tree in it:
 
-Signed-off-by: Preetish Amballi <amballip@gmail.com>
----
- drivers/staging/fbtft/fb_bd663474.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+  struct fb_logo_placement {
+s32 x, y; /* -1 centres on that axis */
+s32 offset_x, offset_y;
+  };
 
-diff --git a/drivers/staging/fbtft/fb_bd663474.c b/drivers/staging/fbtft/fb_bd663474.c
-index 1629c2c440a9..c34f859043ef 100644
---- a/drivers/staging/fbtft/fb_bd663474.c
-+++ b/drivers/staging/fbtft/fb_bd663474.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0+
- /*
-- * FB driver for the uPD161704 LCD Controller
-+ * FB driver for the BD663474 LCD Controller
-  *
-  * Copyright (C) 2014 Seong-Woo Kim
-  *
-@@ -166,6 +166,6 @@ MODULE_ALIAS("platform:" DRVNAME);
- MODULE_ALIAS("spi:bd663474");
- MODULE_ALIAS("platform:bd663474");
- 
--MODULE_DESCRIPTION("FB driver for the uPD161704 LCD Controller");
-+MODULE_DESCRIPTION("FB driver for the BD663474 LCD Controller");
- MODULE_AUTHOR("Seong-Woo Kim");
- MODULE_LICENSE("GPL");
--- 
-2.43.0
+fb_center_logo is exactly {-1, -1}, so it stops being a second path, and th=
+e
+device tree patch only fills the same structure in.
 
+It also turned up a bug. fb_prepare_logo() and fb_show_logo_line() each ope=
+n
+coded the same decision, and my patch had made them disagree: the reservati=
+on
+took the larger of the console position and the device tree one, the drawin=
+g
+took only the device tree one. Both call one function now.
+
+> why so many fb_logo_dt_read() calls?
+
+Down to one, in fb_prepare_logo(). fb_show_logo() is only reached through
+logo_shown =3D=3D FBCON_LOGO_DRAW, which fbcon_prepare_logo() sets.
+
+> I usually prefer if people use the IS_ENABLED(CONFIG_XXX) macro instead
+> and put it at specific entry places
+
+Done in both files, following your example.
+
+Checked with CONFIG_OF=3Dn on x86_64: neither object is left with an unreso=
+lved
+of_* symbol, and the structure is dropped from .bss. That last part needed =
+a
+second IS_ENABLED() in an accessor that read it unguarded, or the compiler
+could not prove the read dead. Also built a Cell config, where SPU_BASE mak=
+es
+CONFIG_FB_LOGO_EXTRA real, to a linked vmlinux.
+
+logo.c was the other file with an #ifdef around it. The rest of the series =
+is
+the binding, the reserved memory parsing and the host tool, none of it
+conditional, so there was nothing else to convert.
+
+One thing the reread turned up: fb_logo_axis() added a coordinate and an
+offset, both straight from the device tree, in int, and the binding bounded
+neither. A large pair wrapped instead of landing against an edge. It is don=
+e
+in 64 bits now and both properties are bounded.
+
+The series needs this, or dtbs_check rejects the node wherever it appears:
+
+  https://github.com/devicetree-org/dt-schema/pull/204
+
+Max

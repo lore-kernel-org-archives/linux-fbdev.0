@@ -1,116 +1,120 @@
-Received: from mail-lj1-f174.google.com (mail-lj1-f174.google.com [209.85.208.174])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9154F39A04F
-	for <linux-fbdev@vger.kernel.org>; Mon, 10 Aug 2026 07:07:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.174
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786345658; cv=pass; b=XeXyhrRrVMrkh7nqrVH4SXEf77wqDu8ohO7i6Bp8xydb3tl2bd0hAYd64kQ0qoLbKmfWowa0BzMMrLnj8CJrdVAW0B4miYedHAoxtfQNtuTHQWbgU04IF5lbUQ1YKI27C+41PcVcr4Kh/g3+ySMlXZ4Ipe52l05tN824l/HFBA8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786345658; c=relaxed/simple;
-	bh=t0itK36weHoU2jtoEAt96DrFUj7FEsHjlM30gbeY12U=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=rPjKPR3WcjwXkQ5KxRsdDe5WeXsWNCdkI5yRgOi7HJHcJLqB6Xa0mLQklxOz7bX1f0q6ilBh2nxViWrA7ZqQxareixlzGI2IgZuTTOMWQg1KHCT+IOb5X5BhqCdSxBEFUfs0FcHGdZ6nGxFs6RQposXpMIB7OI2+nQG52V+WJwE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JpNlbQyi; arc=pass smtp.client-ip=209.85.208.174
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 938F93A7F70;
+	Mon, 10 Aug 2026 09:02:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786352531; cv=none; b=kgsnavBaAPxhbn5B5wH6EFc0GTSQhp4viqM43yxgPka1nAkOwnqB3MRfzqrN+SQCgCss9fB1QktYGP2/oT+KKUIZFpNzMsLqDwryWKBKDP1IOOgC0M3/lUu3OHXGoWOI6FMp6yRv6+9gN2vBMn13AnVUdQMk+SA4cw2O/Q9mhiQ=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786352531; c=relaxed/simple;
+	bh=HdpBme/9t/xZqKfAX+GpR5irQSAM7NC/ySAMmoe/4aQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=eg9YG+kbfMbVlkUYzdkH1XZooV19UYv7xmvBstKiTPVly0pL83QqqBFhkkWEa4V9lewo9vvNWRNXE6CwZJ4Msgs/XKdl240O6p9olEXCN0J6hMh/VIaBCrYiX5ShbQ3Moc1eZ8w5e8YjqBcnaM9c0XsCfnqt8CLPYtDg5rgbrO8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DRwl1wy6; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JpNlbQyi"
-Received: by mail-lj1-f174.google.com with SMTP id 38308e7fff4ca-39f20d19895so10305651fa.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 10 Aug 2026 00:07:36 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1786345655; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Z7IKRDyXYte5PJKYQ8sWzrLV3FNGeZBoB3zhXnB+V75Z6tU7gf7onsOzytwWd3nxXd
-         f3oukLwOKrTY1TmqyUDoVhLouU9pQ+ju8AnDx2hPCM5GoL/NqVAL0EKj+rYKRZiMYBDO
-         obTwYTRgSOvChY8zgL0yA8929PoiZzGvru+4oWbNyUjoM1AqlAHBxM20tQfYErZLvXVJ
-         bl459EPd9TXUDQsIbv9eQDunPUfn4n55AnMeUINsYuKfopu1Io42dByChFZOSq97Gn7N
-         VCH00k0yiZ+X/bSVzX7cXAFk5mwbkE7VvU+UxsVzee0ItvfcBnrguOZl5G4gi09Ja7M3
-         T0UQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=t0itK36weHoU2jtoEAt96DrFUj7FEsHjlM30gbeY12U=;
-        fh=qOSZtA2xa/1FtK/lDK8lCJuRaTiQfZz9orF6ei/292Q=;
-        b=Je5FX5aEe3BDQmGE2f0WYN+gXsgG/Vy2plvTAdBlLEVFlSmK/paMGthzA7FggQeWTB
-         5RnBEvkTUPjntelrfgh+tUhmeK01kGTsbbVyGJrhW31D05W4xFPSSrKEzZ9POnExuzOk
-         RFTvmdB2TmBVjudLL6lDxrCzQ4yw75lA9IS1K/4ouHqgEUt1Z4vK7DqJAQSolTXi+mzC
-         cmoATMVJemuKLjU/3yYeUyYVlmLQ9SkewFTPoCUbGgHDJ2jH+Y7ZSNBQ+OA4o7Ov2G7h
-         RoXAs5LVm3aOeDjFrZgtaHQqpm+Si4/z1EFl2a7uBaSju0KnoYrS8r1wkGD8HJ7GqlO3
-         bn2g==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786345655; x=1786950455; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=t0itK36weHoU2jtoEAt96DrFUj7FEsHjlM30gbeY12U=;
-        b=JpNlbQyiGFiGH5kUMXjQ3txd0p2d2psgYv4yIMOJPjKrDdgoLV5T0uGdN9gfAsgSSi
-         K/1iaHy27aH7erW4+FwPdVhygyrQuxmS2z4GUGALvkGPrRjDRBOaChlkDoM320LVtaB+
-         vkAyg0VfYcPkJk1HtYy+7XZ37FQaxyQeXOUsKa7NEeilX3Khpsy7gexZw3NCexIJ9CRf
-         wDn8pPPSDyzc/Yp/Nm+X2j1ee8dbe2Bw0fx6F7oS70nVjelMuCVxkCNZfgdsqueseHfq
-         otnHiKmbraycF2Rx964y9vQTdsVCPSX51XaxGbhvTEuaZQAdrxCQki1IGStxjNE/91p3
-         5SGQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786345655; x=1786950455;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=t0itK36weHoU2jtoEAt96DrFUj7FEsHjlM30gbeY12U=;
-        b=mxcWGVQQcRetMXf5eSwcRqpOQ9Q9St9AJTO8gqC4a7QxseaoV+j8L0Xt/+r2OqiNHJ
-         T1v8vrryturh3j22hci42gl1xBsRXP6LnRIP7gvNdH3hmR8rqrSzf/OhCg/7Je6+BNSq
-         LxkSujKmodn7AXzNzKSivTk+YzKwtidWo2P9pbSW6KQAo0qHCp1YA8Jp2PYum1QMVO/C
-         pmyoOw8jP3E5HYA6/2CwHvPKFgNS58xbNCT7aAiBxQrVC7VWWO9wo8S44tj7H+0aqskC
-         ZIpjkZU0ZrDommnMSrJl0541txjTwEHSkJowuB70UANlgCUUoAiy1tiboaymQzlCf3xR
-         yWAQ==
-X-Forwarded-Encrypted: i=1; AHgh+RqmW8ve6fsVDUVh10iDYkp7Zxaz5qbL15gN83+XG7K43coHM/OckcgXlWHu89r3dKAr81Yt+ihKF0unSQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwIDb2wuqG8ZoYkwnH2Tea+UG1plepX9xKE1vk85xgrBFVXoFwp
-	CQPn0boR+AJZQXutebGtb0lUoqriy+dF2j1AymxS0yD8nvsUBjRYoH7pn4zqyEGYAzfnblYp2Qg
-	WFvUz9Z5tJr8WeJuuKis29YzxXlJFlPQ=
-X-Gm-Gg: AR+sD13Hi8R4O+qkvhE2XFZ8Irb8f9IYNDJB1T/HW9XEYsCHbHklLomTYLB3Ur/A6V2
-	ClQYc3jDn8Sst1VmZrOZT7iomgRXJY7m6Hr79kZt6OPRpc55mSfCfDJept/Q6QVAv0Tgw8Ug99J
-	rog1BzOkq4nE2PMsKx3DJt0+LSx4A3EcspT/kXPr/IaFgJxNDK3esEYmWFkoT/0XlxvZQld4jLo
-	sPeT6g5nik/ekHomPtSqe9sBSckiXgiEXU4kIVwmWB0/MNcMDm26IPC1BoBknMstOR1Lg/ljZqu
-	0RUaXceru9jcPpk5YBoZl1LX7wpJprGGp25+VFIDvM/hSYymIulwr1T7bkt7GOuEEiKM/X4vrhm
-	Afllu0do3Hd6t4zbfoQtw3jruGbgKmEfWOyfYiTZno6EoIlaGECo0XwxwwA+X+nmbvjaysB9XKH
-	OEnxqrRhAs4my4R3OEq6wZ7PfbhwsziqKdrNbrBO87kg==
-X-Received: by 2002:a05:651c:c8d:b0:39a:cfe9:247f with SMTP id
- 38308e7fff4ca-39fbb301b83mr46526421fa.31.1786345654462; Mon, 10 Aug 2026
- 00:07:34 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DRwl1wy6"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5F9F1F000E9;
+	Mon, 10 Aug 2026 09:02:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786352530;
+	bh=HdpBme/9t/xZqKfAX+GpR5irQSAM7NC/ySAMmoe/4aQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=DRwl1wy6wJ8GczC3ap6xxrKWs6ZWkvS3tMC6pAb1FetOncUzJRQtKCIq8+lfKKBOX
+	 g5fk/FmVLnywzijHBkrEdqvogicRLGraYhBoW5Q+Llea0yby+ZTm3zhEmvTVBm6uw9
+	 RdjnDQIkhC7C5XVaot/kmNFo90CIWOu2tpgvpjyf5BDbuqO30IkFK+P5SUyq9EPDr0
+	 JwDDCKgoux6qgWhqeMyxUFoM5iZT/lZSwE73c4gggOlk4/MqdWvxlIw9T3wVFrc3Dg
+	 J8QhXDvQ/4d5GXMzUMS+5dmx+ggKza+XFObqYsmq8EZnfpUNjmdJT56EYNbGtSD2Bi
+	 /XrrjrsbBJ0iA==
+Date: Mon, 10 Aug 2026 11:02:07 +0200
+From: Maxime Ripard <mripard@kernel.org>
+To: =?utf-8?B?TcOgeGlt?= Pedraza Padilla <maximpedraza@gmail.com>
+Cc: Helge Deller <deller@gmx.de>, 
+	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
+Message-ID: <20260810-devout-pig-of-performance-595ccc@houat>
+References: <20260731215043.30392-1-maximpedraza@gmail.com>
+ <am2mvECnCcO9IxuI@monoceros>
+ <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
+ <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260809053253.14537-1-amballip@gmail.com>
-In-Reply-To: <20260809053253.14537-1-amballip@gmail.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Mon, 10 Aug 2026 10:06:58 +0300
-X-Gm-Features: AUfX_mwVA-ExyPEAQSrd3nXoSIktRzqRF1T8EbwlfOAr0G0N12s_EaUlhji3NvU
-Message-ID: <CAHp75VcFkgrcBKJcvm8Br164MA8jM1xRKahBuZ-WPgEBwfi5Fg@mail.gmail.com>
-Subject: Re: [PATCH] staging: fbtft: Fix wrong controller name in fb_bd663474
-To: Preetish Amballi <amballip@gmail.com>
-Cc: andy@kernel.org, gregkh@linuxfoundation.org, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha384;
+	protocol="application/pgp-signature"; boundary="jlvsv7mq5dpw6ycy"
+Content-Disposition: inline
+In-Reply-To: <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
+
+
+--jlvsv7mq5dpw6ycy
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
+MIME-Version: 1.0
 
-On Sun, Aug 9, 2026 at 8:33=E2=80=AFAM Preetish Amballi <amballip@gmail.com=
-> wrote:
->
-> The file fb_bd663474.c is a driver for the BD663474 LCD controller,
-> but the comment header and MODULE_DESCRIPTION incorrectly reference
-> 'uPD161704' =E2=80=94 a copy-paste error from fb_upd161704.c.
->
-> Fix the comment and MODULE_DESCRIPTION to say 'BD663474' instead of
-> 'uPD161704'.
+Hi,
 
-LGTM,
-Reviewed-by: Andy Shevchenko <andy@kernel.org>
+On Sun, Aug 02, 2026 at 12:01:58AM +0200, M=C3=A0xim Pedraza Padilla wrote:
+> Uwe Kleine-K=C3=B6nig wrote:
+> > My 0.02=E2=82=AC: Usually you want to use the display using drm and not=
+ fb once
+> > the machine is fully booted. If you're using fb during boot to display a
+> > logo, it's hardly possible to switch to drm later in the boot process
+> > without flicker.
+> >
+> > So my recommendation for your usecase is to not use the kernel boot logo
+> > stuff, but something like https://github.com/pengutronix/platsch.
+>=20
+> Thanks for the pointer, I did not know platsch and it looks like a good
+> fit for the problem it solves. It does not solve mine, though, and I
+> think the reason is worth spelling out, because it is not about how the
+> image gets drawn but about when.
+>=20
+> These are industrial units, and the requirement is time to first pixel
+> after power is applied. If the panel stays dark for more than a moment
+> the unit reads as dead, and that is a support call. Anything running in
+> userspace is by construction later than the kernel: it needs the kernel
+> booted, the rootfs mounted and init far enough along to exec it. I can
+> measure the exact difference on our hardware if that is useful for the
+> discussion.
+>=20
+> We do already paint a BMP from U-Boot, which is as early as we can
+> possibly be. The problem is the gap that follows: once the display
+> driver probes, the panel is cleared, and nothing puts anything back
+> until userspace is running. Moving the logo further out into userspace
+> widens that gap rather than closing it. The kernel boot logo is what
+> fills it, and that is the whole reason this series exists.
 
---=20
-With Best Regards,
-Andy Shevchenko
+If the sole reason for this series is to keep having something on the
+display while the kernel boots until DRM catches up, then you probably
+want to check
+
+https://lore.kernel.org/r/20260629-drm-state-readout-v4-0-5966657980ed@kern=
+el.org
+
+Which also does what you're trying to achieve: keep the display running
+with the same content while the DRM driver loads, and switch to whatever
+comes next without a flicker (if we can).
+
+Maxime
+
+--jlvsv7mq5dpw6ycy
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCanmTiAAKCRAnX84Zoj2+
+dv6HAX9W/YXoO7mIxYM1dW13th4tADPga2R/eJrH9jUS2EpeZODDGQI35Bz22jXD
+BzPgq0EBgITlzetN/7l5R6fMid4G29Yo7pdhJkE7hJygLXhy0ruNuW9u8AtJTfKp
+9bLeQ/WtyQ==
+=MPTn
+-----END PGP SIGNATURE-----
+
+--jlvsv7mq5dpw6ycy--

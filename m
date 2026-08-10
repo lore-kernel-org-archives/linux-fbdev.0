@@ -1,205 +1,116 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-f174.google.com (mail-lj1-f174.google.com [209.85.208.174])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13D4C276038;
-	Mon, 10 Aug 2026 03:29:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786332576; cv=none; b=lenBfe64llf5N85+0zgZOtnT9UD8ylzLbYpl0CGoBtX2SxsuXpT4RuhGTnoz75H3UCPQ1HE4AlS8a0Vszb2RWmujUuueLgnj2/ffcNqkBG5eupey63aTBN3WQhZaold6iyleuWKdQBaWVn4Rkv30pWS5g5yFqaeu/hZOVzfwvy4=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786332576; c=relaxed/simple;
-	bh=NXzUDuKA+/uw7lgZLuhWJ2T0behu8TLnFwR3fxD2ofc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TNVJFAzIBTVLC7sVcDhREJhbpn55t653itq7JBWHqjTDFrf0d2EqxexBo2W+Wka2sZDp1SgdxGonmzckREoyrU4cUFjHuIcB9cmu5/uUj0DmPhqWUlbblxWOpAhZOqFak3dOMe8uWTTNfONKfn/dtePwjzsrNIUamYtWICLaB5M=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=yZsLOpa/; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9154F39A04F
+	for <linux-fbdev@vger.kernel.org>; Mon, 10 Aug 2026 07:07:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.174
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786345658; cv=pass; b=XeXyhrRrVMrkh7nqrVH4SXEf77wqDu8ohO7i6Bp8xydb3tl2bd0hAYd64kQ0qoLbKmfWowa0BzMMrLnj8CJrdVAW0B4miYedHAoxtfQNtuTHQWbgU04IF5lbUQ1YKI27C+41PcVcr4Kh/g3+ySMlXZ4Ipe52l05tN824l/HFBA8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786345658; c=relaxed/simple;
+	bh=t0itK36weHoU2jtoEAt96DrFUj7FEsHjlM30gbeY12U=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=rPjKPR3WcjwXkQ5KxRsdDe5WeXsWNCdkI5yRgOi7HJHcJLqB6Xa0mLQklxOz7bX1f0q6ilBh2nxViWrA7ZqQxareixlzGI2IgZuTTOMWQg1KHCT+IOb5X5BhqCdSxBEFUfs0FcHGdZ6nGxFs6RQposXpMIB7OI2+nQG52V+WJwE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JpNlbQyi; arc=pass smtp.client-ip=209.85.208.174
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="yZsLOpa/"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=2mXr+36gQcVouoMzQ7KrVvAve6jSBWSK45dYP1ruE3s=; b=yZsLOpa/KvV6fqnglFbg4wE62d
-	JivkRFHRaWx4c8tMMJP9+EJGS7ZBhgc4s68xyOZUThN5X5gJ4qNaW0PZ5okCAd6VnnP7THswjZbqG
-	kJvQQMfFlQFZ8T08UiWTIHLqWu6lJn6MZGq6EbvXQWoU5CDoKRNmmBGWD1g3lMyxCUB40SFgANEIY
-	Qxg6YVY/lG40FtEb1EdTT1eXTLL48T4bShBrSXWe6/cRzm+tttAJBFtS7g804bPCBDV+7S+OxaLDP
-	bOdOPURaUXpW8DtrqW8w0D1QhUuP9Dwobnedbz8zQARptC3PG2GZXv0s8m3AuSEdhyDH5GCQpkxG1
-	IK3h95Yw==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1wtGhf-0000000AxV3-3S7w;
-	Mon, 10 Aug 2026 03:29:31 +0000
-Message-ID: <7282ae0f-3bf5-4eb8-9585-04635de0084a@infradead.org>
-Date: Sun, 9 Aug 2026 20:29:31 -0700
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JpNlbQyi"
+Received: by mail-lj1-f174.google.com with SMTP id 38308e7fff4ca-39f20d19895so10305651fa.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 10 Aug 2026 00:07:36 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786345655; cv=none;
+        d=google.com; s=arc-20260327;
+        b=Z7IKRDyXYte5PJKYQ8sWzrLV3FNGeZBoB3zhXnB+V75Z6tU7gf7onsOzytwWd3nxXd
+         f3oukLwOKrTY1TmqyUDoVhLouU9pQ+ju8AnDx2hPCM5GoL/NqVAL0EKj+rYKRZiMYBDO
+         obTwYTRgSOvChY8zgL0yA8929PoiZzGvru+4oWbNyUjoM1AqlAHBxM20tQfYErZLvXVJ
+         bl459EPd9TXUDQsIbv9eQDunPUfn4n55AnMeUINsYuKfopu1Io42dByChFZOSq97Gn7N
+         VCH00k0yiZ+X/bSVzX7cXAFk5mwbkE7VvU+UxsVzee0ItvfcBnrguOZl5G4gi09Ja7M3
+         T0UQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=t0itK36weHoU2jtoEAt96DrFUj7FEsHjlM30gbeY12U=;
+        fh=qOSZtA2xa/1FtK/lDK8lCJuRaTiQfZz9orF6ei/292Q=;
+        b=Je5FX5aEe3BDQmGE2f0WYN+gXsgG/Vy2plvTAdBlLEVFlSmK/paMGthzA7FggQeWTB
+         5RnBEvkTUPjntelrfgh+tUhmeK01kGTsbbVyGJrhW31D05W4xFPSSrKEzZ9POnExuzOk
+         RFTvmdB2TmBVjudLL6lDxrCzQ4yw75lA9IS1K/4ouHqgEUt1Z4vK7DqJAQSolTXi+mzC
+         cmoATMVJemuKLjU/3yYeUyYVlmLQ9SkewFTPoCUbGgHDJ2jH+Y7ZSNBQ+OA4o7Ov2G7h
+         RoXAs5LVm3aOeDjFrZgtaHQqpm+Si4/z1EFl2a7uBaSju0KnoYrS8r1wkGD8HJ7GqlO3
+         bn2g==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786345655; x=1786950455; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=t0itK36weHoU2jtoEAt96DrFUj7FEsHjlM30gbeY12U=;
+        b=JpNlbQyiGFiGH5kUMXjQ3txd0p2d2psgYv4yIMOJPjKrDdgoLV5T0uGdN9gfAsgSSi
+         K/1iaHy27aH7erW4+FwPdVhygyrQuxmS2z4GUGALvkGPrRjDRBOaChlkDoM320LVtaB+
+         vkAyg0VfYcPkJk1HtYy+7XZ37FQaxyQeXOUsKa7NEeilX3Khpsy7gexZw3NCexIJ9CRf
+         wDn8pPPSDyzc/Yp/Nm+X2j1ee8dbe2Bw0fx6F7oS70nVjelMuCVxkCNZfgdsqueseHfq
+         otnHiKmbraycF2Rx964y9vQTdsVCPSX51XaxGbhvTEuaZQAdrxCQki1IGStxjNE/91p3
+         5SGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786345655; x=1786950455;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=t0itK36weHoU2jtoEAt96DrFUj7FEsHjlM30gbeY12U=;
+        b=mxcWGVQQcRetMXf5eSwcRqpOQ9Q9St9AJTO8gqC4a7QxseaoV+j8L0Xt/+r2OqiNHJ
+         T1v8vrryturh3j22hci42gl1xBsRXP6LnRIP7gvNdH3hmR8rqrSzf/OhCg/7Je6+BNSq
+         LxkSujKmodn7AXzNzKSivTk+YzKwtidWo2P9pbSW6KQAo0qHCp1YA8Jp2PYum1QMVO/C
+         pmyoOw8jP3E5HYA6/2CwHvPKFgNS58xbNCT7aAiBxQrVC7VWWO9wo8S44tj7H+0aqskC
+         ZIpjkZU0ZrDommnMSrJl0541txjTwEHSkJowuB70UANlgCUUoAiy1tiboaymQzlCf3xR
+         yWAQ==
+X-Forwarded-Encrypted: i=1; AHgh+RqmW8ve6fsVDUVh10iDYkp7Zxaz5qbL15gN83+XG7K43coHM/OckcgXlWHu89r3dKAr81Yt+ihKF0unSQ==@vger.kernel.org
+X-Gm-Message-State: AOJu0YwIDb2wuqG8ZoYkwnH2Tea+UG1plepX9xKE1vk85xgrBFVXoFwp
+	CQPn0boR+AJZQXutebGtb0lUoqriy+dF2j1AymxS0yD8nvsUBjRYoH7pn4zqyEGYAzfnblYp2Qg
+	WFvUz9Z5tJr8WeJuuKis29YzxXlJFlPQ=
+X-Gm-Gg: AR+sD13Hi8R4O+qkvhE2XFZ8Irb8f9IYNDJB1T/HW9XEYsCHbHklLomTYLB3Ur/A6V2
+	ClQYc3jDn8Sst1VmZrOZT7iomgRXJY7m6Hr79kZt6OPRpc55mSfCfDJept/Q6QVAv0Tgw8Ug99J
+	rog1BzOkq4nE2PMsKx3DJt0+LSx4A3EcspT/kXPr/IaFgJxNDK3esEYmWFkoT/0XlxvZQld4jLo
+	sPeT6g5nik/ekHomPtSqe9sBSckiXgiEXU4kIVwmWB0/MNcMDm26IPC1BoBknMstOR1Lg/ljZqu
+	0RUaXceru9jcPpk5YBoZl1LX7wpJprGGp25+VFIDvM/hSYymIulwr1T7bkt7GOuEEiKM/X4vrhm
+	Afllu0do3Hd6t4zbfoQtw3jruGbgKmEfWOyfYiTZno6EoIlaGECo0XwxwwA+X+nmbvjaysB9XKH
+	OEnxqrRhAs4my4R3OEq6wZ7PfbhwsziqKdrNbrBO87kg==
+X-Received: by 2002:a05:651c:c8d:b0:39a:cfe9:247f with SMTP id
+ 38308e7fff4ca-39fbb301b83mr46526421fa.31.1786345654462; Mon, 10 Aug 2026
+ 00:07:34 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH] fbdev: maxinefb: fix build issues
-To: =?UTF-8?Q?Philippe_Mathieu-Daud=C3=A9?= <philmd@oss.qualcomm.com>,
- linux-kernel@vger.kernel.org
-Cc: "Maciej W. Rozycki" <macro@orcam.me.uk>, Helge Deller <deller@gmx.de>,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org
-References: <20260809234810.982500-1-rdunlap@infradead.org>
- <8ce99afa-1162-4910-92a4-6cb2973ea977@oss.qualcomm.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <8ce99afa-1162-4910-92a4-6cb2973ea977@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20260809053253.14537-1-amballip@gmail.com>
+In-Reply-To: <20260809053253.14537-1-amballip@gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Mon, 10 Aug 2026 10:06:58 +0300
+X-Gm-Features: AUfX_mwVA-ExyPEAQSrd3nXoSIktRzqRF1T8EbwlfOAr0G0N12s_EaUlhji3NvU
+Message-ID: <CAHp75VcFkgrcBKJcvm8Br164MA8jM1xRKahBuZ-WPgEBwfi5Fg@mail.gmail.com>
+Subject: Re: [PATCH] staging: fbtft: Fix wrong controller name in fb_bd663474
+To: Preetish Amballi <amballip@gmail.com>
+Cc: andy@kernel.org, gregkh@linuxfoundation.org, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Sun, Aug 9, 2026 at 8:33=E2=80=AFAM Preetish Amballi <amballip@gmail.com=
+> wrote:
+>
+> The file fb_bd663474.c is a driver for the BD663474 LCD controller,
+> but the comment header and MODULE_DESCRIPTION incorrectly reference
+> 'uPD161704' =E2=80=94 a copy-paste error from fb_upd161704.c.
+>
+> Fix the comment and MODULE_DESCRIPTION to say 'BD663474' instead of
+> 'uPD161704'.
 
-On 8/9/26 8:24 PM, Philippe Mathieu-Daudé wrote:
-> Hi Randy,
-> 
-> On 10/8/26 01:48, Randy Dunlap wrote:
->> This is all ancient source code from the beginning of git time.
->> Now builds cleanly on 32-bit and 64-bit MACH_DECSTATION.
->>
->> Fixes these build errors/warnings:
->>
->> ../drivers/video/fbdev/maxinefb.c:64:6: warning: no previous prototype for 'maxinefb_ims332_write_register' [-Wmissing-prototypes]
->>     64 | void maxinefb_ims332_write_register(int regno, register unsigned int val)
->>        |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>
->> In file included from ../drivers/video/fbdev/maxinefb.c:34:
->> ../drivers/video/fbdev/maxinefb.c: In function 'maxinefb_ims332_write_register':
->> ../include/video/maxinefb.h:16:41: error: implicit declaration of function 'KSEG1ADDR'; did you mean 'CKSEG1ADDR'? [-Wimplicit-function-declaration]
->>     16 | #define MAXINEFB_IMS332_ADDRESS         KSEG1ADDR(0x1c140000)
->>        |                                         ^~~~~~~~~
->> ../drivers/video/fbdev/maxinefb.c:66:49: note: in expansion of macro 'MAXINEFB_IMS332_ADDRESS'
->>     66 |         register unsigned char *regs = (char *) MAXINEFB_IMS332_ADDRESS;
->>        |                                                 ^~~~~~~~~~~~~~~~~~~~~~~
->> ../drivers/video/fbdev/maxinefb.c:66:40: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
->>     66 |         register unsigned char *regs = (char *) MAXINEFB_IMS332_ADDRESS;
->>        |                                        ^
->> ../drivers/video/fbdev/maxinefb.c: At top level:
->> ../drivers/video/fbdev/maxinefb.c:74:14: warning: no previous prototype for 'maxinefb_ims332_read_register' [-Wmissing-prototypes]
->>     74 | unsigned int maxinefb_ims332_read_register(int regno)
->>        |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> ../drivers/video/fbdev/maxinefb.c: At top level:
->> ../drivers/video/fbdev/maxinefb.c:74:21: warning: 'maxinefb_ims332_read_register' defined but not used [-Wunused-function]
->>     74 | static unsigned int maxinefb_ims332_read_register(int regno)
->>        |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> ../drivers/video/fbdev/maxinefb.c: In function 'maxinefb_ims332_read_register':
->> ../drivers/video/fbdev/maxinefb.c:76:40: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
->>     76 |         register unsigned char *regs = (char *) MAXINEFB_IMS332_ADDRESS;
->>        |                                        ^
->> ../drivers/video/fbdev/maxinefb.c: At top level:
->> ../drivers/video/fbdev/maxinefb.c:114:12: warning: no previous prototype for 'maxinefb_init' [-Wmissing-prototypes]
->>    114 | int __init maxinefb_init(void)
->>        |            ^~~~~~~~~~~~~
->> In file included from ../drivers/video/fbdev/maxinefb.c:34:
->> ../drivers/video/fbdev/maxinefb.c: In function 'maxinefb_init':
->> ../include/video/maxinefb.h:22:41: error: implicit declaration of function 'KSEG1ADDR'; did you mean 'CKSEG1ADDR'? [-Wimplicit-function-declaration]
->>     22 | #define DS5000_xx_ONBOARD_FBMEM_START   KSEG1ADDR(0x0a000000)
->>        |                                         ^~~~~~~~~
->> ../drivers/video/fbdev/maxinefb.c:119:20: note: in expansion of macro 'DS5000_xx_ONBOARD_FBMEM_START'
->>    119 |         fb_start = DS5000_xx_ONBOARD_FBMEM_START;
->>        |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>
->> Suggested-by: "Maciej W. Rozycki" <macro@orcam.me.uk> # for s/KSEG1ADDR/CKSEG1ADDR/
->> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
->> ---
->> Cc: "Maciej W. Rozycki" <macro@orcam.me.uk>
->> Cc: Helge Deller <deller@gmx.de>
->> Cc: linux-fbdev@vger.kernel.org
->> Cc: dri-devel@lists.freedesktop.org
->> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
->> Cc: linux-mips@vger.kernel.org
->>
->>   drivers/video/fbdev/maxinefb.c |   17 ++---------------
->>   include/video/maxinefb.h       |    4 ++--
->>   2 files changed, 4 insertions(+), 17 deletions(-)
->>
->> --- linux-next-20260807.orig/drivers/video/fbdev/maxinefb.c
->> +++ linux-next-20260807/drivers/video/fbdev/maxinefb.c
->> @@ -61,7 +61,7 @@ static struct fb_fix_screeninfo maxinefb
->>     /* Handle the funny Inmos RamDAC/video controller ... */
->>   -void maxinefb_ims332_write_register(int regno, register unsigned int val)
->> +static void maxinefb_ims332_write_register(int regno, register unsigned int val)
->>   {
->>       register unsigned char *regs = (char *) MAXINEFB_IMS332_ADDRESS;
->>       unsigned char *wptr;
->> @@ -71,19 +71,6 @@ void maxinefb_ims332_write_register(int
->>       *((volatile unsigned short *) (wptr)) = val;
->>   }
->>   -unsigned int maxinefb_ims332_read_register(int regno)
->> -{
->> -    register unsigned char *regs = (char *) MAXINEFB_IMS332_ADDRESS;
->> -    unsigned char *rptr;
->> -    register unsigned int j, k;
->> -
->> -    rptr = regs + 0x80000 + (regno << 4);
->> -    j = *((volatile unsigned short *) rptr);
->> -    k = *((volatile unsigned short *) regs);
->> -
->> -    return (j & 0xffff) | ((k & 0xff00) << 8);
->> -}
->> -
->>   /* Set the palette */
->>   static int maxinefb_setcolreg(unsigned regno, unsigned red, unsigned green,
->>                     unsigned blue, unsigned transp, struct fb_info *info)
->> @@ -111,7 +98,7 @@ static const struct fb_ops maxinefb_ops
->>       .fb_setcolreg    = maxinefb_setcolreg,
->>   };
->>   -int __init maxinefb_init(void)
->> +static int __init maxinefb_init(void)
->>   {
->>       unsigned long fboff;
->>       unsigned long fb_start;
->> --- linux-next-20260807.orig/include/video/maxinefb.h
->> +++ linux-next-20260807/include/video/maxinefb.h
->> @@ -13,13 +13,13 @@
->>   /*
->>    * IMS332 video controller register base address
->>    */
->> -#define MAXINEFB_IMS332_ADDRESS        KSEG1ADDR(0x1c140000)
->> +#define MAXINEFB_IMS332_ADDRESS        CKSEG1ADDR(0x1c140000)
->>     /*
->>    * Begin of DECstation 5000/xx onboard framebuffer memory, default resolution
->>    * is 1024x768x8
->>    */
->> -#define DS5000_xx_ONBOARD_FBMEM_START    KSEG1ADDR(0x0a000000)
->> +#define DS5000_xx_ONBOARD_FBMEM_START    CKSEG1ADDR(0x0a000000)
-> 
-> The change looks correct, but clearly this has never been tested
-> on a 64-bit DECstation, so I'm not sure having this code being
-> now built is an improvement.
-> 
-> What about:
-> 
-> -- >8 --
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index ac9ac4287c6a..ff17afe6b8b3 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -1436,7 +1436,7 @@ config FB_PMAGB_B
-> 
->  config FB_MAXINE
->         bool "Maxine (Personal DECstation) onboard framebuffer support"
-> -       depends on (FB = y) && MACH_DECSTATION
-> +       depends on (FB = y) && MACH_DECSTATION && 32BIT
->         select FB_IOMEM_HELPERS
->         help
->           Support for the onboard framebuffer (1024x768x8) in the Personal
-> ---
-> 
-> ?
+LGTM,
+Reviewed-by: Andy Shevchenko <andy@kernel.org>
 
-I guess I'm OK with that. I'm even OK with removing the driver completely.
-
-Maciej did say in https://lore.kernel.org/all/alpine.DEB.2.21.2308152255080.8596@angie.orcam.me.uk/
-that: "the proper way would be by using `ioremap' really.  I'll make a patch."
-[That was 15.Aug.2023.]
-
-
--- 
-~Randy
-
+--=20
+With Best Regards,
+Andy Shevchenko

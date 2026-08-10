@@ -1,120 +1,87 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 938F93A7F70;
-	Mon, 10 Aug 2026 09:02:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1EAE39AD39;
+	Mon, 10 Aug 2026 10:36:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786352531; cv=none; b=kgsnavBaAPxhbn5B5wH6EFc0GTSQhp4viqM43yxgPka1nAkOwnqB3MRfzqrN+SQCgCss9fB1QktYGP2/oT+KKUIZFpNzMsLqDwryWKBKDP1IOOgC0M3/lUu3OHXGoWOI6FMp6yRv6+9gN2vBMn13AnVUdQMk+SA4cw2O/Q9mhiQ=
+	t=1786358163; cv=none; b=PotaUzHVKNwrRxRMWZV926YVJ8CHqz5Z3SULtQkI56O6UtSNW2ZXo/fj+hu3iJ/rjcae9A3HWOYC89lzX1FQN8HVYSL6YcDKrmhZOMXJgdkhn3cLdYh8a8uyYwCB8PuG6SbWS3W2b55tdLm5jbVjW+Z/65ijl2VwZgIt9wQVrqE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786352531; c=relaxed/simple;
-	bh=HdpBme/9t/xZqKfAX+GpR5irQSAM7NC/ySAMmoe/4aQ=;
+	s=arc-20240116; t=1786358163; c=relaxed/simple;
+	bh=aXlsx6jnI65lLrCHVH/Ds1l8OuKu1/H08tT9GG0irC8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eg9YG+kbfMbVlkUYzdkH1XZooV19UYv7xmvBstKiTPVly0pL83QqqBFhkkWEa4V9lewo9vvNWRNXE6CwZJ4Msgs/XKdl240O6p9olEXCN0J6hMh/VIaBCrYiX5ShbQ3Moc1eZ8w5e8YjqBcnaM9c0XsCfnqt8CLPYtDg5rgbrO8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DRwl1wy6; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=e/XmvLD92XPntK91m2n/aox0U+C9tOize1nHAVjzFzjqzVzdm+BVKL4gnxUrJlFlW4hPQU71JTbuKpFdqV25qycbdoCtrjxbqLSqK3jtSfx159TcGxbeqcDGO8Z/x5lLj+LsPDLYREN598Ka46YxZ7/yB+qFLXDylTxQQtt5Pro=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CWM5bZIS; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DRwl1wy6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5F9F1F000E9;
-	Mon, 10 Aug 2026 09:02:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CWM5bZIS"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26F551F000E9;
+	Mon, 10 Aug 2026 10:35:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786352530;
-	bh=HdpBme/9t/xZqKfAX+GpR5irQSAM7NC/ySAMmoe/4aQ=;
+	s=k20260515; t=1786358162;
+	bh=aXlsx6jnI65lLrCHVH/Ds1l8OuKu1/H08tT9GG0irC8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=DRwl1wy6wJ8GczC3ap6xxrKWs6ZWkvS3tMC6pAb1FetOncUzJRQtKCIq8+lfKKBOX
-	 g5fk/FmVLnywzijHBkrEdqvogicRLGraYhBoW5Q+Llea0yby+ZTm3zhEmvTVBm6uw9
-	 RdjnDQIkhC7C5XVaot/kmNFo90CIWOu2tpgvpjyf5BDbuqO30IkFK+P5SUyq9EPDr0
-	 JwDDCKgoux6qgWhqeMyxUFoM5iZT/lZSwE73c4gggOlk4/MqdWvxlIw9T3wVFrc3Dg
-	 J8QhXDvQ/4d5GXMzUMS+5dmx+ggKza+XFObqYsmq8EZnfpUNjmdJT56EYNbGtSD2Bi
-	 /XrrjrsbBJ0iA==
-Date: Mon, 10 Aug 2026 11:02:07 +0200
-From: Maxime Ripard <mripard@kernel.org>
-To: =?utf-8?B?TcOgeGlt?= Pedraza Padilla <maximpedraza@gmail.com>
-Cc: Helge Deller <deller@gmx.de>, 
-	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-Message-ID: <20260810-devout-pig-of-performance-595ccc@houat>
-References: <20260731215043.30392-1-maximpedraza@gmail.com>
- <am2mvECnCcO9IxuI@monoceros>
- <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
- <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
+	b=CWM5bZISaLECOKY1Wtjn0I4IsHHW5ixJ7xumDpQvvDbi+h/ismEJv96GBQEeA8Xai
+	 Mm7URwrdyB+b25iei/AU/srS/DoE0czDnYav6c2okXt9fzfrjzgoqEZGSPIEyzVuO9
+	 t5phGEXdiw4o91XvLM3DJ+2mSszyONGbCgMj9SaptXpuToQqlYzL1Cf2jEQqD5IVjR
+	 4jBFh5JyiJN28Ve72CTKuAtb+t6EuNgybkG15ShwuwmfcEYx1PTBDpFhrwdMrzu+Kt
+	 0k9p8Q0JVvb5L+gfQRTggI9gMqorpMBMC7dbYaENRs5bWvSaHxNMGPcQ5LDiBT602o
+	 uxWSA/d64iu0g==
+Date: Mon, 10 Aug 2026 11:35:52 +0100
+From: Daniel Thompson <danielt@kernel.org>
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Grond <grond66@riseup.net>, Stefan Leichter <sle85276@gmx.de>,
+	Grazvydas Ignotas <notasas@gmail.com>,
+	Tony Lindgren <tony@atomide.com>,
+	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Jarkko Nikula <jarkko.nikula@bitmer.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Andreas Kemnade <andreas@kemnade.info>, Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Aaro Koskinen <aaro.koskinen@iki.fi>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Roger Quadros <rogerq@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	Sen Wang <sen@ti.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Niranjan H Y <niranjan.hy@ti.com>, letux-kernel@openphoenux.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	kernel@pyra-handheld.com, mfd@lists.linux.dev
+Subject: Re: [PATCH 15/16] backlight: remove pandora_bl
+Message-ID: <anmpiADsvzW39DNx@aspen.lan>
+References: <cover.1783749722.git.hns@goldelico.com>
+ <f897f695c0e1e128d7ebb41be8dfdce4d634f552.1783749722.git.hns@goldelico.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="jlvsv7mq5dpw6ycy"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
+In-Reply-To: <f897f695c0e1e128d7ebb41be8dfdce4d634f552.1783749722.git.hns@goldelico.com>
+
+On Sat, Jul 11, 2026 at 08:02:02AM +0200, H. Nikolaus Schaller wrote:
+> Retire the platform specific pandora backlight driver since
+> it can now be replaced by twl_pm and device tree.
+>
+> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+
+Yay!
+
+Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
 
 
---jlvsv7mq5dpw6ycy
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-MIME-Version: 1.0
-
-Hi,
-
-On Sun, Aug 02, 2026 at 12:01:58AM +0200, M=C3=A0xim Pedraza Padilla wrote:
-> Uwe Kleine-K=C3=B6nig wrote:
-> > My 0.02=E2=82=AC: Usually you want to use the display using drm and not=
- fb once
-> > the machine is fully booted. If you're using fb during boot to display a
-> > logo, it's hardly possible to switch to drm later in the boot process
-> > without flicker.
-> >
-> > So my recommendation for your usecase is to not use the kernel boot logo
-> > stuff, but something like https://github.com/pengutronix/platsch.
->=20
-> Thanks for the pointer, I did not know platsch and it looks like a good
-> fit for the problem it solves. It does not solve mine, though, and I
-> think the reason is worth spelling out, because it is not about how the
-> image gets drawn but about when.
->=20
-> These are industrial units, and the requirement is time to first pixel
-> after power is applied. If the panel stays dark for more than a moment
-> the unit reads as dead, and that is a support call. Anything running in
-> userspace is by construction later than the kernel: it needs the kernel
-> booted, the rootfs mounted and init far enough along to exec it. I can
-> measure the exact difference on our hardware if that is useful for the
-> discussion.
->=20
-> We do already paint a BMP from U-Boot, which is as early as we can
-> possibly be. The problem is the gap that follows: once the display
-> driver probes, the panel is cleared, and nothing puts anything back
-> until userspace is running. Moving the logo further out into userspace
-> widens that gap rather than closing it. The kernel boot logo is what
-> fills it, and that is the whole reason this series exists.
-
-If the sole reason for this series is to keep having something on the
-display while the kernel boots until DRM catches up, then you probably
-want to check
-
-https://lore.kernel.org/r/20260629-drm-state-readout-v4-0-5966657980ed@kern=
-el.org
-
-Which also does what you're trying to achieve: keep the display running
-with the same content while the DRM driver loads, and switch to whatever
-comes next without a flicker (if we can).
-
-Maxime
-
---jlvsv7mq5dpw6ycy
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCanmTiAAKCRAnX84Zoj2+
-dv6HAX9W/YXoO7mIxYM1dW13th4tADPga2R/eJrH9jUS2EpeZODDGQI35Bz22jXD
-BzPgq0EBgITlzetN/7l5R6fMid4G29Yo7pdhJkE7hJygLXhy0ruNuW9u8AtJTfKp
-9bLeQ/WtyQ==
-=MPTn
------END PGP SIGNATURE-----
-
---jlvsv7mq5dpw6ycy--
+Daniel.

@@ -1,204 +1,247 @@
-Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [81.169.146.168])
+Received: from meve.dewith.io (meve.dewith.io [157.90.20.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9F5E3AF66E;
-	Mon, 10 Aug 2026 13:23:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=81.169.146.168
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786368243; cv=pass; b=OkOHkzfkPotRj3QxSdJAOCUwte68u4whwzqXSWxK0jWT4mP0/Kt9lDA/ADhuPvVarFqCw37y7rAItgXfO8R7KKiy9Osf6WdmVIOpLLxDG/5rDxu5znwci1aX+pIC1KUkA1dB2IbsVfuSb46P+eGpI8cOcd5F1gx+oiTwcAjiRtU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786368243; c=relaxed/simple;
-	bh=UVLS94Nu/msDhoAOREJ/lL1zoSphEtNktL21sATk4oE=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=VUYej7fRZCsNZygSAo4IkpSE506oDJ8HFdBeUbTfjou0VY+A71EztfClz/gH8/wddKAnJ5XGNCb3p4748gVazVPjJUTzobDkV1tEl/2yU/XT91tkC6FrAfrBy/sAWEcUgJYOnNxe3uUNHzFI433/gqlrfjRyhFYAdQpPpzxQ+K4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=goldelico.com; spf=pass smtp.mailfrom=goldelico.com; dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b=kcm8+Fr2; dkim=permerror (0-bit key) header.d=goldelico.com header.i=@goldelico.com header.b=pxqtwYZ9; arc=pass smtp.client-ip=81.169.146.168
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=goldelico.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goldelico.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2C3B40B364;
+	Mon, 10 Aug 2026 17:10:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=157.90.20.64
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786381838; cv=none; b=DTyIlkiECBt6k1JQmBl0rxqQSrqe/MQuBqbx9sBHMg9yX++kzqE4VKh4mscB97oEwDXQ/OpAnJ6aIbSlNwRusjxV9eyPdfAsvL2y5fSojTrr9xkODMY52HwrAGZxzD9EzfS5GURtIHOlQfyAJSU3yAIRxgVk1gWJu5pJHhvlsS0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786381838; c=relaxed/simple;
+	bh=U05IaZCt9defcc1yBLtFROR8MKd1m0y3f66KSqzwKso=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SpzblldMddXrMEE3fYbofRMcRtEKO3VvQWZnWf0537BPj3ziDqnGjr7yVxd/bR5vsy0RRC1rCAmOQphuys1mJBltlLeTyTn0+3DAHirdjoveMoZsrAp60NXOJVkEvXOKjzQOryWXztzYTIrzcwbjcE3SmrSlRG88pJ4ReXs2vek=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=pb3nrYYW; arc=none smtp.client-ip=157.90.20.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dewith.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="kcm8+Fr2";
-	dkim=permerror (0-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="pxqtwYZ9"
-ARC-Seal: i=1; a=rsa-sha256; t=1786368204; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=oZwvfMJaGTBBjkBPR3xlmWs35zo06s0Dr8YQKH8QljmQ9uAQdJb0dY4ii2Po47oqP8
-    067G+NpNbtO6GzHie7kkZdJTYt6Sd/NqrS/d1kcJEpNgrGkAkZ8SIwtvWeBKmS5k9Fac
-    vXkiKYUJC6PYF/p4Pr6dw8zr2scRUYMyKsl8UHdgG4Ib47RrdCxnMfsi9AyxIyyZy37Y
-    PPOcJHoF24PexYjubN31MwQUiqAh4gI3eb2/fC/OwHW2ATBlmHcxoT/jNBezdwGCEOa8
-    rJcBzx3XdhhgBSzEwK56xxGuGT3NJWjcI0NlYpdmHNrHCap6ovCeOLaxVM4LstkqLLyD
-    Jr4Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1786368204;
-    s=strato-dkim-0002; d=strato.com;
-    h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=UVLS94Nu/msDhoAOREJ/lL1zoSphEtNktL21sATk4oE=;
-    b=C+1GfriRL03PaVpEB/BoflZAnOd1yR2ZtLYd5i6MPiLflpvEskSs3khOWLyKqzxH/j
-    o2QKHBwtRaQKj6ThIeRV8BD0v3Qj6ZUYjFKsyERDoXujHTKyJrFUiKNZGT0s4WYueo4+
-    wP/MVZu0RTQW2af+92csK9Or6YeqTXyWrRPZtM3SsYsAdcT3x3f0Y2VmFWlegE73pJ5q
-    X2QeBYDtap1kxHY5EaWbcfPhZGX73KBDLOO3DeBFEHbmLihuSnJHfI+pG4b/2W7MRbU7
-    k/A0WKcFkqDzvTL04qHhwJvalDaSv5DG28OCW8zt6KvjYDNtZ4H86NoUasppqu5z8ZvL
-    Cauw==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo02
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1786368204;
-    s=strato-dkim-0002; d=goldelico.com;
-    h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=UVLS94Nu/msDhoAOREJ/lL1zoSphEtNktL21sATk4oE=;
-    b=kcm8+Fr2dZean0JggFaM7FX7eCQ0l72pYub+jaEsPSUSWMe5O3ysbVty9J/EXJPTjz
-    P3QnSXXXzPz91KM1By7JeVtoVQNQpopVNNfjMIZbYX/MCCauNFwRSIcaZmEdlx/wh9Qm
-    k08PgQNTXbHTQuYQglOPk7Me9jnJJ6E2H8DfMaZ/lmqBFLQdLaBOUbbmQuwjjueQdIBa
-    KBeKcD4QTIZp3HGCkhIynZd7/lGowSgsPZuEPHgHAOSTfb5mOfjIxI+wNQzFRIbkQn9V
-    PK1vLEnuTXXYtSkK0NQ+W+uEATtNy4pdSGza6qp8Ao+U63HGKfaId3RvGDZeWVKQOgkI
-    yTPA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1786368204;
-    s=strato-dkim-0003; d=goldelico.com;
-    h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=UVLS94Nu/msDhoAOREJ/lL1zoSphEtNktL21sATk4oE=;
-    b=pxqtwYZ9vplpgSt/sU0OClyffqzbWrotFPpsUMsIZ9OtbvV0CemIGBSKQDjB4znVj4
-    LlouQyDfsJrsM2TlRSDg==
-X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMhflhwDubTJ9qVpwcQVkPW4I1HrTipoGmsiNZ9v/oGyp26o/Wi+pVFrZX1Db5b3z"
-Received: from smtpclient.apple
-    by smtp.strato.de (RZmta 55.5.6 AUTH)
-    with ESMTPSA id Q58eac27ADNMhHH
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve X9_62_prime256v1 with 256 ECDH bits, eq. 3072 bits RSA))
-	(Client did not present a certificate);
-    Mon, 10 Aug 2026 15:23:22 +0200 (CEST)
-Content-Type: text/plain;
-	charset=us-ascii
+	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="pb3nrYYW"
+Received: from localhost (70-26-208-87.ftth.glasoperator.nl [87.208.26.70])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by meve.dewith.io (Postfix) with ESMTPSA id 4A7F31FC16;
+	Mon, 10 Aug 2026 17:10:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dewith.io; s=default;
+	t=1786381828;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=zRlDAn2w48ZOZSZja/33WF3x7tTj9Ajju1bg/9k60To=;
+	b=pb3nrYYWp3nNM+k9njiYwFJaTuEL9Ade7KEZPKnuZ+jtdjeD8fwDTt0KqqaeJxucPeNAHL
+	ehglFj142Zbwq0lELcvxmtSBzHjLCNHBhsIVOlbqE4UfKx9lfRN8q1GDMmKduoBYg1Anfr
+	j812+YNlLlQi/oYgc4zNqXYxZTf6Zss=
+Date: Mon, 10 Aug 2026 19:10:22 +0200
+From: Wim de With <wf@dewith.io>
+To: Daniel Thompson <danielt@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 2/2] backlight: Add support for Orient Chip OCP8178
+Message-ID: <anoF_hOjV-BRvYBI@dewith.io>
+References: <20260806201541.101304-1-wf@dewith.io>
+ <20260806201541.101304-3-wf@dewith.io>
+ <anm3DY86P_TGxj3a@aspen.lan>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3826.700.81.1.8\))
-Subject: Re: [PATCH 15/16] backlight: remove pandora_bl
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-In-Reply-To: <20260810143914.64d29a5c@kemnade.info>
-Date: Mon, 10 Aug 2026 15:23:12 +0200
-Cc: Daniel Thompson <danielt@kernel.org>,
- Grond <grond66@riseup.net>,
- Stefan Leichter <sle85276@gmx.de>,
- Grazvydas Ignotas <notasas@gmail.com>,
- Tony Lindgren <tony@atomide.com>,
- Ethan Nelson-Moore <enelsonmoore@gmail.com>,
- Jarkko Nikula <jarkko.nikula@bitmer.com>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- Lee Jones <lee@kernel.org>,
- Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>,
- Aaro Koskinen <aaro.koskinen@iki.fi>,
- Kevin Hilman <khilman@baylibre.com>,
- Roger Quadros <rogerq@kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Jingoo Han <jingoohan1@gmail.com>,
- Helge Deller <deller@gmx.de>,
- Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>,
- Sen Wang <sen@ti.com>,
- Richard Fitzgerald <rf@opensource.cirrus.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>,
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
- Charles Keepax <ckeepax@opensource.cirrus.com>,
- Niranjan H Y <niranjan.hy@ti.com>,
- letux-kernel@openphoenux.org,
- devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- linux-sound@vger.kernel.org,
- linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org,
- kernel@pyra-handheld.com,
- mfd@lists.linux.dev
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <2C9844A3-3C4C-48E6-863D-BF8328CEE540@goldelico.com>
-References: <cover.1783749722.git.hns@goldelico.com>
- <f897f695c0e1e128d7ebb41be8dfdce4d634f552.1783749722.git.hns@goldelico.com>
- <anmpiADsvzW39DNx@aspen.lan>
- <DA9588C6-0238-4713-B1A1-CB2123F02028@goldelico.com>
- <20260810143914.64d29a5c@kemnade.info>
-To: Andreas Kemnade <andreas@kemnade.info>
-X-Mailer: Apple Mail (2.3826.700.81.1.8)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <anm3DY86P_TGxj3a@aspen.lan>
 
+Thanks for the review.
 
+On Mon, Aug 10, 2026 at 12:33:33PM +0100, Daniel Thompson wrote:
+> On Thu, Aug 06, 2026 at 10:15:41PM +0200, Wim de With wrote:
+> > +static void ocp8178_bl_write_u8(struct ocp8178_bl *ocp8178, u8 value)
+> > +{
+> > +	unsigned long flags;
+> > +
+> > +	gpiod_set_value(ocp8178->gpiod, 1);
+> > +	udelay(OCP8178_1W_T_START_US);
+> > +
+> > +	local_irq_save(flags);
+> > +
+> > +	for (int i = 7; i >= 0; i--) {
+> > +		if ((value >> i) & 1) {
+> > +			gpiod_set_value(ocp8178->gpiod, 0);
+> > +			udelay(OCP8178_1W_HIGH_BIT_T_LOW_US);
+> > +			gpiod_set_value(ocp8178->gpiod, 1);
+> > +			udelay(OCP8178_1W_HIGH_BIT_T_HIGH_US);
+> > +		} else {
+> > +			gpiod_set_value(ocp8178->gpiod, 0);
+> > +			udelay(OCP8178_1W_LOW_BIT_T_LOW_US);
+> > +			gpiod_set_value(ocp8178->gpiod, 1);
+> > +			udelay(OCP8178_1W_LOW_BIT_T_HIGH_US);
+> > +		}
+> > +	}
+> > +
+> > +	gpiod_set_value(ocp8178->gpiod, 0);
+> > +
+> > +	local_irq_restore(flags);
+> > +
+> > +	udelay(OCP8178_1W_T_EOS_US);
+> 
+> Given this happens after we restore local irqs this should probably be
+> fsleep().
+ 
+This one is wrong, the IRQs should be restored after this delay and
+following GPIO set, as noted by Sashiko.
 
-> Am 10.08.2026 um 14:39 schrieb Andreas Kemnade <andreas@kemnade.info>:
->=20
-> On Mon, 10 Aug 2026 12:45:16 +0200
-> "H. Nikolaus Schaller" <hns@goldelico.com> wrote:
->=20
->> Hi Daniel,
->>=20
->>> Am 10.08.2026 um 12:35 schrieb Daniel Thompson <danielt@kernel.org>:
->>>=20
->>> On Sat, Jul 11, 2026 at 08:02:02AM +0200, H. Nikolaus Schaller =
-wrote: =20
->>>> Retire the platform specific pandora backlight driver since
->>>> it can now be replaced by twl_pm and device tree.
->>>>=20
->>>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com> =20
->>>=20
->>> Yay!
->>>=20
->>> Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org> =20
->>=20
->> Well, there were some good comments by Sahiko to the prerequisites of =
-this patch,
->> because it has one speciality the PWM BL driver does not handle =
-(avoid
->> interpretation of PWM signals as W1 protocol).
->>=20
->> I haven't found time to work on this, so we can't remove this yet.
->>=20
->> In the end it may either remain a pandora_bl driver (converted to DT)
->> or become a patch for something else.
->>=20
-> But then it is a TPS61161 on top of PWM, not a pandora driver.
-> And then there might be just a quirk for that chip in the pwm_bl using
-> triggered by a compatible. I guess the quirk is this:
->=20
->=20
-> if (priv->old_state =3D=3D PANDORABL_WAS_OFF) {
-> - /*
-> - * set PWM duty cycle to max. TPS61161 seems to use this
-> - * to calibrate it's PWM sensitivity when it starts.
-> - */
-> - twl_i2c_write_u8(TWL_MODULE_PWM, MAX_VALUE, TWL_PWM0_OFF);
-> -
-> - /* first enable clock, then PWM0 out */
-> - twl_i2c_read_u8(TWL4030_MODULE_INTBR, &r, TWL_INTBR_GPBR1);
-> - r &=3D ~PWM0_ENABLE;
-> - r |=3D PWM0_CLK_ENABLE;
-> - twl_i2c_write_u8(TWL4030_MODULE_INTBR, r, TWL_INTBR_GPBR1);
-> - r |=3D PWM0_ENABLE;
-> - twl_i2c_write_u8(TWL4030_MODULE_INTBR, r, TWL_INTBR_GPBR1);
-> -
-> - /*
-> - * TI made it very easy to enable digital control, so easy that
-> - * it often triggers unintentionally and disabes PWM control,
-> - * so wait until 1 wire mode detection window ends.
-> - */
-> - usleep_range(2000, 10000);
-> - }
->=20
+> > +	gpiod_set_value(ocp8178->gpiod, 1);
+> > +}
+> > +
+> > +static void ocp8178_bl_set_brightness(struct ocp8178_bl *ocp8178, u8 brightness)
+> > +{
+> > +	u8 data = 0;
+> > +
+> > +	dev_dbg(ocp8178->dev, "setting brightness to %u\n", brightness);
+> 
+> Do we really need the dev_dbg() here?
 
-Yes that is what I mean. It needs to be ported somewhere. If it can be =
-ported to
-some compatible =3D "pwm_bl_for_tps61161" or what fits best it will be =
-fine. Or it
-could be in some compatible =3D "pandora_bl" driver.
+We don't, it adds no value. I'll remove it in v2.
 
-Has to be worked out when the development machines are not blocked by 3 =
-or 4 other
-projects already running in parallel :)
+> > +
+> > +	data |= FIELD_PREP(OCP8178_DATA_ADDR, 0);
+> > +	data |= FIELD_PREP(OCP8178_DATA_VALUE, brightness);
+> > +
+> > +	ocp8178_bl_write_u8(ocp8178, OCP8178_DEVICE_ADDRESS);
+> > +	ocp8178_bl_write_u8(ocp8178, data);
+> > +}
+> > +
+> > +static int ocp8178_bl_update_status(struct backlight_device *bl)
+> > +{
+> > +	struct ocp8178_bl *ocp8178 = bl_get_data(bl);
+> > +	u8 brightness = backlight_get_brightness(bl);
+> > +
+> > +	/*
+> > +	 * Setting brightness to 0 turns the backlight off but retains the
+> > +	 * onewire mode. If we disable the controller, we would need to enable
+> > +	 * the onewire mode again.
+> > +	 */
+> > +	if (backlight_is_blank(bl))
+> > +		brightness = 0;
+> 
+> This is not needed. It will happen inside backlight_get_brightness().
 
-BR,
-Nikolaus
+Will remove in v2.
 
+> > +
+> > +	ocp8178_bl_set_brightness(ocp8178, brightness);
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct backlight_ops ocp8178_bl_ops = {
+> > +	.options	= BL_CORE_SUSPENDRESUME,
+> > +	.update_status	= ocp8178_bl_update_status,
+> > +};
+> > +
+> > +static int ocp8178_bl_probe(struct platform_device *pdev)
+> > +{
+> > +	struct device *dev = &pdev->dev;
+> > +	struct backlight_device *bl;
+> > +	struct backlight_properties props;
+> > +	struct ocp8178_bl *ocp8178;
+> > +	u32 max_brightness, brightness;
+> > +	int ret, retries;
+> > +
+> > +	ocp8178 = devm_kzalloc(dev, sizeof(*ocp8178), GFP_KERNEL);
+> > +	if (!ocp8178)
+> > +		return -ENOMEM;
+> > +
+> > +	ocp8178->dev = dev;
+> > +
+> > +	ret = device_property_read_u32(dev, "max-brightness", &max_brightness);
+> > +	if (ret)
+> > +		max_brightness = OCP8178_MAX_BRIGHTNESS;
+> > +	if (max_brightness > OCP8178_MAX_BRIGHTNESS) {
+> > +		dev_warn(dev, "max brightness exceeds hardware limit\n");
+> > +		max_brightness = OCP8178_MAX_BRIGHTNESS;
+> > +	}
+> > +
+> > +	ret = device_property_read_u32(dev, "default-brightness", &brightness);
+> > +	if (ret)
+> > +		brightness = max_brightness;
+> > +	if (brightness > max_brightness) {
+> > +		dev_warn(dev, "default brightness exceeds max brightness\n");
+> > +		brightness = max_brightness;
+> > +	}
+> > +
+> > +	ocp8178->gpiod = devm_gpiod_get(dev, "enable", GPIOD_OUT_LOW);
+> > +	if (IS_ERR(ocp8178->gpiod))
+> > +		return dev_err_probe(dev, PTR_ERR(ocp8178->gpiod),
+> > +				     "gpio missing or invalid\n");
+> > +	gpiod_set_consumer_name(ocp8178->gpiod, dev_name(dev));
+> > +
+> > +	for (retries = 0; retries < OCP8178_1W_INIT_MAX_RETRIES; retries++) {
+> > +		ret = ocp8178_bl_enable_onewire(ocp8178);
+> > +		if (!ret)
+> > +			break;
+> > +		if (ret != -EAGAIN)
+> > +			return ret;
+> > +		msleep(OCP8178_1W_INIT_SLEEP_MS);
+> 
+> fsleep()?
 
+Sure, and I'll make the udelay() for the ~100 us in the initialization
+use usleep_range because those timings aren't that precise.
+
+> 
+> > +	}
+> > +	if (retries >= OCP8178_1W_INIT_MAX_RETRIES)
+> > +		return dev_err_probe(dev, -ETIMEDOUT,
+> > +				     "failed to initialize onewire protocol");
+> > +
+> > +	props = (typeof(props)){
+> > +		.type		= BACKLIGHT_RAW,
+> > +		.brightness	= brightness,
+> > +		.max_brightness = max_brightness,
+> > +		.power		= BACKLIGHT_POWER_ON,
+> > +		.scale		= BACKLIGHT_SCALE_NON_LINEAR,
+> > +	};
+> > +
+> > +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ocp8178,
+> > +					    &ocp8178_bl_ops, &props);
+> > +	if (IS_ERR(bl))
+> > +		return dev_err_probe(dev, PTR_ERR(bl),
+> > +				     "failed to register backlight\n");
+> > +
+> > +	platform_set_drvdata(pdev, bl);
+> > +	backlight_update_status(bl);
+> > +
+> > +	dev_info(dev, "probed, brightness=%u/%u\n", brightness, max_brightness);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct of_device_id ocp8178_bl_of_match[] = {
+> > +	{ .compatible = "ocs,ocp8178" },
+> > +	{ /* sentinel */ }
+> > +};
+> > +MODULE_DEVICE_TABLE(of, ocp8178_bl_of_match);
+> > +
+> > +static struct platform_driver ocp8178_bl_driver = {
+> > +	.driver		= {
+> > +		.name		= "ocp8178-bl",
+> > +		.of_match_table	= ocp8178_bl_of_match,
+> > +	},
+> > +	.probe		= ocp8178_bl_probe,
+> > +};
+> 
+> I'm with Uwe on the indentation here. No padding needed after the
+> = IMHO.
+
+Will fix in v2.
+
+> 
+> Daniel.
+
+Regards,
+Wim

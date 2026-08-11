@@ -1,104 +1,139 @@
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com [209.85.167.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E028928686
-	for <linux-fbdev@vger.kernel.org>; Tue, 11 Aug 2026 13:08:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB88736920F;
+	Tue, 11 Aug 2026 18:09:26 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786453700; cv=none; b=rItTCcw3rAH+tXbdwSRO16644p86kd+uwUsUe1Yj/zgFEHMIqvTxwmQJ2A2l0VyRC1lpnuO0ghx6cN4Ol+ZULdMpZv2/y4qJ+N4A5mFPg1sh515DavQrtofoW7cWJS2LS5a+rU+1KJUtR3ZzoBQWGaeCrZ0B43L1EvktXioAyd0=
+	t=1786471767; cv=none; b=GFXYX8ef5eshtEi1qZVQikgzpFn70f8DUEZY7RQwMPWLEAx0ePlYQ7VAnI7ZucccxwAYVbq7T9x9qBYo+0ya8NZvTOwDug71yncnjTHBj32ydSxi+eD7NsnIWIIZFhfKQszOqmQDxYJ7VJJ2bQ9sOPIZlKwm0pCG1gRobse1SlU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786453700; c=relaxed/simple;
-	bh=a9KO7Tse9tk2O/Wp+mdffCUvJ0UirYVIu1DkVWGwiJM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WuglrE1fjTtWJLy0wkfknhi9Q8YJEHPui7JXNUVGd6iNTalZq1HhBbgjW1d6J3Weq9fJxYFAR/pWQH7YtjUn1Z0cmbsscTmoWNRYldv9pXKCZXoFJC4EV6Ru+srfghjDxoR7ITyxDxLi9ARWGmxyx5XEaK1BZA6hk/lLQZzumJw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ec5yNyTv; arc=none smtp.client-ip=209.85.167.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1786471767; c=relaxed/simple;
+	bh=R3Sm3emUwygtZH0CQ8dh3h0Y2HaTC/pUUS0iKw2VM9I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=my1cA/dmYJaRTU49iGPs8itK0PQbCsBD/XSWieVV4wh9zFfjXDb1dtLqrnhNZsjf4/CHR48boHI7RC17zQoz1/JzWyImise1cSypmn7U4PhegbL+5jCT/7THzEY1DgV/lo9pRpdBUS0upJgXjDyPBeogp/W9lN3p7GF/RkghtgA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UCU8L3fV; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ec5yNyTv"
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5b0115b9e17so3213746e87.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 11 Aug 2026 06:08:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786453697; x=1787058497; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=kYnmqd9o2ccxCSK1AbFiMyB7/O/f7wvcG/IcJOVpKHQ=;
-        b=Ec5yNyTvDRIdiFTF9R2vwUahHAC3z7jRWJCrZ99pR18PGOZ/7D4HgozmowoR80nAt0
-         VGakfL14fJUajo5BgOt2kmggmw+0VTbzfXgWoh0adnudPx7LZkT/j5AuleMfPVHWrlIv
-         /zK8Nf0lZYiX5flH7ueyvkAGIGj2e+M8EjRm1FEXpuyfyNkUY6i28bIvsk1/108v/gX9
-         f6Raz/eqAWyKu7TrBVxCOwThxGWUxoAGIS/W5rgoxWWv601Rcf4bgMoKt+BQQjbTE+5V
-         krioffS3XvMUni7luGkjqQZE9alfqvxyhZrn9mSNX1Y1zzJa7a6BNXaubQabtAfCGCJv
-         DDtw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786453697; x=1787058497;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=kYnmqd9o2ccxCSK1AbFiMyB7/O/f7wvcG/IcJOVpKHQ=;
-        b=syNNSvNPB91eMLCdGSswEUTCLPd6arduPGrkfWPXgEVoPa2aPOUO5wVIOyTWVf4p7t
-         0F1m+zptV+z8dw/EnQAVy23fu27m3sZcablewMZN0Nq7IZeujR6EAzRYmQKc+CKXBlDF
-         gQ9cBRqZNmSNPGdMGMxw6tl9tcfDZHKY66niA73g5RMl7f7mpvqBeTTS4w7kJQQTVAg3
-         e+tQuSxn9klNRAkjPO1JocxClwxdKrI9VELwEYxwelB74lvSoT5IhWzBBerF0wtrmSvN
-         jjYSpG/zm5Vd3lXuRLAwMxhZZgRl3f/DVgWaRbEWL6YqDr2arv234mVgqu9fxn8TkDQ+
-         nh7Q==
-X-Gm-Message-State: AOJu0YyWwy43GnfSYDQZkP49BRZibc8TlTLhrhPr7Vg8sO90tPiw41Nx
-	L71SPrIPdALoPyuGN9zRfI+V1qomcMBMQ8Y5OK981Z3sEwS3ulu/s344
-X-Gm-Gg: AR+sD10z2BFPHc/JNVkwc/676A5DhWbSQ0vDJf22FmsfLmbmYRiNDp9Kjoen8VSuDzp
-	dkhz8SLHi+43e9U1Vw9ioENvHYikkeqyY6Tn5M0lifVuhWkcOyUwb1cCtEzSvf1N1B/YelzgdoS
-	5Gq89PynU1m80GqgY9c0xlZ3l5xtEz6oIHBXFWnGNrnidBi2jYgfUpKAIN8kOHleewiqMKKKYfs
-	iqAC7FY/6AltWW7FlkBtGFjm8IkZbT34duSbSypP7S91sQyYOf8trilWUuc1wmO6DDGf4g4FUk/
-	ZpkZr6gqeX0/grerAxP8l/SAnm7yVz0rJf9stQNU/8na+w7wpgK8dFOoWVPyCW0RvE2UZ/mWNkL
-	0MlGA4BUy+X7oY30Y9yaqlqUykzuBUo0V/hjMUOqDtSGmvtfy7JOe2+Aan3mGY7/IT5WYy2xU7a
-	2/48fADEUUrNrE4de8RTo8xrexJ85ZWp25ZgJHLGbZSLtsOoYtfj6v+/pO6Bhi4ovCiKqF
-X-Received: by 2002:a05:6512:1110:b0:5b3:f8e:396b with SMTP id 2adb3069b0e04-5b448658754mr424250e87.55.1786453696586;
-        Tue, 11 Aug 2026 06:08:16 -0700 (PDT)
-Received: from gentoo.home ([2001:2042:2a39:500:8a2b:6241:6d4c:773f])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b448724b46sm273541e87.38.2026.08.11.06.08.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Aug 2026 06:08:15 -0700 (PDT)
-From: Maxim Codita <maxkoditsa7c@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Maxim Codita <maxkoditsa7c@gmail.com>
-Subject: [PATCH] staging: sm750fb/sm750.c: mark g_def_fbmode as const pointer
-Date: Tue, 11 Aug 2026 15:08:13 +0200
-Message-ID: <20260811130813.434660-1-maxkoditsa7c@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UCU8L3fV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4FD1E1F000E9;
+	Tue, 11 Aug 2026 18:09:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786471766;
+	bh=fp0I+WEOJYjIihNljaA30yRbFo0fxG9dkAdF1R7NHwc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=UCU8L3fVCCuUJVT/V4RVLOGDK+nmw4dsEG2ZS/rljXqnPmOMylfs+x14VoazoQIBs
+	 QDED7Im4nx7eyBHMdjca2re+EvHQ4y75B9ZuhrZtPpPbvUtphSVGdvk81i5yochkAi
+	 Ke+5O4YSr0r6w7EjfWdl29yExS186q250UW6SkrLZ36y+WF3yi4EMQy5vuCwallBnI
+	 mp+KBe9Uy8uFCWvPMe47pLaDs7fmUQe9QS+Zs4AbYCjlqn6lzvW5D5GfkrPQDj/omU
+	 6+zqzhwbx2s2vD+k+dpOmFKxzqP5KMr4tzSRmv2KwfcYdqHIEbWaqwr/dh5E99yt1z
+	 T6rFrO5awJtMg==
+Date: Tue, 11 Aug 2026 19:09:15 +0100
+From: Mark Brown <broonie@kernel.org>
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Grond <grond66@riseup.net>, Stefan Leichter <sle85276@gmx.de>,
+	Grazvydas Ignotas <notasas@gmail.com>,
+	Tony Lindgren <tony@atomide.com>,
+	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Jarkko Nikula <jarkko.nikula@bitmer.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Andreas Kemnade <andreas@kemnade.info>, Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Aaro Koskinen <aaro.koskinen@iki.fi>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Roger Quadros <rogerq@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	Sen Wang <sen@ti.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Niranjan H Y <niranjan.hy@ti.com>, letux-kernel@openphoenux.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	kernel@pyra-handheld.com, mfd@lists.linux.dev
+Subject: Re: [PATCH 02/16] regulator: twl: Expose the TWL4030's REGEN signal
+ as a regulator
+Message-ID: <40172b9e-7435-41b7-8fb4-04095d4ba1ed@sirena.org.uk>
+Mail-Followup-To: "H. Nikolaus Schaller" <hns@goldelico.com>,
+	Grond <grond66@riseup.net>, Stefan Leichter <sle85276@gmx.de>,
+	Grazvydas Ignotas <notasas@gmail.com>,
+	Tony Lindgren <tony@atomide.com>,
+	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Jarkko Nikula <jarkko.nikula@bitmer.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Andreas Kemnade <andreas@kemnade.info>, Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Aaro Koskinen <aaro.koskinen@iki.fi>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Roger Quadros <rogerq@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	Sen Wang <sen@ti.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Niranjan H Y <niranjan.hy@ti.com>, letux-kernel@openphoenux.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	kernel@pyra-handheld.com, mfd@lists.linux.dev
+References: <cover.1783749722.git.hns@goldelico.com>
+ <1746667e5c17e2d39fc0747d7e098b32b3d7b479.1783749722.git.hns@goldelico.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="YozZDkin/iTDr57l"
+Content-Disposition: inline
+In-Reply-To: <1746667e5c17e2d39fc0747d7e098b32b3d7b479.1783749722.git.hns@goldelico.com>
+X-Cookie: Anything is possible, unless it's not.
 
-Fix a checkpatch.pl warning for g_def_fbmode by marking the pointer
-as const. Ensures it is stored as read-only.
 
-Note: g_fbmode[] is left as non-const as its elements are modified at
-runtime by lynxfb_set_fbinfo() and sm750fb_setup().
+--YozZDkin/iTDr57l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Maxim Codita <maxkoditsa7c@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Sat, Jul 11, 2026 at 08:01:49AM +0200, H. Nikolaus Schaller wrote:
+> From: Grond <grond66@riseup.net>
+>=20
+> This is needed on some boards (for example, the Pandora), where REGEN is
+> used to drive external regulators.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 89c811e0806c..cc38dac88a73 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -22,7 +22,7 @@ static int g_hwcursor = 1;
- static int g_noaccel __ro_after_init;
- static int g_nomtrr __ro_after_init;
- static const char *g_fbmode[] = {NULL, NULL};
--static const char *g_def_fbmode = "1024x768-32@60";
-+static const char  * const g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview __ro_after_init;
- static char *g_option;
--- 
-2.53.0
+Is this a regulator or a GPIO?  It sounds an awful lot like a GPIO.
 
+--YozZDkin/iTDr57l
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmp7ZUoACgkQJNaLcl1U
+h9C2sAf/dYpOrF3gel//SuWNj2En9HCdjFRvmlfEP+Hk69wcbhAG1amOMbhl5jhY
+YLCA99bUq+a8dG3W29+y/GRDgvbsT9jbkPHMhmJM27G5rT/OoQ4ffXdFOciNi0xQ
+t/M0Y1M5gSXaBdJbtUITVNXIlc6pwyAqb30a2yXj+JXuo0oKD5Ex7JyKCCnDdEx6
+IikziTt0bKUaLdXJ7eH62kgnnF9Bsh/H1ndKzgsUAFFNLCcT0qrkgj4LXjEXAkNc
+G9dYq2vzKqz17K3dm70t2b6L0MMfe0K8WjFUyNqOe8rzog6LQ65bAj439xtW1T9d
+n4kMTcDV+bq+pl2o2p5hnbAm2GIR6Q==
+=O/3/
+-----END PGP SIGNATURE-----
+
+--YozZDkin/iTDr57l--

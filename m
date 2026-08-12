@@ -1,123 +1,113 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06753398902;
-	Wed, 12 Aug 2026 07:42:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9B6342BC3A
+	for <linux-fbdev@vger.kernel.org>; Wed, 12 Aug 2026 11:44:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786520559; cv=none; b=aCdBBr6oU1hAXkO0ppKtuy2IKrH84TLEJaH2iQWBE9HPxLLhKkx+LauIDenplgNf1FB9EhWNa0M/dkHSBoX1fKWhJM4igZaFj4MJVCycCH4dWePBIebjDA2RQ+59bJwCLwo7yV7ULgWGFTJ63ahy9aETkufBfwjVgo1JqYG3o70=
+	t=1786535074; cv=none; b=OZ319zP7vBzAVBKxOkQEBUQaKrcH8IvGChzx5jAjlsQqROpH1hUx/2WQkRSnLJqLicbyy5ls2hHWRr4MxWcyFXj5T1+nS2dEh0lYqh8ctnGRyuMdiYxNYyTnDz9hYuIi4DPyz4Y8u/9U6l6WkUZ6LkDy9IcJhzUszVnyoW4Ngd4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786520559; c=relaxed/simple;
-	bh=QRpaal9Asx+0Nld4pChkyHqNF+oT5dFLKDnnsi8C65k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UablbHn4S29C+KPG7dAp4aiqO5ASaG5PmzTzEeCxaer2c26R1x/I3VdklUB+YgAoKUII3FvYQprQFlEoidnqD5ubYrDqT8gMd1hjOFIT05q/0zBN4nu8B5GDU4+pPqBkkPUeVzMWgblsrIXIjN5/CtP5paOtBWxJAk9ZAte4vH8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=aKkZKzQ4; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1786535074; c=relaxed/simple;
+	bh=6bDgppw1upMRRhV0yGcXzCvzM2E7ZuS4xeKKgk2RLKk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=a23izeu4GSjNwHgb+i2N4QTklkHr/oh28QeVp4JvfkjcArPGbdigaxTh7mWkn2wLpFATJQ9l/03LYf90ubIE3gKYCQXyQLOW7zcR/ISeFj+Hz8xcffczLUnwgDX0/fbmCAilwr+hATJKCbkcTesrB0NbKWGhKCA5UB8MuFwCl64=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VM+OI0wl; arc=none smtp.client-ip=209.85.167.44
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="aKkZKzQ4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F01B1F00A3A;
-	Wed, 12 Aug 2026 07:42:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1786520557;
-	bh=UB1jF7L3iPk9Rg0+1qtTwgCtX6bgx0/fZCeUDQ/DIwA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=aKkZKzQ4Z2TKBfnpaCMI4tPl2gHvTd3QyNnrw/r1RkNMvVdXANvYhqVp4ZdKVDXwj
-	 qyyS6H5CdNZZjq+0ZuWWxrGSr8azN6lhiZvXdbNjvB4k+wO70NmRA/WAoo3mG4tE3T
-	 QWzixG6juj7qx2goYfPhQV+kItylHrhuWrpURJ+ob6fR/XQIWUuW+l2qEOz1w7ouRr
-	 DurzvNo2KByMTTz+wzI5K008b1B+iuTYz/uktjrYpPjJ2PfvJVLv2HyFu9zYCWR+P9
-	 fu7Hl5cs2A9ZROiXW/vRVVMPDn5DYue9wnkGGxAQLYGdMzgM4WqTy0EkX+y/UYjK66
-	 EPGxZhV8PFYrw==
-Date: Wed, 12 Aug 2026 09:42:35 +0200
-From: Maxime Ripard <mripard@kernel.org>
-To: =?utf-8?B?TcOgeGlt?= Pedraza Padilla <maximpedraza@gmail.com>
-Cc: Helge Deller <deller@gmx.de>, 
-	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-Message-ID: <20260812-neon-asp-of-completion-e9349e@houat>
-References: <20260731215043.30392-1-maximpedraza@gmail.com>
- <am2mvECnCcO9IxuI@monoceros>
- <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
- <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
- <20260810-devout-pig-of-performance-595ccc@houat>
- <CAEUXW=GuHypVE5Xre8AQBmkrcUbPQxh03Lq8os=kjcLeGahOgw@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VM+OI0wl"
+Received: by mail-lf1-f44.google.com with SMTP id 2adb3069b0e04-5b021916bd3so1183129e87.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 12 Aug 2026 04:44:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786535070; x=1787139870; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=FHDNFQ36fyaG0ir08tDXiNr3M+QaNM3vkw/XZ55Hif0=;
+        b=VM+OI0wlyJet9WNJ/8bNpvw2j4KrnTTtJ8vQvGGgwgfNo5znH/nNX1PprCkOZ2NRtJ
+         Ot16yW27a+JfB2+pzbkAaOFsCX6am03ITbvYV8rlvjwabJeZraoz/92slkuJkzQsiHBX
+         HYngYCoaiAXuSKzxAmNYoGOwxRXzWV2OQSDZ4jRRB5zLgWJnE7/g+s8VZDuDXpfrXR5e
+         i8inQfzIsqR6hRRAo1bTDnJXWBfQLegK3X4hm40y8+9/Wm+7Dv1LlL28Oynx/1OBv/Fk
+         SSdWeQNRzF0D2R5EGe2yCAYeL0CWJtKkwXGTCjoQSjTC9LFYPAmjxlDGGkXcg7gc0UKR
+         DzbQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786535070; x=1787139870;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=FHDNFQ36fyaG0ir08tDXiNr3M+QaNM3vkw/XZ55Hif0=;
+        b=T1KIYdE6HAG8q++ilW2q3xhlQUELwoPQ4HaUght/il5fIByEhMDxCNaxoAew8BCjHU
+         PkbUyk1aDa+oiSPuMv8qRrn1FJ7BtxDCHdnM/T9cc4nbgkhMRbOQQM8TUS7fmkfMPSjN
+         Uu1FmLINgS2Kf6WtS8mG/eYJExN2egU2WLt/K0RsQaQNBD3AebnPvT06owHfYB3zQ/0R
+         Ona8uS3Eu6x14ovl8t71LV3B65j2ZBSFkU3BOLJ32K6LICZyYwxY5vQRFalzUGn7jFgC
+         qtOpNbJ2QCBSvufeGLLcs7mGeeKZST2rYY79Eqa6fNDaOUpQnrHYC2BmRfchJbem3DBx
+         Nglw==
+X-Gm-Message-State: AOJu0YxKnjA5hz3qmR6r2FyG4l1P1JzJ3HjqLAg46SA0Rwccl4+8/S3E
+	4zBmccT+OThtkOqU7yu/JS9Sd1mOdQeC+lJREkb+HEjSBAWMsEUQmKEA
+X-Gm-Gg: AR+sD106Bgj7jWAfyyAqeRKjCcWe5h439F5TZ7BuJLGJhpYgKBbbeHHWjnfEnfUa5Ts
+	xtyDeMrZOISA3ep+vZJVFVsT1WkUsU1amneT6wwsx50/eaV0ZghI7j/d04ayBXbVfpPYcKPfFT9
+	TME8ZNemQIBWmZ1u07xClh9o2+nGSi6sYrhgbsMYDkT4aF/QhMC7rofkKoy9ONIO6YJZ/QbuQzw
+	Z5Oo4Yozw7SHLpojn+sai3ENZIvA8oAT1cZPE30A8JYh4azgNxj+CIowd6vXwer/vut2z0T7DvQ
+	C4lqxnemO8ANjdoTZfMrJ12cK7+EjvutgngkscRHyLDIlDkS8dMgqAGXlDw05PJSw9R7uDin6Lj
+	Uhnl0H3oPCkYyJDczBLK3oKw78d6oj5DB1/2zkn+PN0U+sF+8i9I1buFLL4yO2zgRlAntSRPqxS
+	H5B7J1WmIiJEblUuB05DuP1JZo0f25BYwNlR5mYrlQqgxjdLZ7Zwdscagov/4UCWNbF87G
+X-Received: by 2002:a05:6512:130c:b0:5aa:8822:c945 with SMTP id 2adb3069b0e04-5b44e336717mr679286e87.47.1786535070291;
+        Wed, 12 Aug 2026 04:44:30 -0700 (PDT)
+Received: from gentoo.home ([2001:2042:2a39:500:8a2b:6241:6d4c:773f])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b44cfb2810sm442736e87.7.2026.08.12.04.44.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 12 Aug 2026 04:44:29 -0700 (PDT)
+From: Maxim Codita <maxkoditsa7c@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Maxim Codita <maxkoditsa7c@gmail.com>
+Subject: [PATCH v2] staging: sm750fb/sm750.c: mark g_def_fbmode as const pointer
+Date: Wed, 12 Aug 2026 13:44:21 +0200
+Message-ID: <20260812114421.24860-1-maxkoditsa7c@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <2026081233-simmering-exerciser-4ab2@gregkh>
+References: <2026081233-simmering-exerciser-4ab2@gregkh>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="ibzlmn7sqd2mt3nn"
-Content-Disposition: inline
-In-Reply-To: <CAEUXW=GuHypVE5Xre8AQBmkrcUbPQxh03Lq8os=kjcLeGahOgw@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
 
+Fix a checkpatch.pl warning for g_def_fbmode by marking the pointer
+as const. Ensures it is stored as read-only.
 
---ibzlmn7sqd2mt3nn
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-MIME-Version: 1.0
+Note: g_fbmode[] is left as non-const as its elements are modified at
+runtime by lynxfb_set_fbinfo() and sm750fb_setup().
 
-On Wed, Aug 12, 2026 at 02:31:52AM +0200, M=E0xim Pedraza Padilla wrote:
-> El lun, 10 ago 2026 a las 11:02, Maxime Ripard (<mripard@kernel.org>) esc=
-ribi=F3:
-> > If the sole reason for this series is to keep having something on the
-> > display while the kernel boots until DRM catches up, then you probably
-> > want to check [drm state readout]
->=20
-> Thanks, I had missed it. I read it and then measured, having earlier
-> claimed in this thread that our hardware kept no state worth reading. That
-> was wrong.
->=20
-> Dumping the LCDC registers at the top of tilcdc's probe, before the driver
-> touches anything:
->=20
->   RASTER_CTRL=3D00280081  FB=3D9df13cc0..9dfcf4bc
->=20
-> LCD_EN is set and the scanout address is exactly the framebuffer U-Boot
-> reported, still holding the image. So readout would have something real to
-> adopt here. tilcdc is not one of the drivers you implement, but that is
-> work rather than a disagreement.
->=20
-> One observation that may be worth your time. Pointing a simple-framebuffer
-> node at that same memory, same device tree, only the driver differing:
->=20
->   simplefb   the image is still there afterwards
->   simpledrm  the buffer reads back as all zeros
->=20
-> So where the CRTC is still scanning the bootloader's buffer, simpledrm
-> wipes the image it was meant to carry over. I have not chased down the ca=
-ll
-> that clears it.
->=20
-> What readout cannot cover is having no firmware splash to read. U-Boot's
-> Falcon mode boots the kernel from SPL and skips U-Boot proper, where
-> display init lives, so there is no image and no programmed CRTC to inherit
-> -- and Falcon mode exists to shorten boot time, which is the same reason
-> one cares about the logo appearing early.
+Signed-off-by: Maxim Codita <maxkoditsa7c@gmail.com>
+---
+v2:
+Fixed extra spacing between char and *
+Compile tested with make drivers/staging/sm750fb/ (no hardware to check
+runtime)
+---
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-In such a case, you can (and really should) use KMS, and you should use
-an initramfs and setup the splash screen there. There's no need for the
-kernel to do that work.
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 89c811e0806c..b2f5f49e447a 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -22,7 +22,7 @@ static int g_hwcursor = 1;
+ static int g_noaccel __ro_after_init;
+ static int g_nomtrr __ro_after_init;
+ static const char *g_fbmode[] = {NULL, NULL};
+-static const char *g_def_fbmode = "1024x768-32@60";
++static const char * const g_def_fbmode = "1024x768-32@60";
+ static char *g_settings;
+ static int g_dualview __ro_after_init;
+ static char *g_option;
+-- 
+2.53.0
 
-It's still significantly different from your earlier claim, since there
-would be no gap between uboot and DRM, and no blanking either.
-
-Maxime
-
---ibzlmn7sqd2mt3nn
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCanwj5wAKCRAnX84Zoj2+
-djk4AXoDaUpvlsLACdFgaEpmyXSq8tMZcRam1NtpdStxqjIXf0td0aHqsBW9yLHM
-qHBynosBfjTL6/dGkQiTNe8d8My3Mh9Mv/26EX8/wJznUEx3OXSHeiBB5CfJ36OR
-J3sTCZOWpQ==
-=d3a1
------END PGP SIGNATURE-----
-
---ibzlmn7sqd2mt3nn--

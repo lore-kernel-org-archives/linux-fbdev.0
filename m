@@ -1,29 +1,30 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C6F646F4AE;
-	Thu, 13 Aug 2026 12:51:06 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E29DA3E172F;
+	Thu, 13 Aug 2026 12:51:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.2
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786625470; cv=none; b=hyrhDkTx/8WZV55I5ZezIjyyVOExGVWhYlS+cfjmAEZ7es049qZpisIzYdEXoTzfSdUbrr33tN375fw2Q8uUQ6EQ5M60sLibzXLr2U3P7QCDUWScF3TWLf9lnGWmPVwVb9UBPGfYRVoP9zMOhNt+HVSOol+swfnQp4XZqPQDjQc=
+	t=1786625475; cv=none; b=ErTjpXb776DNytMzE5yfqRftbAxnYT0UDQWReAqUYPPvlRNOuZ6EDnOAUydx9Mi2IqIHJ7JI3AnmiM651WICMETJdkshOG9YA2YDza4JebMimHFCd7WuQ4r5IyZvBANTQmMQAukK+XYLbKfJByuHcFOL64UPbUSd78ozOdkoafw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786625470; c=relaxed/simple;
-	bh=nlepqJ1e5zfB3g+coEDIy6XX6gtJugit6D77Qk2AXzE=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Z1179y51Iapq11RMcKXGmp0WHKz6oeB3Jwwye5R5y3Jf9yog3OZZeWpR6Zdq1qWu1aPtOI2ZfivkN4NcwgDJGpsg0QPm+BRKf6LSNnlgDnZA5M9b8LEYcq6R8ibaESg63nZE4HmGtLB4xLWtNXhHM/LwQCPWGD75ufh3CkeEx4k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=L0AfYe9e; arc=none smtp.client-ip=117.135.210.2
+	s=arc-20240116; t=1786625475; c=relaxed/simple;
+	bh=pwOG9mdRK79Bg8yBJmpkL38yDwiyLGV564tH+3lYDHM=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=NVU5yAqVfvalXRN3N7inH52CwOXkVuzD4cPi2jflbvS2O5SGZ0rFaCBLjadAL7FKwYxDJTY7moLv83pDB+3EU9vd/CVx+jDYrdNyuVPNyYqtUJxDsgOD2S+tqqtnbgI5yG7oTkbhqP6i4juHV/Zr3kZUlvf5qrwPGCUKl1qrlQs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=VKmSsGYD; arc=none smtp.client-ip=220.197.31.2
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="L0AfYe9e"
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="VKmSsGYD"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=tw
-	U2UmKc0VqNuKR+XXFp2odsiikhh3amQi3ufiG3shw=; b=L0AfYe9e6jJSNqpbok
-	yrqz5+M+jHw3nJ/fF1Rk5XHzfnbiA42R0cFlCzJaypWoXAck487CkT13Sa2Sp0I9
-	jpnXQzsTZq2RUk82kT0bcftFi6Bp6Vwwk2LD9p7j2bZBxLLBjKe9XF5iKKqYdeOO
-	fwowJuKYuKMEaZPFSWltajJFo=
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=oK
+	w70w/LOsp/h1z6Fef4O8j0xSbzMzILJqyCgk0tvCQ=; b=VKmSsGYD0tzfZze2kP
+	91JdLGx5MzY1u5toIjA2GgalZcc0wRq3uby/qRihHrHuMCr+4kw+WDJ6cNmUd+pe
+	JLay6BMJl07AdXaIoRcGUe+thZudxhlLpHjdpNsHzTRCwZWr+zbSf6apdap63zmT
+	rJxpSuEsdA3i0SmBApLSUxoHE=
 Received: from localhost.localdomain (unknown [])
-	by gzsmtp4 (Coremail) with SMTP id PygvCgB3lO2JvX1qxfeJMA--.22540S2;
-	Thu, 13 Aug 2026 20:50:18 +0800 (CST)
+	by gzsmtp4 (Coremail) with SMTP id PygvCgB3lO2JvX1qxfeJMA--.22540S3;
+	Thu, 13 Aug 2026 20:50:21 +0800 (CST)
 From: oushixiong1025@163.com
 To: Helge Deller <deller@gmx.de>
 Cc: Thomas Zimmermann <tzimmermann@suse.de>,
@@ -33,10 +34,12 @@ Cc: Thomas Zimmermann <tzimmermann@suse.de>,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	Shixiong Ou <oushixiong@kylinos.cn>
-Subject: [PATCH 1/5] fbdev: aty128fb: Convert to managed PCI and ioremap API
-Date: Thu, 13 Aug 2026 20:50:11 +0800
-Message-Id: <20260813125015.1097301-1-oushixiong1025@163.com>
+Subject: [PATCH 2/5] fbdev: nvidia: Convert to managed PCI and ioremap API
+Date: Thu, 13 Aug 2026 20:50:12 +0800
+Message-Id: <20260813125015.1097301-2-oushixiong1025@163.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20260813125015.1097301-1-oushixiong1025@163.com>
+References: <20260813125015.1097301-1-oushixiong1025@163.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -44,140 +47,109 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:PygvCgB3lO2JvX1qxfeJMA--.22540S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxWryDZryftw45Cry5ZrW7XFb_yoWrAw1Dpr
-	1fGFW3Gr4rGFnFgF4DuF15Z3Z8ZrWIv345CrW2y3sagFsIy3s2qrZ7tFyjvF9xJ3ykK3W3
-	Zw45t3WxZFWUGaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UZyCAUUUUU=
-X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/xtbC-QqLmmp9vYoWbwAA3-
+X-CM-TRANSID:PygvCgB3lO2JvX1qxfeJMA--.22540S3
+X-Coremail-Antispam: 1Uf129KBjvJXoWxAr4DZw15Kry3ur1UWFy7trb_yoWrJFy8pF
+	sxKa1ftrWfKF95uw1kCF4UZFs8X3yIv3y3Cr4UK3Z3trsIy3s2vF4IqFyav39rArZrJF1a
+	qw1jqw1UZa1IqaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jOb18UUUUU=
+X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/xtbC4Q2Mm2p9vY03EgAA35
 
 From: Shixiong Ou <oushixiong@kylinos.cn>
 
 Fix missing pci_disable_device() in probe and remove.
 
-Use pcim_enable_device(), pcim_request_region(), devm_ioremap()
-and devm_ioremap_wc() to replace manual resource management.
-Remove all release_mem_region() and iounmap() calls.
+Use pcim_enable_device(), pcim_request_all_regions(),
+devm_ioremap() and devm_ioremap_wc() to replace manual resource
+management. Remove all pci_release_regions() and iounmap() calls.
 
 Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
 ---
- drivers/video/fbdev/aty/aty128fb.c | 40 +++++++++---------------------
- 1 file changed, 12 insertions(+), 28 deletions(-)
+ drivers/video/fbdev/nvidia/nvidia.c | 19 ++++++-------------
+ 1 file changed, 6 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index bcb10e66221c..b76bfe014f41 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -2009,31 +2009,30 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		return err;
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+index 7d20c4087aeb..4ef7a5ba43cc 100644
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -1292,7 +1292,7 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 	NVTRACE_ENTER();
+ 	assert(pd != NULL);
  
- 	/* Enable device in PCI config */
--	if ((err = pci_enable_device(pdev))) {
-+	err = pcim_enable_device(pdev);
-+	if (err) {
- 		printk(KERN_ERR "aty128fb: Cannot enable PCI device: %d\n",
- 				err);
+-	if (pci_enable_device(pd)) {
++	if (pcim_enable_device(pd)) {
+ 		printk(KERN_ERR PFX "cannot enable PCI device\n");
  		return -ENODEV;
  	}
+@@ -1305,7 +1305,7 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 	nvidiafb_fix.mmio_start = pci_resource_start(pd, 0);
+ 	nvidiafb_fix.mmio_len = pci_resource_len(pd, 0);
  
- 	fb_addr = pci_resource_start(pdev, 0);
--	if (!request_mem_region(fb_addr, pci_resource_len(pdev, 0),
--				"aty128fb FB")) {
-+	if (!pcim_request_region(pdev, 0, "aty128fb FB")) {
- 		printk(KERN_ERR "aty128fb: cannot reserve frame "
- 				"buffer memory\n");
+-	REGS = ioremap(nvidiafb_fix.mmio_start, nvidiafb_fix.mmio_len);
++	REGS = devm_ioremap(&pd->dev, nvidiafb_fix.mmio_start, nvidiafb_fix.mmio_len);
+ 	if (!REGS) {
+ 		printk(KERN_ERR PFX "cannot ioremap MMIO base\n");
  		return -ENODEV;
+@@ -1333,7 +1333,7 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 	if (info->pixmap.addr == NULL)
+ 		goto err_out_kfree;
+ 
+-	if (pci_request_regions(pd, "nvidiafb")) {
++	if (pcim_request_all_regions(pd, "nvidiafb")) {
+ 		printk(KERN_ERR PFX "cannot request PCI regions\n");
+ 		goto err_out_enable;
  	}
+@@ -1358,7 +1358,7 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 	sprintf(nvidiafb_fix.id, "NV%x", (pd->device & 0x0ff0) >> 4);
  
- 	reg_addr = pci_resource_start(pdev, 2);
--	if (!request_mem_region(reg_addr, pci_resource_len(pdev, 2),
--				"aty128fb MMIO")) {
-+	if (!pcim_request_region(pdev, 2, "aty128fb MMIO")) {
- 		printk(KERN_ERR "aty128fb: cannot reserve MMIO region\n");
--		goto err_free_fb;
-+		goto err_free_info;
- 	}
+ 	if (NVCommonSetup(info))
+-		goto err_out_free_base0;
++		goto err_out_enable;
  
- 	/* We have the resources. Now virtualize them */
- 	info = framebuffer_alloc(sizeof(struct aty128fb_par), &pdev->dev);
- 	if (!info)
--		goto err_free_mmio;
-+		goto err_free_info;
+ 	par->FbAddress = nvidiafb_fix.smem_start;
+ 	par->FbMapSize = par->RamAmountKBytes * 1024;
+@@ -1378,8 +1378,8 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
+ 	par->ScratchBufferStart = par->FbUsableSize - par->ScratchBufferSize;
+ 	par->CursorStart = par->FbUsableSize + (32 * 1024);
  
- 	par = info->par;
+-	info->screen_base = ioremap_wc(nvidiafb_fix.smem_start,
+-				       par->FbMapSize);
++	info->screen_base = devm_ioremap_wc(&pd->dev, nvidiafb_fix.smem_start,
++					    par->FbMapSize);
+ 	info->screen_size = par->FbUsableSize;
+ 	nvidiafb_fix.smem_len = par->RamAmountKBytes * 1024;
  
-@@ -2041,7 +2040,8 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	/* Virtualize mmio region */
- 	info->fix.mmio_start = reg_addr;
--	par->regbase = pci_ioremap_bar(pdev, 2);
-+	par->regbase = devm_ioremap(&pdev->dev, pci_resource_start(pdev, 2),
-+				    pci_resource_len(pdev, 2));
- 	if (!par->regbase)
- 		goto err_free_info;
- 
-@@ -2050,9 +2050,9 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	par->vram_size = aty_ld_le32(CNFG_MEMSIZE) & 0x03FFFFFF;
- 
- 	/* Virtualize the framebuffer */
--	info->screen_base = ioremap_wc(fb_addr, par->vram_size);
-+	info->screen_base = devm_ioremap_wc(&pdev->dev, fb_addr, par->vram_size);
- 	if (!info->screen_base)
--		goto err_unmap_out;
-+		goto err_free_info;
- 
- 	/* Set up info->fix */
- 	info->fix = aty128fb_fix;
-@@ -2063,7 +2063,7 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	/* If we can't test scratch registers, something is seriously wrong */
- 	if (!register_test(par)) {
- 		printk(KERN_ERR "aty128fb: Can't write to video register!\n");
--		goto err_out;
-+		goto err_free_info;
- 	}
- 
- #ifndef __sparc__
-@@ -2085,25 +2085,15 @@ static int aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	pci_set_drvdata(pdev, info);
- 
- 	if (!aty128_init(pdev, ent))
--		goto err_out;
-+		goto err_free_info;
- 
- 	if (mtrr)
- 		par->wc_cookie = arch_phys_wc_add(info->fix.smem_start,
- 						  par->vram_size);
+@@ -1423,19 +1423,15 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
  	return 0;
  
--err_out:
+ err_out_iounmap_fb:
 -	iounmap(info->screen_base);
--err_unmap_out:
--	iounmap(par->regbase);
- err_free_info:
+ 	fb_destroy_modelist(&info->modelist);
+ err_out_free_base1:
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	nvidia_delete_i2c_busses(par);
+-err_out_free_base0:
+-	pci_release_regions(pd);
+ err_out_enable:
+ 	kfree(info->pixmap.addr);
+ err_out_kfree:
  	framebuffer_release(info);
--err_free_mmio:
--	release_mem_region(pci_resource_start(pdev, 2),
--			pci_resource_len(pdev, 2));
--err_free_fb:
--	release_mem_region(pci_resource_start(pdev, 0),
--			pci_resource_len(pdev, 0));
+ err_out:
+-	iounmap(REGS);
  	return -ENODEV;
  }
  
-@@ -2124,13 +2114,7 @@ static void aty128_remove(struct pci_dev *pdev)
+@@ -1450,11 +1446,8 @@ static void nvidiafb_remove(struct pci_dev *pd)
  	unregister_framebuffer(info);
  
  	arch_phys_wc_del(par->wc_cookie);
--	iounmap(par->regbase);
 -	iounmap(info->screen_base);
- 
--	release_mem_region(pci_resource_start(pdev, 0),
--			   pci_resource_len(pdev, 0));
--	release_mem_region(pci_resource_start(pdev, 2),
--			   pci_resource_len(pdev, 2));
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	nvidia_delete_i2c_busses(par);
+-	iounmap(par->REGS);
+-	pci_release_regions(pd);
+ 	kfree(info->pixmap.addr);
  	framebuffer_release(info);
- }
- #endif /* CONFIG_PCI */
+ 	NVTRACE_LEAVE();
 -- 
 2.25.1
 

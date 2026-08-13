@@ -1,196 +1,209 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.4])
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61C8447AF67;
-	Thu, 13 Aug 2026 12:51:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.4
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D2A13546C9;
+	Thu, 13 Aug 2026 15:45:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786625475; cv=none; b=nbZ/yS7PCBg1wJE0Zu97pAyUQW9HibgWiKLZaUwsz9gAUgGYaoCBD2C/LwiGFakbtrr4E/IOhVslzC2EvwrGcCdsTmbEA3a5uUPIZnMNIv6bltDbDwzaPJljHUnSQVTKZeogRLt8e2awI00rFkPG926omT6Su9ES/fSY1lggVd8=
+	t=1786635951; cv=none; b=FOHzqFIE1kKoBXMtHKjsGlMOV50MSKI116je33kJzHVieT7WqsuWxjlWJxyO2bpwFs1GHQRX0b3be04qxqN7x2yHMZumLQkW7Ic9GOEkpQOvKuKAwTbeuZ7QCHV6jyO76ssVYu+Lb8wZVkQyDF12lL5yT+zWtvGnyzwJU35M3D8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786625475; c=relaxed/simple;
-	bh=odGa2UsacVwpDfdT4pQOriKEDLZJ+vB2tGNe5FYg90U=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=pcASdcaxBRaiNA7BkO8joHEca5ibtwyr3GVPFXasfLh80dOYg0Ax5q+l6P+tuZizIRw1+C74SjMOsXg9XxA3Ldq8Os8K0xNpveEKmXh8Pk5YGGaJn8Csk8kH0Z+SsBHJrKhtcByaGhIKpL3EFNDVdnvvXjQ9NPfs+sPjJR8qWV0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=aMmgwwdv; arc=none smtp.client-ip=117.135.210.4
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1786635951; c=relaxed/simple;
+	bh=RQrnRY+7da1I0xjq7uhxqMCPga7vxDV5J3HAOLHXOFc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=k60fNfFwklxVa5uvgCJgsYf/04CnHmS7Wa1psJBNYF02FTqxN3JilkQSxa6tvCMVngsmOSBYimzLIzUwiG1yhLEmD1ojRQjQAtOq4GUmu712ZCv1KD1XTjEa+qV3ekZ/4cCjK2bTR/bt4Oc/YITTziwcMQSfX/F9cBJ7vhGnVTg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=rXLMD2dr; arc=none smtp.client-ip=212.227.17.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="aMmgwwdv"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Ch
-	uGeiwEbh3v21bNTNb7bSglyAc8AmH3h3N7zu1+nXg=; b=aMmgwwdvH9jPEgqv23
-	n7CpAMhHbsb2kzONKvcbO4o7gGJ9U8XyhZcF3xZhNMlznDG5Cx1ZMxANp0YhDkJ3
-	ERVqYc97Dn+WbZZXwFXoHo2kLqQqaZuyZcqFCG84alAgSJeqXP7DHO9bXSjnpiBA
-	v7tBYEjd0S9S2NA0gYMQ85COA=
-Received: from localhost.localdomain (unknown [])
-	by gzsmtp4 (Coremail) with SMTP id PygvCgB3lO2JvX1qxfeJMA--.22540S6;
-	Thu, 13 Aug 2026 20:50:24 +0800 (CST)
-From: oushixiong1025@163.com
-To: Helge Deller <deller@gmx.de>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
-	Abdun Nihaal <nihaal@cse.iitm.ac.in>,
-	u.kleine-koenig@baylibre.com,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Shixiong Ou <oushixiong@kylinos.cn>
-Subject: [PATCH 5/5] fbdev: atyfb: Convert to managed PCI and ioremap API
-Date: Thu, 13 Aug 2026 20:50:15 +0800
-Message-Id: <20260813125015.1097301-5-oushixiong1025@163.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20260813125015.1097301-1-oushixiong1025@163.com>
-References: <20260813125015.1097301-1-oushixiong1025@163.com>
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="rXLMD2dr"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1786635937; x=1787240737; i=deller@gmx.de;
+	bh=iQHntodUfi7mO3nLJnN30Ow5eK+ocjWAx4Zl+wKpL4o=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=rXLMD2drXBYemQkFxKxvDlEVnHdEo9YgiUxfKFS0zZeKySYydM9nBrVfl5PzKkKb
+	 WT4uFbBtCmY4ukIjyWyPLG0mMlACPYV09LsgAvWZdv0jVo0bDV8JLrxGhSBB+hAUw
+	 +37xNKIsvpP6onhdogAsMTuelWySOH84+QBf6jxInWstPHoqIwTWLhzEgDrbznFbY
+	 A/RCNuN3KEe7LBqEtoEGTq+kat+UC6iKbXvAaANSfnmWCsUEXcfTtIGoedoAw9jFf
+	 RMQ7LDpBfgi+vhRcqJhphE/JFgvQRHSiFjOQGNZET69AzewjKWpAtgbfPhDVuWuOc
+	 m69Np8JEp3shTjYtEw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MZTmY-1wP6Kk3Zzy-00LseR; Thu, 13
+ Aug 2026 17:45:36 +0200
+Message-ID: <e77b4b42-3467-4c9f-aec8-fda4187f1df1@gmx.de>
+Date: Thu, 13 Aug 2026 17:45:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:PygvCgB3lO2JvX1qxfeJMA--.22540S6
-X-Coremail-Antispam: 1Uf129KBjvJXoWxCry8WF4rGFWUZw1rXFW7XFb_yoW7Jr4UpF
-	yfGFsxtr45KF409r1DCrn09a95Aa1ay34rGrW7tw1ftFn8Jw18XrZ5GasF9rZ3J3yktrs0
-	9w1kt3WfCw129FJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jj9a9UUUUU=
-X-CM-SenderInfo: xrxvxxx0lr0wirqskqqrwthudrp/xtbC-RCNnGp9vZAWrQAA39
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/5] fbdev: aty128fb: Convert to managed PCI and ioremap
+ API
+To: oushixiong1025@163.com
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20260813125015.1097301-1-oushixiong1025@163.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20260813125015.1097301-1-oushixiong1025@163.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:LH+pTtrEZALvX7L8SLK6mU37y9AlSI9gvnpShlHrmXznLdAu+ia
+ 5q0WARf7KpMfwBvqrMq5G7UW971Kl3sR1apqGFDKVCzff/mQdDeCB5Jh7HWjpVyS8NbBKXb
+ J1GhB7TEUu8ElsnXnOcWtyPbXx6UnqkfbG+7YLVzZyH74ciEHU/VVuV14NvWmH/dOnbQ6dD
+ mQGZVLbyR94GoLimkKTTA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:6GKfOXI3Up0=;LXI2UURr1LUNdIHzRfptathtN03
+ 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
 
-From: Shixiong Ou <oushixiong@kylinos.cn>
+On 8/13/26 14:50, oushixiong1025@163.com wrote:
+> From: Shixiong Ou <oushixiong@kylinos.cn>
+>=20
+> Fix missing pci_disable_device() in probe and remove.
+>=20
+> Use pcim_enable_device(), pcim_request_region(), devm_ioremap()
+> and devm_ioremap_wc() to replace manual resource management.
+> Remove all release_mem_region() and iounmap() calls.
+>=20
+> Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
+> ---
+>   drivers/video/fbdev/aty/aty128fb.c | 40 +++++++++---------------------
+>   1 file changed, 12 insertions(+), 28 deletions(-)
+Whole series applied to fbdev for-next git tree.
 
-Fix missing pci_disable_device() in probe and remove.
-
-Use pcim_enable_device(), pcim_request_region(), devm_ioremap(),
-devm_ioremap_uc() and devm_ioremap_wc() for the PCI path. Convert
-aux_start to devm_request_mem_region(). Guard atyfb_remove() to
-only unmap/release for non-PCI (Atari) devices. Keep iounmap for
-sprite.addr outside the guard since it uses raw ioremap().
-
-Signed-off-by: Shixiong Ou <oushixiong@kylinos.cn>
----
- drivers/video/fbdev/aty/atyfb_base.c | 47 +++++++++++-----------------
- 1 file changed, 18 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 9fc5af09f86c..97cc8b6a9361 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3435,7 +3435,7 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
- 	raddr = addr + 0x7ff000UL;
- 	rrp = &pdev->resource[2];
- 	if ((rrp->flags & IORESOURCE_MEM) &&
--	    request_mem_region(rrp->start, resource_size(rrp), "atyfb")) {
-+	    devm_request_mem_region(&pdev->dev, rrp->start, resource_size(rrp), "atyfb")) {
- 		par->aux_start = rrp->start;
- 		par->aux_size = resource_size(rrp);
- 		raddr = rrp->start;
-@@ -3448,9 +3448,9 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
- 	 * By using strong UC we force the MTRR to never have an
- 	 * effect on the MMIO region on both non-PAT and PAT systems.
- 	 */
--	par->ati_regbase = ioremap_uc(info->fix.mmio_start, 0x1000);
-+	par->ati_regbase = devm_ioremap_uc(&pdev->dev, info->fix.mmio_start, 0x1000);
- #else
--	par->ati_regbase = ioremap(info->fix.mmio_start, 0x1000);
-+	par->ati_regbase = devm_ioremap(&pdev->dev, info->fix.mmio_start, 0x1000);
- #endif
- 	if (par->ati_regbase == NULL)
- 		return -ENOMEM;
-@@ -3490,8 +3490,8 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
- 
- 	aty_fudge_framebuffer_len(info);
- 
--	info->screen_base = ioremap_wc(info->fix.smem_start,
--				       info->fix.smem_len);
-+	info->screen_base = devm_ioremap_wc(&pdev->dev, info->fix.smem_start,
-+					    info->fix.smem_len);
- 	if (info->screen_base == NULL) {
- 		ret = -ENOMEM;
- 		goto atyfb_setup_generic_fail;
-@@ -3511,12 +3511,9 @@ static int atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info,
- 	return 0;
- 
- atyfb_setup_generic_fail:
--	iounmap(par->ati_regbase);
-+	/* devm handles cleanup automatically on probe failure */
- 	par->ati_regbase = NULL;
--	if (info->screen_base) {
--		iounmap(info->screen_base);
--		info->screen_base = NULL;
--	}
-+	info->screen_base = NULL;
- 	return ret;
- }
- 
-@@ -3536,7 +3533,7 @@ static int atyfb_pci_probe(struct pci_dev *pdev,
- 		return rc;
- 
- 	/* Enable device in PCI config */
--	if (pci_enable_device(pdev)) {
-+	if (pcim_enable_device(pdev)) {
- 		PRINTKE("Cannot enable PCI device\n");
- 		return -ENXIO;
- 	}
-@@ -3552,7 +3549,7 @@ static int atyfb_pci_probe(struct pci_dev *pdev,
- 	/* Reserve space */
- 	res_start = rp->start;
- 	res_size = resource_size(rp);
--	if (!request_mem_region(res_start, res_size, "atyfb"))
-+	if (!pcim_request_region(pdev, rp - pdev->resource, "atyfb"))
- 		return -EBUSY;
- 
- 	/* Allocate framebuffer */
-@@ -3612,17 +3609,9 @@ static int atyfb_pci_probe(struct pci_dev *pdev,
- err_release_io:
- #ifdef __sparc__
- 	kfree(par->mmap_map);
--#else
--	if (par->ati_regbase)
--		iounmap(par->ati_regbase);
--	if (info->screen_base)
--		iounmap(info->screen_base);
- #endif
-+	/* devm handles cleanup automatically for non-sparc PCI devices */
- err_release_mem:
--	if (par->aux_start)
--		release_mem_region(par->aux_start, par->aux_size);
--
--	release_mem_region(par->res_start, par->res_size);
- 	framebuffer_release(info);
- 
- 	return rc;
-@@ -3733,10 +3722,13 @@ static void atyfb_remove(struct fb_info *info)
- 	arch_phys_wc_del(par->wc_cookie);
- 
- #ifndef __sparc__
--	if (par->ati_regbase)
--		iounmap(par->ati_regbase);
--	if (info->screen_base)
--		iounmap(info->screen_base);
-+	/* For PCI devices, devm handles unmapping automatically */
-+	if (par->bus_type != PCI) {
-+		if (par->ati_regbase)
-+			iounmap(par->ati_regbase);
-+		if (info->screen_base)
-+			iounmap(info->screen_base);
-+	}
- #ifdef __BIG_ENDIAN
- 	if (info->sprite.addr)
- 		iounmap(info->sprite.addr);
-@@ -3745,10 +3737,7 @@ static void atyfb_remove(struct fb_info *info)
- #ifdef __sparc__
- 	kfree(par->mmap_map);
- #endif
--	if (par->aux_start)
--		release_mem_region(par->aux_start, par->aux_size);
--
--	if (par->res_start)
-+	if (par->res_start && par->bus_type != PCI)
- 		release_mem_region(par->res_start, par->res_size);
- 
- 	framebuffer_release(info);
--- 
-2.25.1
-
-
-No virus found
-		Checked by Hillstone Network AntiVirus
-
+Thanks!
+Helge

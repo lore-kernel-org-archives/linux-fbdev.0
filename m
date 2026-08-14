@@ -1,215 +1,136 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E430941D239;
-	Fri, 14 Aug 2026 07:39:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.21
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BD31141B362
+	for <linux-fbdev@vger.kernel.org>; Fri, 14 Aug 2026 07:44:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786693183; cv=none; b=oKY2IWz8EjInHuVKoBAPPxs46sHOST7qCHUkZmzfAL4KBuekr9ZPyfaRc8Ev/Ase8O3y7ch/eo2Bu6mfpmdLEaLsTvsPHNz8gUe5HtfXwo2X5O0taJ2kL8bad2zXA3LCNCJLBafWCLpgw6zZFsMpKCIG6JwE4THFVdc0MzEySeI=
+	t=1786693496; cv=none; b=gQofTqPWbEjQESDDYY8f39uZRO+NoXmkhC2TxlLWkwTnWt1Zw8mUZDH+Lfk2OvWPZOz9JAeQWy3BE0k6Cx5sm2F1laHLucSHMtOQ4ORyHwucjLNidsdDzlz++qYfHtvoTKjS+C6Tvc45qQLx9KShiw16m4va/4qPYitY3v+evVI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786693183; c=relaxed/simple;
-	bh=z53zlfLQD3HGOD2ubS9FWTN+Mx+baoKG8SHoei5bPOw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lPZll28WFC5+oVNPCxkLgk4YycuVQJADOCrzr1K5Y20Q0tN6Y1mmJQKyi4WcQ/fTj5/84afWnC97tKr5xzKXxClPnBNd0e1X8VasgkFthdEHf3hVudpXZ8vXo+o27qZUwtf0g48WZr6GqhP9am1I3XSVIewnfAL/d4kvOD4yXn0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=jsUAX/t8; arc=none smtp.client-ip=212.227.17.21
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	s=arc-20240116; t=1786693496; c=relaxed/simple;
+	bh=JgaZlVMkDe6qDCqmgpIIx3QmwudO6Mvh8tOMiOQ11bU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rRqu3swQQ1kjL/6rnwFsJWdUpmt0m3boDfACMP1cLYCMxfgzIrDm+uPMLSWHpRUiSxldW++fC9NHQInMwh3odqvP2N8I4oIuUquwNsHuZ9/UbicSb0gbix1UIWDAjLTLrkQtGruXh9voXwyBI6epICjwoIh/IYafDoRQYDT819A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WuQZQOUg; arc=none smtp.client-ip=209.85.216.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="jsUAX/t8"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1786693160; x=1787297960; i=deller@gmx.de;
-	bh=vVmvEbjJhFB9WmxxfgfG99J4R4PuDxNShJucSYr3rew=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=jsUAX/t8hVqEKRvJQ9R1cPT9VFgCdnLm1kKq/Uty/lQ28Uk6GgKv9FC8NTgMG9h8
-	 xfLCn7nzPyv6b+qm+noRkDitR2TfSqOxMaB6g70pLzXPjvWersrrJ3pMBVnGTJz/w
-	 2ZQVh9Unz4w6YMR5HXnPxwTCPsUi4hxpFI2UQeI3EhI1ozWJRNJb/yzBhWoy+GbId
-	 sRRgIbia6OnMHhofNVIm/gEWarANX7hVRO7w+cwgpixhZTl1EysBgxd/2Hxh2Olip
-	 FTQKUirv9NfTYzTSMC+OyiLw3KfOFFLY5Euu1/gqUJMzFdCon+jYq6bxlPiF2IW2r
-	 mWN7W5fdISIFioCWvQ==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MKbg4-1wZooO1CTU-00WLzt; Fri, 14
- Aug 2026 09:39:20 +0200
-Message-ID: <2c453754-64d9-42eb-8006-21ec003a2575@gmx.de>
-Date: Fri, 14 Aug 2026 09:39:18 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WuQZQOUg"
+Received: by mail-pj1-f49.google.com with SMTP id 98e67ed59e1d1-38125cebfdaso971751a91.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 14 Aug 2026 00:44:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786693484; x=1787298284; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=cwYk4ejoNMOniCBgkjcxx38Ml00PjaYwyPcbfZWz9ws=;
+        b=WuQZQOUgwfu5zQxjbX5x1vuUUv9Enuispsa3bTGii2PdLecScU/nr1vnXb3PSYxtPD
+         QNx901YmAeDeREmuB/IyyoFzdJxX2iTRxuZWaWXzLm6wdZ8I8lp+AVM/jMNSXcLXBt5k
+         BJRsn95bIDYQdVlFSJ5sa29hTxi9yWJnSYyY/d38Iw3lUzWsYB5hGxIwPQPojneeEZWy
+         CGnTjahbOKbHI0fH2kmMAqKxADK4ZfoQtT4YgIeI9i0ky9R+FljGmEOfMmpAjegODhO3
+         fc8OEdZBC+uIDd75ZJoB64typ81TWbPZg+MPXzoFzdciocNGEA0biolONXgqaPWx5OzQ
+         BqRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786693484; x=1787298284;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=cwYk4ejoNMOniCBgkjcxx38Ml00PjaYwyPcbfZWz9ws=;
+        b=Kc/qryLu+D5o+yMwb0wYC9IHnOj6C9dPWzXtXI6wKD6AXZsfzMVjkgaxZRkZpgnipA
+         p77r/rvhrvpjMIv+gIMn8+AsM4/Ko2XPCaUWYB7N2hAzr9qa2Ibb+4Vxky+M5+2tZb/n
+         WFVTyh4iJx7UL7XqiKt7EfcvgrgYlVPhqSc72+Ch8LEwWXkRoqbSg5wzj3A7d6za9dZb
+         BWOZx54TH/gQf5nWyBB/H1cL6a3pACrxjjbXYFeA/vXs9yidRnnZdn9poIUkH318Snly
+         boT4cmBQAuRrlH//M2HLrV3Oqa784gFNloEG2SLXJmVr1zjfu+CzxiFTPLMUMp4VaZut
+         dEsg==
+X-Gm-Message-State: AOJu0Yy7wlP7S62hQraiJXLmILLnG4DKlDKAUMI0mFMM67Po9nvLhiVd
+	hUNGTm3SwLdAaCUmANMmhjNO8ElXMem1xzJfWEwgoqV+Txa3oC7CwwOF
+X-Gm-Gg: AR+sD10Z1hWoKb0IQj6SJY4t0Y0ZrL5sV31lUg45LnRBuRM3H1hSmEkkudTZ4MlM09k
+	sO3Ar/8j14yJ0l2pk9ocaZ7ZaFf5uBBH/6h7BlSin7kQpS9KbhM+FJj93xHL082EgMU4X+poyq8
+	jJ+by6XhnfOqC00v4YbwQfjT9CbUGGvA/BDnhTafAU/qIBv3J2k4M/1M400BB17Tw6vVjNrphaN
+	TvQ2y3aIMXSuE0ChVBbM2cC55gmvvlKjQXZEUjZXIqvejkTikaAegi15UP2yYZeuOg5dzrfROns
+	jFNSSb/zcYW6h0ix893SumBS/Zot1DL3wdtZ2qAaYlpYpjz6Rpf09Jl/OooiB4JXpFQonduknWs
+	8Gi857xWmd77f63EFzvs1+DHMqKL7pWbOPeUE1nwQXyV7LhPBs28Z7y+ER+1sWMQ8DhsiIIlp3L
+	Kkgs6hdv+mvk4lBXoIUIq08/JnM13j+CxZYRWgU7DooRFVfCgzh7mpAgY3a23R3hEB4SkXn/G12
+	u4=
+X-Received: by 2002:a17:90a:ec83:b0:381:e74f:8a6a with SMTP id 98e67ed59e1d1-3933b8c1041mr4446396a91.16.1786693483969;
+        Fri, 14 Aug 2026 00:44:43 -0700 (PDT)
+Received: from ubuntu.. ([49.205.39.116])
+        by smtp.googlemail.com with ESMTPSA id 98e67ed59e1d1-394ebbcc34csm1462260a91.15.2026.08.14.00.44.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 14 Aug 2026 00:44:43 -0700 (PDT)
+From: Ajith P V <ajithpv.linux@gmail.com>
+To: FlorianSchandinat@gmx.de,
+	deller@gmx.de
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Ajith P V <ajithpv.linux@gmail.com>
+Subject: [PATCH v3] video: fbdev: via: refactor strcpy and viafb_name
+Date: Fri, 14 Aug 2026 07:44:35 +0000
+Message-ID: <20260814074435.277441-1-ajithpv.linux@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/03] fbdev: maxine: clean up build issues
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- "Maciej W. Rozycki" <macro@orcam.me.uk>
-References: <20260813232934.2718291-1-rdunlap@infradead.org>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20260813232934.2718291-1-rdunlap@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:OQ6I8ICmZrjPJRTxPyYNBJEMs9hnB48E4DtMKRCi8Sb1bdCcuwb
- nb/gtWXmD4QHpweWxIQFngVZEVTjhCafcUwJlBB7YJ8JKZaPVfs9TTq01iWpgFiDi3sou00
- HdqZ7OPS+tCsGkMfdctXOAV0XNdrtJa6pvsrNtnZ/VNDwUVYF8wOhrLiS86qHj4BzmsVvhk
- 5c/6t632Z05/+tC9U2eGA==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:hgf+ZLUh4vc=;sTFPxLBtH0slSXtuVdMal/YxYGv
- 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
- IwClhGw==
+Content-Transfer-Encoding: 8bit
 
-On 8/14/26 01:29, Randy Dunlap wrote:
-> This is all ancient source code from the beginning of git time.
-> Now builds cleanly on 32-bit and 64-bit MACH_DECSTATION.
->=20
->=20
-> Subject: [PATCH 01/03] fbdev: maxine: make functions static
-> Subject: [PATCH 02/03] fbdev: maxine: elide an unused function
-> Subject: [PATCH 03/03] fbdev: maxine: fix 64-bit build error
->=20
->   drivers/video/fbdev/maxinefb.c |    9 ++++++---
->   include/video/maxinefb.h       |    4 ++--
->   2 files changed, 8 insertions(+), 5 deletions(-)
+Replace the deprecated and unbounded strcpy() function with the safer
+strscpy() alternative when setting up the framebuffer fixed screen
+information [1][2].
 
-Thanks Randy!
+It aligns this driver with the ongoing kernel-wide security initiative
+to eliminate unbounded string copies, hardening the code against future
+modifications.
 
-I've applied all patches (including #4).
-I'll add upcoming Reviewed-by/Acked-by tags too.
+Additionally, convert the file-scope `viafb_name` pointer into a
+`static const char[]` array while preserving its original value "Via".
+This allows the compiler to execute compile-time bounds checking and
+optimize the string copy operation without breaking userspace ABI
+backward compatibility.
 
-Helge
+This is a proactive API cleanup and there is no functional
+performance or truncation risk.
 
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: "Maciej W. Rozycki" <macro@orcam.me.uk>
+Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strcpy [1]
+Link: https://github.com/KSPP/linux/issues/88 [2]
+
+Signed-off-by: Ajith P V <ajithpv.linux@gmail.com>
+---
+v3:
+  - Restore the original "Via" string value to prevent userspace ABI 
+    regressions, while keeping the 'static const char[]' optimization as
+    suggested by Sashiko AI.
+v2:
+  - Keep variable static but change it to a const array
+    'static const char viafb_name[] = "viafb"' as suggested by Helge Deller
+    to let the compiler leverage compile-time checks.
+
+ drivers/video/fbdev/via/viafbdev.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
+index 80f95dac32c8..f6823beb4d7e 100644
+--- a/drivers/video/fbdev/via/viafbdev.c
++++ b/drivers/video/fbdev/via/viafbdev.c
+@@ -16,7 +16,7 @@
+ #define _MASTER_FILE
+ #include "global.h"
+ 
+-static char *viafb_name = "Via";
++static const char viafb_name[] = "Via";
+ static u32 pseudo_pal[17];
+ 
+ /* video mode */
+@@ -144,7 +144,7 @@ static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
+ 	struct viafb_par *viaparinfo)
+ {
+ 	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
+-	strcpy(fix->id, viafb_name);
++	strscpy(fix->id, viafb_name, sizeof(fix->id));
+ 
+ 	fix->smem_start = viaparinfo->fbmem;
+ 	fix->smem_len = viaparinfo->fbmem_free;
+-- 
+2.43.0
 

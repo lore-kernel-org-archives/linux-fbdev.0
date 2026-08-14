@@ -1,66 +1,52 @@
-Received: from mailrelay-egress4.pub.mailoutpod2-cph3.one.com (mailrelay-egress4.pub.mailoutpod2-cph3.one.com [46.30.211.179])
+Received: from meve.dewith.io (meve.dewith.io [157.90.20.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 649E7485514
-	for <linux-fbdev@vger.kernel.org>; Fri, 14 Aug 2026 15:54:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=46.30.211.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06980492525;
+	Fri, 14 Aug 2026 17:58:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=157.90.20.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786722882; cv=none; b=dUD+d/cxx1kfwkBQvYT+qfgYE3TRiuY7Xv96gDQL/3L27V4ovHTp31QR374Dlcl3AC95mxErTekj4s2ehFd79xmnNLF1A9MCPY0r7a7MoTNt4+TwIqbFgDI4rvD9Ztgb8FKaKG2JWXzkFDaker9yrTQfxBmvjBLQ4XvzNbdtUg0=
+	t=1786730312; cv=none; b=bFqyuze2HC4DB2ulc05nymKZYa336Z5xTBJzwFmkTCD2rAFzUtNGvxxbTNMP2O2fXoFnzE9UjipAErlZtSVjWwhP3WlN+I8XU6Q4ex6tYN3qkdgcasubnVDWRPz7P8KoCPIeEDVZfZuGoxaTmSYLmRcfAIWUfHHbCAD/nNNNnVU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786722882; c=relaxed/simple;
-	bh=QGBzJP2QI9fiZMw8xRjRur+lgwtJJP60mATY37xXmfM=;
+	s=arc-20240116; t=1786730312; c=relaxed/simple;
+	bh=lbGj7nzIY4w4x0Owb8AUzwmGiTRV8YOEQ8U5QYE7n7w=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AVYbYUdhpVzMAWHt67oGAZ3OV6quZgeNgIUEMx+kzYm3XUSrxagH0D+u/4T35Iw9aVVWJEkp3IDvK4Ae5RlXjfr7Z5BAdrOF00LW+FxgVpdLDYiKH4gwSrBTtm7I3bzn5FDi/BOsBnScF9i7Tp+G3gyXtImmyJMhIGKUcqMHkl4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; spf=none smtp.mailfrom=ravnborg.org; dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=VKJxlyjc; dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b=+bcLyjFz; arc=none smtp.client-ip=46.30.211.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ravnborg.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=YiFfhfh52cVTaTvmGRSVgMThaZU+zd83tXTAPgVwbMBVY+l7Z1pvcMC+H8XIP2+MGeWDQdlcUd12sN30Z77dBEPrhyqb1Q1pTPaBqwh0PlD/ACjCXMzH+UTI7Qoj198AV/kKWBOt1OlHzUv2S1UVp3EDOLj/BNtSBx44Du6hw5I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=OtnwFJCd; arc=none smtp.client-ip=157.90.20.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dewith.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="VKJxlyjc";
-	dkim=permerror (0-bit key) header.d=ravnborg.org header.i=@ravnborg.org header.b="+bcLyjFz"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1786722807; x=1787327607;
-	d=ravnborg.org; s=rsa1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=ETAbJekTKq7/C0E0ng0HA47FjvDztMKRhBFG1L/c6jc=;
-	b=VKJxlyjce8chAlpqGFSW/zNF8pWL3vDuk0YSwhK6YgmGt2OXN8WEr2zwOMfPHeGaUbTZ9uTdPoxpr
-	 DpRSSBchSXxPo/30t6XuzVG2+lAvB6T9cdjcgMZTwIiy3eC+n/he9zq3IWsPoCeT1umGfGmbdO9dxi
-	 NZ4E5I50WtnCQjKbOddPSrKiR680Q5AYKgpky6oLvMppvNP/RAV7izR56xlkZg3guJGoemXVKD/KxJ
-	 Qu/6cSl96lIbwY1cI2FeLPSkaOZWiWmgOMPX+Wu4Anud/GRKqtdriPJ5ICWCdCgxvakwnXvOpur70D
-	 mRyeWJKu9A9UrsIke7H/zcGVXtRmocQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1786722807; x=1787327607;
-	d=ravnborg.org; s=ed1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=ETAbJekTKq7/C0E0ng0HA47FjvDztMKRhBFG1L/c6jc=;
-	b=+bcLyjFzFfdoZAOUcbMvrKbcCe6MFYUHe9j2rfTpKkEa4DRTGsQ6XsN68ja6gNvJWTk//jAKcjZEb
-	 OZAmEViBQ==
-X-HalOne-ID: 489b43a4-97f8-11f1-8842-5fcedd255746
-Received: from ravnborg.org (unknown [2a00:fd01:81e9:6100:119c:2d17:fdc1:9930])
-	by mailrelay5.pub.mailoutpod2-cph3.one.com (Halon) with ESMTPSA
-	id 489b43a4-97f8-11f1-8842-5fcedd255746;
-	Fri, 14 Aug 2026 15:53:26 +0000 (UTC)
-Date: Fri, 14 Aug 2026 17:53:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: =?iso-8859-1?Q?M=E0xim?= Pedraza Padilla <maximpedraza@gmail.com>
-Cc: Maxime Ripard <mripard@kernel.org>, Helge Deller <deller@gmx.de>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
+	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="OtnwFJCd"
+Received: from localhost (70-26-208-87.ftth.glasoperator.nl [87.208.26.70])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by meve.dewith.io (Postfix) with ESMTPSA id 7005F238C4;
+	Fri, 14 Aug 2026 17:58:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dewith.io; s=default;
+	t=1786730302;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=d3OSKF+fc/ftZbxaCIXYwiQoEpv2eaHUd9Rrn/IRaEk=;
+	b=OtnwFJCdkB/JV32wn9xNz0UbCuMmNsNrbQarOg6Y/1KFOMEevIJXoBBKhFSyEm7axIK+7l
+	NT3P8pz+5qbGSpCzxKY/2UQoZ0WpbboVQnJIgNYSVrnmkxgFdomGBPIweEBQv8e8sQtoT/
+	ckYMgOpFOxxRjroRjFh95PqFMkfytmE=
+Date: Fri, 14 Aug 2026 19:57:58 +0200
+From: Wim de With <wf@dewith.io>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
 	Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
 	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	kernel@pengutronix.de, Francesco Valla <francesco@valla.it>
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-Message-ID: <20260814155325.GB516994@ravnborg.org>
-References: <20260731215043.30392-1-maximpedraza@gmail.com>
- <am2mvECnCcO9IxuI@monoceros>
- <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
- <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
- <20260810-devout-pig-of-performance-595ccc@houat>
- <CAEUXW=GuHypVE5Xre8AQBmkrcUbPQxh03Lq8os=kjcLeGahOgw@mail.gmail.com>
- <20260812-neon-asp-of-completion-e9349e@houat>
- <CAEUXW=H-o+fqBjH1UQG7=UTm5x1a9Cj++XJM7twvFU4vJC4UrQ@mail.gmail.com>
+	linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] backlight: Add support for Orient Chip OCP8178
+Message-ID: <an9XJmcXq_EUjY5y@dewith.io>
+References: <20260812-ocp8178-backlight-v2-0-4ad18b48bef8@dewith.io>
+ <20260812-ocp8178-backlight-v2-2-4ad18b48bef8@dewith.io>
+ <20260814-peculiar-mega-mandrill-3a3148@quoll>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -69,29 +55,36 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAEUXW=H-o+fqBjH1UQG7=UTm5x1a9Cj++XJM7twvFU4vJC4UrQ@mail.gmail.com>
+In-Reply-To: <20260814-peculiar-mega-mandrill-3a3148@quoll>
 
-Hi Maxim.
+On Fri, Aug 14, 2026 at 11:22:15AM +0200, Krzysztof Kozlowski wrote:
+> On Wed, Aug 12, 2026 at 09:21:47PM +0200, Wim de With wrote:
+> > +	props = (typeof(props)){
+> > +		.type = BACKLIGHT_RAW,
+> > +		.brightness = brightness,
+> > +		.max_brightness = max_brightness,
+> > +		.power = BACKLIGHT_POWER_ON,
+> > +		.scale = BACKLIGHT_SCALE_NON_LINEAR,
+> > +	};
+> > +
+> > +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ocp8178,
+> > +					    &ocp8178_bl_ops, &props);
+> > +	if (IS_ERR(bl))
+> > +		return dev_err_probe(dev, PTR_ERR(bl),
+> > +				     "failed to register backlight\n");
+> > +
+> > +	platform_set_drvdata(pdev, bl);
+> > +	backlight_update_status(bl);
+> > +
+> > +	dev_dbg(dev, "probed, brightness=%u/%u\n", brightness, max_brightness);
+> 
+> You should not have probe success messages even as debug. It's not
+> printing anything useful as brightness is fixed (comes from DTB) and
+> devices appear in sysfs thus you can check them. Printing debug probe
+> success messages applies for core SoC drivers which might fail before
+> reaching initramfs mount and starting init.
 
-> On doing it through KMS: you are right, and the follow-up series should be
-> a DRM client alongside drm_log rather than a hook in drm_fb_helper. I will
-> rework it that way before posting it.
+Clear, will fix in v3.
 
-Take a look at:
-https://lkml.iu.edu/2605.1/03465.html
-
-The work Francesco Valla did seems to overlap a lot with what you
-suggest.
-
-From the intro mail:
-
-"
-in a nutshell, the splash DRM client can draw a splashscreen using:
-
-- the BMP image supplied by the EFI BGRT;
-- a BMP image loaded as firmware (either built-in or loaded from the
-filesystem);
-- a colored background.
-"
-
-	Sam
+Regards,
+Wim

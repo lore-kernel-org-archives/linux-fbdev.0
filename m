@@ -1,90 +1,76 @@
-Received: from meve.dewith.io (meve.dewith.io [157.90.20.64])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06980492525;
-	Fri, 14 Aug 2026 17:58:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=157.90.20.64
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9BB353CD8A4;
+	Fri, 14 Aug 2026 18:42:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786730312; cv=none; b=bFqyuze2HC4DB2ulc05nymKZYa336Z5xTBJzwFmkTCD2rAFzUtNGvxxbTNMP2O2fXoFnzE9UjipAErlZtSVjWwhP3WlN+I8XU6Q4ex6tYN3qkdgcasubnVDWRPz7P8KoCPIeEDVZfZuGoxaTmSYLmRcfAIWUfHHbCAD/nNNNnVU=
+	t=1786732958; cv=none; b=rFZpnqLq7PnTDuFxW105LS98xEeMZN2NvLqxHmfVIz0dZ9nZ8a7plBFH1jbZGasIk6N78V5po+Vl+KUZ5D2enD2nPpZCrri/Vu4xR2Ixne1JM07WXoFOT6nX63XmDfjRkNA2BAa/PgV1rt0Z/s+nvu3m5kwvEtZIXP65JJGUiLU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786730312; c=relaxed/simple;
-	bh=lbGj7nzIY4w4x0Owb8AUzwmGiTRV8YOEQ8U5QYE7n7w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YiFfhfh52cVTaTvmGRSVgMThaZU+zd83tXTAPgVwbMBVY+l7Z1pvcMC+H8XIP2+MGeWDQdlcUd12sN30Z77dBEPrhyqb1Q1pTPaBqwh0PlD/ACjCXMzH+UTI7Qoj198AV/kKWBOt1OlHzUv2S1UVp3EDOLj/BNtSBx44Du6hw5I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=OtnwFJCd; arc=none smtp.client-ip=157.90.20.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dewith.io
+	s=arc-20240116; t=1786732958; c=relaxed/simple;
+	bh=DrswnHRwBo2rjxH18CeA2A+LZA1/2HmObpE6QkRVNLY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=irI/+PNGRDgrBFL1K73q7B5bwKvrlRxsrzwPddhhTCFVbdt0EBKtW2G5lfDSC9sSsp/BIu2iAc5cWFctavedZGvCgdBel4iBPv5NAyGcfWofaTAuqZIIEO+OihaqE2DXwC/SxiDHDvukflPWsJn+GkEo3XoLhRGLyDq8jP09+j8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=pass smtp.mailfrom=infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=kIYah7Jn; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="OtnwFJCd"
-Received: from localhost (70-26-208-87.ftth.glasoperator.nl [87.208.26.70])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by meve.dewith.io (Postfix) with ESMTPSA id 7005F238C4;
-	Fri, 14 Aug 2026 17:58:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dewith.io; s=default;
-	t=1786730302;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=d3OSKF+fc/ftZbxaCIXYwiQoEpv2eaHUd9Rrn/IRaEk=;
-	b=OtnwFJCdkB/JV32wn9xNz0UbCuMmNsNrbQarOg6Y/1KFOMEevIJXoBBKhFSyEm7axIK+7l
-	NT3P8pz+5qbGSpCzxKY/2UQoZ0WpbboVQnJIgNYSVrnmkxgFdomGBPIweEBQv8e8sQtoT/
-	ckYMgOpFOxxRjroRjFh95PqFMkfytmE=
-Date: Fri, 14 Aug 2026 19:57:58 +0200
-From: Wim de With <wf@dewith.io>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] backlight: Add support for Orient Chip OCP8178
-Message-ID: <an9XJmcXq_EUjY5y@dewith.io>
-References: <20260812-ocp8178-backlight-v2-0-4ad18b48bef8@dewith.io>
- <20260812-ocp8178-backlight-v2-2-4ad18b48bef8@dewith.io>
- <20260814-peculiar-mega-mandrill-3a3148@quoll>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="kIYah7Jn"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=f95P4MUmI1ujQc62rr5prDkoqcixRSf+PR0x1gpnLNc=; b=kIYah7Jn4yXU3v566aU3hWuQRu
+	z4Fg/wejBgUV06X+QvqHtvL2M+oRX0jQfOVMUBB83kZS9ICihr/DaVuWPSFHQU02tpo2rWQpMg5iC
+	dOkLm4KftFSFHVg/DQF5A6Bhe8Unz5N5KswmzYde1I8TcAxu8Fd8E/mbcexvw4Ue8Pk0B2FfPT+Pg
+	QpbcRmvQOwqYixTLr4rg7D5aTkHraBTKjshe1HPZGk3T1/r8PzrnLDAtNKnv9ynxe6YMl9TBCwqlv
+	DPDitbfxUgzVmxiC2jpTaN0Gkyz4IGJid9tJ72EqASUtMwQAXD7EpMuKIexZUjHq0zHdkcNfQGJNX
+	6k1Fjj3Q==;
+Received: from [50.53.43.113] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wuwrT-000000033V3-1SlN;
+	Fri, 14 Aug 2026 18:42:35 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>
+Subject: [PATCH] fbdev: maxine: use MODULE_LICENSE() unconditionally
+Date: Fri, 14 Aug 2026 11:42:34 -0700
+Message-ID: <20260814184234.3013510-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260814-peculiar-mega-mandrill-3a3148@quoll>
+Content-Transfer-Encoding: 8bit
 
-On Fri, Aug 14, 2026 at 11:22:15AM +0200, Krzysztof Kozlowski wrote:
-> On Wed, Aug 12, 2026 at 09:21:47PM +0200, Wim de With wrote:
-> > +	props = (typeof(props)){
-> > +		.type = BACKLIGHT_RAW,
-> > +		.brightness = brightness,
-> > +		.max_brightness = max_brightness,
-> > +		.power = BACKLIGHT_POWER_ON,
-> > +		.scale = BACKLIGHT_SCALE_NON_LINEAR,
-> > +	};
-> > +
-> > +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ocp8178,
-> > +					    &ocp8178_bl_ops, &props);
-> > +	if (IS_ERR(bl))
-> > +		return dev_err_probe(dev, PTR_ERR(bl),
-> > +				     "failed to register backlight\n");
-> > +
-> > +	platform_set_drvdata(pdev, bl);
-> > +	backlight_update_status(bl);
-> > +
-> > +	dev_dbg(dev, "probed, brightness=%u/%u\n", brightness, max_brightness);
-> 
-> You should not have probe success messages even as debug. It's not
-> printing anything useful as brightness is fixed (comes from DTB) and
-> devices appear in sysfs thus you can check them. Printing debug probe
-> success messages applies for core SoC drivers which might fail before
-> reaching initramfs mount and starting init.
+This driver cannot be built as a loadable module so testing for
+"#ifdef MODULE" is not appropriate here.
+Also, MODULE_LICENSE() is always available.
 
-Clear, will fix in v3.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+---
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: "Maciej W. Rozycki" <macro@orcam.me.uk>
 
-Regards,
-Wim
+ drivers/video/fbdev/maxinefb.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+--- linux-next-20260814.orig/drivers/video/fbdev/maxinefb.c
++++ linux-next-20260814/drivers/video/fbdev/maxinefb.c
+@@ -169,9 +169,7 @@ static void __exit maxinefb_exit(void)
+ 	unregister_framebuffer(&fb_info);
+ }
+ 
+-#ifdef MODULE
+ MODULE_LICENSE("GPL");
+-#endif
+ module_init(maxinefb_init);
+ module_exit(maxinefb_exit);
+ 

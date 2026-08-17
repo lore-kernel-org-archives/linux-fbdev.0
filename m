@@ -1,81 +1,77 @@
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 671403EEAE9
-	for <linux-fbdev@vger.kernel.org>; Mon, 17 Aug 2026 09:40:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C68FE3F39FB
+	for <linux-fbdev@vger.kernel.org>; Mon, 17 Aug 2026 09:59:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786959636; cv=none; b=ZLxLL6KQN0C9UGvPVThr0NfSUJ+v/rCp15JbaqLgYW/4w05c/50zu0cx+ucZX6Z09Tc4tAykm6+yYTEYXuy4zxlYC4USZCajnKfNvccBzQ3VWev3E2xCnSEc9BsXF2JORdO5VC1YWFjAaVQrN/2elMmglO2C8yTW4g8JLGMGk/o=
+	t=1786960766; cv=none; b=P8FVM9DIFNBls/qSMpcnCbtAGJnb2mHu3sW9GxP0c68AFaLTj7DnmkTdXlOSRTgYUiRCkkH118TPEt4RyoAVq3GJ8UwukEB+4hWqeCyh3CXU9IxIiGf0L0ajDD4YHwcqWxO2kO95nMp+10OKqXki9y3mV0sx00khTDRqB5B9Md0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786959636; c=relaxed/simple;
-	bh=7VGMnmkejSh3sVd1hpCqrgINcXXfow/Hx/voysWE7aM=;
+	s=arc-20240116; t=1786960766; c=relaxed/simple;
+	bh=CBhBOxKW9DXkHE6Vdw9XCfb+WTJBsS8SlILHHvnc8TI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=q6BVda+Ku3KTLrYhnj1SKlXXMOwvV0KrPjr+9S7WcryrJZiwp0bR94l8ZcCtZEmfHTVrpLWMBebL8y0ZReRBdEltFrTd21YX8BdvuKVNYnkSTYoBd+KpJr3D012MbF0VcSHQxkZfqqQZzDRD8keB/bLvTY6IajAYfD4SQr+u/q0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b=OxK4Afoo; arc=none smtp.client-ip=209.85.128.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=PDW/6UT3Z5sjmSJzo8jUgmNBkO/NmtU1GBM5UggDiVKCqg6DxIGaaNIXVfVK0YheVGck5p3h91H966UglARTHl7CEzM3AViUcDirC56Kv3a2rcJxjhySksMGQFSxe3mwcm6qbFUYSeBq1YpCggaeenn7EIqUuWdfafv8sHzQyxc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=r58tA3a5; arc=none smtp.client-ip=209.85.128.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b="OxK4Afoo"
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-495590dde14so39553415e9.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Aug 2026 02:40:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r58tA3a5"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-495590dde14so39800255e9.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Aug 2026 02:59:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1786959628; x=1787564428; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1786960753; x=1787565553; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=7VGMnmkejSh3sVd1hpCqrgINcXXfow/Hx/voysWE7aM=;
-        b=OxK4Afooh8iWOamFVvhtRaf1jWHdGPK1FjMkEV3a3QqNw0LDcpKZqMu0Zq8zQhTLQ0
-         sUPvznOvTY7RAk/NMVcfFcO6I5gO6PSj3K7efy4kNAUa4ttskweRQ8W2j0ywHsz6edML
-         PZYKscBMMxK7Jfg0i+jzxH7xyXhqAOyvHgyp0cihRIoAtABDOqD3PG5WbGkTc2qcoSiD
-         xKTWuHRyU7hCuKAjS4vVRCXU4AKKX09/4gtp0gpZ6k3UlEAVIgQ5OE8Zh3mHlt+Q4GXL
-         dHWln/0RGeATlUNIdK2CiJkndhAiu58SJCDz4lMOnWk3OaxT9x+kfO2zJoySZr16r1gl
-         hIlA==
+        bh=n63sUKQMdSKf2IRWefDfMPcW8wjg+n1z3lYjhlrIgr4=;
+        b=r58tA3a5JpXgezjaC1WENgcDK/zZhZPyZZq/kRqG8yfvp+6KVaGI+rQyx7k8pDDJhx
+         5OPgbeqf68/fkhNYOHToyU9UaRmS0LSSd84D9fkKV9v9rtEHnzugLEvDstrPfQBbgmW9
+         AXtKb4P01885viv3qCujfxuQR7Pa16eDUZfEiuOb1ERALdHnyUZsB+tEhyNCdJhxawcB
+         /0HUsE1fs5fUhFGEEqfC175+yLKsITkopCrG4VtB0d2KohKsC8zv8JZ6B6n+gegcac83
+         OeDHwtq7+onVRpDqcWgGqt6vOaz63uwzhRteI7fxokuruEl6qduZ6xGe6Qko0eyngd8f
+         CjwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786959628; x=1787564428;
+        d=1e100.net; s=20251104; t=1786960753; x=1787565553;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=7VGMnmkejSh3sVd1hpCqrgINcXXfow/Hx/voysWE7aM=;
-        b=b5CBAIyv+gUPZg83bwsquBEz1T+N0IjSZKO9ucwl17KNtGNgv0B2Uc1iBgx4ENHGgu
-         C9Dru1yXy7Iu1YCQFpOjQC0GVMRx5Qft78e/5sdBO1VZl2qvAsPXL3e0svhP8u00srem
-         1aGGnnuR5MXbQOfYTQY84jWYxlzjpgMnenE92li91zSg9Jem6bH1uzshPZ8q5IoCQBDZ
-         ITJGEBqOMrWerGiMOTWU7IVpq6ECh4Ti/wA/Tpwb51t8f6e1OuA4d9SEXq3EjSPSeUv1
-         1VdL99g3w8VKAjYpZMZxGY/dEZXNRoekY0tmsViO1ZiRSTrZGIBRyN2XYaC7aM7rCTOB
-         dbQQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpSsf+w+ikFBHcO69q/xPPvPpAEUUQ+0jTghvmPWqv6T+DTyBdQB4Tgi7jfsWZeNA/CigbuY62UFJco/w==@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywo5Hz07fYLuNhk9O7EW1UM4dQFQkQKkk92mShiwNH92frdPbxP
-	AY0CDH7/iwu3U8/LTCSfrRsruUTIUvWNPrQrkv7DYkcSxQOnieiwM3NKT6C9Jek9TfY=
-X-Gm-Gg: AR+sD126WpKW/aL5A2nhv9btuQKZ14H9zs1BxHzTEiQEAT7y8NGptNvM5Jk2KSWDQTj
-	xw+EzrXYRxP1lFVc2K3omFAM4M3q5wQbgEBg46kF2Ul5qFUTawaLW7p59+LYtpK8XVQYFjH/ONL
-	n8XU9grUkqeVB1+f2IpFjqOQ30yZOX+YusGjdd2588/5fnmNQMTubNKfbNwBoDXFDLUC0jXgsus
-	XQ5Jo4lng21z2Tl/i/APct6XriocTlVKVGNqHCRX2uXeMh5zZh6M0g8zNLo/aMamnU8hn8ew/On
-	w1HSZHtWUR7l4WSJl5TU5Ffnh1IGPRqj5GXKu/qJbcA0sYLkTWANgsW6i4FidSJga5WulRcHr2o
-	ohwR+VzNfMsSBCm4V9a96u/Ry5H7JYByLBVVG6uU4j8RqhWCpzTKZ/uAWo5BxPMKGli2BfNbBW+
-	dBCyONvQLirhFZMys97IEsWj82iM32BKtYrFroasjvgnbmvgw79aHuJispkDeyqD/zvO+Xn3nvC
-	sHoz3ahx7p3MoAtt2iyIw8HVyoXMyNIEou300TfOksKRn4gBU5NGH5Ck+FdGPWOiNyt48wji67T
-	XI00ii+4dwi6EMrtedDyW/dXy8FjdIi34BCpa9uzrSvqSA==
-X-Received: by 2002:a7b:cb1a:0:b0:498:519:e660 with SMTP id 5b1f17b1804b1-49987935847mr230720425e9.4.1786959628339;
-        Mon, 17 Aug 2026 02:40:28 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4999d0fb867sm36476785e9.10.2026.08.17.02.40.27
+        bh=n63sUKQMdSKf2IRWefDfMPcW8wjg+n1z3lYjhlrIgr4=;
+        b=Rt/9J8Iyl3e10wVCDvXe3zhZBxrqRTs74G09lOI5V3g1p87XXIwWQH1Gw/D5zhKPaA
+         IrovAL1I7N1UYcSaEtJPqvVXQPvbsE3pgNwEkyINdRo8J5Ymm6FeJIfrL32fkT/W5hza
+         W/p05F0uWbxlbWgvML2XfQ3RZnT6P0yd434mryNi+G+oqRBp0voPBkHjIpzi8Qo+YWY/
+         PCfymIBeGqA/9qoSc/GjdPPTRJKMOGkNPiR1Uh2D4zLXNa7GLNDcoUHcIJkYSU148W+W
+         mT7ivtnR5ea2cQYfmymJ/WLv4rP6gObBHo5b8ViGLI35kegxFbyGcNfBeMh8dpz0+0HK
+         4Nug==
+X-Forwarded-Encrypted: i=1; AHgh+RpuFHQA7wOCu7/GmeVZFhk9NVQLKBfys6cc5jCpTSKXLSBUPfl8ztoKnlUkHdyDMWhOpmbXvJLLXBVYZg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxhygnz4TGZviwqCq/96LAlhdnQPZlefAjGjjkvPx9h7miDYA7F
+	ReTxuo992DB5E0BJHy+m8cao9t0+6KEGncKpsAbyeyK0+sLM4s5NQc/a
+X-Gm-Gg: AR+sD11XWdyuU9j9PsloMU9gPfofZo8yqgaMhtaujGeBADDteJdJJXPxS3s0iFmJOUr
+	PmFcyfWgaLj0bTD+7+qI4bBfd4LVcxhx6g7VhwJkZ8B1Jlj/OwMc1kPcwJWNAeaEwFDpq7JOesL
+	GUmnJXDgalXwQtIvp82q4Wub8LbvBuNL0+HvVK6ljR6Te5AT0eRKgWA+SCr12DEbOehmmKZ6/7s
+	NAUOzoKKNAQSUJzVw0QYqj0UrKmaOGaPvtLB38Fec+p6El2zEUJjFqdaDq9jQAmsq/wBHsUWhep
+	OkWEkM+3iM0JndbrdOX6DwcBRVCWHymXA+OlkxrLh0iefNiWj+w3ADXjoO5YCAtJXA79ltDyRsU
+	9+J9Y3xA/v1/OdRG4E3YJsYG5gpEY3VvQxF+Rr23BQyvEXt18af+sInD/QfBKJ44+5ZAp8vmk6v
+	KrI4uvxI9q1AYk6KwSaQAwb6bLh2M2g8K2om5v8vMF536Ne5nG+Ev80AO7XA==
+X-Received: by 2002:a05:600c:500d:b0:499:86f5:9e33 with SMTP id 5b1f17b1804b1-499879bc10emr392118895e9.18.1786960753464;
+        Mon, 17 Aug 2026 02:59:13 -0700 (PDT)
+Received: from localhost ([2c0f:3d00:6be:8900:9cf4:43df:e612:817b])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-482a5b7cd38sm2863663f8f.32.2026.08.17.02.59.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Aug 2026 02:40:27 -0700 (PDT)
-Date: Mon, 17 Aug 2026 10:40:25 +0100
-From: Daniel Thompson <daniel@riscstar.com>
-To: Wim de With <wf@dewith.io>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 1/2] dt-bindings: backlight: Add Orient Chip OCP8178
-Message-ID: <aoLXCY-q_o9IPDN3@aspen.lan>
-References: <20260816-ocp8178-backlight-v3-0-caf95c453c50@dewith.io>
- <20260816-ocp8178-backlight-v3-1-caf95c453c50@dewith.io>
+        Mon, 17 Aug 2026 02:59:12 -0700 (PDT)
+Date: Mon, 17 Aug 2026 12:59:09 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: moonafterrain@outlook.com
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org, Yuhao Jiang <danisjiang@gmail.com>,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: do not program the PLL from an
+ uninitialized value
+Message-ID: <aoLbbZ--FrkVN3SU@stanley.mountain>
+References: <20260817-sm750-fixes-v1-1-978c617e5a20@outlook.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -84,15 +80,58 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260816-ocp8178-backlight-v3-1-caf95c453c50@dewith.io>
+In-Reply-To: <20260817-sm750-fixes-v1-1-978c617e5a20@outlook.com>
 
-On Sun, Aug 16, 2026 at 12:57:03PM +0200, Wim de With wrote:
-> Add device tree bindings for the Orient Chip OCP8178 LED backlight
-> driver.
->
-> Signed-off-by: Wim de With <wf@dewith.io>
+On Mon, Aug 17, 2026 at 05:13:53PM +0800, Junrui Luo via B4 Relay wrote:
+> From: Junrui Luo <moonafterrain@outlook.com>
+> 
+> sm750_calc_pll_value() writes pll->M, N, OD and POD only when its search
+> loop finds a divider combination with 0 < M < 256, and returns 0 when
+> there is none. ddk750_set_mode_timing() discards that return value and
+> calls program_mode_registers() regardless, so sm750_format_pll_reg()
+> reads the four members uninitialized and pokes them into PANEL_PLL_CTRL
+> or CRT_PLL_CTRL. Nothing bounds var->pixclock on the way in, so a mode
+> set can ask for a clock the loop cannot represent.
+> 
+> Consume the return value and reject the mode; hw_sm750_crtc_set_mode()
+> already propagates a non-zero return. Initialize the structure as well:
+> sm750_calc_pll_value() returns early for SM750LE without writing the
+> members, and returns non-zero on that path.
+> 
+> Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
+> Reported-by: Yuhao Jiang <danisjiang@gmail.com>
+> Assisted-by: Claude:claude-opus-5
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Junrui Luo <moonafterrain@outlook.com>
+> ---
 
-Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
+Greg is not taking AI patches unless they can be tested.
+https://lore.kernel.org/all/2026080354-skater-urgent-31b2@gregkh/
 
+I kind of hate AI commit messages...  They are so verbose, confident
+and reasonable sounding.  But they don't answer any of the real
+questions I want to know.  How did Yuhao Jiang find this bug?  What
+did the symptoms look like to a user?  Are there ways we could
+improve our QC process to prevent this sort of bug in the future?
 
-Daniel.
+Probably the answer is that the bug was detected with AI and we
+have no idea what the symptoms look like.  Everyone sane automatically
+initializes variables to zero so probably there are no symptoms.
+
+So the problem is that the user inputs invalid var->pixclock, and
+it leads to an uninitialized variable usage.  This patch addresses
+it by initializing he variable to zero and checking if
+sm750_calc_pll_value() returns an error code.  Either approach on
+its own would would fix the problem, hopefully right?  So it's a belt
+and suspenders approach.  But isn't the real solution to reject
+invalid pixclocks in lynxfb_ops_check_var()?
+
+We're not going to apply this patch because it hasn't been tested.
+Probably we should invent a new tag so we can create a TODO list
+of rejected AI patches.
+
+KTODO: investigate unintialized variables in sm750fb found by AI
+
+regards,
+dan carpenter
+

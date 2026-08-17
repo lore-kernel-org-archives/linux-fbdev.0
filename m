@@ -1,172 +1,133 @@
-Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
+Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 77E6D431A51
-	for <linux-fbdev@vger.kernel.org>; Mon, 17 Aug 2026 19:11:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.54
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786993889; cv=none; b=jdfc1BSLiOIH4bi1yFrjX2QEMi2PL97yamR6bxlZ24ja6Z25P37FnjR4AnRsyy1Dqs2O+SI9SSVLpcDQ/33wkM2G3LkcJUA3bJQQpoXhYTD2gVEyPsMVZLBpRvtCdB+Jj6VeOGT3dka+z+qARsTjqltL0Fn6JKoCyEnuG1F+fWU=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786993889; c=relaxed/simple;
-	bh=PFznSusuAxwRsCwydTQw2s/fj8NtxgMl05ZErA3OYGc=;
-	h=Subject:To:References:Cc:From:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=elWJVk3fOxirEYqxtgAh6Y0MOhJvzZyqrkBQGnz0KUKofz0fSiWKzWaHIPUlNJGWHG4s8H0Sea0iehaUOlwlLxCjWJP81Ee4O+o34xshgr/CoS6Ms+ybALwbByVwIstOV43fY+VutbkI109E+z0XvDssoivfcRYw9I/7NsfNZN8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nogU4YRL; arc=none smtp.client-ip=209.85.216.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D01D33EB7F4
+	for <linux-fbdev@vger.kernel.org>; Mon, 17 Aug 2026 22:48:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.54
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787006920; cv=pass; b=TEXh3XU2NW03k4S5FEdWyhuSWKCMSch6XTIOFzjYikghg5+Rfk/9MR2xXLTH2MtZ4SyuVWaTfihP27bjvZmmh3PRK80Tk5x34MBsxip0XH+QRYSZbr8rzEveUWc7arqjvu32ibuBd9HfufZDVTkmApYYYBu/mUXHzHYm81EyxYU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787006920; c=relaxed/simple;
+	bh=q8RULe1QAJd8R3K15o5RctOMaBUubC8V5OsER/7e59o=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hALQlZF1CGvmUI6UPn32C56Y1Z3ynuYZvDuQsj84oOBIZru2BOlXZOrPvufbj5Y0tArwlrV/IOnUw7NiyVbHcJuqigFoFJ50L1SB9V5wOlfFVMltXIOIhjbJwbvDEQ6CjDfh8eAZ4dBqVsfyxwlXwPSZXlq+02qXaiby67lRV0M=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dzDYYo1L; arc=pass smtp.client-ip=209.85.218.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nogU4YRL"
-Received: by mail-pj1-f54.google.com with SMTP id 98e67ed59e1d1-383cb94f742so4667490a91.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Aug 2026 12:11:28 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dzDYYo1L"
+Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-c15f020a223so557319766b.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Aug 2026 15:48:38 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1787006917; cv=none;
+        d=google.com; s=arc-20260327;
+        b=BjJLexyc7FbUrRdBXF2vSOzhvqF3scwll6zQERDTG8srVeAuGYZAQtjM9KlkJmojs0
+         py50FZVVPTpsbtELClGWVIyMbFi6QJA86TVoPtsH/0ySLvaR0Viq29i2eSLYyFs3l6DU
+         oco9BKUL6j74X/mZPUs8arVG9nLj9JQG2gwppLzYX0Nl06gXXG04Y8uqcvE28nPZmEOr
+         5nvEGPPNTHfD00tHrrvy8ZnOdCcUTYQgm2pghG5rBcYY6bi5Q1AaEck9+aTkb9tm+csK
+         s4kAx3mK66QRMbbEBiIGevcQn7vUqDf6Mjx6aN3wJF4T6La2QVoAZgekaL6dW03FwRKi
+         NhfQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=q8RULe1QAJd8R3K15o5RctOMaBUubC8V5OsER/7e59o=;
+        fh=wxf/elXPC8r7uuDiXTZtrohJRqLcoK7H/6HP+9qqbvo=;
+        b=LD3yyak7JeF7AHiZUgUxJ1yhLFszu99BotaBMidlusyk3R8ICHw5MsB69ekVypI1sT
+         +0dv6OdkFRtjZHO/LPwa7Mtxa5BbbU/UL1SaZwP5WRUMw7vGsfMnRWUT6CYshzPgy6Pz
+         9YSwXtPqEM/UICw/reB+OOp29ODv0FDYrX3HkgxD4kM6QGsQCZtUa7vKgJ3VRPpWcDoh
+         iT/ZI1R+vK44R21Q25T1EJnOnY6V3Cf16/Y2BHEx3Dyrj40RX1QtpKFuMftLD+2Yj8BY
+         zRmTPkoxbJnYLSCmyn2wlBotoyK9zEiNxcfAsErvwd0UYTavaY2uS/UsUaP/IoPmlBNC
+         xdIg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786993888; x=1787598688; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:mime-version
-         :user-agent:date:message-id:from:cc:references:to:subject:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=kgpBXaPbKe1BHFYzjio5DXVI45Z37nWkkPcEL9YDavM=;
-        b=nogU4YRLvh22eK0Z98bb6JgovUTFNTQ5FdDCHDRPH5Um16zKjPJ2RRBpZcMxT0Jb8O
-         ioweJxYET2JyB9oGiMwKpa0ySlhTU28jcppdSxbzP89d+dNxeEM3NJYYfyKY0oCrLOpN
-         Kk0wDKnH9QB2nmO/R52hliWYWiMtfV3uMMqx4bg6y4eXBMvL/EwaGN+NvTb697BRIt7d
-         9ase3nJpvSe8B81ou7mmq7LjI6FusIwOXj5CMrxRHhspvrby0bdbxMQBrl38oVJMi/ar
-         gMLr6m0lhdfanJYkrSfEEv+Su+ohV7nkStzdNyHwDjuLM1Wo3SlxUoMXnL0fFv7rEeEJ
-         +HUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786993888; x=1787598688;
-        h=content-transfer-encoding:content-type:in-reply-to:mime-version
-         :user-agent:date:message-id:from:cc:references:to:subject:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1787006917; x=1787611717; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=kgpBXaPbKe1BHFYzjio5DXVI45Z37nWkkPcEL9YDavM=;
-        b=s4J7bB3uK55ct6US7uMxgXABct5gy3MRU7c5+7Kem8grmeyLXtFjKhqETn737xc2Hc
-         W639aywJSb/J4fLwVxpOIl1XM7LKDfsNnsZHM4suTJcGiMRhklTrWg5TfxV/RKRTdlr0
-         njzWamBTts39+OPO04JZ7PohGuyoRSfYqF52PMCWJ2QG5FfGOlO5YUXYHa8nUNQUoNsF
-         asSR3RxQQSzE6uqsHtED67duSSrtdTuFtdFMoGAIGZteWP4UMSLsdJy+Gduo5+MTKATG
-         qFL5S6rb8Zq018FJCODxWvkJrqRS/0zeXFN7pK+Ib7+tQkI6ITeycP5GBAfvOg15dUYN
-         s/Xw==
-X-Forwarded-Encrypted: i=1; AHgh+Rpt3BNXVVZzMMKvIqpp6L9VXRCwAULODKJRWg0syvgGy1EvtxSp2odLKmZg78AVG9vB39LAYPRxzNb2yQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy3HcDbzvR9oIP/1Xu0kxBYxs2VWPeIW7JcK7XuQsdnVZbqcm4L
-	yIuw/fliHCab4mDaMamZkiCsGx46vpo1FGgTaY42nl8BzoQt4paCN5MZe0UZbA==
-X-Gm-Gg: AR+sD10JzKU7Qi89bp0O7+/GL7xtIcv2o6vn+aqHx5qutEOxeWDRG9dPGn3feOTEzT8
-	6/D5uHQnvgC0uy2doWIyRohpZNF8zht6FsNI3bXBAc/fYnqkB091R2PyOFNOPQ1wx01xY55jnE0
-	cPb1cq/RNViPe87Z4mgKrtHXZZk9YoQ3AeJQiUhl4/Heb7XxwBhaYZ2b8cJMnLltZJRDnAUWYHu
-	J9A3WiRHxSH3Z7wk0wbu9Ake63KzLsxq0jDnJChqUlMNLML55sgB/r0T+ODMFMfFCnEu/IQyqSW
-	aZ4s6yJcGVN+1T221VNzx/MOSitweT/0tdQv5UJQMl3eACaywwwtceP2eLFhoG8tzifF4DPrUoW
-	SGIFDDnD9SmEuNtkjD20hOqjBbiHT5su4tbvgL2SUJnphqScL2woBUtGEL0DsRpn4eOG1paELQm
-	v2GnFGkCCqsLn754C0ryL1d4d3/vX4gjN+gPJvYRUhqmgecXEf5gRHsKHSNX8LfhhEzaTdIA/Rr
-	B37VEWcDh5jK1JJkg3xDf0X
-X-Received: by 2002:a17:90b:2b8f:b0:38f:7f60:ba35 with SMTP id 98e67ed59e1d1-3933cadeefdmr28541596a91.5.1786993887659;
-        Mon, 17 Aug 2026 12:11:27 -0700 (PDT)
-Received: from [10.1.1.24] (222-152-170-159-fibre.sparkbb.co.nz. [222.152.170.159])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3954d2b8080sm3481920a91.4.2026.08.17.12.11.23
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 17 Aug 2026 12:11:26 -0700 (PDT)
-Subject: Re: [PATCH v2 2/5] fbdev: Give atafb proper parent
-To: Thomas Zimmermann <tzimmermann@suse.de>, linux-m68k@vger.kernel.org,
- geert@linux-m68k.org
-References: <20260816073752.16656-1-schmitzmic@gmail.com>
- <20260816073752.16656-3-schmitzmic@gmail.com>
- <a486820d-8500-41b1-bc32-a23d908c9f86@suse.de>
- <5a2d0139-84db-cab8-c7fb-7806a71c53b2@gmail.com>
- <3347106a-f0f9-415a-94e4-94bc9b8182ef@suse.de>
-Cc: Miro Kropacek <miro.kropacek@gmail.com>, linux-fbdev@vger.kernel.org
-From: Michael Schmitz <schmitzmic@gmail.com>
-Message-ID: <badcf850-5e4d-40cb-11df-ff15f23e4983@gmail.com>
-Date: Tue, 18 Aug 2026 07:11:20 +1200
-User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101
- Icedove/45.4.0
+        bh=q8RULe1QAJd8R3K15o5RctOMaBUubC8V5OsER/7e59o=;
+        b=dzDYYo1LEmDAAtEoyETmq9YTwfuqkzZRIA6redFFfixVdtFns9rruf9LIWI6A+aHGW
+         +2CKSWycMizrbqMTu1dYPcg5X4XMqNbnfgABZERu83/dvrs2rJKy7CmsBdyUVyKrlLN9
+         G35+TQtKM0a5Bl7LyF2HAHILHGqFAMsTXZIJqxT2WIdY7tB+KFWCUyvkuBt+yOWYzVWb
+         gSR9TrpfJg5I6iHUJVCXgDijnBXC5pmZqOQlfZODACmTudd4ItIrQ7FFNBduGFQGNlbv
+         NYY/svFewepxwJDPQsndBELegWRaTiPbd4Np2WBrFC2UEiZu054J9xBEFjBk3n5zP0pg
+         Vo3g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787006917; x=1787611717;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=q8RULe1QAJd8R3K15o5RctOMaBUubC8V5OsER/7e59o=;
+        b=AWUxeysjvOs6ljeY/aG6AeLM+fE7U3BfeuLfKy4qiJ9i+W9pG6VNIsGa493RbTFrPd
+         w+h1SVkUgXJ+2WT/zF1CfUakeEHz93GhCFly6s3u3+k0g4Pshd1iN7jpAn4dLb2pQ4iG
+         LCkgKSr3rnCSiWmapjlT3ppcuaoRrcS8aBiVv79XbOQJh+YBLN4zCbOcBiXhxzOs6UQC
+         68tCDihaXaqgYqrmpH66jiyoaAedAth+Sn0YaqJQB5G2GPpUw+12FzLJH7Apb605L4pT
+         USVfSZfntOEyDcrd6f8gxeO5EGvbWXv+ufey6rfNIWceYcwhK/U6+g1HuE867wxz6TH6
+         bdzA==
+X-Forwarded-Encrypted: i=1; AHgh+RpMtpmtO35SMuw38c65AyaDqSf030tq+mdTDyEoGMwBhXvT97E/10W41bgw64GohWpEKpIkOxEXAkyMZg==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxzrWjj9d6+pnRGurNXxvXobbcEAqGjW6eBrO3y1m08k9RlIMWN
+	erRy6bkOgKw2Y5n+fouPnMpT+YrbFrEqVylE6uvQPemmg560C5gBfscM0IEvF5XaTUMYt5tdKnb
+	BiWesvOiXz8fiDIk098S17xqR9ZVDD3g=
+X-Gm-Gg: AR+sD124F9TBUQ4yL2IRsf91GeIR4EgO20zkYlsviM4zSIGiXHzQxwAHpk8hFD7a04e
+	G0t6ucdp/8gCGf5OuY1yMhWDi+93RjrJ8TxoTZAJgeZNMzA3ubwhKFC3Xqe6KXREQEpqjzzU5wV
+	+QQf9KiFAWd5nNaHU0FOT41nx9HxOh6e6jpc19VlSBOM1uljlcTL0KZgKQUszBfaBJkfQadycbU
+	hUpn5n8LSoktFWgwCL61OecyfUdMP+nnIw70dwdHX6FeO7AJgY6X+ETV0PQx1Qzhja25I3SyJol
+	QfJcedJLvQV2cUCfDA1qaZRTZDcC5Vw2r4rUbRwXnyUEMmKoh0vvbXEa
+X-Received: by 2002:a17:906:ef0a:b0:c21:61a6:8825 with SMTP id
+ a640c23a62f3a-c218880200dmr169252666b.22.1787006916867; Mon, 17 Aug 2026
+ 15:48:36 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <3347106a-f0f9-415a-94e4-94bc9b8182ef@suse.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260731215043.30392-1-maximpedraza@gmail.com>
+ <am2mvECnCcO9IxuI@monoceros> <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
+ <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
+ <20260810-devout-pig-of-performance-595ccc@houat> <CAEUXW=GuHypVE5Xre8AQBmkrcUbPQxh03Lq8os=kjcLeGahOgw@mail.gmail.com>
+ <20260812-neon-asp-of-completion-e9349e@houat> <CAEUXW=H-o+fqBjH1UQG7=UTm5x1a9Cj++XJM7twvFU4vJC4UrQ@mail.gmail.com>
+ <20260814155325.GB516994@ravnborg.org>
+In-Reply-To: <20260814155325.GB516994@ravnborg.org>
+From: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>
+Date: Tue, 18 Aug 2026 00:48:21 +0200
+X-Gm-Features: AcwNN1VaOzcnJmtGbApjtL8xLM_RPNeMVubTf0qJSVEHqCGDhHuSQ3SwYRF67bI
+Message-ID: <CAEUXW=Ffs+WKsQrNc3zjwtfAO=FKTf_7jQFovD+yjmD_yJuY2Q@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Maxime Ripard <mripard@kernel.org>, Helge Deller <deller@gmx.de>, 
+	=?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, kernel@pengutronix.de, 
+	Francesco Valla <francesco@valla.it>
+Content-Type: text/plain; charset="UTF-8"
 
-Hi Thomas,
+Hi Sam,
 
-Am 17.08.2026 um 19:57 schrieb Thomas Zimmermann:
->>>> The atafb fb device registers no parent, causing a missing symlink
->>>> (/sys/class/graphics/fb0/device). Xorg fbdevhw driver looks for that
->>>> symlink when scanning for devices, so add a parent node for atafb.
->>>
->>> Do you really have these devices to test with?
->>
->> Not the particular hardware that patches 3 and 4 add support for, but
->> the 'normal' Videl that is found in every Falcon, yes.
+Thank you -- that's a useful pointer, and it settles the question of how
+a splash should be drawn without fbcon: a DRM client at
+drm_client_setup(), next to drm_log, not a drm_fb_helper hook.
 
-N.B.: actual hardware won't be essential to test - an emulator such as 
-ARAnyM will do fine.
+Francesco's series is genuinely inspiring work, and it would be very
+useful to me if it could take a CLUT224 image -- unfortunately it can't.
+It only accepts an uncompressed 24-bit RGB888 BMP, whereas our logo is
+paletted, which is what keeps it small: 17 KiB for 800x480 rather than
+around a megabyte. So as it stands the format doesn't line up with what
+we carry.
 
->>
->>> If so, could you also replace the hard coded fb_info with a call to
->>> framebuffer_alloc()?
->>
->> Can't see how that would work - fb_info isn't passed to all functions
->> that need to use it, especially in the hardware detection phase (hence
->> the use of a static fb_info struct)?
+Reading it did make the distinction clearer to me, though. drm_splash
+*draws* an image into a fresh buffer, which means a first modeset and the
+blanking that comes with it. What our hardware leaves us with is a
+framebuffer U-Boot has already drawn and a CRTC still scanning it out, so
+for our case the natural thing is to *adopt* that state rather than
+redraw it -- which is what hardware state readout does, with no redraw
+and no flicker.
 
-On second thought, depending on how early in driver init fb_info is 
-needed, I may get away with turning it into a struct *fb_info and using 
-that where it can't easily be passed.
+Where drm_splash is the right tool is the case with no state to adopt --
+Falcon boot, where U-Boot proper never runs, or a handover where the
+buffer doesn't survive. I'll follow Francesco's series for that.
 
->
-> You'd have to modify the driver to pass the allocated instance, of
-> course. It's not a trivial oneliner, but if this driver is still
-> relevant, it might be worth improving it.
+Thanks again -- it helped me draw the line between the two.
 
-Your point is taken - I'll take a look at what would be required to pass 
-fb_info to all users. It's been nineteen years since rewrote atafb so 
-getting my head around the call sequences may take awhile.
-
-Cheers,
-
-	Michael
-
->
-> Best regards
-> Thomas
->
->>
->> Cheers,
->>
->>     Michael
->>
->>>>
->>>> Signed-off-by: Miro Kropacek <miro.kropacek@gmail.com>
->>>> Reviewed-by: Michael Schmitz <schmitzmic@gmail.com>
->>>> Signed-off-by: Michael Schmitz <schmitzmic@gmail.com>
->>>> Cc: <linux-fbdev@vger.kernel.org>
->>>> Link: https://lists.debian.org/debian-68k/2026/08/msg00000.html
->>>> ---
->>>>   drivers/video/fbdev/atafb.c | 5 +++++
->>>>   1 file changed, 5 insertions(+)
->>>>
->>>> diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
->>>> index b8ed1c537293..3d540803dc2b 100644
->>>> --- a/drivers/video/fbdev/atafb.c
->>>> +++ b/drivers/video/fbdev/atafb.c
->>>> @@ -3101,6 +3101,11 @@ static int __init atafb_probe(struct
->>>> platform_device *pdev)
->>>>   #endif /* ATAFB_EXT */
->>>>     //    strcpy(fb_info.mode->name, "Atari Builtin ");
->>>> +    /* Parent the fb device properly: without this fb0 registers as a
->>>> +     * virtual sysfs device with no /sys/class/graphics/fb0/device
->>>> link,
->>>> +     * which makes Xorg's fbdevhw reject it ("No devices detected").
->>>> +     */
->>>> +    fb_info.device = &pdev->dev;
->>>
->>> Because this is supposed to happen in framebuffer_alloc() and keeping it
->>> there would be preferable.
->>>
->>> Best regards
->>> Thomas
->>>
->>>>       fb_info.fbops = &atafb_ops;
->>>>       // try to set default (detected; requested) var
->>>>       do_fb_set_var(&atafb_predefined[default_par - 1], 1);
->>>
->>
->
+Max

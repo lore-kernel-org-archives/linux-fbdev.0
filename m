@@ -1,25 +1,24 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C7FF18DB1F;
-	Mon, 17 Aug 2026 06:36:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 670C937649D;
+	Mon, 17 Aug 2026 06:39:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786948611; cv=none; b=HHSJ4yS3L3aT7ZmYV+5e2mdew0rGYCePCBOQLzipvMpGBh+EoCIXOvnoxID/bC5c6/G/+WORafX8pqzD9fK57uevQl2iqnUrTlUL688KuUSWyv2PyJZlyFtXiNGAib0rdFRBLog4B+vo1EjC2GifFA0bEMHpqRdJEnPYj8b/lB4=
+	t=1786948796; cv=none; b=CTxJGbNj0XySh25liHrbfmjfjqk7P5McW6AfA421M8/9Gd0RkgP23aS/IgdZsyDuRUIJW7GGhzC79wi+J1FDkGOBjVpYQtDt3+uiwih+eIMLCcT8Nb9xIeUURddKZ1lposADFLncuqhW9G2X1Cp8pRti72+T8wjeFrR097J2azk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786948611; c=relaxed/simple;
+	s=arc-20240116; t=1786948796; c=relaxed/simple;
 	bh=YAXfyoucDFVd+xUrToagwQBlZZxLxO+3+e27LmGBQPQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aNc69thLfJlyVBTu1xgeLtg3n6y08iPTwmPBFwWmS+xnwi1NdY0a3p1v1vdYHiMaU0I3TupK1v9PFSvZKsbOBY/CUOfuNDasSAciwZJjfza0ZHoSccWWko6YVVBzFww8cYXWP5V4jNbgUIIG0OaEWM242OjS1qT4kfujePId1sI=
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=U+MRW29rF0cWaCv0oOugs29h6zmuJZEI3lcLLeQ17+iB3GH3T2Gj8bj9kVIMQLVHEsNGggq1Jepc+3WSVzgEWFr0HHEU/Quqa0AJVcHyTzVJPjf85PTy0IDEYzRypHXFgBrH7eAXyqOSAZLBG3DboG6HMNRkNuO6z+yuy+lwxwA=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 00eaab8a9a0611f19a56ed5b684f684d-20260817
-X-CID-CACHE: Type:Local,Time:202608171356+08,HitQuantity:1
+X-UUID: 6f142afa9a0611f19a56ed5b684f684d-20260817
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:438fbd1b-f0fb-47a0-9b3c-19b685a1d370,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:7db8b62,CLOUDID:e1fd7904bf143020e19e26bc3e6fd36b,BulkI
+X-CID-O-INFO: VERSION:1.3.19,REQID:692f5d82-b3b0-48f7-aedc-ced83efa3d51,IP:0,U
+	RL:0,TC:0,Content:-5,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
+	:release,TS:-5
+X-CID-META: VersionHash:7db8b62,CLOUDID:04b980b4817a7bef028bdf65ece100b3,BulkI
 	D:nil,BulkQuantity:0,SF:102|136|865|898,TC:nil,Content:0|15|50,EDM:-3|-100
 	,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV
 	:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
@@ -27,21 +26,21 @@ X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 00eaab8a9a0611f19a56ed5b684f684d-20260817
+X-UUID: 6f142afa9a0611f19a56ed5b684f684d-20260817
 X-User: yuebingkun@kylinos.cn
 Received: from tushenkeke2-pc.. [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <yuebingkun@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 1495331620; Mon, 17 Aug 2026 14:36:40 +0800
+	with ESMTP id 1025158773; Mon, 17 Aug 2026 14:39:44 +0800
 From: yuebingkun <yuebingkun@kylinos.cn>
 To: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	yuebingkun <yuebingkun@kylinos.cn>
-Subject: [PATCH] fbdev: platinumfb: add error checking for ioremap calls
-Date: Mon, 17 Aug 2026 14:36:37 +0800
-Message-ID: <20260817063637.306865-1-yuebingkun@kylinos.cn>
+Subject: [PATCH v2] fbdev: platinumfb: add error checking for ioremap calls
+Date: Mon, 17 Aug 2026 14:39:42 +0800
+Message-ID: <20260817063942.308926-1-yuebingkun@kylinos.cn>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org

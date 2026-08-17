@@ -1,46 +1,46 @@
 Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65C8E5733E;
-	Mon, 17 Aug 2026 03:18:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CC8839023D;
+	Mon, 17 Aug 2026 05:56:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786936708; cv=none; b=JCvmzlN3TovU5r1zY+79IKTJZessec7ZwSk5ZIlVoCVcGAsWNCwadNKhzt68fama00u3TZTV8jA0hlvvDvYi5KQ524IbGwkD0qzRjoyZB3zYzNv0W5Zp0kvbFDilPlfhbyrd7I/Xk6vEYqy/xhMjnngZJS9Zo0Q7n9R7foKLwHs=
+	t=1786946196; cv=none; b=en7Ehe01Es3bYgu+oJIA9G2b3XrJfE8EhrxZisvF9uWf6UfPPgY8a0ly+RigN7SQQx9MIrCld3BY4jwNrk83Eg2vDcQp1g6X7/q5e3gqXNaJt7nQHGLULDWw7SObwjAeom6jx1VB3iCnT4wL2b0I0rRtrbJDOovC5CJgSonZE9s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786936708; c=relaxed/simple;
-	bh=oy3/RMw1Xq/AgRdJNrtnDS1N3ozCn6zmQvIhwBZ3F08=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ctLtwkvmgPXuMpqamDLHMTvolyTD0MEtvEvZw9tX9Ujk9qZXqrpsSQVWaEJ8Al3S/BLxqUqyrLcfcuI2vA32m1P4X9cNdYLB0f9B0t83cBHiLms2SOouSPFmYNdJ/R598RDlvkVEV62aMjzHimloFzQqONDJiD4c7hY1ilvMsJY=
+	s=arc-20240116; t=1786946196; c=relaxed/simple;
+	bh=FTgo8RVQtmK3RiyvrVeuiF86C8GzL+TWqg6opVWiC5U=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bOHWM6lxQeFUO0nsc9c6p2dZKIqR7/n2h0KeE2G1evxrD2hM1tuJwv2Mkg1HwENvcDUvUTWG5bU9FKmCcL/x7DfBaW0g0GjTmqAiprVS7leBXrNsvS6NxzdbWZ4sFgjEZ11sTNWEIQFj9MMON3ip7vyQb7lP1rssYLTYwkZxFDE=
 ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 4b5bc58a99ea11f19a56ed5b684f684d-20260817
+X-UUID: 634312829a0011f19a56ed5b684f684d-20260817
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:104961e3-349c-4307-a96b-f96aabf0ba04,IP:0,U
+X-CID-O-INFO: VERSION:1.3.19,REQID:c8d9a146-4616-4c9e-b86b-a1d12ab60a52,IP:0,U
 	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
 	release,TS:0
-X-CID-META: VersionHash:7db8b62,CLOUDID:aac34e38859da426d09d3d5b0d3ccbd8,BulkI
-	D:nil,BulkQuantity:0,SF:102|865|898,TC:nil,Content:0|15|50,EDM:-3,IP:nil,U
-	RL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES:1,
-	SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-META: VersionHash:7db8b62,CLOUDID:e1fd7904bf143020e19e26bc3e6fd36b,BulkI
+	D:nil,BulkQuantity:0,SF:102|136|865|898,TC:nil,Content:0|15|50,EDM:-3|-100
+	,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV
+	:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
 X-CID-BVR: 2,SSN|SDN
 X-CID-BAS: 2,SSN|SDN,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
 X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 4b5bc58a99ea11f19a56ed5b684f684d-20260817
+X-UUID: 634312829a0011f19a56ed5b684f684d-20260817
 X-User: yuebingkun@kylinos.cn
 Received: from tushenkeke2-pc.. [(10.44.16.150)] by mailgw.kylinos.cn
 	(envelope-from <yuebingkun@kylinos.cn>)
 	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 964093421; Mon, 17 Aug 2026 11:18:19 +0800
+	with ESMTP id 205910464; Mon, 17 Aug 2026 13:56:28 +0800
 From: yuebingkun <yuebingkun@kylinos.cn>
 To: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	yuebingkun <yuebingkun@kylinos.cn>
-Subject: [PATCH] fbdev: platinumfb: replace strcpy with strscpy
-Date: Mon, 17 Aug 2026 11:18:16 +0800
-Message-ID: <20260817031816.188833-1-yuebingkun@kylinos.cn>
+Subject: [PATCH] fbdev: platinumfb: add error checking for ioremap calls
+Date: Mon, 17 Aug 2026 13:56:24 +0800
+Message-ID: <20260817055625.276500-1-yuebingkun@kylinos.cn>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -50,30 +50,64 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-strcpy() is deprecated for use on fixed-size buffers. Replace it with
-strscpy() to avoid potential buffer overflow issues.
+The ioremap() and ioremap_wt() calls in platinumfb_probe() were not
+checked for failure. If any of these mappings fail, the driver would
+dereference NULL pointers, leading to a kernel panic.
 
-Found by checkpatch.pl:
-WARNING: Prefer strscpy over strcpy
+Add proper error checking and cleanup for all three ioremap calls in
+the probe function, ensuring that any resources already allocated are
+properly released on failure.
 
 Signed-off-by: yuebingkun <yuebingkun@kylinos.cn>
 ---
- drivers/video/fbdev/platinumfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/platinumfb.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
 diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
-index a08d955d9b43..fa27a3a4f05b 100644
+index fa27a3a4f05b..e607d03a8adb 100644
 --- a/drivers/video/fbdev/platinumfb.c
 +++ b/drivers/video/fbdev/platinumfb.c
-@@ -320,7 +320,7 @@ static void platinum_init_info(struct fb_info *info,
- 	fb_alloc_cmap(&info->cmap, 256, 0);
+@@ -567,15 +567,40 @@ static int platinumfb_probe(struct platform_device* odev)
+ 	/* frame buffer - map only 4MB */
+ 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+ 	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
++	if (!pinfo->frame_buffer) {
++		dev_err(&odev->dev, "failed to ioremap frame buffer\n");
++		release_mem_region(pinfo->rsrc_fb.start,
++				   resource_size(&pinfo->rsrc_fb));
++		framebuffer_release(info);
++		return -ENOMEM;
++	}
+ 	pinfo->base_frame_buffer = pinfo->frame_buffer;
  
- 	/* Fill fix common fields */
--	strcpy(info->fix.id, "platinum");
-+	strscpy(info->fix.id, "platinum", sizeof(info->fix.id));
- 	info->fix.mmio_start = pinfo->platinum_regs_phys;
- 	info->fix.mmio_len = 0x1000;
- 	info->fix.type = FB_TYPE_PACKED_PIXELS;
+ 	/* registers */
+ 	pinfo->platinum_regs_phys = pinfo->rsrc_reg.start;
+ 	pinfo->platinum_regs = ioremap(pinfo->rsrc_reg.start, 0x1000);
++	if (!pinfo->platinum_regs) {
++		dev_err(&odev->dev, "failed to ioremap registers\n");
++		iounmap(pinfo->frame_buffer);
++		release_mem_region(pinfo->rsrc_fb.start,
++				   resource_size(&pinfo->rsrc_fb));
++		framebuffer_release(info);
++		return -ENOMEM;
++	}
+ 
+ 	pinfo->cmap_regs_phys = 0xf301b000;	/* XXX not in prom? */
+ 	request_mem_region(pinfo->cmap_regs_phys, 0x1000, "platinumfb cmap");
+ 	pinfo->cmap_regs = ioremap(pinfo->cmap_regs_phys, 0x1000);
++	if (!pinfo->cmap_regs) {
++		dev_err(&odev->dev, "failed to ioremap cmap registers\n");
++		iounmap(pinfo->platinum_regs);
++		iounmap(pinfo->frame_buffer);
++		release_mem_region(pinfo->cmap_regs_phys, 0x1000);
++		release_mem_region(pinfo->rsrc_fb.start,
++				   resource_size(&pinfo->rsrc_fb));
++		framebuffer_release(info);
++		return -ENOMEM;
++	}
+ 
+ 	/* Grok total video ram */
+ 	out_be32(&pinfo->platinum_regs->reg[16].r, (unsigned)pinfo->frame_buffer_phys);
 -- 
 2.43.0
 

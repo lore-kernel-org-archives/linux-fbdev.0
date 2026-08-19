@@ -1,489 +1,101 @@
-Received: from mail-pf1-f169.google.com (mail-pf1-f169.google.com [209.85.210.169])
+Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9262030CD9E
-	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 19:25:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C65BF3BE647
+	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 22:28:54 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787167537; cv=none; b=NGmAAKAqH7KMwJHG6A6tSSCU5avvRozQx2zuVhq1i16/uKOAaJ71b/6dhfl4+QExwlX7S1NlnAIcBj6IDmwINAQWJYKFhxFkIrhBEval2nf2Xaz3bvysxlYIj4sIvCgz/x63rz2VW/j3x8CdqXbEWUQKS5cQQ7hfwmMvUYz+ioY=
+	t=1787178536; cv=none; b=tPAm8fW/T5CxbFSB6+3kaT0c2kOn4vai9/2EJTBYZRRRLeC+nzjNZTDGBDsRmScUbSoUVftJJdstLgXzngyDoIu3mDiFMNy797damAnPYO+1TtWVfWEo49qAcvyFnBgclrmijTzS3MslVPj+J90iW3oEoJBR5k2pjbOmIWJnwVI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787167537; c=relaxed/simple;
-	bh=I5V+LrOapNGzlOWBfBdSv1rm6pWJTSCAn4tZbwxU+gc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rETzq2/TlDTumw8z/VMJhX1vNZhErfmQlsUbqynmCR3PHgQr6yW0wqMgBj1vU5LUISHOWNeanDoxgDZvBZBU5I2Jc2AB3qvG1yfQRlKsHO5wRS+tUd2YmGI9DFwGDnSVwBCGNX7cVyDfwr0RYVgTXP5vF3LaNg0gGh0956QWubs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=snu.ac.kr; spf=pass smtp.mailfrom=snu.ac.kr; dkim=pass (1024-bit key) header.d=snu.ac.kr header.i=@snu.ac.kr header.b=YOjYZo/g; arc=none smtp.client-ip=209.85.210.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=snu.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=snu.ac.kr
+	s=arc-20240116; t=1787178536; c=relaxed/simple;
+	bh=zY+gW1lXxfK7kqtIXgYpm9NhsrQnedavPShq5FhgfcE=;
+	h=From:To:Cc:Subject:Date:Message-Id; b=OWm0/iTKgxHWicHjjuWkddkfK2LshhgtMr5ZhW6YTANT6dx5/qHNmHNELSOdJIDi8CHntCjxBWllFkinhbiJvFC5YyOrzjJm2tvd5Qc3P0ZPeQpsKBSzLR0wJQKt4MuWM0x28lDPPo0M7C2LRX5h2W/NDsGXha7pkdh2IlIux+o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NoqZQC7A; arc=none smtp.client-ip=209.85.214.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=snu.ac.kr header.i=@snu.ac.kr header.b="YOjYZo/g"
-Received: by mail-pf1-f169.google.com with SMTP id d2e1a72fcca58-8487214ad2bso1899827b3a.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 12:25:34 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NoqZQC7A"
+Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2cf27856f9cso14929305ad.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 15:28:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=snu.ac.kr; s=google; t=1787167534; x=1787772334; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=/hAsqKeBKalXBMmx+oiuGsjP6yvX3Ib9m0iErNCoBJI=;
-        b=YOjYZo/gOvasrNm220mnhXKmjg/tsQqKPD6kDjGd+3heoRvTv2FJLfEoa9VEprO7qC
-         0LEoTxsN53JYSS3gGYS6h3YpmWTP7c41dHHr7bIeEf79Hj0+qSp+7ZMe6n5bfUmMW7Id
-         vskNvrUHmMdeA/DL8Bsv4mlu6LXYx98z68QoE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787167534; x=1787772334;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1787178534; x=1787783334; darn=vger.kernel.org;
+        h=message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=/hAsqKeBKalXBMmx+oiuGsjP6yvX3Ib9m0iErNCoBJI=;
-        b=Wnl8XMCHZS4D21ddMCklyuzsGo5ahYofsDpUZcNt0OcBHydeV2Ez1xfhHsczLxXjxS
-         xl/WXiza42U1D1+LG0YRJQa9kaRWFe/LzGR1uxf+oXs2I5YqSJDlQYqhpJE09TafYd7U
-         OUq01RvuH01SAVbWUgy7a+pKUXoDvYpgbe7aFWlw8rX33tz6AVlXiEzy1rgSsY9XWpJI
-         gWCgtLQIE6+igO4lpA6K8xU658zbIbYP3t/JUFnV4YDCdsTlpotZHIiPvt+vTqQdnG8M
-         VKHfruX0SUGnwbMvX56xppBfl1LNhTYptbOu7AXqVC4GFnOdfiVTLcEA5YfIgHd8qvd0
-         QL1g==
-X-Forwarded-Encrypted: i=1; AHgh+Rqq/cm9tOUL130hxMVHfmTAkntGiAPlrtDEjQaLB2YBtTvMW14b6GQaFGxTExJhEWSwHcvoNQl4ryqWlQ==@vger.kernel.org
-X-Gm-Message-State: AOJu0YwJSLpIYvvfQsvqPiJPxdzjt86gYLEnU9Lq6Dzv95qRJstFU3TO
-	OVgT8CSykqZw6f79WpTmYJE/dSR9RAT5tAKq5xrkwtkIN+sskaRnr/0hWfgseEFbZGY=
-X-Gm-Gg: AR+sD13xfRoYO4NTMo2eTtzdI4XodTPv45Tw+1wJeRHsjkIqqqzDWAxfCBS736YVvFN
-	8vyB+HwI93l6dN9YaJNbDNgAzMntWrS/KXPxNxY088q7e6vUaCzgP6wxzGbDi8KMRbJBDtB7zrw
-	NWVJPwS3P2mB5UoVOA0N4ZhBFXQcIpHf10bJL1XOgUaw8QnMRE/+dEGRkC5+ixgmm2lbwgIILiL
-	75/N/Xx+YM6Zo1McyxTJpPmvYBOU+4r6RQsRmOdC7cBxoD4CK2BBW4s3WriJ/tcRfPv/d+a9RnZ
-	AoKKbcBgt2Rg26skUxbmt8zDuUoF+x953DUcAlo1NDkLP4tU2nFLhB/SqOWKmP5WL/jqZAFSbcH
-	ZNK9Ybn9yNhXKnpF1aqKeOdePie8YdbAEC5a+FyL3EQeS/afZrCO6JHx+wXU9rUbrMSSVH44kne
-	RQU9LxphRZ4aavvicv9tVQtuHHqdbOTeVxfxHQLB5Uc2NSliH0CG5ISmOiZImpdDRFYB2mvIjzx
-	otR/mkeSaBsjyOsxaNQAoDu9DqchTWVqcuU972OCMxwDnT5ROV/q5v95cdmOXjDlc2JTUISJHKs
-	jTWrKGUT4l9oE4p20glzfE+z45FM4Aa1uAGzLKSXQIep9upY40NbuBxzbgtnaUiDug==
-X-Received: by 2002:a05:6a00:139c:b0:848:2c2e:c7a3 with SMTP id d2e1a72fcca58-851d3965b23mr11071026b3a.16.1787167533700;
-        Wed, 19 Aug 2026 12:25:33 -0700 (PDT)
-Received: from leesin ([147.46.121.37])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-851d3392a96sm957693b3a.20.2026.08.19.12.25.30
+        bh=yyf8P0B/y8zIH+Mmhiq8iXp175Fg2OnIXEWNkWxUosA=;
+        b=NoqZQC7AN1VOjGunB+DXvheM2lqStZmscomDxYqCca5uAOn3sQy9GYy70XVGN0WQgv
+         g0C5Et8CurQoWg//zBfQIyKl9HHPGiCzUxpgfqR7NdOHFdYJiwdf50AZkS1HezglKxpr
+         yoeONI+oZX3ItzLCtf3ccQmECX9JcXT8r033Ud+5bWUQm4iC2+4+oc6uejWQDHqP5Ugs
+         Y4Tv4Pt7R8q2GXGOH8fxBc8YNgdvRl8qKF0TALeGvikgniRq08pX6KXrDjRyKw38mJPw
+         5P+3vNtwyXaEAZTCFaTQFXPHXEOzOiAPO8ehGJbGT8GtJFlwujbvmOL71Zc/qszBUdGk
+         VWNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787178534; x=1787783334;
+        h=message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=yyf8P0B/y8zIH+Mmhiq8iXp175Fg2OnIXEWNkWxUosA=;
+        b=oZkL86S+XlU3TDQyCxOornLBBezkcaTXgRhB02Ihb8y9rdkcgB+eWqZZEFjjcpcxxP
+         ym38pkY2RYhCtvG//Oskn4Rc6ekvVJfJxCybZseNvJ9IKuagMDD8qVbCFsOSVyVsRkE2
+         hhKy40RyD4gST8ynFZBdJJU4NP/NIk74Z2CmeceMMxynXb3FMvqufjDkgvsZTHBeiG2G
+         ZVKZElIDT7NmIrnN2At7VENEa+Jeks7RhvIUEKlp0LsN6FmL5w8sL8bV4guGT5tJ/7rN
+         pRiHKOnF4IEmHO4OhPfDxTrVbV36S9S8TjHWJgEkm7NxxVtZcjMvI+7TFjY17vLC+lIo
+         olrA==
+X-Forwarded-Encrypted: i=1; AHgh+RqYo24ww+JK6RxzUVZ62LWdhNZubtww0Cwqx7bo8mgHK7erRQygYea2pzEOGwKp4CHA9OgCMNLerbyiRQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++k1yx2bfmtu0d4EmmEG87c/DTN4dDyQpt4voslpEB6hlfW9ysd/
+	xTFypkmYI0dcqFONXDyYi4oBVW+LEZWOs5s+no9tiicmzdKn0JumhhF+
+X-Gm-Gg: AR+sD10bI9Gbfx9lmJc5uJ2YI0LkrYo3K6HmrCCL8wJlTGs4kubJbuN7Ag8W7wGy/lg
+	hqeP2J3ElrHL+FzGkgkRFol5Wdi0Ig7oIGDByqPbee6bqvL4nL18AfpJPmY6cEsSDBAt4tHayxk
+	VC6akIrkETMrymUhfcO5l1uWXHfUjYco+ihf9WOYveRsQgsepXZ/auLZA0ebPs34JCj4qBlsPn4
+	TqDTQ9zjn+4qctak8JenG7dAl2atATvpnkk/Lun8YtQTmkmMNThf+UXJ0tD5jQrYs19igiMWWDL
+	Ul5gIY/HITpHvr7dTzE3Z3pfF5KdveM/TyGohXO492lsK1+XN/mQ51h0Lc2NmCWQQjEXRC4G1Qj
+	EsiYeE4q4OVzlJfMr8u4+9pF0oUeJhE9RHC33dxDSZUl+FzGCTCHLtWZ8TkeH3+XtpwK2MLGVVV
+	194fLyfuFHuRaiCLbcx7en1pKKBh0h2/lJa9uz4G3LKc6crFqDLUtdY+UwU4+3YEsN8yrkgWx4Z
+	siEJnjLKyarzHuA48qI4Fd0J3KPOrbDqW3qvOlBm9eeqFlsPw==
+X-Received: by 2002:a17:90b:5624:b0:38e:e9b:ffa4 with SMTP id 98e67ed59e1d1-39580a7c3dbmr15590880a91.6.1787178533810;
+        Wed, 19 Aug 2026 15:28:53 -0700 (PDT)
+Received: from xplor.waratah.dyndns.org (122-59-250-182-adsl.sparkbb.co.nz. [122.59.250.182])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1416ad564bcsm10629116c88.5.2026.08.19.15.28.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Aug 2026 12:25:33 -0700 (PDT)
-From: Jaeyoung Chung <jjy600901@snu.ac.kr>
-To: deller@gmx.de,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	simona@ffwll.ch,
-	soci@c64.rulez.org
-Cc: linux-kernel@vger.kernel.org,
-	eulgyukim@snu.ac.kr,
-	jjy600901@snu.ac.kr
-Subject: [BUG] KASAN: vmalloc-out-of-bounds Read in imageblit
-Date: Thu, 20 Aug 2026 04:25:15 +0900
-Message-ID: <20260819192516.57820-1-jjy600901@snu.ac.kr>
-X-Mailer: git-send-email 2.50.1
+        Wed, 19 Aug 2026 15:28:53 -0700 (PDT)
+Received: by xplor.waratah.dyndns.org (Postfix, from userid 1000)
+	id 810D436035C; Thu, 20 Aug 2026 10:28:48 +1200 (NZST)
+From: Michael Schmitz <schmitzmic@gmail.com>
+To: linux-m68k@vger.kernel.org,
+	geert@linux-m68k.org
+Cc: schmitzmic@gmail.com,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH v3 0/5] m68k SuperVidel patches
+Date: Thu, 20 Aug 2026 10:28:33 +1200
+Message-Id: <20260819222838.21256-1-schmitzmic@gmail.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-Hello,
+Version 3 of Miro Kropacek's patches for Atari SuperVidel.
 
-We found a "KASAN: vmalloc-out-of-bounds Read in imageblit" on Linux v7.2.
-The issue was found by our own race fuzzer. We have not analyzed the root cause,
-so we do not have a proposed fix to offer.
+Patch 1 is a bugfix for the Atari mouse input device driver
+(miscompiled since v6.2 with use of -funsigned_char). Geert's
+suggestion to change the mouse interrupt function signature
+adopted (generates equivalent code as seen by inspection and
+testing on my 030 Falcon).
 
-To reproduce the race reliably, we applied the delay patch below to the
-kernel and ran the C reproducer as root inside an x86_64 QEMU guest. The
-crash log we observed, the delay patch and the reproducer are all included
-below.
+Patches 2-4 are fbdev hardware support patches for the SuperVidel
+blitter hardware. Patch 2 has been replaced by a version addressing
+the root cause of the missing parent device (i.e. atafb failing
+to use framebuffer_alloc()). Patches 3 and 4 have been updated
+to reflect changes introduced by patch 2.
 
-The following kernel config options are required to reproduce the issue:
-    CONFIG_VT=y
-    CONFIG_VT_CONSOLE=y
-    CONFIG_FB=y
-    CONFIG_FB_CORE=y
-    CONFIG_FRAMEBUFFER_CONSOLE=y
-    CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
-    CONFIG_FONT_SUPPORT=y
-    CONFIG_FONT_8x16=y
-    CONFIG_DRM=y
-    CONFIG_DRM_BOCHS=y
-    CONFIG_DRM_FBDEV_EMULATION=y
-    CONFIG_KASAN=y
-    CONFIG_KASAN_VMALLOC=y
+Patch 5 is adding support to make use of the ethoc hardware also
+in the SuperVidel. Platform device register error handling (reported
+by Geert) hopefully fixed.
 
-We hope this report is useful. Please let us know if any further
-information would help.
+Cheers,
 
-Reported-by: Eulgyu Kim <eulgyukim@snu.ac.kr>
-Reported-by: Jaeyoung Chung <jjy600901@snu.ac.kr>
+   Michael
 
-Kernel delay patch:
-==================================================================
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 23b3c536d53d..774a38378aa5 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -84,6 +84,8 @@
- #include "fbcon.h"
- #include "fbcon_rotate.h"
- #include "fb_internal.h"
-+#include <linux/sched.h>	/* syz_rg: current->comm for the comm gates */
-+#include <linux/delay.h>	/* syz_rg: mdelay */
- 
- /*
-  * FIXME: Locking
-@@ -1231,6 +1233,13 @@ static void fbcon_init(struct vc_data *vc, bool init)
- 		set_blitting_type(vc, info);
- 	}
- 
-+	if (strncmp(current->comm, "syzrepro0", 9) == 0) {
-+		pr_info("syz_rg: fbcon_init arm vc=%u fg=%d par_rotate=%d fg_con_rotate=%d var=%ux%u\n",
-+			vc->vc_num, fg_console, par->rotate,
-+			fb_display[fg_console].con_rotate,
-+			info->var.xres, info->var.yres);
-+		mdelay(30);
-+	}
- 	par->p = &fb_display[fg_console];
- }
- 
-@@ -2432,6 +2441,13 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
- 		rows = FBCON_SWAP(par->rotate, info->var.yres, info->var.xres);
- 		cols /= w;
- 		rows /= h;
-+		if (strncmp(current->comm, "syzrepro1", 9) == 0) {
-+			pr_info("syz_rg: set_font rot=%d cols=%d rows=%d font=%dx%d var=%ux%u vc=%ux%u\n",
-+				par->rotate, cols, rows, w, h,
-+				info->var.xres, info->var.yres,
-+				vc->vc_cols, vc->vc_rows);
-+			mdelay(10);
-+		}
- 		ret = vc_resize(vc, cols, rows);
- 		if (ret)
- 			goto err_out;
-diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/core/fbcon_cw.c
-index bde820967eb9..f93a4364f89c 100644
---- a/drivers/video/fbdev/core/fbcon_cw.c
-+++ b/drivers/video/fbdev/core/fbcon_cw.c
-@@ -15,6 +15,8 @@
- #include <linux/font.h>
- #include <linux/vt_kern.h>
- #include <linux/console.h>
-+#include <linux/sched.h>	/* syz_rg: current->comm for the comm gates */
-+#include <linux/delay.h>	/* syz_rg: mdelay */
- #include <asm/types.h>
- #include "fbcon.h"
- #include "fbcon_rotate.h"
-@@ -137,6 +139,14 @@ static void cw_putcs(struct vc_data *vc, struct fb_info *info,
- 	image.width = vc->vc_font.height;
- 	image.depth = 1;
- 
-+	if (strncmp(current->comm, "syzrepro", 8) == 0 &&
-+	    vc->vc_cols * vc->vc_font.width > info->var.yres) {
-+		pr_info("syz_rg: cw_putcs pre-oob yy=%d xx=%d dx=%u dy=%u iw=%u cols=%u font=%ux%u yres=%u yvirt=%u vxres=%u\n",
-+			yy, xx, image.dx, image.dy, image.width,
-+			vc->vc_cols, vc->vc_font.width, vc->vc_font.height,
-+			info->var.yres, info->var.yres_virtual, vxres);
-+		mdelay(5);
-+	}
- 	if (attribute) {
- 		buf = kmalloc(cellsize, GFP_KERNEL);
- 		if (!buf)
-
-==================================================================
-
-C reproducer:
-==================================================================
-#define _GNU_SOURCE
-#include <fcntl.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/prctl.h>
-#include <unistd.h>
-
-#define SYSCHK(x) ({ long __r = (long)(x); if (__r == -1L) { perror(#x); exit(1); } __r; })
-
-#define FBIOGET_VSCREENINFO 0x4600
-#define KDFONTOP            0x4B72
-#define KD_FONT_OP_SET      0
-#define VT_ACTIVATE         0x5606
-#define VT_WAITACTIVE       0x5607
-#define VT_DISALLOCATE      0x5608
-#define VT_RESIZEX          0x560A
-
-struct kfont_op {
-	unsigned int op, flags, width, height, charcount;
-	unsigned char *data;
-};
-
-struct vt_consize {
-	unsigned short v_rows, v_cols, v_vlin, v_clin, v_vcol, v_ccol;
-};
-
-static const unsigned int heights[] = { 17, 19, 21, 23, 25, 27, 29, 31, 9, 11, 13, 15 };
-static unsigned char font[8192];
-static unsigned int xres = 1024, yres = 768;
-static int tty0, fresh_vt = -1;
-static volatile int phase, stop;
-
-static void wait_phase(int want)
-{
-	while (phase != want && !stop)
-		usleep(200);
-}
-
-static void *arm_thread(void *arg)
-{
-	char path[32];
-	int round, fd, n;
-
-	prctl(PR_SET_NAME, "syzrepro0", 0, 0, 0);
-	for (round = 0; round < 120 && !stop; round++) {
-		wait_phase(0);
-
-		fd = open("/sys/class/graphics/fbcon/rotate", O_WRONLY);
-		if (fd >= 0) {
-			write(fd, "1\n", 2);
-			close(fd);
-		}
-
-		n = 8 + (round % 50);
-		snprintf(path, sizeof(path), "/dev/tty%d", n);
-		fd = open(path, O_RDWR | O_NOCTTY);
-		if (fd >= 0) {
-			close(fd);
-			fresh_vt = n;
-		} else {
-			fresh_vt = -1;
-		}
-		phase = 1;
-
-		wait_phase(2);
-		if (fresh_vt > 0)
-			ioctl(tty0, VT_DISALLOCATE, (unsigned long)fresh_vt);
-		fresh_vt = -1;
-		phase = 0;
-	}
-	stop = 1;
-	return NULL;
-}
-
-static void *trigger_thread(void *arg)
-{
-	unsigned int h;
-	int round;
-
-	prctl(PR_SET_NAME, "syzrepro1", 0, 0, 0);
-	for (round = 0; round < 120 && !stop; round++) {
-		h = heights[round % 12];
-		wait_phase(1);
-
-		if ((round % 4) == 3) {
-			struct vt_consize cs;
-
-			memset(&cs, 0, sizeof(cs));
-			cs.v_cols = xres / 8;
-			cs.v_rows = yres / h ? yres / h : 1;
-			ioctl(tty0, VT_RESIZEX, &cs);
-		} else {
-			struct kfont_op op;
-
-			memset(&op, 0, sizeof(op));
-			op.op = KD_FONT_OP_SET;
-			op.width = 8;
-			op.height = h;
-			op.charcount = 256;
-			op.data = font;
-			ioctl(tty0, KDFONTOP, &op);
-		}
-		phase = 2;
-	}
-	stop = 1;
-	return NULL;
-}
-
-int main(void)
-{
-	unsigned int var[40];
-	pthread_t t0, t1;
-	int i, fd;
-
-	for (i = 0; i < (int)sizeof(font); i++)
-		font[i] = (unsigned char)(0x55 ^ i);
-
-	fd = open("/dev/fb0", O_RDONLY);
-	if (fd >= 0) {
-		if (ioctl(fd, FBIOGET_VSCREENINFO, var) == 0) {
-			xres = var[0];
-			yres = var[1];
-		}
-		close(fd);
-	}
-
-	tty0 = SYSCHK(open("/dev/tty0", O_RDWR | O_NOCTTY));
-	if (ioctl(tty0, VT_ACTIVATE, 1) == 0)
-		ioctl(tty0, VT_WAITACTIVE, 1);
-
-	pthread_create(&t0, NULL, arm_thread, NULL);
-	pthread_create(&t1, NULL, trigger_thread, NULL);
-	pthread_join(t0, NULL);
-	pthread_join(t1, NULL);
-	return 0;
-}
-==================================================================
-
-Crash log:
-==================================================================
-BUG: KASAN: vmalloc-out-of-bounds in fb_read_offset drivers/video/fbdev/core/sysmem.h:38 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_bitblit drivers/video/fbdev/core/fb_imageblit.h:137 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap1x_imageblit drivers/video/fbdev/core/fb_imageblit.h:275 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:477 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x10ab/0x1c50 drivers/video/fbdev/core/sysimgblt.c:24
-Read of size 8 at addr ffffc90000a81fb8 by task syzrepro1/408
-
-CPU: 2 UID: 0 PID: 408 Comm: syzrepro1 Not tainted 7.2.0-dirty #1 PREEMPT 
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.13.0-1ubuntu1.1 04/01/2014
-Call Trace:
- <TASK>
- dump_stack_lvl+0x5e/0x80 lib/dump_stack.c:120
- print_address_description+0x77/0x200 mm/kasan/report.c:378
- print_report+0x64/0x70 mm/kasan/report.c:482
- kasan_report+0x118/0x150 mm/kasan/report.c:595
- fb_read_offset drivers/video/fbdev/core/sysmem.h:38 [inline]
- fb_bitblit drivers/video/fbdev/core/fb_imageblit.h:137 [inline]
- fb_bitmap1x_imageblit drivers/video/fbdev/core/fb_imageblit.h:275 [inline]
- fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:477 [inline]
- fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
- sys_imageblit+0x10ab/0x1c50 drivers/video/fbdev/core/sysimgblt.c:24
- drm_fbdev_shmem_defio_imageblit+0x26/0x110 drivers/gpu/drm/drm_fbdev_shmem.c:39
- cw_putcs_aligned drivers/video/fbdev/core/fbcon_cw.c:113 [inline]
- cw_putcs+0x48c/0x1aa0 drivers/video/fbdev/core/fbcon_cw.c:169
- fbcon_putcs+0x616/0xa50 drivers/video/fbdev/core/fbcon.c:1401
- do_update_region+0x387/0x470 drivers/tty/vt/vt.c:656
- redraw_screen+0x652/0xcb0 drivers/tty/vt/vt.c:1008
- vc_do_resize+0xe4f/0x1490 drivers/tty/vt/vt.c:1309
- vc_resize include/linux/vt_kern.h:49 [inline]
- fbcon_do_set_font+0x693/0x1a90 drivers/video/fbdev/core/fbcon.c:2451
- fbcon_set_font+0x50c/0x750 drivers/video/fbdev/core/fbcon.c:2534
- con_font_set drivers/tty/vt/vt.c:4992 [inline]
- con_font_op+0x8a4/0xce0 drivers/tty/vt/vt.c:5032
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0x719/0x1660 drivers/tty/vt/vt_ioctl.c:745
- tty_ioctl+0x89c/0xa40 drivers/tty/tty_io.c:2792
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:597 [inline]
- __se_sys_ioctl+0xb6/0x100 fs/ioctl.c:583
- do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0xf7/0x370 arch/x86/entry/syscall_64.c:94
- entry_SYSCALL_64_after_hwframe+0x76/0x7e
-RIP: 0033:0x79ef7f990d6b
-Code: 00 48 89 44 24 18 31 c0 48 8d 44 24 60 c7 04 24 10 00 00 00 48 89 44 24 08 48 8d 44 24 20 48 89 44 24 10 b8 10 00 00 00 0f 05 <89> c2 3d 00 f0 ff ff 77 1c 48 8b 44 24 18 64 48 2b 04 25 28 00 00
-RSP: 002b:000079ef7f08de10 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000079ef7f990d6b
-RDX: 000079ef7f08de70 RSI: 0000000000004b72 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007ffe35b301e7
-R10: 0000000000000000 R11: 0000000000000246 R12: 000079ef7f08de70
-R13: 0000000000000011 R14: 0000583e9d2d80a0 R15: 0000583e9d2da060
- </TASK>
-
-The buggy address belongs to a vmalloc virtual mapping
-Memory state around the buggy address:
- ffffc90000a81e80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90000a81f00: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
->ffffc90000a81f80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-                                        ^
- ffffc90000a82000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90000a82080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-==================================================================
-BUG: unable to handle page fault for address: ffffc90000a81fb8
-#PF: supervisor read access in kernel mode
-#PF: error_code(0x0000) - not-present page
-PGD 100000067 P4D 100000067 PUD 1003ad067 PMD 102b57067 PTE 0
-Oops: Oops: 0000 [#1] SMP KASAN PTI
-CPU: 2 UID: 0 PID: 408 Comm: syzrepro1 Tainted: G    B               7.2.0-dirty #1 PREEMPT 
-Tainted: [B]=BAD_PAGE
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.13.0-1ubuntu1.1 04/01/2014
-RIP: 0010:fb_read_offset drivers/video/fbdev/core/sysmem.h:38 [inline]
-RIP: 0010:fb_bitblit drivers/video/fbdev/core/fb_imageblit.h:137 [inline]
-RIP: 0010:fb_bitmap1x_imageblit drivers/video/fbdev/core/fb_imageblit.h:275 [inline]
-RIP: 0010:fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:477 [inline]
-RIP: 0010:fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
-RIP: 0010:sys_imageblit+0x10d6/0x1c50 drivers/video/fbdev/core/sysimgblt.c:24
-Code: 8b 54 24 38 4c 8b 4c 24 20 4c 8b 44 24 10 48 8b 7c 24 08 48 be 00 00 00 00 00 fc ff df 49 c7 c5 ff ff ff ff 44 89 c9 49 d3 e5 <48> 8b 0f 49 f7 d5 48 89 4c 24 50 49 21 cd eb 0c 45 31 ed 48 c7 44
-RSP: 0018:ffffc900028ef5f0 EFLAGS: 00010287
-RAX: ffff88810a328001 RBX: 0000000000000000 RCX: 0000000000000020
-RDX: 0000000000000001 RSI: dffffc0000000000 RDI: ffffc90000a81fb8
-RBP: ffffc900028ef6c8 R08: 0000000000000020 R09: 0000000000000020
-R10: ffff888102858900 R11: fffffbfff54aabb9 R12: 0000000000000100
-R13: ffffffff00000000 R14: 0000000000000000 R15: 0000000000000000
-FS:  000079ef7f08e6c0(0000) GS:ffff888170830000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffffc90000a81fb8 CR3: 0000000108fc6000 CR4: 00000000000006f0
-Call Trace:
- <TASK>
- drm_fbdev_shmem_defio_imageblit+0x26/0x110 drivers/gpu/drm/drm_fbdev_shmem.c:39
- cw_putcs_aligned drivers/video/fbdev/core/fbcon_cw.c:113 [inline]
- cw_putcs+0x48c/0x1aa0 drivers/video/fbdev/core/fbcon_cw.c:169
- fbcon_putcs+0x616/0xa50 drivers/video/fbdev/core/fbcon.c:1401
- do_update_region+0x387/0x470 drivers/tty/vt/vt.c:656
- redraw_screen+0x652/0xcb0 drivers/tty/vt/vt.c:1008
- vc_do_resize+0xe4f/0x1490 drivers/tty/vt/vt.c:1309
- vc_resize include/linux/vt_kern.h:49 [inline]
- fbcon_do_set_font+0x693/0x1a90 drivers/video/fbdev/core/fbcon.c:2451
- fbcon_set_font+0x50c/0x750 drivers/video/fbdev/core/fbcon.c:2534
- con_font_set drivers/tty/vt/vt.c:4992 [inline]
- con_font_op+0x8a4/0xce0 drivers/tty/vt/vt.c:5032
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0x719/0x1660 drivers/tty/vt/vt_ioctl.c:745
- tty_ioctl+0x89c/0xa40 drivers/tty/tty_io.c:2792
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:597 [inline]
- __se_sys_ioctl+0xb6/0x100 fs/ioctl.c:583
- do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0xf7/0x370 arch/x86/entry/syscall_64.c:94
- entry_SYSCALL_64_after_hwframe+0x76/0x7e
-RIP: 0033:0x79ef7f990d6b
-Code: 00 48 89 44 24 18 31 c0 48 8d 44 24 60 c7 04 24 10 00 00 00 48 89 44 24 08 48 8d 44 24 20 48 89 44 24 10 b8 10 00 00 00 0f 05 <89> c2 3d 00 f0 ff ff 77 1c 48 8b 44 24 18 64 48 2b 04 25 28 00 00
-RSP: 002b:000079ef7f08de10 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 000079ef7f990d6b
-RDX: 000079ef7f08de70 RSI: 0000000000004b72 RDI: 0000000000000003
-RBP: 0000000000000000 R08: 0000000000000000 R09: 00007ffe35b301e7
-R10: 0000000000000000 R11: 0000000000000246 R12: 000079ef7f08de70
-R13: 0000000000000011 R14: 0000583e9d2d80a0 R15: 0000583e9d2da060
- </TASK>
-Modules linked in:
-CR2: ffffc90000a81fb8
----[ end trace 0000000000000000 ]---
-RIP: 0010:fb_read_offset drivers/video/fbdev/core/sysmem.h:38 [inline]
-RIP: 0010:fb_bitblit drivers/video/fbdev/core/fb_imageblit.h:137 [inline]
-RIP: 0010:fb_bitmap1x_imageblit drivers/video/fbdev/core/fb_imageblit.h:275 [inline]
-RIP: 0010:fb_bitmap_imageblit drivers/video/fbdev/core/fb_imageblit.h:477 [inline]
-RIP: 0010:fb_imageblit drivers/video/fbdev/core/fb_imageblit.h:492 [inline]
-RIP: 0010:sys_imageblit+0x10d6/0x1c50 drivers/video/fbdev/core/sysimgblt.c:24
-Code: 8b 54 24 38 4c 8b 4c 24 20 4c 8b 44 24 10 48 8b 7c 24 08 48 be 00 00 00 00 00 fc ff df 49 c7 c5 ff ff ff ff 44 89 c9 49 d3 e5 <48> 8b 0f 49 f7 d5 48 89 4c 24 50 49 21 cd eb 0c 45 31 ed 48 c7 44
-RSP: 0018:ffffc900028ef5f0 EFLAGS: 00010287
-RAX: ffff88810a328001 RBX: 0000000000000000 RCX: 0000000000000020
-RDX: 0000000000000001 RSI: dffffc0000000000 RDI: ffffc90000a81fb8
-RBP: ffffc900028ef6c8 R08: 0000000000000020 R09: 0000000000000020
-R10: ffff888102858900 R11: fffffbfff54aabb9 R12: 0000000000000100
-R13: ffffffff00000000 R14: 0000000000000000 R15: 0000000000000000
-FS:  000079ef7f08e6c0(0000) GS:ffff888170830000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffffc90000a81fb8 CR3: 0000000108fc6000 CR4: 00000000000006f0
-----------------
-Code disassembly (best guess):
-   0:	8b 54 24 38          	mov    0x38(%rsp),%edx
-   4:	4c 8b 4c 24 20       	mov    0x20(%rsp),%r9
-   9:	4c 8b 44 24 10       	mov    0x10(%rsp),%r8
-   e:	48 8b 7c 24 08       	mov    0x8(%rsp),%rdi
-  13:	48 be 00 00 00 00 00 	movabs $0xdffffc0000000000,%rsi
-  1a:	fc ff df
-  1d:	49 c7 c5 ff ff ff ff 	mov    $0xffffffffffffffff,%r13
-  24:	44 89 c9             	mov    %r9d,%ecx
-  27:	49 d3 e5             	shl    %cl,%r13
-* 2a:	48 8b 0f             	mov    (%rdi),%rcx <-- trapping instruction
-  2d:	49 f7 d5             	not    %r13
-  30:	48 89 4c 24 50       	mov    %rcx,0x50(%rsp)
-  35:	49 21 cd             	and    %rcx,%r13
-  38:	eb 0c                	jmp    0x46
-  3a:	45 31 ed             	xor    %r13d,%r13d
-  3d:	48                   	rex.W
-  3e:	c7                   	.byte 0xc7
-  3f:	44                   	rex.R
-==================================================================
-
+Cc: Helge Deller <deller@gmx.de>
+Cc: <linux-fbdev@vger.kernel.org>GIT: [PATCH v3 1/5] m68k: Fix atari mouse movement
 

@@ -1,172 +1,159 @@
-Received: from delivery.antispam.mailspamprotection.com (delivery.antispam.mailspamprotection.com [185.56.87.3])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7087368276;
-	Tue, 18 Aug 2026 20:01:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.56.87.3
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787083302; cv=pass; b=PlLbDoWGmXIc1OKeNj4/wdQXkMU7Nh1uo3Ft4s/ZFn565Tj+LMh9rAE6hX3H+r0RR4bSGuHWXNFgleWDhwC8vw0MJy3aNF9f4CO56U1G89nmQsOAERdig/B4KvYknjFoePdZ6C6EGPUujtojuYerP5p2CbLL+c+hBPD4JO5Lhso=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787083302; c=relaxed/simple;
-	bh=wHP5KBg/oNB+Ay6wTp7lvz/U/sVkCZYQHiydgCUUv2U=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gPmyXdxWK1JZWMDCilxtoaqKpci38+2y9T1d6MnP7JYTKsikVPCkHqU5Bl6vFqPtStuZ05psI/OaKpqim/DHwBra/Ofd5P+YqK/XXcVlrmUNvWjA126q4ab+iPrFvdisU/hsxW7aUj3Br3e8LwVFGvwSjjpKCiP+JNbDXjyrk04=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=valla.it; spf=pass smtp.mailfrom=valla.it; dkim=pass (1024-bit key) header.d=antispam.mailspamprotection.com header.i=@antispam.mailspamprotection.com header.b=NUIP4/OQ; dkim=pass (1024-bit key) header.d=valla.it header.i=@valla.it header.b=E60QJm7E; arc=pass smtp.client-ip=185.56.87.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=valla.it
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=valla.it
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E57B26A08A
+	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 01:36:01 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.180
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787103363; cv=none; b=K0n7VU7ovMGMZiHAdhpM655m5w1bgCANwNqP+IA4DF/lro9SCA6QePtNWYHLvhEmwd0MRTVlfFj07x60zpJ64cTHILpxYc3dU64rRqb8zlvGHj22gS+hsogdXV1/wHvpXuuyRnWNufFMReloLQuLAU0r5EJcgmuBg4iVT7MQ0NM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787103363; c=relaxed/simple;
+	bh=c4DgkPkL0O1RvnIC56+UnsEDbQXeHgXgajlT3dEacgg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mIY2hXTXQKyeRRgjn39me4EfKRAAjBhji+KxxkLq4ULKFOmaKovhRmY78oP6a8uV7szYph7CplO3icowBsiXuy3H+Z9FQQOI2jn/g5tCvFszAf2jrOmSuXkqv4SHTNGWGD4UZbYTloMVXTgPYjM23JHp+1gObR5ZMOtLHyM5s5U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=E0pB2oht; arc=none smtp.client-ip=209.85.214.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=antispam.mailspamprotection.com header.i=@antispam.mailspamprotection.com header.b="NUIP4/OQ";
-	dkim=pass (1024-bit key) header.d=valla.it header.i=@valla.it header.b="E60QJm7E"
-ARC-Seal: i=1; cv=none; a=rsa-sha256; d=outgoing.instance-europe-west4-v4rr.prod.antispam.mailspamprotection.com; s=arckey; t=1787083299;
-	 b=Orq5ZrgKs8jBUQJ3TsYfjWtjBWWvJeFN0JYWLFa8X9Y52h2B3A2DnP1bkZYmtTeNLgMCp27Rk4
-	  Eactn9SMiVNSFw+P2RBtL3Ahtl6m+vt5xz0njAb2xGXKtbtGY726vVzYWCvZNeofFF0qnxK3nS
-	  ZfftriuDr47mvK9+CWiSaRwmdt3o29onxqa9DhnhwBegs+i3tpjcgAvgYcCI7tPnSiU5Hfos7f
-	  Dvk2AznnIRiQbL94qQuyJOA5QuJngmFJFYlfDz1SzeTcHFQW7/qY4uMkdwFpyAmh4Or1f5VIey
-	  OByanXZaAS9pTeiPs4CSBXyXZDbXvqRivO3GkJ6o8u+GsA==;
-ARC-Authentication-Results: i=1; outgoing.instance-europe-west4-v4rr.prod.antispam.mailspamprotection.com; smtp.remote-ip=35.214.173.214;
-	iprev=pass (214.173.214.35.bc.googleusercontent.com) smtp.remote-ip=35.214.173.214;
-	auth=pass (LOGIN) smtp.auth=esm19.siteground.biz;
-	dkim=pass header.d=valla.it header.s=default header.a=rsa-sha256;
-	arc=none
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed; d=outgoing.instance-europe-west4-v4rr.prod.antispam.mailspamprotection.com; s=arckey; t=1787083299;
-	bh=wHP5KBg/oNB+Ay6wTp7lvz/U/sVkCZYQHiydgCUUv2U=;
-	h=In-Reply-To:Content-Transfer-Encoding:Content-Type:MIME-Version:References:
-	  Message-ID:Subject:Cc:To:From:Date:DKIM-Signature:DKIM-Signature;
-	b=X1eILoCTbCZWKJmv2RBnZ/xNnCEMCtfblO39y7319D6fxEC+Gqx1kiRfGf/8rEtL5Qqb4/0QYs
-	  amQSxWa9mXdf0USEpcUC8tqVAhaZfOQe6oq1FIQlnRT0lqg1enfMP9mc5fUokc6SKBJB4ZuBwV
-	  8hK8NU9rzR989efpVRZYocPnbUqvNNtZ+Wa3amuEdPe+dr9kx5T2HHyFcM0M9FZj+katwAeki9
-	  W2QiI3okJeDRt+qDIifVMCi7AOOI8Nep1O5M8/TlYY4vUiiwtm6TELc4r+Xkwclb5JT83fM3nb
-	  ER5SfgByn3gYTyRg+UZ9isop5T33HkfmSsEieP9nMlBVmA==;
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=antispam.mailspamprotection.com; s=default; h=CFBL-Feedback-ID:CFBL-Address
-	:Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:Subject:Cc:To
-	:From:Date:Reply-To:List-Unsubscribe;
-	bh=3pmtWH4eFsI2qfj6Txsmu/hKvSWq+vceDLJCUvd8CW0=; b=NUIP4/OQniaL9BK8RoISIFrBE5
-	mJZnz0p9lf5n/AY7Bsv7zI1kzAMlWj6JcJToIQs7I05VGhC8uVFltMNgj5aqNe00blZCRWXz5VJR1
-	oMZrbbZnvAXDMzG0EyhnU8apAuhZgf383z1cedYEtqpgOL/wlqNJL0W5qrmfdksiyLqo=;
-Received: from 214.173.214.35.bc.googleusercontent.com ([35.214.173.214] helo=esm19.siteground.biz)
-	by instance-europe-west4-v4rr.prod.antispam.mailspamprotection.com with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
-	(Exim 4.99.5)
-	(envelope-from <francesco@valla.it>)
-	id 1wwPek-000000037SS-2oxs;
-	Tue, 18 Aug 2026 19:39:31 +0000
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=valla.it;
-	s=default; h=Subject:Cc:To:From:Date:list-help:list-unsubscribe:
-	list-subscribe:list-post:list-owner:list-archive;
-	bh=3pmtWH4eFsI2qfj6Txsmu/hKvSWq+vceDLJCUvd8CW0=; b=E60QJm7ENkgKZRD25VMjMR5TCA
-	BMleotmG9NUp+WMpOPuG5hWFGzU1LzEzMVpbJbCSeDa1EYhxUTyib9fNgyFW+pbxbzVY+t0H/nh7T
-	Z72DDAU7DLcZfH3vTwgWH7OXMa3SMTy0+lbww/2s/NYLslfbAkqDDuLhR0sWfqpkxbRw=;
-Received: from [87.5.139.196] (port=60131 helo=bywater)
-	by esm19.siteground.biz with essmtpa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
-	(Exim 4.99.5)
-	(envelope-from <francesco@valla.it>)
-	id 1wwPeV-00000000Fh4-2goh;
-	Tue, 18 Aug 2026 19:39:15 +0000
-Date: Tue, 18 Aug 2026 21:39:13 +0200
-From: Francesco Valla <francesco@valla.it>
-To: =?utf-8?B?TcOgeGlt?= Pedraza Padilla <maximpedraza@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Maxime Ripard <mripard@kernel.org>, 
-	Helge Deller <deller@gmx.de>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, kernel@pengutronix.de
-Subject: Re: [RFC PATCH 0/6] Boot logo supplied by the device tree
-Message-ID: <aoSygH8JSXFrivOA@bywater>
-References: <20260731215043.30392-1-maximpedraza@gmail.com>
- <am2mvECnCcO9IxuI@monoceros>
- <0219df57-06e3-4776-afb1-d167cad2e795@gmx.de>
- <CAEUXW=GUY+x1A72n99i1Cpgy03jTYv3FPAX5nY3DCHqmeq9YVg@mail.gmail.com>
- <20260810-devout-pig-of-performance-595ccc@houat>
- <CAEUXW=GuHypVE5Xre8AQBmkrcUbPQxh03Lq8os=kjcLeGahOgw@mail.gmail.com>
- <20260812-neon-asp-of-completion-e9349e@houat>
- <CAEUXW=H-o+fqBjH1UQG7=UTm5x1a9Cj++XJM7twvFU4vJC4UrQ@mail.gmail.com>
- <20260814155325.GB516994@ravnborg.org>
- <CAEUXW=Ffs+WKsQrNc3zjwtfAO=FKTf_7jQFovD+yjmD_yJuY2Q@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E0pB2oht"
+Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-2caea3f742bso6754745ad.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Aug 2026 18:36:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787103361; x=1787708161; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=owKCVUF/nyGQlzMiSHiL1o+6oXm0PiyeDQIC8x4f2D8=;
+        b=E0pB2ohtfYc2UqPah4afWb1RL3xV7dFX1nmMqhne8VDjZYa8e9ikPhSyGKuEnMW3SE
+         5tss4CEJzr423yG1zI4t13uAih1BnRUfrY7nqLeEMFKNfdK5Uhsu/4mJtieuNhCRM1tF
+         yBIakn7fKJS47Irmd+WvPUj1esSQWrQVjO/SfLfsx2DjS43We4j9hG3QTIjIExlTKK9D
+         C0Ts/l65vqyrp+UcW3bUbKEz+Qr/nxn6c6E9COupt2852yEuu7l2g7pQ8Vp0Fm2EsAr0
+         +0189pFhCEvCW9U64sppCPpgkm6mebjmBrOmdBnPHW6Bi6/X7arpLV89AQMl3jQuRhpF
+         dcxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787103361; x=1787708161;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=owKCVUF/nyGQlzMiSHiL1o+6oXm0PiyeDQIC8x4f2D8=;
+        b=RyM9khG8ynX+dYp8Sk8wxQORzOeDK4RZwS/pZC66bAQB6o6M6le1jN7M8gGce/5F1G
+         D3LkrYy8zFgcOM7uon9VXH9IkGOTZfwBWta8Go2QyqEZYMTqtQl0dKkgxO+W5GsJ4Ta9
+         98aGBWtbP7o8+DYk7YkEW7qBFsIYFWERc+OCYn8Btq7mtv3ZzKENZS2fLmV7+YQcn28O
+         IKgB3JUsmsGcFvc9SztQjPIv92UmfXn68OsY3z01tg6cXJ3xPQmtAYBdIYuaKZ4iYMlY
+         OKxm8Csr8JGqbRMmyXLbWUncucqs/ipf8pbLmcQMwsBzCnDjjZd0OoGLBlkdEvfesZFf
+         Cc9A==
+X-Forwarded-Encrypted: i=1; AHgh+RrU+IiVbi6ntpXBWfJ+vu0d0CdOa5nbCs73GlpPkDmO8PhI7BKNFTXSvkxGo8kPj75G2UWZG0XOs/kCDA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YxWDOYPEfa6br20BtZS2n0w3INoRjEJ8DGRJ2s5h31P/I5u0g31
+	CIyHQkyu94XxwuhHCapLbRuZ56FlBj0+YXj5nNILtQi+PkB+/sGpXn2q
+X-Gm-Gg: AR+sD12vxhcea1Ez6hHVd/6HRkEbnMMC9f4TErVJmGnSSQakUKlEIzqeQYGKSdzNGKF
+	6Yb5aU46fr7jVE10bBz8NnhoRRWdp4Tjs9wVVP32e8EmntUuRNvGwZ4bNWQ+NjoOVNP+Rup1Tmn
+	m+xLhy+y6gRdt0sgpyZCcLVUdbwrmvFB7mdfMSJ6rLpkKHaVg6v3XytMcA0uEQwlwaVqg/Ae9a8
+	qtGBc33uXdNPbajUNkIfUWqRQSvS/QZjvBMWxv1kSCUcBQ9qtH/jlfRiW9SsTBmCgvfZMb7Ra57
+	X3K0X8LhzOgroz+SHRS5AL9Z62GafTGVZTaHNONwv9jZJObBkcAYLu7AGDbfs79abO27NTpdpA8
+	LuTj8eo4wfgeewfTbeqKPDDEXOWPPmGGC/b8YUENGtUx7yp8q57ZLBdeune6ALW1DU5GoavRvsg
+	deqb6/f7SYUZ3rVvjBsGNoPcRBMF7cQohkl41bfns4YdE6XuaGACtkkAX0iB93ux2Cod6W6qW3n
+	ISnQ116HtEsoItHh3cpKsUxy9xZjndc0alHztslMnfkxHv01wMokcA7eBVtzYm66ytXPQ8p9MRE
+	S9R6Jic=
+X-Received: by 2002:a17:902:f687:b0:2d3:2e86:647a with SMTP id d9443c01a7336-2d5fd6b24camr18144275ad.5.1787103361348;
+        Tue, 18 Aug 2026 18:36:01 -0700 (PDT)
+Received: from ?IPV6:2001:df0:0:200c:b984:9fe3:5dce:f291? ([2001:df0:0:200c:b984:9fe3:5dce:f291])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327bef77fc0sm1727889eec.8.2026.08.18.18.35.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 18 Aug 2026 18:36:00 -0700 (PDT)
+Message-ID: <6b9e3cc6-8534-4dde-b2cc-505f1576a7f2@gmail.com>
+Date: Wed, 19 Aug 2026 13:35:54 +1200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/5] fbdev: Give atafb proper parent
+To: Thomas Zimmermann <tzimmermann@suse.de>, linux-m68k@vger.kernel.org,
+ geert@linux-m68k.org, Helge Deller <deller@gmx.de>
+Cc: Miro Kropacek <miro.kropacek@gmail.com>, linux-fbdev@vger.kernel.org
+References: <20260816073752.16656-1-schmitzmic@gmail.com>
+ <20260816073752.16656-3-schmitzmic@gmail.com>
+ <a486820d-8500-41b1-bc32-a23d908c9f86@suse.de>
+ <5a2d0139-84db-cab8-c7fb-7806a71c53b2@gmail.com>
+ <3347106a-f0f9-415a-94e4-94bc9b8182ef@suse.de>
+Content-Language: en-US
+From: Michael Schmitz <schmitzmic@gmail.com>
+In-Reply-To: <3347106a-f0f9-415a-94e4-94bc9b8182ef@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAEUXW=Ffs+WKsQrNc3zjwtfAO=FKTf_7jQFovD+yjmD_yJuY2Q@mail.gmail.com>
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - esm19.siteground.biz
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - valla.it
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-SGantispam-id: a9886efba043501a04ef82f403f845d6
-X-AntiAbuse: ID - a9886efba043501a04ef82f403f845d6
-AntiSpam-DLS: false
-AntiSpam-DLSP: 
-AntiSpam-DLSRS: 
-AntiSpam-TS: 1.0
-CFBL-Address: feedback@antispam.mailspamprotection.com; report=arf
-CFBL-Feedback-ID: 1wwPek-000000037SS-2oxs-feedback@antispam.mailspamprotection.com
-Authentication-Results: outgoing.instance-europe-west4-v4rr.prod.antispam.mailspamprotection.com;
-	iprev=pass (214.173.214.35.bc.googleusercontent.com) smtp.remote-ip=35.214.173.214;
-	auth=pass (LOGIN) smtp.auth=esm19.siteground.biz;
-	dkim=pass header.d=valla.it header.s=default header.a=rsa-sha256;
-	arc=none
 
-Hi M�xim,
+Hi Thomas,
 
-On Tue, Aug 18, 2026 at 12:48:21AM +0200, M�xim Pedraza Padilla wrote:
-> Hi Sam,
-> 
-> Thank you -- that's a useful pointer, and it settles the question of how
-> a splash should be drawn without fbcon: a DRM client at
-> drm_client_setup(), next to drm_log, not a drm_fb_helper hook.
-> 
-> Francesco's series is genuinely inspiring work, and it would be very
-> useful to me if it could take a CLUT224 image -- unfortunately it can't.
-> It only accepts an uncompressed 24-bit RGB888 BMP, whereas our logo is
-> paletted, which is what keeps it small: 17 KiB for 800x480 rather than
-> around a megabyte. So as it stands the format doesn't line up with what
-> we carry.
+On 17/08/26 19:57, Thomas Zimmermann wrote:
+>
+>>
+>>> If so, could you also replace the hard coded fb_info with a call to
+>>> framebuffer_alloc()?
+>>
+>> Can't see how that would work - fb_info isn't passed to all functions 
+>> that need to use it, especially in the hardware detection phase 
+>> (hence the use of a static fb_info struct)?
+>
+> You'd have to modify the driver to pass the allocated instance, of 
+> course. It's not a trivial oneliner, but if this driver is still 
+> relevant, it might be worth improving it.
 
-Format concerns are - in addition to lack of time to work on it - what
-is keeping me from sending a new revision. Any kind of compression would
-need to be unwinded - probably on a per-pixel basis - making the
-required CPU time unreasonable for large images (at least if boot time
-optimization is the ultimate goal - linke in my case).
+Wasn't all that hard after all - do you want that patch on top of the 
+current series or replacing Miro's patch 2, Helge?
 
-Of course, on "low-resolution" displays the size-vs-time tradeoff might
-be the sweet spot - but the target here was to being as much generic as
-possible.
+Cheers,
 
-> 
-> Reading it did make the distinction clearer to me, though. drm_splash
-> *draws* an image into a fresh buffer, which means a first modeset and the
-> blanking that comes with it. What our hardware leaves us with is a
-> framebuffer U-Boot has already drawn and a CRTC still scanning it out, so
-> for our case the natural thing is to *adopt* that state rather than
-> redraw it -- which is what hardware state readout does, with no redraw
-> and no flicker.
-> 
-> Where drm_splash is the right tool is the case with no state to adopt --
-> Falcon boot, where U-Boot proper never runs, or a handover where the
-> buffer doesn't survive. I'll follow Francesco's series for that.
+     Michael
 
-My typical embedded setup is exactly that one - Falcon boot, a simple
-boot logic inside the SPL, and possibly no initramfs. I find this to be
-the most portable solution, as it does not require complex drivers and
-handover logic in the bootloader.
 
-In case you decide to take my series for a re-spin, feel free to ask if
-something is unclear.
-
-> Thanks again -- it helped me draw the line between the two.
-> 
-> Max
-
-Reagrds,
-
-Francesco
-
+>
+> Best regards
+> Thomas
+>
+>>
+>> Cheers,
+>>
+>>     Michael
+>>
+>>>>
+>>>> Signed-off-by: Miro Kropacek <miro.kropacek@gmail.com>
+>>>> Reviewed-by: Michael Schmitz <schmitzmic@gmail.com>
+>>>> Signed-off-by: Michael Schmitz <schmitzmic@gmail.com>
+>>>> Cc: <linux-fbdev@vger.kernel.org>
+>>>> Link: https://lists.debian.org/debian-68k/2026/08/msg00000.html
+>>>> ---
+>>>>   drivers/video/fbdev/atafb.c | 5 +++++
+>>>>   1 file changed, 5 insertions(+)
+>>>>
+>>>> diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+>>>> index b8ed1c537293..3d540803dc2b 100644
+>>>> --- a/drivers/video/fbdev/atafb.c
+>>>> +++ b/drivers/video/fbdev/atafb.c
+>>>> @@ -3101,6 +3101,11 @@ static int __init atafb_probe(struct
+>>>> platform_device *pdev)
+>>>>   #endif /* ATAFB_EXT */
+>>>>     //    strcpy(fb_info.mode->name, "Atari Builtin ");
+>>>> +    /* Parent the fb device properly: without this fb0 registers as a
+>>>> +     * virtual sysfs device with no /sys/class/graphics/fb0/device 
+>>>> link,
+>>>> +     * which makes Xorg's fbdevhw reject it ("No devices detected").
+>>>> +     */
+>>>> +    fb_info.device = &pdev->dev;
+>>>
+>>> Because this is supposed to happen in framebuffer_alloc() and 
+>>> keeping it
+>>> there would be preferable.
+>>>
+>>> Best regards
+>>> Thomas
+>>>
+>>>>       fb_info.fbops = &atafb_ops;
+>>>>       // try to set default (detected; requested) var
+>>>>       do_fb_set_var(&atafb_predefined[default_par - 1], 1);
+>>>
+>>
+>

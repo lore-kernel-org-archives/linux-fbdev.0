@@ -1,101 +1,259 @@
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com [209.85.214.182])
+Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C65BF3BE647
-	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 22:28:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 872053DA7D7
+	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 22:28:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787178536; cv=none; b=tPAm8fW/T5CxbFSB6+3kaT0c2kOn4vai9/2EJTBYZRRRLeC+nzjNZTDGBDsRmScUbSoUVftJJdstLgXzngyDoIu3mDiFMNy797damAnPYO+1TtWVfWEo49qAcvyFnBgclrmijTzS3MslVPj+J90iW3oEoJBR5k2pjbOmIWJnwVI=
+	t=1787178538; cv=none; b=ATLq3Pyx4Ga0+sA75EZ9mY3Ois3EhEHLOXCqgHf1/h9nU9so2rk8M0SriyZbRGM7TIRyR6zAgGMjZ4GzcFfD28ilWjc22/Flj0edjbafYBL2Qfg4dU6H7Qui5Lzz5DdbXuWc3BIcex3uDfmmSeDDdRHdWgb0AZfsUhTQSyfMzfU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787178536; c=relaxed/simple;
-	bh=zY+gW1lXxfK7kqtIXgYpm9NhsrQnedavPShq5FhgfcE=;
-	h=From:To:Cc:Subject:Date:Message-Id; b=OWm0/iTKgxHWicHjjuWkddkfK2LshhgtMr5ZhW6YTANT6dx5/qHNmHNELSOdJIDi8CHntCjxBWllFkinhbiJvFC5YyOrzjJm2tvd5Qc3P0ZPeQpsKBSzLR0wJQKt4MuWM0x28lDPPo0M7C2LRX5h2W/NDsGXha7pkdh2IlIux+o=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NoqZQC7A; arc=none smtp.client-ip=209.85.214.182
+	s=arc-20240116; t=1787178538; c=relaxed/simple;
+	bh=br4m2mbqAvPGTm+zJJQ2YU/1vn8BYIaN5BHm4Whjkvg=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=dGVS9qa9WrunSEC+V1s9yu/2gmxNSqvcD7MxEgIoSXmZfvvXJwtMwcsCO4XGldfH/ocXcXV6Rlj22k4MtA9/+v2+pdNj0uTpcwnhr1Od6UMyZWiP0fF1tEMD60R/7lCJSFIgHfOuR5cgb18P9Cm9UBhGVIZrlu+M2eYL+mYBU04=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=D5YBicDd; arc=none smtp.client-ip=209.85.214.179
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NoqZQC7A"
-Received: by mail-pl1-f182.google.com with SMTP id d9443c01a7336-2cf27856f9cso14929305ad.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 15:28:54 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D5YBicDd"
+Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2cf27856f9cso14929645ad.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 15:28:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787178534; x=1787783334; darn=vger.kernel.org;
-        h=message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=yyf8P0B/y8zIH+Mmhiq8iXp175Fg2OnIXEWNkWxUosA=;
-        b=NoqZQC7AN1VOjGunB+DXvheM2lqStZmscomDxYqCca5uAOn3sQy9GYy70XVGN0WQgv
-         g0C5Et8CurQoWg//zBfQIyKl9HHPGiCzUxpgfqR7NdOHFdYJiwdf50AZkS1HezglKxpr
-         yoeONI+oZX3ItzLCtf3ccQmECX9JcXT8r033Ud+5bWUQm4iC2+4+oc6uejWQDHqP5Ugs
-         Y4Tv4Pt7R8q2GXGOH8fxBc8YNgdvRl8qKF0TALeGvikgniRq08pX6KXrDjRyKw38mJPw
-         5P+3vNtwyXaEAZTCFaTQFXPHXEOzOiAPO8ehGJbGT8GtJFlwujbvmOL71Zc/qszBUdGk
-         VWNA==
+        d=gmail.com; s=20251104; t=1787178537; x=1787783337; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=CEW6KFIMNw5VcOVlr93xuWLGX5tz2KuDZc6WCxXPwrU=;
+        b=D5YBicDdlcCes93zuOB2Y5XPjSuOkdUsjifWMMozCU8Ngcre2Yl2oGcVgMOzhIjSPY
+         gujLFXUtWKCH6PeHVk2dZ/b4ARFMgsUSeHgMFgmUh001e3osViBkDVvTefBJZoRvp16V
+         xO2i5pKgfG7nGL1KObqMi9z0PZ+RsufN8+pRXaKCs4F6O0BFVD0WWg1repVhxTj2dDfw
+         6v7D65bxmURxe9SK1RRGzzzMJ1lszsc3Ljl46ta+sdGF75RXXB3QI77vpqaCO1KucEZe
+         krTo3lhKRDsZ/KUCgB5A2yKV+2/Ehtm0lR/0R2OkIQQVmS5EmYaJPciwoMJorPPdanST
+         InrQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787178534; x=1787783334;
-        h=message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=yyf8P0B/y8zIH+Mmhiq8iXp175Fg2OnIXEWNkWxUosA=;
-        b=oZkL86S+XlU3TDQyCxOornLBBezkcaTXgRhB02Ihb8y9rdkcgB+eWqZZEFjjcpcxxP
-         ym38pkY2RYhCtvG//Oskn4Rc6ekvVJfJxCybZseNvJ9IKuagMDD8qVbCFsOSVyVsRkE2
-         hhKy40RyD4gST8ynFZBdJJU4NP/NIk74Z2CmeceMMxynXb3FMvqufjDkgvsZTHBeiG2G
-         ZVKZElIDT7NmIrnN2At7VENEa+Jeks7RhvIUEKlp0LsN6FmL5w8sL8bV4guGT5tJ/7rN
-         pRiHKOnF4IEmHO4OhPfDxTrVbV36S9S8TjHWJgEkm7NxxVtZcjMvI+7TFjY17vLC+lIo
-         olrA==
-X-Forwarded-Encrypted: i=1; AHgh+RqYo24ww+JK6RxzUVZ62LWdhNZubtww0Cwqx7bo8mgHK7erRQygYea2pzEOGwKp4CHA9OgCMNLerbyiRQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++k1yx2bfmtu0d4EmmEG87c/DTN4dDyQpt4voslpEB6hlfW9ysd/
-	xTFypkmYI0dcqFONXDyYi4oBVW+LEZWOs5s+no9tiicmzdKn0JumhhF+
-X-Gm-Gg: AR+sD10bI9Gbfx9lmJc5uJ2YI0LkrYo3K6HmrCCL8wJlTGs4kubJbuN7Ag8W7wGy/lg
-	hqeP2J3ElrHL+FzGkgkRFol5Wdi0Ig7oIGDByqPbee6bqvL4nL18AfpJPmY6cEsSDBAt4tHayxk
-	VC6akIrkETMrymUhfcO5l1uWXHfUjYco+ihf9WOYveRsQgsepXZ/auLZA0ebPs34JCj4qBlsPn4
-	TqDTQ9zjn+4qctak8JenG7dAl2atATvpnkk/Lun8YtQTmkmMNThf+UXJ0tD5jQrYs19igiMWWDL
-	Ul5gIY/HITpHvr7dTzE3Z3pfF5KdveM/TyGohXO492lsK1+XN/mQ51h0Lc2NmCWQQjEXRC4G1Qj
-	EsiYeE4q4OVzlJfMr8u4+9pF0oUeJhE9RHC33dxDSZUl+FzGCTCHLtWZ8TkeH3+XtpwK2MLGVVV
-	194fLyfuFHuRaiCLbcx7en1pKKBh0h2/lJa9uz4G3LKc6crFqDLUtdY+UwU4+3YEsN8yrkgWx4Z
-	siEJnjLKyarzHuA48qI4Fd0J3KPOrbDqW3qvOlBm9eeqFlsPw==
-X-Received: by 2002:a17:90b:5624:b0:38e:e9b:ffa4 with SMTP id 98e67ed59e1d1-39580a7c3dbmr15590880a91.6.1787178533810;
-        Wed, 19 Aug 2026 15:28:53 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1787178537; x=1787783337;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=CEW6KFIMNw5VcOVlr93xuWLGX5tz2KuDZc6WCxXPwrU=;
+        b=CFhGGYLbijJ61QvbZ5S2C3JfO1fBl1c+9hkZ3hVHvykEri0nmUETmw7u3iV45A7gVd
+         au2UXs+VBKs6Jxt79obvUgs5uDkEbP6jAxLLbh9TCS6n/hTBatWr+S43zgZ2ZzptXfsf
+         OUfs1JwcHDKkH6RTySkETAaVpWn2TjsELef3AYbjwVOtbNhGaaINFxU+OW0NPFyjHM5+
+         hHGRRnbquXRM3VDYpTUmwocoyUhG9feqXaJ1iULxTxQSp3SJsj0vQKvmiY0lq6PcY0e5
+         qNMenaCYtOZX8n9JhbsyQz4IB2r5/xplEYILxBAD9VmN+QlJbMJ2FmYYXLHpFcoc1Vpi
+         +fzg==
+X-Forwarded-Encrypted: i=1; AHgh+RqFBFuHyYJkue1Mu5joBh8CgUftb9MM3bhxHqSbUWYBhABj6IcH/mQUYb0ohuM7kTssaj7jEFmEaBFJ0A==@vger.kernel.org
+X-Gm-Message-State: AFuF++kW1+KCJTDg852R0Y+Zshj0AyWj/Z3wbuzKXhVznJVbwL5rsYd7
+	qXDLz3ZXbUw1PwfCCxsx0wcVd5pGGgsc1efb2jis+G2pVyfOpGFJ2LG5
+X-Gm-Gg: AR+sD13Wv+deOVCH1aJClFlZbbfisQCfIyH/LmXtIP3u/huTRbNeTEFW9FI3ODclAXF
+	0Qptss4ZSaL+dn4YUiu7Li/CxbBW5Zs9zwj/AEVKl572Kt/w6jYLBAwnMAqPeMh2gxX21vxNFcQ
+	8wkk5twN2QfSiYdtbmiKY1yWi8JKJptOoAuf9GEIGmUMc1zcFJnnUZqHRp+7XbUI5mg7gola7na
+	A+q7lkXPVlIp9w1MJ6u32GHSE59oHgUkah2DxTyv4soMVCE4BexamsXZTudSbQ3A5MRsEKvddZQ
+	onUgpOAuMiPl9SdSWOjaD/0xGWsAWqryx/olq2vNyAwX37BwXlJQgp9uJNTqVoKyojpP+E0Xoi1
+	S/GfJa8HLSx0nbVSSwMQOwu4/lNqzHv2/jiEN8dVWmZxCcsDMffFkWpy2wyastmbfB26uA2OKMk
+	qV2HK2AugG5yLq5iFmCQN6svK52cVp4MB0DD2CegdZWEju8QafSOqXa2zU3L7jljPJQgUBJ1N9r
+	Qt2tMbiSo7dO7Sf2yoIIUZ//MTZmJh+8zqQwJngiUrJ/N5c1DNbwobn3pCl
+X-Received: by 2002:a17:903:2bcb:b0:2cc:9179:32e with SMTP id d9443c01a7336-2d601e80fd8mr154826015ad.10.1787178536631;
+        Wed, 19 Aug 2026 15:28:56 -0700 (PDT)
 Received: from xplor.waratah.dyndns.org (122-59-250-182-adsl.sparkbb.co.nz. [122.59.250.182])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1416ad564bcsm10629116c88.5.2026.08.19.15.28.52
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327bef77bfcsm9027134eec.9.2026.08.19.15.28.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Aug 2026 15:28:53 -0700 (PDT)
+        Wed, 19 Aug 2026 15:28:56 -0700 (PDT)
 Received: by xplor.waratah.dyndns.org (Postfix, from userid 1000)
-	id 810D436035C; Thu, 20 Aug 2026 10:28:48 +1200 (NZST)
+	id F4084360572; Thu, 20 Aug 2026 10:28:51 +1200 (NZST)
 From: Michael Schmitz <schmitzmic@gmail.com>
 To: linux-m68k@vger.kernel.org,
 	geert@linux-m68k.org
 Cc: schmitzmic@gmail.com,
-	Helge Deller <deller@gmx.de>,
+	Miro Kropacek <miro.kropacek@gmail.com>,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH v3 0/5] m68k SuperVidel patches
-Date: Thu, 20 Aug 2026 10:28:33 +1200
-Message-Id: <20260819222838.21256-1-schmitzmic@gmail.com>
+Subject: [PATCH v3 3/5] fbdev: Add support for further video bit depths on atafb:external
+Date: Thu, 20 Aug 2026 10:28:36 +1200
+Message-Id: <20260819222838.21256-4-schmitzmic@gmail.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20260819222838.21256-1-schmitzmic@gmail.com>
+References: <20260819222838.21256-1-schmitzmic@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=y
+Content-Transfer-Encoding: 8bit
 
-Version 3 of Miro Kropacek's patches for Atari SuperVidel.
+From: Miro Kropacek <miro.kropacek@gmail.com>
 
-Patch 1 is a bugfix for the Atari mouse input device driver
-(miscompiled since v6.2 with use of -funsigned_char). Geert's
-suggestion to change the mouse interrupt function signature
-adopted (generates equivalent code as seen by inspection and
-testing on my 030 Falcon).
+Supervidel offers additional video bit depths (8-bit chunky, 16-bit
+RGB565 (also on the originaln Videl) and ARGB888.
 
-Patches 2-4 are fbdev hardware support patches for the SuperVidel
-blitter hardware. Patch 2 has been replaced by a version addressing
-the root cause of the missing parent device (i.e. atafb failing
-to use framebuffer_alloc()). Patches 3 and 4 have been updated
-to reflect changes introduced by patch 2.
+Add code to support these bit depths.
 
-Patch 5 is adding support to make use of the ethoc hardware also
-in the SuperVidel. Platform device register error handling (reported
-by Geert) hopefully fixed.
+Signed-off-by: Miro Kropacek <miro.kropacek@gmail.com>
+Reviewed-by: Michael Schmitz <schmitzmic@gmail.com>
+Signed-off-by: Michael Schmitz <schmitzmic@gmail.com>
+Cc: <linux-fbdev@vger.kernel.org>
+Link: https://lists.debian.org/debian-68k/2026/08/msg00000.html
 
-Cheers,
+---
 
-   Michael
+Changes in v3:
 
-Cc: Helge Deller <deller@gmx.de>
-Cc: <linux-fbdev@vger.kernel.org>GIT: [PATCH v3 1/5] m68k: Fix atari mouse movement
+- adapt patch to fb_info -> *fb_info rewrite (in patch 2)
+---
+ drivers/video/fbdev/atafb.c | 89 ++++++++++++++++++++++++++++++++++---
+ 1 file changed, 82 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index a9be06ded5c9..1a245141560b 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -2079,8 +2079,12 @@ static int ext_encode_fix(struct fb_fix_screeninfo *fix, struct atafb_par *par)
+ 			 external_pmode == FB_TYPE_PACKED_PIXELS) ?
+ 				FB_VISUAL_MONO10 : FB_VISUAL_MONO01;
+ 	} else {
+-		/* Use STATIC if we don't know how to access color registers */
+-		int visual = external_vgaiobase ?
++		/* Use STATIC if we don't know how to access color registers;
++		 * SuperVidel 8bpp chunky (fb in SV RAM) uses the Falcon palette
++		 */
++		int visual = (external_vgaiobase ||
++			      (external_depth == 8 &&
++			       external_addr >= 0xa0000000)) ?
+ 					 FB_VISUAL_PSEUDOCOLOR :
+ 					 FB_VISUAL_STATIC_PSEUDOCOLOR;
+ 		switch (external_pmode) {
+@@ -2158,6 +2162,35 @@ static int ext_encode_var(struct fb_var_screeninfo *var, struct atafb_par *par)
+ 	var->transp.offset = 0;
+ 	var->transp.length = 0;
+ 	var->transp.msb_right = 0;
++	if (external_pmode == -1 && external_depth == 16) {
++		/* RGB565 truecolor (e.g. SuperVidel native mode) */
++		var->red.offset = 11;
++		var->red.length = 5;
++		var->green.offset = 5;
++		var->green.length = 6;
++		var->blue.offset = 0;
++		var->blue.length = 5;
++	} else if (external_pmode == -1 && external_depth == 32) {
++		/* ARGB8888 truecolor (e.g. SuperVidel native mode) */
++		var->red.offset = 16;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 0;
++		var->blue.length = 8;
++		var->transp.offset = 24;
++		var->transp.length = 8;
++	} else if (external_pmode == FB_TYPE_PACKED_PIXELS &&
++		   external_depth == 8 && external_addr >= 0xa0000000) {
++		/* SuperVidel 8bpp chunky: palette has 8 bits per channel.
++		 * Without this, fb_get_color_depth() sees length 0 and
++		 * fbcon falls back to its 2-color palette — the console
++		 * text (color 7) stays black on black.
++		 */
++		var->red.length = 8;
++		var->green.length = 8;
++		var->blue.length = 8;
++	}
+ 	var->yres_virtual = var->yres;
+ 	var->xoffset = 0;
+ 	var->yoffset = 0;
+@@ -2192,6 +2225,38 @@ static int ext_setcolreg(unsigned int regno, unsigned int red,
+ {
+ 	unsigned char colmask = (1 << external_bitspercol) - 1;
+ 
++	if (external_pmode == -1 && external_depth == 16) {
++		/* truecolor: only the pseudo palette for fbcon is needed */
++		if (regno > 15)
++			return 1;
++		((u32 *)info->pseudo_palette)[regno] = (red & 0xf800) |
++						       ((green & 0xfc00) >> 5) |
++						       ((blue & 0xf800) >> 11);
++		return 0;
++	}
++	if (external_pmode == -1 && external_depth == 32) {
++		/* ARGB8888, alpha forced opaque */
++		if (regno > 15)
++			return 1;
++		((u32 *)info->pseudo_palette)[regno] = 0xff000000 |
++						       ((red & 0xff00) << 8) |
++						       (green & 0xff00) |
++						       ((blue & 0xff00) >> 8);
++		return 0;
++	}
++	if (external_pmode == FB_TYPE_PACKED_PIXELS && external_depth == 8 &&
++	    external_addr >= 0xa0000000) {
++		/* SuperVidel native 8bpp chunky scans out via the Falcon
++		 * palette registers, honoring all 8 bits per channel
++		 */
++		if (regno > 255)
++			return 1;
++		f030_col[regno] = ((red & 0xff00) << 16) |
++				  ((green & 0xff00) << 8) |
++				  ((blue & 0xff00) >> 8);
++		return 0;
++	}
++
+ 	if (!external_vgaiobase)
+ 		return 1;
+ 
+@@ -2421,7 +2486,9 @@ static void atafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ 		return;
+ 
+ #ifdef ATAFB_FALCON
+-	if (info->var.bits_per_pixel == 16) {
++	/* chunky modes (Falcon hicolor, external packed/truecolor) */
++	if (info->fix.type == FB_TYPE_PACKED_PIXELS &&
++	    info->var.bits_per_pixel > 1) {
+ 		cfb_fillrect(info, rect);
+ 		return;
+ 	}
+@@ -2462,7 +2529,9 @@ static void atafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ 	int rev_copy = 0;
+ 
+ #ifdef ATAFB_FALCON
+-	if (info->var.bits_per_pixel == 16) {
++	/* chunky modes (Falcon hicolor, external packed/truecolor) */
++	if (info->fix.type == FB_TYPE_PACKED_PIXELS &&
++	    info->var.bits_per_pixel > 1) {
+ 		cfb_copyarea(info, area);
+ 		return;
+ 	}
+@@ -2516,7 +2585,9 @@ static void atafb_imageblit(struct fb_info *info, const struct fb_image *image)
+ 	u32 dx, dy, width, height, pitch;
+ 
+ #ifdef ATAFB_FALCON
+-	if (info->var.bits_per_pixel == 16) {
++	/* chunky modes (Falcon hicolor, external packed/truecolor) */
++	if (info->fix.type == FB_TYPE_PACKED_PIXELS &&
++	    info->var.bits_per_pixel > 1) {
+ 		cfb_imageblit(info, image);
+ 		return;
+ 	}
+@@ -2752,7 +2823,7 @@ static void __init atafb_setup_ext(char *spec)
+ 		return;
+ 	depth = simple_strtoul(p, NULL, 10);
+ 	if (depth != 1 && depth != 2 && depth != 4 && depth != 8 &&
+-	    depth != 16 && depth != 24)
++	    depth != 16 && depth != 24 && depth != 32)
+ 		return;
+ 
+ 	p = strsep(&spec, ";");
+@@ -3137,7 +3208,11 @@ static int __init atafb_probe(struct platform_device *pdev)
+ 
+ 	atafb_set_disp(fb_info);
+ 
+-	fb_alloc_cmap(&(fb_info->cmap), 1 << fb_info->var.bits_per_pixel, 0);
++	/* truecolor visuals only need the 16-entry console palette; this
++	 * also avoids 1 << 32 overflowing at 32bpp
++	 */
++	fb_alloc_cmap(&(fb_info->cmap), fb_info->var.bits_per_pixel > 8 ?
++		      16 : 1 << fb_info->var.bits_per_pixel, 0);
+ 
+ 	dev_info(&pdev->dev, "Determined %dx%d, depth %d\n", fb_info->var.xres,
+ 		 fb_info->var.yres, fb_info->var.bits_per_pixel);
+-- 
+2.17.1
 

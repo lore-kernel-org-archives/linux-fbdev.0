@@ -1,156 +1,108 @@
-Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
+Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18E893BBFAD
-	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 17:07:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.53
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787159239; cv=pass; b=m8l25her0CkVPgYrq+wHDH3zasHFoD+TqYX8L44oUWg2XrEnxkS25ZpNXM4MBxIbnJG8HowgxhD5iKLbgGHZ9/03CGCBy/GZJ3Cwjsto0V9IxSMAGAPZGe4CFBTZE82LS7cNOCbK/7eLr13N3/LfATfo2DzCQziLKV8MIozpOOM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787159239; c=relaxed/simple;
-	bh=fSAJ8Sb2eIq4+8sJL6s8v2TvLC008BJj5Lp/c0rDYWc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=aKUKLNLVIVsKvhoDYrKScaMr1wHsgUKU+LnBjgczNpwMh5W7FwvJ7aEbr2gprP4DlCPblJ5uhbJDtC5K83Hp0fwfgnpR80rvh7nSzbTSUtuSErser7/P/YIHu5Wysh7iu4AsEqEvzGFFI+RBHtABejvIu3mT9XG3X0IY4R51kgw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MWG9Nh8A; arc=pass smtp.client-ip=209.85.218.53
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82FA94B8DDA
+	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 18:16:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.50
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787163400; cv=none; b=A0efGX6ONufwaDiAsV1sEpxzyCt1immUXKQpx0AXNhAbF6rmoncTHZ4FQt4dy8W2sYUZ2mo5hz0DHsfG8a+3m8jCj7dQMXHzjqMB88TOYTtObt3fhEaLv+db4muzGTAHam2BhMRVlbcjW/ixVB8WtBBuUXfx43vSzF6rbPcQM/Q=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787163400; c=relaxed/simple;
+	bh=HKbHUPzIF0sxOi/gVORJXE9q94etDqfM25thtSz+r3M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ac4wEba4SvkCizizyK3JDQEk5dHueZGY1NYBMSkI/HHBL90+U06umRJIJ/v+GbL9LEi7mYY3Rzikod+8RLLKa45/M2TgOEwMHB7HI35nbELjzi63xVpxOMB8W7YSchlXWcDAmIP6zFVycuLJtDwERNDITvUkBzHntlVIYp2Ijv0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=C6W1nhmX; arc=none smtp.client-ip=209.85.128.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MWG9Nh8A"
-Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-c20e70a0962so181429966b.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 10:07:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1787159236; cv=none;
-        d=google.com; s=arc-20260327;
-        b=g66fHVeEfgj0HV1pXI+A22fROUR43QF88alew99EWAj612hiuQ5bLNO7eqRFEkDaCO
-         10PJodsMTG+j8qGlP7CUj51I0U+pSFtWucbPK+AWj2jrL+pl+HzG3/j8yHCa0OO3IAmt
-         4SjMd8avYxLSs6kG7sVjvWlp/a6b9LOhQZMT125LvU8VRVOmA1/X+/V6+gxR3R0n3n6z
-         P0ePVeH02hb4RaOP0XySAlJwkEahusJz5DSu3VBlO7DdWCz97RhaL4+krzW+DM9Kbf4f
-         XceqRsxH5Mp+X2GhZPTYAVIcmhNqxH/x22py6/yd3+W4sA8OPTuIbRG5yxEaqUoWWni9
-         h4zQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=jKlJ/iR1cPNwjtIJybzvfRzDBetXP7ZIN/hUGlzWzgU=;
-        fh=7UImkuG5VDCZDMfUmh/N8YdP3zkcUaDKjIxMywzQECg=;
-        b=nKUg4+egpZItO1wKRM0p7Vxe50AGGY3IiDXp6gKiWbKyiScLgkCHdr+kk2ulsfGiNP
-         REXe/VYk44wTdxgNRBldYp7Pjcgl3UbvApLZMoYXtKe/eM7jKHheX/HJNUyEQe2YI70p
-         5A84ceagYCnf4LXiAEvuKU9GvBRZJs34Je4QzLhOD3JXLmFdvXqBYptOTIAnmeO4V+tW
-         rGNzbAyCxDL08Nxd8nmMDaNtpVgQm44jV1/djKUD5WEQuoRnJBQU17zUanOl3eYCo64a
-         pL/mrXN797ejGS6Q6dU41kX8FgjvnEq7//o6z8aS9cTVo2ESE3tM88GYhBa9yXU6vRwm
-         v6/w==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C6W1nhmX"
+Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4998e0916faso11055235e9.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 11:16:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787159236; x=1787764036; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+        d=gmail.com; s=20251104; t=1787163397; x=1787768197; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=jKlJ/iR1cPNwjtIJybzvfRzDBetXP7ZIN/hUGlzWzgU=;
-        b=MWG9Nh8AZw+sATA93xtwmknqpyT5XU2JHivp1dPFun3aVlEo4pwwhndq+4eypwH/qV
-         mK6ZzKAM4dSn2PhsZ/Nu4Vbe/NilF8qfJKYDIcDXg1jA0zlC4623ZjmGO0i/YQ6FpVUo
-         g1AptMxfI8iNj6PnKdbEBKG+VFsE5VW6W1iO7VT+KMHMNjnsUPFPuCJrjhrVsvAMRhFa
-         UwhVw7b7wcbbMGNqwj6QyHZnaqpxH3Q7YN2GyYQQ9ZcTgap0erAGcFf0f/eoqNyVgIIE
-         yzg0OMfimSSCaF5oqoAWBQZlcVy2NqY7J9ruS4kLVIlA7Nd+k+fNeK+ixQj+nBiEVZcL
-         F82w==
+        bh=etwYCc0YG/dlWmj1ZdGEpwanMrLp6se5hTk1lCrdgCA=;
+        b=C6W1nhmXK1z7evNKaoNA8GhjqIanTQAajfVpoN4npra32Ycdv358Elt0Q4VwuQDrvH
+         cangDOizZVA89i7wYoLqgQS1rLL7sYGDe95FO9Lzm4XQ5rEaQsXAiV+kLrSeF2e4w+Ua
+         KDPiTgM2XbPtnlJw1ZizAXvQU4O2eyadAS5+rs7HZsRhWgqXkQKhqmI0a2LIGCYMtUAA
+         O08KE3IgtdhTY3JpwSFd66j2EeTOOUx4HwSjjFCV9dlxxKLY+nzme4YIuQj4qQOUgDXP
+         VgP0I7/WdCQiFfcFh/9MQyR7qR8NwDg/cmnfl7Ce9vdi25fzVoeuEEdNT2ZHGye9T2fJ
+         +eBA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787159236; x=1787764036;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20251104; t=1787163397; x=1787768197;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=jKlJ/iR1cPNwjtIJybzvfRzDBetXP7ZIN/hUGlzWzgU=;
-        b=a59iG4JqnXETLRm1474bZQiJnA2NwDFxJ0+JOS07Bz3MhVoxRtj3Tm1PjFUbsfjr0C
-         MfLSzHbUYguFlaKBxTCoM8U3AYuK3dXDgntJ8c8Z5MmVAkODxvDS1nHflmlrqgMT03eI
-         CoOELhpLhmEKf5JpFY/0zpj4vy2+zE7Za5vG71SGT2qhzRDxv5KN7278/H2fhPw+tVl5
-         m2V/l5RbuFq7Oss+t9SM6wz+ZzFrrcT33WTtH+k3Yc7oAve5X9LmkErKvkYXo9PMtgo1
-         yal8ANryQimxxwOfstj/xKEkQVmN0LkVjZDfmJs7ROGKmuKL+4iWZdz5VahQcQQKzDX9
-         61cg==
-X-Forwarded-Encrypted: i=1; AHgh+RrQoc+cx7Rk90DA+NaBX5nnG72v/bPvN8zzLBPm2UO4gF0hVkbqzTvZzu65BwsrERShuk0GrlnhCFTMkA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy1HFddvH4WuQ127usPIDDAGJHTjzpA6kOs6CD/lKeuaueRBWUa
-	j2Ulgc14dnKowflJgk4XshNanTuMurei2auGn7eP4J216WUPd4aFwCUfxMUPuzsiKl+NmWmZLwS
-	NuKS7MxoAWxvaZ/dBLpgbL4Mplp3MN5g=
-X-Gm-Gg: AR+sD12f91nTyvxGx9B1viHdj6NU4opUTuVtTdb2lDRg7ao+Mn9JGZK49vY1OQ6oXFF
-	gFHYffldwD9RzQYnDIw52+0jmNSQb2v/gBjr0cts/glL1KQrDtzIyD0t4qd1QXljuNZR334VziC
-	lmPM3TTdVMWwtvM41yjRuKiHFzWwko6bSyVVRsQ0EoUvODdp8RbJBaUWVcfQpINLyyJzAbciZs1
-	Dp6dm5P8aXUF6dYJpgpHvj1cYe5SftepfTKmE3dtV3jPTMY5S/X7WS9zxlnQWVQ14W2+WqGhMUV
-	qzlNpNMVXQTlgAYCoejqXl6o7xKdDY9mLfbvTQMb9q7fCbP5IUzRPA5YijZdu9bE1LuBJwGC1fz
-	OY4ojRsxjpLWUOe/6tm2bXEFT0Qi4xVSpiu9tCLQwSMTEpiq56KckNgX5F5iznv4NycKUUYhzCT
-	V7FKWk1XoKeKA0ljnEUDnRDx8QmRIivg==
-X-Received: by 2002:a17:907:d26:b0:c16:84dc:9607 with SMTP id
- a640c23a62f3a-c242e242a7bmr386522966b.19.1787159235944; Wed, 19 Aug 2026
- 10:07:15 -0700 (PDT)
+        bh=etwYCc0YG/dlWmj1ZdGEpwanMrLp6se5hTk1lCrdgCA=;
+        b=orofymDRBGikSSMX0Ylax/QVU9ZEXY4hp+zYh0zMv10SF1IRzJapCa4WDSuNEOk0il
+         u7vHmODAemL5gyRb0ua3yA3nkhwpmk4sZ6+AyjFY0b43yYeZYNnXLOHj0tBDc0NzKvvT
+         qOLUQtBrHAGl2VEm5cj/7EDLLj4lqQpOlLDNTtcVTi1+qvJRmWmZaNdBpRYk1GfKDy9R
+         vbslpQpvrdg+N/PzK8+V89PsNWaX9T4ItM4ftm5ji1fRxlwfsQ698fZC39k9h41fPLMF
+         mLhgg1Yp8Ic6id95iMHIjHd8hypak+fxO3b/W6TWtLFmte/aFbgPcNz0tJYFy9JifWUF
+         u9JA==
+X-Forwarded-Encrypted: i=1; AHgh+RqCw8EvThK/Vo7u2kD77cuG4GjnZz648/2kLhuKSXCJXbpNsY6tMHkBn78FAdxuSJ3+G6XCIjYQ8Bj9xA==@vger.kernel.org
+X-Gm-Message-State: AOJu0YyLQ/edrTRTsPXJgGciRRAdxj2lJ5H7TUccJazahrb0tPm3SyC0
+	YUDRx19OA9omuK0dRejkHlhDPv327SJfJmb4wgXeI1HyhTZT4prZOOCZ
+X-Gm-Gg: AR+sD12Ouqyt2hJ5KlxDjq8k4GW67Cq25+73OyS8yCPpYcnr0BtiIws7GIXDMlVg2Gf
+	Svb3ND/gczUCOzJBwgqagqhxzmUeCFBQU0H7X92Tf8lQNZvWaZmx22+Ti1At/oz0sfQxF1tnFgy
+	jOhh1K2liOu7YRklmUe24BBKT5WRqqOhLEx1kIPrXyse3DYs5Ou8gqKem5/gQ4aRXMmWebouxnH
+	4sz87YenVoX+6kcMVBgPye3yaU/kIKP+eA0+CX53B9qeJMmat1GqqkhsNuyQ1n3pHla0Yy2DMCU
+	YoegS2S9+5trYG+06qjpQPxUuX3Wk+GWlUkfhLp+2fu9VFVJYMhtosEEDqOWC/FSoFDG4c+Apy9
+	mcMcifozNsBrGl/C17Zjq7t1LWaiFDnRHT9TkxKFQaJL8udShxNPU+Fr26elVa64uZAX0Ya9o2W
+	gjrNbIBWO4GB0Tx57aH+mCYvdowYtE2gVawMMFcKhGtraBIOPxtX0mGKjI
+X-Received: by 2002:a05:600c:3590:b0:493:a966:d5b5 with SMTP id 5b1f17b1804b1-499aa14a75bmr129238445e9.2.1787163396476;
+        Wed, 19 Aug 2026 11:16:36 -0700 (PDT)
+Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-499a9e784b3sm67635045e9.3.2026.08.19.11.16.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Aug 2026 11:16:35 -0700 (PDT)
+Date: Wed, 19 Aug 2026 21:16:32 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Tomasz Unger <tomasz.unger@yahoo.pl>
+Cc: Andy Shevchenko <andy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: fbtft: prefer scnprintf over sprintf in
+ fbtft-core.c
+Message-ID: <aoXzALsRLqyqro8X@stanley.mountain>
+References: <20260819-fbtft-core-scnprintf-v1-1-842c0603634c.ref@yahoo.pl>
+ <20260819-fbtft-core-scnprintf-v1-1-842c0603634c@yahoo.pl>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260819-fbtft-core-scnprintf-v1-1-842c0603634c.ref@yahoo.pl> <20260819-fbtft-core-scnprintf-v1-1-842c0603634c@yahoo.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20260819-fbtft-core-scnprintf-v1-1-842c0603634c@yahoo.pl>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 19 Aug 2026 20:06:39 +0300
-X-Gm-Features: AcwNN1XtphdklIb1Xh2EgzEMsoGcQxR0A6TVYdMP1qLtFEyfNntG_muiTXDLy_c
-Message-ID: <CAHp75VcGmmz6EZYjG871V+sYmJn=iGOFxj+D1oe4rtguWkipRw@mail.gmail.com>
-Subject: Re: [PATCH] staging: fbtft: prefer scnprintf over sprintf in fbtft-core.c
-To: Tomasz Unger <tomasz.unger@yahoo.pl>
-Cc: Andy Shevchenko <andy@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Aug 19, 2026 at 7:45=E2=80=AFPM Tomasz Unger <tomasz.unger@yahoo.pl=
-> wrote:
->
+On Wed, Aug 19, 2026 at 06:44:44PM +0200, Tomasz Unger wrote:
 > Using sprintf has potential for buffer overflows if the formatted
-
-sprintf()
-
 > string exceeds the destination buffer size. Replace it with
 > scnprintf, passing sizeof() of the fixed-size stack buffers
-
-scnprintf()
-
 > (text1[50] and text2[50]) so the write is always bounded.
-
+> 
 > In practice an overflow is very unlikely here: text1 only needs
-> room for a size_t value from an SPI TX buffer length, and text2
-> formats three small integers (bus number, chip select, and
-> frequency in MHz) that always come from real hardware ranges far
-> below the theoretical worst case for their types. This is
-> therefore a defense-in-depth hardening rather than a fix for an
-> observed or easily triggered issue.
 
-This paragraph is not for the commit message, rather for the comment.
+I don't have a problem with the patch, because I think making the
+code easy to audit is helpful.  However, change "unlikely" to
+"impossible".
 
-...
+18446744073709551616  KiB buffer memory
+123456789 123456789 123456789 1234567890
 
->         if (par->txbuf.buf && par->txbuf.len >=3D 1024)
-> -               sprintf(text1, ", %zu KiB buffer memory", par->txbuf.len =
->> 10);
+spi-4294967296.-4294967296 at -4294967296 MHz
+123456789 123456789 123456789 123456789 1234567890
 
-The 64-bit number takes up to 20 decimal digits, the rest here is 20
-and one for NUL terminator. 50 is more than enough.
+The other thing is that scnprintf() is only for if we care about
+the return.  Otherwise default to snprintf().  It's just a more
+traditional choice.
 
-> +               scnprintf(text1, sizeof(text1), ", %zu KiB buffer memory"=
-, par->txbuf.len >> 10);
->         if (spi)
-> -               sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->b=
-us_num,
+regards,
+dan carpenter
 
-For this it might be worse, 3 32-bit integers that may take up to 10
-decimal digits + sign, so 33 altogether and the rest is 13 and one for
-NUL terminator, so still below 50 in the longest case.
-
-> -                       spi_get_chipselect(spi, 0), spi->max_speed_hz / 1=
-000000);
-> +               scnprintf(text2, sizeof(text2), ", spi%d.%d at %d MHz", s=
-pi->controller->bus_num,
-> +                         spi_get_chipselect(spi, 0), spi->max_speed_hz /=
- 1000000);
-
-Taking the above (and if there are no compiler warnings currently
-present) this change is an unneeded churn.
-
---=20
-With Best Regards,
-Andy Shevchenko

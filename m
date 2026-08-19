@@ -1,141 +1,156 @@
-Received: from sonic.asd.mail.yahoo.com (sonic-euwe1-0017.asd.mail.yahoo.com [34.2.82.16])
+Received: from mail-ej1-f53.google.com (mail-ej1-f53.google.com [209.85.218.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A517248B374
-	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 16:45:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.2.82.16
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787157904; cv=none; b=QCXEwDIYMLZTO3EQ/e7M3OQXhh+mh7Z8Vpg+dGJ/UCN/ZOWrt/iUZs7/J1zRaSz2RWG2lbuy4mesOsriAd2ZtLg1QsqWFSbPht1iVthzyAyo7O1x4k52353IU2pRbpFOLqcWBTvS06GEuC6ivIASaMIq0ODjLA6OfPOWoLtSx+g=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787157904; c=relaxed/simple;
-	bh=fAj/ZwZdDNIq6XPDw1CtOG2+/TZWCjN9a5TCWDhfr0I=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc:
-	 References; b=GpJQRNrYOS5TkvA9lOSJqiu9qlgq2ZT8cCtkFY9Fhwpyrag9uvKTQo4ieRboRLYfNgss2BCresjou4ieU6EEepzLziIucM7lGZ0Q4RnSM387E9L9wRpp7yg6LCBjbVj+tIin8+lWu9UssjhYDLE8e0oMUdiAgfJlNRCGs4blQJ0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl; spf=pass smtp.mailfrom=yahoo.pl; dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b=o1awkTT1; arc=none smtp.client-ip=34.2.82.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.pl
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18E893BBFAD
+	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 17:07:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.218.53
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787159239; cv=pass; b=m8l25her0CkVPgYrq+wHDH3zasHFoD+TqYX8L44oUWg2XrEnxkS25ZpNXM4MBxIbnJG8HowgxhD5iKLbgGHZ9/03CGCBy/GZJ3Cwjsto0V9IxSMAGAPZGe4CFBTZE82LS7cNOCbK/7eLr13N3/LfATfo2DzCQziLKV8MIozpOOM=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787159239; c=relaxed/simple;
+	bh=fSAJ8Sb2eIq4+8sJL6s8v2TvLC008BJj5Lp/c0rDYWc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=aKUKLNLVIVsKvhoDYrKScaMr1wHsgUKU+LnBjgczNpwMh5W7FwvJ7aEbr2gprP4DlCPblJ5uhbJDtC5K83Hp0fwfgnpR80rvh7nSzbTSUtuSErser7/P/YIHu5Wysh7iu4AsEqEvzGFFI+RBHtABejvIu3mT9XG3X0IY4R51kgw=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MWG9Nh8A; arc=pass smtp.client-ip=209.85.218.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b="o1awkTT1"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.pl; s=s2048; t=1787157900; bh=fxgdbKZ4EVOmdlAegT37bG2gyo0fL7Bviv99W3LuWQE=; h=From:Date:Subject:To:Cc:References:From:Subject:Reply-To; b=o1awkTT1ZMgERffT/bNFTXmt4srItwfqLjThS6tZ0j2F9L+jh1yh/rnvoiLHHGbdYZolgacnBoP4RjVx/zG5P6LB1vFYmA/A3IbWZ5moqQV85d9TCh4F09qTPFej14dye0YhlXWCVcdLsJfaLitgOmu4EXr9izdTGvU4Rf4oDo1b8iWtAUh547IYp0FPhuY2GJvLvPdrIfOQ1DsV34rAnxwiq8bpFNY5Ih3hiUQ+SDz0vkHj3dt3cw23ox4Bsja3HMW7X2707Uf5FR7E6iB8GsBUDqqDqwl19tlFFQx1HyeWnDI/Ywj0m6329+paNrUfeiwtqAkQqE6uMRglp4adKw==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1787157900; bh=pzN0DZQZmmMdJVCkjXFx5oSOlXKWr/JYLwDlizRlkkm=; h=X-Sonic-MF:From:Date:Subject:To:From:Subject; b=CbJUbLY4KbTNunR4L4GMPHg6yLgWwfmAgKbrmso7cGJhw9pt3F0+J2c8yOUY7ye2mXvT2AZcw9ZsNvGgeMSdiPcVIXYGq3reRKl1c8IrHaJ6Jrt3+WncyTzxBPpWoouiSlKHF1asN7AfLIDqVgD2xewowexwCNVH/c5qxzns/svJhdFSwcZLiBtedwXkUCECLgy4V6kWHb5DxfDm2ilTEDDEk01mZ0spV4fyvK0ahsjaECHu50Bwjv7a0+pR83gFCM7hESnEWb8qmLQGcAYpbCf9SVQv8c+ZS2X4nZmcGGKrCkfX0AFe3k5btJcuoQIeBpKK2orKk8ZiwezuGnizQw==
-X-YMail-OSG: fbh0ObMVM1n3pFygdC3kO4_AYrlEibhGhL6U8lKaoUhMUShlpUAZ2QipvKAwrea
- 8i.RNbhBiLnjN1qmm0yirK7Le3IFad.6Lq2ppf8P3o3sM5tUa17cprmmvV_CTJmtZF0xwNhibFsl
- Xlp63X_R6xH_G0KO.ljVjEBFPTfmK.D6h2GIPIhtLfS7Qxx.bpU7Dfr7V8zKitbdifUVsW.WzI0H
- 2UD1fgSgNzvW2ltGGWqfPiR7b1ynVvIzQfhsxX.w_zWfljQmwUa6_sVri0Brt902rgSW5TiKsQzK
- BN_docpHXHld4GWmATRWokAAaFfaw48YVjq7OT.AqXaDA1qRst1ZLGVK.GOkG0LsN7UFt6trCUA3
- W3mhbWKQf_p1bt2sFsTaMTRtovpstX6bo6yQlkDAUkvpVfXP5s3PnzffHkTsd4_dRI8ld1Iy2NeG
- j0AF1sdjTAPBwo46LtLz6ZLJqZmVz2Aq9hW2aj68D5J0eknB9fbs9DoER_nlBEBSoVMwXg1M6UEL
- PUBw5jXWg4d_AguUcPjBVEEoyF8wumDq8uqni.chP1e5YWSl37LrYuHyWAVJwuWkrUX9rj1z0F1Q
- M.0KsmiYLlhK9ZwMt9AaxFXRUt1kyWjMKK5OXPErBMWysf3Q0F2Sgu49HL3udmmWTZS2P7_Mq6v2
- 8ZvRIStcCfwQ8DniyIjvGZt8yEkxs3NjaXT2wUl.tKTVYeNGUP4gxJTbG15q5zrRIGsHbHKRUMLJ
- Bfre6_70G53z9zLsAMiyD0.L6syfq.AXGBAhg26lUfb1R1Pfbst553feC3K3JQx45tYmwA23HcVp
- q1r8UPfZuvALbnhNT_14lTpX00kcyPnrg4CMsY6GcLJo9VQ.kB0uoYjFDSBIU13ht2b9ditI5xrL
- 7yu0EK178MbL_eUX8StYqxekkHNdtFrd2HA3dBZe6J7mLT78PYhqU6Tqpz4OPjfkH3IILxZcHa5l
- QHuej6cTGD2JIr91JqiyBfXex3.Sidd4V9vY3hqgYDED.7eKIlQVrD5jjtesr7i9XZrexH_2dcpe
- swr3lJUZDH4AQznavCJ4LFjYIJ7qq7Y2XXqHYkLvaRE0vFcQfemX6i8rZrFvzVAJpzeLZvadO6U7
- CZYCTd5R4WaRGKe7AUIbEBuVoi7FXTqVU2EQP_kw4iuhdOBnSVN_nb8onsNlaleXQfkBao2SKvH.
- 0n.9HWqgpmZ_nYkL6eOsAso36_vY_8xC9h9SEoBwHhxhRojHXjclVP6lMPR_H8rw.aHVYKJ2_3lB
- X7CtRTcLsDspIKisB9gkcS1jiZcMKmQwqVRoj2TEQb9.8USuuoiGoC6EoCro7JocCwtJ4mvA_9xu
- fIagAm5Cvdgu5D88ZahnEOM2u33ynWj45JGRuQPqrA2e5mkB60p5mKbMLlSzRxZUkvX.3BTWxDvh
- xip0pfXUCRBlXbCtCmzxKilTMmsY3rzEOvKTWc76i66fQyZrXm3R6RnCliOjKb0tzT5NAzNPfnan
- BSKpd.5VnmDee9cmbsU8VeyMMB1t2zRHGrSOULnMk0vsi0y0J2PT.VbC8fmQuROwMK4Q.o2x0gBV
- A6wzQiiOcE7fESgIOFFZYYyxHZNaMMWkTn_mLC2Y..KpDrjvuZHbfiLjHkXERbSRM_wuEdO7mM4s
- .BdY.JFLVL2CXk9P_TwoUNtrs2GAsh4GQQDRFEBmMSeXY84.abPmn3f8hhPPJ9kzoeAbqNSf_Heu
- 61PqHuAD2AdQdeXmSIdf1dITuT5E13nNsY0.G7p3s6eKz.5DQ8LLkgStySTJ7IyZS25kXiFJRmrC
- egfV5ufBTwTPcaWeX2qtLMpIix767xPOzjZAaOJX_LaC8j2W0CUOutTQLFdFJaOuQ7F7YKZc6oT2
- G7AVMghh.1Z6HuieMVFVmrY.WdLQ7lHUVQi.hsBQJbp6i_pcjfnjbCTi4vh6MtTc.RkOv3QAlzke
- pWw6TWQxIM5zaSGFUbqcbfHn8p3FEiPNpCDawTI6YHuWtudsAOXW5filWbTmXzP2jbN2jmcTFSe0
- ie3WGZUGEBkP_cYcT7V689ysAI84U7yKHqSdbcwL_xAuoV1LAuTbvHfG.VWD9EQ--
-X-Sonic-MF: <tomasz.unger@yahoo.pl>
-X-Sonic-ID: 9b716b9d-7246-472c-8d1e-624c7e58f7e5
-Received: from sonic.gate.mail.ne1.yahoo.com by mail-asdoutdeli-p-cin-euwe1-prod-sonicconsumer-svc-102 with HTTP; Wed, 19 Aug 2026 16:45:00 +0000
-Received: from dip105.lsn.ir2.yahoo.com ([87.248.99.114])
-          by hello (SMTP) with SMTP ID 5d5ae7f586cb629b9c02634e046e3739;
-          Wed, 19 Aug 2026 16:44:55 +0000 (UTC)
-From: Tomasz Unger <tomasz.unger@yahoo.pl>
-Date: Wed, 19 Aug 2026 18:44:44 +0200
-Subject: [PATCH] staging: fbtft: prefer scnprintf over sprintf in
- fbtft-core.c
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MWG9Nh8A"
+Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-c20e70a0962so181429966b.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 10:07:17 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1787159236; cv=none;
+        d=google.com; s=arc-20260327;
+        b=g66fHVeEfgj0HV1pXI+A22fROUR43QF88alew99EWAj612hiuQ5bLNO7eqRFEkDaCO
+         10PJodsMTG+j8qGlP7CUj51I0U+pSFtWucbPK+AWj2jrL+pl+HzG3/j8yHCa0OO3IAmt
+         4SjMd8avYxLSs6kG7sVjvWlp/a6b9LOhQZMT125LvU8VRVOmA1/X+/V6+gxR3R0n3n6z
+         P0ePVeH02hb4RaOP0XySAlJwkEahusJz5DSu3VBlO7DdWCz97RhaL4+krzW+DM9Kbf4f
+         XceqRsxH5Mp+X2GhZPTYAVIcmhNqxH/x22py6/yd3+W4sA8OPTuIbRG5yxEaqUoWWni9
+         h4zQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=jKlJ/iR1cPNwjtIJybzvfRzDBetXP7ZIN/hUGlzWzgU=;
+        fh=7UImkuG5VDCZDMfUmh/N8YdP3zkcUaDKjIxMywzQECg=;
+        b=nKUg4+egpZItO1wKRM0p7Vxe50AGGY3IiDXp6gKiWbKyiScLgkCHdr+kk2ulsfGiNP
+         REXe/VYk44wTdxgNRBldYp7Pjcgl3UbvApLZMoYXtKe/eM7jKHheX/HJNUyEQe2YI70p
+         5A84ceagYCnf4LXiAEvuKU9GvBRZJs34Je4QzLhOD3JXLmFdvXqBYptOTIAnmeO4V+tW
+         rGNzbAyCxDL08Nxd8nmMDaNtpVgQm44jV1/djKUD5WEQuoRnJBQU17zUanOl3eYCo64a
+         pL/mrXN797ejGS6Q6dU41kX8FgjvnEq7//o6z8aS9cTVo2ESE3tM88GYhBa9yXU6vRwm
+         v6/w==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787159236; x=1787764036; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=jKlJ/iR1cPNwjtIJybzvfRzDBetXP7ZIN/hUGlzWzgU=;
+        b=MWG9Nh8AZw+sATA93xtwmknqpyT5XU2JHivp1dPFun3aVlEo4pwwhndq+4eypwH/qV
+         mK6ZzKAM4dSn2PhsZ/Nu4Vbe/NilF8qfJKYDIcDXg1jA0zlC4623ZjmGO0i/YQ6FpVUo
+         g1AptMxfI8iNj6PnKdbEBKG+VFsE5VW6W1iO7VT+KMHMNjnsUPFPuCJrjhrVsvAMRhFa
+         UwhVw7b7wcbbMGNqwj6QyHZnaqpxH3Q7YN2GyYQQ9ZcTgap0erAGcFf0f/eoqNyVgIIE
+         yzg0OMfimSSCaF5oqoAWBQZlcVy2NqY7J9ruS4kLVIlA7Nd+k+fNeK+ixQj+nBiEVZcL
+         F82w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787159236; x=1787764036;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=jKlJ/iR1cPNwjtIJybzvfRzDBetXP7ZIN/hUGlzWzgU=;
+        b=a59iG4JqnXETLRm1474bZQiJnA2NwDFxJ0+JOS07Bz3MhVoxRtj3Tm1PjFUbsfjr0C
+         MfLSzHbUYguFlaKBxTCoM8U3AYuK3dXDgntJ8c8Z5MmVAkODxvDS1nHflmlrqgMT03eI
+         CoOELhpLhmEKf5JpFY/0zpj4vy2+zE7Za5vG71SGT2qhzRDxv5KN7278/H2fhPw+tVl5
+         m2V/l5RbuFq7Oss+t9SM6wz+ZzFrrcT33WTtH+k3Yc7oAve5X9LmkErKvkYXo9PMtgo1
+         yal8ANryQimxxwOfstj/xKEkQVmN0LkVjZDfmJs7ROGKmuKL+4iWZdz5VahQcQQKzDX9
+         61cg==
+X-Forwarded-Encrypted: i=1; AHgh+RrQoc+cx7Rk90DA+NaBX5nnG72v/bPvN8zzLBPm2UO4gF0hVkbqzTvZzu65BwsrERShuk0GrlnhCFTMkA==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy1HFddvH4WuQ127usPIDDAGJHTjzpA6kOs6CD/lKeuaueRBWUa
+	j2Ulgc14dnKowflJgk4XshNanTuMurei2auGn7eP4J216WUPd4aFwCUfxMUPuzsiKl+NmWmZLwS
+	NuKS7MxoAWxvaZ/dBLpgbL4Mplp3MN5g=
+X-Gm-Gg: AR+sD12f91nTyvxGx9B1viHdj6NU4opUTuVtTdb2lDRg7ao+Mn9JGZK49vY1OQ6oXFF
+	gFHYffldwD9RzQYnDIw52+0jmNSQb2v/gBjr0cts/glL1KQrDtzIyD0t4qd1QXljuNZR334VziC
+	lmPM3TTdVMWwtvM41yjRuKiHFzWwko6bSyVVRsQ0EoUvODdp8RbJBaUWVcfQpINLyyJzAbciZs1
+	Dp6dm5P8aXUF6dYJpgpHvj1cYe5SftepfTKmE3dtV3jPTMY5S/X7WS9zxlnQWVQ14W2+WqGhMUV
+	qzlNpNMVXQTlgAYCoejqXl6o7xKdDY9mLfbvTQMb9q7fCbP5IUzRPA5YijZdu9bE1LuBJwGC1fz
+	OY4ojRsxjpLWUOe/6tm2bXEFT0Qi4xVSpiu9tCLQwSMTEpiq56KckNgX5F5iznv4NycKUUYhzCT
+	V7FKWk1XoKeKA0ljnEUDnRDx8QmRIivg==
+X-Received: by 2002:a17:907:d26:b0:c16:84dc:9607 with SMTP id
+ a640c23a62f3a-c242e242a7bmr386522966b.19.1787159235944; Wed, 19 Aug 2026
+ 10:07:15 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260819-fbtft-core-scnprintf-v1-1-842c0603634c@yahoo.pl>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQ6CQAxA0auQrm0yMxKCXsW4kNJCXQykHY0J4
- e4OunyL/zdwNmWHa7OB8Vtdl1wRTw3Q/MgTo47VkELqQh8vKEORgrQYo1NeTXMRjEIS2tRRf26
- hpqux6Oe3vd3/9tfwZCrHC/b9C+QJjtF4AAAA
-X-Change-ID: 20260819-fbtft-core-scnprintf-1fcf0426c834
-To: Andy Shevchenko <andy@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, 
- Tomasz Unger <tomasz.unger@yahoo.pl>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787157894; l=2505;
- i=tomasz.unger@yahoo.pl; s=20260311; h=from:subject:message-id;
- bh=fAj/ZwZdDNIq6XPDw1CtOG2+/TZWCjN9a5TCWDhfr0I=;
- b=TOIBrdl31TNOG55V/dOQ/xIgEIbFBGWCGHNHXLhkT8N3LD6fK1YdGoZweUdcZ/b8YIoaZRts7
- EWCkNIj+vgKCq+86Il/+GteuXyHTwjyqfHJe6MysIP1iAZCUWt1bOw/
-X-Developer-Key: i=tomasz.unger@yahoo.pl; a=ed25519;
- pk=EPPsO91uz/0J2cTQ6ol+dgxYaieEc9dKSXWUb51n46c=
-References: <20260819-fbtft-core-scnprintf-v1-1-842c0603634c.ref@yahoo.pl>
+References: <20260819-fbtft-core-scnprintf-v1-1-842c0603634c.ref@yahoo.pl> <20260819-fbtft-core-scnprintf-v1-1-842c0603634c@yahoo.pl>
+In-Reply-To: <20260819-fbtft-core-scnprintf-v1-1-842c0603634c@yahoo.pl>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Wed, 19 Aug 2026 20:06:39 +0300
+X-Gm-Features: AcwNN1XtphdklIb1Xh2EgzEMsoGcQxR0A6TVYdMP1qLtFEyfNntG_muiTXDLy_c
+Message-ID: <CAHp75VcGmmz6EZYjG871V+sYmJn=iGOFxj+D1oe4rtguWkipRw@mail.gmail.com>
+Subject: Re: [PATCH] staging: fbtft: prefer scnprintf over sprintf in fbtft-core.c
+To: Tomasz Unger <tomasz.unger@yahoo.pl>
+Cc: Andy Shevchenko <andy@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Using sprintf has potential for buffer overflows if the formatted
-string exceeds the destination buffer size. Replace it with
-scnprintf, passing sizeof() of the fixed-size stack buffers
-(text1[50] and text2[50]) so the write is always bounded.
+On Wed, Aug 19, 2026 at 7:45=E2=80=AFPM Tomasz Unger <tomasz.unger@yahoo.pl=
+> wrote:
+>
+> Using sprintf has potential for buffer overflows if the formatted
 
-In practice an overflow is very unlikely here: text1 only needs
-room for a size_t value from an SPI TX buffer length, and text2
-formats three small integers (bus number, chip select, and
-frequency in MHz) that always come from real hardware ranges far
-below the theoretical worst case for their types. This is
-therefore a defense-in-depth hardening rather than a fix for an
-observed or easily triggered issue.
+sprintf()
 
-Signed-off-by: Tomasz Unger <tomasz.unger@yahoo.pl>
----
-Verified with checkpatch.pl - no errors or warnings.
-Compiled the fbtft module successfully with CONFIG_FB_TFT=m
-(also required enabling CONFIG_FB=m, CONFIG_SPI=y and
-CONFIG_GPIOLIB=y, all previously disabled).
-fb.ko, syscopyarea.ko, sysimgblt.ko, sysfillrect.ko,
-fb_sys_fops.ko and fbtft.ko all load without errors in a QEMU
-environment (verified via insmod and lsmod). This confirms the
-modules load cleanly but does not exercise the changed code
-path, which would require an actual SPI-connected TFT display.
----
- drivers/staging/fbtft/fbtft-core.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> string exceeds the destination buffer size. Replace it with
+> scnprintf, passing sizeof() of the fixed-size stack buffers
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index ca0c38221c16..95c92ad55e98 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -784,10 +784,10 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
- 	fbtft_sysfs_init(par);
- 
- 	if (par->txbuf.buf && par->txbuf.len >= 1024)
--		sprintf(text1, ", %zu KiB buffer memory", par->txbuf.len >> 10);
-+		scnprintf(text1, sizeof(text1), ", %zu KiB buffer memory", par->txbuf.len >> 10);
- 	if (spi)
--		sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->bus_num,
--			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
-+		scnprintf(text2, sizeof(text2), ", spi%d.%d at %d MHz", spi->controller->bus_num,
-+			  spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
- 	fb_dbg(fb_info,
- 	       "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
- 	       fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
+scnprintf()
 
----
-base-commit: 8d3ae59288f1e7d58d76558a6ee96d533bc5019f
-change-id: 20260819-fbtft-core-scnprintf-1fcf0426c834
+> (text1[50] and text2[50]) so the write is always bounded.
 
-Best regards,
---  
-Tomasz Unger <tomasz.unger@yahoo.pl>
+> In practice an overflow is very unlikely here: text1 only needs
+> room for a size_t value from an SPI TX buffer length, and text2
+> formats three small integers (bus number, chip select, and
+> frequency in MHz) that always come from real hardware ranges far
+> below the theoretical worst case for their types. This is
+> therefore a defense-in-depth hardening rather than a fix for an
+> observed or easily triggered issue.
 
+This paragraph is not for the commit message, rather for the comment.
+
+...
+
+>         if (par->txbuf.buf && par->txbuf.len >=3D 1024)
+> -               sprintf(text1, ", %zu KiB buffer memory", par->txbuf.len =
+>> 10);
+
+The 64-bit number takes up to 20 decimal digits, the rest here is 20
+and one for NUL terminator. 50 is more than enough.
+
+> +               scnprintf(text1, sizeof(text1), ", %zu KiB buffer memory"=
+, par->txbuf.len >> 10);
+>         if (spi)
+> -               sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->b=
+us_num,
+
+For this it might be worse, 3 32-bit integers that may take up to 10
+decimal digits + sign, so 33 altogether and the rest is 13 and one for
+NUL terminator, so still below 50 in the longest case.
+
+> -                       spi_get_chipselect(spi, 0), spi->max_speed_hz / 1=
+000000);
+> +               scnprintf(text2, sizeof(text2), ", spi%d.%d at %d MHz", s=
+pi->controller->bus_num,
+> +                         spi_get_chipselect(spi, 0), spi->max_speed_hz /=
+ 1000000);
+
+Taking the above (and if there are no compiler warnings currently
+present) this change is an unneeded churn.
+
+--=20
+With Best Regards,
+Andy Shevchenko

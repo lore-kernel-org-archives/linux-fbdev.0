@@ -1,73 +1,76 @@
-Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+Received: from mail-pg1-f170.google.com (mail-pg1-f170.google.com [209.85.215.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7CBE3E0094
-	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 22:28:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36E883DA7D7
+	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 22:28:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787178539; cv=none; b=eeIWqQZcLweSgiu2kpd0aLuOPgKw2Vs6oBU2VH60lfVmpdQeNkzTJIlMDgHt1SkJxtIsWNuTy2UhihrTIndx3/DfP39ZqclGrx7uzbDxuShJUjF4H5gKYsEvUsUPmxZ+jOWs96tulsLT8Uuzk+XMfCBZPWqmyfOMza4Nhxacj4U=
+	t=1787178540; cv=none; b=ISyBhrsa8JXRR378GLwkZwgx+LlQfMuQG3D8/JOGpiKiBNGgEigbK2sara6b9HQshH/1VpF5Z6VZMaPmyBfbX7ZsrFqm3Fqn7j9IbzM6kME5rj1YNT0aPPybYCYrO3M/NUOkjliWyHFIypLHQ9WaPJUeea8Umap8rm2qpfYsvdo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787178539; c=relaxed/simple;
-	bh=VqovMCFcIO0AgRizO3lLfzzCWFVFj4CMgUdjOYFesd4=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References; b=K+hV0THB3RrbmlbdwFwywY3114Ai9oXRf8sDdow6MW7nvkF2esJjtTTfZPDkbprWvGUD7691SB+pVawbw+NVMHYNOpj4a+p4evy9K4Ll/8TuDd1UO50d9jyBTLBFbDXAfrw/n4FLiCMKgkyk5Bhva5x52YLop9P8hgaTwCilpv8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ol3XbpN2; arc=none smtp.client-ip=209.85.214.179
+	s=arc-20240116; t=1787178540; c=relaxed/simple;
+	bh=SOqECmxdvbnN4HB0fatSOol0FpfSI3aw8SkRlLSHP/E=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cSDQe4Dz47toFGQ4Fq1e1cCOuxsdRWJ0smL79Rt3eRBWzM6GcgoZtY2GBbyszVUnaXcuKLAGtIFwZS3obNDWkjdxsJnqfOmYgVTMQyMXQby/5OGo7NqHGBWgBNcx0BdhbCb3XWdfQ3tsojJrrnuLIJyBFoZBw8YUU3bXJpw4dNM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pnN2mSpL; arc=none smtp.client-ip=209.85.215.170
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ol3XbpN2"
-Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2cc7ef7ec27so19448385ad.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 15:28:57 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pnN2mSpL"
+Received: by mail-pg1-f170.google.com with SMTP id 41be03b00d2f7-c998fd549a8so1097193a12.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 15:28:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787178537; x=1787783337; darn=vger.kernel.org;
-        h=references:in-reply-to:message-id:date:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=eJNgLzogKifzgb0L3CXlpNr21wbTpyoAKWAZKUrsE98=;
-        b=Ol3XbpN25Im6vOUntR+7FgJ3yUHQPvfIsMkwzEBXdrIl8Sow9+jTwFTSy6ND+aZ2kI
-         DIK4PsoAod5LFX/o6wpBQ42tdfpQagu0g2DCSWPlRgym9ekAuFANwuIdBRKpmjWxf6FU
-         avPqv4Mp6+cahNl/mYIBwVA6OSPXHKCZ+XxlW8mqkH2vsMTBnZgekpAKVvGbTZ4JCEuW
-         vSExWkoB74asTWGTpifSb6SB9juuWqPJ7Jqj9NvKJb/4QEUl8kvp90n52zueLWcBs+Xu
-         eJb//mrfFLbj7Ryrbrgvm9541xhQCeHAnCGdf/hXbD0atej1FpSbDPxNxg71HBxk/beW
-         BYIQ==
+        d=gmail.com; s=20251104; t=1787178538; x=1787783338; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=Ak2jmxVCeU+lMeQASQO/CfV20ix4PcHNAD4Nc/Kpacg=;
+        b=pnN2mSpL8/uOl6PssoNbEH/4468VWjWVfpNNgZ5Pi/esrNMT2/ApVC5OPKaqtSdApx
+         ZP2/ncq5JaF7WWCpjb5BOodEN/LPwP740Ia6RmKiAwNEeEbZhLz0SIZdOefGtwwIjtng
+         60AB4U8fAFEh+AZFWK46/vRqAnyl3yPAV1on9aIjbZ5PQr1f/kIJ9Tn+03k0dzbO+qTY
+         qudEAlDMwA+IS95wN3+DNg7rw10bcS+HW/luns7azuPQS6+xI6mLSr5Vzoq4/8Nrddx5
+         0RCc/No963ILKpLIFSTslBOT3fha9+rtVJUcB3QmLvBhLxiGc1d9OcUBm4kRggcy4H+e
+         rF2g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787178537; x=1787783337;
-        h=references:in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20251104; t=1787178538; x=1787783338;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=eJNgLzogKifzgb0L3CXlpNr21wbTpyoAKWAZKUrsE98=;
-        b=He008ZIom/slK/Vffg7Pz7cNbmcHZw+Q8DDEbpONAS0ACZOr+8sAqZgmMV58YO9ukQ
-         px4sXQ6VgisV6+7igW/In/pyMSYOqf69DxiC8VBR3m9U4Y6yYww1Pa98hTxvJykpm6wk
-         CCGoqskyKBZUr2ntnZHvX1dk59HwsrMZzqCTUaEN2k50hWLJ+4UZC25lCinMV2Usfk5a
-         m/C8aU9qwfAnKblXeTUtuVITJZEFIDGRN6bKAN9iADPuVnyaDMZTSocQq2ZDsa9fIGSN
-         iZSf8LEc5hUuc99UcU5MpMNI2TlN1IJCrfJKmytDXWmcpxHZEjSIPUqn/1nygwWiC5Bj
-         /qVQ==
-X-Forwarded-Encrypted: i=1; AHgh+RpA1p7hqIuYmfw82JrgQ7eqSvhkHiZFVoOZVKfYNsE2vY23ZSBpTBLeyncbvlwqJhyWCiXEWt6UwufLxg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yxt7FwhC6iI85BcjHEY1EEGuaRmPzMiEAT4OGNehITT28PYdsvw
-	hSjy7n8cN+DKp9LDuv2ri22pENN7VwRrfu4H5EhNSx6aZFradH6hOIgh
-X-Gm-Gg: AR+sD12FybFOj+abVf6KZSJK4cGxcjpSohwOdgavSXdKw6rHBWtBnVqgtPNRPCJeyCs
-	BXnmQK2wpz4pWR0c5RzX3WudMgCyWRSTkEo5qJI4tlyn6wIiedV7ds3zQAfBBrfbE+PBukEPdyk
-	lV78QD3BLIqr3DFnsC303EuMTcbq+pQ+kLCZrNQUynBNxjeGPEALrGEehTZbQ1oMBHy09JEp59L
-	WXgyvUtEuHklO1sNGtnG8yY9Z4c+93asGcB8uNpjgrUz1TdEFVfBO+s3ERyrimmkq5tVysUaG9k
-	3UYCrDbY5cNiP1t57sVXwHWkR5uyIb7T3uIhEj62hVSui/bauizEH7flMMFhc9ihldgSwa68hvo
-	yKZGEFNxOzaKx0npl7ATi9KrLasQtq1BjJ4I+86N7BmB2tG6G0NbwKsuBYvzOyevaARAzlcni52
-	G6oQgj0Fx2SiNvgcBplG98/4mH71s5lVBYgD0I/28qEZqsmzqGihIYZ6zNff+DycKcZ80+q1yLR
-	Pkt2E5vXdMUUO1xT8gEySGV9HhgxPSAY19aqKca4O7lpVr2Og==
-X-Received: by 2002:a17:902:ebc7:b0:2ca:e565:7b15 with SMTP id d9443c01a7336-2d5fd73d03dmr142054395ad.10.1787178536890;
-        Wed, 19 Aug 2026 15:28:56 -0700 (PDT)
+        bh=Ak2jmxVCeU+lMeQASQO/CfV20ix4PcHNAD4Nc/Kpacg=;
+        b=btrutnQabJgCQgRdc36E1b1vz/cv9uwq0m3FeZrF9qpqk8kCp1lbnfqEYC/WKlCwMr
+         yyaIHzyO2rdzp7/ObjHZNvsOZ3XeOcMUSDHj3+oj12cv+N7BelB01PsVTOyE+PcsT0BV
+         PCpoJIcmAJ306bPebNL4G65j+ZJccNJZof0uIxWfOm2Wne1B5QBCjn1/QEFV6fD/1MvZ
+         pCgF72niqi27vgqiRluGGpNvcEZvzLUzU5/SPbN+tLWL6KhOvcLEMy0xPNcINwlh9Kwe
+         nZy1BqdJp0yOqXBwt2BH7rDeySElitFVkUYXB6uFwCuXeW0LElofeYK7rkxtSEk9Qptr
+         pGyg==
+X-Forwarded-Encrypted: i=1; AHgh+Rrb7YhQljdArGYaOL+z9iPIldRe+ahbr0SvKZ8PC/q6H9Bd7jxDHo4QHPAsolKTPsvAbfPAqCk1PzvMYg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywy+BKvt8S/ouITZWqp+QzFhX/LxJqD9FaxzpLNx+1/EAk/iogP
+	c8AHb8Zn4Tqo30mnRcvvBVO2L06plkblJQEB7MVbBQF9XhQwqyU+D6Eg
+X-Gm-Gg: AR+sD13hRCq04vsfLqbVZG72sYhSk5fn+dVLukhh3po1jyVrD+kLAyipw5HsX+ur4wI
+	GTIV4ypRq3KFrIWeNuiIWMXDP3B1NYi0pxjW3LmGEUZFBAj3DA5oxSc1l/ZgdCRQ2LnWx/3aF4B
+	B5mXWJh5DwDnR6OnWtjAK/1AvSK1bTtpb9oonIxyuyMrofl58O62Oxb84CE9rX1y9I890CvvrL+
+	1q1PTWbDjIHMmfIUlA5aqHpxgfR1qrA/QxxkYbK23sUhjdHWE+XvpPAMI5FrJJgedrfQMNT1n92
+	A1hPntIbON7WUPVZ8gRYMFQyQOZXu2uMUCoPcGJNv6e0Xdk246jSBL/ohhAlm8taSWhAc+RzEg4
+	cHdKOHmc+JPgutJIiYqsz4wW3ncG1A2HhdnIdH8UQm5xnjOa++BQD9CLuHwjpp0mNBLmphQ4Jkj
+	nRWRfkgkpPuOcrjEdB/FcZZP9Eq/RZ5v5IFNd+43wVsgvllonYNfzfPt2f2QfjH/l/G6JUmkwW6
+	S7+PPOwQqVWAnUKGJ5C2Xut8obZ1onDzfVXhsFBUqj0vGq53w==
+X-Received: by 2002:a05:6a20:2d13:b0:3b2:a809:1000 with SMTP id adf61e73a8af0-3cd014aacfemr16987105637.3.1787178538277;
+        Wed, 19 Aug 2026 15:28:58 -0700 (PDT)
 Received: from xplor.waratah.dyndns.org (122-59-250-182-adsl.sparkbb.co.nz. [122.59.250.182])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327bef3cde4sm11490849eec.4.2026.08.19.15.28.55
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-327bf191821sm9678993eec.28.2026.08.19.15.28.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Aug 2026 15:28:56 -0700 (PDT)
+        Wed, 19 Aug 2026 15:28:57 -0700 (PDT)
 Received: by xplor.waratah.dyndns.org (Postfix, from userid 1000)
-	id 34A993604AD; Thu, 20 Aug 2026 10:28:51 +1200 (NZST)
+	id C13D036057C; Thu, 20 Aug 2026 10:28:52 +1200 (NZST)
 From: Michael Schmitz <schmitzmic@gmail.com>
 To: linux-m68k@vger.kernel.org,
 	geert@linux-m68k.org
 Cc: schmitzmic@gmail.com,
 	Miro Kropacek <miro.kropacek@gmail.com>,
 	linux-fbdev@vger.kernel.org
-Subject: [PATCH v3 2/5] fbdev: Give atafb proper parent
-Date: Thu, 20 Aug 2026 10:28:35 +1200
-Message-Id: <20260819222838.21256-3-schmitzmic@gmail.com>
+Subject: [PATCH v3 4/5] fbdev: Add support for SuperVidel's SuperBlitter
+Date: Thu, 20 Aug 2026 10:28:37 +1200
+Message-Id: <20260819222838.21256-5-schmitzmic@gmail.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20260819222838.21256-1-schmitzmic@gmail.com>
 References: <20260819222838.21256-1-schmitzmic@gmail.com>
@@ -76,22 +79,22 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=y
+Content-Transfer-Encoding: 8bit
 
 From: Miro Kropacek <miro.kropacek@gmail.com>
 
-The atafb fb device registers no parent, causing a missing symlink
-(/sys/class/graphics/fb0/device). Xorg fbdevhw driver looks for that
-symlink when scanning for devices, so add a parent node for atafb.
+The SuperVidel graphics FPGA includes a hardware blitter (bit block
+transfer engine) operating within the SuperVidel DDR2 video RAM.
 
-The proper way to do that is use of framebuffer_alloc(), which
-requries refactoring atafb to move from static fb_info to allocation
-of fb_info by framebuffer_alloc().
-About the only location where a fb_info pointer cannot be passed
-is monspec setup in atafb_setup(). Store static monspecs there
-and copy into place after framebuffer_alloc().
+Two versions of this blitter exist. Later versions (>= 9) of the
+SuperVidel firmware support an asynchronous command FIFO, older
+versions must be polled for command completion.
 
-Pass fb_info everywhere it's needed (detect, decode_var and
-do_fb_set_var functions), and remove the static fb_info struct.
+Add hardware-accelerated copyarea, fillrect and imageblit fb
+operations (falling back to the non-accelerated versions for
+anything that exceeds blitter capabilities).
 
 Signed-off-by: Miro Kropacek <miro.kropacek@gmail.com>
 Reviewed-by: Michael Schmitz <schmitzmic@gmail.com>
@@ -103,480 +106,226 @@ Link: https://lists.debian.org/debian-68k/2026/08/msg00000.html
 
 Changes in v3:
 
-- fbdev: refactor atafb fb_info use to allow use of framebuffer_alloc()
-  (Thomas Zimmermann)
+- adapt patch to fb_info -> *fb_info rewrite (in patch 2)
 ---
- drivers/video/fbdev/atafb.c | 174 +++++++++++++++++++-----------------
- 1 file changed, 92 insertions(+), 82 deletions(-)
+ drivers/video/fbdev/atafb.c | 197 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 197 insertions(+)
 
 diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index b8ed1c537293..a9be06ded5c9 100644
+index 1a245141560b..1e5724d99b39 100644
 --- a/drivers/video/fbdev/atafb.c
 +++ b/drivers/video/fbdev/atafb.c
-@@ -158,14 +158,6 @@ static int DontCalcRes = 0;
- #define VMO_PREMASK		0x0c
- #endif
+@@ -2303,6 +2303,185 @@ static int ext_detect(struct fb_info *info)
+ 	return 1;
+ }
  
--static struct fb_info fb_info = {
--	.fix = {
--		.id	= "Atari ",
--		.visual	= FB_VISUAL_PSEUDOCOLOR,
--		.accel	= FB_ACCEL_NONE,
--	}
--};
--
- static void *screen_base;	/* base address of screen */
- static unsigned long phys_screen_base;	/* (only for Overscan) */
- 
-@@ -175,6 +167,12 @@ static int current_par_valid;
- 
- static int mono_moni;
- 
-+/* monspecs passed by user */
++/* ------------------- SuperVidel SuperBlitter ---------------------- */
 +
-+static __u32 mcap_hmin;		/* hfreq lower limit (Hz) */
-+static __u32 mcap_hmax;		/* hfreq upper limit (Hz) */
-+static __u16 mcap_vmin;		/* vfreq lower limit (Hz) */
-+static __u16 mcap_vmax;		/* vfreq upper limit (Hz) */
- 
- #ifdef ATAFB_EXT
- 
-@@ -299,7 +297,7 @@ static int *MV300_reg = MV300_reg_8bit;
- /* ++roman: This structure abstracts from the underlying hardware (ST(e),
-  * TT, or Falcon.
-  *
-- * int (*detect)(void)
-+ * int (*detect)(*fb_info)
-  *   This function should detect the current video mode settings and
-  *   store them in atafb_predefined[0] for later reference by the
-  *   user. Return the index+1 of an equivalent predefined mode or 0
-@@ -311,7 +309,7 @@ static int *MV300_reg = MV300_reg_8bit;
-  *   values in the 'par' structure.
-  * !!! Obsolete, perhaps !!!
-  *
-- * int (*decode_var)(struct fb_var_screeninfo *var,
-+ * int (*decode_var)(struct fb_info *info, struct fb_var_screeninfo *var,
-  *                   struct atafb_par *par)
-  *   Get the video params out of 'var'. If a value doesn't fit, round
-  *   it up, if it's too big, return EINVAL.
-@@ -345,10 +343,10 @@ static int *MV300_reg = MV300_reg_8bit;
-  */
- 
- static struct fb_hwswitch {
--	int (*detect)(void);
-+	int (*detect)(struct fb_info *info);
- 	int (*encode_fix)(struct fb_fix_screeninfo *fix,
- 			  struct atafb_par *par);
--	int (*decode_var)(struct fb_var_screeninfo *var,
-+	int (*decode_var)(struct fb_info *info, struct fb_var_screeninfo *var,
- 			  struct atafb_par *par);
- 	int (*encode_var)(struct fb_var_screeninfo *var,
- 			  struct atafb_par *par);
-@@ -576,7 +574,7 @@ static int tt_encode_fix(struct fb_fix_screeninfo *fix, struct atafb_par *par)
- 	return 0;
- }
- 
--static int tt_decode_var(struct fb_var_screeninfo *var, struct atafb_par *par)
-+static int tt_decode_var(struct fb_info *info, struct fb_var_screeninfo *var, struct atafb_par *par)
- {
- 	int xres = var->xres;
- 	int yres = var->yres;
-@@ -782,7 +780,7 @@ static int tt_setcolreg(unsigned int regno, unsigned int red,
- 	return 0;
- }
- 
--static int tt_detect(void)
-+static int tt_detect(struct fb_info *info)
- {
- 	struct atafb_par par;
- 
-@@ -877,7 +875,7 @@ static int falcon_encode_fix(struct fb_fix_screeninfo *fix,
- 	return 0;
- }
- 
--static int falcon_decode_var(struct fb_var_screeninfo *var,
-+static int falcon_decode_var(struct fb_info *info, struct fb_var_screeninfo *var,
- 			     struct atafb_par *par)
- {
- 	int bpp = var->bits_per_pixel;
-@@ -1069,13 +1067,13 @@ static int falcon_decode_var(struct fb_var_screeninfo *var,
- 			/* Choose master pixelclock depending on hor. timing */
- 			plen = 1 * xstretch;
- 			if ((plen * xres + f25.right + f25.hsync + f25.left) *
--			    fb_info.monspecs.hfmin < f25.f)
-+			    info->monspecs.hfmin < f25.f)
- 				pclock = &f25;
- 			else if ((plen * xres + f32.right + f32.hsync +
--				  f32.left) * fb_info.monspecs.hfmin < f32.f)
-+				  f32.left) * info->monspecs.hfmin < f32.f)
- 				pclock = &f32;
- 			else if ((plen * xres + fext.right + fext.hsync +
--				  fext.left) * fb_info.monspecs.hfmin < fext.f &&
-+				  fext.left) * info->monspecs.hfmin < fext.f &&
- 			         fext.f)
- 				pclock = &fext;
- 			else
-@@ -1245,14 +1243,14 @@ static int falcon_decode_var(struct fb_var_screeninfo *var,
- 
- 	/*  check hor. frequency */
- 	hfreq = pclock->f / ((par->HHT + 2) * prescale * 2);
--	if (hfreq > fb_info.monspecs.hfmax && mon_type != F_MON_VGA) {
-+	if (hfreq > info->monspecs.hfmax && mon_type != F_MON_VGA) {
- 		/* ++guenther:   ^^^^^^^^^^^^^^^^^^^ can't remember why I did this */
- 		/* Too high -> enlarge margin */
- 		left_margin += 1;
- 		right_margin += 1;
- 		goto again;
- 	}
--	if (hfreq > fb_info.monspecs.hfmax || hfreq < fb_info.monspecs.hfmin)
-+	if (hfreq > info->monspecs.hfmax || hfreq < info->monspecs.hfmin)
- 		return -EINVAL;
- 
- 	/* Vxx-registers */
-@@ -1283,50 +1281,50 @@ static int falcon_decode_var(struct fb_var_screeninfo *var,
- 	/* V-frequency check, hope I didn't create any loop here. */
- 	/* Interlace and doubleline are mutually exclusive. */
- 	vfreq = (hfreq * 2) / (par->VFT + 1);
--	if (vfreq > fb_info.monspecs.vfmax && !doubleline && !interlace) {
-+	if (vfreq > info->monspecs.vfmax && !doubleline && !interlace) {
- 		/* Too high -> try again with doubleline */
- 		doubleline = 1;
- 		goto again;
--	} else if (vfreq < fb_info.monspecs.vfmin && !interlace && !doubleline) {
-+	} else if (vfreq < info->monspecs.vfmin && !interlace && !doubleline) {
- 		/* Too low -> try again with interlace */
- 		interlace = 1;
- 		goto again;
--	} else if (vfreq < fb_info.monspecs.vfmin && doubleline) {
-+	} else if (vfreq < info->monspecs.vfmin && doubleline) {
- 		/* Doubleline too low -> clear doubleline and enlarge margins */
- 		int lines;
- 		doubleline = 0;
- 		for (lines = 0;
- 		     (hfreq * 2) / (par->VFT + 1 + 4 * lines - 2 * yres) >
--		     fb_info.monspecs.vfmax;
-+		     info->monspecs.vfmax;
- 		     lines++)
- 			;
- 		upper_margin += lines;
- 		lower_margin += lines;
- 		goto again;
--	} else if (vfreq > fb_info.monspecs.vfmax && doubleline) {
-+	} else if (vfreq > info->monspecs.vfmax && doubleline) {
- 		/* Doubleline too high -> enlarge margins */
- 		int lines;
- 		for (lines = 0;
- 		     (hfreq * 2) / (par->VFT + 1 + 4 * lines) >
--		     fb_info.monspecs.vfmax;
-+		     info->monspecs.vfmax;
- 		     lines += 2)
- 			;
- 		upper_margin += lines;
- 		lower_margin += lines;
- 		goto again;
--	} else if (vfreq > fb_info.monspecs.vfmax && interlace) {
-+	} else if (vfreq > info->monspecs.vfmax && interlace) {
- 		/* Interlace, too high -> enlarge margins */
- 		int lines;
- 		for (lines = 0;
- 		     (hfreq * 2) / (par->VFT + 1 + 4 * lines) >
--		     fb_info.monspecs.vfmax;
-+		     info->monspecs.vfmax;
- 		     lines++)
- 			;
- 		upper_margin += lines;
- 		lower_margin += lines;
- 		goto again;
--	} else if (vfreq < fb_info.monspecs.vfmin ||
--		   vfreq > fb_info.monspecs.vfmax)
-+	} else if (vfreq < info->monspecs.vfmin ||
-+		   vfreq > info->monspecs.vfmax)
- 		return -EINVAL;
- 
- set_screen_base:
-@@ -1720,7 +1718,7 @@ static int falcon_blank(int blank_mode)
- 	return 0;
- }
- 
--static int falcon_detect(void)
-+static int falcon_detect(struct fb_info *info)
- {
- 	struct atafb_par par;
- 	unsigned char fhw;
-@@ -1732,18 +1730,18 @@ static int falcon_detect(void)
- 	f030_bus_width = fhw << 6 & 0x80;
- 	switch (mon_type) {
- 	case F_MON_SM:
--		fb_info.monspecs.vfmin = 70;
--		fb_info.monspecs.vfmax = 72;
--		fb_info.monspecs.hfmin = 35713;
--		fb_info.monspecs.hfmax = 35715;
-+		info->monspecs.vfmin = 70;
-+		info->monspecs.vfmax = 72;
-+		info->monspecs.hfmin = 35713;
-+		info->monspecs.hfmax = 35715;
- 		break;
- 	case F_MON_SC:
- 	case F_MON_TV:
- 		/* PAL...NTSC */
--		fb_info.monspecs.vfmin = 49;	/* not 50, since TOS defaults to 49.9x Hz */
--		fb_info.monspecs.vfmax = 60;
--		fb_info.monspecs.hfmin = 15620;
--		fb_info.monspecs.hfmax = 15755;
-+		info->monspecs.vfmin = 49;	/* not 50, since TOS defaults to 49.9x Hz */
-+		info->monspecs.vfmax = 60;
-+		info->monspecs.hfmin = 15620;
-+		info->monspecs.hfmax = 15755;
- 		break;
- 	}
- 	/* initialize hsync-len */
-@@ -1795,7 +1793,7 @@ static int stste_encode_fix(struct fb_fix_screeninfo *fix,
- 	return 0;
- }
- 
--static int stste_decode_var(struct fb_var_screeninfo *var,
-+static int stste_decode_var(struct fb_info *info, struct fb_var_screeninfo *var,
- 			    struct atafb_par *par)
- {
- 	int xres = var->xres;
-@@ -1971,7 +1969,7 @@ static int stste_setcolreg(unsigned int regno, unsigned int red,
- 	return 0;
- }
- 
--static int stste_detect(void)
-+static int stste_detect(struct fb_info *info)
- {
- 	struct atafb_par par;
- 
-@@ -2112,7 +2110,8 @@ static int ext_encode_fix(struct fb_fix_screeninfo *fix, struct atafb_par *par)
- 	return 0;
- }
- 
--static int ext_decode_var(struct fb_var_screeninfo *var, struct atafb_par *par)
-+static int ext_decode_var(struct fb_info *info, struct fb_var_screeninfo *var,
-+			struct atafb_par *par)
- {
- 	struct fb_var_screeninfo *myvar = &atafb_predefined[0];
- 
-@@ -2226,7 +2225,7 @@ static int ext_setcolreg(unsigned int regno, unsigned int red,
- 	}
- }
- 
--static int ext_detect(void)
-+static int ext_detect(struct fb_info *info)
- {
- 	struct fb_var_screeninfo *myvar = &atafb_predefined[0];
- 	struct atafb_par dummy_par;
-@@ -2344,12 +2343,12 @@ static void ata_set_par(struct atafb_par *par)
- 
- /* used for hardware scrolling */
- 
--static int do_fb_set_var(struct fb_var_screeninfo *var, int isactive)
-+static int do_fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var, int isactive)
- {
- 	int err, activate;
- 	struct atafb_par par;
- 
--	err = fbhw->decode_var(var, &par);
-+	err = fbhw->decode_var(info, var, &par);
- 	if (err)
- 		return err;
- 	activate = var->activate;
-@@ -2368,7 +2367,7 @@ static int atafb_get_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
- 	struct atafb_par par;
- 	int err;
- 	// Get fix directly (case con == -1 before)??
--	err = fbhw->decode_var(&info->var, &par);
-+	err = fbhw->decode_var(info, &info->var, &par);
- 	if (err)
- 		return err;
- 	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
-@@ -2635,7 +2634,7 @@ static int atafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 
- 	/* Validate wanted screen parameters */
- 	// if ((err = ata_decode_var(var, &par)))
--	err = fbhw->decode_var(var, &par);
-+	err = fbhw->decode_var(info, var, &par);
- 	if (err)
- 		return err;
- 
-@@ -2651,7 +2650,7 @@ static int atafb_set_par(struct fb_info *info)
- 	struct atafb_par *par = info->par;
- 
- 	/* Decode wanted screen parameters */
--	fbhw->decode_var(&info->var, par);
-+	fbhw->decode_var(info, &info->var, par);
- 	mutex_lock(&info->mm_lock);
- 	fbhw->encode_fix(&info->fix, par);
- 	mutex_unlock(&info->mm_lock);
-@@ -2677,7 +2676,7 @@ static struct fb_ops atafb_ops = {
- 	__FB_DEFAULT_IOMEM_OPS_MMAP,
- };
- 
--static void check_default_par(int detected_mode)
-+static void check_default_par(struct fb_info *info, int detected_mode)
- {
- 	char default_name[10];
- 	int i;
-@@ -2688,14 +2687,14 @@ static void check_default_par(int detected_mode)
- 	if (default_par) {
- 		var = atafb_predefined[default_par - 1];
- 		var.activate = FB_ACTIVATE_TEST;
--		if (do_fb_set_var(&var, 1))
-+		if (do_fb_set_var(info, &var, 1))
- 			default_par = 0;	/* failed */
- 	}
- 	/* Next is the autodetected one */
- 	if (!default_par) {
- 		var = atafb_predefined[detected_mode - 1]; /* autodetect */
- 		var.activate = FB_ACTIVATE_TEST;
--		if (!do_fb_set_var(&var, 1))
-+		if (!do_fb_set_var(info, &var, 1))
- 			default_par = detected_mode;
- 	}
- 	/* If that also failed, try some default modes... */
-@@ -2708,7 +2707,7 @@ static void check_default_par(int detected_mode)
- 				panic("can't set default video mode");
- 			var = atafb_predefined[default_par - 1];
- 			var.activate = FB_ACTIVATE_TEST;
--			if (!do_fb_set_var(&var,1))
-+			if (!do_fb_set_var(info, &var, 1))
- 				break;	/* ok */
- 		}
- 	}
-@@ -2901,10 +2900,10 @@ static void __init atafb_setup_mcap(char *spec)
- 	if (hmax <= 0 || hmax <= hmin)
- 		return;
- 
--	fb_info.monspecs.vfmin = vmin;
--	fb_info.monspecs.vfmax = vmax;
--	fb_info.monspecs.hfmin = hmin;
--	fb_info.monspecs.hfmax = hmax;
-+	mcap_vmin = vmin;
-+	mcap_vmax = vmax;
-+	mcap_hmin = hmin;
-+	mcap_hmax = hmax;
- }
- #endif /* ATAFB_FALCON */
- 
-@@ -2991,12 +2990,19 @@ static int __init atafb_probe(struct platform_device *pdev)
- 	unsigned int defmode = 0;
- 	unsigned long mem_req;
- 	char *option = NULL;
-+	struct fb_info *fb_info;
- 
- 	if (fb_get_options("atafb", &option))
- 		return -ENODEV;
- 	atafb_setup(option);
- 	dev_dbg(&pdev->dev, "%s: start\n", __func__);
- 
-+	fb_info =  framebuffer_alloc(sizeof(struct atafb_par), &pdev->dev);
++/*
++ * Hardware blitter in the SuperVidel FPGA, operating within SV DDR2 RAM.
++ * FW revision >= 9 provides a command FIFO (async operation); older
++ * revisions are programmed directly with busy-polling.
++ */
++#define SVBLIT_REGS_PHYS	0x80010000
++#define SVBLIT_SRC1		0x58	/* bits 26:0 */
++#define SVBLIT_SRC2		0x5c
++#define SVBLIT_DST		0x60
++#define SVBLIT_COUNT		0x64	/* bytes per line - 1 */
++#define SVBLIT_SRC1_OFFSET	0x68	/* line start to next line start */
++#define SVBLIT_SRC2_OFFSET	0x6c
++#define SVBLIT_DST_OFFSET	0x70
++#define SVBLIT_MASK_AND_LINES	0x74	/* bits 11:0: number of lines */
++#define SVBLIT_CONTROL		0x78	/* bit 0: busy/start, bits 4:1: mode */
++#define SVBLIT_VERSION		0x7c	/* bits 9:0: FW revision */
++#define SVBLIT_FIFO		0x80	/* wr: data; rd: bit 0 empty, bit 1 full */
 +
-+	strscpy(fb_info->fix.id, "Atari ");
-+	fb_info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
-+	fb_info->fix.accel = FB_ACCEL_NONE;
++/*
++ * SuperBlitter bug: Instead of declared 2048 bytes, 2032 is the real maximum.
++ */
++#define SVBLIT_MAX_SPAN	2032
 +
- 	do {
- #ifdef ATAFB_EXT
- 		if (external_addr) {
-@@ -3052,15 +3058,20 @@ static int __init atafb_probe(struct platform_device *pdev)
- 
- 	/* Multisync monitor capabilities */
- 	/* Atari-TOS defaults if no boot option present */
--	if (fb_info.monspecs.hfmin == 0) {
--		fb_info.monspecs.hfmin = 31000;
--		fb_info.monspecs.hfmax = 32000;
--		fb_info.monspecs.vfmin = 58;
--		fb_info.monspecs.vfmax = 62;
-+	if (mcap_hmin == 0) {
-+		fb_info->monspecs.hfmin = 31000;
-+		fb_info->monspecs.hfmax = 32000;
-+		fb_info->monspecs.vfmin = 58;
-+		fb_info->monspecs.vfmax = 62;
-+	} else {
-+		fb_info->monspecs.vfmin = mcap_vmin;
-+		fb_info->monspecs.vfmax = mcap_vmax;
-+		fb_info->monspecs.hfmin = mcap_hmin;
-+		fb_info->monspecs.hfmax = mcap_hmax;
- 	}
- 
--	detected_mode = fbhw->detect();
--	check_default_par(detected_mode);
-+	detected_mode = fbhw->detect(fb_info);
-+	check_default_par(fb_info, detected_mode);
- #ifdef ATAFB_EXT
- 	if (!external_addr) {
++static void __iomem *svblit_regs;
++static int svblit_fw;
++
++static inline u32 svblit_rd(unsigned int reg)
++{
++	return __raw_readl(svblit_regs + reg);
++}
++
++static inline void svblit_wr(unsigned int reg, u32 val)
++{
++	__raw_writel(val, svblit_regs + reg);
++}
++
++/* wait until all queued blits have finished */
++static void svblit_wait(void)
++{
++	if (svblit_fw >= 9)
++		/* FIFO empty flag = fewer than 9 longwords queued */
++		while (!(svblit_rd(SVBLIT_FIFO) & 1))
++			cpu_relax();
++	while (svblit_rd(SVBLIT_CONTROL) & 1)
++		cpu_relax();
++}
++
++/*
++ * FW >= 9 queues commands through the 512-longword FIFO: a command is
++ * 9 longwords (registers 0x58..0x78 in order), executed whenever >= 9
++ * words are queued and the blitter is idle. The full flag rises at
++ * >= 500 queued words, so below it there is always room for a whole
++ * command — one flag check per command prevents overflow (dropped
++ * words would desync the 9-word framing until an SV reinit, which is
++ * exactly what overflowing did before this guard existed). Older FW
++ * is programmed directly with busy-polling.
++ *
++ * The line byte count field is 11 bits but see SVBLIT_MAX_SPAN.
++ */
++static void svblit_copy(u32 src, u32 dst, u32 nbytes, u32 src_offset,
++			u32 dst_offset, u32 lines)
++{
++	while (nbytes) {
++		u32 chunk = min(nbytes, SVBLIT_MAX_SPAN);
++
++		if (svblit_fw >= 9) {
++			while (svblit_rd(SVBLIT_FIFO) & 2)
++				cpu_relax();
++			svblit_wr(SVBLIT_FIFO, src);
++			svblit_wr(SVBLIT_FIFO, 0);
++			svblit_wr(SVBLIT_FIFO, dst);
++			svblit_wr(SVBLIT_FIFO, chunk - 1);
++			svblit_wr(SVBLIT_FIFO, src_offset);
++			svblit_wr(SVBLIT_FIFO, 0);
++			svblit_wr(SVBLIT_FIFO, dst_offset);
++			svblit_wr(SVBLIT_FIFO, lines);
++			svblit_wr(SVBLIT_FIFO, 0x01);
++		} else {
++			while (svblit_rd(SVBLIT_CONTROL) & 1)
++				cpu_relax();
++			svblit_wr(SVBLIT_SRC1, src);
++			svblit_wr(SVBLIT_SRC2, 0);
++			svblit_wr(SVBLIT_DST, dst);
++			svblit_wr(SVBLIT_COUNT, chunk - 1);
++			svblit_wr(SVBLIT_SRC1_OFFSET, src_offset);
++			svblit_wr(SVBLIT_SRC2_OFFSET, 0);
++			svblit_wr(SVBLIT_DST_OFFSET, dst_offset);
++			svblit_wr(SVBLIT_MASK_AND_LINES, lines);
++			svblit_wr(SVBLIT_CONTROL, 0x01);
++		}
++
++		src += chunk;
++		dst += chunk;
++		nbytes -= chunk;
++	}
++}
++
++static int svblit_sync(struct fb_info *info)
++{
++	svblit_wait();
++	return 0;
++}
++
++static void svblit_copyarea(struct fb_info *info,
++			    const struct fb_copyarea *area)
++{
++	u32 bytespp = info->var.bits_per_pixel / 8;
++	u32 pitch = info->fix.line_length;
++
++	/*
++	 * The blitter walks lines in ascending order, so overlapping
++	 * moves down/right would read already overwritten data. Those
++	 * are rare for fbcon (scrolling backwards); leave them and
++	 * oversized areas to the CPU.
++	 */
++	if (area->height > 4095 ||
++	    area->dy > area->sy ||
++	    (area->dy == area->sy && area->dx > area->sx)) {
++		svblit_wait();
++		cfb_copyarea(info, area);
++		return;
++	}
++
++	svblit_copy(external_addr + area->sy * pitch + area->sx * bytespp,
++		    external_addr + area->dy * pitch + area->dx * bytespp,
++		    area->width * bytespp, pitch, pitch, area->height);
++	/* async: every CPU access to the fb goes through svblit_wait() */
++}
++
++static void svblit_fillrect(struct fb_info *info,
++			    const struct fb_fillrect *rect)
++{
++	u32 bytespp = info->var.bits_per_pixel / 8;
++	u32 pitch = info->fix.line_length;
++	u8 *line;
++	u32 pix;
++
++	svblit_wait();		/* the CPU is about to touch the fb */
++
++	if (rect->rop != ROP_COPY || rect->height <= 1 ||
++	    rect->height > 4096) {
++		cfb_fillrect(info, rect);
++		return;
++	}
++
++	pix = (info->fix.visual == FB_VISUAL_TRUECOLOR) ?
++		((u32 *)info->pseudo_palette)[rect->color] : rect->color;
++
++	/* draw the first line with the CPU ... */
++	line = (u8 *)info->screen_base + rect->dy * pitch +
++	       rect->dx * bytespp;
++	switch (bytespp) {
++	case 1:
++		memset(line, pix, rect->width);
++		break;
++	case 2:
++		memset16((u16 *)line, pix, rect->width);
++		break;
++	default:
++		memset32((u32 *)line, pix, rect->width);
++		break;
++	}
++
++	/* ... and let the blitter replicate it into the other lines */
++	svblit_copy(external_addr + rect->dy * pitch + rect->dx * bytespp,
++		    external_addr + (rect->dy + 1) * pitch +
++		    rect->dx * bytespp,
++		    rect->width * bytespp, 0, pitch, rect->height - 1);
++}
++
++static void svblit_imageblit(struct fb_info *info,
++			     const struct fb_image *image)
++{
++	svblit_wait();		/* CPU rendering must not race queued blits */
++	cfb_imageblit(info, image);
++}
++
  #endif /* ATAFB_EXT */
-@@ -3100,43 +3111,42 @@ static int __init atafb_probe(struct platform_device *pdev)
+ 
+ /* ------ This is the same for most hardware types -------- */
+@@ -3179,6 +3358,24 @@ static int __init atafb_probe(struct platform_device *pdev)
+ 		phys_screen_base = external_addr;
+ 		screen_len = external_len & PAGE_MASK;
+ 		memset (screen_base, 0, external_len);
++
++		/* framebuffer in SV RAM: enable the SuperBlitter */
++		if (external_addr >= 0xa0000000) {
++			svblit_regs = ioremap(SVBLIT_REGS_PHYS, 0x100);
++			if (svblit_regs) {
++				svblit_fw = svblit_rd(SVBLIT_VERSION) & 0x1ff;
++				atafb_ops.fb_fillrect = svblit_fillrect;
++				atafb_ops.fb_copyarea = svblit_copyarea;
++				atafb_ops.fb_imageblit = svblit_imageblit;
++				atafb_ops.fb_sync = svblit_sync;
++				fb_info->flags |= FBINFO_HWACCEL_COPYAREA |
++						  FBINFO_HWACCEL_FILLRECT;
++				dev_info(&pdev->dev,
++					 "SuperBlitter enabled, FW revision %d (%s)\n",
++					 svblit_fw, svblit_fw >= 9 ?
++					 "async FIFO" : "sync");
++			}
++		}
  	}
  #endif /* ATAFB_EXT */
  
--//	strcpy(fb_info.mode->name, "Atari Builtin ");
--	fb_info.fbops = &atafb_ops;
-+//	strcpy(fb_info->mode->name, "Atari Builtin ");
-+	fb_info->fbops = &atafb_ops;
- 	// try to set default (detected; requested) var
--	do_fb_set_var(&atafb_predefined[default_par - 1], 1);
-+	do_fb_set_var(fb_info, &atafb_predefined[default_par - 1], 1);
- 	// reads hw state into current par, which may not be sane yet
- 	ata_get_par(&current_par);
--	fb_info.par = &current_par;
-+	fb_info->par = &current_par;
- 	// tries to read from HW which may not be initialized yet
- 	// so set sane var first, then call atafb_set_par
--	atafb_get_var(&fb_info.var, &fb_info);
-+	atafb_get_var(&(fb_info->var), fb_info);
- 
- #ifdef ATAFB_FALCON
--	fb_info.pseudo_palette = current_par.hw.falcon.pseudo_palette;
-+	fb_info->pseudo_palette = current_par.hw.falcon.pseudo_palette;
- #endif
- 
--	if (!fb_find_mode(&fb_info.var, &fb_info, mode_option, atafb_modedb,
-+	if (!fb_find_mode(&(fb_info->var), fb_info, mode_option, atafb_modedb,
- 			  NUM_TOTAL_MODES, &atafb_modedb[defmode],
--			  fb_info.var.bits_per_pixel)) {
-+			  fb_info->var.bits_per_pixel)) {
- 		return -EINVAL;
- 	}
- 
- 	fb_videomode_to_modelist(atafb_modedb, NUM_TOTAL_MODES,
--				 &fb_info.modelist);
--
--	atafb_set_disp(&fb_info);
-+				 &(fb_info->modelist));
- 
--	fb_alloc_cmap(&(fb_info.cmap), 1 << fb_info.var.bits_per_pixel, 0);
-+	atafb_set_disp(fb_info);
- 
-+	fb_alloc_cmap(&(fb_info->cmap), 1 << fb_info->var.bits_per_pixel, 0);
- 
--	dev_info(&pdev->dev, "Determined %dx%d, depth %d\n", fb_info.var.xres,
--		 fb_info.var.yres, fb_info.var.bits_per_pixel);
--	if ((fb_info.var.xres != fb_info.var.xres_virtual) ||
--	    (fb_info.var.yres != fb_info.var.yres_virtual))
-+	dev_info(&pdev->dev, "Determined %dx%d, depth %d\n", fb_info->var.xres,
-+		 fb_info->var.yres, fb_info->var.bits_per_pixel);
-+	if ((fb_info->var.xres != fb_info->var.xres_virtual) ||
-+	    (fb_info->var.yres != fb_info->var.yres_virtual))
- 		dev_info(&pdev->dev, "   virtual %dx%d\n",
--			 fb_info.var.xres_virtual, fb_info.var.yres_virtual);
-+			 fb_info->var.xres_virtual, fb_info->var.yres_virtual);
- 
--	if (register_framebuffer(&fb_info) < 0) {
-+	if (register_framebuffer(fb_info) < 0) {
- #ifdef ATAFB_EXT
- 		if (external_addr) {
- 			iounmap(external_screen_base);
-@@ -3150,7 +3160,7 @@ static int __init atafb_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	fb_info(&fb_info, "frame buffer device, using %dK of video memory\n",
-+	fb_info(fb_info, "frame buffer device, using %dK of video memory\n",
- 		screen_len >> 10);
- 
- 	/* TODO: This driver cannot be unloaded yet */
 -- 
 2.17.1
 

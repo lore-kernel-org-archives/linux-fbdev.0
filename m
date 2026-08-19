@@ -1,136 +1,313 @@
-Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
+Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A6E84779B9
-	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 15:33:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.199
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 394BD48A8BB
+	for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 16:34:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787153629; cv=none; b=GWWKC5qZ5Yn6+0gu4oLrhmWijcIEePEJc49e75l+khwbwVSy+PDIXbs8YnxFiX4i2Q1OSkukrEAaR8CdESGhSU6zmCcc9EWD2RtkCPdCERMccErwruC5BexUd7yRvDK29okcEsLwFGRJvPqXtb10XQAIzhsUC2c2jC1QVX31p34=
+	t=1787157294; cv=none; b=Y5HqsqhaF8LdDuuZ9DS1ztE+qp8K8NWQv4lCtF2OELBGtN7hSAwYz+QH5MTDStfjwwbuSOb91wGON2i6ccauEEP8XuiyufE6KxJ6TYTHld5PoY6lJcfVzhylMSLZbQCk0mUzxnhkB8fgu5nFpAtwvBYrpTFSwd20ZhmWJmzOcWE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787153629; c=relaxed/simple;
-	bh=4Yli6tecyJEHplZwFU9XXAL6o7x1WGOP/NVWujBjOgo=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=CkXCBHVUN3l4qbl6EsfP2FchyDRXmLWAjZAk2Q+2eEEltb770D3HFkC5Fh6Ylrl7KXILbOpM0r+mLNq/anSJr3OAngV7r3C0gMXWFYQxb0mkmxos/AKgUPTHIKy7Lb9i3/4J8fuqQWEMhcXksKUNcw5zQLltuEl8BLsOXVOFqY8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--seanjc.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=XU/cVw0+; arc=none smtp.client-ip=209.85.210.199
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--seanjc.bounces.google.com
+	s=arc-20240116; t=1787157294; c=relaxed/simple;
+	bh=D0tvzZc5j7tK8KVp4To8G8H0S66NejgBCde1AUomAL8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oGDBU1kQhM6ZNaYxDtLIBzif2h61sYzKUSv+I2+ir704/p8ZwxrtuiCiLB03Y/mnyTVGgfWLp5ScIfvYhoXJpsM7slhEIvTSy91rqrBwU1+1VXLUkUN932XrfM5yjE1HX6v9vaohdGMtDo+MW9rA8MvEFqX6Gn/bpOcvpmJVo+E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=snu.ac.kr; spf=pass smtp.mailfrom=snu.ac.kr; dkim=pass (1024-bit key) header.d=snu.ac.kr header.i=@snu.ac.kr header.b=gGv39nhw; arc=none smtp.client-ip=209.85.216.41
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=snu.ac.kr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=snu.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="XU/cVw0+"
-Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-84c4cd31b51so15772b3a.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 08:33:47 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=snu.ac.kr header.i=@snu.ac.kr header.b="gGv39nhw"
+Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-38a0c7e841fso1832218a91.2
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Aug 2026 09:34:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1787153627; x=1787758427; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=c2FvzDQHxVaueg4hvKJpjDuB27Njlxwegg3SIxYd2Fg=;
-        b=XU/cVw0+p9kAqaFFKwNtFk5zq0mOExFboyZMXzRqehxsK9WIfnOCnZxYAx+4Wja0eO
-         jALKjzpL9AQ2UaqtpGbejqQfbePzO+q+jc4LYfucU3awBgHzWGILbkmSswwY+VAm1pi2
-         UKGgkkcpSRYp8GQotWZUdF8iJeMFfwPYy1uaBpIvbtBkcMlacNxcO+Zo3yoYJ2b+sOZY
-         jHtIoadd+n/Fh1q7zG4wZkFxmqMW50IjuVPPaoEZ1nhnUGcL9GnWueT8Ir3SzKuhkSXK
-         yfyjsZJxqyA5ar+VOfZRzNPZLBgOKY7GvvTrrJ8jE2iLPZY7R0jBRGj2qpfq3Cpe9UCN
-         x93A==
+        d=snu.ac.kr; s=google; t=1787157289; x=1787762089; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=SciAtpaFLHaXdN0fISEnWrIpHa6KFhRQKeuCrMjWs18=;
+        b=gGv39nhw0Nh9NeddYBh2F6Gy+OCJ97KAph9KZCHh86y6Gn70ML2iAT1EqoLcL/o1nm
+         hT3iZr20crxNGcOvoJqT3rhKX8QL+uMpKh0oCgRG6+x4cAJnpXX+UgW9U1dEpLw0hPvq
+         sKgv0GSop5s19aqrBFOvVxmt1MDE8KKAp9j1g=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787153627; x=1787758427;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20251104; t=1787157289; x=1787762089;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=c2FvzDQHxVaueg4hvKJpjDuB27Njlxwegg3SIxYd2Fg=;
-        b=fBNYBoVtB0akZqH2IE6iRhxUK2itLkb10RKxtfWGUkaVmM9W1HQBOX21DUDbF42526
-         dsZjjpVkYyxI3JhBMYIAODd4WJQN0a4LtzsjI/GAswN63hvc3GPYSmGjiUL3XRH26skG
-         m197uClPiiQdqvx6F8h0/FYZUfmFJa3oOIzaPwyfqMz5rx/0oRjhbR+4jc9Vgh/fErk6
-         tYxdnheudpAx8t56TTkXSosle3tjTR5CzcUYWH/yMgNbcVyUYEfpp1mLsh455obYt8QS
-         GKcLj28bIm15rnr9NK6N5JRolMQ6+4HDv/L2b1QOdKiY+6wkxmIZQamdbtekEXNd1xa2
-         Df/A==
-X-Forwarded-Encrypted: i=1; AHgh+Rqyx/JsCIAqhHyr1QhT4jZ2O/DFl5dxpFC3ZO+cIIo5Hp7thBTPTrIJRmZOfHBLVaONReOsQxktvx8xKA==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw+fa6NnbZlavtyk0ZKXIDsVYMOOO3yPtU+h6FuJbJU4hjdSSfh
-	HokTv3Crm82YvAA1eZYZxJAdqixNncfNNzsD3Wcxk+8BSbGCF+HA0311MPNEt6CGP3EQBytAWpT
-	LGC1/JA==
-X-Received: from pfoo3.prod.google.com ([2002:a05:6a00:1a03:b0:84f:df8f:5a90])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:2913:b0:84b:9a69:156d
- with SMTP id d2e1a72fcca58-851df6dc419mr109732b3a.0.1787153626373; Wed, 19
- Aug 2026 08:33:46 -0700 (PDT)
-Date: Wed, 19 Aug 2026 08:33:45 -0700
-In-Reply-To: <bd9e5b6e-07f2-459d-bca6-e290585060aa@intel.com>
+        bh=SciAtpaFLHaXdN0fISEnWrIpHa6KFhRQKeuCrMjWs18=;
+        b=TNr9jJLpnA3g07w15c5Cx+jDmS7mLdxlDFTOXUqKWUZlBGgbmAnI+EPoTZnQ/Q6bTg
+         sl3iVDwEIqIk9yHXFLaTGhmyBOPZZsyIzHKvi35S5/JsSa72FsiX/+TMHOeCdoi3H0L+
+         gvATuFqan+fKgZ92ueWJULB3HOyUJg9Fh50LAgyWylKHu+LHcxqBQJDUgOFjfFeYEM9S
+         hWqgMr4iqfuyOE6W4UTVm/d9x8entg5EzAMla7YSHR5TY76rEOdAK0g0CbVuZbDOO7+v
+         rHdYdTd58oPOjolmVYFUMMiXw2zPvurNQcQ65ekjsj0RZ1JY8CvN+6o7E0Z15xOSSAPM
+         yxTg==
+X-Forwarded-Encrypted: i=1; AHgh+RqisRtkN/V+OReeZaksQF0taGKaEE3U9VFXPoXor0CMXiwMHQEBxd2+dzPgBMGNZHQ8OkXJucNjX+fg7A==@vger.kernel.org
+X-Gm-Message-State: AFuF++k5n12I6hzhG5Xp2VYZE7ps5ks0DXEupdPoMUZ8g9woWEXXxqws
+	cWZ2++rJwECDnMZQEZSRg8TJdI+Y9J1TLkAchpISAWjfOhiA53UwnErbJmZ3h/h4dOg=
+X-Gm-Gg: AR+sD12C7oIPTy3kHoL0vocUplAFtieDbXEL2FFrOkLXaS6LjKqIdpl+We0omJ7OKYs
+	ok0o+KqJPlUpvjxWDA6rsD7bk4+p4GaWz4/SUTFkj/Y6gg5w2GlAOwLOib3jC25y+o+teeWo48u
+	93RQW3VpTOde+35uqosPCJWXhLq7PL5Fvp0GWaSmFO1yQ/5B8F7+Fktd5f941nYJ5P9x75M5dku
+	vtgdGD9/02auCvdzoQOIiajjbfCt8h0jsLjbSWnZIcaE+7ZIjx2GjZLwuTLuzp5/s+t8nC8F54u
+	+KXC+xl6hLhA9ROmSd35VAuK/Gi2y26vtqJ0uyhHiP1B95ooaNZXbBpVctf2ZJyLHI2zNXIV6L5
+	U/fDKvBRPvJxbZMtb1kKuPGuc7q2UeHlO27eAeqlCL9qpzZGt1kxtG91pWNBWlyoBMGVIBkOuha
+	jilvPdfVkK0YjEaxBV+qsWMSPMvezeiSzUzsDqMQx6wo34yRhP6+481Z3tO5VsKVvF+IDzNwS6F
+	croBPuYmc2CtFh27j+2RKHXPhmkpAM8umVRidszZxGi3nMZwmOVKaMWVhbUb3Cglp6piFtKxrew
+	byuPGffct8UbAAHDfr8W2/E9U0WlJkPsATm4bmWk0OPTTkZXMcZLxw==
+X-Received: by 2002:a17:90b:5684:b0:395:5eec:b932 with SMTP id 98e67ed59e1d1-39580f6b704mr11763668a91.11.1787157289392;
+        Wed, 19 Aug 2026 09:34:49 -0700 (PDT)
+Received: from leesin ([147.46.121.37])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3957f875f38sm1432887a91.4.2026.08.19.09.34.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Aug 2026 09:34:48 -0700 (PDT)
+From: Jaeyoung Chung <jjy600901@snu.ac.kr>
+To: deller@gmx.de,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	simona@ffwll.ch,
+	tzimmermann@suse.de
+Cc: linux-kernel@vger.kernel.org,
+	eulgyukim@snu.ac.kr,
+	jjy600901@snu.ac.kr
+Subject: [BUG] KASAN: slab-out-of-bounds Read in soft_cursor
+Date: Thu, 20 Aug 2026 01:34:39 +0900
+Message-ID: <20260819163440.3702924-1-jjy600901@snu.ac.kr>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260819102314.1499258-1-jgross@suse.com> <bd9e5b6e-07f2-459d-bca6-e290585060aa@intel.com>
-Message-ID: <aoXM2f1YTwgVj8KL@google.com>
-Subject: Re: [PATCH v2 00/13] x86/msr: Drop 32-bit MSR interfaces
-From: Sean Christopherson <seanjc@google.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: Juergen Gross <jgross@suse.com>, linux-kernel@vger.kernel.org, x86@kernel.org, 
-	virtualization@lists.linux.dev, linux-ide@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-crypto@vger.kernel.org, linux-gpio@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-hyperv@vger.kernel.org, 
-	kvm@vger.kernel.org, linux-edac@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-coco@lists.linux.dev, 
-	linux-acpi@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	linux-mtd@lists.infradead.org, platform-driver-x86@vger.kernel.org, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, 
-	Ajay Kaher <ajay.kaher@broadcom.com>, Alexey Makhalov <alexey.makhalov@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Damien Le Moal <dlemoal@kernel.org>, 
-	Niklas Cassel <cassel@kernel.org>, David Airlie <airlied@redhat.com>, Helge Deller <deller@gmx.de>, 
-	linux-geode@lists.infradead.org, Olivia Mackall <olivia@selenic.com>, 
-	Herbert Xu <herbert@gondor.apana.org.au>, Linus Walleij <linusw@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Peter Zijlstra <peterz@infradead.org>, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, 
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, 
-	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
-	James Clark <james.clark@linaro.org>, "K. Y. Srinivasan" <kys@microsoft.com>, 
-	Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
-	Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Josh Poimboeuf <jpoimboe@kernel.org>, 
-	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, Pu Wen <puwen@hygon.cn>, 
-	Tony Luck <tony.luck@intel.com>, Reinette Chatre <reinette.chatre@intel.com>, 
-	Dave Martin <Dave.Martin@arm.com>, James Morse <james.morse@arm.com>, 
-	Babu Moger <babu.moger@amd.com>, Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>, 
-	Vitaly Kuznetsov <vkuznets@redhat.com>, Andy Lutomirski <luto@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, 
-	Kiryl Shutsemau <kas@kernel.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, 
-	Boris Ostrovsky <boris.ostrovsky@oracle.com>, Len Brown <lenb@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>, 
-	Mario Limonciello <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>, 
-	K Prateek Nayak <kprateek.nayak@amd.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, 
-	Guenter Roeck <linux@roeck-us.net>, Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, 
-	Artem Bityutskiy <dedekind1@gmail.com>, Miquel Raynal <miquel.raynal@bootlin.com>, 
-	Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, Ashok Raj <ashok.raj.linux@gmail.com>, 
-	Hans de Goede <hansg@kernel.org>, 
-	"Ilpo =?utf-8?B?SsOkcnZpbmVu?=" <ilpo.jarvinen@linux.intel.com>, 
-	Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>, David E Box <david.e.box@intel.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, xen-devel@lists.xenproject.org
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Wed, Aug 19, 2026, Dave Hansen wrote:
-> Hey Juergen,
-> 
-> These look great. Thanks for doing it!
-> 
-> The only wonky thing is how we're going to actually merge it. We
-> obviously can't do patches 10-11 until all the "stop using" patches have
-> been applied.
-> 
-> I obviously 100% realize that it's during the merge window, but any acks
-> that the maintainers of 5-9 provide in the next few weeks would be super
-> helpful. Or, if any of those maintainers want to cherry pick their
-> subsystem's stuff out of this series and apply it, that would be great too.
-> 
-> But, the last time we did some MSR function munging, the tip tree
-> carried most of the patches. I would expect we'll have a repeat of that
-> here too. I'll pencil in the idea of just merging the lot around -rc1 time.
+Hello,
 
-Note, patch 12 "treewide: convert rdmsrq() from a macro to an inline function"
-is going to conflict with the KVM changes for 7.3; kvm_access_xstate_msr() is
-getting moved from x86.c to msrs.c.  Somewhat surprisingly, AFAICT that's the
-only conflict with KVM's code movement, so it's probably not strictly required
-to send a new version after the KVM pull request?
+We found a "KASAN: slab-out-of-bounds Read in soft_cursor" on Linux v7.2.
+The issue was found by our own race fuzzer. We have not analyzed the root
+cause, so we do not have a proposed fix to offer.
+
+To reproduce the race reliably, we applied the delay patch below to the
+kernel and ran the C reproducer as root inside an x86_64 QEMU guest. The
+crash log we observed, the delay patch and the reproducer are all included
+below.
+
+The following kernel config options are required to reproduce the issue:
+    CONFIG_VT=y
+    CONFIG_VT_CONSOLE=y
+    CONFIG_FB=y
+    CONFIG_FB_CORE=y
+    CONFIG_FRAMEBUFFER_CONSOLE=y
+    CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
+    CONFIG_FONT_SUPPORT=y
+    CONFIG_FONT_8x16=y
+    CONFIG_DRM=y
+    CONFIG_DRM_BOCHS=y
+    CONFIG_DRM_FBDEV_EMULATION=y
+    CONFIG_KASAN=y
+
+We hope this report is useful. Please let us know if any further
+information would help.
+
+Reported-by: Eulgyu Kim <eulgyukim@snu.ac.kr>
+Reported-by: Jaeyoung Chung <jjy600901@snu.ac.kr>
+
+Kernel delay patch:
+==================================================================
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 8f467b22b799..e4d9233c4f5f 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -86,6 +86,7 @@
+ #include <linux/major.h>
+ #include <linux/mm.h>
+ #include <linux/console.h>
++#include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
+ #include <linux/vt_kern.h>
+@@ -4979,6 +4980,9 @@ static int con_font_set(struct vc_data *vc, const struct console_font_op *op)
+ 	font.width = op->width;
+ 	font.height = op->height;
+ 
++	if (!strncmp(current->comm, "syzrepro", 8) &&
++	    op->width == 32 && op->height == 30 && op->charcount == 512)
++		mdelay(100);
+ 	guard(console_lock)();
+ 
+ 	if (vc->vc_mode != KD_TEXT)
+diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
+index 6cdbc96eeca6..f4797dc2dd78 100644
+--- a/drivers/video/fbdev/core/fbcon_rotate.c
++++ b/drivers/video/fbdev/core/fbcon_rotate.c
+@@ -9,6 +9,8 @@
+  */
+ 
+ #include <linux/errno.h>
++#include <linux/delay.h>
++#include <linux/string.h>
+ #include <linux/fb.h>
+ #include <linux/font.h>
+ 
+@@ -38,6 +40,9 @@ int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
+ 		ret = PTR_ERR(buf);
+ 		goto err_kfree;
+ 	}
++	if (!strncmp(current->comm, "syzrepro", 8) &&
++	    par->rotated.bufsize == 4096)
++		mdelay(50);
+ 
+ 	par->rotated.buf = buf;
+ 
+==================================================================
+
+C reproducer:
+==================================================================
+#define _GNU_SOURCE
+#include <fcntl.h>
+#include <linux/kd.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/prctl.h>
+#include <unistd.h>
+
+#define SYSCHK(x) ({ long __r = (long)(x); if (__r == -1L) { perror(#x); exit(1); } __r; })
+
+static pthread_barrier_t start;
+static unsigned char font[4U * 32U * 512U];
+
+static void *rotate_thread(void *arg)
+{
+	int fd;
+
+	prctl(PR_SET_NAME, "syzrepro0", 0, 0, 0);
+	pthread_barrier_wait(&start);
+	fd = SYSCHK(open("/sys/class/graphics/fbcon/rotate_all", O_WRONLY));
+	SYSCHK(write(fd, "1", 1));
+	close(fd);
+	return NULL;
+}
+
+static void *font_thread(void *arg)
+{
+	struct console_font_op op = { .op = KD_FONT_OP_SET, .width = 32,
+				      .height = 30, .charcount = 512, .data = font };
+	int fd;
+
+	prctl(PR_SET_NAME, "syzrepro1", 0, 0, 0);
+	pthread_barrier_wait(&start);
+	fd = SYSCHK(open("/dev/tty1", O_RDWR | O_NOCTTY));
+	ioctl(fd, KDFONTOP, &op);
+	close(fd);
+	return NULL;
+}
+
+int main(void)
+{
+	pthread_t t[2];
+
+	memset(font, 0x5a, sizeof(font));
+	pthread_barrier_init(&start, NULL, 2);
+	pthread_create(&t[0], NULL, rotate_thread, NULL);
+	pthread_create(&t[1], NULL, font_thread, NULL);
+	pthread_join(t[0], NULL);
+	pthread_join(t[1], NULL);
+	return 0;
+}
+==================================================================
+
+
+Crash log:
+==================================================================
+BUG: KASAN: slab-out-of-bounds in soft_cursor+0x3eb/0xb70 drivers/video/fbdev/core/softcursor.c:70
+Read of size 128 at addr ffff88810792d000 by task syzrepro1/401
+
+CPU: 2 UID: 0 PID: 401 Comm: syzrepro1 Not tainted 7.2.0-dirty #1 PREEMPT 
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.13.0-1ubuntu1.1 04/01/2014
+Call Trace:
+ <TASK>
+ dump_stack_lvl+0x5e/0x80 lib/dump_stack.c:120
+ print_address_description+0x77/0x200 mm/kasan/report.c:378
+ print_report+0x64/0x70 mm/kasan/report.c:482
+ kasan_report+0x118/0x150 mm/kasan/report.c:595
+ check_region_inline mm/kasan/generic.c:-1 [inline]
+ kasan_check_range+0x2b0/0x2c0 mm/kasan/generic.c:200
+ __asan_memcpy+0x29/0x70 mm/kasan/shadow.c:105
+ soft_cursor+0x3eb/0xb70 drivers/video/fbdev/core/softcursor.c:70
+ cw_cursor+0x1322/0x2080 drivers/video/fbdev/core/fbcon_cw.c:324
+ hide_cursor+0x84/0x350 drivers/tty/vt/vt.c:884
+ redraw_screen+0x3b9/0xcb0 drivers/tty/vt/vt.c:986
+ vc_do_resize+0xe4f/0x1490 drivers/tty/vt/vt.c:1310
+ vc_resize include/linux/vt_kern.h:49 [inline]
+ fbcon_do_set_font+0x666/0x1980 drivers/video/fbdev/core/fbcon.c:2435
+ fbcon_set_font+0x50c/0x750 drivers/video/fbdev/core/fbcon.c:2518
+ con_font_set drivers/tty/vt/vt.c:4996 [inline]
+ con_font_op+0x91b/0xdc0 drivers/tty/vt/vt.c:5036
+ vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
+ vt_ioctl+0x719/0x1660 drivers/tty/vt/vt_ioctl.c:745
+ tty_ioctl+0x89c/0xa40 drivers/tty/tty_io.c:2792
+ vfs_ioctl fs/ioctl.c:51 [inline]
+ __do_sys_ioctl fs/ioctl.c:597 [inline]
+ __se_sys_ioctl+0xb6/0x100 fs/ioctl.c:583
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xf7/0x370 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x76/0x7e
+RIP: 0033:0x7fa577d5ad6b
+Code: 00 48 89 44 24 18 31 c0 48 8d 44 24 60 c7 04 24 10 00 00 00 48 89 44 24 08 48 8d 44 24 20 48 89 44 24 10 b8 10 00 00 00 0f 05 <89> c2 3d 00 f0 ff ff 77 1c 48 8b 44 24 18 64 48 2b 04 25 28 00 00
+RSP: 002b:00007fa577457e40 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 00007fa577d5ad6b
+RDX: 00007fa577457ea0 RSI: 0000000000004b72 RDI: 0000000000000003
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000002
+R10: 0000000000000000 R11: 0000000000000246 R12: ffffffffffffff80
+R13: 0000000000000000 R14: 00007ffdf1422270 R15: 00007fa576c58000
+ </TASK>
+
+Allocated by task 400:
+ kasan_save_stack mm/kasan/common.c:57 [inline]
+ kasan_save_track+0x3e/0x80 mm/kasan/common.c:78
+ poison_kmalloc_redzone mm/kasan/common.c:398 [inline]
+ __kasan_kmalloc+0x72/0x90 mm/kasan/common.c:415
+ kasan_kmalloc include/linux/kasan.h:263 [inline]
+ __do_kmalloc_node mm/slub.c:5334 [inline]
+ __kmalloc_noprof+0x20f/0x4b0 mm/slub.c:5359
+ _kmalloc_noprof include/linux/slab.h:992 [inline]
+ _kmalloc_array_noprof include/linux/slab.h:1208 [inline]
+ font_data_rotate+0xc1/0x6f0 lib/fonts/font_rotate.c:231
+ fbcon_rotate_font+0x2d5/0x520 drivers/video/fbdev/core/fbcon_rotate.c:35
+ fbcon_modechanged+0x280/0x11f0 drivers/video/fbdev/core/fbcon.c:2664
+ fbcon_rotate_all drivers/video/fbdev/core/fbcon.c:254 [inline]
+ rotate_all_store+0x140/0x4c0 drivers/video/fbdev/core/fbcon.c:3218
+ kernfs_fop_write_iter+0x289/0x3c0 fs/kernfs/file.c:345
+ new_sync_write fs/read_write.c:595 [inline]
+ vfs_write+0x7a2/0xa10 fs/read_write.c:687
+ ksys_write+0xb0/0x170 fs/read_write.c:739
+ do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
+ do_syscall_64+0xf7/0x370 arch/x86/entry/syscall_64.c:94
+ entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+The buggy address belongs to the object at ffff88810792c000
+ which belongs to the cache kmalloc-4k of size 4096
+The buggy address is located 0 bytes to the right of
+ allocated 4096-byte region [ffff88810792c000, ffff88810792d000)
+
+The buggy address belongs to the physical page:
+page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x107928
+head: order:3 mapcount:0 entire_mapcount:0 nr_pages_mapped:0 pincount:0
+flags: 0x200000000000040(head|node=0|zone=2)
+page_type: f5(slab)
+raw: 0200000000000040 ffff888100043040 dead000000000100 dead000000000122
+raw: 0000000000000000 0000000800040004 00000000f5000000 0000000000000000
+head: 0200000000000040 ffff888100043040 dead000000000100 dead000000000122
+head: 0000000000000000 0000000800040004 00000000f5000000 0000000000000000
+head: 0200000000000003 fffffffffffffe01 00000000ffffffff 00000000ffffffff
+head: ffffffffffffffff 0000000000000000 00000000ffffffff 0000000000000008
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ ffff88810792cf00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffff88810792cf80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffff88810792d000: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+                   ^
+ ffff88810792d080: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+ ffff88810792d100: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+==================================================================
+
+

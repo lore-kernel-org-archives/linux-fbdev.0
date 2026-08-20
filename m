@@ -1,84 +1,135 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49D4F38D3FD;
-	Thu, 20 Aug 2026 06:00:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62DE73AE6E5;
+	Thu, 20 Aug 2026 06:06:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787205637; cv=none; b=gCXTHb10cr48h4PIKr363RWlKu7BJOkgDW1qvxglqPuCAHNsO4tihJI6amZF+Lh8l/p7WSo1wFBOuS4SfM7WuTceLT3nkcHKLGXDSUu/P3cM67oCfCwfOFPOW+kRh29fESNANIsyN03nqHjhaCz7p5DH+37r2kLpw2EvhmdJvbQ=
+	t=1787205986; cv=none; b=gw+nKe+YV1MkTZMcldu7LRg1adatU9FscRk+hLbXkjNBKthPEE5oAOj3KYmzmXdP97hTkl9NCaXuxVkxoiJtIfBhoS34zQDBn5sAlkJzBgkFvT6MIVrDxUzieqYk9pAlla1S7lgWcxhC8Ik+szqeHGwk27yasPYO3bsK5DiMt+s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787205637; c=relaxed/simple;
-	bh=xElA6E10uUi9yZQnU+2OiO/da7ibJP07YNyEPSnMfTY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NoIXKXzfZFpdTcnZAOMos6dPimNJM/yVKHWOI0WeH96Yc+b5WSwZoAiPwhoYJl9fSjfhjizrOGeoBSwsnsEy+nSIW/w3uR5SoqD1vFB2+9bryUMzmL7VQ7bBYTNhnLrWL8pheyu9DeDnNWd2czHwqrM34WkhWwIncbq7G8b0PAY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 71ec5d589c5c11f19a56ed5b684f684d-20260820
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:efee74a8-2a7e-4cb1-a816-6b8c27cfee85,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:7db8b62,CLOUDID:1288cbc57c99250d7bddb12c354bae79,BulkI
-	D:nil,BulkQuantity:0,SF:102|136|865|898,TC:nil,Content:0|15|50,EDM:-3|-100
-	,IP:nil,URL:99|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0
-	,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 71ec5d589c5c11f19a56ed5b684f684d-20260820
-X-User: yuebingkun@kylinos.cn
-Received: from tushenkeke2-pc.. [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <yuebingkun@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 628903182; Thu, 20 Aug 2026 14:00:28 +0800
-From: Yue Bing Kun <yuebingkun@kylinos.cn>
-To: Helge Deller <deller@gmx.de>
-Cc: Nathan Chancellor <nathan@kernel.org>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3] fbdev: platinumfb: add error checking for ioremap calls
-Date: Thu, 20 Aug 2026 14:00:26 +0800
-Message-ID: <20260820060026.217814-1-yuebingkun@kylinos.cn>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1787205986; c=relaxed/simple;
+	bh=z7pB0ckMr2OaLmwtRf84WyK35FfiHatfdlZmGKp64pU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=kZH6EITTkhFeqOSGpXQbGY/E+y8qay6sOqnFc7nIKZCI0bjraZxn2VnpYbAyQU9OHxbxdhzq+6CuKsEmjLm7c84hfoQTJHdoMVz+Qe7ptZhK8XV78v8AJmZuUBIRAYIuHrMORhTjfNS5MstiaoelBlJaEWWmheAN3pY8JTs7oE8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=n7FFTwj8; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="n7FFTwj8"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 106F71F000E9;
+	Thu, 20 Aug 2026 06:06:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787205985;
+	bh=8Ul4LcNKNGu0Z584PICkjX7+P+obMk+pMAEdlAEtBLc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=n7FFTwj85oHM8+Z0bncLFNY9/eW5UxEc3LeFSPwVmM/J0yU3NCrZjNz2zCIEYZwLE
+	 VkUDYV1ptH6tax/0F1oXiJjDiE4SC7hgcWjk/xP+EHEssecT4QfZMP4aTD2PVsDkB/
+	 PHZc88roAXGNSFiQUibZJ0cNvxEnz09z/agN4p5AbkwKKXMWc8TIrdxjcPbruKZSKu
+	 3OPsCjNo23WGFwZ6ajg3ye5CpkwpwGndpwB3CJOPi5MYLZRxkxBpTyt0laVyIVRSIA
+	 t9R0jcmDR/EPUk7IXvEelvCevQFSUrNEUzW4iSTQEsCRum1JwmrzWQUfF/uSY/YiLe
+	 LHO1ski2SQNRg==
+Message-ID: <21d31639-4d16-4ee2-8ff3-18877636aa8b@kernel.org>
+Date: Thu, 20 Aug 2026 15:06:10 +0900
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 12/13] treewide: convert rdmsrq() from a macro to an
+ inline function
+To: Juergen Gross <jgross@suse.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-perf-users@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, kvm@vger.kernel.org,
+ virtualization@lists.linux.dev, linux-edac@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-coco@lists.linux.dev, linux-acpi@vger.kernel.org,
+ linux-ide@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-crypto@vger.kernel.org, linux-gpio@vger.kernel.org,
+ linux-hwmon@vger.kernel.org, linux-mtd@lists.infradead.org,
+ platform-driver-x86@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+ Adrian Hunter <adrian.hunter@intel.com>, James Clark
+ <james.clark@linaro.org>, "K. Y. Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
+ Sean Christopherson <seanjc@google.com>, Paolo Bonzini
+ <pbonzini@redhat.com>, Ajay Kaher <ajay.kaher@broadcom.com>,
+ Alexey Makhalov <alexey.makhalov@broadcom.com>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, Josh Poimboeuf
+ <jpoimboe@kernel.org>, Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+ Pu Wen <puwen@hygon.cn>, Tony Luck <tony.luck@intel.com>,
+ Reinette Chatre <reinette.chatre@intel.com>,
+ Dave Martin <Dave.Martin@arm.com>, James Morse <james.morse@arm.com>,
+ Babu Moger <babu.moger@amd.com>, Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, Andy Lutomirski <luto@kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ Kiryl Shutsemau <kas@kernel.org>, Rick Edgecombe
+ <rick.p.edgecombe@intel.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Len Brown <lenb@kernel.org>, Niklas Cassel <cassel@kernel.org>,
+ David Airlie <airlied@redhat.com>, Olivia Mackall <olivia@selenic.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Yazen Ghannam <yazen.ghannam@amd.com>, Linus Walleij <linusw@kernel.org>,
+ Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
+ Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+ Artem Bityutskiy <dedekind1@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
+ Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>,
+ Ashok Raj <ashok.raj.linux@gmail.com>, Hans de Goede <hansg@kernel.org>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
+ David E Box <david.e.box@intel.com>,
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+ Lukasz Luba <lukasz.luba@arm.com>, Helge Deller <deller@gmx.de>,
+ xen-devel@lists.xenproject.org, linux-geode@lists.infradead.org
+References: <20260819102314.1499258-1-jgross@suse.com>
+ <20260819102314.1499258-13-jgross@suse.com>
+Content-Language: en-US
+From: Damien Le Moal <dlemoal@kernel.org>
+Organization: Western Digital Research
+In-Reply-To: <20260819102314.1499258-13-jgross@suse.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: BingKun Yue <yuebingkun@kylinos.cn>
+On 8/19/26 19:23, Juergen Gross wrote:
+> Today rdmsrq() is a macro using its second parameter as the target for
+> storing the read MSR value.
+> 
+> Convert rdmsrq() to an inline function returning the MSR value.
+> 
+> The users have been converted using the following semantic patch:
+> 
+>   // Options: --include-headers
+> 
+>   virtual patch
+>   virtual report
+> 
+>   @@
+>   expression msr, val;
+>   @@
+>   (
+>   - rdmsrq(msr,val)
+>   + val = rdmsrq(msr)
+>   )
+> 
+> Signed-off-by: Juergen Gross <jgross@suse.com>
 
-The ioremap() and ioremap_wt() calls in platinumfb_probe() were not
-checked for failure. If any of these mappings fail, the driver would
-dereference NULL pointers, leading to a kernel panic.
+For the ata bits,
 
-Add proper error checking and use goto-based cleanup to avoid code
-duplication across the error paths.
+Acked-by: Damien Le Moal <dlemoal@kernel.org>
 
-Reported-by: Nathan Chancellor <nathan@kernel.org>
-Link: https://lore.kernel.org/linux-fbdev/20260819235918.GA2021182@ax162/
-Signed-off-by: BingKun Yue <yuebingkun@kylinos.cn>
----
- drivers/video/fbdev/platinumfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
-index fdffadcc3e73..f74c937c839f 100644
---- a/drivers/video/fbdev/platinumfb.c
-+++ b/drivers/video/fbdev/platinumfb.c
-@@ -320,7 +320,7 @@ static void platinum_init_info(struct fb_info *info,
- 	fb_alloc_cmap(&info->cmap, 256, 0);
- 
- 	/* Fill fix common fields */
--	strscpy(info->fix.id, "platinum", sizeof(info->fix.id));
-+	strcpy(info->fix.id, "platinum");
- 	info->fix.mmio_start = pinfo->platinum_regs_phys;
- 	info->fix.mmio_len = 0x1000;
- 	info->fix.type = FB_TYPE_PACKED_PIXELS;
 -- 
-2.43.0
-
+Damien Le Moal
+Western Digital Research

@@ -1,213 +1,142 @@
-Received: from DM1PR04CU001.outbound.protection.outlook.com (mail-centralusazon11010014.outbound.protection.outlook.com [52.101.61.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from sonic.asd.mail.yahoo.com (sonic-euwe1-0017.asd.mail.yahoo.com [34.2.82.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4CBD63D75DE;
-	Thu, 20 Aug 2026 16:12:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.61.14
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787242378; cv=fail; b=GtbH1apW0zsi9GlH41jBH4S86/SBMxlzVcv7J6XO5F13ZdQzNp6Ybi7dMM7/IGHYJemwGWctyD8CXDWZn8FL4+tUYjzVd8FBDbr+xCURGNAYTrCGGdbZ2ps7F737dQwUQY3wjrUfWB4zCOOeQUWIBIi4x981xwqfz2Go8wYRAiQ=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787242378; c=relaxed/simple;
-	bh=GQwNxZNRb7QfVL5uH97DO+3qCLdKNGVBBEl7WltKtn8=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=EqslJ6hOiO7p67sTjSus20JBlCy3VBYW9qzunPgwzYvSoSCgiavD+ODrhk0Ws92JQvVPPeWUbaPNmTFhcRyiUKVxqgpmvJEtKWF7Yyjo+dfWKMGNOMsBvPV9Z9PQwC39ACIe0nwyP2skVfwQlzfzyThX/nYuN/7U873opCStiLY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=m+vO74j6; arc=fail smtp.client-ip=52.101.61.14
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40C5A47DFAF
+	for <linux-fbdev@vger.kernel.org>; Thu, 20 Aug 2026 16:58:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.2.82.16
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1787245106; cv=none; b=cA48zBo4FF9kzil/O3soD5FKGmNLroq2AzcAjdiVAjwZjFFyEqymQWLAAtknzQatUr4+e0aZp4zWxk3r5LlIKxvfLw2gj6MvxNvGvV5QLdbss0PWC5rzY5ffj0dV1KtGdR5aMBVnw6dKwDPLD7SdJFIW/SWbrsSVOz1eGP0RldI=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1787245106; c=relaxed/simple;
+	bh=Vb6a0nlxcTQQQNTbxhFquNvqg+VCLZ0UAyF94lMD/Og=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc:
+	 References; b=PAU2Hp251f4g2JC9qtYR0pX0R/+UpDc+R6ss6BxNW0ifQH02rbkQW5GUn0uMKVvYDpfmxDxomxQp62HFmfsMJTCwyuxGYHUb6xsAVUSfOr06BFi6ufXquLuOnff9ASRklvbljojo7G74n+5VfOU2Kt2wur27SCgu3gZtnhX7TOw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl; spf=pass smtp.mailfrom=yahoo.pl; dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b=IVuRbm2d; arc=none smtp.client-ip=34.2.82.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.pl
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="m+vO74j6"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=f3Uc5FdNgXa/DWjk8UUj7JgJQBpAvUIhou3ndjHFD6ixU1lLrWEAFXE5BcI4LDZ+6tWa95B1/6tLHftEl1NzXSk9cjNJCGlJF4pY794+/SX8bpY07HoRMRyRIQxQFOEyVxMf4unobpLhOAsQ41JXw03eP8ULqwxEKkMSE9BwFaLA76zZeh4LLmlMfUOZHDCxtiTOu0r3/I7mTRjlBXPLifBjQ2vjIuXUTETq/nhyFCcKpO3LGEcp94DuWKyaWeBxbFfGG/+soKyxKhhwAL9CdFaZrZQdDjY6flcdE4u/xx7Nbqs1UcTthKY6LeCLiiREMS4nEBfim/LzkBpHKLYDtg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=dXQACOlMqYttdwf87+MdT+hgACB1lVKrO6r8CW4/KWU=;
- b=oi4foruBDTxzCm5vPGH2kNphFqYT/GM0953Ftl5dLyNgyB8lwXy3fTTb6rAmvKAPUG7ye8KQuQYENzFHWjRHLabgvpZz2P6nywUG6zsVJTCHNYGkbDD+0KCyjpysZbaqwhuSkP5PiFSIFzRSy7eIOaYnMSqlX37WH0DXeJhsjcHDmoWr9l63Du+gZKywMt4CWYn+6VgOTRY6NER7dD8XUzbQML8e16SdaCQYS/YKE6d4VkiykrNiMXs8e6PrUmzn6mBMaO3uF++vxqwNHs5rRVZ+xWkqYXWSNI8tcZ7GwdZ+5X5hE80IfXz2JsFNgoCXBBOwyRZfSt23WCfQN0RAng==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dXQACOlMqYttdwf87+MdT+hgACB1lVKrO6r8CW4/KWU=;
- b=m+vO74j6BdUSjBj9JJqSTFitMc3/WKuIUYplZHoaHToDpuLZAFuspnhpDliJtg+krMFHpARp5V+JADFacIFFcMWnB4s39hT8QJ5NYiqptIukyWWdJ+YXBWuQijL9ZOQRbhJG0Xja/L9Jno5AavzKs2ylZqUpnSEc2RzZEGSPsThuf41eorCZugY0lTo0U0/56Ak5LwK86IcBxon3Uu7Hdq+bfDIK0a/PbkLc9lMgmV5nh+aK8lUUex0am0ui9fniHxo2ePBZQZjwbV4m/pmCKTA/y90pmuFnCKIrbGznsLrA997W1MfkaHpdsKHVTTRo0lZ/YUUCwuHNFyv5v4rcrQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from SJ1PR12MB6051.namprd12.prod.outlook.com (2603:10b6:a03:48a::18)
- by DS7PR12MB5936.namprd12.prod.outlook.com (2603:10b6:8:7f::8) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.339.10; Thu, 20 Aug 2026 16:12:45 +0000
-Received: from SJ1PR12MB6051.namprd12.prod.outlook.com
- ([fe80::96e1:b300:7b78:d3a9]) by SJ1PR12MB6051.namprd12.prod.outlook.com
- ([fe80::96e1:b300:7b78:d3a9%6]) with mapi id 15.21.0339.007; Thu, 20 Aug 2026
- 16:12:45 +0000
-Message-ID: <c8a8ed26-973a-4fb3-a72a-f595cccaf1bb@nvidia.com>
-Date: Thu, 20 Aug 2026 17:12:30 +0100
-User-Agent: Mozilla Thunderbird
-Subject: Re: [patch 06/38] calibrate: Rework delay timer calibration
-To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
- Lu Baolu <baolu.lu@linux.intel.com>, iommu@lists.linux.dev,
- Michael Grzeschik <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org,
- linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
- linux-crypto@vger.kernel.org, Vlastimil Babka <vbabka@kernel.org>,
- linux-mm@kvack.org, David Woodhouse <dwmw2@infradead.org>,
- Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
- Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Uladzislau Rezki <urezki@gmail.com>, Marco Elver <elver@google.com>,
- Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com,
- Andrey Ryabinin <ryabinin.a.a@gmail.com>,
- Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
- "Jason A. Donenfeld" <Jason@zx2c4.com>,
- Richard Henderson <richard.henderson@linaro.org>,
- linux-alpha@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
- linux-arm-kernel@lists.infradead.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
- Dinh Nguyen <dinguyen@kernel.org>, Jonas Bonn <jonas@southpole.se>,
- linux-openrisc@vger.kernel.org, Helge Deller <deller@gmx.de>,
- linux-parisc@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
- linux-riscv@lists.infradead.org, Heiko Carstens <hca@linux.ibm.com>,
- linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- sparclinux@vger.kernel.org,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
-References: <20260410120044.031381086@kernel.org>
- <20260410120317.978403520@kernel.org>
-Content-Language: en-US
-From: Jon Hunter <jonathanh@nvidia.com>
-In-Reply-To: <20260410120317.978403520@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: FR0P281CA0205.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:ad::19) To SJ1PR12MB6051.namprd12.prod.outlook.com
- (2603:10b6:a03:48a::18)
+	dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b="IVuRbm2d"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.pl; s=s2048; t=1787245100; bh=20T8mnv+fo+0/Ee4L8ZXZ+KnWYflUPcl5mZUhp2ixas=; h=From:Date:Subject:To:Cc:References:From:Subject:Reply-To; b=IVuRbm2dGqY6BEEL/vnxA0wcb26KcIUv9Hjphxx6fE2dvGKrQMC/T2kDGPJp2BvSLe1LwDisZwSyudRUl2yC/t0uvEXmMzr1t2N+WYFZ+SSukCWsBKdDMIAFKfbf1+M3fMUdWZPSYSpLYdQmFqTNm9qFrrONbXy8L3SygBGQomv7q99IoGGpwO/fNEYFYwkp7Fu8Z6JBSLpiHXcFRs2LzkQbESOwS/eq43FSMUQviT9ghl/2smuPUIB6WpVgz8NuXNwyPdiMFpsRTdETOagCw/ZZd6b3kmGEDKZubPVOCQXOTb4zbZOw2Xi7y48o6j/G4AMT+WPyslhWZK4wAULbOA==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1787245100; bh=gE8N1VxA+5ErlNxa526OLY2U2sgwN7vvxkwH2J/sc2L=; h=X-Sonic-MF:From:Date:Subject:To:From:Subject; b=hGWmpPnV5KfMKBTYd1Y38gscH+41ZgE6JkwxX5fpZYhq3YlTHS0Uf50qrrTyWEYyJP5Fv2OufeZEWDjJgUVnlCksioD+q8v2gowwcnHc7Iq3fvB4qH9i+gkW4PJ80gcACplMq6p5193YCZ83vo8z+jdfjlo4WKaecywdpK0UBmpYqrOb1527JzSKuV6TbfN8tjDIht50usoh4HLLmeZC38NcWbgTS+dw61UmC0rqukPAVGRg9hZDVOA8x3K2XBjPfSMcitlCdDOcsQd1QFlTlGUDsAbD/V86BW1XU+pOHC1+7TZEkRnCavs6DsZz/M74885oURRatJ/ho+umLq75cg==
+X-YMail-OSG: DRhStrYVM1k048MDc.Ky8NnvQQIY0rRNKS3Y6kbs4riPy8utRc0KKFdvkqraSkb
+ 8Bp448Vu6Dz35kLErW3_Xddn6NXDlQdAnpEG9GQ_f4s._s0qtaGydlcJmk5gKTr46o9Q01VgbSFm
+ 5UyjSqkWSwX5yx_VoXauuHL9hzq.h2On7mDbwOGQ6wGIUf2tx5kwJtyJeN7KDeqr.pE4eldxkVW9
+ Fpb0_4WkjlcFAVJwrXyC97T0sKetTumlqpHtXcCoJAfbWY8sUF0Q19XHXZsE8Gze6rFeIGj4g5OY
+ BNqCsBPungBD46nOW3a0b6xqO4EFiw6rjfn_6NfwWHB6NLYkmuVlINy8DSbYZuXQhjlPt2JmNEe7
+ t5ToJQGOc2GkNmVhXFfLU9pwXv1RuUk3icDVf.VWuvr1TNadOcUuHecxtHWAGcKEMgdpBf6znpxF
+ hXyyySzzC0C3ehOzk0xRWcNt_VjBL5rDCQvpelPCYfO0ukE9AfKw6bVKV8bog9IDwk9NdFYEirFT
+ Nyr05z8WyK8qgOK00fTW6Fh555I7QBCAb1c4A9Q3IwAILhgXzPBX_t8yonTLw4MF8hP9JT9Wr5V5
+ G2p6OM8y8RymXYBbAN_4CKMDUvrFSuH6wsWpgSNWplMiWTn01jm3ECmLiaEOLPei3UJfKjgPn0cO
+ ey_ekjm.kHSSpocTj6FnmmfqYKu462IXS4VYFR4Nh4iDBOaPuPxk7KNRLU3NIq_604MNRVI_uyOB
+ JNTSh5Qk5PzBXskcqCLPnNAb8XPkYZy0GwgjHxBOGkb3AADNyCTIgpZvb2IS8w.ytp2_KE_ydQjL
+ glmGyRkRAu4SbMPIZxGPqjG.PriRYl.jSTxrhCtQjgnuLucoghGF.KGg0hYo6Cx7BIDSEz_uWN0d
+ YglG9q8EMDIC4YhYOFTl4lPUH6WIwa01FlrRZa96KRDWUy2TpPMw_GJirXeaf5D8azxoHJqVODD2
+ zfoOXFH60WVGXQr_wR3V9ks09yo0GgV3F_KZ6Lliel2IfzQBfEymHs71pI4bwrujY8zZxLNwbruc
+ Lro1prd1VSGS5JA_GVefTcMNfDsRIfqjA2g1LbS9jawGd3Pnpp5eMQ7E0Vf1BV0u1o8YF_uKGNYg
+ 3qWpVkOVANQJpe1JV3k8Wjce2tIjFeojqFemXUSZ9fK_U58FQY9_CKia4wUGeLRdsCYqL8WmHmZm
+ 0FH4lWSyr8hIwllZXrMWXlF4z3t.khKnCzDRO79TgJCmks8ewcHxCPx_r3ZrQVPSnI9Q3BZFu65X
+ 11FVjVjNhYxB4bwwx.BSSvUnI9gYKLSgfbTbR7nw.anvKVZQRhGYq7hO20FTHxhvE6AniAQPX79t
+ 0FGAPLojAqttJpvdRCOQ2Hpf_oNe3gHuUdZwsQY8mRyEMl7i.TC0yZUPOtvFFI42rAAIWV4VAqOz
+ ieNStF4ds_sc78sPVkKmOLpVwlBJnHajL1J9CJlMgv1z2m94yY63OsByKmb33A.J56eG7vKUyden
+ 4yEOofiMSCZWy_WzrkOkfHVapB5YCgjB2mLRhWQ1KgJz4cKhRZNxZpoGJkQ5wU0p8W.u9k8pPHjU
+ 9QPuSjRyQ0HmrxD5pmRwCWcJFs9pu7zRBgQMjcL.QVHxjKq8qLrWJsLZQ3q5bJoQoD7lc1p2_3is
+ yLfoZtNObXyKkO7fy9pm9dzXPOCFqYCir_QrEwk46VrZuFryRm..IoyCRThHMZyu23CWLR9eNJiS
+ iBkvULUCT2.LDIl9RLeO2RSwJzrKwXFjaf43RTBT_s1VjHKAcB1ukVkznFK2BZ6RumOwGD9hktr8
+ zwq3qjb6328JCf_wO21IBlHRMRExZCjMkyl3OulS_.8aq64JYg9LvkYhDAxAdMF17Jb.AM9Z3W4X
+ _OPQYHhdbTY.IyNf.LMrpUFLuEof5u.pnXCu37NdyCLN2KcMgcA17VEv70ke67tSf9Z51MpZJzt4
+ KdnQiQFliktS7eVbypR1UWfbKabYRITY1OIC5tlGn.w1m6xn64JKZY0wQu2deuTLjJGOKihmQz1T
+ PO8_8QxiIkVhmlYL6KbFDBx.Hd1jm69Jn7HDSkAYKkQ--
+X-Sonic-MF: <tomasz.unger@yahoo.pl>
+X-Sonic-ID: 190d7c3d-2ca3-47dd-a859-4ff0c5f6b921
+Received: from sonic.gate.mail.ne1.yahoo.com by mail-asdoutdeli-p-cin-euwe1-prod-sonicconsumer-svc-101 with HTTP; Thu, 20 Aug 2026 16:58:20 +0000
+Received: from dip154.lsn.ir2.yahoo.com ([87.248.99.163])
+          by hello (SMTP) with SMTP ID 8cc8ace8c40ab7de35cb50eca70dcdbd;
+          Thu, 20 Aug 2026 16:58:15 +0000 (UTC)
+From: Tomasz Unger <tomasz.unger@yahoo.pl>
+Date: Thu, 20 Aug 2026 18:58:12 +0200
+Subject: [PATCH v2] staging: fbtft: prefer snprintf over sprintf in
+ fbtft-core.c
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PR12MB6051:EE_|DS7PR12MB5936:EE_
-X-MS-Office365-Filtering-Correlation-Id: 403b744e-fd37-478d-d403-08defed5dea4
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|23010399003|366016|10067099003|11063799006|4143699003|56012099006|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	Hku/AQpoDLljpIsWMTOh6NT0b3M4gjVgbDMQtZDjU7lXVe14SpA6/bMJ/hEkj9LRXMDZc7FgK5B7dIFn/CHKklGKQjQcJ5HpNDzmN4TKY20Ud1Ntw/F/UJRIbfErCGYCpzKCbnsGv5Rsmspv/qDZZMPDLYteMPrfcm9qcqIou386zjVU0KOD6ACvP7kcbIDxFnr2GqtbdqL8bY8sUXWqGUlv4c6fhxY2xVpptb0nBK3djNHVjf/NAv2yl+67I7weZjtdPKG04+hEBivIYgrgCFoogdONpMrqUAfSOafaB3UDz20/5WomVhqmSpYtrB1RHBs95+qY0mcngiyx02QJ89MoeuMuCg8spER2kwX5y8JR5TLeEBUjo/dxShi7fZFNO8nZluTUWeJ5s+dPpfjqhCBfsgwXWTYeRxsOmvw7HoZh1XUWJawnikpP1z7aso0Uw4+C+NnaK7ooXLl41q4ivktSsWadUaPhPbbaflbgUFM6l7fVWJ0oNy0Ml4vnpgTHsf3EhEUAF4byfE3GlG8sVSkbqqV6/ALcKCAsibKQVvo8XE5OQzN+lSLP6tVIEqcx90W3eZbmKOd+fvU/1uqsXkhdsQ9hHhmqrP9vzYi/pz9OQgvoKKo7+mZyPERQMtInUTYJd1znCNef1XIVfITbXvd8OCnivO5+I4a/LRJsI7s=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ1PR12MB6051.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(23010399003)(366016)(10067099003)(11063799006)(4143699003)(56012099006)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?d2pNYVJsZ09NOVNLY0hqVlNKYTB6cmFCSHZ1dUdIcHRKVS9ldzlPZ1c1TjFk?=
- =?utf-8?B?b3RHYzZKSDk3Tm45d3Z3UGl6RENmYVpOcDhibUorY0dDa2s3NG4rRWZ1S0du?=
- =?utf-8?B?Mk4wNVBGb1Z5ajRsZFQyZmJGSGFCZnVhaUplOGwvNWxFVUVkdTNDNSt4Y0Vz?=
- =?utf-8?B?SE0zWGptVlBBTUlRdUIvTWdHeVVNelpmVjlKWHA1ZG0xdEpaOVd6dWdoTWEw?=
- =?utf-8?B?b0tOR0NFVlVoNllLMitzLzNhSk1UU2NoNWJ3NFhKSklRMXBKYlhqY2pDdE45?=
- =?utf-8?B?QzlJTnBXRzZQdFZIV3hKaENqTEs4Nkx1UzB5NmlBZUJUekY5dDAxQ0lJVllH?=
- =?utf-8?B?K1VaajRPUHlwUm0zbUdLSnVhU0RJUFJSL2JwdW9XNTBYVzJYRGNsNG8vSHgy?=
- =?utf-8?B?STc2TnE1TzBWRmIxMEpHNW1PbVZtWUxnQ0owa0FsbUhORnBlNjh6L1J5MnJF?=
- =?utf-8?B?OTBtOGsvMitsSVFoVHU2b1R3TEpBNW1TUXdGZXdqcmc0TzBobkJ0UFpibU1F?=
- =?utf-8?B?WUdFaFpzV1lvRVg4ZmRZRXRWdEY0bXV6c1Y0c1MyWktqSWNUVHNtditXaFdN?=
- =?utf-8?B?b0UvUEUzTUlndEhPSDhjSXVydkN4MktGcGZaUHlwbHRvQ3AwbWt0ZCtvQ3JT?=
- =?utf-8?B?b0R0WkYzT1ROZ1FBYU1rRkhpejJlcjRBekRRejBkK29pRUd2UXlqb2oybndV?=
- =?utf-8?B?WWV4Q1U3KzFobitJaW0vMHBDdk9hV3JHUVVBdWRzS3lURXFNNzdHN1B4eEYy?=
- =?utf-8?B?c3k0M1RNK0VUK1lLYi80YUhsQmhTMzVWeHkyZTQ4QVh5U1ZhRmJVcFZUa3ky?=
- =?utf-8?B?aDRmeHlSckRnUHFOZmZFRkJoNDl6eThaTkM3Ry83S1hnckhycU9JSzBQL2Mw?=
- =?utf-8?B?VjZvYW5ndGEya0Q0THhlQlZwNkNmOWdtZDEyVUoybDc5SSt4b0VPcnV3Ri93?=
- =?utf-8?B?bkc5Si82UW5vaWp6NDk1cy9KenQ4QWliRkQ3SHJRNkhVc1g4MmMyZjJXRHVz?=
- =?utf-8?B?RFJ4QXI0Vmx0SkRQTnVWZk5TelgxQmF4dHdMaFlvKzQvdXo2Nm5IcjNvby9O?=
- =?utf-8?B?NThMVVlIMHptZE9jK3dIeVhrLzJ4VFhWS0Y0cGpaZlMzb0JQT2JrdzN3eVI3?=
- =?utf-8?B?dDRnaW9ZNDFwVWlmKzYwL1hLekpYNEZET0RETGRDMlVqQ2ZlVXBTd2NOQWlx?=
- =?utf-8?B?MDdiZytFeSthWjh2V0FQSzV1aWUzNUtURDNyZTVKVWlUSkxjNTFiYWkxc05T?=
- =?utf-8?B?bUk3cnBjZXkzSEdPTDRCY0JkOXoyTGtxeXR5Mm9UOEFFMzhUSkg2QXBKSW84?=
- =?utf-8?B?aHdvR3pHcDNsRXppdEo4YU5tWDc3ZGxPY2tpeVhPS0ttNS9aeDkyUWppR0dG?=
- =?utf-8?B?VkxwWExqUlRRNWNMZ21IdXBCR3BSY0cxTjM0Z1J1eHoxcGdINFRvS1BhWjRx?=
- =?utf-8?B?aXJIK2pRUHJFNU1LUUpiTldwYWdFd2dDK1R5Z296R2w5N09IdTJNZXQ4N05t?=
- =?utf-8?B?SHJDS0JEMVZKMjdmNDY2Vzh0emtGRExTNVJkQlB2OEJoR3FXMVBGa0w3WE9C?=
- =?utf-8?B?cHdLYnZIbFFSc1JqVE1vNHkyakVMV3VMajVqaEcvSkdtYjdhUWErVlBoMW9W?=
- =?utf-8?B?TGNpR1YxSkdUc0s5bTFUejlESmVleXVwSnhNM0RLZEhueUFQckhLUW9oejJU?=
- =?utf-8?B?bUljV3M3eVJ0eVpjN3ZKWE9hWkduVk5FMndZU3BLdHRldUdPcHZtSmtRd296?=
- =?utf-8?B?KzloVzROdDQ3V08rR0pnU0kzTVFVcmJBeFRtM0pSL0dxcldkWmhvRUFHYThy?=
- =?utf-8?B?Um9DTlF6dE1JenhNUDZZcHRBelB1K1VrNHdTYXpwS3N1OXZVRnU1bHRGb1ZV?=
- =?utf-8?B?TW0venp3eHM2R2xpMDVadFRNOU43ZWhTbEIxVlFkV2pxNGQwdXd5MlJjcXVE?=
- =?utf-8?B?N3BHQUMzVHo4cUJGSnFBUzkrYWIzTEI5b1prUmtUZTJ5d0tjRmRwRS9oREhN?=
- =?utf-8?B?NkVlOWJoNjJUdTNOWmNNYXRzelZDc0s1cTVvalVQaW5pVEpCMm9tYjI2eDh5?=
- =?utf-8?B?SDl2Nzdibk9sNVR0LzVNUXFZSENKa0J0Q0l0Ym1UQXhWd2RYdFE3NU5aS0Ew?=
- =?utf-8?B?Ri9Ha0dvb0x4RlNBSExObEEwQjl5MXNKVEJpdGZtSkxGR2NzbFpqNGlWVlNZ?=
- =?utf-8?B?bitWS1NzRVFlbW51YUVRS0RWWDc1aTdleTdZQWxub2tIVDJ4b0w2eGJ3OXc3?=
- =?utf-8?B?R1ZCZmJrbWlYOGF5aUFvTVN5VDJ3SVRXQXRNQVFFVXFvTFNSOG5IdGRlZDE5?=
- =?utf-8?B?Z0xUOGxEOGRkVVJMVHgzUUNoTHJOQ0YySDNWbVJhcE5RNDVBWHBkUT09?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 403b744e-fd37-478d-d403-08defed5dea4
-X-MS-Exchange-CrossTenant-AuthSource: SJ1PR12MB6051.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Aug 2026 16:12:45.1194
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Ye8rvQlQdxke1Cm1o4X47OnoHKOhjeOLZqyz+t1/mQTrGPAo/TLtIte6ObxvJ5yITO80ujas5jc+bmfZJt3IoA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR12MB5936
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260820-fbtft-v2-final-v2-1-44d107b04634@yahoo.pl>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMwQ5FMBBA0V+RWZukZkH5FbFAp4xISdsnLxH/r
+ liexb0nBPbCAZrsBM+HBNlcAuUZjHPvJkYxyUCKSqVJoR2ijXgQWnH9ipWuCzamMLpiSNHu2cr
+ /Hbbd5/AbFh7jc4HrugHuaWz/cgAAAA==
+X-Change-ID: 20260820-fbtft-v2-final-7891edd1d87e
+To: Andy Shevchenko <andy@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+ linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, 
+ Dan Carpenter <error27@gmail.com>, Tomasz Unger <tomasz.unger@yahoo.pl>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1787245094; l=2352;
+ i=tomasz.unger@yahoo.pl; s=20260311; h=from:subject:message-id;
+ bh=Vb6a0nlxcTQQQNTbxhFquNvqg+VCLZ0UAyF94lMD/Og=;
+ b=3b9EtNix8VYT957kW4pB9zzHtHrNt4t4E3UKE8alsCVDA4txh9vZLbGalXj3DxNQSdGg1lsEV
+ xjLWB+So9s7CLnmCLQeEcjRRooDjIKAl/K+75NkYzGYu08w3QnAx7tU
+X-Developer-Key: i=tomasz.unger@yahoo.pl; a=ed25519;
+ pk=EPPsO91uz/0J2cTQ6ol+dgxYaieEc9dKSXWUb51n46c=
+References: <20260820-fbtft-v2-final-v2-1-44d107b04634.ref@yahoo.pl>
 
-Hi Thomas,
+Using sprintf has potential for buffer overflows if the formatted
+string exceeds the destination buffer size. Replace it with
+snprintf, passing sizeof() of the fixed-size stack buffers
+(text1[50] and text2[50]) so the write is always bounded.
 
-On 10/04/2026 13:18, Thomas Gleixner wrote:
-> The header define in asm/timex,h and the naming of the function to read the
-> delay timer are confusing at best.
-> 
-> Convert it to a config switch selected by the archictures, which provide
-> the functionality, and rename the function to delay_read_timer(), which
-> makes the purpose clear. Move the declaration to linux/delay.h where it
-> belongs.
-> 
-> Remove the resulting empty asm/timex.h files as well.
-> 
-> No functional change.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
+An overflow is impossible here: even the worst case for the
+argument types (size_t for text1, three ints for text2) still
+fits within 50 bytes. Use snprintf() rather than scnprintf()
+since the return value is not used here.
 
-...
+Signed-off-by: Tomasz Unger <tomasz.unger@yahoo.pl>
+---
+Changes in v2 (per Dan Carpenter's review):
+- Switched from scnprintf() to snprintf(), since the return
+  value is unused.
+- Reworded the commit message: overflow is impossible, not
+  merely unlikely, and dropped detail about where the values
+  come from.
 
-> --- a/arch/arm/include/asm/timex.h
-> +++ b/arch/arm/include/asm/timex.h
-> @@ -10,7 +10,10 @@
->   #define _ASMARM_TIMEX_H
->   
->   typedef unsigned long cycles_t;
-> -#define get_cycles()	({ cycles_t c; read_current_timer(&c) ? 0 : c; })
-> +// Temporary workaround
-> +bool delay_read_timer(unsigned long *t);
-> +
-> +#define get_cycles()	({ cycles_t c; delay_read_timer(&c) ? 0 : c; })
->   #define random_get_entropy() (((unsigned long)get_cycles()) ?: random_get_entropy_fallback())
+Verified with checkpatch.pl - no errors or warnings.
+Compiled the fbtft module successfully with CONFIG_FB_TFT=m.
+fb.ko, syscopyarea.ko, sysimgblt.ko, sysfillrect.ko,
+fb_sys_fops.ko and fbtft.ko all load without errors in a QEMU
+environment (verified via insmod and lsmod, dmesg shows no
+errors).
+---
+ drivers/staging/fbtft/fbtft-core.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index ca0c38221c16..9ea0442a337e 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -784,10 +784,10 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+ 	fbtft_sysfs_init(par);
+ 
+ 	if (par->txbuf.buf && par->txbuf.len >= 1024)
+-		sprintf(text1, ", %zu KiB buffer memory", par->txbuf.len >> 10);
++		snprintf(text1, sizeof(text1), ", %zu KiB buffer memory", par->txbuf.len >> 10);
+ 	if (spi)
+-		sprintf(text2, ", spi%d.%d at %d MHz", spi->controller->bus_num,
+-			spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
++		snprintf(text2, sizeof(text2), ", spi%d.%d at %d MHz", spi->controller->bus_num,
++			 spi_get_chipselect(spi, 0), spi->max_speed_hz / 1000000);
+ 	fb_dbg(fb_info,
+ 	       "%s frame buffer, %dx%d, %d KiB video memory%s, fps=%lu%s\n",
+ 	       fb_info->fix.id, fb_info->var.xres, fb_info->var.yres,
 
-I have noticed a boot regression on some of our 32-bit Tegra platforms. 
-Bisect is pointing to this commit. Making the following change does fix 
-it, as delay_read_timer() now returns a valid value when true ...
+---
+base-commit: 8d3ae59288f1e7d58d76558a6ee96d533bc5019f
+change-id: 20260820-fbtft-v2-final-7891edd1d87e
 
-diff --git a/arch/arm/include/asm/timex.h b/arch/arm/include/asm/timex.h
-index 94e40c19cfc5..4d31eab9dba2 100644
---- a/arch/arm/include/asm/timex.h
-+++ b/arch/arm/include/asm/timex.h
-@@ -13,7 +13,7 @@ typedef unsigned long cycles_t;
-  // Temporary workaround until timex.h is cleaned up
-  bool delay_read_timer(unsigned long *t);
-
--#define get_cycles()   ({ cycles_t c; delay_read_timer(&c) ? 0 : c; })
-+#define get_cycles()   ({ cycles_t c; delay_read_timer(&c) ? c : 0; })
-  #define random_get_entropy() (((unsigned long)get_cycles()) ?: 
-random_get_entropy_fallback())
-
-Cheers
-Jon
-
--- 
-nvpublic
+Best regards,
+--  
+Tomasz Unger <tomasz.unger@yahoo.pl>
 

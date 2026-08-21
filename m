@@ -1,166 +1,219 @@
-Received: from mail-qk1-f173.google.com (mail-qk1-f173.google.com [209.85.222.173])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1922E346E5E
-	for <linux-fbdev@vger.kernel.org>; Fri, 21 Aug 2026 15:15:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 83E0C3101D8;
+	Fri, 21 Aug 2026 15:52:38 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787325350; cv=none; b=cV/dBFlZunuWyP5ys5R4AzL/XodfIid3wmywP//7LMQwJMKxZXZ4dhihRAqtU1nnVWTKJKY3a1rMfJAaz+LLqUK4CpK/bINd+O7WrA9o9ixUPf7vfaFT1weqveKXymeNieJ2zDFnvFjsw/WCn6J1WkD6t6MoNQw2QO+MP3neLVo=
+	t=1787327559; cv=none; b=SMXn9VxZHh/lbART5IsA7fCRwD39MH6POSi8lLXT2XGuPttHel1oqzMvJ9Emevbv0dkloi/Kkh4Rv8JxO3+6GmPZzC8+uwrjiPlf7VgyEAVujlsSUINyJRE2BliWyDJaYiwtlIRUeQzSCKrZbAjxsMB0ZaY1JRiLHbO0Y8aikS8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787325350; c=relaxed/simple;
-	bh=VWprNmqQgfznUUymEi7MLyrplr+mofikIGdmMHvaI5g=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NCfvR7Xv9IPZMUudinfLdM7ll5Cm1mxZjZJ7NxG/ZmBaIcxz3SYasQK4vGznGoZRjqo4e/OFba5pIabLphlrvIraljMr8XR+Af/sXx6nkq6KwV571I2TlUFvHOu3Xjpu7yRYGf10pjg/hEmDnb+EifotFfnmzsuhr7bQIBFPX1c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=E3Exgo4q; arc=none smtp.client-ip=209.85.222.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1787327559; c=relaxed/simple;
+	bh=TvJECTvxT/2wMDvaLcTFs3goog/BJh0knms7i6BRb2g=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=AGmzUmNBLrQKr5K3UFGOwz4Jv1risyuH+ogtc4v+28AW56pHdRO97nEkVGljLizc4rXCfg4tHO4aq+zRtagdRFmgL/ECtZRxUMC3EFuvxwwusZQGXaBKo13Oi/RD3brH8v1hPYuDQ1YNQehLJhTO6QsCkwhYaqILR4lYgQTBRbE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dmMLEt5j; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E3Exgo4q"
-Received: by mail-qk1-f173.google.com with SMTP id af79cd13be357-92e85499ffbso86419585a.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Aug 2026 08:15:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787325348; x=1787930148; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=FpgB6bU5DPvqDeHFBiZr0voqp9OUP9pmguygZ0b0Ukw=;
-        b=E3Exgo4qZG0oOwO1AcEPDff/Spg4iRrss6jmJfCtLD5S8JRHIPWxNhEQ8YAerX3f9h
-         BIhw1H88c5bvd1FP3jAxZ7+3vkWMb+ZWhPzlgVXTR3qKTqLC6WCiIDORQ8N7u5Rs+Jjm
-         qZKgqLsspm5crEcDiJ3P6SsP9BhKk36SyF0Tt1WjGA6i2SrLwnzVgHnG2KM3ssjk+q0L
-         r4fnCtQTNhB61rcPFMYPyTudzFT+GAxNyy2d6I7XlzGkW39GhzzBrPo51mHiMobg/jvm
-         2Vxgr+midgwKskyoPW0P4kT7RTIeidIx15d2yP/2VM/AKzN4U73DSQDWJnmZ7ZDU8XZG
-         SGEg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787325348; x=1787930148;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=FpgB6bU5DPvqDeHFBiZr0voqp9OUP9pmguygZ0b0Ukw=;
-        b=BHTHn2KPIKYeFWZNtdBS77rDkJLpsa9RqHqTMIXyl5N3UT4m+LnUX+D96pYNSt3VPL
-         l+I5c7ExmthMGzfvzzhcCF7/VPDqaZqjDpuETwUj9eUq82ItDn6g7PlIYrYC8BiGCOPi
-         wHB9H9gybjHdAgOFkDw39oXbPnIT/5DIPgj5bskD7RclaVmHGvdK4dueRsr84UGv0VxP
-         6uhFb7ucZKeMu1CT//RHnEdyho2MItEN/bBYE760a/Uo5Tdf8wIqwJfKx+DbD/40jCu2
-         NRIwuk3ivvodXFnlYcNN9YVT+NMCk/BJr0o5O7nWy6HlUIYFS6uXcea+S8gkn3Rvsla0
-         rlcQ==
-X-Gm-Message-State: AOJu0YyNaKo69B0MS0cFVWyodPnUv340bZ6DPPEJ1bx73pQ4EbEjL2FB
-	L4eE3uXxwyfauw8x2oClGcIiR+qyAFA4WfFgRjNp9l1HPq/MoxwTsFWE
-X-Gm-Gg: AR+sD12sy1m9gbiSXiA5fmAkaHFza5pGRWlqI+TopaPbKuAFjclznyLkNS6t9tdBP0s
-	vF7UdX0rCiF6hHT3EMwxArcFwKqicHwIFYFdyChJbIt9lMeT1WEiy7pgcfKHt0lLVMS4IKZXjAi
-	VrH/fCno1JZKxtZboxRhaiLFu50IJaMfxCGzjx8xe66VTNkFDGAz/Or37pHkrTN3IX4u8lHiJdE
-	wLWqR0hMMS/TniuKkmygZWAzXSynsKeSByqL0Kv5UQSs9Cs9gjK3UBDYyrPJnUyPVL3BElrVrRR
-	XCJ26y4LsG2ISSQp7Z8DeNDXzFi6fht4KnDDu6jiF2keJQFGKJosZuy+XDOigwnUPALGJXpGWeP
-	uj6blEv6mMBGRI0pS6v0YZ64koDmAzw5+7qImu3BZ/wzaoK/3xQM6wyxpWbcBAXtmyDHlVR7Lzf
-	jo6yFZxhR1HWesP52hpjyZ9SdCb7sZi0xLUzP/uDrTmg==
-X-Received: by 2002:a05:620a:f0d:b0:936:48f2:b04f with SMTP id af79cd13be357-93739432247mr652456285a.6.1787325347871;
-        Fri, 21 Aug 2026 08:15:47 -0700 (PDT)
-Received: from fedora ([2601:5c2:8600:6e00::18ef])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-93720493f35sm614552785a.9.2026.08.21.08.15.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Aug 2026 08:15:47 -0700 (PDT)
-From: jaiden.linux@gmail.com
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	Jaiden Magnan <jaiden.linux@gmail.com>
-Subject: [PATCH] staging: sm750fb: rename CamelCase variable pvReg to vreg
-Date: Fri, 21 Aug 2026 11:15:25 -0400
-Message-ID: <20260821151525.54751-1-jaiden.linux@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dmMLEt5j"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C686F1F000E9;
+	Fri, 21 Aug 2026 15:52:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787327558;
+	bh=7UmAnCQSK9yiznSJ1ZPkH/Vy/lG/hCl4RASG9HOF5ho=;
+	h=Date:From:To:Subject;
+	b=dmMLEt5jTgQ0+XzhzDE5SVC9Y/gH2pCQUk9SyeUfxgkQzLatTgf1lzyzixf97a2hD
+	 QqiKbv06fSTr4qZFry76Qfv8454B94HRswp8389d4mZlL4mep4c2FqLcxBs0XLD/Tz
+	 tEcNeWxYF40WA1IqgQrwCgPB/DhYed14GV2TD+Wc+3/agK2ICo3ClUQN73CdR3HDU+
+	 Yv93wjXpiMiQnk0dvZIRElE+DDoIpeOAAbJna836+vGeLJMgBtTKIO2YmOYR177ecp
+	 r6BDo7G7hsSJNjr5vxCbY1CsXXSpV7lwVWpKwApPhiMjuCArRKnns0oB8RdVWM+Y3X
+	 MGk4xPzJQTc4A==
+Date: Fri, 21 Aug 2026 17:52:33 +0200
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and updates for v7.3-rc1
+Message-ID: <aoh0QXTIQbgDjAB_@carbonx1>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-From: Jaiden Magnan <jaiden.linux@gmail.com>
+Dear Linus,
 
-Rename CamelCase variable pvReg to vreg. This is to fix the following:
+please pull the fbdev patch collection for kernel v7.3-rc1:
 
-CHECK: Avoid CamelCase <pvReg>
+The usual bunch of many small fixes in various fbdev drivers, but more
+interestingly the Vodoo3/4/5 cards will now be initialized even without PC BIOS
+support and vintage Atari computers gain more color depths and console
+acceleration on SuperVidel's SuperBlitter chips.
 
-Assisted-by: LLM
-Signed-off-by: Jaiden Magnan <jaiden.linux@gmail.com>
----
- drivers/staging/sm750fb/sm750.c    |  4 ++--
- drivers/staging/sm750fb/sm750.h    |  2 +-
- drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
- 3 files changed, 9 insertions(+), 9 deletions(-)
+Thanks!
+Helge
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 89c811e0806c..0bfda7508bb5 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -743,7 +743,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 	 * must be set after crtc member initialized
- 	 */
- 	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
--	crtc->cursor.mmio = sm750_dev->pvReg +
-+	crtc->cursor.mmio = sm750_dev->vreg +
- 		0x800f0 + (int)crtc->channel * 0x140;
- 
- 	crtc->cursor.max_h = 64;
-@@ -1047,7 +1047,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
- 	sm750fb_framebuffer_release(sm750_dev);
- 	arch_phys_wc_del(sm750_dev->mtrr.vram);
- 
--	iounmap(sm750_dev->pvReg);
-+	iounmap(sm750_dev->vreg);
- 	iounmap(sm750_dev->vmem);
- 	pci_release_region(pdev, 1);
- 	kfree(g_settings);
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index d2c522e67f26..a40dbcc2e6c8 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -97,7 +97,7 @@ struct sm750_dev {
- 	unsigned long vidreg_start;
- 	__u32 vidmem_size;
- 	__u32 vidreg_size;
--	void __iomem *pvReg;
-+	void __iomem *vreg;
- 	unsigned char __iomem *vmem;
- 	/* locks*/
- 	spinlock_t slock;
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 34a837fb4b64..03c951619c70 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -23,18 +23,18 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	}
- 
- 	/* now map mmio and vidmem */
--	sm750_dev->pvReg =
-+	sm750_dev->vreg =
- 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
--	if (!sm750_dev->pvReg) {
-+	if (!sm750_dev->vreg) {
- 		dev_err(&pdev->dev, "mmio failed\n");
- 		ret = -EFAULT;
- 		goto err_release_region;
- 	}
- 
--	sm750_dev->accel.dpr_base = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
--	sm750_dev->accel.dp_port_base = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
-+	sm750_dev->accel.dpr_base = sm750_dev->vreg + DE_BASE_ADDR_TYPE1;
-+	sm750_dev->accel.dp_port_base = sm750_dev->vreg + DE_PORT_ADDR_TYPE1;
- 
--	mmio750 = sm750_dev->pvReg;
-+	mmio750 = sm750_dev->vreg;
- 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
- 
- 	sm750_dev->vidmem_start = pci_resource_start(pdev, 0);
-@@ -58,7 +58,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	return 0;
- 
- err_unmap_reg:
--	iounmap(sm750_dev->pvReg);
-+	iounmap(sm750_dev->vreg);
- err_release_region:
- 	pci_release_region(pdev, 1);
- 	return ret;
--- 
-2.55.0
+----------------------------------------------------------------
+The following changes since commit db2ddb87143519e20a95aa36c60b36107b736a58:
 
+  Linux 7.2-rc7 (2026-08-09 14:54:50 -0700)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.3-rc1
+
+for you to fetch changes up to d463633d63e6aa10384683bf39971a4b00780c56:
+
+  fbdev: atafb: Add support for SuperVidel's SuperBlitter (2026-08-21 00:02:41 +0200)
+
+----------------------------------------------------------------
+fbdev code updates for 7.3-rc1:
+
+New features:
+- tdfxfb: Allow Vodoo3/4/5 card to be initialized without PC-BIOS [Daniel Palmer]
+- atafb: Add support for SuperVidel's SuperBlitter [Miro Kropacek]
+- atafb: Add further video bit depths [Miro Kropacek]
+- sticon/parisc: Detect default graphics card for console output [Helge Deller]
+
+Fixes:
+- kyro: Validate overlay viewport coordinates [Danila Chernetsov]
+- platinumfb: add error checking for ioremap calls [BingKun Yue]
+- ssd1307fb: damage callback fixes [Hui Su]
+- maxine: fix 64-bit build error and code cleanups [Randy Dunlap]
+- omapfb: panel-dsi-cm: initialize lock before registering display [Runyu Xiao]
+- core: Clamp total_size to smem_len in read/write functions [Mingyu Wang]
+- uvesafb, tdxfb: failure path cleanups [Myeonghun Pak]
+- udlfb: validate DisplayLink vendor descriptor items before usage [Pengpeng Hou]
+
+Cleanups:
+- Convert multiple drivers to managed PCI and ioremap API [Shixiong Ou]
+- Remove redundant dev_err() from multiple drivers [Pan Chuang]
+- omap2: do not copy isr table [Andreas Kemnade]
+- pvr2fb: correct user pointer annotation and sentinel initializer [Florian Fuchs]
+- mb862xxfb: silence possibly unused functions [Helge Deller]
+- au1100fb: drop unneeded semicolon [Julia Lawall]
+- clps711x-fb: remove unreachable code [Karl Mehltretter]
+- viafb: refactor strcpy call [Ajith P V]
+- sstfb: add missing MODULE_DEVICE_TABLE() [Pengpeng Hou]
+- mb862xx: replace dead Kconfig select with dependency [Julian Braha]
+
+Documentation fixes:
+- fonts: fixup font.h kernel-doc warnings [Randy Dunlap]
+
+----------------------------------------------------------------
+Ajith P V (1):
+      fbdev: viafb: refactor strcpy and viafb_name
+
+Andreas Kemnade (1):
+      fbdev: omap2: dsi: do not copy isr table
+
+BingKun Yue (1):
+      fbdev: platinumfb: add error checking for ioremap calls
+
+Daniel Palmer (5):
+      fbdev: tdfxfb: Add helper to read config table from BIOS
+      fbdev: tdfxfb: Attempt to detect if the card wasn't booted
+      fbdev: tdfxfb: Manually boot unbooted cards
+      fbdev: tdfxfb: Wake the VGA core before programming the CRTC
+      fbdev: tdfxfb: Program the initial video mode
+
+Danila Chernetsov (1):
+      fbdev: kyro: Validate overlay viewport coordinates
+
+Florian Fuchs (1):
+      fbdev: pvr2fb: correct user pointer annotation and sentinel initializer
+
+Helge Deller (2):
+      sticon/parisc: Detect default STI graphics card for console output
+      fbdev: mb862xxfb: Silence possibly unused functions
+
+Hui Su (1):
+      fbdev: ssd1307fb: defer I2C transfers from damage callbacks
+
+Julia Lawall (1):
+      fbdev: au1100fb: drop unneeded semicolon
+
+Julian Braha (1):
+      fbdev: mb862xx: replace dead select with dependency
+
+Karl Mehltretter (1):
+      fbdev: clps711x-fb: Remove unreachable unregister_framebuffer() call
+
+Mingyu Wang (1):
+      fbdev: core: Clamp total_size to smem_len in read/write functions
+
+Miro Kropacek (3):
+      fbdev: atafb: Give atafb proper parent
+      fbdev: atafb: Add support for further video bit depths on atafb:external
+      fbdev: atafb: Add support for SuperVidel's SuperBlitter
+
+Myeonghun Pak (2):
+      fbdev: uvesafb: unregister connector callback on init failure
+      fbdev: tdfxfb: fix PCI enable cleanup with pcim_enable_device()
+
+Pan Chuang (7):
+      fbdev: mmp: Remove redundant dev_err()
+      fbdev: omapfb/dsi-cm: Remove redundant dev_err()
+      fbdev: pxa168fb: Remove redundant dev_err()
+      fbdev: pxa3xx-gcu: Remove redundant dev_err()
+      fbdev: pxafb: Remove redundant dev_err()
+      fbdev: s3c-fb: Remove redundant dev_err()
+      fbdev: sa1100fb: Remove redundant dev_err()
+
+Pengpeng Hou (2):
+      fbdev: sstfb: add missing MODULE_DEVICE_TABLE()
+      fbdev: udlfb: validate vendor descriptor items
+
+Randy Dunlap (6):
+      fonts: fixup font.h kernel-doc warnings
+      fbdev: maxine: make functions static
+      fbdev: maxine: elide an unused function
+      fbdev: maxine: fix 64-bit build error
+      fbdev: maxine: fix maxinefb_init() return value
+      fbdev: maxine: use MODULE_LICENSE() unconditionally
+
+Runyu Xiao (1):
+      fbdev: omapfb: panel-dsi-cm: initialize lock before registering display
+
+Shixiong Ou (5):
+      fbdev: aty128fb: Convert to managed PCI and ioremap API
+      fbdev: nvidia: Convert to managed PCI and ioremap API
+      fbdev: savage: Convert to managed PCI and ioremap API
+      fbdev: matrox: Convert to managed PCI and ioremap API
+      fbdev: atyfb: Convert to managed PCI and ioremap API
+
+ drivers/video/fbdev/Kconfig                        |   3 +-
+ drivers/video/fbdev/atafb.c                        | 458 +++++++++++++++++----
+ drivers/video/fbdev/aty/aty128fb.c                 |  40 +-
+ drivers/video/fbdev/aty/atyfb_base.c               |  47 +--
+ drivers/video/fbdev/au1100fb.c                     |   2 +-
+ drivers/video/fbdev/clps711x-fb.c                  |   2 -
+ drivers/video/fbdev/core/fb_io_fops.c              |  16 +
+ drivers/video/fbdev/core/fb_sys_fops.c             |  16 +
+ drivers/video/fbdev/kyro/fbdev.c                   |  24 +-
+ drivers/video/fbdev/matrox/matroxfb_base.c         |  30 +-
+ drivers/video/fbdev/maxinefb.c                     |  15 +-
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c         |   6 +-
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c              |   2 -
+ drivers/video/fbdev/nvidia/nvidia.c                |  19 +-
+ .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     |   8 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c         |   9 +-
+ drivers/video/fbdev/platinumfb.c                   |  35 +-
+ drivers/video/fbdev/pvr2fb.c                       |   4 +-
+ drivers/video/fbdev/pxa168fb.c                     |   1 -
+ drivers/video/fbdev/pxa3xx-gcu.c                   |   4 +-
+ drivers/video/fbdev/pxafb.c                        |   1 -
+ drivers/video/fbdev/s3c-fb.c                       |   4 +-
+ drivers/video/fbdev/sa1100fb.c                     |   4 +-
+ drivers/video/fbdev/savage/savagefb_driver.c       |  16 +-
+ drivers/video/fbdev/ssd1307fb.c                    |  72 +++-
+ drivers/video/fbdev/sstfb.c                        |   1 +
+ drivers/video/fbdev/tdfxfb.c                       | 157 ++++++-
+ drivers/video/fbdev/udlfb.c                        |  22 +-
+ drivers/video/fbdev/uvesafb.c                      |   2 +
+ drivers/video/fbdev/via/viafbdev.c                 |   3 +-
+ drivers/video/sticore.c                            |  22 +-
+ include/linux/font.h                               |   4 +-
+ include/video/maxinefb.h                           |   4 +-
+ 33 files changed, 797 insertions(+), 256 deletions(-)

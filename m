@@ -1,275 +1,166 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-f173.google.com (mail-qk1-f173.google.com [209.85.222.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0521D4334A6;
-	Fri, 21 Aug 2026 08:14:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1922E346E5E
+	for <linux-fbdev@vger.kernel.org>; Fri, 21 Aug 2026 15:15:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787300047; cv=none; b=rAU7SAHk4w/KOIGb8kj5F3ctcXu4ZndE/BEWvsbqwGkdgeS+SghOLouYVH3Mpry9ix6s4XTQM3534eMNGCg0+MZcipYwG4kxh74fsxZOIJ6NRpBCiD0FJbfTBQX8cRumUiFcac7uYK04PVdz4AqAX1xD90qeTdW9/OJ6fpGvM1I=
+	t=1787325350; cv=none; b=cV/dBFlZunuWyP5ys5R4AzL/XodfIid3wmywP//7LMQwJMKxZXZ4dhihRAqtU1nnVWTKJKY3a1rMfJAaz+LLqUK4CpK/bINd+O7WrA9o9ixUPf7vfaFT1weqveKXymeNieJ2zDFnvFjsw/WCn6J1WkD6t6MoNQw2QO+MP3neLVo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787300047; c=relaxed/simple;
-	bh=BjA+7zOM0P3gCe7JmK7M3N1TWCYGL09+O6wcESdaF2s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=d1Hj63Tb15RL4RXk9jUT+492oqEGCT0CaSMR2JHwHJsFsutEcMUrLmafxipTb4QRLUgwqTp7MbCVrKj/y1071ljXGW8Cfg9ZpdQLvWlQ05l0Z7claDnV21dI1sqeJt1sHPFZHXDKspZbhI2GjZQYDJUMCc0XJy99aJP+pVI3KPs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=fR2oN5oO; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787325350; c=relaxed/simple;
+	bh=VWprNmqQgfznUUymEi7MLyrplr+mofikIGdmMHvaI5g=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NCfvR7Xv9IPZMUudinfLdM7ll5Cm1mxZjZJ7NxG/ZmBaIcxz3SYasQK4vGznGoZRjqo4e/OFba5pIabLphlrvIraljMr8XR+Af/sXx6nkq6KwV571I2TlUFvHOu3Xjpu7yRYGf10pjg/hEmDnb+EifotFfnmzsuhr7bQIBFPX1c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=E3Exgo4q; arc=none smtp.client-ip=209.85.222.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="fR2oN5oO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 668BF1F000E9;
-	Fri, 21 Aug 2026 08:14:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787300045;
-	bh=mu3+VK3ISRUdF3OJOLxNYQ1Sn/6+qFNCbg3T5ZXJxBg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=fR2oN5oO0bRCmlosf1ulDx8FrDlOhXY0lC6fXO0//MqnH5HYKEz5Obeb2yl+vPW0m
-	 bVn/EbMftMn0Si5paf55JFUDHEEe0nf2FKcDkrGwyCluT5kyIHxNI8upSkG3Rn9asK
-	 JFKLIafU3DjC6/62w5o7oM/xlsh+4HGSdP88zO+Qs/RHTs2e9cxe64Ncqd1ioO0t0a
-	 We+AEV5ij0+T83XJ9I5An5Hjqy3rHJMNH8b8LTQmS/Cr9A5VOC8N7Cfjr4NPSC4yn2
-	 jYmDjTIQoLEPBRcbjOimsrlkcafGk4IOUdLe95TSfCRW3JVMzwTtWmHUqmY3AT4niR
-	 UfTKVrEVBOOsw==
-Date: Fri, 21 Aug 2026 10:14:00 +0200
-From: Helge Deller <deller@kernel.org>
-To: Jaeyoung Chung <jjy600901@snu.ac.kr>
-Cc: deller@gmx.de, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, simona@ffwll.ch, tzimmermann@suse.de,
-	linux-kernel@vger.kernel.org, eulgyukim@snu.ac.kr
-Subject: Re: [BUG] KASAN: slab-out-of-bounds Read in soft_cursor
-Message-ID: <aogIyAk7AJ-uFP72@carbonx1>
-References: <20260819163440.3702924-1-jjy600901@snu.ac.kr>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E3Exgo4q"
+Received: by mail-qk1-f173.google.com with SMTP id af79cd13be357-92e85499ffbso86419585a.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Aug 2026 08:15:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787325348; x=1787930148; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=FpgB6bU5DPvqDeHFBiZr0voqp9OUP9pmguygZ0b0Ukw=;
+        b=E3Exgo4qZG0oOwO1AcEPDff/Spg4iRrss6jmJfCtLD5S8JRHIPWxNhEQ8YAerX3f9h
+         BIhw1H88c5bvd1FP3jAxZ7+3vkWMb+ZWhPzlgVXTR3qKTqLC6WCiIDORQ8N7u5Rs+Jjm
+         qZKgqLsspm5crEcDiJ3P6SsP9BhKk36SyF0Tt1WjGA6i2SrLwnzVgHnG2KM3ssjk+q0L
+         r4fnCtQTNhB61rcPFMYPyTudzFT+GAxNyy2d6I7XlzGkW39GhzzBrPo51mHiMobg/jvm
+         2Vxgr+midgwKskyoPW0P4kT7RTIeidIx15d2yP/2VM/AKzN4U73DSQDWJnmZ7ZDU8XZG
+         SGEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787325348; x=1787930148;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=FpgB6bU5DPvqDeHFBiZr0voqp9OUP9pmguygZ0b0Ukw=;
+        b=BHTHn2KPIKYeFWZNtdBS77rDkJLpsa9RqHqTMIXyl5N3UT4m+LnUX+D96pYNSt3VPL
+         l+I5c7ExmthMGzfvzzhcCF7/VPDqaZqjDpuETwUj9eUq82ItDn6g7PlIYrYC8BiGCOPi
+         wHB9H9gybjHdAgOFkDw39oXbPnIT/5DIPgj5bskD7RclaVmHGvdK4dueRsr84UGv0VxP
+         6uhFb7ucZKeMu1CT//RHnEdyho2MItEN/bBYE760a/Uo5Tdf8wIqwJfKx+DbD/40jCu2
+         NRIwuk3ivvodXFnlYcNN9YVT+NMCk/BJr0o5O7nWy6HlUIYFS6uXcea+S8gkn3Rvsla0
+         rlcQ==
+X-Gm-Message-State: AOJu0YyNaKo69B0MS0cFVWyodPnUv340bZ6DPPEJ1bx73pQ4EbEjL2FB
+	L4eE3uXxwyfauw8x2oClGcIiR+qyAFA4WfFgRjNp9l1HPq/MoxwTsFWE
+X-Gm-Gg: AR+sD12sy1m9gbiSXiA5fmAkaHFza5pGRWlqI+TopaPbKuAFjclznyLkNS6t9tdBP0s
+	vF7UdX0rCiF6hHT3EMwxArcFwKqicHwIFYFdyChJbIt9lMeT1WEiy7pgcfKHt0lLVMS4IKZXjAi
+	VrH/fCno1JZKxtZboxRhaiLFu50IJaMfxCGzjx8xe66VTNkFDGAz/Or37pHkrTN3IX4u8lHiJdE
+	wLWqR0hMMS/TniuKkmygZWAzXSynsKeSByqL0Kv5UQSs9Cs9gjK3UBDYyrPJnUyPVL3BElrVrRR
+	XCJ26y4LsG2ISSQp7Z8DeNDXzFi6fht4KnDDu6jiF2keJQFGKJosZuy+XDOigwnUPALGJXpGWeP
+	uj6blEv6mMBGRI0pS6v0YZ64koDmAzw5+7qImu3BZ/wzaoK/3xQM6wyxpWbcBAXtmyDHlVR7Lzf
+	jo6yFZxhR1HWesP52hpjyZ9SdCb7sZi0xLUzP/uDrTmg==
+X-Received: by 2002:a05:620a:f0d:b0:936:48f2:b04f with SMTP id af79cd13be357-93739432247mr652456285a.6.1787325347871;
+        Fri, 21 Aug 2026 08:15:47 -0700 (PDT)
+Received: from fedora ([2601:5c2:8600:6e00::18ef])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-93720493f35sm614552785a.9.2026.08.21.08.15.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 21 Aug 2026 08:15:47 -0700 (PDT)
+From: jaiden.linux@gmail.com
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	Jaiden Magnan <jaiden.linux@gmail.com>
+Subject: [PATCH] staging: sm750fb: rename CamelCase variable pvReg to vreg
+Date: Fri, 21 Aug 2026 11:15:25 -0400
+Message-ID: <20260821151525.54751-1-jaiden.linux@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260819163440.3702924-1-jjy600901@snu.ac.kr>
+Content-Transfer-Encoding: 8bit
 
-* Jaeyoung Chung <jjy600901@snu.ac.kr>:
-> Hello,
-> 
-> We found a "KASAN: slab-out-of-bounds Read in soft_cursor" on Linux v7.2.
-> The issue was found by our own race fuzzer. We have not analyzed the root
-> cause, so we do not have a proposed fix to offer.
-> 
-> To reproduce the race reliably, we applied the delay patch below to the
-> kernel and ran the C reproducer as root inside an x86_64 QEMU guest. The
-> crash log we observed, the delay patch and the reproducer are all included
-> below.
-> 
-> The following kernel config options are required to reproduce the issue:
->     CONFIG_VT=y
->     CONFIG_VT_CONSOLE=y
->     CONFIG_FB=y
->     CONFIG_FB_CORE=y
->     CONFIG_FRAMEBUFFER_CONSOLE=y
->     CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
->     CONFIG_FONT_SUPPORT=y
->     CONFIG_FONT_8x16=y
->     CONFIG_DRM=y
->     CONFIG_DRM_BOCHS=y
->     CONFIG_DRM_FBDEV_EMULATION=y
->     CONFIG_KASAN=y
-> 
-> We hope this report is useful. Please let us know if any further
-> information would help.
-> 
-> Reported-by: Eulgyu Kim <eulgyukim@snu.ac.kr>
-> Reported-by: Jaeyoung Chung <jjy600901@snu.ac.kr>
-> 
-> Kernel delay patch:
-> ==================================================================
-> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-> index 8f467b22b799..e4d9233c4f5f 100644
-> --- a/drivers/tty/vt/vt.c
-> +++ b/drivers/tty/vt/vt.c
-> @@ -86,6 +86,7 @@
->  #include <linux/major.h>
->  #include <linux/mm.h>
->  #include <linux/console.h>
-> +#include <linux/delay.h>
->  #include <linux/init.h>
->  #include <linux/mutex.h>
->  #include <linux/vt_kern.h>
-> @@ -4979,6 +4980,9 @@ static int con_font_set(struct vc_data *vc, const struct console_font_op *op)
->  	font.width = op->width;
->  	font.height = op->height;
->  
-> +	if (!strncmp(current->comm, "syzrepro", 8) &&
-> +	    op->width == 32 && op->height == 30 && op->charcount == 512)
-> +		mdelay(100);
->  	guard(console_lock)();
->  
->  	if (vc->vc_mode != KD_TEXT)
-> diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
-> index 6cdbc96eeca6..f4797dc2dd78 100644
-> --- a/drivers/video/fbdev/core/fbcon_rotate.c
-> +++ b/drivers/video/fbdev/core/fbcon_rotate.c
-> @@ -9,6 +9,8 @@
->   */
->  
->  #include <linux/errno.h>
-> +#include <linux/delay.h>
-> +#include <linux/string.h>
->  #include <linux/fb.h>
->  #include <linux/font.h>
->  
-> @@ -38,6 +40,9 @@ int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
->  		ret = PTR_ERR(buf);
->  		goto err_kfree;
->  	}
-> +	if (!strncmp(current->comm, "syzrepro", 8) &&
-> +	    par->rotated.bufsize == 4096)
-> +		mdelay(50);
->  
->  	par->rotated.buf = buf;
->  
-> ==================================================================
-> 
-> C reproducer:
-> ==================================================================
-> #define _GNU_SOURCE
-> #include <fcntl.h>
-> #include <linux/kd.h>
-> #include <pthread.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <sys/ioctl.h>
-> #include <sys/prctl.h>
-> #include <unistd.h>
-> 
-> #define SYSCHK(x) ({ long __r = (long)(x); if (__r == -1L) { perror(#x); exit(1); } __r; })
-> 
-> static pthread_barrier_t start;
-> static unsigned char font[4U * 32U * 512U];
-> 
-> static void *rotate_thread(void *arg)
-> {
-> 	int fd;
-> 
-> 	prctl(PR_SET_NAME, "syzrepro0", 0, 0, 0);
-> 	pthread_barrier_wait(&start);
-> 	fd = SYSCHK(open("/sys/class/graphics/fbcon/rotate_all", O_WRONLY));
-> 	SYSCHK(write(fd, "1", 1));
-> 	close(fd);
-> 	return NULL;
-> }
-> 
-> static void *font_thread(void *arg)
-> {
-> 	struct console_font_op op = { .op = KD_FONT_OP_SET, .width = 32,
-> 				      .height = 30, .charcount = 512, .data = font };
-> 	int fd;
-> 
-> 	prctl(PR_SET_NAME, "syzrepro1", 0, 0, 0);
-> 	pthread_barrier_wait(&start);
-> 	fd = SYSCHK(open("/dev/tty1", O_RDWR | O_NOCTTY));
-> 	ioctl(fd, KDFONTOP, &op);
-> 	close(fd);
-> 	return NULL;
-> }
-> 
-> int main(void)
-> {
-> 	pthread_t t[2];
-> 
-> 	memset(font, 0x5a, sizeof(font));
-> 	pthread_barrier_init(&start, NULL, 2);
-> 	pthread_create(&t[0], NULL, rotate_thread, NULL);
-> 	pthread_create(&t[1], NULL, font_thread, NULL);
-> 	pthread_join(t[0], NULL);
-> 	pthread_join(t[1], NULL);
-> 	return 0;
-> }
-> ==================================================================
-> 
-> 
-> Crash log:
-> ==================================================================
-> BUG: KASAN: slab-out-of-bounds in soft_cursor+0x3eb/0xb70 drivers/video/fbdev/core/softcursor.c:70
-> Read of size 128 at addr ffff88810792d000 by task syzrepro1/401
-> 
-> CPU: 2 UID: 0 PID: 401 Comm: syzrepro1 Not tainted 7.2.0-dirty #1 PREEMPT 
-> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.13.0-1ubuntu1.1 04/01/2014
-> Call Trace:
->  <TASK>
->  dump_stack_lvl+0x5e/0x80 lib/dump_stack.c:120
->  print_address_description+0x77/0x200 mm/kasan/report.c:378
->  print_report+0x64/0x70 mm/kasan/report.c:482
->  kasan_report+0x118/0x150 mm/kasan/report.c:595
->  check_region_inline mm/kasan/generic.c:-1 [inline]
->  kasan_check_range+0x2b0/0x2c0 mm/kasan/generic.c:200
->  __asan_memcpy+0x29/0x70 mm/kasan/shadow.c:105
->  soft_cursor+0x3eb/0xb70 drivers/video/fbdev/core/softcursor.c:70
->  cw_cursor+0x1322/0x2080 drivers/video/fbdev/core/fbcon_cw.c:324
->  hide_cursor+0x84/0x350 drivers/tty/vt/vt.c:884
->  redraw_screen+0x3b9/0xcb0 drivers/tty/vt/vt.c:986
->  vc_do_resize+0xe4f/0x1490 drivers/tty/vt/vt.c:1310
->  vc_resize include/linux/vt_kern.h:49 [inline]
->  fbcon_do_set_font+0x666/0x1980 drivers/video/fbdev/core/fbcon.c:2435
->  fbcon_set_font+0x50c/0x750 drivers/video/fbdev/core/fbcon.c:2518
->  con_font_set drivers/tty/vt/vt.c:4996 [inline]
->  con_font_op+0x91b/0xdc0 drivers/tty/vt/vt.c:5036
->  vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
->  vt_ioctl+0x719/0x1660 drivers/tty/vt/vt_ioctl.c:745
->  tty_ioctl+0x89c/0xa40 drivers/tty/tty_io.c:2792
->  vfs_ioctl fs/ioctl.c:51 [inline]
->  __do_sys_ioctl fs/ioctl.c:597 [inline]
->  __se_sys_ioctl+0xb6/0x100 fs/ioctl.c:583
->  do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
->  do_syscall_64+0xf7/0x370 arch/x86/entry/syscall_64.c:94
->  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+From: Jaiden Magnan <jaiden.linux@gmail.com>
 
-I think we need to hide the cursor (in addition to drop the selection).
-The position of both may be outside the new screen limits when changing
-font sizes.
+Rename CamelCase variable pvReg to vreg. This is to fix the following:
 
-Can you test the patch below?
+CHECK: Avoid CamelCase <pvReg>
 
-Helge
+Assisted-by: LLM
+Signed-off-by: Jaiden Magnan <jaiden.linux@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c    |  4 ++--
+ drivers/staging/sm750fb/sm750.h    |  2 +-
+ drivers/staging/sm750fb/sm750_hw.c | 12 ++++++------
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-
-From a383c7ac62d839a94ceb53ad363ccba541165c4a Mon Sep 17 00:00:00 2001
-From: Helge Deller <deller@gmx.de>
-Date: Fri, 21 Aug 2026 10:01:22 +0200
-Subject: [PATCH] vt: hide cursor prior to font changes to avoid out-of-bound
- reads
-
-When changing the size of a sceen font, the amount of columns and rows
-on a screen may change and thus the current position of the cursor and
-the selection may suddenly lay outside of the current screen limits.
-This may lead to slab-out-of-bounds errors as reported by KASAN.
-
-Reported-by: Jaeyoung Chung <jjy600901@snu.ac.kr>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Link: https://lore.kernel.org/all/20260819163440.3702924-1-jjy600901@snu.ac.kr/
-
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 8f467b22b799..30c6ea48c338 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -4986,8 +4986,8 @@ static int con_font_set(struct vc_data *vc, const struct console_font_op *op)
- 	if (!vc->vc_sw->con_font_set)
- 		return -ENOSYS;
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 89c811e0806c..0bfda7508bb5 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -743,7 +743,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 	 * must be set after crtc member initialized
+ 	 */
+ 	crtc->cursor.offset = crtc->o_screen + crtc->vidmem_size - 1024;
+-	crtc->cursor.mmio = sm750_dev->pvReg +
++	crtc->cursor.mmio = sm750_dev->vreg +
+ 		0x800f0 + (int)crtc->channel * 0x140;
  
--	if (vc_is_sel(vc))
--		clear_selection();
-+	/* hide selection and cursor - due to font size change they might be outside of screen afterwards */
-+	hide_cursor(vc);
+ 	crtc->cursor.max_h = 64;
+@@ -1047,7 +1047,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
+ 	sm750fb_framebuffer_release(sm750_dev);
+ 	arch_phys_wc_del(sm750_dev->mtrr.vram);
  
- 	return vc->vc_sw->con_font_set(vc, &font, vpitch, op->flags);
- }
-@@ -5011,8 +5011,9 @@ static int con_font_default(struct vc_data *vc, struct console_font_op *op)
- 		if (!vc->vc_sw->con_font_default)
- 			return -ENOSYS;
+-	iounmap(sm750_dev->pvReg);
++	iounmap(sm750_dev->vreg);
+ 	iounmap(sm750_dev->vmem);
+ 	pci_release_region(pdev, 1);
+ 	kfree(g_settings);
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index d2c522e67f26..a40dbcc2e6c8 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -97,7 +97,7 @@ struct sm750_dev {
+ 	unsigned long vidreg_start;
+ 	__u32 vidmem_size;
+ 	__u32 vidreg_size;
+-	void __iomem *pvReg;
++	void __iomem *vreg;
+ 	unsigned char __iomem *vmem;
+ 	/* locks*/
+ 	spinlock_t slock;
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 34a837fb4b64..03c951619c70 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -23,18 +23,18 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	}
  
--		if (vc_is_sel(vc))
--			clear_selection();
-+		/* hide selection and cursor - due to font size change they might be outside of screen afterwards */
-+		hide_cursor(vc);
-+
- 		int ret = vc->vc_sw->con_font_default(vc, &font, s);
- 		if (ret)
- 			return ret;
+ 	/* now map mmio and vidmem */
+-	sm750_dev->pvReg =
++	sm750_dev->vreg =
+ 		ioremap(sm750_dev->vidreg_start, sm750_dev->vidreg_size);
+-	if (!sm750_dev->pvReg) {
++	if (!sm750_dev->vreg) {
+ 		dev_err(&pdev->dev, "mmio failed\n");
+ 		ret = -EFAULT;
+ 		goto err_release_region;
+ 	}
+ 
+-	sm750_dev->accel.dpr_base = sm750_dev->pvReg + DE_BASE_ADDR_TYPE1;
+-	sm750_dev->accel.dp_port_base = sm750_dev->pvReg + DE_PORT_ADDR_TYPE1;
++	sm750_dev->accel.dpr_base = sm750_dev->vreg + DE_BASE_ADDR_TYPE1;
++	sm750_dev->accel.dp_port_base = sm750_dev->vreg + DE_PORT_ADDR_TYPE1;
+ 
+-	mmio750 = sm750_dev->pvReg;
++	mmio750 = sm750_dev->vreg;
+ 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
+ 
+ 	sm750_dev->vidmem_start = pci_resource_start(pdev, 0);
+@@ -58,7 +58,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	return 0;
+ 
+ err_unmap_reg:
+-	iounmap(sm750_dev->pvReg);
++	iounmap(sm750_dev->vreg);
+ err_release_region:
+ 	pci_release_region(pdev, 1);
+ 	return ret;
+-- 
+2.55.0
 

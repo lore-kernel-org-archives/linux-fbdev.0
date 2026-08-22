@@ -1,64 +1,84 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f199.google.com (mail-oi1-f199.google.com [209.85.167.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 612E93603C2;
-	Fri, 21 Aug 2026 16:56:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8780E234973
+	for <linux-fbdev@vger.kernel.org>; Sat, 22 Aug 2026 04:32:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.199
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787331394; cv=none; b=F9E1XjyFZLdWBqjcnxFNceGjFKDYbCeDKtb6DK3TK4pQUjfWXfSwgX+ZTgd5+TTpr8Y1rCJOramVYrhwcOSU/mE0VGwr3BdWw3I2AKhC9+T3hx3Th40FkZIbaTsmE84bt6GFqVBWN1Y3gz2FovlH8JkJbynmS9v91ED5rEtbj+s=
+	t=1787373153; cv=none; b=JJDrUcHuH2Y39sUAfyTL1gSOJeJOAjpiptZGYWsV9B169N+S8/zQiBPn5TLEstTiA5iPFgTF1S1L3ocvOSs4QFKxnghMUCr2isgy8a+NoCgQ9E8rR3vxWUoLrTK2pZgaZ/QVpll6HqbgtQAmTT8HqPofeh0Iby8dwn17y8EvSyI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787331394; c=relaxed/simple;
-	bh=1VJrhM6rFC7EbfomiawKNjSdR9+WgFXfwlzPwDScouw=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=pPdLZxEcG74abMZyFRgfldX5/T1nGBC0FuywKFwjexCJaSaQ5DV0cHyvJwua6NpW/SRZ/2batDftFiK+LGFfr3vTAUJRS+7xIzku2hROc3HfNaONjGvCQFp7fsOxNtOhj6l2DOfEG5c/hSpotK2aGXB6RUVPh9qPhIQrJ/6z7N0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HME5CV05; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HME5CV05"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4650F1F000E9;
-	Fri, 21 Aug 2026 16:56:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787331393;
-	bh=LU6lUdJZu7Xg+V0AStShUedGkhyFT7zl6U/m5ST954I=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=HME5CV05j3WUvoBpTjWHslotu8f4QngXMecLV3FIXhDaHKL8rEQ4G3tslTU9pBmi0
-	 SUKYZZD7nhxBsmQkgrIPz7qfuM1XCX4pD1pzjQKGjRMR+jB+YkNFHSTgVd6injzPqI
-	 VFUCYkLJX7k19RDilHMO17u5Lo9P8eyPFEUblt9FbWwGfqrP3fkM5ecWGLVzXd3dNi
-	 2HHEmsM0t3q9y4xFuTAxNxnBX1kTXy1w6niI9548pdrTnYFEVzTSJP4FGyeIxlJwR3
-	 6f0ft4r788F4bH//lLFcgrT/ymc7wsEW1KFdca6RMGbkYXagNtyxj8feYj3B5lpuW8
-	 3OBosucenbYrQ==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 19AD1380AA76;
-	Fri, 21 Aug 2026 16:55:44 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev fixes and updates for v7.3-rc1
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <aoh0QXTIQbgDjAB_@carbonx1>
-References: <aoh0QXTIQbgDjAB_@carbonx1>
-X-PR-Tracked-List-Id: Direct Rendering Infrastructure - Development
- <dri-devel.lists.freedesktop.org>
-X-PR-Tracked-Message-Id: <aoh0QXTIQbgDjAB_@carbonx1>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.3-rc1
-X-PR-Tracked-Commit-Id: d463633d63e6aa10384683bf39971a4b00780c56
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 531ed942bb0df04f6747983fecdedce76a22d07f
-Message-Id: <178733134265.1393585.15591611200509777280.pr-tracker-bot@kernel.org>
-Date: Fri, 21 Aug 2026 16:55:42 +0000
-To: Helge Deller <deller@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+	s=arc-20240116; t=1787373153; c=relaxed/simple;
+	bh=yuDckLYJsB3en37z4MyHgr7MxkPiremxYff/2JSGjOo=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=Qoq29JzCg01s1u5L0Npb49fAu4szPA7ORO725Ow5vi/ZWMmt+MPF6KRD+p9ED4TvYo7qaGKSTmbDYoqTVLf0aW5piBNAvfheO9Sf57rz9YlaTA5icM2i0YZzQfLL4822XO1jkKXzaawpodSRwlEZc3xPIvzAhVGfl1KD3VY/nuA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.199
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oi1-f199.google.com with SMTP id 5614622812f47-4b1bc2e44e0so3124536b6e.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Aug 2026 21:32:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787373151; x=1787977951;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=kFPJ+40TyxyYPL/NHbCx3BNGd4L5TspWxKmyoIoaHqY=;
+        b=kvXLY4KBm06EXblVfzFxhxI13GlrmFAMxMTthb+C9IMEYpZHrRflUnj262B1nsr3MT
+         0Wm7EFLogZtBiVlY3+PHBCguyxo5BidvKtcxBWXBRjUvu7z6CquD/Q4F2ExjMssmikUF
+         oE3fadf2v5txDZKm3brQdCvwk1xn0gyGlZ/pQz/rFQqUcPFoTlLu1lSFYvYp0JbfcFsd
+         shv8ayF9gFJlP2wn19kcPx+VtDRyerPssEyoUK7XjJ1kS0j7jRRKaekkqNTlhuAfNLXn
+         /7ctyn7q6VKuDYQ6/qwSlx3LmvbZEKwWFlGMve5oLbykWd0bCpOoaNajAZhOsQ+Bx6VB
+         VCPg==
+X-Forwarded-Encrypted: i=1; AHgh+RqZXmnN3QMEJPKZB5g7/YqSkiuiUisUiXqEecf+GQfg2/+dwTRhWGcFzSJPA5RUlexNIcRMcGGuKN7UjQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++mtu8nJJLfABZ5DGtDqjaWv6df4LeNi86F3OkZHaBbC1N6fEFpT
+	mxUMpGEOXnxFe1C0bJkmHi63aJoI63+mb/wcH5pR77aYIpDJBJO02gLN/3b07nECr1AsdDXkuVH
+	nG3vp+QlB/+LtP+ivbU2Uebqq5A+a1LabkIkFtDNTC8xVAPcqAWwHuXijkBw=
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+X-Received: by 2002:a05:6808:4f23:b0:4a3:95f3:68e with SMTP id
+ 5614622812f47-4b2ef2906edmr13595230b6e.9.1787373151509; Fri, 21 Aug 2026
+ 21:32:31 -0700 (PDT)
+Date: Fri, 21 Aug 2026 21:32:31 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6a89265f.ae6ddae5.3da009.004e.GAE@google.com>
+Subject: [syzbot] Monthly fbdev report (Aug 2026)
+From: syzbot <syzbot+listd297115051db584140be@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 
-The pull request you sent on Fri, 21 Aug 2026 17:52:33 +0200:
+Hello fbdev maintainers/developers,
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.3-rc1
+This is a 31-day syzbot report for the fbdev subsystem.
+All related reports/information can be found at:
+https://syzkaller.appspot.com/upstream/s/fbdev
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/531ed942bb0df04f6747983fecdedce76a22d07f
+During the period, 0 new issues were detected and 1 were fixed.
+In total, 3 issues are still open and 31 have already been fixed.
 
-Thank you!
+Some of the still happening issues:
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Ref Crashes Repro Title
+<1> 7823    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
+                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
+<2> 1730    Yes   KASAN: slab-out-of-bounds Read in fbcon_prepare_logo
+                  https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
+<3> 469     No    KASAN: vmalloc-out-of-bounds Write in fillrect
+                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+To disable reminders for individual bugs, reply with the following command:
+#syz set <Ref> no-reminders
+
+To change bug's subsystems, reply with:
+#syz set <Ref> subsystems: new-subsystem
+
+You may send multiple commands in a single email message.

@@ -1,67 +1,67 @@
-Received: from mail-wr1-f51.google.com (mail-wr1-f51.google.com [209.85.221.51])
+Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69AE63F54C6
-	for <linux-fbdev@vger.kernel.org>; Mon, 24 Aug 2026 09:17:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4FD33A1A27
+	for <linux-fbdev@vger.kernel.org>; Mon, 24 Aug 2026 09:33:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787563044; cv=none; b=tPCNfqq094Q8d120HRDkKk7NszLAM9HF3yE33vy157srmgiCvFT4KKFusZQINxuMf84+8FwRXk4O5xXMsn5dZwhLUG4YPC5fudO/Ulfb/7g2lyBmnyI4CwqWriz6ndNMmnD1+UdLSGQPGlQPUwrf1KLPhvHeqcFTCGYly9yxe7c=
+	t=1787564002; cv=none; b=O2Y8gOitmCn/ub59NmhVDKSFgq96GMF6QyBLxRHW/7cFEOYXAEWOoVUSO+U/CnPupwlJ2Lxyo5HEhfWhSP/SxIgrZBGqFheo0QC9xzvpphQdsU2CJezB2IKKDmq8PI7z8RMxIJiVdJB170y4YNBlg6FGAe8lVDngk1/u0dEU490=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787563044; c=relaxed/simple;
-	bh=UYJh2MdQumhQG/EQROPql19ITOL7tikzrHjRGItiHmg=;
+	s=arc-20240116; t=1787564002; c=relaxed/simple;
+	bh=FqqX1Mln5GUPxDhrH5Nc5ECsMnro9xqpY8P5ZgebS4M=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VZ1P6YUMXZ1czpeMOPXLqzpk9Y7gUY6YBUUEzdaVolnqxba7eGZ5IrfviCrcSAGH/MmNX5UOxIEg2q0uXKigwwRAWZx1GJjRABXvb04XyTEt9M1B5sUGLYB4SpXsluT1lWZiuHhkzzwVNijTIU4w1lsefJ+u8pPu2/UMRaGnyQg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b=akqef6Ax; arc=none smtp.client-ip=209.85.221.51
+	 Content-Type:Content-Disposition:In-Reply-To; b=Wk0bZzSmXUmElpDRW1n3TcJ/UPgHZbXCXHUTtD5LwtMusBrqjjVZqYuII6JTH7SUhWgy0LXKiVxJRgSCDyY3sKVi/v8LJU0n3wTNIb1m+S5ZH1O23/moNhBtpbaeW7CmCsQ8EctEFEbOxq1niA7kjB4pG+xHNb8Yrd1B529/Sso=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b=oIjcEQlA; arc=none smtp.client-ip=209.85.128.53
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b="akqef6Ax"
-Received: by mail-wr1-f51.google.com with SMTP id ffacd0b85a97d-476a130c138so3199855f8f.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Aug 2026 02:17:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b="oIjcEQlA"
+Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-49556f97a9dso17552215e9.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Aug 2026 02:33:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1787563039; x=1788167839; darn=vger.kernel.org;
+        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1787563999; x=1788168799; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=1KWOdEO9XQSV3ds07vANFxSNMOkEh8mcBPlw2ud0ZcY=;
-        b=akqef6Axy7C2vgALYbN7SAqk9ay1qLQmpaR3NmVbO320MNpuuhdsigs7nQm3Y9IUCq
-         GKKutHCm1tKBciicTkLCKhTDuIPoTFwSNQoY2hQ4oRTw56amFAOq0NwUSiJTdpdsJTYX
-         su0wJPzWILENU0b2iWbStIIU4lNU55K8v4hMNcgh3krHTT6LP88b26Hb+8YeiItWAKh/
-         5l5N7mncNZxAPSsyM44X5fs6gc55C9yM09pZMfDolyY/URlMqHlnpIEFO5RkyfPPcmDS
-         F3YHfn1+m30Oxd03Ea+Oo7shVXDrXZ9Go+uck3Ns+/P7uT+uHBUYhdfwkyzi5whvBEyh
-         OGlA==
+        bh=FqqX1Mln5GUPxDhrH5Nc5ECsMnro9xqpY8P5ZgebS4M=;
+        b=oIjcEQlANUv01vd7M3tJtWhbdqdmSJc9fCXyGzSJLjKXf5RLbXZLOqhCI2/nsqMUBP
+         e97x+WGPa4DGR13z2uh9q2f9lurVF+xPxeoSJmapnB89UcdR0BB5DLxkWWjDhh3ziLcS
+         mHXlSvlC144FSsBWPnLuf64D7kVYXfTHOrczn2t0hnn44L6U0PUVL6Vlizg49/O005Gb
+         lpoMPvUprYuHQU/zC1Y4rVSL+wg7JGklwFccJyl3BP8dHwtLpHv30aT1p7t+bS1h1Acr
+         ayW3BR3+ONS1pQVLC/reP7Z1c+tS6lDFjdI+dEUnocXeUTHNCm2BAhOnCfCGZMFCUvO+
+         J0Gw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787563039; x=1788167839;
+        d=1e100.net; s=20251104; t=1787563999; x=1788168799;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=1KWOdEO9XQSV3ds07vANFxSNMOkEh8mcBPlw2ud0ZcY=;
-        b=bJDgR3OE9xFm49OwfY2Wi7IdBRNdm0oqVpxcGrLke4/7PllHLIZrS2UcWXLmSSQV15
-         rTrvHwOd3H/BD1YotRgkEH0YQmUGYE8lxtrIw7WL50hiiWQyX9HCVjFFrl1t8bHftRis
-         2FPDhrP0uwrSBjmljXZn0HQpaaaHPPYp6ff23hAYIpL5MiRx2fPOKekBOvzp2Dc2tk4p
-         N9EH6ZkVk3KtFlPAaVZUJIOz2OH1+vBqERZngx8/6OOdGvfmZ4LzAdFbtfzb1roEOurS
-         Mf9qdpClmDjSw4Tgf1skcA8JYh9Wbv5R3v35X5zpxq8iMjAkML4pk5Zv2Wy/DxESAllW
-         pi9Q==
-X-Forwarded-Encrypted: i=1; AHgh+RpZXJjYTh6jaDy4pc5df7B5RaQ4gbzftDvpDbvZ1kcscrL1WWJo5bzCEf+VKk3ZEu+m/dKywMiLwR+JcA==@vger.kernel.org
-X-Gm-Message-State: AFuF++ltoySI9qcCjiR9HrTVXKR/io5JZSmmhSBGi+juktHMsTbsy0NL
-	e6NSebjLTH2C3YHaNZmRKi/ns3jX7qEljKQUwnA1WJwPoXtOSF2PowpQJVspGakS49U=
-X-Gm-Gg: AR+sD10Jpf2lKZd4FaoTR+A6wAlQ1oqPR3sW66VhZa8/rA5H+z9oc9ahLGcMJA6YiHm
-	ckRI3xr7m1ZdE06vzN4VGVtOsu4qYIdr9T8HLqLVN003bvlIONApeiIJDUK2ltyMm0DUL0gtb3Z
-	9+8m8VBlwCHV35vHtMI8LFIwzlehQyrj+V17EOiY1D8qqTDVkfjNSBons7ucqFWtzfxhhCBAJRv
-	rs+SxLrbgHeDtIjVtvWdOquQBrV8LrIDtd0jalwKISrfWIcatwgsDsW7mg1RhlQCMUVTuQTlmJC
-	vqBS8VV5bbKUSrHTedtSf3pM7dlPpSfz+Cdad8eKGkS0518RIGPrCStM/cohwLEiyGeRAezDY4Y
-	PJMoQZ44OiYLfAWMPq+ySi6A19pf3ddtbviPz35D2M05W1wVujApLSRvSu8t1UHo4dscYRMohna
-	pR8u7ZnDVYriyW9J+CLT6pvBmkBcrLcRmBHYeXJhMWtSr7c7I5r/R1dOctWlz+z3mlvZ7rHuarH
-	ot7ZsUOBb2GQ/mntcdi3Jd3BxUyqJJgm9qk2G72IBhTy9EbRPcgekdaRIsMxq9XaSyqEUbctkci
-	hLuMPdet3wjNC/yLBmkil4jKL2p6upDjSGFS9hjdAEyc5hVBOGsDuWre
-X-Received: by 2002:a5d:59c6:0:b0:47f:773f:2d68 with SMTP id ffacd0b85a97d-482c0ba3307mr32820982f8f.16.1787563039461;
-        Mon, 24 Aug 2026 02:17:19 -0700 (PDT)
+        bh=FqqX1Mln5GUPxDhrH5Nc5ECsMnro9xqpY8P5ZgebS4M=;
+        b=GDihJqu9H9Tg9OvUWxonievvUkwKVMExR5WgD8tAFTD5YKbkmWM7JYXo3MrtxTjf/3
+         rLZ12y4AGqd21q5RadPdYIVcDmqK6TN1fzmOTZnmjOjhJ5Me77lSjskPy1xR96y+ToRJ
+         rvZO1MeRcnF0Ld+rvqdt3CxAiXN5bCuELmlo30IoVXBk6FbPvSWVKufxqjIZYxDmJ/7U
+         5N3l4s60QkEenySiopWRzYAErCkwpPxiqOydjY3AkXZO9RCfRBBZvwqve8oDn0tVuMdp
+         2c0G9Yvu5a4GIP68El+UO7lDRXMWZn4cIL4vIaCmVHMl3qShDzWft2bWiCItlX+CeLXq
+         hYGw==
+X-Forwarded-Encrypted: i=1; AHgh+RojWgQ7g5q3cvztrgYpoVCl9o7DCSLJdecY3Jzs5OYWVZp/oAa+ap9HaEAv7qAamXxTy83Yixi+kUG5Og==@vger.kernel.org
+X-Gm-Message-State: AFuF++lPshp7pb2yxNG2b5MME9bNh44UXv2qV7eo7w6tLuhmKrLg5Pyr
+	PbIMsZX/+17+DSboaT4fokk3zjpNVLYBmDrjWuQwfdmTzttv80ioNWtjDg94aiq0HTE=
+X-Gm-Gg: AR+sD12PAybybjbrp6q2+6Q6XFgcrtTli9hupobl082lzjOjf9K5ZaWWIZshvch49cJ
+	VY7QHU8BIX/lPt5jpY/lKfIZedTfgqHds9gvJD6PuZBfdICly9uMQJH+Jf1BdZKf1FleoADUq07
+	oxBONleZ5TWZIoNzWBKIwMepi1nJA3JMCPUCcrcdyV5lQ1rjvMxPSOErYDhgqDpyGu9h/T6rsgP
+	qZk7MvQbGq2e5873LJl42/F+slsPjodR2AaAue8TSHw031HcpTcLHju4wD8nEcaufgHinUAa4N7
+	CV0uDhQTm//QMBuXkredcIusCoV2sGZrDDeJWGKWz1cr9l2GaoxljJnn5fFrEAlBhvvZZD0sIpH
+	5Tm5nwhE17NHRG8Vv4Kgl/KZta1xwrjvfPtjcZuZk40gP//6F+WDtlrw+60S+d0d6wwyrsxTtY4
+	EKXQgwngaKe2+WYQDrbomF2JID25vEW6mvXySWUUNIsDpcPCmjRhfde/JP5ccHy1sEKQ+OAbSdj
+	z+SbuSmj9KZxMf6N4HP69yG9je6awhut5ElZssXOCQSEFAzuX80cAM52Vak3qhiQPuklX/Wt6XQ
+	+CSTzwVx4fZwoXpkLU2UnguBPVAqxYswRk+K5uMAEx0+Gg==
+X-Received: by 2002:a05:600c:19cc:b0:499:9240:9a1c with SMTP id 5b1f17b1804b1-499b847725emr306902295e9.15.1787563999161;
+        Mon, 24 Aug 2026 02:33:19 -0700 (PDT)
 Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-482c9bfd2bbsm7567131f8f.18.2026.08.24.02.17.18
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-499bebfa94esm70641885e9.1.2026.08.24.02.33.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Aug 2026 02:17:18 -0700 (PDT)
-Date: Mon, 24 Aug 2026 10:17:17 +0100
+        Mon, 24 Aug 2026 02:33:18 -0700 (PDT)
+Date: Mon, 24 Aug 2026 10:33:16 +0100
 From: Daniel Thompson <daniel@riscstar.com>
 To: "A. Sverdlin" <alexander.sverdlin@siemens.com>
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
@@ -70,11 +70,10 @@ Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
 	Daniel Thompson <danielt@kernel.org>,
 	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
 	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org
-Subject: Re: [PATCH 1/2] backlight: led_bl: Add devm_led_backlight_register()
- helper
-Message-ID: <aowMHRSOg82oSBmV@aspen.lan>
+Subject: Re: [PATCH 2/2] leds: lp8864: Register a backlight device
+Message-ID: <aowP3K7sgXKnsonS@aspen.lan>
 References: <20260817170817.1933046-1-alexander.sverdlin@siemens.com>
- <20260817170817.1933046-2-alexander.sverdlin@siemens.com>
+ <20260817170817.1933046-3-alexander.sverdlin@siemens.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,56 +82,29 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260817170817.1933046-2-alexander.sverdlin@siemens.com>
+In-Reply-To: <20260817170817.1933046-3-alexander.sverdlin@siemens.com>
 
-On Mon, Aug 17, 2026 at 07:08:14PM +0200, A. Sverdlin wrote:
+On Mon, Aug 17, 2026 at 07:08:15PM +0200, A. Sverdlin wrote:
 > From: Alexander Sverdlin <alexander.sverdlin@siemens.com>
 >
-> The led-backlight driver could so far only be instantiated from a
-> device-tree node with the "led-backlight" compatible. This makes it
-> impossible for a self-contained LED provider (e.g. a hot-pluggable I2C
-> LED controller) to expose a backlight interface tied to its own
-> lifetime.
+> The LP8864/LP8866 is a display-cluster LED backlight driver. Expose a
+> standard backlight class interface in addition to the LED class device,
+> so it can be used by display/panel stacks that expect a backlight.
 >
-> Factor the actual backlight registration out of the probe path into a
-> shared led_bl_register() helper and export devm_led_backlight_register(),
-> which registers a backlight class device driven by a single LED, without
-> device tree and bound to the caller's device lifetime. The backlight
-> device and the LED sysfs handover are now devres-managed, so the probe
-> path shrinks and the explicit .remove callback is no longer needed.
+> Use the new devm_led_backlight_register() helper, which spawns a
+> led-backlight device driven by our LED and tied to the I2C device
+> lifetime. This keeps the driver a plain LED driver, requires no
+> device-tree changes and remains backwards compatible with existing DTs.
+> It is a no-op when the led-backlight support is not enabled.
 
-Please can you split this patch into two pieces to make review easier.
-One to introduce make the backlight device and LED sysfs handover devre
--managed and the other to introduce devm_led_backlight_register().
+... but when led-backlight support is enabled it will prohibit the use
+of the LED sysfs interface.
 
+Having zero DT changes is a nice property but it seems rather fragile to
+change the ABI the userspace must use to manipulate the LED based on
+CONFIG_LED_BL.
 
-> diff --git a/include/linux/led_bl.h b/include/linux/led_bl.h
-> new file mode 100644
-> index 0000000000000..e38e4d62bf653
-> --- /dev/null
-> +++ b/include/linux/led_bl.h
-> @@ -0,0 +1,20 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _LINUX_LED_BL_H
-> +#define _LINUX_LED_BL_H
-> +
-> +#include <linux/kconfig.h>
-> +
-> +struct device;
-> +struct led_classdev;
-> +
-> +#if IS_REACHABLE(CONFIG_BACKLIGHT_LED)
-> +int devm_led_backlight_register(struct device *dev, struct led_classdev *led);
-> +#else
-> +static inline int devm_led_backlight_register(struct device *dev,
-> +					      struct led_classdev *led)
-> +{
-> +	return 0;
-
-This should not return success; it has not succeeded in registering a
-backlight.
-> +}
-> +#endif
+Is there no way to explictly configure which ABI should be used?
 
 
 Daniel.

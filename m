@@ -1,116 +1,99 @@
-Received: from sonic.asd.mail.yahoo.com (sonic-euwe1-0017.asd.mail.yahoo.com [34.2.82.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B1612BCF46
-	for <linux-fbdev@vger.kernel.org>; Sat, 22 Aug 2026 13:46:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=34.2.82.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 986193EEAC3;
+	Mon, 24 Aug 2026 08:59:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.17
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787406419; cv=none; b=Q8YaIsNIukNlUCQ5tbjcgfLaMAjapx6cN13/8LZMTDPAI4VXPjEMN1JB4Q4+OcZmhILN8LrvY83PK5HmqSWDNt5Q01MDUC/kNdKU2el5b2gom4yWmV25m1nog5giyxWxem/c1S3+pMJW0lRJ4u+h1I2p8U24ThiQRlAsKwZjsZc=
+	t=1787561994; cv=none; b=MCRy2/zHVPnv7NCSRRuzAriHecxw6+HzHW8Uw1eXN4tcU3eb+LbqrVAesElxYJzC1OerGwWJG3jX4jXLaj4NYUVTyZnYZZSDVw7p3zyPFIrFU1VrfjkcNsLJrbBD8to2bCyXNTVgSU4te6cPzqXeSmEnAhOs7P+StPbE+M3z46U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787406419; c=relaxed/simple;
-	bh=5Y6E8rVhWotWLkn2qTETrnAkw98SA8hvxNOi6g7VXzw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc:
-	 References; b=CfqRuBUfOEwOOefLqUpGu4RsE4xZcu36NDGN15rH+JgdFycWTdJewmf0PjUAkw3zGux7Xw+43TwW9QOcL1jmjzgJ4lIrXSyQjbeJhzHZHZOrl9199rcwnBiNXYDMUjbogGpV66/ju0oWScURonGfFOapby81LyYcHGiXf1rKnIw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl; spf=pass smtp.mailfrom=yahoo.pl; dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b=q4g9AV6m; arc=none smtp.client-ip=34.2.82.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yahoo.pl
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yahoo.pl
+	s=arc-20240116; t=1787561994; c=relaxed/simple;
+	bh=xD3ZVhiv3S6/xvTY/hQeH/RBQov8u8bAVX39CY321XY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=s73NzNEJcr0ihcxBEPLkDjc//Z9oQHeR1sLrs74Bl752yuxWh8jAy6Ogzplslkdo8F8cccIeInfj8yxRLw5OmMKxSmZ95OM5sj30KhOqcXUD1qFl2SSZ4mFP6TBZY+5Ta1WTrn45vfRxP839x3h9hWaq1NfFDcC2x1CMImRTSgI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nlSkjZtu; arc=none smtp.client-ip=198.175.65.17
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yahoo.pl header.i=@yahoo.pl header.b="q4g9AV6m"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.pl; s=s2048; t=1787406415; bh=FmtPaIAyL/Qmq2MEAEdmsB+XwwYaOOeBDCzMU/8KT9Q=; h=From:Date:Subject:To:Cc:References:From:Subject:Reply-To; b=q4g9AV6mNkjWGO8N+6iBdkIiA3TdAM6euaxRvmMOg3zOw3B5UuR6a+a5ezq1GDrYeATDO8p51oqNxVdlR7W57RiLRzmtBGQ0Lu4mgH3LimEDa2mkxPgBDW0rNy6glIcK0Cupm3a4DrspxHVfoWrNKftoB0iXLoJIh82VLx21Pxia5bLjIxTf23rzD1OjaWpHG7sdnMYKcAQbCuVJanQooiSwZLOr4Tw1h6xGahuy1QED+HHCO4FDUGOKS59vUA+Wji/2ed7yhuu1cguSz4ln2u76h2BsW/UJn4842m9Jm1yLHqZrzrdmZBVXIKn9v7ziOe7LfKXfNDoM5FITEMs6Zg==
-X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1787406415; bh=CJu70w6VTxaBejQiDUm/YIXHHI9U7xHy3wk8owf2cWb=; h=X-Sonic-MF:From:Date:Subject:To:From:Subject; b=OuXftqQ3RgCpLURzwfis4Y5aUC6XFzVYa8MnJpEmLNAINEPe8OMz8Uh4jLBQAwKLlozbcQpxbnN0o3mFF9AGJHCvB8PDPIqR0ZwI88qHYzQDSqPb8WC0AGn55UE43meGEw2O1nIk4lVCbIFLCiTcYi8k6rh2XG/WXkWetedLsLBqaVBQDCMI/deFrH8iwzpmCFP7UeyuAeHx2sYgrK9ulpUuy5yx1Qj4nfO/MFeQ6NverOQXMJbEah4HfdvCvs8QA0CPpg492O7yFrM0nxApAe2S4oCZy0nRjZcBDWiVf6/CMn2g+QWquA3bson6Z2KzDLJoQ7z6n+vEVKpHBUnxpg==
-X-YMail-OSG: 29DD7o8VM1nuXiwExgVSrsphvxCzSUY_PzKCL6XsMc0vEwjlIjYkUQ.xNIG2Kys
- codtjA0Vm_c8gyVt_kD2QkAapf0y5uz3qntJnBlU6FsccPs1XRvVmpbImnSgTtmJtQ7vL7ENcsvx
- zmCT9t.qZEWhRyG4N1giimwdP121AYb3BdCG3VHhxSjjzCcdW5h7RXnOAfzpn00T7oA5CtMloEEG
- iajpLSDt5uxYruODBy4coibQemVdFULw8OITExDpZQrzXtikG_OdfBUvF8PRJQvZMjSZfEm2RNxd
- WZHD73fIQAuqM3I_T2uDElXa0SgLTE.cBKYtt97Bh7EBJ0QKuuaP5ubmqEn9GF2UzrVK71wH.hvm
- F25TJQivC6Gw2g0LVIIhvKO0yJzu9LH6bhO51zBlWz2drMYNxTXWfjPfWlA7X2CoK9FtMwtXcwyD
- IjZFIvHkt2tRaquOyLxFyh3yFFRz2PswqtpBxDpwomrM79wowO.qfosgwQsF43NzHXD1TQhtv8hJ
- WWYwiaA0hSgGeKwvIu5fNJYUM85Wi5R6kUaVrMef_UhgfRQNMmyx2lq8zSa7Fy6Lj9EVyOz8M0X6
- xlbVuEMok2wQDnYk5X6zibeaMI4RcJUCQp.85fY6zBKqmJVLi_zIrWghZa9GvyGTWVzL2S.iizFN
- G6dpSdNzPMBBB.HZsgPON0hMlVaZBQFyvctD8v0OiIufk2fHjTgC4UkyFRpZKGiXMG7wifBZbD4q
- jbkf4yDr6XxG2BJ6dNZSKO_SxBfgJglOB0mcshjCphGezLw9o7HwY5y.jwhNkwDABM3wzI3wq.zc
- Sr1Wlv9nMGMEmtcsCIE0P3Mwy3RjtmQFyZ.UK_U_Zq7qUk7hew.XLW6pbuT3V4IpDHdclwv9pxpX
- XFLGNDzwm0.87zRPdq1RrdP_jFafhbjaFkhNl5I1IVwNM77c9ZHxqT3g5VXtjLVThLnJcj1r_2yW
- BLgmOpbC1IhpO8wzfmul.8q0Z7_84RN.SSDvqRT1ZM5UDbRSgGKTnT0yJT1.7oimKWv.Kd4gHDPV
- fUr.20zg.MgkET5aR8AwUVKNyO5Td4LnzYGU3xxLujv4cQNKBwZ1F6AyzZpVjBSzWrdbD.rVTIOK
- LilMee7Ed8uytxr_iA0vBU2Zq519UP9_uzDwtNwXx1RdXAjlfnjAgUkN1jWfxwhFinhhhpU5wx3i
- tlxveo0FXF_KOIWdofMbex.0_3r1PhzTFwB1U25pbEFDNcp9kR5bWg7FYpuihYEwbGxANOxWZlxq
- twNIU.08Ou8LbIzMWLaSi3qwuPTF_XbObIHzOGwXyKY7dc0hfoDu1TJgxOMtXON9WUnxCNXKZWqn
- SXMOR7YjBwmnu6mxxQ6VFO2Zh.7cGdMG6imndbF8SaAYXhu6gJTde1UW04IuK3SqORPlPjlLj8C6
- gdQe05PqzuVF9ottJRwPiCrF7Ft5R7bPmu6J979pbAvHlJOlixb8XfZUolTHn.m_El9iemierVAK
- .saFy9ejasMbxpcpLof_zuYZZtoo2KHxLNQ2.vJ1AgZ0DtREDHNm_1IlCIjLdlrmL8CwXFiYWrTo
- cw7WwQq0e836nvns7Bh9iSTklfmUg75ntaeNoAj1xnsSGO3118fqRQyoD9ZCSE_9fLzpXK3RNCY8
- rm9bFo0ZBRKskvv40hdvnBpU9ep73h7R7oq.xg7iSfDmyaSflJz51Zy0GpJFzFBMLyKOVcP_EYY9
- vHx42mXPVn1SDfjs_rdc_ni3ic8i9TJ4wInj8690K8PHiVzpHnThBPHz5RWWzWv.oRRDwueLMWRJ
- 3W0v8fG9nw42KQ3vaoDDdTOE.4kV3Ex6PwP71BQ2zy8Vmy3J9Mw6a41UAmseCVqSKJRUCCTKzKmX
- 1Ld6mQFOLM0pYgFMs9pNRxGeo_YuZfbe.wMO4z.NW1GfcNxrGEj5zErEPWaDpttzme8bbzPW4p82
- orG5rfTKeDf_4Lk7DI9uv6AC70uU47vRNaqxFdqQpH5mH5_Te3IbdXKChmgDpOFbJ2fkTjJ_DD9U
- Er.KkMwrK1hwjExOm88Ug8A--
-X-Sonic-MF: <tomasz.unger@yahoo.pl>
-X-Sonic-ID: 04b4a139-9e57-4601-b5ce-b610a2a9cc75
-Received: from sonic.gate.mail.ne1.yahoo.com by mail-asdoutdeli-p-cin-euwe1-prod-sonicconsumer-svc-101 with HTTP; Sat, 22 Aug 2026 13:46:55 +0000
-Received: from dip123.lsn.ir2.yahoo.com ([87.248.99.132])
-          by hello (SMTP) with SMTP ID 0619e259233a5150a8906f0b26521e3d;
-          Sat, 22 Aug 2026 13:46:53 +0000 (UTC)
-From: Tomasz Unger <tomasz.unger@yahoo.pl>
-Date: Sat, 22 Aug 2026 15:46:51 +0200
-Subject: [PATCH] staging: sm750fb: fix typo in comment
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nlSkjZtu"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1787561980; x=1819097980;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=xD3ZVhiv3S6/xvTY/hQeH/RBQov8u8bAVX39CY321XY=;
+  b=nlSkjZtuztRzAydfgqJlI3o4UL/8i4vOjobib7qEB5mEk04/tJL84aiu
+   k5s/lfbT871V5fJGRDigUVL9OrUmEgbGx0ZHS87Vri3xPJQRRtQciNyCx
+   jmu1jMIGF49H1Qs6wGLTiIs/J99DxaeUUTOp+WSzBSH1AFTaUCLAM1aJS
+   vECPSa+PIMJsKy/IG/sFKuApUOxdCIUcxFGPZbK6xGVUchnw+IAtBBJXa
+   9yaoWOo4UsByq7eClsK41RWI359vPTgW4l6oVMhszROoWXRcSvXo/VN4T
+   Tp1Qrw+tDXAavjYGHJ/yWvyF0MCScgJ77YLg3NzknhpL5tzVoUeytds5P
+   g==;
+X-CSE-ConnectionGUID: shYlhERhScqQXhiMEy+HHg==
+X-CSE-MsgGUID: QE/t0xp8RKO6A6fWnrqz4w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11884"; a="88022800"
+X-IronPort-AV: E=Sophos;i="6.25,240,1779174000"; 
+   d="scan'208";a="88022800"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Aug 2026 01:59:36 -0700
+X-CSE-ConnectionGUID: Y7/NezxmSk60n3rVoTSsvA==
+X-CSE-MsgGUID: RFwQHik+TO6IgBDv0RjAJw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,240,1779174000"; 
+   d="scan'208";a="268904673"
+Received: from conormcd-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.244.130])
+  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Aug 2026 01:59:31 -0700
+Date: Mon, 24 Aug 2026 11:59:29 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Tomasz Unger <tomasz.unger@yahoo.pl>
+Cc: Andy Shevchenko <andy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+	Dan Carpenter <error27@gmail.com>
+Subject: Re: [PATCH v2] staging: fbtft: prefer snprintf over sprintf in
+ fbtft-core.c
+Message-ID: <aowH8YrNTzAJYRa9@ashevche-desk.local>
+References: <20260820-fbtft-v2-final-v2-1-44d107b04634.ref@yahoo.pl>
+ <20260820-fbtft-v2-final-v2-1-44d107b04634@yahoo.pl>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260822-sm750fb-defaulty-typo-fix-v1-1-d2f668b1ccca@yahoo.pl>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQ6CQAyF4auQrm1Sq4B6FeMCZjpao0Cmg5EQ7
- s6gy+8l75/BJKoYXIoZonzUtO8y9rsC3KPp7oLqs4GJKzoxo73rkkKLXkIzvtKEaRp6DPpF8lT
- 6qj67Ix8g/4coef61r7e/bWyf4tIWhGVZARDxP9R9AAAA
-X-Change-ID: 20260822-sm750fb-defaulty-typo-fix-0d05d679c423
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, 
- Teddy Wang <teddy.wang@siliconmotion.com>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
- linux-kernel@vger.kernel.org, Tomasz Unger <tomasz.unger@yahoo.pl>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787406412; l=1172;
- i=tomasz.unger@yahoo.pl; s=20260311; h=from:subject:message-id;
- bh=5Y6E8rVhWotWLkn2qTETrnAkw98SA8hvxNOi6g7VXzw=;
- b=Izb9AsfwZoP5MgJPfGrPwbRwzhq5e66gfWnSGznUxKf1cfGFE6n/qWhecrFxb8yDQu3ZGPN4V
- Vy8oPdNikw+AXExRMo6IDXIpzCtmvF9+uR5s3Q1UG4s1aL00cic6zzS
-X-Developer-Key: i=tomasz.unger@yahoo.pl; a=ed25519;
- pk=EPPsO91uz/0J2cTQ6ol+dgxYaieEc9dKSXWUb51n46c=
-References: <20260822-sm750fb-defaulty-typo-fix-v1-1-d2f668b1ccca.ref@yahoo.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260820-fbtft-v2-final-v2-1-44d107b04634@yahoo.pl>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-Fix a typo in a comment: "defaulty" should be "default".
+On Thu, Aug 20, 2026 at 06:58:12PM +0200, Tomasz Unger wrote:
+> Using sprintf has potential for buffer overflows if the formatted
 
-Signed-off-by: Tomasz Unger <tomasz.unger@yahoo.pl>
----
-Verified with checkpatch.pl - no new warnings introduced by this change (one pre-existing WARNING at line 15, unrelated to this patch, confirmed via git stash).
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+sprintf()
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 039e2033f84e..725d82d2220c 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -479,7 +479,7 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo *var,
- 
- 	/* check if current fb's video memory big enough to hold the onscreen*/
- 	request = var->xres_virtual * (var->bits_per_pixel >> 3);
--	/* defaulty crtc->channel go with par->index */
-+	/* default crtc->channel go with par->index */
- 
- 	request = ALIGN(request, crtc->line_pad);
- 	request = request * var->yres_virtual;
+> string exceeds the destination buffer size. Replace it with
+> snprintf, passing sizeof() of the fixed-size stack buffers
 
----
-base-commit: c6eb4dc5964fdf4086b73b7f0f5dc0d595fb5cf3
-change-id: 20260822-sm750fb-defaulty-typo-fix-0d05d679c423
+snprintf()
 
-Best regards,
---  
-Tomasz Unger <tomasz.unger@yahoo.pl>
+> (text1[50] and text2[50]) so the write is always bounded.
+> 
+> An overflow is impossible here: even the worst case for the
+> argument types (size_t for text1, three ints for text2) still
+> fits within 50 bytes. Use snprintf() rather than scnprintf()
+> since the return value is not used here.
+
+Then why the patch is needed at all? Do you have any compiler that warns
+you about something?
+
+...
+
+It looks like you ignored all my comments against v1...
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
 

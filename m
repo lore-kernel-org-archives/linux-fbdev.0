@@ -1,92 +1,90 @@
-Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [13.76.78.106])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 296353DEFFB
-	for <linux-fbdev@vger.kernel.org>; Tue, 25 Aug 2026 09:01:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.76.78.106
+Received: from out203-205-221-205.mail.qq.com (out203-205-221-205.mail.qq.com [203.205.221.205])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52CEB3DEFFB;
+	Tue, 25 Aug 2026 09:01:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.205.221.205
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787648505; cv=none; b=PE2v/XxKm+SB/g7KoMzVZUWHjgsKaRThA2oNwwddjnL9WZkgBj0UO54WfDTM04FqM4Ot5J/m+ROGrm5OCAUbGIBIwE4FIWcoqKoDobsb4ob7Vb1iAoLUfTwuQbGRbTtBDjbRMlzkY6nORoT1FcyCFkgf9dbqfUU9QM8pQA8jAGE=
+	t=1787648508; cv=none; b=VyosoECgEWBMibYrQ325uj34dn6d8SMwGn5BCiOANnQ30E7KOi3XIuJe/8WUd4uAbiuXFA5Sm5kX/eXFhliZdl03Cp8jEkvVY7/vuc3Wx6ZpHrZCxNZyTkuRUYzHwshwn12wUrRR1qfRJqOPhihJABhX6AUctLXDwhPGQDiGICs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787648505; c=relaxed/simple;
-	bh=JDeOtktzhn1YnwIXwKUItM0FpMKTl5zt0iy1WfoKZwc=;
-	h=Date:From:To:Cc:Subject:Content-Type:MIME-Version:Message-ID; b=giK/JBglV6NfGU8XAyQ1u/KEER2baaGn+gLy0VGHAD65a5d6qhzhZKdkfEE841Vm2VYPtKpznsOnQKGG0jFhngKVwSjCXomfoA/cr3o1jAGVqWcfZ6qKB3LBiuePAQ5cXU8jBMVSf06hVfvpnvVWnlFpVbWr9S9O7i/rW6O9mDo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=13.76.78.106
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
-Received: from zju.edu.cn (unknown [10.190.160.162])
-	by mtasvr (Coremail) with SMTP id _____wBnIz7vWY1qnGHBAA--.8796S3;
-	Tue, 25 Aug 2026 17:01:36 +0800 (CST)
-Received: from stitch$zju.edu.cn ( [10.190.160.162] ) by
- ajax-webmail-mail-app1 (Coremail) ; Tue, 25 Aug 2026 17:01:35 +0800
- (GMT+08:00)
-Date: Tue, 25 Aug 2026 17:01:35 +0800 (GMT+08:00)
-X-CM-HeaderCharset: UTF-8
-From: "Jiacheng Xu" <stitch@zju.edu.cn>
-To: "Helge Deller" <deller@gmx.de>
-Cc: "Thomas Zimmermann" <tzimmermann@suse.de>,
-	"Simona Vetter" <simona@ffwll.ch>, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org
-Subject: [BUG] fbcon rotate causes vmalloc out-of-bounds write after
- vc_resize failure
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2025.3-cmXT6 build
- 20260617(6f868824) Copyright (c) 2002-2026 www.mailtech.cn zju.edu.cn
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
+	s=arc-20240116; t=1787648508; c=relaxed/simple;
+	bh=9xvODdda/cJtrVomNv8s/Z8no4Xi8h3PVmyvznxcSzQ=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=BA6RVSlh/9pbZCPyRpGndbuMzBNQAcYbt/v/bSXY5BA6HXBF2YDsAn34bHB95NzrTPuSmliYMfhXc1eMFmhNQbECMiefBzBS82jRZkNscFhCVs0WN82zmJ2fwI6SYiNFPydc3znKAgsN7Oc5EsBnBcjQXEzwmvZCp0ekAePhVBE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; spf=pass smtp.mailfrom=qq.com; dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b=Js2KAfHB; arc=none smtp.client-ip=203.205.221.205
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=qq.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=qq.com header.i=@qq.com header.b="Js2KAfHB"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1787648498; bh=9xvODdda/cJtrVomNv8s/Z8no4Xi8h3PVmyvznxcSzQ=;
+	h=Date:To:Cc:From:Subject;
+	b=Js2KAfHBJRysO8501hkdIiMiDFg/Yo27HfQwpEmm48EXnO+67LRZaIBbJylgl6+0W
+	 4Mn55JeBb+v5ldiXU8wq4yrGTds1804fbBSTTKHsNoHRrSo5iBljNXNC4vcd0EHLIX
+	 1dvQCKjJGOELYbE81mQ7OS/y+IWO7SgfUa3nnTr8=
+Received: from [192.168.255.10] ([111.206.145.19])
+	by newxmesmtplogicsvrsza63-0.qq.com (NewEsmtp) with SMTP
+	id E90B74EB; Tue, 25 Aug 2026 16:58:16 +0800
+X-QQ-mid: xmsmtpt1787648296tavryu85r
+Message-ID: <tencent_93CDCEC8A5EA657378E58B59854679079C0A@qq.com>
+X-QQ-XMAILINFO: MVzyZ2KMQtlaj77DLvTQsGupLzss5aDxAqeBL2qmH+34LtmsKeLCR0w+HhLApC
+	 eFrRKgX5jAtIVAX2idnIdTFAXpi2OCdQtRaKZy4Kqbhq7Y+qRarVEcwUAaWsaJGvJz0iQrTJdfig
+	 1uFCk+b+jatklQYKkTpVDa0yj+YBKer26+KpoY3cgVhFd3DP38gMJTrLXhDuqiVfGy1jTsEpkSyv
+	 E0q9gDSTLnoawv+Xrc91MIgxC3PwHiAzcl21G8Q9x7Ck2uShXzz2uyj0oFCW5Fu2DvHTR5HPsWEG
+	 oUioFkPqrOOVQ7yRGx7YZnYuoueVQufRsZFnIPZojKOj3SP3K8Z2szIZBdbtojnB4hQw5ijmhAju
+	 MIJZLIiKtKpBGCWNwQKaZmTPddN0hXdntvxX7A1iGMw2HyNOjTWNabtBw3N7VXHBPtHYoVn25MVv
+	 PtlessSrYHRn1MKoHtNHIYNGchCqb09XHExWRcB1tIeO+fCnc4Y9utZH+6ufUNgX3t7QJ1wMEnJS
+	 jLPhiy+C9MjE4lF2Abmp0TA94McTMCszGVJfp1nsp16GQTqcYYpm2MUiazNXRvMGvNn8VCvbRYA6
+	 l6y4ISDkGCW3BSPir8g+I2Lt9gzQcD/qLtxPhWtWOkdXaHjksPZt3Tg13akOSajS8dAEvE5gIfjU
+	 FYaZ70OVPBFsg2b+TX0RgXXZcQB7m5GQ/sWxHQLv2v9MX3RpC0MuYOCLAblUmLhczRSxuODp0tvc
+	 ZVe0OAcbJ54BijNakIVxzxPBB2Q+CtUmSwSvl+i7KAq3MwkCW79Hpppfzj9A3Sp15i6W0TdZqDfU
+	 XHx3GlBdLBaEFiDe60qlUoVmTWCWHWK2JpRkqRb5R/aGgSrRUhlmX5vYjrhbK6vHIvz+jVfZGneV
+	 WbS6ZiD9gXY/n5KW27T6vY7r9rC8L4ZLowzKsaRpkv0mj4fPy+rJgSfi5g/ASGKZs0WO9xqImmiq
+	 /UMQms6zKzFtiwD4vu0z+6uqN4g7sYKlZiqHDEmtV7o3g7Y0WlDJfPnGV1kLpRJkmlDyrrtJEhm1
+	 wbE4ngshkybWATYRMne9cOD2XRv4BzC9r5R7LFB8YzhiMiTVHjM1vIMuUHYyCPXapPfdjzJw8MaW
+	 RPiXPRV5UiZv3TnatsDHwo2TtOLw==
+X-QQ-XMRINFO: NyFYKkN4Ny6FuXrnB5Ye7Aabb3ujjtK+gg==
+X-OQ-MSGID: <68e6c603-95a0-47c7-93e9-0812964aea18@qq.com>
+Date: Tue, 25 Aug 2026 16:58:15 +0800
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <3394ce6f.1a32a.1a038275127.Coremail.stitch@zju.edu.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:yy_KCgBna6XvWY1qDOQfBA--.253W
-X-CM-SenderInfo: qtrxiiaqttimo62m3hxhgxhubq/1tbiAwIOC2qM9pcD3gAIsW
-X-CM-DELIVERINFO: =?B?4OA/dgXKKxbFmtjJiESix3B1w3tMoM3snk/k5SVzZVydjEqe1eefKHnLf95EnB4iem
-	egW4fQsIcz6umLz5CG6CW/IDVkXbfswUu/snLUb/yfw5mXYdc4lBcSWCVKpGWZ2M2SVveQ
-	K57+AxbK/SWT+FN7GtjFiwxosi0UcqwN5P5z7xdrBhTU/BR6fnxaHQBb+sK+Yw==
-X-Coremail-Antispam: 1Uk129KBj93XoW7CryxZw4kKw15ZFyUXr45XFc_yoW8XF18pr
-	90yFW7KF1kAryUAwn7JayfZa40va1DXr1jgrWDKw18Kas8Gan2qFyfK3WrWayxCFnxGw45
-	AF4jyFyDC3y5AagCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUUPCb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AK
-	xVW0oVCq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc804VCY07AIYIkI8VC2zVCFFI0UMc
-	02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAF
-	wI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0Y48IcxkI7V
-	AKI48G6xCjnVAKz4kxM4xvF2IEb7IF0Fy264kE64k0F24lFcxC0VAYjxAxZF0Ex2IqxwCF
-	04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r
-	18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_JF0_Jw1lIxkGc2Ij64vI
-	r41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr
-	1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvE
-	x4A2jsIEc7CjxVAFwI0_Gr0_Gr1UMVCEFcxC0VAYjxAxZFUvcSsGvfC2KfnxnUUI43ZEXa
-	7IU86OJ7UUUUU==
+User-Agent: Mozilla Thunderbird
+To: deller@gmx.de, linux-fbdev@vger.kernel.org
+Cc: sh_def@163.com, nihaal@cse.iitm.ac.in, u.kleine-koenig@baylibre.com,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+From: Yang Zi <2959243019@qq.com>
+Subject: [PATCH] fbdev: ssd1307fb: fix NULL pointer dereference on missing
+ match data
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-RXhlY3V0aW9uIGVudmlyb25tZW50OgoKLSBLZXJuZWw6IExpbnV4IGNvbW1pdCAwZjIzZDU2Zgot
-IEFyY2hpdGVjdHVyZTogeDg2XzY0Ci0gUUVNVTogS1ZNLWVuYWJsZWQgcWVtdS1zeXN0ZW0teDg2
-XzY0Ci0gR3Vlc3QgaW1hZ2U6IERlYmlhbiBCdWxsc2V5ZQotIEtBU0FOIGFuZCBmYXVsdCBpbmpl
-Y3Rpb24gZW5hYmxlZAoKClRoZSBrZXJuZWwgd2FzIHN0YXJ0ZWQgd2l0aDoKCnFlbXUtc3lzdGVt
-LXg4Nl82NCBcCiAgICAtbSAyRyBcCiAgICAtc21wIDIgXAogICAgLWtlcm5lbCAuL2J6SW1hZ2Ug
-XAogICAgLWFwcGVuZCAiY29uc29sZT10dHlTMCByb290PS9kZXYvc2RhIGVhcmx5cHJpbnRrPXNl
-cmlhbCBuZXQuaWZuYW1lcz0wIiBcCiAgICAtZHJpdmUgZmlsZT0uL2J1bGxzZXllLmltZyxmb3Jt
-YXQ9cmF3IFwKICAgIC1uZXQgdXNlcixob3N0PTEwLjAuMi4xMCxob3N0ZndkPXRjcDoxMjcuMC4w
-LjE6MTAwMjEtOjIyIFwKICAgIC1uZXQgbmljLG1vZGVsPWUxMDAwIFwKICAgIC1lbmFibGUta3Zt
-IFwKICAgIC1ub2dyYXBoaWMgXAogICAgLXBpZGZpbGUgdm0ucGlkIFwKICAgIDI+JjEgfCB0ZWUg
-dm0ubG9nCgoKVHJpZ2dlciBjb25kaXRpb246CgoxLiBXcml0ZSB0byBgL3N5cy9jbGFzcy9ncmFw
-aGljcy9mYmNvbi9yb3RhdGVgIHRvIGluaXRpYWxpemUgdGhlIGF0dHJpYnV0ZS4KMi4gU2V0IHRo
-ZSBjdXJyZW50IHRocmVhZCdzIGZhdWx0LWluamVjdGlvbiBjb3VudGVyIHRvIDEzIHRocm91Z2gK
-ICAgIGAvcHJvYy90aHJlYWQtc2VsZi9mYWlsLW50aGAuCjMuIFJlcXVlc3Qgcm90YXRpb24gdmFs
-dWUgMSB0aHJvdWdoIHRoZSBzYW1lIGByb3RhdGVgIGF0dHJpYnV0ZS4KClRoZSBpbmplY3RlZCBm
-YWlsdXJlIG9jY3VycyBkdXJpbmcgbWVtb3J5IGFsbG9jYXRpb24gaW4gdmNfZG9fcmVzaXplKCku
-IFRoZSBzdWJzZXF1ZW50IHJlZHJhdyBwYXRoIHJlYWNoZXMgc3lzX2ltYWdlYmxpdCgpIGFuZCBy
-ZXBvcnRzIGEgS0FTQU4gdm1hbGxvYyBvdXQtb2YtYm91bmRzIHdyaXRlLgoKClBvdGVudGlhbCBy
-b290IGNhdXNlOgoKZmJjb25fbW9kZWNoYW5nZWQoKSBzd2l0Y2hlcyB0byB0aGUgbmV3IHJvdGF0
-aW9uIGFuZCBibGl0dGluZyBvcGVyYXRpb25zIGJlZm9yZSByZXNpemluZyB0aGUgdmlydHVhbCBj
-b25zb2xlLiBXaGVuIHZjX3Jlc2l6ZSgpIGZhaWxzLCBpdHMKcmV0dXJuIHZhbHVlIGlzIGlnbm9y
-ZWQgYW5kIHVwZGF0ZV9zY3JlZW4oKSBzdGlsbCBydW5zLgoKQXMgYSByZXN1bHQsIHRoZSBWVCBn
-ZW9tZXRyeSBhbmQgc2NyZWVuIGJ1ZmZlciByZW1haW4gaW4gdGhlIG9sZCBzdGF0ZSB3aGlsZSB0
-aGUgZnJhbWVidWZmZXIgY29uc29sZSB1c2VzIHRoZSBuZXcgcm90YXRpb24gc3RhdGUuCnN5c19p
-bWFnZWJsaXQoKSB0aGVuIGNhbGN1bGF0ZXMgYW4gaW52YWxpZCBmcmFtZWJ1ZmZlciBhZGRyZXNz
-IGFuZCBwZXJmb3JtcyBhbiBvdXQtb2YtYm91bmRzIHdyaXRlLgoKQmVzdCwKSmlhY2hlbmcKCg==
+device_get_match_data() can return NULL, e.g. when the device is matched
+through the I2C device ID table rather than the OF match table. The
+returned value is stored in par->device_info and later dereferenced when
+initializing par->vcomh, causing a NULL pointer dereference.
+
+Check the return value right after the assignment and bail out with
+-ENODEV (releasing the already allocated framebuffer) before any
+dereference.
+
+Signed-off-by: Yang Zi <2959243019@qq.com>
+---
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index c4fdecafd856..4d185c754284 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -665,6 +665,10 @@ static int ssd1307fb_probe(struct i2c_client *client)
+     spin_lock_init(&par->damage_lock);
+ 
+     par->device_info = device_get_match_data(dev);
++    if (!par->device_info) {
++        ret = -ENODEV;
++        goto fb_alloc_error;
++    }
+ 
+     par->reset = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
+     if (IS_ERR(par->reset)) {
 

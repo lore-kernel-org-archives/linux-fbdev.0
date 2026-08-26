@@ -1,149 +1,134 @@
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from meve.dewith.io (meve.dewith.io [157.90.20.64])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12B0717BB21
-	for <linux-fbdev@vger.kernel.org>; Tue, 25 Aug 2026 09:15:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62F343B0AC4;
+	Wed, 26 Aug 2026 07:33:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=157.90.20.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787649327; cv=none; b=Q/cZdsV0/qj8O5mUFFavE+DUHOQ56SrEJYL5wzyrLZdHyGIcCYrHabho6Y8r3sw2nL51x450I9i5IwNAnsUNFwExthg1qI9TQi3oHbIxdzfNBNGQB+MlXcxAKobVNufUAjX6SRg19NH7DKRDZlgXLj83c3clIg/xKswbxig5Tbw=
+	t=1787729616; cv=none; b=Nk4tOU4FqFkSsnJGWdUf+OlwRjFlut2tbH6BD0bGZmJb+2N6SPcQvYyi0yVYyxh5AKw5Z1ZroMnYVUeINJduNAglVVkl5XEMVHVHXBcbSNqjMoCf40WPzgmkS7CbkNBUmtI1rAiw9ZyHDzrUcwJzDRR3R7utlJQ3OyFE48ham80=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787649327; c=relaxed/simple;
-	bh=KQG7I15zl1cZ8xoz0nJUhoyELZuli5z85AXKE7Cy0D4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VLGy4+ehSimKPNE6DXzwhsHb2K2YEPHF7VSEGLfiMWgOk7AJbg+XXIad3vbB570mrJVYfM4blU6o1UfeNFT/3duZuf/OAXRCXtaINfFmX+Yj4LJNdK/gciElAzexR6mU1nsxamPAS6VaLIgcISRXI7q+ccTw1wkThARbANnQyLA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com; spf=pass smtp.mailfrom=riscstar.com; dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b=R5ZLpaM7; arc=none smtp.client-ip=209.85.128.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=riscstar.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=riscstar.com
+	s=arc-20240116; t=1787729616; c=relaxed/simple;
+	bh=2kkGWDFGI/OD7dmBUn3UVn1bLSIqWcPVbyKZgfQWbns=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Rq/77mV0LRU65oxcD24j2yG7V2/lM0e6FfPf6QamzKhLpG84RNrrXKR2+VrYJ2YIxSxJNMZE1zhbsAHijwwLhJb7rJW9KKpS1hM698xjdeuMqYHCWtsQQs+2cJn+tio9qpu3X7nxYt61sYF/H5RrzLNbLcqtro8BpLziksAkI7Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=fZSPTl2c; arc=none smtp.client-ip=157.90.20.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dewith.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=riscstar-com.20251104.gappssmtp.com header.i=@riscstar-com.20251104.gappssmtp.com header.b="R5ZLpaM7"
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-4998590d392so18762565e9.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 25 Aug 2026 02:15:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=riscstar-com.20251104.gappssmtp.com; s=20251104; t=1787649324; x=1788254124; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=KQG7I15zl1cZ8xoz0nJUhoyELZuli5z85AXKE7Cy0D4=;
-        b=R5ZLpaM70CU5oOvUDOWx3aSdVWl4WCG+c7HRNIiEwUnuZRPGb5Gi8n6St7HQtbUvjZ
-         wPaLuGtd/LikNUsxHKAVYOuiC5CxGqU+moyqk71GO5z49bKCmNtBfxRYuJdUVevU0sKA
-         6QJSTBexzISdRCs2gnMc4nDIGzA9DJzMvMdY8d22NK6tpAwxGK3xwIDNOSixcPfzO127
-         xJuzAZAT289aXZwjFqNNKpkgSrhMFs58k/RYw/FzHRa9PvqrY1E8Sy8ZDIZyHyFatwjY
-         H2HfoJ5VSv28PopiMb/+SRfxGugWW/vcCF4E7DLHLYbmk1UPMQ46LooWA9HczPKOnxHR
-         EgCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787649324; x=1788254124;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=KQG7I15zl1cZ8xoz0nJUhoyELZuli5z85AXKE7Cy0D4=;
-        b=arXBuC3uxF0cW0GTD97ZlSQjzOl3KRlFagchegPVXKbzfYSziSoFaO0HJbBKyVOJhp
-         wlw7Cztu5KO9pRdQDfjkIeFoGZrwyzBGZMOtRvsH8RFoHZa+ntMY0aCxexxvTckEYNvW
-         1wS2WZ7g/7j+zrjU9XuEYDre3QgPMhl9YTdPTtQSe1h920dgo2TIF+4AFrEBel5sZK6R
-         TAlGVyPcInKVmwpNTvHRqecrKLeOatPbnjr88KDKMYcC2ExIXNxFTwjjsgbnbQnJt4BJ
-         dOp708pseXv8L0/pdvMt+CPo5r//OrRXlJ2bKNKH1JawYnT7DcAaVJacNsLZi7LUy2j5
-         ZBLw==
-X-Forwarded-Encrypted: i=1; AHgh+RpbKQwLDkRMUICZqhY3MytLS/9epixoSpvkYZ/dWnV6cmm9mC2vs4Ln51XLfVCxayapG2m3mth3ZflTxA==@vger.kernel.org
-X-Gm-Message-State: AFuF++m6JeTiRzUC9dQPMcN2vKzroB54Z6uL7iGpHV2TuAEFOuzz/kw3
-	54S+9SWG/u/ES6y00js6Vub7dCpO4PSFOPg6k2l3mlW1xt31ci70Cik+24mO9AxBYdc=
-X-Gm-Gg: AR+sD10r6seLbYJ1BptkEmd1PRyAfHixadzdixByYtue8HddFOFgsjZr9sQcMO35BHV
-	YsCP04FLRAHhXN37/aLt9SFzNXCY8n23C1IQPWzknwbFowB+Tfz8CnvUg83mHAnJnNVaW907rwh
-	3S8GfJpFMMTAb+h1Qr8afrBiQiLeEbPwoDA/vYptJLvc9Kl+FepfWN35P1BVSMRKRYfQbRiCie0
-	OkXOgcqiQzXpHNPJpNuWQ0SHama6M4aASSWphGd+R72ei1OSm+ZUQICJKehcl9zXcMFsGDd1UvS
-	83b3sAQshYPPTMUZJLR0It8rjiOb1iszp96avb0gvvb7pP4HhEAyYGfajnwjGHTXNeMeleuWFd4
-	hUxNgR79XdEiRPTD7UXzXOhBvWsBxkUhIZk8CVQt5j+BAc2WnWtyM/IPqsvUc/25SBFGticMx0p
-	Ef5GlPOASLj5fb0j69hkmcu4uvwl59VHvtfLw/gSnZTLHuJSyUih+NVTsNP1IHWgmHxKAS1YrAL
-	GyeQjnBz8N0rR0IAQdVucThC5uJaphcxGyx2c4gNKoLq5FSHWjUfJ1bXTqYTecAy5Mua4FOhOly
-	tyZgVepjm2s/6a4GYHq+Uuj6XhipQ9ZbKjQfuTyfB3lyBg==
-X-Received: by 2002:a05:600c:c493:b0:499:7aa7:eaa7 with SMTP id 5b1f17b1804b1-499b845c184mr414028865e9.15.1787649324060;
-        Tue, 25 Aug 2026 02:15:24 -0700 (PDT)
-Received: from aspen.lan (aztw-34-b2-v4wan-166919-cust780.vm26.cable.virginm.net. [82.37.195.13])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-499d65c326esm20415775e9.10.2026.08.25.02.15.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Aug 2026 02:15:22 -0700 (PDT)
-Date: Tue, 25 Aug 2026 10:15:19 +0100
-From: Daniel Thompson <daniel@riscstar.com>
-To: Andrew Davis <afd@ti.com>
-Cc: "A. Sverdlin" <alexander.sverdlin@siemens.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
-	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org
-Subject: Re: [PATCH 2/2] leds: lp8864: Register a backlight device
-Message-ID: <ao1dJ1Ce6qcp9USk@aspen.lan>
-References: <20260817170817.1933046-1-alexander.sverdlin@siemens.com>
- <20260817170817.1933046-3-alexander.sverdlin@siemens.com>
- <aowP3K7sgXKnsonS@aspen.lan>
- <fcdc4b46-dab7-40fe-9b1e-c5c2e2ef8dd7@ti.com>
+	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="fZSPTl2c"
+Received: from localhost (70-26-208-87.ftth.glasoperator.nl [87.208.26.70])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by meve.dewith.io (Postfix) with ESMTPSA id 1E67624F7A;
+	Wed, 26 Aug 2026 07:23:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dewith.io; s=default;
+	t=1787729025;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=QAUOj2QAkKl6zEzdhup86/l49AfWYPOJZzp6vrxeQlI=;
+	b=fZSPTl2cq6asaC+h1SoLhhFJG4IvcGBV4fIApcJ9IYPbx1Y2/3B7GWEZeumCYh0c7D2v4l
+	UWXKUkVMWNNf1zkl4Tst6H8BMgQzU+MZsPMROd/SKdhguqkq+ee7AU53K8NCA+3hCbcsZG
+	M4A6USD34H0/PRKHgRNcLeMc9jcNr2s=
+From: Wim de With <wf@dewith.io>
+Subject: [PATCH v4 0/2] backlight: Add support for Orient Chip OCP8178
+Date: Wed, 26 Aug 2026 09:23:09 +0200
+Message-Id: <20260826-ocp8178-backlight-v4-0-47d7acce882e@dewith.io>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fcdc4b46-dab7-40fe-9b1e-c5c2e2ef8dd7@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/23OzW7CMBAE4FdBPneR/5I6PfU9Kg6Os8YLLUa2C
+ a1Q3h0besiB40gzn+bGMibCzD42N5ZwpkzxVIN+2zAX7GmPQFPNTHLZc8MNRHc24t3AaN3xm/a
+ hwIB2Ujgojl6xujsn9PT7ML92z5wv4wFdaVBr+BR/oIRUhyu7l1x0WmwFF4prEHD1nxNeqYQtx
+ TYLlEtMf4+vs2z8/1TIF7dmCRy0nYQZtRnRmxXWbs1qLfSvBFUFZ/3QOd0p1/G1sCzLHaoaE1Y
+ 9AQAA
+X-Change-ID: 20260808-ocp8178-backlight-9ead3e930ef3
+To: Wim de With <wf@dewith.io>, Lee Jones <lee@kernel.org>, 
+ Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+ Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-fbdev@vger.kernel.org, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.16.0
 
-On Mon, Aug 24, 2026 at 10:39:19AM -0500, Andrew Davis wrote:
-> On 8/24/26 4:33 AM, Daniel Thompson wrote:
-> > On Mon, Aug 17, 2026 at 07:08:15PM +0200, A. Sverdlin wrote:
-> > > From: Alexander Sverdlin <alexander.sverdlin@siemens.com>
-> > >
-> > > The LP8864/LP8866 is a display-cluster LED backlight driver. Expose a
-> > > standard backlight class interface in addition to the LED class device,
-> > > so it can be used by display/panel stacks that expect a backlight.
-> > >
-> > > Use the new devm_led_backlight_register() helper, which spawns a
-> > > led-backlight device driven by our LED and tied to the I2C device
-> > > lifetime. This keeps the driver a plain LED driver, requires no
-> > > device-tree changes and remains backwards compatible with existing DTs.
-> > > It is a no-op when the led-backlight support is not enabled.
-> >
-> > ... but when led-backlight support is enabled it will prohibit the use
-> > of the LED sysfs interface.
-> >
->
-> The commit message states "in addition to" so both are registered still.
-> The issue would be in the [1/2] patch if it disables the LED sysfs interface
-> as this might be unexpected behavior to not keep both interfaces active.
+The ClockworkPi uConsole[1] is a modular handheld console manufactured
+by Clockwork Tech that runs Linux. It consists of a mainboard which
+connects a number of peripherals, such as the screen, batteries and
+keyboard. This mainboard hosts a system on a module (SoM), such as the
+Raspberry Pi Compute Module as a so-called core to provide the compute
+for the device. The device supports different kinds of SoM as cores. The
+mainboard is shared between different devices, such as the DevTerm[2].
 
-Yes, led_bl disables the sysfs interface of any LED supplier(s). Note
-that this is not changed by anything in the patch series ([1/2]
-rearranges the code slghtlt but this has always been the case).
+Currently, the uConsole requires a number of out-of-tree drivers to
+support the hardware. In addition, most (if not all) supported SoMs
+require vendor kernels. In practice, this means that kernel support for
+the device is scattered across various repositories in the form of
+patches with dubious quality.
 
+This patch series is the first in an attempt to upstream as many of the
+needed drivers as possible. The goal is to support at least the
+mainboard and the peripherals of the uConsole in the upstream kernel.
+These drivers should find their way downstream to the SoM vendor kernels
+eventually.
 
-> > Having zero DT changes is a nice property but it seems rather fragile to
-> > change the ABI the userspace must use to manipulate the LED based on
-> > CONFIG_LED_BL.
-> >
->
-> If this was done in DT then it would also change the API userspace must
-> use in a non-flexible way (DT is also considered a fixed ABI for a board).
+This series adds the driver for the backlight controller, the Orient
+Chip OCP8178. I wrote the driver from scratch using the datasheet, to
+avoid any copyright or attribution problems.
 
-Agreed, although it does allow an existing board not to change userspace
-ABI based on a Kconfig option.
+[1]: https://www.clockworkpi.com/home-uconsole
+[2]: https://www.clockworkpi.com/home-devterm
 
+---
+Changes in v4:
+No functional changes
+- Collect Reviewed-by trailers
+- Link to v3: https://patch.msgid.link/20260816-ocp8178-backlight-v3-0-caf95c453c50@dewith.io
 
-> > Is there no way to explictly configure which ABI should be used?
-> >
->
-> I wonder if there is a good way to have the actual use of one API cause
-> the other to be disabled at runtime? So the first one used disables the
-> other, but that does sound like a race.
->
-> Maybe a mod config to disable the LED-BL path and keep the simple LED
-> sysfs interface would be enough. Or maybe a sysfw entry so it could
-> be set per-device if needed.
+Changes in v3:
+- Rename enable-gpios to ctrl-gpios
+- Remove probe debug message
+- Remove onewire debug message
+- Link to v2: https://patch.msgid.link/20260812-ocp8178-backlight-v2-0-4ad18b48bef8@dewith.io
 
-Mod config isn't "nice" although it might be a good enough solution for
-what is probably a fairly niche issue if nothing better comes up.
+Changes in v2:
+- Add a note in the commit message that the 1-Wire protocol is not the
+  one implemented in drivers/w1
+- Explicitly reject sleepable GPIO and don't use _cansleep() functions
+- Fix bug where interrupts were restored during timing-critical section
+- Remove unnecessary logging
+- Add missing \n to dev_err_probe message
+- Remove linux/mod_devicetable.h include
+- Remove struct init padding
+- Remove unnecessary backlight_is_blank() check
+- Use appropriate delay functions
+- Set RFA explicitly and move comment
+- Format DT binding YAML
+- Link to v1: https://patch.msgid.link/20260806201541.101304-1-wf@dewith.io
 
-I'd also note that a mod config would also allow the driver to error out
-when CONFIG_LED_BL is not set (with a hint on the logs to either enable
-LED_BL or set the config option) rather then the current "secret" ABI
-change.
+---
+Wim de With (2):
+      dt-bindings: backlight: Add Orient Chip OCP8178
+      backlight: Add support for Orient Chip OCP8178
 
+ .../bindings/leds/backlight/ocs,ocp8178.yaml       |  47 +++++
+ MAINTAINERS                                        |   6 +
+ drivers/video/backlight/Kconfig                    |  10 +
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/ocp8178_bl.c               | 231 +++++++++++++++++++++
+ 5 files changed, 295 insertions(+)
+---
+base-commit: 315f4bd234b3b8a3ed3a71fd4c53b110cf373720
+change-id: 20260808-ocp8178-backlight-9ead3e930ef3
 
-Daniel.
+Best regards,
+--  
+Wim de With <wf@dewith.io>
+

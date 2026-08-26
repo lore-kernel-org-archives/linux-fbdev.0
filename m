@@ -1,303 +1,150 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f175.google.com (mail-pg1-f175.google.com [209.85.215.175])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 003E63B6C15;
-	Wed, 26 Aug 2026 08:37:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E6FE43E08D
+	for <linux-fbdev@vger.kernel.org>; Wed, 26 Aug 2026 14:20:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.175
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787733453; cv=none; b=AOvrzu/HQEHa566DB8aX4ikqlTIE/vzouDrYgW0R9fji4cAILew8Vws4WD92X+E/12OsAixVHtaswbkDR9JlCLZTwhqzLxF4ZIejZGqPZb6xwTIk0du2/TnKEm6AzKQgPUUbr/dZo3VVI5HqlVaLgL39NI7FHCzqG/wMY8/nPws=
+	t=1787754019; cv=none; b=QedzoeL+/v/Dn9bOsm+nAo3/f/fTrqHvo2uUf3eJFQ41K+fIlLSjUhSam/HtvP9QtQTNifRXqVYKkb5oQ4BHxuRZW+zonj3Xn4Nluy8gDFAgZKudv2TSbzawXzDLkSoXVA1+k+9M/9bcpTQLfYV1kJ4zWR4/WU0hKOnH5Af9eIY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787733453; c=relaxed/simple;
-	bh=/nJ+6muvPjw51iymCr3S4mmwHKOg1vP9q5wNnUEFStE=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Mf+VelpsG7HnpQ7+3GeVLcEXvraqNlHfSCnSyhfB1EUSqgvmPDDnMK4Rv8kJFvsOiY7LHooju+ub0ccz5lyuGarsDGRQfnrYs2D+tBeZoKy9beb8o8mBeR8T9SgBEUpAr2xEI1m/W66/4WudMyuOftDTuN4gyiL9hKC6+7fbMn8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: 5b4cb9eaa12911f19a56ed5b684f684d-20260826
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:3271276e-ecaf-42b4-9819-320377205142,IP:0,U
-	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:-25
-X-CID-META: VersionHash:7db8b62,CLOUDID:6c3636afc8496d9cf70cbed7c874e8f3,BulkI
-	D:nil,BulkQuantity:0,SF:102|850|865|898,TC:nil,Content:0|15|50,EDM:-3,IP:n
-	il,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LE
-	S:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: 5b4cb9eaa12911f19a56ed5b684f684d-20260826
-X-User: yanglinlin@kylinos.cn
-Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <yanglinlin@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 1157170727; Wed, 26 Aug 2026 16:37:22 +0800
-From: Linlin Yang <yanglinlin@kylinos.cn>
-To: linux-kernel@vger.kernel.org
-Cc: amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org,
-	linux-hwmon@vger.kernel.org,
-	linux-mmc@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-spi@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	Linlin Yang <yanglinlin@kylinos.cn>
-Subject: [PATCH] treewide: fix spelling of "overridden"
-Date: Wed, 26 Aug 2026 16:37:15 +0800
-Message-Id: <20260826083715.625136-1-yanglinlin@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+	s=arc-20240116; t=1787754019; c=relaxed/simple;
+	bh=wukuL8CwW5Sw95Eq3HK+NwHjNtJ5hpUPHptVYnfF13I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=of77quuFM6EcFv7hGCqMBYKtpRRdq1hBBmWw5Tz3r9Z7ZP1fJVxw0ILW2EdmnjpOz/xD/bU6tnlFph1LuATHfnn+Yr+ogdLM9HfolpJEuQnOqI+1vCXKdQaqvJsKdZlcqQChqE/038oe9GuFZrEbRSEbHZDR8OkBCh5Ng1Pl+Jk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cVrkRI/P; arc=none smtp.client-ip=209.85.215.175
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cVrkRI/P"
+Received: by mail-pg1-f175.google.com with SMTP id 41be03b00d2f7-cc1c8d4a959so481831a12.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Aug 2026 07:20:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1787754014; x=1788358814; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=/1XUCO5ehW6HIK1UxtZ/MdhG2zZvli3B4/DG5Oizxoc=;
+        b=cVrkRI/PMurosqZocvroLG2C2KTArW7gOLQgtIC/Yvq7jlbJhoreSZ7D7umvnULUPW
+         Md3KpIdecg4PTIlWfifW/lkmAUj2tfCoqbhm1Qgl8xLfe7mz7kkhvBqymh1w/4fytj65
+         KVDkIeY3S0WpxkrzmjxYZstufgX8p6WqiJRD4lIog/FKe4yXYKq7o2O+JDqyxqf1n53j
+         R5OVGCiA71M2BeHH9BMGQE77As131utbJpRe0lLLXpukuwGgNR+phrIaWcurAelTYSEh
+         5DQlTD6yN6mgMARUfm4NmDbWguE20NQNA8O3J1/i81M2hFlFyNCwGMRKF6MkbH92Nyz4
+         G0WA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787754014; x=1788358814;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=/1XUCO5ehW6HIK1UxtZ/MdhG2zZvli3B4/DG5Oizxoc=;
+        b=YpWeJZGVHZmC/rvPmxvtmrAbLfMXrWGyPXxVIgKY97ynpRDuNrda71MHkoGxwL35i3
+         2lTtMOxmEC/nCVGPDLNygf1FWkPbtwexTO0sG9DsAUTrzNY5r6XFgsh4xUukyo3i425p
+         JHFMT3w0n6TuMaxj0zBNbcAPM+jwTKtvueL3CBLsiheulQGxYOwdiqauTUx12jnAXbs6
+         IQVTFdFouiKF2wKWQw4LoT5bghDcomv0J1G6QH+0dU+jZtfjtngzckC+2+dUwv71ok0i
+         Zfh4dROjfGiSS+0p+1AiytyMn80RgjzhEp/NJVgDNwZVeowE7y3UT5acqL7uoGzNIpYe
+         hzsQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrZGPMqG+z/xbtiwwNqVeQQ4EzBhFMVTqcVQmFx1pURO1mS70m6bvyFkBF/Pp9eIhfHpRYinz5+Aqm9zg==@vger.kernel.org
+X-Gm-Message-State: AFuF++mwIbwuUCKm5MQNb4s3ezOlm2xPl7SzbrYnfea2/Esf19GKSeYd
+	UeYIkumMS5Yiri7SuRyVt8mDaFnQGiImt0/B7HNrLDeIHW85lf0avFQhs8UjYA==
+X-Gm-Gg: AR+sD11JdxlqGupTutU9rSeasYpf21R8btfq96XzSOvu7P+9lHfpw+n2dCVuwuVkzpf
+	Cvh9C9zAI223umbQiKlM/lkTTZ2URZdPQI3d9QlNQ20Ya/Y/nmIKJ3TP/7PCqXI46HwZ1tlTMyY
+	NSe41sV3mnrokPVcnouvctF9B460kpdWdd2EAQfV2kDLrVWUbwhZf2CUbRxA1e3LN9AC8E2sPry
+	uYgFCCRXPdboRlzrj7a1X0g8CBhmDz4wkZK5FhlHM3OLY9a30nY7oMzlD12zptxLQPo66OrsQGv
+	O+nYxVmBExGKPZk/WBN9DiP8v1mtCCk1F3kKDMnj3jwDhITw0rlmmOpScqda25FI1VkAophCVmV
+	53yrbwWz/MEjosCaqjOH9cI9+WA3eIXn+jWB+ygNl4EiesH+VGOWfnqmhnWYuyfVlFSkI+EHEnY
+	nY4sMhfM9JJUDk0trjrk33nNa4b1GbvcZP3wuZk3iltEzPcc2nSEDnCwLcusrHG8fMrXSoJHrDI
+	QIKK1RU7F3lJX1MZS1q5w0LdfUNRffBxgUsig==
+X-Received: by 2002:a17:90a:d2c6:b0:38e:5c6:4db9 with SMTP id 98e67ed59e1d1-3966d3dafb9mr16370184a91.11.1787754014381;
+        Wed, 26 Aug 2026 07:20:14 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3283d60bf36sm9592172eec.2.2026.08.26.07.20.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 26 Aug 2026 07:20:13 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <7532cd0d-6f9d-4278-9216-5d9aea92fa16@roeck-us.net>
+Date: Wed, 26 Aug 2026 07:20:11 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] treewide: fix spelling of "overridden"
+To: Linlin Yang <yanglinlin@kylinos.cn>, linux-kernel@vger.kernel.org
+Cc: amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ linux-hwmon@vger.kernel.org, linux-mmc@vger.kernel.org,
+ netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <20260826083715.625136-1-yanglinlin@kylinos.cn>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
+In-Reply-To: <20260826083715.625136-1-yanglinlin@kylinos.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Fix misspelling of "overridden" (missing a 'd') in comments across
-multiple drivers.  The correct spelling "overridden" is already used
-292 times in the same drivers/ directory.
+On 8/26/26 01:37, Linlin Yang wrote:
+> Fix misspelling of "overridden" (missing a 'd') in comments across
+> multiple drivers.  The correct spelling "overridden" is already used
+> 292 times in the same drivers/ directory.
+> 
+> All occurrences are in comments only, no functional change.
+> 
+> Signed-off-by: Linlin Yang <yanglinlin@kylinos.cn>
+> ---
+>   .../gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c    | 2 +-
+>   .../gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c    | 2 +-
+>   .../amd/display/dc/link/protocols/link_edp_panel_control.c    | 4 ++--
+>   drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c               | 2 +-
+>   drivers/gpu/drm/msm/registers/gen_header.py                   | 2 +-
+>   drivers/gpu/drm/nouveau/nouveau_bios.c                        | 2 +-
+>   drivers/hwmon/abituguru.c                                     | 2 +-
 
-All occurrences are in comments only, no functional change.
+I would expect this to be a separate patch to even consider applying it.
 
-Signed-off-by: Linlin Yang <yanglinlin@kylinos.cn>
----
- .../gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c    | 2 +-
- .../gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c    | 2 +-
- .../amd/display/dc/link/protocols/link_edp_panel_control.c    | 4 ++--
- drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c               | 2 +-
- drivers/gpu/drm/msm/registers/gen_header.py                   | 2 +-
- drivers/gpu/drm/nouveau/nouveau_bios.c                        | 2 +-
- drivers/hwmon/abituguru.c                                     | 2 +-
- drivers/mmc/core/block.c                                      | 2 +-
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c              | 2 +-
- drivers/net/ethernet/chelsio/cxgb4vf/sge.c                    | 2 +-
- drivers/net/ethernet/freescale/fman/fman_memac.c              | 2 +-
- drivers/net/ethernet/sfc/mcdi_pcol.h                          | 2 +-
- drivers/scsi/aic7xxx/aic79xx_osm.c                            | 2 +-
- drivers/scsi/sym53c8xx_2/sym53c8xx.h                          | 2 +-
- drivers/spi/spi-omap2-mcspi.c                                 | 2 +-
- drivers/video/fbdev/tridentfb.c                               | 2 +-
- 16 files changed, 17 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c b/drivers/gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c
-index 33b5136f7ce3..75bdad22bf69 100644
---- a/drivers/gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c
-+++ b/drivers/gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c
-@@ -1805,7 +1805,7 @@ static void DISPCLKDPPCLKDCFCLKDeepSleepPrefetchParametersWatermarksAndPerforman
- 	v->DISPCLKWithRamping = 0;
- 	v->DISPCLKWithoutRamping = 0;
- 	v->GlobalDPPCLK = 0.0;
--	/* DAL custom code: need to update ReturnBW in case min dcfclk is overriden */
-+	/* DAL custom code: need to update ReturnBW in case min dcfclk is overridden */
- 	v->IdealSDPPortBandwidthPerState[v->VoltageLevel][v->maxMpcComb] = dml_min3(
- 			v->ReturnBusWidth * v->DCFCLK,
- 			v->DRAMSpeedPerState[v->VoltageLevel] * v->NumberOfChannels * v->DRAMChannelWidth,
-diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c b/drivers/gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c
-index 8064c4b3fd25..3f62ea493787 100644
---- a/drivers/gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c
-+++ b/drivers/gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c
-@@ -2045,7 +2045,7 @@ static void DISPCLKDPPCLKDCFCLKDeepSleepPrefetchParametersWatermarksAndPerforman
- 	v->DISPCLKWithRamping = 0;
- 	v->DISPCLKWithoutRamping = 0;
- 	v->GlobalDPPCLK = 0.0;
--	/* DAL custom code: need to update ReturnBW in case min dcfclk is overriden */
-+	/* DAL custom code: need to update ReturnBW in case min dcfclk is overridden */
- 	{
- 	double IdealFabricAndSDPPortBandwidthPerState = dml_min(
- 			v->ReturnBusWidth * v->DCFCLKState[v->VoltageLevel][v->maxMpcComb],
-diff --git a/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c b/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
-index 16951a9550f2..d3fe6e024891 100644
---- a/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
-+++ b/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
-@@ -108,7 +108,7 @@ enum dp_panel_mode dp_get_panel_mode(struct dc_link *link)
- 			/* alternate scrambler reset is required for Travis
- 			 * for the case when external chip does not
- 			 * provide sink device id, alternate scrambler
--			 * scheme will  be overriden later by querying
-+			 * scheme will  be overridden later by querying
- 			 * Encoder features
- 			 */
- 			if (strncmp(
-@@ -124,7 +124,7 @@ enum dp_panel_mode dp_get_panel_mode(struct dc_link *link)
- 			/* alternate scrambler reset is required for NUTMEG
- 			 * for the case when external chip does not provide
- 			 * sink device id, alternate scrambler scheme will
--			 * be overriden later by querying Encoder feature
-+			 * be overridden later by querying Encoder feature
- 			 */
- 			if (strncmp(link->dpcd_caps.branch_dev_name,
- 				DP_VGA_LVDS_CONVERTER_ID_3,
-diff --git a/drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c b/drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c
-index 204375f1eff8..587d26c742cd 100644
---- a/drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c
-+++ b/drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c
-@@ -584,7 +584,7 @@ static bool dmub_srv_hw_setup(struct dmub_srv *dmub, enum dmub_asic asic)
- 		return false;
- 	}
- 
--	/* set default inbox type if not overriden */
-+	/* set default inbox type if not overridden */
- 	if (dmub->inbox_type == DMUB_CMD_INTERFACE_DEFAULT) {
- 		if (default_inbox_type != DMUB_CMD_INTERFACE_DEFAULT) {
- 			/* use default inbox type as specified by DCN rev */
-diff --git a/drivers/gpu/drm/msm/registers/gen_header.py b/drivers/gpu/drm/msm/registers/gen_header.py
-index d3b56a9d84fb..d6bfb7b7d7b3 100644
---- a/drivers/gpu/drm/msm/registers/gen_header.py
-+++ b/drivers/gpu/drm/msm/registers/gen_header.py
-@@ -576,7 +576,7 @@ class Parser(object):
-             raise self.error(e)
- 
-     def parse_varset(self, attrs):
--        # Inherit the varset from the enclosing domain if not overriden:
-+        # Inherit the varset from the enclosing domain if not overridden:
-         varset = self.current_varset
-         if "varset" in attrs:
-             varset = self.enums[attrs["varset"]]
-diff --git a/drivers/gpu/drm/nouveau/nouveau_bios.c b/drivers/gpu/drm/nouveau/nouveau_bios.c
-index 38032bb95826..10cd606d01b9 100644
---- a/drivers/gpu/drm/nouveau/nouveau_bios.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_bios.c
-@@ -323,7 +323,7 @@ get_fp_strap(struct drm_device *dev, struct nvbios *bios)
- 	/*
- 	 * The fp strap is normally dictated by the "User Strap" in
- 	 * PEXTDEV_BOOT_0[20:16], but on BMP cards when bit 2 of the
--	 * Internal_Flags struct at 0x48 is set, the user strap gets overriden
-+	 * Internal_Flags struct at 0x48 is set, the user strap gets overridden
- 	 * by the PCI subsystem ID during POST, but not before the previous user
- 	 * strap has been committed to CR58 for CR57=0xf on head A, which may be
- 	 * read and used instead
-diff --git a/drivers/hwmon/abituguru.c b/drivers/hwmon/abituguru.c
-index ba8c68ae4595..5accd463599c 100644
---- a/drivers/hwmon/abituguru.c
-+++ b/drivers/hwmon/abituguru.c
-@@ -475,7 +475,7 @@ abituguru_detect_bank1_sensor_type(struct abituguru_data *data,
- 	u8 val, test_flag, buf[3];
- 	int i, ret = -ENODEV; /* error is the most common used retval :| */
- 
--	/* If overriden by the user return the user selected type */
-+	/* If overridden by the user return the user selected type */
- 	if (bank1_types[sensor_addr] >= ABIT_UGURU_IN_SENSOR &&
- 			bank1_types[sensor_addr] <= ABIT_UGURU_NC) {
- 		ABIT_UGURU_DEBUG(2, "assuming sensor type %d for bank1 sensor "
-diff --git a/drivers/mmc/core/block.c b/drivers/mmc/core/block.c
-index e760d13ee325..a02bb2fee874 100644
---- a/drivers/mmc/core/block.c
-+++ b/drivers/mmc/core/block.c
-@@ -86,7 +86,7 @@ MODULE_ALIAS("mmc:block");
- static DEFINE_MUTEX(block_mutex);
- 
- /*
-- * The defaults come from config options but can be overriden by module
-+ * The defaults come from config options but can be overridden by module
-  * or bootarg options.
-  */
- static int perdev_minors = CONFIG_MMC_BLOCK_MINORS;
-diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
-index ea310057fe3a..bc36d7578ce2 100644
---- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
-+++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
-@@ -3743,7 +3743,7 @@ static void bnx2x_warpcore_enable_AN_KR(struct bnx2x_phy *phy,
- 		{MDIO_WC_DEVAD, MDIO_WC_REG_CL72_USERB0_CL72_TX_FIR_TAP, 0},
- 	};
- 	DP(NETIF_MSG_LINK, "Enable Auto Negotiation for KR\n");
--	/* Set to default registers that may be overriden by 10G force */
-+	/* Set to default registers that may be overridden by 10G force */
- 	for (i = 0; i < ARRAY_SIZE(reg_set); i++)
- 		bnx2x_cl45_write(bp, phy, reg_set[i].devad, reg_set[i].reg,
- 				 reg_set[i].val);
-diff --git a/drivers/net/ethernet/chelsio/cxgb4vf/sge.c b/drivers/net/ethernet/chelsio/cxgb4vf/sge.c
-index 31fab2415743..b4374ca1d653 100644
---- a/drivers/net/ethernet/chelsio/cxgb4vf/sge.c
-+++ b/drivers/net/ethernet/chelsio/cxgb4vf/sge.c
-@@ -2194,7 +2194,7 @@ static void __iomem *bar2_address(struct adapter *adapter,
-  *	@rspq: pointer to the new rxq's Response Queue to be filled in
-  *	@iqasynch: if 0, a normal rspq; if 1, an asynchronous event queue
-  *	@dev: the network device associated with the new rspq
-- *	@intr_dest: MSI-X vector index (overriden in MSI mode)
-+ *	@intr_dest: MSI-X vector index (overridden in MSI mode)
-  *	@fl: pointer to the new rxq's Free List to be filled in
-  *	@hnd: the interrupt handler to invoke for the rspq
-  */
-diff --git a/drivers/net/ethernet/freescale/fman/fman_memac.c b/drivers/net/ethernet/freescale/fman/fman_memac.c
-index e2d8c58deef0..c1d588337751 100644
---- a/drivers/net/ethernet/freescale/fman/fman_memac.c
-+++ b/drivers/net/ethernet/freescale/fman/fman_memac.c
-@@ -1311,7 +1311,7 @@ int memac_initialization(struct mac_device *mac_dev,
- 
- 	/* Most boards should use MLO_AN_INBAND, but existing boards don't have
- 	 * a managed property. Default to MLO_AN_INBAND rather than MLO_AN_PHY.
--	 * Phylink will allow this to be overriden by a fixed link. We need to
-+	 * Phylink will allow this to be overridden by a fixed link. We need to
- 	 * be careful and not enable this if we are using MII or RGMII, since
- 	 * those configurations modes don't use in-band autonegotiation.
- 	 */
-diff --git a/drivers/net/ethernet/sfc/mcdi_pcol.h b/drivers/net/ethernet/sfc/mcdi_pcol.h
-index b9866e389e6d..9adfa058512f 100644
---- a/drivers/net/ethernet/sfc/mcdi_pcol.h
-+++ b/drivers/net/ethernet/sfc/mcdi_pcol.h
-@@ -13547,7 +13547,7 @@
-  * an ancestor of the current user (see MC_CMD_SET_VI_USER). Note that LL
-  * queues require this to be called after allocation but before initialisation
-  * of the queue. TLP options of a queue are fixed after queue is initialised,
-- * with the values set to current global value or they can be overriden using
-+ * with the values set to current global value or they can be overridden using
-  * this command. At LL queue allocation, all overrides are cleared.
-  */
- #define MC_CMD_SET_VI_TLP_PROCESSING 0xb1
-diff --git a/drivers/scsi/aic7xxx/aic79xx_osm.c b/drivers/scsi/aic7xxx/aic79xx_osm.c
-index feb1707feb7e..c9470f80626b 100644
---- a/drivers/scsi/aic7xxx/aic79xx_osm.c
-+++ b/drivers/scsi/aic7xxx/aic79xx_osm.c
-@@ -173,7 +173,7 @@ static adapter_tag_info_t aic79xx_tag_info[] =
- 
- /*
-  * The I/O cell on the chip is very configurable in respect to its analog
-- * characteristics.  Set the defaults here; they can be overriden with
-+ * characteristics.  Set the defaults here; they can be overridden with
-  * the proper insmod parameters.
-  */
- struct ahd_linux_iocell_opts
-diff --git a/drivers/scsi/sym53c8xx_2/sym53c8xx.h b/drivers/scsi/sym53c8xx_2/sym53c8xx.h
-index 11f5dc29aa59..8790f1315f75 100644
---- a/drivers/scsi/sym53c8xx_2/sym53c8xx.h
-+++ b/drivers/scsi/sym53c8xx_2/sym53c8xx.h
-@@ -128,7 +128,7 @@ struct sym_driver_setup {
- /*
-  *  Initial setup.
-  *
-- *  Can be overriden at startup by a command line.
-+ *  Can be overridden at startup by a command line.
-  */
- #define SYM_LINUX_DRIVER_SETUP	{				\
- 	.max_tag	= CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS,	\
-diff --git a/drivers/spi/spi-omap2-mcspi.c b/drivers/spi/spi-omap2-mcspi.c
-index a3355147f5de..90f3990e0060 100644
---- a/drivers/spi/spi-omap2-mcspi.c
-+++ b/drivers/spi/spi-omap2-mcspi.c
-@@ -1244,7 +1244,7 @@ static int omap2_mcspi_transfer_one(struct spi_controller *ctlr,
- 		omap2_mcspi_set_fifo(spi, t, 0);
- 
- out:
--	/* Restore defaults if they were overriden */
-+	/* Restore defaults if they were overridden */
- 	if (par_override) {
- 		par_override = 0;
- 		status = omap2_mcspi_setup_transfer(spi, NULL);
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 9f055ba776c8..6501f6e2615a 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -58,7 +58,7 @@ static struct fb_fix_screeninfo tridentfb_fix = {
- 	.accel = FB_ACCEL_NONE,
- };
- 
--/* defaults which are normally overriden by user values */
-+/* defaults which are normally overridden by user values */
- 
- /* video mode */
- static char *mode_option;
--- 
-2.25.1
+Guenter
 

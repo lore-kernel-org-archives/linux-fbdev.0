@@ -1,363 +1,303 @@
-Received: from meve.dewith.io (meve.dewith.io [157.90.20.64])
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 630AC3B0AF0;
-	Wed, 26 Aug 2026 07:33:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=157.90.20.64
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 003E63B6C15;
+	Wed, 26 Aug 2026 08:37:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787729617; cv=none; b=J5Q+qgcrXCOXpHsxpeJczfqFR7lekWV4uGbf4f1jpVJ225JSQw2MVZGA76c9nJgHOtEI/RfXAGzIrV05wYFhGUriHad3lQba1rUEbLjV9NQ/eaEPU1nicSEaRZNv/+BMDMPDqe2WHaFUfEKM2dYgvdLOz3PmuazkaUHMj/TLyOQ=
+	t=1787733453; cv=none; b=AOvrzu/HQEHa566DB8aX4ikqlTIE/vzouDrYgW0R9fji4cAILew8Vws4WD92X+E/12OsAixVHtaswbkDR9JlCLZTwhqzLxF4ZIejZGqPZb6xwTIk0du2/TnKEm6AzKQgPUUbr/dZo3VVI5HqlVaLgL39NI7FHCzqG/wMY8/nPws=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787729617; c=relaxed/simple;
-	bh=XcmQdcyRXcqz7OOgOPQtWvKh3U9JiKuMujian315yV8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VwltRGRfjHz/UuDmn7CHw/9kaWVBP6cQE0CTfjh4tLDICenNZSyB4HS2zxoXMgy+4UDV/aKFvD7jQm6R5TVtWQUUShhjb0AG+5LzXfSbnSzWcoxcpjTBFNPKteYWbMPL5FPJZOZy6FjARlHA+F38kL3PiOTgGaqWFmGUP7VM8Io=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=qgXgP5T5; arc=none smtp.client-ip=157.90.20.64
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dewith.io
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="qgXgP5T5"
-Received: from localhost (70-26-208-87.ftth.glasoperator.nl [87.208.26.70])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by meve.dewith.io (Postfix) with ESMTPSA id 5C4D624D69;
-	Wed, 26 Aug 2026 07:23:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dewith.io; s=default;
-	t=1787729024;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uXApw21u7kFbyUeBtXMbtGKYUhRfHXU4v8DzWnU9RlU=;
-	b=qgXgP5T5vrFd3RIjjvJ5mBDw9x0SjgNEaijfoUXMG+I/JcTOwZ/rBkRlceOE61kJvYLKsd
-	09hO8IRhGArEn52tNEpEu5SJq4UA0+r/Dkf53i4NVQmZWc78fLktfW6CMaL9l4q1o603ag
-	+2kuKlGFt2ht4KMif2cd/8vGIzBu8G0=
-From: Wim de With <wf@dewith.io>
-Date: Wed, 26 Aug 2026 09:23:11 +0200
-Subject: [PATCH v4 2/2] backlight: Add support for Orient Chip OCP8178
+	s=arc-20240116; t=1787733453; c=relaxed/simple;
+	bh=/nJ+6muvPjw51iymCr3S4mmwHKOg1vP9q5wNnUEFStE=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Mf+VelpsG7HnpQ7+3GeVLcEXvraqNlHfSCnSyhfB1EUSqgvmPDDnMK4Rv8kJFvsOiY7LHooju+ub0ccz5lyuGarsDGRQfnrYs2D+tBeZoKy9beb8o8mBeR8T9SgBEUpAr2xEI1m/W66/4WudMyuOftDTuN4gyiL9hKC6+7fbMn8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 5b4cb9eaa12911f19a56ed5b684f684d-20260826
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.19,REQID:3271276e-ecaf-42b4-9819-320377205142,IP:0,U
+	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:7db8b62,CLOUDID:6c3636afc8496d9cf70cbed7c874e8f3,BulkI
+	D:nil,BulkQuantity:0,SF:102|850|865|898,TC:nil,Content:0|15|50,EDM:-3,IP:n
+	il,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LE
+	S:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 5b4cb9eaa12911f19a56ed5b684f684d-20260826
+X-User: yanglinlin@kylinos.cn
+Received: from localhost.localdomain [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <yanglinlin@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 1157170727; Wed, 26 Aug 2026 16:37:22 +0800
+From: Linlin Yang <yanglinlin@kylinos.cn>
+To: linux-kernel@vger.kernel.org
+Cc: amd-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org,
+	linux-hwmon@vger.kernel.org,
+	linux-mmc@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linux-spi@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	Linlin Yang <yanglinlin@kylinos.cn>
+Subject: [PATCH] treewide: fix spelling of "overridden"
+Date: Wed, 26 Aug 2026 16:37:15 +0800
+Message-Id: <20260826083715.625136-1-yanglinlin@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260826-ocp8178-backlight-v4-2-47d7acce882e@dewith.io>
-References: <20260826-ocp8178-backlight-v4-0-47d7acce882e@dewith.io>
-In-Reply-To: <20260826-ocp8178-backlight-v4-0-47d7acce882e@dewith.io>
-To: Wim de With <wf@dewith.io>, Lee Jones <lee@kernel.org>, 
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
- Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-fbdev@vger.kernel.org
-X-Mailer: b4 0.16.0
-X-Spam: Yes
+Content-Transfer-Encoding: 8bit
 
-Add a driver for the Orient Chip OCP8178 backlight controller.
+Fix misspelling of "overridden" (missing a 'd') in comments across
+multiple drivers.  The correct spelling "overridden" is already used
+292 times in the same drivers/ directory.
 
-The OCP8178 supports either PWM or a vendor-specific onewire protocol
-over GPIO. This driver implements the onewire protocol, which enables
-setting static brightness levels without requiring a continuous PWM
-signal from the host CPU. Note that while the vendor calls the protocol
-1-Wire, it is not the 1-Wire protocol from Dallas Semiconductor as
-implemented in drivers/w1.
+All occurrences are in comments only, no functional change.
 
-Signed-off-by: Wim de With <wf@dewith.io>
-Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
+Signed-off-by: Linlin Yang <yanglinlin@kylinos.cn>
 ---
- MAINTAINERS                          |   1 +
- drivers/video/backlight/Kconfig      |  10 ++
- drivers/video/backlight/Makefile     |   1 +
- drivers/video/backlight/ocp8178_bl.c | 231 +++++++++++++++++++++++++++++++++++
- 4 files changed, 243 insertions(+)
+ .../gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c    | 2 +-
+ .../gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c    | 2 +-
+ .../amd/display/dc/link/protocols/link_edp_panel_control.c    | 4 ++--
+ drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c               | 2 +-
+ drivers/gpu/drm/msm/registers/gen_header.py                   | 2 +-
+ drivers/gpu/drm/nouveau/nouveau_bios.c                        | 2 +-
+ drivers/hwmon/abituguru.c                                     | 2 +-
+ drivers/mmc/core/block.c                                      | 2 +-
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c              | 2 +-
+ drivers/net/ethernet/chelsio/cxgb4vf/sge.c                    | 2 +-
+ drivers/net/ethernet/freescale/fman/fman_memac.c              | 2 +-
+ drivers/net/ethernet/sfc/mcdi_pcol.h                          | 2 +-
+ drivers/scsi/aic7xxx/aic79xx_osm.c                            | 2 +-
+ drivers/scsi/sym53c8xx_2/sym53c8xx.h                          | 2 +-
+ drivers/spi/spi-omap2-mcspi.c                                 | 2 +-
+ drivers/video/fbdev/tridentfb.c                               | 2 +-
+ 16 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3ca99d9c32ef1..7146e4dea8d78 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -19682,6 +19682,7 @@ OCP8178 BACKLIGHT DRIVER
- M:	Wim de With <wf@dewith.io>
- S:	Maintained
- F:	Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
-+F:	drivers/video/backlight/ocp8178_bl.c
+diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c b/drivers/gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c
+index 33b5136f7ce3..75bdad22bf69 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c
++++ b/drivers/gpu/drm/amd/display/dc/dml/dcn30/display_mode_vba_30.c
+@@ -1805,7 +1805,7 @@ static void DISPCLKDPPCLKDCFCLKDeepSleepPrefetchParametersWatermarksAndPerforman
+ 	v->DISPCLKWithRamping = 0;
+ 	v->DISPCLKWithoutRamping = 0;
+ 	v->GlobalDPPCLK = 0.0;
+-	/* DAL custom code: need to update ReturnBW in case min dcfclk is overriden */
++	/* DAL custom code: need to update ReturnBW in case min dcfclk is overridden */
+ 	v->IdealSDPPortBandwidthPerState[v->VoltageLevel][v->maxMpcComb] = dml_min3(
+ 			v->ReturnBusWidth * v->DCFCLK,
+ 			v->DRAMSpeedPerState[v->VoltageLevel] * v->NumberOfChannels * v->DRAMChannelWidth,
+diff --git a/drivers/gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c b/drivers/gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c
+index 8064c4b3fd25..3f62ea493787 100644
+--- a/drivers/gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c
++++ b/drivers/gpu/drm/amd/display/dc/dml/dcn31/display_mode_vba_31.c
+@@ -2045,7 +2045,7 @@ static void DISPCLKDPPCLKDCFCLKDeepSleepPrefetchParametersWatermarksAndPerforman
+ 	v->DISPCLKWithRamping = 0;
+ 	v->DISPCLKWithoutRamping = 0;
+ 	v->GlobalDPPCLK = 0.0;
+-	/* DAL custom code: need to update ReturnBW in case min dcfclk is overriden */
++	/* DAL custom code: need to update ReturnBW in case min dcfclk is overridden */
+ 	{
+ 	double IdealFabricAndSDPPortBandwidthPerState = dml_min(
+ 			v->ReturnBusWidth * v->DCFCLKState[v->VoltageLevel][v->maxMpcComb],
+diff --git a/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c b/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
+index 16951a9550f2..d3fe6e024891 100644
+--- a/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
++++ b/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
+@@ -108,7 +108,7 @@ enum dp_panel_mode dp_get_panel_mode(struct dc_link *link)
+ 			/* alternate scrambler reset is required for Travis
+ 			 * for the case when external chip does not
+ 			 * provide sink device id, alternate scrambler
+-			 * scheme will  be overriden later by querying
++			 * scheme will  be overridden later by querying
+ 			 * Encoder features
+ 			 */
+ 			if (strncmp(
+@@ -124,7 +124,7 @@ enum dp_panel_mode dp_get_panel_mode(struct dc_link *link)
+ 			/* alternate scrambler reset is required for NUTMEG
+ 			 * for the case when external chip does not provide
+ 			 * sink device id, alternate scrambler scheme will
+-			 * be overriden later by querying Encoder feature
++			 * be overridden later by querying Encoder feature
+ 			 */
+ 			if (strncmp(link->dpcd_caps.branch_dev_name,
+ 				DP_VGA_LVDS_CONVERTER_ID_3,
+diff --git a/drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c b/drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c
+index 204375f1eff8..587d26c742cd 100644
+--- a/drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c
++++ b/drivers/gpu/drm/amd/display/dmub/src/dmub_srv.c
+@@ -584,7 +584,7 @@ static bool dmub_srv_hw_setup(struct dmub_srv *dmub, enum dmub_asic asic)
+ 		return false;
+ 	}
  
- OCXL (Open Coherent Accelerator Processor Interface OpenCAPI) DRIVER
- M:	Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 7aa1c4b21111f..aa845230c5f58 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -226,6 +226,16 @@ config BACKLIGHT_LOCOMO
- 	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
- 	  enable the LCD/backlight driver.
+-	/* set default inbox type if not overriden */
++	/* set default inbox type if not overridden */
+ 	if (dmub->inbox_type == DMUB_CMD_INTERFACE_DEFAULT) {
+ 		if (default_inbox_type != DMUB_CMD_INTERFACE_DEFAULT) {
+ 			/* use default inbox type as specified by DCN rev */
+diff --git a/drivers/gpu/drm/msm/registers/gen_header.py b/drivers/gpu/drm/msm/registers/gen_header.py
+index d3b56a9d84fb..d6bfb7b7d7b3 100644
+--- a/drivers/gpu/drm/msm/registers/gen_header.py
++++ b/drivers/gpu/drm/msm/registers/gen_header.py
+@@ -576,7 +576,7 @@ class Parser(object):
+             raise self.error(e)
  
-+config BACKLIGHT_OCP8178
-+	tristate "OCP8178 Backlight Driver"
-+	depends on GPIOLIB
-+	help
-+	  If you have an Orient Chip OCP8178, say Y to enable the backlight
-+	  driver.
-+
-+	  To compile this driver as a module, choose M here: the module will
-+	  be called ocp8178_bl.
-+
- config BACKLIGHT_OMAP1
- 	tristate "OMAP1 PWL-based LCD Backlight"
- 	depends on ARCH_OMAP1 || COMPILE_TEST
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 21c8313cfb121..c4e87b708ae21 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -51,6 +51,7 @@ obj-$(CONFIG_BACKLIGHT_MAX25014)	+= max25014.o
- obj-$(CONFIG_BACKLIGHT_MAX8925)		+= max8925_bl.o
- obj-$(CONFIG_BACKLIGHT_MP3309C)		+= mp3309c.o
- obj-$(CONFIG_BACKLIGHT_MT6370)		+= mt6370-backlight.o
-+obj-$(CONFIG_BACKLIGHT_OCP8178)		+= ocp8178_bl.o
- obj-$(CONFIG_BACKLIGHT_OMAP1)		+= omap1_bl.o
- obj-$(CONFIG_BACKLIGHT_PANDORA)		+= pandora_bl.o
- obj-$(CONFIG_BACKLIGHT_PWM)		+= pwm_bl.o
-diff --git a/drivers/video/backlight/ocp8178_bl.c b/drivers/video/backlight/ocp8178_bl.c
-new file mode 100644
-index 0000000000000..6c1e8c9451f12
---- /dev/null
-+++ b/drivers/video/backlight/ocp8178_bl.c
-@@ -0,0 +1,231 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Orient Chip OCP8178 Backlight Driver
-+ *
-+ * Copyright (C) 2026 Wim de With
-+ *
-+ * Author: Wim de With <wf@dewith.io>
-+ */
-+
-+#include <linux/backlight.h>
-+#include <linux/bitfield.h>
-+#include <linux/bits.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/irqflags.h>
-+#include <linux/platform_device.h>
-+#include <linux/property.h>
-+
-+#define OCP8178_MAX_BRIGHTNESS 0x1F /* 5 bits */
-+
-+#define OCP8178_DEVICE_ADDRESS 0x72
-+
-+#define OCP8178_DATA_RFA BIT(7)
-+#define OCP8178_DATA_ADDR GENMASK(6, 5)
-+#define OCP8178_DATA_VALUE GENMASK(4, 0)
-+
-+#define OCP8178_1W_INIT_MAX_RETRIES 5
-+#define OCP8178_1W_INIT_SLEEP_US (50 * 1000)
-+
-+#define OCP8178_T_OFF_US (3 * 1000) /* datasheet specifies at least 2.5 ms */
-+#define OCP8178_1W_T_DELAY_US (100 + 10) /* 10 us as safety factor */
-+#define OCP8178_1W_T_DETECT_US (260 + 10) /* 10 us as safety factor */
-+#define OCP8178_1W_T_START_US 2
-+#define OCP8178_1W_T_EOS_US 2
-+#define OCP8178_1W_T_WIN_NS (1000 * 1000)
-+
-+/*
-+ * The datasheet specifies 1.7 Kbps to 160 Kbps.
-+ * 1 / (160 Kbps) is about 6.67 us, so using 7 us per bit should be fine.
-+ * T_HIGH + T_LOW = 7 us
-+ * T_HIGH > 2 * T_LOW for high bits
-+ * T_LOW > 2 * T_HIGH for low bits
-+ */
-+#define OCP8178_1W_HIGH_BIT_T_LOW_US 2
-+#define OCP8178_1W_HIGH_BIT_T_HIGH_US 5
-+#define OCP8178_1W_LOW_BIT_T_LOW_US 5
-+#define OCP8178_1W_LOW_BIT_T_HIGH_US 2
-+
-+struct ocp8178_bl {
-+	struct device *dev;
-+	struct gpio_desc *gpiod;
-+};
-+
-+static int ocp8178_bl_enable_onewire(struct ocp8178_bl *ocp8178)
-+{
-+	u64 start, duration;
-+
-+	gpiod_set_value(ocp8178->gpiod, 0);
-+	fsleep(OCP8178_T_OFF_US);
-+
-+	start = ktime_get_ns();
-+
-+	gpiod_set_value(ocp8178->gpiod, 1);
-+	udelay(OCP8178_1W_T_DELAY_US);
-+	gpiod_set_value(ocp8178->gpiod, 0);
-+	udelay(OCP8178_1W_T_DETECT_US);
-+	gpiod_set_value(ocp8178->gpiod, 1);
-+
-+	duration = ktime_get_ns() - start;
-+
-+	if (duration >= OCP8178_1W_T_WIN_NS) {
-+		dev_err(ocp8178->dev,
-+			"onewire detection window exceeded (%llu ns)\n",
-+			duration);
-+		return -EAGAIN;
-+	}
-+
-+	return 0;
-+}
-+
-+static void ocp8178_bl_write_u8(struct ocp8178_bl *ocp8178, u8 value)
-+{
-+	unsigned long flags;
-+
-+	gpiod_set_value(ocp8178->gpiod, 1);
-+	udelay(OCP8178_1W_T_START_US);
-+
-+	local_irq_save(flags);
-+
-+	for (int i = 7; i >= 0; i--) {
-+		if ((value >> i) & 1) {
-+			gpiod_set_value(ocp8178->gpiod, 0);
-+			udelay(OCP8178_1W_HIGH_BIT_T_LOW_US);
-+			gpiod_set_value(ocp8178->gpiod, 1);
-+			udelay(OCP8178_1W_HIGH_BIT_T_HIGH_US);
-+		} else {
-+			gpiod_set_value(ocp8178->gpiod, 0);
-+			udelay(OCP8178_1W_LOW_BIT_T_LOW_US);
-+			gpiod_set_value(ocp8178->gpiod, 1);
-+			udelay(OCP8178_1W_LOW_BIT_T_HIGH_US);
-+		}
-+	}
-+
-+	gpiod_set_value(ocp8178->gpiod, 0);
-+	udelay(OCP8178_1W_T_EOS_US);
-+	gpiod_set_value(ocp8178->gpiod, 1);
-+
-+	local_irq_restore(flags);
-+}
-+
-+static void ocp8178_bl_set_brightness(struct ocp8178_bl *ocp8178, u8 brightness)
-+{
-+	u8 data = 0;
-+
-+	/*
-+	 * We cannot set RFA (request for acknowledge) unless the GPIO pin is
-+	 * configured as open drain.
-+	 */
-+	data |= FIELD_PREP(OCP8178_DATA_RFA, 0);
-+	data |= FIELD_PREP(OCP8178_DATA_ADDR, 0);
-+	data |= FIELD_PREP(OCP8178_DATA_VALUE, brightness);
-+
-+	ocp8178_bl_write_u8(ocp8178, OCP8178_DEVICE_ADDRESS);
-+	ocp8178_bl_write_u8(ocp8178, data);
-+}
-+
-+static int ocp8178_bl_update_status(struct backlight_device *bl)
-+{
-+	struct ocp8178_bl *ocp8178 = bl_get_data(bl);
-+	u8 brightness = backlight_get_brightness(bl);
-+
-+	ocp8178_bl_set_brightness(ocp8178, brightness);
-+	return 0;
-+}
-+
-+static const struct backlight_ops ocp8178_bl_ops = {
-+	.options = BL_CORE_SUSPENDRESUME,
-+	.update_status = ocp8178_bl_update_status,
-+};
-+
-+static int ocp8178_bl_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct backlight_device *bl;
-+	struct backlight_properties props;
-+	struct ocp8178_bl *ocp8178;
-+	u32 max_brightness, brightness;
-+	int ret, retries;
-+
-+	ocp8178 = devm_kzalloc(dev, sizeof(*ocp8178), GFP_KERNEL);
-+	if (!ocp8178)
-+		return -ENOMEM;
-+
-+	ocp8178->dev = dev;
-+
-+	ret = device_property_read_u32(dev, "max-brightness", &max_brightness);
-+	if (ret)
-+		max_brightness = OCP8178_MAX_BRIGHTNESS;
-+	if (max_brightness > OCP8178_MAX_BRIGHTNESS) {
-+		dev_warn(dev, "max brightness exceeds hardware limit\n");
-+		max_brightness = OCP8178_MAX_BRIGHTNESS;
-+	}
-+
-+	ret = device_property_read_u32(dev, "default-brightness", &brightness);
-+	if (ret)
-+		brightness = max_brightness;
-+	if (brightness > max_brightness) {
-+		dev_warn(dev, "default brightness exceeds max brightness\n");
-+		brightness = max_brightness;
-+	}
-+
-+	ocp8178->gpiod = devm_gpiod_get(dev, "ctrl", GPIOD_OUT_LOW);
-+	if (IS_ERR(ocp8178->gpiod))
-+		return dev_err_probe(dev, PTR_ERR(ocp8178->gpiod),
-+				     "GPIO missing or invalid\n");
-+	if (gpiod_cansleep(ocp8178->gpiod))
-+		return dev_err_probe(dev, -EINVAL,
-+				     "sleeping GPIO not supported\n");
-+	gpiod_set_consumer_name(ocp8178->gpiod, dev_name(dev));
-+
-+	for (retries = 0; retries < OCP8178_1W_INIT_MAX_RETRIES; retries++) {
-+		ret = ocp8178_bl_enable_onewire(ocp8178);
-+		if (!ret)
-+			break;
-+		if (ret != -EAGAIN)
-+			return ret;
-+		fsleep(OCP8178_1W_INIT_SLEEP_US);
-+	}
-+	if (retries >= OCP8178_1W_INIT_MAX_RETRIES)
-+		return dev_err_probe(dev, -ETIMEDOUT,
-+				     "failed to initialize onewire protocol\n");
-+
-+	props = (typeof(props)){
-+		.type = BACKLIGHT_RAW,
-+		.brightness = brightness,
-+		.max_brightness = max_brightness,
-+		.power = BACKLIGHT_POWER_ON,
-+		.scale = BACKLIGHT_SCALE_NON_LINEAR,
-+	};
-+
-+	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ocp8178,
-+					    &ocp8178_bl_ops, &props);
-+	if (IS_ERR(bl))
-+		return dev_err_probe(dev, PTR_ERR(bl),
-+				     "failed to register backlight\n");
-+
-+	platform_set_drvdata(pdev, bl);
-+	backlight_update_status(bl);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id ocp8178_bl_of_match[] = {
-+	{ .compatible = "ocs,ocp8178" },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, ocp8178_bl_of_match);
-+
-+static struct platform_driver ocp8178_bl_driver = {
-+	.driver = {
-+		.name = "ocp8178-bl",
-+		.of_match_table = ocp8178_bl_of_match,
-+	},
-+	.probe = ocp8178_bl_probe,
-+};
-+module_platform_driver(ocp8178_bl_driver);
-+
-+MODULE_AUTHOR("Wim de With <wf@dewith.io>");
-+MODULE_DESCRIPTION("Orient Chip OCP8178 Backlight Driver");
-+MODULE_LICENSE("GPL");
-
+     def parse_varset(self, attrs):
+-        # Inherit the varset from the enclosing domain if not overriden:
++        # Inherit the varset from the enclosing domain if not overridden:
+         varset = self.current_varset
+         if "varset" in attrs:
+             varset = self.enums[attrs["varset"]]
+diff --git a/drivers/gpu/drm/nouveau/nouveau_bios.c b/drivers/gpu/drm/nouveau/nouveau_bios.c
+index 38032bb95826..10cd606d01b9 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_bios.c
++++ b/drivers/gpu/drm/nouveau/nouveau_bios.c
+@@ -323,7 +323,7 @@ get_fp_strap(struct drm_device *dev, struct nvbios *bios)
+ 	/*
+ 	 * The fp strap is normally dictated by the "User Strap" in
+ 	 * PEXTDEV_BOOT_0[20:16], but on BMP cards when bit 2 of the
+-	 * Internal_Flags struct at 0x48 is set, the user strap gets overriden
++	 * Internal_Flags struct at 0x48 is set, the user strap gets overridden
+ 	 * by the PCI subsystem ID during POST, but not before the previous user
+ 	 * strap has been committed to CR58 for CR57=0xf on head A, which may be
+ 	 * read and used instead
+diff --git a/drivers/hwmon/abituguru.c b/drivers/hwmon/abituguru.c
+index ba8c68ae4595..5accd463599c 100644
+--- a/drivers/hwmon/abituguru.c
++++ b/drivers/hwmon/abituguru.c
+@@ -475,7 +475,7 @@ abituguru_detect_bank1_sensor_type(struct abituguru_data *data,
+ 	u8 val, test_flag, buf[3];
+ 	int i, ret = -ENODEV; /* error is the most common used retval :| */
+ 
+-	/* If overriden by the user return the user selected type */
++	/* If overridden by the user return the user selected type */
+ 	if (bank1_types[sensor_addr] >= ABIT_UGURU_IN_SENSOR &&
+ 			bank1_types[sensor_addr] <= ABIT_UGURU_NC) {
+ 		ABIT_UGURU_DEBUG(2, "assuming sensor type %d for bank1 sensor "
+diff --git a/drivers/mmc/core/block.c b/drivers/mmc/core/block.c
+index e760d13ee325..a02bb2fee874 100644
+--- a/drivers/mmc/core/block.c
++++ b/drivers/mmc/core/block.c
+@@ -86,7 +86,7 @@ MODULE_ALIAS("mmc:block");
+ static DEFINE_MUTEX(block_mutex);
+ 
+ /*
+- * The defaults come from config options but can be overriden by module
++ * The defaults come from config options but can be overridden by module
+  * or bootarg options.
+  */
+ static int perdev_minors = CONFIG_MMC_BLOCK_MINORS;
+diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
+index ea310057fe3a..bc36d7578ce2 100644
+--- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
++++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
+@@ -3743,7 +3743,7 @@ static void bnx2x_warpcore_enable_AN_KR(struct bnx2x_phy *phy,
+ 		{MDIO_WC_DEVAD, MDIO_WC_REG_CL72_USERB0_CL72_TX_FIR_TAP, 0},
+ 	};
+ 	DP(NETIF_MSG_LINK, "Enable Auto Negotiation for KR\n");
+-	/* Set to default registers that may be overriden by 10G force */
++	/* Set to default registers that may be overridden by 10G force */
+ 	for (i = 0; i < ARRAY_SIZE(reg_set); i++)
+ 		bnx2x_cl45_write(bp, phy, reg_set[i].devad, reg_set[i].reg,
+ 				 reg_set[i].val);
+diff --git a/drivers/net/ethernet/chelsio/cxgb4vf/sge.c b/drivers/net/ethernet/chelsio/cxgb4vf/sge.c
+index 31fab2415743..b4374ca1d653 100644
+--- a/drivers/net/ethernet/chelsio/cxgb4vf/sge.c
++++ b/drivers/net/ethernet/chelsio/cxgb4vf/sge.c
+@@ -2194,7 +2194,7 @@ static void __iomem *bar2_address(struct adapter *adapter,
+  *	@rspq: pointer to the new rxq's Response Queue to be filled in
+  *	@iqasynch: if 0, a normal rspq; if 1, an asynchronous event queue
+  *	@dev: the network device associated with the new rspq
+- *	@intr_dest: MSI-X vector index (overriden in MSI mode)
++ *	@intr_dest: MSI-X vector index (overridden in MSI mode)
+  *	@fl: pointer to the new rxq's Free List to be filled in
+  *	@hnd: the interrupt handler to invoke for the rspq
+  */
+diff --git a/drivers/net/ethernet/freescale/fman/fman_memac.c b/drivers/net/ethernet/freescale/fman/fman_memac.c
+index e2d8c58deef0..c1d588337751 100644
+--- a/drivers/net/ethernet/freescale/fman/fman_memac.c
++++ b/drivers/net/ethernet/freescale/fman/fman_memac.c
+@@ -1311,7 +1311,7 @@ int memac_initialization(struct mac_device *mac_dev,
+ 
+ 	/* Most boards should use MLO_AN_INBAND, but existing boards don't have
+ 	 * a managed property. Default to MLO_AN_INBAND rather than MLO_AN_PHY.
+-	 * Phylink will allow this to be overriden by a fixed link. We need to
++	 * Phylink will allow this to be overridden by a fixed link. We need to
+ 	 * be careful and not enable this if we are using MII or RGMII, since
+ 	 * those configurations modes don't use in-band autonegotiation.
+ 	 */
+diff --git a/drivers/net/ethernet/sfc/mcdi_pcol.h b/drivers/net/ethernet/sfc/mcdi_pcol.h
+index b9866e389e6d..9adfa058512f 100644
+--- a/drivers/net/ethernet/sfc/mcdi_pcol.h
++++ b/drivers/net/ethernet/sfc/mcdi_pcol.h
+@@ -13547,7 +13547,7 @@
+  * an ancestor of the current user (see MC_CMD_SET_VI_USER). Note that LL
+  * queues require this to be called after allocation but before initialisation
+  * of the queue. TLP options of a queue are fixed after queue is initialised,
+- * with the values set to current global value or they can be overriden using
++ * with the values set to current global value or they can be overridden using
+  * this command. At LL queue allocation, all overrides are cleared.
+  */
+ #define MC_CMD_SET_VI_TLP_PROCESSING 0xb1
+diff --git a/drivers/scsi/aic7xxx/aic79xx_osm.c b/drivers/scsi/aic7xxx/aic79xx_osm.c
+index feb1707feb7e..c9470f80626b 100644
+--- a/drivers/scsi/aic7xxx/aic79xx_osm.c
++++ b/drivers/scsi/aic7xxx/aic79xx_osm.c
+@@ -173,7 +173,7 @@ static adapter_tag_info_t aic79xx_tag_info[] =
+ 
+ /*
+  * The I/O cell on the chip is very configurable in respect to its analog
+- * characteristics.  Set the defaults here; they can be overriden with
++ * characteristics.  Set the defaults here; they can be overridden with
+  * the proper insmod parameters.
+  */
+ struct ahd_linux_iocell_opts
+diff --git a/drivers/scsi/sym53c8xx_2/sym53c8xx.h b/drivers/scsi/sym53c8xx_2/sym53c8xx.h
+index 11f5dc29aa59..8790f1315f75 100644
+--- a/drivers/scsi/sym53c8xx_2/sym53c8xx.h
++++ b/drivers/scsi/sym53c8xx_2/sym53c8xx.h
+@@ -128,7 +128,7 @@ struct sym_driver_setup {
+ /*
+  *  Initial setup.
+  *
+- *  Can be overriden at startup by a command line.
++ *  Can be overridden at startup by a command line.
+  */
+ #define SYM_LINUX_DRIVER_SETUP	{				\
+ 	.max_tag	= CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS,	\
+diff --git a/drivers/spi/spi-omap2-mcspi.c b/drivers/spi/spi-omap2-mcspi.c
+index a3355147f5de..90f3990e0060 100644
+--- a/drivers/spi/spi-omap2-mcspi.c
++++ b/drivers/spi/spi-omap2-mcspi.c
+@@ -1244,7 +1244,7 @@ static int omap2_mcspi_transfer_one(struct spi_controller *ctlr,
+ 		omap2_mcspi_set_fifo(spi, t, 0);
+ 
+ out:
+-	/* Restore defaults if they were overriden */
++	/* Restore defaults if they were overridden */
+ 	if (par_override) {
+ 		par_override = 0;
+ 		status = omap2_mcspi_setup_transfer(spi, NULL);
+diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
+index 9f055ba776c8..6501f6e2615a 100644
+--- a/drivers/video/fbdev/tridentfb.c
++++ b/drivers/video/fbdev/tridentfb.c
+@@ -58,7 +58,7 @@ static struct fb_fix_screeninfo tridentfb_fix = {
+ 	.accel = FB_ACCEL_NONE,
+ };
+ 
+-/* defaults which are normally overriden by user values */
++/* defaults which are normally overridden by user values */
+ 
+ /* video mode */
+ static char *mode_option;
 -- 
-2.55.0
+2.25.1
 

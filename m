@@ -1,39 +1,40 @@
 Received: from meve.dewith.io (meve.dewith.io [157.90.20.64])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62F343B0AC4;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62FC53B0ADC;
 	Wed, 26 Aug 2026 07:33:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=157.90.20.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787729616; cv=none; b=Nk4tOU4FqFkSsnJGWdUf+OlwRjFlut2tbH6BD0bGZmJb+2N6SPcQvYyi0yVYyxh5AKw5Z1ZroMnYVUeINJduNAglVVkl5XEMVHVHXBcbSNqjMoCf40WPzgmkS7CbkNBUmtI1rAiw9ZyHDzrUcwJzDRR3R7utlJQ3OyFE48ham80=
+	t=1787729616; cv=none; b=bDf2EI4FSX3siyR1j6i0ZWMa/dapl/qMSX10ZdjqUKTGtARpqmQieUmwLzbjGiaYaow8cnG7TZnauCI0AZcHa7+MdiQ4jykcg2L37Q9p58594giUSPisoywhBwxKur2xm2ypOh/LfgLG4l8d9Ld/UFRrJK48d8gFUt8h7AqQk3s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1787729616; c=relaxed/simple;
-	bh=2kkGWDFGI/OD7dmBUn3UVn1bLSIqWcPVbyKZgfQWbns=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Rq/77mV0LRU65oxcD24j2yG7V2/lM0e6FfPf6QamzKhLpG84RNrrXKR2+VrYJ2YIxSxJNMZE1zhbsAHijwwLhJb7rJW9KKpS1hM698xjdeuMqYHCWtsQQs+2cJn+tio9qpu3X7nxYt61sYF/H5RrzLNbLcqtro8BpLziksAkI7Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=fZSPTl2c; arc=none smtp.client-ip=157.90.20.64
+	bh=qftSrEfroFp5nluJHtSsmGjCMcHsJSpZDV79+wzd2XU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=I/dFDtOtJvlcHqzhMes/gPBxuFlci0fVQ3toOcd+psPOLZBrJ0ylcSVxhhwArj8KDdGEk496aK2dSEf9/6IXED2siJazKt8ZrWSz4O9engELR4AYHha59y3h/TzfTY/ZyNkd94Fgrf+YM3+i0ogq6RRgKEE6W7pJ+yic7rUTqmQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io; spf=pass smtp.mailfrom=dewith.io; dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b=y2dh/FJl; arc=none smtp.client-ip=157.90.20.64
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=dewith.io
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=dewith.io
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="fZSPTl2c"
+	dkim=pass (1024-bit key) header.d=dewith.io header.i=@dewith.io header.b="y2dh/FJl"
 Received: from localhost (70-26-208-87.ftth.glasoperator.nl [87.208.26.70])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by meve.dewith.io (Postfix) with ESMTPSA id 1E67624F7A;
-	Wed, 26 Aug 2026 07:23:45 +0000 (UTC)
+	by meve.dewith.io (Postfix) with ESMTPSA id 7BD5F21A63;
+	Wed, 26 Aug 2026 07:23:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dewith.io; s=default;
-	t=1787729025;
+	t=1787729023;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=QAUOj2QAkKl6zEzdhup86/l49AfWYPOJZzp6vrxeQlI=;
-	b=fZSPTl2cq6asaC+h1SoLhhFJG4IvcGBV4fIApcJ9IYPbx1Y2/3B7GWEZeumCYh0c7D2v4l
-	UWXKUkVMWNNf1zkl4Tst6H8BMgQzU+MZsPMROd/SKdhguqkq+ee7AU53K8NCA+3hCbcsZG
-	M4A6USD34H0/PRKHgRNcLeMc9jcNr2s=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=lpvFtfsJlIAI5gfNTYWyYBhU1P8rqGqemnlrcNBN2Dc=;
+	b=y2dh/FJlTX2PyRxMrQWXqW6QauzDqKTxITgdXVmjMQ9lMKwHFBC5gGtYsr/CiddgATTYPO
+	VnVm+wFd+jc4F3wAIszZagJkvUySZ1D1tHQfpQWKnFRggMzhu+KKlat75YRquTpOcva9tM
+	LWTQ1ZbC0rlNpoBM7liaBWvBswTq804=
 From: Wim de With <wf@dewith.io>
-Subject: [PATCH v4 0/2] backlight: Add support for Orient Chip OCP8178
-Date: Wed, 26 Aug 2026 09:23:09 +0200
-Message-Id: <20260826-ocp8178-backlight-v4-0-47d7acce882e@dewith.io>
+Date: Wed, 26 Aug 2026 09:23:10 +0200
+Subject: [PATCH v4 1/2] dt-bindings: backlight: Add Orient Chip OCP8178
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -42,12 +43,9 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/23OzW7CMBAE4FdBPneR/5I6PfU9Kg6Os8YLLUa2C
- a1Q3h0besiB40gzn+bGMibCzD42N5ZwpkzxVIN+2zAX7GmPQFPNTHLZc8MNRHc24t3AaN3xm/a
- hwIB2Ujgojl6xujsn9PT7ML92z5wv4wFdaVBr+BR/oIRUhyu7l1x0WmwFF4prEHD1nxNeqYQtx
- TYLlEtMf4+vs2z8/1TIF7dmCRy0nYQZtRnRmxXWbs1qLfSvBFUFZ/3QOd0p1/G1sCzLHaoaE1Y
- 9AQAA
-X-Change-ID: 20260808-ocp8178-backlight-9ead3e930ef3
+Message-Id: <20260826-ocp8178-backlight-v4-1-47d7acce882e@dewith.io>
+References: <20260826-ocp8178-backlight-v4-0-47d7acce882e@dewith.io>
+In-Reply-To: <20260826-ocp8178-backlight-v4-0-47d7acce882e@dewith.io>
 To: Wim de With <wf@dewith.io>, Lee Jones <lee@kernel.org>, 
  Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
  Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -58,77 +56,89 @@ Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
  linux-fbdev@vger.kernel.org, 
  Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailer: b4 0.16.0
+X-Spam: Yes
 
-The ClockworkPi uConsole[1] is a modular handheld console manufactured
-by Clockwork Tech that runs Linux. It consists of a mainboard which
-connects a number of peripherals, such as the screen, batteries and
-keyboard. This mainboard hosts a system on a module (SoM), such as the
-Raspberry Pi Compute Module as a so-called core to provide the compute
-for the device. The device supports different kinds of SoM as cores. The
-mainboard is shared between different devices, such as the DevTerm[2].
+Add device tree bindings for the Orient Chip OCP8178 LED backlight
+driver.
 
-Currently, the uConsole requires a number of out-of-tree drivers to
-support the hardware. In addition, most (if not all) supported SoMs
-require vendor kernels. In practice, this means that kernel support for
-the device is scattered across various repositories in the form of
-patches with dubious quality.
-
-This patch series is the first in an attempt to upstream as many of the
-needed drivers as possible. The goal is to support at least the
-mainboard and the peripherals of the uConsole in the upstream kernel.
-These drivers should find their way downstream to the SoM vendor kernels
-eventually.
-
-This series adds the driver for the backlight controller, the Orient
-Chip OCP8178. I wrote the driver from scratch using the datasheet, to
-avoid any copyright or attribution problems.
-
-[1]: https://www.clockworkpi.com/home-uconsole
-[2]: https://www.clockworkpi.com/home-devterm
-
+Signed-off-by: Wim de With <wf@dewith.io>
+Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 ---
-Changes in v4:
-No functional changes
-- Collect Reviewed-by trailers
-- Link to v3: https://patch.msgid.link/20260816-ocp8178-backlight-v3-0-caf95c453c50@dewith.io
+ .../bindings/leds/backlight/ocs,ocp8178.yaml       | 47 ++++++++++++++++++++++
+ MAINTAINERS                                        |  5 +++
+ 2 files changed, 52 insertions(+)
 
-Changes in v3:
-- Rename enable-gpios to ctrl-gpios
-- Remove probe debug message
-- Remove onewire debug message
-- Link to v2: https://patch.msgid.link/20260812-ocp8178-backlight-v2-0-4ad18b48bef8@dewith.io
+diff --git a/Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml b/Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
+new file mode 100644
+index 0000000000000..1cd95aac0d168
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
+@@ -0,0 +1,47 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/ocs,ocp8178.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Orient Chip OCP8178 backlight
++
++maintainers:
++  - Wim de With <wf@dewith.io>
++
++description:
++  The Orient Chip OCP8178 is a white LED backlight driver controlled by a single
++  GPIO line with a vendor-specific onewire protocol.
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: ocs,ocp8178
++
++  ctrl-gpios:
++    description: GPIO to use to enable/disable and dim the backlight.
++    maxItems: 1
++
++  default-brightness:
++    maximum: 31
++
++  max-brightness:
++    maximum: 31
++
++required:
++  - compatible
++  - ctrl-gpios
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    backlight {
++        compatible = "ocs,ocp8178";
++        ctrl-gpios = <&gpio2 5 GPIO_ACTIVE_HIGH>;
++        default-brightness = <13>;
++        max-brightness = <31>;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cfee5d47b214d..3ca99d9c32ef1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -19678,6 +19678,11 @@ F:	drivers/mfd/ocelot*
+ F:	drivers/net/dsa/ocelot/ocelot_ext.c
+ F:	include/linux/mfd/ocelot.h
+ 
++OCP8178 BACKLIGHT DRIVER
++M:	Wim de With <wf@dewith.io>
++S:	Maintained
++F:	Documentation/devicetree/bindings/leds/backlight/ocs,ocp8178.yaml
++
+ OCXL (Open Coherent Accelerator Processor Interface OpenCAPI) DRIVER
+ M:	Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+ R:	Andrew Donnellan <andrew+kernel@donnellan.id.au>
 
-Changes in v2:
-- Add a note in the commit message that the 1-Wire protocol is not the
-  one implemented in drivers/w1
-- Explicitly reject sleepable GPIO and don't use _cansleep() functions
-- Fix bug where interrupts were restored during timing-critical section
-- Remove unnecessary logging
-- Add missing \n to dev_err_probe message
-- Remove linux/mod_devicetable.h include
-- Remove struct init padding
-- Remove unnecessary backlight_is_blank() check
-- Use appropriate delay functions
-- Set RFA explicitly and move comment
-- Format DT binding YAML
-- Link to v1: https://patch.msgid.link/20260806201541.101304-1-wf@dewith.io
-
----
-Wim de With (2):
-      dt-bindings: backlight: Add Orient Chip OCP8178
-      backlight: Add support for Orient Chip OCP8178
-
- .../bindings/leds/backlight/ocs,ocp8178.yaml       |  47 +++++
- MAINTAINERS                                        |   6 +
- drivers/video/backlight/Kconfig                    |  10 +
- drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/ocp8178_bl.c               | 231 +++++++++++++++++++++
- 5 files changed, 295 insertions(+)
----
-base-commit: 315f4bd234b3b8a3ed3a71fd4c53b110cf373720
-change-id: 20260808-ocp8178-backlight-9ead3e930ef3
-
-Best regards,
---  
-Wim de With <wf@dewith.io>
+-- 
+2.55.0
 

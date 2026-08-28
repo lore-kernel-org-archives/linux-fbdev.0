@@ -1,173 +1,138 @@
-Received: from mail.muc.de (mail.muc.de [193.149.48.3])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27F074908DF
-	for <linux-fbdev@vger.kernel.org>; Thu, 27 Aug 2026 18:58:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.149.48.3
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3596D4315F;
+	Fri, 28 Aug 2026 04:57:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787857137; cv=none; b=H2Js52Q+vVE3KBFMs71HLhjfzVcsZ+5PQJqRG3EwrCVyXdGqpODQltDlgrlDYK8UwtsFID/JzQSUDZw0GHBwHT85o6ehimmcXqLMB01EsEp4UFDqXogKqOFJYSpnmjCgvmnWu96CgR5M/LQ9tlXCmRcpd6RhhViDtRt1fQ/Qa+E=
+	t=1787893030; cv=none; b=QMbL+iLStYcU3iX8BRwXZhaONE3l9uqUQOaTJDQd9vXgqrWSUPm2qgBiIOmxXkfrzeN+oSDVtn4jADjggI9crMD9+ojJHao+8lLUx3pFOnDLfaoFWySgq0AzgtJGUKvm9iygjF0d12ZEiJWjyJTl7Hib67c3PFxGgemA/2duRqk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787857137; c=relaxed/simple;
-	bh=HjViuf1CgFYHCz//y2JoY6sU4NK6J/e0fdh+7UIi3Ss=;
-	h=Date:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To:From; b=t01FgRhEAOOhMAzBZytIC5HpXZP5WXMPGi0cmC4gEZ0RfmD17AbuGY1Fltr9rOSXiUFWe+wndiaAGBtloiPGbeWQQJR/hx+jm3hxwBpLqGvogQpcT7zLzAG1wUm+IZLubyJpQqB2yteIBgJuZtwPW/GfOeef71Bcm4Uyy/Qhh0k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=muc.de; spf=pass smtp.mailfrom=muc.de; arc=none smtp.client-ip=193.149.48.3
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=muc.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=muc.de
-Received: (qmail 25869 invoked by uid 3782); 27 Aug 2026 20:58:49 +0200
-Received: from muc.de (p4fe15cdf.dip0.t-ipconnect.de [79.225.92.223]) (using
- STARTTLS) by colin.muc.de (tmda-ofmipd) with ESMTP;
- Thu, 27 Aug 2026 20:58:49 +0200
-Received: (qmail 31226 invoked by uid 1000); 27 Aug 2026 18:58:48 -0000
-Date: Thu, 27 Aug 2026 18:58:48 +0000
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-  Jiri Slaby <jirislaby@kernel.org>, Simona Vetter <simona@ffwll.ch>,
-  linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-  Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>,
-  linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: acm@muc.de
-Subject: [Patch 9/9]: vt: Misc changes, e.g. to #include directives
-Message-ID: <apCI6JhoH5D7ss34@MAC.fritz.box>
-References: <apCEDM2sWv_M354-@MAC.fritz.box>
+	s=arc-20240116; t=1787893030; c=relaxed/simple;
+	bh=ybu/9C5Y5K9vGbbTdsX6Qa2JT8JIZut+yHcbtL7m85w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=HRrtpIXO+lxbfPQlhjzS2cY+TX2ncT8T76OGD//Tdkz3MOqO6Gn35NGFXwPo1c6mvXNyYr47PD7D2/qFNXa+QoK+Ou++gjltyfCODIZbJTeSM6wAlFY0VtvtUv/relxOi7W/MZYssiQdK3tjD/END48KRJTJJ7j1AbprwQ4XaEA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XsuqmT8B; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XsuqmT8B"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E30771F000E9;
+	Fri, 28 Aug 2026 04:57:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787893028;
+	bh=30+vWOFLvDRyu2p90gkDmZljBAVI066FlFRhEIPobq4=;
+	h=Date:Subject:To:References:From:In-Reply-To;
+	b=XsuqmT8BLHhd/wNOCMPFIZg9T6f06PThC89n6aM9DjV5GVvDnYCDHhFk1X+G3kM3B
+	 Ab652uxuQdZLjvkYlTlXWLti66Fxk3QBkhhBw190DBJuc3kZ34iWbe874zwRGMQjHd
+	 mb3ccGw8hHztO7M4hBITyRtxjkBcvjdoiHwrUsOkI6bd66kt4SD0b1g9AaZ2Cn9aG9
+	 n7Qtrvo1WelU7roXNl1591trpY/TZhstLi3ei4umlZU1N8Wfa/kxSy20pq60rmehjh
+	 mRt/HUWSWUWF0HTSFkZMYsnu0FkLQ1QL0vRcEQDreyRyxzmNrYlTBC4V3+M/kaN3Dx
+	 ofmL1OgnQFWmQ==
+Message-ID: <d1437839-5a08-46d9-b40d-83faae7b19c9@kernel.org>
+Date: Fri, 28 Aug 2026 06:57:04 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <apCEDM2sWv_M354-@MAC.fritz.box>
-X-Submission-Agent: TMDA/1.3.x (Ph3nix)
-From: Alan Mackenzie <acm@muc.de>
-X-Primary-Address: acm@muc.de
+User-Agent: Mozilla Thunderbird
+Subject: Re: [Patch 1/9]: Make consolemap.c handle Unicode planes outside BMP
+To: Alan Mackenzie <acm@muc.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Simona Vetter <simona@ffwll.ch>, linux-serial@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+References: <apCEDM2sWv_M354-@MAC.fritz.box> <apCFLI0ga-DG-HRN@MAC.fritz.box>
+Content-Language: en-US
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ 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
+In-Reply-To: <apCFLI0ga-DG-HRN@MAC.fritz.box>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-vt: 32b glyph: 9. Misc changes, e.g. to #include directives
+On 27. 08. 26, 20:42, Alan Mackenzie wrote:
+> vt: 32b glyph: 1. Make consolemap.c handle Unicode planes outside BMP
+> 
+> For this, add a fourth layer "planes" onto the sparse map in
+> this file.  Also handle glyph numbers up to 2^21 rather than
+> 256/512.  Move the conversion between __user and kernel data
+> from consolemap.c to vt_ioctl.c.
+> 
+> Signed-off-by: Alan Mackenzie <acm@muc.de>
+> 
+> diff --git a/drivers/tty/vt/consolemap.c b/drivers/tty/vt/consolemap.c
+> index 3fa89a2dbeba..2f695d97f0eb 100644
+> --- a/drivers/tty/vt/consolemap.c
+> +++ b/drivers/tty/vt/consolemap.c
+> @@ -34,11 +34,11 @@
+>   #include <linux/tty.h>
+>   #include <linux/uaccess.h>
+>   #include <linux/console.h>
+> -#include <linux/consolemap.h>
+>   #include <linux/vt_kern.h>
+> +#include <linux/consolemap.h>
 
-Rearrange some #include directives, add some clarifying
-comments, and some code changes which didn't fit elsewhere.
+Why do you do this?
 
-Signed-off-by: Alan Mackenzie <acm@muc.de>
+>   #include <linux/string.h>
+>   
+> -static unsigned short translations[][E_TABSZ] = {
+> +static u1632 translations[][E_TABSZ] = {
 
-diff --git a/drivers/tty/vt/keyboard.c b/drivers/tty/vt/keyboard.c
-index dfdea0842149..35da5e127a49 100644
---- a/drivers/tty/vt/keyboard.c
-+++ b/drivers/tty/vt/keyboard.c
-@@ -25,7 +25,6 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
--#include <linux/consolemap.h>
- #include <linux/init.h>
- #include <linux/input.h>
- #include <linux/jiffies.h>
-@@ -46,6 +45,7 @@
- #include <linux/tty.h>
- #include <linux/uaccess.h>
- #include <linux/vt_kern.h>
-+#include <linux/consolemap.h>
- 
- #include <asm/irq_regs.h>
- 
-diff --git a/drivers/tty/vt/selection.c b/drivers/tty/vt/selection.c
-index 13f4e48b4142..18affdb3c7c5 100644
---- a/drivers/tty/vt/selection.c
-+++ b/drivers/tty/vt/selection.c
-@@ -48,6 +48,8 @@ static struct vc_selection {
- 	.start = -1,
- };
- 
-+static unsigned int size_row;
-+
- /* clear_selection, highlight and highlight_pointer can be called
-    from interrupt (via scrollback/front) */
- 
-@@ -340,6 +342,7 @@ static int vc_selection(struct vc_data *vc, struct tiocl_selection *v,
- {
- 	int ps, pe;
- 
-+	size_row = vc->vc_size_row;
- 	poke_blanked_console();
- 
- 	if (v->sel_mode == TIOCL_SELCLEAR) {
-diff --git a/drivers/tty/vt/vc_screen.c b/drivers/tty/vt/vc_screen.c
-index 7d40eacc21b3..f23d61fe10c1 100644
---- a/drivers/tty/vt/vc_screen.c
-+++ b/drivers/tty/vt/vc_screen.c
-@@ -201,6 +201,8 @@ static struct vc_data *vcs_vc(struct inode *inode, bool *viewed)
- 
- /**
-  * vcs_size - return size for a VC in @vc
-+ * The size is the number of bytes required by a buffer reading to/writing from
-+ * the entire device.
-  * @vc: which VC
-  * @attr: does it use attributes?
-  * @unicode: is it unicode?
-@@ -307,7 +314,9 @@ static unsigned int vcs_read_buf(const struct vc_data *vc, char *con_buf,
- 		getconsxy(vc, con_buf + 2);
- 
- 		*skip += pos;
--		count += pos;
-+		count += pos;	/* COUNT is now the byte offset of the end
-+				 * position from the start of the header.
-+				 */
- 		if (count > CON_BUF_SIZE) {
- 			count = CON_BUF_SIZE;
- 			filled = count - pos;
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 8f467b22b799..0c389a564357 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -89,6 +89,7 @@
- #include <linux/init.h>
- #include <linux/mutex.h>
- #include <linux/vt_kern.h>
-+#include <linux/vt_buffer.h>
- #include <linux/selection.h>
- #include <linux/tiocl.h>
- #include <linux/kbd_kern.h>
-@@ -4910,15 +4967,17 @@ static int con_font_get(struct vc_data *vc, struct console_font_op *op)
- static int con_font_get(struct vc_data *vc, struct console_font_op *op)
- {
- 	struct console_font font;
- 	int c;
--	unsigned int vpitch = op->op == KD_FONT_OP_GET_TALL ? op->height : 32;
-+	unsigned int vpitch =
-+		op->op == KD_FONT_OP_GET_TALL ? vc->vc_font.height : 32;
- 
- 	if (vpitch > max_font_height)
- 		return -EINVAL;
- 
- 	void *font_data __free(kvfree) = NULL;
-+	c = DIV_ROUND_UP(vc->vc_font.width, 8) * vpitch * vc->vc_font.charcount;
- 	if (op->data) {
--		font.data = font_data = kvzalloc(max_font_size, GFP_KERNEL);
-+		font.data = font_data = kvzalloc(c, GFP_KERNEL);
- 		if (!font.data)
- 			return -ENOMEM;
- 	} else
-@@ -4935,8 +4994,6 @@ static int con_font_get(struct vc_data *vc, struct console_font_op *op)
- 			return ret;
- 	}
- 
--	c = DIV_ROUND_UP(font.width, 8) * vpitch * font.charcount;
--
- 	if (op->data && font.charcount > op->charcount)
- 		return -ENOSPC;
- 	if (font.width > op->width || font.height > op->height)
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index fe915afdece5..5afce52057ca 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -13,6 +13,7 @@
- #ifndef _LINUX_CONSOLE_STRUCT_H
- #define _LINUX_CONSOLE_STRUCT_H
- 
-+#include <linux/consolemap.h>
- #include <linux/vt.h>
- #include <linux/wait.h>
- #include <linux/workqueue.h>
+This breaks the build at this point, right?
 
+u1632 is a bad name though.
 
+ > For the avoidance of doubt, no LLM has been used in the preparation 
+of this change.
+
+Given the above, perhaps you should have?
+
+See also what Sashiko thinks:
+https://sashiko.dev/#/patchset/apCEDM2sWv_M354-%40MAC.fritz.box
+
+thanks,
 -- 
-Alan Mackenzie (Nuremberg, Germany).
+js
+suse labs

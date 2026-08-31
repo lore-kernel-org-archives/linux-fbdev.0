@@ -1,43 +1,46 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A677F525A9E;
-	Mon, 31 Aug 2026 13:44:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB51352A2E3;
+	Mon, 31 Aug 2026 13:44:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788183864; cv=none; b=hgfuRmj49srTGQjmzwUrZBQ53FubD2wZPyKq5xWhR/eId9EHcoCLLo7tKTxpn1KuSqFHFUD601CbeQyo68EBrW+n1i4cM9RFL3EH4eemdzjBOlMq4kY6T+HVHbWEd5hX+Od3QRFEpnwsKaRiseam2Uv7rU2m8oGdFwzbppuXLMw=
+	t=1788183879; cv=none; b=mRUFi9ULFCn+MsSYKIy4Aewu0Yjxn1V+XXg9lCwMiTfK7O1IoRfL0wfi8FR5q638BYLB+XSuYnTYyS/iTE9FOT4Y5HHX131NdklcPsqM04fwpnm3dtUqoMNaLcZc8sdcIQaiaisvVdEeK3643VXrhorCCqikxtkpX/h0+M/C65Y=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788183864; c=relaxed/simple;
-	bh=iIoLSThhvBNpdNvI4xmyVzoJqgONVjjSmzWQnmCZs6M=;
+	s=arc-20240116; t=1788183879; c=relaxed/simple;
+	bh=sU3mqGD6Yv9vpBjFJ+rAUnYV2pIoGf8U1cilLIrzAqs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qV2g72JocLK492Qgs/NOT869z8G+oJDXL5FZt4mCd8JG84zqJlp17m7yoxVepTh+/Q9VcPVJnqDdnaSq4BzHhbRUnVRGjyrxQXS+C1/yRrqZGyFrdIOUhn0wLH4dO/QkQmCLB0A9qVFDiIhejFT1hQQTT5Xy0E2hGK04N25YH9I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Lg4qFprw; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=Eo4d0R5Rtsyei2Ueh00hlISkeNMzMGSyUbisQ3C0oiqSXF9jUoLiiC2FyJABRHFnDplROfGm9zGmTzc9MLaweaH80TBLzNIO2Ovsoa/zPoJkyqND5kC7i0v8ONFIuZA7v4fwzlsJ4SG5bXpmrPds2lYP2NN6a9yzqoV/8vmF4Cw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HFQdH1yM; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Lg4qFprw"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47DE41F00A3E;
-	Mon, 31 Aug 2026 13:44:20 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HFQdH1yM"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75FEF1F00A3D;
+	Mon, 31 Aug 2026 13:44:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788183861;
-	bh=BCUcAlchfVkJ6CooKk/wH8zMbjYepLYVbdrAMkbfdaw=;
+	s=k20260515; t=1788183876;
+	bh=J2Jw5sWgvHqjZIXUDjEAfq88hH8ePVNKIO0/CdBgR+M=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Lg4qFprwRYqFRESe+s3dK2JNk4HjWODdINGyDaTh49ut60lnzf5C6lV7U5IX83uus
-	 mQmVbegVS2ilGDcta5O7txbOCB46VHSLSvjdLHyaprSQ/NYI/YnbHUeNYdg49Begnv
-	 Xe77O97RLwV/B20qLXlW3ZYoBPVq+NaJ2DdL6KlpijIscXy74qKxgv9oxq54VhP4ct
-	 U9Hae2d6lAYUpZkg0Ysc2rHidRbEg3XmOTIa9OVebszR2I/h/jdXS4qRrvy6YPB6qn
-	 lpQfB78l1CLZAzCMTaWV/vLM4cNitJwOeOHJXDjxElKpGpXwkUgDjxxm69gHFPxTLF
-	 MNMWJXwZzgC9Q==
+	b=HFQdH1yMQyq4n128Db5+CAniGv2huDq54zGRQpsncq+Zqt4os0kItfg7znKoFZfZ6
+	 ta/vz9YS/ywBhLP1POsTVG9lv6V5TPf9hddDhemaE2S2LXZzQmik8vu/7QHdE9fYer
+	 dc7GvRn6k9dUn4Hz9NvWSqytq7lz70JtsqTVVRDMeAMMIiGYmrDMPY8s0zYGxb10J9
+	 R2jUr5nLZa/GpIn3pODM29KPlEMj6PiTAfqqtmuUFfxLto6dquJ9zAxnUkMMouXet2
+	 b/8McsGPxA+rQb1zUPVZ4y5MxL004q9qjJPIjji4j36GIVStSCac+1bydARx/uLtez
+	 Gtchvv/91NvXw==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Haoxiang Li <haoxiang_li2024@163.com>,
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
 	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
+	simona@ffwll.ch,
+	maddy@linux.ibm.com,
 	linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-5.10] fbdev: pm2fb: unwind WC setup on probe failure
-Date: Mon, 31 Aug 2026 09:26:16 -0400
-Message-ID: <20260831133314.4125787-348-sashal@kernel.org>
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH AUTOSEL 6.18] fbdev: Wrap user-invoked calls to fb_set_var() in helper
+Date: Mon, 31 Aug 2026 09:26:24 -0400
+Message-ID: <20260831133314.4125787-356-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260831133314.4125787-1-sashal@kernel.org>
 References: <20260831133314.4125787-1-sashal@kernel.org>
@@ -53,96 +56,134 @@ X-stable-base: Linux 6.18.48
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Haoxiang Li <haoxiang_li2024@163.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
 
-[ Upstream commit 16eb19f0c90af03bda6ba66586d7bb0e9cf85b43 ]
+[ Upstream commit 6f611e5e5f3327cf2e2daabe6ee5acac58cc784e ]
 
-Add arch_phys_wc_del() on error path to keep the
-write-combining setup balanced when later probe
-steps fail.
+Handle fbcon during display updates in fb_set_var_from_user(). Check
+with fbcon if the mode change is possible, update hardware state and
+finally update fbcon. Update all callers.
 
-Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
+Only the FBIOPUT_VSCREENINFO ioctl currently does all steps. Other
+mode-changes callers in sysfs and driver code are missing fbcon-related
+steps.
+
+With the new helper, ps3fb and sh_mobile_lcdcfb no longer maintain
+fbcon state themselves.
+
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-# Stable Backport Analysis: `fbdev: pm2fb: unwind WC setup on probe
-failure`
+# Stable Backport Analysis: `fbdev: Wrap user-invoked calls to
+fb_set_var() in helper`
 
-**Local tree:** `v6.18.44` (`stable/linux-6.18.y`, `HEAD` detached)
-**Candidate commit:** `16eb19f0c90af03bda6ba66586d7bb0e9cf85b43`
-(mainline only; **not** in this tree)
+**Local tree:** `v6.18.44` (6.18.y stable)
+**Commit under review:** `6f611e5e5f3327cf2e2daabe6ee5acac58cc784e` (not
+in HEAD; present as git object, applies cleanly)
 
 ---
 
 ## PHASE 1: COMMIT MESSAGE FORENSICS
 
 ### Step 1.1: Subject line
-**Record:** `[fbdev: pm2fb]` `[unwind]` — Add missing write-combining
-teardown when `pm2fb_probe()` fails after WC setup.
+**Record:** `[fbdev]` `[wrap/consolidate]` — Introduce
+`fb_set_var_from_user()` helper and route all user-invoked mode-change
+paths through it.
 
 ### Step 1.2: Tags
 **Record:**
-- `Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>` (author)
-- `Signed-off-by: Helge Deller <deller@gmx.de>` (fbdev maintainer,
-  applied the patch)
-- No `Fixes:`, `Reported-by:`, `Tested-by:`, `Reviewed-by:`, `Cc:
-  stable@vger.kernel.org`, or `Link:` tags
-- Notable: maintainer ack via application; no user/fuzzer reports
+- **Signed-off-by:** Thomas Zimmermann `<tzimmermann@suse.de>` (author)
+- **Signed-off-by:** Helge Deller `<deller@gmx.de>` (fbdev maintainer)
+- No `Fixes:`, `Reported-by:`, `Cc: stable@vger.kernel.org`, `Link:`,
+  `Reviewed-by:`, `Tested-by:`, or `Acked-by:` tags
+
+Notable: maintainer sign-off; absence of stable tag is expected for
+manual review.
 
 ### Step 1.3: Body analysis
 **Record:**
-- **Bug:** `arch_phys_wc_add()` is called during probe, but later probe
-  failures skip `arch_phys_wc_del()`.
-- **Symptom:** Leaked MTRR/WC mapping on x86 systems where
-  `arch_phys_wc_add()` actually allocates an MTRR (PAT disabled, MTRR
-  enabled, `nomtrr` unset).
-- **Root cause:** Missing symmetric cleanup on `err_exit_pixmap` and
-  downstream error labels (`err_exit_both`, `err_exit_all`).
-- **Version info:** None in the message.
+- **Bug described:** Only `FBIOPUT_VSCREENINFO` ioctl performs the full
+  fbcon sequence (`fbcon_modechange_possible` → `fb_set_var` →
+  `fbcon_update_vcs`). Sysfs mode-change paths and driver ioctl/reconfig
+  paths skip the `fbcon_modechange_possible` check.
+- **Symptom/failure mode:** Incomplete fbcon synchronization on mode
+  changes; missing validation that resolution is not smaller than
+  console font size.
+- **Version info:** None in message.
+- **Root cause:** Inconsistent fbcon handling across user-facing entry
+  points after the ioctl-only fix from 2022.
 
-### Step 1.4: Hidden bug fix?
-**Record:** Yes. Although titled “unwind WC setup,” this is a probe
-error-path **resource leak** fix, not cosmetic cleanup.
+### Step 1.4: Hidden bug fix detection
+**Record:** Yes — despite refactor-style wording, this completes a real
+correctness/safety gap. The original `fbcon_modechange_possible()`
+commit (`e64242caef18b`, 2022) explicitly warned that undersized
+resolutions cause character rendering to access memory outside the
+graphics region. That check was ioctl-only; sysfs and driver paths
+remained vulnerable.
 
 ---
 
 ## PHASE 2: DIFF ANALYSIS
 
-### Step 2.1: Inventory
+### Step 2.1: Change inventory
 **Record:**
-- **Files:** `drivers/video/fbdev/pm2fb.c` (+1 / −0)
-- **Functions:** `pm2fb_probe()` error path only
-- **Scope:** Single-file, surgical one-liner
+| File | Change |
+|------|--------|
+| `fb_chrdev.c` | −5/+1 |
+| `fbcon.c` | −2 (remove exports) |
+| `fbmem.c` | +13 (new helper) |
+| `fbsysfs.c` | −3/+1 |
+| `ps3fb.c` | −4/+1 |
+| `sh_mobile_lcdcfb.c` | −4/+1 |
+| `include/linux/fb.h` | +2 |
 
-### Step 2.2: Code flow change
+**Functions modified:** `do_fb_ioctl()`, `activate()`,
+`fb_set_var_from_user()` (new), `ps3fb_ioctl()`,
+`sh_mobile_fb_reconfig()`
+**Scope:** Small, multi-file but tightly focused consolidation.
+
+### Step 2.2: Code flow per hunk
 **Record:**
-- **Before:** After `arch_phys_wc_add()` at lines 1655–1657, failures at
-  pixmap alloc (`err_exit_pixmap`), cmap alloc (`err_exit_both`), or
-  `register_framebuffer()` (`err_exit_all`) skipped WC teardown.
-- **After:** `err_exit_pixmap` calls
-  `arch_phys_wc_del(default_par->wc_cookie)` before unmapping smem —
-  matching `pm2fb_remove()` at line 1738.
-- **Affected paths:** Error paths only (not the success path).
+1. **`fb_chrdev.c` / `FBIOPUT_VSCREENINFO`:** Three-step inline sequence
+   → single `fb_set_var_from_user()` call. Behavior unchanged.
+2. **`fbmem.c`:** New helper encapsulates the three-step sequence.
+3. **`fbsysfs.c` / `activate()`:** Before: `fb_set_var` +
+   `fbcon_update_vcs` (no validation). After: `fb_set_var_from_user`
+   (adds `fbcon_modechange_possible`).
+4. **`ps3fb.c`:** Same — gains validation via helper; drops direct
+   `fbcon.h` usage.
+5. **`sh_mobile_lcdcfb.c`:** Before: `fb_set_var` then separate
+   `fbcon_update_vcs`. After: single helper call with validation.
+6. **`fbcon.c`:** Removes `EXPORT_SYMBOL` / `EXPORT_SYMBOL_GPL` from
+   `fbcon_update_vcs` and `fbcon_modechange_possible`.
 
 ### Step 2.3: Bug mechanism
 **Record:**
-- **Category:** Error-path resource leak
-- **Mechanism:** `arch_phys_wc_add()` may consume an MTRR slot on PAT-
-  less x86; without `arch_phys_wc_del()`, that slot stays allocated
-  after failed probe. On PAT-enabled or non-x86 systems,
-  `arch_phys_wc_add()` is effectively a no-op and `arch_phys_wc_del(0)`
-  is also a no-op.
+- **Category:** Memory safety / logic correctness (OOB access prevention
+  + fbcon state consistency).
+- **Mechanism:** `fbcon_modechange_possible()` rejects resolutions where
+  font width/height exceeds effective `xres`/`yres` (with rotation).
+  Sysfs (`store_mode`, `store_rotate`, `store_virtual`, `store_bpp` via
+  `activate()`) and ps3fb/sh_mobile paths bypassed this check.
+  Undersized modes could proceed to `fb_set_var` and fbcon rendering,
+  risking out-of-bounds framebuffer access — the same failure mode
+  documented in `e64242caef18b`.
 
 ### Step 2.4: Fix quality
 **Record:**
-- Obviously correct; mirrors `pm2fb_remove()` and the pattern in
-  `tdfxfb.c` (line 1556).
-- Minimal, no API changes.
-- **Regression risk:** Very low — `arch_phys_wc_del()` is documented to
-  be safe for handle `0` and error returns.
+- Fix is obviously correct: extracts ioctl’s already-proven three-step
+  pattern.
+- Minimal, no unrelated changes.
+- **Regression risk:** Low for in-tree code. Removing exports of
+  `fbcon_update_vcs` / `fbcon_modechange_possible` could affect out-of-
+  tree GPL modules; in-tree users (`ps3fb`, `sh_mobile_lcdcfb`) are
+  updated in the same patch. ps3fb/sh_mobile may now reject mode changes
+  that previously succeeded but were unsafe — intentional behavior
+  change.
 
 ---
 
@@ -150,34 +191,36 @@ error-path **resource leak** fix, not cosmetic cleanup.
 
 ### Step 3.1: Blame
 **Record:**
-- `arch_phys_wc_add()` introduced in `f8f05cdc767fa` (Apr 2015, “use
-  arch_phys_wc_add() and ioremap_wc()”).
-- `f8f05cdc767fa` **is** an ancestor of this tree (`merge-base` exit 0).
-- Error-path labels date to 2005–2008; WC cleanup on error was never
-  added when MTRR code was converted in 2015.
+- `fb_chrdev.c:88-92`: Added in `588b35634a5aa` (Thomas Zimmermann,
+  2023) with full three-step sequence.
+- `fbsysfs.c:23-25`: `fb_set_var` since 2005; `fbcon_update_vcs` added
+  in `d88ca7e1a27eb` (2020, syzbot OOB fix); never gained
+  `fbcon_modechange_possible`.
+- **Bug introduced:** Gap since `e64242caef18b` (Jun 2022) when
+  validation was ioctl-only.
 
-### Step 3.2: Fixes: tag
-**Record:** N/A — no `Fixes:` tag. Bug introduced by `f8f05cdc767fa`,
-which is present in 6.18.y.
+### Step 3.2: Fixes tag
+**Record:** N/A — no `Fixes:` tag. Related fix `e64242caef18b` is in
+this tree (`git merge-base --is-ancestor` confirms).
 
 ### Step 3.3: Related file history
 **Record:**
-- `a943710407120` — identical fix for `uvesafb_probe()` error path,
-  **already in 6.18.y**
-- `ed359a464846b` — `pm2fb` missing `pci_disable_device()` on probe
-  error path, **already in 6.18.y**
-- `tdfxfb.c` already has `arch_phys_wc_del()` on probe error path (line
-  1556)
-- Standalone patch; not part of a series
+- `e64242caef18b` — ioctl-only font-size validation (Cc: stable # v5.4+)
+- `d88ca7e1a27eb` — syzbot OOB in `vc_do_resize`, pulled
+  `fbcon_update_vcs` out of `fb_set_var`
+- Recent stable-relevant fbcon fixes in tree: OOB/null-ptr fixes
+  (`076b1aa65f77a`, `6617df8c24631`)
+- **Standalone:** Patch 1/4 of “Internalize fbcon” series; does not
+  require patches 2–4 to function.
 
 ### Step 3.4: Author context
-**Record:** Haoxiang Li submits probe error-path leak fixes across
-subsystems; Helge Deller (fbdev maintainer) applied this patch.
+**Record:** Thomas Zimmermann is active fbdev/fbcon maintainer. Helge
+Deller (co-author of original `fbcon_modechange_possible`) signed off.
 
 ### Step 3.5: Dependencies
-**Record:** None. Requires only
-`arch_phys_wc_add()`/`arch_phys_wc_del()` and `wc_cookie` in `struct
-pm2fb_par`, all present since `f8f05cdc767fa`. Applies cleanly.
+**Record:** No prerequisite commits required.
+`fbcon_modechange_possible` and `fbcon_update_vcs` exist in tree. `git
+apply --check` passes cleanly on 6.18.44.
 
 ---
 
@@ -185,129 +228,130 @@ pm2fb_par`, all present since `f8f05cdc767fa`. Applies cleanly.
 
 ### Step 4.1: Original discussion
 **Record:**
-- `b4 dig -c 16eb19f0c90af`: https://patch.msgid.link/20260621071935.380
-  2673-1-haoxiang_li2024@163.com
-- Single-patch submission; Helge Deller replied “applied. Thanks!”
-- No series revisions (`-a` not needed; single patch)
-- No stable nomination in thread
-- No NAKs or concerns
+- **b4 dig URL:**
+  https://patch.msgid.link/20260527151551.258659-2-tzimmermann@suse.de
+- **Series revisions:** v1 (2026-05-20), v2 (2026-05-22), v3
+  (2026-05-27) — committed version is v3.
+- **WebFetch of lore:** Blocked by Anubis bot protection; could not read
+  full thread.
+- **From search snippets:** AI review noted ps3fb gains
+  `fbcon_modechange_possible` check as intentional behavioral change.
 
 ### Step 4.2: Reviewers
-**Record:** `b4 dig -w`: To/Cc — Haoxiang Li, Helge Deller, `linux-
-fbdev@vger.kernel.org`, `linux-kernel@vger.kernel.org`
+**Record:** CC list includes Helge Deller, Geert Uytterhoeven, Simona
+Vetter, airlied, linux-fbdev, dri-devel, linuxppc-dev — appropriate
+subsystem coverage.
 
 ### Step 4.3: Bug reports
-**Record:** N/A — no `Reported-by:` or `Link:` tags; no syzbot/fuzzer
-involvement.
+**Record:** No direct bug report in this commit. Underlying issue
+matches `e64242caef18b` rationale (OOB framebuffer access). Related
+syzbot fix `d88ca7e1a27eb` addressed a different fbcon/OOB path.
 
-### Step 4.4: Related patches
-**Record:** Direct analogue: `a943710407120` (uvesafb, same maintainer,
-same pattern).
+### Step 4.4: Series context
+**Record:** Part of 4-patch “fbdev: Internalize fbcon” series. Patches
+2–4 handle `fb_blank_from_user` and unexporting fbcon symbols more
+broadly. This patch is self-contained for the `fb_set_var` path.
 
 ### Step 4.5: Stable list history
-**Record:** Lore fetch blocked by bot protection; no stable-list
-discussion found via `b4`. Precedent established in-tree via uvesafb
-backport.
+**Record:** UNVERIFIED — could not search lore stable list due to fetch
+blocking. Original `e64242caef18b` was explicitly nominated `Cc:
+stable@vger.kernel.org # v5.4+`.
 
 ---
 
 ## PHASE 5: CODE SEMANTIC ANALYSIS
 
 ### Step 5.1: Key functions
-**Record:** `pm2fb_probe()`, `arch_phys_wc_add()`, `arch_phys_wc_del()`
+**Record:** `fb_set_var_from_user()` (new), `activate()`,
+`do_fb_ioctl()`, `ps3fb_ioctl()`, `sh_mobile_fb_reconfig()`.
 
 ### Step 5.2: Callers
-**Record:** `pm2fb_probe()` registered as `.probe` in `pm2fb_driver`
-(PCI core during device enumeration/module load). Not a hot path; runs
-once per device attach attempt.
+**Record:**
+- `activate()` ← `store_mode`, `store_bpp`, `store_rotate`,
+  `store_virtual` (sysfs, root-writable framebuffer attributes)
+- `do_fb_ioctl()` ← `FBIOPUT_VSCREENINFO` (userspace ioctl on
+  `/dev/fb*`)
+- `ps3fb_ioctl()` ← `PS3FB_IOCTL_SETMODE` (PS3 platform)
+- `sh_mobile_fb_reconfig()` ← `sh_mobile_lcdc_release()` on display
+  hotplug/reconfig (SH Mobile embedded)
 
 ### Step 5.3: Callees
-**Record:** On failure after WC setup: `kfree()`, `fb_dealloc_cmap()`,
-`iounmap()`, `release_mem_region()`, `framebuffer_release()`,
-`pci_disable_device()`. WC teardown was the missing piece.
+**Record:** `fbcon_modechange_possible()` → `fb_set_var()` →
+`fbcon_update_vcs()`. Requires `console_lock()` + `lock_fb_info()` at
+all call sites (already present).
 
 ### Step 5.4: Reachability
-**Record:** Trigger requires `CONFIG_FB_PM2` built/loaded, Permedia2
-hardware present, probe progressing past smem ioremap + WC add, then
-failing at:
-1. `kmalloc(PM2_PIXMAP_SIZE)` → `-ENOMEM`
-2. `fb_alloc_cmap()` failure
-3. `register_framebuffer()` failure
-
-Reachable from module load / PCI hotplug; no userspace syscall needed
-beyond normal device binding.
+**Record:**
+- Sysfs paths: reachable by privileged users (root) on any system with
+  framebuffer sysfs nodes.
+- Ioctl: reachable by users with framebuffer device access.
+- ps3fb/sh_mobile: platform-specific but real hardware paths.
+- **Userspace triggerable:** Yes (sysfs/ioctl, privileged).
 
 ### Step 5.5: Similar patterns
-**Record:**
-- `tdfxfb.c`: has probe-error `arch_phys_wc_del()` ✓
-- `uvesafb.c`: fixed in `a943710407120` (in this tree) ✓
-- `s3fb.c`, `i740fb.c`: WC add after success point or missing probe-
-  error del (latent issues elsewhere; out of scope)
+**Record:** ioctl path in `fb_chrdev.c` already had the correct three-
+step pattern since 2022/2023. Sysfs and drivers were the inconsistent
+outliers.
 
 ---
 
-## PHASE 6: CROSS-REFERENCE AGAINST LOCAL TREE
+## PHASE 6: CROSS-REFERENCE AGAINST LOCAL TREE (6.18.44)
 
 ### Step 6.1: Buggy code present?
-**Record:** **Yes.** Lines 1655–1657 call `arch_phys_wc_add()`; lines
-1713–1715 (`err_exit_pixmap`) lack `arch_phys_wc_del()`. Bug present
-since `f8f05cdc767fa` (2015).
+**Record:** **Yes.** Current tree at `fbsysfs.c:23-25` calls
+`fb_set_var` + `fbcon_update_vcs` without `fbcon_modechange_possible`.
+Same gap in `ps3fb.c:833-835` and `sh_mobile_lcdcfb.c:1768-1772`. Commit
+`6f611e5` is **NOT** in HEAD.
 
 ### Step 6.2: Backport complications
-**Record:** Clean apply expected — one line at `err_exit_pixmap`,
-identical context to mainline diff.
+**Record:** `git apply --check` on commit patch: **clean apply**. No
+structural conflicts observed.
 
 ### Step 6.3: Related fixes already present?
-**Record:**
-- `a943710407120` (uvesafb WC probe-error fix) — **present**
-- `ed359a464846b` (pm2fb `pci_disable_device` probe fix) — **present**
-- `16eb19f0c90af` (this fix) — **absent** (`merge-base --is-ancestor`
-  exit 1)
+**Record:** `e64242caef18b` (ioctl-only validation) is in tree. No
+`fb_set_var_from_user` or equivalent consolidation. Gap remains open.
 
 ---
 
 ## PHASE 7: SUBSYSTEM CONTEXT
 
 ### Step 7.1: Subsystem criticality
-**Record:** `drivers/video/fbdev/pm2fb.c` — legacy framebuffer driver
-(`CONFIG_FB_PM2`, tristate). **PERIPHERAL** — affects users of 1990s-era
-Permedia2 hardware (PCI/SPARC).
+**Record:** `drivers/video/fbdev` / `fbcon` — **IMPORTANT** (framebuffer
+console on servers, embedded, legacy platforms; less universal than
+mm/net but affects console stability).
 
 ### Step 7.2: Activity
-**Record:** Low churn; occasional maintenance fixes from Helge Deller’s
-fbdev tree.
+**Record:** Actively maintained — recent fixes include UAF, null-ptr-
+deref, and OOB fixes in fbdev/fbcon on this branch.
 
 ---
 
 ## PHASE 8: IMPACT AND RISK ASSESSMENT
 
 ### Step 8.1: Who is affected
-**Record:** Users with Permedia2 hardware, `CONFIG_FB_PM2` enabled,
-probe failing after WC setup. Narrow population.
+**Record:** Users of fbdev with active fbcon text console who change
+modes via sysfs or affected drivers (not only ioctl). Embedded (SH
+Mobile), PS3, and general framebuffer sysfs users.
 
 ### Step 8.2: Trigger conditions
-**Record:**
-- **Real leak only on:** x86, PAT disabled, MTRR enabled, `nomtrr=0`
-- **Failure modes:** ENOMEM or framebuffer registration failure after WC
-  add
-- **Likelihood:** Low (legacy hardware + rare probe failure)
-- **Unprivileged trigger:** Indirectly via module load / device
-  presence; not a typical attack vector
+**Record:** Set framebuffer mode/rotation/virtual resolution via sysfs
+to a value smaller than current console font dimensions while fbcon is
+active in text mode. Requires privileged access. Not everyday, but
+realistic for admin tooling and embedded hotplug scenarios.
 
-### Step 8.3: Failure severity
-**Record:** Leaked MTRR slot (finite resource, typically ~8–10 entries).
-Can degrade performance or block other drivers needing MTRR on PAT-less
-systems. **Not** a crash, deadlock, or data corruption. **Severity:
-LOW–MEDIUM** (resource leak, not security).
+### Step 8.3: Failure mode severity
+**Record:** Out-of-bounds framebuffer memory access during console
+character rendering → potential kernel oops, memory corruption.
+**Severity: HIGH** (same class as the 2022 ioctl fix that went to
+stable).
 
-### Step 8.4: Risk–benefit
+### Step 8.4: Risk-benefit
 **Record:**
-- **Benefit:** Correct probe teardown; consistency with uvesafb/tdfxfb;
-  prevents MTRR exhaustion on affected configs
-- **Risk:** Negligible — one line, symmetric with remove path, no-op on
-  modern PAT-enabled systems
-- **Ratio:** Low benefit magnitude, but also near-zero risk; established
-  fbdev stable pattern
+- **Benefit:** HIGH — closes a known validation gap left by incomplete
+  application of `e64242caef18b`.
+- **Risk:** LOW — ~37 lines, behavior matches existing ioctl path;
+  applies cleanly.
+- **Ratio:** Strong benefit, low risk.
 
 ---
 
@@ -316,109 +360,247 @@ LOW–MEDIUM** (resource leak, not security).
 ### Step 9.1: Evidence summary
 
 **FOR backport:**
-- Real, verifiable resource leak since 2015 WC conversion
-- One-line, obviously correct fix
-- Identical pattern already backported in this tree (`a943710407120`
-  uvesafb)
-- Same maintainer (Helge Deller) applied both uvesafb and pm2fb fixes
-- Buggy code confirmed present in 6.18.y; fix not yet applied
-- Matches `tdfxfb` probe-error pattern already in tree
+- Fixes real OOB/corruption-class bug (documented in `e64242caef18b`)
+- Completes ioctl-only fix from 2022 across sysfs and driver paths
+- Small, surgical, applies cleanly to 6.18.44
+- Maintainer sign-off (Helge Deller)
+- Same bug class previously deemed stable-worthy (`Cc: stable` on
+  original)
+- Privileged userspace can trigger via sysfs
 
 **AGAINST backport:**
-- Very obscure hardware (Permedia2)
-- No user reports, syzbot, or security angle
-- Effective only on PAT-less x86 with MTRR (rare on 6.18 deployments)
-- Impact is resource leak, not crash/corruption
-- “Important issue” bar is borderline for severity
+- Adds new exported helper `fb_set_var_from_user` (kernel-internal, not
+  userspace API)
+- Removes exports of `fbcon_update_vcs` / `fbcon_modechange_possible`
+  (minor ABI concern for OOT modules)
+- Part of larger “internalize fbcon” series (but functionally
+  standalone)
+- No syzbot/user bug report for this specific gap
 
-**Unresolved:** None material to the decision.
+**Unresolved:** Full lore review thread content (fetch blocked).
 
 ### Step 9.2: Stable rules checklist
-1. Obviously correct and tested? **PASS** — mirrors remove path;
-   maintainer applied; no objections
-2. Fixes a real bug? **PASS** — MTRR leak on probe failure (on affected
-   configs)
-3. Important issue? **PASS (borderline)** — resource leak, not
-   crash/security; but same class already accepted for uvesafb in this
-   tree
-4. Small and contained? **PASS** — 1 line, 1 file
-5. No new features/APIs? **PASS**
-6. Can apply to local tree? **PASS** — prerequisite code present; clean
-   apply
+1. Obviously correct and tested? **PASS** — logic mirrors proven ioctl
+   path; maintainer SOB.
+2. Fixes real bug affecting users? **PASS** — sysfs/driver paths lack
+   font-size validation.
+3. Important issue? **PASS** — OOB memory access / potential crash or
+   corruption (**HIGH**).
+4. Small and contained? **PASS** — 7 files, ~37 lines net.
+5. No new features/APIs? **PASS** (with nuance) — new kernel helper
+   export only; no userspace API; behavior fix not feature addition.
+6. Can apply to local tree? **PASS** — `git apply --check` succeeds.
 
 ### Step 9.3: Exception categories
-**Record:** None (not device ID, quirk, DT, build, or docs). Standard
-probe error-path resource cleanup.
+**Record:** None (not device ID, quirk, DT, build, or docs). Qualifies
+as a correctness/memory-safety bug fix.
 
-### Step 9.4: Decision rationale
-
-For **linux-6.18.y**, this is a legitimate probe error-path resource
-leak fix. Severity is low and the hardware is legacy, but the patch is
-trivial, zero-risk, and the **same tree already carries the identical
-uvesafb fix** (`a943710407120`). Backporting maintains consistency in
-fbdev probe teardown and closes a gap that has existed since the 2015
-`arch_phys_wc_add()` conversion.
+### Step 9.4: Problem summary for stable users
+When the 2022 fix added `fbcon_modechange_possible()` to prevent console
+font rendering past framebuffer bounds, it was wired only into the
+`FBIOPUT_VSCREENINFO` ioctl. Sysfs mode/rotation/virtual-resolution
+writes and ps3fb/sh_mobile driver paths still allowed undersized modes,
+risking the same out-of-bounds access. This commit routes all user-
+invoked `fb_set_var` paths through one helper that performs validation,
+hardware update, and fbcon refresh — closing that gap on 6.18.y.
 
 ---
 
 ## Verification
 
-- **[Phase 1]** Parsed subject, tags, body; no Reported-by/syzbot
-- **[Phase 2]** Diff: +1 line `arch_phys_wc_del()` at `err_exit_pixmap`
-  in `pm2fb_probe()`
-- **[Phase 3]** `git describe HEAD` → `v6.18.44`; `git blame` → WC add
-  from `f8f05cdc767fa` (2015)
-- **[Phase 3]** `git merge-base --is-ancestor f8f05cdc767fa HEAD` → exit
-  0 (bug source in tree)
-- **[Phase 3]** `git merge-base --is-ancestor 16eb19f0c90af HEAD` → exit
-  1 (fix not in tree)
-- **[Phase 3]** `git log stable/linux-6.18.y..master -- pm2fb.c` → only
-  `16eb19f` and unrelated pci_device_id change
-- **[Phase 3]** Related: `a943710407120` (uvesafb), `ed359a464846b`
-  (pm2fb pci_disable) in tree
-- **[Phase 4]** `b4 dig -c 16eb19f` → lore URL found; maintainer
-  “applied”
-- **[Phase 4]** `b4 dig -w` → fbdev maintainers CC’d
-- **[Phase 5]** Read `arch_phys_wc_add/del` in
-  `arch/x86/kernel/cpu/mtrr/mtrr.c` and stubs in `include/linux/io.h`
-- **[Phase 5]** Compared `tdfxfb.c:1556` (has probe-error del) and
-  `pm2fb.c:1738` (remove-path del)
-- **[Phase 6]** Confirmed missing `arch_phys_wc_del` at lines 1713–1715
-  in current tree
-- **[Phase 6]** `git show a943710407120` — identical uvesafb probe-error
-  fix already in 6.18.y
-- **[Phase 8]** Assessed impact: MTRR leak on PAT-less x86 only;
-  LOW–MEDIUM severity
+- **[Phase 1]** Parsed subject, tags, body; no Reported-by/syzbot/Fixes
+  tags.
+- **[Phase 1]** Identified hidden bug fix via cross-reference to
+  `e64242caef18b` message.
+- **[Phase 2]** Diff inventory: 7 files, functions listed; bug = missing
+  `fbcon_modechange_possible` on non-ioctl paths.
+- **[Phase 3]** `git describe HEAD` → `v6.18.44`; `make kernelversion` →
+  `6.18.44`.
+- **[Phase 3]** `git blame` on `fb_chrdev.c:86-92` and
+  `fbsysfs.c:16-26`.
+- **[Phase 3]** `git show e64242caef18b` — original OOB rationale and
+  ioctl-only placement confirmed.
+- **[Phase 3]** `git merge-base --is-ancestor e64242caef18b HEAD` → in
+  tree.
+- **[Phase 3]** `git merge-base --is-ancestor 6f611e5 HEAD` → NOT in
+  tree.
+- **[Phase 3]** `git log -S fbcon_modechange_possible` — introduced
+  `e64242caef18b`, ioctl placement `588b35634a5aa`.
+- **[Phase 4]** `b4 dig -c 6f611e5` → lore URL found; v1/v2/v3 revisions
+  listed.
+- **[Phase 4]** `b4 dig -w` → CC list with Deller, Geert, linux-fbdev,
+  dri-devel.
+- **[Phase 4]** WebFetch lore URL → blocked (Anubis); thread content
+  UNVERIFIED.
+- **[Phase 5]** `grep` callers: `activate()` used by `store_mode`,
+  `store_bpp`, `store_rotate`, `store_virtual`.
+- **[Phase 5]** `grep` for `fbcon_update_vcs` /
+  `fbcon_modechange_possible` — only fbdev core + ps3fb + sh_mobile.
+- **[Phase 6]** Read current `fbsysfs.c`, `fb_chrdev.c`, `ps3fb.c`,
+  `sh_mobile_lcdcfb.c` — buggy pattern confirmed.
+- **[Phase 6]** `git show 6f611e5 | git apply --check` → clean apply.
+- **[Phase 6]** `grep fb_set_var_from_user` → not in tree.
+- **[Phase 8]** Failure mode from `e64242caef18b`: OOB graphics memory
+  access; severity HIGH.
 
-**YES**The background lookups finished and matched what the analysis
-used:
+**YES****Verdict for 6.18.44:** **YES** — backport this commit.
 
-- **pm2fb history:** The commit isn’t in this `v6.18.44` tree yet;
-  recent `pm2fb.c` history shows maintenance fixes like the
-  `pci_disable_device()` probe cleanup.
-- **Candidate hash:** Mainline commit is `16eb19f0c90af` (“fbdev: pm2fb:
-  unwind WC setup on probe failure”).
-- **Stable precedent:** `6.18.y` already has the same pattern for
-  uvesafb (`a943710407120`); this pm2fb fix is not in stable yet.
+It closes a real gap left by the 2022 ioctl-only
+`fbcon_modechange_possible()` fix: sysfs mode/rotation/virtual writes
+and ps3fb/sh_mobile paths could still set resolutions smaller than the
+console font, risking out-of-bounds framebuffer access. The patch is
+small (~37 lines), applies cleanly, and mirrors the ioctl path’s
+existing three-step sequence.
 
-**Verdict for 6.18.y: YES** — one-line probe error-path MTRR/WC cleanup,
-same class of fix already accepted in this tree.
+**Commit:** `6f611e5e5f3327cf2e2daabe6ee5acac58cc784e` (not yet in this
+tree).
 
- drivers/video/fbdev/pm2fb.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/core/fb_chrdev.c   |  6 +-----
+ drivers/video/fbdev/core/fbcon.c       |  2 --
+ drivers/video/fbdev/core/fbmem.c       | 13 +++++++++++++
+ drivers/video/fbdev/core/fbsysfs.c     |  4 +---
+ drivers/video/fbdev/ps3fb.c            |  5 +----
+ drivers/video/fbdev/sh_mobile_lcdcfb.c |  5 +----
+ include/linux/fb.h                     |  2 ++
+ 7 files changed, 19 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
-index f34429829b7d7..82408503c2812 100644
---- a/drivers/video/fbdev/pm2fb.c
-+++ b/drivers/video/fbdev/pm2fb.c
-@@ -1711,6 +1711,7 @@ static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
-  err_exit_both:
- 	kfree(info->pixmap.addr);
-  err_exit_pixmap:
-+	arch_phys_wc_del(default_par->wc_cookie);
- 	iounmap(info->screen_base);
- 	release_mem_region(pm2fb_fix.smem_start, pm2fb_fix.smem_len);
-  err_exit_mmio:
+diff --git a/drivers/video/fbdev/core/fb_chrdev.c b/drivers/video/fbdev/core/fb_chrdev.c
+index 4ebd16b7e3b8d..54f926fb411bd 100644
+--- a/drivers/video/fbdev/core/fb_chrdev.c
++++ b/drivers/video/fbdev/core/fb_chrdev.c
+@@ -85,11 +85,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		var.activate &= ~FB_ACTIVATE_KD_TEXT;
+ 		console_lock();
+ 		lock_fb_info(info);
+-		ret = fbcon_modechange_possible(info, &var);
+-		if (!ret)
+-			ret = fb_set_var(info, &var);
+-		if (!ret)
+-			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
++		ret = fb_set_var_from_user(info, &var);
+ 		unlock_fb_info(info);
+ 		console_unlock();
+ 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index df1ecbf3f5d02..35210f2bb7b2b 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2754,7 +2754,6 @@ void fbcon_update_vcs(struct fb_info *info, bool all)
+ 	else
+ 		fbcon_modechanged(info);
+ }
+-EXPORT_SYMBOL(fbcon_update_vcs);
+ 
+ /* let fbcon check if it supports a new screen resolution */
+ int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeninfo *var)
+@@ -2782,7 +2781,6 @@ int fbcon_modechange_possible(struct fb_info *info, struct fb_var_screeninfo *va
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(fbcon_modechange_possible);
+ 
+ int fbcon_mode_deleted(struct fb_info *info,
+ 		       struct fb_videomode *mode)
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 30a2c0d47e5c8..1533d43a0a0c9 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -346,6 +346,19 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ }
+ EXPORT_SYMBOL(fb_set_var);
+ 
++int fb_set_var_from_user(struct fb_info *info, struct fb_var_screeninfo *var)
++{
++	int ret = fbcon_modechange_possible(info, var);
++
++	if (!ret)
++		ret = fb_set_var(info, var);
++	if (!ret)
++		fbcon_update_vcs(info, var->activate & FB_ACTIVATE_ALL);
++
++	return ret;
++}
++EXPORT_SYMBOL(fb_set_var_from_user);
++
+ static void fb_lcd_notify_blank(struct fb_info *info)
+ {
+ 	int power;
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index fe8bd33e64ab1..d363f94207c3e 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -20,9 +20,7 @@ static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
+ 	var->activate |= FB_ACTIVATE_FORCE;
+ 	console_lock();
+ 	lock_fb_info(fb_info);
+-	err = fb_set_var(fb_info, var);
+-	if (!err)
+-		fbcon_update_vcs(fb_info, var->activate & FB_ACTIVATE_ALL);
++	err = fb_set_var_from_user(fb_info, var);
+ 	unlock_fb_info(fb_info);
+ 	console_unlock();
+ 	if (err)
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index dbcda307f6a67..1376d19b19aeb 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -29,7 +29,6 @@
+ #include <linux/freezer.h>
+ #include <linux/uaccess.h>
+ #include <linux/fb.h>
+-#include <linux/fbcon.h>
+ #include <linux/init.h>
+ 
+ #include <asm/cell-regs.h>
+@@ -830,9 +829,7 @@ static int ps3fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 				/* Force, in case only special bits changed */
+ 				var.activate |= FB_ACTIVATE_FORCE;
+ 				par->new_mode_id = val;
+-				retval = fb_set_var(info, &var);
+-				if (!retval)
+-					fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
++				retval = fb_set_var_from_user(info, &var);
+ 				console_unlock();
+ 			}
+ 			break;
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index dd950e4ab5ceb..6038f217ab427 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -15,7 +15,6 @@
+ #include <linux/ctype.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/delay.h>
+-#include <linux/fbcon.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/ioctl.h>
+@@ -1765,11 +1764,9 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
+ 	var.height = ch->display.height;
+ 	var.activate = FB_ACTIVATE_NOW;
+ 
+-	if (fb_set_var(info, &var) < 0)
++	if (fb_set_var_from_user(info, &var) < 0)
+ 		/* Couldn't reconfigure, hopefully, can continue as before */
+ 		return;
+-
+-	fbcon_update_vcs(info, true);
+ }
+ 
+ /*
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index da2fdabd18cb3..f622f5f520cf0 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -541,6 +541,8 @@ extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
+ extern int fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var);
+ extern int fb_blank(struct fb_info *info, int blank);
+ 
++int fb_set_var_from_user(struct fb_info *info, struct fb_var_screeninfo *var);
++
+ /*
+  * Helpers for framebuffers in I/O memory
+  */
 -- 
 2.53.0
 

@@ -1,42 +1,42 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA1444A2A5A;
-	Tue,  1 Sep 2026 18:50:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71A2D4A2A71;
+	Tue,  1 Sep 2026 18:51:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788288662; cv=none; b=jXDSL6Gc3OBR5umU9KRa+B1ymwO/z2SzYv/wilZmPHVWsLPQHp2JK67jsNST811OxRn26gPjVtGnbPQj2xQSX+a264KcT/RBo8ySeXfhXpmtx7Fzupia2dCGDVaQQWhv1cnSbsUfBwBjoDcXkYXXAytw1Ee88xkFM0/8GTEYcIs=
+	t=1788288663; cv=none; b=a0HtJ3QRx3G2LGhbbwaPAmCCzPcyAlviH1sq9PMx53+vP4BhsC2oj27gPaQPK6xi1IHm3Rtkz0oQzT1K8x4+nuM9NjBRRNbgUu/+o7lDlJKWeUYgfVh3SIpwf7O30L2WCbQVkjWf5qj7/DE+DfZwSU4BeVwsA/dNw2OiovpWo7s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788288662; c=relaxed/simple;
-	bh=s7nfXrufCSMgabRiLlCwtS5BY0Y5rXZc77iLgoU2ACk=;
+	s=arc-20240116; t=1788288663; c=relaxed/simple;
+	bh=dHIKdEC5RHVqcHq82GjtYHGUUOJHjjeCBOpp724uoac=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kuYojjqZKmkq37Ll9fAUl32v8/nhagzb7LfmKixy3ITHqjxI8KXUJcgmFDA8CQhe3p1fpNA0BMbYt1mj6iL53GZkU6HAjbHPpayPv6FbpNDy720l6368k2qULj6R2F/i6r5WGNSIiBSIEgpzkPLlaPNRpbd5+Y0E+9cwwcqWS44=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=o0Fmo9JU; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:To:Cc; b=XjwakOkhrpWM4SvQCitBtoNnxI7I63s77TOI9INDMJ48jxpuogVy28BLIzp5zdPH9EuQF6fHvhgDWuoD8gqYFnRfviq1RnPGr6F2pJNQljFVOWE18TC2Nn+zo73jOOX2UI6NgTUsUHkEK+azk28vcNsEhWicvoKqnQuLFDWYBDc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=ACW+ziuW; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="o0Fmo9JU"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="ACW+ziuW"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1788288657;
-	bh=s7nfXrufCSMgabRiLlCwtS5BY0Y5rXZc77iLgoU2ACk=;
+	s=mail; t=1788288658;
+	bh=dHIKdEC5RHVqcHq82GjtYHGUUOJHjjeCBOpp724uoac=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=o0Fmo9JU/JHC/s3aTSbVAAFV2mAg12KyJpFmlQQE0iu+VggsX+WT3eK4Z72zJujOJ
-	 5Qd4v14DiYBQa8/GXRnZK14qcClbR8zkvrMtXVSClLtV6uCfqKfXycVfW4o+m6s0gs
-	 Mdwy+kr67mATafCZGV54ZX2fCQcOKaEWNQ97SvRy1r7ntrvFYItwO8eniwgoYU60mG
-	 k5gCtoNCWuZeizG8+pJ5a/nqRrKrR33nR1fhyw2KWerJMbcT7pwIdHrnqPqX4f1T3x
-	 HHPvWB5OQfO8JkNwo+GjS7+jzUPi4K7oz/06iVFjKMTP7j3CdsW+cuqNZm+Mz6h/Gu
-	 dsrFvAs7xnWgw==
+	b=ACW+ziuWAPd7zQm+209nems4I5iTQK8DxQhfTlIXHAZiHsFxLg+JqCna8mjW0HOHN
+	 9oRrZAu3JtYTlX3chmx8L5lRyVfKDJ4tedh4UDnomz7Z4HGRGJKJa5A43vFlyVsXv/
+	 vycrj6aiyTRjt+Ma0ToXjajA6HX6rGIme9LyvDu8Kp5+VSNbCpQIN5a4zfiNV5mZ6q
+	 zFpBFLN1tNBMGnKm9AN+7aAcRv3xpxFheSMR+zKCIZQw6bAdCULapugytg0YfuNyk2
+	 bFL3CtQHBlrTx1c1/d+SLHBsR7Dau2rqZ/MIlk75FrSmfC3ud9//gOm2Gq9OhGh1zs
+	 zN5/R+JjtaJGA==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 6BC0317E38D2;
-	Tue, 01 Sep 2026 20:50:57 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 3137C17E38DC;
+	Tue, 01 Sep 2026 20:50:58 +0200 (CEST)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Tue, 01 Sep 2026 21:50:46 +0300
-Subject: [PATCH v11 22/74] drm/display: hdmi-state-helper: Add
- drm_atomic_helper_connector_hdmi_force_ctx()
+Date: Tue, 01 Sep 2026 21:50:47 +0300
+Subject: [PATCH v11 23/74] drm/display: hdmi-state-helper: Sync SCDC state
+ on hotplug
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,7 +45,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-dw-hdmi-qp-scramb-v11-22-bc12954a0688@collabora.com>
+Message-Id: <20260901-dw-hdmi-qp-scramb-v11-23-bc12954a0688@collabora.com>
 References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
@@ -70,67 +70,84 @@ To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 Cc: kernel@collabora.com, linux-kernel@vger.kernel.org, 
  dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
  linux-sunxi@lists.linux.dev, linux-rockchip@lists.infradead.org, 
- linux-fbdev@vger.kernel.org
+ linux-fbdev@vger.kernel.org, Maud Spierings <maud_spierings@hotmail.com>, 
+ Diederik de Haas <diederik@cknow-tech.com>
 X-Mailer: b4 0.15.2
 
-Introduce drm_atomic_helper_connector_hdmi_force_ctx() as the HDMI
-connector implementation of the .force_ctx() callback.  It receives the
-modeset acquire context, allowing it to take additional locks, e.g. to
-support SCDC status synchronization.
+drm_atomic_helper_connector_hdmi_hotplug() does not currently
+synchronize SCDC status on hotplug events, leaving the scrambler state
+potentially inconsistent after (re)connect.
 
-Since migrating from the .force() callback is somewhat more involved,
-its users will be migrated incrementally, after which
-drm_atomic_helper_connector_hdmi_force() will be removed.
+Hook drm_connector_hdmi_sync_scdc() into both the connect and disconnect
+paths, replacing the existing TODOs around missing scrambler handling.
+Note that per .detect_ctx() contract, implementations shall return a
+drm_connector_status value or -EDEADLK, nothing else.  Therefore, handle
+deadlocks and just report any other errors.  For consistency, also
+report the errors from drm_edid_connector_update().
 
-Reviewed-by: Maxime Ripard <mripard@kernel.org>
+Tested-by: Maud Spierings <maud_spierings@hotmail.com>
+Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, Rock 5B
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/display/drm_hdmi_state_helper.c | 21 +++++++++++++++++++++
- include/drm/display/drm_hdmi_state_helper.h     |  2 ++
- 2 files changed, 23 insertions(+)
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c | 34 ++++++++++++++++++++++---
+ 1 file changed, 31 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-index 485fcca2de4b..8045b1d17d6e 100644
+index 8045b1d17d6e..1e269b203b98 100644
 --- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
 +++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-@@ -1424,3 +1424,24 @@ void drm_atomic_helper_connector_hdmi_force(struct drm_connector *connector)
- 	drm_atomic_helper_connector_hdmi_update(connector, NULL, connector->status);
- }
- EXPORT_SYMBOL(drm_atomic_helper_connector_hdmi_force);
-+
-+/**
-+ * drm_atomic_helper_connector_hdmi_force_ctx - HDMI Connector implementation
-+ * of the force_ctx callback
-+ * @connector: A pointer to the HDMI connector
-+ * @ctx: Lock acquisition context to be used for resetting CRTC
-+ *
-+ * This function implements the .force_ctx() callback for the HDMI connectors.
-+ * It can either be used directly as the callback or should be called from
-+ * within the .force_ctx() callback implementation to maintain the HDMI-specific
-+ * connector's data.
-+ *
-+ * Returns:
-+ * Zero on success, error code on failure, including -EDEADLK.
-+ */
-+int drm_atomic_helper_connector_hdmi_force_ctx(struct drm_connector *connector,
-+					       struct drm_modeset_acquire_ctx *ctx)
-+{
-+	return drm_atomic_helper_connector_hdmi_update(connector, ctx, connector->status);
-+}
-+EXPORT_SYMBOL(drm_atomic_helper_connector_hdmi_force_ctx);
-diff --git a/include/drm/display/drm_hdmi_state_helper.h b/include/drm/display/drm_hdmi_state_helper.h
-index 2439bad15c4b..965342f6bbc9 100644
---- a/include/drm/display/drm_hdmi_state_helper.h
-+++ b/include/drm/display/drm_hdmi_state_helper.h
-@@ -28,6 +28,8 @@ int drm_atomic_helper_connector_hdmi_hotplug(struct drm_connector *connector,
- 					     struct drm_modeset_acquire_ctx *ctx,
- 					     enum drm_connector_status status);
- void drm_atomic_helper_connector_hdmi_force(struct drm_connector *connector);
-+int drm_atomic_helper_connector_hdmi_force_ctx(struct drm_connector *connector,
-+					       struct drm_modeset_acquire_ctx *ctx);
+@@ -1362,12 +1362,29 @@ drm_atomic_helper_connector_hdmi_update(struct drm_connector *connector,
+ 					enum drm_connector_status status)
+ {
+ 	const struct drm_edid *drm_edid;
++	int ret;
  
- enum drm_mode_status
- drm_hdmi_connector_mode_valid(struct drm_connector *connector,
+ 	if (status == connector_status_disconnected) {
+-		// TODO: also handle scramber, HDMI sink disconnected.
++		/*
++		 * .detect_ctx() can only ever return a drm_connector_status or
++		 * -EDEADLK. Handle deadlocks, and report any !EDEADLK error.
++		 */
++		ret = drm_connector_hdmi_sync_scdc(connector, false, ctx);
++		if (ret) {
++			if (ret == -EDEADLK)
++				return ret;
++
++			drm_warn(connector->dev, "Ignored SCDC sync error: %d\n", ret);
++		}
++
+ 		drm_connector_hdmi_audio_plugged_notify(connector, false);
+-		drm_edid_connector_update(connector, NULL);
++
++		ret = drm_edid_connector_update(connector, NULL);
++		if (ret)
++			drm_warn(connector->dev, "Ignored EDID update error: %d\n", ret);
++
+ 		drm_connector_cec_phys_addr_invalidate(connector);
++
+ 		return 0;
+ 	}
+ 
+@@ -1381,7 +1398,18 @@ drm_atomic_helper_connector_hdmi_update(struct drm_connector *connector,
+ 	drm_edid_free(drm_edid);
+ 
+ 	if (status == connector_status_connected) {
+-		// TODO: also handle scramber, HDMI sink is now connected.
++		/*
++		 * .detect_ctx() can only ever return a drm_connector_status or
++		 * -EDEADLK. Handle deadlocks, and report any !EDEADLK error.
++		 */
++		ret = drm_connector_hdmi_sync_scdc(connector, true, ctx);
++		if (ret) {
++			if (ret == -EDEADLK)
++				return ret;
++
++			drm_warn(connector->dev, "Ignored SCDC sync error: %d\n", ret);
++		}
++
+ 		drm_connector_hdmi_audio_plugged_notify(connector, true);
+ 		drm_connector_cec_phys_addr_set(connector);
+ 	}
 
 -- 
 2.55.0

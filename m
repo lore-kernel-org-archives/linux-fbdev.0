@@ -1,42 +1,42 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 006B84A3D4F;
-	Tue,  1 Sep 2026 18:51:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 280084A0145;
+	Tue,  1 Sep 2026 18:51:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788288666; cv=none; b=FpCoXusLICTp1sOfzhTgi+1yzit0zggFNqG1x2k+q1/DGJ0eTHYvbL6Lzffc7s/RJVKde3UINeNQ/DcShKyS4sPlG53uIEDWTcoEnKh7abkCHfYhE5tkcTa6X3/yDCBm+T6+HLCdZRzH1wBr6RIWXNKxRzPqAmmSshl+MQDxco0=
+	t=1788288667; cv=none; b=RyU0iLea3RbZXqTGiS3MqrRSZ3LFZQieiTNRm3cIHLJ2i0W6Dig7rJ5qLnBaptNJjCkqb/As4eRM4Gc41LiT5o+ovNMktltQ83skAzxZDjkME/cb7uhtMVBw9mpghe7grUoR+wpaK2Co6gvJtQDlARYIeDDcTHApXWoENlCHtNI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788288666; c=relaxed/simple;
-	bh=8Oq1JKZ+6aISjMBfW/rB+bCdiIclZbkZhtUTs+Enj9E=;
+	s=arc-20240116; t=1788288667; c=relaxed/simple;
+	bh=qtNL65/c4PhNmZPiAInduzePTu8PpXnaj5N7uxfmkyI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WM1alDkGTEuJ7221BQ0xHWrCtpHmHbIQy2yF/9t3R+gu//MqesWl3X4VKV8oo1hHcZaHlkTbEuz18JAtiPHN+SAej1uidWK72QuSA0ez7cXiwVgKVmHuWL25Q+mJpjj6WvGx3pGUbLIeKd6pBFRmRS8wiLCyYclVH8AQ9hsHE08=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Og55MvAz; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:To:Cc; b=FktAJqMHnaastTUdwz1esHJ4NYyXxV0htHfduIF+C0kEKCZkD7i+BR28fn6/f2df6BUWZ3hYUVtRUgqRDMqjzLaBJyGQIqwg5UxlKerH3VcStmMbElchNtS8ZX/e8PsO3B1qIOUjG4YKQRufV2o5QaGGa6I7WDZmkhLMOepAB0U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=La/wzkFQ; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Og55MvAz"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="La/wzkFQ"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1788288661;
-	bh=8Oq1JKZ+6aISjMBfW/rB+bCdiIclZbkZhtUTs+Enj9E=;
+	s=mail; t=1788288663;
+	bh=qtNL65/c4PhNmZPiAInduzePTu8PpXnaj5N7uxfmkyI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Og55MvAzDAr7Bv+d9/9T7Q5xhdI+voULqob07G1Tdp5WDSxNtGeZk942RTA7/Qe2g
-	 KeVYppx9jjrVsup/B2RqdtqG7fHCrr2yC9nNysB4J1CmJ3ZiedrG+TUSAly9/TbUQR
-	 gScPyd4HalqHbOSlV4MiFBOjv4N4GxpEn+6V50Dhd5yggK+MF2KTab/lbp7Kfve7/Q
-	 3PLZlKWG245ZLx3Wmjb5Hmz1ZuxCk4qhFEH0XMlSoRSGVILNshQEVvT0dfW8KiUu92
-	 Mj+RQszfDV22FbgHx4BS7hBl3Cg+LjZ+TkdcprSPsDbV2UtJ/yH3cqu+8ebxTXJcz1
-	 Erhzgt/tWP6BQ==
+	b=La/wzkFQKk9opqOqO3qi/KrubJMngitsHR7w+DZyLbGJRjEseGYzIt2NYp264hS9m
+	 5iBH8lXQCIWl/fgsxKluH9VkUnJ1TKpswcqR/m09bSqX8uH82NLy3ljo1q/yOfFcjk
+	 0XsGWFAXv2AuTTOvC0geW6xDnEnJAu+0MFRXf8hNZeMjn/r4KY//Q0mw6biyZsc3vk
+	 so+QNj3hyEtOW1D5CAOKtgnDaEb64s3ILjxW3tGZygGBKdOLb83A8S2c3LV+/Zns9e
+	 J/lPFn40gXC/+xgCCQSHA0RnwSBfczikxbbwRYu6EpHctQbiLrCP5KubJfaj9wneS7
+	 z5cokJxjxRTHg==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id B9EE917E39A8;
-	Tue, 01 Sep 2026 20:51:01 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 3A4B517E3A04;
+	Tue, 01 Sep 2026 20:51:03 +0200 (CEST)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Tue, 01 Sep 2026 21:50:52 +0300
-Subject: [PATCH v11 28/74] drm/bridge: dw-hdmi-qp: Remove unused workqueue
- include and define
+Date: Tue, 01 Sep 2026 21:50:54 +0300
+Subject: [PATCH v11 30/74] drm/bridge: dw-hdmi-qp: Provide
+ dw_hdmi_qp_hpd_notify() helper
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,7 +45,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-dw-hdmi-qp-scramb-v11-28-bc12954a0688@collabora.com>
+Message-Id: <20260901-dw-hdmi-qp-scramb-v11-30-bc12954a0688@collabora.com>
 References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
@@ -70,40 +70,115 @@ To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 Cc: kernel@collabora.com, linux-kernel@vger.kernel.org, 
  dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
  linux-sunxi@lists.linux.dev, linux-rockchip@lists.infradead.org, 
- linux-fbdev@vger.kernel.org
+ linux-fbdev@vger.kernel.org, Maud Spierings <maud_spierings@hotmail.com>, 
+ Diederik de Haas <diederik@cknow-tech.com>
 X-Mailer: b4 0.15.2
 
-linux/workqueue.h is no longer needed, and SCRAMB_POLL_DELAY_MS is
-unused.
+Export dw_hdmi_qp_hpd_notify() for platform drivers to report hot-plug
+detection events.  Unlike drm_helper_hpd_irq_event() which polls all
+connectors, this helper targets only the affected connector and ensures
+.detect_ctx() is invoked on reconnection events to trigger SCDC state
+recovery.
 
-Remove them.
+Note that this helper may sleep, so it must only be called from a
+threaded HPD interrupt handler or a work function.
 
+Tested-by: Maud Spierings <maud_spierings@hotmail.com>
+Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, Rock 5B
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c | 37 ++++++++++++++++++++++++++++
+ include/drm/bridge/dw_hdmi_qp.h              |  1 +
+ 2 files changed, 38 insertions(+)
 
 diff --git a/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c b/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c
-index a0613f0d2ebc..246c4161e627 100644
+index ee74266b7aa9..a2277531182c 100644
 --- a/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c
 +++ b/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c
-@@ -15,7 +15,6 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/of.h>
--#include <linux/workqueue.h>
+@@ -28,6 +28,7 @@
+ #include <drm/drm_edid.h>
+ #include <drm/drm_modes.h>
+ #include <drm/drm_print.h>
++#include <drm/drm_probe_helper.h>
  
- #include <drm/bridge/dw_hdmi_qp.h>
- #include <drm/display/drm_hdmi_helper.h>
-@@ -38,8 +37,6 @@
- #define DDC_CI_ADDR		0x37
- #define DDC_SEGMENT_ADDR	0x30
+ #include <media/cec.h>
  
--#define SCRAMB_POLL_DELAY_MS	3000
--
- /*
-  * Unless otherwise noted, entries in this table are 100% optimization.
-  * Values can be obtained from dw_hdmi_qp_compute_n() but that function is
+@@ -163,6 +164,8 @@ struct dw_hdmi_qp {
+ 	struct regmap *regm;
+ 	int main_irq;
+ 
++	/* Written by the atomic enable/disable hooks, read locklessly by HPD */
++	struct drm_connector *curr_conn;
+ 	unsigned long tmds_char_rate;
+ 	bool no_hpd;
+ };
+@@ -785,6 +788,8 @@ static void dw_hdmi_qp_bridge_atomic_enable(struct drm_bridge *bridge,
+ 	dw_hdmi_qp_mod(hdmi, op_mode, OPMODE_DVI, LINK_CONFIG0);
+ 
+ 	drm_atomic_helper_connector_hdmi_update_infoframes(connector, state);
++
++	WRITE_ONCE(hdmi->curr_conn, connector);
+ }
+ 
+ static void dw_hdmi_qp_bridge_atomic_disable(struct drm_bridge *bridge,
+@@ -793,6 +798,7 @@ static void dw_hdmi_qp_bridge_atomic_disable(struct drm_bridge *bridge,
+ 	struct dw_hdmi_qp *hdmi = bridge->driver_private;
+ 	struct drm_connector *connector;
+ 
++	WRITE_ONCE(hdmi->curr_conn, NULL);
+ 	hdmi->tmds_char_rate = 0;
+ 
+ 	connector = drm_atomic_get_old_connector_for_encoder(state, bridge->encoder);
+@@ -1409,6 +1415,37 @@ struct dw_hdmi_qp *dw_hdmi_qp_bind(struct platform_device *pdev,
+ }
+ EXPORT_SYMBOL_GPL(dw_hdmi_qp_bind);
+ 
++/**
++ * dw_hdmi_qp_hpd_notify() - Notify a hot-plug detection event
++ * @hdmi: pointer to the DW HDMI QP controller
++ *
++ * Platform drivers should call this from their threaded IRQ handler or work
++ * function to notify the bridge of a connection status change.
++ * The bridge's .read_hpd() phy_ops callback is used to read the current
++ * connection status.
++ */
++void dw_hdmi_qp_hpd_notify(struct dw_hdmi_qp *hdmi)
++{
++	struct drm_connector *conn = READ_ONCE(hdmi->curr_conn);
++	enum drm_connector_status status;
++
++	status = hdmi->phy.ops->read_hpd(hdmi, hdmi->phy.data);
++	dev_dbg(hdmi->dev, "%s status=%d\n", __func__, status);
++
++	/*
++	 * When the display pipeline has been already active, switch to
++	 * drm_connector_helper_hpd_irq_event() to ensure .detect_ctx()
++	 * gets invoked, i.e. via drm_helper_probe_detect(), because
++	 * drm_bridge_hpd_notify() defers to a delayed hotplug path in
++	 * this case.
++	 */
++	if (conn && status == connector_status_connected)
++		drm_connector_helper_hpd_irq_event(conn);
++	else
++		drm_bridge_hpd_notify(&hdmi->bridge, status);
++}
++EXPORT_SYMBOL_GPL(dw_hdmi_qp_hpd_notify);
++
+ void dw_hdmi_qp_suspend(struct device *dev, struct dw_hdmi_qp *hdmi)
+ {
+ 	disable_irq(hdmi->main_irq);
+diff --git a/include/drm/bridge/dw_hdmi_qp.h b/include/drm/bridge/dw_hdmi_qp.h
+index b80fceffc315..b4fb1c578a5b 100644
+--- a/include/drm/bridge/dw_hdmi_qp.h
++++ b/include/drm/bridge/dw_hdmi_qp.h
+@@ -36,6 +36,7 @@ struct dw_hdmi_qp_plat_data {
+ struct dw_hdmi_qp *dw_hdmi_qp_bind(struct platform_device *pdev,
+ 				   struct drm_encoder *encoder,
+ 				   const struct dw_hdmi_qp_plat_data *plat_data);
++void dw_hdmi_qp_hpd_notify(struct dw_hdmi_qp *hdmi);
+ void dw_hdmi_qp_suspend(struct device *dev, struct dw_hdmi_qp *hdmi);
+ void dw_hdmi_qp_resume(struct device *dev, struct dw_hdmi_qp *hdmi);
+ #endif /* __DW_HDMI_QP__ */
 
 -- 
 2.55.0

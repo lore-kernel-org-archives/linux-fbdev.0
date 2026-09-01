@@ -1,42 +1,42 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5688E4A5C57;
-	Tue,  1 Sep 2026 18:51:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52AA54A64E8;
+	Tue,  1 Sep 2026 18:51:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788288681; cv=none; b=nI9Xo4mQY3AQ7PJabmFOk3CpMgpfToJOrajy1FLIWypq4E/VH4S17lf927tCQOitiWsLw4BUPmyAfiqO/15I9EEGr8T9kvAPpO6D1aOogVHvEfm5ctsh0v5r+H7QphmtTzy4jQEp6xp2Tlw6JzZK4jWFZKC4akPWWUHSV5tTkLs=
+	t=1788288682; cv=none; b=F+QQ5MEOeUm2/LBPcQuwpmhBrbOtStzlA6gz/GTUWs6EtP5TF88V2qIkDZEFiKOOtYSXKIZECsU0XnBllXxLBX417aij1ar6XNUBlcAd7bNWjQCFBu3QVaWUE6U2GOIMTA59iMuOzg+lD6OfXoeb4uXs0V+U5adFWxpbQvMXalM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788288681; c=relaxed/simple;
-	bh=TTJ9k281x820Fhqsww8dePpZZjOZVQAkGWLxEfMxV30=;
+	s=arc-20240116; t=1788288682; c=relaxed/simple;
+	bh=7TffjHT/FiznFowY3x4vtvfUjZAAe2Mb5KIXYD9cBBU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AuT7aqkpcEXzcavmIwyBS4pvzqkTJsCEui/NdC52VjAnwE8Q2PaeYzCV9+2QJR5IOy5fh4fWglhs+3+3r04e6QzXol8uF0kV2jaCawbuUSM0B4gvH5MRAvvFHQV1cyVzqxBfI/Vxfn+cdp/UWwWyLTuHfPtbiQw1uL2rIgUOOuM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=I1mKM0To; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:To:Cc; b=XMM/dzz+znzQpIEAvCdKx/qOarsTlpDosx6sC8q+A4ep/WuWdH1hSt1s3nkHu9T/N0YqVQpdPeuUZkHhUyB8btKvanljCBwZXFTnAyEi3FlP7zCfY93JVnILgWcrZYqZN/7ZOeNNuBzRcqgS/mdo0j1rX8mIzBSV+BOtfOKBQs8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=dNQpFuO2; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="I1mKM0To"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="dNQpFuO2"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1788288676;
-	bh=TTJ9k281x820Fhqsww8dePpZZjOZVQAkGWLxEfMxV30=;
+	s=mail; t=1788288677;
+	bh=7TffjHT/FiznFowY3x4vtvfUjZAAe2Mb5KIXYD9cBBU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=I1mKM0TovFFJY5lflvJFCV0pyXAjh5h+gbj60CWywvIIHC44qMIQxooSH/IHHzrA9
-	 GotZ1+PS1Mv8LeACQ4H6lh/0gYWeNF9SJ1sfOJrqKdqRfSHevLU26Ft67qWXJLa9fJ
-	 R1KitirANFXpH7DmxjT2+OZFI+tv05ykfrKfjWyjNM7g0xZnIVDhZb2SpjY3BKR9SJ
-	 9AX+q2FzfbpNEUkNoKKA6qvVJfvn5lU0b8EFjvZlHCp+me0uAUeCSWdRERLQU+M4cB
-	 bR8vPdXrbnMKX3SIkJ46Kt0Sx/g3EHNVhYST/YVyf7Jldx7We3BVtYezsWN9TQ/8rP
-	 CeMuWNR3xXVwA==
+	b=dNQpFuO2JjXd3aIpv2AD5Fdlo87mTkfdOfX6Fog0LxsbkwpmiFqXuAcKGAoIh6tqX
+	 kdGlN5d3oWVjVeogBMIUsaHRID3/XOKwWE4564YplxsbAhjkQAxuhWeEMwoeKLoSs+
+	 hsQwlznCXZL7rQ+LOUxPjLN3UxieHJM4giristfeaa5YoAlpDoyjqpM/GAdM/9SMzX
+	 0lM4Pk4+gM8j0T8qs1vTdIOvdvX6yJfE3cPsrGB9Bcr9QmzeZdAk6FEpBKoTyT/Mib
+	 xT+Oh2ZR2YEddj9PlW4GJ7u2d10vOuljh6Nenl4os6ZN2rAf9GHh5cMxGLTWgyR9iv
+	 gW3cJpIiyrEPg==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 6A52917E3C6D;
-	Tue, 01 Sep 2026 20:51:16 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 27AF817E3C6E;
+	Tue, 01 Sep 2026 20:51:17 +0200 (CEST)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Tue, 01 Sep 2026 21:51:12 +0300
-Subject: [PATCH v11 48/74] drm/vc4: hdmi: Defer pixel clock validation to
- HDMI helpers
+Date: Tue, 01 Sep 2026 21:51:13 +0300
+Subject: [PATCH v11 49/74] drm/display: hdmi-state-helper: Drop
+ drm_atomic_helper_connector_hdmi_force()
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,7 +45,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-dw-hdmi-qp-scramb-v11-48-bc12954a0688@collabora.com>
+Message-Id: <20260901-dw-hdmi-qp-scramb-v11-49-bc12954a0688@collabora.com>
 References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
@@ -73,105 +73,53 @@ Cc: kernel@collabora.com, linux-kernel@vger.kernel.org,
  linux-fbdev@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-drm_atomic_helper_connector_hdmi_check() rejects modes whose computed
-TMDS character rate exceeds the connector limit before invoking the
-driver's .tmds_char_rate_valid() hook.
-
-BCM2835 is capped at 162 MHz, slightly below the 165 MHz limit of HDMI
-1.2.  Set supported_tmds_char_rate in vc4_hdmi_connector_funcs_hdmi10 so
-that the limit inferred from supported_hdmi_ver is overridden by the
-lower hardware constraint.  All other chip variants rely on the standard
-HDMI 1.4/2.0 limits, so the default validation suffices.
-
-This allows vc4_hdmi_connector_clock_valid() to be simplified by
-dropping the now-redundant max_pixel_clock field from struct
-vc4_hdmi_variant.
+With all callers converted to the .force_ctx() connector helper, this
+function has no users left.  Remove it.
 
 Reviewed-by: Maxime Ripard <mripard@kernel.org>
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/vc4/vc4_hdmi.c | 10 +---------
- drivers/gpu/drm/vc4/vc4_hdmi.h |  3 ---
- 2 files changed, 1 insertion(+), 12 deletions(-)
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c | 15 ---------------
+ include/drm/display/drm_hdmi_state_helper.h     |  1 -
+ 2 files changed, 16 deletions(-)
 
-diff --git a/drivers/gpu/drm/vc4/vc4_hdmi.c b/drivers/gpu/drm/vc4/vc4_hdmi.c
-index 2451ff85e759..6d3db0d24c38 100644
---- a/drivers/gpu/drm/vc4/vc4_hdmi.c
-+++ b/drivers/gpu/drm/vc4/vc4_hdmi.c
-@@ -1529,12 +1529,8 @@ vc4_hdmi_connector_clock_valid(const struct drm_connector *connector,
- 			       const struct drm_display_mode *mode,
- 			       unsigned long long clock)
- {
--	const struct vc4_hdmi *vc4_hdmi = connector_to_vc4_hdmi(connector);
- 	struct vc4_dev *vc4 = to_vc4_dev(connector->dev);
+diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+index 7cdb7ca3dc12..d661385c3e64 100644
+--- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
++++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+@@ -1441,21 +1441,6 @@ int drm_atomic_helper_connector_hdmi_hotplug(struct drm_connector *connector,
+ }
+ EXPORT_SYMBOL(drm_atomic_helper_connector_hdmi_hotplug);
  
--	if (clock > vc4_hdmi->variant->max_pixel_clock)
--		return MODE_CLOCK_HIGH;
+-/**
+- * drm_atomic_helper_connector_hdmi_force - HDMI Connector implementation of the force callback
+- * @connector: A pointer to the HDMI connector
+- *
+- * This function implements the .force() callback for the HDMI connectors. It
+- * can either be used directly as the callback or should be called from within
+- * the .force() callback implementation to maintain the HDMI-specific
+- * connector's data.
+- */
+-void drm_atomic_helper_connector_hdmi_force(struct drm_connector *connector)
+-{
+-	drm_atomic_helper_connector_hdmi_update(connector, NULL, connector->status);
+-}
+-EXPORT_SYMBOL(drm_atomic_helper_connector_hdmi_force);
 -
- 	if (!vc4->hvs->vc5_hdmi_enable_hdmi_20 && clock > HDMI_1_3_TMDS_CHAR_RATE_MAX_HZ)
- 		return MODE_CLOCK_HIGH;
- 
-@@ -1579,6 +1575,7 @@ static const struct drm_connector_hdmi_funcs vc4_hdmi_connector_funcs_hdmi12 = {
- 	VC4_HDMI_CONNECTOR_FUNCS_COMMON,
- 	.max_bpc		= 8,
- 	.supported_hdmi_ver	= HDMI_VERSION_1_2,
-+	.supported_tmds_char_rate = 162000000,
- };
- 
- static const struct drm_connector_hdmi_funcs vc4_hdmi_connector_funcs_hdmi14 = {
-@@ -3185,7 +3182,6 @@ static const struct vc4_hdmi_variant bcm2835_variant = {
- 	.encoder_type		= VC4_ENCODER_TYPE_HDMI0,
- 	.debugfs_name		= "hdmi_regs",
- 	.card_name		= "vc4-hdmi",
--	.max_pixel_clock	= 162000000,
- 	.registers		= vc4_hdmi_fields,
- 	.num_registers		= ARRAY_SIZE(vc4_hdmi_fields),
- 
-@@ -3205,7 +3201,6 @@ static const struct vc4_hdmi_variant bcm2711_hdmi0_variant = {
- 	.encoder_type		= VC4_ENCODER_TYPE_HDMI0,
- 	.debugfs_name		= "hdmi0_regs",
- 	.card_name		= "vc4-hdmi-0",
--	.max_pixel_clock	= HDMI_2_0_TMDS_CHAR_RATE_MAX_HZ,
- 	.registers		= vc5_hdmi_hdmi0_fields,
- 	.num_registers		= ARRAY_SIZE(vc5_hdmi_hdmi0_fields),
- 	.phy_lane_mapping	= {
-@@ -3234,7 +3229,6 @@ static const struct vc4_hdmi_variant bcm2711_hdmi1_variant = {
- 	.encoder_type		= VC4_ENCODER_TYPE_HDMI1,
- 	.debugfs_name		= "hdmi1_regs",
- 	.card_name		= "vc4-hdmi-1",
--	.max_pixel_clock	= HDMI_1_3_TMDS_CHAR_RATE_MAX_HZ,
- 	.registers		= vc5_hdmi_hdmi1_fields,
- 	.num_registers		= ARRAY_SIZE(vc5_hdmi_hdmi1_fields),
- 	.phy_lane_mapping	= {
-@@ -3263,7 +3257,6 @@ static const struct vc4_hdmi_variant bcm2712_hdmi0_variant = {
- 	.encoder_type		= VC4_ENCODER_TYPE_HDMI0,
- 	.debugfs_name		= "hdmi0_regs",
- 	.card_name		= "vc4-hdmi-0",
--	.max_pixel_clock	= HDMI_2_0_TMDS_CHAR_RATE_MAX_HZ,
- 	.registers		= vc6_hdmi_hdmi0_fields,
- 	.num_registers		= ARRAY_SIZE(vc6_hdmi_hdmi0_fields),
- 	.phy_lane_mapping	= {
-@@ -3290,7 +3283,6 @@ static const struct vc4_hdmi_variant bcm2712_hdmi1_variant = {
- 	.encoder_type		= VC4_ENCODER_TYPE_HDMI1,
- 	.debugfs_name		= "hdmi1_regs",
- 	.card_name		= "vc4-hdmi-1",
--	.max_pixel_clock	= HDMI_2_0_TMDS_CHAR_RATE_MAX_HZ,
- 	.registers		= vc6_hdmi_hdmi1_fields,
- 	.num_registers		= ARRAY_SIZE(vc6_hdmi_hdmi1_fields),
- 	.phy_lane_mapping	= {
-diff --git a/drivers/gpu/drm/vc4/vc4_hdmi.h b/drivers/gpu/drm/vc4/vc4_hdmi.h
-index f6159c9e6144..61486e7b4ba2 100644
---- a/drivers/gpu/drm/vc4/vc4_hdmi.h
-+++ b/drivers/gpu/drm/vc4/vc4_hdmi.h
-@@ -29,9 +29,6 @@ struct vc4_hdmi_variant {
- 	/* Filename to expose the registers in debugfs */
- 	const char *debugfs_name;
- 
--	/* Maximum pixel clock supported by the controller (in Hz) */
--	unsigned long long max_pixel_clock;
--
- 	/* List of the registers available on that variant */
- 	const struct vc4_hdmi_register *registers;
+ /**
+  * drm_atomic_helper_connector_hdmi_force_ctx - HDMI Connector implementation
+  * of the force_ctx callback
+diff --git a/include/drm/display/drm_hdmi_state_helper.h b/include/drm/display/drm_hdmi_state_helper.h
+index 965342f6bbc9..5c827409db45 100644
+--- a/include/drm/display/drm_hdmi_state_helper.h
++++ b/include/drm/display/drm_hdmi_state_helper.h
+@@ -27,7 +27,6 @@ int drm_atomic_helper_connector_hdmi_update_infoframes(struct drm_connector *con
+ int drm_atomic_helper_connector_hdmi_hotplug(struct drm_connector *connector,
+ 					     struct drm_modeset_acquire_ctx *ctx,
+ 					     enum drm_connector_status status);
+-void drm_atomic_helper_connector_hdmi_force(struct drm_connector *connector);
+ int drm_atomic_helper_connector_hdmi_force_ctx(struct drm_connector *connector,
+ 					       struct drm_modeset_acquire_ctx *ctx);
  
 
 -- 

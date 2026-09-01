@@ -1,42 +1,42 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76CD44A8A26;
-	Tue,  1 Sep 2026 18:51:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C84B34A8A1E;
+	Tue,  1 Sep 2026 18:51:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788288688; cv=none; b=hcfJRkSst3nXmCa6dDBfkUjIPVPcszFZ+XseCrgBkYiE2WB8DBpLY9m4an4AeqarrzK0MVYmvr27/e44jzUrch74SnXwI2QcsRLkdORCWibM0Y1NwlV60hxVgaBE7HGTbBKR5/pQ4K3ZwzD+ZhaMwC/oF9aXP30gIuUH1xRrH3Y=
+	t=1788288688; cv=none; b=XVBs2kqqD3F6DeC1zeQVga5K2XpHIE3Eftzc3fyefU2NmB4PZQw20R61U1j/4svS12tQbtjFFDJ6Gy0yQ6QQeCn/M9KahbCq16BzO8fTbf1a2Ak+fmbexoOABzZmWgbGJEzOOsSJMEmJAF5n2m2sptCMRI10v6CR3FSJo5CPU/U=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1788288688; c=relaxed/simple;
-	bh=eTwvcHzDahjPYHCtMEH5hOYZ7IvsD5Sh3bBiNe6fI+U=;
+	bh=lZUSDt3QSXeFHF6VV6Oc9j8qitYrzw5Nsf6oI2hLSn0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=vCqavYmp4tM+LXyUz0VFMtC6IXb/n8ElORkQgul+yU4gGOH4G52b3ZQKEabtHn6IhTiH4pWkXrw9wsPCX3yVqdyjRYAsVgPsNia7MFOmwNxfRor8MLD/6l8cf9dn1vun0aOFKgT7mbDXPFAkuvqX/F+3ej0Ngx+Bv6kpS/79/mE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=W4Dr2V50; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:To:Cc; b=OSjRNfEb2kmUC7HPDxPL4FG+QpG1JV8S2gBiCIsqgaLbf+uac5i7Cf30ai1G9OluTx1qdmgxWP9H00lTsL7Li5tYgZRQ+FNfxHKJtteqXYm0/RAokl8DmHg7chH1GTzgHFJS3D3HhStz3iPXoQAVJOoRZqGyCYcMrxSCEx9pLt4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=Ls9nlQpn; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="W4Dr2V50"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="Ls9nlQpn"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1788288683;
-	bh=eTwvcHzDahjPYHCtMEH5hOYZ7IvsD5Sh3bBiNe6fI+U=;
+	s=mail; t=1788288682;
+	bh=lZUSDt3QSXeFHF6VV6Oc9j8qitYrzw5Nsf6oI2hLSn0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=W4Dr2V50fcGATA3BlMN2dZTHzsCTva51cS7g3YJltBdKQqVmNCxpivDne3jYxhAMj
-	 IdHzXLDAXcROyA4yKlviV5WVIQDblwOxH0Wul3CzAvAouKKRgpNXRGf7+Wys9+x6pN
-	 CoNWo0ru1uTpvCoeT7ULCL8DasrcHW/R4uKDNpqA1ixgCyYaXHDn7aVOpJGNJcjR6t
-	 2Xd/Gz07CsmE17BdkCKZZhPknfaLVcKkpSapw/n40M9fOHP8VMXr12YAJ5Kz4aQq2O
-	 i3C+aSlTolESSnJkVxj24iwhfHyU2hh8LVkHNAoisVK/c7UQ3FpZ81ZtwhCDko6kpe
-	 48dpPv/kbDTuQ==
+	b=Ls9nlQpnLqPTXQcg89AYQ6rxTbLiRLtJ1kMmTqWladWfS/RbOyvkx5a45wiBHVx5I
+	 fBRmwnL802tyz1RaJMscAzZiax/5HvDoGiWQT4KCx+3aFpg4avHTyQjI2NlkWD0LKE
+	 K2r+W3ltMnRJHVTJ+x4ZHX8WBwqYdPscWBS9VU6xrcIm4ooqWZApU/kHsTGxYiYUB0
+	 seefaTRZA9lNnydjbM1jDOR5KyOG9hVNSFPUc14+HLWBvXlsqeWdRn1veFNZ3iFP0B
+	 NN4KQZx1Whw78XCY4vOEBMtlXcbsh9LqNgrJCqimMhH9ZEvef6Sb2bYZGo0zORo3TP
+	 wZTa0xJOj/DPw==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 0DD1217E3C88;
-	Tue, 01 Sep 2026 20:51:23 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 4E34D17E3C85;
+	Tue, 01 Sep 2026 20:51:22 +0200 (CEST)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Tue, 01 Sep 2026 21:51:21 +0300
-Subject: [PATCH v11 57/74] drm/sun4i: hdmi: Convert to
- drmm_connector_hdmi_init()
+Date: Tue, 01 Sep 2026 21:51:20 +0300
+Subject: [PATCH v11 56/74] drm/rockchip: rk3066_hdmi: Advertise HDMI 1.4
+ capabilities
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,7 +45,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-dw-hdmi-qp-scramb-v11-57-bc12954a0688@collabora.com>
+Message-Id: <20260901-dw-hdmi-qp-scramb-v11-56-bc12954a0688@collabora.com>
 References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
@@ -73,78 +73,46 @@ Cc: kernel@collabora.com, linux-kernel@vger.kernel.org,
  linux-fbdev@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-Switch driver over to the new drmm_connector_hdmi_init() signature and
-advertise HDMI 1.2 support.  The vendor, product, supported_formats and
-max_bpc values previously passed as arguments are now provided through
-struct drm_connector_hdmi_funcs, together with the new
-supported_hdmi_ver field.
+Bridges using DRM_BRIDGE_OP_HDMI are now expected to also provide a
+supported HDMI version.  This is not yet enforced, but will become
+mandatory once the migration to the new caps-based HDMI connector
+initialization API is completed.
 
-The HDMI connector helpers infer the 165 MHz TMDS character rate ceiling
-from supported_hdmi_ver and reject modes exceeding it before invoking
-the driver's .tmds_char_rate_valid() hook.  This makes the explicit mode
-clock check in sun4i_hdmi_connector_clock_valid() redundant, so drop it.
+The RK3066 HDMI TX supports HDMI 1.4a, as described in commit
+f84d3d37b7fb ("drm: rockchip: introduce rk3066 hdmi").  However, the
+driver does not currently enforce a maximum TMDS character rate, it only
+filters non-CEA modes and excludes VIC 1 (640x480) via the .mode_valid
+callback.
 
-No functional change intended.
+Advertise HDMI 1.4 support for now so that modes exceeding the 340 MHz
+TMDS limit are rejected by the core.
 
-Reviewed-by: Maxime Ripard <mripard@kernel.org>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/sun4i/sun4i_hdmi_enc.c | 25 +++++++++++--------------
- 1 file changed, 11 insertions(+), 14 deletions(-)
+ drivers/gpu/drm/rockchip/rk3066_hdmi.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/gpu/drm/sun4i/sun4i_hdmi_enc.c b/drivers/gpu/drm/sun4i/sun4i_hdmi_enc.c
-index d98b6f12a7bc..6f4fe0c8efae 100644
---- a/drivers/gpu/drm/sun4i/sun4i_hdmi_enc.c
-+++ b/drivers/gpu/drm/sun4i/sun4i_hdmi_enc.c
-@@ -192,10 +192,6 @@ sun4i_hdmi_connector_clock_valid(const struct drm_connector *connector,
- 	if (mode->flags & DRM_MODE_FLAG_DBLCLK)
- 		return MODE_BAD;
+diff --git a/drivers/gpu/drm/rockchip/rk3066_hdmi.c b/drivers/gpu/drm/rockchip/rk3066_hdmi.c
+index f28d6a883e09..f748700b0ba6 100644
+--- a/drivers/gpu/drm/rockchip/rk3066_hdmi.c
++++ b/drivers/gpu/drm/rockchip/rk3066_hdmi.c
+@@ -14,6 +14,7 @@
+ #include <drm/drm_probe_helper.h>
  
--	/* HDMI 1.0 max TMDS character rate */
--	if (clock > HDMI_1_0_TMDS_CHAR_RATE_MAX_HZ)
--		return MODE_CLOCK_HIGH;
--
- 	rounded_rate = clk_round_rate(hdmi->tmds_clk, clock);
- 	if (rounded_rate > 0 &&
- 	    max_t(unsigned long, rounded_rate, clock) -
-@@ -253,6 +249,15 @@ static struct i2c_adapter *sun4i_hdmi_get_ddc(struct device *dev)
- }
+ #include <linux/clk.h>
++#include <linux/hdmi.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+@@ -712,6 +713,7 @@ rk3066_hdmi_register(struct drm_device *drm, struct rk3066_hdmi *hdmi)
+ 	hdmi->bridge.type = DRM_MODE_CONNECTOR_HDMIA;
+ 	hdmi->bridge.vendor = "Rockchip";
+ 	hdmi->bridge.product = "RK3066 HDMI";
++	hdmi->bridge.supported_hdmi_ver = HDMI_VERSION_1_4;
  
- static const struct drm_connector_hdmi_funcs sun4i_hdmi_hdmi_connector_funcs = {
-+	/*
-+	 * NOTE: Those are likely to be wrong, but I couldn't find
-+	 * the actual ones in the BSP.
-+	 */
-+	.vendor = "AW",
-+	.product = "HDMI",
-+	.supported_hdmi_ver = HDMI_VERSION_1_2,
-+	.supported_formats = BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
-+	.max_bpc = 8,
- 	.tmds_char_rate_valid	= sun4i_hdmi_connector_clock_valid,
- 	.avi = {
- 		.clear_infoframe	= sun4i_hdmi_clear_avi_infoframe,
-@@ -654,19 +659,11 @@ static int sun4i_hdmi_bind(struct device *dev, struct device *master,
- 
- 	drm_connector_helper_add(&hdmi->connector,
- 				 &sun4i_hdmi_connector_helper_funcs);
--	ret = drmm_connector_hdmi_ini2(drm, &hdmi->connector,
--				       /*
--					* NOTE: Those are likely to be
--					* wrong, but I couldn't find the
--					* actual ones in the BSP.
--					*/
--				       "AW", "HDMI",
-+	ret = drmm_connector_hdmi_init(drm, &hdmi->connector,
- 				       &sun4i_hdmi_connector_funcs,
- 				       &sun4i_hdmi_hdmi_connector_funcs,
- 				       DRM_MODE_CONNECTOR_HDMIA,
--				       hdmi->ddc_i2c,
--				       BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
--				       8);
-+				       hdmi->ddc_i2c);
- 	if (ret) {
- 		dev_err(dev,
- 			"Couldn't initialise the HDMI connector\n");
+ 	hdmi->bridge.ddc = rk3066_hdmi_i2c_adapter(hdmi);
+ 	if (IS_ERR(hdmi->bridge.ddc))
 
 -- 
 2.55.0

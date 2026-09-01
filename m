@@ -1,42 +1,42 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ED1E14A2A61;
-	Tue,  1 Sep 2026 18:51:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E7464A3840;
+	Tue,  1 Sep 2026 18:51:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788288663; cv=none; b=Dif3rnLKZnw0wRY7caiMh+TU/U1IKbHvkeHEcysdNLp0W1Xru4EqAE6csj3X8xYcnbXEUUg++G/glMYYijiX/NEE61oRM3o45r5BlEvmO5Bap2UdH8L+5USHJo7Ht3+Ah9PTrhT857+mq2vTM9YWWB9qgU0xVo5d8aRjDsgpoEc=
+	t=1788288664; cv=none; b=aHRJS7bLPLn0NTzLl69AgyVx3TH7SKt9kOE0SDcwJCC2GG7HGOgsbpASPHZ7ZdCJstYFvIT6u/NTnJzwAQd7t4VSUfPZDozxW9oD/RIE5kjI7RNEommLaLmvAjdquQK7tGgvrDhGMX2v8Z53an17Y0+j+zw4BiXxuhZxAz2HQlw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788288663; c=relaxed/simple;
-	bh=llRoKpfXuQkYY+W0+/jwbxQOlm0Z0m47rfFzOtj1Nlw=;
+	s=arc-20240116; t=1788288664; c=relaxed/simple;
+	bh=RkfCwo+2xh2eA4ByQWj+OR0E04K3cBjBCK6HYgdmnC4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=pwvSB3O9AVx8So5mXe6sb1pBsyyk99ZthxZx0Ub1JPwD1OpbMvJuaGYedCZGfR6hREP2wr0RZeNAMmVXf1OyNO/xYFlfjqNkMtlW2eJucGK76jk0hsY7neO15D7RGPaD9Cjjw2MEHn7VP0Qm0hXoOl/C4rQr38RcWsexAPG0+Dg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=WkqOVOtU; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:To:Cc; b=b3kD/4YJUAZEBZrK6q1hldA8dUTZ1xHF+pilhIuVZfd3L4eEQePO+qZPpiGBct4VgXQMxtTLjEZEdj151VR9qjjwbmMyvw0LBHvZyPtxvnzZXKMBY/ESHUUKnaydn0jQO279Ns4YnK4av89sEQriRGTAN41PPx0W5KiUTpanRzg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=e57Wp8BC; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="WkqOVOtU"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="e57Wp8BC"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
 	s=mail; t=1788288659;
-	bh=llRoKpfXuQkYY+W0+/jwbxQOlm0Z0m47rfFzOtj1Nlw=;
+	bh=RkfCwo+2xh2eA4ByQWj+OR0E04K3cBjBCK6HYgdmnC4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=WkqOVOtUGI+dxR97lgGEVnMkIlpIq9j2acvd8iVZ9kqVtmIeu0bXneyWSBUt52yVA
-	 szeP9EhMz62PcX8q1VXK8wcVjDgq9qoJAfdPoMqKUHqFHelUN1k6xBcfFS7azUUiDv
-	 JTs0XyBfvU6eoLdyxDNbUIqibiB3GlqiNh2vqrF8RaAcBxjwYk0ahRXRS4HV7cIGcI
-	 WfAMdN6skhKyLymkvub+vLTMaogL/1JPc9lhlMF7x2n1jNo/+hVFa8K7Z4ZBPXoq7O
-	 2LVtJZCuShFVV2Bvh0fexr4Vjwr/KmmqhbaIivO7lCHDuingYR1LNdvRwqbIUH7BtR
-	 jAsyWc9gI0XsA==
+	b=e57Wp8BCxkaI3grdmHvLeFEzL34bcRhsPmJS/VLQ6NSOsAK5su60nB3bcl5H0C/fk
+	 nh31JaIO157gB+AJ5utw8azvVZ5H4berfJoT3IUd2a3v7Chnu7ZMBRbxoskadxEYXZ
+	 GalLCIzLFoE6OA7dpRgi1vEuhqNXj2ATFnSekxYS0yx7l9Fjy5my1w3hMTHXa+vJU9
+	 0OBPLJZftdnFTMixnWZ+d4ardebC+7dO30nd2PrUieKTL0U6w6aszH3ZaXsrrIm4FB
+	 LbeJ3wThzHrLRbw4lSnx7bkhUypGR4F/sIwgeraRhoXNzFA2C9QnlPwVbIBeZfec7s
+	 dLg4LSiPPdg2w==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id EDABA17E38F5;
-	Tue, 01 Sep 2026 20:50:58 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 9D9B417E38F9;
+	Tue, 01 Sep 2026 20:50:59 +0200 (CEST)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Tue, 01 Sep 2026 21:50:48 +0300
-Subject: [PATCH v11 24/74] drm/display: hdmi-state-helper: Set HDMI
- scrambling requirement
+Date: Tue, 01 Sep 2026 21:50:49 +0300
+Subject: [PATCH v11 25/74] drm/display: bridge_connector: Switch to
+ .force_ctx() connector helper
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,7 +45,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-dw-hdmi-qp-scramb-v11-24-bc12954a0688@collabora.com>
+Message-Id: <20260901-dw-hdmi-qp-scramb-v11-25-bc12954a0688@collabora.com>
 References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
@@ -70,39 +70,80 @@ To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 Cc: kernel@collabora.com, linux-kernel@vger.kernel.org, 
  dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
  linux-sunxi@lists.linux.dev, linux-rockchip@lists.infradead.org, 
- linux-fbdev@vger.kernel.org, Maud Spierings <maud_spierings@hotmail.com>, 
- Diederik de Haas <diederik@cknow-tech.com>
+ linux-fbdev@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-Set drm_connector_hdmi_state.scrambler_needed when the computed TMDS
-character rate exceeds the HDMI 1.3 maximum TMDS character rate.
+Turn drm_bridge_connector_force() into a .force_ctx() implementation and
+hand the acquire context over to
+drm_atomic_helper_connector_hdmi_force_ctx(), so that the HDMI connector
+framework can reset the CRTC to recover the SCDC state when the sink
+reconnects while the display pipeline is active.
 
-HDMI 2.0 requires scrambling above 340 MHz.  Centralize that clock-based
-requirement in the HDMI state helper so drivers do not need to open-code
-the threshold check.
+No functional change for non-HDMI bridge connectors, which keep behaving
+as a no-op.
 
-Acked-by: Maxime Ripard <mripard@kernel.org>
-Tested-by: Maud Spierings <maud_spierings@hotmail.com>
-Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, Rock 5B
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/display/drm_hdmi_state_helper.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/gpu/drm/display/drm_bridge_connector.c | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-index 1e269b203b98..7cdb7ca3dc12 100644
---- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-+++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-@@ -596,6 +596,9 @@ hdmi_compute_clock(const struct drm_connector *connector,
+diff --git a/drivers/gpu/drm/display/drm_bridge_connector.c b/drivers/gpu/drm/display/drm_bridge_connector.c
+index b5a6e2e8bcd5..707d7143e475 100644
+--- a/drivers/gpu/drm/display/drm_bridge_connector.c
++++ b/drivers/gpu/drm/display/drm_bridge_connector.c
+@@ -208,16 +208,6 @@ static void drm_bridge_connector_disable_hpd(struct drm_connector *connector)
+  * Bridge Connector Functions
+  */
  
- 	conn_state->hdmi.tmds_char_rate = clock;
- 
-+	/* TODO: also check drm_display_info.hdmi.scdc.scrambling.low_rates */
-+	conn_state->hdmi.scrambler_needed = (clock > HDMI_1_3_TMDS_CHAR_RATE_MAX_HZ);
-+
- 	return 0;
+-static void drm_bridge_connector_force(struct drm_connector *connector)
+-{
+-	struct drm_bridge_connector *bridge_connector =
+-		to_drm_bridge_connector(connector);
+-	struct drm_bridge *hdmi = bridge_connector->bridge_hdmi;
+-
+-	if (hdmi)
+-		drm_atomic_helper_connector_hdmi_force(connector);
+-}
+-
+ static void drm_bridge_connector_debugfs_init(struct drm_connector *connector,
+ 					      struct dentry *root)
+ {
+@@ -277,7 +267,6 @@ drm_bridge_connector_color_format(const struct drm_connector_state *conn_state)
  }
  
+ static const struct drm_connector_funcs drm_bridge_connector_funcs = {
+-	.force = drm_bridge_connector_force,
+ 	.fill_modes = drm_helper_probe_single_connector_modes,
+ 	.atomic_create_state = drm_bridge_connector_create_state,
+ 	.atomic_duplicate_state = drm_atomic_helper_connector_duplicate_state,
+@@ -329,6 +318,19 @@ static int drm_bridge_connector_detect_ctx(struct drm_connector *connector,
+ 	return status;
+ }
+ 
++static int drm_bridge_connector_force_ctx(struct drm_connector *connector,
++					  struct drm_modeset_acquire_ctx *ctx)
++{
++	struct drm_bridge_connector *bridge_connector =
++		to_drm_bridge_connector(connector);
++	struct drm_bridge *hdmi = bridge_connector->bridge_hdmi;
++
++	if (hdmi)
++		return drm_atomic_helper_connector_hdmi_force_ctx(connector, ctx);
++
++	return 0;
++}
++
+ static int drm_bridge_connector_get_modes_edid(struct drm_connector *connector,
+ 					       struct drm_bridge *bridge)
+ {
+@@ -421,6 +423,7 @@ static int drm_bridge_connector_atomic_check(struct drm_connector *connector,
+ static const struct drm_connector_helper_funcs drm_bridge_connector_helper_funcs = {
+ 	.get_modes = drm_bridge_connector_get_modes,
+ 	.detect_ctx = drm_bridge_connector_detect_ctx,
++	.force_ctx = drm_bridge_connector_force_ctx,
+ 	.mode_valid = drm_bridge_connector_mode_valid,
+ 	.enable_hpd = drm_bridge_connector_enable_hpd,
+ 	.disable_hpd = drm_bridge_connector_disable_hpd,
 
 -- 
 2.55.0

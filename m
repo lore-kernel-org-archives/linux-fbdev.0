@@ -1,42 +1,42 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD34D4A841D;
-	Tue,  1 Sep 2026 18:51:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD7674A9D78;
+	Tue,  1 Sep 2026 18:51:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788288702; cv=none; b=CwLE8lfWl4F2AnXLWKZe/9hf7bxk+emulJ7EqqfmAgXdv5yvS+GIWdCFieyGcFUfQlTiFUYElBwnpCnvgAXjYdu0xwd+PFInYiwuaapZS1C7dDZtrcwgtmOuTG6KVF44d95hA3z4ZpnECF52Yf7mdZPdkQNtkhOVz4NTayZe5K0=
+	t=1788288702; cv=none; b=IUITwY0lC4sGXE7gAWwROo7Yo5TuBJqQVMWy2aYkh+3r1VzWM240v9CL/q8Y1mz4mtWwUoiwYYou8Xn3oJIkyOReT60PmZJhQkbxgbxP59bTRxGYPURYg1EtcTntjEN9kzX8vMs3guoXciFDpj7UtrAlTCESnxJ7FTkyoB4exlQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1788288702; c=relaxed/simple;
-	bh=gMZvH/XQuHle0y4qmxFGuepyJ+gg6MxKAWPpFnQKQUk=;
+	bh=WvZHGQUwLNHlXVJXJUmzneooB/o/bop5PxCRNXVE6KM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=aryVicO+pGjPx8J9LdUPe33BVpptyxy7K0vcEW15+VrLFXNuuvT1p55kpkv5xPRluNMP3MY16527OtMHJ6tJl5AwLa5RhxwOxYK7LZ1dcn3zhpkvxSNgxTQB+/dKp+HherRN1Ds9Pi8O95hDFe/NkOIHOiXWzf/fRZqO2fuWHkQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=CHeLv6D1; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:To:Cc; b=cw9G08LL10HTcN1AHXN3IBd2gKVS5Ojzvh1emJuIw59ajQd/DKh1Ow4cvtg2ZCqyRwFxFijlA77+UsjihXygCeeV9WVdIFVUnWGcd7DuHGfHOzlZ5d3Ku3gKydNcpFHvtaZcg6ggUYa6mmRcKKFgRI1dBkofW6v+b7817yJvz3I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=br+Zi4pP; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="CHeLv6D1"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="br+Zi4pP"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1788288694;
-	bh=gMZvH/XQuHle0y4qmxFGuepyJ+gg6MxKAWPpFnQKQUk=;
+	s=mail; t=1788288692;
+	bh=WvZHGQUwLNHlXVJXJUmzneooB/o/bop5PxCRNXVE6KM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=CHeLv6D1SpaIHwZ1VwZo90Z4Voe1VkTLSbU/6grn1SzcAuimWnmB++CGKsI2PRyNU
-	 nM3MUkO+tJf+2sZWXaVUIs/tPNuAVxN3Q1+nQ89+aD/Rb7r/hDtMb7C97yiV1nvfD1
-	 cMnWZT5VQUCWaxVNdpecybIeGFh4GNVcwFiuvIfFRIPGdmvzVvDkI7dE3mW6oItc9X
-	 /lgVE6jTFFmb3ZOflHVIVDaHxTzoCNkJfQx18QbGA8nnEYGVOI/hxN/HZjLEFqFotV
-	 mFjc2/dBjjLKqOroSXryCUWxsFnAg7CKKKcNuToSqgWDOBpc5Iq95edvAE212+1UoL
-	 etYOWrrCkwVzg==
+	b=br+Zi4pP1ctJ5jk3Zd/d0C1FvBB8sGMDTi9ZzhwG+4N3JJYx6yxT/ho+eFIx6jwRE
+	 S68UKJ6ZNbyhxXrJPvB1qfceuPZMkNcIUqlW0R4nW8Gp+41uwSUOGf9AXeU70BoxYK
+	 JuoikA8BdRQinLW8CUxG4wzwrSLllB6g7HEsc11DsLwApx4dXil3f75cVOsycTs2K9
+	 gruAPO8T/Vq2Vy/LUxYnSvRa9U4q+ofleEOlhmzkhdJs7MLLFXJL5ZxkQqIiBMjxJU
+	 GxNZxUlSXeBN/nEQZS2n6X0+7P/LR+jrMVfrF7CDVRGNirXZcnGvoQguKkdyalkmBI
+	 ILMT1zN1PowFg==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 0833817E3CA6;
-	Tue, 01 Sep 2026 20:51:34 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 8A0DA17E3CA1;
+	Tue, 01 Sep 2026 20:51:32 +0200 (CEST)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Tue, 01 Sep 2026 21:51:36 +0300
-Subject: [PATCH v11 72/74] video/hdmi: Define SPD InfoFrame field lengths
- and use strtomem_pad()
+Date: Tue, 01 Sep 2026 21:51:34 +0300
+Subject: [PATCH v11 70/74] drm/connector: Drop redundant hdmi
+ supported_formats field
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,7 +45,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-dw-hdmi-qp-scramb-v11-72-bc12954a0688@collabora.com>
+Message-Id: <20260901-dw-hdmi-qp-scramb-v11-70-bc12954a0688@collabora.com>
 References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
@@ -70,115 +70,71 @@ To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 Cc: kernel@collabora.com, linux-kernel@vger.kernel.org, 
  dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
  linux-sunxi@lists.linux.dev, linux-rockchip@lists.infradead.org, 
- linux-fbdev@vger.kernel.org
+ linux-fbdev@vger.kernel.org, Diederik de Haas <diederik@cknow-tech.com>
 X-Mailer: b4 0.15.2
 
-HDMI specification defines the SPD InfoFrame Vendor Name and Product
-Description as fixed-size fields, 8 and 16 bytes respectively, padded
-with zeros and left without any trailing NUL when a name spans the whole
-field.
+Now that all users migrated to the new drmm_connector_hdmi_init()
+signature, supported_formats is provided through struct
+drm_connector_hdmi_funcs, a reference to which is already stored in
+drm_connector_hdmi.
 
-Give those lengths a name and mark the fields as non-strings, so that
-the copies can be handed over to strtomem_pad(), which implements
-precisely the required semantics.  This also bounds the reads from the
-source strings, whereas the open-coded strlen() could run past the end
-of the buffer in the hdmi_spd_infoframe_unpack() path, where the names
-come straight from the wire and are not NUL-terminated.
+Drop the redundant field from drm_connector_hdmi and point its users to
+hdmi.funcs->supported_formats instead.
 
-While at it, replace the related magic numbers in the pack and unpack
-helpers with the new defines.
-
+Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, Rock 5B
+Reviewed-by: Maxime Ripard <mripard@kernel.org>
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/video/hdmi.c | 23 +++++++++++++----------
- include/linux/hdmi.h |  7 +++++--
- 2 files changed, 18 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c | 3 ++-
+ drivers/gpu/drm/drm_connector.c                 | 3 ---
+ include/drm/drm_connector.h                     | 6 ------
+ 3 files changed, 2 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index 45b42f14a750..e729c26d61c4 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -217,23 +217,22 @@ EXPORT_SYMBOL(hdmi_avi_infoframe_pack);
-  * @vendor: vendor string
-  * @product: product string
-  *
-+ * Both strings are copied into the fixed-size infoframe fields,
-+ * truncated if too long and padded with zeros otherwise.
-+ *
-  * Returns 0 on success or a negative error code on failure.
-  */
- int hdmi_spd_infoframe_init(struct hdmi_spd_infoframe *frame,
- 			    const char *vendor, const char *product)
- {
--	size_t len;
--
- 	memset(frame, 0, sizeof(*frame));
+diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+index 289dce6c6281..687793c62d55 100644
+--- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
++++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+@@ -428,7 +428,8 @@ sink_supports_format_bpc(const struct drm_connector *connector,
+ 		return false;
+ 	}
  
- 	frame->type = HDMI_INFOFRAME_TYPE_SPD;
- 	frame->version = 1;
- 	frame->length = HDMI_SPD_INFOFRAME_SIZE;
- 
--	len = strlen(vendor);
--	memcpy(frame->vendor, vendor, min(len, sizeof(frame->vendor)));
--	len = strlen(product);
--	memcpy(frame->product, product, min(len, sizeof(frame->product)));
-+	strtomem_pad(frame->vendor, vendor, 0);
-+	strtomem_pad(frame->product, product, 0);
- 
- 	return 0;
- }
-@@ -305,9 +304,11 @@ ssize_t hdmi_spd_infoframe_pack_only(const struct hdmi_spd_infoframe *frame,
- 	ptr += HDMI_INFOFRAME_HEADER_SIZE;
- 
- 	memcpy(ptr, frame->vendor, sizeof(frame->vendor));
--	memcpy(ptr + 8, frame->product, sizeof(frame->product));
-+	memcpy(ptr + HDMI_SPD_INFOFRAME_VENDOR_LEN, frame->product,
-+	       sizeof(frame->product));
- 
--	ptr[24] = frame->sdi;
-+	ptr[HDMI_SPD_INFOFRAME_VENDOR_LEN + HDMI_SPD_INFOFRAME_PRODUCT_LEN] =
-+		frame->sdi;
- 
- 	hdmi_infoframe_set_checksum(buffer, length);
- 
-@@ -1643,11 +1644,13 @@ static int hdmi_spd_infoframe_unpack(struct hdmi_spd_infoframe *frame,
- 
- 	ptr += HDMI_INFOFRAME_HEADER_SIZE;
- 
--	ret = hdmi_spd_infoframe_init(frame, ptr, ptr + 8);
-+	ret = hdmi_spd_infoframe_init(frame, ptr,
-+				      ptr + HDMI_SPD_INFOFRAME_VENDOR_LEN);
+-	if (!(connector->hdmi.supported_formats & BIT(format))) {
++	if (!connector->hdmi.funcs ||
++	    !(connector->hdmi.funcs->supported_formats & BIT(format))) {
+ 		drm_dbg_kms(dev, "%s format unsupported by the connector.\n",
+ 			    drm_hdmi_connector_get_output_format_name(format));
+ 		return false;
+diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
+index 4d580aaec247..db4d8daacfa0 100644
+--- a/drivers/gpu/drm/drm_connector.c
++++ b/drivers/gpu/drm/drm_connector.c
+@@ -617,9 +617,6 @@ int drmm_connector_hdmi_init(struct drm_device *dev,
  	if (ret)
  		return ret;
  
--	frame->sdi = ptr[24];
-+	frame->sdi = ptr[HDMI_SPD_INFOFRAME_VENDOR_LEN +
-+			 HDMI_SPD_INFOFRAME_PRODUCT_LEN];
- 
- 	return 0;
- }
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index b80a5ee63bb2..d73ad7b3fa94 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -267,12 +267,15 @@ enum hdmi_spd_sdi {
- 	HDMI_SPD_SDI_PMP,
- };
- 
-+#define HDMI_SPD_INFOFRAME_VENDOR_LEN   8
-+#define HDMI_SPD_INFOFRAME_PRODUCT_LEN 16
-+
- struct hdmi_spd_infoframe {
- 	enum hdmi_infoframe_type type;
- 	unsigned char version;
- 	unsigned char length;
--	char vendor[8];
--	char product[16];
-+	unsigned char vendor[HDMI_SPD_INFOFRAME_VENDOR_LEN] __nonstring;
-+	unsigned char product[HDMI_SPD_INFOFRAME_PRODUCT_LEN] __nonstring;
- 	enum hdmi_spd_sdi sdi;
- };
- 
+-	/* TODO: remove after conversion to new drmm_connector_hdmi_init() */
+-	connector->hdmi.supported_formats = hdmi_funcs->supported_formats;
+-
+ 	/*
+ 	 * The supported HDMI version can be used to determinate the maximum
+ 	 * TMDS character rate allowed by the specification. Some controllers,
+diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
+index 182946279194..d0aaa87dad7b 100644
+--- a/include/drm/drm_connector.h
++++ b/include/drm/drm_connector.h
+@@ -2192,12 +2192,6 @@ struct drm_connector_hdmi_audio {
+  * struct drm_connector_hdmi - DRM Connector HDMI-related structure
+  */
+ struct drm_connector_hdmi {
+-	/**
+-	 * @supported_formats: Bitmask of @drm_output_color_format
+-	 * supported by the controller.
+-	 */
+-	unsigned long supported_formats;
+-
+ 	/**
+ 	 * @max_tmds_char_rate: Maximum TMDS character rate, in Hz,
+ 	 * supported by the controller.
 
 -- 
 2.55.0

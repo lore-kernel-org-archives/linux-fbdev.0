@@ -1,42 +1,42 @@
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0677C4A0150;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD2BD4AA017;
 	Tue,  1 Sep 2026 18:51:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788288702; cv=none; b=X47g9sSmF/O6IOaiXsbxizF7evyR3Ts7eHT7oBoPNAV5SOCN5xHuJW1p8u6w+ghaC6qjmImb3kLOZzBH5797h14Od8eZyv5G68rAkKPlhwhLZK2BR07Af8YAsizG9hPkrnTDUpHZiWLCPG794MZNl3sfVBTOXR56WlkKD+4/sLw=
+	t=1788288703; cv=none; b=o/dJgavJvUfy3GndROYekFd+YekJ+GVHgR6ZmbY64iW+q+TrepWZalqTqQ+jQoitStjS8xYMa9C6u2wPePViGhppB6KGRGniypmK3a/yY22U5kStukfj3QoLgE/NIsQjMytb3ddodEkQpt0rXV4uzsb93G8vI1jhs4nmbT1eKvE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788288702; c=relaxed/simple;
-	bh=2FphXkEs5DxSnnWd+PhysCsnj7bm1CbZ3PIGCi97678=;
+	s=arc-20240116; t=1788288703; c=relaxed/simple;
+	bh=cihigF4VnR53Ld2/oM7OfeYgsP2+G6E2xvoDukRhIWk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kb8THyhnEy6ze0QczW1LbMeWvOV/WHV4gM4U/3KvwjAfb6JRk3Nv7XQp33kdMCovdLWiwhbXv+CQPwXOVgV5lF+h32Vm4MXtk8qc5y0aXF9wTiXHcgXTPyeT6xgkVrsn9+6OYLnLlBEuOxuTc95Jus4yXIcotYgYp07cP5ldFpQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=VfTE5yh7; arc=none smtp.client-ip=148.251.105.195
+	 In-Reply-To:To:Cc; b=I9eH9TRc70gqiI/FbMbSOZhMdTWNe5rcm55qZpGXxAS4sYkxx8+rga54m2dHtW0rmNj8RZs6BqWlwXI3w5oYXxBSfx76d4U0o53PQUCxUoe/ktALGQ9abUnPRRMXFjosNVQLq5vF4qhinDFzzTqLeq10KSMtZ40aNIr6HjyGIdc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=IkpTEUb6; arc=none smtp.client-ip=148.251.105.195
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="VfTE5yh7"
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="IkpTEUb6"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1788288694;
-	bh=2FphXkEs5DxSnnWd+PhysCsnj7bm1CbZ3PIGCi97678=;
+	s=mail; t=1788288695;
+	bh=cihigF4VnR53Ld2/oM7OfeYgsP2+G6E2xvoDukRhIWk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=VfTE5yh7FmjPZC7UGIt63cVMRRkKlxjumfIkSCXPIWxWa4Q8Oen/yvdTvBRLWykde
-	 YFznIqMN3zhq535W6FSPg+v+W41AQlYc0fpNhgxaBUGS6o7M8B3v7/xerIX2TCaeyP
-	 hHq8unvKErlXnBp4Ho/zlL27dL0AHYJ+fQaWmDJJ1kqGgdNR5y1MYr1efbqb4e+/FR
-	 2ES0gzUYL/vuZ2kKGJ963DxuCNXSJEbBBuIbH0Oss5KfCToHOh3EO1UVc4laI2gC9x
-	 GEwFKUYAWi3y/2O/NTmJh5qIxfy3n9L/sRYT1zX+H6p7l1UaKlAoxaHQhioZ5x+PaJ
-	 djLkOdkb5YBVg==
+	b=IkpTEUb6bF0P7+vfKu6YN5lXXxM1DUVGzB+Yuadf0Kr5klRniY5bc/k97wSFu5aLF
+	 5uXVeEItUgakdpz+080O6B84iGh9YnK9IVrMYv3+Gh0E2KC3bxctEQMSXqxg9+ZTLH
+	 x795Dco/PhLNHuz9pJPJt1cSRiPlYy+FhRwJfBdcHBxyCd7oZrlsSpV952u5SFHNS+
+	 j1XQo0Qi8YM7ImZYEle6mfBHBA0rx9PEwpOmTRyyqIVGKa8aWtAi8+UPdzvZ0lGccx
+	 +G+QN5aAxOga9DfwngAr+NuJS/GbErWNh6wZAkRNDRrqquvYILeztOWG87qG9Cc+ne
+	 gy3IXM928jFsw==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id B863F17E3CA7;
-	Tue, 01 Sep 2026 20:51:34 +0200 (CEST)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 7B59717E3CAB;
+	Tue, 01 Sep 2026 20:51:35 +0200 (CEST)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Tue, 01 Sep 2026 21:51:37 +0300
-Subject: [PATCH v11 73/74] drm/connector: Use the SPD InfoFrame field
- length defines
+Date: Tue, 01 Sep 2026 21:51:38 +0300
+Subject: [PATCH v11 74/74] drm/tests: hdmi: Add SPD InfoFrame
+ vendor/product coverage
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -45,7 +45,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-dw-hdmi-qp-scramb-v11-73-bc12954a0688@collabora.com>
+Message-Id: <20260901-dw-hdmi-qp-scramb-v11-74-bc12954a0688@collabora.com>
 References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
@@ -73,120 +73,208 @@ Cc: kernel@collabora.com, linux-kernel@vger.kernel.org,
  linux-fbdev@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-DRM_CONNECTOR_HDMI_{VENDOR,PRODUCT}_LEN used to size the vendor and
-product arrays in struct drm_connector_hdmi.  Those arrays are gone and
-both names are now only validated before being copied into the SPD
-InfoFrame, hence the limits they have to be checked against are the ones
-of the SPD InfoFrame fields themselves.
+The vendor and product strings provided through struct
+drm_connector_hdmi_funcs end up in the SPD InfoFrame, whose fields are
+defined by the HDMI specification as fixed-size: 8 bytes for the vendor
+name and 16 bytes for the product description, padded with zeros and
+left without any trailing NUL when a name spans the whole field.
 
-Switch the remaining users over to
-HDMI_SPD_INFOFRAME_{VENDOR,PRODUCT}_LEN and drop the DRM specific
-defines, so that the two cannot drift apart.
+Nothing exercises that so far, since the SPD InfoFrame is only generated
+for connectors implementing the related hooks, which none of the
+existing test funcs provides.
+
+Add a connector variant supplying those hooks, along with parametrized
+tests covering both the padded and the exact length cases.
 
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/drm_connector.c            |  4 ++--
- drivers/gpu/drm/tests/drm_connector_test.c | 12 ++++++------
- include/drm/drm_connector.h                |  8 ++++----
- 3 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c | 164 ++++++++++++++++++++-
+ 1 file changed, 163 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-index bb02e8626c0d..4bb43ac50b0a 100644
---- a/drivers/gpu/drm/drm_connector.c
-+++ b/drivers/gpu/drm/drm_connector.c
-@@ -579,8 +579,8 @@ int drmm_connector_hdmi_init(struct drm_device *dev,
- 	if (!hdmi_funcs->vendor || !hdmi_funcs->product)
- 		return -EINVAL;
+diff --git a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
+index 68b442c32a2a..415d82e75eaa 100644
+--- a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
++++ b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
+@@ -3205,6 +3205,167 @@ static void drm_test_check_infoframes(struct kunit *test)
+ 	drm_modeset_acquire_fini(&ctx);
+ }
  
--	if ((strlen(hdmi_funcs->vendor) > DRM_CONNECTOR_HDMI_VENDOR_LEN) ||
--	    (strlen(hdmi_funcs->product) > DRM_CONNECTOR_HDMI_PRODUCT_LEN))
-+	if ((strlen(hdmi_funcs->vendor) > HDMI_SPD_INFOFRAME_VENDOR_LEN) ||
-+	    (strlen(hdmi_funcs->product) > HDMI_SPD_INFOFRAME_PRODUCT_LEN))
- 		return -EINVAL;
++struct drm_hdmi_spd_infoframe_test {
++	const char *name;
++	const char *vendor;
++	const char *product;
++	unsigned char expected_vendor[HDMI_SPD_INFOFRAME_VENDOR_LEN];
++	unsigned char expected_product[HDMI_SPD_INFOFRAME_PRODUCT_LEN];
++};
++
++static const struct drm_hdmi_spd_infoframe_test drm_hdmi_spd_infoframe_tests[] = {
++	{
++		.name = "shorter-than-field",
++		.vendor = "Vend",
++		.product = "Prod",
++		.expected_vendor = { 'V', 'e', 'n', 'd' },
++		.expected_product = { 'P', 'r', 'o', 'd' },
++	},
++	{
++		.name = "whole-field",
++		.vendor = "VendorVe",
++		.product = "ProductProductPr",
++		.expected_vendor = {
++			'V', 'e', 'n', 'd', 'o', 'r', 'V', 'e',
++		},
++		.expected_product = {
++			'P', 'r', 'o', 'd', 'u', 'c', 't',
++			'P', 'r', 'o', 'd', 'u', 'c', 't',
++			'P', 'r',
++		},
++	},
++};
++
++static void drm_hdmi_spd_infoframe_desc(const struct drm_hdmi_spd_infoframe_test *t,
++					char *desc)
++{
++	strscpy(desc, t->name, KUNIT_PARAM_DESC_SIZE);
++}
++
++KUNIT_ARRAY_PARAM(drm_hdmi_spd_infoframe, drm_hdmi_spd_infoframe_tests,
++		  drm_hdmi_spd_infoframe_desc);
++
++/*
++ * The SPD InfoFrame is only generated for connectors implementing the
++ * related hooks, hence the SPD tests cannot rely on the plain dummy funcs.
++ */
++static const struct drm_connector_hdmi_funcs dummy_connector_hdmi_spd_funcs = {
++	.vendor = "Vendor",
++	.product = "Product",
++	.supported_hdmi_ver = HDMI_VERSION_1_4,
++	.supported_formats = BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
++	.max_bpc = 8,
++	.avi = {
++		.clear_infoframe = accept_infoframe_clear_infoframe,
++		.write_infoframe = accept_infoframe_write_infoframe,
++	},
++	.spd = {
++		.clear_infoframe = accept_infoframe_clear_infoframe,
++		.write_infoframe = accept_infoframe_write_infoframe,
++	},
++	.hdmi = {
++		.clear_infoframe = accept_infoframe_clear_infoframe,
++		.write_infoframe = accept_infoframe_write_infoframe,
++	},
++};
++
++/*
++ * Test that the vendor and product names end up in the SPD InfoFrame padded
++ * with zeros, and without any trailing NUL when spanning the whole field.
++ */
++static void drm_test_check_spd_infoframe(struct kunit *test)
++{
++	const struct drm_hdmi_spd_infoframe_test *param = test->param_value;
++	struct drm_connector_hdmi_funcs hdmi_funcs = dummy_connector_hdmi_spd_funcs;
++	struct drm_atomic_helper_connector_hdmi_priv *priv;
++	struct drm_modeset_acquire_ctx ctx;
++	struct drm_connector_state *conn_state;
++	struct drm_crtc_state *crtc_state;
++	struct drm_atomic_commit *state;
++	struct drm_display_mode *preferred;
++	struct hdmi_spd_infoframe *frame;
++	struct drm_connector *conn;
++	struct drm_device *drm;
++	struct drm_crtc *crtc;
++	int ret;
++
++	hdmi_funcs.vendor = param->vendor;
++	hdmi_funcs.product = param->product;
++
++	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
++				&hdmi_funcs,
++				test_edid_hdmi_1080p_rgb_max_200mhz);
++	KUNIT_ASSERT_NOT_NULL(test, priv);
++
++	drm = &priv->drm;
++	crtc = priv->crtc;
++	conn = &priv->connector;
++
++	preferred = find_preferred_mode(conn);
++	KUNIT_ASSERT_NOT_NULL(test, preferred);
++
++	drm_modeset_acquire_init(&ctx, 0);
++
++retry_conn_enable:
++	ret = drm_kunit_helper_enable_crtc_connector(test, drm,
++						     crtc, conn,
++						     preferred,
++						     &ctx);
++	if (ret == -EDEADLK) {
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry_conn_enable;
++	}
++	KUNIT_ASSERT_EQ(test, ret, 0);
++
++	state = drm_kunit_helper_atomic_state_alloc(test, drm, &ctx);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, state);
++
++retry_crtc_state:
++	crtc_state = drm_atomic_get_crtc_state(state, crtc);
++	if (PTR_ERR(crtc_state) == -EDEADLK) {
++		drm_atomic_commit_clear(state);
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry_crtc_state;
++	}
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, crtc_state);
++
++	crtc_state->mode_changed = true;
++
++	ret = drm_atomic_check_only(state);
++	if (ret == -EDEADLK) {
++		drm_atomic_commit_clear(state);
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry_crtc_state;
++	}
++	KUNIT_ASSERT_EQ(test, ret, 0);
++
++	ret = drm_atomic_commit(state);
++	if (ret == -EDEADLK) {
++		drm_atomic_commit_clear(state);
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry_crtc_state;
++	}
++	KUNIT_ASSERT_EQ(test, ret, 0);
++
++	conn_state = conn->state;
++	KUNIT_ASSERT_NOT_NULL(test, conn_state);
++	KUNIT_ASSERT_TRUE(test, conn_state->hdmi.infoframes.spd.set);
++
++	frame = &conn_state->hdmi.infoframes.spd.data.spd;
++
++	KUNIT_EXPECT_MEMEQ(test, frame->vendor, param->expected_vendor,
++			   sizeof(frame->vendor));
++	KUNIT_EXPECT_MEMEQ(test, frame->product, param->expected_product,
++			   sizeof(frame->product));
++
++	drm_modeset_drop_locks(&ctx);
++	drm_modeset_acquire_fini(&ctx);
++}
++
+ static int reject_infoframe_write_infoframe(struct drm_connector *connector,
+ 					    const u8 *buffer, size_t len)
+ {
+@@ -3723,9 +3884,10 @@ static void drm_test_check_reject_audio_infoframe(struct kunit *test)
+ 	drm_modeset_acquire_fini(&ctx);
+ }
  
- 	if (!hdmi_funcs->supported_formats ||
-diff --git a/drivers/gpu/drm/tests/drm_connector_test.c b/drivers/gpu/drm/tests/drm_connector_test.c
-index be2d24abeeb8..f79cea11d161 100644
---- a/drivers/gpu/drm/tests/drm_connector_test.c
-+++ b/drivers/gpu/drm/tests/drm_connector_test.c
-@@ -782,7 +782,7 @@ static void drm_test_connector_hdmi_init_product_valid(struct kunit *test)
- 	priv->hdmi_funcs.product = "Prod";
- 
- 	KUNIT_ASSERT_LT(test, strlen(priv->hdmi_funcs.product),
--			DRM_CONNECTOR_HDMI_PRODUCT_LEN);
-+			HDMI_SPD_INFOFRAME_PRODUCT_LEN);
- 
- 	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
- 				       &dummy_funcs,
-@@ -805,7 +805,7 @@ static void drm_test_connector_hdmi_init_product_length_exact(struct kunit *test
- 	priv->hdmi_funcs.product = "ProductProductPr";
- 
- 	KUNIT_ASSERT_EQ(test, strlen(priv->hdmi_funcs.product),
--			DRM_CONNECTOR_HDMI_PRODUCT_LEN);
-+			HDMI_SPD_INFOFRAME_PRODUCT_LEN);
- 
- 	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
- 				       &dummy_funcs,
-@@ -828,7 +828,7 @@ static void drm_test_connector_hdmi_init_product_length_too_long(struct kunit *t
- 	priv->hdmi_funcs.product = "ProductProductProduct";
- 
- 	KUNIT_ASSERT_GT(test, strlen(priv->hdmi_funcs.product),
--			DRM_CONNECTOR_HDMI_PRODUCT_LEN);
-+			HDMI_SPD_INFOFRAME_PRODUCT_LEN);
- 
- 	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
- 				       &dummy_funcs,
-@@ -851,7 +851,7 @@ static void drm_test_connector_hdmi_init_vendor_valid(struct kunit *test)
- 	priv->hdmi_funcs.vendor = "Vend";
- 
- 	KUNIT_ASSERT_LT(test, strlen(priv->hdmi_funcs.vendor),
--			DRM_CONNECTOR_HDMI_VENDOR_LEN);
-+			HDMI_SPD_INFOFRAME_VENDOR_LEN);
- 
- 	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
- 				       &dummy_funcs,
-@@ -874,7 +874,7 @@ static void drm_test_connector_hdmi_init_vendor_length_exact(struct kunit *test)
- 	priv->hdmi_funcs.vendor = "VendorVe";
- 
- 	KUNIT_ASSERT_EQ(test, strlen(priv->hdmi_funcs.vendor),
--			DRM_CONNECTOR_HDMI_VENDOR_LEN);
-+			HDMI_SPD_INFOFRAME_VENDOR_LEN);
- 
- 	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
- 				       &dummy_funcs,
-@@ -895,7 +895,7 @@ static void drm_test_connector_hdmi_init_vendor_length_too_long(struct kunit *te
- 
- 	priv->hdmi_funcs = dummy_hdmi_funcs;
- 	priv->hdmi_funcs.vendor = "VendorVendor";
--	KUNIT_ASSERT_GT(test, strlen(priv->hdmi_funcs.vendor), DRM_CONNECTOR_HDMI_VENDOR_LEN);
-+	KUNIT_ASSERT_GT(test, strlen(priv->hdmi_funcs.vendor), HDMI_SPD_INFOFRAME_VENDOR_LEN);
- 
- 	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
- 				       &dummy_funcs,
-diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 3b49799d12fd..2a804d42d4b1 100644
---- a/include/drm/drm_connector.h
-+++ b/include/drm/drm_connector.h
-@@ -1485,15 +1485,15 @@ struct drm_connector_infoframe_funcs {
-  * and controller capabilities
-  */
- struct drm_connector_hdmi_funcs {
--#define DRM_CONNECTOR_HDMI_VENDOR_LEN	8
- 	/**
--	 * @vendor: HDMI Controller Vendor name.
-+	 * @vendor: HDMI Controller Vendor name, at most
-+	 * HDMI_SPD_INFOFRAME_VENDOR_LEN characters long.
- 	 */
- 	const char *vendor;
- 
--#define DRM_CONNECTOR_HDMI_PRODUCT_LEN	16
- 	/**
--	 * @product: HDMI Controller Product name
-+	 * @product: HDMI Controller Product name, at most
-+	 * HDMI_SPD_INFOFRAME_PRODUCT_LEN characters long.
- 	 */
- 	const char *product;
- 
+-
+ static struct kunit_case drm_atomic_helper_connector_hdmi_infoframes_tests[] = {
+ 	KUNIT_CASE(drm_test_check_infoframes),
++	KUNIT_CASE_PARAM(drm_test_check_spd_infoframe,
++			 drm_hdmi_spd_infoframe_gen_params),
+ 	KUNIT_CASE(drm_test_check_reject_avi_infoframe),
+ 	KUNIT_CASE(drm_test_check_reject_hdr_infoframe_bpc_8),
+ 	KUNIT_CASE(drm_test_check_reject_hdr_infoframe_bpc_10),
 
 -- 
 2.55.0

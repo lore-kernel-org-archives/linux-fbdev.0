@@ -1,38 +1,41 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mail.muc.de (mail.muc.de [193.149.48.3])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5939B357D17;
-	Tue,  1 Sep 2026 10:15:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1F5C384CE9
+	for <linux-fbdev@vger.kernel.org>; Tue,  1 Sep 2026 11:14:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.149.48.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788257712; cv=none; b=C3Hu2fLTTviliTY98U0MWSRVeE7+xuGJu7OWYgqiFY7R5pA5i2fbe8mOf2uzPGf35ANh2C+pl7zePUuaDzHbjH6+LlgZkm9GKE73RkPxMKZiUuPnELT8UYfqZxrzDdxNIZE996sSArFSi2U6Y7gnd9y19npwjSTxf2cPf7Dep8I=
+	t=1788261290; cv=none; b=tYTF1C54Dz0lrFATSZ68LuwOqHzTmrcQ+hEqwGKD+H30r7kD0icoypvfG0JfFJb1LWsGDQuy40bZgLkY0hcdAsQ+7aSToVYhMiT6khtF+bjg93+joqUJ2gI3iSEeW/MMU0kilBMHtrAGU4JGXqlYiDqVIpFJfg5l4sgtegQFzYE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788257712; c=relaxed/simple;
-	bh=ulY4BgkvHNB0zbc+jpZL/vSRL6fHXJqlcCC6mqCUMPE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UimaeMoS1eHvQ5Z7wCquJdGmpUP/FrjYo9H2AkwTlQWCl1jbZN3xIOk8/3To8+SuWKZyFxmpQLpHWFV6ooTb7xdKq6wEahDmwUY5jKt6OFEhNXFwDsF+4oJ9G1DpzOpLeYpaEsJ75j1yMrKrAfPqwp5BHgDVYZMyIQXd89C065I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=D5/hSDpY; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="D5/hSDpY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4BB151F000E9;
-	Tue,  1 Sep 2026 10:15:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1788257710;
-	bh=omjNlM7AaIJXcpz/D/+/7yBgQTKNq3z8ieKvrlC9UJI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=D5/hSDpYG/TAV4tU5QT256PUjB+f4TI6Xro3Eb0Gc9fh2dmSblgNj9/I3QOK3NUkv
-	 qwScVfREhh7isATmX8MuMFUONhv2Bn569GL0DAMCHdPATdH5I0PLmRdhQFIq1IWxpN
-	 L9S5OQKBex7SCjAa7gOQIC2niWkSWz/iAIpzjxjA=
-Date: Tue, 1 Sep 2026 12:15:06 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Muhammad Bilal <meatuni001@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v3] staging: sm750fb: fix mono image source stride
- mismatch in lynxfb_ops_imageblit()
-Message-ID: <2026090151-nutrient-clay-c53e@gregkh>
-References: <20260728131050.37032-1-meatuni001@gmail.com>
+	s=arc-20240116; t=1788261290; c=relaxed/simple;
+	bh=MFnA0HVS04xJQTa/xvZgCrUb3vCVJC4U3BZpZ+TL+Og=;
+	h=Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To:From; b=RhMP2Fu0Nu+S21SPtRFEqMLqD2/QC/8x5gHC7YiKCcieKOKI0Fr9ptybalrfp63rJDLKjb4BVmOiBcIib3foWqTt4iXFNqnM5Nm1l8Sdx7A6WzrEkKJ+N7AMP45wIXvmjphdzmVlfNug2VkWTMw0/ZpHSeMJOe5X0l+kIvKGc8A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=muc.de; spf=pass smtp.mailfrom=muc.de; arc=none smtp.client-ip=193.149.48.3
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=muc.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=muc.de
+Received: (qmail 81106 invoked by uid 3782); 1 Sep 2026 13:14:45 +0200
+Received: from muc.de (p4fe15c70.dip0.t-ipconnect.de [79.225.92.112]) (using
+ STARTTLS) by colin.muc.de (tmda-ofmipd) with ESMTP;
+ Tue, 01 Sep 2026 13:14:44 +0200
+Received: (qmail 6890 invoked by uid 1000); 1 Sep 2026 11:14:43 -0000
+Date: Tue, 1 Sep 2026 11:14:43 +0000
+To: Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+  Jiri Slaby <jirislaby@kernel.org>, Simona Vetter <simona@ffwll.ch>,
+  linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+  linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: vt: Enlarge the framebuffer glyph size from 16 to 32 bits
+Message-ID: <apazo2RIHiEAtpNN@MAC.fritz.box>
+References: <apCEDM2sWv_M354-@MAC.fritz.box>
+ <145be2e3-a8c0-4f4f-a701-af2696cec461@suse.de>
+ <apGc4y8ApYWh4Yr4@MAC.fritz.box>
+ <2026082938-spray-shimmer-9389@gregkh>
+ <apLvO-8YJmQG7T0Z@MAC.fritz.box>
+ <7c199c7f-d89b-48ca-a777-85585d2eb624@suse.de>
+ <apWTg6mNZrdBm2-D@MAC.fritz.box>
+ <ae1ae01a-677e-4c51-bf9a-ebe7b2e91e4f@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -41,72 +44,55 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260728131050.37032-1-meatuni001@gmail.com>
+In-Reply-To: <ae1ae01a-677e-4c51-bf9a-ebe7b2e91e4f@gmx.de>
+X-Submission-Agent: TMDA/1.3.x (Ph3nix)
+From: Alan Mackenzie <acm@muc.de>
+X-Primary-Address: acm@muc.de
 
-On Tue, Jul 28, 2026 at 06:10:50PM +0500, Muhammad Bilal wrote:
-> sm750_hw_imageblit() advances its monochrome source pointer by
-> src_delta per scanline, and computes the correct rounded-up stride
-> internally as:
-> 
->         bytes_per_scan = (width + start_bit + 7) / 8;
-> 
-> Its only caller, lynxfb_ops_imageblit(), instead passed src_delta as
-> image->width >> 3. For widths not a multiple of 8 this under-counted
-> the stride, so the source pointer fell further behind the real
-> per-scanline layout on every line, corrupting the rendered image.
-> 
-> Rather than just fixing the caller's calculation, remove src_delta
-> as a parameter entirely and have sm750_hw_imageblit() advance by the
-> bytes_per_scan it already computes for itself. There has only ever
-> been one caller, and that caller was passing an out-of-sync
-> derivative of the same width/start_bit values sm750_hw_imageblit()
-> already has, so keeping stride as a separate parameter served no
-> purpose beyond letting the two calculations drift apart, which is
-> exactly what happened here.
-> 
-> Rounding up, rather than down, is the direction consistent with the
-> rest of the fbdev core: struct fb_image mono bitmap data (the same
-> image->data this driver receives) is walked elsewhere with byte
-> strides derived from a ceiling division of width by 8. The generic
-> mono bit iterator in drivers/video/fbdev/core/fb_imageblit.h advances
-> scanlines with "iter->data += BITS_TO_BYTES(iter->width)", and
-> BITS_TO_BYTES() (include/linux/bitops.h) is a ceiling division.
-> sm750_hw_imageblit()'s own "(width + start_bit + 7) / 8" is that same
-> ceiling division with an added start_bit offset, so the caller's
-> ">> 3" (floor) was the one calculation out of step with how this data
-> layout is handled everywhere else.
-> 
-> Found by code review of sm750_hw_imageblit()'s internal stride
-> calculation against what its only caller was passing in, and
-> confirmed with a clean -Werror build. I do not have this hardware,
-> so this has not been exercised at runtime on real sm750 silicon.
-> 
-> Fixes: 81dee67e215b2 ("staging: sm750fb: add sm750 to staging")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Muhammad Bilal <meatuni001@gmail.com>
-> ---
-> v3: Added the version notes below, which Dan pointed out were
->     missing from v2. Added Cc: stable@vger.kernel.org, flagged by
->     Greg's patch-bot since the Fixes: tag targets an old (2015)
->     commit. Added the rounding-direction justification Dan asked
->     about, citing fb_imageblit.h's BITS_TO_BYTES() as the existing
->     kernel-wide convention for this same struct fb_image layout.
->     Moved the "no hardware" disclosure from an email reply into the
->     commit message itself, per Dan's request.
-> v2: Added a Fixes tag. Moved the src_delta calculation into
->     sm750_hw_imageblit() itself and dropped it as a parameter, per
->     Dan Carpenter's review.
-> 
->  drivers/staging/sm750fb/sm750.c       | 2 +-
->  drivers/staging/sm750fb/sm750.h       | 2 +-
->  drivers/staging/sm750fb/sm750_accel.c | 6 ++----
->  drivers/staging/sm750fb/sm750_accel.h | 4 +---
->  4 files changed, 5 insertions(+), 9 deletions(-)
-> 
+On Mon, Aug 31, 2026 at 19:21:30 +0200, Helge Deller wrote:
+> On 8/31/26 16:45, Alan Mackenzie wrote:
+> > On Mon, Aug 31, 2026 at 08:20:10 +0200, Thomas Zimmermann wrote:
+> >> Am 29.08.26 um 16:39 schrieb Alan Mackenzie:
 
-Does not apply to 7.3-rc1 :(
+[ .... ]
 
-Can you please rebase and resend?
+> > I've been using the console for around 28 years, now.  I don't recall it
+> > crashing at all.  My current font and keyboard files are in exactly the
+> > same form as they were 28 years ago.  These formats are stable and
+> > dependable.
 
-thanks,
-greg k-h
+> >> I've spend the last years working on related code (fbcon) and it
+> >> mostly feels dated and unmaintained. Our prime implementation (again
+> >> fbcon) has been de-facto unmaintained for years.  We recently had
+> >> contributors who are pushing the ioctls semantics and found bugs in
+> >> fbcon for a number of corner cases.
+
+[ .... ]
+
+> >> FTR I'm not at all interested in eliminating the kernel's console.
+
+> > Other people, in particular Greg KH, have said this is the current aim.
+> > I'm worried for myself.  It is far from clear that there is a suitable
+> > replacement for the kernel's console, and its elimination could easily
+> > happen without that replacement.  I suppose I could always (laboriously)
+> > maintain the console for myself personally.  Or there's always the BSDs.
+> > I just don't know what I'd do.
+
+> Alan, I really appreciate your efforts to enhance the kernel console code!
+> And I'm not interested to eliminate the kernel console either.
+
+> >> But there are must-have features and nice-to-have features. IMHO for
+> >> the kernel console i18n really belongs in the later category.
+
+> > It's 2026, four decades after VGA was the latest thing, and Unicode
+> > support is merely a nice-to-have?
+
+> No. IMHO Unicode support would be great.
+
+Thank you, indeed!  That's cheering to hear.
+
+> Thanks!
+> Helge
+
+-- 
+Alan Mackenzie (Nuremberg, Germany).

@@ -1,281 +1,117 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD2BD4AA017;
-	Tue,  1 Sep 2026 18:51:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA8482BE053
+	for <linux-fbdev@vger.kernel.org>; Wed,  2 Sep 2026 04:50:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788288703; cv=none; b=o/dJgavJvUfy3GndROYekFd+YekJ+GVHgR6ZmbY64iW+q+TrepWZalqTqQ+jQoitStjS8xYMa9C6u2wPePViGhppB6KGRGniypmK3a/yY22U5kStukfj3QoLgE/NIsQjMytb3ddodEkQpt0rXV4uzsb93G8vI1jhs4nmbT1eKvE=
+	t=1788324661; cv=none; b=hN4sUKCGP9L17CbIe/SiYggFBRnnqgiSr2K+muXJkQeeI0xMwDXvNoonPoiTb9CAsT7mvwcPxSd00T3SuZo0w2d1SJ34WUfqjuwAjyznARgjj3frDHAs9LNnafkZxDq4FArzvQZbj5jai+Ne+MQjGvWHZpIF3XwSUlpcCTnssxc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788288703; c=relaxed/simple;
-	bh=cihigF4VnR53Ld2/oM7OfeYgsP2+G6E2xvoDukRhIWk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=I9eH9TRc70gqiI/FbMbSOZhMdTWNe5rcm55qZpGXxAS4sYkxx8+rga54m2dHtW0rmNj8RZs6BqWlwXI3w5oYXxBSfx76d4U0o53PQUCxUoe/ktALGQ9abUnPRRMXFjosNVQLq5vF4qhinDFzzTqLeq10KSMtZ40aNIr6HjyGIdc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=IkpTEUb6; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1788324661; c=relaxed/simple;
+	bh=LMSRCIUMLvwhOCCbBHYxtVhNFgFxXi8Mvt8mgmFphTU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=osXExS+2SBvtB0EW3hKrgoWnbGjEAWyyiAGVBQapvOqCsr8Dev8mLbxhcVAdGeAiOnHG/66cDw22gAxcYSJ8JaqWRA/B87lwFu67A+Brbii6vDeuI0CA8b0PDu4YIxkL5PuInj9ppSXkkWO2oRrNrs4ad+kkci3FAus3Yj0I/7c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NbAaE4u0; arc=none smtp.client-ip=209.85.210.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="IkpTEUb6"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1788288695;
-	bh=cihigF4VnR53Ld2/oM7OfeYgsP2+G6E2xvoDukRhIWk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=IkpTEUb6bF0P7+vfKu6YN5lXXxM1DUVGzB+Yuadf0Kr5klRniY5bc/k97wSFu5aLF
-	 5uXVeEItUgakdpz+080O6B84iGh9YnK9IVrMYv3+Gh0E2KC3bxctEQMSXqxg9+ZTLH
-	 x795Dco/PhLNHuz9pJPJt1cSRiPlYy+FhRwJfBdcHBxyCd7oZrlsSpV952u5SFHNS+
-	 j1XQo0Qi8YM7ImZYEle6mfBHBA0rx9PEwpOmTRyyqIVGKa8aWtAi8+UPdzvZ0lGccx
-	 +G+QN5aAxOga9DfwngAr+NuJS/GbErWNh6wZAkRNDRrqquvYILeztOWG87qG9Cc+ne
-	 gy3IXM928jFsw==
-Received: from localhost (unknown [100.64.0.241])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 7B59717E3CAB;
-	Tue, 01 Sep 2026 20:51:35 +0200 (CEST)
-From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Tue, 01 Sep 2026 21:51:38 +0300
-Subject: [PATCH v11 74/74] drm/tests: hdmi: Add SPD InfoFrame
- vendor/product coverage
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NbAaE4u0"
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-8487214ad2bso914414b3a.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Sep 2026 21:50:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788324659; x=1788929459; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=gL9gEW7ayUvR98UbsWW5JS05cT2CnhJ1qoyjKu7J0AI=;
+        b=NbAaE4u0Ygzx2Hj8dVT9co3N4s8wYCQ0qLldY4XYlQ9WQfZBAtfF5+SpT5iXDhmp/H
+         8HoBXlV/K1gHu3bXnR855H6dIR9jJukk0gR/aoedvonIcK6mIy1xRRr+HZ+nexcLH+U8
+         NSSnIhsGmwrc1Uk9rMyCTgIlA75LzIHDzZZZkPX36lhhlvRe6SYYuflb4WNRJxPTfgKI
+         f41wvFFcBBnuzya7kEzss6UJoYIys1uXzX+ZPKJwngSIjbo1Uelsl/xYMFnImBn6fZqV
+         QFcGsyNUynZ2Me/zT+iFcDYy7TZ1a6lP0GVKdcQ7ZCZMmCysnU/xkqLPuPeOUxhEq4hk
+         /ENA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788324659; x=1788929459;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=gL9gEW7ayUvR98UbsWW5JS05cT2CnhJ1qoyjKu7J0AI=;
+        b=oljewSt6Gs1tRVin+wsBbHVpefPrBdN5Ypofs39gO/vwyudDfxdB73wAnnaak49gF5
+         RMtKUCZuRpI+pr8t8Ck/R0RJPbXpkyXp+GYdENXivM+GyP/xkyvB4Fp7nBixjnRoFCaE
+         XGQYhoICbXTArWVnjeFgNwmZJn936V1m/zZAhIAPgNJ5TOR5p8t7TKMhOVbEdqS2sOrx
+         gKFwfn8b0qXOcGjiFqOs+GCFcWq2s2kfhe7DbYpdHct3Kc4qu45YhNSYj2LOXMlBdsEJ
+         x0lQbjOsda17niPhBeA2719psAJhBChlHH2h5j57i16EadlU+0XsP0ObtSQ0/pTCKf4M
+         ZcWg==
+X-Forwarded-Encrypted: i=1; AKwUvBwbf4xANCV3IK4DteovgMepGhv6oYpWgZGFD7tKz+1uQk7uktpiDa4HzngEtYpZL+u1ADu0aJQYHMEAoA==@vger.kernel.org
+X-Gm-Message-State: AFuF++luXy3puTpjKgBVB4vOmlFONFGyTyqsXARu06Jnecpp9x4RMx1h
+	+kf9X7Kri/Ul57uS8Fcd+6Y3L13plli+bB8PBWCTUsLU6HWf+XIYcp+E
+X-Gm-Gg: AYBFou0liRtUXinSWZ97otSxNBjD4F4ybG/z7FeQOeRI10U/dWUiY8JAxtHR5CmiKFu
+	PwGWVjVAjv7vWf3ZrRt+Swp/GeOKv8wjynhE9x+17f3YyTdfB1Sv3kzwpk/2ZW1qa0lP72Zp2Bb
+	zXryHzcS6woAvvWv82zRnRDWFOT4TGDBpz707zBtwAuNfUzIOZJZjCNyFai+ZYohsYhAhU8ABbh
+	umDqHRTVkKBYYo1OekwN9tbnX9mvMyItJzrDrCJjwFs959u6AbrVQsXTHSZjUCBNqOQDqUxrFU3
+	6ja0zJGOJB/lb9Q5cBJpPSxKmVcuZKwiHz71Qdo9HeP/ARHzX+kDEGFfR0Azog5QUbc6TGBEWSL
+	ZVnxfuZdg96+MarNdJfFKMPZDWA5/7AYz4WvFOwachSetgCGlfJqlVMYJV6W0JJwJVXOrALBt/U
+	SUjWPj8aOfXYDeReP88M0RnFjaKlu11SSVgtZknHK9iXIf7akHL9RKvpsCJn1BoHTMSF6Uz3+9t
+	1ITuc4J
+X-Received: by 2002:a05:6a00:148e:b0:847:893f:2d0c with SMTP id d2e1a72fcca58-85ed1d0414dmr4031929b3a.5.1788324659284;
+        Tue, 01 Sep 2026 21:50:59 -0700 (PDT)
+Received: from Kalpna.localdomain ([106.194.26.137])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-85dc11f44a8sm709997b3a.56.2026.09.01.21.50.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 01 Sep 2026 21:50:58 -0700 (PDT)
+From: Anshika Jain <anshikajain196872@gmail.com>
+To: Andy Shevchenko <andy@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	sashiko-bot@kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	Anshika Jain <anshikajain196872@gmail.com>
+Subject: [PATCH] staging: fbtft: fix len<=0 buffer overflow in define_fbtft_write_reg()
+Date: Wed,  2 Sep 2026 10:20:26 +0530
+Message-Id: <20260902045026.7442-1-anshikajain196872@gmail.com>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260901-dw-hdmi-qp-scramb-v11-74-bc12954a0688@collabora.com>
-References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
-In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
-To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Dave Stevenson <dave.stevenson@raspberrypi.com>, 
- Dmitry Baryshkov <lumag@kernel.org>, 
- Andrzej Hajda <andrzej.hajda@intel.com>, 
- Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>, 
- Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, 
- Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
- Luca Ceresoli <luca.ceresoli@bootlin.com>, Chen-Yu Tsai <wens@kernel.org>, 
- Samuel Holland <samuel@sholland.org>, 
- =?utf-8?q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>, 
- Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>, 
- Raphael Gallais-Pou <rgallaispou@gmail.com>, 
- Sandy Huang <hjc@rock-chips.com>, 
- =?utf-8?q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
- Andy Yan <andy.yan@rock-chips.com>, Algea Cao <algea.cao@rock-chips.com>, 
- Daniel Stone <daniels@collabora.com>, Liu Ying <victor.liu@nxp.com>, 
- Phong LE <ple@baylibre.com>, Helge Deller <deller@gmx.de>
-Cc: kernel@collabora.com, linux-kernel@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
- linux-sunxi@lists.linux.dev, linux-rockchip@lists.infradead.org, 
- linux-fbdev@vger.kernel.org
-X-Mailer: b4 0.15.2
+Content-Transfer-Encoding: 8bit
 
-The vendor and product strings provided through struct
-drm_connector_hdmi_funcs end up in the SPD InfoFrame, whose fields are
-defined by the HDMI specification as fixed-size: 8 bytes for the vendor
-name and 16 bytes for the product description, padded with zeros and
-left without any trailing NUL when a name spans the whole field.
+If len is 0 or negative when a define_fbtft_write_reg()-generated
+function is called, len-- underflows to -1, causing the subsequent
+while (i--) loop to run approximately 2^31 times and write far past
+the end of buf.
 
-Nothing exercises that so far, since the SPD InfoFrame is only generated
-for connectors implementing the related hooks, which none of the
-existing test funcs provides.
+This is a latent bug: nothing in the current code prevents two
+adjacent negative values in an init_sequence from producing len=0,
+and there is no guarantee future or out-of-tree panel definitions
+won't do so.
 
-Add a connector variant supplying those hooks, along with parametrized
-tests covering both the padded and the exact length cases.
+Add an early return for len <= 0, matching the existing guard already
+present in the sibling function fbtft_write_reg8_bus9().
 
-Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
+Reported-by: sashiko-bot <sashiko-bot@kernel.org>
+Link: https://sashiko.dev/#/patchset/20260830161529.14500-1-anshikajain196872@gmail.com?part=1
+
+Signed-off-by: Anshika Jain <anshikajain196872@gmail.com>
 ---
- drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c | 164 ++++++++++++++++++++-
- 1 file changed, 163 insertions(+), 1 deletion(-)
+ drivers/staging/fbtft/fbtft-bus.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-index 68b442c32a2a..415d82e75eaa 100644
---- a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-+++ b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-@@ -3205,6 +3205,167 @@ static void drm_test_check_infoframes(struct kunit *test)
- 	drm_modeset_acquire_fini(&ctx);
- }
- 
-+struct drm_hdmi_spd_infoframe_test {
-+	const char *name;
-+	const char *vendor;
-+	const char *product;
-+	unsigned char expected_vendor[HDMI_SPD_INFOFRAME_VENDOR_LEN];
-+	unsigned char expected_product[HDMI_SPD_INFOFRAME_PRODUCT_LEN];
-+};
-+
-+static const struct drm_hdmi_spd_infoframe_test drm_hdmi_spd_infoframe_tests[] = {
-+	{
-+		.name = "shorter-than-field",
-+		.vendor = "Vend",
-+		.product = "Prod",
-+		.expected_vendor = { 'V', 'e', 'n', 'd' },
-+		.expected_product = { 'P', 'r', 'o', 'd' },
-+	},
-+	{
-+		.name = "whole-field",
-+		.vendor = "VendorVe",
-+		.product = "ProductProductPr",
-+		.expected_vendor = {
-+			'V', 'e', 'n', 'd', 'o', 'r', 'V', 'e',
-+		},
-+		.expected_product = {
-+			'P', 'r', 'o', 'd', 'u', 'c', 't',
-+			'P', 'r', 'o', 'd', 'u', 'c', 't',
-+			'P', 'r',
-+		},
-+	},
-+};
-+
-+static void drm_hdmi_spd_infoframe_desc(const struct drm_hdmi_spd_infoframe_test *t,
-+					char *desc)
-+{
-+	strscpy(desc, t->name, KUNIT_PARAM_DESC_SIZE);
-+}
-+
-+KUNIT_ARRAY_PARAM(drm_hdmi_spd_infoframe, drm_hdmi_spd_infoframe_tests,
-+		  drm_hdmi_spd_infoframe_desc);
-+
-+/*
-+ * The SPD InfoFrame is only generated for connectors implementing the
-+ * related hooks, hence the SPD tests cannot rely on the plain dummy funcs.
-+ */
-+static const struct drm_connector_hdmi_funcs dummy_connector_hdmi_spd_funcs = {
-+	.vendor = "Vendor",
-+	.product = "Product",
-+	.supported_hdmi_ver = HDMI_VERSION_1_4,
-+	.supported_formats = BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
-+	.max_bpc = 8,
-+	.avi = {
-+		.clear_infoframe = accept_infoframe_clear_infoframe,
-+		.write_infoframe = accept_infoframe_write_infoframe,
-+	},
-+	.spd = {
-+		.clear_infoframe = accept_infoframe_clear_infoframe,
-+		.write_infoframe = accept_infoframe_write_infoframe,
-+	},
-+	.hdmi = {
-+		.clear_infoframe = accept_infoframe_clear_infoframe,
-+		.write_infoframe = accept_infoframe_write_infoframe,
-+	},
-+};
-+
-+/*
-+ * Test that the vendor and product names end up in the SPD InfoFrame padded
-+ * with zeros, and without any trailing NUL when spanning the whole field.
-+ */
-+static void drm_test_check_spd_infoframe(struct kunit *test)
-+{
-+	const struct drm_hdmi_spd_infoframe_test *param = test->param_value;
-+	struct drm_connector_hdmi_funcs hdmi_funcs = dummy_connector_hdmi_spd_funcs;
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_modeset_acquire_ctx ctx;
-+	struct drm_connector_state *conn_state;
-+	struct drm_crtc_state *crtc_state;
-+	struct drm_atomic_commit *state;
-+	struct drm_display_mode *preferred;
-+	struct hdmi_spd_infoframe *frame;
-+	struct drm_connector *conn;
-+	struct drm_device *drm;
-+	struct drm_crtc *crtc;
-+	int ret;
-+
-+	hdmi_funcs.vendor = param->vendor;
-+	hdmi_funcs.product = param->product;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
-+				&hdmi_funcs,
-+				test_edid_hdmi_1080p_rgb_max_200mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	drm = &priv->drm;
-+	crtc = priv->crtc;
-+	conn = &priv->connector;
-+
-+	preferred = find_preferred_mode(conn);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+
-+	drm_modeset_acquire_init(&ctx, 0);
-+
-+retry_conn_enable:
-+	ret = drm_kunit_helper_enable_crtc_connector(test, drm,
-+						     crtc, conn,
-+						     preferred,
-+						     &ctx);
-+	if (ret == -EDEADLK) {
-+		ret = drm_modeset_backoff(&ctx);
-+		if (!ret)
-+			goto retry_conn_enable;
-+	}
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	state = drm_kunit_helper_atomic_state_alloc(test, drm, &ctx);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, state);
-+
-+retry_crtc_state:
-+	crtc_state = drm_atomic_get_crtc_state(state, crtc);
-+	if (PTR_ERR(crtc_state) == -EDEADLK) {
-+		drm_atomic_commit_clear(state);
-+		ret = drm_modeset_backoff(&ctx);
-+		if (!ret)
-+			goto retry_crtc_state;
-+	}
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, crtc_state);
-+
-+	crtc_state->mode_changed = true;
-+
-+	ret = drm_atomic_check_only(state);
-+	if (ret == -EDEADLK) {
-+		drm_atomic_commit_clear(state);
-+		ret = drm_modeset_backoff(&ctx);
-+		if (!ret)
-+			goto retry_crtc_state;
-+	}
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	ret = drm_atomic_commit(state);
-+	if (ret == -EDEADLK) {
-+		drm_atomic_commit_clear(state);
-+		ret = drm_modeset_backoff(&ctx);
-+		if (!ret)
-+			goto retry_crtc_state;
-+	}
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	conn_state = conn->state;
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+	KUNIT_ASSERT_TRUE(test, conn_state->hdmi.infoframes.spd.set);
-+
-+	frame = &conn_state->hdmi.infoframes.spd.data.spd;
-+
-+	KUNIT_EXPECT_MEMEQ(test, frame->vendor, param->expected_vendor,
-+			   sizeof(frame->vendor));
-+	KUNIT_EXPECT_MEMEQ(test, frame->product, param->expected_product,
-+			   sizeof(frame->product));
-+
-+	drm_modeset_drop_locks(&ctx);
-+	drm_modeset_acquire_fini(&ctx);
-+}
-+
- static int reject_infoframe_write_infoframe(struct drm_connector *connector,
- 					    const u8 *buffer, size_t len)
- {
-@@ -3723,9 +3884,10 @@ static void drm_test_check_reject_audio_infoframe(struct kunit *test)
- 	drm_modeset_acquire_fini(&ctx);
- }
- 
--
- static struct kunit_case drm_atomic_helper_connector_hdmi_infoframes_tests[] = {
- 	KUNIT_CASE(drm_test_check_infoframes),
-+	KUNIT_CASE_PARAM(drm_test_check_spd_infoframe,
-+			 drm_hdmi_spd_infoframe_gen_params),
- 	KUNIT_CASE(drm_test_check_reject_avi_infoframe),
- 	KUNIT_CASE(drm_test_check_reject_hdr_infoframe_bpc_8),
- 	KUNIT_CASE(drm_test_check_reject_hdr_infoframe_bpc_10),
-
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index e03aa251c..7d7135571 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -20,6 +20,9 @@ void func(struct fbtft_par *par, int len, ...)                                \
+ 	int offset = 0;                                                       \
+ 	buffer_type *buf = (buffer_type *)par->buf;                           \
+ 									      \
++	if (len <= 0)                                                         \
++		return;                                                       \
++									      \
+ 	if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {                    \
+ 		va_start(args, len);                                          \
+ 		for (i = 0; i < len; i++) {                                   \
 -- 
-2.55.0
+2.34.1
 

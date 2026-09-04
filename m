@@ -1,71 +1,74 @@
-Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com [209.85.167.178])
+Received: from mail-pj1-f47.google.com (mail-pj1-f47.google.com [209.85.216.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2A00175A9D
-	for <linux-fbdev@vger.kernel.org>; Fri,  4 Sep 2026 12:22:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.178
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 802A9378D8B
+	for <linux-fbdev@vger.kernel.org>; Fri,  4 Sep 2026 12:26:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788524578; cv=none; b=ZGxM4PRwD71EswHxu6I7KfvBjaaJjBtVwGyrqUXVDtUxZ+lA73meyMm7HUGqYFSxaa+6SgX4PEu2RBcwHV+WSR5jR3oT7amfTLoj5bVNTJ0d9u972u8RZ69RcNacHJGlfPg71g5fpu5CfpkXNuOx/ryyAQRDac5RsdQBdexIQKc=
+	t=1788524813; cv=none; b=e7xSkwE/FpRDkp1WWWJQz5ze3f5ttB2egB2V8HKehUdacVRepoMjIVBV8UxXMXJ7vEDDYqW98XxLQLPFMQ3gAekRl0HLSv0e55Bd1K2MOZUQU6y/dkcUM7WFEjhbp/QlitOMam6YJk42mSetE+ycwsDlQYz8DZl9nz3LDHxkZos=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788524578; c=relaxed/simple;
-	bh=1mRrBqwUgZts1zwql3KQjALYMgJWWNR6dZeZ/uFaRM4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fv1Sav2vPkrW9T9RVFVTlc6MJowgSr6HFtvphpq6FSKpBxhIBCVLok9I7/8BbeQY+FfnjJEpr3RIWYhDqIUpGgY0mPwJlKN4YQN4CuAcjDKSqyFSxRcP0CAoOijBt0YJn5ISRvp85F1AGiZNuNQMTJux/LI0lJE10eitRQzIkTg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kmQ4XDuA; arc=none smtp.client-ip=209.85.167.178
+	s=arc-20240116; t=1788524813; c=relaxed/simple;
+	bh=FWy5OE8EuZlV574J7Cfm1CRIWTypooLcjTrc3wz6AD4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Fw30Mbugq1ge2NN0206x8wNq7Q2bp8uzgtes2eyjnu9btbc+imHvmeob4rIo4hNO8AyhSw2vxHXc+HCbFpa3pWiywXGaDJq0m1PPpf5ZD16jqqGgm7OSb/yZp1GmCyNC3C+aHGHASkgfK01jeRu4opsxe1If59/8TkDLFPpLEZI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=L9o2bsUS; arc=none smtp.client-ip=209.85.216.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kmQ4XDuA"
-Received: by mail-oi1-f178.google.com with SMTP id 5614622812f47-4b3b1b3b992so520097b6e.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Sep 2026 05:22:56 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L9o2bsUS"
+Received: by mail-pj1-f47.google.com with SMTP id 98e67ed59e1d1-395cf2535acso1038101a91.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 04 Sep 2026 05:26:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788524576; x=1789129376; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1788524812; x=1789129612; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=KpkKAog1QJLuRwkyLizAo0StvAtiJvsvlNaL98jaQbU=;
-        b=kmQ4XDuAtFpKeTQKYwp92YkwB9g9hKqTexVwY/OHUNC0nI4CGWsb28GUzMFulhs6Ey
-         /DR6fr3Slq2qIPx86zliD8os2r+3zGB5CROhAHGa2CJaOGXV2CWoiLk7Mvb5RsIZYneU
-         21ZmdvmzlDdy7dsNN0byCtcLnz0YyWhXQyiSu9QjljkEF8tug+c9TmMdIzefosWbb1JX
-         Kd0X9H2zHtrT/veYbbPO6jnfTzJ6fV+nyKR6O9/tq4qujEHoPg7SuxEXRTc134gdzg6o
-         UsNUNygb8SZHaF3mIUjvjLIooYmcEylJanV471KtfftuILb+T8uHIFx7eJMwZn8Rfszw
-         +lsg==
+        bh=XCWnmnyrXvFMshF1SLGpbxtR/Lc6PeZ58jpBs90dY2o=;
+        b=L9o2bsUSxJaQQ68g3m5Ny58oFN4j+IcONFAOClnELWpWZLqKk0b1+dhn2tkHiw8NoY
+         vFUE+rIBkYytSXESfLrfbV2/TlaoHUWC9hpQvaEAeETOjdiK7pGNENF73kLR7LQjPnkt
+         oJbzrH97OhGnHFmQVuaTC6QlrMUbDr9h96e/Z2wldADgnhOU1sdeC7mM5B3MJaTz6cHe
+         kj0Cn9jrIDAQQWl/JAVfZg00pRF/E87xp6T/8frk0C+x8i44qBvmNRyYk3PCTOmU2Eg2
+         e1q53abbe9F7lW+91L6vnlP8ohfWjCt8XsEgbdmVJWvM4qMJf/JMqLqbf8a+sVhrQ2li
+         NgBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788524576; x=1789129376;
+        d=1e100.net; s=20251104; t=1788524812; x=1789129612;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=KpkKAog1QJLuRwkyLizAo0StvAtiJvsvlNaL98jaQbU=;
-        b=EsVavsSqyGuugLOlOrLVDpz34DDkTNLs0K/13V5/Q/THc757nMONgvnhHGfTI40PKI
-         ocLCAISJuRZc5vN2miCzMqdkvmmUjwhavrdM3DWNupRd2MkNe+37FAADGZNMKxzrdPHJ
-         1WGWdNUJW+VTl+dhigk1y4oNQDGYhm5f/p/U4/A6AfMi6jFydJLxnleol6SM8TKN+NHr
-         +9EQnnbT/6GpRGBc1v7YgM8EFZku3hCCvbz7+4PQ/I+RIS+tzqPHD5I8u/Nlz8dY8fFy
-         vMbWcQ57TED1g+eGf/HniZKSU4006itYHqlvX3kIGvK9zrgeb4GjZsEiAPW9INvBVrOP
-         m3tA==
-X-Forwarded-Encrypted: i=1; AKwUvByb3EhDKMnxQVtw8d3BY0CCJtJkvjKM0QKiKnwiYziD+UilBUxdwDwPvKDo/MOYv8wbw3tv7tXp4NUBOg==@vger.kernel.org
-X-Gm-Message-State: AFuF++lw4uO0pOO1+U+jfn4QVdoDBb5PObsAX68MnA2TldNZgZ6+qZFY
-	+Hh6ZPuitJqGBJa7/n4q8LsZLKRnQR3qQOn7eFEXt1sak/HIb+gMD+o2
-X-Gm-Gg: AYBFou0pG7vC+O2ajteoOzLT8jYuvdJ8/0EpyahMRzBHY+wIYoozWfJ/AuUFECHUHIT
-	FeqDVb0XHb0VphyI5LY5Ua0yZLk4Lts2/eWfiv75SXOl4sJAVvIpjaXDzZmSXOG8YpiFaytUsCB
-	5tNETwsziX+ii4bWD/QRG8gxmseYoYLw6urJhw/UjEidwikIzJq+EoQzVjS9nTf4nvwb25qY0+R
-	mneHIjXa0t777pAsZ1ewHj4/KcveabDjtRRPcfgtf05ldDfLXREtz1+S9lvFuOMN3skvojYmiDg
-	ywn70jKgibEjFAo8tJzbswoUTCS2oK43V5A8MGNbPuq41OcIa9eI6cUCE1WODghh9n9laCAyDyY
-	ocBC8X++lj5oX8qRCnQz4XcIWvvqSzHXcO2OorOm7cia+hvvciXL3cUcsHtCIqKQLAUuNDZbkLr
-	S3v4MHYYC2SJptsI1tNc5arSJhrkyoYjcssPziRIJWzcxL4Wl0jaJ64wCMpvJMQ+QkcJ94tyEPh
-	EThtppzT9h0meQ=
-X-Received: by 2002:a05:6820:160b:b0:6b0:1b86:fb0 with SMTP id 006d021491bc7-6b6fe59c86dmr3811462eaf.31.1788524575594;
-        Fri, 04 Sep 2026 05:22:55 -0700 (PDT)
+        bh=XCWnmnyrXvFMshF1SLGpbxtR/Lc6PeZ58jpBs90dY2o=;
+        b=gB9smBeegE2B0uHkrvUxGmc7J18pnyMnk9gLdjOOtb/rf8HiqBcBUVwOJWgk6/3Rf7
+         T4PJHCm3LibtKyHdYspIXG3lwh0ix/5JFzaDDHrFUeXzhtCgvhX6nCrVNzrZtfUxVgfH
+         +0sEmXngKRpa/I8zwcheah9sQ0aTMd8ca409MTZSnRHzvw1TTm0gfQ/jUJlo7QomWnMs
+         RHE8hoAWaWxSgm38feOfPsDJM971obR+HPye3nB0jlxI3o0296MMRCIFRwW/2mY2uMih
+         kst6/8aCJ/6vQYR8K5dcEl+XDvZLRFIQQi9yCcK9iR6c0M1P4JXcHxhbGx+TX7Ff6H+n
+         ySdA==
+X-Forwarded-Encrypted: i=1; AKwUvBxWNnpGIl0rzyqzw7rLRTwQ6c7ezSYGH5evnxapQ1JwElI0oYyD8JHpnJUtBuuNSHpdtK3tPkBvsq1BFg==@vger.kernel.org
+X-Gm-Message-State: AFuF++n812mzbjzl9lna3O3bdRNQXNu9n2A+Ct6n1ynEZDFTsdcIMRgT
+	fwXGAzKa9IHeumChfG/IiCoEYjAAHr6UnRZZayNQoJtwB3bgp3Sw3wbv
+X-Gm-Gg: AYBFou2ivGlqbXhs338tHE49oy16eAV0QZ+qjpDZbrMjJ2n/Bw/JvxNfLN9V1BEy0tg
+	/yArK8XbGob0gewIiJdTYlFVN7hLNkeIHMu8/gFQEsRZ67ANjo+tglxMDfuSz7JueNxeY72fcwG
+	WSqrsksiuIehtO8QUjdUjQ4JSHOFSc0QsNP66mMSp9lEsGeTY6xzAxzaPQucKVJc0rhAPBq5xIu
+	T0RjdtjMPqcqG9gfhbL37zR1oirP39rWpkaFGp812/mkhUVZk0YOBWRTpZ6tI0P2Nt1SHXy+APs
+	Q7DWvcipzaYO9xrZtnRoGeJANkoGh68ztoj1Ge/HsjyRRMJ2gcg9Wv/hKUKh9z4mazDvV6QWvDM
+	Zf4230mKWJ8ax7tYoioAqDd1FenLIbTx8nYyl4dyV8FHrUao5hz8EYAVtFM2qFm1QstGmJh3m2p
+	CbA+Xd8cJEqo+z7Cy9Wx4xZu6fwIIWNYOx/TSy2+CuDYNQlWbD9RJaJipOTr5KbHQYSEpX0tQ6Z
+	2zApjp875ZC79eNV8B/VTvu88s=
+X-Received: by 2002:a17:90b:2e46:b0:38f:a81:15b1 with SMTP id 98e67ed59e1d1-39b08653554mr16574087a91.19.1788524811722;
+        Fri, 04 Sep 2026 05:26:51 -0700 (PDT)
 Received: from volcano9f6e-hostos.amd.com ([165.204.217.251])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339885ca07sm7440220eec.1.2026.09.04.05.22.53
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339bbf1feesm6626601eec.26.2026.09.04.05.26.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Sep 2026 05:22:55 -0700 (PDT)
+        Fri, 04 Sep 2026 05:26:51 -0700 (PDT)
 From: Hemanth Selam <hemanth.selam@gmail.com>
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-	Helge Deller <deller@gmx.de>
+To: Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Linus Walleij <linusw@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [PATCH] fbdev: fix typos in comments
-Date: Fri,  4 Sep 2026 17:52:49 +0530
-Message-ID: <20260904122250.29879-1-hemanth.selam@gmail.com>
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH] backlight: fix typos in comments
+Date: Fri,  4 Sep 2026 17:56:44 +0530
+Message-ID: <20260904122646.32558-1-hemanth.selam@gmail.com>
 X-Mailer: git-send-email 2.48.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -82,40 +85,36 @@ changes.
 Assisted-by: Cursor:claude-opus-5
 Signed-off-by: Hemanth Selam <hemanth.selam@gmail.com>
 ---
- drivers/video/fbdev/s1d13xxxfb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/backlight/ili9320.c          | 2 +-
+ drivers/video/backlight/ktd253-backlight.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d13xxxfb.c
-index e80c806ef520..ab09790d6268 100644
---- a/drivers/video/fbdev/s1d13xxxfb.c
-+++ b/drivers/video/fbdev/s1d13xxxfb.c
-@@ -400,7 +400,7 @@ s1d13xxxfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+diff --git a/drivers/video/backlight/ili9320.c b/drivers/video/backlight/ili9320.c
+index 2df96a882119..d2f094dd7fc3 100644
+--- a/drivers/video/backlight/ili9320.c
++++ b/drivers/video/backlight/ili9320.c
+@@ -30,7 +30,7 @@ static inline int ili9320_write_spi(struct ili9320 *ili,
+ 	unsigned char *addr = spi->buffer_addr;
+ 	unsigned char *data = spi->buffer_data;
  
- /**
-  *	bltbit_wait_bitclear - waits for change in register value
-- *	@info : frambuffer structure
-+ *	@info : framebuffer structure
-  *	@bit  : value currently in register
-  *	@timeout : ...
-  *
-@@ -426,7 +426,7 @@ bltbit_wait_bitclear(struct fb_info *info, u8 bit, int timeout)
-  *	@info : framebuffer structure
-  *	@area : fb_copyarea structure
-  *
-- *	supports (atleast) S1D13506
-+ *	supports (at least) S1D13506
-  *
-  */
- static void
-@@ -516,7 +516,7 @@ s1d13xxxfb_bitblt_copyarea(struct fb_info *info, const struct fb_copyarea *area)
-  *	@info : framebuffer structure
-  *	@rect : fb_fillrect structure
-  *
-- *	supports (atleast 13506)
-+ *	supports (at least 13506)
-  *
-  **/
- static void
+-	/* spi message consits of:
++	/* spi message consists of:
+ 	 * first byte: ID and operation
+ 	 */
+ 
+diff --git a/drivers/video/backlight/ktd253-backlight.c b/drivers/video/backlight/ktd253-backlight.c
+index 327b4ee75254..f2c5527d02e0 100644
+--- a/drivers/video/backlight/ktd253-backlight.c
++++ b/drivers/video/backlight/ktd253-backlight.c
+@@ -53,7 +53,7 @@ static int ktd253_backlight_stepdown(struct ktd253_backlight *ktd253)
+ 	 *
+ 	 * Architectures do not always support ndelay() and we will get a few us
+ 	 * instead. If we get to a critical time limit an interrupt has likely
+-	 * occured in the low part of the loop and we need to restart from the
++	 * occurred in the low part of the loop and we need to restart from the
+ 	 * top so we have the backlight in a known state.
+ 	 */
+ 	u64 ns;
 -- 
 2.48.1
 

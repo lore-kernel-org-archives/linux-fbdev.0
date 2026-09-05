@@ -1,62 +1,62 @@
-Received: from mail-vk1-f173.google.com (mail-vk1-f173.google.com [209.85.221.173])
+Received: from mail-pj1-f41.google.com (mail-pj1-f41.google.com [209.85.216.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6525E224AFA
-	for <linux-fbdev@vger.kernel.org>; Sat,  5 Sep 2026 00:16:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E2AA2DF13F
+	for <linux-fbdev@vger.kernel.org>; Sat,  5 Sep 2026 00:30:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788567404; cv=none; b=gN1gYW2eEwShoqTYlVCqGYN+1QCYQ3EAUu621Iwg5TlHFENLlEap+ExZlDX/j+o1dPjLrdQYYy6SWYR8E9sY2LidTUZbIHUYJAL1siYOb5g5DIHAUrRwv25OCdXBgAGu+Vu5/7AegnZpmp8r8TqLJZAT2I6ip+ExcF0wm3HLYmY=
+	t=1788568215; cv=none; b=AIAX3gH+E8D6+haybJie2Cdigf4yqWVmuWlAYfmP4W24ptnwYjqd1+CF9oGh/eo1ACJFRtYjwi/v8Tus+S8Zl8buRxfCxuY2NF10Jp4qXoL9otvEMqS4xLw4TlYaAscY9sLRDSMaBjm+wnrefgu5sZL9JGGIQCNSkE1va5iFpeQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788567404; c=relaxed/simple;
-	bh=cP+4U9AC/n7DQ4j6Q+01Y8jJOSjSG1IbtukTRFC96co=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GhjvzmcGE/znwje85gDf0JUxSnDOlCr6EoAQpeLACjIHyzi4yaHNXvX3xeGwItXhtiAYsyo6Tdw1n/MaTc621UbwxGFSPinSa3g6H+myiwTtY6a+JBvPaRPAYZlKcF3ivzFWDDk6bC3+By2kM8NdTBKkze1DHX7/dTpAHgNKmPM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mOPNT2fD; arc=none smtp.client-ip=209.85.221.173
+	s=arc-20240116; t=1788568215; c=relaxed/simple;
+	bh=XxbPIFk2tSsij/ROTcukZp1v9F5KUnPXyjMHgXJVQ8s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ao40q0Ybk9QPSeNpRLGs9/JpdVQahQoxs+OOVPs0Zd7A3Fdit8hJVCBoaTPjwS+sKeV2VhtwsKDYCDr6go2mIQDV+1b0XmkqqkoS9V6cGD8hbuzMab4Xyiu9b2VWAFdxAX+58SQ0mbEFELfvYzYyqxr+uzp0SoMPjiJPzdHY3V0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YDGVxRdz; arc=none smtp.client-ip=209.85.216.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mOPNT2fD"
-Received: by mail-vk1-f173.google.com with SMTP id 71dfb90a1353d-5c67175d176so741208e0c.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Sep 2026 17:16:42 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YDGVxRdz"
+Received: by mail-pj1-f41.google.com with SMTP id 98e67ed59e1d1-38e58034d05so1397960a91.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 04 Sep 2026 17:30:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788567401; x=1789172201; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1788568212; x=1789173012; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wFPE/GeLZQJNUjlVPHTUrDmhgIqHfBgziOiwOmM9ZNo=;
-        b=mOPNT2fDb5crMGshoXFC2mEspNBHR7sIrIBZBidoQM5I+5x4RATIpHrDPM656G6T5D
-         TPMtQgOSNJNwbRCfasl37EFPNAOo+ocNzS+WXS7k0orfre/Y/DiFq/g6VX1e2HnUz9rE
-         CGfgurud6ROBGkwZL2C9TBBqavEn/vU+2pnR2/hWqD/F1ByPFP+McwV/scfn+lMwfOfM
-         ihfjj/YZDOt6j6xGzkASSPVXaocfsfadNOKHGZz5XbttNgnpXTnTtQyrjgBIEBHiJykb
-         V16ev4bNvQz6AeFiiisON3aJ5Lz0bWp3bKV6a0OmT2i93wfzcSKgMrfH/WLLtUOPMOxr
-         Ondw==
+        bh=7HnYBPkgGHcq9yWO+WayMoxCwKBUXVvRWJyyRsMWSP0=;
+        b=YDGVxRdzwiZjZAB3CiuiI18XQj5Uxss8SJ+Qhvg9+pCl3vV5hseo++ZJ/aWiN0vxP7
+         /XkSLNhgKpB4hOldnEk0A9hgg+GgAXL+e90pN56oGuCoi5FjFd9M+wt9pqfI+ylRaQX4
+         dV4YlT9yGcbNP3933iE09hJl+mCcGK474uQtPhThwBjeUB+a7d7gHyRVlXQjRLEFrHLx
+         oJLAt2vkrxJF9h7HEYSM0V1OTQo6Ukd+vZCu+Se9ud/mw+UG6MN4wDUDF0Xa7h1RhH3w
+         XvGQoFIyQf4xHswOXk/O8JYWkXccWKd2oDt4IzvXIch90UYZU3nQ758vpPIxrEjM50DC
+         dLuA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788567401; x=1789172201;
+        d=1e100.net; s=20251104; t=1788568212; x=1789173012;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=wFPE/GeLZQJNUjlVPHTUrDmhgIqHfBgziOiwOmM9ZNo=;
-        b=AoFF0bFkUHB1pjIzW4ydqHwOC6w5ROUH+zHpzaNoctKXxSlyn1qjuvel/4u1DkWpnU
-         pLAJ/41S/9/KMU3GzQ0YGaJGPpe9A3MPm7RBB63eQv7ZaQRF8nzSvAvQXOTv+HleVQhp
-         k3rJVbzTIWhLjxgd05rU0MlsPQc7S8hFRHi6LPXS9B/IdcfcQAwlD5GFXQJCWq2ez10P
-         Lmj1htNa1QBBkLy15QCp9AjH45gYA1nrTbgIGLaJyYQodh48gReOnmJgCWMjVAAz66qa
-         EQ4ulmFmQ0QYn4iQ1DeCdGmdmuOPU5Yfpm2icoW81Enf9OGw1VFphNBSlc1jgt1HO0+G
-         KluQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxphX6Lec0lTAorh5o4eJgJ4e1CBrpk2i3QG1gzCohJZKQ7G8tvlFF9sVMHK+6WgToBUU0hAqYTrHfUJQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++mHh6oz2TL3B0CccdcYFElErBDi8yn2W2L2nLDaKOROdBrZrLt9
-	58pLJULShQU3iVj/SCyxnQBbj9BrifXIlw7e2P25uLMhVsAgK3qknmOG
-X-Gm-Gg: AYBFou2shs9HWQH1jOYvDejCkt99uaHcY4cfPzIvf4TD+24Ce8RVEMuu60uzW91zDNF
-	zuqtyY1rsFLGbwpADmhywKK3Qs1C1jVV2Ne35ObvEOvWeKhU/1PBoT3jYNlUawPx0XIsiwEI+2n
-	JLNFhjcJLXqz0/4lTg7GqJclZJ33kBj2IzS51vYAVUOuqFmhTtgNm5xYs1O17yNZOuN96ArhYbT
-	bZpFCiEFK5ZZLJzEUoNSStAFIuN913LqLVw7bDFfyxWNAUvk6eb9XICsAoZv1RNmIbWgb/m10X3
-	dXgWYY6BRV98E9WsQPnzmf3Yi5ENkKvjRfe9lsw4Rp05RnwtrZQYEupXpFWk/uEIO7hBZUztIOE
-	CeWTEjvyonGoCf2c7uBfRlqUcN5QUW1Kdgpnv8l6GtMCvCsQPn9WHQpcVJcR/QCiV+BRbGodRj5
-	U8Lxb07ciHk+UbHUh30ffCs04UoIZ5F8o13kKmcadNkkL6YVJdT85BVziR+ELCPcIfmKpcNSTLy
-	MmqL3eyZu/NId2zOENJ2AD3hDq2SvnH
-X-Received: by 2002:a05:6122:4f82:b0:5c2:ac92:eb18 with SMTP id 71dfb90a1353d-5c7ed3f6d2amr4275904e0c.7.1788567401218;
-        Fri, 04 Sep 2026 17:16:41 -0700 (PDT)
+        bh=7HnYBPkgGHcq9yWO+WayMoxCwKBUXVvRWJyyRsMWSP0=;
+        b=C6lkKEznFxb3t6AIXY+piEDLcBHHvzBy2FiKMnIvQYl9ktdvQzun5JpF71KVUpUVGl
+         umh9xlpTjDMbyWpBMFnUHJk/jD/rIiE3aegIU4nwrSMzOGrG5l7pUfPL0S98uvLANsRo
+         kUkmW8WExV1aNj9r7vYuXac++WOKE57CRO/6tu0oT9XLxwx0s1ZVvPgdu8wsDAsVWc1B
+         Vb3gPzawgap9tM7vWoFiMxq8bLtEY7xfXWmez2yWTj6MOU5CXYjvf4oIW/6h7S3wanUV
+         qOXZef+RSN6H8tXhcFN8qroZ43YGHUo04z9Dj1JSGx+H+903JrguSg4x1Iuu+TyoG4A5
+         DZxA==
+X-Forwarded-Encrypted: i=1; AKwUvByjZ+Ja/NwblAay6K+biCkFQGji8BjXsavSZQCVmG3KTCj3+p3bDbkb1ZdrD/nu57ugBsZoLS1DDUPxQQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++kuURWcqoIDKJYQF3SsEyQEbYAlG9fuWXCuJVK7bkQ2hZ7Odxy7
+	thkTvCIRhIOTWvvirXkA7MRROuVVnnYYAzlDpZoGUBNRboT+zERxy5td
+X-Gm-Gg: AYBFou1ijDJmzVOagugMiHC2NoyYArxuJ9KawMpf8E3i7Go6US7sjhDDOMF2B64DmfY
+	eQfeap7D593CO+fofZjNU1Em38JHV0E7XK2w5SAiG08+pq8yc7OogomQRXfOfkiEukpLSv9/vvz
+	b4Fq9Jv+fAtsmmN/J2TDu2FyWhsGzqONXPiOOTKpPKnTqtuubR6ji7plVieKdC3MVq5LjJwXVaS
+	VgayG/85dw5fX8V/5xLGD0ZiPyFsgBw+AVm9NiKHsnL/PqHCiCuaiqQY2g9p5MKftp6/JiyF76J
+	6eMgKX5pG+ZlcqI5veYVK+G0JuorfsbyJvdeesqaEB27a6YU27lrR0Hyz2jEsBT3Sty3tQwiDCm
+	bzQvuSo7RItO1Hv0hxO9mfzW/3uFgrjaEYxlUVw6Bsq5fImaYKXvsIvLjFxEtXQRRibcKPttj/P
+	4u9B7SA6F9kFoYMiKfUPnoRNAR/9GXoREvXm/EkUPPJRJ6lyDsJOOXb7VrnloB8baWBJYHsTdsG
+	MSUmv4B/9w7+rUYR93EVbTmd9e3Chkj
+X-Received: by 2002:a17:90b:4b0c:b0:37f:fdc8:71b4 with SMTP id 98e67ed59e1d1-39b26121f6cmr14637223a91.2.1788568211735;
+        Fri, 04 Sep 2026 17:30:11 -0700 (PDT)
 Received: from Biostar-A520MT.. ([187.94.13.245])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5c7ecac1033sm3210562e0c.18.2026.09.04.17.16.35
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3339aa31b24sm9745628eec.13.2026.09.04.17.30.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Sep 2026 17:16:39 -0700 (PDT)
+        Fri, 04 Sep 2026 17:30:11 -0700 (PDT)
 From: Breno Rodrigues Alves <breno3011alves@gmail.com>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org,
@@ -72,9 +72,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-fbdev@vger.kernel.org,
 	linux-security-module@vger.kernel.org,
 	Breno Rodrigues Alves <breno3011alves@gmail.com>
-Subject: [PATCH v4] Kconfig: fix typos in core makefiles/code and purge remaining ghosts (v4)
-Date: Fri,  4 Sep 2026 21:16:31 -0300
-Message-ID: <20260905001631.108652-1-breno3011alves@gmail.com>
+Subject: [PATCH v5] Kconfig: fix typos in core makefiles and purge defective DVB debug (v5)
+Date: Fri,  4 Sep 2026 21:30:05 -0300
+Message-ID: <20260905003005.118245-1-breno3011alves@gmail.com>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -84,16 +84,21 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Following precise automated feedback from Sashiko AI, the active
-lcd-panel-cgram documentation has been completely retained to prevent
-UAPI/Sphinx tree-wide translation breaks.
+Automated review from Sashiko AI revealed that re-enabling the legacy
+DVB_ULE_DEBUG code via CONFIG_DVB_ULE_DEBUG exposes severe race conditions
+on global state variables, leading to out-of-bounds memory corruption.
+Additionally, the debug block suffers from undeclared identifiers (TS_SZ).
 
-This version properly stages and includes the intended bugfixes:
+Following the core kernel principle of eliminating dangerous, unmaintained
+code, this patch completely extirpates the defective DVB_ULE_DEBUG block
+from dvb_net.c and purges its corresponding configuration symbol from
+the Kconfig tree.
+
+This version retains the verified MediaTek bugfixes and ghost purges:
   - Fixes MediaTek interconnect typo mapping mt8196.o to MT8196.
   - Fixes MediaTek regulator typo mapping mt6316-regulator to MT6316.
-  - Fixes missing CONFIG_ prefix on DVB_ULE_DEBUG macro in dvb_net.c.
   - Cleans up the dangling comment in drivers/leds/Kconfig.
-  - Purges the remaining verified ghost weight.
+  - Purges verified legacy ghost weight.
 
 Signed-off-by: Breno Rodrigues Alves <breno3011alves@gmail.com>
 ---

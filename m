@@ -1,157 +1,139 @@
-Received: from mail-pl1-f172.google.com (mail-pl1-f172.google.com [209.85.214.172])
+Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1D135B5AB
-	for <linux-fbdev@vger.kernel.org>; Sun,  6 Sep 2026 01:49:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.172
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788659365; cv=none; b=kvRY5UBQMXzeJv+jZRc+fOdBH+EAl54jy20Av/xmUfgKOiwKMaIPLFrNLi3CmEdGQ05iaCM9nHLp3UU6D2UgJDlQJZAxERgbxl7Q9IoczNKpOLrvAJarPXKkTbvQ4grxjlMBx3Ybd0nLYPTbh1ezKZQ1+vlFspIxbRob2WyLkb8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788659365; c=relaxed/simple;
-	bh=A3BWN2pQX6u909yRMUdmP0zxqeTmYPA47VdZHSAX85I=;
-	h=Subject:To:References:Cc:From:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=O8JGXyZf/pqVjCIPVq8JiTf0aUPNmfGGop3rms4wXcwVhMy++mTN1Fk2fPjU5Ehmp9ogWDrWbAj4mEPgJdu3FJWshesQ4rqfkDH7piwXYhyoXX5/6oSsu1IwQR0b0hZoPOU/+/0eFHLTpf4/lQexS6gsU2IIYS4r70c5HbbWOwA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EF91JWVL; arc=none smtp.client-ip=209.85.214.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB2A215FA81
+	for <linux-fbdev@vger.kernel.org>; Sun,  6 Sep 2026 17:29:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.179
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788715752; cv=pass; b=HnEASFmnNK6g9uYZrQ22cxCg/zHaEl2dLLBXwTxNKjTSRvXDv36/2lxonFOLwDz+1tZzgBieqQOPYPK42dT/sUtrVvQoMaEv9PoFG2+ilppTGdVi/x4/M7olRgR5zDvd4gA948umXjypMzQhtHZDqmmrr9NwlW3JjtkGh7DY2Qs=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788715752; c=relaxed/simple;
+	bh=5DEiI0XOfcZ/AmMcsore77sSwCupcFULPw2OZjhCwgo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=KCFp7j5iuN3plHOjDh8A4zUuH7ay6P4G8LDgiKdLYPGj9T0PYICoIg9yn08t4ddyd1dXuDWW0kSIXvHKU09pg0+b9afr83y3pApqqn7VOs8UlMWZH+nHBKapVLvx1pr6RNUOW5gM/xKmzwhaTxIl2X/Ylcib6wASF1cEjqG0SRQ=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OF8j2/e9; arc=pass smtp.client-ip=209.85.214.179
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EF91JWVL"
-Received: by mail-pl1-f172.google.com with SMTP id d9443c01a7336-2d94c868ea5so24025425ad.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 05 Sep 2026 18:49:23 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OF8j2/e9"
+Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2d6f9e2f681so30443675ad.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 06 Sep 2026 10:29:10 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788715750; cv=none;
+        d=google.com; s=arc-20260327;
+        b=XvxqyjeZNK7RljgQiNgVOx3U36IU/YwfTcFmd141L0/GTyw1ccaMEGWw90Hohd8iaj
+         4kMHKc/WRMbpmAxsvNUeEZbyHYxMpJFhbbZkOGhHHy8qgC+icWeYOwZUIq9WbWGItphc
+         MRVTmDy4Y2v0s3E+0gVV4Qoftl4kyHXQD3FDrRl9gYpds+OL21mBIxAqRig0vGRt6voN
+         dQnBoaGl5Tx4Ri49RdDIAFADR6tnwd7tGW//mBJYgeNiKHdB5KtfuRvu4N5DtnJExFbz
+         teEF30FLtOx5Zs43Fl5AXbXKI8uYo+L6dbLbsR03wDQQlb7MY2Um6/IKIVydOOH+WHzu
+         JjgA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=5DEiI0XOfcZ/AmMcsore77sSwCupcFULPw2OZjhCwgo=;
+        fh=jeop+Q5rlAlK+vKDIzdKvbKUZQaSSfF/R2KoeAIXM8g=;
+        b=d+AMV6eMrDpUmVdsll+8GAWBsz1CgwUlE/G93lFbhcTumY5HNomchp2k4b3E3njQYJ
+         9XB5ACb8DWZW23ZHHysyEO35A9V7UiMlVN9WevjHmNeuZtTANkdFZpCy3UNmE+q6jxJ7
+         HFnme52WX87E/qKcFaRUL/4ddTAgJ+SiGg5gqfr6x114ThnJrpMfUDbrSU/BzM55oQjg
+         9MIxIhzBzDgPaVIm4SC1RkxUmvWaEdkk/miH3kcoJnuRD5vAhjT+wJoc6ou4yd6SaDiJ
+         9+v28if3wKbhjfWc8nZg7XznvpvHexFKtcc1N9M/RkgN8nxpjr+80RTl5mrIL4EVXJIa
+         JfQw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788659363; x=1789264163; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:mime-version
-         :user-agent:date:message-id:from:cc:references:to:subject:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=S0KhFClpzBCgstI8o1AR/vkilR/o3vMPMYTkXSYpO4U=;
-        b=EF91JWVL37ekkQgPFYsZV/MfGjzcBF4Yrw4Eu8qOF/4MGx4JzCG0F3YzjQ/7l3hsxt
-         6uAXaPLTNK6kvFBk+wkZrdhkSRWorjUWRUhV8P3sQ7tVbzkLFw+dMlA9JpDeN/dNu9Bt
-         gIFR0zBXV8TMdaGFW3gqOkMPsyza+7wVt48h1icBi3nak6xzQIztgl5U41DPgSj7jIsC
-         UxjndWGLxBLPdIlU0GS26nj4q3a7ambCqqx2ZtMDnd6oaJbDumX7hlvcMjAOmiDxY40v
-         p+P0MgE06bfhO2D5mGv2YGZ5gD/Hn5HCk+f0NwHkmKNju7bqSNpOrZqJAEH2UyIvlxPg
-         q+UQ==
+        d=gmail.com; s=20251104; t=1788715750; x=1789320550; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5DEiI0XOfcZ/AmMcsore77sSwCupcFULPw2OZjhCwgo=;
+        b=OF8j2/e9XaMRw5ga8VMjNKTjcE7mR8jmZcAz5h3CAi+h5rCxFnYnEfwtjWc3daAtRK
+         wWR3rt+PNnSrR1dFm+5ceUKKbPr4kqSvRyCTz/LEFdlh9sh8dDoqIPNAsqZystl9Cnav
+         h/mCpA3lAUX61QIRfNqgQASSNlTzGgBGgTW7NJkBEbG7kLNVL7WTiYZVgCutRYCZqfmg
+         fon2Fm5XPPuRiy6UXv9I2qR0SiNCt/QmbKjqeCqDDbm/ZwXZP15ige2qp3w9gsZ561Qi
+         bZ9IXQ9hJe0u3MpgmjeCLTpgaXSNYVxnC4DC2pc10S1zGMdMJ+4zTlsFdSmNuItXxe5+
+         Hjnw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788659363; x=1789264163;
-        h=content-transfer-encoding:content-type:in-reply-to:mime-version
-         :user-agent:date:message-id:from:cc:references:to:subject:x-gm-gg
+        d=1e100.net; s=20251104; t=1788715750; x=1789320550;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=S0KhFClpzBCgstI8o1AR/vkilR/o3vMPMYTkXSYpO4U=;
-        b=IuDDPBZj+vXKIjMKqvd6KR1Gidzi576p/ROLKKQxvFQdEzixICa2uXRkaAjW8dL6ZT
-         KG+WUo9VFDNtnmfonHWTXyqnApOVGBhUtfvC4G2TMpjcASDq2sgu2HdqpXfHPgzn4fkS
-         1r2Rq278maQXcDfYk+uHFuBTRagEATrb71P2B2egmetYRi7Dw9BJb38PJivsVbuitOFG
-         uPzY9wPQihZiKpPmgv28pFCEfTJaQflCNFmoY3gLg5arOoVqTW0Q0BpNxZK8vH5rnBsV
-         K7lqFLk4Y2YafWHC9m/QmdRDO6TGDH24TpuvypPUJ9Uvxz0ax1Fcyop6Evoode87/+li
-         t7aw==
-X-Forwarded-Encrypted: i=1; AKwUvBzoNf1BjVRuQXeN7ROGM0SDWZrEXXJiy52R95B1bNuHOcqzzO+3Yjxs678kZ6drl6WCWgAXfAlWinGzYQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++kIWWf225u0QX8oS9v033zbtw8mIUcn1bCgjZ9DGIIKsIj8hiDO
-	XzTacHHYPdT4WIQFdoDo2460FeYIL3O7rjpQTNWEKu5MLtAnbqsnoklX
-X-Gm-Gg: AYBFou0P7MlWMexGiedNPqPbMS5Qc++sG4jpadMbB6ECnDw5d5Wi6iy4wKiKsOFXBgN
-	v9ijNQFdHbFrGh2gWclTdwQrN99IbvJtaKwaep5m3WNSIQYRV9juWWCwR8RDt9L3mGuZPOmRkoC
-	sVc5R8c4byrSpxVVvSpKfyaW9LCaj3qzA+sCym779gNKgGuf49LDGIitpsdTI2+QrrbqmompM97
-	ICevE0h+vLinD1vpJoziGQ6FaJlwQMjwAikl3LrvQ2AYZNWm3zLrDwgokoOr11mAjZN3RIPcv/v
-	xMZJ22Kwon4boo8eEt4vjimtm2w5v46R1Ms+AnK/6Uo0k9LVASkHBeypsTf8u3Pv2G8bi0nCsEN
-	GWTHu53c/dgJlA3ClQrbfDtxWIxY/vRjODnIUrYykQVCHdiSdZJ+xRoF0ez2IkCv5lF8Nn3Qxum
-	szMsIHo7aHkbWBMbyyl4nfIcvRmcdKXrWmfdGjhnJyz33i8sq5iGtO3tgR9ZjEhooxagLkHVWel
-	64b1ptODLIt3qn1igA=
-X-Received: by 2002:a17:902:ebc3:b0:2db:20fa:9443 with SMTP id d9443c01a7336-2db20fa96d6mr161492935ad.13.1788659362933;
-        Sat, 05 Sep 2026 18:49:22 -0700 (PDT)
-Received: from [10.1.1.24] (122-59-250-182-adsl.sparkbb.co.nz. [122.59.250.182])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2db149ccf2esm27008175ad.73.2026.09.05.18.49.17
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sat, 05 Sep 2026 18:49:22 -0700 (PDT)
-Subject: Re: [PATCH] fbdev: atafb: Restrict SuperBlitter to supported formats
-To: Linmao Li <lilinmao@kylinos.cn>, deller@gmx.de,
- linux-fbdev@vger.kernel.org
-References: <20260827093948.2825531-1-lilinmao@kylinos.cn>
-Cc: miro.kropacek@gmail.com, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
-From: Michael Schmitz <schmitzmic@gmail.com>
-Message-ID: <e4a2ba2e-c533-04d8-0795-e3d43caf47b9@gmail.com>
-Date: Sun, 6 Sep 2026 13:49:14 +1200
-User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101
- Icedove/45.4.0
+        bh=5DEiI0XOfcZ/AmMcsore77sSwCupcFULPw2OZjhCwgo=;
+        b=HhxcvVMyQOU+mNJFTPL/mSIfCfYgX2DeV4hiy1N2qWzpmdtb651HmzDMgx5Zvtl2XH
+         O5sBAcyjsCOlGOjldOk4gVO537E117LyqUA5UsxGvtYDkT2h725FM4sPco6BupI5k1Qp
+         m0atQ+MpLwIDWoCAYl3kzk0xnUeFLKJmVIpnbkxI8qogS5q9eZ7yocmL6xlqWOJWBA+k
+         qeyogiE1rPM2y8zPlvk3oqO67oZPwLEGRobQ0EmTM9k+qmu8iVnHnZ9mbo+mo4oLrXX0
+         mnHA22+ad3BNIYVb3EvAz+NLaKc0fUKCw/OZufxCMjbnzJvInwBSjsGnOwZOxjvq5vh9
+         EfSg==
+X-Forwarded-Encrypted: i=1; AKwUvBwvCDor5lQxQ2DfOu3oPqjw51QDglNPSimpYvRdz1HYEKnG0gdx2kJ0KI50AaNCaK8PZE6hIWdNXsUbVw==@vger.kernel.org
+X-Gm-Message-State: AFuF++lFrd0oeYA5LZ9sUiWN3r6AakJUWfg4fCoHD7f18vuRj0pNzfWV
+	Xe5df5xrN4CG02VVHTXEQtQMdNZdo4nDmhpycqRbPUB1ZtEjFGkSqhlVHc/S+yDbpk2R6yaMQxf
+	nmMwvQWenT41MWRMNEVypS9mG16j7NOI=
+X-Gm-Gg: AYBFou1rbpoNw8ozEXuGt3pyam+gmEUUyxTNgl7gl8iJiiSdv9u4RkPPjAajPNKccmO
+	M08vcK5fvt9PdZrLdnGJcGNcV27QfWUFl0ifkxzYdJsmfDvUYabcf5Dabxg1tpgRWCx+ZYgzmUa
+	0+g6TgTzgt/+epqfce5Fbgl7Oh4NvHOdUwZHWliMCj9fQtsVMzAw9CWULD/2vzu+UgkBe79071/
+	9E5MD5T3xCLwu3NCaK8cB7wEJmmAB6SNsgMXHEyJ36ojc4WJzHT2HIVxoy0m6fo8kktD++YVtGB
+	EEu0eEtVo3kjM7NpPBjcVlUL4EfmOzfdWLZD7TiH0QSLGih80W5Yhy0L7nUuhL2PkKZsdgFmQXx
+	f1Q==
+X-Received: by 2002:a17:902:8a8d:b0:2ca:e19c:97b with SMTP id
+ d9443c01a7336-2db122edd50mr199148445ad.5.1788715750074; Sun, 06 Sep 2026
+ 10:29:10 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20260827093948.2825531-1-lilinmao@kylinos.cn>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20260617080031.99156-1-clamor95@gmail.com> <20260702161828.GB2108533@google.com>
+In-Reply-To: <20260702161828.GB2108533@google.com>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
+Date: Sun, 6 Sep 2026 20:28:58 +0300
+X-Gm-Features: AcwNN1XWisbz2ascChHcLatRKYQPwdXAhH_U7ChBKnQiXROAqpt9L2vnmsacgR4
+Message-ID: <CAPVz0n2fRs=q-1dAEt2k1FJpQVK9+PMSY0BSMB7Rs3F2xDyFvw@mail.gmail.com>
+Subject: Re: [PATCH v5 00/14] mfd: lm3533: convert to OF bindings, improve support
+To: Lee Jones <lee@kernel.org>
+Cc: Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
+	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Jonathan Cameron <jic23@kernel.org>, David Lechner <dlechner@baylibre.com>, 
+	=?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
+	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>, Johan Hovold <johan@kernel.org>, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Linmao,
-
-thanks for your patch!
-
-Am 27.08.2026 um 21:39 schrieb Linmao Li:
-> The SuperBlitter operations derive an integer byte count per pixel.  The
-> accelerated fill path handles only one-, two- and four-byte pixels.
-> However, the operations are currently installed for every external
-> framebuffer in SuperVidel RAM, including planar 1/2/4/8-bpp and 24-bpp
-> truecolor modes accepted by the external video parser.
+=D1=87=D1=82, 2 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 19:18 Lee J=
+ones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
 >
-> For 1/2/4-bpp modes, the byte count becomes zero, so accelerated copies do
-> nothing and fills fall through to 32-bit stores.  Planar 8-bpp uses an
-> incompatible memory layout.  For 24-bpp modes, fills also use 32-bit stores
-> despite advancing addresses by three bytes per pixel.  These cases can
-> corrupt the framebuffer beyond the requested rectangle.
-
-I believe 24 bpp mode can be rescued using something like this (entirely 
-untested):
-
---- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -2463,6 +2463,11 @@ static void svblit_fillrect(struct fb_info *info,
-         case 2:
-                 memset16((u16 *)line, pix, rect->width);
-                 break;
-+       case 3:
-+               memset(line, pix, ((rect->width * bytespp) % 4));
-+               line += ((rect->width * bytespp) % 4);
-+               memset32((u32 *)line, pix, (rect->width * bytespp) / 4);
-+               break;
-         default:
-                 memset32((u32 *)line, pix, rect->width);
-                 break;
-
-Can't test this on hardware, and would need Miro to confirm it works as 
-intended.
-
+> On Wed, 17 Jun 2026, Svyatoslav Ryhel wrote:
 >
-> Enable the SuperBlitter operations only for the layouts they implement:
-> 8-bpp packed pixels and 16/32-bpp truecolor.  Keep the existing software
-> operations for all other external formats.
+> > Convert LM3533 to OF bindings, add missing VIN supply, add support for
+> > setting mapping mode and LED sources based on device tree.
+> >
+> > ---
+> > Changes in v2:
+> >
+> > schema
+> > - maximum led sources for leds set to 4
+> > - anyOf > oneOf in ALS
+> > - improved ALS descriptions
+> > - adjusted example
+> > drivers
+> > - dropped devm convertion of irq and mfd helpers
+> > - all als configuration moved into lm3533_als_setup
+> > - added regulator/consumer.h
+> > - lm3533_bl_setup set before sysfs_create_group in backlight
+> > - added check if LVLED is valid
+> > - LM3533_REG_OUTPUT_CONF1 > LM3533_REG_OUTPUT_CONF2 for LVLED4 and LVLE=
+D5
 >
-> Fixes: d463633d63e6 ("fbdev: atafb: Add support for SuperVidel's SuperBlitter")
-> Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
-> ---
->  drivers/video/fbdev/atafb.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
+> This set looks good to me now.
 >
-> diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-> index 5bca34c45cef3..c3011b61a94b9 100644
-> --- a/drivers/video/fbdev/atafb.c
-> +++ b/drivers/video/fbdev/atafb.c
-> @@ -3360,7 +3360,11 @@ static int __init atafb_probe(struct platform_device *pdev)
->  		memset (screen_base, 0, external_len);
->
->  		/* framebuffer in SV RAM: enable the SuperBlitter */
-> -		if (external_addr >= 0xa0000000) {
-> +		if (external_addr >= 0xa0000000 &&
-> +		    ((external_pmode == FB_TYPE_PACKED_PIXELS &&
-> +		      external_depth == 8) ||
-> +		     (external_pmode == -1 &&
-> +		      (external_depth == 16 || external_depth == 32)))) {
->  			svblit_regs = ioremap(SVBLIT_REGS_PHYS, 0x100);
->  			if (svblit_regs) {
->  				svblit_fw = svblit_rd(SVBLIT_VERSION) & 0x1ff;
+> Let me know when you have all of the Acks and I'll merge it via MFD.
 >
 
-Otherwise, LGTM.
+Hello Lee! Is there any unresolved blockers for picking this patch set?
 
-@Geert: can you remember if pixel format or bit depth of an external 
-framebuffer can be changed at runtime using fbset??
-
-Reviewed-by: Michael Schmitz <schmitzmic@gmail.com>
+> --
+> Lee Jones

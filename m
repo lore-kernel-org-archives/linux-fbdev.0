@@ -1,252 +1,165 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail-vs1-f42.google.com (mail-vs1-f42.google.com [209.85.217.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9478340BCB2;
-	Mon,  7 Sep 2026 06:59:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60DFB44212E
+	for <linux-fbdev@vger.kernel.org>; Mon,  7 Sep 2026 08:39:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788764381; cv=none; b=k7x16G67u4kptFBBBGdg3Gj02wAdT9V1jZfNU19ZUOJe8i4JxkhuT1rX58tTeU2Q3RqIJSbtZutDatbRnpvChdbzCjZXnXRhNMNBPREgeivz5jTgd1NW5lSn+cTVTdf2a91D6/8hMAv19GFBfacu8D1iqJ8O8KWHElBQT3NAtQw=
+	t=1788770346; cv=none; b=cr0PTOzI97u8kJ5MEpHxt7di1/qMs88Z21iJexqAkwqOUs32istE8ynp6P6XPzkREHpWslG9TQG2o9zZs//qPNU5xawwGzElPy25d+1AVYq51sTlLrVKScLhllddGtYr7Av/VSw3wKnpUssWLzcE0bgwkNbVXmVziTfomy2sN1c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788764381; c=relaxed/simple;
-	bh=68zq9K51Ay0P16Ip57VHSJhSwyjNPhK8KfIuClbnaR0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iA8RBV3l0+TAVSIa+lR6TUMXugHL4uHcFYxcudxszzTKaBn4RYngZSsNnSQdW92j+fP2yNJGcauZZO+WCODmfzC56NlZy3EBOrBG1YLCuapthI08H9UD/3RXI7f6jqvMJ2/p8MmVIIOg8w1fvKhIwUXfY4L6IP++RCxt+b9PLKI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=wlIPwCRp; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Cx9KJBXU; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=e0rZrifk; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=5f9VZldn; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wlIPwCRp";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Cx9KJBXU";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="e0rZrifk";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5f9VZldn"
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 5FA391F750;
-	Mon,  7 Sep 2026 06:59:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1788764373; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=do8tCb/WEQVB5WcbQ+nX9pTcXqhCTxoFf3t+kQA7Cd8=;
-	b=wlIPwCRpbSjG1YwZQLRGeVaoTAbjDlZ5mQUVIr4JXo/iBT3a4Q0iH6q3KuiIBzJUKfxnX9
-	/Oxidgg3nxHJKpUzDbw6cBurL8wqFfjnExlFpplf04hO2aRAAa7RStxV7HsL02DYMbRZNr
-	3UDtjGBoTvoHszkZaN/z9Q3bUK9ze6g=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1788764373;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=do8tCb/WEQVB5WcbQ+nX9pTcXqhCTxoFf3t+kQA7Cd8=;
-	b=Cx9KJBXUtp5fhYyVV4hzQS2p48f2jp5NsH1gki5wAXk89bfUrjPfS2krewBdl6mcSHoSJy
-	NapMeisj3ThAF8Dg==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1788764369; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=do8tCb/WEQVB5WcbQ+nX9pTcXqhCTxoFf3t+kQA7Cd8=;
-	b=e0rZrifkg5vEXUNAp301FUAS6arueahh02Qtfk9f0nOM+BgnLLgvHz6Sgvz7rpoid5c1qs
-	BFjB+Zfp+bwj+/p7iA4LqSH5FFkiqvlLvqZjogfaaPbwca795R1Clm3gRhoh2ncfN5mBo9
-	e+bwzWMbc0kej1wlII9bg9vhYMRLVqQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1788764369;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=do8tCb/WEQVB5WcbQ+nX9pTcXqhCTxoFf3t+kQA7Cd8=;
-	b=5f9VZldnsThtR5Ool3IzbjkvtPK6c0RIReUaSQm+sGldhPOHl7PvojatmPqO4560OylauL
-	+3SEaaWT2ZkZcbCw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E7AE513432;
-	Mon,  7 Sep 2026 06:59:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id vHVEN9BgnmpDaQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 07 Sep 2026 06:59:28 +0000
-Message-ID: <22707a1f-970b-4309-905d-13ac794c51fa@suse.de>
-Date: Mon, 7 Sep 2026 08:59:28 +0200
+	s=arc-20240116; t=1788770346; c=relaxed/simple;
+	bh=Tm/d84wF7MfOvBgEC1xVi9lvNiCMRhmX1lrFGxn/CV0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Llp3EVDrzaDg4sLFRaL+NJjiew1BZgsvz69rCrD2mruP41D0Iy1+2EtSuClOK0x/nWR5SrDSHRhpN4pU8M+SsvEcXfR3TeYHGWfsl4+jU3HR9I1Z9ZIvC+cQdmaMiqTalyGyEB8rVoVHHFMSO9z3VpWF7g8U9P144LUqzjW8Bns=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f42.google.com with SMTP id ada2fe7eead31-74ab6c88052so926016137.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 07 Sep 2026 01:39:04 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788770343; x=1789375143;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=2br8BvQg9DJFd3H4ITYFtxQrEUyvo1i3TJw/l6L1bw4=;
+        b=CIcqZ9mNwvX9iT3UXX++dHrohZUMD87hJy/mKam9kBAXoMZR/xDpCYc0uzEZIWmgY/
+         7ZPrM9a70vxMUVBJXnmUAnmGhNZ94zwr0vO/C50qK1A/yy8rfYe5JRMFJfbsxvJKDBZ1
+         GjdQf9qv/S2QJY7oO6wXMHY3/NAwQT+K1iUhD6gTyjYDJErjeMjWyIcCVeaeU24NX4v+
+         FSuhV1gZpqI7YxIrhfE+LK8Fpk8rIU/iTm21Bch8AoXscb5JW1hie7wZn5bx7Bi+xs2o
+         ioo6g+k1zplKB59dpd4FWuJArEJw0h55xoAcIa1GZa7MufXcFAjEs24G8VhxibQdm1SX
+         4Ncg==
+X-Forwarded-Encrypted: i=1; AKwUvByYVPPYyfaQA9vVFhZSNOdtg9bfs7v+Wpq11rsutUrlvkA6i68HpYwtTr9Ncorl9ZCfpJUSp8RfJbVk+Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++lBA+TA1DAt0a4oWTfqu9r89oLyOoAg3aDtqUWOAlb1tG0FE4uo
+	mpsIYxlIZIijlC2WWb12AH9h5aVi5rEpNDv3RSIsFhapX7G/cTsDn+X680CGTwJA
+X-Gm-Gg: AYBFou1p2N+tMzcl/qWhom2DYsSVWtf6HqAncUqQ1HlREqpgOlNOpFZNbR/Ajas1b/e
+	XvEPozIrTjjDAymWr1lfKy58d+Djg1FLRNPlIBP7MNUrzcnPzaYXHGTY307AGusJ9BU1veE+WO4
+	GwnyuLyeJzYEGtEses1BMcV1vqDbgvTFUsg3dwk4tafov00caydbYI6AFiK0Hbf7rMhI8rMv6ys
+	wFiA6GsQosXmcbO3Aw+37oTL5039CJ1KuDsHK2wmNL1pNylWy1zh0DIVw3pRAWKr6wsu9UIwrJP
+	VjUjQZ/6WpECBs+MHBJcvYSfUd6V+5K5gJSQTenSIO+30SPav8cTy2SVrweV+kWoPF3Qsaav0+1
+	g4FDez7j8/940NMeCXpvqmpJaqGL1ALMFnDXfX3jA9jDrcDLDXES86c5bAP5xUkmURlOSoYRGMw
+	UXLhK1xMaNaeUMgXLZcumbbNbO+9vg6JV+Jn1u8+VrNgiZb9sS/gSP50ptJVJz/1pKi/PoB+ElQ
+	BEXuWdKbQZj71r+b1OnZrKViA==
+X-Received: by 2002:a05:6102:5807:b0:778:5e58:ec46 with SMTP id ada2fe7eead31-78a4a72823bmr6851222137.2.1788770343031;
+        Mon, 07 Sep 2026 01:39:03 -0700 (PDT)
+Received: from mail-vs1-f42.google.com (mail-vs1-f42.google.com. [209.85.217.42])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-9808ee1c0cdsm6912489241.8.2026.09.07.01.39.00
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 07 Sep 2026 01:39:00 -0700 (PDT)
+Received: by mail-vs1-f42.google.com with SMTP id ada2fe7eead31-782c22fbb1cso901020137.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 07 Sep 2026 01:39:00 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzPxVmSY1N5IJBm5xILUzidhRKwHn552WeU4/MYLkM8rhSvbZm71T1j17WK4VrsOtKrfYp2GSYvhA/xEA==@vger.kernel.org
+X-Received: by 2002:a05:6102:6d6:b0:737:783d:1916 with SMTP id
+ ada2fe7eead31-78a4aa56803mr7111444137.11.1788770340448; Mon, 07 Sep 2026
+ 01:39:00 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5] Kconfig: fix typos in core makefiles and purge
- defective DVB debug (v5)
-To: Breno Rodrigues Alves <breno3011alves@gmail.com>,
- torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, arnd@arndb.de,
- linux-clk@vger.kernel.org, linux-input@vger.kernel.org,
- linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-sound@vger.kernel.org,
- linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
- linux-security-module@vger.kernel.org
-References: <20260905003005.118245-1-breno3011alves@gmail.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260905003005.118245-1-breno3011alves@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Spam-Score: -2.80
-X-Spam-Flag: NO
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	FREEMAIL_TO(0.00)[gmail.com,linux-foundation.org];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[14];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:mid]
+References: <20260827093948.2825531-1-lilinmao@kylinos.cn> <e4a2ba2e-c533-04d8-0795-e3d43caf47b9@gmail.com>
+In-Reply-To: <e4a2ba2e-c533-04d8-0795-e3d43caf47b9@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 7 Sep 2026 10:38:48 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVOc-_hgWvu84EW7tyQx6WzPtabnBUJ1T0uoxa1QZA94Q@mail.gmail.com>
+X-Gm-Features: AcwNN1Wp_1PImUP-cNgneasiw6HMISUs78c56UfOAI5vNGTS0l_4VrpE9irLY4c
+Message-ID: <CAMuHMdVOc-_hgWvu84EW7tyQx6WzPtabnBUJ1T0uoxa1QZA94Q@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: atafb: Restrict SuperBlitter to supported formats
+To: Michael Schmitz <schmitzmic@gmail.com>
+Cc: Linmao Li <lilinmao@kylinos.cn>, deller@gmx.de, linux-fbdev@vger.kernel.org, 
+	miro.kropacek@gmail.com, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, linux-m68k <linux-m68k@lists.linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 
-Please stop spamming this list with revisions.
+Hi Michael,
 
-Am 05.09.26 um 02:30 schrieb Breno Rodrigues Alves:
-> Automated review from Sashiko AI revealed that re-enabling the legacy
-> DVB_ULE_DEBUG code via CONFIG_DVB_ULE_DEBUG exposes severe race conditions
-> on global state variables, leading to out-of-bounds memory corruption.
-> Additionally, the debug block suffers from undeclared identifiers (TS_SZ).
+CC linux-m68k
+
+On Sun, 6 Sept 2026 at 03:49, Michael Schmitz <schmitzmic@gmail.com> wrote:
+> Am 27.08.2026 um 21:39 schrieb Linmao Li:
+> > The SuperBlitter operations derive an integer byte count per pixel.  The
+> > accelerated fill path handles only one-, two- and four-byte pixels.
+> > However, the operations are currently installed for every external
+> > framebuffer in SuperVidel RAM, including planar 1/2/4/8-bpp and 24-bpp
+> > truecolor modes accepted by the external video parser.
+> >
+> > For 1/2/4-bpp modes, the byte count becomes zero, so accelerated copies do
+> > nothing and fills fall through to 32-bit stores.  Planar 8-bpp uses an
+> > incompatible memory layout.  For 24-bpp modes, fills also use 32-bit stores
+> > despite advancing addresses by three bytes per pixel.  These cases can
+> > corrupt the framebuffer beyond the requested rectangle.
 >
-> Following the core kernel principle of eliminating dangerous, unmaintained
-> code, this patch completely extirpates the defective DVB_ULE_DEBUG block
-> from dvb_net.c and purges its corresponding configuration symbol from
-> the Kconfig tree.
+> I believe 24 bpp mode can be rescued using something like this (entirely
+> untested):
 >
-> This version retains the verified MediaTek bugfixes and ghost purges:
->    - Fixes MediaTek interconnect typo mapping mt8196.o to MT8196.
->    - Fixes MediaTek regulator typo mapping mt6316-regulator to MT6316.
->    - Cleans up the dangling comment in drivers/leds/Kconfig.
->    - Purges verified legacy ghost weight.
+> --- a/drivers/video/fbdev/atafb.c
+> +++ b/drivers/video/fbdev/atafb.c
+> @@ -2463,6 +2463,11 @@ static void svblit_fillrect(struct fb_info *info,
+>          case 2:
+>                  memset16((u16 *)line, pix, rect->width);
+>                  break;
+> +       case 3:
+> +               memset(line, pix, ((rect->width * bytespp) % 4));
+> +               line += ((rect->width * bytespp) % 4);
+> +               memset32((u32 *)line, pix, (rect->width * bytespp) / 4);
+
+This uses unaligned writes for the largest part.
+You can avoid that by doing the memset32() first.
+
+> +               break;
+>          default:
+>                  memset32((u32 *)line, pix, rect->width);
+>                  break;
 >
-> Signed-off-by: Breno Rodrigues Alves <breno3011alves@gmail.com>
-> ---
->   drivers/interconnect/mediatek/Makefile | 2 +-
->   drivers/leds/Kconfig                   | 1 -
->   drivers/media/dvb-core/dvb_net.c       | 6 +++---
->   drivers/regulator/Makefile             | 2 +-
->   4 files changed, 5 insertions(+), 6 deletions(-)
+> Can't test this on hardware, and would need Miro to confirm it works as
+> intended.
 >
-> diff --git a/drivers/interconnect/mediatek/Makefile b/drivers/interconnect/mediatek/Makefile
-> index 6bd656668..64170ab16 100644
-> --- a/drivers/interconnect/mediatek/Makefile
-> +++ b/drivers/interconnect/mediatek/Makefile
-> @@ -3,4 +3,4 @@
->   obj-$(CONFIG_INTERCONNECT_MTK_DVFSRC_EMI) += icc-emi.o
->   obj-$(CONFIG_INTERCONNECT_MTK_MT8183) += mt8183.o
->   obj-$(CONFIG_INTERCONNECT_MTK_MT8195) += mt8195.o
-> -obj-$(CONFIG_INTERCONNECT_MTK_MT8195) += mt8196.o
-> +obj-$(CONFIG_INTERCONNECT_MTK_MT8196) += mt8196.o
-> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> index d0d318223..800fbd560 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -873,7 +873,6 @@ config LEDS_UPBOARD
->   	  This driver can also be built as a module. If so the module will be
->   	  called leds-upboard.
->   
-> -comment "LED driver for blink(1) USB RGB LED is under Special HID drivers (HID_THINGM)"
->   
->   config LEDS_BLINKM
->   	tristate "LED support for the BlinkM I2C RGB LED"
-> diff --git a/drivers/media/dvb-core/dvb_net.c b/drivers/media/dvb-core/dvb_net.c
-> index a2159b2bc..3b503695e 100644
-> --- a/drivers/media/dvb-core/dvb_net.c
-> +++ b/drivers/media/dvb-core/dvb_net.c
-> @@ -68,7 +68,7 @@ static inline __u32 iov_crc32( __u32 c, struct kvec *iov, unsigned int cnt )
->   
->   #define DVB_NET_MULTICAST_MAX 10
->   
-> -#ifdef DVB_ULE_DEBUG
-> +#ifdef CONFIG_DVB_ULE_DEBUG
->   /*
->    * The code inside DVB_ULE_DEBUG keeps a history of the
->    * last 100 TS cells processed.
-> @@ -320,7 +320,7 @@ static int dvb_net_ule_new_ts_cell(struct dvb_net_ule_handle *h)
->   {
->   	/* We are about to process a new TS cell. */
->   
-> -#ifdef DVB_ULE_DEBUG
-> +#ifdef CONFIG_DVB_ULE_DEBUG
->   	if (ule_where >= &ule_hist[100*TS_SZ])
->   		ule_where = ule_hist;
->   	memcpy(ule_where, h->ts, TS_SZ);
-> @@ -659,7 +659,7 @@ static void dvb_net_ule_check_crc(struct dvb_net_ule_handle *h,
->   			h->ts_remain > 2 ?
->   				*(unsigned short *)h->from_where : 0);
->   
-> -	#ifdef DVB_ULE_DEBUG
-> +	#ifdef CONFIG_DVB_ULE_DEBUG
->   		hexdump(iov[0].iov_base, iov[0].iov_len);
->   		hexdump(iov[1].iov_base, iov[1].iov_len);
->   		hexdump(iov[2].iov_base, iov[2].iov_len);
-> diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-> index 5a764cec8..f81d1f31a 100644
-> --- a/drivers/regulator/Makefile
-> +++ b/drivers/regulator/Makefile
-> @@ -107,7 +107,7 @@ obj-$(CONFIG_REGULATOR_MP886X) += mp886x.o
->   obj-$(CONFIG_REGULATOR_MPQ7920) += mpq7920.o
->   obj-$(CONFIG_REGULATOR_MT6311) += mt6311-regulator.o
->   obj-$(CONFIG_REGULATOR_MT6315) += mt6315-regulator.o
-> -obj-$(CONFIG_REGULATOR_MT6315)  += mt6316-regulator.o
-> +obj-$(CONFIG_REGULATOR_MT6316)  += mt6316-regulator.o
->   obj-$(CONFIG_REGULATOR_MT6323)	+= mt6323-regulator.o
->   obj-$(CONFIG_REGULATOR_MT6331)	+= mt6331-regulator.o
->   obj-$(CONFIG_REGULATOR_MT6332)	+= mt6332-regulator.o
+> >
+> > Enable the SuperBlitter operations only for the layouts they implement:
+> > 8-bpp packed pixels and 16/32-bpp truecolor.  Keep the existing software
+> > operations for all other external formats.
+> >
+> > Fixes: d463633d63e6 ("fbdev: atafb: Add support for SuperVidel's SuperBlitter")
+> > Signed-off-by: Linmao Li <lilinmao@kylinos.cn>
+> > ---
+> >  drivers/video/fbdev/atafb.c | 6 +++++-
+> >  1 file changed, 5 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+> > index 5bca34c45cef3..c3011b61a94b9 100644
+> > --- a/drivers/video/fbdev/atafb.c
+> > +++ b/drivers/video/fbdev/atafb.c
+> > @@ -3360,7 +3360,11 @@ static int __init atafb_probe(struct platform_device *pdev)
+> >               memset (screen_base, 0, external_len);
+> >
+> >               /* framebuffer in SV RAM: enable the SuperBlitter */
+> > -             if (external_addr >= 0xa0000000) {
+> > +             if (external_addr >= 0xa0000000 &&
+> > +                 ((external_pmode == FB_TYPE_PACKED_PIXELS &&
+> > +                   external_depth == 8) ||
+> > +                  (external_pmode == -1 &&
+> > +                   (external_depth == 16 || external_depth == 32)))) {
+> >                       svblit_regs = ioremap(SVBLIT_REGS_PHYS, 0x100);
+> >                       if (svblit_regs) {
+> >                               svblit_fw = svblit_rd(SVBLIT_VERSION) & 0x1ff;
+> >
+>
+> Otherwise, LGTM.
+>
+> @Geert: can you remember if pixel format or bit depth of an external
+> framebuffer can be changed at runtime using fbset??
+
+I am no Atari expert, but IIRC all external framebuffers rely on
+being fully set-up before Linux boots?
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

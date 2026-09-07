@@ -1,191 +1,252 @@
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 065902D9796
-	for <linux-fbdev@vger.kernel.org>; Mon,  7 Sep 2026 02:18:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9478340BCB2;
+	Mon,  7 Sep 2026 06:59:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788747535; cv=none; b=XBpVM9WTDLE0LEeBPR+tCneHv7fwlbAbk2TC98J+JwOkGzAKLRc0F3jVWuyDYQDHGefBZOt7MrRPgrX6xXf5/cY5Wk4QsxuEzO0/UzWxsOwmTEMP7I7j2WCz7o3d7XJKE2RRpG+z1UISfN71QwD5/ZplT68Q6k+jKtGOilBgv9Q=
+	t=1788764381; cv=none; b=k7x16G67u4kptFBBBGdg3Gj02wAdT9V1jZfNU19ZUOJe8i4JxkhuT1rX58tTeU2Q3RqIJSbtZutDatbRnpvChdbzCjZXnXRhNMNBPREgeivz5jTgd1NW5lSn+cTVTdf2a91D6/8hMAv19GFBfacu8D1iqJ8O8KWHElBQT3NAtQw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788747535; c=relaxed/simple;
-	bh=tAjnkzKNrxs4iWZRhFTUOpI2X3brnrApqpb8xgY0oPs=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OH5q0tbbgvkZw8U052ABE28rctqPDd4faSre6lqMqV6ewT2NhU8dnzl/FnBFpNEhhDhMtfpeS6dnjKSDhZ7+6wuKb+1oaV0EBK+YFTriekBO0TAXtddK3Mxe3Ec95ardOS8W9uA5GzAmU+Mm0qsL3U83npisZEMJCuT/aHSbTl0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=piIhbASF; arc=none smtp.client-ip=209.85.221.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1788764381; c=relaxed/simple;
+	bh=68zq9K51Ay0P16Ip57VHSJhSwyjNPhK8KfIuClbnaR0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=iA8RBV3l0+TAVSIa+lR6TUMXugHL4uHcFYxcudxszzTKaBn4RYngZSsNnSQdW92j+fP2yNJGcauZZO+WCODmfzC56NlZy3EBOrBG1YLCuapthI08H9UD/3RXI7f6jqvMJ2/p8MmVIIOg8w1fvKhIwUXfY4L6IP++RCxt+b9PLKI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=wlIPwCRp; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Cx9KJBXU; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=e0rZrifk; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=5f9VZldn; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="piIhbASF"
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-482e257a23aso2025828f8f.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 06 Sep 2026 19:18:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788747529; x=1789352329; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=AIZYWJVjQUnBNnHeOHBqUSKoQJf+SCAcPIAInF4Y+OU=;
-        b=piIhbASFwQ5V2inJkGKKo0dA6rhveg1xPPy94ksmTHRAHO9tkWqBvRwS4/pN78G+OB
-         JVhCDaOfY8bJTIyiWTn3pHSjL9w0Z2LR37Ip4nxFU0CK0VvWUbx8ctA8fOF/CqC+ZHZ1
-         eZ9LRb1vXs/xc28MBxVwJktIq6cdGw7ZGaOvZuaNiFgqz7Y6M/HISHJ4hcVzoHnFErZY
-         /QqbQv1w+EyOp6TgkDAYMeKwaYhXmJLG+Zw4ahugVMaHeGOnZIu39BgjAEVjbHXcHlzR
-         EWxPyLBaJ31w/+JnJYoLj2Xi6KPX9RvIi51rdnSFsv9uoQBDndxu5+HRztbmcVhvpJfb
-         mVqA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788747529; x=1789352329;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=AIZYWJVjQUnBNnHeOHBqUSKoQJf+SCAcPIAInF4Y+OU=;
-        b=jyctCqJHgIZACRn13JKqcEqIGN6l0OIxS9RglIqXXait080JXYaIHid8pCbwvpPZZR
-         +e9YgGljf25WZBgy29USAdU26WVaqKJnJ64hhtBy1Bu/1UGsbh5Zmqvifkua3v+1rEbi
-         LvLb53BhXg7dqx8d/r8Xq7GFOHLKQmqzKwCSrOpdSzr3r7HC+uagFwkRg6plTCFPB/DJ
-         SWvxMkbaaQMhsiZjDbo2Y1bKK7/UZkU7sREfrW37lk1Bl5/D5SJv20loLNgGtK+BgrZU
-         +n3Ogca+JktuBSeu7s8Ib+xP0/djD2ygpijysFuyRb6rWwnX7Yv867bTG61sRM7FPxoh
-         3M/w==
-X-Forwarded-Encrypted: i=1; AKwUvBzlOLuWdPNOycRbH0PQdxlMccYNzrNo0Tart4BjYjDzTXwjoDcEU1iNlaXWzNqd2omnF6qD9aebSw+F/g==@vger.kernel.org
-X-Gm-Message-State: AFuF++krwyCOZ3Ba+CRgOa0u6Z5iJHQFkvc6bHFbHdatS6Z7JQ3c4Gfy
-	bcoTBxzrZuRHigLud+AoRTiqJAgAHjAp8V4A9J/hwoL/SK5qEpTzKXEu
-X-Gm-Gg: AYBFou1o9QjNn8HCB1N3RUFWtjlvuYbD8qO5ScGmUCEMrl1dc4pkBV8jv6DMuH9EZgV
-	ztubt4gW16WU4wdtQyeq61PvyKAMV87Igk36BQ+iKUmu/7DFUJiCO6tiuUUgJOBZAmfZOJw9EkI
-	iwajfZ8eulwzKo2VK0bZOD85UWmxK2YcXDbSCfYrblm6Jw2lmiZcAZ0TgIXPTGh1yCHDyJIqCEB
-	8gkuqS73UcOSob2j0xyca0W4BDpUweWFwzPVuGjcCEjidudA3EvGdQC49KjzA8052weK+SinseS
-	NS/5daIoZhi9jaPHROB6nbPMr2HQViIsSiPx0QTkdSvrjoKs/ruZZDlrcGC+KWip2wqBznL09xI
-	7JFpeaiieZyoxfHxGYmG54Srigq8HuorhbGz2NtSWkgaaaT0UtneoqGIoaxes476dj75rdl7oAy
-	N/uv33VCp9PmT+GWfr1+jBd1/uDA5k0fGhbql8VVr1lM2l67cDi+bCy8K2MEnYDyYNRv+WibNfL
-	4KhrlZpHpp2mj+93Mu6Qr0hoJUkGhDw6oADvLc4J2kUjFknqxCUoq2q1CkYV8lKvChDo3xmhL9b
-	eIpzPG2GN7gU+gPiIWXCBVk60JHqb9W+9Scb/lLryXHGfGr/dE3CSHKfSKsI/mj7n2ArxPFKYr6
-	G7ydqbdrDT3q1xb/h
-X-Received: by 2002:a05:6000:4703:b0:485:93c5:856e with SMTP id ffacd0b85a97d-48593c58629mr10071101f8f.9.1788747529298;
-        Sun, 06 Sep 2026 19:18:49 -0700 (PDT)
-Received: from MacBook-Pro-von-Karl.localdomain (dynamic-2a02-3100-b0c9-3601-9daa-d59e-970b-f46c.310.pool.telefonica.de. [2a02:3100:b0c9:3601:9daa:d59e:970b:f46c])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48588135600sm21411912f8f.2.2026.09.06.19.18.48
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sun, 06 Sep 2026 19:18:48 -0700 (PDT)
-From: Karl Mehltretter <kmehltretter@gmail.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Karl Mehltretter <kmehltretter@gmail.com>,
-	Shixiong Ou <oushixiong@kylinos.cn>,
-	Chintan Patel <chintanlike@gmail.com>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	stable@vger.kernel.org
-Subject: [PATCH] fbdev: sh_mobile_lcdcfb: Restore the per-overlay sysfs attributes
-Date: Mon,  7 Sep 2026 04:18:44 +0200
-Message-Id: <20260907021844.25497-1-kmehltretter@gmail.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wlIPwCRp";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Cx9KJBXU";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="e0rZrifk";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="5f9VZldn"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 5FA391F750;
+	Mon,  7 Sep 2026 06:59:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1788764373; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=do8tCb/WEQVB5WcbQ+nX9pTcXqhCTxoFf3t+kQA7Cd8=;
+	b=wlIPwCRpbSjG1YwZQLRGeVaoTAbjDlZ5mQUVIr4JXo/iBT3a4Q0iH6q3KuiIBzJUKfxnX9
+	/Oxidgg3nxHJKpUzDbw6cBurL8wqFfjnExlFpplf04hO2aRAAa7RStxV7HsL02DYMbRZNr
+	3UDtjGBoTvoHszkZaN/z9Q3bUK9ze6g=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1788764373;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=do8tCb/WEQVB5WcbQ+nX9pTcXqhCTxoFf3t+kQA7Cd8=;
+	b=Cx9KJBXUtp5fhYyVV4hzQS2p48f2jp5NsH1gki5wAXk89bfUrjPfS2krewBdl6mcSHoSJy
+	NapMeisj3ThAF8Dg==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1788764369; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=do8tCb/WEQVB5WcbQ+nX9pTcXqhCTxoFf3t+kQA7Cd8=;
+	b=e0rZrifkg5vEXUNAp301FUAS6arueahh02Qtfk9f0nOM+BgnLLgvHz6Sgvz7rpoid5c1qs
+	BFjB+Zfp+bwj+/p7iA4LqSH5FFkiqvlLvqZjogfaaPbwca795R1Clm3gRhoh2ncfN5mBo9
+	e+bwzWMbc0kej1wlII9bg9vhYMRLVqQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1788764369;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=do8tCb/WEQVB5WcbQ+nX9pTcXqhCTxoFf3t+kQA7Cd8=;
+	b=5f9VZldnsThtR5Ool3IzbjkvtPK6c0RIReUaSQm+sGldhPOHl7PvojatmPqO4560OylauL
+	+3SEaaWT2ZkZcbCw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E7AE513432;
+	Mon,  7 Sep 2026 06:59:28 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id vHVEN9BgnmpDaQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 07 Sep 2026 06:59:28 +0000
+Message-ID: <22707a1f-970b-4309-905d-13ac794c51fa@suse.de>
+Date: Mon, 7 Sep 2026 08:59:28 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5] Kconfig: fix typos in core makefiles and purge
+ defective DVB debug (v5)
+To: Breno Rodrigues Alves <breno3011alves@gmail.com>,
+ torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, arnd@arndb.de,
+ linux-clk@vger.kernel.org, linux-input@vger.kernel.org,
+ linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-sound@vger.kernel.org,
+ linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
+ linux-security-module@vger.kernel.org
+References: <20260905003005.118245-1-breno3011alves@gmail.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20260905003005.118245-1-breno3011alves@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Spam-Level: 
+X-Spam-Score: -2.80
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	MIME_GOOD(-0.10)[text/plain];
+	FREEMAIL_TO(0.00)[gmail.com,linux-foundation.org];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	MID_RHS_MATCH_FROM(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:mid]
 
-The ovl_* files documented in
-Documentation/ABI/testing/sysfs-devices-platform-sh_mobile_lcdc_fb no
-longer exist.
+Please stop spamming this list with revisions.
 
-Commit a979182a2453 ("fbdev: lcdcfb: Register sysfs groups through driver
-core") moved the attributes from each overlay's framebuffer device to
-the platform driver's dev_groups and renamed them overlay_*. There is
-now only one set of attributes for the whole LCDC. The callbacks still
-expect dev_get_drvdata() to return a struct fb_info, but the platform
-device holds struct sh_mobile_lcdc_priv, so they access the wrong
-structure.
+Am 05.09.26 um 02:30 schrieb Breno Rodrigues Alves:
+> Automated review from Sashiko AI revealed that re-enabling the legacy
+> DVB_ULE_DEBUG code via CONFIG_DVB_ULE_DEBUG exposes severe race conditions
+> on global state variables, leading to out-of-bounds memory corruption.
+> Additionally, the debug block suffers from undeclared identifiers (TS_SZ).
+>
+> Following the core kernel principle of eliminating dangerous, unmaintained
+> code, this patch completely extirpates the defective DVB_ULE_DEBUG block
+> from dvb_net.c and purges its corresponding configuration symbol from
+> the Kconfig tree.
+>
+> This version retains the verified MediaTek bugfixes and ghost purges:
+>    - Fixes MediaTek interconnect typo mapping mt8196.o to MT8196.
+>    - Fixes MediaTek regulator typo mapping mt6316-regulator to MT6316.
+>    - Cleans up the dangling comment in drivers/leds/Kconfig.
+>    - Purges verified legacy ghost weight.
+>
+> Signed-off-by: Breno Rodrigues Alves <breno3011alves@gmail.com>
+> ---
+>   drivers/interconnect/mediatek/Makefile | 2 +-
+>   drivers/leds/Kconfig                   | 1 -
+>   drivers/media/dvb-core/dvb_net.c       | 6 +++---
+>   drivers/regulator/Makefile             | 2 +-
+>   4 files changed, 5 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/interconnect/mediatek/Makefile b/drivers/interconnect/mediatek/Makefile
+> index 6bd656668..64170ab16 100644
+> --- a/drivers/interconnect/mediatek/Makefile
+> +++ b/drivers/interconnect/mediatek/Makefile
+> @@ -3,4 +3,4 @@
+>   obj-$(CONFIG_INTERCONNECT_MTK_DVFSRC_EMI) += icc-emi.o
+>   obj-$(CONFIG_INTERCONNECT_MTK_MT8183) += mt8183.o
+>   obj-$(CONFIG_INTERCONNECT_MTK_MT8195) += mt8195.o
+> -obj-$(CONFIG_INTERCONNECT_MTK_MT8195) += mt8196.o
+> +obj-$(CONFIG_INTERCONNECT_MTK_MT8196) += mt8196.o
+> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> index d0d318223..800fbd560 100644
+> --- a/drivers/leds/Kconfig
+> +++ b/drivers/leds/Kconfig
+> @@ -873,7 +873,6 @@ config LEDS_UPBOARD
+>   	  This driver can also be built as a module. If so the module will be
+>   	  called leds-upboard.
+>   
+> -comment "LED driver for blink(1) USB RGB LED is under Special HID drivers (HID_THINGM)"
+>   
+>   config LEDS_BLINKM
+>   	tristate "LED support for the BlinkM I2C RGB LED"
+> diff --git a/drivers/media/dvb-core/dvb_net.c b/drivers/media/dvb-core/dvb_net.c
+> index a2159b2bc..3b503695e 100644
+> --- a/drivers/media/dvb-core/dvb_net.c
+> +++ b/drivers/media/dvb-core/dvb_net.c
+> @@ -68,7 +68,7 @@ static inline __u32 iov_crc32( __u32 c, struct kvec *iov, unsigned int cnt )
+>   
+>   #define DVB_NET_MULTICAST_MAX 10
+>   
+> -#ifdef DVB_ULE_DEBUG
+> +#ifdef CONFIG_DVB_ULE_DEBUG
+>   /*
+>    * The code inside DVB_ULE_DEBUG keeps a history of the
+>    * last 100 TS cells processed.
+> @@ -320,7 +320,7 @@ static int dvb_net_ule_new_ts_cell(struct dvb_net_ule_handle *h)
+>   {
+>   	/* We are about to process a new TS cell. */
+>   
+> -#ifdef DVB_ULE_DEBUG
+> +#ifdef CONFIG_DVB_ULE_DEBUG
+>   	if (ule_where >= &ule_hist[100*TS_SZ])
+>   		ule_where = ule_hist;
+>   	memcpy(ule_where, h->ts, TS_SZ);
+> @@ -659,7 +659,7 @@ static void dvb_net_ule_check_crc(struct dvb_net_ule_handle *h,
+>   			h->ts_remain > 2 ?
+>   				*(unsigned short *)h->from_where : 0);
+>   
+> -	#ifdef DVB_ULE_DEBUG
+> +	#ifdef CONFIG_DVB_ULE_DEBUG
+>   		hexdump(iov[0].iov_base, iov[0].iov_len);
+>   		hexdump(iov[1].iov_base, iov[1].iov_len);
+>   		hexdump(iov[2].iov_base, iov[2].iov_len);
+> diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+> index 5a764cec8..f81d1f31a 100644
+> --- a/drivers/regulator/Makefile
+> +++ b/drivers/regulator/Makefile
+> @@ -107,7 +107,7 @@ obj-$(CONFIG_REGULATOR_MP886X) += mp886x.o
+>   obj-$(CONFIG_REGULATOR_MPQ7920) += mpq7920.o
+>   obj-$(CONFIG_REGULATOR_MT6311) += mt6311-regulator.o
+>   obj-$(CONFIG_REGULATOR_MT6315) += mt6315-regulator.o
+> -obj-$(CONFIG_REGULATOR_MT6315)  += mt6316-regulator.o
+> +obj-$(CONFIG_REGULATOR_MT6316)  += mt6316-regulator.o
+>   obj-$(CONFIG_REGULATOR_MT6323)	+= mt6323-regulator.o
+>   obj-$(CONFIG_REGULATOR_MT6331)	+= mt6331-regulator.o
+>   obj-$(CONFIG_REGULATOR_MT6332)	+= mt6332-regulator.o
 
-Restore the documented names and register the group on each overlay's
-framebuffer device with device_add_groups(). Remove it with
-device_remove_groups() before unregistering the framebuffer. Skip
-creation when info->dev is NULL, as the old device_create_file() calls did.
-
-Drop the CONFIG_FB_DEVICE guard, since the driver already depends on it.
-
-Fixes: a979182a2453 ("fbdev: lcdcfb: Register sysfs groups through driver core")
-Cc: stable@vger.kernel.org
-Assisted-by: LLM
-Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
----
-Found while reviewing the sysfs ABI documentation.
-
-Compile-tested only (allmodconfig, W=1), I have no SH-Mobile hardware.
-
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 37 +++++++++++++++++---------
- 1 file changed, 24 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index e8324b01700f..18fc4e465283 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -1337,22 +1337,24 @@ overlay_rop3_store(struct device *dev, struct device_attribute *attr,
- 	return count;
- }
- 
--static DEVICE_ATTR_RW(overlay_alpha);
--static DEVICE_ATTR_RW(overlay_mode);
--static DEVICE_ATTR_RW(overlay_position);
--static DEVICE_ATTR_RW(overlay_rop3);
--
--static struct attribute *overlay_sysfs_attrs[] __maybe_unused = {
--	&dev_attr_overlay_alpha.attr,
--	&dev_attr_overlay_mode.attr,
--	&dev_attr_overlay_position.attr,
--	&dev_attr_overlay_rop3.attr,
-+static struct device_attribute dev_attr_ovl_alpha =
-+	__ATTR(ovl_alpha, 0644, overlay_alpha_show, overlay_alpha_store);
-+static struct device_attribute dev_attr_ovl_mode =
-+	__ATTR(ovl_mode, 0644, overlay_mode_show, overlay_mode_store);
-+static struct device_attribute dev_attr_ovl_position =
-+	__ATTR(ovl_position, 0644, overlay_position_show, overlay_position_store);
-+static struct device_attribute dev_attr_ovl_rop3 =
-+	__ATTR(ovl_rop3, 0644, overlay_rop3_show, overlay_rop3_store);
-+
-+static struct attribute *overlay_sysfs_attrs[] = {
-+	&dev_attr_ovl_alpha.attr,
-+	&dev_attr_ovl_mode.attr,
-+	&dev_attr_ovl_position.attr,
-+	&dev_attr_ovl_rop3.attr,
- 	NULL,
- };
- 
--#ifdef CONFIG_FB_DEVICE
- ATTRIBUTE_GROUPS(overlay_sysfs);
--#endif
- 
- static const struct fb_fix_screeninfo sh_mobile_lcdc_overlay_fix  = {
- 	.id =		"SH Mobile LCDC",
-@@ -1513,6 +1515,7 @@ sh_mobile_lcdc_overlay_fb_unregister(struct sh_mobile_lcdc_overlay *ovl)
- 	if (info == NULL || info->dev == NULL)
- 		return;
- 
-+	device_remove_groups(info->dev, overlay_sysfs_groups);
- 	unregister_framebuffer(ovl->info);
- }
- 
-@@ -1530,6 +1533,15 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
- 	if (ret < 0)
- 		return ret;
- 
-+	/* The framebuffer device is optional, see fb_device_create(). */
-+	if (info->dev) {
-+		ret = device_add_groups(info->dev, overlay_sysfs_groups);
-+		if (ret < 0) {
-+			unregister_framebuffer(info);
-+			return ret;
-+		}
-+	}
-+
- 	dev_info(lcdc->dev, "registered %s/overlay %u as %dx%d %dbpp.\n",
- 		 dev_name(lcdc->dev), ovl->index, info->var.xres,
- 		 info->var.yres, info->var.bits_per_pixel);
-@@ -2637,7 +2649,6 @@ static int sh_mobile_lcdc_probe(struct platform_device *pdev)
- static struct platform_driver sh_mobile_lcdc_driver = {
- 	.driver		= {
- 		.name		= "sh_mobile_lcdc_fb",
--		.dev_groups	= overlay_sysfs_groups,
- 		.pm		= &sh_mobile_lcdc_dev_pm_ops,
- 	},
- 	.probe		= sh_mobile_lcdc_probe,
-
-base-commit: 986c24e0fe44f844b44d365b71ce831947f50298
 -- 
-2.53.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
+
+

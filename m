@@ -1,139 +1,191 @@
-Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB2A215FA81
-	for <linux-fbdev@vger.kernel.org>; Sun,  6 Sep 2026 17:29:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.214.179
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788715752; cv=pass; b=HnEASFmnNK6g9uYZrQ22cxCg/zHaEl2dLLBXwTxNKjTSRvXDv36/2lxonFOLwDz+1tZzgBieqQOPYPK42dT/sUtrVvQoMaEv9PoFG2+ilppTGdVi/x4/M7olRgR5zDvd4gA948umXjypMzQhtHZDqmmrr9NwlW3JjtkGh7DY2Qs=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788715752; c=relaxed/simple;
-	bh=5DEiI0XOfcZ/AmMcsore77sSwCupcFULPw2OZjhCwgo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=KCFp7j5iuN3plHOjDh8A4zUuH7ay6P4G8LDgiKdLYPGj9T0PYICoIg9yn08t4ddyd1dXuDWW0kSIXvHKU09pg0+b9afr83y3pApqqn7VOs8UlMWZH+nHBKapVLvx1pr6RNUOW5gM/xKmzwhaTxIl2X/Ylcib6wASF1cEjqG0SRQ=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OF8j2/e9; arc=pass smtp.client-ip=209.85.214.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 065902D9796
+	for <linux-fbdev@vger.kernel.org>; Mon,  7 Sep 2026 02:18:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788747535; cv=none; b=XBpVM9WTDLE0LEeBPR+tCneHv7fwlbAbk2TC98J+JwOkGzAKLRc0F3jVWuyDYQDHGefBZOt7MrRPgrX6xXf5/cY5Wk4QsxuEzO0/UzWxsOwmTEMP7I7j2WCz7o3d7XJKE2RRpG+z1UISfN71QwD5/ZplT68Q6k+jKtGOilBgv9Q=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788747535; c=relaxed/simple;
+	bh=tAjnkzKNrxs4iWZRhFTUOpI2X3brnrApqpb8xgY0oPs=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OH5q0tbbgvkZw8U052ABE28rctqPDd4faSre6lqMqV6ewT2NhU8dnzl/FnBFpNEhhDhMtfpeS6dnjKSDhZ7+6wuKb+1oaV0EBK+YFTriekBO0TAXtddK3Mxe3Ec95ardOS8W9uA5GzAmU+Mm0qsL3U83npisZEMJCuT/aHSbTl0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=piIhbASF; arc=none smtp.client-ip=209.85.221.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OF8j2/e9"
-Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2d6f9e2f681so30443675ad.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 06 Sep 2026 10:29:10 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1788715750; cv=none;
-        d=google.com; s=arc-20260327;
-        b=XvxqyjeZNK7RljgQiNgVOx3U36IU/YwfTcFmd141L0/GTyw1ccaMEGWw90Hohd8iaj
-         4kMHKc/WRMbpmAxsvNUeEZbyHYxMpJFhbbZkOGhHHy8qgC+icWeYOwZUIq9WbWGItphc
-         MRVTmDy4Y2v0s3E+0gVV4Qoftl4kyHXQD3FDrRl9gYpds+OL21mBIxAqRig0vGRt6voN
-         dQnBoaGl5Tx4Ri49RdDIAFADR6tnwd7tGW//mBJYgeNiKHdB5KtfuRvu4N5DtnJExFbz
-         teEF30FLtOx5Zs43Fl5AXbXKI8uYo+L6dbLbsR03wDQQlb7MY2Um6/IKIVydOOH+WHzu
-         JjgA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=5DEiI0XOfcZ/AmMcsore77sSwCupcFULPw2OZjhCwgo=;
-        fh=jeop+Q5rlAlK+vKDIzdKvbKUZQaSSfF/R2KoeAIXM8g=;
-        b=d+AMV6eMrDpUmVdsll+8GAWBsz1CgwUlE/G93lFbhcTumY5HNomchp2k4b3E3njQYJ
-         9XB5ACb8DWZW23ZHHysyEO35A9V7UiMlVN9WevjHmNeuZtTANkdFZpCy3UNmE+q6jxJ7
-         HFnme52WX87E/qKcFaRUL/4ddTAgJ+SiGg5gqfr6x114ThnJrpMfUDbrSU/BzM55oQjg
-         9MIxIhzBzDgPaVIm4SC1RkxUmvWaEdkk/miH3kcoJnuRD5vAhjT+wJoc6ou4yd6SaDiJ
-         9+v28if3wKbhjfWc8nZg7XznvpvHexFKtcc1N9M/RkgN8nxpjr+80RTl5mrIL4EVXJIa
-         JfQw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="piIhbASF"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-482e257a23aso2025828f8f.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 06 Sep 2026 19:18:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788715750; x=1789320550; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=5DEiI0XOfcZ/AmMcsore77sSwCupcFULPw2OZjhCwgo=;
-        b=OF8j2/e9XaMRw5ga8VMjNKTjcE7mR8jmZcAz5h3CAi+h5rCxFnYnEfwtjWc3daAtRK
-         wWR3rt+PNnSrR1dFm+5ceUKKbPr4kqSvRyCTz/LEFdlh9sh8dDoqIPNAsqZystl9Cnav
-         h/mCpA3lAUX61QIRfNqgQASSNlTzGgBGgTW7NJkBEbG7kLNVL7WTiYZVgCutRYCZqfmg
-         fon2Fm5XPPuRiy6UXv9I2qR0SiNCt/QmbKjqeCqDDbm/ZwXZP15ige2qp3w9gsZ561Qi
-         bZ9IXQ9hJe0u3MpgmjeCLTpgaXSNYVxnC4DC2pc10S1zGMdMJ+4zTlsFdSmNuItXxe5+
-         Hjnw==
+        d=gmail.com; s=20251104; t=1788747529; x=1789352329; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=AIZYWJVjQUnBNnHeOHBqUSKoQJf+SCAcPIAInF4Y+OU=;
+        b=piIhbASFwQ5V2inJkGKKo0dA6rhveg1xPPy94ksmTHRAHO9tkWqBvRwS4/pN78G+OB
+         JVhCDaOfY8bJTIyiWTn3pHSjL9w0Z2LR37Ip4nxFU0CK0VvWUbx8ctA8fOF/CqC+ZHZ1
+         eZ9LRb1vXs/xc28MBxVwJktIq6cdGw7ZGaOvZuaNiFgqz7Y6M/HISHJ4hcVzoHnFErZY
+         /QqbQv1w+EyOp6TgkDAYMeKwaYhXmJLG+Zw4ahugVMaHeGOnZIu39BgjAEVjbHXcHlzR
+         EWxPyLBaJ31w/+JnJYoLj2Xi6KPX9RvIi51rdnSFsv9uoQBDndxu5+HRztbmcVhvpJfb
+         mVqA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788715750; x=1789320550;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=5DEiI0XOfcZ/AmMcsore77sSwCupcFULPw2OZjhCwgo=;
-        b=HhxcvVMyQOU+mNJFTPL/mSIfCfYgX2DeV4hiy1N2qWzpmdtb651HmzDMgx5Zvtl2XH
-         O5sBAcyjsCOlGOjldOk4gVO537E117LyqUA5UsxGvtYDkT2h725FM4sPco6BupI5k1Qp
-         m0atQ+MpLwIDWoCAYl3kzk0xnUeFLKJmVIpnbkxI8qogS5q9eZ7yocmL6xlqWOJWBA+k
-         qeyogiE1rPM2y8zPlvk3oqO67oZPwLEGRobQ0EmTM9k+qmu8iVnHnZ9mbo+mo4oLrXX0
-         mnHA22+ad3BNIYVb3EvAz+NLaKc0fUKCw/OZufxCMjbnzJvInwBSjsGnOwZOxjvq5vh9
-         EfSg==
-X-Forwarded-Encrypted: i=1; AKwUvBwvCDor5lQxQ2DfOu3oPqjw51QDglNPSimpYvRdz1HYEKnG0gdx2kJ0KI50AaNCaK8PZE6hIWdNXsUbVw==@vger.kernel.org
-X-Gm-Message-State: AFuF++lFrd0oeYA5LZ9sUiWN3r6AakJUWfg4fCoHD7f18vuRj0pNzfWV
-	Xe5df5xrN4CG02VVHTXEQtQMdNZdo4nDmhpycqRbPUB1ZtEjFGkSqhlVHc/S+yDbpk2R6yaMQxf
-	nmMwvQWenT41MWRMNEVypS9mG16j7NOI=
-X-Gm-Gg: AYBFou1rbpoNw8ozEXuGt3pyam+gmEUUyxTNgl7gl8iJiiSdv9u4RkPPjAajPNKccmO
-	M08vcK5fvt9PdZrLdnGJcGNcV27QfWUFl0ifkxzYdJsmfDvUYabcf5Dabxg1tpgRWCx+ZYgzmUa
-	0+g6TgTzgt/+epqfce5Fbgl7Oh4NvHOdUwZHWliMCj9fQtsVMzAw9CWULD/2vzu+UgkBe79071/
-	9E5MD5T3xCLwu3NCaK8cB7wEJmmAB6SNsgMXHEyJ36ojc4WJzHT2HIVxoy0m6fo8kktD++YVtGB
-	EEu0eEtVo3kjM7NpPBjcVlUL4EfmOzfdWLZD7TiH0QSLGih80W5Yhy0L7nUuhL2PkKZsdgFmQXx
-	f1Q==
-X-Received: by 2002:a17:902:8a8d:b0:2ca:e19c:97b with SMTP id
- d9443c01a7336-2db122edd50mr199148445ad.5.1788715750074; Sun, 06 Sep 2026
- 10:29:10 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1788747529; x=1789352329;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=AIZYWJVjQUnBNnHeOHBqUSKoQJf+SCAcPIAInF4Y+OU=;
+        b=jyctCqJHgIZACRn13JKqcEqIGN6l0OIxS9RglIqXXait080JXYaIHid8pCbwvpPZZR
+         +e9YgGljf25WZBgy29USAdU26WVaqKJnJ64hhtBy1Bu/1UGsbh5Zmqvifkua3v+1rEbi
+         LvLb53BhXg7dqx8d/r8Xq7GFOHLKQmqzKwCSrOpdSzr3r7HC+uagFwkRg6plTCFPB/DJ
+         SWvxMkbaaQMhsiZjDbo2Y1bKK7/UZkU7sREfrW37lk1Bl5/D5SJv20loLNgGtK+BgrZU
+         +n3Ogca+JktuBSeu7s8Ib+xP0/djD2ygpijysFuyRb6rWwnX7Yv867bTG61sRM7FPxoh
+         3M/w==
+X-Forwarded-Encrypted: i=1; AKwUvBzlOLuWdPNOycRbH0PQdxlMccYNzrNo0Tart4BjYjDzTXwjoDcEU1iNlaXWzNqd2omnF6qD9aebSw+F/g==@vger.kernel.org
+X-Gm-Message-State: AFuF++krwyCOZ3Ba+CRgOa0u6Z5iJHQFkvc6bHFbHdatS6Z7JQ3c4Gfy
+	bcoTBxzrZuRHigLud+AoRTiqJAgAHjAp8V4A9J/hwoL/SK5qEpTzKXEu
+X-Gm-Gg: AYBFou1o9QjNn8HCB1N3RUFWtjlvuYbD8qO5ScGmUCEMrl1dc4pkBV8jv6DMuH9EZgV
+	ztubt4gW16WU4wdtQyeq61PvyKAMV87Igk36BQ+iKUmu/7DFUJiCO6tiuUUgJOBZAmfZOJw9EkI
+	iwajfZ8eulwzKo2VK0bZOD85UWmxK2YcXDbSCfYrblm6Jw2lmiZcAZ0TgIXPTGh1yCHDyJIqCEB
+	8gkuqS73UcOSob2j0xyca0W4BDpUweWFwzPVuGjcCEjidudA3EvGdQC49KjzA8052weK+SinseS
+	NS/5daIoZhi9jaPHROB6nbPMr2HQViIsSiPx0QTkdSvrjoKs/ruZZDlrcGC+KWip2wqBznL09xI
+	7JFpeaiieZyoxfHxGYmG54Srigq8HuorhbGz2NtSWkgaaaT0UtneoqGIoaxes476dj75rdl7oAy
+	N/uv33VCp9PmT+GWfr1+jBd1/uDA5k0fGhbql8VVr1lM2l67cDi+bCy8K2MEnYDyYNRv+WibNfL
+	4KhrlZpHpp2mj+93Mu6Qr0hoJUkGhDw6oADvLc4J2kUjFknqxCUoq2q1CkYV8lKvChDo3xmhL9b
+	eIpzPG2GN7gU+gPiIWXCBVk60JHqb9W+9Scb/lLryXHGfGr/dE3CSHKfSKsI/mj7n2ArxPFKYr6
+	G7ydqbdrDT3q1xb/h
+X-Received: by 2002:a05:6000:4703:b0:485:93c5:856e with SMTP id ffacd0b85a97d-48593c58629mr10071101f8f.9.1788747529298;
+        Sun, 06 Sep 2026 19:18:49 -0700 (PDT)
+Received: from MacBook-Pro-von-Karl.localdomain (dynamic-2a02-3100-b0c9-3601-9daa-d59e-970b-f46c.310.pool.telefonica.de. [2a02:3100:b0c9:3601:9daa:d59e:970b:f46c])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48588135600sm21411912f8f.2.2026.09.06.19.18.48
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sun, 06 Sep 2026 19:18:48 -0700 (PDT)
+From: Karl Mehltretter <kmehltretter@gmail.com>
+To: Helge Deller <deller@gmx.de>
+Cc: Karl Mehltretter <kmehltretter@gmail.com>,
+	Shixiong Ou <oushixiong@kylinos.cn>,
+	Chintan Patel <chintanlike@gmail.com>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	stable@vger.kernel.org
+Subject: [PATCH] fbdev: sh_mobile_lcdcfb: Restore the per-overlay sysfs attributes
+Date: Mon,  7 Sep 2026 04:18:44 +0200
+Message-Id: <20260907021844.25497-1-kmehltretter@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260617080031.99156-1-clamor95@gmail.com> <20260702161828.GB2108533@google.com>
-In-Reply-To: <20260702161828.GB2108533@google.com>
-From: Svyatoslav Ryhel <clamor95@gmail.com>
-Date: Sun, 6 Sep 2026 20:28:58 +0300
-X-Gm-Features: AcwNN1XWisbz2ascChHcLatRKYQPwdXAhH_U7ChBKnQiXROAqpt9L2vnmsacgR4
-Message-ID: <CAPVz0n2fRs=q-1dAEt2k1FJpQVK9+PMSY0BSMB7Rs3F2xDyFvw@mail.gmail.com>
-Subject: Re: [PATCH v5 00/14] mfd: lm3533: convert to OF bindings, improve support
-To: Lee Jones <lee@kernel.org>
-Cc: Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
-	Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Jonathan Cameron <jic23@kernel.org>, David Lechner <dlechner@baylibre.com>, 
-	=?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>, Johan Hovold <johan@kernel.org>, 
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-=D1=87=D1=82, 2 =D0=BB=D0=B8=D0=BF. 2026=E2=80=AF=D1=80. =D0=BE 19:18 Lee J=
-ones <lee@kernel.org> =D0=BF=D0=B8=D1=88=D0=B5:
->
-> On Wed, 17 Jun 2026, Svyatoslav Ryhel wrote:
->
-> > Convert LM3533 to OF bindings, add missing VIN supply, add support for
-> > setting mapping mode and LED sources based on device tree.
-> >
-> > ---
-> > Changes in v2:
-> >
-> > schema
-> > - maximum led sources for leds set to 4
-> > - anyOf > oneOf in ALS
-> > - improved ALS descriptions
-> > - adjusted example
-> > drivers
-> > - dropped devm convertion of irq and mfd helpers
-> > - all als configuration moved into lm3533_als_setup
-> > - added regulator/consumer.h
-> > - lm3533_bl_setup set before sysfs_create_group in backlight
-> > - added check if LVLED is valid
-> > - LM3533_REG_OUTPUT_CONF1 > LM3533_REG_OUTPUT_CONF2 for LVLED4 and LVLE=
-D5
->
-> This set looks good to me now.
->
-> Let me know when you have all of the Acks and I'll merge it via MFD.
->
+The ovl_* files documented in
+Documentation/ABI/testing/sysfs-devices-platform-sh_mobile_lcdc_fb no
+longer exist.
 
-Hello Lee! Is there any unresolved blockers for picking this patch set?
+Commit a979182a2453 ("fbdev: lcdcfb: Register sysfs groups through driver
+core") moved the attributes from each overlay's framebuffer device to
+the platform driver's dev_groups and renamed them overlay_*. There is
+now only one set of attributes for the whole LCDC. The callbacks still
+expect dev_get_drvdata() to return a struct fb_info, but the platform
+device holds struct sh_mobile_lcdc_priv, so they access the wrong
+structure.
 
-> --
-> Lee Jones
+Restore the documented names and register the group on each overlay's
+framebuffer device with device_add_groups(). Remove it with
+device_remove_groups() before unregistering the framebuffer. Skip
+creation when info->dev is NULL, as the old device_create_file() calls did.
+
+Drop the CONFIG_FB_DEVICE guard, since the driver already depends on it.
+
+Fixes: a979182a2453 ("fbdev: lcdcfb: Register sysfs groups through driver core")
+Cc: stable@vger.kernel.org
+Assisted-by: LLM
+Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+---
+Found while reviewing the sysfs ABI documentation.
+
+Compile-tested only (allmodconfig, W=1), I have no SH-Mobile hardware.
+
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 37 +++++++++++++++++---------
+ 1 file changed, 24 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index e8324b01700f..18fc4e465283 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1337,22 +1337,24 @@ overlay_rop3_store(struct device *dev, struct device_attribute *attr,
+ 	return count;
+ }
+ 
+-static DEVICE_ATTR_RW(overlay_alpha);
+-static DEVICE_ATTR_RW(overlay_mode);
+-static DEVICE_ATTR_RW(overlay_position);
+-static DEVICE_ATTR_RW(overlay_rop3);
+-
+-static struct attribute *overlay_sysfs_attrs[] __maybe_unused = {
+-	&dev_attr_overlay_alpha.attr,
+-	&dev_attr_overlay_mode.attr,
+-	&dev_attr_overlay_position.attr,
+-	&dev_attr_overlay_rop3.attr,
++static struct device_attribute dev_attr_ovl_alpha =
++	__ATTR(ovl_alpha, 0644, overlay_alpha_show, overlay_alpha_store);
++static struct device_attribute dev_attr_ovl_mode =
++	__ATTR(ovl_mode, 0644, overlay_mode_show, overlay_mode_store);
++static struct device_attribute dev_attr_ovl_position =
++	__ATTR(ovl_position, 0644, overlay_position_show, overlay_position_store);
++static struct device_attribute dev_attr_ovl_rop3 =
++	__ATTR(ovl_rop3, 0644, overlay_rop3_show, overlay_rop3_store);
++
++static struct attribute *overlay_sysfs_attrs[] = {
++	&dev_attr_ovl_alpha.attr,
++	&dev_attr_ovl_mode.attr,
++	&dev_attr_ovl_position.attr,
++	&dev_attr_ovl_rop3.attr,
+ 	NULL,
+ };
+ 
+-#ifdef CONFIG_FB_DEVICE
+ ATTRIBUTE_GROUPS(overlay_sysfs);
+-#endif
+ 
+ static const struct fb_fix_screeninfo sh_mobile_lcdc_overlay_fix  = {
+ 	.id =		"SH Mobile LCDC",
+@@ -1513,6 +1515,7 @@ sh_mobile_lcdc_overlay_fb_unregister(struct sh_mobile_lcdc_overlay *ovl)
+ 	if (info == NULL || info->dev == NULL)
+ 		return;
+ 
++	device_remove_groups(info->dev, overlay_sysfs_groups);
+ 	unregister_framebuffer(ovl->info);
+ }
+ 
+@@ -1530,6 +1533,15 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobile_lcdc_overlay *ovl)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	/* The framebuffer device is optional, see fb_device_create(). */
++	if (info->dev) {
++		ret = device_add_groups(info->dev, overlay_sysfs_groups);
++		if (ret < 0) {
++			unregister_framebuffer(info);
++			return ret;
++		}
++	}
++
+ 	dev_info(lcdc->dev, "registered %s/overlay %u as %dx%d %dbpp.\n",
+ 		 dev_name(lcdc->dev), ovl->index, info->var.xres,
+ 		 info->var.yres, info->var.bits_per_pixel);
+@@ -2637,7 +2649,6 @@ static int sh_mobile_lcdc_probe(struct platform_device *pdev)
+ static struct platform_driver sh_mobile_lcdc_driver = {
+ 	.driver		= {
+ 		.name		= "sh_mobile_lcdc_fb",
+-		.dev_groups	= overlay_sysfs_groups,
+ 		.pm		= &sh_mobile_lcdc_dev_pm_ops,
+ 	},
+ 	.probe		= sh_mobile_lcdc_probe,
+
+base-commit: 986c24e0fe44f844b44d365b71ce831947f50298
+-- 
+2.53.0

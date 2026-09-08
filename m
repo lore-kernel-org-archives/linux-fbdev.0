@@ -1,38 +1,38 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1053C3CB57B;
-	Tue,  8 Sep 2026 09:58:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 547034CA798;
+	Tue,  8 Sep 2026 09:59:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788861532; cv=none; b=RthWylrO5rdVKvpxOAMrE8F06d/W3ZmEOejpSRJTXEGbNIhEx+w0yJtFtwoiysHjLWlZQXDqPerjHxI7UKsVRsv04xI/wk570IukxLrKL8x9vG6ydkl0szp941QEYaCy0WfYx+GRvIZ3Ik9EMI+ZxjWKwWVrUtEdbRyqESjT4K0=
+	t=1788861543; cv=none; b=qwTiY1cntsYECbHcRMniv01Jfct+qndEmprl7jGy6pWz7kRg0zUg4cqhJDpLas+HYxZQTmkoLsdgfN2BrNLSz7Fzy97W0j+bVA3nKo4G1V0cfb8o06Bo1KP9QoEt+8sg/vcOcOu6oqE8XXVUuraBIgxdXh9oooNpSJzmJzSVUs4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788861532; c=relaxed/simple;
-	bh=J221TgZMfSARyG5x1do9FyaaAAuwRypeD+B6QQubkwo=;
-	h=Message-ID:Date:From:To:Subject:In-Reply-To:References:Cc; b=Gd/EZKXnMs6981K6atNLBUAiSk3hRXIS4ft/a5s0/JJ30y9LLa4RJdQjDDBeIvoqjAzWP5JmJ2W9ljiQgOuXniBYr2K4hGImn/XZ4Sts4lZvMw8iiCOq28hnId/HnqS1JqiwKljv3oU7S4m/Brjyg1rkHbZjgSV2eNvTx/rLw40=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=URYU6/qi; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788861543; c=relaxed/simple;
+	bh=BF3RfRvcy38/pR2FwVmnhOtEyo2B0tTxkwbJhydVc5o=;
+	h=Message-ID:Date:From:To:Subject:In-Reply-To:References:Cc; b=jV31PiEXUsyfFqmnh4XO6lbb+C04tkI+X1LFupoWAkiBiJpZb3cHJ8PF27caWNQimAxi0pLXO40jYFMYAJH9FMj8PYw29U22vl9Dn3yhMRWj3BexhRkO5v5WB2Ayl3J2IyHXUbX4h1SyQh0FOwaOHLxqxzpwtiLQ0YSvEllIQuA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g0Dxy9so; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="URYU6/qi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8A8F1F00A3F;
-	Tue,  8 Sep 2026 09:58:49 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g0Dxy9so"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B05F1F00A3D;
+	Tue,  8 Sep 2026 09:59:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788861530;
-	bh=cE2GIGpzCoTJfok5ialF83+vS2toupukOH7Ha7eEy2A=;
+	s=k20260515; t=1788861541;
+	bh=qJfUSJRCevtsAlee5fpqTfsNMuEH2eYAYjOny6uC7L0=;
 	h=Date:From:To:Subject:In-Reply-To:References:Cc;
-	b=URYU6/qiDVZf8Bnwa3wJeFRuNJbuks2TgRJWOal//UegZQVZZMGJnvJ4ixFtBRVON
-	 nkt9ubX3XDXScngwGHC9n7WJbZdAtFApQF5wKSAcAicX6j8ag4qkUyPDCWduJxFvNO
-	 i9c5ik2MQso1iHtJXP3j4JKoyXmEf2f0DK27PAozWDIkrsp1rau7+i2UHOjACydIki
-	 YbIibC+9eXiSHVBCEcB9FVbm4GSjnGg6qqFdYJnvaAMGosJkIuMEDG9kNnT/w+G6/m
-	 LoxEc/UkkscsQjMDfpX/2JEbGaAIotd9v+xK924GpPZ2GEDxoHSr0RR/h8M9QBOAoG
-	 sboGsRJqI2FAg==
-Message-ID: <dbd7ce5178e8e3049486aa89798abcce@kernel.org>
-Date: Tue, 08 Sep 2026 09:58:47 +0000
+	b=g0Dxy9so8FfejqBtHuaG1lGFytbhTY/SYmnz7lxKGGPNFXJY6tksNCGAhMyyuz15c
+	 A1HNknCOxFfkHm6oOjSbAspjVqXSKeptEF9ZCyFxezvuTAYWoKFqlUZ1Ic7jvWXwT5
+	 7GZ/dYJqH8NTJlT6M3WcwIsCVLPKvLaPgU6wB3+eFiK5GMpwwkr651FofVo75WXkmL
+	 tJEnmWfvy8w5HZ1GjjHqkEiL/+zDadoFTrSWGanx07uUhYjBr2I7rx8Wa+kWpePwYQ
+	 O2qdzxGEg8NNjpa5m0fLxr6dMhZNw/OEgJuPqJxDqgSwis8L1EJF3ZExrowhezZVxL
+	 QxBfCrjhil0eg==
+Message-ID: <5053a2775eb9b2101ae7725b497912bc@kernel.org>
+Date: Tue, 08 Sep 2026 09:58:58 +0000
 From: "Maxime Ripard" <mripard@kernel.org>
 To: "Cristian Ciocaltea" <cristian.ciocaltea@collabora.com>
-Subject: Re: [PATCH v11 50/74] drm/bridge: adv7511: Advertise HDMI 1.2
+Subject: Re: [PATCH v11 51/74] drm/bridge: inno-hdmi: Advertise HDMI 1.2
  capabilities
-In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-50-bc12954a0688@collabora.com>
-References: <20260901-dw-hdmi-qp-scramb-v11-50-bc12954a0688@collabora.com>
+In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-51-bc12954a0688@collabora.com>
+References: <20260901-dw-hdmi-qp-scramb-v11-51-bc12954a0688@collabora.com>
 Cc: dri-devel@lists.freedesktop.org, kernel@collabora.com, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-sunxi@lists.linux.dev, "Algea
  Cao" <algea.cao@rock-chips.com>, "Andrzej Hajda" <andrzej.hajda@intel.com>, "Andy
  Yan" <andy.yan@rock-chips.com>, "Chen-Yu Tsai" <wens@kernel.org>, "Daniel
@@ -55,7 +55,7 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 
-On Tue, 1 Sep 2026 21:51:14 +0300, Cristian Ciocaltea wrote:
+On Tue, 1 Sep 2026 21:51:15 +0300, Cristian Ciocaltea wrote:
 > Bridges using DRM_BRIDGE_OP_HDMI are now expected to also provide a
 > supported HDMI version.  This is not yet enforced, but will become
 > mandatory once the migration to the new caps-based HDMI connector

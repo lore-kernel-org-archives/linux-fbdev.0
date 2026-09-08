@@ -1,171 +1,133 @@
-Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com [209.85.217.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D383137F30A
-	for <linux-fbdev@vger.kernel.org>; Tue,  8 Sep 2026 07:18:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A35B350AC1E;
+	Tue,  8 Sep 2026 09:24:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788851933; cv=none; b=Olt3oOysWGZjuJVIwQqru++5jE5748zLsSytbv9Tr0JSdEeOeQ/wI+wGh4D/01SIcHLzlfqF64S0TTm9u3zKUtgXuf1HtUBHx7HldbQ+8i6Z1GcF3Z2Brcv1Jurmuwvot92jizSw5UdYQlzIXLEqohS29mkQPtOSntZsylvJz6o=
+	t=1788859470; cv=none; b=dzivAMfHUiZaALqYlMFXKVir2H/1aP5xCKsKNPQVqZEX8MSQ4nnXuPd9PJmhF/bVw1888svYRbDf0S1aUyJgnQp6oxXerNQgVq77v+rwTS/PbKp14UisOpWm4+2yO3R6gCvcnwaYTTtSVXn6ZtjOqVzodCLKwS3vyxYaSNo1kBE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788851933; c=relaxed/simple;
-	bh=atHJUSU8jh/rAd34gcMPQ5DnJpjMvR7FLz3fOgQccno=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=REjUbeYRT1BGoSw8ZDoxq2rc4RrPhDfgYxQb6AGOm2+PeiYLnoSMxRlUN1ycGwgB0KZGjqqxRv2HpwTZmnow39P7ieSqphATv3MCJdOfyBgcGBr+TAjBzf0md/CZmGaR8PtMi9nqpizRWLcnc04/YsYZlpsDA4x9XaY3hRtDjRA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-754ac74c495so1344425137.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Sep 2026 00:18:51 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788851931; x=1789456731;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ASzOob7GnYKJXcWv8xLMRXcs4durQAzV6NwhNCTQzS0=;
-        b=DsDLzVSyVWL02ETzMcRb/ybMkFe7B/E10LFTBHatWCSYtDJUxXkQGeWcAZeRoiHfjE
-         PfwAgHGcLqsA+hdLsla/KqsarCVPLA/ySoUwFP5vHTBhBuxoSFN8WWD4row8M577kNEr
-         CGFTnH6zGM6lG4YxUoi8M2NpOzalp4CFFDhHNp/RhCZvUrsk+j/vdZ/zh43uXt+pWP7f
-         nxh0iJsIp+Cd5ot8H9OVdaU18bHiqKsqo17gxHqYoQivcfRsv4B6amhSoTfWPQnsRQ3w
-         uwqpLU9esySMD3V8uXm8OYwAQ+QQW38aTxy8gtad6phLJ7JDoAGKJCO2Dhn12QULkvnr
-         1y6A==
-X-Forwarded-Encrypted: i=1; AKwUvBxTagc37XP0dWKO3oUp+mx47zStUxiCKL6OmbUfivuoViDZZpvekjN//SDfKaGwh6qX8KdrlJuPSzXd7g==@vger.kernel.org
-X-Gm-Message-State: AFuF++k/1Gy5i2BQ7QiZI/Y/dVMFZGnszMSGyuzvMOBmmje2y1BTP4o3
-	nRAptnETEjuOk/hSUxESnPkbnFsbGun4+JzOS/J3KNj+N2RnYuQPISxk/EtuGGcp
-X-Gm-Gg: AYBFou1BQ/s/CmlfkfihcX7voTOA1kIwMY5QOyZW+phyYQGn9esAAG3z3ebR13f4mf1
-	aZJzgp9YC27LBqYh57djvrxzrDaoDmXkt2xi0h/ervfrprosTzaqySeuJwxG7AetRQYTcw2Zs01
-	efRZi+yF9c8Vprs5vcRpOiNCS3KpZ6bARwc0nSua9rHQv9fZ4QsNHOj7yP9cWjDEtJrIT+y7EGZ
-	D9SZ0OXyF7p4939ttyeAeSYnln3BLgGevShB1tZsHbUostq0KDw3pc73SlD1MClibUgsgTzmiQN
-	VHCdrnib73+6hoSU/FYQj77+Y8lq8DqaW+gZx1lZ6HGfT+EwgIQGDkEVjdOL/FOOc/84ZWGcfl7
-	Tfk4/6cctu/pWUfkzrE6JtoJn6VPYd5gB28fValkFcsxLppitadwEIGLxBaj1DKU5coOoAPwfdu
-	eBxSU5FP+UulAvES5Uz7pCBEKlcDY1JxarB3iGjkXmrgCVztPAmU2ABLdJNRUa8u7OjI7WPq1J5
-	YBl1DlUULRM5x62/R8tSBDrQg==
-X-Received: by 2002:a05:6102:292b:b0:782:e19d:6f39 with SMTP id ada2fe7eead31-78a4a483c93mr8220918137.0.1788851930723;
-        Tue, 08 Sep 2026 00:18:50 -0700 (PDT)
-Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com. [209.85.222.41])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-78a47ae8dd2sm8404364137.8.2026.09.08.00.18.49
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 08 Sep 2026 00:18:49 -0700 (PDT)
-Received: by mail-ua1-f41.google.com with SMTP id a1e0cc1a2514c-966eabad303so960411241.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Sep 2026 00:18:49 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvByqIdHpAJ+4X+2ETRGTpUwWB5OiVOMspCtFP4v0R/YK8oovDx4sbIJor4TyC1T/rEd4l3TMmBMHVEIemg==@vger.kernel.org
-X-Received: by 2002:a05:6102:5493:b0:789:5f54:2367 with SMTP id
- ada2fe7eead31-78a4a718223mr9320013137.4.1788851928902; Tue, 08 Sep 2026
- 00:18:48 -0700 (PDT)
+	s=arc-20240116; t=1788859470; c=relaxed/simple;
+	bh=h/T7ycLMSDC3a2kr6DgdOAzHxcYYnc5NhlAyE3UitFc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gF/hy/aXwtJ59SfOWZs7f5dk5jkAcnfFZqk1N2LcSqbTkmWVl/MdCpAXnuZGTXAQkouU7rIsVvu4bWKHOhYd9wDzb4EeGrhvghUH7h03K/chWCtcogZZxdFG2jZugUcdUospaKXCjOzX8JbZ4lSFaC002lGVi56FDcj9KyOugZw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hdump79V; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hdump79V"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8522F1F00A3A;
+	Tue,  8 Sep 2026 09:24:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788859469;
+	bh=nwt4MSvg+/6zRv8Vcf7XT0o+MS+vnu26qoTN+G3zanc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=hdump79Vw5fEgXFJ9VugGGr5h6P63z5Rb/y5Hg0yODT+xkwe1X9g+jFlOkv7xQ2AQ
+	 uoCqpfp3P4EELicYSY5xFxcScIgnN41HJE9Hv+IxmdZE3UxokuQE7yocbQixaPW1bD
+	 BW578Iwlzn0eG3XZClR5mMtu1brAknhWLvs7GumecG1XFVYvsexzXf5BQLuUikEodO
+	 6U91vturj452mofL9n1U1GBjg37Vl2/FSlgkBctDhnEQTdhaEBWmhcv5aTHVRUL7ID
+	 Ek2bZXURLjsVrHEStEywjsO0iimjIlhQPJW7MDJgN3QgLd7fwNXC4iMlsT1e/eY3bc
+	 gi7qJpbxFcf3Q==
+Date: Tue, 8 Sep 2026 11:24:25 +0200
+From: Maxime Ripard <mripard@kernel.org>
+To: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Dave Stevenson <dave.stevenson@raspberrypi.com>, 
+	Dmitry Baryshkov <lumag@kernel.org>, Andrzej Hajda <andrzej.hajda@intel.com>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>, 
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Jonas Karlman <jonas@kwiboo.se>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
+	Chen-Yu Tsai <wens@kernel.org>, Samuel Holland <samuel@sholland.org>, 
+	=?utf-8?B?TWHDrXJh?= Canal <mcanal@igalia.com>, Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>, 
+	Raphael Gallais-Pou <rgallaispou@gmail.com>, Sandy Huang <hjc@rock-chips.com>, 
+	Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>, Andy Yan <andy.yan@rock-chips.com>, 
+	Algea Cao <algea.cao@rock-chips.com>, Daniel Stone <daniels@collabora.com>, 
+	Liu Ying <victor.liu@nxp.com>, Phong LE <ple@baylibre.com>, Helge Deller <deller@gmx.de>, 
+	kernel@collabora.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev, linux-rockchip@lists.infradead.org, 
+	linux-fbdev@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
+Subject: Re: [PATCH v11 13/74] drm/bridge: Fix NULL deref in drm_bridge_add()
+ for legacy bridges
+Message-ID: <ap_Tr_Viqy29f515@houat>
+References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
+ <20260901-dw-hdmi-qp-scramb-v11-13-bc12954a0688@collabora.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260827093948.2825531-1-lilinmao@kylinos.cn> <e4a2ba2e-c533-04d8-0795-e3d43caf47b9@gmail.com>
- <CAN5rfbSh9ZoUkReAqv9rHYowqKcZFa-Svy6LP-MHvqfBVhjdBQ@mail.gmail.com> <4f3c7184-1b5c-4074-b8a1-49261833df8f@gmail.com>
-In-Reply-To: <4f3c7184-1b5c-4074-b8a1-49261833df8f@gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 8 Sep 2026 09:18:37 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWoZBGyH=WeiTG4QCNC4hr_+pC4QQb-wjK0afZgMUy1Fw@mail.gmail.com>
-X-Gm-Features: AcwNN1XmAqsgmY9dglWOajpNmnnts6xxj9nL1ZG-ZrxbM9jWTj4q9h8M9EtZsAE
-Message-ID: <CAMuHMdWoZBGyH=WeiTG4QCNC4hr_+pC4QQb-wjK0afZgMUy1Fw@mail.gmail.com>
-Subject: Re: [PATCH] fbdev: atafb: Restrict SuperBlitter to supported formats
-To: Michael Schmitz <schmitzmic@gmail.com>
-Cc: =?UTF-8?B?TWlybyBLcm9ww6HEjWVr?= <miro.kropacek@gmail.com>, 
-	Linmao Li <lilinmao@kylinos.cn>, deller@gmx.de, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha384;
+	protocol="application/pgp-signature"; boundary="ygj36ay46abkkslu"
+Content-Disposition: inline
+In-Reply-To: <20260901-dw-hdmi-qp-scramb-v11-13-bc12954a0688@collabora.com>
+
+
+--ygj36ay46abkkslu
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v11 13/74] drm/bridge: Fix NULL deref in drm_bridge_add()
+ for legacy bridges
+MIME-Version: 1.0
 
-Hi Michael,
+On Tue, Sep 01, 2026 at 09:50:37PM +0300, Cristian Ciocaltea wrote:
+> Legacy bridge drivers that embed struct drm_bridge in a zero-initialized
+> allocation, rather than obtaining it from devm_drm_bridge_alloc(), never
+> run INIT_LIST_HEAD() on bridge->list, leaving next and prev NULL.
+> list_empty() compares next against &bridge->list, so it reports such a
+> list head as non-empty.  list_del_init() therefore runs and dereferences
+> the NULL pointers, panicking the kernel during probe.  Only builds with
+> CONFIG_DEBUG_LIST survive, with a list corruption report.
+>=20
+> This affects rk3066_hdmi and the i.MX8 LDB bridges, which still embed a
+> bridge in a devm_kzalloc()'d struct.
+>=20
+> Initialize the list head when it is found to be NULL, so that the bridge
+> ends up with a valid empty list head and list_del_init() is only reached
+> for bridges that can actually be linked.
+>=20
+> Fixes: 17805a15d175 ("drm/bridge: add list of removed refcounted bridges")
+> Reported-by: Sashiko <sashiko-bot@kernel.org>
+> Closes: https://lore.kernel.org/all/20260731175016.C5D591F00AC4@smtp.kern=
+el.org/
+> Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
+> ---
+>  drivers/gpu/drm/drm_bridge.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/gpu/drm/drm_bridge.c b/drivers/gpu/drm/drm_bridge.c
+> index 2c457ad74f3b..a8b6df5c13ea 100644
+> --- a/drivers/gpu/drm/drm_bridge.c
+> +++ b/drivers/gpu/drm/drm_bridge.c
+> @@ -453,9 +453,16 @@ void drm_bridge_add(struct drm_bridge *bridge)
+>  	 * If the bridge was previously added and then removed, it is now
+>  	 * in bridge_lingering_list. Remove it or bridge_lingering_list will be
+>  	 * corrupted when adding this bridge to bridge_list below.
+> +	 *
+> +	 * Legacy drivers that allocate the bridge with kzalloc() rather than
+> +	 * devm_drm_bridge_alloc() leave list.next NULL. Such a bridge cannot
+> +	 * be on any list, and list_del_init() would dereference NULL, so
+> +	 * initialize the list head first.
 
-On Mon, 7 Sept 2026 at 22:14, Michael Schmitz <schmitzmic@gmail.com> wrote:
-> On 7/09/26 23:14, Miro Krop=C3=A1=C4=8Dek wrote:
-> > On Sun, 6 Sept 2026 at 11:49, Michael Schmitz <schmitzmic@gmail.com> wr=
-ote:
-> >> Hi Linmao,
-> >>
-> >> thanks for your patch!
-> >>
-> >> Am 27.08.2026 um 21:39 schrieb Linmao Li:
-> >>> The SuperBlitter operations derive an integer byte count per pixel.  =
-The
-> >>> accelerated fill path handles only one-, two- and four-byte pixels.
-> >>> However, the operations are currently installed for every external
-> >>> framebuffer in SuperVidel RAM, including planar 1/2/4/8-bpp and 24-bp=
-p
-> >>> truecolor modes accepted by the external video parser.
-> >>>
-> >>> For 1/2/4-bpp modes, the byte count becomes zero, so accelerated copi=
-es do
-> >>> nothing and fills fall through to 32-bit stores.  Planar 8-bpp uses a=
-n
-> >>> incompatible memory layout.  For 24-bpp modes, fills also use 32-bit =
-stores
-> >>> despite advancing addresses by three bytes per pixel.  These cases ca=
-n
-> >>> corrupt the framebuffer beyond the requested rectangle.
-> >> I believe 24 bpp mode can be rescued using something like this (entire=
-ly
-> >> untested):
-> >>
-> >> --- a/drivers/video/fbdev/atafb.c
-> >> +++ b/drivers/video/fbdev/atafb.c
-> >> @@ -2463,6 +2463,11 @@ static void svblit_fillrect(struct fb_info *inf=
-o,
-> >>           case 2:
-> >>                   memset16((u16 *)line, pix, rect->width);
-> >>                   break;
-> >> +       case 3:
-> >> +               memset(line, pix, ((rect->width * bytespp) % 4));
-> >> +               line +=3D ((rect->width * bytespp) % 4);
-> >> +               memset32((u32 *)line, pix, (rect->width * bytespp) / 4=
-);
-> >> +               break;
-> >>           default:
-> >>                   memset32((u32 *)line, pix, rect->width);
-> >>                   break;
-> >>
-> >> Can't test this on hardware, and would need Miro to confirm it works a=
-s
-> >> intended.
-> > Linmao's patch: I ran it on a Falcon with SuperVidel at
-> > 1920x1080x32bpp, all good.
-> >
-> > Michael's 24bpp fill: I cannot test it because the SuperVidel has no
-> > 24bpp video mode. It was planned but never implemented. Its mode
-> > register offers 1/2/4/8-bit bitplane, 8-bit chunky, 16-bit highcolor
-> > and 32-bit truecolor (24-bit RGB plus an alpha byte), with the
-> > remaining code reserved - and TOS offers no 24bpp mode to set.
-> Without a 24 bpp mode, the 24 bpp fill is pointless, so no point trying
-> to keep that mode alive.
-> > Unless I overlooked something, the fill also looks wrong on paper: the
-> > first line is filled with a repeated byte and then with repeated
-> > 32-bit words of the same value, which cannot reproduce a 3-byte pixel
-> > pattern unless all three bytes are equal.
->
-> You're correct - we'd need a memset24() to account for that. Without
+"legacy" bridges are ambigous and was also used for non-atomic bridges.
+That being said, it's now *required* that bridges use
+devm_drm_bridge_alloc() instead of kzalloc, and we warn in
+drm_bridge_add if it hasn't.
 
-Unless the frame buffer would be using a DIRECT_COLOR visual (which
-is not the case), then you could draw pixels in the 16 console colors
-by replicating the color index in all 3 bytes ;-)
+So I don't think we should merge this patch.
 
-> hardware support this is an academic exercise that I don't have time for =
-:-)
+Maxime
 
-True. And as this code is used only to fill the first line (the blitter
-replicates it into the other lines), the performance difference between
-a simple byte loop and a true memset24() won't be that large.
+--ygj36ay46abkkslu
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
-Gr{oetje,eeting}s,
+iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCap/USAAKCRAnX84Zoj2+
+dvfBAX9Xat1E7rHDo5AwoQwclzUX6gFePTOLCX7JzUTlJj4v+JVqzvUmXYfX2MVE
+CDhj71EBf2f48qg8uxY+jSn8HuuECyGRZX1EJkTYg9OjYG+JlhXy81xPlHXuun/i
+wRZxh6EhmA==
+=t0EL
+-----END PGP SIGNATURE-----
 
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+--ygj36ay46abkkslu--

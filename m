@@ -1,139 +1,176 @@
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fhigh-b2-smtp.messagingengine.com (fhigh-b2-smtp.messagingengine.com [202.12.124.153])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D3C44349B3
-	for <linux-fbdev@vger.kernel.org>; Tue,  8 Sep 2026 19:22:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E98E13A1E81;
+	Tue,  8 Sep 2026 19:43:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.153
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788895365; cv=none; b=ZNYLBpkposHmDSQChBgltlyAaDhIEYL03uXk8qoKfn+PF71ZQbzL3/k5bzNjVt0RzYCCTGgRMyOPPPlQ527lOTx80x8qFeg7oWs3ywlmFd8oUGj4d/Sy7xZa8EM5jLbtBw+z8341wN0FQ12dkBv39A4dXRtoZO8CuXfBTOeRsUo=
+	t=1788896596; cv=none; b=OnbT0QZyqisRL/eXFwFbuRfn7Kp0rXmbEMazOPRQAx2DR+yhWb9He6cYOR/+cqUwKHyvBlUSy10x+j8X3X1DH2ve0ectMVqz0ytyb7AwvnHwkrZ0G9XBEA9H/Wj/g24+CrL0ZI5M0DOb7+s6aD4tg7Jiy9s+TX6ReMfY93Zorbk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788895365; c=relaxed/simple;
-	bh=BL1RUYoOl+2DCnnljwHrTpWKc1vt3ozShPXUSpVHg8g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H0FoEQyad1ALlm4YjMsCPQrK5YCQs8LbtnuKWG/dZeMUTII3sDn3vZcGjgxj+Eknzd4jLxIx0wx9e5bVvgj0+dlwtWp6chnVJalqL53F8Y7ywW3gem/aU3WHsUwrfeZ23kJLbbe3zBAswslidhTlKyxLa//z/0k+HBKwrmMjeR8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=IldMupf/; arc=none smtp.client-ip=209.85.128.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1788896596; c=relaxed/simple;
+	bh=xlqEswEziPGf0ZRlGaptPva6ELMXLnrVfl8OWXiHUlg=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=SgNgdp+JyHMbp8mMrYuRIx4owfugb8n5SWGxTV8KfB/2pXi9wnNGwMnP7USaeiyy+LnDpte0W0UDk1jhwXGc3nIP5/tJeTepR0hvyPZ68hm8GnCXgzHzQTRpTBxn3sjRYa/9vEQX+rDO24UPyKu6Rt3H6iiyqxfstuvecxiZqM4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=U6mPFVk9; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=S2Cld9ng; arc=none smtp.client-ip=202.12.124.153
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IldMupf/"
-Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-49cca4ffdcfso41216125e9.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Sep 2026 12:22:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788895358; x=1789500158; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=GVs4+8gm56Wnu6exUObCNgkOQEYDE8t6OW3Oqkq6qd8=;
-        b=IldMupf/CXO1fJhcChwVffZ26pAdYEuJJo7n3NchFgpe6wbStMGfI4utvCihSq3+Mx
-         QfakSVaL/MJcsyxLgiVpLhVZFiyd8ScB3t8IUALrvbnZWyWN17avGp9xQ9S7P4++LXdU
-         LUlfBZMoh7BO7j3i9dt1eIczOoUyh6xGljMyldbvy7aZbl9McjsggHDOzBBQdaTDXM7h
-         T05dJ6nI49n7G0r3JT59zHl54FDUVXNFF31hTE4azXp5dODZo1yxFt83JcwMmjJUyP59
-         wMfR0iaSQSzgKmfqD4f+FZODJ2rym9Fks8lUDFHOufvKk5rwLwpiVRfU7SdRzD88aQWa
-         rObQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788895358; x=1789500158;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=GVs4+8gm56Wnu6exUObCNgkOQEYDE8t6OW3Oqkq6qd8=;
-        b=UESBCtqRLcfCLYfdZPvlwaVTu4+DloVIA4eVVds5csbx+3O/aJiM0uPWYh7UNB03hN
-         IrWfTzF2dSy6s3XN/ttPbvmQMw13zO1dMHcT97B2dv03wKNrTdaEVH/JRjnTEG4YjJ7i
-         Wb2rEzdBT1ksSgsYX+gcxyhVIdezjWkE7rc5qBwYOmYh6ujuk5ocgtivX4DH4S0+SOxH
-         d8h3wBWLzgHc8aiM+Y+VMBG9bHpe2gLyOzLpEpq5/dWU6E1rlsUU+4gmYZczUMkaBHqT
-         DUZFIjDDGkEifzi63MzB88H4gD8TjQ94E2xgDpPULGt1d16G9AV/e/TZnIxvjNBrvZtp
-         etUw==
-X-Forwarded-Encrypted: i=1; AKwUvBybtddXnmsecu4tgtX0JVdLkhDRDHsPfbaueq1JoNawS3HX60G3bHJcCtjAjC6NOmNqrr1EALXFgN650g==@vger.kernel.org
-X-Gm-Message-State: AFuF++nNbObsrZRd6eIOVt2smnbkEcYdMNuwWG2mYNYRfiJHBUgQJRok
-	s24ss/tqjmLHgIFp+c+p8rnxu7r//qrei2TWRPPrB8dYHi7aIDEMbW4q
-X-Gm-Gg: AYBFou1KqJkt1QYH/KAdmPes+UmDoOxM3yYnsXPTuHzbRN6u35AHR0Pe3KOsGvGCVwu
-	ECdI+0f3+TyvNqBzpfnnn6BS+V/gPw/rvydHgkgL6m3wNPcOLev2Jj5kKZc0HRUYvE5YsTE3p9H
-	xoIVCQQSftw+5Yi2+uAYM0vYinJxGdSamXE6wrtBVbuj5Q6/NDe/xfP5RX23vO/Iw00zRuPK99w
-	+h7fzA3G2MAFbhsZrs+Jlx2E6xhxmv+NABO+iSx+4+dXvws1LZAKAWRLAZeycYvMqN8FWnF1v1z
-	P4zNrAKrqcSjYUEERbXVsw1593PJV3NNAjhxr4qU/lSMSvfLbxiwvi0Si4cSWPbbUrW6Ta5OS1I
-	Ru73FVifaAGIa1UGCbtz29YOXhCvI9/la+HKuKycNAtafj81Et5X5QKZa/XdIS69L3HHKIcN8M2
-	+Q3Ah24hGFJOOaOsh6pzqAADSU/qDj88z6IcDX2vqmZsSm3h5aq7sEdycI46bLsadRQbbxD7D1R
-	Tp1bmUwHxIMGVnPalJY7Dfv4xssXqW3fvUEYj3nkUTSCW5TE5vggWn4tItiKgFz+YxXn0RloIW7
-	gk/pb429Gl8MXNfyCsn3yH1mZSCoIg==
-X-Received: by 2002:a05:600c:3ba3:b0:49d:e79:612f with SMTP id 5b1f17b1804b1-49d0e79635amr157041045e9.26.1788895358151;
-        Tue, 08 Sep 2026 12:22:38 -0700 (PDT)
-Received: from MacBook-Pro-von-Karl (dynamic-095-117-170-066.95.117.pool.telefonica.de. [95.117.170.66])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-485881353e8sm38080321f8f.1.2026.09.08.12.21.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Sep 2026 12:22:37 -0700 (PDT)
-Date: Tue, 8 Sep 2026 21:21:22 +0200
-From: Karl Mehltretter <kmehltretter@gmail.com>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Linus Walleij <linusw@kernel.org>, 
-	Russell King <linux@armlinux.org.uk>, Drew Fustini <fustini@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, 
-	Stefan Agner <stefan@agner.ch>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
-	Alexandre Torgue <alexandre.torgue@foss.st.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, 
-	Andreas Kemnade <andreas@kemnade.info>, Kevin Hilman <khilman@baylibre.com>, 
-	Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
-	Gregory Clement <gregory.clement@bootlin.com>, Robert Jarzmik <robert.jarzmik@free.fr>, 
-	Kristoffer Ericson <kristoffer.ericson@gmail.com>, Ethan Nelson-Moore <enelsonmoore@gmail.com>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, Alexander Sverdlin <alexander.sverdlin@siemens.com>, 
-	Shawn Guo <shawnguo@kernel.org>, "David Hildenbrand (Arm)" <david@kernel.org>, 
-	Nicolas Pitre <npitre@baylibre.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, imx@lists.linux.dev, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, 
-	Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Helge Deller <deller@gmx.de>, Tero Kristo <kristo@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, linux-media@vger.kernel.org, linux-mtd@lists.infradead.org, 
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-clk@vger.kernel.org
-Subject: Re: [PATCH 06/13] ARM: omap2: remove omap24xx support
-Message-ID: <aqBXOemS4boakDGt@gmail.com>
-References: <20260908152808.3928630-1-arnd@kernel.org>
- <20260908152808.3928630-7-arnd@kernel.org>
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="U6mPFVk9";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="S2Cld9ng"
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id 24BAA7A00F4;
+	Tue,  8 Sep 2026 15:43:12 -0400 (EDT)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Tue, 08 Sep 2026 15:43:13 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1788896591;
+	 x=1788982991; bh=4IJjsl35hy6uWhJvFuqE8L4yxSGKu+5lpZymIsb8Msc=; b=
+	U6mPFVk9YL16LJWdXa/424N8Q9tnaQEfkXaFZfC05Rv7g4jpETeO3ajN2fq495Fh
+	WrMWE0DREKl8e+FiZIiwVBqHCNQxkGRS9lPOKYYAWBJE1fupx5qElQI0jQ530txI
+	g3X5DeD2h8/VRfWue8/KhfhKl1JROC2/WzNBrYwJIF4sNlclS3yqaVAEDE3v6ak2
+	7ERTKh65f/H0qH1V8JJl3KCQyVVkUiiUM6IbZARWbZYq5VmWPMicnoqBENNth38I
+	cwUAoGf8GVvYgj42lLzAoVmQVfkALFAtU+9JW7ssDaQsghuNEj184yNFsP3Fk+wH
+	db58YqvVf1CgsbAr6b3r6Q==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1788896591; x=
+	1788982991; bh=4IJjsl35hy6uWhJvFuqE8L4yxSGKu+5lpZymIsb8Msc=; b=S
+	2Cld9ngfwmUHarBMQc/LHSHeHWD0xtCBeynQUwY/nM+jxDIY8h9wQU0SijPCvIEI
+	1UeKVQxK0LSWtuTvDfHOWngQW+JKivd59xMRq6nr1wGJ+RGQT0pCL9Kds9X2runx
+	Id4R0A1GnYrDNERfPiYJP1Q8vLXjKG/UfcF0jMSKzYfwb5BpMZE9GabqI2IXZXni
+	kKq4xIYCl4XCv9v4dqy+32BQo3yWlSuBZ1XB4rhrzQXSSilmjSvRk+tdOvw+Q62m
+	tEv7nKUYq9BDQjn6duHrF7DdeRu1YwZC1RRUCSdXPpldghkrE/Y2Cmi6zC1McD0x
+	SLUVnqFm1WUDD7+EKjE2Q==
+X-ME-Sender: <xms:TGWgajM7wSAGALfvOn0tYKDarPFdSWSYTFcyb7sKqGRwOaa-2zryUQ>
+    <xme:TGWgaozaCDYxyc6ffkMyogw7qY-sR8oaeaSB_DHd5mYdn1O5vI2LHIwT9Y3CPOVsW
+    q-fPOeJgxWDBvFvRRObAkHu6rlIgBNykdQrvQlbUysBtUpUMctkb2A>
+X-ME-Proxy-Cause: dmFkZTEWysj5ngFE1nM4ud5BEPnvNaVbfYlRDfiGwB68r8EDMkiU5dzpKRL9NlWCptfdbK
+    gfYqSYN+zM2p2G/Yb36sHfe9I/KOu0qw/QkNoT2IKpQDasimiA7FGdoW6yMeisRcU7Ho+s
+    BCTOjGzEhfUj3P4ZL+t9f53KwQHAUqftFGmSnQ9rLouWbRnDbVR9a1+b+C+MvXP4Muec/V
+    Pnuh871vbx1/3VKO6k5vpaVJLH98Mku+zk4Zc7wG/4cDobBB0jqTgHteoMd27vRHO/nxiS
+    0jjysIFfqmCGHzCtN1VTOia6Ta1mDR+gs6c2FHBGR/mzzcwxxWOVowCsEHHjW9br5Wasfb
+    s48PSXmTpU6kXUvvenJcDEcEuqj5qljSKEZpS9kJHmeDmAEeLZeZ+KZ6847/LJEySgqP2o
+    bZWhPCGN5NrPyltp+oBJBs2Dz0+uBeOh41cZdIztRcs88YNCunjoRMiMcjQ51f2zrZH23A
+    WgAZg8velj0kko8cn/rU8NOleKEaOpEO9ZRV5APtuQylj7KorLjPWnTvlJUr1wLNsa52nd
+    1zfrX5XpW52RTnm3HHcOk7CsE63TkpT0eGNz+xdN7EHW+XcPFE5ojIAOf1j5ADEPfgIvhH
+    cMceBWJ/nNjX9ZlH7XRe1MrrpxcJbGiUISI0/dsIUh2MU0KelaKeAo7v6QEg
+X-ME-Proxy: <xmx:TWWgau76hFCfszuDLebCtu_Obicnoz1oY4QV544NImgpBVmbrFLXdA>
+    <xmx:TWWgamIx8dtaC3Y5Qz36XcUAjyWFju7iSwPqzOgORSdUH-_DrSitXA>
+    <xmx:TWWgamxWttHdozSgKKMVHp7vYnUvEue8cpp_Yr84jmKvYJwinmGPtw>
+    <xmx:TWWgauKmvGYTP7PhPkc5fWcT22JbHI87VUCq43eLfcarGYdLADfcSg>
+    <xmx:T2WgamK7BjD-KSv4eKe3JVkV1RWLIt4kYji1aOSvJ72E0WheE6FecdYn>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id 25BF232A0078; Tue,  8 Sep 2026 15:43:08 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260908152808.3928630-7-arnd@kernel.org>
+X-ThreadId: ABtt46vjHSU-
+Date: Tue, 08 Sep 2026 21:42:42 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Karl Mehltretter" <kmehltretter@gmail.com>,
+ "Arnd Bergmann" <arnd@kernel.org>
+Cc: "Krzysztof Kozlowski" <krzk@kernel.org>,
+ "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
+ "Linus Walleij" <linusw@kernel.org>,
+ "Russell King" <linux@armlinux.org.uk>,
+ "Drew Fustini" <fustini@kernel.org>, "Rob Herring" <robh@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>,
+ "Liviu Dudau" <liviu.dudau@arm.com>,
+ "Sudeep Holla" <sudeep.holla@kernel.org>,
+ "Lorenzo Pieralisi" <lpieralisi@kernel.org>,
+ "Frank Li" <Frank.Li@nxp.com>, "Sascha Hauer" <s.hauer@pengutronix.de>,
+ "Pengutronix Kernel Team" <kernel@pengutronix.de>,
+ "Fabio Estevam" <festevam@gmail.com>,
+ "Vladimir Zapolskiy" <vz@mleia.com>, "Stefan Agner" <stefan@agner.ch>,
+ "Maxime Coquelin" <mcoquelin.stm32@gmail.com>,
+ "Alexandre Torgue" <alexandre.torgue@foss.st.com>,
+ "Aaro Koskinen" <aaro.koskinen@iki.fi>,
+ "Andreas Kemnade" <andreas@kemnade.info>,
+ "Kevin Hilman" <khilman@baylibre.com>,
+ "Roger Quadros" <rogerq@kernel.org>, "Tony Lindgren" <tony@atomide.com>,
+ "Nicolas Ferre" <nicolas.ferre@microchip.com>,
+ "Claudiu Beznea" <claudiu.beznea@tuxon.dev>,
+ "Andrew Lunn" <andrew@lunn.ch>,
+ "Sebastian Hesselbarth" <sebastian.hesselbarth@gmail.com>,
+ "Gregory Clement" <gregory.clement@bootlin.com>,
+ "Robert Jarzmik" <robert.jarzmik@free.fr>,
+ "Kristoffer Ericson" <kristoffer.ericson@gmail.com>,
+ "Ethan Nelson-Moore" <enelsonmoore@gmail.com>,
+ "Geert Uytterhoeven" <geert@linux-m68k.org>,
+ "A. Sverdlin" <alexander.sverdlin@siemens.com>,
+ "Shawn Guo" <shawnguo@kernel.org>,
+ "David Hildenbrand (Red Hat)" <david@kernel.org>,
+ "Nicolas Pitre" <npitre@baylibre.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org, imx@lists.linux.dev,
+ linux-stm32@st-md-mailman.stormreply.com,
+ Linux-OMAP <linux-omap@vger.kernel.org>,
+ "Paul Walmsley" <paul@pwsan.com>,
+ "Herbert Xu" <herbert@gondor.apana.org.au>,
+ "David S . Miller" <davem@davemloft.net>,
+ "Mauro Carvalho Chehab" <mchehab@kernel.org>,
+ "Kyungmin Park" <kyungmin.park@samsung.com>,
+ "Helge Deller" <deller@gmx.de>, "Tero Kristo" <kristo@kernel.org>,
+ "Stephen Boyd" <sboyd@kernel.org>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>, linux-media@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-clk@vger.kernel.org
+Message-Id: <5c7ef711-0e5b-4006-831f-c1129acc65be@app.fastmail.com>
+In-Reply-To: <aqBXOemS4boakDGt@gmail.com>
+References: <20260908152808.3928630-1-arnd@kernel.org>
+ <20260908152808.3928630-7-arnd@kernel.org> <aqBXOemS4boakDGt@gmail.com>
+Subject: Re: [PATCH 06/13] ARM: omap2: remove omap24xx support
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 08, 2026 at 05:27:56PM +0100, Arnd Bergmann wrote:
->  86 files changed, 60 insertions(+), 10696 deletions(-)
+On Tue, Sep 8, 2026, at 21:21, Karl Mehltretter wrote:
+> On Tue, Sep 08, 2026 at 05:27:56PM +0100, Arnd Bergmann wrote:
+>>  86 files changed, 60 insertions(+), 10696 deletions(-)
+>
+>> -CONFIG_ARCH_MULTI_V6=y
+>>  CONFIG_OMAP_RESET_CLOCKS=y
+>> -CONFIG_ARCH_OMAP2=y
+>
+> With CONFIG_ARCH_MULTI_V6 gone, CONFIG_ARM_ERRATA_411920=y a few lines
+> down can be deleted (savedefconfig drops it)
 
-Note that Sashiko skipped reviewing this patch, because it exceeded
-its current 10000 line limit.
+fixed now
 
-> -CONFIG_ARCH_MULTI_V6=y
->  CONFIG_OMAP_RESET_CLOCKS=y
-> -CONFIG_ARCH_OMAP2=y
+>> diff --git a/arch/arm/mach-omap2/gpmc.h b/arch/arm/mach-omap2/gpmc.h
+>> deleted file mode 100644
+>
+> perl scripts/get_maintainer.pl --self-test=patterns now warns:
+>   ./MAINTAINERS:19896: warning: no file matches	F:	arch/arm/mach-omap2/*gpmc*
 
-With CONFIG_ARCH_MULTI_V6 gone, CONFIG_ARM_ERRATA_411920=y a few lines
-down can be deleted (savedefconfig drops it)
+Ah perfect, I was looking for that command, and will check
+the rest of my series now.
 
-> diff --git a/arch/arm/mach-omap2/gpmc.h b/arch/arm/mach-omap2/gpmc.h
-> deleted file mode 100644
+>> @@ -560,13 +533,11 @@ void __init pdata_quirks_init(const struct of_device_id *omap_dt_match_table)
+>>  	 * We still need this for omap2420 and omap3 PM to work, others are
+>
+> Stale comment about omap2420
 
-perl scripts/get_maintainer.pl --self-test=patterns now warns:
-  ./MAINTAINERS:19896: warning: no file matches	F:	arch/arm/mach-omap2/*gpmc*
+fixed.
 
-> @@ -560,13 +533,11 @@ void __init pdata_quirks_init(const struct of_device_id *omap_dt_match_table)
->  	 * We still need this for omap2420 and omap3 PM to work, others are
+>> diff --git a/arch/arm/mach-omap2/voltagedomains2xxx_data.c b/arch/arm/mach-omap2/voltagedomains2xxx_data.c
+>> deleted file mode 100644
+>> [...]
+>> -void __init omap2xxx_voltagedomains_init(void)
+>
+> The declaration for this is still in voltage.h.
 
-Stale comment about omap2420
+fixed.
 
-> diff --git a/arch/arm/mach-omap2/voltagedomains2xxx_data.c b/arch/arm/mach-omap2/voltagedomains2xxx_data.c
-> deleted file mode 100644
-> [...]
-> -void __init omap2xxx_voltagedomains_init(void)
+Thanks a lot for taking a look here.
 
-The declaration for this is still in voltage.h.
-
-Thanks,
-Karl
+       Arnd

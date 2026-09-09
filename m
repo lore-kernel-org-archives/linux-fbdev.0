@@ -1,38 +1,38 @@
 Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4B474F55A5;
-	Wed,  9 Sep 2026 13:47:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9A8D4DF4DC;
+	Wed,  9 Sep 2026 13:52:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788961659; cv=none; b=GdeD4mBIQeWHnGdMT3SW/IqdAQ2J8DRn+cnaCC0JwCslKpOaD0hNk4HlB5/bSRf9TQxRGpn+s3XmiOAl2UKjMwIswnYSDdhuWd3w2ci0rs5bwyD14jdXYK73imDiO5acA6O5QobYIFS4ePDCOyvcPRg9+jud0M8XJW0mydr6QEo=
+	t=1788961923; cv=none; b=Z8TueXaLjICMKjKK1TAr4mjg3r7LHwVTtgWFEjb14O1Zae2zIdZcNwlg7cZ+Ky5n+X/PmFsjQhvwKGgUHJN2921tSupxSQQhV52wTxeb1vx4ATFYz7qiQAbAOvCmLmU3iGVig770SwBy/slyDI2Gd1FFXNYPtfJ1UP+UYsR9v9w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788961659; c=relaxed/simple;
-	bh=paMgZuNREAZRlfZm0w4BUOSPbd88b6hgz9N3jycmZig=;
+	s=arc-20240116; t=1788961923; c=relaxed/simple;
+	bh=pAVIrS3A7Rvp0U6cdijMHeBv+L6o6e+82vw+zmkqi7U=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Kcs+/hXN/ckzZvOhCavWR0jmD9E5V2gRQrDTlTUnNkpX7IbrH+Xn4chufTLQe8NsJUfunDdUXYmBz5yovE6pmsdjOtE9egbOvRUcbAjTIBVu+5C7g8JLGi0Cw3jaLpd0onskTbMo43xX+wBVP0yak2LipWEXOBSeowXUJZdfN9c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=GCHpAQ+O; arc=none smtp.client-ip=185.246.84.56
+	 Content-Type:Content-Disposition:In-Reply-To; b=nXTtbzZVIvylX3JjIJ2NZGuiVH2KMHfI1PRXKCMil1wkhn7/Lme27yf8Wu4WzS4Vc8SjBKBy+EBinWwh7LXf5r+GF2FaM4Zj95zy0XmwpXDklqRkW75u2J48dDIkvoHRl2OxJ6Vd6Mu7gX9VlDRD4AnFqMg1JViLeKwzhy5zcV0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=ioCAXYPV; arc=none smtp.client-ip=185.246.84.56
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="GCHpAQ+O"
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="ioCAXYPV"
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id 11B541A1A70;
-	Wed,  9 Sep 2026 13:47:35 +0000 (UTC)
+	by smtpout-02.galae.net (Postfix) with ESMTPS id 0E6A21A1A75;
+	Wed,  9 Sep 2026 13:51:59 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id D920F60448;
-	Wed,  9 Sep 2026 13:47:34 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id E878511C782BF;
-	Wed,  9 Sep 2026 15:47:25 +0200 (CEST)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id CD57B60448;
+	Wed,  9 Sep 2026 13:51:58 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id A566B11C7AF8E;
+	Wed,  9 Sep 2026 15:51:49 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1788961652; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 in-reply-to:references; bh=UeQWrBHUsYzfR8OG1tLDH6xJ9uIj59JiQoZuHROubjw=;
-	b=GCHpAQ+OrX4KfJhFAWkevTRLOtcTPUS8G9Z+Qk0T1XTKkFRt9FjGrGjCYhRGd9BtQhCjo/
-	EjrkQN54tfMFRkO5+xmticdh9JQRCnP2A6n6eTLXDpmK7ohZQa0h2ZLHdz6McP4I8NsWd7
-	Vhhg7eZxU5SjMneaW0TFE74yKyqTBm3QDE3kSX31z2V59Awjm5z2K1z2U17N9pizI0//yg
-	GjoEmkXUvZsDmi3QmJQ5OdeX67P1EmPvSDqjVYKsmyBs8NvIaHtOqAOZbnt7yRBk6aq0Q9
-	1TDtXjaJ35VLd+ubtK3nvQd8cnqvwUzV/I8u/lS/OxzWY95CvKOygSUOa+SMoQ==
-Date: Wed, 9 Sep 2026 15:47:25 +0200
+	t=1788961916; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 in-reply-to:references; bh=X3TXa8ZqMQb4DnauQKRwN/9Bqzakf4XtPXYK7Pd7tsY=;
+	b=ioCAXYPVeyyJMca8ak7CEqrnzMHTUnvRr+T9Em1q2K55JSPptr9oF0sf8wq+LQEdMpFEKD
+	00Vkzm8CTC+NdwdC1gZZ9VtovHy1m5ebKW8EgpOtx8a6YUjVa/AU6YAMdmkFMBXUnNt/NX
+	09GgLdWETkP2R+00Kf9hLVtcVDO20S1blQ18HThNPki10EisBVPE0hTs6dtgpE5pofHJc8
+	YP07DdcaByF7h4IU4ii4lOqWfFZiccMDPuveULOScrip6ulVUSm+uyjN8NNdXeHizLT7vS
+	HqNPdXLA9lk7kniz17hGVcOlsGTDe8/Z24UFy3FJqS9SaDzfZNGprIAeNTOJ8A==
+Date: Wed, 9 Sep 2026 15:51:49 +0200
 From: Alexandre Belloni <alexandre.belloni@bootlin.com>
 To: Arnd Bergmann <arnd@kernel.org>
 Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev,
@@ -62,10 +62,10 @@ Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev,
 	linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org,
 	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: Re: [PATCH 07/14] mfd: remove unused lp8788 driver
-Message-ID: <202609091347259a3b9fa4@mail.local>
+Subject: Re: [PATCH 13/14] mfd: remove unused menelaus driver
+Message-ID: <20260909135149e7d73952@mail.local>
 References: <20260909132153.1596191-1-arnd@kernel.org>
- <20260909132153.1596191-8-arnd@kernel.org>
+ <20260909132153.1596191-14-arnd@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -74,23 +74,19 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260909132153.1596191-8-arnd@kernel.org>
+In-Reply-To: <20260909132153.1596191-14-arnd@kernel.org>
 X-Last-TLS-Session-Version: TLSv1.3
 
-On 09/09/2026 15:21:44+0200, Arnd Bergmann wrote:
+On 09/09/2026 15:21:50+0200, Arnd Bergmann wrote:
 > From: Arnd Bergmann <arnd@arndb.de>
 > 
-> This driver was apparently never used upstream, and without devicetree
-> support cannot be used by external board support.
-> 
-> The MAINTAINER entry was already removed in 2021 as the email address
-> bounced.
+> Menelaus was a companion chip for the omap24xx platform, which has
+> been remvoed from the kernel, so now the menelaus driver is unused
+> and can be removed.
 > 
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
 Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-
-
 
 -- 
 Alexandre Belloni, co-owner and COO, Bootlin

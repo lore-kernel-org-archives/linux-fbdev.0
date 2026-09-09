@@ -1,153 +1,212 @@
-Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06F5235F60F
-	for <linux-fbdev@vger.kernel.org>; Wed,  9 Sep 2026 19:10:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.140
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 108E13D904C;
+	Wed,  9 Sep 2026 20:11:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788981046; cv=none; b=HPQNq1reXLIDf2x3OL5QK/9C/UhUm6bz+VgHwn1W3ClgIZxUfWgqKvdw7D9kLha/cJ1xA70JQkHY44WgPQZ6Q9TjJ07jCdEt/vTDStxO9p1alvC44Pn9sjiTGQapnbQFp4JdSdSlmmvhukf+EVMTFuwM4qjeF1CIUXskiXKeU10=
+	t=1788984668; cv=none; b=WzrUxBKmk7TbKIYly9K/dSU/qhB1YA/o4OoqN27BXxESsJbQU3PQE1h8eQZZsNkeA9e+FMTvsBiX0OpBtZHwKyddGMRmb9Dr9MY2x/zZj9Fbq/OKYEqqelVDM98mgnzgd7dyXOTKOehSoEy2G6rfaZbFqRh+GBsvxMh89jpVxYE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788981046; c=relaxed/simple;
-	bh=+FwvqeOjTOvavB2Tk0SAMV7YSqs/UTLwrOLAsMcBZ0s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ChRWwhff2yljArDgsqTnVICyjA/gCdOI3K2QtEp6VCvhZ735IlGA4uD7NlY3fI11UD8VV16gtTdlDnWFDuGy8GoZBygupRnnC/WCO4rNGXctRmPCniu60njYayVWsJPAQnSS28Yi+/6rYB7ghpNlVXmxz9PTXUj9otbVP/Z3Qck=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=bx+vL5tq; arc=none smtp.client-ip=74.125.227.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1788984668; c=relaxed/simple;
+	bh=5HoG3honV/sojWC8vPCS1yQeOGAMvOh2ZbyOcHFktnc=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=X1pDXokmrpGEEtnOz2VqRfmxI/G0F9OcP4z7z+OWl2utvwtl3ImNTaI3wP/1qdNtwRbsYIh+Yw8mM3rPXFXKYzbGR/UE1308Mdw/eBjIjzmyGJlN0mAMILk4tPy37XVpPCiZUSQ2cDCt3/wtocSY5L1lDG6MJsiPs/i1Jw87LVc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MOzG7z/W; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bx+vL5tq"
-Received: by mail-pj2-f12.google.com with SMTP id d9443c01a7336-2d747eb79fbso4813995ad.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Sep 2026 12:10:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1788981043; x=1789585843; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=TyPxplOOHI2AEPRdVqrOjZibnjH3OGUmINX0gnTrLb8=;
-        b=bx+vL5tq0zNZYW5V74NfZwQ6quPYjRn53dhcO+ZoSd/CZ2tAL3i3Hpr4DaF+Zk50kt
-         XhQUgRH3g00XpXX+BBr48tSSHs8ckccYP0xfRXwrKhA6m0JAumZaROUuisKxl0eDQ9QD
-         gHgh7LyGXplM41mJeuOtZQwrdtImgtas3Nz3IXVpdk+VbmcAA/8xwHxkbTZdY7j0Lfg8
-         K1f0YlrCAk1yRYcRIDCE3vwcmQNEwapF+Zwd9ADvGtyd3tv4JHs8nDt5y26rmiLEqpYE
-         0C6fM+Ef0YgetYn4BSjbq78RqwBgcshQyJiUqvPEYHXbLxzJeH6nvZSgroEOlGkPTLvY
-         N/RA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788981043; x=1789585843;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=TyPxplOOHI2AEPRdVqrOjZibnjH3OGUmINX0gnTrLb8=;
-        b=objK1EqvzhiWeBAft7A2Fa44L6JU8cuudJ0muQGLapWSd752cHPaA3DrTJL4bBlPOX
-         7s/Str1V5d6ltNEoS4KarNNn0m8uJmsX4bteS2o9rLrQ3Wjlmm5aZqMrRX93rIh1oE3j
-         ZKS1Zy93IGpv6mmQG4Erju88SUsxbdGgs5NdGklL1Ue/OqXTUJEYmI3kbHOKEF2bVup5
-         Hxr8rOX78mBtqu0ARuU74VBAOPNWhtVUvMuJ2hwGOAHXrxO7MItfU/6QzVcf6b7NB14U
-         XMw2fSSOBtoDqrazzOw4r4gUSAWiJFwqVX2KS+N2WuPrd4YupcgSIYyaOcRb1rUG66Pn
-         OKng==
-X-Gm-Message-State: AFuF++mg51B5hAnJ/Z2PBzRvH0Ir8n1rBuy/DaUfSNQNdhfLC3kTpXxy
-	s0SpGtAgrgaDoiSHAuLZDtFxamdRA5rjQeZCHOyvvuF71BCdDD0zC/EB
-X-Gm-Gg: AYBFou22tThRRWytimDw7kHwkyMo3zUkrA33AX5ZjcLUy7cnaRcmOB6Gc8pIlhjnbwC
-	QhBFBDXXxYDeE4B7e5VccQwpsXlrOUY3MYF24VuNSqEOKdopPrxE26MkI2TvHjQVUNg62G09wXb
-	eCnsoePofwqSWcLn5NTt9Ev8mxTCZ0g1FEEsDoo553DXMGDBkpw1VGALe7LHF89CDfBKGc5gfqF
-	1JoKrCQkq0T+tgGO6Z+J+e8W2oq4Y1SH2rXc9Bu2jcKQ1HpL/drqRLBxPsyHjUP8qCGnfSjrMPJ
-	EebdKxJjeZrMxgmDCioJ1iWqnZbGzqMHU5sW3HHYPz047fIgkOJyjRboMfQF4SLAKthHv2rC/hX
-	OXCf0yPeDI6OpmSyBeow+mQ6PMh9evERZHN2oqBgtq+oqujYD5r5dUZ3Vbu5G8CkaxBPH+Di1ew
-	wYwxGTPzPNLjT9mqYo347tLhZQoAoqDFqEicQol2mIqqSurEuD9EVTgnCJTS+QD+R9JIuOxUQp5
-	RgsaphxcYk0lzAaxxka3qqFiMza+f6m
-X-Received: by 2002:a17:902:ec89:b0:2d6:df31:5bd0 with SMTP id d9443c01a7336-2dd07b9d3c0mr43860775ad.10.1788981042709;
-        Wed, 09 Sep 2026 12:10:42 -0700 (PDT)
-Received: from 192.168.50.3 ([198.176.50.208])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2db18a1eb47sm77198285ad.48.2026.09.09.12.10.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2026 12:10:41 -0700 (PDT)
-From: Weiming Shi <bestswngs@gmail.com>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	co+c25629c98ba36ebe@bugs.sh,
-	Weiming Shi <bestswngs@gmail.com>
-Subject: [PATCH] fbdev: vfb: defer cleanup until the last reference
-Date: Thu, 10 Sep 2026 03:10:23 +0800
-Message-ID: <20260909191022.847295-2-bestswngs@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MOzG7z/W"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 199AA1F00898;
+	Wed,  9 Sep 2026 20:10:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1788984656;
+	bh=dMpeLqTNXDRpS+r+jORTF862uDqb/CqEpFeuPMT9TQY=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject;
+	b=MOzG7z/WitVOZzXnEIONfv6+fQIabeSSDolWC+rNYrS7Vlwwk1vfEtfYArR3h+6AW
+	 BkZjdwcm4wildy8SICewrTrtCKgy1b/k3oor33cNi+NQUhi9t08L42AuUSej2fEUqe
+	 qfny4KDHxbZ/xJqwFiumW+2xXGFO5NTmGmjFJsK/R3ZPuIR60+kApLxdoET5/gH2iE
+	 rWbH4vbeQZu2OBM+F5Ue964Xfcvu1u56EKpW7dmEAVwazFnXO1VEyiFIhPc6gnzFQs
+	 PkgWE1RX2sqolRE0Bgev0hvDTVbQb+YwwFjRG96UwvW36lXSDQI2HmKP52zMD7Vv7T
+	 Lhkf7318C1Mlw==
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailfauth.ams.internal (Postfix) with ESMTP id 48EF31980052;
+	Wed,  9 Sep 2026 16:10:53 -0400 (EDT)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Wed, 09 Sep 2026 16:10:53 -0400
+X-ME-Sender: <xms:Sr2hajWlva4lVEbm2EzQ1s3udRWO4ikQFFFPxDegsKQ3CTjZB3r-uA>
+    <xme:Sr2hambJl-c3e1UrZYMfqYiLxCHTOQsPkJ8JLd0z0j-CmEmZZXevEai-Q5MqU57rC
+    ZZC53tEJfuu9jLPODK6QXBLSGBNaUsNCeOiE3yoJfwKabbHa6Xe7xPZ>
+X-ME-Proxy-Cause: dmFkZTGP2bhb/XYhsNLB9S53X9rzoPN54qfE/KjrIQ+39ezusymjgkFG9cet+423ozVpDR
+    QFvnmTNBMcgGscLcMMj7nBUY31hzJeOaGY2jSrT3p2YxejgdAUzrKdVOR8lCRBS16Gn88X
+    /+XGMDl8CSXVYCQsr0wErwVPc+V6zmpd4d51AzTQO8MWr89uCO460fbix+l7zmvoJuzkvE
+    RaO6/PdGwEVTqYIezlus3lDCEAnry2C8vj8V499E/dlZoQ4ScXku67uqDjBlKaXI4HB2gC
+    KacujXVdDoEwzQ2dyYPEUzaZ7+e2mOEhOGj1Fetuz0MEj4OcAAwjVvsFr0sHvhPpz277Gf
+    eKzGoSn6iqanxzNgqqMPsXCY76vQD+ea58iHSG5APtokUDPToSvfELosscq5Qt4yP2Q9+t
+    y1tk8mh/YV6JND1qNbS+O2favpqJYSFmbwPFawNlshEMNgXzINZxwKWiewG0SxhFiQFIL9
+    4DpI0upYjn0k3v2eBM7Iml4anYd8gF3WPX86kKH7R0o4H64FA7zDDSXAF3jY5QkB0ZSiW6
+    sIKc9JmLSD+i8R4Jef0OcLMUt1jMXi6faA5jYE6vH5UfgYoDR3/ZIP9Q6vSw4pAYMA/Nxa
+    V2SShKsn+8CcVH/XBZJ+tLKfo4Kqs/CxHjYl1vrrgz/DIr30WA6FviGoSjxg
+X-ME-Proxy: <xmx:Tb2hapOSEggtAzw0YPolcJShgHipiCEz32yrnlma3o-FVpqo5DDtLw>
+    <xmx:Tb2hampTwttRtE3MK5w7nObKR1veqSPqSuzHl5qP3-u6Rq2T0fLYYA>
+    <xmx:Tb2hau5yJgf9foM2D7YQh1VswYDLBi8VWRuYGaVJdHhtOWFLOMS4ZQ>
+    <xmx:Tb2hagpfMYsdVStUsBhPHlcE5fczSNlUCNGOAGT9WGdLMRXUiDZ7qw>
+    <xmx:Tb2hasKSPzPUsbdSIk5XCLjXxVPXAZU5O6viFS2qHLW3A3TqPNR5T1ZS>
+Feedback-ID: i36794607:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id 78FB232A007B; Wed,  9 Sep 2026 16:10:50 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-ThreadId: AGTXWeH1PU47
+Date: Wed, 09 Sep 2026 22:09:43 +0200
+From: "Arnd Bergmann" <arnd@kernel.org>
+To: "Bart Van Assche" <bvanassche@acm.org>,
+ "Krzysztof Kozlowski" <krzk@kernel.org>,
+ "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
+ "Linus Walleij" <linusw@kernel.org>, "Russell King" <linux@armlinux.org.uk>
+Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ imx@lists.linux.dev, linux-stm32@st-md-mailman.stormreply.com,
+ Linux-OMAP <linux-omap@vger.kernel.org>, linux-block@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
+Message-Id: <b0705a8d-1b85-44e0-917d-19ba760e8c12@app.fastmail.com>
+In-Reply-To: <2da174ef-1d5a-425d-b885-be9482b0be90@acm.org>
+References: <20260908152808.3928630-1-arnd@kernel.org>
+ <20260908152808.3928630-4-arnd@kernel.org>
+ <2da174ef-1d5a-425d-b885-be9482b0be90@acm.org>
+Subject: Re: [PATCH 03/13] ARM: remove riscpc
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-FBIOGETCMAP takes a shallow snapshot of info->cmap and performs the
-usercopy after dropping info->lock. vfb_remove() frees the colormap
-immediately after unregistering the framebuffer, even when an open file
-still holds a reference to fb_info. A concurrent driver unbind can
-therefore free the colormap while the ioctl copies it to userspace.
+On Wed, Sep 9, 2026, at 18:42, Bart Van Assche wrote:
+> On 9/8/26 8:27 AM, Arnd Bergmann wrote:
+>> The Acorn Risc PC is the oldest still support Arm machine in the kern=
+el,
+>> originally shipped with an ARMv3 ARM610 support in 1994, it later all=
+owed
+>> faster StrongARM CPUs.
+>>=20
+>> The main limitation here is the CPU bus that does not allow 16-bit
+>> wide data transfers and hence requires the kernel to be built with the
+>> -march=3Darmv3 compiler option that was discontinued in gcc-9.
+>>=20
+>> As gcc-8 is barely supported for compiling the kernel, this one
+>> will not see another LTS kernel release, so remove it now.
+>
+> If this patch has to be reposted, here is the feedback of my AI coding
+> assistant (based on an LLM and hence may be wrong):
 
-KASAN reports:
+Most of this was already discussed, but there are two additional
+changes that I made based on it.
 
-  BUG: KASAN: slab-use-after-free in _copy_to_user
-  Read of size 512 by task poc/125
+> Issues & Observations
+> ---------------------
+> 1. Missed arch/arm/Makefile cleanup
+> Patch 03 deletes the entire directory arch/arm/mach-rpc/, but does not=20
+> touch arch/arm/Makefile. As a result, two orphaned entries remain:
+>
+> machine-$(CONFIG_ARCH_RPC)		+=3D rpc
+> machdirs-$(CONFIG_ARCH_RPC)		+=3D arch/arm/mach-rpc
+> Furthermore, machdirs-$(CONFIG_ARCH_RPC) was the very last user of=20
+> machdirs- in arch/arm/Makefile (after Footbridge and SA-1100 are remov=
+ed=20
+> in patches 1 & 2):
 
-   _copy_to_user (./include/linux/instrumented.h:129 ./include/linux/uaccess.h:201 lib/usercopy.c:24)
-   fb_cmap_to_user (./include/linux/uaccess.h:230 drivers/video/fbdev/core/fbcmap.c:211)
-   do_fb_ioctl (drivers/video/fbdev/core/fb_chrdev.c:114)
+Fixed already after sashiko-bot found the same thing.
 
-   Allocated by task 1:
-   fb_alloc_cmap_gfp (./include/linux/slab.h:973 ./include/linux/slab.h:1290 drivers/video/fbdev/core/fbcmap.c:108)
-   vfb_probe (drivers/video/fbdev/vfb.c:459)
+> kconfig
+>
+>
+> config FONT_ACORN_8x8
+> 	bool "Acorn console 8x8 font" if FONTS
+> 	depends on FRAMEBUFFER_CONSOLE || DRM_PANIC
+> 	default y if !SPARC && !FONTS && ARM && ARCH_ACORN
+> Because ARCH_ACORN is removed, this default can never trigger and the=20
+> reference should be cleaned up.
 
-   Freed by task 124:
-   fb_dealloc_cmap (drivers/video/fbdev/core/fbcmap.c:151)
-   vfb_remove (drivers/video/fbdev/vfb.c:489)
+I have this in the patch that removes acornfb. It could go into
+either one, but I felt it fits better there
 
-unregister_framebuffer() drops the registration reference, and fbdev calls
-fb_destroy after the last put_fb_info(). Move the registered framebuffer's
-cleanup into an fb_destroy callback so its colormap and screen buffer stay
-alive until all file references have been released.
+> kconfig
+>
+>
+> config CPU_SA110
+> 	bool
+> 	select CPU_32v3 if ARCH_RPC
+> 	select CPU_32v4 if !ARCH_RPC
+> Since ARCH_RPC is removed, select CPU_32v3 if ARCH_RPC references a=20
+> non-existent symbol. If CPU_SA110 remains temporarily (before the=20
+> architectural cleanup in 7.5), this should be simplified to select CPU=
+_32v4.
 
-Fixes: 5e266e2e0e19 ("vfb: fix memory leaks in removal path")
-Reported-by: co+c25629c98ba36ebe@bugs.sh
-Closes: https://lore.kernel.org/linux-fbdev/f2Kf9GYn1lKR5S1dbvGVtykMxK1RlgP5z8sW@bugs.sh/
-Assisted-by: Codex:gpt-5
-Signed-off-by: Weiming Shi <bestswngs@gmail.com>
----
- drivers/video/fbdev/vfb.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+Also explained already that I preferred removing CPU_32v3 along
+with CPU_SA110 in a later patch, not together with ARCH_RPC.
 
-diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-index 5b7965f36c5ed..de137b2bdaedc 100644
---- a/drivers/video/fbdev/vfb.c
-+++ b/drivers/video/fbdev/vfb.c
-@@ -78,6 +78,13 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
- static int vfb_mmap(struct fb_info *info,
- 		    struct vm_area_struct *vma);
- 
-+static void vfb_destroy(struct fb_info *info)
-+{
-+	vfree(info->screen_buffer);
-+	fb_dealloc_cmap(&info->cmap);
-+	framebuffer_release(info);
-+}
-+
- static const struct fb_ops vfb_ops = {
- 	.owner		= THIS_MODULE,
- 	__FB_DEFAULT_SYSMEM_OPS_RDWR,
-@@ -87,6 +94,7 @@ static const struct fb_ops vfb_ops = {
- 	.fb_pan_display	= vfb_pan_display,
- 	__FB_DEFAULT_SYSMEM_OPS_DRAW,
- 	.fb_mmap	= vfb_mmap,
-+	.fb_destroy	= vfb_destroy,
- };
- 
-     /*
-@@ -485,9 +493,6 @@ static void vfb_remove(struct platform_device *dev)
- 
- 	if (info) {
- 		unregister_framebuffer(info);
--		vfree(videomemory);
--		fb_dealloc_cmap(&info->cmap);
--		framebuffer_release(info);
- 	}
- }
- 
--- 
-2.55.0
+> 4. Dead code in arch/arm/kernel/atags_compat.c
+> With CONFIG_ARCH_ACORN removed from arch/arm/Kconfig, two blocks in
+> arch/arm/kernel/atags_compat.c
+>   are now dead code:
+>
+> Lines 150=E2=80=93157: #ifdef CONFIG_ARCH_ACORN / if (machine_is_riscp=
+c())=20
+> memory bank tagging.
+> Lines 186=E2=80=93194: #ifdef CONFIG_ARCH_ACORN ATAG_ACORN translation.
+> These blocks should be removed as part of this patch.
 
+I have a patch to remove that file.
+
+>
+> /*
+>   * Now, pick up the machine-defined IO definitions
+>   */
+> #if IS_ENABLED(CONFIG_PCMCIA) || defined(CONFIG_PCI)
+> CONFIG_NEED_MACH_IO_H and #include <mach/io.h> were removed, leaving=20
+> this comment describing generic PCI/PCMCIA I/O limits.
+
+Fixed now.
+
+> arch/arm/boot/bootp/Makefile:21
+> : # guess an initrd location if possible is left dangling right before=20
+> ifdef INITRD_OFFSET after all initrd_offset-$(CONFIG_...) logic has be=
+en=20
+> stripped out.
+
+Removed that entire block now:
+
+--- a/arch/arm/boot/bootp/Makefile
++++ b/arch/arm/boot/bootp/Makefile
+@@ -17,12 +17,6 @@ add_hex =3D $(shell printf 0x%x $$(( $(1) + $(2) )) )
+ #   INITRD_PHYS must be in RAM
+=20
+ PARAMS_PHYS :=3D $(call add_hex, $(PHYS_OFFSET), 0x100)
+-
+-# guess an initrd location if possible
+-ifdef INITRD_OFFSET
+-INITRD_PHYS :=3D $(call add_hex, $(PHYS_OFFSET), $(INITRD_OFFSET))
+-endif
+-
+ endif
+=20
+ PHONY +=3D initrd
+@@ -30,7 +24,7 @@ initrd:
+        @test "$(PARAMS_PHYS)" !=3D "" || \
+        (echo bootpImage: You must specify PHYS_OFFSET of PARAMS_PHYS ; =
+exit -1)
+        @test "$(INITRD_PHYS)" !=3D "" || \
+-       (echo bootpImage: You must specify INITRD_OFFSET or INITRD_PHYS =
+; exit -1)
++       (echo bootpImage: You must specify INITRD_PHYS ; exit -1)
+        @test "$(INITRD)" !=3D "" || \
+        (echo bootpImage: You must specify INITRD; exit -1)
+=20
+
+> 6. Floppy driver & arch/arm/include/asm/floppy.h status
+> The patch removes the ARM MFM AND FLOPPY DRIVERS entry from MAINTAINER=
+S:
+
+commented already that this is removed along with CONFIG_ISA in a later
+patch.
+
+      Arnd

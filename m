@@ -1,107 +1,79 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mail-4319.protonmail.ch (mail-4319.protonmail.ch [185.70.43.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88D7D57981C;
-	Wed,  9 Sep 2026 13:28:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C990568534;
+	Wed,  9 Sep 2026 13:35:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.70.43.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788960491; cv=none; b=sbGJtJKUzITG8HQiD37BmuI0YcvgNJdtB8BEHEdH8YtdMxAxGU+yrLLzSVGZhcybL+ds8VxF4vzziUUw7aagUolz5ztOduTngKV24b6LJYRG76Kp51O42YoIGGQUBPqySOrnwvRHdJKGC/stcSWXXMQwIWVq+cDjjUwfw7JPgsI=
+	t=1788960939; cv=none; b=abmLtQ5iupqNZWolM4jtv+3KHdJe+KhQgu8JTXI5WO2SMYSa+Z5ySR/vnEWY5IJ2IyqiVENqw5DheGjwt4M47iVmOyaWdtHsbmpoGJt8Ml8QGOrjijum2D5cdoF5luxIPq0Q+Yl4A9Lsmc8UniSKJOCOT7HwrR6/8W6vTp1JvA4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788960491; c=relaxed/simple;
-	bh=/hlzJNzei2knOn1RYcaTNkb4UoqZbwgVsH5KNit1MHs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Z9oVulXpzlgva3wYektP1omFy5KrfwNhigc0FV54Q53VOzqWgsd0r3jGIGX3PaycuLNCZR0eWMlwUqeR3UhveKhUZuZB2i/NWzGD4kJFGI5eHRcWAROQ6sZOuT9jw9i/cCeQTeJtLiM/iQvC/NR8n+U/vsoU9KhNk+REVdkfZ4s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=eR5D3nm1; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788960939; c=relaxed/simple;
+	bh=UvIq/cjJV1hrTOlrWNf3iiQyvG0huFuuj7qysrrM2u8=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=BiOmMJTe1QglxaQ2B3AydYVnhCpqXf3UWf4G4b7vH0yz+htm3kl4Guy9rJbwAksSA6Yk3TE4horf0gutEElwVPaSc27eZmJ/0W/6MbHRk9m7fEQbz7n8NlC4TqrT48prKuHC5BdJW2xOi6DjPGScxPXeMKI9HXbzRNn0rtP9Qgc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=IsLU78/n; arc=none smtp.client-ip=185.70.43.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="eR5D3nm1"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5C301F00A3A;
-	Wed,  9 Sep 2026 13:27:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788960486;
-	bh=/hlzJNzei2knOn1RYcaTNkb4UoqZbwgVsH5KNit1MHs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=eR5D3nm1CPgbjmHPZ0Vv7T4vdNRF/43OgybS94gl2A9fsyrl4gGmKe6vwaT3jfTzX
-	 +jD4I9IGrYtGuGXb5/A7jnHJvsDKGHllhymRTLq9kCq/SQi87n+n9y8sD4xk8HYc4W
-	 1FMZTsqHXMX6M3yTH47nD27tyCXLTKlR5oFEGKYxbRLJ27lUqEnoIOljlrumgyldGk
-	 vQ0EiMkovKU1SvLxEK2ji2FQp/hgc7rRh1M5u3fknsEg1fK7g7esz94rpEqvklnBCa
-	 BYmZFTXxMbawW0CHZITqBgDveaise1uxWGeZVkrhXq8mgPMzdHFvBAlr06emaY0HNc
-	 eC2FsYwPx3u3A==
-Date: Wed, 9 Sep 2026 14:27:57 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	Arnd Bergmann <arnd@arndb.de>, Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Jonathan Cameron <jic23@kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Pavel Machek <pavel@kernel.org>,
-	Michael Hennerich <michael.hennerich@analog.com>,
-	Support Opensource <support.opensource@diasemi.com>,
-	Sebastian Reichel <sre@kernel.org>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-	linux-doc@vger.kernel.org, linux-media@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-hwmon@vger.kernel.org,
-	patches@opensource.cirrus.com, linux-watchdog@vger.kernel.org,
-	linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org,
-	linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-	linux-fbdev@vger.kernel.org, linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev
-Subject: Re: [PATCH 04/14] mfd: remove unused wm8400 driver
-Message-ID: <76d70b0a-a3c1-4051-84c9-77afb715c4a8@sirena.org.uk>
-References: <20260909132153.1596191-1-arnd@kernel.org>
- <20260909132153.1596191-5-arnd@kernel.org>
+	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="IsLU78/n"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
+	s=protonmail; t=1788960929; x=1789220129;
+	bh=8FP9wEWR+OQlwhcDhoPZ/PVqsFTANFAKvO8FGTeDz5s=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=IsLU78/nM9lNpcWcpMwTAnDNWCElDiEwffkCVgRIlLxY+ydaX3ujG/Jn2RkgzL1RR
+	 OGvyg3Euo6jRpusAnLX/2f8npgfJrIBzDY+KfffjCPgsdJ9/q0OTlCbiYIU5z/J/XH
+	 HGvp/n8XCPpg6Si3CqoLAoy4m7LridPSe7iktxNZhFKKn+zTWqqdgJtwQF0CLOmL7J
+	 t+BElI4ppSVVzYWzhyJ1vXThJGxqH+9hBy+fXxIz03TQfT9ozGpJjrYKSPZvbbqFA2
+	 gnqG2pV3HaKkqbWz4/zhHcMVZ0uf5RWCfCVOD7lE+ICfdPjPDHxRa7u+v20ceIkPe2
+	 fC855vEIag/Fw==
+Date: Wed, 09 Sep 2026 13:35:23 +0000
+To: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+From: contectforbusiness@proton.me
+Cc: "sudipm.mukherjee@gmail.com" <sudipm.mukherjee@gmail.com>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] staging: sm750fb: make g_fbmode const to fix checkpatch warning
+Message-ID: <z52NAZ-Y9CZbDesqE3fyIEJdUIJnqeIXj6HhArNIjnT8tw7wQcT6uhT7KdZlC7h11AB5X8AQG1EG96GalUwNUGtCy6XFKqCkeazSTpmEzPk=@proton.me>
+In-Reply-To: <KW1s60gR5As9PdhLGq5MQYR9QPxr-tCZUn_dxvjME1PM6lW4ilRIG0gq8mbir7y9oBSlnEIhPq-EkEjHkruVnDNZpsJ-2OF2OIAEZLEZs7E=@proton.me>
+References: <KW1s60gR5As9PdhLGq5MQYR9QPxr-tCZUn_dxvjME1PM6lW4ilRIG0gq8mbir7y9oBSlnEIhPq-EkEjHkruVnDNZpsJ-2OF2OIAEZLEZs7E=@proton.me>
+Feedback-ID: 147676893:user:proton
+X-Pm-Message-ID: d48efaa0481a959b39cf2c693198d246cb67d856
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="E7vTznbJl/k8Ppdd"
-Content-Disposition: inline
-In-Reply-To: <20260909132153.1596191-5-arnd@kernel.org>
-X-Cookie: Postage will be paid by addressee.
-
-
---E7vTznbJl/k8Ppdd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 09, 2026 at 03:21:41PM +0200, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->=20
-> This driver requires a platform_data definition, which does not exist
-> in the kernel.
->=20
-> According to Mark Brown, the hardware supported by this driver was never
-> shipped in production.
+checkpatch reports:
 
-Acked-by: Mark Brown <broonie@kernel.org>
+  WARNING: static const char * array should probably be
+  static const char * const
 
---E7vTznbJl/k8Ppdd
-Content-Type: application/pgp-signature; name="signature.asc"
+g_fbmode is never modified, so make the pointers const as well.
+This quiets the warning and makes the intent clearer.
 
------BEGIN PGP SIGNATURE-----
+No functional change.
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmqhXtwACgkQJNaLcl1U
-h9DKkgf/RLbTE5UB6RL3Q66U8VBY9ivEji//LxLXmZDVRMWW85M/tZkuimYXhr1H
-qRZzWzsDpkIZhMa5DFLZxJGgVhSyRq9lmv40QYt8TboWu0+dKRy4nuB95+RSTNWh
-fjmkSjHkD/A3ELOP2Q/9B/cCFXsbGXHwS8eXeJVkuaDa1BSP3E7o1l338kofZy5F
-KyFWqJgxYKL/U82xSTvj04+NKj++SorlCIGShW9hgF11hhNTRHMwW8uF2pksnopN
-W8URlMgbSAEsELUabpsbzCFqwtnOJZU2y2vWAICyNt491Nctuj5oUx6D3c0HFsnZ
-z8z8A5SciRK3sUB/+Uh4thfPneAMHA==
-=lTKT
------END PGP SIGNATURE-----
+Signed-off-by: Vaibhav Agarwal <contectforbusiness@proton.me>
+---
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---E7vTznbJl/k8Ppdd--
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm75=
+0.c
+index 039e2033f..f731ef53e 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -12,7 +12,7 @@
+ static int g_hwcursor =3D 1;
+ static int g_noaccel __ro_after_init;
+ static int g_nomtrr __ro_after_init;
+-static const char *g_fbmode[] =3D {NULL, NULL};
++static const char * const g_fbmode[] =3D {NULL, NULL};
+ static const char *g_def_fbmode =3D "1024x768-32@60";
+ static char *g_settings;
+ static int g_dualview __ro_after_init;
+

@@ -1,41 +1,41 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E395E3C3425;
-	Thu, 10 Sep 2026 20:53:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF36E425CEE;
+	Thu, 10 Sep 2026 21:15:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.15.15
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789073600; cv=none; b=H4AzxW9/izLsD5Wsk8jxvJ131DNJVNB25HdqafrKVwewpoNOpp2uD7GUxOnJuA9jWc+ArdqBxzjaHPO+U/Hgm6yQ7MXK/Oq8khtDHm+ePUfkaA2M7rIUpU4AO2cT/DuSdC5mMH7UOF/TwSQnC+6yJFmrCTO8anP4xTBXjRhH0s0=
+	t=1789074945; cv=none; b=br7Ur26Oevw7kJpSMPvYOHbRS8zjbcEQo6LfGdWfdiyH1cNrs9R1VD0ZSvo6GbIeyfszyLxnv5S+b5cEpFjdagTbJppSR3nZp0xsPHFq9vV7kmz3Qcfp74lkTrXV3AMdL+jOrz9l0JalTvM6rwbVlXkUGeSqy0rCphTNPNoI/HQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789073600; c=relaxed/simple;
-	bh=gxvGPXxWQ2ZFlOxjOf3ENd7yMMntKsew/q15r/IRVpc=;
+	s=arc-20240116; t=1789074945; c=relaxed/simple;
+	bh=BF1l/gJGmJ2v2cGaXXpmqVDjtZ+m90GoBHwAP+Ywzvs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EPInTZlk59I2vf64aKkgnrD9Jf9tZb79PzyhL3iJpX/wrSS07xo1tpKQVzAkyJ6kxU9+pjEP032yK6UTzsjczB/ktKTj2YclsPn4kqB4ZIjeXWjFS1eLs+Hhux+YlF4Ly5vFo5TmgEV65j20vJ9rr9jdV0+vxAZPJnpo2pISo3c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=IrP24G26; arc=none smtp.client-ip=212.227.15.18
+	 In-Reply-To:Content-Type; b=N8dwffmF21H43y2p8bgvbDmbjG3c2hQZFfrwwYjjVJ5mNBuP1kQlNNLyvUXg1d8bhQN4hqZxxhPNqpTYURmeyGaHzfIa7eSNSfJaxXx52+/y8E1wV/O8AktaGCkQnc14WPEDgfmVt7Cpge27oAOG4btY4Pzt6yb2bYuVmg179UE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Q9OlQVqB; arc=none smtp.client-ip=212.227.15.15
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="IrP24G26"
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Q9OlQVqB"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1789073561; x=1789678361; i=deller@gmx.de;
-	bh=n2nEvoeCUMsbJxYznaoiRp8eMkeLEENZoc7VuW9yLsY=;
+	s=s31663417; t=1789074913; x=1789679713; i=deller@gmx.de;
+	bh=q1yOBrOw6Ws4g+7hn+GZPA284T4xzGrbHkZrFCYF/Yc=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=IrP24G26u9908JLV3wz2yHxrsmUGyUm6CLT09zqZoz2BV0tlBg0tP3lqxF0aqT//
-	 HxYXQLvZ1R8lRp2ZOiPa6HD9MuH5gtD5GdIgixbSrFoRONP/C1iWykAFZFaplM8kt
-	 OakmulJgBLpvzABCx3OFX4PM5aYA6cHmXnYtHEzdER4/EANQLV5Kusxjc/rWXULjc
-	 BHl5AEu1W4XlYIvFQdjNvnA6QYQSwa4eTTKE8K/Tqlw+6Kw/AsAuv/ktT5MD5Us5i
-	 +pkLrUEbR2R6PTRhGmbzqyqmp8YIhnq5ewUNhov6HLORBayUg+dpD/SVvoSJ03dRp
-	 0VpUpsqQFAAzLbw1IA==
+	b=Q9OlQVqBp7CHd7z+x7TtFkg1opwv0tPDZ1tNPfESLA5EHd22eutDjBW4Yc7xTWDW
+	 wIMGqFYesi/TH0Brnb27eYOttphXgs3VpQk7AuCksLk6Vdn58+H/QR7knRz3ldZqv
+	 vRDfJ9T8wQ4OVNR/ebIhXowjWKY6kdBZ2vCObP852OSpiHpAwn+ucXIWfKL2a5ZB+
+	 NG+yuXVFDc9MysmkA38ULerXK06Z7akiZlZFMQ/Mc36BIlwvEibbYqu5Xr+5QJ413
+	 uS/f3zhcqpad0Hn5Slls0TVf5em/HfmkCDQTryxYaZw9MgYGdzwbSUScBr05CgiK8
+	 EM7RjyjuV6W6P6qM6Q==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
 Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MMGRA-1xMzfS3qVC-00LTLf; Thu, 10
- Sep 2026 22:52:41 +0200
-Message-ID: <8cb3dcb1-a654-44cf-b885-8855ae7798ae@gmx.de>
-Date: Thu, 10 Sep 2026 22:52:37 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MVN6j-1xDwtb2u6Z-00Ua7G; Thu, 10
+ Sep 2026 23:15:12 +0200
+Message-ID: <72351d8f-289e-44d1-b241-e68d7d23145a@gmx.de>
+Date: Thu, 10 Sep 2026 23:15:04 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -43,11 +43,16 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: vfb: defer cleanup until the last reference
-To: Weiming Shi <bestswngs@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, co+c25629c98ba36ebe@bugs.sh
-References: <20260909191022.847295-2-bestswngs@gmail.com>
+Subject: Re: [PATCH] fbdev: sh_mobile_lcdcfb: Restore the per-overlay sysfs
+ attributes
+To: Karl Mehltretter <kmehltretter@gmail.com>
+Cc: Shixiong Ou <oushixiong@kylinos.cn>, Chintan Patel
+ <chintanlike@gmail.com>, Laurent Pinchart
+ <laurent.pinchart@ideasonboard.com>, Thomas Zimmermann
+ <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>
+References: <20260907021844.25497-1-kmehltretter@gmail.com>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -93,150 +98,234 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20260909191022.847295-2-bestswngs@gmail.com>
+In-Reply-To: <20260907021844.25497-1-kmehltretter@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:TGX1Fj5uJvaIJN4nzoqNvgMo6ATr4j8fHvGPfg4FxbMhxVvoh9f
- 0qACugkNeNOMp/iWjd12Hwt8F3p6Qsq+VfEh2edMdo+M534F5k93P+O1sKhj+0p+F/9MyCq
- TUEeDfcVksbowyjfalGqtqnNGqplnpI7QdrzcArzrgSFTSdgSI5t32upkq3hrp1ZzN9BOR2
- 9Z/VdwIKwDccBmWn5ARgg==
+X-Provags-ID: V03:K1:P3H+W5M3XrWOCbLt+28Y387nW4fT8T8jc9/trNMNJ7o3mi17aJd
+ nD9W/BtiTuXzy9SF1nnpIfCgprq48fOiawnSLE6AhDbUceNdQjJ3TECxtrjapy1j2VfYMPv
+ ftZIXsry7NL6WBwr/sRPLELAWzaUZet2jhEpifdp1aNhJCyMBBO5qlvSVKb4bXf+c1kLqLO
+ fA4P73VSCupzs8IbHBz/g==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:j3QB8mty8+o=;2SZ1XCkMzOj4xwY1x3N470r0UG+
- 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
+UI-OutboundReport: notjunk:1;M01:P0:BNn4iYoVYWI=;ASBC221NBexMq+KJq4emwfnX4Op
+ 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
+ mJFWTSwBqkFVto8a1W8/9ogtdPJTU6M6avA==
 
-On 9/9/26 21:10, Weiming Shi wrote:
-> FBIOGETCMAP takes a shallow snapshot of info->cmap and performs the
-> usercopy after dropping info->lock. vfb_remove() frees the colormap
-> immediately after unregistering the framebuffer, even when an open file
-> still holds a reference to fb_info. A concurrent driver unbind can
-> therefore free the colormap while the ioctl copies it to userspace.
+On 9/7/26 04:18, Karl Mehltretter wrote:
+> The ovl_* files documented in
+> Documentation/ABI/testing/sysfs-devices-platform-sh_mobile_lcdc_fb no
+> longer exist.
 >=20
-> KASAN reports:
+> Commit a979182a2453 ("fbdev: lcdcfb: Register sysfs groups through drive=
+r
+> core") moved the attributes from each overlay's framebuffer device to
+> the platform driver's dev_groups and renamed them overlay_*. There is
+> now only one set of attributes for the whole LCDC. The callbacks still
+> expect dev_get_drvdata() to return a struct fb_info, but the platform
+> device holds struct sh_mobile_lcdc_priv, so they access the wrong
+> structure.
 >=20
->    BUG: KASAN: slab-use-after-free in _copy_to_user
->    Read of size 512 by task poc/125
+> Restore the documented names and register the group on each overlay's
+> framebuffer device with device_add_groups(). Remove it with
+> device_remove_groups() before unregistering the framebuffer. Skip
+> creation when info->dev is NULL, as the old device_create_file() calls d=
+id.
 >=20
->     _copy_to_user (./include/linux/instrumented.h:129 ./include/linux/ua=
-ccess.h:201 lib/usercopy.c:24)
->     fb_cmap_to_user (./include/linux/uaccess.h:230 drivers/video/fbdev/c=
-ore/fbcmap.c:211)
->     do_fb_ioctl (drivers/video/fbdev/core/fb_chrdev.c:114)
+> Drop the CONFIG_FB_DEVICE guard, since the driver already depends on it.
 >=20
->     Allocated by task 1:
->     fb_alloc_cmap_gfp (./include/linux/slab.h:973 ./include/linux/slab.h=
-:1290 drivers/video/fbdev/core/fbcmap.c:108)
->     vfb_probe (drivers/video/fbdev/vfb.c:459)
->=20
->     Freed by task 124:
->     fb_dealloc_cmap (drivers/video/fbdev/core/fbcmap.c:151)
->     vfb_remove (drivers/video/fbdev/vfb.c:489)
->=20
-> unregister_framebuffer() drops the registration reference, and fbdev cal=
-ls
-> fb_destroy after the last put_fb_info(). Move the registered framebuffer=
-'s
-> cleanup into an fb_destroy callback so its colormap and screen buffer st=
-ay
-> alive until all file references have been released.
->=20
-> Fixes: 5e266e2e0e19 ("vfb: fix memory leaks in removal path")
-> Reported-by: co+c25629c98ba36ebe@bugs.sh
-> Closes: https://lore.kernel.org/linux-fbdev/f2Kf9GYn1lKR5S1dbvGVtykMxK1R=
-lgP5z8sW@bugs.sh/
-> Assisted-by: Codex:gpt-5
-> Signed-off-by: Weiming Shi <bestswngs@gmail.com>
+> Fixes: a979182a2453 ("fbdev: lcdcfb: Register sysfs groups through drive=
+r core")
+> Cc: stable@vger.kernel.org
+> Assisted-by: LLM
+> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
 > ---
->   drivers/video/fbdev/vfb.c | 11 ++++++++---
->   1 file changed, 8 insertions(+), 3 deletions(-)
-applied.
+> Found while reviewing the sysfs ABI documentation.
+>=20
+> Compile-tested only (allmodconfig, W=3D1), I have no SH-Mobile hardware.
 
-Thanks!
-Helge
+
+This all seems correct, but since it reverts a few of the last patches
+I'd prefer that some other person could also review it....
+
+ =20
+>   drivers/video/fbdev/sh_mobile_lcdcfb.c | 37 +++++++++++++++++---------
+>   1 file changed, 24 insertions(+), 13 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbde=
+v/sh_mobile_lcdcfb.c
+> index e8324b01700f..18fc4e465283 100644
+> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
+> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+> @@ -1337,22 +1337,24 @@ overlay_rop3_store(struct device *dev, struct de=
+vice_attribute *attr,
+>   	return count;
+>   }
+>  =20
+> -static DEVICE_ATTR_RW(overlay_alpha);
+> -static DEVICE_ATTR_RW(overlay_mode);
+> -static DEVICE_ATTR_RW(overlay_position);
+> -static DEVICE_ATTR_RW(overlay_rop3);
+> -
+> -static struct attribute *overlay_sysfs_attrs[] __maybe_unused =3D {
+> -	&dev_attr_overlay_alpha.attr,
+> -	&dev_attr_overlay_mode.attr,
+> -	&dev_attr_overlay_position.attr,
+> -	&dev_attr_overlay_rop3.attr,
+> +static struct device_attribute dev_attr_ovl_alpha =3D
+> +	__ATTR(ovl_alpha, 0644, overlay_alpha_show, overlay_alpha_store);
+> +static struct device_attribute dev_attr_ovl_mode =3D
+> +	__ATTR(ovl_mode, 0644, overlay_mode_show, overlay_mode_store);
+> +static struct device_attribute dev_attr_ovl_position =3D
+> +	__ATTR(ovl_position, 0644, overlay_position_show, overlay_position_sto=
+re);
+> +static struct device_attribute dev_attr_ovl_rop3 =3D
+> +	__ATTR(ovl_rop3, 0644, overlay_rop3_show, overlay_rop3_store);
+> +
+> +static struct attribute *overlay_sysfs_attrs[] =3D {
+> +	&dev_attr_ovl_alpha.attr,
+> +	&dev_attr_ovl_mode.attr,
+> +	&dev_attr_ovl_position.attr,
+> +	&dev_attr_ovl_rop3.attr,
+>   	NULL,
+>   };
+>  =20
+> -#ifdef CONFIG_FB_DEVICE
+>   ATTRIBUTE_GROUPS(overlay_sysfs);
+> -#endif
+>  =20
+>   static const struct fb_fix_screeninfo sh_mobile_lcdc_overlay_fix  =3D =
+{
+>   	.id =3D		"SH Mobile LCDC",
+> @@ -1513,6 +1515,7 @@ sh_mobile_lcdc_overlay_fb_unregister(struct sh_mob=
+ile_lcdc_overlay *ovl)
+>   	if (info =3D=3D NULL || info->dev =3D=3D NULL)
+>   		return;
+>  =20
+> +	device_remove_groups(info->dev, overlay_sysfs_groups);
+>   	unregister_framebuffer(ovl->info);
+>   }
+>  =20
+> @@ -1530,6 +1533,15 @@ sh_mobile_lcdc_overlay_fb_register(struct sh_mobi=
+le_lcdc_overlay *ovl)
+>   	if (ret < 0)
+>   		return ret;
+>  =20
+> +	/* The framebuffer device is optional, see fb_device_create(). */
+> +	if (info->dev) {
+
+I think this needs to be:
+	if (dev_of_fbinfo(info)) {
+to avoid compile error when CONFIG_FB_DEVICE=3Dn.
+
+
+> +		ret =3D device_add_groups(info->dev, overlay_sysfs_groups);
+
+same here. dev_of_fbinfo(info).
+
+> +		if (ret < 0) {
+> +			unregister_framebuffer(info);
+> +			return ret;
+> +		}
+> +	}
+> +
+>   	dev_info(lcdc->dev, "registered %s/overlay %u as %dx%d %dbpp.\n",
+>   		 dev_name(lcdc->dev), ovl->index, info->var.xres,
+>   		 info->var.yres, info->var.bits_per_pixel);
+> @@ -2637,7 +2649,6 @@ static int sh_mobile_lcdc_probe(struct platform_de=
+vice *pdev)
+>   static struct platform_driver sh_mobile_lcdc_driver =3D {
+>   	.driver		=3D {
+>   		.name		=3D "sh_mobile_lcdc_fb",
+> -		.dev_groups	=3D overlay_sysfs_groups,
+>   		.pm		=3D &sh_mobile_lcdc_dev_pm_ops,
+>   	},
+>   	.probe		=3D sh_mobile_lcdc_probe,
+>=20
+> base-commit: 986c24e0fe44f844b44d365b71ce831947f50298
+

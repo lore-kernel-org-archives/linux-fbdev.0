@@ -1,100 +1,93 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D03E3D16FD;
-	Thu, 10 Sep 2026 12:53:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E4B849B200;
+	Thu, 10 Sep 2026 14:04:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789044787; cv=none; b=bzo5lNdeuaPu1ifYo5IBva97xClUGoTGYkbAIqejsCh5SLS/InsZKeNv4mh0w1NC4+U1CWLgdDltDSHPhgmWXqOwa9OyL7SMb59seFoLPco/nHMGol28J877Nen0ZW1EsAjctfdSailkMndX7WcWjvHZg0si6SfwEYQKuI2p7Ns=
+	t=1789049046; cv=none; b=G7/ODmMyx8l0+MbHHx/OUKZWqxNN+gnIMpTFf3dAXhySWu3BWiEeU2s4OgVuwM7WP13KmN4qdiRerJjJLzxZw5/J1AbgyVMgPty6Giy0u0Hpv3JLEUT+CgKjHOLbmWXobaRYUI2ybypl06XPYq87OvKx1G0g9RknWFCMlrmr+9s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789044787; c=relaxed/simple;
-	bh=lqTIdEaPrpwGl5K+cpZOtpgI5Wdv2a5OovOLiY9Cxz4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WXsQW+T4HAXv6rfbecy2Ow/sy5eCcGfxS+sjuGireUj3uMP9Lc8JFrHZK+yPngfWeQ5wMngDwNeGUTNlvRXZO7qxyK9GECaf2nS6OWhF8vDCSzNuqg0iU2a25jWpPw1kiaMbm0xD/8maAD8PHDc0cc2KTuXxcupc7ym3CzOIwY8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=PNNfCWYT; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789049046; c=relaxed/simple;
+	bh=BiT3XmkVk+84uXY5KStLs6hWwju0nZ0a8i4V6q1UJ6c=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=PXMhDXmKlnHmw/ZJDEM4tqJ9A8ldItWjrEuUOgyslvi/h6IUHogwTEaEQImSxaq+mk1yqWn8q/VW14pKZMzanJCXrN1MVLP7e44R2C3KBEZPKyGZ4jg13eT973cOhhobDB8MJhg4Y3QgICHUpoN1r69doZm0XPClZDh4qAQQmqw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=TpwDvRrV; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="PNNfCWYT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 474A71F000FF;
-	Thu, 10 Sep 2026 12:53:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="TpwDvRrV"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A1111F000FF;
+	Thu, 10 Sep 2026 14:04:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789044785;
-	bh=ZAwZPihDUqVguGMD+e1WxJuQTdm2jQpWWVdsIj5EqYU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=PNNfCWYTWUebqAFKXsVLyRZhODcZ2qx+QcZYV3Wwm78IszmXcn9+j/9c9PXs4d+Q+
-	 7UA0xPv2dxq9IeqpkgP/O3wuoCDbHJkoEOhHL8RwcgRd/4gAxnY4YnoSwCfcsKXz/g
-	 CN6fIzmZbmQvJ1ighItnJdozc8yB0zO1K01RG1yRntg5ab9Pt6I63XExcLjW0hIA6m
-	 2wqrl/juqRYmdo6LepKFKLEzq77f7377A8EDFQ194aK11xwjYJFmR+kXksq9hOZb7x
-	 KDeIq5mSpMkVW3lkz21KsuQsQd+lVsy2yTwA3Umgl9t1wniQZsmQUK1/WlMRbjSiys
-	 5d0J0GA/HsJPw==
-From: Sasha Levin <sashal@kernel.org>
-To: stable@vger.kernel.org
-Cc: Lee Jones <lee.jones@linaro.org>,
-	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.10.y 1/2] staging: sm750fb: sm750_accel: Provide description for 'accel' and fix function naming
-Date: Thu, 10 Sep 2026 08:53:01 -0400
-Message-ID: <20260910125302.184373-1-sashal@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <2026090831-improve-varied-70b4@gregkh>
-References: <2026090831-improve-varied-70b4@gregkh>
+	s=k20260515; t=1789049044;
+	bh=X/SCTxt22w+Yil3YTsvFsInwOyu+yj4jZHKNcp11+zc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=TpwDvRrVWuslkfDqVT9SpXsaRrQqIV5JLg+fPgGAPN033uXOPeGITTGiq3UZL7rpb
+	 19LW8SU1nJHvXIDn+k+YeEexiOGGnoRi02WX27DubWJorR278yayRTMHjxbOhiElH2
+	 2SaHaqYDxd7G1RrQpZHK02VuYHXUaWy5WSJmZ7EAFt75egAGI/lUyHeUlPNNbGBgl6
+	 7UOy62v/DLsrbcqCAgmZIDUFkTkGn1imnyNc01P0tursdKrh4c+iUy3sOHRnvw7JMS
+	 KFhk2l16IvQL2qMjZUGuLtl4OE6YM8vy0zLTqnlAB07Ts6XFCnmxoz6JD7ta2oqTqP
+	 d+HrBTmO8d4BA==
+From: Lee Jones <lee@kernel.org>
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
+ David Lechner <dlechner@baylibre.com>, 
+ =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, 
+ Andy Shevchenko <andy@kernel.org>, Helge Deller <deller@gmx.de>, 
+ Svyatoslav Ryhel <clamor95@gmail.com>
+Cc: Johan Hovold <johan@kernel.org>, dri-devel@lists.freedesktop.org, 
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, 
+ mfd@lists.linux.dev, linux-fbdev@vger.kernel.org
+In-Reply-To: <20260731113632.158440-1-clamor95@gmail.com>
+References: <20260731113632.158440-1-clamor95@gmail.com>
+Subject: Re: [PATCH v6 00/14] mfd: lm3533: convert to OF bindings, improve
+ support
+Message-Id: <178904903999.1172658.13303214372114400299.b4-ty@b4>
+Date: Thu, 10 Sep 2026 15:03:59 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.16-dev-ad80c
 
-From: Lee Jones <lee.jones@linaro.org>
+On Fri, 31 Jul 2026 14:36:18 +0300, Svyatoslav Ryhel wrote:
+> Convert LM3533 to OF bindings, add missing VIN supply, add support for
+> setting mapping mode and LED sources based on device tree.
 
-[ Upstream commit d12dd1e0e3b96b1a2c9ffdb0fa9c115aeb82b569 ]
+Applied, thanks!
 
-Fixes the following W=1 kernel build warning(s):
+[01/14] dt-bindings: leds: Document TI LM3533 LED controller
+        commit: 0747740a123b844a87f7b86977845ccaca15362b
+[02/14] mfd: lm3533: Remove driver specific regmap wrappers
+        commit: f022c47f4843462cd02f1163f624631f7f4e409e
+[03/14] mfd: lm3533: Remove extern from shared functions in the header
+        commit: 06ea59b4135ed6c999bc33daca1abf51071f5f53
+[04/14] mfd: lm3533: Pass only regmap and light sensor presence to child devices
+        commit: f6420210fbaf563de34c769f4a408790523bc36c
+[05/14] iio: light: lm3533-als: Remove redundant pdata helpers
+        commit: 948c42932e0b696de11a2aee69a81d8a6f83dd12
+[06/14] mfd: lm3533-core: Remove redundant pdata helpers
+        commit: cdc9de135bc4bac7b7a344e76bef8e7e6cfb3e16
+[07/14] mfd: lm3533: Use dev_groups in struct device_driver
+        commit: d172f3814461c91db5af71fb628601af8389a3ee
+[08/14] mfd: lm3533: Convert to use OF bindings
+        commit: 5669316d7055325d981b5a37f574299c848af581
+[09/14] mfd: lm3533: Add support for VIN power supply
+        commit: 4a2300981a68c8f6ef5c667d6f81667c4036b269
+[10/14] mfd: lm3533: Set DMA mask
+        commit: 95a968ec7c31d70d4e38840409c3983ca7cac937
+[11/14] video: backlight: lm3533_bl: Improve logic of sysfs functions
+        commit: 92992a77a4c471064cec8398310c3f9486340c16
+[12/14] video: backlight: lm3533_bl: Set initial mapping mode from DT
+        commit: 879dd08125dbec68ea0d5b624aa8c42175232637
+[13/14] video: backlight: lm3533_bl: Implement backlight_scale property
+        commit: 0077e5ed836a01a0c82f23b91afdd38e42ace8b8
 
- drivers/staging/sm750fb/sm750_accel.c:155: warning: Function parameter or member 'accel' not described in 'sm750_hw_copyarea'
- drivers/staging/sm750fb/sm750_accel.c:155: warning: expecting prototype for sm750_hm_copyarea(). Prototype was for sm750_hw_copyarea() instead
- drivers/staging/sm750fb/sm750_accel.c:321: warning: Function parameter or member 'accel' not described in 'sm750_hw_imageblit'
-
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-staging@lists.linux.dev
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Link: https://lore.kernel.org/r/20210414181129.1628598-26-lee.jones@linaro.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Stable-dep-of: cc7cd2a92281 ("staging: sm750fb: fix mono image source stride mismatch in lynxfb_ops_imageblit()")
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/staging/sm750fb/sm750_accel.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 8faa601c700b2..24b9077a634a6 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -131,7 +131,8 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
- }
- 
- /**
-- * sm750_hm_copyarea
-+ * sm750_hw_copyarea
-+ * @accel: Acceleration device data
-  * @sBase: Address of source: offset in frame buffer
-  * @sPitch: Pitch value of source surface in BYTE
-  * @sx: Starting x coordinate of source surface
-@@ -298,6 +299,7 @@ static unsigned int deGetTransparency(struct lynx_accel *accel)
- 
- /**
-  * sm750_hw_imageblit
-+ * @accel: Acceleration device data
-  * @pSrcbuf: pointer to start of source buffer in system memory
-  * @srcDelta: Pitch value (in bytes) of the source buffer, +ive means top down
-  *	      and -ive mean button up
--- 
-2.53.0
+--
+Lee Jones [李琼斯]
 

@@ -1,212 +1,124 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 108E13D904C;
-	Wed,  9 Sep 2026 20:11:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 787531E0E14;
+	Thu, 10 Sep 2026 00:12:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.19
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788984668; cv=none; b=WzrUxBKmk7TbKIYly9K/dSU/qhB1YA/o4OoqN27BXxESsJbQU3PQE1h8eQZZsNkeA9e+FMTvsBiX0OpBtZHwKyddGMRmb9Dr9MY2x/zZj9Fbq/OKYEqqelVDM98mgnzgd7dyXOTKOehSoEy2G6rfaZbFqRh+GBsvxMh89jpVxYE=
+	t=1788999168; cv=none; b=Ysi7Lg5IEiJzCY5mSyrfEqm88p6eLJI6cnZF1KKQ4boB2fxghSeQzgZQAdcMqlMiT0kkGLIN+kz59xlkKze0RCJMVQ8orLsbyYsUOd/p3otGbVNHNmbGPTpwLLy6I0AA0rX4CIOBR5hIQxjzrb8kpVGz3Ip2Vel+LoHwar+kUe8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788984668; c=relaxed/simple;
-	bh=5HoG3honV/sojWC8vPCS1yQeOGAMvOh2ZbyOcHFktnc=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=X1pDXokmrpGEEtnOz2VqRfmxI/G0F9OcP4z7z+OWl2utvwtl3ImNTaI3wP/1qdNtwRbsYIh+Yw8mM3rPXFXKYzbGR/UE1308Mdw/eBjIjzmyGJlN0mAMILk4tPy37XVpPCiZUSQ2cDCt3/wtocSY5L1lDG6MJsiPs/i1Jw87LVc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MOzG7z/W; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788999168; c=relaxed/simple;
+	bh=J1jJnaeyf7LLhRqA+aeobhaA5FN1rbTKGY9M/HtxP4k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uEtqAjiwyCwOLzXZK2+0d9IxSXrXZxOKjKxsIj2xlzbJCHX+KxpujKe1pD262g0MeJrLK4Gi4GWoAOA5pmjcP6QIdpFcS4QKZYLWsO0f8UxWqI95bAC2twptcu52uih1J9+jttJzS2ID7JGjY1CkO/AKiD0hrXdjxJ3rcIevbxU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=nHG6J6Bf; arc=none smtp.client-ip=192.198.163.19
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MOzG7z/W"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 199AA1F00898;
-	Wed,  9 Sep 2026 20:10:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788984656;
-	bh=dMpeLqTNXDRpS+r+jORTF862uDqb/CqEpFeuPMT9TQY=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject;
-	b=MOzG7z/WitVOZzXnEIONfv6+fQIabeSSDolWC+rNYrS7Vlwwk1vfEtfYArR3h+6AW
-	 BkZjdwcm4wildy8SICewrTrtCKgy1b/k3oor33cNi+NQUhi9t08L42AuUSej2fEUqe
-	 qfny4KDHxbZ/xJqwFiumW+2xXGFO5NTmGmjFJsK/R3ZPuIR60+kApLxdoET5/gH2iE
-	 rWbH4vbeQZu2OBM+F5Ue964Xfcvu1u56EKpW7dmEAVwazFnXO1VEyiFIhPc6gnzFQs
-	 PkgWE1RX2sqolRE0Bgev0hvDTVbQb+YwwFjRG96UwvW36lXSDQI2HmKP52zMD7Vv7T
-	 Lhkf7318C1Mlw==
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfauth.ams.internal (Postfix) with ESMTP id 48EF31980052;
-	Wed,  9 Sep 2026 16:10:53 -0400 (EDT)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Wed, 09 Sep 2026 16:10:53 -0400
-X-ME-Sender: <xms:Sr2hajWlva4lVEbm2EzQ1s3udRWO4ikQFFFPxDegsKQ3CTjZB3r-uA>
-    <xme:Sr2hambJl-c3e1UrZYMfqYiLxCHTOQsPkJ8JLd0z0j-CmEmZZXevEai-Q5MqU57rC
-    ZZC53tEJfuu9jLPODK6QXBLSGBNaUsNCeOiE3yoJfwKabbHa6Xe7xPZ>
-X-ME-Proxy-Cause: dmFkZTGP2bhb/XYhsNLB9S53X9rzoPN54qfE/KjrIQ+39ezusymjgkFG9cet+423ozVpDR
-    QFvnmTNBMcgGscLcMMj7nBUY31hzJeOaGY2jSrT3p2YxejgdAUzrKdVOR8lCRBS16Gn88X
-    /+XGMDl8CSXVYCQsr0wErwVPc+V6zmpd4d51AzTQO8MWr89uCO460fbix+l7zmvoJuzkvE
-    RaO6/PdGwEVTqYIezlus3lDCEAnry2C8vj8V499E/dlZoQ4ScXku67uqDjBlKaXI4HB2gC
-    KacujXVdDoEwzQ2dyYPEUzaZ7+e2mOEhOGj1Fetuz0MEj4OcAAwjVvsFr0sHvhPpz277Gf
-    eKzGoSn6iqanxzNgqqMPsXCY76vQD+ea58iHSG5APtokUDPToSvfELosscq5Qt4yP2Q9+t
-    y1tk8mh/YV6JND1qNbS+O2favpqJYSFmbwPFawNlshEMNgXzINZxwKWiewG0SxhFiQFIL9
-    4DpI0upYjn0k3v2eBM7Iml4anYd8gF3WPX86kKH7R0o4H64FA7zDDSXAF3jY5QkB0ZSiW6
-    sIKc9JmLSD+i8R4Jef0OcLMUt1jMXi6faA5jYE6vH5UfgYoDR3/ZIP9Q6vSw4pAYMA/Nxa
-    V2SShKsn+8CcVH/XBZJ+tLKfo4Kqs/CxHjYl1vrrgz/DIr30WA6FviGoSjxg
-X-ME-Proxy: <xmx:Tb2hapOSEggtAzw0YPolcJShgHipiCEz32yrnlma3o-FVpqo5DDtLw>
-    <xmx:Tb2hampTwttRtE3MK5w7nObKR1veqSPqSuzHl5qP3-u6Rq2T0fLYYA>
-    <xmx:Tb2hau5yJgf9foM2D7YQh1VswYDLBi8VWRuYGaVJdHhtOWFLOMS4ZQ>
-    <xmx:Tb2hagpfMYsdVStUsBhPHlcE5fczSNlUCNGOAGT9WGdLMRXUiDZ7qw>
-    <xmx:Tb2hasKSPzPUsbdSIk5XCLjXxVPXAZU5O6viFS2qHLW3A3TqPNR5T1ZS>
-Feedback-ID: i36794607:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 78FB232A007B; Wed,  9 Sep 2026 16:10:50 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="nHG6J6Bf"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1788999167; x=1820535167;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=J1jJnaeyf7LLhRqA+aeobhaA5FN1rbTKGY9M/HtxP4k=;
+  b=nHG6J6BfXPcIowaA912QKVzXyc8TXWD5eQ586HWUjnHphsZYh8PCWqw0
+   I97TkvfCifUE6vWq/BnxLiG4lHO55H0id9pqgOlkJ5VpP+4E2s4J52M69
+   tmeyP+lTD0MHaipmzpGSYJp8BAoND6aGjHrosPNldOKGNeiHoaAXXqgbp
+   glCoNTFnzStw0JLgPr/2O7lFiNPxdBvldrOzMIg8VuEWzb8uk6TRhyuhh
+   BI2iZf+/7T4VspPSwEX6G/NxYmQk9IXi2npP2/57aioCVCZOD1Y7hqmrq
+   1MNBIwBfmY+qi9XNlLPulikTFDiugSGB70uQb4lLZombOsbloUUqxiHqe
+   g==;
+X-CSE-ConnectionGUID: DtJjLdW/QtieSh1jFtP1sg==
+X-CSE-MsgGUID: 6e2B8osBSWiB6VLXITkSKg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11900"; a="88384806"
+X-IronPort-AV: E=Sophos;i="6.25,271,1779174000"; 
+   d="scan'208";a="88384806"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Sep 2026 17:12:46 -0700
+X-CSE-ConnectionGUID: 57YLa0rXQiKYLTcF3IhQXQ==
+X-CSE-MsgGUID: Mhufsv5iQ4+dLQjYqL4qAg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,271,1779174000"; 
+   d="scan'208";a="276707916"
+Received: from lkp-server01.sh.intel.com (HELO a3e91e2cf319) ([10.239.97.150])
+  by fmviesa005.fm.intel.com with ESMTP; 09 Sep 2026 17:12:42 -0700
+Received: from kbuild by a3e91e2cf319 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1x4SPA-0000000018G-0Anx;
+	Thu, 10 Sep 2026 00:12:40 +0000
+Date: Thu, 10 Sep 2026 08:11:57 +0800
+From: kernel test robot <lkp@intel.com>
+To: Breno Rodrigues Alves <breno3011alves@gmail.com>,
+	torvalds@linux-foundation.org
+Cc: oe-kbuild-all@lists.linux.dev, linux-kernel@vger.kernel.org,
+	gregkh@linuxfoundation.org, arnd@arndb.de,
+	linux-clk@vger.kernel.org, linux-input@vger.kernel.org,
+	linux-media@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-usb@vger.kernel.org, linux-sound@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	Breno Rodrigues Alves <breno3011alves@gmail.com>
+Subject: Re: [PATCH v5] Kconfig: fix typos in core makefiles and purge
+ defective DVB debug (v5)
+Message-ID: <202609100824.ndDVSLWu-lkp@intel.com>
+References: <20260905003005.118245-1-breno3011alves@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: AGTXWeH1PU47
-Date: Wed, 09 Sep 2026 22:09:43 +0200
-From: "Arnd Bergmann" <arnd@kernel.org>
-To: "Bart Van Assche" <bvanassche@acm.org>,
- "Krzysztof Kozlowski" <krzk@kernel.org>,
- "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
- "Linus Walleij" <linusw@kernel.org>, "Russell King" <linux@armlinux.org.uk>
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
- imx@lists.linux.dev, linux-stm32@st-md-mailman.stormreply.com,
- Linux-OMAP <linux-omap@vger.kernel.org>, linux-block@vger.kernel.org,
- linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Message-Id: <b0705a8d-1b85-44e0-917d-19ba760e8c12@app.fastmail.com>
-In-Reply-To: <2da174ef-1d5a-425d-b885-be9482b0be90@acm.org>
-References: <20260908152808.3928630-1-arnd@kernel.org>
- <20260908152808.3928630-4-arnd@kernel.org>
- <2da174ef-1d5a-425d-b885-be9482b0be90@acm.org>
-Subject: Re: [PATCH 03/13] ARM: remove riscpc
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260905003005.118245-1-breno3011alves@gmail.com>
 
-On Wed, Sep 9, 2026, at 18:42, Bart Van Assche wrote:
-> On 9/8/26 8:27 AM, Arnd Bergmann wrote:
->> The Acorn Risc PC is the oldest still support Arm machine in the kern=
-el,
->> originally shipped with an ARMv3 ARM610 support in 1994, it later all=
-owed
->> faster StrongARM CPUs.
->>=20
->> The main limitation here is the CPU bus that does not allow 16-bit
->> wide data transfers and hence requires the kernel to be built with the
->> -march=3Darmv3 compiler option that was discontinued in gcc-9.
->>=20
->> As gcc-8 is barely supported for compiling the kernel, this one
->> will not see another LTS kernel release, so remove it now.
->
-> If this patch has to be reposted, here is the feedback of my AI coding
-> assistant (based on an LLM and hence may be wrong):
+Hi Breno,
 
-Most of this was already discussed, but there are two additional
-changes that I made based on it.
+kernel test robot noticed the following build errors:
 
-> Issues & Observations
-> ---------------------
-> 1. Missed arch/arm/Makefile cleanup
-> Patch 03 deletes the entire directory arch/arm/mach-rpc/, but does not=20
-> touch arch/arm/Makefile. As a result, two orphaned entries remain:
->
-> machine-$(CONFIG_ARCH_RPC)		+=3D rpc
-> machdirs-$(CONFIG_ARCH_RPC)		+=3D arch/arm/mach-rpc
-> Furthermore, machdirs-$(CONFIG_ARCH_RPC) was the very last user of=20
-> machdirs- in arch/arm/Makefile (after Footbridge and SA-1100 are remov=
-ed=20
-> in patches 1 & 2):
+[auto build test ERROR on lee-leds/for-leds-next]
+[also build test ERROR on broonie-regulator/for-next linus/master v7.3-rc2 next-20260909]
+[cannot apply to linux/master]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Fixed already after sashiko-bot found the same thing.
+url:    https://github.com/intel-lab-lkp/linux/commits/Breno-Rodrigues-Alves/Kconfig-fix-typos-in-core-makefiles-and-purge-defective-DVB-debug-v5/20260904-213005
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/leds.git for-leds-next
+patch link:    https://lore.kernel.org/r/20260905003005.118245-1-breno3011alves%40gmail.com
+patch subject: [PATCH v5] Kconfig: fix typos in core makefiles and purge defective DVB debug (v5)
+config: m68k-allmodconfig (https://download.01.org/0day-ci/archive/20260910/202609100824.ndDVSLWu-lkp@intel.com/config)
+compiler: m68k-linux-gcc (GCC) 16.1.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260910/202609100824.ndDVSLWu-lkp@intel.com/reproduce)
 
-> kconfig
->
->
-> config FONT_ACORN_8x8
-> 	bool "Acorn console 8x8 font" if FONTS
-> 	depends on FRAMEBUFFER_CONSOLE || DRM_PANIC
-> 	default y if !SPARC && !FONTS && ARM && ARCH_ACORN
-> Because ARCH_ACORN is removed, this default can never trigger and the=20
-> reference should be cleaned up.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202609100824.ndDVSLWu-lkp@intel.com/
 
-I have this in the patch that removes acornfb. It could go into
-either one, but I felt it fits better there
+All error/warnings (new ones prefixed by >>):
 
-> kconfig
->
->
-> config CPU_SA110
-> 	bool
-> 	select CPU_32v3 if ARCH_RPC
-> 	select CPU_32v4 if !ARCH_RPC
-> Since ARCH_RPC is removed, select CPU_32v3 if ARCH_RPC references a=20
-> non-existent symbol. If CPU_SA110 remains temporarily (before the=20
-> architectural cleanup in 7.5), this should be simplified to select CPU=
-_32v4.
+>> drivers/media/dvb-core/dvb_net.c:76:35: error: 'TS_SZ' undeclared here (not in a function)
+      76 | static unsigned char ule_hist[100*TS_SZ] = { 0 };
+         |                                   ^~~~~
+>> drivers/media/dvb-core/dvb_net.c:76:22: warning: 'ule_hist' defined but not used [-Wunused-variable]
+      76 | static unsigned char ule_hist[100*TS_SZ] = { 0 };
+         |                      ^~~~~~~~
 
-Also explained already that I preferred removing CPU_32v3 along
-with CPU_SA110 in a later patch, not together with ARCH_RPC.
 
-> 4. Dead code in arch/arm/kernel/atags_compat.c
-> With CONFIG_ARCH_ACORN removed from arch/arm/Kconfig, two blocks in
-> arch/arm/kernel/atags_compat.c
->   are now dead code:
->
-> Lines 150=E2=80=93157: #ifdef CONFIG_ARCH_ACORN / if (machine_is_riscp=
-c())=20
-> memory bank tagging.
-> Lines 186=E2=80=93194: #ifdef CONFIG_ARCH_ACORN ATAG_ACORN translation.
-> These blocks should be removed as part of this patch.
+vim +/TS_SZ +76 drivers/media/dvb-core/dvb_net.c
 
-I have a patch to remove that file.
+^1da177e4c3f41 drivers/media/dvb/dvb-core/dvb_net.c Linus Torvalds        2005-04-16  70  
+e9f8b7ccd92d83 drivers/media/dvb-core/dvb_net.c     Breno Rodrigues Alves 2026-09-04  71  #ifdef CONFIG_DVB_ULE_DEBUG
+b93a25e120d5a4 drivers/media/dvb-core/dvb_net.c     Mauro Carvalho Chehab 2017-12-11  72  /*
+ba711e1cee7553 drivers/media/dvb-core/dvb_net.c     Mauro Carvalho Chehab 2017-12-11  73   * The code inside DVB_ULE_DEBUG keeps a history of the
+b93a25e120d5a4 drivers/media/dvb-core/dvb_net.c     Mauro Carvalho Chehab 2017-12-11  74   * last 100 TS cells processed.
+b93a25e120d5a4 drivers/media/dvb-core/dvb_net.c     Mauro Carvalho Chehab 2017-12-11  75   */
+b93a25e120d5a4 drivers/media/dvb-core/dvb_net.c     Mauro Carvalho Chehab 2017-12-11 @76  static unsigned char ule_hist[100*TS_SZ] = { 0 };
+b93a25e120d5a4 drivers/media/dvb-core/dvb_net.c     Mauro Carvalho Chehab 2017-12-11  77  static unsigned char *ule_where = ule_hist, ule_dump;
+b93a25e120d5a4 drivers/media/dvb-core/dvb_net.c     Mauro Carvalho Chehab 2017-12-11  78  
 
->
-> /*
->   * Now, pick up the machine-defined IO definitions
->   */
-> #if IS_ENABLED(CONFIG_PCMCIA) || defined(CONFIG_PCI)
-> CONFIG_NEED_MACH_IO_H and #include <mach/io.h> were removed, leaving=20
-> this comment describing generic PCI/PCMCIA I/O limits.
-
-Fixed now.
-
-> arch/arm/boot/bootp/Makefile:21
-> : # guess an initrd location if possible is left dangling right before=20
-> ifdef INITRD_OFFSET after all initrd_offset-$(CONFIG_...) logic has be=
-en=20
-> stripped out.
-
-Removed that entire block now:
-
---- a/arch/arm/boot/bootp/Makefile
-+++ b/arch/arm/boot/bootp/Makefile
-@@ -17,12 +17,6 @@ add_hex =3D $(shell printf 0x%x $$(( $(1) + $(2) )) )
- #   INITRD_PHYS must be in RAM
-=20
- PARAMS_PHYS :=3D $(call add_hex, $(PHYS_OFFSET), 0x100)
--
--# guess an initrd location if possible
--ifdef INITRD_OFFSET
--INITRD_PHYS :=3D $(call add_hex, $(PHYS_OFFSET), $(INITRD_OFFSET))
--endif
--
- endif
-=20
- PHONY +=3D initrd
-@@ -30,7 +24,7 @@ initrd:
-        @test "$(PARAMS_PHYS)" !=3D "" || \
-        (echo bootpImage: You must specify PHYS_OFFSET of PARAMS_PHYS ; =
-exit -1)
-        @test "$(INITRD_PHYS)" !=3D "" || \
--       (echo bootpImage: You must specify INITRD_OFFSET or INITRD_PHYS =
-; exit -1)
-+       (echo bootpImage: You must specify INITRD_PHYS ; exit -1)
-        @test "$(INITRD)" !=3D "" || \
-        (echo bootpImage: You must specify INITRD; exit -1)
-=20
-
-> 6. Floppy driver & arch/arm/include/asm/floppy.h status
-> The patch removes the ARM MFM AND FLOPPY DRIVERS entry from MAINTAINER=
-S:
-
-commented already that this is removed along with CONFIG_ISA in a later
-patch.
-
-      Arnd
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki

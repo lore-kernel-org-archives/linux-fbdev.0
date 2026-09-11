@@ -1,142 +1,119 @@
-Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43BF5489FA3
-	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 13:22:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.198
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C538416124;
+	Fri, 11 Sep 2026 13:26:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789132968; cv=none; b=YqrzG2MPQcREdWte5iwMxGQ/quz97P58gV9/qN2ZiZkShuLX1RNIiaPKf+aitUT3X5lg9KrPjsvcY75LHzAkAh2YM0ZeuHdFD9A4f1gFcD2lfQxGSK/JrE+RundfN5UtkaK4/sysmFMC+duYLoJtarppHc+eZMZ09rKo0Ujk+P8=
+	t=1789133180; cv=none; b=RDJQ5M3+xj/92AURsecJ4y9mJ5+oQ7n5cHAIr0ZaOSu6FK8/ZqRbehCOQgnztIhTaPuzFYnUkXR9jyVQwGTGnZ3bcRVD3s3S8yWNARMS41G3OdDGgeGWFKOt1JZ+yjOqizeXkcQA8KDt3nCMObKYQ9tzqD5CCiQzR5YmVliWNnY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789132968; c=relaxed/simple;
-	bh=T/e2vgzi/yX3haBVonSYMOMOZ1YJ8sxvxQcGMOKmPKs=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=bjy/TQl7Inu4D+lkTvNVUi8CPrKK3kUBFnP/MPHlp/cFdmHFfz9+Ovz4zlnUgwy2QER1RBlxcOIj04DfeX7aU0j1J4ebJwFGTox1+lFHB7eq7Jh6vv0wDkc4M1YH7sZVP0s6+P/vKawxMiKI+Pk1yDiJIDAzXBzeJgwgU93EtRI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=flex--seanjc.bounces.google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=RLwvSvK3; arc=none smtp.client-ip=209.85.215.198
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--seanjc.bounces.google.com
+	s=arc-20240116; t=1789133180; c=relaxed/simple;
+	bh=5SNgYt0Og5PizNXuj2seGZx1s9j3Gc+sbup7rqOyQtc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EcD6A7SrOL68GX+aHkFW/SoPV+M/PAHGR/5TY3AIvUuo1acC6ahLFapULurpkwdhHwHyAOUnqh+CZRfrz4s8t1tqEh1MQWRtr4TNZQDvw9WkoqISho9muMOkXUw9v6ECfIJP9q+6TVK6OTRHhlOeCCA0ezrzIqp+x+7lqkI1/oQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=o7fnp2xz; arc=none smtp.client-ip=199.89.1.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="RLwvSvK3"
-Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cc435388657so1206937a12.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 06:22:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1789132963; x=1789737763; darn=vger.kernel.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=kqAHaS5fsv9ERkHKe2Kmet0fUHotC014bD2kFqqX4to=;
-        b=RLwvSvK31Nx6W5e5cWd1Zwn3GrqgUoi6AhS072W/uylcwVwZ3gpe+kx6GEa9rIFlk0
-         FYF4erl5BDuLlexOocQCSN41l6ccwOOPma6v34CdMIG5khIVZqkDirlCdqv964QjHzjX
-         wPzKEn407qRm3Embbs+yCBCiSEJTY3Js8tzzleFdo1mBTOxt2yTNnE2xosV20WkoMQvM
-         wIayUAwD/BVN9hgLYwfzEr+DeuhSbiV33KL8FX8Bmqy/2DX9ttcVZLG7uRr6EAwczGFk
-         ZiDQLDEUQiAQ8XVcZzOaCJECezVH/N/QfYRIjvdt+E3bJGSQdWRG09uKOPUwfNDqFGFJ
-         twjA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789132963; x=1789737763;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=kqAHaS5fsv9ERkHKe2Kmet0fUHotC014bD2kFqqX4to=;
-        b=G/YgmMtRc3Tc5fGhuCo6gbVUBa5HwwHbv5kawsWwmSu2GY1Kta/Wi982DqW8MUlZvQ
-         5p/hhIfL37BatEWpF2Aootb8O6ypYMHuRsxrC4DnxVgu8q67ko85ecQ5MJjkDOKekkQX
-         3Dv17eA996xZuoTQOgEgKAwgV9o9NbROHnNuH7WKCnCUYo344Ion56aX5764GmSQfRvp
-         1qniHMBCaGPJQSsYSNWYrcfR9bmK4YHULUXN8bjogAAvztkaPDTfj67kmz78rMsUfeLf
-         y+0kvnGgY54+PpA/Nyw182/TIZEXYrNoKPr7msj4vw8O+4KDf3vVyXQ2y20R1u9DJ/Fe
-         oRrg==
-X-Forwarded-Encrypted: i=1; AKwUvBxvndBbmRJYPx3oSoxsqrnnie9TqW8U+v5YUW7qbp7wvdvCkqFk4VJujqFfINkcecvkgi04R8G/U7BrjQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++l3hUycxFvU75d0O/kLWA3sw3POaYp9+srKVzH9/zLzF96QYcoL
-	FgNQuKaJWkX6IkcCWT4T+iT4uaWHz3wYmG9S8lJBQIqqBYq6Z257faguvCwnWKQMwo2XNpN9vPc
-	wQLXNNA==
-X-Received: from pjbmv13.prod.google.com ([2002:a17:90b:198d:b0:39d:8dae:7e6d])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3c89:b0:398:e46e:ade3
- with SMTP id 98e67ed59e1d1-39d9c39625dmr7169956a91.23.1789132962606; Fri, 11
- Sep 2026 06:22:42 -0700 (PDT)
-Date: Fri, 11 Sep 2026 06:22:41 -0700
-In-Reply-To: <20260911074530.3140830-13-jgross@suse.com>
+	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="o7fnp2xz"
+Received: from localhost (localhost [127.0.0.1])
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4hhFgG4t41zlfwJB;
+	Fri, 11 Sep 2026 13:26:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:content-language:references:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1789133176; x=1791725177; bh=oyAYQmUekWykInIy8DJFeLF8
+	1/4M/B/awGBINpSMfs4=; b=o7fnp2xz7xwkD8pZPjEN2Asr9z8OubvJFObqqbvG
+	gNbmquFtIR+b8ItfO3kMkF4t3SxvZj+7I17D51SU++WhrAbomuTdns2NzLQIwv7q
+	hWB5j8FiRRkdwVsTVbqcAY7ZV8VuVmwKhUxVck1aC0sA73n6mtDJ11TH2bsSWnZA
+	pr2S7Im5UuXCW67C8fTAesQvoJmQ83SLvTA8oU0+vYmxnYhHOd5PMrDgBVxShnsC
+	0Fy4C/an9pFV/C/Uy6HGSBfCnkVkodJFrw+GsfMbAcYxOy5pIbtZDNY+1wX++ish
+	9ZEq5PmtxVYMXPIjefT7ZvkO8WmY4z5yPk5W98vh/2HG/w==
+X-Virus-Scanned: by MailRoute
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id fPowWimQpx3i; Fri, 11 Sep 2026 13:26:16 +0000 (UTC)
+Received: from [192.168.51.14] (c-24-6-239-25.hsd1.ca.comcast.net [24.6.239.25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4hhFfp1RLbzlfvqM;
+	Fri, 11 Sep 2026 13:25:53 +0000 (UTC)
+Message-ID: <2144051c-268c-40b1-8c22-4be49f0edd17@acm.org>
+Date: Fri, 11 Sep 2026 06:25:52 -0700
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-References: <20260911074530.3140830-1-jgross@suse.com> <20260911074530.3140830-13-jgross@suse.com>
-Message-ID: <aqQAodJCAEZyeQ1k@google.com>
-Subject: Re: [PATCH v3 12/13] treewide: convert rdmsrq() from a macro to an
- inline function
-From: Sean Christopherson <seanjc@google.com>
-To: Juergen Gross <jgross@suse.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-hyperv@vger.kernel.org, 
-	kvm@vger.kernel.org, virtualization@lists.linux.dev, 
-	linux-edac@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-coco@lists.linux.dev, 
-	linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-crypto@vger.kernel.org, 
-	linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	linux-mtd@lists.infradead.org, platform-driver-x86@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Arnaldo Carvalho de Melo <acme@kernel.org>, 
-	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, 
-	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
-	James Clark <james.clark@linaro.org>, "K. Y. Srinivasan" <kys@microsoft.com>, 
-	Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
-	Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>, Ajay Kaher <ajay.kaher@broadcom.com>, 
-	Alexey Makhalov <alexey.makhalov@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
-	Josh Poimboeuf <jpoimboe@kernel.org>, Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, 
-	Pu Wen <puwen@hygon.cn>, Tony Luck <tony.luck@intel.com>, 
-	Reinette Chatre <reinette.chatre@intel.com>, Dave Martin <Dave.Martin@arm.com>, 
-	James Morse <james.morse@arm.com>, Babu Moger <babu.moger@amd.com>, 
-	Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
-	Andy Lutomirski <luto@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
-	"Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, Kiryl Shutsemau <kas@kernel.org>, 
-	Rick Edgecombe <rick.p.edgecombe@intel.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, 
-	Len Brown <lenb@kernel.org>, Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
-	David Airlie <airlied@redhat.com>, Olivia Mackall <olivia@selenic.com>, 
-	Herbert Xu <herbert@gondor.apana.org.au>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Huang Rui <ray.huang@amd.com>, Mario Limonciello <mario.limonciello@amd.com>, 
-	Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, 
-	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
-	Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, Artem Bityutskiy <dedekind1@gmail.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, 
-	Vignesh Raghavendra <vigneshr@ti.com>, Ashok Raj <ashok.raj.linux@gmail.com>, 
-	Hans de Goede <hansg@kernel.org>, 
-	"Ilpo =?utf-8?B?SsOkcnZpbmVu?=" <ilpo.jarvinen@linux.intel.com>, 
-	Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>, Xi Pardee <xi.pardee@linux.intel.com>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
-	Lukasz Luba <lukasz.luba@arm.com>, Helge Deller <deller@gmx.de>, xen-devel@lists.xenproject.org, 
-	linux-geode@lists.infradead.org, Michael Kelley <mhklinux@outlook.com>
-Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 03/13] ARM: remove riscpc
+To: Linus Walleij <linusw@kernel.org>,
+ Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+ Russell King <linux@armlinux.org.uk>
+Cc: Arnd Bergmann <arnd@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Drew Fustini <fustini@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+ Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@kernel.org>,
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>,
+ Stefan Agner <stefan@agner.ch>, Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Aaro Koskinen <aaro.koskinen@iki.fi>, Andreas Kemnade
+ <andreas@kemnade.info>, Kevin Hilman <khilman@baylibre.com>,
+ Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>,
+ Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Claudiu Beznea <claudiu.beznea@tuxon.dev>, Andrew Lunn <andrew@lunn.ch>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Gregory Clement <gregory.clement@bootlin.com>,
+ Robert Jarzmik <robert.jarzmik@free.fr>,
+ Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Alexander Sverdlin <alexander.sverdlin@siemens.com>,
+ Shawn Guo <shawnguo@kernel.org>, Karl Mehltretter <kmehltretter@gmail.com>,
+ "David Hildenbrand (Arm)" <david@kernel.org>,
+ Nicolas Pitre <npitre@baylibre.com>, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org, imx@lists.linux.dev,
+ linux-stm32@st-md-mailman.stormreply.com, linux-omap@vger.kernel.org,
+ Ian Molton <spyro@f2s.com>, Jens Axboe <axboe@kernel.dk>,
+ Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>,
+ "Paul E. McKenney" <paulmck@kernel.org>, linux-block@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <20260908152808.3928630-1-arnd@kernel.org>
+ <20260908152808.3928630-4-arnd@kernel.org>
+ <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
+ <CAD++jL=ysmPgs8yKH5KBobuv-eeCHHgZwvo1kvHOFuTwhkaOew@mail.gmail.com>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <CAD++jL=ysmPgs8yKH5KBobuv-eeCHHgZwvo1kvHOFuTwhkaOew@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 11, 2026, Juergen Gross wrote:
-> Today rdmsrq() is a macro using its second parameter as the target for
-> storing the read MSR value.
+On 9/11/26 2:07 AM, Linus Walleij wrote:
+> The community has a built in tension around this:
 > 
-> Convert rdmsrq() to an inline function returning the MSR value.
+> - One camp that are enthusiast like yourself. That kind of people
+>    are running the show inside arch/m68k on Amigas and Ataris.
 > 
-> The users have been converted using the following semantic patch:
+> - One camp who get their paycheck from present day companies
+>    and constantly on top of the latest technology. As can be
+>    seen Qualcomm just taped out a brand new ARMv7 SoC
+>    named Kuno, for example.
 > 
->   // Options: --include-headers
-> 
->   virtual patch
->   virtual report
-> 
->   @@
->   expression msr, val;
->   @@
->   (
->   - rdmsrq(msr,val)
->   + val = rdmsrq(msr)
->   )
-> 
-> Signed-off-by: Juergen Gross <jgross@suse.com>
-> Acked-by: Damien Le Moal <dlemoal@kernel.org>      # ATA
-> Reviewed-by: Michael Kelley <mhklinux@outlook.com> # Hyper-V
-> ---
+> As you can see this leads to a bit of tension.
 
-Acked-by: Sean Christopherson <seanjc@google.com>
+That summary looks incomplete to me. Every time a kernel API is modified 
+that is used by the RiscPC code, the RiscPC code has to be modified too.
+Removing the RiscPC code makes modifying kernel APIs easier. A recent
+example is available here: "[PATCH v5] scsi: core: Drop
+Scsi_Host.default_lock"
+(https://lore.kernel.org/linux-scsi/20260831095821.3486994-1-john.g.garry@oracle.com/).
+
+Bart.

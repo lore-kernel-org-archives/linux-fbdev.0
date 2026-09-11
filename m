@@ -1,233 +1,143 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 876A846984B;
-	Fri, 11 Sep 2026 08:51:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8609459AD4
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 09:07:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789116675; cv=none; b=kS6sEv8tcH+PD0Ltku8Lf2wnzLd94BEOp1hx4ZKZP898D+oH98Q3KSxJdHLuGYbQ4K1Ej/sb0PpdYJRuwvs/zyKOqwBj+1W6wDJLIijEoecNMQ5bmLXaRoDMpJsIMfA06btiKGFc4MZ9n55FAw/CHODmsP2TF1gZLBrHDly5NxM=
+	t=1789117653; cv=none; b=HzQnar4bOt934CfeH866X2urxu0O3SLxctsuZUm4shNO6goKVr9HzurBvF4Jr+UzdNmVIDmybZ/UVs9+kY/D0UsxMx7Agti3guZmfkkW8MA7XUZeJkBykqhYhSVemVt94MEN+Fxt2bq96DwnhCb3GkPH8oazEOOZzCpPPOTQx5w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789116675; c=relaxed/simple;
-	bh=DY3nAZEw7IwIcK7ATvLcXz2X/NgGx+ZUSaAnsbH9oD0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=G9m8csvKl79A+E0FL8BHmd+PFG/uTCf8nzpQjlX3hHmkr0lENYDsxX/pfXbs9Ef02l4CtnIE2eY2hH1Lki1/kmPz8zjmRVXxOkCVAak9jbOH9iHsnkmo68S6vXUQ+WUQE8OqibbYNrEyA1zIaa8NzTnSn09x0RTOIkAg2cjSTf4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=vIOQPc9o; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1789117653; c=relaxed/simple;
+	bh=/dL3pCPr3MM7dPLehJhDV3xFjQwplqUCQL5XgTxif+k=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RaVD+PRyN6JHH2E61iSYQq3nrv9jaf8CdE8VxLNDSWQ1fjF1sGaeQDeXruQjT3+CsrzKB32eOaQQbk1AfhsDem1Q3QrnlCQrofzfI8aApypPeTU5WxLPUcHsIM1YqyFlU34bxgwW9Uv77H0ND8gxi1uMNzY1RQjksd6KdcGDtP0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ozwuuEUQ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="vIOQPc9o"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 44BECC2BCF4;
-	Fri, 11 Sep 2026 08:51:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1789116675;
-	bh=DY3nAZEw7IwIcK7ATvLcXz2X/NgGx+ZUSaAnsbH9oD0=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=vIOQPc9oHsAb5NAMCqQSY2ZC9ZWES3F1I+WL1UMX6w0fWakBt6wCJ8/BpvamaPKBA
-	 GztFcpozC1ZOMwR/pHj4OXDiXjuaPoY/SPUe1BVCqlaY00PsilXrVmt4qqRjLG2to+
-	 F2MNSekiB/ZaIfTcsueZR+hqhaQq65rIM8N+ExzP0mV1zg7kibl4/pTDICNwOcy1rp
-	 ABb7U8WTkS+dcJoj68T5nK/LNcfOzCTSrE3U700Vp4WwzPo660EKT3JaMWOZ+iJoSE
-	 KjknH85+1JDXx+v532KClu9oP+OQpplH3a+lvwqypOUY6QaI1QRaTlQQNtPgx8RvK2
-	 3HNXYLpAtT9rQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F9C3C88E53;
-	Fri, 11 Sep 2026 08:51:15 +0000 (UTC)
-From: =?utf-8?q?Y=C4=B0=C4=9E=C4=B0TCAN_KAVAKLI_via_B4_Relay?= <devnull+kavakliyigitcan.gmail.com@kernel.org>
-Date: Fri, 11 Sep 2026 11:51:07 +0300
-Subject: [PATCH RFC 10/10] arm64: dts: qcom: sm6125-xiaomi-ginkgo: enable
- display, backlight and touchscreen
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ozwuuEUQ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBEDF1F00899
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 09:07:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789117650;
+	bh=/VGcQS0ZeRYJfc9e784tdLXi12bCcFoGI0t9ozoHPBo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=ozwuuEUQ8Z5se6zO5/fvu0pYLAOc5jGBs3n7Ao8KmKbvgwFVyNUnWcGSZguymLUAt
+	 RVKzsVQaratM2qCL/JX11MdyergavYIT/AlSFNnuGbejufqwsbMAaHjmmUCx7QSWAX
+	 gkSSivPrnNsep6lmjwegM8eFlO37g5AD3iliEMWZVSB9ellqVprjaNTpKigOOglQX4
+	 A07yKT36YEPA0DyRIxKNtXe/lzyMTs9aSi5aHQJz7Dato7ohCLajMILy+cSmGin6G+
+	 dg8cO5vN/lLlf3Dj3aYxfuGDuqOkh2HnLG2wOopDnvUs9h4DBtVxyeNV0hoAqF2pr+
+	 wf2Osx0fo8QlA==
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5b5e5ab03afso659236e87.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 02:07:30 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBzUBFIDB1S+2pw6DUWsGzWjM3uA8lAeZ8OuIj7t4GeSwG7uDvfKYc0U1kzKiDo+KIWR9ju24ghkqvRvlg==@vger.kernel.org
+X-Gm-Message-State: AFuF++mjdw7lWPGhADIO6w91QYTbwf/pftZRsKALzc0uN+dXydEWqekX
+	cWFbGPRi860xCs5QksvyWZPccTQTrnPKgAm30X9cnUYdrAu1gZjSia2eCaf+/lO/m/MIWFCaCKv
+	PDTUXjNQre9vZ6YC79K7e05exxJ2GVhs=
+X-Received: by 2002:a05:6512:3054:b0:5b6:1a7c:fd99 with SMTP id
+ 2adb3069b0e04-5b8a0348f4fmr751726e87.63.1789117648568; Fri, 11 Sep 2026
+ 02:07:28 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260911-ginkgo-submission-final-v1-10-0e68e63a18d4@gmail.com>
-References: <20260911-ginkgo-submission-final-v1-0-0e68e63a18d4@gmail.com>
-In-Reply-To: <20260911-ginkgo-submission-final-v1-0-0e68e63a18d4@gmail.com>
-To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Sumit Semwal <sumit.semwal@linaro.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>, 
- Jessica Zhang <jesszhan0024@gmail.com>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, 
- Henrik Rydberg <rydberg@bitmath.org>, 
- Rob Clark <robin.clark@oss.qualcomm.com>, 
- Dmitry Baryshkov <lumag@kernel.org>, 
- Abhinav Kumar <abhinav.kumar@linux.dev>, Sean Paul <sean@poorly.run>, 
- Marijn Suijten <marijn.suijten@somainline.org>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Konrad Dybcio <konradybcio@kernel.org>
-Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org, 
- =?utf-8?q?Y=C4=B0=C4=9E=C4=B0TCAN_KAVAKLI?= <kavakliyigitcan@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1789116671; l=3582;
- i=kavakliyigitcan@gmail.com; s=20260911; h=from:subject:message-id;
- bh=x7HUi8j9WM0O66VRg2zaqPmBSUKqKlYUrg3o+6fVUMA=;
- b=0p7Sw0WODkPHyr6uYaCxqJhHD15HpgWvncYsEcFoTIdse3nMrsA429rybhBMBFN9lnbCG75i0
- EoyAv2U5cNvCyIAm66vhUwtwyvhJf5el9hJ1LDQvAl6pw6l7r3yALhq
-X-Developer-Key: i=kavakliyigitcan@gmail.com; a=ed25519;
- pk=W2GaxVotULs2vAjRMMLheaDtMMYs4037zO1LVVfFtPI=
-X-Endpoint-Received: by B4 Relay for kavakliyigitcan@gmail.com/20260911
- with auth_id=1024
-X-Original-From: =?utf-8?q?Y=C4=B0=C4=9E=C4=B0TCAN_KAVAKLI?= <kavakliyigitcan@gmail.com>
-Reply-To: kavakliyigitcan@gmail.com
+References: <20260908152808.3928630-1-arnd@kernel.org> <20260908152808.3928630-4-arnd@kernel.org>
+ <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
+In-Reply-To: <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 11 Sep 2026 11:07:16 +0200
+X-Gmail-Original-Message-ID: <CAD++jL=ysmPgs8yKH5KBobuv-eeCHHgZwvo1kvHOFuTwhkaOew@mail.gmail.com>
+X-Gm-Features: AcwNN1VlOYTrU3ZTl5zPPP6nearnDuFcxxJJedZ2i25yyIxB1qlTUVLyGBWuTQs
+Message-ID: <CAD++jL=ysmPgs8yKH5KBobuv-eeCHHgZwvo1kvHOFuTwhkaOew@mail.gmail.com>
+Subject: Re: [PATCH 03/13] ARM: remove riscpc
+To: Ethan Nelson-Moore <enelsonmoore@gmail.com>, Russell King <linux@armlinux.org.uk>
+Cc: Arnd Bergmann <arnd@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Drew Fustini <fustini@kernel.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, Stefan Agner <stefan@agner.ch>, 
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+	Aaro Koskinen <aaro.koskinen@iki.fi>, Andreas Kemnade <andreas@kemnade.info>, 
+	Kevin Hilman <khilman@baylibre.com>, Roger Quadros <rogerq@kernel.org>, 
+	Tony Lindgren <tony@atomide.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>, Andrew Lunn <andrew@lunn.ch>, 
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
+	Gregory Clement <gregory.clement@bootlin.com>, Robert Jarzmik <robert.jarzmik@free.fr>, 
+	Kristoffer Ericson <kristoffer.ericson@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	Alexander Sverdlin <alexander.sverdlin@siemens.com>, Shawn Guo <shawnguo@kernel.org>, 
+	Karl Mehltretter <kmehltretter@gmail.com>, "David Hildenbrand (Arm)" <david@kernel.org>, 
+	Nicolas Pitre <npitre@baylibre.com>, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	devicetree@vger.kernel.org, imx@lists.linux.dev, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-omap@vger.kernel.org, 
+	Ian Molton <spyro@f2s.com>, Jens Axboe <axboe@kernel.dk>, Helge Deller <deller@gmx.de>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, "Paul E. McKenney" <paulmck@kernel.org>, linux-block@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: YİĞİTCAN KAVAKLI <kavakliyigitcan@gmail.com>
+On Fri, Sep 11, 2026 at 5:44=E2=80=AFAM Ethan Nelson-Moore
+<enelsonmoore@gmail.com> wrote:
 
-Enable the display subsystem (MDSS/MDP/DSI0), Kinetic KTD3136 backlight,
-and Novatek NT36672A SPI touchscreen on the Xiaomi Redmi Note 8 (ginkgo).
+> Because I think it's cool that the kernel still supports actual Acorn
+> hardware, I patched gcc 16.2 to restore ARMv3m support:
+> https://github.com/EthanNelson-Moore/gcc-arm-retro
 
-Hardware nodes added:
-- Fixed LCDB regulators (lcdb_lab and lcdb_ibb at +/- 5.5V)
-- MDSS and DSI0 with Tianma 1080x2340 FHD+ video panel
-- I2C1 backlight node at 0x36 with PMI632 GPIO 6 hardware enable
-- SPI2 touchscreen node at CS0 with GPIO 88 interrupt and panel follower
-  reference
-- Touchscreen active pinctrl definition on GPIO 88
+For the record: I also think this is cool.
 
-Signed-off-by: YİĞİTCAN KAVAKLI <kavakliyigitcan@gmail.com>
----
- .../boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi | 100 +++++++++++++++++++++
- 1 file changed, 100 insertions(+)
+One question: is ARMv3m there in Clang/LLVM? I only
+know that we have ARMv4t.
 
-diff --git a/arch/arm64/boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi b/arch/arm64/boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi
-index 59042a5937535c4acda064fa0f865f4f5a52d01b..f4b9e2092a814e56cdc23218025cb4166dec110a 100644
---- a/arch/arm64/boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi
-@@ -26,11 +26,30 @@ / {
- 	chassis-type = "handset";
- 
- 	qcom,msm-id = <QCOM_ID_SM6125 0x10000>;
-+	qcom,board-id = <34 0>, <34 1>, <34 2>, <34 3>, <34 4>, <0 0>;
- 
- 	aliases {
- 		serial0 = &uart4;
- 	};
- 
-+	lcdb_lab: regulator-lcdb-lab {
-+		compatible = "regulator-fixed";
-+		regulator-name = "lcdb_lab";
-+		regulator-min-microvolt = <5500000>;
-+		regulator-max-microvolt = <5500000>;
-+		regulator-boot-on;
-+		regulator-always-on;
-+	};
-+
-+	lcdb_ibb: regulator-lcdb-ibb {
-+		compatible = "regulator-fixed";
-+		regulator-name = "lcdb_ibb";
-+		regulator-min-microvolt = <5500000>;
-+		regulator-max-microvolt = <5500000>;
-+		regulator-boot-on;
-+		regulator-always-on;
-+	};
-+
- 	chosen {
- 		#address-cells = <2>;
- 		#size-cells = <2>;
-@@ -356,6 +375,13 @@ irled@1 {
- 
- &tlmm {
- 	gpio-reserved-ranges = <0 4>, <30 4>;
-+
-+	ts_int_active: ts-int-active-state {
-+		pins = "gpio88";
-+		function = "gpio";
-+		drive-strength = <8>;
-+		bias-pull-up;
-+	};
- };
- 
- &uart4 {
-@@ -369,3 +395,77 @@ &usb3 {
- &usb_dwc3_hs {
- 	remote-endpoint = <&pmi632_hs_in>;
- };
-+
-+&mdss {
-+	status = "okay";
-+};
-+
-+&mdss_mdp {
-+	status = "okay";
-+};
-+
-+&mdss_dsi0_phy {
-+	vdds-supply = <&vreg_l7a>;
-+	status = "okay";
-+};
-+
-+&mdss_dsi0 {
-+	vdda-supply = <&vreg_l18a>;
-+	status = "okay";
-+
-+	panel: panel@0 {
-+		compatible = "tianma,fhd-video-ginkgo", "novatek,nt36672a";
-+		reg = <0>;
-+
-+		reset-gpios = <&tlmm 90 GPIO_ACTIVE_LOW>;
-+		vddio-supply = <&vreg_l9a>;
-+		vddpos-supply = <&lcdb_lab>;
-+		vddneg-supply = <&lcdb_ibb>;
-+		backlight = <&backlight>;
-+
-+		port {
-+			panel_in: endpoint {
-+				remote-endpoint = <&mdss_dsi0_out>;
-+			};
-+		};
-+	};
-+};
-+
-+&mdss_dsi0_out {
-+	remote-endpoint = <&panel_in>;
-+	data-lanes = <0 1 2 3>;
-+};
-+
-+&qupv3_id_0 {
-+	status = "okay";
-+};
-+
-+&i2c1 {
-+	clock-frequency = <400000>;
-+	status = "okay";
-+
-+	backlight: backlight@36 {
-+		compatible = "kinetic,ktd3136";
-+		reg = <0x36>;
-+		enable-gpios = <&pmi632_gpios 6 GPIO_ACTIVE_HIGH>;
-+		default-brightness = <2047>;
-+		max-brightness = <2047>;
-+	};
-+};
-+
-+&spi2 {
-+	status = "okay";
-+
-+	touchscreen@0 {
-+		compatible = "novatek,nt36672a-spi", "novatek,nt36672a-ts";
-+		reg = <0>;
-+		spi-max-frequency = <4000000>;
-+		interrupt-parent = <&tlmm>;
-+		interrupts = <88 IRQ_TYPE_EDGE_RISING>;
-+		pinctrl-0 = <&ts_int_active>;
-+		pinctrl-names = "default";
-+		panel = <&panel>;
-+		touchscreen-size-x = <1080>;
-+		touchscreen-size-y = <2340>;
-+	};
-+};
+To the bigger question.
 
--- 
-2.47.3
+The community has a built in tension around this:
 
+- One camp that are enthusiast like yourself. That kind of people
+  are running the show inside arch/m68k on Amigas and Ataris.
 
+- One camp who get their paycheck from present day companies
+  and constantly on top of the latest technology. As can be
+  seen Qualcomm just taped out a brand new ARMv7 SoC
+  named Kuno, for example.
+
+As you can see this leads to a bit of tension.
+
+What I'm after here is not one camp is doing the right thing
+and the other one is not, because that inevitably boils down
+to the question of what is the meaning of life. Or "what is fun"
+actually (Torvalds wrote a book named "just for fun") and
+either case could be argued to be quite fun, or meaningful.
+
+> I am working on a clocksource driver, which uses both timers (to
+> hopefully fix the awful time drift), and removes the dependency on
+> LEGACY_TIMER_TICK.
+>
+> I also have patches for several cleanups to Risc PC-related code.
+
+As SoC maintainers I think we want to hear about a plan to
+migrate RiscPC to device tree should it stay supported. And I
+do not think it is that hard to achieve with the right focus by the
+right people.
+
+Actually testing it on actual hardware would be a further
+requirement, so we're not doing dreamscapes here.
+
+I want to heat from Russell on this.
+
+The ARM kernel started as a passionate project by him, on that very
+machine, and he should decide if we keep it going.
+
+IIUC the Clang/LLVM compiler has essentially solved the compiler
+issue.
+
+> I am aware that this has no actual use case, but it was fun. No LLM
+> was used for any part of the work.
+
+My position is that using LLMs is good in many ways because
+when used right by the right people it allows us to keep a wider
+range of hardware supported.
+
+Yours,
+Linus Walleij

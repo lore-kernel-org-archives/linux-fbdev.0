@@ -1,115 +1,110 @@
-Received: from mail-qk2-f12.google.com (mail-qk2-f12.google.com [74.125.230.204])
+Received: from mail-yx2-f12.google.com (mail-yx2-f12.google.com [74.125.224.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A6DF32C8B
-	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 00:08:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.230.204
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789085329; cv=none; b=o7wCxBm48MmTmphSclwWiLtctpgEZwrWz7jawQ3hkDO0Yh1/Bw1rGjXFT9nn+Vq7KFvgZs8KpGoNronkIadfExNA5Qh/uyz85A2IjM0HYROJtVp/cbbhOCm1X3kaxWPfk9zU7s6ZZY68RcMP2JZK3VbHRkGvM1U+h/OZV9FMGKM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789085329; c=relaxed/simple;
-	bh=v2XJNi/Y29xgo2PM9yU2/1tfHLxfQOc8Xy9oLXfuIbc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Nsfac28nKB4eTujwSTZxIabSYBDHpo1CG5nABX5K+KM7F7YE5Tz5Xr7sFYMsINeGKMGBUCPICckVbBDl19LuMzjmO8BJhJfo+2pNufIQ6BncoZxoQgPHVBDpPruwNa5xgbysd9SaePwyfd9nft0Erv5GfTTYdv9En9dAcUz12A0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Ton5mef0; arc=none smtp.client-ip=74.125.230.204
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F9FD49E155
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 00:17:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.140
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789085869; cv=pass; b=jzT4omVmt+PW3Z5kpYe3zcVxwhrd1rbeYiYTCB4GAkfqkAH0aXfuryJQubjTPN6ssH7tJP0dJ/X26W7HCp8/Uj4AUwnyxVQEFoW1DmMleAd4ZPKx/D53A+zzAXd1nyhZGl4YOdlF/wBW6eq6tK/Girmi5bclxHT6lHKko7ZeXtA=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789085869; c=relaxed/simple;
+	bh=n9SrHN+fgpLIqi8Itt/3HtMz4SuMQlkWH/sPrxujiQE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UvZ27Gzg8xUK6BC5QYtP2m3JynQp7iB3MyUfum/HJ3YzbxULPikbjkB3lirHYjKd+Rl/YqbFJvK3jzlGXRTgYfM6O5F2FXoHjGfsVdktjCVafYWmSo7n9hZ5FYA449fbzJqHgCRS5CTMP364RAhKjsYgnqPnYj93J1Cx/4QBK8s=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=dw7fOt+h; arc=pass smtp.client-ip=74.125.224.140
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ton5mef0"
-Received: by mail-qk2-f12.google.com with SMTP id af79cd13be357-939109fafddso26806985a.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 10 Sep 2026 17:08:46 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dw7fOt+h"
+Received: by mail-yx2-f12.google.com with SMTP id 956f58d0204a3-66e4ab19125so291454d50.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 10 Sep 2026 17:17:48 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789085867; cv=none;
+        d=google.com; s=arc-20260327;
+        b=ZBoV15Tx4o2YFIQF54ydorRolmOlT77crtC4h5yFpmmus8en4nf7l/vuoSBtLQZNVN
+         2bpDPhhBw8bb3xep46ljnN2j8wyhpar76hd/O3srOg4JjA0tdSJ2CfumqBWaWu+oEIoK
+         Yz0x9nMVxxNe9G3CkxQzFe5irtsRCZaDsr/v9TN4fTIXBfXw7dcTxJET+lM5BbFzkoBF
+         r1FEYF+qI4z4BKu1aSJGtWnVeU1WHxLF9eyus93Sb7Vj223DstP5qQpF2PAK9oylST8u
+         vR2nqiH0JLk/bCNn74Ff1JHJpipzfbAY6vVbTmjX0H6URylJsgFmW3EYcXBVnKGgwAJ5
+         D8Dg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=n9SrHN+fgpLIqi8Itt/3HtMz4SuMQlkWH/sPrxujiQE=;
+        fh=9wYgffX7dYUn5U6MgCNIg0HS3ae9FyQE+rBlJ3bTBgY=;
+        b=EG3wx6+FQSw+d8oGF54GuXFJ8945rEq4e1iyIdcYJxneVaT7NhRM3G662PmQKVRacR
+         6TU8tFp42PP1EpvTdtirqPN147r1haispATfTMeENfIeSBBw8UDyXNBMUskiC18cBxiK
+         5SyCGOGh6biUniCj3o8LULW24LFGE5OdcS0s0bd3hSYGTNLCoShslDLAY6lr6TE1D952
+         Z6bob4nONYXxGHA/pbkm2dGdnSn2G07PF1KqIALUjT0jJPkAjqe/KSpFUlAmi1wZ2AzF
+         J6zuCc8Ehja8EvGmV18pG+yQUoxR5N/ehy7y9M22uclyFvwOXtfhZZ/t8JpRMZKjOgja
+         NakQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789085326; x=1789690126; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=bSaMAuaPgc7+sGFbHWGL+A5HmSLpypXBziPyfL/qmaQ=;
-        b=Ton5mef0H8KvHg31LiINad2ZtLRH8lkVKFPf5kVkXqOQkb5l1LPVyZlVN8T5YRvodd
-         9veLYeMgdO+q/MpTZKyQQF01MBMT18EFFJK1oLtaj8AMQb0RsC2n8zcZiQn5ykBaUVYK
-         GlZWx733ZIttDCqUhG0rcWQmbnUe1ne86BKWl4JyFYACyQkndQloOxl6+pbgh7YiJIAi
-         m1Kkqkj7hH4EOwZfAO4x81PnEHS7C3sbdQ3uvLEXKkMTQShMT1jAYQE4q3LItcmNmBdd
-         Uq9eUUrFH/MJ0AzuF93zGxUhB1ug80nPqITY4OwuzmDYD5km6dYFsBylzOs8HybYGACv
-         NJZg==
+        d=gmail.com; s=20251104; t=1789085867; x=1789690667; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=n9SrHN+fgpLIqi8Itt/3HtMz4SuMQlkWH/sPrxujiQE=;
+        b=dw7fOt+hq7HIFai0TMaJanw+O/NBLPkg4rJxQqxAARm5dFv8/OoJae2EHzw7ga+coz
+         aiPssEzcMISTt81V4EhhvfPuqRWzzuDUHkS8IpmXQ0qpA2SpMCz8YUB9kOL/7FopDlqu
+         MTdf9ralrZg5mTKSEYLLZ91J/bdNFX9T6UPQViMr6wfjHCKtcbEShzetJz1/lZFNU3Qh
+         l7YxyjrotxiTNdmuZeGnU4NcTwNJSrwL5pij3H22RyoCccoEmApsI2KPjC/QhT2ayUaN
+         WAlKNSjaF4sWJ6TxfFxROaJbuP81wDajofDlXiZ5rGzSy6He8gnIOBHO1jqpHHzA6Jex
+         UQ9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789085326; x=1789690126;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=bSaMAuaPgc7+sGFbHWGL+A5HmSLpypXBziPyfL/qmaQ=;
-        b=LWC6G4PiOQ2ztiIoVb2LaVOkQwWA5xLxDCsCMvdmyAupkP74NqLyTID5rHoLiY3tZP
-         U7Jzy1DI06+Of2klMUkjzYBo/l0fXxbNKXLZJLaBpTuamHSKPdptowuvs3DI2dhPyo8D
-         haXeDnB6w+kqfH+GKUXjp8aboVyBvybxQmMIMSmgT5nnG4m04E919wQAqxWdvHNt8uho
-         wLJe7cFJlcYCA24TRgXhjrWDvibJpro7fHf+WYmNmB9vB4JofrClayKpQtYTbYtRtKZC
-         3aO8Dwei+qy1vDDBy10MV05Khw/kuwqR63C98QJEKRjqFySZ6hi6r5H64wSz/CjZ6R1R
-         mBmQ==
-X-Gm-Message-State: AFuF++kvMV+oSrdUqDvj6B0NZXyfAmVu+6vTp+D7b3pEkZUqKYcqz63f
-	DG69hWdseivgPDArO+AOZ0xjSkZtumlPwNlxU22mM+N6TPMl4tnIEds=
-X-Gm-Gg: AYBFou2Yyll0oGi8xfwcvjl3J+iTr9mPkT9rTIl4iHc5elEvnyfXHG2sa079vWNWJJG
-	7LFtWYJpG8qC/++ROOdCgDuaFYyz6jqrIYCJWRIzudQQrnWCW8fS+yX3lU9M7qT12nzZvhavIyY
-	REwfe40EOtTj/jtoePJGA41Ibk0K2zstALhSLWCfwA/Wab36p8kw4k0zAi92hIO9WvffSIszKSd
-	ObiaKC0K6A7q9sRiMGxGp5awbD2pVZIXwiD84UnjW+OOmoojs5MV199YI0+tdw/uGjFLQ6kbbWR
-	sYF3lcNxJ3CfZN6nKj6n8eHJ7LrfaRVFyiWzebo8fqd2k3ssz0jeE7s+PvK2apgY/a/V4AkfPCJ
-	wmXxYEdvbtimbhBKMTAnPmF0XAqin/awSzutYwci/tk3wQbdFdi4WCKTqROOmohqq6ZTNHGXa3L
-	XJBuN8CQjg5S0vGwNa1GQ9WJefXBOLsKi7dnp04deJSKB/rt+pRTvHIErz8WvM61M6Uoy5et6b2
-	n3g8oWmHhWhwUrDbHm6dS/8mvh6pmM/HhJGPz/w0B/xZ5Tb7UxnmTWqBaq/xubLiWhMP8bCM1jF
-	60mBiV9McXWQShLSeE99Lf7car8pxf9tqU4=
-X-Received: by 2002:a05:620a:4409:b0:939:191c:cac7 with SMTP id af79cd13be357-939ea0850abmr180782885a.13.1789085325637;
-        Thu, 10 Sep 2026 17:08:45 -0700 (PDT)
-Received: from localhost.localdomain ([104.39.73.78])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-939e811cffdsm106263285a.46.2026.09.10.17.08.44
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 10 Sep 2026 17:08:45 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Myeonghun Pak <mhun512@gmail.com>,
-	Ijae Kim <ae878000@gmail.com>
-Subject: [PATCH] fbdev: sstfb: use managed PCI device enable
-Date: Thu, 10 Sep 2026 20:08:35 -0400
-Message-ID: <20260911000835.88909-1-mhun512@gmail.com>
-X-Mailer: git-send-email 2.47.1
+        d=1e100.net; s=20251104; t=1789085867; x=1789690667;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=n9SrHN+fgpLIqi8Itt/3HtMz4SuMQlkWH/sPrxujiQE=;
+        b=OdO7wHeGjFQijS572MxidjoRdcLnI9x+x3UI+UlHMVNSQ0Dn0beh874CU0hXXB5xxl
+         SBDD1H5H4+jh7CkMstw67eQidnBXQ0Ief0VfvZtzCyfOk2h9FRi4UxdpYl8RK4POrrYB
+         4LUIki/xVTch8VZutBIy9Gs/cT79DWhynSZ0Mr8myPqepRK6hlXCPzf75orld6er0iDY
+         M3OjJgObKibr9VWGGkmvkQovVy0sC5CP2gLq7brS8QTzS+in/BzdF0a82eIQ+A7Zv/HN
+         vMuztCyeUsjbowiGFAZOcU3+SihuF8JIQsDkEDdBgIx/+BEYVp0GbWG4W2sS68QX/Ku0
+         9Pqw==
+X-Forwarded-Encrypted: i=1; AKwUvBx7ipZ+yYYdr5vZqwK/d0yT9sMtQjDpU2dhaMu0qdEcJghqmnZOzPfI+tQyXMRH1SNN9QRwlPkkdBEiqA==@vger.kernel.org
+X-Gm-Message-State: AFuF++mMKuc6t9/2lSAF4jsMKKQDaYcwH+TuJaM2JdsweyP8+9cocpAi
+	Lu7+9vUNrDdPYZqPbudBlftLmv2ydEQvBwIzgD7TwUyKg2yzjO9BP1hb3+yOV9fn32q7TucBYQe
+	O+NqM67RJbKh7pfLtAtehAP7hQEsdiRdRew==
+X-Gm-Gg: AYBFou2Lj5IQnY2OuQi1+jCsvs/nWucIij0V/l5vCCSTU38wp+isBJgkm7L46ixvj3d
+	9nUDLLtZU4oyik0IqIGdphsngmJs+yylNBFveyD0zs/IB1O1rWBKjrwvELZd46zqmhSnC57VqLv
+	oSc7SMDhkga4//3Lc+PUuD+S5F4XCQey0SeNwNnYxaKxehRNuTKNbkxYf/25mBTJkoo0M4QiTuU
+	1mYsF0HMDnsEQ/9HsgCAFMEdYEQ81uybf9AxNVfdze4/jqjfacEOqvo3ufV0kBQNrBXDrPDPe4F
+	yOG5x7qg8t3cXHDvVVdGQtj6jpee10xxrLi3PQN7G2wPd1hpnWmIX46Pc4ElXGJFaLf8TZxEdc0
+	3nDjMaFxEVa6UYKbzzGm2sG+pnxFgD+b2uRspHK/Nh74p8Nb8cP9b2OwGtHCdJix6vh8mSOxfYu
+	c6C7tQRu+IyNSQYUz8h5rWK7x6ytFZBZFY0HOEYR7pJETgwEO0lQj5EQ==
+X-Received: by 2002:a05:690e:4501:20b0:671:1feb:199f with SMTP id
+ 956f58d0204a3-6712473278dmr616377d50.45.1789085866400; Thu, 10 Sep 2026
+ 17:17:46 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260827093948.2825531-1-lilinmao@kylinos.cn> <e4a2ba2e-c533-04d8-0795-e3d43caf47b9@gmail.com>
+ <CAN5rfbSh9ZoUkReAqv9rHYowqKcZFa-Svy6LP-MHvqfBVhjdBQ@mail.gmail.com>
+ <4f3c7184-1b5c-4074-b8a1-49261833df8f@gmail.com> <a8cb0e4f-a2fd-4478-99d6-fdb043a9d15c@gmx.de>
+In-Reply-To: <a8cb0e4f-a2fd-4478-99d6-fdb043a9d15c@gmx.de>
+From: =?UTF-8?B?TWlybyBLcm9ww6HEjWVr?= <miro.kropacek@gmail.com>
+Date: Fri, 11 Sep 2026 10:17:29 +1000
+X-Gm-Features: AcwNN1Vors9QLM8_x5o0_B2FetldnvezlCJ6C1fncIRSIhuR9h5MtKq7gbNFw8c
+Message-ID: <CAN5rfbQaXnYJszenqQvP3i9TSE500UJTgTQZUtQVxmRsqwQN9A@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: atafb: Restrict SuperBlitter to supported formats
+To: Helge Deller <deller@gmx.de>
+Cc: Michael Schmitz <schmitzmic@gmail.com>, Linmao Li <lilinmao@kylinos.cn>, 
+	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-sstfb_probe() enables the PCI device with pci_enable_device(), but
-failure paths after that point return without disabling it. The successful
-probe path has the same imbalance because sstfb_remove() releases the
-framebuffer, mappings and memory regions, but never calls
-pci_disable_device().
+On Fri, 11 Sept 2026 at 06:39, Helge Deller <deller@gmx.de> wrote:
+> But I added a
+> Tested-by: Miro Krop=C3=A1=C4=8Dek <miro.kropacek@gmail.com>
+> tag, if that's Ok for you, Miro?
+No problem.
 
-Use pcim_enable_device() so the PCI core disables the device automatically
-after probe failure or driver removal. The driver still releases its
-framebuffer, mappings and memory regions explicitly.
-
-This issue was identified during our ongoing static-analysis research while
-reviewing kernel code.
-
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
----
- drivers/video/fbdev/sstfb.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-index 2ea947f57efb..0496b9d5ecc4 100644
---- a/drivers/video/fbdev/sstfb.c
-+++ b/drivers/video/fbdev/sstfb.c
-@@ -1332,7 +1332,8 @@ static int sstfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 		return err;
- 
- 	/* Enable device in PCI config. */
--	if ((err=pci_enable_device(pdev))) {
-+	err = pcim_enable_device(pdev);
-+	if (err) {
- 		printk(KERN_ERR "cannot enable device\n");
- 		return err;
- 	}
--- 
-2.47.1
+--=20
+http://mikro.atari.org

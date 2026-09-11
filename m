@@ -1,143 +1,163 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8609459AD4
-	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 09:07:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC7CE39768F;
+	Fri, 11 Sep 2026 09:38:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789117653; cv=none; b=HzQnar4bOt934CfeH866X2urxu0O3SLxctsuZUm4shNO6goKVr9HzurBvF4Jr+UzdNmVIDmybZ/UVs9+kY/D0UsxMx7Agti3guZmfkkW8MA7XUZeJkBykqhYhSVemVt94MEN+Fxt2bq96DwnhCb3GkPH8oazEOOZzCpPPOTQx5w=
+	t=1789119489; cv=none; b=Ga0b24vCLW0SAwgWQddX5y3wxwP9TGyeCbIjYYTVSM7T6orBfVE1XawxkcW85MkOGMRDX+sRaCbuux1s3Wij5zz8NQOTMitdYosOOPoy4YFfkh6Ty71EW0AzaHQYteWI8o3El+wiBMpTTdfMWM3UyL0hM49kVohQtGtURokA9n4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789117653; c=relaxed/simple;
-	bh=/dL3pCPr3MM7dPLehJhDV3xFjQwplqUCQL5XgTxif+k=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RaVD+PRyN6JHH2E61iSYQq3nrv9jaf8CdE8VxLNDSWQ1fjF1sGaeQDeXruQjT3+CsrzKB32eOaQQbk1AfhsDem1Q3QrnlCQrofzfI8aApypPeTU5WxLPUcHsIM1YqyFlU34bxgwW9Uv77H0ND8gxi1uMNzY1RQjksd6KdcGDtP0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ozwuuEUQ; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789119489; c=relaxed/simple;
+	bh=sb6ClNqSQhPq2ZVhuU+8klKUwkLjODKU96QOOaqi6Cw=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=hAUe8WxEDOonDVIo3OzRL4HImhO1d9ZMNENjjmVvPvvBOWhgL/4+yoLeJvbuXs1Gi4mQniwFw2zCFZEKJvztZAIZGanE87Hpi/xZ+hPZHD83ANL9tfk6TIRhOrFsxBv3coqpUogi0VCHfz1Yt8OODoWE1335oAWZFtCRiXYIWHE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=linux.intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=DM9yb6wk; arc=none smtp.client-ip=192.198.163.7
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ozwuuEUQ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBEDF1F00899
-	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 09:07:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789117650;
-	bh=/VGcQS0ZeRYJfc9e784tdLXi12bCcFoGI0t9ozoHPBo=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=ozwuuEUQ8Z5se6zO5/fvu0pYLAOc5jGBs3n7Ao8KmKbvgwFVyNUnWcGSZguymLUAt
-	 RVKzsVQaratM2qCL/JX11MdyergavYIT/AlSFNnuGbejufqwsbMAaHjmmUCx7QSWAX
-	 gkSSivPrnNsep6lmjwegM8eFlO37g5AD3iliEMWZVSB9ellqVprjaNTpKigOOglQX4
-	 A07yKT36YEPA0DyRIxKNtXe/lzyMTs9aSi5aHQJz7Dato7ohCLajMILy+cSmGin6G+
-	 dg8cO5vN/lLlf3Dj3aYxfuGDuqOkh2HnLG2wOopDnvUs9h4DBtVxyeNV0hoAqF2pr+
-	 wf2Osx0fo8QlA==
-Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-5b5e5ab03afso659236e87.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 02:07:30 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBzUBFIDB1S+2pw6DUWsGzWjM3uA8lAeZ8OuIj7t4GeSwG7uDvfKYc0U1kzKiDo+KIWR9ju24ghkqvRvlg==@vger.kernel.org
-X-Gm-Message-State: AFuF++mjdw7lWPGhADIO6w91QYTbwf/pftZRsKALzc0uN+dXydEWqekX
-	cWFbGPRi860xCs5QksvyWZPccTQTrnPKgAm30X9cnUYdrAu1gZjSia2eCaf+/lO/m/MIWFCaCKv
-	PDTUXjNQre9vZ6YC79K7e05exxJ2GVhs=
-X-Received: by 2002:a05:6512:3054:b0:5b6:1a7c:fd99 with SMTP id
- 2adb3069b0e04-5b8a0348f4fmr751726e87.63.1789117648568; Fri, 11 Sep 2026
- 02:07:28 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="DM9yb6wk"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1789119488; x=1820655488;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version:content-id;
+  bh=sb6ClNqSQhPq2ZVhuU+8klKUwkLjODKU96QOOaqi6Cw=;
+  b=DM9yb6wkIw6H/4OUaxjgfsWqnlyifFSzuJm4auThBBtBwc0mV354yWRx
+   XtVaPKQt14wWQTHxwmAuXrNtLuI74H7+XGOopmobWMGCbssTFCTgK70GN
+   xPc/0fvgWUsW06yKDHuGJmgGIjUvm1V7dS7+MPTBjbLpMhgWAOSeQFKK8
+   CXvQwBVdRUh7PB3vVnm8I4Hbb6wYWM1MRgDUtsgLsesnWkjK2NOk6/5wg
+   tMkfigA95OrdDDeQGjA0+DXpjVm+sYk7WNYD5sMczGNu5j/1W9HF8+vvK
+   A11b1psKdcGb9tZV65ASr1A+m9roMLitbGJqHxiKH0mDnGtQeJfczTkfU
+   w==;
+X-CSE-ConnectionGUID: lv8LjnQ/RM2Ip6FtGVq2QA==
+X-CSE-MsgGUID: o8V6DDF0TnKqW/TDijK+BA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11901"; a="115120614"
+X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
+   d="scan'208";a="115120614"
+Received: from fmviesa001.fm.intel.com ([10.60.135.141])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 02:38:07 -0700
+X-CSE-ConnectionGUID: SRo+o97pTgCUDHnSfx1bsQ==
+X-CSE-MsgGUID: d5IlSxrWQfGb/hpk+vV9Sw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,97,1787036400"; 
+   d="scan'208";a="296857533"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.158])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Sep 2026 02:37:41 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Fri, 11 Sep 2026 12:37:38 +0300 (EEST)
+To: Juergen Gross <jgross@suse.com>
+cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org, 
+    linux-perf-users@vger.kernel.org, linux-hyperv@vger.kernel.org, 
+    kvm@vger.kernel.org, virtualization@lists.linux.dev, 
+    linux-edac@vger.kernel.org, linux-pci@vger.kernel.org, 
+    linux-pm@vger.kernel.org, linux-coco@lists.linux.dev, 
+    linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org, 
+    dri-devel@lists.freedesktop.org, linux-crypto@vger.kernel.org, 
+    linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org, 
+    linux-mtd@lists.infradead.org, platform-driver-x86@vger.kernel.org, 
+    linux-fbdev@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>, 
+    Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+    Dave Hansen <dave.hansen@linux.intel.com>, 
+    "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, 
+    Arnaldo Carvalho de Melo <acme@kernel.org>, 
+    Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
+    Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
+    Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
+    Adrian Hunter <adrian.hunter@intel.com>, 
+    James Clark <james.clark@linaro.org>, 
+    "K. Y. Srinivasan" <kys@microsoft.com>, 
+    Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
+    Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
+    Sean Christopherson <seanjc@google.com>, 
+    Paolo Bonzini <pbonzini@redhat.com>, Ajay Kaher <ajay.kaher@broadcom.com>, 
+    Alexey Makhalov <alexey.makhalov@broadcom.com>, 
+    Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+    Josh Poimboeuf <jpoimboe@kernel.org>, 
+    Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, Pu Wen <puwen@hygon.cn>, 
+    Tony Luck <tony.luck@intel.com>, 
+    Reinette Chatre <reinette.chatre@intel.com>, 
+    Dave Martin <Dave.Martin@arm.com>, James Morse <james.morse@arm.com>, 
+    Babu Moger <babu.moger@amd.com>, Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>, 
+    Vitaly Kuznetsov <vkuznets@redhat.com>, Andy Lutomirski <luto@kernel.org>, 
+    Bjorn Helgaas <bhelgaas@google.com>, 
+    "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+    Kiryl Shutsemau <kas@kernel.org>, 
+    Rick Edgecombe <rick.p.edgecombe@intel.com>, 
+    Boris Ostrovsky <boris.ostrovsky@oracle.com>, Len Brown <lenb@kernel.org>, 
+    Damien Le Moal <dlemoal@kernel.org>, Niklas Cassel <cassel@kernel.org>, 
+    David Airlie <airlied@redhat.com>, Olivia Mackall <olivia@selenic.com>, 
+    Herbert Xu <herbert@gondor.apana.org.au>, 
+    Viresh Kumar <viresh.kumar@linaro.org>, Huang Rui <ray.huang@amd.com>, 
+    Mario Limonciello <mario.limonciello@amd.com>, 
+    Perry Yuan <perry.yuan@amd.com>, K Prateek Nayak <kprateek.nayak@amd.com>, 
+    Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, 
+    Yazen Ghannam <yazen.ghannam@amd.com>, Linus Walleij <linusw@kernel.org>, 
+    Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>, 
+    Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, 
+    Artem Bityutskiy <dedekind1@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
+    Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+    Miquel Raynal <miquel.raynal@bootlin.com>, 
+    Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
+    Ashok Raj <ashok.raj.linux@gmail.com>, Hans de Goede <hansg@kernel.org>, 
+    Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>, 
+    Xi Pardee <xi.pardee@linux.intel.com>, 
+    Daniel Lezcano <daniel.lezcano@kernel.org>, 
+    Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, 
+    Helge Deller <deller@gmx.de>, xen-devel@lists.xenproject.org, 
+    linux-geode@lists.infradead.org, Michael Kelley <mhklinux@outlook.com>
+Subject: Re: [PATCH v3 12/13] treewide: convert rdmsrq() from a macro to an
+ inline function
+In-Reply-To: <20260911074530.3140830-13-jgross@suse.com>
+Message-ID: <b2baa471-0f6b-84e8-bda1-ae0964b72b04@linux.intel.com>
+References: <20260911074530.3140830-1-jgross@suse.com> <20260911074530.3140830-13-jgross@suse.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260908152808.3928630-1-arnd@kernel.org> <20260908152808.3928630-4-arnd@kernel.org>
- <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
-In-Reply-To: <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
-From: Linus Walleij <linusw@kernel.org>
-Date: Fri, 11 Sep 2026 11:07:16 +0200
-X-Gmail-Original-Message-ID: <CAD++jL=ysmPgs8yKH5KBobuv-eeCHHgZwvo1kvHOFuTwhkaOew@mail.gmail.com>
-X-Gm-Features: AcwNN1VlOYTrU3ZTl5zPPP6nearnDuFcxxJJedZ2i25yyIxB1qlTUVLyGBWuTQs
-Message-ID: <CAD++jL=ysmPgs8yKH5KBobuv-eeCHHgZwvo1kvHOFuTwhkaOew@mail.gmail.com>
-Subject: Re: [PATCH 03/13] ARM: remove riscpc
-To: Ethan Nelson-Moore <enelsonmoore@gmail.com>, Russell King <linux@armlinux.org.uk>
-Cc: Arnd Bergmann <arnd@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Drew Fustini <fustini@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, Stefan Agner <stefan@agner.ch>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Aaro Koskinen <aaro.koskinen@iki.fi>, Andreas Kemnade <andreas@kemnade.info>, 
-	Kevin Hilman <khilman@baylibre.com>, Roger Quadros <rogerq@kernel.org>, 
-	Tony Lindgren <tony@atomide.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>, Andrew Lunn <andrew@lunn.ch>, 
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
-	Gregory Clement <gregory.clement@bootlin.com>, Robert Jarzmik <robert.jarzmik@free.fr>, 
-	Kristoffer Ericson <kristoffer.ericson@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Alexander Sverdlin <alexander.sverdlin@siemens.com>, Shawn Guo <shawnguo@kernel.org>, 
-	Karl Mehltretter <kmehltretter@gmail.com>, "David Hildenbrand (Arm)" <david@kernel.org>, 
-	Nicolas Pitre <npitre@baylibre.com>, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, imx@lists.linux.dev, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-omap@vger.kernel.org, 
-	Ian Molton <spyro@f2s.com>, Jens Axboe <axboe@kernel.dk>, Helge Deller <deller@gmx.de>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, "Paul E. McKenney" <paulmck@kernel.org>, linux-block@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; BOUNDARY="8323328-1162080221-1789119116=:1171"
+Content-ID: <b9134b99-a885-4c62-2abd-7195415a52e3@linux.intel.com>
 
-On Fri, Sep 11, 2026 at 5:44=E2=80=AFAM Ethan Nelson-Moore
-<enelsonmoore@gmail.com> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Because I think it's cool that the kernel still supports actual Acorn
-> hardware, I patched gcc 16.2 to restore ARMv3m support:
-> https://github.com/EthanNelson-Moore/gcc-arm-retro
+--8323328-1162080221-1789119116=:1171
+Content-Type: text/plain; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-ID: <085b47bf-864b-9802-2915-a51186e45c40@linux.intel.com>
 
-For the record: I also think this is cool.
+On Fri, 11 Sep 2026, Juergen Gross wrote:
 
-One question: is ARMv3m there in Clang/LLVM? I only
-know that we have ARMv4t.
+> Today rdmsrq() is a macro using its second parameter as the target for
+> storing the read MSR value.
+>=20
+> Convert rdmsrq() to an inline function returning the MSR value.
+>=20
+> The users have been converted using the following semantic patch:
+>=20
+>   // Options: --include-headers
+>=20
+>   virtual patch
+>   virtual report
+>=20
+>   @@
+>   expression msr, val;
+>   @@
+>   (
+>   - rdmsrq(msr,val)
+>   + val =3D rdmsrq(msr)
+>   )
+>=20
+> Signed-off-by: Juergen Gross <jgross@suse.com>
+> Acked-by: Damien Le Moal <dlemoal@kernel.org>      # ATA
 
-To the bigger question.
+Acked-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>=09=09# pdx86
 
-The community has a built in tension around this:
+What is the plan for merging this?
 
-- One camp that are enthusiast like yourself. That kind of people
-  are running the show inside arch/m68k on Amigas and Ataris.
+> Reviewed-by: Michael Kelley <mhklinux@outlook.com> # Hyper-V
 
-- One camp who get their paycheck from present day companies
-  and constantly on top of the latest technology. As can be
-  seen Qualcomm just taped out a brand new ARMv7 SoC
-  named Kuno, for example.
-
-As you can see this leads to a bit of tension.
-
-What I'm after here is not one camp is doing the right thing
-and the other one is not, because that inevitably boils down
-to the question of what is the meaning of life. Or "what is fun"
-actually (Torvalds wrote a book named "just for fun") and
-either case could be argued to be quite fun, or meaningful.
-
-> I am working on a clocksource driver, which uses both timers (to
-> hopefully fix the awful time drift), and removes the dependency on
-> LEGACY_TIMER_TICK.
->
-> I also have patches for several cleanups to Risc PC-related code.
-
-As SoC maintainers I think we want to hear about a plan to
-migrate RiscPC to device tree should it stay supported. And I
-do not think it is that hard to achieve with the right focus by the
-right people.
-
-Actually testing it on actual hardware would be a further
-requirement, so we're not doing dreamscapes here.
-
-I want to heat from Russell on this.
-
-The ARM kernel started as a passionate project by him, on that very
-machine, and he should decide if we keep it going.
-
-IIUC the Clang/LLVM compiler has essentially solved the compiler
-issue.
-
-> I am aware that this has no actual use case, but it was fun. No LLM
-> was used for any part of the work.
-
-My position is that using LLMs is good in many ways because
-when used right by the right people it allows us to keep a wider
-range of hardware supported.
-
-Yours,
-Linus Walleij
+--=20
+ i.
+--8323328-1162080221-1789119116=:1171--

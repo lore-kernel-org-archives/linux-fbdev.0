@@ -1,157 +1,129 @@
-Received: from mail-qv2-f2.google.com (mail-qv2-f2.google.com [74.125.230.130])
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D05F93EC834
-	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 03:44:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.230.130
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789098288; cv=pass; b=EFSdIG7k5fu2WpxdWEzEWLRvQLkLCD5XbZgXRnxu8QJNN046JSIkYJPa2YL8IGEut9eXLSR19hKL3oE+fB4QPiTZJcFAjkoftgl/ch6b9qZU4pUYjTC4bi2Uu4B8WsOjdBdM444omWHNZttHHXpnYq32b8PuP+8AH90+XKDpc/o=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789098288; c=relaxed/simple;
-	bh=9MUCzlT67j02Tdxv5MkPUdx0rDyVjNu0IwYTyNrltgs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=pbFX36SfTi/z7uQmLWT9Av3Xb2O/hEhJpum8yGQIRtPLRmuoVXoDHoWHOB0gEJXleUobAl/NOb8OGVHzMHWWF61++5nSjKsS1BPOD0HgwCz9BuSTBLtcXvaXQaMjVqtyhg26yc3ZaASlYlu5XdpR+j51gHLCoinCVl6Kp2k8vdc=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=G2V24x4G; arc=pass smtp.client-ip=74.125.230.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 784613E9C11
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 04:53:27 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789102409; cv=none; b=gSunK3+q/r8/w5gzlbFhZpvVMPYBAZZB53+Jq3GO3xyveHxmvCReXlVeVCfzcCJSH0nRVs/09R2sm0Ju8si+L280giNQbDdmi62WwDDpDNRlpwfzqIuVjCPP4Id/ayAcvqswdxjP1lAEP59uq+ubx6+nAGMcGB3i6Nvjc1MshWM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789102409; c=relaxed/simple;
+	bh=E7Weys295E2lRJwd7nPe69axA6DpdeCQiU9gZVYLBdw=;
+	h=Subject:To:References:Cc:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=FSJzVKbwUEOqSh0mEk1sEvcBVfDcvqtBhIxZ2RJs6L35C76s5PVNu1kh9VQW90EOnTzWvcDDVKl02CHeZIAafzpPb6K/WNFh4Khzu9NRH/HQessCoWEUxl3lcqqsyeExwSapvEzxWvEeclTNCFCaS/n+l+khA2Ic2Qoqm1AKUs4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BNp8i3iY; arc=none smtp.client-ip=209.85.216.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="G2V24x4G"
-Received: by mail-qv2-f2.google.com with SMTP id 6a1803df08f44-90cbfa89a42so2802736d6.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 10 Sep 2026 20:44:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789098286; cv=none;
-        d=google.com; s=arc-20260327;
-        b=AFrgLZh91elQrzCwvNkEpXoSC6F4YYEmbt7uv9SvfhtR/+wHh1NDEh3K8rZjQgqegb
-         rjzgQnAY1LVVV1OPtkmTvIhYjgMo1Yt9HU+olIRkhshXyKxaubYSU6OaGu9aTikLoZBT
-         tMPHU3O5jSpaed20R9cNZWS5syaZwgBkvxM6koo7Af9xc5CuICatFv3rbi+mAdaANb0Y
-         3yo70M61/JDkBRfhIANJ0Bcowub1Q3NdBFERGO83aHv8li7qJkYxmqUxdjwU9R9idPWJ
-         Mjfwor9HJ46ER+40MK9OKFB8Utt5Xe6oZSYaxE//fEnSDbz2gGphjcabuV5PZGATGcDi
-         3O/Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=9MUCzlT67j02Tdxv5MkPUdx0rDyVjNu0IwYTyNrltgs=;
-        fh=HCpBNthS7zpstpO/OlRq4jzphVFZJGuW/ewzVxbweq8=;
-        b=YPWGPFoaLNwJKxx7IcEiTNmqRUKvdV5CnQOkc5AzGQ8+urxbeVBAi+1+lNjBIHeKYQ
-         1Li45qzBkrp+QurJluU87c4f0i3sjOkLpXwHzY8esqdulq6JWh7IezPWC7XzjTp/v0cB
-         J+ygCUZPKVBkqsdgrtBDA5OG/1cZG6J+VtCGx8VO3PFQ+BocDUQVMoAMTdFteDeRvg9t
-         y9tnEjWXXYreE9hi/euThWNCr2n5Iv81P4kYoGBtLBoRq5V1EsAjMK4pQnP9OOwvvZim
-         z0nKA6ddXdmPDe5xwFd9/WNr6SSGbSPZJ0rFg62226fFaoUoVKKrHG2B7ILXsY0pjjm8
-         1Bog==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BNp8i3iY"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-3964dfb5b9aso615784a91.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 10 Sep 2026 21:53:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789098286; x=1789703086; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=9MUCzlT67j02Tdxv5MkPUdx0rDyVjNu0IwYTyNrltgs=;
-        b=G2V24x4GGyCwAd8LaJ2X8PGNbql6wdGj7itobGHv+DWtilwCENd20LNJWE0FPLHB3/
-         0AjlkwMCGqs9CTmfIsOad/o7305l5dxeD1ZFHVPrHnNcoEDHmmOEkUoLBmMXN0uGF9mA
-         NFt62u0bdoESjLGcIpLtJ0v7+FmJRxrD/o1lT5g+LldSZZhD3Og4hV+mUCCZhqbjd2JS
-         rECTuLTUzPCSAjku7N+dnRXlt7UYkl6EGUg9xcf0TT9TiheCSHMZR1kposahxXE8JxLQ
-         5XMF89T6zDhqWdtlqtNhZhEm9Fss7ApuSwbHeeM2sCdkBm+3v8htMXW4iBX0va4HMp+v
-         aDTA==
+        d=gmail.com; s=20251104; t=1789102407; x=1789707207; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:mime-version
+         :user-agent:date:message-id:from:cc:references:to:subject:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=mT2sfmz7zRKsiFELeDn6nFddteQ3mqhWB3TM2IakbMI=;
+        b=BNp8i3iYatNF8ZpuTKWSvx+9QuY7DvLQng1ARPfYLGjOviAKNKK/tdnDSihZlLOI3D
+         tkOpuKA3yBEEereCe/B/0oP7gTF5MinZssoZu+JY+vnPoCzPifznt4QtCylpdyyhz5g1
+         5ZteegWQg065LOMlutRAhszAMzQ7gmyO+M3vXWvYexFSZ4gJPCfXlidXXdYsy4J8YY8f
+         ybGzCaQFSzZrG0MwuL2ZIezNcjIhSGp6W3EUWNBjluOL0o2EmnForden8MjpmWZ6rAwZ
+         q0gzz94ExxPJhwWr4LvycD+M7m8jskrXYiDMIWTtrDAYzxc6uBkJB9QUBosybIj+05fG
+         jPLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789098286; x=1789703086;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
+        d=1e100.net; s=20251104; t=1789102407; x=1789707207;
+        h=content-transfer-encoding:content-type:in-reply-to:mime-version
+         :user-agent:date:message-id:from:cc:references:to:subject:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=9MUCzlT67j02Tdxv5MkPUdx0rDyVjNu0IwYTyNrltgs=;
-        b=B4UF5I1lK1apIzvzC4UYnP6gS7v56s79pAFCntRq1Dwg7bwrZefKnywpy2zqE9pvRJ
-         5RpjPxuqGuBomxF05HQEeO8LBSlJetMMrrNyK8Q0sRoNSkpremyCFXPDBva+x+gjNDOn
-         9us6RdA4GxC+LXmugqbOSnmbswGVZ6YNfw5b3+ECzhCuYNDxcMjmTKDzRFOy4Jgmii+9
-         JAhWe4ivaRby0HLfuPOxVzpTHNoiPn/fC+SFzN5gm4LLRWaDzNo7ee9Ehp8GBHblbPV2
-         QTxwVD3i0+ROtaUyW0dZlrLkbQMbPN8jmqrQrAk8BwMnef805RBsIeOy6GXLCTJf+rlp
-         8new==
-X-Forwarded-Encrypted: i=1; AKwUvBx+AHLUW+fH4W1dBpPLC+MZqo/Y3UPUlSxn15cMJCWCMOKWik0+fsKhdo79BiDYUHO74aruy+jD/GbXHw==@vger.kernel.org
-X-Gm-Message-State: AFuF++k3x4dszhoCMKadKV6PP7pzx9Am+214NiG2BElLRsd0W6+9xDjL
-	hkMIZD5Z4M17xkS6XbJv55mQIuZWmtf/KN99OQT8gWW9/CgtCOiXgq3ZLc0zjDENc3bUHIYHZwt
-	iixGzpd3gG8pwT6ZQF6+u8MjCYaFKjmg=
-X-Gm-Gg: AYBFou1xXCugMdaATZ1Y4UmMEzWJuMLOpLQ9itR4JFoY6BkzI1x92dITu8RZkfXCKuY
-	sCimPzPlu2AHTKsMPwy2TqCpMoN0euSQ4ijnIBB1pceqOgNgWIYzb0oYaTa6fuq0b6z0IdVNhoj
-	KC/VAPsEg2vENI8Dw+P45lpwlFDdN/yYrOmExSb3Eu87i9DPKMeOwMVDLmx6kKCjMReQJM6SclX
-	4mwHIrSGLMilcQEkQyBOow+5Hs1iLZF9qiHQi9xOCvKKfjflfs8ZNQ+y3lWc52rAKX5ZWijK0Hs
-	r0BGFy8mZp/daPpvwCOabBkCjTS8eMWlLHmqJOJ/jZO5zju9/Ui15jy+MhIvUzwjMORQqa8FRZE
-	dBDwoypDnlsqWC2Mnm/R3v/0iUENAYm3xBNBBxOey
-X-Received: by 2002:a05:622a:5987:b0:52d:918b:92e1 with SMTP id
- d75a77b69052e-530c84f326bmr40390581cf.5.1789098285727; Thu, 10 Sep 2026
- 20:44:45 -0700 (PDT)
+        bh=mT2sfmz7zRKsiFELeDn6nFddteQ3mqhWB3TM2IakbMI=;
+        b=i2JL45ispwLqH1JKLMT8A5rYeQyJdz5ZsvFwFP7xiCOVvPlNjAwAgQRmQR2TO5wbPb
+         plOw/5pJ2B+Al3sdFEXrL1I0UYtDwWPEFR9Sj55a4ZEpu1NycZ1iZXIh3/Zg1nULoxlk
+         MWxKx7C+o2CW/AvfKj0CBpwMq3LEMesWrJZ/8VG4ftK57qhf2/11xKQ0n6A9HAVi9A1y
+         u78mrpoa+EZTzttGtM5UWVddyDL5ak+ZbnkGGZDGQLUSCmUycoWFmqcVgu/u+z3xFguX
+         1ELITz2ecmA1Dzrp0t9H1V8kp/ifKviEpnf50sQDP92Qrcc9o3TvqHJIo1pTPGbZt9RD
+         9kfA==
+X-Forwarded-Encrypted: i=1; AKwUvByDIhKPJWr99UBiNtvj+ixHXSXVZLgLaVL9SUwyzXVwemY08QMBMzBkM4/aKLsiZ5DKza2+lfhoa2Mo+Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++kBSqe6GhYjmDaAnQljziMUgubrsW5Asf5N60oxRaOoirW3zyob
+	LQ752rpqMEM27nCFKVbT4NFxZe3X/aB+flwCyM9YqfYTo4VfxD7ub9Go
+X-Gm-Gg: AYBFou2F4NQ/mG554dC1J0ShnSUUjgXMAWfVIKAzkf7O191a1CI+xq8nGmyGWc4YSAL
+	SPMkQ+KjO/TKOlFr6QW07YGTF7bY4oY1fuiHUWKCxF5vWG0QnCHCQrn+w6TgF4rJihPC58d37w5
+	jfdv5cUOFuT4MnXD4o2ek7V4D8P/z5Euq070Vca2WgI4scgGenvGVgRb0v65yzod6qzm29qAdTc
+	mGD+A2f76SuUHNvJ0pMAbkCEh4QcqoJkJDXOLcroLqIu17it6Z0GCmfIiQVJAsVUtYt3RFFWeWO
+	Qzk3DPCaiGyk5Ib5cI73md60Em0V9lwHDexFLOV/2/RAKxZvZe9WRWr7uCt3/V1cnuBtq8OkzYo
+	BhJcFuUp0Ovmb2rxwhDkHGnpC+WblANzL+Jt0Q8sNHldMTG+0b5eL0RMcmnUSnKHuqZ3HGTaNX4
+	jrNgOaCebQN2Ajjd8/meWdAjgUf203XlWevEKyfofpHZffOq0/3s0UJWky2rL58Jk0Wgi3QK4x3
+	glJDgKxZ/xACkArGQSpgb47VP9DOQ4=
+X-Received: by 2002:a17:90b:1c8b:b0:398:9c00:29ee with SMTP id 98e67ed59e1d1-39d9c38fa48mr3710302a91.22.1789102406694;
+        Thu, 10 Sep 2026 21:53:26 -0700 (PDT)
+Received: from [10.1.1.24] (122-59-250-182-adsl.sparkbb.co.nz. [122.59.250.182])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39d951d6b08sm2884821a91.8.2026.09.10.21.53.19
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 10 Sep 2026 21:53:26 -0700 (PDT)
+Subject: Re: [PATCH] fbdev: atafb: Restrict SuperBlitter to supported formats
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+References: <20260827093948.2825531-1-lilinmao@kylinos.cn>
+ <e4a2ba2e-c533-04d8-0795-e3d43caf47b9@gmail.com>
+ <CAN5rfbSh9ZoUkReAqv9rHYowqKcZFa-Svy6LP-MHvqfBVhjdBQ@mail.gmail.com>
+ <4f3c7184-1b5c-4074-b8a1-49261833df8f@gmail.com>
+ <CAMuHMdWoZBGyH=WeiTG4QCNC4hr_+pC4QQb-wjK0afZgMUy1Fw@mail.gmail.com>
+Cc: =?UTF-8?B?TWlybyBLcm9ww6HEjWVr?= <miro.kropacek@gmail.com>,
+ Linmao Li <lilinmao@kylinos.cn>, deller@gmx.de, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+From: Michael Schmitz <schmitzmic@gmail.com>
+Message-ID: <f2656a6f-0bc4-2afe-1a1a-f8ce1167e090@gmail.com>
+Date: Fri, 11 Sep 2026 16:53:16 +1200
+User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101
+ Icedove/45.4.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260908152808.3928630-1-arnd@kernel.org> <20260908152808.3928630-4-arnd@kernel.org>
-In-Reply-To: <20260908152808.3928630-4-arnd@kernel.org>
-From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Date: Thu, 10 Sep 2026 20:44:34 -0700
-X-Gm-Features: AcwNN1V1fOC0jmd_i5r-nVHD_ZWN_P0KCiZNA7MUoO0nuGcjQ9okMtkGALkOIWk
-Message-ID: <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
-Subject: Re: [PATCH 03/13] ARM: remove riscpc
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-	Linus Walleij <linusw@kernel.org>, Russell King <linux@armlinux.org.uk>, 
-	Drew Fustini <fustini@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Liviu Dudau <liviu.dudau@arm.com>, 
-	Sudeep Holla <sudeep.holla@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
-	Vladimir Zapolskiy <vz@mleia.com>, Stefan Agner <stefan@agner.ch>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Aaro Koskinen <aaro.koskinen@iki.fi>, Andreas Kemnade <andreas@kemnade.info>, 
-	Kevin Hilman <khilman@baylibre.com>, Roger Quadros <rogerq@kernel.org>, 
-	Tony Lindgren <tony@atomide.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>, Andrew Lunn <andrew@lunn.ch>, 
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
-	Gregory Clement <gregory.clement@bootlin.com>, Robert Jarzmik <robert.jarzmik@free.fr>, 
-	Kristoffer Ericson <kristoffer.ericson@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Alexander Sverdlin <alexander.sverdlin@siemens.com>, Shawn Guo <shawnguo@kernel.org>, 
-	Karl Mehltretter <kmehltretter@gmail.com>, "David Hildenbrand (Arm)" <david@kernel.org>, 
-	Nicolas Pitre <npitre@baylibre.com>, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, imx@lists.linux.dev, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-omap@vger.kernel.org, 
-	Ian Molton <spyro@f2s.com>, Jens Axboe <axboe@kernel.dk>, Helge Deller <deller@gmx.de>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, "Paul E. McKenney" <paulmck@kernel.org>, linux-block@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <CAMuHMdWoZBGyH=WeiTG4QCNC4hr_+pC4QQb-wjK0afZgMUy1Fw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi, everyone,
+Hi Geert,
 
-On Tue, Sep 8, 2026 at 8:29=E2=80=AFAM Arnd Bergmann <arnd@kernel.org> wrot=
-e:
-> The main limitation here is the CPU bus that does not allow 16-bit
-> wide data transfers and hence requires the kernel to be built with the
-> -march=3Darmv3 compiler option that was discontinued in gcc-9.
+Am 08.09.2026 um 19:18 schrieb Geert Uytterhoeven:
+>>> Unless I overlooked something, the fill also looks wrong on paper: the
+>>> first line is filled with a repeated byte and then with repeated
+>>> 32-bit words of the same value, which cannot reproduce a 3-byte pixel
+>>> pattern unless all three bytes are equal.
+>>
+>> You're correct - we'd need a memset24() to account for that. Without
 >
-> As gcc-8 is barely supported for compiling the kernel, this one
-> will not see another LTS kernel release, so remove it now.
+> Unless the frame buffer would be using a DIRECT_COLOR visual (which
+> is not the case), then you could draw pixels in the 16 console colors
+> by replicating the color index in all 3 bytes ;-)
 
-Because I think it's cool that the kernel still supports actual Acorn
-hardware, I patched gcc 16.2 to restore ARMv3m support:
-https://github.com/EthanNelson-Moore/gcc-arm-retro
+Sorry, I don't get that - are the console colors chosen judiciously to 
+allow for that?
 
-This ended up being surprisingly straightforward - only a couple
-hundred lines changed - and it would be even fewer lines had I not
-reverted a commit that adds a use of ldrh instead of fixing it.
+>> hardware support this is an academic exercise that I don't have time for :-)
+>
+> True. And as this code is used only to fill the first line (the blitter
+> replicates it into the other lines), the performance difference between
+> a simple byte loop and a true memset24() won't be that large.
 
-It is able to compile a kernel successfully (once you update the GCC
-version check to check for -march=3Darmv3m support instead - I can send
-my patch). I haven't tested it, but I am fairly confident that it
-would run, because the assembler will reject code the compiler
-generates with unsupported instructions - this is how I found the
-commit I needed to revert.
+I wasn't worried about performance as the blitter takes care of most of 
+the work (though we may schedule away from svblit_fillrect() while the 
+blitter is active). Getting the 'simple byte loop' right is more 
+important. My sample code got everything wrong in fact.
 
-I am working on a clocksource driver, which uses both timers (to
-hopefully fix the awful time drift), and removes the dependency on
-LEGACY_TIMER_TICK.
+There's a reason why we don't work with 24 bit sized objects usually, 
+and probably a reason why 24 bpp was never implemented for the 
+SuperVidel :-)
 
-I also have patches for several cleanups to Risc PC-related code.
+Cheers,
 
-I am aware that this has no actual use case, but it was fun. No LLM
-was used for any part of the work.
+	Michael
 
-Ethan
+>
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>

@@ -1,78 +1,125 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-vs1-f54.google.com (mail-vs1-f54.google.com [209.85.217.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2AE33232395;
-	Fri, 11 Sep 2026 07:25:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBFEA453A5E
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 07:36:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789111503; cv=none; b=KV+IGgXFsQMPevUP4+7mQA1lf2cSBZ5NB/nrjEIWH0WR3ClTj0p2HYI+ue88G4kEXizvdlyYY8Lbs/d/SQUFjrRzle3HrOsTwSp4u+i17cFnhVzpGKv05jRSJNnKJ5bBkofntu5AX2BU5cgyaa1p+/QKGQv0BBtVMaGGY+RzRzI=
+	t=1789112213; cv=none; b=XgzCRgTRArv9SMDHbH8+IvXo2OXH+Sbf30TOSjpJtTDQTbX2UJpq0azKzK660lNgKmylPRxdRziTvDPrsHgl9mBkkvJtWF+vHWPsUbnydYFE9nMnj5ud8nOcXJWjNihpSY403J4sCxjSF4OHEIJpxS3UHT3vny8wZ3GZ72tH+Dw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789111503; c=relaxed/simple;
-	bh=GWroBVEzFoQk4S/34nBzYkm+qHO729shFJDiDKYbJl8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=C71P2j8HTpbUfn8LdhLyUlC/xlvcCLwHmTebJq1U4PeGaxsI87u5dtEnm9WN1cN6WHW9kIg25Hyi8HBAFSnnbenQS4tfDO1CwRlveaGsKA0y0V5bQ1zHsJaboIo7Zoea5dRNRPoAGc35+3llqIqZPPWXNviGdotwKImcca9Oz7c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ANl9844t; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ANl9844t"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93D7E1F000FF;
-	Fri, 11 Sep 2026 07:25:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789111501;
-	bh=BH+kR55l7q2T4yQ9SIaFXw37h9ozVxD3HhYmGKf8G4g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ANl9844tOuE5AoQGY+DjaIFqCkPogFuzPNdfQWqulQ1ewcXnDBgt4NdOoaAxooGZH
-	 otw3WqXN/dfJ1pNs0X0yevkODFTPh3pxA9BwxVVkBA1iktQgUJQewif5xVbMODOWQG
-	 p/mWIch3ra5WH3jLHFaw3cWT0YrPLRjUedj8sYvbwLEFVFwspXynmHIaliKaD8MzHM
-	 Xaf5Qs18Xas8eGIznU7yaUWvc+9ptKBerpjAHFGKEw0DHIqd0hSZcM1yyqzMhkH095
-	 IUQbqVg1ph51dt/CUhqYAMrmXLp66EUw6RS72Jj/2UD9lzJLKJvRcTkZjvnML1Ja+L
-	 dkfqQ0ihw0QKA==
-Date: Fri, 11 Sep 2026 09:24:57 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, mfd@lists.linux.dev, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	Arnd Bergmann <arnd@arndb.de>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
-	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Guenter Roeck <linux@roeck-us.net>, Linus Walleij <linusw@kernel.org>, 
-	Bartosz Golaszewski <brgl@kernel.org>, Jonathan Cameron <jic23@kernel.org>, 
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@kernel.org>, 
-	Michael Hennerich <michael.hennerich@analog.com>, Support Opensource <support.opensource@diasemi.com>, 
-	Sebastian Reichel <sre@kernel.org>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-	Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org, 
-	linux-media@vger.kernel.org, devicetree@vger.kernel.org, linux-hwmon@vger.kernel.org, 
-	patches@opensource.cirrus.com, linux-watchdog@vger.kernel.org, linux-gpio@vger.kernel.org, 
-	linux-iio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, 
-	linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev
-Subject: Re: [PATCH 01/14] mfd: remove unused 88pm80x driver
-Message-ID: <20260911-righteous-arboreal-angelfish-3bcbdf@quoll>
-References: <20260909132153.1596191-1-arnd@kernel.org>
- <20260909132153.1596191-2-arnd@kernel.org>
+	s=arc-20240116; t=1789112213; c=relaxed/simple;
+	bh=gbmyJ64L6uNWZRacKLU2Vghqz/zZpdA4Wk9MoWvK9Nw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TAQjyVuEu14OdQEDz1gA5PRPXRLEEuxIzZuE0u/Ote08RM4O7FIrN866ZDH6Y8Sx89xoiC1rng58a7dYMdcNvbWc98MOvHIavkvmmh08BC7nTh/obXx5Nr7HiomzB1qU3FolFLHbekXeuLJAgovSrNO0J6k7Ch4t30StQ8aR5hk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.217.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-vs1-f54.google.com with SMTP id ada2fe7eead31-779d18ef706so404557137.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 00:36:51 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789112211; x=1789717011;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=fbsARpw/dJVoneGGfEjuF+GfyjF53s/yH8EH4RLlPOA=;
+        b=Hkhe5j6oGq5gK8qBqElyvcmuiFoag2COIrTOvjaV5xoELNaz9OXIrBQJX7RHzVwSpV
+         W9Srb/fdCUE39Ylgi47QjbYI+Pd8nP+htaB4oshyasbxKQbZr78fQzlLNUm6oO75c+bi
+         4gWQM9/STqHANXLfvCozn7B6TYGsZRP3ZpQmuM7FXIvCuPCSVdk2ffXs1fZvxl651xuu
+         hmLDooUWElQcaCUqf47SlA+n7inrAVUO/ZdOYs34cmACEn7retvQDEEVwYw+y/H+oqQw
+         lNNfbmPg0Kv4HYP2PhDY0oMTHS7naeS/K69RnI9RgUFQiYcJ28MRox7ca499UkVYsdDp
+         fcjQ==
+X-Forwarded-Encrypted: i=1; AKwUvBylL3yXSxRiBneFVmGRtDxdq5GrOjanyuud4K7UsGvGpyyA2Mnr7xq2BgVJe1KhfbYVsi449gNoaJR4zQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++ljqYJo8pXIyR8SR3ZYf/rKiaDZ9lZngafmdKkmhSdxknFeIbz1
+	2jsnhrXTurNi7DONDt/kBG+e5HAEqObMN7lI1/AGEsVK8CHS+GRBLMSeS+eGnoes
+X-Gm-Gg: AYBFou3lAkNgr1UmdXPFNv23CZUBG+I/ipRp8MYyGdSkLjy+fIUIcRNRuheMwNUDdHV
+	ZZ1ceCNObWiS9L2q6yAh9r2J3c2B4c4w1qSHvs5CsaI3pWOci4E6muw0bcfdpm40ykFunyG5N3d
+	563XDA3kBF1C8csPOdYR1xmVFcz9TGaxgqdyzHmFZLnBoyP9Oc78sA7cd3oYZZDBWLsbEa8Nwye
+	5BWSIh/f4xzDXyvD9dWhjujzspb6FsoqoARD6nnVEfokCR6mW+cvMqMXdx5FK2Z6iMy4dsi7XXo
+	cGwXQHXy9UGDmIHJtlWmheLoV3fm82I669GvPbJLhUz68lxDm87qVsAe9f0TW/vlLMgMxR0WxCj
+	RjN+k+4bCK1mau56ncHP4iE1FirD5TqQd7lzcGiaCqBL8mBZjvo9IKKOKLHsLrmhp5P3cOpj5Wa
+	s30ghQVHqQi2p+qI3lcXpiIoq8ixWCxtUR/slz2oa86FLeC0KiQgwbLwQeeHg0nea4r4nSsZKyB
+	c64OS5LCKQbGsOe07dnIN32JO6EV63kgOPj
+X-Received: by 2002:a05:6102:5493:b0:784:b9ec:9144 with SMTP id ada2fe7eead31-792abb23c2cmr2601478137.8.1789112207758;
+        Fri, 11 Sep 2026 00:36:47 -0700 (PDT)
+Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com. [209.85.217.47])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-982ba0c3679sm1868591241.10.2026.09.11.00.36.47
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 11 Sep 2026 00:36:47 -0700 (PDT)
+Received: by mail-vs1-f47.google.com with SMTP id ada2fe7eead31-78fe51a2dbeso533024137.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 00:36:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AKwUvBy8+pKpLMwBnckN4LEbqWeawz5ioB5Cb7bp5Cbesi0jS3I3WNWSkd73U8EyUNwUFI43dwRUneAZ8nxQ5Q==@vger.kernel.org
+X-Received: by 2002:a05:6102:148a:b0:77f:fb50:8820 with SMTP id
+ ada2fe7eead31-792acdd6139mr3532430137.11.1789112207336; Fri, 11 Sep 2026
+ 00:36:47 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260909132153.1596191-2-arnd@kernel.org>
+References: <20260827093948.2825531-1-lilinmao@kylinos.cn> <e4a2ba2e-c533-04d8-0795-e3d43caf47b9@gmail.com>
+ <CAN5rfbSh9ZoUkReAqv9rHYowqKcZFa-Svy6LP-MHvqfBVhjdBQ@mail.gmail.com>
+ <4f3c7184-1b5c-4074-b8a1-49261833df8f@gmail.com> <CAMuHMdWoZBGyH=WeiTG4QCNC4hr_+pC4QQb-wjK0afZgMUy1Fw@mail.gmail.com>
+ <f2656a6f-0bc4-2afe-1a1a-f8ce1167e090@gmail.com>
+In-Reply-To: <f2656a6f-0bc4-2afe-1a1a-f8ce1167e090@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 11 Sep 2026 09:36:35 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUBn5yjXA25zOjUbtOjeY105AwJnP+tvJjRH5Y-qzfjVA@mail.gmail.com>
+X-Gm-Features: AcwNN1VMa2RNewNSKr2wzj3QZMXOaBYMFGdqezh5M0Od6lwZNKFjHs8IMjeEn6M
+Message-ID: <CAMuHMdUBn5yjXA25zOjUbtOjeY105AwJnP+tvJjRH5Y-qzfjVA@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: atafb: Restrict SuperBlitter to supported formats
+To: Michael Schmitz <schmitzmic@gmail.com>
+Cc: =?UTF-8?B?TWlybyBLcm9ww6HEjWVr?= <miro.kropacek@gmail.com>, 
+	Linmao Li <lilinmao@kylinos.cn>, deller@gmx.de, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Wed, Sep 09, 2026 at 03:21:38PM +0200, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> This pair of drivers was originally added as companion chips for pxa/mmp
-> SoCs, but the corresponding platform code was never merged, so it has
-> been unused the entire time.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  .../devicetree/bindings/regulator/88pm800.txt |  38 --
+Hi Michael,
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+On Fri, 11 Sept 2026 at 06:53, Michael Schmitz <schmitzmic@gmail.com> wrote:
+> Am 08.09.2026 um 19:18 schrieb Geert Uytterhoeven:
+> >>> Unless I overlooked something, the fill also looks wrong on paper: the
+> >>> first line is filled with a repeated byte and then with repeated
+> >>> 32-bit words of the same value, which cannot reproduce a 3-byte pixel
+> >>> pattern unless all three bytes are equal.
+> >>
+> >> You're correct - we'd need a memset24() to account for that. Without
+> >
+> > Unless the frame buffer would be using a DIRECT_COLOR visual (which
+> > is not the case), then you could draw pixels in the 16 console colors
+> > by replicating the color index in all 3 bytes ;-)
+>
+> Sorry, I don't get that - are the console colors chosen judiciously to
+> allow for that?
 
-Best regards,
-Krzysztof
+Sorry, I don't remember if we still do that.
 
+> >> hardware support this is an academic exercise that I don't have time for :-)
+> >
+> > True. And as this code is used only to fill the first line (the blitter
+> > replicates it into the other lines), the performance difference between
+> > a simple byte loop and a true memset24() won't be that large.
+>
+> I wasn't worried about performance as the blitter takes care of most of
+> the work (though we may schedule away from svblit_fillrect() while the
+> blitter is active). Getting the 'simple byte loop' right is more
+> important. My sample code got everything wrong in fact.
+>
+> There's a reason why we don't work with 24 bit sized objects usually,
+> and probably a reason why 24 bpp was never implemented for the
+> SuperVidel :-)
+
+Yeah, 24bpp is tricky.  And in this case we don't even have to deal with a
+different endianness ;-)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

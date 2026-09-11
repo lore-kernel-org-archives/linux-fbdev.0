@@ -1,126 +1,173 @@
-Received: from mail-wr2-f12.google.com (mail-wr2-f12.google.com [74.125.225.76])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBB2E4BE439
-	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 18:43:24 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.76
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 322D64AF69A;
+	Fri, 11 Sep 2026 19:26:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789152212; cv=none; b=XPoBdBrdp12HWHKJY3cnrcDlwOuHZT/XRVYfGhmAWD0IyOmqD4LRwRvmhTu8Ip9x8TOEKjRroRkdiGIxWufk8xT2EaMz5McE+2JT2aGKjeztlYtX8/MheTvxDbPz4w8Rg+iS1qwt2S4lsXG3dXvfdvpofigI3qhN8t7tbEChv1E=
+	t=1789154771; cv=none; b=O3fe6VghRLefIi4IFhOxqbG6Lxuz04Bi4zSYBOOX6zmvSH80ztN/YB16a57Glj5Tm1vIucDXO/t58BNAn5E5l+4XwIBozuicxE8LAMHGTcWKy+wJOuyxdl9iucs9dCnO0QBc0amOvrPXb4DPPw/VyRJl7dqjOZUDS/Ti7IewTBM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789152212; c=relaxed/simple;
-	bh=Vo/Zbo4FmIJeIV5z2fixRdEtyG30qlGNFYOjHoNYkqE=;
+	s=arc-20240116; t=1789154771; c=relaxed/simple;
+	bh=dE+o+f490yWX+XohTAQWImtcJFaNeQcze7Th761MDWM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iZKMGn8CJGWsFLhVG6wiQos1BwbeR/bZkzeim6yf6pA5nFzlrPlG1/luCISk1QByAuD4jK+yN+1IO2wR5KofpRDR0eUNdkGtkYfkGOIW5cYBB70RA2Jq95gnxlCtYOfHxRo23gOC4lh6OKI9Xnkj1MDmtNVc2secpn4G49cxcUY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hkmGIJbB; arc=none smtp.client-ip=74.125.225.76
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=pt2NcCx25fXBavRzMn4MsR307Qvra61HECxsWnxRYHveh2cEQuP8b88PgnwoE0EwJMxs0rVRih+CEMY7JIM0wQoCvmKjTX9XpWq1Lk7awx6kz4j3YtKQoLKOjl/Un1i/I9olqncQIlE9QCzv6Ecxk2xhdiLHMH99KV5XpJ1A0bs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=hr+PSViy; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hkmGIJbB"
-Received: by mail-wr2-f12.google.com with SMTP id ffacd0b85a97d-4834977ae75so82059f8f.3
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 11:43:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789152201; x=1789757001; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=WEMRrWkwvFIDZfKdDi5vmlHb7sgj26/s86919xqFCGg=;
-        b=hkmGIJbBp4EQG8Uj6bpqrQLLIx6687IoycAymJGV+AQbiulxMddwk/XjuxgBdaOgRh
-         vjlGnpEswovnh80F9t8tbcEwpHnU7ilhSJSoW0LTmXGNZMYdKZcQBLvAHXrDgJBDeok7
-         ZqmJfVVT1Y2C7Yk7vcFHuRPXWxQ6+IWNvElRuinPE86yblBvn8Wnq2azuUCCa5QWd3bf
-         qK4b/vMq22GGwsDShePmi7WSgExb5FsepmNmXsf5rbELNjDZ37OVZnFrpjXxcBMNVauO
-         btSHH3MjcKO15Zq7kM/kfsFWwG6wlO9FmPwkucU75k99FIABnvOlg7eQK01Vvw9l03n6
-         F2lg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789152201; x=1789757001;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=WEMRrWkwvFIDZfKdDi5vmlHb7sgj26/s86919xqFCGg=;
-        b=RvWsPhLclHpWv5ShZO8zyfAgG9NMc92buvtp/N3z98ECR2RWY7FsnztLZuH+74SOZk
-         AB3gH0debRC0TE7RkJTMCL5SYKUw24SB1ncaG3lLvA7W1M8XM0gTcARzdqFGZ0Bs1VuM
-         YpQqrz4LmgGLWOMrcKhTEj/B+sxRmFFCBRW1AY3DemCaHUor/KO/AFmmF3MNI9S8Iatj
-         AcDGyCLEgJ7d3h2vn55WRUtNYlXnIwXd5u9cKtCgGFf1Psj42/HH7YgJCvagEJquf/Io
-         qE8RIyKhY6+Y6kQCunUGW7DPCSbzSevACXQrkQPucsM9kc96tpWCg7Q/FY7DAPrkDLgj
-         W+lg==
-X-Forwarded-Encrypted: i=1; AKwUvBxL6aUkYQAQlshtQx3bkw/ldwkxB9288pBj5TVNTSiP2zCs4FgAaQHIG6pnCqKA2MfZ2hduunzxA/PUAA==@vger.kernel.org
-X-Gm-Message-State: AFuF++n+eJPx2eqVUjxv7lQuexkgOlTc4VMDJKXLc/fF55A1yD8Y9CVg
-	ZyFyF/9a0etLAzE6peGhoP237tyTzDsC9xs5FVDbDXsVtroYlKNuEcDI
-X-Gm-Gg: AYBFou3uF9PCWb8sp31DEnjN1aPz4QQikNK+ozx+snUriZz4rbEwcwK5D7MByhigJQs
-	RGrlwS/k2zgzzC0A0pt0scqGgbUHZL3eVAxWc+hncWrO5wi0jax9PQvVVNBxuinGBRIP7z2Ccvg
-	PubLqurR6j0sP+GJ0mIZ323/diWF8NQQC89EE5fWvXYN2jtGC2cQ9Dq1ZUrnXftb2LWIoEcsc1m
-	ilKyn53uZOWGjC7phaf9WtVwz41MlK7AWNkp9L0Xc47eMpNaMfRK07RQB9YNggUUFfj8dj1JGkO
-	iLFdN6nZoDfjrQbLM2VpSVz09S4O5imWdblUj5tsqSsHYia+UzSdSv73KCXqa/3vKMFcEgfpHrm
-	UVZluItwOjAktnmgfaHGzmC0Vu+ylbnJPISpy/z4DornIlrbj4gKEagOjIYnWE2g3gtWBIz+Lw5
-	pd5ogccdHSOTaXKce06ErnvID1j3+y55W5laXXyOSCpachmLiCzRN4olXILm/0cpexmxhOOCDIm
-	GGxXn/IZHBETfy++xkvEQdd6OGEKWl07M+Si7hfFSGGlmWBIIFkQiSEv693BrmjLgq/hh99Tt9Y
-	g6CgDPewg8ompm6o8tPsRpueFXWoUOVS503UO/CacnCX4QmuSg==
-X-Received: by 2002:a05:6000:4605:b0:485:ac39:36ef with SMTP id ffacd0b85a97d-486eb1d3781mr14290458f8f.5.1789152200719;
-        Fri, 11 Sep 2026 11:43:20 -0700 (PDT)
-Received: from unknown748F3CBA5068 (dynamic-095-114-033-154.95.114.pool.telefonica.de. [95.114.33.154])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-486f0403125sm5446009f8f.8.2026.09.11.11.43.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Sep 2026 11:43:20 -0700 (PDT)
-Date: Fri, 11 Sep 2026 20:42:46 +0200
-From: Karl Mehltretter <kmehltretter@gmail.com>
-To: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-Cc: Arnd Bergmann <arnd@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Linus Walleij <linusw@kernel.org>, 
-	Russell King <linux@armlinux.org.uk>, Drew Fustini <fustini@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, 
-	Stefan Agner <stefan@agner.ch>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
-	Alexandre Torgue <alexandre.torgue@foss.st.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, 
-	Andreas Kemnade <andreas@kemnade.info>, Kevin Hilman <khilman@baylibre.com>, 
-	Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
-	Gregory Clement <gregory.clement@bootlin.com>, Robert Jarzmik <robert.jarzmik@free.fr>, 
-	Kristoffer Ericson <kristoffer.ericson@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Alexander Sverdlin <alexander.sverdlin@siemens.com>, Shawn Guo <shawnguo@kernel.org>, 
-	"David Hildenbrand (Arm)" <david@kernel.org>, Nicolas Pitre <npitre@baylibre.com>, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
-	imx@lists.linux.dev, linux-stm32@st-md-mailman.stormreply.com, 
-	linux-omap@vger.kernel.org, Ian Molton <spyro@f2s.com>, Jens Axboe <axboe@kernel.dk>, 
-	Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	"Paul E. McKenney" <paulmck@kernel.org>, linux-block@vger.kernel.org, linux-serial@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 03/13] ARM: remove riscpc
-Message-ID: <aqRI3N5FPX1dpIlk@gmail.com>
-References: <20260908152808.3928630-1-arnd@kernel.org>
- <20260908152808.3928630-4-arnd@kernel.org>
- <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="hr+PSViy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 388D01F000FF;
+	Fri, 11 Sep 2026 19:26:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789154765;
+	bh=zwltEYL3YNdlrAP6IKVR5tGeGFPOBBkOKK5RahqTZLY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=hr+PSViyFYrJMGSoit0iid0wlgstQnN2Aw0vdLi8Df0yH1Sl8uz+vL3v/h/dEAZ61
+	 +LQH6UC8LgKeh54qenqYP3tPy1ZM5fhHgcTvRuNDJ/ScEVU8NAWUW60fiVd3tiyww8
+	 LBoUw//JCyW4/WDCRaQ/Q0BNg8QPA1DP36bASCFBwHtDfxfroQaZmMgsPJmKTb4kwt
+	 vCCgjZkBA3/3+3xGP6NxDhe2Wo6tpFAuLNlZ4yytlrtOllS1I5gOtG4vtqXSfDB4co
+	 GF8IueQmiCrLa2kAmNZB75e8gMd/7MZ4UysauHMXCa/r4OYGI8h2rwGxGVTxZbJko6
+	 HYjUzaEbvmfcw==
+Received: by traversing.sirena.org.uk (Postfix, from userid 1000)
+	id 698F0DAC7A8; Fri, 11 Sep 2026 20:25:20 +0100 (BST)
+Date: Fri, 11 Sep 2026 20:25:20 +0100
+From: Mark Brown <broonie@kernel.org>
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Grond <grond66@riseup.net>, Stefan Leichter <sle85276@gmx.de>,
+	Grazvydas Ignotas <notasas@gmail.com>,
+	Tony Lindgren <tony@atomide.com>,
+	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Jarkko Nikula <jarkko.nikula@bitmer.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Andreas Kemnade <andreas@kemnade.info>, Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Aaro Koskinen <aaro.koskinen@iki.fi>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Roger Quadros <rogerq@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	Sen Wang <sen@ti.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Niranjan H Y <niranjan.hy@ti.com>, letux-kernel@openphoenux.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	kernel@pyra-handheld.com, mfd@lists.linux.dev
+Subject: Re: [PATCH 08/16] ASoC: pcm1773-codec: write a driver for the
+ PCM1773 chip from TI
+Message-ID: <aqRVoOCvVwZA3uV5@sirena.org.uk>
+Mail-Followup-To: "H. Nikolaus Schaller" <hns@goldelico.com>,
+	Grond <grond66@riseup.net>, Stefan Leichter <sle85276@gmx.de>,
+	Grazvydas Ignotas <notasas@gmail.com>,
+	Tony Lindgren <tony@atomide.com>,
+	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
+	Jarkko Nikula <jarkko.nikula@bitmer.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Andreas Kemnade <andreas@kemnade.info>, Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Aaro Koskinen <aaro.koskinen@iki.fi>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Roger Quadros <rogerq@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	Sen Wang <sen@ti.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Niranjan H Y <niranjan.hy@ti.com>, letux-kernel@openphoenux.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	kernel@pyra-handheld.com, mfd@lists.linux.dev
+References: <cover.1783749722.git.hns@goldelico.com>
+ <7d8989813cbd750259dfdde2e1187082493279a0.1783749722.git.hns@goldelico.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="8VWMi9X2XTocGtq+"
+Content-Disposition: inline
+In-Reply-To: <7d8989813cbd750259dfdde2e1187082493279a0.1783749722.git.hns@goldelico.com>
+X-Cookie: Orders subject to approval.
+
+
+--8VWMi9X2XTocGtq+
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 10, 2026 at 08:44:34PM +0100, Ethan Nelson-Moore wrote:
-> 
-> Because I think it's cool that the kernel still supports actual Acorn
-> hardware, I patched gcc 16.2 to restore ARMv3m support:
-> https://github.com/EthanNelson-Moore/gcc-arm-retro
-> 
+On Sat, Jul 11, 2026 at 08:01:55AM +0200, H. Nikolaus Schaller wrote:
+> From: Grond <grond66@riseup.net>
+>=20
+> This chip is used in the OpenPandora.
 
-Nice.
+> +++ b/sound/soc/codecs/pcm1773.c
+> @@ -0,0 +1,149 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * pcm1773.c -- codec for the simple PCM1773 output codec from TI
+> + *
+> + * Shamelessly cobbled together from sound/soc/ti/omap3pandora.c and a f=
+ew
+> + * other codec drivers in sound/soc/codecs/
 
-I've made a RiscPC emulator in the browser using QEMU and WASM. It boots
-Linux kernels and currently emulates a StrongARM RiscPC:
+Please make the entire comment a C++ one so things look more
+intentional.
 
-https://github.com/kmehltretter82/risc_pc_linux_emu
+> +	.playback =3D {
+> +		.stream_name =3D "PCM1773 IN",
+> +		.channels_min =3D 2,
+> +		.channels_max =3D 2,
+> +		.rates =3D SNDRV_PCM_RATE_8000_48000,
+> +		// [TODO] these really should be BE, per the data sheet but for
+> +		// some reason the omap-mcbsp driver claims only to support LE.
+> +		// investigate
+> +		.formats =3D SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE,
+> +	},
 
-I used LLMs a lot while building it.
+The format described here is the in memory format, not the wire format.
 
-Your GCC work looks useful for this. I will look at building the RiscPC
-Linux kernel with it, and at emulating the original ARMv3 CPU too.
+> +	ctx->regulator =3D devm_regulator_get(dev, "vcc");
+> +	if (IS_ERR(ctx->regulator)) {
+> +		dev_warn(dev, "cannot get regulator 'vcc'");
+> +		ctx->regulator =3D NULL;
+> +	}
 
-Thanks,
-Karl
+This is obviously broken.  The driver should handle the error as a
+normal error, not just ignore it.
+
+--8VWMi9X2XTocGtq+
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmqkVZ8ACgkQJNaLcl1U
+h9ANxQf+NbBkZEJZSsd9ku1cZsPpGBfxhrqMreka7Y24CMLjnIcmPGw4KRrBOcWh
+rRYxpERw/bNXc0OPrSz0k4v7pUdnPmD7XL6q8smQFUqO0cAIZfkapEByQ5NNYXx/
+vNSxUay1sNHex7SauqBichHdhyfPV1YSHJnPu9X2RPsbcvh60u0xvhnTlHIC8egT
+wIPtdj6srM7K+biEegoal8Cvy+5koZfoyRkIHQkSbMD1JFrFDkza3XbamNhPyIlv
+5mP5Lwf0erONIrnizgA3LYZjHMUb6RmtEVoiu1azEwHRv87q42R9pOeiKDQiBhnH
+Gb+jZpZREv9HI5PwAFfeg4z9OuPDwQ==
+=K9b0
+-----END PGP SIGNATURE-----
+
+--8VWMi9X2XTocGtq+--

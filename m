@@ -1,190 +1,111 @@
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 524F5377545;
-	Fri, 11 Sep 2026 01:41:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=124.126.103.232
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88B553B8413
+	for <linux-fbdev@vger.kernel.org>; Fri, 11 Sep 2026 03:42:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789090869; cv=none; b=RFUAQ8PnBGg94gBklJ8i/FVBwkjs6/ojnM7kOrgYOJcfRIwg1DtxQjM+C/d9zJxPXgkV1034S5qEPJQ7yGxx5t/ri8N0XV9UyQssBm+yc8pzchn5R2oC/zFFnizjShQqVeGNZ2sxFEZkMHloIpe2bxC7Df20NkI/n/mxzEU0k3A=
+	t=1789098179; cv=none; b=g0kb/r1ghZbCgcZt1dLjRwAdvwCh8lyBC42x1m6DPl6e0QO8QvEachbZ460sEJGpNTMA9ilf5cy4GBfs0ZzPBpsVCOp2J7joLyaeSABJmkERguNr9ypkOYVhcIZxaNtenlf5th/We0U3pCkCIjaEF5QL7eC/9uWOl+tduGQERXs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789090869; c=relaxed/simple;
-	bh=9eeSa7wy/fFrLjtPFF9CWGC+26JZptOZSSCeH+aVUCU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Di4cY+tHnsPhgUGXWlCrm7FqlIH0TfZP2xoPxf+uSzaea8LLX3AGDKvrtt0EADQ/uHMvaMD6xcpEHM68zY+1uM6DNEMEaTUZmzTDbPIfH1hi5/j1gfyGhUSZ/HIfVra/e0XjP0gS5zLxEdMF1TTYdab1l4Ab9jnPk31N1TFk7Kg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass smtp.mailfrom=kylinos.cn; arc=none smtp.client-ip=124.126.103.232
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
-X-UUID: d8e8cae2ad8111f19a56ed5b684f684d-20260911
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.3.19,REQID:ea22bced-16c7-4e13-86e0-dc58687ac881,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:7db8b62,CLOUDID:ca077e12bcc8d860d6ef4ff0d3b1b1ce,BulkI
-	D:nil,BulkQuantity:0,SF:80|81|82|83|102|865|898,TC:nil,Content:0|15|50|99,
-	EDM:-3,IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OS
-	A:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 2,SSN|SDN
-X-CID-BAS: 2,SSN|SDN,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
-X-UUID: d8e8cae2ad8111f19a56ed5b684f684d-20260911
-Received: from [10.42.17.251] [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <oushixiong@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_128_GCM_SHA256 128/128)
-	with ESMTP id 1239253127; Fri, 11 Sep 2026 09:41:02 +0800
-Message-ID: <4a527e66-8aa9-4422-a3b5-7ac1d9919220@kylinos.cn>
-Date: Fri, 11 Sep 2026 09:41:01 +0800
+	s=arc-20240116; t=1789098179; c=relaxed/simple;
+	bh=ezl60jnsGlY2DjuW5u8Hxt4e27j5KruM4etJ6V9C2uE=;
+	h=Subject:To:References:Cc:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=fAXicTuvSdNI6z3N1SO6VJws8zHlHlNx8eOMBeGwfcUhPzZqlWoTfQUcQxOCXKVXfxbLsEN4kcUcOq8knQt5PswSGgoewBbhiUrZq5zScte4XZK+r/VLmuoMZc17KUFeewdfvXrbJi2PjIAAAU37RR1buOkdrvaAFfW8TmouLwc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=NwQnKggr; arc=none smtp.client-ip=209.85.215.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NwQnKggr"
+Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-cc1c73645a1so517574a12.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 10 Sep 2026 20:42:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789098178; x=1789702978; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:mime-version
+         :user-agent:date:message-id:from:cc:references:to:subject:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=cS7AJAyUrXw4OKsQuXto2NRThO/NQ7LZ4I3G8/x/j7Y=;
+        b=NwQnKggrZbdvmf8bEqW4QqxsnvrLHhEXABy6/YHz6jTuLwCMrv/zYPJ2V9k8zpYCiG
+         y/usF2SCWA0aw+nLN3KUjxF7z12j4a2PNprmYeZqNKQUdwHLrQ7gD8T3XTF/eXlbSZlg
+         HFKRT7rjb+JOu8pxqQNCDWCn75ghzEQWOXwOPIIy0h2PThRyIpB5GBEHqGOXfjzsmXLy
+         0bZE14y/dSHw0ROWYmCgZAB0J58fOAGAHeQQAEpmxhRwfTPuklYT0vItw91idWy/8mtL
+         Nuc2722H715Cb0nFsFZGTzNqw0/8hsVz2XVbo4lZS0sNPyi2i9oWPzzaTNCYDGyc3lz+
+         XxBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789098178; x=1789702978;
+        h=content-transfer-encoding:content-type:in-reply-to:mime-version
+         :user-agent:date:message-id:from:cc:references:to:subject:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=cS7AJAyUrXw4OKsQuXto2NRThO/NQ7LZ4I3G8/x/j7Y=;
+        b=dx1lCAZPkLphVP9p1pd9CgwjdUAjgC8/N18lhS7ZcVWFm3OrxRyXMPe9PSqt16Kqki
+         7S+8phLp0NgxKvxT8fR1e3SZKLkkCLzHQgwKc7W2tih3XrFPvrA7njkBWVf4aoTng3ed
+         T5pMVuNaA4YwsnYxz7N5YWSP385b+WAQTRT7j+z8HsSzutrwu0z8JV7+k+0MNXO1b7LY
+         jLaxr5q5vYsS5Q0f5v1QH9rA4ASHIG7v6y2Y1G90oxtSpsZAKp2pUYONuH1TK/E3adXA
+         lTWB8GEexpOoiKuLFEmVu2uPXAql3/9I29cyE/8gHWXMMU4kB8iYTKmuLmJL//2/bR7X
+         PFBA==
+X-Forwarded-Encrypted: i=1; AKwUvBz+cRdJrfg5suKP5Kt4s+hOnRaJMIsGbwGxzODN5htw0xdiXN/+uANzAjqdo5yvIbgBIHvLvM7ZIbc4jg==@vger.kernel.org
+X-Gm-Message-State: AFuF++lk9SAimGSxiWrJDV+gsxpSWlSvx2zBoxk4Tdgyy4bLM/TSIh20
+	JbWB/9VEV/DFkzJh4DClRTcZZrFxoDca9VEcgOhbzTuqo41igO+EL/UG
+X-Gm-Gg: AYBFou2ABWczZwsfGW3sB2edmtZRdcFKZJ1fmIq5wiwIPaaphRFI/Br2ZwAHbA1n0Jw
+	8AkPKnf/a36C2ffKx93PQuNjPkl/htGWwYkA5DCaqOJ8fFJoCsARegEjj0vGDmdOvtbO5BtP//6
+	/7VgiNRCV+L6aGvJV/9EyEdDvpAGJqi3sALFaFv/O0dxwznchp6GDZWAtiUX21oMNvGNsgu/422
+	cTyk9vJHcXSgnmyKWbk4v5rbxxndaNf/dG6S/8KPvJf2Hq059IXX3WBjLwhzZhji6oLT26QdQDQ
+	fIZrfza/UfrwcROTCd4FxKnbVmSrcqX+6F1yAHfmkFlZdVog0RKilOfLz44mlHtTc4sP/K4mTGy
+	SYNpf1gwzK5Y+LlA2QoVnj4QPIk+874jdK3G+7PS99HmFYMSyUNir88UWn7t+eVysWmSo1dGHow
+	Y0tZQj6/9EsJB9mFQNLjjeFuOIFV9kZAkJSBrZqZhbP/iDaNLU21vfhtTlP6GH6TAEMMrbBlVX0
+	4nv2zrFL23WibXZk1jdxJsFXQRB2A==
+X-Received: by 2002:a17:90b:1d45:b0:398:9be9:ab8f with SMTP id 98e67ed59e1d1-39d9c21cf40mr3366244a91.20.1789098177800;
+        Thu, 10 Sep 2026 20:42:57 -0700 (PDT)
+Received: from [10.1.1.24] (122-59-250-182-adsl.sparkbb.co.nz. [122.59.250.182])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39d9d9ebeb1sm408602a91.4.2026.09.10.20.42.51
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 10 Sep 2026 20:42:57 -0700 (PDT)
+Subject: Re: [PATCH] fbdev: atafb: Restrict SuperBlitter to supported formats
+To: Helge Deller <deller@gmx.de>, =?UTF-8?B?TWlybyBLcm9ww6HEjWVr?=
+ <miro.kropacek@gmail.com>
+References: <20260827093948.2825531-1-lilinmao@kylinos.cn>
+ <e4a2ba2e-c533-04d8-0795-e3d43caf47b9@gmail.com>
+ <CAN5rfbSh9ZoUkReAqv9rHYowqKcZFa-Svy6LP-MHvqfBVhjdBQ@mail.gmail.com>
+ <4f3c7184-1b5c-4074-b8a1-49261833df8f@gmail.com>
+ <a8cb0e4f-a2fd-4478-99d6-fdb043a9d15c@gmx.de>
+Cc: Linmao Li <lilinmao@kylinos.cn>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+From: Michael Schmitz <schmitzmic@gmail.com>
+Message-ID: <6197fda7-889c-7f26-98ad-e0c56da66efa@gmail.com>
+Date: Fri, 11 Sep 2026 15:42:49 +1200
+User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101
+ Icedove/45.4.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: sh_mobile_lcdcfb: Restore the per-overlay sysfs
- attributes
-To: Helge Deller <deller@gmx.de>, Karl Mehltretter <kmehltretter@gmail.com>
-Cc: Chintan Patel <chintanlike@gmail.com>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, stable@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>
-References: <20260907021844.25497-1-kmehltretter@gmail.com>
- <72351d8f-289e-44d1-b241-e68d7d23145a@gmx.de>
-Content-Language: en-US
-From: Shixiong Ou <oushixiong@kylinos.cn>
-In-Reply-To: <72351d8f-289e-44d1-b241-e68d7d23145a@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <a8cb0e4f-a2fd-4478-99d6-fdb043a9d15c@gmx.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
+Thanks Helge,
 
-On 2026/9/11 05:15, Helge Deller wrote:
-> On 9/7/26 04:18, Karl Mehltretter wrote:
->> The ovl_* files documented in
->> Documentation/ABI/testing/sysfs-devices-platform-sh_mobile_lcdc_fb no
->> longer exist.
->>
->> Commit a979182a2453 ("fbdev: lcdcfb: Register sysfs groups through 
->> driver
->> core") moved the attributes from each overlay's framebuffer device to
->> the platform driver's dev_groups and renamed them overlay_*. There is
->> now only one set of attributes for the whole LCDC. The callbacks still
->> expect dev_get_drvdata() to return a struct fb_info, but the platform
->> device holds struct sh_mobile_lcdc_priv, so they access the wrong
->> structure.
->>
->> Restore the documented names and register the group on each overlay's
->> framebuffer device with device_add_groups(). Remove it with
->> device_remove_groups() before unregistering the framebuffer. Skip
->> creation when info->dev is NULL, as the old device_create_file() 
->> calls did.
->>
->> Drop the CONFIG_FB_DEVICE guard, since the driver already depends on it.
->>
->> Fixes: a979182a2453 ("fbdev: lcdcfb: Register sysfs groups through 
->> driver core")
->> Cc: stable@vger.kernel.org
->> Assisted-by: LLM
->> Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
->> ---
->> Found while reviewing the sysfs ABI documentation.
->>
->> Compile-tested only (allmodconfig, W=1), I have no SH-Mobile hardware.
+Am 11.09.2026 um 08:39 schrieb Helge Deller:
+>> All good then - do you need my Acked-by for Linmao's patch, Helge?
 >
+> No, I think your Reviewed-by is sufficient.
 >
-> This all seems correct, but since it reverts a few of the last patches
-> I'd prefer that some other person could also review it....
+> But I added a
+> Tested-by: Miro Kropáček <miro.kropacek@gmail.com>
+> tag, if that's Ok for you, Miro?
+> It's always good to know if a patch has been tested.
 >
-Looks good to me, and I agree .dev_groups is wrong here.
+> With that, I just added the patch to the fbdev git tree.
 
-Shixiong.
+All good then, much appreciated!
+
+Cheers,
+
+	Michael
 
 >
->>   drivers/video/fbdev/sh_mobile_lcdcfb.c | 37 +++++++++++++++++---------
->>   1 file changed, 24 insertions(+), 13 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c 
->> b/drivers/video/fbdev/sh_mobile_lcdcfb.c
->> index e8324b01700f..18fc4e465283 100644
->> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
->> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
->> @@ -1337,22 +1337,24 @@ overlay_rop3_store(struct device *dev, struct 
->> device_attribute *attr,
->>       return count;
->>   }
->>   -static DEVICE_ATTR_RW(overlay_alpha);
->> -static DEVICE_ATTR_RW(overlay_mode);
->> -static DEVICE_ATTR_RW(overlay_position);
->> -static DEVICE_ATTR_RW(overlay_rop3);
->> -
->> -static struct attribute *overlay_sysfs_attrs[] __maybe_unused = {
->> -    &dev_attr_overlay_alpha.attr,
->> -    &dev_attr_overlay_mode.attr,
->> -    &dev_attr_overlay_position.attr,
->> -    &dev_attr_overlay_rop3.attr,
->> +static struct device_attribute dev_attr_ovl_alpha =
->> +    __ATTR(ovl_alpha, 0644, overlay_alpha_show, overlay_alpha_store);
->> +static struct device_attribute dev_attr_ovl_mode =
->> +    __ATTR(ovl_mode, 0644, overlay_mode_show, overlay_mode_store);
->> +static struct device_attribute dev_attr_ovl_position =
->> +    __ATTR(ovl_position, 0644, overlay_position_show, 
->> overlay_position_store);
->> +static struct device_attribute dev_attr_ovl_rop3 =
->> +    __ATTR(ovl_rop3, 0644, overlay_rop3_show, overlay_rop3_store);
->> +
->> +static struct attribute *overlay_sysfs_attrs[] = {
->> +    &dev_attr_ovl_alpha.attr,
->> +    &dev_attr_ovl_mode.attr,
->> +    &dev_attr_ovl_position.attr,
->> +    &dev_attr_ovl_rop3.attr,
->>       NULL,
->>   };
->>   -#ifdef CONFIG_FB_DEVICE
->>   ATTRIBUTE_GROUPS(overlay_sysfs);
->> -#endif
->>     static const struct fb_fix_screeninfo sh_mobile_lcdc_overlay_fix  
->> = {
->>       .id =        "SH Mobile LCDC",
->> @@ -1513,6 +1515,7 @@ sh_mobile_lcdc_overlay_fb_unregister(struct 
->> sh_mobile_lcdc_overlay *ovl)
->>       if (info == NULL || info->dev == NULL)
->>           return;
->>   +    device_remove_groups(info->dev, overlay_sysfs_groups);
->>       unregister_framebuffer(ovl->info);
->>   }
->>   @@ -1530,6 +1533,15 @@ sh_mobile_lcdc_overlay_fb_register(struct 
->> sh_mobile_lcdc_overlay *ovl)
->>       if (ret < 0)
->>           return ret;
->>   +    /* The framebuffer device is optional, see fb_device_create(). */
->> +    if (info->dev) {
->
-> I think this needs to be:
->     if (dev_of_fbinfo(info)) {
-> to avoid compile error when CONFIG_FB_DEVICE=n.
->
->
->> +        ret = device_add_groups(info->dev, overlay_sysfs_groups);
->
-> same here. dev_of_fbinfo(info).
->
->> +        if (ret < 0) {
->> +            unregister_framebuffer(info);
->> +            return ret;
->> +        }
->> +    }
->> +
->>       dev_info(lcdc->dev, "registered %s/overlay %u as %dx%d %dbpp.\n",
->>            dev_name(lcdc->dev), ovl->index, info->var.xres,
->>            info->var.yres, info->var.bits_per_pixel);
->> @@ -2637,7 +2649,6 @@ static int sh_mobile_lcdc_probe(struct 
->> platform_device *pdev)
->>   static struct platform_driver sh_mobile_lcdc_driver = {
->>       .driver        = {
->>           .name        = "sh_mobile_lcdc_fb",
->> -        .dev_groups    = overlay_sysfs_groups,
->>           .pm        = &sh_mobile_lcdc_dev_pm_ops,
->>       },
->>       .probe        = sh_mobile_lcdc_probe,
->>
->> base-commit: 986c24e0fe44f844b44d365b71ce831947f50298
+> Thanks!
+> Helge

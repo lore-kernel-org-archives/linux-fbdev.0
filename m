@@ -1,349 +1,222 @@
-Received: from mail-ej2-f12.google.com (mail-ej2-f12.google.com [74.125.228.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from flow-b6-smtp.messagingengine.com (flow-b6-smtp.messagingengine.com [202.12.124.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D61D381EA7
-	for <linux-fbdev@vger.kernel.org>; Sun, 13 Sep 2026 05:36:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.140
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 919FF381E92;
+	Sun, 13 Sep 2026 08:34:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789277794; cv=none; b=TLQeo1efURX8UMNB8akeAsfCJ0mxhsa1zq6x9SqhbKxZXOyK++YG7dCRugZD0X/YlCGFNa+Cqk8HD8UUvqzeV5PQommuoBuJIClBxatUf4aj64qHsLh3H+vcGluLNRRAQP3/6SiVxfnvmTM/795ret+cXv1sqMkN8Yn0SBQiw/c=
+	t=1789288443; cv=none; b=oWR60WUWAMvRCRSYlm56i48yaj+Q5RxThtk1WFeNlQYBNOZQ4bmMj29fiDqgA7UD+IFdm0r9Oo0sft4SbLBv67S521fyw+FUgj/c7S85AQK4HxHznRN/R6/NmDuZp3dCpGGhtYbDgmV9gF1wu6NerUt0XXv+LDwozkHu6PoAgAo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789277794; c=relaxed/simple;
-	bh=x33SXcGKJZwybp329vf09l/E4GjWsK3N79Z1GJxL4P0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WzngssohNmy8Ic7KATNyEeINOBXQ7C5D2oDZ/bkYjGETwyfdvUcIbWWcZsdcP362lVBIZ854zVxW4NUZV8lQRp6t9Xb2tEI1bhzq/VS9e1jk1JME/QpPpVPlxk0wQ3fUlwaqgYXc0NEFtBiCWn24d9GHi1hFr7xmDrPUCUm0VWU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=YO+ql2k1; arc=none smtp.client-ip=74.125.228.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1789288443; c=relaxed/simple;
+	bh=l21u1VfuTUk80ee1/KqRN/TTYww9xGQuE4vEMp/bBy0=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=amxxgufPOZT09XmoTHFO+Oy04bCak6y5OKiCcpfEI/2/ApcFMmsVDcFBVGj5dQzHbyueDBZ4VEz92MpXa28mc7JIpaBPVWhbLz3EiMZ9MfwJSLi5P21s7s7IsV5PahHXUricLe1B8be/e9R1ayy32BYyt6/+wBJG14+lvsuONac=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=hP4uSJGU; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=nvm4EGrz; arc=none smtp.client-ip=202.12.124.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="YO+ql2k1"
-Received: by mail-ej2-f12.google.com with SMTP id a640c23a62f3a-c254fa663c1so149907766b.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 12 Sep 2026 22:36:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1789277789; x=1789882589; darn=vger.kernel.org;
-        h=content-type:in-reply-to:autocrypt:from:content-language:references
-         :cc:to:subject:user-agent:mime-version:date:message-id:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=x33SXcGKJZwybp329vf09l/E4GjWsK3N79Z1GJxL4P0=;
-        b=YO+ql2k1ZzWdTfiu6qznNHxUP54CTAaZcUeAuAM8DGteVxOe9pNeJyQO2HNR3+LuxO
-         NCrLMLYiRwZijXst8syuWirvGNvKWq30qAEoZpcOX+hDJeBJF9oEmEChTu4XWwTCho8t
-         Bt8LXbjEv/v9gxfpUuHBu0gjnsRC+Y8jWIHokwswf/s4JeX8WeTAWN0lDTyt3Das0Qkt
-         m2wy9cBQIRe7kFKMNnOOo6Omr/ZOSbT91mJnKJ1oV+90t9aI7jTNYRu00qZnziLmBxXm
-         ZQNpM5g1uQdq/JNhTtdT0cJrI0B6u9CAAFkNTe8kWxBSq9kZ1w/EFoBckoJIeKnw8MAs
-         5jhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789277789; x=1789882589;
-        h=content-type:in-reply-to:autocrypt:from:content-language:references
-         :cc:to:subject:user-agent:mime-version:date:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=x33SXcGKJZwybp329vf09l/E4GjWsK3N79Z1GJxL4P0=;
-        b=HzzmKkXAflKpQEsygivC+LXjzBYPHMjVgcZTSJxkTSyBAe1w8wDMyFtWmhY55zy7YJ
-         PSHPKSD3f+csCeXW42ssHi8I62sN1yZu0iAxVl0Tha8gyK/BhPiO6kWZl8UUarOkR2GX
-         cy0cjM1KodgPCdBRF57FLgfx/0kg+P8ir/9TKrX4CXWE/oH5e6hZ3nlNwWjfrNkQPxVa
-         Z7usEF35T5bcEVMloKUHGjXRRrfk9YDEnhM/i6IY0oApwAQyIyJu5FeQ5b1gconrvV8K
-         OpwSlLeBVTV7qFjOKNL52j887zXnD/Q3C5jyEa1Qg+wQOvwsY4Q6nwuRdswcd1m5TczE
-         sEcg==
-X-Forwarded-Encrypted: i=1; AKwUvBzyJKQ7ukxEUY10uLzvuPNpN/+dUE2JskvdBxx+Vw9n+jLQtXONsD1MBfmsQYzVoay7dMKG8x73hSzLHQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++m21f8m2pkfJ3lxNFMGLaUteck2EROryt29zKMYV00n2uBW2Ov1
-	XyTSzOedivO1NSrswORIqZoqGo+/oBkhbRRiQiDKTd6oHRNJouQ3HN430rKaJ+hI11k=
-X-Gm-Gg: AYBFou01BvQhyZiWbN831p3uopk0V66hkBUCnaDDjMX6KtRdxrO7pgU/Oa9+5t7Qsax
-	klNKw7TP9Rj++MXxvnuZO7qexjZFz+cBY8x/AQR1XTKaHlQqlZRN9JNcA8uUd/hkWNumslp93ME
-	iR6U86b/0DOCFAujbMVocersWKMY2F7VkHtheToreJoor1AU206Ao3lmjD5FJPbzDGQ0AVHIOTA
-	kwiaUtzCtR0MwiwCnrHoYN29NXy32lplBf4LcDewGwkGcu1QkfzNSYPTC24kBCl920ExsrW3p2H
-	U1NAnVUhAmqWKaFxK7ypcMnYvGh+dUvwLM+jSW6eHfIufqrutV5sGVQBv51vja4cfotZZ81/CMi
-	iY58LN5BvPzDknhXuXP/0WUfF3pa+vz8yH9iytsvr2+Oj0q/oBcJJVVxxIB0Ze/HAq1RKagEF+X
-	yKuEkDkMjcn4tLqCQVFFCPUAef/4uiCWPKOssKmGGy6Y1pUt3f00tmRybZ3SWmiia6FI2nTUjuj
-	+P9Z1vQ7TzjE5Z7M8C5wm9TkWFeW8BLgSKOMo1m2/ITXH0jJLQDNkpRu+gMl31ie+LNkvf8rH6R
-	Xw7vsrXPJ1a49ejImHKgtioQ
-X-Received: by 2002:a17:907:e895:b0:c20:1bc5:7002 with SMTP id a640c23a62f3a-c29665414f1mr1041706166b.3.1789277789216;
-        Sat, 12 Sep 2026 22:36:29 -0700 (PDT)
-Received: from ?IPV6:2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112? (2a00-12d0-af5d-ad01-5d3f-14e6-9bcb-5112.ip.tng.de. [2a00:12d0:af5d:ad01:5d3f:14e6:9bcb:5112])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c2966066b75sm264030566b.29.2026.09.12.22.36.27
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 12 Sep 2026 22:36:28 -0700 (PDT)
-Message-ID: <170d06eb-5cc7-41f0-a0e0-0eeca77307c7@suse.com>
-Date: Sun, 13 Sep 2026 07:36:26 +0200
+	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="hP4uSJGU";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="nvm4EGrz"
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailflow.stl.internal (Postfix) with ESMTP id 3F049130010C;
+	Sun, 13 Sep 2026 04:33:55 -0400 (EDT)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Sun, 13 Sep 2026 04:33:59 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1789288434;
+	 x=1789295634; bh=FK/hgn5ztNrzJ8FzxNsGVH8sTakZzoGmnSB/QJ0ZjK4=; b=
+	hP4uSJGU4LPNyh7tNOFYiOwyUhoJjvn+rtx/gV1jNxsXli24Yj4H9OHWbSCUCOYp
+	1LmeKkR/FDUTxfeVUcR3PW6hzHXaeKbqkwhguEsHXcWXM+EqRDq6Mutivw7D6AP7
+	zxcO7/7iOjRUeRDtvmwTdGVJi91XV93oTtX2lrN8t5oAK8MveTvPjOJLHdwKGLDv
+	WDY18MwDH078GeQblDSx50OkW8RYXHIL1Py1DTJXQ6l5yXDv8UpvOCwggfr73muh
+	tjWCnmei/4Ederp7aq+6q9XhHyjG3orbvr7iO3P4pOWy80p3tGPWWzvPjFz6Xoj/
+	l/E+uRa80heywM28ZQPbng==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1789288434; x=
+	1789295634; bh=FK/hgn5ztNrzJ8FzxNsGVH8sTakZzoGmnSB/QJ0ZjK4=; b=n
+	vm4EGrz4F6jR5JXE4wigJ8Ry7JX5M0AcC921ZlsuVqc/YpoeL8SAT+tKWa33nB0T
+	ZjwnZB7JaKQBbZtda19Ii6izZqboxNE1agBJILSQAvcaL8wIdNQhGx6H6fTk7CiJ
+	9DNwc7XlhvV+mMoGxebUGze3s1kX5uyoEPunC4jlIgaJyiyTX4Sbb7UtBOpcgTkm
+	GA9daUeYKwy5LcIt5VDo8mzbeUuePrI+JBZLjzF/J2KeYkeu+nmvT4YELvXjrCdX
+	MgxF8P55rsqI0lTOj9w6JBgCin8AMz9HlCAbF/Hl/i9h5rN/siDdaojxzhTnkeU0
+	a5HBpRoQJPWwTY7SPsEjQ==
+X-ME-Sender: <xms:6V-mapGAWvvTCYmPsF0gHXxbEy2q1VIUbPN28RqMGUUZtzTOrnEvuA>
+    <xme:6V-mapLXRXStV_91mp4cNlBE7UDv4i1YnLRZiVf3ZoCTB1V3wH1kzPlEqS463DWcH
+    jBKPFdmoJWdTPPrTaq2cSmCN-or1svTLHlOTE8BeqZQDBbr6-RKxf_M>
+X-ME-Proxy-Cause: dmFkZTFlVhM1xA9XUYL3SefhQrC0hRhFkTaBBJIQ3su2kNz4MfZ3F028vj/UpSaZ9vtqdo
+    wovmypaSI/+/Azrkn02Yb8tOmVCj78ufH0HthXhTBRf6WeFoUXig393+d5/MfEq2pSRnyw
+    LvkfDeXAZA0b/j/z/1yiQhabfROQmtQB7KcVHYhL5U/1ONNfzRfrULV/TAUFjNOKXvZqHU
+    1d3D75czeqAluQHI4FwbSCqywRuOSl2dbfCEwiQwzFVuJIGYTmYp+6BhJS/cWlHc13mRMu
+    JCF4bc/fUM2PhFgmF6DfLis1vMU0ddqwu1kq89fIC1RtR0wlPT1taz0+6qP2fokAV623EC
+    7WvNLhWl3kVw2NxV4IcXin9Y98/yDUmwATW+ikygGBZJ6YYQmvcBkxJjwY6s1s0lBnkurW
+    dgFHyjPldyFsZBx8c3uSdH5l15d1REZen5gyrGPU1HE169zMMgo3KEmBEUmtacwkM75/YY
+    grwFCl6KM0Bz9faJrynux+UReF8cohlyDGeVV9rTC5y20vL4mU3p+bx1hfEaXHZ84F3XO2
+    v2UOS2mSdQ64QMhfWRfWITFHODS475vwD85qi+Wj3j/4MpFov5LCO3ZCpCX0NoG23iGgHA
+    cDtOhMrnZ/x93jpFr/xtrmhKYEtASmslgyDXrwp3akV21xiDzYSAeZt4Xing
+X-ME-Proxy: <xmx:7l-marCsxWSQh7GyHEJQeExs04vUHwGvSpX6l3ZVDsiTwMGzIFCPpg>
+    <xmx:7l-mamy6bQq8k5lrbzz61NVzb-U8lzuLCWChRPmqZFuL-W1-V1RBnA>
+    <xmx:7l-mapO3Ea7pdRgQSbEG743m78cgcMsUglEvHhQP6eVdBbbYwVXaDw>
+    <xmx:7l-matdXxH-1ltZbtCG0gBd_mR1zKSCO473ThhfLCbYY-V19IRKADw>
+    <xmx:8l-maj_96L_YD-vKCf9QRDIxzcji6jyg1fRDZfFt7ZuAErCOtrULUMr4>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id DB07132A007E; Sun, 13 Sep 2026 04:33:44 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 12/13] treewide: convert rdmsrq() from a macro to an
- inline function
-To: =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
- linux-perf-users@vger.kernel.org, linux-hyperv@vger.kernel.org,
- kvm@vger.kernel.org, virtualization@lists.linux.dev,
- linux-edac@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-coco@lists.linux.dev,
- linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-crypto@vger.kernel.org,
- linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
- linux-mtd@lists.infradead.org, platform-driver-x86@vger.kernel.org,
- linux-fbdev@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
- Adrian Hunter <adrian.hunter@intel.com>, James Clark
- <james.clark@linaro.org>, "K. Y. Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
- Sean Christopherson <seanjc@google.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Ajay Kaher <ajay.kaher@broadcom.com>,
- Alexey Makhalov <alexey.makhalov@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Josh Poimboeuf
- <jpoimboe@kernel.org>, Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
- Pu Wen <puwen@hygon.cn>, Tony Luck <tony.luck@intel.com>,
- Reinette Chatre <reinette.chatre@intel.com>,
- Dave Martin <Dave.Martin@arm.com>, James Morse <james.morse@arm.com>,
- Babu Moger <babu.moger@amd.com>, Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
- Vitaly Kuznetsov <vkuznets@redhat.com>, Andy Lutomirski <luto@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
- Kiryl Shutsemau <kas@kernel.org>, Rick Edgecombe
- <rick.p.edgecombe@intel.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Len Brown <lenb@kernel.org>, Damien Le Moal <dlemoal@kernel.org>,
- Niklas Cassel <cassel@kernel.org>, David Airlie <airlied@redhat.com>,
- Olivia Mackall <olivia@selenic.com>, Herbert Xu
- <herbert@gondor.apana.org.au>, Viresh Kumar <viresh.kumar@linaro.org>,
- Huang Rui <ray.huang@amd.com>, Mario Limonciello
- <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Yazen Ghannam <yazen.ghannam@amd.com>, Linus Walleij <linusw@kernel.org>,
- Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- Artem Bityutskiy <dedekind1@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Miquel Raynal <miquel.raynal@bootlin.com>,
- Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>,
- Ashok Raj <ashok.raj.linux@gmail.com>, Hans de Goede <hansg@kernel.org>,
- Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
- Xi Pardee <xi.pardee@linux.intel.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Helge Deller <deller@gmx.de>,
- xen-devel@lists.xenproject.org, linux-geode@lists.infradead.org,
- Michael Kelley <mhklinux@outlook.com>
-References: <20260911074530.3140830-1-jgross@suse.com>
- <20260911074530.3140830-13-jgross@suse.com>
- <b2baa471-0f6b-84e8-bda1-ae0964b72b04@linux.intel.com>
-Content-Language: en-US
-From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
-Autocrypt: addr=jgross@suse.com; keydata=
- xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOB
- ycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJve
- dYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJ
- NwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvx
- XP3FAp2pkW0xqG7/377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEB
- AAHNH0p1ZXJnZW4gR3Jvc3MgPGpncm9zc0BzdXNlLmNvbT7CwHkEEwECACMFAlOMcK8CGwMH
- CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRCw3p3WKL8TL8eZB/9G0juS/kDY9LhEXseh
- mE9U+iA1VsLhgDqVbsOtZ/S14LRFHczNd/Lqkn7souCSoyWsBs3/wO+OjPvxf7m+Ef+sMtr0
- G5lCWEWa9wa0IXx5HRPW/ScL+e4AVUbL7rurYMfwCzco+7TfjhMEOkC+va5gzi1KrErgNRHH
- kg3PhlnRY0Udyqx++UYkAsN4TQuEhNN32MvN0Np3WlBJOgKcuXpIElmMM5f1BBzJSKBkW0Jc
- Wy3h2Wy912vHKpPV/Xv7ZwVJ27v7KcuZcErtptDevAljxJtE7aJG6WiBzm+v9EswyWxwMCIO
- RoVBYuiocc51872tRGywc03xaQydB+9R7BHPzsBNBFOMcBYBCADLMfoA44MwGOB9YT1V4KCy
- vAfd7E0BTfaAurbG+Olacciz3yd09QOmejFZC6AnoykydyvTFLAWYcSCdISMr88COmmCbJzn
- sHAogjexXiif6ANUUlHpjxlHCCcELmZUzomNDnEOTxZFeWMTFF9Rf2k2F0Tl4E5kmsNGgtSa
- aMO0rNZoOEiD/7UfPP3dfh8JCQ1VtUUsQtT1sxos8Eb/HmriJhnaTZ7Hp3jtgTVkV0ybpgFg
- w6WMaRkrBh17mV0z2ajjmabB7SJxcouSkR0hcpNl4oM74d2/VqoW4BxxxOD1FcNCObCELfIS
- auZx+XT6s+CE7Qi/c44ibBMR7hyjdzWbABEBAAHCwF8EGAECAAkFAlOMcBYCGwwACgkQsN6d
- 1ii/Ey9D+Af/WFr3q+bg/8v5tCknCtn92d5lyYTBNt7xgWzDZX8G6/pngzKyWfedArllp0Pn
- fgIXtMNV+3t8Li1Tg843EXkP7+2+CQ98MB8XvvPLYAfW8nNDV85TyVgWlldNcgdv7nn1Sq8g
- HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
- QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
- ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
-In-Reply-To: <b2baa471-0f6b-84e8-bda1-ae0964b72b04@linux.intel.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------eaM1imaen800kHMvvuISziE6"
+X-ThreadId: AK-jVwBtQCQR
+Date: Sun, 13 Sep 2026 10:33:04 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Jonathan Cameron" <jic23@kernel.org>
+Cc: "Svyatoslav Ryhel" <clamor95@gmail.com>,
+ "Arnd Bergmann" <arnd@kernel.org>,
+ "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
+ "Bartosz Golaszewski" <brgl@kernel.org>,
+ "Mark Brown" <broonie@kernel.org>, "Conor Dooley" <conor+dt@kernel.org>,
+ "Daniel Thompson" <danielt@kernel.org>, "Helge Deller" <deller@gmx.de>,
+ devicetree@vger.kernel.org,
+ "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+ dri-devel@lists.freedesktop.org, "Jingoo Han" <jingoohan1@gmail.com>,
+ "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Lee Jones" <lee@kernel.org>,
+ "Liam Girdwood" <lgirdwood@gmail.com>,
+ "Linus Walleij" <linusw@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
+ linux-fbdev@vger.kernel.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+ linux-sound@vger.kernel.org, linux-watchdog@vger.kernel.org,
+ "Guenter Roeck" <linux@roeck-us.net>, linuxppc-dev@lists.ozlabs.org,
+ llvm@lists.linux.dev, "Mauro Carvalho Chehab" <mchehab@kernel.org>,
+ mfd@lists.linux.dev, "Michael Hennerich" <michael.hennerich@analog.com>,
+ patches@opensource.cirrus.com, "Pavel Machek" <pavel@kernel.org>,
+ "Rob Herring" <robh@kernel.org>, "Sebastian Reichel" <sre@kernel.org>,
+ "Support Opensource" <support.opensource@diasemi.com>
+Message-Id: <e53ae695-99ed-4f14-855b-b922a938438c@app.fastmail.com>
+In-Reply-To: <20260912232047.19c4cb10@jic23-hlaptop>
+References: 
+ <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
+ <11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
+ <20260912232047.19c4cb10@jic23-hlaptop>
+Subject: Re: [PATCH 08/14] mfd: remove unused aat2870 driver
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------eaM1imaen800kHMvvuISziE6
-Content-Type: multipart/mixed; boundary="------------NEp702byBysSRAjr2vYU7iXA";
- protected-headers="v1"
-From: =?UTF-8?B?SsO8cmdlbiBHcm/Dnw==?= <jgross@suse.com>
-To: =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
- linux-perf-users@vger.kernel.org, linux-hyperv@vger.kernel.org,
- kvm@vger.kernel.org, virtualization@lists.linux.dev,
- linux-edac@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-coco@lists.linux.dev,
- linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-crypto@vger.kernel.org,
- linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
- linux-mtd@lists.infradead.org, platform-driver-x86@vger.kernel.org,
- linux-fbdev@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
- Adrian Hunter <adrian.hunter@intel.com>, James Clark
- <james.clark@linaro.org>, "K. Y. Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
- Sean Christopherson <seanjc@google.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Ajay Kaher <ajay.kaher@broadcom.com>,
- Alexey Makhalov <alexey.makhalov@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Josh Poimboeuf
- <jpoimboe@kernel.org>, Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
- Pu Wen <puwen@hygon.cn>, Tony Luck <tony.luck@intel.com>,
- Reinette Chatre <reinette.chatre@intel.com>,
- Dave Martin <Dave.Martin@arm.com>, James Morse <james.morse@arm.com>,
- Babu Moger <babu.moger@amd.com>, Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
- Vitaly Kuznetsov <vkuznets@redhat.com>, Andy Lutomirski <luto@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
- Kiryl Shutsemau <kas@kernel.org>, Rick Edgecombe
- <rick.p.edgecombe@intel.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Len Brown <lenb@kernel.org>, Damien Le Moal <dlemoal@kernel.org>,
- Niklas Cassel <cassel@kernel.org>, David Airlie <airlied@redhat.com>,
- Olivia Mackall <olivia@selenic.com>, Herbert Xu
- <herbert@gondor.apana.org.au>, Viresh Kumar <viresh.kumar@linaro.org>,
- Huang Rui <ray.huang@amd.com>, Mario Limonciello
- <mario.limonciello@amd.com>, Perry Yuan <perry.yuan@amd.com>,
- K Prateek Nayak <kprateek.nayak@amd.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Yazen Ghannam <yazen.ghannam@amd.com>, Linus Walleij <linusw@kernel.org>,
- Bartosz Golaszewski <brgl@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
- Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
- Artem Bityutskiy <dedekind1@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Miquel Raynal <miquel.raynal@bootlin.com>,
- Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>,
- Ashok Raj <ashok.raj.linux@gmail.com>, Hans de Goede <hansg@kernel.org>,
- Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>,
- Xi Pardee <xi.pardee@linux.intel.com>,
- Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
- Lukasz Luba <lukasz.luba@arm.com>, Helge Deller <deller@gmx.de>,
- xen-devel@lists.xenproject.org, linux-geode@lists.infradead.org,
- Michael Kelley <mhklinux@outlook.com>
-Message-ID: <170d06eb-5cc7-41f0-a0e0-0eeca77307c7@suse.com>
-Subject: Re: [PATCH v3 12/13] treewide: convert rdmsrq() from a macro to an
- inline function
-References: <20260911074530.3140830-1-jgross@suse.com>
- <20260911074530.3140830-13-jgross@suse.com>
- <b2baa471-0f6b-84e8-bda1-ae0964b72b04@linux.intel.com>
-In-Reply-To: <b2baa471-0f6b-84e8-bda1-ae0964b72b04@linux.intel.com>
+On Sun, Sep 13, 2026, at 00:20, Jonathan Cameron wrote:
+> On Thu, 10 Sep 2026 20:14:15 +0200 "Arnd Bergmann" <arnd@arndb.de> wrote:
+>> 
+>> I tried to be careful about figuring out exactly which drivers are
+>> unused, but I'm sure there are still a few false positive and false
+>> negative ones in there. I've added the current list of driver files below,
+>> let me know if you see something that shouldn't be there.
+> Hi Arnd
+>
+> For I2C and SPI at least, there doesn't need to be explicit
+> device tree support as long as they have defaults when platform
+> data isn't there. Those two buses will happily bind based on
+> a dt-compatible and their i2c_device_id or spi_device_id tables
+> for example.
+>
+> So unless they fail to probe (some might?) we don't have
+> a clear signal on whether they are in use via DT or not.
+>
+> For vast majority of IIO drivers we don't have an upstream
+> DTS as there is no clear motivation for anyone to upstream
+> the dts for a random industrial control board or similar.
 
---------------NEp702byBysSRAjr2vYU7iXA
-Content-Type: multipart/mixed; boundary="------------JHou3VyeAHLBdBUp1ZKQPjhy"
+Right, that was my general rule, if I had tried to remove
+all drivers that could plausibly probe with an external dtb
+but have no internal users, that would have easily doubled
+the 300 patches I already did.
 
---------------JHou3VyeAHLBdBUp1ZKQPjhy
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+>> drivers/iio/adc/ad7266.c
+> No to dropping this.
+>
+>
+>> drivers/iio/adc/ad7791.c
+> No to dropping this one.
+>
+>> drivers/iio/adc/ad7793.c
+> Maybe. Analog devices ack needed.
+>
+> Production part but this one indeed fails to probe.  Analog
+> folk, do you want to fix this one up?
+>
+>> drivers/iio/adc/ad7887.c
+> No to dropping this.
+>
+> Production part - should work fine with defaults in driver.
+> Could like the others drop the platform data handling.
 
-T24gMTEuMDkuMjYgMTE6MzcsIElscG8gSsOkcnZpbmVuIHdyb3RlOg0KPiBPbiBGcmksIDEx
-IFNlcCAyMDI2LCBKdWVyZ2VuIEdyb3NzIHdyb3RlOg0KPiANCj4+IFRvZGF5IHJkbXNycSgp
-IGlzIGEgbWFjcm8gdXNpbmcgaXRzIHNlY29uZCBwYXJhbWV0ZXIgYXMgdGhlIHRhcmdldCBm
-b3INCj4+IHN0b3JpbmcgdGhlIHJlYWQgTVNSIHZhbHVlLg0KPj4NCj4+IENvbnZlcnQgcmRt
-c3JxKCkgdG8gYW4gaW5saW5lIGZ1bmN0aW9uIHJldHVybmluZyB0aGUgTVNSIHZhbHVlLg0K
-Pj4NCj4+IFRoZSB1c2VycyBoYXZlIGJlZW4gY29udmVydGVkIHVzaW5nIHRoZSBmb2xsb3dp
-bmcgc2VtYW50aWMgcGF0Y2g6DQo+Pg0KPj4gICAgLy8gT3B0aW9uczogLS1pbmNsdWRlLWhl
-YWRlcnMNCj4+DQo+PiAgICB2aXJ0dWFsIHBhdGNoDQo+PiAgICB2aXJ0dWFsIHJlcG9ydA0K
-Pj4NCj4+ICAgIEBADQo+PiAgICBleHByZXNzaW9uIG1zciwgdmFsOw0KPj4gICAgQEANCj4+
-ICAgICgNCj4+ICAgIC0gcmRtc3JxKG1zcix2YWwpDQo+PiAgICArIHZhbCA9IHJkbXNycSht
-c3IpDQo+PiAgICApDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogSnVlcmdlbiBHcm9zcyA8amdy
-b3NzQHN1c2UuY29tPg0KPj4gQWNrZWQtYnk6IERhbWllbiBMZSBNb2FsIDxkbGVtb2FsQGtl
-cm5lbC5vcmc+ICAgICAgIyBBVEENCj4gDQo+IEFja2VkLWJ5OiBJbHBvIErDpHJ2aW5lbiA8
-aWxwby5qYXJ2aW5lbkBsaW51eC5pbnRlbC5jb20+CQkjIHBkeDg2DQo+IA0KPiBXaGF0IGlz
-IHRoZSBwbGFuIGZvciBtZXJnaW5nIHRoaXM/DQoNCkluZ28gd2FudGVkIHRvIHRha2UgdGhl
-IHdob2xlIHNlcmllcyB2aWEgdGhlIHRpcCB0cmVlLg0KDQoNCkp1ZXJnZW4NCg==
---------------JHou3VyeAHLBdBUp1ZKQPjhy
-Content-Type: application/pgp-keys; name="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Disposition: attachment; filename="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Description: OpenPGP public key
-Content-Transfer-Encoding: quoted-printable
+This was one patch that I wasn't sure about myself (all four
+drivers together) since it looks like even when they do probe
+from dtb, the feature set would be limited without a DT
+binding, and they have been in the tree for a rather long time
+without users.
 
------BEGIN PGP PUBLIC KEY BLOCK-----
+I've dropped the patch now. I looked at dropping the platform_data
+handling, but I think that only makes sense if we get a
+proper DT binding first.
 
-xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjri
-oyspZKOBycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2
-kaV2KL9650I1SJvedYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i
-1TXkH09XSSI8mEQ/ouNcMvIJNwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/B
-BLUVbDa4+gmzDC9ezlZkTZG2t14zWPvxXP3FAp2pkW0xqG7/377qptDmrk42GlSK
-N4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEBAAHNHEp1ZXJnZW4gR3Jvc3Mg
-PGpnQHBmdXBmLm5ldD7CwHkEEwECACMFAlOMcBYCGwMHCwkIBwMCAQYVCAIJCgsE
-FgIDAQIeAQIXgAAKCRCw3p3WKL8TL0KdB/93FcIZ3GCNwFU0u3EjNbNjmXBKDY4F
-UGNQH2lvWAUy+dnyThpwdtF/jQ6j9RwE8VP0+NXcYpGJDWlNb9/JmYqLiX2Q3Tye
-vpB0CA3dbBQp0OW0fgCetToGIQrg0MbD1C/sEOv8Mr4NAfbauXjZlvTj30H2jO0u
-+6WGM6nHwbh2l5O8ZiHkH32iaSTfN7Eu5RnNVUJbvoPHZ8SlM4KWm8rG+lIkGurq
-qu5gu8q8ZMKdsdGC4bBxdQKDKHEFExLJK/nRPFmAuGlId1E3fe10v5QL+qHI3EIP
-tyfE7i9Hz6rVwi7lWKgh7pe0ZvatAudZ+JNIlBKptb64FaiIOAWDCx1SzR9KdWVy
-Z2VuIEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+wsB5BBMBAgAjBQJTjHCvAhsDBwsJ
-CAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey/HmQf/RtI7kv5A2PS4
-RF7HoZhPVPogNVbC4YA6lW7DrWf0teC0RR3MzXfy6pJ+7KLgkqMlrAbN/8Dvjoz7
-8X+5vhH/rDLa9BuZQlhFmvcGtCF8eR0T1v0nC/nuAFVGy+67q2DH8As3KPu0344T
-BDpAvr2uYM4tSqxK4DURx5INz4ZZ0WNFHcqsfvlGJALDeE0LhITTd9jLzdDad1pQ
-SToCnLl6SBJZjDOX9QQcyUigZFtCXFst4dlsvddrxyqT1f17+2cFSdu7+ynLmXBK
-7abQ3rwJY8SbRO2iRulogc5vr/RLMMlscDAiDkaFQWLoqHHOdfO9rURssHNN8WkM
-nQfvUewRz80hSnVlcmdlbiBHcm9zcyA8amdyb3NzQG5vdmVsbC5jb20+wsB5BBMB
-AgAjBQJTjHDXAhsDBwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/
-Ey8PUQf/ehmgCI9jB9hlgexLvgOtf7PJnFOXgMLdBQgBlVPO3/D9R8LtF9DBAFPN
-hlrsfIG/SqICoRCqUcJ96Pn3P7UUinFG/I0ECGF4EvTE1jnDkfJZr6jrbjgyoZHi
-w/4BNwSTL9rWASyLgqlA8u1mf+c2yUwcGhgkRAd1gOwungxcwzwqgljf0N51N5Jf
-VRHRtyfwq/ge+YEkDGcTU6Y0sPOuj4Dyfm8fJzdfHNQsWq3PnczLVELStJNdapwP
-OoE+lotufe3AM2vAEYJ9rTz3Cki4JFUsgLkHFqGZarrPGi1eyQcXeluldO3m91NK
-/1xMI3/+8jbO0tsn1tqSEUGIJi7ox80eSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1
-c2UuZGU+wsB5BBMBAgAjBQJTjHDrAhsDBwsJCAcDAgEGFQgCCQoLBBYCAwECHgEC
-F4AACgkQsN6d1ii/Ey+LhQf9GL45eU5vOowA2u5N3g3OZUEBmDHVVbqMtzwlmNC4
-k9Kx39r5s2vcFl4tXqW7g9/ViXYuiDXb0RfUpZiIUW89siKrkzmQ5dM7wRqzgJpJ
-wK8Bn2MIxAKArekWpiCKvBOB/Cc+3EXE78XdlxLyOi/NrmSGRIov0karw2RzMNOu
-5D+jLRZQd1Sv27AR+IP3I8U4aqnhLpwhK7MEy9oCILlgZ1QZe49kpcumcZKORmzB
-TNh30FVKK1EvmV2xAKDoaEOgQB4iFQLhJCdP1I5aSgM5IVFdn7v5YgEYuJYx37Io
-N1EblHI//x/e2AaIHpzK5h88NEawQsaNRpNSrcfbFmAg987ATQRTjHAWAQgAyzH6
-AOODMBjgfWE9VeCgsrwH3exNAU32gLq2xvjpWnHIs98ndPUDpnoxWQugJ6MpMncr
-0xSwFmHEgnSEjK/PAjppgmyc57BwKII3sV4on+gDVFJR6Y8ZRwgnBC5mVM6JjQ5x
-Dk8WRXljExRfUX9pNhdE5eBOZJrDRoLUmmjDtKzWaDhIg/+1Hzz93X4fCQkNVbVF
-LELU9bMaLPBG/x5q4iYZ2k2ex6d47YE1ZFdMm6YBYMOljGkZKwYde5ldM9mo45mm
-we0icXKLkpEdIXKTZeKDO+Hdv1aqFuAcccTg9RXDQjmwhC3yEmrmcfl0+rPghO0I
-v3OOImwTEe4co3c1mwARAQABwsBfBBgBAgAJBQJTjHAWAhsMAAoJELDendYovxMv
-Q/gH/1ha96vm4P/L+bQpJwrZ/dneZcmEwTbe8YFsw2V/Buv6Z4Mysln3nQK5ZadD
-534CF7TDVft7fC4tU4PONxF5D+/tvgkPfDAfF77zy2AH1vJzQ1fOU8lYFpZXTXIH
-b+559UqvIB8AdgR3SAJGHHt4RKA0F7f5ipYBBrC6cyXJyyoprT10EMvU8VGiwXvT
-yJz3fjoYsdFzpWPlJEBRMedCot60g5dmbdrZ5DWClAr0yau47zpWj3enf1tLWaqc
-suylWsviuGjKGw7KHQd3bxALOknAp4dN3QwBYCKuZ7AddY9yjynVaD5X7nF9nO5B
-jR/i1DG86lem3iBDXzXsZDn8R3/CwO0EGAEIACAWIQSFEmdy6PYElKXQl/ew3p3W
-KL8TLwUCWt3w0AIbAgCBCRCw3p3WKL8TL3YgBBkWCAAdFiEEUy2wekH2OPMeOLge
-gFxhu0/YY74FAlrd8NAACgkQgFxhu0/YY75NiwD/fQf/RXpyv9ZX4n8UJrKDq422
-bcwkujisT6jix2mOOwYBAKiip9+mAD6W5NPXdhk1XraECcIspcf2ff5kCAlG0DIN
-aTUH/RIwNWzXDG58yQoLdD/UPcFgi8GWtNUp0Fhc/GeBxGipXYnvuWxwS+Qs1Qay
-7/Nbal/v4/eZZaWs8wl2VtrHTS96/IF6q2o0qMey0dq2AxnZbQIULiEndgR625EF
-RFg+IbO4ldSkB3trsF2ypYLij4ZObm2casLIP7iB8NKmQ5PndL8Y07TtiQ+Sb/wn
-g4GgV+BJoKdDWLPCAlCMilwbZ88Ijb+HF/aipc9hsqvW/hnXC2GajJSAY3Qs9Mib
-4Hm91jzbAjmp7243pQ4bJMfYHemFFBRaoLC7ayqQjcsttN2ufINlqLFPZPR/i3IX
-kt+z4drzFUyEjLM1vVvIMjkUoJs=3D
-=3DeeAB
------END PGP PUBLIC KEY BLOCK-----
+>> drivers/iio/adc/lp8788_adc.c
+> Probably
+>
+> Sub driver of an MFD.  I'm fine with that going if we know
+> the mfd is no longer in use.
 
---------------JHou3VyeAHLBdBUp1ZKQPjhy--
+Ok, I posted that one as
+https://lore.kernel.org/all/20260909132153.1596191-8-arnd@kernel.org/
 
---------------NEp702byBysSRAjr2vYU7iXA--
+and so far, everyone agreed on removing it.
 
---------------eaM1imaen800kHMvvuISziE6
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+>> drivers/iio/adc/lpc18xx_adc.c
+>> drivers/iio/dac/lpc18xx_dac.c
+> Probably
+>
+> Likewise these two.
 
------BEGIN PGP SIGNATURE-----
+Right, this one of course should follow the removal of
+CONFIG_ARCH_LPC18XX in arch/arm/
 
-wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmqmNlsFAwAAAAAACgkQsN6d1ii/Ey+b
-zwf+OzaU6Petyp2h+7lmUlJdSjc0eGdEi1rB0ocVzj1kZHlAYaJJchfEYlr+cy0jrRbAJUqhocOe
-c/DNBw8RSCwubb6xG6QmMEUtKIZLM+wjc/7U/S+ijRfm4cSHAnOr3Vh6jffSSW0G96X5SzsCpC5v
-vC2SBDQjyP+kgsXS4vGBrhBzRC4SXsIHwOmVNJWDkTlpnzTh0joIXofqOrNHKQMcGuBpxJCHDYSL
-NkUzegBFSRDKWDqtEOP5DrbpgeJEve03txe84l6HRyCVozjsba1pS2fehrmMh9+xRi40lMnxGRKq
-EiFbizqDTM71Fgp15B9MKWAg+6FGtcM7TKtwsc/reQ==
-=agVt
------END PGP SIGNATURE-----
+>> drivers/iio/frequency/ad9523.c
+> Maybe. Analog Devices ack needed.
+>
+> Fails to probe without platform data and marked not recomended
+> for new designs. If we get an Ack from Analog devices folk
+> I'm fine with this one going away.
 
---------------eaM1imaen800kHMvvuISziE6--
+This matches what I wrote in 
+https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/commit/?id=20c1515b0caec2769c0916d087326f640bfb8aab
+
+I'll keep the patch in the series and we'll see what the
+maintainers think when I post it.
+
+Thanks a lot for taking a look!
+
+I wonder if some of the older Analog drivers were only ever used
+on Blackfin. My series still removes a few more drivers outside
+of iio list that had platform_data in arch/blackfin/ until we
+removed that in 2018. These all fail to probe without
+platform_data, which means they also wouldn't work with the
+downstream adsp-sc5xx/sc8xx port or any other upstream Arm
+platform:
+
+a4bdf847e0e1 backlight: remove unused adp8860/8870 drivers
+c71829e110e9 Input: touchscreen: remove unused ad7877 driver
+b4d4ca64500b Input: misc: remove unused ad714x driver
+978426a3fe1a usb: remove unused sl811 driver
+0860c9f297c3 mfd: remove unused adp5520 driver
+
+       Arnd

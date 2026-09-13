@@ -1,160 +1,119 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pz2-f43.google.com (mail-pz2-f43.google.com [74.125.228.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C630F39061C;
-	Sat, 12 Sep 2026 22:21:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82843374E6D
+	for <linux-fbdev@vger.kernel.org>; Sun, 13 Sep 2026 04:02:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789251664; cv=none; b=HRLRBqlPqXYQKn/0NcNlQkpYv84aS2xuk409J784xaqmGKsfTVoAxex7+hamY3Z1mezMhEopbiTCz+kmLaBvWMBQ0RMRNyHkjQEg6uh7idme378XZ855juxaC3xPyFKWc/wIHFB3L2W9QGlub2SzXSbdCAPNJHVmg2Hx6wxZuX0=
+	t=1789272121; cv=none; b=WyP5ZtdAJny9JHJilg5IKaWbpLdpkg4o3c18Wvq2MKS7VnamCzmWbl9ZO6lZYlmfOF/iQLXbJHQHIYULsTBzqNOUkP8893nwsZ3NGazTTeuwP6pSWLDcQPNPmMmciDFD7nfOKR5sdoGFBxms+GAfPjGniQdK4NvzjPSHiZeWjzQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789251664; c=relaxed/simple;
-	bh=jJN5bbmJG6+W8ZaAl9RR52OiGtP0jEKBmRMAckxoXiM=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aJe6HCLeEcaYPMYTJDo6bj52O4C4tN9/S/pJQ+nuxskJRaZYMGv/KJlET++t6zOUyeerAhGe7S1q8c9iuQ3BMZPp4tgAzfaoYtqM/d2uJ+98i0Myg33FwevRkgp9GRgF1P/rzFIYzEFpyw8oWzz9UatbWIXSpAj7k4XKeWMNeXg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=BHhPvzDn; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789272121; c=relaxed/simple;
+	bh=qOU4mOdJZExzY66rPx/p4PHpUpxs+QTxG3UNNWTlklo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NGh8qswmvlqaLXpjM3OMa39wlMVtEzdhL2Wh4PYuIBQTaDKXqtqaLAvL6L1TZk3qK3JbkTyHET8oTDAafiK0Tm4REPLUirSuylF2INzouFkO2W/fmMqYq8K3xvkxVt/joTOppuPoyxdBFdSFk+CP5Qer0tH7ERZfG+AuZ06kwaA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KL784V58; arc=none smtp.client-ip=74.125.228.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="BHhPvzDn"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 434821F000FF;
-	Sat, 12 Sep 2026 22:20:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789251662;
-	bh=A9T5TqugoZpwriYm80tITfJ7eL5e79XFR+RGRlWT3Yo=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=BHhPvzDnmzwpQttZFmPMZf/UutFNeY/Degy6vahXXbV7Z6hNGc9MkvFE+rdhQJ6MU
-	 VAw3b4RYQvofx2lNTbeX4zkZRnpelNzwDei0UTSd3ZGNIs/4odMQ67B9LiiARuySxb
-	 U6BER7d7wfXohAn2tXbzGwa2wiTRgp4c4+hrPC/Fg2mvopBtYwKpfuJcqo2gQktz/i
-	 UBA340zyHxS9IBLWpHZ7ZP/iBROp/81WLbTAUh34hL3mGOOjez8TZZyGHIC4Q8vD6X
-	 SvDJPAFOvk+SgEr6vR+aGc41krBbPQbYbAOql8ew7alD2jpnrmyuGLi/805cAMk+g3
-	 S6DFuxrkx8D2Q==
-Date: Sat, 12 Sep 2026 23:20:47 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Cc: "Svyatoslav Ryhel" <clamor95@gmail.com>, "Arnd Bergmann"
- <arnd@kernel.org>, "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
- "Bartosz Golaszewski" <brgl@kernel.org>, "Mark Brown" <broonie@kernel.org>,
- "Conor Dooley" <conor+dt@kernel.org>, "Daniel Thompson"
- <danielt@kernel.org>, "Helge Deller" <deller@gmx.de>,
- devicetree@vger.kernel.org, "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
- dri-devel@lists.freedesktop.org, "Jingoo Han" <jingoohan1@gmail.com>,
- "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Lee Jones" <lee@kernel.org>,
- "Liam Girdwood" <lgirdwood@gmail.com>, "Linus Walleij" <linusw@kernel.org>,
- linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
- linux-fbdev@vger.kernel.org, "open list:GPIO SUBSYSTEM"
- <linux-gpio@vger.kernel.org>, linux-hwmon@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
- linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-rtc@vger.kernel.org, linux-sound@vger.kernel.org,
- linux-watchdog@vger.kernel.org, "Guenter Roeck" <linux@roeck-us.net>,
- linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev, "Mauro Carvalho
- Chehab" <mchehab@kernel.org>, mfd@lists.linux.dev, "Michael Hennerich"
- <michael.hennerich@analog.com>, patches@opensource.cirrus.com, "Pavel
- Machek" <pavel@kernel.org>, "Rob Herring" <robh@kernel.org>, "Sebastian
- Reichel" <sre@kernel.org>, "Support Opensource"
- <support.opensource@diasemi.com>
-Subject: Re: [PATCH 08/14] mfd: remove unused aat2870 driver
-Message-ID: <20260912232047.19c4cb10@jic23-hlaptop>
-In-Reply-To: <11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
-References: <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
-	<11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
-X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KL784V58"
+Received: by mail-pz2-f43.google.com with SMTP id d2e1a72fcca58-8692a8568e9so683855b3a.3
+        for <linux-fbdev@vger.kernel.org>; Sat, 12 Sep 2026 21:02:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789272120; x=1789876920; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=IUaIWeESj5beJuigMXgXrhS+tGPcUhdzld8fSkS1OKQ=;
+        b=KL784V58wIuDnuXqenQLvuL5orC7rXdZDhrkOMhD3a5ZjhJ4B+UoScneZ0tdsuefrw
+         Pf/ar54hPmTOfNbuxXCw+6F0imtvjjsgyPTbfftAnotrva2gj6wRZDU1n8og1pm4U5hB
+         Hjsf6xVhcGaHbN2lf+QTFGr5CXfh5O8CZWzE75Ku3LZ7j/TTdliwIV2rS+P9bjiAmKog
+         kmIz6jg1S4qQAxppQ3yjfnLBbtjlj6Pu+EwjMlQZgk0ucAdEVrNf9sXPqLekn1/cmKgj
+         L2+Xf39HUUewqb4ZXTqRsIvWOBZdyjQ6Yx1lacE/pgfkIjeVmtcKqYvf3hXp+mTfAZvE
+         EGRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789272120; x=1789876920;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=IUaIWeESj5beJuigMXgXrhS+tGPcUhdzld8fSkS1OKQ=;
+        b=ZjdXaaq/zG5qbuV4iPPmVPHX9Wwgcd+uz+94PXb0nbOBfeIwcIB/j2OJMrIwRJY36x
+         2YVMkTgXsfiNk2wkbzO64o+UjlLI2ECpaoI1VdoJ6/ir7HT9wR4xMUhO7qNFDC+ZWXYK
+         0zNIbmOk6pkDl0MuvLx0p+RuRMaM4F5aR3EX5freAsV/U3dDsXxYqR87DoRo5uiWsSjk
+         xKqICRppiq6ekNgsyEcN3hDu4i+HkuEcELyx98N6Nfx+hc+bGXDMPJlDuYixewLR6gW7
+         bnT+h2mrAvyfTBKD2PWKp9BUQWkQ/ugDrdgBxA2O1QVQ3EsGQHbc0YHXiAL+LYFZwP4k
+         z/OA==
+X-Gm-Message-State: AFuF++mkd3pwejgT8bXZuL9kDZGY5EMBhP++wRBZvx+ogWaUc4kiPjw8
+	3yTTjpYmZpyLNL+qvPVFGSdfbNB/WYaw67sm8+jwKqpwJqLYDLZFEEja
+X-Gm-Gg: AYBFou05+mIUsm6KPOgxjc9Z6eQojiFd/6PWmLGn0MzFu34M+2kqy3ktcb2loPCu6oh
+	wPEaaSOYm5Gl7YR8oBhlzy07+C6GZDQ1GBP+lEnyZvvJmIC1veN9jCCJkFGDthFbwnPAWVlTVw8
+	PwaHf8HSHMi37g+wpm9XDeuycn/zDXrtsGbxMlGMpS+6JgJKnC6xHkHkX6nRf5FlMUfMKfHPKPK
+	g3Ld/pGw00uP/8cYYvkdjrvHabusLqX9nQxh0xcv9edkiWXSP+JnodZ5uIcGtmvtW5fQB2cV7R3
+	LueHZ0rSS+fQn6m96e4CsDS/zNPpPa8YVIW3RYMr9hhZsqDZ2DZXjCJtVkCwgagwXh2fhz1RPhv
+	HtnJ+v2yj4UPc8YqL0HO8fVk01SnS6H9eJJb0RcjeWAstsyAQ6XA4JT6ONaiFrUkkP4HoF3ZEuJ
+	d6X12dCsiBNN2DkS8PtWiltxmwgUhsTl5Ov/FwiDZvgiB5nKKNY8Lc76YZ+f3m9XlE5DovVvO/r
+	8RumYNU3ydJQnva5oGJcmomYTzLIzqgUOXZfXf+8XFCTqkvD6oKg7IHmKAVaqKcPdLrNwoJ+8Jp
+	s2EwFM5dl9az9CeejarQFQ75+wKKsUJilSskkHpV6dx3h+Bfbw==
+X-Received: by 2002:a05:6a00:3d01:b0:85c:2d83:bbf1 with SMTP id d2e1a72fcca58-86ccb44e113mr8738679b3a.20.1789272119714;
+        Sat, 12 Sep 2026 21:01:59 -0700 (PDT)
+Received: from localhost.localdomain (c-67-170-60-64.hsd1.wa.comcast.net. [67.170.60.64])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc4c659b9a3sm2957890a12.29.2026.09.12.21.01.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 12 Sep 2026 21:01:59 -0700 (PDT)
+From: Gabriel Changamire <gaberashawn@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Gabriel Changamire <gaberashawn@gmail.com>
+Subject: [PATCH 1/2] staging: sm750fb: clean up sm750_hw_imageblit() kernel-doc comment
+Date: Sun, 13 Sep 2026 04:01:39 +0000
+Message-ID: <20260913040140.4517-1-gaberashawn@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On Thu, 10 Sep 2026 20:14:15 +0200
-"Arnd Bergmann" <arnd@arndb.de> wrote:
+The @start_bit description contains a stray ">-----" artifact -- a
+literal copy of an editor tab marker -- that leaves the continuation
+line "0 to 7" garbled. The @fg_color and @bg_color descriptions are
+also missing their closing parentheses.
 
-> On Thu, Sep 10, 2026, at 18:40, Svyatoslav Ryhel wrote:
-> > __ 
-> > Hello Arnd! May you please spare AAT2870 from being removed? I have a 
-> > device which uses aat2870 (LG Optimus 2X P990 Tegra 2, not upstreamed 
-> > yet, but in process as well) and atm I am working on converting this 
-> > driver to use OF. Thank you!  
-> 
-> Sure, I have removed this patch from my series now.
-> 
-> > P. S. If you are planning to remove more old drivers, please CC me in 
-> > since I may be interested in some additional driver upgrades for 
-> > devices I own.  
-> 
-> Please have a look at
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/log/?h=board-remove-7.3
-> 
-> I tried to be careful about figuring out exactly which drivers are
-> unused, but I'm sure there are still a few false positive and false
-> negative ones in there. I've added the current list of driver files below,
-> let me know if you see something that shouldn't be there.
-Hi Arnd
+Replace the artifact with a plain indented continuation line and close
+the parentheses. Comment change only; no functional change.
 
-For I2C and SPI at least, there doesn't need to be explicit
-device tree support as long as they have defaults when platform
-data isn't there. Those two buses will happily bind based on
-a dt-compatible and their i2c_device_id or spi_device_id tables
-for example.
+Signed-off-by: Gabriel Changamire <gaberashawn@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_accel.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-So unless they fail to probe (some might?) we don't have
-a clear signal on whether they are in use via DT or not.
-
-For vast majority of IIO drivers we don't have an upstream
-DTS as there is no clear motivation for anyone to upstream
-the dts for a random industrial control board or similar.
-
-> drivers/iio/adc/ad7266.c
-No to dropping this.
-
-Has fallbacks and should bind just fine  No one ever
-bothered adding an of_device_id table because it isn't
-needed. Fine to rip out the platform data support as nothing is
-using that.
-
-This is a production part that is likely being used in new designs.
-
-> drivers/iio/adc/ad7791.c
-No to dropping this one.
-
-I'm fine with ripping out the platform data but this again
-has defaults and may well be in use via DT. Antoniu from
-Analog was doing some cleanup on this recently so I'd guess
-they probably still at least somewhat care and some of the
-supported parts are still in production (e.g. the AD7788)
-
-> drivers/iio/adc/ad7793.c
-Maybe. Analog devices ack needed.
-
-Production part but this one indeed fails to probe.  Analog
-folk, do you want to fix this one up?
-
-> drivers/iio/adc/ad7887.c
-No to dropping this.
-
-Production part - should work fine with defaults in driver.
-Could like the others drop the platform data handling.
-
-> drivers/iio/adc/lp8788_adc.c
-Probably
-
-Sub driver of an MFD.  I'm fine with that going if we know
-the mfd is no longer in use.
-
-> drivers/iio/adc/lpc18xx_adc.c
-> drivers/iio/dac/lpc18xx_dac.c
-Probably
-
-Likewise these two.
-
-> drivers/iio/frequency/ad9523.c
-Maybe. Analog Devices ack needed.
-
-Fails to probe without platform data and marked not recomended
-for new designs. If we get an Ack from Analog devices folk
-I'm fine with this one going away.
-
-Jonathan
+diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
+index 6db54c6526dc..a0fda56d955e 100644
+--- a/drivers/staging/sm750fb/sm750_accel.h
++++ b/drivers/staging/sm750fb/sm750_accel.h
+@@ -223,7 +223,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+  * @accel: Acceleration device data
+  * @src_buf: pointer to start of source buffer in system memory
+  * @start_bit: Mono data can start at any bit in a byte, this value should be
+- *>-----      0 to 7
++ *             0 to 7
+  * @dest_base: Address of destination: offset in frame buffer
+  * @dest_pitch: Pitch value of destination surface in BYTE
+  * @byte_per_pixel: Color depth of destination surface
+@@ -231,8 +231,8 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+  * @dy: Starting y coordinate of destination surface
+  * @width: width of rectangle in pixel value
+  * @height: height of rectangle in pixel value
+- * @fg_color: Foreground color (corresponding to a 1 in the monochrome data
+- * @bg_color: Background color (corresponding to a 0 in the monochrome data
++ * @fg_color: Foreground color (corresponding to a 1 in the monochrome data)
++ * @bg_color: Background color (corresponding to a 0 in the monochrome data)
+  * @rop2: ROP value
+  */
+ int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
+-- 
+2.47.3
 

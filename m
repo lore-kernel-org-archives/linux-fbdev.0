@@ -1,86 +1,86 @@
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6FA23D566D
-	for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 13:21:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D97C446820
+	for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 13:24:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789392068; cv=none; b=ep3/6DCsfLYScXisDkJSYuF+ht46GTIKZWwVcKgGAtKGubTOq3A6//BUZ7H5+5aleFVebyJUVY94ZUHF/gmO/jaXKkMzCy9dvMkiWBgGVOwOhb6AyQ7q5/c7PmM1ncycEQq0pryfood+sayFxw0lkHhwpDmXWtOLrOdGIs25KSM=
+	t=1789392291; cv=none; b=Es4Iltg5O7BFAW4sLzbt4Q+AzVCwRcQVpMsULhn6NlVluieD7Mu/zcnZtCWXoRteyvKzMmOO4Bfyn8f1x+N956LFqfH3vcFLozKNYRCMMQnqBC4jnznKOvLK6njdZOpq8W77g4Em1I8Mn0arKlI5g0fZfQ5ZQI56BtpR7CeixwE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789392068; c=relaxed/simple;
-	bh=X1MDExZhVzmc/fbyowMR2JAYw5sbyqlJibBNUw3YlMQ=;
+	s=arc-20240116; t=1789392291; c=relaxed/simple;
+	bh=5KLPdncsLccVWG4vS1VbkO+4SihTxYoWlWEpXBujLM0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MorNu4IU4rmKYNP/Vd9WMOFssVnKfCyi9IskN8N+/oPuNhhqNOG5suGcuiaKiKFJJmiVMsPI4h6roOVt0UuC8igD41eWPJMF0XEtrFzlmXrdlXIB9LiCQOj0PH2y8ZFfkT1DTD4bByop5Xx/tN3YQivf266hVZf7+TVqU55J40c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=QNvp4vA/; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=N+RC0zeE; arc=none smtp.client-ip=205.220.168.131
+	 Content-Type:Content-Disposition:In-Reply-To; b=iScRYkEUkBiUmfjwKLy7lH9tw4W3RkrsmWfDUjy3pFYfVn0x716XWzThehvko6FPac3duKwhjjkU0ND4F8QH62XqjUB3lPMFDtVb0XcS7vKUGTxbR5lcSj2oIjW4NFdPV8LorHbaC80Nr6ofvXaeeZ51YueEYTHfADJte+GR5GA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=QWbNb02Q; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=cNtCCiDe; arc=none smtp.client-ip=205.220.168.131
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="QNvp4vA/";
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="N+RC0zeE"
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68ED0Qvt674431
-	for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 13:21:06 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="QWbNb02Q";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="cNtCCiDe"
+Received: from pps.filterd (m0279864.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68ED0Vn33588169
+	for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 13:24:48 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	e2jE0G2s1QXqJo24O7Ni8kLViBPEblU5gPqHIox+cik=; b=QNvp4vA/hw71+fNq
-	opu1Q6PkFnO/todSJ1WPvuJeYJsk+8gh6dCGViY9KnAf0Hl+D5SuRT1rxGb842E9
-	IAZxPc2RpGBNSYbxH/1dfh+4n9OJlvtplukY3LBgOKvs+w6+Gbb3eDIfQdWpyzbB
-	bjE9DfCxjJDOlEJ+ZsZgQgDpFrzmS7d0b4RrSl1Qwhq3/0gvm7IB1IiDGfZFVKf0
-	aC+D9LED1dUdnVkrs/Mereszf1dfn2IRN1EAVOvQeelFu7tSxOrsx0jeVBBRL0JZ
-	CmFqPW/wUGDZS8kg4ikF65kLGm4DrSpQcKXnn8l25UnvLu2WZW5phC9w2Nw6kRWA
-	S7KfSA==
-Received: from mail-vk1-f199.google.com (mail-vk1-f199.google.com [209.85.221.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gpecs8uvy-1
+	TJEsqlbhkeYlvOTZeQMhupa6Ph/sDiB31OAPFik2LLM=; b=QWbNb02QNVXvEYSI
+	LSHs0mIIGJEbh/T60hOsLDfGeW2+GMdGZgtgPBLfnuRpRvHzI9whPWMqZB86tGU4
+	F9Go+RUrpDjru1FiBA3stdJJu47PqKS9Z5kGo27IFKcinkoCSQTC198YnBCTizSS
+	ttcOlgH7DjXqVvTOOKEM8duu2LlXmt6ByPebsT4qK8MFH2VOQceaHToc8TlTntSS
+	Jn7hcGDiwvYgr3Fb+R6PtOmtQl1oAp8Lo9ckpm5fsVNJS0O+rlcpLsjr6E/Xe+FD
+	OtEhHqF5jl8gITZcdzYhNROZS9Stzi7zQy10Mx/ibD95d4dH+3yam4vpdPeXUsiA
+	44yPZw==
+Received: from mail-vs1-f70.google.com (mail-vs1-f70.google.com [209.85.217.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gperg8tm0-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 13:21:05 +0000 (GMT)
-Received: by mail-vk1-f199.google.com with SMTP id 71dfb90a1353d-5c7c0d2b0aaso1349138e0c.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 06:21:05 -0700 (PDT)
+	for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 13:24:48 +0000 (GMT)
+Received: by mail-vs1-f70.google.com with SMTP id ada2fe7eead31-79cdabf7d89so2059137.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 06:24:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1789392065; x=1789996865; darn=vger.kernel.org;
+        d=oss.qualcomm.com; s=google; t=1789392287; x=1789997087; darn=vger.kernel.org;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :content-type:mime-version:references:message-id:subject:cc:to:from
          :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=e2jE0G2s1QXqJo24O7Ni8kLViBPEblU5gPqHIox+cik=;
-        b=N+RC0zeECaFh84nt7IfWhF7J/9BPiYV1VBaSSZXpSE+ZxTWkRRZif21mO7ebCcFk2Z
-         z0qQXnRGPLt7X6ZLZfbibMWva0SGV9At3cDXzkYfwiGl85FrFBEvMRR64qpxUXyAzctj
-         Ndq6dSSGrIBCnYmLLhpGTMhNfSU7dTMzPT2RGb5Enos0wc4X6CDkYvduPCZbmpBwHorR
-         4aAq014sC3Ny4Qks0SIC7XEEz2IQ591CioR4tLiPGjF80F91fv0RIMdpgoMxVCOSTkg4
-         NMVXYqRfC5W2dr08DkXFicIDUFF1bIJgvGlLvDFTHQ4UN6xyI4voPO+IeykAIuiyXVnz
-         WB4Q==
+        bh=TJEsqlbhkeYlvOTZeQMhupa6Ph/sDiB31OAPFik2LLM=;
+        b=cNtCCiDeibDi5/bc8ZxF38OlsZA4M+jjBdAOsIm7ByWVO913r3NfhHOM0HKxr4imAq
+         Yh83r7fTbEK5yuhPYNCcuYqeFAwJGj4PwwUQHxMdz56pE/GpDNbqKkniUqSKVjSfz7cd
+         DI3xuze9kL5keqJ96+G7xBDdE7HLXpjTCt333PjM5uBlaljaDmeM+PNO118HxLNDIFN0
+         IAJ+E1mpwF3Cs80L0VcfO45czc+V6/yBHq9Be66YFyPLdHAAqhbX0RI1hSjC7CVWIsAO
+         x8EKVlbu9d2S3U/dOMt8ddlRtKANlzYe1bMKOk6SjBR2s0+1bP1/TeWhRt9Sl//zRdf/
+         5VuA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789392065; x=1789996865;
+        d=1e100.net; s=20251104; t=1789392287; x=1789997087;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :content-type:mime-version:references:message-id:subject:cc:to:from
          :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=e2jE0G2s1QXqJo24O7Ni8kLViBPEblU5gPqHIox+cik=;
-        b=UNmGCajz5ha69X8240zf2r7lj1T3Q9VMEwM7ykLY4qAl7oBrMJjQqjid0GfKBSEWva
-         GoyuLaEOEUIfwXgNsyx7j/4eeJKx+FbNjWcPEIZjXogx/UrsUu8DCc5Js4a4UpG0o2lB
-         vl6UFHId2kyEaQVJiuxOOjOhHH6JD12VLpwHqqXXFChRdJ8nkbZWUtxIHDftAqfsvq7Q
-         ftZm9E+df+h0o7NtqF/LeXUIECkWcysXd9zeNnBVJ3mhJxXFbE0HS3mo8JRorBJsdMWa
-         I+soVIbiaYAeM8CpCflRQiBCSLV/5HRGJEZS9DpRih1zYoOfvogKQgYxTgx3lkph0kjj
-         i9cQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzFRGEAVSHTlr7NrywCQRUu8UiFDTWTfDIWe24NO5hkL3yHNEjBZ19DeeZJO13a0SSUc38co1oLUyhMDQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++kUu9vstyyKP4AiV+6vUd9Z15NgeNpGl7OM1qdo7EU+YqmuntNT
-	t1c5EPO0UogXgZUFSIlidafbRJBPhv4DSmesBXUKGnDw5bJTelH8ZEH0o6RW+0DtTmqEMFjN6dM
-	FWwRnxFXK2j3q96xaKmT83M2eJKuFeQ1jUPG1ihZAQnjHkRkjUn95bxb20WtP6qA0vQ==
-X-Gm-Gg: AYBFou2CJ/+3OwL/3caaARVMu22IIXW+p7WuFsZlD34B1d+srU6aONGnvG42bsQYXIU
-	sijBc5+2VzD/KRptBJFCcSudSTynDmj0KamwRYJ9moBPf2QqwPcsSKACUW1ZkaGbN08uGb/sZJY
-	bffT7KJghMtHTuxcWxEPiE7/Z2yXjADVnvbe3KSSRIIl2VyxM0lgsooFqC3YIWh0e/jrPmVBh4Y
-	Zvg/dVbPwIUb8/wqeYMJfmTB3EGCv3Ea5DPFzhnX7d0egCyNLKHNOkOOgut9C+j8BX8TWu9cAvf
-	GkyjzsSdanOZ2JiWSSShPDFQvki0g3D1IvWBnp5ko7sULxy3ZchC0DQLNuHi0A/RpCT/iqno472
-	kB81PkIWZAvP4Livsyc1tcV4S/9xkPmzq59LDXVt9ULBpn+i/PjqC2HSt6uLs0YCJZ5H6zY8kI9
-	lo1cBEZatfC0KF
-X-Received: by 2002:a05:6122:20a3:b0:5bc:42be:f758 with SMTP id 71dfb90a1353d-5c981b4a171mr1773077e0c.3.1789392064545;
-        Mon, 14 Sep 2026 06:21:04 -0700 (PDT)
-X-Received: by 2002:a05:6122:20a3:b0:5bc:42be:f758 with SMTP id 71dfb90a1353d-5c981b4a171mr1773000e0c.3.1789392064094;
-        Mon, 14 Sep 2026 06:21:04 -0700 (PDT)
+        bh=TJEsqlbhkeYlvOTZeQMhupa6Ph/sDiB31OAPFik2LLM=;
+        b=l003V6p14Q4MKcCAXkSEl3CRxF/T7h5kME2+1QVUOs9hB8SY4uJErh3WUBEQgzm2zC
+         SCL8hrgfa9XMq4/UbOnTU3vC3yTAXLDf1M5zrdehllZvmsbjbsw62z1MzBK0mfZlTwRG
+         powIVkRJD/jpidnItVgQwCzyNiCBDelXuNE47gRXaRBR0G2vPo5Do3PLkLiuWnJkj/x1
+         2wC2C/bTYhqrsdlJDoKtwhDH+JTjhR6IE4sEvV48k/WzVQxdeNzowSNxFhfgK3KHsCoJ
+         ZlXANRnbDa0Q+O7h1mRIw7K72MVZa7qWGw4xc3e05+X3pdDXEHZMIBz7TkWBHLm6gKfo
+         tUPA==
+X-Forwarded-Encrypted: i=1; AKwUvBwuVoh9JXVoeggDIxwPFtNj53N9eQUeORQAguycxT+FHCTK472v7sxh3F/OpMezzin/PzZpqXfjkGaXgQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++koJ0q7Z44LCprH0a3iMoM25x+ut6LpNCsji1M+MmQjWQsydgA+
+	xLLD3s4IvDAA9Xy+dAMp4zgtmgWGzt+40KeLVMGKtc4gbJihVh+pO1jcQVv0JsD2F4EpQkz3HCb
+	mgCBxC+ry3sxxbW40HJoRBfT/4QPg7lrjPN5dd7cJtihsj1GC0S9uhK2GmS4zRpbJWg==
+X-Gm-Gg: AYBFou3m/8yl4CHCX6XjKPGVFd4RnxcEYEN8BcLFW46UeVaew2NTTwWyCq26VVgz5vU
+	8VSyblaCxjcASPZZHm/96rfffHKKGhCFsBvHaNKRRzEEFkU1wRQhQWH10GSxIs/IZtdJ+9qdVwq
+	r0H8e5NwyWSfOCJ+T87cEChCKpYA/g3mxnHcY92scHFr9zwGahT4UZ54s9MAHK78ubN8s/osUg/
+	kZ1ZidIkgxP9zLGLRVd6trcQWdiknTJJNIJoZprmh6GeoYs1S7crBDc1KpLqqOUiWa04+OD40jx
+	ODixLvdis7vbfblsQyGA6YLpILeTFL30YBCqQE7SNncvr5fDPgm0NsXvhji+yuoaH4wED7FA8UJ
+	VheZhgNe72K0W+UWGtoNBgIvSFZex7VVNs4BLgN3MCckokTDrGUamo5aBoKNxrFSBb5UCIEB3e+
+	pbzHjj3hTBiEWJ
+X-Received: by 2002:a05:6102:6a90:b0:795:1be9:661e with SMTP id ada2fe7eead31-79b570f4ba8mr1228016137.1.1789392286936;
+        Mon, 14 Sep 2026 06:24:46 -0700 (PDT)
+X-Received: by 2002:a05:6102:6a90:b0:795:1be9:661e with SMTP id ada2fe7eead31-79b570f4ba8mr1227965137.1.1789392286464;
+        Mon, 14 Sep 2026 06:24:46 -0700 (PDT)
 Received: from umbar.lan (2001-14ba-a073-af00-264b-feff-fe8b-be8a.rev.dnainternet.fi. [2001:14ba:a073:af00:264b:feff:fe8b:be8a])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b8a0470d6dsm2485419e87.56.2026.09.14.06.21.01
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5b8a0472bdasm2443458e87.63.2026.09.14.06.24.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2026 06:21:02 -0700 (PDT)
-Date: Mon, 14 Sep 2026 16:21:00 +0300
+        Mon, 14 Sep 2026 06:24:45 -0700 (PDT)
+Date: Mon, 14 Sep 2026 16:24:43 +0300
 From: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 To: kavakliyigitcan@gmail.com
 Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
@@ -108,11 +108,11 @@ Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org
-Subject: Re: [PATCH RFC 07/10] drm/msm/dpu: describe SM6125
- programmable-fetch delayed-start quirk
-Message-ID: <6zvweenpt7x7qnyrxptzz4h3cyl7azqbekyluekhpcrb5gk6ge@pfdkjp44fhbv>
+Subject: Re: [PATCH RFC 08/10] drm/msm/dsi: make command and video mode
+ configuration mutually exclusive
+Message-ID: <pnlrq23steuyvrqm4e6krzdlaa7pqozxqcaaakzsmqajuo7n54@hhhu6chgeei5>
 References: <20260911-ginkgo-submission-final-v1-0-0e68e63a18d4@gmail.com>
- <20260911-ginkgo-submission-final-v1-7-0e68e63a18d4@gmail.com>
+ <20260911-ginkgo-submission-final-v1-8-0e68e63a18d4@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -122,107 +122,89 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260911-ginkgo-submission-final-v1-7-0e68e63a18d4@gmail.com>
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDE5MSBTYWx0ZWRfX8Fo894tMriM3
- enKrde/fKkWqUVLfPNGiKIrKJ6bzMou8eP6CYIImmr5dtgJWtrouTcuoxL6EI2AxozZ4ExUJC/M
- 6pAGR7ZDlx6xdHN8S6siE8b81S6WulM=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDE5MSBTYWx0ZWRfXwHEwqfq3yayp
- dWo9fqsuQnsrHUIVTUQKd3qKKk1ZP4rtbEne+jfM+e7eDtFjJQhT2vCmjacVyv1U24TDs6Mlmgp
- jo1zUnope9Bsj14w7PIx+Zilx967I5rABUsx8NQL2pX9m8NUi4Gnlhpc+qtOU7zM2ns1NbCSqN5
- hrerwExCwrNpeLXLcZxZkdSG7gPm/gUBYeGv3ApBoc/GlG5j/gBSj8pWwHjvYfmU1VxfkbzVt2+
- W8k79bB62NSlfNnW62VyqXE+H7ON2gBA1TTmTrr6Vyp4FsSRXzJwdKC3s/VeHjVqnMs37iefU5c
- Ynj4h0laMeuSVC7L3v2dMrQ3goOR3vYJoU+8B0ea22ttMoeAGiF18ffLWL3TYFeBqlKABeLBJEO
- AqPpNomg2eoUGf7hT3c99Ukke/9cSnupPFdBEiW8/8WI2ttBLtc49ooikTx4wJTb/KDKT5IlGNr
- +MJ/Aud0VARVIcvTcYA==
-X-Proofpoint-GUID: GgD5STTIsxwUzyr2RTAWmIR9saapF4l5
-X-Authority-Analysis: v=2.4 cv=b/cncdGx c=1 sm=1 tr=0 ts=6aa7f4c1 cx=c_pps
- a=+D9SDfe9YZWTjADjLiQY5g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+In-Reply-To: <20260911-ginkgo-submission-final-v1-8-0e68e63a18d4@gmail.com>
+X-Authority-Analysis: v=2.4 cv=QK/91QLL c=1 sm=1 tr=0 ts=6aa7f5a0 cx=c_pps
+ a=N1BjEkVkxJi3uNfLdpvX3g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
  a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=pGLkceISAAAA:8
- a=T_hHn50QQsNSpKpO-EoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=vmgOmaN-Xu0dpDh8OwbV:22
-X-Proofpoint-ORIG-GUID: GgD5STTIsxwUzyr2RTAWmIR9saapF4l5
+ a=u7WPNUs3qKkmUXheDGA7:22 a=DJpcGTmdVt4CTyJn9g5Z:22 a=pGLkceISAAAA:8
+ a=irAkg3Ti1NS2jvoIXoMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=crWF4MFLhNY0qMRaF8an:22
+X-Proofpoint-GUID: ULMctKUZkMv02T9TBBic10W8lSGB0WYW
+X-Proofpoint-ORIG-GUID: ULMctKUZkMv02T9TBBic10W8lSGB0WYW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDE5MiBTYWx0ZWRfX6iElsuUvNFPj
+ mzyxjAhSA22o8lOri+DGYfJfRyuLtmGnu8oVb6obejlazqf+N79mNxfqZ3r9x1QAtwzoIHi2OUI
+ zWecFJH/uT9wKAUCbQTmmjqQsABABCr1x5YL/ms3wnh3ipVwv1y+dc1Y+1f6Th5clKDkW47gjIg
+ lIZ4iys/cbOjTZW0ZhUqukcfPlnd1b0Wx4yTOLgNBfbeDFJ/47IMSMVGHyBAIFBhi6x3B2tuuSR
+ xyzSfygzUWLQpZdF4yselGeulSZeUHloWy7PrJj87AL5l6jtSw5vi0bquDvVQdsVlRZTdjdBNS4
+ LgiES+DD6AZn4wBWHwtmJFNHnu0T3U8OKsxTe7bJo2tJFjoKm0CGi5iJ65cPp1x6yzE0ndpVKU6
+ lJ/QepCM9tS/ZgPgohH+BuzykEvSc6MqX+gZJaa0EcsCb1+goPs6ktSXxKR6b3uyk6Lrb6KULi3
+ +/09RkLJvP+0nuxBg/w==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDE5MiBTYWx0ZWRfX8cvXbbjOwBDS
+ VMDeAbj5iTV6j7bHnyWVP7DtM8llp6f1ofNaZgh5KvhdqBVTSTOvWkMX4F+i/Ezbu/m/Nv6GGJV
+ luwrKEY9eY2K+FT1hXaeq7Qg4TYqiHc=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
  definitions=2026-09-14_03,2026-09-14_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 adultscore=0 priorityscore=1501 phishscore=0
- clxscore=1011 impostorscore=0 lowpriorityscore=0 suspectscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ phishscore=0 malwarescore=0 suspectscore=0 lowpriorityscore=0
+ priorityscore=1501 spamscore=0 adultscore=0 bulkscore=0 clxscore=1015
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
- definitions=main-2609140191
+ definitions=main-2609140192
 
-On Fri, Sep 11, 2026 at 11:51:04AM +0300, YİĞİTCAN KAVAKLI via B4 Relay wrote:
+On Fri, Sep 11, 2026 at 11:51:05AM +0300, YİĞİTCAN KAVAKLI via B4 Relay wrote:
 > From: YİĞİTCAN KAVAKLI <kavakliyigitcan@gmail.com>
 > 
-> On Qualcomm SM6125 (Snapdragon 665 / Trinket DPU 5.4.0), calculating the
-> programmable prefetch start counter strictly as:
+> In dsi_op_mode_config(), entering video mode sets DSI_CTRL_VID_MODE_EN
+> without clearing DSI_CTRL_CMD_MODE_EN, and entering command mode sets
+> DSI_CTRL_CMD_MODE_EN without clearing DSI_CTRL_VID_MODE_EN.
 > 
->     (vert_total - vfp_fetch_lines) * horiz_total + 1
-> 
-> causes the fetch trigger to evaluate on the active-video to vertical
-> front porch line boundary. In hardware, this triggers an internal line
-> buffer FIFO conflict within the INTF timing generator, resulting in
-> immediate DSI FIFO overflow and timeout errors (status=5) and complete
-> loss of pixel output.
-> 
-> Qualcomm downstream display drivers mitigate this erratum via
-> delay_prg_fetch_start = true, delaying the fetch start by one scanline
-> (+ horiz_total) into vertical front porch line 1.
-> 
-> Introduce 'has_prg_fetch_delay' in struct dpu_caps, enable it for SM6125
-> in its catalog entry, and throttle fetch start in programmable_fetch_config()
-> when the capability is set.
-
-'has_foo' usually means that there is an optional feature. In your case
-it's more like 'needs_foo'.
-
+> Ensure explicit mutual exclusion by clearing the opposing enable bit
+> when switching operational modes to prevent hardware bus collisions.
 > 
 > Signed-off-by: YİĞİTCAN KAVAKLI <kavakliyigitcan@gmail.com>
 > ---
->  drivers/gpu/drm/msm/disp/dpu1/catalog/dpu_5_4_sm6125.h |  1 +
-
-Fixes: 9b6f4fedaac2 ("drm/msm/dpu: Add SM6125 support")
-
-
->  drivers/gpu/drm/msm/disp/dpu1/dpu_encoder_phys_vid.c   | 11 +++++++++++
->  drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h         |  2 ++
->  3 files changed, 14 insertions(+)
+>  drivers/gpu/drm/msm/dsi/dsi_host.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
 > 
-> +		/*
-> +		 * SM6125 (DPU 5.4 / Trinket) quirk matching downstream
+> diff --git a/drivers/gpu/drm/msm/dsi/dsi_host.c b/drivers/gpu/drm/msm/dsi/dsi_host.c
+> index 7e4e3718b536c92dc555de213042857379499447..b9e2867d435a3ad8b6db6b57c440bbd827180b6e 100644
+> --- a/drivers/gpu/drm/msm/dsi/dsi_host.c
+> +++ b/drivers/gpu/drm/msm/dsi/dsi_host.c
+> @@ -1094,7 +1094,9 @@ static void dsi_timing_setup(struct msm_dsi_host *msm_host, bool is_bonded_dsi)
+>  		dsi_write(msm_host, REG_DSI_ACTIVE_HSYNC,
+>  			DSI_ACTIVE_HSYNC_START(hs_start) |
+>  			DSI_ACTIVE_HSYNC_END(hs_end));
+> -		dsi_write(msm_host, REG_DSI_ACTIVE_VSYNC_HPOS, 0);
+> +		dsi_write(msm_host, REG_DSI_ACTIVE_VSYNC_HPOS,
+> +			DSI_ACTIVE_VSYNC_HPOS_START(hs_start) |
+> +			DSI_ACTIVE_VSYNC_HPOS_END(vs_end));
 
-Drop the codename, please.
+This fixup is unrelated, please split it to a separate commit. Also, I
+don't see corresponding code in the downstream driver. Do you have a
+reference?
 
-> +		 * delay_prg_fetch_start = true. Throttle fetch start
-> +		 * to the second line after active video (VFP line 1).
-> +		 */
-> +		if (catalog && catalog->caps && catalog->caps->has_prg_fetch_delay)
-> +			vfp_fetch_start_vsync_counter += horiz_total;
-> +
->  		f.enable = 1;
->  		f.fetch_start = vfp_fetch_start_vsync_counter;
->  	}
-> diff --git a/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h b/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
-> index f45faf87333e89bbd463504ae3219609ef6209bd..db3cbf9fa04a13baf3ac40390757ed24120ccccd 100644
-> --- a/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
-> +++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_hw_catalog.h
-> @@ -273,6 +273,7 @@ struct dpu_rotation_cfg {
->   * @has_dim_layer      dim layer feature status
->   * @has_idle_pc        indicate if idle power collapse feature is supported
->   * @has_3d_merge       indicate if 3D merge is supported
-> + * @has_prg_fetch_delay indicate if programmable fetch start requires a 1-line delay
->   * @max_linewidth      max linewidth for sspp
->   * @pixel_ram_size     size of latency hiding and de-tiling buffer in bytes
->   * @max_hdeci_exp      max horizontal decimation supported (max is 2^value)
-> @@ -285,6 +286,7 @@ struct dpu_caps {
->  	bool has_dim_layer;
->  	bool has_idle_pc;
->  	bool has_3d_merge;
-> +	bool has_prg_fetch_delay;
->  	/* SSPP limits */
->  	u32 max_linewidth;
->  	u32 pixel_ram_size;
+>  		dsi_write(msm_host, REG_DSI_ACTIVE_VSYNC_VPOS,
+>  			DSI_ACTIVE_VSYNC_VPOS_START(vs_start) |
+>  			DSI_ACTIVE_VSYNC_VPOS_END(vs_end));
+> @@ -1168,8 +1170,10 @@ static void dsi_op_mode_config(struct msm_dsi_host *msm_host,
+>  					DSI_IRQ_MASK_VIDEO_DONE, 0);
+>  	} else {
+>  		if (video_mode) {
+> +			dsi_ctrl &= ~DSI_CTRL_CMD_MODE_EN;
+>  			dsi_ctrl |= DSI_CTRL_VID_MODE_EN;
+>  		} else {		/* command mode */
+> +			dsi_ctrl &= ~DSI_CTRL_VID_MODE_EN;
+>  			dsi_ctrl |= DSI_CTRL_CMD_MODE_EN;
+>  			dsi_intr_ctrl(msm_host, DSI_IRQ_MASK_CMD_MDP_DONE, 1);
+
+For this one:
+
+
+Fixes: a689554ba6ed ("drm/msm: Initial add DSI connector support")
+
+
+>  		}
 > 
 > -- 
 > 2.47.3

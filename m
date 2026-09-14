@@ -1,317 +1,207 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5887248CD48;
-	Mon, 14 Sep 2026 15:17:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D93F479887;
+	Mon, 14 Sep 2026 15:35:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789399076; cv=none; b=GFRhjG4aHrR/USHygWkRD68B23fCDRfQVhE2ANwFy7joN6o6tafDitwVaf3XzN8m6nLtYzVJheGC/jriXbCOh4f7HnEBN2suhDjhtXZNnGCtCsHHImSSlbXfcBp9caczamC/78DLkDFR5g3UolrQqX43ArX7HbPFyJxTW7TG+o4=
+	t=1789400158; cv=none; b=O6q8UTJOhyqcN1Howy9mP/01L8eyN9M03xwOUJsb67p05R7Ld2HRT04MVxO5kYvyEgLbPVtjLk23gAf3ZPAtIiGwocfG50rFpgjqOlMurF/ggQ7NKbE3EmBUbaFsURTmGn+ollfm9J2kWafQApP4IpRbnXL5IGvnFLz+ATrlngk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789399076; c=relaxed/simple;
-	bh=3AnqccC2jTUlmIOHAi2JESa1NkBfZlWIxg9a+l0jjPI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KNhoI8Qh/rgfmOs3FfvRb8sPY8gsnnAA2x/FpAUgq6NIMRkLU3GsLtP86Rnjt6Atb6DK+SIdUVOURrrU/EyGjET+vA7u8HBq7Qrwv9/6NMELBbrGiswJC/TnM6dSAYPxkQcFIWDUVKTudyISszkwuz2Ee55UhONcy0VRoj60sLY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SJBEb+Gi; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789400158; c=relaxed/simple;
+	bh=MAGPHmXCBIhziBEg26ZvuPjqgU0drVUTwS2yrtaIaIo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=JKWmY8aHoUZu0kjKQQy8rjtBmp/G8OkRRbLenpcjbo0qYvhhhjzzmdjrFrMtA1YXUpVQY608ogE65/oV1eLkhvzoBY0tkwn7I8t7JfQBy7AWwDUcFsSEfZvo0bMrHAlfFrNYv0SM/qS8IA+XaoJ1oC5XUEEhxG7AKDvLEX8FasE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=VgiZ38xu; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=bG7oIN5x; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=DBJ3tvPd; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=YC+3iRCm; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SJBEb+Gi"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2FFF01F00893;
-	Mon, 14 Sep 2026 15:17:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789399072;
-	bh=fJh5Pnd5DL/qwxE+WalsUTaJGJt6FooGZcWLpPNnk7E=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=SJBEb+GiYUKwq78ymyy9xZi5YxHSsl3+R12Wq1y0Nsf2/hsIt5f6VR12jG9FLsmoK
-	 IEzLRYU4gHRuR3B6UrSWiBzVaqEaDWCvCvmqwrdKIuMYP29tsdN9RjYMUy4sBEBwEO
-	 Qwmm0RQ5msDwyuLQ8+6UzfG1pCgJHdctl691Lrfe7MYxV0tWZUErIIggyXeia5YmMK
-	 h6wnFZurT6Z7hw2RrQcbTH/vH7UDNmre0Tsy8MF/iVuJWyzO05woCfsOn57z0QCf6a
-	 f3RqU+jD2hnz3/Do3nZKKt1jW7hJNKGt/eLLxEZU7UV2k/yAbKikokP9YsJLwlWHCM
-	 dm/lMP+3dWi7A==
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Mon, 14 Sep 2026 15:58:00 +0100
-Subject: [PATCH v2 40/40] mm/vma: introduce and use vma[_flags]_can_gup()
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="VgiZ38xu";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="bG7oIN5x";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="DBJ3tvPd";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="YC+3iRCm"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 0D40421AC5;
+	Mon, 14 Sep 2026 15:35:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789400150; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Yfhzq82k8L8drMq+Ll2NQnVekhrjDO6tZ7cNiceRBV0=;
+	b=VgiZ38xuAJfCHBmpUs4Mc0D+YwMFCv8VljVWlO7WMP7ptTtR5fULuiOh/YfNomSrYzx38O
+	7sa0JstEl1eUi3/YJ5GyBhQYyY0NsSY2lkNSLytgQO7Au3RfY6jZsoDwKNLjk4vixj/Wti
+	F2zHNNpdfKBto6qaaRKzRChYi8+63r8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789400150;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Yfhzq82k8L8drMq+Ll2NQnVekhrjDO6tZ7cNiceRBV0=;
+	b=bG7oIN5x0Qjs7RcLu0ty7ReoNmGtegRGwSI5P+bCpq/G7fFGgpJWCk+r5xxs/mZXIUnff/
+	vxw2to5dg6vDgpDg==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=DBJ3tvPd;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=YC+3iRCm
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789400146; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Yfhzq82k8L8drMq+Ll2NQnVekhrjDO6tZ7cNiceRBV0=;
+	b=DBJ3tvPdMy3SurN3mbfnllqVEF7yVWFtPK0AWWeu1vbxByxkyow/v72hcRLncOogjGUuDq
+	frDLqMH+/o5Epx3CheXva1fiSpR8eXx938NrDwmvlTufdScHsda85AOOgpPqEWLxEflyiF
+	zpXIzPKep/WjKTXxodOHz3s5EyvtCng=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789400146;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Yfhzq82k8L8drMq+Ll2NQnVekhrjDO6tZ7cNiceRBV0=;
+	b=YC+3iRCm0/3Do8mGLGAI30Rjnm84lf9hVnTR2+5I8LhOHLqziT8svovyxEfu1W29rHfKy6
+	dmZrO6WMNfFrgCCw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A9E2C1368C;
+	Mon, 14 Sep 2026 15:35:45 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 7NoMKFEUqGo4cgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 14 Sep 2026 15:35:45 +0000
+Message-ID: <ac910605-ee57-4139-bea7-38fbbe99777f@suse.de>
+Date: Mon, 14 Sep 2026 17:35:45 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-40-7d9781ed5361@kernel.org>
-References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
-In-Reply-To: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, 
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
- Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
- David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
- Jonathan Corbet <corbet@lwn.net>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
- Paul Moore <paul@paul-moore.com>, 
- Stephen Smalley <stephen.smalley.work@gmail.com>, 
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
- Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
- Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
- Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
- Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
- Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
- Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, 
- Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, 
- Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, 
- Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
- Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
- x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
- Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, 
- Juri Lelli <juri.lelli@redhat.com>, 
- Vincent Guittot <vincent.guittot@linaro.org>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
- Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
- Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
- Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
- Catalin Marinas <catalin.marinas@arm.com>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Janosch Frank <frankja@linux.ibm.com>, 
- Claudio Imbrenda <imbrenda@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, 
- Christian Brauner <brauner@kernel.org>, 
- Matthew Brost <matthew.brost@intel.com>, 
- Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
- Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
- Ying Huang <ying.huang@linux.alibaba.com>, 
- Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, 
- Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>, 
- Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
- Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
- Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
- Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>, 
- Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>, 
- Xu Xin <xu.xin@linux.dev>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
- linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
- linux-rdma@vger.kernel.org, selinux@vger.kernel.org, 
- linux-sound@vger.kernel.org, bpf@vger.kernel.org, 
- linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
- linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, 
- linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
- fuse-devel@lists.linux.dev, "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6501; i=ljs@kernel.org;
- h=from:subject:message-id; bh=3AnqccC2jTUlmIOHAi2JESa1NkBfZlWIxg9a+l0jjPI=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJWcG/RLrydJciw/BS79IsveW9n+2r99rmurBlodmpS+
- RRx76h1HaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZhIkjvDP93oPv7KUwVZyzmP
- /Y5JN7v5L+H3keK5W5RUpgfrJzE0uzMynHype2puUKfCJhPhXQtYMu7XXi1Km15XEbP4QomOrJw
- oLwA=
-X-Developer-Key: i=ljs@kernel.org; a=openpgp;
- fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/5] vt: Add cursor-size helpers
+To: Helge Deller <deller@gmx.de>, gregkh@linuxfoundation.org,
+ jirislaby@kernel.org, simona@ffwll.ch
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-serial@vger.kernel.org, sashiko-reviews@lists.linux.dev
+References: <20260911094518.78093-1-tzimmermann@suse.de>
+ <20260911094518.78093-2-tzimmermann@suse.de>
+ <31dfff58-f3c2-4265-b34f-e40bdc61e18c@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <31dfff58-f3c2-4265-b34f-e40bdc61e18c@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.51
+X-Rspamd-Queue-Id: 0D40421AC5
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Level: 
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [-4.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_TO(0.00)[gmx.de,linuxfoundation.org,kernel.org,ffwll.ch];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[8];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RCVD_TLS_ALL(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:email,suse.de:mid,gmx.de:email];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Spam-Flag: NO
 
-GUP cannot be used for VMAs which set VMA_IO_BIT - because memory-mapped
-I/O must not be accessed on the user's behalf - or VMA_PFNMAP_BIT - because
-PFN maps have no folios which the kernel is permitted to access.
+Hi
 
-Rather than keeping these checks open-coded, abstract them to
-vma_flags_can_gup() and its VMA wrapper vma_can_gup().
+Am 12.09.26 um 21:01 schrieb Helge Deller:
+> On 9/11/26 11:25, Thomas Zimmermann wrote:
+>> Cursors in the VT subsystem are blocks within a character cell that are
+>> filled with the foreground color. The new helpers vc_font_cursor_start()
+>> and vc_font_cursor_end() return the scanlines in which the cursor block
+>> starts rsp. ends. This is compatible with VGA hardware
+>>
+>> In terms of cursor design, the new cursor-size helpers follow 
+>> established
+>> styles in fbcon. The only exception is in underline cursors for fonts 
+>> with
+>> a size larger than 10. The underlining dash is now one pixel closer to
+>> the font-glyph data, so that the cursor looks less detached. This 
+>> follows
+>> the style used by vgacon.
+>>
+>> Similar code in vgacon and fbcon ignores the cursor's default size 
+>> stored
+>> in vt.cur_default. The consoles default to full-block cursors, while vt
+>> defaults to underline cursors. The new helper fall back to 
+>> cur_default and
+>> then underline cursors; in this order.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> ---
+>>   drivers/tty/vt/vt.c            | 90 ++++++++++++++++++++++++++++++++++
+>>   include/linux/console_struct.h |  2 +
+>>   2 files changed, 92 insertions(+)
+> You may add
+> Reviewed-by: Helge Deller <deller@gmx.de>
+> to the whole series.
 
-A number of other places make the same check to decide whether a mapping
-can be populated or accessed as GUP would, so update those too.
+Thanks a lot. I'll send out another revision to address the bot's concerns.
 
-While here, drop a reference to 'special' and replace a use of the
-deprecated VMA flags API in vma_dump_size().
+Best regards
+Thomas
 
-No functional change intended.
-
-Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
----
- fs/coredump.c      |  4 ++--
- include/linux/mm.h | 29 +++++++++++++++++++++++++++++
- mm/gup.c           |  7 +++----
- mm/hmm.c           |  3 +--
- mm/memory.c        | 14 ++++++++------
- mm/mempolicy.c     |  3 ++-
- 6 files changed, 45 insertions(+), 15 deletions(-)
-
-diff --git a/fs/coredump.c b/fs/coredump.c
-index fb21fb6703dd..9f729c594c47 100644
---- a/fs/coredump.c
-+++ b/fs/coredump.c
-@@ -1616,8 +1616,8 @@ static unsigned long vma_dump_size(struct vm_area_struct *vma,
- 		return 0;
- 	}
- 
--	/* Do not dump I/O mapped devices or special mappings */
--	if (vma->vm_flags & VM_IO)
-+	/* Do not dump memory-mapped I/O, which may have side effects on read. */
-+	if (vma_test(vma, VMA_IO_BIT))
- 		return 0;
- 
- 	/* By default, dump shared memory if mapped from an anonymous file. */
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 5860a3b4dba9..1249e04d7b98 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1777,6 +1777,35 @@ static inline bool vma_is_persistent(const struct vm_area_struct *vma)
- 	return vma_flags_is_persistent(&vma->flags);
- }
- 
-+/**
-+ * vma_flags_can_gup() - Do the specified VMA flags permit GUP to access the
-+ * mapping's pages?
-+ * @flags: The VMA flags to test.
-+ *
-+ * GUP cannot obtain pages from a PFN map (VMA_PFNMAP_BIT), which may have no
-+ * struct pages behind it, and must not provide access to memory-mapped I/O
-+ * (VMA_IO_BIT).
-+ *
-+ * Returns: true if GUP may access pages from the mapping, otherwise false.
-+ */
-+static inline bool vma_flags_can_gup(const vma_flags_t *flags)
-+{
-+	return !vma_flags_test_any(flags, VMA_IO_BIT, VMA_PFNMAP_BIT);
-+}
-+
-+/**
-+ * vma_can_gup() - May GUP obtain pages from @vma?
-+ * @vma: The VMA to test.
-+ *
-+ * See vma_flags_can_gup() for details.
-+ *
-+ * Returns: true if GUP may access pages from the mapping, otherwise false.
-+ */
-+static inline bool vma_can_gup(const struct vm_area_struct *vma)
-+{
-+	return vma_flags_can_gup(&vma->flags);
-+}
-+
- /**
-  * vma_kernel_pagesize - Default page size granularity for this VMA.
-  * @vma: The user mapping.
-diff --git a/mm/gup.c b/mm/gup.c
-index f166acf794e3..8e9ef5ee7498 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -1204,7 +1204,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
- 	int foreign = (gup_flags & FOLL_REMOTE);
- 	bool vma_anon = vma_is_anonymous(vma);
- 
--	if (vm_flags & (VM_IO | VM_PFNMAP))
-+	if (!vma_can_gup(vma))
- 		return -EFAULT;
- 
- 	if ((gup_flags & FOLL_ANON) && !vma_anon)
-@@ -1955,7 +1955,7 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
- 		 * range with the first VMA. Also, skip undesirable VMA types.
- 		 */
- 		nend = min(end, vma->vm_end);
--		if (vma->vm_flags & (VM_IO | VM_PFNMAP))
-+		if (!vma_can_gup(vma))
- 			continue;
- 		if (nstart < vma->vm_start)
- 			nstart = vma->vm_start;
-@@ -2017,8 +2017,7 @@ static long __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
- 			break;
- 
- 		/* protect what we can, including chardevs */
--		if ((vma->vm_flags & (VM_IO | VM_PFNMAP)) ||
--		    !(vm_flags & vma->vm_flags))
-+		if (!vma_can_gup(vma) || !(vm_flags & vma->vm_flags))
- 			break;
- 
- 		if (pages) {
-diff --git a/mm/hmm.c b/mm/hmm.c
-index 2f1e98c6b644..e9569b82a1f0 100644
---- a/mm/hmm.c
-+++ b/mm/hmm.c
-@@ -595,8 +595,7 @@ static int hmm_vma_walk_test(unsigned long start, unsigned long end,
- 	struct hmm_range *range = hmm_vma_walk->range;
- 	struct vm_area_struct *vma = walk->vma;
- 
--	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)) &&
--	    vma->vm_flags & VM_READ)
-+	if (vma_can_gup(vma) && vma_test(vma, VMA_READ_BIT))
- 		return 0;
- 
- 	/*
-diff --git a/mm/memory.c b/mm/memory.c
-index 02e9d5d2e279..9e4a70421a6b 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2417,11 +2417,11 @@ static bool vm_mixed_zeropage_allowed(struct vm_area_struct *vma)
- 	 * be problematic as soon as the zeropage gets replaced by a different
- 	 * page due to vma->vm_ops->pfn_mkwrite, because what's mapped would
- 	 * now differ to what GUP looked up. FSDAX is incompatible to
--	 * FOLL_LONGTERM and VM_IO is incompatible to GUP completely (see
--	 * check_vma_flags).
-+	 * FOLL_LONGTERM and memory-mapped I/O is incompatible to GUP completely
-+	 * (see vma_can_gup()).
- 	 */
- 	return vma->vm_ops && vma->vm_ops->pfn_mkwrite &&
--	       (vma_is_fsdax(vma) || vma->vm_flags & VM_IO);
-+	       (vma_is_fsdax(vma) || vma_test(vma, VMA_IO_BIT));
- }
- 
- static int validate_page_before_insert(struct vm_area_struct *vma,
-@@ -7116,7 +7116,8 @@ int follow_pfnmap_start(struct follow_pfnmap_args *args)
- 	if (unlikely(address < vma->vm_start || address >= vma->vm_end))
- 		goto out;
- 
--	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
-+	/* Only mappings GUP cannot handle are followed here. */
-+	if (vma_can_gup(vma))
- 		goto out;
- retry:
- 	pgdp = pgd_offset(mm, address);
-@@ -7316,8 +7317,9 @@ static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
- 			}
- 
- 			/*
--			 * Check if this is a VM_IO | VM_PFNMAP VMA, which
--			 * we can access using slightly different code.
-+			 * GUP failed, perhaps because this is a mapping it
-+			 * cannot handle (see vma_can_gup()) - such mappings may
-+			 * provide access via vm_ops->access() instead.
- 			 */
- 			bytes = 0;
- #ifdef CONFIG_HAVE_IOREMAP_PROT
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 044ffb4f4128..2fd759e348ca 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -2013,7 +2013,8 @@ SYSCALL_DEFINE5(get_mempolicy, int __user *, policy,
- 
- bool vma_migratable(struct vm_area_struct *vma)
- {
--	if (vma->vm_flags & (VM_IO | VM_PFNMAP))
-+	/* Pages which GUP cannot obtain cannot be migrated either. */
-+	if (!vma_can_gup(vma))
- 		return false;
- 
- 	/*
+>
+> Thanks!
+> Helge
+>
 
 -- 
-2.55.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
+
 

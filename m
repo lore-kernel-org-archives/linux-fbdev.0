@@ -1,156 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej2-f12.google.com (mail-ej2-f12.google.com [74.125.228.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28AAA35B12B
-	for <linux-fbdev@vger.kernel.org>; Sun, 13 Sep 2026 18:14:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B85F40F8ED
+	for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 08:54:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.140
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789323253; cv=none; b=C6Wd3ffDaiS/9HriumnAg/FBkNkukuDopFQ6bjdRwmsiFS/5YLief2YqwzdCr6jcYmoTXDDQHety9JGusBJExIvMzPwSDLu42/e4/+/sVRw/SSBhdgV+8tfEVocCG7bDfv+Tkr6ffLp1wrtncrr//TYcEX3kFwUAdWdmib9KUwg=
+	t=1789376057; cv=none; b=Rpw/tykZYumpxua6e7m9/aS4Zl8xyFgT42nR8JmKO9eCfE/lI5cF/WSG63fynBijx2SrKko1sgv6bcFijZ/VXmkTzT8Fk8XPdluggpzFyQdUIWidM1uaFCV1GBkU0L3F5UrNjJfepmCNfZqQUM1ymfm40Co5bGhxYAIaKFnoPiE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789323253; c=relaxed/simple;
-	bh=+i/WMQo12F+E81xj/jdX7lcu6060BfxnYwbQM4ckRZ4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=pEGgo0wEwtVQTU/LBKg7m4vMiDxpEJFqlDCxvUckaOo5fakh0aDEiNIVf9LwFT8ODGHt1fRqmrCtgPqhFSUbDQvYQOLS2+19e9JbS9wgX8uOTDyWuHobeFTSQoE1ttQ4GCkLeBr9rsHe176/pRtR413GyfH0dyQNbRQ2f+Ukz0w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=SO2SmIdY; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789376057; c=relaxed/simple;
+	bh=qFnrZ7EQGr/Nuy+M5wyfqqYr8TfZ+ni22DbJJQ8c36I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bWoMwbTzibICMtqPqCu5kHOSrvZn+LSOoCdTkjWX2su6YyzIaHIlv28IsCaMfWRcdYAdTJk28/KVPBXYpaHfqbZIIjeVLmaqyZQDmpdRSBzF8SqD78AoCInXEcXACyJAcqqDfgCA3sWocCjTtHKrF7bpbhOym0vaD3Sn711kq9A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=QTeOOUfv; arc=none smtp.client-ip=74.125.228.140
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="SO2SmIdY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6AD0B1F0089F
-	for <linux-fbdev@vger.kernel.org>; Sun, 13 Sep 2026 18:13:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789323239;
-	bh=+i/WMQo12F+E81xj/jdX7lcu6060BfxnYwbQM4ckRZ4=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=SO2SmIdYjJe5zzSusPLufb1N/4sITaFnh3OuAjM0+HDJ/0jzTDRo1LJJD3yuz0LAe
-	 m9utPZHktAferMrZ1uMTDiSdbFT8PuZIT68sd6yul+TOjyulMH1leZv3n2097fW0kI
-	 HZSTnOlV/XWa3doV6AwdmTxJGx3acDrumYZ3xAXLg9oBP7AZeX4c+jdG+GE3leTYME
-	 o+gGhWxF0SyzDJ1JCk+kUMy4kYISkcvV3AkuDb36TVraJLgPIZU84S7P5MYAV3syTK
-	 sGiu4PkjnJsUoo795urpsWbR9ka05zNomPSqGObRwYr6ZGH3GsxtKSjfhGjyfqiex9
-	 6SceEGtrOAcWw==
-Received: by mail-lf2-f12.google.com with SMTP id 2adb3069b0e04-5b5e4f13d7aso1282650e87.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 13 Sep 2026 11:13:59 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AKwUvBxxV6jMg0udyVrh+7pPVFEF4KBKMb/OzpH3vtF7nttbJ9wbKOQi4qMKfzcbonK/+IBM7kCIc+hqLxlDUg==@vger.kernel.org
-X-Gm-Message-State: AFuF++kDcVFQJ6exPkfcmi9gVIHCQHRUReftn3X+vt0NFAJPvxqqp+L6
-	YqTbzZvukcH6dAfXO9ykwk3NbvU7cVJiiT64XgTVKAhv9RcTkVsOWads483K0xBsRlvwYIXfeyZ
-	GgiVwtxyAJJqg1mAAV158UtU7OjxfxGo=
-X-Received: by 2002:a05:6512:158b:b0:5b8:9ec5:c936 with SMTP id
- 2adb3069b0e04-5b8a8ec2c76mr1378800e87.44.1789323238029; Sun, 13 Sep 2026
- 11:13:58 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QTeOOUfv"
+Received: by mail-ej2-f12.google.com with SMTP id a640c23a62f3a-c2953a01240so256298566b.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 01:54:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789376048; x=1789980848; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=wa0N9b93v2KYOcx/Yzu42GebihJotfz/VPHeWZU/2n4=;
+        b=QTeOOUfvnMJc65Jxu3+9WpewRvq5oTQRW7exJmTc4udDU2r38KsrptIHkNtGiEc9Np
+         1z3ie3aueF6yguPULgNw8dHY9X4zCoYq1MLyYyW9pwSjdG18l3/YWDh8oODm+ZXjb+ak
+         2PaKu631LWDKhAeK8nk6dpQpytnHzb1ZUIQ6n7iZNjquRZ1QyFeShcpwEdS1tX4s/2Lg
+         LC4TJLXsmastJOs7JtMMtOVkAgz1lqEvdnS1LQGrR6EbFxqzNivvAM/rt/yY81U/O+Lv
+         L3Uc+YqLipgsu6amL5gv9EJxhEsSa+yW6pXmDhpyKU5D3BCmciyLev4UQZU8eFg1SezS
+         FXRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789376048; x=1789980848;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=wa0N9b93v2KYOcx/Yzu42GebihJotfz/VPHeWZU/2n4=;
+        b=g2Noai7tQGSZJ98Htt3mBcWSm0dOLUUR8hNIupYe01n7xOMN8AMvqZF2fAybXC6hMW
+         em1LFYB5NPwkBBVZtprmhLtxzv3VFlTzdCAPN/vUmBW5tt32nB14yllMrBdLsM0mhGU4
+         pf1W2qH19ZF95BdAd383HKDlZqaSt+GjG5rXld3k9mChi+Qk91YYmfjsc/HAOz9NBVuK
+         2FzWd3bQOawpH44aTAxN2yA8ULAF37DGQba9Q+AcwuUz+UlqO+tymPOab8g4ViV9xBU+
+         sr0Gortbk6dmVVgFjaEakFJA1ehcEuGPEmkMPxKU/lqmCmOnQDGzzCv/2TxjtsZ1bQIT
+         Hdow==
+X-Forwarded-Encrypted: i=1; AKwUvBzZyhAlCNOZ9rvfXLgPQ4yaj7mH/JfpgQxCe3OX4YxKoF5LwYe61btxqRaNRHZVyjr2X7IGFqON2iiqTQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++nFfFM73hYDLuOAJvTP+huSyn+TtWnRaRFUMZQrs/YYe6BHouaH
+	3F72jJ6zWoby1+CiqmhSKDg1zFgbaxCDp2voPpQyb4y0d+QF+vUc3gds
+X-Gm-Gg: AYBFou3U85oAHfOLuA4VoPyXo948IWzL/J0CjPrisfknSThHbY2koV1qAXby2DsOUkT
+	wjr8/1dgSQ+ySeM/gdG5RFz7iwee0ed+78sOMRkEeTAA/gGJXDl9Sz1mFt27WNnxhizjgLJ6KF1
+	j0pRtQ45ZDP55KotOb/2853m3Jjx+djfRjuc1viI7g3oCjQVjmJye1G47p8A67O7MlgUfKlES4n
+	1gwS81lni/GBzJCUDmNeJ8xM0yP1rgIFCijY0HI/H6IZUlJ1wP3WjjLEM1cDsYGl8Y4o3SL2A5c
+	cPagbyF/MOfnZr7F/gr+IvfJmXn5KrrV8Ltsv5s6IplU7Pei85wHZsj28KdWJ/QgctGmzStogPA
+	pppDyhRoB15gto3tIl+juIE34Qt0debAEXJ2wMaKPFbwGaivEC6V1Y2eY91cVLMOoE5UAlss+D3
+	UpvXD9CT+HcLw40m60xT0lBsrbmorO4PBIEwlP9LwEd1VhCj76FG/hek2sy44iD37Qww0P
+X-Received: by 2002:a17:907:7204:b0:c26:2751:3da4 with SMTP id a640c23a62f3a-c29b86141e3mr110973266b.13.1789376047594;
+        Mon, 14 Sep 2026 01:54:07 -0700 (PDT)
+Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c29660234dcsm394388366b.21.2026.09.14.01.54.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 14 Sep 2026 01:54:07 -0700 (PDT)
+Date: Mon, 14 Sep 2026 11:54:03 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Gabriel Changamire <gaberashawn@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] staging: sm750fb: remove unused definitions from
+ ddk750_reg.h
+Message-ID: <aqe2K0nVppBFSidV@stanley.mountain>
+References: <20260913040140.4517-1-gaberashawn@gmail.com>
+ <20260913040140.4517-2-gaberashawn@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260908152808.3928630-1-arnd@kernel.org> <20260908152808.3928630-4-arnd@kernel.org>
- <CADkSEUjYhRk-ezaXZkHzFTFQnySFSisKtZfEP-_NtLnQF+6-1Q@mail.gmail.com>
- <CAD++jL=ysmPgs8yKH5KBobuv-eeCHHgZwvo1kvHOFuTwhkaOew@mail.gmail.com>
- <CAFr9PX=_FmMdR4TeP+tqURZdZCTjw8UYxAxeszs_vcpTbX+_aw@mail.gmail.com>
- <CAD++jL=zaF1zcTv6Mta5Xw69WeLC30NRcH0_pkSkLJJ0UtnZHQ@mail.gmail.com> <CAFr9PX=tVOzqGU4k0zSzXheuU5z5LZi4LSGdUvjChrSTrbyjJg@mail.gmail.com>
-In-Reply-To: <CAFr9PX=tVOzqGU4k0zSzXheuU5z5LZi4LSGdUvjChrSTrbyjJg@mail.gmail.com>
-From: Linus Walleij <linusw@kernel.org>
-Date: Sun, 13 Sep 2026 20:13:44 +0200
-X-Gmail-Original-Message-ID: <CAD++jL=nr_Rgf6e+vo2bbTRNvEXysEEMjMhGp3-2J2_JPSVkiA@mail.gmail.com>
-X-Gm-Features: AcwNN1UBjE2eanAt46mrgMtCvXLgZ5DQ_bTFYwRvKhaMIzHs2zMGgr1ICh4wWo0
-Message-ID: <CAD++jL=nr_Rgf6e+vo2bbTRNvEXysEEMjMhGp3-2J2_JPSVkiA@mail.gmail.com>
-Subject: Re: [PATCH 03/13] ARM: remove riscpc
-To: Daniel Palmer <daniel@0x0f.com>
-Cc: Ethan Nelson-Moore <enelsonmoore@gmail.com>, Russell King <linux@armlinux.org.uk>, 
-	Arnd Bergmann <arnd@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Drew Fustini <fustini@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, Stefan Agner <stefan@agner.ch>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Aaro Koskinen <aaro.koskinen@iki.fi>, Andreas Kemnade <andreas@kemnade.info>, 
-	Kevin Hilman <khilman@baylibre.com>, Roger Quadros <rogerq@kernel.org>, 
-	Tony Lindgren <tony@atomide.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>, Andrew Lunn <andrew@lunn.ch>, 
-	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
-	Gregory Clement <gregory.clement@bootlin.com>, Robert Jarzmik <robert.jarzmik@free.fr>, 
-	Kristoffer Ericson <kristoffer.ericson@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Alexander Sverdlin <alexander.sverdlin@siemens.com>, Shawn Guo <shawnguo@kernel.org>, 
-	Karl Mehltretter <kmehltretter@gmail.com>, "David Hildenbrand (Arm)" <david@kernel.org>, 
-	Nicolas Pitre <npitre@baylibre.com>, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	devicetree@vger.kernel.org, imx@lists.linux.dev, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-omap@vger.kernel.org, 
-	Ian Molton <spyro@f2s.com>, Jens Axboe <axboe@kernel.dk>, Helge Deller <deller@gmx.de>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, "Paul E. McKenney" <paulmck@kernel.org>, linux-block@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260913040140.4517-2-gaberashawn@gmail.com>
 
-Hi Daniel,
+On Sun, Sep 13, 2026 at 04:01:40AM +0000, Gabriel Changamire wrote:
+> The sm750fb TODO asks for unused code to be removed. Of the 1203
+> register and field definitions in ddk750_reg.h, 1046 are referenced
+> neither by the rest of the driver nor, transitively, by any definition
+> that is referenced.
+> 
+> Remove them, together with section comments that are left with no
+> content beneath them. The include guard and all VALIDATION_CHIP
+> conditional blocks are preserved.
+> 
+> Build-tested: all driver objects are byte-identical before and after
+> the change. No functional change.
+> 
+> Signed-off-by: Gabriel Changamire <gaberashawn@gmail.com>
+> ---
 
-On Sat, Sep 12, 2026 at 3:29=E2=80=AFAM Daniel Palmer <daniel@0x0f.com> wro=
-te:
-> On Sat, 12 Sept 2026 at 03:15, Linus Walleij <linusw@kernel.org> wrote:
+These macros are just documentation and they don't hurt readability.
+They probably improve readability.
 
-> > I would say using generic entry would be a prerequisite for
-> > doing m68k SMP so we don't introduce *more* entry
-> > oddities, but after that I'm game.
->
-> I have started this for one part of the m68k tree (68000), but it's
-> one of those things that is hard/frustrating to test on real hardware.
+regards,
+dan carpenter
 
-Pretty cool!
-
-> For the last few weeks I've had claude create a QEMU that can boot all
-> of the m68k supported machines to Linux, Netbsd and their original OS.
-> It already found this:
-> https://lore.kernel.org/linux-m68k/20260828094940.3882602-1-daniel@0x0f.c=
-om/
-
-Now we're talking.
-
-> > As SoC maintainer I see that m68k has a lot of technical debt
-> > like drivers under arch/m68k and no proper hardware description
-> > (such as device tree)
->
-> I have m68k machines using devicetree... :)
->
-> > There are things like
-> > amiints.c, cia.c, ataints.c, q40ints.c etc that should be in
-> > drivers/irqchip. So many time.c that should be in
-> > drivers/clocksource/* and many other unmodern things.
->
-> Would be easier with devicetree. But is anyone crazy enough to go
-> through the pain of merging the devicetree support and then arguing
-> about devicetree bindings for each of those drivers only to be told
-> m68k should just be removed?
-
-That's conflating two completely different things that think
-about themselves as different communities.
-
-Devicetree is in its ambition OS-independent and the fact that
-the bindings are all in the Linux git is just a convenience because
-that community works well and is dominant.
-
-No device tree maintainer should *ever* complain abot
-*any* binding with reference to what Linux supports or
-where Linux want to go. Only people not actually working
-with device tree would say such things.
-
-Device tree bindings have been deleted but then by the
-person who is maintainer of the binding itself, and for
-the argument that "no operating system" supports the
-platform anymore.
-
-Reviewing and merging m68k bindings should not be
-any more problem than any other binding, and it should
-not have an impact on Linux support of m68k.
-
-> Once you have an emulator that the LLM can operate it can do the
-> change/build/test/debug cycle all on its own.
-> With a test harness it can even test the changes work on the real hardwar=
-e.
-> But I don't think that's enough to convince people the changes are
-> worth reviewing/merging.
-
-I will review them. And I do not think the DT maintainers
-have anything against m68k.
-
-Yours,
-Linus Walleij

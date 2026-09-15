@@ -1,188 +1,107 @@
-Received: from mail-pz2-f12.google.com (mail-pz2-f12.google.com [74.125.228.12])
+Received: from mail-qk1-f176.google.com (mail-qk1-f176.google.com [209.85.222.176])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 010D849B1EE
-	for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 19:57:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.12
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789415866; cv=pass; b=WyoXm6PCejmop/8EvISYXUB5+QHYUA2hYE/tBwmsNla9+jW+YOiKRWuHk/Wl94u4tJ41B6h+8ZxhHZWVx2PTChy0wzRafPk2yxxKml0EPfGpkFpjeouS7LCD7qQi+1KfO5i+yxALNnjvGmvlx/Bv6Cx6+HMJL9M7i9RdTbUlGO8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789415866; c=relaxed/simple;
-	bh=rm+zdLu0LlzNfMP/vZrBYvi966p9ISS8d4XEb3JQ094=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=qJYxE+CeJ/lrnN9LmoH5JGuzOC6USakewcpubd5Sba+34NAcirxEHkiVWrOwrzH6CRE5A0uwidDQ2pOXZYTxOxZaJ7rwsYlXBGpOEo56n2xsdro2lO/0advitG/wedT8wQKEBV/DG1heAngk9JUJv4+63Ssqkth4lekC7lanDso=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; spf=pass smtp.mailfrom=paul-moore.com; dkim=pass (2048-bit key) header.d=paul-moore.com header.i=@paul-moore.com header.b=VBYIS+ru; arc=pass smtp.client-ip=74.125.228.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=paul-moore.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B89BF2EB0F
+	for <linux-fbdev@vger.kernel.org>; Tue, 15 Sep 2026 00:38:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.176
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789432729; cv=none; b=jo71PkQHmSWoXbcaw3tWzGkObFzzFRNwRwemdv9GqU9h+jUmiJAmd2yXcTk603yevnuyNgsTBSiow676/ATjds6XYkJV95O+Y+ZzZHdfZAt1fr62VqNbRFIvr9cnOI4te0UZGNxxl6o+vKcw4lAs/g4tMeivOnFnIcg6qsDLCBc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789432729; c=relaxed/simple;
+	bh=BuLaE65NQ9rrIR9C05ul8QhLWBqr+NJQ6N3lBPZiaD4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EnO2NbmELUc/jTQwCkvF5tNea2ppJHw42V7Jxmj2GlupWeuJZuuvGitUgMICvbqTsyuCvkX3mwsvdgvzMUVxUQkbenRSdOz+jUeSD0KVns5n7pYLd+kir6kF/ToQ04pgMZIXuchK0aBiAI1/0V/i//FfZi4+2yo5/+fEIAgFcYo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=B2kReCan; arc=none smtp.client-ip=209.85.222.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=paul-moore.com header.i=@paul-moore.com header.b="VBYIS+ru"
-Received: by mail-pz2-f12.google.com with SMTP id d2e1a72fcca58-86b90133ae8so1980672b3a.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 12:57:42 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789415862; cv=none;
-        d=google.com; s=arc-20260327;
-        b=ftkHNhTP3ufcBX8zPi6FxiWxGmiUV1lowOSVJUP3cGLvVz2ssemLzWI5LTUgViHbZE
-         +T9Q7Btfss4rTcqFec3pROBtMwi0Sb1TZ9mEODiLxw/cKij993BKl3ntjPAthwNCYahl
-         KclR4iOA27i6OVolaml4XMXjtThXqVwh1WRXtIX12DNW6Y/tYMN95d56r4R3IFxZ9mKA
-         3uzgf5ZPT4HKAoWhffSk4YoEKYPeUnDd/NkSLN63GbYtA549PTN9OCJPCnTwroBJf+ji
-         GPw+nX3P3Wg87kuJPCsE9wvmKHgm5MFO8UYPLW9toO/WK4jsGR31ru3XoHbIB4DGCkBy
-         +fjg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=iEa5EIpxI31VfZhRCWTdUVuFxMmPcLfnD5/j1cH2Le4=;
-        fh=1sJLDCkcAughT8WpzJ31VzTERfuJ5QfRaXADFfUBDD0=;
-        b=cIdn728hofx/pcUi/vTTYgiXbuSkgIb0412gKLjgbphaOKtpxRjbs52yRYgKrFFWXo
-         t8lX9glZmTHp4UkvLcEdH1RuyUKuUYTzGST8HuseBryg5/4Jm6+6V93Jey6/5sRvVbHN
-         rVfyVe+Fl45WmU+vcXz+gYiNs6BtUMNxpFmvXoAENeF5yYybZqCh+tPPXAnWyzlKBV8c
-         gZqZ8ZJXEHr9Q2EdRKo3LGXVaGozWtSyEPG8LSjHR+OkkzFjyvqQTCzaj6qoMcK74+TX
-         G9/XN5BezUQ9lasPBN/dsx7zZdVDRXBkED/6mfVWC/36QHLPr13eYBXIGv7iYu5uZGWp
-         Whow==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="B2kReCan"
+Received: by mail-qk1-f176.google.com with SMTP id af79cd13be357-939b5ded99dso390139585a.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 17:38:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore.com; s=google; t=1789415862; x=1790020662; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=iEa5EIpxI31VfZhRCWTdUVuFxMmPcLfnD5/j1cH2Le4=;
-        b=VBYIS+ruvec/YQ7NPDSavrBqZkup3jtMUSf2x9fg2vR4Q/ZYGnptCqM7UF9GBEk6Kb
-         pwYbAK2sJEZFDjRFht2ALhGnWfzEgxLd1W4Nqjf3iOyc3C9CQVwNzR9p52/m8eg00t3y
-         i3INHp65zySvAJlrkN0SKQiamBOPK/2OeoXHbM/ieIzmZObIDK9PzOChSRrcM8YAyS56
-         Wpk2JsgEsfietAppzsrHDi7c7Qi8vepD85wgaha++Drvrzfs42k7ryFVO4ohzIir1SFu
-         Dz5Af79neP1/ODat12UTHwq79Ug1vrjKu97+aj6V0fudJlIrOVtfB5xkOELTreMhvqOw
-         VVNw==
+        d=gmail.com; s=20251104; t=1789432726; x=1790037526; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=CB0/Ut2q4k6domqU+GFMH7n96krlT2PxA2EBOCoxQxI=;
+        b=B2kReCanmIf2GovD6npMm99pPlABNXNmEsT80e+qcEd5T58h52IrDNrcqrvivHSbwG
+         rjz2TXk/xGWHf9iFq11fkRiead3u0ftLH5cR66K/qdJpb+F5jSM7roMl2hHvc3dCvTQa
+         ronFLgrv9seRY5vAEAXWUKZ4hTOYxd6o5Bkf409QGm5Yd5Q7eQAo/adfRqQlU+I9k0oq
+         sHIzpRyFadgl/H3po1uowSO00nBOdXm9FFRJmzZQxtBKgEqWLstGqd6hYtcmeZyKjV0j
+         ZVawRqKGVVcA+va4jBee9FhRzCvmZSI+6eNXEg5cLfasKbgQo7CUsNB2qXWYWPKwb6oP
+         2MeA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789415862; x=1790020662;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=iEa5EIpxI31VfZhRCWTdUVuFxMmPcLfnD5/j1cH2Le4=;
-        b=R2HZt+UpV4pyTeRtj/z/f7k1xtTpF+5biwfnowswFFZvc+hGiOCsH/ZEt/8CPmUWkt
-         6tH6O2YsFJVcUic9yJ1nwnUCvsyHKoqlr94UM2VhBFugBM1kBwPeEHabQgtdfyKO7PVG
-         Cklk8xFN5HsSOB4tk0mn/eHtk2snQ3pP8AegbdeNa0Vubey1pkQcUNBf/fZ+CoHQ/M1r
-         zzn+MyoccIBrpAfL4ahV2xDkGMqw+D38AMKnhwem0RE9b6klCZ+uOzsPPKVhrYLZXAzA
-         kIiPLA2bwVP4cWCQLpXvzhcrm3aLfw5oVB098Vo6T0O6Ju4rCveYaRyb5HjEo3EcTzsR
-         EdIg==
-X-Forwarded-Encrypted: i=1; AKwUvBxuQQJm1glnkj6U/trc7vEDjjVIELxb0Js2X0oji2Xjf3G4DtCiGKitp58PB+z7NVSIoURotBSOMZf+KA==@vger.kernel.org
-X-Gm-Message-State: AFuF++nnTlRHCAxEU6F+gwCsmdZF3ZRhTLqs/Oe3DtpRFcxoK2ROjIfO
-	aT+McqTMT3orukNDfmJysypRYMlR+TmxrU2c2gAIbOzbsT/DyplxayRLyRqsimnGCRIU+assNSX
-	cCjJv5Xk6kFFI9l/OUr+5OsYVNiEnaacFXh1TIdUs
-X-Gm-Gg: AYBFou0MQWm2xpowBcXRGUQzT1xsFZ4wYsTBGR5niOnXdT6U0aTAdYTNTMeeG33SgP8
-	PxeBb5svvP3bwbSVDMp9Z5bWLRUx1wTej4B3UOZgx6Zzavh9SGSsbcRDFejDNSnOEfiZ2YFoPct
-	dCnbva7PgSEQobWWBQCWUCxz1lWGIsTFNkCUR4IWsFJb3w/XcY9u19k+o7C/nlP1mSUp3T8hpdh
-	na4ZAQadbCKadrlBEQhPNEpRAk1h2z3g19zrzTn1unWm9jaNQWo8Ltipg+5r0VP2aoiJ9GRP760
-	8o+J36OqAsrfPEnlXRprLPrD4BjsO35cN07sS8UlRp6a9bGdqbg90vlpEjbdEfe0+Me4RiXl8Um
-	EjBwlgjTS3T0=
-X-Received: by 2002:a05:6a00:18a9:b0:858:b809:6ec0 with SMTP id
- d2e1a72fcca58-86f869a920dmr8896742b3a.23.1789415862342; Mon, 14 Sep 2026
- 12:57:42 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1789432726; x=1790037526;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=CB0/Ut2q4k6domqU+GFMH7n96krlT2PxA2EBOCoxQxI=;
+        b=IaA1IYZsDgfY9QP/XuevnuDVGq1LL0RPZGOWEFyIZnVlmNKF2KpR7zqpc7YEArqpIk
+         N3i8mWlRrk93RreNTEjo3EKMAolEDxmnhttLJ45qWjdCw7BNO7oBTZ7Ej4vPupG3/zmw
+         CdQL8cjeBVIyjOdkdB7t3OQIy3ESdeQZzvGO+AoI1pPiOMUAD1uwtfHwN6mYCoLX1W0k
+         IJOkUa4lfCf0ysmb+2eWj+jesKomzXfCJVDptqHwp7RacNMirxSpYbjpP6d5hAxQSG+8
+         9esBKffxbHvT//vYrzcXakGWenboI/p0p2zIi8MBrDN0+CdvecdiMtd6gNbxtV7Oe5e8
+         qn0g==
+X-Gm-Message-State: AFuF++nZmnmQhTcxuWLoDamT+oPxbRh5tTuTf1jIktwniSuxRt0zrhng
+	/AciI9KMQzl/R9PqJretOQhEtnClGYl/kHgCh4Aq/Mi/GxYphyRzzr4s+biSmSE=
+X-Gm-Gg: AYBFou0c7CpgTQO8Ew0WbmIdfj5GajZOzt4tOBN4XVgPk4sV+R2dToyUZyQkCeUhvKx
+	6CzRkKmTqJ/ymYke05R26+KYDUWSUv2jOYvKq0Q3zos3g9tKeB4zvjEAKE7MfdiejS4TI/mIYxG
+	At3ztuDLeFTU3JpHussSiPdUucX5V1SZt3BzAE7keHBPkYsSuCujvLtS/NBS2utg37DYuJeahS6
+	WiHZ+ZqMeOJ55GDT5VFnXNx7buSs2fkNoFaKovB6pByeN0R+kow2l1AmiqXSSDBqXOEZrThbmLi
+	x+WY+0x5xHzxBdNYipX2EyjPvEDM5lsK1K5gx4BOLeVW2IQzvE0/sNqrjinLwsJCb3utrRBN4v8
+	4NTbvo3MXxOQrclD8wMwM8TQ55GVf0GWgzVP54Imos4NmVj9nbBadYsD4nLbThTAy5SJ1gp+Di3
+	upW5/pIaV3WYTT/2Up6z4lwwV+zNoDzO/9lrDG4Lxf7ml1cgrJm3xbWWE//gbCknsEFQ/D/+zkk
+	A3kfjy2fh18rn76Twa/HjGZ9uTAk1APF1i+t9P58mZ9at3AvGykSFeFTYlUgjoCRxcDHbHt6/eD
+	qB5WUCRcyFCUvDnvUY8my05He9KM7T0Z78WGXSYtUhJ/+US2cEOPKMB2ZVy23lUqSeVGjDNT4Nz
+	fa60p
+X-Received: by 2002:a05:620a:890e:b0:939:710:536c with SMTP id af79cd13be357-93a29a11d43mr657586485a.43.1789432726516;
+        Mon, 14 Sep 2026 17:38:46 -0700 (PDT)
+Received: from 6e-wmo5420-02.ad.psu.edu.net (6e-wmo5420-02.ad.psu.edu. [104.39.213.233])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-93a2db5f257sm247664885a.17.2026.09.14.17.38.44
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Mon, 14 Sep 2026 17:38:45 -0700 (PDT)
+From: Myeonghun Pak <mhun512@gmail.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: gxt4500: Release WC setup on probe failure
+Date: Mon, 14 Sep 2026 20:38:34 -0400
+Message-ID: <20260915003834.49715-1-mhun512@gmail.com>
+X-Mailer: git-send-email 2.47.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
- <20260914-b4-mmap-prepare-vma-flag-sanify-v2-12-7d9781ed5361@kernel.org>
-In-Reply-To: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-12-7d9781ed5361@kernel.org>
-From: Paul Moore <paul@paul-moore.com>
-Date: Mon, 14 Sep 2026 15:57:29 -0400
-X-Gm-Features: AcwNN1XaLRK0KaZAmfcRvdaBSkZOdh14LF1fb-xWULoFVhBfqyRklsdKoWBmLag
-Message-ID: <CAHC9VhQ3TwdGGH6YtVyMqJX4avJwsadcRvRhAoUhCvJEHk=i=g@mail.gmail.com>
-Subject: Re: [PATCH v2 12/40] selinux: reject writable opens of policy file,
- drop mmap shared/write check
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, 
-	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
-	David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	Leon Romanovsky <leon@kernel.org>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, 
-	Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, 
-	Eduard Zingerman <eddyz87@gmail.com>, Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
-	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
-	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, 
-	Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, 
-	Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, 
-	Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, 
-	Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
-	Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
-	Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
-	Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, 
-	Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, 
-	Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, 
-	Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, 
-	Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, 
-	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
-	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, 
-	selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
-	fuse-devel@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Mon, Sep 14, 2026 at 11:05=E2=80=AFAM Lorenzo Stoakes (ARM) <ljs@kernel.=
-org> wrote:
->
-> The policy file has no write method and is exposed read-only (S_IRUGO in
-> selinux_files[]), yet sel_open_policy() performs no open mode check, so a
-> CAP_DAC_OVERRIDE caller can open it O_RDWR. Reject FMODE_WRITE at open, a=
-s
-> kernfs does.
->
-> The file can then never be mapped with FMODE_WRITE, so do_mmap() always
-> clears VM_MAYWRITE and VM_SHARED for MAP_SHARED mappings and the VM_SHARE=
-D
-> check in sel_mmap_policy() cannot be reached. Remove it.
->
-> This also stops sel_mmap_policy() clearing VM_MAYWRITE on a mapping that =
-is
-> neither a PFN map nor a mixed map, ahead of the core enforcing that only
-> such mappings may do so.
->
-> Acked-by: Stephen Smalley <stephen.smalley.work@gmail.com>
-> Reviewed-by: Jann Horn <jannh@google.com>
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> ---
->  security/selinux/selinuxfs.c | 11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
+gxt4500_probe() adds a write-combining range before allocating the cmap
+and registering the framebuffer. If a later step fails, the range is
+not released. Add the missing cleanup before unmapping the framebuffer,
+matching the successful remove path.
 
-Acked-by: Paul Moore <paul@paul-moore.com>
+This issue was identified during our ongoing static-analysis research
+while reviewing kernel code.
 
---=20
-paul-moore.com
+Fixes: 38fc4d45fae5 ("gxt4500: Use arch_phys_wc_* for framebuffer")
+Assisted-by: LLM
+Co-developed-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+---
+ drivers/video/fbdev/gxt4500.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -719,6 +719,7 @@ static int gxt4500_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+  err_free_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+  err_unmap_all:
++	arch_phys_wc_del(par->wc_cookie);
+ 	iounmap(info->screen_base);
+  err_unmap_regs:
+ 	iounmap(par->regs);
+-- 
+2.51.0

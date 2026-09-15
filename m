@@ -1,71 +1,73 @@
 Received: from mail-qk2-f13.google.com (mail-qk2-f13.google.com [74.125.230.205])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BCAB2DECA3
-	for <linux-fbdev@vger.kernel.org>; Tue, 15 Sep 2026 00:52:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E4D32F6586
+	for <linux-fbdev@vger.kernel.org>; Tue, 15 Sep 2026 00:54:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.230.205
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789433573; cv=none; b=ehmNWYf30jjiAvq91p5p0iBba7clSEtZZQEDaoMdEMx1bd00CWMJxyEp8js54nO72ogfipuH8d9jZ6nCHKY5oM9eUm9CqaQ3j3rm0SpB3Diw7nwMvobrzgvfdPtBO88o216Hd8ynu2hVTtWjdPfgECH7hjN7d8OVzQ7ZQcY9AWA=
+	t=1789433696; cv=none; b=jdviA+9EzAb2tSFueSUppEkd50PH9pO8RhXVIwN6/Dz9YGoEXnH57UuBFiG1PmWdiRJs4Owxyi+MN7ZN+VcybEQweLInM0l/91trSpc/ooXPr7uaKDVG0CZc2yet3Lg0w2LBX7mcKNJbQ/Lgj8jhAL2GNya2pfOVjnKxUJWTTb0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789433573; c=relaxed/simple;
-	bh=E99Dz8Xkzhhbw+xuuQIQ9G+/9ex1yfLS64o2aGg11Yg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CBwAdAdUnd+EsnwBatqeAUKsJaroNWtP6O18I1Qjrq8lcnMj8XFG3xsj4KWaRwXsIsYmUTnZpVfYjvgocpJoxk3dMQwTNfO6CzDRqQw/RTeQ6Ap1WzZx6qEzdoqy4DqyNpkzv6B/kLL+ZPD5mWk8WnTEszBqfiq6dyoVjukpKoY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=F1CTYEDm; arc=none smtp.client-ip=74.125.230.205
+	s=arc-20240116; t=1789433696; c=relaxed/simple;
+	bh=jtsnuA5ycq+UgmN6OOcXxBfjzv8pUq5mMUCzSwpDgSk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VYgzlEne/0dYajFS8R87GUf0lEfbFlteanB0Ntv7EPtVfV24FRpRHvg0qX1rgSR0Sp4nMPBYEE1/kvTmeqKW+scNcZapAf4b3JV7C2+n/jtgCRvBlVfcisOsSHHCERgzKkFv2yZ7/RzGlSXDRrjQ1UfU8Jb/DZjwdRcCjdoSXSQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=swiF4wzJ; arc=none smtp.client-ip=74.125.230.205
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="F1CTYEDm"
-Received: by mail-qk2-f13.google.com with SMTP id af79cd13be357-93a135ffb08so283577185a.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 17:52:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="swiF4wzJ"
+Received: by mail-qk2-f13.google.com with SMTP id af79cd13be357-939109fafd6so290504285a.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 17:54:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789433571; x=1790038371; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1789433693; x=1790038493; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=3FqhYN8GqnOvyCCd51Tqy0N6wSmRpiZ4v7QBDM0Zgas=;
-        b=F1CTYEDmcTExQNcdaz3vsmywKGilJoxn78ItFjbED8LVZnB/4daP0tpTU0Bt/2Yi49
-         xvk7Hca0PAt8yv6cMTjSEHKNBHzcHlMEnRF7L2vel0P4e965YE7lKB2mDYs5Ij7ZgAs1
-         +BcQOK0Jr6yfZruAEyKQqdUMXIrY0n5Hii9yc13N6Px/BCvZHBrQG6xKRSxf6DGyUvIw
-         0dS9yFjlmSIu7lmpV24v68MNTi4iRBAVc0qbT9EvtxnRJlC/SazFqk7RxYdOBzb5haFp
-         DH9nrawo//d3JIT2Gbf9L/raZa8jKkrydYO2yAQHCjvYcP3b3rGLSGedcpr5ld+SbDVS
-         /40A==
+        bh=wPbpaLTfdjYqHBQHnPbcqcrKPKopAanNoJX+x2503BM=;
+        b=swiF4wzJBxx6UGfZG0rpviFm9wPmwjrjWSMG9zDmsvGRpz38aL/Hs7YUMziiYkjFk6
+         jvSMwyIBNAgIBe4mCQgK7Gzcmm6RtS/ZU8ehoOGiv4p0nBlR/cH7JGz5sJsHbcsbApHQ
+         RIabwAJERaT1cK+qSRVogsATexOXfibcyQUFr02jrEP67u/p3N1/sl+i3rnx8MZLT5V9
+         VFJfy2G5oBv3g6zYdD8rfI2kUdl4tm2h3k0KxMdY3iUvXab7iMH/AzxUFQz/7La0PhMM
+         AaftwdqzsmTLchTj0qDYXa7ickQ48SWEmphN7jkqJCsX9/WTVPHutQqC1Rj5Y0jl1Pc5
+         a9cw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789433571; x=1790038371;
+        d=1e100.net; s=20260707; t=1789433693; x=1790038493;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=3FqhYN8GqnOvyCCd51Tqy0N6wSmRpiZ4v7QBDM0Zgas=;
-        b=E92u97h3legnetFhNtZ5daXOFWAg/fgHxolOAiM+I6dBNUpWDmVJ7h7mF0J/GQfT/g
-         0HEAk2i+avhCWqCQDo+Vy79Yvg3EpEDY95R8yuBy6IKkfhfrfZr7t9fDKOtVSHsRYH2I
-         m/832lqEMwnJ8RFwSq2jVIYs4XOPbI/Vzy2GS2oman/Owc0ivCFvVGGCUtMWXrww90xR
-         lgQND0KMqlHe9HHV5pSGvekETicp68rWvjvY5D724yyoCl52yxLscOAedJ8nuaoC0xFz
-         LqHB7MIfqq8SnEUVNcOG2NHzuvi0cP1qbCtZUBwdazL1WVsy4+jQpFezLnqKJ/Pg8Fy4
-         cH6w==
-X-Gm-Message-State: AFuF++mevq2TeTC8bW94q7K4fF8Zt6aO0GPhQ6zwUznv68pQAzr9V1DF
-	hYKGn1pqHHyDjbBsZiIL2UBFOqAioSuPvS+9+dkTb34GKEeQU41Pf9qjM0PSp30=
-X-Gm-Gg: AYBFou3dhYqWC9U95UpBP4xMVzNCit6a/B7mmn6ZqAjSLpwCidnhkLQPQnhBmQC4oS0
-	WoWo7j3lf7BUc6Gxp0DZoJJxER3781bgkFBte7PUCBvK7z2VAnHQCMUwyAqvKJkUlUOxz121sTl
-	5uC/y+OT0oDHzocT0Nm9Fkl4Ww95c47lwbrqFQrtNXzxduwL/reay9j6afEV0fVzipNUEplY/dJ
-	zBQxU2YmH8eop5AhpR76wWIeahzGlsurV7EGTz26s6mBzpdivANfMYXEAnPhuhYbXVVAMS3el01
-	pLvWHQ0VJoUYZGwUFWzQd0KT0v0EPZP2/q8xfoaFrezD47PzxGoclLV48p91x2+HgyaTrQmMTx/
-	gE2H5bZ4ek4iuElLQrm/aVydVy2/g304c/LeuQ/ftgWsnE6ZYKzPXOQZMEZtn+Urqd3KCww1zVu
-	yLg9byUHRr7QZwrPUIBZXyzvoXHiPX9JYAwCzUboJAOBm4RraZ9nGukK2aJ9xCcYCi6z+HuncMp
-	ExwGd24tnH9CRAdj2gGujziLPRoACioZODwqJf84TMzewfO02usnJvBli7+qFDPN3aHSFieb0rN
-	Tc1xCtytvN+nXmZZ1nJEp9e6WwP000ab6A1EMe0W4SRY2XUmhGOspGtBNqGNIEqF
-X-Received: by 2002:a05:620a:468c:b0:939:d913:9a74 with SMTP id af79cd13be357-93a29bbcd86mr667300585a.46.1789433571426;
-        Mon, 14 Sep 2026 17:52:51 -0700 (PDT)
+        bh=wPbpaLTfdjYqHBQHnPbcqcrKPKopAanNoJX+x2503BM=;
+        b=uU/6KlEFib3DpRQiDSjnmzpEpi4MnDUE4Jn4o3gfKhvqFm+E/JQTY2SM7dGotO4A19
+         ajtYgmA/fSvVNHbxAdlGJX4kRnz1RlH/lmuWsdRhpQaRrZrUUhxleEo9Pya5Ouv+5NHC
+         eAAiwMMZNMGDGo3HWSroJkdphndksebKnd9kVBgkOxjyULDbt+kuoDvznn9cEDwj16DV
+         WCw5/QDAiAbgdEPNgYq7eGM3af3RNl4kLMGzfqtN55nMoT9TuFe1O5cVqGkh/C3FhSLp
+         xhfiMcMffP6ZGwobRaGuot/9UbWw8CLzj9bxb/CNMSBsXTxz1MiuaIWWgjaDbBhljfWp
+         xaMg==
+X-Gm-Message-State: AFuF++l+tF3QmsYmqcfucGSvXTXtgKq0/i07t4GSoE3tXGYxLM6QqcKg
+	Bs3APs5wvg8ruUUReFem1eWdgGMIe63WPzZMvH7uP3cLOv4KMDKqsCY=
+X-Gm-Gg: AYBFou2Uk3pG8aL3H/CyXMEhO8rxIacHhCAQx7/+17/wHoRCeswA5ohUaFDuGC18O+D
+	tCbMZkNtWnvsJodG4vQp9WWbna7HEf+VwxT3zzmowKarS0pp6Xe6bgOi56R/qrDZFW1BV0UWHCk
+	hOe0x1rDb1t5Dqf9BXDGYmTGmcFUNwB85uz+T3CrDh/zagMnkAPmM5uS62vz/xY3cSl/bwjoAFu
+	RCK/INdmQWCxitdHnYDQjl4u7xE6X8y3d1X3Fmc4n91b9kc3JYTyPb7cZH2QoPWfx80nTy3T3Gl
+	ctg9uAKuwUwdR4kEXJixtDzU2KQskvMvdj4vrUt6A6FHjzD8RpXGVOgok3ZqPX5CGz/zuzFWzf+
+	e7jjRDrE8SmgTF5V2Ku9i8PEp62VfEofVT1E6rPJn8364VKeAlQnGBjWUFJrywXIMoyjl0w2Xa6
+	Q+i2v3Dp6Oz2n3nnXTFZSo+ib2xdaKN5REROo+3+zKLtk3yLLuonuUUbZDxtUoCumLUMxsffhvM
+	VRS1BYKuBNe5XE0SyYrBM7CsMuyiaEOtiugl2qbFHusrYAIHIs+uq4ZlQY9bLDz+B12MuNko+6E
+	n2ljYst8JO60I5zlA6bESQC0eSI5I3iEPkXGQsgl8mZPQ8a+ONNFIEC0WcGR4zPKjEAPe6SAFSk
+	=
+X-Received: by 2002:a05:620a:43a2:b0:939:6c31:2318 with SMTP id af79cd13be357-93a29a13b19mr830053485a.34.1789433693467;
+        Mon, 14 Sep 2026 17:54:53 -0700 (PDT)
 Received: from 6e-wmo5420-02.ad.psu.edu.net (6e-wmo5420-02.ad.psu.edu. [104.39.213.233])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-939ecea9f35sm1063205785a.7.2026.09.14.17.52.50
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-9120f4b3dcesm108370476d6.31.2026.09.14.17.54.52
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 14 Sep 2026 17:52:50 -0700 (PDT)
+        Mon, 14 Sep 2026 17:54:52 -0700 (PDT)
 From: Myeonghun Pak <mhun512@gmail.com>
-To: Helge Deller <deller@gmx.de>
+To: Antonino Daplas <adaplas@gmail.com>,
+	Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH] fbdev: kyro: Release WC setup on registration failure
-Date: Mon, 14 Sep 2026 20:52:43 -0400
-Message-ID: <20260915005243.51683-1-mhun512@gmail.com>
+Subject: [PATCH] fbdev: nvidia: Release write-combining handle on probe failure
+Date: Mon, 14 Sep 2026 20:54:47 -0400
+Message-ID: <20260915005447.51995-1-mhun512@gmail.com>
 X-Mailer: git-send-email 2.47.1
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -75,12 +77,12 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-If register_framebuffer() fails, kyrofb_probe() frees the framebuffer
-without releasing its write-combining range. Release the range before
-freeing the framebuffer. Earlier failures still skip this cleanup.
+Failures in nvidia_set_fbinfo() or register_framebuffer() leave the handle
+from arch_phys_wc_add() allocated. Release it in the shared error path,
+as nvidiafb_remove() already does on normal removal.
 
-The missing cleanup already exists in the initial Git import, before
-the conversion from mtrr_add() to arch_phys_wc_add().
+The missing cleanup was already present in the initial Git import,
+when the driver used mtrr_add() directly.
 
 This issue was identified during our ongoing static-analysis research
 while reviewing kernel code.
@@ -92,29 +94,19 @@ Co-developed-by: Ijae Kim <ae878000@gmail.com>
 Signed-off-by: Ijae Kim <ae878000@gmail.com>
 Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/nvidia/nvidia.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -759,7 +759,7 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	fb_memset_io(info->screen_base, 0, size);
- 
- 	if (register_framebuffer(info) < 0)
--		goto out_free_fb;
-+		goto out_free_wc;
- 
- 	fb_info(info, "%s frame buffer device, at %dx%d@%d using %ldk/%ldk of VRAM\n",
- 		info->fix.id,
-@@ -776,6 +776,8 @@ static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -1424,6 +1424,7 @@ static int nvidiafb_probe(struct pci_dev *pd, const struct pci_device_id *ent)
  	return 0;
  
-+out_free_wc:
-+	arch_phys_wc_del(currentpar->wc_cookie);
- out_free_fb:
- 	framebuffer_release(info);
- 
+ err_out_iounmap_fb:
++	arch_phys_wc_del(par->wc_cookie);
+ 	fb_destroy_modelist(&info->modelist);
+ err_out_free_base1:
+ 	fb_destroy_modedb(info->monspecs.modedb);
 -- 
 2.51.0

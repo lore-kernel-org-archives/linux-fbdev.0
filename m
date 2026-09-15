@@ -1,306 +1,220 @@
-Received: from mail-pj2-f6.google.com (mail-pj2-f6.google.com [74.125.227.134])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA20F3B6343
-	for <linux-fbdev@vger.kernel.org>; Tue, 15 Sep 2026 05:20:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.134
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9C2A39D6CC;
+	Tue, 15 Sep 2026 07:05:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789449649; cv=none; b=NgiqQK+BEcOv+LvXrheSWck0C1urnSC0aR+m6tOOA/M2c4NqKknzLkHOH31e2MOjrtCzC+KhrbAwSVK8VlEn59svOHogtJLGeVIn9Yk2rS7j4ZbTbrWO9oJO4guR0or0PexlBy4ehDnX4pwBgJY+ytVtmx3AhLw/uHx/HZ6M6mU=
+	t=1789455906; cv=none; b=FmA8rXrcGPKsOElTWwYWco5Ny1DINl0Uhaqfl8VYqGmPE+jNpQCkYpYuN9jIgLdojBatH1qW6Q7HieyqbMtrR+U+8CfUxA9RbS74N0IEssq1eD6RoEohrhVNntJnlLkU0DDRf5se6XIy/+4WVTUIsF/zr0G341O9buFify1zbJM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789449649; c=relaxed/simple;
-	bh=wszpl89rhMLihceAchczV2W1Iq1tua5BAIUCiIaRKHk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KxWja74QuJVpaalp1YcAR3lHg75wqVoX3yyx6TYZy43j9KfwZAPv4bOqVHIPNQ+ix4R0XrozgMLVbRV+jOuMAI+BidlSdRGFSaxbPrDHzRHVDdopxVWbOmTajbjHebZ97IzYBBPP/0XPAltV/hBXyvO0SniJafxLjGAK+7rGSuQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DZjrdzsd; arc=none smtp.client-ip=74.125.227.134
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789455906; c=relaxed/simple;
+	bh=ykzzV3Q8ayLNNuU7bBIUsCoM1Y6pZFwqUfBWZo9jzMA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=VaR63QGUMP4DP/NMcjMZatop12MpLafsG5GllsDdO5uzGzqigrneTH7fIqMHz9TacHQZ/00fNL9zq9BKFFheTZRzAfzBi3j36Hs3t4+SSlO2V4jokel6Ekog573deaPH8CkJSA+sPSdVTeTL5a1ZHd0f3vt2oWu2iwbwX8lT7TM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=QVbj+TnS; arc=none smtp.client-ip=212.227.17.20
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DZjrdzsd"
-Received: by mail-pj2-f6.google.com with SMTP id 98e67ed59e1d1-3964e7720afso2761897a91.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Sep 2026 22:20:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789449647; x=1790054447; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=rSU4R22SESbjjX3cQkBbS8lUy6Q/T1lRNgl0UnLZD5I=;
-        b=DZjrdzsd+iI+UE9FH4/gWmyrpboGJU1A0h+wr28qHEbHr99bwB8WUR7sceBYuTKc1O
-         7zuJqrGZPaqfUVqv0+OQ4ZL35pNbqzTQ8GtNFTp3B0tIHTvFy+qiMo2Lr0SgTiC9PV5e
-         gQ3Zxx6omYQ5XyLLE87iZ6O9vNA0EHA6NU5+CevxC7vbxp7Q0RyxgwhJDUH5nazJf1/9
-         BjrS/hinrPp4lkcoadpAavgxXSnU7e2ufFqrptXEaVJc7oJnf/m5wfOHV4buwopMgCQy
-         GzyL469fU+rUjT1mwcf04AwAPhVuVt2Ykn790PmtgGuTrKggx+oFUzEuweGs8/1+V+PM
-         8uIg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789449647; x=1790054447;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=rSU4R22SESbjjX3cQkBbS8lUy6Q/T1lRNgl0UnLZD5I=;
-        b=0LuTNV8JaxhRhVAlxtDmnNVtS/BA03nZEzZ/D9zVsYbXpJjrlzhf1SWVI8eXlNEy9Q
-         HyR5sKfhtPBkMzSPNZj8e0gLGvaOtj3548VE8P72tvzSNBi03IgVDYZgMCKRYK8nDTRx
-         Vt5l4dLKeqE5ogqMtIKVjR9fK14x6NBAynuOq2c+llzhCQMYNWS7Lf00wKCc1TjDUddh
-         EUaRIkHa0L2zsfL6pQGlssDG3WbUlT8F/nuAC9wcowcX09qaSe4+LaWQsVUcGof/slkE
-         D1oM/4/3e5fJ7iCSSMjkKP824yPXTFWtxIYIDwXecQhtJ4vKtlxVvtYkXq6iReYsBObs
-         HaBA==
-X-Forwarded-Encrypted: i=1; AKwUvBx+8LKseUrt/nWL62a+dR0hrQ11jPEo91klNR9jDQyZsR198QHrmotUh6a7Mh9PhUR7cAawWbOoe8+Lqg==@vger.kernel.org
-X-Gm-Message-State: AFuF++kEJ4HWJP3/VfNR3yWdFWuXHbcNTlGi2hBT4la6I+5OQej5pOFI
-	TQgUCjkIKwQjQDhhh+kpES7H4pTMvmN7/a1Lcwh5qFGxpW2MOGpHOXTh
-X-Gm-Gg: AYBFou1ifSGOWS/8FwhzCSR2g5yOYafYidIF9PLHnVb24bigBoorm387MZjF6ZUBAYm
-	oqJ3Vf9HXmsXfs9uKXByvUlRGAW8F6DklkPhEK4jSoNrtOmo474K7A81nEHW7ea3pEobTTBLwvH
-	c1hXE2hQ/fIKPdMu8kNaQDF4LUTdIdz8byOeHPNptVk7yG0pyLnlxbOZud9PyHmiUvovP1HaIvI
-	+d2iZiXX5Jq6YRp1eXT9b1/dApPAajiwQmecd4gbUB1hZVmCs+syDp7qsRPFMPANREmwqXjBM9R
-	5563lny9GapAT7cMWi6ydXQgwS7+Yg/HdUQmGphaawlG6v4SvJZZGX4+xncqEvTEj+obtG0VP1e
-	KnFQljxf4Gly3A3mhnRz+nAW0zikIUzBt11kWaP8GzNSBdejdKLW+rX1veUnR7aSkypZBnpYGJi
-	i057slbcDcd6t8OzgCTj5yDKsVajnGhnLaAPPvCD1pxafOf5YPf+kShoP1bv4GG0/v47Cybm4mi
-	tauub9tU+1cgb6bQX3YzfHeK7MqRPkcUV8i5XOYNmKn+PBkV2oiAcDDfKB+Egxa06ak25UND1Zp
-	Rh4ils1ounp814Y49p6Jr6kR378GsAFrh6Y0eNsBfsnWoftp1VhK5w5d+KZtkI6Lug==
-X-Received: by 2002:a05:6a20:1609:b0:3d3:afd9:6040 with SMTP id adf61e73a8af0-3db40746ea8mr13353608637.27.1789449646922;
-        Mon, 14 Sep 2026 22:20:46 -0700 (PDT)
-Received: from ethan-latitude5420.. (host-127-24.cafrjco.fresno.ca.us.clients.pavlovmedia.net. [68.180.127.24])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33ba4f7390csm30258521eec.26.2026.09.14.22.20.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2026 22:20:46 -0700 (PDT)
-From: Ethan Nelson-Moore <enelsonmoore@gmail.com>
-To: linux-arm-kernel@lists.infradead.org,
-	Alex Guo <alexguo1023@gmail.com>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Cc: Russell King <linux@armlinux.org.uk>,
-	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
-	Helge Deller <deller@gmx.de>
-Subject: [PATCH] video: acornfb: remove unused code for 26-bit hardware
-Date: Mon, 14 Sep 2026 22:20:29 -0700
-Message-ID: <20260915052038.626258-1-enelsonmoore@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="QVbj+TnS"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1789455899; x=1790060699; i=deller@gmx.de;
+	bh=oI87ZYp//Jds/bPjtsW/wo0dDKyMhHYPN2zL4Tu0Br8=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=QVbj+TnSsHtDuNtpWdOHmMcXwO8ZZLQdpo4XmzG16PKKMuo/qDftnGXhNcYYSsB0
+	 vijA0zcUapagIFEZXKZaTj21bP7GZpxMLVEvWcKzYZe6sK8V/tgnrtjpxNETJg+Cr
+	 d/a/+b3ju4mkD9NdPpJjkM5n/SqB6YrZBqoPdB4IeM2shWb+CiI17TEdFNHwp5GvV
+	 AtKWL9JdUIFv0BMVxJ7t0Xglr3VFkA5ky45//Y5d9W8+W4C/5ebKkPScq9lBLwAKd
+	 4KqXTGUx989A37DNzvq4IO8VP1LVSpioEVH80qE3Zy2XXjJiJWcCWqahsGYwOYyAG
+	 bD0MWPjdKuaLIZe7SA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MmlTC-1wPqg90a4U-00ostN; Tue, 15
+ Sep 2026 09:04:59 +0200
+Message-ID: <6e9c98f9-56b8-4e8f-9707-a567656741d8@gmx.de>
+Date: Tue, 15 Sep 2026 09:04:58 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] fbdev: nvidia: Release write-combining handle on probe
+ failure
+To: Myeonghun Pak <mhun512@gmail.com>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <20260915005447.51995-1-mhun512@gmail.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20260915005447.51995-1-mhun512@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:vozMbD7ewiF29iR4NtcOTDkY84iX46snqVJffXc/XSRKfKAMYuW
+ iIAMhyj+r9By00Earr5MOlRgBGT916uIXK46+6mcGG2wv6/jOZg1vS4p2Ua5lsPw3tf8++Q
+ XJEjubn09NgJcfsu4RiLUqi4vAKy7+jBu6hVQ0tAK3s7dfs0qdb3g0m1HlY1KeSe/vdxQMZ
+ //is4SnaNReZWwa850jPA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:WZEw98eEtTk=;MT374Tde9Y03HYdVFx6xyTu9tCq
+ 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
 
-The acornfb driver contains code to support machines with a MEMC chip
-and without IOMD and VIDC20 chips. All 32-bit Acorn hardware has IOMD
-and VIDC20 chips and does not have a MEMC chip.
+On 9/15/26 02:54, Myeonghun Pak wrote:
+> Failures in nvidia_set_fbinfo() or register_framebuffer() leave the hand=
+le
+> from arch_phys_wc_add() allocated. Release it in the shared error path,
+> as nvidiafb_remove() already does on normal removal.
+>=20
+> The missing cleanup was already present in the initial Git import,
+> when the driver used mtrr_add() directly.
+>=20
+> This issue was identified during our ongoing static-analysis research
+> while reviewing kernel code.
+>=20
+> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Cc: stable@vger.kernel.org
+> Assisted-by: LLM
+> Co-developed-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+> ---
+>   drivers/video/fbdev/nvidia/nvidia.c | 1 +
+>   1 file changed, 1 insertion(+)
+Thanks for your patches!
+I've added this one and the two similar ones regarding kyro and gxt4500
+to the fbdev git tree.
 
-Linux formerly supported 26-bit Acorn computers, but that support was
-removed in commit 99eb8a550dbc ("Remove the arm26 port") because it had
-bitrotted to the extent that it did not even compile.
-
-Remove this unused code. Also take the opportunity to remove incorrect
-file paths in the file headers, which are bad style regardless.
-
-Signed-off-by: Ethan Nelson-Moore <enelsonmoore@gmail.com>
----
- drivers/video/fbdev/acornfb.c | 57 +++++++++--------------------------
- drivers/video/fbdev/acornfb.h |  8 +----
- 2 files changed, 15 insertions(+), 50 deletions(-)
-
-diff --git a/drivers/video/fbdev/acornfb.c b/drivers/video/fbdev/acornfb.c
-index f0600f6ca254..30781679c90a 100644
---- a/drivers/video/fbdev/acornfb.c
-+++ b/drivers/video/fbdev/acornfb.c
-@@ -1,7 +1,5 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-- *  linux/drivers/video/acornfb.c
-- *
-  *  Copyright (C) 1998-2001 Russell King
-  *
-  * Frame buffer code for Acorn platforms
-@@ -94,7 +92,6 @@ static struct vidc_timing current_vidc;
- 
- extern unsigned int vram_size;	/* set by setup.c */
- 
--#ifdef HAS_VIDC20
- #include <mach/acornfb.h>
- 
- #define MAX_SIZE	(2*1024*1024)
-@@ -306,7 +303,6 @@ acornfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 
- 	return 0;
- }
--#endif
- 
- /*
-  * Before selecting the timing parameters, adjust
-@@ -390,7 +386,6 @@ acornfb_adjust_timing(struct fb_info *info, struct fb_var_screeninfo *var, u_int
- 	/* hsync_len must be even */
- 	var->hsync_len = (var->hsync_len + 1) & ~1;
- 
--#if defined(HAS_VIDC20)
- 	/* left_margin must be even */
- 	if (var->left_margin & 1) {
- 		var->left_margin += 1;
-@@ -400,7 +395,6 @@ acornfb_adjust_timing(struct fb_info *info, struct fb_var_screeninfo *var, u_int
- 	/* right_margin must be even */
- 	if (var->right_margin & 1)
- 		var->right_margin += 1;
--#endif
- 
- 	if (var->vsync_len < 1)
- 		var->vsync_len = 1;
-@@ -436,11 +430,7 @@ acornfb_update_dma(struct fb_info *info, struct fb_var_screeninfo *var)
- {
- 	u_int off = var->yoffset * info->fix.line_length;
- 
--#if defined(HAS_MEMC)
--	memc_write(VDMA_INIT, off >> 2);
--#elif defined(HAS_IOMD)
- 	iomd_writel(info->fix.smem_start + off, IOMD_VIDINIT);
--#endif
- }
- 
- static int
-@@ -469,7 +459,6 @@ acornfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 		var->transp.length = 0;
- 		break;
- 
--#ifdef HAS_VIDC20
- 	case 16:
- 		var->red.offset    = 0;
- 		var->red.length    = 5;
-@@ -491,7 +480,6 @@ acornfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 		var->transp.offset = 24;
- 		var->transp.length = 4;
- 		break;
--#endif
- 	default:
- 		return -EINVAL;
- 	}
-@@ -519,6 +507,9 @@ acornfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 
- static int acornfb_set_par(struct fb_info *info)
- {
-+	unsigned long start, size;
-+	u_int control;
-+
- 	switch (info->var.bits_per_pixel) {
- 	case 1:
- 		current_par.palette_size = 2;
-@@ -536,7 +527,6 @@ static int acornfb_set_par(struct fb_info *info)
- 		current_par.palette_size = VIDC_PALETTE_SIZE;
- 		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
- 		break;
--#ifdef HAS_VIDC20
- 	case 16:
- 		current_par.palette_size = 32;
- 		info->fix.visual = FB_VISUAL_DIRECTCOLOR;
-@@ -545,41 +535,26 @@ static int acornfb_set_par(struct fb_info *info)
- 		current_par.palette_size = VIDC_PALETTE_SIZE;
- 		info->fix.visual = FB_VISUAL_DIRECTCOLOR;
- 		break;
--#endif
- 	default:
- 		BUG();
- 	}
- 
- 	info->fix.line_length	= (info->var.xres * info->var.bits_per_pixel) / 8;
- 
--#if defined(HAS_MEMC)
--	{
--		unsigned long size = info->fix.smem_len - VDMA_XFERSIZE;
-+	start = info->fix.smem_start;
-+	size  = current_par.screen_end;
- 
--		memc_write(VDMA_START, 0);
--		memc_write(VDMA_END, size >> 2);
-+	if (current_par.using_vram) {
-+		size -= current_par.vram_half_sam;
-+		control = DMA_CR_E | (current_par.vram_half_sam / 256);
-+	} else {
-+		size -= 16;
-+		control = DMA_CR_E | DMA_CR_D | 16;
- 	}
--#elif defined(HAS_IOMD)
--	{
--		unsigned long start, size;
--		u_int control;
--
--		start = info->fix.smem_start;
--		size  = current_par.screen_end;
--
--		if (current_par.using_vram) {
--			size -= current_par.vram_half_sam;
--			control = DMA_CR_E | (current_par.vram_half_sam / 256);
--		} else {
--			size -= 16;
--			control = DMA_CR_E | DMA_CR_D | 16;
--		}
- 
--		iomd_writel(start,   IOMD_VIDSTART);
--		iomd_writel(size,    IOMD_VIDEND);
--		iomd_writel(control, IOMD_VIDCR);
--	}
--#endif
-+	iomd_writel(start,   IOMD_VIDSTART);
-+	iomd_writel(size,    IOMD_VIDEND);
-+	iomd_writel(control, IOMD_VIDCR);
- 
- 	acornfb_update_dma(info, &info->var);
- 	acornfb_set_timing(info);
-@@ -709,10 +684,8 @@ static void acornfb_init_fbinfo(void)
- 	 */
- 	memset(&fb_info.var, 0, sizeof(fb_info.var));
- 
--#if defined(HAS_VIDC20)
- 	fb_info.var.red.length	   = 8;
- 	fb_info.var.transp.length  = 4;
--#endif
- 	fb_info.var.green	   = fb_info.var.red;
- 	fb_info.var.blue	   = fb_info.var.red;
- 	fb_info.var.nonstd	   = 0;
-@@ -991,7 +964,6 @@ static int acornfb_probe(struct platform_device *dev)
- 
- 	size = PAGE_ALIGN(size);
- 
--#if defined(HAS_VIDC20)
- 	if (!current_par.using_vram) {
- 		dma_addr_t handle;
- 		void *base;
-@@ -1011,7 +983,6 @@ static int acornfb_probe(struct platform_device *dev)
- 		fb_info.screen_base = base;
- 		fb_info.fix.smem_start = handle;
- 	}
--#endif
- 	fb_info.fix.smem_len = size;
- 	current_par.palette_size   = VIDC_PALETTE_SIZE;
- 
-diff --git a/drivers/video/fbdev/acornfb.h b/drivers/video/fbdev/acornfb.h
-index e65388587f80..e33ea24ae0e1 100644
---- a/drivers/video/fbdev/acornfb.h
-+++ b/drivers/video/fbdev/acornfb.h
-@@ -1,16 +1,13 @@
- /* SPDX-License-Identifier: GPL-2.0-only */
- /*
-- *  linux/drivers/video/acornfb.h
-- *
-  *  Copyright (C) 1998,1999 Russell King
-  *
-  *  Frame buffer code for Acorn platforms
-  */
--#if defined(HAS_VIDC20)
- #include <mach/iomd.h>
-+
- #define VIDC_PALETTE_SIZE	256
- #define VIDC_NAME		"VIDC20"
--#endif
- 
- #define EXTEND8(x) ((x)|(x)<<8)
- #define EXTEND4(x) ((x)|(x)<<4|(x)<<8|(x)<<12)
-@@ -94,7 +91,6 @@ struct modex_params {
- 	const struct modey_params *modey;
- };
- 
--#ifdef HAS_VIDC20
- /*
-  * VIDC20 registers
-  */
-@@ -162,5 +158,3 @@ struct modex_params {
- #define VIDC20_DCTL_VRAM_PXCLK	(1 << 18)
- #define VIDC20_DCTL_VRAM_PXCLK2	(2 << 18)
- #define VIDC20_DCTL_VRAM_PXCLK4	(3 << 18)
--
--#endif
--- 
-2.43.0
-
+Helge

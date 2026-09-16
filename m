@@ -1,35 +1,71 @@
-Received: from mail-m155101.qiye.163.com (mail-m155101.qiye.163.com [101.71.155.101])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr2-f12.google.com (mail-wr2-f12.google.com [74.125.225.76])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D0BF4A2604;
-	Tue, 15 Sep 2026 14:45:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.71.155.101
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C06248D868
+	for <linux-fbdev@vger.kernel.org>; Wed, 16 Sep 2026 09:02:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.76
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789483553; cv=none; b=r/4ieyI9rYcQXH3S3a2qJXnfWc8I+/Ze7rDhQYPLnA20PeKHVEBJLX7ulEyJ9QrAO8frIPz9Ylg4LlGrBNlUMTCGqq8C/vFi8XAOp6aPPW0n5/GKDJ7BlBu+tOXnNhocszXO6Nsu+HFNtVOH98POTOTRwC5yCtEEWDXuRGrF3Fg=
+	t=1789549354; cv=none; b=n5X59b2c5Rj+vXnF1Y1lGrra/nxm1rVAHIn6t+1u3nt++RdrkPmHuloQj1GIjMskOhBo2my3gSMslPxS3/N8ocbf+Xl3pY9cTZLEtKrkZ3KA9ryDq0mgftmEFjdSy3I+sbKJ8r6ivA6pF++OUruCTDNYhJl+2jUFbyBGjxzcc/k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789483553; c=relaxed/simple;
-	bh=sryxKvjfZ9SXWJkloWRmv7gAM/1bQTdAxnTAiQXiuLw=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=L21SnQeATQ5k1gRxN2ILsUD6Ue/srCgltCVQnImEIaGkKiv0qkKnaI7PA839BjUu3zSloW+iB93NpKiYl4YmP20MwWXGBPhYZqSQ+wrCTk7oKTRbYPpgeqMZjKxZcf5bCexsf+zRRuidJwUMvwpYHQFcNqeDuV7d3NJWriplI2Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tju.edu.cn; spf=pass smtp.mailfrom=tju.edu.cn; dkim=pass (1024-bit key) header.d=tju.edu.cn header.i=@tju.edu.cn header.b=OqY9PXnF; arc=none smtp.client-ip=101.71.155.101
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=tju.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=tju.edu.cn
+	s=arc-20240116; t=1789549354; c=relaxed/simple;
+	bh=j5sbj2aiiq+G7EZlSbj67WaGpilF88mvU2dc4Sb1Ous=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MtUAdVu0Uwao8q4KgWHCLq8KXsIovPe/SBs8mUh5yYb2QfngDmH/Sw2v/DXZP8CjDIFmwVEC2+oJOjL/hA2jMVHNMDz0MLxVGTUUJ+xAmcv994yVjEAUeU9K8yis6s5e1fmJmoTIDG5gVVNWWMH+1aJDJl+vY2kQrNH3O/0ajgM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WgianMGT; arc=none smtp.client-ip=74.125.225.76
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=tju.edu.cn header.i=@tju.edu.cn header.b="OqY9PXnF"
-Received: from tju.edu.cn (gy-adaptive-ssl-proxy-3-entmail-virt135.gy.ntes [183.242.150.9])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 4ddceb521;
-	Tue, 15 Sep 2026 22:45:34 +0800 (GMT+08:00)
-From: Yibo Tan <lhfff@tju.edu.cn>
-To: Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Helge Deller <deller@gmx.de>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WgianMGT"
+Received: by mail-wr2-f12.google.com with SMTP id ffacd0b85a97d-48439feca17so436968f8f.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 16 Sep 2026 02:02:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789549323; x=1790154123; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=mLpJwVn/HuZGfr8ir4XRFNtWV419k47czEV7zvOmQAU=;
+        b=WgianMGTSKKfNGAx7NvwWaXyUWZjEYY2LP6oAv1z3V85xpqsdECDvoEwBnRSEdmBBU
+         qPZeqacwlLNGEXoMwpme2PiYCYU9S/UxgEFfZ+cYMQMPx9S6RaFCf5XsAvO4eitIpG8i
+         70oDS8Z8ZBeCuJSE5FyO3z7+lhjpWEO2myH1X2Zdg6AxgFddELaw8smGZAgUl0CwsWkE
+         VwaQoZ/qDN8bBhppPR9D4Qp9xa0uim1ZDECy6gFxOSk0BRixGFRB41NVyEDLexKP7K8/
+         Ij/S/qsfbbRsf6eM7MfId+ErhQOulxgTJUghbASlIpg6QKjFlrf4hZAkllM9p6ojHeav
+         P8vQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789549323; x=1790154123;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=mLpJwVn/HuZGfr8ir4XRFNtWV419k47czEV7zvOmQAU=;
+        b=q42zObMEZJv5P3Dnob3fTiiF+eNevPLgZeoIXVgkXg3hqEsiPcG1n251/8lPeHw8jt
+         ulO/RaT+3PIYyZ3OFyEx9ficB/TcZ+7ebmPsEIGLy6Sop11RedmYfg0gQAUHNt9fCr1v
+         VtoO2wC7ayxKsUwN7PK9/EdrDaJKJJgJrPI9QY5GvM65f0BbIxii3XPP9DhR+nWMuLXc
+         1BnhspWhggOsDVekJBPRdeOrLCxgFDfg+jjsD5nc83nzInwqc6+M9hm9+EM1PPnOTLMw
+         K21PH7qn0OeYaKgkV+HDP+13RT//YBj4A10LN2zwCAjTYtVg67dBmdD0Bq8FlGH7pLq+
+         N4wQ==
+X-Gm-Message-State: AFuF++nwP5o4elLGqC2XEZrzwmlMZVfRjJzlYX5Eu0yRqVMwyq+xxVsD
+	C+TI+x5Fe1bIprtF/YML4vSDdENW5LAB4yxTzWCK2vBvfYtq9oE1V4mtOcYmIjJy
+X-Gm-Gg: AYBFou0vXmjXbFlvsNOUAjQMDilRE3KjPPhQXm8RBW0quXs1QXs7PawEWBXyPE7B9Uh
+	fcGVggPyLSmu46xTeXWEuUM8J7Tg3+mE7eMyz8wlXERICWAVHFtb7waQi0YvvM8yxHyFzGhCddB
+	PWFwO6R2O20pTjct6dvx+yThTfcSxpwqZlezKbmIcLfH9r3rI/FIJ3FX5wXEHGoZt0zxOO3y4c4
+	0dunDd4qqsg6m9JG6aHoeqgjfWSHEAqE1FHvuyYWx1o5N2f4suyIjgOfsFjkKS1/0EyYdrrs4In
+	X8ch2b2UtDIbLfnIwBj5wrbrIppUASGPhIVjWX+LyfLuZyD5eNCWSJNVoS2Ppkzg/jRDf/0Chle
+	uKLm5UbV0GiAp/ukJ+b0zBhg5vjNYdfHPNmr6ZFiyM8kgtvZDV3ZoDLlNU3l1QuuPBsC+8oxS6H
+	S514AjmFfDHpAsVwNXiyNViAjG9Q9EtiWMij3lLkfPLdWb31W/Xf0VYn2gkJHx36e8
+X-Received: by 2002:a05:6000:1845:b0:487:370:d03b with SMTP id ffacd0b85a97d-4870cf201dbmr2386458f8f.19.1789549322496;
+        Wed, 16 Sep 2026 02:02:02 -0700 (PDT)
+Received: from omermac ([82.222.238.173])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4870bf4161fsm5229696f8f.34.2026.09.16.02.02.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 16 Sep 2026 02:02:02 -0700 (PDT)
+From: Omer PALA <palaomer100@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v1] fbdev: atmel_lcdfb: Prevent FIFO work after removal
-Date: Tue, 15 Sep 2026 22:45:28 +0800
-Message-Id: <20260915144528.3464726-1-lhfff@tju.edu.cn>
+Subject: [PATCH] staging: sm750fb: remove unnecessary parentheses
+Date: Wed, 16 Sep 2026 12:01:45 +0300
+Message-ID: <20260916090145.34881-1-palaomer100@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -37,93 +73,45 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa0a587c6a003a1kunmb39ec71c2df824
-X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkaGB1LVhhOTUhIHUoaHx5MQlYeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlKQ0hVSU9JVUpOS1VCWVdZFhoPEhUdFFlBWU9LSFVKS0hKTk
-	xOVUpLS1VKQktLWQY+
-DKIM-Signature: a=rsa-sha256;
-	b=OqY9PXnFOEYsBrY58XRsakZ/d8919hvn1n6Ev5om59QW4+FMvm7VfjVtVqBmg6Z8T1jEGbSJQW2DRAk18hgz6sCCmegwOc5ocY+ngoRlDkrmOOHqA1n87PwUajgPcOTGZdFjQrtSnUY16cy407TTEUN9lK57an0zoHN831uMjJg=; c=relaxed/relaxed; s=default; d=tju.edu.cn; v=1;
-	bh=R/WqiFUDtj9hW8jTIp2hYqJBQvF/QvuI4kKPkm5/LJo=;
-	h=date:mime-version:subject:message-id:from;
 
-The LCD controller IRQ schedules sinfo->task to recover from a FIFO
-underflow.  Probe currently requests the IRQ before initializing the
-work, so an early interrupt can schedule an uninitialized work item.
+Remove unnecessary parentheses around equality checks in sm750_accel.c
 
-The probe error path and remove path cancel the work before freeing the
-IRQ.  A FIFO-underflow interrupt can schedule the work again after that
-cancellation.  framebuffer_release() may then free sinfo while the work
-is still pending.
+and ddk750_swi2c.c to clear checkpatch.pl checks and improve code
 
-KASAN reported a use-after-free in atmel_lcdfb_task() when an underflow
-interrupt occurred during removal.  With the IRQ freed before the work
-was cancelled, the same test completed without a kernel diagnostic.
+readability.
 
-Initialize the work before requesting the IRQ.  In both cleanup paths,
-free the IRQ before cancelling the work so that it cannot be scheduled
-again after cancellation.
-
-Fixes: d22579b83735 ("atmel_lcdfb: FIFO underflow management")
-Cc: stable@vger.kernel.org
-Assisted-by: Codex:GPT-5
-Signed-off-by: Yibo Tan <lhfff@tju.edu.cn>
+Signed-off-by: Omer PALA <palaomer100@gmail.com>
 ---
- drivers/video/fbdev/atmel_lcdfb.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/staging/sm750fb/ddk750_swi2c.c | 2 +-
+ drivers/staging/sm750fb/sm750_accel.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-index 53f0156992e6..9a0cc09004b7 100644
---- a/drivers/video/fbdev/atmel_lcdfb.c
-+++ b/drivers/video/fbdev/atmel_lcdfb.c
-@@ -1146,6 +1146,9 @@ static int atmel_lcdfb_probe(struct platform_device *pdev)
- 	/* Initialize PWM for contrast or backlight ("off") */
- 	init_contrast(sinfo);
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index e63f3b00e..24ad58207 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -393,7 +393,7 @@ long sm750_sw_i2c_init(unsigned char clk_gpio, unsigned char data_gpio)
+ 	 * Return 0 if the GPIO pins to be used is out of range. The
+ 	 * range is only from [0..63]
+ 	 */
+-	if ((clk_gpio > 31) || (data_gpio > 31))
++	if (clk_gpio > 31 || data_gpio > 31)
+ 		return -1;
  
-+	/* Some LCDC recovery operations require process context. */
-+	INIT_WORK(&sinfo->task, atmel_lcdfb_task);
-+
- 	/* interrupt */
- 	ret = request_irq(sinfo->irq_base, atmel_lcdfb_interrupt, 0, pdev->name, info);
- 	if (ret) {
-@@ -1153,10 +1156,6 @@ static int atmel_lcdfb_probe(struct platform_device *pdev)
- 		goto unmap_mmio;
+ 	if (sm750_get_chip_type() == SM750LE)
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index bac9a2098..21aed73d8 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -202,7 +202,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+ 		}
  	}
  
--	/* Some operations on the LCDC might sleep and
--	 * require a preemptible task context */
--	INIT_WORK(&sinfo->task, atmel_lcdfb_task);
--
- 	ret = atmel_lcdfb_init_fbinfo(sinfo);
- 	if (ret < 0) {
- 		dev_err(dev, "init fbinfo failed: %d\n", ret);
-@@ -1192,8 +1191,8 @@ static int atmel_lcdfb_probe(struct platform_device *pdev)
- 	dev_set_drvdata(dev, NULL);
- 	fb_dealloc_cmap(&info->cmap);
- unregister_irqs:
--	cancel_work_sync(&sinfo->task);
- 	free_irq(sinfo->irq_base, info);
-+	cancel_work_sync(&sinfo->task);
- unmap_mmio:
- 	exit_backlight(sinfo);
- 	iounmap(sinfo->mmio);
-@@ -1230,6 +1229,7 @@ static void atmel_lcdfb_remove(struct platform_device *pdev)
- 		return;
- 	sinfo = info->par;
- 
-+	free_irq(sinfo->irq_base, info);
- 	cancel_work_sync(&sinfo->task);
- 	exit_backlight(sinfo);
- 	atmel_lcdfb_power_control(sinfo, 0);
-@@ -1238,7 +1238,6 @@ static void atmel_lcdfb_remove(struct platform_device *pdev)
- 	clk_put(sinfo->lcdc_clk);
- 	clk_put(sinfo->bus_clk);
- 	fb_dealloc_cmap(&info->cmap);
--	free_irq(sinfo->irq_base, info);
- 	iounmap(sinfo->mmio);
-  	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
- 	if (platform_get_resource(pdev, IORESOURCE_MEM, 1)) {
+-	if ((direction == BOTTOM_TO_TOP) || (direction == RIGHT_TO_LEFT)) {
++	if (direction == BOTTOM_TO_TOP || direction == RIGHT_TO_LEFT) {
+ 		sx += width - 1;
+ 		sy += height - 1;
+ 		dx += width - 1;
 -- 
-2.39.5
+2.55.0
 

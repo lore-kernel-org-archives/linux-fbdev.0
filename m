@@ -1,44 +1,44 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B25734C2252;
-	Mon, 21 Sep 2026 15:54:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DC1B4B8260;
+	Mon, 21 Sep 2026 15:54:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790006042; cv=pass; b=U4EDz13KVCM/sz6+KrVzU5nmTG/LLzwDHwNZpHLWZxLaNGEF6n/gj/+yfKNTcFV4osJD1PJFBPMVadmaPpb5cLZbOVDw2BqEOrO+//5WEwziNS7HmYgajN2HWWiOvdD+a4DRWSTQtKuzX3MS4BAqiThXJczENxx8Hk4qlY0VCBU=
+	t=1790006050; cv=pass; b=DSrddvRu2fG2HRYAlGZGi2S14y4In3XRddooF0wxXsbhOmWB2SZY33iacABAb8AlPzih5lqj1xpnWkP/auO1AaU2B9ZcBPg8/FJ1OjP8iZ6fDUBDym7aByDrLDfVHDnbQtox0TKaGPhTUiGhWJiT38VXnguylnh7XWhNsVvsAzc=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790006042; c=relaxed/simple;
-	bh=SucLkbiXjq+ceXs1x5uTbroq7iKshDOiP4egQEXO0cE=;
+	s=arc-20240116; t=1790006050; c=relaxed/simple;
+	bh=Q7jbDEF67e0ZNFDuThOV0VAu04swd23Jp1F6u0D98eI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=pJXzgJ7EL39g1a9dMYXA7zPr5wy70urQcYkA0vQT6GH2r77uWD2BmWatWUgY3Iorh5Cw8Whr7Ih4d8kYykoGVZ5YrPDMKt2Rap6d3vDiu5xEvaflGM7+vS7UO8t6AYOLkXjL5PPi01C95kM+0tu0Q79xZyz+IJtqoHZFCXEJSQw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=g6da8j9/; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=PQLwjzqstY2fB8QxO2mxWG0mZtfs++PLNJNZLG5okgRwYH4ZF5tFEBjylV8ig5K/LVn/SrIlndetW9OWs2KoDQ7esidAm2J9YYMM95NRblT2vsxoD1GmgX/B2Scarnmay1sOoQf6D5MU/dc6ERnBYFoJmRQ2+AXB1Ra6ps2K1Z8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=I2ERqQNv; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="g6da8j9/"
-ARC-Seal: i=1; a=rsa-sha256; t=1790005997; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="I2ERqQNv"
+ARC-Seal: i=1; a=rsa-sha256; t=1790006001; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=XahlPAYNjDzRctea301zGJHETm8cszOEd4hclQSx3BhQlOVrX56sZa2sbC07zTmRiV+6HeM07kk97xl7/zFEp/yVU4nXARI/dfxsX3iGzg6C3HBtjT/DYQ+FHXPE6yfvooAPVmXlz96ycY+/h2g0LO+TwhX6LVElp7GT5Re6DWA=
+	b=N7vVbuDej8VgLQ0DPVwNy3IK5WoD21dk+inFRdNbFD7BqFslISshLYyfchcjIatQsMl/bqHx0OCyBVQOrduuW3/jCuZXrhdo2JYAC0gvimhb5rOFS0jCyKC9xrJaGprCy4oFpLxEuu7XJ64YfU3KkHzdng1vR+usDjqyuD1/HvI=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1790005997; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=/FoKRakhY4NsKczet48wwu0RDCyKt3DGaCiZ6bh1z0o=; 
-	b=H8JabL+G3SKEsM9FyVz/le7hCmsTcw9Z4ifRCodVQ8YVtPuvN/EUBrDy4On3i2doLwCi5GCgrx0Fuwm+UeLGvs0hvKC9CSZxj55ITUrME6oRjGdHL2faQpGCDC4mr2YcxMVPi5wUo/q9HKXTvYKeEY/6Sl4IpUdrdg3uvsftH1Y=
+	t=1790006001; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=2340rAUPh+cjIYbPiCBSqhKVXnIH+nymunIe5WSMkVg=; 
+	b=ZiWc8eitpYdEBN2y5Po87aQK+D2baoB5LfseFiKOiL0JGjMTxPVhCFVb/DCYcTC0SgQgIq8CgqnCl/GbzdS99sVtIx6Ygp9xsYB5DucByzGjOvSNdqlrPDXrl0pcKmKfLaRgAxYYy56yHq4V1cSGv5a3qM7elZtJtxSCkxVpQb0=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1790005997;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1790006001;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=/FoKRakhY4NsKczet48wwu0RDCyKt3DGaCiZ6bh1z0o=;
-	b=g6da8j9/euUYTP+py59U99/QEd4qOcDh0eHWCJXJ/EJTXlbJ+vX4zTkNXXHltAAf
-	sX4+js/MMVyuDAyAIs2UnhE3r/tmZWZk125TOY068BYR2yCtQj0wA/JJRjJ7EFK56h1
-	iqyBOvHogPFrzdCS56u6i52IONlqL68S4inX7R7g=
-Received: by smtp.zohomail.com with SMTPS id 1790005995550693.3087509800898;
-	Mon, 21 Sep 2026 08:53:15 -0700 (PDT)
+	bh=2340rAUPh+cjIYbPiCBSqhKVXnIH+nymunIe5WSMkVg=;
+	b=I2ERqQNvVfm9A861OCq83Nz52IWUOpUIRkcyMwvJYfrdpGStzz+z690BUerdYOrB
+	/EybheP/knZ22rMkIekvoh3p7dVokjwuF0wNx1kwJpElTYgNRPDO/qsHlItch6lVikV
+	1MtT8VUhLAFsTHeFKb+hyS/ETXLvi/R7zfmO7jeE=
+Received: by smtp.zohomail.com with SMTPS id 1790006000937510.4944678062657;
+	Mon, 21 Sep 2026 08:53:20 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Mon, 21 Sep 2026 17:51:39 +0200
-Subject: [PATCH RFC 13/25] drm: Add VRR target frame rate properties
+Date: Mon, 21 Sep 2026 17:51:40 +0200
+Subject: [PATCH RFC 14/25] drm: Implement VRR rate limiting
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -47,7 +47,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260921-vrr-limiter-uapi-v1-13-2fcd7d011646@collabora.com>
+Message-Id: <20260921-vrr-limiter-uapi-v1-14-2fcd7d011646@collabora.com>
 References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
 In-Reply-To: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
 To: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
@@ -70,274 +70,279 @@ Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.15.2
 
-Userspace may wish to set a target frame rate for the Variable Refresh
-Rate mechanism. There are multiple possible ways such a target could be
-communicated.
+Currently, VRR is allowed to use the entire range advertised by the
+sink's EDID. Userspace may find it desirable, however, to limit this
+range, or set a fixed target rate entirely. The latter is mainly useful
+for multimedia playback applications, where judder can be avoided by
+matching the content's frame rate precisely.
 
-It's desirable for userspace to not only set a fixed target, but a
-target range within which VRR may operate. This is because even if a
-sink advertises a certain range as supported, said range may not be the
-ideal range to use, as numbers on the extreme end of the range may
-induce flickering or other glitches.
+With the new VRR target frame rate properties, the necessary
+infrastructure is in place to allow implementing this.
 
-There's four choices to how one bracketing value for the target range
-could be communicated:
-1. Target frame rate in something like millihertz
-2. Target frame period in something like usecs
-3. Target vtotal value
-4. Target frame rate as a fraction expressed by two integers
+Add the necessary logic to hdmi_validate_vrr, as well as the VRR
+helpers. Since not every target rate can be reached precisely, the
+per-frame error is calculated, and dithered one row at a time across
+subsequent frames. This means some frames are one vtotal larger than
+others, so that averaged over the frames, the desired target rate is
+achieved. Such dithering is explicitly permitted by HDMI, and is still
+considered a constant target frame rate.
 
-Choice 1 is unpleasant as it would introduce some amount of rounding to
-common broadcast framerates like 24/1.001, which seems minor except that
-exact matches to standard framerates would rely on making all userspace
-and kernel agree on a specific method of rounding. This is sure to go
-wrong, so is disqualified.
-
-Choice 2 has the same problem as 1, with the added complication that
-the EDID's VRR range is expressed in frames per second, and other HDMI
-features express things in frames per second as well, which would
-require possibly imprecise computations.
-
-Choice 3 is disqualified as mechanisms other than VRR, such as FVA, may
-also modify the vtotal value. Additionally, it has the same drawbacks of
-choice 2 and 1.
-
-Choice 4 is therefore what's implemented. The frame rate 24/1.001Hz, for
-example, is expressed as nominator=24000 and denominator=1001. As there
-is both a minimum and a maximum, there are 4 properties in total: two
-numerators, and two denominators. A fixed rate with no variability is
-expressed by setting the minimum fractional and the maximum fractional
-properties to the same value.
-
+Co-developed-by: Derek Foreman <derek.foreman@collabora.com>
+Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- drivers/gpu/drm/drm_atomic_uapi.c | 24 +++++++++++++++++++++
- drivers/gpu/drm/drm_connector.c   | 45 +++++++++++++++++++++++++++++++++++++++
- drivers/gpu/drm/drm_crtc.c        |  8 +++++++
- drivers/gpu/drm/drm_mode_config.c | 20 +++++++++++++++++
- include/drm/drm_crtc.h            |  4 ++++
- include/drm/drm_mode_config.h     | 45 +++++++++++++++++++++++++++++++++++++++
- 6 files changed, 146 insertions(+)
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c | 108 ++++++++++++++++++++----
+ drivers/gpu/drm/drm_crtc_helper.c               |  34 +++++++-
+ include/drm/drm_crtc.h                          |   3 +
+ include/drm/drm_crtc_helper.h                   |   2 +
+ 4 files changed, 130 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_atomic_uapi.c b/drivers/gpu/drm/drm_atomic_uapi.c
-index 1eebcf6f5e05..c9eb01d740b3 100644
---- a/drivers/gpu/drm/drm_atomic_uapi.c
-+++ b/drivers/gpu/drm/drm_atomic_uapi.c
-@@ -420,6 +420,22 @@ static int drm_atomic_crtc_set_property(struct drm_crtc *crtc,
- 		return ret;
- 	} else if (property == config->prop_vrr_enabled) {
- 		state->vrr_enabled = val;
-+	} else if (property == config->prop_vrr_min_numerator) {
-+		if (val > U32_MAX)
-+			return -EINVAL;
-+		state->vrr_state.vrr_min_n = val;
-+	} else if (property == config->prop_vrr_min_denominator) {
-+		if (val > U32_MAX)
-+			return -EINVAL;
-+		state->vrr_state.vrr_min_d = val;
-+	} else if (property == config->prop_vrr_max_numerator) {
-+		if (val > U32_MAX)
-+			return -EINVAL;
-+		state->vrr_state.vrr_max_n = val;
-+	} else if (property == config->prop_vrr_max_denominator) {
-+		if (val > U32_MAX)
-+			return -EINVAL;
-+		state->vrr_state.vrr_max_d = val;
- 	} else if (property == config->degamma_lut_property) {
- 		const size_t elem_size = sizeof(struct drm_color_lut);
- 		u64 lut_size;
-@@ -505,6 +521,14 @@ drm_atomic_crtc_get_property(struct drm_crtc *crtc,
- 		*val = (state->mode_blob) ? state->mode_blob->base.id : 0;
- 	else if (property == config->prop_vrr_enabled)
- 		*val = state->vrr_enabled;
-+	else if (property == config->prop_vrr_min_numerator)
-+		*val = state->vrr_state.vrr_min_n;
-+	else if (property == config->prop_vrr_min_denominator)
-+		*val = state->vrr_state.vrr_min_d;
-+	else if (property == config->prop_vrr_max_numerator)
-+		*val = state->vrr_state.vrr_max_n;
-+	else if (property == config->prop_vrr_max_denominator)
-+		*val = state->vrr_state.vrr_max_d;
- 	else if (property == config->degamma_lut_property)
- 		*val = (state->degamma_lut) ? state->degamma_lut->base.id : 0;
- 	else if (property == config->ctm_property)
-diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-index fc7d9fcf9d9f..5c07bd221977 100644
---- a/drivers/gpu/drm/drm_connector.c
-+++ b/drivers/gpu/drm/drm_connector.c
-@@ -2579,6 +2579,51 @@ EXPORT_SYMBOL(drm_mode_create_scaling_mode_property);
-  *
-  *	The driver may place further restrictions within these minimum
-  *	and maximum bounds.
-+ *
-+ * VRR Limiter/Target Properties
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ * The ``VRR_{MIN,MAX}_{NUMERATOR,DENOMINATOR}`` properties expose a mechanism
-+ * through which userspace can control the desired range of refresh rates in
-+ * which VRR is allowed to operate. Each rate is expressed as a
-+ * numerator/denominator fraction of refresh rates in Hz, allowing for rational
-+ * target rates like 24/1.001 Hz with no loss of precision or ambiguity.
-+ *
-+ * If the minimum and maximum rate are set to the same value (and not 0), they
-+ * are understood as a fixed target rate. This is especially useful for media
-+ * playback, where the content's frame rate is both constant and known in
-+ * advance. In such cases, a refresh rate that is not an integer multiple of the
-+ * content's frame rate will introduce judder, since not every frame is
-+ * displayed for the same amount of time. A modeset of the display with a
-+ * compatible rate may in those cases be either undesirable or impossible, but
-+ * the rate can still effectively be reached through VRR.
-+ *
-+ * .. _VRR-MIN-NUMERATOR:
-+ *
-+ * "VRR_MIN_NUMERATOR":
-+ *	Default &drm_crtc integer property forming the numerator of a
-+ *	numerator/denominator pair of a frame rate to set as the minimum VRR
-+ *	target rate. Set to 0 to disable.
-+ *
-+ * "VRR_MIN_DENOMINATOR":
-+ *	Default &drm_crtc integer property forming the denominator of a
-+ *	numerator/denominator pair of a frame rate to set as the minimum VRR
-+ *	target rate. If :ref:`VRR_MIN_NUMERATOR <VRR-MIN-NUMERATOR>` is not
-+ *	zero, it must be non-zero.
-+ *	Otherwise, must also be zero.
-+ *
-+ * .. _VRR-MAX-NUMERATOR:
-+ *
-+ * "VRR_MAX_NUMERATOR":
-+ *	Default &drm_crtc integer property forming the numerator of a
-+ *	numerator/denominator pair of a frame rate to set as the maximum VRR
-+ *	target rate. Set to 0 to disable.
-+ *
-+ * "VRR_MAX_DENOMINATOR":
-+ *	Default &drm_crtc integer property forming the denominator of a
-+ *	numerator/denominator pair of a frame rate to set as the maximum VRR
-+ *	target rate. If :ref:`VRR_MAX_NUMERATOR <VRR-MAX-NUMERATOR>` is not
-+ *	zero, it must be non-zero. Otherwise, must also be zero.
-  */
+diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+index 33d0c9491643..7dbd678cf061 100644
+--- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
++++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+@@ -5,6 +5,7 @@
  
- /**
-diff --git a/drivers/gpu/drm/drm_crtc.c b/drivers/gpu/drm/drm_crtc.c
-index 63ead8ba6756..9244fbf97029 100644
---- a/drivers/gpu/drm/drm_crtc.c
-+++ b/drivers/gpu/drm/drm_crtc.c
-@@ -322,6 +322,14 @@ static int __drm_crtc_init_with_planes(struct drm_device *dev, struct drm_crtc *
- 					   config->prop_out_fence_ptr, 0);
- 		drm_object_attach_property(&crtc->base,
- 					   config->prop_vrr_enabled, 0);
-+		drm_object_attach_property(&crtc->base,
-+					   config->prop_vrr_min_numerator, 0);
-+		drm_object_attach_property(&crtc->base,
-+					   config->prop_vrr_min_denominator, 0);
-+		drm_object_attach_property(&crtc->base,
-+					   config->prop_vrr_max_numerator, 0);
-+		drm_object_attach_property(&crtc->base,
-+					   config->prop_vrr_max_denominator, 0);
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_connector.h>
++#include <drm/drm_crtc_helper.h>
+ #include <drm/drm_edid.h>
+ #include <drm/drm_modes.h>
+ #include <drm/drm_print.h>
+@@ -1046,6 +1047,39 @@ static int hdmi_calculate_vtotal(const struct drm_display_mode *mode,
+ 	return 0;
+ }
+ 
++static int hdmi_validate_vrr_limits(struct drm_crtc_state *crtc_state, u16 vrr_min)
++{
++	struct drm_crtc_vrr_state *vrr_state = &crtc_state->vrr_state;
++	const struct drm_display_mode *mode = &crtc_state->mode;
++	u32 limit_d;
++	int ret;
++
++	/* No limiter, don't need to validate, but reset the error */
++	if (!drm_crtc_helper_vrr_is_fixed_rate(vrr_state)) {
++		vrr_state->per_frame_err = 0;
++		return 0;
++	}
++
++	/* Don't allow rates equal to or below the minimum VRR rate / 1.001 */
++	if (cmp_fraction(vrr_state->vrr_min_n, vrr_state->vrr_min_d,
++			 vrr_min * 1000, 1001) < 0)
++		return -EINVAL;
++
++	if (check_mul_overflow(mode->crtc_htotal, vrr_state->vrr_min_n, &limit_d))
++		return -ERANGE;
++
++	ret = hdmi_calculate_vtotal(&crtc_state->mode, vrr_state->vrr_min_n,
++				    vrr_state->vrr_min_d, &vrr_state->base_vtotal,
++				    &vrr_state->denom, &vrr_state->per_frame_err);
++	if (ret)
++		return ret;
++
++	if (vrr_state->base_vtotal < mode->crtc_vtotal)
++		return -EINVAL;
++
++	return 0;
++}
++
+ static int hdmi_validate_vrr(struct drm_connector *connector,
+ 			     struct drm_atomic_commit *state)
+ {
+@@ -1067,6 +1101,7 @@ static int hdmi_validate_vrr(struct drm_connector *connector,
+ 	u32 min_vfreq_d = 1;
+ 	u32 max_vfreq_n = info->monitor_range.max_vfreq;
+ 	u32 max_vfreq_d = 1;
++	bool is_fixed;
+ 
+ 	/* Save on the expensive vic lookup, if nothing else. */
+ 	if (!new_crtc_state->mode_changed &&
+@@ -1099,6 +1134,10 @@ static int hdmi_validate_vrr(struct drm_connector *connector,
+ 	if (!max_vfreq_n || max_vfreq_n > mode_refresh)
+ 		max_vfreq_n = mode_refresh;
+ 
++	is_fixed = drm_crtc_helper_vrr_is_fixed_rate(vrr_state);
++	if (is_fixed && info->hdmi.cinema_vrr)
++		min_vfreq_n = 24;
++
+ 	if (!min_vfreq_n) {
+ 		drm_dbg_kms(dev, "Could not get minimum VRR rate from sink\n");
+ 		return -EINVAL;
+@@ -1112,25 +1151,64 @@ static int hdmi_validate_vrr(struct drm_connector *connector,
+ 
+ 	vrr_state->vic = drm_match_cea_mode(mode);
+ 
+-	if (cmp_fraction(min_vfreq_n, min_vfreq_d, max_vfreq_n, max_vfreq_d) > 0) {
+-		drm_dbg_kms(dev, "Target max (%u/%u) > target min (%u/%u)\n",
+-			    max_vfreq_n, max_vfreq_d, min_vfreq_n, min_vfreq_d);
+-		return -EINVAL;
+-	}
+-
+-	ret = hdmi_calculate_vtotal(mode, max_vfreq_n, max_vfreq_d,
+-				    &vrr_state->base_vtotal, NULL, NULL);
++	ret = hdmi_validate_vrr_limits(new_crtc_state, min_vfreq_n);
+ 	if (ret) {
+-		drm_dbg_kms(dev, "Couldn't calculate base_vtotal: %pe\n", ERR_PTR(ret));
++		drm_dbg_kms(dev, "Invalid VRR fixed target rate: %pe\n", ERR_PTR(ret));
+ 		return ret;
  	}
  
- 	return 0;
-diff --git a/drivers/gpu/drm/drm_mode_config.c b/drivers/gpu/drm/drm_mode_config.c
-index 48a56f23dadb..da967d60f832 100644
---- a/drivers/gpu/drm/drm_mode_config.c
-+++ b/drivers/gpu/drm/drm_mode_config.c
-@@ -535,6 +535,26 @@ static int drm_mode_create_standard_properties(struct drm_device *dev)
- 		return -ENOMEM;
- 	dev->mode_config.prop_vrr_enabled = prop;
+-	/*
+-	 * Even at its fastest, it can't go faster than the mode, so
+-	 * clamp to avoid imprecisely rounded mode_refresh values we
+-	 * can't do anything about from ruining our day.
+-	 */
+-	vrr_state->base_vtotal = max(vrr_state->base_vtotal, mode->crtc_vtotal);
++	if (!is_fixed) {
++		vrr_state->dynamic = true;
++
++		if (vrr_state->vrr_min_n) {
++			if (!vrr_state->vrr_min_d)
++				return -EINVAL;
++
++			if (cmp_fraction(vrr_state->vrr_min_n, vrr_state->vrr_min_d,
++					 min_vfreq_n * 1000, 1001) < 0) {
++				drm_dbg_kms(dev, "Target min (%u/%u) < supported min (%u/%u)\n",
++					    vrr_state->vrr_min_n, vrr_state->vrr_min_d,
++					    min_vfreq_n, min_vfreq_d);
++				return -EINVAL;
++			}
++			min_vfreq_n = vrr_state->vrr_min_n;
++			min_vfreq_d = vrr_state->vrr_min_d;
++		}
++		if (vrr_state->vrr_max_n) {
++			if (!vrr_state->vrr_max_d)
++				return -EINVAL;
++
++			if (cmp_fraction(vrr_state->vrr_max_n, vrr_state->vrr_max_d,
++					 max_vfreq_n, max_vfreq_d) > 0) {
++				drm_dbg_kms(dev, "Target max (%u/%u) > supported max (%u/%u)\n",
++					    vrr_state->vrr_max_n, vrr_state->vrr_max_d,
++					    max_vfreq_n, max_vfreq_d);
++				return -EINVAL;
++			}
++			max_vfreq_n = vrr_state->vrr_max_n;
++			max_vfreq_d = vrr_state->vrr_max_d;
++		}
++		if (cmp_fraction(min_vfreq_n, min_vfreq_d, max_vfreq_n, max_vfreq_d) > 0) {
++			drm_dbg_kms(dev, "Target max (%u/%u) > target min (%u/%u)\n",
++				    max_vfreq_n, max_vfreq_d, min_vfreq_n, min_vfreq_d);
++			return -EINVAL;
++		}
++
++		ret = hdmi_calculate_vtotal(mode, max_vfreq_n, max_vfreq_d,
++					    &vrr_state->base_vtotal, NULL, NULL);
++		if (ret) {
++			drm_dbg_kms(dev, "Couldn't calculate base_vtotal: %pe\n", ERR_PTR(ret));
++			return ret;
++		}
++
++		/*
++		 * Even at its fastest, it can't go faster than the mode, so
++		 * clamp to avoid imprecisely rounded mode_refresh values we
++		 * can't do anything about from ruining our day.
++		 */
++		vrr_state->base_vtotal = max(vrr_state->base_vtotal,
++					     mode->crtc_vtotal);
++	}
  
-+	prop = drm_property_create_range(dev, 0, "VRR_MIN_NUMERATOR", 0, U32_MAX);
-+	if (!prop)
-+		return -ENOMEM;
-+	dev->mode_config.prop_vrr_min_numerator = prop;
+ 	if (cmp_fraction(min_vfreq_n, min_vfreq_d, mode_refresh, 1) >= 0) {
+ 		/* refresh <= VRR min, don't do VRR vtotal adjustment */
+diff --git a/drivers/gpu/drm/drm_crtc_helper.c b/drivers/gpu/drm/drm_crtc_helper.c
+index 4ffb3b0b7878..c46de778df30 100644
+--- a/drivers/gpu/drm/drm_crtc_helper.c
++++ b/drivers/gpu/drm/drm_crtc_helper.c
+@@ -838,6 +838,22 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set,
+ }
+ EXPORT_SYMBOL(drm_crtc_helper_set_config);
+ 
++bool drm_crtc_helper_vrr_is_fixed_rate(const struct drm_crtc_vrr_state *vrr)
++{
++	if (!vrr->vrr_min_n)
++		return false;
 +
-+	prop = drm_property_create_range(dev, 0, "VRR_MIN_DENOMINATOR", 0, U32_MAX);
-+	if (!prop)
-+		return -ENOMEM;
-+	dev->mode_config.prop_vrr_min_denominator = prop;
++	if (!vrr->vrr_min_d || !vrr->vrr_max_d)
++		return false;
 +
-+	prop = drm_property_create_range(dev, 0, "VRR_MAX_NUMERATOR", 0, U32_MAX);
-+	if (!prop)
-+		return -ENOMEM;
-+	dev->mode_config.prop_vrr_max_numerator = prop;
++	if (mul_u32_u32(vrr->vrr_min_n, vrr->vrr_max_d) ==
++	    mul_u32_u32(vrr->vrr_min_d, vrr->vrr_max_n))
++		return true;
 +
-+	prop = drm_property_create_range(dev, 0, "VRR_MAX_DENOMINATOR", 0, U32_MAX);
-+	if (!prop)
-+		return -ENOMEM;
-+	dev->mode_config.prop_vrr_max_denominator = prop;
++	return false;
++}
++EXPORT_SYMBOL(drm_crtc_helper_vrr_is_fixed_rate);
 +
- 	prop = drm_property_create(dev,
- 			DRM_MODE_PROP_BLOB,
- 			"DEGAMMA_LUT", 0);
+ /**
+  * drm_crtc_helper_vrr_flush - Update VRR state on frame ready
+  * @crtc_state: pointer to &struct drm_crtc_state of CRTC that has a new frame ready
+@@ -864,6 +880,9 @@ bool drm_crtc_helper_vrr_flush(struct drm_crtc_state *crtc_state)
+ 		return false;
+ 	}
+ 
++	if (drm_crtc_helper_vrr_is_fixed_rate(vrr))
++		return false;
++
+ 	if (vrr->cur_vtotal == vrr->base_vtotal)
+ 		return false;
+ 
+@@ -889,10 +908,21 @@ bool drm_crtc_helper_vrr_vsync(struct drm_crtc_state *crtc_state)
+ 	struct drm_crtc_vrr_state *vrr = &crtc_state->vrr_state;
+ 	u16 old_vtotal = vrr->cur_vtotal;
+ 
+-	if (!crtc_state->vrr_enabled)
++	if (!crtc_state->vrr_enabled) {
+ 		vrr->cur_vtotal = 0;
+-	else
++		vrr->cur_err = 0;
++	} else if (drm_crtc_helper_vrr_is_fixed_rate(vrr)) {
++		if (vrr->cur_err * 2 >= vrr->denom) {
++			vrr->cur_err -= vrr->denom;
++			vrr->cur_vtotal = vrr->base_vtotal + 1;
++		} else {
++			vrr->cur_vtotal = vrr->base_vtotal;
++		}
++
++		vrr->cur_err += vrr->per_frame_err;
++	} else {
+ 		vrr->cur_vtotal = vrr->max_vtotal;
++	}
+ 
+ 	if (abs_diff(vrr->cur_vtotal, old_vtotal) > 1)
+ 		vrr->dynamic = true;
 diff --git a/include/drm/drm_crtc.h b/include/drm/drm_crtc.h
-index 9d58158af459..df37f4ebb58e 100644
+index df37f4ebb58e..00e9df02f3d5 100644
 --- a/include/drm/drm_crtc.h
 +++ b/include/drm/drm_crtc.h
-@@ -67,6 +67,10 @@ struct drm_crtc_vrr_state {
- 	u8 vic;
- 	u16 cur_vtotal;
- 	u16 max_vtotal;
-+	u32 vrr_min_n;
-+	u32 vrr_min_d;
-+	u32 vrr_max_n;
-+	u32 vrr_max_d;
+@@ -71,6 +71,9 @@ struct drm_crtc_vrr_state {
+ 	u32 vrr_min_d;
+ 	u32 vrr_max_n;
+ 	u32 vrr_max_d;
++	u32 denom;
++	u32 per_frame_err;
++	int cur_err;
  	u16 base_vtotal;
  	bool dynamic;
  };
-diff --git a/include/drm/drm_mode_config.h b/include/drm/drm_mode_config.h
-index 084517beb924..c8d5286f9267 100644
---- a/include/drm/drm_mode_config.h
-+++ b/include/drm/drm_mode_config.h
-@@ -702,6 +702,51 @@ struct drm_mode_config {
- 	 */
- 	struct drm_property *prop_vrr_enabled;
+diff --git a/include/drm/drm_crtc_helper.h b/include/drm/drm_crtc_helper.h
+index 0c8c11ea36dd..7d7b75045bd9 100644
+--- a/include/drm/drm_crtc_helper.h
++++ b/include/drm/drm_crtc_helper.h
+@@ -45,6 +45,7 @@ struct drm_framebuffer;
+ struct drm_mode_set;
+ struct drm_modeset_acquire_ctx;
+ struct drm_crtc_state;
++struct drm_crtc_vrr_state;
  
-+	/**
-+	 * @prop_vrr_min_numerator: Default atomic CRTC property to indicate the
-+	 * numerator of a numerator/denominator variable refresh rate minimum
-+	 * target frame rate.
-+	 *
-+	 * If not zero, @prop_vrr_min_numerator divided by
-+	 * @prop_vrr_min_denominator must result in a frame rate above the
-+	 * sink's minimum VRR rate.
-+	 */
-+	struct drm_property *prop_vrr_min_numerator;
-+
-+	/**
-+	 * @prop_vrr_min_denominator: Default atomic CRTC property to indicate
-+	 * the denominator of a numerator/denominator variable refresh rate
-+	 * minimum target frame rate.
-+	 *
-+	 * If @prop_vrr_min_numerator is set, @prop_vrr_min_denominator must not
-+	 * be 0, and @prop_vrr_min_numerator divided by @prop_vrr_min_denominator
-+	 * must result in a frame rate above the minimum VRR rate.
-+	 */
-+	struct drm_property *prop_vrr_min_denominator;
-+
-+	/**
-+	 * @prop_vrr_max_numerator: Default atomic CRTC property to indicate the
-+	 * numerator of a numerator/denominator variable refresh rate maximum
-+	 * target frame rate range.
-+	 *
-+	 * The fraction expressed by this property divided by its corresponding
-+	 * denominator must be equal to or greater than the value of
-+	 * @prop_vrr_min_numerator.
-+	 */
-+	struct drm_property *prop_vrr_max_numerator;
-+
-+	/**
-+	 * @prop_vrr_max_denominator: Default atomic CRTC property to indicate
-+	 * the denominator of a numerator/denominator variable refresh rate
-+	 * maximum target frame rate range.
-+	 *
-+	 * If @prop_vrr_max_numerator is set, @prop_vrr_max_denominator must not
-+	 * be 0, and @prop_vrr_max_numerator divided by @prop_vrr_max_denominator
-+	 * must result in a frame rate equal to or above @prop_vrr_min_numerator
-+	 * divided by @prop_vrr_min_denominator.
-+	 */
-+	struct drm_property *prop_vrr_max_denominator;
-+
- 	/**
- 	 * @dvi_i_subconnector_property: Optional DVI-I property to
- 	 * differentiate between analog or digital mode.
+ void drm_helper_disable_unused_functions(struct drm_device *dev);
+ int drm_crtc_helper_set_config(struct drm_mode_set *set,
+@@ -63,6 +64,7 @@ int drm_helper_connector_dpms(struct drm_connector *connector, int mode);
+ void drm_helper_resume_force_mode(struct drm_device *dev);
+ int drm_helper_force_disable_all(struct drm_device *dev);
+ 
++bool drm_crtc_helper_vrr_is_fixed_rate(const struct drm_crtc_vrr_state *vrr);
+ bool drm_crtc_helper_vrr_flush(struct drm_crtc_state *crtc_state);
+ bool drm_crtc_helper_vrr_vsync(struct drm_crtc_state *crtc_state);
+ 
 
 -- 
 2.55.0

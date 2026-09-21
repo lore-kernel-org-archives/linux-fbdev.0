@@ -1,38 +1,38 @@
-Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 610624DA9B6
-	for <linux-fbdev@vger.kernel.org>; Mon, 21 Sep 2026 16:51:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4BC864C10F1
+	for <linux-fbdev@vger.kernel.org>; Mon, 21 Sep 2026 16:52:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.85.4
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790009518; cv=none; b=KX2huleoO0qbeH2zrntLpKxm4YM3p51s81Dgk1f6xazCKyS9fHk4/9bAUO+GScgQSoPxwlg/DBmahWsaRNWQVBudFUOreRxXpSDLT89xQrCx2/ZqhYg1geZnfq+AU+/M7x5DCdVYDrR/TQDdNyAnUq5VirYQS2DJEwh5drxy1RM=
+	t=1790009527; cv=none; b=tY5lzdcpl6BwGCl3syUsckouy9dAsql2bPGucHyGXEQSJ9joAdg8L/zoTlhkJXx6zJRdJuVugUjwT61GxLrcRuIOxbeQTdqDArSk4ggUn0g6LEo0chDhiYQ6GZMkyjfPF7+5iLcl2VYUOBzuAZOXw5oAWMMNoi1+IFMPVLKF4Es=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790009518; c=relaxed/simple;
-	bh=/s+Rm5TPnXMuq1eSozgqOKlpb07HdyEVcwVTo15Mu20=;
+	s=arc-20240116; t=1790009527; c=relaxed/simple;
+	bh=8qpYRBQlVULXYBwXUjPqr/j/KUQsqav5QY98Ap0DELo=;
 	h=Mime-Version:Content-Type:Date:Message-Id:Cc:To:From:Subject:
-	 References:In-Reply-To; b=YMzDLOhxcQujN4mTf8Emew1rDoFTStzIk5jyd3ckTcahmQjrMvXj1v6rXlWwg4LQkLyNNAhRxnkU6C5bcMjaQXdedf395Sd6fNLreLIHlT6Lg+j9w6EGGyIvmY1vS6rPeu8O5VEf191KQp2MqEeGkzahiZhydPG0Mlvx6RISBNw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=IjYWD3xI; arc=none smtp.client-ip=185.246.84.56
+	 References:In-Reply-To; b=TmE5VGAmbE7OIj7E3Z93OTRNsHXSNYum7khKGl7FbM3Ro4WZ8whPob58aNbf1AMQZdwXP05PB7Z/wXoBULHsWgedMAofyRH4adlH+CXsEgyfa2xyYiNiurqK8m9Ygerq/jKGe41PvSzv2DZAcSYrxpXui4sjLUY4W5xbAbcF+Eg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=DOj1Y41g; arc=none smtp.client-ip=185.246.85.4
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="IjYWD3xI"
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="DOj1Y41g"
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id 465AE1A0D88;
-	Mon, 21 Sep 2026 16:51:48 +0000 (UTC)
+	by smtpout-03.galae.net (Postfix) with ESMTPS id C077D4E40755;
+	Mon, 21 Sep 2026 16:52:03 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 04BCA5FFB2;
-	Mon, 21 Sep 2026 16:51:48 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 59E35103291BD;
-	Mon, 21 Sep 2026 18:51:26 +0200 (CEST)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 8CF895FFB2;
+	Mon, 21 Sep 2026 16:52:03 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id C859C1032913F;
+	Mon, 21 Sep 2026 18:51:49 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1790009502; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	t=1790009517; h=from:subject:date:message-id:to:cc:mime-version:content-type:
 	 content-transfer-encoding:in-reply-to:references;
-	bh=cSwoV7JYFKwWDkDL4IDFclIBqtgIii8ZsKhV2r0CgdE=;
-	b=IjYWD3xIKW0KiAwSGgakYrxt0r+vUYd0qxiCiN/UWCsb/Lzv6F9MRJMiln7kdo9fS0L97I
-	MsXakBjOTJ1+zKqPla6JTpP36tNNijKQuc05p4N/sYCzdy/c7URDCf+uJa5rryyF/pGD5K
-	CvqGwT/3RpwqR10lvWnK934ts0XBX+qWLGQw+t4WaJu2BG8/qPF+HiQ1510dHvF6L28CmX
-	ioTpVmqh4beeqW3L3IIl55sutm8DOpW/zT1po1oe7QbGwrjZOVXRXmuApmKzwv2DLncD2H
-	1SpLtpGpNxBgOe0ek/Ku+tmxFQw0ujiCLjuQSMInGOlC5v95Mxni3AZCvi3qHg==
+	bh=E8+TuwKUE2XBa2SuyOFw2XhfA4p/VrA5lusEOG2wO70=;
+	b=DOj1Y41gnblEuUbAcpP3/m5HMMS+8CCXjkY0nVms96dcQJVAg6eDcUo/6D1ViLtXTvg/t6
+	dHQ7g26/B+Pl8hrOF9+FnEzM5qlsuFK/Qpep/KPqvJrDNIsGzH497zB30KindqOD11tjQU
+	sVWzDA/oXW+BOeMjwphAXxrivYUOp7/mV0KOP+uqH+upCyq8Ed6J8v95Zu+EatW8JEmDya
+	EzYiR1FyK+9ONJTnTx+Ho5A5MA+ZZdNDlSTWwXpMDgv3vhSYT2XghlFtBaVDM5Du/0Vp9s
+	nKPzT/Qx4U8tvu2vyp1PkjsWu18hnjG7QKoc6NyrPox5y8/8QrUygXcs4LqaSw==
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -41,12 +41,12 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Mon, 21 Sep 2026 18:51:25 +0200
-Message-Id: <DLL5ELBGGCIU.3LL2QIE4I4MDS@bootlin.com>
+Date: Mon, 21 Sep 2026 18:51:49 +0200
+Message-Id: <DLL5EWC41AQ4.ZVQI9FO4EEVN@bootlin.com>
 Cc: <kernel@collabora.com>, <linux-kernel@vger.kernel.org>,
  <dri-devel@lists.freedesktop.org>, <linux-arm-kernel@lists.infradead.org>,
  <linux-sunxi@lists.linux.dev>, <linux-rockchip@lists.infradead.org>,
- <linux-fbdev@vger.kernel.org>, "Sashiko" <sashiko-bot@kernel.org>
+ <linux-fbdev@vger.kernel.org>
 To: "Luca Ceresoli" <luca.ceresoli@bootlin.com>, "Cristian Ciocaltea"
  <cristian.ciocaltea@collabora.com>, "Maarten Lankhorst"
  <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
@@ -66,46 +66,32 @@ To: "Luca Ceresoli" <luca.ceresoli@bootlin.com>, "Cristian Ciocaltea"
  Stone" <daniels@collabora.com>, "Liu Ying" <victor.liu@nxp.com>, "Phong LE"
  <ple@baylibre.com>, "Helge Deller" <deller@gmx.de>
 From: "Luca Ceresoli" <luca.ceresoli@bootlin.com>
-Subject: Re: [PATCH v11 12/74] drm/bridge: Fix unlocked list_del in
- drm_bridge_add()
+Subject: Re: [PATCH v11 14/74] drm/bridge: Fix unlocked list access in
+ drm_bridge_attach()
 X-Mailer: aerc 0.22.0
 References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
- <20260901-dw-hdmi-qp-scramb-v11-12-bc12954a0688@collabora.com>
- <DLKT61DMSLFT.JA03R1SO6WNU@bootlin.com>
- <DLKT9WH655L4.37F4JBC3Y14D8@bootlin.com>
-In-Reply-To: <DLKT9WH655L4.37F4JBC3Y14D8@bootlin.com>
+ <20260901-dw-hdmi-qp-scramb-v11-14-bc12954a0688@collabora.com>
+ <DLKTC338JONX.CQ6L7JYQ4UDD@bootlin.com>
+In-Reply-To: <DLKTC338JONX.CQ6L7JYQ4UDD@bootlin.com>
 X-Last-TLS-Session-Version: TLSv1.3
 
-On Mon Sep 21, 2026 at 9:21 AM CEST, Luca Ceresoli wrote:
-> On Mon Sep 21, 2026 at 9:16 AM CEST, Luca Ceresoli wrote:
->> Hello Cristian,
+On Mon Sep 21, 2026 at 9:23 AM CEST, Luca Ceresoli wrote:
+> On Tue Sep 1, 2026 at 8:50 PM CEST, Cristian Ciocaltea wrote:
+>> drm_bridge_attach() inspects bridge->list to warn about bridges being
+>> attached without a previous drm_bridge_add() call, but it does so
+>> without holding bridge_lock.
 >>
->> On Tue Sep 1, 2026 at 8:50 PM CEST, Cristian Ciocaltea wrote:
->>> When re-adding a bridge that was previously removed, drm_bridge_add()
->>> drops it from bridge_lingering_list without holding bridge_lock.
->>>
->>> Both bridge_list and bridge_lingering_list are protected by bridge_lock=
-,
->>> as they are concurrently modified by drm_bridge_remove() and
->>> __drm_bridge_free(), and walked by the debugfs 'bridges' file.  Running
->>> the list_empty() test and the list_del_init() outside of the lock may
->>> therefore corrupt either list.
+>> The list head can be concurrently written by drm_bridge_add(),
+>> drm_bridge_remove() and __drm_bridge_free() while they operate on
+>> neighbouring entries of bridge_list or bridge_lingering_list, all of
+>> them under bridge_lock.  Hence the unlocked read is a data race, even
+>> though it is unlikely to change the outcome of list_empty() in practice.
 >>
->> The analysis appears correct, with a small nit: __drm_bridge_free() cann=
-ot
->> touch the list concurrently to other functions, because it only runs whe=
-n
->> the refcount is 0, and all other functions tounch the lists only when th=
-ey
->> have a reference. (Should this sentence be wrong, that would be a big bu=
-g!)
->
-> Ah, no, I just realized my concern does not stand. Indeed
-> __drm_bridge_free() can run concurrently on a different bridge than the o=
-ne
-> being handled by other functions, ending up in modifying the same list. S=
-o
-> your comment is fully correct:
+>> Perform the check with bridge_lock held.
+>>
+>> Fixes: 76f1a9711b83 ("drm/bridge: add warning for bridges attached witho=
+ut being added")
+>> Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 >
 > Reviewed-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
 

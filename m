@@ -1,44 +1,44 @@
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D422E4BA1EC;
-	Mon, 21 Sep 2026 15:53:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CB1C4C10DF;
+	Mon, 21 Sep 2026 15:53:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790005989; cv=pass; b=EaVnijWYy5vG5PiioIgoG7THs4N/PEtCypjFnouyw4HjVVhsFiBUFujoxhDbE5H7XbRxxuv4L2gsfQ//HkJ1w2Wr4FJVDHy72QIB6CD7PuVGs6tDucTpVE38DhleLgF0fD6DuNCGwbtxhj7IsJZ4KqPxpo19y7PrX+BXlM7woS4=
+	t=1790005995; cv=pass; b=hNxmy8QSlvI4c9yB3+6mOtNBYmDnQXcMPwaxKVQjUforQMeU9Qkzfmw1UF9JynZZmEdLvVVxqSagvJnAWQ483st9h4m5Ls+R9CjleYx3twLqtQ3St/3Z87spnSHCWorvv8NWmv8+t8GXqGVknAW+6/yekqfG3MCllcf4Yo7Yhs8=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790005989; c=relaxed/simple;
-	bh=/xB7xPGoX6Fc0hViVOqrOKWzmSeDOdtc/GJJfB9XcJg=;
+	s=arc-20240116; t=1790005995; c=relaxed/simple;
+	bh=BmCd6Sw/G9OOGOwOlBAzlWvGU8fxLplwZZMTJLJxLXU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=baSy48vczoL9MYnblL4bpKeown6k6Mi8ZHa7kaSicl6ZuqCNmkm9nQnlS/odc+BCnxxDsmbVlWYqx5phU2FqbtqElhujCrXyqyo4RqDtPOJulfQG8NsV4hB0KsFEQnWGI7LeUjusramtfyqGl9bxyrfOH8SHm53UiVElSsCyJ/U=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=DOswmEm0; arc=pass smtp.client-ip=136.143.188.112
+	 In-Reply-To:To:Cc; b=YbjAKmRT2QwsNf6rlFMjCjU+u+DfUOD2smD3T1gUO5j60Kav7Mlb2lqu4xzTALzN2b0EGxT9/wiH2RuiZ8LM/PVjEgAQptI0hBe3Nc5TuOTVlh9Dd46kvfMTx6YO1XxRb7zyz26FpRJPc83SLxlID80I901dCOhtyGqARVZNijE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=SqzMjGGz; arc=pass smtp.client-ip=136.143.188.112
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="DOswmEm0"
-ARC-Seal: i=1; a=rsa-sha256; t=1790005935; cv=none; 
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="SqzMjGGz"
+ARC-Seal: i=1; a=rsa-sha256; t=1790005945; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=OBVv96TUXdoXic0cqDd4x0l2klxzddq8NcTlmTRkDBPHPkwClnotLGwcJiHoZo6yb2uygiJBPSJF9nDHwWxVQZe+GehSaR6NCxgxvP1wbb+15HI/pU7WFSmD3T3vYqwVdKAvr1BlINBqVTJSGuP1F57Enstg9oqCSo88ZmfLXDM=
+	b=ljSNHs+y51ZZ4z/4x1pAepFaDbtFfHOtzS1eiQpDlDrLHxu0AKYd63k6/1MeeuoiNUQ2t/KSAUMhoedmb7ZoMJ2g3Px1KUD+7FVG/tRqQuR3FIY/uA5HJZpXpgMY+SA9pvvQRq9QMeY/urRpAzxgdB+Qne3cfdpJqmOE4L8T6ME=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1790005935; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=JuZK847Y5757sJEnhMHU8hTY28zMxad07CW44p71Yy0=; 
-	b=MALTOISkOWJDGYoqcjLU+uLFaPLt9FIREdkWFykcGokRsVk4ACqnNnaCeLHHZXNsFaBOILT4a0hG7/ImpRK/qCDs4oqNQqlKwb5e4rB3d2CrFoUMy24gjWAwSgSw4NVJYzkM7i4PQNLnJqA2d5qAhax1/COYA1hMi0vzZ1NIGf0=
+	t=1790005945; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=DiwDpN9riDDJQcO6V+hK0OwAgWXYH5bbcn0W29vlIso=; 
+	b=BMXp3pZ6gKVvowjbqMV9mALWOTrErIUMJZZbGQnfHRueiBNQXy4wcfJPl+PGBfDo4XJ2Pc6lrGGaixVBLHCXyuJ/Z1d0M9HryzRPcG78oqcpZ0GULkFX/fGch3sXdcB8rCNfqsJPk1mYYJX5kbHWyU0+YGYbeirqi+fdzXqRk0E=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1790005935;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1790005945;
 	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
 	h=From:From:Date:Date:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Message-Id:In-Reply-To:To:To:Cc:Cc:Reply-To;
-	bh=JuZK847Y5757sJEnhMHU8hTY28zMxad07CW44p71Yy0=;
-	b=DOswmEm0LaguHnu3Q1ydRg1tcenDett7H52lBaFXY6HfGU28JSHcJxMpljDVAISg
-	MMzHrQrD9IJyMbS1IEGDvZa9MhKFQrPp1yVtg1QpuRAdg6cQZND1uBOOefVfYCHdu1v
-	KlXZTya6E5CVDpYu/axoP7Ys5MXV7nqk84QkuD/M=
-Received: by smtp.zohomail.com with SMTPS id 1790005932561371.5890654858862;
-	Mon, 21 Sep 2026 08:52:12 -0700 (PDT)
+	bh=DiwDpN9riDDJQcO6V+hK0OwAgWXYH5bbcn0W29vlIso=;
+	b=SqzMjGGzJwUZ+VXI+7o8MgXBG1T1uWWFdvKtVqJPV1dDBuFmhnaNntTU9ggZGT+8
+	2Ds2KflAFHbrlmAnMeD67vFy9mlTbU228CCkIe62ZYILaYuREeGgHZ49Nsq1vsSJJGt
+	YEA5V0xGGS1wLD+a2fxY39D/E7enNUtjIcWTcpZI=
+Received: by smtp.zohomail.com with SMTPS id 179000594398149.12293130246803;
+	Mon, 21 Sep 2026 08:52:23 -0700 (PDT)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Mon, 21 Sep 2026 17:51:28 +0200
-Subject: [PATCH RFC 02/25] drm: Add VRR state
+Date: Mon, 21 Sep 2026 17:51:30 +0200
+Subject: [PATCH RFC 04/25] video/hdmi: Add VTEM EMP packing
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -47,7 +47,7 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260921-vrr-limiter-uapi-v1-2-2fcd7d011646@collabora.com>
+Message-Id: <20260921-vrr-limiter-uapi-v1-4-2fcd7d011646@collabora.com>
 References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
 In-Reply-To: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
 To: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
@@ -70,292 +70,211 @@ Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.15.2
 
-Add preliminary state tracking for VRR, and VRR state validation. This
-will be used for generating VTEM infoframes in order to support variable
-refresh rate functionality.
+From: Derek Foreman <derek.foreman@collabora.com>
 
-Co-developed-by: Derek Foreman <derek.foreman@collabora.com>
+VTEM EMPs are a type of infoframe that is required for Variable Refresh
+Rate. Add code to pack them.
+
 Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- drivers/gpu/drm/display/drm_hdmi_state_helper.c | 227 ++++++++++++++++++++++++
- include/drm/drm_crtc.h                          |  11 ++
- 2 files changed, 238 insertions(+)
+ drivers/video/hdmi.c | 97 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/hdmi.h | 19 ++++++++++
+ 2 files changed, 115 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-index 7cdb7ca3dc12..d55548399687 100644
---- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-+++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-@@ -887,6 +887,229 @@ hdmi_generate_infoframes(const struct drm_connector *connector,
- 	return 0;
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index 45b42f14a750..ed9abc7ad228 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -983,6 +983,10 @@ hdmi_infoframe_pack(union hdmi_infoframe *frame,
+ 		length = hdmi_vendor_any_infoframe_pack(&frame->vendor,
+ 							buffer, size);
+ 		break;
++	case HDMI_INFOFRAME_TYPE_EMP:
++		length = hdmi_emp_infoframe_vtem_pack(&frame->vtem,
++						      buffer, size);
++		break;
+ 	default:
+ 		WARN(1, "Bad infoframe type %d\n", frame->any.type);
+ 		length = -EINVAL;
+@@ -994,9 +998,11 @@ EXPORT_SYMBOL(hdmi_infoframe_pack);
+ 
+ static const char *hdmi_infoframe_type_get_name(enum hdmi_infoframe_type type)
+ {
+-	if (type < 0x80 || type > 0x9f)
++	if (type < 0x7F || type > 0x9f)
+ 		return "Invalid";
+ 	switch (type) {
++	case HDMI_INFOFRAME_TYPE_EMP:
++		return "EMP";
+ 	case HDMI_INFOFRAME_TYPE_VENDOR:
+ 		return "Vendor";
+ 	case HDMI_INFOFRAME_TYPE_AVI:
+@@ -1516,6 +1522,29 @@ hdmi_vendor_any_infoframe_log(const char *level,
+ 	}
  }
  
-+/**
-+ * cmp_fraction - compares two fractional numbers
-+ * @a: numerator of the first fraction
-+ * @b: denominator of the first fraction
-+ * @c: numerator of the second fraction
-+ * @d: denominator of the second fraction
-+ *
-+ * Compare fractional expression given by @a divided by @b with fractional
-+ * expression given by @c divided by @d, without running into rounding issues.
-+ *
-+ * Neither @b nor @d should be 0.
-+ *
-+ * Returns:
-+ *  - %1 if @a / @b > @c / @d
-+ *  - %-1 if @a / @b < @c / @d
-+ *  - %0 if @a / @b == @c / @d
-+ *  - %-EDOM if @b is zero or @d is zero.
-+ */
-+static int cmp_fraction(u32 a, u32 b, u32 c, u32 d)
++static void
++hdmi_emp_infoframe_vtem_log(const char *level,
++			    struct device *dev,
++			    const struct hdmi_emp_infoframe_vtem *frame)
 +{
-+	u64 a_d = mul_u32_u32(a, d);
-+	u64 b_c = mul_u32_u32(b, c);
++	hdmi_infoframe_log_header(level, dev,
++				  (const struct hdmi_any_infoframe *)frame);
 +
-+	if (WARN_ON(!b || !d))
-+		return -EDOM;
-+
-+	/* a/b > c/d */
-+	if (a_d > b_c)
-+		return 1;
-+
-+	/* a/b < c/d */
-+	if (a_d < b_c)
-+		return -1;
-+
-+	/* a/b == c/d */
-+	return 0;
++	hdmi_log("    game vrr enabled: %u\n", frame->game_vrr_en);
++	hdmi_log("    fva factor minus 1: %u\n", frame->fva_factor_m1);
++	hdmi_log("    m_const: %u\n", frame->m_const);
++	hdmi_log("    base vertical front porch: %u\n", frame->base_vfront);
++	hdmi_log("    base refresh rate: %u\n", frame->base_refresh_rate);
 +}
 +
-+static int hdmi_calculate_vtotal(const struct drm_display_mode *mode,
-+				 u32 rate_n, u32 rate_d, u16 *out_vtotal,
-+				 u32 *out_denom, u32 *out_frame_err)
++static void
++hdmi_emp_infoframe_log(const char *level,
++		       struct device *dev,
++		       const union hdmi_infoframe *frame)
 +{
-+	u32 denom, result, err;
-+	u64 numerator;
-+
-+	/*
-+	 * We perform VRR based rate limiting by adjusting the vertical front
-+	 * porch. We do that by picking a new Vtotal to pass to the hardware,
-+	 * which extends the display period. Since we can change no other
-+	 * timings, this rarely results in a perfect integer match to the
-+	 * target framerate. However, we would like to correct for this error
-+	 * using only integer math.
-+	 *
-+	 * For a given refresh rate:
-+	 *
-+	 * Vtotal =              clock
-+	 *          ----------------------------------
-+	 *               Htotal * target_refresh
-+	 *
-+	 * We specify target_refresh as a ratio, because the possible target
-+	 * framerates include rates like 23.97... that are actually 24 / 1.001,
-+	 * or 24000 / 1001.
-+	 *
-+	 *                        clock
-+	 * Vtotal = ----------------------------------
-+	 *            Htotal * target_n / target_d
-+	 *
-+	 * Some algebra brings us to:
-+	 *
-+	 *                clock * target_n
-+	 * Vtotal = ----------------------------------
-+	 *                Htotal * rate_n
-+	 *
-+	 * The amount of timing error we accumulate every frame will be
-+	 * the remainder of that division.
-+	 *
-+	 * We store the remainder for later. Every frame we add the remainder
-+	 * to an accumulator, and when the accumulator exceeds the denominator,
-+	 * one Htotal worth of error has accumulated.
-+	 *
-+	 * In practice, as soon as the accumulated error exceeds half the
-+	 * denominator, it is dithered across frames by temporarily extending
-+	 * Vtotal by a single row on that frame.
-+	 */
-+
-+	if (check_mul_overflow(mode->crtc_htotal, rate_n, &denom))
-+		return -ERANGE;
-+
-+	if (check_mul_overflow(mode->crtc_clock * 1000ULL, rate_d, &numerator))
-+		return -ERANGE;
-+
-+	result = div_u64_rem(numerator, denom, &err);
-+	if (result > U16_MAX)
-+		return -ERANGE;
-+
-+	if (out_vtotal)
-+		*out_vtotal = result;
-+	if (out_denom)
-+		*out_denom = denom;
-+	if (out_frame_err)
-+		*out_frame_err = err;
-+
-+	return 0;
++	/* Only support VTEM for now */
++	hdmi_emp_infoframe_vtem_log(level, dev, &frame->vtem);
 +}
-+
-+static int hdmi_validate_vrr(struct drm_connector *connector,
-+			     struct drm_atomic_commit *state)
-+{
-+	struct drm_connector_state *new_conn_state =
-+		drm_atomic_get_new_connector_state(state, connector);
-+	struct drm_crtc_state *new_crtc_state =
-+		drm_atomic_get_new_crtc_state(state, new_conn_state->crtc);
-+	struct drm_crtc_state *old_crtc_state =
-+		drm_atomic_get_old_crtc_state(state, new_conn_state->crtc);
-+	struct drm_crtc_vrr_state *vrr_state =
-+		&new_crtc_state->vrr_state;
-+	struct drm_crtc_vrr_state *old_vrr_state =
-+		&old_crtc_state->vrr_state;
-+	struct drm_display_info *info = &connector->display_info;
-+	const struct drm_display_mode *mode = &new_crtc_state->mode;
-+	struct drm_device *dev = connector->dev;
-+	int mode_refresh, vfront, ret;
-+	u32 min_vfreq_n = info->monitor_range.min_vfreq;
-+	u32 min_vfreq_d = 1;
-+	u32 max_vfreq_n = info->monitor_range.max_vfreq;
-+	u32 max_vfreq_d = 1;
-+
-+	/* Save on the expensive vic lookup, if nothing else. */
-+	if (!new_crtc_state->mode_changed &&
-+	    old_crtc_state->vrr_enabled &&
-+	    old_vrr_state->vrr_min_n == vrr_state->vrr_min_n &&
-+	    old_vrr_state->vrr_min_d == vrr_state->vrr_min_d &&
-+	    old_vrr_state->vrr_max_n == vrr_state->vrr_max_n &&
-+	    old_vrr_state->vrr_max_d == vrr_state->vrr_max_d &&
-+	    info->hdmi.vrr_capable) {
-+		memcpy(vrr_state, old_vrr_state, sizeof(*vrr_state));
-+		vrr_state->dynamic = false;
-+		return 0;
-+	}
-+
-+	if (!new_crtc_state->vrr_enabled)
-+		return 0;
-+
-+	if (!info->hdmi.vrr_capable)
-+		return -EOPNOTSUPP;
-+
-+	mode_refresh = drm_mode_vrefresh(mode);
-+
-+	/* HDMI uses 10 bits to signal the base refresh. */
-+	if (mode_refresh < 0 || mode_refresh > 1023) {
-+		drm_dbg_kms(dev, "Mode's refresh of %dHz > HDMI VRR maximum (1023)\n",
-+			    mode_refresh);
-+		return -EINVAL;
-+	}
-+
-+	if (!max_vfreq_n || max_vfreq_n > mode_refresh)
-+		max_vfreq_n = mode_refresh;
-+
-+	if (!min_vfreq_n) {
-+		drm_dbg_kms(dev, "Could not get minimum VRR rate from sink\n");
-+		return -EINVAL;
-+	}
-+
-+	vfront = mode->crtc_vsync_start - mode->crtc_vdisplay;
-+	if (vfront < 0 || vfront > U8_MAX) {
-+		drm_dbg_kms(dev, "Vfront of %d would not fit in VTEM packet\n", vfront);
-+		return -EINVAL;
-+	}
-+
-+	vrr_state->vic = drm_match_cea_mode(mode);
-+
-+	if (cmp_fraction(min_vfreq_n, min_vfreq_d, max_vfreq_n, max_vfreq_d) > 0) {
-+		drm_dbg_kms(dev, "Target max (%u/%u) > target min (%u/%u)\n",
-+			    max_vfreq_n, max_vfreq_d, min_vfreq_n, min_vfreq_d);
-+		return -EINVAL;
-+	}
-+
-+	ret = hdmi_calculate_vtotal(mode, max_vfreq_n, max_vfreq_d,
-+				    &vrr_state->base_vtotal, NULL, NULL);
-+	if (ret) {
-+		drm_dbg_kms(dev, "Couldn't calculate base_vtotal: %pe\n", ERR_PTR(ret));
-+		return ret;
-+	}
-+
-+	/*
-+	 * Even at its fastest, it can't go faster than the mode, so
-+	 * clamp to avoid imprecisely rounded mode_refresh values we
-+	 * can't do anything about from ruining our day.
-+	 */
-+	vrr_state->base_vtotal = max(vrr_state->base_vtotal, mode->crtc_vtotal);
-+
-+	if (cmp_fraction(min_vfreq_n, min_vfreq_d, mode_refresh, 1) >= 0) {
-+		/* refresh <= VRR min, don't do VRR vtotal adjustment */
-+		vrr_state->max_vtotal = mode->crtc_vtotal;
-+	} else {
-+		/*
-+		 * Allow additional front porch until effective rate == VRR min
-+		 * In essence, this is mode->vtotal * mode_refresh / min_vfreq
-+		 * but the relevant factors factored out from drm_mode_vrefresh()
-+		 * to avoid working with rounded values, as well as using the
-+		 * hardware adjusted crtc_* values instead.
-+		 */
-+		ret = hdmi_calculate_vtotal(mode, min_vfreq_n, min_vfreq_d,
-+					    &vrr_state->max_vtotal, NULL, NULL);
-+		if (ret) {
-+			drm_dbg_kms(dev, "Couldn't calculate max_vtotal: %pe\n", ERR_PTR(ret));
-+			return ret;
-+		}
-+
-+		if (vrr_state->max_vtotal < mode->crtc_vtotal) {
-+			drm_dbg_kms(dev, "max_vtotal=%u < crtc_vtotal=%u\n",
-+				    vrr_state->max_vtotal, mode->crtc_vtotal);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	drm_dbg_kms(dev, "VRR has base_vtotal=%u max_vtotal=%u from %u/%uHz <= rate <= %u/%uHz\n",
-+		    vrr_state->base_vtotal, vrr_state->max_vtotal, min_vfreq_n,
-+		    min_vfreq_d, max_vfreq_n, max_vfreq_d);
-+
-+	return 0;
-+}
-+
  /**
-  * drm_atomic_helper_connector_hdmi_check() - Helper to check HDMI connector atomic state
-  * @connector: DRM Connector
-@@ -919,6 +1142,10 @@ int drm_atomic_helper_connector_hdmi_check(struct drm_connector *connector,
- 
- 	new_conn_state->hdmi.is_limited_range = hdmi_is_limited_range(connector, new_conn_state);
- 
-+	ret = hdmi_validate_vrr(connector, state);
-+	if (ret)
-+		return ret;
+  * hdmi_infoframe_log() - log info of HDMI infoframe
+  * @level: logging level
+@@ -1542,6 +1571,9 @@ void hdmi_infoframe_log(const char *level,
+ 	case HDMI_INFOFRAME_TYPE_DRM:
+ 		hdmi_drm_infoframe_log(level, dev, &frame->drm);
+ 		break;
++	case HDMI_INFOFRAME_TYPE_EMP:
++		hdmi_emp_infoframe_log(level, dev, frame);
++		break;
+ 	}
+ }
+ EXPORT_SYMBOL(hdmi_infoframe_log);
+@@ -1919,3 +1951,66 @@ int hdmi_infoframe_unpack(union hdmi_infoframe *frame,
+ 	return ret;
+ }
+ EXPORT_SYMBOL(hdmi_infoframe_unpack);
 +
- 	ret = hdmi_generate_infoframes(connector, new_conn_state);
- 	if (ret)
- 		return ret;
-diff --git a/include/drm/drm_crtc.h b/include/drm/drm_crtc.h
-index be5dca538d87..9d58158af459 100644
---- a/include/drm/drm_crtc.h
-+++ b/include/drm/drm_crtc.h
-@@ -63,6 +63,14 @@ struct drm_atomic_commit;
- struct drm_crtc_helper_funcs;
- struct drm_plane_helper_funcs;
++/**
++ * hdmi_emp_infoframe_vtem_init() - initialize an HDMI VTEM EMP
++ * @emp: HDMI VTEM EMP
++ */
++void hdmi_emp_infoframe_vtem_init(struct hdmi_emp_infoframe_vtem *emp)
++{
++	memset(emp, 0, sizeof(*emp));
++	emp->type = HDMI_INFOFRAME_TYPE_EMP;
++}
++EXPORT_SYMBOL(hdmi_emp_infoframe_vtem_init);
++
++/**
++ * hdmi_emp_infoframe_vtem_pack() - pack a vtem into a binary buffer
++ * @vtem: pointer to &struct hdmi_emp_infoframe_vtem to pack
++ * @buffer: pointer to pre-allocated output buffer
++ * @size: maximum size in bytes of @buffer
++ *
++ * Pack a VTEM infoframe struct into a binary buffer in a way that's suitable
++ * to be sent out over the wire.
++ *
++ * Returns the number of bytes packed into the binary buffer or a negative
++ * error code on failure.
++ */
++ssize_t hdmi_emp_infoframe_vtem_pack(struct hdmi_emp_infoframe_vtem *vtem,
++				     void *buffer, size_t size)
++{
++	u8 *ptr = buffer;
++
++	if (size < HDMI_INFOFRAME_SIZE(VTEM))
++		return -EINVAL;
++
++	/* 4 bits max */
++	if (vtem->fva_factor_m1 > 0xF)
++		return -EINVAL;
++
++	memset(buffer, 0, size);
++
++	/* Header Data */
++	ptr[0] = vtem->type;
++	ptr[1] = BIT(7) | BIT(6);
++	ptr[2] = 0;
++
++	ptr[3] = BIT(7) | BIT(2);
++
++	ptr[4] = 0;
++	ptr[5] = 1;
++	ptr[6] = 0;
++	ptr[7] = 1;
++	ptr[8] = 0;
++	ptr[9] = 4;
++
++	/* This is where the VTEM part starts */
++	ptr[10] = (vtem->fva_factor_m1 << 4) |
++		  (vtem->m_const ? BIT(1) : 0) |
++		  (vtem->game_vrr_en ? BIT(0) : 0);
++	ptr[11] = vtem->base_vfront;
++	ptr[12] = vtem->base_refresh_rate >> 8 & 0x3;
++	ptr[13] = vtem->base_refresh_rate & 0xFF;
++
++	return 14;
++}
++EXPORT_SYMBOL(hdmi_emp_infoframe_vtem_pack);
+diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+index b80a5ee63bb2..71e2b36896af 100644
+--- a/include/linux/hdmi.h
++++ b/include/linux/hdmi.h
+@@ -55,6 +55,7 @@ enum hdmi_packet_type {
+ };
  
-+struct drm_crtc_vrr_state {
-+	u8 vic;
-+	u16 cur_vtotal;
-+	u16 max_vtotal;
-+	u16 base_vtotal;
-+	bool dynamic;
+ enum hdmi_infoframe_type {
++	HDMI_INFOFRAME_TYPE_EMP = 0x7F,
+ 	HDMI_INFOFRAME_TYPE_VENDOR = 0x81,
+ 	HDMI_INFOFRAME_TYPE_AVI = 0x82,
+ 	HDMI_INFOFRAME_TYPE_SPD = 0x83,
+@@ -76,6 +77,7 @@ enum hdmi_infoframe_type {
+ #define HDMI_AUDIO_INFOFRAME_SIZE  10
+ #define HDMI_DRM_INFOFRAME_SIZE    26
+ #define HDMI_VENDOR_INFOFRAME_SIZE  4
++#define HDMI_VTEM_INFOFRAME_SIZE   10
+ 
+ /*
+  * HDMI 1.3a table 5-14 states that the largest InfoFrame_length is 27,
+@@ -235,6 +237,18 @@ struct hdmi_drm_infoframe {
+ 	u16 max_fall;
+ };
+ 
++struct hdmi_emp_infoframe_vtem {
++	enum hdmi_infoframe_type type;
++	unsigned char version;
++	unsigned char length;
++
++	bool game_vrr_en;
++	bool m_const;
++	unsigned char fva_factor_m1;
++	unsigned char base_vfront;
++	u16 base_refresh_rate;
 +};
 +
- /**
-  * struct drm_crtc_state - mutable CRTC state
-  *
-@@ -397,6 +405,9 @@ struct drm_crtc_state {
- 	 */
- 	struct drm_pending_vblank_event *event;
+ void hdmi_avi_infoframe_init(struct hdmi_avi_infoframe *frame);
+ ssize_t hdmi_avi_infoframe_pack(struct hdmi_avi_infoframe *frame, void *buffer,
+ 				size_t size);
+@@ -249,6 +263,10 @@ ssize_t hdmi_drm_infoframe_pack_only(const struct hdmi_drm_infoframe *frame,
+ int hdmi_drm_infoframe_check(struct hdmi_drm_infoframe *frame);
+ int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
+ 				   const void *buffer, size_t size);
++void hdmi_emp_infoframe_vtem_init(struct hdmi_emp_infoframe_vtem *frame);
++ssize_t hdmi_emp_infoframe_vtem_pack(struct hdmi_emp_infoframe_vtem *frame,
++				     void *buffer,
++				     size_t size);
  
-+	/** @vrr_state: State related to variable refresh rate. */
-+	struct drm_crtc_vrr_state vrr_state;
-+
- 	/**
- 	 * @commit:
- 	 *
+ enum hdmi_spd_sdi {
+ 	HDMI_SPD_SDI_UNKNOWN,
+@@ -457,6 +475,7 @@ union hdmi_infoframe {
+ 	union hdmi_vendor_any_infoframe vendor;
+ 	struct hdmi_audio_infoframe audio;
+ 	struct hdmi_drm_infoframe drm;
++	struct hdmi_emp_infoframe_vtem vtem;
+ };
+ 
+ ssize_t hdmi_infoframe_pack(union hdmi_infoframe *frame, void *buffer,
 
 -- 
 2.55.0

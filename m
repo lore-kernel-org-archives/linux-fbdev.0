@@ -1,127 +1,118 @@
-Received: from mail-pz2-f12.google.com (mail-pz2-f12.google.com [74.125.228.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 177921A680A
-	for <linux-fbdev@vger.kernel.org>; Mon, 21 Sep 2026 16:06:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.12
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 610624DA9B6
+	for <linux-fbdev@vger.kernel.org>; Mon, 21 Sep 2026 16:51:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790006795; cv=none; b=Gb5cLXZNtxnuFoBt+TJ9iyb6T3xO30zJBHZQbfMaMuOf9xejU6m9bjbSWgjRoqRIHUeK9L1cxrT+ysGt4/W88Jf0Q1J6Jo2pi3Se1p76mRTOmwo9QaVeDXYGKaescxu/KrkLG5iLM7oXMZJXnV8RIANmy6zf4MQ0S0l3ZRCZjL0=
+	t=1790009518; cv=none; b=KX2huleoO0qbeH2zrntLpKxm4YM3p51s81Dgk1f6xazCKyS9fHk4/9bAUO+GScgQSoPxwlg/DBmahWsaRNWQVBudFUOreRxXpSDLT89xQrCx2/ZqhYg1geZnfq+AU+/M7x5DCdVYDrR/TQDdNyAnUq5VirYQS2DJEwh5drxy1RM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790006795; c=relaxed/simple;
-	bh=UOTeQSx76a9v/ZV3YujOIEiYlAr7+SRsnm3/O5Z68jU=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=sFEfXzAHEsbgLmdvjBjqi0cOXh/21UE5CyNDp1VckxWXSZt1CMMr6lv4fw2mnLIPzw1KXCRxyockK+YpGDL2wUn9ihrmKuMiA82u12/rqo8QoFIfL1LwQRGNqW/jVRm5wqEe5eu2RI4PleyCfqkpk3F26eQD1jOOlUNiWwmUdhY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=jNIPkims; arc=none smtp.client-ip=74.125.228.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1790009518; c=relaxed/simple;
+	bh=/s+Rm5TPnXMuq1eSozgqOKlpb07HdyEVcwVTo15Mu20=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:To:From:Subject:
+	 References:In-Reply-To; b=YMzDLOhxcQujN4mTf8Emew1rDoFTStzIk5jyd3ckTcahmQjrMvXj1v6rXlWwg4LQkLyNNAhRxnkU6C5bcMjaQXdedf395Sd6fNLreLIHlT6Lg+j9w6EGGyIvmY1vS6rPeu8O5VEf191KQp2MqEeGkzahiZhydPG0Mlvx6RISBNw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=IjYWD3xI; arc=none smtp.client-ip=185.246.84.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="jNIPkims"
-Received: by mail-pz2-f12.google.com with SMTP id d2e1a72fcca58-868a9c48f9eso3784347b3a.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 21 Sep 2026 09:06:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1790006791; x=1790611591; darn=vger.kernel.org;
-        h=content-type:mime-version:message-id:date:references:in-reply-to
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=UOTeQSx76a9v/ZV3YujOIEiYlAr7+SRsnm3/O5Z68jU=;
-        b=jNIPkimsgzwGeAPw1T5J0ZZWbbWbvmf9gqRj40Y/atoUYgKG2yWh3HESwt6126nUDp
-         FD+Rmk79KRReyBBYIl4nF0UXejvRBciVXLpQ0x0P4HGhci5O8iuKBzqiPsMrmLMZpiFB
-         lTbphc8C5mH2TgoQvoSliu53nlAZUPM7gnPf6JVk1XoAUGXqWGbf8eYG4gdjGZ8Be6kE
-         0hW1vjiNk54/tiLuCoDH+rB/8p0unN4PncOQIY7I8fOQderqwGHSfRx+8mIky9QBPvd4
-         jWCVCSqDpodMotBD1r5UZ3EgftUBugTYiLbiO0CekAfIDwDxZ7IOPCqLCaPurh0VfluR
-         DhJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790006791; x=1790611591;
-        h=content-type:mime-version:message-id:date:references:in-reply-to
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=UOTeQSx76a9v/ZV3YujOIEiYlAr7+SRsnm3/O5Z68jU=;
-        b=VWazfuWWewrMWBDYLGrNWanc/BwjY+SVrqaLEV1/Ts1Tf74RdNYnjMPGDq0EYR/qOK
-         /zc4w8cKgD+WCza+Ox79IH0eswL83srK1vltDrQw1Ofo26e9rLRkd+LGA9t52FlG7/Up
-         W+L6206MVPM5fQ1R0x8r1HpUkrigN1FtKt4psOv8F31ugvC7ozvJjsgXtdVjycJoUkYN
-         vUbDQpmQ0GU0VwX20eGNauUYJdratZadOZuR/9cy6UXNLECUdggbSnI/bvWB6V/V2/VA
-         OWM8zR4X00VH9hziABjWTHwBT8ZQJ+y1i6eQJD2a7KRRz3jtaua0/2sLf+xCpp8y9yMQ
-         dWxg==
-X-Forwarded-Encrypted: i=1; AKwUvByYd41EhdYTCG0w7v0Hn5sAIvD3L6U2hQtwyZsuMLw+oNrtlwNTHq8dZsfi5fXV4hmi5mcbMuCYf7VMtw==@vger.kernel.org
-X-Gm-Message-State: AFuF++kz37Aua4B5OBM+sg9VfLoZAV7QGRfqEHrzpqwgS9gOUtBHi/zS
-	zVaPIp8SsbZK2m22GdDgdgVheKpiT5IglNc1+20xaFeZwScp2Kcp0sWWMXqxwcoa0wU=
-X-Gm-Gg: AYBFou15BXsrdhe2RrM4+yWvaIeGFtcbs+hvyyPiwiC2y1djXapDsKoHEYQpI1RuZpl
-	9n89D8+AjHQBSkw21IWly34R/xgoqRINI7zp5Hdguwo/RH0fs144jACF7ZK4ML2ADPjEVPrvBo1
-	LWzbsNbJ2/J0qMXJK9TeS3bLpSBrOK9HGyACWZNWSTFUFll0NPbHCzrUzFiR0S15rvwPv3LhTjz
-	WJMfER8K1M8DIr1IePmjqIGUp9shFGNNosOz2/vfNc2qJGkADP6Tei4PZdF4b3ocErATnCMsiNx
-	4/SydLH3Mbd0yqQUlpg3cQBjNYqIC5WKzICyeHRlVLanl7zvFMLccgggruyWl5Dre3wgfkXU08c
-	sZA0vslrFMKmF28niu9F29y/Va+w7NFdJSUYbdgDjvXqSccWo6pS5jmvUL0pRV4K7eFaORVJMRz
-	Tj/916LADgAlzfbYLZtkURGKpbkwpjhjmxWeVPYmPBjiZFaPLWX2+dI1D9VBmmmo8Why8=
-X-Received: by 2002:a05:6a00:ac8:b0:878:34d7:6a30 with SMTP id d2e1a72fcca58-87834d76f20mr8319100b3a.36.1790006791257;
-        Mon, 21 Sep 2026 09:06:31 -0700 (PDT)
-Received: from localhost ([71.212.197.238])
-        by smtp.gmail.com with UTF8SMTPSA id d2e1a72fcca58-877a95f915csm3487490b3a.29.2026.09.21.09.06.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Sep 2026 09:06:30 -0700 (PDT)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Arnd Bergmann <arnd@kernel.org>, soc@lists.linux.dev
-Cc: Arnd Bergmann <arnd@arndb.de>, Andreas Kemnade <andreas@kemnade.info>,
- Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>, Paul
- Walmsley <paul@pwsan.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Mauro Carvalho Chehab
- <mchehab@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Helge
- Deller <deller@gmx.de>, Tero Kristo <kristo@kernel.org>, Stephen Boyd
- <sboyd@kernel.org>, linux-kernel@vger.kernel.org,
- linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
- linux-media@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-clk@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Aaro
- Koskinen <aaro.koskinen@iki.fi>
-Subject: Re: [PATCH v2 06/14] ARM: omap2: remove omap24xx support
-In-Reply-To: <20260914140821.1805449-7-arnd@kernel.org>
-References: <20260914140821.1805449-1-arnd@kernel.org>
- <20260914140821.1805449-7-arnd@kernel.org>
-Date: Mon, 21 Sep 2026 09:06:30 -0700
-Message-ID: <7htsnid1x5.fsf@baylibre.com>
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="IjYWD3xI"
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-02.galae.net (Postfix) with ESMTPS id 465AE1A0D88;
+	Mon, 21 Sep 2026 16:51:48 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 04BCA5FFB2;
+	Mon, 21 Sep 2026 16:51:48 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 59E35103291BD;
+	Mon, 21 Sep 2026 18:51:26 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1790009502; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=cSwoV7JYFKwWDkDL4IDFclIBqtgIii8ZsKhV2r0CgdE=;
+	b=IjYWD3xIKW0KiAwSGgakYrxt0r+vUYd0qxiCiN/UWCsb/Lzv6F9MRJMiln7kdo9fS0L97I
+	MsXakBjOTJ1+zKqPla6JTpP36tNNijKQuc05p4N/sYCzdy/c7URDCf+uJa5rryyF/pGD5K
+	CvqGwT/3RpwqR10lvWnK934ts0XBX+qWLGQw+t4WaJu2BG8/qPF+HiQ1510dHvF6L28CmX
+	ioTpVmqh4beeqW3L3IIl55sutm8DOpW/zT1po1oe7QbGwrjZOVXRXmuApmKzwv2DLncD2H
+	1SpLtpGpNxBgOe0ek/Ku+tmxFQw0ujiCLjuQSMInGOlC5v95Mxni3AZCvi3qHg==
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 21 Sep 2026 18:51:25 +0200
+Message-Id: <DLL5ELBGGCIU.3LL2QIE4I4MDS@bootlin.com>
+Cc: <kernel@collabora.com>, <linux-kernel@vger.kernel.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-sunxi@lists.linux.dev>, <linux-rockchip@lists.infradead.org>,
+ <linux-fbdev@vger.kernel.org>, "Sashiko" <sashiko-bot@kernel.org>
+To: "Luca Ceresoli" <luca.ceresoli@bootlin.com>, "Cristian Ciocaltea"
+ <cristian.ciocaltea@collabora.com>, "Maarten Lankhorst"
+ <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
+ <airlied@gmail.com>, "Simona Vetter" <simona@ffwll.ch>, "Dave Stevenson"
+ <dave.stevenson@raspberrypi.com>, "Dmitry Baryshkov" <lumag@kernel.org>,
+ "Andrzej Hajda" <andrzej.hajda@intel.com>, "Neil Armstrong"
+ <neil.armstrong@linaro.org>, "Robert Foss" <rfoss@kernel.org>, "Laurent
+ Pinchart" <Laurent.pinchart@ideasonboard.com>, "Jonas Karlman"
+ <jonas@kwiboo.se>, "Jernej Skrabec" <jernej.skrabec@gmail.com>, "Chen-Yu
+ Tsai" <wens@kernel.org>, "Samuel Holland" <samuel@sholland.org>,
+ =?utf-8?q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>, "Raspberry Pi Kernel
+ Maintenance" <kernel-list@raspberrypi.com>, "Raphael Gallais-Pou"
+ <rgallaispou@gmail.com>, "Sandy Huang" <hjc@rock-chips.com>,
+ =?utf-8?q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "Andy Yan"
+ <andy.yan@rock-chips.com>, "Algea Cao" <algea.cao@rock-chips.com>, "Daniel
+ Stone" <daniels@collabora.com>, "Liu Ying" <victor.liu@nxp.com>, "Phong LE"
+ <ple@baylibre.com>, "Helge Deller" <deller@gmx.de>
+From: "Luca Ceresoli" <luca.ceresoli@bootlin.com>
+Subject: Re: [PATCH v11 12/74] drm/bridge: Fix unlocked list_del in
+ drm_bridge_add()
+X-Mailer: aerc 0.22.0
+References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
+ <20260901-dw-hdmi-qp-scramb-v11-12-bc12954a0688@collabora.com>
+ <DLKT61DMSLFT.JA03R1SO6WNU@bootlin.com>
+ <DLKT9WH655L4.37F4JBC3Y14D8@bootlin.com>
+In-Reply-To: <DLKT9WH655L4.37F4JBC3Y14D8@bootlin.com>
+X-Last-TLS-Session-Version: TLSv1.3
 
-Arnd Bergmann <arnd@kernel.org> writes:
+On Mon Sep 21, 2026 at 9:21 AM CEST, Luca Ceresoli wrote:
+> On Mon Sep 21, 2026 at 9:16 AM CEST, Luca Ceresoli wrote:
+>> Hello Cristian,
+>>
+>> On Tue Sep 1, 2026 at 8:50 PM CEST, Cristian Ciocaltea wrote:
+>>> When re-adding a bridge that was previously removed, drm_bridge_add()
+>>> drops it from bridge_lingering_list without holding bridge_lock.
+>>>
+>>> Both bridge_list and bridge_lingering_list are protected by bridge_lock=
+,
+>>> as they are concurrently modified by drm_bridge_remove() and
+>>> __drm_bridge_free(), and walked by the debugfs 'bridges' file.  Running
+>>> the list_empty() test and the list_del_init() outside of the lock may
+>>> therefore corrupt either list.
+>>
+>> The analysis appears correct, with a small nit: __drm_bridge_free() cann=
+ot
+>> touch the list concurrently to other functions, because it only runs whe=
+n
+>> the refcount is 0, and all other functions tounch the lists only when th=
+ey
+>> have a reference. (Should this sentence be wrong, that would be a big bu=
+g!)
+>
+> Ah, no, I just realized my concern does not stand. Indeed
+> __drm_bridge_free() can run concurrently on a different bridge than the o=
+ne
+> being handled by other functions, ending up in modifying the same list. S=
+o
+> your comment is fully correct:
+>
+> Reviewed-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
 
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The omap24xx SoC platform was used in the Nokia N800 and N810 tablets
-> released on 2007 and was among the first ARMv6 CPUs in products that
-> made it into products.
->
-> Unfortunately the early ARM1136r0 CPU cores had a number of quirks that
-> caused a disproportionate amount of work to keep them compatible with
-> later ARMv6K/v7/v8 implementations.
->
-> Drop the support for this SoC in order to allow removing ARM1136r0.
->
-> Cc: Andreas Kemnade <andreas@kemnade.info>
-> Cc: Kevin Hilman <khilman@baylibre.com>
-> Cc: Roger Quadros <rogerq@kernel.org>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Paul Walmsley <paul@pwsan.com>
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Tero Kristo <kristo@kernel.org>
-> Cc: Stephen Boyd <sboyd@kernel.org>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-media@vger.kernel.org
-> Cc: linux-mtd@lists.infradead.org
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-clk@vger.kernel.org
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de> # omapfb
-> Acked-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+And tested with bridge hotplug:
+Tested-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
 
-Acked-by: Kevin Hilman <khilman@baylibre.com>
+--
+Luca Ceresoli, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com

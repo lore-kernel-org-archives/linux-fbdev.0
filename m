@@ -1,176 +1,144 @@
-Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CCDF2FD69D;
-	Sun, 20 Sep 2026 09:44:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 951943ACF0F
+	for <linux-fbdev@vger.kernel.org>; Mon, 21 Sep 2026 07:06:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=185.246.84.56
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789897455; cv=none; b=H+l5z+8jqT6VRUg/EHWBuF2CktUAH1vEtI77dIsKqkD7pm+ReKOWYu7PcZVdmNyzMJTBFzWpI9Tfh2tY7gz2sZbg0x6rnTuuI0J2SJ8vSSztJjhozJoTtKXKoxQLwf1D+SsG8mZYFrriBnq1waWztB1kIjZw+ySLsa9Pl+snbuQ=
+	t=1789974365; cv=none; b=K2ltjucRgS5imk8y/VbJqYWSKo+kbUhIqx0b5kO6Eo8tnPRkVl1o4VhzqW+mILI0bx2LNoc3nZ5+zN4CECsv8Y+T97OTgv/fTHHY9wawb7GXmGBYZRLgdCG/ceZI4LD2l9JWbQ1B+Ky7bXya+UWb+qrg9+i/KYcLTWcbet+VKxs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789897455; c=relaxed/simple;
-	bh=VaCHIbqayKHpuRvZbdiid0ApzeVrHRM1euobbTzlPRc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LzeM64xDbDwXADnL+ClCgDs+aNxqyVXhMqzGuQcJYK99DUjDB8AlFiuh/icn2DdDKquIMCDsTdj2JiBJlAwEQeVwvxvwFrhouGkCdhF5uCAgFtsvbcftluF+fXqiP+oRggbxv+EX67/6/vjGpv4cvmZj3HBZ3Ewho68eUYbXbvk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=peMEUP+Y; arc=none smtp.client-ip=148.251.105.195
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	s=arc-20240116; t=1789974365; c=relaxed/simple;
+	bh=EBJQpWLY6zS3lPstVd9MZs+Q/9KBP95hHmwtpJd2xBA=;
+	h=Mime-Version:Content-Type:Date:Message-Id:From:Subject:Cc:To:
+	 References:In-Reply-To; b=TQ+PUNJ2PvXLSf4VqWl60wflW02Yx2vITPgiJywN56sgvqf4riimcXmX/eV2KmClXhIRemGJlQZ7yAL+FVVDwNFRTbuSclRYZROLpw16TFgpihBVDI31vW90nmuDdJRrQrGyVspaM3s+J+oUP46MJnXGH5+o3Fd5c5W7ht68e2A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; spf=pass smtp.mailfrom=bootlin.com; dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b=oIGWPfNv; arc=none smtp.client-ip=185.246.84.56
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bootlin.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="peMEUP+Y"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1789897452;
-	bh=VaCHIbqayKHpuRvZbdiid0ApzeVrHRM1euobbTzlPRc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=peMEUP+Yy1BaYtTRZVdeYhHiwtL+emnJv+XSfsBsP0TW2HZHy3+OOhAonCgfrNZ6S
-	 BzizMfHPTWfyeI+HWchhwSCwHYtP3BWE8ZQ0gXX8OF6XatXDvwNE+RbWihJ3fJTl3a
-	 Q4Wk6lz2+tya3mYVne4ryXQSzpRjYYmWOzIyTwX6Bmjze5DwzXuBceSOJu7t6YcafJ
-	 eu/oHb/IqBziro+swTA9msKOM8PibldK5ml919xoioItvmhl8XFD1XGPBXsbLp3dd/
-	 WZca0ZjGKg1lzihFUT7mcbsuP/XtjoIF/h5A5Y1pzj5468Gt/MTI8LI1v7S3g0HuGF
-	 /T1UTs74TSTpw==
-Received: from [100.64.0.241] (unknown [100.64.0.241])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 4598517E00C9;
-	Sun, 20 Sep 2026 11:44:09 +0200 (CEST)
-Message-ID: <9e21c5c3-f8e6-4343-b4cc-52c9e84316ef@collabora.com>
-Date: Sun, 20 Sep 2026 12:44:08 +0300
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.b="oIGWPfNv"
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-02.galae.net (Postfix) with ESMTPS id EFDF41A0E34;
+	Mon, 21 Sep 2026 07:06:00 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id BC2FD60339;
+	Mon, 21 Sep 2026 07:06:00 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 79EEC10328ED0;
+	Mon, 21 Sep 2026 09:05:41 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1789974357; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=lc3Q5bHjC9Y5EjOyv/5Amr9ZepClgh/msjX52TvdD9I=;
+	b=oIGWPfNvDSRbuhkeQtz7bxBJxWZYBW2cPZXT+UaEDez5iBFH2fF/5qtRmniX5pWZGz8E3K
+	q74f2AJxyvO54Nw2fgwxH0oY7iv3GFATtVa9GXDdxGNpeQhgcdnuS6q/aZMlIuCUtu+/sb
+	4iQ+/XyCd2B1VnpR+ZPSGkDM+9JVT+5mDsBCyziy25sxPBu9ZcbPg0GoNguKP1G05ucFLL
+	BMFC/U3CxdZw/9Kl6afCteUQDoNtTYjQ7SnsgvWqFB0O14Y0n8Bh2fmJ6XlJf9nitdwE1Z
+	dm61Uq7NAkZqZJzwTtkc5Gro/DbLRu4zBMjgv+5b5LNTZXEZV46O9KlQTh9fTg==
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v11 00/74] Add HDMI 2.0 support to DW HDMI QP TX
-To: Maxime Ripard <mripard@kernel.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>,
- Dave Stevenson <dave.stevenson@raspberrypi.com>,
- Dmitry Baryshkov <lumag@kernel.org>, Andrzej Hajda
- <andrzej.hajda@intel.com>, Neil Armstrong <neil.armstrong@linaro.org>,
- Robert Foss <rfoss@kernel.org>,
- Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
- Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
- Luca Ceresoli <luca.ceresoli@bootlin.com>, Chen-Yu Tsai <wens@kernel.org>,
- Samuel Holland <samuel@sholland.org>, =?UTF-8?Q?Ma=C3=ADra_Canal?=
- <mcanal@igalia.com>,
- Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>,
- Raphael Gallais-Pou <rgallaispou@gmail.com>, Sandy Huang
- <hjc@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>,
- Andy Yan <andy.yan@rock-chips.com>, Algea Cao <algea.cao@rock-chips.com>,
- Daniel Stone <daniels@collabora.com>, Liu Ying <victor.liu@nxp.com>,
- Phong LE <ple@baylibre.com>, Helge Deller <deller@gmx.de>,
- kernel@collabora.com, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
- linux-sunxi@lists.linux.dev, linux-rockchip@lists.infradead.org,
- linux-fbdev@vger.kernel.org,
- Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
- Sashiko <sashiko-bot@kernel.org>, Diederik de Haas
- <diederik@cknow-tech.com>, Maud Spierings <maud_spierings@hotmail.com>
-References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
- <ap_ZyC-XaHTUNyQ5@houat>
-Content-Language: en-US
-From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-In-Reply-To: <ap_ZyC-XaHTUNyQ5@houat>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date: Mon, 21 Sep 2026 09:05:40 +0200
+Message-Id: <DLKSY3W6CGW1.3C0J6DHKV8P2Z@bootlin.com>
+From: "Luca Ceresoli" <luca.ceresoli@bootlin.com>
+Subject: Re: [PATCH v11 13/74] drm/bridge: Fix NULL deref in
+ drm_bridge_add() for legacy bridges
+Cc: "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, "Thomas
+ Zimmermann" <tzimmermann@suse.de>, "David Airlie" <airlied@gmail.com>,
+ "Simona Vetter" <simona@ffwll.ch>, "Dave Stevenson"
+ <dave.stevenson@raspberrypi.com>, "Dmitry Baryshkov" <lumag@kernel.org>,
+ "Andrzej Hajda" <andrzej.hajda@intel.com>, "Neil Armstrong"
+ <neil.armstrong@linaro.org>, "Robert Foss" <rfoss@kernel.org>, "Laurent
+ Pinchart" <Laurent.pinchart@ideasonboard.com>, "Jonas Karlman"
+ <jonas@kwiboo.se>, "Jernej Skrabec" <jernej.skrabec@gmail.com>, "Luca
+ Ceresoli" <luca.ceresoli@bootlin.com>, "Chen-Yu Tsai" <wens@kernel.org>,
+ "Samuel Holland" <samuel@sholland.org>, =?utf-8?q?Ma=C3=ADra_Canal?=
+ <mcanal@igalia.com>, "Raspberry Pi Kernel Maintenance"
+ <kernel-list@raspberrypi.com>, "Raphael Gallais-Pou"
+ <rgallaispou@gmail.com>, "Sandy Huang" <hjc@rock-chips.com>,
+ =?utf-8?q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "Andy Yan"
+ <andy.yan@rock-chips.com>, "Algea Cao" <algea.cao@rock-chips.com>, "Daniel
+ Stone" <daniels@collabora.com>, "Liu Ying" <victor.liu@nxp.com>, "Phong LE"
+ <ple@baylibre.com>, "Helge Deller" <deller@gmx.de>, <kernel@collabora.com>,
+ <linux-kernel@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-sunxi@lists.linux.dev>,
+ <linux-rockchip@lists.infradead.org>, <linux-fbdev@vger.kernel.org>,
+ "Sashiko" <sashiko-bot@kernel.org>
+To: "Maxime Ripard" <mripard@kernel.org>, "Cristian Ciocaltea"
+ <cristian.ciocaltea@collabora.com>
+X-Mailer: aerc 0.22.0
+References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
+ <20260901-dw-hdmi-qp-scramb-v11-13-bc12954a0688@collabora.com>
+ <ap_Tr_Viqy29f515@houat>
+In-Reply-To: <ap_Tr_Viqy29f515@houat>
+X-Last-TLS-Session-Version: TLSv1.3
 
-Hi Maxime,
+On Tue Sep 8, 2026 at 11:24 AM CEST, Maxime Ripard wrote:
+> On Tue, Sep 01, 2026 at 09:50:37PM +0300, Cristian Ciocaltea wrote:
+>> Legacy bridge drivers that embed struct drm_bridge in a zero-initialized
+>> allocation, rather than obtaining it from devm_drm_bridge_alloc(), never
+>> run INIT_LIST_HEAD() on bridge->list, leaving next and prev NULL.
+>> list_empty() compares next against &bridge->list, so it reports such a
+>> list head as non-empty.  list_del_init() therefore runs and dereferences
+>> the NULL pointers, panicking the kernel during probe.  Only builds with
+>> CONFIG_DEBUG_LIST survive, with a list corruption report.
+>>
+>> This affects rk3066_hdmi and the i.MX8 LDB bridges, which still embed a
+>> bridge in a devm_kzalloc()'d struct.
+>>
+>> Initialize the list head when it is found to be NULL, so that the bridge
+>> ends up with a valid empty list head and list_del_init() is only reached
+>> for bridges that can actually be linked.
+>>
+>> Fixes: 17805a15d175 ("drm/bridge: add list of removed refcounted bridges=
+")
+>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>> Closes: https://lore.kernel.org/all/20260731175016.C5D591F00AC4@smtp.ker=
+nel.org/
+>> Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
+>> ---
+>>  drivers/gpu/drm/drm_bridge.c | 9 ++++++++-
+>>  1 file changed, 8 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/gpu/drm/drm_bridge.c b/drivers/gpu/drm/drm_bridge.c
+>> index 2c457ad74f3b..a8b6df5c13ea 100644
+>> --- a/drivers/gpu/drm/drm_bridge.c
+>> +++ b/drivers/gpu/drm/drm_bridge.c
+>> @@ -453,9 +453,16 @@ void drm_bridge_add(struct drm_bridge *bridge)
+>>  	 * If the bridge was previously added and then removed, it is now
+>>  	 * in bridge_lingering_list. Remove it or bridge_lingering_list will b=
+e
+>>  	 * corrupted when adding this bridge to bridge_list below.
+>> +	 *
+>> +	 * Legacy drivers that allocate the bridge with kzalloc() rather than
+>> +	 * devm_drm_bridge_alloc() leave list.next NULL. Such a bridge cannot
+>> +	 * be on any list, and list_del_init() would dereference NULL, so
+>> +	 * initialize the list head first.
+>
+> "legacy" bridges are ambigous and was also used for non-atomic bridges.
+> That being said, it's now *required* that bridges use
+> devm_drm_bridge_alloc() instead of kzalloc, and we warn in
+> drm_bridge_add if it hasn't.
+>
+> So I don't think we should merge this patch.
 
-On 9/8/26 12:48 PM, Maxime Ripard wrote:
-> Hi,
-> 
-> On Tue, Sep 01, 2026 at 09:50:24PM +0300, Cristian Ciocaltea wrote:
->> Enable HDMI 2.0 display modes (e.g. 4K@60Hz) on the Synopsys DW HDMI QP
->> TX controller, as found in Rockchip RK3576 & RK3588 SoCs, by adding SCDC
->> management for high TMDS clock ratio and scrambling.  Since SCDC state
->> is lost on sink disconnects, the bridge driver needs to trigger a CRTC
->> reset during connector detection.
->>
->> To support this at the DRM infrastructure level, the series first
->> introduces the HDMI version enum, then prepares for changing the
->> signature of drmm_connector_hdmi_init(), i.e. dropping the vendor,
->> product, supported_formats and max_bpc arguments, which are being moved
->> into struct drm_connector_hdmi_funcs, by temporarily renaming the helper
->> to drmm_connector_hdmi_ini2().  This lets the new signature be
->> introduced under the original name while callers are converted
->> incrementally.  Note the transitional name matches the original's length
->> so continuation-line arguments stay aligned to the opening parenthesis,
->> keeping the diff to the identifier itself and avoiding re-alignment
->> churn.
->>
->> Appending more HDMI-specific arguments to the init function would not
->> scale well, hence the hdmi_funcs struct is extended with new fields:
->> supported_hdmi_ver, supported_tmds_char_rate.  These are used to
->> infer and/or limit the maximum TMDS character rate permitted for the
->> connector.
->>
->> Patches 6-11 build the connector and bridge scrambling infrastructure on
->> top: the connector scrambler callbacks/flags, the scdc-helper
->> additions (connector-prefixed debug macro and SCDC version helper), and
->> the HDMI scrambling management helpers including SCDC source-version
->> advertisement.
->>
->> Patches 12-25 wires this up through the hdmi-state-helper and bridge
->> connector layers: source TMDS rate validation, hotplug SCDC state sync
->> and the scrambling requirement, new source-side scrambling bridge ops,
->> the switch to a cached-status, atomic-aware .detect_ctx() connector
->> helper, and finally hooking up the HDMI 2.0 scrambler callbacks.
->>
->> The SCDC scrambling feature itself is implemented in the DW HDMI QP
->> bridge driver, alongside i2c error-message rate limiting,
->> .enable_hpd()/.disable_hpd() PHY ops and a dw_hdmi_qp_hpd_notify()
->> helper (patches 26-30).
->>
->> Patches 31-41 cover the Rockchip platform driver and HPD handling: bug
->> fixes, minor cleanups, avoiding spurious HDP IRQ wakeups, masking the
->> RK3576 HPD IRQ in io_init, implementing the .{enable|disable}_hpd() PHY
->> ops, switching HPD reports to dw_hdmi_qp_hpd_notify() to restrict events
->> to the affected connector, dropping the now-unused .setup_hpd() PHY op.
->>
->> Patches 42-48 convert VC4 HDMI to the common infrastructure as a proof
->> of reuse: adopting the shared TMDS char rate constants, switching to
->> drm_hdmi_mode_needs_scrambling() and force_ctx(), proper -EDEADLK
->> handling, and replacing the driver-local scrambling implementation with
->> the common SCDC scrambling helpers.
->>
->> Patches 50-57 advertise supported version for all HDMI
->> connectors/bridges, except the MediaTek HDMI driver (for now), as it
->> requires non-trivial changes: there's a core library shared between two
->> drivers, one being HDMI 2.0 compliant.
->>
->> Patches 58-67 add KUnit tests: HDMI caps-based init coverage and
->> source-side scrambler validation for the connector, conversion of
->> hdmi_state_helper to the new drmm_connector_hdmi_init() with
->> max_tmds_char_rate validation, a new 4K@60Hz 600MHz TMDS EDID,
->> source-side scrambling decision coverage, and conformity fixes for the
->> existing 1080p+4K YUV420 200MHz and 4K RGB/YUV 340MHz test EDID blobs.
->>
->> Patches 68-71 remove the now unused drmm_connector_hdmi_ini2() helper
->> and redundant hdmi fields from connector structs: vendor, product,
->> supported_formats and max_bpc.
->>
->> Eventually patches 72-74 consolidate SPD InfoFrame handling of
->> vendor/product.
->>
->> This has been tested on the following boards:
->>
->> * Radxa ROCK 5B (RK3588)
->> * Radxa ROCK 4D (RK3576)
->> * Raspberry Pi 5 Model B Rev 1.1 (BCM2712 D0)
-> 
-> This series is getting a bit insane. You have preliminary patches that
-> have been reviewed/acked already, you should merge them, and possibly
-> split the rest into preliminary series.
+I agree.
 
-Thanks for the additional reviews, and sorry for my late reply - I've been on
-leave and traveling.  I've merged the preliminary patches and will handle the
-split upon my return, in about a week.
+I theory all drivers are be already using devm_drm_bridge_alloc() by now.
 
-I plan to send separate series for vc4, dw-hdmi-qp, the rest of the bridge
-drivers, kunit & final cleanup.
+In practice rk3066_hdmi is actually still using kzalloc, it should be fixed
+to use devm_drm_bridge_alloc(). Are you OK with doing it in v12?
 
-Regards,
-Cristian
+By "i.MX8 LDB" I guess you mean fsl-ldb.c, which was converted in
+9c399719cfb9 ("drm: convert many bridge drivers from devm_kzalloc() to
+devm_drm_bridge_alloc() API").
+
+Luca
+
+--
+Luca Ceresoli, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com

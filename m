@@ -1,104 +1,152 @@
-Received: from mail-wm2-f13.google.com (mail-wm2-f13.google.com [74.125.225.141])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AEA44A5C59
-	for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 19:39:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.141
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96A333FDBF7;
+	Tue, 22 Sep 2026 21:24:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.251.105.195
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790105961; cv=none; b=APmJeNOP+kVi2JiHY3gJhKmHQHhi18/5VRU6TGz9j0b2fi6gNPSRb9VxIAXYR15sKpGPBp/kRQvQXymQo9EhcgWs+xdJZR1lg8z0CvTCL3mGmnG1v+SThxixivNRIIpkdDG2vXdJkzBR8KAlY4Tmfa5xYA48ozVCsXa0d15D0Yg=
+	t=1790112298; cv=none; b=E6vpIj1p+jGIe8miVpFgaXb3fTmBc6RGaXSjMxOCRQzOgj92FAaQ9VNr7mxyVJkEc7puahRflHXLpXPltUy65En9GVd2IgbCGPanvjBzePxXr+kOeljtvLgICwlTu3xFux0A9cYR3Zh+H93oRPKsZyLEfq4cXzPV6BRiO5usVks=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790105961; c=relaxed/simple;
-	bh=K4wKYbY7lU8zUdU+RI5QB9tTpmwS75+tA5THD4vU4oI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BM592hyjDtzhRYLea7AMS60R6SpfEbAbJMn9S7qJnaD+8IJRUgEdmGVhDjcS5WlvLkTeNX1+y6p0D1VKEqiMEI72j/Bs6dwxxONP1DEyAnVIqxhh20YVwcQYa5D5cM+6lNUDQjm88LRbi74bvx8wKYq/w1i19pq5w9B3uFb5MVo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=SCJ4d+ks; arc=none smtp.client-ip=74.125.225.141
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790112298; c=relaxed/simple;
+	bh=YdbB4HHFr5RiQMEKS7IZDCgTEt//MSoaU0ovnWKgFaY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=t5rnEKhk/yrAiv9pTCG5FUQeA9JvZSzMrggoqvUvYmWFDSLTwiulrUOuI5mA/oly8ZDeHwF2tx+xGDpmxIXm4//ioJSqjm2N0jLe3/ANt52TgpU4Qx7PVtNYsmtsvtw9T39ZeIzvZagymgrT4hzLr6WVFVBRE34DjgoTvtaNK90=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b=o5zlNzoT; arc=none smtp.client-ip=148.251.105.195
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SCJ4d+ks"
-Received: by mail-wm2-f13.google.com with SMTP id 5b1f17b1804b1-49b912d3931so1103005e9.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 12:39:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790105957; x=1790710757; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=nL0RZ42dVFFkNwcOaBBBW2RIorolWqyGdNFfDoBAeZI=;
-        b=SCJ4d+ksMF4vTPq+zMjIotBID7PsPO/J5xwvxjUjeVG0C92sPHyNFFhmD75HRYR7BD
-         LN+rz5FZISR4+/5HzCoZPPZ0vpSpm3+xquCeDdWkrsPyHSHh9iVOo2fACtRKOy3+/r71
-         rTmgOk7Pss8n+ulQgOYg79VH5oULUc+ywsqHE9fvGpZmgHbsl+PhJS/SPoJYEb2mS6IV
-         1AIbWdq0mxIlth41dyV9O4XqI7lIWyp9w7WdZzrO5jHw32GfkAXANkxKRGji6gK18bzw
-         U7++CwytXygz2Kfzz2qDmuCvWBLXuUgP97l3ifC71v/NgwPKOLAdCbgr8wnt9gRFDWmo
-         U4eg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790105957; x=1790710757;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=nL0RZ42dVFFkNwcOaBBBW2RIorolWqyGdNFfDoBAeZI=;
-        b=ZNXprvEHKK48zZtGnLhlEWRWeCYBudQv6VqoGN/X7dYp1vo5KPFYBuZoYxoCJYnWEp
-         y90b82LdTCNqskWFfnegjymetKZVtVc4UGN2y1clTgBr/OH5ZDkbYYctfZE8/Cr2+3Mo
-         Ilb3SFUbeEH+6vGO4S0l2OfjwNHZvD1Ft2O7Er++z0PF6VYwbnVqHLXyIM0OzA5UMLVi
-         /VpqD8HnEFhNvzVXIpqNZh5OUsWk9JxEK/ggSWkzZ3F49sqSham0Sd0DmWVh9vhV49bE
-         +NIfbwgVn3SF+3o9y10+pWFRaneAMCDO9GlQ6b/LeroCl1G50yoHXzC53KABaLUSrrgQ
-         gD9A==
-X-Forwarded-Encrypted: i=1; AKwUvBwvC49+83MUvKtgqbWfUmf9o9pKBY3G5eBs43LHGy8dBWudIb0F6n6FYmzrNAQWEQIiUvXfJ23oHEzE1A==@vger.kernel.org
-X-Gm-Message-State: AFuF++nVjZ1cFSy3XZ4IH22KuyiZixPL5C+MzZ8W8aviyzk5+oj/Yyit
-	gR+bPGti2odKygsTQO1MYWvqALRwU1KmErD+Id7qNzeQ+A7rNu92CiJk
-X-Gm-Gg: AYBFou3hOxpmT0gACd+YhkTlgYNvy7kpg76I1hSEiNDuqouh3W2J3RnYyAGk213WX9m
-	rudeXh2D66KO7NJ1rBvPz7Qp8y1x4L8ksMsPA00dZiZr08rygXFrGK7pOjB1/r+jrgXUKpI12xQ
-	DfxHTnLxenLeWAMhqFhXbxlCkA24Oo9vR+AaxSlc9eHEQxVMpdysq+0DyVQogUKhOtZ6fZH3fCs
-	zn7gyy8mvxaPgcie7OpkX7CLV+f1MrjP3kV29BKBAIFtROO9kwU6SKLAGj5JaUH23tGNhLwxtCU
-	HftqrMttM0yM5lVoyP5km5+KyUBPNdrs7PN+/HvPrlT3Z4YzBwBjHuYR9mRORdTIBZVdy5DGdHI
-	l0L2B4B0ByMSTNe+jNKxfaKFS2nYxL8SqtRyTsy08nlfzivTnx3Zvjfm8ky91hM6QvUjYgSBSha
-	GZIhTlH4oUgMzYipqBlQNrJm5gfnyIMN5+9Ywxi1elT9Weolbpg8wCyfq0sYohnmkhqXlaH6jIh
-	mfUZncDhEv9UiAWDsmHiQ==
-X-Received: by 2002:a05:600c:8b64:b0:499:8b13:3a98 with SMTP id 5b1f17b1804b1-49fdee0a0ebmr2558085e9.4.1790105957383;
-        Tue, 22 Sep 2026 12:39:17 -0700 (PDT)
-Received: from localhost.localdomain ([149.7.5.255])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fdf157cdfsm2494235e9.0.2026.09.22.12.39.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Sep 2026 12:39:17 -0700 (PDT)
-From: Vladan Kalaba <vladan.kalaba@gmail.com>
-To: gregkh@linuxfoundation.org,
-	sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com
-Cc: vladan.kalaba@gmail.com,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: sm750fb: fix const pointer declaration in sm750.c
-Date: Tue, 22 Sep 2026 21:36:53 +0200
-Message-ID: <20260922193653.16086-1-vladan.kalaba@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.b="o5zlNzoT"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+	s=mail; t=1790112277;
+	bh=YdbB4HHFr5RiQMEKS7IZDCgTEt//MSoaU0ovnWKgFaY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=o5zlNzoTZhj10MvLCN9RERRNk12QLtK1kfvAIFY9TWvY/x0Vx7xXCU4Qz27NEc4Ao
+	 j/ScP5/FJpyAOQuM47UzkcQnjLTVwkbYLodGxtqPQ7VTjmpUvi/L3VDRLToQiAjhfm
+	 VweugPVCerh94lN8/qmLvIRTKDymIrI+NIQL+s738bw7ANjnj9lSQ1qKJHwwrlXJl/
+	 z01fNYmGCkIVtIHgICRqShsBygE0Y7GXKbVYsy59CEygo3B1nk1KZfm6s2feoq9fAi
+	 oKFau036K6gwAaZWkMVz62G1H+DjbV2h3FkOE7erBDjSnwEPf/bNIG03yhO+LqGzrU
+	 6sp7bDQ5Lgqhg==
+Received: from [100.64.0.241] (unknown [100.64.0.241])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: cristicc)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id B185817E006F;
+	Tue, 22 Sep 2026 23:24:30 +0200 (CEST)
+Message-ID: <743283af-753a-40bb-96f3-d05b1e38e186@collabora.com>
+Date: Wed, 23 Sep 2026 00:24:28 +0300
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v11 13/74] drm/bridge: Fix NULL deref in drm_bridge_add()
+ for legacy bridges
+To: Luca Ceresoli <luca.ceresoli@bootlin.com>,
+ Maxime Ripard <mripard@kernel.org>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>,
+ Dave Stevenson <dave.stevenson@raspberrypi.com>,
+ Dmitry Baryshkov <lumag@kernel.org>, Andrzej Hajda
+ <andrzej.hajda@intel.com>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Robert Foss <rfoss@kernel.org>,
+ Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+ Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Chen-Yu Tsai <wens@kernel.org>, Samuel Holland <samuel@sholland.org>,
+ =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>,
+ Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>,
+ Raphael Gallais-Pou <rgallaispou@gmail.com>, Sandy Huang
+ <hjc@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>,
+ Andy Yan <andy.yan@rock-chips.com>, Algea Cao <algea.cao@rock-chips.com>,
+ Daniel Stone <daniels@collabora.com>, Liu Ying <victor.liu@nxp.com>,
+ Phong LE <ple@baylibre.com>, Helge Deller <deller@gmx.de>,
+ kernel@collabora.com, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev, linux-rockchip@lists.infradead.org,
+ linux-fbdev@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
+References: <20260901-dw-hdmi-qp-scramb-v11-0-bc12954a0688@collabora.com>
+ <20260901-dw-hdmi-qp-scramb-v11-13-bc12954a0688@collabora.com>
+ <ap_Tr_Viqy29f515@houat> <DLKSY3W6CGW1.3C0J6DHKV8P2Z@bootlin.com>
+Content-Language: en-US
+From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
+In-Reply-To: <DLKSY3W6CGW1.3C0J6DHKV8P2Z@bootlin.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Fix static const char * declaration for g_fbmode[] to static const
-char * const as reported by checkpatch to cohere to Linux kernel
-coding standards.
+Hi Luca,
 
-Signed-off-by: Vladan Kalaba <vladan.kalaba@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 9/21/26 10:05 AM, Luca Ceresoli wrote:
+> On Tue Sep 8, 2026 at 11:24 AM CEST, Maxime Ripard wrote:
+>> On Tue, Sep 01, 2026 at 09:50:37PM +0300, Cristian Ciocaltea wrote:
+>>> Legacy bridge drivers that embed struct drm_bridge in a zero-initialized
+>>> allocation, rather than obtaining it from devm_drm_bridge_alloc(), never
+>>> run INIT_LIST_HEAD() on bridge->list, leaving next and prev NULL.
+>>> list_empty() compares next against &bridge->list, so it reports such a
+>>> list head as non-empty.  list_del_init() therefore runs and dereferences
+>>> the NULL pointers, panicking the kernel during probe.  Only builds with
+>>> CONFIG_DEBUG_LIST survive, with a list corruption report.
+>>>
+>>> This affects rk3066_hdmi and the i.MX8 LDB bridges, which still embed a
+>>> bridge in a devm_kzalloc()'d struct.
+>>>
+>>> Initialize the list head when it is found to be NULL, so that the bridge
+>>> ends up with a valid empty list head and list_del_init() is only reached
+>>> for bridges that can actually be linked.
+>>>
+>>> Fixes: 17805a15d175 ("drm/bridge: add list of removed refcounted bridges")
+>>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>>> Closes: https://lore.kernel.org/all/20260731175016.C5D591F00AC4@smtp.kernel.org/
+>>> Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
+>>> ---
+>>>  drivers/gpu/drm/drm_bridge.c | 9 ++++++++-
+>>>  1 file changed, 8 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/gpu/drm/drm_bridge.c b/drivers/gpu/drm/drm_bridge.c
+>>> index 2c457ad74f3b..a8b6df5c13ea 100644
+>>> --- a/drivers/gpu/drm/drm_bridge.c
+>>> +++ b/drivers/gpu/drm/drm_bridge.c
+>>> @@ -453,9 +453,16 @@ void drm_bridge_add(struct drm_bridge *bridge)
+>>>  	 * If the bridge was previously added and then removed, it is now
+>>>  	 * in bridge_lingering_list. Remove it or bridge_lingering_list will be
+>>>  	 * corrupted when adding this bridge to bridge_list below.
+>>> +	 *
+>>> +	 * Legacy drivers that allocate the bridge with kzalloc() rather than
+>>> +	 * devm_drm_bridge_alloc() leave list.next NULL. Such a bridge cannot
+>>> +	 * be on any list, and list_del_init() would dereference NULL, so
+>>> +	 * initialize the list head first.
+>>
+>> "legacy" bridges are ambigous and was also used for non-atomic bridges.
+>> That being said, it's now *required* that bridges use
+>> devm_drm_bridge_alloc() instead of kzalloc, and we warn in
+>> drm_bridge_add if it hasn't.
+>>
+>> So I don't think we should merge this patch.
+> 
+> I agree.
+> 
+> I theory all drivers are be already using devm_drm_bridge_alloc() by now.
+> 
+> In practice rk3066_hdmi is actually still using kzalloc, it should be fixed
+> to use devm_drm_bridge_alloc(). Are you OK with doing it in v12?
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 1ea3dd8b8f28..79d0221cdeae 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -12,7 +12,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel __ro_after_init;
- static int g_nomtrr __ro_after_init;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char * const g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview __ro_after_init;
--- 
-2.53.0
+Yes, I'll send this a separate series, together with the other bridge fixes. 
 
+> By "i.MX8 LDB" I guess you mean fsl-ldb.c, which was converted in
+> 9c399719cfb9 ("drm: convert many bridge drivers from devm_kzalloc() to
+> devm_drm_bridge_alloc() API").
+
+I was actually referring to imx8q*-ldb.c, but it turns out those were converted
+as well - I incorrectly flagged them because the probe functions still contain
+
+  imx8qm_ldb = devm_kzalloc(dev, sizeof(*imx8qm_ldb), GFP_KERNEL);
+
+I've just realized the struct drm_bridge is not embedded in struct
+imx8qm_ldb,but it's part of struct ldb_channel.  Sorry for the confusion.
+
+Thanks for the reviews & tests!
+
+Regards,
+Cristian

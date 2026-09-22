@@ -1,147 +1,112 @@
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
+Received: from mail-ej2-f12.google.com (mail-ej2-f12.google.com [74.125.228.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4867247CA78
-	for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 07:22:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.49
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790061777; cv=none; b=TNx8tEyQC/k3KBG/kqRgYYRv3cHFjJOLZR3tpbxbJfCWWdGkEs8/SdAiHYe3QX2QXvZs1S+IODEAZWwndf12N/rOj48UqawNcmSGiW1p8Yq/7glfcXRDy0XIv3NEh+fkUF+SWPLT+sjG9JeBD73VB1pysnggB37pEVcYoml+bl8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790061777; c=relaxed/simple;
-	bh=g2Xy9jDjDZ3K6DmNsnmaoN1dj1u+mGq37X7BB/6Az8k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bXAH5RTIt0PcEdvgrjMHOjsS0idDZB2O8l7m+xqGPOHbysO4cf2E7liEMmRaqAsVj93EuVo3vxpstPBtZmfei8GLeOHquiH/dpCK68kwDBCUVbli0NoEwCuZA+7cM6NF5QVZbazLJKsXrhjrL5Lc9UWI9Bg9HLTx63+UViOAgDU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=DJQ8jYIp; arc=none smtp.client-ip=209.85.221.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 638445275AC
+	for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 09:05:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.140
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790067934; cv=pass; b=WEcyV41M8BOVYT2GW+NrSc5lKKYro78oVQ1dSnJLbzttQ4laAyqysQjrIN/xie2RfJa2lcKxjBVJLhPxOu//344+sbHZzmoLexOcx6Fyvis799fFZxw+hxIn2ycLhSHp14wHSMp6jjuPg9S3BwRR2BBtRtu9rnSTugonHg/mM7w=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790067934; c=relaxed/simple;
+	bh=6VxrMknAVb1vDWNanfZgZOBYSwjkUtQT3TOXrqHvrks=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oQ8lUNVvakuhyQkrjs46uIImb3eEnmE/e2KW319ot+t1CNEgVYBN6SPfvIiBlfrgcySDDyz8qYd6h2CkvoleiW5oqJawL6M+kBvbmiv5586oMVBllXx6D/yPmyMoK1zu/0AqKntEzEYVt5CwPoop6eBGr21nWrattEv4oGjiZu8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=b+J0/W8O; arc=pass smtp.client-ip=74.125.228.140
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DJQ8jYIp"
-Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-4843e397f74so386521f8f.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 00:22:55 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b+J0/W8O"
+Received: by mail-ej2-f12.google.com with SMTP id a640c23a62f3a-c254f5603a0so519482666b.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 02:05:32 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790067930; cv=none;
+        d=google.com; s=arc-20260327;
+        b=k0RTl++4eOUxC9jDa47RTEwjmsZIwPb3UwijMet+YUAj/lvqBZo722KIPPa2ItZIjA
+         q7HmJrfWPAgdg18s5FNzxKbmny2rmHP6NtSUW4TTlNGmwZW2+XtE3odISWvpFr1xiCxY
+         i0x+nCTiuxwGALA6bNzHcGk0+lnBLrJBUr/uQOPdLNPvtqo+BPRyOuzkcrzjj9kawScb
+         9BPk7GmjgpWJOdOH5qvPCMKMsCaVlNS+LYiavY8bsFcShkhJYN6ppoLYrWTKjRjVD8lO
+         rKhBGXSuVuph2wNSjf5bnFFUrFcNG/3Zilia9EpXkQsL1emtOwWf3eM29e6H1F4Cs90y
+         bFRg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=6VxrMknAVb1vDWNanfZgZOBYSwjkUtQT3TOXrqHvrks=;
+        fh=B0rVrQoWSN3lawO7IE6mX3bGehTUO0+UKR/V4ocCKmY=;
+        b=GyH6sylityuUL2lUUjFFS6Q4+SieuS/35GH/SqvxgBRjqhBfaEJwPepQj3eIN8Ykv3
+         NKm0/yLRH+pzxC5vXNxqWoLs4HP1buQUaLgqPS+/NuxPg44own7JDuYrJWEACIjZuiCa
+         FE/SenYksYSUqF5DpTXBwhA8NNY3VHtafAAyZKmGFI/xKyZs6rH5MHDHaJsN3dzxR93M
+         ct/7MZtRUg1XzscM1X9dWH80REgiIB/Wkcvy7p4HP0B5AwoKevcdYkgk7EiSZLHMVfst
+         H4mdDHVXez+ZvXgp0pPYNoGt4ziVbPg0fQnU086W0gPoss2MestIiywj9keUrkEyWmP9
+         s7Ig==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790061773; x=1790666573; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+        d=gmail.com; s=20251104; t=1790067930; x=1790672730; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=zOpUj0Pnwod3tVYOQ3yCnTP6vZoRZm1tHkQP7O06AhU=;
-        b=DJQ8jYIpkqCnzQzOVX8ElvdpMq4WB9zTxZW+N7+moxSrZW0gLFoG6CJLMljnRO4OEL
-         eAdNQb4WyHZvTWaAdkEZhutbCMwg7y3MqYKtrxg8TazD1+QsibKE9YIk99JqUh4aHTn3
-         haCoXSuZ7+KogBQeEj+pbpKEMhMWpPmqqhvu2kvt6ISF48yVUwyg2SaFjZnlAZ3akfne
-         pgwSvrHdmvzT+0yr5D1uvdh6QE/9NDgV59lm39Bwjdkg4Xq37p4grHI+9r3pMe01C24c
-         lJ2DkXx3Dc60SHVeX0AbiUrWxT79ZmbeUjft03/Vi3C9gu6OLTqz3iam7dMjhy1C51IA
-         UYGw==
+        bh=6VxrMknAVb1vDWNanfZgZOBYSwjkUtQT3TOXrqHvrks=;
+        b=b+J0/W8O+194uMJCZtlLWUWNcTzaoRLF9m7me91BpuFxnE0bcySpQmlrrLOSCBfPNG
+         ixldLOZd90yWi0jRTFDD3Iv8KeXrd8syp9MHOIaGb8Wbimq00JWH2djDWKAHnG5uNC7K
+         w1yh7EJnOdhjXA7ppmXdBiZFZusH8KUp77mdEYnUVyv94KBNm6sUhW5Z6u8fa3/DVVxu
+         Hq1XzHwe/vZG/8Stdst213sCA7yL2MiMtH9xfa7WVbcFgdgtvYhDY2PNunNRUxmNpOHa
+         xsk82i7rt5ZSeQ2YZ/ZnpVlPINX3ezqqqN/GPYa2XbIcF5Z1RUXTCcBA4uv6r7n7GJ5T
+         jzcQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790061773; x=1790666573;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
+        d=1e100.net; s=20260707; t=1790067930; x=1790672730;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=zOpUj0Pnwod3tVYOQ3yCnTP6vZoRZm1tHkQP7O06AhU=;
-        b=YvyQFwWJiYsWD+V+Rskv1w0MvFiGMkcQNUJ6OByOS36rSyBnLrr9Go5kmKSKI9gTh3
-         8TACZTPfSlfk1BRLBPeF+wyky8EAntnrV3nU+7S5v1ckbfzklbP53nGLDoy1SvvUIykO
-         3LqnMgiwD9fMhe3cC/4RoE5952Js6O9PhqgKld0ri1j+zu8P3kyGd47zXe/74NQCHdd1
-         vp8lGptbpZL/s75k2vNPGUFYOcepWUKwmshsMoK0FZlax3/DcuUwQt7vgtzifr/rhwe/
-         NaxvLAPh/SjeBVTm+tXz0swiokE5THxMFip+5z9F8KtW1V93uRNQnLvdBw0oQ5kBvhw3
-         wPuQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzeA//ML312wmGxCaYslDqhRLpxjCtl711VC5Y5uLC/VWOGTdTWzDf2zzdVVvuu59GUT16cDU6GgbT8CQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++m9d2631nKLTVTb0FWUpNDWTJvWJSsSFIL/JkPnyXr+j7SpmUbt
-	sSjT82YVEf8PxiqMVek2do9hQL+bv/Lzgle+Temj/FTgz/CGw6Fo+8EI
-X-Gm-Gg: AYBFou30lImUTPMT7rYfgagcBCzBQXODgj1R59zG984X93mpZ5KDXF+0/SCIdYmJRcp
-	CVRe3fBnooBpwtjfzIECdz4wfb7E6rFGrBAhSXz1R9nSJzLUKP5Xeozk+rjTDWpl03VfzwaeMu/
-	6UHs1otAjXL4mQFWFMYk6+kOLNZPRYSIuM3enKFbeJGkXUMqxDS7aPeEiye7X39aHG+Aj6jWszq
-	aBmZxZkFHbqA2f+fqKuqZQkt/fzSvb0An2dj/ULxwaML5T1LXcYCgWXoSvK7/CDlheRwDmuZp+i
-	NJOWFm2ZY6kCOIs0hnf2NGsv+zOtHX06WdgY8IjQEIc8EQsdCmycrWPkpa1MGV4tndBW1dNvew4
-	uP5ganYU0wMVcyFKL/fv2Yvba1CRr4UZFcZ95sxe9QzeiN+62ZXfaJxK7twNf3Okv86q3SmI5ma
-	dHGzZxiq92eqg4bkWv96PVAoBPvm9QwBvBtN9c60GKr5Nbyy5nngfINR3u1jkshzByk9rL1d3lM
-	rgKJQ==
-X-Received: by 2002:a05:6000:41f8:b0:485:8226:c69e with SMTP id ffacd0b85a97d-48861021808mr2450244f8f.29.1790061773363;
-        Tue, 22 Sep 2026 00:22:53 -0700 (PDT)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48862793792sm3387192f8f.31.2026.09.22.00.22.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Sep 2026 00:22:52 -0700 (PDT)
-Date: Tue, 22 Sep 2026 10:22:48 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Lucas Costa <2000.costalucas@gmail.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: free cmap on framebuffer release
-Message-ID: <arIsyPJno_UGVvSK@stanley.mountain>
-References: <20260922035302.167378-1-2000.costalucas@gmail.com>
+        bh=6VxrMknAVb1vDWNanfZgZOBYSwjkUtQT3TOXrqHvrks=;
+        b=J3i4oN58fvut2RKsgQxIDBpANPGqMi8bOHtv0Jd+iM2eAcb6F79t+OKEk8io/LaueR
+         NdT16E0nOfJufYSWBSi9vbC7n9aRHmU4SCZf6lswnEmr+SEz4iGTRfJbwAT6k2mhLjVL
+         f615vT2gJOgugLrWPb4eLswaY05T7h5f6x3Euun4+DjUaU5u+MSFSa3VQ+TaQdJdgSkw
+         c7m3Uxhv9RbNRJMXY3t5MWtGHIPAdK9Lpi3vtO1cpfFuyq1gPF2oyPgalyrTOL22epk9
+         HDuq2gDZ44ZFgV8EZwJAkiHYGYmb/4ubB7tRW2Zcf8+zusfDbAXXG2M9czFCNnStOgRw
+         i1GQ==
+X-Forwarded-Encrypted: i=1; AKwUvBx1eYwIbRm9R5rryT+ifzdFzczZF0ivX8VN5KLcgoU/Whs0b+JEkEwdLYJOW1HhJ8DIWYtfQbfcTpOx1Q==@vger.kernel.org
+X-Gm-Message-State: AFuF++mWUW3xXSAif8pI/LuIE+nMT8lhcmrOKjMv6pISLK62dc1xF0ZY
+	zV36D8lV+5Gyb09ULNjKpKvDgwe0apEnOOysyUSNyLoZbR7pJDFh3BWVJeqdZ7+7r8sLGXJLEI3
+	LKX7iv2dbIfuTGR0GtuBr2XZOPYoeJuM=
+X-Gm-Gg: AYBFou160bmqEjWotztePVxbfX7PyC7Gt46REZAwOPMYYPeHDXccoQnAkK2dxL6W9B2
+	I4mWuWW/42MjqpxDde4ThO1tUXjJGoYZayGkbtXkIJEptRSr/9dCHO17kpZZarRxVrlKTkhJn4J
+	e158mhLe7Es74fmMR1tEgqBb4UZlky87mCSmolxIHTrBPFJuL9SnTamxCJutvbBhe2awLGwlCxE
+	kuJeP2JUr6KKB7IIKLEMn1QNESMsGYgVMOsLls6es66m9MVdyvXidJudHLK1cOaORzrl2lrhTha
+	GFYLBe8HUGx+HTY9RmagiipKHyp5JECbZwRFU3dSHj+A8vWq/JLhnRtB6um9E8LiE/IuqQPrAct
+	jxORU4yc541f7Rvf7V8p+ETZs+lwWW1qH17egh2Xv4p7uvxXYOqPDcX/coBjnvcpDZAxDI44Doz
+	YYsyBtZpbSWAxs43Q34/d1hWEmHJUKmi/2fRvHrMvXZwWZ+VEg1qFH
+X-Received: by 2002:a17:906:c10b:b0:c26:19de:9139 with SMTP id
+ a640c23a62f3a-c2a15cf8ea1mr1261725566b.44.1790067930361; Tue, 22 Sep 2026
+ 02:05:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260922035302.167378-1-2000.costalucas@gmail.com>
+References: <20260921183313.92795-1-hikarialiyev@gmail.com>
+In-Reply-To: <20260921183313.92795-1-hikarialiyev@gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Tue, 22 Sep 2026 11:04:53 +0200
+X-Gm-Features: AcwNN1X5O3CnNVl33I3dVh03PNniNtuSKukKjtL-OpPtcpVg5gCiGP8Rn-l-Dyo
+Message-ID: <CAHp75Ve=Wxe=2VjuEyMaeigskU=CmWDLN0baFbxwJ54pKDponw@mail.gmail.com>
+Subject: Re: [PATCH v2] staging: fbtft: fbtft-bus: remove space before close parenthesis
+To: UgwuRhema <hikarialiyev@gmail.com>
+Cc: gregkh@linuxfoundation.org, Andy Shevchenko <andy@kernel.org>, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Sep 22, 2026 at 12:53:02AM -0300, Lucas Costa wrote:
-> The driver never calls fb_dealloc_cmap() after it has been allocated,
-> so when the buffer is torn down we leak.
-> 
-> This happens on every unbind, and when an error is detected in
-> sm750fb_framebuffer_alloc().
-> 
-> fb_dealloc_cmap() gets called before framebuffer_release() in both places.
-> 
-> Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
-> 
-> Signed-off-by: Lucas Costa <2000.costalucas@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index 8b93bfeb217b..92412534239c 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -910,6 +910,7 @@ static void sm750fb_framebuffer_release(struct sm750_dev *sm750_dev)
->  	while (sm750_dev->fb_count) {
->  		fb_info = sm750_dev->fbinfo[sm750_dev->fb_count - 1];
->  		unregister_framebuffer(fb_info);
-> +		fb_dealloc_cmap(&fb_info->cmap);
->  		framebuffer_release(fb_info);
->  		sm750_dev->fb_count--;
->  	}
-> @@ -943,6 +944,7 @@ static int sm750fb_framebuffer_alloc(struct sm750_dev *sm750_dev, int fbidx)
->  	return 0;
->  
->  release_fb:
-> +	fb_dealloc_cmap(&fb_info->cmap);
->  	framebuffer_release(fb_info);
->  	return err;
+On Mon, Sep 21, 2026 at 8:33=E2=80=AFPM UgwuRhema <hikarialiyev@gmail.com> =
+wrote:
+>
+> Fix checkpatch.pl errors regarding prohibited spaces before closing
+> parentheses in fbtft-bus.c while retaining trailing commas required
+> by macro definitions.
 
-This works, but I don't love One Err label style cleanup.  The label
-name is no longer accurate.
+It makes no sense. It's a false positive of checkpatch.
 
-The cmap is allocated by:
-
-	err = lynxfb_set_fbinfo(fb_info, fbidx);
-
-So ideally there would be a cleanup function which is called something
-like:
-
-	lynxfb_unset_fbinfo(fb_info);
-
-Then we would only call it if lynxfb_set_fbinfo() succeeds instead of
-if it succeeds or fails.
-
-unset_fb:
-	lynxfb_unset_fbinfo(fb_info);
-release_fb:
-	framebuffer_release(fb_info);
-
-	return err;
-
-See my blog for more details.
-staticthinking.wordpress.com/2022/04/28/free-the-last-thing-style/
-
-regards,
-dan carpenter
-
+--=20
+With Best Regards,
+Andy Shevchenko

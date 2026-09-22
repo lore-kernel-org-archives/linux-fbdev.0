@@ -1,198 +1,144 @@
-Received: from mail-vs2-f12.google.com (mail-vs2-f12.google.com [74.125.227.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62730542EF5
-	for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 12:40:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.12
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790080805; cv=none; b=nc9W9dzqJ0NZBHt4Dj2Q3wUrbJjDV70ahjsfGNNhrZXjzLP0R0ar/B8E7QfQI0i0CvxatK4enPC6BnF3KNR9JdhLZFRWf3i0YTkxZkXYx1EU7ZcNwUq4hHn/R/hdWx9wBeLTZwPLP8yPVXVrukDrN1Ytsk8ZJaj3bKX5cVCibBY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790080805; c=relaxed/simple;
-	bh=wFmJBrwWil7bpAeYIpoN4GzUL1HvXOt5ldn6IIIiFHY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LZi8VDX115/N7DuF4BEqEOXVa5TmITySpT2eOuxOZqJ5AELn5lRMt2mQcOROgw4yGfCuoi0UPjqVAmtH5Dx4ahzi2DZJYGXIXS9VnxpqNyB1d31XxrxfA1G40InJdnoppaQIo1IGtEBMHtaW36rftsUxWbiJ++1MW3WriWak9lM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ieee.org; spf=pass smtp.mailfrom=ieee.org; dkim=pass (1024-bit key) header.d=ieee.org header.i=@ieee.org header.b=O2oXCldz; arc=none smtp.client-ip=74.125.227.12
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=ieee.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ieee.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E1FF544D57;
+	Tue, 22 Sep 2026 12:54:45 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790081692; cv=pass; b=YfYP+iv6G0sPnrfDToNABEGAZKNpyleq3w0fA4nv5EaLkaB6v+AGOS3AKDSJu4rFgM6Q8JjvdplKdnsmuLBFdeLiHGpzqUhmV7JH1RmqZb5I+LcLq/+udFJqCeBOnhLnUD+mBsE9O6cb69Fn7wXI9C8vzxlZf6w+In0jYiMytq4=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790081692; c=relaxed/simple;
+	bh=qS1SVTe9Y4Cs5c98mbRLZyLHvGmLAke7AUAJGJS4g2M=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=KOoJT/lr7t66SAu74clvrLT85MSOIpn98F7evFyZE4Xqg6i4VamDZC8JvGI1fANd1XGREseO+2CYhzE3K6TCJpz6YlDOHF73pYgsItUaxWmvF4m+NWc6Wl9Cuvt5NavLOBcvYayJAmRRFYzAVBFydbmlhGzo5LDCoGJkea5p05w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=TCdu6C7h; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ieee.org header.i=@ieee.org header.b="O2oXCldz"
-Received: by mail-vs2-f12.google.com with SMTP id 71dfb90a1353d-5c67e4d8d8aso2693697e0c.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 05:40:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ieee.org; s=google; t=1790080799; x=1790685599; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=o9blDfaIlaDE7zWOzf7sAkl81n8mIgiGQIMLz8R8dVg=;
-        b=O2oXCldzJ3LpA4QHBbXInqG6gPFkiSS8IpezgH8R+ZrmCNrQGw2qZ3cz2HJXPR/LD3
-         nDnwu+h/q1ydJlARyj62co9tTwdWIgt6A4ziEIgZPoWy6ktNQVyLZgBsOE9UYoUt4d3f
-         ApfWcUtfyoMebnbxzEyQSfJL5IYMdQPZlYtb0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790080799; x=1790685599;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=o9blDfaIlaDE7zWOzf7sAkl81n8mIgiGQIMLz8R8dVg=;
-        b=kr4lNiLB1jCCvDnxOk2aaTodj/e/ufzEB/7b9WeQLobIVEdhpip4Fcs6lDvRoA9k5H
-         /SD2gt3EjBxJX8QtC/cN0eefuOPoCtGt3ZE590N73xDdLv2zbCLRxDXmK1GWquIOrkA2
-         OMqPN9bcmla2R6crvZYy2J4mCVGMO0uyIPkvSryt4C1bngooyeMgfjJzHLvccKQqNrHK
-         jhYAi21oBlEVtO2k6zGQKCE77ObB/wiKSf6XUHwg+mlxe2dUZoBo6LOS5Fje9TuUIxI6
-         kI/K/YukAZvjD0eQfHyd+SqLmw3leMHqLCQT3Lqne6Y78QTTELGqlBLTfgDBq8pDhjZV
-         9fnA==
-X-Forwarded-Encrypted: i=1; AKwUvBybrv8Rz4o5JYfL3K4+fBYOJi+Z+OdlDt+zi5z6pq6PIiTAgfOzY7NX2U7lQgVLiTZeJpI9l4NhIjXPHg==@vger.kernel.org
-X-Gm-Message-State: AFuF++m9ZJnfpN19dTxQbMRSj0T+OdM1Q0GBqA9fOLuQ11M8gUsvgnjM
-	kEHGauuPHSnmt84807myPx4NCVfpbolTT4OwQbWe2fjLPg402CdAqf9hcS5J3p025w==
-X-Gm-Gg: AYBFou1Wh6cXHk+qex/w1InMbe3kVg0Ue4g1Sy/xv2ABmIuwbE0nyZxgt4N5NQP9hdu
-	VeyKDjLDsxHVwzZ8jby2aTM15HcVEnFrdmBJG0Yj3Ci9HlIB8tP+rox2WZ6XSkVXHnnJDhQNE40
-	y9pMI9gSziLPPg3tfk5IRZmGDZS/XJXV77iauaH23B3AxRf5y0JvIwTxeDQOdwkE9P9kvp2XVzm
-	JubVORt1hdK0Dztu1HU/B4Qi66ns4YNkqoqRsnPdRXSsRckMV/j6YGlKFNaq0gkK4P1erHYo6p7
-	kXD3w4M4qQFSCjhP8afrDjVgtJMt2JQgjKGHIIvdRHfctlOPNek7jQo5GqItsR1FbABElV1stYe
-	N+OFvqQi7uL+oxmcuuU8KCdNB0LQsSHE5OciMd2CyesKq1ctXBa9M7390+D+xfU1qEgyutETZF1
-	4Kr17H9SFupp7zEufjJzzclWJpQrgVNiMk7vFqouvpowBcdqf16p3ogK5Srw5yjuGFaCClYo/iZ
-	a/2
-X-Received: by 2002:a05:6122:e22b:b0:5c9:a60c:2736 with SMTP id 71dfb90a1353d-5c9b598e442mr8405960e0c.14.1790080799199;
-        Tue, 22 Sep 2026 05:39:59 -0700 (PDT)
-Received: from [172.22.22.28] ([73.62.185.64])
-        by smtp.googlemail.com with ESMTPSA id 6a1803df08f44-91402535ce1sm14566906d6.48.2026.09.22.05.39.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Sep 2026 05:39:53 -0700 (PDT)
-Message-ID: <d2052425-3fb4-4104-b1ed-f2d53e5a710d@ieee.org>
-Date: Tue, 22 Sep 2026 07:39:47 -0500
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="TCdu6C7h"
+ARC-Seal: i=1; a=rsa-sha256; t=1790081625; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=KTndc6JZaRZHwnEIOsJVOKmqMnPoyD0yJUj7daOPlmBUXrYCLC7sXrwHhSQE/M1j0SelAcsyof5PD3lQS0w0CQBr9yUNEWhUGag6v95l7NXo+BzIQ8Gce1U7JIP5hgSyjCQ/1LXPWKv2jxbgTyp2dNeb1Sm2ibtztE+5DPc8Ji4=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1790081625; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=8VjNl0wa/Nxv7LlY9fTplz72WoCM/sa6XfRLdYqoWf4=; 
+	b=iQEHTfp1vj8knug37pUf8qyg1jsi2Ik8q0L8i491jEO0OnRutlTdUNwhENof8gUq8voCE7STLUVB+/PzLLd95UmcLL1pBDYWthMysH2QgI55DWtF7mVJ2RQmP/Ftc/qBYmbCmCsjRTmZAL2aFbbo/cWYijsVLzEewVy1YHXAVg4=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1790081625;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:MIME-Version:Content-Transfer-Encoding:Content-Type:Message-Id:Reply-To;
+	bh=8VjNl0wa/Nxv7LlY9fTplz72WoCM/sa6XfRLdYqoWf4=;
+	b=TCdu6C7hW2pYijD6VGCaiC+wv5MqeYa3Fx6j1IxMBPJkKRSEEGQpJJdhmINCvJ3i
+	zeMSbdPSbjZu51N/DttLQ5WTW3C38NdLEbu+/1NqKFSdt/fldM1iQ5G47a4IkHlsXrr
+	x/iihlM9thTLVL5I1AkmxN9YehFWKw8QVIzXhiUI=
+Received: by smtp.zohomail.com with SMTPS id 1790081623916135.24430513639902;
+	Tue, 22 Sep 2026 05:53:43 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+To: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>,
+ Daniel Stone <daniels@collabora.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>,
+ Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>,
+ Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+ Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Luca Ceresoli <luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
+ Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>,
+ Andy Yan <andy.yan@rock-chips.com>, Leo Li <sunpeng.li@amd.com>
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
+ Derek Foreman <derek.foreman@collabora.com>,
+ wayland-devel@lists.freedesktop.org
+Subject:
+ Re: [PATCH RFC 03/25] drm/atomic-helper: Set mode_changed on vrr_enabled
+ change
+Date: Tue, 22 Sep 2026 14:53:36 +0200
+Message-ID: <XpLMHDHXSDOKXXVsZyU9Pg@collabora.com>
+In-Reply-To: <75b82a61-fe82-4597-bfb5-3c717fbb0dda@amd.com>
+References:
+ <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
+ <20260921-vrr-limiter-uapi-v1-3-2fcd7d011646@collabora.com>
+ <75b82a61-fe82-4597-bfb5-3c717fbb0dda@amd.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/3] umh, treewide: Explicitly include linux/umh.h
- where needed
-To: Petr Pavlu <petr.pavlu@suse.com>, Tony Luck <tony.luck@intel.com>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Philipp Reisner <philipp.reisner@linbit.com>,
- Lars Ellenberg <lars.ellenberg@linbit.com>,
- =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
- Jens Axboe <axboe@kernel.dk>, Johan Hovold <johan@kernel.org>,
- Alex Elder <elder@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>,
- Michal Januszewski <spock@gentoo.org>, Helge Deller <deller@gmx.de>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Trond Myklebust <trondmy@kernel.org>, Anna Schumaker <anna@kernel.org>,
- Chuck Lever <cel@kernel.org>, Jeff Layton <jlayton@kernel.org>,
- NeilBrown <neil@brown.name>, Olga Kornievskaia <okorniev@redhat.com>,
- Dai Ngo <Dai.Ngo@oracle.com>, Tom Talpey <tom@talpey.com>,
- Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>,
- Joseph Qi <joseph.qi@linux.alibaba.com>, Tejun Heo <tj@kernel.org>,
- Johannes Weiner <hannes@cmpxchg.org>, =?UTF-8?Q?Michal_Koutn=C3=BD?=
- <mkoutny@suse.com>, Luis Chamberlain <mcgrof@kernel.org>,
- Daniel Gomez <da.gomez@kernel.org>, Sami Tolvanen <samitolvanen@google.com>,
- Aaron Tomlin <atomlin@atomlin.com>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Nikolay Aleksandrov
- <razor@blackwall.org>, Ido Schimmel <idosch@nvidia.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, David Howells <dhowells@redhat.com>,
- Jarkko Sakkinen <jarkko@kernel.org>, Paul Moore <paul@paul-moore.com>,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Kentaro Takeda <takedakn@nttdata.co.jp>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
- drbd-dev@lists.linux.dev, linux-block@vger.kernel.org,
- greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, ocfs2-devel@lists.linux.dev,
- cgroups@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- bridge@lists.linux.dev, netdev@vger.kernel.org, keyrings@vger.kernel.org,
- linux-security-module@vger.kernel.org
-References: <20260911-module-include-kmod-v3-0-6ebccc3e0731@suse.com>
- <20260911-module-include-kmod-v3-1-6ebccc3e0731@suse.com>
-Content-Language: en-US
-From: Alex Elder <elder@ieee.org>
-In-Reply-To: <20260911-module-include-kmod-v3-1-6ebccc3e0731@suse.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-On 9/11/26 9:46 AM, Petr Pavlu wrote:
-> The usermode helper declarations were previously provided by linux/kmod.h
-> but commit c1f3fa2a4fde ("kmod: split off umh headers into its own file")
-> moved them to linux/umh.h in 2017.
+On Monday, 21 September 2026 23:59:11 Central European Summer Time Leo Li wrote:
+> Hi Nicholas,
 > 
-> Add explicit includes of linux/umh.h to files that use usermode helpers and
-> remove linux/kmod.h where it is no longer needed.
+> Thanks for sending this out. I'm looking into an amdgpu implementation
+> and had some comments along the way. Will reply inline on respective
+> patches.
 > 
-> Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
-> ---
->   arch/x86/kernel/cpu/mce/dev-mcelog.c | 2 +-
->   drivers/block/drbd/drbd_nl.c         | 1 +
->   drivers/greybus/svc_watchdog.c       | 1 +
-
-For Greybus:
-
-Acked-by: Alex Elder <elder@riscstar.com>
-
->   drivers/macintosh/windfarm_core.c    | 1 +
->   drivers/pnp/pnpbios/core.c           | 2 +-
->   drivers/video/fbdev/uvesafb.c        | 1 +
->   fs/coredump.c                        | 2 +-
->   fs/nfs/cache_lib.c                   | 2 +-
->   fs/nfsd/nfs4layouts.c                | 2 +-
->   fs/nfsd/nfs4recover.c                | 1 +
->   fs/ocfs2/stackglue.c                 | 1 +
->   kernel/cgroup/cgroup-v1.c            | 2 +-
->   kernel/module/kmod.c                 | 1 +
->   kernel/power/process.c               | 2 +-
->   kernel/reboot.c                      | 2 +-
->   kernel/umh.c                         | 2 +-
->   lib/kobject_uevent.c                 | 2 +-
->   net/bridge/br_stp_if.c               | 2 +-
->   security/keys/request_key.c          | 2 +-
->   security/tomoyo/common.h             | 2 +-
->   20 files changed, 20 insertions(+), 13 deletions(-)
+> On 2026-09-21 11:51, Nicolas Frattaroli wrote:
+> > A change in whether VRR is enabled or not on a CRTC will be of interest
+> > to any VRR implementation, as they may need to recalculate certain
+> > internal state in response. So far, this was handled ad-hoc in the
+> > drivers that implement VRR.
+> > 
+> > Handle this in the common DRM atomic core by setting the mode_changed
+> > flag when this occurs. The rationale for using mode_changed is that VRR
+> > is deeply intertwined with the current mode with regards to its timing.
+> > Consequently, any component that cares about a mode change is likely
+> > also going to care about VRR being enabled/disabled.
+> > 
+> > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+> > ---
+> >  drivers/gpu/drm/drm_atomic_helper.c | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> > 
+> > diff --git a/drivers/gpu/drm/drm_atomic_helper.c b/drivers/gpu/drm/drm_atomic_helper.c
+> > index 9d006f98413a..0664d5779282 100644
+> > --- a/drivers/gpu/drm/drm_atomic_helper.c
+> > +++ b/drivers/gpu/drm/drm_atomic_helper.c
+> > @@ -694,6 +694,12 @@ drm_atomic_helper_check_modeset(struct drm_device *dev,
+> >  			new_crtc_state->active_changed = true;
+> >  		}
+> >  
+> > +		if (old_crtc_state->vrr_enabled != new_crtc_state->vrr_enabled) {
+> > +			drm_dbg_atomic(dev, "[CRTC:%d:%s] VRR changed\n",
+> > +				       crtc->base.id, crtc->name);
+> > +			new_crtc_state->mode_changed = true;
+> > +		}
+> > +
 > 
-> diff --git a/arch/x86/kernel/cpu/mce/dev-mcelog.c b/arch/x86/kernel/cpu/mce/dev-mcelog.c
-> index 053555206d81..af4e76babe7a 100644
-> --- a/arch/x86/kernel/cpu/mce/dev-mcelog.c
-> +++ b/arch/x86/kernel/cpu/mce/dev-mcelog.c
-> @@ -11,7 +11,7 @@
->   
->   #include <linux/miscdevice.h>
->   #include <linux/slab.h>
-> -#include <linux/kmod.h>
-> +#include <linux/umh.h>
->   #include <linux/poll.h>
->   
->   #include "internal.h"
-> diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
-> index b77f901fc3ef..6f5d059394b3 100644
-> --- a/drivers/block/drbd/drbd_nl.c
-> +++ b/drivers/block/drbd/drbd_nl.c
-> @@ -14,6 +14,7 @@
->   #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
->   
->   #include <linux/module.h>
-> +#include <linux/umh.h>
->   #include <linux/drbd.h>
->   #include <linux/in.h>
->   #include <linux/fs.h>
-> diff --git a/drivers/greybus/svc_watchdog.c b/drivers/greybus/svc_watchdog.c
-> index 16e6de5e9eff..b318eb34bcca 100644
-> --- a/drivers/greybus/svc_watchdog.c
-> +++ b/drivers/greybus/svc_watchdog.c
-> @@ -7,6 +7,7 @@
->   
->   #include <linux/delay.h>
->   #include <linux/suspend.h>
-> +#include <linux/umh.h>
->   #include <linux/workqueue.h>
->   #include <linux/greybus.h>
->   
-. . .
+> I don't think this is the case for all hardware, at least not for amdgpu.
+> The parts in HW that adjust vtotal can be programmed without requiring
+> bandwidth recalculations or reprogramming of pipes.
+
+Thanks for pointing this out. I was already unsure of this patch before,
+and I don't think Rockchip requires these recalculations either. Originally
+I added this when I looked at the i915 code iirc and saw them setting it.
+
+I think in the commit message I also conflate needing to know about VRR
+being changed with needing to do a full modeset (which is what mode_changed
+basically means).
+
+I'll drop this patch on the next revision.
+
+Kind regards,
+Nicolas Frattaroli
+
+> 
+> - Leo
+> 
+> >  		if (new_crtc_state->enable != has_connectors) {
+> >  			drm_dbg_atomic(dev, "[CRTC:%d:%s] enabled/connectors mismatch (%d/%d)\n",
+> >  				       crtc->base.id, crtc->name,
+> > 
+> 
+> 
+
+
+
+

@@ -1,84 +1,91 @@
-Received: from mail-oo1-f72.google.com (mail-oo1-f72.google.com [209.85.161.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5955136D9E7
-	for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 04:33:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.72
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAE51489FD9;
+	Tue, 22 Sep 2026 05:41:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790051618; cv=none; b=cxSBWd7dPtHqKlgg5fD5llvO4Dic2ONrcTkajsprGg+IX8NZ8gfXyR3SJT0K0oIjJVtYa78B1EgyrUDzWVJggsFmV17tOXezDjB/ltlk+Lu4OTwp1mSh4C5FfFotXb+63LP8t64h57zHFUQJv7V/uP98lrhBd2b78bGUvUurBS0=
+	t=1790055690; cv=none; b=uWutebZjHjuln8pmkxOHnrk2Uf2b+3Ue9H+AzGZjJ8OEB5lTJm5D3Fv7pn8Qsvx/GKf9mec2NrYI2bAASghWqtQR2cbUNzYe/aSupSAOiYTDBFl/B/OjvdKLPzgD0r7XEQ2TGnTynUYVFiEJLwV7wu4daWLSsKQDeFs4JR64Muc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790051618; c=relaxed/simple;
-	bh=XPXt3Z3jNSQeIV0oE+SHPDVpfA5tFB3w2U3m0vU9YjA=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=SJbwRmS1OGrGXwp81g8E6GJGK1y/e/XwXSxgVzRVpy/3jZv+bwyxxE6FvDNGwLCxM0+j3I3pOvEhhhB8VxsJbeJ90Dex2/aGCKQcXbdn+NT2ohp3PByPNuqHf0QuNqCYSsHziKDyJW7K0RQDUTPCnxfhm2jd8yQjRo1BgpCIets=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.161.72
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oo1-f72.google.com with SMTP id 006d021491bc7-6c2549d0cbaso5815499eaf.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 21 Sep 2026 21:33:37 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790051616; x=1790656416;
-        h=content-type:to:from:subject:message-id:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=AqXH8zMNK8/wjqTTotQdjbu++KpQ7T8UNeQ/UVNY8LI=;
-        b=06D/4vfN+WMRDrzt1TGovtABe3w4gv70kpeoE2pqkzOxWsQK7KtdZzz5FOg9Z9M+qT
-         5jvvUJ8LJL4VWkDnP0fCVY83qZKYMX1CZqv4f/BRqhBtIDBKbFd6DUBcmRSUEN3Uyt28
-         cxeyuw3Rmfy8xxhMMKoSMOBJgavE6nuWPd04/UXSHIXCCfebQCvKPWyyOIX5cxM6tC0u
-         LmKIxIenPRSDJZyWKk/H1AFldJZjqw66Dh//EeQB3BcCn6BI4Nh5oXC6zOv+sH2RMkrD
-         C6/nfu7JoMBrmLvFx2RRU6EUfTOOWUkEAXQMfD5+hUVxbGpLkzomnDj3u7MrpoSzVYvl
-         /tvA==
-X-Forwarded-Encrypted: i=1; AKwUvByT/6xhpghqSrpun6YKCrNAeqDfBrl3cP3G2YgSnhdO0ljv/YeZCJzAvTsVytcwqUP7K0uLc+z51ojndw==@vger.kernel.org
-X-Gm-Message-State: AFuF++kFarrAh+YJn7I9cewcsFg+kIkW/zVCJSV3DvT96h5M+OkIc9WM
-	sc0B/Lo0G70GsLBbmyDDWyvNKmyXvnt9w8VX5U8CkVzxu3DijvsW/sPOqAHN0wcZ/EcoAlxF2p8
-	oiCaLzE3QnYjwrTqb1jgKmJKc65VjnFXGRpA51g3Y0+8hqLRHRrFIzQNwKjY=
+	s=arc-20240116; t=1790055690; c=relaxed/simple;
+	bh=XUfOpKItUivTQzfJZZPeBV73mNXXnF63BoKe2YealYQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gZXvHE/62ABMLiJflP4Q56bEmfYcfwtXO+NNPRJ/hF1VsIZgScapsZDqUyhi96z+okbipeVGV/XB3HTDmq+x2q32Qw4VEu+OAqkVzdHqRMmWRgNhrpnn+fnmxgR7VUEzMweT9Ab5t2BLwfob5amyTMX7G+Fvk567sUqkTQHzzbU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=khMrIrLY; arc=none smtp.client-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="khMrIrLY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8A3E1F00893;
+	Tue, 22 Sep 2026 05:41:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1790055689;
+	bh=DrlcUzTgdGShWSLTZcCX91aNyoT35IwgtT0JL3SZWw0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=khMrIrLYkiP5lFsB8RZ4XapvAWHtMWwjNUpW+tUp8rSlP8DMxyWjyFq2HZf0dRZVX
+	 laWWywRn/GKAsjnQq44PboP5IZLMcgicMXbBftxi8LGzt+sJyqHToAI4+nPrX3mNWj
+	 X1Sewp07+M3G9vrHItDIoryOVZOhqRI/1Q1BkAB4=
+Date: Tue, 22 Sep 2026 07:41:25 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Lucas Costa <2000.costalucas@gmail.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: free cmap on framebuffer release
+Message-ID: <2026092214-corset-unaligned-2cb2@gregkh>
+References: <20260922035302.167378-1-2000.costalucas@gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6820:61b:b0:6b7:83c5:fe00 with SMTP id
- 006d021491bc7-6ca9d147147mr11928074eaf.65.1790051616277; Mon, 21 Sep 2026
- 21:33:36 -0700 (PDT)
-Date: Mon, 21 Sep 2026 21:33:36 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6ab20520.514bccd6.255447.0019.GAE@google.com>
-Subject: [syzbot] Monthly fbdev report (Sep 2026)
-From: syzbot <syzbot+listcf6c12acbc676cc53289@syzkaller.appspotmail.com>
-To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260922035302.167378-1-2000.costalucas@gmail.com>
 
-Hello fbdev maintainers/developers,
+On Tue, Sep 22, 2026 at 12:53:02AM -0300, Lucas Costa wrote:
+> The driver never calls fb_dealloc_cmap() after it has been allocated,
+> so when the buffer is torn down we leak.
+> 
+> This happens on every unbind, and when an error is detected in
+> sm750fb_framebuffer_alloc().
+> 
+> fb_dealloc_cmap() gets called before framebuffer_release() in both places.
+> 
+> Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
+> 
+> Signed-off-by: Lucas Costa <2000.costalucas@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+> index 8b93bfeb217b..92412534239c 100644
+> --- a/drivers/staging/sm750fb/sm750.c
+> +++ b/drivers/staging/sm750fb/sm750.c
+> @@ -910,6 +910,7 @@ static void sm750fb_framebuffer_release(struct sm750_dev *sm750_dev)
+>  	while (sm750_dev->fb_count) {
+>  		fb_info = sm750_dev->fbinfo[sm750_dev->fb_count - 1];
+>  		unregister_framebuffer(fb_info);
+> +		fb_dealloc_cmap(&fb_info->cmap);
+>  		framebuffer_release(fb_info);
+>  		sm750_dev->fb_count--;
+>  	}
+> @@ -943,6 +944,7 @@ static int sm750fb_framebuffer_alloc(struct sm750_dev *sm750_dev, int fbidx)
+>  	return 0;
+>  
+>  release_fb:
+> +	fb_dealloc_cmap(&fb_info->cmap);
+>  	framebuffer_release(fb_info);
+>  	return err;
+>  }
+> -- 
+> 2.43.0
+> 
+> 
 
-This is a 31-day syzbot report for the fbdev subsystem.
-All related reports/information can be found at:
-https://syzkaller.appspot.com/upstream/s/fbdev
+Nice, how was this found and tested?
 
-During the period, 0 new issues were detected and 1 were fixed.
-In total, 3 issues are still open and 32 have already been fixed.
+thanks,
 
-Some of the still happening issues:
-
-Ref Crashes Repro Title
-<1> 9747    Yes   KASAN: vmalloc-out-of-bounds Write in imageblit (6)
-                  https://syzkaller.appspot.com/bug?extid=5a40432dfe8f86ee657a
-<2> 794     No    KASAN: vmalloc-out-of-bounds Write in fillrect
-                  https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
-<3> 4       Yes   KASAN: slab-out-of-bounds Read in fb_pad_aligned_buffer (3)
-                  https://syzkaller.appspot.com/bug?extid=bf4020519fbd94b2355d
-
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-To disable reminders for individual bugs, reply with the following command:
-#syz set <Ref> no-reminders
-
-To change bug's subsystems, reply with:
-#syz set <Ref> subsystems: new-subsystem
-
-You may send multiple commands in a single email message.
+greg k-h

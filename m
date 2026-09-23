@@ -1,73 +1,72 @@
-Received: from mail-oa2-f12.google.com (mail-oa2-f12.google.com [74.125.231.76])
+Received: from mail-pz2-f42.google.com (mail-pz2-f42.google.com [74.125.228.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24DD0522681
-	for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 22:53:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.76
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91A2E35E1D9
+	for <linux-fbdev@vger.kernel.org>; Wed, 23 Sep 2026 01:36:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790117605; cv=none; b=UacGsmXScOdPfcAoNI4yEyT8GGlt+s9Iu5llYSa7OKkwQJkMjWQnlzdqyToHqhxx52DQOIVt1Yjs1Ig259LMpOFmXpbUg4je+6OxSxnuxPl2n4WquJ3X+DjEQFyE39KP2K4TR1A1MzzDqM/VfqmiiPCBhzfXhp1lvm2H2iPoNjY=
+	t=1790127366; cv=none; b=oBccCZGUFr52VNHJi/P25CEP4Pl9jp03anop4DAaT+56SaZzXa+r7XRrlfIdIuNF76t1Bn1EY22Eul+5vOU4cw8+xBKzq2yJ/35smXZYs4D0mXVtPl0dw3/+GLNpSyPt5P6bT0JEiWBwxq0a7A1L/c1V9iM8LbCFaEEOT/K1kvk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790117605; c=relaxed/simple;
-	bh=REPZkL1thDeVzHCspF0PHUx7OtBPKunpJ9Mv1lOEFOc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Yqtxh/tYoBIK7ljst+7c0Y7A2o4L7sFyTTgTGQ0HD5nxQQTZYAltT27OnBlPznGymCWoqiqRDaJVyvZEUIyQ5cf9kZXhJOPOa7odFWzXqqViR+UyZ2J7URmhisznfPOvAel5P+KPQDBcuzJdalF3OCfuUfUggqBhAfeLPwpNnkQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=p/2pnnZr; arc=none smtp.client-ip=74.125.231.76
+	s=arc-20240116; t=1790127366; c=relaxed/simple;
+	bh=cdAjBeMlNMT+7+wm8ZCCKENLpx7+MxggMRqCiLWJKz4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=u/Dlt719loqmvAJ85tfqSNKVThGNKHl6EtD4fPKCRhpZrRX/PggBNgKnY6iqiBLAzkEN5ETXa/Wb67he7GzJccr9A3qkyhuiAysS10y/afx6p9bF3NJujUBnOgXLqn7hHqCqnY8aS0S9U86jfTOL2ugnBtU2Oru18Gw/MoFGr4o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jdMzC1PS; arc=none smtp.client-ip=74.125.228.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="p/2pnnZr"
-Received: by mail-oa2-f12.google.com with SMTP id 586e51a60fabf-466ccbd478cso250816fac.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 15:53:19 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jdMzC1PS"
+Received: by mail-pz2-f42.google.com with SMTP id 41be03b00d2f7-cc4cacd3409so387144a12.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 22 Sep 2026 18:36:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790117597; x=1790722397; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=GdRvNmdqEASsHQpM6tI7sJS6Hgv3J1YdSsDajcpZjZY=;
-        b=p/2pnnZrvOpzuCFbX20buIc4/Ox7GFkW5SUErBAAYyrJB7LsIAkXl5hLbatsd7ag73
-         C7NbV4TIdIw54tlynmm/Zee9k7N4fswmfEzybeVUT+lvzGnRiP6XJUfOa7UwhioQ3irD
-         YdoLhwSQ2pUJIE5EyXCzAfML6OsXvauSKy5Iq++GnbjQXc/ncHnsYsbQinpDyfBjVLb9
-         PPUaOjq5zw7G8IjxPvXD64lel7L4ST+WNOieX+cH802/w0d5iIPwLgOCsw0r6LSc3Aad
-         SRb4KJXOTvqOjjr62xlRRo7AtsQsRg0tpz6o6yofhDaRWszG6wedarrIDIkc0QZgCzyY
-         Zs9A==
+        d=gmail.com; s=20251104; t=1790127364; x=1790732164; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=00Mu3E316L50R7aKcX+ERjAkcdHIZ0M1oyJeJ9Yl1So=;
+        b=jdMzC1PS8B9faMukF4d1EIO9LIVfNA4cBScjtkkGpgN7urht8wR/okxwMVzfY8M8BT
+         pT3JBaVZR1bZHzBJPZrNqFuyp4OGWgCQ7R0GWwjH/7BcgBfLeoiCegW3KrlcZcV4gaD0
+         wo8hifytA5P7wSKIy8YPpqYCLkequ/6UkEcrEDEmTqdfcLaR4d5zfpZ5NU7KYe9xJEkr
+         VEqU7vkTk9U1AP1hneV+lEQs/dsq/anwPI47CDKJGURbtOeEY7IQ2Q/z7pNwN5AYZxLZ
+         eOLPNXZSip54T/ANMlJ0x08p0tU3tbxpqHg2ZdL3umr2CyGVm6k8+CLR37pxcIsIMN2H
+         zKtw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790117597; x=1790722397;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=GdRvNmdqEASsHQpM6tI7sJS6Hgv3J1YdSsDajcpZjZY=;
-        b=z9Hg/0/pVxORVXWXLXwxFuow378fXSsbNg2WdK4C6xdKf6xCgZRaU1YHwF1zeAd+O3
-         E4hToHxZj0xOSLDyYENoVk/xzGs8tFYyDNANnpjCAlP+3T2CLSqDmlxYpXaL4kmj0Llt
-         p54PpyM4wbT1vXpFSMBIXSMlSfE68OfZ8QgmVBB9ZKX35nJUO+vUaF5BVgMp7hexgmVM
-         lwT77rF/2ysv47JD+jGR0CCzYeRH4V76jpCSll3O8Mx/RbT/bPfP3FmEeLbcHl76lACE
-         b143u6bw2rFRptUUzURvGbMxViB3KnaNdcOspRLI2VPkk6Tx2IvpQZOKMCN4Ab+6hnig
-         Xg5A==
-X-Gm-Message-State: AFuF++nGuoUxl8AuVQzaoi9EY5/zYuYF9/cGSHFrtKh+96CgSfdsyb0I
-	g8fsLGRm821puF0OSEnwJ9wvw75kf2VTxlTeVXfwCxkokg1NHlAA3+fh
-X-Gm-Gg: AYBFou2zNDrZ06Nn6qh+ssQlwoZXikFNTOR9r9S0cMFNG6iv1hCGqJEd2yhdoEn6vfI
-	SCK48Qj3X2158gbVIaVkc28A/QhxX6uxW3VCf/sLO+qsAf5pEvd9TD/nDrb1tflTDg56/ApF0Qo
-	a0dToBdiBNnhBct6BYt00ZLzMyrgYZbIxA/ZxDBU4rS4+1gwg/fN9luLqOWO7Lr6PzEpNChS3y9
-	DHvkJgX7fIWfXdWEurtwMeA1/35rNSX5JtOh+0s/LSkm61eIxw0Aq1Vhycvu5zdvQeExPKNi0Yq
-	goiPgIZmoTb6akNx18J9UfN28lpm8v7FTaWsKNxJsyZwUq4/CpaKUB0oS3nknGsBHcfo6xoNfwb
-	MNrFSs1B4EVWW/RNQ7WOVWRDtNOCOTB6iUeZWIS7VFiFlenMMVQxyqON+uyEbzkX+rI3jw61pQ2
-	PD7cM+dlgbPdOGGTd02OPopfHFImo2/6JcRL+PWuvukAB6pdaWCl0Xz9L/6k6txeRFfI5TvvkBO
-	36pVD7mK6TcLt3HDE7VErnB
-X-Received: by 2002:a05:6870:658d:b0:47d:7ee6:98da with SMTP id 586e51a60fabf-490891d5ca1mr994227fac.8.1790117597104;
-        Tue, 22 Sep 2026 15:53:17 -0700 (PDT)
-Received: from Arch ([201.110.78.131])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4908e66112asm869709fac.9.2026.09.22.15.53.15
+        d=1e100.net; s=20260707; t=1790127364; x=1790732164;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=00Mu3E316L50R7aKcX+ERjAkcdHIZ0M1oyJeJ9Yl1So=;
+        b=HSY/D72eTQTnAMS7JjJexeJFSAllFNTjAu+HViAVMwMI6O+FKGKFVk4NP5UqzAyeTs
+         FIHUOWCOaXmM8tboKBUGoj1H1CF5SyFZq7ATgL3PESaSVD67f1QW/pX4fEpQed7g/+9W
+         XISmX9WVuZw1OldCYgC9kIWogyuyLbIYEXDlH+H74GBY0cwGcwd/28UtQbTy2vNbYHKH
+         2eDAo1ZOisHFRl3RW2WhqjIc5vNrmeJN1vo2dgKLJo0LBI0uIrmLjMsfEBYkytSzXMH2
+         vQTuq1HyEKXiFwiSKs88eWqzYTnjcw92bDzKR6jauCGjaubykYyaG0eoJHNvpyg/Uqr4
+         i7Nw==
+X-Forwarded-Encrypted: i=1; AKwUvBw5pT9xZzEvbAmlhVFF/uKGqhUDFTZs4mZ1kMZQ20FK64SVkgyIoNdoZw/RZZZ3lljsIssSeQIsIwb6Xw==@vger.kernel.org
+X-Gm-Message-State: AFuF++muEDVBUYehCnzNPRw8cOJ9VXfTPmg58MLYcSlKfeN2qWceGHO7
+	yagWrw0MbFbrno0HPQT3eNIvOvAtKbAKDEMeUG/vn+T2hPVgcSYugFdj
+X-Gm-Gg: AYBFou3o6A4pNlt+9T39Wh7N1U3AwmsnSFM4FeHHr3xFGlvA6Frxxzc/xB1/IhF941r
+	EA4DRUo8/ibATZ3KzY7R/ubP6VMJliDWZUpRn/OkYApfXCa554gj9V66jaNTOM3j7oXd5FtVCMZ
+	eLpLU1YDsojfHkKT6k/CJ3P8NpvY+/oNhsezSA1Y7hHjEPzZilPMdPTWzfoTuwQ4tx2odrH8Kp9
+	t+Gy7IgeSvHBkOblzm0D8ix6sEzmfdc+Kh6WakemGvhRuLO6/1ww8oYaR4ixN+JqqsS1KTRemmv
+	gSx9gwYZmJ4uEGHAgdtqg/EUGNycjOJji4TBUomOk0g8a3j6UHb7hUP930sgVJMHjK1WvQ72IKA
+	4yYwjd9fSb62rAMKb2CF7On6LtZ8APxopDtnzkoKz+eyjAUXCnsuWt1xTsf2F5HN2QPQJtd6t5/
+	rw7kBTrUuQbmdRi8LOEMaHbsyrDyk8++QWR1p6kSVvxSzu5qOddk3CAxWEy7DLeWkT
+X-Received: by 2002:a05:6a20:7faa:b0:3da:e1b5:2baa with SMTP id adf61e73a8af0-3ddf7e93850mr1125740637.2.1790127363814;
+        Tue, 22 Sep 2026 18:36:03 -0700 (PDT)
+Received: from linux ([205.237.104.28])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-87d1afb99f0sm487569b3a.6.2026.09.22.18.35.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 22 Sep 2026 15:53:16 -0700 (PDT)
-From: =?UTF-8?q?I=C3=B1aki=20Sobera=20Sotomayor?= <inakisobera8@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
+        Tue, 22 Sep 2026 18:36:03 -0700 (PDT)
+From: Eduard Zateev <hackerowskiy@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: linux-staging@lists.linux.dev,
+	linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	=?UTF-8?q?I=C3=B1aki=20Sobera=20Sotomayor?= <inakisobera8@gmail.com>
-Subject: [PATCH] staging: sm750fb: mark g_fbmode as const
-Date: Tue, 22 Sep 2026 16:55:01 -0600
-Message-ID: <20260922225501.1792665-1-inakisobera8@gmail.com>
+	Eduard Zateev <hackerowskiy@gmail.com>
+Subject: [PATCH] staging: sm750fb: remove unused variable 'tmp' in sw_i2c_wait
+Date: Wed, 23 Sep 2026 03:35:26 +0200
+Message-ID: <20260923013526.12225-1-hackerowskiy@gmail.com>
 X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -75,32 +74,38 @@ List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-The g_fbmode array of pointers is only used during module initialization
-to parse display options and is never modified. Marking both the pointers
-and the array const allows the compiler to place it in .rodata, which
-avoids accidental modifications and cleans up a checkpatch warning.
+The variable 'tmp' in sw_i2c_wait() is written but never read outside
+the loop, triggering a set-but-not-used warning with W=1. The loop
+itself is a fixed-count busy-wait with no side effects; remove the
+unused variable and keep the empty loop body.
 
-Signed-off-by: Iñaki Sobera Sotomayor <inakisobera8@gmail.com>
+Signed-off-by: Eduard Zateev <hackerowskiy@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750_swi2c.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 8b93bfeb2..c3f391cdd 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -12,7 +12,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel __ro_after_init;
- static int g_nomtrr __ro_after_init;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview __ro_after_init;
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index e63f3b00ec4c..55623ad35be2 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -92,12 +92,10 @@ static void sw_i2c_wait(void)
+      * it's more reliable than counter loop ..
+      * write 0x61 to 0x3ce and read from 0x3cf
+      */
+-	int i, tmp;
++	int i;
+ 
+-	for (i = 0; i < 600; i++) {
+-		tmp = i;
+-		tmp += i;
+-	}
++	for (i = 0; i < 600; i++)
++		;
+ }
+ 
+ /*
 -- 
 2.55.0
 

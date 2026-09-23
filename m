@@ -1,84 +1,136 @@
-Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F95B47CC8A;
-	Wed, 23 Sep 2026 09:54:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CCDF949AA57;
+	Wed, 23 Sep 2026 11:23:12 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790157273; cv=none; b=euMfIlfx513gze8/Lgih7ZEld8TprtSpd0EgoiK6WpFS852Eq2BY6eaR6YrIirUN5HRtNXm93UvwmO9SONj+Sb80iB4K2NTv4E+PJc7p0CFUeqAoNcfw4XCCkQhXf8WeaZasJu4YoxrJzIvXfDk0OO2kumSta08/PHtA5B/+37w=
+	t=1790162594; cv=none; b=DYdAdaWLuVx3l7LCHtZ98LimZ5T91EM1DM79OjHGJRPpdeng2DAbRI7TaMGcPyLUPqH4MoUfvoXrFcL+W+z/ko/6cPjg+Bq0TcPBviOnanqUQPHJwkSU7ZUbIEMdowUTF9InhuWUzVPqQcERgl8MtKkMnjJiFosQeEBFNzY8c00=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790157273; c=relaxed/simple;
-	bh=0YJmeCEZcPyWKHx1rFsYpNoHpdB0qdAQrtJlqxnBRi4=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=evqdF8yQqOPW87EcvcQAm3/ByKOOtpzczPO3qOy6PkDNW0zWfEIMqCsex+9+/Fms/fdxOv5nWzBsmmDqt8GXyc6jmKNQ62ZiTvVlHQaTKDgbTVeTxrl5YMFARo8/BvJqA9HQzBmMYPkMcsEe40E35UhsPwuCe5b7XB0tQ0jLUsM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=XvxsDhc6; arc=none smtp.client-ip=80.241.56.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
+	s=arc-20240116; t=1790162594; c=relaxed/simple;
+	bh=/UeddZLObedbnCTNfhMV1gtTovVw+BqhhzmgjEPn34Q=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lprPU1Vny3KCCLZTTVP2SY11PHejyiYEw0hE2LCOBHyBTMlubUCQ6hJgXZWJnoOmHlhYj3Kekuo2kirejnruizVe7Y4j5OV41azKmGjDru9TBLp3MHKc4N7K5ZuZp8h9ZEshu1rBJXkuFMPsway5SPyEaQFAaXmmCHrOp3Rl7vo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=JfwNsnSJ; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="XvxsDhc6"
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4hqXPG62HMzMkr7;
-	Wed, 23 Sep 2026 11:54:26 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1790157266;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pNJQx7eG3HyvFQ0X0+FNFvV8AFm7jVjyATRQZ7QjHTw=;
-	b=XvxsDhc6sDw6jWabjFnd7rqSASkwJCCSiyum0/HZmpONf/RR6qAw0RoMsDjXi++LHK59Tv
-	9BpaDN5UqXUhgAF6ww8oO6sALQbqcjsH1xOCu/APUZpCtzpvmx9S6YLB28NUziOSEb6A6g
-	2qw2Exsv9Q66x4Qtl18IxQ6kNp9/0QJztYuddLJZ6im/+9e2rfMgj4j3fWdyYLqYfMEnTS
-	mVwgZ9L8vLDin/LbJ3YPyEXs6PPXLb15ll90PDhe2qwd9cdnRXZvfGHuTNro2Or923orFz
-	7hewrAjOZO5jX7lK9NwMsmB8IavrCTgpIpF9FUVhDfimdykDuyqU89IX8p8MuQ==
-Message-ID: <3b90b2c4-5acd-453b-8f9d-738370a52ddd@mailbox.org>
-Date: Wed, 23 Sep 2026 11:54:17 +0200
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="JfwNsnSJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 247491F000FF;
+	Wed, 23 Sep 2026 11:23:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790162592;
+	bh=LQ8zpcYLHlC/xHOUgHpHFt33WgSiUzGFFjBEuuxh4rM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=JfwNsnSJ7b2IUUacwbm8HxGoXi2ST5ryLkbkJoGFyg2NrcZzbBvHu+BOvzzgs2B8q
+	 Z9ZYRgwUSU/xXKV5mpjdp14Nf3LC9SI4oeo9xRYE9GkTQoEPs+UotwFtXz8jpg9fzE
+	 fBatJXDhI3YswO2favtKZbaUpakGNE0uWXbZ01m7WsYfnfgvjGEb5X4Do03dz4yrPz
+	 WiZJPZfKX1vaNoIcrTdE+tSwo7Ulc2pH0MJF02szyzzM8Otxm/Zg+H3sx4eUm3kEww
+	 IjbDz6RgvIviP+tZCBDTY8mAQJbWafG1OOLbrphrYdXFV32iIDJUuI/DFTu3AwLcpU
+	 ZNfzcSdhrsdJw==
+Message-ID: <385341aa-db86-4f22-851f-85c0e6a0ca89@kernel.org>
+Date: Wed, 23 Sep 2026 13:23:08 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH RFC 13/25] drm: Add VRR target frame rate properties
-From: =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel.daenzer@mailbox.org>
-To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
- "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>,
- Leo Li <sunpeng.li@amd.com>, Daniel Stone <daniels@collabora.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>,
- Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>,
- Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
- Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
- Luca Ceresoli <luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
- =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>,
- Andy Yan <andy.yan@rock-chips.com>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-rockchip@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
- Derek Foreman <derek.foreman@collabora.com>,
- wayland-devel@lists.freedesktop.org
-References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
- <20260921-vrr-limiter-uapi-v1-13-2fcd7d011646@collabora.com>
- <588442c7-2589-4026-a8f8-e03f944318c3@mailbox.org>
-Content-Language: en-CA
-In-Reply-To: <588442c7-2589-4026-a8f8-e03f944318c3@mailbox.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] video/logo: Improve logo help texts
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org
+References: <024a2d7e9a6b63d261f6ca4afb1a75d4f540defa.1790154481.git.geert+renesas@glider.be>
+From: Vincent Mailhol <mailhol@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=mailhol@kernel.org; keydata=
+ xjMEZluomRYJKwYBBAHaRw8BAQdAf+/PnQvy9LCWNSJLbhc+AOUsR2cNVonvxhDk/KcW7FvN
+ JFZpbmNlbnQgTWFpbGhvbCA8bWFpbGhvbEBrZXJuZWwub3JnPsKZBBMWCgBBFiEE7Y9wBXTm
+ fyDldOjiq1/riG27mcIFAmdfB/kCGwMFCQp/CJcFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcC
+ F4AACgkQq1/riG27mcKBHgEAygbvORJOfMHGlq5lQhZkDnaUXbpZhxirxkAHwTypHr4A/joI
+ 2wLjgTCm5I2Z3zB8hqJu+OeFPXZFWGTuk0e2wT4JzjgEZx4y8xIKKwYBBAGXVQEFAQEHQJrb
+ YZzu0JG5w8gxE6EtQe6LmxKMqP6EyR33sA+BR9pLAwEIB8J+BBgWCgAmFiEE7Y9wBXTmfyDl
+ dOjiq1/riG27mcIFAmceMvMCGwwFCQPCZwAACgkQq1/riG27mcJU7QEA+LmpFhfQ1aij/L8V
+ zsZwr/S44HCzcz5+jkxnVVQ5LZ4BANOCpYEY+CYrld5XZvM8h2EntNnzxHHuhjfDOQ3MAkEK
+In-Reply-To: <024a2d7e9a6b63d261f6ca4afb1a75d4f540defa.1790154481.git.geert+renesas@glider.be>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-MBO-RS-ID: 11646ef09ad52a70421
-X-MBO-RS-META: ds7zdfw7ac3mtbp1kbr9duz934e1srq6
+Content-Transfer-Encoding: 7bit
 
-On 9/23/26 11:51, Michel Dänzer wrote:
+On 23/09/2026 at 11:09, Geert Uytterhoeven wrote:
+> Since commit dfa6ce636cb8faea ("video/logo: allow custom logo"), the
+> LOGO_LINUX_{MONO,VGA16,CLUT224} configuration options no longer control
+> the inclusion of the "standard" Linux logo, but the inclusion of
+> (possibly custom) logos specified through the correspondig *_FILE
+                                                ^^^^^^^^^^^^
+Typo: corresponding (missing 'n')
+
+> options.
 > 
-> Either way, should these rules be enforced in drm_atomic_crtc_set_property?
+> Adjust the one-line prompt to reflect this.
+> Add long help texts while at it.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Or rather in atomic_check.
+I added some comments, but notwithstanding of these:
+
+Acked-by: Vincent Mailhol <mailhol@kernel.org>
+
+> ---
+>  drivers/video/logo/Kconfig | 21 ++++++++++++++++++---
+>  1 file changed, 18 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/logo/Kconfig b/drivers/video/logo/Kconfig
+> index cda15b95891ed3a8..3cb66ac88d6be0fe 100644
+> --- a/drivers/video/logo/Kconfig
+> +++ b/drivers/video/logo/Kconfig
+> @@ -19,7 +19,11 @@ config FB_LOGO_EXTRA
+>  	default y if SPU_BASE
+>  
+>  config LOGO_LINUX_MONO
+> -	bool "Standard black and white Linux logo"
+> +	bool "Black and white Linux logo"
+> +	help
+> +	  Include a monochrome (black and white) Linux logo.
+> +	  This logo can be shown on all kinds of displays.
+> +	  Say Y to show a logo on monochrome displays.
+>  
+>  config LOGO_LINUX_MONO_FILE
+>  	string "Monochrome logo .pbm file"
+> @@ -36,7 +40,13 @@ config LOGO_LINUX_MONO_FILE
+>  	    magick source_image -compress none destination.pbm
+>  
+>  config LOGO_LINUX_VGA16
+> -	bool "Standard 16-color Linux logo"
+> +	bool "16-color Linux logo"
+> +	help
+> +	  Include a 16-color Linux logo.
+> +	  This logo can be shown on displays that support showing (at least)
+> +	  the standard VGA 16 color palette.
+> +	  Say Y to show a logo on color displays that are limited to less than
+> +	  256 colors.
+
+Maybe state that if supported, this takes precedence on the monochrome logo.
+
+>  config LOGO_LINUX_VGA16_FILE
+>  	string "16-color logo .ppm file"
+> @@ -55,8 +65,13 @@ config LOGO_LINUX_VGA16_FILE
+>  	      -remap drivers/video/logo/clut_vga16.ppm destination.ppm
+>  
+>  config LOGO_LINUX_CLUT224
+> -	bool "Standard 224-color Linux logo"
+> +	bool "224-color Linux logo"
+>  	default y
+> +	help
+> +	  Include a 224-color Linux logo.
+> +	  This logo can be shown on displays that support showing a palette of
+> +	  256 or more colors.
+> +	  Say Y to show a logo on colorful displays.
+
+Same, if supported, it takes precedence on the two other logo types.
+
+>  config LOGO_LINUX_CLUT224_FILE
+>  	string "224-color logo .ppm file"
 
 
--- 
-Earthling Michel Dänzer       \        GNOME / Xwayland / Mesa developer
-https://redhat.com             \               Libre software enthusiast
+Yours sincerely,
+Vincent Mailhol
+

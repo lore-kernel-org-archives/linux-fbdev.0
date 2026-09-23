@@ -1,195 +1,139 @@
-Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com [209.85.160.177])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4049B415B82
-	for <linux-fbdev@vger.kernel.org>; Wed, 23 Sep 2026 14:31:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1658E3749F7;
+	Wed, 23 Sep 2026 14:42:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.188.112
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790173879; cv=pass; b=JZNJBOoV2jT1zBwEeyvyTjee28qnBAmW9xwqtJGGpYfebDrhIIZv0jiUHRUAZxwIC7XzYq6JScg/yqly1G3pkCKmRk9WCauBfEc6Xyq5iZnokysZO8vm6NdVkI+xuGEkTVfk4aIxVkOsIJdd/rynHja4y+rQuyYoywK1yyzOzO8=
+	t=1790174524; cv=pass; b=uwPeHAqparnxsBDXf4WykQkFHcZeZlbpWFLIUZWp4lUmA3si0AQTIjQzmXK0jfuhFXBQ9zApSrnAvnFFBh6XYi4ufZHE9FCM56Bn3e8lNGaj/v1iVAvJrD6VfYEwzAJHScxKwRiByEp6BtQ1yS8j/54kGx+MqK7/b+sXVupwGEE=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790173879; c=relaxed/simple;
-	bh=3IRQTfCkVu29EAhzhIq8HL8xV9bhN+vmwTvfaTzW1hg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=joOMuYgqO8yQkYljmF7ZtwyGi/TDFLkUy6vbsrM76KX3iG/zLoJlLogaMiF21iZN3INycNFv0kH4+vJ+dBQK3YrVpT4bvd7KjooC67oSEa0DYilYSrY6wpRa2i5oEvbXaZbeWS3WmwVgl5jtG1ZLzHlFXMfb0Zv3/wonBVEVi4M=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=C+1Ohl3z; arc=pass smtp.client-ip=209.85.160.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
+	s=arc-20240116; t=1790174524; c=relaxed/simple;
+	bh=F2aXbujIxoCyt7cj9H0Rb9VCuMUSDgRr3VpYMtadM1g=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=BsnPKiOuyy777N0JsEzWReOTS0HxnoU7p42OKVu5wzr/4MVKrYdxo520Z5qIqOQi3IRASpuoyXCy7WXdhU0FrdyFsvPOHXBCbSXvQpdU94wjh2OK88ww8vhReifeiXNms+6Gt3tdB2PLUnzcBFU4utcI/SmJNZeMnkQ9MdDr/os=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com; spf=pass smtp.mailfrom=collabora.com; dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b=Gv6B+QMS; arc=pass smtp.client-ip=136.143.188.112
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="C+1Ohl3z"
-Received: by mail-qt1-f177.google.com with SMTP id d75a77b69052e-53113d72966so260491cf.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 23 Sep 2026 07:31:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790173876; cv=none;
-        d=google.com; s=arc-20260327;
-        b=EOvG6CnEFavyZD6DYSua3pCdBqojw/jy6OcXDXZe0FvSe1rWPLxqU8Du2nfXTILhOg
-         9VCbM6+hRYSfWJ4ALiXzknoFdjCO4b5v5DzStfltcXVYVHFgq/GZnkX/P1SMLouH/IfK
-         OP5yZ0YWNtF8vtMhoa/Pp7c4DnsjOIc4xD6zvJO1MVrcNpdkTPvAtnJAj0W9V9cb0ggc
-         PK7XqPJnq9ntGvAkqIfY8/UYnqqwyDnl4xch5gdCziaDK+up6oWHrRL5hS7llfC5jwX4
-         FgQMXtyHahzTTsg5Hb857AI6PqQN4Y6eOxqOxamgkiHa5wFRFlaP5Wp61zhNSfmiWWUC
-         ziGw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=3IRQTfCkVu29EAhzhIq8HL8xV9bhN+vmwTvfaTzW1hg=;
-        fh=o81NCVYW3s1IhAHC7BzG8oczuoz6EPnuxwX4IiRS5wQ=;
-        b=f9xe5m8NV/tW1YE2Aqe0wL0MYs9eMlbqMEo5NCuoD/JHKL/cmIiq8fCpg+FWkHw0S1
-         gfEfXLN+JeUPTjyt2nOn5UKVYFv9WcI4QImJMIzLUo/4wzsqbscHuMasEDh8iewo4Xb0
-         obmiVWq2QnWthcrLwM29nGiU2DjiAxWJ6vydgWhxg1uPttRZuQlynTbdhxf3npFHH77J
-         q10g8SoGguqtqqFlhO/Ly2qGuqfxEWekr3m2xMvtYEj2KnSUgl8nM0rV9uDePYLcleSV
-         1IE1ST7f14y1PYMpY9a0PRx/7g1WD9cheH37o7YWygSa8JXicocDfYwiECu+WlpV+Hh+
-         MlYA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1790173876; x=1790778676; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=3IRQTfCkVu29EAhzhIq8HL8xV9bhN+vmwTvfaTzW1hg=;
-        b=C+1Ohl3zbsMrjh1dB/zOjZD8WctelSpuD7HSjz83HtCzxAu2uQCdrvdk6mQA/qDmED
-         XPmCruc/0qesoh5ZaUY/8kYU55YuQDkrL+NWB4/GzBktzO6vR8i1QACk+3pme9wnGQCn
-         VZQmjl8KrY0HTHromA139b+tgbWQilZ3lTmZ8bgk7A7cwz+FVWfgOIYzhOmTDxAQ89K+
-         VZ5tGKKWdn2SxsyXoo0ZRNPy/7aL5Z2Tdfk7aj0pDU/c4b+4zxQCe6XqJRfIBBmHEG8r
-         fY+QEIfNks1XUT2d6WUeW6MkoHO+EYXflKlYvUF0fbOWU0DbvpsKlrTvHc30tBgH/z4n
-         u9Ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790173876; x=1790778676;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3IRQTfCkVu29EAhzhIq8HL8xV9bhN+vmwTvfaTzW1hg=;
-        b=Je+YsxemOzH3PGcXLIAoUgDA7WX8FYjptFNw3hkknp5iCZ0rkHgQTyDDXYnCOr4xLJ
-         1HDXgkHSziNRNcobnjihwLR8ThOCLzSNwvo0JqPnw85IBjntxdo/Ya/hci22bPXARiQv
-         v0ugZVYjfWR92BxSGeQ+hHbz5BvyF9ajLS3oPJKyCI5PR9W7Lt6wjgiAqhbGRHTrCOtg
-         Aj3v0p0faoj+kuJlWcSTcyiqoKrzz0HJUrQ0PyyVPUDdAptfX+dKCLTQDfEn6l6uEBkH
-         lqo/yoqFV3sHdfYKLBDIWKUJY7PHYObCGJtM5yVy8rXKL4vYrsYk79hSbTkzzHf8bSVf
-         5OPA==
-X-Forwarded-Encrypted: i=1; AKwUvBxVb64johR+A7oXbeJY+ffn9bjxw7Z1/CjvscFgAjGBtt8UpBThVGiZVAjuLxZquJBqm/sMIpLy+YZliQ==@vger.kernel.org
-X-Gm-Message-State: AFuF++leaRmIbEsgVsjKszz6p9S026et3MOJ/8bycA2JtNgy9rW9oBVn
-	1KkUHN8HIt+w2uF8d03IAglEoyven4CI/7KwN82xqGstpsgnDDm7mqXStyxNS+9kKsbjzBRNeeK
-	bEDK6iVku4xPJVReOhtKnvzTbBX9TzG3YMz8bOweS
-X-Gm-Gg: AYBFou1P36uF/RxGY+cMPrQbLkhuloEM0dX49cQPVWEbH20fOrhXTluYMLMqEBc3Xz0
-	Gdpb6yaX/zGteEsjwnE8/PnNd6U1dvebv9Tm69h5JwbeRIsnFFHEqzCz6LK4iSyA/c3GbQ6gh3N
-	LKibNq/1EYYDDsAyi8n7T/FIQMJD0S+/fWMtS5zJKQDrDAijhArv8CTUuN0QDy2fnRDRN0eH25o
-	wLKaCIn58Uz0K5Cg9JKPInOgo9cMPngglR//eEyq1WO+p5GRLE2TtO5VhI8o5TroVqndnZjbJqC
-	AIbM+IVjVqhO7EExIsPHx/piqTqREX6pVPLygmjiXViIVHtZ27lg7DY/IPxVXQE1hqugkqIcbEr
-	P2c6wlZUXPw==
-X-Received: by 2002:a05:622a:260e:b0:532:9d15:2e5a with SMTP id
- d75a77b69052e-532ede89b29mr14598791cf.1.1790173874906; Wed, 23 Sep 2026
- 07:31:14 -0700 (PDT)
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=nicolas.frattaroli@collabora.com header.b="Gv6B+QMS"
+ARC-Seal: i=1; a=rsa-sha256; t=1790174432; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=e5OkvZYukIt5GiTQhW6G+Kt1c269AMGHFXpP3r7i+CLvslhzze3rX4ILzx5pTKxgBRIk4eGy2F5HaUWIQuzEmjWHV2bh0li4VAw5VV3vgx58YZezIfbSNX3mvz04KJRvYDlIcdq25Kp7+aL0OkmwqjFMeVYFhQKb9NXxvlicAf0=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1790174432; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=pAuvWDVYVwhz9FttWiM1t3wAMo1yh0IBF3GPtqoFkZA=; 
+	b=ddYCwNc0m34CAPczGPwkeH3AcvGPgdXzFqRZh6b8tu6HRgdBLSyoKd1k+BgSfZT8VhNkaMponBaq8nwYgKFU9o35+0FOliOdAf/BzJJOcTlQuvzxhRBhmW2NjqGnHQLHbf/tQYiFxSkyMRQDGxMi0/J9VrrjnYY0aleWunJAIL4=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1790174432;
+	s=zohomail; d=collabora.com; i=nicolas.frattaroli@collabora.com;
+	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:MIME-Version:Content-Transfer-Encoding:Content-Type:Message-Id:Reply-To;
+	bh=pAuvWDVYVwhz9FttWiM1t3wAMo1yh0IBF3GPtqoFkZA=;
+	b=Gv6B+QMS10z3axRJLGhhpi3sf27EvZHXCdFXjbFmfzCs9qJg3pQk9aS/Yk9UJaPi
+	SLUfnU66bwh4D4qSZKNaxfUGEmDj5eTCix712HE5alCc2nZV+3gwqhIU/a8i6VS0FLY
+	nyguwDqV8p9OR2I5z9STawWqE/wrdi7EY/f1vV+s=
+Received: by smtp.zohomail.com with SMTPS id 1790174426791143.0815861883815;
+	Wed, 23 Sep 2026 07:40:26 -0700 (PDT)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+To: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>,
+ Leo Li <sunpeng.li@amd.com>, Daniel Stone <daniels@collabora.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>,
+ Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>,
+ Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+ Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Luca Ceresoli <luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
+ Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>,
+ Andy Yan <andy.yan@rock-chips.com>,
+ Michel =?UTF-8?B?RMOkbnplcg==?= <michel.daenzer@mailbox.org>
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
+ Derek Foreman <derek.foreman@collabora.com>,
+ wayland-devel@lists.freedesktop.org
+Subject: Re: [PATCH RFC 13/25] drm: Add VRR target frame rate properties
+Date: Wed, 23 Sep 2026 16:39:57 +0200
+Message-ID: <YozwdeJLQh-0GBcK9P3QvQ@collabora.com>
+In-Reply-To: <588442c7-2589-4026-a8f8-e03f944318c3@mailbox.org>
+References:
+ <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
+ <20260921-vrr-limiter-uapi-v1-13-2fcd7d011646@collabora.com>
+ <588442c7-2589-4026-a8f8-e03f944318c3@mailbox.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260914-b4-mmap-prepare-vma-flag-sanify-v2-0-7d9781ed5361@kernel.org>
- <20260914180811.057cba8fcc48d6e0b53a2683@linux-foundation.org>
- <0b064fe6-ddb3-4f26-a1f2-2e9dd88d590f@kernel.org> <CAJuCfpFBichJH4OcmSHTb1rOuQBT6k5pXeua9_KgpWjDBKvsYw@mail.gmail.com>
- <aq6kzpK7wPl3iFGe@gremlin> <aq6lW9FvL69QeA9H@gremlin> <arOCPN02xB7mykju@gremlin>
- <b007cd0f-29ef-457a-8e44-63ab26f3bcd0@kernel.org>
-In-Reply-To: <b007cd0f-29ef-457a-8e44-63ab26f3bcd0@kernel.org>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Wed, 23 Sep 2026 07:31:02 -0700
-X-Gm-Features: AclHuK_ZGTwaB8ygIyiOyIIeQNRzbEtns-G_Cds8CuZ4q61CHw7YMjTifucik0o
-Message-ID: <CAJuCfpHL=dHjT=O4S88ZBvT1DyodAtCL9QTryepzs3EMwoECDQ@mail.gmail.com>
-Subject: Re: [PATCH v2 00/40] mm: make VMA flag semantics explicit, eliminate VM_SPECIAL
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, 
-	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, 
-	Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, 
-	Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, 
-	Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
-	Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
-	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
-	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, 
-	Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, 
-	Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, 
-	Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, 
-	Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
-	Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
-	Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
-	Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, 
-	Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, 
-	Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, 
-	Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, 
-	Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, 
-	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
-	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, 
-	selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
-	fuse-devel@lists.linux.dev, Takashi Iwai <tiwai@suse.de>
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-On Wed, Sep 23, 2026 at 1:40=E2=80=AFAM David Hildenbrand (Arm)
-<david@kernel.org> wrote:
->
-> On 9/23/26 10:13, Lorenzo Stoakes (ARM) wrote:
-> > On Sat, Sep 19, 2026 at 04:09:13PM +0100, Lorenzo Stoakes (ARM) wrote:
-> >> On Sat, Sep 19, 2026 at 04:05:57PM +0100, Lorenzo Stoakes (ARM) wrote:
-> >>>
-> >>> Thanks guys!
-> >>
-> >> Note v3 has been posted to fix a stupid bug in 1/40 + attack some very=
- trivial
-> >> sashiko stuff
-> >>
-> >> https://lore.kernel.org/linux-mm/20260917-b4-mmap-prepare-vma-flag-san=
-ify-v3-0-4583d8a23bca@kernel.org/
-> >
-> > Just a gentle nudge on this :)
-> >
-> > If you guys or anybody else has some time it'd be appreciated! (obv. th=
-e v3 as
-> > linked above not this v2!)
-> >
-> > I know the series seems intimidating but most of the commits are very s=
-mall and
-> > it's been in -next for a while.
->
-> Busy with too many other things sorry. Its time will come.
+On Wednesday, 23 September 2026 11:51:45 Central European Summer Time Miche=
+l D=C3=A4nzer wrote:
+> On 9/21/26 17:51, Nicolas Frattaroli wrote:
+> >=20
+> > + * .. _VRR-MIN-NUMERATOR:
+> > + *
+> > + * "VRR_MIN_NUMERATOR":
+> > + *	Default &drm_crtc integer property forming the numerator of a
+> > + *	numerator/denominator pair of a frame rate to set as the minimum VRR
+> > + *	target rate. Set to 0 to disable.
+> > + *
+> > + * "VRR_MIN_DENOMINATOR":
+> > + *	Default &drm_crtc integer property forming the denominator of a
+> > + *	numerator/denominator pair of a frame rate to set as the minimum VRR
+> > + *	target rate. If :ref:`VRR_MIN_NUMERATOR <VRR-MIN-NUMERATOR>` is not
+> > + *	zero, it must be non-zero.
+> > + *	Otherwise, must also be zero.
+> > + *
+> > + * .. _VRR-MAX-NUMERATOR:
+> > + *
+> > + * "VRR_MAX_NUMERATOR":
+> > + *	Default &drm_crtc integer property forming the numerator of a
+> > + *	numerator/denominator pair of a frame rate to set as the maximum VRR
+> > + *	target rate. Set to 0 to disable.
+> > + *
+> > + * "VRR_MAX_DENOMINATOR":
+> > + *	Default &drm_crtc integer property forming the denominator of a
+> > + *	numerator/denominator pair of a frame rate to set as the maximum VRR
+> > + *	target rate. If :ref:`VRR_MAX_NUMERATOR <VRR-MAX-NUMERATOR>` is not
+> > + *	zero, it must be non-zero. Otherwise, must also be zero.
+> >   */
+>=20
+> Is there a reason that DENOMINATOR must be 0 when the corresponding NUMER=
+ATOR is? 0 divided by any number is still 0.
 
-Had to take care of the pile of bugs but I'm on it now.
+No, I think that's an arbitrary convention I settled on and don't enforce. I
+guess it should be "Otherwise, may also be zero", because the only situation
+I'm making userspace avoid is x/0 where x !=3D 0.
 
->
-> --
-> Cheers,
->
-> David
+> > Either way, should these rules be enforced in drm_atomic_crtc_set_prope=
+rty?
+>=20
+> Or rather in atomic_check.
+
+Due to complicating factors like EDID, CinemaVRR, and QMS TFRmin/TFRmax, ch=
+ecking
+the properties for sensible values is done in the HDMI state helpers at the=
+ moment.
+
+If/when there is a similar mechanism for DP, we can probably factor the com=
+mon
+parts out. I really do hope all drivers (including those that don't use the=
+ HDMI
+state helpers) can at least share the hdmi_validate_vrr() logic, but I have=
+n't
+factored this out into an exported function yet because I don't know how si=
+milar
+the DisplayPort-equivalent mechanisms requirements are, or how much of the =
+state
+derivation non-state-helper drivers (i.e. i915 and amdgpu) need.
+
+Kind regards,
+Nicolas Frattaroli
+
+

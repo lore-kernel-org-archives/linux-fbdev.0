@@ -1,66 +1,66 @@
-Received: from mail-qk2-f13.google.com (mail-qk2-f13.google.com [74.125.230.205])
+Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2A36411A07
-	for <linux-fbdev@vger.kernel.org>; Thu, 24 Sep 2026 17:17:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.230.205
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D1173DE450
+	for <linux-fbdev@vger.kernel.org>; Thu, 24 Sep 2026 18:00:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.179
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790270254; cv=none; b=Z8yYmcUvZZFt/ZEP/zSFOy6gBbQBLJb4A6lvoXs12+1Fcd2Qz11UF1DCluRlDkVW9i0y+J+CL0P7appeHQugu9BqMN8G71fVuOgflbXm1D1JIcYoF4MKE2HmU3n0mCKrDr+Y2V5tmG59+rHITaIyt4gFdGyJ1uu1w1k085E+LjM=
+	t=1790272825; cv=none; b=NYY2CyxxywQMp7XBk0+M0nFYC3iI7fSaLzEG08lvTtgAejhIWh5gex8wnbBhTxsaHSrXCiNr+EhOFIvZ2GJnXu/Ob/Yl5haRUVdaTU3IUBQEBhiF44PpKs09fDiqoLpV8Kjg1ixJ5MHTz4uOmlRklRAD8mi76Vzk907BiuFhZd8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790270254; c=relaxed/simple;
-	bh=N9G2xDWLJkhjpVHjPudlC9eB56JQvy0Q3UFpvQ70GnM=;
+	s=arc-20240116; t=1790272825; c=relaxed/simple;
+	bh=dIEo2BWot8KMA7bFyxIXMBMINiO703u3CNAgbTnUo2E=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kW/jTB9MLNEwbYTxidsqZaovFyr0CwnL61kvTRWs/q/JuVy+jMjaJs68XS+F2qOvos5GasjlhGMtnpfQDH0QJNFQfXTRM3CTKzR5AEnMB9d0D/kr5vsJDF6B6t8ucX2WR+OXdlmNOOLkss1Hf/EvaeKwWItBn+CFKRb+Dxdny5c=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net; spf=pass smtp.mailfrom=gourry.net; dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.b=tprV5yBU; arc=none smtp.client-ip=74.125.230.205
+	 Content-Type:Content-Disposition:In-Reply-To; b=t1GqOLMvD4I8VNInvl/B35hHV24/7TQkfLnoSgJejQkLY9gor1ZTy+nPpJoK6d66kpL4M1kxKuBkt//YcXR1p/cHPEslfbE20QzDXn2mkVa/l4MRUQD1DzcJe6Z3hqfvW2yNXGtfkxwhc6IVH6BB/hU9c5S+q9biqhKaEfM9lXw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net; spf=pass smtp.mailfrom=gourry.net; dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.b=qNcW8nj0; arc=none smtp.client-ip=209.85.160.179
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gourry.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.b="tprV5yBU"
-Received: by mail-qk2-f13.google.com with SMTP id d75a77b69052e-530e28a62abso911281cf.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 24 Sep 2026 10:17:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.b="qNcW8nj0"
+Received: by mail-qt1-f179.google.com with SMTP id d75a77b69052e-52f9fc510e1so8275601cf.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 24 Sep 2026 11:00:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gourry.net; s=google; t=1790270251; x=1790875051; darn=vger.kernel.org;
+        d=gourry.net; s=google; t=1790272822; x=1790877622; darn=vger.kernel.org;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=feTLx7y3sxZ57LB+c+M8YbdddVhljMzyHzPRAu6TpA4=;
-        b=tprV5yBUII/qRzLyqKPdJDICtcHMIXdxXt3R1PhRppTAqbBmNEs7Uqtgc/IauT7bas
-         6q+btZ6riiYDfPxMNxJ9LlKIzVy4E/rMZS8FF2kWFWhC/RTZ0m/dLDIeIJEc6DmgUeKW
-         rRe5l+D4Gb5EgFoh0bNUVpRhgcRfueygz54BCmywUEAofeJDIrYo8R8bOOlnVVhbm8Xx
-         8y1PvkD+okpXc2BYxVcdIyuBwaEwabsdPE+xSDWc5coaNizNqVaWAFRlWZ+CHrBLXEHc
-         +ibea7n8Gc0GPrQRe/RTIUKy7LATsQy5mAZvm52IfaGHNyUnZEVBqjo1InS2m+tWjzj5
-         xc4Q==
+        bh=yIrEACM/1hk8RvSSdnwytl7iIy1+VcppA4PP9Tt2BDk=;
+        b=qNcW8nj0/pDdjrHX+ELCleXyhNSH46+yVTvIwKXf0KEsO2lrNq/+t7BLtAJv/5kwUi
+         2AQLV5DG6nqODb54KYJ2Hhy8HyGJBZMXduXpgQLzeebEeIcn11k5EsbWxNYcGPXBaT1+
+         /qweihLG7noAHfK+Zx5EEGn0ruWcXq/Gj/S2WSYYG/9cAsBnCCVbDo0GQ6tr6T6jIO6M
+         OeOdtj4ZPY+H89quivLjIZrF0JngYycSDR0/nPJVKUYp/eeTnJbocj21+VpbAezcSeJb
+         3sQPtmZy9+wwtqCXvsR5dE5N64+9dWM26DJ4nK/0tsdNaizI0KONqxKZScMTirDGCpdM
+         wpaQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790270251; x=1790875051;
+        d=1e100.net; s=20260707; t=1790272822; x=1790877622;
         h=in-reply-to:content-disposition:content-type:mime-version
          :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=feTLx7y3sxZ57LB+c+M8YbdddVhljMzyHzPRAu6TpA4=;
-        b=F9rEk6Gs/vs05n/ty8M27PudNECLp0CJ60DBkgMSK7JlcNrsQYFb6qXlFFZcXdI2zJ
-         89ASEO4f1aFUs+2zBv8tD68W3uz32d3WKOtolK4p8mK5mSZFbJjNPeHaUAcyN0zK4zdy
-         TvFLpzlfDxKuCBOwaBQ/BqTvizdmaNxz2SjoUyUNXV6Q0u/W2anHy6FQDnA8MzOVoYpl
-         AgNB2b7tY4UAcZ3NfNaFiySr0crCbwsRPeu0gTAcH7zAS9JKZmx/MQ2KmSS9TLtTIJ2l
-         XSBVvyGXHC3NpAM8sw2ydNIHLWzmjxvGsbrC2qSgI9nk6XOTYcnOws0zokIrzs4FPkfb
-         9nLQ==
-X-Forwarded-Encrypted: i=1; AKwUvBzMZtjTWO7HhbkiPY/kbE9vf8Bji7Qgk7pnjDy7MQQKPeoAJ7DvOz0JzbSAagXTAHinzexXWZIMbrjDow==@vger.kernel.org
-X-Gm-Message-State: AFuF++ka0B1PQItEsvHELeW0idTI99SEet6JM89d+Uxt62qLs5Q/omyX
-	k48GfExoYwJwLgWrMI8+qHyy2PC31e8HBRc7qbSMKVgGX4PYzskKkD/R7tE87b6+V0I=
-X-Gm-Gg: AYBFou1yVdmMwPJZIS8kGhGq94aAU6dqHq8XJalJM1CR1ulQt4zrnFF0nyKrvHOCsb3
-	rgJDnH7wm/sraNeo0cTw8FYeymzCBTLaEaLYcT1fOXkJPkDiHSlXyxz0ywpG8cqRMvmYxhwLkEB
-	hqAScrzay9eH/EP2BDWZ37qh8mt9xvvCpIebOuWtGXLAhJ8464XvtY8KzKW22llndIAmAWzHATR
-	9VgLO6VUw4FQOcQAisYwLYh58DBcRdpWmJCTx0mfpjllq1iOuvZFWlFMDXNEiNL/E3sNdqDXea8
-	wuGyest05W1UFiWjv1Mn+DJeayimN0yreR+TRcL13TjIG/cdSios9dxW8xg0jvoHsSk6HzKcdZw
-	P7nc0doVkQur+cObQipTMr2IuvQW/0fDAaA0lvTIaSiQAHJsLnBtMPz1wrLuGtEvDaIT8poACj9
-	SlTQRG3iLd25K/qglfT9vK+vgl1J+RY85h4dMf2uPXCrCR6OeshOh+H9D0zrJ4RBbrMbELsC5tJ
-	LqpniwXbQXu/6jDZszwdJhX0RxrdrRwkbwjmHgqFCUq28p8fLB2jtM=
-X-Received: by 2002:a05:622a:2b05:b0:530:42e4:f001 with SMTP id d75a77b69052e-532feb3025amr31555731cf.46.1790270250746;
-        Thu, 24 Sep 2026 10:17:30 -0700 (PDT)
+        bh=yIrEACM/1hk8RvSSdnwytl7iIy1+VcppA4PP9Tt2BDk=;
+        b=bJ+HhUiQz/QDAAXkdE1gZVaYMPxJwyCG1Aj+SnT65bkpcKWf90dwpcp6C0n69VNba1
+         X6bptLVIVTvHP2VuCVy18dB6Suli6ylzcd6w5xbrWZXTb2R2ZEB60iVk51Gj/ZY1LiSV
+         9adeq01wIDipWOWsL4oSSRZdnEU1LKrymc1dxoUeKo0XhCc+glZIXuyrYkGZAC6NzJsu
+         ub+QDH2trHUD5cv1GmI0wBMg0YoSG+ifxf5QdTOQ3/WJARO/DPUNMIewKWCzYtyZLj6Y
+         ch3c4wwn44wJCX4amfTO4SBbkh2pzMV2Saxl85kADCV4e9V4qDqJmHjR+qootCYLjq7+
+         FsLw==
+X-Forwarded-Encrypted: i=1; AKwUvByrJfXHOD1IZOxq5CPaSATP4Kz7NMVQBDR/QchPDEeE1n3q1X7psr3SyaNqJihJcbB/zY+vJ47hytoFbQ==@vger.kernel.org
+X-Gm-Message-State: AFuF++lOxIKH5y6q9/IiQbxl/7YJGHVYm53C3Xs4DeAu9kjTgiERS2na
+	ska2x/j1btWRSv8QBjuKiXIRHgXcMZS9Eq18Pnydm5uLvCX/FpqlIVrf3fWX2Itpia8=
+X-Gm-Gg: AYBFou3SLzXO+NLWW3od+601tPgLZwjLEqwzAP5s/fTBHl7QLaOv/TFDcvZVh9v2TNZ
+	/IE2JBLZ/fZDtef6f6UUa6nWSL5VaGPS31isbS++GBbFR4oT7D0UAoRTCsJ8oJpXR6Os+FfDxAZ
+	ebIhJB4RJIWwkOcImaPOHfzJNCY3CC9PQ9HvtTg3sQuSe2YSRAwvCp8jfWa6EFWxJLSbWohl8iA
+	d2RI3dKlzBj+iw4PmrS7EM66zBlDO8Qeid9TpQAPnjrhd0wJYEjkcDxAJUqumOyAj8rD9q69/4o
+	geW9XTvGCG968mHnMp+nK7g0z5CrTrBMXw1RGA/Xq4cb3D15b0HqaD2JCD2GgXj7DgN/RBUKyBV
+	Jo1gJ+MsG86Zeu6e1G1zemQNK22JpbMvElRVXDkEak8m+mOZnLQ2TOyUqAFZjUyDWKI9QN+Tw4c
+	YHFs0oVqITlT044Eb9qRtQvYhYfqID4iASIJpbv+KIQZZ1wfdEx4POoIRTHT9KjsIViWGy2QPgS
+	aydD543V07Xnzp8+87WGV+sq2YA1u/ceWGj0zXVNvnRM502sxfqDCc=
+X-Received: by 2002:ac8:5a46:0:b0:530:e682:87c with SMTP id d75a77b69052e-5330b6df434mr78501cf.33.1790272821894;
+        Thu, 24 Sep 2026 11:00:21 -0700 (PDT)
 Received: from gourry-fedora-PF4VCD3F (pool-173-79-60-52.washdc.fios.verizon.net. [173.79.60.52])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-532f8b7174asm25743881cf.14.2026.09.24.10.17.29
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-532eb38d347sm47450101cf.25.2026.09.24.11.00.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2026 10:17:30 -0700 (PDT)
-Date: Thu, 24 Sep 2026 13:17:28 -0400
+        Thu, 24 Sep 2026 11:00:21 -0700 (PDT)
+Date: Thu, 24 Sep 2026 14:00:18 -0400
 From: Gregory Price <gourry@gourry.net>
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, 
@@ -72,11 +72,11 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
 	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
 	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 04/40] mm: consistently validate VMA state after
- mmap[_prepare] hooks
-Message-ID: <arVW5i8pvySq6Co2@gourry-fedora-PF4VCD3F>
+Subject: Re: [PATCH v3 05/40] mm/vma: ensure mmap_prepare doesn't set actions
+ on a mergeable vma
+Message-ID: <arVkwC_wNoTLjRYf@gourry-fedora-PF4VCD3F>
 References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-4-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -85,63 +85,60 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-4-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
 
-On Thu, Sep 17, 2026 at 05:22:13PM +0100, Lorenzo Stoakes (ARM) wrote:
->  static inline int mmap_file(struct file *file, struct vm_area_struct *vma)
+On Thu, Sep 17, 2026 at 05:22:14PM +0100, Lorenzo Stoakes (ARM) wrote:
+> When a user requests an mmap_action be performed in mmap_prepare, this
+> involves populating the VMA range with data.
+> 
+> However, if the VMA is mergeable, it might then mistakenly be merged with
+> another VMA without having populated the range.
+> 
+> Every mmap action currently available sets VMA flags such that the VMA
+> cannot be merged.
+> 
+> However, to ensure that no future mmap action falls foul of this, assert
+> that this is the case upon mmap_prepare validation.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  mm/vma.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/mm/vma.c b/mm/vma.c
+> index d6ed10cefc8f..62f2ce1ad5a1 100644
+> --- a/mm/vma.c
+> +++ b/mm/vma.c
+> @@ -2809,6 +2809,15 @@ static int mmap_validate(unsigned long prev_start, unsigned long prev_end,
+>  int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
+>  			  const struct vm_area_desc *desc)
 >  {
-...
-> +	err = mmap_hook_validate(prev_start, prev_end, &prev_flags, vma);
-> +	if (unlikely(err)) {
-> +		vma->vm_start = prev_start;
-> +		vma->vm_end = prev_end;
-> +		vma_close(vma);
->  	}
+> +	/*
+> +	 * It is not valid to execute mmap actions for VMAs which can be merged,
+> +	 * as any such merge would leave portions of the mapping incorrectly
+> +	 * unmapped.
+> +	 */
+> +	if (vma_flags_can_merge(&desc->vma_flags) &&
+> +	    WARN_ON_ONCE(desc->action.type != MMAP_NOTHING))
+> +		return -EINVAL;
 > +
-> +	return err;
->  }
->  
 
-I indepdeantly validated the sashiko report on this chunk.  Seems like
-close() should be deferred until after __map_new_file_vma() calls
-unmap_region().
+If you wanted to make this unit-testable, you could pull it out into a
+separate function:
 
-suggested fix is to drop vma_close() from mmap_file()  and update the
-cleanup in __mmap_new_file_vma() 
-
-if (error) {
-	UNMAP_STATE(unmap, vmi, vma, vma->vm_start, vma->vm_end,
-		    map->prev, map->next);
-	vma_iter_set(vmi, vma->vm_end);
-	unmap_region(&unmap);
-
-	/* Release driver state only after its mappings are gone. */
-	vma_close(vma);
-
-	if (map_same_file(map))
-		fput(map->vm_file);
-	vma->vm_file = NULL;
-
-	return error;
+static bool mmap_action_is_valid(const struct vm_area_desc *desc)
+{
+	return desc->action.type == MMAP_NOTHING ||
+		!vma_flags_can_merge(&desc->vma_flags);
 }
 
-Example race:
+then write:
 
-  Thread A                              Thread B
+if (WARN_ON_ONCE(!mmap_action_is_valid(desc)))
+	return -EINVAL;
 
-  mmap(MAP_FIXED, address A)
-    driver remap_pfn_range(A, page P)
-                                         load/store at known address A
-                                         hardware finds the new present PTE
-    validation fails
-    ->close() frees page P
-                                         UAF
-    unmap_region()
-    TLB shootdown
+And you can write a unit test directly against mmap_action_is_valid
 
-With that fix
+otherwise
 
 Reviewed-by: Gregory Price (Meta) <gourry@gourry.net>
-
-~Gregory
-

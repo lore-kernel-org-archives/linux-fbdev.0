@@ -1,53 +1,52 @@
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013067.outbound.protection.outlook.com [40.93.196.67])
+Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010056.outbound.protection.outlook.com [52.101.193.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F9FA370ACC;
-	Thu, 24 Sep 2026 06:45:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.67
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7DE542E409;
+	Thu, 24 Sep 2026 06:55:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.56
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790232361; cv=fail; b=BbQxptduz2F8UDZbDuFAUfah3GaWb+yH6yxuiCwpDkJ8n0qjELG2YWE50CSo0NY1h05dxl5odklxA8+9jWgg5LuId+7JB8510F4WBezudAqZpFtWBJV+GyPAn/qwP5lOqn2FGYf2nd+FwqYVsZP/0/rMiYyPVX/J0AuGM9769u0=
+	t=1790232929; cv=fail; b=iHjR/Z7dtJgg7wop3DD9bWWX2YPORMEqTSxBtWG0D4kgmpS7ZTTdA1xgxsrcgUQsdAJm6Z8lcvwSDUWQTpBXUtUHfxRKWwtqOKzqzdP/XXttCs+PaYVew3C/Ttz2eJH8j3Qrt9GFJ/qI6/0dv3JGZahuuRVauv2ZjTdNhz3AiFE=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790232361; c=relaxed/simple;
-	bh=i5QG9nuJ3lfL7TOeSBQr6zRBmci5R7PiBTAwNti8osM=;
+	s=arc-20240116; t=1790232929; c=relaxed/simple;
+	bh=Qbcf6ZLV6aAoFV+BKUq4a8R0dFOGgtJexzC0ykXuAUs=;
 	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 Content-Type:MIME-Version; b=IcBrvPYAQysI9oV2jmZR0y2WCPIs7hTKVIN54cnbW21i9I5lu6tShPdvoiRfq4ow0CeNEXuNq3oWds+DsJt2soMFDqZkyZqt5zmhlGY43j5X2SelgVstsVG4cNirxlaJrIvGg/TLOpjftfvSa6kqHww5FiOwzuwBpWeChp1RBcE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=StkWSi05; arc=fail smtp.client-ip=40.93.196.67
+	 Content-Type:MIME-Version; b=UA7Qu/eyAMQ8Y3rZf3o6B2o8mUvnhd5cFsRu5w0LWhhoxOS9vk7YJ7huk+RbcMiF4OIWl8Efmc44FIxWBoa4M2QeAhzuGyn4GMgdec/Og44AftcHvc2EZITXaAQApUaevkMRMe8+QjF0eoIUT2SFWaEiAsi/ureEaoymLwQGlck=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=naOuY6rc; arc=fail smtp.client-ip=52.101.193.56
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="StkWSi05"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="naOuY6rc"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BNTrZYDOGIx/UxYjRhtgBiAboA3CIHU9iN1lS/7uyRrKr8ztqutHHLX7v4q6oyxr32IYZ9AHvhSa8R6fbAGFMKQsNc1Q2SzIDxVVlxjiJZy/KMaj+X2hkOSiyem6K9FAqF0IDHtiD6t/u505Y0oLJ8FG7x2bp7W9DYY40xnA6i03l/GoTdaw5CP55Xlw+MRjpm0ZocKCoCINXUIzfOEpTp7xeVTh8sQ5mUxJbmfW49bL/BddX+uWqzTRsFZii5us9XLa1Hr3JGXoBx9nTKYqRrIkgpDmoFOK3TPUWysSNJfYF3NBVY4mqu3PuyuTWctYsETAfwKJEO7bO3zOxYbwOg==
+ b=OoMvYpk5MaiU9Eyawk8MAX+O+U1R2u4mLBECPWQ6KtXyTl3BlZ1JPs0R2C2tOjIqxJbrQ1lcTsq2VP11Sb+ksSTHOuWCstHyih6hcY0WIahPsNHaK29d0q2+jJ0THMu8yhWaQl4MZhftkBV/HPddYcN5Eurj9bBbWBosyDUdv1/0aL4SibKNJZ4fLMFELF4HOxEFCLD8/Gq5VluB82THqoexpHoE/K+WmixTrcbD9O0XNpiuORPjlQH3lmE1qrmTtQDhzbO5L6cXoejV6bmOkG91SkSxfuJgHIpfr5n9Qn5lcYlX0RZL8FJIEnCYwt5UDVRc1/ARqOH21NyOzjEHoQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=pux10LlETLszwSf1Y6MVAh3Fvixzs5T8niWGfHPGaP8=;
- b=Auj/DAoy3kXR66KZPNBmMjTRxu5WNYR7QDfG//alrsT6EBzP4Wgt0warHPVCt+v+VC6TBQslqiITzIegzcnTNOedM6XFX0lN2xHJteisSQ1pgCfBlfq2VDHHymQbtaYJcM/OjD7xdZkTTY1NX6jlzyfzYhmCZRKXK/TfAgAa3b9mhdB7qeXoDU+ZQJNnfr1Bf+TbSDI6f3o9W18vPLAfOCXapqqNWax+HWavWOyERbVWuWue7YVmVvYXnLACpNiuqphwJdlRYn+SCUzOKDdP1zHzyNJVTbSWCbQ1BFLabXcp4Qxw6a2f4sJA4PcCgsCecf+7JYhTTtLdj/Ct3is68Q==
+ bh=HVfFu4PUeajg1ABEa5xa7PUUAKSajpANyrE8pxU7RcI=;
+ b=K/KODGVly+v11V+okVe14CWG2y74A8xad/BAaKKBasJuPEy4fwQduYgL6x1ufNizE8/jhzdsJYIa/HQMP+VRGMet7soVFldSNEUCf+4WOUvXFX2lDu8CsItE/2jnSTJYIwS64Od75Ma6y5mPNKbKnc436A8v/XKFPdfFFQKPbs1Zuzm8D72rS3PBSHZ6yMtpO6Dp8B81TSdGq+7ouKb91aUOZxPuJHOVJN+o0KZvcIMeD98MDGC5LzybvEfLaSzx5A9jqjBzvLTNq+NQy5Vtqg3YrcPI9O2+ExxC46bENWhyBiZsi/8dz6uZiK+HiLWHJopzcTAkqkalpiRfqs80FA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=pux10LlETLszwSf1Y6MVAh3Fvixzs5T8niWGfHPGaP8=;
- b=StkWSi05T7vNT7gX8cV1yBGseBdFMdj/hG1ClkiIRO1DoCCWXPG0ZWxPZdvH72V06IUk6Dwz644Ti1kS0E4diiWIjfQzCyIxHXVbEwcpdoPxnZuM6B2IUnNjW8x0108QJSnuCM4tXaDv5uvGkE1Tk0yFEauso5bb1aKFDxNma8G5bIbyAorp8YimNffnlZW+JajjZbqFsEU/uZXTktLWZQmw6ORs2ADU/JEJyXqJFz+D0uwIbUN5poqjHdiYxhxCBlgrrhA7jUC2YEtb2zyBC4jk2T/YRa8LxG0M15RJoG01M/zeTeN1EC+7J0xq1eXpGY38CJX3+3rz2uKNHbfKNQ==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ bh=HVfFu4PUeajg1ABEa5xa7PUUAKSajpANyrE8pxU7RcI=;
+ b=naOuY6rcfNXjTGxN74lZfKPOA0t6YkcLeNhghmRyFzbol7WegXcE25BS9KaSitW4xOnq3NPa2BFbP4tTPlpvGPAzIkOK9OJbZJIY8C1ZcSns0PJFbQVmhV65YEtF9KwAixoQfZ6wQ8sxVZZob7PjcUoOHyYh4q0c0fxoecrHWzN17CRj2uei7PRpkBXOnemdXzbiZjYDl0Clh4G+hJS3mi50XTwktpomBLEZv5EZAti6KBwmNe/y3g0ZDOcEz4MLBgn9BWjkvZq/kaxea5a3BCS/VKvcFRUFGGr32chu3GCoxS1X+6ke8/B4t72nVrURBNCKthGxJzZnEKS7clKgaw==
+Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
 Received: from BL0PR12MB4914.namprd12.prod.outlook.com (2603:10b6:208:1c4::16)
- by SA1PR12MB9514.namprd12.prod.outlook.com (2603:10b6:806:458::7) with
+ by IA1PR12MB6017.namprd12.prod.outlook.com (2603:10b6:208:3d7::8) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Thu, 24 Sep
- 2026 06:45:55 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.17; Thu, 24 Sep
+ 2026 06:55:07 +0000
 Received: from BL0PR12MB4914.namprd12.prod.outlook.com
  ([fe80::4921:cbe6:78cd:b445]) by BL0PR12MB4914.namprd12.prod.outlook.com
  ([fe80::4921:cbe6:78cd:b445%4]) with mapi id 15.21.0428.015; Thu, 24 Sep 2026
- 06:45:55 +0000
-Date: Thu, 24 Sep 2026 01:45:51 -0500 (CDT)
+ 06:55:07 +0000
+Date: Thu, 24 Sep 2026 01:55:01 -0500 (CDT)
 From: Vidith Madhu <vmadhu@nvidia.com>
-To: Leo Li <sunpeng.li@amd.com>
-cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
-    "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
-    Daniel Stone <daniels@collabora.com>, 
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+cc: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
+    Leo Li <sunpeng.li@amd.com>, Daniel Stone <daniels@collabora.com>, 
     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
     Maxime Ripard <mripard@kernel.org>, 
     Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
@@ -64,14 +63,13 @@ cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
     linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
     kernel@collabora.com, Derek Foreman <derek.foreman@collabora.com>, 
     wayland-devel@lists.freedesktop.org
-Subject: Re: [PATCH RFC 03/25] drm/atomic-helper: Set mode_changed on
- vrr_enabled change
-In-Reply-To: <75b82a61-fe82-4597-bfb5-3c717fbb0dda@amd.com>
-Message-ID: <7d5d4ae5-0f48-7c91-2675-8ae6e20fa5ef@nvidia.com>
-References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com> <20260921-vrr-limiter-uapi-v1-3-2fcd7d011646@collabora.com> <75b82a61-fe82-4597-bfb5-3c717fbb0dda@amd.com>
+Subject: Re: [PATCH RFC 02/25] drm: Add VRR state
+In-Reply-To: <20260921-vrr-limiter-uapi-v1-2-2fcd7d011646@collabora.com>
+Message-ID: <6835709f-e2d1-54ec-7dee-057004b08a90@nvidia.com>
+References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com> <20260921-vrr-limiter-uapi-v1-2-2fcd7d011646@collabora.com>
 Content-Type: text/plain; charset=US-ASCII
-X-ClientProxiedBy: BN9PR03CA0174.namprd03.prod.outlook.com
- (2603:10b6:408:f4::29) To BL0PR12MB4914.namprd12.prod.outlook.com
+X-ClientProxiedBy: SJ0PR05CA0029.namprd05.prod.outlook.com
+ (2603:10b6:a03:33b::34) To BL0PR12MB4914.namprd12.prod.outlook.com
  (2603:10b6:208:1c4::16)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
@@ -80,115 +78,357 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL0PR12MB4914:EE_|SA1PR12MB9514:EE_
-X-MS-Office365-Filtering-Correlation-Id: 55832ba3-0a7f-4fdf-8b6e-08df1a077af8
+X-MS-TrafficTypeDiagnostic: BL0PR12MB4914:EE_|IA1PR12MB6017:EE_
+X-MS-Office365-Filtering-Correlation-Id: 128682e3-d62e-427b-18f9-08df1a08c3e7
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|23010399003|376014|7416014|10067099003|4143699003|56012099006|11063799006|22082099003|18002099003;
+	BCL:0;ARA:13230040|7416014|1800799024|376014|23010399003|366016|10067099003|56012099006|11063799006|4143699003|5023799004|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	xon87r0cUfVNI8nhR/C5EB3qVujKWq1qHdaL0dw7cXGSnmgbCsXBi/DmdasaqcM+OuyA2MnZb5HhE9xJzZ17W+SebvSdY/mc+cYklDGQQicmr2UK6pKxRpRO8Z25VsXFMGW3I1e0Uey+S/vepLTaZAvBirFZy2MEMXWJEqzAAHiPIOZp8sAEmnAsGHyQFFxT4B1tE1uA9dgzB/8v7RtEecITSw9yaOfzyvalVxgYurVyCLoz3VcawCjufhXbu2k+w4Hv8nILiiMxefemqOIWFVLpm05hTxghPByOO/YQ3tfb95zFkX3TdBh1ZN4GOmfL2ejavfFl2J6dpoD+gZogMkiDgmitKJOHYVQCScYpAsEDEhjcRoYDRvh1kyCs7t+v4ECwi1BLxhj8mH0Ff0PtB0hora5Gn/HH/GnpdLS++odIp7FjYV4k11ZpKJIgELDz7FKmtM2LigfA2N22DLlA2krsWR3+s1CkiaQ3dKzHerS3RgXEe1WyXcPXj9bmJ+0/rQfOBj1cXfRvw/IwE65FrnpP28Vf06f/smA5IPxymSnl2QP71AuIboxwelzjJ10BfApBLJuxYJxU88HTNrsCVxoDbJONpHQewvyKG/K6vAMpPELmFvLyesrM4OxTK9RLro8gnXU+OC/mXPA2pZJsuikucH1uxIqd599MXzm4GiM=
+	UPV21w6U4p/r+YPtclOZMJpo444ikwW8llr/KOuzjJmRjgqeSMt0ycGLzFR23ZxK5Y+lNydKPXJYvln5RLMbLBIHB9UdkqdKk3Ul4IzOQ5qE/uxHIMgJFe66VdrYn2MCOM9tssvhvGCflOYqQe73l5UFj/btqsS8b9boSQtyoWTJjBKIfTFa9RwsjMT6fC9Kl9xaYaknt/54u2G/HjxsvI5baCcBJD6yJTLtBJeu0NOKjnFV0VfyfCXEKhOv0bhnyT1OipM4l1ENx10oDALO1GhGm2Pntzvc1XPprqWycP7Ck5TDm+FYkniW63koqjvA+vAZbrSB3fJPyDzjA9mvyx/zGcuiT36tF/S6qBOhgqisAW8oKHjtEHy/ZJC/CgWohCKWzn9C8sT0cihzzGNGEhsN5ynzlRjy0kLkBNzX0nBz5PUPGB8zlObz/bfuO5D0NM6OyANmCq2tX0ttkOIhTsIUv9ih0KRQNZ7UNOnN0MNiGsoau1feapIZ96ia50JahEfzcWGGyc0IK01REBqYtWfFld5FEl44aM/888mhpA/SjJtxb3lKwUWmLUa2w/vE7xQO1h+QJeKii6vYc7YHFyJQ3qZ4VH8rm3vGFrQWPjIkBbgghV7Z54gJoYZMNHSp6EuGD+DHay+8IMxN6uxTydjheAON7bZqByLzJqVwNzw=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB4914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(7416014)(10067099003)(4143699003)(56012099006)(11063799006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB4914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(1800799024)(376014)(23010399003)(366016)(10067099003)(56012099006)(11063799006)(4143699003)(5023799004)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?NCBrF8GlyoxNOcuWpX9zvCxKIbQpKmUcOvbM7I9CRTHUJwslz8SW4lcxVHsH?=
- =?us-ascii?Q?uks+poJssqCNXVgQVhGsy8VsdnqXxvXAWsHsDYGzGFZQdJsj6XetVwIQs5Dg?=
- =?us-ascii?Q?7mBAjmkpdbjeUtwXjrih6SMF0Wyztk4q34XOVX0kL9UD0sBUNujcNANuHSSO?=
- =?us-ascii?Q?w7kUnB2tCABoMmYY9jCgd86Fzsjj3GB0S2aMp2GvIKiO6b8Bo8qcFQEdJiWW?=
- =?us-ascii?Q?fkswCMWYv0ndueStJOCQaZl9aPHiP68eSUf5b+V/GNB/i9dwtmOgSW7eyYP5?=
- =?us-ascii?Q?qCjQ5LcKudHLiWqoBo8KAC4gH0QVo+f0ZzV34hqf32foYKAoUsx2/8M0v/QB?=
- =?us-ascii?Q?MgyAiOXHCKkAOjWIYQY7xlZNiYpbEHMlYrbzYYf3TgnoarXjaCu67hle0Qks?=
- =?us-ascii?Q?htNdTepiSRX+7nwf8NF44XO9FK8e0IxTSmgdUnX32GFdGsUhujV+7+cHfPpb?=
- =?us-ascii?Q?mCUBEa9FAH3E5HBQqUib+W92cKbeYWoxmHu02OvSUVAKbToxyXi0BxtlYR37?=
- =?us-ascii?Q?HwSNs9xvB28DrgiOnB5TZwa/Oj9k0nd6rIvdiQuVXe5ULm+HLQ6RHt88Lxb1?=
- =?us-ascii?Q?ZVsVSe3EhXgf+Frx9lMTObw7jieb59u9rtqlDLMHIUXv9DSx1fUQGaWblxGC?=
- =?us-ascii?Q?7GykdFmpscH+tFQTHp23LKsqGOer9zRoFMi8H4YOEJZWe9p5I2+TmcW9OtzT?=
- =?us-ascii?Q?rKLkwFCs4vwmjijASAo0tM9cUD8hihyoYH1Pkha+mkDM0qIWTGej7I0h92np?=
- =?us-ascii?Q?XQaZTtPdBsaDpy+y/5Q1T5ddYRyk/HUPI8LHho4rAaxfbJ10YJgvibsFL90J?=
- =?us-ascii?Q?4dnZryoiAxmN6tJ67QBz5CXkbi6JYtNVz96HlHj7bCXFh5it+1sH8ZY9Gddn?=
- =?us-ascii?Q?6xkHmkt8++zQGDJFAPnJyOG+o8u/1Ne1gn4AK6t6ap/avi2wQELKFdxI9BYh?=
- =?us-ascii?Q?fWAONeHqwMfHbMfd1SiLv9Xf0HALDSrNg20vY1YpBkOYwd0EYXWquVGmtfF1?=
- =?us-ascii?Q?+xTt05XXrU91q4VIl2ZwB6qvRt/Q04F1QE42gPwJKbYr6NQtsinnMaZOUGQs?=
- =?us-ascii?Q?b/RKKkPTxS3tUZytffk0bmMEhfYfiCS7ZUjvB+kkxEkDxXkpy8SAV1SgBRwg?=
- =?us-ascii?Q?ImNpLbgTWYGlP+v9jh9jw55E/Wlf9kjmK15qB6wCXPixqgpgvnWpmUsSkGVk?=
- =?us-ascii?Q?i8jgL8fbyknvjFPOWTwZ8favaOZW9GHggmznDxY6qr7aOuofZ17jFzpZSNNw?=
- =?us-ascii?Q?uABCoU9kvf3ZI+fjX97+wXgMjDqm5a1bNkco+QpQGuGg0g6TY9ZZ8NSvho65?=
- =?us-ascii?Q?cDlgeuh0TuRqwu3UGQod7bLQER4I1920kYnm6u6qWBi3TCkmKg13HYnazh24?=
- =?us-ascii?Q?LAbdLekL/Eq61R9c5eeOJXl9tW6GTbQU9npvre7V8a4vFAdThBBedl4vLODi?=
- =?us-ascii?Q?Zpa+4Ej8RWXXiZXJPViyS1F6vEDIT2unrWRp+xtxt6VhCbNbuU8554wbQxw2?=
- =?us-ascii?Q?vNIkpBFOaok8f+BqV8Z5nM6jPXfvd2uBnC0o8X1Za9M+Z8X4Bc7dwl6uD5qQ?=
- =?us-ascii?Q?7HkhQJ5id84FA/n6TFgQxIF9HgV+cL6NhQcxXn2kSksLLX2DwXfBZ/8rFXDo?=
- =?us-ascii?Q?9BTU0D9wq+xNXSo+2ai2EcCvZmQsU74fewNmLvuepEPe18AkDjdAq9hqsG/B?=
- =?us-ascii?Q?f62rwgZcppoHJiEJ5D4mOmLnIP1Vm5OxN+Q68cHudipjahGrxSnEoRV7l6Zb?=
- =?us-ascii?Q?I7maMd5Ikg=3D=3D?=
+	=?us-ascii?Q?vTYM6NYngDRyLO+VHWAd3ystW3SXHiqVWNp6P1C4LlqJiq9hEuiQzcUYlyiV?=
+ =?us-ascii?Q?CWQMMOO7sYsSbVKWp3BGd69g5SXuTNsUs4DCQr1rQsJakOla8RkCBMgOkrMm?=
+ =?us-ascii?Q?vtq65WbZNhabr5MvzY61Ax9cFl7GyETXW66uICpbu6BJiwnvoy49Ro3nylpL?=
+ =?us-ascii?Q?k5dxpd1KukaKM/TXEw5PmdpY4XM8WWXfixiH0JMX3CVNETopUVuCvl6i7rW8?=
+ =?us-ascii?Q?RpTAkMRfRZT537B+MfjTZcA2efXAUP1mzZL83H8vF5JlJkL67t43Y5TdL4fU?=
+ =?us-ascii?Q?bY8V1aNR7mQQMdJOLxtkcwunBgPnXIpxtv19TzTzIkVtqSP/kpAmR4C5tn4Z?=
+ =?us-ascii?Q?TpyDyGih6hYyw473wrw4/7I42jJPzcH2ObVVmvJ5atEB0/a4MK7aYxtyQMYL?=
+ =?us-ascii?Q?eTujyRdJvi6fV/bNeGL8+PI3Qty76OQM5VVqlkm94hg30st8MHrXvPFFqJ16?=
+ =?us-ascii?Q?xzGqLwx3oh/11xYPQdESN937GdIyntpKXOCchxG9LBmnS+kGDP2odDUUIR7l?=
+ =?us-ascii?Q?x8CIQfOf/9BziZ1mZgnizip4W9FAkTx0C6qP3306p+adjCYg3xdYorzkWO3k?=
+ =?us-ascii?Q?Ci6zSu2SrJJid03eLaSYuxFdf+r5zOyGQiLeWjE1AFhFHI9HpumlX+iZYIlH?=
+ =?us-ascii?Q?liuZjqVsAbB8ri/g2GoDpEnuOUpHRlsE/KwOrRKpCvMUV/rMXVnAcyvE7LXJ?=
+ =?us-ascii?Q?W0/t5v7k6LrM+tOhvWoRKaf5HAAqiDXR2fEDb2jD5Y1bBckr2PIZupowKNrY?=
+ =?us-ascii?Q?tqq52SbVEJIENDdvp+TAkn8mGjw199sWV9PBQk+bRo3cDmYn1ObKwrtHRnjV?=
+ =?us-ascii?Q?bPqup8kM0f1Q1NS9EkDk2tFL4jW606vZNDexFjZcFGiZD6sSKqH7qUNnekKX?=
+ =?us-ascii?Q?Azudw+b/EEoEmVwYNNzDgFt5eNFaXHC5CIhgqlnqBPp80lH29kiFIQEoZGPI?=
+ =?us-ascii?Q?DnZ/mNXYzhyjmxpEpBcm2eQnucixqvm65xfdixKCMS+sDdLEXKKA7Q5Avme/?=
+ =?us-ascii?Q?u3idXxO12n70ZSy7Hpb5dHBdu5k8iVg1nPyXIv/DDoKqeugWYdfgkQjrNWPF?=
+ =?us-ascii?Q?jkcEcLAJZWpBPqtBc5ovpNkgodWp1jun+iGYGiMLUBMSZkvGMYOWt7vmniWg?=
+ =?us-ascii?Q?3d5/jXCDf0LwDOcSFJXJQ4mifRgq7yW0JupxyoJcmvsPfAnbMG779rYCvChh?=
+ =?us-ascii?Q?70mtQuGwjtO9Bx7dkL5/EfDBcQDAnC+w/UoWXpNRmZ1ov4Ize1yyq/lm6S/P?=
+ =?us-ascii?Q?7gZOUUT2DZX3h5131wr0tyNxO7rV0FO9RQ3WhKJ0VAadhSTgIufwpa3z/8fg?=
+ =?us-ascii?Q?dnjyfKpYvw1LSH7R5VB0SYBOGRjcQQKNTAFS/6X8lXgxqXnLUh0wFRV7ebv9?=
+ =?us-ascii?Q?0GdaUlEVDtMptQVjkQ/1ueLP2isswEu45lMNI3/gw3GRNtG09OqcvBSbzWmJ?=
+ =?us-ascii?Q?W3g0B0pbcbMd1tw//TBgletsy7FpmSpwJHfdpCxI/b7gMbslnjBZX+zw4Jsq?=
+ =?us-ascii?Q?38IKPPycjzMvPq4TW2OFdkLebbt+jsVc8E+DOd65Rp+6CoXjCxKNdkDDaEgW?=
+ =?us-ascii?Q?iS12eFU00tx9FzWxLuEKbAoGrlHfaTKQIFNaSGPd3/7y5/P5iGWFs+F+//up?=
+ =?us-ascii?Q?YVr/UkA/E1q59IgYi2LJwTrKYSBYP7KkZHaqxFlH3tVYhei9SJwFl60Ey0uO?=
+ =?us-ascii?Q?tMbHE3FVjy5NmRQHVz5r1qp9VzirVqmvADC3jx9s13OwX3jf?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 55832ba3-0a7f-4fdf-8b6e-08df1a077af8
+X-MS-Exchange-CrossTenant-Network-Message-Id: 128682e3-d62e-427b-18f9-08df1a08c3e7
 X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB4914.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2026 06:45:55.3066
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2026 06:55:07.0665
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: aOPjNIoaoy+gTBa2gdJOIEKzW0fAwWKkCHJ+gt1Q918nnXfzFx+UMZhrGNrmT9jpRaWmADB5SSwClJ2Qa69pBA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB9514
+X-MS-Exchange-CrossTenant-UserPrincipalName: qKXpHaGjpsTHitL3qKCpyIsEKd4wDIkB+tN6MUfCKstzcCDZSswG5bp2Obq6Cxo9EQFniw8FIi5LZmgYUxjqQg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6017
 
 
 
-On Mon, 21 Sep 2026, Leo Li wrote:
+On Mon, 21 Sep 2026, Nicolas Frattaroli wrote:
 
-> Hi Nicholas,
+> Add preliminary state tracking for VRR, and VRR state validation. This
+> will be used for generating VTEM infoframes in order to support variable
+> refresh rate functionality.
 > 
-> Thanks for sending this out. I'm looking into an amdgpu implementation
-> and had some comments along the way. Will reply inline on respective
-> patches.
+> Co-developed-by: Derek Foreman <derek.foreman@collabora.com>
+> Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
+> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+> ---
+>  drivers/gpu/drm/display/drm_hdmi_state_helper.c | 227 ++++++++++++++++++++++++
+>  include/drm/drm_crtc.h                          |  11 ++
+>  2 files changed, 238 insertions(+)
 > 
-> On 2026-09-21 11:51, Nicolas Frattaroli wrote:
-> > A change in whether VRR is enabled or not on a CRTC will be of interest
-> > to any VRR implementation, as they may need to recalculate certain
-> > internal state in response. So far, this was handled ad-hoc in the
-> > drivers that implement VRR.
-> > 
-> > Handle this in the common DRM atomic core by setting the mode_changed
-> > flag when this occurs. The rationale for using mode_changed is that VRR
-> > is deeply intertwined with the current mode with regards to its timing.
-> > Consequently, any component that cares about a mode change is likely
-> > also going to care about VRR being enabled/disabled.
-> > 
-> > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> > ---
-> >  drivers/gpu/drm/drm_atomic_helper.c | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> > 
-> > diff --git a/drivers/gpu/drm/drm_atomic_helper.c b/drivers/gpu/drm/drm_atomic_helper.c
-> > index 9d006f98413a..0664d5779282 100644
-> > --- a/drivers/gpu/drm/drm_atomic_helper.c
-> > +++ b/drivers/gpu/drm/drm_atomic_helper.c
-> > @@ -694,6 +694,12 @@ drm_atomic_helper_check_modeset(struct drm_device *dev,
-> >  			new_crtc_state->active_changed = true;
-> >  		}
-> >  
-> > +		if (old_crtc_state->vrr_enabled != new_crtc_state->vrr_enabled) {
-> > +			drm_dbg_atomic(dev, "[CRTC:%d:%s] VRR changed\n",
-> > +				       crtc->base.id, crtc->name);
-> > +			new_crtc_state->mode_changed = true;
-> > +		}
-> > +
-> 
-> I don't think this is the case for all hardware, at least not for amdgpu.
-> The parts in HW that adjust vtotal can be programmed without requiring
-> bandwidth recalculations or reprogramming of pipes. 
-> 
-> - Leo
+> diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+> index 7cdb7ca3dc12..d55548399687 100644
+> --- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+> +++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+> @@ -887,6 +887,229 @@ hdmi_generate_infoframes(const struct drm_connector *connector,
+>  	return 0;
+>  }
+>  
+> +/**
+> + * cmp_fraction - compares two fractional numbers
+> + * @a: numerator of the first fraction
+> + * @b: denominator of the first fraction
+> + * @c: numerator of the second fraction
+> + * @d: denominator of the second fraction
+> + *
+> + * Compare fractional expression given by @a divided by @b with fractional
+> + * expression given by @c divided by @d, without running into rounding issues.
+> + *
+> + * Neither @b nor @d should be 0.
+> + *
+> + * Returns:
+> + *  - %1 if @a / @b > @c / @d
+> + *  - %-1 if @a / @b < @c / @d
+> + *  - %0 if @a / @b == @c / @d
+> + *  - %-EDOM if @b is zero or @d is zero.
+> + */
+> +static int cmp_fraction(u32 a, u32 b, u32 c, u32 d)
+> +{
+> +	u64 a_d = mul_u32_u32(a, d);
+> +	u64 b_c = mul_u32_u32(b, c);
+> +
+> +	if (WARN_ON(!b || !d))
+> +		return -EDOM;
+> +
+> +	/* a/b > c/d */
+> +	if (a_d > b_c)
+> +		return 1;
+> +
+> +	/* a/b < c/d */
+> +	if (a_d < b_c)
+> +		return -1;
+> +
+> +	/* a/b == c/d */
+> +	return 0;
+> +}
+> +
+> +static int hdmi_calculate_vtotal(const struct drm_display_mode *mode,
+> +				 u32 rate_n, u32 rate_d, u16 *out_vtotal,
+> +				 u32 *out_denom, u32 *out_frame_err)
+> +{
+> +	u32 denom, result, err;
+> +	u64 numerator;
+> +
+> +	/*
+> +	 * We perform VRR based rate limiting by adjusting the vertical front
+> +	 * porch. We do that by picking a new Vtotal to pass to the hardware,
+> +	 * which extends the display period. Since we can change no other
+> +	 * timings, this rarely results in a perfect integer match to the
+> +	 * target framerate. However, we would like to correct for this error
+> +	 * using only integer math.
+> +	 *
+> +	 * For a given refresh rate:
+> +	 *
+> +	 * Vtotal =              clock
+> +	 *          ----------------------------------
+> +	 *               Htotal * target_refresh
+> +	 *
+> +	 * We specify target_refresh as a ratio, because the possible target
+> +	 * framerates include rates like 23.97... that are actually 24 / 1.001,
+> +	 * or 24000 / 1001.
+> +	 *
+> +	 *                        clock
+> +	 * Vtotal = ----------------------------------
+> +	 *            Htotal * target_n / target_d
+> +	 *
+> +	 * Some algebra brings us to:
+> +	 *
+> +	 *                clock * target_n
+> +	 * Vtotal = ----------------------------------
+> +	 *                Htotal * rate_n
+> +	 *
+> +	 * The amount of timing error we accumulate every frame will be
+> +	 * the remainder of that division.
+> +	 *
+> +	 * We store the remainder for later. Every frame we add the remainder
+> +	 * to an accumulator, and when the accumulator exceeds the denominator,
+> +	 * one Htotal worth of error has accumulated.
+> +	 *
+> +	 * In practice, as soon as the accumulated error exceeds half the
+> +	 * denominator, it is dithered across frames by temporarily extending
+> +	 * Vtotal by a single row on that frame.
+> +	 */
+> +
+> +	if (check_mul_overflow(mode->crtc_htotal, rate_n, &denom))
+> +		return -ERANGE;
+> +
+> +	if (check_mul_overflow(mode->crtc_clock * 1000ULL, rate_d, &numerator))
+> +		return -ERANGE;
+> +
+> +	result = div_u64_rem(numerator, denom, &err);
+> +	if (result > U16_MAX)
+> +		return -ERANGE;
+> +
+> +	if (out_vtotal)
+> +		*out_vtotal = result;
+> +	if (out_denom)
+> +		*out_denom = denom;
+> +	if (out_frame_err)
+> +		*out_frame_err = err;
+> +
+> +	return 0;
+> +}
+> +
+> +static int hdmi_validate_vrr(struct drm_connector *connector,
+> +			     struct drm_atomic_commit *state)
+> +{
+> +	struct drm_connector_state *new_conn_state =
+> +		drm_atomic_get_new_connector_state(state, connector);
+> +	struct drm_crtc_state *new_crtc_state =
+> +		drm_atomic_get_new_crtc_state(state, new_conn_state->crtc);
+> +	struct drm_crtc_state *old_crtc_state =
+> +		drm_atomic_get_old_crtc_state(state, new_conn_state->crtc);
+> +	struct drm_crtc_vrr_state *vrr_state =
+> +		&new_crtc_state->vrr_state;
+> +	struct drm_crtc_vrr_state *old_vrr_state =
+> +		&old_crtc_state->vrr_state;
+> +	struct drm_display_info *info = &connector->display_info;
+> +	const struct drm_display_mode *mode = &new_crtc_state->mode;
+> +	struct drm_device *dev = connector->dev;
+> +	int mode_refresh, vfront, ret;
+> +	u32 min_vfreq_n = info->monitor_range.min_vfreq;
+> +	u32 min_vfreq_d = 1;
+> +	u32 max_vfreq_n = info->monitor_range.max_vfreq;
+> +	u32 max_vfreq_d = 1;
+> +
+> +	/* Save on the expensive vic lookup, if nothing else. */
+> +	if (!new_crtc_state->mode_changed &&
+> +	    old_crtc_state->vrr_enabled &&
+> +	    old_vrr_state->vrr_min_n == vrr_state->vrr_min_n &&
+> +	    old_vrr_state->vrr_min_d == vrr_state->vrr_min_d &&
+> +	    old_vrr_state->vrr_max_n == vrr_state->vrr_max_n &&
+> +	    old_vrr_state->vrr_max_d == vrr_state->vrr_max_d &&
+> +	    info->hdmi.vrr_capable) {
+> +		memcpy(vrr_state, old_vrr_state, sizeof(*vrr_state));
+> +		vrr_state->dynamic = false;
+> +		return 0;
+> +	}
+> +
+> +	if (!new_crtc_state->vrr_enabled)
+> +		return 0;
+> +
+> +	if (!info->hdmi.vrr_capable)
+> +		return -EOPNOTSUPP;
+> +
+> +	mode_refresh = drm_mode_vrefresh(mode);
+> +
+> +	/* HDMI uses 10 bits to signal the base refresh. */
+> +	if (mode_refresh < 0 || mode_refresh > 1023) {
+> +		drm_dbg_kms(dev, "Mode's refresh of %dHz > HDMI VRR maximum (1023)\n",
+> +			    mode_refresh);
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (!max_vfreq_n || max_vfreq_n > mode_refresh)
+> +		max_vfreq_n = mode_refresh;
+> +
+> +	if (!min_vfreq_n) {
+> +		drm_dbg_kms(dev, "Could not get minimum VRR rate from sink\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	vfront = mode->crtc_vsync_start - mode->crtc_vdisplay;
+> +	if (vfront < 0 || vfront > U8_MAX) {
+> +		drm_dbg_kms(dev, "Vfront of %d would not fit in VTEM packet\n", vfront);
+> +		return -EINVAL;
+> +	}
+> +
+> +	vrr_state->vic = drm_match_cea_mode(mode);
+> +
+> +	if (cmp_fraction(min_vfreq_n, min_vfreq_d, max_vfreq_n, max_vfreq_d) > 0) {
+> +		drm_dbg_kms(dev, "Target max (%u/%u) > target min (%u/%u)\n",
+> +			    max_vfreq_n, max_vfreq_d, min_vfreq_n, min_vfreq_d);
+> +		return -EINVAL;
+> +	}
+> +
+> +	ret = hdmi_calculate_vtotal(mode, max_vfreq_n, max_vfreq_d,
+> +				    &vrr_state->base_vtotal, NULL, NULL);
+> +	if (ret) {
+> +		drm_dbg_kms(dev, "Couldn't calculate base_vtotal: %pe\n", ERR_PTR(ret));
+> +		return ret;
+> +	}
+> +
+> +	/*
+> +	 * Even at its fastest, it can't go faster than the mode, so
+> +	 * clamp to avoid imprecisely rounded mode_refresh values we
+> +	 * can't do anything about from ruining our day.
+> +	 */
+> +	vrr_state->base_vtotal = max(vrr_state->base_vtotal, mode->crtc_vtotal);
+> +
+> +	if (cmp_fraction(min_vfreq_n, min_vfreq_d, mode_refresh, 1) >= 0) {
+> +		/* refresh <= VRR min, don't do VRR vtotal adjustment */
+> +		vrr_state->max_vtotal = mode->crtc_vtotal;
+> +	} else {
+> +		/*
+> +		 * Allow additional front porch until effective rate == VRR min
+> +		 * In essence, this is mode->vtotal * mode_refresh / min_vfreq
+> +		 * but the relevant factors factored out from drm_mode_vrefresh()
+> +		 * to avoid working with rounded values, as well as using the
+> +		 * hardware adjusted crtc_* values instead.
+> +		 */
+> +		ret = hdmi_calculate_vtotal(mode, min_vfreq_n, min_vfreq_d,
+> +					    &vrr_state->max_vtotal, NULL, NULL);
+> +		if (ret) {
+> +			drm_dbg_kms(dev, "Couldn't calculate max_vtotal: %pe\n", ERR_PTR(ret));
+> +			return ret;
+> +		}
+> +
+> +		if (vrr_state->max_vtotal < mode->crtc_vtotal) {
+> +			drm_dbg_kms(dev, "max_vtotal=%u < crtc_vtotal=%u\n",
+> +				    vrr_state->max_vtotal, mode->crtc_vtotal);
+> +			return -EINVAL;
+> +		}
+> +	}
+> +
+> +	drm_dbg_kms(dev, "VRR has base_vtotal=%u max_vtotal=%u from %u/%uHz <= rate <= %u/%uHz\n",
+> +		    vrr_state->base_vtotal, vrr_state->max_vtotal, min_vfreq_n,
+> +		    min_vfreq_d, max_vfreq_n, max_vfreq_d);
+> +
+> +	return 0;
+> +}
 
-This is also the case for NVIDIA, it would be unfortunate if changes to 
-vrr_enabled require allow_modeset=TRUE.
+I don't think we need to restrict the frame rate range limits validation 
+to just HDMI. The frame rate limits themselves are not dependent on any 
+specific HDMI features and can be enforced source-side while signalling 
+the standard VRR mode to the sink.
 
+> +
+>  /**
+>   * drm_atomic_helper_connector_hdmi_check() - Helper to check HDMI connector atomic state
+>   * @connector: DRM Connector
+> @@ -919,6 +1142,10 @@ int drm_atomic_helper_connector_hdmi_check(struct drm_connector *connector,
+>  
+>  	new_conn_state->hdmi.is_limited_range = hdmi_is_limited_range(connector, new_conn_state);
+>  
+> +	ret = hdmi_validate_vrr(connector, state);
+> +	if (ret)
+> +		return ret;
+> +
+>  	ret = hdmi_generate_infoframes(connector, new_conn_state);
+>  	if (ret)
+>  		return ret;
+> diff --git a/include/drm/drm_crtc.h b/include/drm/drm_crtc.h
+> index be5dca538d87..9d58158af459 100644
+> --- a/include/drm/drm_crtc.h
+> +++ b/include/drm/drm_crtc.h
+> @@ -63,6 +63,14 @@ struct drm_atomic_commit;
+>  struct drm_crtc_helper_funcs;
+>  struct drm_plane_helper_funcs;
+>  
+> +struct drm_crtc_vrr_state {
+> +	u8 vic;
+> +	u16 cur_vtotal;
+> +	u16 max_vtotal;
+> +	u16 base_vtotal;
+> +	bool dynamic;
+> +};
+> +
+>  /**
+>   * struct drm_crtc_state - mutable CRTC state
+>   *
+> @@ -397,6 +405,9 @@ struct drm_crtc_state {
+>  	 */
+>  	struct drm_pending_vblank_event *event;
+>  
+> +	/** @vrr_state: State related to variable refresh rate. */
+> +	struct drm_crtc_vrr_state vrr_state;
+> +
+>  	/**
+>  	 * @commit:
+>  	 *
 > 
-> >  		if (new_crtc_state->enable != has_connectors) {
-> >  			drm_dbg_atomic(dev, "[CRTC:%d:%s] enabled/connectors mismatch (%d/%d)\n",
-> >  				       crtc->base.id, crtc->name,
-> > 
+> -- 
+> 2.55.0
 > 
 > 

@@ -1,209 +1,163 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010008.outbound.protection.outlook.com [40.93.198.8])
+Received: from delivery.antispam.mailspamprotection.com (delivery.antispam.mailspamprotection.com [185.56.87.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A92D4E4304;
-	Fri, 25 Sep 2026 18:42:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.8
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 088304E56EE;
+	Fri, 25 Sep 2026 19:32:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=185.56.87.9
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790361742; cv=fail; b=MSspfYnC1zpIhOwvdH3f/gfV54E4M6iEHnWC9lWAxoKkrRp0wx1Ex4bW/HMkK0wqEPJpcDw12N/wttWSJYwRjeGHak/MgywOKl8OMA5Py4n7zuakWHk3fCSwvwNdfXGS0KDba8D8gGPBNEnUZnx2w8UerxvpIW5P1MERrX6vrUs=
+	t=1790364744; cv=pass; b=iYPI6ZXkjCA7oC1k4O0KT25oLLHtx5iuclWDymeCBCOhlfE0STSg61945WTDgq4MOXHv4NEVZGACdHP3lFHikgQb8s7+h/SpDpQnKMWtgcKW24Nl6ApDohSwkJxgW9PbiW14sKo0tY9//NMmcEtd06hj6+BRRY2C5F+Qj+ksc64=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790361742; c=relaxed/simple;
-	bh=QY+TicjWh6oiFGgW/I3NSFQSJUsykZhivl4HfiLIDVo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=iZMsmkvB2jlx89YbtvkuLQd2Cb1o4bI0C4zgNepA3mnkYpuFjOCIjeIlffHWqqpjF7RCArPfxmyrAXwUOpRG5U6DELGEYtFEno+0UMtl7fN76/2sOhWPSS7Eq2vuEh2uHLzMOeLdV37vEvt+X0hYbaci9XFBdpa018Qh+eIf9RI=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=qnlffLAE; arc=fail smtp.client-ip=40.93.198.8
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
+	s=arc-20240116; t=1790364744; c=relaxed/simple;
+	bh=oN779mH9tBNwuA7d/NdNWDGQm450ycX3DX6zJkalp1I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=M+WyovUshpti76kqem51Id6a+vXUpJO5dcRQCHsyWnM1yQ3ffX5mhEm1fPV7uSDkjyfFDrtFTNdeIRz8/xIoR2xwSLoP+k4XLWFJbcnWClnx6ocmzb2DtuRPfhBXMMWfAFjSSsd1CAE0NkEt1zZEV01in2zslzGSo7umYJk6M3M=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=valla.it; spf=pass smtp.mailfrom=valla.it; dkim=pass (1024-bit key) header.d=antispam.mailspamprotection.com header.i=@antispam.mailspamprotection.com header.b=kbVeRKSs; dkim=pass (1024-bit key) header.d=valla.it header.i=@valla.it header.b=QJx4pD3h; arc=pass smtp.client-ip=185.56.87.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=valla.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=valla.it
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="qnlffLAE"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Ye7prbYyACZ7WV/j8xgF4NgDZN/W5KrwcPAfEMlrHGTt8LY+5UKJAsX/4YF0rF2OZLxvCA3c59CTGHJRb0LKKUSK2czP9GHpNn7LPAQEyGn1AGQZQLubw9XYV0+3nLFqrFWbEGYXpXoQJ2NtFNjtrZNdhiI0ViSjswdWhjA4DhakSZ5w9YdsArj5jBqm93MBconTgACYaP0IsN0861rSeNUYN6Sp07J9hqLlE8n27R8UJXfW+EHMLMvBWO02QGfJ9H8n39AJRiWCOFe9+QZcEhr5OYEj94+pmPEFeFNOqgu6aLoaUCje7gMnFySqzCnhk9Ue6nqkFNUOT8g3H7jeNA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=bOfpGmVAQ40dh+pQHepJXK/c9qXJ2THWPTvOZ/CTwew=;
- b=dAEp5RbrpPVPWZ26lDjmhVwk0or1O5/dYjYIse39kqiyoCgZEW5QvdzdIED6KY5I0PB9Q5DYikSIJrCA3yrP86Lyzi354ooprk7kDxcxV3F3Ah8766hkYPFMcm4AsPirbQVuzNLH+ahikf+/A033GvBRbQ0xJnn4r4Etj7LHBMUf/1ZBCn+bnoKb2g4y6o8FUAcVaOHCDzfx/uCU9+AI9iFiv1fN/AA15p4A4C0sV08N9O87tpiQrQMvVZOsuLK7pJjwOKOb6sO7/OzIDIcCaVPD8DeWGrf6wOpNT+6YWDssEpM4iaZYYSkRg2V21Ankt5+ljmYSwdIX1VdJViqUOQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=collabora.com smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=bOfpGmVAQ40dh+pQHepJXK/c9qXJ2THWPTvOZ/CTwew=;
- b=qnlffLAEep3mw5W5tcEvn1aLIj8wAFF1WPLmcAfA4cTfgXe7TbcC86TuBk+Y7H1wFgqPLUjoxSKwqD2mKO8gdh3nHgIx9hlKwa6Cz4K9+QJPVyemCzR73GHWjB7/wEIIMtkTi9fOFWA5W+Jf+wHY34BGXdQf0s2CmiU54pDjgtM=
-Received: from BL1PR13CA0448.namprd13.prod.outlook.com (2603:10b6:208:2c3::33)
- by SA1PR12MB6994.namprd12.prod.outlook.com (2603:10b6:806:24d::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Fri, 25 Sep
- 2026 18:42:13 +0000
-Received: from BN7PEPF000000A9.namprd05.prod.outlook.com
- (2603:10b6:208:2c3:cafe::3) by BL1PR13CA0448.outlook.office365.com
- (2603:10b6:208:2c3::33) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.428.8 via Frontend Transport; Fri, 25
- Sep 2026 18:42:13 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
-Received: from satlexmb08.amd.com (165.204.84.17) by
- BN7PEPF000000A9.mail.protection.outlook.com (10.167.245.233) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.451.8 via Frontend Transport; Fri, 25 Sep 2026 18:42:13 +0000
-Received: from satlexmb10.amd.com (10.181.42.219) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Fri, 25 Sep
- 2026 13:42:13 -0500
-Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb10.amd.com
- (10.181.42.219) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Fri, 25 Sep
- 2026 13:42:12 -0500
-Received: from [10.254.92.96] (10.180.168.240) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.49 via Frontend
- Transport; Fri, 25 Sep 2026 13:42:11 -0500
-Message-ID: <8a3b2902-3255-4dd9-82f0-75a7747b710e@amd.com>
-Date: Fri, 25 Sep 2026 14:42:05 -0400
+	dkim=pass (1024-bit key) header.d=antispam.mailspamprotection.com header.i=@antispam.mailspamprotection.com header.b="kbVeRKSs";
+	dkim=pass (1024-bit key) header.d=valla.it header.i=@valla.it header.b="QJx4pD3h"
+ARC-Seal: i=1; cv=none; a=rsa-sha256; d=outgoing.instance-europe-west4-0jng.prod.antispam.mailspamprotection.com; s=arckey; t=1790364740;
+	 b=kjRpZW/WFtWpZ+0aj4bt/aQq0IesDfymlyH+Ef7HVZ3gfjM1S0SS3deN4VyqsU6323pqGUklMs
+	  t6FcFvI0yL7TS7pCCWU+1awBJrJO/lj/gq1f3q32KlckM1kSlsKL9zFm7JUBQdGgeVM/aBSaw3
+	  LkYJrbk0fu6B3FDQ/qH/6Z9T3TNWovcxmV/jMhryg/sJZxZGIFyKcXPMzB0Wt/l+KeVS44PoGQ
+	  +CZfsz95V2ctdNgMAaH+NPt0NknpL4sL3vWzKGKcPsrW6czOR8UMCDM+B7aPyCqPWd/CxyyRrr
+	  Hi1BOjy0yK7xj72PZVygjEZUp3MpH1s8Ugsv2epUqPmznw==;
+ARC-Authentication-Results: i=1; outgoing.instance-europe-west4-0jng.prod.antispam.mailspamprotection.com; smtp.remote-ip=35.214.173.214;
+	iprev=pass (214.173.214.35.bc.googleusercontent.com) smtp.remote-ip=35.214.173.214;
+	auth=pass (LOGIN) smtp.auth=esm19.siteground.biz;
+	dkim=pass header.d=valla.it header.s=default header.a=rsa-sha256;
+	arc=none
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed; d=outgoing.instance-europe-west4-0jng.prod.antispam.mailspamprotection.com; s=arckey; t=1790364740;
+	bh=oN779mH9tBNwuA7d/NdNWDGQm450ycX3DX6zJkalp1I=;
+	h=In-Reply-To:Content-Transfer-Encoding:Content-Type:MIME-Version:References:
+	  Message-ID:Subject:Cc:To:From:Date:DKIM-Signature:DKIM-Signature;
+	b=c4T9Ri6sn99kF5GOxqBkeHpl8ga3rN80Nu949eOkPLZRU2dYc9BiHwpapMfXr9PnpXZem8TNNw
+	  MB/UcJ4BMtdeFAz2ONqygYcoaqf+ls2eRbEtg3ZENKvwmNgoDmzG5MECMlmepcdNMZ7wncAqMq
+	  sYJRobp8Q7xPfCJJGsVhpV4jHRa8V04w0Q+i5uZolJwISpS2Grv7lTzpC8JFw72MCEE2kAqePj
+	  jCgXMC9G21OcY+nlQZCrPQ0RFxpIDjotoKt6qIoYcJ0P81JWFAKPXW7QvIae4pg3ApRRJT6cFD
+	  Fx3Tnze4M8SUFypU2/Xnj9vo1LsNVnPP9IAG4KoSEGYkKg==;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=antispam.mailspamprotection.com; s=default; h=CFBL-Feedback-ID:CFBL-Address
+	:Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:Subject:Cc:To
+	:From:Date:Reply-To:List-Unsubscribe;
+	bh=yvE3X9fHZurwYk916e+LX2mNqDb/QFApCbGFkhBpWsI=; b=kbVeRKSsQUbxRDo25OJk568kQc
+	oUxR5bNUdTicg065wQzXCXsn+Gxw6pSf/kyjPyE0dmfaqUVGhgRlg2GPFzCb+Igi1W7QSdZM8+2wz
+	sM3N70IHQ+MMQtwGwNGn9nMgxubRbqc+xu1V5WVPL1WNBiuyMQmPOTaSVKZfbBU/zrNM=;
+Received: from 214.173.214.35.bc.googleusercontent.com ([35.214.173.214] helo=esm19.siteground.biz)
+	by instance-europe-west4-0jng.prod.antispam.mailspamprotection.com with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.100.1)
+	(envelope-from <francesco@valla.it>)
+	id 1xABeT-00000006ZRw-0o9K;
+	Fri, 25 Sep 2026 19:32:09 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=valla.it;
+	s=default; h=Subject:Cc:To:From:Date:list-help:list-unsubscribe:
+	list-subscribe:list-post:list-owner:list-archive;
+	bh=yvE3X9fHZurwYk916e+LX2mNqDb/QFApCbGFkhBpWsI=; b=QJx4pD3h5WMfaRo9W0EvTF6goY
+	BapWrz5179rvyOrHL6dOengJgj79GvD7dKfyewvov+Nugo+OfX96ypdaC3dlJTBXc+fIntYohkNaQ
+	yqV/99qP3sCHq4vcZKBQ2bzgfS+dcQ0cKhD4RQb9qDIAOqhvvJWwEYmxQVBxzaNbHnMk=;
+Received: from [79.45.60.29] (port=62784 helo=bywater)
+	by esm19.siteground.biz with essmtpa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.100.1)
+	(envelope-from <francesco@valla.it>)
+	id 1xABeI-00000000BOp-0kv1;
+	Fri, 25 Sep 2026 19:31:58 +0000
+Date: Fri, 25 Sep 2026 21:31:56 +0200
+From: Francesco Valla <francesco@valla.it>
+To: =?utf-8?B?TcOgeGlt?= Pedraza Padilla <maximpedraza@gmail.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, Helge Deller <deller@gmx.de>, 
+	Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 0/7] Boot logo supplied by the device tree
+Message-ID: <arbLHvCBqxG7zcf_@bywater>
+References: <20260923201035.51007-1-maximpedraza@gmail.com>
+ <64e273d4-2660-437d-8871-e2bfa3c377c9@suse.de>
+ <CAEUXW=G2a=Qz-9P_2+EFe-GiW4WqdOjtSCxoO4P15u_J48nP9g@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC 13/25] drm: Add VRR target frame rate properties
-To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, "Borah, Chaitanya
- Kumar" <chaitanya.kumar.borah@intel.com>, Daniel Stone
-	<daniels@collabora.com>, Maarten Lankhorst
-	<maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Andrzej Hajda
-	<andrzej.hajda@intel.com>, Neil Armstrong <neil.armstrong@linaro.org>,
-	"Robert Foss" <rfoss@kernel.org>, Laurent Pinchart
-	<Laurent.pinchart@ideasonboard.com>, Jonas Karlman <jonas@kwiboo.se>, "Jernej
- Skrabec" <jernej.skrabec@gmail.com>, Luca Ceresoli
-	<luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
-	=?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Andy Yan
-	<andy.yan@rock-chips.com>
-CC: <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>,
-	<linux-fbdev@vger.kernel.org>, <linux-rockchip@lists.infradead.org>,
-	<linux-arm-kernel@lists.infradead.org>, <kernel@collabora.com>, Derek Foreman
-	<derek.foreman@collabora.com>, <wayland-devel@lists.freedesktop.org>
-References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
- <20260921-vrr-limiter-uapi-v1-13-2fcd7d011646@collabora.com>
- <0226527e-ee38-40ab-a2a8-1ae62013b950@amd.com>
- <VERVf-aJRRKsBOI_3dpScg@collabora.com>
-Content-Language: en-US
-From: Leo Li <sunpeng.li@amd.com>
-In-Reply-To: <VERVf-aJRRKsBOI_3dpScg@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN7PEPF000000A9:EE_|SA1PR12MB6994:EE_
-X-MS-Office365-Filtering-Correlation-Id: ce00b8b2-9201-49bf-0f0c-08df1b34b715
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|36860700016|1800799024|376014|7416014|42112799006|23010399003|10067099003|56012099006|6133799003|22082099003|4143699003|18002099003|11063799006|921020;
-X-Microsoft-Antispam-Message-Info:
-	Riz02biUVxIpWgvZ8NZKQ3bHHfi5XDtTnGglixOIZoMOKfZqZnSrKlyLmCbvraGXxP+fDoWmC+ktdi66xqY5IzauVpEsNpBFcHB7fR0XgGC1CPDEB36akuE0u6HK8DRrgtjV9L+bNTJTux6hZYmi13VxNhrnT68rRaQ8xTWGvmKF4Xs27xCzUfq8FUUmx0pKPw+NOUEhTvrKSqGfvCp40ykWxayMuAYfUXonibvH3KHwKtDQ2JPl0+WCxjykYc1T1N9EDe5/oR6Hh2Jbx2xHdBo1Av7NPmCAXQ15a1O8rwnHQcmOfyNtTMAvJ1VbbS4l6eY7i59Nlu0ypnjZYqE0FAJQfkdEsrnl0m6d8D9uVZHf5vIHZepeQwTpKgHWY7qr0zU+QD7CQbMf+Fs9y9gPV7nYbz0NvY5ZGpIklwkyC36AbTXIcdsl6KJrqv5G3tsdcoyvGvVIK0FdJRjSsNxs7TQPNg9rUNknIu3EmlV4KoIEGhdQ/qcqeO05mf5oohDUKdFLoeT+8o8fadf6Q+j5QP2g2l00tIYvsemtVny6nXNv+ikanLB+848lD8psMAyvch5mFIQoee0t30usWoYeXQSeh6SDDV7Lfddgd7eTHmeHIIUZbSW1FSSZP4a36biFaR9qYokkOkI/L+oEXg4Z3BbNZleZ5PNYI8uO6HzeKWOdWaOA9NHzv7W3YC41JURrWFU25fbc/3zkhVGeOUbc4GnaBQ+ACGaUxFdtHT1kCUJvxcQ840nj2bipygyik0AV
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(1800799024)(376014)(7416014)(42112799006)(23010399003)(10067099003)(56012099006)(6133799003)(22082099003)(4143699003)(18002099003)(11063799006)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	jXDzaoj4FClt0uR3OlLyale2P4nf1gIsETl9qEhpgRxvqtkkmEs/9Cq3w4BcLd+jvePx5wVs9K8OpZuXVhJpoz9eNOUG/vBCtMtYS6EZJLHLP5+pcZJoq3fhyfJbVkIixoWnGUmgR3RvNgHxdq8xVTEvOdNw7XdhJSBqwdyHWb8vJj6CGijlACtLmkRQxuzQaVonN+ycVJVBDeMuT//W57IZT7a4gxCrw7iKKKwjHwCCf9hNn/ZD2RC4WJmOy+d6QIQ8/d41rfwfwBFNf15aL6XzpugDbGcDBYmThbuXOLepDPmTBf8Jo5j6ADCHApoMQjZ27wNcZVtDUuJf35xhpYxUbtHkY7Xh7iqTK14HyGbdHcpkYvuXWFf6eaCh/VFhJgdf9+ClzC5xyijur1N6GTbKFMS0l55W/8Nuwy8W4oX5QuidxNhgCGsjv11rVcx9
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Sep 2026 18:42:13.3339
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: ce00b8b2-9201-49bf-0f0c-08df1b34b715
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	BN7PEPF000000A9.namprd05.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB6994
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAEUXW=G2a=Qz-9P_2+EFe-GiW4WqdOjtSCxoO4P15u_J48nP9g@mail.gmail.com>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - esm19.siteground.biz
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - valla.it
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-SGantispam-id: da2b712f03778543fbd6975a29cb1846
+X-AntiAbuse: ID - da2b712f03778543fbd6975a29cb1846
+AntiSpam-DLS: false
+AntiSpam-DLSP: 
+AntiSpam-DLSRS: 
+AntiSpam-TS: 1.0
+CFBL-Address: feedback@antispam.mailspamprotection.com; report=arf
+CFBL-Feedback-ID: 1xABeT-00000006ZRw-0o9K-feedback@antispam.mailspamprotection.com
+Authentication-Results: outgoing.instance-europe-west4-0jng.prod.antispam.mailspamprotection.com;
+	iprev=pass (214.173.214.35.bc.googleusercontent.com) smtp.remote-ip=35.214.173.214;
+	auth=pass (LOGIN) smtp.auth=esm19.siteground.biz;
+	dkim=pass header.d=valla.it header.s=default header.a=rsa-sha256;
+	arc=none
 
+Hi Màxim,
 
-
-On 2026-09-22 11:26, Nicolas Frattaroli wrote:
->>> + * VRR Limiter/Target Properties
->>> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>> + *
->>> + * The ``VRR_{MIN,MAX}_{NUMERATOR,DENOMINATOR}`` properties expose a mechanism
->>> + * through which userspace can control the desired range of refresh rates in
->>> + * which VRR is allowed to operate. Each rate is expressed as a
->>> + * numerator/denominator fraction of refresh rates in Hz, allowing for rational
->>> + * target rates like 24/1.001 Hz with no loss of precision or ambiguity.
->>> + *
->>> + * If the minimum and maximum rate are set to the same value (and not 0), they
->>> + * are understood as a fixed target rate. This is especially useful for media
->>> + * playback, where the content's frame rate is both constant and known in
->>> + * advance. In such cases, a refresh rate that is not an integer multiple of the
->>> + * content's frame rate will introduce judder, since not every frame is
->>> + * displayed for the same amount of time. A modeset of the display with a
->>> + * compatible rate may in those cases be either undesirable or impossible, but
->>> + * the rate can still effectively be reached through VRR.
->>> + *
->>> + * .. _VRR-MIN-NUMERATOR:
->>> + *
->>> + * "VRR_MIN_NUMERATOR":
->>> + *	Default &drm_crtc integer property forming the numerator of a
->>> + *	numerator/denominator pair of a frame rate to set as the minimum VRR
->>> + *	target rate. Set to 0 to disable.
->>> + *
->>> + * "VRR_MIN_DENOMINATOR":
->>> + *	Default &drm_crtc integer property forming the denominator of a
->>> + *	numerator/denominator pair of a frame rate to set as the minimum VRR
->>> + *	target rate. If :ref:`VRR_MIN_NUMERATOR <VRR-MIN-NUMERATOR>` is not
->>> + *	zero, it must be non-zero.
->>> + *	Otherwise, must also be zero.
->>> + *
->>> + * .. _VRR-MAX-NUMERATOR:
->>> + *
->>> + * "VRR_MAX_NUMERATOR":
->>> + *	Default &drm_crtc integer property forming the numerator of a
->>> + *	numerator/denominator pair of a frame rate to set as the maximum VRR
->>> + *	target rate. Set to 0 to disable.
->>> + *
->>> + * "VRR_MAX_DENOMINATOR":
->>> + *	Default &drm_crtc integer property forming the denominator of a
->>> + *	numerator/denominator pair of a frame rate to set as the maximum VRR
->>> + *	target rate. If :ref:`VRR_MAX_NUMERATOR <VRR-MAX-NUMERATOR>` is not
->>> + *	zero, it must be non-zero. Otherwise, must also be zero.
->>>   */
->> If VRR_MIN_NUMERATOR == 0 && VRR_MAX_NUMERATOR > 0, do we interpret that as
->> vrr limiting is disabled?
-> You can picture VRR limiting as always being active, but with a limit rational
-> of 0 it uses the display's limit as per the EDID, which is what unlimited game
-> mode is. So with how it's implemented right now in hdmi_validate_vrr(), your
-> example would set a maximum target, but leave the minimum at whatever the
-> display defaults to.
+On Fri, Sep 25, 2026 at 10:48:31AM +0200, Màxim Pedraza Padilla wrote:
+> Hi Thomas,
 > 
-> Now that I'm thinking through this, a possible problem is that
-> drm_crtc_helper_vrr_is_fixed_rate() operates on the user supplied limits, but
-> if the display supplied lower limit is equal to the user supplied upper limit,
-> then we have a fixed rate scenario without recognising it as such. I think I
-> need to have a ponder on what the least surprising behaviour for userspace
-> is in that instance. The display limit stuff gets a bit complex due to
-> CinemaVRR and QMS TFRmin/TFRmax.
+> > the whole Linux logo on the console is somewhat gimmicky and IMHO should
+> > not be further extended. Also fbdev as a whole has realistically run its
+> > course. We fix bugs and occasionally clean up the code, but it is
+> > questionable whether new feature make much sense. Even more so as the
+> > drivers your system uses appear to be DRM ones.
 > 
-> I'll improve the documentation on the next revision to make the meanings more
-> explicit.
+> They are, it is tilcdc. Understood, I will drop the fbdev side, which
+> also settles your comment on patch 1.
+> 
+> > There is a proposal for a DRM splash screen at [1]. It retrieves the
+> > device vendor's logo from the firmware and displays it at the given
+> > coordinates. IMHO you should start with this series and add DT support
+> > there.
+> 
+> Agreed. I have been following Francesco's series since Sam pointed me
+> at it, and it is where the DRM follow-up I mentioned in the cover letter
+> belongs, rather than in a client of my own.
+> 
+> A device tree source fits next to the BGRT one. The BGRT is the firmware
+> handing the kernel an image and where to put it, and a DT system has no
+> such table. The BMP loaded as firmware only helps if the file is built
+> into the kernel, or if a filesystem is already there when the display
+> comes up. With U-Boot's Falcon mode, the device tree is the only thing
+> that reaches the kernel.
+> 
+> So the plan would be a node under /chosen carrying a BMP, either in the
+> node itself or in a reserved memory region the bootloader loaded it
+> into, with the placement properties from this series. The region is the
+> same memremap() the BGRT source already does, only with the address
+> coming from the device tree.
+> 
+> Rotation too: the client skips a BGRT image with the orientation bits
+> set today, and it could turn it instead. I will ask Rob separately how
+> he wants the image described, since that is what the binding hinges on.
+> 
+> Francesco, is a v4 on the way? Would you take a DT source as patches on
+> top of your series, or would you rather I wait until it lands?
+> 
 
-Perhaps a simple way is to require simultaneous setting MIN and MAX pairs?
-IOW, require userspace to set MIN and MAX simultaneously to >0, or =0. For example:
+v4 is planned but has been preempted by other activities - I am not able
+to give you an ETA at the moment. If you have capacity, feel free to
+take over.
 
-if ((vrr_min_n == 0 || vrr_min_d == 0 ||
-     vrr_max_n == 0 || vrr_max_d == 0) &&
-    (vrr_min_n > 0 || vrr_max_n > 0))
-	return -EINVAL;
+> Max
+> 
 
-That way, it's never ambiguous what userspace has requested for the range. They can copy the EDID supported range if they don't care about limiting one side, rather than leaving it at 0. It's then also clear if they requested a static Hz.
-
-Thanks,
-Leo
- 
-
+Regards,
+Francesco
 

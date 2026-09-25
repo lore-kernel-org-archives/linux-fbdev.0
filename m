@@ -1,227 +1,330 @@
-Received: from flow-b8-smtp.messagingengine.com (flow-b8-smtp.messagingengine.com [202.12.124.143])
+Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C1824570E1;
-	Fri, 25 Sep 2026 22:06:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.143
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D879B4FDE67;
+	Fri, 25 Sep 2026 22:27:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790374019; cv=none; b=KnF68ceULhHuwl9zGkE4KpadXcCo6dieB5pZxfwwdQhfx5EslvNRRqqmxFUm61zWlvrkq5cvHzh+nhe/R7TNEO8c9DNfZghyHYFtelAJXDWBWnFnOEHVl2jJ5/y+PipPF236SrMZILhlIa2RU+2llb4QyylhhFtBloJ9bPGDfJc=
+	t=1790375281; cv=none; b=Gr1nB15eXCGvGN08vnMT4Q10tZMtlPkTfgf5okuESt32/yzKcjrmCaWe/KefcrgLimtmMAHMv+9R+W0xnACj0otgsvXbuT2cpNWxc0IxKv5b/c+sDcrX6HxCc4na54va95/a4vajoITD7ROQRztg+ddZU9Vlkbhy6uPqFeevlts=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790374019; c=relaxed/simple;
-	bh=lS1TxV0OL5XbjJoEVVQOxIs/WZv/eAgyubI3NbbQssI=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=qBMOiV8XKYqE2k6LV4zGN+Ym0gNRay1evLw51EiIATao+r3QN1HLgUuNYoQbBZRKgtdG00suqHJJz+Zv+bRDauX/f0jlv9G/IRgVP00uVEiVlZR+Q36ywtU3gzLx0vNyhQ4Hrtw0SPFpKcOD9ivHoE8kPXv9GeTZh5VBN3yN2IE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=VV93A+GB; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=aGXV+YUS; arc=none smtp.client-ip=202.12.124.143
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
+	s=arc-20240116; t=1790375281; c=relaxed/simple;
+	bh=F3JyrnU1T/7MY1F59ID3BIeap1ZmUL/wyu5htRqpiQ0=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=h4psPyf2nCExd67tgXPYPmh4YOEKI2ZKvjl7c31ftRSFf4Tg+x+wiRWRox9Q9B69zZ+V4jVkhR988t7SUTmxoCadjOXz8hkjiklB6LfRdFjRgYI/1vJtN9PSJTTxU8M6Otm1YkJnb3tLHwl8obprtSZT+6NQrVvJsen1oGcvUZ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=JVAyHatN; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=pR6lN4bC; arc=none smtp.client-ip=5.75.144.95
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="VV93A+GB";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="aGXV+YUS"
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailflow.stl.internal (Postfix) with ESMTP id 573C313003B9;
-	Fri, 25 Sep 2026 18:06:52 -0400 (EDT)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Fri, 25 Sep 2026 18:06:56 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1790374011;
-	 x=1790381211; bh=JrMmm48wWb5nfElfLTql9tnPeB0+8MEVeYNyAgGoaQE=; b=
-	VV93A+GBv2P9/qrRdwAhHm15SknYpPDoE9Rusj/hHzckBkjJVEcdDlJTHlO4p/7E
-	MsStEr6lA9ZZpv80ctYjcMxWtVfeFtMzS2Pz6b48b4mBBrO1C9yPQ1m/yB4jrJsU
-	Txgptg/CZdFHDOAYUVRGXXi1vMAjXp9R2q/zkAVgu2JU57U6eOhopKB9vdNOWomM
-	8KEOhPJEGjfknNt7dRh1N3UcGrPPo322SVDR7u2P7ODyCz9fXvOMVKwB4BGJLV4d
-	p1vZk++EfDAgCFACQelPXp+bGzwficcKO8bwIm5qbPT1tKzqp+6Byy8nrSst/iUF
-	5iM/+XBRXhRzlq/3FdZWSw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1790374011; x=
-	1790381211; bh=JrMmm48wWb5nfElfLTql9tnPeB0+8MEVeYNyAgGoaQE=; b=a
-	GXV+YUSmJZBpt2RL3eFg0yROgDvjwUpne/3aX5qHc2ia1wEVE/khGVzWW2IGsz5l
-	hd3jDKQVGFxsM4ytzm0w/bh9v/Q0fmxggROD5amVZbL2IpyazCJKEmXcfYygtqXQ
-	BNuhNcefmS8wBdPbdpsyQgC85zo4DoYIA7PTlnLy/b0B7TGhHrMTVWAcQVUniEoZ
-	1QJGFj+nGWa8IGhxIs0v/xiIAUYiBM7D6MMeI7Tqf0DCWrqnH693KRkitqw3jAgQ
-	k0QlTsip1+o1bnRtNhMLSAe/LoZeLLRCKWTKQF0vQQ12dvxRPUWAYPzU7TrYn2iP
-	xq/lsXF6iBqKAWrtf+W5Q==
-X-ME-Sender: <xms:cvC2aiSvwM8it39YGAo0r2BFMlajZQzHCF1-wybOlfFNnzuJE4_VgQ>
-    <xme:cvC2aim-IxtOzGmBKYQptfJ-5tq7fGqg-34DIWlZzsqMywgEQ0mR0QgqWq_6cb9JX
-    NjtResFg31PUDdRrYBtL-YJLF1e2pjmDFCJzHcjJRCB_VemwzQ9RdVm>
-X-ME-Proxy-Cause: dmFkZTGWorUwcHDaphCYw8v7P4r6eX5pMArEM2/fjfsVfdD8oh9PHyAFGRqsP8lKRNOvro
-    Ftaux56ZQWBnJufjCK4NoTl5gmyZyS2NrT/mOlvXaJbBgwyJlksfmDxh/T6ep3Q5rP1X5I
-    Gg3BUF69X8e0yxuG8tIsosXhwJWN04kZfd3Hs8hAZ/+JOdcATDpskVHlGuS/IemkueryOR
-    hIuVjhFQk7CePHMlVc9CQ7MECLINzrqb9LdZmsZGkkEkpHSYSPer552CpRSKn34v37USct
-    HhFuvihTiBMck5qt8HqfIL/ioFLlYd+AoG7CwtlhshQQ5QWzjlxpGOjuQuzfN0lyT2CNBA
-    xiE3/XVFoRJUnTcPHXnnP4ULg2/OhUw0cUVTM2Hl8kzEGyQmxm0APQJMTvjFGoCeexOfR/
-    jaxLRyktqvX8daF3L239waW+lQXkj8NIMZ45sRs0hondG/NYNiUtlwijloNURLVJpSRs1n
-    HjrVk8mAadcUojfqUFKMkwbvd1knunWFqf3wFKqO35MyuIsff+Lt3vTDKNneO2MS2loK5e
-    Q/dybw3p42QGSplvXOieL4zZL+ZwpJVbWdxv7+d9YbwYEGdtccmCLCVTEkoohZKIitwDZF
-    bbnjGJjj38fYWu6AOjGxXX1gJyhzi0LUn/N6YtrvJoDdXC/mveLWJ3hmsmrw
-X-ME-Proxy: <xmx:dvC2amzBvlQCAD5sW2JaXm3j0P9ai-oMPjy5v8vXmarN-S8XKRnZUw>
-    <xmx:dvC2auHhsX2b7IMnKKPnB_m7lyGmqEgN3tOfWJI43cbUmyqJIJe9DQ>
-    <xmx:dvC2avqA9un_ie7CCszm4rHR5kIbiuuqJAmgxGMKC0t4LTi-ke-ZMg>
-    <xmx:dvC2avxp2MUpSON7EdEvlibuWv90i4hC2qOqz0DFeopE6Lyo9tYUDA>
-    <xmx:e_C2asxjh4_ZZbt6wpAEkh3al--Q2E5cOHCufEezSsf4Ch9A-LWaZN6L>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 548BB32A0087; Fri, 25 Sep 2026 18:06:42 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="JVAyHatN";
+	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="pR6lN4bC"
+DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
+	h=Message-ID:Subject:To:From:Date; t=1790375262; bh=A+iKWh5sj5YoOcrwdCL0h8j
+	CSUwRstI5vEoHvPHIJoI=; b=JVAyHatNWNvnhAg0tCBcDElFuGPkRnfUol+s4hJLPX6tYGI3ed
+	bwr2Md+LCni/ho6GyJEzErsWgGaW+i02dH2b+dBMDqRCI9/HjXdtEI2tZQIqD2d1WwCjrP25KUk
+	612HcmgaMnWNOeLNaav8CwtMJsR+XT5i/U8DM1WdqFERDrMa6GsgL/h7vjZGv0Jt4tf4L7u/2hP
+	/unEl8L3b2Lj2aoUa1FtE4W4UhRGPqSl9p5HK5fF7dCFGF3gs9uyGtBKZEvJvZVX/sWoo4quqKc
+	r6i7pfb43QS9S0SfFFkWQ8nu/zY6PHCEbfAfuGBx5Zlk11axbcfC8jrNLAm/hgS+Vcg==;
+DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
+	h=Message-ID:Subject:To:From:Date; t=1790375262; bh=A+iKWh5sj5YoOcrwdCL0h8j
+	CSUwRstI5vEoHvPHIJoI=; b=pR6lN4bCmjgTzxfTIKniik2AjkDBGP0oObQcwcSbYh2PEdDTtB
+	U35u9OCJJr1lrCan0f/Llqwo95kPH+DgUpCg==;
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: AJwEWD5WPnhk
-Date: Sat, 26 Sep 2026 00:06:22 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Lorenzo Stoakes" <ljs@kernel.org>,
- "Andrew Morton" <akpm@linux-foundation.org>,
- "Liam R. Howlett" <liam@infradead.org>,
- "Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
- "Jann Horn" <jannh@google.com>, "Pedro Falcato" <pfalcato@suse.de>,
- "David Hildenbrand (Red Hat)" <david@kernel.org>,
- "Mike Rapoport" <rppt@kernel.org>,
- "Suren Baghdasaryan" <surenb@google.com>,
- "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet" <corbet@lwn.net>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>,
- "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>,
- "Paul Moore" <paul@paul-moore.com>,
- "Stephen Smalley" <stephen.smalley.work@gmail.com>,
- "Jaroslav Kysela" <perex@perex.cz>, "Takashi Iwai" <tiwai@suse.com>,
- "Alexei Starovoitov" <ast@kernel.org>,
- "Daniel Borkmann" <daniel@iogearbox.net>,
- "Andrii Nakryiko" <andrii@kernel.org>,
- "Eduard Zingerman" <eddyz87@gmail.com>,
- "Kumar Kartikeya Dwivedi" <memxor@gmail.com>, "Zi Yan" <ziy@nvidia.com>,
- "Baolin Wang" <baolin.wang@linux.alibaba.com>,
- "Nico Pache" <nico.pache@linux.dev>,
- "Ryan Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>,
- "Barry Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>,
- "Usama Arif" <usama.arif@linux.dev>,
- "Kirill A. Shutemov" <kas@kernel.org>,
- "Doug Gilbert" <dgilbert@interlog.com>,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <mkp@kernel.org>,
- "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter" <simona@ffwll.ch>,
- "Helge Deller" <deller@gmx.de>, "Sebastian Reichel" <sre@kernel.org>,
- "John Hubbard" <jhubbard@nvidia.com>, peterx <peterx@redhat.com>,
- "Masami Hiramatsu" <mhiramat@kernel.org>,
- "Oleg Nesterov" <oleg@redhat.com>,
- "Peter Zijlstra" <peterz@infradead.org>,
- "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
- "Borislav Petkov" <bp@alien8.de>,
- "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
- "Arnaldo Carvalho de Melo" <acme@kernel.org>,
- "Namhyung Kim" <namhyung@kernel.org>,
- "Mark Rutland" <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>,
- "Harry Yoo" <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>,
- "Vincent Guittot" <vincent.guittot@linaro.org>,
- "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>,
- "Maxime Ripard" <mripard@kernel.org>,
- "Thomas Zimmermann" <tzimmermann@suse.de>,
- "Dave Airlie" <airlied@gmail.com>, "Will Deacon" <will@kernel.org>,
- "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Muchun Song" <muchun.song@linux.dev>,
- "Oscar Salvador" <osalvador@suse.de>,
- "Matthew Wilcox" <willy@infradead.org>, "Jan Kara" <jack@suse.cz>,
- "Marc Zyngier" <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>,
- "Catalin Marinas" <catalin.marinas@arm.com>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>,
- "Palmer Dabbelt" <palmer@dabbelt.com>,
- "Albert Ou" <aou@eecs.berkeley.edu>,
- "Christian Borntraeger" <borntraeger@linux.ibm.com>,
- "Janosch Frank" <frankja@linux.ibm.com>,
- "Claudio Imbrenda" <imbrenda@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>,
- "Gerald Schaefer" <gerald.schaefer@linux.ibm.com>,
- "Heiko Carstens" <hca@linux.ibm.com>,
- "Vasily Gorbik" <gor@linux.ibm.com>,
- "David S . Miller" <davem@davemloft.net>,
- "Andreas Larsson" <andreas@gaisler.com>,
- "Alexander Viro" <viro@zeniv.linux.org.uk>,
- "Christian Brauner" <brauner@kernel.org>,
- "Matthew Brost" <matthew.brost@intel.com>,
- "Joshua Hahn" <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>,
- "Byungchul Park" <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>,
- "Ying Huang" <ying.huang@linux.alibaba.com>,
- "Alistair Popple" <apopple@nvidia.com>, "Chris Li" <chrisl@kernel.org>,
- "Kairui Song" <kasong@tencent.com>,
- "Kemeng Shi" <shikemeng@huaweicloud.com>,
- "Nhat Pham" <nphamcs@gmail.com>, "Baoquan He" <baoquan.he@linux.dev>,
- "Youngjun Park" <youngjun.park@lge.com>,
- "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>,
- "Shakeel Butt" <shakeel.butt@linux.dev>,
- "Axel Rasmussen" <axelrasmussen@google.com>,
- "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu" <weixugc@google.com>,
- "Chengming Zhou" <chengming.zhou@linux.dev>,
- "Michal Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>,
- "Xu Xin" <xu.xin@linux.dev>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
- linux-sound@vger.kernel.org, bpf@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Linux-Arch <linux-arch@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- fuse-devel@lists.linux.dev, "Takashi Iwai" <tiwai@suse.de>,
- "Emil Tsalapatis" <emil@etsalapatis.com>
-Message-Id: <d4d7d4c2-a1d5-41d0-b1c8-8ea0cc5a0397@app.fastmail.com>
-In-Reply-To: 
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
-References: 
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
-Subject: Re: [PATCH v3 00/40] mm: make VMA flag semantics explicit, eliminate
- VM_SPECIAL
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Date: Sat, 26 Sep 2026 00:27:42 +0200
+From: =?UTF-8?Q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?=
+ <barnabas.czeman@mainlining.org>
+To: =?UTF-8?Q?Y=C4=B0=C4=9E=C4=B0TCAN_KAVAKLI?= <kavakliyigitcan@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo
+ Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, Liam Girdwood
+ <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Sumit Semwal
+ <sumit.semwal@linaro.org>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Jessica Zhang <jesszhan0024@gmail.com>, Maarten Lankhorst
+ <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, Henrik Rydberg <rydberg@bitmath.org>, Rob Clark
+ <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, Abhinav
+ Kumar <abhinav.kumar@linux.dev>, Sean Paul <sean@poorly.run>, Marijn Suijten
+ <marijn.suijten@somainline.org>, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, dri-devel@lists.freedesktop.org,
+ linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ freedreno@lists.freedesktop.org
+Subject: Re: [PATCH RFC 04/10] drm/panel: novatek-nt36672a: add Tianma FHD+
+ video mode panel
+In-Reply-To: <20260911-ginkgo-submission-final-v1-4-0e68e63a18d4@gmail.com>
+References: <20260911-ginkgo-submission-final-v1-0-0e68e63a18d4@gmail.com>
+ <20260911-ginkgo-submission-final-v1-4-0e68e63a18d4@gmail.com>
+Message-ID: <8396770e7f5c85d4e8ac111b83bf8ad0@mainlining.org>
+X-Sender: barnabas.czeman@mainlining.org
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Sep 17, 2026, at 18:22, Lorenzo Stoakes (ARM) wrote:
->
->  mm/vma.c                                   | 246 +++++++++++++++++++-------
-
-Hi Lorenzo,
-
-I see that in linux-next there is a new build failure in some
-configurations in code that you are changing here:
-
-mm/vma.c: In function '__mmap_region':
-mm/vma.c:3083:1: error: the frame size of 1552 bytes is larger than 1536 bytes [-Werror=frame-larger-than=]
-
-I don't immediately see anything that you did that would have introduced
-something bad that wasn't already there, so it's likely just gone from
-just below the limit I was using for my testing to just above. The 1536
-byte limit is what I use on 64-bit builds with KASAN and otherwise
-still has a clean build (with a small number of local fixup patches).
-
-What I see is that this function has multiple structures on the
-stack that have nontrivial sizes:
-
-        VMA_ITERATOR(vmi, mm, addr); /* 104 bytes */
-        MMAP_STATE(map, mm, &vmi, addr, len,...); /* 384 bytes */
-        struct vm_area_desc desc; /* 128 bytes */
-
-The config that caused this is https://pastebin.com/raw/5M95qHy5,
-which is an x86-64 build with CONFIG_KASAN_STACK enabled, and likely
-a few other configuration options that made it a little worse.
-KASAN_STACK tends to double the stack size used by structures
-in order to catch out-of-bounds accesses.
-
-If I sprinkle some 'noinline_for_stack' annotations on functions
-called by __mmap_region(), I can get the size down to 1144 in this
-config, but that doesn't sound like a great workaround.
-
-The large stack usage is potentially harmful if this ends up
-in call chains that have additional large stack usage (e.g.
-kmalloc() leading to reclaim). Any ideas for how to reduce it here?
-
-     Arnd
+On 2026-09-11 10:51, YİĞİTCAN KAVAKLI wrote:
+> Add support for the 1080x2340 Tianma video mode panel with Novatek
+> NT36672A driver IC found in the Xiaomi Redmi Note 8 (ginkgo / SM6125).
+> 
+> Changes:
+> - Add 1080x2340 display mode timings (183.025 MHz pixel clock)
+> - Add verified DCS initialization sequences for pages 0x25, 0x20, 0x24,
+>   0x26, and user command page 0x10
+> - Add standard DRM panel .enable and .disable callbacks to coordinate
+>   display on/off commands with active DSI video stream
+> - Set prepare_prev_first = true for host controller synchronization
+> - Optimize power-on reset sequence to nominal 10ms timings
+> 
+> Signed-off-by: YİĞİTCAN KAVAKLI <kavakliyigitcan@gmail.com>
+> ---
+>  drivers/gpu/drm/panel/panel-novatek-nt36672a.c | 141 
+> ++++++++++++++++++++-----
+>  1 file changed, 117 insertions(+), 24 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/panel/panel-novatek-nt36672a.c 
+> b/drivers/gpu/drm/panel/panel-novatek-nt36672a.c
+> index 
+> 464d9ce47d87dc857c3a565a63156ac79ddeb30c..b69213790441f204016895a391b58f676762b1aa 
+> 100644
+> --- a/drivers/gpu/drm/panel/panel-novatek-nt36672a.c
+> +++ b/drivers/gpu/drm/panel/panel-novatek-nt36672a.c
+> @@ -34,7 +34,7 @@ static const char * const nt36672a_regulator_names[] 
+> = {
+>  	"vddneg",
+>  };
+> 
+> -static unsigned long const nt36672a_regulator_enable_loads[] = {
+> +static const unsigned long nt36672a_regulator_enable_loads[] = {
+>  	62000,
+>  	100000,
+>  	100000
+> @@ -92,18 +92,12 @@ static int nt36672a_panel_unprepare(struct 
+> drm_panel *panel)
+>  	if (pinfo->desc->send_deinit_cmds)
+>  		pinfo->desc->send_deinit_cmds(&dsi_ctx);
+> 
+> -	/* Reset error to continue with display off even if send_cmds failed 
+> */
+> +	/* Reset error to continue power-down even if send_cmds failed */
+>  	dsi_ctx.accum_err = 0;
+> -	mipi_dsi_dcs_set_display_off_multi(&dsi_ctx);
+> -	/* Reset error to continue power-down even if display off failed */
+> -	dsi_ctx.accum_err = 0;
+> -
+> -	/* 120ms delay required here as per DCS spec */
+> -	msleep(120);
+> 
+>  	mipi_dsi_dcs_enter_sleep_mode_multi(&dsi_ctx);
+> 
+> -	/* 0x3C = 60ms delay */
+> +	/* 60ms delay as per DCS spec */
+>  	msleep(60);
+> 
+>  	nt36672a_panel_power_off(panel);
+> @@ -120,15 +114,14 @@ static int nt36672a_panel_power_on(struct 
+> nt36672a_panel *pinfo)
+>  		return ret;
+> 
+>  	/*
+> -	 * As per downstream kernel, Reset sequence of Tianma FHD panel 
+> requires the panel to
+> -	 * be out of reset for 10ms, followed by being held in reset for 
+> 10ms. But for Android
+> -	 * AOSP, we needed to bump it upto 200ms otherwise we get white 
+> screen sometimes.
+> -	 * FIXME: Try to reduce this 200ms to a lesser value.
+> +	 * Reset sequence: 10ms out of reset, 10ms held in reset, 10ms out of 
+> reset.
+>  	 */
+> -	gpiod_set_value(pinfo->reset_gpio, 1);
+> -	msleep(200);
+> -	gpiod_set_value(pinfo->reset_gpio, 0);
+> -	msleep(200);
+> +	gpiod_set_value_cansleep(pinfo->reset_gpio, 0);
+> +	usleep_range(10000, 11000);
+> +	gpiod_set_value_cansleep(pinfo->reset_gpio, 1);
+> +	usleep_range(10000, 11000);
+> +	gpiod_set_value_cansleep(pinfo->reset_gpio, 0);
+> +	usleep_range(10000, 11000);
+> 
+>  	return 0;
+>  }
+> @@ -146,19 +139,41 @@ static int nt36672a_panel_prepare(struct 
+> drm_panel *panel)
+> 
+>  	mipi_dsi_dcs_exit_sleep_mode_multi(&dsi_ctx);
+> 
+> -	/* 0x46 = 70 ms delay */
+> -	mipi_dsi_msleep(&dsi_ctx, 70);
+> -
+> -	mipi_dsi_dcs_set_display_on_multi(&dsi_ctx);
+> +	/* 80 ms delay as per DCS spec / downstream timing */
+> +	msleep(80);
+> 
+>  	/* Send rest of the init cmds */
+>  	if (pinfo->desc->send_init_cmds_2)
+>  		pinfo->desc->send_init_cmds_2(&dsi_ctx);
+> 
+> -	mipi_dsi_msleep(&dsi_ctx, 120);
+> -
+>  	if (dsi_ctx.accum_err < 0)
+> -		gpiod_set_value(pinfo->reset_gpio, 0);
+> +		gpiod_set_value_cansleep(pinfo->reset_gpio, 0);
+> +
+> +	return dsi_ctx.accum_err;
+> +}
+> +
+> +static int nt36672a_panel_enable(struct drm_panel *panel)
+> +{
+> +	struct nt36672a_panel *pinfo = to_nt36672a_panel(panel);
+> +	struct mipi_dsi_multi_context dsi_ctx = { .dsi = pinfo->link };
+> +
+> +	mipi_dsi_dcs_set_display_on_multi(&dsi_ctx);
+> +
+> +	/* Frame settling delay */
+> +	msleep(20);
+> +
+> +	return dsi_ctx.accum_err;
+> +}
+> +
+> +static int nt36672a_panel_disable(struct drm_panel *panel)
+> +{
+> +	struct nt36672a_panel *pinfo = to_nt36672a_panel(panel);
+> +	struct mipi_dsi_multi_context dsi_ctx = { .dsi = pinfo->link };
+> +
+> +	mipi_dsi_dcs_set_display_off_multi(&dsi_ctx);
+> +
+> +	/* 120ms delay as per DCS spec */
+> +	msleep(120);
+> 
+>  	return dsi_ctx.accum_err;
+>  }
+> @@ -189,6 +204,8 @@ static int nt36672a_panel_get_modes(struct 
+> drm_panel *panel,
+>  static const struct drm_panel_funcs panel_funcs = {
+>  	.unprepare = nt36672a_panel_unprepare,
+>  	.prepare = nt36672a_panel_prepare,
+> +	.enable = nt36672a_panel_enable,
+> +	.disable = nt36672a_panel_disable,
+As far as I know adding .enable and .disable callbacks for on/off 
+commands is a workaround for -110 time outs
+and not a proper fix, as a workaround .disable is enough.
+Here is an another attempt with the same workaround and it was declined:
+https://lore.kernel.org/all/20240509-jdi-use-disable-v1-1-5c175b2ea1ee@gmail.com/
+We have this commit for this issue at downstream 
+https://github.com/msm8953-mainline/linux/commit/c1adb576d7b49833d0d48c5ffae18372c9db668e
+but in my understanding it also should not considered a proper fix.
+>  	.get_modes = nt36672a_panel_get_modes,
+>  };
+> 
+> @@ -404,6 +421,79 @@ static const struct nt36672a_panel_desc 
+> tianma_fhd_video_panel_desc = {
+>  	.send_deinit_cmds = tianma_fhd_video_send_deinit_cmds,
+>  };
+> 
+> +static void tianma_ginkgo_send_init_cmds(struct mipi_dsi_multi_context 
+> *dsi_ctx)
+> +{
+> +	/* Page 0x25 init */
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xff, 0x25);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xfb, 0x01);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x18, 0x96);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x05, 0x04);
+> +
+> +	/* Page 0x20 init */
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xff, 0x20);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xfb, 0x01);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x78, 0x01);
+> +
+> +	/* Page 0x24 init */
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xff, 0x24);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xfb, 0x01);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x82, 0x13);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x84, 0x31);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x88, 0x13);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x8a, 0x31);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x8e, 0xe4);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x8f, 0x01);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x90, 0x80);
+> +
+> +	/* Page 0x26 init */
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xff, 0x26);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xfb, 0x01);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xa9, 0x12);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xaa, 0x10);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xae, 0x8a);
+> +
+> +	/* Page 0x10 (User command page) */
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xff, 0x10);
+> +}
+> +
+> +static void tianma_ginkgo_send_post_on_cmds(struct 
+> mipi_dsi_multi_context *dsi_ctx)
+> +{
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0xb0, 0x01);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x35, 0x00);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x68, 0x04, 0x03);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x51, 0xb8);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x53, 0x2c);
+> +	mipi_dsi_dcs_write_seq_multi(dsi_ctx, 0x55, 0x00);
+> +}
+> +
+> +static const struct drm_display_mode tianma_ginkgo_fhd_video_mode = {
+> +	.clock		= 183025,
+> +
+> +	.hdisplay	= 1080,
+> +	.hsync_start	= 1080 + 90,
+> +	.hsync_end	= 1080 + 90 + 2,
+> +	.htotal		= 1080 + 90 + 2 + 120,
+> +
+> +	.vdisplay	= 2340,
+> +	.vsync_start	= 2340 + 10,
+> +	.vsync_end	= 2340 + 10 + 3,
+> +	.vtotal		= 2340 + 10 + 3 + 8,
+> +
+> +	.type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED,
+> +};
+> +
+> +static const struct nt36672a_panel_desc 
+> tianma_ginkgo_fhd_video_panel_desc = {
+> +	.display_mode = &tianma_ginkgo_fhd_video_mode,
+> +	.panel_name = "tianma-ginkgo-fhd-video",
+> +	.width_mm = 67,
+> +	.height_mm = 145,
+> +	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_LPM,
+> +	.format = MIPI_DSI_FMT_RGB888,
+> +	.lanes = 4,
+> +	.send_init_cmds_1 = tianma_ginkgo_send_init_cmds,
+> +	.send_init_cmds_2 = tianma_ginkgo_send_post_on_cmds,
+> +};
+> +
+>  static int nt36672a_panel_add(struct nt36672a_panel *pinfo)
+>  {
+>  	struct device *dev = &pinfo->link->dev;
+> @@ -428,6 +518,8 @@ static int nt36672a_panel_add(struct nt36672a_panel 
+> *pinfo)
+>  	if (ret)
+>  		return dev_err_probe(dev, ret, "Failed to get backlight\n");
+> 
+> +	pinfo->base.prepare_prev_first = true;
+> +
+>  	drm_panel_add(&pinfo->base);
+> 
+>  	return 0;
+> @@ -481,6 +573,7 @@ static void nt36672a_panel_remove(struct 
+> mipi_dsi_device *dsi)
+> 
+>  static const struct of_device_id tianma_fhd_video_of_match[] = {
+>  	{ .compatible = "tianma,fhd-video", .data = 
+> &tianma_fhd_video_panel_desc },
+> +	{ .compatible = "tianma,fhd-video-ginkgo", .data = 
+> &tianma_ginkgo_fhd_video_panel_desc },
+>  	{ },
+>  };
+>  MODULE_DEVICE_TABLE(of, tianma_fhd_video_of_match);

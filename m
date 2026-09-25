@@ -1,170 +1,143 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj2-f43.google.com (mail-pj2-f43.google.com [74.125.227.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0121E3DA7E4;
-	Fri, 25 Sep 2026 09:55:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790330134; cv=none; b=E+5LTsWscHyD+Pq9GzS/Gi5cprSe8Ujqoy6Rj9E30vHdzk0MWfnhOpIJkRTuMvZP3GiS1tVSzh4jvRVI6bx0GIzazO+loQBxryLG6VQAtbKw9ssrNVBmp2K0px7PTNbrrZXsaYrtNkJK6GuaW0lSeu+SLVi7HRMlbD8a6opCPBQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790330134; c=relaxed/simple;
-	bh=bbikqsSea9vW+pe3Cgq2a9QL95dQasb87hlFKxy08F8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dkV5/EYkCBQn5pyz+cwsaZfrThofldme4FpFbE6QHNrboKZdxAcFm6jzBRqRdGyd7+GP6QhT6/5EGl46uexq9HfCZRa6bzDCITrX9l9/qVru9cxvoYfj1Df6j8SHtB+oZBE0PE7Erij3fXOAXQezL4GvSfw0VAFA0Ph9kP6JW2s=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HxJQcEvn; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25B1849B5B6
+	for <linux-fbdev@vger.kernel.org>; Fri, 25 Sep 2026 10:43:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.227.171
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790332991; cv=pass; b=aAr3M0eqaDAyqCytWraow+XHXPEAMvhEwinCFyPrF7WtuxYagHX3V1Qh0O7/rSWBgLZXXDmxs/y0ITGF9O472tgXsSejCmBfqstFQpYnOSLZDIJUoH6/bqMUnf0GKxwqI8lrJyMz/znjMOq+BiHwsvr/SuCelwXQoBxaRRGqg8U=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790332991; c=relaxed/simple;
+	bh=0jhBtxezo/BnEPs8cPVGYM+CZTI3dvgcBUXFhUlmG60=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=QLhrjjCJMJVPD9OUCQwDacXaZERAs66pgOEEqtyHUwv6lqNsZHsyRZQJDBeGOciZla8DO7eHCj0pCZqZpOpb0Ya3bIl6Eqb7veHfeIwDKJwG749R2VMKp37lec+x+K4wVZjVI6c1O3f9x7uFRcjf8egAkzsfsu8GhYypL1Y352Y=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fooishbar.org; spf=pass smtp.mailfrom=fooishbar.org; dkim=pass (2048-bit key) header.d=fooishbar.org header.i=@fooishbar.org header.b=CAe8qvdw; arc=pass smtp.client-ip=74.125.227.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=fooishbar.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=fooishbar.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HxJQcEvn"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C76A1F000FF;
-	Fri, 25 Sep 2026 09:55:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790330132;
-	bh=wHcL5jPNS47s6Ul8XnEo1uFsA8Y0TKv8vyd/Iuc4jW8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=HxJQcEvnuhUOHH3Z6mzmWye1CE1PjDtpVrPBVFbcNDGyG6yBkjOShg1wXTRxmQKyc
-	 TCJMHEkTxA8Sxw4HyLR7LdXQhRJb+9udY3QgV8ET7cug6AZBPLxgIFx/TdmYGQ8bVU
-	 ptEgwP56FVQ2pJrDbYSWaP8xyRORQKPPWrshPWAAjxwWnAwT2YIoJgfyo9wv4EO7c3
-	 7ozDd+omlnSWJmwSq3s1563JOKXMeNxa13jAxu5Ee20miDdmPGzcEIeZWGgnBBy5y6
-	 eWzAFHQy56s+qgvvgTG8xUGQUmf5tQzyaZcP9CgdenUpWl9R2UycwCgDON1sf75KvU
-	 KkanjhxFaUGcw==
-Date: Fri, 25 Sep 2026 10:55:01 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Zi Yan <ziy@nvidia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
-	David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
-	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
-	Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
-	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
-	Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, 
-	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
-	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
-	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, 
-	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
-	Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
-	Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
-	Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
-	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
-	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 05/40] mm/vma: ensure mmap_prepare doesn't set actions
- on a mergeable vma
-Message-ID: <arZE4aXD0yIbXVFU@gremlin>
-References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
- <DLNSM8R8JS9A.1850RMXAG9NSR@nvidia.com>
+	dkim=pass (2048-bit key) header.d=fooishbar.org header.i=@fooishbar.org header.b="CAe8qvdw"
+Received: by mail-pj2-f43.google.com with SMTP id 98e67ed59e1d1-396ccda24a3so467908a91.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Sep 2026 03:43:08 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790332988; cv=none;
+        d=google.com; s=arc-20260327;
+        b=V0i26V44j32TBJM6Oh9kV1lTdcMOqsrDcjQCmzqGO6uD5UPGmb+htFt34sTFao8Ucu
+         qeDXWq/n1Vl29wXsoBTeFVxLIv7d6sndGRvHgSEzt8xaQI3H9vTnPZrC+ScalqB1jgco
+         Ix3UlBul4QPaa8ky+izYgaZgxUWkwL02U7TwZw6x7azQGOnBluI+5xGqUniB+X4zsGgK
+         QDgTYQyurAv6IJa0dMT2Sbj3gW2aC8PEdjDlp9Fj+cFnej3dBscVPwrBdGwwmetV2Se0
+         zEfRSxxtK79Jrna5lsZp4niNk1SC0CbE9HQJGKH3IY0HfEwVP6Rh8uizrukyqo9ocpvf
+         xRWA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=BRpIuFoFTSYDMCEFJGiUusnifNbms8g6CYYPzdMnXGI=;
+        fh=kVF6Ti2RyUAmDoLDJqNORmAUqtJ65n2iz06PgDrG+a4=;
+        b=GgdR0wxOvKey5C7ybA/f8Fofc78h4N7J2942CyhgOa/toSKnDzSM5d3xKoyHh4YNyr
+         OzS/8uOSNIdUFaiOHm9Q3qkASMnW9KmB3gaEg4nT1qcNElTJJyU70itgT/DcnTBfIXHT
+         7+9Vhtu5SSCy07qi55644nLHRk47NEFl50lWJu0uLcmy0sYVrpu6RWVFQkjDO6j1jGQ2
+         DzjW/yrOKz8Am/i3yAYsMV7RsjUHVRvOsLmcD9+dYYR0eEpP1BeXyc/TQPDj14TclCwj
+         0qcx09Q4G0ObNLySHSqUj2azrSAOVl2sMVCCheqoQt8aJ+cLJfUNVEllRygD4uPASxI6
+         kLVA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=fooishbar.org; s=google; t=1790332988; x=1790937788; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=BRpIuFoFTSYDMCEFJGiUusnifNbms8g6CYYPzdMnXGI=;
+        b=CAe8qvdwdzWqIl8B+zTwTKPTXHI3B8qlX4wRv9GHGvAw6JAGZ8qiqkEqss+nXd9p17
+         6oKTMoc/FaJPssk5tgVORNnk7wz3mnDICZlslwMGqiJfXRnJBxGfrw3wCXSPUaFZCr5N
+         1P2MuGxaI+qc3USBlc0/Ur6pffC+KhBht5NqMdLuUsi9c7Jxn/ovQX8k9Rw+sOHiGMOV
+         3D+x3N1O75s2Hi6En08OzX/CWdyutShl0inQNEFDMuZyxVMTNgSCYYnVm3q1An2cFxtq
+         V3H1aQTC5m5l1703m/+tys8WF1iigtzh3dQkrIul8NUMVrucud08BjpuJVlFMxDmUdNs
+         U5MA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790332988; x=1790937788;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=BRpIuFoFTSYDMCEFJGiUusnifNbms8g6CYYPzdMnXGI=;
+        b=X0UxNS5Dp17a9BGuX1/xN/j/80v+ZIXzcZf8qf/fwH2CbQvLg3ctTywS5vLaHaljpX
+         w/tSdEBDEeS/r71eFi7YKgcgf2W2lErXyj6miop8u/JNiY9ADF8vsVZs3ZqezDBdXOmU
+         aGRn4bhWxV8tmPsTrmddbSqnxIKC6YbeY80pHL/C78HqtuRfOaf0TxNhkdkwVYhq9h8R
+         VobeDhIRl9MMClnpclmH7bg4gu4/KIcr8mlaMzlQG/jsPnerzNgiGqYUuijAa74HIPmK
+         F+e8iDE6CDtaFN8BNU+yo2nBvzRRt78JGYdMYPQvxywhokFHSRncwV0XZVMTnwimmnU2
+         1wBw==
+X-Forwarded-Encrypted: i=1; AKwUvBwpRGATE/wus7BmMAbA6wlsYK8WqkoMr0ZkRXgv1ocoVx+h0pgM/hTiHmSePPe0qEzuKT9XNMLVKfrdSA==@vger.kernel.org
+X-Gm-Message-State: AFuF++kXPkStCJM3gru0JZn6aLibKMIE/5oP1qyVI/v1Gs6ap8ClwPhZ
+	Ws4vnJ1sYVTIsjcJ4nIoGAZ1j6CzO5Rdgn/neW03+qv+pFfNYqQJ5jTosJ503GHkVPc4E4ho6yx
+	MEs0Ei8ATIl52Rw5lp2QTHbxivjmQXSheXKK84i4BmQ==
+X-Gm-Gg: AYBFou1pZqsjjZMlOPq13Mru/6JpAHNxohC8mKfnPBHKoJzTiwCGFRFopi0IyMAE/yi
+	PdmMM6Em+Q2rxuC97yXWsNuC3f3R5Fyr5/S4jo7xR7+JgbgqVdafSiI8A2eZs6OansPWu6TPbAS
+	gLYXT+xJmNvmcaQkOwE2dD+673+iY45Az86DSvnmNXaeKYSwqeJ/2h+PoiCOffmMw168sw9O+a3
+	8nW/M05OlivnwxumlE6/7pHpSl9bQomFtyvmaUGDLa0jKTHB5BXqX4hPpky7MiIoKkhBf+YP+Af
+	WSeKjKqw1nFCx62DzzdGbLFZFmqaegaiK6qSJNeHWAP4cxjJRPdX9RwV2Ot2+5qPpA==
+X-Received: by 2002:a17:90b:3d46:b0:39d:f317:44cd with SMTP id
+ 98e67ed59e1d1-3a09860dff2mr4452158a91.14.1790332988129; Fri, 25 Sep 2026
+ 03:43:08 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DLNSM8R8JS9A.1850RMXAG9NSR@nvidia.com>
+References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
+ <20260921-vrr-limiter-uapi-v1-6-2fcd7d011646@collabora.com> <a5bc012a-9b9e-eb2b-d67e-a91f2d93d6bf@nvidia.com>
+In-Reply-To: <a5bc012a-9b9e-eb2b-d67e-a91f2d93d6bf@nvidia.com>
+From: Daniel Stone <daniel@fooishbar.org>
+Date: Fri, 25 Sep 2026 11:42:56 +0100
+X-Gm-Features: AclHuK-I3v9LGdL8IGkTOXDiWq73AU-KwLgPcsiWlNH5IITVHFCCiS3M3P2Jw5E
+Message-ID: <CAPj87rO2+oSA7KtocG-M1hqgQTJO=3Qxmg-OMC5MmOLaja_kRg@mail.gmail.com>
+Subject: Re: [PATCH RFC 06/25] drm/connector: hdmi: Add VTEM EMP generation
+To: Vidith Madhu <vmadhu@nvidia.com>
+Cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, 
+	"Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, Leo Li <sunpeng.li@amd.com>, 
+	Daniel Stone <daniels@collabora.com>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>, 
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Jonas Karlman <jonas@kwiboo.se>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Luca Ceresoli <luca.ceresoli@bootlin.com>, 
+	Sandy Huang <hjc@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
+	Andy Yan <andy.yan@rock-chips.com>, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	kernel@collabora.com, Derek Foreman <derek.foreman@collabora.com>, 
+	wayland-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Thu, Sep 24, 2026 at 03:28:10PM -0400, Zi Yan wrote:
-> On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
-> > When a user requests an mmap_action be performed in mmap_prepare, this
-> > involves populating the VMA range with data.
-> >
-> > However, if the VMA is mergeable, it might then mistakenly be merged with
-> > another VMA without having populated the range.
-> >
-> > Every mmap action currently available sets VMA flags such that the VMA
-> > cannot be merged.
-> >
-> > However, to ensure that no future mmap action falls foul of this, assert
-> > that this is the case upon mmap_prepare validation.
-> >
-> > Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-> > ---
-> >  mm/vma.c | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> >
-> > diff --git a/mm/vma.c b/mm/vma.c
-> > index d6ed10cefc8f..62f2ce1ad5a1 100644
-> > --- a/mm/vma.c
-> > +++ b/mm/vma.c
-> > @@ -2809,6 +2809,15 @@ static int mmap_validate(unsigned long prev_start, unsigned long prev_end,
-> >  int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
-> >  			  const struct vm_area_desc *desc)
-> >  {
-> > +	/*
-> > +	 * It is not valid to execute mmap actions for VMAs which can be merged,
->
-> Is it better to say "for VMAs ... after mmap_action_prepare()"? When I
-> first read this, I wonder why the check is done after
-> mmap_action_prepare(), which does some work based on action.type. Then,
-> I realize mmap_action_prepare() changes desc->vma_flags and affect its
-> mergeablitiy.
+Hi Vidith,
 
-Ack, good point will update!
+On Fri, 25 Sept 2026 at 04:49, Vidith Madhu <vmadhu@nvidia.com> wrote:
+> On Mon, 21 Sep 2026, Nicolas Frattaroli wrote:
+> > +     if (!crtc_state->vrr_enabled) {
+> I don't think we should use the vrr_enabled CRTC property to determine
+> VRR_EN in the VTEM EMP. Transitioning the VRR mode sink-side typically causes
+> blanking, and it was discussed in patch [03/25] that drivers should be
+> free to handle vrr_enabled changes as a seamless switch since it only
+> concerns source-side VRR state (this is how the NVIDIA driver handles it).
+> Maybe it would make sense to extend the qms_enabled connector property
+> introduced in this patchset to an enum of {Off, Gaming, QMS}? This would allow
+> a standard path to control the VRR state on the sink, separately from
+> vrr_enabled.
 
->
-> > +	 * as any such merge would leave portions of the mapping incorrectly
-> > +	 * unmapped.
-> > +	 */
-> > +	if (vma_flags_can_merge(&desc->vma_flags) &&
-> > +	    WARN_ON_ONCE(desc->action.type != MMAP_NOTHING))
-> > +		return -EINVAL;
-> > +
-> >  	return mmap_validate(prev_desc->start, prev_desc->end,
-> >  			     desc->start, desc->end,
-> >  			     &prev_desc->vma_flags, &desc->vma_flags);
->
->
-> Otherwise, LGTM.
->
-> Reviewed-by: Zi Yan <ziy@nvidia.com>
+I remain cautious of putting this amount of policy inside the kernel
+and/or left to individual IHV choices. It's relatively obvious for
+NVIDIA and AMD to say 'we'll always enable FRL/VRR to smash the
+maximum rate (unless it's contraindicated by USB-C bandwidth somehow)
+because the power burn is inconsequential', but if you were MediaTek
+or Rockchip you'd probably make a different decision. Then again, if
+you were an MTK device living on AC power, maybe you'd make the same
+decision. Or maybe AMD would want to make a different decision on
+laptop parts because the bandwidth is noticeable then.
 
-Thanks!
+The point is that I don't think we should bury this down in implicit
+kernel state. I'm with you on surfacing this as an explicit connector
+property. Possibly a bitmask of modes the user will use? e.g. {
+frr_only = 0, maybe_gaming_vrr = (1 << 0),  maybe_qms = (1 << 1), ...
+}? Or perhaps just a flag for whether the link should be negotiated as
+wide as possible or tight to the existing mode params?
 
->
->
-> --
-> Best Regards,
-> Yan, Zi
->
-
---
-Cheers, Lorenzo
+Cheers,
+Daniel

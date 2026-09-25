@@ -1,142 +1,209 @@
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010008.outbound.protection.outlook.com [40.93.198.8])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 671A914A8B;
-	Fri, 25 Sep 2026 17:52:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=5.75.144.95
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790358774; cv=none; b=klqFJh7u6aL/HVJzalSrEpEXVEOyhm50xRJK7qVqz0wnxmWwUM7SFNZSmiLE00cPeaFea+ucX5aTjmiHgoqfnAz5tINjEUr6h+u+OUDRlDUgH7UMurFucqKmKBXjL72Ysa8dHm5i2hS5nru2psB8DHduqwmrRAHYlIBXcrhaWKI=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790358774; c=relaxed/simple;
-	bh=h2F6Wlrr7DWF4srFC6zkGugGEjHOBZnfF68/9H/Z5rY=;
-	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
-	 Message-ID:Content-Type; b=neQAcEHkDqHMX9A/p7P8XHzbkYXI30wo6s3JoLEdQMx5u38G52jsha0ctIaqp+pdZyCd0pZHL6NQzmO9UKmaQlwPlv6ro8x/Rax4dah8e7rAH7h+1CIr0eq3Q5+gUqvWkiYjgfIew2VRhCITSaNgRj81kCbydF7XMr7qMGJMNts=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; spf=pass smtp.mailfrom=mainlining.org; dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=dybEE07j; dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b=6hkU80fp; arc=none smtp.client-ip=5.75.144.95
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mainlining.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A92D4E4304;
+	Fri, 25 Sep 2026 18:42:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.8
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790361742; cv=fail; b=MSspfYnC1zpIhOwvdH3f/gfV54E4M6iEHnWC9lWAxoKkrRp0wx1Ex4bW/HMkK0wqEPJpcDw12N/wttWSJYwRjeGHak/MgywOKl8OMA5Py4n7zuakWHk3fCSwvwNdfXGS0KDba8D8gGPBNEnUZnx2w8UerxvpIW5P1MERrX6vrUs=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790361742; c=relaxed/simple;
+	bh=QY+TicjWh6oiFGgW/I3NSFQSJUsykZhivl4HfiLIDVo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=iZMsmkvB2jlx89YbtvkuLQd2Cb1o4bI0C4zgNepA3mnkYpuFjOCIjeIlffHWqqpjF7RCArPfxmyrAXwUOpRG5U6DELGEYtFEno+0UMtl7fN76/2sOhWPSS7Eq2vuEh2uHLzMOeLdV37vEvt+X0hYbaci9XFBdpa018Qh+eIf9RI=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=qnlffLAE; arc=fail smtp.client-ip=40.93.198.8
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="dybEE07j";
-	dkim=permerror (0-bit key) header.d=mainlining.org header.i=@mainlining.org header.b="6hkU80fp"
-DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1790358748; bh=nNXRZZyO5E6gJXFXSSEbRo7
-	RUD3G589ViTisRDLWX74=; b=dybEE07jOsSg2uVQbdrgvnpMJTnRpLxDanSAyANWMHaXeM16IC
-	g+Oov4sM3WMnWkgiJGGW8xu4nutrv3Tr/NqSZZvIVJ8s9+uiaRf/Typxm1P5yJhO8ZB88O64D+0
-	lpOMx0wfsRL/dNzTfD7yiUy+89mL5zAxuU9//TMhic3wpj8yvnmPjWXaTl3gJAlNnSYnYr9KDbC
-	NmJFr4eOi9atCKMb2gbjhSGewJ2gXNBKZseJlACHY1NqlMahuFSMUNWb4DNRVxR3qHaIJmrSwJ3
-	dpm8w2QjZAy4+1mrqgOGkOBJAMz65Oo/fgW/8jFyNuEMTzdv2S4kfo7lmIfDipvSa6g==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=Message-ID:Subject:To:From:Date; t=1790358748; bh=nNXRZZyO5E6gJXFXSSEbRo7
-	RUD3G589ViTisRDLWX74=; b=6hkU80fpF18eaotihI8czs8zqTmN9aBl918adzBeqol+4g+4I5
-	AX114HYqQ5r0FqT8+yWyI6FklC5LOVeiPUBg==;
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="qnlffLAE"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Ye7prbYyACZ7WV/j8xgF4NgDZN/W5KrwcPAfEMlrHGTt8LY+5UKJAsX/4YF0rF2OZLxvCA3c59CTGHJRb0LKKUSK2czP9GHpNn7LPAQEyGn1AGQZQLubw9XYV0+3nLFqrFWbEGYXpXoQJ2NtFNjtrZNdhiI0ViSjswdWhjA4DhakSZ5w9YdsArj5jBqm93MBconTgACYaP0IsN0861rSeNUYN6Sp07J9hqLlE8n27R8UJXfW+EHMLMvBWO02QGfJ9H8n39AJRiWCOFe9+QZcEhr5OYEj94+pmPEFeFNOqgu6aLoaUCje7gMnFySqzCnhk9Ue6nqkFNUOT8g3H7jeNA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=bOfpGmVAQ40dh+pQHepJXK/c9qXJ2THWPTvOZ/CTwew=;
+ b=dAEp5RbrpPVPWZ26lDjmhVwk0or1O5/dYjYIse39kqiyoCgZEW5QvdzdIED6KY5I0PB9Q5DYikSIJrCA3yrP86Lyzi354ooprk7kDxcxV3F3Ah8766hkYPFMcm4AsPirbQVuzNLH+ahikf+/A033GvBRbQ0xJnn4r4Etj7LHBMUf/1ZBCn+bnoKb2g4y6o8FUAcVaOHCDzfx/uCU9+AI9iFiv1fN/AA15p4A4C0sV08N9O87tpiQrQMvVZOsuLK7pJjwOKOb6sO7/OzIDIcCaVPD8DeWGrf6wOpNT+6YWDssEpM4iaZYYSkRg2V21Ankt5+ljmYSwdIX1VdJViqUOQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=collabora.com smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bOfpGmVAQ40dh+pQHepJXK/c9qXJ2THWPTvOZ/CTwew=;
+ b=qnlffLAEep3mw5W5tcEvn1aLIj8wAFF1WPLmcAfA4cTfgXe7TbcC86TuBk+Y7H1wFgqPLUjoxSKwqD2mKO8gdh3nHgIx9hlKwa6Cz4K9+QJPVyemCzR73GHWjB7/wEIIMtkTi9fOFWA5W+Jf+wHY34BGXdQf0s2CmiU54pDjgtM=
+Received: from BL1PR13CA0448.namprd13.prod.outlook.com (2603:10b6:208:2c3::33)
+ by SA1PR12MB6994.namprd12.prod.outlook.com (2603:10b6:806:24d::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Fri, 25 Sep
+ 2026 18:42:13 +0000
+Received: from BN7PEPF000000A9.namprd05.prod.outlook.com
+ (2603:10b6:208:2c3:cafe::3) by BL1PR13CA0448.outlook.office365.com
+ (2603:10b6:208:2c3::33) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.428.8 via Frontend Transport; Fri, 25
+ Sep 2026 18:42:13 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ BN7PEPF000000A9.mail.protection.outlook.com (10.167.245.233) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.451.8 via Frontend Transport; Fri, 25 Sep 2026 18:42:13 +0000
+Received: from satlexmb10.amd.com (10.181.42.219) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Fri, 25 Sep
+ 2026 13:42:13 -0500
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb10.amd.com
+ (10.181.42.219) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Fri, 25 Sep
+ 2026 13:42:12 -0500
+Received: from [10.254.92.96] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.49 via Frontend
+ Transport; Fri, 25 Sep 2026 13:42:11 -0500
+Message-ID: <8a3b2902-3255-4dd9-82f0-75a7747b710e@amd.com>
+Date: Fri, 25 Sep 2026 14:42:05 -0400
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Fri, 25 Sep 2026 19:52:27 +0200
-From: =?UTF-8?Q?Barnab=C3=A1s_Cz=C3=A9m=C3=A1n?=
- <barnabas.czeman@mainlining.org>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Cc: kavakliyigitcan@gmail.com, Lee Jones <lee@kernel.org>, Daniel Thompson
- <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Pavel Machek
- <pavel@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
- <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller
- <deller@gmx.de>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown
- <broonie@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, Neil Armstrong
- <neil.armstrong@linaro.org>, Jessica Zhang <jesszhan0024@gmail.com>, Maarten
- Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
- <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
- <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Dmitry Torokhov
- <dmitry.torokhov@gmail.com>, Henrik Rydberg <rydberg@bitmath.org>, Rob Clark
- <robin.clark@oss.qualcomm.com>, Dmitry Baryshkov <lumag@kernel.org>, Abhinav
- Kumar <abhinav.kumar@linux.dev>, Sean Paul <sean@poorly.run>, Marijn Suijten
- <marijn.suijten@somainline.org>, Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>, dri-devel@lists.freedesktop.org,
- linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-input@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- freedreno@lists.freedesktop.org
-Subject: Re: [PATCH RFC 10/10] arm64: dts: qcom: sm6125-xiaomi-ginkgo: enable
- display, backlight and touchscreen
-In-Reply-To: <fe437142-eb1e-49d3-ad3f-704066bea53b@oss.qualcomm.com>
-References: <20260911-ginkgo-submission-final-v1-0-0e68e63a18d4@gmail.com>
- <20260911-ginkgo-submission-final-v1-10-0e68e63a18d4@gmail.com>
- <fe437142-eb1e-49d3-ad3f-704066bea53b@oss.qualcomm.com>
-Message-ID: <37bb460f800995ee97b4867e09c04ebb@mainlining.org>
-X-Sender: barnabas.czeman@mainlining.org
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC 13/25] drm: Add VRR target frame rate properties
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>, "Borah, Chaitanya
+ Kumar" <chaitanya.kumar.borah@intel.com>, Daniel Stone
+	<daniels@collabora.com>, Maarten Lankhorst
+	<maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Andrzej Hajda
+	<andrzej.hajda@intel.com>, Neil Armstrong <neil.armstrong@linaro.org>,
+	"Robert Foss" <rfoss@kernel.org>, Laurent Pinchart
+	<Laurent.pinchart@ideasonboard.com>, Jonas Karlman <jonas@kwiboo.se>, "Jernej
+ Skrabec" <jernej.skrabec@gmail.com>, Luca Ceresoli
+	<luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
+	=?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Andy Yan
+	<andy.yan@rock-chips.com>
+CC: <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>,
+	<linux-fbdev@vger.kernel.org>, <linux-rockchip@lists.infradead.org>,
+	<linux-arm-kernel@lists.infradead.org>, <kernel@collabora.com>, Derek Foreman
+	<derek.foreman@collabora.com>, <wayland-devel@lists.freedesktop.org>
+References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
+ <20260921-vrr-limiter-uapi-v1-13-2fcd7d011646@collabora.com>
+ <0226527e-ee38-40ab-a2a8-1ae62013b950@amd.com>
+ <VERVf-aJRRKsBOI_3dpScg@collabora.com>
+Content-Language: en-US
+From: Leo Li <sunpeng.li@amd.com>
+In-Reply-To: <VERVf-aJRRKsBOI_3dpScg@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN7PEPF000000A9:EE_|SA1PR12MB6994:EE_
+X-MS-Office365-Filtering-Correlation-Id: ce00b8b2-9201-49bf-0f0c-08df1b34b715
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|36860700016|1800799024|376014|7416014|42112799006|23010399003|10067099003|56012099006|6133799003|22082099003|4143699003|18002099003|11063799006|921020;
+X-Microsoft-Antispam-Message-Info:
+	Riz02biUVxIpWgvZ8NZKQ3bHHfi5XDtTnGglixOIZoMOKfZqZnSrKlyLmCbvraGXxP+fDoWmC+ktdi66xqY5IzauVpEsNpBFcHB7fR0XgGC1CPDEB36akuE0u6HK8DRrgtjV9L+bNTJTux6hZYmi13VxNhrnT68rRaQ8xTWGvmKF4Xs27xCzUfq8FUUmx0pKPw+NOUEhTvrKSqGfvCp40ykWxayMuAYfUXonibvH3KHwKtDQ2JPl0+WCxjykYc1T1N9EDe5/oR6Hh2Jbx2xHdBo1Av7NPmCAXQ15a1O8rwnHQcmOfyNtTMAvJ1VbbS4l6eY7i59Nlu0ypnjZYqE0FAJQfkdEsrnl0m6d8D9uVZHf5vIHZepeQwTpKgHWY7qr0zU+QD7CQbMf+Fs9y9gPV7nYbz0NvY5ZGpIklwkyC36AbTXIcdsl6KJrqv5G3tsdcoyvGvVIK0FdJRjSsNxs7TQPNg9rUNknIu3EmlV4KoIEGhdQ/qcqeO05mf5oohDUKdFLoeT+8o8fadf6Q+j5QP2g2l00tIYvsemtVny6nXNv+ikanLB+848lD8psMAyvch5mFIQoee0t30usWoYeXQSeh6SDDV7Lfddgd7eTHmeHIIUZbSW1FSSZP4a36biFaR9qYokkOkI/L+oEXg4Z3BbNZleZ5PNYI8uO6HzeKWOdWaOA9NHzv7W3YC41JURrWFU25fbc/3zkhVGeOUbc4GnaBQ+ACGaUxFdtHT1kCUJvxcQ840nj2bipygyik0AV
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(36860700016)(1800799024)(376014)(7416014)(42112799006)(23010399003)(10067099003)(56012099006)(6133799003)(22082099003)(4143699003)(18002099003)(11063799006)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	jXDzaoj4FClt0uR3OlLyale2P4nf1gIsETl9qEhpgRxvqtkkmEs/9Cq3w4BcLd+jvePx5wVs9K8OpZuXVhJpoz9eNOUG/vBCtMtYS6EZJLHLP5+pcZJoq3fhyfJbVkIixoWnGUmgR3RvNgHxdq8xVTEvOdNw7XdhJSBqwdyHWb8vJj6CGijlACtLmkRQxuzQaVonN+ycVJVBDeMuT//W57IZT7a4gxCrw7iKKKwjHwCCf9hNn/ZD2RC4WJmOy+d6QIQ8/d41rfwfwBFNf15aL6XzpugDbGcDBYmThbuXOLepDPmTBf8Jo5j6ADCHApoMQjZ27wNcZVtDUuJf35xhpYxUbtHkY7Xh7iqTK14HyGbdHcpkYvuXWFf6eaCh/VFhJgdf9+ClzC5xyijur1N6GTbKFMS0l55W/8Nuwy8W4oX5QuidxNhgCGsjv11rVcx9
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Sep 2026 18:42:13.3339
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: ce00b8b2-9201-49bf-0f0c-08df1b34b715
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BN7PEPF000000A9.namprd05.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB6994
 
-On 2026-09-21 13:26, Konrad Dybcio wrote:
-> On 9/11/26 10:51 AM, YİĞİTCAN KAVAKLI via B4 Relay wrote:
->> From: YİĞİTCAN KAVAKLI <kavakliyigitcan@gmail.com>
->> 
->> Enable the display subsystem (MDSS/MDP/DSI0), Kinetic KTD3136 
->> backlight,
->> and Novatek NT36672A SPI touchscreen on the Xiaomi Redmi Note 8 
->> (ginkgo).
->> 
->> Hardware nodes added:
->> - Fixed LCDB regulators (lcdb_lab and lcdb_ibb at +/- 5.5V)
->> - MDSS and DSI0 with Tianma 1080x2340 FHD+ video panel
->> - I2C1 backlight node at 0x36 with PMI632 GPIO 6 hardware enable
->> - SPI2 touchscreen node at CS0 with GPIO 88 interrupt and panel 
->> follower
->>   reference
->> - Touchscreen active pinctrl definition on GPIO 88
->> 
->> Signed-off-by: YİĞİTCAN KAVAKLI <kavakliyigitcan@gmail.com>
->> ---
->>  .../boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi | 100 
->> +++++++++++++++++++++
->>  1 file changed, 100 insertions(+)
->> 
->> diff --git a/arch/arm64/boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi 
->> b/arch/arm64/boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi
->> index 
->> 59042a5937535c4acda064fa0f865f4f5a52d01b..f4b9e2092a814e56cdc23218025cb4166dec110a 
->> 100644
->> --- a/arch/arm64/boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi
->> +++ b/arch/arm64/boot/dts/qcom/sm6125-xiaomi-ginkgo-common.dtsi
->> @@ -26,11 +26,30 @@ / {
->>  	chassis-type = "handset";
->> 
->>  	qcom,msm-id = <QCOM_ID_SM6125 0x10000>;
->> +	qcom,board-id = <34 0>, <34 1>, <34 2>, <34 3>, <34 4>, <0 0>;
-> 
-> This should be a separate patch with the reasoning for the change
 
-board-id is not neccesary for this device to be able to boot so it can 
-be removed. I have already done that before so it should not be readded.
+
+On 2026-09-22 11:26, Nicolas Frattaroli wrote:
+>>> + * VRR Limiter/Target Properties
+>>> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>> + *
+>>> + * The ``VRR_{MIN,MAX}_{NUMERATOR,DENOMINATOR}`` properties expose a mechanism
+>>> + * through which userspace can control the desired range of refresh rates in
+>>> + * which VRR is allowed to operate. Each rate is expressed as a
+>>> + * numerator/denominator fraction of refresh rates in Hz, allowing for rational
+>>> + * target rates like 24/1.001 Hz with no loss of precision or ambiguity.
+>>> + *
+>>> + * If the minimum and maximum rate are set to the same value (and not 0), they
+>>> + * are understood as a fixed target rate. This is especially useful for media
+>>> + * playback, where the content's frame rate is both constant and known in
+>>> + * advance. In such cases, a refresh rate that is not an integer multiple of the
+>>> + * content's frame rate will introduce judder, since not every frame is
+>>> + * displayed for the same amount of time. A modeset of the display with a
+>>> + * compatible rate may in those cases be either undesirable or impossible, but
+>>> + * the rate can still effectively be reached through VRR.
+>>> + *
+>>> + * .. _VRR-MIN-NUMERATOR:
+>>> + *
+>>> + * "VRR_MIN_NUMERATOR":
+>>> + *	Default &drm_crtc integer property forming the numerator of a
+>>> + *	numerator/denominator pair of a frame rate to set as the minimum VRR
+>>> + *	target rate. Set to 0 to disable.
+>>> + *
+>>> + * "VRR_MIN_DENOMINATOR":
+>>> + *	Default &drm_crtc integer property forming the denominator of a
+>>> + *	numerator/denominator pair of a frame rate to set as the minimum VRR
+>>> + *	target rate. If :ref:`VRR_MIN_NUMERATOR <VRR-MIN-NUMERATOR>` is not
+>>> + *	zero, it must be non-zero.
+>>> + *	Otherwise, must also be zero.
+>>> + *
+>>> + * .. _VRR-MAX-NUMERATOR:
+>>> + *
+>>> + * "VRR_MAX_NUMERATOR":
+>>> + *	Default &drm_crtc integer property forming the numerator of a
+>>> + *	numerator/denominator pair of a frame rate to set as the maximum VRR
+>>> + *	target rate. Set to 0 to disable.
+>>> + *
+>>> + * "VRR_MAX_DENOMINATOR":
+>>> + *	Default &drm_crtc integer property forming the denominator of a
+>>> + *	numerator/denominator pair of a frame rate to set as the maximum VRR
+>>> + *	target rate. If :ref:`VRR_MAX_NUMERATOR <VRR-MAX-NUMERATOR>` is not
+>>> + *	zero, it must be non-zero. Otherwise, must also be zero.
+>>>   */
+>> If VRR_MIN_NUMERATOR == 0 && VRR_MAX_NUMERATOR > 0, do we interpret that as
+>> vrr limiting is disabled?
+> You can picture VRR limiting as always being active, but with a limit rational
+> of 0 it uses the display's limit as per the EDID, which is what unlimited game
+> mode is. So with how it's implemented right now in hdmi_validate_vrr(), your
+> example would set a maximum target, but leave the minimum at whatever the
+> display defaults to.
 > 
->> 
->>  	aliases {
->>  		serial0 = &uart4;
->>  	};
->> 
->> +	lcdb_lab: regulator-lcdb-lab {
->> +		compatible = "regulator-fixed";
->> +		regulator-name = "lcdb_lab";
->> +		regulator-min-microvolt = <5500000>;
->> +		regulator-max-microvolt = <5500000>;
->> +		regulator-boot-on;
->> +		regulator-always-on;
->> +	};
->> +
->> +	lcdb_ibb: regulator-lcdb-ibb {
->> +		compatible = "regulator-fixed";
->> +		regulator-name = "lcdb_ibb";
->> +		regulator-min-microvolt = <5500000>;
->> +		regulator-max-microvolt = <5500000>;
->> +		regulator-boot-on;
->> +		regulator-always-on;
->> +	};
+> Now that I'm thinking through this, a possible problem is that
+> drm_crtc_helper_vrr_is_fixed_rate() operates on the user supplied limits, but
+> if the display supplied lower limit is equal to the user supplied upper limit,
+> then we have a fixed rate scenario without recognising it as such. I think I
+> need to have a ponder on what the least surprising behaviour for userspace
+> is in that instance. The display limit stuff gets a bit complex due to
+> CinemaVRR and QMS TFRmin/TFRmax.
 > 
-> LAB/IBB and LCDB are separate hardware blocks, only LCDB is
-> present on PMI632. It provides a pair of pos/neg bias
-> voltages. Looks like downstream has a driver for controlling
-> this block.
-> 
-> Konrad
+> I'll improve the documentation on the next revision to make the meanings more
+> explicit.
+
+Perhaps a simple way is to require simultaneous setting MIN and MAX pairs?
+IOW, require userspace to set MIN and MAX simultaneously to >0, or =0. For example:
+
+if ((vrr_min_n == 0 || vrr_min_d == 0 ||
+     vrr_max_n == 0 || vrr_max_d == 0) &&
+    (vrr_min_n > 0 || vrr_max_n > 0))
+	return -EINVAL;
+
+That way, it's never ambiguous what userspace has requested for the range. They can copy the EDID supported range if they don't care about limiting one side, rather than leaving it at 0. It's then also clear if they requested a static Hz.
+
+Thanks,
+Leo
+ 
+
+

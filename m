@@ -1,135 +1,76 @@
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazon11010059.outbound.protection.outlook.com [52.101.193.59])
+Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010047.outbound.protection.outlook.com [40.93.198.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C700F40DB59;
-	Thu, 24 Sep 2026 19:31:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.193.59
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24A2F175A5;
+	Fri, 25 Sep 2026 03:50:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.47
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790278276; cv=fail; b=ZRo9JqkDBMFCQWA2XpQulgg3/5DH7ZEfwtkYgJ1gZaI7LklpVw3Qk+/hdHPwA9eky4E8D2Zd+Eb4DU08ydUr4ojAtIeMUnP17VpWfyXW+HbiyzD8ix2fj+gAE4lQxdssoJcz2MSQv9SI6suk1NALjdFLPM0iAJ84JzXSXIMwFdY=
+	t=1790308219; cv=fail; b=pmTdRt9Z1p1CCRo7hGm9TGdMczTt20kUWjvz/h2hxzCXzwPEIxjkaiTPxX3IRR/uMCf14h2U1dQKO65h/6NieLmovwwOtWUysL07MABhGTs9XBfRKVrHFqKjUKt/IFA1nuIyoi0oSjMaGZ2cVaTKCLujcr9pDXu6S1KLs+uR4so=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790278276; c=relaxed/simple;
-	bh=nrNqaZhHKVQmplTx/xKHtvTTFJYqyKWuM8kfinzTuAI=;
-	h=Content-Type:Date:Message-Id:Cc:To:From:Subject:References:
-	 In-Reply-To:MIME-Version; b=r86YtlJYx58Ggi0tMhxoHq2Dx0zZxJ6UaQNcMMtdTlUyn3j4zg6XT5l8lt9hi430ORqLJ/1/h7N4Jn+XCQqV43FRWEXL2IlsgCekdIwnyVTB6Mjsu5Qy89QHIbOeSMnDobtonbLitKfd3Yj8Sfl16sH8LRMCz7aCjx8gqkxvsVs=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=mfLhqy8Z; arc=fail smtp.client-ip=52.101.193.59
+	s=arc-20240116; t=1790308219; c=relaxed/simple;
+	bh=0rIKLBRSuwOpz3DqxeubtsEvyKyHmTqzgxiXxtKTx0U=;
+	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 Content-Type:MIME-Version; b=AICsmDpI1mtkPrNY5as3S4PoTScOa2V7OYS7fc/y8hTu+m1PwdbmxRFATF3GERW2Ucb/oZn+//U3ERbPTFHVa4d2R8YI37AdmjqP4oJA8UyaupSkJpeDiFbfIdCFe+Qj+zqQXqcZts9FxzlX5c6XH1qi0ij6hF71T5+CG8LkrIU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=lnCbgU6q; arc=fail smtp.client-ip=40.93.198.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="mfLhqy8Z"
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="lnCbgU6q"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Fg1LPy8n+6/EliKS09YGqkeWJ7f5YiMLp6PtTuq3Qzkok2YoGmCLR0anC+aShfnMwoQUpne/4kjRNX8aVthAU0T9/sQuN3fZaWUgM6xoKSTvwmtEpmNcNsdBna4sSh/MR+UYoNyK8ykd50A5h4X8nIybN5cLXnSUir6U5RROwz40U3Ll9axkKE3LzeLBFegbTlGiPm9dW2m0NwmkM1L9Ht734PFtNV6AnX0mJzPmn3yuyDp32+9nZ/2oqLwkeGdl8ddgVAAG0qMUho5bUIzYwt3KHKDa5dU4HQIlttNIxqD7GLaT9KGQWT3oTpgivx1tlGvKW0TK76JjdLTsIz6ScQ==
+ b=C4lGgf3ageA9LZWjNWW/djHDWUJUso6sv9M6OraKDeTkEtpPGkYGf0JpnKUBYUXKbLOr5i9w4+INVQoLhZ5aP9mZdlz6s1HgNOzxdF/cG+6W3+prnEDBeQSBdAUvUGsVeD+F5CwUgOCM9h+AlpEBnb7BgBLIN2xOh2WV1MXCWKR5DB82JK5FrwDgQFI9rr1baz0xSZN2MurhoeiNCm8uXKvgwdsdOto5xze/jifWYnnU2UdrVBGsn42InWuTXsnpro8yvIhfGPGrmhE93+lYEJIjCeeQ6QC+WD/T/nPg6WKm1RriOOXNzcxeYkv30iKhw408IXBDNT6fEuP1LOCK+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=xa8gAjKn5oVW/QByPYuTXdPL9stOtn0VXXgIIOvgqjg=;
- b=YVCc5XCvKNwKllKo9cbAmGkTzUp1vbomqQhUVbD63zoNZ6QjjbS3Tb6Qg6qhNASbvIlTeFmdmKMfF2RZvf747w2FF6GuUEucW8kbsbYyq6pUX0id7pIwWebLJRqhiHR+83osV++fbVLaJMBNPnKSCf6nfCtlaxUANL9pnTBqwEauxpQ87MwMWdHrXRq8wLTP2V3kuE8TdPgM2AvFKv6QW7mDKQukhZ/WPTgjwfOTr/h7ITyorJd1Y+MoJplpOHittgNLUKISUApR6bD6wCVWhZWZe4sbcDf4cknB3XJPjdutF1fnihNcMDwlh1VKLE04PhG5h/YHl33cqfngSOD4/w==
+ bh=woQhDygZRnqq3mpxfJFy5+nbkVh9qMmLeuJAjO8IX98=;
+ b=HeKQM7PTFQRQwx3zjLHbodK1RB6khH1lc7XNw7qPS/k3Cdpk7J0KdiaKZNPrDRAct9m3lBHm5r56vPLA6/vesZtayqx5wQgFKgO9w1Yc2fy1rDowa9DiA7tRXCnvHEI4GzTqDA3+/IPiu2Xh3QUvDjahvgaQg/q6K4Q5iwXtKuiiWtnCIUBplIe7TgobV2c+dCtxFfQRWw5+5AgqXpV9ja1xVC4F7JDlNxezcvE5whjzH0jimlj3hctvGhAQnMaPS0P6X4pPHt98h21NFG9XwnSPddhxT62ct4WX8F5BTbdyaElrQoGkej522HZ4GkssPTIBOcgT2EP3sstDjTRLLQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
  dkim=pass header.d=nvidia.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
  s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=xa8gAjKn5oVW/QByPYuTXdPL9stOtn0VXXgIIOvgqjg=;
- b=mfLhqy8Z8QqtD9aqIvoUYNMx+cmWyNxg4QWp2h/RWXR+RxlztonQdnBVIW2DTJRFlez34GmlKlMuxNravWiXgSA3QD/0UFODWgUenUCnLU0ttpOe3Vw48rz4uidRt/QdjQ/4T0WxrCXACi4p8RVjQZP1zMy5/06BPB/VmKBbppeeomIKPrTkG2lMFQGipaWhgHfPMAmVYM425kwCRdIuRKNOUYzewFfOVL1unh1LFIRHfpVApGVgm3pL6FJ7Sgm8TrVDP1XhZ65a6vZ52iG6l710CVFifbwTT5j1gFiN0A1WJ1qrbRRurnuxcADKfNCS5NpjRROOtZLZG5vYVkesoA==
+ bh=woQhDygZRnqq3mpxfJFy5+nbkVh9qMmLeuJAjO8IX98=;
+ b=lnCbgU6qjjCj0vJCWh3Y5ztq8hpFkcwAmvqnRzcSFH5tUqt/jZEQgmAITlQWA8IiGnWuQNUIFZ6MvVJFzG20NVWLG+zSykczknHGXU99Y+kSegZTKzfG1lfU9edj5/80W7VJsnD4x/eHjzakgDGpXCUvLDak0UU1wp7CIJ2+U8PzN8SyVigNXL0Q0TY9aWhoYrIoQsjX33Q7RpGuuX2IJjQhHq9GvVOb6Sv+HILLFByVv7BojwcMTbWgaGpE07AG0aYIEHnAALqrHpS1YJATLHXrg4k8Un+uXAnVOiIt5sAkGPEtaTqmxBRKt/a0IEsdviUwP9VKfm3Exrfvtz446w==
 Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
- by IA0PR12MB7554.namprd12.prod.outlook.com (2603:10b6:208:43e::19) with
+Received: from BL0PR12MB4914.namprd12.prod.outlook.com (2603:10b6:208:1c4::16)
+ by MW6PR12MB8914.namprd12.prod.outlook.com (2603:10b6:303:244::12) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Thu, 24 Sep
- 2026 19:31:04 +0000
-Received: from IA0PR12MB8374.namprd12.prod.outlook.com
- ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
- ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0451.014; Thu, 24 Sep 2026
- 19:31:00 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 24 Sep 2026 15:30:53 -0400
-Message-Id: <DLNSOBMBHIVC.22QI9YBL1U72E@nvidia.com>
-Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
- <linux-doc@vger.kernel.org>, <linux-usb@vger.kernel.org>,
- <linux-rdma@vger.kernel.org>, <selinux@vger.kernel.org>,
- <linux-sound@vger.kernel.org>, <bpf@vger.kernel.org>,
- <linux-scsi@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
- <dri-devel@lists.freedesktop.org>, <linux-trace-kernel@vger.kernel.org>,
- <linux-perf-users@vger.kernel.org>, <linux-arch@vger.kernel.org>,
- <linux-fsdevel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <kvmarm@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
- <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
- <linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
- <sparclinux@vger.kernel.org>, <fuse-devel@lists.linux.dev>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, "Andrew Morton"
- <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>,
- "Vlastimil Babka" <vbabka@kernel.org>, "Jann Horn" <jannh@google.com>,
- "Pedro Falcato" <pfalcato@suse.de>, "David Hildenbrand" <david@kernel.org>,
- "Mike Rapoport" <rppt@kernel.org>, "Suren Baghdasaryan"
- <surenb@google.com>, "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet"
- <corbet@lwn.net>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>, "Jason
- Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>, "Paul
- Moore" <paul@paul-moore.com>, "Stephen Smalley"
- <stephen.smalley.work@gmail.com>, "Jaroslav Kysela" <perex@perex.cz>,
- "Takashi Iwai" <tiwai@suse.com>, "Alexei Starovoitov" <ast@kernel.org>,
- "Daniel Borkmann" <daniel@iogearbox.net>, "Andrii Nakryiko"
- <andrii@kernel.org>, "Eduard Zingerman" <eddyz87@gmail.com>, "Kumar
- Kartikeya Dwivedi" <memxor@gmail.com>, "Baolin Wang"
- <baolin.wang@linux.alibaba.com>, "Nico Pache" <nico.pache@linux.dev>, "Ryan
- Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>, "Barry
- Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>, "Usama
- Arif" <usama.arif@linux.dev>, "Kiryl Shutsemau" <kas@kernel.org>, "Doug
- Gilbert" <dgilbert@interlog.com>, "James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
- <mkp@kernel.org>, "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter"
- <simona@ffwll.ch>, "Helge Deller" <deller@gmx.de>, "Sebastian Reichel"
- <sre@kernel.org>, "John Hubbard" <jhubbard@nvidia.com>, "Peter Xu"
- <peterx@redhat.com>, "Masami Hiramatsu" <mhiramat@kernel.org>, "Oleg
- Nesterov" <oleg@redhat.com>, "Peter Zijlstra" <peterz@infradead.org>,
- "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
- "Borislav Petkov" <bp@alien8.de>, "Dave Hansen"
- <dave.hansen@linux.intel.com>, <x86@kernel.org>, "Arnaldo Carvalho de Melo"
- <acme@kernel.org>, "Namhyung Kim" <namhyung@kernel.org>, "Mark Rutland"
- <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>, "Harry Yoo"
- <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>, "Vincent Guittot"
- <vincent.guittot@linaro.org>, "Maarten Lankhorst"
- <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
- "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
- <airlied@gmail.com>, "Will Deacon" <will@kernel.org>, "Aneesh Kumar K.V"
- <aneesh.kumar@kernel.org>, "Nick Piggin" <npiggin@gmail.com>, "Arnd
- Bergmann" <arnd@arndb.de>, "Muchun Song" <muchun.song@linux.dev>, "Oscar
- Salvador" <osalvador@suse.de>, "Matthew Wilcox (Oracle)"
- <willy@infradead.org>, "Jan Kara" <jack@suse.cz>, "Marc Zyngier"
- <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>, "Catalin Marinas"
- <catalin.marinas@arm.com>, "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>,
- "Palmer Dabbelt" <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>,
- "Christian Borntraeger" <borntraeger@linux.ibm.com>, "Janosch Frank"
- <frankja@linux.ibm.com>, "Claudio Imbrenda" <imbrenda@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>, "Gerald Schaefer"
- <gerald.schaefer@linux.ibm.com>, "Heiko Carstens" <hca@linux.ibm.com>,
- "Vasily Gorbik" <gor@linux.ibm.com>, "David S. Miller"
- <davem@davemloft.net>, "Andreas Larsson" <andreas@gaisler.com>, "Alexander
- Viro" <viro@zeniv.linux.org.uk>, "Christian Brauner" <brauner@kernel.org>,
- "Matthew Brost" <matthew.brost@intel.com>, "Joshua Hahn"
- <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>, "Byungchul Park"
- <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>, "Ying Huang"
- <ying.huang@linux.alibaba.com>, "Alistair Popple" <apopple@nvidia.com>,
- "Chris Li" <chrisl@kernel.org>, "Kairui Song" <kasong@tencent.com>, "Kemeng
- Shi" <shikemeng@huaweicloud.com>, "Nhat Pham" <nphamcs@gmail.com>, "Baoquan
- He" <baoquan.he@linux.dev>, "Youngjun Park" <youngjun.park@lge.com>,
- "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>,
- "Shakeel Butt" <shakeel.butt@linux.dev>, "Axel Rasmussen"
- <axelrasmussen@google.com>, "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu"
- <weixugc@google.com>, "Chengming Zhou" <chengming.zhou@linux.dev>, "Michal
- Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>, "Xu Xin"
- <xu.xin@linux.dev>
-From: "Zi Yan" <ziy@nvidia.com>
-Subject: Re: [PATCH v3 07/40] mm/vma: tidy up map kernel pages enum values
-X-Mailer: aerc 0.22.0
-References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org> <20260917-b4-mmap-prepare-vma-flag-sanify-v3-7-4583d8a23bca@kernel.org>
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-7-4583d8a23bca@kernel.org>
-X-ClientProxiedBy: YQBPR0101CA0214.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:c01:67::20) To IA0PR12MB8374.namprd12.prod.outlook.com
- (2603:10b6:208:40e::7)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Fri, 25 Sep
+ 2026 03:49:01 +0000
+Received: from BL0PR12MB4914.namprd12.prod.outlook.com
+ ([fe80::4921:cbe6:78cd:b445]) by BL0PR12MB4914.namprd12.prod.outlook.com
+ ([fe80::4921:cbe6:78cd:b445%4]) with mapi id 15.21.0451.014; Fri, 25 Sep 2026
+ 03:49:00 +0000
+Date: Thu, 24 Sep 2026 22:48:54 -0500 (CDT)
+From: Vidith Madhu <vmadhu@nvidia.com>
+To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+cc: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
+    Leo Li <sunpeng.li@amd.com>, Daniel Stone <daniels@collabora.com>, 
+    Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+    Maxime Ripard <mripard@kernel.org>, 
+    Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
+    Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, 
+    Andrzej Hajda <andrzej.hajda@intel.com>, 
+    Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>, 
+    Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, 
+    Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+    Luca Ceresoli <luca.ceresoli@bootlin.com>, 
+    Sandy Huang <hjc@rock-chips.com>, 
+    =?ISO-8859-15?Q?Heiko_St=FCbner?= <heiko@sntech.de>, 
+    Andy Yan <andy.yan@rock-chips.com>, dri-devel@lists.freedesktop.org, 
+    linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+    linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+    kernel@collabora.com, Derek Foreman <derek.foreman@collabora.com>, 
+    wayland-devel@lists.freedesktop.org
+Subject: Re: [PATCH RFC 06/25] drm/connector: hdmi: Add VTEM EMP generation
+In-Reply-To: <20260921-vrr-limiter-uapi-v1-6-2fcd7d011646@collabora.com>
+Message-ID: <a5bc012a-9b9e-eb2b-d67e-a91f2d93d6bf@nvidia.com>
+References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com> <20260921-vrr-limiter-uapi-v1-6-2fcd7d011646@collabora.com>
+Content-Type: text/plain; charset=US-ASCII
+X-ClientProxiedBy: BY3PR10CA0019.namprd10.prod.outlook.com
+ (2603:10b6:a03:255::24) To BL0PR12MB4914.namprd12.prod.outlook.com
+ (2603:10b6:208:1c4::16)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -137,95 +78,191 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|IA0PR12MB7554:EE_
-X-MS-Office365-Filtering-Correlation-Id: dd4e73e5-3efe-40f6-982b-08df1a725cfc
+X-MS-TrafficTypeDiagnostic: BL0PR12MB4914:EE_|MW6PR12MB8914:EE_
+X-MS-Office365-Filtering-Correlation-Id: 67861e9f-92d2-469b-2665-08df1ab7eeae
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|7416014|1800799024|376014|366016|10067099003|56012099006|6133799003|18002099003|22082099003|4143699003|11063799006|921020;
+	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|23010399003|10067099003|5023799004|56012099006|11063799006|4143699003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	H75VnqSXCI6nshucZgXvPJeyYbIoBOjqHqxzLHmSgIi7hs+ccC9NuVDzdp0Ddm6tlOP2M+PEYqy5H0R7zLQYMUMdZ3uCLRzpce6MEprOTYKRLWxfOhLANDHBwrn48h69oqBXQFawOHrZi3FowkD6hdGWsmDa+j8FNJQ28EieNcEXOo+gosUYIqXaVBJWlXRxRY4lPN5IfBbahMsjuSFWZaIaVQ8T1IISzoy1ZL8LdE8G1M7vHDaMFUw3Y18//aH7A6u+/nwZ0y5zXQEyDTmbglgQF259yBLKMfg0oyJv3LRCd+1zATgfV2BkmHgK2bIoArhaVORWFH7gMdA+3cAc6jDffi6OFySF4AffiYVBYLNQwH1KTRYhEJjXQF+UbEXyvlGHxplKwmKo7SxjrdJpxb5TTpbTes184jNIvFqnvfvXdTE8022R63l199yNNHJGU8+ABDugfnLTS8aldCj9CR4Q880ZFNK6i+bEzZf+Fq3odht33SFRkH4B9bw5BTDymC39L9Rn2uPNVLbPUwLnFrecDyzLutzPornaHFQyqCc+MQrh/iFw9yK/Sla8+M3scHnffzHUH54OUF/5Zq1JMXoykTWldYuOAmQ/jYRCdGu0iI1zGN3C/DG+eV6gQBt87sYPIomO5UC4EZbnjz062HohT0SXOcqMEr+1uCglfcHiimU5c+lb9nqEigIa9L7eKFMR/y8IEnqN0w5WbgUUNg==
+	DMlCuIILU5gYnDdrtKowYbX/GuxYTpkF7s8/NhC8ux5XSrPBXR0rj9ujRqlbHWcerv0vNOGMP0e6lNU008iA7flXQJACjsytOC4vmpc48rZZp3Ub+yVvu9Jc7dwHsYiUNyR70Cy4ary2+6yeorxx7UyUxG+I587AINYhb7Z/lra53Tv9DmSiULDu3SV8mBUMCBzJ7D49aT37SGB+BUhBibKBn9MiAMl55xUt/0fCrcYobAUQOUFohuR+P4KXedzFdWi7GLf0qD7pcHhzl7930Fd+8b3M3Eu9NtP/JUbkZkiln1HhzxU9+gtXSwU44uIk3wnvFeNOIO9yxG63bn6Ja73+99uhUx4jZzy2jLaqXgTsJi/z8SHoeel2+29uwmfq9oLuctao9B7EWV6WEuFsFpNqpacWY8EMGIj+6vZZHqAhb2XIq/YLCqP7tpRkC7zH2ZPMIdFyB0v6GK4xXAYGra4nLW34O4xczp/H2/2uK0K4w+3hHMjCw25F6U7vc7xE/Os8A48iqWUw1LJYJDGLm/xqr5bl0X6FOPRIrLyKQg+tPxaO3CjJvKTDDXLkHBviMnYKwrjNJGXmKrieTyO/RtwN+EL8bttxdoPLtlV91IPY3vDYFw3AvRTnV28dd/GEvkMzhp1uvIVzMt14mz4ZES2loSkd+23HFsh8Nv17Z5w=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(1800799024)(376014)(366016)(10067099003)(56012099006)(6133799003)(18002099003)(22082099003)(4143699003)(11063799006)(921020);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB4914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(23010399003)(10067099003)(5023799004)(56012099006)(11063799006)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Z2VPUVNVUCs3YlBIU1JzeThTY25LN3hBMkdOdkY0S014RTZLUWhiVnQ3aHVP?=
- =?utf-8?B?K2RkQjlKS0wwVHZGWTBQcVJ1b0U4bnZHamprWWt3U040NG1GenVweW45S3Y4?=
- =?utf-8?B?TWZTVGkwWk9ZNlVSUCtoYkw2M1V1b3dneVBMakpGanlRc0UwczlQb2ViaWxF?=
- =?utf-8?B?V25pd25zdnJsU3hlSGxFNXM0TlR6U3NxWlpGbGU1T3Z6Mk9RZ0R3R2VrZXJo?=
- =?utf-8?B?Yi9kV3EreEhKNWlDdUNnUmZKRFIxY29WZ3VxYVZKcTFFd0FaKy9NRVI1VGRS?=
- =?utf-8?B?YXJjZG03L3pLU3N0QWJTZng2cVZZV1dCQVNDZ1VkUCtndk1ZZUlXSUVBbGlt?=
- =?utf-8?B?YWpPQjlyeGFWQ01mNncrbGtHUVh2TzlKazhUL01UKzNUZDJaaHA4Uys3Rjdq?=
- =?utf-8?B?czhOOUFEenBHVlZXcVRiaUJlWnRjb0JDYnp5Q0lBUGxoaTBvL1o3dFpnSks3?=
- =?utf-8?B?Zm5DM1U1SnBudVJSa2JhZ2Z4QXFZbmxwbGl4am9CNmFEaGpYWWRBSnhpbkZu?=
- =?utf-8?B?REJBaHFvZHdsYjZyYW9WTVh3dHExSWY4bjNGTWF5b0NmcTlFZVpxSDFtZUV2?=
- =?utf-8?B?OXVkemEzSXE5R1hJNnB4elhEQk5UQkR1NHNUT0hlclRBNjBKenZzYkw5bTRi?=
- =?utf-8?B?OEpzb2hRbkUrOWRObjVhcjBjVlNGL2pVSjNQTDEvMVVqeElYelphQ2pzb0My?=
- =?utf-8?B?Y3NxUGl1RmpTRHNobmxjaFJWYTJhaFRZbnJPU3p3bTdPWGJ5RTcwcVJpb2ZK?=
- =?utf-8?B?QWpqZmQvM2pmbEE2Nmx0U0xiWUV1UnVURjFIelpQWGpkUzlQbkFOTmdsM09E?=
- =?utf-8?B?MVdpenRMaFpnK2NJanBlbE9WRVhrOWo3WTNwbUlEU2lJcTRPTTJFVVBSY3Bo?=
- =?utf-8?B?dFFIaVlGNFU2ckViZzI3OHY0ZnY0RlBQWjlzaFBVd1pIb042ZzFoWDcwS2dl?=
- =?utf-8?B?RGtQelk2YzRTQ0t5em14dzkzbmlBTGRYYndTNmVMYysvc0d5VEhRVmVibGdC?=
- =?utf-8?B?OUlmNXk1RE50dEZpQjI5WkRGSjUxY1U2SlJpUjBGc01SWFZmWTNaZlJKcDlE?=
- =?utf-8?B?UlFod3J6WUZVZ3NVNUVGTjRFTlVzM1B6VjRoM1laY1I0M3AxdXBTbHVidUdG?=
- =?utf-8?B?VDlkaGkyTWhURnNRb3ZxRkZLSStxUHpjOFpvb2RuT2Z0S2JueW0rUFA4NGpu?=
- =?utf-8?B?VUswR3BCaWpUczN2dEJJRUlib29DT29KMEZWQjUyNlVwRUFQRmhjcXpoSmdv?=
- =?utf-8?B?OWQraU5mQVFNS3VBTFU5bXREZlE2K05HM0puZVVnY2tyY1dYUVl2Y3k1YUp6?=
- =?utf-8?B?MVd0NStGamxMWGtrK0JtVkQwcXV6WjBLNjVyeDZqdzFnaVJNSHNPaHg0c2NY?=
- =?utf-8?B?ZjBYbXNFekFYTlc5STlhN0RtU1dSakdWOGpWZWw2SXFJMnF4SFVOWTdnNmdy?=
- =?utf-8?B?UDRLTWkwRHFnWGNVWXAvMnJKSnBCbHB4anU3R1pYd3Y0NHduKytZcTFkUlJN?=
- =?utf-8?B?NEtjYlppdXNsakJxZ3RWR2l4aXJsRWh5SjYrdElPUFE4NE5yTXI4Z3V1RVY1?=
- =?utf-8?B?VktjSmhTcmNpc2JkaDJwRllKRlFBVEdIclZmb0Uxa3UydGxobTd6b2JnYlkw?=
- =?utf-8?B?TWZkckxyQlgybG1uYk9EQm9vVW5SMnh4R3BVZ3BEWS9HbVBiOHlla3ZMM2Ix?=
- =?utf-8?B?eFlZVG9QWnZBdjB6OWJUOVZiQW9PY3ZYWm5kYWFTMTJuTHNBNGNTSkVrNkg1?=
- =?utf-8?B?VzArSlY5ZXFKdFdQWG1COCtaRDA2WG1MblZPUldWTWpxUWRhUC9qN1AvMCth?=
- =?utf-8?B?dW9ZYTdhK3lmZlFzNVVMSC9ncllFSUUrWU9uQktwMVU0enlJRTNRYlBOVnNw?=
- =?utf-8?B?ZmFEbEJPNWZscFVqYVd6VG9lcHdlbGJBT0ZMV2hPVFZvdU5Ic05NdWJ4eFhC?=
- =?utf-8?B?a2swQnlybjJ4WlJxODNXNkcya3RwdnNDMVM3RzlVR2xlTld2THMxNlFNM2lr?=
- =?utf-8?B?VW05WnNkeEVMWFE0RDRZS2lhU3UrNXRwa08yVFViOWxZelpGYUF1VjI5ZTJ4?=
- =?utf-8?B?SlJjaTE1RG8xRGsyVjJlejBYeHBOY0JHUmtHNkFMM0RUSWNzTURtT0ZNTm1Q?=
- =?utf-8?B?YldZYXJIT2VTOGxzSzJnRlRzZmVPRnJ2RkZ0QXdVWnR5aTlOVkZlNXlWbkJL?=
- =?utf-8?B?RTgyck8zUW05WVVjRGdjRU5QdmtoQ2FybmVNZDd5cHRNc0svemdwUGc2OWxF?=
- =?utf-8?B?Z211eVhIczB6NUxLckx6d3BRdU9tR3BFT0xxWVZ1ZjJ1WFdHSk82Qm4zd1dz?=
- =?utf-8?Q?SGwa4Xr7Tby48wmA+m?=
+	=?us-ascii?Q?ukvNWoKZ7SVC4UaMRGrm1lEcoWiR47fYeG1nes2FpXbfI79jWdA/jadOQQ9w?=
+ =?us-ascii?Q?bkYz5HTe15U83l9pHBozOoHXNEu+oGUPx2s/LcGn3Z7a/rphVshWeMneecu4?=
+ =?us-ascii?Q?vw+cMdFsP1rrK6o0tv8QWBRideKIupHOWxX36mZWdqgPEpmthAoE7ZfZPfMf?=
+ =?us-ascii?Q?RHJgqSL/XflqbgpbJacb3zgRFOXIfNXqzez2xyWSml0LeKMzO8dfVws760bO?=
+ =?us-ascii?Q?lb9qaxT9Duvk1I3Kk+y/Gwnur4t1ltbzEpTDUSqNtYX+NXyW98BROlRbGLd0?=
+ =?us-ascii?Q?zrzQXXzanfK5HDFpzy5wNPMH8gfutm0Jb2hmWvi752NEJ+6Ar5Moc3pOHyRk?=
+ =?us-ascii?Q?wgjYoNm/3Ru4aEhdbxCIUtL1eNGq+oPQ3i/3ZJz93oO4bTAtxziknB27AI4B?=
+ =?us-ascii?Q?kO5nmBXYrqNTxXBNg3JMGMrf04xNNAfKqK5We3pRTCEHOC7dF8pi/0N3qvxJ?=
+ =?us-ascii?Q?HHLlQi8M6iKzbG5zf6x6KYlF7KwNuyidsj1Th3o1vDGnql9PY3O5BhHef5UD?=
+ =?us-ascii?Q?oYnCwxOdL1DHZrKNw2GHaEB/2EeZWjgstsL3GMaymDT8IDNbChLEpOd6i0kv?=
+ =?us-ascii?Q?qBM5pfIX9RPyfh7fY1pg38IYemfcJ23ig+UFO3s/m+Z5M1A/nKvB8hdu6NOP?=
+ =?us-ascii?Q?XZB8XfbFEq14/bOo1fQufhuF7NX/GxSDdPEGkcHgUgLrwilTEluEXoCMJLSL?=
+ =?us-ascii?Q?kzxw5eOtqj63fM30lua/gJRKCVZbpcCeX+te6bCeocmJ4ZOZ8qcc5yA2r46o?=
+ =?us-ascii?Q?M2xxKZSiLXWcTzULS4INo6zhCTeRnTtAnEAtK1I8rCyNp+RrLD8EPFSECqY/?=
+ =?us-ascii?Q?35AuOQ8V7Okf1q+zuVZ+iZtyLm/yatT3+ymzcw/7ymgAITEx8uCxkV1e5A22?=
+ =?us-ascii?Q?oZtHYX9oy2vB/UWRviVV9LpAEMaUyheLftA8qOpTdIqbbr/7z1X8Nhpd01Tp?=
+ =?us-ascii?Q?JDWFjuYHJsAKXBF61htu07GNi23gDNJPkS5etPFZDG4SpqXH1zLZnbAbccIt?=
+ =?us-ascii?Q?aGZBvoJltA/d0VBIghxCPR1M+HwhTeAf6sZF9K3Fz+ymQA8wpo5r1yr4oB4s?=
+ =?us-ascii?Q?dpBNEYyYBox01hRrdFAFGaqkBEkmxXgstL1qbtxojP8Iyv8BiKtEdAXaBV7W?=
+ =?us-ascii?Q?ParJAr5DffGlic1cU1T8/8e0vYTQMMWBbY6GkHnrlrKsTlsUAkiQWS/WPLZ6?=
+ =?us-ascii?Q?0i1/d3ee73r/y9nrFien1oWZVjnzxDomuEfE10qoNZEmqHqCM7XnpHLatifX?=
+ =?us-ascii?Q?q02msrPQAu9cD6FTKbJQVia4WhM8ZhqypFfvUXkICmgWErmFYfIbH3zmEyYI?=
+ =?us-ascii?Q?X7sceAN78Bo6mmEfryvVK+brL7YjpL9a5EFVLsuot8zlivQp6JwQqReakjrj?=
+ =?us-ascii?Q?ioYkwforOocrX54WFMVgoZExYChifC4MAtBWwNTjNq2jYLhzK8zWxFm0FZRg?=
+ =?us-ascii?Q?L+zc3iam/pxiZsHGVHP1sF7DOHP8zGYBxLqPyxuac3WRzYBs46ztXzTI7hw5?=
+ =?us-ascii?Q?l5VSU4b/GJiFlMgilwFDh0xu/ssOwcVH1DJ+/RaBtiYpPa5h7Z9OFcZwMimx?=
+ =?us-ascii?Q?Q3i8t3W5uFjZq00GqTto7vdELRHvc3yunYlpUVws9h2AF2YeXAhQfAAoiPur?=
+ =?us-ascii?Q?RUHhZaV3JMdxzywxUiJ03lHLdvvAg9QiqXNGSI3JkKE0Px6ZkYSNwhkxnMrv?=
+ =?us-ascii?Q?r1G4t6Z9lQppM0gY25Yb5TYvLC4U35gY0GMWJkisPelz88aq?=
 X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: dd4e73e5-3efe-40f6-982b-08df1a725cfc
-X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 67861e9f-92d2-469b-2665-08df1ab7eeae
+X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB4914.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Sep 2026 19:30:59.9704
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Sep 2026 03:49:00.7899
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: zMmG82cICUQhHSQf1Y20zN/xZl+8uxsADN0PWTOSgERaQzs1sKW52PzuP8qTMUcP
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7554
+X-MS-Exchange-CrossTenant-UserPrincipalName: QNW36uIioo2K14jlnH5gBoROKzB9D/cKslDb7g5PnJvvFmIYAHvuYzI6yhyN1opsEyan557a8vcrLkvIwawzjQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR12MB8914
 
-On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
-> MMAP_MAP_KERNEL_PAGES is a mouthful, discard the MAP_ as that's implied b=
-y
-> MMAP.
->
-> Also while we're here delete useless comments for mmap actions whose name=
-s
-> clearly indicate what they are for.
->
-> Also update the userland VMA tests to reflect this change.
->
-> No functional change intended.
->
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+
+
+On Mon, 21 Sep 2026, Nicolas Frattaroli wrote:
+
+> From: Derek Foreman <derek.foreman@collabora.com>
+> 
+> Add VTEM EMP generation to enable variable refresh rate signalling over
+> HDMI.
+> 
+> These infoframes are only generated if the sink supports VRR.
+> 
+> Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
+> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 > ---
->  include/linux/mm.h              | 2 +-
->  include/linux/mm_types.h        | 8 ++++----
->  mm/util.c                       | 8 ++++----
->  tools/testing/vma/include/dup.h | 8 ++++----
->  4 files changed, 13 insertions(+), 13 deletions(-)
->
-LGTM.
-
-Reviewed-by: Zi Yan <ziy@nvidia.com>
-
---=20
-Best Regards,
-Yan, Zi
-
+>  drivers/gpu/drm/display/drm_hdmi_state_helper.c | 60 +++++++++++++++++++++++++
+>  include/drm/drm_connector.h                     |  5 +++
+>  2 files changed, 65 insertions(+)
+> 
+> diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+> index d55548399687..33d0c9491643 100644
+> --- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+> +++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+> @@ -853,6 +853,56 @@ static int hdmi_generate_hdmi_vendor_infoframe(const struct drm_connector *conne
+>  	return 0;
+>  }
+>  
+> +static int hdmi_generate_emp_infoframe_vtem(const struct drm_connector *connector,
+> +					    struct drm_connector_state *conn_state)
+> +{
+> +	const struct drm_display_info *info = &connector->display_info;
+> +	const struct drm_crtc_state *crtc_state =
+> +		drm_atomic_get_crtc_state(conn_state->state, conn_state->crtc);
+> +	struct drm_connector_hdmi_infoframe *infoframe =
+> +		&conn_state->hdmi.infoframes.vtem;
+> +	struct hdmi_emp_infoframe_vtem *vtem =
+> +		&infoframe->data.vtem;
+> +	const struct drm_crtc_vrr_state *vrr = &crtc_state->vrr_state;
+> +	int vfront;
+> +
+> +	infoframe->set = false;
+> +
+> +	if (!connector->hdmi.funcs->vtem.write_infoframe)
+> +		return 0;
+> +
+> +	if (!info->hdmi.vrr_capable)
+> +		return 0;
+> +
+> +	hdmi_emp_infoframe_vtem_init(vtem);
+> +	if (!crtc_state->vrr_enabled || vrr->vic) {
+> +		vtem->base_refresh_rate = 0;
+> +		vtem->base_vfront = 0;
+It shouldn't hurt to always populate base_refresh_rate and base_vfront, 
+might be cleaner to skip this check.
+> +	} else {
+> +		vtem->base_refresh_rate = drm_mode_vrefresh(&crtc_state->mode);
+> +		vfront = crtc_state->adjusted_mode.crtc_vsync_start -
+> +			 crtc_state->adjusted_mode.crtc_vdisplay;
+> +		if (vfront > U8_MAX || vfront < 0)
+> +			return -EINVAL;
+> +
+> +		vtem->base_vfront = vfront;
+> +	}
+> +	vtem->fva_factor_m1 = 0;
+> +	infoframe->set = true;
+> +
+> +	if (!crtc_state->vrr_enabled) {
+I don't think we should use the vrr_enabled CRTC property to determine 
+VRR_EN in the VTEM EMP. Transitioning the VRR mode sink-side typically causes
+blanking, and it was discussed in patch [03/25] that drivers should be 
+free to handle vrr_enabled changes as a seamless switch since it only 
+concerns source-side VRR state (this is how the NVIDIA driver handles it).
+Maybe it would make sense to extend the qms_enabled connector property 
+introduced in this patchset to an enum of {Off, Gaming, QMS}? This would allow
+a standard path to control the VRR state on the sink, separately from
+vrr_enabled. 
+> +		vtem->m_const = false;
+> +		vtem->game_vrr_en = false;
+> +		return 0;
+> +	}
+> +
+> +	vtem->game_vrr_en = true;
+> +
+> +	vtem->m_const = !vrr->dynamic;
+> +
+> +	return 0;
+> +}
+> +
+>  static int
+>  hdmi_generate_infoframes(const struct drm_connector *connector,
+>  			 struct drm_connector_state *conn_state)
+> @@ -884,6 +934,10 @@ hdmi_generate_infoframes(const struct drm_connector *connector,
+>  	if (ret)
+>  		return ret;
+>  
+> +	ret = hdmi_generate_emp_infoframe_vtem(connector, conn_state);
+> +	if (ret)
+> +		return ret;
+> +
+>  	return 0;
+>  }
+>  
+> @@ -1494,6 +1548,12 @@ int drm_atomic_helper_connector_hdmi_update_infoframes(struct drm_connector *con
+>  			goto out;
+>  	}
+>  
+> +	if (info->hdmi.vrr_capable)
+> +		ret = write_or_clear_infoframe(connector,
+> +					&funcs->vtem, "VTEM",
+> +					&old_conn_state->hdmi.infoframes.vtem,
+> +					&new_conn_state->hdmi.infoframes.vtem);
+> +
+>  out:
+>  	mutex_unlock(&connector->hdmi.infoframes.lock);
+>  	return ret;
+> diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
+> index e561a444515f..6e431eb81705 100644
+> --- a/include/drm/drm_connector.h
+> +++ b/include/drm/drm_connector.h
+> @@ -1180,6 +1180,11 @@ struct drm_connector_hdmi_state {
+>  		 * matching our state.
+>  		 */
+>  		struct drm_connector_hdmi_infoframe hdmi;
+> +
+> +		/**
+> +		 * @vtem: VTEM EMP infoframes structure matching our state.
+> +		 */
+> +		struct drm_connector_hdmi_infoframe vtem;
+>  	} infoframes;
+>  
+>  	/**
+> 
+> -- 
+> 2.55.0
+> 
+> 

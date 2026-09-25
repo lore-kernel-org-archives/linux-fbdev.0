@@ -1,268 +1,212 @@
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazon11010047.outbound.protection.outlook.com [40.93.198.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qt1-f171.google.com (mail-qt1-f171.google.com [209.85.160.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24A2F175A5;
-	Fri, 25 Sep 2026 03:50:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.198.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4F9D449B24
+	for <linux-fbdev@vger.kernel.org>; Fri, 25 Sep 2026 07:29:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.171
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790308219; cv=fail; b=pmTdRt9Z1p1CCRo7hGm9TGdMczTt20kUWjvz/h2hxzCXzwPEIxjkaiTPxX3IRR/uMCf14h2U1dQKO65h/6NieLmovwwOtWUysL07MABhGTs9XBfRKVrHFqKjUKt/IFA1nuIyoi0oSjMaGZ2cVaTKCLujcr9pDXu6S1KLs+uR4so=
+	t=1790321345; cv=pass; b=AyqdrEtNTX8uJA08OtdOfO0EiezrvfzdqOIFDz4sMplI6gP4K9O2nRJOPJuCdBqPj8paut41p/nk1Z1RN2RjhaLdpqn9j01XW2e95yCOUyEsjcwqb5YfvVszBXUWETOF2x4LoUR0n0ySRT7Ajv9rqlBB7QAwbpdIBwLjMSclQL8=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790308219; c=relaxed/simple;
-	bh=0rIKLBRSuwOpz3DqxeubtsEvyKyHmTqzgxiXxtKTx0U=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 Content-Type:MIME-Version; b=AICsmDpI1mtkPrNY5as3S4PoTScOa2V7OYS7fc/y8hTu+m1PwdbmxRFATF3GERW2Ucb/oZn+//U3ERbPTFHVa4d2R8YI37AdmjqP4oJA8UyaupSkJpeDiFbfIdCFe+Qj+zqQXqcZts9FxzlX5c6XH1qi0ij6hF71T5+CG8LkrIU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=lnCbgU6q; arc=fail smtp.client-ip=40.93.198.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	s=arc-20240116; t=1790321345; c=relaxed/simple;
+	bh=jVgzSGCm8ywlcuZ7qh3DmkhvaTUxolTqjmx7km46hGw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=njw8NEhl4LzLTYJpdo9DP2F+/PlbpggkySJQxoTTsG3ySzKrX9J2nOHLG+WvTy+Nbr6Ms8X0h+vMz1gUJsE5Z29uU4QCC3BNDXpCMFfgld7iA3n3SMIxsWjucB/eyw/sQzZQBfa9DVc8jRkJ7SnnQNszBdH/VNpM2yJP38Vwd/w=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=jD9s5J6B; arc=pass smtp.client-ip=209.85.160.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="lnCbgU6q"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=C4lGgf3ageA9LZWjNWW/djHDWUJUso6sv9M6OraKDeTkEtpPGkYGf0JpnKUBYUXKbLOr5i9w4+INVQoLhZ5aP9mZdlz6s1HgNOzxdF/cG+6W3+prnEDBeQSBdAUvUGsVeD+F5CwUgOCM9h+AlpEBnb7BgBLIN2xOh2WV1MXCWKR5DB82JK5FrwDgQFI9rr1baz0xSZN2MurhoeiNCm8uXKvgwdsdOto5xze/jifWYnnU2UdrVBGsn42InWuTXsnpro8yvIhfGPGrmhE93+lYEJIjCeeQ6QC+WD/T/nPg6WKm1RriOOXNzcxeYkv30iKhw408IXBDNT6fEuP1LOCK+w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=woQhDygZRnqq3mpxfJFy5+nbkVh9qMmLeuJAjO8IX98=;
- b=HeKQM7PTFQRQwx3zjLHbodK1RB6khH1lc7XNw7qPS/k3Cdpk7J0KdiaKZNPrDRAct9m3lBHm5r56vPLA6/vesZtayqx5wQgFKgO9w1Yc2fy1rDowa9DiA7tRXCnvHEI4GzTqDA3+/IPiu2Xh3QUvDjahvgaQg/q6K4Q5iwXtKuiiWtnCIUBplIe7TgobV2c+dCtxFfQRWw5+5AgqXpV9ja1xVC4F7JDlNxezcvE5whjzH0jimlj3hctvGhAQnMaPS0P6X4pPHt98h21NFG9XwnSPddhxT62ct4WX8F5BTbdyaElrQoGkej522HZ4GkssPTIBOcgT2EP3sstDjTRLLQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=woQhDygZRnqq3mpxfJFy5+nbkVh9qMmLeuJAjO8IX98=;
- b=lnCbgU6qjjCj0vJCWh3Y5ztq8hpFkcwAmvqnRzcSFH5tUqt/jZEQgmAITlQWA8IiGnWuQNUIFZ6MvVJFzG20NVWLG+zSykczknHGXU99Y+kSegZTKzfG1lfU9edj5/80W7VJsnD4x/eHjzakgDGpXCUvLDak0UU1wp7CIJ2+U8PzN8SyVigNXL0Q0TY9aWhoYrIoQsjX33Q7RpGuuX2IJjQhHq9GvVOb6Sv+HILLFByVv7BojwcMTbWgaGpE07AG0aYIEHnAALqrHpS1YJATLHXrg4k8Un+uXAnVOiIt5sAkGPEtaTqmxBRKt/a0IEsdviUwP9VKfm3Exrfvtz446w==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BL0PR12MB4914.namprd12.prod.outlook.com (2603:10b6:208:1c4::16)
- by MW6PR12MB8914.namprd12.prod.outlook.com (2603:10b6:303:244::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.18; Fri, 25 Sep
- 2026 03:49:01 +0000
-Received: from BL0PR12MB4914.namprd12.prod.outlook.com
- ([fe80::4921:cbe6:78cd:b445]) by BL0PR12MB4914.namprd12.prod.outlook.com
- ([fe80::4921:cbe6:78cd:b445%4]) with mapi id 15.21.0451.014; Fri, 25 Sep 2026
- 03:49:00 +0000
-Date: Thu, 24 Sep 2026 22:48:54 -0500 (CDT)
-From: Vidith Madhu <vmadhu@nvidia.com>
-To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-cc: "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
-    Leo Li <sunpeng.li@amd.com>, Daniel Stone <daniels@collabora.com>, 
-    Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-    Maxime Ripard <mripard@kernel.org>, 
-    Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
-    Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, 
-    Andrzej Hajda <andrzej.hajda@intel.com>, 
-    Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>, 
-    Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, 
-    Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
-    Luca Ceresoli <luca.ceresoli@bootlin.com>, 
-    Sandy Huang <hjc@rock-chips.com>, 
-    =?ISO-8859-15?Q?Heiko_St=FCbner?= <heiko@sntech.de>, 
-    Andy Yan <andy.yan@rock-chips.com>, dri-devel@lists.freedesktop.org, 
-    linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-    linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-    kernel@collabora.com, Derek Foreman <derek.foreman@collabora.com>, 
-    wayland-devel@lists.freedesktop.org
-Subject: Re: [PATCH RFC 06/25] drm/connector: hdmi: Add VTEM EMP generation
-In-Reply-To: <20260921-vrr-limiter-uapi-v1-6-2fcd7d011646@collabora.com>
-Message-ID: <a5bc012a-9b9e-eb2b-d67e-a91f2d93d6bf@nvidia.com>
-References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com> <20260921-vrr-limiter-uapi-v1-6-2fcd7d011646@collabora.com>
-Content-Type: text/plain; charset=US-ASCII
-X-ClientProxiedBy: BY3PR10CA0019.namprd10.prod.outlook.com
- (2603:10b6:a03:255::24) To BL0PR12MB4914.namprd12.prod.outlook.com
- (2603:10b6:208:1c4::16)
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="jD9s5J6B"
+Received: by mail-qt1-f171.google.com with SMTP id d75a77b69052e-532e9ad9a1eso202231cf.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Sep 2026 00:29:02 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790321342; cv=none;
+        d=google.com; s=arc-20260327;
+        b=VK9plOOs8jMh7P4WjpMG6ymFXnOlL++Vl5DsHk/zAUxmwpnGI4OqoUF2k4MvxLjxT9
+         AWTqOp1S9Rpb0t+re3Nv2pC2fQ0hDWST8X1W9uMxgKd/V4AWnz8PDesRGOgYVO1cmEb3
+         V8iIZ0AWJdxeyK1a+J3fGJtk0PGm8fcM1tXUYQ6SbCti7ldbm11N3GwNbOti/iSci1kP
+         FgBrAObETiH/cHYM9lip9icGNom8tsWFnS4yOr7XChhRCJpLKP0mZ7gT+u8OfZP1SkoB
+         plbipRfiyXfzLobdkGLVMtYVUwb162r46HulOOE0Y3ke0uyzYmTH+2DEG/ueOk6nWY+A
+         qMMA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=QKlx39bvD+La1fyAAMePfYRq9L+0k8EzNqVplWKbJoQ=;
+        fh=tigCsBdir9gQzfYV47UxieI6SX5YFpVRlFb/YRgbzT4=;
+        b=fJeZRgqlcZDha8xb5va41LwVbJIOhbFt7YnwrDlfi9f3rLc54pm9/d0Z6Kku0hLM7C
+         0ue3aprIXyH5jWi4dW9QpQMCNjFISysoaOjbSnT0I2QZnaCSfnh2Lojyj4/xQeHPo7NK
+         Of4gjhgdMJ12QRqKBf+tjRgXq6J4AAkrc7Hlgav8C75mmoW9fO5flnVPDPStg5srkEzc
+         lwGbLeSBybXKfKV8ugodLNdunndLbkz368zkdp3mObur3vWL8wnAVONMXMG5/c+0YfSk
+         vUpjfzv0hjIQ2YdfMRt2VRm5Qn17PtwMh7O2BpqJe/771cSdm755jDqStnKlGrtRLPgn
+         1DvA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1790321342; x=1790926142; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=QKlx39bvD+La1fyAAMePfYRq9L+0k8EzNqVplWKbJoQ=;
+        b=jD9s5J6BxLUpOD+WnjyHgcQqvyMWXtKd8JOlF8Wqc7YrVArqK3BEC29170xB4S3ZdA
+         5mH36URtK99mdnb7qjMWW9ASPxDIu+iiFZ/CSdaBcqKTlKoO3RdcRNxAlFCiBxkpg5Ll
+         5OP3lufYb5Wc/bmKdPC5bRSrxQOTz1XzF8KLKdMBm2Z/FaYNVuWkDpCr2iTsgdUlppYA
+         xVLDCzZTCpgtBnyn0TGzsYxarAsXKPeNbHClPsDS4ZHo9aNc6Fsst8fQmbYj3RKRrAzx
+         ShvTucutNkiNSDR7HvOmG84bvKdJ3EPHoOkbIRJqumaMQ+a6VVzAfM3mRCoFc0IJ3Aro
+         BzMQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790321342; x=1790926142;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QKlx39bvD+La1fyAAMePfYRq9L+0k8EzNqVplWKbJoQ=;
+        b=NNfXKTvVbVZ/nLId4g48Um1rlzGuh36ghdkDXtslm0p9BVcnLnOFVpaoecgeC6DWMU
+         TI9VWG38Qp9kM7FUPP9qoITSCkiV/kl3y+p2BJnapAUh6XGEYd1Or2lf+jv8edOsQQgb
+         Qm+tXxhB4/8NCJV7V03voXxbFgmZ5TL8YnRdrQo+d+Ez38TctJpuxllEwXe3QCTz0fWb
+         Qlhq18Bdh7bZa1Xne85ozV5T0zNfGg7SA4B5j2fn1HhUSX4osK4zduKyZfAjcQ8IfxTY
+         f5KnOI7N42ol/N28AXV+jhfuyzdyW3lKIHw3OLYPWYGq1PjoQGtNA6wr8W4vCRnT+Z42
+         Axcg==
+X-Forwarded-Encrypted: i=1; AKwUvBxNo1svZPqjJ1oKDktnizSsEvPJD8691mqkEiFElxu9sLMPjjN8Ebpuuhzlh3tR5mA5SycskqKTpa56yA==@vger.kernel.org
+X-Gm-Message-State: AFuF++lQWhwP3p8iimHgE4y0nXDsBWurormharUW/1YIsnnHVkjZ8AKo
+	m+Cu5Ey/V3nbjVF9uKkyA3+HAlF1rBv2wDdUtYGpXFAG9KQKL+vEG5bEN2OvNx5jvswJjHd8Ajq
+	O9Yhfjxc+47BauYzfIYChH2574CpUyEF55b6utO1f
+X-Gm-Gg: AYBFou223FnoOvonsw22Jo1DhuA0+tFld3HyG9KH2zuh/b6BsU5L+dw3z2L1AbzHgO1
+	3PhUun3FAYpZ0YS5QSFpZ4ktJ6xx5l+egifN43RguLlJCQzACt8zi8s0GhpV7COCZ8VmJG1ajdT
+	MJXUzSybsKFr/KA+AvN4/1oe3WLNDSnMS5fwrd2hqStlpn0eg0m6rjBJM0XGR5wl6AtIBWG5Fjy
+	e6uKCwG6r9yQFYpup0YkPqilfDzUj0CZO51QwW4gOV7Zrce9JdEZjlAklXRb0YXrnC/zTxMPm6A
+	Z3eVXGDQ8RnAWjVMzF6h9OtOoiawwZRuWejP8Fgd0ElVZjcgIQAstA==
+X-Received: by 2002:a05:622a:4c15:b0:531:d8:e437 with SMTP id
+ d75a77b69052e-5330e1083a8mr8850471cf.7.1790321341004; Fri, 25 Sep 2026
+ 00:29:01 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BL0PR12MB4914:EE_|MW6PR12MB8914:EE_
-X-MS-Office365-Filtering-Correlation-Id: 67861e9f-92d2-469b-2665-08df1ab7eeae
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|23010399003|10067099003|5023799004|56012099006|11063799006|4143699003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	DMlCuIILU5gYnDdrtKowYbX/GuxYTpkF7s8/NhC8ux5XSrPBXR0rj9ujRqlbHWcerv0vNOGMP0e6lNU008iA7flXQJACjsytOC4vmpc48rZZp3Ub+yVvu9Jc7dwHsYiUNyR70Cy4ary2+6yeorxx7UyUxG+I587AINYhb7Z/lra53Tv9DmSiULDu3SV8mBUMCBzJ7D49aT37SGB+BUhBibKBn9MiAMl55xUt/0fCrcYobAUQOUFohuR+P4KXedzFdWi7GLf0qD7pcHhzl7930Fd+8b3M3Eu9NtP/JUbkZkiln1HhzxU9+gtXSwU44uIk3wnvFeNOIO9yxG63bn6Ja73+99uhUx4jZzy2jLaqXgTsJi/z8SHoeel2+29uwmfq9oLuctao9B7EWV6WEuFsFpNqpacWY8EMGIj+6vZZHqAhb2XIq/YLCqP7tpRkC7zH2ZPMIdFyB0v6GK4xXAYGra4nLW34O4xczp/H2/2uK0K4w+3hHMjCw25F6U7vc7xE/Os8A48iqWUw1LJYJDGLm/xqr5bl0X6FOPRIrLyKQg+tPxaO3CjJvKTDDXLkHBviMnYKwrjNJGXmKrieTyO/RtwN+EL8bttxdoPLtlV91IPY3vDYFw3AvRTnV28dd/GEvkMzhp1uvIVzMt14mz4ZES2loSkd+23HFsh8Nv17Z5w=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL0PR12MB4914.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(23010399003)(10067099003)(5023799004)(56012099006)(11063799006)(4143699003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?ukvNWoKZ7SVC4UaMRGrm1lEcoWiR47fYeG1nes2FpXbfI79jWdA/jadOQQ9w?=
- =?us-ascii?Q?bkYz5HTe15U83l9pHBozOoHXNEu+oGUPx2s/LcGn3Z7a/rphVshWeMneecu4?=
- =?us-ascii?Q?vw+cMdFsP1rrK6o0tv8QWBRideKIupHOWxX36mZWdqgPEpmthAoE7ZfZPfMf?=
- =?us-ascii?Q?RHJgqSL/XflqbgpbJacb3zgRFOXIfNXqzez2xyWSml0LeKMzO8dfVws760bO?=
- =?us-ascii?Q?lb9qaxT9Duvk1I3Kk+y/Gwnur4t1ltbzEpTDUSqNtYX+NXyW98BROlRbGLd0?=
- =?us-ascii?Q?zrzQXXzanfK5HDFpzy5wNPMH8gfutm0Jb2hmWvi752NEJ+6Ar5Moc3pOHyRk?=
- =?us-ascii?Q?wgjYoNm/3Ru4aEhdbxCIUtL1eNGq+oPQ3i/3ZJz93oO4bTAtxziknB27AI4B?=
- =?us-ascii?Q?kO5nmBXYrqNTxXBNg3JMGMrf04xNNAfKqK5We3pRTCEHOC7dF8pi/0N3qvxJ?=
- =?us-ascii?Q?HHLlQi8M6iKzbG5zf6x6KYlF7KwNuyidsj1Th3o1vDGnql9PY3O5BhHef5UD?=
- =?us-ascii?Q?oYnCwxOdL1DHZrKNw2GHaEB/2EeZWjgstsL3GMaymDT8IDNbChLEpOd6i0kv?=
- =?us-ascii?Q?qBM5pfIX9RPyfh7fY1pg38IYemfcJ23ig+UFO3s/m+Z5M1A/nKvB8hdu6NOP?=
- =?us-ascii?Q?XZB8XfbFEq14/bOo1fQufhuF7NX/GxSDdPEGkcHgUgLrwilTEluEXoCMJLSL?=
- =?us-ascii?Q?kzxw5eOtqj63fM30lua/gJRKCVZbpcCeX+te6bCeocmJ4ZOZ8qcc5yA2r46o?=
- =?us-ascii?Q?M2xxKZSiLXWcTzULS4INo6zhCTeRnTtAnEAtK1I8rCyNp+RrLD8EPFSECqY/?=
- =?us-ascii?Q?35AuOQ8V7Okf1q+zuVZ+iZtyLm/yatT3+ymzcw/7ymgAITEx8uCxkV1e5A22?=
- =?us-ascii?Q?oZtHYX9oy2vB/UWRviVV9LpAEMaUyheLftA8qOpTdIqbbr/7z1X8Nhpd01Tp?=
- =?us-ascii?Q?JDWFjuYHJsAKXBF61htu07GNi23gDNJPkS5etPFZDG4SpqXH1zLZnbAbccIt?=
- =?us-ascii?Q?aGZBvoJltA/d0VBIghxCPR1M+HwhTeAf6sZF9K3Fz+ymQA8wpo5r1yr4oB4s?=
- =?us-ascii?Q?dpBNEYyYBox01hRrdFAFGaqkBEkmxXgstL1qbtxojP8Iyv8BiKtEdAXaBV7W?=
- =?us-ascii?Q?ParJAr5DffGlic1cU1T8/8e0vYTQMMWBbY6GkHnrlrKsTlsUAkiQWS/WPLZ6?=
- =?us-ascii?Q?0i1/d3ee73r/y9nrFien1oWZVjnzxDomuEfE10qoNZEmqHqCM7XnpHLatifX?=
- =?us-ascii?Q?q02msrPQAu9cD6FTKbJQVia4WhM8ZhqypFfvUXkICmgWErmFYfIbH3zmEyYI?=
- =?us-ascii?Q?X7sceAN78Bo6mmEfryvVK+brL7YjpL9a5EFVLsuot8zlivQp6JwQqReakjrj?=
- =?us-ascii?Q?ioYkwforOocrX54WFMVgoZExYChifC4MAtBWwNTjNq2jYLhzK8zWxFm0FZRg?=
- =?us-ascii?Q?L+zc3iam/pxiZsHGVHP1sF7DOHP8zGYBxLqPyxuac3WRzYBs46ztXzTI7hw5?=
- =?us-ascii?Q?l5VSU4b/GJiFlMgilwFDh0xu/ssOwcVH1DJ+/RaBtiYpPa5h7Z9OFcZwMimx?=
- =?us-ascii?Q?Q3i8t3W5uFjZq00GqTto7vdELRHvc3yunYlpUVws9h2AF2YeXAhQfAAoiPur?=
- =?us-ascii?Q?RUHhZaV3JMdxzywxUiJ03lHLdvvAg9QiqXNGSI3JkKE0Px6ZkYSNwhkxnMrv?=
- =?us-ascii?Q?r1G4t6Z9lQppM0gY25Yb5TYvLC4U35gY0GMWJkisPelz88aq?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 67861e9f-92d2-469b-2665-08df1ab7eeae
-X-MS-Exchange-CrossTenant-AuthSource: BL0PR12MB4914.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Sep 2026 03:49:00.7899
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QNW36uIioo2K14jlnH5gBoROKzB9D/cKslDb7g5PnJvvFmIYAHvuYzI6yhyN1opsEyan557a8vcrLkvIwawzjQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW6PR12MB8914
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-5-4583d8a23bca@kernel.org>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Fri, 25 Sep 2026 00:28:49 -0700
+X-Gm-Features: AclHuK8wpU_boMBtoQ2BxSfl48UrjTg974xy2tCF5bv_vM_I_Kq5OyVf7aIl6LM
+Message-ID: <CAJuCfpF2U9rgHmhaDoXX1hxsuuS=s-oWK9Nk19TDQ6CLpjhFVA@mail.gmail.com>
+Subject: Re: [PATCH v3 05/40] mm/vma: ensure mmap_prepare doesn't set actions
+ on a mergeable vma
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>, 
+	Vlastimil Babka <vbabka@kernel.org>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
+	David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, 
+	Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	Leon Romanovsky <leon@kernel.org>, Paul Moore <paul@paul-moore.com>, 
+	Stephen Smalley <stephen.smalley.work@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+	Takashi Iwai <tiwai@suse.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
+	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <nico.pache@linux.dev>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
+	Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, 
+	Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, Simona Vetter <simona@ffwll.ch>, 
+	Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>, 
+	Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, 
+	Juri Lelli <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, 
+	Arnd Bergmann <arnd@arndb.de>, Muchun Song <muchun.song@linux.dev>, 
+	Oscar Salvador <osalvador@suse.de>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
+	Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
+	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
+	Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
+	Ying Huang <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>, 
+	Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
+	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, 
+	Baoquan He <baoquan.he@linux.dev>, Youngjun Park <youngjun.park@lge.com>, 
+	Johannes Weiner <hannes@cmpxchg.org>, Qi Zheng <qi.zheng@linux.dev>, 
+	Shakeel Butt <shakeel.butt@linux.dev>, Axel Rasmussen <axelrasmussen@google.com>, 
+	Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
+	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
+	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org, 
+	selinux@vger.kernel.org, linux-sound@vger.kernel.org, bpf@vger.kernel.org, 
+	linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, 
+	fuse-devel@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Sep 17, 2026 at 9:25=E2=80=AFAM Lorenzo Stoakes (ARM) <ljs@kernel.o=
+rg> wrote:
+>
+> When a user requests an mmap_action be performed in mmap_prepare, this
+> involves populating the VMA range with data.
+>
+> However, if the VMA is mergeable, it might then mistakenly be merged with
+> another VMA without having populated the range.
+>
+> Every mmap action currently available sets VMA flags such that the VMA
+> cannot be merged.
+>
+> However, to ensure that no future mmap action falls foul of this, assert
+> that this is the case upon mmap_prepare validation.
+>
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
+Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 
-On Mon, 21 Sep 2026, Nicolas Frattaroli wrote:
-
-> From: Derek Foreman <derek.foreman@collabora.com>
-> 
-> Add VTEM EMP generation to enable variable refresh rate signalling over
-> HDMI.
-> 
-> These infoframes are only generated if the sink supports VRR.
-> 
-> Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
-> Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 > ---
->  drivers/gpu/drm/display/drm_hdmi_state_helper.c | 60 +++++++++++++++++++++++++
->  include/drm/drm_connector.h                     |  5 +++
->  2 files changed, 65 insertions(+)
-> 
-> diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-> index d55548399687..33d0c9491643 100644
-> --- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-> +++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-> @@ -853,6 +853,56 @@ static int hdmi_generate_hdmi_vendor_infoframe(const struct drm_connector *conne
->  	return 0;
->  }
->  
-> +static int hdmi_generate_emp_infoframe_vtem(const struct drm_connector *connector,
-> +					    struct drm_connector_state *conn_state)
-> +{
-> +	const struct drm_display_info *info = &connector->display_info;
-> +	const struct drm_crtc_state *crtc_state =
-> +		drm_atomic_get_crtc_state(conn_state->state, conn_state->crtc);
-> +	struct drm_connector_hdmi_infoframe *infoframe =
-> +		&conn_state->hdmi.infoframes.vtem;
-> +	struct hdmi_emp_infoframe_vtem *vtem =
-> +		&infoframe->data.vtem;
-> +	const struct drm_crtc_vrr_state *vrr = &crtc_state->vrr_state;
-> +	int vfront;
+>  mm/vma.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> diff --git a/mm/vma.c b/mm/vma.c
+> index d6ed10cefc8f..62f2ce1ad5a1 100644
+> --- a/mm/vma.c
+> +++ b/mm/vma.c
+> @@ -2809,6 +2809,15 @@ static int mmap_validate(unsigned long prev_start,=
+ unsigned long prev_end,
+>  int mmap_prepare_validate(const struct vm_area_desc *prev_desc,
+>                           const struct vm_area_desc *desc)
+>  {
+> +       /*
+> +        * It is not valid to execute mmap actions for VMAs which can be =
+merged,
+> +        * as any such merge would leave portions of the mapping incorrec=
+tly
+> +        * unmapped.
+> +        */
+> +       if (vma_flags_can_merge(&desc->vma_flags) &&
+> +           WARN_ON_ONCE(desc->action.type !=3D MMAP_NOTHING))
+
+Any reason you chose this "if (A && WARN_ON_ONCE(B))" pattern instead
+of a simpler "if (WARN_ON_ONCE(A && B))"? Unless there are races
+between A and B updates, I think these would be equivalent, right?
+
+> +               return -EINVAL;
 > +
-> +	infoframe->set = false;
-> +
-> +	if (!connector->hdmi.funcs->vtem.write_infoframe)
-> +		return 0;
-> +
-> +	if (!info->hdmi.vrr_capable)
-> +		return 0;
-> +
-> +	hdmi_emp_infoframe_vtem_init(vtem);
-> +	if (!crtc_state->vrr_enabled || vrr->vic) {
-> +		vtem->base_refresh_rate = 0;
-> +		vtem->base_vfront = 0;
-It shouldn't hurt to always populate base_refresh_rate and base_vfront, 
-might be cleaner to skip this check.
-> +	} else {
-> +		vtem->base_refresh_rate = drm_mode_vrefresh(&crtc_state->mode);
-> +		vfront = crtc_state->adjusted_mode.crtc_vsync_start -
-> +			 crtc_state->adjusted_mode.crtc_vdisplay;
-> +		if (vfront > U8_MAX || vfront < 0)
-> +			return -EINVAL;
-> +
-> +		vtem->base_vfront = vfront;
-> +	}
-> +	vtem->fva_factor_m1 = 0;
-> +	infoframe->set = true;
-> +
-> +	if (!crtc_state->vrr_enabled) {
-I don't think we should use the vrr_enabled CRTC property to determine 
-VRR_EN in the VTEM EMP. Transitioning the VRR mode sink-side typically causes
-blanking, and it was discussed in patch [03/25] that drivers should be 
-free to handle vrr_enabled changes as a seamless switch since it only 
-concerns source-side VRR state (this is how the NVIDIA driver handles it).
-Maybe it would make sense to extend the qms_enabled connector property 
-introduced in this patchset to an enum of {Off, Gaming, QMS}? This would allow
-a standard path to control the VRR state on the sink, separately from
-vrr_enabled. 
-> +		vtem->m_const = false;
-> +		vtem->game_vrr_en = false;
-> +		return 0;
-> +	}
-> +
-> +	vtem->game_vrr_en = true;
-> +
-> +	vtem->m_const = !vrr->dynamic;
-> +
-> +	return 0;
-> +}
-> +
->  static int
->  hdmi_generate_infoframes(const struct drm_connector *connector,
->  			 struct drm_connector_state *conn_state)
-> @@ -884,6 +934,10 @@ hdmi_generate_infoframes(const struct drm_connector *connector,
->  	if (ret)
->  		return ret;
->  
-> +	ret = hdmi_generate_emp_infoframe_vtem(connector, conn_state);
-> +	if (ret)
-> +		return ret;
-> +
->  	return 0;
->  }
->  
-> @@ -1494,6 +1548,12 @@ int drm_atomic_helper_connector_hdmi_update_infoframes(struct drm_connector *con
->  			goto out;
->  	}
->  
-> +	if (info->hdmi.vrr_capable)
-> +		ret = write_or_clear_infoframe(connector,
-> +					&funcs->vtem, "VTEM",
-> +					&old_conn_state->hdmi.infoframes.vtem,
-> +					&new_conn_state->hdmi.infoframes.vtem);
-> +
->  out:
->  	mutex_unlock(&connector->hdmi.infoframes.lock);
->  	return ret;
-> diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-> index e561a444515f..6e431eb81705 100644
-> --- a/include/drm/drm_connector.h
-> +++ b/include/drm/drm_connector.h
-> @@ -1180,6 +1180,11 @@ struct drm_connector_hdmi_state {
->  		 * matching our state.
->  		 */
->  		struct drm_connector_hdmi_infoframe hdmi;
-> +
-> +		/**
-> +		 * @vtem: VTEM EMP infoframes structure matching our state.
-> +		 */
-> +		struct drm_connector_hdmi_infoframe vtem;
->  	} infoframes;
->  
->  	/**
-> 
-> -- 
+>         return mmap_validate(prev_desc->start, prev_desc->end,
+>                              desc->start, desc->end,
+>                              &prev_desc->vma_flags, &desc->vma_flags);
+>
+> --
 > 2.55.0
-> 
-> 
+>

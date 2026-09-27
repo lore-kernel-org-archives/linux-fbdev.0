@@ -1,237 +1,110 @@
-Received: from flow-a3-smtp.messagingengine.com (flow-a3-smtp.messagingengine.com [103.168.172.138])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dl2-f42.google.com (mail-dl2-f42.google.com [74.125.229.170])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1996A31E85B;
-	Sat, 26 Sep 2026 17:14:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=103.168.172.138
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A611D1D5AD4
+	for <linux-fbdev@vger.kernel.org>; Sun, 27 Sep 2026 05:13:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790442891; cv=none; b=ikGqtDyotU4vLW1m0H2ZSA90ZHJD4lX/4QPHjebIl7PvkbNsltWobnO0xDyiheF4kGEEYviUQZNc0Sy9be9HZUD62SgxEM2GyMIJSCjlwL1rkYtI0myf3PkDl4SQkYERH1b7c0SofCRPFC8Ydnxc760/9pLbl1CPRwt1Y8Bd5Z4=
+	t=1790485981; cv=none; b=VaKuc6YYPIkjEmyJOfzp6uh4n6FQi3nCg67vrTGC+oC8hrur379nzoc4WJ0FeHdET/JhRySQMjagqpAlG2pPn6BwF7UTGnOEJb7gWZcp5QeT3kuw3bwido1d0QaGGo+728AioImvtaSV/sDEuJKrcHMwBa++hpekvlLsAc7GSBM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790442891; c=relaxed/simple;
-	bh=gojmdYDsD3StNnB/hDyqo1gXIHc8O8nZybk73It5oqU=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=nAA/WlIzbixDsH7/i+ccnmt0/NrHTEngYwj2+yPDdK2pqxFX41f+CdQ6dgIGCk0WoW+DK/WA/1QXux5IV93FXwqfilQbgWIHjWqi9pLE7dj/5aZrgTYV6Oh/zy3xlxursqdHeGkiOUugMQzB3Ewlbvq+0m8sgX9n5ZM3o7Zws/A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de; spf=pass smtp.mailfrom=arndb.de; dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b=ZVIK9Hxi; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=mwp84TFY; arc=none smtp.client-ip=103.168.172.138
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arndb.de
+	s=arc-20240116; t=1790485981; c=relaxed/simple;
+	bh=RiJf6iWK+usISOd4aWwdvTIAae1wviS3r9OeiNIPnXk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hTaN5E54wsWJyrgCjdfAdRPgzm1F1mEKkczm1DJU/PWP5Z80GoioSbGypgKIcboZ6bbxsoF5uyki8O0nOuDzVwnlF0Y9IUmqrwwK1GXp15t9tklxsvAAH7WOlnxL6h07vhIvit2Twri/K+vw/SmCBzH+dafIuGWzlhTf6lq6u8Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=OKMkqb0u; arc=none smtp.client-ip=74.125.229.170
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=arndb.de header.i=@arndb.de header.b="ZVIK9Hxi";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="mwp84TFY"
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailflow.phl.internal (Postfix) with ESMTP id E9CEB13800A4;
-	Sat, 26 Sep 2026 13:14:44 -0400 (EDT)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Sat, 26 Sep 2026 13:14:47 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1790442884;
-	 x=1790450084; bh=tGTq2YiYGuZgWk5ZY7JZMyWu45IuuL1ykMMcgPEJafg=; b=
-	ZVIK9Hxi8OmBYJD8gSQZXTgvlZ4ULwofUd3eHILARMayF90oSThQLlm5pu0l5+wO
-	EnQNPrQtmiNIZnGIwOhafr8jMDFrP3Dl7gTfjveAGlyclXfQN3BLKbYH82TnwGGE
-	LDHz+61nEQdNJ7Mm5sWNWenepLPKzpbtqHutP61oa4S7+XoKGpYriUTGoU0AgYuQ
-	9OTwRwbhibVgycEtR2pOCeqTs4FUfvkkls84aK/T+ibf6XDH5w7vKSNIGM7Ns4Te
-	135M6wCurb5eGsyT4wJmj9eSmNADUwntt12lTP3+ewZFA5Y2rk4HTFGRVv8Gm5J4
-	FYdUPsr/YYOVOuEmK403CA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1790442884; x=
-	1790450084; bh=tGTq2YiYGuZgWk5ZY7JZMyWu45IuuL1ykMMcgPEJafg=; b=m
-	wp84TFYHlBmHy48WpU0OJv+UejeKBnb6WEhb5BMBbjPw/UCY7uqA+43EKIRDaLxu
-	G1ME4E65zZTTM83OGQxFYEaX8IjFcTplRfJNXnDCcf7M4LwptgYoomz5Pd8yjegu
-	vxxY9CLa8ktV+zIhtoRoAiwaeH8imBZgq5qItAjTqRNlGb0cSk9vAwm0npDwQJxc
-	ZBSOWP/LIH26Up0NfHDTJ2s5vjKd+KXmqqu3dQNyzUjNXLWwkQPUdw7wFwNq/2No
-	YsWwT9G3+rtA9dRodWihaGIftDwTqZDbktrxc69FY4uf2b4Ufj3bOnrmH4U90eCu
-	jkII0jgJplt+Ho3eCclLA==
-X-ME-Sender: <xms:ev23aphDb-V-DzcUvq0g2j4uWxVUXz288eL2VWYqofNWUqazGf5cSw>
-    <xme:ev23ao0ryaKlcNAnhIKgzAZfizI5zRmS9PD6pqUF6Jaoul6FnnmXFYB6KvX02iUGz
-    BZmE3RTt53azeiOlRWmgUZqFjlCoYZMFa8ew0yOEJBlTMonzQebK2g>
-X-ME-Proxy-Cause: dmFkZTFhx2cFFtNhkULYuqPvl8gGeJkM2fhMBUUfWVg74H8MxuoOHs6J8LEQB/SWwobSXF
-    cN3Bm393pJVl8n+wel7ooQQNi4RqB/GFQKqP4KFWek4N9ELRDdYFOjuVinSGdMSTiVarKs
-    4rOSnFGMqI3VdSxqJCmbjwz8JsjadS6g8WVg1FSsOASQL9qnvW06scsM7DdiXuQXSRvbp0
-    oc1rMfdDSdXjZDuQ4Flc3WgW80v1q7p36oNIX1c572OX8QvM44FF244YDOCuvYk1zcB+Fz
-    OcU5GlcEjMBRQT8ozzGGB17lMhu1hmoOmo2ETYbYqG7qYCuz/Gp8fIl3AA5CvGes553OYH
-    zOP0t/bzfIhWaCPZjluKxSSoXuDxxjcXX/Q8DMMxmDbQWJ9Fr5WThqDq2FLaU+SqnaJuCL
-    pkYbhniVBzMm7pvuYCl/qtichaoaEjJr59rIk6FGTSg9hy5MSJhlHhPKI2TiyHW60MEHdl
-    JWno9EOAuEBSzEKX+LMbGzYracPdYAHxU3uanBYFvpgh22w5H+sisOsx1bppU4jaCs1GSb
-    qD7s7IdOD1fMrVJxaXNIjxEhMdeQ0eT9oEzd23eeqQJ6pu7bYb2KG7Sxf3YtlsvQWzwwTb
-    DVHLWbQk3RKB8mG01KIcI+VKbYDfnxSRmys1tgvRg1CtY/krP0JQij7af/2Q
-X-ME-Proxy: <xmx:f_23asArcTC-7Q3MDdhePBo8lXV8z6QvAKpe9Ibzmll_nWXelxFyFw>
-    <xmx:f_23aqWfoDFHKQGVk2R1--3tsFeyYyFnrcejyjSEGK5MWrduS9Wguw>
-    <xmx:f_23am5ly-0659jMdrdtd-Lr7Biq-i6-UFjxRj9juHeAU_T69iDw6A>
-    <xmx:f_23amDnrd_P6v0UUP--vOzaHh9I4PDmquAxe_V0QS1vx9j31Ee7Dg>
-    <xmx:hP23akAE2wZVF6psZ3xKJ1lvcUYpihdEVBPR2JzpRxVK20H4-2HGjT2V>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 7CCAA32A0087; Sat, 26 Sep 2026 13:14:34 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OKMkqb0u"
+Received: by mail-dl2-f42.google.com with SMTP id a92af1059eb24-144e32aaa1cso1098395c88.2
+        for <linux-fbdev@vger.kernel.org>; Sat, 26 Sep 2026 22:13:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790485980; x=1791090780; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Li1CFbWIegv8mAz9zTeIVGn7vrMtVUxmg53aaPsA4qQ=;
+        b=OKMkqb0ulJGop6tQIeJoEPqwqtm7VoxOO0R58ltrHWx1jAWwpwJZRIBMcm9Mc93tIx
+         9DeGyFJwzq/swIr/AOoT3GDJNrFpnSoQv1gKQoRutNq2AbJDq3ZJG0eVPZw3P8jAtTX7
+         /ZD3uhQbIs5Izsypzm54IJrV8Mbqda9VNs0uJbfK0SEQbjizqAa0w2f9KQTTWOs0F0v/
+         4K+5qmOUgd94R8pemW4VN1Px4RDrJOD0l8a3A40x/XN7z3peXpT+zvNhqdyCtDhrDSel
+         TPA7lCFK71dS1nqR6CjpZw+ZEVeNEggSK6LsNnag3g8n8WS/xs79J0mFJb7L/9CjRHix
+         J6WQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790485980; x=1791090780;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Li1CFbWIegv8mAz9zTeIVGn7vrMtVUxmg53aaPsA4qQ=;
+        b=2J1NteI8kbplAYKbgSQZIqu/OcNLPui3BleDA+TrcNdrv+q6z9jPkfJrlcafQzxOjX
+         ubBjGRLAx70Pi0m0oQxi5wlLIIFeLHbHNxYAGsynnNiMvC4KRW40um4Kap4AmOclEoAZ
+         H8micaRv08HzoFfjcq8rYc924g+LUfTfRScoFAK1+vxwxioJfo1RErur0FjAb+J71GE2
+         Uhp6TYbLsV+2C4S8hyhojy5xg0r8abKoHqydpDAAumQvxK05PaW7X3vdX32G7U6HwWkw
+         aQZXyA0JIynDYoBcvyI8OF0VznSDg21Ee3RWHz93P7SLXm0WXoRa7vgywBCqiJqHt7BH
+         WlnA==
+X-Gm-Message-State: AFuF++m/N+6q1PpvG5mRwoxdgr5ReHJ8jVBsGdXalmbIcXZFHSDULinj
+	+eZRZIVg2yAN6as6BU76S8mIqvFMJlQj66U76DbMuro/0p57PeV9bgr3pIrez9xPWWOzeQ==
+X-Gm-Gg: AYBFou3u0w9p2bHmP5n9ILMYfeyuetRVri8FoDsryDWtk1gzFBXHJ1Ny9m/qc4bo765
+	ks05yhbEigm3413764acTieR+amiLTM5u/3XJ+jYqDHIeWgHvUrsWs27ltreJeDW7dt2mw5Hr8y
+	T36ILkN0u5U2yqhJ1wqm8EdqEFJ/qmumGhx1sFMVxu5ApGbkNrGfr3H1K2mV1slw+nkmT4KNkUV
+	zanzKS5OigQzLSEJXoo8RiGiUy/Z8jurohIERlkZTQm1OUtPbUHGC1psdhWH06r9To/4Man4aHS
+	IB8BIQ4SpZ0ly8q++QcL5hviYSgFjZj48Xfo2z3w4ZxPLG3bqAZhUAG+h856tCBivl4dydes5rf
+	JIbGcnRn5yaF3lrYZts3yfHxeSVFZlbAGAeUXf2ziLIKkGkegkhNmvqjsoygfMJotV9Obcgswno
+	o4k6siVh7X4CL15CUn2aHtYceyhgaahGjSyVBsL2fsqH1SBmweBgFdaeuUAKzAK88m+H7zAgC1D
+	ASMNJHAJWce3o0+cVV6kKUqOjpbzK/eEVkPmXet/oyiDIEUJCA4jlI20KNCjQ5+PQD/NRmpfr2a
+	isNYResf5YuK3/3Ew/6WWgatB8s9hZ+MBPaOObIcIBO3opJX20pzkXfpMJDs
+X-Received: by 2002:a05:7022:ba2:b0:143:297d:21f6 with SMTP id a92af1059eb24-146d0497c6cmr6882989c88.35.1790485979436;
+        Sat, 26 Sep 2026 22:12:59 -0700 (PDT)
+Received: from spider.bream-herring.ts.net ([103.6.151.236])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-145aa0cb7bcsm14790970c88.2.2026.09.26.22.12.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 26 Sep 2026 22:12:59 -0700 (PDT)
+From: Matthias Goergens <matthias.goergens@gmail.com>
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [PATCH] MAINTAINERS: name the deller/linux-fbdev for-next branch
+Date: Sun, 27 Sep 2026 13:12:56 +0800
+Message-ID: <20260927051256.2752154-1-matthias.goergens@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: AJwEWD5WPnhk
-Date: Sat, 26 Sep 2026 19:14:14 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Lorenzo Stoakes" <ljs@kernel.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
- "Liam R. Howlett" <liam@infradead.org>,
- "Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
- "Jann Horn" <jannh@google.com>, "Pedro Falcato" <pfalcato@suse.de>,
- "David Hildenbrand (Red Hat)" <david@kernel.org>,
- "Mike Rapoport" <rppt@kernel.org>,
- "Suren Baghdasaryan" <surenb@google.com>,
- "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet" <corbet@lwn.net>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>,
- "Jason Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>,
- "Paul Moore" <paul@paul-moore.com>,
- "Stephen Smalley" <stephen.smalley.work@gmail.com>,
- "Jaroslav Kysela" <perex@perex.cz>, "Takashi Iwai" <tiwai@suse.com>,
- "Alexei Starovoitov" <ast@kernel.org>,
- "Daniel Borkmann" <daniel@iogearbox.net>,
- "Andrii Nakryiko" <andrii@kernel.org>,
- "Eduard Zingerman" <eddyz87@gmail.com>,
- "Kumar Kartikeya Dwivedi" <memxor@gmail.com>, "Zi Yan" <ziy@nvidia.com>,
- "Baolin Wang" <baolin.wang@linux.alibaba.com>,
- "Nico Pache" <nico.pache@linux.dev>,
- "Ryan Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>,
- "Barry Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>,
- "Usama Arif" <usama.arif@linux.dev>,
- "Kirill A. Shutemov" <kas@kernel.org>,
- "Doug Gilbert" <dgilbert@interlog.com>,
- "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
- "Martin K. Petersen" <mkp@kernel.org>,
- "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter" <simona@ffwll.ch>,
- "Helge Deller" <deller@gmx.de>, "Sebastian Reichel" <sre@kernel.org>,
- "John Hubbard" <jhubbard@nvidia.com>, peterx <peterx@redhat.com>,
- "Masami Hiramatsu" <mhiramat@kernel.org>,
- "Oleg Nesterov" <oleg@redhat.com>,
- "Peter Zijlstra" <peterz@infradead.org>,
- "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
- "Borislav Petkov" <bp@alien8.de>,
- "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
- "Arnaldo Carvalho de Melo" <acme@kernel.org>,
- "Namhyung Kim" <namhyung@kernel.org>,
- "Mark Rutland" <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>,
- "Harry Yoo" <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>,
- "Vincent Guittot" <vincent.guittot@linaro.org>,
- "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>,
- "Maxime Ripard" <mripard@kernel.org>,
- "Thomas Zimmermann" <tzimmermann@suse.de>,
- "Dave Airlie" <airlied@gmail.com>, "Will Deacon" <will@kernel.org>,
- "Aneesh Kumar K.V (Arm)" <aneesh.kumar@kernel.org>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Muchun Song" <muchun.song@linux.dev>,
- "Oscar Salvador" <osalvador@suse.de>,
- "Matthew Wilcox" <willy@infradead.org>, "Jan Kara" <jack@suse.cz>,
- "Marc Zyngier" <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>,
- "Catalin Marinas" <catalin.marinas@arm.com>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>,
- "Palmer Dabbelt" <palmer@dabbelt.com>,
- "Albert Ou" <aou@eecs.berkeley.edu>,
- "Christian Borntraeger" <borntraeger@linux.ibm.com>,
- "Janosch Frank" <frankja@linux.ibm.com>,
- "Claudio Imbrenda" <imbrenda@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>,
- "Gerald Schaefer" <gerald.schaefer@linux.ibm.com>,
- "Heiko Carstens" <hca@linux.ibm.com>,
- "Vasily Gorbik" <gor@linux.ibm.com>,
- "David S . Miller" <davem@davemloft.net>,
- "Andreas Larsson" <andreas@gaisler.com>,
- "Alexander Viro" <viro@zeniv.linux.org.uk>,
- "Christian Brauner" <brauner@kernel.org>,
- "Matthew Brost" <matthew.brost@intel.com>,
- "Joshua Hahn" <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>,
- "Byungchul Park" <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>,
- "Ying Huang" <ying.huang@linux.alibaba.com>,
- "Alistair Popple" <apopple@nvidia.com>, "Chris Li" <chrisl@kernel.org>,
- "Kairui Song" <kasong@tencent.com>,
- "Kemeng Shi" <shikemeng@huaweicloud.com>,
- "Nhat Pham" <nphamcs@gmail.com>, "Baoquan He" <baoquan.he@linux.dev>,
- "Youngjun Park" <youngjun.park@lge.com>,
- "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>,
- "Shakeel Butt" <shakeel.butt@linux.dev>,
- "Axel Rasmussen" <axelrasmussen@google.com>,
- "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu" <weixugc@google.com>,
- "Chengming Zhou" <chengming.zhou@linux.dev>,
- "Michal Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>,
- "Xu Xin" <xu.xin@linux.dev>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-rdma@vger.kernel.org,
- selinux@vger.kernel.org, linux-sound@vger.kernel.org,
- bpf@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Linux-Arch <linux-arch@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- fuse-devel@lists.linux.dev, "Takashi Iwai" <tiwai@suse.de>,
- "Emil Tsalapatis" <emil@etsalapatis.com>
-Message-Id: <4a3a089c-3ade-494d-8f83-f9cb710e9ad1@app.fastmail.com>
-In-Reply-To: <arfGmNiEngnO3JKm@gremlin>
-References: 
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <d4d7d4c2-a1d5-41d0-b1c8-8ea0cc5a0397@app.fastmail.com>
- <areSEI5pWBadkqIe@gremlin>
- <408aef6e-5b0a-482f-8ba8-f8c20ee870e5@app.fastmail.com>
- <arfGmNiEngnO3JKm@gremlin>
-Subject: Re: [PATCH v3 00/40] mm: make VMA flag semantics explicit, eliminate
- VM_SPECIAL
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On Sat, Sep 26, 2026, at 15:22, Lorenzo Stoakes (ARM) wrote:
-> On Sat, Sep 26, 2026 at 03:06:33PM +0200, Arnd Bergmann wrote:
->>
->> It's a Kconfig setting upstream, but the way I'm doing it is to have
->> patch that calculates a sensible default based on other options that
->> is a little smaller than the default (currently 2048 bytes) on x86-64
->> to catch more cases where something sticks out.
->
-> So this is an early warning more or less :)
+The T: entry for FRAMEBUFFER LAYER names deller/linux-fbdev without a
+branch.  The repository's HEAD points to branch master, which mainline
+already contains.  linux-next merges the for-next branch of this
+repository (Next/Trees).  Name that branch in the entry.
 
-Yes, a surprising number of these just point to stupid mistakes
-where the developer had no they were adding a large object to
-the stack. This instance here is unfortunately not an obvious
-case.
+Signed-off-by: Matthias Goergens <matthias.goergens@gmail.com>
+---
+This is part of a cleanup of all T: entries whose repository HEAD is
+not where development happens: one patch per repository, sent in small
+batches.  The plan is at [1], and why it goes out in batches at [2].
 
->> There are many ways the call chain can go of course, but the actual
->> stack overflows do tend to follow this pattern where you are at a
->> function with high stack usage and call kmalloc() during low memory
->> condition and that ends up waiting for a block I/O down the line.
->> (you normally don't go through swap and nfs, I was just looking
->> for the worst case I could easily see in the code)
->
-> You certainly found quite the example haha.
+[1] https://lore.kernel.org/all/20260924033200.3615554-1-matthias.goergens@gmail.com/
+[2] https://lore.kernel.org/all/20260924101844.2403008-1-matthias.goergens@gmail.com/
 
-I have previously toyed around with using VMALLOC_STACK on a reduced
-stack size and syzcaller, so I knew roughly where the worst offenders
-lie, but the list was from looking through the code just today.
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->> > If I can do it as a follow-up that'd be ideal!
->>
->> What I was hoping for is that as you are already deep into the
->> exact code that caused the warning and you can already see something
->> in there that may help.
->>
->> I don't think it's urgent, I just don't want it to be forgotten.
->
-> It won't be, it's now on my TODO and I see it as a relatively high priority
-> thing to follow up with.
->
-> Will likely send a patch for it next cycle (this is about the worst cycle I've
-> seen workload-size for mm so I don't really want to send anything more this time
-> around).
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 140eafcbbd78..b275a2254738 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10339,7 +10339,7 @@ L:	linux-fbdev@vger.kernel.org
+ L:	dri-devel@lists.freedesktop.org
+ S:	Maintained
+ Q:	http://patchwork.kernel.org/project/linux-fbdev/list/
+-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git for-next
+ F:	Documentation/fb/
+ F:	drivers/video/
+ F:	include/linux/fb.h
 
-Sounds good, I'll keep the local hack to mark functions as noinline for the
-moment then. Thanks,
+base-commit: 62f4c998b297cf233997a2b4cd6fc2d2df0319c9
+-- 
+2.55.0
 
-      Arnd

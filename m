@@ -1,135 +1,101 @@
-Received: from mail-lr2-f34.google.com (mail-lr2-f34.google.com [74.125.230.98])
+Received: from mail-vs2-f43.google.com (mail-vs2-f43.google.com [74.125.227.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F7572DA74C
-	for <linux-fbdev@vger.kernel.org>; Sun, 27 Sep 2026 09:48:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.230.98
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790502532; cv=pass; b=jLA5PVe6QaHdVZSmnPbge0rbD6gNAlUeZLp+KlKbQx0rH6BO83BhvpTxvDKmx9II/RVNo9aBn9i0oCFMgQfU5OMGcbgUkLKTwkRjFh+LMiYJCUS0LuWgnkKG5oQHHpcgqGP6Sf7z28khgdEaaq/ZE2Agmd1rnsmuOKpidWRXkdk=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790502532; c=relaxed/simple;
-	bh=VbNaCBv97oG90I5mvgMS936SO9aqYeDUwCKNKwEYwwA=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=OHNo4EqM7XylYfrnUFeprMVP81ajCW//xSKQJD6QZRi/sXEm/KWVmoWmnCzlMLbogaG7yECtu2AcucO+8oS7RdaX+Sf2YRzeL2dBM4V2CVD3ZbujHVNSsiPygCQXsz8qDPfgOh/2b99te5jkbQlONQOyDUpZ3MIjidrXxVVRNL0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hj5+aITT; arc=pass smtp.client-ip=74.125.230.98
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F8443F20E3
+	for <linux-fbdev@vger.kernel.org>; Sun, 27 Sep 2026 13:37:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.43
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790516240; cv=none; b=BSKNejwAwzdNB5I5bNBx7cU7hejEwy96XHw6ngygp9wkZ6WAEkqC2T9mGuPobk3R+gOAT0HK5fttGosiXbffIgAWH23jQgici3wmukfVOFC1qywEI3cnHgpndrWzqMkFe2Jdv4PZJGzS5OaJI51suiIng2Uzwacuu3erpuaCanU=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790516240; c=relaxed/simple;
+	bh=NLbwPHvCiBJgx7ebzZxRbu/Tp+bn3nfDoOHERKWL7Kc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=PyNvTRCRwSYaXizGYl1lh7mnAD7t62qRCAM3HHsBGS8HgjNyLmfsqOD33lJCB5iLMCLr7kZTCgeLkmJMoCvn4fNEeSUjPRO9O0QhSEKCMCX6v+BgxnP7YGgnrM7T33sqQCKQ9O5vriJ9USofMWuMhtf5+xArFGU11j+5Ltc/52U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=74.125.227.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hj5+aITT"
-Received: by mail-lr2-f34.google.com with SMTP id 38308e7fff4ca-3a651f928d9so13660941fa.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 27 Sep 2026 02:48:43 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790502521; cv=none;
-        d=google.com; s=arc-20260327;
-        b=krZW8FMfOxOqsYXqcJzztQwvp5ttn8FvHDHGSlbRlsJ8XzameX3YUG4VwJ26CpuPfY
-         KWWiLDOsBgAw/1JTCCfqy2ucBPvVkQxIJZHiXFezBKWRC1NcpQrpiUTF7YKesnDg+9Tv
-         PtRQ+UDL6AvXx6MSHLR3B7hre3Dmty46AIAIcsBfGdUAY/z1de9oI+o4QtfV0f1a4P/9
-         HUm7b94Q5fThWDVsQugI+dzbVHbDydUTPNJQI8lbVqr5tvhY+JP+nc9gvWcysYZRE5Dv
-         04YmNaGAt2Sfk5YW804iGNw1SgWP7TgO3KRA8wqgSHPwk6o/m/j/NODOKDwOd3sWf+b1
-         S81g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=G1OxfNq/5YdzHTbdOohSN8hvy0lgOzxPTHbFi5QdzsE=;
-        fh=WXRGudabu8FU76dwSJ/SRIzB21q/t8lXsnIPoQJHN3Q=;
-        b=ngkTdJmFQGt8GxYCC5j4pp2I2orbl62+nhCK7lzAjBdfKhs/2MdwftpN9GSU8CjfLe
-         PY+4j54LbeidtdSRYWB7w31xqMLTZsQdugXPjGOYPMjvsh3Gzm6ki384ZcYX+pKItb3t
-         +l8xiceduXTRNAWNJWDu20PsklmDYmGH2CLrxAdS7bwHI0DNJVcKeBzbnvOM+/a+6Wbx
-         yjfQ7dNMvCrbcmBnCrnIs7Q4C+QLMlzAp4CweA70GNe9C3nPY2SJ3exVDp82fPalC+wq
-         JHwgJhA/OnXML1PgwFj3MVgNCDivPNVdcHRS88a33sm4sfWwfNm3BIq2osQHTyQdXL5W
-         SiDQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790502521; x=1791107321; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=G1OxfNq/5YdzHTbdOohSN8hvy0lgOzxPTHbFi5QdzsE=;
-        b=hj5+aITTL5bm2S6ryzWK5C2ABDGNpvvNPgneED3F9Gn+G/ASyMD06AQcHHE9Q9QrAo
-         l3Z4RJeDs5Elxpz0Z7xVWvAXlc/+oUjIQD3FZJ7ofopL7rLXgP9GAS8wSoDxwjbwvgkY
-         hNzqQpfd2FFpxLuqCPRbpRQKCHHNuuKskUdWBAb6rdd+3KjkW9YVoVgEl1IpaQGL6+6+
-         beQ/8qGeZ/Er5JPwGdw6oH2EEeRhrPVpix8KQukUjhXCTedkrE9GdYptTZZXbRWyuZ+Z
-         NEX6kXuUHXZ4jhpeY3lRXvevbKfxs7/23hkXI7ZHzzAbUtuLYIVSwm0RXxWTdt9pbnKK
-         vGXg==
+Received: by mail-vs2-f43.google.com with SMTP id ada2fe7eead31-79028ca9371so760571137.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 27 Sep 2026 06:37:08 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790502521; x=1791107321;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=G1OxfNq/5YdzHTbdOohSN8hvy0lgOzxPTHbFi5QdzsE=;
-        b=aBwKRqYiqMJBGN0E0VYweUyqpPuW2dcNYh8qafv0hWeo6DMMSN/xKnw34Gmme/VyfY
-         1PnpHp38SOynLDFBRZerjJ67g7mhXYACDxlketVGCkHL/5EVT/vt2QeaqmTrA2fUqJ/K
-         REqdQFcKFHLmN8jdcT8b5i/IS66DKrpGRZ1kM0ZtEyvgBh5obzlqadOPgLiXak/YNIH6
-         ozf5HIoHY5brZzPuc9catMk89ab1wRFNB7awbuF9Xu8ev8cLIo6LCs6x+ANGe8txYpxm
-         afWmBXuWXOtwMW8l9OPz9AsT9Zm6HuoZ+spQqKjCFeSZsp6NN3kqp20PwSU3oCrJQ/uS
-         J2DA==
-X-Forwarded-Encrypted: i=1; AKwUvBxvM8G6n1BqLazNRgoMAwbIrnVuZ0DxEdbD52EA+t1HB85VmJI1DKE0Oo+2Qskj8eVp+YC//YumzSWoMg==@vger.kernel.org
-X-Gm-Message-State: AFq9FYL+6JWCGsjdK5auDbrOrI//6+X37v++8CvO9reWKtP+y7X5gRMF
-	itlTj4P4DPb5xjmwDtz+jm+xNuCQkh9LrXFNkEQ2hiyfDpulMxcHWFaHWRghfhZPhmNbYKYsnmK
-	OZ7OE8jlgMc/AUcFdNIemltGiA0URnjr8Ow==
-X-Gm-Gg: AYBFou3y9eeu+UfkC2l94otP7uiznJ2PF7jc/ULVqhGwkbivSe9j53bBe4dsqZboYZr
-	Ai2+WL9jjDCcAEfsCZqEwLaAAyElAJWPZojT47qN3C8YuHt2lDR6JEydOn1XfjfwAmrQv40J17I
-	+spdflQqkCr2lvxnNhQ3TwM1d2HsAmnBgJDOJnLmuZ1xdi8C6xAdm2s7Q3x50X2TSu9Ub/jXxrR
-	bO9jWGznemjszQ+nuFo9UgVMn0idQSUHtRA1ls06YJoUGDxnuMavJ0AljmigwnoDFsdyOGYLr/n
-	77dNjTa7sqY0+mE0JPR9aaWSMhHKFWvPQ7A5TgsNXCVLsyG/xXeJv9cNni1C2dl/rgClOo+5WKh
-	L6Rc/xgY3MSWA6c2QmHlNxurNK3UyHP/AWdSv8yJO60GNVxKV+LkMbws02bobz2Gm1A9qB3NIIy
-	XQ
-X-Received: by 2002:a2e:a812:0:b0:3a3:749e:31a1 with SMTP id
- 38308e7fff4ca-3a63de5c715mr24136561fa.21.1790502520622; Sun, 27 Sep 2026
- 02:48:40 -0700 (PDT)
-Received: from 77377267392 named unknown by gmailapi.google.com with HTTPREST;
- Sun, 27 Sep 2026 02:48:40 -0700
-Received: from 77377267392 named unknown by gmailapi.google.com with HTTPREST;
- Sun, 27 Sep 2026 02:48:40 -0700
+        d=1e100.net; s=20260707; t=1790516227; x=1791121027;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=EvrrFDOEfw30xeCEywR2DrXxtTlrcUlKoMxF2l4mFYQ=;
+        b=RnxNpdmFoqDVooQFkL7Q0E9cH0GQq4Bxp/N0Dqn+XZjE7gIHEbmTj81Y02EG8VUHB5
+         TOdqoEEHxG4iUKMLK1d2vdS9DtWMjuccf98yahHksrNEGFUe42PbIO+d8w/A+eGQ2Sfz
+         LztIaQc0xbv7bqAuIHTr2Lo1VWW5vhFEH0TfE7FA3qeiPbrgDVjUDbVA0QZYevI+amDo
+         3ZG9S9QVLViF3wEfrIVjA4DUSN0Qqt+v6/lCooJyyR2eSDVlUCc12E1xBDTeQT80Fv7U
+         Jz0BTCJPp7hc/+kuB4LtR8jqQ6gOJTKIw7+GkT+zE4MU7J2qow2pZ/HCuFoxiOIe/l3s
+         utBA==
+X-Gm-Message-State: AFq9FYJ/IUgX6rkj/sFwDiqYmW04T/pb/tVYaZ2x62Tod31Ij+9kp9H+
+	nZNb2kRkEaHAyLiGqe6+Vs0ThpCSDbNeXJBwMduqcMl5HT8jQo9/Q270yaIAmEib
+X-Gm-Gg: AYBFou3LdcJCaTQceFffzCw9JDWUmk3K+hBVQP3zRFFOybnA2Ly97IrouZJspb+BDvO
+	P8cpm7EKhId31fOAWDpuApMAMezOECMePZmNJ94FErRQXT1KOX2FGQPKDEBswyJEK242YMh/P6c
+	HxehSykivkZzraOjMcVDhlhwX/XENkGSTkyjXxbkb8u5kwOnEdF5FXr2lchFGgh+7wEIOMYOJ5B
+	0KwNu7GmECj4X5KolpKNP3yu8mVRDybh8ogny63k/dVFR8q3F+UXoQ0oHNg+D8SVgMJd40P/LGi
+	8qTzNlJmgcQCuoCPOwyS6ei6MDFM6eD6b/3NlXvQ2BPWLwNK1a8mXPb/PTYyl3LmKCUfHbm/S4W
+	VrVzTQEDBx4G27FgqbFD5KYAEmUDtqIjGsmQnbNllViJwdmFhHcWrwkcl86tx+WAG59V31HHLRh
+	w8/msFHwzCTGQwI1eajarqf1dfDZLK5leJux+wGUrN9YNl61DSJC/jOv4+44+UtX27fmHcsyRm9
+	4Cqwf2jjcZ9ntzvC82pIqAkwS4++ByVEmIh
+X-Received: by 2002:a05:6102:3ed4:b0:7a1:f7d2:e80a with SMTP id ada2fe7eead31-7af1eaeabd3mr3498624137.18.1790516227090;
+        Sun, 27 Sep 2026 06:37:07 -0700 (PDT)
+Received: from mail-vs2-f38.google.com (mail-vs2-f38.google.com. [74.125.227.38])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-9889ae9eaf9sm2740122241.0.2026.09.27.06.37.06
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 27 Sep 2026 06:37:06 -0700 (PDT)
+Received: by mail-vs2-f38.google.com with SMTP id 71dfb90a1353d-5cd1d9d66c9so644178e0c.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 27 Sep 2026 06:37:06 -0700 (PDT)
+X-Received: by 2002:a05:6102:41a1:b0:7a7:19aa:f0d0 with SMTP id
+ ada2fe7eead31-7af1eff6b23mr3197807137.29.1790516225994; Sun, 27 Sep 2026
+ 06:37:05 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: krishnanand G <krishnanandgeetheswaran@gmail.com>
-Date: Sun, 27 Sep 2026 02:48:40 -0700
-X-Gm-Features: AclHuK8BTBfNpqz3m6BQ2iIMJxIt6xRy_BCLLwu5RAkXd_Z2NtIUajK6RkAMxFU
-Message-ID: <CAG_41BL-nu7tDFjGgehz9Bf+KKPty8kR6A0RUUUfpepJu4doHQ@mail.gmail.com>
-Subject: [PATCH] staging: fbtft: fix spacing in macro calls
-To: andy@kernel.org
-Cc: gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org, 
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev
+References: <20260926062136.162108-1-deller@gmx.de>
+In-Reply-To: <20260926062136.162108-1-deller@gmx.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sun, 27 Sep 2026 15:36:54 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVB0PCGQnbNRVDT6D2dDNM6034GnkNk1FS-vZfwzRdVZA@mail.gmail.com>
+X-Gm-Features: AclHuK9ucjDUGnCQyC4VU3A8-llcICjZdwnLW26_tqxRQfUZez9PgO5NLvXPejM
+Message-ID: <CAMuHMdVB0PCGQnbNRVDT6D2dDNM6034GnkNk1FS-vZfwzRdVZA@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: atafb: fix sparse warnings
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	kernel test robot <lkp@intel.com>, Miro Kropacek <miro.kropacek@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 
-From 5473fd52eeda7ab1f608c414e386dad0ea40bef4 Mon Sep 17 00:00:00 2001
-From: Krishnanand G <118352827+Krishnanand-G@users.noreply.github.com>
-Date: Sat, 26 Sep 2026 19:41:06 +0530
-Subject: [PATCH] staging: fbtft: fix spacing in macro calls
+On Sat, 26 Sept 2026 at 08:23, Helge Deller <deller@gmx.de> wrote:
+> Fix two sparse warnings:
+> - atafb.c:1092: sparse: Using plain integer as NULL pointer
+>
+> Use NULL instead of 0 when assigning a pointer.
+>
+> - atafb.c:2824: sparse: switch with no cases
+>
+> FBCMD_GET_CURRENTPAR and and FBCMD_SET_CURRENTPAR seem to be
+> historic defines, which are not any longer in the kernel, and
+> as such the code isn't built any longer and may be dropped.
+>
+> Fixes: d463633d63e6 ("fbdev: atafb: Add support for SuperVidel's SuperBlitter")
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202609261313.kgFtkz2t-lkp@intel.com/
+> Cc: Miro Kropacek <miro.kropacek@gmail.com>
+> Signed-off-by: Helge Deller <deller@gmx.de>
 
-The two calls to define_fbtft_write_reg() that use the default
-modifier have a space before the closing parenthesis. This triggers
-two checkpatch.pl errors.
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Add an inline comment for the intentionally empty modifier argument.
-It satisfies the spacing check without changing the macro expansion.
+Gr{oetje,eeting}s,
 
-Tests: scripts/checkpatch.pl --no-tree -f --terse --strict
-  drivers/staging/fbtft/fbtft-bus.c
-Signed-off-by: Krishnanand G <118352827+Krishnanand-G@users.noreply.github.com>
-Assisted-by: LLM
----
- drivers/staging/fbtft/fbtft-bus.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+                        Geert
 
-diff --git a/drivers/staging/fbtft/fbtft-bus.c
-b/drivers/staging/fbtft/fbtft-bus.c
-index 30e436f..5f320de 100644
---- a/drivers/staging/fbtft/fbtft-bus.c
-+++ b/drivers/staging/fbtft/fbtft-bus.c
-@@ -62,9 +62,9 @@ out:									      \
- }                                                                             \
- EXPORT_SYMBOL(func);
-
--define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
-+define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, /* no modifier */)
- define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
--define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
-+define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, /* no modifier */)
-
- void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
- {
 -- 
-2.39.0.windows.2
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

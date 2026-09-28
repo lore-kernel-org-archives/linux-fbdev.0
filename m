@@ -1,135 +1,238 @@
-Received: from mail-oi2-f7.google.com (mail-oi2-f7.google.com [74.125.231.199])
+Received: from mail-oa2-f9.google.com (mail-oa2-f9.google.com [74.125.231.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61CA54E3244
-	for <linux-fbdev@vger.kernel.org>; Mon, 28 Sep 2026 16:15:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.231.199
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 753C14D796E
+	for <linux-fbdev@vger.kernel.org>; Mon, 28 Sep 2026 16:17:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.231.73
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790612157; cv=pass; b=DWbsh9j+3n64Vg2Bmj2bJE+3VUPlFWbUQ3rewPr/hoFnoF2ScacrNWef0UjQs5euLE+c3cVDExH/WyZkxhePnyMYKwSTb2xfpOLOp/TrfEAg0t0O8WKuG0Jk3mIhmUyYGuzdYvLp5T8uXaT8mI2uSpHpbX89Fg97cPWwwBOmwLA=
+	t=1790612273; cv=pass; b=k2V9ZteILlwUdnQ7PnhggI4r93NIrKWwAehT4APQfKn8MNFMI+Nx49HG4twcyTVvTTwUQZgW2ElFEsA9xY0ulsen40Cwx2yNB73FRd/iYuHiCGTTu4nXbUcz30S5Tn4YQeTgn+qGVuQfG4a5CEOcEGCyDPF5YtgW28hQpb+7CLk=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790612157; c=relaxed/simple;
-	bh=5zhxTTDmIVJyF7gRnQGI1x1uORVwq6Xhxto6tH0D/wQ=;
-	h=From:MIME-Version:Date:Message-ID:Subject:To:Cc:Content-Type; b=FICLwpWn2xnjT3MYOjatk3pk9vGQ6gTpd7WEbeqH5ybVXob1SszoGS6K1vSxZE5z6/bMEwNAnHxC8ir4VChG7BJMez0TlfeqhVvgQNpL/ob8U2iy3AC5t2JZm2voBrOi16yg20upjzHoIICR95iZyhn/6xMLW13M1hpPkrKuSTA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZlOhyslV; arc=pass smtp.client-ip=74.125.231.199
+	s=arc-20240116; t=1790612273; c=relaxed/simple;
+	bh=/9u3l8tvroAWhsZ3+bgszRdYGfDaF3Zw4nAXDtkGKNI=;
+	h=From:In-Reply-To:References:MIME-Version:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=WOH3O36uRLo7wp/XLXcn6lYlUou18XhiTHESOMtmQ1103/hu/1TVtGEAERmSoey4AaKO0/aRyXvPZ6h67cadzKI0feZU5lC9V613VIDO0KqPzx7p1Yw1wXeotuD3UE2lbn3ps9884FxRrOvnrepsKjpDDIalno9KS39JJiDLAl0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=T7K4jm22; arc=pass smtp.client-ip=74.125.231.73
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZlOhyslV"
-Received: by mail-oi2-f7.google.com with SMTP id 5614622812f47-4b39374fab5so1125287b6e.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 28 Sep 2026 09:15:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790612145; cv=none;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T7K4jm22"
+Received: by mail-oa2-f9.google.com with SMTP id 586e51a60fabf-47bd4bcc3e2so1444766fac.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 28 Sep 2026 09:17:51 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790612270; cv=none;
         d=google.com; s=arc-20260327;
-        b=EVcdKGYP4/XgJKt+OGIK2odmpg84okZD4+vyeCkN33v5F+4xu0MSvTAvBnKhGyQYdR
-         Q1Qsvci4qUY25SKxTt9SpoS2Hgrs8IJkOIpZUamfDQANm1RDxxsJaZPOGlmmZQAWD5eN
-         MUCinkfpnog+9L0COAHjYq9vQeDCPDDKQk64P0gdrCc8sayxtGWU75W6xfoHabNXIKoc
-         4m23ojquLBtD+gcicRE/M4s/AfXvKMpua2KtIWCHpHboIwbWiWG0nLeDOozZzYosNgFQ
-         3GlFYS9bgv2rG5jJQ3f5v5Sckj+5rKpJjXLoksrw+QLxc8YQd1O5CT7ChJnpxSlxFPfL
-         guJQ==
+        b=Rvfe00JbWthRFbkmp6HUL4AVD5xbUVxn40y8wA4AEcCZdZqvFx0iC+aMCL+cavlh28
+         Akb8P7M3hfVAU69HncSMhRk6vRkvrR8083XjEImihsazv97W02UjfRVQau7qpSuqT5iA
+         eZmdclIMcqLFjXZcqzisuddSC0+d6LmWaetPVLNhVkhckurmLcVzT7RiQ4ViDEKgM7Xx
+         4HTMLUPjpvLjuL6wbkptfsQLZWN+tQdWYPF4OOQQQ0Y1WpKjbe2xAHnKTK8sLFXPHdL0
+         es2ko2xbZDFx9hz7ZLETX1i9lKChACRVpJ/Y2lyOPVEpyJNzgbywqbV82yq+5pk2e3R8
+         rPpQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:mime-version:from:dkim-signature;
-        bh=0A5INQy7dX8LBqGciPLMu7YdS8AMK7M47XwobBkMymc=;
-        fh=8uW4tyIYMF+B+5XMFQZlui06QYcKE/BAZKDjGrLco0Y=;
-        b=dTqce+UXNCAUfQ0mFyo0DgUoo2DmO5Pb80yD++IyjZohBQ+IgRUai/Ri9QpfwJl6NC
-         UOsrIzqx0wY+oQR7RVcac8L9ucEFKE+SSKoDCMVTP+Jd8bEGxO66CkPDyYpSdyHU8Fyi
-         nKClb0VTlsq/JkFwbjPUX2krZ3tqjq2Y9NLk36KQLiOv8f1/WK7ZrJ3gbbRbFasW4cmQ
-         SLvMXZ24rFZv0vid9zEP44ssHlSISzkx68wmh42i8QE/UsK5DwXbEICM6TQ96AeZI7OL
-         WDqFSyX+PbfNDJpXibHBU68JCiZqDBWVmUzNlBHD3nOKoAHj4/HZ5aEdWhZwWcGbjE1W
-         rBQA==;
+        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
+         :from:dkim-signature;
+        bh=mAEzcqvZR7kY5FZwPLKlXWGuBFBAruI7pzeVz3Vqh4E=;
+        fh=zHXLhSo+2zzqpb7PCf2YDUaTncdH5KLJTBPwlv8xHiI=;
+        b=LiXQhkQ4gmzT3OzvNoTSIXBS3YV0XTVwRcjyKofKXy13i3gy7NTDF9owMZS+btYgRA
+         RMhWCC2UnkfzVqlsuoqfRYZoTxsZPJz7UMHzAcTjhNXiOHfz6zhswr+mJSXvSQvwAaxQ
+         KpkBZli2j3+qsiu+qn/5W+mNVLnWFQAN8+0IBEye/t3T68oTGmsRgD5S6lyz9rulo/rm
+         +NA5YhyIB/l4Z1E5aI4Nmvx7rbVw0isj9iREP7Yw2YoZu0Otv3El/gItUy0n+6C6TnEE
+         kECqYj9iSCf6NsU5tHaU/JtJEFAzKKXTrkkz3l++LjaR5IHpw/B+uiO6KH/zslgL5+wi
+         61nQ==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790612145; x=1791216945; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:mime-version:from:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=0A5INQy7dX8LBqGciPLMu7YdS8AMK7M47XwobBkMymc=;
-        b=ZlOhyslVUrlWymcuC/MqPbxr4onRVzChOjkIPIgTGWjevHlLxpftjx9So4kGgay9TJ
-         I1e0qyo36WrHA7CrVVzULjLmP41bpz1dbXrPO3oH3v3nCeEwlpJ7ctpgOKwNry3cP4lm
-         EucllAX1KO++yYuDTC5kpHW/nv+i5kyZ3ssIavSSPgraGgJeo4XW8jWJULZv46eIRI2P
-         c/lAhgZ+rQSD4Pr2aLFtxo+JiIQ5pxA5huBRQLGhn8L3iOOx+1fMpm8aDk7Xj6du4W4G
-         c51aMVXxbAszP4ySV1HTYxr2bQhKi3c7KWKZ8oKF5ZPIcL4T9C8fbyWZPwKQKiIW4WBm
-         qHtA==
+        d=gmail.com; s=20251104; t=1790612270; x=1791217070; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:mime-version:references
+         :in-reply-to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=mAEzcqvZR7kY5FZwPLKlXWGuBFBAruI7pzeVz3Vqh4E=;
+        b=T7K4jm22TTyshae2BQw2pmgbgDt009kzc7b+aCWAh8Hox6+IZGJj6DdNnXUrZ0QsAG
+         tZi7G6g5N6nh3qbbAKiiz6Okzwq+beTf+vJKN2KsupZ8hFJkyANbpJcBmH5dsfMo2nwK
+         O6y//GA1tld7ZsZlAVQsIHvEUB7gZwOThyYqWlAb5I+4pYTq0IArU0OdhlqjYLMwtFbi
+         DYIzmEQ147pZ6XMqa8PlZGY4iEBiIfmhGw+C2eyU63x4lw+cx6CbUJOqyMcSWWfS28KE
+         kUXT2N2hNv/LVY8iiYwofbaX9b10gvafyjUlpBWlaTcnQmKspGzZkzAdXfvHPv7+L2w7
+         31nQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790612145; x=1791216945;
-        h=content-type:cc:to:subject:message-id:date:mime-version:from
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=0A5INQy7dX8LBqGciPLMu7YdS8AMK7M47XwobBkMymc=;
-        b=KBtAfxpnF1fkz7MoW1zg7UE0DcYWiQ6AkwzC1wQ7ulknfzBpBmTA0YCq+KzoyHZZvS
-         8XsMHrVBLpMyBBFFK0NqZheaxOD9tBEscK2aM6BYESvmeW25Cwn9zTMhkZXuraiG80gL
-         aDVBns76oVDPXZl1TerugKTk2vq//zJCSakMZjXAw1Sn5uCJyqZNy89F9NjpgnEWViCW
-         0EeZFxkat2QUz61E+lvmrwcfzblNoF1PCju0OGt5X3C60OlzYO+zaFyIpWDl3iEQmDFe
-         dwDEOeMYdEzCArnvpEkuzvtcbx+KMbe6TK2uYvDID1jPhzYOTtJrgM52a8YYr90YQpLb
-         hMWw==
-X-Forwarded-Encrypted: i=1; AKwUvBxzkXn5rs90Z7Y6TQWOb4Ncmd72MtCQnr0IVWJ+OeOgqOm3Ffmav+ibVw/Lp0KLwSa8y6dPT2G+F4titw==@vger.kernel.org
-X-Gm-Message-State: AFuF++mqguqwTbaXztCCRfDcm2cQ8qNbaNxlCMk38HqIqEplQ/c/Qhc0
-	1OwIV8pAppC16QueTtQ5oSYrfhh5yTGC6bFAPNVckO19lt98rA0G87R1qR/7d5PTzwzMrSCNWFd
-	lKVJRXfIEHqq1wzKHAQlIPLLHMP4mde8=
-X-Gm-Gg: AYBFou3vKjBo7MVMyb0xkuAfRxH6LGNECVUe0JRZDAAVtyx9ZzHLsIjjwvmwHDroN8u
-	TOi8VQFejn1oJhM+7U5DxYLCQIgtPkhSteFU6seP+A052iSWCuRIDjYGmJokzBsGB12coq9E9Zb
-	54i7NTJkj2GCNd6r/NdaeoYp4Pp0q8tLSUCFblswAFlUUD6LbcystMbjbpXLAgFp6lx8CskXhxP
-	Ho0vWlEhYbFF3kvfgvy9Xj50VNnvthDVVAzyx0Ao/Hf/21D2JnE8liwsK2HX6TsXBcPJONSCdoL
-	0CDj6yH1CbZ+aQ5goEi+XV8V+94T8HLfVrgla1NnyRoyEWc1WcKh1ustzmnpO9/kMbmtfA/Gvc9
-	704iEJ4RzRQ==
-X-Received: by 2002:a05:6808:198e:b0:4d6:90f4:48ba with SMTP id
- 5614622812f47-4d72ac45eacmr14395634b6e.44.1790612144676; Mon, 28 Sep 2026
- 09:15:44 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1790612270; x=1791217070;
+        h=content-type:cc:to:subject:message-id:date:mime-version:references
+         :in-reply-to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=mAEzcqvZR7kY5FZwPLKlXWGuBFBAruI7pzeVz3Vqh4E=;
+        b=Vrnk5KTOkF6XuTPiMutdRdFPZgkbiplY7cwtT94XrSXPziKZHBiiA/Nr/DUHb7LP+V
+         0lNJ/bjohyVE/rwZatWsUrbqJdtnMD8qiumfWNnu7vI07rzZ+43m+JW0Hr2mTxs57BYh
+         8TCx2VcKrnyPPHzufSJxdqHMCQWu05dVRj+gUPkaGDCNaQTOw1hY1BKwqc+kHdiopNSv
+         D7AgIb9Ap/Y8VX4WPOMlg7cbZd48A/BfzfK2mXhD7J4apqe+itIlpE9REYqu6BgYDVm+
+         O9fMeDXLlZkcg0Lct7KPjtu+bRGAEQjJGQfHEXtTLqLoLiXrcRRRADHoLfujaoMMt2x/
+         Y92w==
+X-Forwarded-Encrypted: i=1; AKwUvBwH76MgLuQV0cQOYyss/4IGYmQqK53M5WqWkLrb6DNwfcj8ie17rTQOvqzrGmeV7CMQLMWvwHD62M1Tqg==@vger.kernel.org
+X-Gm-Message-State: AFuF++m3/yWkfcgQg0rHLpqfZfgM2P86vTX23zCW/zCovrGfmWINwihO
+	/Jvjs3/ApPGhCwBgRzPLtqc8nkbi0Wq7TCzzPcB678ya5V88l9VY0bh5deNgIqPSRPlMW2uJ1c2
+	6GkUy9oqPmuiIY2HI+BuN5weYW5yoWK0=
+X-Gm-Gg: AYBFou3Cmn+QLabEu/o3ML53UV2Ce8U26kVelnS0QpvttiBOiWeLvh38i04e+HR0Ege
+	BcFcJQ67zwRTowFkIEC/HqQ2ZdacQuOajsRHQxa+TDhYLMv2wichCAnXLWX0vQj4I4k3zaNXFVu
+	5Vt+IUGQy8bDHVXZahuAckoZIOFdTYAo4iblWeUi6BCddu++/eB2rwJtyX+ntGvERoXZZ8PTKUY
+	dpNGPffqvckWDGMNQne/IayFdyVbqnYZwgPclGpcbIKIOQTm7iRA0/01wqQHfNqgmn0nddGw5nz
+	63+n5rfBMjTZLd4M4mRpctwY9UiXG1buGPYVCf6CujYxOlyoTSXqlkXeSTiAEku4meSlwY11a2R
+	Zh9ORL47ASw==
+X-Received: by 2002:a05:6808:180f:b0:4ea:f4ab:dad7 with SMTP id
+ 5614622812f47-4eaf4abde31mr3114576b6e.43.1790612270217; Mon, 28 Sep 2026
+ 09:17:50 -0700 (PDT)
 Received: from 578479312649 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 28 Sep 2026 18:15:44 +0200
+ HTTPREST; Mon, 28 Sep 2026 16:17:49 +0000
 Received: from 578479312649 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 28 Sep 2026 18:15:44 +0200
+ HTTPREST; Mon, 28 Sep 2026 16:17:49 +0000
 From: Aveline Noir <jm5905938@gmail.com>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <CANOyQmGfmBdTRaEamVdGuMBToVLeXGi6qLrnX=xkA9acsL9TSQ@mail.gmail.com>
+References: <CANOyQmGfmBdTRaEamVdGuMBToVLeXGi6qLrnX=xkA9acsL9TSQ@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Mon, 28 Sep 2026 18:15:44 +0200
-X-Gm-Features: AclHuK9iPdog26wVV94AzoDOB6Ecnbo54mNzfsBz7HWPWdsxEbSKehYuy5Lt6Js
-Message-ID: <CANOyQmGfmBdTRaEamVdGuMBToVLeXGi6qLrnX=xkA9acsL9TSQ@mail.gmail.com>
-Subject: [PATCH v2 0/2] HID: picolcd: Fix output-request and framebuffer locking
+Date: Mon, 28 Sep 2026 16:17:49 +0000
+X-Gm-Features: AclHuK8BjruCpIs-y-znTwRHy4UbPVU7NoASXj59drlp5sgPwJENTSFHMkI16G0
+Message-ID: <CANOyQmHF-gjvnLqTGEVBcU6+AWj5ha+7tJhE2E_Cv9aj-gRXdA@mail.gmail.com>
+Subject: [PATCH v2 2/2] HID: picolcd: Avoid framebuffer last-close deadlock
 To: Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <bentiss@kernel.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	syzbot+912222e4cb82423535fa@syzkaller.appspotmail.com, bigeasy@linutronix.de, 
-	linux-rt-devel@lists.linux.dev, deller@gmx.de, simona@ffwll.ch, 
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, deller@gmx.de, 
+	simona@ffwll.ch, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 Content-Type: text/plain; charset="UTF-8"
 
-This series fixes two PicoLCD locking problems. The first moves output
-requests into sleepable context and serializes LED state updates. The
-second breaks the last-close/deferred-worker lock dependency using a
-private framebuffer update mutex.
+Closing the last framebuffer descriptor can deadlock against PicoLCD's
+deferred update worker. fb_release() holds info->lock while waiting for
+deferred work, and picolcd_fb_update() takes the same lock. Lockdep
+reports the cycle through deferred-work completion and fbdefio_state->lock.
+Repeated framebuffer open/write/close with concurrent device destruction
+reproduces the hang in a PREEMPT_RT QEMU guest.
 
-The first patch was tested separately with the original syzkaller C
-reproducer and bounded concurrent sysfs/UHID-destroy workloads on
-PREEMPT_RT. The complete series additionally passed repeated framebuffer
-open/write/close and persistent-open framebuffer tests. Pre-fix modules
-reproduced the respective failures. Physical hardware, prolonged stress
-and suspend/resume have not been tested.
+Use a private update mutex in the deferred worker instead of info->lock.
+Take it in picolcd_set_par() as well to preserve serialization of pixel
+format conversion and framebuffer updates. Initialize it before exposing
+the framebuffer.
 
-Patch 2's Fixes tag identifies the fbdev change that began draining
-deferred work from fb_release() while holding info->lock. Patch 1's Fixes
-tag was checked against the upstream transport-conversion diff.
+The test with the preceding output-request fix hung in the first round
+and reported a circular locking dependency. With this change, all five
+rounds completed, including 29 successful framebuffer write cycles and
+concurrent LCD, backlight, two LED and UHID destroy operations, without
+BUG/WARNING. The original syzkaller reproducer and persistent-open
+framebuffer tests also passed again. These are bounded virtual-device
+tests; physical hardware and suspend/resume remain untested.
 
-Changes in v2:
-- Address Sebastian Andrzej Siewior's feedback: clarify that the issue
-  is not specific to PREEMPT_RT and identify picolcd_data::lock as a
-  spinlock_t in patch 1. The code changes are identical to v1.
+Fixes: 3efc61d95259 ("fbdev: Fix invalid page access after closing
+deferred I/O devices")
+Signed-off-by: Aveline Noir <jm5905938@gmail.com>
+---
+ drivers/hid/hid-picolcd.h    |  2 ++
+ drivers/hid/hid-picolcd_fb.c | 33 ++++++++++++++++++++++-----------
+ 2 files changed, 24 insertions(+), 11 deletions(-)
 
-Aveline Noir (2):
-  HID: picolcd: Move output requests out of spinlocked sections
-  HID: picolcd: Avoid framebuffer last-close deadlock
+diff --git a/drivers/hid/hid-picolcd.h b/drivers/hid/hid-picolcd.h
+index 846a8ceb95..33e6654ca0 100644
+--- a/drivers/hid/hid-picolcd.h
++++ b/drivers/hid/hid-picolcd.h
+@@ -115,6 +115,8 @@ struct picolcd_data {
+ struct picolcd_fb_data {
+ 	/* Framebuffer stuff */
+ 	spinlock_t lock;
++	/* Deferred I/O runs while fbdefio_state->lock is held. */
++	struct mutex update_lock;
+ 	struct picolcd_data *picolcd;
+ 	u8 update_rate;
+ 	u8 bpp;
+diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
+index c17104fd60..258c7c4fa2 100644
+--- a/drivers/hid/hid-picolcd_fb.c
++++ b/drivers/hid/hid-picolcd_fb.c
+@@ -231,7 +231,8 @@ static void picolcd_fb_update(struct fb_info *info)
+ 	struct picolcd_fb_data *fbdata = info->par;
+ 	struct picolcd_data *data;
 
- drivers/hid/hid-picolcd.h           |  4 +++
- drivers/hid/hid-picolcd_backlight.c |  7 ++--
- drivers/hid/hid-picolcd_core.c      | 46 +++++++++++++++---------
- drivers/hid/hid-picolcd_fb.c        | 56 ++++++++++++++++++-----------
- drivers/hid/hid-picolcd_lcd.c       |  7 ++--
- drivers/hid/hid-picolcd_leds.c      | 31 +++++++++-------
- 6 files changed, 93 insertions(+), 58 deletions(-)
+-	mutex_lock(&info->lock);
++	/* fb_release() flushes this work while holding info->lock. */
++	mutex_lock(&fbdata->update_lock);
 
+ 	spin_lock_irqsave(&fbdata->lock, flags);
+ 	data = !fbdata->ready ? fbdata->picolcd : NULL;
+@@ -258,11 +259,11 @@ static void picolcd_fb_update(struct fb_info *info)
+ 				spin_lock_irqsave(&fbdata->lock, flags);
+ 				data = fbdata->picolcd;
+ 				spin_unlock_irqrestore(&fbdata->lock, flags);
+-				mutex_unlock(&info->lock);
++				mutex_unlock(&fbdata->update_lock);
+ 				if (!data)
+ 					return;
+ 				hid_hw_wait(data->hdev);
+-				mutex_lock(&info->lock);
++				mutex_lock(&fbdata->update_lock);
+ 				n = 0;
+ 			}
+ 			spin_lock_irqsave(&fbdata->lock, flags);
+@@ -277,13 +278,13 @@ static void picolcd_fb_update(struct fb_info *info)
+ 		spin_lock_irqsave(&fbdata->lock, flags);
+ 		data = fbdata->picolcd;
+ 		spin_unlock_irqrestore(&fbdata->lock, flags);
+-		mutex_unlock(&info->lock);
++		mutex_unlock(&fbdata->update_lock);
+ 		if (data)
+ 			hid_hw_wait(data->hdev);
+ 		return;
+ 	}
+ out:
+-	mutex_unlock(&info->lock);
++	mutex_unlock(&fbdata->update_lock);
+ }
 
-base-commit: 72d3fcf802c45d00b300f25b848a93c3a2bd7c7e
+ static int picolcd_fb_blank(int blank, struct fb_info *info)
+@@ -332,17 +333,24 @@ static int picolcd_set_par(struct fb_info *info)
+ {
+ 	struct picolcd_fb_data *fbdata = info->par;
+ 	u8 *tmp_fb, *o_fb;
++	int ret = 0;
++
++	mutex_lock(&fbdata->update_lock);
+ 	if (info->var.bits_per_pixel == fbdata->bpp)
+-		return 0;
++		goto out;
+ 	/* switch between 1/8 bit depths */
+-	if (info->var.bits_per_pixel != 1 && info->var.bits_per_pixel != 8)
+-		return -EINVAL;
++	if (info->var.bits_per_pixel != 1 && info->var.bits_per_pixel != 8) {
++		ret = -EINVAL;
++		goto out;
++	}
+
+ 	o_fb   = fbdata->bitmap;
+ 	tmp_fb = kmalloc_array(PICOLCDFB_SIZE, info->var.bits_per_pixel,
+ 			       GFP_KERNEL);
+-	if (!tmp_fb)
+-		return -ENOMEM;
++	if (!tmp_fb) {
++		ret = -ENOMEM;
++		goto out;
++	}
+
+ 	/* translate FB content to new bits-per-pixel */
+ 	if (info->var.bits_per_pixel == 1) {
+@@ -369,7 +377,9 @@ static int picolcd_set_par(struct fb_info *info)
+
+ 	kfree(tmp_fb);
+ 	fbdata->bpp = info->var.bits_per_pixel;
+-	return 0;
++out:
++	mutex_unlock(&fbdata->update_lock);
++	return ret;
+ }
+
+ static void picolcdfb_ops_damage_range(struct fb_info *info, off_t
+off, size_t len)
+@@ -506,6 +516,7 @@ int picolcd_init_framebuffer(struct picolcd_data *data)
+
+ 	fbdata = info->par;
+ 	spin_lock_init(&fbdata->lock);
++	mutex_init(&fbdata->update_lock);
+ 	fbdata->picolcd = data;
+ 	fbdata->update_rate = PICOLCDFB_UPDATE_RATE_DEFAULT;
+ 	fbdata->bpp     = picolcdfb_var.bits_per_pixel;
 -- 
 2.55.0

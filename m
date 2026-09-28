@@ -1,298 +1,269 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C20D335C1BC;
-	Mon, 28 Sep 2026 08:57:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82815485949;
+	Mon, 28 Sep 2026 09:07:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.9
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790585868; cv=none; b=F9CNIaI5zr2h0RG5bMDYhlGQGFLnPX7U49QQNdDmReJPnrVGW8w3fBr7eK++14cDC+FOBHlmbHCf37v2Yuk02biXNBM5nRe9pIB6cTfvB9cq2po+QlAmLD8TBSx/UcozK2zq3AZao4rI3YBfyBkbzYFsU0CLWcgq5bwTHR852hk=
+	t=1790586431; cv=none; b=S2XBqNtg/UN6vqPVmnKLjNIoVyAT02EVZxmWoILNlOqk0AtOyW2BTHg0OWWjZG54jebEsFWIjkFLmgQUemg84wr2pLyI2al+6JIxw/2fz81vkQNIgZ9CGtr67LAJBLxbcp48jfUXldBwAIEvkJFlolVqkux2vOuzk3RK4JgJPSA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790585868; c=relaxed/simple;
-	bh=JsKAJx8BMfZHoE7fTfSMmLBTHvQ4HXUbc3J/MfRdqnE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oQL/Oy5VVMCiStirf+oNPHNRm1LZd486uTTWzm50BDGjp1q1KzSTUxGr32JZy0T8uYmS0WsJR49sYlpUndNISu+/M8Vr/6gMF4Lk+CnVEqSbtSwW9wdxPaPXRBje5ZEYJOnkfrIJSSmeKsN8y3MobmniSb201hcheg0w6+FnedM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=h8HVsXDJ; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Rwevysdt; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Qfv7yWhd; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=gvfgsLyC; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1790586431; c=relaxed/simple;
+	bh=dAtvLrjUvMJgdZTQ8XVAIxOGXDZkRD/ZGR7CSApiYA0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=c4K1H7PkMJZX3NB+JIHO9iH+Wkj/+2r6v3PGdSFhfSDX0v19k3LaUiarPqRAIlgV1m0YW2p5cEwRLFbXm/9M78oTFVvyF5bJbSYHJzNtVclD2ZfaSSXlJ71/7V+jW5uWcnGgnMJC1e8ptR+ILao9pl3UiF+tppAzqYXPb2re8q0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=ClUGi41R; arc=none smtp.client-ip=198.175.65.9
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="h8HVsXDJ";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Rwevysdt";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Qfv7yWhd";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="gvfgsLyC"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id BBE6C2005F;
-	Mon, 28 Sep 2026 08:57:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1790585860; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eQInQiSoFgN20FwPZAQkSimSNxx0P+gPkILtWae2sXM=;
-	b=h8HVsXDJ57TrisiNuQXH+7Ry2/1MsQ1mui1Kn3oU0hUZJnAqXjylvtW57BfXbW4wzTyLD2
-	5RgLDN7bcM+cghkc7n6q/NzQFCSX2LB/4PKPxL8ASdJr16cpUgjFVUsoGHGxBvxFUes4SV
-	9M0hfLQHkLN8rOX5nRHxVqvMSvjfi+Y=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1790585860;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eQInQiSoFgN20FwPZAQkSimSNxx0P+gPkILtWae2sXM=;
-	b=RwevysdtqOOA4dK4Ra23UrqUsvpYR/BQ/gMqlS/a0qGYK73Wh5WFvsos5Dif7l0p4AOpDS
-	KPxJwtYofDsRz5DQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Qfv7yWhd;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=gvfgsLyC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1790585856; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eQInQiSoFgN20FwPZAQkSimSNxx0P+gPkILtWae2sXM=;
-	b=Qfv7yWhdydEZ6HAj5qrhZvOl8P6pQus72AmkCQfsrmvKpjcw7VmivCU7MmsCWCLpfpWnXF
-	wwmlEayUlLA1kVGn8ifYby0nB5LaQZiUF4AVa5gmqLJ5J8tmgj/YlUZhggvsH1RXI6vBct
-	+p5hyu8RRnbknA+XJrZ3KpK2f9lg8WM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1790585856;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eQInQiSoFgN20FwPZAQkSimSNxx0P+gPkILtWae2sXM=;
-	b=gvfgsLyCZtpmD59/Pt9eux8K1yBcpF0Qh45hBdddqJo1KHYK8jWbfTLFXxEMp0l2ryvHDg
-	6RiYCVqSEwhoZhBw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6CB2013432;
-	Mon, 28 Sep 2026 08:57:29 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Kr86I/crumo3HwAAD6G6ig:T6
-	(envelope-from <tzimmermann@suse.de>); Mon, 28 Sep 2026 08:57:29 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: deller@gmx.de,
-	gregkh@linuxfoundation.org,
-	jirislaby@kernel.org,
-	simona@ffwll.ch
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-serial@vger.kernel.org,
-	sashiko-reviews@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 5/5] fbcon: Replace fbcon_fill_cursor_mask() with fbcon_cursor_glyph()
-Date: Mon, 28 Sep 2026 10:55:28 +0200
-Message-ID: <20260928085724.41660-6-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260928085724.41660-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="ClUGi41R"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1790586429; x=1822122429;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=dAtvLrjUvMJgdZTQ8XVAIxOGXDZkRD/ZGR7CSApiYA0=;
+  b=ClUGi41RKRvypTrjEiiJYhhVBaAHovO0CnPKB0rOtRG4i4d0zN78hdKt
+   kWa4S93oHan4u6a6kn9efEhd4mFf6DFQhHuzclyM5GeXxFq50SooFgCcd
+   VcCazxSdEpKz5A4kdx6sQQgOL59dpp/Hz90k3PPnm5lPDAmn1T5sIuAuE
+   JXV91+/wR53XI8SWna+BkEQZcXdyFOqx9/KYfyfEduV9XYB3QPWevhM8S
+   1i2+mr+iQKGOirUpIFuKahXEjiSZXYkbu2lgPfUauGePcroEBQgh8gZyO
+   sbJ3zUtoMhxqiHsxpBOoYok+NjjBQZkTzljBkZeyRsMBAld/wIf9HNZJx
+   A==;
+X-CSE-ConnectionGUID: vnFuWbsiTMiULDdkkEzmlA==
+X-CSE-MsgGUID: gF+a4JEORHeMJ9bNM7P5/g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11918"; a="113064571"
+X-IronPort-AV: E=Sophos;i="6.27,128,1787036400"; 
+   d="scan'208";a="113064571"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Sep 2026 02:07:08 -0700
+X-CSE-ConnectionGUID: ZUeIqnn/S/qrXMCSWW+wHQ==
+X-CSE-MsgGUID: Dz6IRCGHRNWA+R3MTY6kTg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,128,1787036400"; 
+   d="scan'208";a="278351074"
+Received: from cpetruta-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.54])
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Sep 2026 02:07:05 -0700
+From: Jani Nikula <jani.nikula@linux.intel.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, deller@gmx.de,
+ gregkh@linuxfoundation.org, jirislaby@kernel.org, simona@ffwll.ch
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-serial@vger.kernel.org, sashiko-reviews@lists.linux.dev, Thomas
+ Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH v3 1/5] vt: Add cursor-size helpers
+In-Reply-To: <20260928085724.41660-2-tzimmermann@suse.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park,
+ 6 krs Bertel Jungin Aukio 5, 02600 Espoo, Finland
 References: <20260928085724.41660-1-tzimmermann@suse.de>
+ <20260928085724.41660-2-tzimmermann@suse.de>
+Date: Mon, 28 Sep 2026 12:07:02 +0300
+Message-ID: <7e3cccd612e87e6e85271a026d9fc737a56eaa6c@intel.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Level: 
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: BBE6C2005F
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[gmx.de,linuxfoundation.org,kernel.org,ffwll.ch];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	R_RATELIMIT(0.00)[to_ip_from(RLqtkr6cif1ebgurukgmwdm7xc)];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email,suse.de:mid,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,gmx.de:email];
-	RCPT_COUNT_SEVEN(0.00)[9];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de]
-X-Spam-Flag: NO
-X-Spam-Score: -3.01
+Content-Type: text/plain
 
-The kernel's font library provides font_glyph_cursor() to create cursor
-glyphs. Replace fbcon's fbcon_fill_cursor_mask() with a new helper that
-uses font_glyph_cursor().
+On Mon, 28 Sep 2026, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Cursors in the VT subsystem are blocks within a character cell that are
+> filled with the foreground color. The new helpers vc_cursor_start() and
+> vc_cursor_end() return the scanlines in which the cursor block starts rsp.
+> ends. This is compatible with VGA hardware.
+>
+> In terms of cursor design, the new cursor-size helpers follow established
+> styles in fbcon. The only exception is in underline cursors for fonts with
+> a size larger than 10. The underlining dash is now one pixel closer to
+> the font-glyph data, so that the cursor looks less detached. This follows
+> the style used by vgacon.
+>
+> Users control the cursor size with the vt module's parameter cur_default
+> or with the ESC sequence \e[?Nc, where N is the cursor-size constant. In
+> case of an invalid setting, the new helpers fall back to cur_default and
+> then underline cursors; in this order.
+>
+> Similar code in vgacon and fbcon ignores the cursor's default size stored
+> in vt.cur_default. The consoles default to full-block cursors, while vt
+> defaults to underline cursors. VGA BIOSes also tend to use underline by.
+> default. Upon initialization vt applies its default to the console, but
+> each console might fall back to it own default. For example, running the
+> ESC code from above with the invalid constant of 8 magically flips the
+> cursor from underline to block size on vgacon. Another call with N set
+> to 0 (i.e., default) magically flips it back to underlyine. Making
+> underline the new default everywhere harmonizes vt, fbcon and most VGA
+> BIOSes.
+>
+> v3:
+> - mention user interfaces to control cursor size in commit message (GregKH)
+> - elaborate defaults (GregKH)
+> - move retry logic into helper
+> - handle CUR_DEF
+> v2:
+> - export non-font interface for vgacon
+> - avoid interference from concurrent user space (Sashiko)
+> - fix function docs (Sashiko)
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reviewed-by: Helge Deller <deller@gmx.de>
+> ---
+>  drivers/tty/vt/vt.c            | 104 +++++++++++++++++++++++++++++++++
+>  include/linux/console_struct.h |   7 +++
+>  2 files changed, 111 insertions(+)
+>
+> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+> index 57edf37495a8..8141296ccad0 100644
+> --- a/drivers/tty/vt/vt.c
+> +++ b/drivers/tty/vt/vt.c
+> @@ -71,6 +71,7 @@
+>   * by Adam Tla/lka <atlka@pg.gda.pl>, Aug 2006
+>   */
+>  
+> +#include <linux/compiler.h>
+>  #include <linux/module.h>
+>  #include <linux/types.h>
+>  #include <linux/sched/signal.h>
+> @@ -264,6 +265,109 @@ unsigned int vc_font_size(const struct vc_font *font)
+>  }
+>  EXPORT_SYMBOL_GPL(vc_font_size);
+>  
+> +/*
+> + * Cursors
+> + */
+> +
+> +static unsigned int vc_cursor_size(unsigned int cursor_size)
+> +{
+> +	const unsigned int cursor_default_size = CUR_SIZE(READ_ONCE(cur_default));
+> +
+> +retry:
+> +	switch (cursor_size) {
+> +	case CUR_NONE:
+> +	case CUR_UNDERLINE:
+> +	case CUR_LOWER_THIRD:
+> +	case CUR_LOWER_HALF:
+> +	case CUR_TWO_THIRDS:
+> +	case CUR_BLOCK:
+> +		return cursor_size;
+> +	default:
+> +		pr_warn_once("Unknown cursor %u\n", cursor_size);
+> +		fallthrough;
+> +	case CUR_DEF:
+> +		/*
+> +		 * Use user-given default size, or underline if
+> +		 * the given default is invalid.
+> +		 */
+> +		if (cursor_size != cursor_default_size)
+> +			cursor_size = cursor_default_size;
+> +		else
+> +			cursor_size = CUR_UNDERLINE;
+> +		goto retry;
 
-The cursor shapes remain mostly unchanged. The only exception is in
-underline cursors for fonts with a size larger than 10. The underlining
-dash is now one pixel closer to the font-glyph data, so that the cursor
-looks less detached. This follows the style used by vgacon.
+Complete bikeshed, but IMO goto for retries is ugly. It's fine for error
+handling, but this could trivially be a loop.
 
-v2:
-- adapt to new VT interface
+BR,
+Jani.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Helge Deller <deller@gmx.de>
----
- drivers/video/fbdev/core/bitblit.c   |  3 +-
- drivers/video/fbdev/core/fbcon.c     | 45 +++++++---------------------
- drivers/video/fbdev/core/fbcon.h     |  2 +-
- drivers/video/fbdev/core/fbcon_ccw.c |  3 +-
- drivers/video/fbdev/core/fbcon_cw.c  |  3 +-
- drivers/video/fbdev/core/fbcon_ud.c  |  3 +-
- 6 files changed, 16 insertions(+), 43 deletions(-)
+> +	}
+> +}
+> +
+> +/**
+> + * vc_cursor_start - Calculates the cursor's first scanline within a character cell
+> + * @cell_height: The overall height of the character cell
+> + * @cursor_size: The size constant of cursor pattern
+> + *
+> + * The parameter @cell_height is the height of the character cell as
+> + * displayed by the console. The argument given in @cursor_size is one
+> + * of the CUR_ constants, as stored in struct @vc_data.vc_cursor_type.
+> + * For unknown values, the helper draws the default cursor or an underline
+> + * dash.
+> + *
+> + * Returns:
+> + * The index of the cursor's first scanline within the character cell
+> + */
+> +unsigned int vc_cursor_start(unsigned int cell_height, unsigned int cursor_size)
+> +{
+> +	switch (vc_cursor_size(cursor_size)) {
+> +	case CUR_NONE:
+> +		return cell_height;
+> +	case CUR_UNDERLINE:
+> +	default:
+> +		if (cell_height < 10)
+> +			return cell_height - 1;
+> +		else
+> +			return cell_height - 3;
+> +	case CUR_LOWER_THIRD:
+> +		return cell_height - cell_height / 3;
+> +	case CUR_LOWER_HALF:
+> +		return cell_height - cell_height / 2;
+> +	case CUR_TWO_THIRDS:
+> +		return cell_height - (cell_height * 2) / 3;
+> +	case CUR_BLOCK:
+> +		return 0;
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(vc_cursor_start);
+> +
+> +/**
+> + * vc_cursor_end - Calculates the first scanline after the cursor within a character cell
+> + * @cell_height: The overall height of the character cell
+> + * @cursor_size: The size constant of cursor pattern
+> + *
+> + * The parameter @cell_height is the height of the character cell as
+> + * displayed by the console. The argument given in @cursor_size is one
+> + * of the CUR_ constants, as stored in struct @vc_data.vc_cursor_type.
+> + * For unknown values, the helper draws the default cursor or an underline
+> + * dash.
+> + *
+> + * Returns:
+> + * The index of the first scanline after the cursor within the character cell
+> + */
+> +unsigned int vc_cursor_end(unsigned int cell_height, unsigned int cursor_size)
+> +{
+> +	switch (vc_cursor_size(cursor_size)) {
+> +	case CUR_UNDERLINE:
+> +	default:
+> +		if (cell_height < 10)
+> +			return cell_height;
+> +		else
+> +			return cell_height - 1;
+> +	case CUR_NONE:
+> +	case CUR_LOWER_THIRD:
+> +	case CUR_LOWER_HALF:
+> +	case CUR_TWO_THIRDS:
+> +	case CUR_BLOCK:
+> +		return cell_height;
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(vc_cursor_end);
+> +
+>  /*
+>   * /sys/class/tty/tty0/
+>   *
+> diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+> index fe915afdece5..1d37c7898ea0 100644
+> --- a/include/linux/console_struct.h
+> +++ b/include/linux/console_struct.h
+> @@ -204,6 +204,10 @@ struct vc {
+>  extern struct vc vc_cons [MAX_NR_CONSOLES];
+>  extern void vc_SAK(struct work_struct *work);
+>  
+> +/*
+> + * Cursors
+> + */
+> +
+>  #define CUR_MAKE(size, change, set)	((size) | ((change) << 8) |	\
+>  		((set) << 16))
+>  #define CUR_SIZE(c)		 ((c) & 0x00000f)
+> @@ -222,6 +226,9 @@ extern void vc_SAK(struct work_struct *work);
+>  #define CUR_CHANGE(c)		 ((c) & 0x00ff00)
+>  #define CUR_SET(c)		(((c) & 0xff0000) >> 8)
+>  
+> +unsigned int vc_cursor_start(unsigned int cell_height, unsigned int cursor_size);
+> +unsigned int vc_cursor_end(unsigned int cell_height, unsigned int cursor_size);
+> +
+>  bool con_is_visible(const struct vc_data *vc);
+>  
+>  #endif /* _LINUX_CONSOLE_STRUCT_H */
 
-diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
-index 39f44258d793..03b3b18e1fe9 100644
---- a/drivers/video/fbdev/core/bitblit.c
-+++ b/drivers/video/fbdev/core/bitblit.c
-@@ -334,11 +334,10 @@ static void bit_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
- 	    vc->vc_cursor_type != par->p->cursor_shape ||
- 	    par->cursor_state.mask == NULL ||
- 	    par->cursor_reset) {
--		unsigned char *mask = kmalloc_array(vc->vc_font.height, w, GFP_ATOMIC);
-+		unsigned char *mask = fbcon_cursor_glyph(&vc->vc_font, vc->vc_cursor_type);
- 
- 		if (!mask)
- 			return;
--		fbcon_fill_cursor_mask(par, vc, mask);
- 
- 		kfree(par->cursor_state.mask);
- 		par->cursor_state.mask = (const char *)mask;
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 615fa596b7cc..8581b7a9b3b7 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -444,44 +444,21 @@ static void fbcon_del_cursor_work(struct fb_info *info)
- 	cancel_delayed_work_sync(&par->cursor_work);
- }
- 
--void fbcon_fill_cursor_mask(struct fbcon_par *par, struct vc_data *vc, unsigned char *mask)
-+unsigned char *fbcon_cursor_glyph(const struct vc_font *font, unsigned int cursor_type)
- {
--	static const unsigned int pattern = 0xffffffff;
--	unsigned int pitch = vc_font_pitch(&vc->vc_font);
--	unsigned int cur_height, size;
-+	unsigned int height = font->height;
-+	unsigned int cursor_size = CUR_SIZE(cursor_type);
-+	unsigned char *glyph;
- 
--	switch (CUR_SIZE(vc->vc_cursor_type)) {
--	case CUR_NONE:
--		cur_height = 0;
--		break;
--	case CUR_UNDERLINE:
--		if (vc->vc_font.height < 10)
--			cur_height = 1;
--		else
--			cur_height = 2;
--		break;
--	case CUR_LOWER_THIRD:
--		cur_height = vc->vc_font.height / 3;
--		break;
--	case CUR_LOWER_HALF:
--		cur_height = vc->vc_font.height / 2;
--		break;
--	case CUR_TWO_THIRDS:
--		cur_height = (vc->vc_font.height * 2) / 3;
--		break;
--	case CUR_BLOCK:
--	default:
--		cur_height = vc->vc_font.height;
--		break;
--	}
-+	glyph = kmalloc_array(height, vc_font_pitch(font), GFP_ATOMIC);
-+	if (!glyph)
-+		return NULL;
- 
--	size = (vc->vc_font.height - cur_height) * pitch;
--	while (size--)
--		*mask++ = (unsigned char)~pattern;
-+	font_glyph_cursor(font->width, height,
-+			  vc_cursor_start(height, cursor_size),
-+			  vc_cursor_end(height, cursor_size), glyph);
- 
--	size = cur_height * pitch;
--	while (size--)
--		*mask++ = (unsigned char)pattern;
-+	return glyph;
- }
- 
- #ifndef MODULE
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 407d207b14f1..054cf66b15fa 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -202,7 +202,7 @@ extern void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info);
- extern void fbcon_set_bitops_ur(struct fbcon_par *par);
- extern int  soft_cursor(struct fb_info *info, struct fb_cursor *cursor);
- 
--void fbcon_fill_cursor_mask(struct fbcon_par *par, struct vc_data *vc, unsigned char *mask);
-+unsigned char *fbcon_cursor_glyph(const struct vc_font *font, unsigned int cursor_type);
- 
- #define FBCON_ATTRIBUTE_UNDERLINE 1
- #define FBCON_ATTRIBUTE_REVERSE   2
-diff --git a/drivers/video/fbdev/core/fbcon_ccw.c b/drivers/video/fbdev/core/fbcon_ccw.c
-index 33f02d579e02..9a9839631cc5 100644
---- a/drivers/video/fbdev/core/fbcon_ccw.c
-+++ b/drivers/video/fbdev/core/fbcon_ccw.c
-@@ -298,10 +298,9 @@ static void ccw_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
- 	    par->cursor_reset) {
- 		unsigned char *tmp, *mask;
- 
--		tmp = kmalloc_array(vc->vc_font.height, vc_font_pitch(&vc->vc_font), GFP_ATOMIC);
-+		tmp = fbcon_cursor_glyph(&vc->vc_font, vc->vc_cursor_type);
- 		if (!tmp)
- 			return;
--		fbcon_fill_cursor_mask(par, vc, tmp);
- 
- 		mask = kmalloc_array(vc->vc_font.width, w, GFP_ATOMIC);
- 		if (!mask) {
-diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/core/fbcon_cw.c
-index bde820967eb9..4cb20337cf79 100644
---- a/drivers/video/fbdev/core/fbcon_cw.c
-+++ b/drivers/video/fbdev/core/fbcon_cw.c
-@@ -281,10 +281,9 @@ static void cw_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
- 	    par->cursor_reset) {
- 		unsigned char *tmp, *mask;
- 
--		tmp = kmalloc_array(vc->vc_font.height, vc_font_pitch(&vc->vc_font), GFP_ATOMIC);
-+		tmp = fbcon_cursor_glyph(&vc->vc_font, vc->vc_cursor_type);
- 		if (!tmp)
- 			return;
--		fbcon_fill_cursor_mask(par, vc, tmp);
- 
- 		mask = kmalloc_array(vc->vc_font.width, w, GFP_ATOMIC);
- 		if (!mask) {
-diff --git a/drivers/video/fbdev/core/fbcon_ud.c b/drivers/video/fbdev/core/fbcon_ud.c
-index eaf08999e249..ac22b9846b79 100644
---- a/drivers/video/fbdev/core/fbcon_ud.c
-+++ b/drivers/video/fbdev/core/fbcon_ud.c
-@@ -328,10 +328,9 @@ static void ud_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
- 	    par->cursor_reset) {
- 		unsigned char *tmp, *mask;
- 
--		tmp = kmalloc_array(vc->vc_font.height, w, GFP_ATOMIC);
-+		tmp = fbcon_cursor_glyph(&vc->vc_font, vc->vc_cursor_type);
- 		if (!tmp)
- 			return;
--		fbcon_fill_cursor_mask(par, vc, tmp);
- 
- 		mask = kmalloc_array(vc->vc_font.height, w, GFP_ATOMIC);
- 		if (!mask) {
 -- 
-2.55.0
-
+Jani Nikula, Intel

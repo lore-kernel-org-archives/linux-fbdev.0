@@ -1,179 +1,225 @@
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed2-f35.google.com (mail-ed2-f35.google.com [74.125.228.99])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D595D40926C
-	for <linux-fbdev@vger.kernel.org>; Tue, 29 Sep 2026 06:12:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.227.17.20
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790662350; cv=none; b=IG5PHg6KUEddwjoOPB4qx5icPXKcTmnhsjI6dDWcqNHjq73enOvBsO4UZ3OPW2K+5XV1WLKOAROJZiGUlxshS9xZhTFs5Fdxe33dDCrejgQz0Mab6KnX363nEpwvmQGztsfyVSgwoZbOIj0DeHHK3wzGQ8b8mwR1OCOe2GQnGe8=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790662350; c=relaxed/simple;
-	bh=wQwJc7ZUop2kzXG7HqfItPT1Y+l1xvqcr4z9RJ9FM08=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=VHfqs126FljZ529HVPcdVhGkSFKL8zR3yG+DflGPe3Ee2Ge0D5DuWlix21E+VYVVE0PnHEUAzFfe+WcLl2459+iySJJ48NfIW0aSU2KG1MKjgzvRxPNKwQigVDy/ijESHhwdJDoxNe0ERoG84TUsgNSc/7e5MBLR61akz249bXA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; spf=pass smtp.mailfrom=gmx.de; dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b=Zc83Xd8i; arc=none smtp.client-ip=212.227.17.20
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FB103A7F7C
+	for <linux-fbdev@vger.kernel.org>; Tue, 29 Sep 2026 09:46:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.228.99
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790675218; cv=pass; b=jL3dtiBPzahJfJTRKfogwC4hssRmUDpzoCef70c9lSrRlKseUD+0dHUO4wEUw+bqd7d6dRAs5AWo4sQ7ehzxTz3xoV1134XCjt1EsB6F7GbcLqyO5Gr9Cmt615a8VKxSfe97+0os36Ks5psy8ZpsGQhCnDIjviJEnEPXNdhxfA0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790675218; c=relaxed/simple;
+	bh=eeb2q1g5UGMm12PakPu9SPfTtlo4NPC7O6qt7TUMi2k=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SDGXZLwaDosFOW3gM/16yfeFHQUIkoOcM4PC6Sq1LHcPwbPA7rS/lKkxz7AYLgHAeTGa5JpTFjBYjkSEEjOAwzzBkpl7gBS+5NV1seamfdjbnorIo0pwRDi+wm0+xGxuCRbaVPnAYADpzer6IxvfuaapT8FyzdZ7xkgawaiHIx0=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=E5eLmIni; arc=pass smtp.client-ip=74.125.228.99
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.b="Zc83Xd8i"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1790662345; x=1791267145; i=deller@gmx.de;
-	bh=WN2wcsoLDOGY/sfLHbxYR3nGKcjrwhloVxKkM82pLgw=;
-	h=X-UI-Sender-Class:From:To:Cc:Subject:Date:Message-ID:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=Zc83Xd8i2XxeH18Bewjh0hdgG9Z4XMregDGe6TP03sUium6gsE2wTH7nfcZFlU2G
-	 8wNmQ4tB+GNLV5SiQAi6q/hRGX07EhZUwuQn+lzDTw1NBtNn0PZY3sDYlgE/LJpzG
-	 VxL/j3dmy4BhgQj48JobWV0MnrH5t0u34SEfLLdbDm+ThP8uQ01bNsXL532J/bKCS
-	 CZZVODrK5aqs9UGQhUxGZlxmY/+xAfYgG03AB0CX8mwm6eIe15GFkBI8LILuhgET7
-	 wJmU3Cuw10nLDMdY71MhjAR7oBODZpwNViT++QJakOQbzgurRVNZ27wiglYV3LeCt
-	 9fDPs/6WVWSo6lNarg==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MaJ3t-1xGbbZ3v2j-00PSWZ; Tue, 29
- Sep 2026 08:12:25 +0200
-From: Helge Deller <deller@gmx.de>
-To: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Cc: kernel test robot <lkp@intel.com>,
-	=?UTF-8?q?Miro=20Krop=C3=A1=C4=8Dek?= <miro.kropacek@gmail.com>
-Subject: [PATCH] atafb: avoid cast when assigning buffer address pointer
-Date: Tue, 29 Sep 2026 08:12:23 +0200
-Message-ID: <20260929061223.55435-1-deller@gmx.de>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E5eLmIni"
+Received: by mail-ed2-f35.google.com with SMTP id 4fb4d7f45d1cf-6a99cd5115bso6661851a12.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 29 Sep 2026 02:46:55 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790675213; cv=none;
+        d=google.com; s=arc-20260327;
+        b=XHhaBNREdifuu3up4liT2YcG/DXBj9A3Kxgm8oFZ9o+AZhHox6vn+3zbVQX4Fsky2z
+         /680367ig1zG+01Roz+aPidFd8Lsn/tFws6fIZ81Qx1SMsud4rRKKYw2ODSGayyjQudE
+         hEV/iIysUqSKLIjbWYONuVrEJl/kGWE99UVsO2HW19l+0jBfRmeg2vuFv6EGYO/aDPdq
+         emdWVp7XqM2x7un5RPbhgwils2ink7HTtBudUWvRzVIwPsJPN4KkhKef5vYO5ZP80yGq
+         QwjQHl+Gr+Zw0qPFLCqpWQ2MxJ1w5Gxdkdf6T/ma2KiVxWyDRnPbWYd+tKyksYolzj7t
+         UHZQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=+YdZLbLvyhM+9EF8BV63cOnUty6jcpMKF9WL+DE/91w=;
+        fh=DiuNurAR71SRVK8iFP4IuF5mtnfOY0ar+qYhWBmkKBc=;
+        b=L+ZvG/j3hOdSU6RqCZfcMvcxQU03aiIomuqF2hy2xU215Ik5JIWIZ28ggAiH1FzuMZ
+         BxyPCKyvcwUYVa1mbtzsyBZbvvjoXhL473ThrDe4/K7qO1PKyPAXhrwA86Xlfm8lGNQ7
+         ZOqzQATxsyml2ACqo+kEnhl2H7HSYoBYGjuMOGkeN9fTvPswfMHeDHjsKV5qk6x0zzPZ
+         kBR85kvMAdyoJmvP152ut3EbzR7pGMWmcj9D6lYsng+BfqcbmDr81AeY0AD8hncq+S7d
+         ggkp+LiRauDC6L7OEqGYsirjjK2g+T3cavLNnbDW9i0J6UL6dszvUpDtOVKt1kOeiny6
+         +EmQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790675213; x=1791280013; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=+YdZLbLvyhM+9EF8BV63cOnUty6jcpMKF9WL+DE/91w=;
+        b=E5eLmIni2BTfnqUU8m8dRLxKL5TZFc+n3DIdYC/YwGpJyYdvsUpUQKYw/Vk1EvtkvL
+         s3c/R1mV9szC1IrjkrQx4ikPfLGEGblF6PQIbrZbjumFPJk58GVsrtCT6mWXOsRoC0Te
+         DNuGQVeEnZRkG+XWTgaentNqWOrKmNqoICcglyyNixj3pMbiEJZjrJOsLkaRzgSiSdlY
+         BJjEjg4vtGAwBNG7c8WtNa6KflfW/cfnwPQagTH/bHb46CBgAmxfHX6oDdT3yEMMby3Z
+         bVdqL9P6WEht71ktjRCjOhixF69DHwbdCmcBN4sWvMbq6XoShExvhXFWHWgvOLmgg9+Y
+         xS5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790675213; x=1791280013;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=+YdZLbLvyhM+9EF8BV63cOnUty6jcpMKF9WL+DE/91w=;
+        b=cLFHszJbubNz+O0UFVxWxvkUSN+1JBGA1ocfA86cqk1pD0m0CZVoeh6n0mOjq4PCtd
+         xBZ3EIP285yxVtBgR9qvlT6W2sNOyf25dDwcbdlCOWBjJ/M4QVnNc1UWiCvlPv2xuYUA
+         An7SfFho5hUiFmn5br9PfYwNbVMjRiCO/bF+RaFq0wD9TicPzvbEH9q9o8RTDXjmfKt3
+         /FshJSRO4l0zdwI++QlNLqZAcyMS9G6h8mB7UXn4+q1UTuUw67AZmJWrNiZZD6G9aU8I
+         xhEJ55Fhg7v1vR8uzig3wECyqqEdO/Phky8+HGC8D+SQaBz8bjdwXJMH3gIXUY/myeK3
+         jkRw==
+X-Forwarded-Encrypted: i=1; AKwUvBzxx74NoLpQMiO0fPTjzehecA+aCUV3FhJR/YqINN/AoTB1y9P0ymbdzNFA/1Fx5Z1I4U50CrqiU61ceA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYK9pBdnIUd2l9Ww49I2XqPZxyixxaUSZLKZMSZ8pmOdGUC0uai7
+	jkodxm5DIrk3C8uzkq/bJkUyPupNyw5N9a7WPoHS5ZtMkQS6ki0j490LBlhITZzczZ1rOtcsaMe
+	L/AqA8ad5ymDwzPUpeBwDy3Jsz/L0w7g=
+X-Gm-Gg: AYBFou1ZZCZSiGBxl3yW0x9DgJ4FNlwUQVyLpSb5wlNoF9G2el6+MQuAAzkebrDi5Dz
+	6PtmfhxGkKtGWQpRWO4/8okXqw3b7G7+B03UEny7i1a/LXdhuJEJE+YxnB0fa0nqzEGDQZt0y9G
+	fy9+JygVD6tOOZs9Tjpep3SmdM8wtWwVN0pfXxZGHHld+0825IgVN4nTncC0qiIC4q0YnNcs0gx
+	pfCflP8RGdyU4eCSa8NKC2/n7pU9/c6+ruUL6L2WpuR4jqV4PdJWnaA9Wve8XbZ6XHDDuNcXNMi
+	mSXjK5jtLndPZ+KUpWZg8c/jn8cfH7/5wqwMRrUejcc85mPw9x8BqtA=
+X-Received: by 2002:a05:6402:1d55:b0:6aa:7fb:7678 with SMTP id
+ 4fb4d7f45d1cf-6aae8a518b4mr8630052a12.6.1790675213345; Tue, 29 Sep 2026
+ 02:46:53 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+References: <20260923201035.51007-1-maximpedraza@gmail.com>
+ <64e273d4-2660-437d-8871-e2bfa3c377c9@suse.de> <CAEUXW=G2a=Qz-9P_2+EFe-GiW4WqdOjtSCxoO4P15u_J48nP9g@mail.gmail.com>
+ <arbLHvCBqxG7zcf_@bywater>
+In-Reply-To: <arbLHvCBqxG7zcf_@bywater>
+From: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>
+Date: Tue, 29 Sep 2026 13:46:36 +0200
+X-Gm-Features: AclHuK_DOhKuESbFIkSM5tBxWuDkjgIy9D1hy5UWjYEzpHDFJ0AUXPBUH8LKOSA
+Message-ID: <CAEUXW=ELS1OCyDdy5Gx41g8twU5B8112gMct9uFqhdGVveRKMw@mail.gmail.com>
+Subject: Re: [PATCH v3 0/7] Boot logo supplied by the device tree
+To: Francesco Valla <francesco@valla.it>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, Helge Deller <deller@gmx.de>, Simona Vetter <simona@ffwll.ch>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org, 
+	devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9gAy4UGIXznppLNH34dI7Rvkahxjgck+ST04HvcJdThU2eeYXQY
- YYV3+umXjzfgP7p+5uM7SV+8NUmgNxfHMzLZFsjDHXroQyirM0p3TfojsZagIzXiMSrj7lL
- 0iOVyLVU7/KCbVs0hE9iZZ2zXufeuu2jDtr+bZp8jiF78SqY0t+ZZH3LcLJe+/JvlmY016Q
- YWEfelnG54EJVaLMogUnw==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:8L6q+tMGQxg=;55J/dC7Gnfm5+LppYnZuPWrS8qt
- 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
 
-The sparse tool complains that the "cast removes the address space
-'__iomem' of expression".
-Avoid the cast by using the screen_buffer pointer instead of the
-screen_base pointer from the union.
+Hi Francesco,
 
-Fixes: d463633d63e6 ("fbdev: atafb: Add support for SuperVidel's SuperBlit=
-ter")
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202609261313.kgFtkz2t-lkp@in=
-tel.com/
-Cc: Miro Krop=C3=A1=C4=8Dek <miro.kropacek@gmail.com>
-Signed-off-by: Helge Deller <deller@gmx.de>
-=2D--
- drivers/video/fbdev/atafb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> v4 is planned but has been preempted by other activities - I am not able
+> to give you an ETA at the moment. If you have capacity, feel free to
+> take over.
 
-diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index 5c3e5861543a..c32576cb1720 100644
-=2D-- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -2454,7 +2454,7 @@ static void svblit_fillrect(struct fb_info *info,
- 		((u32 *)info->pseudo_palette)[rect->color] : rect->color;
-=20
- 	/* draw the first line with the CPU ... */
--	line =3D (u8 *)info->screen_base + rect->dy * pitch +
-+	line =3D info->screen_buffer + rect->dy * pitch +
- 	       rect->dx * bytespp;
- 	switch (bytespp) {
- 	case 1:
-=2D-=20
-2.55.0
+Thanks, I appreciate it. Since it is your series, I would like to run
+past you what I would change before taking it on.
 
+The v4 would still be an RFC, based on drm-misc-next. Your patches keep
+your authorship, with any fix to them folded in and noted in the commit
+message.
+
+Fixes to what is in v3:
+
+  - the BGRT symbols exported, as in your patch for Mario, but with
+    EXPORT_SYMBOL_GPL;
+  - drm_splash_init_client() indexes modeset_mask by the number of
+    modesets added in the first loop and by the number walked in the
+    second, so an output without a mode ahead of a connected one gets
+    the buffer instead;
+  - for a tiled group, the first loop dereferences tiled->buffer before
+    any buffer exists, and the width and height look swapped;
+  - if the BMP firmware never arrives, the callback returns without
+    waking the render thread, which is left in TASK_UNINTERRUPTIBLE for
+    good;
+  - the 24 bit blitters read each pixel as an unaligned u32, one byte
+    past the image when the rows have no padding;
+  - the image cleanup always calls memunmap(), which will need to know
+    where the image came from once there is a third source;
+  - the spaces in DRM_CLIENT_DEFAULT, in a patch of its own.
+
+The modeset, tiling and render thread ones come from reading the code,
+so I will reproduce them in qemu first. Tiling I cannot test at all.
+
+Additions:
+
+  - a device tree image source: a node under /chosen with the BMP either
+    in the node itself (dtc's /incbin/) or in a reserved memory region,
+    mapped with the same memremap() as the BGRT;
+  - placement from that node, a position with -1 centring an axis plus
+    an offset, instead of always centring;
+  - rotation, for the DT image and for BGRT images with the orientation
+    bits set, which are skipped today;
+  - the background colour coming from the same place as the image: the
+    DT node can carry its own, splash_color goes with splash_bmp, and
+    the Kconfig colour stays the default for everything else, BGRT
+    included.
+
+The sources would be tried in the order DT, BGRT, BMP firmware, and
+then just the colour. A DT node is only there if someone put it there
+for that board, so it seemed right to let it win.
+
+Does that match what you had in mind? And how would you like to appear
+in MAINTAINERS, as a maintainer next to me or as a reviewer?
+
+If you are happy with it, I'll take you up on your offer.
+
+M=C3=A0xim
+
+El vie, 25 sept 2026 a las 21:32, Francesco Valla
+(<francesco@valla.it>) escribi=C3=B3:
+>
+> Hi M=C3=A0xim,
+>
+> On Fri, Sep 25, 2026 at 10:48:31AM +0200, M=C3=A0xim Pedraza Padilla wrot=
+e:
+> > Hi Thomas,
+> >
+> > > the whole Linux logo on the console is somewhat gimmicky and IMHO sho=
+uld
+> > > not be further extended. Also fbdev as a whole has realistically run =
+its
+> > > course. We fix bugs and occasionally clean up the code, but it is
+> > > questionable whether new feature make much sense. Even more so as the
+> > > drivers your system uses appear to be DRM ones.
+> >
+> > They are, it is tilcdc. Understood, I will drop the fbdev side, which
+> > also settles your comment on patch 1.
+> >
+> > > There is a proposal for a DRM splash screen at [1]. It retrieves the
+> > > device vendor's logo from the firmware and displays it at the given
+> > > coordinates. IMHO you should start with this series and add DT suppor=
+t
+> > > there.
+> >
+> > Agreed. I have been following Francesco's series since Sam pointed me
+> > at it, and it is where the DRM follow-up I mentioned in the cover lette=
+r
+> > belongs, rather than in a client of my own.
+> >
+> > A device tree source fits next to the BGRT one. The BGRT is the firmwar=
+e
+> > handing the kernel an image and where to put it, and a DT system has no
+> > such table. The BMP loaded as firmware only helps if the file is built
+> > into the kernel, or if a filesystem is already there when the display
+> > comes up. With U-Boot's Falcon mode, the device tree is the only thing
+> > that reaches the kernel.
+> >
+> > So the plan would be a node under /chosen carrying a BMP, either in the
+> > node itself or in a reserved memory region the bootloader loaded it
+> > into, with the placement properties from this series. The region is the
+> > same memremap() the BGRT source already does, only with the address
+> > coming from the device tree.
+> >
+> > Rotation too: the client skips a BGRT image with the orientation bits
+> > set today, and it could turn it instead. I will ask Rob separately how
+> > he wants the image described, since that is what the binding hinges on.
+> >
+> > Francesco, is a v4 on the way? Would you take a DT source as patches on
+> > top of your series, or would you rather I wait until it lands?
+> >
+>
+> v4 is planned but has been preempted by other activities - I am not able
+> to give you an ETA at the moment. If you have capacity, feel free to
+> take over.
+>
+> > Max
+> >
+>
+> Regards,
+> Francesco
+>

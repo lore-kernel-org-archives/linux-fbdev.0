@@ -1,102 +1,130 @@
-Received: from mail-wr2-f12.google.com (mail-wr2-f12.google.com [74.125.225.76])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80F1846D568
-	for <linux-fbdev@vger.kernel.org>; Tue, 29 Sep 2026 15:59:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.76
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4AB635839E;
+	Tue, 29 Sep 2026 16:00:51 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.241.56.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790697566; cv=none; b=F+sN9eUfBO2w9aeE7wGr3K1+Wxyz1+vCYPUG43WnZzxeQlBABlexbxdMPADQ+Z4WfQWSlh2yb13GmeAJ8V+C2oUsFhH9WcnYD/Im7BUHMn+qhf5+qsNoi8Hwo+JMcv6NAWRc8CHLWfyPUT4gdMXRcztnaUlgzVhY5FwKYezL5vY=
+	t=1790697653; cv=none; b=C0KTV1gwlLN1o8BU9i8nTQgZye4Y16ctre8/7amynS5ogDf2MerVvUQGlYZYKT9komUXZXtjgmT4K6yBO4VyaF6jKW1h7MqKa/Q2v/YzRgeLQDixRAH/toIiHZKbHl5X9l+35cwROGMW+/wp5Bn0IsrsDAGdZ4Hr/GXKHXe/Juw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790697566; c=relaxed/simple;
-	bh=bwnWYK80nFfKr3iwUcfFe3FiEOIbobSQBQGXAMlfsws=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mxW+YS57RpMKZcPLQLDxA3ex4xgsgEk/P91BR91n518UnffPXXc72rwkCyn/TVhXqVqMj3cy3btdn0YbDAj5UQnkl2SFBrnW+RuT+NgC2Unp8TDUKJausfrCnKx4DRvnA788aCVx9yY3yct2sVJog6xCjyGzphxhPM8i/lZ8/mI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net; spf=pass smtp.mailfrom=gourry.net; dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.b=nYBYdIxr; arc=none smtp.client-ip=74.125.225.76
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=gourry.net
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gourry.net
+	s=arc-20240116; t=1790697653; c=relaxed/simple;
+	bh=+t1vhB8TcR/IBAQoLCsoW/rC16f8OyTh5U6hw6SZB3s=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=YMUmOKCnyzAiW/aTYH/KriiHtf/rdexGKKsIVgF3qlPk0FsqrLqv5p0+FmH28++CfHTZJXQP9wynRMviNklu93GcqDBOBEDCoB+/6jpH1Jk5RHuY6+iQq/f0ezAWAU7zFCNckz1xdX1nfECqkNFvmTzbiDmTkRfrCPAhnbdBC3w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; spf=pass smtp.mailfrom=mailbox.org; dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b=EtznGOuu; arc=none smtp.client-ip=80.241.56.171
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.b="nYBYdIxr"
-Received: by mail-wr2-f12.google.com with SMTP id ffacd0b85a97d-482f6350f91so2567962f8f.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 29 Sep 2026 08:59:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gourry.net; s=google; t=1790697560; x=1791302360; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=3j1GsvDFG4oGBkWvUsNYUZ4jWPGCGdM9fhJMq32ExyQ=;
-        b=nYBYdIxrDawbXfSaFe7w3OFYOIJlQrI7qz59yDzNoP/mpoddTQw11jDpz8fIdtFR8U
-         Znr8Mf9igyXtWKyhX9oMfdAJDqgBGoGjvHJ6igkkprc58F97zd5CcoCsAlzLvRI3ylim
-         m1hLqtLjxW1ZBq19GMmUHaYSFSOffW8bLP3K3qMkDov5FsMy3S3x/irgsjS1eOVIRxq+
-         mTxoNRrvS3DP/l/GGQcl6eQRSamNLt1PpjT8Td4ULW0LxMOaLDCJ+NvWfW4h18DY5Ss0
-         azhkGRaDxXPuY2FEehlaV3VB2aS/wbvlM5l1jOZ2enaChDZdM1x+J0h36wzrNkROlZrg
-         6rYw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790697560; x=1791302360;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=3j1GsvDFG4oGBkWvUsNYUZ4jWPGCGdM9fhJMq32ExyQ=;
-        b=1HOq5PauNUEg4YD3nlh/W7xTEEL37tCnpPan/hAPz2/Ml4kgiPW2sk38Rgx8FMJESq
-         63mP0y/9rev4CN7creyIY5bF0Au0jBIVQZJ9I4plGSRiB2Zf23srtFglBy/hzZocMyx6
-         DpiQHa9b1Ofec4OeA12uAUAhdTfxEmNB0iLQWnRHvzJqzTzIRT/BL2JxYRNLiOESAF7M
-         Cd7SfwO0xdC6T8CpRHmMVqii1bf0vPfeEbml7S6kOvsiAWLPBJuQcsU9QGg9ZD35jiSD
-         +XOhkuJKh1jJ184WhuGMMZ6VduNhC0sYR70zLhcTDbeIr5kvZEjBQPgH4W0Da7X10M3g
-         S6oA==
-X-Forwarded-Encrypted: i=1; AKwUvBx7sDnAPsufCpVibI919M1g2Uuh8FNaEv/zgIkwDdSd00KKxuu+mjH1vpd4TsmIyhUSqM5rpWAlA3qqnw==@vger.kernel.org
-X-Gm-Message-State: AFuF++nsUiIALFbVmWf/yVzNlFfNme4ehQhtbESxGHc6XdDrq3PcLEzs
-	lzQTIts5epsDSK3ac26s4NBCU94aIM5aEs90kfhBc/n3+8oX9w3TsiOEBM0rSsv6r96kufdmdhN
-	NpLVrb6BzcQ==
-X-Gm-Gg: AYBFou2ywAKQj38pFFaJGmQBDMDpJolG7LeEgxKWIxKi3BQmzuPGO+gYtu4t6FbULe+
-	hzOLN2bn2/ySMh6RP5B3pkuDhcVh8X6Fn11eM8BW7A4pJ6g7yc3J2HSytNrlZdyRM+IU4j2jDrk
-	1D6Ukl1omvVx2HYaqEyIq2Bh4DYzLZL99oeHKEwEl1yg8Qh58vbE+IR4SqZK5mVWqMMi1a4y0Yx
-	6P0lxUp9R95ybXmemg5Epl0YDnR+ztRR21RjokVa2ej/rnNvUq+TXI4M1wFt4FLhXV5GMy8yNf4
-	1UUseyC78faIj85djnnsZvFU8q7TBm6pzT9PHzvTQBiSBZPkQegBteZQI2N1JkZwwbvq6l+9eo4
-	8n7dv/zpBkXRViVyIJ0OYhjYpua2fCaStWaqJ+08QwNCb08pxFk3vFFHByoreRST3ZCWx024cZO
-	ahx+9/JMXZKNfA10i5el/4jy2gj86AgpbytDPKWGguNTVcEnINBiG64ld3t1ecQdi4eQ==
-X-Received: by 2002:a05:600c:46d4:b0:49f:ec98:f030 with SMTP id 5b1f17b1804b1-49ff06f839dmr227620145e9.33.1790697559827;
-        Tue, 29 Sep 2026 08:59:19 -0700 (PDT)
-Received: from gourry-fedora-PF4VCD3F ([2620:10d:c092:500::5:5c0])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a013c6f295sm7062155e9.0.2026.09.29.08.59.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Sep 2026 08:59:19 -0700 (PDT)
-Date: Tue, 29 Sep 2026 11:59:17 -0400
-From: Gregory Price <gourry@gourry.net>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
-	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 07/40] mm/vma: tidy up map kernel pages enum values
-Message-ID: <arvgNTUgcO0nPh-V@gourry-fedora-PF4VCD3F>
-References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-7-4583d8a23bca@kernel.org>
+	dkim=pass (2048-bit key) header.d=mailbox.org header.i=@mailbox.org header.b="EtznGOuu"
+Received: from smtp102.mailbox.org (smtp102.mailbox.org [IPv6:2001:67c:2050:b231:465::102])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4hvNFB5DQ9zMlhW;
+	Tue, 29 Sep 2026 18:00:46 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1790697646;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=IiGOJgGIass9aVDNQ4vKCQdxgrlpbqGo3d/LNJ/Qqdk=;
+	b=EtznGOuuYrnwKzckU/TLZKsDDV3MsyaLoBwKUvB1oD8ljsWrN5izxLfo7svXbzGDHzcp/T
+	twCGdEXz91ga6meCpQqhjcXD1zECB00a9nIQx2ZNgOyaAN9WhdVEqy/3VWTRI+W9FSaCT8
+	Ef1P4f8da3ZAutQsfhch0aLU8lB23I+aEK5NRj2aMtCJLmDlOGJKnBLV7YRoQgfyVwSV/V
+	C7dLIP4SW7RtH8FPJbeBbOPLW3DdPAWLSfrbowSAncdh+ZH6hIldISb61YrWaqeSimsZOK
+	8nab3Vtq55aNg5VyIfCoyQN919Y0uS5Aby8yK7MWw9fuvZu+QtU4xItwAFcfMA==
+Message-ID: <a9164202-bb55-40cd-b9ad-20f5be344ba1@mailbox.org>
+Date: Tue, 29 Sep 2026 18:00:36 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-7-4583d8a23bca@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC 13/25] drm: Add VRR target frame rate properties
+To: Leo Li <sunpeng.li@amd.com>,
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
+ "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>,
+ Daniel Stone <daniels@collabora.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>,
+ Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>,
+ Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+ Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Luca Ceresoli <luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
+ =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>,
+ Andy Yan <andy.yan@rock-chips.com>, Xaver Hugl <xaver.hugl@gmail.com>
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
+ Derek Foreman <derek.foreman@collabora.com>,
+ wayland-devel@lists.freedesktop.org
+References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
+ <20260921-vrr-limiter-uapi-v1-13-2fcd7d011646@collabora.com>
+ <0226527e-ee38-40ab-a2a8-1ae62013b950@amd.com>
+ <VERVf-aJRRKsBOI_3dpScg@collabora.com>
+ <8a3b2902-3255-4dd9-82f0-75a7747b710e@amd.com>
+ <3cf7143d-7013-4a3b-a831-96c3f125c2f6@mailbox.org>
+ <164d00c2-e4cb-4962-8e4e-389ae77af943@amd.com>
+Content-Language: en-CA
+From: =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel.daenzer@mailbox.org>
+In-Reply-To: <164d00c2-e4cb-4962-8e4e-389ae77af943@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-MBO-RS-META: 11ugeqcc3bte89ybq6np5e6yubuc9mu3
+X-MBO-RS-ID: ebf20fcafbe5d0a3431
 
-On Thu, Sep 17, 2026 at 05:22:16PM +0100, Lorenzo Stoakes (ARM) wrote:
-> MMAP_MAP_KERNEL_PAGES is a mouthful, discard the MAP_ as that's implied by
-> MMAP.
+On 9/29/26 16:34, Leo Li wrote:
 > 
-> Also while we're here delete useless comments for mmap actions whose names
-> clearly indicate what they are for.
 > 
-> Also update the userland VMA tests to reflect this change.
+> On 2026-09-28 04:10, Michel Dänzer wrote:
+>>>> You can picture VRR limiting as always being active, but with a limit rational
+>>>> of 0 it uses the display's limit as per the EDID, which is what unlimited game
+>>>> mode is. So with how it's implemented right now in hdmi_validate_vrr(), your
+>>>> example would set a maximum target, but leave the minimum at whatever the
+>>>> display defaults to.
+>>>>
+>>>> Now that I'm thinking through this, a possible problem is that
+>>>> drm_crtc_helper_vrr_is_fixed_rate() operates on the user supplied limits, but
+>>>> if the display supplied lower limit is equal to the user supplied upper limit,
+>>>> then we have a fixed rate scenario without recognising it as such. I think I
+>>>> need to have a ponder on what the least surprising behaviour for userspace
+>>>> is in that instance. The display limit stuff gets a bit complex due to
+>>>> CinemaVRR and QMS TFRmin/TFRmax.
+>>>>
+>>>> I'll improve the documentation on the next revision to make the meanings more
+>>>> explicit.
+>>> Perhaps a simple way is to require simultaneous setting MIN and MAX pairs?
+>>> IOW, require userspace to set MIN and MAX simultaneously to >0, or =0. For example:
+>>>
+>>> if ((vrr_min_n == 0 || vrr_min_d == 0 ||
+>>>      vrr_max_n == 0 || vrr_max_d == 0) &&
+>>>     (vrr_min_n > 0 || vrr_max_n > 0))
+>>> 	return -EINVAL;
+>>> That way, it's never ambiguous what userspace has requested for the range.
+>>> They can copy the EDID supported range if they don't care about limiting one side, rather than leaving it at 0.
+>> Determining the actual limits can be non-trivial (though I guess that might be fine as long as libdisplay-info can work them out), if user space gets them wrong, it might accidentally apply a narrower limit than intended.
+>>
+>>
+>>> It's then also clear if they requested a static Hz.
+>> I do see the benefit of your suggestion for this though.
 > 
-> No functional change intended.
-> 
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> Xaver and I were chatting about this at XDC, and yeah it'll be difficult to match KMD's monitor range, especially if KMD decides to patch it with quirks and whatnot.
 
-Reviewed-by: Gregory Price (Meta) <gourry@gourry.net>
+That's a good point.
+
+
+> Since we are handing compositors control over vrr range, does it sound sensible to expose KMD's monitor range as a read-only property pair on the drm connector?
+
+Sounds good to me, I actually had a similar idea after sending my previous post above. :)
+
+(I have vague recollection of something like this having been suggested before, can't remember by whom / where / when though)
+
+
+-- 
+Earthling Michel Dänzer       \        GNOME / Xwayland / Mesa developer
+https://redhat.com             \               Libre software enthusiast

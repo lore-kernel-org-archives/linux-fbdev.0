@@ -1,125 +1,173 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013053.outbound.protection.outlook.com [40.93.196.53])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBB001B4F0A;
-	Tue, 29 Sep 2026 11:21:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790680919; cv=none; b=W1itpTjoP8RL4MxFML9jGF+zMEzoho4alShnOgXKjwyOv2LoMYlOHcXQWkmhXNaZggs+UMQFsAVgrMqbHhiP9L54k4h7XgvQiX5WMxYOqyBWA4C39uiOto2ku/OdOb5uwnhDfeP8YTsuCtYPo2qK/UyNzqBTMcVOgK4vtDlKAFE=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790680919; c=relaxed/simple;
-	bh=0tGRycjpiixLeY+PMc8Qd7H5Nd0F7yLxzp9vsJVm2so=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=er16aexfYAxunUHCjRUGq3e9PBScTphIalUfja9EoSQS3p3U181trxu+MIok+RKYpi3k5X9/JThrpgBgsDr50GFYqDMs1e2MYnga8sEZpI8oaQW6qfbGr6d+DsZycd7aGHF0XNIt7ElxQnwZo6PZ3RO5uwz4wQlIzpNWVP4Do0I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=R7ZIalgU; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C61B11E0DD8;
+	Tue, 29 Sep 2026 14:35:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.53
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790692539; cv=fail; b=cqrLRs3PnEDxKg5+KNj9hU5iyW35RLkHSpNoyNylBrI1vOIBA46CXLSAT+yOyLubGnHvWC6et+WRy+oHN3W1dx9RVwqkgUTbTRPCX2RFHexnkgeooGTpT1+sQ6dojm7R8rummCg7cF/ePXmQKXbHEEAuuRPS17drgBQpkGJnpD8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790692539; c=relaxed/simple;
+	bh=sCLsv6owBi4SccL7a/+96D/05hphTGp17pEUVK2+N7E=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=eCRn8Ao3MpFS5RxwpmoCeZ7JRPSis6s942nU2gMNRYrWOnRFIwjfO6KpMNenc//AqXG8nxZw1wojLPzW4BLfYhYT1/PSTzTzFVu6beG2P2BqEDe3I5w9zOxyBzj+/4doJZmQuJET8/a1IpPYeyAaLRwEq+bPovAhDmwBRNJJi4I=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; spf=fail smtp.mailfrom=amd.com; dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b=NV/6KskU; arc=fail smtp.client-ip=40.93.196.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=amd.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="R7ZIalgU"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C3D1B1F000FF;
-	Tue, 29 Sep 2026 11:21:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1790680917;
-	bh=2fPL1r0q3ZFaPVm8LMil7KkezedSBA8/3rMeLvpxPeA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=R7ZIalgU2YxoignykHVl41GbwXVq+ymjE2Si4HRcFErNll2DzNwd43/xyUICNL9Gh
-	 ZKbhOo6icKbcmsuOqmHY4vcYGDVk0I9HhEjHuNVoiCF/g/yVcf+z3KLnyerzZ1MiXd
-	 W5Z9bZBV7t1tkUZVxlpq6Ci9stfsy0TAMMeCuz+nSAiebkXEgWtguADRz3DWyBpZ+H
-	 mIWJYnCrwO2dvpBgpuGcPLGHOAHxCMNlWV4hSF1En76lTAsSQsZ+wBOPbyH1ksC26r
-	 xgTJ+Vceyq3XFJSuuzXLjQ/8jCstGixi8blBDf2nxCsI5axooCKVBfsc28vfxzNygJ
-	 YWOKPhtuzPNAg==
-Date: Tue, 29 Sep 2026 12:21:22 +0100
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Zi Yan <ziy@nvidia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	"Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
-	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
-	David Hildenbrand <david@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
-	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
-	Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>, 
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
-	Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, 
-	Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
-	Doug Gilbert <dgilbert@interlog.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>, 
-	Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>, Sebastian Reichel <sre@kernel.org>, 
-	John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, 
-	Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, 
-	Vincent Guittot <vincent.guittot@linaro.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>, 
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, 
-	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, Marc Zyngier <maz@kernel.org>, 
-	Oliver Upton <oupton@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Matthew Brost <matthew.brost@intel.com>, 
-	Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park <byungchul@sk.com>, 
-	Gregory Price <gourry@gourry.net>, Ying Huang <ying.huang@linux.alibaba.com>, 
-	Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>, Kairui Song <kasong@tencent.com>, 
-	Kemeng Shi <shikemeng@huaweicloud.com>, Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>, 
-	Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>, 
-	Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, Wei Xu <weixugc@google.com>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@kernel.org>, 
-	Miklos Szeredi <miklos@szeredi.hu>, Xu Xin <xu.xin@linux.dev>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linux-usb@vger.kernel.org, 
-	linux-rdma@vger.kernel.org, selinux@vger.kernel.org, linux-sound@vger.kernel.org, 
-	bpf@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org, 
-	linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, fuse-devel@lists.linux.dev
-Subject: Re: [PATCH v3 09/40] docs: filesystems: update mmap_prepare docs for
- discontig kernel pgs
-Message-ID: <arudePFfTLNBMKzQ@gremlin>
-References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
- <20260917-b4-mmap-prepare-vma-flag-sanify-v3-9-4583d8a23bca@kernel.org>
- <DLOP8IH392ZU.2X2GPOP2NYK4X@nvidia.com>
+	dkim=pass (1024-bit key) header.d=amd.com header.i=@amd.com header.b="NV/6KskU"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Dy+ICAngjBRs2dIcl4Qk6fqROZTzux9GxJgspRf/At5AGooszQflklcXG92B0xksXx7+pXNpnKWPv02AqD5fcJaBccPsfc85OdcPngOModkx/p7psed/ugOewQBUN6rfSBI5J1LXLYvzaU+llZSBZDNYAqQlSd3IP3R6EWIhCsEeJHN79jl+gI1cdplcuAB+S8Tj9YtYc4/2hKYSrk6Y5W7um5gmbOAT6StcAOqdao8EDnJOJ/kuU0mFw0SLDlFTzNNoMCtaRpE8asAnhUJxi0RvswuSeVrzMeavNwHZZRsqy7nLDQ8f4cYp+pvntZKjKY68Eyrchl5NoH8oxyXGCQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=JJ3zBmAAYumqBWtZ5z5TrPexjuJJueU1AW0zWeQGirI=;
+ b=sIkgsO1M9JvSxABSUWNVSJakcaFvmdSsI6OuPTFj3+a3mWOxIy1vfKnlKbmxcKnqISctqnRHah6womD2IHVt06t+LSZiHS2IilhX6tElKjM/g9pBxFr/M6kCl/FoxiVma4XyRJeGj1oljTmCC6kn1tApvPNSV6ubmPkFUwd8s0AysFs1tNcOzlFhHOrE05dVcNaq7Z7kZrxzXu+4SMU4m6MQEk++Fq6fdz3+vYJBYmV9a7dX98Xrdef8ADzliuXDA5XqzOUfoDs0qa5NRzKXLQ6uTTJNfyeFOKVU2DevTyVwkFM3owk3otOyr0Ig4Xif5A+kmrUBM3dilurklgFiOw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=mailbox.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=JJ3zBmAAYumqBWtZ5z5TrPexjuJJueU1AW0zWeQGirI=;
+ b=NV/6KskUG0/yuojxcIRr61uTnSbBW1g4W+hIqw3qu6jWSrRibt0MOWO2Fi4x97LmRTlTanYOaYyGc3RzgW8BpAJfUDM6BmhpxcQUhBwJ86S1FDNhuCP58ZebnQr5llXQCb1zZmYVHll09VUrrejwpPCL943JRKbTaHF90g/EJqU=
+Received: from BYAPR21CA0004.namprd21.prod.outlook.com (2603:10b6:a03:114::14)
+ by BN7PPFEE0F400A9.namprd12.prod.outlook.com (2603:10b6:40f:fc02::6e9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.24; Tue, 29 Sep
+ 2026 14:35:14 +0000
+Received: from SJ1PEPF00002323.namprd03.prod.outlook.com
+ (2603:10b6:a03:114:cafe::3) by BYAPR21CA0004.outlook.office365.com
+ (2603:10b6:a03:114::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.496.5 via Frontend Transport; Tue, 29
+ Sep 2026 14:35:14 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 165.204.84.17) smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ SJ1PEPF00002323.mail.protection.outlook.com (10.167.242.85) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.472.14 via Frontend Transport; Tue, 29 Sep 2026 14:35:12 +0000
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.49; Tue, 29 Sep
+ 2026 09:35:01 -0500
+Received: from [10.254.92.188] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.49 via Frontend
+ Transport; Tue, 29 Sep 2026 09:34:58 -0500
+Message-ID: <164d00c2-e4cb-4962-8e4e-389ae77af943@amd.com>
+Date: Tue, 29 Sep 2026 10:34:58 -0400
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DLOP8IH392ZU.2X2GPOP2NYK4X@nvidia.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC 13/25] drm: Add VRR target frame rate properties
+To: =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel.daenzer@mailbox.org>, Nicolas
+ Frattaroli <nicolas.frattaroli@collabora.com>, "Borah, Chaitanya Kumar"
+	<chaitanya.kumar.borah@intel.com>, Daniel Stone <daniels@collabora.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
+	<mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
+	<airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Helge Deller
+	<deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>, Neil Armstrong
+	<neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>, Laurent Pinchart
+	<Laurent.pinchart@ideasonboard.com>, Jonas Karlman <jonas@kwiboo.se>, Jernej
+ Skrabec <jernej.skrabec@gmail.com>, Luca Ceresoli
+	<luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
+	=?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Andy Yan
+	<andy.yan@rock-chips.com>, Xaver Hugl <xaver.hugl@gmail.com>
+CC: <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>,
+	<linux-fbdev@vger.kernel.org>, <linux-rockchip@lists.infradead.org>,
+	<linux-arm-kernel@lists.infradead.org>, <kernel@collabora.com>, Derek Foreman
+	<derek.foreman@collabora.com>, <wayland-devel@lists.freedesktop.org>
+References: <20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com>
+ <20260921-vrr-limiter-uapi-v1-13-2fcd7d011646@collabora.com>
+ <0226527e-ee38-40ab-a2a8-1ae62013b950@amd.com>
+ <VERVf-aJRRKsBOI_3dpScg@collabora.com>
+ <8a3b2902-3255-4dd9-82f0-75a7747b710e@amd.com>
+ <3cf7143d-7013-4a3b-a831-96c3f125c2f6@mailbox.org>
+Content-Language: en-US
+From: Leo Li <sunpeng.li@amd.com>
+In-Reply-To: <3cf7143d-7013-4a3b-a831-96c3f125c2f6@mailbox.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ1PEPF00002323:EE_|BN7PPFEE0F400A9:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9a219bd1-c51e-4d58-85b2-08df1e36df0b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|82310400026|23010399003|36860700016|1800799024|7416014|376014|42112799006|11063799006|10067099003|921020|6133799003|56012099006|18002099003|22082099003|4143699003|13003099007;
+X-Microsoft-Antispam-Message-Info:
+	GAVbmH6O41RdShvxcuU7nOi8PlOlaYcuEbMIGfgqibxYalFVe3A2FP+aZqa+TmtOgMPj8JD3RK9ME+9RSSGsHB6ZHfMrD2t+JySBf27oadSQPJSohBWeDP5WCG7sTqihXtyY72nPDj7BLWKFLt4I9ITldIsgHK+vzmHM6QQSc9KXIC0rqLayCbE2+sDyjU7o8SxIIKti0j0b1UA+HcYF+2OvG3bHU+k9EgudG9KEOMla46YVH40IUY/vrPOIAYzoX8kYYAq+rVvNjQOuYRT6JtICp2ZTCcU1cw+mDDl1BP43ncC44Sbmv9LhK6iuMsm1/z01CPjmSdnskg/1mTbKcMIuUjEgiic2oHJl6o9iqD/Tcq046y4Y1/v3NAPM9ZlD2BkWOAig+X9r37FbHM+nUF8chinMG/D7hcZhVcyJyLr73m1o9FLofjX2WIwHoRIDQcI03CFI194XpVZD5FBR7mMPvMuQUqAAqXtVnkHkaQcb+XXVUoq4ZoleLhe1UtmAyLraz3jbKZUHz0IUm3VnnFryXKmEYwAft8XKr33H1XsPfBVVTHXTPMQo6mKC98PW2M10mUCmeHoQrsG2ou8Gnm+am/9LGWzOBPVbRVXbb3QlEc1MMk+Yg/rvBce0R7qVeduH0pwGp2CBYfIedAjoRN6dyGoxra7CSV3IInAIUTAPlQma0GYVGZS84ysEsNn3
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(23010399003)(36860700016)(1800799024)(7416014)(376014)(42112799006)(11063799006)(10067099003)(921020)(6133799003)(56012099006)(18002099003)(22082099003)(4143699003)(13003099007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	rh5edO2ljQR3ttOp5ZQ5/OiRc2u5UXvuTM4WHZ8YDIrkmIXWUU5E5BArxxJ4r35Mj/HaK4N3a9pYjaVZKOE1tBdROfJBfJwm0l8J8UN66mtkm9qTrzkhHS8mvu3O0Oa3zGsez3rhX7oizmcfEebSp7xvkoWEt9+7fsRaDyUoSut66jK6GLMVji8NGK+6z9YwLT7iDl61Q8vFjGnXLgFmFlwO5ZOHSrumfGJSsqjD429BizlLr+hFBuHY01rDveGKgAfVKiA17dEZT1VpDZgeaVA8Qx9gd89skOHK1Nrsl/AT8l80Cv5Z8FbCeKLggIZ5qBJSO6mK7hgsMkN5Y8tEZikLc0ESdERl5BIxkhCU14uR+HvxhIn/AFC31r4jmD/58+n4rt0mo37xtnaXNbVXHaR6tqIxit5ZJuWMAvM1W9j1UFpjOxZBQwoKOtCKcQHJ
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Sep 2026 14:35:12.8005
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9a219bd1-c51e-4d58-85b2-08df1e36df0b
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SJ1PEPF00002323.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PPFEE0F400A9
 
-On Fri, Sep 25, 2026 at 05:01:51PM -0400, Zi Yan wrote:
-> On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
 
-> >  Documentation/filesystems/mmap_prepare.rst | 81 ++++++++++++++++++++++++++++++
 
-> > +* ``discontig_kernel_map_page()`` - Maps a single page, correctly handling
-> > +  compound pages (if the compound page is bigger than the remaining pages in the
-> > +  VMA, then only those pages that fit will be mapped). For a compound page, the
-> > +  head page must be passed.
-> > +* ``discontig_kernel_map_page_range()`` - Map an array of pages of a specified
-> > +  size. Note that if the number of pages specified exceeds the VMA size then an
-> > +  error will arise.
->
-> Why do mapping a compound page and a page range have different behaviors
-> on the bound? Either both do partial mappings or give errors when a
-> given input cannot be mapped as a whole in the VMA.
+On 2026-09-28 04:10, Michel Dänzer wrote:
+>>> You can picture VRR limiting as always being active, but with a limit rational
+>>> of 0 it uses the display's limit as per the EDID, which is what unlimited game
+>>> mode is. So with how it's implemented right now in hdmi_validate_vrr(), your
+>>> example would set a maximum target, but leave the minimum at whatever the
+>>> display defaults to.
+>>>
+>>> Now that I'm thinking through this, a possible problem is that
+>>> drm_crtc_helper_vrr_is_fixed_rate() operates on the user supplied limits, but
+>>> if the display supplied lower limit is equal to the user supplied upper limit,
+>>> then we have a fixed rate scenario without recognising it as such. I think I
+>>> need to have a ponder on what the least surprising behaviour for userspace
+>>> is in that instance. The display limit stuff gets a bit complex due to
+>>> CinemaVRR and QMS TFRmin/TFRmax.
+>>>
+>>> I'll improve the documentation on the next revision to make the meanings more
+>>> explicit.
+>> Perhaps a simple way is to require simultaneous setting MIN and MAX pairs?
+>> IOW, require userspace to set MIN and MAX simultaneously to >0, or =0. For example:
+>>
+>> if ((vrr_min_n == 0 || vrr_min_d == 0 ||
+>>      vrr_max_n == 0 || vrr_max_d == 0) &&
+>>     (vrr_min_n > 0 || vrr_max_n > 0))
+>> 	return -EINVAL;
+>> That way, it's never ambiguous what userspace has requested for the range.
+>> They can copy the EDID supported range if they don't care about limiting one side, rather than leaving it at 0.
+> Determining the actual limits can be non-trivial (though I guess that might be fine as long as libdisplay-info can work them out), if user space gets them wrong, it might accidentally apply a narrower limit than intended.
+> 
+> 
+>> It's then also clear if they requested a static Hz.
+> I do see the benefit of your suggestion for this though.
 
-Ack, yeah similar to Suren's point on patch 8, will clamp for both.
+Xaver and I were chatting about this at XDC, and yeah it'll be difficult to match KMD's monitor range, especially if KMD decides to patch it with quirks and whatnot.
 
---
-Cheers, Lorenzo
+Since we are handing compositors control over vrr range, does it sound sensible to expose KMD's monitor range as a read-only property pair on the drm connector? We probably don't need a num/den pair for it, it's not like panels advertise fractional VRR ranges (right?).
+
+Fun fact: vrr_range is exposed today over debugfs for IGT testing
+https://elixir.bootlin.com/linux/v7.3-rc5/source/drivers/gpu/drm/drm_debugfs.c#L586
+
+Thanks,
+Leo
+
+> 
+> 
+> -- Earthling Michel Dänzer \ GNOME / Xwayland / Mesa developer https://redhat.com \ Libre software enthusiast
+

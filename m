@@ -1,238 +1,245 @@
-Received: from mail-oa2-f9.google.com (mail-oa2-f9.google.com [74.125.231.73])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazon11013064.outbound.protection.outlook.com [40.93.196.64])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 753C14D796E
-	for <linux-fbdev@vger.kernel.org>; Mon, 28 Sep 2026 16:17:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.231.73
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A631A632;
+	Tue, 29 Sep 2026 02:12:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.93.196.64
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790612273; cv=pass; b=k2V9ZteILlwUdnQ7PnhggI4r93NIrKWwAehT4APQfKn8MNFMI+Nx49HG4twcyTVvTTwUQZgW2ElFEsA9xY0ulsen40Cwx2yNB73FRd/iYuHiCGTTu4nXbUcz30S5Tn4YQeTgn+qGVuQfG4a5CEOcEGCyDPF5YtgW28hQpb+7CLk=
+	t=1790647941; cv=fail; b=Kf72bnslOeYuD5pwIme+6l1lWOmpKyRlEvObBGnJnsgFD/O6PZ1xuWQi2fcNhFzMUemCqRjhA+7vD6cT/YIhQuI5E8eHDum/ZFr7WM1px8Kyx7dvW7ELw8tGu1L1O5JSdG1nSc2B1aGknsdXD3wpfCJLwp++vH77YEjkPX7ybW4=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790612273; c=relaxed/simple;
-	bh=/9u3l8tvroAWhsZ3+bgszRdYGfDaF3Zw4nAXDtkGKNI=;
-	h=From:In-Reply-To:References:MIME-Version:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WOH3O36uRLo7wp/XLXcn6lYlUou18XhiTHESOMtmQ1103/hu/1TVtGEAERmSoey4AaKO0/aRyXvPZ6h67cadzKI0feZU5lC9V613VIDO0KqPzx7p1Yw1wXeotuD3UE2lbn3ps9884FxRrOvnrepsKjpDDIalno9KS39JJiDLAl0=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=T7K4jm22; arc=pass smtp.client-ip=74.125.231.73
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790647941; c=relaxed/simple;
+	bh=AzYIu37u22pHqb/M50reRigPIq7ehHO+XHRnK1k83kc=;
+	h=Content-Type:Date:Message-Id:To:From:Subject:Cc:References:
+	 In-Reply-To:MIME-Version; b=ReAYvP+jiLgGvUjRpDVqr5Az3n/3f5grKXV+RnzxoW7HA8dBhILQLeWEwd0THBRGZeXR3eLrfJ7DGZN3pWK5p2E0r0i78SuJeyYXd6nBWyy6DvbJqvSWaWdt55zEliKK/sXh0GZ+Jc4YQBTBjDs4Bg/PWP97kZGujjDsWYw37/s=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=nbSi06Xg; arc=fail smtp.client-ip=40.93.196.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T7K4jm22"
-Received: by mail-oa2-f9.google.com with SMTP id 586e51a60fabf-47bd4bcc3e2so1444766fac.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 28 Sep 2026 09:17:51 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790612270; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Rvfe00JbWthRFbkmp6HUL4AVD5xbUVxn40y8wA4AEcCZdZqvFx0iC+aMCL+cavlh28
-         Akb8P7M3hfVAU69HncSMhRk6vRkvrR8083XjEImihsazv97W02UjfRVQau7qpSuqT5iA
-         eZmdclIMcqLFjXZcqzisuddSC0+d6LmWaetPVLNhVkhckurmLcVzT7RiQ4ViDEKgM7Xx
-         4HTMLUPjpvLjuL6wbkptfsQLZWN+tQdWYPF4OOQQQ0Y1WpKjbe2xAHnKTK8sLFXPHdL0
-         es2ko2xbZDFx9hz7ZLETX1i9lKChACRVpJ/Y2lyOPVEpyJNzgbywqbV82yq+5pk2e3R8
-         rPpQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:mime-version:references:in-reply-to
-         :from:dkim-signature;
-        bh=mAEzcqvZR7kY5FZwPLKlXWGuBFBAruI7pzeVz3Vqh4E=;
-        fh=zHXLhSo+2zzqpb7PCf2YDUaTncdH5KLJTBPwlv8xHiI=;
-        b=LiXQhkQ4gmzT3OzvNoTSIXBS3YV0XTVwRcjyKofKXy13i3gy7NTDF9owMZS+btYgRA
-         RMhWCC2UnkfzVqlsuoqfRYZoTxsZPJz7UMHzAcTjhNXiOHfz6zhswr+mJSXvSQvwAaxQ
-         KpkBZli2j3+qsiu+qn/5W+mNVLnWFQAN8+0IBEye/t3T68oTGmsRgD5S6lyz9rulo/rm
-         +NA5YhyIB/l4Z1E5aI4Nmvx7rbVw0isj9iREP7Yw2YoZu0Otv3El/gItUy0n+6C6TnEE
-         kECqYj9iSCf6NsU5tHaU/JtJEFAzKKXTrkkz3l++LjaR5IHpw/B+uiO6KH/zslgL5+wi
-         61nQ==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790612270; x=1791217070; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:mime-version:references
-         :in-reply-to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=mAEzcqvZR7kY5FZwPLKlXWGuBFBAruI7pzeVz3Vqh4E=;
-        b=T7K4jm22TTyshae2BQw2pmgbgDt009kzc7b+aCWAh8Hox6+IZGJj6DdNnXUrZ0QsAG
-         tZi7G6g5N6nh3qbbAKiiz6Okzwq+beTf+vJKN2KsupZ8hFJkyANbpJcBmH5dsfMo2nwK
-         O6y//GA1tld7ZsZlAVQsIHvEUB7gZwOThyYqWlAb5I+4pYTq0IArU0OdhlqjYLMwtFbi
-         DYIzmEQ147pZ6XMqa8PlZGY4iEBiIfmhGw+C2eyU63x4lw+cx6CbUJOqyMcSWWfS28KE
-         kUXT2N2hNv/LVY8iiYwofbaX9b10gvafyjUlpBWlaTcnQmKspGzZkzAdXfvHPv7+L2w7
-         31nQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790612270; x=1791217070;
-        h=content-type:cc:to:subject:message-id:date:mime-version:references
-         :in-reply-to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=mAEzcqvZR7kY5FZwPLKlXWGuBFBAruI7pzeVz3Vqh4E=;
-        b=Vrnk5KTOkF6XuTPiMutdRdFPZgkbiplY7cwtT94XrSXPziKZHBiiA/Nr/DUHb7LP+V
-         0lNJ/bjohyVE/rwZatWsUrbqJdtnMD8qiumfWNnu7vI07rzZ+43m+JW0Hr2mTxs57BYh
-         8TCx2VcKrnyPPHzufSJxdqHMCQWu05dVRj+gUPkaGDCNaQTOw1hY1BKwqc+kHdiopNSv
-         D7AgIb9Ap/Y8VX4WPOMlg7cbZd48A/BfzfK2mXhD7J4apqe+itIlpE9REYqu6BgYDVm+
-         O9fMeDXLlZkcg0Lct7KPjtu+bRGAEQjJGQfHEXtTLqLoLiXrcRRRADHoLfujaoMMt2x/
-         Y92w==
-X-Forwarded-Encrypted: i=1; AKwUvBwH76MgLuQV0cQOYyss/4IGYmQqK53M5WqWkLrb6DNwfcj8ie17rTQOvqzrGmeV7CMQLMWvwHD62M1Tqg==@vger.kernel.org
-X-Gm-Message-State: AFuF++m3/yWkfcgQg0rHLpqfZfgM2P86vTX23zCW/zCovrGfmWINwihO
-	/Jvjs3/ApPGhCwBgRzPLtqc8nkbi0Wq7TCzzPcB678ya5V88l9VY0bh5deNgIqPSRPlMW2uJ1c2
-	6GkUy9oqPmuiIY2HI+BuN5weYW5yoWK0=
-X-Gm-Gg: AYBFou3Cmn+QLabEu/o3ML53UV2Ce8U26kVelnS0QpvttiBOiWeLvh38i04e+HR0Ege
-	BcFcJQ67zwRTowFkIEC/HqQ2ZdacQuOajsRHQxa+TDhYLMv2wichCAnXLWX0vQj4I4k3zaNXFVu
-	5Vt+IUGQy8bDHVXZahuAckoZIOFdTYAo4iblWeUi6BCddu++/eB2rwJtyX+ntGvERoXZZ8PTKUY
-	dpNGPffqvckWDGMNQne/IayFdyVbqnYZwgPclGpcbIKIOQTm7iRA0/01wqQHfNqgmn0nddGw5nz
-	63+n5rfBMjTZLd4M4mRpctwY9UiXG1buGPYVCf6CujYxOlyoTSXqlkXeSTiAEku4meSlwY11a2R
-	Zh9ORL47ASw==
-X-Received: by 2002:a05:6808:180f:b0:4ea:f4ab:dad7 with SMTP id
- 5614622812f47-4eaf4abde31mr3114576b6e.43.1790612270217; Mon, 28 Sep 2026
- 09:17:50 -0700 (PDT)
-Received: from 578479312649 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 28 Sep 2026 16:17:49 +0000
-Received: from 578479312649 named unknown by gmailapi.google.com with
- HTTPREST; Mon, 28 Sep 2026 16:17:49 +0000
-From: Aveline Noir <jm5905938@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <CANOyQmGfmBdTRaEamVdGuMBToVLeXGi6qLrnX=xkA9acsL9TSQ@mail.gmail.com>
-References: <CANOyQmGfmBdTRaEamVdGuMBToVLeXGi6qLrnX=xkA9acsL9TSQ@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="nbSi06Xg"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=leeJ8nG6kj+Isq6S32I/3jiDio4VD8pSbkms/J2QD/IoX8aLjHdso07oB/5c35shMYDpTwrel4o7mU4I1FWDN1AFAmeR/3R/NWNSVOl8pcMqS6kOgC5pT9tYA8/Ofn+tXn7rhqOudPS9JUhFuMNxboeOVhrACy5P6LkekpgZv3i5dw80SaSNAGPAMLPxZtg2+iT2IQxUpebjAPr9T0CIrXgCYf8Dqe0eh0+kNpenBcJ9k3zaXNia9AT/8Ieewx7u1VGQb19YkesBEYCMdnAf9p6qVUTkQHMWowi+2t9pL8nWE5ZUz5brT9TpM4o4VOzL/uCBGqII4umw7zkax/LubA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Rvbe69xBIpzGsOrw6VbYQRORSyH1zSp/rLtFmlWZcCQ=;
+ b=BrZGvAynJ4ponUIVOC/cXDvrF1+Etamv2w8qVqOlmhTL8aiE49f6Fr+pOZGCxpsZ8U5TWZJeYCRTF0JCQRuPP55AJVZuwoRVfyelTWQbndJxpUDeg27fFcjsLvOWUBI2Lppn2TBIn+kkt+PdquLDl+M2IX9quoD3CNvn6dG+bzbCQcY8jNjTrlvky7Kvf2JnQ3oXOrvRgEnO3TC7qBz+Li/Di6Uy5qjKJrHOPmtgB+xJpTRvLbcJxCi2zqCf+Oif/79m+P6CKx8IGZcMsnRlxfrvt6nscsBQs4/yY6DxAyUtoYbi9lMgkjHr5wnZKQfQr9weeVUnEx3FaP0LAf7nfw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Rvbe69xBIpzGsOrw6VbYQRORSyH1zSp/rLtFmlWZcCQ=;
+ b=nbSi06XgCR12RiFIHX53tm05VV6tvR8/+VLSfACKpV0nx74Nc/5S3tSezV1wqhbi0cq7fG5akeV+5ugVQEXZx8Ie72mN77tyNZKtIUXyfDpSyG/LqGOli/zt8QYC6byGtv4stGz12SOqQoiRkvlmC5mA4TMRiAQjpdyH1OJDE8LjQT4riv3BdU3C10yuHgc7649NY12R+CP4T1Tx1zYNsnEdcUpL0LVGqJ3HBYH4wwX1QmohJ86A9KA7M9mf/oIfEsTLcjSvbAqkkynzOcQySH2+tGANArdLXGiXQ1vmHAEC4/c4SlOl4OsmwIK78JCfEw4GrAkf2wlBAgXZBE6c6Q==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com (2603:10b6:208:40e::7)
+ by SA1PR12MB8161.namprd12.prod.outlook.com (2603:10b6:806:330::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.451.24; Tue, 29 Sep
+ 2026 02:12:09 +0000
+Received: from IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16]) by IA0PR12MB8374.namprd12.prod.outlook.com
+ ([fe80::d85f:4c87:ae84:3f16%6]) with mapi id 15.21.0451.022; Tue, 29 Sep 2026
+ 02:12:09 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 28 Sep 2026 22:12:02 -0400
+Message-Id: <DLRFPN5JH235.34HHA5QDQGSBT@nvidia.com>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, "Andrew Morton"
+ <akpm@linux-foundation.org>, "Liam R. Howlett" <liam@infradead.org>,
+ "Vlastimil Babka" <vbabka@kernel.org>, "Jann Horn" <jannh@google.com>,
+ "Pedro Falcato" <pfalcato@suse.de>, "David Hildenbrand" <david@kernel.org>,
+ "Mike Rapoport" <rppt@kernel.org>, "Suren Baghdasaryan"
+ <surenb@google.com>, "Michal Hocko" <mhocko@suse.com>, "Jonathan Corbet"
+ <corbet@lwn.net>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Dennis Dalessandro" <dennis.dalessandro@cornelisnetworks.com>, "Jason
+ Gunthorpe" <jgg@ziepe.ca>, "Leon Romanovsky" <leon@kernel.org>, "Paul
+ Moore" <paul@paul-moore.com>, "Stephen Smalley"
+ <stephen.smalley.work@gmail.com>, "Jaroslav Kysela" <perex@perex.cz>,
+ "Takashi Iwai" <tiwai@suse.com>, "Alexei Starovoitov" <ast@kernel.org>,
+ "Daniel Borkmann" <daniel@iogearbox.net>, "Andrii Nakryiko"
+ <andrii@kernel.org>, "Eduard Zingerman" <eddyz87@gmail.com>, "Kumar
+ Kartikeya Dwivedi" <memxor@gmail.com>, "Baolin Wang"
+ <baolin.wang@linux.alibaba.com>, "Nico Pache" <nico.pache@linux.dev>, "Ryan
+ Roberts" <ryan.roberts@arm.com>, "Dev Jain" <dev.jain@arm.com>, "Barry
+ Song" <baohua@kernel.org>, "Lance Yang" <lance.yang@linux.dev>, "Usama
+ Arif" <usama.arif@linux.dev>, "Kiryl Shutsemau" <kas@kernel.org>, "Doug
+ Gilbert" <dgilbert@interlog.com>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
+ <mkp@kernel.org>, "Jaya Kumar" <jayalk@intworks.biz>, "Simona Vetter"
+ <simona@ffwll.ch>, "Helge Deller" <deller@gmx.de>, "Sebastian Reichel"
+ <sre@kernel.org>, "John Hubbard" <jhubbard@nvidia.com>, "Peter Xu"
+ <peterx@redhat.com>, "Masami Hiramatsu" <mhiramat@kernel.org>, "Oleg
+ Nesterov" <oleg@redhat.com>, "Peter Zijlstra" <peterz@infradead.org>,
+ "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>, "Dave Hansen"
+ <dave.hansen@linux.intel.com>, <x86@kernel.org>, "Arnaldo Carvalho de Melo"
+ <acme@kernel.org>, "Namhyung Kim" <namhyung@kernel.org>, "Mark Rutland"
+ <mark.rutland@arm.com>, "Rik van Riel" <riel@surriel.com>, "Harry Yoo"
+ <harry@kernel.org>, "Juri Lelli" <juri.lelli@redhat.com>, "Vincent Guittot"
+ <vincent.guittot@linaro.org>, "Maarten Lankhorst"
+ <maarten.lankhorst@linux.intel.com>, "Maxime Ripard" <mripard@kernel.org>,
+ "Thomas Zimmermann" <tzimmermann@suse.de>, "David Airlie"
+ <airlied@gmail.com>, "Will Deacon" <will@kernel.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@kernel.org>, "Nick Piggin" <npiggin@gmail.com>, "Arnd
+ Bergmann" <arnd@arndb.de>, "Muchun Song" <muchun.song@linux.dev>, "Oscar
+ Salvador" <osalvador@suse.de>, "Matthew Wilcox (Oracle)"
+ <willy@infradead.org>, "Jan Kara" <jack@suse.cz>, "Marc Zyngier"
+ <maz@kernel.org>, "Oliver Upton" <oupton@kernel.org>, "Catalin Marinas"
+ <catalin.marinas@arm.com>, "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Anup Patel" <anup@brainfault.org>, "Paul Walmsley" <pjw@kernel.org>,
+ "Palmer Dabbelt" <palmer@dabbelt.com>, "Albert Ou" <aou@eecs.berkeley.edu>,
+ "Christian Borntraeger" <borntraeger@linux.ibm.com>, "Janosch Frank"
+ <frankja@linux.ibm.com>, "Claudio Imbrenda" <imbrenda@linux.ibm.com>,
+ "Alexander Gordeev" <agordeev@linux.ibm.com>, "Gerald Schaefer"
+ <gerald.schaefer@linux.ibm.com>, "Heiko Carstens" <hca@linux.ibm.com>,
+ "Vasily Gorbik" <gor@linux.ibm.com>, "David S. Miller"
+ <davem@davemloft.net>, "Andreas Larsson" <andreas@gaisler.com>, "Alexander
+ Viro" <viro@zeniv.linux.org.uk>, "Christian Brauner" <brauner@kernel.org>,
+ "Matthew Brost" <matthew.brost@intel.com>, "Joshua Hahn"
+ <joshua.hahnjy@gmail.com>, "Rakie Kim" <rakie.kim@sk.com>, "Byungchul Park"
+ <byungchul@sk.com>, "Gregory Price" <gourry@gourry.net>, "Ying Huang"
+ <ying.huang@linux.alibaba.com>, "Alistair Popple" <apopple@nvidia.com>,
+ "Chris Li" <chrisl@kernel.org>, "Kairui Song" <kasong@tencent.com>, "Kemeng
+ Shi" <shikemeng@huaweicloud.com>, "Nhat Pham" <nphamcs@gmail.com>, "Baoquan
+ He" <baoquan.he@linux.dev>, "Youngjun Park" <youngjun.park@lge.com>,
+ "Johannes Weiner" <hannes@cmpxchg.org>, "Qi Zheng" <qi.zheng@linux.dev>,
+ "Shakeel Butt" <shakeel.butt@linux.dev>, "Axel Rasmussen"
+ <axelrasmussen@google.com>, "Yuanchu Xie" <yuanchu@google.com>, "Wei Xu"
+ <weixugc@google.com>, "Chengming Zhou" <chengming.zhou@linux.dev>, "Michal
+ Hocko" <mhocko@kernel.org>, "Miklos Szeredi" <miklos@szeredi.hu>, "Xu Xin"
+ <xu.xin@linux.dev>
+From: "Zi Yan" <ziy@nvidia.com>
+Subject: Re: [PATCH v3 25/40] mm/vma: enforce that only kernel-owned
+ mappings may set VMA_IO_BIT
+Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+ <linux-doc@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+ <linux-rdma@vger.kernel.org>, <selinux@vger.kernel.org>,
+ <linux-sound@vger.kernel.org>, <bpf@vger.kernel.org>,
+ <linux-scsi@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
+ <dri-devel@lists.freedesktop.org>, <linux-trace-kernel@vger.kernel.org>,
+ <linux-perf-users@vger.kernel.org>, <linux-arch@vger.kernel.org>,
+ <linux-fsdevel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <kvmarm@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+ <kvm@vger.kernel.org>, <kvm-riscv@lists.infradead.org>,
+ <linux-riscv@lists.infradead.org>, <linux-s390@vger.kernel.org>,
+ <sparclinux@vger.kernel.org>, <fuse-devel@lists.linux.dev>
+X-Mailer: aerc 0.22.0
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org> <20260917-b4-mmap-prepare-vma-flag-sanify-v3-25-4583d8a23bca@kernel.org>
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-25-4583d8a23bca@kernel.org>
+X-ClientProxiedBy: YQBPR0101CA0340.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:c01:6b::17) To IA0PR12MB8374.namprd12.prod.outlook.com
+ (2603:10b6:208:40e::7)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Mon, 28 Sep 2026 16:17:49 +0000
-X-Gm-Features: AclHuK8BjruCpIs-y-znTwRHy4UbPVU7NoASXj59drlp5sgPwJENTSFHMkI16G0
-Message-ID: <CANOyQmHF-gjvnLqTGEVBcU6+AWj5ha+7tJhE2E_Cv9aj-gRXdA@mail.gmail.com>
-Subject: [PATCH v2 2/2] HID: picolcd: Avoid framebuffer last-close deadlock
-To: Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <bentiss@kernel.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, deller@gmx.de, 
-	simona@ffwll.ch, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA0PR12MB8374:EE_|SA1PR12MB8161:EE_
+X-MS-Office365-Filtering-Correlation-Id: 929b79cd-7fd3-4fe7-b0ea-08df1dcf10e1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|23010399003|376014|7416014|921020|10067099003|4143699003|11063799006|56012099006|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	55V5jLLqnKa+bap2rTDpyXvJ3MS2KeCN1v66hI6BgDtw24iIHyBtnFcsj40HGTzEsTDv6VVOvLjR+3RKHA13ORaZjm94lG+Mm6zU/Gi5YMuUYQVpJFkYr14j9O2JEahCemsUkSAvCXrpWSlLjvgVYmWUWb2pMyw+ENNOeNu9ib40HzVvAlZ1hnYPKjBOGJmIhdSQahYFF2kBaQUuxI+GQ4Ggj6FQYrR3/VE+qJZJpfwcECIAFB4twVQa+hLHa0Ve0J3DSJT24HEHLYU4q4AkQdTVE/lEl/AIeXhgOUupKjHD9yu256BAbRce7VT6kw5gebvfaLB6PeRavLv8twn1I6OdyXfs2CsChLXJoeTSySz6laOIKou7jk9lJDIHvpn2NJ5j7FFWDYru8bNGIOYxS1D+oJOd1no8EYCKcS4FoVqOMZu8SxD6nI5W5LesieW6vo4Z8G5btadzb3CVLJi4YBw3XHQLNI+VkzVKhIJ3Kfq7hEkvvjn5jzX89cxCQekRNonJwLSUjc/eR/gZhHhBjnF7/pvLR4MhCfy5mos6X7sd77iTwY9mB+IEyGRt4oEGSOqPdlvWFtngelGgsZMcvRpKdOIJw9eZjxzu9+i3vf8mLI9h8wzHVv4jGxA0NzZEI8IofRgVaKEHJFZm2obMyU03kiQn9zErw/yXQeNHOCl8QWdt64j6Ft1G9PwSg+AhwwMh3EGQOYEH+UNFKOBvCw==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR12MB8374.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(23010399003)(376014)(7416014)(921020)(10067099003)(4143699003)(11063799006)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?ZmpGRzdZTUhYUEpidGovM2ltbThTWDBuQlNLbW1uZHRGTXl4Y05XRWxVcDVz?=
+ =?utf-8?B?YXh6OFhPd3JhNTdtSytoMm91Yi9lVlp0NWJueS9wM3RRMW80QURYV29RUWg1?=
+ =?utf-8?B?dnlVRWpVN1pMS2lkZlFOb0U1UGtzeVNkZjFUdFdXcEZTOEVGcWdzcU5zdlpv?=
+ =?utf-8?B?QnJnL0JXQjBDVHVsNWt1SFB6LzZGWjlzRWdXTVYvNC9EVFJBTVlSRE9iQUJh?=
+ =?utf-8?B?b3cvcWV6NTZXT2dOS1VmVUk2NHBHeE5NbGlYdithNC9VUHV4c1FMcnM3MXpX?=
+ =?utf-8?B?cExGellJTFBXOU4xUlpwWkNnSTM1dzU0WkpRTytlNTQydUw2WGtTbHdJSEc4?=
+ =?utf-8?B?M0dudWh6d2JMQUVKWWlZajhGMGhHZU9DWUNYckVUWG1YWDA2TFU0SEliL0RN?=
+ =?utf-8?B?dERYNHEvQVJzWkNma3hSVndMVCtoc3o1MGhWdVNET3F1MGRjQUxPQmdaRmZC?=
+ =?utf-8?B?Nzc5WFhkbVRkcldBdmVvZjF2T2tKVG1iRXdqWGVmdzYxaS80N0U0RWczNkpC?=
+ =?utf-8?B?OWFjamVLOVBsVTNJR0U4V2lWVFRxSDJVSGZFZkhrY3BPTmRKei9YbXFuZ21L?=
+ =?utf-8?B?UGx4R2VkM0sxMnZhd0RsejdGbTEzcUUxdmRyY2J3Ry9DWXc3Q2lVSHozbng3?=
+ =?utf-8?B?c3hQMEJpWWdPdFpqZ3dybUxabmdOK1JQSE5UM0RyOGxRSVBwQzVneXF5UzRi?=
+ =?utf-8?B?bEhJM3NMcjNiK1Evd2Y1eFNVRHQ3WnQ3c2RJNTNPZWwzM1dBTDN0RzZZQU1D?=
+ =?utf-8?B?QWw2SDNwbCtsa010aEd2aVZoYnBXN1BKd3NxeW42WCtLUmFtdnRzVnkwbVlR?=
+ =?utf-8?B?OWxkL1RQNlUrSTBkRTBsZ04zbG9iUy9jYTdqRjVudmg5RDlmWkhwNDRQUFlp?=
+ =?utf-8?B?a2l0ZkFOdStOL1V4OVIzbDRFVFB6TWViQVc3OWRUZDducUlDMTZBZTNMcmVD?=
+ =?utf-8?B?Ry90emRCTHd3NnQxZWFxelZDM2ttY2xrMklDd3M4dXJwV0Y3b2hhd0lnQnlr?=
+ =?utf-8?B?bXlyOWt1NkNJZXc0VjNHLzFFT0NsQ1hwLzgwUzZKQ1VsNkk5eU5rR3F0cWRH?=
+ =?utf-8?B?T3Zkc2Q4ZHh0cWhMbkwvQ3JCc0J0OWtuaTRVa1RFbnFBT1BQckJkS1FGN1ZV?=
+ =?utf-8?B?QzM3Q2JSVzBzUzFJQWNZN3dOSEErZ2Q2dVl3WEk5dnBFRmxTc0RLWHFtNUZa?=
+ =?utf-8?B?V01xWTI0R2hEbnp6d1RiekZGL0wwUzdkVjZ2RFVhTFU1OU5qZ1J2SXZQL05t?=
+ =?utf-8?B?SzZSRzRiWWtDZ3MrL1FEVnVNUE1TZzh4UnV4a2w5R2RiQktjdmhWMEo5Y1Yz?=
+ =?utf-8?B?YXoyYUQxd2J4WUo5Q0d1TUw0YVBDbUxjbEQwbEZpQStPZjVOQmZTakdTdVkw?=
+ =?utf-8?B?elU2ZkZod2JERHpXek94UUJDTFZMVjF1Rnd5bVNTSUJ5bUVQRlpCamtCWkdq?=
+ =?utf-8?B?bVJLbG1JS1BCS1dhQ0hMUTJNc3A5UFliOTkrWmdhMzFjbTh6OXZyMk9sa1p4?=
+ =?utf-8?B?R2pyelhlU1BMZDg2VFN4SW5XbGdrWmQwOWdHV0l1ejBKS0hzK1AvMmJjRW5q?=
+ =?utf-8?B?clh4cjhkb3VNdDA5T3pVNTc4dUFCUEJ2ZzZiSjlhY0pYRmF5Y1RDU1F3OVkw?=
+ =?utf-8?B?VG1SdDdFTFRKU2FFL241cnhWNEFKWnRHdW15OXhaTUp2UjF0TnpiMUt4REdE?=
+ =?utf-8?B?T01ETHRmdHRXcmpBcThpUE9ocFgrK2huT2N6bElBNWc2MkVEL2YvdHR1Z1M0?=
+ =?utf-8?B?UXBkdTc0cVdjWEw4Sld2RHlFUkJnellpaUR5ZGUxNnIwRGJIa0RxY2pGWkFa?=
+ =?utf-8?B?aGphNUFOL3c5dG1Lb0w5Y29DampLbGNIbHg4OThUY2NCRG1FTHdxaFg2OG0w?=
+ =?utf-8?B?MkoyanMyY3BTVUl6dUZmcjF0MmZLNFZNSGpKY0w0NGtsVWYwOWJZbk9Xb2sy?=
+ =?utf-8?B?NTE1Z2ZWZDZjMFVFdnZ5VUJmVmRyV1JDN1ErZFBwZ1E2VlJGQUYrck1WRzRa?=
+ =?utf-8?B?aVROVjZRMW5mb1lWY1lZSlh3aVVzeEpWNmp3NGw2RG5oczIrS1YrUTlIYXNX?=
+ =?utf-8?B?Zk9XRWt2VFVYc211ZVR4dUwzendWSkg3WWRKYkljWk5pUFNTcGxFMDd6UXE1?=
+ =?utf-8?B?WmNHcVJlR1ZSYmRNWHFHdzVyeGJGQ1pRVVQyanhJUmpvUjRNb2dId1k3TDAr?=
+ =?utf-8?B?T29MU2QrYTEyMWhudFFBN2FGQTd2ekZDMnJ4c2pubzBOdk9kcTBxSVFRSnJi?=
+ =?utf-8?B?K3Y2QWJVRVZ4YmZHbGhFazFSdDdadkp2cEUyMmVQRUdMdzNVaENVd2hFUmxC?=
+ =?utf-8?Q?nxE//RYebAqK4lZhk9?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 929b79cd-7fd3-4fe7-b0ea-08df1dcf10e1
+X-MS-Exchange-CrossTenant-AuthSource: IA0PR12MB8374.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Sep 2026 02:12:09.0376
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: iGPiS2Ywd+V6AhZ66j60qQ5UQnjbvbizvRjnGHh57Z10grwgY/ZHiviWZgnay2r+
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB8161
 
-Closing the last framebuffer descriptor can deadlock against PicoLCD's
-deferred update worker. fb_release() holds info->lock while waiting for
-deferred work, and picolcd_fb_update() takes the same lock. Lockdep
-reports the cycle through deferred-work completion and fbdefio_state->lock.
-Repeated framebuffer open/write/close with concurrent device destruction
-reproduces the hang in a PREEMPT_RT QEMU guest.
+On Thu Sep 17, 2026 at 12:22 PM EDT, Lorenzo Stoakes (ARM) wrote:
+> It makes no sense for a mapping whose contents the kernel does not own to
+> specify that the range is MMIO.
+>
+> Prior to this patch, all in-tree drivers which did so have been updated
+> such that they are marked as kernel-owned. The check WARNs and fails the
+> mmap for any out-of-tree driver that still sets VMA_IO_BIT without a kern=
+el
+> mapping.
+>
+> No functional change intended for in-tree code.
+>
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  mm/vma.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/mm/vma.c b/mm/vma.c
+> index 1db8b218fe64..56a0cd154419 100644
+> --- a/mm/vma.c
+> +++ b/mm/vma.c
+> @@ -2787,6 +2787,12 @@ static int mmap_validate_vma_flags(const vma_flags=
+_t *flags)
+>  		return -EINVAL;
+>  #endif
+> =20
+> +	if (!vma_flags_test_any(flags, VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT)) {
 
-Use a private update mutex in the deferred worker instead of info->lock.
-Take it in picolcd_set_par() as well to preserve serialization of pixel
-format conversion and framebuffer updates. Initialize it before exposing
-the framebuffer.
+I thought why not just using vma_flags_is_kernel_owned(), then realize
+that function is still checking VMA_IO_BIT. And you convert it in the
+next patch.
 
-The test with the preceding output-request fix hung in the first round
-and reported a circular locking dependency. With this change, all five
-rounds completed, including 29 successful framebuffer write cycles and
-concurrent LCD, backlight, two LED and UHID destroy operations, without
-BUG/WARNING. The original syzkaller reproducer and persistent-open
-framebuffer tests also passed again. These are bounded virtual-device
-tests; physical hardware and suspend/resume remain untested.
+LGTM.
 
-Fixes: 3efc61d95259 ("fbdev: Fix invalid page access after closing
-deferred I/O devices")
-Signed-off-by: Aveline Noir <jm5905938@gmail.com>
----
- drivers/hid/hid-picolcd.h    |  2 ++
- drivers/hid/hid-picolcd_fb.c | 33 ++++++++++++++++++++++-----------
- 2 files changed, 24 insertions(+), 11 deletions(-)
+Reviewed-by: Zi Yan <ziy@nvidia.com>
 
-diff --git a/drivers/hid/hid-picolcd.h b/drivers/hid/hid-picolcd.h
-index 846a8ceb95..33e6654ca0 100644
---- a/drivers/hid/hid-picolcd.h
-+++ b/drivers/hid/hid-picolcd.h
-@@ -115,6 +115,8 @@ struct picolcd_data {
- struct picolcd_fb_data {
- 	/* Framebuffer stuff */
- 	spinlock_t lock;
-+	/* Deferred I/O runs while fbdefio_state->lock is held. */
-+	struct mutex update_lock;
- 	struct picolcd_data *picolcd;
- 	u8 update_rate;
- 	u8 bpp;
-diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-index c17104fd60..258c7c4fa2 100644
---- a/drivers/hid/hid-picolcd_fb.c
-+++ b/drivers/hid/hid-picolcd_fb.c
-@@ -231,7 +231,8 @@ static void picolcd_fb_update(struct fb_info *info)
- 	struct picolcd_fb_data *fbdata = info->par;
- 	struct picolcd_data *data;
 
--	mutex_lock(&info->lock);
-+	/* fb_release() flushes this work while holding info->lock. */
-+	mutex_lock(&fbdata->update_lock);
 
- 	spin_lock_irqsave(&fbdata->lock, flags);
- 	data = !fbdata->ready ? fbdata->picolcd : NULL;
-@@ -258,11 +259,11 @@ static void picolcd_fb_update(struct fb_info *info)
- 				spin_lock_irqsave(&fbdata->lock, flags);
- 				data = fbdata->picolcd;
- 				spin_unlock_irqrestore(&fbdata->lock, flags);
--				mutex_unlock(&info->lock);
-+				mutex_unlock(&fbdata->update_lock);
- 				if (!data)
- 					return;
- 				hid_hw_wait(data->hdev);
--				mutex_lock(&info->lock);
-+				mutex_lock(&fbdata->update_lock);
- 				n = 0;
- 			}
- 			spin_lock_irqsave(&fbdata->lock, flags);
-@@ -277,13 +278,13 @@ static void picolcd_fb_update(struct fb_info *info)
- 		spin_lock_irqsave(&fbdata->lock, flags);
- 		data = fbdata->picolcd;
- 		spin_unlock_irqrestore(&fbdata->lock, flags);
--		mutex_unlock(&info->lock);
-+		mutex_unlock(&fbdata->update_lock);
- 		if (data)
- 			hid_hw_wait(data->hdev);
- 		return;
- 	}
- out:
--	mutex_unlock(&info->lock);
-+	mutex_unlock(&fbdata->update_lock);
- }
+--=20
+Best Regards,
+Yan, Zi
 
- static int picolcd_fb_blank(int blank, struct fb_info *info)
-@@ -332,17 +333,24 @@ static int picolcd_set_par(struct fb_info *info)
- {
- 	struct picolcd_fb_data *fbdata = info->par;
- 	u8 *tmp_fb, *o_fb;
-+	int ret = 0;
-+
-+	mutex_lock(&fbdata->update_lock);
- 	if (info->var.bits_per_pixel == fbdata->bpp)
--		return 0;
-+		goto out;
- 	/* switch between 1/8 bit depths */
--	if (info->var.bits_per_pixel != 1 && info->var.bits_per_pixel != 8)
--		return -EINVAL;
-+	if (info->var.bits_per_pixel != 1 && info->var.bits_per_pixel != 8) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-
- 	o_fb   = fbdata->bitmap;
- 	tmp_fb = kmalloc_array(PICOLCDFB_SIZE, info->var.bits_per_pixel,
- 			       GFP_KERNEL);
--	if (!tmp_fb)
--		return -ENOMEM;
-+	if (!tmp_fb) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-
- 	/* translate FB content to new bits-per-pixel */
- 	if (info->var.bits_per_pixel == 1) {
-@@ -369,7 +377,9 @@ static int picolcd_set_par(struct fb_info *info)
-
- 	kfree(tmp_fb);
- 	fbdata->bpp = info->var.bits_per_pixel;
--	return 0;
-+out:
-+	mutex_unlock(&fbdata->update_lock);
-+	return ret;
- }
-
- static void picolcdfb_ops_damage_range(struct fb_info *info, off_t
-off, size_t len)
-@@ -506,6 +516,7 @@ int picolcd_init_framebuffer(struct picolcd_data *data)
-
- 	fbdata = info->par;
- 	spin_lock_init(&fbdata->lock);
-+	mutex_init(&fbdata->update_lock);
- 	fbdata->picolcd = data;
- 	fbdata->update_rate = PICOLCDFB_UPDATE_RATE_DEFAULT;
- 	fbdata->bpp     = picolcdfb_var.bits_per_pixel;
--- 
-2.55.0

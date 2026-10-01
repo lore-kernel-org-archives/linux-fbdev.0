@@ -1,121 +1,124 @@
-Received: from mail-lr2-f34.google.com (mail-lr2-f34.google.com [74.125.230.98])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BEBA4A498E
-	for <linux-fbdev@vger.kernel.org>; Thu,  1 Oct 2026 14:04:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.230.98
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790863446; cv=pass; b=HJ0At4MQrdIQaUoEU7/eNvDdn5ZQeDYztMfN6zHQM18zBGsv9Psdcuyv7IyxCmLUUl+DK/qHqscyDWMjDmGAIHS/5mNkw7p9dBtoP3i5E/TtjrFCh++WPAjGtfFeZVXqSzUCcwjJe62bX8uifpjzwtCflRPAQtIT5V+I1C9jCZ8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790863446; c=relaxed/simple;
-	bh=U9jLK7/wc7B6mGa6+VCwGx4Ieg2jj91kEAwv06rg/rQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IKCzPPEStgBkv4XUxG026KQw5J2MOkTRKbAh1cGIEKUWFOhJGGnETuN5kKNBirLNfUIk208MI1JZY/vsbzVNzkZvRrgCXHY7lUsYDOtt2jxaa4FLFBzmEEGyYII+qb95BB9yIXeBCDzL8fAkvDWw6ABZSIz/pzP3AvNz98J0VpA=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=mxnS9U4M; arc=pass smtp.client-ip=74.125.230.98
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CA0051597B
+	for <linux-fbdev@vger.kernel.org>; Thu,  1 Oct 2026 14:38:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790865537; cv=none; b=a2h2TaON1+OGVwN4QKSUlQAHY9E3Mal6D/PQipEtpEmMUZOHymbBJLC/lITludLfbnleRELdrzRdLLlxqLAcLVftc/Hox0fgJoHlK+tIcLM14Ts9gf/RG6imcZA8JZXVBCCygKJYYhbuISVzWpjA+EollJ56AHb0Z0kOiBfG3eY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790865537; c=relaxed/simple;
+	bh=TP4jI+wG6PBqBKAosooF+4rrhoc5hNQtPHbUvJ/nxic=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=sRUVpueNP56iNB2CCxB6azvvHThmwXyjtZF9tFbEdV6fEnKui+a3/e/BLsvfWbgXbPilCA7DTS6ZUIDBbZ9jJU8Z3eeCcuLWauk784OD17DuLwkMuRdzUxxdSIzSBseF+Eaizq5zSgMOzOEEar2162sEAGi6MWtlQe7kyVE8gGc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=J5TPUfqt; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=VjIBUJ8J; arc=none smtp.client-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mxnS9U4M"
-Received: by mail-lr2-f34.google.com with SMTP id 38308e7fff4ca-3a75ff20a6eso35005861fa.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 01 Oct 2026 07:04:04 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790863442; cv=none;
-        d=google.com; s=arc-20260327;
-        b=MdcX5shfoq0ziEHdDS7dNafE3jmfKWuFXyyxu0PeRLGm6xl4A360N/3Wq9TyYW/XFS
-         w05taHJpCRrblNjg9zVks9i1sdhkcI11CqmrUCp1HCT00+dV5dqNElTQrPpaL213RdmG
-         WAa3RRjRPlXYE52TZ7Zt2sooi4YirCaSpSeBJK2MN6WQJsbWbeMwGBNJrPOSqd2lEkHu
-         qJSEa1RQmhmS2DS7eNaXnmstrTKk13b2ET2Fkzcjy/+dgZFzUoktbheovRZDu7yPrLN5
-         gsYA1nEdkKtQEpFuwcP56bjmvEBMhjQ8RqP5rZNaIsvIOwM8KvAqtTXDe1TXTMivx6Au
-         k7AA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=U9jLK7/wc7B6mGa6+VCwGx4Ieg2jj91kEAwv06rg/rQ=;
-        fh=cyXK4RqA1TxCFqm59N8ZD7M73mSKQSnjE4tMGo0eB1o=;
-        b=IIYJRJIGvCnqnPjV0Pv5O/jw1RoNXSTh7hAQz3Nxk/c4WR51xifq1Xg4TEd6Wcm4Bv
-         qXwsu7ECgtlPeq9zBxepQ1aPCU3E/Sbu17yVaoOWlODfQVBCxENXA1C0k4iLchCQHA/h
-         9lD3a8TakA5SfrJEJU3NzVfFOKahOA0UqwbOhW5ve9eu9LDeRP5zgRhuTG+nreN1Ekwx
-         weK4Hc1YqykVGrUtvcknG4UWbm2WroI9m6es899SOSf1anQvOIKdA6YO7i2IiBpL953W
-         77z8d3A6PaYkuJPWLxa7zoMnDUkMCTpbU2CqChBlp7Q8m/IVz67/u9mRTbOwSHAfyk42
-         5+8g==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="J5TPUfqt";
+	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="VjIBUJ8J"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1790865529;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=i4xhRQFt/bWT6UALcOITRzeSEDfb1ACELZHI8/ear74=;
+	b=J5TPUfqtrtqpeS8SlQLjzv3vhrZQdFt09DaMBP94eK/YbQB2f0TRRn7Uw/OTIzX1pxI5r3
+	ZLumVB0WwfmL9B+zV394FspL1wqlVAwXGDUJ75ujzTrNlSTUh3cY+APEITL89jeovZUJKY
+	piixZs0h17ThkR5Mm/lqlJhsvUjvd6k=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-564-2gzl8yeFODOKFmYRAVvG_w-1; Thu, 01 Oct 2026 10:38:47 -0400
+X-MC-Unique: 2gzl8yeFODOKFmYRAVvG_w-1
+X-Mimecast-MFC-AGG-ID: 2gzl8yeFODOKFmYRAVvG_w_1790865526
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-4a009f82bedso31010595e9.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 01 Oct 2026 07:38:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790863442; x=1791468242; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=U9jLK7/wc7B6mGa6+VCwGx4Ieg2jj91kEAwv06rg/rQ=;
-        b=mxnS9U4MAgMkcyZxXxOPp5bmZqUfNqW78r5C1CazNNYZAlO1HmyvOl6SR526BHZ78c
-         zQC7l0Hbz7V3sqos12PwSoeVMFBfbZsJ6FpTXz2Ntr1imtKCsblpFIUMxAjHUjYM1MyQ
-         ui0rG3MtrCLlL9MOO1KCilQ9PvCd81kP6vU8VkTkreZ0E/Kz07yLSVakR/vl4Khm5VRi
-         OFi0M6lmV/hoaIN6SSSF1Rc+3DhGQoa0zgytVxxTFU5LZi0EH7CdxtPyeMc5WaBslGf3
-         uu8tPs7on1//MD0XEMsYA15be4qE/RJYNDRSKgndp/1WR9gSaYxor5FqjUFBtmZwxfep
-         io7A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790863442; x=1791468242;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=redhat.com; s=google; t=1790865526; x=1791470326; darn=vger.kernel.org;
+        h=content-type:mime-version:message-id:date:references:in-reply-to
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=U9jLK7/wc7B6mGa6+VCwGx4Ieg2jj91kEAwv06rg/rQ=;
-        b=sWoQNyT4ynbSegXkl0VT5zAfdRfHYdjWpOo1Uzgg/UYmoT1QI2xcpeK+ii7Ys/uEj0
-         qyRYbGZtq/QV2lYLqzGaPd6ospJGpG0wwct6nC5LgNC/hyNX253M6GyZmK6n5YQ6fIA8
-         rrLtW+MPD9i3eq5QUVhW4A0DsXwVV/IrLaiEoEsVSVMDkufAvT1plneJbo8rBtyG2I6P
-         jrQlhlir7zZTNqTDV3yfV6UcO9EBl3AmqlxAq7t+bYIj0nvxfsx9vM+bPfaeZU/8EU5N
-         NP3hJR5wtS9m5T1QIfvPXbYXa2w/iXYZwSy7qvgZcUu9vPnaQ/NwnNi5c1+U0bPmp3RE
-         kNKQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxs65Qc5ea4AvSUgCz1MBr4AE+QIOovJ0Et4igy47iInnrxim+cVfgNzRdhkFZxIoGxd1HQJYhKLCPd3A==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJa0i2OsMJyOXyogUVdGokxfbL8Tin8Q1K42HjQ+EB4R9M5IVYZ
-	IHRuyKbxBeITW5XoUDWn9P6kJ3EjvixT5LKzor2DHPkVSInPSyx2JwqjEzZ5w9XpzRhfdTb3ZMn
-	Oz1MfUYMqvs0N2fZnIJ5M4tYdpOTbMzo=
-X-Gm-Gg: AYBFou352w8XRhbC78xqRdMLUN1k8kEtQRyzRxb6VkE6lk55aoAFfVe8UPpod+QMCJX
-	QNpIMtTeJLXy36ggsfk6sQLD6Ygg0Bpy0glAtEV+IJc0JHRchH4vZDvmL2NZ625g/ccwcHJO0aV
-	JAaOSQAGY9GnNdaF8bu3Pj0CKyQ0IIrnshihbXcvNJDsk3rKCqlojFcAso9pxKEXORv3MxzxIjE
-	ep/zQ5h1MM8gKjaI+wodIm2jApmbMpd0Msfke5leCUpXaEeE5TCHUn6K3AXrgyyCB1QOH0gCLHB
-	EQ0RFYgTkSuQzj3Gn9Y33PzroXhX86IIgS+ziJFlU1/dl/d+wfH2iq3Ijh1PmA2VVCEce+1VWze
-	z96udhC7d0qlSFXIgDZy0PCb3ucyW/fSQjQ+FmHtWyxE1Wr4CFEbO83tPblIOocGr7a1vSoP/Vm
-	hicNjOodJYcG8ufUYoSlWptwMOO1m31HF3bDmSWuMX
-X-Received: by 2002:a05:651c:2121:b0:3a6:27ba:be0b with SMTP id
- 38308e7fff4ca-3a77928dc6cmr16119671fa.20.1790863442038; Thu, 01 Oct 2026
- 07:04:02 -0700 (PDT)
+        bh=i4xhRQFt/bWT6UALcOITRzeSEDfb1ACELZHI8/ear74=;
+        b=VjIBUJ8J2/ysa0wVuaeMXcYQmXgkrijhtQC3hjYnFW1AYHsbqDtu8gxrYLSne0ydJU
+         3kcFo83XDha4TQkYIeEXOo34MyYzWLRwJfo4qnXzvM4SxfNpqFhbw0LlaC6LcRpzeG+Z
+         Pkv57cIxRfZmCpIyzCUZ3K7a0wzR++nDoxrTkTUJVrh300B+haIS+CYT1l1+r4e67raV
+         kXTNy9otKtGR6tmARhV/kCv/JZecFrx1gW6QJtQFf9tjY01GGL7iIQEqInYI5u+DKatA
+         Fik4lDASNG8V/0R7pdFL/mQzYIJ+GJZ0638PHcIectETw18Q4KS6UtJgwXCaDNKwgj1Q
+         bheg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790865526; x=1791470326;
+        h=content-type:mime-version:message-id:date:references:in-reply-to
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=i4xhRQFt/bWT6UALcOITRzeSEDfb1ACELZHI8/ear74=;
+        b=VxvgKzx4NDkVgDWgn1BTNCGQofpPGReC8Mj9uHMAvvCVfuY+ykyGtO8n4QQjA8HYP1
+         711eO75APExsEMi0xjIKueZECtI9cvoAogcqWr4ZGAIzWFF7E6AMHKzsFsP9AtJIKfBD
+         Nu78oFDe7R1TXknVqwBwb4JCN03MVt4G+1zrFpEhwiM/mpANwD17RxdtM34maAlpCYNK
+         SQgwzsZoB0jLSwuVtOHfoN+rVJsl5pvy/bvBflrqpsXrU+io1N4JQza5Zd9+U1s5KB0z
+         Mhc2cDb6kjTIFB3WC3D6PA4IrUuWDOCkDDHDrLmJnRuxrNB2WKvUkftpA/Fwq/HMjMPc
+         nA8A==
+X-Forwarded-Encrypted: i=1; AKwUvBywiou9qhmCQ1G4Hm2ZC4XabqLCrgptFlrAmwsvJzL8UsQ737UuRx6z7BhS0pZqLDI83ZkXrGzwpppSaA==@vger.kernel.org
+X-Gm-Message-State: AFuF++nNF2VirmrsFrnLGYnEnS40UOSGhp0g01LD7kxcREQYViICIo/W
+	BkMEFYn+8nhIExPTk6h0ooRVAHmHyH0VdCyDVy8IxNJ5Zj1XZBujv+TnnNniyHOQBHzUatL2Pu9
+	sUGA0sZ/XxdZtC1QLDbgxnjHjDZEnc/LmV73SgTsRSUBFYV+mMfQ9fAycXKn2uYkawjtoPaK7
+X-Gm-Gg: AYBFou0shUKtLQLqSbwqbEnSTrlSxlJhLyLsS56cL74bsifmMcKVtuZ9OnABD7slESX
+	Hz6a3h0Qk7QZBGxQ8FwtxqVG64i+3lq3nz4cQ9LxEi2XBxPTbj80l8A6hfcgdOfMxHfCXUm1dU4
+	DC4jp3/GM4qRqFZ0QSoz89TakUBRxl1f2ojoHx0zPKjtzxCTNwsAkoaIH+ZK3ZUz4lIRNbHPDDP
+	n9doxFdHT2EiGmjIYkIQSrUhkCrYJL8vbTXjgrHPfVrpfiEi7BjreLhULP2q1dxOT61Bp7Nk+0S
+	Zgj92BGW3qG1b4GzOtBnszff1XrOktAd2NrkNPaGWPa0wyw+S+/GiBquGnyJcYPXpPOVtqMKTe5
+	S1HohKvdf1zMdPYpkgdEazg2yPDvSiCb+4z2eO9gntHm0YZxLSfyIOGcC5SHrzitSuA==
+X-Received: by 2002:a05:600c:1f86:b0:4a0:13ea:2ec3 with SMTP id 5b1f17b1804b1-4a01b135eccmr80506955e9.35.1790865526399;
+        Thu, 01 Oct 2026 07:38:46 -0700 (PDT)
+X-Received: by 2002:a05:600c:1f86:b0:4a0:13ea:2ec3 with SMTP id 5b1f17b1804b1-4a01b135eccmr80506425e9.35.1790865525833;
+        Thu, 01 Oct 2026 07:38:45 -0700 (PDT)
+Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a023ebe694sm51117505e9.10.2026.10.01.07.38.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 01 Oct 2026 07:38:45 -0700 (PDT)
+From: Javier Martinez Canillas <javierm@redhat.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com,
+ simona@ffwll.ch, decui@microsoft.com, longli@microsoft.com,
+ ssengar@linux.microsoft.com, andy@kernel.org, gregkh@linuxfoundation.org
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+ sashiko-reviews@lists.linux.dev, Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH 2/2] drm/kms-helper: Remove struct
+ drm_simple_display_pipe and helpers
+In-Reply-To: <20261001133736.802604-3-tzimmermann@suse.de>
+References: <20261001133736.802604-1-tzimmermann@suse.de>
+ <20261001133736.802604-3-tzimmermann@suse.de>
+Date: Thu, 01 Oct 2026 16:38:44 +0200
+Message-ID: <xlv1mrsxfpu3.fsf@fmartine-thinkpadx1carbongen12.rmtes.csb>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20261001133736.802604-1-tzimmermann@suse.de>
-In-Reply-To: <20261001133736.802604-1-tzimmermann@suse.de>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Thu, 1 Oct 2026 17:03:25 +0300
-X-Gm-Features: AclHuK-MGGGgGsa7XTJEX30X4AH0rHlA77AtOEFwmZmXzvdKsC2XJRDqSMsLZSA
-Message-ID: <CAHp75Vf80MzmPvOK7Qpy99dxoKY1JSiJWM6KUVswoO12LgtuBw@mail.gmail.com>
-Subject: Re: [PATCH 0/2] drm: Remove simple-display pipe
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com, 
-	simona@ffwll.ch, decui@microsoft.com, longli@microsoft.com, 
-	ssengar@linux.microsoft.com, andy@kernel.org, gregkh@linuxfoundation.org, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev, 
-	sashiko-reviews@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 
-On Thu, Oct 1, 2026 at 4:37=E2=80=AFPM Thomas Zimmermann <tzimmermann@suse.=
-de> wrote:
+Thomas Zimmermann <tzimmermann@suse.de> writes:
+
+> There are no drivers using struct drm_simple_display_pipe. Remove
+> the data type and all related helpers.
 >
-> There are no drivers using struct drm_simple_display_pipe left. Remove
-> the related helpers from DRM and clear any TODO items. Hyperv-drm needs
-> a minor fix to include some additonal headers.
+> The idea behind struct drm_simple_display_pipe was to provide an
+> easier way for writing DRM drivers besides regular atomic helpers.
+> It turned out to be more complicated. With all drivers being updated
+> to use atomic helpers, it's time to remove simple-pipe. Also clean
+> up the related TODO items.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
 
-additional
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
-...
+-- 
+Best regards,
 
-Makes a lot of sense,
-Reviewed-by: Andy Shevchenko <andy@kernel.org>
-with the spelling fix in the patch 2/2.
+Javier Martinez Canillas
+Core Platforms
+Red Hat
 
---=20
-With Best Regards,
-Andy Shevchenko

@@ -1,210 +1,303 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Received: from mail-ua2-f42.google.com (mail-ua2-f42.google.com [74.125.226.234])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 501CE3E0097;
-	Thu,  1 Oct 2026 15:57:44 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790870265; cv=none; b=dfe6ZL7mW+iVPZwz6MxGfg7SP6F+3kDJCdGtQYVckx0rMkbW+4Bzji/ScxzGR3GeAMv2xQC+BTmK/cDbCEnncY+ozWZ5fPR1vqOf7MZuiTnoMaJ5yJbehVn1bCtm+DZVtN2++kwqgFSrMBdGJ5wqN/SKH9eGOS9T6aL6Qagdr0k=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790870265; c=relaxed/simple;
-	bh=UNkHMqxGBAcD+RzwKWSXdRY112uRoXout3g80Fye6f0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VqPjbekDDgNgzF6GHhx9zXxPFNw3QwXnsug5V3U3+g2OMU8sMnOxflUvaM3JXsVT3rrPgj7FVVy7A/AQKdbG9UxsGoR0f/dlEV1UbImkmKEoHqJJ5ntdB7keZRpL7btbcIYEXYPHwQXLgkbqTT5VdXBsmzg9o5e6hOOxNr4J6Wk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=XwgacyKU; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=libx+BTn; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=fUpJhl1n; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=UuCWnDvL; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29B881FF7C8
+	for <linux-fbdev@vger.kernel.org>; Thu,  1 Oct 2026 20:17:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.226.234
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790885867; cv=pass; b=AyMtRKKiRlZdC0VdU+yhWoztL/A1OwxG1bHnEwz/rYYL0fX3eKjZIpdR4u1ZhrSnMYYHEJQZDDuOujm6o7AafN0VQjearWG8fqvUnMvcQZzSuLD/2VznE3AnGUX/V2o+Vvh+iuscwDLAXtXNN9z2p8muGbt46ceiL8u1izmpnT8=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790885867; c=relaxed/simple;
+	bh=PqLEnAhdWY4goD9GpAA/y+PQMN4ckdrxb2RJsFoXOlM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Vp4DB9y3U4gchc0kFP+mqULo6gA4KRTaStpiSjKPNXmy36hbRgOhnoYGipWOLlnxZWs/F9fLWw235I3fz5frOK3i3IGU9IZwqUoXOP+xf/tSy4KlZ8AbEzhbCUvT6TZtMOS/3RDYRJxrzq4ouTtCdu3yLT6ywpB2c89ENVITimU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YF9N0WhW; arc=pass smtp.client-ip=74.125.226.234
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="XwgacyKU";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="libx+BTn";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="fUpJhl1n";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="UuCWnDvL"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id EF6B721292;
-	Thu,  1 Oct 2026 15:57:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1790870258; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=qhF6KmmCbZRNKmOH2gXcyTapxNbzeo8YMso0EFlu0Ec=;
-	b=XwgacyKUjFR+XxQTbtoP9EjvRsO1nbA1T0+JMuaVocRVEf0LJMYgerHbAECpvG1jhTlwl5
-	4sY2jMAHxuHL2Cp06Aro7KAsX98zymLmBrzmvbCtEZiq14qiv9O26w75T8C1ur1mRXW19a
-	waBtTFI5QWXSVUpkbZvaWrepx4fwYSY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1790870258;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=qhF6KmmCbZRNKmOH2gXcyTapxNbzeo8YMso0EFlu0Ec=;
-	b=libx+BTnJP/eyYyYVlVz+mo7U2UONe4Ozskz0zArpfLps64VO7R2La7Zc/r33RFVVysluI
-	71NcGxN8IzCj/PAw==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=fUpJhl1n;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=UuCWnDvL
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1790870253; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=qhF6KmmCbZRNKmOH2gXcyTapxNbzeo8YMso0EFlu0Ec=;
-	b=fUpJhl1n6dBhYqnLlR0TGAM+/ezNQ7Z0xRJGAEp+wUTht5sPvgY6FKc2QOE/DdYAACeo+z
-	8qq02G099dw/n5/QHPyaYZaHwEt/m6rSsIBKBFAVf3YF3nXGSuCcUEwCz/L8pIZfXgHP/+
-	wsc6jvG0GNdJd/pPSY0+gqRCrWKaJ0c=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1790870253;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=qhF6KmmCbZRNKmOH2gXcyTapxNbzeo8YMso0EFlu0Ec=;
-	b=UuCWnDvLvCmJTh/wRWFXg3DkW+3x+Gwp5h1Go7syIhVsUw53jEjbVAobh5luFgsGneo17P
-	k40VfaF8y0J86ICg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 670E713B97;
-	Thu,  1 Oct 2026 15:57:33 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id yvM5C+2CvmqlUQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 01 Oct 2026 15:57:33 +0000
-Message-ID: <14c21d1f-6be7-4477-8010-3d6439310410@suse.de>
-Date: Thu, 1 Oct 2026 17:57:32 +0200
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YF9N0WhW"
+Received: by mail-ua2-f42.google.com with SMTP id a1e0cc1a2514c-988ce00f22dso895191241.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 01 Oct 2026 13:17:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1790885865; cv=none;
+        d=google.com; s=arc-20260327;
+        b=WyWeG5RQuJthlYbBzDiPTAafBxhyS87b6WvMkgOrEUOmCzixofhoDCFspxmr+6WzBV
+         Qixrur/CeaP6rOFvBPh9BVAqy6/g7qbu3aV7jjsSdJpJwCYsOkdodZEH+J4KGySW+dwO
+         OdawDB4LSk+LXNbMJ4w+YIjzl4uTPiGDV/yOONzQf3Jat0ir9+hLlre2vck+Eq5uzm7K
+         05jvByzdpVzdhpfHp6wofzYGEZH3AkGLqyHVD6PD0oYXI8Q4cXw0IDiLalIFNdalYvuJ
+         YYYuDGBbilFc24tLSlrt0WLE0Jirx5s6cwazgGds5Q0duPwcapo/tTV8KTPvD0FhusvL
+         qw1Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=6tkKgICqIcJIGkBovWHK92OXP6OvdcQ+ysdZiv7iOmM=;
+        fh=3roxRPs/uESKbQS3hUNQWlbFDi24UAQEFJkb3iYIb0o=;
+        b=owPvhtn0xFUvMjJrDjEa8OEO4KeWbbj/6FpZ6imV7+C+4wOYaDZqFWylxV57AwWilL
+         YJZgQIHnqCQg1ZQxUZcpbYbJtBd09HymoCr44dVKhYyEb+qWX0WBv+2VGvz63BeOVkgz
+         AwOexEpmyjct8vQSdDhdsR1TnJ+/5rH0+l+Z4CQGgY9YOtuj3o5kxNes5GjTGeJ7uaiQ
+         T7C5CMqIrzs+En5XBYaP4Oxx6rH+Baf/nx4arME0SOCmZ6kEmTI4vaPK/B4XO31t/+QS
+         /tqpkJVozPoVrm51G6Evs3iPziP2XmnNSVCwMmYa+OJ73wGYuEibKL11RKm8EYciAHKD
+         jlWw==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790885865; x=1791490665; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=6tkKgICqIcJIGkBovWHK92OXP6OvdcQ+ysdZiv7iOmM=;
+        b=YF9N0WhWy+XpK6U4boK/iaw+QbfyDbqOmmCSHmfa+o63WHb9IyESBMoZx+7Bpv+BtN
+         Sk/E49W0aw251HdhA99Q+G8xQsOgydxRWszIGvhUOd3JHU/MhqN9Wp55oiH4TgXhxsVP
+         Wc4m8S9L7DMTDGA3JGRL6F7JnRA+9E5EjgesTr6k+OKdXAs1a0kfQktJKM+KJDS8S85a
+         0AygCSPkBXNVxmVyChrh7sR50arfDBZ8G3H6Wgl0YR7GBJAgFjuh0L8sj1Xu8dpdlsX/
+         QxKD1Y44iXm8TAy0eyhdsdKElA+wrPGAI2fmhdtDfNj/pU7cj0YqdrT8loPFnS0kgdaU
+         j2mw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790885865; x=1791490665;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=6tkKgICqIcJIGkBovWHK92OXP6OvdcQ+ysdZiv7iOmM=;
+        b=gVkMOC8k+myXp0biLfF39I5pCmIcPi0Zeh98Z3/c69qpAzzZHVUQqez4ET0r/dkDN6
+         U1KoDDmQvW8GQ1DQNYj5ZylyAD5Yg1ilwk+1FsP/+Vo/isYPAQRUzG953kT3zg/s6ERX
+         /30J2qe2dIcYBR55gHddNuhVLiExu44LVgK3hOjKnLSSYYTOomEPUfYcoby2DGFZ3KSv
+         ah14hm1v8ZumZ/G1mbkR+pZbLKeABLJSjwxf0t1Z2n+l9RBX8o6sbR3u3Ao8J2jgRs7b
+         njpYT8qWrNYBs8DxVmu6c8CW/LDW75rBmcFylDE2Y1Lea9J+GhvegZ1btzfv9qNgSpHk
+         ZXFw==
+X-Forwarded-Encrypted: i=1; AKwUvBwr7jNWl0s1y65KKARWd+kW62+Tho+dMnDsiL9NJoIZw1AVLjITM1VNe8wCEvMC5RP75wPpqefSFEH46Q==@vger.kernel.org
+X-Gm-Message-State: AFq9FYIIejZmQk3gjS8yB7DynZ+fNn+xiitRqtzSVIqbsVwKpM+QjJiB
+	EC7Gol/HY7dN5GKZYjR9GWP2J4ufYYREWO06QJumXbpXLYdO1/DxRnATSZFeBY/GaA/hBoI4Q/j
+	Wlavy2YR+OmAyd2Vr6ufE1dWUplkZoXU=
+X-Gm-Gg: AYBFou1LnpFlQnNHJVogYDtC3qWJELa+KwNcPBaWQTqtybW5LM8PJn8hUefj4eXM7Kx
+	F+3bZJtWyHcmQ+UevbQaDDsR/8cB+49lYeHT1xPrSO7UDpFEryXrcAIGuGbwjixIIsGCwolP/y+
+	HkULI7M+c9JsWmGHXf4ANuVL1p3WWhaJkTeAOJqtmyuBl90bmT0AMq//fEFmjf9iplF1pytt6ZF
+	0YsgSgCOfUfz9fQ7olAMPtWpgFz7QCQPAo4eQailvmcrBqWoCob23NuXfBrPIjWx6Os7nA1waTG
+	QYXbhrL9fV/8hfQmM2TTFAX82V/q6dCk5YL63Hk1Nqkeol4qoW49iQc3AjBTXNGkOg==
+X-Received: by 2002:a05:6102:688f:b0:7a7:198a:c2c1 with SMTP id
+ ada2fe7eead31-7c0f58ae607mr132715137.31.1790885864968; Thu, 01 Oct 2026
+ 13:17:44 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] drm/kms-helper: Remove struct drm_simple_display_pipe
- and helpers
-To: Javier Martinez Canillas <javierm@redhat.com>,
- maarten.lankhorst@linux.intel.com, mripard@kernel.org, airlied@gmail.com,
- simona@ffwll.ch, decui@microsoft.com, longli@microsoft.com,
- ssengar@linux.microsoft.com, andy@kernel.org, gregkh@linuxfoundation.org
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
- sashiko-reviews@lists.linux.dev
-References: <20261001133736.802604-1-tzimmermann@suse.de>
- <20261001133736.802604-3-tzimmermann@suse.de>
- <xlv1jyo1fphg.fsf@fmartine-thinkpadx1carbongen12.rmtes.csb>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <xlv1jyo1fphg.fsf@fmartine-thinkpadx1carbongen12.rmtes.csb>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: EF6B721292
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	FREEMAIL_TO(0.00)[redhat.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,microsoft.com,linux.microsoft.com,linuxfoundation.org];
-	RCPT_COUNT_TWELVE(0.00)[15];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	DKIM_TRACE(0.00)[suse.de:+];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,suse.de:mid,suse.de:email,suse.de:dkim,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns];
-	MID_RHS_MATCH_FROM(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from]
-X-Spam-Flag: NO
-X-Spam-Score: -4.51
-X-Spam-Level: 
+References: <20260923201035.51007-1-maximpedraza@gmail.com>
+ <64e273d4-2660-437d-8871-e2bfa3c377c9@suse.de> <CAEUXW=G2a=Qz-9P_2+EFe-GiW4WqdOjtSCxoO4P15u_J48nP9g@mail.gmail.com>
+ <arbLHvCBqxG7zcf_@bywater> <CAEUXW=ELS1OCyDdy5Gx41g8twU5B8112gMct9uFqhdGVveRKMw@mail.gmail.com>
+ <aryqYhHqFk3cXh9d@bywater>
+In-Reply-To: <aryqYhHqFk3cXh9d@bywater>
+From: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>
+Date: Thu, 1 Oct 2026 22:17:31 +0200
+X-Gm-Features: AclHuK_TJb3OzJ-b3Pi60bWWkDOOeJUZPt1GI9wR3Q6RdrK3y1nqllSCTtDORV8
+Message-ID: <CAEUXW=G-iz7R=c=9pZS0vygX6YVJ1suFpAhyyjXb5KzUJGtwkQ@mail.gmail.com>
+Subject: Re: [PATCH v3 0/7] Boot logo supplied by the device tree
+To: Francesco Valla <francesco@valla.it>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, Helge Deller <deller@gmx.de>, Simona Vetter <simona@ffwll.ch>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org, 
+	devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Javier
+Hi,
 
-Am 01.10.26 um 16:46 schrieb Javier Martinez Canillas:
-> Thomas Zimmermann <tzimmermann@suse.de> writes:
+This series is superseded by RFC v4 of the DRM splash client, which
+adds the device tree support there, as Thomas suggested:
+
+https://lore.kernel.org/all/20261001195847.141192-1-maximpedraza@gmail.com/
+
+The node placement and the reserved memory region carried over; the
+clut224 format and the ppmtodtlogo tool did not, as the client takes
+BMP images. Helge, please drop this one.
+
+Thanks to everyone who reviewed it.
+
+M=C3=A0xim
+
+
+El mi=C3=A9, 30 sept 2026 a las 8:32, Francesco Valla
+(<francesco@valla.it>) escribi=C3=B3:
 >
-> Hello Thomas,
+> Hi M=C3=A0xim,
 >
->> There are no drivers using struct drm_simple_display_pipe. Remove
->> the data type and all related helpers.
->>
->> The idea behind struct drm_simple_display_pipe was to provide an
->> easier way for writing DRM drivers besides regular atomic helpers.
->> It turned out to be more complicated. With all drivers being updated
->> to use atomic helpers, it's time to remove simple-pipe. Also clean
->> up the related TODO items.
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->> ---
->>   Documentation/gpu/todo.rst              |  17 --
->>   drivers/gpu/drm/drm_gem_atomic_helper.c |  92 -------
->>   drivers/gpu/drm/drm_simple_kms_helper.c | 328 ------------------------
->>   drivers/staging/fbtft/TODO              |   6 +-
->>   include/drm/drm_gem_atomic_helper.h     |  28 --
->>   include/drm/drm_simple_kms_helper.h     |  56 +---
-> There are no more users of struct drm_simple_display_pipe but still some
-> drivers include the drm_simple_kms_helper.h header. Latest drm-misc-next:
+> On Tue, Sep 29, 2026 at 01:46:36PM +0200, M=C3=A0xim Pedraza Padilla wrot=
+e:
+> > Hi Francesco,
+> >
+> > > v4 is planned but has been preempted by other activities - I am not a=
+ble
+> > > to give you an ETA at the moment. If you have capacity, feel free to
+> > > take over.
+> >
+> > Thanks, I appreciate it. Since it is your series, I would like to run
+> > past you what I would change before taking it on.
+> >
+> > The v4 would still be an RFC, based on drm-misc-next. Your patches keep
+> > your authorship, with any fix to them folded in and noted in the commit
+> > message.
+> >
+> > Fixes to what is in v3:
+> >
+> >   - the BGRT symbols exported, as in your patch for Mario, but with
+> >     EXPORT_SYMBOL_GPL;
+> >   - drm_splash_init_client() indexes modeset_mask by the number of
+> >     modesets added in the first loop and by the number walked in the
+> >     second, so an output without a mode ahead of a connected one gets
+> >     the buffer instead;
+> >   - for a tiled group, the first loop dereferences tiled->buffer before
+> >     any buffer exists, and the width and height look swapped;
+> >   - if the BMP firmware never arrives, the callback returns without
+> >     waking the render thread, which is left in TASK_UNINTERRUPTIBLE for
+> >     good;
+> >   - the 24 bit blitters read each pixel as an unaligned u32, one byte
+> >     past the image when the rows have no padding;
+> >   - the image cleanup always calls memunmap(), which will need to know
+> >     where the image came from once there is a third source;
+> >   - the spaces in DRM_CLIENT_DEFAULT, in a patch of its own.
+> >
 >
-> git grep "drm_simple_kms_helper.h" -- drivers/gpu/drm/*/ | wc -l
-> 21
+> I suggest you also take at look at the review sashiko did for the V3
+> [1], as it contains some good suggestions (some of them are already
+> present in your list).
 >
-> So it seems you need more  preparatory patches. For this patch though:
-
-I'll take another look at it, but there's another interface in this 
-header file that is (still) being used by several drivers. The header 
-file still remains in place for now.
-
-Best regards
-Thomas
-
+> > The modeset, tiling and render thread ones come from reading the code,
+> > so I will reproduce them in qemu first. Tiling I cannot test at all.
+> >
 >
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> I did not test tiling as well - I think it's a mode limited to some
+> Intel cards?
 >
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
-
-
+> > Additions:
+> >
+> >   - a device tree image source: a node under /chosen with the BMP eithe=
+r
+> >     in the node itself (dtc's /incbin/) or in a reserved memory region,
+> >     mapped with the same memremap() as the BGRT;
+>
+> A reserved memory region is (probably) a better idea, to allow change
+> the splash without recompiling the devicetree.
+>
+> A possible usecase would be:
+>
+>  - bootloader reads the BMP image from a dedicated partition and loads
+>    it to the reserved memory (very much like the BGRT path);
+>  - splash client parses the devicetree, finds the memory region and
+>    loads the image from there;
+>  - userspace updates the dedicated partition with a different image.
+>
+> >   - placement from that node, a position with -1 centring an axis plus
+> >     an offset, instead of always centring;
+> >   - rotation, for the DT image and for BGRT images with the orientation
+> >     bits set, which are skipped today;
+> >   - the background colour coming from the same place as the image: the
+> >     DT node can carry its own, splash_color goes with splash_bmp, and
+> >     the Kconfig colour stays the default for everything else, BGRT
+> >     included.
+> >
+> > The sources would be tried in the order DT, BGRT, BMP firmware, and
+> > then just the colour. A DT node is only there if someone put it there
+> > for that board, so it seemed right to let it win.
+> >
+> > Does that match what you had in mind? And how would you like to appear
+> > in MAINTAINERS, as a maintainer next to me or as a reviewer?
+> >
+>
+> Yes, please, either as a co-maintainer or as a reviewer, as you see fit.
+>
+> > If you are happy with it, I'll take you up on your offer.
+> >
+>
+> Thank you for continuing the effort on this - I still believe it's
+> useful, but currently is not fitting inside my schedule.
+>
+> > M=C3=A0xim
+> >
+>
+> Regards,
+> Francesco
+>
+>
+> [1] https://sashiko.dev/#/patchset/20260510-drm_client_splash-v3-0-a9aee9=
+f0b2fc%40valla.it
+>
+> > El vie, 25 sept 2026 a las 21:32, Francesco Valla
+> > (<francesco@valla.it>) escribi=C3=B3:
+> > >
+> > > Hi M=C3=A0xim,
+> > >
+> > > On Fri, Sep 25, 2026 at 10:48:31AM +0200, M=C3=A0xim Pedraza Padilla =
+wrote:
+> > > > Hi Thomas,
+> > > >
+> > > > > the whole Linux logo on the console is somewhat gimmicky and IMHO=
+ should
+> > > > > not be further extended. Also fbdev as a whole has realistically =
+run its
+> > > > > course. We fix bugs and occasionally clean up the code, but it is
+> > > > > questionable whether new feature make much sense. Even more so as=
+ the
+> > > > > drivers your system uses appear to be DRM ones.
+> > > >
+> > > > They are, it is tilcdc. Understood, I will drop the fbdev side, whi=
+ch
+> > > > also settles your comment on patch 1.
+> > > >
+> > > > > There is a proposal for a DRM splash screen at [1]. It retrieves =
+the
+> > > > > device vendor's logo from the firmware and displays it at the giv=
+en
+> > > > > coordinates. IMHO you should start with this series and add DT su=
+pport
+> > > > > there.
+> > > >
+> > > > Agreed. I have been following Francesco's series since Sam pointed =
+me
+> > > > at it, and it is where the DRM follow-up I mentioned in the cover l=
+etter
+> > > > belongs, rather than in a client of my own.
+> > > >
+> > > > A device tree source fits next to the BGRT one. The BGRT is the fir=
+mware
+> > > > handing the kernel an image and where to put it, and a DT system ha=
+s no
+> > > > such table. The BMP loaded as firmware only helps if the file is bu=
+ilt
+> > > > into the kernel, or if a filesystem is already there when the displ=
+ay
+> > > > comes up. With U-Boot's Falcon mode, the device tree is the only th=
+ing
+> > > > that reaches the kernel.
+> > > >
+> > > > So the plan would be a node under /chosen carrying a BMP, either in=
+ the
+> > > > node itself or in a reserved memory region the bootloader loaded it
+> > > > into, with the placement properties from this series. The region is=
+ the
+> > > > same memremap() the BGRT source already does, only with the address
+> > > > coming from the device tree.
+> > > >
+> > > > Rotation too: the client skips a BGRT image with the orientation bi=
+ts
+> > > > set today, and it could turn it instead. I will ask Rob separately =
+how
+> > > > he wants the image described, since that is what the binding hinges=
+ on.
+> > > >
+> > > > Francesco, is a v4 on the way? Would you take a DT source as patche=
+s on
+> > > > top of your series, or would you rather I wait until it lands?
+> > > >
+> > >
+> > > v4 is planned but has been preempted by other activities - I am not a=
+ble
+> > > to give you an ETA at the moment. If you have capacity, feel free to
+> > > take over.
+> > >
+> > > > Max
+> > > >
+> > >
+> > > Regards,
+> > > Francesco
+> > >

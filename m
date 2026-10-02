@@ -1,303 +1,184 @@
-Received: from mail-ua2-f42.google.com (mail-ua2-f42.google.com [74.125.226.234])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29B881FF7C8
-	for <linux-fbdev@vger.kernel.org>; Thu,  1 Oct 2026 20:17:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.226.234
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790885867; cv=pass; b=AyMtRKKiRlZdC0VdU+yhWoztL/A1OwxG1bHnEwz/rYYL0fX3eKjZIpdR4u1ZhrSnMYYHEJQZDDuOujm6o7AafN0VQjearWG8fqvUnMvcQZzSuLD/2VznE3AnGUX/V2o+Vvh+iuscwDLAXtXNN9z2p8muGbt46ceiL8u1izmpnT8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790885867; c=relaxed/simple;
-	bh=PqLEnAhdWY4goD9GpAA/y+PQMN4ckdrxb2RJsFoXOlM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Vp4DB9y3U4gchc0kFP+mqULo6gA4KRTaStpiSjKPNXmy36hbRgOhnoYGipWOLlnxZWs/F9fLWw235I3fz5frOK3i3IGU9IZwqUoXOP+xf/tSy4KlZ8AbEzhbCUvT6TZtMOS/3RDYRJxrzq4ouTtCdu3yLT6ywpB2c89ENVITimU=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=YF9N0WhW; arc=pass smtp.client-ip=74.125.226.234
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E45F93E1D07;
+	Fri,  2 Oct 2026 06:52:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790923972; cv=none; b=K6BpjuQPKSzkkaQe0q+UDcxBxQoynrDXZOQgXM0EkKflYZ6Wh7ZcF6MVbD7fFt3cv005XhaRHFONNE8JJkjYW2YjVd0/bMETpERZjqLRwoNaDPjXtysjR6iukzxVa6V6qaGabXW9sO77hHHLnpX6O4fD19ZQ8T6a0aYhWZnDwwA=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790923972; c=relaxed/simple;
+	bh=qB2Wypr9G/9D5c5y2YXcfVZc9vgDAVA8p+hTwJcQ4bM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Pj7L2aLqOLNtIeaAqmR/jAL8KWCaqNQCBPT69oUMXPI1t+PDlz5nIw/B7GYGihJAQ++oiW4ev8GtsbTH+J6mJtdt262SSO+GNIawHsPiYiwZXxqE2SA79181pwutKERh1oN1IJvJDmrFvG6GeXPXF7nHd3m8czmSxoQwWaZhyWI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=c8bDWgyU; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YF9N0WhW"
-Received: by mail-ua2-f42.google.com with SMTP id a1e0cc1a2514c-988ce00f22dso895191241.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 01 Oct 2026 13:17:46 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790885865; cv=none;
-        d=google.com; s=arc-20260327;
-        b=WyWeG5RQuJthlYbBzDiPTAafBxhyS87b6WvMkgOrEUOmCzixofhoDCFspxmr+6WzBV
-         Qixrur/CeaP6rOFvBPh9BVAqy6/g7qbu3aV7jjsSdJpJwCYsOkdodZEH+J4KGySW+dwO
-         OdawDB4LSk+LXNbMJ4w+YIjzl4uTPiGDV/yOONzQf3Jat0ir9+hLlre2vck+Eq5uzm7K
-         05jvByzdpVzdhpfHp6wofzYGEZH3AkGLqyHVD6PD0oYXI8Q4cXw0IDiLalIFNdalYvuJ
-         YYYuDGBbilFc24tLSlrt0WLE0Jirx5s6cwazgGds5Q0duPwcapo/tTV8KTPvD0FhusvL
-         qw1Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=6tkKgICqIcJIGkBovWHK92OXP6OvdcQ+ysdZiv7iOmM=;
-        fh=3roxRPs/uESKbQS3hUNQWlbFDi24UAQEFJkb3iYIb0o=;
-        b=owPvhtn0xFUvMjJrDjEa8OEO4KeWbbj/6FpZ6imV7+C+4wOYaDZqFWylxV57AwWilL
-         YJZgQIHnqCQg1ZQxUZcpbYbJtBd09HymoCr44dVKhYyEb+qWX0WBv+2VGvz63BeOVkgz
-         AwOexEpmyjct8vQSdDhdsR1TnJ+/5rH0+l+Z4CQGgY9YOtuj3o5kxNes5GjTGeJ7uaiQ
-         T7C5CMqIrzs+En5XBYaP4Oxx6rH+Baf/nx4arME0SOCmZ6kEmTI4vaPK/B4XO31t/+QS
-         /tqpkJVozPoVrm51G6Evs3iPziP2XmnNSVCwMmYa+OJ73wGYuEibKL11RKm8EYciAHKD
-         jlWw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790885865; x=1791490665; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=6tkKgICqIcJIGkBovWHK92OXP6OvdcQ+ysdZiv7iOmM=;
-        b=YF9N0WhWy+XpK6U4boK/iaw+QbfyDbqOmmCSHmfa+o63WHb9IyESBMoZx+7Bpv+BtN
-         Sk/E49W0aw251HdhA99Q+G8xQsOgydxRWszIGvhUOd3JHU/MhqN9Wp55oiH4TgXhxsVP
-         Wc4m8S9L7DMTDGA3JGRL6F7JnRA+9E5EjgesTr6k+OKdXAs1a0kfQktJKM+KJDS8S85a
-         0AygCSPkBXNVxmVyChrh7sR50arfDBZ8G3H6Wgl0YR7GBJAgFjuh0L8sj1Xu8dpdlsX/
-         QxKD1Y44iXm8TAy0eyhdsdKElA+wrPGAI2fmhdtDfNj/pU7cj0YqdrT8loPFnS0kgdaU
-         j2mw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790885865; x=1791490665;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=6tkKgICqIcJIGkBovWHK92OXP6OvdcQ+ysdZiv7iOmM=;
-        b=gVkMOC8k+myXp0biLfF39I5pCmIcPi0Zeh98Z3/c69qpAzzZHVUQqez4ET0r/dkDN6
-         U1KoDDmQvW8GQ1DQNYj5ZylyAD5Yg1ilwk+1FsP/+Vo/isYPAQRUzG953kT3zg/s6ERX
-         /30J2qe2dIcYBR55gHddNuhVLiExu44LVgK3hOjKnLSSYYTOomEPUfYcoby2DGFZ3KSv
-         ah14hm1v8ZumZ/G1mbkR+pZbLKeABLJSjwxf0t1Z2n+l9RBX8o6sbR3u3Ao8J2jgRs7b
-         njpYT8qWrNYBs8DxVmu6c8CW/LDW75rBmcFylDE2Y1Lea9J+GhvegZ1btzfv9qNgSpHk
-         ZXFw==
-X-Forwarded-Encrypted: i=1; AKwUvBwr7jNWl0s1y65KKARWd+kW62+Tho+dMnDsiL9NJoIZw1AVLjITM1VNe8wCEvMC5RP75wPpqefSFEH46Q==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIIejZmQk3gjS8yB7DynZ+fNn+xiitRqtzSVIqbsVwKpM+QjJiB
-	EC7Gol/HY7dN5GKZYjR9GWP2J4ufYYREWO06QJumXbpXLYdO1/DxRnATSZFeBY/GaA/hBoI4Q/j
-	Wlavy2YR+OmAyd2Vr6ufE1dWUplkZoXU=
-X-Gm-Gg: AYBFou1LnpFlQnNHJVogYDtC3qWJELa+KwNcPBaWQTqtybW5LM8PJn8hUefj4eXM7Kx
-	F+3bZJtWyHcmQ+UevbQaDDsR/8cB+49lYeHT1xPrSO7UDpFEryXrcAIGuGbwjixIIsGCwolP/y+
-	HkULI7M+c9JsWmGHXf4ANuVL1p3WWhaJkTeAOJqtmyuBl90bmT0AMq//fEFmjf9iplF1pytt6ZF
-	0YsgSgCOfUfz9fQ7olAMPtWpgFz7QCQPAo4eQailvmcrBqWoCob23NuXfBrPIjWx6Os7nA1waTG
-	QYXbhrL9fV/8hfQmM2TTFAX82V/q6dCk5YL63Hk1Nqkeol4qoW49iQc3AjBTXNGkOg==
-X-Received: by 2002:a05:6102:688f:b0:7a7:198a:c2c1 with SMTP id
- ada2fe7eead31-7c0f58ae607mr132715137.31.1790885864968; Thu, 01 Oct 2026
- 13:17:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="c8bDWgyU"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B78DB1F000FF;
+	Fri,  2 Oct 2026 06:52:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1790923970;
+	bh=u15YH4Gk1jY734f7Ru9LTF8CNh+n4MtAogEYgBYqpnw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=c8bDWgyU7nbSbFiXaryamWOeLdeQpMchMrG0YjFpHuBOQ1PuqIEtbmxLMXTlp4ewM
+	 OL/GoVIH5VS5zURtCMofHqaWCe4cVE9WJ8MPM3FdcVOyMRU1YSbKnFj7c9DjyEVkSw
+	 9gCmXRSqnWhhFoMhDJ/lGP59xmGFDa3YmRJMrGx+9mw3LMY8NLYorwZ19bld8oz5rO
+	 DgWfbQbiLCLEg2FXnUdwmI6B06bIL+jviB54nuqoHIQ8yrkmiuMD5hPR0jQVPoCSav
+	 mIx8HAdy4CslS+i7YzgBC1u1s9bonkEoTcmwC1glIfgxX4mWnJ3lRT0smKX9wzYurc
+	 IJYDuX5dbpfvw==
+Message-ID: <bd623df8-d5f0-46a3-927f-f0a4b458e651@kernel.org>
+Date: Fri, 2 Oct 2026 08:52:06 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260923201035.51007-1-maximpedraza@gmail.com>
- <64e273d4-2660-437d-8871-e2bfa3c377c9@suse.de> <CAEUXW=G2a=Qz-9P_2+EFe-GiW4WqdOjtSCxoO4P15u_J48nP9g@mail.gmail.com>
- <arbLHvCBqxG7zcf_@bywater> <CAEUXW=ELS1OCyDdy5Gx41g8twU5B8112gMct9uFqhdGVveRKMw@mail.gmail.com>
- <aryqYhHqFk3cXh9d@bywater>
-In-Reply-To: <aryqYhHqFk3cXh9d@bywater>
-From: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>
-Date: Thu, 1 Oct 2026 22:17:31 +0200
-X-Gm-Features: AclHuK_TJb3OzJ-b3Pi60bWWkDOOeJUZPt1GI9wR3Q6RdrK3y1nqllSCTtDORV8
-Message-ID: <CAEUXW=G-iz7R=c=9pZS0vygX6YVJ1suFpAhyyjXb5KzUJGtwkQ@mail.gmail.com>
-Subject: Re: [PATCH v3 0/7] Boot logo supplied by the device tree
-To: Francesco Valla <francesco@valla.it>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>, Helge Deller <deller@gmx.de>, Simona Vetter <simona@ffwll.ch>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Maxime Ripard <mripard@kernel.org>, linux-fbdev@vger.kernel.org, 
-	devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 27/40] mm: remove hugetlb_inline.h
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>,
+ Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
+ Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Jonathan Corbet <corbet@lwn.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
+ Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Andrii Nakryiko <andrii@kernel.org>, Eduard Zingerman <eddyz87@gmail.com>,
+ Kumar Kartikeya Dwivedi <memxor@gmail.com>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
+ Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>,
+ Kiryl Shutsemau <kas@kernel.org>, Doug Gilbert <dgilbert@interlog.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <mkp@kernel.org>, Jaya Kumar <jayalk@intworks.biz>,
+ Simona Vetter <simona@ffwll.ch>, Helge Deller <deller@gmx.de>,
+ Sebastian Reichel <sre@kernel.org>, John Hubbard <jhubbard@nvidia.com>,
+ Peter Xu <peterx@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Rik van Riel <riel@surriel.com>, Harry Yoo <harry@kernel.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Will Deacon <will@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nick Piggin
+ <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+ Marc Zyngier <maz@kernel.org>, Oliver Upton <oupton@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Janosch Frank <frankja@linux.ibm.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>,
+ Matthew Brost <matthew.brost@intel.com>,
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
+ Ying Huang <ying.huang@linux.alibaba.com>,
+ Alistair Popple <apopple@nvidia.com>, Chris Li <chrisl@kernel.org>,
+ Kairui Song <kasong@tencent.com>, Kemeng Shi <shikemeng@huaweicloud.com>,
+ Nhat Pham <nphamcs@gmail.com>, Baoquan He <baoquan.he@linux.dev>,
+ Youngjun Park <youngjun.park@lge.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Qi Zheng <qi.zheng@linux.dev>, Shakeel Butt <shakeel.butt@linux.dev>,
+ Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>,
+ Wei Xu <weixugc@google.com>, Chengming Zhou <chengming.zhou@linux.dev>,
+ Michal Hocko <mhocko@kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+ Xu Xin <xu.xin@linux.dev>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-rdma@vger.kernel.org, selinux@vger.kernel.org,
+ linux-sound@vger.kernel.org, bpf@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-trace-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ fuse-devel@lists.linux.dev
+References: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-0-4583d8a23bca@kernel.org>
+ <20260917-b4-mmap-prepare-vma-flag-sanify-v3-27-4583d8a23bca@kernel.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20260917-b4-mmap-prepare-vma-flag-sanify-v3-27-4583d8a23bca@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi,
-
-This series is superseded by RFC v4 of the DRM splash client, which
-adds the device tree support there, as Thomas suggested:
-
-https://lore.kernel.org/all/20261001195847.141192-1-maximpedraza@gmail.com/
-
-The node placement and the reserved memory region carried over; the
-clut224 format and the ppmtodtlogo tool did not, as the client takes
-BMP images. Helge, please drop this one.
-
-Thanks to everyone who reviewed it.
-
-M=C3=A0xim
+On 9/17/26 18:22, Lorenzo Stoakes (ARM) wrote:
+> This header really makes little sense - every place it is included mm.h is
+> also included, and the header itself includes mm.h, so it does nothing to
+> reduce header size.
 
 
-El mi=C3=A9, 30 sept 2026 a las 8:32, Francesco Valla
-(<francesco@valla.it>) escribi=C3=B3:
->
-> Hi M=C3=A0xim,
->
-> On Tue, Sep 29, 2026 at 01:46:36PM +0200, M=C3=A0xim Pedraza Padilla wrot=
-e:
-> > Hi Francesco,
-> >
-> > > v4 is planned but has been preempted by other activities - I am not a=
-ble
-> > > to give you an ETA at the moment. If you have capacity, feel free to
-> > > take over.
-> >
-> > Thanks, I appreciate it. Since it is your series, I would like to run
-> > past you what I would change before taking it on.
-> >
-> > The v4 would still be an RFC, based on drm-misc-next. Your patches keep
-> > your authorship, with any fix to them folded in and noted in the commit
-> > message.
-> >
-> > Fixes to what is in v3:
-> >
-> >   - the BGRT symbols exported, as in your patch for Mario, but with
-> >     EXPORT_SYMBOL_GPL;
-> >   - drm_splash_init_client() indexes modeset_mask by the number of
-> >     modesets added in the first loop and by the number walked in the
-> >     second, so an output without a mode ahead of a connected one gets
-> >     the buffer instead;
-> >   - for a tiled group, the first loop dereferences tiled->buffer before
-> >     any buffer exists, and the width and height look swapped;
-> >   - if the BMP firmware never arrives, the callback returns without
-> >     waking the render thread, which is left in TASK_UNINTERRUPTIBLE for
-> >     good;
-> >   - the 24 bit blitters read each pixel as an unaligned u32, one byte
-> >     past the image when the rows have no padding;
-> >   - the image cleanup always calls memunmap(), which will need to know
-> >     where the image came from once there is a third source;
-> >   - the spaces in DRM_CLIENT_DEFAULT, in a patch of its own.
-> >
->
-> I suggest you also take at look at the review sashiko did for the V3
-> [1], as it contains some good suggestions (some of them are already
-> present in your list).
->
-> > The modeset, tiling and render thread ones come from reading the code,
-> > so I will reproduce them in qemu first. Tiling I cannot test at all.
-> >
->
-> I did not test tiling as well - I think it's a mode limited to some
-> Intel cards?
->
-> > Additions:
-> >
-> >   - a device tree image source: a node under /chosen with the BMP eithe=
-r
-> >     in the node itself (dtc's /incbin/) or in a reserved memory region,
-> >     mapped with the same memremap() as the BGRT;
->
-> A reserved memory region is (probably) a better idea, to allow change
-> the splash without recompiling the devicetree.
->
-> A possible usecase would be:
->
->  - bootloader reads the BMP image from a dedicated partition and loads
->    it to the reserved memory (very much like the BGRT path);
->  - splash client parses the devicetree, finds the memory region and
->    loads the image from there;
->  - userspace updates the dedicated partition with a different image.
->
-> >   - placement from that node, a position with -1 centring an axis plus
-> >     an offset, instead of always centring;
-> >   - rotation, for the DT image and for BGRT images with the orientation
-> >     bits set, which are skipped today;
-> >   - the background colour coming from the same place as the image: the
-> >     DT node can carry its own, splash_color goes with splash_bmp, and
-> >     the Kconfig colour stays the default for everything else, BGRT
-> >     included.
-> >
-> > The sources would be tried in the order DT, BGRT, BMP firmware, and
-> > then just the colour. A DT node is only there if someone put it there
-> > for that board, so it seemed right to let it win.
-> >
-> > Does that match what you had in mind? And how would you like to appear
-> > in MAINTAINERS, as a maintainer next to me or as a reviewer?
-> >
->
-> Yes, please, either as a co-maintainer or as a reviewer, as you see fit.
->
-> > If you are happy with it, I'll take you up on your offer.
-> >
->
-> Thank you for continuing the effort on this - I still believe it's
-> useful, but currently is not fitting inside my schedule.
->
-> > M=C3=A0xim
-> >
->
-> Regards,
-> Francesco
->
->
-> [1] https://sashiko.dev/#/patchset/20260510-drm_client_splash-v3-0-a9aee9=
-f0b2fc%40valla.it
->
-> > El vie, 25 sept 2026 a las 21:32, Francesco Valla
-> > (<francesco@valla.it>) escribi=C3=B3:
-> > >
-> > > Hi M=C3=A0xim,
-> > >
-> > > On Fri, Sep 25, 2026 at 10:48:31AM +0200, M=C3=A0xim Pedraza Padilla =
-wrote:
-> > > > Hi Thomas,
-> > > >
-> > > > > the whole Linux logo on the console is somewhat gimmicky and IMHO=
- should
-> > > > > not be further extended. Also fbdev as a whole has realistically =
-run its
-> > > > > course. We fix bugs and occasionally clean up the code, but it is
-> > > > > questionable whether new feature make much sense. Even more so as=
- the
-> > > > > drivers your system uses appear to be DRM ones.
-> > > >
-> > > > They are, it is tilcdc. Understood, I will drop the fbdev side, whi=
-ch
-> > > > also settles your comment on patch 1.
-> > > >
-> > > > > There is a proposal for a DRM splash screen at [1]. It retrieves =
-the
-> > > > > device vendor's logo from the firmware and displays it at the giv=
-en
-> > > > > coordinates. IMHO you should start with this series and add DT su=
-pport
-> > > > > there.
-> > > >
-> > > > Agreed. I have been following Francesco's series since Sam pointed =
-me
-> > > > at it, and it is where the DRM follow-up I mentioned in the cover l=
-etter
-> > > > belongs, rather than in a client of my own.
-> > > >
-> > > > A device tree source fits next to the BGRT one. The BGRT is the fir=
-mware
-> > > > handing the kernel an image and where to put it, and a DT system ha=
-s no
-> > > > such table. The BMP loaded as firmware only helps if the file is bu=
-ilt
-> > > > into the kernel, or if a filesystem is already there when the displ=
-ay
-> > > > comes up. With U-Boot's Falcon mode, the device tree is the only th=
-ing
-> > > > that reaches the kernel.
-> > > >
-> > > > So the plan would be a node under /chosen carrying a BMP, either in=
- the
-> > > > node itself or in a reserved memory region the bootloader loaded it
-> > > > into, with the placement properties from this series. The region is=
- the
-> > > > same memremap() the BGRT source already does, only with the address
-> > > > coming from the device tree.
-> > > >
-> > > > Rotation too: the client skips a BGRT image with the orientation bi=
-ts
-> > > > set today, and it could turn it instead. I will ask Rob separately =
-how
-> > > > he wants the image described, since that is what the binding hinges=
- on.
-> > > >
-> > > > Francesco, is a v4 on the way? Would you take a DT source as patche=
-s on
-> > > > top of your series, or would you rather I wait until it lands?
-> > > >
-> > >
-> > > v4 is planned but has been preempted by other activities - I am not a=
-ble
-> > > to give you an ETA at the moment. If you have capacity, feel free to
-> > > take over.
-> > >
-> > > > Max
-> > > >
-> > >
-> > > Regards,
-> > > Francesco
-> > >
+It's very small indeed
+
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+
+-- 
+Cheers,
+
+David

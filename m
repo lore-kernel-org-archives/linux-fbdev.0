@@ -1,32 +1,32 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74FF1280331;
-	Tue,  6 Oct 2026 09:59:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8EC03B27E7;
+	Tue,  6 Oct 2026 10:03:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791280751; cv=none; b=f31RtajBfjmnTBZvEUHSVXK/hNA+5j2aHx7WIKyadxa9MtKh385OcfoEoNRbkwpoZ7JT5N5NIuWW2fZ8Zg75CnV/zJrs/1ajuXXvq+kORrOhLQuD+nPjrcPdIF5mDufpR7hvqVX1NoO4cxePr4D1uj3hoEZkS8Qpty21/OhJyAk=
+	t=1791281012; cv=none; b=C+QE2Hy1JM+UqgWA6E3NQx8BqREsVKcsBc2Xer9Vsi7995ie3Wbux/PhHqEOomxMLv2rQOQLT1t2BbVYb6o6deEYVQJb/vo7Jr1fi+ttc5zxYwUxXz3vN+zYH3XiyO8Ql+eCvHWCo5PtU1FrzLPtaPJ02iq41zVPJx7ob6xo8BU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791280751; c=relaxed/simple;
-	bh=oeSgVEToKy6aow+epXZMmyRWo4CwzKipH7QE77b9DmA=;
+	s=arc-20240116; t=1791281012; c=relaxed/simple;
+	bh=K7Q1Hbwe8OrMZg236KezYIV7ojhvcBdbHPeqQQ80IYA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=j3JBVUW4K+oH40xc4Wc6FxOCHEfO2T+iSlTIZPdm6et4zjP+3n/zHz0VHHBx32hldSnMY8zg/3bCDARU/B7fb7TvmzpKCEFI5Wo0d/JfGQKatlaubmF/EqLMVcR9r2lytHw/u2YPh2gmIxMRoQzZp403Q8B0Ejzao7gmvQxr8io=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ae5qConT; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=Jv/RRqp/pdyAJ+RAjBJBWHUelTHeTkIcfEmz7sdXZ1xRLXXmjCJeYmmtNwB3swrZVwLBvm+NhLyXXNT94k12i4SuFhN83WwR+tgDWeKqe9IZLhISvLK3tnt/e3uOQ8KHrzI2auWPevqDAPkfqSnNndkdOReiO5/nJQ1SOuoBvHw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=J4E2WmoB; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ae5qConT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 767CE1F000FF;
-	Tue,  6 Oct 2026 09:59:07 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="J4E2WmoB"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87C611F000FF;
+	Tue,  6 Oct 2026 10:03:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791280750;
-	bh=oeSgVEToKy6aow+epXZMmyRWo4CwzKipH7QE77b9DmA=;
+	s=k20260515; t=1791281011;
+	bh=fDfSAUXNlnIr8WhGRvDMtmNz3uXW9Ub9sCp+o+YIEYI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Ae5qConTRtDe2EIx0Fu5mytBK9gV1JJiRo6uRYY+GrgDO0DE/2fxIIruK1KJZzk8+
-	 HHtGAwJB5SnrH22PoM7fEzLmlOqsgiAy4/h618HOGA9n7ecIsvaE6wjkrwjW3FrZsv
-	 i4Scab6FYfTaBLqipaxN5kQD6XL0ALCJMjDWbXIpubW5BMtL75tDKSJ/GSfodE2q/j
-	 1HFMU04fl6AR51BOh0pUtwO5hdU51ds/9LKUkcaJFEUvVuylUDwIvtjDn4zTG9rdDL
-	 rQCoRdJ+yh8+1gECoBOT1jkrlu4ZsF02Qo3+hfvStT6FjvXA0QsJa5dBnHTiSDlId0
-	 PG1RRixUloTpg==
-Date: Tue, 6 Oct 2026 10:59:05 +0100
+	b=J4E2WmoBNAWWEzyqtdOg6R49PtoxmBqlIA5re63CXl0ed/xEfz8rfwNmySrE8tbku
+	 J3EULoTZIk1Yyj45oBiT+/H/e83GkswqWHh7NmNmS6255egih+sGRvV0wbgcrMXSTY
+	 dRjfSOUMrm7LY8L0boU4+iP+16wpva/IsZwGLeAv6Y7Oqfa9vTS+kp6PzFULC8ffBL
+	 FVDc8o/3XyIxrVJ/jxdiFbMJLtaRNbilCDpuR7eJ0pCAWgpEOwaxywAmZClRKqiy1a
+	 JJTSxEawaasLYeQivVa7LxJlZw1vCUuDRvS6HZOvZsSA7/uR41s+qFqdeGjlMAVjUQ
+	 3qEZXdR1KaWZg==
+Date: Tue, 6 Oct 2026 11:03:26 +0100
 From: Daniel Thompson <danielt@kernel.org>
 To: david@ixit.cz
 Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
@@ -38,11 +38,11 @@ Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
 	phone-devel@vger.kernel.org,
 	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
 	Joel Selvaraj <foss@joelselvaraj.com>, stable@vger.kernel.org
-Subject: Re: [PATCH v4 1/4] backlight: qcom-wled: Fix NULL pointer
- dereference in wled_remove()
-Message-ID: <asTGaV_---60n_Kp@aspen.lan>
+Subject: Re: [PATCH v4 2/4] backlight: qcom-wled: Fix WLED3 brightness
+ register stride
+Message-ID: <asTHbpMrXzjh_iyk@aspen.lan>
 References: <20260921-qcom-wled-backlight-v4-0-bab8c7ef73cb@ixit.cz>
- <20260921-qcom-wled-backlight-v4-1-bab8c7ef73cb@ixit.cz>
+ <20260921-qcom-wled-backlight-v4-2-bab8c7ef73cb@ixit.cz>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -51,22 +51,58 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260921-qcom-wled-backlight-v4-1-bab8c7ef73cb@ixit.cz>
+In-Reply-To: <20260921-qcom-wled-backlight-v4-2-bab8c7ef73cb@ixit.cz>
 
-On Mon, Sep 21, 2026 at 12:46:22PM +0200, David Heidelberg via B4 Relay wrote:
+On Mon, Sep 21, 2026 at 12:46:23PM +0200, David Heidelberg via B4 Relay wrote:
 > From: David Heidelberg <david@ixit.cz>
 >
-> wled_probe() doesn't set the driver data for the platform device.
-> As a result, platform_get_drvdata() in wled_remove() will return NULL,
-> and the first dereference of it crashes on unbind.
+> WLED3 has a 16-bit brightness register pair per string, at 0x40 + 2*n,
+> which is what the pm8941-wled driver wrote to:
 >
-> Set the platform device driver data in wled_probe().
+> 	rc = regmap_bulk_write(wled->regmap,
+> 			wled->addr + WLED3_CTRL_REG_VAL_BASE + 2 * i,
+> 			v, 2);
 >
+> The restructuring for WLED3 turned that into WLED3_SINK_REG_BRIGHT(n),
+> defined as 0x40 + n, so the two byte writes for consecutive strings
+> overlap: string 1 overwrites the MSB of string 0 with its own LSB, and
+> with the default three strings only string 1 ends up with the requested
+> value.
+>
+> Use the 2 byte stride.
+>
+> Fixes: 775d2ffb4af6 ("backlight: qcom-wled: Restructure the driver for WLED3")
 > Cc: stable@vger.kernel.org
-> Fixes: feeab87b3072 ("backlight: qcom-wled: Add support for short circuit handling")
+> Assisted-by: LLM
 > Signed-off-by: David Heidelberg <david@ixit.cz>
 
 Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
+
+
+> ---
+>  drivers/video/backlight/qcom-wled.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+> index 2281007bdd459..f452d328997ad 100644
+> --- a/drivers/video/backlight/qcom-wled.c
+> +++ b/drivers/video/backlight/qcom-wled.c
+> @@ -54,17 +54,17 @@
+>  #define WLED3_SINK_REG_SYNC				0x47
+>  #define  WLED3_SINK_REG_SYNC_CLEAR			0x00
+>
+>  #define WLED3_SINK_REG_CURR_SINK			0x4f
+>  #define  WLED3_SINK_REG_CURR_SINK_MASK			GENMASK(7, 5)
+>  #define  WLED3_SINK_REG_CURR_SINK_SHFT			5
+>
+>  /* WLED3 specific per-'string' registers below */
+> -#define WLED3_SINK_REG_BRIGHT(n)			(0x40 + n)
+> +#define WLED3_SINK_REG_BRIGHT(n)			(0x40 + (n * 0x2))
+
+I saw the comment about (n).
+
+I'd rather see that in the marcos... but since the new code matches the
+existing macros it has my R-b with or without change.
 
 
 Daniel.

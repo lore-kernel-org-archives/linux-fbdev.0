@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 222EA4D4871;
-	Wed, 14 Oct 2026 12:30:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7AD73C4163;
+	Wed, 14 Oct 2026 12:31:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791981007; cv=none; b=rcCcxT1jSR4dBMWLYcR8DFzwtz/VR6k2xQlS0CqiutKmoq9MAEd9QauiSZqfytW25UJ+VyNV8rVqTvf0EzhaG5dzPgCT951iVT69VPqlaFx5dkVaPm/Q0h6QbNlkllY5UivUeyZMAJINuFRwsLI7UabijuEbdRhNIC/FTjDhdsg=
+	t=1791981062; cv=none; b=k2jbCLlLYP1BjDcQNkOFjzI6KFLTFUFD4kyzICTLdC0GBbmN3umrFymkB6jlHaTJts//sqIIlNPQROTTj/8z4b13t4F8zcLrhEK9pUvJvaZq+RRYom2V3qJaZM4m///geN3WlFoDFYsUVglos6JAvL2lYcIZtUZ+alNRDdh4cXY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791981007; c=relaxed/simple;
-	bh=bCFxC+G5LkvNJl1avUiZgUBgnk+2WI1hyc8TP8Xm1uU=;
+	s=arc-20240116; t=1791981062; c=relaxed/simple;
+	bh=bvxjmZS4X4Eqd5hZyX7kc4xljHOyD0evQGjjmXhkUbo=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=hLib0f1UDuF4Tr+onoM6sCHYXkV2PFnl27ItmNZkBueJRVdrNLaQa5goTglF11muQZnK+r9f5mBD2gXUHLtnRLppjk5RZ/MQDqscz8JQHvB1E3Lc/F1EqkJl0a+BSHdTepKHLZnejKt07ueYIqU/oqKAcXLXkGOMgTeDKTNBcW8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Ljil3pb0; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=hppDSUB8lzgLooQLY5H5KDGHAhUjXUZXYSNUHbqNJw54sy9TKYbA3jaaMLdSnjcbKooiTg2H3jporagNSoT8PFkLYxjiRkTnTTqyHvvH1aXQSdbMAm/wni1YhVZawZoq9Md7ghRzJm61wfVWsLrtJVm7iP6yJHDb0Hc3uUVxIWU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=blfQHchG; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ljil3pb0"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13A231F000FF;
-	Wed, 14 Oct 2026 12:30:02 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="blfQHchG"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A35C41F00893;
+	Wed, 14 Oct 2026 12:30:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791981006;
-	bh=vEb5Gx0LrtGn+0frlTWsSNwPuSCsK7a2RD1SMA1DXnU=;
+	s=k20260515; t=1791981061;
+	bh=WmMdzxPlejQaqZNa3UTkzpuCVe+6o2oOl7wZ2XqTuo4=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=Ljil3pb0zmj/wIQfZB/cQuB9DS2AhIvaEixXz+DRu0ctwfV+uIB5+aTb+AKr4fGtv
-	 pda6bfzDOZgAGvX9cTgJh/VbcqoQmK1GKRVXUvFSQr2721LDY1hZ3oyzu1IDfyAmsF
-	 RE5XPBwu5tH+L1Oc7nUddPsAR7vVPUxNYWiT7YUraox48N3v0514slWNq+e49lNfoR
-	 kTxHBW256PTScguOamk6dTxfUP6llVcZS63QHzv5pudOpYNtwUmiHJQpV2BDHx1Ul+
-	 wHFDM381bh0i4wyCgeT4b1xXOJiWVs+7eKoNvOKyqss19TjaEhItjTA5x2wTseNagL
-	 awPFYwfKeAzgA==
+	b=blfQHchGOVRFFMFi9S0YYv9imMp5lzosnABYBn1sqEGK120DSF7lPqIS0uJVXR9pp
+	 Q/LdcvPMrqGMPt4AlprwLZ5KMCClE2Q/08BMbMM05PuzGTTVN4J/nB5iBFSET8i1pP
+	 b+7xTMNuYJMV7zGIkcTSjOT8z4lIOF8psQCjjB1f2OWbgPEW1dAoR1ln2yjfui3veB
+	 mimECd9i9fZb+N4ls7BN1iaqTZBUhJIgmMa0B5INvaTZ8xZchOu5TdAoevFeqALSvT
+	 mCvRcpP5GbhskOlHJ9ZkFfsqplq7C/9Q/ojxfWLiQ6gAEd6koP874402sMWAB+JakL
+	 xJfDQQlFuEFNQ==
 From: Lee Jones <lee@kernel.org>
 To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
@@ -41,8 +41,8 @@ In-Reply-To: <20260921-qcom-wled-backlight-v4-0-bab8c7ef73cb@ixit.cz>
 References: <20260921-qcom-wled-backlight-v4-0-bab8c7ef73cb@ixit.cz>
 Subject: Re: [PATCH v4 0/4] backlight: qcom-wled: Fix OVP IRQ imbalance and
  start from the hardware state
-Message-Id: <179198100282.808561.2750105116872314866.b4-ty@b4>
-Date: Wed, 14 Oct 2026 13:30:02 +0100
+Message-Id: <179198105841.810389.574989948392370179.b4-ty@b4>
+Date: Wed, 14 Oct 2026 13:30:58 +0100
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -67,13 +67,13 @@ On Mon, 21 Sep 2026 12:46:21 +0200, David Heidelberg wrote:
 Applied, thanks!
 
 [1/4] backlight: qcom-wled: Fix NULL pointer dereference in wled_remove()
-      commit: 186fc521f211a207c323b753659f28d3dda7bc45
+      commit: 1dbd46d4b2fb416a8202b1a8e4ef9d0cadbe075f
 [2/4] backlight: qcom-wled: Fix WLED3 brightness register stride
-      commit: e60dc9c05e0f415ef8bc63b3179abdd49830a619
+      commit: 22672f81f0724cbabb272fd0228fa424d4306082
 [3/4] backlight: qcom-wled: Fix unbalanced OVP IRQ enable at probe
-      commit: b32a8c32fea3855e707717155f198f03fdbf6f1e
+      commit: 5eda6b51461932f9fd835ef9e4574650c69c4fe8
 [4/4] backlight: qcom-wled: Read back the programmed brightness at probe
-      commit: 2ffcac916578f4a57347e717786d1e07e85cbf2b
+      commit: eacfbe6f9716d00536edc229a58895405e73c2e4
 
 --
 Lee Jones [李琼斯]

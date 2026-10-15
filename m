@@ -1,81 +1,87 @@
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B44664A4835;
-	Thu, 15 Oct 2026 09:07:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 239804A4835
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Oct 2026 09:10:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.168.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792055264; cv=none; b=lANvpV9LkYuY7sf5AIxbs6g6Xx2hU0VEgdzXSR0/4E2zyZpW+kIVHCu88xTpWu/NocRaN0p4RVuuizX10UNqlRf+408HYpLkaAnFyrei/KDqeDEHSVZxKyn9eFh6DVf5U1app7TqVva7fg/9TuG9tXFVuQ6GC1A9/pp+lNbRDZc=
+	t=1792055445; cv=none; b=Ywjbx6iFrOX3Zz4eI2KbUBFjdqkFjNtq0IjZbDO3WCnIjELTPmHkHZVaLBRpcZ8vjMMjFu2zaqfXwp4lF3MlpDXZMa0wAQDSQZqJ/xs7UKFNHHHup8DoY5tS5+ZPzUOBENNojPC1MMzbidC6yk+YkzgWhDQMP/i5c5sOvcGY1W8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792055264; c=relaxed/simple;
-	bh=eZw9m0c/QAvRL5UXYsVixkm4FNoo5gHZ4L09f2+kZGg=;
+	s=arc-20240116; t=1792055445; c=relaxed/simple;
+	bh=F9sCs/Et+Q8r2QxPlaxDRFhUFrobaL5SK4g9Bng5fxs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QZxr4ZyDGhsb3EiedVXYaXl6PO4H2A3G9LNdKCZl9h5mma/T4ARd+MPph0fZbP8XWJTlHpnBozLYfLjccbG8dv7fl5EE8/WFfIjHWkKceOu6lxGLoeUyf0UdAA9kcSIffzrcJ5WdYgkck3GKj2VZUugos42EJcyaOGLYnNr5pfo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Ja1AfWLm; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hZcuI2h0; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Ja1AfWLm; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=hZcuI2h0; arc=none smtp.client-ip=195.135.223.131
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	 In-Reply-To:Content-Type; b=oxUN7Vf5IFvSz9weIFSS8jRVvIwqEhkSAU3paeY3NZUOJaJTEl1f9AY2c00jjgVcfN8B4iAxOU6ytQjvvjmUtOQYEJBDl+YF9HaZ2nJLtS1ZhSqv5UysgFwMmHXpYiNHeTaoJL7Ta031QLOqkBSkGbaxFEM1LpOuK4r65pai2XY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass smtp.mailfrom=oss.qualcomm.com; dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b=lNXqNt3t; dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b=efGQ8lNf; arc=none smtp.client-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Ja1AfWLm";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hZcuI2h0";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Ja1AfWLm";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="hZcuI2h0"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 63D5F1F7EF;
-	Thu, 15 Oct 2026 09:07:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1792055257; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=lYMwZ+Fgmcnaf42YiU+5DZVFEVKAyChCqxQwFCkXZMo=;
-	b=Ja1AfWLmCAw6sP/MnQ1FgDzoR2WsFZf8BL1FoKMyQ7WmH+A3PnMtbFxXBG3+sfLYCboiYt
-	YpaoN5Mjc7CAhrQACR9lfypX1wkDdqYsa7gW0V+Pjx3JbIiFg51Al7SJ04XhCQYeaqHaOn
-	OLj4W66dHzQbHFLuNBd+bA5dQdyBTkk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1792055257;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=lYMwZ+Fgmcnaf42YiU+5DZVFEVKAyChCqxQwFCkXZMo=;
-	b=hZcuI2h02cm67XfwdUnfUAdodQahH2sPmTVf4zw63yTjO/yHa5+edMPcl0PJALdIHfqif+
-	fM31BmklQK1ytJBg==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Ja1AfWLm;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=hZcuI2h0
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1792055257; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=lYMwZ+Fgmcnaf42YiU+5DZVFEVKAyChCqxQwFCkXZMo=;
-	b=Ja1AfWLmCAw6sP/MnQ1FgDzoR2WsFZf8BL1FoKMyQ7WmH+A3PnMtbFxXBG3+sfLYCboiYt
-	YpaoN5Mjc7CAhrQACR9lfypX1wkDdqYsa7gW0V+Pjx3JbIiFg51Al7SJ04XhCQYeaqHaOn
-	OLj4W66dHzQbHFLuNBd+bA5dQdyBTkk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1792055257;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=lYMwZ+Fgmcnaf42YiU+5DZVFEVKAyChCqxQwFCkXZMo=;
-	b=hZcuI2h02cm67XfwdUnfUAdodQahH2sPmTVf4zw63yTjO/yHa5+edMPcl0PJALdIHfqif+
-	fM31BmklQK1ytJBg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E0AB7132C9;
-	Thu, 15 Oct 2026 09:07:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id f2L6G9iX0Gr4OAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 15 Oct 2026 09:07:36 +0000
-Message-ID: <b8b52ffd-ecec-4fba-b432-ba32135c2f99@suse.de>
-Date: Thu, 15 Oct 2026 11:07:35 +0200
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.b="lNXqNt3t";
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.b="efGQ8lNf"
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 69F6KKW9644643
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Oct 2026 09:10:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	BdDwoOcc/IZIcemzbEOb6Rk++kVeyFBUpRdmHijaAIM=; b=lNXqNt3tkE/p961B
+	wahr3Lmhg1umEwgGeBlbKzdQD6+6DynIJcumsyW6FdgTDooOm3yrmyvioHialzms
+	4apGwbfbo6HiiyUDj1e5uBpp1Ee4wERSV7RwMiy596LX/OmTC4reOEvy51vIHXm2
+	ynGUNLCBTYitPT1RcFUlTqM5l49FExlq1TFFBc04dxFmK9M3f+1IbifZII0Ndiux
+	taB/MRxOO7o9Jw/b3Xc8Z9JLQLWfZlV/p4OPfYk2qSS7vS6T+Z1CmYIydDcZsuvi
+	KZ+71i0ZmtUzqvedLDcuCYCk2u96iDIPO76GTZpBlu/Kjvgj3KgXi7xQ2ui3/X44
+	QLkjrg==
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hajmya65x-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-fbdev@vger.kernel.org>; Thu, 15 Oct 2026 09:10:43 +0000 (GMT)
+Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-53389750985so10410301cf.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 15 Oct 2026 02:10:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1792055442; x=1792660242; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=BdDwoOcc/IZIcemzbEOb6Rk++kVeyFBUpRdmHijaAIM=;
+        b=efGQ8lNfNn2oMJbrd9Mo/emcmGmOyRNlqaEQ/R7Rpu2GenraIp0X7rIaYILNM/mmEw
+         cacFoAQWMbCA4JeBeB2O7oWpgDmO8FFC5u6RMW8NgUtqlzU/xMd+2+41TudaLOkuKAgO
+         Wu+brPREoPdFrc3Zrq/cxCeAlVcO1ca8iP5ltF8NACtg5zSq2yEiQFWyMKJdfPN4WrCE
+         ekfyXs6eqHOwJcPYb4JjFCUMgJho0Ki0gG223DLi5Hq03s0Z03lo0bCi9ii+y+N29Nqo
+         mWm4OqwGnrlqaeMWI2kwcakTWlldac//ksAjeYO9XCpSk+4NNSkN7pmElu2KY2jOpNug
+         gNfw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792055442; x=1792660242;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=BdDwoOcc/IZIcemzbEOb6Rk++kVeyFBUpRdmHijaAIM=;
+        b=QSYqg4RUSfQGplolcjyRkiONeh1yeVzER6JC6+qV6fUCDTefx00NDpY7Th9jpV8UZ0
+         2CsNvxUiAlf7dHhej475Sobcp6ArcsVh5lRZBactULZDSMoPr/bt8s4M86TQVSHHZINg
+         c0FVhXKSh3sxEEbddgXQCzZpzAX/8pCeLUoZ4+rQdc8BnZE/TsemO2c9h5ikiefiLc+K
+         OZrWuVph1kS8P8vffAOkLV/jML6sQUem607vjbvhlEc3G//A0GnYr19gPZb8fM3H8GfK
+         zaTSDNV7/Co16wjvlhZMBI/ZhT1qBJXzzMrSptxAq2BJmcDwsDtAU/mzkMBptts7NGTb
+         svig==
+X-Forwarded-Encrypted: i=1; AKwUvBxKQjZXBBrHFoe6upJUQpYJ0ChqOlT0GOQ4Bd2EPsx+2lBNReGG9tRF0kIQ3DUoFGk+w6jAvUAxpbKs5w==@vger.kernel.org
+X-Gm-Message-State: AFq9FYLE2i2vkxgwqS5PkuXi6SOu3WerejdOLDc5hkFCKdezPuIZN+1Q
+	vT4JxrBuCL7hFfS3ITKzodsnJn33/iJNXsoXpb5e7KKqb3papyAljyNAbozZ5Xn9en4BFK3nzq3
+	pAdo1w/87K8EZp1sDOVksvP498ywhll6mXO7lpu7qkGS3PRl/GXa6uBTAAJevPP0SoQ==
+X-Gm-Gg: AYBFou3plnjfiJRsX/SP9gGZqrpSn2x5QUV0dXn7Z4qfEZ6UhqyXVlOZXog9UK++AFw
+	TaB5ezToA964IwmJE9GRMSvK+yRt6EjdQmRSYT5ugXy0mS3FkTg1GE/Hb5PqhVkl3TtfQ55CbZu
+	WVFArwKjgOobiNIxRliX5eMLkNd4VqCpXY6mZAvbYKgHF2TdbVvEr6wA6vyIt072lapunwbZ1cg
+	L2YqvUrlatnS4GE69vRHya1GugvQWX4kH25++n/BCVfXvuLO/cd/Tir0dBJLRCyEfqSV7sVxuWM
+	GLXa1SEnL3hoPmpmxB94WmgwHPzXAp9GhrYbzcTTSckrAFkaJdv+fzatjmBJiBgWuxlHfq/30/T
+	iOjRkJBqbvgWGrXxj95hPeA==
+X-Received: by 2002:a05:620a:199b:b0:939:eb09:4458 with SMTP id af79cd13be357-93ebd1de450mr3641735585a.3.1792055442360;
+        Thu, 15 Oct 2026 02:10:42 -0700 (PDT)
+X-Received: by 2002:a05:620a:199b:b0:939:eb09:4458 with SMTP id af79cd13be357-93ebd1de450mr3641732685a.3.1792055441898;
+        Thu, 15 Oct 2026 02:10:41 -0700 (PDT)
+Received: from [192.168.226.26] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b2038abf24sm2188025a12.37.2026.10.15.02.10.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 15 Oct 2026 02:10:40 -0700 (PDT)
+Message-ID: <ddbb547a-f59f-4ad2-8c99-4436bdae84c7@oss.qualcomm.com>
+Date: Thu, 15 Oct 2026 11:10:38 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,144 +89,73 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbdev: Add bounds checking in bit_putcs to fix
- vmalloc-out-of-bounds
-To: Helge Deller <deller@gmx.de>,
- Albin Babu Varghese <albinbabuvarghese20@gmail.com>,
- Simona Vetter <simona@ffwll.ch>
-Cc: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-References: <20251003073210.48501-1-albinbabuvarghese20@gmail.com>
- <b4af6e84-6555-4629-8291-fc4c2c99390b@gmx.de>
+Subject: Re: [PATCH 8/9] arm64: dts: qcom: sm8150-hdk: fix FSA4480 address
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
+        Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+        Kiran Gunda <quic_kgunda@quicinc.com>,
+        Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>,
+        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>, Dmitry Baryshkov <lumag@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, mfd@lists.linux.dev
+References: <20261015-sm8150-display-card-v1-0-5c14928cef29@oss.qualcomm.com>
+ <20261015-sm8150-display-card-v1-8-5c14928cef29@oss.qualcomm.com>
 Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <b4af6e84-6555-4629-8291-fc4c2c99390b@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 63D5F1F7EF
-X-Rspamd-Action: no action
-X-Spam-Level: 
-X-Spamd-Result: default: False [-3.00 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	XM_UA_NO_VERSION(0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FREEMAIL_TO(0.00)[gmx.de,gmail.com,ffwll.ch];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	DKIM_TRACE(0.00)[suse.de:+];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[48b0652a95834717f190];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,appspotmail.com:email,suse.de:dkim,gmx.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,syzkaller.appspot.com:url]
-X-Spam-Flag: NO
-X-Spam-Score: -3.00
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20261015-sm8150-display-card-v1-8-5c14928cef29@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: -h_Lrh1QB-t5CXJ_-2i5GQnRQYhWwEed
+X-Proofpoint-ORIG-GUID: -h_Lrh1QB-t5CXJ_-2i5GQnRQYhWwEed
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMDE1MDAzNiBTYWx0ZWRfX2gBdSYqQKk2T
+ yq3AjvjWhqymEAG42FFAoGrXqINQEWeNJ5509VlXE5luWeAJMu4Mo4A34xuPwha+GPXoouLyM3U
+ 4NDFoIjRyqPamA5CNluxVHoaWQH6b+k=
+X-Authority-Analysis: v=2.4 cv=TbQDJhQh c=1 sm=1 tr=0 ts=6ad09893 cx=c_pps
+ a=JbAStetqSzwMeJznSMzCyw==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=IkcTkHD0fZMA:10 a=660iZSQnnn4A:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=YMgV9FUhrdKAYTUUvYB2:22
+ a=EUspDBNiAAAA:8 a=7g7iOhDP9QsUep1Qju8A:9 a=QEXdDO2ut3YA:10
+ a=uxP6HrT_eTzRwkO_Te1X:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMDE1MDAzNiBTYWx0ZWRfX0Lphw4dhk/Ju
+ IK8zElP4mnmhSsw607JGFsFCior7KA9TQgOOxcJQ5yWbOem2aC7pw+1FrZj+4VPG1vfjc7vkhmp
+ OVxrss/o5wz2QY6+HDZcd3jlOjva/8LDnmzvg8SZCiOyBsJr9mNBOTHI4MFGmhvFYD5hvxdOZUp
+ 50B9Urn72a0E1kMeJ5U2woB7wHQv+k3oB6EApII8tdSOUgWlx8hsJG3NKNCHMeIX0GVNE4QasH+
+ tzqPuBLQFO/rd/hA6KM9l+FmELrELDEQfuwnJrIZgYfe6ggL/Fo+XlWOuxQCX8M8mNJI5NxCtiC
+ N4nG+Tx/YCfdxW0+7EMQ5ltb7w7qAQDfo8MRBnOh2yceP/9ACflfpF1iEI4z0xyHTyMELTTMjHz
+ kB+ycef5VNHOeP9QC1JVhTsp+dE6+js1A0AIhh1BPOBGJpE7Pe+rxuiSitDOVq0dTdR2+3wSTka
+ ge4X+IUCrF+Te/mIyjg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-10-13_01,2026-10-14_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501 spamscore=0
+ clxscore=1015 impostorscore=0 phishscore=0 malwarescore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2610080000 definitions=main-2610150036
 
-Hi
+On 10/15/26 10:58 AM, Dmitry Baryshkov wrote:
+> The FSA4480 on the SM8150 HDK responds at 0x43 rather than 0x42. With
+> the wrong address the mux driver fails to probe, the Type-C controller
+> and the DisplayPort controller keep waiting for it and the display
+> subsystem never binds.
+> 
+> Fixes: ba712fd55c7b ("arm64: dts: qcom: sm8150-hdk: enable DisplayPort and USB-C altmode")
+> Assisted-by: LLM
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> ---
 
-Am 04.10.25 um 02:43 schrieb Helge Deller:
-> On 10/3/25 09:32, Albin Babu Varghese wrote:
->> Add bounds checking to prevent writes past framebuffer boundaries when
->> rendering text near screen edges. Return early if the Y position is 
->> off-screen
->> and clip image height to screen boundary. Break from the rendering 
->> loop if the
->> X position is off-screen. When clipping image width to fit the 
->> screen, update
->> the character count to match the clipped width to prevent buffer size
->> mismatches.
->>
->> Without the character count update, bit_putcs_aligned and 
->> bit_putcs_unaligned
->> receive mismatched parameters where the buffer is allocated for the 
->> clipped
->> width but cnt reflects the original larger count, causing 
->> out-of-bounds writes.
->>
->> Reported-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
->> Closes: https://syzkaller.appspot.com/bug?extid=48b0652a95834717f190
->> Suggested-by: Helge Deller <deller@gmx.de>
->> Tested-by: syzbot+48b0652a95834717f190@syzkaller.appspotmail.com
->> Signed-off-by: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
->> ---
->> Changes in v2:
->> - Partially render when height exceeding screen boundaries instead of 
->> skipping
->> - Update character count when width is clipped to prevent buffer 
->> mismatch
->>
->> Link to v1:
->> https://lore.kernel.org/all/20250927075010.119671-1-albinbabuvarghese20@gmail.com/ 
->>
->> ---
->>   drivers/video/fbdev/core/bitblit.c | 20 ++++++++++++++++++++
->>   1 file changed, 20 insertions(+)
->
-> applied.
+Hm, there's an ADDR pin on the FSA. I wonder if the previous guy had
+an earlier revision of the board which routed that differently or
+something.
 
-This patch mangles fbcon output on fbdev HW drivers. It's reproducible 
-on matroxfb and sisfb. Reverting the change restores these driver's 
-functionality.
+Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-Fbcon from within DRM's fbdev emulation works.
-
-Best regards
-Thomas
-
-
->
-> Thanks!
-> Helge
->
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
-
+Konrad
 

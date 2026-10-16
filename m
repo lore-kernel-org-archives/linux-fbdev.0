@@ -1,233 +1,75 @@
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6A77483BEA;
-	Fri, 16 Oct 2026 09:34:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B72734F30C1;
+	Fri, 16 Oct 2026 15:39:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792143251; cv=none; b=dHa1o7HpRyLP0L2dr3ul+NUv6+QeObNv728ivqHzFVcFL8zSlktyOtClDd1xT+p/5ggPS0divgrlB+dNLbMaNIBg6a7nix15jqFEidIWR+TAa2/0rjLIS6bRu+MTzNo2XYhQvhmIuV8cjXdft3ujBOIE0iGpfqQ7EScCZz/FIi8=
+	t=1792165178; cv=none; b=sdVqYVQZbRmBEo6yIAgDUzR3k7n5iaxAIIG4Y+fsm93S8WGtjHJ/o21yuJ5Hdih5HEdA0pE7RDa9bIGpc7evDIZuaYX3anzsVWAX5cLNZXrEGIY9yMVhhAsZ2mMQEr8ihDYjCU1/J+umUwspZps0lBTdY5DmhaGkUCW3FJbDiFE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792143251; c=relaxed/simple;
-	bh=Wrs+SVXb9uEFGBb5fL6xASMYt2gFmNuYucTNFgJL56k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=my/fcGmaccZXcN2f6aE8f125gmzXwEw+htbMCyBtqKBhROfETrWRRxQbPZDhFaxsDrKn+djQDzpKof9BR9/Cy+dJqs2E610PA7O+AOZa0IgQHfEf4nHVkiKALjm3xlNueBzcWGKQmXSBF5gKn6xLXTxiRdbb+1SktGTKzV3KbE4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=wrYcl0+V; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=VH5OmjJm; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=wrYcl0+V; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=VH5OmjJm; arc=none smtp.client-ip=195.135.223.130
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+	s=arc-20240116; t=1792165178; c=relaxed/simple;
+	bh=DBTfS6GgR2JOYsHytsKaQbGgGzHwHCX9MxhZZB5k5lc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=s7i94Y0JKTOj7Dfz333bsO0LjmVKEA3IMpVQ02DsV5yt0HDevCN87bfP0OXg1Zw33/ShZZ7p1jC7YZpNQZ4KAfyO7EkgkpJgX7wRE//ZXS+zq1GoFPAz+SJ4qTgLE90cSc8uyDPpUhAIXG9fCT6yr6zQpxe1r5mLrNwT0i5UrFU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Leed4Rhk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wrYcl0+V";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="VH5OmjJm";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="wrYcl0+V";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="VH5OmjJm"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A300621C15;
-	Fri, 16 Oct 2026 09:34:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1792143243; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=IeSoQiQ5ORlTqAZjMneFz0cgyP5LHbAOMi9jVF+Tpt0=;
-	b=wrYcl0+VIfyk/dQrs4OIAmvDeZCYFPIFqA+2RRzdblF46il8iDgBThhIiAGMNjZFemo8Cd
-	Qy4IuUU7BfbQs/kiALKDJVhNwHyXhksOW3ENxzIfQpl85WZS+DBgq6hOntR6kSYcxGOf5+
-	Np4sHzDRcyhwacz9unXcUC0+vuDGVPA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1792143243;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=IeSoQiQ5ORlTqAZjMneFz0cgyP5LHbAOMi9jVF+Tpt0=;
-	b=VH5OmjJmER1RnQ9ceWtR/qaiB1psnXZ2MjGUNU3R8UR2STwZY9HvIbj9XuRD0Y0YhxkOK4
-	2X8ThrwsiiZs5nDA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=wrYcl0+V;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=VH5OmjJm
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1792143243; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=IeSoQiQ5ORlTqAZjMneFz0cgyP5LHbAOMi9jVF+Tpt0=;
-	b=wrYcl0+VIfyk/dQrs4OIAmvDeZCYFPIFqA+2RRzdblF46il8iDgBThhIiAGMNjZFemo8Cd
-	Qy4IuUU7BfbQs/kiALKDJVhNwHyXhksOW3ENxzIfQpl85WZS+DBgq6hOntR6kSYcxGOf5+
-	Np4sHzDRcyhwacz9unXcUC0+vuDGVPA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1792143243;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=IeSoQiQ5ORlTqAZjMneFz0cgyP5LHbAOMi9jVF+Tpt0=;
-	b=VH5OmjJmER1RnQ9ceWtR/qaiB1psnXZ2MjGUNU3R8UR2STwZY9HvIbj9XuRD0Y0YhxkOK4
-	2X8ThrwsiiZs5nDA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3958B138A5;
-	Fri, 16 Oct 2026 09:34:03 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 8cgiBonv0WqmHQAAD6G6ig:T7
-	(envelope-from <tzimmermann@suse.de>); Fri, 16 Oct 2026 09:34:03 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: gregkh@linuxfoundation.org,
-	jirislaby@kernel.org,
-	deller@gmx.de,
-	James.Bottomley@HansenPartnership.com,
-	simona@ffwll.ch
-Cc: linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
-	sashiko-reviews@lists.linux.dev,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 6/7] vgacon: Implement struct consw.con_unblank
-Date: Fri, 16 Oct 2026 11:11:56 +0200
-Message-ID: <20261016093357.33294-7-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261016093357.33294-1-tzimmermann@suse.de>
-References: <20261016093357.33294-1-tzimmermann@suse.de>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Leed4Rhk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64A8B1F000C4;
+	Fri, 16 Oct 2026 15:39:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792165177;
+	bh=DBTfS6GgR2JOYsHytsKaQbGgGzHwHCX9MxhZZB5k5lc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Leed4Rhk7k2sKjAKraXvVR2AHx73ZkQKT52DNG2kxy7LKkl68vAktU1dAi3yItTJI
+	 nh+mxSI0hiyrHn5YR3NMO3AmDTZRR8WIj6L2ceB6gmopVRSazoYCrwk9+g96tbsG90
+	 cttM+49YqQFKB4VFyFMTmRrFpTkJ4eD06UiNx9zuh9mj+OimuTM1vf5i5QRdRFC5vF
+	 9plv/4zCUAdQCfWMLsaCCIvNYU/YIzDMYN35PI0q2Mchkp8vqGlTElXYn6L2ECfpvH
+	 v9hmaUtaK040LzUFnMIqN1uX86al6pMC38+Ku7inB85rgJnMhCjsBlcSk/adIQp9ot
+	 OrltrQJ3x2MaA==
+Date: Fri, 16 Oct 2026 16:39:28 +0100
+From: Daniel Thompson <danielt@kernel.org>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>, Kiran Gunda <quic_kgunda@quicinc.com>,
+	Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Dmitry Baryshkov <lumag@kernel.org>, linux-arm-msm@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+	mfd@lists.linux.dev
+Subject: Re: [PATCH 2/9] backlight: qcom-wled: fix string detection
+ brightness on WLED5
+Message-ID: <atJFMBqrF5uzmMWM@aspen.lan>
+References: <20261015-sm8150-display-card-v1-0-5c14928cef29@oss.qualcomm.com>
+ <20261015-sm8150-display-card-v1-2-5c14928cef29@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Spam-Score: -3.01
-X-Spam-Flag: NO
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	FREEMAIL_TO(0.00)[linuxfoundation.org,kernel.org,gmx.de,HansenPartnership.com,ffwll.ch];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:dkim,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[11];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	DKIM_TRACE(0.00)[suse.de:+]
-X-Spam-Level: 
-X-Rspamd-Queue-Id: A300621C15
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261015-sm8150-display-card-v1-2-5c14928cef29@oss.qualcomm.com>
 
-Implement con_unblank from struct consw with the VESA_NO_BLANKING
-case from vgacon_blank(). The new function is called vgacon_unblank().
-Remove the duplicated code from vgacon_blank().
+On Thu, Oct 15, 2026 at 11:58:39AM +0300, Dmitry Baryshkov wrote:
+> The string detection sets the test brightness through
+> wled4_set_brightness(). On WLED5 that writes to unrelated registers and
+> the detection runs with whatever brightness has been programmed before.
+>
+> Use the per-version callback and latch the new value on WLED5.
+>
+> Fixes: 62a1d3f623ac ("backlight: qcom-wled: Add support for WLED5 peripheral that is present on PM8150L PMICs")
+> Assisted-by: LLM
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 
-Vgacon uses the global state vga_is_gfx in several places to test if
-the console runs on text or graphics mode. Track the mode switches in
-vgacon_blank() and vga_unblank(). As vgacon_unblank() does not have
-a mode_switch parameter, derive the value from vga_is_gfx and vc_mode.
+Reviewed-by: Daniel Thompson (RISCstar) <danielt@kernel.org>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/console/vgacon.c | 53 ++++++++++++++++++++--------------
- 1 file changed, 31 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 536e7fe4d142..7f52164c30af 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -800,39 +800,47 @@ static void vga_pal_blank(struct vgastate *state)
- static bool vgacon_blank(struct vc_data *c, enum vesa_blank_mode blank,
- 			 bool mode_switch)
- {
-+	if (mode_switch)
-+		vga_is_gfx = true;
-+
- 	switch (blank) {
--	case VESA_NO_BLANKING:		/* Unblank */
--		if (vga_vesa_blanked) {
--			vga_vesa_unblank(&vgastate);
--			vga_vesa_blanked = VESA_NO_BLANKING;
--		}
--		if (vga_palette_blanked) {
--			vga_set_palette(c, color_table);
--			vga_palette_blanked = false;
--			return 0;
--		}
--		vga_is_gfx = false;
--		/* Tell console.c that it has to restore the screen itself */
--		return 1;
--	case VESA_VSYNC_SUSPEND:	/* Normal blanking */
-+	case VESA_NO_BLANKING:	/* Normal blanking */
- 		if (!mode_switch && vga_video_type == VIDEO_TYPE_VGAC) {
- 			vga_pal_blank(&vgastate);
- 			vga_palette_blanked = true;
--			return 0;
-+			return false;
- 		}
- 		vgacon_set_origin(c);
--		scr_memsetw((void *) vga_vram_base, BLANK,
--			    c->vc_screenbuf_size);
--		if (mode_switch)
--			vga_is_gfx = true;
--		return 1;
-+		scr_memsetw((void *)vga_vram_base, BLANK, c->vc_screenbuf_size);
-+		return true;
- 	default:		/* VESA blanking */
- 		if (vga_video_type == VIDEO_TYPE_VGAC) {
--			vga_vesa_blank(&vgastate, blank - 1);
-+			vga_vesa_blank(&vgastate, blank);
- 			vga_vesa_blanked = blank;
- 		}
--		return 0;
-+		return false;
-+	}
-+}
-+
-+static bool vgacon_unblank(struct vc_data *c)
-+{
-+	bool mode_switch = vga_is_gfx && c->vc_mode == KD_TEXT;
-+
-+	if (mode_switch)
-+		vga_is_gfx = false;
-+
-+	if (vga_vesa_blanked) {
-+		vga_vesa_unblank(&vgastate);
-+		vga_vesa_blanked = VESA_NO_BLANKING;
- 	}
-+
-+	if (vga_palette_blanked) {
-+		vga_set_palette(c, color_table);
-+		vga_palette_blanked = false;
-+		return false;
-+	}
-+
-+	return true;
- }
- 
- /*
-@@ -1201,6 +1209,7 @@ const struct consw vga_con = {
- 	.con_scroll = vgacon_scroll,
- 	.con_switch = vgacon_switch,
- 	.con_blank = vgacon_blank,
-+	.con_unblank = vgacon_unblank,
- 	.con_font_set = vgacon_font_set,
- 	.con_font_get = vgacon_font_get,
- 	.con_resize = vgacon_resize,
--- 
-2.55.0
-
+Daniel.

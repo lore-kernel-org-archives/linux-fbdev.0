@@ -1,748 +1,194 @@
-Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from OS0P286CU011.outbound.protection.outlook.com (mail-japanwestazolkn19010073.outbound.protection.outlook.com [52.103.66.73])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32F8B52FE49
-	for <linux-fbdev@vger.kernel.org>; Fri, 16 Oct 2026 16:29:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.52
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792168176; cv=none; b=C6B3zkHdzUPf3LA4d3Vbz0Zq+ejQSQsPvDhouGPFKkROUG7ThKjqHRi901m2niFrlwOhPIoHN5Xi/n1OpxcGkdqoVIPs9UGjw7xhVNwJrmn46NNotzmIGtw58Txq5mTX7K21hQy1Po0pj2SaabY1U4sYHB8g9BLr36k98Yj91kg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792168176; c=relaxed/simple;
-	bh=pqS6KFk2050B10nKGfi4aD7GcPJCQEPYCC94LoumGDM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gzU7v3C1gr56/ngJOtgUlo5HsNOpmj33LgOefTpOU4sv0Id13Luf/4cGKwLet2Bj9hutzPPBipcAgB6x8+5M48ODoPzfkJSUs5As+i6LPiFcg8vpZXQjQzjrCzuccwKmZhcGd+A5sJq0sjUbzvQ72j88YQrC5vOOT39mHR9RvIY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=MDZIErLc; arc=none smtp.client-ip=209.85.221.52
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6950E2C08BB;
+	Sat, 17 Oct 2026 08:54:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.103.66.73
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1792227291; cv=fail; b=Ln5ztpvNM8zKnmPT7RHqfNMOMnv193LYoCfH53gyOKOwG1jOEIoIMdn3ssTBed1BN7I6qXy1884WQKkSJPAKANe1wIeS135duL1nzEE3CPRxhEbzkiL/Qiob6t8LZJwwnTllVOUwEX/IrFmS8+zUDS7CEuOhdrYBu6ZiIH3MuJU=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1792227291; c=relaxed/simple;
+	bh=th8xhwhmY1/BdUfzpahJ4cCIBaoEwiK8lmos5eoDrmo=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=lyBSAxDLLWujehUKQKdflgOtLJzdWdSOnRI9eLrXo25yh80Q118cWn7SEf4W8V/ZviHQeoQ2pe+AuJzADy+NBxiInQ0V1EIP+3xbd2FQhD0ppH9fXclCXeykkrtHCvB5sIqaNKowAOHN0yxO5/Wgq8ErWTIXm6LbXRfKOHa/Tw8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=live.cn; spf=pass smtp.mailfrom=live.cn; dkim=pass (2048-bit key) header.d=LIVE.CN header.i=@LIVE.CN header.b=aNLl5wuQ; arc=fail smtp.client-ip=52.103.66.73
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=live.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=live.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MDZIErLc"
-Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-48c4d870d54so9351f8f.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 16 Oct 2026 09:29:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792168165; x=1792772965; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=FyyptWs4jeRy65VcZv2YS5BXwKedU7NEWnY/im0Q2Lg=;
-        b=MDZIErLccDlYos2drA1F0zZk5AhdcywLZZWIAkgah7DJjcL4tToN3XEnuZxZXFjDIr
-         PhA7rLOTV6bkLcAk7I1Ir7h0mqVNIiPQIXcHkH9622t4F5mxORsvQXc9I5/+ANJUsGbV
-         ePJtM7nfcIToF+db3SrjbIRxfupSYeO6vxiqxpRuVPEw4fzfM9JlqeCx9NQpIUHk9y+m
-         JMcqc8g0HQpu5HlKYVtETuXmwMu/uJdp376fNhZ2WgC7CxweZK2/edPGMBeKPstDgHVq
-         IJpdB8ka8c/Walfqbpy73cZct4Q4WcK73T9qjXX3XsFDKdG/neQP8dgF9u0Omsrj2M5g
-         TPEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792168165; x=1792772965;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=FyyptWs4jeRy65VcZv2YS5BXwKedU7NEWnY/im0Q2Lg=;
-        b=FDsTggYKiMdSxDW0GqZVPyhTk+Xd1tXqeadE6LU28ZHwzC2hL4cEtWEUlbQrHwT3XE
-         PCwWISJKrPrhnNjGKilb8TAtff6nsa8RNQc5lWXzjXiw0eoAXlPZNyWnpNIcpDgvQ8UW
-         NND9pCQRD2iyxezyYQrXq5YZ+qDNhKraFLcp7wfzmg8MWjjXbTEjDBmL0A3gggAvOojg
-         HFqhqyEkxLtjBAeljkwHv/Kqv0QBxy/GTAWI1FcYC7cv/qzcfq/u9QhBCgQQ6jknFN9S
-         SpoMAqUKa4duL6d5YswkqfoWEylE8aUVBOn6izTwqb68rX2MmiMiTbjfSR02ifLiUa9C
-         qWSQ==
-X-Forwarded-Encrypted: i=1; AKwUvBz+R1Q3GaI1mZdjxTa4Y+D0Nfj43aXTBWY3rUPJTmFmWuo9jcC9qYPnda4lIvwHUgrIi452KP3HcV9chA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJkFn8hkTZ/gJSuvg2ecptps+mwYw+YDO7K68ha0C/E6SXwEhg6
-	5VnIYLvT1jco/p4AMwnB7rPGh/p8XVRu3CNcx7VGTMmZ8Zw8yDuz1cFW
-X-Gm-Gg: AYBFou1W0tuYmZg1hhuGJp/aNCy3JdvevR5L09S8TnQnqYtdXpLqWZe0ulozdacYe5z
-	GQS5ll0X/slAZmBk6dgzsQ1qqNoB9bp28G5kuNZf+dooahK7aRglNU7CjfFl/VT9DXzEJR7rBgN
-	HM8TzaCVZ8R9CHHfi0aFz+pkiWw/WXXKmwvJC3eGQLTQRpPoGgKg0ropy/3uSkqFfp9wKyHUBF1
-	FZX+WVzfb2xYGteVzY2ZecAsP35efaG600qYwTUiozeqkzUMpa39tO4c6osSPanaylQRS6gumGS
-	wPXzmPH91BBm8fYmJ78iwhn+X8iHaPu3zrsqvGzNJRc28t1lpeH9kxb/xRi+6S5/o8j35U8nBRP
-	QV2qDnNl2MBzQSDfU/WyLbW0pACXj5m/DBVwrKpTyLLb5j8VixfQIaDoOJl59IzxxypvifSSlRa
-	g3xz1ZBQ8BC3DGOLuRiIA/7M0YqcoDbqx7vEPu/BZLzro5jKD819WeNqqPM/30tYGPh4Dmg0H3R
-	qPGQkyfocLIm0jBd2xHvXAIT2ALr5ct91aCZonVUNUvP6dRGJDvgKzN+8SLBaD0Xcc5UeiS9dYi
-	XA==
-X-Received: by 2002:a05:6000:46da:b0:48d:f3d2:38e0 with SMTP id ffacd0b85a97d-48e07bbe5efmr161804f8f.15.1792168164719;
-        Fri, 16 Oct 2026 09:29:24 -0700 (PDT)
-Received: from machine.home.arpa ([2a0d:3344:57f6::103c])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48dfd4c5942sm9404317f8f.16.2026.10.16.09.29.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 16 Oct 2026 09:29:24 -0700 (PDT)
-From: Luka Panio <lukapanio@gmail.com>
-To: lee@kernel.org,
-	danielt@kernel.org,
-	jingoohan1@gmail.com,
-	pavel@kernel.org,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	deller@gmx.de
+	dkim=pass (2048-bit key) header.d=LIVE.CN header.i=@LIVE.CN header.b="aNLl5wuQ"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=IQy3vcV0HwJ0ZHj3Ff74adVenJ6bWLLBIHoII+IQoybe3FKSi8qsPQy+QP7x66M7bu2D2kgujN+5Uv/xO0s8cSacFwdgel4zTex4PBUkTzTms5vSvptYH9O0JCIjftrn/fSwNQTKfpXWdPxlDWDmOj4pSl2n7c2Gd+ugHuqcP+bIOrv4zhx2jSXyttnehDHLZ773IO1sF/DSvBmxrfShhNjHwEHfPNTmRpK3qJPFYZLr7UHYSKe0YkaoV1Lp0A2+beYFREwIriI0+0EGNfZahO77n6FDGUPbXL7FqQSeJmk89FOprVMPs3yNjaw621P+dCbbmLOiK6Gux3g0HFP3dw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=momfuM8rYZ0xutqkpJ+GY31UgSR4C6f1PSCgrddeKZU=;
+ b=wP9yf/BW2KwqwsxPoNtFjSbvUTTgFHtoJ6DtVQk2j8jcOBy8pZx6G3szh4SK2FXi97LDfM8CyyfE0xbvj2gFM2s/C1xD1vuVwUXq8O9Rtz9Ld9M3SiKPuBhXoHtKsy/LuJfAPtBg2jXNyLkP2a3gNik9mUp91Gxgy7s1UkSaCrhI7w6oX3Ij2NkedBJJGBBLbLB+e0Hgd8JbLUcZGGGR0OO+eu2i1lrmFXlmfNXs3ULqFcJtrQ/YZj7HAJTxFKcr3Njm2qCD5gKiA/FfUz/wrJK0keZbm6a1MmiTbXlgOHRKR1mtPRDqKo6OY+hy4lJiKbVTNrOyAzoD/R6LT7M7MQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=LIVE.CN; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=momfuM8rYZ0xutqkpJ+GY31UgSR4C6f1PSCgrddeKZU=;
+ b=aNLl5wuQ5dosZp1vgX9oHlkwLxzqZeoIJv9SlNNr/DvwRsMquGna6+sUcbJlyaWLIrpLbRQuwBTzigoYLxS6S17YLcLwcQ4+L/QxMgHeoR0D1W4/M9HtPfoGtIV1SmWTVTwH8f4yGo+CxXGY2bOWFaDU3uaTpitzw0bdxexs+LI98kaPRKX5vssbDalpjTdTSaf5/ItEfaaBHuunROiQAUibYvg9XHdwewsBYxWzKwKfugHMT5dWuB+LYff2M/7lKUb8Q1GnnSu1mAr9hAoE5YwezWar8geoNOX3xvqk5F0QGGtxXhjMVLPJQeu4+7j5253W3FIGqt/Zv8gq50jnZQ==
+Received: from TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM (2603:1096:405:30e::5)
+ by TY4P301MB1284.JPNP301.PROD.OUTLOOK.COM (2603:1096:405:297::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.18; Sat, 17 Oct
+ 2026 08:54:45 +0000
+Received: from TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM
+ ([fe80::2834:779c:2a80:9f60]) by TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM
+ ([fe80::2834:779c:2a80:9f60%3]) with mapi id 15.21.0522.017; Sat, 17 Oct 2026
+ 08:54:45 +0000
+From: CatMe0w <CatMe0w@live.cn>
+To: Helge Deller <deller@gmx.de>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Simona Vetter <simona@ffwll.ch>,
+	Albin Babu Varghese <albinbabuvarghese20@gmail.com>
 Cc: dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org,
 	linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Luka Panio <lukapanio@gmail.com>
-Subject: [PATCH 2/2] backlight: Add Awinic AW99703 backlight driver
-Date: Fri, 16 Oct 2026 18:29:12 +0200
-Message-ID: <20261016162912.64581-3-lukapanio@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261016162912.64581-1-lukapanio@gmail.com>
-References: <20261016162912.64581-1-lukapanio@gmail.com>
+	CatMe0w <CatMe0w@live.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] fbdev: bitblit: Fix glyph clipping when fbcon pans
+Date: Sat, 17 Oct 2026 02:53:37 -0600
+Message-ID:
+ <TYYP301MB1525C03FE71D47908263EBFCF69A2@TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM>
+X-Mailer: git-send-email 2.56.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MW4P223CA0018.NAMP223.PROD.OUTLOOK.COM
+ (2603:10b6:303:80::23) To TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM
+ (2603:1096:405:30e::5)
+X-Microsoft-Original-Message-ID: <20261017085337.61314-1-CatMe0w@live.cn>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TYYP301MB1525:EE_|TY4P301MB1284:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1186c93a-9bac-46e0-b7ec-08df2c2c4aa2
+X-MS-Exchange-SLBlob-MailProps:
+	AZnQBsB9XmrTkIzDOCxR6E7nJ4I/6XZ7KMcPVaMvafk7/kmsyD+OvBINOEbFW4AX49ap4536ypBnXe5ZMSIrVuD5ZCob5bHV1nlwvS8qt0Ur0qs0TazLX9hST/zROHktSNK0BJf7XCvUBQ/yJr2fRE15+CcKxPAVKQn3GYzLJBcneeXtBCf4rxjRUoG22I6+2ROaE9EKDRG3mBFTMg82ZNGIXHpuo0AtJuSNAy6O6f3AbiikybfKJlTzT9p7OG/nWml5/AYJZSVHoiev4eeDN0RBMXEQlbsnzsA7IqbB8AEnl2uCGHjQOOs0It5D3kDPSL9olYyh+gAQkWELQ5ZLjbZbaAv6x5qo0lf9sB4X0tfeiWfNSd/rSF2LaG8N1zff+SO5TbgvG4YqJnWP86PqYD1ht2d1Dvla3FQv3jTUCf40CEZgvPJP6AoE7C7mOjK5wo+X9eYu+9/c3uXWefDCSa/CgzienmYIkhh9hBMMS7PPp6a5yVeNZ9WdA7hMwjwBd+VFobIYvgKOI/7UK+zMQdUYFS5GmL3raf/ierz91Dz4PrGgIOwVxi+pf5+j6oao+30WanwDc8DYA+0sy6gWVuTOnaWxtNVhkH1WkxwutdS5FCLQc+uCiqjmhx86zHMX7DM3BHCEC1mUBjn/eQr6xR/5wIhopJIhyvGSWDp/HkXhMO0Wk5UzVlrrYGcLs1mQa+iRAm4KSUjJ1bgtf9xOZdRliTFuFvUUjOrAk96av1abppw5s593wRlN1W8A1UrDZZCX2tnalZA=
+X-Microsoft-Antispam:
+	BCL:0;ARA:14566002|37011999003|39105399006|24021099003|25010399006|4140399003|260925184616899003|8060799015|19110799012|25031999004|5072599009|41001999006|22141099003|5062599005|15080799012|23021999003|40105399003|10035399007|440099028|3412199025|1710799026;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?wpK5v/6dyACXfiZk0ZHnp3o2Bl4IiOnOuT2bhjyQu/TdNOJzdx0lw1DawPCU?=
+ =?us-ascii?Q?xWWgD0uLeUarS3uCYceGi+soOVztpFmCrfuEF3W4IifdNjUb1wU3SEYe6Ar4?=
+ =?us-ascii?Q?BzqS1qDnOLchkUMYxpIQ8WbDtnFLhpEaG1UfsP9pcynmICms7QPLNyJZ4jah?=
+ =?us-ascii?Q?211Sv7H+yQDiG4y3DM/HQd9jUgNCLnBdjkQrMGrG8Eq3uiyvSqHmbNruBBI4?=
+ =?us-ascii?Q?VMYDmh41LOyV+Zm84mlGStFWwlKG6atRoG7YC8iMb6fn2N0f5SaLTA7yb4yR?=
+ =?us-ascii?Q?kXoGkAQW2a5x0i2ujRubr7wVNffFV4b2WtIR7dvxsVs1sP8Fh9UrzWkot+aQ?=
+ =?us-ascii?Q?I5e9/GbmgobSKBaWZHVYWo4Ga+2RjLb/aTp8muTO9y6BK3SySGBkP/ehZ4Nl?=
+ =?us-ascii?Q?LfADLw8faltOkZDh/QKQiTEPyK7O4XRGTSRPkSb898UwmJR2dcpKRRUit6uH?=
+ =?us-ascii?Q?i841kR/7PkspXr3YMy115zS3gleEFqxweylW2BTQx6MV0EkNLvISBD3/MmXG?=
+ =?us-ascii?Q?2F4SxpHJE+FYuXQO9p6zMJap1r+a1Avev7y/KmNFpqyfF6U3qh6C0teXInWK?=
+ =?us-ascii?Q?n1o7ZpgpAt4N3pibYcaDlDFNK3tZRhKX9RWDi5BV23RlGoEqT8Oz9AeE/ilu?=
+ =?us-ascii?Q?mryOqhRv46Uld0HzpFHXKrWRj6/hXLksCtuErd/z9cIG8FmGBKvd+wRe1S/5?=
+ =?us-ascii?Q?8W8sYNWCxsHL2IeAWOFtkp0EIWjjANiLAN0+ep4PG9iWHtPdBkAICVHrW/pt?=
+ =?us-ascii?Q?iz24wyOB59OAcG/kuCCVYMc+pFZ6dw50FC69ICziidTlloYXgOZcf2sCy0Y0?=
+ =?us-ascii?Q?UjIcJMyWCJmbGccJ5ENJ3KmPH53L3T8197D9yqK2X8S39feLJJ32GBUXsgRx?=
+ =?us-ascii?Q?hfTXby6pIb9B+zOHdSE93ZJP1IGoGR+fLCZWpjuQHylUyWB9xMakgCP9OSqL?=
+ =?us-ascii?Q?3ARngE9mg76zN33bjxDs1XsQZJD1wzOEQBM0T70u4IicSQlUGlfcfGI2CzTK?=
+ =?us-ascii?Q?aSGFkRMVgZXgz91kzjx6qGMLRxlR2tAT5+jYaCvw19TNNGp1hX2uGzRAyHwA?=
+ =?us-ascii?Q?l7uceug/9VC3t7HUpCskYm9b0OmXEuR+8bgqm8BMuT9IqWv0as8=3D?=
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?4iuPKBXM8Syt2yNF2zeIK0YShqZjGYwQBaYxL7wg1i5XNQ7UhHNOybFesJbS?=
+ =?us-ascii?Q?7+/WAO9f12hoTp123pNevwpUOVyz0xNqm8WgUMHfBpcAc3nu9Ks07sYjuabf?=
+ =?us-ascii?Q?Z2v4ChgXVdfN83ZftDCVVUd7ljIjbkiX+xwziPsH6t6BLrM0S79I+/bAkywD?=
+ =?us-ascii?Q?fLe4JlVcyaP9CRrL2wHOLDL6PYZXLfpNxGmWYOdEWhHCuIflMj8NH/mVn2b4?=
+ =?us-ascii?Q?HCRloMgdtxbietLK5HHRqj4BKDAoC7Q3pmfVRERzoC9tAw0aWyqmNRnvUgjW?=
+ =?us-ascii?Q?OAodF4Ndu0He0BTgDsyBHQ7XV/zRO9hT4kbc3wdUzhAdB2yQ9JQ+26u5TDUA?=
+ =?us-ascii?Q?P6YWlwFnZeA7W8TZr7i9ybYNeOvxs7MPsHmAGJbv7Uqftemf8IcgrFcYPDL6?=
+ =?us-ascii?Q?bNYeu6GWpJyGnrGn8tqED+IWJPxfrFvdUOY3owzhWILuaBNw9emU8M425VYn?=
+ =?us-ascii?Q?DSpekrPOXxPzFYLCH1+He+EslRQUDxfCITlvrXYhbp6Q4guXn4cD1O1BbD7P?=
+ =?us-ascii?Q?NW7Ra+vq4ya1k21GXY0aspKtYnlhz+s3SCVQhWNiPsofNdo8cr7DaY/1jOYf?=
+ =?us-ascii?Q?2K1Hc9RKgc5YxIq7UPT3Wdc8E/HL+wHhwHdce+/Xkx0H4nYihQtdcICNjSPa?=
+ =?us-ascii?Q?lZp8x1YQ+251cK1HT8+ojU2EpMGvrCn2nljqKTjrWlVYOQA/g/T2zMDKs3Fd?=
+ =?us-ascii?Q?hXmn47JYaKR4wGI1IYn/S1T01PODUwcibLvwJ0uZayAveznK193rvd7WwovO?=
+ =?us-ascii?Q?J7OKXZnGhjO+vRVxSaekoEjDzfET63869Zqg2CfWjEht6GhZhRL86aHSBtpD?=
+ =?us-ascii?Q?G1fEpHiywFGPLe3ko61YVaheXOuDEqOK+IV3LcfqxSOyiOs7WlId58B6ZGX3?=
+ =?us-ascii?Q?Lc7QQ6aAZIrhjJOneYIw9IAThEH04wV0t8YxeNIlGZw4+JMCcBA2/UyfhzHr?=
+ =?us-ascii?Q?zwQbanTUmdJGmNF/twr6aWwWwrmA4BR3aCssVQJfGfLp/yTCd4VH+881HojO?=
+ =?us-ascii?Q?CShKKMmVfrvEWybbFPSE7+6c/h76RyLtP8hhK8uVApkrJLhMy8YEsRts4FAd?=
+ =?us-ascii?Q?Kql8VEY8Scc27iLn/ngE9I4GykFvmKEs3NQi9SoCSeZZRoxaor/1Sd97DsYv?=
+ =?us-ascii?Q?ucRvKRdSKdxc4dXE78TfRgQldGlV58K2mzXAX/x0a/GHpTM20PolN5k2NtwB?=
+ =?us-ascii?Q?PeiddfUBUPyNvRvAtIn5Sf5/mZvx56I8KCbGK0jCzgluQ+n8Tg5/h/lPaI3D?=
+ =?us-ascii?Q?XCKYyoMS5oPoQ0jnSZjo1qOJNWaFrDUMICf2J2Jo14VInTzYctJc28pxKIDZ?=
+ =?us-ascii?Q?Ktt7MDb2B7Ps0fNOlGozOJwuGnH8NJ5jpEJXb2JbrIv4tIzjA0h5p5GvGvVz?=
+ =?us-ascii?Q?C2rm9+m3GaZ3zAbKHCIeniZsVGcrnn8jrRpG6RfPxE7ugY79169uvjzKNUxn?=
+ =?us-ascii?Q?UiCSOl+QbuOXT/XJjK4xoNGTuBr9Wb/Y?=
+X-OriginatorOrg: sct-15-20-9412-4-msonline-outlook-a91ca.templateTenant
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1186c93a-9bac-46e0-b7ec-08df2c2c4aa2
+X-MS-Exchange-CrossTenant-AuthSource: TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Oct 2026 08:54:45.4497
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
+	00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY4P301MB1284
 
-Add a driver for the Awinic AW99703 3-string WLED backlight controller.
+Commit 3637d34b35b2 ("fbdev: Add bounds checking in bit_putcs to fix
+vmalloc-out-of-bounds") made bit_putcs() clip glyphs to var.yres. When
+fbcon scrolls by panning, it draws text rows up to var.yres_virtual,
+so after the first pan most new text is not drawn until the next full
+redraw. This affects fbdev drivers that set FBINFO_HWACCEL_YPAN or
+FBINFO_HWACCEL_YWRAP, such as vesafb with the ypan option, when
+CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION=y.
 
-Register values follow the AW99703 datasheet (V1.6), the structure
-follows the aw99706 driver.
+Clip to GETVYRES() instead, which fbcon_ud.c and fbcon_ccw.c already
+use as the drawing area height. When fbcon does not pan, GETVYRES()
+returns var.yres, keeping the existing bound. When fbcon pans, it
+returns var.yres_virtual, which the framebuffer memory must cover
+anyway for panning to work.
 
-Signed-off-by: Luka Panio <lukapanio@gmail.com>
+Fixes: 3637d34b35b2 ("fbdev: Add bounds checking in bit_putcs to fix vmalloc-out-of-bounds")
+Cc: stable@vger.kernel.org
+Signed-off-by: CatMe0w <CatMe0w@live.cn>
 ---
- MAINTAINERS                       |   6 +
- drivers/video/backlight/Kconfig   |  11 +
- drivers/video/backlight/Makefile  |   1 +
- drivers/video/backlight/aw99703.c | 583 ++++++++++++++++++++++++++++++
- 4 files changed, 601 insertions(+)
- create mode 100644 drivers/video/backlight/aw99703.c
+ drivers/video/fbdev/core/bitblit.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 461a56850c84..e4168448e95c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4525,6 +4525,12 @@ L:	linux-sound@vger.kernel.org
- S:	Maintained
- F:	sound/hda/codecs/side-codecs/aw88399*
+diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
+index 39f44258d793..323a9e79a684 100644
+--- a/drivers/video/fbdev/core/bitblit.c
++++ b/drivers/video/fbdev/core/bitblit.c
+@@ -18,6 +18,7 @@
+ #include <linux/console.h>
+ #include <asm/types.h>
+ #include "fbcon.h"
++#include "fbcon_rotate.h"
  
-+AWINIC AW99703 WLED BACKLIGHT DRIVER
-+M:	Luka Panio <lukapanio@gmail.com>
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/leds/backlight/awinic,aw99703.yaml
-+F:	drivers/video/backlight/aw99703.c
-+
- AWINIC AW99706 WLED BACKLIGHT DRIVER
- M:	Junjie Cao <junjie.cao@linux.dev>
- S:	Maintained
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index dbf4ca23a9b6..c2494f7fa5d2 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -156,6 +156,17 @@ config BACKLIGHT_ATMEL_LCDC
- 	  If in doubt, it's safe to enable this option; it doesn't kick
- 	  in unless the board's description says it's wired that way.
+ /*
+  * Accelerated handlers.
+@@ -150,7 +151,9 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
+ 		      const unsigned short *s, int count, int yy, int xx,
+ 		      int fg, int bg)
+ {
++	struct fbcon_par *par = info->fbcon_par;
+ 	struct fb_image image;
++	u32 vyres = GETVYRES(par->p, info);
+ 	u32 width = DIV_ROUND_UP(vc->vc_font.width, 8);
+ 	u32 cellsize = width * vc->vc_font.height;
+ 	u32 maxcnt = info->pixmap.size/cellsize;
+@@ -167,10 +170,10 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
+ 	image.height = vc->vc_font.height;
+ 	image.depth = 1;
  
-+config BACKLIGHT_AW99703
-+	tristate "Backlight Driver for Awinic AW99703"
-+	depends on I2C
-+	select REGMAP_I2C
-+	help
-+	  If you have a LCD backlight connected to the WLED outputs of an
-+	  Awinic AW99703, say Y here to enable this driver.
-+
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called aw99703.
-+
- config BACKLIGHT_AW99706
- 	tristate "Backlight Driver for Awinic AW99706"
- 	depends on I2C
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 34469711c6cd..09ec9bd71c92 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -25,6 +25,7 @@ obj-$(CONFIG_BACKLIGHT_ADP8870)		+= adp8870_bl.o
- obj-$(CONFIG_BACKLIGHT_APPLE)		+= apple_bl.o
- obj-$(CONFIG_BACKLIGHT_APPLE_DWI)	+= apple_dwi_bl.o
- obj-$(CONFIG_BACKLIGHT_AS3711)		+= as3711_bl.o
-+obj-$(CONFIG_BACKLIGHT_AW99703)		+= aw99703.o
- obj-$(CONFIG_BACKLIGHT_AW99706)		+= aw99706.o
- obj-$(CONFIG_BACKLIGHT_BD6107)		+= bd6107.o
- obj-$(CONFIG_BACKLIGHT_CGBC)		+= cgbc_bl.o
-diff --git a/drivers/video/backlight/aw99703.c b/drivers/video/backlight/aw99703.c
-new file mode 100644
-index 000000000000..b0a46753d176
---- /dev/null
-+++ b/drivers/video/backlight/aw99703.c
-@@ -0,0 +1,583 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * aw99703 - Backlight driver for the AWINIC AW99703
-+ *
-+ * Copyright (C) 2026 Luka Panio <lukapanio@gmail.com>
-+ *
-+ * Register layout and init sequence based on the AW99703 datasheet (V1.6)
-+ */
-+#include <linux/backlight.h>
-+#include <linux/bitfield.h>
-+#include <linux/delay.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/i2c.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/pm.h>
-+#include <linux/regmap.h>
-+
-+#define AW99703_MAX_BRT_LVL		2047
-+#define AW99703_ID			0x03
-+
-+#define AW99703_REG_ID			0x00
-+#define AW99703_REG_SFTRST		0x01
-+#define AW99703_REG_MODE		0x02
-+#define AW99703_PDIS_MASK		BIT(4)
-+#define AW99703_MAP_LINEAR_MASK		BIT(2)
-+#define AW99703_WORKMODE_MASK		GENMASK(1, 0)
-+#define AW99703_WORKMODE_STANDBY	0
-+#define AW99703_WORKMODE_BACKLIGHT	1
-+#define AW99703_REG_LEDCUR		0x03
-+#define AW99703_BLFS_MASK		GENMASK(7, 3)
-+#define AW99703_CHANNEL_MASK		GENMASK(2, 0)
-+#define AW99703_REG_BSTCTR1		0x04
-+#define AW99703_SW_FREQ_MASK		BIT(5)
-+#define AW99703_OVPSEL_MASK		GENMASK(4, 2)
-+#define AW99703_OCPSEL_MASK		GENMASK(1, 0)
-+#define AW99703_REG_BSTCTR2		0x05
-+#define AW99703_IDCTSEL_MASK		BIT(6)
-+#define AW99703_REG_LEDLSB		0x06
-+#define AW99703_BRT_LSB_MASK		GENMASK(2, 0)
-+#define AW99703_REG_LEDMSB		0x07
-+#define AW99703_REG_PWM			0x08
-+#define AW99703_REG_TURNCFG		0x09
-+#define AW99703_RAMP_ON_MASK		GENMASK(7, 4)
-+#define AW99703_RAMP_OFF_MASK		GENMASK(3, 0)
-+#define AW99703_REG_TRANCFG		0x0A
-+#define AW99703_PWM_TRANS_MASK		GENMASK(6, 4)
-+#define AW99703_I2C_TRANS_MASK		GENMASK(3, 0)
-+#define AW99703_REG_FLASH		0x0B
-+#define AW99703_REG_AFHIGH		0x0C
-+#define AW99703_REG_AFLOW		0x0D
-+#define AW99703_REG_FLAGS1		0x0E
-+#define AW99703_REG_FLAGS2		0x0F
-+#define AW99703_FLAGS2_MASK		GENMASK(7, 5)
-+#define AW99703_REG_FLAGS3		0x11
-+#define AW99703_REG_MAX			0x69
-+
-+#define AW99703_HWEN_ON_DELAY_US	3500
-+#define AW99703_ID_RETRIES		5
-+
-+#define RESV	U32_MAX
-+
-+/* Boost switching frequency, in Hz */
-+static const u32 aw99703_sw_freq_tbl[] = { 500000, 1000000 };
-+
-+/* Boost over-voltage protection threshold, in uV (1xx = 41.5 V) */
-+static const u32 aw99703_ovp_tbl[] = {
-+	17500000, 24000000, 31000000, 38000000, 41500000, RESV, RESV, RESV
-+};
-+
-+/* Boost over-current protection threshold, in uA */
-+static const u32 aw99703_ocp_tbl[] = { 900000, 1800000, 2700000, 3400000 };
-+
-+/* Boost inductor, in nH */
-+static const u32 aw99703_inductor_tbl[] = { 4700, 10000 };
-+
-+/* Current sink turn on/off ramp time, in us */
-+static const u32 aw99703_ramp_tbl[] = {
-+	512, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000,
-+	512000, 1024000, 2048000, 4096000, 8192000, 16384000
-+};
-+
-+/* PWM dimming transition time, in ms */
-+static const u32 aw99703_pwm_trans_tbl[] = {
-+	2, 4, 8, 16, 32, 64, 128, 256
-+};
-+
-+/* I2C dimming transition time, in ms (code 0: 1 us per brightness step) */
-+static const u32 aw99703_i2c_trans_tbl[] = {
-+	RESV, 128, 192, 256, 320, 384, 448, 512, 576, 640, 768, 1024, 1280,
-+	1536, 2560, 4096
-+};
-+
-+struct aw99703_dt_prop {
-+	const char * const name;
-+	const u32 * const lookup_tbl;
-+	u8 tbl_size;
-+	u32 min;
-+	u32 step;
-+	u8 reg;
-+	u8 mask;
-+	u8 def_code;
-+};
-+
-+static const struct aw99703_dt_prop aw99703_dt_props[] = {
-+	{
-+		.name = "awinic,sw-freq-hz",
-+		.lookup_tbl = aw99703_sw_freq_tbl,
-+		.tbl_size = ARRAY_SIZE(aw99703_sw_freq_tbl),
-+		.reg = AW99703_REG_BSTCTR1,
-+		.mask = AW99703_SW_FREQ_MASK,
-+		.def_code = 1,
-+	},
-+	{
-+		.name = "awinic,ovp-microvolt",
-+		.lookup_tbl = aw99703_ovp_tbl,
-+		.tbl_size = ARRAY_SIZE(aw99703_ovp_tbl),
-+		.reg = AW99703_REG_BSTCTR1,
-+		.mask = AW99703_OVPSEL_MASK,
-+		.def_code = 3,
-+	},
-+	{
-+		.name = "awinic,ocp-microamp",
-+		.lookup_tbl = aw99703_ocp_tbl,
-+		.tbl_size = ARRAY_SIZE(aw99703_ocp_tbl),
-+		.reg = AW99703_REG_BSTCTR1,
-+		.mask = AW99703_OCPSEL_MASK,
-+		.def_code = 2,
-+	},
-+	{
-+		.name = "awinic,inductor-nanohenry",
-+		.lookup_tbl = aw99703_inductor_tbl,
-+		.tbl_size = ARRAY_SIZE(aw99703_inductor_tbl),
-+		.reg = AW99703_REG_BSTCTR2,
-+		.mask = AW99703_IDCTSEL_MASK,
-+		.def_code = 0,
-+	},
-+	{
-+		.name = "awinic,iled-max-microamp",
-+		.min = 4800,
-+		.step = 800,
-+		.reg = AW99703_REG_LEDCUR,
-+		.mask = AW99703_BLFS_MASK,
-+		.def_code = 19,
-+	},
-+	{
-+		.name = "awinic,ramp-on-time-us",
-+		.lookup_tbl = aw99703_ramp_tbl,
-+		.tbl_size = ARRAY_SIZE(aw99703_ramp_tbl),
-+		.reg = AW99703_REG_TURNCFG,
-+		.mask = AW99703_RAMP_ON_MASK,
-+		.def_code = 4,
-+	},
-+	{
-+		.name = "awinic,ramp-off-time-us",
-+		.lookup_tbl = aw99703_ramp_tbl,
-+		.tbl_size = ARRAY_SIZE(aw99703_ramp_tbl),
-+		.reg = AW99703_REG_TURNCFG,
-+		.mask = AW99703_RAMP_OFF_MASK,
-+		.def_code = 4,
-+	},
-+	{
-+		.name = "awinic,pwm-trans-time-ms",
-+		.lookup_tbl = aw99703_pwm_trans_tbl,
-+		.tbl_size = ARRAY_SIZE(aw99703_pwm_trans_tbl),
-+		.reg = AW99703_REG_TRANCFG,
-+		.mask = AW99703_PWM_TRANS_MASK,
-+		.def_code = 0,
-+	},
-+	{
-+		.name = "awinic,i2c-trans-time-ms",
-+		.lookup_tbl = aw99703_i2c_trans_tbl,
-+		.tbl_size = ARRAY_SIZE(aw99703_i2c_trans_tbl),
-+		.reg = AW99703_REG_TRANCFG,
-+		.mask = AW99703_I2C_TRANS_MASK,
-+		.def_code = 0,
-+	},
-+};
-+
-+struct reg_init_data {
-+	u8 reg;
-+	u8 mask;
-+	u8 val;
-+};
-+
-+#define AW99703_INIT_TBL_SIZE	(ARRAY_SIZE(aw99703_dt_props) + 3)
-+
-+struct aw99703_device {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	struct backlight_device *bl_dev;
-+	struct gpio_desc *hwen_gpio;
-+	struct reg_init_data init_tbl[AW99703_INIT_TBL_SIZE];
-+	bool bl_enable;
-+};
-+
-+static bool aw99703_readable_reg(struct device *dev, unsigned int reg)
-+{
-+	switch (reg) {
-+	case AW99703_REG_ID:
-+	case AW99703_REG_MODE ... AW99703_REG_FLAGS2:
-+	case AW99703_REG_FLAGS3:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static bool aw99703_writeable_reg(struct device *dev, unsigned int reg)
-+{
-+	switch (reg) {
-+	case AW99703_REG_SFTRST ... AW99703_REG_AFLOW:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static bool aw99703_volatile_reg(struct device *dev, unsigned int reg)
-+{
-+	switch (reg) {
-+	case AW99703_REG_FLAGS1:
-+	case AW99703_REG_FLAGS2:
-+	case AW99703_REG_FLAGS3:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static const struct regmap_config aw99703_regmap_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+	.max_register = AW99703_REG_MAX,
-+	.readable_reg = aw99703_readable_reg,
-+	.writeable_reg = aw99703_writeable_reg,
-+	.volatile_reg = aw99703_volatile_reg,
-+};
-+
-+static int aw99703_dt_lookup(const struct aw99703_dt_prop *prop, u32 dt_val,
-+			     u8 *val)
-+{
-+	u32 max_code = prop->mask >> __ffs(prop->mask);
-+	int i;
-+
-+	if (!prop->lookup_tbl) {
-+		if (dt_val < prop->min || (dt_val - prop->min) % prop->step ||
-+		    (dt_val - prop->min) / prop->step > max_code)
-+			return -EINVAL;
-+		*val = (dt_val - prop->min) / prop->step;
-+		return 0;
-+	}
-+
-+	for (i = 0; i < prop->tbl_size; i++)
-+		if (prop->lookup_tbl[i] != RESV && prop->lookup_tbl[i] == dt_val)
-+			break;
-+
-+	*val = i;
-+	return i == prop->tbl_size ? -EINVAL : 0;
-+}
-+
-+static void aw99703_dt_parse(struct aw99703_device *aw,
-+			     struct backlight_properties *props)
-+{
-+	const struct aw99703_dt_prop *prop;
-+	struct reg_init_data *init = aw->init_tbl;
-+	bool exp_map;
-+	u32 dt_val, strings = 3;
-+	int i;
-+	u8 val;
-+
-+	for (i = 0; i < ARRAY_SIZE(aw99703_dt_props); i++, init++) {
-+		prop = &aw99703_dt_props[i];
-+
-+		val = prop->def_code;
-+		if (!device_property_read_u32(aw->dev, prop->name, &dt_val) &&
-+		    aw99703_dt_lookup(prop, dt_val, &val)) {
-+			dev_warn(aw->dev, "invalid value %u for %s, using chip default\n",
-+				 dt_val, prop->name);
-+			val = prop->def_code;
-+		}
-+
-+		init->reg = prop->reg;
-+		init->mask = prop->mask;
-+		init->val = val << __ffs(prop->mask);
-+	}
-+
-+	device_property_read_u32(aw->dev, "awinic,led-strings", &strings);
-+	if (strings < 1 || strings > 3) {
-+		dev_warn(aw->dev, "invalid awinic,led-strings %u, using 3\n",
-+			 strings);
-+		strings = 3;
-+	}
-+	init->reg = AW99703_REG_LEDCUR;
-+	init->mask = AW99703_CHANNEL_MASK;
-+	init->val = GENMASK(strings - 1, 0);
-+	init++;
-+
-+	init->reg = AW99703_REG_MODE;
-+	init->mask = AW99703_PDIS_MASK;
-+	init->val = device_property_read_bool(aw->dev, "awinic,pwm-input") ?
-+		    0 : AW99703_PDIS_MASK;
-+	init++;
-+
-+	exp_map = device_property_read_bool(aw->dev, "awinic,exponential-map");
-+	init->reg = AW99703_REG_MODE;
-+	init->mask = AW99703_MAP_LINEAR_MASK;
-+	init->val = exp_map ? 0 : AW99703_MAP_LINEAR_MASK;
-+	props->scale = exp_map ? BACKLIGHT_SCALE_NON_LINEAR :
-+				 BACKLIGHT_SCALE_LINEAR;
-+
-+	props->max_brightness = AW99703_MAX_BRT_LVL;
-+	device_property_read_u32(aw->dev, "max-brightness",
-+				 &props->max_brightness);
-+	if (props->max_brightness > AW99703_MAX_BRT_LVL)
-+		props->max_brightness = AW99703_MAX_BRT_LVL;
-+
-+	props->brightness = props->max_brightness >> 1;
-+	device_property_read_u32(aw->dev, "default-brightness",
-+				 &props->brightness);
-+	if (props->brightness > props->max_brightness)
-+		props->brightness = props->max_brightness;
-+}
-+
-+static int aw99703_hw_init(struct aw99703_device *aw)
-+{
-+	int ret, i;
-+
-+	if (aw->hwen_gpio) {
-+		gpiod_set_value_cansleep(aw->hwen_gpio, 1);
-+		fsleep(AW99703_HWEN_ON_DELAY_US);
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(aw->init_tbl); i++) {
-+		ret = regmap_update_bits(aw->regmap, aw->init_tbl[i].reg,
-+					 aw->init_tbl[i].mask,
-+					 aw->init_tbl[i].val);
-+		if (ret) {
-+			dev_err(aw->dev, "failed to write init data: %d\n", ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static const char * const aw99703_flags1_names[] = {
-+	"over-temperature", "boost over-current", "LED3 short", "LED2 short",
-+	"LED1 short", "LED3 open", "LED2 open", "LED1 open",
-+};
-+
-+static const char * const aw99703_flags2_names[] = {
-+	[5] = "flash timeout", [6] = "UVLO", [7] = "boost over-voltage",
-+};
-+
-+static void aw99703_check_faults(struct aw99703_device *aw)
-+{
-+	unsigned int f1, f2;
-+	unsigned long flags;
-+	int bit;
-+
-+	if (regmap_read(aw->regmap, AW99703_REG_FLAGS1, &f1) ||
-+	    regmap_read(aw->regmap, AW99703_REG_FLAGS2, &f2))
-+		return;
-+
-+	flags = f1;
-+	for_each_set_bit(bit, &flags, 8)
-+		dev_warn_ratelimited(aw->dev, "fault: %s\n",
-+				     aw99703_flags1_names[bit]);
-+
-+	flags = f2 & AW99703_FLAGS2_MASK;
-+	for_each_set_bit(bit, &flags, 8)
-+		dev_warn_ratelimited(aw->dev, "fault: %s\n",
-+				     aw99703_flags2_names[bit]);
-+}
-+
-+static int aw99703_update_brightness(struct aw99703_device *aw, u32 brt)
-+{
-+	bool enable = !!brt;
-+	int ret;
-+
-+	ret = regmap_write(aw->regmap, AW99703_REG_LEDLSB,
-+			   brt & AW99703_BRT_LSB_MASK);
-+	if (ret)
-+		return ret;
-+
-+	ret = regmap_write(aw->regmap, AW99703_REG_LEDMSB, brt >> 3);
-+	if (ret)
-+		return ret;
-+
-+	if (aw->bl_enable == enable)
-+		return 0;
-+
-+	ret = regmap_update_bits(aw->regmap, AW99703_REG_MODE,
-+				 AW99703_WORKMODE_MASK,
-+				 enable ? AW99703_WORKMODE_BACKLIGHT :
-+					  AW99703_WORKMODE_STANDBY);
-+	if (ret) {
-+		dev_err(aw->dev, "failed to %s backlight: %d\n",
-+			enable ? "enable" : "disable", ret);
-+		return ret;
-+	}
-+
-+	aw->bl_enable = enable;
-+	if (enable)
-+		aw99703_check_faults(aw);
-+
-+	return 0;
-+}
-+
-+static int aw99703_bl_update_status(struct backlight_device *bl)
-+{
-+	struct aw99703_device *aw = bl_get_data(bl);
-+
-+	return aw99703_update_brightness(aw, backlight_get_brightness(bl));
-+}
-+
-+static const struct backlight_ops aw99703_bl_ops = {
-+	.options = BL_CORE_SUSPENDRESUME,
-+	.update_status = aw99703_bl_update_status,
-+};
-+
-+static int aw99703_chip_id_read(struct aw99703_device *aw)
-+{
-+	unsigned int val = 0;
-+	int ret = 0, i;
-+
-+	for (i = 0; i < AW99703_ID_RETRIES; i++) {
-+		ret = regmap_read(aw->regmap, AW99703_REG_ID, &val);
-+		if (!ret && val == AW99703_ID)
-+			return 0;
-+		fsleep(2000);
-+	}
-+
-+	if (!ret)
-+		dev_err(aw->dev, "unexpected chip id 0x%02x\n", val);
-+
-+	return ret ? ret : -ENODEV;
-+}
-+
-+/*
-+ * If the bootloader left the backlight on, start from its level so the
-+ * handover doesn't flash the panel.
-+ */
-+static void aw99703_read_boot_brightness(struct aw99703_device *aw,
-+					 struct backlight_properties *props)
-+{
-+	unsigned int mode, lsb, msb, brt;
-+
-+	if (regmap_read(aw->regmap, AW99703_REG_MODE, &mode) ||
-+	    FIELD_GET(AW99703_WORKMODE_MASK, mode) != AW99703_WORKMODE_BACKLIGHT)
-+		return;
-+
-+	if (regmap_read(aw->regmap, AW99703_REG_LEDLSB, &lsb) ||
-+	    regmap_read(aw->regmap, AW99703_REG_LEDMSB, &msb))
-+		return;
-+
-+	brt = (msb << 3) | (lsb & AW99703_BRT_LSB_MASK);
-+	if (brt && brt <= props->max_brightness) {
-+		props->brightness = brt;
-+		aw->bl_enable = true;
-+	}
-+}
-+
-+static void aw99703_power_off(void *data)
-+{
-+	struct aw99703_device *aw = data;
-+
-+	aw99703_update_brightness(aw, 0);
-+	gpiod_set_value_cansleep(aw->hwen_gpio, 0);
-+}
-+
-+static int aw99703_probe(struct i2c_client *client)
-+{
-+	struct device *dev = &client->dev;
-+	struct backlight_properties props = {};
-+	struct aw99703_device *aw;
-+	int ret;
-+
-+	aw = devm_kzalloc(dev, sizeof(*aw), GFP_KERNEL);
-+	if (!aw)
-+		return -ENOMEM;
-+
-+	aw->dev = dev;
-+	i2c_set_clientdata(client, aw);
-+
-+	aw->regmap = devm_regmap_init_i2c(client, &aw99703_regmap_config);
-+	if (IS_ERR(aw->regmap))
-+		return dev_err_probe(dev, PTR_ERR(aw->regmap),
-+				     "failed to init regmap\n");
-+
-+	aw->hwen_gpio = devm_gpiod_get_optional(dev, "enable", GPIOD_ASIS);
-+	if (IS_ERR(aw->hwen_gpio))
-+		return dev_err_probe(dev, PTR_ERR(aw->hwen_gpio),
-+				     "failed to get enable gpio\n");
-+	if (aw->hwen_gpio) {
-+		ret = gpiod_direction_output(aw->hwen_gpio, 1);
-+		if (ret)
-+			return dev_err_probe(dev, ret,
-+					     "failed to drive enable gpio\n");
-+		fsleep(AW99703_HWEN_ON_DELAY_US);
-+	}
-+
-+	ret = aw99703_chip_id_read(aw);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "chip id check failed\n");
-+
-+	props.type = BACKLIGHT_RAW;
-+	aw99703_dt_parse(aw, &props);
-+	aw99703_read_boot_brightness(aw, &props);
-+
-+	ret = aw99703_hw_init(aw);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "failed to initialize chip\n");
-+
-+	ret = devm_add_action_or_reset(dev, aw99703_power_off, aw);
-+	if (ret)
-+		return ret;
-+
-+	aw->bl_dev = devm_backlight_device_register(dev, "aw99703-backlight",
-+						    dev, aw, &aw99703_bl_ops,
-+						    &props);
-+	if (IS_ERR(aw->bl_dev))
-+		return dev_err_probe(dev, PTR_ERR(aw->bl_dev),
-+				     "failed to register backlight\n");
-+
-+	return backlight_update_status(aw->bl_dev);
-+}
-+
-+static void aw99703_shutdown(struct i2c_client *client)
-+{
-+	aw99703_power_off(i2c_get_clientdata(client));
-+}
-+
-+static int aw99703_suspend(struct device *dev)
-+{
-+	struct aw99703_device *aw = dev_get_drvdata(dev);
-+
-+	if (aw->hwen_gpio) {
-+		gpiod_set_value_cansleep(aw->hwen_gpio, 0);
-+		aw->bl_enable = false;
-+	}
-+
-+	return 0;
-+}
-+
-+static int aw99703_resume(struct device *dev)
-+{
-+	struct aw99703_device *aw = dev_get_drvdata(dev);
-+
-+	return aw99703_hw_init(aw);
-+}
-+
-+static DEFINE_SIMPLE_DEV_PM_OPS(aw99703_pm_ops, aw99703_suspend,
-+				aw99703_resume);
-+
-+static const struct i2c_device_id aw99703_ids[] = {
-+	{ "aw99703" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, aw99703_ids);
-+
-+static const struct of_device_id aw99703_match_table[] = {
-+	{ .compatible = "awinic,aw99703" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, aw99703_match_table);
-+
-+static struct i2c_driver aw99703_i2c_driver = {
-+	.probe = aw99703_probe,
-+	.shutdown = aw99703_shutdown,
-+	.id_table = aw99703_ids,
-+	.driver = {
-+		.name = "aw99703",
-+		.of_match_table = aw99703_match_table,
-+		.pm = pm_sleep_ptr(&aw99703_pm_ops),
-+	},
-+};
-+module_i2c_driver(aw99703_i2c_driver);
-+
-+MODULE_AUTHOR("Luka Panio <lukapanio@gmail.com>");
-+MODULE_DESCRIPTION("AWINIC AW99703 Backlight Driver");
-+MODULE_LICENSE("GPL");
+-	if (image.dy >= info->var.yres)
++	if (image.dy >= vyres)
+ 		return;
+ 
+-	image.height = min(image.height, info->var.yres - image.dy);
++	image.height = min(image.height, vyres - image.dy);
+ 
+ 	if (attribute) {
+ 		buf = kmalloc(cellsize, GFP_ATOMIC);
+
+base-commit: 8d3ae59288f1e7d58d76558a6ee96d533bc5019f
 -- 
-2.55.0
+2.56.0
 

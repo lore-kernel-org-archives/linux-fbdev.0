@@ -1,156 +1,76 @@
-Received: from fout-b5-smtp.messagingengine.com (fout-b5-smtp.messagingengine.com [202.12.124.148])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 385A537F33D
-	for <linux-fbdev@vger.kernel.org>; Sat, 17 Oct 2026 09:06:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.148
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6175037DEBE;
+	Sat, 17 Oct 2026 16:37:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792227966; cv=none; b=UipQeh1YGwujYCnHe5rD7Hqvoogj5L3BCo52pY6knlngkw38S5BMM6wxsbQJCxKpw6UwZVCkQNHAl+i+UOf9Xm59ZH+Dy0lMme3ZVwtCwEH9fQazaqZlrsdEB9bnPaX56UoiC5MTNYT0Zo9onyQNGQcGPm2AgV8OjYYHzF7+V2U=
+	t=1792255055; cv=none; b=cSUE01NliVNcBk2g9H6nykQYKpAvKhGooHp6MlaXpQZ5xeSAkX1cj8lYrU3rWsnRd2xBzI3rljZerppkkdJ0HS1voggS+AT1SUk1JTHBvTySAtYBegAXG8byMoo7Y5su8YtdXbw85QWwH9wabBNIfajoSFqBzpzNpEN1Ot2Ak/0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792227966; c=relaxed/simple;
-	bh=PJIb4TRS1B7oZsCjZ5WW1IwlU12EO4LgK9NuEO1Pa68=;
+	s=arc-20240116; t=1792255055; c=relaxed/simple;
+	bh=Kxy3m8TYu9b7PA1MA5QaC7rocyw0sBLIPEymVIRi1DI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=opkijScYeLwPqirvTxA6helvFxlhUUDDqRq/xv7OQcgDS85ogAo4CI6vEf9KMMtwcFUMOXHfKP+HWbKm1ouoaaBABoCR6IUMUDsnpVaX+VR+r6f1+EBDwXE6iVvg6X8trjH3VKJEOu+pRYbv+SFworUENvbCMIUIxcLTXJfLrH8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com; spf=pass smtp.mailfrom=kroah.com; dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b=MoyatWcL; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=UnkV1F+s; arc=none smtp.client-ip=202.12.124.148
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kroah.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=PG76O4dKmRCPUGpzWPd1Q6N6edT0cjtEf4Vta2fNF5MKDRzxPwzDew+uEFv5UDhsWzFtg5iV1nWzb7b9VZdJHC1KZZY3gigyRPJirJomq/mQ/C/mt2FCAHia6l9YHsa73MqKpwk+dmuqp/2IpBqh5csFVhnJdGvOTIH5aJxtZuY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ajgpPwRD; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="MoyatWcL";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="UnkV1F+s"
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfout.stl.internal (Postfix) with ESMTP id 7E4601D000D0
-	for <linux-fbdev@vger.kernel.org>; Sat, 17 Oct 2026 05:06:03 -0400 (EDT)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-01.internal (MEProxy); Sat, 17 Oct 2026 05:06:03 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:subject
-	:subject:to:to; s=fm2; t=1792227962; x=1792314362; bh=nVZZl6/Mu+
-	b0pKxknf/5K0vEjUCByAfibexN3hnGTGs=; b=MoyatWcLwb7JrN3Plo/AYcROBU
-	5cIsAg2GXW3NFBepev5xqGvx0ZhmeMCUQWPe4u2Eh2desbNeTmD/2ePXN8DtkjjF
-	hIY/5yTVzJGuu2wZBb9Zcxr4HWhbDayHc7gvh5PaNO90iTb/2s3QHBj6J2/or/ln
-	XbO3oRgaV+XBn326IrTr2QCEPg13J2V6M3RCXSp28Cyf5DVy7cmawYtFPAJKJhiz
-	wSFp0YzS2zAxyIIZnDjRan46ZIqNx0IPkQf/7QeWlQAcq3O/Wb6Y+Yb2Vb1+gNSR
-	vI7stgnrS1jlGvISMj9EHcQMopH2G85Vme4EXl+/JZ/xQlMK/vz5GZY1Gjpg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
-	1792227962; x=1792314362; bh=nVZZl6/Mu+b0pKxknf/5K0vEjUCByAfibex
-	N3hnGTGs=; b=UnkV1F+szvuzJqJYZ2dfWWiXErITbSqB0S1TGHw/zhtLcM3HwLs
-	kpYQz/pgLx0xXtH9lruD164FcEAUx5ApvN2aGs9Zi3Zm9XH4y0uGIB0C4zluTBhQ
-	VdUdeB3nkl2xn6mvOBS9BEvY45F/eiH+sSa7GNoKOPgTzMi4e6S+tC9N56v8M4kW
-	zXtM9SGWedo1f7fj46PMUqziqXNzojSHL6Q7lqLPTIAQ6dd4+xcEjh9ACfzHYmTG
-	D2zGrQr7PiagIvPwBh4zHz/8S9T5qsbHZFKJEnbgmhX7ZJOoV/rS2j7T7gZdkted
-	4jAa4PK+JEWDQgbA5k6Pgd8T0RVhwncGdmQ==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
-	repo=github.com/dkim2wg/interop; date=2026-10-08; sw=lmtpprox;
-	action=sign d=kroah.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1792227962; d=kroah.com;
-	mf=PGdyZWdAa3JvYWguY29tPg==;
-	rt=PGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZz4=;
-	s=fm2:rsa-sha256:MHuuJn0fqQni4DQXUUybHnbYYWpXSo8SHHSFZGSnnq0uAb+
-	TvH8sisk6HzsyEfjQ3TgMNcEhaEAwzP78P7RHTo9lReyRukXPmMnmr/5YHHvxuS/
-	W0L55G6087SDDxjNy9zEdXEWGs+1Yoee6KqRMNGfnHhmBvJYhQUffzYJ8MN02KsT
-	ttbKSDVh0A8Gl3R04n9f4Ro4qz2kRm4YygtAcx+jNlNfL4M2AKj3bQ3bFgj3YHrA
-	QfaJuYP7cRFE1IT8ZkQE3RCPA03DpLMMntQZwjsrFkQiR9vKB7wc6a4O84lATu7Y
-	8gxV7y9OT0FYCk8zupqxiYJ7evSOxbuaIcp4Pyw==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-06;
-	repo=github.com/dkim2wg/interop; date=2026-10-08; sw=lmtpprox;
-	action=mi-m=1; hc=12;
-	hn=cc,content-disposition,content-type,date,feedback-id,from,
-	in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:1KXjdkGRee6BPcWb+KLOanPCir7NKbfNOq6AHMIKUlQ=:PJIb4TRS1B7oZsCjZ5WW1IwlU12EO4LgK9NuEO1Pa68=;
-X-ME-Sender: <xms:ejrTalod7NYQ2bWMzjc4pYGmkcUPmCeUsyVivHwdK9pqU3pxrZSNwg>
-    <xme:ejrTasxPPtpZj3AHXroEzUh1Mivy2hNxU_9eH52OLOw0BDmVRzHeHfDPCr3PfpL3B
-    P38oj0IrwB1eu1GSqVgiF85k9BGkoexGXtKahGZs-bg9eer9_U>
-X-ME-Received: <xmr:ejrTalIZG93txse36Vkm9pKW4KotG_eOjZ0bWezRN5qJGNd3QevjzZyxcnq36UOdhGRKaCBLLW9W9Un1lsHZf1yDRqYCl9RA1ee6JjOEUyU>
-X-ME-Proxy-Cause: dmFkZTGQQdqoEe7fwc0RF/hCGdyTrVrgrv/fnU4qZKHJGS2riRgYXePyEuB8jYXrA/NwyJ
-    Z0NthuPRl5Y8EvXeHQskQv3bZgwpg3P3DaMcRxJA9Uy2j6fVM7G5rRUbOfv4r2nICpiN9T
-    X0ktSIv8L+5R5AbDFYhEqj5bVBhYKCWe4vg3s3upCE6aIT9Nj/exGqzpCERYmci9UUh8jV
-    0yTmhHW0HfhwiX/NzSy8krpjpF+py7AxDTHWhGNtdYoRCsGU9zeLfXFFSVZKZR/9/3U8+d
-    KOcdu4AWDwTNqtwKGmypRSygBg9Cp/pMMSUs3XIvJtqY+jp34ZLjNz3SMHkmPqtamC+LfX
-    tbDZgk4qdZdYrMzZ/Or/KxKRHlIClfmzgPzC8zQXaZWoVYEQIszmvp1ZOKKsvvp7+rBAw7
-    qFZ4eH+wnYDnyVMWHSn44tcGCFfuw1daN2h0Ju5PxuZ3T/cc764GUhjjDd0TBQW7sT0An6
-    ODeqV/0rCvQCyo9JhanqIFltNrHa5MuCYhWGS1g522XwYdbcJZWBLlC1BvwKdTX8372EJ9
-    yNR7lQzyQGk+iX8NG6lnQZqSktMCp70eVEm3D7bgG0U5uE7y+G3uADLVrjsLeOaV1BsHom
-    WM9XsLJb+QJnInfIO9DW5xJArpLY0x1UB7QSpkGEMPE8UBABWEL+vszFEWRQ
-X-ME-Proxy: <xmx:ejrTam68LSS0A4lyRWBLF4ilGVoM2y6SXHxdiv_lf8f7w5F1APGVRg>
-    <xmx:ejrTarxdL3TJJcbmBGiX5dC9OyhaDbB-e6bUEmwQKCTrESCQtb16jw>
-    <xmx:ejrTag-4xYDnRSw7tNeQcA6X-TgZ9Ki1T7Q5vbudXo6J8DCc4JrDmQ>
-    <xmx:ejrTanHC03pYjZ7Xl8J5Jd_YRpGRM6WlO4VR7ItZEBaBo0aq5lYdKA>
-    <xmx:ejrTasXVeMAAS7YPNen_1oiOqc-0BwLu8DV1MsG6XwxjSbNd3iUJ2wYV>
-Feedback-ID: i787e41f1:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sat,
- 17 Oct 2026 05:06:01 -0400 (EDT)
-Date: Sat, 17 Oct 2026 11:05:59 +0200
-From: Greg KH <greg@kroah.com>
-To: CatMe0w <CatMe0w@live.cn>
-Cc: Helge Deller <deller@gmx.de>, Thomas Zimmermann <tzimmermann@suse.de>,
-	Simona Vetter <simona@ffwll.ch>,
-	Albin Babu Varghese <albinbabuvarghese20@gmail.com>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] fbdev: bitblit: Fix glyph clipping when fbcon pans
-Message-ID: <2026101740-concrete-mowing-498b@gregkh>
-References: <TYYP301MB1525C03FE71D47908263EBFCF69A2@TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ajgpPwRD"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1BA291F000C5;
+	Sat, 17 Oct 2026 16:37:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792255054;
+	bh=5YQWSI4ybuP3+qZ2WIH2lJW4okdIiZktG/jNbRw5lxc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ajgpPwRDVpSR9qx+gRAnR4zdOE14k/fr+tSCNxvDM9/65ngZPp1Ifrc7Ip9953irt
+	 Dr7Evyr7Ze7W+5VoACIzLie7isRpU6TtSFfFpVcvc+m2G8p1sau9lo9HZzh1h5i0Ip
+	 5difS6URCxy1Y9xpyryb4Rc2msfm9AYTzYzx7GfMAPMHI01c2ttXn9XJKxdtZhceoF
+	 1wmwj/SY01hBxkRr8Rl5iTuHIIit6IwmzaWT7SoOoTo3h29TsEgZ4Iu+JyS8AfCU9S
+	 W/ogJWye0OPYbC+FiuDh8ELsqPoeH8gT8IXip6qiat3mN8x0M3ZZ3PJAEx+gY8mKCC
+	 YBFouicgvrr4Q==
+Date: Sat, 17 Oct 2026 18:37:28 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	Kiran Gunda <quic_kgunda@quicinc.com>, Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Stephen Boyd <sboyd@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+	Dmitry Baryshkov <lumag@kernel.org>, linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	mfd@lists.linux.dev
+Subject: Re: [PATCH 3/9] dt-bindings: regulator: add Qualcomm LCDB regulator
+Message-ID: <20261017-daffodil-buzzard-of-amplitude-9e817f@quoll>
+References: <20261015-sm8150-display-card-v1-0-5c14928cef29@oss.qualcomm.com>
+ <20261015-sm8150-display-card-v1-3-5c14928cef29@oss.qualcomm.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <TYYP301MB1525C03FE71D47908263EBFCF69A2@TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM>
+In-Reply-To: <20261015-sm8150-display-card-v1-3-5c14928cef29@oss.qualcomm.com>
 
-On Sat, Oct 17, 2026 at 02:53:37AM -0600, CatMe0w wrote:
-> Commit 3637d34b35b2 ("fbdev: Add bounds checking in bit_putcs to fix
-> vmalloc-out-of-bounds") made bit_putcs() clip glyphs to var.yres. When
-> fbcon scrolls by panning, it draws text rows up to var.yres_virtual,
-> so after the first pan most new text is not drawn until the next full
-> redraw. This affects fbdev drivers that set FBINFO_HWACCEL_YPAN or
-> FBINFO_HWACCEL_YWRAP, such as vesafb with the ypan option, when
-> CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION=y.
+On Thu, Oct 15, 2026 at 11:58:40AM +0300, Dmitry Baryshkov wrote:
+> Several Qualcomm PMICs have an LCDB block providing the positive and
+> negative bias rails for LCD panels. It is not supported by Linux, so
+> boards using it either model the rails as dummy fixed regulators and
+> depend on the state left by the bootloader.
 > 
-> Clip to GETVYRES() instead, which fbcon_ud.c and fbcon_ccw.c already
-> use as the drawing area height. When fbcon does not pan, GETVYRES()
-> returns var.yres, keeping the existing bound. When fbcon pans, it
-> returns var.yres_virtual, which the framebuffer memory must cover
-> anyway for panning to work.
+> Describe the LCDB regulator present on the PM8150L. Use it as a fallback
+> compatible for LCDB blocks on PMI632 and PM6150L. PM660L has a different
+> version of LCDB block, so it's not being covered.
 > 
-> Fixes: 3637d34b35b2 ("fbdev: Add bounds checking in bit_putcs to fix vmalloc-out-of-bounds")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: CatMe0w <CatMe0w@live.cn>
+> Assisted-by: LLM
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
 > ---
->  drivers/video/fbdev/core/bitblit.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
+>  .../bindings/regulator/qcom,pm8150l-lcdb.yaml      | 81 ++++++++++++++++++++++
+>  1 file changed, 81 insertions(+)
 
-Hi,
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+Best regards,
+Krzysztof
 
-You are receiving this message because of the following common error(s)
-as indicated below:
-
-- It looks like you did not use your "real" name for the patch on either
-  the Signed-off-by: line, or the From: line (both of which have to
-  match).  Please read the kernel file,
-  Documentation/process/submitting-patches.rst for how to do this
-  correctly.
-
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
-
-thanks,
-
-greg k-h's patch email bot

@@ -1,38 +1,71 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com [209.85.128.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1FA424C10C5;
-	Sun, 18 Oct 2026 14:24:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11E0C396B9A
+	for <linux-fbdev@vger.kernel.org>; Sun, 18 Oct 2026 15:37:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792333475; cv=none; b=HVXJeOwnOVu+cneTcmHxF1/R7sCQMt9S91e7qBUzpUYUbv56uIixhMAQ0Pvs/umpaXwy4Nm5/oyQYdJzfe17qTVxE8mOPY1xCaFs0zYd5L21FmPDNGUb6OTnv/EqL3yYgNQnOFU6huQEtH/K5hIJztr+hbOlDZmnS9XNV7F6iEg=
+	t=1792337878; cv=none; b=Cg4QdbUNgMwu2xTUI09h+r4e3IkoqdxKkWicSz6HulaAtQZsxBhf2BmHZcbsXglkjCe78oWBFKdGXOrHnGJ0aKquVn7FetUqBo6NH10a4HlQm6qcdJq9Y6LqUtfnVJMOth9Z9631eJ3+uBLbc23imWCzf52Zu0+llPX/30cxobA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792333475; c=relaxed/simple;
-	bh=HdTlWCuN5mxA4kDV4+oAu0rp4stUqFqZbZ7iGah99N0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YBGnftZLNqPBZmUcaXIEOG+Fqh9W/TC+VTq8I8aVw1HsSZdtKN0ZIp+OXIO1ZwAPpSyXGuT46b+lvQuqZ8+KFjGFF6ZV6gNDaGu9pTh2H+FhbAznufDfqFqmxo0MFSc6zEWrJS9BWPalptn1aUoPVx5tF2HqLq/L0AnAnxaZ0ok=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=z+ySQzJ7; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792337878; c=relaxed/simple;
+	bh=9NUrm+JR+AwAKle6F1upGyUXgd9H6U/Ig9Dkc6DFvyM=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=o/mghNhACFZZRYbbYJDLhKpNE/VVTmnGTmHyHXHk7CrQi7n48ABBM3fRIU6lLEipAcO/LqhTmGZzdpN4Q4sncyqOBGDp3ouoWjS39CfV1slfPBJ+A1WvUDQyHQztMOSV2YXYGS5XLu3l2E0gcsE+18fb3ytRMdrAYAsFvKJHxrE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=oTX7EzRM; arc=none smtp.client-ip=209.85.128.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="z+ySQzJ7"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 242AC1F000C4;
-	Sun, 18 Oct 2026 14:24:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1792333473;
-	bh=ZfYJa03d83SpS0hjPsK06z1KJODHj9vH3bty8zkM5cw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=z+ySQzJ7EyDJTQrrJKB4V0BAbbLJS57cC8iisAcE0zjNDkOPnR734Ik6UlFb1hO2I
-	 cko5KBIVFDYyKcHbH4XBz2QrSEAvy1O4/+B7NMQx/iyqHlNs6x0HFBhBSsKdOyNowy
-	 PcvDgOgokbmLzHslYXi2BFp5DspEvQi7W85YA5WQ=
-Date: Sun, 18 Oct 2026 16:23:08 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Temitope obabi <obabitemitope765@gmail.com>
-Cc: outreachy@lists.linux.dev, Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: Remove redundant zero assignments
-Message-ID: <2026101838-oaf-bobcat-efa0@gregkh>
-References: <20261018141519.10165-1-obabitemitope765@gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oTX7EzRM"
+Received: by mail-wm1-f43.google.com with SMTP id 5b1f17b1804b1-4a1e3b87ac5so3388995e9.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 18 Oct 2026 08:37:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1792337874; x=1792942674; darn=vger.kernel.org;
+        h=content-disposition:content-type:mime-version:message-id:subject:cc
+         :to:from:date:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=RynPPvVjqTV4luxl9PBymJrn2D7Dl4oqi1D5yk6iPS4=;
+        b=oTX7EzRMBQn/JjnfvYFxNcrEOPdeTp9LppDxeiA8pUmEUO02LeU6SpuLRydlCZoCzA
+         TtZocVRLJRfpXE3px+arx/lbax/dj0gwbjuCdTQjlpYoYzTHplxiw6I8TUCqzatQBcNE
+         0GdWLbv5uC0T0ukej5kgxrMnhYjUplVKhENEq+yoQSEHCeZ31D5GBCDmtmmPPNOh/kYg
+         oxN7RHARrXRzr18tcHszFNsBAzJjSsDw94Uqd7HaA/wq6fcJ+4GgKFC80qt/lw0O1lt8
+         LjoqLJHgSHtuZc4+ZpXkli27CyLwZlIyfd0i/RqI7lqdiYN5i9Vbew4TRw+/7vPJNOzJ
+         BIZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792337874; x=1792942674;
+        h=content-disposition:content-type:mime-version:message-id:subject:cc
+         :to:from:date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=RynPPvVjqTV4luxl9PBymJrn2D7Dl4oqi1D5yk6iPS4=;
+        b=1qeo+drxvmKvh5QVS/9tJb4ugaogXpb4BpDPFv+veqQsDbkg5q6L/LTU+gUZVfJesh
+         EpSg4cW4egYnLQyXHOqBUXe7dpliBg45eyjg35OVAKs18PsDE+b0/8HXJ+6Ob0eiLcD6
+         MEGxs6+g2M5cMDoNEw7h2s329N6UmoixVkUQX52l9HOBd3XCFiaIBCXgaqrJZyvEhW7I
+         aN+NUNfzgD1ARCQ8RTCayNi5sv7Us1G2rGbv5OtVzhFCjOapAJQr3sTifqjhzmBaPnWz
+         f6b5UxtayFvDc0gS8Ey7qUJ31TF9Vf74T4r1PCQ7wb+Mroj5KjYJwGSnB2SdvAvzcmkw
+         7f7A==
+X-Forwarded-Encrypted: i=1; AKwUvBxTXLJBPw610HXY24yJuOYVmcoUB6Pxyxfl0JKcs331nqJgLUE3IAMNG7Pu/2XHO1fiDs2Bos0ikfQ6iA==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJmzhGf40F5oFS1PCzhRk9z6rlwhkipXPM/z9ZA2TAd/Rzxmj3O
+	cFl6aYsrwiXCHfD9Zck5etK7YVCmLHEnIFM99F022GkXwGxuR0FZ/IJBy6wAO2ttjVlzyw==
+X-Gm-Gg: AYBFou1cb+iuSRhjmIfDwm81fD2PHqn0eg6kc76ZPxPwqJiDhEvddb48paNYkWcNF8O
+	h78jXV5lcxAB/Owh3fyclgWy9P8ITDabaLjyg66ToQM6FZkeW4iW7rUcYhcPZXipAzktOtbI3Ja
+	pitZS8K8A9AvCWMnDCFcoU4L/MDvf911NZ2UQEwI4NUdFWUHQfpPZ108Uur96caYm49r38xmfJK
+	cX0hVn4zUN37v+GDnA0kF0Cgx2MoF2oftHYH3oaMbFBatLN8BNXK+Hrj/4cSxm8hlPpk0wd2NRq
+	cQ47xdq8/AgjCXpf0y1ufdLip4Fi9c5fxlJT1ZFgYG8M+NlW9yUSUSSyV7jPmK9iVfNtop93BAg
+	pOA0Q4h2agXdPojJ4sUM8vFR/diNDoVn1BK1SJ9/iTMzK2VQhTvg/2Fz/MT88SpcvQiHfKOCwG1
+	Cl68pCo8i0+V1kGDqcFAm79aiVSUe35+EbPWm19yUIVXH0qjzGlei960MYW3w=
+X-Received: by 2002:a05:600c:548d:b0:4a1:e250:b191 with SMTP id 5b1f17b1804b1-4a1e250b1c7mr41260495e9.17.1792337874062;
+        Sun, 18 Oct 2026 08:37:54 -0700 (PDT)
+Received: from ubuntu ([102.91.81.39])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48dfd503862sm17479115f8f.46.2026.10.18.08.37.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 18 Oct 2026 08:37:53 -0700 (PDT)
+Date: Sun, 18 Oct 2026 16:35:34 +0100
+From: Comfort Oyewole <coyewole7@gmail.com>
+To: gregkh@linuxfoundation.org, andy@kernel.org
+Cc: outreachy@lists.linux.dev, linux-staging@lists.linux.dev,
+	linux-fbdev@vger.kernel.org
+Subject: [PATCH] staging: fbtft: remove trailing semicolons from macro
+ definitions
+Message-ID: <atTnRr-JGIb9eLQR@ubuntu>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -41,33 +74,62 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261018141519.10165-1-obabitemitope765@gmail.com>
 
-On Sun, Oct 18, 2026 at 05:15:18PM +0300, Temitope obabi wrote:
-> The sm750_dev structure is allocated with devm_kzalloc() before
-> sm750fb_setup() is called, so the init_parm fields are already zero.
-> Remove the four assignments that set them to zero again.
-> 
-> Signed-off-by: Temitope obabi <obabitemitope765@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.c | 4 ----
->  1 file changed, 4 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-> index 8b93bfeb217b..21744a5a63fb 100644
-> --- a/drivers/staging/sm750fb/sm750.c
-> +++ b/drivers/staging/sm750fb/sm750.c
-> @@ -833,10 +833,6 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
->  
->  	swap = 0;
->  
-> -	sm750_dev->init_parm.chip_clock = 0;
-> -	sm750_dev->init_parm.mem_clock = 0;
-> -	sm750_dev->init_parm.master_clock = 0;
-> -	sm750_dev->init_parm.power_mode = 0;
+Remove trailing semicolons from macro definitions to allow the
+macros to be used where callers provide their own trailing semicolon
 
-This is good to keep as it is explict what is happening, right?
+Signed-off-by: Comfort Oyewole <coyewole7@gmail.com>
+---
+ drivers/staging/fbtft/fbtft.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-thanks,
+diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
+index 40a7567df1eb..1ab1658e8321 100644
+--- a/drivers/staging/fbtft/fbtft.h
++++ b/drivers/staging/fbtft/fbtft.h
+@@ -277,7 +277,7 @@ static const struct of_device_id dt_ids[] = {					\
+ 	{ .compatible = _compatible },						\
+ 	{},									\
+ };										\
+-MODULE_DEVICE_TABLE(of, dt_ids);
++MODULE_DEVICE_TABLE(of, dt_ids)
+ 
+ #define FBTFT_SPI_DRIVER(_name, _compatible, _display, _spi_ids)		\
+ 										\
+@@ -301,7 +301,7 @@ static struct spi_driver fbtft_driver_spi_driver = {				\
+ 	.id_table = _spi_ids,							\
+ 	.probe = fbtft_driver_probe_spi,					\
+ 	.remove = fbtft_driver_remove_spi,					\
+-};
++}
+ 
+ #define FBTFT_REGISTER_DRIVER(_name, _compatible, _display)                \
+ 									   \
+@@ -350,8 +350,8 @@ static void __exit fbtft_driver_module_exit(void)                          \
+ 	platform_driver_unregister(&fbtft_driver_platform_driver);         \
+ }                                                                          \
+ 									   \
+-module_init(fbtft_driver_module_init);                                     \
+-module_exit(fbtft_driver_module_exit);
++module_init(fbtft_driver_module_init)                                     \
++module_exit(fbtft_driver_module_exit)
+ 
+ #define FBTFT_REGISTER_SPI_DRIVER(_name, _comp_vend, _comp_dev, _display)	\
+ 										\
+@@ -361,11 +361,11 @@ static const struct spi_device_id spi_ids[] = {					\
+ 	{ .name = _comp_dev },							\
+ 	{},									\
+ };										\
+-MODULE_DEVICE_TABLE(spi, spi_ids);						\
++MODULE_DEVICE_TABLE(spi, spi_ids)						\
+ 										\
+ FBTFT_SPI_DRIVER(_name, _comp_vend "," _comp_dev, _display, spi_ids)		\
+ 										\
+-module_spi_driver(fbtft_driver_spi_driver);
++module_spi_driver(fbtft_driver_spi_driver)
+ 
+ /* Debug macros */
+ 
+-- 
+2.53.0
 
-greg k-h

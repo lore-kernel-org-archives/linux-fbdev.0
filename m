@@ -1,80 +1,75 @@
-Received: from mail-dy2-f9.google.com (mail-dy2-f9.google.com [74.125.229.9])
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2169F4AA59E
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 09:44:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.9
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 763914B8270
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 09:49:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792403041; cv=none; b=G7g6aMfNDo+SRqZT3NPAJY7JqsRCxa+q4RInBmIj81H0z8bfYcGhkMbxhul/3H3Xt0Jq+3mDto/KA8TfTTeIEXHe8PY6i5GDrE60arp42kCPbGMVdPsN9MRGPOoY9mxjDm3pszjjghNXNi2K4qHuPEHkvLTILwpI2BjxX9dYVMQ=
+	t=1792403358; cv=none; b=G6/hZVhBi0G91/s5I8/bZ5t6n4VBx0r9t0pLuP5QSC3RcmjT30SKopAPIFVjcTg83lknJzPHO3BfiUjUtak2vVtxh6WfgdErDpm8wKoCs8AWO8JSfSJplNnzRTIMPjDiofLUtME+4kBywTeWURk2aXE84NoP3MASv2e+zIC9qWY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792403041; c=relaxed/simple;
-	bh=eF9ybIO73BvXJx/tfM15TxxY0Adrd/pDfCRrQG6zpJs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BrYMZEJNzGPU0BZykg9j8swT3Qr3lRN3A1ruk8pZdTTht2gBm0rGm41YCNMalwhPmD29hnKzgxkVfOW1o+OJEem9ZMPRGGYoidm04m46X+7GJTMX9xO1fNnbHC8wZf9PB98cs9L87ZEcH1MGyfl8CVHUsw8bnVRNX4lPI9u6y2I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CZLHAr+5; arc=none smtp.client-ip=74.125.229.9
+	s=arc-20240116; t=1792403358; c=relaxed/simple;
+	bh=Djw+CAa4TdmdhY24d0q7OhDkmwT0mOBOFc45rC3up0k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=V1m5HIPA7rwUqHjnPeL6eLHQjIKU0xzqJ2BWK4xslH0hWW/eWN30NATYorruH3cCkCZAgCSfh3U7vdM1ePFo18AAQFX4XvR54FXUm3DLC+DfjCQkQRjSrHPy/D+il9hUBovk/2M1kySA7Hkiji/IvrYlwBySb0/paA8//K7X/n0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=kjIaNhDh; arc=none smtp.client-ip=209.85.128.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CZLHAr+5"
-Received: by mail-dy2-f9.google.com with SMTP id 5a478bee46e88-35fad13ca97so84623eec.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 02:44:00 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kjIaNhDh"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4a1e477fe16so6510875e9.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 02:49:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792403039; x=1793007839; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=SS9kJ1jH1xG6CLAUi3XRMYbxFYxyeHVEus5/yx1itww=;
-        b=CZLHAr+5SX+9O1+UKYUHozqaxF2RfMchhttSCgzxcKinJil1RdzUOe07aDVb89Dfsi
-         ONyShNKWZhj4smiq1Cm8hyyN5E2sRgdpHp0mln5BucMZtPhbmILte6x1yK9sLQQvIIe7
-         Q8IRR+fb+Gqe2GB9lwtoYS4DpAbIDF5dlOH6iUKoNfS0JWxeqYlCTCjE06kH8lcAZl8O
-         r1BOSBW5oqmyA67DDa/5yX5gkDGmdj4sqAKc4CmCNycam4OvLSudgfllbg3LiEnjhWIS
-         XqIJOI3m2k6YEPrQYQ2mZVbp7tuchL7XHn1XavSIEX7Qq5mUgic/Dz19Mq1OtiyHvFTM
-         9Rew==
+        d=gmail.com; s=20251104; t=1792403355; x=1793008155; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=wVwmmSqI00v46zZ18N04BUiAXDw2jjv5hFhr+um5J7s=;
+        b=kjIaNhDhKAIOEtLwjZApMa1KxaqWxsgFHyKiGuvTmrsiOayEUH47oxJXkpWXq4U7nr
+         mkwLFWvbmHpMN9mGJuDyp3vcqjo80rhBfH2lqfsoKlluphO2akFAId6CUolBTALwpvkX
+         PWmFp61zh1YHqzISmMJcqTv6agpsogDuICgNy7bBP3JHQ0LwODI+JuzRe61dKeOa4im3
+         Oxo/kin9jIcbIuJR1D0/G5XoyAxbtE+TMsWPx7CjeJIWo7o4dRMrHptuyfsXTg9zxxHN
+         KCtY/7tQMQYao9x8VIbzepBD2KsEeWchsriUgGCC/PNdvqcuKEt147zNP8DR253BmYir
+         wS7A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792403039; x=1793007839;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SS9kJ1jH1xG6CLAUi3XRMYbxFYxyeHVEus5/yx1itww=;
-        b=qF8lDIJZh0S0cwfFTNOiBt9pZuOk04T+p/kZKplzLIDRjnRAoMc4vVTekMbFX46Dub
-         OYYS1wMRQ20XyqnizG3+5b9qXrwTDapTuTpaeWkJJeX+fr107OQMhmUr1NNtlLxbtd4E
-         3o++QvA8m8K0AQdZY9O0IKU0xeM1zkRXv3C8u9YXVhAGMlPbVAq/qmNzQ7migGhzo1/6
-         7Exxe8oJJdhTMQ+mqi6Q4Qj5dpArDQoeJ4QsadOMduVXsMQJu3gcXYG25sC4ekrZktoY
-         3lUpH/Q6oZ4wAwByTvUyQae9DPVb7Zb0POK2dTe3b64+Lgw4YkhfoGjL331TBRknxfPe
-         sz9Q==
-X-Forwarded-Encrypted: i=1; AKwUvBxgSgSuCpDgZKbJPJf0A79QS5rpSJCrlxvjd4P6FCWtWEoKWnlN8AaqLr8W0oACBeskpJ8esXq2RBgLZQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKoeAITcIfY2jIqE3YrG04bv+l5qx+ouvZ7UKl/WYiIiLqcuzj5
-	HZe8pbHKQ213gFjOf7jVZomxkMj5uNejSy5Qeyhnn/NkJvVU8pimxzKN
-X-Gm-Gg: AYBFou2w2zNGT0DJ44cZPd/FX9kPQJ+Ri8KdHl0AQXOCnfrKcY00rzySxgz+9SXZEuv
-	OzZXYMs8Px4M1NPwR4G+6JYEaWJzmgeAWKMcuAG026y/YErJEfb4oOiS2Kv8J1KOT9JOsZkn6SA
-	sro4G+U+2m0N/b8Z54JgF6eQhYWFF0dIjF/0LpodKpIazTzEh2BFB8E6w0JYbXbw07TipAIJabp
-	PrWZ7Znleo+iSI5uRWOaKRb3hP41zdBAjyHFGZW55veA9DAg3vd/dGJEe+D9r+0dtjt7Y4DLBoA
-	yFBlwze8Bzg0/+3n9YgHCImBRHvtkFRnursrr7Sz86lBTMgdK4mTZTjDPhAeti0PLGK05MezfwW
-	i7qV7zDvXQUdObKLOrnvBf3h/5UGGdNu6sSCCLj7YtcFisf9xoTxXyZeJbycfaqokBLL1YY3oHx
-	o6p5cI0Bpkx1HiwcYfTWwHJk007NetLKR5GfXqCYEA43239+Dl8l74zf0C61MvgY/44vQKdJZbJ
-	7oysG9a4OEE82RyqRub9Q/N+0bHmz4KbxY=
-X-Received: by 2002:a05:7301:6404:b0:360:f13a:ff0e with SMTP id 5a478bee46e88-361a1b539f1mr10748987eec.23.1792403039178;
-        Mon, 19 Oct 2026 02:43:59 -0700 (PDT)
-Received: from blue.tailcc13ef.ts.net (104.194.64.109.16clouds.com. [104.194.64.109])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3607bc950f9sm34370074eec.0.2026.10.19.02.43.56
+        d=1e100.net; s=20260707; t=1792403355; x=1793008155;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=wVwmmSqI00v46zZ18N04BUiAXDw2jjv5hFhr+um5J7s=;
+        b=mKc6rhNC/3W69hHE8BvVAy6sRcSqmjy2iVXgdwMqitLoVMGjnX0uFuVSByj4UPHJYZ
+         Vc6rPdDJJK3hOZ7bG8Bk5x4xkZZBaze3iPAzbkzlMYdO+fFFky2X7S0c6QggJtVYnSya
+         Frql+QX2zk9ER+7rGCDi6r8nkuOahmhzOpy/dXcwQFCVF3884dF/J5THQ3fxM5e3LZ89
+         8/tvjKjy7AXZwdw/9zspEXl6ZFEnx6fpfYVmrMZZnDwVAmaMOZtSmf2btCyufhh2QoSM
+         0e5j+lwX3Mq5xsaWam5hXM31xM6G8N4DUY42GBCJzsc3JzoHiuKZNbX+Uw8pu33Y2WVf
+         RvFQ==
+X-Gm-Message-State: AFq9FYIRmU8P+NXKRNi96WYvJWiYbeuGpfEAzhrwAXmgCzucQy0Uj0Rc
+	S1CId5pnAKScIf1ipcKrACY2GCF+xsV2xRYv/hTiEGwLd9k4Fczg+XMS
+X-Gm-Gg: AYBFou0oORM0qWI0Xb2q24JVwjsO+umH2uB9Wzdu6e2ezErgyvVAAOSmgSJWYz5HNun
+	V6eSVWS9OPfuQFob29xR/rJca2K3E8Z2gdM1fLFS7KW7EL3u6+RfNNwt21QkHzrexX/3nxyIcil
+	wz+CbiDpjAPLq7GQEnLUanwcvKJ9admeGLBXA9XPwBb7uvBIwvpIUxehMEBpwX7jqd6rPt/dllq
+	LyI1IPVBcA4ZSEQvkcYFSDfxC7B9gTlGw9LYeQz0KKPm1GFStWqTv5D3c6wkCy9gt8SQo+7YcoT
+	gI0Xgv28vCjDZxN83NDb+f7vBtl2sB7/oq8xzXoXBQON1xeV2PPgzlkj/mlGbOvFTHX7M5AeE8p
+	ApG8bthjgih1jA324uD2YOdeY2OyCQui0T+W9nbJz0Iw5igtIvJd8uyX2pbmUP3YCZdpg7mHu8h
+	IYTES86+LISxPJ4t8GdW7l8qoZ/J52jjQb3o2pidxS+9u/aXdhl6kpMy0wHGCWSvHQffZPJVkT8
+	GD2/34ua4Y+uwHZambFz1lyxh8=
+X-Received: by 2002:a05:600c:3b1c:b0:4a1:c646:3edc with SMTP id 5b1f17b1804b1-4a1d75f2aedmr149554645e9.11.1792403354550;
+        Mon, 19 Oct 2026 02:49:14 -0700 (PDT)
+Received: from DESKTOP-0KSTGNI.localdomain ([156.213.131.39])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a1ce02d619sm177669655e9.3.2026.10.19.02.49.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2026 02:43:58 -0700 (PDT)
-From: Yao Yiqi <yyaqia@gmail.com>
-To: deller@gmx.de,
-	tzimmermann@suse.de,
-	simona@ffwll.ch
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
+        Mon, 19 Oct 2026 02:49:14 -0700 (PDT)
+From: Temitope obabi <obabitemitope765@gmail.com>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
-	yaoyiqi3@huawei.com,
-	Yao Yiqi <yyaqia@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH v5 3/3] fbcon: Retry rotated font allocation after failure
-Date: Mon, 19 Oct 2026 17:43:31 +0800
-Message-ID: <20261019094331.1128871-4-yyaqia@gmail.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261019094331.1128871-1-yyaqia@gmail.com>
-References: <20261019094331.1128871-1-yyaqia@gmail.com>
+	outreachy@lists.linux.dev,
+	julia.lawall@inria.fr,
+	Temitope obabi <obabitemitope765@gmail.com>
+Subject: [PATCH] staging: sm750fb: Remove redundant NULL and zero assignments in probe
+Date: Mon, 19 Oct 2026 12:48:35 +0300
+Message-ID: <20261019094835.1343-1-obabitemitope765@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -83,41 +78,47 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Yao Yiqi <yaoyiqi3@huawei.com>
+The sm750_dev structure is allocated with devm_kzalloc() just above,
+so its memory is already zeroed. Remove the explicit NULL assignments
+to fbinfo[0] and fbinfo[1] and the zero assignment to mtrr.vram, which
+only set fields that are already zero.
 
-fbcon_rotate_font() records the font, its geometry and the rotation in
-par->rotated before calling font_data_rotate(). If the allocation
-fails, the error path clears par->rotated.buf, but the recorded key
-already looks up to date, so the next call takes the early-out and
-never retries. The rotated putcs/cursor ops keep returning early on
-the NULL buffer, and the console stays blank even after memory is
-available again.
-
-Also test par->rotated.buf in the early-out, so a failed allocation
-is retried on the next call: at the next fbcon_switch(),
-fbcon_modechanged() or font change.
-
-Fixes: e4ef723d8975 ("fbcon: Avoid OOB font access if console rotation fails")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yao Yiqi <yaoyiqi3@huawei.com>
+Signed-off-by: Temitope obabi <obabitemitope765@gmail.com>
 ---
- drivers/video/fbdev/core/fbcon_rotate.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Note: Greg replied to my earlier sm750fb patch that keeping the
+explicit zero assignments is good because it is clear what is
+happening. In that patch the allocation was in a different function.
+Here the assignments are in lynxfb_pci_probe(), just after the
+devm_kzalloc() call and its NULL check, so I think removing them may
+still be useful.
 
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
-index 660a3fa81bae..7afd63dcee7b 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.c
-+++ b/drivers/video/fbdev/core/fbcon_rotate.c
-@@ -25,7 +25,8 @@ int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- 	    par->rotate == par->rotated.buf_rotate &&
- 	    vc->vc_font.width == par->rotated.buf_width &&
- 	    vc->vc_font.height == par->rotated.buf_height &&
--	    vc->vc_font.charcount == par->rotated.buf_charcount)
-+	    vc->vc_font.charcount == par->rotated.buf_charcount &&
-+	    par->rotated.buf)
- 		return 0;
+ drivers/staging/sm750fb/sm750.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 8b93bfeb217b..8702f6313f78 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -969,13 +969,10 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 	if (!sm750_dev)
+ 		return err;
  
- 	par->rotated.fontdata = par->p->fontdata;
+-	sm750_dev->fbinfo[0] = NULL;
+-	sm750_dev->fbinfo[1] = NULL;
+ 	sm750_dev->devid = pdev->device;
+ 	sm750_dev->revid = pdev->revision;
+ 	sm750_dev->pdev = pdev;
+ 	sm750_dev->mtrr_off = g_nomtrr;
+-	sm750_dev->mtrr.vram = 0;
+ 	sm750_dev->accel_off = g_noaccel;
+ 	spin_lock_init(&sm750_dev->slock);
+ 
 -- 
-2.56.0
+2.53.0
+Note: Greg replied to my earlier sm750fb patch that keeping the
+explicit zero assignments is good because it is clear what is
+happening. In that patch the allocation was in a different function.
+Here the assignments are in lynxfb_pci_probe(), just after the
+devm_kzalloc() call and its NULL check, so I think removing them may
+still be useful
 

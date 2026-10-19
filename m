@@ -1,45 +1,43 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B0695083E0;
-	Mon, 19 Oct 2026 14:03:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20C3364A888;
+	Mon, 19 Oct 2026 14:06:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792418610; cv=none; b=N1ze6QBQAwItIvYXdLzsky99MpI7mCMhFVty0slRB5L+ggX0YG3uLmkueH+QboSOiET6kxPbGHBTKpxqQ9daWnOh1zbeW06c+n2hY7toi8Vt/b5Ndo2D9VSEiVeqphKnyDrXGisqSQgQfspdjNwIaeUBdr3602igtSPDkamKM24=
+	t=1792418811; cv=none; b=gXzXDlVwFjp2lmJvgy6E+BFhiq54uUsBChpyxNbietHWrTa7xO+N+XU3Ywv175bl+GulhmwT86PrFL/H5xWJiMfacR7sSARwqqJQXUMv9BaVIGLUwOR6BSBbBv9PCC5DSumAZG74kgjQm2NXY1rEqbBnJcMe93LR9b5hMu0shSY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792418610; c=relaxed/simple;
-	bh=/vk3W0OuB8uzko+mMXFxy4Zv/bmV187ISHDrW5g6WYw=;
+	s=arc-20240116; t=1792418811; c=relaxed/simple;
+	bh=7eHM45NPLVbSB2rWEQrIR/3jDdUUMejk7jeUEPqlOqQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=qxw0+t7t4QKwDPqV3Yey2bpXQ7DkH9VAbwaHas/tSsiFqpHs96pW6/ZgJlws6irhJepdvGiwxW9LW3r7P5N0MpgvzZwMTDgnVb3RXY4pV7bF2zwHRt68U+6FfUHb8tUKsADTcU7EQ4uRZ2PDXcxZVV4761xRtHfWXWi3BHdQLlo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DKSjTdaY; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=goKf0TwP4YTeBlB52ONSjP7iegSh2Af0VVpLs7buxhfhChjnOEo3bFmxvP6Og7OvyKpb98EVfheSgwe7cx0cRqK1hY6+dDlIRV/pWbmnwnhlr/vN2dJE1s9eYsJnC4w10dFm2cG5qB10FBe05R34J5IklMzsHjVmlOctuPzqdwo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O7pnl4xI; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DKSjTdaY"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85F6E1F000C9;
-	Mon, 19 Oct 2026 14:03:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O7pnl4xI"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C4161F000CC;
+	Mon, 19 Oct 2026 14:06:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418606;
-	bh=VcXNbrzKLhYN5V0hkHe94Cash4qRCSavaP+hGPLNDIk=;
+	s=k20260515; t=1792418807;
+	bh=Ka3ZG+0/jaJUIN2HdnBaOl0wFNO/VMkQL9G6JtKgayE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=DKSjTdaYnZ0dDvZYvl+j1Ur5BKSoAUnorFIX1OZsJItLz7bLUawBF6VuBktnSdRjA
-	 4cDEWOGgZfNhZoghNTEIy/pZFliM6Ni4HghFdiIu9SRtjsbNsdMgXyt09FJ5b0N/tX
-	 IOpnaNaZxytmjomimoOp1O7L5yoE9UpFtQEaykvGYVedCddwtIGrjVueNZ1Lfa2BNK
-	 1sCt4y9oXNCtU7NcfhnIdS3lg/EQ9BYz/fI5qzMO1UrBfH5vhMs1WExnOnpiQRCppf
-	 fZlekV5rIQIIz23TBym+kh6bYxTqFZ9rpZtY5e07JzdrT8FY9ifTy8g5bDbwYIGhWA
-	 VmHgzXhLhrDrQ==
+	b=O7pnl4xInEy3Y20FiMePeIDiXxrcjlSQM6GOs/EFrOUljgX/ctYT5VJN6IhvUnL1A
+	 vR8I8KUZsf1mYMkUlhKgzML9SIXsPH0Q8raUvXd4qTcNL5FoeS3HQY6mumktmjrRHD
+	 6rJ8szeHSyBH0xCEvEP0jnJVyNAEsNGxjhthxlzszm111zRgjdKMgt/TcByMtKltag
+	 lTs2qop/cIQide1mcU8Zwj5PMdM2fqzmzW/5UykON9BT5LorL1Zn1Qe5XubkhRpDWm
+	 tLaHzEyKBgFRUgXXXv9fWMb2plDjMdQ5NUDiAntdCiZqH688dhw0xJ0MST0MZTlBI9
+	 XiJVccnVwS9xw==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Helge Deller <deller@gmx.de>,
-	syzbot+0c815b25cdb3678e7083@syzkaller.appspotmail.com,
+Cc: BingKun Yue <yuebingkun@kylinos.cn>,
+	Helge Deller <deller@gmx.de>,
 	Sasha Levin <sashal@kernel.org>,
-	tzimmermann@suse.de,
-	simona@ffwll.ch,
-	dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-5.10] fbcon: Fix KASAN slab-out-of-bounds Read in fbcon_prepare_logo
-Date: Mon, 19 Oct 2026 09:50:59 -0400
-Message-ID: <20261019135441.1420968-368-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-5.10] fbdev: platinumfb: add error checking for ioremap calls
+Date: Mon, 19 Oct 2026 09:53:21 -0400
+Message-ID: <20261019135441.1420968-510-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
 References: <20261019135441.1420968-1-sashal@kernel.org>
@@ -55,361 +53,460 @@ X-stable-base: Linux 6.18.57
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Helge Deller <deller@gmx.de>
+From: BingKun Yue <yuebingkun@kylinos.cn>
 
-[ Upstream commit 94e6a058b16820e02f25e1221a4c4e713ba23550 ]
+[ Upstream commit ba13226fc966004713aed47931db8922b84d1960 ]
 
-Ensure the logo will not exceed the screen size, which then should
-fix a reported KASAN: slab-out-of-bounds Read in fbcon_prepare_logo.
+The ioremap() and ioremap_wt() calls in platinumfb_probe() were not
+checked for failure. If any of these mappings fail, the driver would
+dereference NULL pointers, leading to a kernel panic.
 
-Reported-by: syzbot+0c815b25cdb3678e7083@syzkaller.appspotmail.com
+Add proper error checking and use goto-based cleanup to avoid code
+duplication across the error paths.
+
+Signed-off-by: BingKun Yue <yuebingkun@kylinos.cn>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-The local tree is **6.12.111** (`pending-6.12`). The buggy `logo_lines`
-walk is present here, and the candidate is a 7-line KASAN bounds check
-that applies cleanly.
+## Phase 1: Commit message forensics
 
-===============================================================
-PHASE 1: COMMIT MESSAGE FORENSICS
-===============================================================
+**Step 1.1 — Subject**
+- Record: **[fbdev/platinumfb] [add] error checking for ioremap calls**
+- Subsystem: `fbdev: platinumfb`. Action verb: **add** (defensive
+  checks). Intent: stop using NULL mappings after failed `ioremap()` /
+  `ioremap_wt()`.
 
-**Step 1.1: PARSE THE SUBJECT LINE**
-Record: **[fbcon] [Fix] [KASAN slab-out-of-bounds read in
-fbcon_prepare_logo]**
+**Step 1.2 — Tags**
+- Record (committed message):
+  - `Signed-off-by: BingKun Yue <yuebingkun@kylinos.cn>` (author)
+  - `Signed-off-by: Helge Deller <deller@gmx.de>` (fbdev maintainer)
+- Ignored as pipeline noise: any `[Upstream commit ...]` / `Signed-off-
+  by: Sasha Levin`.
+- Not in the committed message, but present on the mailing-list v1/v2:
+  `Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")`. Helge Deller dropped that
+  tag as having no value (it points at the git epoch, not a real
+  introducing change).
+- No `Reported-by`, `Tested-by`, `Reviewed-by`, `Acked-by`, `Link:`, or
+  `Cc: stable` in the committed message.
+- Absence of `Cc: stable` / `Fixes:` is expected for this review and is
+  not a negative signal.
 
-**Step 1.2: PARSE ALL COMMIT MESSAGE TAGS**
-Record:
-- Reported-by: syzbot+0c815b25cdb3678e7083@syzkaller.appspotmail.com
-- Signed-off-by: Helge Deller \<deller@gmx.de\> (FRAMEBUFFER LAYER
-  maintainer; applied the patch himself)
-- No Fixes:, no Cc: stable, no Reviewed-by/Acked-by/Tested-by, no Link:
-  in the committed message (the syzbot-forwarded submission did include
-  `Link: https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083`)
-- Notable: syzbot + maintainer SOB; absence of Fixes/Cc:stable is
-  expected for this review pipeline
+**Step 1.3 — Body**
+- Record:
+  - **Bug:** `ioremap()` / `ioremap_wt()` in `platinumfb_probe()` are
+    unchecked.
+  - **Symptom:** NULL dereference → kernel panic.
+  - **Root cause:** probe maps framebuffer, platinum registers, and cmap
+    registers, then immediately writes through those pointers
+    (`out_be32`, `fbuffer[0x100000] = ...`).
+  - **Fix approach:** check each mapping, return `-ENOMEM`, goto-based
+    cleanup to avoid duplicated teardown.
+  - **Version info:** none in the body. Hardware is Apple “platinum” on
+    PPC32 Power Mac.
 
-**Step 1.3: ANALYZE THE COMMIT BODY TEXT**
-Record:
-- Bug: calculated logo height can exceed the console buffer, then
-  `fbcon_prepare_logo()` reads past it.
-- Symptom: KASAN slab-out-of-bounds Read (also KFENCE OOB and UAF-class
-  reports on the same syzbot bug).
-- Version info in the message: none. Syzbot shows crashes from Feb 2025
-  through 2026 on upstream, and on linux-5.15.y / 6.1.y / 6.6.y.
-- Root cause as stated: logo not clipped to screen size before the
-  buffer walk.
+**Step 1.4 — Hidden bug fix?**
+- Record: **Yes, a real bug fix**, not style cleanup. The “goto cleanup”
+  wording also **closes a pre-existing resource leak**: on
+  `platinum_init_fb()` failure the old path `iounmap()`’d three mappings
+  and called `framebuffer_release()` but never `release_mem_region()`
+  for the framebuffer or cmap regions. `platinumfb_remove()` does
+  release those regions, but `remove()` is not run after a failed probe.
 
-**Step 1.4: DETECT HIDDEN BUG FIXES**
-Record: Not a hidden fix. Explicit KASAN OOB fix. The later `if
-(logo_lines > vc->vc_bottom)` path already tried to disable an oversized
-logo, but only **after** the out-of-bounds walk.
+---
 
-===============================================================
-PHASE 2: DIFF ANALYSIS - LINE BY LINE
-===============================================================
+## Phase 2: Diff analysis
 
-**Step 2.1: INVENTORY THE CHANGES**
-Record:
-- File: `drivers/video/fbdev/core/fbcon.c` (+7 / −0)
-- Function: `fbcon_prepare_logo()`
-- Scope: single-file surgical fix
+**Step 2.1 — Inventory**
+- Record:
+  - File: `drivers/video/fbdev/platinumfb.c` (~+23 / −8 in
+    `platinumfb_probe()`; ~35 lines net as posted).
+  - Function modified: **`platinumfb_probe()` only**.
+  - Scope: **single-file surgical fix**.
 
-**Step 2.2: UNDERSTAND THE CODE FLOW CHANGE**
-Record: After `logo_lines = DIV_ROUND_UP(logo_height,
-vc->vc_font.height)` the code immediately walked `q - logo_lines *
-cols`. Now it clamps `logo_lines` to `rows` and `new_rows - 1`, and if
-that leaves nothing, sets `logo_shown = FBCON_LOGO_DONTSHOW` and
-returns. Normal path with a logo that already fits is unchanged.
+**Step 2.2 — Code flow**
+- Record:
+  - **Hunk 1 (framebuffer):** `ioremap_wt(..., 0x400000)` was used
+    unconditionally. After: if NULL, `rc = -ENOMEM`, `goto
+    err_release_fb`.
+  - **Hunk 2 (platinum regs):** `ioremap(..., 0x1000)` was used
+    unconditionally. After: if NULL, `goto err_unmap_fb`.
+  - **Hunk 3 (cmap regs):** `ioremap(..., 0x1000)` was used
+    unconditionally. After: if NULL, `goto err_release_cmap`.
+  - **Hunk 4 (init failure / cleanup):** old `platinum_init_fb()`
+    failure only unmapped and released `fb_info`. After: shared labels
+    unmap cmap → release cmap region → unmap platinum regs → unmap
+    framebuffer → release framebuffer region → `framebuffer_release()`.
+    Success path now `return 0` explicitly.
 
-**Step 2.3: IDENTIFY THE BUG MECHANISM**
-Record: **Memory safety / out-of-bounds.** `fb_prepare_logo()` returns a
-pixel height `<= yres`, but `DIV_ROUND_UP(height, font_height)` can be
-one larger than `yres / font_height` (`new_rows`). Example: yres=100,
-font=16 → logo_lines=7, new_rows=6. Then `q - logo_lines * cols` is one
-row before `vc_origin`, and `scr_readw` / `scr_memcpyw` go OOB. The
-existing `logo_lines > vc->vc_bottom` check runs too late.
+**Step 2.3 — Bug mechanism**
+- Record:
+  - **Category:** memory safety (NULL deref) + error-path resource leak.
+  - **Mechanism:** failed `ioremap*` returns NULL; next statements
+    dereference it (`out_be32(&pinfo->platinum_regs->...)`,
+    `fbuffer[0x100000] = 0x34`, `out_8(&pinfo->cmap_regs->addr, ...)`).
+  - **Cleanup:** goto chain matches acquisition order. Nathan Chancellor
+    later had an unused `err_unmap_regs` label removed; the candidate
+    diff is that folded version (no unused label).
 
-**Step 2.4: ASSESS THE FIX QUALITY**
-Record: Obviously correct bounds clamp; 7 lines; no API change.
-`new_rows == 0` yields `new_rows - 1 == -1`, then `logo_lines <= 0`
-bails out. Regression risk is low: at worst the penguin is skipped on
-tiny/odd geometries instead of walking off the buffer. A 2025 RFC (Wang
-ShaoBo) described a related cols-mismatch after `vc_resize()`; this
-clamp does not fully cover that variant, but it does not worsen it, and
-syzbot named this commit as the fix for the 1873-crash report.
+**Step 2.4 — Fix quality**
+- Record:
+  - Obviously correct: each mapping is checked before use; unwind order
+    is right.
+  - Minimal: one probe function, no API/struct changes.
+  - Regression risk: **low**. Same teardown operations already exist on
+    the `platinum_init_fb()` error path and in `platinumfb_remove()`.
+    Extra `release_mem_region()` on probe failure is the missing
+    counterpart of `request_mem_region()`.
+  - Pre-existing (unchanged): `request_mem_region()` for cmap is still
+    unchecked; `dev_set_drvdata()` still happens before
+    `platinum_init_fb()`. Not introduced by this patch.
+  - `rc` is already declared in this tree and is set on every new goto
+    path (`-ENOMEM`) or by `platinum_init_fb()`.
 
-===============================================================
-PHASE 3: GIT HISTORY INVESTIGATION
-===============================================================
+---
 
-**Step 3.1: BLAME THE CHANGED LINES**
-Record: The OOB walk (`q - logo_lines * cols` / `scr_readw` loop) is
-from **^1da177e4c3f41** (v2.6.12 era). `logo_lines = DIV_ROUND_UP(...)`
-is from **416e74ea781359** (Julia Lawall, 2008). This is long-standing
-code, not a recent 6.12-only bug.
+## Phase 3: Git history
 
-**Step 3.2: FOLLOW THE FIXES: TAG**
-Record: No Fixes: tag. The buggy pattern has been in the function for
-~20 years. `6104c37094e7` ("fbcon: Make fbcon a built-time dependency
-for fbdev", 2017) is in this tree (`merge-base --is-ancestor` exit 0);
-Wang’s RFC cited it, but that is a different proposed patch.
+**Step 3.1 — Blame**
+- Record:
+  - Unchecked `ioremap()` of platinum/cmap regs: present since
+    `1da177e4c3f41` (Linux-2.6.12-rc2, 2005).
+  - Framebuffer mapping: `cc5d0189b9ba95` (2005) then `e04e39507c3c3d`
+    (2018, `__ioremap()` → `ioremap_wt()`), still unchecked.
+  - Partial teardown on `platinum_init_fb()` failure: `2b7574da255fef`
+    (2006, “ioremap balanced with iounmap”).
+- The hole has been in this driver for the entire git history, including
+  this 6.12 tree.
 
-**Step 3.3: CHECK FILE HISTORY FOR RELATED CHANGES**
-Record: Related but distinct history in this tree: `a6a00d7e8ffd7` /
-`5c38052680f56` (kzalloc KMSAN false-positive, reverted);
-`250038f5a7207` (2007 vertical overflow when making space for the logo —
-different hunk). No prior clamp of `logo_lines` to `rows`/`new_rows`.
-Standalone, not patch N/M.
+**Step 3.2 — Fixes: tag**
+- Record: mailing-list `Fixes: 1da177e4c3f4` is the epoch commit, not a
+  real regression. Helge dropped it. `1da177e4c3f41` **is** an ancestor
+  of this tree (`git merge-base --is-ancestor` succeeded). The buggy
+  code is here regardless of the tag.
 
-**Step 3.4: CHECK THE AUTHOR'S OTHER COMMITS**
-Record: Helge Deller is FRAMEBUFFER LAYER maintainer (`MAINTAINERS`). He
-authors/applies fbdev fixes regularly in this tree.
+**Step 3.3 — File history**
+- Record: last change touching this file in-tree is `01ecc142ef7c8`
+  (“fbdev: Switch back to struct platform_driver::remove()”). Recent
+  platinumfb work is platform-remove/fb_ops/whitespace, not probe
+  mapping. **Standalone**, not patch N/M.
 
-**Step 3.5: CHECK FOR DEPENDENT/PREREQUISITE COMMITS**
-Record: Uses existing `logo_lines`, `rows`, `new_rows`, `logo_shown`,
-`FBCON_LOGO_DONTSHOW`. No new helpers. `git apply --check` succeeded
-(hunk at line 596, offset −64). Standalone.
+**Step 3.4 — Author**
+- Record: BingKun Yue has **no** other commits in this tree under
+  `drivers/video/fbdev/`. Helge Deller is the fbdev maintainer and
+  signed off. Nathan Chancellor (Clang/build) reviewed the applied
+  version.
 
-===============================================================
-PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
-===============================================================
+**Step 3.5 — Dependencies**
+- Record: uses `ioremap_wt()`, `dev_err()`, `request_mem_region()`,
+  `framebuffer_release()` — all present. **Can apply standalone.**
+  Context in this checkout matches the “before” side of the diff
+  exactly.
 
-**Step 4.1: FIND THE ORIGINAL PATCH DISCUSSION**
-Record: `b4 dig -c 94e6a058b168` →
-https://patch.msgid.link/6a897c8e.dbb3a75c.13dd47.002f.GAE@google.com
-(syzbot-forwarded `#syz test` from deller@kernel.org, 2026-08-22). `b4
-dig -a`: v1 only. lore.kernel.org returned 403; openwall mirror confirms
-the same single-hunk patch. No NAK found. Applied two days later by
-Deller (commit date 2026-08-24).
+---
 
-**Step 4.2: CHECK WHO REVIEWED THE PATCH**
-Record: `b4 dig -w`: recipients were syzbot and linux-
-kernel@vger.kernel.org only. No public Reviewed-by. Weight comes from
-the maintainer applying it, not from a review thread.
+## Phase 4: Mailing list / external research
 
-**Step 4.3: SEARCH FOR THE BUG REPORT**
-Record: https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
-- Status: upstream, C repro, **prio:high**, **1873 crashes**, first
-  2025-02-25
-- Fix commit listed: **94e6a058b168**
-- Patched on 20/29 syzbot instances
-- Stack: `store_bind` → `vt_bind` → `do_bind_con_driver` → `visual_init`
-  → `fbcon_init` → `fbcon_prepare_logo` → `scr_memcpyw`
-- Same title also on linux-5.15.y (C repro), linux-6.1.y, linux-6.6.y
-- Syzbot security assessment: DenialOfService yes, Exploitable yes,
-  Unprivileged no (sysfs `bind` is `S_IWUSR`)
+`b4 dig -c` was not used: the candidate is **not in this checkout**, so
+there is no local SHA to feed it. Thread was recovered from
+lore/openwall/patchew.
 
-**Step 4.4: CHECK FOR RELATED PATCHES AND SERIES**
-Record: Not a series. Related RFC 2025-09-25 from Wang ShaoBo added a
-pointer-vs-`vc_origin` guard in the scroll loop; it was not applied in
-this tree or in the candidate’s parent. Older kzalloc change is
-unrelated (reverted KMSAN false positive).
+**Step 4.1 — Original discussion**
+- Record:
+  - v1 (duplicated cleanup, no gotos):
+    `20260817055625.276500-1-yuebingkun@kylinos.cn`
+  - v2 (goto cleanup, applied): `https://lists.openwall.net/linux-
+    kernel/2026/08/17/346` — Message-ID
+    `20260817063637.306865-1-yuebingkun@kylinos.cn`
+  - Helge Deller: applied v2, dropped the epoch `Fixes:` line, asked for
+    a real name on SOB.
+  - Nathan Chancellor: unused label `err_unmap_regs` warning; suggested
+    deleting it. Helge folded that in. Candidate diff matches the folded
+    result (`err_release_cmap` falls through into
+    `iounmap(platinum_regs)`).
+  - A later “v3” wrongly changed `strscpy` → `strcpy` and reused this
+    subject; reviewers called out the mismatch. **That v3 is not this
+    candidate.**
+  - Merged in Helge’s fbdev pull for **v7.3-rc1**.
+- No NAK. No reviewer `Cc: stable`. No claim this was a production crash
+  report.
 
-**Step 4.5: CHECK STABLE MAILING LIST HISTORY**
-Record: lore.kernel.org/stable 403. No evidence this 2026-08-24 commit
-was already discussed for 6.12.y. The same KASAN title is already
-reproduced on older stable CIs, which supports that 6.12 is affected.
+**Step 4.2 — Recipients**
+- Record: To Helge Deller; Cc `linux-fbdev`, `dri-devel`, `linux-
+  kernel`. Right maintainer and list.
 
-===============================================================
-PHASE 5: CODE SEMANTIC ANALYSIS
-===============================================================
+**Step 4.3 — Bug report**
+- Record: **No user/syzbot report.** Static/code-review finding. Failure
+  mode is still a panic if `ioremap*` fails.
 
-**Step 5.1: IDENTIFY KEY FUNCTIONS IN THE DIFF**
-Record: `fbcon_prepare_logo()` only. Semcode MCP not available.
+**Step 4.4 — Series**
+- Record: Standalone driver fix. Same family of Mac fbdev drivers:
+  `controlfb.c` and `valkyriefb.c` **already** check ioremap failure in
+  this tree. platinumfb is the outlier.
 
-**Step 5.2: TRACE CALLERS**
-Record: Two call sites in this tree:
-1. `con2fb_init_display()` (line 826) — console mapped to a framebuffer,
-   `show_logo`.
-2. `fbcon_init()` (line 1155) — after setting/resizing the VC, if `logo`
-   is set.
+**Step 4.5 — Stable list**
+- Record: lore.kernel.org/stable search returned **403**. **UNVERIFIED**
+  whether this SHA was discussed on stable@. No evidence it was
+  rejected.
 
-`fbcon_init` is `con_init` for fbcon, called from `visual_init()` during
-bind/takeover. `store_bind` is the syzbot trigger (root sysfs write).
-Also runs on normal fbcon takeover at boot when the logo is enabled
-(`!MODULE`).
+---
 
-**Step 5.3: TRACE CALLEES**
-Record: `fb_prepare_logo()`, `scr_readw`/`scr_memcpyw`/`scr_memsetw`,
-`kmalloc`/`kfree`, `update_screen`. The new code only uses `min()` and
-existing `logo_shown`.
+## Phase 5: Semantic / call-chain
 
-**Step 5.4: FOLLOW THE CALL CHAIN**
-Record: Userspace (root) → `sysfs` `vtconN/bind` → `fbcon_init` →
-`fbcon_prepare_logo`. Also boot-time logo on `CONFIG_FRAMEBUFFER_CONSOLE
-&& !MODULE`. Path is real and reproduced.
+**Step 5.1 — Functions**
+- Record: `platinumfb_probe()` only.
 
-**Step 5.5: SEARCH FOR SIMILAR PATTERNS**
-Record: The too-late `logo_lines > vc->vc_bottom` check is the same bug
-class, just after the OOB. No sibling drivers copy this logo-scroll
-logic.
+**Step 5.2 — Callers**
+- Record: `.probe = platinumfb_probe` in `platinum_driver`. Called from
+  platform/OF probe when the node name is `"platinum"`. Boot/device-bind
+  path, not a syscall.
 
-===============================================================
-PHASE 6: CROSS-REFERENCING AGAINST THE LOCAL TREE
-===============================================================
+**Step 5.3 — Callees**
+- Record: `ioremap_wt` / `ioremap`, `request_mem_region` /
+  `release_mem_region`, `iounmap`, `platinum_init_fb()` (VRAM probe +
+  `register_framebuffer()`), `framebuffer_release()`. After a successful
+  map, probe immediately MMIO-writes the mapped addresses.
 
-**Step 6.1: DOES THE BUGGY CODE EXIST IN THIS TREE?**
-Record: Yes. `drivers/video/fbdev/core/fbcon.c` lines 597–604 compute
-`logo_lines` and walk `q - logo_lines * cols` with no clamp. `git merge-
-base --is-ancestor 94e6a058b168 HEAD` is **false** — the fix is not in
-6.12.111. Bug introduced long before 6.12.
+**Step 5.4 — Reachability**
+- Record: Reachable only if `CONFIG_FB_PLATINUM=y` (`bool`, not
+  tristate) on **PPC_PMAC && PPC32** with a `platinum` OF node. Not
+  userspace-triggerable on other machines. If probe runs and `ioremap*`
+  fails, panic is certain.
 
-**Step 6.2: CHECK FOR BACKPORT COMPLICATIONS**
-Record: `git apply --check` **clean** (offset −64 from surrounding-line
-drift / `fbcon_ops`→`fbcon_par` rename already in this tree). Expected
-difficulty: **clean apply**.
+**Step 5.5 — Similar patterns**
+- Record: `controlfb.c` already does `if (!p->cmap_regs ||
+  !p->control_regs || !p->frame_buffer) goto error_out;`. `valkyriefb.c`
+  already does a NULL check after the three ioremaps. Historical
+  analogue: `13b7c0390a5d3` “video: imsttfb: check for ioremap()
+  failures”.
 
-**Step 6.3: CHECK IF RELATED FIXES ARE ALREADY HERE**
-Record: No `logo_lines = min(...)` in this file. The 2007 Geert overflow
-tweak and the kzalloc revert do not clamp logo lines.
+---
 
-===============================================================
-PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
-===============================================================
+## Phase 6: This tree (pending-6.12 / 6.12.111)
 
-**Step 7.1: IDENTIFY THE SUBSYSTEM AND ITS CRITICALITY**
-Record: **fbcon** (`drivers/video/fbdev/core/fbcon.c`), the framebuffer
-console used with `CONFIG_FRAMEBUFFER_CONSOLE` (default follows
-`DRM_FBDEV_EMULATION`). Criticality: **IMPORTANT** — not mm/core, but
-default console path on many DRM/fbdev systems.
+**Step 6.1 — Does the bug exist here?**
+- Record: **Yes.** `drivers/video/fbdev/platinumfb.c` lines 569, 574,
+  578: three unchecked maps, then MMIO at 581–608. `make kernelversion`
+  → **6.12.111**. `git describe HEAD` → `p-6.12-3-gc504cf0baa3d8`.
+  Subject grep on this file history: **commit not present**.
 
-**Step 7.2: ASSESS SUBSYSTEM ACTIVITY**
-Record: Mature; still receiving OOB/NULL/font fixes in this tree
-(`51b8258efe254`, `b5bb2c696e140`, `ac970358c5ca0`). Not staging.
+**Step 6.2 — Backport difficulty**
+- Record: **Clean apply.** All four “before” contexts match this file
+  byte-for-byte.
 
-===============================================================
-PHASE 8: IMPACT AND RISK ASSESSMENT
-===============================================================
+**Step 6.3 — Related fixes already here?**
+- Record: **No** platinumfb ioremap-check. Sibling Mac drivers already
+  have the check; this driver does not.
 
-**Step 8.1: DETERMINE WHO IS AFFECTED**
-Record: Users with framebuffer console (typical desktop/embedded DRM
-fbdev emulation, vkms/syzbot, classic fbdev). Config-specific
-(`FRAMEBUFFER_CONSOLE`), not universal.
+---
 
-**Step 8.2: DETERMINE THE TRIGGER CONDITIONS**
-Record: (1) Console bind/takeover with a logo taller than the text grid
-after integer rounding; (2) syzbot C repro via `vtcon` bind. Common on
-fuzzing and on small/rotated/odd modes. Unprivileged users cannot write
-`bind` (`S_IWUSR`); boot-time logo does not need that.
+## Phase 7: Subsystem context
 
-**Step 8.3: DETERMINE THE FAILURE MODE SEVERITY**
-Record: KASAN slab-out-of-bounds **read** (and related UAF/KFENCE
-reports). Can oops under KASAN/KFENCE; without sanitizers it is still an
-invalid buffer walk. Severity: **HIGH** (memory-safety crash; syzbot
-marked exploitable but not unprivileged).
+**Step 7.1**
+- Record: **fbdev / Apple Platinum**. Criticality: **PERIPHERAL**
+  (legacy PPC32 Power Mac only). Still a first-party in-tree driver, not
+  staging.
 
-**Step 8.4: CALCULATE RISK-BENEFIT RATIO**
-Record: Benefit **high** (stops a reproducible KASAN OOB in a common
-console path). Risk **very low** (7-line clamp, early return already
-used elsewhere in the same function). Ratio strongly favors backport.
+**Step 7.2**
+- Record: File is mature/quiet. Last platinumfb-specific functional
+  change in this tree is older fbdev-ops/platform-remove work. Bug is
+  long-standing, not a new-subsystem leftover.
 
-===============================================================
-PHASE 9: FINAL SYNTHESIS
-===============================================================
+---
 
-**Step 9.1: COMPILE THE EVIDENCE**
+## Phase 8: Impact and risk
 
-FOR:
-- Real, syzbot-reproduced KASAN OOB with C repro, 1873 crashes,
-  prio:high
-- Same bug title on 5.15.y / 6.1.y / 6.6.y — this 6.12 tree still has
-  the unclamped walk
-- Syzbot lists 94e6a058b168 as the fix commit
-- Maintainer-authored, 7 lines, applies cleanly here
-- Fixes a rounding hole (`DIV_ROUND_UP` vs `yres / font_height`) plus
-  any logo taller than the VC
-- No new API/feature; existing `FBCON_LOGO_DONTSHOW` path
+**Step 8.1 — Who is affected**
+- Record: **config- and platform-specific**: 32-bit Power Macintosh with
+  platinum graphics (`CONFIG_FB_PLATINUM`). Tiny population, but those
+  users take this path on every boot.
 
-AGAINST:
-- Short commit message, no public review, no Fixes:
-- Does not fully address the Wang RFC cols-mismatch-after-resize case
-- Trigger via sysfs bind is root-only (boot logo path still matters)
+**Step 8.2 — Trigger**
+- Record: Probe-time `ioremap*` failure (vmalloc/ioremap space
+  exhaustion or mapping rejection). Unprivileged users cannot trigger it
+  except by booting that machine. Uncommon, not theoretical in the “dead
+  code” sense: the next instructions are unconditional dereferences.
 
-UNRESOLVED:
-- Could not read lore.kernel.org (403); used b4 + openwall instead
-- Could not confirm whether post-fix syzbot “last: 2d” crashes are only
-  on the 9 unpatched instances (likely, given 20/29 patched)
+**Step 8.3 — Failure mode**
+- Record: **NULL deref → oops/panic during probe**. Severity: **HIGH**
+  (crash), not a security hole. Secondary: mem-region leak if
+  `platinum_init_fb()` fails after regions were requested.
 
-**Step 9.2: APPLY THE STABLE RULES CHECKLIST**
-1. Obviously correct and tested? **PASS** — clamp is local and readable;
-   syzbot C repro; maintainer applied it
-2. Fixes a real bug that affects users? **PASS** — KASAN OOB, thousands
-   of syzbot hits, stable-tree crashes
-3. Important issue (crash, security, corruption, deadlock)? **PASS** —
-   HIGH memory-safety OOB
-4. Small and contained? **PASS** — +7 lines, one function
-5. No new features or APIs? **PASS**
-6. Can apply to the local tree? **PASS** — buggy code present; `git
-   apply --check` clean
+**Step 8.4 — Risk/benefit**
+- Record:
+  - Benefit: avoid panic and leak on a real (if rare) probe failure;
+    same check sibling drivers already have.
+  - Risk: **very low** (~20 lines, error path only, maintainer-applied,
+    unused-label already folded).
+  - Ratio: favorable. Conservative stable policy still accepts small
+    NULL-deref probe fixes in in-tree drivers.
 
-**Step 9.3: CHECK FOR EXCEPTION CATEGORIES**
-Record: Not a device-ID/quirk/DT/docs exception. It is a normal memory-
-safety bug fix.
+---
 
-**Step 9.4: MAKE YOUR DECISION**
-This is a small, correct bounds check for a long-standing fbcon OOB that
-syzbot can hit on this class of kernels. It belongs in 6.12.y.
+## Phase 9: Synthesis
+
+**Step 9.1 — Evidence**
+
+For:
+- Unchecked `ioremap*` then immediate dereference is a real panic.
+- Bug is in **this** 6.12 tree and dates to 2.6.12-era code.
+- Small, obviously correct, applies cleanly.
+- Also releases mem regions on `platinum_init_fb()` failure (old path
+  leaked them).
+- Maintainer SOB; Nathan’s warning fix is already in the candidate.
+- Sibling `controlfb` / `valkyriefb` already check this.
+
+Against:
+- No crash report, no syzbot, no `Cc: stable`.
+- Hardware is ancient PPC32 Power Mac; ioremap failure is uncommon.
+- Helge treated the epoch `Fixes:` as worthless (not a tracked
+  regression).
+- Mixed into a 7.3-rc1 “fixes and updates” pull with many cleanups.
+
+Unresolved:
+- Exact mainline SHA (not in this tree).
+- Whether stable@ already discussed it (lore/stable 403).
+- `b4 dig` not run (no local SHA).
+
+**Step 9.2 — Stable rules**
+1. Obviously correct and tested? **PASS** — logic is straightforward;
+   maintainer applied it; unused-label fixed.
+2. Real bug affecting users? **PASS** — NULL deref on failed map; probe
+   is the only path this driver has.
+3. Important (crash/security/corruption/deadlock)? **PASS** — kernel
+   panic. User base is small; crash class still qualifies.
+4. Small and contained? **PASS** — one function, one file.
+5. No new features/APIs? **PASS**.
+6. Applies to this tree? **PASS** — context matches; no missing prereqs.
+
+**Step 9.3 — Exceptions**
+- Record: none (not a device ID, quirk, DT, build, or docs patch).
+  Ordinary crash-prevention fix.
+
+**Step 9.4 — Decision**
+This is a surgical NULL-deref/leak fix in code this tree actually runs
+on PPC32 Power Mac. Sibling drivers already do the check. Benefit is a
+avoided panic; risk is negligible. Meets stable rules for **this** 6.12
+checkout.
+
+---
+
+### Problem for stable users
+On Power Macs with Apple platinum graphics, `platinumfb_probe()` maps
+the framebuffer and two register windows and then writes through those
+pointers with no NULL check. A failed `ioremap*` panics instead of
+failing probe. The new labels also `release_mem_region()` on
+`platinum_init_fb()` failure, which the old error path skipped.
+
+### Rules / risk
+Small, maintainer-acked, applies cleanly to 6.12.111, no new API, no
+extra dependencies. Regression risk is limited to probe error paths.
+
+### Concerns
+Rare hardware and no field report; Helge dropped the epoch `Fixes:` tag.
+Those do not remove the panic if mapping fails, and they do not block
+backport to this tree.
 
 Verification:
-- [Phase 1] Parsed tags: syzbot Reported-by; Helge Deller SOB; no
-  Fixes/Cc:stable/review tags in the committed message
-- [Phase 2] Diff: +7 lines in `fbcon_prepare_logo()` after
-  `DIV_ROUND_UP`; clamp `logo_lines` then early return
-- [Phase 3] `git describe HEAD` / Makefile: **6.12.111**, branch
-  pending-6.12
-- [Phase 3] `git blame`: OOB loop from ^1da177e4c3f41; DIV_ROUND_UP from
-  416e74ea781359 (2008)
-- [Phase 3] `git merge-base --is-ancestor 94e6a058b168 HEAD` → not an
-  ancestor (fix absent here)
-- [Phase 3] `git apply --check` of 94e6a058b168 → clean, offset −64
-- [Phase 3] Confirmed no `logo_lines = min` already in this file
-- [Phase 4] `b4 dig -c 94e6a058b168` → msgid
-  6a897c8e.dbb3a75c.13dd47.002f.GAE@google.com; v1 only
-- [Phase 4] Syzbot extid 0c815b25cdb3678e7083: C repro, prio:high, 1873
-  crashes, Fix commit 94e6a058b168
-- [Phase 4] Same KASAN title on linux-5.15.y / 6.1.y / 6.6.y
-- [Phase 5] Callers: `fbcon_init` (line 1155), `con2fb_init_display`
-  (line 826); bind path `store_bind` is `S_IWUSR`
-- [Phase 6] Local function still matches the pre-patch walk at lines
-  597–604
-- [Phase 7] Helge Deller listed as FRAMEBUFFER LAYER maintainer
-- [Phase 8] Failure mode: slab-out-of-bounds read in
-  `scr_memcpyw`/`scr_readw`; severity HIGH
-- UNVERIFIED: full lore.kernel.org thread (HTTP 403); whether every
-  post-Aug-24 syzbot crash is on unpatched instances only
-
-The patch is a 7-line clamp in `fbcon_prepare_logo()` that stops a
-syzbot-reproduced KASAN out-of-bounds read. The buggy walk is in this
-6.12 tree, the fix applies cleanly, and the risk is limited to skipping
-the boot logo when it cannot fit.
+- [Phase 1] Parsed committed tags: author + Helge Deller SOB only; no
+  Reported-by/syzbot.
+- [Phase 1] Openwall v2: original `Fixes: 1da177e4c3f4`; Helge dropped
+  it as valueless.
+- [Phase 2] Diff: three NULL checks + goto teardown in
+  `platinumfb_probe()`; also `release_mem_region` on init failure.
+- [Phase 2] Current probe (lines 569–633) dereferences maps with no
+  checks; cleanup omits mem-region release.
+- [Phase 3] `git blame`: unchecked ioremap since `1da177e4c3f41` /
+  `cc5d0189b9ba95`; `ioremap_wt` from `e04e39507c3c3d`.
+- [Phase 3] `git merge-base --is-ancestor 1da177e4c3f41 HEAD`: yes.
+- [Phase 3] `git log --oneline --grep='add error checking for ioremap'
+  -- drivers/video/fbdev/`: not in this tree.
+- [Phase 3] Author search in fbdev: no other BingKun Yue commits here.
+- [Phase 4] Thread: v2 applied by Helge; Nathan unused-label fold
+  matches candidate; bogus v3 strcpy not this patch.
+- [Phase 4] lore.kernel.org/stable: 403, UNVERIFIED.
+- [Phase 4] `b4 dig`: UNVERIFIED (no local candidate SHA).
+- [Phase 5] Only caller: `platinum_driver.probe`; Kconfig `FB_PLATINUM`
+  depends on `PPC_PMAC && PPC32`, `bool`.
+- [Phase 5] `controlfb.c` / `valkyriefb.c` already check ioremap NULL in
+  this tree.
+- [Phase 6] `git describe HEAD` = `p-6.12-3-gc504cf0baa3d8`; `make
+  kernelversion` = 6.12.111.
+- [Phase 6] Before-context of all four hunks matches this file.
+- [Phase 8] Failure mode: NULL deref oops on probe, severity HIGH;
+  trigger rare but on the only probe path.
+- UNVERIFIED: mainline SHA; stable@ discussion.
 
 **YES**
 
- drivers/video/fbdev/core/fbcon.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/video/fbdev/platinumfb.c | 35 ++++++++++++++++++++++++++------
+ 1 file changed, 29 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 532522c2aed05..903823c9ce567 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -600,6 +600,13 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
- 		erase &= ~0x400;
- 	logo_height = fb_prepare_logo(info, par->rotate);
- 	logo_lines = DIV_ROUND_UP(logo_height, vc->vc_font.height);
-+	logo_lines = min(logo_lines, rows);
-+	logo_lines = min(logo_lines, new_rows - 1);
-+	if (logo_lines <= 0) {
-+		logo_lines = 0;
-+		logo_shown = FBCON_LOGO_DONTSHOW;
-+		return;
+diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+index a08d955d9b439..81fdaa3541db9 100644
+--- a/drivers/video/fbdev/platinumfb.c
++++ b/drivers/video/fbdev/platinumfb.c
+@@ -567,15 +567,30 @@ static int platinumfb_probe(struct platform_device* odev)
+ 	/* frame buffer - map only 4MB */
+ 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+ 	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
++	if (!pinfo->frame_buffer) {
++		dev_err(&odev->dev, "failed to ioremap frame buffer\n");
++		rc = -ENOMEM;
++		goto err_release_fb;
 +	}
- 	q = (unsigned short *) (vc->vc_origin +
- 				vc->vc_size_row * rows);
- 	step = logo_lines * cols;
+ 	pinfo->base_frame_buffer = pinfo->frame_buffer;
+ 
+ 	/* registers */
+ 	pinfo->platinum_regs_phys = pinfo->rsrc_reg.start;
+ 	pinfo->platinum_regs = ioremap(pinfo->rsrc_reg.start, 0x1000);
++	if (!pinfo->platinum_regs) {
++		dev_err(&odev->dev, "failed to ioremap registers\n");
++		rc = -ENOMEM;
++		goto err_unmap_fb;
++	}
+ 
+ 	pinfo->cmap_regs_phys = 0xf301b000;	/* XXX not in prom? */
+ 	request_mem_region(pinfo->cmap_regs_phys, 0x1000, "platinumfb cmap");
+ 	pinfo->cmap_regs = ioremap(pinfo->cmap_regs_phys, 0x1000);
++	if (!pinfo->cmap_regs) {
++		dev_err(&odev->dev, "failed to ioremap cmap registers\n");
++		rc = -ENOMEM;
++		goto err_release_cmap;
++	}
+ 
+ 	/* Grok total video ram */
+ 	out_be32(&pinfo->platinum_regs->reg[16].r, (unsigned)pinfo->frame_buffer_phys);
+@@ -623,13 +638,21 @@ static int platinumfb_probe(struct platform_device* odev)
+ 	dev_set_drvdata(&odev->dev, info);
+ 
+ 	rc = platinum_init_fb(info);
+-	if (rc != 0) {
+-		iounmap(pinfo->frame_buffer);
+-		iounmap(pinfo->platinum_regs);
+-		iounmap(pinfo->cmap_regs);
+-		framebuffer_release(info);
+-	}
++	if (rc != 0)
++		goto err_unmap_cmap;
++
++	return 0;
+ 
++err_unmap_cmap:
++	iounmap(pinfo->cmap_regs);
++err_release_cmap:
++	release_mem_region(pinfo->cmap_regs_phys, 0x1000);
++	iounmap(pinfo->platinum_regs);
++err_unmap_fb:
++	iounmap(pinfo->frame_buffer);
++err_release_fb:
++	release_mem_region(pinfo->rsrc_fb.start, resource_size(&pinfo->rsrc_fb));
++	framebuffer_release(info);
+ 	return rc;
+ }
+ 
 -- 
 2.53.0
 

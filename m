@@ -1,58 +1,58 @@
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 267014A8A11;
-	Mon, 19 Oct 2026 09:20:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8E533E0758
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 09:32:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=192.198.163.7
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792401658; cv=none; b=s3avrFChmVDUAe6WxiBHatzOdJ27Kpsv6yeS/spu2Dx5hieBLath0HyC3vKvEFKcR3T8lqZzdV+T6QWd0PJEAaDOe3L7a7OwlIwJsI5Bv0Ro2ny8H9XM9P5awKJQBMmnuLubVFqvy9sA7tmL05/a2HKyRZ9o2iy8lLu5dvzemqE=
+	t=1792402380; cv=none; b=nkPDicVwhZ3uB8HPevEg9KVsRcpIbJy/RYzrFNLG0cMSdFGhFoa61gGR8WIUxAOn3OHMGKvU93Rh9PAJmA0d6zF+DyysmoezO4gWwwp0IqJwls4bRnkJ2XqptDK0LDypbUyZGTZAVAOWXTUcO0k2fAFClIKJOyzBWZXkoNkSY6M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792401658; c=relaxed/simple;
-	bh=DcmCQr+wPZOsTvW7Bqt3y8moIQ64eG6w0LecBO0EAFA=;
+	s=arc-20240116; t=1792402380; c=relaxed/simple;
+	bh=ZhyEg7g3MPxYgitM/QU3nd+2tn4+kNnAmnRm3uc4nJ4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ueNgkHTPpb91OEkwM1rPczREdjzZG8J+c6Wk4bY23xHGWJPIXzjl6R25fMZp9gYkZ2cz0WMZ16Wh90m3O+DQuD73307YPkCVwrI9ftCKMM/5saBuMDoaaOwDQbNleBVFrVVx9jn62MO2wE7ZRfyyRDrgxtV4Oh9wGA2Qp0m2kXo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EjHjQvm3; arc=none smtp.client-ip=198.175.65.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=cHY8LAPUK/MOl1Mq01yViaTOJS7fduukSDRFTiykjYp3PmDUpPSA4D6tLJQxSk3bqqdM0gnvL03yRoS0XV/H0MYAZJFGAr3d9NPmnwIfG8y5PskS3eTrO/nEb/IginbIuF1sAOjWo0463Jvldu+KFEahhviGTOk897zzhbVdzlM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=MJpB87ZB; arc=none smtp.client-ip=192.198.163.7
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EjHjQvm3"
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="MJpB87ZB"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1792401657; x=1823937657;
+  t=1792402379; x=1823938379;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=DcmCQr+wPZOsTvW7Bqt3y8moIQ64eG6w0LecBO0EAFA=;
-  b=EjHjQvm3wrm1gEvk6q5UjhuvCDkvUOJJsKX5dfY+e1goDLaO3ZGeP+EP
-   X5vrdbve7kaW0t2PA9Zm0P/u+NFquuLY/504kr4Olx32YzaxNizsDOiku
-   9FZ9aYEbk/KVIaCGblt+O4HgPc6xI64jVi1Em0kaS98dqSIDADL6xE4/7
-   dT6kgugc66FLqq4ZIXBk9pVjuxkzgR8/TWLb1evNywN27OcXpn9MRS28H
-   7Eg2jCpNHZOJlRDXPqKwFou6t48tNrqVoj+vhW6RBHhlbYi9rum6nzL0x
-   rrRnpEgPt9weN8wnsTy28UwidUMSUghEXMIVKnlMf4WTfZyKEFwMhsft3
-   g==;
-X-CSE-ConnectionGUID: 0i7m0QJzQvGesS92s7BsiA==
-X-CSE-MsgGUID: GQYxcY8FS1CNYr5FPgD4rg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11939"; a="1089951"
+  bh=ZhyEg7g3MPxYgitM/QU3nd+2tn4+kNnAmnRm3uc4nJ4=;
+  b=MJpB87ZBzzoSUePXTnXz39531owPNq+oD0dlQGaQp/vpH3gYAbtvqqkg
+   /oLaI1O8xlfvlDIAvtjhawgYQGDcpiIcREeOz/eX0LY948iysaTpw7xRB
+   NdWUIxP8lIRaK1d+ItcmbLy5oikFW9viDijIXtuvkfF7S9g0ejSNU68Vc
+   RfXxRTdvmpvGoNBEbUzAiS3zY+j1Ury2MtKdAS+RMxDFbhutsVG2+O2Zo
+   SzUR4OTXuYC16qeY0VLc06sIGleVN6lb031LTnxKERxrn7CqX19LQVRnj
+   bn78bo3lo69R4Pj6U616z8CP4DZo8gEzp86bSic86IL68QT29e1EqQvm6
+   w==;
+X-CSE-ConnectionGUID: xA652XOkTZqpiNugTLZ1lQ==
+X-CSE-MsgGUID: sFA1TvmnT++ibRz1SI2nJg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11939"; a="982712"
 X-IronPort-AV: E=Sophos;i="6.27,167,1787036400"; 
-   d="scan'208";a="1089951"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2026 02:20:56 -0700
-X-CSE-ConnectionGUID: OEcLK07XT8CtbkY6p1I1lA==
-X-CSE-MsgGUID: kKuZ3vV3S+Cvly4mnFZsaw==
+   d="scan'208";a="982712"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2026 02:32:58 -0700
+X-CSE-ConnectionGUID: XUApzBz6RvuCgQ5/r5IXhQ==
+X-CSE-MsgGUID: LcgvO9mSQOSbvrYOtREEBQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,167,1787036400"; 
-   d="scan'208";a="2909163"
+   d="scan'208";a="2377382"
 Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.209])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2026 02:20:53 -0700
-Date: Mon, 19 Oct 2026 12:20:51 +0300
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2026 02:32:57 -0700
+Date: Mon, 19 Oct 2026 12:32:54 +0300
 From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: wrmfwv@163.com
-Cc: andy@kernel.org, gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-	gtl-m <admin@micronull.cn>
-Subject: Re: [PATCH] staging: fbtft: fix syntax errors in macros
-Message-ID: <atXg85m8ukjFuok_@ashevche-desk.local>
-References: <20261018085345.17619-1-wrmfwv@163.com>
+To: Comfort Oyewole <coyewole7@gmail.com>
+Cc: gregkh@linuxfoundation.org, andy@kernel.org, outreachy@lists.linux.dev,
+	linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
+	Julia.Lawall@inria.fr
+Subject: Re: [PATCH v2] staging: fbtft: remove trailing semicolons from macro
+ definitionsandy@kernel.org
+Message-ID: <atXjxn9DzmXQCX8T@ashevche-desk.local>
+References: <atUG5LbCbePRNn5M@ubuntu>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -61,18 +61,17 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261018085345.17619-1-wrmfwv@163.com>
+In-Reply-To: <atUG5LbCbePRNn5M@ubuntu>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Sun, Oct 18, 2026 at 04:53:45PM +0800, wrmfwv@163.com wrote:
+On Sun, Oct 18, 2026 at 06:50:28PM +0100, Comfort Oyewole wrote:
+> Remove trailing semicolons from macro definitions to allow the
+> macros to be used where callers provide their own trailing semicolon.
+> Also confirmed that all current uses of these macros already include
+> their own semicolons.
 
-> checkpatch.pl reported errors regarding unnecessary commas and spaces
-> before closing parentheses in the fbtft_write_reg macro definitions.
-> Remove them to strictly comply with the kernel coding style guidelines.
-
-NAK.
-It's your homework to understand why.
+Yeah, it's v2 and you have still failed to even compile it. Don't bother.
 
 -- 
 With Best Regards,

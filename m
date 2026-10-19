@@ -1,92 +1,277 @@
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA39E489FBA
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 07:15:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C0D13921EC
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 07:24:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792394133; cv=none; b=JRj6netadAWjNP1no5N6DCv3Mlc0s/GfPEdUURlijvuE5DeubKkVBLieAdQ/8h3laZklxtLnaWbYQNPyXLvPAgxHjG5J6pDCjIauVZT43k8Icj7Q4A1EBcvMZcl7J9G9WbBmqthFU+hsrSd31CY+fF1seNGtLH2D8loSLBGL2XE=
+	t=1792394649; cv=none; b=kFGtA3Lq8yL18xWYU9tE01XLd/ZAGX2T5Cp806HTztXmGKtjrAbhSheT2779dewj9OkxPNOcrVtjt4dxyG1KAmxwXh8N8FbZCdvrA/35NMvxafrspe0+zG2n1xdpUmR7ZIB2bCKIzEdH9+fZfGvuieYPZQqtUxiWcaW2qDcx7DY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792394133; c=relaxed/simple;
-	bh=euPFOSxanSFPi2Zpw8qrz5T/8Lck+/AaQ85OLuB2GjM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b+Vvhe2n+m9M4wG+45DMZ08E5yKe7PXUQz8QAA4fWl+ynVFg/p9CAJsLB++68V04QXFnT+pVruylhYLcx/hDLXIslUXXc6kC5fIORkMS1lKk2r4MjiCT1ZOyavXyyRtbpZ1+vNKxiU+MLGzD2GcGIzevoUzWjpbjGi5jX+4iAbY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fpPLG/AX; arc=none smtp.client-ip=209.85.128.49
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1792394649; c=relaxed/simple;
+	bh=DVWaVtn1LGUgXd1scHZ13VwTmb+uHLWAEJvTnge2Rlk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MnAQ3wk4asmO5QTJCiIO+EtnLXRwXP0Z8U2k0uQzcJNrzSvQ/lm6TydhtxwW+J0p/r2Ir9tM+w2wOq6fupeKpDCj/RJ1cUA5hq7C+/aJ4gWLGKDho19yOG+lTCJaAUek9hfJzuDo0Yrv50HrMDqVQ5MvdQMFtEzuT8ZaAZoXCFA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=C1qjR02F; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=IDR+GW07; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=EwmrhD0A; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ehJ6Kr0c; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fpPLG/AX"
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4a19cba5c14so18994405e9.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 00:15:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792394130; x=1792998930; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Lh/rfye6OYmPn+uBQKUoMnQVrTTMgM/f0x7DqQdwTJE=;
-        b=fpPLG/AX6yoNyg5VCeqU4BWdJzCvxxyZiSyv0UawbPrST4yjFouWr7wmMVeHvdKISc
-         25X4BPUVTVJhAgKASEeIhRo5u3kXpb0m7z4jUW72kqsIWQEwSBvkB1k6OPnhMuql874i
-         MzctTMqOPeWLrjzws+BQ8C19M4r6uKGxmo5tk3d2u5OyT/eFqY6ijdZVNftl3vE+UysR
-         /Rm830Vx4Fo8eMrn513vWdN5DdwRUrW0Veljxu5BGCzvrhE1c6SQqf+IgwOuJjsWaWkk
-         tvLbDzxtJF5amMzq6UxfQkcPTsaLG0nn/2Gkj2lTObM5HoARt4z6II+ZgvRhaD6T8wTU
-         klAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792394130; x=1792998930;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Lh/rfye6OYmPn+uBQKUoMnQVrTTMgM/f0x7DqQdwTJE=;
-        b=P5K1rXOIlcCK44YWJSbH5HOlwsFK3NvLMFl9qwZugvkw6E7licbBM5V3WjugxaaWws
-         2oMXxcSy8/xHRNOQsxSUzPR+1DGyNDizYYpBBZmLj2dnuruO1fyYgzIOSg1wJ39tBX8x
-         mR+NEvIGeMfcFq4TyZ1fFv8NQB4kBVamf8lPZx73WHiAIJQRkQYnnHXaec1CCUSUQhzh
-         9/olwWuiePNpxPrggfs0fExsonjHjBpDFGL0wJOQy5+OgXFRZiPWkMup2XzgA3Qa9NXj
-         QrzIrvio2jVkkD3SdXrytaeFO0PDYNiFbITqMh0SK6tFMX1Aed3/aTSkBqLPR+VBO/sU
-         qPwg==
-X-Forwarded-Encrypted: i=1; AKwUvBxAu/bE8EDAhsvnsk1HpvTvXr3fsO6P9kkJdO8J36JlcQBEllf7UxxDXnYgZAyKrpczXNejQB44b9bFOQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJnNV/lsB5qeJLEb/kr6T5cG6eLWH5PMf1Lsywo/pOPRcDX0Tc9
-	xn08+JsNYU4UCm4JqWQpwfh4DMjb9xGzHwIPX+U04jkphTMAxs+Pq2d4nldEI4LbsNzZtvjj
-X-Gm-Gg: AYBFou18+zlIaN8RfN1QjED0Bn0yK0JWecypVL0fzbTVmg59IM4rozzt4A83zV5YMWv
-	OZvPygZSioH0h8NAY+GWNROA1Xehd0J7WoM7A+Za0IGkXF8ZUtPDsFKCh+jXtrQmF6X5L2OZirI
-	7DAbZWCDaCoWxz2i99WREKCbuh6Qx8a+oLhLERoARO8CO75PCWzG1BG9LEU0UM0RFF2kwTRx/JY
-	ZqX1g3ZJVaT1RuVQ/pAVUzEX2ANxMGY2+lH3gO6gkEBB0D98596BHCw/a+yp6faXdM5jqaDRTAw
-	dzqhNQpqbLz6AJjlAyMjwnpuGdm3q8zTEn1hsLMzYWt++f1KPMVg/E29jAtTrl0lcjfzTin6uHD
-	X/3ryxznl7PxQt5qTBe8K3D93g9dbQVbGOWy++vGbtXeCZ8/c3TNUb2pknj5/jWg16Q0yc3WzbC
-	GzRNZhROnHliCaWlKWC9Bchq+7KaujfpVwbeT7XjCrk4+7H/iE1q/eEUdG6l2uZBm/W4o=
-X-Received: by 2002:a05:600c:348f:b0:4a1:e774:370c with SMTP id 5b1f17b1804b1-4a1e7743940mr39926855e9.30.1792394129754;
-        Mon, 19 Oct 2026 00:15:29 -0700 (PDT)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a1cc642573sm208220875e9.2.2026.10.19.00.15.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2026 00:15:29 -0700 (PDT)
-Date: Mon, 19 Oct 2026 10:15:25 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Comfort Oyewole <coyewole7@gmail.com>
-Cc: gregkh@linuxfoundation.org, andy@kernel.org, outreachy@lists.linux.dev,
-	linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: remove trailing semicolons from macro
- definitions
-Message-ID: <atXDjUmhI38WQhaJ@stanley.mountain>
-References: <atTnRr-JGIb9eLQR@ubuntu>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="C1qjR02F";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="IDR+GW07";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="EwmrhD0A";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ehJ6Kr0c"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 3E8C01F7BD;
+	Mon, 19 Oct 2026 07:24:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1792394646; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=X/2Kjoo/a5eGfK0HNZFMQdW7lR0A2kfejW8MU//7JDE=;
+	b=C1qjR02FouHgH4jgWbipKIKW5V1zJ0IWA8oL2U+Dt3zC2cvl5m6qvnt9IovYz0N2+koylg
+	vwbaL0PEHroqFI8gr3MN7yXPAG3evGrpQVPlZk0a3USg2PCKmx78VpxcSc3gEPCBMFfw+a
+	2PEAAkwozvJ830AhUHizvFTXIu3v53w=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1792394646;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=X/2Kjoo/a5eGfK0HNZFMQdW7lR0A2kfejW8MU//7JDE=;
+	b=IDR+GW07HK2pJ1n8S5iBVB5WkP9AiQaM7mqp6I5B/Yxa1pFZoGQvkFC1Uv60w5ulJAC5vn
+	bGq+g8lnb1FZT1Ag==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=EwmrhD0A;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ehJ6Kr0c
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1792394645; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=X/2Kjoo/a5eGfK0HNZFMQdW7lR0A2kfejW8MU//7JDE=;
+	b=EwmrhD0AzaoRHGrAY47RdsW0C9Xo6XB4h6Ta6VhOWNhZiC5aijZM/s1ZLIneJSfNCp3v59
+	vsCAv8SiiIBeBUQ4YsOjq8PIZSNOmFYqAQ8/3VXAoGw0dM5cZ5T8Uwe3WEEUfvF0Rub+Hx
+	25mumFuYiNLpu1XZsAuzOxmj9Yjc/hw=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1792394645;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=X/2Kjoo/a5eGfK0HNZFMQdW7lR0A2kfejW8MU//7JDE=;
+	b=ehJ6Kr0cuibb+HIwS2SraKfbs0AA6H3KZUwCxXqM1F83+Hz+iDYs/Wm4LQ/lO/J3Nksi9R
+	W2hqhTCS6B+Co5Bw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id F1BFA134B3;
+	Mon, 19 Oct 2026 07:24:04 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id w4ZxM5TF1WrtHgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 19 Oct 2026 07:24:04 +0000
+Message-ID: <33fd4c60-43f4-4055-838e-a37e58ab70dc@suse.de>
+Date: Mon, 19 Oct 2026 09:24:04 +0200
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <atTnRr-JGIb9eLQR@ubuntu>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/5] fbdev/au1100fb: Use FB blanking constants
+To: Helge Deller <deller@gmx.de>, adaplas@gmail.com, michal.simek@amd.com
+Cc: linux-fbdev@vger.kernel.org
+References: <20261009161814.120480-1-tzimmermann@suse.de>
+ <20261009161814.120480-2-tzimmermann@suse.de>
+ <3ae4590b-c420-480f-a6a2-79700bf20a1a@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <3ae4590b-c420-480f-a6a2-79700bf20a1a@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: 3E8C01F7BD
+X-Rspamd-Action: no action
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.50 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
+	MX_GOOD(-0.01)[];
+	MIME_TRACE(0.00)[0:+];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FREEMAIL_TO(0.00)[gmx.de,gmail.com,amd.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCPT_COUNT_THREE(0.00)[4];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:email,suse.de:dkim]
+X-Spam-Flag: NO
+X-Spam-Score: -4.50
 
-On Sun, Oct 18, 2026 at 04:35:34PM +0100, Comfort Oyewole wrote:
-> Remove trailing semicolons from macro definitions to allow the
-> macros to be used where callers provide their own trailing semicolon
-> 
+Hi
 
-This doesn't match what the patch does.  I'm surprised that this code
-compiles with all the semi-colons removed, honestly.  :P
+Am 18.10.26 um 15:52 schrieb Helge Deller:
+> Hi Thomas,
+>
+> On 10/9/26 18:05, Thomas Zimmermann wrote:
+>> Fbdev and its drivers use FB_BLANK constants for controlling the
+>> display's blanking state. Semantics differ to similar VESA blanking
+>> constants.
+>>
+>> Replace the VESA constants in au1100fb with FB_BLANK.
+>
+> I understand that this series drops the VESA constants.
+> That seems logical and correct, but....
+>
+>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> ---
+>>   drivers/video/fbdev/au1100fb.c | 18 +++++++++---------
+>>   1 file changed, 9 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/drivers/video/fbdev/au1100fb.c 
+>> b/drivers/video/fbdev/au1100fb.c
+>> index 39f86ffb1ae3..6c375f389fbd 100644
+>> --- a/drivers/video/fbdev/au1100fb.c
+>> +++ b/drivers/video/fbdev/au1100fb.c
+>> @@ -424,15 +424,15 @@ static int au1100fb_fb_blank(int blank_mode, 
+>> struct fb_info *fbi)
+>>         switch (blank_mode) {
+>>   -    case VESA_NO_BLANKING:
+>> +    case FB_BLANK_UNBLANK:
+>>           /* Turn on panel */
+>>           fbdev->regs->lcd_control |= LCD_CONTROL_GO;
+>>           wmb(); /* drain writebuffer */
+>>           break;
+>> -
+>> -    case VESA_VSYNC_SUSPEND:
+>> -    case VESA_HSYNC_SUSPEND:
+>> -    case VESA_POWERDOWN:
+>> +    case FB_BLANK_NORMAL:
+>> +    case FB_BLANK_VSYNC_SUSPEND:
+>> +    case FB_BLANK_HSYNC_SUSPEND:
+>> +    case FB_BLANK_POWERDOWN:
+> I don't understand (this is not the fault of this/your patch),
+> how this enum in fb.h works:
+>
+> enum {
+>         /* screen: unblanked, hsync: on,  vsync: on */
+>         FB_BLANK_UNBLANK       = VESA_NO_BLANKING,
+>
+>         /* screen: blanked,   hsync: on,  vsync: on */
+>         FB_BLANK_NORMAL        = VESA_NO_BLANKING + 1,
+>
+>         /* screen: blanked,   hsync: on,  vsync: off */
+>         FB_BLANK_VSYNC_SUSPEND = VESA_VSYNC_SUSPEND + 1,
+>
+>         /* screen: blanked,   hsync: off, vsync: on */
+>         FB_BLANK_HSYNC_SUSPEND = VESA_HSYNC_SUSPEND + 1,
+>
+>         /* screen: blanked,   hsync: off, vsync: off */
+>         FB_BLANK_POWERDOWN     = VESA_POWERDOWN + 1
+>
+>
+> In vesa.h we have:
+> /* VESA Blanking Levels */
+> enum vesa_blank_mode {
+>         VESA_NO_BLANKING        = 0,
+> #define VESA_NO_BLANKING        VESA_NO_BLANKING
+>         VESA_VSYNC_SUSPEND      = 1,
+> #define VESA_VSYNC_SUSPEND      VESA_VSYNC_SUSPEND
+>         VESA_HSYNC_SUSPEND      = 2,
+> #define VESA_HSYNC_SUSPEND      VESA_HSYNC_SUSPEND
+>         VESA_POWERDOWN          = VESA_VSYNC_SUSPEND | 
+> VESA_HSYNC_SUSPEND,
+> #define VESA_POWERDOWN          VESA_POWERDOWN
+>         VESA_BLANK_MAX          = VESA_POWERDOWN,
+>
+>
+> for example this one:
+>         /* screen: blanked,   hsync: on,  vsync: off */
+>         FB_BLANK_VSYNC_SUSPEND = VESA_VSYNC_SUSPEND + 1,
+> which is effectively:
+>         FB_BLANK_VSYNC_SUSPEND = VESA_HSYNC_SUSPEND,
+> which seems wrong.
+>
+> Am I missing something?
 
-regards,
-dan carpenter
+No worries, it's super-confusing.
+
+- FB_BLANK_ describes CRTC state plus monitor state. VESA_ only 
+describes monitor state and assumes that the CRTC is off.
+
+- FB_BLANK_UNBLANK means "monitor on and send pixels".  There is no VESA 
+equivalent for this mode, because all VESA constants assume that the 
+stream if pixel data has been disabled.
+
+- FB_BLANK_NORMAL means "monitor on, but do not send pixels". This 
+corresponds to VESA_BLANK_NO_BLANKING, but has a different integer value.
+
+- The FB_BLANK_*_SUSPEND and _POWERDOWN constants correspond to the VESA 
+constants of similar name. But they are all off by one.
+
+Therefore some of the drivers (au1100fb) use VESA_NO_BLANKING when they 
+mean FB_BLANK_UNBLANK. Others (xilinxfb) get it wrong and use 
+VESA_POWERDOWN when they should use FB_BLANK_POWERDOWN.
+
+Best regards
+Thomas
+
+
+>
+> Helge
+>
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
 
 

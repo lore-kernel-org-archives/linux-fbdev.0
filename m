@@ -1,123 +1,93 @@
-Received: from mail-dl2-f7.google.com (mail-dl2-f7.google.com [74.125.229.135])
+Received: from mail-dy2-f5.google.com (mail-dy2-f5.google.com [74.125.229.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 982114A7CB8
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 09:02:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.135
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C5E249BD71
+	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 09:12:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792400554; cv=none; b=QhjiT72k7PBZ7C54kXSMaLsrCsZAxKLZ2pelO1mSxKZQRA+CsDeMAJe3ifwnzJKUhP+KYJ/pROqqC26UuGaXJzoONI5cbGyXSlcckhnjfeFsdgy4OAwfpVRXwIVtI7SsvSWv41N5Cw9JkEYoyEDVmGEqP62IwDv34MWRADfQdSE=
+	t=1792401179; cv=none; b=Gv3oFBTk5JqCdE/4mQdIJesn9Yzf+T9VR3dgX4v3onDqzHB3RbtR++jQjIUi9/9cDxuq/guvUXPrwHNalW0EbCf6yVsNkiutd62j0H6VBt2MWrvAN7/jqOCnfpy+Tmi9F6fgl9CmOQOAthTXfwTeFMlOO/Z9E52iB1LZ9qu0Ydw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792400554; c=relaxed/simple;
-	bh=eF9ybIO73BvXJx/tfM15TxxY0Adrd/pDfCRrQG6zpJs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=F/iIurod+qR5dqRphYzXlGjCDAmQNNdecVjIRAuGi2hEsZSu9mOS9vViQWSYcTxLUyZqewBqHnBepTjEftsh3zhfMNpztNzVWxoWnAWH2o5O7Umj//s8TSDAN7HXaeDUvdIjEMOZtpJAZRKqt2aonKw6uJnnGT7qpo2ocWN/8iI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZK/ENO2r; arc=none smtp.client-ip=74.125.229.135
+	s=arc-20240116; t=1792401179; c=relaxed/simple;
+	bh=t/h5DpMhUIYeLONHjlycBELUNoQmFT3rwegVO/JrzCw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=G9d50Pz3s0OmT9KwXkHC8KGoBpufwSijKCrUPwUE7Vzkrrrp/klKzdmL3f7T0fcYKaIILTuhjteQqdCQEReMVq8YsA0gYdEH9gxGZo1LyBefMsonLsMANQ0eSvgD6M5UnPVWRlmchG40P6JAE6iQqdakznC0dng9uyIqHhnZRQI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=h/P2EyqG; arc=none smtp.client-ip=74.125.229.5
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZK/ENO2r"
-Received: by mail-dl2-f7.google.com with SMTP id a92af1059eb24-139b659a45eso508016c88.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 02:02:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h/P2EyqG"
+Received: by mail-dy2-f5.google.com with SMTP id 5a478bee46e88-3535a54c09bso1832202eec.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 02:12:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792400549; x=1793005349; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=SS9kJ1jH1xG6CLAUi3XRMYbxFYxyeHVEus5/yx1itww=;
-        b=ZK/ENO2rN2TZeuiApTi0/qB8qiJrAAE80GgDWCvwwP8dL2ZTy5i9Pz70z+UeUgJHby
-         3S82CcH+cC2/NhwZMF+7sjc5KClPEX4F62m3AiHAklTrePFYeYBOXfZWdvi+3FIfPFuW
-         M9ncQRUKVqiwm+ka4lz3IPyb5po/cjid+qotIGvWmO+QqfGS2VI3s05NC+e4tQzBzaf7
-         s0BSHTbM5+L7ObnGu29xgI7kNK97H+PbSL2Dhk3GjrYkISoyYPkJezBUMfKZKNT9H0ol
-         BjDWF60CSZX/owIN7DtTj9UJsHBHWXu8ZQpsV615J01bKdv4skcv+IbR6dTiedNIp5Qk
-         J7rQ==
+        d=gmail.com; s=20251104; t=1792401177; x=1793005977; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=t/h5DpMhUIYeLONHjlycBELUNoQmFT3rwegVO/JrzCw=;
+        b=h/P2EyqG+vz/k5AG6bPvlzBTpbXciM8oS4PXFPyqt0gyHmhbnqh/x1ZCDItJLnJSvv
+         FHphneFX6sD1g1iyvN1I4vIly2ZNj02BmotmVvzZgIGzPOIrmeJQx1Ha+XfDQI40LrBz
+         qkP+UfQLzZc6oN36YZ1/vp1Bpc58q01to4oFpb2Et3bqBM6ZegHZPQigoFfxslIxEr2n
+         8UiWvDJL9gweZSzWbSeU18GjVYnOKalGoU75jeFOW8oNeTmkmo9gZGagpgd7ATOtQ6ct
+         pBTa3lAf4SgawdmIZCRfne9FW8otDRf5tQDJIuACHZD05aHwe0sqpBMOCJvCSOMYEQMC
+         BVBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792400549; x=1793005349;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SS9kJ1jH1xG6CLAUi3XRMYbxFYxyeHVEus5/yx1itww=;
-        b=D3UEbTTTczuBYiu46iUpx0Q2GMsMsQDB+9QDbY8eWN1hKc2xOkXVQ4SweG7815vFPc
-         gEuVVNxn+Ol/eh7jLNmD6PwAy2Ykb92JVK3pibO0cwqxTg+t2XCGEHE2Axl5bLeo3KHa
-         4FU7Vl33AEF7dAl/3LpzuOU3nm5Py8GsmeOVPtVGctjEq1bwuNjt7tl2DdnXoehT8lOr
-         Ba3Mr5uXevepc3GvKIPEsCzwUulzBX4TmhzHKXV1vusMnZdlOvAGjnUsqag8bkpkhM19
-         g52WNb5pduDiE0WF9LhupKRNaxYERLyHuxzHfiT7oSt2fMRrx82Ap8/h6FTzuazsuqnj
-         HDMQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxVkvy8Mjm9kUkfLxguBsurpXDBg1AjyabaA4lG9ChgUZ99Cf008x7ZU1hnaLZ+4xqwNkjwvoSHefRoQw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLtcCFCYuqnWhnvd23ipAR8jjDV2p7ZVF6t9L/2M6XitDNiABiz
-	XdCa/BiFa3uf2JlqOY/us5b9NCfWPCO9eNjQi2GWnqsE0Bgc+BlttC3L
-X-Gm-Gg: AYBFou2Gt6p0Fu8kaSQYW6VWAaVpHDVSy7RvPS0rLokAjGX8VCa0ODm3KmQY6e/1ksO
-	NG2s4B1N8qsDM2JVUpNPb74SKLgaCJE4qPPItcWooYLeziNT9yzm1i1t2N7Pn4vTNrWgFZ6jT8W
-	QiyFMmAMC370MlSzNA2c//IM6fC+XwhzdKltHw83xhtADXdLwcxLpEqpyCgZPaEEGIuIbHEV0Bb
-	0sla9t+teT/hMIgXbBilW9Dmn6lS2wRXjnRKtHYg4yqtD335nLHpjbWWU5Ib4s9rF7I15FKnuOW
-	DKcFEOzUxNHXaQcwpMWXg3ZS5KMrbAOXocUQiDbBfUfzRtDJBDGLLI0e8ufHcQ0TSyeK9umRbFF
-	jEniRAtSFgz9Fi2F7V2rrM7XqlyhPUTpmivk5hF1X5DsCrozo18X+5PEBblKPW8I3dFg7gbsR2D
-	cdPjoxI2IJ4r0Bj1s3skU71ErSr8qMODg6U8cI6+gw6JTTn0WoJV2Gt2NEkdxCtM3FtEYzqZcwY
-	igCsjW1oYEIgqJgsXmPQzA1N78p6/upcbs=
-X-Received: by 2002:a05:7022:eb44:10b0:14e:d0ba:7569 with SMTP id a92af1059eb24-1850c502379mr10698378c88.6.1792400549264;
-        Mon, 19 Oct 2026 02:02:29 -0700 (PDT)
-Received: from blue.tailcc13ef.ts.net (104.194.64.109.16clouds.com. [104.194.64.109])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1831ba424a6sm27085064c88.17.2026.10.19.02.02.25
+        d=1e100.net; s=20260707; t=1792401177; x=1793005977;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=t/h5DpMhUIYeLONHjlycBELUNoQmFT3rwegVO/JrzCw=;
+        b=JyqJEnCtAF3Zxhz8RGlDU05WHrU8ojbB5KeLDkxUvcM7l8VJeTjstpwSEYQE3/I2TB
+         O5SyEbCE7rQY0Y7tVtocN7jqL/3tjOC49o0jyzl/RY/319Jxnd6WcikBN8xejIFtTmNh
+         6ByIgYklO6WuxFlxH666lJEayAk4lejiTgUSMt/oFOmzkCUOEEdY6DzkKKyiZSjzxLLz
+         sHWfmIO8Ud+iRbZlErGbd6fSIwgpIZ6XWcNB4zQG8bx2cUmG4n2RYcqaVsz55qpmFIyS
+         rVQBEZUKMjq5lIspkgjK29wVQuhI7UbRdgs5HttQApJ0yIUxSYtt20zAY38MgtmThEjd
+         agWA==
+X-Forwarded-Encrypted: i=1; AKwUvBzCY5rA10bwsL5OPHidix8vt7blZf7HT9OmN+3eVc9qQ6Pbz+wf5NmBcxoBlM/9lmSNt9cTkOxzFXeCGw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKA7NcyZn3oGa72J7ZdN3/6bTfQ4lBF+fAnyYE+IxRaTeV7JU0N
+	h+ULrN/JZ9IeaVwty5TcTCM2PCTjn8UJvmZpiYmDzOW0CylabN7g1Ev5
+X-Gm-Gg: AYBFou1tJKUVkF+qA043En/EN3eXB8mo2oVuIJkTC3+dNvkCX7IEZ+ufHNrc6DpJurc
+	ok2xBk+bKfocRLiXpQymUGQMmYlonIefxrHg8tS7haJq36cZeNGAsfSgFq71SI3KAKGaBOdaEFN
+	5vnfkMpq6fVEJ3d66xTECfI58ynnM4HLlrH1FbUbHLPHqA9YkMqdKIjjA/wt1g7CMj1oIJ4pGkN
+	Uo2NRUZN4roGW9VMk9P+KPA1i8tQMPOuN+O1V6UUAzxgjTZIK++1LP2CVm1q8b5H/E7tVOuAuIv
+	tOZJU4hU62iBELoxXxw93lmfVsz8SGqt/pPIiFox5Ye0xf4BJZQY5u9yGyOmJmZOfqvNlmWEndd
+	vxj4e/LDpO2HbbBpqdn8MGc3NYIBaEiA2Pk4gCjRpGTR2UPJ+sPs37O2uLim//JuzjzT3QPwSt4
+	cpMNmW9+DxDFbPXZcs07wbIjEeDVlHLOsKsPPzPT0mBa4f6CdRUPHuPXlIc7Hw+ltxycuoiJCPi
+	3PVDji2riM=
+X-Received: by 2002:a05:7300:d588:b0:35f:4780:518e with SMTP id 5a478bee46e88-361a16609bdmr11651555eec.16.1792401177429;
+        Mon, 19 Oct 2026 02:12:57 -0700 (PDT)
+Received: from blue (104.194.64.109.16clouds.com. [104.194.64.109])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-360819be413sm30693119eec.13.2026.10.19.02.12.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2026 02:02:28 -0700 (PDT)
-From: Yao Yiqi <yyaqia@gmail.com>
-To: deller@gmx.de,
-	tzimmermann@suse.de,
-	simona@ffwll.ch
-Cc: dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	yaoyiqi3@huawei.com,
-	Yao Yiqi <yyaqia@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH v4 3/3] fbcon: Retry rotated font allocation after failure
-Date: Mon, 19 Oct 2026 17:02:06 +0800
-Message-ID: <20261019090206.1094958-4-yyaqia@gmail.com>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261019090206.1094958-1-yyaqia@gmail.com>
-References: <20261019090206.1094958-1-yyaqia@gmail.com>
+        Mon, 19 Oct 2026 02:12:56 -0700 (PDT)
+Date: Mon, 19 Oct 2026 17:12:52 +0800
+From: yyaqia@gmail.com
+To: Helge Deller <deller@gmx.de>, tzimmermann@suse.de, simona@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, yaoyiqi3@huawei.com, stable@vger.kernel.org
+Subject: Re: [PATCH v3 1/3] fbcon: Include font geometry in the rotated font
+ cache
+Message-ID: <atXeFarSzZcJmThe@blue>
+References: <20261016073023.490430-1-yyaqia@gmail.com>
+ <20261016073023.490430-2-yyaqia@gmail.com>
+ <b93a87be-f55d-45e9-8705-74a5c63600ab@gmx.de>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b93a87be-f55d-45e9-8705-74a5c63600ab@gmx.de>
 
-From: Yao Yiqi <yaoyiqi3@huawei.com>
+On 2026-10-18 16:05, Helge Deller wrote:
+> I've replaced the v1 version of this series with this v3 version
+> in fbdev/for-next git tree for further testing.
 
-fbcon_rotate_font() records the font, its geometry and the rotation in
-par->rotated before calling font_data_rotate(). If the allocation
-fails, the error path clears par->rotated.buf, but the recorded key
-already looks up to date, so the next call takes the early-out and
-never retries. The rotated putcs/cursor ops keep returning early on
-the NULL buffer, and the console stays blank even after memory is
-available again.
+Sorry, the patch was not good enough, Zimmermann reviewed the code and I
+did some modification after that. So we might need to switch to v4
+version, sadly. Anyway, appreciate your continuous work for testing.
 
-Also test par->rotated.buf in the early-out, so a failed allocation
-is retried on the next call: at the next fbcon_switch(),
-fbcon_modechanged() or font change.
-
-Fixes: e4ef723d8975 ("fbcon: Avoid OOB font access if console rotation fails")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yao Yiqi <yaoyiqi3@huawei.com>
----
- drivers/video/fbdev/core/fbcon_rotate.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
-index 660a3fa81bae..7afd63dcee7b 100644
---- a/drivers/video/fbdev/core/fbcon_rotate.c
-+++ b/drivers/video/fbdev/core/fbcon_rotate.c
-@@ -25,7 +25,8 @@ int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
- 	    par->rotate == par->rotated.buf_rotate &&
- 	    vc->vc_font.width == par->rotated.buf_width &&
- 	    vc->vc_font.height == par->rotated.buf_height &&
--	    vc->vc_font.charcount == par->rotated.buf_charcount)
-+	    vc->vc_font.charcount == par->rotated.buf_charcount &&
-+	    par->rotated.buf)
- 		return 0;
- 
- 	par->rotated.fontdata = par->p->fontdata;
--- 
-2.56.0
-
+Thanks,
+Yao Yiqi

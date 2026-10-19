@@ -1,76 +1,58 @@
-Received: from mail-dy2-f5.google.com (mail-dy2-f5.google.com [74.125.229.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C5E249BD71
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 09:12:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.229.5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 267014A8A11;
+	Mon, 19 Oct 2026 09:20:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.175.65.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792401179; cv=none; b=Gv3oFBTk5JqCdE/4mQdIJesn9Yzf+T9VR3dgX4v3onDqzHB3RbtR++jQjIUi9/9cDxuq/guvUXPrwHNalW0EbCf6yVsNkiutd62j0H6VBt2MWrvAN7/jqOCnfpy+Tmi9F6fgl9CmOQOAthTXfwTeFMlOO/Z9E52iB1LZ9qu0Ydw=
+	t=1792401658; cv=none; b=s3avrFChmVDUAe6WxiBHatzOdJ27Kpsv6yeS/spu2Dx5hieBLath0HyC3vKvEFKcR3T8lqZzdV+T6QWd0PJEAaDOe3L7a7OwlIwJsI5Bv0Ro2ny8H9XM9P5awKJQBMmnuLubVFqvy9sA7tmL05/a2HKyRZ9o2iy8lLu5dvzemqE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792401179; c=relaxed/simple;
-	bh=t/h5DpMhUIYeLONHjlycBELUNoQmFT3rwegVO/JrzCw=;
+	s=arc-20240116; t=1792401658; c=relaxed/simple;
+	bh=DcmCQr+wPZOsTvW7Bqt3y8moIQ64eG6w0LecBO0EAFA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G9d50Pz3s0OmT9KwXkHC8KGoBpufwSijKCrUPwUE7Vzkrrrp/klKzdmL3f7T0fcYKaIILTuhjteQqdCQEReMVq8YsA0gYdEH9gxGZo1LyBefMsonLsMANQ0eSvgD6M5UnPVWRlmchG40P6JAE6iQqdakznC0dng9uyIqHhnZRQI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=h/P2EyqG; arc=none smtp.client-ip=74.125.229.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=ueNgkHTPpb91OEkwM1rPczREdjzZG8J+c6Wk4bY23xHGWJPIXzjl6R25fMZp9gYkZ2cz0WMZ16Wh90m3O+DQuD73307YPkCVwrI9ftCKMM/5saBuMDoaaOwDQbNleBVFrVVx9jn62MO2wE7ZRfyyRDrgxtV4Oh9wGA2Qp0m2kXo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com; spf=pass smtp.mailfrom=intel.com; dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b=EjHjQvm3; arc=none smtp.client-ip=198.175.65.18
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h/P2EyqG"
-Received: by mail-dy2-f5.google.com with SMTP id 5a478bee46e88-3535a54c09bso1832202eec.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 02:12:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792401177; x=1793005977; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=t/h5DpMhUIYeLONHjlycBELUNoQmFT3rwegVO/JrzCw=;
-        b=h/P2EyqG+vz/k5AG6bPvlzBTpbXciM8oS4PXFPyqt0gyHmhbnqh/x1ZCDItJLnJSvv
-         FHphneFX6sD1g1iyvN1I4vIly2ZNj02BmotmVvzZgIGzPOIrmeJQx1Ha+XfDQI40LrBz
-         qkP+UfQLzZc6oN36YZ1/vp1Bpc58q01to4oFpb2Et3bqBM6ZegHZPQigoFfxslIxEr2n
-         8UiWvDJL9gweZSzWbSeU18GjVYnOKalGoU75jeFOW8oNeTmkmo9gZGagpgd7ATOtQ6ct
-         pBTa3lAf4SgawdmIZCRfne9FW8otDRf5tQDJIuACHZD05aHwe0sqpBMOCJvCSOMYEQMC
-         BVBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792401177; x=1793005977;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=t/h5DpMhUIYeLONHjlycBELUNoQmFT3rwegVO/JrzCw=;
-        b=JyqJEnCtAF3Zxhz8RGlDU05WHrU8ojbB5KeLDkxUvcM7l8VJeTjstpwSEYQE3/I2TB
-         O5SyEbCE7rQY0Y7tVtocN7jqL/3tjOC49o0jyzl/RY/319Jxnd6WcikBN8xejIFtTmNh
-         6ByIgYklO6WuxFlxH666lJEayAk4lejiTgUSMt/oFOmzkCUOEEdY6DzkKKyiZSjzxLLz
-         sHWfmIO8Ud+iRbZlErGbd6fSIwgpIZ6XWcNB4zQG8bx2cUmG4n2RYcqaVsz55qpmFIyS
-         rVQBEZUKMjq5lIspkgjK29wVQuhI7UbRdgs5HttQApJ0yIUxSYtt20zAY38MgtmThEjd
-         agWA==
-X-Forwarded-Encrypted: i=1; AKwUvBzCY5rA10bwsL5OPHidix8vt7blZf7HT9OmN+3eVc9qQ6Pbz+wf5NmBcxoBlM/9lmSNt9cTkOxzFXeCGw==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKA7NcyZn3oGa72J7ZdN3/6bTfQ4lBF+fAnyYE+IxRaTeV7JU0N
-	h+ULrN/JZ9IeaVwty5TcTCM2PCTjn8UJvmZpiYmDzOW0CylabN7g1Ev5
-X-Gm-Gg: AYBFou1tJKUVkF+qA043En/EN3eXB8mo2oVuIJkTC3+dNvkCX7IEZ+ufHNrc6DpJurc
-	ok2xBk+bKfocRLiXpQymUGQMmYlonIefxrHg8tS7haJq36cZeNGAsfSgFq71SI3KAKGaBOdaEFN
-	5vnfkMpq6fVEJ3d66xTECfI58ynnM4HLlrH1FbUbHLPHqA9YkMqdKIjjA/wt1g7CMj1oIJ4pGkN
-	Uo2NRUZN4roGW9VMk9P+KPA1i8tQMPOuN+O1V6UUAzxgjTZIK++1LP2CVm1q8b5H/E7tVOuAuIv
-	tOZJU4hU62iBELoxXxw93lmfVsz8SGqt/pPIiFox5Ye0xf4BJZQY5u9yGyOmJmZOfqvNlmWEndd
-	vxj4e/LDpO2HbbBpqdn8MGc3NYIBaEiA2Pk4gCjRpGTR2UPJ+sPs37O2uLim//JuzjzT3QPwSt4
-	cpMNmW9+DxDFbPXZcs07wbIjEeDVlHLOsKsPPzPT0mBa4f6CdRUPHuPXlIc7Hw+ltxycuoiJCPi
-	3PVDji2riM=
-X-Received: by 2002:a05:7300:d588:b0:35f:4780:518e with SMTP id 5a478bee46e88-361a16609bdmr11651555eec.16.1792401177429;
-        Mon, 19 Oct 2026 02:12:57 -0700 (PDT)
-Received: from blue (104.194.64.109.16clouds.com. [104.194.64.109])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-360819be413sm30693119eec.13.2026.10.19.02.12.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2026 02:12:56 -0700 (PDT)
-Date: Mon, 19 Oct 2026 17:12:52 +0800
-From: yyaqia@gmail.com
-To: Helge Deller <deller@gmx.de>, tzimmermann@suse.de, simona@ffwll.ch
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, yaoyiqi3@huawei.com, stable@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] fbcon: Include font geometry in the rotated font
- cache
-Message-ID: <atXeFarSzZcJmThe@blue>
-References: <20261016073023.490430-1-yyaqia@gmail.com>
- <20261016073023.490430-2-yyaqia@gmail.com>
- <b93a87be-f55d-45e9-8705-74a5c63600ab@gmx.de>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.b="EjHjQvm3"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1792401657; x=1823937657;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=DcmCQr+wPZOsTvW7Bqt3y8moIQ64eG6w0LecBO0EAFA=;
+  b=EjHjQvm3wrm1gEvk6q5UjhuvCDkvUOJJsKX5dfY+e1goDLaO3ZGeP+EP
+   X5vrdbve7kaW0t2PA9Zm0P/u+NFquuLY/504kr4Olx32YzaxNizsDOiku
+   9FZ9aYEbk/KVIaCGblt+O4HgPc6xI64jVi1Em0kaS98dqSIDADL6xE4/7
+   dT6kgugc66FLqq4ZIXBk9pVjuxkzgR8/TWLb1evNywN27OcXpn9MRS28H
+   7Eg2jCpNHZOJlRDXPqKwFou6t48tNrqVoj+vhW6RBHhlbYi9rum6nzL0x
+   rrRnpEgPt9weN8wnsTy28UwidUMSUghEXMIVKnlMf4WTfZyKEFwMhsft3
+   g==;
+X-CSE-ConnectionGUID: 0i7m0QJzQvGesS92s7BsiA==
+X-CSE-MsgGUID: GQYxcY8FS1CNYr5FPgD4rg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11939"; a="1089951"
+X-IronPort-AV: E=Sophos;i="6.27,167,1787036400"; 
+   d="scan'208";a="1089951"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2026 02:20:56 -0700
+X-CSE-ConnectionGUID: OEcLK07XT8CtbkY6p1I1lA==
+X-CSE-MsgGUID: kKuZ3vV3S+Cvly4mnFZsaw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,167,1787036400"; 
+   d="scan'208";a="2909163"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.209])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2026 02:20:53 -0700
+Date: Mon, 19 Oct 2026 12:20:51 +0300
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: wrmfwv@163.com
+Cc: andy@kernel.org, gregkh@linuxfoundation.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+	gtl-m <admin@micronull.cn>
+Subject: Re: [PATCH] staging: fbtft: fix syntax errors in macros
+Message-ID: <atXg85m8ukjFuok_@ashevche-desk.local>
+References: <20261018085345.17619-1-wrmfwv@163.com>
 Precedence: bulk
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -79,15 +61,21 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b93a87be-f55d-45e9-8705-74a5c63600ab@gmx.de>
+In-Reply-To: <20261018085345.17619-1-wrmfwv@163.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On 2026-10-18 16:05, Helge Deller wrote:
-> I've replaced the v1 version of this series with this v3 version
-> in fbdev/for-next git tree for further testing.
+On Sun, Oct 18, 2026 at 04:53:45PM +0800, wrmfwv@163.com wrote:
 
-Sorry, the patch was not good enough, Zimmermann reviewed the code and I
-did some modification after that. So we might need to switch to v4
-version, sadly. Anyway, appreciate your continuous work for testing.
+> checkpatch.pl reported errors regarding unnecessary commas and spaces
+> before closing parentheses in the fbtft_write_reg macro definitions.
+> Remove them to strictly comply with the kernel coding style guidelines.
 
-Thanks,
-Yao Yiqi
+NAK.
+It's your homework to understand why.
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+

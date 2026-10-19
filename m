@@ -1,45 +1,45 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 760335E215C;
-	Mon, 19 Oct 2026 14:02:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B0695083E0;
+	Mon, 19 Oct 2026 14:03:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792418549; cv=none; b=gZzFJYJr0E72p5rlArC4lT/PZouZhx0JvJPyI854h0U74bIUfG9G0lLaACibK+SvCtIRBSJ76r4UhZYPGCkLemf4IwmuSk82MhGHLiA3ZhrOeCluyozILMxQhaE9lhhsZqipl57Wvbyxxqdhl6D0rSeuOLALQ9A80nQZ3KZ4K4k=
+	t=1792418610; cv=none; b=N1ze6QBQAwItIvYXdLzsky99MpI7mCMhFVty0slRB5L+ggX0YG3uLmkueH+QboSOiET6kxPbGHBTKpxqQ9daWnOh1zbeW06c+n2hY7toi8Vt/b5Ndo2D9VSEiVeqphKnyDrXGisqSQgQfspdjNwIaeUBdr3602igtSPDkamKM24=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792418549; c=relaxed/simple;
-	bh=vKtA7JRfO70+rdfogeVXY2fLuLw5H3B9c4LIWICzq5Y=;
+	s=arc-20240116; t=1792418610; c=relaxed/simple;
+	bh=/vk3W0OuB8uzko+mMXFxy4Zv/bmV187ISHDrW5g6WYw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=WIDFCQ+hM7MdUQ/0LU31F98PGhBgD2XMZNFiJ1ZuEph8OdCtL3zbPrsNHbBcBuj9a2qJhiiBgB74061WRcdnuBlWTqQafexNOUzkTSVfJCWZk3x0gMH3NwSaIOHv5Sjad5OZZC98yl75evh0Jl8Yb2L5K6WWRpKgSepoXfEY8Sg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Bu5ppNYx; arc=none smtp.client-ip=100.103.45.18
+	 MIME-Version:Content-Type; b=qxw0+t7t4QKwDPqV3Yey2bpXQ7DkH9VAbwaHas/tSsiFqpHs96pW6/ZgJlws6irhJepdvGiwxW9LW3r7P5N0MpgvzZwMTDgnVb3RXY4pV7bF2zwHRt68U+6FfUHb8tUKsADTcU7EQ4uRZ2PDXcxZVV4761xRtHfWXWi3BHdQLlo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=DKSjTdaY; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Bu5ppNYx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5EFC71F000C7;
-	Mon, 19 Oct 2026 14:02:25 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="DKSjTdaY"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85F6E1F000C9;
+	Mon, 19 Oct 2026 14:03:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1792418546;
-	bh=2Yx0E8RRn1cWZ8BEo/BfdquUwBZonkPGH7EBNzQe+3M=;
+	s=k20260515; t=1792418606;
+	bh=VcXNbrzKLhYN5V0hkHe94Cash4qRCSavaP+hGPLNDIk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=Bu5ppNYxaPrOn1juxuqzMmeSqr9139wHh3FM2FajtVrqMm9p+stSmWZAC69E2+HyQ
-	 pFsNcahAQ92BPqnm+8Q1e+PeOyRgfFHZHJS9/TDyimUbN+1Ro71QiPOvlfZh9EmUYy
-	 i5OF56Q8k9/sunOsp/MrEJV60I+eWSeLp0rcYDFfT/gjqGG6wEtuu+dtfl9UfXQPRI
-	 P77iRcPNH6YyJ3E8c5eD53ggXL8BEkgjdQtrP9OvwPVWUVGvHkUjuOtNaRIHH6BBhB
-	 8QhvwrjfF7wXIRmVtgOlUNO8I/cNJAFe9HlvJDBBrDZcmpxGR3vSUMhABi9gYjgUL5
-	 V65MkBZX9swaA==
+	b=DKSjTdaYnZ0dDvZYvl+j1Ur5BKSoAUnorFIX1OZsJItLz7bLUawBF6VuBktnSdRjA
+	 4cDEWOGgZfNhZoghNTEIy/pZFliM6Ni4HghFdiIu9SRtjsbNsdMgXyt09FJ5b0N/tX
+	 IOpnaNaZxytmjomimoOp1O7L5yoE9UpFtQEaykvGYVedCddwtIGrjVueNZ1Lfa2BNK
+	 1sCt4y9oXNCtU7NcfhnIdS3lg/EQ9BYz/fI5qzMO1UrBfH5vhMs1WExnOnpiQRCppf
+	 fZlekV5rIQIIz23TBym+kh6bYxTqFZ9rpZtY5e07JzdrT8FY9ifTy8g5bDbwYIGhWA
+	 VmHgzXhLhrDrQ==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: Andreas Kemnade <andreas@kemnade.info>,
-	sashiko-bot@kernel.org,
-	Helge Deller <deller@gmx.de>,
+Cc: Helge Deller <deller@gmx.de>,
+	syzbot+0c815b25cdb3678e7083@syzkaller.appspotmail.com,
 	Sasha Levin <sashal@kernel.org>,
-	linux-omap@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
+	tzimmermann@suse.de,
+	simona@ffwll.ch,
 	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-5.10] fbdev: omap2: dsi: do not copy isr table
-Date: Mon, 19 Oct 2026 09:50:16 -0400
-Message-ID: <20261019135441.1420968-325-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.18-5.10] fbcon: Fix KASAN slab-out-of-bounds Read in fbcon_prepare_logo
+Date: Mon, 19 Oct 2026 09:50:59 -0400
+Message-ID: <20261019135441.1420968-368-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261019135441.1420968-1-sashal@kernel.org>
 References: <20261019135441.1420968-1-sashal@kernel.org>
@@ -55,66 +55,58 @@ X-stable-base: Linux 6.18.57
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Andreas Kemnade <andreas@kemnade.info>
+From: Helge Deller <deller@gmx.de>
 
-[ Upstream commit 31875c51c31edec57b3620f278680c23a823763b ]
+[ Upstream commit 94e6a058b16820e02f25e1221a4c4e713ba23550 ]
 
-To te able to unregister stuff from isrs, the corresponding table was
-copied.  Nobody seems to unregister stuff that way, so it does not help.
-But there are stack-allocated objects passed to these isrs giving chances
-of UAF of these objects if irqs are unregistered while they are handled,
-so better do not copy that table.
+Ensure the logo will not exceed the screen size, which then should
+fix a reported KASAN: slab-out-of-bounds Read in fbcon_prepare_logo.
 
-Suggested-by: sashiko-bot@kernel.org
-Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+Reported-by: syzbot+0c815b25cdb3678e7083@syzkaller.appspotmail.com
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-This is a UAF fix in the OMAP2 fbdev DSI IRQ path. The same change is
-already in this 6.12 tree for the DRM copy of the driver; the fbdev copy
-of the bug is still present.
+The local tree is **6.12.111** (`pending-6.12`). The buggy `logo_lines`
+walk is present here, and the candidate is a 7-line KASAN bounds check
+that applies cleanly.
 
 ===============================================================
 PHASE 1: COMMIT MESSAGE FORENSICS
 ===============================================================
 
 **Step 1.1: PARSE THE SUBJECT LINE**
-Record: `[fbdev/omap2/dsi] [do not copy] [stop copying the DSI ISR table
-before invoking handlers]`
+Record: **[fbcon] [Fix] [KASAN slab-out-of-bounds read in
+fbcon_prepare_logo]**
 
 **Step 1.2: PARSE ALL COMMIT MESSAGE TAGS**
 Record:
-- `Suggested-by: sashiko-bot@kernel.org` (static-analysis bot; this is
-  the original trigger, not a user crash report)
-- `Signed-off-by: Andreas Kemnade <andreas@kemnade.info>` (author)
-- `Signed-off-by: Helge Deller <deller@gmx.de>` (fbdev maintainer)
-- No `Fixes:` tag (expected for this review queue)
-- No `Cc: stable@vger.kernel.org`
-- No `Reported-by:`, `Tested-by:`, `Reviewed-by:`, or `Link:`
-- Ignore `Signed-off-by: Sasha Levin` / `[Upstream commit ...]` if
-  present in candidate packaging; they are not part of the technical
-  decision
+- Reported-by: syzbot+0c815b25cdb3678e7083@syzkaller.appspotmail.com
+- Signed-off-by: Helge Deller \<deller@gmx.de\> (FRAMEBUFFER LAYER
+  maintainer; applied the patch himself)
+- No Fixes:, no Cc: stable, no Reviewed-by/Acked-by/Tested-by, no Link:
+  in the committed message (the syzbot-forwarded submission did include
+  `Link: https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083`)
+- Notable: syzbot + maintainer SOB; absence of Fixes/Cc:stable is
+  expected for this review pipeline
 
 **Step 1.3: ANALYZE THE COMMIT BODY TEXT**
 Record:
-- Bug: ISR table was memcpy’d so handlers could unregister themselves,
-  then the copy was walked after dropping `irq_lock`.
-- Author claim: nothing unregisters from ISR context, so the copy is
-  unused for its stated purpose.
-- Failure mode: stack-allocated objects (`DECLARE_COMPLETION_ONSTACK`,
-  `dsi_packet_sent_handler_data` on stack) are passed as ISR `arg`. If
-  unregister/return happens while the IRQ handler still walks the copy,
-  those objects are used after free.
-- No kernel-version range in the message.
-- Root cause: lockless copy of function+arg pointers that alias stack
-  objects.
+- Bug: calculated logo height can exceed the console buffer, then
+  `fbcon_prepare_logo()` reads past it.
+- Symptom: KASAN slab-out-of-bounds Read (also KFENCE OOB and UAF-class
+  reports on the same syzbot bug).
+- Version info in the message: none. Syzbot shows crashes from Feb 2025
+  through 2026 on upstream, and on linux-5.15.y / 6.1.y / 6.6.y.
+- Root cause as stated: logo not clipped to screen size before the
+  buffer walk.
 
 **Step 1.4: DETECT HIDDEN BUG FIXES**
-Record: Not a disguised cleanup. It is explicitly a UAF/race fix, even
-though the subject does not say “fix”.
+Record: Not a hidden fix. Explicit KASAN OOB fix. The later `if
+(logo_lines > vc->vc_bottom)` path already tried to disable an oversized
+logo, but only **after** the out-of-bounds walk.
 
 ===============================================================
 PHASE 2: DIFF ANALYSIS - LINE BY LINE
@@ -122,254 +114,198 @@ PHASE 2: DIFF ANALYSIS - LINE BY LINE
 
 **Step 2.1: INVENTORY THE CHANGES**
 Record:
-- File: `drivers/video/fbdev/omap2/omapfb/dss/dsi.c` (+1 / −8; 9 lines)
-- Removes `struct dsi_isr_tables isr_tables_copy` from `struct dsi_data`
-- In `omap_dsi_irq_handler()`: drop `memcpy`, call `dsi_handle_isrs()`
-  on the live table **while `irq_lock` is held**, then unlock
+- File: `drivers/video/fbdev/core/fbcon.c` (+7 / −0)
+- Function: `fbcon_prepare_logo()`
 - Scope: single-file surgical fix
 
 **Step 2.2: UNDERSTAND THE CODE FLOW CHANGE**
-Record:
-- Before: lock → read/ack IRQ status → memcpy table → unlock →
-  `dsi_handle_isrs(&copy)` → error/stats
-- After: lock → read/ack IRQ status → `dsi_handle_isrs(&live table)` →
-  unlock → error/stats
-- Affected path: hardirq handler (`devm_request_irq(...,
-  omap_dsi_irq_handler, IRQF_SHARED, ...)`)
-- Unregister (`dsi_unregister_isr*`) takes `irq_lock`, so it now waits
-  until handlers finish
+Record: After `logo_lines = DIV_ROUND_UP(logo_height,
+vc->vc_font.height)` the code immediately walked `q - logo_lines *
+cols`. Now it clamps `logo_lines` to `rows` and `new_rows - 1`, and if
+that leaves nothing, sets `logo_shown = FBCON_LOGO_DONTSHOW` and
+returns. Normal path with a logo that already fits is unchanged.
 
 **Step 2.3: IDENTIFY THE BUG MECHANISM**
-Record:
-- Category: use-after-free / race (memory safety)
-- Mechanism: copy of ISR `arg` pointers outlives unregister of stack-
-  allocated completions
-- Verified stack objects passed into ISRs in this tree:
-  - `dsi_sync_vc_vp()` / `dsi_sync_vc_l4()`:
-    `DECLARE_COMPLETION_ONSTACK` + stack `dsi_packet_sent_handler_data`
-  - `dsi_vc_send_bta_sync()`: stack completion registered on **two**
-    tables (global + VC)
-  - `dsi_enter_ulps()`: stack completion registered on CIO table
-- Concrete UAF in `dsi_vc_send_bta_sync()`: `dsi_handle_isrs()` walks
-  global table then VC table. First handler can `complete()`; waiter
-  unregisters and returns; second handler still runs against the copy
-  with a dangling stack pointer.
-- Fix: keep `irq_lock` across handler dispatch so unregister cannot
-  destroy the objects until handlers return.
+Record: **Memory safety / out-of-bounds.** `fb_prepare_logo()` returns a
+pixel height `<= yres`, but `DIV_ROUND_UP(height, font_height)` can be
+one larger than `yres / font_height` (`new_rows`). Example: yres=100,
+font=16 → logo_lines=7, new_rows=6. Then `q - logo_lines * cols` is one
+row before `vc_origin`, and `scr_readw` / `scr_memcpyw` go OOB. The
+existing `logo_lines > vc->vc_bottom` check runs too late.
 
 **Step 2.4: ASSESS THE FIX QUALITY**
-Record:
-- Obviously correct given the locking: unregister cannot proceed while
-  handlers run.
-- Minimal; no API change.
-- Regression risk is low **if** no ISR unregisters itself (would
-  deadlock on `irq_lock`). Verified all three callbacks
-  (`dsi_completion_handler`, `dsi_packet_sent_handler_vp`,
-  `dsi_packet_sent_handler_l4`) only `complete()` and/or read registers.
-  None call `dsi_unregister_isr*`.
-- `complete()` under a spinlock is valid.
-- Holding the lock slightly longer in hardirq is register reads +
-  `complete()`, not a sleep.
+Record: Obviously correct bounds clamp; 7 lines; no API change.
+`new_rows == 0` yields `new_rows - 1 == -1`, then `logo_lines <= 0`
+bails out. Regression risk is low: at worst the penguin is skipped on
+tiny/odd geometries instead of walking off the buffer. A 2025 RFC (Wang
+ShaoBo) described a related cols-mismatch after `vc_resize()`; this
+clamp does not fully cover that variant, but it does not worsen it, and
+syzbot named this commit as the fix for the 1873-crash report.
 
 ===============================================================
 PHASE 3: GIT HISTORY INVESTIGATION
 ===============================================================
 
 **Step 3.1: BLAME THE CHANGED LINES**
-Record:
-- Copy logic and `isr_tables_copy` blamed to `f76ee892a99e6` (“omapfb:
-  copy omapdss & displays for omapfb”, 2015-12-29).
-- Pattern is as old as the fbdev DSS copy in this tree; originally
-  inherited from OMAP DSS ISR support.
-- Long-lived bug, not recent code.
+Record: The OOB walk (`q - logo_lines * cols` / `scr_readw` loop) is
+from **^1da177e4c3f41** (v2.6.12 era). `logo_lines = DIV_ROUND_UP(...)`
+is from **416e74ea781359** (Julia Lawall, 2008). This is long-standing
+code, not a recent 6.12-only bug.
 
 **Step 3.2: FOLLOW THE FIXES: TAG**
-Record: No `Fixes:` on the fbdev commit. The sibling DRM fix
-`2c27a84ba8d1b` (`drm/omap: dsi: Do not copy isr table`) has `Fixes:
-4ae2ddddf44cd ("OMAP: DSS2: DSI: Add ISR support")`. That original ISR
-support is what fbdev copied.
+Record: No Fixes: tag. The buggy pattern has been in the function for
+~20 years. `6104c37094e7` ("fbcon: Make fbcon a built-time dependency
+for fbdev", 2017) is in this tree (`merge-base --is-ancestor` exit 0);
+Wang’s RFC cited it, but that is a different proposed patch.
 
 **Step 3.3: CHECK FILE HISTORY FOR RELATED CHANGES**
-Record:
-- Recent `dsi.c` changes in this tree are unrelated (platform remove,
-  of_graph, timer, pm_runtime).
-- Standalone; not patch N/M.
-- Cover letter on lore points at a DRM twin:
-  `https://lore.kernel.org/lkml/20260702-dsi-
-  uaf-v2-1-dbb4aa0f0b8e@kemnade.info/`
-- That DRM twin **is already in this tree** as `2c27a84ba8d1b`
-  (contained in `v6.12.110~477`).
+Record: Related but distinct history in this tree: `a6a00d7e8ffd7` /
+`5c38052680f56` (kzalloc KMSAN false-positive, reverted);
+`250038f5a7207` (2007 vertical overflow when making space for the logo —
+different hunk). No prior clamp of `logo_lines` to `rows`/`new_rows`.
+Standalone, not patch N/M.
 
 **Step 3.4: CHECK THE AUTHOR'S OTHER COMMITS**
-Record:
-- Andreas Kemnade is an OMAP/display contributor; same author wrote the
-  DRM twin.
-- Helge Deller (fbdev maintainer) applied the fbdev patch.
-- Tomi Valkeinen applied the DRM twin.
+Record: Helge Deller is FRAMEBUFFER LAYER maintainer (`MAINTAINERS`). He
+authors/applies fbdev fixes regularly in this tree.
 
 **Step 3.5: CHECK FOR DEPENDENT/PREREQUISITE COMMITS**
-Record:
-- No new functions/types.
-- Applies as a logic change on existing `omap_dsi_irq_handler` / `struct
-  dsi_data`.
-- Context mismatch only: mainline hunk context has `timer_delete()`;
-  this tree still has `del_timer()` (`8fa7292fee5c5` timer rename is not
-  in 6.12). Not a functional dependency.
+Record: Uses existing `logo_lines`, `rows`, `new_rows`, `logo_shown`,
+`FBCON_LOGO_DONTSHOW`. No new helpers. `git apply --check` succeeded
+(hunk at line 596, offset −64). Standalone.
 
 ===============================================================
 PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
 ===============================================================
 
 **Step 4.1: FIND THE ORIGINAL PATCH DISCUSSION**
-Record:
-- `b4 dig -c 31875c51c31ed`: https://patch.msgid.link/20260702-fbomap-
-  uaf-fix-v1-1-6417edf9d3e7@kemnade.info
-- `b4 dig -a`: single revision **v1** only; that version was applied.
-- Thread: author patch → sashiko-bot review → author reply → Helge
-  Deller “applied.”
-- No NAK. Deller accepted it.
-- Bot comments were about **pre-existing sibling bugs** (DRM DSI, DISPC
-  copy, unbind timers), not about this change being wrong.
-- Author noted the DRM variant in the patch footer.
+Record: `b4 dig -c 94e6a058b168` →
+https://patch.msgid.link/6a897c8e.dbb3a75c.13dd47.002f.GAE@google.com
+(syzbot-forwarded `#syz test` from deller@kernel.org, 2026-08-22). `b4
+dig -a`: v1 only. lore.kernel.org returned 403; openwall mirror confirms
+the same single-hunk patch. No NAK found. Applied two days later by
+Deller (commit date 2026-08-24).
 
 **Step 4.2: CHECK WHO REVIEWED THE PATCH**
-Record (`b4 dig -w`):
-- To: Helge Deller
-- Cc: linux-omap, linux-fbdev, dri-devel, linux-kernel, sashiko-bot
-- Appropriate lists; fbdev maintainer applied it.
-- No human Reviewed-by besides maintainer application.
+Record: `b4 dig -w`: recipients were syzbot and linux-
+kernel@vger.kernel.org only. No public Reviewed-by. Weight comes from
+the maintainer applying it, not from a review thread.
 
 **Step 4.3: SEARCH FOR THE BUG REPORT**
-Record:
-- No syzbot/bugzilla user report. Trigger is sashiko-bot static
-  analysis.
-- Bug is still real: code in this tree matches the described UAF (stack
-  completions + lockless copy).
+Record: https://syzkaller.appspot.com/bug?extid=0c815b25cdb3678e7083
+- Status: upstream, C repro, **prio:high**, **1873 crashes**, first
+  2025-02-25
+- Fix commit listed: **94e6a058b168**
+- Patched on 20/29 syzbot instances
+- Stack: `store_bind` → `vt_bind` → `do_bind_con_driver` → `visual_init`
+  → `fbcon_init` → `fbcon_prepare_logo` → `scr_memcpyw`
+- Same title also on linux-5.15.y (C repro), linux-6.1.y, linux-6.6.y
+- Syzbot security assessment: DenialOfService yes, Exploitable yes,
+  Unprivileged no (sysfs `bind` is `S_IWUSR`)
 
 **Step 4.4: CHECK FOR RELATED PATCHES AND SERIES**
-Record:
-- DRM twin already backported here (`2c27a84ba8d1b`).
-- fbdev DISPC still copies a stack `registered_isr` in `dispc-compat.c`
-  (`omap_dispc_irq_handler`); same pattern, **separate** file, not
-  required for this DSI patch to be correct.
-- No revert of either DSI fix on `origin/master`.
+Record: Not a series. Related RFC 2025-09-25 from Wang ShaoBo added a
+pointer-vs-`vc_origin` guard in the scroll loop; it was not applied in
+this tree or in the candidate’s parent. Older kzalloc change is
+unrelated (reverted KMSAN false positive).
 
 **Step 4.5: CHECK STABLE MAILING LIST HISTORY**
-Record: UNVERIFIED. `lore.kernel.org/stable/` and lore message URLs
-returned HTTP 403. Thread was recovered via `b4 dig -m` instead. No
-stable-list discussion could be fetched.
+Record: lore.kernel.org/stable 403. No evidence this 2026-08-24 commit
+was already discussed for 6.12.y. The same KASAN title is already
+reproduced on older stable CIs, which supports that 6.12 is affected.
 
 ===============================================================
 PHASE 5: CODE SEMANTIC ANALYSIS
 ===============================================================
 
 **Step 5.1: IDENTIFY KEY FUNCTIONS IN THE DIFF**
-Record: `omap_dsi_irq_handler()`; field removed from `struct dsi_data`.
-Callers of `dsi_handle_isrs()` / `dsi_call_isrs()` unchanged except the
-table pointer and lock scope.
+Record: `fbcon_prepare_logo()` only. Semcode MCP not available.
 
 **Step 5.2: TRACE CALLERS**
-Record:
-- `omap_dsi_irq_handler` ← `devm_request_irq` in DSI bind/probe (`dsi.c`
-  ~5363). Hardirq, `IRQF_SHARED`.
-- Register/unregister sites are process context, all take `irq_lock`.
-- Sync/BTA/ULPS paths used during DSI frame update, command write, and
-  ULPS enter (`dsi_sync_vc` from update/disable; `dsi_vc_send_bta_sync`
-  as `.bta_sync`; `dsi_enter_ulps`).
+Record: Two call sites in this tree:
+1. `con2fb_init_display()` (line 826) — console mapped to a framebuffer,
+   `show_logo`.
+2. `fbcon_init()` (line 1155) — after setting/resizing the VC, if `logo`
+   is set.
+
+`fbcon_init` is `con_init` for fbcon, called from `visual_init()` during
+bind/takeover. `store_bind` is the syzbot trigger (root sysfs write).
+Also runs on normal fbcon takeover at boot when the logo is enabled
+(`!MODULE`).
 
 **Step 5.3: TRACE CALLEES**
-Record: `dsi_handle_isrs` → `dsi_call_isrs` → registered `isr(arg,
-status)` → `complete()` / `REG_GET`. Then `dsi_handle_irq_errors` and
-`dsi_collect_irq_stats` still after unlock.
+Record: `fb_prepare_logo()`, `scr_readw`/`scr_memcpyw`/`scr_memsetw`,
+`kmalloc`/`kfree`, `update_screen`. The new code only uses `min()` and
+existing `logo_shown`.
 
 **Step 5.4: FOLLOW THE CALL CHAIN**
-Record: Reachable from normal display I/O on `CONFIG_FB_OMAP2=y` +
-`CONFIG_FB_OMAP2_DSS_DSI=y` (MIPI DSI panel). Not a syscall fuzzer path,
-but a real device IRQ + wait-for-completion path. Unprivileged userspace
-can trigger it by updating the framebuffer on such hardware.
+Record: Userspace (root) → `sysfs` `vtconN/bind` → `fbcon_init` →
+`fbcon_prepare_logo`. Also boot-time logo on `CONFIG_FRAMEBUFFER_CONSOLE
+&& !MODULE`. Path is real and reproduced.
 
 **Step 5.5: SEARCH FOR SIMILAR PATTERNS**
-Record:
-- DRM `drivers/gpu/drm/omapdrm/dss/dsi.c` in **this tree** already calls
-  `dsi_handle_isrs(&dsi->isr_tables, ...)` under `irq_lock` (the
-  backported twin).
-- fbdev `dispc-compat.c` still memcpy’s ISRs then drops the lock;
-  leftover sibling, not a blocker for this patch.
-- `isr_tables_copy` exists only in this fbdev `dsi.c` in this checkout.
+Record: The too-late `logo_lines > vc->vc_bottom` check is the same bug
+class, just after the OOB. No sibling drivers copy this logo-scroll
+logic.
 
 ===============================================================
 PHASE 6: CROSS-REFERENCING AGAINST THE LOCAL TREE
 ===============================================================
 
 **Step 6.1: DOES THE BUGGY CODE EXIST IN THIS TREE?**
-Record:
-- `git describe HEAD`: `p-6.12-3-gc504cf0baa3d8`
-- `make kernelversion` / Makefile: **6.12.111**
-- `git merge-base --is-ancestor 31875c51c31ed HEAD` → not an ancestor
-  (fix not in this tree)
-- Buggy code present: `isr_tables_copy` at `dsi.c:330`, memcpy at
-  `dsi.c:841-848`
-- Introduced here via `f76ee892a99e6` (v4.5-era copy)
+Record: Yes. `drivers/video/fbdev/core/fbcon.c` lines 597–604 compute
+`logo_lines` and walk `q - logo_lines * cols` with no clamp. `git merge-
+base --is-ancestor 94e6a058b168 HEAD` is **false** — the fix is not in
+6.12.111. Bug introduced long before 6.12.
 
 **Step 6.2: CHECK FOR BACKPORT COMPLICATIONS**
-Record:
-- `git apply --check` of `31875c51c31ed` fails only because context has
-  `timer_delete` vs local `del_timer`.
-- The two functional hunks (remove field; move `dsi_handle_isrs` before
-  unlock) match this tree byte-for-byte aside from that nearby timer
-  name.
-- Expected difficulty: **minor context tweak**, not rework.
+Record: `git apply --check` **clean** (offset −64 from surrounding-line
+drift / `fbcon_ops`→`fbcon_par` rename already in this tree). Expected
+difficulty: **clean apply**.
 
 **Step 6.3: CHECK IF RELATED FIXES ARE ALREADY HERE**
-Record:
-- DRM equivalent already applied (`2c27a84ba8d1b`).
-- No fbdev DSI equivalent. `FB_OMAP2` depends on `DRM_OMAP=n`, so omapfb
-  users do **not** get the DRM fix.
+Record: No `logo_lines = min(...)` in this file. The 2007 Geert overflow
+tweak and the kzalloc revert do not clamp logo lines.
 
 ===============================================================
 PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
 ===============================================================
 
 **Step 7.1: IDENTIFY THE SUBSYSTEM AND ITS CRITICALITY**
-Record: `drivers/video/fbdev/omap2` — SoC display driver. Criticality:
-**PERIPHERAL** (OMAP2+ boards using legacy fbdev, not omapdrm). Still
-in-tree and user-facing on that hardware.
+Record: **fbcon** (`drivers/video/fbdev/core/fbcon.c`), the framebuffer
+console used with `CONFIG_FRAMEBUFFER_CONSOLE` (default follows
+`DRM_FBDEV_EMULATION`). Criticality: **IMPORTANT** — not mm/core, but
+default console path on many DRM/fbdev systems.
 
 **Step 7.2: ASSESS SUBSYSTEM ACTIVITY**
-Record: Mature/legacy. Low churn; bug has been present since the 2015
-omapdss copy. Maintainer (Deller) still takes fixes.
+Record: Mature; still receiving OOB/NULL/font fixes in this tree
+(`51b8258efe254`, `b5bb2c696e140`, `ac970358c5ca0`). Not staging.
 
 ===============================================================
 PHASE 8: IMPACT AND RISK ASSESSMENT
 ===============================================================
 
 **Step 8.1: DETERMINE WHO IS AFFECTED**
-Record: Driver-specific / config-specific: `CONFIG_FB_OMAP2` +
-`CONFIG_FB_OMAP2_DSS_DSI` on OMAP2+ with MIPI DSI, and only when DRM
-omap is disabled.
+Record: Users with framebuffer console (typical desktop/embedded DRM
+fbdev emulation, vkms/syzbot, classic fbdev). Config-specific
+(`FRAMEBUFFER_CONSOLE`), not universal.
 
 **Step 8.2: DETERMINE THE TRIGGER CONDITIONS**
-Record:
-- Trigger: DSI IRQ concurrent with unregister of a stack-backed ISR
-  after `complete()` or timeout (`dsi_sync_vc_*` 10 ms, BTA 500 ms, ULPS
-  1000 ms).
-- Dual-ISR BTA path is the most realistic (two handlers, one stack
-  object).
-- Unprivileged userspace can drive framebuffer updates that hit
-  `dsi_sync_vc`.
+Record: (1) Console bind/takeover with a logo taller than the text grid
+after integer rounding; (2) syzbot C repro via `vtcon` bind. Common on
+fuzzing and on small/rotated/odd modes. Unprivileged users cannot write
+`bind` (`S_IWUSR`); boot-time logo does not need that.
 
 **Step 8.3: DETERMINE THE FAILURE MODE SEVERITY**
-Record: Use-after-free of stack completions / handler-data → kernel oops
-or memory corruption in hardirq. Severity: **HIGH**.
+Record: KASAN slab-out-of-bounds **read** (and related UAF/KFENCE
+reports). Can oops under KASAN/KFENCE; without sanitizers it is still an
+invalid buffer walk. Severity: **HIGH** (memory-safety crash; syzbot
+marked exploitable but not unprivileged).
 
 **Step 8.4: CALCULATE RISK-BENEFIT RATIO**
-Record:
-- Benefit: HIGH for omapfb+DSI users (prevents UAF in IRQ). Population
-  is small, but the DRM twin was already taken into this same 6.12.y
-  tree, which shows the bug class is treated as stable-worthy.
-- Risk: LOW (9 lines, verified no self-unregister, `complete()` under
-  spinlock is fine).
-- Ratio: benefit outweighs risk.
+Record: Benefit **high** (stops a reproducible KASAN OOB in a common
+console path). Risk **very low** (7-line clamp, early return already
+used elsewhere in the same function). Ratio strongly favors backport.
 
 ===============================================================
 PHASE 9: FINAL SYNTHESIS
@@ -378,109 +314,102 @@ PHASE 9: FINAL SYNTHESIS
 **Step 9.1: COMPILE THE EVIDENCE**
 
 FOR:
-- Real UAF: lockless copy of pointers to `DECLARE_COMPLETION_ONSTACK`
-  objects
-- Dual-ISR BTA path makes the race practical, not only a 1-instruction
-  window
-- Small, obviously correct lock-scope change
-- All ISR callbacks verified not to unregister (no self-deadlock)
-- Code exists in this 6.12.111 tree; bug dates to 2015 copy
-- fbdev maintainer applied v1 with no NAK
-- Identical DRM fix already in this tree; omapfb users are the leftover
-  affected set
+- Real, syzbot-reproduced KASAN OOB with C repro, 1873 crashes,
+  prio:high
+- Same bug title on 5.15.y / 6.1.y / 6.6.y — this 6.12 tree still has
+  the unclamped walk
+- Syzbot lists 94e6a058b168 as the fix commit
+- Maintainer-authored, 7 lines, applies cleanly here
+- Fixes a rounding hole (`DIV_ROUND_UP` vs `yres / font_height`) plus
+  any logo taller than the VC
+- No new API/feature; existing `FBCON_LOGO_DONTSHOW` path
 
 AGAINST:
-- No user `Reported-by` / syzbot (bot-found)
-- Peripheral OMAP fbdev DSI, not a core path
-- Vanilla patch needs a one-line context adjust (`del_timer`)
-- DISPC has a similar leftover pattern (out of scope for this commit)
+- Short commit message, no public review, no Fixes:
+- Does not fully address the Wang RFC cols-mismatch-after-resize case
+- Trigger via sysfs bind is root-only (boot logo path still matters)
 
 UNRESOLVED:
-- Could not query lore.kernel.org/stable (HTTP 403)
-- No runtime reproduction in this session (analysis is from code +
-  thread)
+- Could not read lore.kernel.org (403); used b4 + openwall instead
+- Could not confirm whether post-fix syzbot “last: 2d” crashes are only
+  on the 9 unpatched instances (likely, given 20/29 patched)
 
 **Step 9.2: APPLY THE STABLE RULES CHECKLIST**
-1. Obviously correct and tested? **PASS** — lock documents the intent;
-   maintainer applied; DRM twin already on 6.12.y
-2. Fixes a real bug that affects users? **PASS** — UAF on DSI IRQ vs
-   stack completions
-3. Important issue? **PASS** — UAF / oops / memory corruption (HIGH)
-4. Small and contained? **PASS** — 9 lines, one file
+1. Obviously correct and tested? **PASS** — clamp is local and readable;
+   syzbot C repro; maintainer applied it
+2. Fixes a real bug that affects users? **PASS** — KASAN OOB, thousands
+   of syzbot hits, stable-tree crashes
+3. Important issue (crash, security, corruption, deadlock)? **PASS** —
+   HIGH memory-safety OOB
+4. Small and contained? **PASS** — +7 lines, one function
 5. No new features or APIs? **PASS**
-6. Can apply to the local tree? **PASS** — functional diff matches;
-   trivial `del_timer` context
+6. Can apply to the local tree? **PASS** — buggy code present; `git
+   apply --check` clean
 
 **Step 9.3: CHECK FOR EXCEPTION CATEGORIES**
-Record: Not an ID/quirk/DT/build/docs exception. It is a normal memory-
-safety bugfix.
+Record: Not a device-ID/quirk/DT/docs exception. It is a normal memory-
+safety bug fix.
 
 **Step 9.4: MAKE YOUR DECISION**
-This should be backported to **this** 6.12.y tree. The buggy
-`isr_tables_copy` path is here; the fix is the same one already taken
-for omapdrm; omapfb is a separate config and still needs it.
+This is a small, correct bounds check for a long-standing fbcon OOB that
+syzbot can hit on this class of kernels. It belongs in 6.12.y.
 
 Verification:
-- [Phase 1] Tags: Suggested-by sashiko-bot; SOB Kemnade + Deller; no
-  Fixes/Cc stable/Reported-by
-- [Phase 2] Diff: remove `isr_tables_copy`; call
-  `dsi_handle_isrs(&dsi->isr_tables)` before `spin_unlock`
-- [Phase 2] Confirmed stack completions at dsi.c:2298, 2347, 2617, 3115
-- [Phase 2] Confirmed ISR callbacks only complete/read MMIO; no
-  unregister
-- [Phase 3] Blame: f76ee892a99e6 (2015); ancestor check of 31875c51c31ed
-  vs HEAD: not present
-- [Phase 3] DRM twin 2c27a84ba8d1b is in this tree (`git merge-base
-  --is-ancestor` exit 0; `v6.12.110~477`)
-- [Phase 4] b4 dig: lore msgid 20260702-fbomap-uaf-
-  fix-v1-1-6417edf9d3e7@kemnade.info; v1 only; Deller “applied.”
-- [Phase 4] UNVERIFIED: stable@ lore search (HTTP 403)
-- [Phase 5] Handler installed via `devm_request_irq` + `IRQF_SHARED`;
-  sync/BTA/ULPS are the users
-- [Phase 6] Local tree 6.12.111; buggy memcpy still at dsi.c:841-848;
-  apply --check fails only on `timer_delete` vs `del_timer`
-- [Phase 7] Peripheral fbdev OMAP DSI; mutually exclusive with DRM_OMAP
-- [Phase 8] Failure mode: hardirq UAF of stack object, severity HIGH
+- [Phase 1] Parsed tags: syzbot Reported-by; Helge Deller SOB; no
+  Fixes/Cc:stable/review tags in the committed message
+- [Phase 2] Diff: +7 lines in `fbcon_prepare_logo()` after
+  `DIV_ROUND_UP`; clamp `logo_lines` then early return
+- [Phase 3] `git describe HEAD` / Makefile: **6.12.111**, branch
+  pending-6.12
+- [Phase 3] `git blame`: OOB loop from ^1da177e4c3f41; DIV_ROUND_UP from
+  416e74ea781359 (2008)
+- [Phase 3] `git merge-base --is-ancestor 94e6a058b168 HEAD` → not an
+  ancestor (fix absent here)
+- [Phase 3] `git apply --check` of 94e6a058b168 → clean, offset −64
+- [Phase 3] Confirmed no `logo_lines = min` already in this file
+- [Phase 4] `b4 dig -c 94e6a058b168` → msgid
+  6a897c8e.dbb3a75c.13dd47.002f.GAE@google.com; v1 only
+- [Phase 4] Syzbot extid 0c815b25cdb3678e7083: C repro, prio:high, 1873
+  crashes, Fix commit 94e6a058b168
+- [Phase 4] Same KASAN title on linux-5.15.y / 6.1.y / 6.6.y
+- [Phase 5] Callers: `fbcon_init` (line 1155), `con2fb_init_display`
+  (line 826); bind path `store_bind` is `S_IWUSR`
+- [Phase 6] Local function still matches the pre-patch walk at lines
+  597–604
+- [Phase 7] Helge Deller listed as FRAMEBUFFER LAYER maintainer
+- [Phase 8] Failure mode: slab-out-of-bounds read in
+  `scr_memcpyw`/`scr_readw`; severity HIGH
+- UNVERIFIED: full lore.kernel.org thread (HTTP 403); whether every
+  post-Aug-24 syzbot crash is on unpatched instances only
 
-The patch is a small UAF fix that already exists for the DRM clone in
-this tree, applies with a trivial context tweak, and matches stable
-rules.
+The patch is a 7-line clamp in `fbcon_prepare_logo()` that stops a
+syzbot-reproduced KASAN out-of-bounds read. The buggy walk is in this
+6.12 tree, the fix applies cleanly, and the risk is limited to skipping
+the boot logo when it cannot fit.
 
 **YES**
 
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index 370e8623754ec..b1df2c014b00c 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -326,8 +326,6 @@ struct dsi_data {
- 
- 	spinlock_t irq_lock;
- 	struct dsi_isr_tables isr_tables;
--	/* space for a copy used by the interrupt handler */
--	struct dsi_isr_tables isr_tables_copy;
- 
- 	int update_channel;
- #ifdef DSI_PERF_MEASURE
-@@ -838,15 +836,10 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
- 		timer_delete(&dsi->te_timer);
- #endif
- 
--	/* make a copy and unlock, so that isrs can unregister
--	 * themselves */
--	memcpy(&dsi->isr_tables_copy, &dsi->isr_tables,
--		sizeof(dsi->isr_tables));
- 
-+	dsi_handle_isrs(&dsi->isr_tables, irqstatus, vcstatus, ciostatus);
- 	spin_unlock(&dsi->irq_lock);
- 
--	dsi_handle_isrs(&dsi->isr_tables_copy, irqstatus, vcstatus, ciostatus);
--
- 	dsi_handle_irq_errors(dsidev, irqstatus, vcstatus, ciostatus);
- 
- 	dsi_collect_irq_stats(dsidev, irqstatus, vcstatus, ciostatus);
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 532522c2aed05..903823c9ce567 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -600,6 +600,13 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 		erase &= ~0x400;
+ 	logo_height = fb_prepare_logo(info, par->rotate);
+ 	logo_lines = DIV_ROUND_UP(logo_height, vc->vc_font.height);
++	logo_lines = min(logo_lines, rows);
++	logo_lines = min(logo_lines, new_rows - 1);
++	if (logo_lines <= 0) {
++		logo_lines = 0;
++		logo_shown = FBCON_LOGO_DONTSHOW;
++		return;
++	}
+ 	q = (unsigned short *) (vc->vc_origin +
+ 				vc->vc_size_row * rows);
+ 	step = logo_lines * cols;
 -- 
 2.53.0
 

@@ -1,59 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.227.17.21
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.227.15.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792526986;
-	b=fk3YSb0NDe9LDjxMZGy+yj+CN2NJVvFv++ICpIuooQ2YhogvLctCLKC+15ClhCKhF+Dw
-	 /cykfClPZuuNaWhAb2cXZwBqp8adokWV3zqiZRggNk2MNAaNGNIhB5KtkkSONIcvxf978
-	 XGLvPXcx8OlUo+O1VaIhFkDJRtgso7XSBAAjcEUNonxI0NFFpfI8aFU2jtuqmB1WTWn8G
-	 d4I4JALG72QbIZqTGSkQ99HXZm5Bm9P5ZrwD53aLs5WoOGcU9x0u1FHzX5IkpvVhWxQQv
-	 B33KWQRgI0ssRjBbzdURE/UBVzVbEp3kvjmv/hblgnG2npodIXoNTLzsmz+OJSRITgw==
+	t=1792528488;
+	b=bAqdzRdfZe33UT5kjX8+ETS/7MyEummGJaN4nxLmcwhvDtPMnqiX8jysYnIBp6jobTHE
+	 v3abwy5J8sKUlv9v2cIYsMUtzWPu+LMYxwh52QXCO56LIvf6mBC8xCeNgQGKa2DagnxxD
+	 IK+iufR21g5otgobJzCQNGruVAZxXMOycDIyOidbPV/sN5zO7kM5hlMvkn0CxL3yiVlzn
+	 uTwN8O8Xc0MBV0ruHHcvS184cCupBVEaAyVjlcAK+AKsyF5fe6Y0Np3vrFSlkylrslk1+
+	 u+XzaoRENgXV6oOQuc2atU+RLynfsyQNMsP6sSvfT/3bgw+u40Dn1zgo/zUd1u/C0bw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792526986;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792528488;
 	h=DMARC-Filter:DKIM-Signature:X-UI-Sender-Class:Received:Message-ID:
 	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
 	 Content-Language:From:Autocrypt:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:X-Provags-ID:X-Spam-Flag:UI-OutboundReport;
-	bh=Ea7e0dr0A0efw/0izD5fHfZwxSDHa2lqh6cctINYdzI=;
-	b=yGdt9/kjwFiHNzo2ZXmkhDs1mtmDzgEWXD3WL54j4QlqcYgOYp7u0fcMrGdVnRWQv+7X
-	 5LeJUQWIXEa+BYb3UyFgATiIrogVQ4oIuDbDvYuuN6VI2HksUOU++M54PfvTEGIz+0mfp
-	 OToc+Lwjd7Ty8dNVNiKLJTb7b8D5ZCJ7c4ReJZjSehNdP/dVGI8h4CXeyTmAUEPJk2z+9
-	 G1oxclT8DoxcTUUzuwiVFNwPl9oDeSlOFu39dUsLJnxwtIgVJgCPe3eHr1Vi1F60IbCht
-	 azpiH0FJVyIduOn/2mrXMbp50Ti2aTHYEAXy8rR9BIeV5GnWY8hq8cxiQtJC3GgUc/A==
+	bh=+XQ2jGq2rGRCXe2a+V4EPKMo/+wuS5hCKLtQkSsDTWI=;
+	b=diMER4dgzKomVJUjerSmok5lPi1U9BYPtPIDIpSf/TjfpM02O+UvbqQOV7/2NQaeEBlr
+	 9JReUJvBAmugLwpJMrCHfiI0uAzp63M8Q7nzV6Nfpb0U+f5oX4dJGErAEdW3NGyEBUZiD
+	 zOAe8qZLwDelTdyiQz/0KuJrRtNy5qIQeGQJ4WAC9WpRpwzD1MtvaucTLeUzBlrgz9vzg
+	 aDG4PVJjlR57HcX/YKXAJz68e11HpWIp1mtGpmjQlgqeGf+h8Y3pcpb8ToQvTfbmGUrrJ
+	 tEHXqLq8+KELGCOWU/EZQQ3VKc6M7Rl0Dn+2ko4nCxJvPtN0/GCueJrNwXq4pCVWiXg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmx.de;
 	spf=pass smtp.mailfrom=gmx.de;
-	dkim=pass header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=grzts+Kv;
-	arc=none smtp.remote-ip=212.227.17.21
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	dkim=pass header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=Bi97biYM;
+	arc=none smtp.remote-ip=212.227.15.18
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00073606A321;
-	Tue, 20 Oct 2026 20:09:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 00073606A321
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 279DF606A322
+	for <linux-fbdev@vger.kernel.org>; Tue, 20 Oct 2026 20:34:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 279DF606A322
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=grzts+Kv
+	dkim=pass (2048-bit key, unprotected) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=Bi97biYM
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1792526982; x=1793131782; i=deller@gmx.de;
-	bh=Ea7e0dr0A0efw/0izD5fHfZwxSDHa2lqh6cctINYdzI=;
+	s=s31663417; t=1792528481; x=1793133281; i=deller@gmx.de;
+	bh=+XQ2jGq2rGRCXe2a+V4EPKMo/+wuS5hCKLtQkSsDTWI=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
 	 References:From:In-Reply-To:Content-Type:
 	 Content-Transfer-Encoding:cc:content-transfer-encoding:
 	 content-type:date:from:message-id:mime-version:reply-to:subject:
 	 to;
-	b=grzts+KvK++Hgl0nbcd2Rp8H8WmIj2c1DziUFMWmP6R9PrbupDij0zjLR0Bb5V+m
-	 sEuQ7gDOtkKrJuUc+Wun3CFbaXVN3qRi2ygP2A1bzhqW5YS9BE1A38Cv0YcN2qwkC
-	 uFmoGNBUlODzhS6AmqD526pSE5gDawRx2rN1uDaG73QPii6AQKmFSGMRoTFswaQFo
-	 ZUth1mAdZ8OMhq5HBCAyzQv/iJEGB27H6Fy7a7gYtDh1mljGvpH8egy2zp32ka8+L
-	 rBzCvNiGeprVaWnH4rTYw+hQVhsMLua89CdZnevoN3bXaju+Zic+ri2HKDIJ4ig+k
-	 mYmPmJYBvAO7f8C3Fg==
+	b=Bi97biYMTeu/0xvyfrWRQ7TMpkZGi5QEBhsd6vCtBY4U4Mb5/5vDdNYbDrBMUCjr
+	 lJbnHOs0YZ/vTs8CamAGhUEVblfPbZxuT24NxQFKPP9dd5+DZV0wDJU/cVSWRh+HE
+	 RgloATcwr5p6TYJPExW0Qet0IwmdWiSO1z+f3dn3hefWuEwgQRiOEnDRDKrUG0M0c
+	 MudL7KHTm3UJV4cdNuE01DBjaXUNCFHtU8UCd2orHSA223DLJGbcsEmScp45MWDHa
+	 cEq8WKZqdaKrPRvmJ9UN9SW+X3QInI+neVfh+9hKc+l7NQ5+hXjw9ps4YwHZhMMqk
+	 L34B9YoVHzeG0NFDNA==
 X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N6KUT-1wYcpT0z8L-014E5L; Tue, 20
- Oct 2026 22:09:42 +0200
-Message-ID: <cf9859c1-2789-4f4f-8d03-aaf1eb73ff74@gmx.de>
-Date: Tue, 20 Oct 2026 22:09:40 +0200
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MY68d-1x6qzc28E9-00PzE5; Tue, 20
+ Oct 2026 22:34:41 +0200
+Message-ID: <583e7e89-48c1-4a89-b8c2-947af16f977a@gmx.de>
+Date: Tue, 20 Oct 2026 22:34:40 +0200
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -64,13 +64,14 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] fbdev: bitblit: Fix glyph clipping when fbcon pans
-To: Tingjie Zhong <catme0w@live.cn>, Thomas Zimmermann <tzimmermann@suse.de>,
- Simona Vetter <simona@ffwll.ch>,
- Albin Babu Varghese <albinbabuvarghese20@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-References: <TYYP301MB1525C5CFBFCE755C7F31426FF6672@TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM>
+Subject: Re: [PATCH 1/5] fbdev/au1100fb: Use FB blanking constants
+To: Thomas Zimmermann <tzimmermann@suse.de>, adaplas@gmail.com,
+ michal.simek@amd.com
+Cc: linux-fbdev@vger.kernel.org
+References: <20261009161814.120480-1-tzimmermann@suse.de>
+ <20261009161814.120480-2-tzimmermann@suse.de>
+ <3ae4590b-c420-480f-a6a2-79700bf20a1a@gmx.de>
+ <33fd4c60-43f4-4055-838e-a37e58ab70dc@suse.de>
 Content-Language: en-US
 From: Helge Deller <deller@gmx.de>
 Autocrypt: addr=deller@gmx.de; keydata=
@@ -116,133 +117,244 @@ Autocrypt: addr=deller@gmx.de; keydata=
  FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
  4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
  ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <TYYP301MB1525C5CFBFCE755C7F31426FF6672@TYYP301MB1525.JPNP301.PROD.OUTLOOK.COM>
+In-Reply-To: <33fd4c60-43f4-4055-838e-a37e58ab70dc@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:XpOm91Lf0wzp/fR6llXhKtRATck8EZQvxZyVoT/J4Oetwt9f1w2
- 9Z2pBSuDh4Gk1ZW0UsnbVJZD0d+b54v/8PV/aHnmfLNw16+OV9KeOYb/Nmr+aTq6lPGskMB
- neJLDqjD03HCGQlBGmy6Tr5cx2s0t05WhAD0NPNyTdE4oeRl8uHDLGdNU2rtSoq7ykPSuTI
- jLR432OmU+ZI4sEuFgdEw==
+X-Provags-ID: V03:K1:cYYKQjal5yzw0NXelMBKc+3Iv0UmRk4QTt7jpXuouz/c1BS9RDD
+ LnigD9NNexaG05WJ4wwaFxU3XFChHt+zybY5PHZlFFHuG4XlFI13xGDUR+VrhgO9u4CjpsT
+ Wi/AylgJzUug0yL7/WQhUiVU5/JpD7cbbX/rNYwjT8ShSJRLH4lOF09nsQr9gVI4Dj0E7LO
+ RWxwq3lI7D5g0ulz/vIwA==
 X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:SPQKMUIY+VM=;RXsJqyNglk7++9HRUM/FGTttL5N
- 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
- 3mKAGDzX7uUyybu/qE2AhCjjfLlHs=
+UI-OutboundReport: notjunk:1;M01:P0:Imh0FZHqgQQ=;rxxeVN7fkJqooC+7UzSWIxcVtca
+ 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
+ gKFlq+JrU8zAvhRor1GQ=
 
-On 10/20/26 18:46, Tingjie Zhong wrote:
-> Commit 3637d34b35b2 ("fbdev: Add bounds checking in bit_putcs to fix
-> vmalloc-out-of-bounds") made bit_putcs() clip glyphs to var.yres. When
-> fbcon scrolls by panning, it draws text rows up to var.yres_virtual,
-> so after the first pan most new text is not drawn until the next full
-> redraw. This affects fbdev drivers that set FBINFO_HWACCEL_YPAN or
-> FBINFO_HWACCEL_YWRAP, such as vesafb with the ypan option, when
-> CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION=3Dy.
+On 10/19/26 09:24, Thomas Zimmermann wrote:
+> Hi
 >=20
-> Clip to GETVYRES() instead, which fbcon_ud.c and fbcon_ccw.c already
-> use as the drawing area height. When fbcon does not pan, GETVYRES()
-> returns var.yres, keeping the existing bound. When fbcon pans, it
-> returns var.yres_virtual, which the framebuffer memory must cover
-> anyway for panning to work.
+> Am 18.10.26 um 15:52 schrieb Helge Deller:
+>> Hi Thomas,
+>>
+>> On 10/9/26 18:05, Thomas Zimmermann wrote:
+>>> Fbdev and its drivers use FB_BLANK constants for controlling the
+>>> display's blanking state. Semantics differ to similar VESA blanking
+>>> constants.
+>>>
+>>> Replace the VESA constants in au1100fb with FB_BLANK.
+>>
+>> I understand that this series drops the VESA constants.
+>> That seems logical and correct, but....
+>>
+>>
+>>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>>> ---
+>>> =C2=A0 drivers/video/fbdev/au1100fb.c | 18 +++++++++---------
+>>> =C2=A0 1 file changed, 9 insertions(+), 9 deletions(-)
+>>>
+>>> diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au11=
+00fb.c
+>>> index 39f86ffb1ae3..6c375f389fbd 100644
+>>> --- a/drivers/video/fbdev/au1100fb.c
+>>> +++ b/drivers/video/fbdev/au1100fb.c
+>>> @@ -424,15 +424,15 @@ static int au1100fb_fb_blank(int blank_mode, str=
+uct fb_info *fbi)
+>>> =C2=A0 =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 switch (blank_mode) {
+>>> =C2=A0 -=C2=A0=C2=A0=C2=A0 case VESA_NO_BLANKING:
+>>> +=C2=A0=C2=A0=C2=A0 case FB_BLANK_UNBLANK:
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /* Turn on pane=
+l */
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 fbdev->regs->lc=
+d_control |=3D LCD_CONTROL_GO;
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 wmb(); /* drain=
+ writebuffer */
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 break;
+>>> -
+>>> -=C2=A0=C2=A0=C2=A0 case VESA_VSYNC_SUSPEND:
+>>> -=C2=A0=C2=A0=C2=A0 case VESA_HSYNC_SUSPEND:
+>>> -=C2=A0=C2=A0=C2=A0 case VESA_POWERDOWN:
+>>> +=C2=A0=C2=A0=C2=A0 case FB_BLANK_NORMAL:
+>>> +=C2=A0=C2=A0=C2=A0 case FB_BLANK_VSYNC_SUSPEND:
+>>> +=C2=A0=C2=A0=C2=A0 case FB_BLANK_HSYNC_SUSPEND:
+>>> +=C2=A0=C2=A0=C2=A0 case FB_BLANK_POWERDOWN:
+>> I don't understand (this is not the fault of this/your patch),
+>> how this enum in fb.h works:
+>>
+>> enum {
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /* screen: unblanked, hsync:=
+ on,=C2=A0 vsync: on */
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FB_BLANK_UNBLANK=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0 =3D VESA_NO_BLANKING,
+>>
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /* screen: blanked,=C2=A0=C2=
+=A0 hsync: on,=C2=A0 vsync: on */
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FB_BLANK_NORMAL=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D VESA_NO_BLANKING + 1,
+>>
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /* screen: blanked,=C2=A0=C2=
+=A0 hsync: on,=C2=A0 vsync: off */
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FB_BLANK_VSYNC_SUSPEND =3D V=
+ESA_VSYNC_SUSPEND + 1,
+>>
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /* screen: blanked,=C2=A0=C2=
+=A0 hsync: off, vsync: on */
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FB_BLANK_HSYNC_SUSPEND =3D V=
+ESA_HSYNC_SUSPEND + 1,
+>>
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /* screen: blanked,=C2=A0=C2=
+=A0 hsync: off, vsync: off */
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FB_BLANK_POWERDOWN=C2=A0=C2=
+=A0=C2=A0=C2=A0 =3D VESA_POWERDOWN + 1
+>>
+>>
+>> In vesa.h we have:
+>> /* VESA Blanking Levels */
+>> enum vesa_blank_mode {
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 VESA_NO_BLANKING=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D 0,
+>> #define VESA_NO_BLANKING=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 VESA=
+_NO_BLANKING
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 VESA_VSYNC_SUSPEND=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 =3D 1,
+>> #define VESA_VSYNC_SUSPEND=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 VESA_VSYNC_SUS=
+PEND
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 VESA_HSYNC_SUSPEND=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 =3D 2,
+>> #define VESA_HSYNC_SUSPEND=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 VESA_HSYNC_SUS=
+PEND
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 VESA_POWERDOWN=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D VESA_VSYNC_SUSPEND | VESA_H=
+SYNC_SUSPEND,
+>> #define VESA_POWERDOWN=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 VESA_POWERDOWN
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 VESA_BLANK_MAX=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D VESA_POWERDOWN,
+>>
+>>
+>> for example this one:
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /* screen: blanked,=C2=A0=C2=
+=A0 hsync: on,=C2=A0 vsync: off */
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FB_BLANK_VSYNC_SUSPEND =3D V=
+ESA_VSYNC_SUSPEND + 1,
+>> which is effectively:
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 FB_BLANK_VSYNC_SUSPEND =3D V=
+ESA_HSYNC_SUSPEND,
+>> which seems wrong.
+>>
+>> Am I missing something?
 >=20
-> Fixes: 3637d34b35b2 ("fbdev: Add bounds checking in bit_putcs to fix vma=
-lloc-out-of-bounds")
-> Reported-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Closes: https://lore.kernel.org/linux-fbdev/b8b52ffd-ecec-4fba-b432-ba32=
-135c2f99@suse.de/
-> Tested-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Tingjie Zhong <catme0w@live.cn>
-applied now to fbdev/for-next.
+> No worries, it's super-confusing.
+>=20
+> - FB_BLANK_ describes CRTC state plus monitor state. VESA_ only describe=
+s monitor state and assumes that the CRTC is off.
+>=20
+> - FB_BLANK_UNBLANK means "monitor on and send pixels".=C2=A0 There is no=
+ VESA equivalent for this mode, because all VESA constants assume that the=
+ stream if pixel data has been disabled.
+>=20
+> - FB_BLANK_NORMAL means "monitor on, but do not send pixels". This corre=
+sponds to VESA_BLANK_NO_BLANKING, but has a different integer value.
+>=20
+> - The FB_BLANK_*_SUSPEND and _POWERDOWN constants correspond to the VESA=
+ constants of similar name. But they are all off by one.
+>=20
+> Therefore some of the drivers (au1100fb) use VESA_NO_BLANKING when
+> they mean FB_BLANK_UNBLANK. Others (xilinxfb) get it wrong and use
+> VESA_POWERDOWN when they should use FB_BLANK_POWERDOWN.
+
+Ok, thanks for this summary.
+
+I've applied this series now to fbdev git tree.
 
 Thanks!
 Helge
-

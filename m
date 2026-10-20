@@ -1,93 +1,61 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792441286;
-	b=Jb+5tsT1G+4YjV4LTvtOlQJ4+A7bBPszuT2DHpOiuzF1bKi/O9Ou3qUzt38IVt/ROWIK
-	 yArdqkxFsLiuSd0n3vkLzZ1IRMl1XU09RDzHkKuFA+pNlJurd8injLixoQtnM45sDd6F3
-	 gLK5yTnNT2nkycFh3HJcmFYHJg1o8w589wKSWTHWXeJMCalYwzAVgTBmEWateY/fwvMLv
-	 rmiU+np7xAmqJovg92n7szFW6Gci52qeUcqf8L85uYo+EkclQGZ91fHHm4Qy7PoQSchCb
-	 4bXDYmb07hxVSoVkT1Az6tuMxLN4OgXvY0xEpb6OO+CBv7W3Xf3UzJZuIUnRoVpqxAg==
+	t=1792483054;
+	b=Nwk3MWnsu/bimvOH1/a2KCp21MZBY58PpAluNbNqTZnh5hY4Lphy2pzyoUJCfarGB7Re
+	 VBE43tp7kAdqhWIySz2M6CDggIM2hGeVn5ZXLIuXWhIMr2Dn3GZRgl7e5iHkB1M2d56mc
+	 HnnFjPjCSoSvXy971g4/9+BCD3/VM4Xl5wtSg738lZG1gNAdrQlRFnY4IRjejAOzkrhxi
+	 JG3CcDyMqvWwiz1wIf5FJotOICgoQkSLynlVAKi1JRstmwZgGiVCw0jRNuN78SvGFkYa7
+	 jBwY6GhWL6C1HYOi4wXdzn/FgY2JpC60TRY0/xoBxDPCQzrCW6aNeqa3PPt1kbJhMyA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792441286;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=5SGe5k/sxuefMjqMn88o6FMTCheBSXX/pG7tZNOtng0=;
-	b=FscU7Zuugtm2Ub6kI64uaeyHdfcGenH689RNvmcR23OUr2rRXx8uqYjUhPUm+eQBpw1G
-	 bhPJsCwEoGNTCsDwtEZq/WfxXkLgyYncF7RxWKciMpCkNKKdakd9AHLRbZyIfxXVlIqui
-	 lodTfihXEvMqJcECGbqpZbBixrQck8+OG5o36R2NWVbwZI+RlCriR8cZ/Xfu8Rpo41WCO
-	 Zgyznp3rHm3VYqztY95OdXR3tOn9BloZpu6V4Sz0yyMZJlpCpVGaKRP8iSMw2EbwG1o9N
-	 DunPUAN/I3w/QrSrrwARUOxsPHT/WNIHsder8vbc0TZjkPI3JdxBDJA7o0P7PuZ7v+g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792483054;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=mlPkgtEB9wKXaP4Uhs/P2TX0qVUv9caR1167FeDUJuI=;
+	b=HBMlU8OnfvWfF7O7uRZKikYPruCCho5W850tzpSGBLu09+yo0AdRW9x4ktIVHTWqxSsG
+	 i+/DeGZxSKyQPgVZnz/7/7VgKNepkUZ5J6in2KH19bzGc+t6jRAggah54eSd8Pp7Q0gpM
+	 cD5a0LK+5WF55kqP09QSfPehqdcVXTNliYFvjiEsXcDPKxbYzwKBSFkD8JZrItp7UOZ7G
+	 dEtieGZjJZGHT5S3XBtyTecfQoafxvsDxmRfb64ovP/Pzok2idlUdzsad66tcGTRApe2A
+	 Q83JyFzYjbdgcDGM/GOLUZPQQWQJVBiwd4Nkz+8sj8CoTOfMafDceQLQeDthS1y0Hkw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=N4F39o8h;
-	arc=none smtp.remote-ip=209.85.128.46
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ojpGzEti;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB5C0606A31E
-	for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 20:21:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CB5C0606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C24FD606A319;
+	Tue, 20 Oct 2026 07:57:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=N4F39o8h
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-4a1dede3c2cso28527975e9.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2026 13:21:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792441284; x=1793046084; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=5SGe5k/sxuefMjqMn88o6FMTCheBSXX/pG7tZNOtng0=;
-        b=N4F39o8h2bRYjS/nBSs4Wut7jXe6vQDCJezCfqTuYfaQu05wkEFpcElLDnPgy7E/aq
-         FZMZMaV1NpnBXOQ2Op3ITzaZ521eVpNf/a1ffNEGKSEYQbxNLVhg9Ax0P5VBM5zqvXAy
-         j7nwulX6ct8uzCRXsJcLfRFcohmZwnmMHqRaRBkyAxHhVc3q8DQGras8KtOWEFQdP9zD
-         YaRK5EOqha5tjyBpEAV6PHtMH6GkxVTBWiQzX08AIcktgQJ3Z4+X3qSpW9hokVb1MSQw
-         0HvmvddD+EGwhitr6PZqmtIeSxmsJzv879Pd9kaxE3xTBWYGppR96++2Dj4YIy5bmQVj
-         f44w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792441284; x=1793046084;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=5SGe5k/sxuefMjqMn88o6FMTCheBSXX/pG7tZNOtng0=;
-        b=iYZKnIOwapbjX56ceRZ3RpdqeEwqafe0WnIXM1vvxGTgZVlbi+67W5zTvhP6LmL9bk
-         6hBYXl+KT3AUW3hCwBrzWegorgPD0BE0aLqDJ09mVJEOuZkC5pB2O4vPAgD4S8zEkEWK
-         nyCKGvaZIQeriUqmMn7OGUbOsObXa8vKrMHJD1OGaxyi859ur3prNtqDhcGE0Qgnzbw4
-         7CZZSIKimyCeevR5hYMm1vU8jMiV++saaAEtRHNVtU3PRJKwOKLUKoVujeOv1STzTjtE
-         dpZKoLsEV3fZAsAZulqZsTJVbm3UcCfnymJ0GRT+eIvnMZiAE4xcyJcKAfdgfzzpwzX0
-         sQ0Q==
-X-Gm-Message-State: AFq9FYLTrOBHM9sJpL6ZqlGmS7ODHexJ1gGPz2TP3h6kMrZa8fSePSSw
-	HzLxn7APjCMYasKHPcge+SgHV+yg6lO0xcOdwoajmiXjHXMlLEV7ehO/
-X-Gm-Gg: AYBFou0tRWVf+V6afw9MfYiampBbpLq2en8Mf0AGxDfyhJgbcAvjwT1cY/vbFBsl42m
-	sUlui+Ebm+4ZR2CkipTOPIHQTEm/u3mnFXBU6Zs148x92mNeZuTUuicNauFhwawUGB+4wLpx9rw
-	hKLIKJwdSdKWSwkAzcjBMwtFHpzpwR/dg1VrnOFoEsfFxBs4uPOU61JbeFvMW/D4CiinnFT+kiK
-	oMFbyF/e6NaXRRSoIhIkg2c2u1senqmUZryG8bbWhqLKPP2UMDpgOrB9zsSS1w6wepb3/GIiqVe
-	4RkvbapZ1eQEXO45PLwYAUXXSbsfp9ZJG1T5oHf5SK665lvPLbDjt1WrrWieDIFRGHYfthzc9eZ
-	p/6TDLdxt1M8Iw0ZvbhMptlfwWOF6dLBBKVa6CD+PbOoM4D3EuHce+vnUVM2ynKb3yd5XnJBoPB
-	P9TnIG9Hs+YqN2a+tj1bLX/Q54Q6EpejiPBF5T4XrRUuHInvu3A74jk4ORH/uLE+AJiSbNUGFS6
-	LboX5HMYivUzlQHrZNhLHB4fYg=
-X-Received: by 2002:a05:600c:4f06:b0:4a1:e69d:90e8 with SMTP id 5b1f17b1804b1-4a1e69d931cmr119638455e9.22.1792441284070;
-        Mon, 19 Oct 2026 13:21:24 -0700 (PDT)
-Received: from DESKTOP-0KSTGNI.localdomain ([156.213.131.39])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e1d817d8bsm943142f8f.24.2026.10.19.13.21.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2026 13:21:23 -0700 (PDT)
-From: Temitope obabi <obabitemitope765@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	outreachy@lists.linux.dev,
-	julia.lawall@inria.fr,
-	Temitope obabi <obabitemitope765@gmail.com>
-Subject: [PATCH v2] staging: sm750fb: Remove redundant NULL and zero assignments in probe
-Date: Mon, 19 Oct 2026 23:20:15 +0300
-Message-ID: <20261019202015.1724-1-obabitemitope765@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ojpGzEti
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3D991F000C4;
+	Tue, 20 Oct 2026 07:57:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792483053;
+	bh=mlPkgtEB9wKXaP4Uhs/P2TX0qVUv9caR1167FeDUJuI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=ojpGzEtibXYnqSq9ttf61L+ZIWw0Wx9Twmh0EIk8ouSDAztcpTeEnFjBS9N8qjlf3
+	 MLCqVqz6MIqwM/grpczvF0LdWSmHeBHwxZ2qHf8YM2rZgaYZXna7qDpqea1orbW3Ln
+	 998+tYMvswZWi7MWx4seCVbFucQqGMSG1d5KZo46hagSfCL1xI0f8gees37yPm41bJ
+	 ES8Idwn2w/Z1Iy39pbrKKRDBwrT2c8pMfRTy3t9RlQAkSgmhHbCVEZrP2zrLnsETgV
+	 Z1ngMMa2LXlPAG6P9WIdaNoCu/l8RyWm0gMRZXK2i8vk42WzSRk+CrZqRrHVXoMQzO
+	 IYHc6AGHJ0zPg==
+Date: Tue, 20 Oct 2026 09:57:30 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	Kiran Gunda <quic_kgunda@quicinc.com>, Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>, 
+	Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Stephen Boyd <sboyd@kernel.org>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+	Dmitry Baryshkov <lumag@kernel.org>, linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	mfd@lists.linux.dev
+Subject: Re: [PATCH v2 3/8] dt-bindings: mfd: qcom,spmi-pmic: add LCDB
+Message-ID: <20261020-illustrious-amorphous-ladybug-8a8526@quoll>
+References: <20261019-sm8150-display-card-v2-0-86c05068efc5@oss.qualcomm.com>
+ <20261019-sm8150-display-card-v2-3-86c05068efc5@oss.qualcomm.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -97,49 +65,24 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261019-sm8150-display-card-v2-3-86c05068efc5@oss.qualcomm.com>
 
-The sm750_dev structure is allocated with devm_kzalloc() just above,
-so its memory is already zeroed. Remove the explicit NULL assignments
-to fbinfo[0] and fbinfo[1] and the zero assignment to mtrr.vram, which
-only set fields that are already zero.
+On Mon, Oct 19, 2026 at 02:25:39PM +0300, Dmitry Baryshkov wrote:
+> Allow the LCDB regulator block as a child of the SPMI PMIC node.
+> 
+> Assisted-by: LLM
+> Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+> ---
+>  Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml | 4 ++++
+>  1 file changed, 4 insertions(+)
 
-Signed-off-by: Temitope obabi <obabitemitope765@gmail.com>
+You need to document/explain the merging dependencies. This looks like
+cannot be taken alone.
 
----
-Changes in v2:
-- Remove an accidental duplicate of the note at the end of the patch.
-  No code changes.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Note: Greg replied to my earlier sm750fb patch that keeping the
-explicit zero assignments is good because it is clear what is
-happening. In that patch the allocation was in a different function.
-Here the assignments are in lynxfb_pci_probe(), just after the
-devm_kzalloc() call and its NULL check, so I think removing them may
-still be useful.
-
-
- drivers/staging/sm750fb/sm750.c | 3 ---
- 1 file changed, 3 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 8b93bfeb217b..8702f6313f78 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -969,13 +969,10 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 	if (!sm750_dev)
- 		return err;
- 
--	sm750_dev->fbinfo[0] = NULL;
--	sm750_dev->fbinfo[1] = NULL;
- 	sm750_dev->devid = pdev->device;
- 	sm750_dev->revid = pdev->revision;
- 	sm750_dev->pdev = pdev;
- 	sm750_dev->mtrr_off = g_nomtrr;
--	sm750_dev->mtrr.vram = 0;
- 	sm750_dev->accel_off = g_noaccel;
- 	spin_lock_init(&sm750_dev->slock);
- 
--- 
-2.53.0
+Best regards,
+Krzysztof
 

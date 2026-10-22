@@ -1,89 +1,51 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.52
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792562379;
-	b=YPAKCar1XsRo7ieMiqd5IOF4/LIR4h7w3hAVrY+Te92fzb8ZLbBtvWGzkxRbD16kOSd1
-	 9y9A3sYSHonbxv5BXRUC9ggb56vulLNtUUNpNsUwH+G8iyuu9BOaziXNIFGUQfB0Fk338
-	 XsTKq+rCBSuMcXn/CeE0hwoDJl8g7X9mW53gz1BGkvF7lEGOvrX5tlKuD4CcD9aejT5Dy
-	 StAAkMO1sqyumnZuLARIo/5gG8wckNwb8hTxhf7nUdFCUvEeD6UN7jBlF+OAN40QvZeaZ
-	 3uUsHXpZvJSPFruZmyuNJQFpL+w0eaAWWXCvCUR/8BiVWoVkVh5XFaX5vyZgLbAGVTQ==
+	t=1792703775;
+	b=J/Wv9v3N+a+/UvvLlCl2hAvaQQpHgsSc+WTSkW3Mv6R6a6O2oOgl8diStoOnCPW7Enr8
+	 Os4oZNkpP4UquI5kG9RNu+YwL//ZTnPodB27awVK9pEZO1837ax6vf19zYLT29BC/Xyup
+	 ts65jylpOGEH2iXq4pWWZz2+cWWx1pxroX65sPuUIC3U/Ns7EshYB4TD5Rv2wQwaCMnu5
+	 OtZ1O0cmk1Jzfa7W/upeq0paosjTF/iBtDHZEEX97K1LJQ/CorIliMHkbjqQ3nLDnKAPc
+	 l5/kgMGW0lrsCDxykHqriS5tm7db00XykVrFJeXCeDZCBq1EYznxvnJDgXpdB5eayzw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792562379;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=7wvxYM7tnszHbpN8YPIatF2rX8H2hfZfH08DLyoi0hs=;
-	b=r06H0I9Fpa+5B+LILmJUO2uVdctiWr8N2ax+Qb62HYRsg2CXcxmfbzh+hPBpZpkEtLfK
-	 0jh3UZ5ggMJdnO5XhrnDUJZifKl+h34LJnxhMx7sRj07EQLxNycIL3dXLjo+p/SkdofHl
-	 9IBk2Cc3x217vyZlXz3I348Fevcfsjgr3yL8LPOxUkG28V2agco7nDK45LYRdtKDeq23S
-	 kq7mkhfKnlX3mbhJE1TSdAKp7daxPcxe3CEZUWJXaImz0s96e24/WOubVlmYUNN6MWmM4
-	 QSj7WBWwYQXSqCG+8na70rMfRsu1rHjzw/i76qlYn4anILHWHaxdYue0+GMkXsmWsKw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792703775;
+	h=Received:DKIM-Signature:Date:From:To:Subject:Message-ID:MIME-Version:
+	 Content-Type:Content-Disposition;
+	bh=ULiUyno5q/1ByPzV5Oc12QZ9vof4bDO1Z38qpJk8WTc=;
+	b=4FtjvGXJI/Xqm/E7PuNoUH/eKuKCYh52w66G2V1sxmyTK8HuuxpcnqwOWvp9wXMwyqA0
+	 34GM/9qoeTQBVvkSiY+fvrqsKOFfI+uNxDKNAGmxFLNOZI1zrHfwsGTtsdjNzlAqRVOKj
+	 Bf3EVIOlY1kKz9jf58DEhvc8E1YlgwH8HBVU16OzvzlO1Yczz538iuWrtPnmobRL6FTr8
+	 0YdqyxC5Z+gecIh6nBUqM9fclAzQnbj+w52NdKUZw/Ut0NkjkW5ftpS3lEQJwRStw65aU
+	 1b0qJDPvkw0W4RHGKkNfkcCYc8mDzFQZgx4oVOelHiK/vE3pkvkAWzas4sVPFS6rh6w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.128.52
-Received: from mail-wm1-f52.google.com (mail-wm1-f52.google.com [209.85.128.52])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ncc1etqj;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2219F606A319
-	for <linux-fbdev@vger.kernel.org>; Wed, 21 Oct 2026 05:59:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2219F606A319
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-wm1-f52.google.com with SMTP id 5b1f17b1804b1-4a1f403aca0so1698135e9.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 20 Oct 2026 22:59:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792562372; x=1793167172; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=7wvxYM7tnszHbpN8YPIatF2rX8H2hfZfH08DLyoi0hs=;
-        b=mrLOs0Rpv9fxgu2Jd7PX8MJDia5wKQtpIQdDOF2qFbADuLm36VGWwWE0HDxIh9JRig
-         w32Epcbwxa+m56SqCIKKjSl3/kB+LEXsLOLUONXC9szsW8tBGOeXNEZcoKcYpoeSzDhG
-         1tAkPF0DhGm2Vip3PdkectSRzedcDY90XKAZOVqjhcRGvmo2BdGcLyUfoCL6OA97eE+I
-         55kwVh0usiWzUec3VsTCCBFlvI0bwsiDMSLtPjbuyo3rOn9dBUIxC7n1HWh2r0SStKVH
-         lYvuJbIGwYPY9pkor9fYMzY80u9PDl/ZdEVnfpK3xbHVpHn6YJXzBPjsy+8i6Tac9MXF
-         kYIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792562372; x=1793167172;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=7wvxYM7tnszHbpN8YPIatF2rX8H2hfZfH08DLyoi0hs=;
-        b=GjSUxoCs1FO6ujXtye2RolEKowApIA/VZvOTy4EXDRMe+7deznRO7sOE+JQQN5/YVX
-         e6OrvrSYt5Gkfbry0PJbyI+EydaYyzIhIgLS/gaH8Z3fEs8BIEEImHeKpPuQWd/GXzI0
-         nOKe7dI+fYRhcHP2WokAeLLb31U9NCI/juXc3ZL7jHs089r3DrrP++CW5hlU2xmaaPv+
-         JUm6do9N3lfikOGsxMqKUdQqOz9sw3rR+eRcA/vKZG+qP93zYaop3xA1lAWtTcFvYRB3
-         VjgHqKtnUgisRtjUjwR9kKTqV278B7Ip8jkKCQBlsSD7GWQjK9fGePItQHthxTvqwbDo
-         vDPQ==
-X-Forwarded-Encrypted: i=1; AKwUvByDW+8sRUzrVfgg0F+R2pe/bZM8rdQvCLA5FhXNBzsDMazVLrJw7uHIR0XdXvsP4X79Du4IKSYdhuEsXQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIgh0Oa2qYvK4atfqklQDwWMXnExGGC4EZsoKPR6eaYKgZ2QQc4
-	HQgsawyszEhH41Lb4LccnG0j0OlYjiwYC5+ez1NilQFkjk0/+gC9GeNr
-X-Gm-Gg: AYBFou0aPBpRxPCaqAhkJczF31ZCn8lrBZwQhZKSSYvpQOsoIeZg4dgiP//cCm2a+FK
-	ISpHYkNdoA93PPwHhfTfXWFmIhFfXkkIALqrQR2O4ahDVG8DLzBORCclqGhBEdd4jyUv7lpJ5eo
-	IZ4iTT3zFebGba1Mjx2YHDRs5etRqbQfngX6hYbf8yXo2UqLc9fdNJTAku5Z1M7GxTdqidcpzGQ
-	dnhoZ1vEXbuy4dkddCm0GQKoMQtEJsdvB4WNDhjkI1F89OTdHlEzQ7RLwFWSC9nQHDpoXGqg9lx
-	DsHlw0fCCBdX9jOo6ixSjI7b1p6et+tN7FSLMSY/AEbG04htMtlKx0DJpnkqnmYTOECZ9Gbnc+Z
-	Kx6gXBbWCDXbFcYV6TqWULlSRiVKCdxQ1B7IKJoWGY385nsffni4ASw/sjQEdISlKYPxrx7zrdy
-	2oq+b2C7bSFbYzUDTLy1MytuvHvcS/j5B2na+wZzCLQyE0Pk/fJgv59ovJUnDQJpz4A3a2uTFyq
-	ZQs/CV9dB0dBlHyxuOjFif6GtQ+r7fgz6qPHFHB8RGfflTKklButkZki9GXuJTzhlQOzqXoeg==
-X-Received: by 2002:a05:600c:c8c:b0:4a1:e489:f8a1 with SMTP id 5b1f17b1804b1-4a1fd89d90cmr15704905e9.2.1792562372261;
-        Tue, 20 Oct 2026 22:59:32 -0700 (PDT)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a1f2d6e2dbsm134642305e9.13.2026.10.20.22.59.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 20 Oct 2026 22:59:31 -0700 (PDT)
-Date: Wed, 21 Oct 2026 08:59:28 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: LiuJunyuan <2058432396@qq.com>
-Cc: andy@kernel.org, gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: use scnprintf for fixed-size text buffers
-Message-ID: <athUwPFnbEJ0p-0s@stanley.mountain>
-References: <tencent_FFC8FA1142CEF600BDEBE1EDF4EC27C39005@qq.com>
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0667606A319;
+	Thu, 22 Oct 2026 21:16:14 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ncc1etqj
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DD8A1F01825;
+	Thu, 22 Oct 2026 21:16:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1792703774;
+	bh=ULiUyno5q/1ByPzV5Oc12QZ9vof4bDO1Z38qpJk8WTc=;
+	h=Date:From:To:Subject;
+	b=Ncc1etqjoKYP2taNTsSlTYum2oye1Y8LhmHqk/IxJTZAbTUGi+NCXEr1v5ul3JyY7
+	 7vu3wug+MiFHEvZ0PKAC/hIgXQkuCrlW538sI7RM92Cs5adswCD/D1CeXrG1Nq0V/0
+	 fTUvSJmEsXh4dtWAaW647MnHqPD+sjx/xBYgg5HbzCxlylMfPA8k/05qm+WqBLSeJQ
+	 LfxfIQuy3q+xBmqjTuYO+JI5deozTOXh5TbU3W/SPQn9Q84mV+4KcKjO0KZP6vG4rR
+	 vnPI37JaSAtT/hisAX2BZm+sa3Lf/TsnGwvumk9sPF/VzvgpTNvrKJ5HPhQUOBZq2N
+	 ij2ZH0WUsvxCQ==
+Date: Thu, 22 Oct 2026 23:16:10 +0200
+From: Helge Deller <deller@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev fixes and updates for v7.4-rc1
+Message-ID: <atp9GlM3gE8uF0xo@carbonx1>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -95,17 +57,193 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <tencent_FFC8FA1142CEF600BDEBE1EDF4EC27C39005@qq.com>
 
-On Wed, Oct 21, 2026 at 11:22:08AM +0800, LiuJunyuan wrote:
-> Replace sprintf() with scnprintf() when formatting the framebuffer
-> description strings into fixed-size buffers.
+Dear Linus,
 
-In commits like this, I want some analysis of if this change matters
-or not.  I would still support a change like this even if it didn't
-fix a bug but the commit message needs to say if it's a cleanup or
-a fix.
+please pull the first bunch of fbdev fixes and cleanups for kernel v7.4-rc1:
 
-regards,
-dan carpenter
+A whole lot of small fixes all over many drivers, but the majority of changes
+are related to code cleanups regarding the cursor handling in vt and fbcon.
 
+Thanks!
+Helge
+
+----------------------------------------------------------------
+The following changes since commit 24a19b953e2a3d0ea5a8c4951a0ab8f32720c907:
+
+  Linux 7.3-rc7 (2026-10-11 20:04:55 -0700)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.4-rc1
+
+for you to fetch changes up to 61e1a43ca5825acb137a10ac7d52746632bfb124:
+
+  fbdev: xilinxfb: Use FB blanking constants (2026-10-20 22:36:14 +0200)
+
+----------------------------------------------------------------
+fbdev fixes and cleanups for 7.4-rc1:
+
+Fixes:
+- core: initialize modelist in framebuffer_alloc()
+- core: bitblit: fix glyph clipping when fbcon pans
+- fbcon: restore font geometry if font rotation fails
+- sh_mobile_lcdcfb: restore the per-overlay sysfs attributes
+- udlfb: don't rebuild the mode list while the framebuffer is in use
+- atmel_lcdfb: prevent FIFO work after removal
+
+Cleanups:
+- vt, fbcon, vgacon: cursor code rework & cleanups
+- MAINTAINERS: name the deller/linux-fbdev for-next branch
+- drop unused FB_IOMEM_HELPERS_DEFERRED Kconfig option
+- acornfb: remove unused code
+- atafb: fix sparse warnings and avoid casts
+- sstfb: use managed PCI device enable
+- gxt4500, kyro, nvidia: release write-combining handle on probe failure
+- various drivers: typo fixes in comments
+- various drivers: fix error path on fb_deferred_io_init() failure
+- various drivers: use FB blanking constants instead of VESA constants
+
+----------------------------------------------------------------
+Andrey Misiurov (1):
+      fbdev: core: Initialize modelist in framebuffer_alloc()
+
+Ethan Nelson-Moore (1):
+      fbdev: acornfb: remove unused code for 26-bit hardware
+
+Helge Deller (3):
+      fbdev: Drop unused FB_IOMEM_HELPERS_DEFERRED Kconfig option
+      fbdev: atafb: fix sparse warnings
+      fbdev: atafb: avoid cast when assigning buffer address pointer
+
+Hemanth Selam (20):
+      fbdev: s1d13xxxfb: fix typos in comments
+      fbdev: sticore: fix typos in comments
+      fbdev: viafb: fix typos in comments
+      fbdev: sstfb: fix typos in comments
+      fbdev: tgafb: fix typos in comments
+      fbdev: tridentfb: fix typos in comments
+      fbdev: mmp: fix typos in comments
+      fbdev: au1100fb: fix typos in comments
+      fbdev: efifb: fix typos in comments
+      fbdev: grvga: fix typos in comments
+      fbdev: kyro: fix typos in comments
+      fbdev: maxinefb: fix typos in comments
+      fbdev: pm2fb: fix typos in comments
+      fbdev: skeletonfb: fix typos in comments
+      fbdev: ocfb: fix typos in comments
+      fbdev: omap2fb: fix typos in comments
+      fbdev: radeonfb: fix typos in comments
+      fbdev: mach64: fix typos in comments
+      fbdev: aty128fb: fix typos in comments
+      fbdev: atyfb_base: fix typos in comments
+
+Karl Mehltretter (1):
+      fbdev: sh_mobile_lcdcfb: Restore the per-overlay sysfs attributes
+
+Lorenzo Stoakes (ARM) (6):
+      fbdev: ssd1307fb: check for fb_deferred_io_init() error
+      fbdev: xen-fbfront: check for fb_deferred_io_init() error
+      HID: picoLCD: check for fb_deferred_io_init() error
+      fbdev: udlfb: check for fb_deferred_io_init() error
+      fbdev: smscufx: check for fb_deferred_io_init() error
+      fbdev: sh_mobile_lcdc: check for fb_deferred_io_init() error
+
+Matthias Goergens (1):
+      MAINTAINERS: name the deller/linux-fbdev for-next branch
+
+Myeonghun Pak (4):
+      fbdev: gxt4500: Release WC setup on probe failure
+      fbdev: kyro: Release WC setup on registration failure
+      fbdev: nvidia: Release write-combining handle on probe failure
+      fbdev: sstfb: use managed PCI device enable
+
+Thomas Zimmermann (10):
+      vt: Add cursor-size helpers
+      vgacon: Remove trailing whitespaces
+      vgacon: Use vt_cursor_{start,end}()
+      lib/fonts: Add font_glyph_cursor() helper
+      fbcon: Replace fbcon_fill_cursor_mask() with fbcon_cursor_glyph()
+      fbdev: au1100fb: Use FB blanking constants
+      fbdev: i810fb: Use FB blanking constants
+      fbdev: sa1100fb: Remove comment on VESA DPMS modes
+      fbdev: platinumfb: Use FB blanking constants
+      fbdev: xilinxfb: Use FB blanking constants
+
+Tingjie Zhong (1):
+      fbdev: bitblit: Fix glyph clipping when fbcon pans
+
+Xiang Mei (1):
+      fbdev: udlfb: don't rebuild the mode list while the framebuffer is in use
+
+Yao Yiqi (3):
+      fbcon: Include font geometry in the rotated font cache
+      fbcon: Rebuild rotated font buffer on font change
+      fbcon: Retry rotated font allocation after failure
+
+Yibo Tan (1):
+      fbdev: atmel_lcdfb: Prevent FIFO work after removal
+
+ MAINTAINERS                                     |   2 +-
+ drivers/hid/hid-picolcd_fb.c                    |  12 ++-
+ drivers/tty/vt/vt.c                             | 114 ++++++++++++++++++++++++
+ drivers/video/console/vgacon.c                  |  43 +++------
+ drivers/video/fbdev/acornfb.c                   |  57 +++---------
+ drivers/video/fbdev/acornfb.h                   |   9 +-
+ drivers/video/fbdev/atafb.c                     |  28 +-----
+ drivers/video/fbdev/atmel_lcdfb.c               |  11 ++-
+ drivers/video/fbdev/aty/aty128fb.c              |   2 +-
+ drivers/video/fbdev/aty/atyfb_base.c            |   4 +-
+ drivers/video/fbdev/aty/mach64_cursor.c         |   2 +-
+ drivers/video/fbdev/aty/radeon_base.c           |   4 +-
+ drivers/video/fbdev/aty/radeon_monitor.c        |   4 +-
+ drivers/video/fbdev/aty/radeonfb.h              |   2 +-
+ drivers/video/fbdev/au1100fb.c                  |  20 ++---
+ drivers/video/fbdev/core/Kconfig                |   6 --
+ drivers/video/fbdev/core/bitblit.c              |  10 ++-
+ drivers/video/fbdev/core/fb_info.c              |   1 +
+ drivers/video/fbdev/core/fbcon.c                |  91 ++++++++++++-------
+ drivers/video/fbdev/core/fbcon.h                |  21 +++--
+ drivers/video/fbdev/core/fbcon_ccw.c            |   3 +-
+ drivers/video/fbdev/core/fbcon_cw.c             |   3 +-
+ drivers/video/fbdev/core/fbcon_rotate.c         |  10 ++-
+ drivers/video/fbdev/core/fbcon_ud.c             |   3 +-
+ drivers/video/fbdev/efifb.c                     |   4 +-
+ drivers/video/fbdev/grvga.c                     |   2 +-
+ drivers/video/fbdev/gxt4500.c                   |   1 +
+ drivers/video/fbdev/i810/i810_main.c            |   2 +-
+ drivers/video/fbdev/kyro/STG4000OverlayDevice.c |   2 +-
+ drivers/video/fbdev/kyro/fbdev.c                |   4 +-
+ drivers/video/fbdev/maxinefb.c                  |   2 +-
+ drivers/video/fbdev/mmp/core.c                  |   2 +-
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c           |   4 +-
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.h           |   4 +-
+ drivers/video/fbdev/mmp/hw/mmp_spi.c            |   2 +-
+ drivers/video/fbdev/nvidia/nvidia.c             |   1 +
+ drivers/video/fbdev/ocfb.c                      |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c    |   4 +-
+ drivers/video/fbdev/platinumfb.c                |   8 +-
+ drivers/video/fbdev/pm2fb.c                     |   2 +-
+ drivers/video/fbdev/s1d13xxxfb.c                |   6 +-
+ drivers/video/fbdev/sa1100fb.c                  |  29 ------
+ drivers/video/fbdev/sh_mobile_lcdcfb.c          |  45 ++++++----
+ drivers/video/fbdev/skeletonfb.c                |   6 +-
+ drivers/video/fbdev/smscufx.c                   |   9 +-
+ drivers/video/fbdev/ssd1307fb.c                 |   6 +-
+ drivers/video/fbdev/sstfb.c                     |   5 +-
+ drivers/video/fbdev/tgafb.c                     |   6 +-
+ drivers/video/fbdev/tridentfb.c                 |   2 +-
+ drivers/video/fbdev/udlfb.c                     |  14 ++-
+ drivers/video/fbdev/via/dvi.c                   |   6 +-
+ drivers/video/fbdev/via/hw.c                    |   2 +-
+ drivers/video/fbdev/via/viafbdev.c              |   4 +-
+ drivers/video/fbdev/xen-fbfront.c               |   7 +-
+ drivers/video/fbdev/xilinxfb.c                  |   2 +-
+ drivers/video/sticore.c                         |   2 +-
+ include/linux/console_struct.h                  |   8 ++
+ include/linux/font.h                            |   4 +
+ include/video/mmp_disp.h                        |   6 +-
+ lib/fonts/Makefile                              |   3 +-
+ lib/fonts/font_cursor.c                         |  56 ++++++++++++
+ 61 files changed, 444 insertions(+), 292 deletions(-)
+ create mode 100644 lib/fonts/font_cursor.c

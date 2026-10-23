@@ -1,55 +1,100 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792761895;
-	b=s0ZwZ4Y4fGgvCxa7R131R2GXx7HGdNmVQuaxAq7ivVKbiu5PB7df8ufIqjKv/pCntAFX
-	 myLKuuL6M1KfsYtQKV0Peh7CYEeOQeyQbtq9+8LfhZksHOgzBy6nNvoK6FFyzeG4NvwEK
-	 6M2o7vzAN1m8FBera9HNCK7M+5ZUkKq8nz8ijFhVWTmnx0682s6oUfqdm556SxJHzg3+x
-	 D5yYiJyc34aRnEjQyVJEOQrF/zeMeIzd7B06cwwC2MoyFZbyKtBmZlCwXrEGjyjhKv9mW
-	 n8/5iAhlfJuTKnlsodErwN1ux/+z0bLlTKpKJgR8Coqoj+M+lUdWYiwiYssuTFu6shw==
+	t=1792761896;
+	b=RUWRZGJig+pVrDF5tjZIHOJXXWXWY4hmaZnbPJadUevk4jIqeFSpBtbPx2g7y1yZxO9v
+	 UuRrsi7A95rSsjZRcAqcBleAAxd6Cb+o5dt36nDU/ueUJ0HxZje/KzrsQqL61rribrKKG
+	 JpP2BGEsjzCUqT5Re4WvBo+H5hm7Q/a3YGGcMDtRPTzGyNY0c2EnOpNEV73WOTDF0IY9R
+	 pzGngtgJ5xBP5iHShbv8Z9muT/x6aoFstyiq+Q+yzVqkwTv5jqz0abSzBVvZvaS+ys9SP
+	 A/8rzwMI2ysC9PsQ8YMFShBbMhxFJmD6i0Y7/dUTZ862/yfCoqDkDGZI9A/k5dBZZmg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792761895;
-	h=DMARC-Filter:Received:Received:Received:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Rspamd-Pre-Result:X-Rspamd-Queue-Id:
-	 X-Rspamd-Pre-Result:X-Rspamd-Action:X-Rspamd-Server:X-Spam-Level:
-	 X-Spamd-Result:X-Spam-Flag:X-Spam-Score;
-	bh=JFTfF/+dKodAINkeqFDJ9gdDQsEU1yKigXEy0qcWv7k=;
-	b=IqFkjUSCvvpRqOcjFwbTDIaMkn5kDQ+s2+Ufnj/sBnDJ9sefXW6375xrmP3oY/g3IoXH
-	 UNelF6B6EAOYOkFSbsg0DZ3f+ehHcpsJBFeVga3p1IYrxh4c8k4Y7S8N5jRIhcop/55VB
-	 EZ2pK8sG1pf9gxj3+vWZO6k0f2REK+4iFKSvPvkRS8mgBd+d2Tru21p38HZMf7dmuda8V
-	 PWAOTypjinnxz8iBXGQCKZpUcDxtCuGin9mp+fzr4nsdmGbH4WIiegyIVDhQb+1Jsnczz
-	 NevixY4+Y97juO1V84osJTuLnK9Nq3q5Iv9esd/+DeqTqmF7uUQYEbRIaicE0wgPp/w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792761896;
+	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
+	 DKIM-Signature:Received:Received:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-Spamd-Result:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Flag;
+	bh=dT92v6jst6Wn6VkhTX59BC8n5a2SVYmz9yZ1pZeV1IU=;
+	b=pwXTLaK6EY3TJreIJXx95adFxaM5Thq6VHK7LxR9+TpKTaPIM7Q0/Y34VPovpkVR0N6I
+	 feUGryIdMIWVHTHgib8wODvrxPOSfRrWiPIAQ6E51vX0GvhOMLanLK6S+fx94zHht0CA8
+	 HhsNlJWDQM+CZ3X1dQuRaEuI6QdDcSPHEmmDWKwRZtHst5dyRqn7MMdmBZT08gHjoQ3tx
+	 4sGh5c+HOoPBF9aEIRs145pSNfR4Yft0mT9vvSH20+5fGBWLIKpdqsj6fLRNc9uPPskvP
+	 qGo/4BqeZ6cpCoxoy2VleFZeh4EDOfTF5VqFCxVtKltl8476gyDQ+jKJaBlLyViylCA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=suse.de;
 	spf=pass smtp.mailfrom=suse.de;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b="yrKqnu6/";
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b="4gCK0x0/";
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b="yrKqnu6/";
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b="4gCK0x0/";
 	arc=none smtp.remote-ip=195.135.223.130
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9A11606A324;
-	Fri, 23 Oct 2026 13:24:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A9A11606A324
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7D63260A260A;
+	Fri, 23 Oct 2026 13:24:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7D63260A260A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key, unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yrKqnu6/;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=4gCK0x0/;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yrKqnu6/;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=4gCK0x0/
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 3BDA2220A6;
+	by smtp-out1.suse.de (Postfix) with ESMTPS id DBE0B2217D;
 	Fri, 23 Oct 2026 13:24:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1792761893; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dT92v6jst6Wn6VkhTX59BC8n5a2SVYmz9yZ1pZeV1IU=;
+	b=yrKqnu6/iJrapFuBDMqWRVS2SUyL7aUbyKkWw00j+6N9m3urEHMjtMkvxP0o2T509Otztd
+	6kVuKgbwVr36EXrjQXzlh0vUKHeaKNFotM5j8OtoLDXqps/d68LOaMg+xBMPLfArBWFb6U
+	Rr5ucCLKs9ioJTHqGEDdtAEKH4+5z0A=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1792761893;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dT92v6jst6Wn6VkhTX59BC8n5a2SVYmz9yZ1pZeV1IU=;
+	b=4gCK0x0/2KOKqnAZfCOTwQ1sw2jAZkswkWJWlceNNU2ljLBkp106kw8Pm8J3RuBKBTfs5o
+	ZlaTgnilMuWuW2DA==
 Authentication-Results: smtp-out1.suse.de;
 	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1792761893; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dT92v6jst6Wn6VkhTX59BC8n5a2SVYmz9yZ1pZeV1IU=;
+	b=yrKqnu6/iJrapFuBDMqWRVS2SUyL7aUbyKkWw00j+6N9m3urEHMjtMkvxP0o2T509Otztd
+	6kVuKgbwVr36EXrjQXzlh0vUKHeaKNFotM5j8OtoLDXqps/d68LOaMg+xBMPLfArBWFb6U
+	Rr5ucCLKs9ioJTHqGEDdtAEKH4+5z0A=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1792761893;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dT92v6jst6Wn6VkhTX59BC8n5a2SVYmz9yZ1pZeV1IU=;
+	b=4gCK0x0/2KOKqnAZfCOTwQ1sw2jAZkswkWJWlceNNU2ljLBkp106kw8Pm8J3RuBKBTfs5o
+	ZlaTgnilMuWuW2DA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CFED7134E6;
-	Fri, 23 Oct 2026 13:24:52 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 77EF8134E6;
+	Fri, 23 Oct 2026 13:24:53 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id kolmHiNg22qfRQAAD6G6ig:T4
-	(envelope-from <tzimmermann@suse.de>); Fri, 23 Oct 2026 13:24:52 +0000
+	id kolmHiNg22qfRQAAD6G6ig:T6
+	(envelope-from <tzimmermann@suse.de>); Fri, 23 Oct 2026 13:24:53 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: gregkh@linuxfoundation.org,
 	jirislaby@kernel.org,
@@ -62,9 +107,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-parisc@vger.kernel.org,
 	sashiko-reviews@lists.linux.dev,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 3/7] fbcon: Implement struct consw.con_unblank
-Date: Fri, 23 Oct 2026 15:16:13 +0200
-Message-ID: <20261023132448.115747-4-tzimmermann@suse.de>
+Subject: [PATCH v3 5/7] sticon: Implement struct consw.con_unblank
+Date: Fri, 23 Oct 2026 15:16:15 +0200
+Message-ID: <20261023132448.115747-6-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261023132448.115747-1-tzimmermann@suse.de>
 References: <20261023132448.115747-1-tzimmermann@suse.de>
@@ -78,122 +123,89 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Queue-Id: 3BDA2220A6
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-15.80 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	REPLY(-4.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FREEMAIL_TO(0.00)[linuxfoundation.org,kernel.org,gmx.de,HansenPartnership.com,ffwll.ch];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCPT_COUNT_SEVEN(0.00)[11];
+	R_RATELIMIT(0.00)[to_ip_from(RLqirfcw6gnbcr9a9yhi49fhi6)];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de]
+X-Spam-Score: -15.80
 X-Spam-Level: 
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
 X-Spam-Flag: NO
-X-Spam-Score: -4.00
 
-Implement con_unblank from struct consw with the !blank branches from
-fbcon_blank(). The new function is called fbcon_unblank(). Remove the
-duplicated code from fbcon_blank().
+Implement con_unblank from struct consw. The new function is called
+sticon_unblank(). Remove the related code from sticon_blank().
 
-Fbcon tracks fbdev blank state in par->blank_state using fbdev's FB_BLANK
-constants. In fbcon_unblank() the stored value is always FB_BLANK_UNBLANK.
-In fbcon_blank(), the new blank state is 1 + plus the VESA blank mode
-given in the parameter blank.
-
-fbcon_blank() now disables the cursor worker unconditionally.
+There is no display unblanking in sticon: only return true to redraw
+the console.
 
 v3:
 - take mode_switch from parameter
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/fbcon.c | 55 ++++++++++++++++++++++----------
- 1 file changed, 38 insertions(+), 17 deletions(-)
+ drivers/video/console/sticon.c | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index d97d94bb8e99..f6139e3c26a2 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2270,32 +2270,52 @@ static bool fbcon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
- 	struct fb_info *info = fbcon_info_from_console(vc->vc_num);
- 	struct fbcon_par *par = info->fbcon_par;
- 
--	if (mode_switch) {
--		struct fb_var_screeninfo var = info->var;
-+	if (mode_switch)
-+		par->graphics = true;
- 
--		par->graphics = 1;
-+	if (fbcon_is_active(vc, info)) {
-+		int blank_state = 1 + blank; /* convert VESA to FB_BLANK constant */
- 
--		if (!blank) {
--			var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE |
--				FB_ACTIVATE_KD_TEXT;
--			fb_set_var(info, &var);
--			par->graphics = 0;
--			par->var = info->var;
-+		if (par->blank_state != blank_state) {
-+			par->blank_state = blank_state;
-+			fbcon_cursor(vc, false);
-+			par->cursor_flash = false;
+diff --git a/drivers/video/console/sticon.c b/drivers/video/console/sticon.c
+index 6f58e6a9e76a..d1b5e1e5594d 100644
+--- a/drivers/video/console/sticon.c
++++ b/drivers/video/console/sticon.c
+@@ -302,17 +302,20 @@ static bool sticon_switch(struct vc_data *conp)
+ static bool sticon_blank(struct vc_data *c, enum vesa_blank_mode blank,
+ 			 bool mode_switch)
+ {
+-    if (blank == VESA_NO_BLANKING) {
++	sti_clear(sticon_sti, 0, 0, c->vc_rows, c->vc_cols, BLANK, font_data[c->vc_num]);
 +
-+			if (fb_blank(info, blank_state))
-+				fbcon_generic_blank(vc, info, true);
- 		}
- 	}
- 
-+	fbcon_del_cursor_work(info);
+ 	if (mode_switch)
+-	    vga_is_gfx = 0;
++		vga_is_gfx = 1;
 +
-+	return false;
+ 	return true;
+-    }
+-    sti_clear(sticon_sti, 0, 0, c->vc_rows, c->vc_cols, BLANK,
+-	      font_data[c->vc_num]);
+-    if (mode_switch)
+-	vga_is_gfx = 1;
 +}
-+
-+static bool fbcon_unblank(struct vc_data *vc, bool mode_switch)
+ 
+-    return true;
++static bool sticon_unblank(struct vc_data *c, bool mode_switch)
 +{
-+	struct fb_info *info = fbcon_info_from_console(vc->vc_num);
-+	struct fbcon_par *par = info->fbcon_par;
++	if (mode_switch)
++		vga_is_gfx = 0;
 +
-+	if (mode_switch) {
-+		struct fb_var_screeninfo var = info->var;
-+
-+		var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE | FB_ACTIVATE_KD_TEXT;
-+		fb_set_var(info, &var);
-+		par->graphics = false;
-+		par->var = info->var;
-+	}
-+
- 	if (fbcon_is_active(vc, info)) {
--		if (par->blank_state != blank) {
--			par->blank_state = blank;
--			fbcon_cursor(vc, !blank);
--			par->cursor_flash = (!blank);
-+		if (par->blank_state != FB_BLANK_UNBLANK) {
-+			par->blank_state = FB_BLANK_UNBLANK;
-+			fbcon_cursor(vc, true);
-+			par->cursor_flash = true;
++	return true;
+ }
  
--			if (fb_blank(info, blank))
--				fbcon_generic_blank(vc, info, blank);
-+			if (fb_blank(info, FB_BLANK_UNBLANK))
-+				fbcon_generic_blank(vc, info, false);
- 		}
- 
--		if (!blank)
--			update_screen(vc);
-+		update_screen(vc);
- 	}
- 
- 	if (mode_switch || !fbcon_is_active(vc, info) || par->blank_state != FB_BLANK_UNBLANK)
-@@ -3145,6 +3165,7 @@ static const struct consw fb_con = {
- 	.con_scroll 		= fbcon_scroll,
- 	.con_switch 		= fbcon_switch,
- 	.con_blank 		= fbcon_blank,
-+	.con_unblank		= fbcon_unblank,
- 	.con_font_set 		= fbcon_set_font,
- 	.con_font_get 		= fbcon_get_font,
- 	.con_font_default	= fbcon_set_def_font,
+ static u8 sticon_build_attr(struct vc_data *conp, u8 color,
+@@ -356,6 +359,7 @@ static const struct consw sti_con = {
+ 	.con_scroll		= sticon_scroll,
+ 	.con_switch		= sticon_switch,
+ 	.con_blank		= sticon_blank,
++	.con_unblank		= sticon_unblank,
+ 	.con_font_set		= sticon_font_set,
+ 	.con_font_default	= sticon_font_default,
+ 	.con_build_attr		= sticon_build_attr,
 -- 
 2.56.0
 

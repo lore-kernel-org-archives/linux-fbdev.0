@@ -1,11 +1,11 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1792761895;
-	b=tLC3sCECsr22qrggqPEIb6kq48mc8H6Z6D0T7HaYrOhRj89O2Esh5IFYC9thZMHvOzac
-	 3rkFJf/+7MDVKgLXe6O8PFdK0KWCwE7cIOsoU79HdUrx+Boj3pH52bGPaMRgqUUpTa4RY
-	 CVArlT5iMeqkZPs8qxMDdlDqFi4mBcJI5gmg0rBO8DyyrHFbxuR/V79Hz4hETe8s5T31k
-	 59y7VCF7ZCaGMAYr5urO+Fogo2J371vh7PEwdcVc8Ct9GUtHdf3/3tskY9ImwQrJ10nZk
-	 8oKL4MKZNP8zGbeIBcNHUneQ75NJPVAAc11sh0v0A/kYVY4ZjwWXy3BezenqJG2Ohpg==
+	b=s0ZwZ4Y4fGgvCxa7R131R2GXx7HGdNmVQuaxAq7ivVKbiu5PB7df8ufIqjKv/pCntAFX
+	 myLKuuL6M1KfsYtQKV0Peh7CYEeOQeyQbtq9+8LfhZksHOgzBy6nNvoK6FFyzeG4NvwEK
+	 6M2o7vzAN1m8FBera9HNCK7M+5ZUkKq8nz8ijFhVWTmnx0682s6oUfqdm556SxJHzg3+x
+	 D5yYiJyc34aRnEjQyVJEOQrF/zeMeIzd7B06cwwC2MoyFZbyKtBmZlCwXrEGjyjhKv9mW
+	 n8/5iAhlfJuTKnlsodErwN1ux/+z0bLlTKpKJgR8Coqoj+M+lUdWYiwiYssuTFu6shw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1792761895;
 	h=DMARC-Filter:Received:Received:Received:From:To:Cc:Subject:Date:
@@ -13,12 +13,12 @@ ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	 Content-Transfer-Encoding:X-Rspamd-Pre-Result:X-Rspamd-Queue-Id:
 	 X-Rspamd-Pre-Result:X-Rspamd-Action:X-Rspamd-Server:X-Spam-Level:
 	 X-Spamd-Result:X-Spam-Flag:X-Spam-Score;
-	bh=23Z0lb7bZcJI8jq52NeAveNZQJLHFRDKRar/W0fR32k=;
-	b=oJSYwHqaYqMfX/G5K+hPgWBAuka7w44r86bH88ZtMq3W0pSunBoi7kGQ5E5QVbVgVYK8
-	 6VW82dM2kqocBR0BZ8tD3/FLTM94x0vIZz1ZthXMfin28cjV4J+7pco9Sv8TLT+Sp9tIl
-	 97sVluhHoY+Ziu+iCwQ95gdPFhqs9Fjo2lXhkrEUgEb4YSzKo6RZ2kGIi60TOw1L9LE5z
-	 YEe3TqbFZdWzKzEXkz0r0hzH8OJbRL1LAD9OcnVYCvJwFMuyfsbysi9M5fo01yCQHCayh
-	 sSX0InFUO9wZ3OJFDvN6dCXLxZsVhimm7hstR439rplqEBsXR4S51nYAFT4E6HLVUJQ==
+	bh=JFTfF/+dKodAINkeqFDJ9gdDQsEU1yKigXEy0qcWv7k=;
+	b=IqFkjUSCvvpRqOcjFwbTDIaMkn5kDQ+s2+Ufnj/sBnDJ9sefXW6375xrmP3oY/g3IoXH
+	 UNelF6B6EAOYOkFSbsg0DZ3f+ehHcpsJBFeVga3p1IYrxh4c8k4Y7S8N5jRIhcop/55VB
+	 EZ2pK8sG1pf9gxj3+vWZO6k0f2REK+4iFKSvPvkRS8mgBd+d2Tru21p38HZMf7dmuda8V
+	 PWAOTypjinnxz8iBXGQCKZpUcDxtCuGin9mp+fzr4nsdmGbH4WIiegyIVDhQb+1Jsnczz
+	 NevixY4+Y97juO1V84osJTuLnK9Nq3q5Iv9esd/+DeqTqmF7uUQYEbRIaicE0wgPp/w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=suse.de;
 	spf=pass smtp.mailfrom=suse.de;
@@ -27,16 +27,16 @@ Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F348D606A32E;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9A11606A324;
 	Fri, 23 Oct 2026 13:24:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F348D606A32E
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A9A11606A324
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 89E1421FC2;
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 3BDA2220A6;
 	Fri, 23 Oct 2026 13:24:53 +0000 (UTC)
 Authentication-Results: smtp-out1.suse.de;
 	none
@@ -44,12 +44,12 @@ Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2ACCF133F6;
-	Fri, 23 Oct 2026 13:24:53 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CFED7134E6;
+	Fri, 23 Oct 2026 13:24:52 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id kolmHiNg22qfRQAAD6G6ig:T5
-	(envelope-from <tzimmermann@suse.de>); Fri, 23 Oct 2026 13:24:53 +0000
+	id kolmHiNg22qfRQAAD6G6ig:T4
+	(envelope-from <tzimmermann@suse.de>); Fri, 23 Oct 2026 13:24:52 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: gregkh@linuxfoundation.org,
 	jirislaby@kernel.org,
@@ -62,9 +62,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-parisc@vger.kernel.org,
 	sashiko-reviews@lists.linux.dev,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v3 4/7] newport_con: Implement struct consw.con_unblank
-Date: Fri, 23 Oct 2026 15:16:14 +0200
-Message-ID: <20261023132448.115747-5-tzimmermann@suse.de>
+Subject: [PATCH v3 3/7] fbcon: Implement struct consw.con_unblank
+Date: Fri, 23 Oct 2026 15:16:13 +0200
+Message-ID: <20261023132448.115747-4-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261023132448.115747-1-tzimmermann@suse.de>
 References: <20261023132448.115747-1-tzimmermann@suse.de>
@@ -81,7 +81,7 @@ Content-Transfer-Encoding: 8bit
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
-X-Rspamd-Queue-Id: 89E1421FC2
+X-Rspamd-Queue-Id: 3BDA2220A6
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
@@ -93,60 +93,107 @@ X-Spamd-Result: default: False [-4.00 / 50.00];
 X-Spam-Flag: NO
 X-Spam-Score: -4.00
 
-Implement con_unblank from struct consw with the VESA_NO_BLANKING
-branch from newport_blank(). Remove that code from the blank helper.
+Implement con_unblank from struct consw with the !blank branches from
+fbcon_blank(). The new function is called fbcon_unblank(). Remove the
+duplicated code from fbcon_blank().
 
-Both helpers, newport_blank() and newport_unbank(), clear or set
-a single flag in a hardware register. No further VESA DPMS blanking
-is supported.
+Fbcon tracks fbdev blank state in par->blank_state using fbdev's FB_BLANK
+constants. In fbcon_unblank() the stored value is always FB_BLANK_UNBLANK.
+In fbcon_blank(), the new blank state is 1 + plus the VESA blank mode
+given in the parameter blank.
+
+fbcon_blank() now disables the cursor worker unconditionally.
+
+v3:
+- take mode_switch from parameter
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/console/newport_con.c | 24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 55 ++++++++++++++++++++++----------
+ 1 file changed, 38 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
-index ecbbe2e4e2a6..1a6f9e8a79aa 100644
---- a/drivers/video/console/newport_con.c
-+++ b/drivers/video/console/newport_con.c
-@@ -481,17 +481,18 @@ static bool newport_blank(struct vc_data *c, enum vesa_blank_mode blank,
- {
- 	unsigned short treg;
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index d97d94bb8e99..f6139e3c26a2 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2270,32 +2270,52 @@ static bool fbcon_blank(struct vc_data *vc, enum vesa_blank_mode blank,
+ 	struct fb_info *info = fbcon_info_from_console(vc->vc_num);
+ 	struct fbcon_par *par = info->fbcon_par;
  
--	if (blank == VESA_NO_BLANKING) {
--		/* unblank console */
--		treg = newport_vc2_get(npregs, VC2_IREG_CONTROL);
--		newport_vc2_set(npregs, VC2_IREG_CONTROL,
--				(treg | VC2_CTRL_EDISP));
--	} else {
--		/* blank console */
--		treg = newport_vc2_get(npregs, VC2_IREG_CONTROL);
--		newport_vc2_set(npregs, VC2_IREG_CONTROL,
--				(treg & ~(VC2_CTRL_EDISP)));
--	}
-+	treg = newport_vc2_get(npregs, VC2_IREG_CONTROL);
-+	newport_vc2_set(npregs, VC2_IREG_CONTROL, (treg & ~(VC2_CTRL_EDISP)));
+-	if (mode_switch) {
+-		struct fb_var_screeninfo var = info->var;
++	if (mode_switch)
++		par->graphics = true;
+ 
+-		par->graphics = 1;
++	if (fbcon_is_active(vc, info)) {
++		int blank_state = 1 + blank; /* convert VESA to FB_BLANK constant */
+ 
+-		if (!blank) {
+-			var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE |
+-				FB_ACTIVATE_KD_TEXT;
+-			fb_set_var(info, &var);
+-			par->graphics = 0;
+-			par->var = info->var;
++		if (par->blank_state != blank_state) {
++			par->blank_state = blank_state;
++			fbcon_cursor(vc, false);
++			par->cursor_flash = false;
 +
-+	return true;
++			if (fb_blank(info, blank_state))
++				fbcon_generic_blank(vc, info, true);
+ 		}
+ 	}
+ 
++	fbcon_del_cursor_work(info);
++
++	return false;
 +}
 +
-+static bool newport_unblank(struct vc_data *c, bool mode_switch)
++static bool fbcon_unblank(struct vc_data *vc, bool mode_switch)
 +{
-+	unsigned short treg;
++	struct fb_info *info = fbcon_info_from_console(vc->vc_num);
++	struct fbcon_par *par = info->fbcon_par;
 +
-+	treg = newport_vc2_get(npregs, VC2_IREG_CONTROL);
-+	newport_vc2_set(npregs, VC2_IREG_CONTROL, (treg | VC2_CTRL_EDISP));
++	if (mode_switch) {
++		struct fb_var_screeninfo var = info->var;
++
++		var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE | FB_ACTIVATE_KD_TEXT;
++		fb_set_var(info, &var);
++		par->graphics = false;
++		par->var = info->var;
++	}
++
+ 	if (fbcon_is_active(vc, info)) {
+-		if (par->blank_state != blank) {
+-			par->blank_state = blank;
+-			fbcon_cursor(vc, !blank);
+-			par->cursor_flash = (!blank);
++		if (par->blank_state != FB_BLANK_UNBLANK) {
++			par->blank_state = FB_BLANK_UNBLANK;
++			fbcon_cursor(vc, true);
++			par->cursor_flash = true;
  
- 	return true;
- }
-@@ -666,6 +667,7 @@ const struct consw newport_con = {
- 	.con_scroll	  = newport_scroll,
- 	.con_switch	  = newport_switch,
- 	.con_blank	  = newport_blank,
-+	.con_unblank	  = newport_unblank,
- 	.con_font_set	  = newport_font_set,
- 	.con_font_default = newport_font_default,
- 	.con_save_screen  = newport_save_screen
+-			if (fb_blank(info, blank))
+-				fbcon_generic_blank(vc, info, blank);
++			if (fb_blank(info, FB_BLANK_UNBLANK))
++				fbcon_generic_blank(vc, info, false);
+ 		}
+ 
+-		if (!blank)
+-			update_screen(vc);
++		update_screen(vc);
+ 	}
+ 
+ 	if (mode_switch || !fbcon_is_active(vc, info) || par->blank_state != FB_BLANK_UNBLANK)
+@@ -3145,6 +3165,7 @@ static const struct consw fb_con = {
+ 	.con_scroll 		= fbcon_scroll,
+ 	.con_switch 		= fbcon_switch,
+ 	.con_blank 		= fbcon_blank,
++	.con_unblank		= fbcon_unblank,
+ 	.con_font_set 		= fbcon_set_font,
+ 	.con_font_get 		= fbcon_get_font,
+ 	.con_font_default	= fbcon_set_def_font,
 -- 
 2.56.0
 

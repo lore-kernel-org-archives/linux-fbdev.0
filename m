@@ -1,93 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.134.164.104
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792865376;
-	b=rP55E5ZnoqbntepOdAu8cUkv3yTRUTEXUAs+AhWHwbru9r2mLQkmxtEVVkK+FADvSeyC
-	 1BtEpEWZFo33TA0k7BcVXrg9WldBru6t2GWk8DRjT8SpKLcTswotJO8E1jYU66f6ffmay
-	 3Is+v6CSD5cFVy5jN/a1i0avrQ/nUYKCTaAMlC/ujWQ/gzd4//YjW8IU7Qf+MzLSguu6z
-	 tiwKW19C+BrrIeSkUbmP3lID9KXPh1rKh3jEw1bdb88wskG1tv8MmZHxpFzJcCLLo50DL
-	 tPb0VUj8KZFccuUHb/TYkPlfDMNKmEDIRN3+cZaaj9192j8RIh1tTdSsTgCmcQ8DM7w==
+	t=1792884936;
+	b=A0JWSyaIkigEHSTwrdVYqxHwbJTy5hh0kbTbdGtCm17tGhmrOzbmsz521VFRUijGZA4A
+	 +7NU1Lz5wXzu8WV3FAUxti2Q4A9DPFWGX/+4AMwqMgL6doBfA50P7P3eV66MDn5okZFQ4
+	 ZKgg1Dh0ARNwkJbFVW6IGKRCQXTxbuLHencmORtvAxkhw1XnGRqzM3KunqpODhCwfyw0l
+	 oR7nTUdDINgHIfHFPdWIDvOCI+N/dsN3NmOh42X0w98ZZTCXJBtq/um4JatosIE0Dt9zt
+	 1Xl31elTKC425TBeM9ISORB3hRAlZqAQ5DwV3qjUfkqOiD7y5LEV/ipYqjkSaRtwDUQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792865376;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=1do5SZCsNsXFNjC3kteHvHno5OZSZlN4oGD9w4JlcOk=;
-	b=pCXczu51Ll0ZpvzpZtM8wG4d5cf4pK5rMm5AVeou66KorO1oWHswJ6Q9paZXyOQMpsve
-	 g1T5GnPPTG2Jp8feZm0C9xoRGrkc/TrDtxKA31pxEDPrkqOn3EFOsUOj4g2Otfvx0vNZj
-	 FaDL2U9KWil8aPeClt8oF6D92bEs1igit49T+u5IhYCy1SODVFpmKh/Cc7a9To6NR8BEK
-	 bvYeIc7FrgfixJClHMW87kujOF7BuajJjsXRUT8ELWVRCBjFxvo52+rqauvA/Ju8t7rho
-	 KO8i5qTM8OTW2IN9BtKlcNwnw+bP1YYDNx2kQ+H/gFK5d8LZ4rPKzb9iZ/+za3+BmeA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792884936;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:Received:Date:From:To:cc:Subject:In-Reply-To:Message-ID:
+	 References:MIME-Version:Content-Type;
+	bh=Ytrr+uxGRP24yFtKG2TutOCpu+EELEvRDLmQWlLM4K0=;
+	b=JG6PRC6JfQJ4UhqrCIam/fNzQ8mz6o24txYWY+jg9n1NECJmZoeb52EPHI1f2Xsjxymh
+	 CxUUCiSAz+WOuKcY4WoZDFm5SwcC2Ktn8TnTYU+QBU1sodB6EacgMqg7VI6ZYnPds4i0B
+	 9TYvzUCEaKqyxMF8BfBya7OnhjNhhENw4l9v7XeYdHh7e4F4wDmvLv9NMwi+oyv9/97O3
+	 N/eUHYP96dJNZuayK9CQFtthT095HcDSSTiMdYN+9astKl3y7WDEH0UIk/tasP+lRs2WJ
+	 /MeIIH6mPEflSZ7tPJ6+IykOtULBeZzN0q7HbmxJWz/ArqBUsg3Ew369vdr/88Q5nkQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=CgLabGsW;
-	arc=none smtp.remote-ip=74.125.82.172
-Received: from mail-dy1-f172.google.com (mail-dy1-f172.google.com [74.125.82.172])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=inria.fr;
+	spf=pass smtp.mailfrom=inria.fr;
+	dkim=pass header.d=inria.fr header.i=@inria.fr header.a=rsa-sha256 header.s=dc header.b=fgQ762zB;
+	arc=none smtp.remote-ip=192.134.164.104
+Received: from mail3-relais-sop.national.inria.fr (mail3-relais-sop.national.inria.fr [192.134.164.104])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F35B606A31B
-	for <linux-fbdev@vger.kernel.org>; Sat, 24 Oct 2026 18:09:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5F35B606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3200F606A31B;
+	Sat, 24 Oct 2026 23:35:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3200F606A31B
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=inria.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=inria.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=CgLabGsW
-Received: by mail-dy1-f172.google.com with SMTP id 5a478bee46e88-3282db206d3so2999194eec.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 24 Oct 2026 11:09:36 -0700 (PDT)
+	dkim=pass (1024-bit key, unprotected) header.d=inria.fr header.i=@inria.fr header.a=rsa-sha256 header.s=dc header.b=fgQ762zB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792865375; x=1793470175; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=1do5SZCsNsXFNjC3kteHvHno5OZSZlN4oGD9w4JlcOk=;
-        b=CgLabGsWu9Qgfc/Gq8E0HEFES6Eek5LmDQjn1UieZ4EaH1/W8ZFpZN79PY6RXOsMIn
-         KJdkHykrbj90WNV8V8B/pSBMFjKNJp48N7C27gAPL2HN0VbY89aLHA+DyVA6MifC03f6
-         R9rDF7YAyppLydwDG5M/z4DOh1VT4R0ZDcOceJfTTtY6ybczyJ1JdSAjPT3UuTyoWG83
-         xm7DVN0Wq+/3jjyqToq3XeomaFVG/JVaq40aaSs9oSsF40x9MNBhA9bWZW5Xby6cZhBP
-         nrFwygbFocDLCsFq/l1fokooV7WaV3eFJJu0XrTt5rpI5/Axr6o9wnKQteSeyv2bHeHl
-         vbwg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792865375; x=1793470175;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=1do5SZCsNsXFNjC3kteHvHno5OZSZlN4oGD9w4JlcOk=;
-        b=ayUizZd9yP3BIFcBk0tWtQKmwmnH19A69Bt7Dr+F13diH+0bVkrGAM6IRIgdMeXvOO
-         6YM8NMePiYbie0WL3VSRpPv2bZKM0fg85EYQiOayzj9MgCojkhp4CBRjVkc/+/Ru3ONI
-         wPeBwiRiwjAgKnTbVLgVCY7R7eVfPWw1I3Rkxf34+wBoZXyrnvHkdpKba5jKYmQslkX4
-         iqVh0Han2Ws0PE/th02lBCHXy4s8sKY63wKtxoLg2drewlDGOTeTTBnspu1YPJbMVJIe
-         NE2xFd2ifc6q2FMeSva5XUP92q1v3dIT+cg1rp6P8Xho2DBcp5akKNfV9Jjty2X5oPZq
-         8iLg==
-X-Forwarded-Encrypted: i=1; AKwUvBwI62y3hS14Y77AI98b+XNoqQm7n1iRs4a/NeWphLe1XDcXc2piG2L5zp7bDZKVBatoV+8hhzAUknqX7A==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ07rOjyRBH0RumgjwrnS/A/wvxLLf8i/X9he4IkIzU6v+xBZ4H
-	JjcOBvDUPxuU6muAgAyBJiuXeK76Xi0B9fxQ+8vxLPTDQLTSfdSjuocP
-X-Gm-Gg: AYBFou3OY9Q+0tu7d5ngJ44lSTiZZSHFWw/92jYpNbVEjHecnWj5+VxORa/tSvGt98F
-	jazBLAjUvGECtTtHKBSGriy5FSgoKQbaF4bS2U691GimkQpQFk3P0FiconzUyC0WdB1JpOSnlkx
-	KRRdk1G0gok0ibh6M2CWgTmzqI51meea3d6TD7u8tShc/3YYEHTuVzdYtYxaIwpcJwNfHGdyVP1
-	rEyJDGllvqmGFRJPvKiW2KX3tY13AKvmUT9C1WrrMJWxry3kTeJ0u8kT9BP6VxxJeKUpoUk1J+V
-	Fxfl8IzhLVr9EQj/p10dokeWkW9BiMm7bZ2a1Q9vVLdXswWIJEh0f4uXCkgZ2yl4n5mgRWTY6nd
-	tRj44JAw74HY5PURyvg0/Ab87c2GFVRGr2QsXq+97PK/eHmZQAtyxJzIZEYwvZZzoFQJExlTz9W
-	GItm6DVXDH6A9pXXYbmf2wGnlu1SxsCHNI8XbvNU6JMTAeiNuoMdGwdBIU27smtpegNWPE5Rpfn
-	aUdoC1h0FdiHTpFUFjlHMxf1cacBL+eJj15Qvatu2bJc9ZBRlLu3kpxwznmZbig/j5P/eX1MGE=
-X-Received: by 2002:a05:693c:62d2:b0:360:8a6e:640f with SMTP id 5a478bee46e88-369e8625854mr3682464eec.39.1792865375371;
-        Sat, 24 Oct 2026 11:09:35 -0700 (PDT)
-Received: from himanshubakshi ([2401:4900:1c9b:1c1b:d646:355d:1105:8655])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-369e8ec865esm8020891eec.26.2026.10.24.11.09.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 24 Oct 2026 11:09:35 -0700 (PDT)
-From: himanshu bakshi <himanshu.bakshi478@gmail.com>
-To: andy@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Himanshu Bakshi <himanshu.bakshi478@gmail.com>
-Subject: [PATCH] staging: fbtft: Fix line length warning
-Date: Sat, 24 Oct 2026 23:38:03 +0530
-Message-ID: <20261024180803.108872-1-himanshu.bakshi478@gmail.com>
-X-Mailer: git-send-email 2.56.0
+  d=inria.fr; s=dc;
+  h=date:from:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=Ytrr+uxGRP24yFtKG2TutOCpu+EELEvRDLmQWlLM4K0=;
+  b=fgQ762zB6RB8v3UH/r2RAKI9a001jYJ2pBpLbqDP9GoXXItMRHMIzHXo
+   t80MS/E59edMUVDj0fRZwSIRlcS/DadLbYQ2eCUFS1+WSV5gbJcfztBxm
+   Z7s/X5jTDIhXkATDyUt7K7LQqczGkV/kmsVtZW/B656jSzJ/xkuLhlMWF
+   A=;
+X-CSE-ConnectionGUID: IMYaHfwfSAOU1AxqeZ1RxA==
+X-CSE-MsgGUID: HbsAwueeReOB2zJSIpkrvQ==
+Authentication-Results: mail3-relais-sop.national.inria.fr; dkim=none (message not signed) header.i=none; spf=SoftFail smtp.mailfrom=julia.lawall@inria.fr; dmarc=fail (p=none dis=none) d=inria.fr
+X-IronPort-AV: E=Sophos;i="6.27,177,1787004000"; 
+   d="scan'208";a="160785023"
+Received: from c-76-123-3-53.hsd1.va.comcast.net (HELO hadrien) ([76.123.3.53])
+  by mail3-relais-sop.national.inria.fr with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2026 01:35:25 +0200
+Date: Sat, 24 Oct 2026 19:35:22 -0400 (EDT)
+From: Julia Lawall <julia.lawall@inria.fr>
+To: Abubakar Musa Samaila <abubakarmusasamaila@gmail.com>
+cc: andy@kernel.org, gregkh@linuxfoundation.org, outreachy@lists.linux.dev, 
+    linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org, 
+    linux-kernel@vger.kernel.org
+Subject: Re: staging: fbtft: fb_upd161704: Replace udelay() with
+ usleep_range()
+In-Reply-To: <CAHxSwT8=ZA2sFqXNjfX2=Bf369+gNRLfCO+VtVmmWiTzenLwWQ@mail.gmail.com>
+Message-ID: <792c90f9-3eb0-eac3-72ab-94dda18322ff@inria.fr>
+References: <CAHxSwT8=ZA2sFqXNjfX2=Bf369+gNRLfCO+VtVmmWiTzenLwWQ@mail.gmail.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -97,32 +68,29 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
 
-From: Himanshu Bakshi <himanshu.bakshi478@gmail.com>
 
-Split the line in fbtft_init_dbg macro to keep it within the limit of 100
-columns and address the check-patch warning.
 
-Signed-off-by: Himanshu Bakshi <himanshu.bakshi478@gmail.com>
----
- drivers/staging/fbtft/fbtft.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+On Sat, 24 Oct 2026, Abubakar Musa Samaila wrote:
 
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index c7afb0fd3943..fd7f8fc2afba 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -424,7 +424,8 @@ module_spi_driver(fbtft_driver_spi_driver);
- #define fbtft_init_dbg(dev, format, arg...)                  \
- do {                                                         \
- 	if (unlikely((dev)->platform_data &&                 \
--	    (((struct fbtft_platform_data *)(dev)->platform_data)->display.debug & DEBUG_DRIVER_INIT_FUNCTIONS))) \
-+	    (((struct fbtft_platform_data *)(dev)->platform_data)-> \
-+	    display.debug & DEBUG_DRIVER_INIT_FUNCTIONS))) \
- 		dev_info(dev, format, ##arg);                \
- } while (0)
- 
--- 
-2.56.0
+> Hi Andy and Greg,
+>
+> Please find attached the patch that replaces non-atomic udelay()
+> instances with appropriate usleep_range() bounds in
+> drivers/staging/fbtft/fb_upd161704.c.
 
+Hello,
+
+Patches are not sent as attachments to the Linux kernel.  Please read the
+first patch tutorial again in its entirety and then try again.  You can
+also look at what others have done in the archives of the mailing list.
+
+julia
+
+
+>
+> Thanks,
+>
+> Abubakar Musa Samaila
+>

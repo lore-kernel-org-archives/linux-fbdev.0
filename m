@@ -1,93 +1,52 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.181
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792848651;
-	b=ODL8TwbpcK/zW5Eeu44pa7jNp2zkSzMQoeKKErJTgUayvGH/M+sbFCBgSKTSg6GKzrJ0
-	 VTjpIE61qKuJEsyVVg6CWr3RhnJOVwjPwJHhak8zsXgIFB1E34BL/ZLumz6uJOQVcdHvb
-	 Z3LauJAkm6GKXcPrIqkf20UN1hZBhihSzHtq2ZnqJAKy08eb27BoaEJ4oOL3qWwsNtkFV
-	 XkTHwLtnCNCYHfbNas5gAlCIi3oEUz/kz7OtZyAu/eXZ02gyxbL3SLEXkzUPz39AUFrzz
-	 LSDTzJEX761BGBxxL9cP5IW+6GW0qLb4R4GF46OQILpVQkFP2GrDd9i7Do3FHfhPZaw==
+	t=1792851054;
+	b=3t1pCvNXNn5yN0WnugOfhSYgEKyW3x8rJ6QmWTt7AgeBKysK5zmBZH+PJbwvIwVnXJZB
+	 86UltWqGJfWfz0YufnrmdG6rHuJkZWD/O5YitPREsSguoIe5d50wpOPVj39pzF08u+/G5
+	 yBgpIZu/eDlcxi0niXCcaFPMAZYXCP4CXFGweRoOWbzMVtiqTiLVzXYkk51fX/44WfSZu
+	 XSRNzH/w39iVFZoc32dUltIe7mc+0AJtC80/tzPePUJfzkVlLbmdTSnmP+yTMGuA3Wsix
+	 RZtpRUU3h6BsgvZt9jVUQ8Rw5W/ra9uat88NI7tP6fcbhFECYhNAg+ymztLnbWigu8Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792848651;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=4DbzmzBdqMsmHhWCEehq33/otLa9/Nzdgb28dQA0Wv4=;
-	b=gVRC6n3tznl1Xy70Ds0Rj6y1EhivA14El5IOSSqsTogrYJSQX8qfbqDaNXHCkb3fONME
-	 ysKFsJu3mYFEXaIMGiBQP0zrDb3DqvFJ10F8tBQB6ugQNIfqqAmvMd8BlkUlsO+RVIH71
-	 egpxTIewRRNoxgOCmZePKrVULbyui5gThVkkSQo9oAgo52R2eOBGcKhF8huz4JkXzmfMT
-	 5K9CLE47QlCDpiqMzMqVkpDbLEDFIQvjm/Kd9Xu0/sL+2oMohBsZfPse/loECCqWkAxUI
-	 J2lYr0B4lRjGWxX9Qvh6oQLkcakd0aog8KDLKwfIQ8Zmj+0sjuIZBbB7Z5nFb7bz8Mw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1792851054;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=rooLqVXyeooPFB49xJl5CZBUAzmbO1HTbYDkbc4qOtA=;
+	b=XlIqUADlxEHSAp+t6Q87lj5m5TrdUlVMdIfc/Uavl9JAwPxvYhI4uGeyD83iIrP0Nff+
+	 d+HwStjqfY5g9VI6qzlTwDXJtg41uMLwI7tI3BCzTmrpQUBbAQkQnsoy367lmYNPrt22T
+	 LQtBuk2vIGTSajv6S3t094BjUcLJ2giGG7oW7vhoopcNcbKIvpPS1m4W85RbqvEQnt7OP
+	 /mwdn6iTIZ+RByTdHLYS9myqQQCa5ykQ0SpN8247Fa1hHOlSQOSpDsuYQup/6yFIdhsej
+	 fyqTzYTFhQoQVUiCjRG9YInDD7IsCPXirc+wp3LjvDHqooI09+Ybsr2yO+FkaeN65qQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fKCW3TaU;
-	arc=none smtp.remote-ip=74.125.82.181
-Received: from mail-dy1-f181.google.com (mail-dy1-f181.google.com [74.125.82.181])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=wBpbDCsE;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0804B606A31F
-	for <linux-fbdev@vger.kernel.org>; Sat, 24 Oct 2026 13:30:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0804B606A31F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6ABDC606A31A;
+	Sat, 24 Oct 2026 14:10:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fKCW3TaU
-Received: by mail-dy1-f181.google.com with SMTP id 5a478bee46e88-369f33df08eso5407eec.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 24 Oct 2026 06:30:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792848650; x=1793453450; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=4DbzmzBdqMsmHhWCEehq33/otLa9/Nzdgb28dQA0Wv4=;
-        b=fKCW3TaUkLtvJNnt7o3RLXMA1pInnCCBv6ficgwjY+pANp4QZ7vEmbo0Zrhjj9PJL0
-         IAXD9rJYAyVr8+DmgFPvjpzPDtNRh7RDtGkA5Gj1WxQeqopavUcLV3VhXTxDzJHpFNB8
-         M6s1kC5YCwT8UlN4NCUzalOYbPbfJKSc+sdjcpIWb9CenisaYAYgQ4/IpYhFvU+WFvYZ
-         af9Bq3tBxXpzLLmVIE1sWMTh9hduqDgm9fAQSK/bBvNoGaP4Ms94PI17QSJl4HQUtLr0
-         AhshiD8gbaheK7kxXtnnTmaZS8r2lEvvSXqnnhP1L9hxXdnY2k+cjqHyQVNIHlnpY95X
-         pwHA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792848650; x=1793453450;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=4DbzmzBdqMsmHhWCEehq33/otLa9/Nzdgb28dQA0Wv4=;
-        b=AISaMuQFJFRKsfJgMGuBNPRwhJfbBXTWeZfzruR/GPEZypo4/Y/zPvcArYjafaUpX1
-         44InpVOCwvf2wvdHme6EKLUI81wgwIVz5ZemgnmflGThXqOmOm1+pqzyyaJvKt8+Ds7t
-         uJGW7oTnlMGh/VAsy6G4ycsk17yH/ykP+c/BMM5JXtR/m8AgMuUYla3R9tuIiujFowIP
-         giq7PY9hHuRf7ZlLprwX6xwOsunGQQRme9vChheWYa2+VC331mPFYRhEY084q2zLn4CQ
-         TwU5VoVLFgmGHEuHsZLmpy8ItpoHmua70OfV+XhLDkxil7hWPE40bsTn9/dyN2T4j+3E
-         aZTw==
-X-Forwarded-Encrypted: i=1; AKwUvBz5UFmex7iQQBdZPkqkPv0geToEpRsHCKhedfZoBKHBk+Z7qnJyyl38Lt42E3ZHTfjd3XFMs11ttilJXA==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJbunwdb+Vk7sdpmwx4JNB22BeZl3R2qXLf6HUAvQlbiO0cpQGo
-	m1dl9ctX9HpAVet0HPQ8eBCurqN2xCUbOPoebrsd+tcWksPDTWlSVyTI
-X-Gm-Gg: AYBFou0HGJ832cyl045gZBU+O5xhlZv5fu3bG71ZIf0eHs1M1EhsKkQeow3760WDyiL
-	4iZSw+bCtBjy08jNOzluHSSIuOmHqhlhk/s7GyXyiexy6N/ECxAaF5dnCobhu+nNOJVHO6AxzRU
-	GddCsJmaa1P5kEmA7L0imzKMcwPplRgDzVy5j1pGba+EyUN9w+muMK3lttdNgcgkVwV2ZfSCB6H
-	xWujw6eaNPV7SzZrLEfdvk+knXDdIGsHIx6XPOnzhMbb0CE4WyibKtSD7m9cv+oNQxkwfw9XcwS
-	/twXik6wFJdwyYQkTM1dSQvllRRCJPlYKmdBIpenuxU+9cgwt6ggKiBfS27zYoWpRruHt//c3P8
-	7MqR9PysRXOhHEW7HycIaaEjFllOoaaoRFVCk2bofRnI8U+nHzLhITIn+CxuoZbxKz5J58ut898
-	SFoACB5RLgfomOz0nAxkjvwfPVchoAtfZNXAjAqRpqDjI79/rGKQf67nMjVunYFXsTHKGJCYeH6
-	rCY5+EVPTPP3bI7JfpJFo1raYfwO+Ffiog6nDK+BTMUmu2AdCXLZe8=
-X-Received: by 2002:a05:7300:1c1e:b0:360:1637:404 with SMTP id 5a478bee46e88-369e8660d3cmr3083001eec.33.1792848649998;
-        Sat, 24 Oct 2026 06:30:49 -0700 (PDT)
-Received: from myarch ([49.36.79.131])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-369e8ec50bcsm15908129eec.23.2026.10.24.06.30.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 24 Oct 2026 06:30:47 -0700 (PDT)
-From: Aditya Nagar <dev.adityanagar@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-	Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Aditya Nagar <dev.adityanagar@gmail.com>
-Subject: [PATCH] staging: sm750fb: constify the pointer array g_fbmode
-Date: Sat, 24 Oct 2026 19:00:37 +0530
-Message-ID: <20261024133037.160112-1-dev.adityanagar@gmail.com>
-X-Mailer: git-send-email 2.56.0
+	dkim=pass (1024-bit key, unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=wBpbDCsE
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6512E1F01825;
+	Sat, 24 Oct 2026 14:10:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1792851052;
+	bh=rooLqVXyeooPFB49xJl5CZBUAzmbO1HTbYDkbc4qOtA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=wBpbDCsELpqdzwz6j+5kit4so09j2vuscgqDddx4L8xEIJRDoHbWpdN3b1wCm5jKk
+	 RHu5C7RBiT/2nAWDwsRFzXPUGY0WPDyO4qlgpIoXbnt2DO/XeIikjSsh5U2HPuNZZs
+	 Io1PKSfcacaMLxIBXeYG3gBZD1rDEsVNYg51BuwI=
+Date: Sat, 24 Oct 2026 16:10:53 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Himanshu Bakshi <himanshu.bakshi478@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: clean up PLL calculation code
+Message-ID: <2026102447-exhale-overarch-8ce7@gregkh>
+References: <20261024073549.29531-1-himanshu.bakshi478@gmail.com>
+ <2026102448-tackle-footnote-9ca0@gregkh>
+ <CAGLmz9+J-s98cT_ZFHF5EU7t=beK8m82fjq20+n5dmncdrMSEQ@mail.gmail.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -97,32 +56,33 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAGLmz9+J-s98cT_ZFHF5EU7t=beK8m82fjq20+n5dmncdrMSEQ@mail.gmail.com>
 
-Make g_fbmode a const array of const pointers since the pointers
-are never reassigned after initialization.
+On Sat, Oct 24, 2026 at 05:20:41PM +0530, Himanshu Bakshi wrote:
+> Hi Greg,
 
-This fixes the following checkpatch warning:
-  static const char * array should probably be static const char * const
+Please do not top-post or send html email, the list rejects that.
 
-Signed-off-by: Aditya Nagar <dev.adityanagar@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> I found this while reviewing sm750_calc_pll_value() and looking for a
+> cleaner way to handle the PLL candidate calculation.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 8b93bfeb2..c3f391cdd 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -12,7 +12,7 @@
- static int g_hwcursor = 1;
- static int g_noaccel __ro_after_init;
- static int g_nomtrr __ro_after_init;
--static const char *g_fbmode[] = {NULL, NULL};
-+static const char * const g_fbmode[] = {NULL, NULL};
- static const char *g_def_fbmode = "1024x768-32@60";
- static char *g_settings;
- static int g_dualview __ro_after_init;
--- 
-2.56.0
+But why does it need to be "cleaner"?
 
+> I tested the change as follows:
+> 
+> Built the sm750fb driver successfully using make -j2
+> M=drivers/staging/sm750fb W=1.
+> 
+> Ran a standalone C differential regression test comparing the original
+> and modified algorithms across 2,010,084 test cases, including
+> frequency sweeps, boundary values, and randomized requests.
+
+Ah, you used a LLM.  You have read:
+	https://lore.kernel.org/r/2026080354-skater-urgent-31b2@gregkh
+right?
+
+Sorry,
+
+greg k-h

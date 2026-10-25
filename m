@@ -1,94 +1,93 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.48
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792946443;
-	b=wXU59AiYZm3hEjZsMBcwjxGje76Tzw+otfUCsz9YtC9rHrf3dZccLzMN9QdIOUPlwCeV
-	 1MgRV0XwxQrRUY/3taUHjS5d6K+0HjZK1EzPPb56l+4cgCPeMkf7kA8d21iNqO8Ie3A9h
-	 JEcFfFCSrCCN+xq5mpQN6jCTiIKjt4NzShVyVReUfFHL0YsTlu5bh4mGgABd3Yl4ctqGM
-	 H5/3xeAxqz3BfNDQgo2LpxSbvTQNU/Hz4FqXX2Wfctfc8HQptPazb7cDniOpEh0GFNQH6
-	 n7rh40f6sVrO1eXzybzTcZFaH0ytXpBKHHQQDOYzpiCpyclJkBVDBeEqZNXkpx4vINw==
+	t=1792952354;
+	b=ZMHlEhg563QixYgtLZARDvoRYrTK3ht1PMtIV1gNjvhb5CqA49seh09luxpCmp9FvnmQ
+	 4c4Vo6oD8hRJkfEzk1XmtUk/escs7dR/YfObInjVwk21PPsJLu5FzjXEjaNyuh+fqtgo1
+	 ruvwwESWhUDl9J1locJPkPhBta/fi2AAnbZ6Zs3EBjJcNPLKORrT1UL/5/ppFFo7SG8AR
+	 XMWbareQl6c/a2Ewr9NAlsCih7K+UsOssK5y5cJcrApKVWQND8+IMR3qzIh7DvevDJylg
+	 o44T6A2sW1IG9YFBOK2fs2YHcpF4aYCV+jKPcQdRPCQA/1jyomuE6xr+FwUd0yZOSnw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792946443;
+	a=rsa-sha256; c=relaxed/relaxed; t=1792952354;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=xv9NAEq9hQ0540bja4x3wK9UU5VFlX1ceZODo3NuB5Q=;
-	b=JQ7FBucBQO9liFR/rFmPpBxZU5MIXJ1LClDy4fsR1FygWb3e8Uzd4pl+sgat0GpcOojL
-	 4ERO7/b3cJgk3fP3XkLnBM6UgX5Uj3/EV+fSa75qX0omAznmM6gVYZ10AaMXXW33Kzb26
-	 n+qoQ4dIKErCsoJ/pi5OnEnNL1M1MTjyHsYruo96wGpiAVAcyZnQZhGAjTlREnA6dD2Av
-	 TZShIjbd9+PD36v+bKiMyW9CanvcarPM9Z20fpW7aEVTCKv0ENBuC8CLOBwbvmZuGDR3N
-	 SQsc3UgkChOwbDP/EDEgdCQHPkPZCUe3HDisbQ4EX8VZdbDSr7adJjb5N18tWAOsO/Q==
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=zm2aYmxX6SYlgH0yTM3NHAOca1bMdwRynpuDzR86ld0=;
+	b=a7aBFjKxLXUXve+tUP1bn5cpAVhflVfORnYBFjzRwFYMGUeHF+4sQXDmsd8+WBJtM6yH
+	 K77ueYYkWXEJfw8FhJQktpr9Sf+r2UcC7p/S9Fbnsbdfzq39QKUthpWS12a6p8AveetJD
+	 SJSXiFlGG6aly8OPq/FJAvfINjvPDXsDOrXEWP18MOz9qO+ENS+DDSgwPsAK61bQy7kwO
+	 TVZKsA7Q4jR3KsLJVt35lVQr3SpuzkVvZMHh8Tne13VxynX9EXXrIfp+0OjjJpOPZ0Y69
+	 icd6loqTwLnsXC9Bpo6Zh0J0yETjAKlEZHMELPoVCNz7yQ+Z3EEctfVDagGIBuOXlbA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L+wAaBf4;
-	arc=none smtp.remote-ip=74.125.82.48
-Received: from mail-dl1-f48.google.com (mail-dl1-f48.google.com [74.125.82.48])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b="oaWL0hP/";
+	arc=none smtp.remote-ip=209.85.128.54
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20AF4606A31D
-	for <linux-fbdev@vger.kernel.org>; Sun, 25 Oct 2026 16:40:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 20AF4606A31D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D90AC606A31A
+	for <linux-fbdev@vger.kernel.org>; Sun, 25 Oct 2026 18:19:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D90AC606A31A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=L+wAaBf4
-Received: by mail-dl1-f48.google.com with SMTP id a92af1059eb24-1438d9363fbso1730703c88.0
-        for <linux-fbdev@vger.kernel.org>; Sun, 25 Oct 2026 09:40:41 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oaWL0hP/
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a1fbd52ab6so14774765e9.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 25 Oct 2026 11:19:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792946441; x=1793551241; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=xv9NAEq9hQ0540bja4x3wK9UU5VFlX1ceZODo3NuB5Q=;
-        b=L+wAaBf4hK1NOTaPyxxY0g42upPhkjpjdeUiMZeUE+Y56EtN/LB+Zu7EteOUThkX8P
-         KmzPxkAwy9Kc5ET7HoU3BnOi8xxPnp9W0aqPR4qXq2QkwKE9+YOsJVAOHkK3Dg1U2Dk6
-         2+7u5PrMan60eMyn7BckCODwxqK8nMdXuZf3mKTjtX3yAApBQfa/uEnIZGLkhsbZ2do9
-         baKdvqBQHc6tGtxH4dogrGf2dB5EiBU5+joNNxyXFFrjfWxIlG9bRDY/KvaITkWhf8rL
-         SzwOAvZ4MhkWDXCTeg+VApOzj8+Su68djNAbV3vlJMjfyjYZscV7t9xwqFzklqhdQmRr
-         HGKQ==
+        d=gmail.com; s=20251104; t=1792952352; x=1793557152; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=zm2aYmxX6SYlgH0yTM3NHAOca1bMdwRynpuDzR86ld0=;
+        b=oaWL0hP/yXSA52dIc4x/zUCYeMbaEE0jCVb3zOcP2bvASkpqyPrWxkEhROsB5KSLTQ
+         J58vY9eieREt6Uj+QOFYQln4Z08eYw+9SFfv3irAuvMpcRbHan2+0nR18M/EUFB9pEI9
+         sLRb1B5+jgKxgvX7fAwJtW+N4gxz5JjwC68aa/rLBU2PNSZ/vDwfyDwwBW+zGbNq8cXh
+         9KGonJZF7Pl1OQ6WzWp3olyi7obQNUx9hqfH4gQLm30w1DgFkPq2OwvQOOTIlUxwxJCY
+         uN4QOdXeaBTe67PI1zK7ZJdHHj2ggng2fBfBiJlZ4MIKtnmXjvjEVxStYOfjWMC+q6nM
+         Lr4A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792946441; x=1793551241;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=xv9NAEq9hQ0540bja4x3wK9UU5VFlX1ceZODo3NuB5Q=;
-        b=PjfK65gO2D2bgvraVWbWegYHqxUs6CThKiaubgMherECtJwUvmg7U7hr+8nCPIaaN3
-         LkwLKvq2DYlzye7QXs5YmpKFk/RWNezMIKtBqVKBm2G5yYQwxPxBwKfVCvF2y7a2sgoe
-         KlpTEqsMvCluby+oaSRbUjIDyDbqX8UikJ2uUmTIDahUR6zdx7+2DgQ7VHDdMyFhFxz9
-         uWA65gA/lYKncljvENOhwAy+Uarg2WMOUDtGemNZe3t2y9jbfy+W7vPN+iL/zJ1b3t+7
-         FMpfgztAUib/4D0dEH9G5cikNgO0y3pFcQGji1oelegvHBRrpN0rm9otwR4bn93qdA9f
-         uF1w==
-X-Forwarded-Encrypted: i=1; AKwUvBwhL/8OZN13BARH2I9P2Tz3s9O0va53MZjKdXUS9rA8CFKiCbs2kAoXS1X9Jkq9tkMnGCM6faqRAkYB/g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJmEKvaNcI37NZPWAjsu46JUWLvFh0XiTAIRZKSMYPMJ52WuNhz
-	VWBwrQ770x0LYX69p86oKUY4DV0cd2wXUBPlmx9O9miTk3/QSa1HpNze
-X-Gm-Gg: AYBFou0/HSqyYtQFFsSeIjy9jR6TKYwhXFr+kJWM1kRxMQXYSB3Ln2AzolcY0Wa/0rJ
-	Rf4OU1DW3TZbU6Ql6sz3RIxZ0YsVY98dS0lqSmRyyH0zr+8nWDLrf4ECaSreqRI9YHT1A7gs1SN
-	e8GF9ljTyDH2EamY527deZj0+rz8ZS3FHdAd6eaZ5mqppzmcskgsyQUpt/ZcbHpTv9qsTVma12q
-	iRsy/Xw3ult8VR4TpSQg3jk96AJdmBDfPryXCO+mJ8AiurCllURrmCDvZLMn0kou/511BxxdtC3
-	IvBNLZX8gmzQzO3ufaoOmeqzLYpO12wDQ+c9WOeTibWBeqUtyNKoNF1hNLqA8OQmG+Jul34qZgr
-	b7nyuFiM5LOI20nhr2YcAWRRSlwOMm1ArCRX0/qSaKEesuryM8MKNVCfMjwD6JcVK9nvVjTswW8
-	STBlweitqqMxXsnBTBrEu2rDmTxDtJqtOWlUtmNTxMR4HJv4w8lpEXkjpqJFVGeopZrgPiuuXqb
-	8Q0sQBHrNFI4iOjVtZ+CbJ27vU2VFXolyWxg2BARNAXRQH0lCpJG9gaR37dAMp3W9lyxgfmgvWS
-	pgEWpACvpdvfa1an9NdL
-X-Received: by 2002:a05:7022:28d:20b0:15c:a04c:cd4f with SMTP id a92af1059eb24-1993fba292amr5562765c88.0.1792946441092;
-        Sun, 25 Oct 2026 09:40:41 -0700 (PDT)
-Received: from himanshubakshi ([2401:4900:1c9b:1c1b:d646:355d:1105:8655])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-198a1bfaebfsm17401503c88.15.2026.10.25.09.40.38
+        d=1e100.net; s=20260707; t=1792952352; x=1793557152;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=zm2aYmxX6SYlgH0yTM3NHAOca1bMdwRynpuDzR86ld0=;
+        b=uPrwhoWzZYoa19DNaPaTL/ah1Y3bkA0hSr0GTEUFIUJiwZBoK6Z/LcDItGsoJrpUGU
+         /LnjPqZWCtWUerB0GeHAeAEC+6OACMSTFhfF3q7aDFhjUuHtKyxMDnt3CdOL38BGbuLS
+         jo7+k0BQpb9aoaL3vUxPzcRE3rhsc7YA8ZsN+A/2dGyKC5YhdqM0NO+/YqjJv9scFbvj
+         ozBPSUR0tqRgQ/vo+VapKP5g7ARKj09PitSedIqeLTCPpS6FX2GYLjVYRZS3ZdhrDIA/
+         5tS5/+ZMcczaN9rkdp0S1z6Mk5wFH2uK+hqQlkSDXRbh8Zh3xwzFP2qHDGU1LnHkvbDv
+         RJQg==
+X-Forwarded-Encrypted: i=1; AKwUvBxerBqhhTMiy06FZ3UL7JMVQpgrgx62NAGdFTFowQ+DGgQKXM6Moj48RgjLvLUR3BKpkTxisxoUV1r0rw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYJiUryb5f6PhxzSY4sfJuF+2vtGpPCHcZ5alFwkcdRJURr+VwSv
+	I2cZtiAMMaSq/0bcAdo0FcEPx1adVSzzTJ2TlY31+PbxLIM+RQMPY3jS
+X-Gm-Gg: AYBFou1o+bbIUUu7dV63Eq9kNMYf2ZSRdCPoifMk4iCW82Z5yc0BGrl+HD5Jazux/RB
+	Yto8r4naQL/G335h+uqkHbXq8ZoJuVb8rDgdRbUn8G24l7t5LHv7s66ybR5IM2cRFJYQu5JhrgY
+	LG0Ff7nWUHEK6GOIV7jToiNhqKMLfU6rjkFDjlAKgz6JLL5vC96R7A2cbOOHjhVDSGVzAW/5Y+2
+	W0V81ADmzXljlqmMj1191YWgz3Y0wT4nireY9tqM/kcVaVnmHYwanPDh2tOlhGeg6kpGnRPS4GY
+	c9Zm1P9aSgZQvCESGEOq11yyRPlk3TIi/hBuZuSkqnHN4cL/588eJpOnUSMaNweYn1WOO4a6tdO
+	cL0xBkNs+0wQ3Guzp9ZXAO/bg5V0qEFFooAYteuhzqv44pEmHtl99+KqExWC4NGJr0Og9a2UeqZ
+	NXvBIIw+wbwJPDQYSRCIWzXd3CSzIrBxooiPm0C6W92/2yvP5nPn4hWI5yDfeS7j/4/ouT6XBoZ
+	FSEDRHGSnUPmlxj9oZD9bBU6m11AyXjug6v2q1KEpv5/4KP6sFI
+X-Received: by 2002:a05:600c:4704:b0:4a2:190f:cf6a with SMTP id 5b1f17b1804b1-4a35acc2ea1mr76729215e9.35.1792952352084;
+        Sun, 25 Oct 2026 11:19:12 -0700 (PDT)
+Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a35a58a293sm137475645e9.12.2026.10.25.11.19.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2026 09:40:40 -0700 (PDT)
-From: himanshu bakshi <himanshu.bakshi478@gmail.com>
-To: andy@kernel.org
-Cc: gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Himanshu Bakshi <himanshu.bakshi478@gmail.com>
-Subject: [PATCH v2] staging: fbtft: Fix line length warning
-Date: Sun, 25 Oct 2026 22:10:03 +0530
-Message-ID: <20261025164003.143864-1-himanshu.bakshi478@gmail.com>
-X-Mailer: git-send-email 2.56.0
+        Sun, 25 Oct 2026 11:19:11 -0700 (PDT)
+Date: Sun, 25 Oct 2026 21:19:07 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Haasham Khan <haasham93@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] staging: sm750fb: remove unnecessary goto
+Message-ID: <at5IG8sRxSA1AFC8@stanley.mountain>
+References: <20261025130258.10747-1-haasham93@gmail.com>
+ <20261025162632.7186-1-haasham93@gmail.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -98,58 +97,25 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261025162632.7186-1-haasham93@gmail.com>
 
-From: Himanshu Bakshi <himanshu.bakshi478@gmail.com>
+On Sun, Oct 25, 2026 at 04:26:32PM +0000, Haasham Khan wrote:
+> Return directly when setting the mode timing fails, rather than
+> jumping to a label that only returns ret. Return 0 on the successful
+> path.
+> 
+> Signed-off-by: Haasham Khan <haasham93@gmail.com>
+> ---
+> 
+> Changes in v2:
+> - Return 0 on the successful path, as suggested by Dan Carpenter.
 
-Hi Andy,
+Thanks!
 
-I have made sure that the \ (backslash) is properly aligned to the same
-column as the rest of the macro. I have also taken into account your
-advice and hence added a local variable for platform data.
+Reviewed-by: Dan Carpenter <error27@gmail.com>
 
-After some thorough searching through the respective directory, I have
-not found any calls for fbtft_init_dbg. This might be because it's a
-helper macro that might be useful as the driver progresses.
-
-I have also noticed that some other macros around this one have simple
-style issues and if you would like, I can send another different patch
-cleaning up those too.
-
-I have also done minimal testing by using the macro once to make sure it
-compiles and has no errors, if you would like, I can also run any
-standalone tests for this macro.
-
-Thanks and Regards,
-	Himanshu Bakshi
-
-Signed-off-by: Himanshu Bakshi <himanshu.bakshi478@gmail.com>
----
- drivers/staging/fbtft/fbtft.h | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index fd7f8fc2afba..ceaa9a3906ef 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -421,12 +421,11 @@ module_spi_driver(fbtft_driver_spi_driver);
- #define DEBUG_REQUEST_GPIOS_MATCH   BIT(30)
- #define DEBUG_VERIFY_GPIOS          BIT(31)
- 
--#define fbtft_init_dbg(dev, format, arg...)                  \
--do {                                                         \
--	if (unlikely((dev)->platform_data &&                 \
--	    (((struct fbtft_platform_data *)(dev)->platform_data)-> \
--	    display.debug & DEBUG_DRIVER_INIT_FUNCTIONS))) \
--		dev_info(dev, format, ##arg);                \
-+#define fbtft_init_dbg(dev, format, arg...)						\
-+do {											\
-+	struct fbtft_platform_data *pdata = dev_get_platdata((dev));			\
-+	if (unlikely(pdata && (pdata->display.debug & DEBUG_DRIVER_INIT_FUNCTIONS)))	\
-+		dev_info(dev, format, ##arg);						\
- } while (0)
- 
- #define fbtft_par_dbg(level, par, format, arg...)            \
--- 
-2.56.0
+regards,
+dan carpenter
 

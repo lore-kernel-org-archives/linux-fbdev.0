@@ -1,96 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1792996320;
-	b=JMLl+ZhDNJRd9uaQO33fZoYaxIr++/LyHYqS9ROQiok79btmRYPjTPKOu5Va6CB0jrKO
-	 EHpAzVRkCNTKy7kf755G1m0ZY03h8aLZpbBfA4egYmpCBq40cb3vRMEzWg0GaDgDnUDBK
-	 jIJ06IvzlRy3pCZbYjE0/nPMhJc93f58O0Gi0tX+eQieWfkl5h6BQOiWF3lJQ/NH21cTe
-	 Ej1r6m7UAcSo5YtgEnKngME5W0TkGlgtXAYn3T2tjxnuxWyZUHyrw9vplrkSACSTB7B38
-	 5nAxBKPKwbIZhbLQnEl5lxy88n/7398BkFGGxhDKxCUK8vJkL413uG08drORFVSNf5A==
+	t=1793000484;
+	b=2Gc2mss2GRMSeUIy0SUQ72Vubln0rP6UtRYy7isl8T8CtYb3HgCcjF6dO1PrFAVslMCF
+	 Lk2cxp9nHWGNFJmAyA7PSRRlHsIA/sKIl5seizRNaW0M6U1Hld+Pz21CdrMmsUHiK/eK/
+	 8fM4IXjUuHC8S7S7fATmrvdWVFHhc5SMPNHz7a9K67AV1PNU8fkD4bAaVhVPT5vbpG7qk
+	 Nfn/o3Bxqt9NMGFE+YIvb0LnPC8pBnG/4hqlMv8T7s4JQgX1e3uFZySOP02W25ATIl1Gi
+	 nKiM3eOJoKsmfiuYKz18c7ijLCM/QXPfGi8uJ6W4c7kfncy2EPiZv1XBDvlF9utnLPw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1792996320;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=GqcxNtiAZfNQOpaRDoKT3/3Dst2nVYU7A0CmkDZXaHQ=;
-	b=cdIEEVDkxfQCOSGipCU7r9jyvyWPd0VwgfQoHXFFRokjycZcl+h5NXNCzZFh2Nwj2lUc
-	 vakR7TXet8vIvOFhJLo3zYh84MhrhdqZfRwJqzc06xfnRPT6gxSNjcuCnncS7HPK1fW+b
-	 OIv/A0MCIjIJ1ZfBBCd+HDpWwqzGlkEd2361FbyoDZL2xOmDZIpJeZ1rFpAl3jgx27HW0
-	 kzaxPeti0dslub640MBJWCCr+86l7stN8GTxrJsMEvYdi5q0QBKSfia1GS7EQZKtYYjpx
-	 pC1slstBT+4BBlpkn9dR4k3/CmIMXL5PLV1bqakr68E7DNAOtE7EfM+Kx7AwWvcS4jw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793000484;
+	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
+	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spamd-Result:
+	 X-Spam-Score:X-Spam-Level:X-Spam-Flag;
+	bh=sWrkcP/yBVW3JGHMD8FsWZTL1fQHiKFs8LimUVOooqU=;
+	b=xqST7GMV15ii+0jtc2UMllMZenVHAIH5MaDy9eZFc5AnFZOmt3m1j+zCvSed9S7thHhR
+	 56ecJV4AuL6b1xONE6V0OnetjF1GvaeONMReENPleHBjzkV0iBp/nEtzMZ3rbwfNbA8Af
+	 c2K5UDqT5V1sTMAtD2hql6Jqn72XLcHlbmDlRip1cTe4XKyq6UTCGDn2IHBUY5AzmEOYn
+	 PxGD7YEZWY2c8yj+jDauCRJ4NrzaAWedDMdtXGlDRT74Tah8vX6Nz+W2psc+496l2e6sZ
+	 faL5J/TEUkHw97oQjI0Pyh3cfH/ZllY36peIvAkyyLSGrh+yVT3y7gXrG/cvmjbhCBw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=M6hSArX6;
-	arc=none smtp.remote-ip=209.85.128.47
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=suse.de;
+	spf=pass smtp.mailfrom=suse.de;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=IMSjQOaC;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FedeyjtJ;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=IMSjQOaC;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FedeyjtJ;
+	arc=none smtp.remote-ip=195.135.223.130
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62665606A31A
-	for <linux-fbdev@vger.kernel.org>; Mon, 26 Oct 2026 06:32:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 62665606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBB12606A321;
+	Mon, 26 Oct 2026 07:41:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CBB12606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=M6hSArX6
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4a5b2be99a8so5361835e9.2
-        for <linux-fbdev@vger.kernel.org>; Sun, 25 Oct 2026 23:32:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792996319; x=1793601119; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=GqcxNtiAZfNQOpaRDoKT3/3Dst2nVYU7A0CmkDZXaHQ=;
-        b=M6hSArX6JTjMluSmjYq/GJ9BD/s2nFPth0bRk6RiRLDEulLnGhekr3ymAjJj4S4Eg+
-         1fIChaBCXkBKX/HIsDnMjJVeWIJouPP8kZqF/WtRHZ+aDk/Iu6rsAqKs9w1T7EPmf48e
-         q22bq9/rbFr6UIR67MtYv2oad5mmlv8NF2kyrgEoLMFLJfCcImAhrkRLPStxXsjCoqv2
-         aA8RDdpB+qkRR9rQcPT6cE39SamMygPkRCA0oS5bapvyXwgK0Hl5WH3M1brU4wCiIhyj
-         sUdWThdie/Cwm80dTJQn1jh9ESiKc8DVyAImvnTmDCjFUW8ICV4KS8KPK/FxIGRxW+KQ
-         PsUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792996319; x=1793601119;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=GqcxNtiAZfNQOpaRDoKT3/3Dst2nVYU7A0CmkDZXaHQ=;
-        b=1pqZp2sWQXx7cOxdfJ0pMGAYGehju4Ivx5pXhWMG9G4uMLDzysKgPYVoRefiMYhuXB
-         IC4DDdu0lacJP6FNKQVnO5mvdSjVVyKbZKRq049ZGPgtwjAVyerBBLONrQl1LwMF6QP0
-         vv2vkQaCXu81pd+zImSeY2QlezSs7SUTsVfimEA9YfJYBS57zdXviAjSastcMOgnDl+W
-         qEKbtUAdo8EzOnfaZlrL8Gf4qpjE0dde7Xz14KShCUrAQCELKzkGdBV9Lj+hlJpuvMNx
-         QMK7JkdYHTXt5AiU7N0ccBeSL9azukxd8Xl6M/oHUoYTWnAWMvSfpJ+OEoXKz9Hm+nTY
-         Vjpg==
-X-Forwarded-Encrypted: i=1; AKwUvBzKkkiOiT70JrYZufslPObeofMUXckE7ERMNxv+ybQ+19ADWTq8vy/VEzu+kr9A1WrHo2yljBZdHS9s5g==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIxrfFlBsjpBCrtcA4xnDAqfzc5BFXGmx8LClhbnmdPPUnKWXu9
-	FjQYoWOI5gJclOK2b3vc4/Bk+nHI0MPMVNoAG7CdY/gjMV04V9V7kV0U
-X-Gm-Gg: AYBFou2Vq47pIGwCyH7m7lUFwup6MJ4IoB0lpSKQSL6HumZlBAoBl3b+I850SvUsZJd
-	UV3heV9SeAW1N+O9AbM3AZIrF0jlyhNiFlfbFEHiGTCoqlkz6WbYrCgDhByH9D8gzrMdVwQ0zwx
-	HzcIbaV/eUZY83RqECzz6/1nTXOwhQ4fQxHh+wXPNeQjF61iGIGNnBAd9GhiQ0joTbkEPpm/rgu
-	r7X2DRwERszK+Q5tF3bycNkWPEANy98cZWQ+lyxk+EDoZvs4RDpFBlp5tud68J3riUb9j3Et+l/
-	sT7hrnsBzEjI6dcg67el13V9BJRodfZJCq8sq9uQtBDVwgywLc1niOy+PU5KFh50G5mfHiCCuZp
-	B18G+gboqN4NGqKyMxuK225Asv+jJiLZDDE38LzF7+RVCtzlqb7u5jY2oRGBJy7htDN2W0lUcu4
-	NntJj1t3IkDwFbmb6TRBEbhM9TUOZsn8uTIMVI9OvZd44p3LWfofzpmyrNPOhc1EwNR1p+bjF8X
-	gXlugrcdEhs2YpmhXAva4HiLK2Ek58OcS+QeQEnhyoO6MsXHPmvOA==
-X-Received: by 2002:a05:600c:474a:b0:4a1:78c5:79f5 with SMTP id 5b1f17b1804b1-4a35acb9afamr106677375e9.33.1792996318690;
-        Sun, 25 Oct 2026 23:31:58 -0700 (PDT)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a35a58a293sm170484255e9.12.2026.10.25.23.31.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2026 23:31:58 -0700 (PDT)
-Date: Mon, 26 Oct 2026 09:31:54 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Himanshu Bakshi <himanshu.bakshi478@gmail.com>
-Cc: andy@kernel.org, gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] staging: fbtft: Fix line length warning
-Message-ID: <at7z2oubp02WQb1h@stanley.mountain>
-References: <20261025164003.143864-1-himanshu.bakshi478@gmail.com>
- <at7pu4hldDTgZtXy@stanley.mountain>
- <CAGLmz9JaXM8s4BHQ2Cn5QQdBZpzDXmHyb-GQ_jXtj4Rz6SJOJQ@mail.gmail.com>
- <at7s7We7bxdmmmSM@stanley.mountain>
- <CAGLmz9+R5Wsd3i+7kLZXL-KP2bqdEmNUJTSKtZph_NSP92Jung@mail.gmail.com>
+	dkim=pass (1024-bit key, unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=IMSjQOaC;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FedeyjtJ;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=IMSjQOaC;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FedeyjtJ
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 0FF47222C7;
+	Mon, 26 Oct 2026 07:41:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1793000482; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=sWrkcP/yBVW3JGHMD8FsWZTL1fQHiKFs8LimUVOooqU=;
+	b=IMSjQOaCYWrZu7o5oVeTyU5bR+QO2aHnpndiTERI5WvKhqz750d5ghV49LPUysNNNTkC9h
+	0zAl5CtbyfEov4yIlVzmrfTc2ykbkwfbaYGf1ExI9csxqZKV/TXReZztxrbvbw8xI43yLz
+	eF4XcUzEWGDs4UbBJFUgDeFyWlakNNg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1793000482;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=sWrkcP/yBVW3JGHMD8FsWZTL1fQHiKFs8LimUVOooqU=;
+	b=FedeyjtJmYr8yfqpxxZ7nqWPJCLWdfeDsrXcaVNhFTgOWJQTS7/yvJss8Yb3TZmacB+Gny
+	HxldMtmc75DcbzBQ==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1793000482; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=sWrkcP/yBVW3JGHMD8FsWZTL1fQHiKFs8LimUVOooqU=;
+	b=IMSjQOaCYWrZu7o5oVeTyU5bR+QO2aHnpndiTERI5WvKhqz750d5ghV49LPUysNNNTkC9h
+	0zAl5CtbyfEov4yIlVzmrfTc2ykbkwfbaYGf1ExI9csxqZKV/TXReZztxrbvbw8xI43yLz
+	eF4XcUzEWGDs4UbBJFUgDeFyWlakNNg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1793000482;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=sWrkcP/yBVW3JGHMD8FsWZTL1fQHiKFs8LimUVOooqU=;
+	b=FedeyjtJmYr8yfqpxxZ7nqWPJCLWdfeDsrXcaVNhFTgOWJQTS7/yvJss8Yb3TZmacB+Gny
+	HxldMtmc75DcbzBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A324F13319;
+	Mon, 26 Oct 2026 07:41:21 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id MKHHESEE32qkBgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 26 Oct 2026 07:41:21 +0000
+Message-ID: <4baeea95-1628-485e-bee7-925849a867d2@suse.de>
+Date: Mon, 26 Oct 2026 08:41:20 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -100,22 +106,109 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAGLmz9+R5Wsd3i+7kLZXL-KP2bqdEmNUJTSKtZph_NSP92Jung@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 7/7] vt: Remove old-style con_blank
+To: Helge Deller <deller@gmx.de>, Greg KH <gregkh@linuxfoundation.org>
+Cc: jirislaby@kernel.org, James.Bottomley@hansenpartnership.com,
+ simona@ffwll.ch, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org,
+ sashiko-reviews@lists.linux.dev
+References: <20261023132448.115747-1-tzimmermann@suse.de>
+ <20261023132448.115747-8-tzimmermann@suse.de>
+ <2026102312-chute-proud-204a@gregkh>
+ <68342b92-0e12-4aa1-a215-efb623418696@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <68342b92-0e12-4aa1-a215-efb623418696@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-13.29 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	FREEMAIL_TO(0.00)[gmx.de,linuxfoundation.org];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url]
+X-Spam-Score: -13.29
+X-Spam-Level: 
+X-Spam-Flag: NO
 
-On Mon, Oct 26, 2026 at 11:46:48AM +0530, Himanshu Bakshi wrote:
-> Hi Dan and Andy,
-> 
-> I have not found any call site for fbtft_init_dbg and just assumed
-> that it might be useful later on as the driver develops. If you are
-> considering removal of the macro, please let me know, I can send
-> over a separate removal patch of the same.
+Hi
 
-Yes.  Please do.
+Am 25.10.26 um 08:48 schrieb Helge Deller:
+> On 10/23/26 15:37, Greg KH wrote:
+>> On Fri, Oct 23, 2026 at 03:16:17PM +0200, Thomas Zimmermann wrote:
+>>> All consoles implement the new con_blank plus con_unblank. Remove
+>>> the old semantics from con_blank. Always pass a VESA blank mode to
+>>> the blank parameter.
+>>>
+>>> v3:
+>>> - keep con_blank's mode_switch parameter
+>>
+>> Shouldn't the "v3:" stuff go below the --- line?
 
-(also no top posting)
+Force of habit. Putting the change log in the commit description is 
+common for DRM patches.
 
-regards,
-dan carpenter
+I'll do better next time.
+
+
+> Series applied to fbdev git tree.
+> While at it, I dropped the v3: stuff lines, so no need to resend.
+
+Thanks Helge.
+
+Best regards
+Thomas
+
+>
+> Helge
+
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
+
 

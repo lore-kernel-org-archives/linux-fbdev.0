@@ -1,93 +1,75 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.50
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.10
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793004711;
-	b=DkRpJZLJ/s9KaO7+7NEculRpLOLFvrP0T3nWgetewhQRWlkNMXUUzqFXb/4Yz/VQ3a+t
-	 QDwlcbfk07xnpj/R31JU1qQchSBTNdPIP+eMD+0Z+mY5TCqnqbfKWP5aPxkQnVbLVnR2Z
-	 hymHpLjhr3tHKIqPOKFPoag9znpHPsFouu/JIsX5B47UIDW+uHm09V3W154th+bx8o6e1
-	 RJj4kJKL6BMS+sHHSeJ5y8o2xjUDw8/GoXCO6eHRgslz+YQtTD5wrY2B3JDg21u/3szIs
-	 v9fQApPbqplNxC4k1d6pfIH9m23Yej+wj0mmU4+3PdMeXVpf+hCynmYOczwL0dXXTCg==
+	t=1793006421;
+	b=cnPYZDxTKrHWVGFKzDKcQ4MvyX7n++D/VsLrEdrXVCLyq0p04jPLZOgUXDXgE0f1lu9r
+	 86FdhTY/xkjNAHN1E6NHvOkjR9jnzv/u5PxbjJZeK1s6Xq/J1SdciqbYCh02jseym1QjP
+	 TPtEoxPdf0A54/W85fEDFbmCUBtaB51mTq5oPIsLyKGyAw3UEMWwT1J0tiont1M6VVM29
+	 peINOsfGkxFSRyfu7KEVgvlA/EIpJjEavkzVD57sCXwJkI4iK66VD6SMXv5dDHqk3Ty+s
+	 QjsqGCtD/WPV+vYl1WtHscHh1j/MbaxxT6qI1auebx5Law1rWtu1xETlmq/GutEH9Aw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793004711;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=xWiTlDTyc6PTyNRCBNyeHOu3tzSbgoo2LUTk5932AiQ=;
-	b=CTjqjFoqXKFNz37g4PZ6VA0iBerAGlQrfeCqJumujqmrf9jCkiBtaHRRvkurGiy+f/vL
-	 P9udf+XsiA4A3BqvCV4M8xRIg9T00wgXuI5cnpxfO47gCLpxNpDU+5wonT/yV+WidgFD/
-	 JUAd9iljwE5CM/2U5YmWRjOfyEiL7cYKtdR67rLbqmGmhsc8isXIuzgjf8wBEZ2XIEtc+
-	 LcSuSbEDi4YlhDoQwuZ9NaFrwhW6ydUUrXhHjC+ySzl064y51PZzY7tnKB0xgyOvr9uoa
-	 +hDmxzA7nO9U7tj6FE8DXzZTJE1O1OeXr/W+sXMKSTBl/8V/U2izTHyGcdoZk4gB3jw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793006421;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Date:From:To:Cc:
+	 Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To:Organization;
+	bh=ovyzx+4aMS0ZrrN8RnrYN2vt3p/SsR70lqwN6FFW96Y=;
+	b=TZKFUv11xN7ZL57S5jP8uOOEiMPtDDkVtUnERjvyF7Agf0GCisPWLsDT/HtQ2ZTBo1vW
+	 ldxxJACImTZielcBusRgQbg7JuRwM467hlogzs17P8XkWFTtZVhD3IfbPE8Af3LNJWRqs
+	 LR743lHInRi2vN9FLYVpxLwjcx6SnSsNoOaAMqYkA4twIVEWQ1GMyu6wVgmVd2CL1sjM+
+	 dzoZ2u7V4w50utGLvwUXalV2LBYdHFfavOCkQSHmUkQcwL1yXTBZpuT9XgJL6xe7Vc/kn
+	 HGbRtZccDaSVJsMfskqiC91UiGBaai8YvKUeqNQajky/4vu2oKL0X3ymSOVqvE8kwUQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J5ysOHc4;
-	arc=none smtp.remote-ip=209.85.128.50
-Received: from mail-wm1-f50.google.com (mail-wm1-f50.google.com [209.85.128.50])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=intel.com;
+	spf=pass smtp.mailfrom=intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nk4xQPYa;
+	arc=none smtp.remote-ip=192.198.163.10
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37451606A327
-	for <linux-fbdev@vger.kernel.org>; Mon, 26 Oct 2026 08:51:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 37451606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9FA04606A31A;
+	Mon, 26 Oct 2026 09:20:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9FA04606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J5ysOHc4
-Received: by mail-wm1-f50.google.com with SMTP id 5b1f17b1804b1-4a549cd7fd2so8072945e9.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 26 Oct 2026 01:51:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793004709; x=1793609509; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=xWiTlDTyc6PTyNRCBNyeHOu3tzSbgoo2LUTk5932AiQ=;
-        b=J5ysOHc4KnG16Nsx67Jslwk2ZoEGuq3b+fT/Vmj8nf4Ee53HTT+mun/PygW+NpsNvm
-         JCwYAAlcSpxpHR2LfJ9/IaQf+4RPMz/aC6rE575ITFbduv/UTAEmY7ZyS89vbIRQCQ+L
-         eiJobtD3vxxRluJSDSIhxfsRkyZHxUw2DLG5qDqE9i3fgrAdN34M9kx3/arpQdJPdVUF
-         FWmM4D6k4OYrmvDe2xOR8FIWXxB/GJCoZDvBxwCT++ls96c/hdqi1fzTM+IHqzID6kYg
-         VqGP8b9ryQRCNstRFjE1p/+gqpV+4q6E3pqCP9LsmcxPjWv1ujuvms2lz+nqCHvHH9u0
-         lnHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793004709; x=1793609509;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=xWiTlDTyc6PTyNRCBNyeHOu3tzSbgoo2LUTk5932AiQ=;
-        b=ypoefHu5RRknjtwmqlwoGVEm4FlAkalFVH7GLKtvoLIPMeBZRES2fedZ9DcOPnVi41
-         CZEKkGkvfBTGYnStvNdMHfUtL9NRQ1/o7wiBIHOBm6wxSLJpH5DZxu5smUMeCUHSsERu
-         H1lz5MPmd67FG5bhV3WWX9SgvFKfKQuk5gL8OxZhqC12XKT+7X/qlSFch1Jit4qJcAw2
-         sPtql4iVaoN3Ay5z6l6HHg2J9J72A4h/FCpGIdEPjEE9EuiqcL/WJDD+T8z4a6fUgy8x
-         nuf1H8OmxpTeB1m/NKvnQl4c/ssfYjHncLWo4TEY2ynT3T1QobiMG8C+j3RpxjdiBqCu
-         6xDg==
-X-Forwarded-Encrypted: i=1; AKwUvBxc76s/ks1U0YCO+bDarsfq4DjSJTprEniUsvzaRXuDYptEWyUH/NkwiOq5HeP8U9SudCwbUpRAgJ4tew==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIya3LJpmEJcPtFa35ezbtOqIvHSv1L6y3V6xuY9m3aN172rJHy
-	M6ICcdn39qke287wNkgTOWlxgAzqDF9vYo2X/aLRi3T34OReoqmoj04c
-X-Gm-Gg: AYBFou1F7mFC1U8rQZRnQejok9qqGrvDUm9t7+k5Zgj/U8JwEpxb0qUNq5yqrlMNe2I
-	GnMtknsqT6s2uyReld6eo91BuuFc4fT3TKgKoiSLQg1bxYtS73x4Nd9pLoOSUm8XvyCnAwVi4UR
-	krXT+ndXdJ6rvidenMODZ1MKXYBzkMs1gNA8d5pzLiSRyRU3yR4QpsKrTLWBBgid4ypQ5ZF2a2i
-	CqIEAN3h6hUozbyt8T3VKR/fcYsuk0RZ3sdy39n9pxGsFbdHbJkeCavGalQA+Ij2AIv/Y6COTGX
-	5IpYx9/5Fuh1FXDS80glNEhFeVsXTX7Wk+Y/v3KhadlqdkU07exQ+xR6I9Z5HaXxbZWwZU9ybHd
-	NEzvF06x35m3me4slgQ65U8xJng8nOSyaTXz7rp2PEqDIiZrOuL3iBjVFoU1x7Hh7YkdkDtYYDo
-	tS/fn3lWzotK+ltpyPj3Bjrfkk6avOkdG+xCVO2+E07X3VIBVYOMf+UtGmrFH9Cg3IfO5Fx6nJ1
-	t4RELjU98zREXsAPqvcvnbVzjsBA5Y9wCUsRQON+txYb4RW7/oL
-X-Received: by 2002:a05:600c:630f:b0:4a1:efbe:529c with SMTP id 5b1f17b1804b1-4a35ae9e071mr121463405e9.12.1793004709351;
-        Mon, 26 Oct 2026 01:51:49 -0700 (PDT)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4a35a0aa0bcsm224781085e9.4.2026.10.26.01.51.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Oct 2026 01:51:48 -0700 (PDT)
-Date: Mon, 26 Oct 2026 11:51:44 +0300
-From: Dan Carpenter <error27@gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nk4xQPYa
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793006420; x=1824542420;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=l98tJlWIxePL8UadcPX+icRB1JGKcTcv7OakA/8Fbb8=;
+  b=nk4xQPYaqxVy2el9UByZy1TI4/fkvrLr5UvNDds+DzOgcVqM1C9mqVsn
+   dtaFQuDv15yN4jajb2efUrCYPAn3ycUaKyfLkNgwV3JTungjdg7TsHqNJ
+   Tj7i6+HQ8OaN64RqtWP94YcGxmz/krI9l4Vd5CoIkn3rXjEGP2Xzoz1GG
+   nq3dOH1xyzPHm6ZDgcerecIC0B2jpuN6n8gSgQV9sfRtl2Dazc6NU1k8b
+   vo3wKclataNvYn0pqajMxSEN81FdFIkw14x5YP9qEgpwquzQ41u+votDQ
+   t995mMAj9r8L84TE5MmRg/DG6WsClWznKvHGCRJMACRKM13NtH0lOU7rw
+   g==;
+X-CSE-ConnectionGUID: WuFkWrmeSNCASi7wyqLp5A==
+X-CSE-MsgGUID: jEzkpKnLQYSlAgjwGIpVvg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11946"; a="1567219"
+X-IronPort-AV: E=Sophos;i="6.27,179,1787036400"; 
+   d="scan'208";a="1567219"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 02:20:20 -0700
+X-CSE-ConnectionGUID: +NkuXWxbSty1XHIxudWlug==
+X-CSE-MsgGUID: 61o73YBrTBeplNEqcvJ6Eg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,179,1787036400"; 
+   d="scan'208";a="4269505"
+Received: from pgcooper-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.245.93])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 02:20:18 -0700
+Date: Mon, 26 Oct 2026 11:20:15 +0200
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
 To: himanshu bakshi <himanshu.bakshi478@gmail.com>
-Cc: andy@kernel.org, gregkh@linuxfoundation.org, dennylin0707@gmail.com,
-	cenzhang@linux.microsoft.com, dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org, dan.carpenter@linaro.org
-Subject: Re: [PATCH] staging: fbtft: Remove unused macro
-Message-ID: <at8UoLDzrO9ypMeR@stanley.mountain>
-References: <20261026081832.60570-1-himanshu.bakshi478@gmail.com>
+Cc: andy@kernel.org, gregkh@linuxfoundation.org,
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] staging: fbtft: Fix line length warning
+Message-ID: <at8bT7NCQb9XvGoS@ashevche-desk.local>
+References: <20261026044523.18516-1-himanshu.bakshi478@gmail.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -99,31 +81,26 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261026081832.60570-1-himanshu.bakshi478@gmail.com>
+In-Reply-To: <20261026044523.18516-1-himanshu.bakshi478@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Mon, Oct 26, 2026 at 01:48:32PM +0530, himanshu bakshi wrote:
+On Mon, Oct 26, 2026 at 10:15:23AM +0530, himanshu bakshi wrote:
 > From: Himanshu Bakshi <himanshu.bakshi478@gmail.com>
 > 
-> fbtft_init_dbg is not used in drivers/staging/fbtft directory and
-> since dev_dbg messages are good enough, fbtft_init_dbg should be
-> removed. After compiling the driver, there are no undefined macro
-> issues.
+> Split the line in fbtft_init_dbg macro to keep it within the limit of 100
+> columns and address the checkpatch warning. Also aligned backslashes (\)
+> for the macro. Added a temproray variable for platform data.
+> 
+> Signed-off-by: Himanshu Bakshi <himanshu.bakshi478@gmail.com>
+> ---
 
-This commit message is sort of acceptable but a better commit message
-would be:
+Where is the changelog?
+Why do you think this patch is anyhow useful (based on the previous discussion
+and your observations)?
 
-"The fbtft_init_dbg() macro is not used, so delete it."
-
-1. () after the macro name to show it works as a function.
-2. We care about the whole kernel not just drivers/staging/fbtft.
-3. No need to discuss dev_dbg().  That is unrelated.
-4. No need to discuss compiling the driver since that is assumed.
-
-Otherwise it looks fine.
-
-Reviewed-by: Dan Carpenter <error27@gmail.com>
-
-regards,
-dan carpenter
+-- 
+With Best Regards,
+Andy Shevchenko
 
 

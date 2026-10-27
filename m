@@ -1,84 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.50
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.49
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793109231;
-	b=AlGdB46d0+C9ipf+fmj3JsLlp3XSrr7ctjyjSQHQQX6vlipFulcch9vbHDRNM4nCSNNg
-	 LFMOR+z3QvybRVqYHpg4P1Tqw79YpOsv9feNgrsIbOreZxBXP2yJv6IZJQFB1zq2IiORX
-	 gQbV8yIPQJ0eGx2WlQqh7T9VsaGOxGW6FcnQNuhcIOh2CZOGd7ztii4xcrcKbPlKEtkfS
-	 mqspohwvMiVpnlQEarNl3XD9IdWsPe++m4+7E3AEhWKWIyBdfHK1hlygEVn485O8m8CRp
-	 Olm6qu1FQhZsdEKwyw+McqZkxgmothxo9zsTWoqxl/xG/rtNe38LhAuMF0APi/evDbA==
+	t=1793109235;
+	b=NkdSQdSySCGq6NGi8/wnpmZNpeFOhKgDXFb5wEVJLQ4B5knZApuCnfIFnJDrmtnrn7w7
+	 yN2jeYyrfZzlCH7ICUIr3TNUOCgwGBuoWLrnGquYrG1WYtli1PiLVDHF7MgLrxZA0LCVV
+	 gl1OTyDofA+Zln4w0vz++v92kUAjfjacXQ8QdrLuoAthQnT+eIh5NyxqdLTfceT1J8CXF
+	 SkYukaSObda9pfjoh/yqIrvfEVHyP2rb+hK8agoFPHhz2T7geCwIdPfpevhZpPluJEDKl
+	 T+ZtM5K6EzqORrvMka1QB9xsNe1ojmF75//cicZOHXqMt01sMzNESVFhoXd1y83QNWg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793109231;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793109235;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References:
 	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=G1+nfUJ+NP0zqKdPIyJvkG8NMwha03wen6k4s/kDOuc=;
-	b=YFxkXJQzua532MPH+BRhVaN82yQIg2stKGRETg6HGyBemBugeFO5z7W4NVmhv+qlWByk
-	 bF3bedcoax52CaKz8gyNo9pe7wU2oJYP5Zi8IDTfmHVRdFTCx60Df0Oj5klR9ZHdklB96
-	 viy3U/MaUzAe25jXGsAF7N56tLOXfk+CwE2G6T3yMHHDEadKy3zN3MpEAyrJEcfGbqUBI
-	 IuZqjU0WjNoVd03MZX/Ugto9g+/0O0NZpMBgdzY3RnbUMROgptFK0e3PISOWieaykBDH5
-	 rqCift0yEo5ctbJbDy79f2TSbTWy0XX+Fp7CsHuWbfu6n2RjTaqhnzkiph6kq0Ps8gQ==
+	bh=HFwDNLv3n+wl+JreLzg2KvEaj4Ho3mAm9pShsdfkSdI=;
+	b=H8ykrviLQOtRXqcdKnjfk+/GLiDTH7XBuGZ6RTx2yNsVoSB6bt9c3yl7VHEWIxhfI32a
+	 OF1kAzHdnvRJG9GZop/jRwTYO437qhMJhb3v74YcXGetnLn9mZkqWMle63U0jaflhhNKg
+	 DacP+TLSWU5JXJmHMRO9OCRe5/sjHDU0m0vglFgd9LKM3pKGjMI3bsbDvZ8OhganU9L7p
+	 dnw2qhj1SZ5Ljz8+TZRmlUNQZgzWSpK06t5l7Inb+yBHDs4CYgkQ9pb42SsmqfLxTZZOT
+	 nPHl6TOvW97IgdMF+62TyQhKNhYR2nwHjOdBQVMwxqgyHS6h7v80uAXNY98cTy+yBOQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S2JE7Nd8;
-	arc=none smtp.remote-ip=209.85.221.50
-Received: from mail-wr1-f50.google.com (mail-wr1-f50.google.com [209.85.221.50])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Axq6+pnr;
+	arc=none smtp.remote-ip=209.85.221.49
+Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4297D606A327
-	for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 13:53:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4297D606A327
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D01E2606A33E
+	for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 13:53:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D01E2606A33E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S2JE7Nd8
-Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-48dfdd0678dso3034029f8f.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 06:53:51 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Axq6+pnr
+Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-48441a2ba1bso2712086f8f.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 06:53:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793109230; x=1793714030; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1793109233; x=1793714033; darn=vger.kernel.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=G1+nfUJ+NP0zqKdPIyJvkG8NMwha03wen6k4s/kDOuc=;
-        b=S2JE7Nd8OTAHxoXX6BZLIyrug9lS3aM+fOmCTHlOH5CAIMWvEng6vFztONyEQONBdy
-         6U0nsYeDQ35b6WSek1fAgeHdpeTYBo+D5PJK/A53gJmbPG6B2KWi4kSxAjhis7z63lHa
-         VTwhOjKb0TUkye6vfPvbocaNrgfU5fOrcE9M84tEkkhZli/4vBmfKp75SaCv+h4FwTN/
-         EtgzNbV7aphJrZ8dCgJJ0YE/R+1IiRFOPdV1D6GOSd7mCp7UjrZEIzeX9wntDPWIqBRW
-         MCObtUrCuy1+OjRKttCmH5cUl6o9wgpDTzpxhx+fVzWDHAMjD2IUkMA1kAucOEcxqznm
-         wcJQ==
+        bh=HFwDNLv3n+wl+JreLzg2KvEaj4Ho3mAm9pShsdfkSdI=;
+        b=Axq6+pnr1Vtgqr4v69LLt3RaAq7k1IMQ7FhaSOZzz89a6lHBeFOr77M3j91ygjKvDH
+         vW1kEPOwTfJv6/v6coa3mh6BRTlsIYo4Qq7xRSyeEeUmSEO+GVswzV/hYPn+7FVDs9wV
+         75jFsCMep9vJ95+PGlhl/75UmcGwA8kotHZEseurbYCEdN5S5yOonMuxsR5mS5odrdsj
+         9eo039drmgS50WpZbllG3q+FX9oC8RtwhQgJmGnX/tXeOOsp7gaEs7C3uUyuNwAMbmGN
+         BoDUegWv6aUwvVjscZXEFPhs3604EOOAYkN1fypwmG0rnidrhWGwFb+WpMSdhA+JE/A5
+         c4RA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793109230; x=1793714030;
+        d=1e100.net; s=20260707; t=1793109233; x=1793714033;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=G1+nfUJ+NP0zqKdPIyJvkG8NMwha03wen6k4s/kDOuc=;
-        b=D4A99LMqKpmRVwI/C4GnH3aBHA23KiNzcOPvMmw+0sSui+lnI6f4W67lUhLbO/Xr8R
-         6vtaJTnQi1xC5fHaWt6uGfY6/EsARiOGYeoQgVAVxsasLtp7svX1rqv7RLIwp0wopPzl
-         KDPZSz/J+JW2uUOJKFbzWeqnfADFMe4erRdb+HdwryAwW7U6fEVtEmvKmciYqWonX3QO
-         0O38yVYI43vqW3Hh1/LIEK6fooEMOXgk3BhYIfA+vJQWo01i26VlSrNKRcArTFkMJX4L
-         aTf4HdaEIpxConHGoKDwo64J2mz8Ii7uxuk/dJFF28+EqvunfUjYT8qRy8XBiRj4CUtc
-         86Zw==
-X-Forwarded-Encrypted: i=1; AKwUvBytcbAdMXFQRb1uWLjZWsMHQFG8UtOXlvzRPzxTFPpWat0uqypQkqNoKEn9UtnOFevs8/jJH/nVniLwpQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYI8NRqnuY2gdoWBYXZY3MsMkS/zi/ZDy2GpJeq0oLFl8RBmLmZ1
-	KgEtfLENi03o19Ibo9kIzYr6DmE5scnIWoMeN2p3AixXcWX0rJ8tngVa
-X-Gm-Gg: AYBFou3r9RNqWASzkBWunpzCT1mrKbWtR4Py54wugHA3U9NXz63b1ngTviLb3PcTFLU
-	J4FttZjIF97WXTnso/cjyxH/2mZWdzQxkWeDpkYGEIb+WJMUNTP4sRg3psys9wqJpKgmZSGJBVd
-	JOj/W5JJjQSwuiuxGsA16SZGmb1QDJ7OxE3QaKSV899O9SoqrC3SmqqIZWeekhZJnYdT03R8/Hn
-	3ZYa7uXg5a36Ls3Sg/tDb0o70KAMf2ihQltJ03hJQ+vDbGaUMIS1q0tvS+QMSKFZoQtnR2ec/VN
-	wePmxpDNc0AbH+Bxmfp6E9M2NoEWtOyWBal0smu9rSKVIb/9yIMrXB5mJ7h7xxWkpiP+hRorhwa
-	a7e/ejUhOIsreBVzK9oUb3yfTcat/KN7lqGlvT1oey5OGEynTRiIsyW4kIGxSDqOpKam6XNoNwe
-	dj0Tq9gHcBWJq9OGgOkNaxy+burHeoZSSXBsQhZ7GAmlFYxfDTLPUDzekJocfwtvpcFzMOPjcz1
-	YYrOq4iRi2eQVZTx8ISx/6XtykZpd2C7/CN7th36MscQIlyBLPF0YN+3oJmWz6btSTOnoOt4Y0O
-	+BlHizk=
-X-Received: by 2002:a05:6000:29d5:b0:48e:f47:273c with SMTP id ffacd0b85a97d-48e3eb45747mr11349441f8f.8.1793109229602;
-        Tue, 27 Oct 2026 06:53:49 -0700 (PDT)
+        bh=HFwDNLv3n+wl+JreLzg2KvEaj4Ho3mAm9pShsdfkSdI=;
+        b=enXvW8kGlE9w44l1rT7KMWzx8bEdksRm5ceDp8W9pC/MRF00TYxLF99rP5eypatr2y
+         JrLqCCmL8ebAm/ZYXEBig6qSnP65fmADTiEAEQueMFmby63n85z76FCOdDrY6SjElYHd
+         1aeka39vNDiIhcWqoWdqTQlE0pk/hz+3ui+OeHU3o1quuXO3ah3Fz/uanr3P6GzAgHV0
+         lsOBqqyjkCr1OLGPWvE5SmP1zep3B4zlX75TdDysddYNFD0bnDSGQxqQJjf3/PZpbM2M
+         0Kmo7F8VI5O1mK6l7lszPNOe/UQ26s8tSNxbC4MWwRDiQfGoHL/vuvtg03dedFK7NsWp
+         jP0w==
+X-Forwarded-Encrypted: i=1; AKwUvBwzTRNITM8C4VHiZLAVYAHnZwlV7U183/4mmbDhpYyoFPA5RPZ6i0n9gkPrLXUNPHBh9xiAcgBve2ECtw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYKXj9LtTjg2t8TRksNJwVkCN2FOH/biSoqr5ph7TDS1wkNwh2lC
+	8Ub4kh3r1ksEHX4rKuk+bKNjizkd9jkgsWQ2xzdtfoSzPafCXwMHhJ1O
+X-Gm-Gg: AYBFou2/GfE6E2OhCnwOe/eBvFGLOCOka4X9nfUkoYINbqH0mukv74UUWKnPCJBAQA4
+	LNQPpkZNciJdJFdfh8Gk3rM8CVY4jfAKW6tzy8j7kMihUxNZid4UXmPi9k8MDj94NLjNFvJp209
+	Q3b27SYQAq9crQ+GaKK2p7tQ8Fo3eBmjMGogCkikBMBnq92bE2S6zSn7geuLOQEnl2UCVIWPGIa
+	wAHv+FIKGcRLsAkyh3jQOp5dMPIveQj+ByldYkTGH359CPehavMNZZaNCHlh4sLSt+Tx0jqwwet
+	rjQnc3eVReSZk15CtT9tcQ8QiLdLZpyAZfZfCtpCq6fGTXFU47LJhWGCzpJhsICM0bsHm/PDSyR
+	JUq8Lz4VsQm2kIggZaMdlotyCs8Pl2N48e8pHz4gZJrsINyp9oIHOcAAkz7cNjMLxMMJfE2izkk
+	+RuQ61gUH4JXHiLto50PvjKnZdhdKS4ZLuWos7pJD+DD8x0c4iRs0IzcneIDn7R4Fx3wfiKSjCJ
+	tSG0dS14rNCLce309vVLPGk7waP/0XsNlho4HqCIsd/9SGPonDf8KZPNL3O/7RoLacIo77RMBpi
+	EZQSvjY=
+X-Received: by 2002:a5d:6f08:0:b0:48d:f034:7fcd with SMTP id ffacd0b85a97d-48e3eba1207mr20313170f8f.51.1793109232976;
+        Tue, 27 Oct 2026 06:53:52 -0700 (PDT)
 Received: from ingenieria31.oficinasStQ.local ([79.117.46.175])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ebcb846sm23128058f8f.25.2026.10.27.06.53.47
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48e3ebcb846sm23128058f8f.25.2026.10.27.06.53.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2026 06:53:48 -0700 (PDT)
+        Tue, 27 Oct 2026 06:53:51 -0700 (PDT)
 From: =?UTF-8?q?M=C3=A0xim=20Pedraza=20Padilla?= <maximpedraza@gmail.com>
 To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 	Maxime Ripard <mripard@kernel.org>,
@@ -108,9 +108,9 @@ Cc: Francesco Valla <francesco@valla.it>,
 	linux-doc@vger.kernel.org,
 	linux-embedded@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v6 02/15] efi: bgrt: add accessors for the boot graphics
-Date: Tue, 27 Oct 2026 14:53:29 +0100
-Message-Id: <20261027135342.2003632-3-maximpedraza@gmail.com>
+Subject: [PATCH v6 03/15] fbdev: efifb: move the BMP headers to <video/bmp.h>
+Date: Tue, 27 Oct 2026 14:53:30 +0100
+Message-Id: <20261027135342.2003632-4-maximpedraza@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20261027135342.2003632-1-maximpedraza@gmail.com>
 References: <20261027135342.2003632-1-maximpedraza@gmail.com>
@@ -126,182 +126,185 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-The DRM splash client shows the boot graphics the firmware left behind,
-and needs the image address and size, its offsets and the status bits.
-Reading them from bgrt_tab and bgrt_image_size works with drm_client_lib
-built in, but it can be a module, and neither is exported:
+The DRM splash client parses the same BMP headers as efifb. Rather than
+keep a second copy of the structures, move them to include/video/bmp.h
+with the magic number.
 
-  ERROR: modpost: drivers/gpu/drm/clients/drm_client_lib.ko: symbol 'bgrt_tab' undefined!
-  ERROR: modpost: drivers/gpu/drm/clients/drm_client_lib.ko: symbol 'bgrt_image_size' undefined!
+BMP is little endian whatever the CPU, so the header gives the fields
+as __le16 and __le32, and efifb now reads them with
+get_unaligned_le16() and get_unaligned_le32(). Width and height are
+read signed, as the format has them. No change on the little endian
+systems EFI runs on.
 
-Rather than export the data, add an accessor for each of them, exported
-GPL only, with stubs in efi-bgrt.h for CONFIG_ACPI_BGRT=n so that users
-need no #ifdef of their own. The variables stay global for
-drivers/acpi/bgrt.c, and are only written by efi_bgrt_init(): mark them
-__ro_after_init.
-
-The table gives the image address as a u64. efi_bgrt_has_image() only
-says yes when phys_addr_t can hold it, so that it never disagrees with
-efi_bgrt_image_address() on kernels with 32-bit physical addresses.
-
-Reported-by: Mario Limonciello <mario.limonciello@amd.com>
-Closes: https://lore.kernel.org/dri-devel/5d7067de-97b7-4232-9cf6-e4b978696482@amd.com/
-Suggested-by: Jani Nikula <jani.nikula@linux.intel.com>
+Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
 Assisted-by: Claude:claude-opus-5-5
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 Signed-off-by: Màxim Pedraza Padilla <maximpedraza@gmail.com>
 ---
- drivers/firmware/efi/efi-bgrt.c | 75 ++++++++++++++++++++++++++++++++-
- include/linux/efi-bgrt.h        | 39 ++++++++++++++++-
- 2 files changed, 111 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/firmware/efi/efi-bgrt.c b/drivers/firmware/efi/efi-bgrt.c
-index 1da451582812..1affe5528139 100644
---- a/drivers/firmware/efi/efi-bgrt.c
-+++ b/drivers/firmware/efi/efi-bgrt.c
-@@ -16,8 +16,8 @@
- #include <linux/efi.h>
- #include <linux/efi-bgrt.h>
+Notes:
+    TODO for the efifb maintainers, not changed here so that this patch
+    only moves the headers: the bound check
+    
+    	if ((bitmap_offset + bmp_pitch * bmp_height) > bgrt_image_size)
+    
+    is done in u32 and can wrap with a crafted BGRT image, for instance
+    with a bitmap_offset close to 4 GiB, and so can round_up(3 * bmp_width,
+    4) and the product with a huge width; image_offset_x + bmp_width against
+    lfb_width is a u32 sum too. efifb_copy_bmp() would then read outside the
+    mapped image. The DRM splash client checks the same headers with
+    check_add_overflow() and check_mul_overflow(). I can send a separate fix
+    if wanted.
+
+ drivers/video/fbdev/efifb.c | 49 ++++++++++++++-----------------------
+ include/video/bmp.h         | 40 ++++++++++++++++++++++++++++++
+ 2 files changed, 58 insertions(+), 31 deletions(-)
+ create mode 100644 include/video/bmp.h
+
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 3411be06d3e6..fd348a72f780 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -16,32 +16,13 @@
+ #include <linux/platform_device.h>
+ #include <linux/printk.h>
+ #include <linux/sysfb.h>
++#include <linux/unaligned.h>
++#include <video/bmp.h>
+ #include <video/vga.h>
+ #include <asm/efi.h>
+ #include <drm/drm_connector.h>  /* For DRM_MODE_PANEL_ORIENTATION_* */
+ #include <drm/drm_panel_quirks.h> /* For drm_get_panel_orientation_quirk */
  
--struct acpi_table_bgrt bgrt_tab;
--size_t bgrt_image_size;
-+struct acpi_table_bgrt bgrt_tab __ro_after_init;
-+size_t bgrt_image_size __ro_after_init;
+-struct bmp_file_header {
+-	u16 id;
+-	u32 file_size;
+-	u32 reserved;
+-	u32 bitmap_offset;
+-} __packed;
+-
+-struct bmp_dib_header {
+-	u32 dib_header_size;
+-	s32 width;
+-	s32 height;
+-	u16 planes;
+-	u16 bpp;
+-	u32 compression;
+-	u32 bitmap_size;
+-	u32 horz_resolution;
+-	u32 vert_resolution;
+-	u32 colors_used;
+-	u32 colors_important;
+-} __packed;
+-
+ static bool use_bgrt = true;
+ static bool request_mem_succeeded = false;
+ static u64 mem_flags = EFI_MEMORY_WC | EFI_MEMORY_UC;
+@@ -145,9 +126,10 @@ static bool efifb_bgrt_sanity_check(const struct screen_info *si, u32 bmp_width)
  
- struct bmp_header {
- 	u16 id;
-@@ -89,3 +89,74 @@ void __init efi_bgrt_init(struct acpi_table_header *table)
- out:
- 	memset(bgrt, 0, sizeof(bgrt_tab));
- }
-+
-+/**
-+ * efi_bgrt_has_image() - Whether the firmware left a boot graphic
-+ *
-+ * Return: true if the BGRT points at a BMP image, which efi_bgrt_init()
-+ * checked and reserved, at an address that phys_addr_t can hold.
-+ */
-+bool efi_bgrt_has_image(void)
-+{
-+	return bgrt_tab.image_address &&
-+	       bgrt_tab.image_address == (phys_addr_t)bgrt_tab.image_address;
-+}
-+EXPORT_SYMBOL_GPL(efi_bgrt_has_image);
-+
-+/**
-+ * efi_bgrt_image_address() - Physical address of the boot graphic
-+ *
-+ * Return: the address of the BMP image, or 0 if there is none.
-+ */
-+phys_addr_t efi_bgrt_image_address(void)
-+{
-+	return bgrt_tab.image_address;
-+}
-+EXPORT_SYMBOL_GPL(efi_bgrt_image_address);
-+
-+/**
-+ * efi_bgrt_image_size() - Size of the boot graphic
-+ *
-+ * Return: the size of the BMP image, as its header gives it, or 0 if there
-+ * is none.
-+ */
-+size_t efi_bgrt_image_size(void)
-+{
-+	return bgrt_image_size;
-+}
-+EXPORT_SYMBOL_GPL(efi_bgrt_image_size);
-+
-+/**
-+ * efi_bgrt_status() - Status field of the BGRT
-+ *
-+ * Return: the status byte. Bit 0 tells whether the image is still on
-+ * screen and, since ACPI 6.2, bits 1-2 how far it has to be turned to show
-+ * upright (ACPI_BGRT_ORIENTATION_OFFSET).
-+ */
-+u8 efi_bgrt_status(void)
-+{
-+	return bgrt_tab.status;
-+}
-+EXPORT_SYMBOL_GPL(efi_bgrt_status);
-+
-+/**
-+ * efi_bgrt_image_offset_x() - Horizontal position of the boot graphic
-+ *
-+ * Return: the X offset, in pixels, at which the firmware drew the image.
-+ */
-+u32 efi_bgrt_image_offset_x(void)
-+{
-+	return bgrt_tab.image_offset_x;
-+}
-+EXPORT_SYMBOL_GPL(efi_bgrt_image_offset_x);
-+
-+/**
-+ * efi_bgrt_image_offset_y() - Vertical position of the boot graphic
-+ *
-+ * Return: the Y offset, in pixels, at which the firmware drew the image.
-+ */
-+u32 efi_bgrt_image_offset_y(void)
-+{
-+	return bgrt_tab.image_offset_y;
-+}
-+EXPORT_SYMBOL_GPL(efi_bgrt_image_offset_y);
-diff --git a/include/linux/efi-bgrt.h b/include/linux/efi-bgrt.h
-index e6cd51005633..1c287e5fd388 100644
---- a/include/linux/efi-bgrt.h
-+++ b/include/linux/efi-bgrt.h
-@@ -9,7 +9,14 @@
- void efi_bgrt_init(struct acpi_table_header *table);
- int __init acpi_parse_bgrt(struct acpi_table_header *table);
+ static void efifb_show_boot_graphics(struct fb_info *info, const struct screen_info *si)
+ {
+-	u32 bmp_width, bmp_height, bmp_pitch, dst_x, y, src_y;
++	u32 bmp_width, bmp_height, bmp_pitch, bitmap_offset, dst_x, y, src_y;
+ 	struct bmp_file_header *file_header;
+ 	struct bmp_dib_header *dib_header;
++	s32 width, height;
+ 	void *bgrt_image = NULL;
+ 	u8 *dst = info->screen_base;
  
--/* The BGRT data itself; only valid if bgrt_image != NULL. */
-+bool efi_bgrt_has_image(void);
-+phys_addr_t efi_bgrt_image_address(void);
-+size_t efi_bgrt_image_size(void);
-+u8 efi_bgrt_status(void);
-+u32 efi_bgrt_image_offset_x(void);
-+u32 efi_bgrt_image_offset_y(void);
-+
-+/* The BGRT data itself; only valid if efi_bgrt_has_image(). */
- extern size_t bgrt_image_size;
- extern struct acpi_table_bgrt bgrt_tab;
+@@ -186,20 +168,25 @@ static void efifb_show_boot_graphics(struct fb_info *info, const struct screen_i
+ 		goto error;
  
-@@ -21,6 +28,36 @@ static inline int __init acpi_parse_bgrt(struct acpi_table_header *table)
- 	return 0;
- }
+ 	file_header = bgrt_image;
+-	if (file_header->id != 0x4d42 || file_header->reserved != 0)
++	if (get_unaligned_le16(&file_header->id) != BMP_FILE_MAGIC_ID ||
++	    get_unaligned_le32(&file_header->reserved) != 0)
+ 		goto error;
++	bitmap_offset = get_unaligned_le32(&file_header->bitmap_offset);
  
-+static inline bool efi_bgrt_has_image(void)
-+{
-+	return false;
-+}
-+
-+static inline phys_addr_t efi_bgrt_image_address(void)
-+{
-+	return 0;
-+}
-+
-+static inline size_t efi_bgrt_image_size(void)
-+{
-+	return 0;
-+}
-+
-+static inline u8 efi_bgrt_status(void)
-+{
-+	return 0;
-+}
-+
-+static inline u32 efi_bgrt_image_offset_x(void)
-+{
-+	return 0;
-+}
-+
-+static inline u32 efi_bgrt_image_offset_y(void)
-+{
-+	return 0;
-+}
-+
- #endif /* !CONFIG_ACPI_BGRT */
+ 	dib_header = bgrt_image + sizeof(*file_header);
+-	if (dib_header->dib_header_size != 40 || dib_header->width < 0 ||
+-	    dib_header->planes != 1 || dib_header->bpp != 24 ||
+-	    dib_header->compression != 0)
++	width = get_unaligned_le32(&dib_header->width);
++	height = get_unaligned_le32(&dib_header->height);
++	if (get_unaligned_le32(&dib_header->dib_header_size) != 40 ||
++	    width < 0 || get_unaligned_le16(&dib_header->planes) != 1 ||
++	    get_unaligned_le16(&dib_header->bpp) != 24 ||
++	    get_unaligned_le32(&dib_header->compression) != 0)
+ 		goto error;
  
- #endif /* _LINUX_EFI_BGRT_H */
+-	bmp_width = dib_header->width;
+-	bmp_height = abs(dib_header->height);
++	bmp_width = width;
++	bmp_height = abs(height);
+ 	bmp_pitch = round_up(3 * bmp_width, 4);
+ 
+-	if ((file_header->bitmap_offset + bmp_pitch * bmp_height) >
++	if ((bitmap_offset + bmp_pitch * bmp_height) >
+ 				bgrt_image_size)
+ 		goto error;
+ 
+@@ -222,12 +209,12 @@ static void efifb_show_boot_graphics(struct fb_info *info, const struct screen_i
+ 
+ 		src_y = y - bgrt_tab.image_offset_y;
+ 		/* Positive header height means upside down row order */
+-		if (dib_header->height > 0)
++		if (height > 0)
+ 			src_y = (bmp_height - 1) - src_y;
+ 
+ 		memset(dst, 0, bgrt_tab.image_offset_x * 4);
+ 		dst_x = bgrt_tab.image_offset_x;
+-		efifb_copy_bmp(bgrt_image + file_header->bitmap_offset +
++		efifb_copy_bmp(bgrt_image + bitmap_offset +
+ 					    src_y * bmp_pitch,
+ 			       (u32 *)dst + dst_x, bmp_width, si);
+ 		dst_x += bmp_width;
+diff --git a/include/video/bmp.h b/include/video/bmp.h
+new file mode 100644
+index 000000000000..8aa249f2302f
+--- /dev/null
++++ b/include/video/bmp.h
+@@ -0,0 +1,40 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _VIDEO_BMP_H
++#define _VIDEO_BMP_H
++
++#include <linux/types.h>
++
++/* "BM", the first two bytes of a BMP file */
++#define BMP_FILE_MAGIC_ID 0x4d42
++
++/*
++ * The headers at the start of a BMP file. Every field is little endian,
++ * whatever the CPU, and the headers need not be aligned in memory: read them
++ * with get_unaligned_le16() and get_unaligned_le32().
++ */
++struct bmp_file_header {
++	__le16 id;
++	__le32 file_size;
++	__le32 reserved;
++	__le32 bitmap_offset;
++} __packed;
++
++/*
++ * BITMAPINFOHEADER. Width and height are signed: a negative width means
++ * nothing, and a negative height that the rows go top to bottom.
++ */
++struct bmp_dib_header {
++	__le32 dib_header_size;
++	__le32 width;
++	__le32 height;
++	__le16 planes;
++	__le16 bpp;
++	__le32 compression;
++	__le32 bitmap_size;
++	__le32 horz_resolution;
++	__le32 vert_resolution;
++	__le32 colors_used;
++	__le32 colors_important;
++} __packed;
++
++#endif /* _VIDEO_BMP_H */
 -- 
 2.39.5
 

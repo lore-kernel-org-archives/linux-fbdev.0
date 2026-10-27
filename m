@@ -1,99 +1,68 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.227.136
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793089368;
-	b=rKScIBd2wcwV/OpCYIMeeNBaZSLJMvqQg5E3jiU4K4XblPS1FpZtVGuYJfyCRSffLYmt
-	 TPYOEPc8M29a2ZCIQC3nhOB5ogXYSWUxme/veyHfb8GVolhKOPhgiy7CXJzrFl3/ZJsbk
-	 5XTY9GO1MDBLdCxlPZDpUHpR7nUfztRWbjG+DqdfpDERtc4Ds9f3oQroOFB+2gniYRSZY
-	 a+cJIyrTPeEgcQXdykzztCTwZGc0tzsoSudby8y/Dl8eaTeOzkJSAr0hsAvnie5dIYRuu
-	 vJUdwp6OOXSProUi3iwJp3f1aEP/lUObgY1980SHsVw2a/4RL67WbqAOPtGf7cS34ow==
+	t=1793108216;
+	b=WWMHghvy8uUPDO70zrsqNCMzg7FKV9gVofF1HoDGDDIeuvpK0Zn4ux2RjwNNRejI4/To
+	 P1Dttkmi9/lc0C1u8vEutzbZ0w4SESFwzEV1Fa22l+POfOSPxi8qQNnvt4iWpYWE/cvdy
+	 xETPIkflLZuVQod0HdyNeiUPbmzS19Vn2QIyJva35S3mQI+oItmf/4YygOdO+CbZsf2Dn
+	 EMddpY1hvoxucYK0PQH6ujt3AOHfuW78Oh5zPoEZhMEnnH2cuiOisSN4BYtXfww1IV2qb
+	 1/sD3CpWJrX+6ZMK1GgVerDDGVcE0gaqsH8CtHHzWa8FAZuTR8TeGrWLOqWFZ8a97GA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793089368;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 Content-Type:Content-Transfer-Encoding:MIME-Version;
-	bh=Oxzp5fPcS3kqgnusg3EHz+ARzLMXQsnr8kyVgVxlMPI=;
-	b=2y7ggHCTYBrDjczzgTt7ltAVxngzbKCRGE77N0P4+a4RcObSAFNGi+GPzpGOG1bSJQTK
-	 LCB8aesP/AdZOOqQzHlLrqyH2rmsEGKZMzV0kR2FiwFTYW1oOliQ6j6AKcWOkK1fFHNgO
-	 v8/xp/uKGiQJ+J3xe3/R4fLYk1JnE7nElhmfWjgVnh4t/wmjf10d/s7W7dnFZ6TnoAdjP
-	 2L8obPyYJurWPlsqnd727OiARdZp6XCrp+bRnuuVdHLLHQNVHsEs5b7+38704AvGOa222
-	 RT9lQs+jDE2lGBwZNU70lBdbZAW2os+ToydDBjpFiAVcf34xicxpjO0yprB0uSL9CgA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793108216;
+	h=DMARC-Filter:Received:Received:Received:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-Rspamd-Pre-Result:X-Rspamd-Queue-Id:
+	 X-Rspamd-Pre-Result:X-Rspamd-Action:X-Rspamd-Server:X-Spam-Level:
+	 X-Spamd-Result:X-Spam-Flag:X-Spam-Score;
+	bh=WImkfxqEQGNeYfAHj0WE2CtADgBK8HXMO/5PqrE+/AA=;
+	b=dSQdflID1JWu7vaKBRdyMev6jcD5Q80hLw7JRAqKoWNQ/PL0leL7fnaC1DTqFzl6NIvy
+	 ql7irahpmLTzUL8Dw60Wa5ePF3wFfXTBFXDpG9nse4WJFfhcsvwoFNKtLkN9Ywx9m0aSg
+	 y26V/RwaTe/UqdG5zYI5FAy7Gn/H/nLgjnYlIygw0sSEAM1MKeskkpZI7edRV0yol/IIJ
+	 l1iJvkrOwpzCGbWzK3ViuDNTF+amlsGCAnCvPlNUgAVnWJS+0R/BFd1zJ0owO9Cj0pzx6
+	 GSIZi49q9GibzQVTysVfnE6VN+hIOoh9/jVGABaQ0AZv+GpIoWr0CiylZnSzZLcEUNw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hayvxmzx;
-	arc=none smtp.remote-ip=74.125.227.136
-Received: from mail-pj2-f8.google.com (mail-pj2-f8.google.com [74.125.227.136])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=suse.de;
+	spf=pass smtp.mailfrom=suse.de;
+	arc=none smtp.remote-ip=195.135.223.130
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6910D606A31D
-	for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 08:22:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6910D606A31D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hayvxmzx
-Received: by mail-pj2-f8.google.com with SMTP id 98e67ed59e1d1-3ac749e0719so934659a91.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 01:22:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793089368; x=1793694168; darn=vger.kernel.org;
-        h=mime-version:content-transfer-encoding:content-type:references
-         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Oxzp5fPcS3kqgnusg3EHz+ARzLMXQsnr8kyVgVxlMPI=;
-        b=hayvxmzxWUNkxQZOcUXN0qwsRzCsTin/m622IWJBdtGoONQ4VRwrf3pi7aAL+T1CTG
-         ulsqZAcddvKOYf2/ClMFuj+IlU7bKnnHMc161bYEfz39L6J+qM+J/chect4a4bTzHW/V
-         HUXhN1koSC0WgHZ7jXAZCc1j75ygzTLQcU9Hx5XslNYpwIWNaGusoczP3SJGjTOBFncJ
-         CY/wRMqZAkmBxqJP7YQqazM51ZlXEN66EiyheLaNRXYHJP+GPF2wvrpsBEHYfcKb/Mk3
-         bu2PCc053cEFkIWrPYSX3/yV19Rutmpp47ownwFpzk+EQk0I6B5NDatVwF/S1+wTVU93
-         kJqA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793089368; x=1793694168;
-        h=mime-version:content-transfer-encoding:content-type:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Oxzp5fPcS3kqgnusg3EHz+ARzLMXQsnr8kyVgVxlMPI=;
-        b=TIPGw3Ub7qzwfVwxgcktn0ntKKR1tqZoniZeiLMQZBfSimL8656povX309WkrQJLJk
-         5oCuqqDFEKKC1l1oIzLTv2EEkllk32PSeevlI7FtblH2RVCrVC1JALnQuvdGbLKULQjv
-         f05a6exkfC67NpzGru+7HTMr7rL0rEyO7Zpu6AQHBiHEOl+y2CMTrBc++HH7gcq2Zrm7
-         d0RrdPenPXOXWBAwYDEMYMAhLAs7/wZdxWSiohI1K45o2/SvwvHFHEOpgAqHEu2IYsGS
-         BEdNMs9mU7crXQP3s/D3ExNMO0tzVnQ1OVrVXZvfdgEhJzHtvV3z/esp9JxQvMSQ+7L1
-         mxxw==
-X-Forwarded-Encrypted: i=1; AKwUvBwEoXZ2JRDNEGLu67/qUd9xT7BocFY5o+LIjOsTBMsGlF6ci0TGye5zfnMto3EOoCO5Jp8pMquzDzzS9Q==@vger.kernel.org
-X-Gm-Message-State: AFq9FYLTz6ZEQeFNQqv5tA1ybrI1+EdoeMAggjVH/yUpzZyntafvq+SP
-	+iaDpiugb3fR3SGl6rA0p4nFb3RNWlPtdOsed99doXlXBOO152og2YMR
-X-Gm-Gg: AYBFou2ZgGtqMLG/Lwp7gXkRw51IvSaSqe7zXoXDBHmpPb1B5Yj2t68H8nVu66Ma/JC
-	QBrPawM694ni1Q+xTxSNYRnp9mqId4VYnUObRX/mRh41ZYAjWFQymKvcxKVH10vNkEAADsacZgS
-	d2snTcaetkZ8+o8uGi3usTz9zcMEaIXYYluuO3YuPsfeGqav/SfuvtKGRaZilRtDFT6/9oLblYs
-	iFi72bxTAOZyZAh35L2G2skl/h5Fstz71QtQ6A65Zl0ZijOyGX3Md03RLSwqEi4HFnEGuPA2a0r
-	nckEST65fSgAASRt6xb+CHyTj9OnOo7XrSmGGTN+ppW3KRgt1bK9/5Q5giphNdY/mjVcBQ57eL7
-	irUJbejWT1q5dkSbvUUsmJbRMryX4qCZssjIdQH/L3AmQR9F/T/+r1sHyrqrnf9h3URGUHQl0X4
-	Shzuf5Kv3qcQlQOP5v+/xBlWYD2YZC0L/G2lNIey5y85eK9YmtZTm0LxG5t6U/cvV32C/7onas9
-	MpnHr18D27TkWOOQwnhyzVAEHk7vS0vycnN1Gjzo9uyUASEWhblwUOLayW8cq5+vrP7ByFHzVIr
-	CG8SaZGaEyY+Iq0GMvsVGuH5mW5/mGg1tZvHQHq+38v4IG8LM7nWzJCSWWh1
-X-Received: by 2002:a17:90b:314a:b0:3ab:413:49bc with SMTP id 98e67ed59e1d1-3adead4f73bmr6882910a91.37.1793089367740;
-        Tue, 27 Oct 2026 01:22:47 -0700 (PDT)
-Received: from [100.64.227.9] (n106-71-19-159.sun21.vic.optusnet.com.au. [106.71.19.159])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3adeba31797sm8137375a91.1.2026.10.27.01.22.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2026 01:22:46 -0700 (PDT)
-Date: Tue, 27 Oct 2026 01:22:46 -0700 (PDT)
-From: Aveline Noir <jm5905938@gmail.com>
-To: Helge Deller <deller@gmx.de>
-Cc: Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <bentiss@kernel.org>,
- linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject:
- Re: [PATCH v2 2/2] HID: picolcd: Avoid framebuffer last-close deadlock
-Message-ID: <179308935900.645289.17780178981863221787@gmail.com>
-In-Reply-To: <76cddcc5-2cf8-40da-9139-e78353975e41@gmx.de>
-References:
- <CANOyQmGfmBdTRaEamVdGuMBToVLeXGi6qLrnX=xkA9acsL9TSQ@mail.gmail.com>
- <CANOyQmHF-gjvnLqTGEVBcU6+AWj5ha+7tJhE2E_Cv9aj-gRXdA@mail.gmail.com>
- <76cddcc5-2cf8-40da-9139-e78353975e41@gmx.de>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B3FF606A31F
+	for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 13:36:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6B3FF606A31F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 09D9821F1C;
+	Tue, 27 Oct 2026 13:36:54 +0000 (UTC)
+Authentication-Results: smtp-out1.suse.de;
+	none
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id B6E6213319;
+	Tue, 27 Oct 2026 13:36:53 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id wbs7OfSo4GoWVAAAD6G6ig:T3
+	(envelope-from <tzimmermann@suse.de>); Tue, 27 Oct 2026 13:36:53 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: deller@gmx.de,
+	simona@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	sashiko-reviews@lists.linux.dev,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 2/6] lib/fonts: Provide internal helpers for allocating font_data_t
+Date: Tue, 27 Oct 2026 14:27:17 +0100
+Message-ID: <20261027133646.297856-3-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261027133646.297856-1-tzimmermann@suse.de>
+References: <20261027133646.297856-1-tzimmermann@suse.de>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -103,24 +72,154 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Queue-Id: 09D9821F1C
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Spam-Flag: NO
+X-Spam-Score: -4.00
 
-Hi Helge,
+Factor out the allocation code for font_data_t from font import in
+font_data_import(). Retrieve a writable glyph buffer from the new
+helper __font_data_wrbuf().
 
-On Sun, 25 Oct 2026 09:20:36 +0100, Helge Deller wrote:
-> For this patch:
-> Acked-by: Helge Deller <deller@gmx.de> # fbdev
+Having the allocation code in separate functions makes it available
+for font rotation and maybe other font utilities. The _wrbuf() helper
+returns a writable glyph buffer. Font data is only readable in general.
 
-Thanks for the ack!
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ lib/fonts/font.h  | 12 +++++++++
+ lib/fonts/fonts.c | 63 ++++++++++++++++++++++++++++++-----------------
+ 2 files changed, 52 insertions(+), 23 deletions(-)
 
-> I'm not sure about how to handle this patch series at all.
-> There is still a review missing for patch #1.
-> Shall I take this patch (#2 of 2) via fbdev git tree?
+diff --git a/lib/fonts/font.h b/lib/fonts/font.h
+index 4f1adf0b6b54..eae8c563f148 100644
+--- a/lib/fonts/font.h
++++ b/lib/fonts/font.h
+@@ -4,6 +4,7 @@
+ #define _LIB_FONTS_FONT_H
+ 
+ #include <linux/font.h>
++#include <linux/types.h>
+ 
+ /*
+  * Font data
+@@ -16,6 +17,17 @@ struct font_data {
+ 	unsigned char data[];
+ } __packed;
+ 
++/*
++ * font_data_t and helpers
++ */
++
++static inline unsigned char *__font_data_wrbuf(font_data_t *fd)
++{
++	return (unsigned char *)fd;
++}
++
++font_data_t *__font_data_alloc(unsigned int size, gfp_t flags);
++
+ /*
+  * Built-in fonts
+  */
+diff --git a/lib/fonts/fonts.c b/lib/fonts/fonts.c
+index 4fc66722d00d..e66a5b6fc3bb 100644
+--- a/lib/fonts/fonts.c
++++ b/lib/fonts/fonts.c
+@@ -47,6 +47,39 @@ static bool font_data_is_internal(font_data_t *fd)
+ 	return !REFCOUNT(fd); /* internal fonts have no reference counting */
+ }
+ 
++font_data_t *__font_data_alloc(unsigned int size, gfp_t flags)
++{
++	unsigned int alloc_size;
++	struct font_data *font_data;
++	font_data_t *fd;
++
++	/* Check for overflow in allocation size calculation */
++	if (check_add_overflow(sizeof(*font_data), size, &alloc_size))
++		return ERR_PTR(-EINVAL);
++
++	font_data = kzalloc(alloc_size, flags);
++	if (!font_data)
++		return ERR_PTR(-ENOMEM);
++
++	fd = font_data->data;
++	REFCOUNT(fd) = 1; /* start with reference acquired */
++	FNTSIZE(fd) = size;
++
++	return fd;
++}
++
++static font_data_t *font_data_alloc(unsigned int pitch, unsigned int h, unsigned int charcount)
++{
++	unsigned int size;
++
++	/* Check for integer overflow in font-size calculation */
++	if (check_mul_overflow(h, pitch, &size) ||
++	    check_mul_overflow(size, charcount, &size))
++		return ERR_PTR(-EINVAL);
++
++	return __font_data_alloc(size, GFP_USER);
++}
++
+ static void font_data_free(font_data_t *fd)
+ {
+ 	kfree(to_font_data_struct(fd));
+@@ -75,36 +108,20 @@ font_data_t *font_data_import(const struct console_font *font, unsigned int vpit
+ 	unsigned int h = font->height;
+ 	unsigned int charcount = font->charcount;
+ 	const unsigned char *data = font->data;
+-	u32 csum = 0;
+-	struct font_data *font_data;
+-	int size, alloc_size;
++	unsigned char *font_data;
+ 	unsigned int i;
+ 	font_data_t *fd;
+ 
+-	/* Check for integer overflow in font-size calculation */
+-	if (check_mul_overflow(h, pitch, &size) ||
+-	    check_mul_overflow(size, charcount, &size))
+-		return ERR_PTR(-EINVAL);
+-
+-	/* Check for overflow in allocation size calculation */
+-	if (check_add_overflow(sizeof(*font_data), size, &alloc_size))
+-		return ERR_PTR(-EINVAL);
+-
+-	font_data = kmalloc(alloc_size, GFP_USER);
+-	if (!font_data)
+-		return ERR_PTR(-ENOMEM);
+-	memset(font_data->extra, 0, sizeof(font_data->extra));
++	fd = font_data_alloc(pitch, h, charcount);
++	if (IS_ERR(fd))
++		return fd;
++	font_data = __font_data_wrbuf(fd);
+ 
+ 	for (i = 0; i < charcount; ++i)
+-		memcpy(font_data->data + i * h * pitch, data + i * vpitch * pitch, h * pitch);
++		memcpy(font_data + i * h * pitch, data + i * vpitch * pitch, h * pitch);
+ 
+ 	if (calc_csum)
+-		csum = calc_csum(0, font_data->data, size);
+-
+-	fd = font_data->data;
+-	REFCOUNT(fd) = 1; /* start with reference acquired */
+-	FNTSIZE(fd) = size;
+-	FNTSUM(fd) = csum;
++		FNTSUM(fd) = calc_csum(0, font_data, FNTSIZE(fd));
+ 
+ 	return fd;
+ }
+-- 
+2.56.0
 
-Since patch #2 depends on patch #1, I think it would make sense
-to keep both patches together, perhaps through the HID tree.
-
-Jiri, Benjamin, could you take a look at patch #1 and let us
-know how you'd prefer to handle the series?
-
-Thanks,
-Aveline

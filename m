@@ -1,82 +1,82 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.229.7
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.68
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793072849;
-	b=yzhmrqs8da5L7j/ZkQZNL8xR1rSKqQvQirdS0vYaI088S3Hjmi5Q8pBzWfIbS2s47Wll
-	 ZrPbfWPV3NZNfhl4gU9J+uYcLldsjvTY4G7htTGX5VyEiXvMDBXv6FetHVkzvsuGLdnhL
-	 K15LBRBjpwNyDnQyc+uQxaFSh9lQEk4NsgqAJmHUlJZ2v/Dkb5COjvoCuOL8swZaMRZc6
-	 OlGzjA03LBj0wTbal02y23KWgj6cDvd/W6OnXEZ5ec0LSdnWEBGZUHvZE2e7Qwl5NF0Gu
-	 h8fYmVoll0AwPVREmH7DxUiMdL45BpnHWmkfCtptW8wtfSAsMRoYmK7ieM4qjVEKEkw==
+	t=1793077350;
+	b=nrrOTwuNYV+53kv+44lliTCS9dsZ4D4zC4MuRC3p+PhT1+UShExivRjpb61rnNhusLU2
+	 kTSdmiZX0S/HQVuXaBXjqnsnUn+9ICfhDFd8HrMUcoElKk3jmzwcwLmRw1YRutjTXcH3z
+	 1YUPTmJX00C3CguGw6CeijoL7swOGxejRVsxzOYhkR/0Y4CGqPa61MPV01JlaDMVdCMj+
+	 OaaDq6NsRVai4FcGH2vOh9DFChqv+3L07tpJsv8NzeRkF8RfZOL4pOKeiUFjKzyOA3zw7
+	 hdrf4FL108aGCHuA2hhIg4B70BPeb2lDPknS+f/5VFIbiAZTtQvKLSivuXFeuAh0ezg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793072849;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793077350;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=d5xPE7zkAisWNP1/3IMkS+loLJJfjfdBEUGlcoiM7g0=;
-	b=KPxSnciBcgilgFu0zHY/6+gwMnPs1gQY6nDLPWtI20NPiZcJFKe29nWRbuHzy27wm9AO
-	 /BR8g5piT+JS5InfmExjMSLwzD7XW4ctUtsjG5nKfDfSNursaTGKj6H6cOrsatbqUeQ5o
-	 AZWR4HinIZnNqm4CMHCnxF26XyH3pPsTGT6DRBXuUr3VUgwVczNFNJQz3K86KzAsPtZwj
-	 ZFjFVb37gk+npIQ1HUfJa35Rk6sf26eSLa4JKlWEGfzW497iFNqoTp30um1QmWIQdVLIv
-	 Tn2DBRFkT+LOdLR8kH7I+EXXb8oxtXVyQEU7J1jc21S7eq3UeJiua08vcmI1isgCKhg==
+	bh=yzZEC/TrZrxGucG9Xp1MOjisRqHlcLyLSCjwMz8NQVc=;
+	b=D5wRm1FAjWCqAPyTYPCLFQol7IdOq4822f5uOTYoJa28qJXW91sdg6SaXooybnUtc0sa
+	 josq+zEBPLs3gO5gCEvqzQU8RWP094yahyI7la5UA1jZNxmOKA/Nsg6r9NTOFucttbBhY
+	 wrN9QannyQG/3Xjlqgt3q28EFxO265PW/ah/GQEgoPYoqVvqyqNyzXZ3zbhJrHQd4uL+K
+	 Sxdgq5rdeBsWW/LZeST80cDxjpkoqUcxICER/QJueS8mtKvwY+TAun4rZzf/YAMC14aJ3
+	 wCPjNYO0QHTZBDc/MucDcsrAIGxyK9VqHBPiBg67wQl2COXqmf1L0bSJBYhxkPJATgQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=e983Zow8;
-	arc=none smtp.remote-ip=74.125.229.7
-Received: from mail-dy2-f7.google.com (mail-dy2-f7.google.com [74.125.229.7])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c5XSdy4z;
+	arc=none smtp.remote-ip=74.125.82.68
+Received: from mail-dl1-f68.google.com (mail-dl1-f68.google.com [74.125.82.68])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 05F46606A31A
-	for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 03:47:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 05F46606A31A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2618A606A31A
+	for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2026 05:02:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2618A606A31A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=e983Zow8
-Received: by mail-dy2-f7.google.com with SMTP id 5a478bee46e88-369f126a526so705129eec.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 26 Oct 2026 20:47:28 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=c5XSdy4z
+Received: by mail-dl1-f68.google.com with SMTP id a92af1059eb24-181516de561so413166c88.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 26 Oct 2026 22:02:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793072848; x=1793677648; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1793077349; x=1793682149; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=d5xPE7zkAisWNP1/3IMkS+loLJJfjfdBEUGlcoiM7g0=;
-        b=e983Zow8bqjcKnPpbeo0bbx7KS7wIeUh39gAOhDmf2Re+Zkktq3fgnJC41tfL3GREe
-         5c6sMBCH2D4WNBCK52FND3Xet7GOvnwn13zfbYx7WoOVAzxFGimRlBBT7Y07ZzNEEktP
-         7WXk+Yi/UJL42KfR3Di5c6WFqo5Tvb/ND7+pWcYoSSHGN6Xhi6Bl7CypCbWewPd3QNUT
-         k5mohsSecJcBa+nCksrsh0AVnrGG/oWPJl9JesGIU1/9WNuYcQbYO1xjz+ZNXnwBd8tf
-         JdeFa+FyY3QE6XfKiASyPEKdUp1zMj78IG9LZPrLQSMz0xSnnywEzz5NhGHDOWOQTzl3
-         OHSA==
+        bh=yzZEC/TrZrxGucG9Xp1MOjisRqHlcLyLSCjwMz8NQVc=;
+        b=c5XSdy4ztScAIiHgbPzGCVSJIwwkHGig0lgK23rWrPwg2l/EKPeyBzJ4Gk4qh1LNAI
+         MqpDU3M93ZSDM+ZfHyQTNPLIYH7LKE6PTt6HVbeNcuEYx91FkUq3yXneMCsmRLiYZyhk
+         COvqB26ApyfjUcwF4LFaatMeEEo8DskjXHgjAbZ1c4pF2HSwBqpsYIherHx/ZA5Qpyto
+         59XFgop9BtU2vW5DsMfa4F4kmX/QOuT6surKOluEPqHhb6F7/B/AaksXrGCW/u/Lfzmg
+         pONuPLkyFV2rhOkOmDTHeBv1j29LBBawuHyOHuKvN8USegNEiNFStaFRuMu8BYEzFllU
+         cipQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793072848; x=1793677648;
+        d=1e100.net; s=20260707; t=1793077349; x=1793682149;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=d5xPE7zkAisWNP1/3IMkS+loLJJfjfdBEUGlcoiM7g0=;
-        b=hCdIym7typHRHePGsU806bLJFvuAX0s9w77APwVCxJILFW0no86SQzwoxahj/JJ3Yh
-         Bc3CwaaMZkCcEAjJGZCB6aUOxNAEoS2T38GhRoqqEC42yIFlf1ICXZz+SFYvqjRb2aBX
-         BysODtxii28HScgXiBxQ6Vw4qzrOSFdfl6INdWjRvg/Q2nIf/jDXU/7HA6a5tGIRuOAa
-         GyyrTYKVyOoK97/MQ/FND7PlbU9AjEJdv6GzKs/8SW1A9g6LONy+qPLVwjLJYy7XvzGh
-         ff572hU8EeId5fqlsb/K01iuSrrJeu2LYda9Ewu77Jx6KCoSp0Gim1zqv+JAYYn9v8JN
-         2kbg==
-X-Forwarded-Encrypted: i=1; AKwUvBykuXxyILatEFC7IeKzfugWCfLPkT3nKZkEH8M7mBJDbOKPeXUWIWWEdnKBXCJ7yelrrDK7ZKCbt+ip4w==@vger.kernel.org
-X-Gm-Message-State: AFq9FYIQ0AXVwZE0otPfF6bG4lhJeea+8xU7tGTxHnEpLGgwSKZeYf3V
-	5A3ATQ7rK2MltVSfExLawl2iaKXQlN5oAED1pxx6Wcf0AjZ/WLdoj9Ar
-X-Gm-Gg: AYBFou2QNAseRM08HBoVf6LceLJVfm3xheWsWCpKeVC0D9ZPF1eW/Y9Yst9KqrtE2hC
-	anvxdtKOJk+paQCuUqKGfCamtZ7131lVQuQm+vq9+NTkV0LZFdMM5s/0AjDPkOj9sM52V2ZOF3p
-	iw/kASpMhF6YzQpeXHoS1FCuM7waSDAiWrB/d2QBZPRel8ZwrxB6jzEMALF803GKsoIztfpe0uf
-	MOaUhSESFsY2sMHb1LWkB5TSKGk93hTxNuNTxnNGJNeC/6Re18ipxsxQlNIrhjfaEgIaXpGCXRV
-	zu+G5FPFpztOmvwT+GISIOPHgyqSjeVxsEMwCyovemPHp6loApJz0N9q7c1Zm4wIsQPj+d5ErH4
-	T32BQdX2tvkK1Zu4olnsceV7rjQG3kt7nukr+35j9g0ZsP+a9okakJKQ2xT+ahWAPFi540Fr9is
-	hNcdxMb2o4JDuAiLfVwWDLGibdUjg7IKo9/C5IvNlJI1r0zcTdGDCHh8FCabR/kUq2fHpDFR28O
-	5TVvADsQleLA2T3784QG/dtZZL8FK9kLXgHpwNqBP9S43v33taiSazSFYnq6v4OQadDX+jYi6aP
-	fNltc58CiaVNgI+S
-X-Received: by 2002:a05:7301:7d01:b0:366:c497:610c with SMTP id 5a478bee46e88-369e8610133mr11168504eec.33.1793072847986;
-        Mon, 26 Oct 2026 20:47:27 -0700 (PDT)
+        bh=yzZEC/TrZrxGucG9Xp1MOjisRqHlcLyLSCjwMz8NQVc=;
+        b=ajYt1fWGr4UFd4hT2P0gUKPZ97J4aVvwiXc0/JqVouQtKttI/kpcswztcY2K41LEw8
+         cds4jddmXP1ulqf4aMAwb8TwHXF2tFlHHObF7MPR1Lplyol9zy07XGSfS1DssrzC7Q7M
+         +uO5CI3MZW7WnJphO4wsUuOWmsAt/z49L7NCyGrt/nQhbdn9/xdudLTikQqV3IKrIhZk
+         a8o4IpnOFD2Nki9pETkbE32JcXOlzdYb62H3lYRN1xXNWOL52OhGqvPNKvC63tVjWEvJ
+         tHB/QH/smOabMk1As+KsKYCcaYmZyonOvkRycSVuG7LwDqwuSrCBQSghHPVPNUepncbh
+         7Njg==
+X-Forwarded-Encrypted: i=1; AKwUvByGpOTmtx192CUCv1JY36hY22q9QHsouycOAayL8mZP62aKzfez6ePJj1RN9qurD6Aqyj55017qFRLDxw==@vger.kernel.org
+X-Gm-Message-State: AFq9FYI+7e1QV7jBDLc3K/6O9b5m07j5R7S7rIPZLd0264icdvV2aToZ
+	2hrx/PlIpqIJx1rtN1UNjg88uETp+LVeC9rKGU15NN8GgpY774DVzkYt
+X-Gm-Gg: AYBFou1Tx0MDNEZ0OJm5kd9doRjh9F/7FMEE0zKkAg3SgtRq2XGvUn5BRsPDkxS3pqU
+	1s8iNw2kzwrg5D26MtxtJPAkDJJmok2iNbyx576AQkrNRfCilSYbGfdRfd82BkW638KFJpnRGKm
+	CKdERqd1hGQc8qak6a1njIiTWznB+qSYlEIR6sG7C9Dkq/XmMrn7cwTRZRnMj75OQHmtFVHkY0+
+	7BCmpYYoa0ASGtyG/a0bnHg5mrJb5t6MXh6KHCOCvWr7Vv7GL93cQvgEQ2SYv2MQj6M3CvkvsnB
+	0TZe+ZpUA672UQfCQ2eknZmNynNjFLO468uc/7fzYa4Zn2sHb2QYhQ7siV2Aokd0+0eSWr+Gp4O
+	MYt8eb2v8U77e6S1ZQK3rQx0glPkTVYkaUqNuZAmLvVzj3lSmZFCt5Rcobaq1RdpvhFcrOrg/wT
+	BrGlcrVKZok/pJD897N1vxQ7gd/7pxyoj6uCjGttcLOjxnb4mh1DXR3F2d/uSQz1O8LwtZzQUi3
+	dTXvHohS1u+FDkdCPGqw4cbT6TIrKXmcakOSXWKOr0zQCSwe3RoGdGncLTTlRsFMzya3KqskLIn
+	8WBYViPUGABl6i9i
+X-Received: by 2002:a05:701b:4505:10b0:15b:1959:15e0 with SMTP id a92af1059eb24-1a3c76669abmr2075046c88.4.1793077348863;
+        Mon, 26 Oct 2026 22:02:28 -0700 (PDT)
 Received: from blue.tailcc13ef.ts.net (104.194.64.109.16clouds.com. [104.194.64.109])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a026e04a0sm11349777eec.1.2026.10.26.20.47.25
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-198a020df20sm35374587c88.6.2026.10.26.22.02.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Oct 2026 20:47:27 -0700 (PDT)
+        Mon, 26 Oct 2026 22:02:28 -0700 (PDT)
 From: Yao Yiqi <yyaqia@gmail.com>
 To: deller@gmx.de,
 	tzimmermann@suse.de,
@@ -86,9 +86,9 @@ Cc: dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org,
 	yaoyiqi3@huawei.com,
 	stable@vger.kernel.org
-Subject: [PATCH v2] fbcon: Avoid cancel_delayed_work_sync() in atomic context
-Date: Tue, 27 Oct 2026 11:47:16 +0800
-Message-ID: <20261027034716.588174-1-yyaqia@gmail.com>
+Subject: [PATCH v3] fbcon: Avoid cancel_delayed_work_sync() in atomic context
+Date: Tue, 27 Oct 2026 13:02:15 +0800
+Message-ID: <20261027050215.612762-1-yyaqia@gmail.com>
 X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -129,19 +129,28 @@ callback is still using it, calls the separate
 fbcon_del_cursor_work_sync(). New call sites therefore get the safe
 variant by default.
 
-cancel_delayed_work() does not wait for a running callback, and
-fb_flashcursor() re-arms itself, so also move the requeue into the
-console_lock section. fbcon_del_cursor_work() callers hold
-console_lock, which serializes them with the requeue and keeps the
-non-synchronizing cancel effective.
+cancel_delayed_work() does not wait for a callback that is already
+running. Since fb_flashcursor() re-arms itself, a callback that has
+already been dequeued by process_one_work() can queue the work again
+after fbcon_del_cursor_work() returns. Add a cursor_blink_on flag to
+struct fbcon_par: fbcon_add_cursor_work() sets it, fbcon_del_cursor_work()
+clears it, and fb_flashcursor() checks it after taking console_lock and
+returns without drawing or re-arming once blinking has been stopped.
+Keep the requeue inside the console_lock section so that the flag check
+and the requeue are not split by a concurrent stop.
 
 Fixes: 3b0fb6ab25dd ("fbcon: Use delayed work for cursor")
 Cc: stable@vger.kernel.org
 Assisted-by: Opencode:deepseek-v4.1-flash
 Signed-off-by: Yao Yiqi <yaoyiqi3@huawei.com>
 ---
-Sorry for the last email, I forgot to write changelog. This email has no
-code modification, it just adds the changelog.
+
+Changes in v3:
+- Add cursor_blink_on to struct fbcon_par so a callback that has already
+  been dequeued by process_one_work() cannot re-arm the work after
+  fbcon_del_cursor_work() has stopped blinking.
+- Keep the requeue inside console_lock so the flag check and the requeue
+  are atomic with the stop.
 
 Changes in v2:
 - Reworked per review (sashiko-AI): do not guess the context with
@@ -152,14 +161,25 @@ Changes in v2:
 - Move the requeue in fb_flashcursor() under console_lock so a running
   callback cannot re-arm the work after the non-synchronizing cancel.
 
- drivers/video/fbdev/core/fbcon.c | 28 ++++++++++++++++++++++++++--
- 1 file changed, 26 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 41 +++++++++++++++++++++++++++-----
+ drivers/video/fbdev/core/fbcon.h |  1 +
+ 2 files changed, 36 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 94abbb5ac766..917ce9d641a1 100644
+index 94abbb5ac766..0847dcf18416 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -422,10 +422,14 @@ static void fb_flashcursor(struct work_struct *work)
+@@ -410,7 +410,8 @@ static void fb_flashcursor(struct work_struct *work)
+ 	if (par->currcon != -1)
+ 		vc = vc_cons[par->currcon].d;
+ 
+-	if (!vc || !con_is_visible(vc) ||
++	if (!par->cursor_blink_on ||
++	    !vc || !con_is_visible(vc) ||
+ 	    fbcon_info_from_console(vc->vc_num) != info ||
+ 	    vc->vc_deccm != 1) {
+ 		console_unlock();
+@@ -422,25 +423,53 @@ static void fb_flashcursor(struct work_struct *work)
  	par->bitops->cursor(vc, info, enable,
  			    get_fg_color(vc, info, c),
  			    get_bg_color(vc, info, c));
@@ -175,8 +195,18 @@ index 94abbb5ac766..917ce9d641a1 100644
  }
  
  static void fbcon_add_cursor_work(struct fb_info *info)
-@@ -437,10 +441,30 @@ static void fbcon_add_cursor_work(struct fb_info *info)
- 				   par->cur_blink_jiffies);
+ {
+ 	struct fbcon_par *par = info->fbcon_par;
+ 
+-	if (fbcon_cursor_blink)
+-		queue_delayed_work(system_power_efficient_wq, &par->cursor_work,
+-				   par->cur_blink_jiffies);
++	if (!fbcon_cursor_blink)
++		return;
++
++	par->cursor_blink_on = true;
++	queue_delayed_work(system_power_efficient_wq, &par->cursor_work,
++			   par->cur_blink_jiffies);
  }
  
 +/*
@@ -192,6 +222,7 @@ index 94abbb5ac766..917ce9d641a1 100644
  {
  	struct fbcon_par *par = info->fbcon_par;
  
++	par->cursor_blink_on = false;
 +	cancel_delayed_work(&par->cursor_work);
 +}
 +
@@ -206,7 +237,7 @@ index 94abbb5ac766..917ce9d641a1 100644
  	cancel_delayed_work_sync(&par->cursor_work);
  }
  
-@@ -765,7 +789,7 @@ static void fbcon_release(struct fb_info *info)
+@@ -765,7 +794,7 @@ static void fbcon_release(struct fb_info *info)
  	if (info->fbcon_par) {
  		struct fbcon_par *par = info->fbcon_par;
  
@@ -215,6 +246,18 @@ index 94abbb5ac766..917ce9d641a1 100644
  		kfree(par->cursor_state.mask);
  		kfree(par->cursor_data);
  		kfree(par->cursor_src);
+diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
+index d93a89877d04..6a2f7f6e5a8c 100644
+--- a/drivers/video/fbdev/core/fbcon.h
++++ b/drivers/video/fbdev/core/fbcon.h
+@@ -97,6 +97,7 @@ struct fbcon_par {
+ 	int    blank_state;
+ 	int    graphics;
+ 	bool   initialized;
++	bool   cursor_blink_on;
+ 	int    rotate;
+ 	char  *cursor_data;
+ #ifdef CONFIG_FRAMEBUFFER_CONSOLE_ROTATION
 -- 
 2.56.0
 

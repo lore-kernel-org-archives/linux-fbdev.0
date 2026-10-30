@@ -1,51 +1,65 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793313075;
-	b=BUWLFgAp2w9jHB5JVV/ZYmIZkzTdeWd3aMI8kRrImxt3dV/JaM4Sl5LQvHa4rLw+xRLn
-	 TCRL9kYU3Y0Sroq+gm/lZRqSAnUBZuO7bzgvpA45CrZoj7RQDlIXP3roePeEL1ez1syIL
-	 BEhzTsuoZchzsP472gJOOj20K991yrkh/mrDGMY4P1K0+BTwu5TNCV229VRpo6PRxoWt/
-	 0u0fcGBkvRMliMEzNJKmb0INb3uO0rMUTpH5qhMkhCFS3z+j0AkNBx+QfZPoFbwA3SA4M
-	 SnsSTC99iOKe0fNI5zNjBoQedtpxSbpcTZcvfIltVembKAY+FKEr6ps3VfXaLitcykQ==
+	t=1793383232;
+	b=E/ZUjA5sED5TDELcQEmPciNJlbP+jTVSp3eMwQmWRkDnMc0tTeJvhIivgTvh7FMh91mP
+	 RgnLhl6kzzmRk0lGRIg5QAESoWcgoPDXEPpu0SDMeTQMT8STLopn3z8CB3WJn4l+GIeB+
+	 1gsgh8GTM7rf8M6kXPtIj92J47vuK6ESr1t6Lb67Nr5WJhVORoTTPwfHVf+0cvuGY/4XE
+	 0ASy42U+Gub9aQHTZ3ydurHn9f94NOwK7irSS95PJonL40lxtqNtTOTjUuoODvIa3/Unj
+	 usXcTANumq4qNUonPGxX5uHovi0GwvZ27w6Mt4H4ogaEpVfdirq4b9pTW2WlLBhN+ww==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793313075;
-	h=Received:DKIM-Signature:Date:From:To:Subject:Message-ID:MIME-Version:
-	 Content-Type:Content-Disposition;
-	bh=kKynRfMeyd4ry1GjXZu3dfS0+scYRKXk4/JZoEI+vkU=;
-	b=MRmDxgL2ui3UQo6B4BQ6HOictCULw17Kw9F1lA5VUtStSnS4Ps0FwqtNu6FpK+m66/RZ
-	 D49v+Bod3pQ1qvYD3G6KA7p+0ghdBM6QkmfbR7uKvF1Ze6nvXhPksAtzFa2pgWBou9ntu
-	 ujWj9wumn1ZghThMLDqAZjMtBgBbA1grVjGZ78cYchjEbtJvc75yAMPt8kc7BjWQZcoxd
-	 wwx6ozq8G1sjyDTC7ADOHKhkdhayz7WuW0Ynvfw3Mxp4DymmAFZQpuW4n8nozY3u7E1qK
-	 F2WRPol/mljRrMAn0Y62snjECOTP5/+P1YfgB/ekIF4Y2CVP0dUgDXVdiZAiiScwdFg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793383232;
+	h=Received:DKIM-Signature:Received:Subject:From:In-Reply-To:References:
+	 X-PR-Tracked-List-Id:X-PR-Tracked-Message-Id:X-PR-Tracked-Remote:
+	 X-PR-Tracked-Commit-Id:X-PR-Merge-Tree:X-PR-Merge-Refname:
+	 X-PR-Merge-Commit-Id:Message-Id:Date:To:Cc;
+	bh=arldDgIN+DCbRWttC/pNZKTNCd0fMgl+I3NlSIduriw=;
+	b=nWyT/sig3UuwYK9HLcJC7vY+oui8DWPAw4JZaCdiv9RDe3HVMgdq6cugzndvghmveImO
+	 85aU8RW6YzUApujiNR9YLj9YVdvIakqqM3XaOnb4F2FqBn14IcpgmB40GJ0gtK21vbC4w
+	 MTpaOyWwuVxWa86L2ma4MP+lMaH7BgK7h7K+yNfa4r/mLPUEvlx01WiczsMy+FVZDB+QY
+	 LHNafgAJOIuXfaGLBFD29bfNsQbl48NmYm6aRlddTKDbEwCa9aMz0yeebk0okQftapxL9
+	 d68lXWaikBsWCGJMF/4bupvfGnsHTzpJ1hikDGrxGOa4Y09SIcEeX5CiWT/4yuSxXAA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EVvez1b1;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jJhpEMme;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72DC6606A31A;
-	Thu, 29 Oct 2026 22:31:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2353606A33C;
+	Fri, 30 Oct 2026 18:00:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EVvez1b1
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69E7F1F01816;
-	Thu, 29 Oct 2026 22:31:13 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jJhpEMme
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF0441F00A1C;
+	Fri, 30 Oct 2026 18:00:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793313075;
-	bh=kKynRfMeyd4ry1GjXZu3dfS0+scYRKXk4/JZoEI+vkU=;
-	h=Date:From:To:Subject;
-	b=EVvez1b1EB47sk+UJxoqVcbHFtAUFwHpjHQkAZ1wdFeImLqzg65pJPaEeo8HmtSnz
-	 b/yyFopSuKL+MC6cft3xMxg9psTTDdj3c/DDP5j3I1I1YFdAmxJ6w5SmYTXoftF4jb
-	 mp/xgTqSI8JkvfYlZMemOhGc5SkXXbzg9I0Nnhl18Fh0XoY64dytuYcjBiLRndyZrx
-	 wucXrav4rX9mR/iBWeBwfnmXFuGkJoPTRzmHwFhXOZGw/CoSRnNcgQaxxVpyJYn8UQ
-	 lL11x+aprC9ybaznHlMbIAED344QLuM4GsewRi52l5IU53QKfhUetKTodS68tm82Ul
-	 MwHg9f+gO89jA==
-Date: Thu, 29 Oct 2026 23:31:09 +0100
-From: Helge Deller <deller@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] more fbdev fixes and updates for v7.4-rc1
-Message-ID: <auPJLXQdFRtkoOCu@carbonx1>
+	s=k20260515; t=1793383231;
+	bh=arldDgIN+DCbRWttC/pNZKTNCd0fMgl+I3NlSIduriw=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=jJhpEMmeqXC0RcZsXl7WFapgrUzaX9VYlBMmNTjFqSrtS738L6LLpmt+ewFzcgoF7
+	 XZzgp54Pipn0MHA17YnDEQmYNYN0vQEKIOzePveG2XPy0h9UgnKcqSu+QZgHloqFQ+
+	 2DNj/T/HcDHQX+WfQMcCVE/drS5eRUMg6B3f+Ckr3Xszp0ij/xHqpYJ2fte3n18f7t
+	 lOTi8vJyrpYt1Pe4gzbzts0BPtWk7sZh5OVJFPGyD9jaMSUy8Slad+qoNqe9Nj5Pql
+	 R9yeNFLIrfAQV0RwBTrOWxFR4rZjhd/TTFiyhlMM7L3YT/dJX/PHKU87ElwZI57Q/W
+	 gLZ8beaGSe6qg==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id C3D7C3800471;
+	Fri, 30 Oct 2026 18:00:31 +0000 (UTC)
+Subject: Re: [GIT PULL] more fbdev fixes and updates for v7.4-rc1
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <auPJLXQdFRtkoOCu@carbonx1>
+References: <auPJLXQdFRtkoOCu@carbonx1>
+X-PR-Tracked-List-Id: Direct Rendering Infrastructure - Development
+ <dri-devel.lists.freedesktop.org>
+X-PR-Tracked-Message-Id: <auPJLXQdFRtkoOCu@carbonx1>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.4-rc1-2
+X-PR-Tracked-Commit-Id: 01d1204582f16e8b7bfce29648e5cf77a585d962
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 67f1f9b38c15b54d257a1efc544873b53905737f
+Message-Id: <179338323067.1671436.4542824899544592054.pr-tracker-bot@kernel.org>
+Date: Fri, 30 Oct 2026 18:00:30 +0000
+To: Helge Deller <deller@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -54,58 +68,16 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-Dear Linus,
+The pull request you sent on Thu, 29 Oct 2026 23:31:09 +0100:
 
-please pull some more fbdev fixes and cleanups for kernel v7.4-rc1:
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.4-rc1-2
 
-Simplify console blanking and one fix for a potential initialization
-issue in atmel_lcdfb.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/67f1f9b38c15b54d257a1efc544873b53905737f
 
-Thanks!
-Helge
+Thank you!
 
-----------------------------------------------------------------
-The following changes since commit 21a7f44fd0765fcc5194130b28767786eba1d1e7:
-
-  Merge tag 'devicetree-for-7.4' of git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux (2026-10-24 20:11:23 -1000)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.4-rc1-2
-
-for you to fetch changes up to 01d1204582f16e8b7bfce29648e5cf77a585d962:
-
-  fbdev: atmel_lcdfb: fix list_first_entry() on possibly empty modelist in probe (2026-10-25 08:57:27 +0100)
-
-----------------------------------------------------------------
-more fbdev fixes and cleanups for 7.4-rc1:
-
-- atmel_lcdfb: avoid issues due to empty modelist in probe
-- simplify the console-blanking interface
-
-----------------------------------------------------------------
-Thomas Zimmermann (7):
-      vt: Add con_unblank callback to struct consw
-      dummycon: Implement struct consw.con_unblank
-      fbcon: Implement struct consw.con_unblank
-      newport_con: Implement struct consw.con_unblank
-      sticon: Implement struct consw.con_unblank
-      vgacon: Implement struct consw.con_unblank
-      vt: Remove old-style con_blank
-
-Wang Haoran (1):
-      fbdev: atmel_lcdfb: fix list_first_entry() on possibly empty modelist in probe
-
- drivers/tty/vt/vt.c                 | 11 ++++----
- drivers/video/console/dummycon.c    | 12 ++++++++
- drivers/video/console/newport_con.c | 24 ++++++++--------
- drivers/video/console/sticon.c      | 20 ++++++++------
- drivers/video/console/vgacon.c      | 46 +++++++++++++++++--------------
- drivers/video/fbdev/atmel_lcdfb.c   | 13 +++++++--
- drivers/video/fbdev/core/fbcon.c    | 55 +++++++++++++++++++++++++------------
- include/linux/console.h             | 10 +++++--
- 8 files changed, 124 insertions(+), 67 deletions(-)
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

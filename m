@@ -1,90 +1,90 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.182
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.51
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793417561;
-	b=EM+WHvTspx9xps7tB0XM6zNJXI5I8kQWy/eNfg0mDI7OlySigI61Qfx4APTf5KLxTk7g
-	 iNNlnGpkiR8IgS8mIQH0hUxowmlVLiQIOomwqQXuI+7hCdeZ6WlhDTPnTht65+2UhLlAW
-	 8mW0yJ5muPsMGIdsEaaOIGRxOZ+DkUvQaQYljHp7QYSnTnMlx0yPhhZYXrK/MXe8+lWks
-	 or8j609NuIJPqCYVGKHhUruqeKSJYLbd9w1EPpQDrKPXNuEqgTrfy/Z023khjroUubrTh
-	 tPAMR4fOcd5XvKQAPhl/jrotv45CPwaqfR5uRmwTgx4fR4McfEDIg7DEn50YZ5G272A==
+	t=1793417574;
+	b=YKjjWh57j+ZO3VaIWGy+jX5F85iu2QAt25EYHLvUlr6SFtkyRVTsZHQoRm9G4ujlA9wV
+	 hzeI0KrKPFrHklIY7yXfV2rHqdNChmYWu9DqAu07M2o7hjMS1o/zd6CHfUEKv0pERQv3E
+	 f9bKJaigRp6h4lIpqXS+a5/KfykPZ8tZggfddkj6FZ2okvADeRvArcLPs5bAVTkghH9Cz
+	 K1hgWPa56MEfF/CQfIt1fMczYpMpNmoSWk4LOVrFIItMHJ39MeqXtzaOkxP0n5nSvzROy
+	 MNzjcvE+ywqy0TF/kLeYItZZzuDy3rjuP+/L/gN8H59dG9aty53tXQMPGpyB0H7iCJQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793417561;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793417574;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
 	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=mnYw2aLxaOMLunU5/NMlexxvi/OdOgAm+kgTsrY2DdI=;
-	b=p1OtlKSwfnp5XXUp0YBfZBjqZepHeLD/ykwp0YXeDyof2R1DVMnSO5Cko2SVLCXdL0VZ
-	 xVNAemwzzST7TDkC0aCvUBuJJvRiv37r+/ct3ERwKK0+hdtfOvkwesnFAW0L4KVwA4nNM
-	 3fT6SpLRTJuKedja7pWvpeboEvs2MdthhctCd5GqWGH/eS5G86KtvL1et6Rv+s+lWgy5c
-	 t3BlsckLSgiEWoQljsoG6Ocu8JORANlqYsKxbV6c2mJYy3Cd3/DUFqpbhJ/hMyPkW90uq
-	 lKA5EIuhfILsIAuIy9fuNJwaFZ3pFtTRlmOjqSnNysurCfa8trrh98tVfWh0HwliOeg==
+	bh=yNBCcyYS48KOF7Z3SVlpQ1pq/HG3PypPDg7sc6kq5zE=;
+	b=HRgt67yTGdYZRB63fNudQHz2qLHKYXUtgikjpl0JCp6MEcKEQCtQyErP+oyiDlPL+cl6
+	 Ms07nQuJkUa+9zU3JINvAZlyEHKjcJjiPIYEaR+utOnWq51ZmgpokUZ9egofHdEOxtooz
+	 6tKz9Kv9BP27Ms1JsHZSgo2+C1V4NkROiopcNovId2Gb+86dU7o8QXIVUVFFzcvo+Ynyv
+	 /nrpcl+mqJF6/o8NPkRHP0OYydn5uHFuOCTBsy8BJwZkvLH5Kn71XtrKGrCd1BLB9jwOe
+	 BFIvdzUupnau1wiGlK9PMaKEAlyIqA7bWxxXNRaJxRa9u0xjYuB4kRIEXyIwuVNj7NA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=OrlS9rp1;
-	arc=none smtp.remote-ip=74.125.82.182
-Received: from mail-dy1-f182.google.com (mail-dy1-f182.google.com [74.125.82.182])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BSGsgJ7R;
+	arc=none smtp.remote-ip=74.125.82.51
+Received: from mail-dl1-f51.google.com (mail-dl1-f51.google.com [74.125.82.51])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AE06606A31F
-	for <linux-fbdev@vger.kernel.org>; Sat, 31 Oct 2026 03:32:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4AE06606A31F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B84AD606A31D
+	for <linux-fbdev@vger.kernel.org>; Sat, 31 Oct 2026 03:32:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B84AD606A31D
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=OrlS9rp1
-Received: by mail-dy1-f182.google.com with SMTP id 5a478bee46e88-369f33df08eso2753841eec.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 30 Oct 2026 20:32:41 -0700 (PDT)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BSGsgJ7R
+Received: by mail-dl1-f51.google.com with SMTP id a92af1059eb24-19305bcb72cso1089246c88.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 30 Oct 2026 20:32:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793417560; x=1794022360; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1793417573; x=1794022373; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=mnYw2aLxaOMLunU5/NMlexxvi/OdOgAm+kgTsrY2DdI=;
-        b=OrlS9rp1bbj0NWuz4a4wVNlomMJVhVs19LaX2EJYbQ0S9tZhodKl4FQWuIiJNuNxBj
-         G/CwzXulMvG1NVMtMQ6IUjbRb7GMCUt4norsKv/2xRl1NWjNaL8BO63XwuZxlme/7LtT
-         GZamJWPslc6/Kw0N9tNMMA6e7UY5FKgs0KEJ2ap9sVdnCLcl0MQAknWt+vUZLzFESDfZ
-         WOs1o1mDcS0VEkVMs4sgsscnpafYAq9cnC1rwwu81FsSFThubV5uIdy/Pk68mlqkqMXv
-         K+BYw/6SbwDaBheZ598lAGu7BNtVDx8Pq8mY9hFtTi/b/JRdVOnJkJlPKcAqtC2n59qE
-         d37Q==
+        bh=yNBCcyYS48KOF7Z3SVlpQ1pq/HG3PypPDg7sc6kq5zE=;
+        b=BSGsgJ7RcTrehIg5BXsMqBpgIgZVJn6DvdLhe1XmYzIAfJFoYcAfKeo57i1+6Lb7XM
+         05Bb+8zse6Y7zJXGhnxY5kT/TlVlok50MwP4TLdvKUAnEg/uAkA1vUcWFFN4V5AZe7XA
+         eccHJTMXy3soVRWfRAw6H7+Kxjb0wZV+LR1FAvG2f5C2LCFcdXlTklir+7HVJV4MammI
+         qRcgOTMQK+dnUorXJIx79GkEBCKpdfugnmi9VsILQ9GDm/LRHpT9rArl+NxPBgu989U0
+         px4zEl5QCQHPemvwTXIX0nV0JjRXW6EtINh0w2abtJDfu7PRbZw5POHhASuXlfTi8kVF
+         GSjA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793417560; x=1794022360;
+        d=1e100.net; s=20260707; t=1793417573; x=1794022373;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=mnYw2aLxaOMLunU5/NMlexxvi/OdOgAm+kgTsrY2DdI=;
-        b=vs3NgBnwIm6zcGGHIgWcP2ymfN/KS6fUtEpcVo/RUc0yi52TRnGjJARk2qhVc4zqn/
-         wPtm4zw8/48cTEna/QCYNRkEaDN0vXt9JvP1ZP06VJjMQcKwR3HlobZnadAChi//x1WZ
-         m0vEjRYemLr0vZ/UBZsjyVUqFbgFvCuUTi7GcZhlEbnuQ04PuFqCb7nKhhJ95S/+U05m
-         vy+YiRl/jb5RK/l+UGaGjCYrLKWSnI83asRLZiq7+GfQdY+N7R3FMFOA8vbPA38RqkS2
-         oSCjPLxuUDc1PUUf8MgPNu+PesLoA26lX30t7W9kbsx57t4+0+9S/mODecr5rv5pOQrE
-         1VJQ==
-X-Gm-Message-State: AFq9FYKUhtaJ6WY/GlLmOEaLb/4Flq1m7PhUsB/k6Gxr2fe3B4zOsFbj
-	2j4bsNk9uMhOyDwS9Vd7gJAzHjreqQPIYZcAZ3aQmq/Vk91z7wD4S4qExocHOM7hNew=
-X-Gm-Gg: AYBFou2QC268QGHFB6U0Nbymx55Vr/K0+42KtPszMQEFuDQsWyFEjHcKP22RXTNRUh8
-	zh4dE++InS+AYL1HJv28fmdjKOtbPqapHFPQMccBORfuGqW3mwzD28UYaAEbYSuqZchX4y0razz
-	NBMXYwikrFbb3J5WWNBnXmTZ73aWLhf33eXsIYP25zWx6wn7sOBzlr6Jg79aKnsBx7E/7rADdEy
-	xj80/og3+T2pIU5V4+y/Re8v7YaF7UC8xAWA77QjIyzjSOp5SpkQGn3n6cSSaOqvwpDoB7uhnOV
-	ToDWGWjYz40tfVwUzYmCaLTHM8lER+N2APdGaPGrRXdNr4UsT/Z/8p1XYthmz5CZ2MjbkC0ScMq
-	GDLggLr3UHrjm83DXpwRIkhOUjOssH5+Kn2StyNYupEnx78RCKpCUXe+ZAmHG6JvBED82Gy++mZ
-	VgRe6+eSLd0VZ/pBxRoAzxM82uBacQ3TOqSUVNM6Gu28bjm+f/ttCPZtRXBcIHVpvTCabPwdpSl
-	snwRQunzqD0Nn4IVTN0Ps+uHnQhAB0O0fmnwbJCqA9H6YUpFQWiRrOS47pfLq8jjD6Poe7bw39N
-	KbsebFbdWU6bGqXLDreh57CIH2Y0yrAAxEya7sSFalqzJg+nNh8400Kk6XF06rGhn4RclU1SUXn
-	gYDkKbESKsJLX6d8qmR7GnDCagR8H+9+izhQxt5hSrBcMy9xUQ/rEVV/6HL4JuqHBmlOrCJCbWp
-	mjmVICXKy8P+jr9w==
-X-Received: by 2002:a05:7301:fa4:b0:36a:713:a76b with SMTP id 5a478bee46e88-36a4236a5c5mr6199404eec.6.1793417560169;
-        Fri, 30 Oct 2026 20:32:40 -0700 (PDT)
+        bh=yNBCcyYS48KOF7Z3SVlpQ1pq/HG3PypPDg7sc6kq5zE=;
+        b=EjBsMKQN1jK8zo4j9y8JGeJQry1yNGHv0ptH32D/04MX+XMq+kGXPX4Mu9eRkdTzC5
+         +3UDVu1Ex15dLeYOVySu/P/Jo46qdTlU8Yd4ZYT+WAcTh5TKvGaTlAeI4QIBsPDSHIRN
+         mwg4mTSDhAfi4HnepxDnPL/nVjS7/1Ql0vTeIJ8+Kod/nTnXUzU+wI01XmMhai9KFQKB
+         G0sw4PfeUUNkeQCqsJ2+7KryEduG0Z1MKtWJ5KqyJIh4wha+aFYxI/EKcPgWoGMGyleC
+         lI9njbPqEL18WOrlCI7KXz6ag9rCCXTa2Z/dUUx8syM6O0AD/HXo7nBVGSl8koOvbuYM
+         KeWw==
+X-Gm-Message-State: AFq9FYKp4Nl+tArpLBjtesi5BPvdn1K6/iqTrWV7HSGIuUkFWovFs+AE
+	PvVpk7p71wF05vf+PdPIuw55SZraReRT260OSLC+4ZBHlommlCN21Yxa
+X-Gm-Gg: AYBFou1rwa8+LzPTfqulfnJGL5vbZ9xG6pbrcB+NMpeEDpVn35o2ql7rX+TZz6LoTuQ
+	b+dDvcr5taidaJwsyeMLUy74q0bN0WdgyjYerlZ+gFMLYAbVlfLal+/U/W2cwtBNkj/0PHRE4lc
+	0CBrff4G6euWByM00QAiAjeTWEc2lMgGIVX/xxwKo6GVmTqAjVmeOc2fAH4Fc3TCTBjGMgQ032M
+	mmDqGvEFzSiFxSL6bCNx0InUPCsHIbaJTcOXDgvdQlO0IiI7RwlXQv+M95nfxQHyCYxRqjyjgPT
+	wSC4WI+vP2s8DNWeJqnkAX2QsNANv/qOQiGSbOzZFGVjqGJObz/4Qa6tKPUrm1nwlDCLvYR4sbs
+	UmpUW3V6nbM6bLf2KYsfNpRdhRaYgWtcJiOeUeqHgTlR1prmLiR3MlcJNvuN+CYnPaTq/To39EQ
+	Z9YmRSQGBUlCqt0G/mVYc6X8tKku3rgr7RTIOKGPWOz4ZCV5EyE5v+vKNYX/vP2NI4FlnedOOCa
+	YkyJYjVqIfS135MrOmTw3JBzO8k2M23CBe4knOYPg2X84M6vTHjZ3Jz6kKPWp0byn/BEW1PfMQ1
+	Y7HF5UAECH0GxQcpBB77qco0HJnvrAlaeNd77x+8L0Hap+ji+KcXdOWrk85I/w1HxZjkfvYhHxL
+	JQ3iyZk529U3ZmeGSFJpcR0DR+BXYziurZxebibtJowLhZsDZ/UceEd4hi6TdhG4ESxSAuJSpQe
+	ZCX4p8tsrVYbYlyogYZ0uszv/70iaWTRRBUjQ=
+X-Received: by 2002:a05:701b:42d4:10b0:143:2967:c0b1 with SMTP id a92af1059eb24-1ac5b7e1cdfmr5936493c88.25.1793417572110;
+        Fri, 30 Oct 2026 20:32:52 -0700 (PDT)
 Received: from spider.bream-herring.ts.net ([103.6.151.236])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a429000f8sm11634639eec.13.2026.10.30.20.32.38
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1ac193b8179sm12841651c88.11.2026.10.30.20.32.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Oct 2026 20:32:39 -0700 (PDT)
+        Fri, 30 Oct 2026 20:32:51 -0700 (PDT)
 From: Matthias Goergens <matthias.goergens@gmail.com>
 To: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev@vger.kernel.org,
 	dri-devel@lists.freedesktop.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: pxafb: preserve IRQ probe errors
-Date: Sat, 31 Oct 2026 11:32:36 +0800
-Message-ID: <20261031033236.2490968-1-matthias.goergens@gmail.com>
+Subject: [PATCH] fbdev: pxafb: stop smart-panel thread and notifier
+Date: Sat, 31 Oct 2026 11:32:48 +0800
+Message-ID: <20261031033248.2491098-1-matthias.goergens@gmail.com>
 X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -97,41 +97,97 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Preserve platform_get_irq() and devm_request_irq() errors, including
--EPROBE_DEFER, instead of replacing them with -ENODEV and -EBUSY.
+Validate smart_update before creating the smart-panel thread, so the
+thread cannot exit independently before kthread_stop().  Use the
+freezer-safe stop API and stop the thread on removal and every probe
+error path after it has been created.  Unregister the cpufreq notifier
+during removal.
 
 Found by Sashiko AI review.
 
 Link: https://lore.kernel.org/dri-devel/20260722075803.570532-1-panchuang@vivo.com
 ---
- drivers/video/fbdev/pxafb.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/pxafb.c | 28 +++++++++++++++++-----------
+ 1 file changed, 17 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index 1682345fb9b0..1912cfce28d6 100644
+index 1912cfce28d6..1b2a16590999 100644
 --- a/drivers/video/fbdev/pxafb.c
 +++ b/drivers/video/fbdev/pxafb.c
-@@ -2306,15 +2306,13 @@ static int pxafb_probe(struct platform_device *dev)
+@@ -1248,20 +1248,10 @@ static int pxafb_smart_thread(void *arg)
+ 	struct pxafb_info *fbi = arg;
+ 	struct pxafb_mach_info *inf = fbi->inf;
  
- 	irq = platform_get_irq(dev, 0);
- 	if (irq < 0) {
--		ret = -ENODEV;
-+		ret = irq;
- 		goto failed_free_mem;
- 	}
- 
- 	ret = devm_request_irq(&dev->dev, irq, pxafb_handle_irq, 0, "LCD", fbi);
--	if (ret) {
--		ret = -EBUSY;
-+	if (ret)
- 		goto failed_free_mem;
+-	if (!inf->smart_update) {
+-		pr_err("%s: not properly initialized, thread terminated\n",
+-				__func__);
+-		return -EINVAL;
 -	}
+-
+ 	pr_debug("%s(): task starting\n", __func__);
  
- 	ret = pxafb_smart_init(fbi);
- 	if (ret) {
+ 	set_freezable();
+-	while (!kthread_should_stop()) {
+-
+-		if (try_to_freeze())
+-			continue;
+-
++	while (!kthread_freezable_should_stop(NULL)) {
+ 		mutex_lock(&fbi->ctrlr_lock);
+ 
+ 		if (fbi->state == C_ENABLE) {
+@@ -1290,6 +1280,9 @@ static int pxafb_smart_init(struct pxafb_info *fbi)
+ 	init_completion(&fbi->command_done);
+ 	init_completion(&fbi->refresh_done);
+ 
++	if (!fbi->inf->smart_update)
++		return -EINVAL;
++
+ 	fbi->smart_thread = kthread_run(pxafb_smart_thread, fbi,
+ 					"lcd_refresh");
+ 	if (IS_ERR(fbi->smart_thread)) {
+@@ -1299,8 +1292,15 @@ static int pxafb_smart_init(struct pxafb_info *fbi)
+ 
+ 	return 0;
+ }
++
++static void pxafb_smart_exit(struct pxafb_info *fbi)
++{
++	if (!IS_ERR_OR_NULL(fbi->smart_thread))
++		kthread_stop(fbi->smart_thread);
++}
+ #else
+ static inline int pxafb_smart_init(struct pxafb_info *fbi) { return 0; }
++static inline void pxafb_smart_exit(struct pxafb_info *fbi) { }
+ #endif /* CONFIG_FB_PXA_SMARTPANEL */
+ 
+ static void setup_parallel_timing(struct pxafb_info *fbi,
+@@ -2364,6 +2364,7 @@ static int pxafb_probe(struct platform_device *dev)
+ 	if (fbi->fb.cmap.len)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+ failed_free_mem:
++	pxafb_smart_exit(fbi);
+ 	free_pages_exact(fbi->video_mem, fbi->video_mem_size);
+ failed_free_dma:
+ 	dma_free_coherent(&dev->dev, fbi->dma_buff_size,
+@@ -2382,6 +2383,11 @@ static void pxafb_remove(struct platform_device *dev)
+ 
+ 	info = &fbi->fb;
+ 
++#ifdef CONFIG_CPU_FREQ
++	cpufreq_unregister_notifier(&fbi->freq_transition,
++				    CPUFREQ_TRANSITION_NOTIFIER);
++#endif
++	pxafb_smart_exit(fbi);
+ 	pxafb_overlay_exit(fbi);
+ 	cancel_work_sync(&fbi->task);
+ 	unregister_framebuffer(info);
 
 base-commit: d89e1d186ec9271bf78e62771779e9fc03bf0fc3
 prerequisite-patch-id: 44b1c2680cb029871e123eb11eab7764a807ef24
+prerequisite-patch-id: f4dfbbaaec2d208ac255451cf032c22f0e7fed2d
+prerequisite-patch-id: ff6a574f35399a0059df3a759cbd2a558d24300c
+prerequisite-patch-id: 784ec68755ba9ffc1d5693e1baff1f59d574c331
 -- 
 2.56.0
 

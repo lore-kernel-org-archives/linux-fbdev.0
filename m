@@ -1,96 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.218.48
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.227.17.11
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793429247;
-	b=j06oZCnjG9kAbkUkrqWuBuQQmk1jv8FtnXRqV4CWs5KnrByof+znxEqxjzUtEXvA0LED
-	 F6UX0LLqYRc3T2Nt/KqXV8kEx/VaKObNC5qjaHMW4Ax6pWwf8PNuCNPtVLd+Vf8WVklQh
-	 Ch5XO/C2l52rdWIcxY5fGpWAQaI8mE3U9X2NR7tCjX7i+AfHRbjZV3NYDuSSZuW6XWJL2
-	 wqLMuLYsQKjcu/gAQRWnvMwQxgmvqOH1Rb4ngz2Vl550h2yPU7qAArxYENk799qmP3kyd
-	 V13vB9p5zG7gyhzHIzdkGaQCC+9J0n3SveC0wY8146s9ZuNlDBVfcWgA621HOti7dPA==
+	t=1793445141;
+	b=JiaWvC6BH1j9alNX30VKX427xuCptHQTfrmMZy0NO+TzMDjpTE5Il3gw28SzDF/g60X3
+	 gpjFPXgl6pLa1mQ8g606C0t3QsyfeHux6twYe9RUypp/m/zNMC8qRphZav/W3bS4/VjCu
+	 fXgKdrXS44gbc1PJlUxD8H4nQp8enMEGxucbGYtjm/yJR3Xqnxk7jEZfZgPKUXmP/gqr8
+	 RHlHE27usxjG4U5uZPN7fAJmcwOEcAXCYrfurZe2CjYecmmNLDPnGwUftEnoXkYdC+oq9
+	 RBv1Jf+GlwLBQE6z5fIqut5YHshviGtde4czFMniPN6mHPdF146be1BLnoXcJGpMDWA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793429247;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=9U3dWfP9wuIKNIASQMC6j7LlTeXrOraHdMR5EURM28M=;
-	b=JbuWWqdFr6pt4WyQST2zy50THkytr+3WKgpCYKGu3RE/ih0YEDrUntq7r9iawNYth9eO
-	 fDIeuH4On4lqgOL/VpEmG5BPDqC6B1te/9McquUJYc+BX94+2KDgWCdJq3y1JApaquU7A
-	 JvrP+fUZfjx5f0UQKLEwrBBfRVwuuaqLWZvEtV2ej9rCLpwBfl7Vr+P6CWGz2RJE4QCTE
-	 +0T/SyOumkPhMMsPB+UoOaMVFULZbk74x75zFbMy9SwYq61lSsaIIn8wNk7L3YTzTvXn0
-	 P44xFU7lhMpZ24i1PuvtRlVuBWXICd4SrGJCU3thRGWK2jsCNKZTEgHlOifQBlz9aPw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793445141;
+	h=DMARC-Filter:DKIM-Signature:X-UI-Sender-Class:Received:Message-ID:
+	 Date:MIME-Version:User-Agent:To:Cc:References:Subject:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-Provags-ID:X-Spam-Flag:UI-OutboundReport;
+	bh=E3TMZTGteJrOuCTMCtS7kFaeGodpFcGQDnNZAnVwAG4=;
+	b=oqcj0Qcl80xXGaEarwRvpyu+nOnHMtf/Oro3lvfpux8jZhkQpiM+b6EXoYsf1D9j2mW6
+	 lH6nUwh49vjtyU/Mo7AuMdxEdBtTzzqcNHCtTn+C0X0wSq+yhxlwNHx6ggeyGZjW1w8CQ
+	 +jX214oRlouYxMdMfnY3EVa0xSMVoYPwBcc4Xc5f5vBpEE9FJclZ8Pov4Q5cyangswEjo
+	 0el3K4iSjwJA4T9uZJ5ScI0l1HUhIfnBBrNjwQgvtdL5XwdOKVQJlTbqjhIHKq73rtg4q
+	 N+dz36iXn+WvncP4h7I5UGkp0QVQXugPT0gbXrz8e/aP+UXrrjLzf48VYsvK9egLNDw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ZhqlFdHG;
-	arc=none smtp.remote-ip=209.85.218.48
-Received: from mail-ej1-f48.google.com (mail-ej1-f48.google.com [209.85.218.48])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=web.de;
+	spf=pass smtp.mailfrom=web.de;
+	dkim=pass header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=biqn7KUl;
+	arc=none smtp.remote-ip=212.227.17.11
+Received: from mout.web.de (mout.web.de [212.227.17.11])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76D39606A31A
-	for <linux-fbdev@vger.kernel.org>; Sat, 31 Oct 2026 06:47:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 76D39606A31A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30B21606A31A;
+	Sat, 31 Oct 2026 11:12:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 30B21606A31A
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=web.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ZhqlFdHG
-Received: by mail-ej1-f48.google.com with SMTP id a640c23a62f3a-c414e5d282eso174318866b.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 30 Oct 2026 23:47:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793429246; x=1794034046; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=9U3dWfP9wuIKNIASQMC6j7LlTeXrOraHdMR5EURM28M=;
-        b=ZhqlFdHG/4Fe4Aj0hNIJOjbgEETH12U5661PKpmYqz1xR8tHK/kqg4aY6pEODGD5H0
-         LlOA+5112rYq+/P4t+2I+DKweLBORfOZ75XQycazt8sBq0xn+iwE3TTpIbU33BfMg3Ty
-         m0yV92yb+vQaSs76F0kmqQYBl73CgLoLiBDsfc/fBrwhUQ9E9be8W/+cvMhaR2lLwS5a
-         Eh0DM/216SaxM7gRZaGGGLDfabR79qb/trJB+ARbEBzdZJkwBxvz+D0JPzaZF3CKFdjc
-         gDwAyAD0L9nBy7m1HQBt0/lq3J3rlC+Gay+rVticzvl+glaYdTybSuDJGtij8aeEv0Ys
-         Pgqg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793429246; x=1794034046;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=9U3dWfP9wuIKNIASQMC6j7LlTeXrOraHdMR5EURM28M=;
-        b=GIpX/VKi330BuLsTujvgoxisaaHd3WZc9BBu604O9m4shK13rN6jhQ/27q0440L+ms
-         YUFNsMOrNf1+t/qr153XN+EeLF+rlc/ZrHSRT8Xa0FBgRqWbBJLUIPXT/AWHODSj7G3z
-         cSbcSEMD2Y8h6d2C9LDi0KzinZuUBkdu31caJkvCOc+F3yPCpF8FGhkGwQUXHY1xvvxd
-         6ZO2KUZY4qDN7PFylpcCo5UBXHMupKWmWVRG8pjMSEiyQ9PeshFHzOrfJDLHITqCgP1r
-         wT5N5jXbZjMFzbPVYZnm49OI+2mZW4FYPSs5pzAj1w179md1cvWIRPkXe41mc/hZ4Hc+
-         mtBA==
-X-Forwarded-Encrypted: i=1; AKwUvBwVF2pyOmiYmO4B789zKiWgg6DSaMtBJvSNqJVwutB5jnIs6RVWZEeX3pZPbIVspq1t+XSXsOYwcTnwtQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYKtmPHnNtryF35KdtXA1pkX6klNQ7FjY7qOjs13IJQinUM7zJ8y
-	GyXFlg9b218d6/5MQFqXSwIduJRKDJrjB3EC89eCrLvHjOPVAo0qJY+x
-X-Gm-Gg: AYBFou02PKI/ZPjLHJaZenb6T7BXepBnDvPknZeyVAuDdQPWKdEl3Vye/eZy3tafAPu
-	Hgm+J6KWefTv5iPoLPs6UONdE/0kAP8b3Gi6QQvVsS4+dxzW24GoDcUjGb99JgK1l0Iox29TIAV
-	54z2Pbuet2+ng+G6eYYCqvevdzAT1ESAAxGRC+qwZNwiJ7saBmqkNJoJSqAayfVP+rSd9gLeurA
-	wSZeiAcKdyHLUIIe8HpzuXxkHpjBM4oSdR4+MjufPNxswtLypY3NxRy/tMAC7CtvFi7IMCWF1mF
-	VznjGvHNHB0e5vKghrMPphYoPzbFghVR3fx+5ZkcUU7FLRk2AivZ/pD2EuAsD9ixb1LhTMTJmIY
-	xTjAsu5VwMnNFz2OqULuLVgOjTbvimx7e/9Fypg2vIi2cEZU5ojiVp/ojlYU/7InFe+WwShSKBA
-	yJZVvAVJ4aBuE9GjYF7yP5Bxr0e69UVm+HAKXTwnRWAKZ5FyriC2qOFtdZqYi3T2nQKHcF4atGG
-	Ql0UWNl2izIlFZIqFrA9goXc1iyL57J/v848hS4yK8Wk0tljQBUz2JOksBRH3+bQUdm0aQZY8jz
-	WvfUxWRXMiVy3vZYVfLVVkY66+PZk/jqTuEIzCWngYeH+nPMFUUN1Vh6/p4KPVt+JOUulQD9xD5
-	CblHTo4X6z4GteHAX7svFR3RBG1ZID4GEYmNSbnpJJ50zH2OuC5XFYp1uYcoZyQOv2H0=
-X-Received: by 2002:a17:907:9346:b0:c49:b9b6:4b5e with SMTP id a640c23a62f3a-c4ca7b1f727mr373328966b.20.1793429245709;
-        Fri, 30 Oct 2026 23:47:25 -0700 (PDT)
-Received: from maria-VMware-Virtual-Platform ([182.186.37.126])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c4cabf43b19sm145030266b.87.2026.10.30.23.47.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Oct 2026 23:47:24 -0700 (PDT)
-From: Maria Sheikh <mariasheikh812@gmail.com>
-To: outreachy@lists.linux.dev,
-	andy@kernel.org,
-	gregkh@linuxfoundation.org,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Cc: Maria Sheikh <mariasheikh812@gmail.com>
-Subject: [PATCH] staging: fbtft: fb_tinylcd: align argument with open parenthesis
-Date: Sat, 31 Oct 2026 11:46:59 +0500
-Message-ID: <20261031064705.9513-1-mariasheikh812@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key, unprotected) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=biqn7KUl
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1793445130; x=1794049930; i=markus.elfring@web.de;
+	bh=E3TMZTGteJrOuCTMCtS7kFaeGodpFcGQDnNZAnVwAG4=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
+	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
+	 cc:content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=biqn7KUln9PXf0nDctEocAFm9y2++cmtRPzyJxpMJ3HCDx51rdVn1CgNYYjXA6Oh
+	 eURX5wmSsZJ2j0HOiLLN/BHYbBfsbt5B+IpHcKqWqCRHr5wIUQFADKQCFwn/xmVsS
+	 RYN8QbGo4rFnPuetz6R7TtD1iW3sRiCHbBkOL89/g9d/9gdG/Ah5xvfiCrWu1l+Dh
+	 LFQ7dawSS3gwyplNWFXeiyRYHxsnWlXw3ptPlLz5PfPrx0ruZmc7GqOYrl8kJLqlb
+	 YkJiShlYjGZyXwPU7iSGi3D91doSMiIuC4x/YrzacPgEGiZIBV6WbR2zJ4/VH8ZID
+	 3rWjh5W7Xb/KnMw8JQ==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from client.hidden.invalid by smtp.web.de (mrweb105
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 1Melf5-1wmOg30Dor-00pZAr; Sat, 31
+ Oct 2026 12:12:10 +0100
+Message-ID: <2fbbd0fc-3f5a-4bee-9a46-1c313a96fa6d@web.de>
+Date: Sat, 31 Oct 2026 12:12:07 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -100,30 +62,130 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+To: =?UTF-8?Q?Matthias_G=C3=B6rgens?= <matthias.goergens@gmail.com>,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Helge Deller <deller@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <20261031003424.1796478-1-matthias.goergens@gmail.com>
+Subject: Re: [PATCH] fbdev: pxafb: initialize IRQ completions before
+ requesting IRQ
+Content-Language: en-GB, de-DE
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <20261031003424.1796478-1-matthias.goergens@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:cno3E0OAhF80A1wicTJfyqf4Ur7vHjAiqNl54qMF/36G4Oe0vhM
+ orl/IvOQlm6mGzUG+5PspebV+TyonysHANhAXSyQpeV0ajHzfikiWrASKfojXwSprBdcOC6
+ wL/AzMYr9aiSjAG7EtPQqaF39m4sygA6TjyudmWHiQtPFm+zJaaI4BxOoTXj0q5xCBYTHCE
+ tQpsz4NfeckUnps4p7wlw==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:kSEzALIdoPU=;zdPriOLF0ydpkblI3O1dHuYJVAp
+ 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
 
-Align the continuation line of the write_reg() call with the open
-parenthesis to fix the checkpatch.pl check "Alignment should match open
-parenthesis".
+=E2=80=A6
+> Normal smart-panel init/flush/timeout/work controls also pass. Main,
+> no-smart and genuine-overlay ARM builds pass; strict checkpatch passes.
+> ---
+>  drivers/video/fbdev/pxafb.c | 26 +++++++++++++++++++++-----
+=E2=80=A6
 
-Signed-off-by: Maria Sheikh <mariasheikh812@gmail.com>
----
- drivers/staging/fbtft/fb_tinylcd.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+What did hinder to add any known tags accordingly?
+* Fixes
+* Cc
+* Signed-off-by
 
-diff --git a/drivers/staging/fbtft/fb_tinylcd.c b/drivers/staging/fbtft/fb_tinylcd.c
-index afa8f1c740c5..d58b1247262b 100644
---- a/drivers/staging/fbtft/fb_tinylcd.c
-+++ b/drivers/staging/fbtft/fb_tinylcd.c
-@@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
- 	write_reg(par, 0xE5, 0x00);
- 	write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
- 	write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
--		       0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
-+		  0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
- 	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55);
- 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
- 	fsleep(250);
--- 
-2.53.0
-
+Regards,
+Markus

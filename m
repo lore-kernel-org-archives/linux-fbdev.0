@@ -1,90 +1,78 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.208.175
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793642838;
-	b=n68DSSL4pxRWUEnlSHAL0P5nxSTZE2y5ioNs2iLvUZiBncc57ajfEGZKf4qxjvliz4Ft
-	 ZhE8kiVZwYVMBKNLfKcXKmGS98BGvxtnRd4BABG4aGnIxo1peUHZOGa7UgMk6Z6fF0OGD
-	 rzwB6DNAN3EZ0Wp/NCE+fohjzdqCj0S/0T835hrMyXkAU9JWV0v7nLiBdVt427CghKCHe
-	 0VoRYEMZlcouw60a3YumLmaalvJXXwa1nJ2AQGKAHIy/NAlPJv7FN6gEAV+CcpsukL+W7
-	 OyIKz5CQcaNW6yGm7/2YpJofh5j0fNESVuXUAitjFmeW/1fcmQ2SmfpDTRv3/PAkgMg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793642838;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Received:X-Forwarded-Encrypted:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=/vXXDZI2TLqXD/tqTZGHj/cF0YcMq0fXP1TpWYkM2ME=;
-	b=ZcqVixpBu9kU6mkoSrlszPllxZEvwXHdFfCxbp/Sf+r5It90bcV7zdZ6RNSXJ5rdJw17
-	 XBf5YY3BScs1PL/ps/ZYQYdKvauD292s3nnJFIZ4WcvDIDvwBTHkLe55c3m/Dp/l4CmPS
-	 SPIATJhVZQ2OLamWXb3tdx8YsB1AVBKgY1TOL2M1mJat13m7gLqPfL/T8JtRfhPhmxfF0
-	 aPZSeZnVhatqgYbuZVaYAcLnMW6kGhcgAeeYTGh+AaDMLUkZfZbLHJFOrpOnGPmuKIBSb
-	 3KyNJt+fP3YPz2r2qrqFl/lRA3JwbJn8lgRaWu1xnGFKJIoPzXX53gtodIHChFT0ReQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=linux-foundation.org;
-	spf=pass smtp.mailfrom=linuxfoundation.org;
-	dkim=pass header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=H+CzZMUv;
-	arc=none smtp.remote-ip=209.85.208.175
-Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com [209.85.208.175])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793649532;
+	b=140TqW4rcOKiOjrHcnrQkXVahbCSSvKYNtEbzf3v4oEzpDqZUA3KrFSXv9ZaK0C/0HLr
+	 QT81LGiQsX8MW+JRgBPnZxiEsriIto5DY1e49WKdAQb+4ZZSm/A0Odk9KjnCnKeRguY25
+	 hx78AWcTBeBzRjCPUb/FNSz8L1RTQWR14yaY38EcrEVJteXxGupPjkVfSbP4NDSeV++cw
+	 5lcnrSP11Sc9SVarkppHlkCdjPWPCTFwq9NGn+xclSSRAFO205DE2INtR68fHwiSSCG9F
+	 Egx4jHt1hxh8pMRA/syzRAB3xJdJnfwxnpo2XeLzzD9NuoYm/Ola6mxmCQdB/hDcKtA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793649532;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=tl39y8nasyQK5FeLS5mRCJiOpnc6BjfLdfWfcIW374g=;
+	b=ToOSxT2FRBKXgvbGWFQXJzPgLdGqxL3ld06zWdJi5V3+paqACsNcOGHPHk7/aTUWEpFf
+	 q32oe9XcqvOtJBujfTfO7SS71M2pGfCD/X+XbdTqbqc6WD9lPRwaPrv4IeAZAZkTLKPc/
+	 +Wc9dwCtWIQK0QDyRahtAlJ2nVWwe8uKiZPouq7AJDZBJMNtcf/wY7/TtTKkjvTrlFh6I
+	 aPEueSCwgZg8mzNTY6OdkrK0NC0qW5A5DW3uezKZiHK8FrTqPFhoCDMn0FBTUB7XKHDRd
+	 RuAcNCMdyhkKigS8OviOYQcCaXo4oJcn6rh8s8s18FqeBTX8A5oLtEXvZiPK2Dhi30g==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WkCbJN4J;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C462606A32E;
+	Mon,  2 Nov 2026 19:58:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=WkCbJN4J
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1793649532;
+	b=1yfj6yOzWbjWHmQevQNleTN/TxzUMJX+z6RTtyJ7XARzgQ6ffrfWXK14oDuF1Ca+sVJ5
+	 /DrjRt6SwSTcePeXzKKYM/x9wQD3UNQa+yFAiQ8QVKruPCsjeYuCIQssnSeezP2j8y9Z1
+	 ac23B/q3K5QBo0VBcql2J5/fc6ZKhl5lbvjVMcy6CG40rgIYdCZXxj4CpMSAeqW+WrBb3
+	 7PvwIMThUKE3aXbHRZsi2v8/7wQTXOR4Z6q74bASMijCAd/2K4VCNXhYnLO/LkekynpbZ
+	 X9AotJceaWpecJAXkfHeOhOVVLp8Xu4QUubqZ2bbHaT06NA+V+SUK3WqM8o3F6UDPUQ==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1793649532;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=tl39y8nasyQK5FeLS5mRCJiOpnc6BjfLdfWfcIW374g=;
+	b=V/T98xXWvDi5fjtML9XsndCOresG+SStRY6/GOYurk1lMrk7V2WIyucH1lurTDyICVVC
+	 Fn65RyfXAJrAHcNae2vnOhJ3iHs5af2U3P5YyvhVs5K6ZtTA9EfdqjfAEWGSjrV12NSU2
+	 c/hhPyLZ8RuZdbrhj8mJMzHL8v5dy+TXAOM+brxET5z2JBDnoUlCF6DkzsIrKLhjTeSdt
+	 4vtyjfTA2xLe/PqSRevRnb3w7xj8KfGHNbqg/h+soJohRmpZIpPw562nDVZfOTpcBWBz0
+	 Z3rQCG46phJpjp0f2yADHK8lvNnxo1MKiVyGGvWp5a8i58oJFwVE+rLl1qB/0tkkfLA==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1849A606A324
-	for <linux-fbdev@vger.kernel.org>; Mon,  2 Nov 2026 18:07:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1849A606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linuxfoundation.org
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=H+CzZMUv
-Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-3ab3b29a210so35860821fa.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 02 Nov 2026 10:07:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1793642836; x=1794247636; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=/vXXDZI2TLqXD/tqTZGHj/cF0YcMq0fXP1TpWYkM2ME=;
-        b=H+CzZMUvn2qC9TmXRv7XlRuuKjtaf8JVhBSz4IvSEAj5/uP4mdnRN8vzL/JllF4NSL
-         N9JAzuk1m69I1F/cun92w5xFfSXtJUyj+SZj6UT3Vm6uMcHsjJnTn1oqU1XKxV5E2Xhu
-         eyS0I857ADvCugZ+vJuPVHG8CI/qhalT5oeAM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793642836; x=1794247636;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=/vXXDZI2TLqXD/tqTZGHj/cF0YcMq0fXP1TpWYkM2ME=;
-        b=maxy3zGBYBpXPsMfRugfmMdDjSFmN8BgaopHf+0SpvooCX8y0uur8XhhimqU1sTo5c
-         ddieYfuDekoVo0mJR+09nD8/kfJuqiRjJWL+kXZ1qspF6uJ2ySaWn/JqcCtJxpn+q1K5
-         nEUqbAF3WLcLMSOz3FitVZGyiAIsr/c3Qs1n3yw1KJZovi8255clgjtCtn/Y1Ht1BmJN
-         Hrxb5NfHR2Jo1l5uKpf/p4S9kzqADUX3IpE3sdtJ+zqnKLjLm85Qn4/GHjHxkT9hMfCU
-         ROsGpHdBNbnwfzk6q6+ThH+bqisjHUFPFMkNm8hhMYQ67w3PuckcB03vB0HX7mqFX1TN
-         iTCw==
-X-Forwarded-Encrypted: i=1; AKwUvBwph9f2Gi1mETnyRsaannPt/45p+/DpQFrnkGfknZJRYDpBgecks+G6azyy1Cyoie7qrXFHUjzUJuf+cQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/4FqhClZmn3mgOMwzIZxwqIvFj8n49RYabX1NRZM5PJzCIFwap
-	F6Yq+hF4i2WtonNrB5YCOMD3eDkWZMCRU/TT7jRIx1U0C20ef2St9ZV+WuHaK50ZMNqw7CCfXMo
-	5NIEq/HEJtg==
-X-Gm-Gg: AYBFou1F3dapqFyPLS3XKrzkhkrdmDGrCgzMQ6jySbO9vI4ew1OkKT2TCqeR1YS4bqV
-	mklPH8+LEZtrnzORApe9Q2FXHwWgglnoN30E65ChBY1wimYcNyQruEQeNbEMi0yHtruzx8NGRrr
-	WQDBnPL2Guq9EQeOqoxGiOEvVli/lxMKMWe/HDFvfeb3R8LQusHC30VqAvnOG0EBQkLY+S5i+Se
-	7gYcIi7tS2/8dHaqDrBLKVSkul4UaFwfNMQ3tIUUKg7oEvWiMzxwxoASvhwM/tEz2jQ+FP5AM9r
-	sU8baIBZln6+++/byNKSyJtbH3oKk1J4omB50uBHrL44XhO5pjphqy8Ziyc0txcPFc1foxRVLlm
-	XgMsJFAjQa1A0ju1YCsRivh3iZ2cejtMy5NmfDqroJg9Flgqa6O+ZR4r0TiK11W/gnkM7bglZdt
-	JCSzfu1GWAkZuzYCRlqyxTqohYFflDRKh0tewylDDDsphGBxkEu7vVBLjnSmxtMJ0eegVTEjNmK
-	/IuxiRdyEjWdk6qg2uFwOmRCE9+sXmqiOT8mITkHiTemJyQUUXSXNmezudPIbnePoXyTRwcEsGE
-	/VGPXv6WsfGeH6Or42C0Vkgyeeq8aOxAT6P4+/K6S/dPzsmFmAWEPy44jEPet7DEI1r7eKfiNb8
-	ilw==
-X-Received: by 2002:a2e:a553:0:b0:3a9:8775:5f11 with SMTP id 38308e7fff4ca-3aca57a55e9mr32700781fa.4.1793642836164;
-        Mon, 02 Nov 2026 10:07:16 -0800 (PST)
-Received: from mail-lf1-f45.google.com (mail-lf1-f45.google.com. [209.85.167.45])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-3acd5c41bd5sm962281fa.28.2026.11.02.10.07.15
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 02 Nov 2026 10:07:15 -0800 (PST)
-Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5bcb440d1cbso2156925e87.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 02 Nov 2026 10:07:15 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AKwUvByG2UcbaCySIoYPTmJwN6vUGQ1FW3M8bDePxtqOjoGbtt5sR+AjFXNlY0WWwynw+h5sPByitITTchS3jA==@vger.kernel.org
-X-Received: by 2002:a17:907:d94:b0:c2d:c80e:8366 with SMTP id
- a640c23a62f3a-c4ca7426f6emr874452266b.0.1793642348398; Mon, 02 Nov 2026
- 09:59:08 -0800 (PST)
+	by smtp.kernel.org (Postfix) with ESMTPS id BB7941F00A17;
+	Mon,  2 Nov 2026 19:58:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793649532;
+	bh=tl39y8nasyQK5FeLS5mRCJiOpnc6BjfLdfWfcIW374g=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=WkCbJN4JMjvIzOrtDXvNc+6dXg7451RHXlD3Rk2fCVGghqBGQD2cGCwUVBlOQXDcx
+	 lCIyhtfTftWkUxSdcZ0D0UIKnpHpm7I5oNFvtN6BR+CiLDIvoXcCwLxop22l5HT1FY
+	 z5czKCVcah4O0sqkHmaM4wSkMzVwdCCFSJ6+KhKHjy+nfl5kbQ8KJf/XRArHod25Jl
+	 lFjprdbj5PymOUtsnU/VEuT2mLlWC7acdUT46aSZmFRjNvAQo3cGOAL8ptviHdkybU
+	 94J6T7tEQIxm7qbDL71GFVhOuhomlxrjNndBZdtruaTqzM1WHb9x9YzlqBsAejiMAw
+	 VdVOQvwYHA7cQ==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 3B62C46621;
+	Mon,  2 Nov 2026 19:58:50 +0000 (UTC)
+From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
+Date: Mon, 02 Nov 2026 21:58:49 +0200
+Subject: [PATCH 2/2] backlight: add ktd3137 support
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -94,60 +82,360 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org> <20261102-work-procfs-bugfixes-v1-1-59422ed3e465@kernel.org>
-In-Reply-To: <20261102-work-procfs-bugfixes-v1-1-59422ed3e465@kernel.org>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 2 Nov 2026 09:58:51 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wiSA7-mqmAjTQDaU7UjUyWt0TxYwXHafL8ZAPudy+B_uQ@mail.gmail.com>
-X-Gm-Features: AclHuK_qZTBVsLQIdymgRHScSFenC6XsGggUDmcuOugjrSTbuVkeASUmC_hYPZo
-Message-ID: <CAHk-=wiSA7-mqmAjTQDaU7UjUyWt0TxYwXHafL8ZAPudy+B_uQ@mail.gmail.com>
-Subject: Re: [PATCH RFC 01/38] PCI/proc: don't truncate the position of config
- space accesses
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>, 
-	Josef Bacik <josef@toxicpanda.com>, Chris Mason <mason@kernel.org>, 
-	Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
-	Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, Greg Kroah-Hartman <gregkh@suse.de>, 
-	Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, 
-	Jan Kara <jack@suse.com>, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
-	platform-driver-x86@vger.kernel.org, coreteam@netfilter.org, 
-	kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
-	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, ibm-acpi-devel@lists.sourceforge.net, 
-	jfs-discussion@lists.sourceforge.net, linux-alpha@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
-	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, 
-	samba-technical@lists.samba.org, sparclinux@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
-	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
-	linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261102-6768-ktd3137-v1-2-b5b4f903c56e@protonmail.com>
+References: <20261102-6768-ktd3137-v1-0-b5b4f903c56e@protonmail.com>
+In-Reply-To: <20261102-6768-ktd3137-v1-0-b5b4f903c56e@protonmail.com>
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-fbdev@vger.kernel.org, Roman Vivchar <rva333@protonmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1793649528; l=10271;
+ i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
+ bh=bd49c6i0vG9Qo3Fa7Sy1aX36q0KV2KecDmkckt4D0Yo=;
+ b=EfGo5r+00OE9bn4Q8FtA7p4MMvHcZ6V5GaH56T795djzPhl7RGGov7yapqAoflAQUPmD8de2P
+ vf0gYzdGRpeBc9p/eDhk1PjLqSZ0duAl0coWGNyh7JP08fs/ts6KtCK
+X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
+ pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
+X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
+ auth_id=777
+X-Original-From: Roman Vivchar <rva333@protonmail.com>
+Reply-To: rva333@protonmail.com
+Content-Transfer-Encoding: 7bit
 
-On Mon, 2 Nov 2026 at 06:22, Christian Brauner <brauner@kernel.org> wrote:
->
-> proc_bus_pci_write() truncates the file position to an int. A pwrite()
-> at an offset like 0xfffff000 turns it negative [..]
+From: Roman Vivchar <rva333@protonmail.com>
 
-I think this would actually be better with rw_verify_area() just
-checking a per-file maxbytes.
+Add support for the KTD3137 display backlight IC. It's used in various
+Xiaomi phones, such as Xiaomi Redmi Note 9.
 
-We already have that logic for lseek and friends - using that fairly
-hacky combination of s_maxbytes and !unsigned_offsets().
+Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+---
+ MAINTAINERS                       |   1 +
+ drivers/video/backlight/Kconfig   |  11 ++
+ drivers/video/backlight/Makefile  |   1 +
+ drivers/video/backlight/ktd3137.c | 262 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 275 insertions(+)
 
-We should combine s_maxbytes and unsigned_offsets() at file open time
-into f_maxbytes and check that not just at lseek but in
-rw_verify_area.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 24dd5b43f167..23114fd09445 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -14622,6 +14622,7 @@ KTD3137 BACKLIGHT DRIVER
+ M:	Roman Vivchar <rva333@protonmail.com>
+ S:	Maintained
+ F:	Documentation/devicetree/bindings/leds/backlight/kinetic,ktd3137.yaml
++F:	drivers/video/backlight/ktd3137.c
+ 
+ KTEST
+ M:	Steven Rostedt <rostedt@goodmis.org>
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 7c66b8840d88..0196b8597367 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -199,6 +199,17 @@ config BACKLIGHT_KTD2801
+ 	  Say Y to enable the backlight driver for the Kinetic KTD2801 1-wire
+ 	  GPIO-controlled backlight found in Samsung Galaxy Core Prime VE LTE.
+ 
++config BACKLIGHT_KTD3137
++	tristate "Backlight Driver for Kinetic KTD3137"
++	depends on I2C
++	select REGMAP_I2C
++	help
++	  Say Y to enable the backlight driver for the Kinetic KTD3137
++	  found in various Xiaomi smartphones.
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called ktd3137.
++
+ config BACKLIGHT_KTZ8866
+ 	tristate "Backlight Driver for Kinetic KTZ8866"
+ 	depends on I2C
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 34469711c6cd..b2d3b69e9e32 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_BACKLIGHT_HP700)		+= jornada720_bl.o
+ obj-$(CONFIG_BACKLIGHT_IPAQ_MICRO)	+= ipaq_micro_bl.o
+ obj-$(CONFIG_BACKLIGHT_KTD253)		+= ktd253-backlight.o
+ obj-$(CONFIG_BACKLIGHT_KTD2801)		+= ktd2801-backlight.o
++obj-$(CONFIG_BACKLIGHT_KTD3137)		+= ktd3137.o
+ obj-$(CONFIG_BACKLIGHT_KTZ8866)		+= ktz8866.o
+ obj-$(CONFIG_BACKLIGHT_LM3509)		+= lm3509_bl.o
+ obj-$(CONFIG_BACKLIGHT_LM3533)		+= lm3533_bl.o
+diff --git a/drivers/video/backlight/ktd3137.c b/drivers/video/backlight/ktd3137.c
+new file mode 100644
+index 000000000000..a3ff334b8d46
+--- /dev/null
++++ b/drivers/video/backlight/ktd3137.c
+@@ -0,0 +1,262 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (c) 2025-2026 Roman Vivchar <rva333@protonmail.com>
++ *
++ * Backlight driver for the Kinetic KTD3137
++ */
++
++#include <linux/backlight.h>
++#include <linux/bitfield.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/gpio/consumer.h>
++#include <linux/i2c.h>
++#include <linux/module.h>
++#include <linux/property.h>
++#include <linux/regmap.h>
++#include <linux/regulator/consumer.h>
++
++#define KTD3137_REG_DEV_ID		0x00
++#define KTD3137_REG_SW_RESET		0x01
++#define KTD3137_REG_MODE		0x02
++#define KTD3137_REG_CONTROL		0x03
++#define KTD3137_REG_RATIO_LSB		0x04
++#define KTD3137_REG_RATIO_MSB		0x05
++#define KTD3137_REG_PWM			0x06
++#define KTD3137_REG_RAMP_ON		0x07
++#define KTD3137_REG_TRANS_RAMP		0x08
++#define KTD3137_REG_FLASH_SETTING	0x09
++#define KTD3137_REG_STATUS		0x0a
++#define KTD3137_REG_MAX			0x0a
++
++/* KTD3137_REG_DEV_ID */
++#define KTD3137_DEV_ID_A		0x12
++#define KTD3137_DEV_ID_B		0x18
++
++/* KTD3137_REG_MODE */
++#define KTD3137_MODE_BL_EN		BIT(0)
++#define KTD3137_MODE_CURRENT_MASK	GENMASK(7, 3)
++
++/* KTD3137_REG_CONTROL */
++#define KTD3137_CONTROL_LINEAR		(BIT(1) | BIT(2))
++#define KTD3137_CONTROL_IND_2P6A	BIT(3)
++#define KTD3137_CONTROL_OVP_32V		BIT(5)
++#define KTD3137_CONTROL_FREQ_1000KHZ	BIT(6)
++#define KTD3137_CONTROL_DEFAULT		(KTD3137_CONTROL_IND_2P6A | \
++					 KTD3137_CONTROL_OVP_32V | \
++					 KTD3137_CONTROL_FREQ_1000KHZ)
++
++/* KTD3137_REG_RATIO_LSB */
++#define KTD3137_RATIO_LSB_MASK		GENMASK(2, 0)
++
++/* KTD3137_REG_PWM */
++#define KTD3137_PWM_CH1_EN		BIT(0)
++#define KTD3137_PWM_CH2_EN		BIT(1)
++#define KTD3137_PWM_FILTER_6LSB		(BIT(3) | BIT(4))
++#define KTD3137_PWM_DISABLE		BIT(7)
++#define KTD3137_PWM_DEFAULT		(KTD3137_PWM_CH1_EN | \
++					 KTD3137_PWM_CH2_EN | \
++					 KTD3137_PWM_FILTER_6LSB | \
++					 KTD3137_PWM_DISABLE)
++
++/* KTD3137_REG_RAMP_ON */
++#define KTD3137_RAMP_ON_MASK		GENMASK(7, 4)
++#define KTD3137_RAMP_OFF_MASK		GENMASK(3, 0)
++/* Ramp ON: 2ms, OFF: 8ms */
++#define KTD3137_RAMP_DEFAULT		(FIELD_PREP(KTD3137_RAMP_ON_MASK, 4) | \
++					 FIELD_PREP(KTD3137_RAMP_OFF_MASK, 4))
++
++#define KTD3137_DEFAULT_BRIGHTNESS	2047
++#define KTD3137_MAX_BRIGHTNESS		2047
++
++#define KTD3137_I_MIN_UA		5000
++#define KTD3137_I_MAX_UA		29800
++#define KTD3137_I_STEP_UA		800
++#define KTD3137_I_DEFAULT_UA		20200
++
++struct ktd3137 {
++	struct device *dev;
++	struct regmap *regmap;
++	struct gpio_desc *enable_gpio;
++	u32 led_current;
++};
++
++static const struct regmap_config ktd3137_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 8,
++	.max_register = KTD3137_REG_MAX,
++};
++
++static int ktd3137_init(struct ktd3137 *ktd)
++{
++	u32 val = KTD3137_CONTROL_DEFAULT | KTD3137_CONTROL_LINEAR;
++	int ret;
++
++	ret = regmap_write(ktd->regmap, KTD3137_REG_CONTROL, val);
++	if (ret)
++		return ret;
++
++	ret = regmap_write(ktd->regmap, KTD3137_REG_PWM, KTD3137_PWM_DEFAULT);
++	if (ret)
++		return ret;
++
++	ret = regmap_write(ktd->regmap, KTD3137_REG_RAMP_ON, KTD3137_RAMP_DEFAULT);
++	if (ret)
++		return ret;
++
++	ret = regmap_write(ktd->regmap, KTD3137_REG_TRANS_RAMP, 0x00);
++	if (ret)
++		return ret;
++
++	return regmap_update_bits(ktd->regmap, KTD3137_REG_MODE,
++				  KTD3137_MODE_CURRENT_MASK, ktd->led_current);
++}
++
++static int ktd3137_backlight_update_status(struct backlight_device *backlight_dev)
++{
++	struct ktd3137 *ktd = bl_get_data(backlight_dev);
++	unsigned int brightness = backlight_get_brightness(backlight_dev);
++	int ret;
++
++	if (brightness > 0) {
++		ret = regmap_write(ktd->regmap, KTD3137_REG_RATIO_LSB,
++				   brightness & KTD3137_RATIO_LSB_MASK);
++		if (ret)
++			return ret;
++
++		ret = regmap_write(ktd->regmap, KTD3137_REG_RATIO_MSB,
++				   brightness >> 3);
++		if (ret)
++			return ret;
++	}
++
++	return regmap_update_bits(ktd->regmap, KTD3137_REG_MODE,
++				  KTD3137_MODE_BL_EN,
++				  brightness ? KTD3137_MODE_BL_EN : 0);
++}
++
++static const struct backlight_ops ktd3137_backlight_ops = {
++	.options = BL_CORE_SUSPENDRESUME,
++	.update_status = ktd3137_backlight_update_status,
++};
++
++static int ktd3137_parse_dt(struct ktd3137 *ktd)
++{
++	u32 max_ua = KTD3137_I_DEFAULT_UA;
++	u32 val;
++
++	device_property_read_u32(ktd->dev, "led-max-microamp", &max_ua);
++
++	if (max_ua < KTD3137_I_MIN_UA || max_ua > KTD3137_I_MAX_UA)
++		return dev_err_probe(ktd->dev, -EINVAL,
++				     "led-max-microamp (%u) out of range\n", max_ua);
++
++	val = (max_ua - KTD3137_I_MIN_UA) / KTD3137_I_STEP_UA;
++	ktd->led_current = FIELD_PREP(KTD3137_MODE_CURRENT_MASK, val);
++
++	return 0;
++}
++
++static int ktd3137_probe(struct i2c_client *client)
++{
++	struct backlight_device *backlight_dev;
++	struct backlight_properties props = { };
++	struct ktd3137 *ktd;
++	u32 val;
++	int ret;
++
++	ktd = devm_kzalloc(&client->dev, sizeof(*ktd), GFP_KERNEL);
++	if (!ktd)
++		return -ENOMEM;
++
++	ktd->dev = &client->dev;
++
++	ret = devm_regulator_get_enable(ktd->dev, "vin");
++	if (ret)
++		return dev_err_probe(ktd->dev, ret, "failed to power up\n");
++
++	ktd->enable_gpio = devm_gpiod_get_optional(ktd->dev, "enable",
++						   GPIOD_OUT_HIGH);
++	if (IS_ERR(ktd->enable_gpio))
++		return dev_err_probe(ktd->dev, PTR_ERR(ktd->enable_gpio),
++				     "failed to get enable gpio\n");
++
++	/* HWEN should stay HIGH for at least 150us before I2C can be used */
++	fsleep(150);
++
++	ktd->regmap = devm_regmap_init_i2c(client, &ktd3137_regmap_config);
++	if (IS_ERR(ktd->regmap))
++		return dev_err_probe(ktd->dev, PTR_ERR(ktd->regmap),
++				     "failed to init regmap\n");
++
++	ret = regmap_read(ktd->regmap, KTD3137_REG_DEV_ID, &val);
++	if (ret)
++		return dev_err_probe(ktd->dev, ret, "failed to read chip id\n");
++
++	if (val != KTD3137_DEV_ID_A && val != KTD3137_DEV_ID_B)
++		return dev_err_probe(ktd->dev, -ENODEV,
++				     "unsupported chip id: 0x%02x\n", val);
++
++	ret = ktd3137_parse_dt(ktd);
++	if (ret)
++		return ret;
++
++	ret = ktd3137_init(ktd);
++	if (ret)
++		return dev_err_probe(ktd->dev, ret, "failed to init chip\n");
++
++	props.type = BACKLIGHT_RAW;
++	props.max_brightness = KTD3137_MAX_BRIGHTNESS;
++	props.brightness = KTD3137_DEFAULT_BRIGHTNESS;
++	props.scale = BACKLIGHT_SCALE_LINEAR;
++	device_property_read_u32(ktd->dev, "default-brightness", &props.brightness);
++
++	backlight_dev = devm_backlight_device_register(ktd->dev,
++						       "ktd3137-backlight",
++						       ktd->dev, ktd,
++						       &ktd3137_backlight_ops,
++						       &props);
++	if (IS_ERR(backlight_dev))
++		return dev_err_probe(ktd->dev, PTR_ERR(backlight_dev),
++				     "failed to register backlight device\n");
++
++	i2c_set_clientdata(client, backlight_dev);
++	return backlight_update_status(backlight_dev);
++}
++
++static void ktd3137_remove(struct i2c_client *client)
++{
++	struct backlight_device *backlight_dev = i2c_get_clientdata(client);
++	struct ktd3137 *ktd = bl_get_data(backlight_dev);
++
++	backlight_dev->props.brightness = 0;
++	backlight_update_status(backlight_dev);
++
++	gpiod_set_value_cansleep(ktd->enable_gpio, 0);
++}
++
++static const struct i2c_device_id ktd3137_ids[] = {
++	{ "ktd3137" },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, ktd3137_ids);
++
++static const struct of_device_id ktd3137_match_table[] = {
++	{ .compatible = "kinetic,ktd3137" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, ktd3137_match_table);
++
++static struct i2c_driver ktd3137_driver = {
++	.driver = {
++		.name = "ktd3137",
++		.of_match_table = ktd3137_match_table,
++	},
++	.probe = ktd3137_probe,
++	.remove = ktd3137_remove,
++	.id_table = ktd3137_ids,
++};
++module_i2c_driver(ktd3137_driver);
++
++MODULE_DESCRIPTION("Kinetic KTD3137 Backlight Driver");
++MODULE_LICENSE("GPL");
 
-And then things like proc_bus_pci could set it's size limit in one single place.
+-- 
+2.56.0
 
-Hmm?
 
-                   Linus

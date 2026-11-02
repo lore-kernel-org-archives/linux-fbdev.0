@@ -1,95 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.179
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793579154;
-	b=TSebTf0FG5uv9wXWlW1iR1yqmupEObGx8zAosJjJWK+qWJ5EMrgnCJ6WSDk8perNLXgH
-	 bJT7+SbyYs8YNjG2SA+EVdHm+mfb3mDjTDXyQKNLdsCa4NPuP+/WOdMDUzxEBKKHNa0CB
-	 Z56xTWETW9SuswH2MIjXnhXO19K6kaWr0O5dvsSrPCKkkj0A6Et4c9rJ2Z68avFsubWZ8
-	 hVDLofCrpu8wKcwLESPYs1kCZ4IpsNWp4N//WTt+MGtjKNUS522X/gJgxAcNocSeuD1TO
-	 7UCbQle/Gpfh5QxFcQjvoaS7w4l3Qb0SvF1DNE5AaDlE/93snVUgrXzTteoW4L0XAZw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793579154;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:MIME-Version:From:Date:
-	 X-Gm-Features:Message-ID:Subject:To:Content-Type;
-	bh=IxaHOBhBHJELnjR7p3C67+RByc+CNdq09G2SjlGIq8w=;
-	b=soAh1+NkSEnuqeHA75OPzUvbGttbmfMurJc/E16utFeR4bockoO+IgTqHXwtF1kkFSmg
-	 fnhLlKOX289MD2MZUYYR0oTT8KHFlXaC/EnClBS38KrMh8M5RuV65HOItHf4x1dDzc+2M
-	 yp8rxTMl2XcAKyfqER0o08+GNcxmMKogzH5BiSh7kSV+7//LkPnn+XVksLCmG4wfGm0tv
-	 r+GsgVA7mc+MJrWLIacfdVRDud+UDNhswHPObf1H1Vi69q54Dm4BxHFgbrnLKg9f0996a
-	 C/ojhc6jt89OntIbBHFaW03AZ2mE4cnH2MjeL9T1filkdUNfz36P+D/ORG/+BtSOMmA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=XCVwmTLZ;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.82.179
-Received: from mail-dy1-f179.google.com (mail-dy1-f179.google.com [74.125.82.179])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43FCA606A324
-	for <linux-fbdev@vger.kernel.org>; Mon,  2 Nov 2026 00:25:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 43FCA606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=XCVwmTLZ
-Received: by mail-dy1-f179.google.com with SMTP id 5a478bee46e88-36a0f27c9f4so4595195eec.1
-        for <linux-fbdev@vger.kernel.org>; Sun, 01 Nov 2026 16:25:54 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793579153; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Va7xr94XTQSePsRFWGehFeRAcKzrcZAROMJDAYY7xiy23I4hv0BjC+/3QkY4+k7Zan
-         1IxWdctjJ4OmW46APGjmjfgu8NeFrVjWuQEcs5CklyDOBKbXQmC1wF/82FRvD3iLJJFP
-         zQshK7zSM0AAW+ENQn5SUi8p0zz4W8hdOREnMEDuyFjDoG2Erj0GCRoBRERI+z6JEmzV
-         wH1MTK4B9EQRdJ1yb6G8E/5+uA2SvUYH6NAzeZ3hdzVeUCDGpDx+jTcQDGtrhzIndmJc
-         Ysn2uhV0V7fGtyJvYHMJYSeZEjTEn3uLrNiJCh6j+6vAG6ZSI+6eHV9gTRGn59PMWMyP
-         MIXQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=IxaHOBhBHJELnjR7p3C67+RByc+CNdq09G2SjlGIq8w=;
-        fh=0OzTX1D2dfYLDzfEsDld+awI73JgilcIc0DS19gjlyg=;
-        b=dylqod0jVHK84Dh4TQygr27At9WP95jycQC8WZkStuXdJr3CH0JWpwfBEFrZtoz3L8
-         U3rZkiWRGSCm0h89yRgq5iIB9d0d9r+WAMZNn76/jxa9jLzQfkfwK1gFS4Y9wh8W4jNS
-         5sGrDKvw2Ye/ScrbivVCV5HXeWvP6P1YwT93T3Ni2KiJNfHllf45rB4oC3bE6/TTZ140
-         aElSms7nHiVWS+PHe1bHDyWatLL3UQDgIW2mQjaV8uJC/nPkyVPTAu+MX0t+yHoCda8u
-         sHeqcgpoff2wHnZKxZR4G2m8jgeP4X6XFznOXo7GF/5o1GTS/ARrCFPMUUCGIjKW/2VD
-         /fgg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=162.243.164.118
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793604103;
+	b=PduKvc4x8RFg4pvOarF8ROY2ArObNOgwqyl0f7Z8ynILruPCDnriDYulxIag3VL3mCko
+	 gx9E/CDI4P/k8ouSeso8pZgyshrj6Dl/btGPslnNFPy2Oja2YG3x1DfpEMRLtuYe3FN75
+	 55hXkpoXvKriOeFYSG/mn184YbBJotGRY9rDeBY4V11aqI2F2taoLKI3uDOikSH6JMNdo
+	 uBpK4AZdlzwKsV693uccMtsMAGJJnq7fj/v2OE/tXOlyVu5EeQvmHjzvbDtexC4l71j8s
+	 CG4tBJQTlQxtFlkoWlB/SJ9j30mzGrQ4f706uZ5eu0DbGsyeI5Hp5BhNajP4NknYAVg==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793604103;
+	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
+	 Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
+	bh=vOm77Ol81NHVwbT3TF1koHcO7lNXXEKWGGU10cmiIbo=;
+	b=AKIwtuMDDK3lA2kzP6Uew2ZMahIlQVA6iBRD/0nebQyRCLJ6p6xCj0oazNPjxjMvHaAw
+	 RjuLxxyrLtNETlCKhR9TA8jm+w5Mha5k0K4NACDsWnuD746OMrFGi/fikNl9p0rtJxvRu
+	 9JE1nfp7s4/hbRMZwvmFHi5jqwmJ/IxfFZHLzc1C8XKLz3FLw0hQmWCQ9IqWIsomZAF5l
+	 O1M0R5Mnh7Vc2F/nIe3x7kDe/MG4l9Gkiu1GcYbmuPOczOAG8Lxyu2cnn9Xv7X8FZJ3n8
+	 4tz4yLTdz7QjjKUG2IRALUbjs6dQSkQ7oO96FUkIGyFma0o0I9jgGGM4sUZeRf/5EtQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=stu.xidian.edu.cn;
+	spf=pass smtp.mailfrom=stu.xidian.edu.cn;
+	arc=none smtp.remote-ip=162.243.164.118
+Received: from zg8tmtyylji0my4xnjqumte4.icoremail.net (zg8tmtyylji0my4xnjqumte4.icoremail.net [162.243.164.118])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 00F0C606A339;
+	Mon,  2 Nov 2026 07:21:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 00F0C606A339
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=stu.xidian.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=stu.xidian.edu.cn
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793579153; x=1794183953; darn=vger.kernel.org;
-        h=content-type:to:subject:message-id:date:from:mime-version:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=IxaHOBhBHJELnjR7p3C67+RByc+CNdq09G2SjlGIq8w=;
-        b=XCVwmTLZ350/60xK9/X/yBqfj9P8rTJau7RijEFDK4bT44aCS2ncX6iuM/LvlhNwND
-         QpaEzggKZ3pWXkQijQpwjwWxSWh/4CSL5TviBBax8I4bjpPeYAvT884+pr6/AkYTXqV7
-         WGbo7k4fRYdk69fdAPgkZ4aLFhM43tTyAU3gPE17bY9SX5emeVS9WJQF4AwhQSMRfIi4
-         T4AkydpIuHtq3zP461ENG9t9QhT0v9e166zOzvK3uetmuTqwpCZ66hZ8fXPEZuvl7hUk
-         c1jsEB+q1dl7knQS23VIQfmeoRyJO6SnYlNCWayC7h7RY63PtSF/j7/0MpI6Hq5C9IiF
-         XQrQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793579153; x=1794183953;
-        h=content-type:to:subject:message-id:date:from:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=IxaHOBhBHJELnjR7p3C67+RByc+CNdq09G2SjlGIq8w=;
-        b=jx/qxrSR82EWda5ZHQq/z/1uUZ/sjryU98W2cKuGt0rD7iYBmhbYDkFKwu//PIV2qN
-         SVVBIqI5GWUAaT3qJ4GJAQapixlqOWdfR0XjQqEHiX9Uv26cAlmCELbhu8auurLtIvDy
-         scCA7wcvdtJDWDoh0kxc5m4NDqMbVW5fBrblQ53IFZz+8lrXXP1/2w0AoWGf7F8GNgnm
-         4qiAjTS7io8VmQL52b03R0lyS5pTD8PfhJzY0SiqNSKL/sriTS/NMp3gIJmPqyYHGwXf
-         iVC1hLEJ0+NwAzNV9LZxrYF4QYM8w82SrED8yPEi/jRj86R6eng9Td1O409RJFC1/lYt
-         8gKQ==
-X-Gm-Message-State: APuU4Z+MbTBWUdiysa7GC26aunsY7bmOqfuacb/w2TSd2CtRv3lwCZYN
-	CsG7HYnpZsUR0kTdjQRpctoDWTz4S2HxwmF1folcAr6nCUdkLXQeyioWQb23rVC0Xz9pFohWFTX
-	B/8L84HwVXqhYt9BsyTqm7s4B8+JNAueulv6dzb7R5g==
-X-Gm-Gg: AYBFou1x/qEZj6mK/YBj/5sjJSd7XZL3MMJsUsy/1s43XxdVe+fHNfEWeKywtWZYmeF
-	RR5pxQhWrBvLwFhJl6tIeOAfwnfHvKCXdbAMWh+Xah5La6zCd90yGx3TS8Bkry8Ob6SskRbM2D6
-	bYuNHCAps2oIkmoPJkiN3g1SsIkPdgtU/74AuSaoZNuzJFn6JZmLqCymXnjs0ihVV/nWBoN7ZZ5
-	Tn0hoorZejshWzSheAo3iubTigz6WMj/X0sNptpHKSBAdyDlt41bzVPZzEt5H5S7i8IouSzSjtc
-	y90ZcKUNBTHrSLekgXBaLqicz0/toaAJrdzk22+keonFAg4dw5T5X6eQLmTNTW9mPJavWyIBh2a
-	GA68UF+YTCo3QX02So8NYOexxx1JXDcm71+qqFeKJ36aE/9+gzCY4UTcH2GO6w1plfYmTPQ==
-X-Received: by 2002:a05:7300:f793:b0:35d:2633:ff79 with SMTP id
- 5a478bee46e88-36a4245944cmr12788322eec.40.1793579153046; Sun, 01 Nov 2026
- 16:25:53 -0800 (PST)
+	d=stu.xidian.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
+	Message-Id:MIME-Version:Content-Transfer-Encoding; bh=vOm77Ol81N
+	HVwbT3TF1koHcO7lNXXEKWGGU10cmiIbo=; b=JE1+CGZHHOyym2NaxWLNlgKGQg
+	hM+RYo1MydRPNh0H0pdPEjlOml67/UxP6wDdhRANX5WDQhffI47kxMsK1WAfxsb5
+	zVT047KomgfvX3UIaTreW+nr3dsLkwUKx32L8edfjvdsuLJhjz4MPIWWk0zJgP3z
+	gCfIjW+3HhJF/JeJY=
+Received: from user-virtual-machine.localdomain (unknown [113.200.174.55])
+	by hzbj-edu-front-4.icoremail.net (Coremail) with UTF8SMTPA id BrQMCkDG5PrwOehqKrgYAQ--.18497S2;
+	Mon, 02 Nov 2026 15:21:21 +0800 (CST)
+From: YuanZhe Liu <25031212351@stu.xidian.edu.cn>
+To: Helge Deller <deller@gmx.de>,
+	Steve Glendinning <steve.glendinning@shawell.net>
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org,
+	Bin Yu <byu@xidian.edu.cn>,
+	Cheng Wen <wencheng@xidian.edu.cn>
+Subject: [PATCH] fbdev: smscufx: bail out of ufx_set_vid_mode() when the device is gone
+Date: Mon,  2 Nov 2026 15:21:20 +0800
+Message-Id: <20261102072120.3022-1-25031212351@stu.xidian.edu.cn>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -99,60 +59,89 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-From: Guilherme Bember Duarte <guilhermebemberduarte@gmail.com>
-Date: Mon, 2 Nov 2026 00:25:41 +0000
-X-Gm-Features: AclHuK9yBlVXACtI0Q-ECo6CdIAwEfXFppBZZF_EM0LOwAT2YMseTCuKC_x1ZQ4
-Message-ID: <CALykNV4SPeXMgGv+F77Gpd35QcaQCBv+Z8LMn24v_+j7sXrc_A@mail.gmail.com>
-Subject: Is drm_log the intended replacement for fbcon? It needs
- console=drm_log0 and loglevel=7 to show anything (7.3.0, amdgpu)
-To: linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:BrQMCkDG5PrwOehqKrgYAQ--.18497S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxArW8Wr4kAw48uFW8AFWkJFb_yoW5Wr13pF
+	W5CFW5KrZ5JFWjka1DGw429a4Yv3ZxAay7Gr9rKw13uFn8u3yfurykCF9FgF98Jry7Zw4U
+	Ja4Ut3yj9ayUuaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9ab7Iv0xC_tr1lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
+	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
+	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xII
+	jxv20xvEc7CjxVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I
+	8E87Iv6xkF7I0E14v26F4UJVW0owAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x0
+	82IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGw
+	Av7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48J
+	MxkF7I0En4kS14v26r126r1DMxkIecxEwVAFwVW8CwCF04k20xvY0x0EwIxGrwCFx2IqxV
+	CFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r10
+	6r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxV
+	WUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG
+	6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Jr0_Gr
+	UvcSsGvfC2KfnxnUUI43ZEXa7IU8HrW5UUUUU==
+X-CM-SenderInfo: ysvqjiysrsjkur6v33wo0lvxldqovvfxof0/1tbiAgUFD2rnWEJ54wAAsA
 
-Hi,
+ufx_usb_disconnect() marks the device as virtualized and clears
+usb_active, but the fbdev entry points that program the controller are
+not serialized against it.  ufx_handle_damage(), ufx_dpy_deferred_io()
+and ufx_ops_ioctl() all return early while usb_active is clear;
+ufx_set_vid_mode() does not, so a mode set or a blank request that
+races with the disconnect keeps issuing control transfers through
+dev->udev.
 
-I've been trying to run a kernel without fbcon, with drm_log for boot
-output and kmscon as the userspace console. Before I go further, I'd
-like to ask where this is heading:
+The usb_device is released once the disconnect callback returns, while
+dev->udev is left pointing at it, so those transfers dereference a
+stale pointer and fault in __create_pipe():
 
-1. Is fbcon (and fbdev emulation) planned to be deprecated?
-2. If so, is drm_log the intended in-kernel replacement for its boot
-output, with the terminal left to userspace?
-3. If that's the plan, why does drm_log need so much setup to work?
-Right now it doesn't behave like something meant to replace fbcon.
+  general protection fault, probably for non-canonical address
+  0xdffffc0000000006: 0000 [#1] SMP
+  KASAN: null-ptr-deref in range [0x0000000000000030-0x0000000000000037]
+  RIP: 0010:__create_pipe include/linux/usb.h:2031
+  Call Trace:
+   ufx_set_vid_mode
+   ufx_ops_set_par
+   fb_set_var
+   fb_set_var_from_user
+   store_rotate
 
-What I found (7.3.0, amdgpu RX 6600, one DP monitor,
-CONFIG_FRAMEBUFFER_CONSOLE and DRM_FBDEV_EMULATION off,
-CONFIG_DRM_CLIENT_LOG=y and DEFAULT="log"):
+Return -ENODEV from ufx_set_vid_mode() when the device is no longer
+active, matching the check the other transmit paths already use.  Both
+callers, ufx_ops_set_par() and ufx_ops_blank(), handle the error: the
+former skips the greenscreen fill and keeps the previous mode, the
+latter already ignores the result.
 
-- console=tty0 loglevel=7                         -> no video
-- console=tty0 console=drm_log0 loglevel=3        -> no video
-- console=tty0 console=drm_log0 loglevel=7        -> video, and kmscon
-takes over cleanly
+The guard cannot live in ufx_reg_write()/ufx_reg_read() instead, since
+probe programs the controller through ufx_config_ddr2(),
+ufx_i2c_init(), ufx_setup_modes() and ufx_reg_set_bits() before it sets
+usb_active.
 
-Why, as far as I can tell:
+Fixes: 3c8a63e22a08 ("Add support for SMSC UFX6000/7000 USB display adapters")
+Cc: stable@vger.kernel.org
+Co-developed-by: Bin Yu <byu@xidian.edu.cn>
+Signed-off-by: Bin Yu <byu@xidian.edu.cn>
+Co-developed-by: Cheng Wen <wencheng@xidian.edu.cn>
+Signed-off-by: Cheng Wen <wencheng@xidian.edu.cn>
+Signed-off-by: YuanZhe Liu <25031212351@stu.xidian.edu.cn>
+---
+ drivers/video/fbdev/smscufx.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-- Without console=drm_log0 the console is registered but never enabled
-(flags 0x101, no CON_ENABLED; with the argument it is 0x107). tty0 is
-already first in the console list and has a tty binding, so
-register_console() doesn't enable drm_log by default. I saw this was
-discussed in the v9 drm_log thread in Dec 2024. The Kconfig help for
-DRM_CLIENT_LOG says nothing about console=, so a user gets a dark
-screen and no message.
-- Even once enabled, drm_log_init_client() only runs when the first
-record passes the console loglevel (it's called from
-drm_log_write_thread()). With a normal loglevel the screen stays dark.
-Needing loglevel=7 to get a display at all seems like a poor
-requirement for a boot display, and it is not documented anywhere I
-could find.
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index 5704f60e1741..f1b640a5d712 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -661,8 +661,12 @@ static int ufx_set_vid_mode(struct ufx_data *dev, struct fb_var_screeninfo *var)
+ 	u32 temp;
+ 	u16 h_total, h_active, h_blank_start, h_blank_end, h_sync_start, h_sync_end;
+ 	u16 v_total, v_active, v_blank_start, v_blank_end, v_sync_start, v_sync_end;
++	int status;
++
++	if (!atomic_read(&dev->usb_active))
++		return -ENODEV;
+ 
+-	int status = ufx_reg_write(dev, 0x8028, 0);
++	status = ufx_reg_write(dev, 0x8028, 0);
+ 	check_warn_return(status, "ufx_set_vid_mode error disabling RGB pad");
+ 
+ 	status = ufx_reg_write(dev, 0x8024, 0);
+-- 
+2.34.1
 
-If drm_log is meant to replace fbcon, at least for boot information
-before userspace handoff, I think it should light the display at boot
-without extra command line arguments and without depending on the
-loglevel, for example by doing the first probe and commit when the
-client registers, or on the first hotplug. If it is only meant as a
-debugging aid, as its DOC comment says, then a kernel without fbcon
-has no supported way to get a boot display, and I'd like to know that
-too.
-
-Thanks,
-Guilherme B.

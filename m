@@ -1,123 +1,72 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793702481;
-	b=rNYQKEDqsmiP3MogOH/JR171y9Bs0RPAUwcIkgx4wTrTnXiX0EkZzzdiNOoeGUQkJk/N
-	 emtRRJKWq4qI4yD5eWKjFrg065QOuhwb0g69WMOfcom9AczxxmJltma8tJ60qZmDgFI9X
-	 PCFnKfrJzpIayLsjNj1HSXwQYPc1HnpU+UVHoPVucU7VypwaMApYrYxv0w/YEU7iS0B4a
-	 1aMbLFDImW5tkACbeKz65AcT0DCBaMAQoLT2qEitamQvh8IzAE10Fzlwl8LyXjw0f/GVf
-	 41fVQbwRW+xf5uThEmf7ALfYfLztxSin0PNIvk48UJoFuZWdj4cyOcsf3woGgeozWOA==
+	t=1793706843;
+	b=NIUxckRA7sDfPHTwW9JsrQ7M3y0MNFBAhmcR3EDxhA7v4H8EjI/YVhX00iKQXXc6HurC
+	 8PUwh2H0hl8Oc7lWge9rXCBMHQ/lBRryNDFk7cHXPZZjwecGgkiP8qC6Or+vpyJ9+z7Ra
+	 MnWHin+9a1+ragjqAHPpybsZ9Y2V6+Y2uj0MciYvjt9Gm9hzKGNlWSKnCtwb9+6hm5s9K
+	 BeQNlFfJMAeHMLKbhoTyNVv6ytFB73JKnqAxz/j8byQe0/PrD3+FJCg5Ci5atWq+JcP/T
+	 QJVVQsrI8TaRg0sOgccGtryJeeQ79Z3D8QP0WfXc5J9cHAcsxqdpBi3i/q2aK6TFsjQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793702481;
-	h=DMARC-Filter:Received:Received:Received:Date:Message-ID:From:To:Cc:
-	 Subject:In-Reply-To:References:User-Agent:MIME-Version:Content-Type:
-	 X-Rspamd-Pre-Result:X-Rspamd-Server:X-Spamd-Result:X-Spam-Flag:
-	 X-Spam-Score:X-Spam-Level:X-Rspamd-Queue-Id:X-Rspamd-Pre-Result:
-	 X-Rspamd-Action;
-	bh=n3928gBIWqHxVcE0Q0TQTSHKUQ5+JmJrD1oVco54lEw=;
-	b=HwjEIW3xc83Pm0CwR2K/jkKioKJQAd99tyX6Cj6/AI9N9iW/GZLJnxdXlQ0Md8xjAhXp
-	 UE7o9jZIB+LI63ZtxP6vN6y+Xa2ri8buth6IGDfiJmvMTMZhzbTH0SsXovYkLzVbKMXXq
-	 vFiXEDLAkZ+L9q6fw4jUwFncyR3YRX4/Enl/UY62hCFlYX14DcVGD2BOI8gPoV+9s44Gh
-	 NTh6As2zyA8On/8V/FwUCthQCAD8QE6ugtIC2CMxuUVLpLwWQObkkycenc7WWO7gIR9OU
-	 N7zwdfKQiWgR5tYfGnHvdPnsVNyCZZ3iwLafK2p+H23NKktgtnQh2Lj+IsH/Ghh3akA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793706843;
+	h=Received:DKIM-Signature:Received:From:To:Cc:In-Reply-To:References:
+	 Subject:Message-Id:Date:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:X-Mailer:X-Developer-Signature:
+	 X-Developer-Key;
+	bh=G1wnrmAx6UKYvtzrJ7pGlQnyDEoN4L09wwQrnXzgcqk=;
+	b=BMw33rQiwnMrBIKN7a/WGRYb1bntHHrWexUQJ14UPR8c6mKNcVY7JdrSCn1Mgyt6Aat7
+	 u+BcmkDDLEnqJs49SQvA+Tcv384HhgUJAVr8Fcbr3Mw0n4SEeC47RyA79lvnhweL/IDmm
+	 lDF22GXKNVGJN4ftyAxYKs4dmJERH5a446aZT3cM3WYz2AmagdNSxZ+hWt7HiqQiRIkb+
+	 xjjrTnfjWo7JY4F4YlBj+AzQxi/AAor6Y+ONAo6DbE25QxBWPNIpnoeCX4UAXtIJPTnfq
+	 f2hIdPu1XUPAAhn1f2hCEKteMahsIaj97GZJxhFNcD0on7zH16Uwcdt7vavAAgqRkxg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=suse.de;
-	spf=pass smtp.mailfrom=suse.de;
-	arc=none smtp.remote-ip=195.135.223.130
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DYajrT6U;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23D3A606A81C;
-	Tue,  3 Nov 2026 10:41:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 23D3A606A81C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 8017122D12;
-	Tue,  3 Nov 2026 10:41:18 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A98D41350A;
-	Tue,  3 Nov 2026 10:41:17 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id fPJkIE266WqxEgAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Tue, 03 Nov 2026 10:41:17 +0000
-Date: Tue, 03 Nov 2026 11:41:09 +0100
-Message-ID: <87ik2exkmy.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Jann Horn <jannh@google.com>,
-	Josef Bacik <josef@toxicpanda.com>,
-	Chris Mason <mason@kernel.org>,
-	Jeff Layton <jlayton@kernel.org>,
-	NeilBrown <neil@brown.name>,
-	Eric Dumazet <edumazet@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Al Viro <viro@zeniv.linux.org.uk>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Christoph Hellwig <hch@lst.de>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Joel Granados <joel.granados@kernel.org>,
-	Kees Cook <kees@kernel.org>,
-	Jan Kara <jack@suse.cz>,
-	Jan Kara <jack@suse.com>,
-	linux-kernel@vger.kernel.org,
-	linux-nfs@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-s390@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-wireless@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org,
-	ntfs3@lists.linux.dev,
-	platform-driver-x86@vger.kernel.org,
-	coreteam@netfilter.org,
-	kexec@lists.infradead.org,
-	linux-pci@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	netfilter-devel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	ibm-acpi-devel@lists.sourceforge.net,
-	jfs-discussion@lists.sourceforge.net,
-	linux-alpha@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-cifs@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	linux-hwmon@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-sh@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	samba-technical@lists.samba.org,
-	sparclinux@vger.kernel.org,
-	linux-m68k@lists.linux-m68k.org,
-	linux-doc@vger.kernel.org,
-	linux-serial@vger.kernel.org,
-	linux-atm-general@lists.sourceforge.net,
-	Takashi Iwai <tiwai@suse.de>,
-	linux-input@vger.kernel.org,
-	linux-raid@vger.kernel.org,
-	linux-ext4@vger.kernel.org,
-	linux-modules@vger.kernel.org,
-	linux-debuggers@vger.kernel.org,
-	Chuck Lever <cel@kernel.org>,
-	stable@vger.kernel.org
-Subject: Re: [PATCH RFC 09/38] ALSA: info: don't write past the end of a data entry
-In-Reply-To: <20261102-work-procfs-bugfixes-v1-9-59422ed3e465@kernel.org>
-References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
-	<20261102-work-procfs-bugfixes-v1-9-59422ed3e465@kernel.org>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58B2B606D805;
+	Tue,  3 Nov 2026 11:54:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DYajrT6U
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DD761F00A02;
+	Tue,  3 Nov 2026 11:54:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793706842;
+	bh=G1wnrmAx6UKYvtzrJ7pGlQnyDEoN4L09wwQrnXzgcqk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=DYajrT6UnCaA2QaHVM6Oq6Ej8fHn/k+mNdjVnvuE2HH2MIfgeZpcFPRCTr7VFMFoF
+	 axET584bGA77w57DX5sgiDR1LABwuFTVb/byivkS4Zlko4yqMRpbsM1fYnH3BcU16l
+	 NMHcGkH2yT+wgEU2IXwVSCvKjea1lK0Gc1bNPBTXVwBqka5nUAIDv1LTCsAFoc7nGA
+	 Eo93yXlNeQxgBS+ZRCuogUb5/MWbEpinwteL4sLWqdkNBomEa+QJsgvSi+VxDVmfOf
+	 5Ge12PoxPGmwfFu0rOHod4zwmnJmMGvR0sCxX/iyq1jvm1n3KecYx7Vh+o88tR8vb5
+	 vASUaAK2j8eRg==
+Received: from traversing.sirena.org.uk (localhost [IPv6:::1])
+	by traversing.sirena.org.uk (Postfix) with ESMTP id D84A6253A672;
+	Tue, 03 Nov 2026 11:54:00 +0000 (GMT)
+From: Mark Brown <broonie@kernel.org>
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+ Kiran Gunda <quic_kgunda@quicinc.com>, 
+ Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+ Dmitry Baryshkov <lumag@kernel.org>, 
+ Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>
+Cc: linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ devicetree@vger.kernel.org, mfd@lists.linux.dev, 
+ Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+In-Reply-To: <20261019-sm8150-display-card-v2-0-86c05068efc5@oss.qualcomm.com>
+References: <20261019-sm8150-display-card-v2-0-86c05068efc5@oss.qualcomm.com>
+Subject: Re: (subset) [PATCH v2 0/8] arm64: qcom: enable display card
+ support on SM8150 HDK
+Message-Id: <179365864580.2186205.7754433993357235376.b4-ty@b4>
+Date: Mon, 02 Nov 2026 22:30:45 +0000
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -126,64 +75,59 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Spam-Flag: NO
-X-Spam-Score: -4.00
-X-Spam-Level: 
-X-Rspamd-Queue-Id: 8017122D12
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1677; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=33J6wCN/4BjmBIY6abHmDR1XKIu9W+IsNR/tzfBzFHE=;
+ b=owGbwMvMwCWm/754w+YLFp2Mp9WSGLJeno7Qr2TfX7wqVGcWo6bhS+29a94UL7U5GvFksuvDh
+ WvmJAos6yhlYRDjYpAVU2SJy+J+WV/yeg3fwYVtMHNYmUCGMHBxCsBELjxn+J/j4m/sGFbi9aem
+ tL3T6bnPMZPa5H4OSaebQs+827nPf2dk6NrPNnmRaXH2t8PZzitlLRllLp86oVJzz9xY3H16UUA
+ 8DwA=
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
-On Mon, 02 Nov 2026 15:21:24 +0100,
-Christian Brauner wrote:
+On Mon, 19 Oct 2026 14:25:36 +0300, Dmitry Baryshkov wrote:
+> arm64: qcom: enable display card support on SM8150 HDK
 > 
-> snd_info_entry_write() clamps the count to what is left of the entry
-> by computing entry->size - pos as a size_t. For a position past the end
-> that wraps and the write goes to the driver unclamped, for opl4 into
-> sample memory outside of what the entry covers. At the end of the entry
-> the driver gets a count of 0 and vmalloc(0) warns. Before the clamp
-> moved into the common code the driver ignored such writes. Fail them
-> with -ENOSPC instead, like a block device does at the end of the
-> device. Returning 0 would make writers that use stdio retry forever.
+> The Qualcomm SM8150 HDK can be equipped with an optional display card
+> having the same panel as the display card for SDM845 HDK. Reuse the
+> driver submitted at [1] and enable display card support on this HDK.
 > 
-> Fixes: d97e1b78239c ("ALSA: info - Check file position validity in common layer")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
-
-Reviewed-by: Takashi Iwai <tiwai@suse.de>
-
-
-thanks,
-
-Takashi
-
-> ---
->  sound/core/info.c | 2 ++
->  1 file changed, 2 insertions(+)
+> Unlike SDM845, this also requires a new LCDB driver, providing voltage
+> for the panel and several fixes in the WLED driver. The FSA4480 address
+> fix is independent and can be applied earlier.
 > 
-> diff --git a/sound/core/info.c b/sound/core/info.c
-> index c4d57d0809ad..982087bc8575 100644
-> --- a/sound/core/info.c
-> +++ b/sound/core/info.c
-> @@ -171,6 +171,8 @@ static ssize_t snd_info_entry_write(struct file *file, const char __user *buffer
->  	pos = *offset;
->  	if (!valid_pos(pos, count))
->  		return -EIO;
-> +	if (pos >= entry->size)
-> +		return count ? -ENOSPC : 0;
->  	if (count > 0) {
->  		size_t maxsize = entry->size - pos;
->  		count = min(count, maxsize);
-> 
-> -- 
-> 2.53.0
-> 
+> [...]
+
+Applied to
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-7.5
+
+Thanks!
+
+[2/8] regulator: dt-bindings: add Qualcomm LCDB regulator
+      https://git.kernel.org/broonie/regulator/c/487f55870c60
+[4/8] regulator: add Qualcomm LCDB driver
+      https://git.kernel.org/broonie/regulator/c/be8c26474857
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+

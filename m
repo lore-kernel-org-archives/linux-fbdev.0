@@ -1,86 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.41
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793664467;
-	b=bkx5gnni2EzT+z5qAdThQnM83y8JSXRHgpeN6JKh2zlOi/urRnfUkG2pC9I1F3nWJe55
-	 ib/9KEsycv3lgy4YfxzZc1dsDOrUF9ckGjGdmsFc5CoYIU/Rdb1GVekRNfQ2fxayJJcXw
-	 7hrdDgeqvOV7qlso+Jd3RppBahnQJ5QSEOpzToFz9YClKMAXkMfOGqZVMw8G8VOj0+aLQ
-	 PfHzsmMj94wvSIgdfzeXD7D7O6G9Zz2HY5SUCvZbQdeY/jTjHex+SuP8IJVnznMKoWJSt
-	 wEyE2FJM2IrrisMTj+gKT5sudfQlM95Jk0cb3ZROBA+menEQSdayCZa8aCb1kxqoVsg==
+	t=1793688876;
+	b=hzgqnxm3zgzuf0aUiAo+TwbFOHepCXmvsaus4+O16k1bbnO3tlMmS7GNAK/SQbdP73Wx
+	 xzOwuyw17pzLskYehOZKR01L4HyqMkAwrhloAtnQYaLWRgX5Rs/yrtIHrweYslhVn6IcK
+	 5eqreAaTkJs7AG6hEGnM44Bx1G2OzTfXuk+OMdgcjYlJEbhMEwrN+GEiyDeuvQrQThuPC
+	 Ouk0Qu8+orBy7D4vdsbuDAohgoazM3TDZGQOq89zItMIirS0tNttMsfXc/Dh5VDgdO4mg
+	 13lD5Y/t/jfmnd6XcL+jeZEx6/Imiv0ZTsk8HzaRaTu+LUKiTj28eRMK++TurW7lIWQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793664467;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Content-Transfer-Encoding:Message-Id:References:To:X-Mailer;
-	bh=TvykTUk4R7T/uqrKjXDjIuLrA+PfKRZ6+JNOrXkof4M=;
-	b=pDcxYgcAQQljbup/p8/C+Fdb09S1lZ9JvEFUQSc9Eoq0Ex/ClUUfyOxenmoGxndsrHk3
-	 XgRsTe5mPzH6vDQikXBD5BHx64YaKv/gZOAtDeRUKuQGsjGZA9YA71HgYzj182Iv2E+E0
-	 HF/ULDiPsKEqL0q252DABSwmcIcEi9E4yjFtkTtk+ZHVfEyAr9REUtb8McDdHMBZuhuQw
-	 uX/9wLff2rg8Yup6iFNRVIXnGJelwZlw0FU1LGVBk/WBfKNmR2xEocH/X7iLtNfVk5Z+Z
-	 uYBiKnAh0LbLeXZyd0+ZYIskXS1yx8zh90E8IbM8uQmFtoCZZiDLJkPHoKfzvvV2lSg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793688876;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:Content-Language:From:Autocrypt:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=pI+R0vssS3+rBEwGlEmrhAJtAWwC+K6R2fL7Q2wxluc=;
+	b=kHpHcYPZNySrVpcXOaZLKz7xVjV1Av85dZ82VFATW6ctQdNLvHkXM8xPm8vTEwpgtxuC
+	 PzvUVZcMmuK4xW9wuQUrRhISAEDM/i2eLIbmqaHah1ydPBfvqtdCLKxILkTz/bClasLEb
+	 02/LAN95Mz+aVP9ZIR9IYM7nDdFt7t1Zl+JJIuoupoibtIcnfINE5AVg7WrJGidH1jGI4
+	 829cycOww4c4If2fp9RJAZeSjSVW50H8YBv7rAHGwNexqAYmGBxmtJ1E4ZwXseO87faFy
+	 jrFAKpILH896Zgxs8XETeVpx2YPPDQbndp4cA+JCgBmecLIy2XG4qj3v57PsvEJEw6g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VxHFrEFl;
-	arc=none smtp.remote-ip=74.125.82.41
-Received: from mail-dl1-f41.google.com (mail-dl1-f41.google.com [74.125.82.41])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HVwwGpgK;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 797FF606A324
-	for <linux-fbdev@vger.kernel.org>; Tue,  3 Nov 2026 00:07:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 797FF606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3EAD606A334;
+	Tue,  3 Nov 2026 06:54:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VxHFrEFl
-Received: by mail-dl1-f41.google.com with SMTP id a92af1059eb24-18cdcfc05ffso4295409c88.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 02 Nov 2026 16:07:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793664467; x=1794269267; darn=vger.kernel.org;
-        h=to:references:message-id:content-transfer-encoding:cc:date
-         :in-reply-to:from:subject:mime-version:content-type:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=TvykTUk4R7T/uqrKjXDjIuLrA+PfKRZ6+JNOrXkof4M=;
-        b=VxHFrEFlEfJUyOT2QkXnqh3iBZKJ2SPDhFPadClLKn9a6UJhK5ZieO69lEY56iCdlN
-         VFM30bA6H+i1ZYpssXbYPut8JwB2YhrFcBxezN4tXBJgUoJTLyKO5XsICgeQ2CGgQNlq
-         Q0VkUSWsWY6HNx+KAkbiOqGhksA4EK5ZjJxQhYm8H9QAESH3SCqCG0vLj+gE+a8Y/jT2
-         5rGx9q/Ii00jbRGt2CeQeuMN0r4WGZZpAiQj7CnVFswtXWgD148CJYMrNMgiVIRKoMl5
-         fhsgwNsBuvUqPxxlpibUNnhMzvsuoefwX5z0YusL4qnY3Z8iC/Isxs4Gi1scxE+bQ1i4
-         k+wQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793664467; x=1794269267;
-        h=to:references:message-id:content-transfer-encoding:cc:date
-         :in-reply-to:from:subject:mime-version:content-type:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=TvykTUk4R7T/uqrKjXDjIuLrA+PfKRZ6+JNOrXkof4M=;
-        b=Nmjp/B5gI5+bG3oDgv5ejKOS2nhVkM9rxfKvw+jLO/LRGcm94nayQZrvByry/x1gI9
-         10v5rdAw28wGsFhBHereBGYTki0zsWAgYXRhmGDN2Zz7a8meryriIJMMIiYFB1i2xrml
-         duka2MVFMj/ANTYteQA1g+vy6FdAN3mC2DuqYgnkkerAnbS/+cxEQ3fKFZT+qck/CiYS
-         8OhoZbp/9/xOYx6RHLbjwlEqbEib1bnXnXWWXScjM/YvDPm6FSxsd/8zI4sYwfMvrylb
-         Q0fKoSIiHOjQ34uku+jVFTxlhObLVAiXa6jmwROWYE+b9hYiFreiWy+bonPUvY156WOB
-         HWaw==
-X-Forwarded-Encrypted: i=1; AKwUvBxt6yXY4xy4EbUnZtfMxwF/6CQJsU6ZftXgLZYr5N21x6LYnK54HNK3ldYR5tAjJ08RWS6ePE77yfSCBQ==@vger.kernel.org
-X-Gm-Message-State: AFq9FYJ/c1p5VOiUCPWs9q2CQOgwbPCYb5RErP74NFfU1rf2SEpgDI+T
-	h3TFQQLFd1lpnqTiI1Ln2UbT/gWWC/TpjFjo2RNRcgjX0wRgaBf0Abh7
-X-Gm-Gg: AYBFou2y+wr366nwuNBd+toe0IZm7ObxQ365RlEYgkCiwZgmE0srfqeSF/DJJP4Aq1L
-	u2vrZMiJ2xWrmbv2OpiqsV2jrMkXCYJWCMttfp3gRbeoIM7AZw2sAIdYIapG804POjNm5dpqE+X
-	iXCtG2XOgSKfACkoFDHa3iKRPPHPK/8Ke+8WfV6BDLJkIUA+pcLtO/DMZW5zp+fXbYYkdprSZLQ
-	T6ev8O7zQ+Gj/nnlzURQncIYELUlWNBSspttSk8a26LNz5o8DtzeVh6JL35oxJLNN3x+ZWJSpxg
-	RPhzLip1VvyPXJAtYAvwuUyL2x14MLRwwH+VSXjgFGo8yFIc3gaBAgcU9e/IHXYG49Xj17LDm8d
-	MZK0OBbNqff3EInjCsjO3YBFLsDztiJlrj1V+aKAeWxCEMD+1qJRfd9UtyNa8CD6i5CoQMblX/t
-	/FJeecxjj4KBzy9Ccvr6Xf4Iq1umcn2i65/IqtdNsnVOYPGz/ky3zqJJY7ls35ELn7odwrX++jN
-	w8Zugudygi6WZi3RzSdQhZBvaEJn62BqQ+2OKyL55dMrGWL3nMbaxTVjKE43yBHO2voVHrO9P+l
-	m7jQCwcmoH+ijfz5El4L/+3AE/chqbKh5Hs=
-X-Received: by 2002:a05:7022:92b:b0:19a:8e3e:530e with SMTP id a92af1059eb24-1ac5bda7dd8mr22231405c88.8.1793664466566;
-        Mon, 02 Nov 2026 16:07:46 -0800 (PST)
-Received: from smtpclient.apple ([5.34.220.141])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1ac192c27cdsm63335030c88.10.2026.11.02.16.07.44
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 02 Nov 2026 16:07:46 -0800 (PST)
-Content-Type: text/plain;
-	charset=utf-8
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HVwwGpgK
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57D471F000C1;
+	Tue,  3 Nov 2026 06:54:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793688875;
+	bh=pI+R0vssS3+rBEwGlEmrhAJtAWwC+K6R2fL7Q2wxluc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=HVwwGpgKph2PTCR3kNBpzgeJl9Fiv96ILTSVlqr7otzEN5KOe+3Oq36TZyy3FWiTn
+	 B5JC9rU3ADl82tq64bDRGFlV2NLyjhAO9fPnLejhbwzeG1Z9dc6ee0GVq9fDWJMr9G
+	 uEn9b1MhNhFVniqfmxfA0bqOs/QBhcC6kPjZ8hJFtdA34IHlyTNGGcCj68Y62ICtjk
+	 Ouq+kpEpWGx9PHR9MkFKZswgqiZXimSJHDR7+eldSuTYGotHgFLXgZCx0dKYEpIAcw
+	 6pYXyTE/pVVs21IvMkWqyQ4k+6ZNZ7Rqbrs3FA5NB7/Klj97W0Huza14rR1CDkHC3E
+	 tLDaFtIRr3wRA==
+Message-ID: <a0736b1b-707e-4f24-8249-c7363c673a43@kernel.org>
+Date: Tue, 3 Nov 2026 07:54:21 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -89,57 +50,141 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.700.51.1.1\))
-Subject: Re: [PATCH] staging: fbtft: fix space prohibited before that close
- parenthesis
-From: Eric Lee <eric.lee0305@gmail.com>
-In-Reply-To: <CAHp75VcvKkOmFTtJDHuKCNVUMXgjZLiNqmGcHFKT__dtTt_QJg@mail.gmail.com>
-Date: Tue, 3 Nov 2026 08:07:31 +0800
-Cc: Andy Shevchenko <andy@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <D7B3C1FA-32F4-4771-BC2D-F97D07CBFFE5@gmail.com>
-References: <20261031042315.1122699-1-eric.lee0305@gmail.com>
- <CAHp75VcvKkOmFTtJDHuKCNVUMXgjZLiNqmGcHFKT__dtTt_QJg@mail.gmail.com>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-X-Mailer: Apple Mail (2.3864.700.51.1.1)
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC 19/23] tty: sysrq: let procfs copy in writes to
+ /proc/sysrq-trigger
+To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>,
+ Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>,
+ NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>,
+ Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>,
+ Greg Kroah-Hartman <gregkh@suse.de>, Joel Granados
+ <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>,
+ Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>,
+ linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-um@lists.infradead.org, linux-wireless@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org,
+ coreteam@netfilter.org, kexec@lists.infradead.org,
+ linux-pci@vger.kernel.org, linux-sound@vger.kernel.org,
+ netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net,
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org,
+ linux-usb@vger.kernel.org, samba-technical@lists.samba.org,
+ sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-doc@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>,
+ linux-input@vger.kernel.org, linux-raid@vger.kernel.org,
+ linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org,
+ linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>
+References: <20261102-work-procfs-drivers-v1-0-a994bd4d3b1a@kernel.org>
+ <20261102-work-procfs-drivers-v1-19-a994bd4d3b1a@kernel.org>
+Content-Language: en-US
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ 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
+In-Reply-To: <20261102-work-procfs-drivers-v1-19-a994bd4d3b1a@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Nov 3, 2026, at 04:44, Andy Shevchenko <andy.shevchenko@gmail.com> =
-wrote:
->=20
-> It's not a fix, it does not fix anything.
-> Also study the mailing list archive (lore.kernel.org) to see what
-> happened to the similar patches in the past.
+On 02. 11. 26, 16:07, Christian Brauner wrote:
+> Implement ->proc_write_buf() so procfs copies in what is written before
+> it pins the entry, and handle the keys from that copy. Writes larger
+> than PAGE_SIZE - 1 bytes fail with -EINVAL now. They used to trigger the
+> first key, or all of them in bulk mode. procfs allocates the copy, which
+> is as small as the write, opening the file allocated as much already.
+> 
+> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 
-Thanks for your feedback. I did check the mailing list archive for the =
-same
-Checkpatch error in staging/fbtft.
+Reviewed-by: Jiri Slaby <jirislaby@kernel.org>
 
-They either removed the extra space between =E2=80=98,=E2=80=99 and =
-=E2=80=98)=E2=80=99 that caused another
-checkpatch error =E2=80=9Cspace required after that =E2=80=98,=E2=80=99=E2=
-=80=9D,
-or removed both =E2=80=98,=E2=80=99 and extra space before =E2=80=98)=E2=80=
-=99 that caused build error.
+> ---
+>   drivers/tty/sysrq.c | 9 +++------
+>   1 file changed, 3 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
+> index f4571d05b496..99363e1b59ed 100644
+> --- a/drivers/tty/sysrq.c
+> +++ b/drivers/tty/sysrq.c
+> @@ -1200,17 +1200,14 @@ EXPORT_SYMBOL(unregister_sysrq_key);
+>    * However, if the first character is an underscore,
+>    * all characters are processed.
+>    */
+> -static ssize_t write_sysrq_trigger(struct file *file, const char __user *buf,
+> +static ssize_t write_sysrq_trigger(struct file *file, char *buf,
+>   				   size_t count, loff_t *ppos)
+>   {
+>   	bool bulk = false;
+>   	size_t i;
+>   
+>   	for (i = 0; i < count; i++) {
+> -		char c;
+> -
+> -		if (get_user(c, buf + i))
+> -			return -EFAULT;
+> +		char c = buf[i];
+>   
+>   		if (c == '_')
+>   			bulk = true;
+> @@ -1225,7 +1222,7 @@ static ssize_t write_sysrq_trigger(struct file *file, const char __user *buf,
+>   }
+>   
+>   static const struct proc_ops sysrq_trigger_proc_ops = {
+> -	.proc_write	= write_sysrq_trigger,
+> +	.proc_write_buf	= write_sysrq_trigger,
+>   	.proc_lseek	= noop_llseek,
+>   };
+>   
+> 
 
-The key difference in my change here is to make that argument =
-=E2=80=9Cmodifier=E2=80=9D as
-variable argument, not a positional argument anymore. After that, I =
-could
-safely remove both =E2=80=98,=E2=80=99 and extra space before  =E2=80=98)=E2=
-=80=99, without further checkpatch
-error.
 
-It passed my build and verificaton based on the file "fbtft-bus.i=E2=80=9D=
-.
-
-It is fine for me if you think that it is not worth removing that =
-checkpatch error.
-
---
-Best Regard,
-Eric LI=
+-- 
+js
+suse labs

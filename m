@@ -1,97 +1,54 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.44
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.167.198
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793692348;
-	b=ns8Ht/mrk2dfs1foZ8pfkcFLYjoyYhyK//DdPVw7xXT3JtTeoe3EmgChNU5VAue89039
-	 +MSpnC+n1Z35+tmk3w0mf1+VTLtCLZ5UdS2eCL/DgKsbQJHzSB2aMvKR0Vwn+8+iO3q/w
-	 IHZ/cUqZe2b5NzFz0p2Va03bwHJf4KYW3+24BAgnHBp20t10oJlpolhRF6k3dOLTvbVC1
-	 XjZaRvq8OrRM0jm8Q1E17GpD3sEnGoUSv6v0bCPxKvIrvFik2O2VnOI2WSKFLICd0UEc2
-	 wRVkdcRtDMS+fZZNGAvvzaDh7sYYuJ3BbmwekaG9GVP/cyhc53jo/pKyH8XfZG9ezyQ==
+	t=1793693127;
+	b=qHi56ct4K2SuihiyXXyCmqfHaTpSt/97ZZ3hYR8l+88wPr+CBRlyLn7k4wt1rIzr4ayV
+	 Z+2Fan7Q6+/W+f8QuXWZqTaWr9oMpObXj49dUp6wY9QQ/5K+te2Xz3AWJ2vIfLY0ubv1A
+	 zuBNoIJ9j0KI5ywt320Rjx8+x0Hm0wyyhfuuBGCoSJ+fI+MpgFjNg0LuSgVLJsx8Pmpal
+	 1hpP47C8cn89AWsIeRnVoQUK7NDd32RrkclPSaBghpLGehJythnIoWnwUJgmgT29mEhWF
+	 DAP/7JQECG+5STfjSHqn2GpBWjycxq4+lM5OoD+pLjF/gi7r9jQbEWlRWEElhgYi73g==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793692348;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=6R7CNAZpahPnRPALzexY2OH6fEkMajMjI2gkDqsBlDU=;
-	b=PjAe5+3EOg0H00WJfo8FotRSwIwaVLRF0pONzhOTbXBC2uDsRbYSNprVGMoClq3a+4m5
-	 hOJP7yZirRw03ed4PsWmjLFEbeo1+jBDzdQ+sF5lI50797lP314nJGdDcuquL+SA77tzK
-	 UmlIcpajH227qKt3TjX/dYexwweUIn60qG2EFaFUpO3fflZeaKYPurv8d9dRnYZUEVJ60
-	 V4WJ7kSiVwhMGcf+alj3xwRHmRYMLzIe3xg7Bez5RwBCJYEBwCnZo5U9mVDVFXaITWXOu
-	 rDfsnuDdIgSfTEE0gVKvBVG4K88uhndH1mNMRgNkeNKp4xS47LqFFeEvOdtJvikR1/g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793693127;
+	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:MIME-Version:X-Received:Date:In-Reply-To:
+	 X-Google-Appengine-App-Id:X-Google-Appengine-App-Id-Alias:Message-ID:
+	 Subject:From:To:Content-Type;
+	bh=gTw7XRRIfHVYQyqbfXSyx0Prw2PsL3DVtgnGhtx9nTo=;
+	b=2PEyk4pzNdvJvwChxdky3r1dsln9LTa0LBMDxQPWmLebisZv4TMeLlEMSNBAhb+RCGET
+	 d3J6GALt+pIZsPSQ71tPfnGJBSSZB/tnMnkPLmXv/yVpJH5YPz6a6dECQzZ+95aYQEiOE
+	 yHIwSoy2a/Ayxq/hszlYiSK6M5GwDhAhE27o48nazVIFs23XBYfcn3RGIBtK0XrFSTXDG
+	 wxByz8CF0o41pL+hE5QYCvC9h41el98ctwFROlm57CVI5u5XYBQreqe0MUdZvvys3VheE
+	 wUQCB3uXJrPyUU4ce32SJdpdQYzjxkBWafMfXn5OLMLol4o7hWYqCtHt9uBnScR62xg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=jwFFhm2t;
-	arc=none smtp.remote-ip=209.85.128.44
-Received: from mail-wm1-f44.google.com (mail-wm1-f44.google.com [209.85.128.44])
+	dmarc=fail header.from=syzkaller.appspotmail.com;
+	spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com;
+	arc=none smtp.remote-ip=209.85.167.198
+Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4808C606A32C
-	for <linux-fbdev@vger.kernel.org>; Tue,  3 Nov 2026 07:52:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4808C606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=jwFFhm2t
-Received: by mail-wm1-f44.google.com with SMTP id 5b1f17b1804b1-4a210470b49so30244055e9.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 02 Nov 2026 23:52:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793692346; x=1794297146; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=6R7CNAZpahPnRPALzexY2OH6fEkMajMjI2gkDqsBlDU=;
-        b=jwFFhm2tuc1+z5jLnk8sYRGl0PF0y6/Ww1TdQrFosY/eeNTOr0xylurNbVeVQLNlZv
-         2CZu1AuVJjMeshKnvR6pMhS9fGTwvqZdnEbDID7huggt7Txf27tIREa0kZIJ6KbvPXyD
-         I/+GUlkENCStsCbpiDiekWaOA00Dfz4TgKC7KHzjsdPAycZ9fMIJNkao+YHjzSTAH+PU
-         +3gPOww4J5ryq6pbu4zJwbp22ZnGrrE4NursYmlPurU6VQIF12FJModxPj9Q4Y+ohyOe
-         puhN+lDJptO1YJBC9+qc3iDZ/1/5lK40wJz1wHBHQgTDaOpE5SOJZtoUR9po9K1bOva9
-         83PQ==
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7440D606A329
+	for <linux-fbdev@vger.kernel.org>; Tue,  3 Nov 2026 08:05:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7440D606A329
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-5641cd2cc13so4205769b6e.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 03 Nov 2026 00:05:27 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793692346; x=1794297146;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=6R7CNAZpahPnRPALzexY2OH6fEkMajMjI2gkDqsBlDU=;
-        b=pHaIWMeMZq2PBdK7ulHf/sfgCqqE1TSCFFl0u1dVxpg7STxf80RaSKgKrhTKfyyAwK
-         NlnLt3TYBCL4J8CkI4R/lTEYWzzkJ5beCbzHnBF8ljKQhF0fY8t9O9ghsdmLodl4ZrMt
-         D0udoXtNSmKKUnvis+SNVzOgwS+HfpPnXEKJDsvSbi8f7RTVUVV5WaI0xDTn86V7JX01
-         KPuY1oS2mTAxv3lCtrqm8xpiJPi9KxsXfGobM1ZkSr8C4wfr8JsivbSelmBpq84WrR0p
-         htk5+JKVxAnum3IZYq9UO6Is/gyxNipeSJjHLgED98yvFg8/weUyd+UqYxbD62k1/ZD3
-         WF0Q==
-X-Forwarded-Encrypted: i=1; AKwUvBwT0LDxAAcVRNSQIfJQLtYEMwjX9m64FatFBF5A/d9G3B/Q5Nkh65AgXRYf9Md0xPdUzJp3bMVDgwk4Fg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9HVCgaCgdSve2Mbes4hg/yGPfKidPC3NbGiZElnz3DaF6OJpJH
-	cKXHda5odu3ucYcmNm94FnCbRK4gg2G6nGZPQvJOVE9GuhlFuUbeAErP
-X-Gm-Gg: AYBFou1e3+MnWJoPs/MPOHoQ7cW3pTQF64A1m07zU2xooSOCq/fzKhwxMsl7NANsW3z
-	94z+86EYwrVMqtJDtUKCQFucGnOTRSwDLzeUjwkO20cNHzixnR97SfuHadRW0FqZsGZ6Pnsc4to
-	vPSB0gJ/Ht8Ss36+fwaMNAOri5P7Cam7cUjteddyabHkM9Q/R1uV2+MIYepUvqolEliLe3jjzJ6
-	/zf2d9c6KtlGxO4sd8lc82TMiPC9O9qyGuOvMtzmZtUrmX+1iXP9uM1g/m5HX+T8wxVvTt08nBC
-	E7xzipAILLIhNwIpAIUM8guT3LzDQb3o2T1IlADwuhKvNsywdt/5Q+1Wb9RnxC4lTxXoxDgpTVV
-	zo2mSlDPq9C6uLXLQGV2iHabGsoPIzr4w+q/+wG2uIt983U8jKEGKS8WS+fhX53elAlShYp0AfK
-	DsNy8gzp2dYMu6GzH+/wLXwpzdMcNdDioeqwNoCfrWxAob9Yu3EsDIGpxt4RguR8Y8zCCdq9wyG
-	43fV08jrHcH5hiX6FAxUaVBmr4kQ9FQKqJzZY9h//8qLgigQDz+m06W7UNwtbnHNpzrDHzlDArT
-	aOVwhp9tEkNOsp/qOYn5G65H2Cb/rDEA34IX2j4ViNsc2LYFdIO8+Qqj1ycdCRWa/fbZutGWjkL
-	+9WNRU7BLjUkkSnc6GVOvTMYhyRs/h+bY01pTrqJqDKqpVtMQrPt53YicJot0aCIL3pLGwbQkb6
-	Cy8Z/FESON9jQ=
-X-Received: by 2002:a05:600c:4e49:b0:4a4:6fdb:cc42 with SMTP id 5b1f17b1804b1-4ac17b2c38bmr299232835e9.11.1793692346478;
-        Mon, 02 Nov 2026 23:52:26 -0800 (PST)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4b2aa953d35sm37915295e9.9.2026.11.02.23.52.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Nov 2026 23:52:25 -0800 (PST)
-Date: Tue, 3 Nov 2026 10:52:22 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Eric LI <eric.lee0305@gmail.com>
-Cc: Andy Shevchenko <andy@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: fbtft: fix space prohibited before that close
- parenthesis
-Message-ID: <aumStg3EuhPbWkZu@stanley.mountain>
-References: <20261031042315.1122699-1-eric.lee0305@gmail.com>
+        d=1e100.net; s=20260707; t=1793693126; x=1794297926;
+        h=content-type:to:from:subject:message-id:in-reply-to:date
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=gTw7XRRIfHVYQyqbfXSyx0Prw2PsL3DVtgnGhtx9nTo=;
+        b=kWwarmHTJoyrrA0dyU+eCHTY8KN9Cqmu8PQb1ZTuh0h4jDXdQ0k2+hZXGlJCny5pTu
+         w0iGT2dwdhqd+5iHsP9fEEvE4m/EMHwEF+gNqDMac4Ye7gX4IbdXwfZrenYwpmkbeJgY
+         reopI1ehRGS4ig426VHcJL/XqeFIQKE1qsrGMOLMQedKnDdSiQwqdOd2WNtDF/1VwwIq
+         H58DGSU0/sK0mh3JHTbx1AoV/WzNb9FfYGbXvja+g0fj/Ib4RTUzAhYTwZ0GD9dAMueO
+         Vs4dB0RHSYDf0qwdPTPhOg4kOOQeufTDeckRUhJDuwUHqu6xg9+9PFyKeS0iRdZJ9yUr
+         KznA==
+X-Forwarded-Encrypted: i=1; AKwUvBwjMlHyGfbylzTV9P6d56epY2o6ZW3HuSQMb+isTh6ZjkLT86bAvDi5IatbbsmYJcI4jQkwMBOiIGm2jg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/DR0ch2Q3bvFCTx5ehMxkKsLmqi7HlCLLenuLBWDqewJQuz2h6
+	rLgBQU0WyU1SxmNJdLII5hTcr0jeFhChLSxWnXWY24PxYaiRcdWQ42N3I+H0u5BFDFuo7cI2iYB
+	h86FJDv8ZN5O+KFhxnVhvXPIdjvMnJzsz6crF7MNO/wm9sbORe+sKdC/wjVQ=
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -101,20 +58,105 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261031042315.1122699-1-eric.lee0305@gmail.com>
+X-Received: by 2002:a05:6808:124a:b0:4e7:8f9b:1185 with SMTP id
+ 5614622812f47-5640d92c7ffmr7321913b6e.3.1793693126459; Tue, 03 Nov 2026
+ 00:05:26 -0800 (PST)
+Date: Tue, 03 Nov 2026 00:05:26 -0800
+In-Reply-To: <6836d5d8.a70a0220.253bc2.00c5.GAE@google.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6ae995c6.24f6a368.35686f.0de8.GAE@google.com>
+Subject: Re: [syzbot] [fbdev?] KASAN: vmalloc-out-of-bounds Write in fillrect
+From: syzbot <syzbot+7a63ce155648954e749b@syzkaller.appspotmail.com>
+To: deller@gmx.de, dri-devel@lists.freedesktop.org, 
+	linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	osama.abdelkader@gmail.com, simona@ffwll.ch, soci@c64.rulez.org, 
+	syzkaller-bugs@googlegroups.com, tzimmermann@suse.de
+Content-Type: text/plain; charset="UTF-8"
 
-I'm going to Ack this patch.  The other patches to silence this warning
-introduced weird no-op macros but I feel like this patch does the right
-thing.
+syzbot has found a reproducer for the following issue on:
 
-Reviewed-by: Dan Carpenter <error27@gmail.com>
+HEAD commit:    6628e7d4c6b2 Linux 7.4-rc1
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=14484581580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=1d2c97eac7d33533
+dashboard link: https://syzkaller.appspot.com/bug?extid=7a63ce155648954e749b
+compiler:       gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=126c692d580000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=140f1d59580000
 
-I don't really care if the patch gets merged or not, but in your heart
-you will know that I approved it and hopefully that counts for
-something.  :P
+Downloadable assets:
+disk image (non-bootable): https://storage.googleapis.com/syzbot-assets/d900f083ada3/non_bootable_disk-6628e7d4.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/2f9e962fc6ac/vmlinux-6628e7d4.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/192b99738db6/bzImage-6628e7d4.xz
 
-regards,
-dan carpenter
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+7a63ce155648954e749b@syzkaller.appspotmail.com
 
+==================================================================
+BUG: KASAN: vmalloc-out-of-bounds in fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in bitfill drivers/video/fbdev/core/fb_fillrect.h:133 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_fillrect_static drivers/video/fbdev/core/fb_fillrect.h:219 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in fb_fillrect drivers/video/fbdev/core/fb_fillrect.h:278 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in sys_fillrect+0x174a/0x1910 drivers/video/fbdev/core/sysfillrect.c:24
+Write of size 8 at addr ffffc900056fd000 by task syz.0.17/5992
+
+CPU: 3 UID: 0 PID: 5992 Comm: syz.0.17 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+Call Trace:
+ <TASK>
+ __dump_stack lib/dump_stack.c:94 [inline]
+ dump_stack_lvl+0x100/0x190 lib/dump_stack.c:120
+ print_address_description mm/kasan/report.c:378 [inline]
+ print_report+0x13d/0x4b0 mm/kasan/report.c:482
+ kasan_report+0xdf/0x1c0 mm/kasan/report.c:595
+ fb_write_offset drivers/video/fbdev/core/sysmem.h:30 [inline]
+ bitfill drivers/video/fbdev/core/fb_fillrect.h:133 [inline]
+ fb_fillrect_static drivers/video/fbdev/core/fb_fillrect.h:219 [inline]
+ fb_fillrect drivers/video/fbdev/core/fb_fillrect.h:278 [inline]
+ sys_fillrect+0x174a/0x1910 drivers/video/fbdev/core/sysfillrect.c:24
+ drm_fbdev_shmem_defio_fillrect+0x22/0x140 drivers/gpu/drm/drm_fbdev_shmem.c:39
+ bit_clear+0x17d/0x220 drivers/video/fbdev/core/bitblit.c:73
+ __fbcon_clear+0x633/0x760 drivers/video/fbdev/core/fbcon.c:1358
+ fbcon_scroll+0x48b/0x650 drivers/video/fbdev/core/fbcon.c:1910
+ con_scroll+0x464/0x690 drivers/tty/vt/vt.c:730
+ csi_M drivers/tty/vt/vt.c:2307 [inline]
+ csi_ECMA.constprop.0+0x1238/0x3b60 drivers/tty/vt/vt.c:2730
+ do_con_trol drivers/tty/vt/vt.c:2945 [inline]
+ do_con_write+0x366b/0x4ae0 drivers/tty/vt/vt.c:3442
+ con_write+0x23/0xb0 drivers/tty/vt/vt.c:3778
+ process_output_block drivers/tty/n_tty.c:557 [inline]
+ n_tty_write+0x440/0x1200 drivers/tty/n_tty.c:2366
+ iterate_tty_write drivers/tty/tty_io.c:1008 [inline]
+ file_tty_write.isra.0+0x4ca/0x8f0 drivers/tty/tty_io.c:1056
+ new_sync_write fs/read_write.c:595 [inline]
+ vfs_write+0x6af/0x1050 fs/read_write.c:687
+ ksys_write+0x12a/0x250 fs/read_write.c:739
+ do_syscall_x64 arch/x86/entry/syscall_64.c:61 [inline]
+ do_syscall_64+0x123/0x790 arch/x86/entry/syscall_64.c:84
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f3a15b9fb19
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffe1abca668 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f3a15e25fa0 RCX: 00007f3a15b9fb19
+RDX: 0000000000001006 RSI: 0000200000000680 RDI: 0000000000000006
+RBP: 00007f3a15c37b70 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 00007f3a15e25fac R14: 00007f3a15e25fa0 R15: 00007f3a15e25fa0
+ </TASK>
+
+The buggy address belongs to a vmalloc virtual mapping
+Memory state around the buggy address:
+ ffffc900056fcf00: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc900056fcf80: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+>ffffc900056fd000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+                   ^
+ ffffc900056fd080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc900056fd100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+==================================================================
+
+
+---
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.

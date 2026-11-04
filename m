@@ -1,111 +1,67 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793815021;
-	b=1RtcZ4H7Yvmu7BNfpsOw5R8YNcCL817+lT4MYRI4mwVQ1BOJHjHgqto/jn3NPbKrkVqa
-	 pX1pryw8L1aGPyfITjnIow2nV8l5QWIonz+/3U7gnbHNCAtTCVhuFA8UEmOFHG9/2OslZ
-	 99r5faOy1kNFlSaAbaSPwMhnKfWNIiVobgBLuYi90YbTJWg+vbPiMFgOkq46jxHSKT6kl
-	 S7wxGq7id9JaFTzWxLv3UdplMmBtOEX1CBjUxXf8wbR729aaj926E0+O7nv1/+rezZFKB
-	 ESKUd9hGT8m1HVbvdj4/y3AQb1sTrX+spAcQcH5QNtnmIm9cJxRgZ7EYcsLMJE17Csw==
+	t=1793817582;
+	b=mt0iF7YoS9MYEFyLnMcz9PlFNHAAG38zH1wHM+W+iaOipt7zn/XK68gfB9w5JOGj9zIE
+	 hXscYdL+L1YzXYhyKpBziVyVXavcdxIL4x2hjFeU3UxTYvHOuJLPSudGdH1AbTVKqlz+N
+	 BPb/dNTVprbWdoFgW6kJ74PI8qDkn/3dyKz/GfjClse2AT26LXXUDQc4n4KIm39WMvilQ
+	 ygC1FVQlvV1bT0HA/5HZaGBa6oJQT2B+p4IlZgS9omizEIcpqDECK8116skeTTaMD7Rhy
+	 EhctVLfF+bKAfxija8ja8Gmur+V5+FjotVXb5d+SVSH+4ZLuoqyxWHz1BcJeKlRfF+w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793815021;
-	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
-	 In-Reply-To:References:MIME-Version:Content-Type:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:Content-Transfer-Encoding;
-	bh=qeQgphPdxdiWtw36JzKqWooMSgzPZU+EeD4NlyLVhDM=;
-	b=hLWmFrbPw7erilaLuXoiV/7HRrwEOrMVpup6UyLm8lHm7YmyiBt+xXFplhDYhCHP3LVS
-	 vynbqIoOhr4+ti6wXyLdyl5iiQHoNj866LJGWssg+f07Q9VHRPBsRyfeNg6QRec0rglK7
-	 mUv07lPvusXTYkekg8Rrtrdf2XIOduIzih/WU7whBaYgURp3v5CfbsTdcnlCenrm/OzXM
-	 27IcMkVM7UyNZ8dgd//cqwN3UXfC63F8vzFaY+V8YIrOQqs7p7tKlQLuNPk/fB/VtKwqi
-	 FzU6kiWXhyWsyBjkk6j7FEzbVcQkjo53dNE1NL3V5Swd+1AkIYQbIcbHOWm3RsPq/kQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793817582;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=DvMLxBlki3uUbmQZYCI/NfK/V+8RiWix7z0CnkehUbs=;
+	b=BRtPMzglKfH1QI/FgIKmsC6nsJ81Aci6kKYhqgQxGJ8qnYHDHpf3jE0bQz1kyTCpWpjR
+	 DxbnlBuwqYxdTSjNRe53b463Wq4W5QtYaCDcYMjF/lqvCp4FYNOiL3WElK59p/sTcfaFs
+	 JcmMYqmDVhufGg2MxJ8ZvIZOsx/2NAGSI7or2XZ5R8PBxjqlQaxor7kiVexoZvXgZWL0n
+	 Ajj+v4vND6SF44wRETdpWBqSsumxcOdphxekyksk4VUjrsDfCpHBZ5KBzBddT1qpvAZpG
+	 p5MWJCOQyck3KoShs08G7/QAZiQ4UCJBCdCvvkLtXms9jRLcnj8Zs5pEylK+NBnsIGg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jJ+YsSS1;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FfOz0h8j;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9E895607A3C1;
-	Wed,  4 Nov 2026 17:57:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F039D606A326;
+	Wed,  4 Nov 2026 18:39:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jJ+YsSS1
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0110B1F000C1;
-	Wed,  4 Nov 2026 17:56:43 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FfOz0h8j
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03F0A1F000C1;
+	Wed,  4 Nov 2026 18:39:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793815020;
-	bh=qeQgphPdxdiWtw36JzKqWooMSgzPZU+EeD4NlyLVhDM=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=jJ+YsSS1mKgXVutXvIprPjWbk/f3EaiHLkE0iUZZAD8UlGdeiTsq37AMjiJ1LQO42
-	 s7IKloTcsbSWCr6Lc4020v768o++Pni3fgFkFO5tp1ySQmamfYyvOlYF89oN/AE0uz
-	 cDBLCJtKpTc2bEc32o8AER5NNVvUQIyxG/58XGRNwW4UebnC4TzH2w4THg6Y4IuZEE
-	 HY4QLlr1k8HjiamlPJYs4KZrW3+I6WmOXTXZ8NvkX2h2a4OGzF5wxpPCxFfmNGgkxC
-	 TEjrpd9SN8JK0f/Vf8mgRK+nlmhJ6yDeGzIC6DtBcVm6ZCj3+6Kd0iuDWQx/Ae1YSo
-	 KOmYuIt4jqdDw==
-From: Christian Brauner <brauner@kernel.org>
-To: linux-fsdevel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-	Jann Horn <jannh@google.com>,
-	Josef Bacik <josef@toxicpanda.com>,
-	Chris Mason <mason@kernel.org>,
-	Jeff Layton <jlayton@kernel.org>,
-	NeilBrown <neil@brown.name>,
-	Eric Dumazet <edumazet@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Al Viro <viro@zeniv.linux.org.uk>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Christoph Hellwig <hch@lst.de>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Joel Granados <joel.granados@kernel.org>,
-	Kees Cook <kees@kernel.org>,
-	Jan Kara <jack@suse.cz>,
-	Jan Kara <jack@suse.com>,
-	linux-kernel@vger.kernel.org,
-	linux-nfs@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-kselftest@vger.kernel.org,
-	linux-s390@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-wireless@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org,
-	ntfs3@lists.linux.dev,
-	platform-driver-x86@vger.kernel.org,
-	coreteam@netfilter.org,
-	kexec@lists.infradead.org,
-	linux-pci@vger.kernel.org,
-	linux-sound@vger.kernel.org,
-	netfilter-devel@vger.kernel.org,
+	s=k20260515; t=1793817581;
+	bh=DvMLxBlki3uUbmQZYCI/NfK/V+8RiWix7z0CnkehUbs=;
+	h=From:To:Cc:Subject:Date;
+	b=FfOz0h8j7+c5jdDl0qlPLn+rjYEsk9YbPY12IrLApeLRDyhKKzxQUB2rOWoPur159
+	 FLvsw7SkILA1nxPAIFBTONB5wAb9UsX1Oeoqhdi2JRNs6E95GKe8NzfY1pyQoxFcZb
+	 suyRDGRXDfFlGE3SqjfMDygY8vlsGqzCc+w9MlVMAhpqyVAHYB7rTFWUXmcNi3Vnwk
+	 2RNv/hejcuroPRYs1+fRrb9hI1x6K0EjJF12WWBcRxX8FLBAxinh0ThAcxnZ/9Vf9U
+	 pyN4SuSPQvEZpmp3YB1sZA9+ef4TZg9hLfAUvPBebJh/uRA7o/38cM0QJkL8Qx+1e+
+	 ci07bbneOFDuQ==
+From: Lee Jones <lee@kernel.org>
+To: lee@kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Daniel Jeong <gshark.jeong@gmail.com>,
+	Daniel Thompson <danielt@kernel.org>,
+	David Heidelberg <david@ixit.cz>,
 	dri-devel@lists.freedesktop.org,
-	ibm-acpi-devel@lists.sourceforge.net,
-	jfs-discussion@lists.sourceforge.net,
-	linux-alpha@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-cifs@vger.kernel.org,
+	Helge Deller <deller@gmx.de>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Jin Park <jinyoungp@nvidia.com>,
+	Kiran Gunda <quic_kgunda@quicinc.com>,
+	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	LDD MLP <ldd-mlp@list.ti.com>,
+	linux-arm-msm@vger.kernel.org,
 	linux-fbdev@vger.kernel.org,
-	linux-hwmon@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-sh@vger.kernel.org,
-	linux-usb@vger.kernel.org,
-	samba-technical@lists.samba.org,
-	sparclinux@vger.kernel.org,
-	linux-m68k@lists.linux-m68k.org,
-	linux-doc@vger.kernel.org,
-	linux-serial@vger.kernel.org,
-	linux-atm-general@lists.sourceforge.net,
-	Takashi Iwai <tiwai@suse.de>,
-	linux-input@vger.kernel.org,
-	linux-raid@vger.kernel.org,
-	linux-ext4@vger.kernel.org,
-	linux-modules@vger.kernel.org,
-	linux-debuggers@vger.kernel.org,
-	"Christian Brauner (Amutable)" <brauner@kernel.org>,
-	Chuck Lever <cel@kernel.org>,
-	stable@vger.kernel.org
-Subject: [PATCH v2 39/51] powerpc/crash_dump: recover from a machine check in copy_oldmem_page()
-Date: Wed,  4 Nov 2026 18:47:25 +0100
-Message-ID: <20261104-work-procfs-bugfixes-v2-39-bbf7d5546809@kernel.org>
-In-Reply-To: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
-References: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
+	Samuel Ortiz <sameo@linux.intel.com>,
+	Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>
+Subject: [PATCH 0/6] backlight: Fix Critical and High issues reported by Sashiko
+Date: Wed,  4 Nov 2026 18:39:01 +0000
+Message-ID: <20261104183935.1214630-1-lee@kernel.org>
+X-Mailer: git-send-email 2.56.0.398.g882cbad275-goog
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -115,63 +71,69 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2421; i=brauner@kernel.org; h=from:subject:message-id; bh=VIVKq8y+KdCJwnDd/z4L2OCrr1yqDfObdGoCOSjiCdM=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWS9znu/ZLFx05xpnp+TTtxLuaWnvKXR5q5SRcWM5RNFJ +7uuXKbraOUhUGMi0FWTJHFod0kXG45T8Vmo0wNmDmsTCBDGLg4BWAi0wIZ/nB7KCi471/L1Nq6 9n0/51Uea/Fd3qy9fnsOr1vwmcnr62yG/yWGkZU+VvatQgcYS97WRSfuKtivn95TcozLZv5XWWl eDgA=
-X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-A capture kernel reads the memory of the crashed kernel, and that memory
-may well have uncorrectable errors. On powerpc a machine check in the
-kernel is only recovered from if the instruction that took it has an
-exception table entry (cf. mce_common_process_ue()). copy_oldmem_page()
-copies with copy_to_iter(). For a read() of /proc/vmcore that is a user
-copy, all of whose loads have exception table entries, so the machine
-check turns into a short copy and read_from_oldmem() returns -EFAULT.
+These issues were reported by Sashiko.
 
-But since commit 4a22fd20379c ("vmcore: convert __read_vmcore to use an
-iov_iter") /proc/vmcore can be spliced too, and splice(), sendfile()
-and copy_file_range() copy into kernel pages with memcpy(), which has
-no exception table entries. A machine check there panics the capture
-kernel. The same goes for the reads of the ELF headers and notes that
-vmcore does itself, and those have been memcpy() for as long as
-copy_oldmem_page() has had its kernel buffer branch, since commit
-54c32021eb6f ("[PATCH] powerpc: Add arch-dependent copy_oldmem_page").
+This series resolves the open Critical and High severity bug reports
+identified by the Sashiko AI analysis tool (https://sashiko.dev) across
+the Backlight subsystem:
 
-Copy with _copy_mc_to_iter() instead. PPC64 selects ARCH_HAS_COPY_MC
-and there it uses copy_mc_generic() for kernel and user destinations
-alike, which has the exception table entries. Everywhere else it is
-_copy_to_iter().
+  1. lm3630a_bl: Prevent a NULL pointer dereference in lm3630a_pwm_ctrl()
+     when PWM mode is enabled by requesting the PWM device before
+     registering the backlight device.
+  2. aat2870_bl: Prevent a NULL pointer dereference on platform_get_drvdata()
+     during devm_backlight_device_register() by populating driver data and
+     scaling the initial brightness beforehand.
+  3. qcom-wled: Cancel wled->ovp_work on probe failure via
+     devm_delayed_work_autocancel() so a scheduled OVP work item cannot
+     fire after devm_kzalloc() frees struct wled.
+  4. qcom-wled: Manage wled->lock via devm_mutex_init() and remove
+     wled_remove() so devres unwinds the backlight device, threaded IRQs,
+     delayed work, and mutex in strict reverse registration order without
+     calling disable_irq() on unconfigured negative or zero IRQ numbers.
+  5. qcom-wled: Guard against calling a NULL
+     wled->wled_auto_detection_required() callback on WLED3 hardware when
+     an OVP fault interrupt fires.
+  6. qcom-wled: Avoid an AB-BA deadlock between wled->lock and the
+     threaded OVP IRQ handler by using disable_irq_nosync() in
+     wled_module_enable() and verifying under wled->lock that the module
+     remains enabled before running wled_auto_string_detection().
 
-Reported-by: Chris Mason <mason@kernel.org>
-Fixes: 54c32021eb6f ("[PATCH] powerpc: Add arch-dependent copy_oldmem_page")
-Fixes: 4a22fd20379c ("vmcore: convert __read_vmcore to use an iov_iter")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
----
- arch/powerpc/kernel/crash_dump.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Bjorn Andersson <andersson@kernel.org>
+Cc: Daniel Jeong <gshark.jeong@gmail.com>
+Cc: Daniel Thompson <danielt@kernel.org>
+Cc: David Heidelberg <david@ixit.cz>
+Cc: dri-devel@lists.freedesktop.org
+Cc: Helge Deller <deller@gmx.de>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Jin Park <jinyoungp@nvidia.com>
+Cc: Kiran Gunda <quic_kgunda@quicinc.com>
+Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+Cc: LDD MLP <ldd-mlp@list.ti.com>
+Cc: linux-arm-msm@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>
 
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index 1543917bd3e1..ca7e019ae3e9 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -83,12 +83,12 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
- 
- 	if (memblock_is_region_memory(paddr, csize)) {
- 		vaddr = __va(paddr);
--		csize = copy_to_iter(vaddr + offset, csize, iter);
-+		csize = _copy_mc_to_iter(vaddr + offset, csize, iter);
- 	} else {
- 		vaddr = ioremap_cache(paddr, PAGE_SIZE);
- 		if (!vaddr)
- 			return -ENOMEM;
--		csize = copy_to_iter(vaddr + offset, csize, iter);
-+		csize = _copy_mc_to_iter(vaddr + offset, csize, iter);
- 		iounmap(vaddr);
- 	}
- 
+Lee Jones (6):
+  backlight: lm3630a: Request PWM device before registering backlight
+  backlight: aat2870: Initialise driver data before registering
+    backlight
+  backlight: qcom-wled: Cancel delayed work on probe failure
+  backlight: qcom-wled: Manage teardown via devres and remove
+    wled_remove()
+  backlight: qcom-wled: Check for auto-detection callback in
+    wled_ovp_irq_handler()
+  backlight: qcom-wled: Avoid AB-BA deadlock in wled_module_enable()
+
+ drivers/video/backlight/aat2870_bl.c | 43 +++++++++++++------------
+ drivers/video/backlight/lm3630a_bl.c | 12 +++----
+ drivers/video/backlight/qcom-wled.c  | 47 +++++++++++++++-------------
+ 3 files changed, 52 insertions(+), 50 deletions(-)
 
 -- 
-2.53.0
+2.56.0.385.gac671c819a-goog
 

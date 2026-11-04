@@ -1,67 +1,72 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793817582;
-	b=mt0iF7YoS9MYEFyLnMcz9PlFNHAAG38zH1wHM+W+iaOipt7zn/XK68gfB9w5JOGj9zIE
-	 hXscYdL+L1YzXYhyKpBziVyVXavcdxIL4x2hjFeU3UxTYvHOuJLPSudGdH1AbTVKqlz+N
-	 BPb/dNTVprbWdoFgW6kJ74PI8qDkn/3dyKz/GfjClse2AT26LXXUDQc4n4KIm39WMvilQ
-	 ygC1FVQlvV1bT0HA/5HZaGBa6oJQT2B+p4IlZgS9omizEIcpqDECK8116skeTTaMD7Rhy
-	 EhctVLfF+bKAfxija8ja8Gmur+V5+FjotVXb5d+SVSH+4ZLuoqyxWHz1BcJeKlRfF+w==
+	t=1793817596;
+	b=BlQgriMZLGg/yfbCecgnT/WRHHdMyMysZ5/p+CO9fkZ2sHG8eo7X1pLiAU074Vtqdt62
+	 4nf/2o/wRFQS1htOabDUwzs9WrPQU9Xb0j48hVgq6dRvESExkCyAHBbKFeO1mv460jVCd
+	 XL7YmRZuIy5pY5DBF5FpSVv7tWBcJ0foc7xCB9W85WOqFZstnh+Qsc216l827yZCJIqPl
+	 E6KVXO/EYb/OyoFVQGBmC9mIRhfESuokZKYmrTpbcIn6vEvZ7YUDQBIZIGVcBN6YROBbx
+	 hH2o3cQsMLDk9yvP/KOMslRFXuJJlgkW5qYfmVR6IHh4r67ryrs/kMaRJ9AxxdxEGxQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793817582;
-	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=DvMLxBlki3uUbmQZYCI/NfK/V+8RiWix7z0CnkehUbs=;
-	b=BRtPMzglKfH1QI/FgIKmsC6nsJ81Aci6kKYhqgQxGJ8qnYHDHpf3jE0bQz1kyTCpWpjR
-	 DxbnlBuwqYxdTSjNRe53b463Wq4W5QtYaCDcYMjF/lqvCp4FYNOiL3WElK59p/sTcfaFs
-	 JcmMYqmDVhufGg2MxJ8ZvIZOsx/2NAGSI7or2XZ5R8PBxjqlQaxor7kiVexoZvXgZWL0n
-	 Ajj+v4vND6SF44wRETdpWBqSsumxcOdphxekyksk4VUjrsDfCpHBZ5KBzBddT1qpvAZpG
-	 p5MWJCOQyck3KoShs08G7/QAZiQ4UCJBCdCvvkLtXms9jRLcnj8Zs5pEylK+NBnsIGg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793817596;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=cfX+RSDf63q8RdYOSefxL9B17eZvLgT/fF9r72R8ItM=;
+	b=JpGYuH62Vv5k02PpA0XvVss9NtYioYWRtz69gVxHJQEeqpNvr77/I4KuTb9VkV3L5XUO
+	 9jvVW9vuqOBaUjPjt64Phu7te06oPAul0ykvdEjKqj8PFHulCZsF5i1uhcE69M8W8fDIO
+	 /Z5KurUGXmfaPmfbAWxkquRdmUiO76oMFEaeP7fHcQ7S0BxDNysZeSGr1YPCvQLNGpmB4
+	 oa2WYUsLgb+AAYZzr8cbHqzwkcxmOz9z8boV7QT6aRxDHBvq/nIy+aFfKOBlUBrtPPP0U
+	 vXvvhlxmvtSYD9GcdQbGEr6fGCSogYCS+V8Fu7+Wy8aLgECQEQNhdoqRH1Dyr4cT/JQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FfOz0h8j;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GDU8EuhU;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F039D606A326;
-	Wed,  4 Nov 2026 18:39:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2318606A337;
+	Wed,  4 Nov 2026 18:39:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FfOz0h8j
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03F0A1F000C1;
-	Wed,  4 Nov 2026 18:39:38 +0000 (UTC)
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=GDU8EuhU
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D94A1F000C1;
+	Wed,  4 Nov 2026 18:39:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793817581;
-	bh=DvMLxBlki3uUbmQZYCI/NfK/V+8RiWix7z0CnkehUbs=;
-	h=From:To:Cc:Subject:Date;
-	b=FfOz0h8j7+c5jdDl0qlPLn+rjYEsk9YbPY12IrLApeLRDyhKKzxQUB2rOWoPur159
-	 FLvsw7SkILA1nxPAIFBTONB5wAb9UsX1Oeoqhdi2JRNs6E95GKe8NzfY1pyQoxFcZb
-	 suyRDGRXDfFlGE3SqjfMDygY8vlsGqzCc+w9MlVMAhpqyVAHYB7rTFWUXmcNi3Vnwk
-	 2RNv/hejcuroPRYs1+fRrb9hI1x6K0EjJF12WWBcRxX8FLBAxinh0ThAcxnZ/9Vf9U
-	 pyN4SuSPQvEZpmp3YB1sZA9+ef4TZg9hLfAUvPBebJh/uRA7o/38cM0QJkL8Qx+1e+
-	 ci07bbneOFDuQ==
-From: Lee Jones <lee@kernel.org>
-To: lee@kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Daniel Jeong <gshark.jeong@gmail.com>,
-	Daniel Thompson <danielt@kernel.org>,
-	David Heidelberg <david@ixit.cz>,
-	dri-devel@lists.freedesktop.org,
-	Helge Deller <deller@gmx.de>,
-	Jingoo Han <jingoohan1@gmail.com>,
-	Jin Park <jinyoungp@nvidia.com>,
-	Kiran Gunda <quic_kgunda@quicinc.com>,
-	Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	LDD MLP <ldd-mlp@list.ti.com>,
-	linux-arm-msm@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	Samuel Ortiz <sameo@linux.intel.com>,
-	Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>
-Subject: [PATCH 0/6] backlight: Fix Critical and High issues reported by Sashiko
-Date: Wed,  4 Nov 2026 18:39:01 +0000
-Message-ID: <20261104183935.1214630-1-lee@kernel.org>
-X-Mailer: git-send-email 2.56.0.398.g882cbad275-goog
+	s=k20260515; t=1793817595;
+	bh=cfX+RSDf63q8RdYOSefxL9B17eZvLgT/fF9r72R8ItM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=GDU8EuhUF/10B5PY7Ge41gK5xPnjrcLHs7feXWHlvH4fq+/JLsc6ePLzmMcenBTV8
+	 F8DU2mNIqG7yMOIN0gPqiAwJM3jV9nVVVUEYkA/ePBSooGTee00ROqhKBnF1Bqim3H
+	 1MIVC6ndCg4IYSs9ehay5xqAR6tGspnn8txoZnqUV3a/rwlemC2StvUcjU4rBzRdDh
+	 smT5Fi28DptI2/GHQw2s7uG8id08IW1enmMV0ZcuUo2Xf6u9ciNae6b4/FwizkvKf5
+	 0O5jZIOLbbQIYlYObNdALqLNo9VEtQX1aZ+lQxJHqEn6uUf5MjI2wjNp8uWWy07SZL
+	 e+KRVPYe7/Ndw==
+Date: Wed, 4 Nov 2026 19:39:40 +0100
+From: Christian Brauner <brauner@kernel.org>
+To: linux-fsdevel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, 
+	Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
+	Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, 
+	Eric Dumazet <edumazet@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Al Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
+	Greg Kroah-Hartman <gregkh@suse.de>, Joel Granados <joel.granados@kernel.org>, 
+	Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
+	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	netdev@vger.kernel.org, ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
+	coreteam@netfilter.org, kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
+	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
+	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
+	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
+	sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
+	Chuck Lever <chuck.lever@oracle.com>, Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, 
+	linux-raid@vger.kernel.org, linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
+	linux-debuggers@vger.kernel.org
+Subject: Re: [PATCH v2 0/7] proc: move procfs to what kernfs does
+Message-ID: <20261104-angriff-abgewandelt-ohnehin-e5ba30d31576@brauner>
+References: <20261104-trompete-gejagt-raddampfer-9fb5640a6102@brauner>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -71,69 +76,13 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261104-trompete-gejagt-raddampfer-9fb5640a6102@brauner>
 
-These issues were reported by Sashiko.
+Please ignore this. Network dropped halfway through and the umbrella
+went out under a broken message-id.
 
-This series resolves the open Critical and High severity bug reports
-identified by the Sashiko AI analysis tool (https://sashiko.dev) across
-the Backlight subsystem:
-
-  1. lm3630a_bl: Prevent a NULL pointer dereference in lm3630a_pwm_ctrl()
-     when PWM mode is enabled by requesting the PWM device before
-     registering the backlight device.
-  2. aat2870_bl: Prevent a NULL pointer dereference on platform_get_drvdata()
-     during devm_backlight_device_register() by populating driver data and
-     scaling the initial brightness beforehand.
-  3. qcom-wled: Cancel wled->ovp_work on probe failure via
-     devm_delayed_work_autocancel() so a scheduled OVP work item cannot
-     fire after devm_kzalloc() frees struct wled.
-  4. qcom-wled: Manage wled->lock via devm_mutex_init() and remove
-     wled_remove() so devres unwinds the backlight device, threaded IRQs,
-     delayed work, and mutex in strict reverse registration order without
-     calling disable_irq() on unconfigured negative or zero IRQ numbers.
-  5. qcom-wled: Guard against calling a NULL
-     wled->wled_auto_detection_required() callback on WLED3 hardware when
-     an OVP fault interrupt fires.
-  6. qcom-wled: Avoid an AB-BA deadlock between wled->lock and the
-     threaded OVP IRQ handler by using disable_irq_nosync() in
-     wled_module_enable() and verifying under wled->lock that the module
-     remains enabled before running wled_auto_string_detection().
-
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bjorn Andersson <andersson@kernel.org>
-Cc: Daniel Jeong <gshark.jeong@gmail.com>
-Cc: Daniel Thompson <danielt@kernel.org>
-Cc: David Heidelberg <david@ixit.cz>
-Cc: dri-devel@lists.freedesktop.org
-Cc: Helge Deller <deller@gmx.de>
-Cc: Jingoo Han <jingoohan1@gmail.com>
-Cc: Jin Park <jinyoungp@nvidia.com>
-Cc: Kiran Gunda <quic_kgunda@quicinc.com>
-Cc: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-Cc: LDD MLP <ldd-mlp@list.ti.com>
-Cc: linux-arm-msm@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Subbaraman Narayanamurthy <quic_subbaram@quicinc.com>
-
-Lee Jones (6):
-  backlight: lm3630a: Request PWM device before registering backlight
-  backlight: aat2870: Initialise driver data before registering
-    backlight
-  backlight: qcom-wled: Cancel delayed work on probe failure
-  backlight: qcom-wled: Manage teardown via devres and remove
-    wled_remove()
-  backlight: qcom-wled: Check for auto-detection callback in
-    wled_ovp_irq_handler()
-  backlight: qcom-wled: Avoid AB-BA deadlock in wled_module_enable()
-
- drivers/video/backlight/aat2870_bl.c | 43 +++++++++++++------------
- drivers/video/backlight/lm3630a_bl.c | 12 +++----
- drivers/video/backlight/qcom-wled.c  | 47 +++++++++++++++-------------
- 3 files changed, 52 insertions(+), 50 deletions(-)
+I'll resend it all correctly.
 
 -- 
-2.56.0.385.gac671c819a-goog
-

@@ -1,110 +1,95 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.45
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793909545;
-	b=zg2M7I38mT++MPdsCjH2qTEutRf2Ne1Mc83D37E8tjChVQAYMMZ4ARvsiqvt/I3FWnuj
-	 pxZIC8oi8IM/2wIu6qqhyWgskY/qH2RqtsPaUPuthV33DeJGOF3gewsGvVRZhq6gv19eM
-	 EqxSSajoPQPXU9OZCIyzNmNfPCEgCwBdtvAixod4/46x4DAKhUAdRP56WGVUVIeo8LOgs
-	 ytRXilH/LHRRMmGswMvAv/3uHm+cnUCJWIKCiKqUSDzXArFl9irCySeQ53nIbngimdi3U
-	 XLLSQInQr8tZlo/CupN8gtGKJN0gAOIpBaYeQ0w0W5oTNBfk1EYdrGDSUQiCQllD2qw==
+	t=1793913392;
+	b=pJ8Az9tJ/FOPrdv7wvyypxNydnCklfp1hqweJyE7tqGxE8mr8Le7MX6D2P09y3Vd8Jbk
+	 J8Igtp0Q56zr7v6glFJQx7NTtvzHw2Wc2C984iu3mc1Z03oExdQysqoLuirQf/Y5XETSs
+	 ndyof+pd93hZaXQsOJbZaZLCEgPEnb0JqoMGqR5ECfpmmMaHeKL4yZ9HbmBqLer29IXIz
+	 e9HvyL769uLWQR2YqF2KbQ7HKeCh1XektdjJkTFWZxef8sZLZe9XyRJYsnmvySktrlqsE
+	 GbzTeLY9DVpfFT9vaMK28V6C35IEJ9pxd7xkaN6nHmse0WeCSpvEuHaHya3HHVQ5Ahw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793909545;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793913392;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
 	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
 	 Content-Transfer-Encoding;
-	bh=oj4+ZYy6IPmEk7n48ZoOfVMyHB9K5zKwdNLmj5eS60A=;
-	b=DtUOIX1rvSUglCoF/0sOZCSlvmvTk+RUBDNpS256fxLgXbZTs6DoylhfIQu0kIovEJ4z
-	 BuJiLJFniYRd1EAjXdXFso1FpHLVjzWA6XJTInHZSsgNXTwkIQAdcp8DkTjfelVxxiqMz
-	 K0a23mC087q5Fe5IrCmPT+aHQgyaxx+dEoJBOQd18byMuN1BgO/uma0JZ8/c1xbHkzsg6
-	 biyUwQEXL6x0um3fJ+pQIQJggE2dlcwDJ7+c0xgw6lqIoTeFs3DFQziakJBL+E01RdhIo
-	 hB3yNZl4yKSKfdaocu4g53CX7t/DzYy+uSoUD7yO6J/PX9IG5Xb/P92RGNgQse8mjOg==
+	bh=xRj+1WgN1BrmQW8Cu7h3hEln/8iUG3pzDfaG3KwvBw4=;
+	b=zLT0mcH9Lw9LavIQFxa2xp/5fLZDzO8PVhjvYqPFlTVoPBQYzxzkWm9YZqbNC6W777Ep
+	 5j37bu1O1FM5zWr1bYFgE1ClDarMsuCK9TjMqniTwwYKyEQ4kUgjrD6sprOfccukSAkYT
+	 v0BvDXdQed9RjWd16CZd3RRp0LCbPhImz5D6apLOsjNbvCa5sEJ8vLSTsoa/EwFw+YZjR
+	 IzaVVczAxmo0CFF/BbyckD2A90T6mooNtHSVyrLrXpraKRtYgPKiO3a3ILLg4g+PMko6w
+	 EFizvmP+WsU2AhHmByvyEiwcCqC/vhhOLv7Sd/4EW/IS/NQHbRwRsxMMX0Wqw/e+1rg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WJW1RlPT;
-	arc=none smtp.remote-ip=209.85.128.42
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=I+UsAmZG;
+	arc=none smtp.remote-ip=209.85.128.45
+Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7966A606A32C
-	for <linux-fbdev@vger.kernel.org>; Thu,  5 Nov 2026 20:12:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7966A606A32C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D35BA606A329
+	for <linux-fbdev@vger.kernel.org>; Thu,  5 Nov 2026 21:16:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D35BA606A329
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WJW1RlPT
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4afe2d546f9so27665455e9.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 05 Nov 2026 12:12:25 -0800 (PST)
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=I+UsAmZG
+Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4a208d93758so27705815e9.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 05 Nov 2026 13:16:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793909544; x=1794514344; darn=vger.kernel.org;
+        d=gmail.com; s=20260707; t=1793913390; x=1794518190; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=oj4+ZYy6IPmEk7n48ZoOfVMyHB9K5zKwdNLmj5eS60A=;
-        b=WJW1RlPT4nBYc85BjmKGFu2S3pNJc9h7p7KxVzEu5ni8QwEhD6AZYZE1PHvNpvssVy
-         C5+q+IbtF7LYPXEPEBRaZkzdujhWyQ0fUe4f5Xz/c5Vqe9MDfRDZsDQt8IHtK49XKXLI
-         ae8sWtCDBYWI/5gseIUrC/+ZUjLbhQdgHuNQefnHAPOH+81+q7amXVCwCXPYDNrtW2sc
-         n9nLehpHgJ9SuJU8R6QuJDwXGiC8NpgU21mQc3O/SLnA6J1YXqXkQEA2Og9BpDp3KDq+
-         xEbiyGKqj+IBXKZBJU/daPFdn9kSiL/PN4Gn9LkJCkB4ihpud59kUVf35uGxaQaScdSC
-         pbFg==
+        bh=xRj+1WgN1BrmQW8Cu7h3hEln/8iUG3pzDfaG3KwvBw4=;
+        b=I+UsAmZGmbl+fJKyfhrjvbUQBr+vmNGkYXN3MA9J+7vqCnUOTn4liWlg7hvRpAAgsH
+         y6YitFWx9cfFARQzlbDFXco2Jk/g8SrZ57Zro8m83yT65BYaQW5QTE8/EsawolbKZq+h
+         ahWyPZ5BtdZyK2a0H2aFiACQKXOChfpuV0N+M32dfOcHmOt9KrOgHM8SL5t2KG8uZuVL
+         aeLjYiqlYl/fkpBqZGuI4TdKlgTlrDs8kuvahyZVurywY710MpNuTQ6VKuttnmUHaro7
+         H7xStlaPX6R2ZZ7VAkKznSwQj4U/Oeq7JnbtrY3nboOhZ0viwX8HwQ1hWnDClj5WYKUx
+         oIJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793909544; x=1794514344;
+        d=1e100.net; s=20260707; t=1793913390; x=1794518190;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=oj4+ZYy6IPmEk7n48ZoOfVMyHB9K5zKwdNLmj5eS60A=;
-        b=Uy/6YVia2vN22gOD58K6S8BhmnNpvgrjgoAZT0zR32IbhkxgxTX/8aY3WdiboYX1w3
-         xEQJwTgrwAHa0/DP145iaFT4pIlYMwtj1MPuXRz7xmn5EveGsOrPL9QIqcrN9kJ0Z2mD
-         pzShBfWq0yYQEvIcHGi98snPzZwXOYtUWWTGMIc++ufRtWf08JFiUM1W3oLRP4YKm/G5
-         w9TXVmT/mAU6IoE5zP9cx3TthCSIG8iIexeXfjdofsoJoBqzh2LzvIXeDKN82O2G/Oip
-         qWfB5u+JDKVhCybfLaBOn1hHEFn228LS783wMj28ssP805weZpkFBwxicTGg4jAms+Uk
-         Xkuw==
-X-Forwarded-Encrypted: i=1; AKwUvBxUmJP/O+wheLgD3id9cqdM8iGeLZeKjFrI5ENqD6IjT7HmNOc8rmU+0AzhonMHTAMStdrSTS71sgQGqQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+nyexyCQhNe2ure3S28DbrWsrwFYtddjI22xjkipCPckfPQLSc
-	V9+caROdBFYZxIhbnIjPUOhNbelA5ZW1UqRikb2GR5Ui5THESTYMYzI6
-X-Gm-Gg: AYBFou1a0erPAxJNonk+rixrHlj+qzzfBkATW2zrLJLIMjz/Eh4tBmVZQrsbFNotFuJ
-	7ZnL/+vxrpJvm/zpwEm98/pUZ71YrDsfnGv45LxjTlpkZcPdNtcCLc7S2Rm1qGhdPBJEOt6o8eH
-	plWuqfb7O3FCSiHGNthp5ERFMKIAP1DGJ/oJMUSLxR0zUHUa+AKIaXxt5gA1D8+MxEaSWdMlfhD
-	mxSvcJ9XTanIqCPvsmDfcWXlusgZshsF1V5UlnIwMMXIafn6L6zoPhkuf2FuBsDDRno8fTBiJxw
-	ckOivOG5EY3zlZ3TGMbHz6zXRVbtJe2w5Rz/lTpwaAu0oAHix9SBbhQvsOxGzYRxvcxMLOhsdzT
-	lEejL7ulZdA19SVepDgEbX/zfzkl7AoTiChbmOxwrVeTGyLpTHxa53qdkd57loVRseWMSCFbDrh
-	6db34inmeFBtUEF6nqItb2IVOg7aG74fJFFKxstUIke6+QtX+bjAofioJhrJciNkzqZ+vnJyMwI
-	B7n+1MSYDfkOWmGd3vwrAYpfG2/+SgvRj0JcHfHkn5j8hjfcUC8T8T0PsQGy2nGVPDSDGxHj1EC
-	7sxK8u1eM1msk8iMKvmBogz1NoBNa4Z6GC/PHXH7iXadIitvKUcnOzg=
-X-Received: by 2002:a05:6000:2dc9:b0:48c:7f18:c85e with SMTP id ffacd0b85a97d-492778d2076mr1325704f8f.45.1793909543495;
-        Thu, 05 Nov 2026 12:12:23 -0800 (PST)
-Received: from localhost ([82.77.126.113])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48fecac1caesm11108369f8f.17.2026.11.05.12.12.22
+        bh=xRj+1WgN1BrmQW8Cu7h3hEln/8iUG3pzDfaG3KwvBw4=;
+        b=lVtGSnki2X7g6xbnEFWzYc1qDZXUXEoXvC98ASNO/Il1PCXbelQQ5ldNx38u7qJfny
+         BuBxe0tJwYV4l63KeixPsPyNQhweUTU58JQJEvjLRC3TsztW185H3vY9N7oZdrJUZ5jy
+         T0uzFAKgYz17nK8rpy8Y9VfS7ffV0rM0JZuKsLPkFvix1/oMk2d28GIaedI6Fr7vip/V
+         tRkfcN2Wk6ieSqtU9O63WbWu9PHh/YO7GALJSawO5InFbwGKhUYUNatD2vTUc1Sn+q4F
+         9VIY2oS8C1HUbyHTNLEinBXmmqpFuh3cFbgYvj2iILVbMm5w+ygwl7mYyk5WqbyroUTK
+         ZAWw==
+X-Forwarded-Encrypted: i=1; AKwUvBwexANDkg7LpKYCfD8vxGWiQUrG8mfn/DzdLOXQTIvdH5f9mPRdeZdUP+fEHxhulsMmaitd1imUyqNXXA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+9Q0SCDgjE3XzNcSsiCnOnkjhtG7ryoq7SlmLzjrkp1X2gL3T1
+	YtBQgqMx/0/1KazlXyfK4XzU3R2vzfXeBfqMXmJ69jqs1FHr2EnkueU5
+X-Gm-Gg: AYBFou3crHRjVRq9tKjHhxr23A/vozi/jkfJj4kskXzy/ZPWgko+DvGRiXe/32M3ZO6
+	+ubVtnZHY5Pq7TIFNLk/xqUzSFl32jn1H8xkkW7sHxsqjvSFYahrCCmUso3e+cNc1gyACmGO6ml
+	jYmU8GzL0D1RikvQqeQGF9v6P1uqvuImhUgNvdwTLddt6v+Z8n9U3NOtc28gYUxelm8IG3ZrbrS
+	jrM/I2sohfe2wn+MdAfl6WogQjvd4Y4X37hqXnIsa5BlxaI6W1QPKZ2B4vjIyntl72aJHIJ1ha6
+	dM3dpsN7D6SgBeZepcujHWlxsO5aMBUOuC3t1bvWqDrxR5b8Dyu3QKeX6GzMAWgpFmUBLiRy6Iz
+	QFI7mcyr4aCnpkOczYWYi1YK2VJYrLK1x/9qfPwRosxm+siteC11wwShjdfMJw+aRIBFaprhZLK
+	EsVKKsgTMh+rfJP+kTiMRF2u6rfmTqpaM0yofRrigV3tVWf0ojOd53l9zhFJSDDvrL1gn6ATKKP
+	472d/D9DHNhqGiWM8bZfUQtHalMBfxEY2uZtQLWJqWtIlX6MHe5P6kiR19EOIiQVNb6alg24yia
+	qVAonHh3UvLRYwCiwvju1Qx3wUn1Up1BNVyB5P1wdkHwzLX1IzoEp59EOxaki/x1NJhC7qZPcDw
+	=
+X-Received: by 2002:a05:600c:8b05:b0:4a7:462c:6b9e with SMTP id 5b1f17b1804b1-4b6e0172847mr5899255e9.32.1793913389982;
+        Thu, 05 Nov 2026 13:16:29 -0800 (PST)
+Received: from localhost.localdomain ([87.13.215.38])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48fedc09675sm11703458f8f.55.2026.11.05.13.16.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 12:12:22 -0800 (PST)
-From: Daniel Matyas <matyasdaniel006@gmail.com>
-To: dri-devel@lists.freedesktop.org
-Cc: Daniel Matyas <matyasdaniel006@gmail.com>,
-	linux-staging@lists.linux.dev,
-	Andy Shevchenko <andy@kernel.org>,
+        Thu, 05 Nov 2026 13:16:29 -0800 (PST)
+From: Francesco Giandinoto <testata.nucleare13@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Francesco Giandinoto <testata.nucleare13@gmail.com>,
+	Teddy Wang <teddy.wang@siliconmotion.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Alex Lanzano <lanzano.alex@gmail.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Conor Dooley <conor@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Nam Cao <namcao@linutronix.de>,
-	linux-fbdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	devicetree@vger.kernel.org
-Subject: [RFC] staging: fbtft: Moving fb_ili9341 (and others) to DRM
-Date: Thu,  5 Nov 2026 22:11:53 +0200
-Message-ID: <20261105201154.37294-2-matyasdaniel006@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	linux-fbdev@vger.kernel.org (open list:STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER),
+	linux-staging@lists.linux.dev (open list:STAGING SUBSYSTEM),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] staging: sm750fb: make g_fbmode constant array
+Date: Thu,  5 Nov 2026 22:13:16 +0100
+Message-ID: <20261105211344.17532-1-testata.nucleare13@gmail.com>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -116,44 +101,26 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hi,
+The g_fbmode variable is used as an array of constant string pointers. Add the missing const qualifier to clean up the source code and adhere to kernel coding standards
 
-I'm looking at the fbtft TODO (convert drivers to DRM) and want to check
-whether fb_ili9341 can be dropped. Findings against v7.4-rc1:
+Signed-off-by: Francesco Giandinoto <testata.nucleare13@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-1. fb_ili9341's init sequence is the MI0283QT-9A one. Comparing register
-   writes with drivers/gpu/drm/tiny/mi0283qt.c, the values are identical,
-   including the default gamma tables. Differences I found:
-   - mi0283qt writes EN3GAM (0xF2) = 0x08; the fbtft write is commented out.
-   - mi0283qt always sets MADCTL BGR; fbtft makes it configurable (bgr=).
-   - fbtft rotate=270 also sets ML; mi0283qt does not.
-   - Rotation maps as DRM rotation = fbtft rotate - 90 (mod 360).
-   - fbtft also offers runtime gamma adjustment.
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 21e310274..47d2917cc 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -12,7 +12,7 @@
+ static int g_hwcursor = 1;
+ static int g_noaccel __ro_after_init;
+ static int g_nomtrr __ro_after_init;
+-static const char *g_fbmode[] = {NULL, NULL};
++static const char * const g_fbmode[] = {NULL, NULL};
+ static const char * const g_def_fbmode = "1024x768-32@60";
+ static char *g_settings;
+ static int g_dualview __ro_after_init;
+-- 
+2.56.0
 
-2. fb_ili9341 registers the compatible "ilitek,ili9341", which is also the
-   fallback in the dt-schema binding, so it can match nodes that the DRM
-   drivers claim via their specific compatibles.
-
-3. In-tree users: no defconfig enables FB_TFT. canaan_kd233 (62363a8e2f56, Feb 2021)
-   has a status = "disabled" panel node compatible with "canaan,kd233-tft",
-   "ilitek,ili9341". It predates the first DRM driver accepting ilitek,ili9341
-   (5a04227326b0, Jul 2021), and none of the DRM drivers match canaan,kd233-tft.
-   fbtft requests "dc" and "reset" GPIOs, which fits that node. I haven't tried
-   binding it. I suppose that, if the board is used, then it is built against the
-   fbtft driver.
-
-4. fb_ili9341 has had only style/mechanical changes in recent years.
-
-Questions:
- a) Is removing fb_ili9341 acceptable, pointing users of other ILI9341
-    modules to panel-mipi-dbi? The KD233 node would then have no driver.
- b) Or should KD233 panel support go into a DRM driver first? I don't have
-    its init sequence or physical size, or the board...
- c) Is removal of all of fbtft already planned?
- d) Several other fbtft drivers have drm counterparts. Should I inspect those
- to see if removal is needed?
-
-I have not tested on hardware.
-
-Thanks,
-Daniel M

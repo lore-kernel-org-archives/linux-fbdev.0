@@ -1,55 +1,56 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793894095;
-	b=a+dSA3lBx3+KJsvQ9AWPR+U6aZ1Ik7j5ONRv4BsCW9XJQoC5HLROQw3eB792v0moml3q
-	 I6KdWT5miybpay+XlUG3y7IOKKQ4x+ovtUcemHKTMa/dYdmlGNJkv1VQxyqNQ9UeKka6f
-	 C28QxuFjqeV33jpbpHXhIpO56RvBmzJeZ0A28wB0+hyKvTqxlhxNSa49VlzQm4of9flwp
-	 R/mjlMxwRrVo5cSc3uxi7mxz3L1o30RirYcMGXogroX0wpDMKel7Rd/fCQ5RZF7g1ARSO
-	 lwgJmD9lCyI0IVzn3QLemKsWg+ry8xEzNTYduVMMDHINgjEHkEG6eHmNATp2FCF/6EQ==
+	t=1793894096;
+	b=31sWA4eV9NI3bDcyCUq8FTWlREgOad/kTGLeykmbxnFGNdXz5/ig7EcAJmu4xA8Qn3Km
+	 OQGTVUcnBl5LBuhdUCUjO3r8vURWpDy9DNIBTonX36ikwqztvwnK9Hcx1x2A/xJEFzt3O
+	 S+8s+A0awkA1F2KB1ZypDu7VA4dAY2MyAiEiHG/jMc5V13STfkQBLgjqragqBlyh5tZSA
+	 bDr3LBlLmK314HQ29uuzsjiwXeoABFZgYmkhLFz8n9wTOD2GG49vYRvexnay5wvIlLaEg
+	 Mi1sEkC5SoNxGIs+d1Q7tpRrnQB2rhRU/ZXmoxXY3ACp3bgVjSm2Hrkf8ae+z3Mbm7A==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793894095;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793894096;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=V8t12PM41qE6N0UG7txMe0AIGzNF1VgRYdq6fo7sYxE=;
-	b=UTOwIL6aeaMJoSkfqJQiBmR/pXlB6gd95GUKgcjOcA64D05vv7rxP8StVgzw12+BZGDi
-	 uyghs6juk3oLlmvtv1CYWLLWQNFhaO04EJIB1qi3YRG54ahApHsht2Sfgce3jU5y1VNaM
-	 1O5YjX7xHjYExODlhONt0ptN2oj8rzEL5J1duYdxNzu9Zleikxc3oeqFGEZkQqTUYqceA
-	 dkduRGWTnB57HTAYRLCANDZGc/WPN6jRgMjpkmLgcgJJPDWpAj51Q0qnvhwEwadSQvQFm
-	 p6AIQ2wNLdw1+6PjtZHYlAIRKbyKH4ZyRDPsNnW3icRl+IpFv16SF1dKM/o5pDHGlPQ==
+	bh=qLyaduhUBi+bpCuge3G1zOLHjhJzZY/OT6BcfFj29Qw=;
+	b=nr0zzM8RP8K0AB+AaLV8kbBhrGQgY/i1odCp0+4AyVoEesVYyq/7hSNjernA+xh+k5n+
+	 MvATlHGBE0tT3deDCuXBHFT0TRXLJ2TVAhOMvX8WzgVCqRe9LS6C1vrlcrYhNDooVVEBx
+	 oUmsqVkwbOq+FSoBeXFRfj18+HlDGKomyzXHHsN1NJkK9dr3FX3GtuAOt94q/WmHQGXiy
+	 s2xYSA7gdnN+S3y7dRiTrenFs/w2fivZa2o3xc4MISBXyJhSeHMzewDvgV32l5lM9SFE3
+	 6uh584TTrR5Ydutdb70Y9Q/jHDHU2JThIDuxH9sapaAXG7ORtpELUHvky+4KRI0y1WA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=LQsqjdLL;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=VH4w9Z32;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78F20606BEA1;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98C2C606CFA8;
 	Thu,  5 Nov 2026 15:54:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 78F20606BEA1
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 98C2C606CFA8
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=LQsqjdLL
-ARC-Seal: i=1; a=rsa-sha256; t=1793893997; cv=none; 
+	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=VH4w9Z32
+ARC-Seal: i=1; a=rsa-sha256; t=1793893966; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=XJieeeqpjbwGPg/ZncAQlSiJa5BakgVBSVtN48HC+RXXEhj/lrMV7tkoAjjTPpZ3nR4cv6JbOBCQybj3EYiACalGlpmG0j+bMSwOIkRUW1aEV9jqyCJC216YLppD9FfZZiQF26Bb6m8YQFy5JVvJYSb0+DG26uJQ8HB01heZuK4=
+	b=NYhMI3Z0wr6Plj+9b9tIx4LFtoS6gJ2jQIbvxMRhfRVtq3bS4e58KPLLLTw9gzM+zonwbn+f7H+moEScq36ZpblmafvBi6V2QfkdjEejXbRBKY/kbl4GmWwUFop7gUYUlUwcfTZFdom3SUvaJGPoB7leWV6Y2SgTiFwXGtmPz9s=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1793893997; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=V8t12PM41qE6N0UG7txMe0AIGzNF1VgRYdq6fo7sYxE=; 
-	b=Jb6ao9UffGRio5LbBN5zSFpaqkO/JBpUn6c5VhsZ++0Wcsu/6lKmqrT0zE/8C0vZ4k2jrW9HeNBnCRqPl0jP7Q2MDfqbOnQ4qiUvqUv64EFtEeQGBfXK/xLxc6+/uj8EDVNU1TPJdsvd1mNw7/SJ81YsTP6EmMq+102xZ/38fr0=
+	t=1793893966; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=qLyaduhUBi+bpCuge3G1zOLHjhJzZY/OT6BcfFj29Qw=; 
+	b=imVnztz1pp1JGC4wi2BNIGpD72DicacyXyt7+dBOMSLWwPsWMtUaaQttvneG+HtUFJij+C72UsW5dpyspdRr2H19aj/X+RD8OCUUUNZMeWpYlKSk3bMEZ3CUQAbf+pzlsOJYh9B1vWUFWDqxTibksAKkpubMyZbUJFyLOcUYsQ4=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=LQsqjdLLLAYaTVElvIHyk6zk3CZoSN935Zwc//GRVsRjwWpwY6MoPe7GlKw11qQaSktgexFqMnIAoF5DyTI31O6du3gQ59ueMD4uVQ5WtmgYOjbDP52/CtvaCAz9B6Z7w+hAzv9oCzCfJPmPzsk+7GNW2LdtyAnh8THj7yj6F+0=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=V8t12PM41qE6N0UG7txMe0AIGzNF1VgRYdq6fo7sYxE=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1793893996571563.8882394295355;
-	Thu, 5 Nov 2026 07:53:16 -0800 (PST)
+DKIM-Signature: a=rsa-sha256; b=VH4w9Z32gBwoCmVzbyZF7xO2Fh4mZKimSEs7GBpJNDSH6RJeztragkvwplJ8GPILzBNsVLckLkYKJBgkMvYQ9ipUzLMCSPGQu8GeaFLncjxF2AyTC+rFcmb/QMtxMfbEcekDCBDspl149T2xSN0wPWFvs/2UCGE4ViTVDO4Wvgg=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=qLyaduhUBi+bpCuge3G1zOLHjhJzZY/OT6BcfFj29Qw=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 179389396485396.56310927072991;
+	Thu, 5 Nov 2026 07:52:44 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Thu, 05 Nov 2026 16:51:58 +0100
-Subject: [PATCH v2 07/27] drm/bridge: synopsys: Add VTEM EMP support
+Date: Thu, 05 Nov 2026 16:51:53 +0100
+Subject: [PATCH v2 02/27] drm/connector: add vrr_display_mode connector
+ property
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -61,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-vrr-limiter-uapi-v2-7-55f4215be2c2@collabora.com>
+Message-Id: <20261105-vrr-limiter-uapi-v2-2-55f4215be2c2@collabora.com>
 References: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 In-Reply-To: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 To: Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>, 
@@ -87,110 +88,225 @@ Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.15.2
 
-From: Derek Foreman <derek.foreman@collabora.com>
+It's common to want to keep a VRR-capable display in a specific VRR mode
+regardless of whether a CRTC uses VRR presentation, to avoid screen
+blanking during switching of the VRR mode. On the other hand, it's also
+not always desired to keep a display in VRR mode even when nothing does
+VRR presentation, for example in battery-powered systems.
 
-Add code to pack and schedule VTEM EMPs.
+To let userspace control this explicitly, instead of relying on implicit
+driver policy, introduce a new connector KMS property: vrr_display_mode.
 
-Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
+It defaults to "Game", which matches the behaviour of dGPU drivers,
+wherein a VRR-capable display will always be in Game mode. However, it
+also has an "Off" mode, with which userspace can explicitly request that
+VRR be disabled on the display sink.
+
+The associated connector state member uses an u8 rather than the enum
+type in order to fit into the existing 2 bytes of padding there. Once
+the kernel mandates compiler versions that have backported C23 features,
+the enum can be given an explicit small backing type and the member can
+be changed to use the enum type.
+
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c | 50 +++++++++++++++++++++++++++-
- drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.h |  1 +
- 2 files changed, 50 insertions(+), 1 deletion(-)
+ drivers/gpu/drm/drm_atomic_uapi.c |  4 ++
+ drivers/gpu/drm/drm_connector.c   | 77 +++++++++++++++++++++++++++++++++++++++
+ include/drm/drm_connector.h       | 29 +++++++++++++++
+ 3 files changed, 110 insertions(+)
 
-diff --git a/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c b/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c
-index b268c9376087..8b3f586dc177 100644
---- a/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c
-+++ b/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c
-@@ -689,6 +689,15 @@ static int dw_hdmi_qp_bridge_clear_spd_infoframe(struct drm_bridge *bridge)
- 	return 0;
- }
+diff --git a/drivers/gpu/drm/drm_atomic_uapi.c b/drivers/gpu/drm/drm_atomic_uapi.c
+index 1eebcf6f5e05..127bdd77802b 100644
+--- a/drivers/gpu/drm/drm_atomic_uapi.c
++++ b/drivers/gpu/drm/drm_atomic_uapi.c
+@@ -969,6 +969,8 @@ static int drm_atomic_connector_set_property(struct drm_connector *connector,
+ 		state->hdmi.broadcast_rgb = val;
+ 	} else if (property == connector->color_format_property) {
+ 		state->color_format = val;
++	} else if (property == connector->vrr_display_mode_property) {
++		state->vrr_display_mode = val;
+ 	} else if (connector->funcs->atomic_set_property) {
+ 		return connector->funcs->atomic_set_property(connector,
+ 				state, property, val);
+@@ -1056,6 +1058,8 @@ drm_atomic_connector_get_property(struct drm_connector *connector,
+ 		*val = state->hdmi.broadcast_rgb;
+ 	} else if (property == connector->color_format_property) {
+ 		*val = state->color_format;
++	} else if (property == connector->vrr_display_mode_property) {
++		*val = state->vrr_display_mode;
+ 	} else if (connector->funcs->atomic_get_property) {
+ 		return connector->funcs->atomic_get_property(connector,
+ 				state, property, val);
+diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
+index 893716a9e489..65c14b6e47a6 100644
+--- a/drivers/gpu/drm/drm_connector.c
++++ b/drivers/gpu/drm/drm_connector.c
+@@ -1434,6 +1434,12 @@ static const struct drm_prop_enum_list drm_tv_mode_enum_list[] = {
+ };
+ DRM_ENUM_NAME_FN(drm_get_tv_mode_name, drm_tv_mode_enum_list)
  
-+static int dw_hdmi_qp_bridge_clear_vtem_emp(struct drm_bridge *bridge)
-+{
-+	struct dw_hdmi_qp *hdmi = bridge->driver_private;
++static const struct drm_prop_enum_list drm_vrr_mode_enum_list[] = {
++	{ VRR_DISPLAY_MODE_GAME,   "Game" },
++	{ VRR_DISPLAY_MODE_OFF,    "Off" },
++};
++DRM_ENUM_NAME_FN(drm_get_vrr_mode_name, drm_vrr_mode_enum_list)
 +
-+	dw_hdmi_qp_mod(hdmi, 0, PKTSCHED_EMP_VTEM_TX_EN, PKTSCHED_PKT_EN);
-+
-+	return 0;
-+}
-+
- static int dw_hdmi_qp_bridge_clear_audio_infoframe(struct drm_bridge *bridge)
- {
- 	struct dw_hdmi_qp *hdmi = bridge->driver_private;
-@@ -791,6 +800,42 @@ static int dw_hdmi_qp_bridge_write_spd_infoframe(struct drm_bridge *bridge,
- 	return 0;
- }
+ /**
+  * drm_get_tv_mode_from_name - Translates a TV mode name into its enum value
+  * @name: TV Mode name we want to convert
+@@ -2560,6 +2566,14 @@ EXPORT_SYMBOL(drm_mode_create_scaling_mode_property);
+  *
+  *	The driver may place further restrictions within these minimum
+  *	and maximum bounds.
++ *
++ * "vrr_display_mode":
++ *	Optional &drm_connector enum property that controls which VRR mode, if
++ *	any, a display is in. Possible values::
++ *
++ *	    - Game - set display to game mode if display supports it,
++ *	      regardless of CRTC state
++ *	    - Off - set display to VRR disabled mode, regardless of CRTC state
+  */
  
-+static int dw_hdmi_qp_bridge_write_vtem_emp(struct drm_bridge *bridge,
-+					    const u8 *buffer, size_t len)
+ /**
+@@ -2593,6 +2607,69 @@ int drm_connector_attach_vrr_capable_property(
+ }
+ EXPORT_SYMBOL(drm_connector_attach_vrr_capable_property);
+ 
++/**
++ * drm_connector_attach_vrr_display_mode_property - creates and attaches VRR
++ * display mode property
++ * @connector: pointer to the &struct drm_connector to attach the property to
++ * @supported_vrr_modes: bitmask of VRR modes the connector supports regardless
++ *			 of sink
++ *
++ * Creates and attaches the "vrr_display_mode" property to @connector. The
++ * property must not already exist on it. @supported_vrr_modes is a bitmask
++ * wherein BIT(VRR_DISPLAY_MODE_FOO) indicates VRR_DISPLAY_MODE_FOO is supported
++ * by the connector.
++ *
++ * Returns:
++ * Zero on success, negative errno on failure.
++ */
++int drm_connector_attach_vrr_display_mode_property(struct drm_connector *connector,
++						   unsigned int supported_vrr_modes)
 +{
-+	struct dw_hdmi_qp *hdmi = bridge->driver_private;
-+	u32 val, i;
++	struct drm_device *dev = connector->dev;
++	struct drm_prop_enum_list enum_list[VRR_DISPLAY_MODE_COUNT];
++	unsigned int num_enums = 0;
++	struct drm_property *prop;
++	int i;
 +
-+	if (len != HDMI_INFOFRAME_SIZE(VTEM)) {
-+		dev_err(hdmi->dev, "unsupported vtem emp packet size of %zu\n", len);
++	if (supported_vrr_modes & ~(BIT(VRR_DISPLAY_MODE_COUNT) - 1)) {
++		drm_err(dev, "Unknown VRR modes provided on [CONNECTOR:%d:%s]\n",
++			connector->base.id, connector->name);
 +		return -EINVAL;
 +	}
 +
-+	val = buffer[1] << 8 | buffer[2] << 16;
-+	dw_hdmi_qp_write(hdmi, val, PKT_EMP_VTEM_CONTENTS0);
++	if (connector->vrr_display_mode_property) {
++		drm_err(dev, "[CONNECTOR:%d:%s] already has a 'vrr_display_mode' property\n",
++			connector->base.id, connector->name);
++		return -EEXIST;
++	}
 +
-+	val = buffer[3] | buffer[4] << 8;
-+	dw_hdmi_qp_write(hdmi, val, PKT_EMP_VTEM_CONTENTS1);
++	if (!(supported_vrr_modes & BIT(VRR_DISPLAY_MODE_GAME))) {
++		drm_err(dev, "Missing default VRR mode on [CONNECTOR:%d:%s]\n",
++			connector->base.id, connector->name);
++		return -EINVAL;
++	}
 +
-+	val = buffer[8] << 8 | buffer[9] << 16 | buffer[10] << 24;
-+	dw_hdmi_qp_write(hdmi, val, PKT_EMP_VTEM_CONTENTS2);
++	for (i = 0; i < VRR_DISPLAY_MODE_COUNT; i++) {
++		if (BIT(i) & supported_vrr_modes) {
++			enum_list[num_enums].name = drm_get_vrr_mode_name(i);
++			enum_list[num_enums].type = i;
++			num_enums++;
++		}
++	}
 +
-+	val = buffer[11] | buffer[12] << 8 | buffer[13] << 16;
-+	dw_hdmi_qp_write(hdmi, val, PKT_EMP_VTEM_CONTENTS3);
++	prop = drm_property_create_enum(dev, DRM_MODE_PROP_ENUM, "vrr_display_mode",
++					enum_list, num_enums);
 +
-+	/*
-+	 * The remaining registers need to explicitly be rewritten even if they
-+	 * stay at 0, as per the hardware documentation.
-+	 */
-+	for (i = PKT_EMP_VTEM_CONTENTS4; i <= PKT_EMP_VTEM_CONTENTS7; i += 4)
-+		dw_hdmi_qp_write(hdmi, 0, i);
++	if (!prop)
++		return -ENOMEM;
 +
-+	dw_hdmi_qp_mod(hdmi, PKTSCHED_EMP_VTEM_TX_EN, PKTSCHED_EMP_VTEM_TX_EN,
-+			PKTSCHED_PKT_EN);
++	connector->vrr_display_mode_property = prop;
++	drm_object_attach_property(&connector->base, prop, VRR_DISPLAY_MODE_GAME);
 +
 +	return 0;
 +}
++EXPORT_SYMBOL(drm_connector_attach_vrr_display_mode_property);
 +
- static int dw_hdmi_qp_bridge_write_audio_infoframe(struct drm_bridge *bridge,
- 						   const u8 *buffer, size_t len)
- {
-@@ -1035,6 +1080,8 @@ static const struct drm_bridge_funcs dw_hdmi_qp_bridge_funcs = {
- 	.hdmi_write_hdr_drm_infoframe = dw_hdmi_qp_bridge_write_hdr_drm_infoframe,
- 	.hdmi_clear_spd_infoframe = dw_hdmi_qp_bridge_clear_spd_infoframe,
- 	.hdmi_write_spd_infoframe = dw_hdmi_qp_bridge_write_spd_infoframe,
-+	.hdmi_clear_vtem_emp = dw_hdmi_qp_bridge_clear_vtem_emp,
-+	.hdmi_write_vtem_emp = dw_hdmi_qp_bridge_write_vtem_emp,
- 	.hdmi_clear_audio_infoframe = dw_hdmi_qp_bridge_clear_audio_infoframe,
- 	.hdmi_write_audio_infoframe = dw_hdmi_qp_bridge_write_audio_infoframe,
- 	.hdmi_audio_startup = dw_hdmi_qp_audio_enable,
-@@ -1154,7 +1201,8 @@ struct dw_hdmi_qp *dw_hdmi_qp_bind(struct platform_device *pdev,
- 			   DRM_BRIDGE_OP_HDMI |
- 			   DRM_BRIDGE_OP_HDMI_AUDIO |
- 			   DRM_BRIDGE_OP_HDMI_HDR_DRM_INFOFRAME |
--			   DRM_BRIDGE_OP_HDMI_SPD_INFOFRAME;
-+			   DRM_BRIDGE_OP_HDMI_SPD_INFOFRAME |
-+			   DRM_BRIDGE_OP_HDMI_VTEM_EMP;
- 	hdmi->bridge.of_node = pdev->dev.of_node;
- 	hdmi->bridge.type = DRM_MODE_CONNECTOR_HDMIA;
- 	hdmi->bridge.vendor = "Synopsys";
-diff --git a/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.h b/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.h
-index c07847e8d7dd..6ce87064a267 100644
---- a/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.h
-+++ b/drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.h
-@@ -210,6 +210,7 @@
- #define PKTSCHED_AVI_TX_EN				BIT(13)
- #define PKTSCHED_VSI_TX_EN				BIT(12)
- #define PKTSCHED_EMP_CVTEM_TX_EN			BIT(10)
-+#define PKTSCHED_EMP_VTEM_TX_EN				BIT(9)
- #define PKTSCHED_AMD_TX_EN				BIT(8)
- #define PKTSCHED_GCP_TX_EN				BIT(3)
- #define PKTSCHED_AUDS_TX_EN				BIT(2)
+ /**
+  * drm_connector_attach_scaling_mode_property - attach atomic scaling mode property
+  * @connector: connector to attach scaling mode property on.
+diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
+index 2ee7c59329aa..8699f35cafcb 100644
+--- a/include/drm/drm_connector.h
++++ b/include/drm/drm_connector.h
+@@ -809,6 +809,15 @@ enum drm_bus_flags {
+ 	DRM_BUS_FLAG_SHARP_SIGNALS = BIT(8),
+ };
+ 
++enum vrr_display_mode {
++	/** @VRR_DISPLAY_MODE_GAME: Set the display to VRR "Game" mode */
++	VRR_DISPLAY_MODE_GAME = 0,
++	/** @VRR_DISPLAY_MODE_OFF: Turn off VRR on the display */
++	VRR_DISPLAY_MODE_OFF,
++	/** @VRR_DISPLAY_MODE_COUNT: Sentinel, not a valid mode, keep last */
++	VRR_DISPLAY_MODE_COUNT
++};
++
+ /**
+  * struct drm_amd_vsdb_info - AMD-specific VSDB information
+  *
+@@ -1352,6 +1361,12 @@ struct drm_connector_state {
+ 	 */
+ 	u8 max_bpc;
+ 
++	/**
++	 * @vrr_display_mode: One of &enum vrr_display_mode to indicate the VRR
++	 * type to use on a VRR-capable display.
++	 */
++	u8 vrr_display_mode;
++
+ 	/**
+ 	 * @privacy_screen_sw_state: See :ref:`Standard Connector
+ 	 * Properties<standard_connector_properties>`
+@@ -2454,6 +2469,17 @@ struct drm_connector {
+ 	 */
+ 	struct drm_property *vrr_capable_property;
+ 
++	/**
++	 * @vrr_display_mode_property: Optional property for userspace to set
++	 * a connected display to a specific VRR mode, regardless of the
++	 * connected CRTC's VRR_ENABLED property. Drivers can create and attach
++	 * the property to a connector by calling
++	 * drm_connector_attach_vrr_display_mode_property(). Implementations can
++	 * then read the set display mode (&enum vrr_display_mode) from
++	 * &drm_connector_state.vrr_display_mode.
++	 */
++	struct drm_property *vrr_display_mode_property;
++
+ 	/**
+ 	 * @colorspace_property: Connector property to set the suitable
+ 	 * colorspace supported by the sink.
+@@ -2859,6 +2885,7 @@ const char *drm_get_dpms_name(int val);
+ const char *drm_get_dvi_i_subconnector_name(int val);
+ const char *drm_get_dvi_i_select_name(int val);
+ const char *drm_get_tv_mode_name(int val);
++const char *drm_get_vrr_mode_name(int val);
+ const char *drm_get_tv_subconnector_name(int val);
+ const char *drm_get_tv_select_name(int val);
+ const char *drm_get_dp_subconnector_name(int val);
+@@ -2883,6 +2910,8 @@ int drm_connector_attach_scaling_mode_property(struct drm_connector *connector,
+ 					       u32 scaling_mode_mask);
+ int drm_connector_attach_vrr_capable_property(
+ 		struct drm_connector *connector);
++int drm_connector_attach_vrr_display_mode_property(struct drm_connector *connector,
++						   unsigned int supported_vrr_modes);
+ void drm_connector_attach_panel_type_property(struct drm_connector *connector);
+ int drm_connector_attach_broadcast_rgb_property(struct drm_connector *connector);
+ int drm_connector_attach_colorspace_property(struct drm_connector *connector);
 
 -- 
 2.56.0

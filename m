@@ -1,55 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793894040;
-	b=R2oAV+J0DL3pVBIf2JPcXBWw/53f+ZxkQXYAg83S1kep8OPWyUU2boa6FXinuqbU5YsF
-	 DVO3z6q8HYvJS/UT9l72WVKnZiLdoyrZc1X5nYXuYkDZ9R4tytMuG5BE5IGrzpjcHleF/
-	 sXp6MYqcHwQHxyouo5sS9cDkhn80ijcsJLiHpMgXhBjc3SgFvLkV+O5legDg1SuFT+yik
-	 y8Y7wG6lI42amyjQFOktz5J2zyWzJLfPKAnIp/WegfoKL0vxxZ7uV3gQoR4c/Rt45yF+N
-	 8ut+hrqCkpOwwrtUmHXccvUimjapH+nGgzczgG7G+pOA54Y5QVuTG55n0xpP77qyPDg==
+	t=1793894037;
+	b=QHzVsaZzixwChndIxu4e/++TrtxkCUyeUsCHXKJsuxM3afzARVfS7HDMAvnvU36lcPSr
+	 q7cpKMH1FHV2dtjDSD7BKeBELSi/O4kB9HL6pR6WGz2lsswa/OtSRyMMs8ZGpWnhmSFBw
+	 WLM4Vm50SFSYaZzX7SK9iRXaCb5vSggolkGXBySI1vWZqCKEuw4R5KDs/7JlrM1Kvy81f
+	 4BLLt/YYfFVbOEZmK6KerJ6Ovl/cQQT8NxYYmVbvSvvtO7d5afRoxPLXm4GOytctxdZbM
+	 jNeszbVDiFUZBjbpydnCvDeHbx5K2Giq5GcXeDus6AOgPkXN9SYAlmuVc3YU1kojVAg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793894040;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793894037;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=fTzNDSolmw7K2SsCbbZU91nxSTB00KcD9PPh6CHzKVg=;
-	b=A+zi03DJaEbHEYHp3Hw1h2KufE4566EiMIgv6k7CPck2wUHqf0XlawVVGAPPCklzYid/
-	 hgt9x/x/5/G+6mnB+axefp23Yu+b0lVG1qlMUi4cEr+U4iddAeTE+YEooEXTcwLWZonwx
-	 vVpNvbPG9/Gpo5sNX6nPMfrIynlVnIgfYPINcmaGVCHXDorbHiPljlu3SvZU/3hGK4PvT
-	 1QiuEDkrRu43i1TIW8cWYpnSNnDBpNJb1JVb7dODp2F7Q7cwsp0BzJ+xIEpE/AcFiNOau
-	 F8c1sPYSCTEXMCaSfir+sVZ6KRXCXOcs3MbHn1pC58q7rYdBZ75+HS3HQCZpGNtnu/A==
+	bh=aFyxDfy6nq4JsCbeO+IwynELVljNeTVnd8XRS/Ay8pI=;
+	b=xI9y8Fn1QIT/epyTQC8lR0c6cqJpEQ9O1+w1MzjmLJ/2nazEyy2cqR1RBVeda19Nv/zA
+	 xS7O2ctNglRYrwzdoV7nOyqkM+frUCe1sk1QU3a0V++4LdABGo9BDiKNIXCs72qBTxMKc
+	 q3YDWSrU/TEDwHoZQUvNnYQJZY0AI4P4c31xoK/0/RDPIBuQh8Q4C+5xtvUjZkvOBndvO
+	 3+9G9DqbpdOQ+ZXDXZhMg0Qq2kybSWreSs3SM7ldHAv8sUW/zW/R8knNu07W0m1JubJ2Q
+	 mBtR6+gEXf6yfYqEPOyJt7hDaK35cPkDUE/WN4gaNOMcdOUixxVHKBvvYDbVnhvp6kQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Ki0h6WUl;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Koigd53D;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7409D606A609;
-	Thu,  5 Nov 2026 15:54:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7409D606A609
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7D0D606A607;
+	Thu,  5 Nov 2026 15:53:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E7D0D606A607
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Ki0h6WUl
-ARC-Seal: i=1; a=rsa-sha256; t=1793893984; cv=none; 
+	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Koigd53D
+ARC-Seal: i=1; a=rsa-sha256; t=1793893972; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=JlB8hVPPPDNcmszLLkIBvBwSag5xhD7SiapW3xecJ7C5W05AWfhRhnN/rRpzwhVVCakGdMNL9mDpTI0dH8NVErgqIeeydWHLkgQ2mtHkOr1kjzAh0p/zLiHKmxnBMUavcgUaroitAhy7icZOfObiJ/j3Q8Szh+KZhTzOS1eftto=
+	b=kaeCJsxGjwXK1eBIKyUfvVH3syby8WhVbqkdJIyrSD02U/hUvWlbHOP0Q5/8XUGc2aeu+9fJXzd77wBOl2rzPtGiLgANZEZEQd+dZVsiVBX+/hjJQj/8oMxuVy2hRxxRiWSyGTJgngaiZq7nKJZboRu/RvJz7EzP8pBbP9z44Ys=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1793893984; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=fTzNDSolmw7K2SsCbbZU91nxSTB00KcD9PPh6CHzKVg=; 
-	b=AYE3sbP2IplCW1BDlq6pjMXAlYtgXCiRV6i3jszZ/L54iL0l3YB+J4lZNS0AQZ0vyRHJBPArbgUws1KJN+PbGC34AoEo7XbFuGTJuH7SwlKGy5WaveL5RHtUB93dKsAzYZXVBBGHinRAoLsdHJQkWVUzAtQyNm13L2TD+uz/R/Q=
+	t=1793893972; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=aFyxDfy6nq4JsCbeO+IwynELVljNeTVnd8XRS/Ay8pI=; 
+	b=PMhYumL3pBr/gB6JiB+zqQLdUP7RloJaSOqGHIepAzjxaj9txRG4xlrOuKKLvCpYADyYtF68xQKt04dPRPUEFoBrE5O7DwS0oY3k812kSXie973KMRIc921VDte1t6uN8FAoZPotLOtNi1Ep5pPdGWKOWV98ZWynJBvIlAPIvDc=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=Ki0h6WUlKLThrkF3KvCnaUd93eXjEjo+StMaGQ/y4aU5zjWNlImVOU+lBV0DDWrpZsy/eUlxAQ/hZX9Pf8aq5CiUS1uW0ZaS8Tai+mkkMXa/rI/6Ar37nMHwxIRw1evj09RZf0iFwtzv9yuv8VQh//vi39UnH6DmTuD3dRhz95I=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=fTzNDSolmw7K2SsCbbZU91nxSTB00KcD9PPh6CHzKVg=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1793893983774815.9743865612031;
-	Thu, 5 Nov 2026 07:53:03 -0800 (PST)
+DKIM-Signature: a=rsa-sha256; b=Koigd53DirSmCJztb08D1dYHSEQ3uhkYdqeFSNhR1c4zloIqxktVwSgj7oV9k/1/+vidcKUiXUUTEa4kjtsyvtRnmGFOUAVnGmDZNt1+5vYE5y7tVG7jNoNL7ogg10Rz/FMc3VQVP0NUsrZb1XEV7w6HBYix5xK10es/Z7FbJLM=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=aFyxDfy6nq4JsCbeO+IwynELVljNeTVnd8XRS/Ay8pI=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 1793893970956976.0401364709152;
+	Thu, 5 Nov 2026 07:52:50 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Thu, 05 Nov 2026 16:51:56 +0100
-Subject: [PATCH v2 05/27] drm/connector: hdmi: Add VTEM EMP generation
+Date: Thu, 05 Nov 2026 16:51:54 +0100
+Subject: [PATCH v2 03/27] video/hdmi: Add VTEM EMP packing
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -61,7 +61,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-vrr-limiter-uapi-v2-5-55f4215be2c2@collabora.com>
+Message-Id: <20261105-vrr-limiter-uapi-v2-3-55f4215be2c2@collabora.com>
 References: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 In-Reply-To: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 To: Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>, 
@@ -89,122 +89,209 @@ X-Mailer: b4 0.15.2
 
 From: Derek Foreman <derek.foreman@collabora.com>
 
-Add VTEM EMP generation to enable variable refresh rate signalling over
-HDMI.
-
-These infoframes are only generated if the sink supports VRR.
+VTEM EMPs are a type of infoframe that is required for Variable Refresh
+Rate. Add code to pack them.
 
 Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- drivers/gpu/drm/display/drm_hdmi_state_helper.c | 63 +++++++++++++++++++++++++
- include/drm/drm_connector.h                     |  5 ++
- 2 files changed, 68 insertions(+)
+ drivers/video/hdmi.c | 97 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/hdmi.h | 19 ++++++++++
+ 2 files changed, 115 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-index eb6abfd1350d..ce680eaa5047 100644
---- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-+++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-@@ -853,6 +853,61 @@ static int hdmi_generate_hdmi_vendor_infoframe(const struct drm_connector *conne
- 	return 0;
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index 45b42f14a750..ed9abc7ad228 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -983,6 +983,10 @@ hdmi_infoframe_pack(union hdmi_infoframe *frame,
+ 		length = hdmi_vendor_any_infoframe_pack(&frame->vendor,
+ 							buffer, size);
+ 		break;
++	case HDMI_INFOFRAME_TYPE_EMP:
++		length = hdmi_emp_infoframe_vtem_pack(&frame->vtem,
++						      buffer, size);
++		break;
+ 	default:
+ 		WARN(1, "Bad infoframe type %d\n", frame->any.type);
+ 		length = -EINVAL;
+@@ -994,9 +998,11 @@ EXPORT_SYMBOL(hdmi_infoframe_pack);
+ 
+ static const char *hdmi_infoframe_type_get_name(enum hdmi_infoframe_type type)
+ {
+-	if (type < 0x80 || type > 0x9f)
++	if (type < 0x7F || type > 0x9f)
+ 		return "Invalid";
+ 	switch (type) {
++	case HDMI_INFOFRAME_TYPE_EMP:
++		return "EMP";
+ 	case HDMI_INFOFRAME_TYPE_VENDOR:
+ 		return "Vendor";
+ 	case HDMI_INFOFRAME_TYPE_AVI:
+@@ -1516,6 +1522,29 @@ hdmi_vendor_any_infoframe_log(const char *level,
+ 	}
  }
  
-+static int hdmi_generate_emp_infoframe_vtem(const struct drm_connector *connector,
-+					    struct drm_connector_state *conn_state)
++static void
++hdmi_emp_infoframe_vtem_log(const char *level,
++			    struct device *dev,
++			    const struct hdmi_emp_infoframe_vtem *frame)
 +{
-+	const struct drm_display_info *info = &connector->display_info;
-+	const struct drm_crtc_state *crtc_state =
-+		drm_atomic_get_crtc_state(conn_state->state, conn_state->crtc);
-+	struct drm_connector_hdmi_infoframe *infoframe =
-+		&conn_state->hdmi.infoframes.vtem;
-+	struct hdmi_emp_infoframe_vtem *vtem =
-+		&infoframe->data.vtem;
-+	const struct drm_crtc_vrr_state *vrr = &crtc_state->vrr_state;
-+	int vfront;
-+	u8 avi_vic;
++	hdmi_infoframe_log_header(level, dev,
++				  (const struct hdmi_any_infoframe *)frame);
 +
-+	infoframe->set = false;
-+
-+	if (!connector->hdmi.funcs->vtem.write_infoframe)
-+		return 0;
-+
-+	if (!info->hdmi.vrr_cap.supported)
-+		return 0;
-+
-+	if (conn_state->hdmi.infoframes.avi.set)
-+		avi_vic = conn_state->hdmi.infoframes.avi.data.avi.video_code;
-+	else
-+		avi_vic = 0;
-+
-+	hdmi_emp_infoframe_vtem_init(vtem);
-+
-+	switch (conn_state->vrr_display_mode) {
-+	case VRR_DISPLAY_MODE_GAME:
-+		vtem->game_vrr_en = true;
-+		vtem->m_const = !vrr->dynamic;
-+		break;
-+	case VRR_DISPLAY_MODE_OFF:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (vtem->game_vrr_en && !avi_vic) {
-+		vtem->base_refresh_rate = drm_mode_vrefresh(&crtc_state->mode);
-+		vfront = crtc_state->adjusted_mode.crtc_vsync_start -
-+			 crtc_state->adjusted_mode.crtc_vdisplay;
-+		if (vfront > U8_MAX || vfront < 0)
-+			return -EINVAL;
-+
-+		vtem->base_vfront = vfront;
-+	}
-+
-+	infoframe->set = true;
-+
-+	return 0;
++	hdmi_log("    game vrr enabled: %u\n", frame->game_vrr_en);
++	hdmi_log("    fva factor minus 1: %u\n", frame->fva_factor_m1);
++	hdmi_log("    m_const: %u\n", frame->m_const);
++	hdmi_log("    base vertical front porch: %u\n", frame->base_vfront);
++	hdmi_log("    base refresh rate: %u\n", frame->base_refresh_rate);
 +}
 +
- static int
- hdmi_generate_infoframes(const struct drm_connector *connector,
- 			 struct drm_connector_state *conn_state)
-@@ -884,6 +939,10 @@ hdmi_generate_infoframes(const struct drm_connector *connector,
- 	if (ret)
- 		return ret;
- 
-+	ret = hdmi_generate_emp_infoframe_vtem(connector, conn_state);
-+	if (ret)
-+		return ret;
-+
- 	return 0;
- }
- 
-@@ -1475,6 +1534,10 @@ int drm_atomic_helper_connector_hdmi_update_infoframes(struct drm_connector *con
- 			goto out;
++static void
++hdmi_emp_infoframe_log(const char *level,
++		       struct device *dev,
++		       const union hdmi_infoframe *frame)
++{
++	/* Only support VTEM for now */
++	hdmi_emp_infoframe_vtem_log(level, dev, &frame->vtem);
++}
+ /**
+  * hdmi_infoframe_log() - log info of HDMI infoframe
+  * @level: logging level
+@@ -1542,6 +1571,9 @@ void hdmi_infoframe_log(const char *level,
+ 	case HDMI_INFOFRAME_TYPE_DRM:
+ 		hdmi_drm_infoframe_log(level, dev, &frame->drm);
+ 		break;
++	case HDMI_INFOFRAME_TYPE_EMP:
++		hdmi_emp_infoframe_log(level, dev, frame);
++		break;
  	}
- 
-+	ret = write_or_clear_infoframe(connector, &funcs->vtem, "VTEM",
-+				       &old_conn_state->hdmi.infoframes.vtem,
-+				       &new_conn_state->hdmi.infoframes.vtem);
-+
- out:
- 	mutex_unlock(&connector->hdmi.infoframes.lock);
+ }
+ EXPORT_SYMBOL(hdmi_infoframe_log);
+@@ -1919,3 +1951,66 @@ int hdmi_infoframe_unpack(union hdmi_infoframe *frame,
  	return ret;
-diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 184b10c89508..9df745ecff92 100644
---- a/include/drm/drm_connector.h
-+++ b/include/drm/drm_connector.h
-@@ -1186,6 +1186,11 @@ struct drm_connector_hdmi_state {
- 		 * matching our state.
- 		 */
- 		struct drm_connector_hdmi_infoframe hdmi;
+ }
+ EXPORT_SYMBOL(hdmi_infoframe_unpack);
 +
-+		/**
-+		 * @vtem: VTEM EMP infoframes structure matching our state.
-+		 */
-+		struct drm_connector_hdmi_infoframe vtem;
- 	} infoframes;
++/**
++ * hdmi_emp_infoframe_vtem_init() - initialize an HDMI VTEM EMP
++ * @emp: HDMI VTEM EMP
++ */
++void hdmi_emp_infoframe_vtem_init(struct hdmi_emp_infoframe_vtem *emp)
++{
++	memset(emp, 0, sizeof(*emp));
++	emp->type = HDMI_INFOFRAME_TYPE_EMP;
++}
++EXPORT_SYMBOL(hdmi_emp_infoframe_vtem_init);
++
++/**
++ * hdmi_emp_infoframe_vtem_pack() - pack a vtem into a binary buffer
++ * @vtem: pointer to &struct hdmi_emp_infoframe_vtem to pack
++ * @buffer: pointer to pre-allocated output buffer
++ * @size: maximum size in bytes of @buffer
++ *
++ * Pack a VTEM infoframe struct into a binary buffer in a way that's suitable
++ * to be sent out over the wire.
++ *
++ * Returns the number of bytes packed into the binary buffer or a negative
++ * error code on failure.
++ */
++ssize_t hdmi_emp_infoframe_vtem_pack(struct hdmi_emp_infoframe_vtem *vtem,
++				     void *buffer, size_t size)
++{
++	u8 *ptr = buffer;
++
++	if (size < HDMI_INFOFRAME_SIZE(VTEM))
++		return -EINVAL;
++
++	/* 4 bits max */
++	if (vtem->fva_factor_m1 > 0xF)
++		return -EINVAL;
++
++	memset(buffer, 0, size);
++
++	/* Header Data */
++	ptr[0] = vtem->type;
++	ptr[1] = BIT(7) | BIT(6);
++	ptr[2] = 0;
++
++	ptr[3] = BIT(7) | BIT(2);
++
++	ptr[4] = 0;
++	ptr[5] = 1;
++	ptr[6] = 0;
++	ptr[7] = 1;
++	ptr[8] = 0;
++	ptr[9] = 4;
++
++	/* This is where the VTEM part starts */
++	ptr[10] = (vtem->fva_factor_m1 << 4) |
++		  (vtem->m_const ? BIT(1) : 0) |
++		  (vtem->game_vrr_en ? BIT(0) : 0);
++	ptr[11] = vtem->base_vfront;
++	ptr[12] = vtem->base_refresh_rate >> 8 & 0x3;
++	ptr[13] = vtem->base_refresh_rate & 0xFF;
++
++	return 14;
++}
++EXPORT_SYMBOL(hdmi_emp_infoframe_vtem_pack);
+diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+index b80a5ee63bb2..71e2b36896af 100644
+--- a/include/linux/hdmi.h
++++ b/include/linux/hdmi.h
+@@ -55,6 +55,7 @@ enum hdmi_packet_type {
+ };
  
- 	/**
+ enum hdmi_infoframe_type {
++	HDMI_INFOFRAME_TYPE_EMP = 0x7F,
+ 	HDMI_INFOFRAME_TYPE_VENDOR = 0x81,
+ 	HDMI_INFOFRAME_TYPE_AVI = 0x82,
+ 	HDMI_INFOFRAME_TYPE_SPD = 0x83,
+@@ -76,6 +77,7 @@ enum hdmi_infoframe_type {
+ #define HDMI_AUDIO_INFOFRAME_SIZE  10
+ #define HDMI_DRM_INFOFRAME_SIZE    26
+ #define HDMI_VENDOR_INFOFRAME_SIZE  4
++#define HDMI_VTEM_INFOFRAME_SIZE   10
+ 
+ /*
+  * HDMI 1.3a table 5-14 states that the largest InfoFrame_length is 27,
+@@ -235,6 +237,18 @@ struct hdmi_drm_infoframe {
+ 	u16 max_fall;
+ };
+ 
++struct hdmi_emp_infoframe_vtem {
++	enum hdmi_infoframe_type type;
++	unsigned char version;
++	unsigned char length;
++
++	bool game_vrr_en;
++	bool m_const;
++	unsigned char fva_factor_m1;
++	unsigned char base_vfront;
++	u16 base_refresh_rate;
++};
++
+ void hdmi_avi_infoframe_init(struct hdmi_avi_infoframe *frame);
+ ssize_t hdmi_avi_infoframe_pack(struct hdmi_avi_infoframe *frame, void *buffer,
+ 				size_t size);
+@@ -249,6 +263,10 @@ ssize_t hdmi_drm_infoframe_pack_only(const struct hdmi_drm_infoframe *frame,
+ int hdmi_drm_infoframe_check(struct hdmi_drm_infoframe *frame);
+ int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
+ 				   const void *buffer, size_t size);
++void hdmi_emp_infoframe_vtem_init(struct hdmi_emp_infoframe_vtem *frame);
++ssize_t hdmi_emp_infoframe_vtem_pack(struct hdmi_emp_infoframe_vtem *frame,
++				     void *buffer,
++				     size_t size);
+ 
+ enum hdmi_spd_sdi {
+ 	HDMI_SPD_SDI_UNKNOWN,
+@@ -457,6 +475,7 @@ union hdmi_infoframe {
+ 	union hdmi_vendor_any_infoframe vendor;
+ 	struct hdmi_audio_infoframe audio;
+ 	struct hdmi_drm_infoframe drm;
++	struct hdmi_emp_infoframe_vtem vtem;
+ };
+ 
+ ssize_t hdmi_infoframe_pack(union hdmi_infoframe *frame, void *buffer,
 
 -- 
 2.56.0

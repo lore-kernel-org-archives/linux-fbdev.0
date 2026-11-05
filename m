@@ -1,55 +1,56 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1793894132;
-	b=dH/yAewzZr+cClQMhCRrVa41AZSGSo4M6Io1eaGL1FuaujQDszENJ4RjtLuo/2d/zB99
-	 CAmejhLoDMoldjSHmVplYwLBgYcBO2GUOsG8RkfwBWhqUhRzs4kR+84EryzSuM7+4TmtE
-	 3woQ/C+sxXF56huecxwyBO5OUW36Qwk9vBtJ9WLEUolN8///ekZ8Fx/TVnw7yP55jjZpU
-	 BX2YWsWc/fM+igs5hmlu0J5VhNdRBTTNzlzAmCK6V5jFIqyjzpEJu2dOmwxuqDQ3tRhF5
-	 qfdEBliCRDWu0sZ2rcNk9Ver8LK8gKntHd7fWNxEBwmIwBnKhhafL3ok7MSX7FO5flg==
+	b=5Avq8SLYQQk+uioShfXQs9P5m5MX1yU9a5SSP/hm+VjSq7dutouXv9TUM8PhA/EWDz5a
+	 eH4F4t2vDQXcTfZwV3ysYcfy3KFX4WkzM79j2ATMTsq/8DEz0HNvqsDFOCwvQgokeKtM/
+	 QSy+xX/pR9GvEOLWfLRFO11bVItRHOeV8Gd+FKh+jAsf3N7f3qWRfv8NfmQQNJfBjwMBj
+	 OMBAw3uVrn2xODncFWuLJsS2EU7VyA+wmgzOgeAhVXD1jDCVuMdNy/8U1qpVXdXA/iauc
+	 A/awpml4TCqoQ5igB5AznrTmW3mxAj4vmytadZ81UvDZB1bvU2qno+D6FRYYXYKp51g==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1793894132;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=ZsJGxCYDJBtgZ7PbKgRI/o6Iaz0hRbnKlktFoA+H35M=;
-	b=l4CPkQF6Empp/8A95nUflpHIsyMZVfr9Kq+uWWOlwJ65u+OpD3sJHQZLPkapJZ6KCaTb
-	 flDzr+bD4ewcYP/dgOo9IEuTHBjAw+zoJWoCf6t29y42GfQYF05bsh7HaPWN3N4t9qfEK
-	 1woR+VyxRCJ1t5N8tg913j7FHLd5JgEkWB0GBtrvlk2v2YRC2vNwLk1FcSIEa5iVYd9ms
-	 2uNG0op16FzJVrDysYQ7WPg5G3XCBMdhtVvUO/Mc139BcPmb0p2WfuziMRoHX9gE4NLGa
-	 XYW11MrVe6enGj20LIdiLfKlgemBHS5Jz0X8PhIKUvxGOf3BZyD/wIzAtaAgPjqxi9g==
+	bh=sXVdw7vU5ofz/MC7RbWYsGV4+QyERagQ3Me77tggaqA=;
+	b=TSq+8q5197C2kZBvxwUNuUPO8RP4EkBjifMITNtElpLBvV5nS76Os5MxiAYvqFsCSdLP
+	 wHuxYQX9WnrKc9auzxJOsXFKnPQGDQSKSV7vZCMjFaIJpomcekdRYOBjWPrwy9gFX1aeS
+	 m7sDZgcwU6PDT9aCpxX3GsdpP214CBTTV4hfItYzWxzkSK5p0bdjUUJYq4u165fw2fivJ
+	 NuFG7A7uUDMmTvzlQXdxO7RcT14u/zW3wX6VUHivUmOYk23q9jSDtlU+M4MZLL+eaKzw1
+	 HH9JNgknbxzKhg70Az2jap+LgysIwwAWwkaIS/ajKfajEYdBPP4wyxOKWW6epw/KrxA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=QGh8+D0s;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b="Da0wH/cG";
 	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9DFF606D82C;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D3E116070782;
 	Thu,  5 Nov 2026 15:55:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C9DFF606D82C
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D3E116070782
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=QGh8+D0s
-ARC-Seal: i=1; a=rsa-sha256; t=1793894049; cv=none; 
+	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Da0wH/cG
+ARC-Seal: i=1; a=rsa-sha256; t=1793894005; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=igjwL76ycM1L/XPcKwK03cwIOheRnkepJ5YN3E4hC+0CbQFVDDgRlnuVtQukFdWyCN2KxuDSlRBQSNVEH5iApDDRz8jTrXX1e7M7pzpx9ELOP6AH6g8V0v7jKwV0D+DXnNmawTAmG+nbinOTcgwQbePOfmR7rSyLXbr8+QQWq9Y=
+	b=R7uf2llnfIu0oqpbnc9sVETu5emQPBr69ahcUBhDgAgKf7TgqdbSkw+oYDyF4JOdNOKwBuwVfsZI/d9c/nE1eLBKB/NlVeC0O1QiIL+b6MtkQHBqEDg2M6TlFyJUF6jont21YyNmG66ZBR/zOaqPDIamx321zrfI5keTmIM2qcc=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1793894049; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=ZsJGxCYDJBtgZ7PbKgRI/o6Iaz0hRbnKlktFoA+H35M=; 
-	b=OKvKHyQ8LpQyWO+0F3ZQFjiq1QDch598myawKpHryQeOi98S0nKAVPVyKGcolNcQg0iodwCyMcTkTNLqQUrfgUeLH2h2ERlycFfL0HKe92H79p5hoG41/3veNxoEv6ryjG9f5y4ZDMdYSCZ2vq1SktKKUjggNlYIvmGe8dWQTKI=
+	t=1793894005; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=sXVdw7vU5ofz/MC7RbWYsGV4+QyERagQ3Me77tggaqA=; 
+	b=DsNrNti6LrJiJzr7cUcac6V2ny95DWA5mJfQ8d5ezJgpFH7oRH80dMv+w3fB5M7XGgUWvGvQ0RHH2Vk8deSwxwJe94UsoQXQUgx+wHJ99iCXsL1e+xAaOwbOhabVhk2IiUNM8zkOyD4P6NIqaEOxCf6MHpnj1gGdro+XUuK4y3M=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=QGh8+D0stNKdIwJFTAYChBePG0mT95bYJ//TTLFpnzP69Mr/EL6tLE9D+YlAyVbJcIIJbOJuWcyUZCGNhSp7/x/1Rmh92oj7wTOnlW5tzLLbzuAZtI67rNlw3gmoUs2fMN+3GkAJxo63Rw82fmGpJNnPJDrzYXvyjyQKPVxmHZk=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=ZsJGxCYDJBtgZ7PbKgRI/o6Iaz0hRbnKlktFoA+H35M=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1793894048143143.84427994378188;
-	Thu, 5 Nov 2026 07:54:08 -0800 (PST)
+DKIM-Signature: a=rsa-sha256; b=Da0wH/cGyb1nyuZoG2Y+e2i436r0rCOAR3nUQui+vXs3iDVpWmjqAxKTNDi/II5cva0TJDNNg3LnWDDADgT9cTrh3Zon0XUYukoaE6OSqBkPWArm4iJ26EJ69jV0vU9Az86uzcr2gHr3f+eXo4vhmRtcXl2EhnNg8cBEezQmHbo=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=sXVdw7vU5ofz/MC7RbWYsGV4+QyERagQ3Me77tggaqA=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 179389400272574.3566153246461;
+	Thu, 5 Nov 2026 07:53:22 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Thu, 05 Nov 2026 16:52:06 +0100
-Subject: [PATCH v2 15/27] drm/edid: Parse QMS flag from HDMI SCDS
+Date: Thu, 05 Nov 2026 16:51:59 +0100
+Subject: [PATCH v2 08/27] drm/connector: Add
+ drm_display_info_is_vrr_capable
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -61,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-vrr-limiter-uapi-v2-15-55f4215be2c2@collabora.com>
+Message-Id: <20261105-vrr-limiter-uapi-v2-8-55f4215be2c2@collabora.com>
 References: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 In-Reply-To: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 To: Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>, 
@@ -87,60 +88,63 @@ Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.15.2
 
-Thanks to a GPL'd source code release from a hardware vendor that shall
-not be named, which has since been scrubbed off GitHub, it's now public
-knowledge how the HDMI Forum EDID extension communicates support for QMS
-("Quick Media Switching") on a sink. Bit number 6 indicates support for
-QMS in the same byte that also contains the CinemaVRR flag.
+Add a function to return whether a sink, as described by a
+drm_display_info struct, is capable of receiving VRR signals.
 
-Add this definition to the EDID header file, and parse it to a member of
-drm_hdmi_vrr_cap.
+For HDMI sinks, this can just check the HDMI specific vrr_cap.supported
+field, which is set by the EDID parsing code. For other types of
+displays, the generally agreed-upon method appears to be to check
+whether the monitor range's minimum frequency is above 0.
 
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- drivers/gpu/drm/drm_edid.c  | 1 +
- include/drm/drm_connector.h | 3 +++
- include/drm/drm_edid.h      | 1 +
- 3 files changed, 5 insertions(+)
+ drivers/gpu/drm/drm_connector.c | 19 +++++++++++++++++++
+ include/drm/drm_connector.h     |  2 ++
+ 2 files changed, 21 insertions(+)
 
-diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-index 3148038747b6..d439928caacc 100644
---- a/drivers/gpu/drm/drm_edid.c
-+++ b/drivers/gpu/drm/drm_edid.c
-@@ -6224,6 +6224,7 @@ static void drm_parse_hdmi_gaming_info(struct drm_hdmi_info *hdmi, const u8 *db)
- 	vrr->cnmvrr = db[8] & DRM_EDID_CNMVRR;
- 	vrr->cinema_vrr = db[8] & DRM_EDID_CINEMA_VRR;
- 	vrr->mdelta = db[8] & DRM_EDID_MDELTA;
-+	vrr->qms_capable = db[8] & DRM_EDID_QMS;
+diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
+index 65c14b6e47a6..a44afba8c5ff 100644
+--- a/drivers/gpu/drm/drm_connector.c
++++ b/drivers/gpu/drm/drm_connector.c
+@@ -1378,6 +1378,25 @@ int drm_display_info_set_bus_formats(struct drm_display_info *info,
+ }
+ EXPORT_SYMBOL(drm_display_info_set_bus_formats);
  
- 	if (cea_db_payload_len(db) < 9)
- 		return;
++/**
++ * drm_display_info_is_vrr_capable - Check whether sink is VRR capable
++ * @info: pointer to a &struct drm_display_info representing the sink
++ *
++ * Check whether the sink supports variable refresh rate signals.
++ *
++ * Returns:
++ * - true if variable refresh rate is supported by the sink
++ * - false otherwise
++ */
++bool drm_display_info_is_vrr_capable(const struct drm_display_info *info)
++{
++	if (info->is_hdmi)
++		return info->hdmi.vrr_cap.supported;
++
++	return info->monitor_range.min_vfreq > 0;
++}
++EXPORT_SYMBOL(drm_display_info_is_vrr_capable);
++
+ /* Optional connector properties. */
+ static const struct drm_prop_enum_list drm_scaling_mode_enum_list[] = {
+ 	{ DRM_MODE_SCALE_NONE, "None" },
 diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index c0865a2547fd..830a33fb5301 100644
+index 9df745ecff92..5b6920c1a996 100644
 --- a/include/drm/drm_connector.h
 +++ b/include/drm/drm_connector.h
-@@ -291,6 +291,9 @@ struct drm_hdmi_vrr_cap {
- 	 * VRRmax values having correct values.
- 	 */
- 	bool supported;
-+
-+	/** @qms_capable: The sink supports Quick Media Switching */
-+	bool qms_capable;
- };
+@@ -1078,6 +1078,8 @@ int drm_display_info_set_bus_formats(struct drm_display_info *info,
+ 				     const u32 *formats,
+ 				     unsigned int num_formats);
  
++bool drm_display_info_is_vrr_capable(const struct drm_display_info *info);
++
  /**
-diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
-index a2617aa34edf..f1e2052cb08b 100644
---- a/include/drm/drm_edid.h
-+++ b/include/drm/drm_edid.h
-@@ -265,6 +265,7 @@ struct detailed_timing {
- #define DRM_EDID_CNMVRR				(1 << 3)
- #define DRM_EDID_CINEMA_VRR			(1 << 4)
- #define DRM_EDID_MDELTA				(1 << 5)
-+#define DRM_EDID_QMS				(1 << 6)
- #define DRM_EDID_VRR_MAX_UPPER_MASK		0xc0
- #define DRM_EDID_VRR_MAX_LOWER_MASK		0xff
- #define DRM_EDID_VRR_MIN_MASK			0x3f
+  * struct drm_connector_tv_margins - TV connector related margins
+  *
 
 -- 
 2.56.0

@@ -1,56 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1793894172;
-	b=nwvAO+EQb2tC2Eammhu/VT5ZyrAh83TTyfD8B4/HbSavVGoK0ugDSQxO7T1XPjk7njdS
-	 bHRdql0W9G9zTD0QSShn6D4OgcW9x1n7NZqGV54PpF1fCsqU4C+Rb1v5eQgjbEMQWGZdq
-	 qM9M1iQbyJYGO0NWHql3dvYwBL+I3M27nPihCitRoRJrrIGhUuqLdbwEU3AxXWaAE9C0I
-	 o3K/GxJjLcQiYcEZlLtHnqpibkrFc4dUJHY5OBymfXzgJPb6t5PIAkjCl8YG8KfpcxcmS
-	 P55nnb0si5yU+kBgYMLkcwv7/PF9oYAcw3GqCa9Uuoqq3OqRfYNi+XM4bHD/IzCthqg==
+	b=WehwsgkZFTYU/iCJabVNkRh92w2rCqbGSR4oWgKgIemXwBHvVakh/c9rlQcjKvZjjtG8
+	 vJ9BQUhVohWsZtE26G9CY722uoI06V42EjpaHhIvN7QEx2fI2DocUgrFMwmnfuztqKv92
+	 F69OhI9yS2lBSpFcO5ghZ6M7koo3dfpzmAnhk6+hHeki3iD/du3qBcFZ4F1nPnJSvsTFM
+	 vFiCDDH+La2ci8sY2WlBxGo6WRGetVzhjwFSFm3n+cZzEZunfZl2aDmzCjeLGix+I6xrQ
+	 9WaBDaT3ygdDWzxoTf0e6nDQeNVO9caxxiTSl/ffT1JWgDvG7Ft2B7v7ETM42chHdkw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1793894172;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=Uvc1syTMYMFSpAE/jbDqVyGXDVUt+Vo4SRVox0ytqLo=;
-	b=oe1aDM4cU6fjlEC1hoJ0bPF4EI5uDQRqx3p9EJRDCNbOWzLwIhK+/sr9tbdHpo+q3LRm
-	 cBPwUau6k+1KzQTOUVbvUfzufNRQAP707XKh68UL8GX4QssZD8+n32x9rzmGTJCQA2NJK
-	 3e/aqRr5mMQ5i/KcBuijIt3Ba9kRN+yPJ/FcR+tOzgrJaRy8j1Ru0PqfKj+lWh9FDprZG
-	 bkFKncRUq9134ZVHh1rpEqiSeq94sDQpGFe8vNWWBNpsUGZGaJ74WoatNnNKPyubpjLAh
-	 V86sfhUbH/wyAsLC5AULDGENqh0u8r+LM6lc5EYiQON/zHONdQCwIfo7T486nKboSXw==
+	bh=tVNwYKMhk2/WnrIZ19upJetFcNs7CUL1Pr30OK/rV9s=;
+	b=RryErX2PHF+ZmCfJ9J/jLGuNR+uvBpJUd2Uj7zHEgYlhwBWD/iinTkzhKozLpO5njJ+m
+	 nnd3a8GowCEmJYBw7bpbW50VLuSG4zGo+qUgvdDz8vXnhR4XoEoceV1bnVXkzSnadq1yg
+	 8Sp3g2O+VIHfDPzalMEFqAf3tLB+aJ2KRScne9ozovC8uR4UWS0wZol56Xd0bmwSTcRpW
+	 593j6r59InKuYAq6P8n8jft4A3GfH/KDNNqe5ijt5sAt8utROlvOa9fslbUUcn2FxL08f
+	 ZVgOC838l+CMuXZSs/gWnA0xLMlqyyFZXYvx+3vGs9+J1Kz2zgi7vsg1fctoX9ECZ6Q==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=ZCRyGZHx;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=B8xpVXrr;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24C4E606E559;
-	Thu,  5 Nov 2026 15:56:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 24C4E606E559
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28DB3606E571;
+	Thu,  5 Nov 2026 15:56:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 28DB3606E571
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=ZCRyGZHx
-ARC-Seal: i=1; a=rsa-sha256; t=1793894111; cv=none; 
+	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=B8xpVXrr
+ARC-Seal: i=1; a=rsa-sha256; t=1793894117; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=Ka1WdsZYDV7Nc8mJ45DMVednrFj/Ynh/2SabZ2ktijh2mdWr/y3rsvmrW+uvCuEbS3Kq8FKozSEf4eNMV9zPf3CVmGCM8oQI3ONhq+BCt4QjxoII6cjuOCxLjk+OgAOBJDST/gPxrfBsIQHYRM+gqikA3EOK5OdsAp1I2OGcYW0=
+	b=CR2pennS5hSbWsFNmP77+NJWpOZsPJC0Uaj/YPAW2kmnuMLpFxNpTTH6KmvOyxKYUGxAkMEdf8zScqXRVRhdrnfaoBQuJL2NQ7TsWZO874UDtW+Ro2YqBs7tz2rsJaYL+OuYZ4syfJeyy0ReXS7oIrMt/JQYFr/rLs5NnJ3kjk4=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1793894111; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=Uvc1syTMYMFSpAE/jbDqVyGXDVUt+Vo4SRVox0ytqLo=; 
-	b=d6FAgzzB3SMiLTQgxUroXw1PHe7mS7Nq/0q+KmnjwsRw0Czt224TSb9jhrpb61whFy/Uv2yCgfZIWYNDGnG1MJp9VIqSyPxyayR0iV28pO4WBEHlsxZOCLurHod0sfQS+exRBKir/1CTtgAApn+DRaOpjkxKmjFCUX7fhFq3gyY=
+	t=1793894117; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=tVNwYKMhk2/WnrIZ19upJetFcNs7CUL1Pr30OK/rV9s=; 
+	b=AJg3rcecPL1vPnfYJ0PawUJipTuMxvcOJLJH7RoshWzWPz+mLoREmsbs43PAWxVKj1IHiVwcj3pgH6RCv/P9EFXKeKp04LHbpa3atUkgPDSZH1XyImOIZo71CVOUQpx9iyPwcD7TbXJoEsI7gIAC3tgloDNTX6gfU24cZnih2eE=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=ZCRyGZHx9txJ5/f9hAPaNM9/ummNBIU4meVhihPTHbgDWQE+YQKJ7DsbsaNpSbtHg+I/9TuGds8z9FCPzQ9/A4KUfvF5xBsNAcyhSCVxMtWMgcjUHTUBrf3rLyGZQBzQ+e91Mn37K/Vp9WLY2Zc16iAlzdWx0/dEUhrYbypVYI0=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=Uvc1syTMYMFSpAE/jbDqVyGXDVUt+Vo4SRVox0ytqLo=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1793894110107971.9612430908318;
-	Thu, 5 Nov 2026 07:55:10 -0800 (PST)
+DKIM-Signature: a=rsa-sha256; b=B8xpVXrrrydEK2W4qItNLZsmWHehtPHQN+tJwM9U4qG2heDbFs7i7woYk2Yet8XdDGgIoM7KWsGZUxBdl8sg9rk9Khy8v87trvQ8+8fDQMZsMrGITRsnAItDXAeD4jHvIryGuOKTE95+/Imq54Hd77b0G0vlcSklkUqn7KY3bzM=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=tVNwYKMhk2/WnrIZ19upJetFcNs7CUL1Pr30OK/rV9s=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 1793894116497649.6985151835922;
+	Thu, 5 Nov 2026 07:55:16 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Thu, 05 Nov 2026 16:52:16 +0100
-Subject: [PATCH v2 25/27] drm/connector: Fix docs for cnmvrr and cinemavrr
- members
+Date: Thu, 05 Nov 2026 16:52:17 +0100
+Subject: [PATCH v2 26/27] drm/debugfs: Expose HDMI VRR in vrr_range debugfs
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -62,7 +61,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-vrr-limiter-uapi-v2-25-55f4215be2c2@collabora.com>
+Message-Id: <20261105-vrr-limiter-uapi-v2-26-55f4215be2c2@collabora.com>
 References: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 In-Reply-To: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 To: Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>, 
@@ -88,34 +87,59 @@ Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.15.2
 
-The member names in the doc comments are inexplicably prefixed with an
-"m", which does not reflect the actual struct member's name.
+IGT requires the vrr_range debugfs file for running the tests, for
+better or worse.
 
-Drop the "m".
+Since Commit 014da1db5e64 ("drm/edid: parse HDMI 2.1 gaming (ALLM/VRR)
+capabilities from HF-VSDB") parses the HDMI VRR minimum and maximum
+numbers into separate members and not the display_info.monitor_range
+member, this debugfs entry needs to use those members when the display
+is HDMI and does HDMI VRR.
 
-Fixes: 014da1db5e64 ("drm/edid: parse HDMI 2.1 gaming (ALLM/VRR) capabilities from HF-VSDB")
+Add this special casing, and also protect accesses to connector->status
+and connector->display_info interruptibly with the mode_config mutex.
+
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- include/drm/drm_connector.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/drm_debugfs.c | 24 +++++++++++++++++++-----
+ 1 file changed, 19 insertions(+), 5 deletions(-)
 
-diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 41f272afbb1e..021ab07a1d9b 100644
---- a/include/drm/drm_connector.h
-+++ b/include/drm/drm_connector.h
-@@ -265,10 +265,10 @@ struct drm_hdmi_vrr_cap {
- 	/** @fva: flag for Fast VActive (Quick Frame Transport) support */
- 	bool fva;
+diff --git a/drivers/gpu/drm/drm_debugfs.c b/drivers/gpu/drm/drm_debugfs.c
+index a72f9723d3a9..476f44642ac3 100644
+--- a/drivers/gpu/drm/drm_debugfs.c
++++ b/drivers/gpu/drm/drm_debugfs.c
+@@ -586,12 +586,26 @@ static ssize_t edid_write(struct file *file, const char __user *ubuf,
+ static int vrr_range_show(struct seq_file *m, void *data)
+ {
+ 	struct drm_connector *connector = m->private;
++	u16 min_vfreq, max_vfreq;
++
++	scoped_cond_guard(mutex_intr, return -EINTR,
++			  &connector->dev->mode_config.mutex) {
++		struct drm_display_info *info = &connector->display_info;
++
++		if (connector->status != connector_status_connected)
++			return -ENODEV;
++
++		if (info->is_hdmi && info->hdmi.vrr_cap.supported) {
++			min_vfreq = info->hdmi.vrr_cap.vrr_min;
++			max_vfreq = info->hdmi.vrr_cap.vrr_max;
++		} else {
++			min_vfreq = info->monitor_range.min_vfreq;
++			max_vfreq = info->monitor_range.max_vfreq;
++		}
++	}
  
--	/** @mcnmvrr: flag for Negative M VRR support */
-+	/** @cnmvrr: flag for Negative M VRR support */
- 	bool cnmvrr;
+-	if (connector->status != connector_status_connected)
+-		return -ENODEV;
+-
+-	seq_printf(m, "Min: %u\n", connector->display_info.monitor_range.min_vfreq);
+-	seq_printf(m, "Max: %u\n", connector->display_info.monitor_range.max_vfreq);
++	seq_printf(m, "Min: %u\n", min_vfreq);
++	seq_printf(m, "Max: %u\n", max_vfreq);
  
--	/** @mcinema_vrr: flag for Cinema VRR support */
-+	/** @cinema_vrr: flag for Cinema VRR support */
- 	bool cinema_vrr;
- 
- 	/** @mdelta: flag for limited frame-to-frame compensation support */
+ 	return 0;
+ }
 
 -- 
 2.56.0

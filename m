@@ -1,56 +1,110 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793894228;
-	b=1R3Al/K3mXIbvQATC26YFeNlL72oaDRXMmXEzU9yMR/ytA/4BCokeCZ4W6R05crqPZ82
-	 VkOXWD4XEBxz455JmYvtx2M++g19Ae66NBet6zXI2o/lDCga5NZ+NKsvZzHshcNTDZPV1
-	 m5MR+FQjxtwzgp8atoD4ZXY0Gl0smdDSnhPfGnjnbD6xZYA9SkcxcLp/Dc+WdyJ/daWw4
-	 w2WCWL1+c9q9RcasHPJqhdDSbsyhF1vHZ4YtgJEU3wrJI+FCWqu8UCf6nrOBYZkuAKhpo
-	 BlqA0bQUWGPcyh8B0mooQA6eQyfUYshUrj9rNil42NGeZRzxmI1/W5PgjNEDVWopR7A==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793894228;
-	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
-	 In-Reply-To:To:Cc:X-Mailer;
-	bh=flsuFq14o816MWACouGrfjkvB7UYKbtN0BBr46XFxiI=;
-	b=k2WKaV21lqyxJjzJ6/stw5xcJOWnki3qCJJvY+1MC4kQBzcztv//wahmHU7Wl3XBW2sp
-	 0LPlzhEs5NwsYAoH82JQikVDUvVW4o5ro+ghcxnskejyD3MUUY0JzamAYtRzFhtyPZBbr
-	 qLAWx5oIGFFWl+6nntMmkqIVwNi/srIXwQpzvoeNHetu/KyLVAJGcievZbgJZdsLLNy+o
-	 qHT4WmPQmtfpUib7YmYzYqurWMQS0Je3hRPsVDDq590DjcfQ8lnAN1HplOf6kQg69vHVy
-	 6LlEmMCr9PrA7H+KXsYyo4dueCTOR/nwvhiWnbPhRCcrjA5Foa+QhiyOjvQG+vxUTtQ==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=collabora.com;
-	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=FVsdXPwr;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1793909545;
+	b=zg2M7I38mT++MPdsCjH2qTEutRf2Ne1Mc83D37E8tjChVQAYMMZ4ARvsiqvt/I3FWnuj
+	 pxZIC8oi8IM/2wIu6qqhyWgskY/qH2RqtsPaUPuthV33DeJGOF3gewsGvVRZhq6gv19eM
+	 EqxSSajoPQPXU9OZCIyzNmNfPCEgCwBdtvAixod4/46x4DAKhUAdRP56WGVUVIeo8LOgs
+	 ytRXilH/LHRRMmGswMvAv/3uHm+cnUCJWIKCiKqUSDzXArFl9irCySeQ53nIbngimdi3U
+	 XLLSQInQr8tZlo/CupN8gtGKJN0gAOIpBaYeQ0w0W5oTNBfk1EYdrGDSUQiCQllD2qw==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793909545;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=oj4+ZYy6IPmEk7n48ZoOfVMyHB9K5zKwdNLmj5eS60A=;
+	b=DtUOIX1rvSUglCoF/0sOZCSlvmvTk+RUBDNpS256fxLgXbZTs6DoylhfIQu0kIovEJ4z
+	 BuJiLJFniYRd1EAjXdXFso1FpHLVjzWA6XJTInHZSsgNXTwkIQAdcp8DkTjfelVxxiqMz
+	 K0a23mC087q5Fe5IrCmPT+aHQgyaxx+dEoJBOQd18byMuN1BgO/uma0JZ8/c1xbHkzsg6
+	 biyUwQEXL6x0um3fJ+pQIQJggE2dlcwDJ7+c0xgw6lqIoTeFs3DFQziakJBL+E01RdhIo
+	 hB3yNZl4yKSKfdaocu4g53CX7t/DzYy+uSoUD7yO6J/PX9IG5Xb/P92RGNgQse8mjOg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WJW1RlPT;
+	arc=none smtp.remote-ip=209.85.128.42
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8539860720DB;
-	Thu,  5 Nov 2026 15:57:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8539860720DB
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7966A606A32C
+	for <linux-fbdev@vger.kernel.org>; Thu,  5 Nov 2026 20:12:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7966A606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=FVsdXPwr
-ARC-Seal: i=1; a=rsa-sha256; t=1793894099; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=Fh4F7EtcB9gi3lPi/lziXVS+1zV3VHmrx+QNYClWb0fIU4yClugt9sK9n21fpuQCuLfNPG8TmcmSub2eiJBnUfQPDfkjEiZ1ggij9PaaqfFo3GKQPOa/JkmJEkWWoDYUYEPsqlY2iqElvt//8APmH2CEiXH5H5VQ6YaXnw/T9Gs=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1793894099; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=flsuFq14o816MWACouGrfjkvB7UYKbtN0BBr46XFxiI=; 
-	b=JLCTF/rsE/8QeIXWu4b7JIwQ/0P/iaFyaaTcw8hf5l9XC37HwlwPGbfAjb50HfWcE29E/HUJ8Hz+0v3dECSUs/0r9J2QPTxljuMdYxCgxbzPVCwyeTuw77hsf02wtHkMYlm0BbFymm/sEGkbS8AJ6uIQIBbnBqiZAh1TWU6bgFs=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
-	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=FVsdXPwrwBtURlUgfQPLp4ym0WpOJ5LAqE/fYV1xyUOl7kePTUkis1+6bFvm34IqDP0ar4+D8SwsHUpC48Xft+IrUZFaGNG1KdwKnAMnQJsDAFLiY6622M3CUG8d7WtmqZlrNnCobPmHAYnnwxfjDEvjejcL23zNlIfRIAhEGVM=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=flsuFq14o816MWACouGrfjkvB7UYKbtN0BBr46XFxiI=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1793894097520640.942599913008;
-	Thu, 5 Nov 2026 07:54:57 -0800 (PST)
-From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Thu, 05 Nov 2026 16:52:14 +0100
-Subject: [PATCH v2 23/27] drm/tests: hdmi: Add Fixed/Constrained rate VRR
- tests
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WJW1RlPT
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4afe2d546f9so27665455e9.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 05 Nov 2026 12:12:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1793909544; x=1794514344; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=oj4+ZYy6IPmEk7n48ZoOfVMyHB9K5zKwdNLmj5eS60A=;
+        b=WJW1RlPT4nBYc85BjmKGFu2S3pNJc9h7p7KxVzEu5ni8QwEhD6AZYZE1PHvNpvssVy
+         C5+q+IbtF7LYPXEPEBRaZkzdujhWyQ0fUe4f5Xz/c5Vqe9MDfRDZsDQt8IHtK49XKXLI
+         ae8sWtCDBYWI/5gseIUrC/+ZUjLbhQdgHuNQefnHAPOH+81+q7amXVCwCXPYDNrtW2sc
+         n9nLehpHgJ9SuJU8R6QuJDwXGiC8NpgU21mQc3O/SLnA6J1YXqXkQEA2Og9BpDp3KDq+
+         xEbiyGKqj+IBXKZBJU/daPFdn9kSiL/PN4Gn9LkJCkB4ihpud59kUVf35uGxaQaScdSC
+         pbFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793909544; x=1794514344;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=oj4+ZYy6IPmEk7n48ZoOfVMyHB9K5zKwdNLmj5eS60A=;
+        b=Uy/6YVia2vN22gOD58K6S8BhmnNpvgrjgoAZT0zR32IbhkxgxTX/8aY3WdiboYX1w3
+         xEQJwTgrwAHa0/DP145iaFT4pIlYMwtj1MPuXRz7xmn5EveGsOrPL9QIqcrN9kJ0Z2mD
+         pzShBfWq0yYQEvIcHGi98snPzZwXOYtUWWTGMIc++ufRtWf08JFiUM1W3oLRP4YKm/G5
+         w9TXVmT/mAU6IoE5zP9cx3TthCSIG8iIexeXfjdofsoJoBqzh2LzvIXeDKN82O2G/Oip
+         qWfB5u+JDKVhCybfLaBOn1hHEFn228LS783wMj28ssP805weZpkFBwxicTGg4jAms+Uk
+         Xkuw==
+X-Forwarded-Encrypted: i=1; AKwUvBxUmJP/O+wheLgD3id9cqdM8iGeLZeKjFrI5ENqD6IjT7HmNOc8rmU+0AzhonMHTAMStdrSTS71sgQGqQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+nyexyCQhNe2ure3S28DbrWsrwFYtddjI22xjkipCPckfPQLSc
+	V9+caROdBFYZxIhbnIjPUOhNbelA5ZW1UqRikb2GR5Ui5THESTYMYzI6
+X-Gm-Gg: AYBFou1a0erPAxJNonk+rixrHlj+qzzfBkATW2zrLJLIMjz/Eh4tBmVZQrsbFNotFuJ
+	7ZnL/+vxrpJvm/zpwEm98/pUZ71YrDsfnGv45LxjTlpkZcPdNtcCLc7S2Rm1qGhdPBJEOt6o8eH
+	plWuqfb7O3FCSiHGNthp5ERFMKIAP1DGJ/oJMUSLxR0zUHUa+AKIaXxt5gA1D8+MxEaSWdMlfhD
+	mxSvcJ9XTanIqCPvsmDfcWXlusgZshsF1V5UlnIwMMXIafn6L6zoPhkuf2FuBsDDRno8fTBiJxw
+	ckOivOG5EY3zlZ3TGMbHz6zXRVbtJe2w5Rz/lTpwaAu0oAHix9SBbhQvsOxGzYRxvcxMLOhsdzT
+	lEejL7ulZdA19SVepDgEbX/zfzkl7AoTiChbmOxwrVeTGyLpTHxa53qdkd57loVRseWMSCFbDrh
+	6db34inmeFBtUEF6nqItb2IVOg7aG74fJFFKxstUIke6+QtX+bjAofioJhrJciNkzqZ+vnJyMwI
+	B7n+1MSYDfkOWmGd3vwrAYpfG2/+SgvRj0JcHfHkn5j8hjfcUC8T8T0PsQGy2nGVPDSDGxHj1EC
+	7sxK8u1eM1msk8iMKvmBogz1NoBNa4Z6GC/PHXH7iXadIitvKUcnOzg=
+X-Received: by 2002:a05:6000:2dc9:b0:48c:7f18:c85e with SMTP id ffacd0b85a97d-492778d2076mr1325704f8f.45.1793909543495;
+        Thu, 05 Nov 2026 12:12:23 -0800 (PST)
+Received: from localhost ([82.77.126.113])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48fecac1caesm11108369f8f.17.2026.11.05.12.12.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Nov 2026 12:12:22 -0800 (PST)
+From: Daniel Matyas <matyasdaniel006@gmail.com>
+To: dri-devel@lists.freedesktop.org
+Cc: Daniel Matyas <matyasdaniel006@gmail.com>,
+	linux-staging@lists.linux.dev,
+	Andy Shevchenko <andy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Alex Lanzano <lanzano.alex@gmail.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Conor Dooley <conor@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Nam Cao <namcao@linutronix.de>,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	devicetree@vger.kernel.org
+Subject: [RFC] staging: fbtft: Moving fb_ili9341 (and others) to DRM
+Date: Thu,  5 Nov 2026 22:11:53 +0200
+Message-ID: <20261105201154.37294-2-matyasdaniel006@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -60,451 +114,46 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-vrr-limiter-uapi-v2-23-55f4215be2c2@collabora.com>
-References: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
-In-Reply-To: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
-To: Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>, 
- "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
- Leo Li <sunpeng.li@amd.com>, Harry Wentland <harry.wentland@amd.com>, 
- Fangzhi Zuo <Jerry.Zuo@amd.com>, Daniel Stone <daniels@collabora.com>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>, 
- Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>, 
- Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, 
- Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
- Luca Ceresoli <luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>, 
- =?utf-8?q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
- Andy Yan <andyshrk@163.com>, 
- =?utf-8?q?Michel_D=C3=A4nzer?= <michel.daenzer@mailbox.org>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
- linux-fbdev@vger.kernel.org, linux-rockchip@lists.infradead.org, 
- linux-arm-kernel@lists.infradead.org, kernel@collabora.com, 
- Derek Foreman <derek.foreman@collabora.com>, 
- wayland-devel@lists.freedesktop.org, 
- Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-X-Mailer: b4 0.15.2
+Content-Transfer-Encoding: 8bit
 
-Add tests to verify the functionality of the
-VRR_{MIN,MAX}_{NUMERATOR,DENOMINATOR} properties and the HDMI state
-helpers that make use of them.
+Hi,
 
-This includes tests for fixed rate scenarios, as well as a test for a
-constrained game mode scenario. A parametric test case checks that
-various erroneous target rates are rejected.
+I'm looking at the fbtft TODO (convert drivers to DRM) and want to check
+whether fb_ili9341 can be dropped. Findings against v7.4-rc1:
 
-Proper handling of CinemaVRR is tested as well.
+1. fb_ili9341's init sequence is the MI0283QT-9A one. Comparing register
+   writes with drivers/gpu/drm/tiny/mi0283qt.c, the values are identical,
+   including the default gamma tables. Differences I found:
+   - mi0283qt writes EN3GAM (0xF2) = 0x08; the fbtft write is commented out.
+   - mi0283qt always sets MADCTL BGR; fbtft makes it configurable (bgr=).
+   - fbtft rotate=270 also sets ML; mi0283qt does not.
+   - Rotation maps as DRM rotation = fbtft rotate - 90 (mod 360).
+   - fbtft also offers runtime gamma adjustment.
 
-Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
----
- drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c | 386 +++++++++++++++++++++
- 1 file changed, 386 insertions(+)
+2. fb_ili9341 registers the compatible "ilitek,ili9341", which is also the
+   fallback in the dt-schema binding, so it can match nodes that the DRM
+   drivers claim via their specific compatibles.
 
-diff --git a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-index def414085069..4d9bcab57778 100644
---- a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-+++ b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-@@ -3674,10 +3674,396 @@ static void drm_test_check_hdmi_vrr_flush_vsync(struct kunit *test)
- 			crtc_state->vrr_state.max_vtotal);
- }
- 
-+/*
-+ * Check that on a VRR-capable sink with VRR enabled and a fixed target rate
-+ * set, an atomic commit works, and the derived vtotals are as expected.
-+ */
-+static void drm_test_check_hdmi_vrr_fixed_rate(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_modeset_acquire_ctx ctx;
-+	struct drm_display_mode *preferred;
-+	struct drm_crtc_state *crtc_state;
-+	struct drm_atomic_commit *state;
-+	int mode_refresh;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
-+				BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
-+				8,
-+				&dummy_connector_hdmi_funcs,
-+				test_edid_hdmi_vrr);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	KUNIT_ASSERT_TRUE(test, priv->connector.display_info.is_hdmi);
-+	KUNIT_ASSERT_TRUE(test, priv->connector.display_info.hdmi.vrr_cap.supported);
-+	KUNIT_ASSERT_TRUE(test, priv->connector.display_info.hdmi.vrr_cap.cinema_vrr);
-+
-+	preferred = find_preferred_mode(&priv->connector);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+
-+	mode_refresh = drm_mode_vrefresh(preferred);
-+
-+	guard(modeset_lock)(&ctx);
-+
-+	allocate_state_for_vrr_test(test, priv, &ctx, preferred, &state);
-+
-+retry:
-+	prepare_state_for_vrr_test(test, priv, &ctx, state, &crtc_state);
-+
-+	crtc_state->vrr_enabled = true;
-+	crtc_state->vrr_state.vrr_min_n = 40;
-+	crtc_state->vrr_state.vrr_min_d = 1;
-+	/* Equivalent fraction, expressed differently to pose a hurdle */
-+	crtc_state->vrr_state.vrr_max_n = 40000;
-+	crtc_state->vrr_state.vrr_max_d = 1000;
-+
-+	ret = drm_atomic_commit(state);
-+	if (ret == -EDEADLK) {
-+		drm_atomic_commit_clear(state);
-+		ret = drm_modeset_backoff(&ctx);
-+		if (!ret)
-+			goto retry;
-+	}
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	crtc_state = drm_atomic_get_new_crtc_state(state, priv->crtc);
-+	KUNIT_ASSERT_NOT_NULL(test, crtc_state);
-+
-+	KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.base_vtotal,
-+			preferred->crtc_vtotal * mode_refresh / 40);
-+
-+	/* Minimum rate is 24Hz because of the CinemaVRR flag */
-+	KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.max_vtotal,
-+			preferred->crtc_vtotal * mode_refresh / 24);
-+}
-+
-+/*
-+ * Check that the drm_hdmi_helper_vrr_flush() and drm_hdmi_helper_vrr_vsync()
-+ * helpers return the expected values on a VRR-capable sink with VRR enabled
-+ * and a fixed target set.
-+ */
-+static void drm_test_check_hdmi_vrr_fixed_rate_flush_vsync(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_modeset_acquire_ctx ctx;
-+	struct drm_display_mode *preferred;
-+	struct drm_crtc_state *crtc_state;
-+	struct drm_atomic_commit *state;
-+	int mode_refresh;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
-+				BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
-+				8,
-+				&dummy_connector_hdmi_funcs,
-+				test_edid_hdmi_vrr);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	KUNIT_ASSERT_TRUE(test, priv->connector.display_info.is_hdmi);
-+	KUNIT_ASSERT_TRUE(test, priv->connector.display_info.hdmi.vrr_cap.supported);
-+
-+	preferred = find_preferred_mode(&priv->connector);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+
-+	mode_refresh = drm_mode_vrefresh(preferred);
-+
-+	scoped_guard(modeset_lock, &ctx) {
-+		allocate_state_for_vrr_test(test, priv, &ctx, preferred, &state);
-+
-+retry:
-+		prepare_state_for_vrr_test(test, priv, &ctx, state, &crtc_state);
-+
-+		crtc_state->vrr_enabled = true;
-+		crtc_state->vrr_state.vrr_min_n = 40000;
-+		crtc_state->vrr_state.vrr_min_d = 1001;
-+		/* Equivalent fraction, expressed differently to pose a hurdle */
-+		crtc_state->vrr_state.vrr_max_n = 80000;
-+		crtc_state->vrr_state.vrr_max_d = 2002;
-+
-+		ret = drm_atomic_commit(state);
-+		if (ret == -EDEADLK) {
-+			drm_atomic_commit_clear(state);
-+			ret = drm_modeset_backoff(&ctx);
-+			if (!ret)
-+				goto retry;
-+		}
-+		KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+		crtc_state = drm_atomic_get_new_crtc_state(state, priv->crtc);
-+		KUNIT_ASSERT_NOT_NULL(test, crtc_state);
-+
-+		KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.base_vtotal,
-+				mult_frac(preferred->crtc_vtotal, mode_refresh * 1000, 39960));
-+
-+		/* Fixed rate case: flush should never trigger a vtotal update. */
-+		KUNIT_EXPECT_FALSE(test, drm_crtc_helper_vrr_flush(crtc_state));
-+		KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.cur_vtotal, 0);
-+
-+		/*
-+		 * Invoking drm_hdmi_helper_vrr_flush() again should not change
-+		 * cur_vtotal, meaning it should return false.
-+		 */
-+		KUNIT_EXPECT_FALSE(test, drm_crtc_helper_vrr_flush(crtc_state));
-+		KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.cur_vtotal, 0);
-+
-+		/* First vsync will set cur_vtotal. */
-+		KUNIT_EXPECT_TRUE(test, drm_crtc_helper_vrr_vsync(crtc_state));
-+		KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.cur_vtotal,
-+				crtc_state->vrr_state.base_vtotal);
-+		/* First vsync with fixed rate will still be dynamic. */
-+		KUNIT_EXPECT_TRUE(test, crtc_state->vrr_state.dynamic);
-+	}
-+
-+	/* Try a second commit to evaluate the dynamic flag */
-+	scoped_guard(modeset_lock, &ctx) {
-+		allocate_state_for_vrr_test(test, priv, &ctx, preferred, &state);
-+
-+retry_2:
-+		prepare_state_for_vrr_test(test, priv, &ctx, state, &crtc_state);
-+
-+		ret = drm_atomic_commit(state);
-+		if (ret == -EDEADLK) {
-+			drm_atomic_commit_clear(state);
-+			ret = drm_modeset_backoff(&ctx);
-+			if (!ret)
-+				goto retry_2;
-+		}
-+		KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+		crtc_state = drm_atomic_get_new_crtc_state(state, priv->crtc);
-+		KUNIT_ASSERT_NOT_NULL(test, crtc_state);
-+
-+		KUNIT_EXPECT_FALSE(test, drm_crtc_helper_vrr_flush(crtc_state));
-+		KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.cur_vtotal,
-+				crtc_state->vrr_state.base_vtotal);
-+		KUNIT_EXPECT_FALSE(test, crtc_state->vrr_state.dynamic);
-+		KUNIT_EXPECT_FALSE(test, drm_crtc_helper_vrr_vsync(crtc_state));
-+		KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.cur_vtotal,
-+				crtc_state->vrr_state.base_vtotal);
-+		/* Subsequent vsyncs with fixed rate won't be dynamic. */
-+		KUNIT_EXPECT_FALSE(test, crtc_state->vrr_state.dynamic);
-+	}
-+}
-+
-+struct vrr_target_error_params {
-+	unsigned int vrr_min_n;
-+	unsigned int vrr_min_d;
-+	unsigned int vrr_max_n;
-+	unsigned int vrr_max_d;
-+	bool cinema_vrr_override;
-+	const char *desc;
-+};
-+
-+static struct vrr_target_error_params vrr_target_errors[] = {
-+	{ 26, 1, 26 * 2000, 2000, false, "VRR target <= min rate should fail" },
-+	{ 200, 1, 200, 1, true, "VRR target <= max rate should fail" },
-+	{ 60, 1, 40, 1, true, "VRR max target <= VRR min target should fail" },
-+	{ 40, 1, 60, 0, true, "VRR max target denominator of 0 should fail" },
-+	{ 40, 0, 60, 1, true, "VRR min target denominator of 0 should fail" },
-+	{ 25000, 1001, 30, 1, true, "CinemaVRR with non-fixed rate should fail" },
-+	{ 0, 1000, 60, 1, true, "Minimum-Incomplete range should fail" },
-+	{ 40, 1, 0, 0, false, "Maximum-Incomplete range should fail" },
-+};
-+
-+KUNIT_ARRAY_PARAM_DESC(check_vrr_target_errors, vrr_target_errors, desc);
-+
-+/*
-+ * Check that on a VRR-capable sink with VRR enabled and various erroneous
-+ * combinations of target rates set, an atomic commit fails.
-+ */
-+static void drm_test_check_hdmi_vrr_target_rate_fail(struct kunit *test)
-+{
-+	const struct vrr_target_error_params *params = test->param_value;
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_modeset_acquire_ctx ctx;
-+	struct drm_display_mode *preferred;
-+	struct drm_crtc_state *crtc_state;
-+	struct drm_atomic_commit *state;
-+	struct drm_connector *conn;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
-+				BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
-+				8,
-+				&dummy_connector_hdmi_funcs,
-+				test_edid_hdmi_vrr);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.is_hdmi);
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.vrr_cap.supported);
-+	KUNIT_ASSERT_LT(test, 24, conn->display_info.hdmi.vrr_cap.vrr_min);
-+
-+	preferred = find_preferred_mode(conn);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+
-+	guard(modeset_lock)(&ctx);
-+
-+	allocate_state_for_vrr_test(test, priv, &ctx, preferred, &state);
-+
-+retry:
-+	prepare_state_for_vrr_test(test, priv, &ctx, state, &crtc_state);
-+
-+	/*
-+	 * Allow individual test parameters to play with the CinemaVRR flag
-+	 * without needing to bring their own modified EDID.
-+	 */
-+	conn->display_info.hdmi.vrr_cap.cinema_vrr = params->cinema_vrr_override;
-+
-+	crtc_state->vrr_enabled = true;
-+	crtc_state->vrr_state.vrr_min_n = params->vrr_min_n;
-+	crtc_state->vrr_state.vrr_min_d = params->vrr_min_d;
-+	crtc_state->vrr_state.vrr_max_n = params->vrr_max_n;
-+	crtc_state->vrr_state.vrr_max_d = params->vrr_max_d;
-+
-+	ret = drm_atomic_commit(state);
-+	if (ret == -EDEADLK) {
-+		drm_atomic_commit_clear(state);
-+		ret = drm_modeset_backoff(&ctx);
-+		if (!ret)
-+			goto retry;
-+	}
-+	KUNIT_EXPECT_LT(test, ret, 0);
-+
-+	drm_modeset_drop_locks(&ctx);
-+	drm_modeset_acquire_fini(&ctx);
-+}
-+
-+/*
-+ * Check that on a VRR-capable sink that has the CinemaVRR flag set, with VRR
-+ * enabled and a fixed target rate set, an atomic commit succeeds at a rate
-+ * only possible if CinemaVRR is supported and a fixed target is used.
-+ */
-+static void drm_test_check_hdmi_vrr_fixed_rate_cinema_vrr(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_modeset_acquire_ctx ctx;
-+	struct drm_display_mode *preferred;
-+	struct drm_crtc_state *crtc_state;
-+	struct drm_atomic_commit *state;
-+	struct drm_connector *conn;
-+	int mode_refresh;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
-+				BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
-+				8,
-+				&dummy_connector_hdmi_funcs,
-+				test_edid_hdmi_vrr);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.is_hdmi);
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.vrr_cap.supported);
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.vrr_cap.cinema_vrr);
-+	KUNIT_ASSERT_LT(test, 24, conn->display_info.hdmi.vrr_cap.vrr_min);
-+
-+	preferred = find_preferred_mode(conn);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+
-+	mode_refresh = drm_mode_vrefresh(preferred);
-+
-+	guard(modeset_lock)(&ctx);
-+
-+	allocate_state_for_vrr_test(test, priv, &ctx, preferred, &state);
-+
-+retry:
-+	prepare_state_for_vrr_test(test, priv, &ctx, state, &crtc_state);
-+
-+	crtc_state->vrr_enabled = true;
-+
-+	/* 24/1.001 Hz should work */
-+	crtc_state->vrr_state.vrr_min_n = 24000;
-+	crtc_state->vrr_state.vrr_min_d = 1001;
-+	crtc_state->vrr_state.vrr_max_n = 24000;
-+	crtc_state->vrr_state.vrr_max_d = 1001;
-+
-+	ret = drm_atomic_commit(state);
-+	if (ret == -EDEADLK) {
-+		drm_atomic_commit_clear(state);
-+		ret = drm_modeset_backoff(&ctx);
-+		if (!ret)
-+			goto retry;
-+	}
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+	KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.base_vtotal,
-+			mult_frac(preferred->crtc_vtotal, mode_refresh * 1000, 23976));
-+}
-+
-+/*
-+ * Check that on a VRR-capable sink, an atomic commit with a VRR minimum and
-+ * maximum target rate that's more narrow than the monitor's target rate
-+ * succeeds and produces the expected derived values.
-+ */
-+static void drm_test_check_hdmi_vrr_constrained_rate(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_modeset_acquire_ctx ctx;
-+	struct drm_display_mode *preferred;
-+	struct drm_crtc_state *crtc_state;
-+	struct drm_atomic_commit *state;
-+	struct drm_connector *conn;
-+	int mode_refresh;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
-+				BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
-+				8,
-+				&dummy_connector_hdmi_funcs,
-+				test_edid_hdmi_vrr);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.is_hdmi);
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.vrr_cap.supported);
-+
-+	preferred = find_preferred_mode(conn);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+
-+	mode_refresh = drm_mode_vrefresh(preferred);
-+
-+	guard(modeset_lock)(&ctx);
-+
-+	allocate_state_for_vrr_test(test, priv, &ctx, preferred, &state);
-+
-+retry:
-+	prepare_state_for_vrr_test(test, priv, &ctx, state, &crtc_state);
-+
-+	crtc_state->vrr_enabled = true;
-+	crtc_state->vrr_state.vrr_min_n = 40;
-+	crtc_state->vrr_state.vrr_min_d = 1;
-+	crtc_state->vrr_state.vrr_max_n = 80;
-+	crtc_state->vrr_state.vrr_max_d = 1;
-+
-+	ret = drm_atomic_commit(state);
-+	if (ret == -EDEADLK) {
-+		drm_atomic_commit_clear(state);
-+		ret = drm_modeset_backoff(&ctx);
-+		if (!ret)
-+			goto retry;
-+	}
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	crtc_state = drm_atomic_get_new_crtc_state(state, priv->crtc);
-+	KUNIT_ASSERT_NOT_NULL(test, crtc_state);
-+
-+	KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.base_vtotal,
-+			preferred->crtc_vtotal * mode_refresh / 80);
-+	KUNIT_EXPECT_EQ(test, crtc_state->vrr_state.max_vtotal,
-+			preferred->crtc_vtotal * mode_refresh / 40);
-+}
-+
- static struct kunit_case drm_atomic_helper_connector_hdmi_vrr_tests[] = {
- 	KUNIT_CASE(drm_test_check_hdmi_vrr),
- 	KUNIT_CASE(drm_test_check_hdmi_vrr_sink_fail),
- 	KUNIT_CASE(drm_test_check_hdmi_vrr_flush_vsync),
-+	KUNIT_CASE(drm_test_check_hdmi_vrr_fixed_rate),
-+	KUNIT_CASE(drm_test_check_hdmi_vrr_fixed_rate_flush_vsync),
-+	KUNIT_CASE_PARAM(drm_test_check_hdmi_vrr_target_rate_fail,
-+			 check_vrr_target_errors_gen_params),
-+	KUNIT_CASE(drm_test_check_hdmi_vrr_fixed_rate_cinema_vrr),
-+	KUNIT_CASE(drm_test_check_hdmi_vrr_constrained_rate),
- 	{ }
- };
- 
+3. In-tree users: no defconfig enables FB_TFT. canaan_kd233 (62363a8e2f56, Feb 2021)
+   has a status = "disabled" panel node compatible with "canaan,kd233-tft",
+   "ilitek,ili9341". It predates the first DRM driver accepting ilitek,ili9341
+   (5a04227326b0, Jul 2021), and none of the DRM drivers match canaan,kd233-tft.
+   fbtft requests "dc" and "reset" GPIOs, which fits that node. I haven't tried
+   binding it. I suppose that, if the board is used, then it is built against the
+   fbtft driver.
 
--- 
-2.56.0
+4. fb_ili9341 has had only style/mechanical changes in recent years.
 
+Questions:
+ a) Is removing fb_ili9341 acceptable, pointing users of other ILI9341
+    modules to panel-mipi-dbi? The KD233 node would then have no driver.
+ b) Or should KD233 panel support go into a DRM driver first? I don't have
+    its init sequence or physical size, or the board...
+ c) Is removal of all of fbtft already planned?
+ d) Several other fbtft drivers have drm counterparts. Should I inspect those
+ to see if removal is needed?
+
+I have not tested on hardware.
+
+Thanks,
+Daniel M

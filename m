@@ -1,56 +1,56 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793894171;
-	b=vKt1uC/Ey3QqADCDffNMG0uimwFkhDN1lUCpzxMFkZCiS9HAMuKAkCcUhvvo+uFY1Eo7
-	 85cj1AKK1SoGJQUdN15ZbVv0y0/0zcT1E5wFsOIC59L4D+eQuTUQvkwUJuPtk+lz+Y9Mt
-	 BWQY12qcq40jdo0s0E3GkSZ25mgbHIr7pgVyFLVl8zzsz50LtewnFWK3kzt6mGWysURnr
-	 hm9VmfeHAJQdYzUEy6DCeAw8EKtZaIRFQqY3n46OhjPD3CbgcFAcqOJzhLe1UXDP/3Ve9
-	 VMlMSXdwIHY3qtEKXGK7d7hm9rDAJNqzZohe5Alb22snlhTQReiTt6uM2jCzcwNG0xw==
+	t=1793894198;
+	b=tFrnPqTWo7a12NeXFNT6tl+uSd2aL03cKDNyXk3LlWvoGwL+DraCvCNHpiammJTAF/B4
+	 JdLx+WpFDhPDT8Os1LLplGeDNeehlte3gcvg1zlNYUsgpbTYtusWNp3UJMXUhpgVvl22r
+	 Q2LBUPzTMszTO/rCtmEIZdcEUi+yDmK3w9vsClB8/tfpRryv88tNIbgWVqJsWj4YLE3MK
+	 45EC1k1e6z+kNP8ptX+8YbF0yM7Dzh88KqhUDwQhhUI2ZpMfVUbczmvBdI3sZDu5Mr3FJ
+	 B8XZdXWfsZjYzYAIAZ8wynyUh/Oy0s739ejLltIC/zZ2mdHltF/+FfemxNQPxKvPyTQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793894171;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793894198;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=ukJa6i38H9O+0wEvhzaIwEJgt1m1SU43w7laRjQC3S0=;
-	b=qNK8qaUV+K/ZVP0OjbbdFVuNMz6rmfjQMownvXHRU6wirrNWINJxox3JFYI04bAgkBb+
-	 If+vykuFsOI9rbgK4WwtITL+MWB1MyQM6RbdlmUB1XYuJCNCCl8fG7v6WpjlIs6lz1FEi
-	 UMGD3hJ6rsb3YCVuW1JwLh88rnfewqxcfKywTw6MUV+Vj4/QQWTqt0pgvM0yIvZH86yrF
-	 RG7f94GBDhYIn8VQpi/UgPVtnMB1+btor28txIsDetim82qke9t4EWOheOH7dHC2f+0iQ
-	 SE3j3+K4fbAnAcmVOAaKyy4eH4SQJPQx2/TfRt1499FRKqI1aSbrGdAziOto39hiR3A==
+	bh=kvRRQf3VcesMtWRZn4Vf9PO7/HvfnDGh4n87CLoKzo8=;
+	b=rweHbCjzk7aCxTJPcH4acRfgmiVf8csLmasVapCsRqT8gLtkAT85MrnYuGKhGuJIc+jF
+	 MGH8uUWOBPa/zW3KBY8P5haxvxfzuNXpGlOEpQVImNvNpXPENklNYMCJg0w/HhbdRts4a
+	 AABwUaXvD2RWAcaj5FMzXfi5lU4YB4082QNhTYhtN8fvnk1QKtAHlS8jlvh9wK5KHYZ5Q
+	 AbvzFdXine9Fmc/g1zg1Mu/h9pPX8Zsn0vSOXbTsjpAX+JvZL6Rsyv8I+x48+WWYaB9L5
+	 Isw5rG0K+Cni5mMJIjznhK9Xblw0FsMKSNuMW9hUopWptT5tliuj8BvPIXLAUADpfQQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Dzb6nTlb;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=bkMTTc0C;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C5CC606E56D;
-	Thu,  5 Nov 2026 15:56:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7C5CC606E56D
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81FC9606A337;
+	Thu,  5 Nov 2026 15:56:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 81FC9606A337
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Dzb6nTlb
-ARC-Seal: i=1; a=rsa-sha256; t=1793894061; cv=none; 
+	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=bkMTTc0C
+ARC-Seal: i=1; a=rsa-sha256; t=1793894079; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=EW0sBlhzbHJ+wcfTSf8BDGMsFkFf+lWXVIeMOyRMFwFc2OSKdkTST9inc7wDI62Gq85VJu6jLi/qHtz+isluoHauLmp1NnqTVvQP5cmzB7QWIDBPymI30JJlLPb0dUWUJ9oCijWBtW/NtzL+n/O9ptH9Ks88w+BXEr4KBx8cckY=
+	b=aJ7rmfyGsSMUWL0bW4IGNGVeoVmgY+HVIHrdM29w1CX2wyVcV79YQ3DlmWCexZkvm2XBmvgZw7OYdVumjY1R0gq5yIHtAg5vqFfE8bAwzJce91HVVEA4/ToOJQDC9iHtslVVTHxU8rnGHselngCiNGPJlt4o2lgb5c1Mqu2kwRM=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1793894061; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=ukJa6i38H9O+0wEvhzaIwEJgt1m1SU43w7laRjQC3S0=; 
-	b=dzhJtMri+kRkSHDTwBhQwtHCy32MMfMIO60HvpLZykHDcnJBAH8P1GL+5Tj/UoARlgcaAZwC5Z4pWPboZXKnxuQJ6WZMBGOxv1OJfxSHcYK7ry2zJZWTkkpeedRosQ4/ywT4tzw6Gf+rFvCl8EdKVnqpllaGNG5/O+tyHwiHH64=
+	t=1793894079; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=kvRRQf3VcesMtWRZn4Vf9PO7/HvfnDGh4n87CLoKzo8=; 
+	b=djOpCFkXSVSb4A8FP5w5t1YhjjkSHo3GKwtBSWW3gRT8ltN4++rpc776ouzoh81lwJGXxbiK2FphxDaQ/9xawHT+ajg0E+UXE5neUZmhHWEBPgLHHqamBsX68vwsgBX998vSDhBodtXtBL3Y6J+c3v6oUJEF1INsEfLkKRVmbTo=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=Dzb6nTlbY4hOx6m/14LuyGTVgvB8JkhEmmR3LYmttlRqn8z6QBJCxgc/T50AgC6+AjkDaDFwdClp/fb7MPPtKEabTobz7CE8PcJH433+QsBnozFVLl0bI8rODWFRogvBc5Aixrpw/PHdpsbPDMpvRaIiRKsFSqYjxnEAc5EWW/Y=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=ukJa6i38H9O+0wEvhzaIwEJgt1m1SU43w7laRjQC3S0=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1793894060390792.41475105125;
-	Thu, 5 Nov 2026 07:54:20 -0800 (PST)
+DKIM-Signature: a=rsa-sha256; b=bkMTTc0CZLul8RwtiQ6lhaUiwM90P/4gpGOtx+M3J7y7/kjg1tv5TJ0ywFDfjCxPV4zh9+RE32Mgxll3fCxj8zwJInqqLxxWCG7gDTnnMB4PibdyDuyDI/hJsKoVbhXxzq7ZwzoENLZ/yN9oJj68nf60qAKj6PyNxBLkT+ggGzg=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=kvRRQf3VcesMtWRZn4Vf9PO7/HvfnDGh4n87CLoKzo8=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 1793894078714173.08349557102235;
+	Thu, 5 Nov 2026 07:54:38 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Date: Thu, 05 Nov 2026 16:52:08 +0100
-Subject: [PATCH v2 17/27] drm/connector: Add "Media" VRR display mode for
- QMS
+Date: Thu, 05 Nov 2026 16:52:11 +0100
+Subject: [PATCH v2 20/27] drm/connector: hdmi: Add QMS state validation and
+ computation
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -62,7 +62,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-vrr-limiter-uapi-v2-17-55f4215be2c2@collabora.com>
+Message-Id: <20261105-vrr-limiter-uapi-v2-20-55f4215be2c2@collabora.com>
 References: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 In-Reply-To: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 To: Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>, 
@@ -88,87 +88,175 @@ Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.15.2
 
-HDMI includes a feature called "Quick Media Switching", or QMS for
-short, which builds upon the existing VRR to allow for quick switching
-between a select few common frame rates.
+Add the necessary code to the HDMI state helpers' hdmi_validate_vrr
+function in order to check and derive the state necessary for HDMI Quick
+Media Switching (QMS) support.
 
-Add a new VRR display mode, "VRR_DISPLAY_MODE_MEDIA", to the
-vrr_display_mode connector property, in order to expose support for
-this.
-
-Additionally, add a boolean flag to the connector's HDMI sub-struct with
-which source-side support for QMS can be indicated, as well as the QMS
-tfr byte to the HDMI state sub-struct.
-
+Co-developed-by: Derek Foreman <derek.foreman@collabora.com>
+Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
- drivers/gpu/drm/drm_connector.c |  6 ++++++
- include/drm/drm_connector.h     | 14 ++++++++++++++
- 2 files changed, 20 insertions(+)
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c | 112 +++++++++++++++++++++++-
+ 1 file changed, 109 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-index 21222214a843..f7d619926e2d 100644
---- a/drivers/gpu/drm/drm_connector.c
-+++ b/drivers/gpu/drm/drm_connector.c
-@@ -1456,6 +1456,7 @@ DRM_ENUM_NAME_FN(drm_get_tv_mode_name, drm_tv_mode_enum_list)
- static const struct drm_prop_enum_list drm_vrr_mode_enum_list[] = {
- 	{ VRR_DISPLAY_MODE_GAME,   "Game" },
- 	{ VRR_DISPLAY_MODE_OFF,    "Off" },
-+	{ VRR_DISPLAY_MODE_MEDIA,  "Media" },
- };
- DRM_ENUM_NAME_FN(drm_get_vrr_mode_name, drm_vrr_mode_enum_list)
+diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+index 407ad28c649f..ba290eea7390 100644
+--- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
++++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+@@ -2,6 +2,7 @@
  
-@@ -2593,6 +2594,11 @@ EXPORT_SYMBOL(drm_mode_create_scaling_mode_property);
-  *	    - Game - set display to game mode if display supports it,
-  *	      regardless of CRTC state
-  *	    - Off - set display to VRR disabled mode, regardless of CRTC state
-+ *	    - Media - a "media" VRR mode that only supports a select number of
-+ *	      common media refresh rates as fixed targets, but does so with
-+ *	      possibly better display-side processing. In the HDMI display
-+ *	      protocol, this is QMS (Quick Media Switching), though the mode
-+ *	      enum itself is vendor-agnostic
-  *
-  * VRR Limiter/Target Properties
-  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 4801bb2769e1..41f272afbb1e 100644
---- a/include/drm/drm_connector.h
-+++ b/include/drm/drm_connector.h
-@@ -829,6 +829,8 @@ enum vrr_display_mode {
- 	VRR_DISPLAY_MODE_GAME = 0,
- 	/** @VRR_DISPLAY_MODE_OFF: Turn off VRR on the display */
- 	VRR_DISPLAY_MODE_OFF,
-+	/** @VRR_DISPLAY_MODE_MEDIA: Protocol-agnostic fixed rate media mode */
-+	VRR_DISPLAY_MODE_MEDIA,
- 	/** @VRR_DISPLAY_MODE_COUNT: Sentinel, not a valid mode, keep last */
- 	VRR_DISPLAY_MODE_COUNT
- };
-@@ -1241,6 +1243,12 @@ struct drm_connector_hdmi_state {
- 	 * deliberately not requested by the helper.
- 	 */
- 	bool scrambler_needed;
+ #include <linux/debugfs.h>
+ #include <linux/export.h>
++#include <linux/gcd.h>
+ 
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_connector.h>
+@@ -954,6 +955,26 @@ hdmi_generate_infoframes(const struct drm_connector *connector,
+ 	return 0;
+ }
+ 
++static const struct {
++	u8 tfr_byte;
++	u32 rate_n;
++	u32 rate_d;
++} hdmi_qms_tfrs[] = {
++	{ 1, 24000, 1001 },
++	{ 2, 24, 1 },
++	{ 3, 25, 1 },
++	{ 4, 30000, 1001 },
++	{ 5, 30, 1 },
++	{ 6, 48000, 1001 },
++	{ 7, 48, 1 },
++	{ 8, 50, 1 },
++	{ 9, 60000, 1001 },
++	{ 10, 60, 1 },
++	{ 11, 100, 1 },
++	{ 12, 120000, 1001 },
++	{ 13, 120, 1 },
++};
 +
-+	/**
-+	 * @qms_tfr_byte: Target frame rate byte for HDMI QMS, or 0 if QMS is
-+	 * not in use.
-+	 */
-+	u8 qms_tfr_byte;
- };
- 
  /**
-@@ -2270,6 +2278,12 @@ struct drm_connector_hdmi {
- 	 */
- 	bool scrambler_enabled;
+  * cmp_fraction - compares two fractional numbers
+  * @a: numerator of the first fraction
+@@ -992,6 +1013,66 @@ static int cmp_fraction(u32 a, u32 b, u32 c, u32 d)
+ 	return 0;
+ }
  
-+	/**
-+	 * @qms_supported: Whether the connector supports HDMI Quick Media
-+	 * Switching (QMS) on the source side, irrespective of display support.
-+	 */
-+	bool qms_supported;
++/**
++ * hdmi_validate_qms - Validate HDMI QMS state
++ * @crtc_state: pointer to a &struct drm_crtc_state to run validation on
++ * @info: pointer to a &struct drm_display_info of the accompanying connector
++ *
++ * Validate that the drm_crtc_vrr_state.vrr_min_numerator and
++ * drm_crtc_vrr_state.vrr_min_denominator are acceptable for HDMI QMS, and check
++ * that the display is HDMI QMS capable.
++ *
++ * Returns:
++ *  - Negative errno on failure
++ *  - the corresponding QMS signaling byte for the target frame rate otherwise
++ */
++static int hdmi_validate_qms(struct drm_crtc_state *crtc_state,
++			     struct drm_connector_state *conn_state,
++			     const struct drm_display_info *info)
++{
++	u32 rate_n = crtc_state->vrr_state.vrr_min_n;
++	u32 rate_d = crtc_state->vrr_state.vrr_min_d;
++	u32 min_rate_n, max_rate;
++	u32 g, i;
 +
- 	/**
- 	 * @scdc_work: Work item currently used to monitor sink-side scrambling
- 	 * status and retry setup if the sink resets it.
++	if (conn_state->vrr_display_mode != VRR_DISPLAY_MODE_MEDIA)
++		return 0;
++
++	if (!drm_crtc_helper_vrr_is_fixed_rate(&crtc_state->vrr_state))
++		return -EINVAL;
++
++	if (info->hdmi.vrr_cap.qms_tfr_min)
++		min_rate_n = 24000;
++	else
++		min_rate_n = info->hdmi.vrr_cap.vrr_min * 1000;
++
++	if (info->hdmi.vrr_cap.qms_tfr_max)
++		max_rate = info->hdmi.vrr_cap.vrr_max;
++	else
++		max_rate = 60;
++
++	g = gcd(rate_n, rate_d);
++	if (g != 1) {
++		rate_n /= g;
++		rate_d /= g;
++	}
++
++	if (!rate_d)
++		return -EINVAL;
++
++	for (i = 0; i < ARRAY_SIZE(hdmi_qms_tfrs); i++) {
++		if (cmp_fraction(min_rate_n, 1001, hdmi_qms_tfrs[i].rate_n,
++				 hdmi_qms_tfrs[i].rate_d) > 0)
++			continue;
++		if (rate_n == hdmi_qms_tfrs[i].rate_n &&
++		    rate_d == hdmi_qms_tfrs[i].rate_d &&
++		    cmp_fraction(rate_n, rate_d, max_rate, 1) <= 0)
++			return hdmi_qms_tfrs[i].tfr_byte;
++	}
++
++	return -EINVAL;
++}
++
+ static int hdmi_calculate_vtotal(const struct drm_display_mode *mode,
+ 				 u32 rate_n, u32 rate_d, u16 *out_vtotal,
+ 				 u32 *out_denom, u32 *out_frame_err)
+@@ -1129,8 +1210,17 @@ static int hdmi_validate_vrr(struct drm_connector *connector,
+ 	if (old_conn_state)
+ 		old_crtc_state = drm_atomic_get_old_crtc_state(state, old_conn_state->crtc);
+ 
+-	if (!info->hdmi.vrr_cap.supported)
+-		return -EOPNOTSUPP;
++	switch (new_conn_state->vrr_display_mode) {
++	case VRR_DISPLAY_MODE_GAME:
++		if (!info->hdmi.vrr_cap.supported)
++			return -EOPNOTSUPP;
++		break;
++	case VRR_DISPLAY_MODE_MEDIA:
++		if (!info->hdmi.vrr_cap.qms_capable ||
++		    !connector->hdmi.qms_supported)
++			return -EOPNOTSUPP;
++		break;
++	}
+ 
+ 	mode_refresh = drm_mode_vrefresh(mode);
+ 
+@@ -1145,7 +1235,10 @@ static int hdmi_validate_vrr(struct drm_connector *connector,
+ 		max_vfreq_n = mode_refresh;
+ 
+ 	is_fixed = drm_crtc_helper_vrr_is_fixed_rate(vrr_state);
+-	if (is_fixed && info->hdmi.vrr_cap.cinema_vrr)
++	if (is_fixed && ((info->hdmi.vrr_cap.qms_tfr_min &&
++			  new_conn_state->vrr_display_mode == VRR_DISPLAY_MODE_MEDIA &&
++			  connector->hdmi.qms_supported && info->hdmi.vrr_cap.qms_capable) ||
++			 info->hdmi.vrr_cap.cinema_vrr))
+ 		min_vfreq_n = 24;
+ 
+ 	/* If the VRR target changed, make sure to reset the error accumulator */
+@@ -1176,6 +1269,19 @@ static int hdmi_validate_vrr(struct drm_connector *connector,
+ 		return ret;
+ 	}
+ 
++	ret = hdmi_validate_qms(new_crtc_state, new_conn_state, info);
++	if (ret < 0) {
++		drm_dbg_kms(dev, "Invalid QMS rate: %pe\n", ERR_PTR(ret));
++		return ret;
++	}
++
++	new_conn_state->hdmi.qms_tfr_byte = ret;
++	if (!old_conn_state ||
++	    new_conn_state->hdmi.qms_tfr_byte != old_conn_state->hdmi.qms_tfr_byte)
++		vrr_state->dynamic = true;
++	else
++		vrr_state->dynamic = false;
++
+ 	if (!is_fixed) {
+ 		vrr_state->dynamic = true;
+ 
 
 -- 
 2.56.0

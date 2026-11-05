@@ -1,127 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793883360;
-	b=X1q48c49GJRMjUAi+wIutBnzs077jkruGVnkuzWf81Nt/wu7Kqu47KAIvKMJjWv9JBAu
-	 iKCIIbBBURlm501OwcvrogK56qdOsAElJU43yx+ipbG9hG6SAX1fuKIolKX3OvoYo0Se6
-	 2wAQrJTrc525wdFg6pJyFM6elmETN1J7N/6UcwD+gf8CQMTfXCIc3LCrgPS4dCzd7zOzc
-	 vy5fc5oQFc/4TxjY5cFOgsXHbxs6Fq5F+HML+zXE1pukFUtLgpoAqlUi9nqs2P7RrdFAL
-	 /h5Kh2ACnf/Cq0SZx2E4S/HakyN7YIgPyVpOi4g/RUSRAOXbeRV60n9HHoxW5t3ivnQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793883360;
-	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
-	 DKIM-Signature:Received:Received:Received:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To:X-Spam-Flag:X-Spam-Level:X-Spamd-Result:X-Spam-Score;
-	bh=cmUgot10we4d03XqL3f7g9G8JJVHefvFl9Pm7WwDa7c=;
-	b=Y/gMkq9ezHbQmBNRgTYu/ZVNMl8bNis+U+/TO3mZ/vqOILpvPaJeQzDaBv8gKFt+iF7D
-	 cN6BIY9tvN/xQ+n/cPDGALLZ+4vURRU1Cz9Lrb47PdDBLJl+kFxkWes0ZyHaEh8eHskOf
-	 CNtae+lwyqAczJ1j0lhhI1EUGdT4PChbWYp/lcS1t4oMU+X+eHBODSBguE/ODWgap4uZy
-	 4znrlGJUUnNp38OPW9sIb1t2Gioy9pRZOiGz8uoz6Ha8CEfXct7bkhpQXuvtHtED+vMIT
-	 Zk51fBfp0Va3Jibvk1R8IFs/Oh0AAKxsYM18WE6ceHqdBqtD3Y4gjuQQVLeZ9s1atHw==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=suse.cz;
-	spf=pass smtp.mailfrom=suse.cz;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=HMq2PGgc;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=MNxFmIWW;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=HMq2PGgc;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=MNxFmIWW;
-	arc=none smtp.remote-ip=195.135.223.130
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1793894034;
+	b=4QEY161UmjZCW6ST+PUZypMat0ATFv94NUnPgnbo1Lyh9kjkuCOtaKwUqKPWrTl/hGSU
+	 IMZBCGj7/gSchK3ISe5QQLmtcIQVs6geD7fTZGGmuHV2w5poErBEm/XRGK14gZ37phmXp
+	 FpO8pYhOEcpVZMSC3+Z90QWboQWjgQ/DdRSpc3DaH8kQdz4CO0NLSvnRyZuvmM7C99GPp
+	 MICO7zSRZ5HdYjKrKGs0GeJ/s5ShrkK/2wlNZhJDg9SG8w95DcZdjDHnFz+OQTnaSq2Tb
+	 th2pKNfp0AX9jRcFuhPrTndUReqBSnY9lagC6U/t193hUoBbqb866VIr3+4CBFAUjcg==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1793894034;
+	h=DMARC-Filter:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer;
+	bh=o6F6viGtXT5EjueNMtEut/jZMxT/MCMMWh1OY9AsXAo=;
+	b=oEdeNbrgEEVQaW1Fn4lWJ246O2tsgRAb2wl499rqFaI/HfFV6epYJH0N3o21sxQlbjkg
+	 tHIKhhTszy50FRXQqWLzp2Cg+oCJqmPrY7jIwLYm9tkDqVT8Bpv7hjlVHrAAYxMR2vPqp
+	 Q6g4c2dtaIqgV2ZnR3HSrxzHtiM2EZYcwGeoYOV6p6oVwvJV/7JR89oWHOudmXqrQozuH
+	 IFd5GtPnlOaxvdYOUIoS1ydVBGxKEk/nf41xtR3FDRrLCEdFS8MFELRkgnIRxjsp07l5U
+	 Yd35rKyWvHMXElAVORXKYZz2htKy9TLQQ0gAKGBKiRnzhAHx+QjOXosCU6S8UVT/dyA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=collabora.com;
+	spf=pass smtp.mailfrom=collabora.com;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=B0qcbkjW;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7AED4606A329;
-	Thu,  5 Nov 2026 12:55:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7AED4606A329
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.cz
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5324606A331;
+	Thu,  5 Nov 2026 15:53:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A5324606A331
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=HMq2PGgc;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=MNxFmIWW;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=HMq2PGgc;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=MNxFmIWW
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A593F21E32;
-	Thu,  5 Nov 2026 12:55:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1793883357; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cmUgot10we4d03XqL3f7g9G8JJVHefvFl9Pm7WwDa7c=;
-	b=HMq2PGgctUwaIqMWa/t6KS8Y0eDcx5+iVAbPBEmlA4XLOKQTFUHYY3Wu2G9HFi2gsM87lD
-	aMzBxa/v0FwGnVsOPESaie+6I8l5/g4k60NYU2DibVe12MrjUAc1fkTQmxmfgcgcng/l+U
-	h4BfEyEohAE+lhFRUtA1oPBHFGrAOjE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1793883357;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cmUgot10we4d03XqL3f7g9G8JJVHefvFl9Pm7WwDa7c=;
-	b=MNxFmIWW2W0N1wEahhCRtu1bRho1DiR+JlZKUGHHI6elu6vobHwCbHYra5eCjH34Mdn1Y0
-	kStFvwQIy0XlegCA==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1793883357; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cmUgot10we4d03XqL3f7g9G8JJVHefvFl9Pm7WwDa7c=;
-	b=HMq2PGgctUwaIqMWa/t6KS8Y0eDcx5+iVAbPBEmlA4XLOKQTFUHYY3Wu2G9HFi2gsM87lD
-	aMzBxa/v0FwGnVsOPESaie+6I8l5/g4k60NYU2DibVe12MrjUAc1fkTQmxmfgcgcng/l+U
-	h4BfEyEohAE+lhFRUtA1oPBHFGrAOjE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1793883357;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cmUgot10we4d03XqL3f7g9G8JJVHefvFl9Pm7WwDa7c=;
-	b=MNxFmIWW2W0N1wEahhCRtu1bRho1DiR+JlZKUGHHI6elu6vobHwCbHYra5eCjH34Mdn1Y0
-	kStFvwQIy0XlegCA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 6652B133F6;
-	Thu,  5 Nov 2026 12:55:57 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 7NjCD9187Gp+RAAAD6G6ig
-	(envelope-from <jack@suse.cz>); Thu, 05 Nov 2026 12:55:57 +0000
-Received: by quack.suse.cz (Postfix, from userid 1000)
-	id E76F9B6F2; Thu, 05 Nov 2026 13:55:56 +0100 (CET)
-Date: Thu, 5 Nov 2026 13:55:56 +0100
-From: Jan Kara <jack@suse.cz>
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, 
-	Linus Torvalds <torvalds@linux-foundation.org>, Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
-	Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, 
-	Eric Dumazet <edumazet@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
-	Al Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
-	Greg Kroah-Hartman <gregkh@suse.de>, Joel Granados <joel.granados@kernel.org>, 
-	Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
-	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	netdev@vger.kernel.org, ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
-	coreteam@netfilter.org, kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
-	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
-	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
-	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
-	sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
-	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, linux-debuggers@vger.kernel.org, 
-	Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
-Subject: Re: [PATCH RFC 35/38] proc: sysctl: don't hold the tables while
- readdir copies to userspace
-Message-ID: <ntnca5ndnjaoi7bvfh346zek2jphi4kfmaxv7yd4bqfrfcwjl6@2wdnnptu4igg>
-References: <20261102-work-procfs-bugfixes-v1-0-59422ed3e465@kernel.org>
- <20261102-work-procfs-bugfixes-v1-35-59422ed3e465@kernel.org>
+	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=B0qcbkjW
+ARC-Seal: i=1; a=rsa-sha256; t=1793893952; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=Vm9GaetwlNgsLFvsFO/ZmvQshN8OyGA3xT49PjmygNMZRoceB9uuaQK6zPLFmRqOMoSd2MRx6GqFjdax0VUuVLSo8OTfYT3+XgTluhLcqYaNKmRv2GRNUSAJO8A7vcHZ7PtJlydubI9QyLc13gajma8c5NFIFbmPWRSWH/KwOMc=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1793893952; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=o6F6viGtXT5EjueNMtEut/jZMxT/MCMMWh1OY9AsXAo=; 
+	b=BIpBmh6ikQMQZN4v8qei/mt1eTzrc1afVVWQcj3Nw8WK09l9uO3/KNRwkcpKNcaZRGN7rnkFqtw4+kVCjfwUMpe30dvWTBA8SPMt9O9LaxrazOJo6R/AYk6NCu6GJzpofwGInKtHc1SK4TsBRwnuGl6i5o6D2ZUF/Oqkm2fVqmE=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: a=rsa-sha256; b=B0qcbkjW3kEvpDJ5a1Z0YHKl22wOf1tAwNop85lU3TSXRyu+nwTt1ia1NdToD7TjwozBqwqzopeyx/FxoyuhZfudcEIEl0D1zkyidlNPagCDHOZXwq5Qh4YxXBJ30w+rrtYcIjXCPbjEEfSE6HnD8E2Rnn0GQg0raBQIqct59YM=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=o6F6viGtXT5EjueNMtEut/jZMxT/MCMMWh1OY9AsXAo=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 1793893952288570.7720246815022;
+	Thu, 5 Nov 2026 07:52:32 -0800 (PST)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+Subject: [PATCH v2 00/27] VRR Target Rate Limiter KMS uAPI and
+ Implementation
+Date: Thu, 05 Nov 2026 16:51:51 +0100
+Message-Id: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -131,502 +61,229 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261102-work-procfs-bugfixes-v1-35-59422ed3e465@kernel.org>
-X-Spam-Flag: NO
-X-Spam-Level: 
-X-Spamd-Result: default: False [-11.30 / 50.00];
-	SUSE_INTERNAL_BYPASS(-9.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_RHS_NOT_FQDN(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_COUNT_THREE(0.00)[3];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	R_RATELIMIT(0.00)[to_ip_from(RL63fqwwx8ot6gmekemcs76f9d)];
-	RCVD_TLS_LAST(0.00)[];
-	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	RCPT_COUNT_GT_50(0.00)[60];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,imap1.dmz-prg2.suse.org:helo]
-X-Spam-Score: -11.30
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/2WOwQ6CMBBEf4Xs2VVaDaae/A/jobSLrgGL20I0h
+ n+3gjdPk0lm3swbIglThEPxBqGRI4d7NnpVgLva+4WQffagS12VRhkcRbDljhMJDrZndMaQN9u
+ G9l5DrvVCDT9n5Om8+DjUN3Lpy/klhB5D3kpLDGobCV3oMvZQeOkwcb/5KXwhV44pyGu+Oaq5s
+ zzS6v/RqLBE3Ti/96VS1a46utC2tg5i13kEztM0fQB+jF0w+QAAAA==
+X-Change-ID: 20260919-vrr-limiter-uapi-c99ed93fe7d2
+To: Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>, 
+ "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
+ Leo Li <sunpeng.li@amd.com>, Harry Wentland <harry.wentland@amd.com>, 
+ Fangzhi Zuo <Jerry.Zuo@amd.com>, Daniel Stone <daniels@collabora.com>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+ Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>, 
+ Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, 
+ Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+ Luca Ceresoli <luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>, 
+ =?utf-8?q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
+ Andy Yan <andyshrk@163.com>, 
+ =?utf-8?q?Michel_D=C3=A4nzer?= <michel.daenzer@mailbox.org>
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+ linux-fbdev@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+ linux-arm-kernel@lists.infradead.org, kernel@collabora.com, 
+ Derek Foreman <derek.foreman@collabora.com>, 
+ wayland-devel@lists.freedesktop.org, 
+ Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+X-Mailer: b4 0.15.2
 
-On Mon 02-11-26 15:21:50, Christian Brauner wrote:
-> proc_sys_readdir() holds the directory's table for the whole readdir
-> and the table of each entry while dir_emit() copies its name to
-> userspace. Unregistering a table waits until nobody uses it anymore. So
-> a getdents64() whose buffer faults for as long as it wants keeps
-> unregister_sysctl_table() waiting, just like a stalled read() does.
-> Listing /proc/sys/net/ipv6/conf/<dev>/ that way holds up the removal of
-> the device under RTNL.
-> 
-> So don't take any table into use for a listing. A header counts what
-> refers to its memory, the inodes made for it, and unregistering doesn't
-> wait for those. readdir takes one of those references on the entry it
-> is at instead, which keeps the header around and nothing else. Under
-> sysctl_lock, where unregistering erases an entry, it finds the entry,
-> copies its name and mode, follows a link to the entry it stands for and
-> pins that. Then it looks the dentry up, creates the inode if there is
-> none, which checks for itself under sysctl_lock that the table is still
-> registered, and emits the entry with nothing held at all. The next
-> entry is the first live one after that name, which is where a listing
-> resumes between calls since "proc: sysctl: resume readdir after the
-> last name it returned" anyway. kernfs_fop_readdir() and
-> proc_readdir_de() work the same way, a reference on the entry and the
-> lock only to find the next one.
-> 
-> While the entry is still registered its node is still in the tree and
-> the next one is right behind it, like kernfs_dir_next_pos() continues
-> from the node it holds. Only once it went away, and to resume, is the
-> next entry found by name. That's one trip through sysctl_lock per entry
-> like before, and the link entries of /proc/sys/net no longer take two
-> more. The directory isn't
-> taken into use either, an entry keeps its directory registered while
-> it is used and readdir looks at the directory under the lock. So the
-> dots don't wait for anything, a directory that went away lists them and
-> then fails with -ENOENT. A seek to an arbitrary position counts the
-> entries from the start like before, one trip per entry.
-> 
-> Fixes: 77b14db502cb ("[PATCH] sysctl: reimplement the sysctl proc support")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+This series defines a proposed new userspace API for specifying frame
+rate targets for variable refresh rate (VRR) mechanisms. This includes
+specifying both a constrained range in which VRR should operate, as well
+as a fixed target, and a new connector property for QMS (Quick Media
+Switching) and passive VRR (as in, keeping the display in VRR mode
+without doing VRR).
 
-So I didn't really carefully check all the details but overall this looks
-sane to me. Just one thing that was confusing me is: Why is sysctl_dirent
-separate from sysctl_cursor? Wouldn't it be more logical for sysctl_cursor
-itself to start what it needs to pin the entry it wants to restart from?
+The reason for wanting such an uAPI is mainly to avoid the imperfection
+of the real world. By constraining VRR to a limited range or a fixed
+point entirely, we get the benefits of judder-free (or low-latency)
+presentation for content within an expected range of frame rates,
+without dipping into ones that cause visible brightness flicker. The
+addition of QMS furthermore allows the connector to signal an upcoming
+rate change ahead of time for media playback scenarios, such that
+advanced processing algorithms in e.g. TVs don't have to be disabled to
+meet the need to be able to present at full rates with no notice.
 
-								Honza
+Aside from the uAPI, there's the EDID parsing and an implementation for
+drivers that use the common HDMI state helpers, with it wired up for
+Rockchip (tested and developed on RK3588).
 
-> ---
->  fs/proc/proc_sysctl.c | 307 +++++++++++++++++++++++++++-----------------------
->  1 file changed, 166 insertions(+), 141 deletions(-)
-> 
-> diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
-> index a1242247f492..0b7a1e487ed6 100644
-> --- a/fs/proc/proc_sysctl.c
-> +++ b/fs/proc/proc_sysctl.c
-> @@ -91,6 +91,8 @@ static void drop_sysctl_table(struct ctl_table_header *header);
->  static int sysctl_follow_link(struct ctl_table_header **phead,
->  	const struct ctl_table **pentry);
->  static int insert_links(struct ctl_table_header *head);
-> +static struct ctl_table_set *lookup_header_set(struct ctl_table_root *root);
-> +static struct ctl_dir *xlate_dir(struct ctl_table_set *set, struct ctl_dir *dir);
->  static void put_links(struct ctl_table_header *header);
->  
->  static void sysctl_print_dir(struct ctl_dir *dir)
-> @@ -367,86 +369,97 @@ static const struct ctl_table *lookup_entry(struct ctl_table_header **phead,
->  	return entry;
->  }
->  
-> -static struct ctl_node *first_usable_entry(struct rb_node *node)
-> -{
-> -	struct ctl_node *ctl_node;
-> +/*
-> + * What readdir takes along for an entry between the trips through
-> + * sysctl_lock: the header pinned, which keeps its memory and nothing else,
-> + * the entry, its name and mode. For a link the header and entry are the
-> + * ones it stands for in the caller's set.
-> + */
-> +struct sysctl_dirent {
-> +	struct ctl_table_header *head;
-> +	const struct ctl_table *table;
-> +	struct ctl_node *node;		/* the entry's node in the directory, NULL for a link */
-> +	ino_t ino;
-> +	unsigned int type;
-> +	umode_t mode;
-> +	bool skip;
-> +	int len;
-> +	char name[NAME_MAX + 1];
-> +};
->  
-> -	for (;node; node = rb_next(node)) {
-> -		ctl_node = rb_entry(node, struct ctl_node, node);
-> -		if (use_table(ctl_node->header))
-> -			return ctl_node;
-> -	}
-> -	return NULL;
-> +/* A reference on the memory of @head, like an inode made for it holds. */
-> +static void sysctl_pin(struct ctl_table_header *head)
-> +{
-> +	lockdep_assert_held(&sysctl_lock);
-> +	head->count++;
->  }
->  
-> -static void first_entry(struct ctl_dir *dir,
-> -	struct ctl_table_header **phead, const struct ctl_table **pentry)
-> +static void sysctl_unpin(struct ctl_table_header *head)
->  {
-> -	struct ctl_table_header *head = NULL;
-> -	const struct ctl_table *entry = NULL;
-> -	struct ctl_node *ctl_node;
-> -
-> -	spin_lock(&sysctl_lock);
-> -	ctl_node = first_usable_entry(rb_first(&dir->root));
-> -	spin_unlock(&sysctl_lock);
-> -	if (ctl_node) {
-> -		head = ctl_node->header;
-> -		entry = &head->ctl_table[ctl_node - head->node];
-> -	}
-> -	*phead = head;
-> -	*pentry = entry;
-> +	lockdep_assert_held(&sysctl_lock);
-> +	if (!--head->count)
-> +		kfree_rcu(head, rcu);
->  }
->  
-> -static void next_entry(struct ctl_table_header **phead, const struct ctl_table **pentry)
-> +/* the first entry from @node on whose table isn't being unregistered */
-> +static struct ctl_node *first_live_entry(struct rb_node *node)
->  {
-> -	struct ctl_table_header *head = *phead;
-> -	const struct ctl_table *entry = *pentry;
-> -	struct ctl_node *ctl_node = &head->node[entry - head->ctl_table];
-> -
-> -	spin_lock(&sysctl_lock);
-> -	unuse_table(head);
-> +	struct ctl_node *ctl_node;
->  
-> -	ctl_node = first_usable_entry(rb_next(&ctl_node->node));
-> -	spin_unlock(&sysctl_lock);
-> -	head = NULL;
-> -	if (ctl_node) {
-> -		head = ctl_node->header;
-> -		entry = &head->ctl_table[ctl_node - head->node];
-> +	lockdep_assert_held(&sysctl_lock);
-> +	for (; node; node = rb_next(node)) {
-> +		ctl_node = rb_entry(node, struct ctl_node, node);
-> +		if (!ctl_node->header->unregistering)
-> +			return ctl_node;
->  	}
-> -	*phead = head;
-> -	*pentry = entry;
-> +	return NULL;
->  }
->  
->  /*
-> - * The first usable entry of @dir after @name, or the first one at all for a
-> - * NULL @name. The entries are sorted by name, so that is where a listing
-> - * resumes when entries in front of it came or went in between. -ENOENT if
-> - * the directory is being unregistered.
-> + * Fill @d with the entry of @dir behind the one it holds, letting go of that
-> + * one, or with the first live entry after @name, or the first one at all for
-> + * a NULL @name. While the entry @d holds is still registered its node is
-> + * still in the tree and the next one is right behind it. Once it is gone the
-> + * entries are found by name, they are sorted by it, so that is also where a
-> + * listing resumes when entries in front of it came or went in between.
-> + * 1 with the next entry pinned in @d, 0 at the end of the directory and
-> + * -ENOENT once @dir itself is being unregistered.
-> + *
-> + * Everything that reads the tables happens under sysctl_lock, where an entry
-> + * is erased when it is unregistered, since nothing holds the tables in use.
->   */
-> -static int entry_after(struct ctl_dir *dir, const char *name, int namelen,
-> -		       struct ctl_table_header **phead,
-> -		       const struct ctl_table **pentry)
-> +static int sysctl_dir_next(struct ctl_dir *dir, struct sysctl_dirent *d,
-> +			   const char *name, int namelen)
->  {
-> -	struct ctl_table_header *head = NULL;
-> -	const struct ctl_table *entry = NULL;
->  	struct rb_node *node, *after = NULL;
-> +	struct ctl_table_header *head;
-> +	const struct ctl_table *entry;
->  	struct ctl_node *ctl_node;
-> +	bool by_name = true;
-> +	int ret = 0;
->  
->  	spin_lock(&sysctl_lock);
-> +	if (d->head) {
-> +		if (d->node && !d->head->unregistering) {
-> +			after = rb_next(&d->node->node);
-> +			by_name = false;
-> +		}
-> +		sysctl_unpin(d->head);
-> +		d->head = NULL;
-> +	}
->  	if (unlikely(dir->header.unregistering)) {
-> -		spin_unlock(&sysctl_lock);
-> -		return -ENOENT;
-> +		ret = -ENOENT;
-> +		goto out;
->  	}
-> -	if (!name) {
-> +	if (!by_name) {
-> +		/* behind the entry @d held */
-> +	} else if (!name) {
->  		after = rb_first(&dir->root);
->  	} else for (node = dir->root.rb_node; node;) {
-> -		const struct ctl_table *table;
-> -		struct ctl_table_header *h;
-> -
->  		ctl_node = rb_entry(node, struct ctl_node, node);
-> -		h = ctl_node->header;
-> -		table = &h->ctl_table[ctl_node - h->node];
-> -		if (namecmp(table->procname, strlen(table->procname),
-> +		head = ctl_node->header;
-> +		entry = &head->ctl_table[ctl_node - head->node];
-> +		if (namecmp(entry->procname, strlen(entry->procname),
->  			    name, namelen) > 0) {
->  			after = node;
->  			node = node->rb_left;
-> @@ -454,15 +467,56 @@ static int entry_after(struct ctl_dir *dir, const char *name, int namelen,
->  			node = node->rb_right;
->  		}
->  	}
-> -	ctl_node = first_usable_entry(after);
-> -	spin_unlock(&sysctl_lock);
-> -	if (ctl_node) {
-> -		head = ctl_node->header;
-> -		entry = &head->ctl_table[ctl_node - head->node];
-> +	ctl_node = first_live_entry(after);
-> +	if (!ctl_node)
-> +		goto out;
-> +	head = ctl_node->header;
-> +	entry = &head->ctl_table[ctl_node - head->node];
-> +
-> +	d->len = strlen(entry->procname);
-> +	if (d->len > NAME_MAX) {
-> +		ret = -ENAMETOOLONG;
-> +		goto out;
->  	}
-> -	*phead = head;
-> -	*pentry = entry;
-> -	return 0;
-> +	memcpy(d->name, entry->procname, d->len);
-> +	d->mode = entry->mode;
-> +	d->skip = false;
-> +	d->node = ctl_node;
-> +	if (unlikely(S_ISLNK(entry->mode))) {
-> +		/* the entry it stands for in the caller's set, or nothing */
-> +		struct ctl_table_root *root = entry->data;
-> +		struct ctl_table_set *set = lookup_header_set(root);
-> +		struct ctl_dir *xdir = xlate_dir(set, head->parent);
-> +		struct ctl_table_header *xhead = NULL;
-> +		const struct ctl_table *xentry = NULL;
-> +
-> +		if (!IS_ERR(xdir))
-> +			xentry = find_entry(&xhead, xdir, d->name, d->len);
-> +		if (!xentry || xhead->unregistering) {
-> +			d->skip = true;
-> +		} else {
-> +			head = xhead;
-> +			entry = xentry;
-> +		}
-> +		d->node = NULL;
-> +	}
-> +	sysctl_pin(head);
-> +	d->head = head;
-> +	d->table = entry;
-> +	ret = 1;
-> +out:
-> +	spin_unlock(&sysctl_lock);
-> +	return ret;
-> +}
-> +
-> +static void sysctl_dir_done(struct sysctl_dirent *d)
-> +{
-> +	if (!d->head)
-> +		return;
-> +	spin_lock(&sysctl_lock);
-> +	sysctl_unpin(d->head);
-> +	spin_unlock(&sysctl_lock);
-> +	d->head = NULL;
->  }
->  
->  /*
-> @@ -765,29 +819,29 @@ static void sysctl_cursor_set(struct file *file, const char *name, int len,
->  	memcpy(cursor->name, name, len);
->  }
->  
-> -static bool proc_sys_fill_cache(struct file *file,
-> -				struct dir_context *ctx,
-> -				struct ctl_table_header *head,
-> -				const struct ctl_table *table)
-> +/*
-> + * The inode number and type of the entry @d holds, instantiating its dentry
-> + * if there is none. Needs the header pinned, proc_sys_make_inode() checks
-> + * for itself that the table is still registered.
-> + */
-> +static int proc_sys_fill_dirent(struct file *file, struct sysctl_dirent *d)
->  {
->  	struct dentry *child, *dir = file->f_path.dentry;
->  	struct inode *inode;
->  	struct qstr qname;
-> -	ino_t ino = 0;
-> -	unsigned type = DT_UNKNOWN;
->  
-> -	qname.name = table->procname;
-> -	qname.len  = strlen(table->procname);
-> +	qname.name = d->name;
-> +	qname.len  = d->len;
->  	qname.hash = full_name_hash(dir, qname.name, qname.len);
->  
->  	child = d_lookup(dir, &qname);
->  	if (!child) {
->  		child = d_alloc_parallel(dir, &qname);
->  		if (IS_ERR(child))
-> -			return false;
-> +			return PTR_ERR(child);
->  		if (d_in_lookup(child)) {
->  			struct dentry *res;
-> -			inode = proc_sys_make_inode(dir->d_sb, head, table);
-> +			inode = proc_sys_make_inode(dir->d_sb, d->head, d->table);
->  			res = d_splice_alias_ops(inode, child,
->  						 &proc_sys_dentry_operations);
->  			d_lookup_done(child);
-> @@ -795,79 +849,41 @@ static bool proc_sys_fill_cache(struct file *file,
->  				dput(child);
->  
->  				if (IS_ERR(res))
-> -					return false;
-> +					return PTR_ERR(res);
->  
->  				child = res;
->  			}
->  		}
->  	}
->  	inode = d_inode(child);
-> -	ino  = inode->i_ino;
-> -	type = inode->i_mode >> 12;
-> +	d->ino = inode->i_ino;
-> +	d->type = inode->i_mode >> 12;
->  	dput(child);
-> -	return dir_emit(ctx, qname.name, qname.len, ino, type);
-> -}
-> -
-> -static bool proc_sys_link_fill_cache(struct file *file,
-> -				    struct dir_context *ctx,
-> -				    struct ctl_table_header *head,
-> -				    const struct ctl_table *table)
-> -{
-> -	bool ret = true;
-> -
-> -	head = sysctl_head_grab(head);
-> -	if (IS_ERR(head))
-> -		return false;
-> -
-> -	/* It is not an error if we can not follow the link ignore it */
-> -	if (sysctl_follow_link(&head, &table))
-> -		goto out;
-> -
-> -	ret = proc_sys_fill_cache(file, ctx, head, table);
-> -out:
-> -	sysctl_head_finish(head);
-> -	return ret;
-> -}
-> -
-> -static int scan(struct ctl_table_header *head, const struct ctl_table *table,
-> -		unsigned long *pos, struct file *file,
-> -		struct dir_context *ctx)
-> -{
-> -	bool res;
-> -
-> -	if ((*pos)++ < ctx->pos)
-> -		return true;
-> -
-> -	if (unlikely(S_ISLNK(table->mode)))
-> -		res = proc_sys_link_fill_cache(file, ctx, head, table);
-> -	else
-> -		res = proc_sys_fill_cache(file, ctx, head, table);
-> -
-> -	if (res) {
-> -		ctx->pos = *pos;
-> -		sysctl_cursor_set(file, table->procname, strlen(table->procname),
-> -				  ctx->pos);
-> -	}
-> -
-> -	return res;
-> +	return 0;
->  }
->  
-> +/*
-> + * Unregistering a table waits until nobody uses it anymore and a copy to
-> + * userspace can take as long as userspace wants. So a listing doesn't take
-> + * any table into use. It pins the memory of the entry it is at, finds the
-> + * next one under sysctl_lock and emits with nothing held, like
-> + * kernfs_fop_readdir() and proc_readdir_de() do. Between calls a listing
-> + * resumes after the name of the last entry it emitted.
-> + */
->  static int proc_sys_readdir(struct file *file, struct dir_context *ctx)
->  {
-> -	struct ctl_table_header *head = grab_header(file_inode(file));
-> +	struct ctl_table_header *head = PROC_I(file_inode(file))->sysctl;
->  	struct sysctl_cursor *cursor = file->private_data;
-> -	struct ctl_table_header *h = NULL;
-> -	const struct ctl_table *entry;
-> +	struct sysctl_dirent d = {};
->  	struct ctl_dir *ctl_dir;
-> -	unsigned long pos;
-> -
-> -	if (IS_ERR(head))
-> -		return PTR_ERR(head);
-> +	int err;
->  
-> +	if (!head)
-> +		head = &sysctl_table_root.default_set.dir.header;
->  	ctl_dir = container_of(head, struct ctl_dir, header);
->  
->  	if (!dir_emit_dots(file, ctx))
-> -		goto out;
-> +		return 0;
->  
->  	/*
->  	 * Resume after the last entry the previous call emitted. Only a seek
-> @@ -875,21 +891,30 @@ static int proc_sys_readdir(struct file *file, struct dir_context *ctx)
->  	 * seeking to an arbitrary position always did.
->  	 */
->  	if (cursor && cursor->pos == ctx->pos) {
-> -		entry_after(ctl_dir, cursor->name, cursor->len, &h, &entry);
-> -		pos = ctx->pos;
-> +		err = sysctl_dir_next(ctl_dir, &d, cursor->name, cursor->len);
->  	} else {
-> -		first_entry(ctl_dir, &h, &entry);
-> -		pos = 2;
-> +		loff_t pos = 2;
-> +
-> +		err = sysctl_dir_next(ctl_dir, &d, NULL, 0);
-> +		while (err > 0 && pos++ < ctx->pos)
-> +			err = sysctl_dir_next(ctl_dir, &d, d.name, d.len);
->  	}
-> +	if (err < 0)
-> +		return err;
->  
-> -	for (; h; next_entry(&h, &entry)) {
-> -		if (!scan(h, entry, &pos, file, ctx)) {
-> -			sysctl_head_finish(h);
-> -			break;
-> +	while (err > 0) {
-> +		if (!d.skip) {
-> +			err = proc_sys_fill_dirent(file, &d);
-> +			if (err)
-> +				break;
-> +			if (!dir_emit(ctx, d.name, d.len, d.ino, d.type))
-> +				break;
->  		}
-> +		ctx->pos++;
-> +		sysctl_cursor_set(file, d.name, d.len, ctx->pos);
-> +		err = sysctl_dir_next(ctl_dir, &d, d.name, d.len);
->  	}
-> -out:
-> -	sysctl_head_finish(head);
-> +	sysctl_dir_done(&d);
->  	return 0;
->  }
->  
-> 
-> -- 
-> 2.53.0
-> 
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+The uAPI consists of 4 new CRTC properties for the frame rate
+minimum/maximum target, and several new connector properties. Two of the
+connector properties are for reporting the display's VRR range to any
+client so that they're aware of quirks the kernel chooses to override
+the ones in the EDID with, and the third is for explicitly setting a
+mode the display should be in (Game, which is default, Off, and Media).
+
+The Media VRR display mode sets HDMI displays to use QMS. Whether or not
+a particular display supports QMS can be determined from the EDID, i.e.
+the kernel does not act as userspace's EDID parser through a redundant
+property for this.
+
+For some background on why the uAPI uses numerator/denominator frame
+rate pairs as opposed to frame intervals or microhertz, my slides from
+Display Next Hackfest 2026 give an explanation:
+
+https://gitlab.freedesktop.org/-/project/2891/uploads/9db8886701e2598271a8c4c6dc4dc2b1/display_next_hackfest_2026.pdf
+
+In short: for QMS, we have a very limited set of frame rate targets that
+signalling is supported for. This includes both rates such as 24 Hz, and
+24/1.001 Hz. Making userspace give us a frame rate as a rational
+expression rather than as the output of some rounding calculations
+spares us the pain and suffering of then having to correctly guess which
+frame rate was originally meant as a target with a <0.1% accuracy
+requirement.
+
+There is also a set of IGT tests for exercising the new uAPI on actual
+hardware:
+
+https://gitlab.freedesktop.org/CounterPillow/igt-gpu-tools/-/tree/vrr-limiter
+
+== Currently known deficiencies as of v2 ==
+
+I've decided to send out a new revision now rather than wait longer, in
+order to get more feedback on the approach. There's still some stuff
+that isn't quite right or there yet though:
+
+1. The immutable VRR flavour property for userspace isn't in yet, but
+   this will be added in the next revision; it's not relevant for the
+   general approach.
+2. The EMP packet's m_const flag is not generated correctly for QMS.
+   Doing more commits skips without making changes to the connector
+   state skips the connector check, so it doesn't get updated to tick
+   over from m_const=0 to m_const=1 in a QMS tfr change scenario.
+3. On my particular hardware, using modes for QMS that require TMDS
+   scrambling, with QMS rates that are quite low, results in a black
+   picture despite the display entering QMS mode. The IGT test contains
+   a workaround for this.
+
+Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+---
+Changes in v2:
+- Make mode_changed on vrr_enabled change a driver-specific
+  consideration, and do it for Rockchip after verifying it's needed
+- Move CRTC VRR limiter property attachment to separate function, to be
+  invoked by driver
+- Invoke aforementioned function in Rockchip VOP2 driver for RK3588
+- Validate target range completeness in common CRTC atomic_check code
+- Move early hdmi_validate_vrr !vrr_enabled bailout to before state
+  re-use check
+- Move addition of state re-use check's check for vrr target members to
+  the patch that actually implements them (d'oh)
+- Make sure old_crtc_state in hdmi_validate_vrr is non-null before
+  dereferencing it
+- Fix KUnit tests not working unless there was a mode_changed on
+  vrr_enabled change by explicitly getting a new connector state in each
+  test, refactoring all this out into a small function to call in each
+- Use guard macro to acquire and release the modeset lock in KUnit
+  tests, fixing a leak of a held lock when tests fail
+- Move added edids to drm_kunit_edid.c instead of defining them in the
+  header
+- Add KUnit tests for limiter range incompleteness
+- Deduplicate HDMI VRR EDID parsing with what already landed in drm-tip
+  and I rebased across by accident. Includes moving from monitor_range
+  to hdmi.vrr_cap.vrr_{min,max}
+- Minor doc fix for the aforementioned already landed stuff
+- Add vrr_display_min/vrr_display_max connector properties, including
+  HDMI helper to set them appropriately
+- Add vrr_display_mode property for userspace to explicitly control the
+  VRR mode a display is in, in order to avoid blanking. Defaults to
+  "Game".
+- Enable aforementioned connector properties for Rockchip dw_hdmi_qp
+- Change qms_enabled to be just another enum value in vrr_display_mode
+- Get rid of the VIC field, read that from the avi infoframe in EMP
+  generation instead
+- Remove the memcpy prior state path in hdmi_validate_vrr
+- Redo EMP generation with respect to new mode logic, remove some
+  redundancy
+- Clear EMP infoframe regardless of sink-side support
+- In hdmi_validate_vrr_limits, round up the vtotal check based on
+  vtotal remainder
+- Support edge case of sinks that only support QMS, and not VRR,
+  and extend the QMS tests for this with another EDID
+- In drm_crtc_helper_vrr_vsync, make the cur_err >= denom check
+  explicitly cast denom (u32) to int after dividing by 2, to avoid
+  both the bad u32 promotion of cur_err and the *2 wraparound
+- In hdmi_validate_vrr, reset vrr state error accumulator if VRR target
+  changes
+- In hdmi_validate_vrr, check for NULL old_conn_state before accessing
+  it for the QMS tfr byte check
+- Drop the patch for disabling VRR in helper_set_config, as it'd regress
+  Xorg.
+- Link to v1: https://patch.msgid.link/20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com
+
+---
+Derek Foreman (4):
+      video/hdmi: Add VTEM EMP packing
+      drm/bridge: Add VTEM EMP support
+      drm/connector: hdmi: Add VTEM EMP generation
+      drm/bridge: synopsys: Add VTEM EMP support
+
+Nicolas Frattaroli (23):
+      drm: Add VRR state
+      drm/connector: add vrr_display_mode connector property
+      drm/crtc-helper: Add VRR helper functions
+      drm/connector: Add drm_display_info_is_vrr_capable
+      drm: Add VRR target frame rate properties
+      drm/connector: Add vrr_display_{min,max} connector properties
+      drm: Implement VRR rate limiting
+      drm/rockchip: dw_hdmi_qp: Add VRR support
+      drm/rockchip: Set mode_changed on vrr_enabled change
+      drm/rockchip: vop2: Enable VRR
+      drm/edid: Parse QMS flag from HDMI SCDS
+      drm/edid: Parse QMS TFR min/max flags from HDMI SCDS
+      drm/connector: Add "Media" VRR display mode for QMS
+      video/hdmi: Add support for QMS in VTEM EMP packing
+      drm/connector: hdmi: Add QMS to VTEM EMP generation
+      drm/connector: hdmi: Add QMS state validation and computation
+      drm/rockchip: dw_hdmi_qp: Add QMS support
+      drm/tests: hdmi: Add "Game Mode" VRR tests
+      drm/tests: hdmi: Add Fixed/Constrained rate VRR tests
+      drm/tests: hdmi: Add Quick Media Switching tests
+      drm/connector: Fix docs for cnmvrr and cinemavrr members
+      drm/debugfs: Expose HDMI VRR in vrr_range debugfs
+      drm/tests: hdmi: Add tests for vrr_display_{min,max} properties
+
+ drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c       |   50 +-
+ drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.h       |    1 +
+ drivers/gpu/drm/display/drm_bridge_connector.c     |   41 +
+ drivers/gpu/drm/display/drm_hdmi_helper.c          |   55 +
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c    |  488 ++++++++
+ drivers/gpu/drm/drm_atomic.c                       |   14 +
+ drivers/gpu/drm/drm_atomic_uapi.c                  |   28 +
+ drivers/gpu/drm/drm_connector.c                    |  217 ++++
+ drivers/gpu/drm/drm_crtc.c                         |   34 +
+ drivers/gpu/drm/drm_crtc_helper.c                  |   93 ++
+ drivers/gpu/drm/drm_debugfs.c                      |   24 +-
+ drivers/gpu/drm/drm_edid.c                         |    7 +
+ drivers/gpu/drm/drm_mode_config.c                  |   20 +
+ drivers/gpu/drm/rockchip/dw_hdmi_qp-rockchip.c     |   33 +
+ drivers/gpu/drm/rockchip/rockchip_drm_fb.c         |   20 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_vop2.c       |   65 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_vop2.h       |   10 +
+ drivers/gpu/drm/rockchip/rockchip_vop2_reg.c       |    4 +
+ drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c | 1308 ++++++++++++++++++++
+ drivers/gpu/drm/tests/drm_kunit_edid.c             |  420 +++++++
+ drivers/gpu/drm/tests/drm_kunit_edid.h             |    3 +
+ drivers/video/hdmi.c                               |   99 +-
+ include/drm/display/drm_hdmi_helper.h              |    3 +
+ include/drm/drm_bridge.h                           |   29 +
+ include/drm/drm_connector.h                        |  107 +-
+ include/drm/drm_crtc.h                             |   19 +
+ include/drm/drm_crtc_helper.h                      |    6 +
+ include/drm/drm_edid.h                             |    3 +
+ include/drm/drm_mode_config.h                      |   45 +
+ include/linux/hdmi.h                               |   21 +
+ 30 files changed, 3245 insertions(+), 22 deletions(-)
+---
+base-commit: 0e8b43b5a5ef2dd52c454158e7fd8a927d796eb4
+change-id: 20260919-vrr-limiter-uapi-c99ed93fe7d2
+
+Best regards,
+--  
+Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+

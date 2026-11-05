@@ -1,57 +1,55 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1793894034;
-	b=4QEY161UmjZCW6ST+PUZypMat0ATFv94NUnPgnbo1Lyh9kjkuCOtaKwUqKPWrTl/hGSU
-	 IMZBCGj7/gSchK3ISe5QQLmtcIQVs6geD7fTZGGmuHV2w5poErBEm/XRGK14gZ37phmXp
-	 FpO8pYhOEcpVZMSC3+Z90QWboQWjgQ/DdRSpc3DaH8kQdz4CO0NLSvnRyZuvmM7C99GPp
-	 MICO7zSRZ5HdYjKrKGs0GeJ/s5ShrkK/2wlNZhJDg9SG8w95DcZdjDHnFz+OQTnaSq2Tb
-	 th2pKNfp0AX9jRcFuhPrTndUReqBSnY9lagC6U/t193hUoBbqb866VIr3+4CBFAUjcg==
+	t=1793894040;
+	b=R2oAV+J0DL3pVBIf2JPcXBWw/53f+ZxkQXYAg83S1kep8OPWyUU2boa6FXinuqbU5YsF
+	 DVO3z6q8HYvJS/UT9l72WVKnZiLdoyrZc1X5nYXuYkDZ9R4tytMuG5BE5IGrzpjcHleF/
+	 sXp6MYqcHwQHxyouo5sS9cDkhn80ijcsJLiHpMgXhBjc3SgFvLkV+O5legDg1SuFT+yik
+	 y8Y7wG6lI42amyjQFOktz5J2zyWzJLfPKAnIp/WegfoKL0vxxZ7uV3gQoR4c/Rt45yF+N
+	 8ut+hrqCkpOwwrtUmHXccvUimjapH+nGgzczgG7G+pOA54Y5QVuTG55n0xpP77qyPDg==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793894034;
-	h=DMARC-Filter:DKIM-Signature:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer;
-	bh=o6F6viGtXT5EjueNMtEut/jZMxT/MCMMWh1OY9AsXAo=;
-	b=oEdeNbrgEEVQaW1Fn4lWJ246O2tsgRAb2wl499rqFaI/HfFV6epYJH0N3o21sxQlbjkg
-	 tHIKhhTszy50FRXQqWLzp2Cg+oCJqmPrY7jIwLYm9tkDqVT8Bpv7hjlVHrAAYxMR2vPqp
-	 Q6g4c2dtaIqgV2ZnR3HSrxzHtiM2EZYcwGeoYOV6p6oVwvJV/7JR89oWHOudmXqrQozuH
-	 IFd5GtPnlOaxvdYOUIoS1ydVBGxKEk/nf41xtR3FDRrLCEdFS8MFELRkgnIRxjsp07l5U
-	 Yd35rKyWvHMXElAVORXKYZz2htKy9TLQQ0gAKGBKiRnzhAHx+QjOXosCU6S8UVT/dyA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793894040;
+	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
+	 In-Reply-To:To:Cc:X-Mailer;
+	bh=fTzNDSolmw7K2SsCbbZU91nxSTB00KcD9PPh6CHzKVg=;
+	b=A+zi03DJaEbHEYHp3Hw1h2KufE4566EiMIgv6k7CPck2wUHqf0XlawVVGAPPCklzYid/
+	 hgt9x/x/5/G+6mnB+axefp23Yu+b0lVG1qlMUi4cEr+U4iddAeTE+YEooEXTcwLWZonwx
+	 vVpNvbPG9/Gpo5sNX6nPMfrIynlVnIgfYPINcmaGVCHXDorbHiPljlu3SvZU/3hGK4PvT
+	 1QiuEDkrRu43i1TIW8cWYpnSNnDBpNJb1JVb7dODp2F7Q7cwsp0BzJ+xIEpE/AcFiNOau
+	 F8c1sPYSCTEXMCaSfir+sVZ6KRXCXOcs3MbHn1pC58q7rYdBZ75+HS3HQCZpGNtnu/A==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=B0qcbkjW;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Ki0h6WUl;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
 Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5324606A331;
-	Thu,  5 Nov 2026 15:53:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A5324606A331
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7409D606A609;
+	Thu,  5 Nov 2026 15:54:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7409D606A609
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=B0qcbkjW
-ARC-Seal: i=1; a=rsa-sha256; t=1793893952; cv=none; 
+	dkim=pass (1024-bit key, unprotected) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Ki0h6WUl
+ARC-Seal: i=1; a=rsa-sha256; t=1793893984; cv=none; 
 	d=zohomail.com; s=zohoarc; 
-	b=Vm9GaetwlNgsLFvsFO/ZmvQshN8OyGA3xT49PjmygNMZRoceB9uuaQK6zPLFmRqOMoSd2MRx6GqFjdax0VUuVLSo8OTfYT3+XgTluhLcqYaNKmRv2GRNUSAJO8A7vcHZ7PtJlydubI9QyLc13gajma8c5NFIFbmPWRSWH/KwOMc=
+	b=JlB8hVPPPDNcmszLLkIBvBwSag5xhD7SiapW3xecJ7C5W05AWfhRhnN/rRpzwhVVCakGdMNL9mDpTI0dH8NVErgqIeeydWHLkgQ2mtHkOr1kjzAh0p/zLiHKmxnBMUavcgUaroitAhy7icZOfObiJ/j3Q8Szh+KZhTzOS1eftto=
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1793893952; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=o6F6viGtXT5EjueNMtEut/jZMxT/MCMMWh1OY9AsXAo=; 
-	b=BIpBmh6ikQMQZN4v8qei/mt1eTzrc1afVVWQcj3Nw8WK09l9uO3/KNRwkcpKNcaZRGN7rnkFqtw4+kVCjfwUMpe30dvWTBA8SPMt9O9LaxrazOJo6R/AYk6NCu6GJzpofwGInKtHc1SK4TsBRwnuGl6i5o6D2ZUF/Oqkm2fVqmE=
+	t=1793893984; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=fTzNDSolmw7K2SsCbbZU91nxSTB00KcD9PPh6CHzKVg=; 
+	b=AYE3sbP2IplCW1BDlq6pjMXAlYtgXCiRV6i3jszZ/L54iL0l3YB+J4lZNS0AQZ0vyRHJBPArbgUws1KJN+PbGC34AoEo7XbFuGTJuH7SwlKGy5WaveL5RHtUB93dKsAzYZXVBBGHinRAoLsdHJQkWVUzAtQyNm13L2TD+uz/R/Q=
 ARC-Authentication-Results: i=1; mx.zohomail.com;
 	dkim=pass  header.i=collabora.com;
 	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
 	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=B0qcbkjW3kEvpDJ5a1Z0YHKl22wOf1tAwNop85lU3TSXRyu+nwTt1ia1NdToD7TjwozBqwqzopeyx/FxoyuhZfudcEIEl0D1zkyidlNPagCDHOZXwq5Qh4YxXBJ30w+rrtYcIjXCPbjEEfSE6HnD8E2Rnn0GQg0raBQIqct59YM=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=o6F6viGtXT5EjueNMtEut/jZMxT/MCMMWh1OY9AsXAo=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1793893952288570.7720246815022;
-	Thu, 5 Nov 2026 07:52:32 -0800 (PST)
+DKIM-Signature: a=rsa-sha256; b=Ki0h6WUlKLThrkF3KvCnaUd93eXjEjo+StMaGQ/y4aU5zjWNlImVOU+lBV0DDWrpZsy/eUlxAQ/hZX9Pf8aq5CiUS1uW0ZaS8Tai+mkkMXa/rI/6Ar37nMHwxIRw1evj09RZf0iFwtzv9yuv8VQh//vi39UnH6DmTuD3dRhz95I=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=fTzNDSolmw7K2SsCbbZU91nxSTB00KcD9PPh6CHzKVg=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 1793893983774815.9743865612031;
+	Thu, 5 Nov 2026 07:53:03 -0800 (PST)
 From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-Subject: [PATCH v2 00/27] VRR Target Rate Limiter KMS uAPI and
- Implementation
-Date: Thu, 05 Nov 2026 16:51:51 +0100
-Message-Id: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
+Date: Thu, 05 Nov 2026 16:51:56 +0100
+Subject: [PATCH v2 05/27] drm/connector: hdmi: Add VTEM EMP generation
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -63,11 +61,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/2WOwQ6CMBBEf4Xs2VVaDaae/A/jobSLrgGL20I0h
- n+3gjdPk0lm3swbIglThEPxBqGRI4d7NnpVgLva+4WQffagS12VRhkcRbDljhMJDrZndMaQN9u
- G9l5DrvVCDT9n5Om8+DjUN3Lpy/klhB5D3kpLDGobCV3oMvZQeOkwcb/5KXwhV44pyGu+Oaq5s
- zzS6v/RqLBE3Ti/96VS1a46utC2tg5i13kEztM0fQB+jF0w+QAAAA==
-X-Change-ID: 20260919-vrr-limiter-uapi-c99ed93fe7d2
+Message-Id: <20261105-vrr-limiter-uapi-v2-5-55f4215be2c2@collabora.com>
+References: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
+In-Reply-To: <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
 To: Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>, 
  "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>, 
  Leo Li <sunpeng.li@amd.com>, Harry Wentland <harry.wentland@amd.com>, 
@@ -91,199 +87,125 @@ Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
  Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 X-Mailer: b4 0.15.2
 
-This series defines a proposed new userspace API for specifying frame
-rate targets for variable refresh rate (VRR) mechanisms. This includes
-specifying both a constrained range in which VRR should operate, as well
-as a fixed target, and a new connector property for QMS (Quick Media
-Switching) and passive VRR (as in, keeping the display in VRR mode
-without doing VRR).
+From: Derek Foreman <derek.foreman@collabora.com>
 
-The reason for wanting such an uAPI is mainly to avoid the imperfection
-of the real world. By constraining VRR to a limited range or a fixed
-point entirely, we get the benefits of judder-free (or low-latency)
-presentation for content within an expected range of frame rates,
-without dipping into ones that cause visible brightness flicker. The
-addition of QMS furthermore allows the connector to signal an upcoming
-rate change ahead of time for media playback scenarios, such that
-advanced processing algorithms in e.g. TVs don't have to be disabled to
-meet the need to be able to present at full rates with no notice.
+Add VTEM EMP generation to enable variable refresh rate signalling over
+HDMI.
 
-Aside from the uAPI, there's the EDID parsing and an implementation for
-drivers that use the common HDMI state helpers, with it wired up for
-Rockchip (tested and developed on RK3588).
+These infoframes are only generated if the sink supports VRR.
 
-The uAPI consists of 4 new CRTC properties for the frame rate
-minimum/maximum target, and several new connector properties. Two of the
-connector properties are for reporting the display's VRR range to any
-client so that they're aware of quirks the kernel chooses to override
-the ones in the EDID with, and the third is for explicitly setting a
-mode the display should be in (Game, which is default, Off, and Media).
-
-The Media VRR display mode sets HDMI displays to use QMS. Whether or not
-a particular display supports QMS can be determined from the EDID, i.e.
-the kernel does not act as userspace's EDID parser through a redundant
-property for this.
-
-For some background on why the uAPI uses numerator/denominator frame
-rate pairs as opposed to frame intervals or microhertz, my slides from
-Display Next Hackfest 2026 give an explanation:
-
-https://gitlab.freedesktop.org/-/project/2891/uploads/9db8886701e2598271a8c4c6dc4dc2b1/display_next_hackfest_2026.pdf
-
-In short: for QMS, we have a very limited set of frame rate targets that
-signalling is supported for. This includes both rates such as 24 Hz, and
-24/1.001 Hz. Making userspace give us a frame rate as a rational
-expression rather than as the output of some rounding calculations
-spares us the pain and suffering of then having to correctly guess which
-frame rate was originally meant as a target with a <0.1% accuracy
-requirement.
-
-There is also a set of IGT tests for exercising the new uAPI on actual
-hardware:
-
-https://gitlab.freedesktop.org/CounterPillow/igt-gpu-tools/-/tree/vrr-limiter
-
-== Currently known deficiencies as of v2 ==
-
-I've decided to send out a new revision now rather than wait longer, in
-order to get more feedback on the approach. There's still some stuff
-that isn't quite right or there yet though:
-
-1. The immutable VRR flavour property for userspace isn't in yet, but
-   this will be added in the next revision; it's not relevant for the
-   general approach.
-2. The EMP packet's m_const flag is not generated correctly for QMS.
-   Doing more commits skips without making changes to the connector
-   state skips the connector check, so it doesn't get updated to tick
-   over from m_const=0 to m_const=1 in a QMS tfr change scenario.
-3. On my particular hardware, using modes for QMS that require TMDS
-   scrambling, with QMS rates that are quite low, results in a black
-   picture despite the display entering QMS mode. The IGT test contains
-   a workaround for this.
-
+Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
 Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
 ---
-Changes in v2:
-- Make mode_changed on vrr_enabled change a driver-specific
-  consideration, and do it for Rockchip after verifying it's needed
-- Move CRTC VRR limiter property attachment to separate function, to be
-  invoked by driver
-- Invoke aforementioned function in Rockchip VOP2 driver for RK3588
-- Validate target range completeness in common CRTC atomic_check code
-- Move early hdmi_validate_vrr !vrr_enabled bailout to before state
-  re-use check
-- Move addition of state re-use check's check for vrr target members to
-  the patch that actually implements them (d'oh)
-- Make sure old_crtc_state in hdmi_validate_vrr is non-null before
-  dereferencing it
-- Fix KUnit tests not working unless there was a mode_changed on
-  vrr_enabled change by explicitly getting a new connector state in each
-  test, refactoring all this out into a small function to call in each
-- Use guard macro to acquire and release the modeset lock in KUnit
-  tests, fixing a leak of a held lock when tests fail
-- Move added edids to drm_kunit_edid.c instead of defining them in the
-  header
-- Add KUnit tests for limiter range incompleteness
-- Deduplicate HDMI VRR EDID parsing with what already landed in drm-tip
-  and I rebased across by accident. Includes moving from monitor_range
-  to hdmi.vrr_cap.vrr_{min,max}
-- Minor doc fix for the aforementioned already landed stuff
-- Add vrr_display_min/vrr_display_max connector properties, including
-  HDMI helper to set them appropriately
-- Add vrr_display_mode property for userspace to explicitly control the
-  VRR mode a display is in, in order to avoid blanking. Defaults to
-  "Game".
-- Enable aforementioned connector properties for Rockchip dw_hdmi_qp
-- Change qms_enabled to be just another enum value in vrr_display_mode
-- Get rid of the VIC field, read that from the avi infoframe in EMP
-  generation instead
-- Remove the memcpy prior state path in hdmi_validate_vrr
-- Redo EMP generation with respect to new mode logic, remove some
-  redundancy
-- Clear EMP infoframe regardless of sink-side support
-- In hdmi_validate_vrr_limits, round up the vtotal check based on
-  vtotal remainder
-- Support edge case of sinks that only support QMS, and not VRR,
-  and extend the QMS tests for this with another EDID
-- In drm_crtc_helper_vrr_vsync, make the cur_err >= denom check
-  explicitly cast denom (u32) to int after dividing by 2, to avoid
-  both the bad u32 promotion of cur_err and the *2 wraparound
-- In hdmi_validate_vrr, reset vrr state error accumulator if VRR target
-  changes
-- In hdmi_validate_vrr, check for NULL old_conn_state before accessing
-  it for the QMS tfr byte check
-- Drop the patch for disabling VRR in helper_set_config, as it'd regress
-  Xorg.
-- Link to v1: https://patch.msgid.link/20260921-vrr-limiter-uapi-v1-0-2fcd7d011646@collabora.com
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c | 63 +++++++++++++++++++++++++
+ include/drm/drm_connector.h                     |  5 ++
+ 2 files changed, 68 insertions(+)
 
----
-Derek Foreman (4):
-      video/hdmi: Add VTEM EMP packing
-      drm/bridge: Add VTEM EMP support
-      drm/connector: hdmi: Add VTEM EMP generation
-      drm/bridge: synopsys: Add VTEM EMP support
+diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+index eb6abfd1350d..ce680eaa5047 100644
+--- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
++++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+@@ -853,6 +853,61 @@ static int hdmi_generate_hdmi_vendor_infoframe(const struct drm_connector *conne
+ 	return 0;
+ }
+ 
++static int hdmi_generate_emp_infoframe_vtem(const struct drm_connector *connector,
++					    struct drm_connector_state *conn_state)
++{
++	const struct drm_display_info *info = &connector->display_info;
++	const struct drm_crtc_state *crtc_state =
++		drm_atomic_get_crtc_state(conn_state->state, conn_state->crtc);
++	struct drm_connector_hdmi_infoframe *infoframe =
++		&conn_state->hdmi.infoframes.vtem;
++	struct hdmi_emp_infoframe_vtem *vtem =
++		&infoframe->data.vtem;
++	const struct drm_crtc_vrr_state *vrr = &crtc_state->vrr_state;
++	int vfront;
++	u8 avi_vic;
++
++	infoframe->set = false;
++
++	if (!connector->hdmi.funcs->vtem.write_infoframe)
++		return 0;
++
++	if (!info->hdmi.vrr_cap.supported)
++		return 0;
++
++	if (conn_state->hdmi.infoframes.avi.set)
++		avi_vic = conn_state->hdmi.infoframes.avi.data.avi.video_code;
++	else
++		avi_vic = 0;
++
++	hdmi_emp_infoframe_vtem_init(vtem);
++
++	switch (conn_state->vrr_display_mode) {
++	case VRR_DISPLAY_MODE_GAME:
++		vtem->game_vrr_en = true;
++		vtem->m_const = !vrr->dynamic;
++		break;
++	case VRR_DISPLAY_MODE_OFF:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (vtem->game_vrr_en && !avi_vic) {
++		vtem->base_refresh_rate = drm_mode_vrefresh(&crtc_state->mode);
++		vfront = crtc_state->adjusted_mode.crtc_vsync_start -
++			 crtc_state->adjusted_mode.crtc_vdisplay;
++		if (vfront > U8_MAX || vfront < 0)
++			return -EINVAL;
++
++		vtem->base_vfront = vfront;
++	}
++
++	infoframe->set = true;
++
++	return 0;
++}
++
+ static int
+ hdmi_generate_infoframes(const struct drm_connector *connector,
+ 			 struct drm_connector_state *conn_state)
+@@ -884,6 +939,10 @@ hdmi_generate_infoframes(const struct drm_connector *connector,
+ 	if (ret)
+ 		return ret;
+ 
++	ret = hdmi_generate_emp_infoframe_vtem(connector, conn_state);
++	if (ret)
++		return ret;
++
+ 	return 0;
+ }
+ 
+@@ -1475,6 +1534,10 @@ int drm_atomic_helper_connector_hdmi_update_infoframes(struct drm_connector *con
+ 			goto out;
+ 	}
+ 
++	ret = write_or_clear_infoframe(connector, &funcs->vtem, "VTEM",
++				       &old_conn_state->hdmi.infoframes.vtem,
++				       &new_conn_state->hdmi.infoframes.vtem);
++
+ out:
+ 	mutex_unlock(&connector->hdmi.infoframes.lock);
+ 	return ret;
+diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
+index 184b10c89508..9df745ecff92 100644
+--- a/include/drm/drm_connector.h
++++ b/include/drm/drm_connector.h
+@@ -1186,6 +1186,11 @@ struct drm_connector_hdmi_state {
+ 		 * matching our state.
+ 		 */
+ 		struct drm_connector_hdmi_infoframe hdmi;
++
++		/**
++		 * @vtem: VTEM EMP infoframes structure matching our state.
++		 */
++		struct drm_connector_hdmi_infoframe vtem;
+ 	} infoframes;
+ 
+ 	/**
 
-Nicolas Frattaroli (23):
-      drm: Add VRR state
-      drm/connector: add vrr_display_mode connector property
-      drm/crtc-helper: Add VRR helper functions
-      drm/connector: Add drm_display_info_is_vrr_capable
-      drm: Add VRR target frame rate properties
-      drm/connector: Add vrr_display_{min,max} connector properties
-      drm: Implement VRR rate limiting
-      drm/rockchip: dw_hdmi_qp: Add VRR support
-      drm/rockchip: Set mode_changed on vrr_enabled change
-      drm/rockchip: vop2: Enable VRR
-      drm/edid: Parse QMS flag from HDMI SCDS
-      drm/edid: Parse QMS TFR min/max flags from HDMI SCDS
-      drm/connector: Add "Media" VRR display mode for QMS
-      video/hdmi: Add support for QMS in VTEM EMP packing
-      drm/connector: hdmi: Add QMS to VTEM EMP generation
-      drm/connector: hdmi: Add QMS state validation and computation
-      drm/rockchip: dw_hdmi_qp: Add QMS support
-      drm/tests: hdmi: Add "Game Mode" VRR tests
-      drm/tests: hdmi: Add Fixed/Constrained rate VRR tests
-      drm/tests: hdmi: Add Quick Media Switching tests
-      drm/connector: Fix docs for cnmvrr and cinemavrr members
-      drm/debugfs: Expose HDMI VRR in vrr_range debugfs
-      drm/tests: hdmi: Add tests for vrr_display_{min,max} properties
-
- drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.c       |   50 +-
- drivers/gpu/drm/bridge/synopsys/dw-hdmi-qp.h       |    1 +
- drivers/gpu/drm/display/drm_bridge_connector.c     |   41 +
- drivers/gpu/drm/display/drm_hdmi_helper.c          |   55 +
- drivers/gpu/drm/display/drm_hdmi_state_helper.c    |  488 ++++++++
- drivers/gpu/drm/drm_atomic.c                       |   14 +
- drivers/gpu/drm/drm_atomic_uapi.c                  |   28 +
- drivers/gpu/drm/drm_connector.c                    |  217 ++++
- drivers/gpu/drm/drm_crtc.c                         |   34 +
- drivers/gpu/drm/drm_crtc_helper.c                  |   93 ++
- drivers/gpu/drm/drm_debugfs.c                      |   24 +-
- drivers/gpu/drm/drm_edid.c                         |    7 +
- drivers/gpu/drm/drm_mode_config.c                  |   20 +
- drivers/gpu/drm/rockchip/dw_hdmi_qp-rockchip.c     |   33 +
- drivers/gpu/drm/rockchip/rockchip_drm_fb.c         |   20 +-
- drivers/gpu/drm/rockchip/rockchip_drm_vop2.c       |   65 +-
- drivers/gpu/drm/rockchip/rockchip_drm_vop2.h       |   10 +
- drivers/gpu/drm/rockchip/rockchip_vop2_reg.c       |    4 +
- drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c | 1308 ++++++++++++++++++++
- drivers/gpu/drm/tests/drm_kunit_edid.c             |  420 +++++++
- drivers/gpu/drm/tests/drm_kunit_edid.h             |    3 +
- drivers/video/hdmi.c                               |   99 +-
- include/drm/display/drm_hdmi_helper.h              |    3 +
- include/drm/drm_bridge.h                           |   29 +
- include/drm/drm_connector.h                        |  107 +-
- include/drm/drm_crtc.h                             |   19 +
- include/drm/drm_crtc_helper.h                      |    6 +
- include/drm/drm_edid.h                             |    3 +
- include/drm/drm_mode_config.h                      |   45 +
- include/linux/hdmi.h                               |   21 +
- 30 files changed, 3245 insertions(+), 22 deletions(-)
----
-base-commit: 0e8b43b5a5ef2dd52c454158e7fd8a927d796eb4
-change-id: 20260919-vrr-limiter-uapi-c99ed93fe7d2
-
-Best regards,
---  
-Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+-- 
+2.56.0
 

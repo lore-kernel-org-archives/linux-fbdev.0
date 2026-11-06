@@ -1,107 +1,89 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.133.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.216.51
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1793928500;
-	b=UJy/WcNYn0K7aY5gPKvZ+XVFHiR4fQyVeLqT26MxH9CLVJkOXuTDt4m73hvbuEkVtIAF
-	 wanba1iVnv97JgMbpf5KUv/In7Yp2lOLC/yZYVo/onidS2zx4btU6pQ7B1xA8RBYTgmJh
-	 eW1+r6M7KkflvhzsdNZ1Ohkw9R3Mnp35gQoASkvQYFTOfu1Jl8A0/ZIA7k0Cen7bJbPtf
-	 w5VH2XG9tbJW9+wbtLZ2Of4ibImJ8x0ct3vuW0J3lDIv8R31xkaWlobfrh3oUy7Ec/oT6
-	 /c14hUvcqgJLM5/SjOFwFFDIeTMMa77OoHogP7XgES/qH+puwA7oecGevzLBWBrYfJg==
+	t=1793983788;
+	b=yrooR+SDwEqjeUXlkmGbBTr0RKMtT3oKLHwH9TlFcXErIYZ0uoqPT8ari8a10VNe0U8r
+	 n86ykWcEJfHIMxeEdS6HpY0m3XShMQSj2y3BQPKYKpzCtFfnz3kmOEfWGdSshqvDo17OM
+	 lm4O/7H5biQkyfSKEbtNqekkvJEUAOaeQxlii5ric5GQeLXWpDqI+F5bB1q6ehGaH81Lv
+	 XrIMen1US1EIQ+jdTNtgXL6o2fcWyHlc4KtIQgvNNV/+iVW44fEvUjwfWh+mxUqE3iZhI
+	 GgPFgng+3q1Oz3zoAQp1Lm4GwstHZEw0L0k6nT7mjt4r6fhx0OWB4TYZy128gGrW2Rg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1793928500;
-	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:
-	 X-Mailer:X-Developer-Signature:X-Developer-Key;
-	bh=OzmeLVnOJ/ClYIo+ngL8aNFa/8nEmpmvX7t0mnKpTNc=;
-	b=z5RV9Tv6Zf/Ll4mBgpyrRPJNifNrieAdhQPV2w7iA9ESsD5S4VeZ+9Au3gINSOmVihM4
-	 kw2xUU761voIMIzIRRwuVJZMEnhhhM+cpyMgDcXDoMdM4Ezw+DE1VDelSq5NCcnayd1fA
-	 40FoUpR4OoyZRUVj3nDmWQbr2oBQ0zXi0sQ2aLX3g2xEAzUbHqTk56Ef36GH+WWv/3F35
-	 pu0Jv5dYyjk78roazFcEsE3WBC70Q7urrB7G+GQu6m3ubRvrZk+Ahu2iohw3dbQuuSNyR
-	 xY3Kqbc9sRy6KgUmzYYc9dUgErJm0FQRy6h5tRraUbmfWUBSB0a9tVqD7nzLn9w3VQQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1793983788;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=XqDNg4W7673UpH/nlCNn5xwA3tbLFD35COXqGvji1qM=;
+	b=42FP5Xwgbbj/XpIHLUMLZhN8OnMxwgSSxoMGwkh8+06hgvun8rxe0uaYAnhmFOXnQ+67
+	 Y3lEPyl+k6ZRS+71fT4ABPjCoSoWUwWWxeM3XWmkdfPZaMd8NYTDU0xf5jWzE3irqwAT/
+	 UVjlcuAk3TTN1ikmDrjwnasR7RGzP3XoOVNyFRS6M//oiVTXlZjZ/LTmyPlPQ5mkD/es7
+	 rVUVDlPUQW5Su6sVvHqiQpxC+zjgX221o2R/Fhqde5+Z7z4jdQ01xcq/sc1tX6A/+ZQdH
+	 4Y0yWooCrkYYm+ZQBIXemUPd+78mxiCh6pD1OwehN28Ft9hvcQ4r1JZg6nTOElABnBw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=redhat.com;
-	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SwQktOmM;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=MD9aG4fx;
-	arc=none smtp.remote-ip=170.10.133.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=bitmesra.ac.in;
+	spf=pass smtp.mailfrom=bitmesra.ac.in;
+	dkim=pass header.d=bitmesra.ac.in header.i=@bitmesra.ac.in header.a=rsa-sha256 header.s=google header.b=Z7TODvfW;
+	arc=none smtp.remote-ip=209.85.216.51
+Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DB02D606A31B
-	for <linux-fbdev@vger.kernel.org>; Fri,  6 Nov 2026 01:28:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DB02D606A31B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3BAD606A329
+	for <linux-fbdev@vger.kernel.org>; Fri,  6 Nov 2026 16:49:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F3BAD606A329
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=bitmesra.ac.in
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bitmesra.ac.in
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SwQktOmM;
-	dkim=pass (2048-bit key, unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=MD9aG4fx
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1793928498;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=OzmeLVnOJ/ClYIo+ngL8aNFa/8nEmpmvX7t0mnKpTNc=;
-	b=SwQktOmMK+OOPotnjTMjhszEs+5+twyPTDGjrEicxXDrRN1biVnWIFS88HuxlH1O4AwJpV
-	44e/caS7LThZkgBcQPnv64BR4vKEisG//a8qiBqMdxMiOB0a7CCiNJg7bdh2DjCXUYJcYh
-	kTPQOycxSUL7S3Xc+9bCKkCILwqSiI4=
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com
- [209.85.160.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-166-hf1AGTupNSiwp9JBFURw9Q-1; Thu, 05 Nov 2026 20:28:16 -0500
-X-MC-Unique: hf1AGTupNSiwp9JBFURw9Q-1
-X-Mimecast-MFC-AGG-ID: hf1AGTupNSiwp9JBFURw9Q_1793928496
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-54af6c38092so1111941cf.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 05 Nov 2026 17:28:16 -0800 (PST)
+	dkim=pass (1024-bit key, unprotected) header.d=bitmesra.ac.in header.i=@bitmesra.ac.in header.a=rsa-sha256 header.s=google header.b=Z7TODvfW
+Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-3adac5c10e3so490542a91.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 06 Nov 2026 08:49:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1793928496; x=1794533296; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=OzmeLVnOJ/ClYIo+ngL8aNFa/8nEmpmvX7t0mnKpTNc=;
-        b=MD9aG4fx4mCWQAH03sTcLmygk+gD03T71HtAdTGykHbhtNlM13XdY93yBRtatBMjBH
-         SBuMfuYXWLITwi55eZQC5wMX8vz7kGMGQWCdBqe7UCFaXQfpyAIMEo3Av12Pazmh5bpz
-         dfrctM/36k/GTpECGxzojsSITzKqSG/7fCTDL8fNH3NcpWkWEhBdsIYPW2cnHDrz+H/k
-         UJS+zKHMZkokav39o8H+f2GlzjxPRMocuduFjqMGQd09ohM+9jGZgspOhNwKRACPse4C
-         YQk6TphBxcOTZ+NNXIwtqFRbp9HMpfZEG00Fy0jNQO+DIbUQ/wYyc4WclOYDEbRz+h8u
-         BwbQ==
+        d=bitmesra.ac.in; s=google; t=1793983785; x=1794588585; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=XqDNg4W7673UpH/nlCNn5xwA3tbLFD35COXqGvji1qM=;
+        b=Z7TODvfWLWlnUBtrtersYwQUYVhj4fzJY9Lc8GcTOeZhyHaj0S5aWlEYl50CsTmACb
+         /r1AeD4v2ND4j5tOdAfUCPmzu8ccWt4YtViOXR9FzMWWZi2wSIzrG6s94uVSYdUJRRbg
+         W3kQ3dJH1ToL7EK2Xk+/lFTVhum59/haUf4Gg=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793928496; x=1794533296;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=OzmeLVnOJ/ClYIo+ngL8aNFa/8nEmpmvX7t0mnKpTNc=;
-        b=UVFJ6qcrlWHYUCVFbZrSBTKWDbxGqtq62cxT+49dom/lulRI+FFA5Yv+L95nJmrjug
-         OuKc614otoFIwo3ZwH+QGvwIaQ9BA9JE1cDilPqJdjZ5Bf/5fIpcvaTB2A4PRpzxK+YW
-         sFwLfw/k2ygR3P+ZKi2El7eDosKDbPZffc1lobof+Q0gaCcVCczco2n2twmlakWzth9H
-         siGrsG4mnf7nTmwecmit0OMbma0n9hltNVM9vw00ppMG0WXgAedSim0ZSMvgkRCRcD0m
-         H3dmAlOxy4uAuw/zS97/A2Hpil8OTgRU/Ztsl0Llr5ZGr1GXL9xLFCmqr2+Gl8JvN/7C
-         hASQ==
-X-Forwarded-Encrypted: i=1; AKwUvBz1bVVaNYBOWXnk2XfcGVV8OOUt768FV49Lgd8uRCf82gjlAzzrHxNJKzhuBJJSS2Vk1t3ziVIZs7tigA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/tFrOUV12/ZgRfRYeMt2NEM32okOHrKfV7lUZdvH4wrPWnseYU
-	PS477Pc+4MTId5VFGXl17IqnCGlIsyC9qPoUizG8pAtIdUERJ2O7rxUACOdNOOzVZ2OZeBltNxW
-	dxjTtCN7md9WSyj1JhT78N96etThcYjuMfzZhv3YCxNbmMqIu6PzuLCktBbLlKObS
-X-Gm-Gg: AYBFou0ompRTGDbS/RCQDU+EeNZ6OTLAFBDxvJzfmoo19CespiqWvuLtsxw5ZI64aPX
-	FwHnoJX7zK4CthuflIvMVV3VmyRi5OYfVTq2uOFoWoVXIZbgFKu/9oNCiZ0nWNKtnYE+bEGl2bL
-	rt/INanWYo9tGF+yXmBvr4qT0AAehjxOiXvqzqJNUocZx5zJYjkjui4/54LU3BEXxBia58AYOff
-	yrEETOIDk1YxuHVNddakdtZws4oYcjlVmhsRFqAdnHWBX5AEEmw3NV8utOy16Td9IiDxrooxA6X
-	H5J3XwVBxKetZ0xZdpDoKHyDH0OpGUb0pNPrsGUSCIy1X3HpZ3Q5nu1UV3jHjdOYCWxFZ7ZtXaz
-	4RpSp6Q9mf/g7JHrFt/2i1HpY8Fox4L8HEuEqfxws0UKOBghFJ6eCvLAMTOzk85oXhJMvbjqHQD
-	xsJmyGFG3cKXoxvno+
-X-Received: by 2002:a05:622a:4c0a:b0:532:9b14:96c5 with SMTP id d75a77b69052e-54e15762f20mr17086181cf.60.1793928495967;
-        Thu, 05 Nov 2026 17:28:15 -0800 (PST)
-X-Received: by 2002:a05:622a:4c0a:b0:532:9b14:96c5 with SMTP id d75a77b69052e-54e15762f20mr17085971cf.60.1793928495520;
-        Thu, 05 Nov 2026 17:28:15 -0800 (PST)
-Received: from bmasney-x1.rmtuswv.csb ([69.43.42.202])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-91ea68fc43asm8983646d6.3.2026.11.05.17.28.14
+        d=1e100.net; s=20260707; t=1793983785; x=1794588585;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=XqDNg4W7673UpH/nlCNn5xwA3tbLFD35COXqGvji1qM=;
+        b=A1l1fypci1eoOtpuuA6AkNaCUWlfBtrpU0+eolnyQZDVYMC0kiMjwUrAClYbPsQ4i4
+         WnMTzgB1guYMIgOteeyrrQmUCM0l6fTQ2nVTaHT/QR02RKmZhFT7sAbsBv+vqdXh3P/O
+         j1tuoJv65IHkbGhCQL65RaFH7baV2QCz8fYLQZ3xEp8R3PSCbA6HORrx1eQgTICuO84b
+         rtQl340EECHYOR+aeFIsCaJWtoFTjYbQBtzaSJv0qcCJSWBzVM/oA4q3C4v0NGrYd2SE
+         JF9Pvdgy7rUexlkTBWSVwGxFmhagJeFAIsNiSF/y+bJL/9kQ/HZDxB5NfcDVvvHLS90r
+         LseA==
+X-Gm-Message-State: APuU4Z/pHx2maC9fL2BN+fuUWTjpC8Kug1036Oocz+f4QFvfoOHsGPuh
+	nQpTzVUBiC6Ns7iw0sXW2WwlgXsiq7ULAdm+oJ7FQG1zZ1fBKtevnHBhDwuKnXyx9w==
+X-Gm-Gg: AYBFou1OXHlsEcGkbNi0Hd9LlGA9bhyhA8zNX41JYWu7NKkFPPvSIQ1AeJerMSOgcNZ
+	MRgBgHrmoPWmQs9p0CIS/WF+S4tgK9jrp22WG/Q9uixwUTu2/onA3nJSNDtIKbvfaCs5/w+0EF2
+	wE1bOioDpv6Qc8+WyhMYoubt1G+GF5rzpa/9nfedu1UqN/1sDJw7EQkVn3VMIvF3wM9zQzRYocF
+	Ttevxz7qnrgCzkZp4RKQlfpgofajmvT4e+8yZ+1o63LIu2dC95X7FmMVY/PgYSr9KLgsWp0dBFC
+	pcJ7QzT3irYsV6zhi8XeFwtL8/BmM/vtOeGET2ut8sssVxtXm5VKvT+6Km0chmT48iSkOqOQidZ
+	MuqkbxhGUl+3Aar+ebv0e3KSj3OtF0RK6xdT0uEHNgN39w597DQcZaCfITgvY8HIGAYOQeAFuZb
+	BGk5p9wd62B3TphEDnQy8qXYrAgVhuv8E6E6gQ+1ermrXeaT/x5b9+FiMoxpHD3MWliQyCUd0NY
+	2EJ0gHuLpJBgA37Jv5UfLqGP8JgCl1cOe8AvKPBmfNPE8oTdZDlVOimF3o00FBfQQ3vyQxIFozK
+	z2rv8KXsFglhzrvL1tglExQDURExM/w/ZNhWfJSQpqrog6qYWXtxJQ==
+X-Received: by 2002:a17:90b:540f:b0:3ac:80dc:f40c with SMTP id 98e67ed59e1d1-3b0db6d7586mr3040386a91.14.1793983785266;
+        Fri, 06 Nov 2026 08:49:45 -0800 (PST)
+Received: from fedora.bitnetwork.com ([115.245.53.98])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b0fc4dc7a8sm264494a91.3.2026.11.06.08.49.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2026 17:28:14 -0800 (PST)
-From: Brian Masney <bmasney@redhat.com>
-Date: Thu, 05 Nov 2026 20:28:02 -0500
-Subject: [PATCH] backlight: aat2870-backlight: convert to
- subsys_platform_driver()
+        Fri, 06 Nov 2026 08:49:44 -0800 (PST)
+From: Kurmapu Sai Devansh Prasad <btech10487.26@bitmesra.ac.in>
+To: sudipm.mukherjee@gmail.com,
+	teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	Kurmapu Sai Devansh Prasad <btech10487.26@bitmesra.ac.in>
+Subject: [PATCH] staging: sm750fb: constify g_fbmode array
+Date: Fri,  6 Nov 2026 22:19:35 +0530
+Message-ID: <20261106164935.18502-1-btech10487.26@bitmesra.ac.in>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -111,66 +93,34 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-backlight-subsys-v1-1-ee9e4cbc8cdf@redhat.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMyw5AMBCF4VeRWWvSSlxfRSzaGgyCdBAi3l2x/
- JJz/gsYHSFDEVzgcCemefJQYQC201OLgmpviGSUKCVjYbQdRmq7VfBm+GShUp3rpDaZNAj+tjh
- s6PiSZfXbL3u069uB+34AqBad+XQAAAA=
-X-Change-ID: 20261105-backlight-subsys-17a9a6db80be
-To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Brian Masney <bmasney@redhat.com>
-X-Mailer: b4 0.17-dev-d96cb
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1268; i=bmasney@redhat.com;
- s=20250903; h=from:subject:message-id;
- bh=H2Ld4en7JsjVIIhCDl57TIyk/SGKDX29aUAga9OP9iU=;
- b=owGbwMvMwCW2/dJd9di6A+2Mp9WSGLLe6mrezL7W5KgvfvdaGM+czQYGWYu0H1t0fz7VHWW0V
- sRNWPBPRykLgxgXg6yYIsuSXKOCiNRVtvfuaLLAzGFlAhnCwMUpABM5uoGRYbax8+fouQ21RXqP
- jl3hvcV7cPWUkxfcj1dK2OQsbuvKzGf4X7BCjlXHm4cve/05l0Mie3cdcmLyn/WO+yPXMt0lmm+
- LeAA=
-X-Developer-Key: i=bmasney@redhat.com; a=openpgp;
- fpr=A46D32705865AA3DDEDC2904B7D2DD275D7EC087
+Content-Transfer-Encoding: 8bit
 
-Reduce boilerplate code in this driver and convert it over to use
-the macro subsys_platform_driver().
+The g_fbmode array contains string pointers that do not need to be
+modified. Add the 'const' keyword to lock these pointers, making
+the entire array read-only. This allows the compiler to safely move
+it into the .rodata section.
 
-Signed-off-by: Brian Masney <bmasney@redhat.com>
+Fixes checkpatch warning:
+WARNING: static const char * array should probably be static const char * const
+
+Signed-off-by: Kurmapu Sai Devansh Prasad <btech10487.26@bitmesra.ac.in>
 ---
- drivers/video/backlight/aat2870_bl.c | 12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/aat2870_bl.c b/drivers/video/backlight/aat2870_bl.c
-index 8b790df1e842..2428427e11aa 100644
---- a/drivers/video/backlight/aat2870_bl.c
-+++ b/drivers/video/backlight/aat2870_bl.c
-@@ -189,17 +189,7 @@ static struct platform_driver aat2870_bl_driver = {
- 	.remove		= aat2870_bl_remove,
- };
- 
--static int __init aat2870_bl_init(void)
--{
--	return platform_driver_register(&aat2870_bl_driver);
--}
--subsys_initcall(aat2870_bl_init);
--
--static void __exit aat2870_bl_exit(void)
--{
--	platform_driver_unregister(&aat2870_bl_driver);
--}
--module_exit(aat2870_bl_exit);
-+subsys_platform_driver(aat2870_bl_driver);
- 
- MODULE_DESCRIPTION("AnalogicTech AAT2870 Backlight");
- MODULE_LICENSE("GPL");
-
----
-base-commit: ddfe51b0a0f5dc9e415cc2c8ad8db17532dd426b
-base-tree: git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
-change-id: 20261105-backlight-subsys-17a9a6db80be
-
-Best regards,
---  
-Brian Masney <bmasney@redhat.com>
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 21e310274330..47d2917cc1d6 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -12,7 +12,7 @@
+ static int g_hwcursor = 1;
+ static int g_noaccel __ro_after_init;
+ static int g_nomtrr __ro_after_init;
+-static const char *g_fbmode[] = {NULL, NULL};
++static const char * const g_fbmode[] = {NULL, NULL};
+ static const char * const g_def_fbmode = "1024x768-32@60";
+ static char *g_settings;
+ static int g_dualview __ro_after_init;
+-- 
+2.56.0
 

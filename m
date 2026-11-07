@@ -1,80 +1,83 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794053662;
-	b=I4WuRdjziikEFnCMmjOe2/kzh0uH7sJP4/2lvGsGUK0fG+EbhXDKzjm05iKe5Pmhk70X
-	 wMYrrXCzId/2iitMzEpzfGydi/ULT3Juir1yuMW3ONGDJeHRwrUm8CoIFYi3XSGfUlrwM
-	 i0ptzS1IudftlN2w2C0sjM+W6NNCdInXrVANRxNpblwKm6epjzkXjeLSmhWeNxD1vRbbB
-	 Gv1hIsDDL+n3xJ/Ev6FLUn8j2dxrFoXH9HrXkU3LGF61nJ3iDimAOJwwVpytGNC+ONjlJ
-	 V7HMsWXOdeBNyIEpFn30h5QjymmVc4n+NBX6MjxtWzBvu1eNvNA1R5dUsmYpj/HDOuw==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794053662;
-	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=a/Ht/DPx0vhE05XCnItYI6wUb3xXda/qEMJVR7xN6iU=;
-	b=Rmhi568HVkqJtgrBedkH4yclRkHQ7fJUvBLVgKkMa16GgkHEHtGHLNH49tx6B8JCRMyT
-	 ZyyLYslJzj4p4TFQLM6FBn5KGeqciZVpE1zv7k22qRDhVXS2QDSXmZOvaxhZxHAdwR0VY
-	 vGfzN322rjDYmv/lQHTHYS9Uq9xm3eVpKbpiirH3zBytCGKD7cirPadCXT9AfhFVC3DH+
-	 L6CQxyKWhHb1DVDlteXR3RB0Q3SUVpSpqN8uhIetC2qUMUfC0ufRTOdRTXKq4IQgkbKro
-	 GFmrKN0FpPjthovUz1drQ7Z9Hdm/rLhNTatWXYN747qh1sCJqF5/8sGJ5XY75VelrfA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QOqHCVQ+;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794067831;
+	b=bNxXRcSiB2KxYU6KuGyhC9en7XoDmWzzcR388479PW0tmUdI+RXMzPpDqNWFuhT2sKxn
+	 dLWq5pmZUZ7k+aOtnIgKFa8BY0Ssf8PImSyremihV8AQ4F/jw71e0X3ttZCKWdaRyB0e7
+	 24xda3EoCCMQbDkJ9Iw7drLUImHu1HFDSL58DQq+XezsZ8JM3zDgmR3k8o2biH6kmfLFl
+	 YaUhTWbRCXr+r98GwPddMaTCs+1S1C70pTsY2s4chuqac9GVuCAhtm+txweFz8saksCgs
+	 6ODSdgMtA2tO481B0bGMzf23loTkjhxfwdXLTRUHNGBgyT1eX9bzxyjL6CWG9rpwGVA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794067831;
+	h=Received:DKIM-Signature:Date:From:To:CC:Subject:User-Agent:
+	 In-Reply-To:References:Message-ID:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=yrl1fDgvB8SejpyA+O0u1vRjlm41/COeTHtKBCR1yZ8=;
+	b=d47J0q+aIryhgPNg1v3RSp7XlziOAmnEFxpZGzixZr2xD77Okt9aKdWK7/U2EAw6Sxnd
+	 gnVNkM6Ip3sqMV0NVxuRMglW5I3reCGX+RaBtzSHox0h37bC4Szlf+119hQPDqt7grncw
+	 x4edcJjoLTU85MLqkeORDmWw3CSUjLgw1oD6p0hmhwwWSZLcoAvWsnITKhmfjmCkbrNmH
+	 VkNzq88oXosfg6unlxHTOYHHQs4VoPyc0Vq0UWvkdyeEhtPDnDVyZEo/O9UUjjgV+zU28
+	 2i7i0mUGA4YrXpwMUoPpM3WC8+qaDgMzwrY/U6APzyriQz5YvrhLoLlXJsx2N/4dUsQ==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DudqRbSQ;
+	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3DA14606A32D;
-	Sat,  7 Nov 2026 12:14:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 98E27606A32C;
+	Sat,  7 Nov 2026 16:10:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QOqHCVQ+
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1794053661;
-	b=npzWmNUNZ34R5cch8soqqYmAWqAemV+Z8A7HrckI1CHrj05UQEA5mYoIp+RfQ5nonoFo
-	 veq5gEtgYcA0zwR2J/mYJQwjDnzrL2d3tye2s5PqSwPb4nCt13kGHLJRM1X8PnrB6bPep
-	 2xrwP36bUwSRCEvDe9KwoP+Fwzca6siCPhAqgzDXeiwmcFCqy5AO/oEjuYgfO7MagXuU8
-	 w+9MkehByJebPpxjNVh16Me4ILh4GdtBqWRMEBI0LiM1tRDQDZZBxF6zF7ee8UP8LUeUr
-	 O5B8tB0T9Thi2tl8WVru1ecKnCQK73d6RrMjhICqi0I01psqlzv8LDpYqDx6u+1v0Mw==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794053661;
-	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=a/Ht/DPx0vhE05XCnItYI6wUb3xXda/qEMJVR7xN6iU=;
-	b=QvhzJ39vd4gdxUPNA9hrU9qaI/J47ceNT/TnSZWs91HfrpuEzPDt0u5868fxYDJwjJOR
-	 qqonj5KSRxfmhN1ndtzPYJpBnmmdes4BdZGs40SE0he45gusiIzpH8stFLweoloRNPiKc
-	 LciWTInM2pzStBC4LQJwBwZk9boza/Fvx4YA1VknWWGDCNT3nQR+LEjVM7XlFsuMKC/Ee
-	 KJ3ZYutR4DPjEe6tPYu1rSO++xEaBKrUrqfmU3TwuvqMTQL2M1CC+UxK1UtzFJtZGUUMQ
-	 U5w5/vlU+8W4IPVNWm7/r3WY41L/Wp3LNtwaEg5O8uwbgy5S9288PrQ7lM0yKE3zEdA==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 11F0F1F008A4;
-	Sat,  7 Nov 2026 12:14:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DudqRbSQ
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1758C1F0089F;
+	Sat,  7 Nov 2026 16:10:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794053661;
-	bh=a/Ht/DPx0vhE05XCnItYI6wUb3xXda/qEMJVR7xN6iU=;
-	h=From:Subject:Date:To:Cc:Reply-To;
-	b=QOqHCVQ+twrDCxhQsMidPPRDJschDUnXnTrejWWTCoDrRcs/fB7kZhraWRFzBc70a
-	 NRWO+VYtuQk8bRpUeNOZmuog+lTZy2Kzx6whyA4+NsXLXGeOIACSNzyfWRyJt7B4Rp
-	 cD8dtzokqUFfqobuyORaw3fSwZq99zlsdzOVA6mdSWxobwRNKS6eT5upodSysQKebN
-	 I/mbtE3vrFDX3eSlrrXqWxYEOpdWJPRYX4vD6hy4Z7y75PmG1wRs1mKaIsUKA5YLiX
-	 v/7yYtaYix4pki6kNJjI8FZzKl8JeJMADIDB9AIKH5Q1Mw3ZBoJsqGKofqlCO6vd/4
-	 hn8XkMxpNwBMQ==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 62BCE47BCF;
-	Sat,  7 Nov 2026 12:14:20 +0000 (UTC)
-From: Michiel van Beers via B4 Relay <devnull+michielvanbeers.gmail.com@kernel.org>
-Subject: [PATCH 0/2] backlight: lm3630a: Add a per-bank full-scale current
- limit
-Date: Sat, 07 Nov 2026 13:13:53 +0100
-Message-Id: <20261107-lm3630a-led-max-microamp-v1-0-ec9e441d9b2c@gmail.com>
+	s=k20260515; t=1794067830;
+	bh=yrl1fDgvB8SejpyA+O0u1vRjlm41/COeTHtKBCR1yZ8=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References;
+	b=DudqRbSQXCpr6NhdcgkB28/OJ09fv/xb+ZGVAY2ZZcm0NtXYxKjH24XfLPv1YVH+1
+	 N2Smc+eQQaJmUtmHSjIuIOHPbXtdHkwnaUWqwn18l1Zgme7MhVjd/tmwPXx2sHiZmJ
+	 bVG7HcpDVP0TwBfdMqAH6zxIyHwUkaCeHOVhR2aYppt91bZLwCTiFYtodZA1aRzQhT
+	 JFzXQc4CJvaSMHUeBSzyyst4sJaPobtuTL08pUib1PO2/6JKi1TR0Oc7vVJSOMiTRg
+	 di9pOtOgBcjQKNqN/zgV0r2ojSo7IUXfYme+kVAZvSpJolvZJtmmOXjKLjiXPaiu1m
+	 qPutBKIcKy2tg==
+Date: Sat, 07 Nov 2026 08:10:28 -0800
+From: Kees Cook <kees@kernel.org>
+To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
+CC: Linus Torvalds <torvalds@linux-foundation.org>, Jann Horn <jannh@google.com>,
+ Josef Bacik <josef@toxicpanda.com>, Chris Mason <mason@kernel.org>,
+ Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
+ Eric Dumazet <edumazet@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Al Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>,
+ Christoph Hellwig <hch@lst.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+ Joel Granados <joel.granados@kernel.org>, Jan Kara <jack@suse.cz>,
+ Jan Kara <jack@suse.com>, linux-kernel@vger.kernel.org,
+ linux-nfs@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-wireless@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, ntfs3@lists.linux.dev,
+ platform-driver-x86@vger.kernel.org, coreteam@netfilter.org,
+ kexec@lists.infradead.org, linux-pci@vger.kernel.org,
+ linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, ibm-acpi-devel@lists.sourceforge.net,
+ jfs-discussion@lists.sourceforge.net, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org,
+ linux-sh@vger.kernel.org, linux-usb@vger.kernel.org,
+ samba-technical@lists.samba.org, sparclinux@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
+ Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org,
+ linux-raid@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-modules@vger.kernel.org, linux-debuggers@vger.kernel.org,
+ "Christian Brauner (Amutable)" <brauner@kernel.org>,
+ Chuck Lever <cel@kernel.org>
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_RESEND_v2_07/23=5D_proc=3A_let_pr?=
+ =?US-ASCII?Q?ocfs_own_the_seq=5Ffile_of_seq=5Ffile_entries?=
+User-Agent: K-9 Mail for Android
+In-Reply-To: <20261104-work-procfs-core-v2-7-76ace653a773@kernel.org>
+References: <20261104-work-procfs-core-v2-0-76ace653a773@kernel.org> <20261104-work-procfs-core-v2-7-76ace653a773@kernel.org>
+Message-ID: <8A21EE2A-F392-40B7-9152-CBC440FDDA70@kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -84,79 +87,33 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAEW72oC/yXMTQ6CMBBA4auQWTtJf9IavIpxMQ6jjqFAWjQkh
- LtbZPkt3luhSFYpcGlWyPLVouNQYU8N8IuGp6B21eCMi9aaM/bJR28Ie+kw0YJJOY+UJuTYehc
- 8tYED1HzK8tDlv77eDpfP/S087z/Yth88vuKufAAAAA==
-X-Change-ID: 20261107-lm3630a-led-max-microamp-c693253a95c5
-To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
- Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
- Griffin Kroah-Hartman <griffin@kroah.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
-Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-fbdev@vger.kernel.org, Michiel van Beers <michielvanbeers@gmail.com>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794053659; l=2212;
- i=michielvanbeers@gmail.com; s=20261107; h=from:subject:message-id;
- bh=M8fM/pimHRx8tpjVsk5Qa5piBItoVw829MhvZQytYiY=;
- b=Gp+M1tpl6Uxw25mEvIymG6qpZ0SfxBhMKPsshgAvw8ZW14OheuknsDPXJOABSPArSVTpM3oNI
- 5E8agsqLbrHCkhDIvs1z+fbyG3B5uPxRpD5UocdI741zOZmoIoQbDI9
-X-Developer-Key: i=michielvanbeers@gmail.com; a=ed25519;
- pk=C+lOje7u3+2x3o2NLMXrwz2veP2++eXfIi9MtYsUo4k=
-X-Endpoint-Received: by B4 Relay for michielvanbeers@gmail.com/20261107
- with auth_id=1444
-X-Original-From: Michiel van Beers <michielvanbeers@gmail.com>
-Reply-To: michielvanbeers@gmail.com
-
-The LM3630A driver always programs the full-scale current of both
-control banks to the chip maximum of 28.25 mA. This series adds the
-common led-max-microamp property to the binding and makes the driver
-program it, so boards whose LEDs are rated for less can set a lower
-limit.
-
-My use case is the frontlight of the Onyx Boox Leaf e-reader (SDM636),
-where Onyx's Android kernel sets the full-scale current of both banks
-to 12.5 mA. The board devicetree is not upstream yet.
-
-Patch 1 documents the property, patch 2 implements it. Both are meant
-to go through the backlight tree.
-
-Testing:
-- Onyx Boox Leaf, 7.2.y kernel (sdm660-mainline) with patch 2 applied:
-  led-max-microamp = <12500> on both banks reads back as code 0x0a in
-  both full-scale registers, and the frontlight works normally. 5000
-  and 28250 give codes 0x00 and 0x1f, with bank A visibly dimmer at
-  5 mA; 28500 makes probe fail with -EINVAL. The driver in 7.4-rc1
-  differs from 7.2.y only by an unrelated change in lm3630a_remove().
-- dt_binding_check, and dtbs_check of all in-tree boards with an
-  LM3630A (rk3566-pinenote, the i.MX6 Kobo and Tolino e-readers,
-  Nexus 5, OnePlus One): no warnings for this binding.
-- arm64 build with W=1 and sparse: no new warnings.
-
-AI disclosure: I prepared this series with Claude Code (Anthropic,
-Claude Opus 5.5). It drafted the driver change and the commit messages
-from my description of the problem and the datasheet, and proposed the
-checks above; I ran the checks and the hardware test, reviewed every
-line, and take responsibility for the patches.
-
----
-Michiel van Beers (2):
-      dt-bindings: backlight: lm3630a: Add led-max-microamp
-      backlight: lm3630a: Allow setting the full-scale current per bank
-
- .../bindings/leds/backlight/lm3630a-backlight.yaml |  9 +++++
- drivers/video/backlight/lm3630a_bl.c               | 40 +++++++++++++++++++---
- include/linux/platform_data/lm3630a_bl.h           |  4 +++
- 3 files changed, 49 insertions(+), 4 deletions(-)
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261107-lm3630a-led-max-microamp-c693253a95c5
-
-Best regards,
---  
-Michiel van Beers <michielvanbeers@gmail.com>
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 
+
+On November 4, 2026 11:30:58 AM PST, Christian Brauner <brauner@kernel=2Eo=
+rg> wrote:
+> [=2E=2E=2E]
+>+static int pde_init_seq_direct(struct proc_dir_entry *pde)
+>+{
+>+	struct seq_operations *ops;
+>+
+>+	if (!pde_is_seq_file(pde))
+>+		return 0;
+>+	ops =3D kmalloc(sizeof(*ops), GFP_KERNEL);
+
+Please use the new style typed allocation calls for objects:
+
+ops =3D kmalloc_obj(*ops);
+
+(This happened to jump out at me, but please check the other patches for t=
+his pattern=2E)
+
+> 		dp->open =3D kzalloc(sizeof(*dp->open), GFP_KERNEL);
+
+Same, etc=2E
+
+--=20
+Kees Cook

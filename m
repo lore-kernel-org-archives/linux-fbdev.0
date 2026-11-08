@@ -1,103 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.9
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=77.32.148.25
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794083481;
-	b=Kmk5OddqLn09IIU9Nl/ZnYfK810PNuAt5e909wdEE7AhLQ2FNeTMdayKpDP931cMRbx0
-	 2NHnP+lYynNIoaAuLoAsCXdcLBmi+Wzu9fVb7HhtdGI6PWQX+90qMD5ESuAHq0CmmyvnR
-	 kYmUbAiokKZlEl9MJi5a02vjm04OyoyBVwLRaMMq7sNymb+SNLgU4OUIOZGR3xQ97cVWV
-	 elpiFM87MYzF+lcs7SpLRNbG882dbjOuhjLS9A+zfqoVWydkra28TJq3ybrrTBPGCJubS
-	 v00laptm0ez5YJFXdLhYSyWzzq9x6+qsWvipNOcfxf1/u3hvsuwnGq1WDGcGvJq6wzQ==
+	t=1794100297;
+	b=QKqiwgtDTUEpiiLPd4vcFMtpSpdn+3Vz25/y6MLBivEuPyJ45islKed9xbp7ZLP++FRi
+	 MX+XRNcGP3banMs/1NiXGpPgwVsWqKVXqG7pwqP2doZocAivyO6t8tpwZDrkphtwUugN5
+	 4TxOHyxZU/9fYshvogE7GpJAUeh9fHdoRHDiDFsJqkh6pGhhtWtZE5FS9rj+Apwk1L323
+	 JsySl9UkfAWZSvZ1HtkLLki4jwEKv6XBPg29czXitiVzUjYp8g9ebk7yy5wFeL5c68ui3
+	 E5n3TYh7+SN96D/VUC17md+POHg7HuBIXt6XsmfZeQBNO7Zm1HsmIGoMMAjli0DDCiQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794083481;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
-	 Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=v6bUcassHdLO/GXw3zM5VIE7wDA3ZUXzoBbv/LJY2ZY=;
-	b=ahgos5kcUi1AWcLSPbU8ldx1sKKSyLrh5yvb33r7sp/ZMQ8hB7UpAfA8wGqKgHlR5O/v
-	 W1h1u5/ZVCaP8Y/JMnIF10NYbkcdRgeLX49CgJqe5mc9xrxCO4L+kBGJS2Vly95XvGTCM
-	 2JDNfgMNcnQ2b+Si2I+cUnVBdKLMIUnH1a5SnvgNRJnGE+BGvNtbXA2E8KSl9u6qFUVe0
-	 oT8SA+Sp+qDVMGFWyF3ntrOdoay8H81iG44m+K10Y5GnI4resBcmwUBVyHmBPO7DFJO0u
-	 lQQjfLORX1jAWf3x/69t05bC/N4G1L5kW2lxEPr86BZvwgInvLa+fNeTF46vD9MIsig==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794100297;
+	h=DMARC-Filter:DKIM-Signature:X-sib-id:Cc:Message-Id:Origin-messageId:
+	 List-Unsubscribe-Post:To:Subject:Feedback-ID:From:List-Unsubscribe:
+	 X-CSA-Complaints:X-Mailin-EID:Date:Mime-Version:
+	 Content-Transfer-Encoding:X-Mailer;
+	bh=sZfzNXh4BND9cCS6sfS5q9SmaLVYUprSC4+0dzXm2Xo=;
+	b=JveKIs5GPQ/OFSc4ASwz6aGbiSwljBWcqBBdi5fGfQGiWSHautDYN2J+1gTc8i10uvVM
+	 1ngvyu8sI+6bXuIdaTsuRlHeJAmfG2tuS1mIJdDwBQn1sgeKVb9RN3m6g9YJOrC4un+93
+	 NAU8+LOE3KD6w4et/xzuln9MYYj4ZTf99KgFm4jkk6TRgUt9oNVJEoQdqom1viNmTjOqI
+	 1uWixFUl5RAcqmyYe1Hq8he6V1T1YPrCP9+yuBbmJ0HwEBRqTlMTvCQdS7EXoB6Jfeiya
+	 eGECMlEUv1vWE1bqpWb05WLeO2gPX8/ZFieuYUZDvjOHHOnTCDT3dIu+x5XkxEaiB+g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=intel.com;
-	spf=pass smtp.mailfrom=intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QVEjE+63;
-	arc=none smtp.remote-ip=192.198.163.9
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=pass header.from=tubot.lat;
+	spf=pass smtp.mailfrom=gy.d.sender-sib.com;
+	dkim=pass header.d=tubot.lat header.i=@tubot.lat header.a=rsa-sha256 header.s=brevo1 header.b=ChSK+Wel;
+	arc=none smtp.remote-ip=77.32.148.25
+Received: from gy.d.sender-sib.com (gy.d.sender-sib.com [77.32.148.25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B87B606A32F;
-	Sat,  7 Nov 2026 20:31:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0B87B606A32F
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61C88606A331
+	for <linux-fbdev@vger.kernel.org>; Sun,  8 Nov 2026 01:11:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 61C88606A331
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=tubot.lat
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gy.d.sender-sib.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QVEjE+63
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1794083479; x=1825619479;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=OahVgGzTA/BbKK0ba5EuajCKzsBQJEMIYUqKxYPZyv0=;
-  b=QVEjE+63IMJ57BjjxDteVkY/7eyoIsrHLdA4f01nWQtVTVAcbZ1JEIF4
-   5cYgoELqtq2kwfyD7IpvvSvPZYygzr0V4J6ttq510/V4mfgD7Md3I636A
-   uwxXbmX/xE73K2I8+/VFR1OD8F5XgGAUVOghjF05aOFNpeSIn/cnGvcZ/
-   g6zxX83Hb6eNwO6irCVnr4KmCfyzN6hq6VDp/eU2WIlylhIQ46M2QT95t
-   swS28f0z2d+ERVyAzIl9xs4I+rfxcGKrHR9bRIZBxL8RmqEYAM6Dm31K0
-   sfxi9hCyWWg+YMFy+Ni/iJuySzTqDJPQKAHem45wsJN/fmtdTwM0EBXYG
-   A==;
-X-CSE-ConnectionGUID: 66pHbNVLR+avwIDKOasKvg==
-X-CSE-MsgGUID: gH8+Fh3oTNaapbsMR+az4w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11959"; a="2751092"
-X-IronPort-AV: E=Sophos;i="6.27,200,1787036400"; 
-   d="scan'208";a="2751092"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Nov 2026 12:31:18 -0800
-X-CSE-ConnectionGUID: o7l63MtfQnShQRRzlIJVWg==
-X-CSE-MsgGUID: Lctc+yuNQwKIuKfWJsyFdg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,200,1787036400"; 
-   d="scan'208";a="7876352"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
-  by fmviesa001.fm.intel.com with ESMTP; 07 Nov 2026 12:31:12 -0800
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xPn47-00000000rX5-3vnH;
-	Sat, 07 Nov 2026 20:31:07 +0000
-Date: Sun, 8 Nov 2026 04:30:15 +0800
-From: kernel test robot <lkp@intel.com>
-To: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
-	Xaver Hugl <xaver.hugl@gmail.com>, Vidith Madhu <vmadhu@nvidia.com>,
-	"Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>,
-	Leo Li <sunpeng.li@amd.com>,
-	Harry Wentland <harry.wentland@amd.com>,
-	Fangzhi Zuo <Jerry.Zuo@amd.com>,
-	Daniel Stone <daniels@collabora.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Helge Deller <deller@gmx.de>,
-	Andrzej Hajda <andrzej.hajda@intel.com>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Robert Foss <rfoss@kernel.org>,
-	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
-	Jonas Karlman <jonas@kwiboo.se>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Luca Ceresoli <luca.ceresoli@bootlin.com>,
-	Sandy Huang <hjc@rock-chips.com>,
-	Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
-	Andy Yan <andyshrk@163.com>,
-	Michel =?iso-8859-1?Q?D=E4nzer?= <michel.daenzer@mailbox.org>
-Cc: oe-kbuild-all@lists.linux.dev, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, kernel@collabora.com
-Subject: Re: [PATCH v2 20/27] drm/connector: hdmi: Add QMS state validation
- and computation
-Message-ID: <202611080413.OlzAJilt-lkp@intel.com>
-References: <20261105-vrr-limiter-uapi-v2-20-55f4215be2c2@collabora.com>
+	dkim=pass (2048-bit key, unprotected) header.d=tubot.lat header.i=@tubot.lat header.a=rsa-sha256 header.s=brevo1 header.b=ChSK+Wel
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=tubot.lat;
+ q=dns/txt; s=brevo1; bh=sZfzNXh4BND9cCS6sfS5q9SmaLVYUprSC4+0dzXm2Xo=;
+ h=from:subject:date:to:cc:mime-version:content-transfer-encoding:list-unsubscribe:x-csa-complaints:list-unsubscribe-post:message-id:x-sib-id:feedback-id;
+        b=ChSK+WelIjdhX5NeaK1suA/90uq2PoR/O5D39hyo9b47e8bxaOfERjPni44nIzvASvY7nL5HRcf/
+        GUSDWiHBajAiK6OwNGftUyD5qR4fwGTzn0Rc1n+Ujdw4IEVoKYx0RR1JY04PsGx7QzwycOW84HEM
+        jOfqIGQJxXcgwZW3R58pRQYf55Eqv/kDYvvmUAnoT/7ucELi4Ek2OKZrH0p+EpDOOJzi1qjMIIfU
+        4A8nvqbobHMqdOrh2y1ekeAowiEFpfosgd56mk0mNSKVHUwxGDswqKjMQSbTkS28uAIuvegb/AIY
+        83M0nvT5JQDntdGOT41Y5Ve2E3OIKF8KvQf8bw==
+X-sib-id: vY5TOxWgtJl17aqXuUvFG6byHIUWa_pIYs6rWiLIzmaDwKN_4NXFJ06LMK-gT0JrW65hE5pN85XT0YBvkuKmitRnUCDvC73JP0IS24Jsa-c2YlddLwCt2LBJL7JDFxfc0A4LErCY-XVakwNAxJKnKSD5ZWS0SiDdNTH4LuaeIwNbcB2zVVGOCQ8a
+Cc: <linux-fbdev@vger.kernel.org>,  <linux-staging@lists.linux.dev>,  <linux-kernel@vger.kernel.org>,  "DelaySystem" <delaysystem@tubot.lat>
+Message-Id: <20261108011131.1124831-1-DelaySystem@tubot.lat>
+Origin-messageId: <20261108011131.1124831-1-DelaySystem@tubot.lat>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+To: <sudipm.mukherjee@gmail.com>,<teddy.wang@siliconmotion.com>,<gregkh@linuxfoundation.org>
+Subject: [PATCH v2] staging: sm750fb: fix remaining spelling mistakes in readme
+Feedback-ID: 77.32.148.25:11287567_-1:11287567:Sendinblue
+From: "DelaySystem" <DelaySystem@tubot.lat>
+X-CSA-Complaints: csa-complaints@eco.de
+X-Mailin-EID: NDczOTMwODc4fmxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZ348MjAyNjExMDgwMTExMzEuMTEyNDgzMS0xLURlbGF5U3lzdGVtQHR1Ym90LmxhdD5%2BZ3kuZC5zZW5kZXItc2liLmNvbQ%3D%3D
+Date: Sat,  7 Nov 2026 17:11:31 -0800
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -106,35 +62,51 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261105-vrr-limiter-uapi-v2-20-55f4215be2c2@collabora.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+X-Mailer: git-send-email 2.34.1
 
-Hi Nicolas,
 
-kernel test robot noticed the following build warnings:
+Fix two spelling mistakes in the driver readme:
 
-[auto build test WARNING on 0e8b43b5a5ef2dd52c454158e7fd8a927d796eb4]
+"Silicon MOtion" -> "Silicon Motion"
+"otherparm" -> "otherparam" (matching the example above it)
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Nicolas-Frattaroli/drm-Add-VRR-state/20261105-165152
-base:   0e8b43b5a5ef2dd52c454158e7fd8a927d796eb4
-patch link:    https://lore.kernel.org/r/20261105-vrr-limiter-uapi-v2-20-55f4215be2c2%40collabora.com
-patch subject: [PATCH v2 20/27] drm/connector: hdmi: Add QMS state validation and computation
-config: loongarch-randconfig-1001-20261108 (https://download.01.org/0day-ci/archive/20261108/202611080413.OlzAJilt-lkp@intel.com/config)
-compiler: loongarch64-linux-gcc (GCC) 16.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261108/202611080413.OlzAJilt-lkp@intel.com/reproduce)
+Signed-off-by: DelaySystem <DelaySystem@tubot.lat>
+---
+v2: resend in plain text via git send-email; v1 was corrupted by the
+webmail send path (HTML part, whitespace mangled).
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202611080413.OlzAJilt-lkp@intel.com/
+Note: this complements Hussain Sitamouwala's unmerged patch
+<20261104112629.180890-1-husainsitamuwala21@gmail.com>, which fixes
+"defaulty" and "althernative" in this same file. The two patches touch
+different lines and do not conflict.
 
-All warnings (new ones prefixed by >>):
+ drivers/staging/sm750fb/readme | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
->> Warning: drivers/gpu/drm/display/drm_hdmi_state_helper.c:1031 function parameter 'conn_state' not described in 'hdmi_validate_qms'
->> Warning: drivers/gpu/drm/display/drm_hdmi_state_helper.c:1031 function parameter 'conn_state' not described in 'hdmi_validate_qms'
+diff --git a/drivers/staging/sm750fb/readme b/drivers/staging/sm750fb/readm=
+e
+index cfa45958b9d2..dd8ba1a85695 100644
+--- a/drivers/staging/sm750fb/readme
++++ b/drivers/staging/sm750fb/readme
+@@ -1,5 +1,5 @@
+ Introduction:
+-	SM750 of Silicon MOtion is pci express display controller device.
++	SM750 of Silicon Motion is pci express display controller device.
+ 	The SM750 embedded graphics features include:
+ 	- dual display
+ 	- 2D acceleration
+@@ -27,7 +27,7 @@ About the kernel module parameter of driver:
+ 		ahead of parameters,so,it looks like:
+ 		video=3Dsm750fb:noaccel,1280x1024@60,otherparam,etc...
+ 		it equal to modular method with below command:
+-		insmod ./sm750fb.ko g_option=3D"noaccel:1280x1024@60:otherparm:etc..."
++		insmod ./sm750fb.ko g_option=3D"noaccel:1280x1024@60:otherparam:etc..."
+=20
+ 	2) if you put 800x600 into the parameter without bpp and
+ 		refresh rate, kernel driver will defaulty use 16bpp and 60hz
+--=20
+2.34.1
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+

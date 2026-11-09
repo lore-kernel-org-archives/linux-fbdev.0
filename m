@@ -1,95 +1,56 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.174
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794231463;
-	b=hSNCVVASL8eLgDh/+qL6fB/M+4aZSoNl3wDnPx7bwVAaXQ+88dtxX0D5I79JeoDmewLy
-	 H5D01sXi6M1QzaoFedB+s6zDQGBRcQAzkBv/2yMiHAzKZ1z/4E8m39swl+WP6+UTsc9jl
-	 vzihfcqFob3B37lU1edSJD0x96cJvOKiB8dvw/1fZCLb73UNzHjzPI29psfqz/F7hm0T1
-	 psDz2zySsPbkKGDHCpHd22ffaHOSpHdpHNbwrc0TDjUb/MuKvA+hiL9ZYP3bwx/oL1rty
-	 Spw+nDN40rGeDBuY45RbIXAKpajia24X3AR+E/SMSccG4I4T6b5UMznUZVoIFPHKSow==
+	t=1794232022;
+	b=AjtEnma2UN+iWxsFbka6LmAyqK9XnQh5AK6RjvnK7i47P5wUsEIz/PXi4Em3toKNwdTD
+	 hISCdlcYqmGyYbZrDEqM8NpWkuKeAHh1w0CeGrOhocj5OKQZhTIn99Di5LZb4K/7f98Eg
+	 24ZsCRDFND8maUJqw7o383cyf/B7A7tcTCKxRY1mpeGkby2Hn/ZKIilXdJPGM7JJRFwr0
+	 VaPoAxh2uyeUr7QEq3KXCiMPvyKaODvY7chd4O78sC4lnpKuUEBQjj7f/zv6TmsDrilzo
+	 EcXeHXO0JlTFRdQ5QYe/he4dM0Tgl0ilLmVAVl+Ky5TWL5/Srcen9rGRl/BI2ctRTqQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794231463;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=QWyQhqJ9ucdQAcEnl95DfWPx+aoHDTMLg3gXeTbngSs=;
-	b=SdAofFMbKFMSi4PR6e1Glwr9Cslcgo6wVd64lp5bFxHvhPj/hJOXSPQmAV274S6z+NOg
-	 e83C7h/9xyKEG62QPjvsRE8nWD8uvsRXoPXM/gySS6jXmAdNTJ83lGuM20R3kXlYT2rz9
-	 my9k2e3oWrIr6ZdY699rGtyX9itAL8klj8iU7Z1Jz/ZA85OzZ1k+xIXP94EaPlg0B2UvJ
-	 LhL2tC5/2MwmB0/XyuhMqLAZkvRBWNxGsY6m3DI/ok67Msc7qHL86qzmmewv9JT8TCiL9
-	 Ahk/J0uqoos+swvXaR2/f2Hm1K5FSVLoODtwcDMEgAXFv0GiVeiz3tg+yE5IbDcPDFw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794232022;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
+	bh=UULeg7ZwfrRSMBYNdcUvvoEFwdkhBm2Chdood5mPzUk=;
+	b=kaacp0oQEvYJ4mRwGZiNi1+9CV+FDE1LJY068NG3DO9Og5Hs4bIkP9aNgrJsbJ3q/5+Q
+	 V0OSO4WYZfkahgAWzjzKIwIcQfTTehC7NqygJ2zI5FLLZZXx8ji7w/hl/sHutyrw8PUjd
+	 ueRa5UZxTFJzIa9RPMPfhqshKlWwkFpOetVW8Pzc8njxAGyFiCHlIiOfpfRtqpNzSj0/8
+	 9j824MS2hBB9H+rkRvFg1CWRovpxqXd4mGcQaJDkM+ZlciqCFTY+L5T0g/CV3/sFVoVqZ
+	 fRCe4P4ZYboiN/ZjHjelJLBh3I5vAUReT1kjFFxMI7SVEq/2V/XBtjmkAfvXgw58Epw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=pEzbnxCc;
-	arc=none smtp.remote-ip=74.125.82.174
-Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g4fqi+1r;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B8E8A606EE81
-	for <linux-fbdev@vger.kernel.org>; Mon,  9 Nov 2026 13:37:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B8E8A606EE81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A734E606A321;
+	Mon,  9 Nov 2026 13:47:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=pEzbnxCc
-Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-33bf40b0c8bso800716eec.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 09 Nov 2026 05:37:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794231462; x=1794836262; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=QWyQhqJ9ucdQAcEnl95DfWPx+aoHDTMLg3gXeTbngSs=;
-        b=pEzbnxCcQlvx2tn5lpveTfIoakyDzPtG7/g1mOwAG6x7gpmM70DDzzfF1jezM1uAH0
-         jIkYyAKN9HSmeB12RFncRzoo+TkZ/bFCtpSdNhJOrbpOrT4FYfujfC8cpntxJTVsk19F
-         M/KISmsWxJp4+s/pW6BFimu9wO6WhonXJEen+7Tm22TToeuJD08U97y+V/0LiPZskSpj
-         6tRiWXNWlci/c441bviiQTo02omcJ/1rp39TGb2E9SBZVwwVlLZXu20FKoKtEvehmT5G
-         j4UuXpaKInR0PrXLtHM2AOY7Mgs/u5FQvs6tI/0LkurFrmn7smh1kOGg+O5UkW64ZlcT
-         EOVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794231462; x=1794836262;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=QWyQhqJ9ucdQAcEnl95DfWPx+aoHDTMLg3gXeTbngSs=;
-        b=K1NK563MYPuJNCwddULr43SwvRGQ88Ql8twNt7wa3rGvwds02dRi5ZgqBasEXnC1s3
-         37KSdLb5QehCeoLzGEa7gHO9hspJsRVGr0QDmCKeFpdlNTOJVLtBLdDXU5XEOWVtehYM
-         MLW6FRKt8T6gVueOL8co6WtBivGzpHzbLnu3Kht9ZWsjpL4y4QumxYP1APKtb4hITeYL
-         LqEwvXJXt5equXvreF4c12u1AbPJS4e4pGAS8cB0JQetakjAGS3PulMZbcq9KeECZdi7
-         cV+/y5FPhqPnPsdgJdFLttSVIYd3Z/QNCjojwBP36A4jaj2Kgrs4bD9Hum6IZuxVsaHG
-         sDLg==
-X-Forwarded-Encrypted: i=1; AL+hErEBlpFU3zuMfSJRK/GCCdsD2nj3ydilCa+p0YM1Z1zRfTUWTairdn80FxEOgu/dEaOCJNwg5dvahzJSxw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8byygnq0TocIfuckB29MKNYDFv5eoe7qazwA7ZvSofs+pG9akP
-	UPKeBkFweBrA0OHszbnkwyyV8jUq7pq4G6VihamfAWCnFtTNPT2Ed8Bs
-X-Gm-Gg: AYBFou20brRtesi0GThu5aSiFuNLdaMuZskTmjqiO4SBmboRo5tOPyLuMpEIsYiIujZ
-	ewe2IKcqujymXentx6JEtCnCOCvr4CVPliEPd3Ywr9Vuum2jRQ48LzSiHvSbkWEkumvrrNEWbvU
-	58xlpW7frHpY87pgIQESJLCTQYSpG/CnYALZU3ZlpgPDEzueOHhKQ/ebg0Yu6I68ye1VRkZGgto
-	mPpaBT1nHCPgV+amVwKZcK0Js8R3tfHlBjOQoVBCFbQHEqNrIE6eIdY8r3T/9FMIIemTwQUW5U5
-	WNQI2k3lHpxM7CwFJHfeF5iugHYu2RP5011pEohDCwxag8mV2DK7fVog51UJhPvQaKHux8lMUrn
-	7r6rbflthR0Tq2xu3Yk/iXThWwNV9M+tARElRC5BsR85zBEuOMrarfoDVyarOd5YjcsruurW7Mz
-	UM/7Pk1xpVhGD2t3WtCCvNOGnRfwRWw1VhmYobj8qTis8Ht539dwtNoqd9Us/fpRgMMIEPPbRKJ
-	bylEy6vEyPOwc3r1g/f+jtzZjLMMKNuQ1Ch7qtlBIQs6Cz6e4p7/4DTTcXThfnc7rf+r8/ZLIYw
-	J5oqEHAj6KsrGlc8Lu1gS3mfoASo0ZiSL7dhranIUDccc4QbEIc6GTV3QhjDk9vXxblWX3TJjZl
-	kbGZLBkrC5sb5QYNENrq/QsKxzNQIoW9zvOGDmNRDFH2V
-X-Received: by 2002:a05:7301:6497:b0:369:efd5:9cad with SMTP id 5a478bee46e88-37255475628mr7236459eec.8.1794231461483;
-        Mon, 09 Nov 2026 05:37:41 -0800 (PST)
-Received: from localhost.localdomain ([203.92.58.30])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-372666d2fcbsm13225525eec.24.2026.11.09.05.37.38
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 09 Nov 2026 05:37:40 -0800 (PST)
-From: Shivani Patel <patelshivani2283@gmail.com>
-To: outreachy@lists.linux.dev,
-	Andy Shevchenko <andy@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-staging@lists.linux.dev,
-	dri-devel@lists.freedesktop.org,
-	linux-fbdev@vger.kernel.org,
-	Shivani Patel <patelshivani2283@gmail.com>
-Subject: [PATCH] staging: fbtft: fix spelling mistake "writte" -> "written"
-Date: Mon,  9 Nov 2026 19:07:31 +0530
-Message-ID: <20261109133731.66016-1-patelshivani2283@gmail.com>
-X-Mailer: git-send-email 2.50.1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g4fqi+1r
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7EC601F0089F;
+	Mon,  9 Nov 2026 13:47:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794232022;
+	bh=UULeg7ZwfrRSMBYNdcUvvoEFwdkhBm2Chdood5mPzUk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=g4fqi+1rJXD8n05eVPt9zgL/1cqFGPO9B3K31Qf8cik24oKlB4uZAmvF7M+JPIhM0
+	 kN5PNyYXjxbKyOAH9Vy+Cb4eM/tLTpjkIAo0jaMtmzKqhsFopAUK7mP2HKlmxnPp1Y
+	 92SdK2+rS4Lfw/XEAfOJopv477xAuZTtlNgeK1BHgzlioTiwPWhU1uHP9prf9LTnZx
+	 40U1F2w6m3bzbM9G1UMao+aK5L4VwlhIoofCylO9NAn1vKMORGTdzHbWDk6ZpcHa87
+	 DdIiFp+DeeBiTJvaQ/5029d2on2APuLgV84ikr//xnC0d0sZPE+nfENyrn8fxzlQxv
+	 zgH0en+eJ7saw==
+Date: Mon, 9 Nov 2026 14:46:58 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>
+Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+	michal.simek@amd.com, deller@gmx.de, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, git@amd.com
+Subject: Re: [PATCH 2/2] dt-bindings: xilinx: Remove description for
+ framebuffer IP
+Message-ID: <20261109-crystal-kangaroo-of-charisma-d7a8fe@quoll>
+References: <20261106170902.3656809-1-radhey.shyam.pandey@amd.com>
+ <20261106170902.3656809-3-radhey.shyam.pandey@amd.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -99,28 +60,25 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261106170902.3656809-3-radhey.shyam.pandey@amd.com>
 
-Correct spelling mistake in comment ("writte" -> "written").
+On Fri, Nov 06, 2026 at 10:39:02PM +0530, Radhey Shyam Pandey wrote:
+> The Xilinx framebuffer IP relies on Xilinx Platform Studio and the ISE
+> Design Suite, both of which were discontinued years ago.
+> 
+> Driver support for the controller is removed by the preceding patch. Keep
+> the bindings in sync by removing the corresponding Xilinx framebuffer
+> description.
+> 
+> Signed-off-by: Radhey Shyam Pandey <radhey.shyam.pandey@amd.com>
+> ---
+>  Documentation/devicetree/bindings/xilinx.txt | 13 -------------
+>  1 file changed, 13 deletions(-)
 
-Signed-off-by: Shivani Patel <patelshivani2283@gmail.com>
----
- drivers/staging/fbtft/fb_st7789v.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-index 861a15414..c4db681eb 100644
---- a/drivers/staging/fbtft/fb_st7789v.c
-+++ b/drivers/staging/fbtft/fb_st7789v.c
-@@ -221,7 +221,7 @@ static int init_display(struct fbtft_par *par)
-  * write_vmem() - write data to display.
-  * @par: FBTFT parameter object.
-  * @offset: offset from screen_buffer.
-- * @len: the length of data to be writte.
-+ * @len: the length of data to be written.
-  *
-  * Return: 0 on success, or a negative error code otherwise.
-  */
--- 
-2.50.1 (Apple Git-155)
+Best regards,
+Krzysztof
 

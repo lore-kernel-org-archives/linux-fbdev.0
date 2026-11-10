@@ -1,79 +1,61 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.54
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=114.242.206.163
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794286834;
-	b=dpG4lmMbiTd62ud7//9xiDZGu0ZeXgsEie0YJWuRJEKQWbiy/6F/2UDjp2XjzBoxU1mO
-	 aUA+vKBs1E2hMS0xWNtajy1Vcat5GxNEmW/uBO2WOafrPnIZeNPYz78G6ej7lrL4I23bI
-	 gX/Q464IJ99JrtRpIqkTNGKBYkQeZxlX9u7DJh5sifzxOWhl5aVXWA2OlHnffdn4XkQHs
-	 Akfwbo6n1hBeVl4ShALKMBRTrmsURmTmyQ71kB7KzmydtEgETjhFca68bUwYp4xcuEfIO
-	 y6rXrKLyz71/ARbVJKA8o6KGTREzunIE7uAAsVrgE8nzpUvAtLCz+IuU3Iq5hlWTTyQ==
+	t=1794301104;
+	b=yUPXAbawxnkNGiTln+WC/33uFZ+6suI2+UstAC6YHgy0vcC8jWMOISejM91lebD/3w5A
+	 JXhlGyPa/o9fPmFhFgZsLZbZWrsJwYd1KgC0qP1vWr/PPcUuk37LVo88PUbxZjWi71rvZ
+	 AiSzsuwQIzgsN2AwcrWhbf1MH96ounz7tiqrhu3idgLy+U1At3p+GUV4Vwp0fXenln7wG
+	 88f7C0Y7+q9mx4szBOHJS6M/LPn06q9VyHe3CLvmfxBQmHE9/aehYyA2fNviqtV+klWLZ
+	 WeoNpOHUlL1hhpWfFYJdWEh/w/jdFBJWAeOK+24YKB4Kl3SfyZDsCMNsxckpiB/LiXQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794286834;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=4O0eqh0/2N6SuevRIz4jY1zAOHwLnJqMFnfAmlKu68o=;
-	b=iOnuFc/HuyqR7oDflNLlTSZIBrGiyGPFk33g10/M4aKQL1r3li0OueexeM3t9LfthQ9b
-	 TrzlfljPpvmJetNgVLkJS3MXobOXVH8Zb50DHw3b6ZEhZX5F84pZZxuttBhsBRtostb0n
-	 UiPtQuCKiLLlMZ3qJWqOGQWBQy+4IhdUqa+fSFtOBZMGjrzo3sVS+OjwFE3CygU1daMFU
-	 3WToC6lnExO/uUjhYm9OEZ04tZ/r5AU8yP+AWvc+k0q8+0oQOnsQMPv2uDcXC82uFjb/u
-	 51b1cNs+TuZ9XeWyRQRQGifJCU1bBiRKpfshuZSDgNXe425kv9D9QrNj69RVJuPnwBQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794301104;
+	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-Id:
+	 X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-CM-TRANSID:X-CM-SenderInfo:
+	 X-Coremail-Antispam;
+	bh=/BerbQ1LqYXVXHKPiWMSxnG91S54BmhY5Kon5U7NqOY=;
+	b=KLTtasSdAHlpUK5/x8q+SQiBWRotaDTmw+WlOB5W7tRUwrm6+zYHqP0M35tkiqDmnd2P
+	 vcm7wqLL8LN4tSFZwnlYCehMi3QZcXN3UhwWVPv+MGSA/4/7eVonhAClT7GEmsNFSBpTV
+	 sAg49phonh0tPDJKL/bk6ELsBN2UeRAO6Q6L9AbL81fycoX++HZVCbUCbqOx3zXR70osn
+	 IgtYGG+CP4VMlVoMqZj/fN/mlPNbCr3mVoBv6etmWxXtYnlaqeOLk0dt7AkNiWvuTRhFe
+	 W78sbbi2oZnKjNjz7UwZogsKL9NkGtAfRWKuJw6vlxfGK/aqUzeyKjurBvR+4SRvblQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=none header.from=cryspen.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.221.54
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01D55606A326
-	for <linux-fbdev@vger.kernel.org>; Tue, 10 Nov 2026 05:00:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 01D55606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=cryspen.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-48e47347279so987274f8f.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 09 Nov 2026 21:00:33 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794286832; x=1794891632;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=4O0eqh0/2N6SuevRIz4jY1zAOHwLnJqMFnfAmlKu68o=;
-        b=1rgBT6IsFgQBmpReDLl+KUT2mtjRl3Z2ANESP9pZohhCr2aV+FPMdFRQZVeow1f60H
-         RceT4/cPmB+Lmejh2EQBen/BxHOCM/zp+Ym5zWCkgL4TfRpOrPBTAtiWGm9qGAWkl4l7
-         6milkribsZC8a5+SBEQT9dmLYYLXAteTB47eBatCrmQIBS1sJt68pyYodnfFLEo9pCAi
-         hJYc8uRwr1iM46B391HkSKmtL7GK3QEoOP39o4qm0ZaQ+gvo3TV47GkB4LoUBBhgRC79
-         Zqo6Kyl8cUn/xv/LV7880I/y+G0nWTNOkrwyKRJ+PVzReuEjBcDJdGbjIU79TJ4xvvQ9
-         bjhg==
-X-Forwarded-Encrypted: i=1; AL+hErHTykrYHjIAqKM0TpqZ2SKlKYakwr+Ipbko8vooKEoxNJIVSMDyCExZl0QZzSwbLbY1qHj8weQNSLKSMA==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/764aDkJIlm78wus2akb3wKXtU6v7O1Lu+HeIx+VoJUMR6cOX3
-	LhIdprWC0qUzJE4254pg9quoTcnuVs3B1JdFVF/p/Uvxc6kgbqSDakcw
-X-Gm-Gg: AYBFou3GMKL/hUnFUVfYbF/huMkptEvDeIQ20G07wE2UVXZN/lwvIeoNmmxb77BGryK
-	rkR+9LSOaKMy6nbpDfI0bkz9naPu5HBDcZpiJKHjoyQmoCZGaNfd73Cx7iuCxu5LsZtSqYqgalo
-	/7kSjsYuyx4UsqsJOBEqhVh4poVnzomv+Lfn5BJz02sy7xapTDgg7ckR6aytL8EjSgck/B7pZe4
-	OfvbSl/KbG6oDm3tk9XXGtvhIsiYp7wylqUHhVe6CWL8a3LyCPBsKhbbEeypiP7KGIbY3+Sr8ya
-	7oS+zALyDvv9LChYkdAn37rpO4/kj/leNV5IhxL1MKmC2tAIGivcZUYXPNm7zFUlh9dvRGhf0rv
-	YqY5EQW/kpMMDh1nbuDu5VlxsylSVvMmb469s7gdQbP64ovzyF05g07zmcFYrQ+Ab+3qVV+7H3P
-	qps62/swwzDWlKgx/EZOcO2Sim5UXQpE3F1T5ggiXMoLadGj3SKeg1EQKNsMrTltGfDYKbEh/VV
-	VCE6PQHNNJF8qsjGNpyJr6r8m37ZHG6GthJ9o51Y/1MyQkptjuSab60CBrjxiGur14M19zRRT6Y
-	3caCe8lzFVrGkmPRet+bRSvZzKoYb59DC4eCYoc+vLLVXb8FhivVzcgHLcZLHk8vGNR4gwpsAiE
-	0YDQahk1SfAm53uhBAm+iVZsi2IkfzG60fyy/QJqpXgB2cQotaz3NVhaedaM6oS93
-X-Received: by 2002:a05:6000:2006:b0:48e:5e20:1371 with SMTP id ffacd0b85a97d-4982b28a89bmr2510103f8f.4.1794286832242;
-        Mon, 09 Nov 2026 21:00:32 -0800 (PST)
-Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-498361f674fsm2715343f8f.33.2026.11.09.21.00.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Nov 2026 21:00:31 -0800 (PST)
-Date: Tue, 10 Nov 2026 08:00:27 +0300
-From: Dan Carpenter <dan@cryspen.com>
-To: Platon Miller <platon.ksenzenkokk@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: remove unused macros in sm750_cursor.c
-Message-ID: <avKk63Z5_ofZZcGk@stanley.mountain>
-References: <20261109231414.25021-1-platon.ksenzenkokk@gmail.com>
+	dmarc=none header.from=loongson.cn;
+	spf=pass smtp.mailfrom=loongson.cn;
+	arc=none smtp.remote-ip=114.242.206.163
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 02C8060A260F;
+	Tue, 10 Nov 2026 08:58:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 02C8060A260F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
+Received: from loongson.cn (unknown [10.20.42.172])
+	by gateway (Coremail) with SMTP id _____8DxTtOt3PJqbyAeAA--.20620S3;
+	Tue, 10 Nov 2026 16:58:21 +0800 (CST)
+Received: from ubuntu.loongson.cn (unknown [127.0.0.1])
+	by front1 (Coremail) with SMTP id qMiowJBxrM6m3PJq83MzAA--.21431S2;
+	Tue, 10 Nov 2026 16:58:14 +0800 (CST)
+From: wuqianhai@loongson.cn
+To: chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	tzimmermann@suse.de,
+	deller@gmx.de,
+	bhelgaas@google.com
+Cc: ardb@kernel.org,
+	ilias.apalodimas@linaro.org,
+	javierm@redhat.com,
+	loongarch@lists.linux.dev,
+	linux-pci@vger.kernel.org,
+	linux-efi@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	wuqianhai <wuqianhai@loongson.cn>
+Subject: [PATCH v3 0/6] LoongArch: Identify the firmware/boot display device
+Date: Tue, 10 Nov 2026 16:56:11 +0800
+Message-Id: <20261110085617.2626835-1-wuqianhai@loongson.cn>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261029033440.973077-1-wuqianhai@loongson.cn>
+References: <20261029033440.973077-1-wuqianhai@loongson.cn>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -83,22 +65,120 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261109231414.25021-1-platon.ksenzenkokk@gmail.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:qMiowJBxrM6m3PJq83MzAA--.21431S2
+X-CM-SenderInfo: 5zxtxtpqkdxqxorr0wxvrqhubq/
+X-Coremail-Antispam: 1Uk129KBj93XoWxGw17XFy8uF1kWrW7Zw15ZFc_yoWruFWUpF
+	4a9a9xJr4kWr4xGryIy34UXFn8Arn7G3yagFWakw18C345Jr18WF93t3yDXa4UJ393J3WF
+	qF15Jw1xWF4DuagCm3ZEXasCq-sJn29KB7ZKAUJUUUUD529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUUPFb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Cr0_Gr1UM28EF7xvwVC2z280aVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIEc7CjxVAF
+	wI0_Gr1j6F4UJwAaw2AFwI0_JF0_Jw1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqjxCEc2
+	xF0cIa020Ex4CE44I27wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_
+	Jw0_WrylYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x
+	0EwIxGrwAKzVCY07xG64k0F24lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l
+	4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_JF0_Jw1lx2IqxVAqx4xG67AKxV
+	WUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI
+	7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Gr0_Xr1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r
+	4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWxJwCI
+	42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjxU4kucDUUUU
 
-On Tue, Nov 10, 2026 at 12:14:14AM +0100, Platon Miller wrote:
-> The macros HWC_ADDRESS_EXT, HWC_ADDRESS_CS, HWC_LOCATION_TOP, and
-> HWC_LOCATION_LEFT are defined in sm750_cursor.c but are never used
-> anywhere in the driver. Remove them to clean up unused code as
-> specified in drivers/staging/sm750fb/TODO.
-> 
-> Signed-off-by: Platon Miller <platon.ksenzenkokk@gmail.com>
-> ---
+From: wuqianhai <wuqianhai@loongson.cn>
 
-Leave this sort of macro.  It documents the hardware and doesn't
-hurt readability at all.
+On LoongArch the kernel cannot reliably identify the display device that
+was set up by the firmware and used for the boot console.  Two code paths
+need this information and currently get it wrong:
 
-regards,
-dan carpenter
+  * The PCI VGA arbiter: vga_is_firmware_default() is compiled only on
+    x86, so on LoongArch vga_default_device() may select the wrong GPU
+    when several are present (for example an integrated display
+    controller and a discrete card).
+
+  * The framebuffer console: LoongArch does not implement
+    video_is_primary_device(), so with
+    CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y the console falls back to
+    the generic stub that always returns false and binds to the first
+    registered framebuffer instead of the boot display.
+
+This series fixes both by publishing the firmware framebuffer information
+through screen_info on LoongArch and consuming it the same way x86 does.
+
+Patch 1 always defines and initializes sysfb_primary_display, and always
+provides its EFI stub alias, instead of guarding them behind
+SYSFB/EFI_EARLYCON.
+
+Patch 2 refreshes screen_info from the PCI resource-assignment path after
+the root-bus resources are assigned, so the framebuffer address is final
+before the VGA arbiter and sysfb_init() consume it.  The call is placed
+in the LoongArch PCI scan path because only LoongArch has this ordering:
+acpi_init() relocates the BAR before vga_arb_device_init() runs.  On x86
+the screen_info address is still accurate at that point.  If you would
+rather have the helper called from the generic
+pci_assign_unassigned_root_bus_resources() path so that all architectures
+share it, that can be done instead.
+
+Patch 3 removes pci_fixup_vgadev(), which overrides the VGA default
+device to a discrete card after the arbiter has already selected the
+firmware framebuffer device, so vga_default_device() consistently
+reflects the boot display.
+
+Patch 4 implements video_is_primary_device() for LoongArch by reusing the
+VGA default device selected by the arbiter.
+
+Patch 5 lets the EFI stub link directly to sysfb_primary_display on
+LoongArch, so the firmware framebuffer information is always populated.
+
+Patch 6 lets the VGA arbiter use CONFIG_SCREEN_INFO instead of an
+architecture check and makes VGA_ARB select SCREEN_INFO on LoongArch.
+
+Patches 1-4 are LoongArch-specific.  Patches 5 and 6 touch generic code
+(the EFI stub and the PCI VGA arbiter) and are placed last so they can be
+reviewed and merged separately.  Patches 3 and 4 depend on patch 6 taking
+effect, but are ordered ahead of it only to group the LoongArch changes
+together.
+
+Changes since v2:
+  - Split the screen_info refresh out of vga_arb_device_init() into the
+    LoongArch PCI resource-assignment path (patch 2), following Thomas'
+    suggestion to decouple it from sysfb_init().
+  - Drop the per-architecture check in vgaarb.c and the select of SYSFB
+    in favour of CONFIG_SCREEN_INFO and select SCREEN_INFO (patch 6).
+  - Always define and initialize sysfb_primary_display, and let the EFI
+    stub link to it directly (patches 1 and 5), instead of guarding them
+    behind SYSFB/EFI_EARLYCON.
+  - Remove the vga_default_device() override (patch 3) so the arbiter's
+    firmware-framebuffer selection takes effect.
+  - Implement video_is_primary_device() (patch 4) by reusing the arbiter's
+    default device, so FRAMEBUFFER_CONSOLE_DETECT_PRIMARY works.
+
+Build-tested on loongarch64 with GCC 8.3.0.
+
+wuqianhai (6):
+  LoongArch: efi: Provide sysfb_primary_display for screen_info users
+  LoongArch/PCI: Refresh screen_info after resource assignment
+  LoongArch/PCI: Remove vga default device override
+  LoongArch: video: Implement primary framebuffer device detection
+  efi/libstub: Enable direct sysfb_primary_display access on LoongArch
+  PCI/VGA: Enable firmware default device detection on LoongArch
+
+ arch/loongarch/Makefile                       |  3 ++
+ arch/loongarch/include/asm/video.h            |  7 +++++
+ arch/loongarch/kernel/efi.c                   |  5 +---
+ arch/loongarch/kernel/image-vars.h            |  2 --
+ arch/loongarch/pci/acpi.c                     |  4 +++
+ arch/loongarch/pci/pci.c                      | 18 ------------
+ arch/loongarch/video/Makefile                 |  3 ++
+ arch/loongarch/video/video-common.c           | 29 +++++++++++++++++++
+ drivers/firmware/efi/libstub/efi-stub-entry.c |  1 +
+ drivers/pci/Kconfig                           |  2 +-
+ drivers/pci/vgaarb.c                          |  2 +-
+ 11 files changed, 50 insertions(+), 26 deletions(-)
+ create mode 100644 arch/loongarch/video/Makefile
+ create mode 100644 arch/loongarch/video/video-common.c
+
+-- 
+2.34.1
 

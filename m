@@ -1,38 +1,39 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=114.242.206.163
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794301174;
-	b=kjL+w0YoA7v3n2d0OoT2RnCeuADOhWEips/ClSb0GBQvek/h1UNRS1rBj4sLxxUe9vL0
-	 ms8+U7XfsaCgcSSDvcljXMMn+D0PW+nfd873VWl05E8eAXZ9Q67is1pNl92fhiumXTEzH
-	 do1ebZmataf7CNW/NK8ge+re9JYwxvE6YANz6qn40eE2vbHIaDfJVdtrfzNSkjGB6Y0Ue
-	 mvGIzmcqZ5pkjFxcwpIins0uYb9aphZnJWZ6FD2UozPkZ3+Q3NW6d0fF12PhGIv5clB/a
-	 tK+tEh+wJaK2/AD1DCXjU2jcfKrh6nSSNG4gOOXs3EMvbWpDku6LKMvHQOyq4k1Ee0Q==
+	t=1794301450;
+	b=noLR/Rdi8KDoI3eE1qKIgHCbS2IBgBA2kqrA7flRqy9a190JvrHtECKmzdUNw3vJY2Kg
+	 DUVyVGJjryOGXrRPh0/DhJIYAJeU8Yyd/Jh81N4FTx+MB1VysdLMcQ0x9aR+5+VSm7/Fy
+	 qbSDHD3/0VXmfwVo+9a9PNEK/GVR2BVITwUbzpO3YME6ZMW2VUew63hGeDSxi4ldPdHXr
+	 ZDftMRHkcxmtzEZ1ua5I9xhQU6lPRvpMvF67XMtOen6NnU/yQYwUkJnGwtXDzBiRpiukT
+	 2ArA/95KJXxaxZMT1zBKWkviWjXXRCTQ5um/7UEuE9lWQwJ26hvKJpQwlcill2zhRYw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794301174;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794301450;
 	h=DMARC-Filter:Received:Received:From:To:Cc:Subject:Date:Message-Id:
-	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
-	 X-CM-SenderInfo:X-Coremail-Antispam;
-	bh=bnII0DF8BaZXT0t528ffy71g+QEopq5IXdLrMPJAYhk=;
-	b=SqbxOzoBP1CP1B0bibv+aaHzS6KruS6/D4OdkdLNj+VDINIE+r7XgjImE/hTSKi/w0GB
-	 2eW2hweJ5jreaja1KfCy4L97lJTYjypYdTirFnLhziCXAv51Mtyst+b1jd+1tP8YwFIGP
-	 0wv3+5EeUpQH6sE68pCg1KGyOIgEBx88gRRAnA3EsuY+tNT7Whlf6tMyZK5cz6TegH+qc
-	 nAZ7YLBzTXkBWgwR8roDm/eGQ3avdGM1PYnHvKtH6Y1Eh9F5czziFqIGtX3+OnCxBeYA6
-	 gwe1njqoano1npJGVJucTWlqIJaQrY/WsMNR83xt5GtGUZQ33TZNbrdR94j2dbNRjUQ==
+	 X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-CM-TRANSID:X-CM-SenderInfo:
+	 X-Coremail-Antispam;
+	bh=4dIt1AfgIDEeFJWlP0nlFpcsbLLfzKQxu18qQOXeU/w=;
+	b=RCSHNC4iz6XHIuLzWgRslXQkM4FPkVsY/jFPpd7N1eoa2fm/+dtaHHd3jE7KKRiWa9oU
+	 yK0lJvvQrqo2NTpbzejFu5I2BCPngTNFcNonxlLu6KW5ie7CiqV+7h1x0M4y/QAzGokFX
+	 g2CFEbvSAyFKn/I4oEhQS9q8MHxPfqyneeZbq6CFuHLWgPy3PJy/sHbeEbaxbJ5tbbsr8
+	 u0SrQpDOCzYex4pmhNDi1NTfayvQfrUUbp/1hQRourUeWFAmnLU2EqLoA+gi83DGnOHmy
+	 1ZdxvnIO+VOticihFbife7icPuxiEYgeIHO/3RpybnCXFJB+QMl+/Nezve+z2SZv6dA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=none header.from=loongson.cn;
 	spf=pass smtp.mailfrom=loongson.cn;
 	arc=none smtp.remote-ip=114.242.206.163
 Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 7D032606A33C;
-	Tue, 10 Nov 2026 08:59:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7D032606A33C
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 28B4660A3802;
+	Tue, 10 Nov 2026 09:04:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 28B4660A3802
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=loongson.cn
 Received: from loongson.cn (unknown [10.20.42.172])
-	by gateway (Coremail) with SMTP id _____8Cxf9P03PJqySAeAA--.21328S3;
-	Tue, 10 Nov 2026 16:59:32 +0800 (CST)
+	by gateway (Coremail) with SMTP id _____8DxytEE3vJqaiEeAA--.20968S3;
+	Tue, 10 Nov 2026 17:04:04 +0800 (CST)
 Received: from ubuntu.loongson.cn (unknown [127.0.0.1])
-	by front1 (Coremail) with SMTP id qMiowJBxa87t3PJqCXQzAA--.20943S2;
-	Tue, 10 Nov 2026 16:59:25 +0800 (CST)
+	by front1 (Coremail) with SMTP id qMiowJCxe84A3vJqYXQzAA--.22085S3;
+	Tue, 10 Nov 2026 17:04:03 +0800 (CST)
 From: wuqianhai@loongson.cn
 To: chenhuacai@kernel.org,
 	kernel@xen0n.name,
@@ -49,10 +50,13 @@ Cc: ardb@kernel.org,
 	linux-fbdev@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	wuqianhai <wuqianhai@loongson.cn>
-Subject: [PATCH v3 4/6] LoongArch: video: Implement primary framebuffer device detection
-Date: Tue, 10 Nov 2026 16:57:27 +0800
-Message-Id: <20261110085729.2628009-1-wuqianhai@loongson.cn>
+Subject: [PATCH v3 1/6] LoongArch: efi: Provide sysfb_primary_display for screen_info users
+Date: Tue, 10 Nov 2026 17:01:58 +0800
+Message-Id: <20261110090203.2631481-2-wuqianhai@loongson.cn>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261110090203.2631481-1-wuqianhai@loongson.cn>
+References: <20261029033440.973077-1-wuqianhai@loongson.cn>
+ <20261110090203.2631481-1-wuqianhai@loongson.cn>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -63,127 +67,84 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qMiowJBxa87t3PJqCXQzAA--.20943S2
+X-CM-TRANSID:qMiowJCxe84A3vJqYXQzAA--.22085S3
 X-CM-SenderInfo: 5zxtxtpqkdxqxorr0wxvrqhubq/
-X-Coremail-Antispam: 1Uk129KBj93XoWxXr4rCFy8Cw13uF43XrWUGFX_yoW5tFWDpF
-	1DAF95Jr4kWrn7G3sxJa43Zr15Jr1kGr1agFyI9Fy8CrnxXrn5Zr93tryDJa4UJ398JFWF
-	qF9xGw13WF45XabCm3ZEXasCq-sJn29KB7ZKAUJUUUUD529EdanIXcx71UUUUU7KY7ZEXa
+X-Coremail-Antispam: 1Uk129KBj93XoW7uryfWF1ftrWDXrW7Ww18tFc_yoW8trW8p3
+	srAF4ktr48GFs8Jryvy3s7urW5Gr95G342gFnxCa4rAw1qqr4kXr1ktryDXFyqqa1FkayF
+	qF1rXa1avF4DCwcCm3ZEXasCq-sJn29KB7ZKAUJUUUjr529EdanIXcx71UUUUU7KY7ZEXa
 	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUUPqb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
+	0xBIdaVrnRJUUUPmb4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
 	IYs7xG6rWj6s0DM7CIcVAFz4kK6r126r13M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
 	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E
-	14v26r4UJVWxJr1ln4kS14v26r126r1DM2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6x
+	14v26r4UJVWxJr1ln4kS14v26r4a6rW5M2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6x
 	kI12xvs2x26I8E6xACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v2
 	6Fy26r45twAv7VC2z280aVAFwI0_Cr0_Gr1UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0x
-	vY0x0EwIxGrwAKzVCY07xG64k0F24lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vI
-	r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_JF0_Jw1lx2IqxVAqx4xG67
+	vY0x0EwIxGrwAKzVCY07xG64k0F24lc7CjxVAaw2AFwI0_GFv_Wryl42xK82IYc2Ij64vI
+	r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_GFv_Wrylx2IqxVAqx4xG67
 	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIY
-	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Ar0_tr1lIxAIcVC0I7IYx2IY6xkF7I0E14
-	v26F4j6r4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Cr0_
-	Gr1UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x07j7Oz
-	sUUUUU=
+	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_tr0E3s1lIxAIcVC0I7IYx2IY6xkF7I0E14
+	v26r4UJVWxJr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26F4j
+	6r4UJwCI42IY6I8E87Iv6xkF7I0E14v26r4UJVWxJrUvcSsGvfC2KfnxnUUI43ZEXa7IU5
+	rb1UUUUUU==
 
 From: wuqianhai <wuqianhai@loongson.cn>
 
-The LoongArch port does not implement video_is_primary_device(), so it
-falls back to the generic stub that always returns false.  As a result,
-with CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y the framebuffer console
-cannot map itself to the primary display device and instead binds to the
-first registered framebuffer, which is not necessarily the one the
-firmware used for the boot console.
+LoongArch defines and initializes sysfb_primary_display only when
+CONFIG_SYSFB or CONFIG_EFI_EARLYCON is enabled.  The PCI VGA arbiter and
+the framebuffer console need the firmware framebuffer information through
+screen_info whenever CONFIG_SCREEN_INFO is enabled, even if neither of
+those options is set.
 
-Implement video_is_primary_device() by returning whether the device is
-the VGA default device.  This reuses the VGA arbiter's choice instead of
-matching the firmware framebuffer by address, so it is stable across BAR
-resizing: the default device is fixed before any driver runs.
+Drop the guards so sysfb_primary_display is always defined and
+initialized, and its EFI stub alias is always provided, mirroring x86.
+This avoids selecting SYSFB just to obtain the symbol.
 
 Signed-off-by: wuqianhai <wuqianhai@loongson.cn>
 ---
- arch/loongarch/Makefile             |  3 +++
- arch/loongarch/include/asm/video.h  |  7 +++++++
- arch/loongarch/video/Makefile       |  3 +++
- arch/loongarch/video/video-common.c | 29 +++++++++++++++++++++++++++++
- 4 files changed, 42 insertions(+)
- create mode 100644 arch/loongarch/video/Makefile
- create mode 100644 arch/loongarch/video/video-common.c
+ arch/loongarch/kernel/efi.c        | 5 +----
+ arch/loongarch/kernel/image-vars.h | 2 --
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/arch/loongarch/Makefile b/arch/loongarch/Makefile
-index 4b22f95aaafb..7fca93298cef 100644
---- a/arch/loongarch/Makefile
-+++ b/arch/loongarch/Makefile
-@@ -166,6 +166,9 @@ bootvars-y	= VMLINUX_LOAD_ADDRESS=$(load-y)
+diff --git a/arch/loongarch/kernel/efi.c b/arch/loongarch/kernel/efi.c
+index 69dd83f8082f..e491a82b2e0d 100644
+--- a/arch/loongarch/kernel/efi.c
++++ b/arch/loongarch/kernel/efi.c
+@@ -74,10 +74,8 @@ bool efi_poweroff_required(void)
  
- drivers-$(CONFIG_PCI)		+= arch/loongarch/pci/
+ unsigned long __initdata primary_display_table = EFI_INVALID_TABLE_ADDR;
  
-+# framebuffer console primary device detection
-+drivers-$(CONFIG_VIDEO)		+= arch/loongarch/video/
-+
- KBUILD_AFLAGS	+= $(cflags-y)
- KBUILD_CFLAGS	+= $(cflags-y)
- KBUILD_CPPFLAGS += -DVMLINUX_LOAD_ADDRESS=$(load-y)
-diff --git a/arch/loongarch/include/asm/video.h b/arch/loongarch/include/asm/video.h
-index 9f76845f2d4f..7b38881ea1d6 100644
---- a/arch/loongarch/include/asm/video.h
-+++ b/arch/loongarch/include/asm/video.h
-@@ -8,6 +8,13 @@
- #include <linux/compiler.h>
- #include <linux/string.h>
+-#if defined(CONFIG_SYSFB) || defined(CONFIG_EFI_EARLYCON)
+ struct sysfb_display_info sysfb_primary_display __section(".data");
+ EXPORT_SYMBOL_GPL(sysfb_primary_display);
+-#endif
  
-+struct device;
-+
-+#ifdef CONFIG_VIDEO
-+bool video_is_primary_device(struct device *dev);
-+#define video_is_primary_device video_is_primary_device
-+#endif
-+
- static inline void fb_memcpy_fromio(void *to, const volatile void __iomem *from, size_t n)
+ static void __init init_primary_display(void)
  {
- 	memcpy(to, (void __force *)from, n);
-diff --git a/arch/loongarch/video/Makefile b/arch/loongarch/video/Makefile
-new file mode 100644
-index 000000000000..f1b2a7e54033
---- /dev/null
-+++ b/arch/loongarch/video/Makefile
-@@ -0,0 +1,3 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+obj-$(CONFIG_VIDEO)		+= video-common.o
-diff --git a/arch/loongarch/video/video-common.c b/arch/loongarch/video/video-common.c
-new file mode 100644
-index 000000000000..6fea46661cb6
---- /dev/null
-+++ b/arch/loongarch/video/video-common.c
-@@ -0,0 +1,29 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2026 Loongson Technology Corporation Limited
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/vgaarb.h>
-+
-+#include <asm/video.h>
-+
-+bool video_is_primary_device(struct device *dev)
-+{
-+	struct pci_dev *pdev;
-+
-+	if (!dev_is_pci(dev))
-+		return false;
-+
-+	pdev = to_pci_dev(dev);
-+
-+	if (!pci_is_display(pdev))
-+		return false;
-+
-+	return pdev == vga_default_device();
-+}
-+EXPORT_SYMBOL(video_is_primary_device);
-+
-+MODULE_DESCRIPTION("LoongArch video helpers");
-+MODULE_LICENSE("GPL");
+@@ -129,8 +127,7 @@ void __init efi_init(void)
+ 
+ 	set_bit(EFI_CONFIG_TABLES, &efi.flags);
+ 
+-	if (IS_ENABLED(CONFIG_EFI_EARLYCON) || IS_ENABLED(CONFIG_SYSFB))
+-		init_primary_display();
++	init_primary_display();
+ 
+ 	if (boot_memmap == EFI_INVALID_TABLE_ADDR)
+ 		return;
+diff --git a/arch/loongarch/kernel/image-vars.h b/arch/loongarch/kernel/image-vars.h
+index e557ebd46c2b..4d1d7978553a 100644
+--- a/arch/loongarch/kernel/image-vars.h
++++ b/arch/loongarch/kernel/image-vars.h
+@@ -11,9 +11,7 @@ __efistub_strcmp		= strcmp;
+ __efistub_kernel_entry		= kernel_entry;
+ __efistub_kernel_asize		= kernel_asize;
+ __efistub_kernel_fsize		= kernel_fsize;
+-#if defined(CONFIG_EFI_EARLYCON) || defined(CONFIG_SYSFB)
+ __efistub_sysfb_primary_display	= sysfb_primary_display;
+-#endif
+ 
+ #endif
+ 
 -- 
 2.34.1
 

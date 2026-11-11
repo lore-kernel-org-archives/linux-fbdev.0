@@ -1,129 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794403122;
-	b=xAWcW11HNxstyeYxM1V00oqjIgETSXeXZjFVjKv+3LKS6vLQV58HwMIJkHu5aELieF89
-	 4NE3Fb0cZHoRtk0JGEy/4OZsUaXKK1+BArOOPdA686K4qG2uHc6/XoWMfKRimYwuqsfwk
-	 Yq5vIW1nT/8QWQYmBQIAMPTKRw/CxDgiveebpkFs8crRrIGijo7rIC177LpzH+R0ZBEKa
-	 dTh0oLWaglosbYVWIACodi/UO3CZu01C5ZNPiKcW3yFdPZxX6aSXRiaMCFI2bsd84MKKF
-	 IjPW63HzkapJhe7nRqTK41e3EltYShz8TvvTzhcSzlrCxq0dnOGJpzF21EP8tcKV9wA==
+	t=1794403287;
+	b=BESh/YqLvl99nozXxxOsvmoIniqZnsXFQfVHqdcXSLTAW80dvbz8ZZkaWAzFPUNaB3de
+	 3ryfdn/Kk7J8YGov2nxzeLMUPGmYae2JBdcDzqenB75+5NXQckoyS1M9cPOkIuapxmEBL
+	 P4J80m/2oGQ4XtevNGKo9eTB9kmRobPhMOhdrr+t8ui0fL6BVZ2NMPy+cBeV4E78L5QY3
+	 K18QUaKorD9HaOa3S4e6iGNJDsylgNpTA1uSCOdvHZYyBqA1ZBkyZ7e+8G6aZuG984IsT
+	 XfhHZkAnGq3uN6qpgJRILw/zwahINvty4jkCvDoKDVgRiBA7PhYT9WKE9ZIH08vHe7Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794403122;
-	h=DMARC-Filter:DKIM-Signature:Received:X-MC-Unique:
-	 X-Mimecast-MFC-AGG-ID:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 X-Received:Received:From:To:Cc:Subject:In-Reply-To:References:Date:
-	 Message-ID:MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=esQaj4i0rxBBJRvkYI6ptnCogyr3YrhY79nTBzkIGog=;
-	b=OAu8QZF+X/vlgmG5ifbMA1bguMnvRUgmcdwqptef39ylT4LDi7/064c1BNvGuLWf0BcG
-	 H+u9hyPEuC8o+O7Vij/UzHowsORHtluqu10+rgCx99UsmtP+X3+eXSbvJgXxSHGkYN7/Z
-	 qZVrSaZeUravZQ0uNn9H14TyhZ5FdT090gvTl7+5v6hzLyrBv9gtWd9cF2TpGMWrNQ9Dh
-	 FWwKCyr0aekzRjVvjvfwxxLWW+TnxyO4JEQlNZTk9S+79b/oPJOHWw25/VYKneOhFHGTm
-	 sEJbynBMqu9QXxqqdAPEYQGl/Sl3sAtZlQZ4BeidhDulix0zb+h/tXZ4FAYclvvAkEw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794403287;
+	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=dYxHBapf5Ns2Ipf/o7jAhmU09g+jMSK+3koea8MpeCE=;
+	b=L6VGedRk0PeSfef1tuR/6CCNa5P7SNsl4SFS65jmAcAIgSDca0HB27XxbR8IY9xru9Nc
+	 Pe7RDQHiyhaJIbqbqowU+saeCq0Wc3ht311PnUd2kgnO99c9QvaqMY1YaMamhfQbtAGpQ
+	 dZe6drDcdJ4ol8u7cgEC/JmUm9V+ywDcX3a8a6uGwS4QZvZgEIM1oEM1lABOzSzagMUJy
+	 mM8LUJxbrj4YnnknxIUJ/yDtl8EKdLLNUNMOA4G9sn+Z+ikc4uEPxcOHcaBr+owmKOL4O
+	 f68S9BwNP2tVtZOnDw4brYNPE2yLwrN6Ous1rKD5RME9agXhPUJhYrx2K27WsWwUFng==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=redhat.com;
-	spf=pass smtp.mailfrom=redhat.com;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iQq7dU9q;
-	dkim=pass header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=RqC7PlOQ;
-	arc=none smtp.remote-ip=170.10.129.124
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LjgH0i2f;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30BD3606A324
-	for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 13:18:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 30BD3606A324
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 37B84606A33A;
+	Wed, 11 Nov 2026 13:21:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iQq7dU9q;
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=google header.b=RqC7PlOQ
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794403121;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=esQaj4i0rxBBJRvkYI6ptnCogyr3YrhY79nTBzkIGog=;
-	b=iQq7dU9qLnoGNYDWDjGkq2hu0UGzL8U0mU2PJsT4ClAuEQwYNhuhD6lbU/L5j70yCdSj3/
-	/GrODQvBHppOxWr5r6zzBgSrz38hu3YXFAWjAaXPwSspLjuvjMHkYMML/7f3qhxJCiKfAN
-	dqxY4Cs0j+KVTOfLKNu99AiyUax7GtA=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-169-8pZUjjOSOUWgmxyJP-OonA-1; Wed, 11 Nov 2026 08:18:39 -0500
-X-MC-Unique: 8pZUjjOSOUWgmxyJP-OonA-1
-X-Mimecast-MFC-AGG-ID: 8pZUjjOSOUWgmxyJP-OonA_1794403118
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-4a1f03f2e8aso26641985e9.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 05:18:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1794403118; x=1795007918; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :references:in-reply-to:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=esQaj4i0rxBBJRvkYI6ptnCogyr3YrhY79nTBzkIGog=;
-        b=RqC7PlOQLpcRLVRN7+MIGQGYiMWNxZug8Tju31tvogWMzrAd4tQOCCnLYEDdGQmB1a
-         yIU6J7qsALFakOeCg3rFjyozZXyY1ZY94vDoAH3zrYpWMWqsW3rzMAnOcfjV/MD/Ce5a
-         3f99wOl4BA2vgj6J0+xX6JkVMkaI8VW2NQwwEtIGyuKrux76g4GlnDaBC8w6s7sAkLTX
-         CbyPtn1OpCdhcy/up/0BM2RXl6gZXXBTuguwH77sMuZ1vEM2VZaG1zS2XaIhSTZfFi4g
-         T87PD7H2j7sgEXpZpzr/Wf2M8EuE3/qGvVuSuZ5CP4DWg3BOX2f1Bcv2x7cLi70juUtk
-         CoFA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794403118; x=1795007918;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :references:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=esQaj4i0rxBBJRvkYI6ptnCogyr3YrhY79nTBzkIGog=;
-        b=wKmzgA3EeXgAq3je3Kafd58JoCqgDnESRFw13tgZBHmxZrUs5+LvWgckXd3iIR2rzo
-         5+1jDxERq4DyAF/DUgxH/GsYRYpn8RycQC4Bz2N+8bdBY6osIMKKsXzb3Xf/1boXPE4I
-         51wS1bz5kVF0/2uama8M+ONbFYO+Zs+OEYkdRzJaTztrEsdAAFGxwN+25hSkvnCTKUmT
-         jSyLX0Koh+b/wAv6ARyMt7wNyOnFlghoBMYrQJwPcXv8f4WH8OjpJ5Qb+joHcpDQdSNy
-         DxiCfakMIbOSdFGnEAwjOdM3POFDklqGKI6FXPLZYQ1VRRi21wx1urjwWsUFK2EFC4sC
-         F6VA==
-X-Forwarded-Encrypted: i=1; AL+hErF0Dg97tih6lEJ8LTi0YjYe9Ox6Ae7cEWQH/QtMO0zrhcFOPVTP3RGUk121tzezfrEixQZJCFoHipOKQg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9ZHbErzRwq0fz/I2g1kfSZsfVld1NDGNc3JpmNVy7qJTHjZQI0
-	PzCf4AXBX2KBoWjQQpDhaQw5TiZxBMjl+3vDRH49Feu+In6pzi+GMB9TcEzUKrbhXKwFKirpun4
-	0MYgTDDIb2qh2Za01xMmO4hsQ9p1229xbIye1Sm8Y1EWaMorlxk8nih0k9sCCUg4H
-X-Gm-Gg: AYBFou1vCGlT7VfgrBdv0wiM8pTEHsuhGfjYbzcMqfPq98vC23Emt6rmICHLjJzfCXk
-	AkPgjwkEXBvDB1+w56yltOCyPK6Gn24wT9borGsQR2Bb6xZTRDeVCcbhiUluMZIauvJHnKaruez
-	vUkcZK6vC3fgDA+Yqjqlrtqb+rjJdp+sigHPvP1RwmRQIRIqF67MvGvFgH+VBb3OQhUthADw+Uh
-	CqvW75zjqI9ax2MB5Q1ucS/NjjCafw+fsjpAEPlHKR2rVW0l2vKoS2ZllNAAS6H8E5kMZivqMOv
-	puj70iR9dwLrUclPlOYMmjMhnZ/RJZDm3RFw0YYJzE392I8bx3Ev0sd1Fc6zzjHCmHKcobW0dYH
-	PFVgKtLv85upnIZuNn7tkOKJ0aCBGdblbDI9r9ZtJ+A4RLNAfP4DEPpKiUhATxO6kkkuYFpQNSN
-	XSkaxHuNRTS18vQrtxakX0IVEzd0dBWupQ2Yn1Ong=
-X-Received: by 2002:a05:600c:870f:b0:4a1:7c56:d4e2 with SMTP id 5b1f17b1804b1-4ba093817d0mr40825485e9.16.1794403117583;
-        Wed, 11 Nov 2026 05:18:37 -0800 (PST)
-X-Received: by 2002:a05:600c:870f:b0:4a1:7c56:d4e2 with SMTP id 5b1f17b1804b1-4ba093817d0mr40824875e9.16.1794403117057;
-        Wed, 11 Nov 2026 05:18:37 -0800 (PST)
-Received: from localhost (62-151-111-63.jazzfree.ya.com. [62.151.111.63])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-498811fa70esm9733692f8f.19.2026.11.11.05.18.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 05:18:36 -0800 (PST)
-From: Javier Martinez Canillas <javierm@redhat.com>
-To: =?utf-8?Q?M=C3=A0xim?= Pedraza Padilla <maximpedraza@gmail.com>, Maarten
- Lankhorst
- <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
- Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Ard
- Biesheuvel <ardb@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Helge
- Deller <deller@gmx.de>, Peter Jones <pjones@redhat.com>
-Cc: Francesco Valla <francesco@valla.it>, Jani Nikula
- <jani.nikula@linux.intel.com>, Mario Limonciello
- <mario.limonciello@amd.com>, Jocelyn Falempe <jfalempe@redhat.com>, Sam
- Ravnborg <sam@ravnborg.org>, Ilias Apalodimas
- <ilias.apalodimas@linaro.org>, Shuah Khan <skhan@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-efi@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 03/15] fbdev: efifb: move the BMP headers to
- <video/bmp.h>
-In-Reply-To: <20261027135342.2003632-4-maximpedraza@gmail.com>
-References: <20261027135342.2003632-1-maximpedraza@gmail.com>
- <20261027135342.2003632-4-maximpedraza@gmail.com>
-Date: Wed, 11 Nov 2026 14:18:35 +0100
-Message-ID: <xlv1cxsba4lw.fsf@fmartine-thinkpadx1carbongen12.rmtes.csb>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LjgH0i2f
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBFA11F00A07;
+	Wed, 11 Nov 2026 13:21:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794403287;
+	bh=dYxHBapf5Ns2Ipf/o7jAhmU09g+jMSK+3koea8MpeCE=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=LjgH0i2fvLmOnGi+qt7ulRx8rRs8za3e5hbWcy5XsDkeAaXBUFfqojvjpulWvMfd7
+	 xKr2SSxHaPqJCDrKnh7aBCcdvRBMB+/4/qfgzvknAVmEf6IlkDq2pAUUsv7R3+zgxB
+	 fDU5alN9su054lOQyyD/t4hbT4aA2eEsYEar4W/ZzTG5rmpD/lDHhA39th3MbPlDu4
+	 NqRssrqKtk6rNNa291a2fbaOnYb1gRkFnLSUmapLchnTEDzekveNgJNTbMcV1TjIEX
+	 TZycMeSc/J14HHDx6+6v7oaNHYIML4DOGIcCyt+rtYHlNd7M16l8lFynqeSASpU9il
+	 jW/Nb4KGwtSJw==
+Message-ID: <f6eb2454-c754-45d8-a2ca-621006b4c260@kernel.org>
+Date: Wed, 11 Nov 2026 14:21:18 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -133,39 +51,109 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] dt-bindings: leds: backlight: add Kinetic KTD3137
+To: Daniel Thompson <danielt@kernel.org>
+Cc: Roman Vivchar <rva333@protonmail.com>, Lee Jones <lee@kernel.org>,
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
+ dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org
+References: <20261102-6768-ktd3137-v1-0-b5b4f903c56e@protonmail.com>
+ <20261102-6768-ktd3137-v1-1-b5b4f903c56e@protonmail.com>
+ <aunqGVkX7-Y61iDA@aspen.lan>
+ <_kyk4j6fx0PX5QqVrjAIGH-5fzUhj-fKhD8YT4F734mCOnQCDXui6wQB77AOka69_gblWOJN2SxzC5OSrH1lXiQeciLfVnWuPHS0JfaMKD4=@protonmail.com>
+ <aunyu4ToQ0T3b2Mj@aspen.lan>
+ <CmvbeteAqxtpenZUmJ4dqRvXYjjDzTTDevRB4NUlN0WGLOUk0jwzt2C3ZtuZ3Eb2UwBDEPUWpu9biU1OOhKGWQITolX96cFXolBTMgSyh1c=@protonmail.com>
+ <auoVaaZjcnRTj1S9@aspen.lan>
+ <3bbc1c1a-0435-4cde-a1a2-a408bd7a794a@kernel.org>
+ <avRiY-8Fw5ZdrkBH@aspen.lan>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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
+In-Reply-To: <avRiY-8Fw5ZdrkBH@aspen.lan>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-M=C3=A0xim Pedraza Padilla <maximpedraza@gmail.com> writes:
+On 11/11/2026 13:41, Daniel Thompson wrote:
+> On Wed, Nov 11, 2026 at 01:11:13PM +0100, Krzysztof Kozlowski wrote:
+>> On 03/11/2026 18:10, Daniel Thompson wrote:
+>>> On Tue, Nov 03, 2026 at 03:21:45PM +0000, Roman Vivchar wrote:
+>>>>
+>>>> In the driver I've used devm_regulator_get_enable(), rather than _optional(),
+>>>> since my understanding is that the non-optional helper is a standard kernel
+>>>> API for required supplies (with regulator core warning and fallback to dummy
+>>>> regulator in case DT omits it).
+>>>
+>>> That dummy fallback essentially makes it optional. On a board with an
+>>> always-on supply then there is no need to include vin-supply in the
+>>> DTB. The driver will work just fine without it.
+>>
+>> There is a need, because this device needs a supply. How you describe
+>> that supply in DTS is a different story - can be always-on, can be
+>> missing etc.
+> 
+> If it is missing (but listed as required) then won't a DT that omits this
+> property fail schema validation? If is legitimate for the property to
+> be missing then I'd view this to be a spurious fail
 
-Hello M=C3=A0xim,
+It is not legitimate for the property to be missing. I said - it is needed.
 
-> The DRM splash client parses the same BMP headers as efifb. Rather than
-> keep a second copy of the structures, move them to include/video/bmp.h
-> with the magic number.
->
-> BMP is little endian whatever the CPU, so the header gives the fields
-> as __le16 and __le32, and efifb now reads them with
-> get_unaligned_le16() and get_unaligned_le32(). Width and height are
-> read signed, as the format has them. No change on the little endian
-> systems EFI runs on.
->
-> Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Assisted-by: Claude:claude-opus-5-5
+> 
+> We certainly didn't list basic supplies as required in other recent
+> backlight reviews:
+> https://lore.kernel.org/all/20260529-topic-sm8650-ayaneo-pocket-s2-sy7758-v5-1-03aacd49747c@linaro.org/
+> 
+> Is this something DT maintainers want to see tightened up when new
+> bindings are introduced?
 
-Please drop this tag. Has been obsoleted by commit 1e035297ffda ("docs:
-remove Assisted-by references").
+We always ask for required supplies to be provided. There might be an
+exception, maybe such one was pointed during multiple revisions of above
+patchset, not sure.
 
-> Signed-off-by: M=C3=A0xim Pedraza Padilla <maximpedraza@gmail.com>
-> ---
->
-
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-
---=20
 Best regards,
-
-Javier Martinez Canillas
-Core Platforms
-Red Hat
-
+Krzysztof

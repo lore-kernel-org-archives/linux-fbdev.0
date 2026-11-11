@@ -1,80 +1,79 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1794414162;
-	b=U21ar4Do+g6X5AVUzl5ZKCGHE6uXMGvDPQJw3JaHkHOa8kDKcoC+ayxchzNM+865YV4/
-	 ZWrmJVJYrTf5KpMNcekthauLZSERQqMdhsA6Z5VPs2aOeFrusHK+TOhZ6+2YOeeUXUvEa
-	 q3EVuc9BQfGz0RkiCO3zJY0X2TF+4O+pRnSptYTd+/IXVD2/7IyACSjtf1noCqlQunrJ7
-	 dlnkXJOUmed1hmYcxZc3szdrJojhY24NjJBWQUHRRqye0G/BQvP1Li/EXJhfODM3LlK3s
-	 KhNXsJ1AeoAMR2sIG6fNzIQ0gpP6qRwaKnCm4+bU1XqnJwJA5kq8CgrpRj4Qy5CBN6g==
+	b=rzHUzNTXP9iDIQfJTFOu5kNJQO1FNPx55jQ3mkS5VVJjRYyf9jfHkd3UqYa7y3x8xBrx
+	 8FbebZltxHrS1d4eDWbohMEHzALNtU5CJpSh/qd+AFl6/0XaN4r/gtDIUNUF6sj+KYcZA
+	 ceRARNZKFJvzlT54u/2NIfbRY7Lb5KIvwjKtYeKX78TymyvjDLJgOkauUvLDIdwpj8N6E
+	 8mXWH4xliVcpkeTjDEmpJ95YQLcrSSuOVGrbWmcqMRFFjU1pYy/3sy0KoDKI9cTgrvB5D
+	 3qM/gE3rCiDZLUYRkAUN3rQWz3FzAJOPI8SU23kRjQds0XcFhk+08WfsvY6xCbnXcWQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794414162;
-	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=5Fudv0OzRIv6YaL5i0QV2cvEXsQiLCG6vTYn4vGwO6g=;
-	b=MhNEiwfu5+TpUyDceu9ZLll6wc2u5dG2xvBZx8YTq9CHTx8rAcIdQ6pyRSJ+oVC72z2q
-	 SIxTEqczXjNFH4vIutPgxi2rmsCm00eOjvWf2fYsrZKqH5AKr9ac2ho5BhdWGHXIAqirS
-	 64INH18zlS9UnoWwXKM6u47MjJkeafEWHnqgZWWRS/z4iloorCJDxz6XQq4RigUUyWXXz
-	 6wcbKqTbHAb8n73lXeQtVEQaADxxug8dpz8IEUy4nANmEt6V9x2UOuH+VacXg5nds2X84
-	 nz87d5geh3GfYVEUQr5iMq6YoBFe7Pa2ME4eLNCbdhysOz5B+hPnbeg5xGAq5Ip7mbw==
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=KLNhZsOZO6tTwWVA3EvqxE7uAVIt4SVNmhY1DO4o9K8=;
+	b=ZitHnOX9rsb+1h/AkpCmkYDUi4TLWxI+ArLLcAXhfVOb5PK9SZe7Tqu78ejATB8fduk0
+	 GdPqpcSgdBsQxXxzYVxtgKsSkrjIpduNaCXb1oor6InDhyvBVrqEUrJnD/QFJ70YecFzi
+	 Oie4w8ODRmrT6N9OzCT21r6KlA+zDLtghazvVIQ/IiRpCIrbDw4fP8LI9npkXpsCmgxri
+	 IwwKXJ8Tt0qVeq5dJ+XQXH3zGL3bobXyl2CcvxItzTht6EQJnoAqUkgqeQk4Hm75j0aCt
+	 xxm1zyXlvs7YRX+y13MP8ZWbnIPPte1UsIrP0JBb2RtaioFIvm/oCppDdUnSmwmRpSw==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EeAT8i9q;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jU+F7Kaa;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00621606A324;
-	Wed, 11 Nov 2026 16:22:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44F2E606A89E;
+	Wed, 11 Nov 2026 16:22:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EeAT8i9q
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jU+F7Kaa
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1794414161;
-	b=Y5Em3jLeIrAdTmdCqY5irAgXcJucbBu61aianq2LMX70xj6oTUI6ADcf4ld6dNPcI9h1
-	 mbHwt6klQ1vf2NhJFCuluC2Lxwhu/j8tTUE0oykRV8ICvnaGDM/lHpkrNLa/hRWXKwDzr
-	 eA6S7lT2lWEn0Zcyd4ZY6J5Fht61iVtZmxLEjtzSzewrT3d8Noj15GkXGp4DhwsbT1VLt
-	 opZrmDulLoSR0rn+3MJe/h2Lqo5a72wLd0ljPXeY9wtuXMayA1QzBx/P9U4MlFEOfYIFI
-	 WssPBGagXgNggOGdBtMavZcerTZrBSCppmJDrNxWoGi6einLzZeoVpVE7Q6n0wLkL4w==
+	t=1794414162;
+	b=Wc1827rM0dE6gqjVcU5W0JlEUv8F0VWRlE/5bM8vtX0lIyURQITLJoNO56RBW7lJoul6
+	 AWt04WfZckpTuQJbN6kQY3jIfqXXOkmLPFh6ayYQjKp55WH6fyhfHc9w4DvXS/S33cTBN
+	 RnCb0T7bZTHwxZZIO+GwAOMw3MfejTlZruBtr61O2mLR4Blw1XcFhdXorZW76EDhGUOVc
+	 dYToIPTvLvEUYQVcD1uB8w48TssCNjrZqnCqFUMhF4juiTMAF8XkuFuMYpHHEzrDfmnv6
+	 9Zg0gOGsTUOtrkbj9qlwuo+CaOopfdVxu5TwGLv6bh6hZRGiLidlaPsfVZgQEK/sjGg==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794414161;
-	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=5Fudv0OzRIv6YaL5i0QV2cvEXsQiLCG6vTYn4vGwO6g=;
-	b=rv8Q5psuP2MAxt5SmHY+u4jc25DNtqoqdAIXa6h+L06mgtM4SvGmk9Ar4+Nqn+Vr5++g
-	 YqFNO36YRECHHL2oY8CGh6PO8bz8rJzbUCj1Xt+ytEX0a30YMYPPbGSAH3ykoqSf2F5Cy
-	 LQ0iiKi+h+GCdCALMLQ9p0yjYgOWWmjodIyIxhW4zaCIl4lwp2de0ElhHpq2RZrc5Q3zS
-	 5WSMDUaFBgDt/EeECSevvDeTyQn9oAdTwDPWv+6lQibyPCq57jyBqzBKbwj3HBHDWUie+
-	 9S0Cu7fBC9k9vChiAcPc43pPFKfd7zFjEI0IrLpieEskB8V+juw54blGOXwUhvyWf/w==
+	c=relaxed/relaxed; t=1794414162;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=KLNhZsOZO6tTwWVA3EvqxE7uAVIt4SVNmhY1DO4o9K8=;
+	b=XE2gK+yliRaOvS3BJXGc99zEuLDoCzt2hnx0QNMYb+EzZSvZbemEW+dRtJ6tdZChRcun
+	 vpo6+7a0DR5grPcldfAAO/uKW73hWFjvi3hropPBL6gspyGBruUwkniqhS/S8JIuHWswc
+	 qICb9b9dhH162brJG3AR8tDO6fTmJwDLs4+sH6q5CjZ8nRldeLi1wlBHcLMg8wf+Myq2U
+	 JzUVpxq4WxHmEwDzFq9lqgl27w+KrvfuRlbhbJwOXCDNhAp4AoyMTDFyFsQo56xEeDV2i
+	 GgB2Fq4ZfOo+ljcg624j3C/y32Uiu/mmNj4mjZdxaLH/BVzuVGV0ecIhYaY74I4+bTw==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 22CB21F00A05;
+	by smtp.kernel.org (Postfix) with ESMTPS id 4EAEE1F00A08;
 	Wed, 11 Nov 2026 16:22:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794414161;
-	bh=5Fudv0OzRIv6YaL5i0QV2cvEXsQiLCG6vTYn4vGwO6g=;
-	h=From:Subject:Date:To:Cc:Reply-To;
-	b=EeAT8i9qBK9Fd7BwZyfz3E6qxbwvq/IuzzfJIZPmV4tN6kL+8ZeV4MDbOpvNOa/l1
-	 ptpG0KoeSHTBBsTV5IygPjGLMYSLARUwTN6hCu3TkAOSe2Ji0uddPvJIpeHeePhVUR
-	 +Eunk8zGP/2mh+m2wz3f8ysIyldrm0X75LpWW+s/XN+ZOOURQQ34KKnUMLw8wambYX
-	 GanARDGE5a0yeRZbTm5TUE6OYAboMgNc4t5cKItYu8EecmHZHYMUK2v+9/gZUsI8Ku
-	 jk8jVM00UpxzXReqDrPwcWcux+hHo7KeFJs4NXt+ZLUkfAhUiHKeKCmSc7Da0wzon7
-	 IRV4UDmk0MJxw==
+	s=k20260515; t=1794414162;
+	bh=KLNhZsOZO6tTwWVA3EvqxE7uAVIt4SVNmhY1DO4o9K8=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=jU+F7KaaRh7E+Cv8AFgcL11n55WHRcQyTjVzt9KhFCxztvLncfpQC2a+q49Z21F2B
+	 HQCRUsYAMOfg84P+hkEQHPKm9Ws7G5ikIb6vSFZOnIz8agCoiHoKH00d3F5fdcfYE/
+	 mTXpNplWKNHst9zFmGsJQ3ZwzWwPwzCrjnwgil6rGWlqankG7/II+EP0rJfWsXtVXs
+	 HJlQmPiRfkTMsT7hGTzQNUBC488mTLo04JvNXXsqUmJsC+Pl/feo9ZjPe1/Whzra5R
+	 PVpe8UE0UjSH6NndP91xHnAotjObGY+1QiOuN3zeDsiYyGCodOiRoAJGtIGgVT//X8
+	 NsAbtpvFgnG1w==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id A749949029;
+	by lkml.kernel.org (Postfix) with ESMTP id CEE3549037;
 	Wed, 11 Nov 2026 16:22:40 +0000 (UTC)
 From: Michiel van Beers via B4 Relay <devnull+michielvanbeers.gmail.com@kernel.org>
-Subject: [PATCH v2 0/2] backlight: lm3630a: Add a per-bank full-scale
- current limit
-Date: Wed, 11 Nov 2026 17:21:40 +0100
-Message-Id: <20261111-lm3630a-led-max-microamp-v2-0-aff11756e7be@gmail.com>
+Date: Wed, 11 Nov 2026 17:21:42 +0100
+Subject: [PATCH v2 2/2] backlight: lm3630a: Allow setting the full-scale
+ current per bank
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -85,12 +84,9 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIABSW9GoC/42NTQ6CMBBGr0K6dkx/AFNX3sOwKMMIY6glLRIM4
- e4CXsDlS973vkUkikxJXLNFRJo4cXhtoE+ZwM69WgJuNhZa6lIpeYHem9JIBz014N0MnjEG5wf
- A0hpdGGcLLMQ2HyI9eD7S9+rH6V0/Cce9txsdpzHEz/E9qd3742ZSIIHQUp6rxtYab6133J8xe
- FGt6/oFs9SgQ9IAAAA=
-X-Change-ID: 20261107-lm3630a-led-max-microamp-c693253a95c5
+Message-Id: <20261111-lm3630a-led-max-microamp-v2-2-aff11756e7be@gmail.com>
+References: <20261111-lm3630a-led-max-microamp-v2-0-aff11756e7be@gmail.com>
+In-Reply-To: <20261111-lm3630a-led-max-microamp-v2-0-aff11756e7be@gmail.com>
 To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
  Griffin Kroah-Hartman <griffin@kroah.com>, Rob Herring <robh@kernel.org>, 
@@ -100,69 +96,142 @@ Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-fbdev@vger.kernel.org, Michiel van Beers <michielvanbeers@gmail.com>
 X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794414160; l=2412;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794414160; l=4765;
  i=michielvanbeers@gmail.com; s=20261107; h=from:subject:message-id;
- bh=M9hBpT4MU3HGwwOvZOZkX2+eRbE95B0Ckdvhl25nIHw=;
- b=NbVP5964O0uRfIoPM7KNrt3JXDt0Zso+PDJcuKUxXOJKdh4pglDmpklTNOQUexAmVeGbN0GLL
- yjRQJ6E5DcaAF83UeKzqE7PJl2aCcOiw1CyERwixGrjY8K8TZ5j0EE3
+ bh=YrzYv6G6kHsv+ddU+T8TW/TH8CUbRepEUJYvTRcaRMI=;
+ b=JVfzfKGbjd7roYgiWd7DpAOH1JdyHKa09w8DtY57g5BGiqeHo0T4K+KllY8o3TX+XGepDjRSV
+ ultsVhs2ntNDpOEr2bfDmLKeRGCaBKVCyz7Khhxji248h3hmSyWNWjy
 X-Developer-Key: i=michielvanbeers@gmail.com; a=ed25519;
  pk=C+lOje7u3+2x3o2NLMXrwz2veP2++eXfIi9MtYsUo4k=
 X-Endpoint-Received: by B4 Relay for michielvanbeers@gmail.com/20261107
  with auth_id=1444
 X-Original-From: Michiel van Beers <michielvanbeers@gmail.com>
 Reply-To: michielvanbeers@gmail.com
+Content-Transfer-Encoding: 7bit
 
-The LM3630A driver always programs the full-scale current of both
-control banks to the chip maximum of 28.25 mA. This series adds the
-common led-max-microamp property to the binding and makes the driver
-program it, so boards whose LEDs are rated for less can set a lower
-limit.
+From: Michiel van Beers <michielvanbeers@gmail.com>
 
-My use case is the frontlight of the Onyx Boox Leaf e-reader (SDM636),
-where Onyx's Android kernel sets the full-scale current of both banks
-to 12.5 mA. The board devicetree is not upstream yet.
+The driver always programs the full-scale current of both control banks
+to the maximum of 28.25 mA (code 0x1F). Boards whose LED strings are
+rated for less have no way to lower it.
 
-Patch 1 documents the property, patch 2 implements it. Both are meant
-to go through the backlight tree.
+Read the optional led-max-microamp property of each led@ node and
+program the full-scale current register of that bank with the matching
+code, I_FS = 5 mA + code * 0.75 mA (datasheet SNVS974B, 7.3.1.11). The
+code is rounded down, so the current never exceeds the requested value.
+Values outside 5000 to 28250 uA are rejected with -EINVAL.
 
-Testing:
-- Onyx Boox Leaf, 7.2.y kernel (sdm660-mainline) with patch 2 applied:
-  led-max-microamp = <12500> on both banks reads back as code 0x0a in
-  both full-scale registers, and the frontlight works normally. 5000
-  and 28250 give codes 0x00 and 0x1f, with bank A visibly dimmer at
-  5 mA; 28500 makes probe fail with -EINVAL. The driver in 7.4-rc1
-  differs from 7.2.y only by an unrelated change in lm3630a_remove().
-- dt_binding_check, and dtbs_check of all in-tree boards with an
-  LM3630A (rk3566-pinenote, the i.MX6 Kobo and Tolino e-readers,
-  Nexus 5, OnePlus One): no warnings for this binding.
-- arm64 build with W=1 and sparse: no new warnings.
+Without the property the driver still programs 0x1F, so existing boards
+are unaffected.
 
-AI disclosure: I prepared this series with Claude Code (Anthropic,
-Claude Opus 5.5). It drafted the driver change and the commit messages
-from my description of the problem and the datasheet, and proposed the
-checks above; I ran the checks and the hardware test, reviewed every
-line, and take responsibility for the patches.
-
+Signed-off-by: Michiel van Beers <michielvanbeers@gmail.com>
 ---
-Changes in v2:
-- Patch 1: reference leds/common.yaml from the led@[01] node (Krzysztof)
-- Link to v1: https://patch.msgid.link/20261107-lm3630a-led-max-microamp-v1-0-ec9e441d9b2c@gmail.com
-
+checkpatch --strict reports errors on the two new kernel-doc lines in
+lm3630a_bl.h; the hunk does not include the comment delimiters. With
+-U15 it is clean.
 ---
-Michiel van Beers (2):
-      dt-bindings: backlight: lm3630a: Add led-max-microamp
-      backlight: lm3630a: Allow setting the full-scale current per bank
+ drivers/video/backlight/lm3630a_bl.c     | 40 ++++++++++++++++++++++++++++----
+ include/linux/platform_data/lm3630a_bl.h |  4 ++++
+ 2 files changed, 40 insertions(+), 4 deletions(-)
 
- .../bindings/leds/backlight/lm3630a-backlight.yaml | 10 ++++++
- drivers/video/backlight/lm3630a_bl.c               | 40 +++++++++++++++++++---
- include/linux/platform_data/lm3630a_bl.h           |  4 +++
- 3 files changed, 50 insertions(+), 4 deletions(-)
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261107-lm3630a-led-max-microamp-c693253a95c5
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 8ef8163c7fef..1189011bb89d 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -80,6 +80,25 @@ static int lm3630a_update(struct lm3630a_chip *pchip,
+ 	return regmap_update_bits(pchip->regmap, reg, mask, data);
+ }
+ 
++/*
++ * Full-scale current register code: I = 5 mA + code * 0.75 mA, code 0..31
++ * (datasheet SNVS974B, 7.3.1.11). Rounds down, so the result never exceeds
++ * the requested current. 0 means "not set" and keeps the chip default 0x1F.
++ */
++#define LM3630A_FS_CURRENT_MIN_UA	5000
++#define LM3630A_FS_CURRENT_STEP_UA	750
++#define LM3630A_FS_CURRENT_MAX_UA	28250
++#define LM3630A_FS_CURRENT_MAX_CODE	0x1F
++
++static unsigned int lm3630a_fs_current_code(unsigned int microamp)
++{
++	if (!microamp)
++		return LM3630A_FS_CURRENT_MAX_CODE;
++
++	return (microamp - LM3630A_FS_CURRENT_MIN_UA) /
++	       LM3630A_FS_CURRENT_STEP_UA;
++}
++
+ /* initialize chip */
+ static int lm3630a_chip_init(struct lm3630a_chip *pchip)
+ {
+@@ -93,10 +112,12 @@ static int lm3630a_chip_init(struct lm3630a_chip *pchip)
+ 	rval |= lm3630a_update(pchip, REG_CONFIG, 0x07, pdata->pwm_ctrl);
+ 	/* set boost control */
+ 	rval |= lm3630a_write(pchip, REG_BOOST, 0x38);
+-	/* set current A */
+-	rval |= lm3630a_update(pchip, REG_I_A, 0x1F, 0x1F);
+-	/* set current B */
+-	rval |= lm3630a_write(pchip, REG_I_B, 0x1F);
++	/* set full-scale current A */
++	rval |= lm3630a_update(pchip, REG_I_A, 0x1F,
++			lm3630a_fs_current_code(pdata->leda_max_microamp));
++	/* set full-scale current B */
++	rval |= lm3630a_write(pchip, REG_I_B,
++			lm3630a_fs_current_code(pdata->ledb_max_microamp));
+ 	/* set control */
+ 	rval |= lm3630a_update(pchip, REG_CTRL, 0x14, pdata->leda_ctrl);
+ 	rval |= lm3630a_update(pchip, REG_CTRL, 0x0B, pdata->ledb_ctrl);
+@@ -472,6 +493,17 @@ static int lm3630a_parse_bank(struct lm3630a_platform_data *pdata,
+ 			pdata->leda_max_brt = val;
+ 	}
+ 
++	ret = fwnode_property_read_u32(node, "led-max-microamp", &val);
++	if (!ret) {
++		if (val < LM3630A_FS_CURRENT_MIN_UA ||
++		    val > LM3630A_FS_CURRENT_MAX_UA)
++			return -EINVAL;
++		if (bank)
++			pdata->ledb_max_microamp = val;
++		else
++			pdata->leda_max_microamp = val;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/platform_data/lm3630a_bl.h b/include/linux/platform_data/lm3630a_bl.h
+index 530be9318711..43383c476c09 100644
+--- a/include/linux/platform_data/lm3630a_bl.h
++++ b/include/linux/platform_data/lm3630a_bl.h
+@@ -37,10 +37,12 @@ enum lm3630a_ledb_ctrl {
+  *@leda_label    : optional led a label.
+  *@leda_init_brt : led a init brightness. 4~255
+  *@leda_max_brt  : led a max brightness.  4~255
++ *@leda_max_microamp : led a full-scale current, 5000~28250 uA (0: default)
+  *@leda_ctrl     : led a disable, enable linear, enable exponential
+  *@ledb_label    : optional led b label.
+  *@ledb_init_brt : led b init brightness. 4~255
+  *@ledb_max_brt  : led b max brightness.  4~255
++ *@ledb_max_microamp : led b full-scale current, 5000~28250 uA (0: default)
+  *@ledb_ctrl     : led b disable, enable linear, enable exponential
+  *@pwm_period    : pwm period
+  *@pwm_ctrl      : pwm disable, bank a or b, active high or low
+@@ -51,11 +53,13 @@ struct lm3630a_platform_data {
+ 	const char *leda_label;
+ 	int leda_init_brt;
+ 	int leda_max_brt;
++	unsigned int leda_max_microamp;
+ 	enum lm3630a_leda_ctrl leda_ctrl;
+ 	/* led b config. */
+ 	const char *ledb_label;
+ 	int ledb_init_brt;
+ 	int ledb_max_brt;
++	unsigned int ledb_max_microamp;
+ 	enum lm3630a_ledb_ctrl ledb_ctrl;
+ 	/* pwm config. */
+ 	unsigned int pwm_period;
 
-Best regards,
---  
-Michiel van Beers <michielvanbeers@gmail.com>
+-- 
+2.43.0
 
 

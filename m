@@ -1,94 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.46
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794409347;
-	b=CXf3LWyMlqpPLSp7Z4p+ahxKcv7SqQ7PARZnNdg2yYoT6ivaseSVoKuAk7ooZK0hlK5J
-	 Pc8pDKuN+z23kvw3yObKw5dg59psF6OODgPC4N0ohmJ7YHOnDAQD2xClsPUm/qRi/dE7o
-	 zhSzJD2inV/mMbhOmqBajBv+XP135IOHzhxRKa6T9TypStrGUEE1DoFpSq24BKv75M+sd
-	 9TOkYyhs6RQycjrxhOk67LPhI49ky1ctv2WLn1tE6frDXh9D0b8s4x2l/DrzvEYfRBXek
-	 DL7xgFuZa6hsm8qKqGnW4JM3bh2xkT8/ZNO8yWMVElaszfMv0ZQx6uzEdEEhP+jLc1A==
+	t=1794410866;
+	b=0MHRhe5UjTKjjyOvGcP/Uju8YD7pLj4wGQlNcHyam30fCARxzi5SaPtvCv1cvR3yhTTX
+	 B0g4f088gWT6WOW1hJ8YD/ECZ+3zTtTPJpuqIUHm3TBYqNd2jwMVtSTcufyCrs0GtaFY1
+	 NEnMqORrLipubHyTzy09Pu9te0E31uoxH1DCmcb6/Oqk9VFv1X6qprKVMv2gSY22D5b7K
+	 DdGTLCjiecs2pHsOa3rdx6sX370j4F6pMHvcvHPbe5FRuTnB6lnOtzIBJUY3eTyTJOhwo
+	 AOg3hvP184d/pEv59kLey+kr6NVMuzG85+vd0MYo0fwTm/8EFVFQB7U4vMq7/DWMp/Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794409347;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=meWNXvMASPE39vwE27i8e5aNRxxg/xlneQl/BaplwNw=;
-	b=tcEmO3H7x0xKgYQOFtPbPZACl6GHINCM1GFUyzAXaC8kSP9tgf4fDyiPNuAD0Gtotxpy
-	 IiouvlUt+YQxsFsHQ1oKrGsh1jlbn1swrZ4PctE1NeaT4DE+nMdSB8oIZKr/H0AFeBKGE
-	 Ym7zHZYlsFjCF66ic0STgy9+o84S62IxR/SW6Zt3XQLInxBucw/fZvLRwxQy5g2xQMtWQ
-	 oAn+1fYu2JzhkvgpP+7DszCRSzq4YfLzpIaUbtwaoaLQMRYIZhItRfa5kHclFseXK5PnO
-	 rx5MSpHfYYexFposcaNZmK5vc7D0ytIs6vZFuCy0QobpOCi5xVEDRU3n7sBJzLJ77rg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794410866;
+	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
+	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spam-Flag:
+	 X-Spam-Level:X-Spamd-Result:X-Spam-Score;
+	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
+	b=4x3wCKxvlNn7WcLtt29f6Ws+n0vSZxRV7na3eowfB3bpJCH51qUuHhOVnitpUCmUKfBo
+	 wzwEqL07NP/wMs2NbijCl4TkBYHWDKg7o/JU3jFmQ+MPPUC3iAF5//V5EeRPnyt+weXoT
+	 NWfkCTXIVv4NLbVnBQwIAxbmN/RTvzDAmH15vFedX0vEXwRhmGfsr3GJZ8Y0Z5tx7qff7
+	 MGJhziNDuNjUuOJerdz7JtXTMz5NKrhk3O+UU+UM7InE+OEBZtLa/OHkERzhg3O1kcpRv
+	 F3YQCZbh42M/XA0EE/cy75jSVgFdmyoM2MDI2rSbE1vgnMTFjMfpF821T64FZkJLWaQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UQ5VFpay;
-	arc=none smtp.remote-ip=209.85.221.46
-Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=suse.de;
+	spf=pass smtp.mailfrom=suse.de;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=WgbuyfLb;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b="bk3uCg9/";
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=WgbuyfLb;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b="bk3uCg9/";
+	arc=none smtp.remote-ip=195.135.223.130
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35269606A336
-	for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 15:02:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 35269606A336
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B7FD606A896;
+	Wed, 11 Nov 2026 15:27:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4B7FD606A896
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UQ5VFpay
-Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-492fcbfaa88so2194618f8f.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 07:02:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794409344; x=1795014144; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=meWNXvMASPE39vwE27i8e5aNRxxg/xlneQl/BaplwNw=;
-        b=UQ5VFpayE9CxUcVJjLg9m8k3212rMrE3w2g8bTETRaeTZGmJwXdK/iPr6idLYFo5lF
-         fIVqcP5zR+wj6RG1R726OpDUDz2py52q1cKoTj2a0Sr7EbFzHZUs6xfArCzJjf6pn+Ip
-         /mFujscxx4Nxo3a3LfKIGdEsEZ5rFc3l72gFAMxauhLiZoKPl+jILGzYojynnifJU2qa
-         rELSdlHKFkyEh1sOk7MZo8oARRRaKEIdLQJ5yj5zWbmmwuYTQaT6jwq4/HVyfjBWaK+L
-         Eb55SxwSHYC3x8LdvJ/FPQOxS3nV6QdwlXKxo5x7WFlAtNhYYrGRzAEwRkaCrn0tXU9w
-         TwLw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794409344; x=1795014144;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=meWNXvMASPE39vwE27i8e5aNRxxg/xlneQl/BaplwNw=;
-        b=abSsvmLZQL7oHUxkBDyfBcrOZhOHObCTnW/n0AfFI0ozjceC9xgC7CXtPMzQt3WKza
-         TQ2XSIQZGIIT0aUebVHKgyv0h5fvQvGOO3zPgBp/3KIi3UOCUpIWCkE63IaHPAc0husZ
-         pF7ZKRGneOIxMLvrQF5xHA7HaT0kPPmzz3mvVUlLTHNbhm8J3/Bk4F5D1SqlJ095GD7V
-         VTtFq5jVkjqV03ixn2myY6/IDFNDs2diVTKgieC+i902gFrOFFYetBAkTqv6bs/sIcub
-         kD/BD970POZ1/nuUh+D/A6bbIrNoVDhYh9p6PrFavMIa7pesSGKWQnjzgqv8y+IFqARU
-         dRnA==
-X-Forwarded-Encrypted: i=1; AL+hErHDuKQuxvyxhnJqdjZnyS3BTzjcTnwHl7iscNldKdvK3lJEC3o7/OvOEtdPRFURP/3B4Xnh8nqBDN3Rfg==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8lPJkxjhQfEzPABBVJnxAfyAKCF4reCSsjDqimIB55nwj9zHk2
-	nhExgrfv0mw7RPPsF6m3SnSBQT2uteXfCBQXrIfCHtt13emn2VmNuOSJ
-X-Gm-Gg: AYBFou3O1jfJ/XNnsM47ez9nTRg5+xWxo+I75XFdtm7FMw/MQt4a6YQKGNlSrMKiN/t
-	qHpxz98qUBxMahk/pca0D9bXTEHe2WzIbpInepEBwNVt+dGWk9GVXnhC4IpcV1wsUT6+5PJpzC3
-	kIoqoVMmzSmokesbnPFZTFJMZZm79xXHhYDMN3HqTU48g37ja/GFtKS/O5gY3+l47HUZFb2xhqG
-	UzIFVZPkzU6F4ZoGxjxadZClg46tVZaRyGvrSBF92mS5uD5UhbRpiGX2FgptAL3MFNv3l9PsWtc
-	8b6PJ51anZwr4cXNP02gzrh1mXob/ZiKhKYsFU9KdX285bGX7dPf+q67VZAzIg79lzH1Ykyj307
-	4NTHFviBeBJuvCM67alZc5d5ckmmEe65BJjnAqbnQgGZz8QItXAxcwm7vnZMNMZ6IoV5Pp3Cs58
-	X0gIkWR1miYH1w9+4WxCBUlD8Dnut7CNyEos654ff71vPZu/HmdrPY+VTWlu0ksG7dQ75mMmYED
-	7SGcqNLxAu70XOo9XOZZOGGiFP1Xi+tw+6Sd9d/xpz+1e1KdaKcwGnPuPaAwo2sGTxrFRg8q8gE
-	d4Up5GL+weXVTF1+p9H7c7vROT9R28pVpTXlTH7QFeuaZF25Eucqklw=
-X-Received: by 2002:a05:6000:40c8:b0:488:8ab9:f74c with SMTP id ffacd0b85a97d-499c425746dmr5287776f8f.3.1794409344157;
-        Wed, 11 Nov 2026 07:02:24 -0800 (PST)
-Received: from localhost ([82.77.126.113])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49835e20327sm12054259f8f.26.2026.11.11.07.02.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 07:02:23 -0800 (PST)
-From: Daniel Matyas <matyasdaniel006@gmail.com>
-To: Jaya Kumar <jayalk@intworks.biz>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
-	Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	Daniel Matyas <matyasdaniel006@gmail.com>
-Subject: [PATCH] video: fbdev: Request IO ports
-Date: Wed, 11 Nov 2026 17:02:17 +0200
-Message-ID: <20261111150219.239706-1-matyasdaniel006@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=WgbuyfLb;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bk3uCg9/;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=WgbuyfLb;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bk3uCg9/
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 4A09521E4F;
+	Wed, 11 Nov 2026 15:27:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1794410863; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
+	b=WgbuyfLbyTNIoBH1d569fOiXWoXyaj0c2T1juvQzh0RoLL15mkv9GAt/WrLsnJDU6nsoNr
+	PBkICJlQqHIVsRSyjNTAbM8d6jhPm4kUJuIU9rgS+BcBp5IncMEnYNC6bTA4sxHR34BS0+
+	vOVSdruLLjIscjZfOpvY6ciPyz1U2SY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1794410863;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
+	b=bk3uCg9/sLfhxUUKldgXxz4WSbgT0nypyn0on6HYozQOp7jsxzALFRowT54KFQnvoJjdiQ
+	x16o98WVJ9DtpUDQ==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1794410863; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
+	b=WgbuyfLbyTNIoBH1d569fOiXWoXyaj0c2T1juvQzh0RoLL15mkv9GAt/WrLsnJDU6nsoNr
+	PBkICJlQqHIVsRSyjNTAbM8d6jhPm4kUJuIU9rgS+BcBp5IncMEnYNC6bTA4sxHR34BS0+
+	vOVSdruLLjIscjZfOpvY6ciPyz1U2SY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1794410863;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
+	b=bk3uCg9/sLfhxUUKldgXxz4WSbgT0nypyn0on6HYozQOp7jsxzALFRowT54KFQnvoJjdiQ
+	x16o98WVJ9DtpUDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C608D1339F;
+	Wed, 11 Nov 2026 15:27:42 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id CzTPHW6J9GpuTAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 11 Nov 2026 15:27:42 +0000
+Message-ID: <1b37c7d3-f8d0-4023-b0bc-4770ec2b17d6@suse.de>
+Date: Wed, 11 Nov 2026 16:27:41 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -98,55 +106,109 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] fbdev: simplefb: Add mono framebuffer format
+To: Helge Deller <deller@gmx.de>, Sebastian Raase <linux@sraa.de>
+Cc: Hans de Goede <hansg@kernel.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <cover.1793758480.git.linux@sraa.de>
+ <6c207278c23d11f2c17cee383d422c3295cc7d97.1793758480.git.linux@sraa.de>
+ <16220356-767a-4f1d-9b24-5b1f960e04cb@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <16220356-767a-4f1d-9b24-5b1f960e04cb@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Spam-Flag: NO
+X-Spam-Level: 
+X-Spamd-Result: default: False [-11.79 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[dt];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_TO(0.00)[gmx.de,sraa.de];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	TO_DN_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,linux.intel.com,gmail.com,ffwll.ch,vger.kernel.org,lists.freedesktop.org];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url]
+X-Spam-Score: -11.79
 
-Some fbdev drivers do not request their memory correctly. Request the IO
-ports' memory so no other driver may access them. Only request 1 byte,
-because the inb() and out() are used for reading and writing.
+Hi Helge
 
-Did not test on hardware.
+Am 11.11.26 um 00:25 schrieb Helge Deller:
+> On 11/4/26 03:34, Sebastian Raase wrote:
+>> Add a new simple-framebuffer format for monochrome 1 bit-per-pixel
+>> framebuffers. Monochrome framebuffers are not true color, so their
+>> visual is set to FB_VISUAL_MONO10 (set pixels are bright).
+>>
+>> Signed-off-by: Sebastian Raase <linux@sraa.de>
+>> ---
+>>   drivers/video/fbdev/simplefb.c         | 2 ++
+>>   include/linux/platform_data/simplefb.h | 1 +
+>>   2 files changed, 3 insertions(+)
+> series applied to fbdev git tree.
 
-Signed-off-by: Daniel Matyas <matyasdaniel006@gmail.com>
----
- drivers/video/fbdev/arcfb.c | 8 ++++++++
- drivers/video/fbdev/n411.c  | 5 +++++
- 2 files changed, 13 insertions(+)
+Isn't that a bit premature? There's no use-case give; except 
+because-we-can.  And doesn't it require a review from DT maintainers?
 
-diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-index b807cf07522d..6771a7409cde 100644
---- a/drivers/video/fbdev/arcfb.c
-+++ b/drivers/video/fbdev/arcfb.c
-@@ -481,6 +481,14 @@ static int arcfb_probe(struct platform_device *dev)
- 		printk(KERN_WARNING "no IO addresses supplied\n");
- 		goto err_addr;
- 	}
-+
-+	if (!devm_request_region(&dev->dev, dio_addr, 1, "arcfb") ||
-+		!devm_request_region(&dev->dev, cio_addr, 1, "arcfb") ||
-+		!devm_request_region(&dev->dev, c2io_addr, 1, "arcfb")) {
-+		retval = -EBUSY;
-+		goto err_addr;
-+	}
-+
- 	par->dio_addr = dio_addr;
- 	par->cio_addr = cio_addr;
- 	par->c2io_addr = c2io_addr;
-diff --git a/drivers/video/fbdev/n411.c b/drivers/video/fbdev/n411.c
-index a3677313396e..ed0281939d37 100644
---- a/drivers/video/fbdev/n411.c
-+++ b/drivers/video/fbdev/n411.c
-@@ -165,6 +165,11 @@ static int __init n411_init(void)
- 	if (!n411_device)
- 		return -ENOMEM;
- 
-+	if (!devm_request_region(&n411_device->dev, dio_addr, 1, "n411") ||
-+		!devm_request_region(&n411_device->dev, cio_addr, 1, "n411") ||
-+		!devm_request_region(&n411_device->dev, c2io_addr, 1, "n411"))
-+		return -EBUSY;
-+
- 	ret = platform_device_add_data(n411_device, &n411_board,
- 				       sizeof(n411_board));
- 	if (ret)
+Best regards
+Thomas
+
+>
+> Thanks!
+> Helge
+
 -- 
-2.55.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
+
 

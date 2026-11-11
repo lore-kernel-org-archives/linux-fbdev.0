@@ -1,102 +1,104 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794403930;
-	b=TffM54Bn/QbR/G+Q4OXYSE6Smkr3g2tBfYbQavonEGTFDDG35pWpDFZIzyS6HwMzPJdQ
-	 f2tIJaAS5Lv8iX/Td0AGYAYyRy0VrFwAui1/Jz6OMe/JnJKWTvyZ+Ve7Tv1Mhr2I7+Lw6
-	 olxEYyP7HzvBo3LUPLpCVDWmm5SSEbYUVfLxsciTzdXWsJdUoikdMtCPSdy8W0KYelbL7
-	 Fe32DKAsVNBjTphHUDPjlAUkfvBIXWbgbSinRqD2gPiKhEPxzNezT5rqYBgGTjGnGJUDO
-	 gGqM9XeCGa9JJZnXV+PK6KntdIRwnwKwETwtzM67PJetrn8wL/Ih09rWsLq2NCe5NOg==
+	t=1794403979;
+	b=rejdo+sCLnbSi9ZDJPkRjNyYC/9KNgSrRHWN+HeTthBqyOyTeNtAcmr1tbTO0pCFoMCx
+	 itCtl17cnioSgWhlVacCRW2D1fA+Ixxqs9kGZ1gbES2gunkWw/yjYTz4o3M4t6GIhciqz
+	 vBtqX4wvsALuVP8YHxEVMVHC9WYYFEMjUw3nS0zesmn4ERAliL1RpOxWUx7eNNn5Mzuqx
+	 pp82t89CpyjLQm+wJUAPoJtBr//998F/9/xzWYxWC8T2zjlRaNPPBdVXOrD67xtlQMkz/
+	 GmrCNoOYpX4k3BqPF8pn37z3GRKwzPCjA5d7zGFxx0fGUhtjP47TEcHMPioPm7cStgw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794403930;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794403979;
 	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
 	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
 	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
-	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spamd-Result:
-	 X-Spam-Score:X-Spam-Level:X-Spam-Flag;
-	bh=8P9Gu9qBqcpDxpNjEf0DY5+KTMy2tpOB+o7FIRyeAgI=;
-	b=AZCBNM+z7VnWI5iVQMUzm1ZZqK+GTHeEek5BY+SL+6cck4wBBmZD5Oyt5ED7eOhJA5ax
-	 Wh83qhfrPKced1hWrnl8+0snhjb+d2n0XB4HsqTsIguhZUOjBLeYHVNraFTujMcfs2Vju
-	 oLd3AyGq3/uD/9/Y9D5ZQDQcF1r/3J2AKa106HL+1D9rWeuEIJ4n9bm7fVKGPz2e7zZ4H
-	 i41KasCAAzYm0zbPUMmjaexnrq8QuyIoTGxG2zblVR5pozqDYRHxNWgVlVRZEYiyhxt96
-	 VRPHZ+9V+cq4a9Z9/vDtHKXBiOzWMe16outLOgUZaca+Mv2jwGlwL0egHjvj3B+hioQ==
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Rspamd-Queue-Id:
+	 X-Spam-Level:X-Rspamd-Server:X-Rspamd-Action:X-Spam-Flag:
+	 X-Spamd-Result:X-Spam-Score;
+	bh=e7z68HpmiXeC9H97zBTrax0xsqzXKKitlWH4KRxwk6M=;
+	b=qKnzln7Qw9kuSq8X9ypmkuSAqvB5QrthsVRJ7O+IX+UDvcd08N3+YKrY1JlZnuIR74BB
+	 TxVQ00izldS7Id15+UStWsJxZ3d3jBzwjmmzjlYB145FXKM3NQaYIAGB6JX+dIJ9KrT7T
+	 C8LYMyN87OAbpRgJb81nOVc5sF0PNzbHrG+wpQHoDyuXk0l6oQHSDsxgiCTYpRAU5R/KM
+	 7xRFMaKTKK3mynIFzEwbK6I933Ngq1Ar53gljCP9g2QY3C2bF9LuxNsgArXmFwnV1GErf
+	 0XkthdnNG6VBtz51J18GrMaIxoOW/HJA8BNvm6TxJMc3KKCWZ0slpODkpf0432FUU/Q==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=suse.de;
 	spf=pass smtp.mailfrom=suse.de;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rtTrYSlE;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lmy+uA73;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rtTrYSlE;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lmy+uA73;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=oV7sNpKt;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=wKzYBZSN;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=TcAGs3Pe;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=MLamnDrL;
 	arc=none smtp.remote-ip=195.135.223.131
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8AFB0606A881;
-	Wed, 11 Nov 2026 13:32:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 8AFB0606A881
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9C87606A326;
+	Wed, 11 Nov 2026 13:32:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B9C87606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rtTrYSlE;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lmy+uA73;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rtTrYSlE;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lmy+uA73
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=oV7sNpKt;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=wKzYBZSN;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=TcAGs3Pe;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=MLamnDrL
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 87F915C4AC;
-	Wed, 11 Nov 2026 13:31:53 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 6EA5C5C5A3;
+	Wed, 11 Nov 2026 13:32:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794403913; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1794403963; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8P9Gu9qBqcpDxpNjEf0DY5+KTMy2tpOB+o7FIRyeAgI=;
-	b=rtTrYSlElDgrPSs1uSVZcz0+060Gg1y/UDP2E/Nd2GeWP4ZvVADQE6k25qP37Q9UdCcKi2
-	h7UM9vNt4O0zjF6OldSUlwVZsTNcsiF/IjNR1xOl3LpT993busznKqIcf0NnVJrYwnM+7A
-	wnzJWSuIhciRC51xPy6CGHf3gd+JmXI=
+	bh=e7z68HpmiXeC9H97zBTrax0xsqzXKKitlWH4KRxwk6M=;
+	b=oV7sNpKtQUP+XCrIwJ9vmr1a/hIepyee8rtAOnqs4b7Bp55cpy9BErfQX+GcH1K8BX0HjU
+	ZyF2NHu6MXecMZwMFed3qrbYecZ8GG1sYZj1bM4/P3Ubgi21ohSabzJG28V0gW91t4FohR
+	Q4bYbaE8oUPLJwrbIQeYoTu3OeSUGGo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794403913;
+	s=susede2_ed25519; t=1794403963;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8P9Gu9qBqcpDxpNjEf0DY5+KTMy2tpOB+o7FIRyeAgI=;
-	b=lmy+uA73Aw+ljWQbrLvH3Kv0nCrZHFq7Trnth+h8DtbugolcZNEzmpgG2w5BjsGwZP4mIL
-	nocHAK7n7FnQt+Bg==
+	bh=e7z68HpmiXeC9H97zBTrax0xsqzXKKitlWH4KRxwk6M=;
+	b=wKzYBZSNql2bQTGND4h0zHEXCHdVSvZ8x6LQOjYo3SUjFjCC1N7DaxtNSdJXVoNVXEQ52B
+	tt62tMDdUyrJCLCw==
 Authentication-Results: smtp-out2.suse.de;
-	none
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=TcAGs3Pe;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=MLamnDrL
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794403913; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1794403961; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8P9Gu9qBqcpDxpNjEf0DY5+KTMy2tpOB+o7FIRyeAgI=;
-	b=rtTrYSlElDgrPSs1uSVZcz0+060Gg1y/UDP2E/Nd2GeWP4ZvVADQE6k25qP37Q9UdCcKi2
-	h7UM9vNt4O0zjF6OldSUlwVZsTNcsiF/IjNR1xOl3LpT993busznKqIcf0NnVJrYwnM+7A
-	wnzJWSuIhciRC51xPy6CGHf3gd+JmXI=
+	bh=e7z68HpmiXeC9H97zBTrax0xsqzXKKitlWH4KRxwk6M=;
+	b=TcAGs3Pe811lw/I6rgmCFa7s4fN/gpO6QCTfA/tt2KjxBubX8zN/sgYf31N+7m5WEJtoKX
+	//N1ixFYnotItdt07vEZNmoVisQQZZVGcBsAEOCdUQQE8uYC3zD3ftgoKXKnyUiFPov1Ux
+	lRms4Uyb3TRJ3z/c8XHsMcFCizyDgOE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794403913;
+	s=susede2_ed25519; t=1794403961;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8P9Gu9qBqcpDxpNjEf0DY5+KTMy2tpOB+o7FIRyeAgI=;
-	b=lmy+uA73Aw+ljWQbrLvH3Kv0nCrZHFq7Trnth+h8DtbugolcZNEzmpgG2w5BjsGwZP4mIL
-	nocHAK7n7FnQt+Bg==
+	bh=e7z68HpmiXeC9H97zBTrax0xsqzXKKitlWH4KRxwk6M=;
+	b=MLamnDrLzMYlNR9eKOxS4pqe/b7Zevkh0gp9zi9Ho5Lszt1xFBs6edOzQ4eYNbPbGn2XyU
+	i302lMispj/RtpBA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id AA91F1339F;
-	Wed, 11 Nov 2026 13:31:52 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 97F3D1339F;
+	Wed, 11 Nov 2026 13:32:40 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 0iPRGEhu9GodVAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 11 Nov 2026 13:31:52 +0000
-Message-ID: <ed28619d-6ca7-46aa-82c0-c83f30a836e3@suse.de>
-Date: Wed, 11 Nov 2026 14:31:51 +0100
+	id WJ5TEXhu9GpuVAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 11 Nov 2026 13:32:40 +0000
+Message-ID: <2d57015d-5ad3-4cfc-b001-2cbbbf9d7bfd@suse.de>
+Date: Wed, 11 Nov 2026 14:32:39 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -107,7 +109,7 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 05/15] MAINTAINERS: add entry for DRM splash client
+Subject: Re: [PATCH v6 06/15] drm: docs: remove bootsplash from TODO
 To: =?UTF-8?Q?M=C3=A0xim_Pedraza_Padilla?= <maximpedraza@gmail.com>,
  Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
  Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
@@ -128,7 +130,7 @@ Cc: Francesco Valla <francesco@valla.it>,
  linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org,
  linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20261027135342.2003632-1-maximpedraza@gmail.com>
- <20261027135342.2003632-6-maximpedraza@gmail.com>
+ <20261027135342.2003632-7-maximpedraza@gmail.com>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -155,84 +157,91 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20261027135342.2003632-6-maximpedraza@gmail.com>
+In-Reply-To: <20261027135342.2003632-7-maximpedraza@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-11.79 / 50.00];
+X-Rspamd-Queue-Id: 6EA5C5C5A3
+X-Spam-Level: 
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-12.00 / 50.00];
 	SUSE_INTERNAL_BYPASS(-9.00)[];
 	BAYES_HAM(-3.00)[100.00%];
 	SUSPICIOUS_RECIPS(1.50)[];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
 	XM_UA_NO_VERSION(0.01)[];
-	TAGGED_RCPT(0.00)[dt];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RCPT_COUNT_TWELVE(0.00)[28];
+	FREEMAIL_TO(0.00)[gmail.com,linux.intel.com,kernel.org,ffwll.ch,lwn.net,gmx.de,redhat.com];
 	MIME_TRACE(0.00)[0:+];
 	ARC_NA(0.00)[];
-	FREEMAIL_TO(0.00)[gmail.com,linux.intel.com,kernel.org,ffwll.ch,lwn.net,gmx.de,redhat.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_TWELVE(0.00)[28];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_COUNT_TWO(0.00)[2];
 	FROM_EQ_ENVFROM(0.00)[];
 	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
 	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	TO_DN_SOME(0.00)[]
-X-Spam-Score: -11.79
-X-Spam-Level: 
-X-Spam-Flag: NO
+	TAGGED_RCPT(0.00)[dt];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	R_RATELIMIT(0.00)[to_ip_from(RLtokucttkpew6o6awf6ycppik)];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,patchwork.freedesktop.org:url,valla.it:email,suse.de:dkim,suse.de:email]
+X-Spam-Score: -12.00
 
-Hi
+
 
 Am 27.10.26 um 14:53 schrieb Màxim Pedraza Padilla:
 > From: Francesco Valla <francesco@valla.it>
 >
-> Add myself as maintainer for the DRM splash client.
+> Now that a splash client exists, remove the bootsplash task from the
+> TODO list for the DRM subsystem.
 >
 > Signed-off-by: Francesco Valla <francesco@valla.it>
-> [Màxim: add myself as co-maintainer]
 > Signed-off-by: Màxim Pedraza Padilla <maximpedraza@gmail.com>
+
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+
 > ---
->   MAINTAINERS | 8 ++++++++
->   1 file changed, 8 insertions(+)
+>   Documentation/gpu/todo.rst | 17 -----------------
+>   1 file changed, 17 deletions(-)
 >
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index a08087fb6e67..321ecb9f5b5b 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -9168,6 +9168,14 @@ F:	Documentation/gpu/drm-ras.rst
->   F:	drivers/gpu/drm/drm_ras*
->   F:	include/drm/drm_ras*
+> diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
+> index e6d36f8da086..5e987e18bfcd 100644
+> --- a/Documentation/gpu/todo.rst
+> +++ b/Documentation/gpu/todo.rst
+> @@ -756,23 +756,6 @@ See drivers/gpu/drm/amd/display/TODO for tasks.
 >   
-> +DRM SPLASH
-> +M:	Francesco Valla <francesco@valla.it>
-> +M:	Màxim Pedraza Padilla <maximpedraza@gmail.com>
-
-I don't think Francesco should be listed here. Although he wrote the 
-initial implementation, it's yours now.  Maybe list him as R: if you 
-want to.
-
-
-> +L:	dri-devel@lists.freedesktop.org
-> +S:	Maintained
-> +T:	git https://gitlab.freedesktop.org/drm/misc/kernel.git
-> +F:	drivers/gpu/drm/clients/drm_splash.c
-
-This patch should be merged with the one that added drm_splash.c.
-
-Best regards
-Thomas
-
-
-
-
-> +
->   DRM TTM SUBSYSTEM
->   M:	Natalie Vock <nat@pixelcluster.dev>
->   M:	Arun Pravin <arunpravin.paneerselvam@amd.com>
+>   Contact: Harry Wentland, Alex Deucher
+>   
+> -Bootsplash
+> -==========
+> -
+> -There is support in place now for writing internal DRM clients making it
+> -possible to pick up the bootsplash work that was rejected because it was written
+> -for fbdev.
+> -
+> -- [v6,8/8] drm/client: Hack: Add bootsplash example
+> -  https://patchwork.freedesktop.org/patch/306579/
+> -
+> -- [RFC PATCH v2 00/13] Kernel based bootsplash
+> -  https://lore.kernel.org/r/20171213194755.3409-1-mstaudt@suse.de
+> -
+> -Contact: Sam Ravnborg
+> -
+> -Level: Advanced
+> -
+>   Brightness handling on devices with multiple internal panels
+>   ============================================================
+>   
 
 -- 
 --

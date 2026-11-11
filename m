@@ -1,102 +1,102 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794410866;
-	b=0MHRhe5UjTKjjyOvGcP/Uju8YD7pLj4wGQlNcHyam30fCARxzi5SaPtvCv1cvR3yhTTX
-	 B0g4f088gWT6WOW1hJ8YD/ECZ+3zTtTPJpuqIUHm3TBYqNd2jwMVtSTcufyCrs0GtaFY1
-	 NEnMqORrLipubHyTzy09Pu9te0E31uoxH1DCmcb6/Oqk9VFv1X6qprKVMv2gSY22D5b7K
-	 DdGTLCjiecs2pHsOa3rdx6sX370j4F6pMHvcvHPbe5FRuTnB6lnOtzIBJUY3eTyTJOhwo
-	 AOg3hvP184d/pEv59kLey+kr6NVMuzG85+vd0MYo0fwTm/8EFVFQB7U4vMq7/DWMp/Q==
+	t=1794411167;
+	b=OKjP9N8kJ/3ZRzia+h9SYUt4OcEqjJz8dFE//0tcChPdDWCiRKo+MfN5AMUTJBT3VI2G
+	 rpR/58skJ32hr10t+2bItB6ob7Bhe98mSAglaVNpVVpBoAPF79odqG15Y1C8FgkrOpuTe
+	 IQhrZxB8aCXBoTkwGjWc3JbCICpY/kX8mIPfmwvqZZGSP5TodNcihGLaZ+xtrb7986Spd
+	 8OVKhnkvoOq1SLhuZCIiBwbVEHMY/ujc3Ls2bH+hTpbtj1EKIOjucG3nBAH8UqqsvfbRs
+	 fk/QVeONgV46smq445f+nTc25XPKE0r0lk16eJsX5UavrcgHE/fDUSUGNI5pRrliIAg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794410866;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794411167;
 	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
 	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
 	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
 	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spam-Flag:
 	 X-Spam-Level:X-Spamd-Result:X-Spam-Score;
-	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
-	b=4x3wCKxvlNn7WcLtt29f6Ws+n0vSZxRV7na3eowfB3bpJCH51qUuHhOVnitpUCmUKfBo
-	 wzwEqL07NP/wMs2NbijCl4TkBYHWDKg7o/JU3jFmQ+MPPUC3iAF5//V5EeRPnyt+weXoT
-	 NWfkCTXIVv4NLbVnBQwIAxbmN/RTvzDAmH15vFedX0vEXwRhmGfsr3GJZ8Y0Z5tx7qff7
-	 MGJhziNDuNjUuOJerdz7JtXTMz5NKrhk3O+UU+UM7InE+OEBZtLa/OHkERzhg3O1kcpRv
-	 F3YQCZbh42M/XA0EE/cy75jSVgFdmyoM2MDI2rSbE1vgnMTFjMfpF821T64FZkJLWaQ==
+	bh=0QX7Nn84u4s0DnwYMDSu32uRZsi//MdgfufFu6UTqA0=;
+	b=oW2oePIVMpvmgLR7kolZOXxODPLhfbq5G4G/DPiGFWt/uh3OYfazvpwyaJ/Mp4RTv5qY
+	 unxnetygms9an71WqqmGWChUQ0cU4xyqV4Ep2BrFCyeM2qYwAREVeK9Q4Y6/tgdQbbLq7
+	 r3nJx2AQYXWgDThmFlvyTvvVHr2Xu/WM4o3w6VKscwQ0lHUXzQ5iARcZJQez50WTa8J1D
+	 gNEMrHVsaKb2WP8C/z6ATIhSPVSG9DX4+a3hvTq/a5+FVwU0ocvL5NlRXtmzi/uynaUVf
+	 4sJrCWavy0b20OSEj81Rb9J6jddkeCM0tXKOVHtBCDRu8WwhEa6CKSCgCHJu9shE2pg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=suse.de;
 	spf=pass smtp.mailfrom=suse.de;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=WgbuyfLb;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b="bk3uCg9/";
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=WgbuyfLb;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b="bk3uCg9/";
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S987N5Xs;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=s9WDYQY+;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S987N5Xs;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=s9WDYQY+;
 	arc=none smtp.remote-ip=195.135.223.130
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4B7FD606A896;
-	Wed, 11 Nov 2026 15:27:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4B7FD606A896
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84A5E606A324;
+	Wed, 11 Nov 2026 15:32:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 84A5E606A324
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=WgbuyfLb;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bk3uCg9/;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=WgbuyfLb;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bk3uCg9/
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S987N5Xs;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=s9WDYQY+;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=S987N5Xs;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=s9WDYQY+
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 4A09521E4F;
-	Wed, 11 Nov 2026 15:27:43 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id AA9C721EA8;
+	Wed, 11 Nov 2026 15:32:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794410863; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1794411164; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
-	b=WgbuyfLbyTNIoBH1d569fOiXWoXyaj0c2T1juvQzh0RoLL15mkv9GAt/WrLsnJDU6nsoNr
-	PBkICJlQqHIVsRSyjNTAbM8d6jhPm4kUJuIU9rgS+BcBp5IncMEnYNC6bTA4sxHR34BS0+
-	vOVSdruLLjIscjZfOpvY6ciPyz1U2SY=
+	bh=0QX7Nn84u4s0DnwYMDSu32uRZsi//MdgfufFu6UTqA0=;
+	b=S987N5XsWK2X6//jsNSWKUmEbdvyx7490xFLwWQtcW3BW+Y7DPovDD/aQPd2UlwA0v0Zpp
+	dPXDEcLZwe1tvxT/ww+fxNHPZW0u/hP2oP96sa7JuyFwKzwG+hxELdmEQTUjc86l0Y94/U
+	ChPYzDQf3qhaJalWmHPnRyuLEfcGcEc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794410863;
+	s=susede2_ed25519; t=1794411164;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
-	b=bk3uCg9/sLfhxUUKldgXxz4WSbgT0nypyn0on6HYozQOp7jsxzALFRowT54KFQnvoJjdiQ
-	x16o98WVJ9DtpUDQ==
+	bh=0QX7Nn84u4s0DnwYMDSu32uRZsi//MdgfufFu6UTqA0=;
+	b=s9WDYQY+f+6araYdRSy/SwbNb8i3TlWvODYlvROUxJVBE3C84zDV+wERB7nD66LozH0tOd
+	2y6hNGeoeptzqlBA==
 Authentication-Results: smtp-out1.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794410863; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1794411164; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
-	b=WgbuyfLbyTNIoBH1d569fOiXWoXyaj0c2T1juvQzh0RoLL15mkv9GAt/WrLsnJDU6nsoNr
-	PBkICJlQqHIVsRSyjNTAbM8d6jhPm4kUJuIU9rgS+BcBp5IncMEnYNC6bTA4sxHR34BS0+
-	vOVSdruLLjIscjZfOpvY6ciPyz1U2SY=
+	bh=0QX7Nn84u4s0DnwYMDSu32uRZsi//MdgfufFu6UTqA0=;
+	b=S987N5XsWK2X6//jsNSWKUmEbdvyx7490xFLwWQtcW3BW+Y7DPovDD/aQPd2UlwA0v0Zpp
+	dPXDEcLZwe1tvxT/ww+fxNHPZW0u/hP2oP96sa7JuyFwKzwG+hxELdmEQTUjc86l0Y94/U
+	ChPYzDQf3qhaJalWmHPnRyuLEfcGcEc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794410863;
+	s=susede2_ed25519; t=1794411164;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=6TN6yjKbmGix2g7qh70eyQ59/AYGmQTZVJ4mri71SHM=;
-	b=bk3uCg9/sLfhxUUKldgXxz4WSbgT0nypyn0on6HYozQOp7jsxzALFRowT54KFQnvoJjdiQ
-	x16o98WVJ9DtpUDQ==
+	bh=0QX7Nn84u4s0DnwYMDSu32uRZsi//MdgfufFu6UTqA0=;
+	b=s9WDYQY+f+6araYdRSy/SwbNb8i3TlWvODYlvROUxJVBE3C84zDV+wERB7nD66LozH0tOd
+	2y6hNGeoeptzqlBA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C608D1339F;
-	Wed, 11 Nov 2026 15:27:42 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2DB441339F;
+	Wed, 11 Nov 2026 15:32:43 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id CzTPHW6J9GpuTAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 11 Nov 2026 15:27:42 +0000
-Message-ID: <1b37c7d3-f8d0-4023-b0bc-4770ec2b17d6@suse.de>
-Date: Wed, 11 Nov 2026 16:27:41 +0100
+	id oBajMZuK9Go7UQAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 11 Nov 2026 15:32:43 +0000
+Message-ID: <57163572-846b-476d-9a90-f28d82598eec@suse.de>
+Date: Wed, 11 Nov 2026 16:32:43 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -107,19 +107,18 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] fbdev: simplefb: Add mono framebuffer format
-To: Helge Deller <deller@gmx.de>, Sebastian Raase <linux@sraa.de>
-Cc: Hans de Goede <hansg@kernel.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+Subject: Re: [PATCH 0/2] Add monochrome framebuffer support to
+ simple-framebuffer
+To: Hans de Goede <hansg@kernel.org>, Sebastian Raase <linux@sraa.de>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
  Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
  Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, linux-fbdev@vger.kernel.org,
  dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
+ linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>
 References: <cover.1793758480.git.linux@sraa.de>
- <6c207278c23d11f2c17cee383d422c3295cc7d97.1793758480.git.linux@sraa.de>
- <16220356-767a-4f1d-9b24-5b1f960e04cb@gmx.de>
+ <ae6f7b88-ea9a-49f7-a3ad-ba90185528c2@kernel.org>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -146,7 +145,7 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <16220356-767a-4f1d-9b24-5b1f960e04cb@gmx.de>
+In-Reply-To: <ae6f7b88-ea9a-49f7-a3ad-ba90185528c2@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Spam-Flag: NO
@@ -159,17 +158,16 @@ X-Spamd-Result: default: False [-11.79 / 50.00];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
 	XM_UA_NO_VERSION(0.01)[];
-	RCVD_TLS_ALL(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[dt];
 	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[14];
 	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_TO(0.00)[gmx.de,sraa.de];
+	TAGGED_RCPT(0.00)[dt];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	RCVD_TLS_ALL(0.00)[];
 	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
 	TO_DN_SOME(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,linux.intel.com,gmail.com,ffwll.ch,vger.kernel.org,lists.freedesktop.org];
+	FREEMAIL_CC(0.00)[linux.intel.com,kernel.org,gmail.com,ffwll.ch,vger.kernel.org,lists.freedesktop.org,gmx.de];
 	MID_RHS_MATCH_FROM(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
@@ -178,30 +176,47 @@ X-Spamd-Result: default: False [-11.79 / 50.00];
 	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url]
 X-Spam-Score: -11.79
 
-Hi Helge
+Hi
 
-Am 11.11.26 um 00:25 schrieb Helge Deller:
-> On 11/4/26 03:34, Sebastian Raase wrote:
->> Add a new simple-framebuffer format for monochrome 1 bit-per-pixel
->> framebuffers. Monochrome framebuffers are not true color, so their
->> visual is set to FB_VISUAL_MONO10 (set pixels are bright).
+Am 11.11.26 um 12:15 schrieb Hans de Goede:
+> Hi Sebastian,
+>
+> On 4-Nov-26 03:34, Sebastian Raase wrote:
+>> This patch series adds support for monochrome framebuffers (1 bpp, packed-pixel)
+>> to simple-framebuffer.
 >>
->> Signed-off-by: Sebastian Raase <linux@sraa.de>
->> ---
->>   drivers/video/fbdev/simplefb.c         | 2 ++
->>   include/linux/platform_data/simplefb.h | 1 +
->>   2 files changed, 3 insertions(+)
-> series applied to fbdev git tree.
+>> Monochrome framebuffers require far less video memory and bandwidth than
+>> 16bpp or 32bpp framebuffers, making them useful for small devices or FPGA
+>> implementations.
+> Thank you for your patch-series and I see that Helge has just
+> applied this to the fbdev tree.
+>
+> Have you considered also extending the simpledrm driver to also
+> support these monochrome formats there ?
+>
+> Most Linux distributions now a days have switched from using simplefb
+> to using simpledrm.
+>
+> But I must admit I've no idea how well the drm subsys / kernel-mode-
+> setting API handles monochrome formats.
 
-Isn't that a bit premature? There's no use-case give; except 
-because-we-can.  And doesn't it require a review from DT maintainers?
+Only kind of. We either support it natively if the compositor can handle 
+it, or we convert from XRGB8888 to the internal pixel format. But our 
+helpers for converting pixel formats expect 8-bit per pixel at a 
+minimum. All the drivers with lower pixel size do some kind of 
+workaround. I'd love to see better support, but had no time to work on it.
 
 Best regards
 Thomas
 
+
 >
-> Thanks!
-> Helge
+> Regards,
+>
+> Hans
+>
+>
+>
 
 -- 
 --

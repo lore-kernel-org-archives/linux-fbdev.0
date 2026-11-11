@@ -1,100 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.41
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794412976;
-	b=ZJyCxtwhlM7D5w+vIA1qlC9LJu+XJTDA4nQ/bQL7pJRtJC7sQkbV1OAmIBBuSmSuxXSx
-	 g2MyL2MdexZ6yxPpwBclwWvjA1dqPZFb1KjUXiKWw1DI+YaAhkGzuteb6cLBH4Rs7fad1
-	 bSrEUYxB6bF64jWg8Ky+gdSZNTEiUkgvSqP252o70PprOG5i13/cKtkkbK0NPfmyD0/1T
-	 LiaIwoBWtSwEWryfdkEb4Z5PailYGQ4x8K83WeNlDbjlNezNuGP6vDd33b+akb6POwtNG
-	 XewjxX0sIz8Jx+DjoeYupS6Bz32f6ooNAQSi+H+Y5IXnvq3UfpvWzljQybnyF1q3vkg==
+	t=1794414161;
+	b=4gDL884THnqskFodOgUR1JUvgrDKP0iT5/XeZbagj72aLMc/MVV0PlBb9Vg7SZmGSB/w
+	 8YX7Y0nxT2qZyHEjS/Rbx1+BkTgNBWC5ujVsAXCGALcM3Gc5AT0wv/CSlJbCurZiFDJ0N
+	 JafK2qmCm6cryXav6VUNVupZ0x4aqTwR0B3Pk4dA8sZoUcb2Ao/GYKtXo4WBnoxcWUEXK
+	 grP8CPL62LSG/uzKMmHyRsqQ3cN1EGTZ0xkbIYjDbsyPCekeYTBdzj1F9k1/6q6hSIWZI
+	 a+RP7G8369HBeMLJXh0H/j/itTrRhuTbfgRdDk9kzBMwakmZBBn9qT2UQ0YRvEaMxAw==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794412976;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:
-	 MIME-Version:References:In-Reply-To:From:Date:X-Gm-Features:
-	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
-	bh=1MTb6+K+DiWbXH5syUxf48Q0aYKAf9KtSh4KBDlK36M=;
-	b=3OMb9LSOYxIu+LJFLGj5ihz7XipGCCvg7dTkZI5a50NksIUmG4afNEwzdzzpVUELAHfj
-	 4uYZ1TTsrwRTEllTS6I2FWep/HlfyLn6r2uPZsgTiuGwAODxbfUd08WFlYTh+TO8Cwk6b
-	 atmD1Zi+kkjmviFyem8t8INBmMfFptVHFUbFefq6RpvxBWPgPzWegEptelUilgNcZEf/X
-	 7ikzZ14gKU3hh6bxoCxevCkFT2rzcXyJjjGr1ufuTCAQg7YlzliTUO9WD1zrzIQmA44Pj
-	 8N8vi+b43CceU/7U8yJ/TQwiZlGiTpWiiW7sUDYBGVBBy0MWwDquSYN4Q+PuHUGCh2w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794414161;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=Or8nTk9ZVbnrA4q914nXGUz7qMvSQv0pWk+CqcMXwjs=;
+	b=nZsR4w8hGaXY3Xi1Xg+KERIQOP/sUBW2HDdu/wfmBtuZPXS7dhwYERckCJ+ZTUY0I0YD
+	 KsdsPdzomZ+jeen7e6Qsm9Ur5E28jfvA7M2PclCvLaLo/AgH2Hue5IvYPweYtZbQevJg2
+	 d2U6YmqQ40f6m2Y8teHcpgx9WTnNBo3+Loms11kb408EahI0fKV4u5fX6SrSfcHYo0BU2
+	 1qtxu0lY1BNt+4OnoL1udJ4YyjmWxq9vnOqqUUyoqOsKap6IJRvvzm+tVyFD22skj210g
+	 KI317YC/giw3K79aoA5BsXz/jvhDJMBQEpi3MyfqBT8qpVjb8XI4ZtnViSBZ+ONepwA==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=FKJ9UTQl;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=74.125.224.41
-Received: from mail-yx1-f41.google.com (mail-yx1-f41.google.com [74.125.224.41])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q08v406y;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9C2D606A326;
+	Wed, 11 Nov 2026 16:22:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Q08v406y
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1794414161;
+	b=ByNQdC/EqbSzhaAJ38QhFeeBItwVbLOXQjUw1E1+pTB4ENy98bTQWcOsIvkf2hYFlYs8
+	 MmNVZ/FC3pxM9/5rQ6E60wxX5xMslItKnotEjoOy75pOQtGWL/uFb/TfH7kvRs+bJBT0h
+	 F4twscc1P1+dfdQTJoOpHMpf76227nR3gW1fI0bJGVKnVFk9oAVhl71vMGez5odIbX8lL
+	 E7R2/ZlATqfYp8G32bJJkR+GZZNULNLasBYz1NBIbw2XBOmes0OR5XYzyXK5+ZRaXcVo9
+	 9YF0ibT87/n+RiEtkwWnqGVT4/JYGrbhfW9En7jEwgFoBkr6plG53qpypTCaewSA8Qw==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1794414161;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=Or8nTk9ZVbnrA4q914nXGUz7qMvSQv0pWk+CqcMXwjs=;
+	b=MuldGOrQa4m3dio/LCKKeOpODtAcAM00vJVO3kwx/BdkW1wVvX0inkPMqZ5tgBVY3+KK
+	 KK3CILlwC8PPhMhSTdwlsJrvXg5OQU5N34miu9dkIwGTQHKbn7m6hBmN8Vs91M2K+euWl
+	 MPvr0iJ0yGS7UXLqSXfbBX8xLr6Ap96ab+BCHr3O5D2rBaojLHQ8/tvJI3hzZBQP31QKN
+	 kKaZT7INP2mrEciqalLOtQSFQ8LOnuadWF2PRTySJfennQK7M7dYIhk3SbmECHSY7PbHm
+	 /dDaF6Fzl9kWo/DW5oFGZ5GNmdwOTMwKvhC8A/y9S7oABcj35iKN0kVAkCdXnZtU25A==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEB13606A331
-	for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 16:02:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AEB13606A331
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=FKJ9UTQl
-Received: by mail-yx1-f41.google.com with SMTP id 956f58d0204a3-67bf3c6654fso3851105d50.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 08:02:55 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794412975; cv=none;
-        d=google.com; s=arc-20260327;
-        b=B5Wp3Kdi7R7ulTXp8vbaI3S4UVFkSTf/1nNU6L9I4567mMDplOphE61I1HDp8Duw5I
-         di1tGl4N4c0x1BOafohsAh4l7Ra4E62m8qZ1SAFiIVga5uZEFgp1HTKV2SQnVREOdkzc
-         X6RmOzwpMppqMEcb51DS8Kwc/PGYlWyy7k/1sIXXoV6MyKaO46dXkIF53Wyc670LX+BE
-         uhhBW7KsisnsGVhKix/h1aw+s0ZzLnjJTM99g84XbInneeehq9zi36CjbDeJnDj0u/9Z
-         YY4YVIC5jHfTWXkGfO3WplSM3LRHmNN+atclyG23sosyStTBd0YFaFHW4ObqNoj1ficE
-         Ef6w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=1MTb6+K+DiWbXH5syUxf48Q0aYKAf9KtSh4KBDlK36M=;
-        fh=eAIwHuxSYHo0iCoo8LSggRBxBV07mZQz9mZFz9XhcuQ=;
-        b=c9ooLPaH8fh3Wvq6BIEFSR0Jz9IPdWzcOPqaPAanhicFWkCzJgxuA/0basnfnlv2Tv
-         UBXb4MKTtXk3+PlzhQfq+Ddyk475+bYpuxErTl0dHki6JlwZGbUToiNi6al99edCG6V7
-         +/49JtszLendVyRWm4Nkbw8moFYqUViagXRoczYJ8BMMdB48NL/VYJPgJ3xYMyONVr8U
-         3P/RA73NNd9jhvHQzWyeUl0sddpfPKO7054QHMyQ8Yp5hDVBk3BC5yvHj/t/GUtxOy6C
-         GR0WqyaasagK6DQa8hfG8Jr+0VG2uUL7Lag7PE7Zd/QjAPtuWhs6HYfkmsbNZCvUg1/r
-         4Dow==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794412975; x=1795017775; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=1MTb6+K+DiWbXH5syUxf48Q0aYKAf9KtSh4KBDlK36M=;
-        b=FKJ9UTQlkrpHd8aeGx0d+LfMWpdS3QS9TXfFNCiStn36JKFVzAHmMK4DgPyjQLCbxe
-         4Yy85tuKfsUxjhpsot4j2CyPm3bwTG7QcrgIW9oNa+8BJQfCzFg5VnxmLS7y6oJvgBfn
-         VaQKBuTMK21izUqJTD5060QhtlStG7L2P83NhZ6t3CLaktB0l0oYDHStXijKSIMgJ940
-         5DTHy5VKDa181kLWtuC7tm//wjmNVhoLdo8diOMuOIxd4PSR83PPwqHIsOHuNfJ/VD9K
-         IQDRdXrELU4dQZOw81p+yE3KAeHqlrCgocrjVYrPYM/pxE9xgbYVSFnE9YchtIdy4j17
-         lnoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794412975; x=1795017775;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=1MTb6+K+DiWbXH5syUxf48Q0aYKAf9KtSh4KBDlK36M=;
-        b=nv9R2iJtyEberF5KU00hDPxDtZruBQw2eku6Ouv8DVx60gbDWVBWbo5tEIN+KTXOxS
-         bQdAZhCCuEhfFDYQHWMeT90c4mElCYgtgPuxYRdHcwqFdHbHjsNFR4UuCy8VwjlwfQDy
-         j2pK/mzlA9TqwfIBzcmd6kBRNrLBxZJ4ZwkCSssJda+FVppOr/spW7NVhYaRO9ebQI1/
-         c2+4f/gtrVtzaVrgVNdV/FMRTJCJShI8vq9bEVlalX8jNJYAxYJvv4qv/ucU6DL67GJl
-         PvuOanAlnB6/zU+FsOrPl7jXJZ0NZYRk/8aGyO7l564sllKdnhZ0fkE4moE+x7s8Lqjm
-         lUiA==
-X-Forwarded-Encrypted: i=1; AL+hErHGVACCI6mbvxpLKT4CmEEwePKgSUMm9PW6oKVD/q+9g84jA/Qg1QB2qhMjUeIVzwzfC/ZqdHlkGaxdmw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8eNSBPB7TUShFfBXuOVdyHDuM43VsvpH6ZWQ6Y3r33/IN2r45K
-	cdSUAwm7yNatHxcAK7QY/0c8Psy2fVm0nzNJLCgiRfDZez7d5esYkTbF4CiMfN9bZiLdWBuci1t
-	l/XrXo/ZHW0XICPQBwYj4wzfChP3UDkQTp2khBBE=
-X-Gm-Gg: AYBFou1mWPgzXQiAO7IFNKDuqViM6tRw6hzbS8CgDRWqWDCHGpns8skK9sWzhzDU9xV
-	gXu1zIxnxoZVBPfoLIHRucP1krOax3O1WHElFtv+iSAiltxcPk3A0CTkvZGvGMoS4V5XvP3UnZR
-	0kxwGgwhboTQuLr6mxo0WV85RX6gbXeXyDKi69bhY9CAimnAq7CAHECNsjy+QjeqRmdG8vveOiZ
-	B7QYGrXCyWzXx/lXx3MkTelPojaD6x/8eAQcrAG0TvfH3tN/rs5Vi6bRtYLORky15oO00MlIg/r
-	TiSE9cyQX2Uf6DgSwzt+T3ZQOi3u9pZskl0/GoQdnCcy4jT+mCy/D2e6bf5kY64X+hjfY3mnvHR
-	16bZrdirahNTIcH8Tdib/WVOSg3odsTAwMZuv7DffM343tsL38D06bOmIaJmMZAUAflRnVg==
-X-Received: by 2002:a05:690e:169b:b0:67c:33d9:7927 with SMTP id
- 956f58d0204a3-67c67cb7cd5mr1503453d50.12.1794412974424; Wed, 11 Nov 2026
- 08:02:54 -0800 (PST)
+	by smtp.kernel.org (Postfix) with ESMTPS id 3C6011F00A07;
+	Wed, 11 Nov 2026 16:22:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794414161;
+	bh=Or8nTk9ZVbnrA4q914nXGUz7qMvSQv0pWk+CqcMXwjs=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=Q08v406ybvKmpgk6WUkix9yHXCBI7SXdsFN8x8vFEuT/7r7MqXnISqLOZahZWdpLR
+	 k/JLyctbWHsjRESICChCnBg2FGBKpnZw2uXWD1jYdPI0dMThCAni36/CipzBBjqtNy
+	 bHS81FUSnkyqyjKZBP1t5jbsOdsfoqmiOJX9lJUE4/cnLMZ1TC5+HG7SUoUGHerIcx
+	 TB/ribWc7yV8LqlJTaz6gfSzm6GmGMOrx9zbOCJ4frsSU4vocdOp3KbvDRdDaTYcsE
+	 IewA5TOz2FTyeoXLcsNLK4YDSP7UpfobKsWBadibAHKys+0xhxzKi7nm/S3MgW7aq3
+	 jmMVeLww4UgyQ==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id BC15749033;
+	Wed, 11 Nov 2026 16:22:40 +0000 (UTC)
+From: Michiel van Beers via B4 Relay <devnull+michielvanbeers.gmail.com@kernel.org>
+Date: Wed, 11 Nov 2026 17:21:41 +0100
+Subject: [PATCH v2 1/2] dt-bindings: backlight: lm3630a: Add
+ led-max-microamp
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -104,38 +83,86 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261107-lm3630a-led-max-microamp-v1-0-ec9e441d9b2c@gmail.com>
- <20261107-lm3630a-led-max-microamp-v1-1-ec9e441d9b2c@gmail.com> <20261111-cute-impetuous-otter-0d70c2@quoll>
-In-Reply-To: <20261111-cute-impetuous-otter-0d70c2@quoll>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261111-lm3630a-led-max-microamp-v2-1-aff11756e7be@gmail.com>
+References: <20261111-lm3630a-led-max-microamp-v2-0-aff11756e7be@gmail.com>
+In-Reply-To: <20261111-lm3630a-led-max-microamp-v2-0-aff11756e7be@gmail.com>
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+ Griffin Kroah-Hartman <griffin@kroah.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-fbdev@vger.kernel.org, Michiel van Beers <michielvanbeers@gmail.com>
+X-Mailer: b4 0.16.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794414160; l=1951;
+ i=michielvanbeers@gmail.com; s=20261107; h=from:subject:message-id;
+ bh=cVMp5TfdJqEv4/BLWzYSV7umn1bMpBqTXaN1LwgWfA0=;
+ b=sKRGK7iQM4/JTa7sbXtUPCIl83y0BsZndAyrc2ZqLpu30HlBCBHiNfTmmr5Ca16CUyCW4pKJC
+ 4mZbHc/UG1lCDNOsiZWu8H137CPjB7L/RUE5JJ6KxfoXzMkQS5NB4+h
+X-Developer-Key: i=michielvanbeers@gmail.com; a=ed25519;
+ pk=C+lOje7u3+2x3o2NLMXrwz2veP2++eXfIi9MtYsUo4k=
+X-Endpoint-Received: by B4 Relay for michielvanbeers@gmail.com/20261107
+ with auth_id=1444
+X-Original-From: Michiel van Beers <michielvanbeers@gmail.com>
+Reply-To: michielvanbeers@gmail.com
+Content-Transfer-Encoding: 7bit
+
 From: Michiel van Beers <michielvanbeers@gmail.com>
-Date: Wed, 11 Nov 2026 17:02:42 +0100
-X-Gm-Features: AclHuK-qKY6zTrJn_1i0uQfpLRmaZpJ8hHHbOyKs16JHL3o_cT2giJuDjxuxfRc
-Message-ID: <CALcvxfH8N554Pn3uN+cms5zuq+LPGj4rnV39-5G3G9yzhXTfgg@mail.gmail.com>
-Subject: Re: [PATCH 1/2] dt-bindings: backlight: lm3630a: Add led-max-microamp
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
-	Griffin Kroah-Hartman <griffin@kroah.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 11, 2026 at 2:04=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
-g> wrote:
-> On Sat, Nov 07, 2026 at 01:13:54PM +0100, Michiel van Beers wrote:
-> > [...]
-> > @@ -77,6 +77,14 @@ patternProperties:
-> >          minimum: 0
-> >          maximum: 255
-> >
->
-> I do not see in this node reference to LEDs common.yaml. You need it for
-> any common properties.
+The LM3630A has a full-scale current setting per control bank, from
+5 mA to 28.25 mA in steps of 750 uA. Boards whose LED strings are rated
+for less than the chip default of 28.25 mA have no way to describe that
+limit.
 
-Thanks, I'll add the reference to leds/common.yaml in v2.
+Add the common led-max-microamp property to the led@0 and led@1 nodes,
+and reference leds/common.yaml from them, where that property is
+defined. The property is optional, so existing devicetrees remain
+valid.
 
-Warm regards,
-Michiel
+Signed-off-by: Michiel van Beers <michielvanbeers@gmail.com>
+---
+ .../devicetree/bindings/leds/backlight/lm3630a-backlight.yaml  | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+index 6393cbf3afdf..92a7236eae1b 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
++++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+@@ -42,6 +42,7 @@ required:
+ patternProperties:
+   "^led@[01]$":
+     type: object
++    $ref: /schemas/leds/common.yaml#
+     description: |
+       Properties for a string of connected LEDs.
+ 
+@@ -77,6 +78,14 @@ patternProperties:
+         minimum: 0
+         maximum: 255
+ 
++      led-max-microamp:
++        description:
++          Full-scale current of the LED strings driven by this control bank.
++          The LM3630A sets it from 5 mA to 28.25 mA in steps of 750 uA.
++        minimum: 5000
++        maximum: 28250
++        default: 28250
++
+       ti,linear-mapping-mode:
+         description: |
+           Enable linear mapping mode. If disabled, then it will use exponential
+@@ -112,6 +121,7 @@ examples:
+                 label = "lcd-backlight";
+                 default-brightness = <200>;
+                 max-brightness = <255>;
++                led-max-microamp = <20000>;
+             };
+         };
+     };
+
+-- 
+2.43.0
+
+

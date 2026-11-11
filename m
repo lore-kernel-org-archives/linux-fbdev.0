@@ -1,47 +1,47 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794398979;
-	b=rImcTo1UIGi+KBDB32N0+Vhufb9jPEG3zgOSyCEnJvank7terQzCPVidYxhA6LGziRAH
-	 Mj/Ffvd3i+B8hRtWpvKfrgjjclrCFWVZcjR4tPz49iWP+Fehz8btm5PsNVGSiF5w+q+gy
-	 +VGteRwW1cjvHaKWbq4DH+G/UmzK+cBOq0u0+V1YnpoCJURtnVSofAyIC/w82pq4tYi3p
-	 5JzYm2XqKe/XyZqUBWNDEtKs0bTdFs9JIRhN7vRgz591jjEcyA44KxPhm2S6NV8F5Y6dA
-	 l+yrofVReUc2u29OL5Tn+8dGJhS6GpmvKPjmZhqso37NHHmcc9J6B03XelxaQ48HTYA==
+	t=1794399081;
+	b=Kxw65J6oJPiJan8IJKQPoo15hZfRx/ZilrAPUVRV7dfO6EFFK6RJ0WFGMgykHLGw2fqt
+	 DenpKdnmuiwfyRk44f6cqPD3B7GQZOwP99OnjkyM6usSNsK/lWjFAkEl2d7vHZptw/JQi
+	 kRItnfbp4QCU60aBksIWyW1BxkbCqhldm4QB+fZlTAh2y0Tea5q1jXQnYela/+oJA1tPx
+	 T3Nj7Xra9bS9Fz3uOza3WqJL714Qw20SrGfLhOFcnYKbGIq/hHE7hfW9MFX4WoY5gFtOy
+	 vViEIrimLm/eEdDECLy2w0aaiaM3SprEHZaIjaI9AxiYSQQgbcUUnpeYWgZ2KDSK1Fg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794398979;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794399081;
 	h=Received:DKIM-Signature:Message-ID:Date:MIME-Version:User-Agent:
 	 Subject:To:Cc:References:From:Content-Language:Autocrypt:In-Reply-To:
 	 Content-Type:Content-Transfer-Encoding;
-	bh=HhZP7zksOoUrXQRIQFpRDpvrEab7emEyW+OIYJBWPY4=;
-	b=dj2xfdG7yVmMLFqPHynrzUC3brELJt0XtG3GxuA/en/yynUKnREGH2dZ7mXyAhJsm07H
-	 UFHvPhwh+5Dc2qex8d8Ov28viedG1idSWunIoN7f3/gpzOmrTLneXjairAS3IRYADchn6
-	 845OTMK4AwW68j8i7/EVa9/PtqIApbeZlttjfQFr+8Ap6fAtdycgurY0WSrXY7ecdtN8Z
-	 sxXoTXgz0BQq/d8x4Uv2b3lttjqaL5flty9oZSWA74M/wzsTeKme4xcRQ2RQQKkzgU1o5
-	 5p7JaHYtbNc1nbHxlyw8DO5kOL85Lnq+dnjLYlMXcFQarUNovdQNEoISIVd3T2paqug==
+	bh=gmPR0FedAKJql2EJ2Bc62+0bi0fawdbdAWLRYaD0g2Y=;
+	b=MM7d3Yik8FTmm7tEzxxnP1B9nD0lv5aP8AfnCsUxQnRvZXle06mBi6ZFtpinhthjB6nM
+	 TMApwMkQ0qx+jSypD/FNSL0BK32Kz9WVrmigczYgCpUqIs+kniS5zotMG9qB4sP0MJy9W
+	 mHq3xZFjhGzYqgEy8SADNQZyusUdUAhLjOqDu65PaKlTmjbzkuji6eZMoecs/dwrNDdOp
+	 DxLjqRxaNlHD1/Ou/Nz5gwST43jwoRhTOy96M0rDYgxMKjP/vYNQrAMVnCgX1tPepTHta
+	 glejvqBpz5MC4kSSkzIrs/s3rlFprOkNgbaA8QzRiLbJez2WvE+MlJOrxN2dBW13Hpw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="gsWeMG5/";
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lCPWC5Pq;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E03AF606A324;
-	Wed, 11 Nov 2026 12:09:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09C78606A31C;
+	Wed, 11 Nov 2026 12:11:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gsWeMG5/
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C28241F00A05;
-	Wed, 11 Nov 2026 12:09:33 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lCPWC5Pq
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E562C1F00A05;
+	Wed, 11 Nov 2026 12:11:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794398978;
-	bh=HhZP7zksOoUrXQRIQFpRDpvrEab7emEyW+OIYJBWPY4=;
+	s=k20260515; t=1794399080;
+	bh=gmPR0FedAKJql2EJ2Bc62+0bi0fawdbdAWLRYaD0g2Y=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=gsWeMG5/ywFr2mL51mL3wLR+c2jOF1/Am9q0tyEUMnJRmOcsTAmr8pL8k+eHViP0e
-	 DAhiCoOC7fXr1fbsrN6Uo8ILLOgHQ9yyXa7+KWFsiNixhWWQ/0X3vQlIYoVq+YyLOu
-	 IrALJ1NTmcH2NyP9pbp+1L7iBPrXOYRMKCXLt/IJp7a4ksViHaA1aNVrK4qGXI7YDD
-	 GPZr4TcDgKQti9CoPYPCgXwIz6608mKxWqqb7tdUJt4aQc9CD3fHEk2al6xfNwlMR6
-	 Nnlm20jlXbcjqy3FjPJqXmdDg9zd6jLpY5yyjOxDULu+v9aVzhik3cnmcDLgSlMIWs
-	 eIDZykVdcE9Jg==
-Message-ID: <46f9bd7e-8964-403f-973d-ac8d84c5bae7@kernel.org>
-Date: Wed, 11 Nov 2026 13:09:30 +0100
+	b=lCPWC5Pq9tGP1K5OOhOWJqUNfy97tqlliU6Otcd3NMRkYYdgC4+8EyPAbPQ/XaUyb
+	 /7CKBi3ORoD9RCr0BO+XFTourHZcbwhgNLROkHFlifvUWVQsz3tHTCeQDJZiKb7EOB
+	 7s9iJggT33t9RfiD0aPhwBjvzLkF8VDptrApobg7FH0Un9dPcWutSGaw5zPl3gsBDO
+	 kpXyFaqTu7qEpBFYpXR53vG/jH9NpMbR9QfC0hmU+L/zKftTfPuk4RLd4Tfld9JLyb
+	 REDDz9YT00h7in1QvvGySbSccbRf5FlkwnE9YkohiI4RA50UBWpGl09kNcgnBN9/jx
+	 dVSnevpw3hlmg==
+Message-ID: <3bbc1c1a-0435-4cde-a1a2-a408bd7a794a@kernel.org>
+Date: Wed, 11 Nov 2026 13:11:13 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -53,7 +53,8 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 1/2] dt-bindings: leds: backlight: add Kinetic KTD3137
-To: Daniel Thompson <danielt@kernel.org>, rva333@protonmail.com
+To: Daniel Thompson <danielt@kernel.org>,
+ Roman Vivchar <rva333@protonmail.com>
 Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
  Pavel Machek <pavel@kernel.org>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
@@ -64,6 +65,10 @@ Cc: Lee Jones <lee@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
 References: <20261102-6768-ktd3137-v1-0-b5b4f903c56e@protonmail.com>
  <20261102-6768-ktd3137-v1-1-b5b4f903c56e@protonmail.com>
  <aunqGVkX7-Y61iDA@aspen.lan>
+ <_kyk4j6fx0PX5QqVrjAIGH-5fzUhj-fKhD8YT4F734mCOnQCDXui6wQB77AOka69_gblWOJN2SxzC5OSrH1lXiQeciLfVnWuPHS0JfaMKD4=@protonmail.com>
+ <aunyu4ToQ0T3b2Mj@aspen.lan>
+ <CmvbeteAqxtpenZUmJ4dqRvXYjjDzTTDevRB4NUlN0WGLOUk0jwzt2C3ZtuZ3Eb2UwBDEPUWpu9biU1OOhKGWQITolX96cFXolBTMgSyh1c=@protonmail.com>
+ <auoVaaZjcnRTj1S9@aspen.lan>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -109,29 +114,27 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
  n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
  qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <aunqGVkX7-Y61iDA@aspen.lan>
+In-Reply-To: <auoVaaZjcnRTj1S9@aspen.lan>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 03/11/2026 15:05, Daniel Thompson wrote:
-> On Mon, Nov 02, 2026 at 09:58:48PM +0200, Roman Vivchar via B4 Relay wrote:
->> <snip>
->> +  led-max-microamp:
->> +    minimum: 5000
->> +    maximum: 29800
->> +    default: 20200
->> +
->> +  vin-supply: true
->> +
->> +required:
->> +  - compatible
->> +  - reg
->> +  - vin-supply
+On 03/11/2026 18:10, Daniel Thompson wrote:
+> On Tue, Nov 03, 2026 at 03:21:45PM +0000, Roman Vivchar wrote:
+>>
+>> In the driver I've used devm_regulator_get_enable(), rather than _optional(),
+>> since my understanding is that the non-optional helper is a standard kernel
+>> API for required supplies (with regulator core warning and fallback to dummy
+>> regulator in case DT omits it).
 > 
-> Why is vin-supply required?
+> That dummy fallback essentially makes it optional. On a board with an
+> always-on supply then there is no need to include vin-supply in the
+> DTB. The driver will work just fine without it.
 
-Device cannot operate without power. What driver needs is irrelevant in
-this particular case.
+There is a need, because this device needs a supply. How you describe
+that supply in DTS is a different story - can be always-on, can be
+missing etc.
+
+
 
 Best regards,
 Krzysztof

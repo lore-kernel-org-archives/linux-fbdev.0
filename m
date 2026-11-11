@@ -1,77 +1,109 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.227.17.20
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794419536;
-	b=rXwBMsBpdcP9fbVo2NATOiA6ManjMQT8gLEblMZCh5BIJhxdC9S869MHS6+DRgY2E8q6
-	 ahc4CE9pnBH5IsAu7X7FlRjJ3U0rrPJIRtWvqo4o5gvqxVMBgqz5QT/mEriw3tEGphjga
-	 +AobIqABrUirNfafUjj9OHGhl7zzmDGmPf51S6JUp0bxJuKWdKxNAxjVAYwhf0FdwDV05
-	 HoHkb9qoJ4vq9AYlTGaKVyzUF5DivUoZQSMYpF9T4Nq6tlHK+iluqQST54LV8HngEyA1s
-	 MaLuxyLtv/iLcpABKn1so+g7czggg1I9y4Kr0mngkt+zxmTinAdLpMXiOzsxuEYqYzg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794419536;
-	h=DMARC-Filter:DKIM2-Signature:Message-Instance:DKIM-Signature:
-	 X-UI-Sender-Class:Received:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:Content-Language:From:Autocrypt:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-Provags-ID:X-Spam-Flag:
-	 UI-OutboundReport;
-	bh=2nS32iMFC6roml0FYhlr4Uqx+HDK3XjQ7OWAzyep86g=;
-	b=UZjWlh/6GrIPcXMT8X0OaSm35ZnLwv0Kzb2yKbkzVR5TGU8JsuXdRN3DeIqPvCIjSM8r
-	 flIvHQJvpyzk4SD7rsVK7H8+69lnRqyaL9rRK7LEw+LM3uIveN1afqnihfYqbR66yoeMV
-	 mbl7KLzF6QQdHyb4TU9GH+T+TJ9LSS9w+tBoJjzZSYlOuajAA6SVqpWDCZ/wVOfXH3MB1
-	 ENaSKHodxjQbAMOhzPxtg6EtE51JBww/AeFa1ZKS792Dex98powxTTy8sHjviMtFFQH98
-	 aXOi4ySMR1huNn4ZG7aLfPMUPoUfafDU8UvHZ/l0ykEQ1AZcORFt+d1iwBNxjvXVZSg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmx.de;
-	spf=pass smtp.mailfrom=gmx.de;
-	dkim=pass header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=KnDYEbXU;
-	arc=none smtp.remote-ip=212.227.17.20
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=185.56.87.1
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794434206;
+	b=coZ3WKBCeZI/nb/x8lSlhsA8qPEvNey6B9qpQWDoseqsoaxTLnDasjGQ1YwLzN61ZVd9
+	 1pFIk8dzatJRJtd9O4olNIEkYDsrBS2lbldSHBnHzgMbEmK62tU7Bj0NdcGQZTYWStzz6
+	 YCQBlYhpstq8aDIfqUOf8FzJTUqz5cXNehfWm2o6JEfFdDhl/c+6w7awtiPN7xkdERKZs
+	 CiGRhMWDElKKvq8EIdyKt9QkIyCzeMB37NUbyrqH4mIprtAqkc6BYmpAS5LU5r9qn3aFc
+	 1q052+OvIbkEaeclYJyz12Kfg5NwUY+Rz0YVdUYFd0Oa//QFtOk5JXtPbobyQyF8R7g==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794434206;
+	h=DMARC-Filter:DKIM-Signature:Received:DKIM-Signature:Received:Date:
+	 From:To:Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:Content-Transfer-Encoding:In-Reply-To:X-AntiAbuse:
+	 X-AntiAbuse:X-AntiAbuse:X-AntiAbuse:X-AntiAbuse:X-Source:
+	 X-Source-Args:X-Source-Dir:X-SGantispam-id:X-AntiAbuse:AntiSpam-DLS:
+	 AntiSpam-DLSP:AntiSpam-DLSRS:AntiSpam-TS:CFBL-Address:
+	 CFBL-Feedback-ID;
+	bh=dJgiLhwnxl07OmJUhfJ5CpoeivoNNwCPag679Wtgjv0=;
+	b=vu1LBd+VTTKQS2sk0OHZwxcBLEZPvE5yvFT7n458jJfKRaXoC/icIbACSohJ/3GW3Ff8
+	 coPaZ7Tlh4dRL7cc24dX/LtGfcu/gGOGakmTCb/CPOtjNTryZtxl53iqrblJmkRCT/ivb
+	 RfOma/En5aOd3F+epqXMFXubNIKQlj9yX9ZhKV+DAUCLWMtyX4cdoXB8Vf86D9yUax9FR
+	 nUbadyHzTamnLtObPAlU4SUcMJIRQltLjrF7vEQiPGPcXcI1N24d2/STzo6Nf2z/5JDU8
+	 7aJLddjkY83/bcMr9I+t7tIm/ByeBZ1gBBXuFVgB2/SGeyqJjYfXj3wmg7N+RiYGELw==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=valla.it;
+	spf=pass smtp.mailfrom=valla.it;
+	dkim=pass header.d=antispam.mailspamprotection.com header.i=@antispam.mailspamprotection.com header.a=rsa-sha256 header.s=default header.b=1GpxIO77;
+	dkim=pass header.d=valla.it header.i=@valla.it header.a=rsa-sha256 header.s=default header.b=df24bgxE;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=185.56.87.1
+Received: from delivery.antispam.mailspamprotection.com (delivery.antispam.mailspamprotection.com [185.56.87.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50AB8606A327
-	for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 17:52:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 50AB8606A327
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 607A3606A321;
+	Wed, 11 Nov 2026 21:56:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 607A3606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=valla.it
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=valla.it
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=KnDYEbXU
-DKIM2-Signature:  i=1; m=1; t=1794419533;
- mf=PGRlbGxlckBnbXguZGU+;
- rt=PGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZz4=;
- d=gmx.de;
- s=s31663417:rsa-sha256:QoQfRPxHCcs7X5Frc/cbEH1QoYGD
-   cQm8qtmcK2wYd1OYfkh5HYsDjk82LR5J3Qgf7ye5S1LAC2SW4SAW3rBL0m+otZ8YRqoTtUMnFPI
-   G3BkTka7HxMNq5cZ7gZquteGjwtcO2cRCm0wVlmUSwBZLdQBjOHMf0F6b+zrLv+i88l8fpR+Nih
-   rzcWHmUrGjZmjWdCHloIuiAXiQO1ZonUcxY8oa346k4xThSmXL+npevftZDHF3mDx46fGGL2hFs
-   8ZJQgrZCsraTR33Q0iyNSNsZdtPCVX27tr90lsjy7eqY/mh4ab2cwoY8y9ZLU77okdDhAPlBvSJ
-   Vi4cOQINFBV47w==;
-Message-Instance:  m=1;
- h=sha256:
-   Y6MaMyDtNgrI/yxmrlSSJdqjUwPo7p6jBktWzpcA4dg=:
-   kuuv3J/mIVua0AdQlk7VtbdEG+8VQT8+6Sou1I8x8JY=,
-  sha512:
-   tCHhNFPdWNUCmSBhBDdzcnElZB1zqovS/dwmQjC9Ciw6aGI9dQXDvcHRZ5sOFr7o8hiV1+GBWfrmmS0ZCR8w/w==:
-   zX3B44FNbx/tLgeL1JoqCDxSg2gGBIYr+ijIX7bEeCkAJAXzWVk926/KPV1NpKYW/pKfbe5VQZdEju2/ypZC9w==;
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1794419529; x=1795024329; i=deller@gmx.de;
-	bh=2nS32iMFC6roml0FYhlr4Uqx+HDK3XjQ7OWAzyep86g=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=KnDYEbXUwRufaTEmOz9uXSeWw3hJPvQ3WpcrFdjf921C/YVuw9rmF4h/LUUfhv4U
-	 AuDxPQ8S3WI8TETJJ8zAGXdbKz5jWzLk3s5sEX4KH1o2RuCblgjNfYyXRDG2XARQu
-	 Aom+/zqNA5rDSQT8e8+ENnRepe/wuFxp0taKsoi92FzurNulcWNIElZCV5QS/7ORc
-	 qHAVixy8bO9IhqSGFKTX3djTGjXWWuYwrh6fya4Ttfh9X8ELgZDnt+g4vD6Mp0pqA
-	 MNcXxcWTbFA2wPiqSRtz8V9CxOB+e7ZZ2+wOzvtZy5KvpUtagajh3S2ak9jOQyLiH
-	 4gSxXEpJzMNXmIX5nw==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from client.hidden.invalid by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MfYLQ-1wpfsn0RPU-00jbWb; Wed, 11
- Nov 2026 18:52:09 +0100
-Message-ID: <9330c733-bb42-4bfb-bdec-d012b651475e@gmx.de>
-Date: Wed, 11 Nov 2026 18:52:06 +0100
+	dkim=pass (1024-bit key, unprotected) header.d=antispam.mailspamprotection.com header.i=@antispam.mailspamprotection.com header.a=rsa-sha256 header.s=default header.b=1GpxIO77;
+	dkim=pass (1024-bit key, unprotected) header.d=valla.it header.i=@valla.it header.a=rsa-sha256 header.s=default header.b=df24bgxE
+ARC-Seal: i=1; cv=none; a=rsa-sha256; d=outgoing.instance-europe-west4-qv6g.prod.antispam.mailspamprotection.com; s=arckey; t=1794434205;
+	 b=NZMQzMdi1AT2LEr4lRcZW7rd0hLeUdrmSa2N5cIII/3+/1aPWIwisQU/+n1L5XW0O40Qi3BcjC
+	  xe3Uo8dPvBXRZ3V2qbI+CkmmjDFmB0HpvKTUcq/v7b3v0YPZxvbPdcVwBWNJpJ46vLhE3koDC5
+	  bGjT7PKUinhnQPY7JLRgd2sy0rljWPdfACtc78Uz+AvZzEs5w8GIkh8cqf9cKM1iimu1CRiK8y
+	  sEA0aJA4mwMOkhjwsTmUNYRuGfuyvDBypjb7gRa5jjwmBqNzCzxvDWFoCBC44MBuT3jPGunmyT
+	  NI2PgGpGa6Fx7gTN7Lu/cs6Wx9P7AwhpldhsytUmAFvdVg==;
+ARC-Authentication-Results: i=1; outgoing.instance-europe-west4-qv6g.prod.antispam.mailspamprotection.com; smtp.remote-ip=35.214.173.214;
+	iprev=pass (214.173.214.35.bc.googleusercontent.com) smtp.remote-ip=35.214.173.214;
+	auth=pass (LOGIN) smtp.auth=esm19.siteground.biz;
+	dkim=pass header.d=valla.it header.s=default header.a=rsa-sha256;
+	arc=none
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed; d=outgoing.instance-europe-west4-qv6g.prod.antispam.mailspamprotection.com; s=arckey; t=1794434205;
+	bh=ZWHYAXJh8M23GgTHS9F/68nHKMuIi5pIeMMp0ENqHgI=;
+	h=In-Reply-To:Content-Transfer-Encoding:Content-Type:MIME-Version:References:
+	  Message-ID:Subject:Cc:To:From:Date:DKIM-Signature:DKIM-Signature;
+	b=UKc3a9BHkS7SzDCYd/Zk16HBFPzJT16vK47exNMCPUjsGrKAtvkeKYTHTKCzEeF2I7T6esNq67
+	  ru2Buu8e9RReiuBIwwtGoEuKsMgbSE2Wm1JhIHL9oIw89iKkZwtRdlbGZ8thvi/82cK7nY8vy2
+	  8d0Hx/RXu1KgE+n/e9DkrOD5URa8VtAgLsnMNbGbDAS5oB4vFZ5bVREyYJ8H7fETrgfQGpwHWy
+	  s+48AKaidemed4W+MuyH7oH55cqcTGBajnlz1Uyf3k4RtrFW/lUTzagIUIBH7tMBeaBYvMtcya
+	  CyztzREt5j6kuRIS4M6BgGcTIYM1Ja2kpFmRVzAjOA6OEA==;
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=antispam.mailspamprotection.com; s=default; h=CFBL-Feedback-ID:CFBL-Address
+	:Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:Subject:Cc:To
+	:From:Date:Reply-To:List-Unsubscribe;
+	bh=dJgiLhwnxl07OmJUhfJ5CpoeivoNNwCPag679Wtgjv0=; b=1GpxIO77H+pCebtcOry2W7wEMN
+	N6o1Z6ypcRnNwhq3YdLr3vc2TcMLzRxd0twNOm3tu8Sz6QucYIiAWNOYwS6nAwR+hnDaJLYgYoQIg
+	k2UoOvY+lGFBmpZZAUghe6F909QcjcRmAEJfy+R4QcrGKdJV5P6x4SkZmyMU48WhBAr4=;
+Received: from 214.173.214.35.bc.googleusercontent.com ([35.214.173.214] helo=esm19.siteground.biz)
+	by instance-europe-west4-qv6g.prod.antispam.mailspamprotection.com with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.100.1)
+	(envelope-from <francesco@valla.it>)
+	id 1xRGJ3-0000000HACC-376R;
+	Wed, 11 Nov 2026 21:56:38 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=valla.it;
+	s=default; h=Subject:Cc:To:From:Date:list-help:list-unsubscribe:
+	list-subscribe:list-post:list-owner:list-archive;
+	bh=dJgiLhwnxl07OmJUhfJ5CpoeivoNNwCPag679Wtgjv0=; b=df24bgxEnOqCeuhgE5/Vkt7aYo
+	NqMMrcKi2X0+MPYvvdEA0l97DuzRosc+bZCoNUxVo+/HXKbeAjRI+DthEMN0VJGE9pJu2Bf5zBWHf
+	3b1JA1B2t61gBHNDk6N2At/yfb9+GePnBCmJTdpKBhvEqfCSddqPd/rtIfIgv14ZgF8k=;
+Received: from [79.17.15.196] (port=60109 helo=bywater)
+	by esm19.siteground.biz with essmtpa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.100.1)
+	(envelope-from <francesco@valla.it>)
+	id 1xRGIe-00000000J0c-38Lm;
+	Wed, 11 Nov 2026 21:56:12 +0000
+Date: Wed, 11 Nov 2026 22:56:10 +0100
+From: Francesco Valla <francesco@valla.it>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: =?utf-8?B?TcOgeGlt?= Pedraza Padilla <maximpedraza@gmail.com>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Ard Biesheuvel <ardb@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Helge Deller <deller@gmx.de>, 
+	Peter Jones <pjones@redhat.com>, Jani Nikula <jani.nikula@linux.intel.com>, 
+	Mario Limonciello <mario.limonciello@amd.com>, Javier Martinez Canillas <javierm@redhat.com>, 
+	Jocelyn Falempe <jfalempe@redhat.com>, Sam Ravnborg <sam@ravnborg.org>, 
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>, Shuah Khan <skhan@linuxfoundation.org>, 
+	Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, 
+	linux-efi@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v6 05/15] MAINTAINERS: add entry for DRM splash client
+Message-ID: <avTjrfIEPgyvPDti@bywater>
+References: <20261027135342.2003632-1-maximpedraza@gmail.com>
+ <20261027135342.2003632-6-maximpedraza@gmail.com>
+ <ed28619d-6ca7-46aa-82c0-c83f30a836e3@suse.de>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -81,191 +113,80 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] fbdev: simplefb: Add mono framebuffer format
-To: Thomas Zimmermann <tzimmermann@suse.de>, Sebastian Raase <linux@sraa.de>
-Cc: Hans de Goede <hansg@kernel.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <cover.1793758480.git.linux@sraa.de>
- <6c207278c23d11f2c17cee383d422c3295cc7d97.1793758480.git.linux@sraa.de>
- <16220356-767a-4f1d-9b24-5b1f960e04cb@gmx.de>
- <1b37c7d3-f8d0-4023-b0bc-4770ec2b17d6@suse.de>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <1b37c7d3-f8d0-4023-b0bc-4770ec2b17d6@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:IjPArBRrdLsfRnJKyuJgFnJRlSydzSJBU7ZN/wgjpcTdWBbjrPR
- NOGtuFKFqhlz1pd9AwyKruUm5tiVoNkXTRE0jqjiiFgZ163AdsMUW22YQxh5XhgZPcb42Tc
- 9k8rZG9Ls1k6oMY3JA2Db7DtECUwxATPLWMHabzIFGQk9cZYmT7qndliNe5MBDI+wCGA5pz
- DzWchn7sZh7fXanNu1kzA==
-X-Spam-Flag: NO
-UI-OutboundReport: notjunk:1;M01:P0:yIqY7v66A6A=;EME8SDBF1BuOx3LkEy6NTgI1F/x
- YYyDB/r+IDiwlnn+2I/lBSa7j4E7calAAiMjiMDGWDGTopDriluGlq57R47BJ3rQcTLey2Bhs
- xoBs8qbnPIk1VC/h4qPTHtPbnPECMZARP2LDkaTLxe3XM68sP5x8IPfwxDA9yNCE0ZoP6Wegr
- zVqP8S5W8sprQWmu9/mBA4nW2aGJmugqSaT1Y5qXQB+j80mH9Hg+rX452JJbeZzD9KEaswEqi
- DlKXmQw24xsUIvWNchXQpmIWrohLqQc8Q5X6iiGwVEAvSIN/grcMGb02eEvSUcKaQTM3kGKU7
- 2lu3wPR7b68Pbtr2PoFCNF64+R2RsxhyvmIApKeZDtwJwixjMnTsoN3mihhNn2CXBTNAyOxbA
- UnE3CqcT5BbM1iYMB9SD5xgzY+vhz2X2WthF9o4SNImjzy8ltf2QiCYgwnrD37F3WLrn7fL6m
- wFjFoo1fsVT6xiXGcuJ5gf/YjnaAf97pHrW0K7PYw84aX48gL/3uSXfMB63hmdpDVHaTixyyA
- 47NMBNWtGwMd4KIjYIyRMYyIT9Dcl0L7WMJJrO7itfK+QwcJ1qj6cojfZ437lYFVpxUDZW0Gj
- CPwLo26sLfUyvR9D+AZrFxQxWPsJYszkv5sZbsR6XuRrXXnE+QNsiAySSeBil4hM/xezIT1EX
- qP/TFk3OfsTMpZt4Y88tv0oO+CkckOa1JtoCzvFxRJypMKel59Qq0dUP4e5/lpT/qoCltEigz
- qiCp72Y5JBwZpTdEDEx7dYeGxuJq7lt1UlZ0IXItIlF9OvhkQtohAyGUQ9UCmJ8wNGGc2lQPg
- 2SEu6xo5atndfIbY6+TNlrtnvClxUTKQJIAaymEsdHtV6FNeC451ZfmmXSgRXOtRz6ZA8G0wY
- D3FuY27tpbmNQcb95059GzbGNvlP1pUMrbilIfq6rVFo8IlG/neQZZL1OD8LH2DhGKLJCtorP
- d4Qrp3vzZOiOKFhKDz7AGlKPzvyeChK1MC6BXRRfwIXcWzEiEKDqpxyTdGcP9mBo//U7Xh6zH
- VUVZgn6fd/8gt1R3gQGIT1roqT8zMrGaHk9JK3yN6oSIcwDZtErcHiNMn8Pf/fv4ktl7ofICh
- GW/SnzLNN/xVUpzjSWuhDoHqYAVcfb8hBoeDQISH6iBDc2LTIWd8EmRksfNjHF6Qj56EdH6Kn
- 0ByT9KP7EVlYMYy5g5ciQyIMsEYyrLxj3f6mxbx2BgJjpf8o/56/AcYaGsY6+sE1D5ryLC2V/
- k1nZfEzjwWGP3kRn1EgIyEqTauRLCj76F1Jajf9G1vB+zPhfTjfN3EZcJ3olOjWzaleQM0Tl2
- gYvhh6/yCymsum2TerZIiDMXtYb9NZsA8yiMWq3OjZgC2VnyuKMrHiX84onRZ8kodXl7/283c
- ifJEM6oqCBaCJQoKKsgfwlej7FImfn6iorxiTFlRlfRFuotFx2uMif5KVSWhnG7IxEGF2uknv
- FsG1Gg3XBg//JBwkcDxLlihMtBSKrpnop+LfLBfm2ZqOyggZZ/Gzn/M1WZLyzbLTVzXs9KghM
- +iHzEh378ymvS58r99TnHqOvRjfvrhy0gPApV++muizeX58FFmKIOvuIhxP27RyUHte3neYVp
- wIYrW0Wbl/n9lnYNDh+wNdLhKFTJw4C21V9Pp0sn1gGzdSkBMml/ujuR/afU6qWAz0eqXkanB
- zmq9PstAg99mt1ch7lrK2ZCVlEz3/upVRhJfBpREgGZs19/F5aubW0IVlo82DtpaF0yrEkqSp
- ZHvVgP9/X58hBifh5E/v96oWtRgwSBs35/Pp/V87eXTX5LvzUPK8QDMZGgNvZ7jorl/QBYYUr
- Foo0U7qLuQEbk91IiUSdA9tvhr21XMF1UKqFlSM6IFYx2Lt5QRKJH9JRGQKvzOT8b8SO18QZv
- P2ho0PTFa3a1jYt2EC7v+1iNnYrh1IJLsRAnJIM0fDvyIYdG/2xbM8ALRCKDYNdiZncx4doE+
- b69jI4fw4xSxzy2rOIhGIgF7DhbU9oVkzCn0xbKoQYbmJ4/HXv0FcZZibivsC+bK/H60Ayfoz
- c5v8lW0vE7jkwLCzhoex+9ZQYzXAyeDhnQPq4cjYzdrSolglvnuJlvJUlEQM0M0HmVLBTgLFS
- 4ess3+zvu0vc4OKAax3c/QaEwbE4n9cg4EOwyi8LB/bh3FFkL0O4kg9b0RQ68G5Adugz3Y/of
- ZhohIohtNqp2VUKBpcdIXIBL8XZSUuvZS1+u3LgVzO56M+mF+Fomr0KxjsTWS7hwTNs+kpYiw
- h12cnDaMQchTaMrp6CDrxJJ7PrxHg3tsoR3abuq8E6iB72mb+tCKmxe98egbfnI7+vomJrRVu
- j+inR9OwkCRheoBtCk+0oP0K81jaTudPTm2jthTQ8d97V45P5BU7kZIzzlSMV5EdgVuO1DeD5
- +HTTZzJ++8CvKFYs0Qk7wrOlUk4j/zqeBU6TeBXsiOnF+2Iz87ulxcJQZbglyd1rJEe4sCj5q
- UtJEkaUqg1MTq2P1uV7RPQeVvgG9S31h1tK9wYHU30q39kpTQOF9QZ3E6i65cP0GfgVtkwtgU
- tdayg00U5FXksC9hXeNLk1E29CqqzaAnMJmpHQVCZ3M0WoUsIQTF5c4gxeht3i7/MkaI525Nb
- 0W+YpIB4plWEY62wHbwX1ni++ExVHfuqjsC55grO3/Ocpg9yfHNODQjpL2Az3sMRGXkISEACL
- Hgp422cWnIhl/A6dkgCTf87ZFe+fF89wnpGXzK8T1N3WgbLQDg5+/lqf3HcnY/ImlNBGXywUP
- r8p1Z0s3mHlzDJx5ec+v6gBYXoCAC3GFHUqqSwwpvgy+4SwZ6+gBGYbDOLV4ysJGqhlNSAzZo
- B5AUIbxIu5MUgK02BXx5cHO9Z/xkvxJxUZEgNUdiZuoIzlRKpeRvHODd8gXqfRD/PJqc8znI0
- iBWkMBHiFyrT6qt0X1yKcLaErYGg3+RO7aICNI3lw9BsJSHxowIv7r5+jT6g7HIsdmeQG+i+U
- /bQuueynSvQmXomaC/K54lx7A03MeNmiw+eEjgtuzVdXlugpS6bqb0OkbynFDh4Tj6rpykicc
- syOSrORTJEGy++c+ldkIvTVNYR6xTczJVGk+M+FgAi3T8Oa+xQz7Hmtp36EHllD+kNZY7Zkyz
- SXAawSJiZMlDVoRszDEJOMuwGYhMir1qTmRqsyqzZzsWQwA8FLnLQGUXwGMxKA7wQG46UNXkq
- PM2wKMoPXGluG3aIcgPmyyAtcrNGXwzHv7haJHOl3xk2MatbV3eKv7TtSg3xCokO2uKI/RQVy
- IsMV9q+A+sVDHy8m9wqYDaExkJkjFIThMqAGEG3ha/mDRSd/w+5buCm3DqZgjGbuiTuchrnpq
- VdQW7hDDMsb0ooG+TwOWUdFfNiowGGVH9RlWUxMguJ8Hz8+sF4yVMiB3ku0A26ohgxB2H8yrR
- rB28I+PLomSf6xgVnbzsC/FSJhPUCnbS0CDJr0CucdDNPOgVUfedDgVdEJ+IsdO7HfVrhFvHz
- ByBzFUTtzJwQxLyBFwsgfGao8hYgtGQI3X/nLdTR8Z38tmdojZk0yP3f0RfTGgrMd/OSqd47h
- qcGSx7xP5c9jM+iU438b+hoCIuLlnW/FwOcDS7Q85EzQPHxoq6bA9MQWK9vDaJhJNrcpBGnDD
- ZvMZuvgcEzHnzbV+PKMwfJEBJ7Z9S/qEhQj5zdthF+UeIdscITq3xVCSCHzcVYyxb95jfNv1P
- IHwkyaSzPT4s1gCknh/ehnT/9RcbpUWqys6TLU3FXWmjMs1X3sfsw/Xp+kcvFM3VlX+42PxHh
- HYkNq7aftiK3YKNAxy1BypNhhqt+KjtGirU3fmb0zf58juvT74kA5ace1uNszNNsybPNGj5wV
- Ou8cfFnmcGuNW3PsD8ezW8Bfddu0ohn5RxOi3onJ/laUDMI2XzqotTlb0SZARAhnqVxF1K90A
- rgFY4KemS9TvinS9ML6QAH84pgTNy24jnZrMF4DQ7s9KFIAXM9U7QTqAIkh6A/BX8h635eJCZ
- h705OwohRd49Pb9Ua7nCF4i77WlyIHDQJGhPKrtHikG8Cm4TQvu+M1+p+nQ/1B++19yx8+lSI
- NOpulLG0jncLAPal4mBsyRYkF5nug+pV7fuDYBuKwQPynZtK2jkCYNyXO2XYsg4r6Ffs1BD2S
- Fr3WfYsx7kRAUgVaHsW5epUkEw3YwA2x5JiowbadeSCnR3NIrYo+HYagt5wdPwobqg8QrZgvB
- JB+NrkHmsNCJSJX0NnoPPl722E9GSMWmfFd9KlGW1tDw91lJaP6vsg6Pyzmd0VYQ6sySa7lwX
- sE8xdsdXGAo+FoeeKwYunbgneQXTVCbQ8QtBWngw68s8rUARzzNfkpDriyAM6WfeXw64Mt6qX
- 0z8XIE3MADSFFCy7kuAS5XEt04YKn2kpB4W/bXIXikAD5B2Kmo9iIPNbTZTS050g2MT4tsb55
- sRatPHKjcwBB//WRccmLY5rxWAuHHzZz51q41hbDAjiwmVeuiupboF0sKEFYqVKaH1J66aaa1
- d9CUJB83o7DUa2SQ3bRwRqU+prERCz42H1Azzn9ZOemZvTSZcypkeuW9PF2OgkbWHmmo9KFRY
- NTkwbaZ5WjLwmN43zpTObDQhIyn6LfXeoHNQQua8CV43fo+F/2OHOle/Lqpcx6J1oUlaiwHMN
- nBpT5SZ7ffz8RhWfWlaAEhWyT91A+mkJFSsIUozT0KS62V3XPzV6Q/DBpT0K2JVviCTLPcCmB
- 0uP+YizZK98KewznuFqyZ85xDOugvEmmDWmLQ5gXX1C2pzuKhm07paWNtU1kWWqfWVr6hlgnW
- 8fvxR4twC2oGA9EexsALNEAb2P6PhScaB1lx41RMKZ8bUYuS4ssAU3gbZxN7I2T5xyNz3UZ5m
- 8eo2hAAst6hljV+gsY3aBgVm2BV6z1sVQohNpVi2CThqS483w6jws9HquXjtFsdID2pAG1/Kg
- 5E42EiOvo71WsF64qSTIJry0Rd3scxySd+P/Yy7AZdWq5SegRH4b7qt3MU7qUHeIB07cHbd6D
- 2cLV8RxxXxwewtyMddDbtdl4DGXKtBk6nNMO32l6L5k+9JSkOex38X2U/vvSrUGtT5QpmZ1g+
- MzY2/EkWOwE1WzVsCBhshH47ZSL61oMvUs9dEXobBOCM0UWdOsQwP2LDlQOprENj1vbHAidWq
- +g1ON3MuewwzLk/KQgB8RbAahu+GtM1QiHjaN3L5av2lkD3XGFlG5RhB/LCC/ATKV4iliU8kE
- 78netWpwyFDwaL3aOmKn9+WW592o2BZ4ZRPgQ+2VKGqopPJLUMg8lrUdL3S9DlOuJsExy7655
- KGMNGBADMGV0TtX2AxA5KKOHzo2hyiljGWZRpqMESPxVb/WyNQGZEBxHqymtcw9fD98BCMmTa
- A9vH7E4TelRmqujYskR8k6kB+pvMwQa2n7JeEUV7uy07DeCORxoj+/v5N7DFlAwSNDZKFAfVe
- 5NXJumq8U7XKQ76Rolk8AJO9+M1EHPH4q18vC4Qjx5Vq5As9HFlIqkNsQSDLkhMb76VnagLvJ
- QX4e6reunjUfALUKCj1xeD7XnCh/0kEPzUTHnyAaFEwgbViPnLvh1zn+WZmhr9C10iJtQjhK1
- h0jm0E+eJaCWnnzUy45I2cQGjmqwJ6v2IObbzWMXsqjQfw1iudMUYcGaJi7SK2lHJm7vFblu/
- VkBOg0WvPB9splbj17FKsDUMrjW3kvIZdSkGjpi5v6/Hm+lhqeGqBWekLkHrOTSmeaj8ShyyI
- KNGbrmkelE1zewgb7Gz/HfPlllRvkX5Jj+NuRHQn5v7nlnLz2MtTgTjLUmAO//Z4XoErSJwYt
- cjgFXFuXNJG1re84Qel7Yjh/v04UqERy03hHc3zztDsHmbBL4f1vhyzgHJCBhnzl/zVUWH+r5
- i48atEK0xjviUHhl0iiwlTztCH7n2knWjglqxN4uwlmEnO8KVsHyHe0yHjjJGdNtPusv3RUYn
- z2rr1qMax924PhYQ9Ms7ZJhPcMduW+mah8JsK3+9Oc3u4jvokGNpFHkHqgJtlbrav2GNtZyZx
- MCtx0eALRsiqAkjum73TFQUgdPKFHt6SnJA/+0zeWesYf/qOwUadTfqoAbk+gDeh7sDQtxFFP
- pdLgqVLtF7WPfwwHlU5HINcipoYHrNvKwNhV346m4L8cN8EVwbV355C5j72h3ZRoVWE8c3g9u
- 8xvfsa9PRStA8OVhqDbFsLKu19kXDODB8C9wAUqW1AcLmZIzXm6JOF2U/Jmog7SZVuBhynRYD
- /XuClhiFSCuAytT8pmnPvsJCqCpBHS0H4lMihqmHIoBVA65JL2mLSYh5Ky4NPxKdX6YVKURng
- atIR1MYt27IfZ4zjc1J7vp9CFXU6XOZZZfv58cy2R0smiOeDMmbG4pqcsgP8Tx1MIKVQjJ8Nk
- UBB2+hJT9kaGz3rv+f1sVpgLVDgjOPN1pSoJ4DP3sNM4BJc8Gz0/OoO4b+wJOcB7YqTxPAS8y
- 7L0We+ceWlFgkq7HRfLn9exJ4sL18gUfepgapdBw5RjgyxvSiebePy1UM5VUP3VpnFVAnuTJN
- BEaUIBPXY73GYdvul52nbkWLzHeQGZBzEe5B65Ft99MVq//2kXr0yZWwlJh7zA8FzOVQIHupl
- RZIu6/IvwbK/+wefurOI1RF13qMB5VozO++sl8T35h3QS1dq0kmNuP+aAno/MNI/Lr1+yhtLX
- +WX8RHxoJ+0U+wanJLV7AUAMuEYB3cOYMbn5gU9ooEwfQRi1ItnTAjH0hHfSPo7XArzRDXFyj
- dV5irnVSTGsVPZY3EPC18U7GDUwaaJVE
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ed28619d-6ca7-46aa-82c0-c83f30a836e3@suse.de>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - esm19.siteground.biz
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - valla.it
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-SGantispam-id: 409e35b0fa1265cbd8659dabe4aea8a7
+X-AntiAbuse: ID - 409e35b0fa1265cbd8659dabe4aea8a7
+AntiSpam-DLS: false
+AntiSpam-DLSP: 
+AntiSpam-DLSRS: 
+AntiSpam-TS: 1.0
+CFBL-Address: feedback@antispam.mailspamprotection.com; report=arf
+CFBL-Feedback-ID: 1xRGJ3-0000000HACC-376R-feedback@antispam.mailspamprotection.com
+Authentication-Results: outgoing.instance-europe-west4-qv6g.prod.antispam.mailspamprotection.com;
+	iprev=pass (214.173.214.35.bc.googleusercontent.com) smtp.remote-ip=35.214.173.214;
+	auth=pass (LOGIN) smtp.auth=esm19.siteground.biz;
+	dkim=pass header.d=valla.it header.s=default header.a=rsa-sha256;
+	arc=none
 
-On 11/11/26 16:27, Thomas Zimmermann wrote:
-> Hi Helge
->=20
-> Am 11.11.26 um 00:25 schrieb Helge Deller:
->> On 11/4/26 03:34, Sebastian Raase wrote:
->>> Add a new simple-framebuffer format for monochrome 1 bit-per-pixel
->>> framebuffers. Monochrome framebuffers are not true color, so their
->>> visual is set to FB_VISUAL_MONO10 (set pixels are bright).
->>>
->>> Signed-off-by: Sebastian Raase <linux@sraa.de>
->>> ---
->>> =C2=A0 drivers/video/fbdev/simplefb.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0 | 2 ++
->>> =C2=A0 include/linux/platform_data/simplefb.h | 1 +
->>> =C2=A0 2 files changed, 3 insertions(+)
->> series applied to fbdev git tree.
->=20
-> Isn't that a bit premature? There's no use-case give; except because-
-> we-can.  And doesn't it require a review from DT maintainers?
+Hi,
 
-I'm happy to add any Reviews or Acks, or drop it again if there are any ob=
-jections.
+On Wed, Nov 11, 2026 at 02:31:51PM +0100, Thomas Zimmermann wrote:
+> Hi
+> 
+> Am 27.10.26 um 14:53 schrieb Màxim Pedraza Padilla:
+> > From: Francesco Valla <francesco@valla.it>
+> > 
+> > Add myself as maintainer for the DRM splash client.
+> > 
+> > Signed-off-by: Francesco Valla <francesco@valla.it>
+> > [Màxim: add myself as co-maintainer]
+> > Signed-off-by: Màxim Pedraza Padilla <maximpedraza@gmail.com>
+> > ---
+> >   MAINTAINERS | 8 ++++++++
+> >   1 file changed, 8 insertions(+)
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index a08087fb6e67..321ecb9f5b5b 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -9168,6 +9168,14 @@ F:	Documentation/gpu/drm-ras.rst
+> >   F:	drivers/gpu/drm/drm_ras*
+> >   F:	include/drm/drm_ras*
+> > +DRM SPLASH
+> > +M:	Francesco Valla <francesco@valla.it>
+> > +M:	Màxim Pedraza Padilla <maximpedraza@gmail.com>
+> 
+> I don't think Francesco should be listed here. Although he wrote the initial
+> implementation, it's yours now.  Maybe list him as R: if you want to.
+> 
 
-Helge
+I agree with Thomas here, you definitely did most of the work and
+deserve to be the maintainer. Feel free to keep me as a reviewer though,
+I'll be happy to help!
+
+> 
+> > +L:	dri-devel@lists.freedesktop.org
+> > +S:	Maintained
+> > +T:	git https://gitlab.freedesktop.org/drm/misc/kernel.git
+> > +F:	drivers/gpu/drm/clients/drm_splash.c
+> 
+> This patch should be merged with the one that added drm_splash.c.
+> 
+> Best regards
+> Thomas
+>
+
+Regards,
+Francesco
+

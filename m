@@ -1,65 +1,57 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794400874;
-	b=dKmGKFTd4GvNFGgfWxKCL2pcTsz7Cvr01L7BuE2sPIk3Dj/8tAODbimf7wdX6QTcN3tt
-	 ho98kbK+A+CyiHrQ48H77eIh84c9dr4x+q9GEAVnm5Ua5fAyq9gsqKEZRDEH94isvfqDG
-	 o6zTv0mFXtxNJnpju5hJb02a2H3SiCbkgpMy0SxN187um+5tlC8vDpPI70MgGgOIjONkV
-	 tdqaI8RGKjqEheY8Ya4KITisVX4drzXYZQPKGbZ0i0ehSJUa3Cogn3imqy6sTPVN2xtZT
-	 teWcvsTHsOtn2ho/oQNXy1f0Ak+px7Qe7FFFO4op02Fut4S4wJ9nCCzMVOREy2YemXA==
+	t=1794402238;
+	b=LeO7StZam6DcYxyBvXi6u6yVycoNqebv1EQXO7ymTkHYpoT50QBeB9D9C5OLgRuGJP2f
+	 N9bhrlddqsF5kSuOq1b1rXH+Zd+6qEu8BdRd8HVJZ4DHV9pc1Sa0MYaVufx0fBzOiuKe8
+	 /AsR7MR329gmR0TYmBDSTlX+UGX4Fzpl0qvXT4x8n/glJKab44dQWwaGlWEcsEAFgvS7A
+	 EDUxEEG/NsbNnje/rq9V26oRhiD3V74Ke3Dhz8YLJgSK6992w/ZgRT1agpRF1g/XRg21e
+	 ehn+8371WHU0BwCYzOpyzvsYf60eX9lHSC0ZYc8AfEocLmHZjstNZmgoNi/U//BTDPA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794400874;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794402238;
 	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=Hqw355eWcLP2IhrR1rvrrSe1NgJExHjFpju/gucphkg=;
-	b=YBx6GKnpWPXndXM4e2kx9pfx24WDsNViL4KINMusrRvIAmjwKsUIO4RRv8SiHSpGt/w7
-	 +CffS407ZManM8mUg46ZnRshVe9dg7qkK1apRQxRqZqXLH3cMJOXyg5yuHrsdroDvsQ/z
-	 8eiqkzXzG1E9wV4t/zycolFZDypADN/5d/T+LQhhYi2d6ogmOKcwrez5Qm2AtHs6EyBMR
-	 TqeujpARcy44R3EeoF3T4v5Jhk2DNR8LAoO5SVznVq6YxbhG0C07gQvvJx6hgCJfe02Ab
-	 mBZhcPR86b07XkIKzb4pEcWGwO2ZzbI9HxKaEhSixxECcowWqoQjX7OKJ6w7UeZrmBQ==
+	bh=AWaIRPGVBwDKyVXL8rFvxOr7TIsCYjaMi2R2yUDvOKI=;
+	b=PMaSjUVQLNh+CSQXe3g8zJ3RSuRbrdtiSl+GLLxgOmB3BdwlbDfAo9MFZv2dnldo0umy
+	 OQNDyFFw/Huq/c2hkKflm1bnTHz6C+ld7zp5SXIY8uroKLyr5yw1vOwQ9BtSKZQ+FK4Nf
+	 iX7CHF0v7eRYHzzcCy9ZGy3gsrMoPMlyJyps3qjJuNAen0oxHKpkIwvsu7kAlqRwFHbbF
+	 kboCmzvfIWpd0WnzpJGzswiL3tdhJLSnHBL92+MAPMUxmrgY8417PeePBKIWV4taCF/Ww
+	 qH8LxvG9i9+r2AJTiq7ovDWsUfJ7OZaII2qB1rlgm2rHrv6R9Wo4xu4Lutj2+X7WPuw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Sy+hubuP;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bY88ne8f;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F315E606A321;
-	Wed, 11 Nov 2026 12:41:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E7E6606A327;
+	Wed, 11 Nov 2026 13:03:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Sy+hubuP
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D46CA1F00A06;
-	Wed, 11 Nov 2026 12:41:10 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bY88ne8f
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B07C1F00A05;
+	Wed, 11 Nov 2026 13:03:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794400873;
-	bh=Hqw355eWcLP2IhrR1rvrrSe1NgJExHjFpju/gucphkg=;
+	s=k20260515; t=1794402238;
+	bh=AWaIRPGVBwDKyVXL8rFvxOr7TIsCYjaMi2R2yUDvOKI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Sy+hubuPvpqnweZrL1Lr/AyHyj/APQUd3Zs/ZrbyAcQSyBXHXqDU6zjU4tOgcsBm1
-	 FmhPevTIUrE9w4/YaRhi3MGMCslGVYVtuHwk9J/HVozCOoaRVOX4c6OaxPnZH/eFAa
-	 MYmtxX+TNenBy8yr+xsQ1ZsvbhZlEODydJ9UNXR4XMBp3L54R67m8mlrcCzTzy6KNf
-	 sn2zkzaupVd0HhXjoJF51dDE5wc+F562TtwfXfVBiVxwmhr+ZijITjkE0cygWF/sVU
-	 ndSF5uNTBPa4RGsBiUGtVSvW9b5XrK6wrO+7U/o8HWJQwKEmN4fAoatsAo/39wojJb
-	 2rAX/63GPBR+Q==
-Date: Wed, 11 Nov 2026 12:41:07 +0000
-From: Daniel Thompson <danielt@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Roman Vivchar <rva333@protonmail.com>, Lee Jones <lee@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>,
-	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] dt-bindings: leds: backlight: add Kinetic KTD3137
-Message-ID: <avRiY-8Fw5ZdrkBH@aspen.lan>
-References: <20261102-6768-ktd3137-v1-0-b5b4f903c56e@protonmail.com>
- <20261102-6768-ktd3137-v1-1-b5b4f903c56e@protonmail.com>
- <aunqGVkX7-Y61iDA@aspen.lan>
- <_kyk4j6fx0PX5QqVrjAIGH-5fzUhj-fKhD8YT4F734mCOnQCDXui6wQB77AOka69_gblWOJN2SxzC5OSrH1lXiQeciLfVnWuPHS0JfaMKD4=@protonmail.com>
- <aunyu4ToQ0T3b2Mj@aspen.lan>
- <CmvbeteAqxtpenZUmJ4dqRvXYjjDzTTDevRB4NUlN0WGLOUk0jwzt2C3ZtuZ3Eb2UwBDEPUWpu9biU1OOhKGWQITolX96cFXolBTMgSyh1c=@protonmail.com>
- <auoVaaZjcnRTj1S9@aspen.lan>
- <3bbc1c1a-0435-4cde-a1a2-a408bd7a794a@kernel.org>
+	b=bY88ne8fKH+AMIpDjGgLPKo2tQ3gBNt/paxmaTdDQeVQ9jEMzkXYg0fc6aof9e3cj
+	 +EL8B7FEAS7BYmklA4wBXRvGufXIl+4383D4TJznpHT8v/vh7XnIIHfw52NMLud/Hf
+	 BY9iJWiDXU1ZIXK8iFaRtcG30l7q0cJpAUA/sFeisFkFs5XsIcB41DFYXWNjHedPui
+	 DCH57s3lM2cHITACQwufd/q6xziE6/X5QBouCIQkjCkxWYMssR7RMiKKK11PgXzwVW
+	 11bIbTeGD+XulA/fHEmYWO17PgqnlOTLjZyJgmUDH0YjVD2kWQrrVru4kDW+uIYHhY
+	 xqbonlRzll3bw==
+Date: Wed, 11 Nov 2026 14:03:54 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Michiel van Beers <michielvanbeers@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+	Griffin Kroah-Hartman <griffin@kroah.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>, 
+	dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: backlight: lm3630a: Add led-max-microamp
+Message-ID: <20261111-cute-impetuous-otter-0d70c2@quoll>
+References: <20261107-lm3630a-led-max-microamp-v1-0-ec9e441d9b2c@gmail.com>
+ <20261107-lm3630a-led-max-microamp-v1-1-ec9e441d9b2c@gmail.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -69,37 +61,36 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <3bbc1c1a-0435-4cde-a1a2-a408bd7a794a@kernel.org>
+In-Reply-To: <20261107-lm3630a-led-max-microamp-v1-1-ec9e441d9b2c@gmail.com>
 
-On Wed, Nov 11, 2026 at 01:11:13PM +0100, Krzysztof Kozlowski wrote:
-> On 03/11/2026 18:10, Daniel Thompson wrote:
-> > On Tue, Nov 03, 2026 at 03:21:45PM +0000, Roman Vivchar wrote:
-> >>
-> >> In the driver I've used devm_regulator_get_enable(), rather than _optional(),
-> >> since my understanding is that the non-optional helper is a standard kernel
-> >> API for required supplies (with regulator core warning and fallback to dummy
-> >> regulator in case DT omits it).
-> >
-> > That dummy fallback essentially makes it optional. On a board with an
-> > always-on supply then there is no need to include vin-supply in the
-> > DTB. The driver will work just fine without it.
->
-> There is a need, because this device needs a supply. How you describe
-> that supply in DTS is a different story - can be always-on, can be
-> missing etc.
+On Sat, Nov 07, 2026 at 01:13:54PM +0100, Michiel van Beers wrote:
+> The LM3630A has a full-scale current setting per control bank, from
+> 5 mA to 28.25 mA in steps of 750 uA. Boards whose LED strings are rated
+> for less than the chip default of 28.25 mA have no way to describe that
+> limit.
+> 
+> Add the common led-max-microamp property to the led@0 and led@1 nodes.
+> The property is optional, so existing devicetrees remain valid.
+> 
+> Signed-off-by: Michiel van Beers <michielvanbeers@gmail.com>
+> ---
+>  .../devicetree/bindings/leds/backlight/lm3630a-backlight.yaml    | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+> index 6393cbf3afdf..a031679d5468 100644
+> --- a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+> +++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+> @@ -77,6 +77,14 @@ patternProperties:
+>          minimum: 0
+>          maximum: 255
+>  
 
-If it is missing (but listed as required) then won't a DT that omits this
-property fail schema validation? If is legitimate for the property to
-be missing then I'd view this to be a spurious fail
+I do not see in this node reference to LEDs common.yaml. You need it for
+any common properties.
 
-We certainly didn't list basic supplies as required in other recent
-backlight reviews:
-https://lore.kernel.org/all/20260529-topic-sm8650-ayaneo-pocket-s2-sy7758-v5-1-03aacd49747c@linaro.org/
+Best regards,
+Krzysztof
 
-Is this something DT maintainers want to see tightened up when new
-bindings are introduced?
-
-
-Daniel.

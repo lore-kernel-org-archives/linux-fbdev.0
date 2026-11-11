@@ -1,95 +1,94 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.103.66.14
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794407949;
-	b=0qwaanrz/E29s5nLOqUbqkMNAxznn58W0oEjOsejyTUpIiheWmFrpSadi2SLyuVPHAT9
-	 f2Mo24NXFIB9k2ZiCIO7XFWHvCNIZedVIMnoShgj+ZZ55k4jfmagO8s49yqBElh9hje+/
-	 aO1M+tY2Qh2B0fzmqo7aZJLnvNU4yvL3QME+JLKEyusRLk5S7vnnHFrQXn05Y+bcZzsNV
-	 9Rxlt3s9GxUfxDmQInFepb4QfYlgBwQNpsNjzPBJ54855GRu5RSDf5TxEbwvbIl4VWXEM
-	 dBNhsNJaXpZj5AXWgRcWtF7w08Ribk1hCub4A9VJaciSPefYuLfYyaljw4YuWIglKfg==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794407949;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:Message-ID:Date:
-	 User-Agent:Subject:To:Cc:References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:X-ClientProxiedBy:
-	 X-Microsoft-Original-Message-ID:MIME-Version:
-	 X-MS-Exchange-MessageSentRepresentingType:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=iSNDeI5T0bW+QT9Squnh8uc1NN7BxHMp0GMmhkoljfg=;
-	b=BIFoXgt9+i9vzFWsXWCuyWSuFygq0cXW8qvMC35/B3K9zELmt9VY5k59tdRBwkg2J24n
-	 wVXUlNh1pFn8wwG/Kd0AuziqSfnbyPJXAl7ZtmQVFvqUD1otoQQeTKifsXne/uCktFzU8
-	 ynYyuz+WElrnvCWOse9v5BzRJmyg7LtFPnoTBrnSbkYLUtqElJaHFKUgKrQD9GJPJPqA9
-	 VrIiylMYUtjBc64dbEC4XH0nZnvd1SJhEgl1ehVzSGlHGcXLs4MKCPYpUCpqpHdNsJzJ2
-	 BPfW/9kZMGjZkYCGi7SXFbDTQyb60qlcDMOzWA3BksCGoV5GztFIR0ONe0YUVbyWLUw==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=outlook.com;
-	spf=pass smtp.mailfrom=outlook.com;
-	dkim=pass header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=VX7SY373;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.103.66.14
-Received: from OS0P286CU010.outbound.protection.outlook.com (mail-japanwestazolkn19011014.outbound.protection.outlook.com [52.103.66.14])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.46
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794409347;
+	b=CXf3LWyMlqpPLSp7Z4p+ahxKcv7SqQ7PARZnNdg2yYoT6ivaseSVoKuAk7ooZK0hlK5J
+	 Pc8pDKuN+z23kvw3yObKw5dg59psF6OODgPC4N0ohmJ7YHOnDAQD2xClsPUm/qRi/dE7o
+	 zhSzJD2inV/mMbhOmqBajBv+XP135IOHzhxRKa6T9TypStrGUEE1DoFpSq24BKv75M+sd
+	 9TOkYyhs6RQycjrxhOk67LPhI49ky1ctv2WLn1tE6frDXh9D0b8s4x2l/DrzvEYfRBXek
+	 DL7xgFuZa6hsm8qKqGnW4JM3bh2xkT8/ZNO8yWMVElaszfMv0ZQx6uzEdEEhP+jLc1A==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794409347;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=meWNXvMASPE39vwE27i8e5aNRxxg/xlneQl/BaplwNw=;
+	b=tcEmO3H7x0xKgYQOFtPbPZACl6GHINCM1GFUyzAXaC8kSP9tgf4fDyiPNuAD0Gtotxpy
+	 IiouvlUt+YQxsFsHQ1oKrGsh1jlbn1swrZ4PctE1NeaT4DE+nMdSB8oIZKr/H0AFeBKGE
+	 Ym7zHZYlsFjCF66ic0STgy9+o84S62IxR/SW6Zt3XQLInxBucw/fZvLRwxQy5g2xQMtWQ
+	 oAn+1fYu2JzhkvgpP+7DszCRSzq4YfLzpIaUbtwaoaLQMRYIZhItRfa5kHclFseXK5PnO
+	 rx5MSpHfYYexFposcaNZmK5vc7D0ytIs6vZFuCy0QobpOCi5xVEDRU3n7sBJzLJ77rg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UQ5VFpay;
+	arc=none smtp.remote-ip=209.85.221.46
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35508606A326;
-	Wed, 11 Nov 2026 14:39:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 35508606A326
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35269606A336
+	for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 15:02:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 35269606A336
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=VX7SY373
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Tdw697q0DD4hhOTcMNARanj520wOQNMQt3V2Gm6Ze3Ge37fZxPb6zI27neI5oOgMurBBoM1QBIfrYRFQTgUmhOGVEJ+NK3o5cU94i4YBHMW6PpRdbrg5A/He7MUq6Y4UyKH+lRcyEn1Scs2pqjrBKVoDUfraQ5orMWkW+S710SDx9gUWFgqPGwP+K2OHOQzlPaVVE0IHbKXCDXhQqO5PcQnKPJZMKhjMYq8gbPsjKu3eFfeoS/gXDxrdIBV/aysLn4x6iH1mHim3VuFnAIkBi/FgmpCwV2n8mhAwodumB3PhVSPFQ/mA/zfsouDDkrPRYK5kQeumwSwTuUKjt8wGsw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=iSNDeI5T0bW+QT9Squnh8uc1NN7BxHMp0GMmhkoljfg=;
- b=x5pKIwTVP6f/1nylvG5pKKWP6sldO+6I7GSePMmTtyUZQQ3FFzNZP/dnvplPVDMgTAlpDxERzdUY4TUh5npnj7V/FAL5ZSgmFI+toxqFNWc7tOxkvSxvXN1+NMejY/rWBM5aNl9P+szFDc/e07/kSTmH7Bwgr9zMFvwsVHRPWb7+viXDfwk1nbfMcwEF1Mphb7KopfgRGPlnLfR0xhPS8tkq51Qm/qVwvqqiUh1s62TP8EU/JK91gxFRbWxpHOxQdrccm72Mt9Hq7IUYjW5VDi48+GdhK7mcz8s5k0syKkb/G4fsOpSsyHlZqSIyC+KMssV8M6MDCw5kzBwqYoiZpg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=iSNDeI5T0bW+QT9Squnh8uc1NN7BxHMp0GMmhkoljfg=;
- b=VX7SY373x0gBk+Hd9jPXvVzsK3ApIBIfPuTFxn0dEm7pEcgDzpgkRoX1k/+7KDKbmaMZ+7odPGxZng6rQAbaYPaGiBiq7zqM0w91QROeZvJmA7FujvcCvdJzSNsVAf5MimdAagLxMkPsvOMoJF0tZZMK7tR4Blsz8d7ZYN9/9ys1KapLOTS0ZmqSRjjxgFIopMv6bVLNRuYBauraBuukGKrHig+IARmQ1b7eXwwE/UE91mlHqV593MrZP9XZPxgyrttE+AIHQ2xyNoRUtJNEvyc8wgbjurYBRcpSipXL9u8gp45FQzKPqZs9ZFWnzgcaPQmTpsNCjGi4AekxxL6h7A==
-Received: from TY7PR01MB804852.jpnprd01.prod.outlook.com
- (2603:1096:403:403::19) by TYWPR01MB10742.jpnprd01.prod.outlook.com
- (2603:1096:400:2a6::10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.8; Wed, 11 Nov
- 2026 14:39:04 +0000
-Received: from TY7PR01MB804852.jpnprd01.prod.outlook.com
- ([fe80::4c0d:ea93:5322:ee61]) by TY7PR01MB804852.jpnprd01.prod.outlook.com
- ([fe80::4c0d:ea93:5322:ee61%3]) with mapi id 15.21.0615.008; Wed, 11 Nov 2026
- 14:39:04 +0000
-Message-ID:
- <TY7PR01MB804852139F8DE700384359B59489712@TY7PR01MB804852.jpnprd01.prod.outlook.com>
-Date: Wed, 11 Nov 2026 22:39:00 +0800
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fbdev: radeonfb: reject a zero pixclock in
- radeonfb_check_var()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, byu@xidian.edu.cn,
- 25181214217@stu.xidian.edu.cn
-References: <20261101104107.33909-1-jq.zou@outlook.com>
-From: Jianqiang Zou <jq.zou@outlook.com>
-In-Reply-To: <20261101104107.33909-1-jq.zou@outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: SEWP216CA0113.KORP216.PROD.OUTLOOK.COM
- (2603:1096:101:2b9::14) To TY7PR01MB804852.jpnprd01.prod.outlook.com
- (2603:1096:403:403::19)
-X-Microsoft-Original-Message-ID:
- <7e4a88b6-9e90-408f-807b-af300a2958fb@outlook.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UQ5VFpay
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-492fcbfaa88so2194618f8f.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 11 Nov 2026 07:02:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794409344; x=1795014144; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=meWNXvMASPE39vwE27i8e5aNRxxg/xlneQl/BaplwNw=;
+        b=UQ5VFpayE9CxUcVJjLg9m8k3212rMrE3w2g8bTETRaeTZGmJwXdK/iPr6idLYFo5lF
+         fIVqcP5zR+wj6RG1R726OpDUDz2py52q1cKoTj2a0Sr7EbFzHZUs6xfArCzJjf6pn+Ip
+         /mFujscxx4Nxo3a3LfKIGdEsEZ5rFc3l72gFAMxauhLiZoKPl+jILGzYojynnifJU2qa
+         rELSdlHKFkyEh1sOk7MZo8oARRRaKEIdLQJ5yj5zWbmmwuYTQaT6jwq4/HVyfjBWaK+L
+         Eb55SxwSHYC3x8LdvJ/FPQOxS3nV6QdwlXKxo5x7WFlAtNhYYrGRzAEwRkaCrn0tXU9w
+         TwLw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794409344; x=1795014144;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=meWNXvMASPE39vwE27i8e5aNRxxg/xlneQl/BaplwNw=;
+        b=abSsvmLZQL7oHUxkBDyfBcrOZhOHObCTnW/n0AfFI0ozjceC9xgC7CXtPMzQt3WKza
+         TQ2XSIQZGIIT0aUebVHKgyv0h5fvQvGOO3zPgBp/3KIi3UOCUpIWCkE63IaHPAc0husZ
+         pF7ZKRGneOIxMLvrQF5xHA7HaT0kPPmzz3mvVUlLTHNbhm8J3/Bk4F5D1SqlJ095GD7V
+         VTtFq5jVkjqV03ixn2myY6/IDFNDs2diVTKgieC+i902gFrOFFYetBAkTqv6bs/sIcub
+         kD/BD970POZ1/nuUh+D/A6bbIrNoVDhYh9p6PrFavMIa7pesSGKWQnjzgqv8y+IFqARU
+         dRnA==
+X-Forwarded-Encrypted: i=1; AL+hErHDuKQuxvyxhnJqdjZnyS3BTzjcTnwHl7iscNldKdvK3lJEC3o7/OvOEtdPRFURP/3B4Xnh8nqBDN3Rfg==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8lPJkxjhQfEzPABBVJnxAfyAKCF4reCSsjDqimIB55nwj9zHk2
+	nhExgrfv0mw7RPPsF6m3SnSBQT2uteXfCBQXrIfCHtt13emn2VmNuOSJ
+X-Gm-Gg: AYBFou3O1jfJ/XNnsM47ez9nTRg5+xWxo+I75XFdtm7FMw/MQt4a6YQKGNlSrMKiN/t
+	qHpxz98qUBxMahk/pca0D9bXTEHe2WzIbpInepEBwNVt+dGWk9GVXnhC4IpcV1wsUT6+5PJpzC3
+	kIoqoVMmzSmokesbnPFZTFJMZZm79xXHhYDMN3HqTU48g37ja/GFtKS/O5gY3+l47HUZFb2xhqG
+	UzIFVZPkzU6F4ZoGxjxadZClg46tVZaRyGvrSBF92mS5uD5UhbRpiGX2FgptAL3MFNv3l9PsWtc
+	8b6PJ51anZwr4cXNP02gzrh1mXob/ZiKhKYsFU9KdX285bGX7dPf+q67VZAzIg79lzH1Ykyj307
+	4NTHFviBeBJuvCM67alZc5d5ckmmEe65BJjnAqbnQgGZz8QItXAxcwm7vnZMNMZ6IoV5Pp3Cs58
+	X0gIkWR1miYH1w9+4WxCBUlD8Dnut7CNyEos654ff71vPZu/HmdrPY+VTWlu0ksG7dQ75mMmYED
+	7SGcqNLxAu70XOo9XOZZOGGiFP1Xi+tw+6Sd9d/xpz+1e1KdaKcwGnPuPaAwo2sGTxrFRg8q8gE
+	d4Up5GL+weXVTF1+p9H7c7vROT9R28pVpTXlTH7QFeuaZF25Eucqklw=
+X-Received: by 2002:a05:6000:40c8:b0:488:8ab9:f74c with SMTP id ffacd0b85a97d-499c425746dmr5287776f8f.3.1794409344157;
+        Wed, 11 Nov 2026 07:02:24 -0800 (PST)
+Received: from localhost ([82.77.126.113])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49835e20327sm12054259f8f.26.2026.11.11.07.02.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Nov 2026 07:02:23 -0800 (PST)
+From: Daniel Matyas <matyasdaniel006@gmail.com>
+To: Jaya Kumar <jayalk@intworks.biz>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Helge Deller <deller@gmx.de>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Daniel Matyas <matyasdaniel006@gmail.com>
+Subject: [PATCH] video: fbdev: Request IO ports
+Date: Wed, 11 Nov 2026 17:02:17 +0200
+Message-ID: <20261111150219.239706-1-matyasdaniel006@gmail.com>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -99,148 +98,55 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TY7PR01MB804852:EE_|TYWPR01MB10742:EE_
-X-MS-Office365-Filtering-Correlation-Id: b26fb997-f444-4495-e67e-08df40018790
-X-Microsoft-Antispam:
-	BCL:0;ARA:14566002|24021099003|25010399006|8022599003|41001999006|23021999003|6090799003|8060799015|12121999013|15080799012|19110799012|5072599009|3071699003|3412199025|440099028|26104999009;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?YVpRVVY2YlR6alljWHJYekVHK2FvZ21KNjVETWQrSXhkL2dxdWxRMXpZQmpK?=
- =?utf-8?B?ak5jMFhQNjFTV0kvRXBENnhtVFZzcXY4ZXpqR01maC82SldSV3hueVE4RWIr?=
- =?utf-8?B?c0NlVTdOcnNYaXpHYndGeUFtYng3Q3dSdGF0bGZPSXg4emxmUUt4WERFYXk1?=
- =?utf-8?B?a0U5Zi9SNWVjcGNaQ1gyQ1RVNGxidkJ1T3I2MXErSU1WbE1Ub1NleVRlLzdq?=
- =?utf-8?B?SnBjWTVDcWdJWmpmWnhxRnBFU1RsOWE0dERXMFo2REFDOGg1WHppQ1lwYnVT?=
- =?utf-8?B?dndZZW5JMEpmeHZsK1BNbHNNWXI2Tm5BUGZqTS9nODBJTnlzZlA3OFhwYTI3?=
- =?utf-8?B?US9zQnFHQk96VWVyZWtSd01VZVZ0VkYyQlM0UXlmeVdXWmsvQTQwQTVSWTlO?=
- =?utf-8?B?MFdCbW5uUnZuOEhYRFNNbGRRMEZBUURSSmI1UkpwclUxaGI2TEhKUkJ1UmVN?=
- =?utf-8?B?SmZJRmRRdWpoeXdkOS9Ia2pya2JNMmJ4aElhTnJpVnF4KzRGek1jNXhkMXpx?=
- =?utf-8?B?bmVGMXh4TzFQT3dCZXgxM1BRRnhKTFhJMTlXdEU3aFZVNlBkTlRIWEM1N3BZ?=
- =?utf-8?B?VzdsbDQwL2g1N0MxT1JlcjdJNWVueTJQQUphaklpcDYzNXFPdEVYRUU2ZkFJ?=
- =?utf-8?B?Nk1CMklRREdzdVAxK0Y5ek5JRHJObmJHdDZlaDdhdUhwSzdiS2kyUnRoYUV3?=
- =?utf-8?B?OTlQUEFWQ2xVdXcwV3lub3ZrMkxlRkJuazJWUzRIbWY3WmZpbVlVOHprVGRS?=
- =?utf-8?B?TUpyb2RxTXlYdHJzTXN3ZEppcDMvaytzYlpmNWhxNU5OZDc2UHhmWUt2Yjdh?=
- =?utf-8?B?TEdOa3draWpJZmpvek5ZNnFicForTHhnV1ZCODFNcHVwYVg2azhsQ3ZwWmxa?=
- =?utf-8?B?TWR1Mmg5RGllbUlZYmh4SEo2Nk94S2Q1TEpXVG1UMUZvaU5rSTJQVmJXNDAr?=
- =?utf-8?B?SjV0S1o0UTJDZjhlZGpLMmtiZU9Dd3ZMRjJwd0szampGUzh3RnE5bnl3SGF1?=
- =?utf-8?B?aTB6M3c3eWZ0NnZPMjNKTFQ2b2VyaVNPY0FqNzFnU1ZZODAwOGNMMUN1c1Vk?=
- =?utf-8?B?cE9sWG8yWnFyWEU5bjdYUnNTL0FGaTd4bjlqTEJ3ZHovYzg0QjBkZ00xZzk4?=
- =?utf-8?B?MzRHOWJyMWo1WGlia3hLN0ZWNEVjT1MwZjBCUnlYQ3laaEhkbTNKNWxpOGRC?=
- =?utf-8?B?VTVYMC9GbEE0SWdpVEVIY2taZUYyMThYMm1CL3lXQWlIcTRFbEhjaEx5KzdQ?=
- =?utf-8?B?a3E3am16QktXNGZockZvd05IUlAwbE12bEVzRXJkcW5MMnZSMStKWE9rQlJL?=
- =?utf-8?B?SUpEWSt4VTh5N3NLVWRuVzlaVEtLa1ZJWU1nQzFSK0dlVmRnSWFpeWlHUUVH?=
- =?utf-8?B?MGthZDRCdkI1SWc9PQ==?=
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?NGdrVmQ4U2dJbnFyWnRUdGFkVGVZOGRGL1pmaFR1YUpRbFZVR0JuSDRGN3FO?=
- =?utf-8?B?eHBEMjVGN3IzZndjSGVSL3E1S0VZTWN3VXRQdnlCcGZOcDEwVzlrcExqV3Q3?=
- =?utf-8?B?OC9iTWFoTXhoaC9GTkpEQkMxRjl4NWRUbGl4SUkrOTdGMHlXNjBvS0lHNm9p?=
- =?utf-8?B?Z3plb1ZXQTkzaS9UN3hlckNHSk9mU0lUUzJNL21nK3M1RExnTE16d1hGSDY5?=
- =?utf-8?B?c21HeWVXMFVtcDVYM3FURlQ2QzB0WlVlRDRJRkxIeDUyK29MaHZGN0ZVcWlt?=
- =?utf-8?B?eVhsY3pPOGxNZlZqUkVBNUtZeG4zQmsxV1hIajg2SnRRaWZaSnVrTG1jM2lm?=
- =?utf-8?B?NDlQTVExSlRwVVEzZHAwbXRMYURmQTJyUFBya3J0SnBjQUQ1NWFVR2w0NFY4?=
- =?utf-8?B?TFpha0xJeTF0UUIwemt4aEVQVUlvaGtJMDNhSW4xWXlpazJnQy9LNk5mUG1J?=
- =?utf-8?B?YldTdDJOTnhyVzNuOXl6dEY2dHpac2dtdFc2RTVYU05taW1Zd2JmK3dXcFhj?=
- =?utf-8?B?Uk1kaUJmeGpoY1cvSVhpWlc4UEJaV3ErRTF2U0dpNXNpdGxmM2pMVUpxT0lN?=
- =?utf-8?B?SEZkRnFJeDNITzZkREQ1cXE5RjdTYkFkM3gzVUNzTWt3Zm83ZEd2Wnc4OUpF?=
- =?utf-8?B?N1dDQW5WUk1KYlZuUG1zellQR2lzdGdzdWovYU5ydDdPelhPWVVnL0w2U0Jq?=
- =?utf-8?B?akU1ck1FamNDNFF4MHJDS3BxNmYyTnEwUG1lNk5NUFpVMzRjdUVVTnF6MjdT?=
- =?utf-8?B?OW40TkxZVWRpTytTMWYxci9sU0NWQnpzR3AxbEVYb29SYkw5QVJsaythODda?=
- =?utf-8?B?SkFNeHZzSmxyZ2VVQ0Qxc29zT2MzQ1VDZ2hub1ZWOWJaT0FXMGFVVEl1SVFE?=
- =?utf-8?B?REh4NDBoZ2MremcwSUY3VmNxQjQzR3NxVWFwWUhISDJlWUVaVFlhKzBvbnRS?=
- =?utf-8?B?czRka21sd05RakJPWWpweDFOWW15Q3A1UjJqemNkSklEa0RHMVU3ZC8xWmlJ?=
- =?utf-8?B?VFZvM2E0VDYyTWNUVlBqRG1rMGlkZXNJNzZGM3NzaHMvWEN4SlFYSG5STmJt?=
- =?utf-8?B?UVNWTGplbStSZ1lvVjRVZzJNWHNTNGZ1djQzMU5VMGgrd20rM20vOE9JL3ZW?=
- =?utf-8?B?NURmeVBVUUhIV3lmenN6NmdXdGltR0J5QWpKNkc1dk5pV3Bybm9oZ1BuV1Bv?=
- =?utf-8?B?YmJ5YmZGZlJ3b2tqb1k1eDFZeFZoYnAxU0hLdElSZlVKR0pRV0NISXBkQXJH?=
- =?utf-8?B?TEkwcnc0QTBrL0FjL1VhK1NKTStrc01CaWZKQ0RlYnoreWdFbVk3SmxjbDNj?=
- =?utf-8?B?aGR3Ymx3M0tnV000NVplUFk5cWdRMjRTT3dRbnNYU2E2TSt3WCtDbzVjU0Rk?=
- =?utf-8?B?V1BVZlcrNnVvSmF3a1RaN3g4M3VHTGpNRW1YNFVTVFd6Qm5TM3I0OVRlV3pl?=
- =?utf-8?B?QTVlN0RRVzZRd2JRNkRBaUJaMVlUOEZObWo4RHZldFZPY3NoUlkxMVowL1FD?=
- =?utf-8?B?WGV6dkhwNTJkK282eTBZcjIyWC9aQU14SFpDREhkSFpIQVhiOUd4UXhXUys3?=
- =?utf-8?B?cjhpengvT25CbUxlYzBsbDluUXVjSFIrTStyaENGYkVMYkVUeXlETWNJSWYy?=
- =?utf-8?B?RWhPZnpkQVFvL0FJb2lMWlBCN1lUaXppU3kyQ1E0VzVKbzZZWkhrRU9VMk1I?=
- =?utf-8?B?TkkrMXhtcmhEM0l1cGxPeGtKNTBRNkd3R1l3eStEUU5ZeEhkajJmUTBsc3lz?=
- =?utf-8?B?UDlXR2RCWnR3OU45NE96MWpLY3lhSm5SSTJ2TlV5Y0svcU1XSitVQStLaUFy?=
- =?utf-8?B?NVN0NXhvVjVpbkd2cmFESDNQNm8rRG1QVjhpZGxrTkdxY2ZjeFhnMGEzWDZh?=
- =?utf-8?Q?IEuCB7OBUC7kZ?=
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b26fb997-f444-4495-e67e-08df40018790
-X-MS-Exchange-CrossTenant-AuthSource: TY7PR01MB804852.jpnprd01.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Nov 2026 14:39:03.5955
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYWPR01MB10742
+Content-Transfer-Encoding: 8bit
 
-On November 1, 2026 at 18:40, Jianqiang Zou wrote:
-> From: Jianqiang Zou <jq.zou@outlook.com>
-> 
-> radeonfb_set_par() derives the dot clock from the user supplied
-> struct fb_var_screeninfo:
-> 
-> 	dotClock = 1000000000 / pixClock;
-> 
-> where pixClock is copied from mode->pixclock.  A zero pixclock
-> bypasses the existing validation and makes the kernel divide by zero
-> in radeonfb_set_par().
-> 
-> The driver does have a check for this: fb_validate_mode() returns
-> -EINVAL when pixclock is 0, but radeon_match_mode() only calls it when
-> the output has no scaler and an EDID-derived mode database is
-> available:
-> 
-> 	if (has_rmx == 0 && rinfo->mon1_modedb)
-> 		if (fb_validate_mode(...))
-> 			return -EINVAL;
-> 
-> mon1_modedb is only filled in when an EDID is read, so when no
-> EDID-derived mode database is available the validation is skipped and
-> the invalid mode reaches radeonfb_set_par().
-> 
-> Reject a zero pixclock in radeonfb_check_var() before matching the
-> mode.  fb_set_var() calls it on the FBIOPUT_VSCREENINFO path before
-> ->fb_set_par(), so the invalid value is rejected before the mode is
-> applied.  This is the same check other fbdev drivers use (i740fb,
-> arkfb, s3fb).
-> 
-> Reproduced on Linux 7.3.0 using a custom QEMU PCI stub device with
-> vendor/device ID 1002:5955; no physical Radeon hardware was used.  A
-> single FBIOPUT_VSCREENINFO with pixclock = 0 is enough to trigger the
-> divide error.
-> 
-> Signed-off-by: Jianqiang Zou <jq.zou@outlook.com>
-> ---
->   drivers/video/fbdev/aty/radeon_base.c | 3 +++
->   1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-> index b6b058cee..a69e58914 100644
-> --- a/drivers/video/fbdev/aty/radeon_base.c
-> +++ b/drivers/video/fbdev/aty/radeon_base.c
-> @@ -836,6 +836,9 @@ static int radeonfb_check_var (struct fb_var_screeninfo *var, struct fb_info *in
->           int nom, den;
->   	unsigned int pitch;
->   
-> +	if (!var->pixclock)
-> +		return -EINVAL;
-> +
->   	if (radeon_match_mode(rinfo, &v, var))
->   		return -EINVAL;
->   
+Some fbdev drivers do not request their memory correctly. Request the IO
+ports' memory so no other driver may access them. Only request 1 byte,
+because the inb() and out() are used for reading and writing.
 
-Hi Benjamin and Helge,
+Did not test on hardware.
 
-I'm following up on the radeonfb patch I sent on November 1. It rejects 
-a zero pixclock in radeonfb_check_var() to prevent a divide-by-zero in 
-radeonfb_set_par().
+Signed-off-by: Daniel Matyas <matyasdaniel006@gmail.com>
+---
+ drivers/video/fbdev/arcfb.c | 8 ++++++++
+ drivers/video/fbdev/n411.c  | 5 +++++
+ 2 files changed, 13 insertions(+)
 
-Could you review the patch when you have a chance and apply it if it 
-looks good? If any changes or additional testing would help, please let 
-me know.
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index b807cf07522d..6771a7409cde 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -481,6 +481,14 @@ static int arcfb_probe(struct platform_device *dev)
+ 		printk(KERN_WARNING "no IO addresses supplied\n");
+ 		goto err_addr;
+ 	}
++
++	if (!devm_request_region(&dev->dev, dio_addr, 1, "arcfb") ||
++		!devm_request_region(&dev->dev, cio_addr, 1, "arcfb") ||
++		!devm_request_region(&dev->dev, c2io_addr, 1, "arcfb")) {
++		retval = -EBUSY;
++		goto err_addr;
++	}
++
+ 	par->dio_addr = dio_addr;
+ 	par->cio_addr = cio_addr;
+ 	par->c2io_addr = c2io_addr;
+diff --git a/drivers/video/fbdev/n411.c b/drivers/video/fbdev/n411.c
+index a3677313396e..ed0281939d37 100644
+--- a/drivers/video/fbdev/n411.c
++++ b/drivers/video/fbdev/n411.c
+@@ -165,6 +165,11 @@ static int __init n411_init(void)
+ 	if (!n411_device)
+ 		return -ENOMEM;
+ 
++	if (!devm_request_region(&n411_device->dev, dio_addr, 1, "n411") ||
++		!devm_request_region(&n411_device->dev, cio_addr, 1, "n411") ||
++		!devm_request_region(&n411_device->dev, c2io_addr, 1, "n411"))
++		return -EBUSY;
++
+ 	ret = platform_device_add_data(n411_device, &n411_board,
+ 				       sizeof(n411_board));
+ 	if (ret)
+-- 
+2.55.0
 
-Thanks,
-Jianqiang

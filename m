@@ -1,82 +1,70 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1794497976;
-	b=tSbQrY8XkvJmQ6IgchIwzfdFSVbbzB6GTee6Zn2yO+Hh1dGUHWwyrEEbVwdSB5nilVKV
-	 fPXYXGtzXZpFRixq0joJqUOXxyngPG5tjxmLzAbdKfWGq1HYkpTsQ05YxkL5YXbYhly/M
-	 HJ8YLx59nVbS7y+gpxlxJrHy8kIdp9R7Bv1LpL4Tgo7hdQ6umVg8EAyOXcYILq/Jyu1u7
-	 HqIff0zNQwCuKxGdQTLZR7+wezMRQ4ELHQ6w1Q+DS8YOjsJhL7ixtLH9AxpzxUAZUEKhZ
-	 litniFPPO3j0fK0ooTiYWL/27/4QkZkQYkSwrJ35xSE4ITjSm/bjLEwecNvqxCWv5GA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794497976;
-	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
-	 Message-ID:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:Content-Type;
-	bh=ZxYoe/p2LIG1FpzD841r8W7HIaR163eDCLpsGJEmtz4=;
-	b=es1IfPLga81GLz+egQ0f5lvavAKI+TMA5vDB8aQfGd4h1lvobjNz+AQFN166PIWAbP3M
-	 An97V79vQTGz2Qnh4++TR8RtfeJEuBKYIwL3eiIy640acuOtg0NIyMAahI0zdTxXH76KA
-	 dK5SByaX1KPHf64nKg4dGrM6EweYX80MTvzOXmi0dv2gvjn4PNyYOgN8NFM8uOXU1NEyv
-	 HX9xOq7By6aPFjsl/+QRYJ7OFvr2SWoMdvoYFi6xaERC9JP+Tk1wc6QydZvSurTWtNkS7
-	 hYS1f2YwLrqkxsZuGxaUzt1sAMXdYeVGe/ld49WDfXHdkta1it5dgG3RGC1ucwizjww==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=collabora.com;
-	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=TMZvkvEz;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
-Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=80.241.56.172
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1794511740;
+	b=BvFSzTtHfiE9W/EXfHXOh0S2OQ5hSYHiXydbGzYSMqH1VHMaWGm0gPMzcy5lJfCTNZQp
+	 M2aKSONx0hMK/HFymqpNhm25MXaBXwp1X94VXVNkU26GCo6DyrhK+DbUyq9acaWMugMPE
+	 48aLmyie9RnbxmfZxnYAfm8zd2AhRbiUVdM6Uph3xCIWK7OI1lWWMTZBYju1xjF98z+zX
+	 gvkOgg/rsIIZTUsyVvKzhfB+tNfvAPer3Mm+WNjj7xQwDUzRaDNC6jNwTOwemPAv63j60
+	 V/nkIuiMpBUYHqTgiJpHHiPNpxTVcX/uDeUuO+gyYUp4Enio9U9oBmTSfjWFDGdylMA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794511740;
+	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-MBO-RS-ID:X-MBO-RS-META;
+	bh=ccf5XW1NMi/JnOTHax4S88P+nla3YnRILZIqWBgjgjM=;
+	b=U5SKz4euQOT0OhhEttcuDXmppHEVZ5E7Z4oAiat19xk5OGB6sVZ7rOWD/zfO7xoGhhbM
+	 3gCuIbo0bqvdpJzFXol3Cj7JNtCGBshTArgnMhU6mUTToggIty49VmcdzGEHPcb1oDc64
+	 gFtoIl9byM0QfI5XfKV5ksrkrf5HhakKp5Bsv8p4DCM36QYQFTrN0gyRaeln/e1/wx7Kt
+	 Qjpe7adFcVhBoUUgn2p5VGZrmAJeh76hUtlOY11llerZ0f65uQcNTDfYk6rwr1QZaGMSR
+	 OWlYGh5tVvP08ehabnB4tZ/Uv5Ov/eJJbn3uFKHTCoaaC4Q942SzEMjTwL44UCDrD9Q==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=mailbox.org;
+	spf=pass smtp.mailfrom=mailbox.org;
+	dkim=pass header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=bPHy+O+m;
+	arc=none smtp.remote-ip=80.241.56.172
+Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org [80.241.56.172])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6850606A31C;
-	Thu, 12 Nov 2026 15:39:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E6850606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F9EA606A31C;
+	Thu, 12 Nov 2026 19:28:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9F9EA606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mailbox.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=TMZvkvEz
-ARC-Seal: i=1; a=rsa-sha256; t=1794497921; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=e/RhxOn5ZE0GIfqtyMkE4SA323oUNLcLNsDzDC0bxw5Lmw+u7YS8ekFpYwSu0BY8ELnQ87/3WcamBHwEuBBKBE4oBtHcH5q4mt2speMuOCVQRejjbbngwtu/pE1DmEHPhxyrXB9ofArKer3hr4vbfxw3Gq+BYOkz9bseOVlp2M4=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1794497921; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=ZxYoe/p2LIG1FpzD841r8W7HIaR163eDCLpsGJEmtz4=; 
-	b=K+ItBK/Xmnb5dfc2IGUa7D0pRLFGS6GE2q9hag7rI9bKFhfHv6yR1GxwBK1VqPAHKQE8+Ro/DSgFXZwcCuZSEFx0kjBtEvSYh+7twKi3GlcWJ5wYGliCERGm9fVc9DFNqPw7RE99ZhFUoigXW43z8OjZklumOQ8i0whT2c+1gfY=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
-	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
-DKIM-Signature: a=rsa-sha256; b=TMZvkvEz9E7Hwt+AShVd/pvqYCuNkFiAApgjem2APnmeAPfce8adjZ10vxZF0XPekund8Jjy1qJ6LJwVPH8Xjr7NES/NSXYdY2Gn3TDDkleaozIxJ1NDVSEOZskU2S28Fhy0J/JLOUAfYPTtVFEDmoXqcnnQ5NhKNCKNKNf95JM=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=ZxYoe/p2LIG1FpzD841r8W7HIaR163eDCLpsGJEmtz4=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
-Received: by smtp.zohomail.com with SMTPS id 1794497919967991.7552714395808;
-	Thu, 12 Nov 2026 07:38:39 -0800 (PST)
-From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-To: Vidith Madhu <vmadhu@nvidia.com>
-Cc: Xaver Hugl <xaver.hugl@gmail.com>,
- "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>,
- Leo Li <sunpeng.li@amd.com>, Harry Wentland <harry.wentland@amd.com>,
- Fangzhi Zuo <Jerry.Zuo@amd.com>, Daniel Stone <daniels@collabora.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>,
- Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>,
- Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
- Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
- Luca Ceresoli <luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
- Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>,
- Andy Yan <andyshrk@163.com>,
- Michel =?UTF-8?B?RMOkbnplcg==?= <michel.daenzer@mailbox.org>,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-rockchip@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
- Derek Foreman <derek.foreman@collabora.com>,
- wayland-devel@lists.freedesktop.org
-Subject: Re: [PATCH v2 11/27] drm: Implement VRR rate limiting
-Date: Thu, 12 Nov 2026 16:38:30 +0100
-Message-ID: <c17LZzRKRUiGxCCOaF_S9w@collabora.com>
-In-Reply-To: <ebaad99a-ef6e-3829-2c27-5ccd5dc1b498@nvidia.com>
-References:
- <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
- <20261105-vrr-limiter-uapi-v2-11-55f4215be2c2@collabora.com>
- <ebaad99a-ef6e-3829-2c27-5ccd5dc1b498@nvidia.com>
+	dkim=pass (2048-bit key, unprotected) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=bPHy+O+m
+Received: from smtp1.mailbox.org (smtp1.mailbox.org [IPv6:2001:67c:2050:b231:465::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519MLKEM768 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-202.mailbox.org (Postfix) with ESMTPS id 4jQVmy2WnrzMlFB;
+	Thu, 12 Nov 2026 20:28:50 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1794511730;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=ccf5XW1NMi/JnOTHax4S88P+nla3YnRILZIqWBgjgjM=;
+	b=bPHy+O+m3HH6XJsCkCd8MWKWxpkeKDMounytMr175GyLvuc4HcBpSpg+YquQ4RMEWHyYKm
+	YK0u0QHa6hS9hx60Sa/rgW0H/GK8OL2wsevt6KnKbnIOhAhwORERadBq+ZqmLNlfbGnzZD
+	DLJEONMw28cjcyjfsHBszdHIEd9rb1E1uZM11vbD4CUvfdHwD3YyN9Yj43e+U0cnIBh7mW
+	P/10rf1lAHUuSApilwXTXN7LPsBSnFa/8Ylck/a3/eqJzBg4J7NhB1GbKGE9pd+3vLUL2J
+	s6uUM7b89skh4CJ0EpxjnWtBBf4mN3nkPf13scGcoBW1t31xBM58Do3vICa+wA==
+From: Manuel Ebner <manuelebnerli@mailbox.org>
+To: Thomas Richard <thomas.richard@bootlin.com>,
+	Lee Jones <lee@kernel.org>,
+	Daniel Thompson <danielt@kernel.org>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>,
+	Petri Karhula <petri.karhula@novatron.fi>
+Cc: Manuel Ebner <manuelebnerli@mailbox.org>,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] backlight: Fix kernel-doc
+Date: Thu, 12 Nov 2026 20:27:43 +0100
+Message-ID: <20261112192744.850142-1-manuelebnerli@mailbox.org>
+X-Mailer: git-send-email 2.56.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -86,135 +74,34 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-MBO-RS-ID: 7daa768aaa933052410
+X-MBO-RS-META: 9azndg7mmh5xfyc7pzicq6bgsqkosin5
 
-On Thursday, 12 November 2026 06:35:44 Central European Standard Time Vidith Madhu wrote:
-> 
-> On Thu, 5 Nov 2026, Nicolas Frattaroli wrote:
-> 
-> > Currently, VRR is allowed to use the entire range advertised by the
-> > sink's EDID. Userspace may find it desirable, however, to limit this
-> > range, or set a fixed target rate entirely. The latter is mainly useful
-> > for multimedia playback applications, where judder can be avoided by
-> > matching the content's frame rate precisely.
-> > 
-> > With the new VRR target frame rate properties, the necessary
-> > infrastructure is in place to allow implementing this.
-> > 
-> > Add the necessary logic to hdmi_validate_vrr, as well as the VRR
-> > helpers. Since not every target rate can be reached precisely, the
-> > per-frame error is calculated, and dithered one row at a time across
-> > subsequent frames. This means some frames are one vtotal larger than
-> > others, so that averaged over the frames, the desired target rate is
-> > achieved. Such dithering is explicitly permitted by HDMI, and is still
-> > considered a constant target frame rate.
-> > 
-> > Co-developed-by: Derek Foreman <derek.foreman@collabora.com>
-> > Signed-off-by: Derek Foreman <derek.foreman@collabora.com>
-> > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
-> > ---
-> >  drivers/gpu/drm/display/drm_hdmi_state_helper.c | 134 +++++++++++++++++++++---
-> >  drivers/gpu/drm/drm_crtc_helper.c               |  34 +++++-
-> >  include/drm/drm_crtc.h                          |   3 +
-> >  include/drm/drm_crtc_helper.h                   |   2 +
-> >  4 files changed, 156 insertions(+), 17 deletions(-)
-> > 
-> > diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-> > index ce680eaa5047..846f7a72fddc 100644
-> > --- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-> > +++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-> > @@ -5,6 +5,7 @@
-> >  
-> >  #include <drm/drm_atomic.h>
-> >  #include <drm/drm_connector.h>
-> > +#include <drm/drm_crtc_helper.h>
-> >  #include <drm/drm_edid.h>
-> >  #include <drm/drm_modes.h>
-> >  #include <drm/drm_print.h>
-> > @@ -1051,15 +1052,60 @@ static int hdmi_calculate_vtotal(const struct drm_display_mode *mode,
-> >  	return 0;
-> >  }
-> >  
-> > +static int hdmi_validate_vrr_limits(struct drm_crtc_state *crtc_state, u16 vrr_min)
-> > +{
-> > +	struct drm_crtc_vrr_state *vrr_state = &crtc_state->vrr_state;
-> > +	const struct drm_display_mode *mode = &crtc_state->mode;
-> > +	u32 limit_d;
-> > +	u8 round;
-> > +	int ret;
-> > +
-> > +	/* No limiter, don't need to validate, but reset the error */
-> > +	if (!drm_crtc_helper_vrr_is_fixed_rate(vrr_state)) {
-> > +		vrr_state->per_frame_err = 0;
-> > +		vrr_state->cur_err = 0;
-> > +		return 0;
-> > +	}
-> > +
-> > +	/* Don't allow rates equal to or below the minimum VRR rate / 1.001 */
-> > +	if (cmp_fraction(vrr_state->vrr_min_n, vrr_state->vrr_min_d,
-> > +			 vrr_min * 1000, 1001) < 0)
-> > +		return -EINVAL;
-> > +
-> > +	if (check_mul_overflow(mode->crtc_htotal, vrr_state->vrr_min_n, &limit_d))
-> > +		return -ERANGE;
-> > +
-> > +	ret = hdmi_calculate_vtotal(&crtc_state->mode, vrr_state->vrr_min_n,
-> > +				    vrr_state->vrr_min_d, &vrr_state->base_vtotal,
-> > +				    &vrr_state->denom, &vrr_state->per_frame_err);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	/* Allow rounding up for the vtotal check below */
-> > +	if (vrr_state->per_frame_err >= vrr_state->denom / 2)
-> > +		round = 1;
-> > +	else
-> > +		round = 0;
-> > +
-> > +	if (vrr_state->base_vtotal + round < mode->crtc_vtotal)
-> > +		return -EINVAL;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> I believe in the previous revision we discussed factoring out the 
-> protocol-agnostic validation of the CRTC frame limit ranges properties
-> (e.g. checking against min/max_vfreq, checking for a degenerate range)
-> to the main CRTC atomic check path. Is that still the intention?
+This comment describes a struct as a kernel-doc. Format as such, fixing:
+  $ ./scripts/kernel-doc --none drivers/video/backlight/cgbc_bl.c
+  Warning: drivers/video/backlight/cgbc_bl.c:29 This comment starts with '/**', but isn't a kernel-doc comment. Refer to Documentation/doc-guide/kernel-doc.rst
+   * CGBC backlight driver data
 
-I think the validate limit function could be moved to the CRTC helpers.
-I did try to move the whole hdmi_validate_vrr logic to CRTC, but that
-doesn't work because a lot of it requires the connector.
+Fixes: b516456e9f91 ("backlight: Add Congatec Board Controller (CGBC) backlight support")
+Signed-off-by: Manuel Ebner <manuelebnerli@mailbox.org>
+---
+ drivers/video/backlight/cgbc_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I'll move the limit validation to the protocol-agnostic CRTC helpers then
-and have the passed-in params be whatever the CRTC doesn't know of itself,
-so that it's at least reusable for non-HDMI-state-helper drivers.
-
-> 
-> >  static int hdmi_validate_vrr(struct drm_connector *connector,
-> >  			     struct drm_atomic_commit *state)
-> >  {
-> >  	struct drm_connector_state *new_conn_state =
-> >  		drm_atomic_get_new_connector_state(state, connector);
-> > +	struct drm_connector_state *old_conn_state =
-> > +		drm_atomic_get_old_connector_state(state, connector);
-> >  	struct drm_crtc_state *new_crtc_state =
-> >  		drm_atomic_get_new_crtc_state(state, new_conn_state->crtc);
-> >  	struct drm_crtc_vrr_state *vrr_state =
-> >  		&new_crtc_state->vrr_state;
-> > +	struct drm_crtc_vrr_state *old_vrr_state;
-> > +	struct drm_crtc_state *old_crtc_state = NULL;
-> >  	struct drm_display_info *info = &connector->display_info;
-> >  	const struct drm_display_mode *mode = &new_crtc_state->mode;
-> >  	struct drm_device *dev = connector->dev;
-> > @@ -1068,10 +1114,14 @@ static int hdmi_validate_vrr(struct drm_connector *connector,
-> >  	u32 min_vfreq_d = 1;
-> >  	u32 max_vfreq_n = info->hdmi.vrr_cap.vrr_max;
-> >  	u32 max_vfreq_d = 1;
-> > +	bool is_fixed;
-> >  
-> [snip]
-
-
-
+diff --git a/drivers/video/backlight/cgbc_bl.c b/drivers/video/backlight/cgbc_bl.c
+index 3be140284e..63408fe40f 100644
+--- a/drivers/video/backlight/cgbc_bl.c
++++ b/drivers/video/backlight/cgbc_bl.c
+@@ -27,7 +27,7 @@
+ #define CGBC_BL_MAX_BRIGHTNESS     100
+ 
+ /**
+- * CGBC backlight driver data
++ * struct cgbc_bl_data - CGBC backlight driver data
+  * @dev: Pointer to the platform device
+  * @cgbc: Pointer to the parent CGBC device data
+  * @current_brightness: Current brightness level (0-100)
+-- 
+2.56.0
 

@@ -1,102 +1,102 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794468230;
-	b=4XDeA2FjS2yd0mlI947fEiD7d5Hz9mR0y+v0zCostVDYVv0u9C2CM/gAhxtMkXm5QOkC
-	 J6ysKXhTXy1wNtQ2GymsfKBI8moO05111FNM3GHb6BhAJJ2CPEU7mV4+v0zObtEm9btBd
-	 pIJ8maOmiuY6WR9ESLJkL9NBvhO85qqZsZKfGwf+1YDotwgOvHjl5VyUOHLafoUkziZKW
-	 bADjBdBBgep8NUMZER3RxoxcDHreV1QG4srMc//tOvmzIHoHOs/H4hvgmMCkCIiiQIKhS
-	 /mMiOsZvohmqGeQgeeUNKlaR5QLspGW8GXOWF21aZSiqDuP7+0HQqv1DDsKYzOwHVEA==
+	t=1794468962;
+	b=CPrlsvq8d8qo0viylyBqCgyYWwlmLDDbdEoHuUvlhoSWHKdBowuXWImpbkiTHKEHRoPP
+	 0miTKzWjC28zxZhn0MHWcoQejXS6s8JDyZgEfh/Ay1TWOsVcG0yQzp/XKtqzUM7gelDnR
+	 mYPN/0OzZ5iq1WyKATlXwisXVqrcQJdC+sa5EBA1PLOsA5zDn5eWsCsqYCkKWd3hZvV0f
+	 oakdsaI5DmeYpamF/QWvKu0q+BzWsKLYvLuEkZ9XlQjJpTF9aFYYZnuhUoNyMAZg8V/Ei
+	 UtHWHBfYsNFmLfPblcXiYaHEvABvN19//Q4F7sFziOAl7Zb/2AKUHwwYqj5F+wytWBQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794468230;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794468962;
 	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
 	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
 	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
 	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spam-Flag:
 	 X-Spam-Level:X-Spamd-Result:X-Spam-Score;
-	bh=LrLWvSoaY1mTWu+pultD2YRxju02DepMVtHczLMKjio=;
-	b=qZ4Mq8cHaaSLk1swCV7MampJ7oZoS8YpQhmrS0LgVu0YOhLW4CzjvVU9dr1ty8M6L/tY
-	 3u0p3gp6lgdIuxXrT2P4026ufsI5hBRUki9HrncOjiHQ6uv1yueNMP0lO0Mkxv24FKJA3
-	 hDHySbcF2umbkE9zObOhk4BZE6oDRBz5D7v5mnNoIgJwOadA4xFLgbbFtYMYRtoF8yV3E
-	 R9GHOCxcrdjbr5ogmUOVlzHxPL7vB/JFK8SGe0JzcgIO/ezIGQGhcDL1hTVWiSZZ5vCxr
-	 4YNjUzb7BM0IekiJHfpYYIcnF7LcedF5AX8GMEyRAlGfSXDkqtBi3WvS2ALToQ4HR4w==
+	bh=eLrr8pKqqR7ShkRhC77eJ4XB0RZSE5KVokQnCulB2o4=;
+	b=wo00OQUpBNlYnvBqlyefkru30LUQVTYINYMbVwQRp4bfiuOvLyais4HFjtgx6UktEwpS
+	 q7eIGvgXuT0qgAISvINk/kg1WS8mY2z5/jumTRmAh1TBZuMuhuDVIJVZxsQIr2CMeOe9p
+	 oaSTeyEnMM8cNMC8PsGC1p3BFtuRAbnCICDcYSQT1NaGD1bCLr1yHQm4CtlZXl1Zy/mkz
+	 y7OamtRw8vee8x+8/MUeK7GMaMsaHRLkBIvZkZ+yALiOvNaUJYdcIeuem8LAub3+DgNJy
+	 fNFiD3uhrIsjVjr1zlhc6kZbWHvQ3sjlMuht7vfhYM+drUEiZUHwcrNIM3JTYVXc9gA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=suse.de;
 	spf=pass smtp.mailfrom=suse.de;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=GhiT493d;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Vs8S84HZ;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=GhiT493d;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Vs8S84HZ;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=SWfGlL5S;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b="Sa/bc71A";
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=SWfGlL5S;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b="Sa/bc71A";
 	arc=none smtp.remote-ip=195.135.223.130
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9AE05606A31C;
-	Thu, 12 Nov 2026 07:23:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9AE05606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 235CC606A31C;
+	Thu, 12 Nov 2026 07:36:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 235CC606A31C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=GhiT493d;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Vs8S84HZ;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=GhiT493d;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Vs8S84HZ
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=SWfGlL5S;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Sa/bc71A;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=SWfGlL5S;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Sa/bc71A
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A0CB921E0C;
-	Thu, 12 Nov 2026 07:23:47 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 2BC5421E2E;
+	Thu, 12 Nov 2026 07:36:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794468227; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1794468960; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=LrLWvSoaY1mTWu+pultD2YRxju02DepMVtHczLMKjio=;
-	b=GhiT493dn1rQPY6sEiC/+cNJbGQ9cnRV9fhDN6xQ4jh49qtzvn0mvvKw8pQGgFdzLiVD5k
-	qTwaXWZviU2XzFPCq8iGMZDGpd/eYRQWjt/wQt6LQzCcMXIeawCo3LAUzLvMl90etzlIUN
-	6f2ed62FwxYqw4GGgVbayn+/OdL6zWI=
+	bh=eLrr8pKqqR7ShkRhC77eJ4XB0RZSE5KVokQnCulB2o4=;
+	b=SWfGlL5SP9QxUigmvUkfyufsOScTBkV0SKYv4XyB00QDFc56vIRgnLoooVn4Kfz5I6sU8G
+	2TK/UiWAb60R81XNi8V6KibQBmpzUHvjBvSdB5YOMNrZCh/UDV61tfqznjFnZFjuE5zMid
+	PhpBGV6jwyk26HJYE9lmUNvnG+oeKj4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794468227;
+	s=susede2_ed25519; t=1794468960;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=LrLWvSoaY1mTWu+pultD2YRxju02DepMVtHczLMKjio=;
-	b=Vs8S84HZU7917LbWn4O7s9YkA7PM+FX7zxwU9qDRYlitFAocwxDCAS1zUN7lgOCtNlBsqt
-	Zp/Nuajx/CaJ11AQ==
+	bh=eLrr8pKqqR7ShkRhC77eJ4XB0RZSE5KVokQnCulB2o4=;
+	b=Sa/bc71AVe/647ejfmkcDQX8ZQ9mMjzepp6L1XlFCiZXlLt06zcX3shwy7VBKqckpNTto4
+	sg0Ykd6hzc53DsAA==
 Authentication-Results: smtp-out1.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794468227; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1794468960; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=LrLWvSoaY1mTWu+pultD2YRxju02DepMVtHczLMKjio=;
-	b=GhiT493dn1rQPY6sEiC/+cNJbGQ9cnRV9fhDN6xQ4jh49qtzvn0mvvKw8pQGgFdzLiVD5k
-	qTwaXWZviU2XzFPCq8iGMZDGpd/eYRQWjt/wQt6LQzCcMXIeawCo3LAUzLvMl90etzlIUN
-	6f2ed62FwxYqw4GGgVbayn+/OdL6zWI=
+	bh=eLrr8pKqqR7ShkRhC77eJ4XB0RZSE5KVokQnCulB2o4=;
+	b=SWfGlL5SP9QxUigmvUkfyufsOScTBkV0SKYv4XyB00QDFc56vIRgnLoooVn4Kfz5I6sU8G
+	2TK/UiWAb60R81XNi8V6KibQBmpzUHvjBvSdB5YOMNrZCh/UDV61tfqznjFnZFjuE5zMid
+	PhpBGV6jwyk26HJYE9lmUNvnG+oeKj4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794468227;
+	s=susede2_ed25519; t=1794468960;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=LrLWvSoaY1mTWu+pultD2YRxju02DepMVtHczLMKjio=;
-	b=Vs8S84HZU7917LbWn4O7s9YkA7PM+FX7zxwU9qDRYlitFAocwxDCAS1zUN7lgOCtNlBsqt
-	Zp/Nuajx/CaJ11AQ==
+	bh=eLrr8pKqqR7ShkRhC77eJ4XB0RZSE5KVokQnCulB2o4=;
+	b=Sa/bc71AVe/647ejfmkcDQX8ZQ9mMjzepp6L1XlFCiZXlLt06zcX3shwy7VBKqckpNTto4
+	sg0Ykd6hzc53DsAA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 21D47134A0;
-	Thu, 12 Nov 2026 07:23:47 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id AC663134A0;
+	Thu, 12 Nov 2026 07:35:59 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id xVu5NIJp9WqCBAAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Thu, 12 Nov 2026 07:23:47 +0000
-Message-ID: <75df518a-41c2-4dda-98fa-61064f8327fb@suse.de>
-Date: Thu, 12 Nov 2026 08:23:46 +0100
+	id WBbQIF9s9WrAEAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Thu, 12 Nov 2026 07:35:59 +0000
+Message-ID: <8a697d14-18c3-454c-979b-7042f16c66ba@suse.de>
+Date: Thu, 12 Nov 2026 08:35:59 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -107,8 +107,9 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] fbdev: simplefb: Add mono framebuffer format
-To: Helge Deller <deller@gmx.de>, Sebastian Raase <linux@sraa.de>
+Subject: Re: [PATCH 2/2] dt-bindings: display: simple-framebuffer: Document
+ mono format
+To: Sebastian Raase <linux@sraa.de>
 Cc: Hans de Goede <hansg@kernel.org>,
  Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
  Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
@@ -116,12 +117,9 @@ Cc: Hans de Goede <hansg@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, linux-fbdev@vger.kernel.org,
  dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
+ linux-kernel@vger.kernel.org, Helge Deller <deller@gmx.de>
 References: <cover.1793758480.git.linux@sraa.de>
- <6c207278c23d11f2c17cee383d422c3295cc7d97.1793758480.git.linux@sraa.de>
- <16220356-767a-4f1d-9b24-5b1f960e04cb@gmx.de>
- <1b37c7d3-f8d0-4023-b0bc-4770ec2b17d6@suse.de>
- <9330c733-bb42-4bfb-bdec-d012b651475e@gmx.de>
+ <258a1228601ab9b5dbb8f077dacf61121b641f15.1793758480.git.linux@sraa.de>
 Content-Language: en-US
 From: Thomas Zimmermann <tzimmermann@suse.de>
 Autocrypt: addr=tzimmermann@suse.de; keydata=
@@ -148,7 +146,7 @@ Autocrypt: addr=tzimmermann@suse.de; keydata=
  SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
  Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
  4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <9330c733-bb42-4bfb-bdec-d012b651475e@gmx.de>
+In-Reply-To: <258a1228601ab9b5dbb8f077dacf61121b641f15.1793758480.git.linux@sraa.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Spam-Flag: NO
@@ -161,57 +159,76 @@ X-Spamd-Result: default: False [-11.79 / 50.00];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
 	XM_UA_NO_VERSION(0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_TO(0.00)[gmx.de,sraa.de];
-	ARC_NA(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RCPT_COUNT_TWELVE(0.00)[14];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,linux.intel.com,gmail.com,ffwll.ch,vger.kernel.org,lists.freedesktop.org];
-	RCVD_COUNT_TWO(0.00)[2];
-	TAGGED_RCPT(0.00)[dt];
-	MID_RHS_MATCH_FROM(0.00)[];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url]
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	TAGGED_RCPT(0.00)[dt];
+	RCPT_COUNT_TWELVE(0.00)[14];
+	RCVD_TLS_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
+	TO_DN_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,linux.intel.com,gmail.com,ffwll.ch,vger.kernel.org,lists.freedesktop.org,gmx.de];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:url,sraa.de:email]
 X-Spam-Score: -11.79
 
 Hi
 
-Am 11.11.26 um 18:52 schrieb Helge Deller:
-> On 11/11/26 16:27, Thomas Zimmermann wrote:
->> Hi Helge
->>
->> Am 11.11.26 um 00:25 schrieb Helge Deller:
->>> On 11/4/26 03:34, Sebastian Raase wrote:
->>>> Add a new simple-framebuffer format for monochrome 1 bit-per-pixel
->>>> framebuffers. Monochrome framebuffers are not true color, so their
->>>> visual is set to FB_VISUAL_MONO10 (set pixels are bright).
->>>>
->>>> Signed-off-by: Sebastian Raase <linux@sraa.de>
->>>> ---
->>>>   drivers/video/fbdev/simplefb.c         | 2 ++
->>>>   include/linux/platform_data/simplefb.h | 1 +
->>>>   2 files changed, 3 insertions(+)
->>> series applied to fbdev git tree.
->>
->> Isn't that a bit premature? There's no use-case give; except because-
->> we-can.  And doesn't it require a review from DT maintainers?
+Am 04.11.26 um 03:34 schrieb Sebastian Raase:
+> This is a 1 bit-per-pixel monochrome format, with 8 pixels/byte.
 >
-> I'm happy to add any Reviews or Acks, or drop it again if there are 
-> any objections.
+> Signed-off-by: Sebastian Raase <linux@sraa.de>
+> ---
+>   .../devicetree/bindings/display/simple-framebuffer.yaml         | 2 ++
+>   1 file changed, 2 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> index 45ffdebc9d86..c627ec088434 100644
+> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> @@ -94,6 +94,7 @@ properties:
+>     format:
+>       description: >
+>         Format of the framebuffer:
+> +        * `mono` - 1-bit packed pixels, 8 pixels/byte
 
-Ok, sure. No general objections from my side.
+I don't object the change, but I really object the naming.
+
+Mono is not a good name because it doesn't describe the format's pixel 
+layout. For example, RGB with only 2 colors is also mono in some sense.
+
+The common names used in the Linux kernel for this type of color format 
+are C1 and R1. More generally speaking,
+
+  - Cn describes an n-bit format with a palette. The pixel bits index 
+into the palette.  Pixels are packed.
+  - Rn describes an n-bit format with a single color channel. The 
+channel has linear color gradient. Pixels are packed.
+
+In your case, you'd define 'r1'. While at it, we can also define r2, r4, 
+and r8.  The terminal supports up to 16 colors, so implementing r4 might 
+be of interest to some simple hardware.
 
 Best regards
 Thomas
 
->
-> Helge
+
+>           * `a1r5g5b5` - 16-bit pixels, d[15]=a, d[14:10]=r, d[9:5]=g, d[4:0]=b
+>           * `a2r10g10b10` - 32-bit pixels, d[31:30]=a, d[29:20]=r, d[19:10]=g, d[9:0]=b
+>           * `a8b8g8r8` - 32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r
+> @@ -106,6 +107,7 @@ properties:
+>           * `x8r8g8b8` - 32-bit pixels, d[23:16]=r, d[15:8]=g, d[7:0]=b
+>           * `x8b8g8r8` - 32-bit pixels, d[23:16]=b, d[15:8]=g, d[7:0]=r
+>       enum:
+> +      - mono
+>         - a1r5g5b5
+>         - a2r10g10b10
+>         - a8b8g8r8
 
 -- 
 --

@@ -1,119 +1,82 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.45
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794496941;
-	b=ojQVqcTT4hV6KZrhXL3+VLNNTbDp+sPuOYWBS8SNaK0R/7PqVh2QPb1/sWNp8TB/vEK3
-	 ZButLDfspJPKoPqEY6umQYpg2eKo+d6khu/hetw29BBpFBv2eLvaTbsbgAf1cdBdea/j9
-	 RjfYwoTxs+Jte+W9nEkfPh8qlvyeAwIPn44ioGlsxgldTrE/SWK/fgcYuuo2CRkFYu41J
-	 KliFniTnzpvlYTMZ7k1DABd4/EGIOePRJ+nsXv8gJxoFY2u8OXCNYMDgyNMe/HPBoKfKM
-	 1ZHKIJ11mM1JUwQFCLbn37NXL7EdMy3c/LI3O1sFm+qGvNwnxJ2sXxqvRIZ01NxL7XA==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794496941;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding;
-	bh=E8QRxqca6MPKKmYjqBq9RkAfrZBWcYxQ/ymz9RyAO8Y=;
-	b=MrO4dHzunYuBpOPufIZ5e3fYwGfHK1i8QaMbpFYUPBOTCWC+PFqjmlnplcm4DFBSyJs3
-	 c8694tWQJRo95IhsOwVj7bg3SdhYm+w2LY+WE+oA4QPL8u4jg/l/s2TBgv1v7wc2c5I2W
-	 xhpeUnWgrPYBNp4Vf/8tUPh/T5WuPadBu7UM9e8aD14wev7XiXaYArQ522cI3tMMSvAjJ
-	 zegWYSculF8/GsZhTmNOf9I6bMEGic++qukWZLPqJPjCFbXMbtTRocgNihIJb8Ru3EOLq
-	 cwArHaYrKWhSs1S+Od2OR4lOSUL/9VQwfJZb9/r8JsiDJ9GgD/NnBm3RAp0splMWOZQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CFNCS1RQ;
-	arc=none smtp.remote-ip=209.85.128.45
-Received: from mail-wm1-f45.google.com (mail-wm1-f45.google.com [209.85.128.45])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794497723;
+	b=iyVCQJgo2FL0xXh6Rhsccws5xcRZd/40OA55XeuK/V11qqEnkAUWlo0b83YPy2fTWqLu
+	 /3n/bmFmZTGhqiAL8/MsDvULrvxxC0NIYjSCQaRdlAM1oGgYh2KapRPB6VgO+SfnEGDi1
+	 qfgrhsxl5iH4LaOWVSLy5xZROFYqj7lclbZvssntfZkdl2Uo/GRHbSSBSkRv+0MX+pcyh
+	 mTOnUO/vCGV9s5EtorjsfPfqh+6FPiykYplQ4IZEzIolQgw6PW2w9wIl3rWTs7bEw6Vtr
+	 3HdelA5+LABkzSFNNwHrponKaWjGSh2B+xQ3WqTpxC6otd8uIiAafloKM8POJuW9Q1Q==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794497723;
+	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
+	 Message-ID:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type;
+	bh=WjpgXx6NEvfU1QpeJ8K6NIoACTTNQ40ei6HG54E25G4=;
+	b=l4VzCf0G4Go2o41nxKrRqyQJF6UH1WMHg/P3bjppSUxXNh4XJRxx/mFy0booYG3ML9sc
+	 IMJt0CfmSxCBdOrLBAJqGWM4L3q1rC1oFh9aOHJHI7HU04BMR+3N+l8P1Hsq1mFxRvpls
+	 +jT1aAMQ1+v3SkuvA4x708qynDQ5xNkd9tdYMnPvejfEOL1vB4r2rWMLo+yLuNT42BCXH
+	 dF5+iSrfZipb5tcEgRAmVsmcgCXPjvswdjXCinRvI/xFyqnHnMn6HVFR4eTlE7OsyNM4y
+	 rfaXWJYS4Crc7R9uJamtxk9pV4O+Buja95L4qBG0guXdffYFMKhF9NB1ERZuH0mSgwQ==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=collabora.com;
+	spf=pass smtp.mailfrom=collabora.com;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=dXXu9RMD;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=136.143.188.112
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62BC060A3827
-	for <linux-fbdev@vger.kernel.org>; Thu, 12 Nov 2026 15:22:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 62BC060A3827
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 718D6606A880;
+	Thu, 12 Nov 2026 15:35:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 718D6606A880
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CFNCS1RQ
-Received: by mail-wm1-f45.google.com with SMTP id 5b1f17b1804b1-4a207b02a2cso30772695e9.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 12 Nov 2026 07:22:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794496940; x=1795101740; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=E8QRxqca6MPKKmYjqBq9RkAfrZBWcYxQ/ymz9RyAO8Y=;
-        b=CFNCS1RQhtbSxMwdv4RT7HaDOzw5D755nrRVwkL4k/OwRxOF9nDaPmGgbE6aBTSXWH
-         msk1dQ3pVIxMk4yUT4CG9M7TNrpwaoIvNpJ3/pm/e0iSCd4XEBJKI8p9xJEwtSIfutCC
-         stsi/5l34qljqB3RcnE4mIfJDNGptsv048CrwnBwOr0aEQYAk0b59wCbdRvQ6o8OL+fb
-         cvAtr7bg4Ikai7/soQQ6V0PODVJ4pPFSeLLwUnbQMGtni8xKfY3UKMvp3w+fEstsPVjc
-         i5FAdugW53dj2trdg9Fn6RkfhC18gt5RpmdSGsBIKL2h48wr0gH7pQH+a3qJOwITfh9h
-         SU1Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794496940; x=1795101740;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=E8QRxqca6MPKKmYjqBq9RkAfrZBWcYxQ/ymz9RyAO8Y=;
-        b=0PE6Qq5NpRQtoyjtP71rCobJ+PBFqxtCgIKHW/nn7L/2Kyn2MMjDBglWRu/kKO15Vh
-         RdAqLvHhasMNjnMgum5NzZ8d1MAKvEqU56m4hbCT9yBlDGE6tSYlY1u+6WD820lldjMj
-         BU0UL7J+5+o6px2m+oUkaOmF5+I1IHcWHWD1PmgQXkPCluC65ggGjVI99zyTfBh4ZunR
-         UVtMsRyxFcLfsC6JdNtMgFYHC9yifnHShqoBy37c1RotprMWPpgkVEOly0Frxu4G0H5b
-         sjABMxyiOfku96AhOL779gqVRii715IldkQWSFxYc95GOdLgZrbjAb4Tqt/rLHstaXms
-         N2WA==
-X-Forwarded-Encrypted: i=1; AL+hErG9Bn6YdZ9E5+yjvPOgLNxWkWtMYzYBTa+/rm1NfaB5cOGwC7RaGO3IK327BQ/5sFnPNPnA2u+Uc1T6rw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9vOtf57lYW4HtN9cMjWsNw9m+aG67ofjSH/FiY3P67sOVQiKN/
-	ar6Dete2wE2qYRygy8g8k9mIjSDrL8Xc8bm1nZ/lJadNow1rNDGkyYtb
-X-Gm-Gg: AYBFou2DKMX4NhSbiAy3FosmK29YKYQZxVXdXy5BjgW9FZynBstVh6pM4DVaGSj2s8O
-	Dy9RhKm9AglDtgFtA57Zq/07TVZfTf8hetXp+N5JJ8xRUEMINoYLGw6CfxkBndMndhA7VtivWES
-	iq2XqviKm4F0eLdeuTbTSSYhdjfSTc2OkwoI+2uG54/8SqxwNcln7xyEbEsjU5wuHBhQw0wtK8c
-	4gefnujC3Zff4pRebnh9Wxv4BBG+TDEZXO7pv2Eeb05+sj4tJg/5Lzia7snkUlQjD8Pe7qgKbDY
-	P5FlHnEh06v52TYRvPa20e5XaObT8LPJ+q5ODiRm5UjYGO4f6ScwjO106gUlDeZRe5cH8vHwbv+
-	ZbBVjZqs/JzsqAnPljeENQ2YMaTEJ4rrXQFb01yrEPRykkatdkceq2gkcIlhrApjOGtnvXL9ajq
-	YpvsaPqQn27xeZbCpxw+0Xpm6q9CmkFdKl9QhLJmka/OvIk1YqueFlsxC51EJ669k8/WJHjWkAh
-	e2sva996SKZ2ScLIPuMAAaj/QvZDOEf6MQnrYsq4v4Jof7VBuAl2BG5XitV2X60iXm2yUSy/w+Z
-	bsuzDEwzeMZV1kvHjerPEfAsC9EBslj2abSJuCLC37Vru2z9I5ZZKzE=
-X-Received: by 2002:a05:600c:1c0d:b0:4a2:1e1:d55 with SMTP id 5b1f17b1804b1-4ba093a3cf9mr132094285e9.28.1794496939343;
-        Thu, 12 Nov 2026 07:22:19 -0800 (PST)
-Received: from ingenieria31.oficinasStQ.local ([79.117.0.220])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb4e252f7fsm84746205e9.2.2026.11.12.07.22.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Nov 2026 07:22:18 -0800 (PST)
-From: =?UTF-8?q?M=C3=A0xim=20Pedraza=20Padilla?= <maximpedraza@gmail.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Javier Martinez Canillas <javierm@redhat.com>,
-	Francesco Valla <francesco@valla.it>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Helge Deller <deller@gmx.de>,
-	Peter Jones <pjones@redhat.com>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Jocelyn Falempe <jfalempe@redhat.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	dri-devel@lists.freedesktop.org,
-	devicetree@vger.kernel.org,
-	linux-efi@vger.kernel.org,
-	linux-fbdev@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-embedded@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 00/15] Add splash DRM client
-Date: Thu, 12 Nov 2026 16:22:09 +0100
-Message-Id: <20261112152209.3297409-1-maximpedraza@gmail.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <066197a1-aa2b-455b-84d8-4e2215fad764@suse.de>
-References: <20261027135342.2003632-1-maximpedraza@gmail.com> <066197a1-aa2b-455b-84d8-4e2215fad764@suse.de>
+	dkim=pass (1024-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=dXXu9RMD
+ARC-Seal: i=1; a=rsa-sha256; t=1794497650; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=Kq9864SPyKvjjMeRkdipd1E35RQlhbP0ilf6aRZxwioSOZqJRi4hUgIpli49TkACpJs+Y+kjV6OsGiZxnOZqzJermko4nVXap6/lqVSYHa2aNJw6g0Y3tpGksvDE4DkMYnrAfxunpoEEzUVTaolJTZO8gQJBTUMKJoi57CBjCzw=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1794497650; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=WjpgXx6NEvfU1QpeJ8K6NIoACTTNQ40ei6HG54E25G4=; 
+	b=jL5Z6j3nO2eolGSsRFZwEnO/838+wTgReS9TqAHhUAFdXOgBTW7XKnEbORC6W1mUieN9qv06Pt5BNh7oW24fhayZSLAz6BGrt7LWsS2M6thyaMb9UjUhFZjVOa2fynYf6xhhtGDtD9Bz/wduku52/5YHoX1lJDB+kQ5uqvbN8og=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=nicolas.frattaroli@collabora.com;
+	dmarc=pass header.from=<nicolas.frattaroli@collabora.com>
+DKIM-Signature: a=rsa-sha256; b=dXXu9RMDE0xezo6kZ18H2VSiccbq6FlBnZmCo/DcR2ZMbbhHVHrljwAtBAOFm859uXeyyFX/pUyOZhP/wCxZjlKTahs83Fb6HxhROSkyXKsfHvpVpiRwl+92SWmr9RTRScyeK+9IbHmEctP9m3I0//4XQtkGXz38uRPAqK1914E=; c=relaxed/relaxed; s=zohomail; d=collabora.com; v=1; bh=WjpgXx6NEvfU1QpeJ8K6NIoACTTNQ40ei6HG54E25G4=; h=Content-Description:Content-ID:Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:List-Subscribe:List-Post:List-Owner:List-Id:List-Archive:List-Help:List-Unsubscribe:MIME-Version:Message-ID:Resent-Sender:Resent-Cc:Resent-Date:Resent-To:Reply-To:Resent-Message-ID:Resent-From:Sender:Subject:To:Date:From:Message-Id:Reply-To:Subject:To:Cc;
+Received: by smtp.zohomail.com with SMTPS id 1794497647702543.2304470024969;
+	Thu, 12 Nov 2026 07:34:07 -0800 (PST)
+From: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+To: Vidith Madhu <vmadhu@nvidia.com>
+Cc: Xaver Hugl <xaver.hugl@gmail.com>,
+ "Borah, Chaitanya Kumar" <chaitanya.kumar.borah@intel.com>,
+ Leo Li <sunpeng.li@amd.com>, Harry Wentland <harry.wentland@amd.com>,
+ Fangzhi Zuo <Jerry.Zuo@amd.com>, Daniel Stone <daniels@collabora.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, Andrzej Hajda <andrzej.hajda@intel.com>,
+ Neil Armstrong <neil.armstrong@linaro.org>, Robert Foss <rfoss@kernel.org>,
+ Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+ Jonas Karlman <jonas@kwiboo.se>, Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Luca Ceresoli <luca.ceresoli@bootlin.com>, Sandy Huang <hjc@rock-chips.com>,
+ Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>,
+ Andy Yan <andyshrk@163.com>,
+ Michel =?UTF-8?B?RMOkbnplcg==?= <michel.daenzer@mailbox.org>,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
+ Derek Foreman <derek.foreman@collabora.com>,
+ wayland-devel@lists.freedesktop.org
+Subject: Re: [PATCH v2 09/27] drm: Add VRR target frame rate properties
+Date: Thu, 12 Nov 2026 16:33:58 +0100
+Message-ID: <6MnpleYQQheiUMA8VObDVg@collabora.com>
+In-Reply-To: <812a813c-05cf-190d-6006-b8f63764beb7@nvidia.com>
+References:
+ <20261105-vrr-limiter-uapi-v2-0-55f4215be2c2@collabora.com>
+ <20261105-vrr-limiter-uapi-v2-9-55f4215be2c2@collabora.com>
+ <812a813c-05cf-190d-6006-b8f63764beb7@nvidia.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -123,53 +86,113 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-Hi Thomas, Javier, Francesco,
+On Thursday, 12 November 2026 06:24:50 Central European Standard Time Vidith Madhu wrote:
+> 
+> On Thu, 5 Nov 2026, Nicolas Frattaroli wrote:
+> 
+> > Userspace may wish to set a target frame rate for the Variable Refresh
+> > Rate mechanism. There are multiple possible ways such a target could be
+> > communicated.
+> > 
+> > It's desirable for userspace to not only set a fixed target, but a
+> > target range within which VRR may operate. This is because even if a
+> > sink advertises a certain range as supported, said range may not be the
+> > ideal range to use, as numbers on the extreme end of the range may
+> > induce flickering or other glitches.
+> > 
+> > There's four choices to how one bracketing value for the target range
+> > could be communicated:
+> > 1. Target frame rate in something like millihertz
+> > 2. Target frame period in something like usecs
+> > 3. Target vtotal value
+> > 4. Target frame rate as a fraction expressed by two integers
+> > 
+> > Choice 1 is unpleasant as it would introduce some amount of rounding to
+> > common broadcast framerates like 24/1.001, which seems minor except that
+> > exact matches to standard framerates would rely on making all userspace
+> > and kernel agree on a specific method of rounding. This is sure to go
+> > wrong, so is disqualified.
+> > 
+> > Choice 2 has the same problem as 1, with the added complication that
+> > the EDID's VRR range is expressed in frames per second, and other HDMI
+> > features express things in frames per second as well, which would
+> > require possibly imprecise computations.
+> > 
+> > Choice 3 is disqualified as mechanisms other than VRR, such as FVA, may
+> > also modify the vtotal value. Additionally, it has the same drawbacks of
+> > choice 2 and 1.
+> > 
+> > Choice 4 is therefore what's implemented. The frame rate 24/1.001Hz, for
+> > example, is expressed as nominator=24000 and denominator=1001. As there
+> > is both a minimum and a maximum, there are 4 properties in total: two
+> > numerators, and two denominators. A fixed rate with no variability is
+> > expressed by setting the minimum fractional and the maximum fractional
+> > properties to the same value.
+> > 
+> > Signed-off-by: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>
+> > ---
+> >  drivers/gpu/drm/drm_atomic.c      | 14 ++++++++++++
+> >  drivers/gpu/drm/drm_atomic_uapi.c | 24 ++++++++++++++++++++
+> >  drivers/gpu/drm/drm_connector.c   | 48 +++++++++++++++++++++++++++++++++++++++
+> >  drivers/gpu/drm/drm_crtc.c        | 34 +++++++++++++++++++++++++++
+> >  drivers/gpu/drm/drm_mode_config.c | 20 ++++++++++++++++
+> >  include/drm/drm_crtc.h            |  6 +++++
+> >  include/drm/drm_mode_config.h     | 45 ++++++++++++++++++++++++++++++++++++
+> >  7 files changed, 191 insertions(+)
+> > 
+> > diff --git a/drivers/gpu/drm/drm_atomic.c b/drivers/gpu/drm/drm_atomic.c
+> > index 9bb761eda59f..da5c6925c349 100644
+> > --- a/drivers/gpu/drm/drm_atomic.c
+> > +++ b/drivers/gpu/drm/drm_atomic.c
+> > @@ -489,6 +489,7 @@ EXPORT_SYMBOL(drm_atomic_get_crtc_state);
+> >  static int drm_atomic_crtc_check(const struct drm_crtc_state *old_crtc_state,
+> >  				 const struct drm_crtc_state *new_crtc_state)
+> >  {
+> > +	const struct drm_crtc_vrr_state *vrr = &new_crtc_state->vrr_state;
+> >  	struct drm_crtc *crtc = new_crtc_state->crtc;
+> >  
+> >  	/* NOTE: we explicitly don't enforce constraints such as primary
+> > @@ -544,6 +545,19 @@ static int drm_atomic_crtc_check(const struct drm_crtc_state *old_crtc_state,
+> >  		return -EINVAL;
+> >  	}
+> >  
+> > +	/*
+> > +	 * Reject VRR limiter ranges that only specify one end of the limit, or
+> I think specifying just one end of the limit should still be a valid case, 
+> the client may want to use the default bound on one side implied by the 
+> base timings/min. refresh rate and constrain the other.
 
-Thanks a lot for the reviews. I'm answering everything here in one go.
+That is what the RFC did, but unfortunately this leads to problems for
+the kernel and non-obvious behaviour for userspace. Specifically, userspace
+may set what is a fixed rate without intending to do so, and the kernel needs
+to do a chicken-and-egg dance to determine whether something could be a fixed
+rate to see if CinemaVRR lowering the minimum rate applies at which point it
+may no longer be a fixed rate.
 
-On 11/11/26 14:52, Thomas Zimmermann wrote:
-> So shall we merge patches 1 to 6 and 8 first? You'd have something in
-> upstream already and not chase a moving target. From there, we can merge
-> the other features in the coming weeks.
+The new display-min/max properties are so that userspace knows what limits the
+kernel is using (so that it factors in quirks applied outside of what's in the
+EDID) and get to essentially specify one end that way.
 
-Yes, that sounds great. v7 is ready and holds just those: patches 1 to 4,
-6 and 8 of v6, with the MAINTAINERS entry squashed into the patch that
-adds drm_splash.c, so six patches in all. The DT binding, the placement
-and rotation, and the connector orientation will follow as a separate
-series once this one is in.
+> 
+> > +	 * specify a numerator > 0 with a denominator that is 0.
+> > +	 */
+> > +	if ((!vrr->vrr_min_n || !vrr->vrr_min_d ||
+> > +	     !vrr->vrr_max_n || !vrr->vrr_max_d) &&
+> > +	    (vrr->vrr_min_n > 0 || vrr->vrr_max_n > 0)) {
+> > +		drm_dbg_atomic(crtc->dev,
+> > +			       "[CRTC:%d:%s] incomplete VRR limiter range\n",
+> > +			       crtc->base.id, crtc->name);
+> > +		return -EINVAL;
+> > +	}
+> > +
+> >  	return 0;
+> >  }
+> >  
+>> [snip]
 
-What changes in v7 from your comments:
 
-- the Assisted-by tags are gone from every patch (Javier)
-- MAINTAINERS: I'm listed as M: and Francesco as R: (thanks, Francesco),
-  in the same patch as drm_splash.c
-- the firmware source is now DRM_SPLASH_SRC_FW, and the Kconfig options
-  DRM_CLIENT_SPLASH_SRC_FW and DRM_CLIENT_SPLASH_FW_NAME; the BMP decoder
-  keeps its name, since the BGRT goes through it too
-- the drm_splash_fw_load() stub returns 0
 
-On the CONFIG_X86 around the BGRT check in patch 4: it comes from efifb,
-where efifb_bgrt_sanity_check() is x86 only too, and its comment says
-that all x86 firmwares centre the image horizontally. I haven't found
-that promised for other architectures, and there the check could reject
-a logo that is fine, so I'd rather keep it as efifb does. If you prefer
-it on every architecture, or gone, I'll change it.
 
-The issue Sashiko found on v6 (a restore deferred while the device was
-suspended) is fixed in v7, together with a few more that a later Sashiko
-run found; the changelog of patch 4 lists them.
-
-About your Reviewed-by on patch 4: since v6 the work has changed quite a
-bit. Restore now leaves the commit to the work, a hotplug while userspace
-holds the display waits for the next restore as fbdev does, and
-unregister waits for the work before it looks for a pending firmware
-request. Shall I keep your tag, or drop it so you can look at the new
-version first? Whichever you prefer.
-
-I'll send v7 shortly.
-
-Best regards,
-Màxim

@@ -1,59 +1,58 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1794679475;
-	b=NIy3Xk0Q4hgAosZ9zhHAjvd+aUrj0xpWuWN8girP6vsHldm8tRc7nV6XtTjWc9JfuGFR
-	 lP9vMFsMlOVDJvNILxSGY7FVdewfF+s1AhlVHxvBYs4Z4SCq6Wq8cULlD0cauLaltE9oj
-	 pU4BtBUJVGXT/+a1j+5ofMOmaOlunrAKj/zPIycHsOzq9g8HY+6GbKqR+VuuDvNICFG3o
-	 EUKmrWB17L6NNOwTjJ39oKrPgeBasP6dFM7SFIQ/L9bqhtBMFqfM7zuRda6p+Oe4mx2YL
-	 Iug8DqKeWqSUcKe5VUWxnTW9ExsWUr38lGLSSLj6ID1u2uwFJ+cvJqstHE8fgXXxMOA==
+	b=bP+4AEGRHw/UvyU+AX5kD3uRPeaMgJsBsm5Mv/qsWJvYkAMAg1SRnAaG21uU/RVbyPYr
+	 OabzeEUc4WW5k03bUOFVOLacpLTmmt3WiyhtRKSdLz8p4pOVTfW8x83Wt8KKLNKfiPbac
+	 vmJvYegGbs+Pamc+CQIdAlNJtXUzIEJddeOu4Oz/hXlPgxRBs/IjQovLpyF/9ssfhi7B5
+	 j56DoJvY5yCUPVy/jqa278f4tGzoI56F15kE5YxcaSgcAE2D0d9Q1fmxUvQwtUQeHaFqa
+	 T7HY26xr5afMUamOcEZZ+jcEbomMmVIBdjDQmY6YErqOTFv9sb6cUfBX7qfImXwLvqQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794679475;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=AKz0E3x70DtjZTltjLTdLqob9RTepe+T/179kC3SIWM=;
-	b=bUtfXCkqg/TONt4ex5WFDFgqAlbM2vQBEGgQ8ma70I6Uttc1+5wz0hoSmodpu/kiGqZa
-	 fPPdaaJfBfUAGE7unc0n2jcDXOkrn7P0Hr/lN4hwmKF/krz7UW6nFqvt/idyDeMfKTU2h
-	 kwV+FMNdlTINvZhcm/1o0ldAzi/D0DbHomZ8Nkcrfdwiusykt0a+O4FLSSC3QovSndWGF
-	 h8qe2ITDJtu8m2tpFlmNhewgEiuvsyoRleOj4peFOmffttXqBbAVFzKaRuQ33lUBu1I3C
-	 liB6anx9idaf0Yb6yl/6eTC+faIRtU+nFr2d+Plqv0LU3g0nzurP4MtX+/HtR0JeXNw==
+	bh=D8zifGSVG3hcY3J/xTKR4bLRn5FtsL9PY/w0j9SmVi8=;
+	b=xqoxu6ECdBpmIO7hRGWiXDm4mj7C5SoApQuNeSODM9hBj9+UFdSUHrc65vHOt3qRG1Ky
+	 EPaleneJZZXd+SsM3JBuXT9h3HpNCL/3XDf4tyPF6BsAPjiwNrWYLgo0GYtaCS2zshG3F
+	 35gSA7xGoh+AFYjSZqJTxdXEXt0alYV9Lk3WY9CvePQedo7SibWgPObEsS4pmV6ttonbJ
+	 I1L0ahZngZW3+rlERNfXqX66xVq/MCQq3UpwUMYr9xugz606ZlUuCUuLt63l6vOkOb+0j
+	 88rnoUGF9vGIGNdni6t+oPgsAUPZ52PYwGp/nmTiLfMhbnntihSab8tZqClnhqNAQ/w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=HMnp7Avb;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=C8r9wcvc;
 	arc=none smtp.remote-ip=148.251.105.195
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2EFC606F702;
-	Sat, 14 Nov 2026 18:04:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B2EFC606F702
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53CF5606A88E;
+	Sat, 14 Nov 2026 18:04:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 53CF5606A88E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=HMnp7Avb
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=C8r9wcvc
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
 	s=mail; t=1794679473;
-	bh=e8ipKJTJWGJG9WOiOgTygD1raxOORRHRTg7YV8KMdIY=;
+	bh=9c+ztpssMq+5co5JuAnswcQK52kvlqN6pPC1WNH9Ax0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=HMnp7AvbJ1Yk8qUJQ653lWGUj8d2Qk7H1x5t4+FbLTUBlVclBdRvRFQrPYxGNPKS4
-	 AToJHrITdBOmExiiuZ4wq/FvG9bE0tjm2XXCGv9lS+aHuvOWWYnMZi8Wv1mKm1JGPA
-	 FSsqf8604AGdvHNxY3X5SjDZfsK0uZ2ZjcNwnY2AWTzEwfwyMRNWmil2KTUmE7prm0
-	 e1Sygdh6xNtAl6+7wgP21d+i9xwdgZn6tMCxn8fNs3ImWFRIkJvMuhlrU+qYGAQa7a
-	 t4MNVud+sz+8WWxGf1lkDUSwCWm7FjhlEzBVrq5Bw+/Znb8d8ely6Q/HR6VzpSnVou
-	 soDqrXe9f4Dog==
+	b=C8r9wcvc8bBI06R6OfqSvfXVHta+HL5o5wo8iTmhnyihxrN2Bpqsk+EoZ1KxXKe9N
+	 FXBaiafKhILU3vH9C2rS4lVgeG7uUNBDwEX8CAVxMqHZzg8tTauK/fvzS9KatbS1TH
+	 WGaBJuyZNKjDw8fX+qErRxsrsX5K2PiE9y/Dh1V3J7i+kvjyeS6Z8p7lCF4rb0ONcf
+	 59EgkJ9tVXNzTFBy2Vko2b/ReZqEwxwX93TZi/VXwNH5hO/qjOOrihzTM3wp4sRy6F
+	 PjAf6iZAELktGlD9+QAGKiLpW/gd0a1n0mztvC8V5DTLaFojlByaiXMkBlQbmlTeEk
+	 eRy6BRVSE9o/Q==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 0758417E15E8;
-	Sat, 14 Nov 2026 19:04:32 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id C7A9D17E14F9;
+	Sat, 14 Nov 2026 19:04:33 +0100 (CET)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Sat, 14 Nov 2026 20:03:45 +0200
-Subject: [PATCH 21/25] drm/tests: hdmi: Add HDMI 2.0 scrambling helpers
- coverage
+Date: Sat, 14 Nov 2026 20:03:46 +0200
+Subject: [PATCH 22/25] drm/tests: hdmi: Verify SCDC resync on hotplug
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -65,7 +64,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-21-20e8a33a2286@collabora.com>
+Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-22-20e8a33a2286@collabora.com>
 References: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>, 
@@ -78,301 +77,69 @@ Cc: kernel@collabora.com, linux-fbdev@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-In order to provide test coverage for the scrambling helpers, i.e.
-drm_hdmi_mode_needs_scrambling() and
-drm_connector_hdmi_{enable,disable}_scrambling(), as well as the SCDC
-status monitoring work, provide a fake DDC adapter modelling the SCDC
-register map of a sink, and let __connector_hdmi_init() optionally hook
-it up to the connector, so that the sink side of the scrambling setup
-can be verified.
+When a sink gets reconnected while the display pipeline is active, its
+SCDC scrambling setup is lost and must be restored through a CRTC reset.
+This is handled by drm_connector_hdmi_sync_scdc(), which is invoked by
+the HDMI connector hotplug and .force_ctx() helpers.
 
-Add tests to make sure that:
+Count the encoder enables to detect CRTC resets, and add tests to make
+sure that:
 
-- drm_hdmi_mode_needs_scrambling() accounts for the mode, bpc and output
-  format when comparing the TMDS character rate against 340 MHz
-- enabling scrambling configures both the sink and the source, and
-  advertises the source SCDC version, while disabling reverts that
-- enabling scrambling for a mode not needing it clears any stale
-  scrambling setup on the sink side, without involving the source
-- enabling scrambling fails without touching the sink when the source or
-  the sink lack support, or when there is no DDC adapter
-- DDC and source-side failures are reported and rolled back
-- disabling scrambling is a no-op unless enabled, and copes with
-  scrambler_enabled being forced by the driver
-- the monitoring work restores the sink setup when lost, stops once the
-  sink reports scrambling as active, and never touches the DDC bus after
-  the connector got unregistered
+- the CRTC is reset only if the sink got (re)plugged, the active mode
+  needs scrambling and the sink reports scrambling as disabled
+- drm_atomic_helper_connector_hdmi_hotplug() leaves the pipeline alone
+  on disconnect, while on reconnect it restores the sink setup only if
+  the sink lost it while being unplugged
+- DDC errors are reported by drm_connector_hdmi_sync_scdc(), but not by
+  drm_atomic_helper_connector_hdmi_hotplug(), as .detect_ctx() may only
+  return a connector status or -EDEADLK
+- drm_atomic_helper_connector_hdmi_force_ctx() restores the sink setup
 
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c | 700 ++++++++++++++++++++-
- 1 file changed, 697 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c | 312 +++++++++++++++++++++
+ 1 file changed, 312 insertions(+)
 
 diff --git a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-index 294be8f4a307..46654d8fa45c 100644
+index 46654d8fa45c..f17ccbf52bb1 100644
 --- a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
 +++ b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-@@ -4,6 +4,9 @@
-  * Kunit test for drm_hdmi_state_helper functions
-  */
+@@ -42,6 +42,7 @@ struct drm_atomic_helper_connector_hdmi_priv {
+ 	size_t current_edid_len;
  
-+#include <linux/i2c.h>
-+#include <linux/workqueue.h>
-+
- #include <drm/drm_atomic.h>
- #include <drm/drm_atomic_state_helper.h>
- #include <drm/drm_atomic_uapi.h>
-@@ -19,6 +22,7 @@
- 
- #include <drm/display/drm_hdmi_helper.h>
- #include <drm/display/drm_hdmi_state_helper.h>
-+#include <drm/display/drm_scdc_helper.h>
- 
- #include "../drm_crtc_internal.h"
- 
-@@ -41,6 +45,16 @@ struct drm_atomic_helper_connector_hdmi_priv {
+ 	int hdmi_update_failures;
++	unsigned int encoder_enable_count;
  
  	u8 spd_infoframe[HDMI_INFOFRAME_SIZE(SPD)];
  	size_t spd_infoframe_len;
+@@ -315,6 +316,8 @@ static void test_encoder_atomic_enable(struct drm_encoder *encoder,
+ 		encoder_to_priv(encoder);
+ 	int ret;
+ 
++	priv->encoder_enable_count++;
 +
-+	/* Fake DDC adapter exposing an SCDC register map */
-+	struct i2c_adapter ddc;
-+	u8 scdc_regs[256];
-+	unsigned int scdc_xfer_count;
-+	int scdc_xfer_err;
-+
-+	unsigned int scrambler_enable_count;
-+	unsigned int scrambler_disable_count;
-+	int scrambler_enable_ret;
+ 	ret = drm_atomic_helper_connector_hdmi_update_infoframes(&priv->connector, state);
+ 	if (ret)
+ 		priv->hdmi_update_failures++;
+@@ -4789,12 +4792,321 @@ static struct kunit_suite drm_atomic_helper_connector_hdmi_scrambling_test_suite
+ 	.test_cases	= drm_atomic_helper_connector_hdmi_scrambling_tests,
  };
  
- #define connector_to_priv(c) \
-@@ -310,13 +324,87 @@ static const struct drm_encoder_helper_funcs test_encoder_helper_funcs = {
- 	.atomic_enable = test_encoder_atomic_enable,
- };
- 
-+#define TEST_SCDC_I2C_ADDR	0x54
-+
-+/*
-+ * Minimal SCDC sink model: register reads are expected as a one byte offset
-+ * write followed by a read, and register writes as a single message carrying
-+ * the offset followed by the data, matching drm_scdc_{read,write}().
-+ */
-+static int fake_scdc_xfer(struct i2c_adapter *adapter,
-+			  struct i2c_msg *msgs, int num)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv =
-+		i2c_get_adapdata(adapter);
-+	unsigned int offset;
-+
-+	priv->scdc_xfer_count++;
-+
-+	if (priv->scdc_xfer_err)
-+		return priv->scdc_xfer_err;
-+
-+	if (msgs[0].addr != TEST_SCDC_I2C_ADDR || msgs[0].flags & I2C_M_RD ||
-+	    !msgs[0].len)
-+		return -ENXIO;
-+
-+	offset = msgs[0].buf[0];
-+
-+	if (num == 2 && msgs[0].len == 1 &&
-+	    msgs[1].addr == TEST_SCDC_I2C_ADDR && msgs[1].flags & I2C_M_RD) {
-+		if (offset + msgs[1].len > sizeof(priv->scdc_regs))
-+			return -EINVAL;
-+
-+		memcpy(msgs[1].buf, &priv->scdc_regs[offset], msgs[1].len);
-+		return num;
-+	}
-+
-+	if (num == 1) {
-+		if (offset + msgs[0].len - 1 > sizeof(priv->scdc_regs))
-+			return -EINVAL;
-+
-+		memcpy(&priv->scdc_regs[offset], &msgs[0].buf[1], msgs[0].len - 1);
-+		return num;
-+	}
-+
-+	return -EOPNOTSUPP;
-+}
-+
-+static u32 fake_scdc_func(struct i2c_adapter *adapter)
-+{
-+	return I2C_FUNC_I2C;
-+}
-+
-+static const struct i2c_algorithm fake_scdc_algorithm = {
-+	.master_xfer = fake_scdc_xfer,
-+	.functionality = fake_scdc_func,
-+};
-+
-+static void i2c_del_adapter_wrapper(void *ptr)
-+{
-+	i2c_del_adapter(ptr);
-+}
-+
-+/*
-+ * The SCDC monitoring work may still be pending when a test completes, make
-+ * sure it is gone before the DDC adapter gets removed.
-+ */
-+static void cancel_scdc_work_wrapper(void *ptr)
-+{
-+	struct drm_connector *connector = ptr;
-+
-+	if (connector->hdmi.scdc_work_initialized)
-+		cancel_delayed_work_sync(&connector->hdmi.scdc_work);
-+}
-+
- static
- struct drm_atomic_helper_connector_hdmi_priv *
- __connector_hdmi_init(struct kunit *test,
- 		      const struct drm_connector_hdmi_funcs *hdmi_funcs,
--		      const void *edid_data, size_t edid_len)
-+		      const void *edid_data, size_t edid_len,
-+		      bool with_scdc)
- {
- 	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct i2c_adapter *ddc = NULL;
- 	struct drm_connector *conn;
- 	struct drm_encoder *enc;
- 	struct drm_device *drm;
-@@ -356,14 +444,37 @@ __connector_hdmi_init(struct kunit *test,
- 	conn->ycbcr_420_allowed = !!(hdmi_funcs->supported_formats &
- 				     BIT(DRM_OUTPUT_COLOR_FORMAT_YCBCR420));
- 
-+	if (with_scdc) {
-+		strscpy(priv->ddc.name, "fake-scdc-ddc", sizeof(priv->ddc.name));
-+		priv->ddc.owner = THIS_MODULE;
-+		priv->ddc.algo = &fake_scdc_algorithm;
-+		priv->ddc.dev.parent = dev;
-+		i2c_set_adapdata(&priv->ddc, priv);
-+
-+		ret = i2c_add_adapter(&priv->ddc);
-+		KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+		ret = kunit_add_action_or_reset(test, i2c_del_adapter_wrapper,
-+						&priv->ddc);
-+		KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+		ddc = &priv->ddc;
-+	}
-+
- 	priv->hdmi_funcs = *hdmi_funcs;
- 	ret = drmm_connector_hdmi_init(drm, conn,
- 				       &dummy_connector_funcs,
- 				       &priv->hdmi_funcs,
- 				       DRM_MODE_CONNECTOR_HDMIA,
--				       NULL);
-+				       ddc);
- 	KUNIT_ASSERT_EQ(test, ret, 0);
- 
-+	if (with_scdc) {
-+		ret = kunit_add_action_or_reset(test, cancel_scdc_work_wrapper,
-+						conn);
-+		KUNIT_ASSERT_EQ(test, ret, 0);
-+	}
-+
- 	drm_connector_helper_add(conn, &dummy_connector_helper_funcs);
- 	drm_connector_attach_encoder(conn, enc);
- 
-@@ -378,7 +489,10 @@ __connector_hdmi_init(struct kunit *test,
- }
- 
- #define drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test, funcs, edid)	\
--	__connector_hdmi_init(test, funcs, edid, ARRAY_SIZE(edid))
-+	__connector_hdmi_init(test, funcs, edid, ARRAY_SIZE(edid), false)
-+
-+#define drm_kunit_helper_connector_hdmi_init_with_scdc(test, funcs, edid)	\
-+	__connector_hdmi_init(test, funcs, edid, ARRAY_SIZE(edid), true)
- 
- static
- struct drm_atomic_helper_connector_hdmi_priv *
-@@ -4097,13 +4211,593 @@ static struct kunit_suite drm_atomic_helper_connector_hdmi_infoframes_test_suite
- 	.test_cases	= drm_atomic_helper_connector_hdmi_infoframes_tests,
- };
- 
-+struct drm_hdmi_mode_needs_scrambling_test {
-+	const char *desc;
-+	u8 vic;
-+	unsigned int bpc;
-+	enum drm_output_color_format fmt;
-+	bool expected;
-+};
-+
-+static const struct drm_hdmi_mode_needs_scrambling_test
-+drm_hdmi_mode_needs_scrambling_params[] = {
-+	{ "1080p60 RGB 8bpc",     16,  8, DRM_OUTPUT_COLOR_FORMAT_RGB444,   false },
-+	{ "2160p30 RGB 8bpc",     95,  8, DRM_OUTPUT_COLOR_FORMAT_RGB444,   false },
-+	{ "2160p30 RGB 10bpc",    95, 10, DRM_OUTPUT_COLOR_FORMAT_RGB444,   true },
-+	{ "2160p30 YUV422 12bpc", 95, 12, DRM_OUTPUT_COLOR_FORMAT_YCBCR422, false },
-+	{ "2160p60 RGB 8bpc",     97,  8, DRM_OUTPUT_COLOR_FORMAT_RGB444,   true },
-+	{ "2160p60 YUV420 8bpc",  97,  8, DRM_OUTPUT_COLOR_FORMAT_YCBCR420, false },
-+	{ "2160p60 YUV420 12bpc", 97, 12, DRM_OUTPUT_COLOR_FORMAT_YCBCR420, true },
-+};
-+
-+static void
-+drm_hdmi_mode_needs_scrambling_desc(const struct drm_hdmi_mode_needs_scrambling_test *t,
-+				    char *desc)
-+{
-+	strscpy(desc, t->desc, KUNIT_PARAM_DESC_SIZE);
-+}
-+
-+KUNIT_ARRAY_PARAM(drm_hdmi_mode_needs_scrambling, drm_hdmi_mode_needs_scrambling_params,
-+		  drm_hdmi_mode_needs_scrambling_desc);
-+
-+/*
-+ * Test that drm_hdmi_mode_needs_scrambling() requires scrambling only when the
-+ * TMDS character rate resulting from the mode, bpc and output format exceeds
-+ * 340 MHz.
-+ */
-+static void drm_test_hdmi_mode_needs_scrambling(struct kunit *test)
-+{
-+	const struct drm_hdmi_mode_needs_scrambling_test *params = test->param_value;
-+	struct drm_display_mode *mode;
-+	struct drm_device *drm;
-+	struct device *dev;
-+
-+	dev = drm_kunit_helper_alloc_device(test);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, dev);
-+
-+	drm = __drm_kunit_helper_alloc_drm_device(test, dev, sizeof(*drm), 0,
-+						  DRIVER_MODESET);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, drm);
-+
-+	mode = drm_kunit_display_mode_from_cea_vic(test, drm, params->vic);
-+	KUNIT_ASSERT_NOT_NULL(test, mode);
-+
-+	KUNIT_EXPECT_EQ(test,
-+			drm_hdmi_mode_needs_scrambling(mode, params->bpc, params->fmt),
-+			params->expected);
-+}
-+
-+static int count_scrambler_enable(struct drm_connector *connector)
++static const struct drm_edid *test_read_edid(struct drm_connector *connector)
 +{
 +	struct drm_atomic_helper_connector_hdmi_priv *priv =
 +		connector_to_priv(connector);
 +
-+	priv->scrambler_enable_count++;
-+
-+	return priv->scrambler_enable_ret;
++	return drm_edid_alloc(priv->current_edid, priv->current_edid_len);
 +}
 +
-+static int count_scrambler_disable(struct drm_connector *connector)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv =
-+		connector_to_priv(connector);
-+
-+	priv->scrambler_disable_count++;
-+
-+	return 0;
-+}
-+
-+static const struct drm_connector_hdmi_funcs scdc_connector_hdmi_funcs = {
++static const struct drm_connector_hdmi_funcs scdc_read_edid_connector_hdmi_funcs = {
 +	.vendor = "Vendor",
 +	.product = "Product",
 +	.supported_hdmi_ver = HDMI_VERSION_2_0,
 +	.supported_formats = BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
 +	.max_bpc = 8,
++	.read_edid = test_read_edid,
 +	.scrambler_enable = count_scrambler_enable,
 +	.scrambler_disable = count_scrambler_disable,
 +	.avi = {
@@ -385,488 +152,285 @@ index 294be8f4a307..46654d8fa45c 100644
 +	},
 +};
 +
-+#define SCDC_TMDS_CONFIG_SCRAMBLED \
-+	(SCDC_SCRAMBLING_ENABLE | SCDC_TMDS_BIT_CLOCK_RATIO_BY_40)
-+
 +/*
-+ * drm_connector_hdmi_enable_scrambling() arms the SCDC monitoring work with
-+ * a delay. Cancel it, so that the test alone controls when the work runs,
-+ * whether or not it has already done so. As the fake sink never reports
-+ * scrambling as active, a past run leaves the sink setup unchanged.
++ * Sets up an HDMI 2.0 connector attached to a sink supporting scrambling and
++ * drives the given CEA mode on it, leaving the locks held in @ctx.
 + */
-+static void scdc_test_stop_work(struct drm_connector *connector)
-+{
-+	cancel_delayed_work_sync(&connector->hdmi.scdc_work);
-+}
-+
-+static void scdc_test_run_work(struct drm_connector *connector)
-+{
-+	struct work_struct *work = &connector->hdmi.scdc_work.work;
-+
-+	work->func(work);
-+}
-+
-+/*
-+ * Test that enabling scrambling configures both the sink, through SCDC, and
-+ * the source, advertises the source SCDC version and starts monitoring the
-+ * sink status, while disabling it reverts all of that.
-+ */
-+static void drm_test_hdmi_scrambling_enable_disable(struct kunit *test)
++static struct drm_atomic_helper_connector_hdmi_priv *
++sync_scdc_test_init(struct kunit *test,
++		    const struct drm_connector_hdmi_funcs *hdmi_funcs,
++		    u8 vic, struct drm_modeset_acquire_ctx *ctx)
 +{
 +	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
++	struct drm_display_mode *mode;
 +	int ret;
 +
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
++	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test, hdmi_funcs,
 +				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
 +	KUNIT_ASSERT_NOT_NULL(test, priv);
 +
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
++	drm_encoder_helper_add(&priv->encoder, &test_encoder_helper_funcs);
 +
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
++	mode = drm_kunit_display_mode_from_cea_vic(test, &priv->drm, vic);
++	KUNIT_ASSERT_NOT_NULL(test, mode);
 +
-+	conn_state->hdmi.scrambler_needed = true;
++	drm_modeset_acquire_init(ctx, 0);
 +
-+	priv->scdc_regs[SCDC_SINK_VERSION] = 1;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
++retry_conn_enable:
++	ret = drm_kunit_helper_enable_crtc_connector(test, &priv->drm,
++						     priv->crtc,
++						     &priv->connector,
++						     mode, ctx);
++	if (ret == -EDEADLK) {
++		ret = drm_modeset_backoff(ctx);
++		if (!ret)
++			goto retry_conn_enable;
++	}
 +	KUNIT_ASSERT_EQ(test, ret, 0);
++	KUNIT_ASSERT_EQ(test, priv->encoder_enable_count, 1);
 +
-+	KUNIT_EXPECT_EQ(test, priv->scdc_regs[SCDC_SOURCE_VERSION], 1);
-+	KUNIT_EXPECT_EQ(test, priv->scdc_regs[SCDC_TMDS_CONFIG],
-+			SCDC_TMDS_CONFIG_SCRAMBLED);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 1);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_disable_count, 0);
-+	KUNIT_EXPECT_TRUE(test, conn->hdmi.scrambler_enabled);
-+	/* The work may be executing already, i.e. not pending */
-+	KUNIT_EXPECT_TRUE(test, work_busy(&conn->hdmi.scdc_work.work));
-+
-+	ret = drm_connector_hdmi_disable_scrambling(conn);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	KUNIT_EXPECT_EQ(test, priv->scdc_regs[SCDC_TMDS_CONFIG], 0);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 1);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_disable_count, 1);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scrambler_enabled);
-+	KUNIT_EXPECT_FALSE(test, delayed_work_pending(&conn->hdmi.scdc_work));
++	return priv;
 +}
 +
-+/*
-+ * Test that enabling scrambling for a mode that doesn't need it leaves the
-+ * source alone, but clears any stale scrambling setup on the sink side.
-+ */
-+static void drm_test_hdmi_scrambling_enable_not_needed(struct kunit *test)
++struct drm_hdmi_sync_scdc_test {
++	const char *desc;
++	u8 vic;
++	bool plugged;
++	u8 tmds_config;
++	int xfer_err;
++	int expected_ret;
++	bool expected_reset;
++};
++
++static const struct drm_hdmi_sync_scdc_test drm_hdmi_sync_scdc_params[] = {
++	{
++		.desc = "scrambling lost",
++		.vic = 97,
++		.plugged = true,
++		.expected_reset = true,
++	},
++	{
++		.desc = "scrambling active",
++		.vic = 97,
++		.plugged = true,
++		.tmds_config = SCDC_SCRAMBLING_ENABLE,
++	},
++	{
++		.desc = "scrambling not needed",
++		.vic = 16,
++		.plugged = true,
++	},
++	{
++		.desc = "unplugged",
++		.vic = 97,
++		.plugged = false,
++	},
++	{
++		.desc = "ddc error",
++		.vic = 97,
++		.plugged = true,
++		.xfer_err = -EIO,
++		.expected_ret = -EIO,
++	},
++};
++
++static void drm_hdmi_sync_scdc_desc(const struct drm_hdmi_sync_scdc_test *t,
++				    char *desc)
 +{
++	strscpy(desc, t->desc, KUNIT_PARAM_DESC_SIZE);
++}
++
++KUNIT_ARRAY_PARAM(drm_hdmi_sync_scdc, drm_hdmi_sync_scdc_params,
++		  drm_hdmi_sync_scdc_desc);
++
++/*
++ * Test that drm_connector_hdmi_sync_scdc() resets the CRTC to restore the sink
++ * scrambling setup only when the sink got (re)plugged, the active mode needs
++ * scrambling and the sink reports it as disabled.
++ */
++static void drm_test_hdmi_sync_scdc(struct kunit *test)
++{
++	const struct drm_hdmi_sync_scdc_test *params = test->param_value;
 +	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
++	struct drm_modeset_acquire_ctx ctx;
++	unsigned int xfer_count;
++	int ret;
++
++	priv = sync_scdc_test_init(test, &scdc_connector_hdmi_funcs,
++				   params->vic, &ctx);
++
++	KUNIT_ASSERT_EQ(test, priv->connector.state->hdmi.scrambler_needed,
++			params->vic == 97);
++
++	priv->scdc_regs[SCDC_TMDS_CONFIG] = params->tmds_config;
++	priv->scdc_xfer_err = params->xfer_err;
++	xfer_count = priv->scdc_xfer_count;
++
++retry:
++	ret = drm_connector_hdmi_sync_scdc(&priv->connector, params->plugged, &ctx);
++	if (ret == -EDEADLK) {
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry;
++	}
++	KUNIT_EXPECT_EQ(test, ret, params->expected_ret);
++
++	KUNIT_EXPECT_EQ(test, priv->encoder_enable_count,
++			params->expected_reset ? 2 : 1);
++
++	if (!params->plugged || params->vic != 97)
++		KUNIT_EXPECT_EQ(test, priv->scdc_xfer_count, xfer_count);
++
++	drm_modeset_drop_locks(&ctx);
++	drm_modeset_acquire_fini(&ctx);
++}
++
++struct drm_hdmi_sync_scdc_hotplug_test {
++	const char *desc;
++	bool sink_reset;
++};
++
++static const struct drm_hdmi_sync_scdc_hotplug_test
++drm_hdmi_sync_scdc_hotplug_params[] = {
++	{ .desc = "sink setup lost", .sink_reset = true, },
++	{ .desc = "sink setup kept", .sink_reset = false, },
++};
++
++static void
++drm_hdmi_sync_scdc_hotplug_desc(const struct drm_hdmi_sync_scdc_hotplug_test *t,
++				char *desc)
++{
++	strscpy(desc, t->desc, KUNIT_PARAM_DESC_SIZE);
++}
++
++KUNIT_ARRAY_PARAM(drm_hdmi_sync_scdc_hotplug,
++		  drm_hdmi_sync_scdc_hotplug_params,
++		  drm_hdmi_sync_scdc_hotplug_desc);
++
++/*
++ * Test that drm_atomic_helper_connector_hdmi_hotplug() leaves the pipeline
++ * alone on disconnect, while on reconnect it restores the sink scrambling
++ * setup only if the sink lost it while being unplugged.
++ */
++static void drm_test_hdmi_sync_scdc_hotplug(struct kunit *test)
++{
++	const struct drm_hdmi_sync_scdc_hotplug_test *params = test->param_value;
++	struct drm_atomic_helper_connector_hdmi_priv *priv;
++	struct drm_modeset_acquire_ctx ctx;
 +	struct drm_connector *conn;
 +	int ret;
 +
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
++	priv = sync_scdc_test_init(test, &scdc_read_edid_connector_hdmi_funcs,
++				   97, &ctx);
++	KUNIT_ASSERT_TRUE(test, priv->connector.state->hdmi.scrambler_needed);
 +
++	priv->scdc_regs[SCDC_TMDS_CONFIG] = SCDC_SCRAMBLING_ENABLE;
 +	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
 +
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = false;
-+
-+	priv->scdc_regs[SCDC_TMDS_CONFIG] = SCDC_TMDS_CONFIG_SCRAMBLED;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
++retry_disconnect:
++	ret = drm_atomic_helper_connector_hdmi_hotplug(conn, &ctx,
++						       connector_status_disconnected);
++	if (ret == -EDEADLK) {
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry_disconnect;
++	}
 +	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_EQ(test, priv->encoder_enable_count, 1);
++	KUNIT_EXPECT_FALSE(test, conn->display_info.is_hdmi);
 +
-+	KUNIT_EXPECT_EQ(test, priv->scdc_regs[SCDC_TMDS_CONFIG], 0);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 0);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scrambler_enabled);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scdc_work_initialized);
++	/* Simulate the sink losing its SCDC setup while being unplugged */
++	if (params->sink_reset)
++		priv->scdc_regs[SCDC_TMDS_CONFIG] = 0;
++
++retry_connect:
++	ret = drm_atomic_helper_connector_hdmi_hotplug(conn, &ctx,
++						       connector_status_connected);
++	if (ret == -EDEADLK) {
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry_connect;
++	}
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
++	KUNIT_EXPECT_EQ(test, priv->encoder_enable_count,
++			params->sink_reset ? 2 : 1);
++
++	drm_modeset_drop_locks(&ctx);
++	drm_modeset_acquire_fini(&ctx);
 +}
 +
 +/*
-+ * Test that enabling scrambling fails without touching the sink when the
-+ * source doesn't support it.
++ * Test that drm_atomic_helper_connector_hdmi_hotplug() doesn't report SCDC
++ * errors, as .detect_ctx() may only return a connector status or -EDEADLK.
 + */
-+static void drm_test_hdmi_scrambling_enable_source_unsupported(struct kunit *test)
-+{
-+	struct drm_connector_hdmi_funcs hdmi_funcs = scdc_connector_hdmi_funcs;
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
-+	int ret;
-+
-+	hdmi_funcs.supported_hdmi_ver = HDMI_VERSION_1_4;
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test, &hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = true;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
-+	KUNIT_EXPECT_EQ(test, ret, -EINVAL);
-+
-+	KUNIT_EXPECT_EQ(test, priv->scdc_xfer_count, 0);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 0);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scrambler_enabled);
-+}
-+
-+/*
-+ * Test that enabling scrambling fails without touching the sink when the
-+ * sink doesn't support it.
-+ */
-+static void drm_test_hdmi_scrambling_enable_sink_unsupported(struct kunit *test)
++static void drm_test_hdmi_sync_scdc_hotplug_ddc_error(struct kunit *test)
 +{
 +	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
++	struct drm_modeset_acquire_ctx ctx;
 +	int ret;
 +
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_340mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_FALSE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = true;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
-+	KUNIT_EXPECT_EQ(test, ret, -EINVAL);
-+
-+	KUNIT_EXPECT_EQ(test, priv->scdc_xfer_count, 0);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 0);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scrambler_enabled);
-+}
-+
-+/*
-+ * Test that enabling scrambling fails on a connector without a DDC adapter,
-+ * which is needed to configure the sink.
-+ */
-+static void drm_test_hdmi_scrambling_enable_no_ddc(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = true;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
-+	KUNIT_EXPECT_EQ(test, ret, -EINVAL);
-+
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 0);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scrambler_enabled);
-+}
-+
-+/*
-+ * Test that a failure to configure the sink through SCDC is reported and the
-+ * source is left alone.
-+ */
-+static void drm_test_hdmi_scrambling_enable_ddc_error(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = true;
++	priv = sync_scdc_test_init(test, &scdc_read_edid_connector_hdmi_funcs,
++				   97, &ctx);
 +
 +	priv->scdc_xfer_err = -EIO;
 +
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
-+	KUNIT_EXPECT_LT(test, ret, 0);
-+
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 0);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scrambler_enabled);
-+	KUNIT_EXPECT_FALSE(test, delayed_work_pending(&conn->hdmi.scdc_work));
-+}
-+
-+/*
-+ * Test that a failure to enable scrambling on the source side is reported,
-+ * and the sink scrambling setup and status monitoring are rolled back.
-+ */
-+static void drm_test_hdmi_scrambling_enable_source_error(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = true;
-+
-+	priv->scrambler_enable_ret = -EIO;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
-+	KUNIT_EXPECT_EQ(test, ret, -EIO);
-+
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 1);
-+	KUNIT_EXPECT_EQ(test, priv->scdc_regs[SCDC_TMDS_CONFIG], 0);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scrambler_enabled);
-+	KUNIT_EXPECT_FALSE(test, delayed_work_pending(&conn->hdmi.scdc_work));
-+}
-+
-+/*
-+ * Test that disabling scrambling when it isn't enabled is a no-op.
-+ */
-+static void drm_test_hdmi_scrambling_disable_not_enabled(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector *conn;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	priv->scdc_regs[SCDC_TMDS_CONFIG] = SCDC_TMDS_CONFIG_SCRAMBLED;
-+
-+	ret = drm_connector_hdmi_disable_scrambling(conn);
++retry:
++	ret = drm_atomic_helper_connector_hdmi_hotplug(&priv->connector, &ctx,
++						       connector_status_connected);
++	if (ret == -EDEADLK) {
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry;
++	}
 +	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_EQ(test, priv->encoder_enable_count, 1);
 +
-+	KUNIT_EXPECT_EQ(test, priv->scdc_xfer_count, 0);
-+	KUNIT_EXPECT_EQ(test, priv->scdc_regs[SCDC_TMDS_CONFIG],
-+			SCDC_TMDS_CONFIG_SCRAMBLED);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_disable_count, 0);
++	drm_modeset_drop_locks(&ctx);
++	drm_modeset_acquire_fini(&ctx);
 +}
 +
 +/*
-+ * Test that disabling scrambling works when scrambler_enabled has been forced
-+ * by the driver to get a disable at boot, i.e. without going through the
-+ * enable path that sets up the status monitoring work.
++ * Test that drm_atomic_helper_connector_hdmi_force_ctx() restores the sink
++ * scrambling setup of a connector forced on.
 + */
-+static void drm_test_hdmi_scrambling_disable_forced(struct kunit *test)
++static void drm_test_hdmi_sync_scdc_force_ctx(struct kunit *test)
 +{
 +	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector *conn;
++	struct drm_modeset_acquire_ctx ctx;
 +	int ret;
 +
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
++	priv = sync_scdc_test_init(test, &scdc_read_edid_connector_hdmi_funcs,
++				   97, &ctx);
 +
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
++	KUNIT_ASSERT_EQ(test, priv->connector.status, connector_status_connected);
 +
-+	priv->scdc_regs[SCDC_TMDS_CONFIG] = SCDC_TMDS_CONFIG_SCRAMBLED;
-+	WRITE_ONCE(conn->hdmi.scrambler_enabled, true);
-+
-+	ret = drm_connector_hdmi_disable_scrambling(conn);
++retry:
++	ret = drm_atomic_helper_connector_hdmi_force_ctx(&priv->connector, &ctx);
++	if (ret == -EDEADLK) {
++		ret = drm_modeset_backoff(&ctx);
++		if (!ret)
++			goto retry;
++	}
 +	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_EQ(test, priv->encoder_enable_count, 2);
 +
-+	KUNIT_EXPECT_EQ(test, priv->scdc_regs[SCDC_TMDS_CONFIG], 0);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_disable_count, 1);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scrambler_enabled);
-+	KUNIT_EXPECT_FALSE(test, conn->hdmi.scdc_work_initialized);
++	drm_modeset_drop_locks(&ctx);
++	drm_modeset_acquire_fini(&ctx);
 +}
 +
-+/*
-+ * Test that the status monitoring work restores the sink scrambling setup
-+ * when the sink reports scrambling as inactive, and keeps monitoring.
-+ */
-+static void drm_test_hdmi_scrambling_work_restore(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = true;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	scdc_test_stop_work(conn);
-+
-+	/* Simulate the sink lost its SCDC setup */
-+	priv->scdc_regs[SCDC_TMDS_CONFIG] = 0;
-+	priv->scdc_regs[SCDC_SCRAMBLER_STATUS] = 0;
-+
-+	scdc_test_run_work(conn);
-+
-+	KUNIT_EXPECT_EQ(test, priv->scdc_regs[SCDC_TMDS_CONFIG],
-+			SCDC_TMDS_CONFIG_SCRAMBLED);
-+	KUNIT_EXPECT_EQ(test, priv->scrambler_enable_count, 1);
-+	/* The re-armed work may be executing already, i.e. not pending */
-+	KUNIT_EXPECT_TRUE(test, work_busy(&conn->hdmi.scdc_work.work));
-+
-+	ret = drm_connector_hdmi_disable_scrambling(conn);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+}
-+
-+/*
-+ * Test that the status monitoring work leaves the sink alone and stops
-+ * monitoring once the sink reports scrambling as active.
-+ */
-+static void drm_test_hdmi_scrambling_work_active(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
-+	unsigned int xfer_count;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = true;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	scdc_test_stop_work(conn);
-+
-+	priv->scdc_regs[SCDC_SCRAMBLER_STATUS] = SCDC_SCRAMBLING_STATUS;
-+	xfer_count = priv->scdc_xfer_count;
-+
-+	scdc_test_run_work(conn);
-+
-+	/* Only the status register has been read */
-+	KUNIT_EXPECT_EQ(test, priv->scdc_xfer_count, xfer_count + 1);
-+	KUNIT_EXPECT_FALSE(test, delayed_work_pending(&conn->hdmi.scdc_work));
-+
-+	ret = drm_connector_hdmi_disable_scrambling(conn);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+}
-+
-+/*
-+ * Test that the status monitoring work never accesses the DDC bus once the
-+ * connector got unregistered, as the adapter may already be gone.
-+ */
-+static void drm_test_hdmi_scrambling_work_unregistered(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_connector_state *conn_state;
-+	struct drm_connector *conn;
-+	unsigned int xfer_count;
-+	int ret;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_scdc(test,
-+				&scdc_connector_hdmi_funcs,
-+				test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	conn = &priv->connector;
-+	KUNIT_ASSERT_TRUE(test, conn->display_info.hdmi.scdc.scrambling.supported);
-+
-+	conn_state = kunit_kzalloc(test, sizeof(*conn_state), GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_NULL(test, conn_state);
-+
-+	conn_state->hdmi.scrambler_needed = true;
-+
-+	ret = drm_connector_hdmi_enable_scrambling(conn, conn_state);
-+	KUNIT_ASSERT_EQ(test, ret, 0);
-+
-+	scdc_test_stop_work(conn);
-+
-+	conn->registration_state = DRM_CONNECTOR_UNREGISTERED;
-+	xfer_count = priv->scdc_xfer_count;
-+
-+	scdc_test_run_work(conn);
-+
-+	KUNIT_EXPECT_EQ(test, priv->scdc_xfer_count, xfer_count);
-+	KUNIT_EXPECT_FALSE(test, delayed_work_pending(&conn->hdmi.scdc_work));
-+
-+	conn->registration_state = DRM_CONNECTOR_INITIALIZING;
-+
-+	ret = drm_connector_hdmi_disable_scrambling(conn);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+}
-+
-+static struct kunit_case drm_atomic_helper_connector_hdmi_scrambling_tests[] = {
-+	KUNIT_CASE_PARAM(drm_test_hdmi_mode_needs_scrambling,
-+			 drm_hdmi_mode_needs_scrambling_gen_params),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_enable_disable),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_enable_not_needed),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_enable_source_unsupported),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_enable_sink_unsupported),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_enable_no_ddc),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_enable_ddc_error),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_enable_source_error),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_disable_not_enabled),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_disable_forced),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_work_restore),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_work_active),
-+	KUNIT_CASE(drm_test_hdmi_scrambling_work_unregistered),
++static struct kunit_case drm_atomic_helper_connector_hdmi_sync_scdc_tests[] = {
++	KUNIT_CASE_PARAM(drm_test_hdmi_sync_scdc, drm_hdmi_sync_scdc_gen_params),
++	KUNIT_CASE_PARAM(drm_test_hdmi_sync_scdc_hotplug,
++			 drm_hdmi_sync_scdc_hotplug_gen_params),
++	KUNIT_CASE(drm_test_hdmi_sync_scdc_hotplug_ddc_error),
++	KUNIT_CASE(drm_test_hdmi_sync_scdc_force_ctx),
 +	{ }
 +};
 +
-+static struct kunit_suite drm_atomic_helper_connector_hdmi_scrambling_test_suite = {
-+	.name		= "drm_atomic_helper_connector_hdmi_scrambling",
-+	.test_cases	= drm_atomic_helper_connector_hdmi_scrambling_tests,
++static struct kunit_suite drm_atomic_helper_connector_hdmi_sync_scdc_test_suite = {
++	.name		= "drm_atomic_helper_connector_hdmi_sync_scdc",
++	.test_cases	= drm_atomic_helper_connector_hdmi_sync_scdc_tests,
 +};
 +
  kunit_test_suites(
@@ -874,13 +438,11 @@ index 294be8f4a307..46654d8fa45c 100644
  	&drm_atomic_helper_connector_hdmi_reset_test_suite,
  	&drm_atomic_helper_connector_hdmi_mode_valid_test_suite,
  	&drm_atomic_helper_connector_hdmi_infoframes_test_suite,
-+	&drm_atomic_helper_connector_hdmi_scrambling_test_suite,
+ 	&drm_atomic_helper_connector_hdmi_scrambling_test_suite,
++	&drm_atomic_helper_connector_hdmi_sync_scdc_test_suite,
  );
  
  MODULE_AUTHOR("Maxime Ripard <mripard@kernel.org>");
-+MODULE_AUTHOR("Cristian Ciocaltea <cristian.ciocaltea@collabora.com>");
- MODULE_DESCRIPTION("Kunit test for drm_hdmi_state_helper functions");
- MODULE_LICENSE("GPL");
 
 -- 
 2.56.0

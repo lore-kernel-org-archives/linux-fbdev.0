@@ -1,59 +1,59 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794679465;
-	b=zKWaRCWP8dbcOKE/7B+FCMhIn82XsvZ8O4QKizXda7L17rLvTshqG0pnfg3N9o5tRJ2r
-	 RVVhpfyLAp/SyMlwcrE5u+aLSDKBBTSJ1Uom+25knrqf7S+PR0OOPo2a5Jz7a6uiWPE1n
-	 66BFgZhtYU5J7s+YHl4kq59kIat/3DnbApQtORK1ezLW2ryuxysurDv+nZVF2e3iJu/y4
-	 WNglJzK2sTmxyz8xsKM5U9TdR52fxAXfPV5GE9eVjXvaIuY7sIoBa6k2ftTnjC4SYYaPf
-	 hLlhg/TfH8g4ban84JRc64V5fVdteDyttYwXxXRrljRsfNP7AS2ZMdli/sUxsdxS8Nw==
+	t=1794679466;
+	b=qa1R5q6RA50Apwjk92R8dCq9GlogxX3EJFljm/x+qlmGWuoTL70xG7Z89yJaA8NCHKDa
+	 cHvuZ/zn+YdqoO/RNS14vQEc9Jn+yHKputmNYhgV1yZ9+L+xZpg3lyeQuIFjZolFaleDM
+	 dmu53Ln1n5JZl4I9/CdAApTiPc4Kcxfminy65L/g4GbLKhKv+C2SYcejIT/gS7Yvln7le
+	 IrnWQYrcBwjpYzTCU2vfLFLxQJdygApo2viqWy46fq4MVNXpQNhgDw96Rld3kUuTStWxe
+	 5RYETYUckzlXr+SlrQ94fLgJD/9A8gCSJc38RXYQlyjU9dPWbxAp46tn6szhj7HUYSA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794679465;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794679466;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=RDJNlND8Zcv+HDCZboZyrXYOvWnLdQmbBes09PYx/G0=;
-	b=b5xVylQeDPKAwT2ic1quYnliSbuMh8UkRSkdwEY9CV0DLsuFXSvGlRzUIVRyAxanuzjk
-	 t5EFKqjX3pJzeaPFxStT6cZxb7E2gqMgie09T8plfP5p0i97OTd2UlQ8ati9xhLOHfGb5
-	 JsaiZMhRyDqcFbZuiQ3vOwlB0wFgOOeIzKMaH7v34KyXXC0bgdj/UMYpp4fExCkS9W00c
-	 XSKnuDJfdutFzv+Hy3QoEycnUIJQDN8onSHKh4PQQ292z1MwrM1Max/bzQxVpdCAOM9QH
-	 ie1Oz1xN6dOvQNMFAUYKS0lkrg5B1h5CSZ9D6L5Vqe3h8Wx6mVo/xQivuh8Uu+tPPEg==
+	bh=VmgdJhLqdvObEmVdZHSnVjMxF7CRFu4RZ0ii1YVtQJk=;
+	b=uerf/LnfasT/ylqqUDm9tuyxQ9EFTJJwOTn84tW/kIls010PKQUmTsfLt84HhdKXCIet
+	 1Wblwa+6s4C7IQNAJ0PdMjVO3z4qgDqNKwrHs4pIGr9UdBPIyQuIQUnEhw7RWZCt6Cwx4
+	 bzX/MQvO6FbsBp4dvjbDPamSsb2AZsNfOmx4BzlIalbbHEEU7o48Vl04oNzC0XDacTmLd
+	 l4vFWKRcna5XvjB+w173U+E3K+yGdTZJxjUMjLZCM/Qj2iOs36Si/on9c0LauWQ9g6gXD
+	 uY4Iv6aDsshA20ItGOGB2BxNP7mLncJ+zH3ZBnQ1SFF1aerMO5uugsn04opgW+bjt4w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=pMEc2GoT;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b="B12y/U9Z";
 	arc=none smtp.remote-ip=148.251.105.195
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4E999606A323;
-	Sat, 14 Nov 2026 18:04:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4E999606A323
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44908606A882;
+	Sat, 14 Nov 2026 18:04:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 44908606A882
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=pMEc2GoT
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=B12y/U9Z
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
 	s=mail; t=1794679458;
-	bh=TxqmposBOHXdDsrH5e74JfVT2uddDv95gdLnKGzzKc8=;
+	bh=owVPqFwaoXUU+Gcwxuroc+P7E9LF5U9XqHzH7kbz1s0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=pMEc2GoTmGBOglomGtdfytnpNJTkCk4lOsXjoqMlh0Xp+qJwK8gwEQ6egtuqVAY1N
-	 lX2qK+lCZvoqSc4MJVsc5h7EAP1zkDnroorLGXK6Qpn1dWmXWf6CuOUc3DFSzH8t+N
-	 N5RdSzNaM0+VSQT4wWhdD42QeIgU8OXLENaKnBuO8nj5wGgu+NnGL01W/PktKwmEiu
-	 tKgHfWOEnuFmNdDMofAr97wd93mZW4ScHsx3hTat1Ti/EGwaidTk84nPD8n8f72fLa
-	 XC9cFn7ZnWZ/XLkYPpzRHc7VagGJCffi39KQ/7IDegAT0XlNIgtGKOVXNc816aT5v9
-	 kGt34JSdeveKg==
+	b=B12y/U9ZpAz20vm5D/hHAoJXT6bUWc70g2oxD7FJYj70lsjHuxYMk0KvXUVmc8Fei
+	 sj2Lol28GXfoqtzZ/DUXkdVS9FOY3M//CY3rjl7QCYHaUyxVv8fusKD3D5NPueCAbS
+	 EioT5ySwEncxK10qAQE1R1O5X5/Rvm5CaqO63kWxFO46HqaB1FDJpQB3AsXNpjRLm4
+	 K+7qDUM+TLAABHVc2VoIalm5nNucBNh5PRVxk2BjubXwq3KNzLf+L2HHWzAXjBGYrX
+	 hlDHzub9P2V7fUU19t4dEC9Vr/2Mckl1RU32SVMvf3ZMKI/CWonWN42wuXXX5YuxN/
+	 cvdFwRv/tqRtQ==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id DD9D317E0B1E;
-	Sat, 14 Nov 2026 19:04:17 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id A669617E0BCF;
+	Sat, 14 Nov 2026 19:04:18 +0100 (CET)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Sat, 14 Nov 2026 20:03:25 +0200
-Subject: [PATCH 01/25] video/hdmi: Copy SPD vendor/product with
- strtomem_pad()
+Date: Sat, 14 Nov 2026 20:03:26 +0200
+Subject: [PATCH 02/25] video/hdmi: Define SPD InfoFrame vendor/product
+ field lengths
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -65,7 +65,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-1-20e8a33a2286@collabora.com>
+Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-2-20e8a33a2286@collabora.com>
 References: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>, 
@@ -75,74 +75,95 @@ To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>,
  Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
  David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>
 Cc: kernel@collabora.com, linux-fbdev@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
- stable@vger.kernel.org
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-The HDMI specification defines the SPD InfoFrame Vendor Name and Product
-Description as fixed-size fields, padded with zeros and left without any
-trailing NUL when a name spans the whole field.
+The HDMI specification defines the SPD InfoFrame Vendor Name and
+Product Description as fixed-size fields of 8 and 16 bytes
+respectively.
 
-Mark the fields as non-strings, so that the copies can be handed over to
-strtomem_pad(), which implements precisely the required semantics.  This
-also bounds the reads from the source strings, whereas the open-coded
-strlen() could run past the end of the buffer in the
-hdmi_spd_infoframe_unpack() path, where the names come straight from the
-wire and are not NUL-terminated.
+Add defines for those lengths and use them in place of the related
+magic numbers, including the payload offsets and the log format
+precisions.  While at it, fix the continuation line alignment in
+hdmi_spd_infoframe_log().
 
-Fixes: 2c676f378edb ("[media] hdmi: added unpack and logging functions for InfoFrames")
-Cc: stable@vger.kernel.org # v6.1+
+No functional change intended.
+
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/video/hdmi.c | 11 +++++------
- include/linux/hdmi.h |  4 ++--
- 2 files changed, 7 insertions(+), 8 deletions(-)
+ drivers/video/hdmi.c | 20 +++++++++++++-------
+ include/linux/hdmi.h |  7 +++++--
+ 2 files changed, 18 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index 45b42f14a750..cd18121afa20 100644
+index cd18121afa20..7eeadac2de69 100644
 --- a/drivers/video/hdmi.c
 +++ b/drivers/video/hdmi.c
-@@ -217,23 +217,22 @@ EXPORT_SYMBOL(hdmi_avi_infoframe_pack);
-  * @vendor: vendor string
-  * @product: product string
-  *
-+ * Both strings are copied into the fixed-size infoframe fields,
-+ * truncated if too long and padded with zeros otherwise.
-+ *
-  * Returns 0 on success or a negative error code on failure.
-  */
- int hdmi_spd_infoframe_init(struct hdmi_spd_infoframe *frame,
- 			    const char *vendor, const char *product)
- {
--	size_t len;
--
- 	memset(frame, 0, sizeof(*frame));
+@@ -304,9 +304,11 @@ ssize_t hdmi_spd_infoframe_pack_only(const struct hdmi_spd_infoframe *frame,
+ 	ptr += HDMI_INFOFRAME_HEADER_SIZE;
  
- 	frame->type = HDMI_INFOFRAME_TYPE_SPD;
- 	frame->version = 1;
- 	frame->length = HDMI_SPD_INFOFRAME_SIZE;
+ 	memcpy(ptr, frame->vendor, sizeof(frame->vendor));
+-	memcpy(ptr + 8, frame->product, sizeof(frame->product));
++	memcpy(ptr + HDMI_SPD_INFOFRAME_VENDOR_LEN, frame->product,
++	       sizeof(frame->product));
  
--	len = strlen(vendor);
--	memcpy(frame->vendor, vendor, min(len, sizeof(frame->vendor)));
--	len = strlen(product);
--	memcpy(frame->product, product, min(len, sizeof(frame->product)));
-+	strtomem_pad(frame->vendor, vendor, 0);
-+	strtomem_pad(frame->product, product, 0);
+-	ptr[24] = frame->sdi;
++	ptr[HDMI_SPD_INFOFRAME_VENDOR_LEN + HDMI_SPD_INFOFRAME_PRODUCT_LEN] =
++		frame->sdi;
+ 
+ 	hdmi_infoframe_set_checksum(buffer, length);
+ 
+@@ -1284,10 +1286,12 @@ static void hdmi_spd_infoframe_log(const char *level,
+ 	hdmi_infoframe_log_header(level, dev,
+ 				  (const struct hdmi_any_infoframe *)frame);
+ 
+-	hdmi_log("    vendor: %.8s\n", frame->vendor);
+-	hdmi_log("    product: %.16s\n", frame->product);
++	hdmi_log("    vendor: %.*s\n", HDMI_SPD_INFOFRAME_VENDOR_LEN,
++		 frame->vendor);
++	hdmi_log("    product: %.*s\n", HDMI_SPD_INFOFRAME_PRODUCT_LEN,
++		 frame->product);
+ 	hdmi_log("    source device information: %s (0x%x)\n",
+-		hdmi_spd_sdi_get_name(frame->sdi), frame->sdi);
++		 hdmi_spd_sdi_get_name(frame->sdi), frame->sdi);
+ }
+ 
+ static const char *
+@@ -1642,11 +1646,13 @@ static int hdmi_spd_infoframe_unpack(struct hdmi_spd_infoframe *frame,
+ 
+ 	ptr += HDMI_INFOFRAME_HEADER_SIZE;
+ 
+-	ret = hdmi_spd_infoframe_init(frame, ptr, ptr + 8);
++	ret = hdmi_spd_infoframe_init(frame, ptr,
++				      ptr + HDMI_SPD_INFOFRAME_VENDOR_LEN);
+ 	if (ret)
+ 		return ret;
+ 
+-	frame->sdi = ptr[24];
++	frame->sdi = ptr[HDMI_SPD_INFOFRAME_VENDOR_LEN +
++			 HDMI_SPD_INFOFRAME_PRODUCT_LEN];
  
  	return 0;
  }
 diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index b80a5ee63bb2..08922d5330d6 100644
+index 08922d5330d6..7d96821b486d 100644
 --- a/include/linux/hdmi.h
 +++ b/include/linux/hdmi.h
-@@ -271,8 +271,8 @@ struct hdmi_spd_infoframe {
+@@ -267,12 +267,15 @@ enum hdmi_spd_sdi {
+ 	HDMI_SPD_SDI_PMP,
+ };
+ 
++#define HDMI_SPD_INFOFRAME_VENDOR_LEN	8
++#define HDMI_SPD_INFOFRAME_PRODUCT_LEN	16
++
+ struct hdmi_spd_infoframe {
  	enum hdmi_infoframe_type type;
  	unsigned char version;
  	unsigned char length;
--	char vendor[8];
--	char product[16];
-+	char vendor[8] __nonstring;
-+	char product[16] __nonstring;
+-	char vendor[8] __nonstring;
+-	char product[16] __nonstring;
++	char vendor[HDMI_SPD_INFOFRAME_VENDOR_LEN] __nonstring;
++	char product[HDMI_SPD_INFOFRAME_PRODUCT_LEN] __nonstring;
  	enum hdmi_spd_sdi sdi;
  };
  

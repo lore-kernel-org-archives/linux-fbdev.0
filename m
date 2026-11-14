@@ -1,58 +1,58 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794679477;
-	b=Beg+KokPRO3oGPAGRFSjHiW/06Vqm3+G5Bcw6bQYgrNoZQuz/CS5ukUW/FNY3QzXns4W
-	 Rf6eBjDkoPpyEIrm4CeVZ34rooZqpLL+/dsgOkift6CUyaaTjnYfqvT9bx36IXM2bp7YJ
-	 Tk3wlURYY6lTMi9cJVj2cF1gnBni2voeeU3NZmcYf9LSKkeO+26FYw82utHuKXpUMUJ3b
-	 fZA98LzMFgUwX51JyHDL2Rm8z/tkj0cioDY2sKBsJNg1qvNOglTHkuSELMSKvXwzDNBxh
-	 CosM1r3iex8uTpomPlTC6snwTa4gdLhlnode4YTnQYuMWaNIyta8tL+MsiSOw7WVUDg==
+	t=1794679478;
+	b=5haBCN/oFGN4TYbG0QE7dyQO+rXoueMMsB5Dqkt08ZqLkXMV2ZiznG+jY89i1x5bZnc5
+	 BgCRAbN4fm6RfOqPlTd/XwmX8gioW+utj8U/E3nZ1T7ux6BrEsgsMHg4c3tYhOZigL5LN
+	 Z+c9ISxEKnelIwq07WdnhI6fsQ4An0k4YDTznliOVmDsk1rKSpCq8eaS17mKYE/f9y9ZE
+	 UmIyIz2t69g8fpz1WFSeOmJ/qDmaoHzv3GwejdYPXjLvQHKD6jOSdmc1ljhCPDbn7CxRO
+	 xmVEwJ1CDLdnf78BY88nP3KNCKyHnWFIiwON53r7kxtmsRccsrX6OOLMxJQ236mj8ag==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794679477;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794679478;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=KqlR6Og/xf6HdkcNgQx2/yYhjlmI9dtnOU/aICd5uJI=;
-	b=WX4SBvGhSfreXWa467AK9UJjIPa/CBwBaLbjnthta2OK3fAHMB5khBKBurNPzOqwgkTJ
-	 sCGSTYGcLnwKkUb87/iRBpweG2bSNOEwMjzOUQAlapyo2CQupRMRPKkhxwOtJfyPIoph6
-	 +QK72vw16OvoglWdTFpzy48HvfYammTjfs2URtBhc9yA6Hi/QBDRgj9QF7LakL/i7eYPz
-	 R5Ggwhyyvd67O5LDb/1Qc6KJnd9aBMe+/cNZyawCtgtlvaVbOVmlQPYd+mVlfYbKFLh9y
-	 Mn9erlBwFe4BAwFTO1k2uwLld9oOS92HDKMrynooFenwVSglkwCbuOxIy1TPtTbjyuw==
+	bh=tvrlBCAz84IHnVHjiXPVpSOzxSHOVov+E7/ouzhKgDE=;
+	b=UT6hPjYalzwQpbBqVvVTIS8UFRMvoaryNMa6aoxrqMALEa0JGPdjhqHr8AXuALTnzbO4
+	 x5/hl0nXtP9h6b8DhT1B2Wpggg0sULm0uwb2fN8RFyNJ/lmHra+ZJR8jPtMC4SC+q3QUI
+	 3NjXhJjzwo8VseOrKBxVEifRC8kM5w3Y5+H2M9BheS+MCqCJKsYv1Ig61B9My46u/8Kjr
+	 ksbYKwg8OVTEO7LqIAYhQ54hd/nj4roYJP100dcjp8jgcZZnnkicPGLd8HmX9e2JWFOD+
+	 7Wc2fr+ikflDfvRVIEiY2fe4aTIq8EQbDZ/nVq8hOheFpCqFxwSKEd2mIM2iqXc3wkA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=DBLsOyUf;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=k5mGdByu;
 	arc=none smtp.remote-ip=148.251.105.195
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9D3A606B5EB;
-	Sat, 14 Nov 2026 18:04:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D9D3A606B5EB
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A022B60A2609;
+	Sat, 14 Nov 2026 18:04:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A022B60A2609
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=DBLsOyUf
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=k5mGdByu
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1794679475;
-	bh=Xv0UPm/o8racomvn8bPDXM+ntONsGF0X3DJtkfA58Jo=;
+	s=mail; t=1794679476;
+	bh=q8YxitCLXIoiDyHwWcus3cdVy65RpFGHngoEFCcMx6o=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=DBLsOyUfT6PaYPM7Op3GrmLObv5HpzFiiBMPTYgEV7DTS1VOOEVi0930GH7Gfvhk/
-	 c19DYj/gmhqkqkRwiQ0ahQck5kzp3cE9++pgjXeo+KO4+vVQBBWMpa0QGtd78LgsdC
-	 Sjzo3wGai3DJ4Q3OHFcjzTmkQXlZ58VYVPa+u71R/zXwtXwytrlYZXeXYyuaU9CI6X
-	 GWUZVaK+IkKqi813ULdpAd/Za9X2YEVoMoPLTMJhGy2BK++9FA+23/IBEY3argJfwO
-	 mf9oaRiqF4X2hG4AXSbWGGgp8d4kF11TiX+Vm3xw35xQ9qdyonifa3Fmc3A3dlDn14
-	 B87C8pmmLPsyw==
+	b=k5mGdByucvJCu/9/LXu64cV+Whyiea554iaACB+BhjTqqSvESi/8kPSw+0ijUEyQ2
+	 UDifp/O0v+k1iOGLRbWutXXKOBpW4bORwmCHiUlDJDI3fmPDbIuSQ7O+JGWWaXP7Gz
+	 iom8Q8PzSrWQc6RvLQO8eNyXpTfBSTSFGAmx4NuP8g0yotqJT2vQ7hC5o0WMgmSNgX
+	 0R5VG7Gp0vXJFQd/7E/9a7KSWLM2qqGApgCyJgDQ+k1KgloRlSI9nJD5TTAFeW882A
+	 YPmqRSEYbzGLRplQwxScRMC4qE/uHA8CLL5sNjwoaJHIYUgcLEAMzNTWm3LXcCsNAl
+	 wN8XzCI7fWBRA==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 594EB17E152A;
-	Sat, 14 Nov 2026 19:04:35 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 2031A17E35C9;
+	Sat, 14 Nov 2026 19:04:36 +0100 (CET)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Sat, 14 Nov 2026 20:03:48 +0200
-Subject: [PATCH 24/25] drm/tests: bridge: Add HDMI 2.0 bridge connector
+Date: Sat, 14 Nov 2026 20:03:49 +0200
+Subject: [PATCH 25/25] drm/tests: probe-helper: Add .force_ctx() callback
  coverage
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
@@ -65,7 +65,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-24-20e8a33a2286@collabora.com>
+Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-25-20e8a33a2286@collabora.com>
 References: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>, 
@@ -78,256 +78,359 @@ Cc: kernel@collabora.com, linux-fbdev@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-The bridge connector derives the HDMI connector scrambling capability
-and max TMDS character rate from the HDMI bridge, and forwards the
-scrambler callbacks to it.
+The .force_ctx() connector helper callback takes precedence over the
+.force() connector callback when probing a forced connector.
 
-Let the HDMI bridge init helper take the supported HDMI version and max
-TMDS character rate, and add tests to make sure that:
+Add tests to make sure that:
 
-- an HDMI 2.0 bridge results in a scrambling capable connector, limited
-  to the HDMI 2.0 max TMDS character rate, whose scrambler callbacks are
-  forwarded to the bridge
-- an HDMI 1.4 bridge results in a connector without scrambling support,
-  even when the bridge provides scrambler callbacks
-- the bridge max TMDS character rate overrides the version-inferred one
-- the connector creation fails for an HDMI 2.0 bridge missing any of the
-  scrambler callbacks
+- .force_ctx() is called instead of .force(), with the forced status
+  already set and the connection_mutex held through the acquire context
+- errors other than -EDEADLK don't prevent the connector from being
+  probed
+- .force() is still called when .force_ctx() is not provided
+- -EDEADLK makes the probe back off and retry, while restoring the
+  connector status beforehand, so that the status change gets detected
+
+For the latter, a genuine deadlock is needed, since
+drm_modeset_backoff() expects a contended lock.  Create one with an
+older acquire context in a kthread, which wounds the probe context by
+requesting the connection_mutex while holding a lock that the probe
+context tries to take from .force_ctx().
 
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/tests/drm_bridge_test.c | 185 +++++++++++++++++++++++++++++++-
- 1 file changed, 182 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/tests/drm_probe_helper_test.c | 296 ++++++++++++++++++++++++++
+ 1 file changed, 296 insertions(+)
 
-diff --git a/drivers/gpu/drm/tests/drm_bridge_test.c b/drivers/gpu/drm/tests/drm_bridge_test.c
-index a445f71c31b8..51212e33a1ae 100644
---- a/drivers/gpu/drm/tests/drm_bridge_test.c
-+++ b/drivers/gpu/drm/tests/drm_bridge_test.c
-@@ -30,6 +30,8 @@
- struct drm_bridge_priv {
- 	unsigned int enable_count;
- 	unsigned int disable_count;
-+	unsigned int scrambler_enable_count;
-+	unsigned int scrambler_disable_count;
- 	struct drm_bridge bridge;
- 	void *data;
- };
-@@ -542,8 +544,10 @@ drm_test_bridge_chain_init(struct kunit *test, unsigned int num_bridges,
- }
+diff --git a/drivers/gpu/drm/tests/drm_probe_helper_test.c b/drivers/gpu/drm/tests/drm_probe_helper_test.c
+index ebc0392585e7..5d7dc4725518 100644
+--- a/drivers/gpu/drm/tests/drm_probe_helper_test.c
++++ b/drivers/gpu/drm/tests/drm_probe_helper_test.c
+@@ -3,6 +3,9 @@
+  * Kunit test for drm_probe_helper functions
+  */
  
- static struct drm_bridge_init_priv *
--drm_test_bridge_hdmi_init(struct kunit *test, const struct drm_bridge_funcs *funcs,
--			  unsigned int supported_formats, int max_bpc)
-+__drm_test_bridge_hdmi_init(struct kunit *test, const struct drm_bridge_funcs *funcs,
-+			    unsigned int supported_formats, int max_bpc,
-+			    enum hdmi_version hdmi_ver,
-+			    unsigned long long max_tmds_char_rate)
- {
- 	struct drm_bridge_init_priv *priv;
- 	struct drm_encoder *enc;
-@@ -598,7 +602,8 @@ drm_test_bridge_hdmi_init(struct kunit *test, const struct drm_bridge_funcs *fun
- 	bridge->ops |= DRM_BRIDGE_OP_HDMI;
- 	bridge->vendor = "LNX";
- 	bridge->product = "KUnit";
--	bridge->supported_hdmi_ver = HDMI_VERSION_1_4;
-+	bridge->supported_hdmi_ver = hdmi_ver;
-+	bridge->max_tmds_char_rate = max_tmds_char_rate;
- 
- 	ret = drm_kunit_bridge_add(test, bridge);
- 	if (ret)
-@@ -619,6 +624,14 @@ drm_test_bridge_hdmi_init(struct kunit *test, const struct drm_bridge_funcs *fun
- 	return priv;
- }
- 
-+static struct drm_bridge_init_priv *
-+drm_test_bridge_hdmi_init(struct kunit *test, const struct drm_bridge_funcs *funcs,
-+			  unsigned int supported_formats, int max_bpc)
-+{
-+	return __drm_test_bridge_hdmi_init(test, funcs, supported_formats,
-+					   max_bpc, HDMI_VERSION_1_4, 0);
-+}
++#include <linux/completion.h>
++#include <linux/kthread.h>
 +
- /*
-  * Test that drm_bridge_get_current_state() returns the last committed
-  * state for an atomic bridge.
-@@ -1373,11 +1386,177 @@ static struct kunit_suite drm_bridge_bus_fmt_test_suite = {
- 	.test_cases = drm_bridge_bus_fmt_tests,
+ #include <drm/drm_atomic_state_helper.h>
+ #include <drm/drm_connector.h>
+ #include <drm/drm_device.h>
+@@ -11,14 +14,24 @@
+ #include <drm/drm_mode.h>
+ #include <drm/drm_modes.h>
+ #include <drm/drm_modeset_helper_vtables.h>
++#include <drm/drm_modeset_lock.h>
+ #include <drm/drm_probe_helper.h>
+ 
+ #include <kunit/test.h>
+ 
++struct drm_probe_helper_contender;
++
+ struct drm_probe_helper_test_priv {
+ 	struct drm_device *drm;
+ 	struct device *dev;
+ 	struct drm_connector connector;
++
++	unsigned int force_count;
++	unsigned int force_ctx_count;
++	int force_ctx_ret;
++	bool force_ctx_locked;
++	enum drm_connector_status force_ctx_status;
++	struct drm_probe_helper_contender *contender;
  };
  
-+static int drm_test_bridge_hdmi_scrambler_enable(struct drm_bridge *bridge)
+ static const struct drm_connector_helper_funcs drm_probe_helper_connector_helper_funcs = {
+@@ -212,6 +225,289 @@ static struct kunit_suite drm_test_connector_helper_tv_get_modes_suite = {
+ 
+ kunit_test_suite(drm_test_connector_helper_tv_get_modes_suite);
+ 
++/*
++ * Runs an acquire context older than the probe one, which first takes @lock,
++ * then waits to be told to also request the connection_mutex held by the
++ * probe context.  Being older, it wounds the probe context, which will get
++ * -EDEADLK as soon as it tries to take @lock.
++ */
++struct drm_probe_helper_contender {
++	struct drm_device *drm;
++	struct drm_modeset_lock lock;
++	struct completion locked;
++	struct completion go;
++	struct completion done;
++	int ret;
++};
++
++static int drm_probe_helper_contender_fn(void *data)
 +{
-+	bridge_to_priv(bridge)->scrambler_enable_count++;
++	struct drm_probe_helper_contender *contender = data;
++	struct drm_modeset_acquire_ctx ctx;
 +
-+	return 0;
-+}
++	drm_modeset_acquire_init(&ctx, 0);
 +
-+static int drm_test_bridge_hdmi_scrambler_disable(struct drm_bridge *bridge)
-+{
-+	bridge_to_priv(bridge)->scrambler_disable_count++;
++	contender->ret = drm_modeset_lock(&contender->lock, &ctx);
++	complete(&contender->locked);
 +
-+	return 0;
-+}
-+
-+#define DRM_TEST_BRIDGE_HDMI_SCRAMBLER_FUNCS(_enable, _disable)				\
-+	{										\
-+		.atomic_destroy_state	= drm_atomic_helper_bridge_destroy_state,	\
-+		.atomic_duplicate_state	= drm_atomic_helper_bridge_duplicate_state,	\
-+		.atomic_create_state	= drm_atomic_helper_bridge_create_state,	\
-+		.hdmi_write_avi_infoframe	= dummy_write_infoframe,		\
-+		.hdmi_write_hdmi_infoframe	= dummy_write_infoframe,		\
-+		.hdmi_clear_avi_infoframe	= dummy_clear_infoframe,		\
-+		.hdmi_clear_hdmi_infoframe	= dummy_clear_infoframe,		\
-+		.hdmi_scrambler_enable		= (_enable),				\
-+		.hdmi_scrambler_disable		= (_disable),				\
++	if (!contender->ret) {
++		if (wait_for_completion_timeout(&contender->go, 5 * HZ))
++			contender->ret =
++				drm_modeset_lock(&contender->drm->mode_config.connection_mutex,
++						 &ctx);
++		else
++			contender->ret = -ETIMEDOUT;
 +	}
 +
-+static const struct drm_bridge_funcs drm_test_bridge_hdmi_scrambler_funcs =
-+	DRM_TEST_BRIDGE_HDMI_SCRAMBLER_FUNCS(drm_test_bridge_hdmi_scrambler_enable,
-+					     drm_test_bridge_hdmi_scrambler_disable);
++	drm_modeset_drop_locks(&ctx);
++	drm_modeset_acquire_fini(&ctx);
 +
-+static const struct drm_bridge_funcs drm_test_bridge_hdmi_no_scrambler_enable_funcs =
-+	DRM_TEST_BRIDGE_HDMI_SCRAMBLER_FUNCS(NULL,
-+					     drm_test_bridge_hdmi_scrambler_disable);
++	complete(&contender->done);
 +
-+static const struct drm_bridge_funcs drm_test_bridge_hdmi_no_scrambler_disable_funcs =
-+	DRM_TEST_BRIDGE_HDMI_SCRAMBLER_FUNCS(drm_test_bridge_hdmi_scrambler_enable,
-+					     NULL);
++	return 0;
++}
 +
-+/*
-+ * Test that the connector created for an HDMI 2.0 bridge reports the
-+ * scrambling capability along with the HDMI 2.0 max TMDS character rate,
-+ * and forwards the scrambler callbacks to the bridge.
-+ */
-+static void drm_test_bridge_connector_hdmi_scrambler(struct kunit *test)
++static struct drm_probe_helper_test_priv *
++connector_to_probe_priv(struct drm_connector *connector)
 +{
-+	struct drm_bridge_init_priv *priv;
-+	struct drm_connector *connector;
++	return container_of(connector, struct drm_probe_helper_test_priv, connector);
++}
++
++static void drm_probe_helper_test_force(struct drm_connector *connector)
++{
++	connector_to_probe_priv(connector)->force_count++;
++}
++
++static int drm_probe_helper_test_force_ctx(struct drm_connector *connector,
++					   struct drm_modeset_acquire_ctx *ctx)
++{
++	struct drm_probe_helper_test_priv *priv = connector_to_probe_priv(connector);
++	struct drm_probe_helper_contender *contender = priv->contender;
 +	int ret;
 +
-+	priv = __drm_test_bridge_hdmi_init(test, &drm_test_bridge_hdmi_scrambler_funcs,
-+					   BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444), 8,
-+					   HDMI_VERSION_2_0, 0);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, priv);
++	priv->force_ctx_count++;
++	priv->force_ctx_status = connector->status;
++	priv->force_ctx_locked =
++		drm_modeset_is_locked(&connector->dev->mode_config.connection_mutex);
 +
-+	connector = priv->connector;
-+	KUNIT_EXPECT_TRUE(test, drm_connector_hdmi_scrambler_supported(connector));
-+	KUNIT_EXPECT_EQ(test, connector->hdmi.max_tmds_char_rate,
-+			HDMI_2_0_TMDS_CHAR_RATE_MAX_HZ);
++	if (contender && priv->force_ctx_count == 1) {
++		complete(&contender->go);
 +
-+	KUNIT_ASSERT_NOT_NULL(test, connector->hdmi.funcs->scrambler_enable);
-+	ret = connector->hdmi.funcs->scrambler_enable(connector);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+	KUNIT_EXPECT_EQ(test, priv->test_bridge->scrambler_enable_count, 1);
-+	KUNIT_EXPECT_EQ(test, priv->test_bridge->scrambler_disable_count, 0);
++		ret = drm_modeset_lock(&contender->lock, ctx);
++		if (ret)
++			return ret;
++	}
 +
-+	KUNIT_ASSERT_NOT_NULL(test, connector->hdmi.funcs->scrambler_disable);
-+	ret = connector->hdmi.funcs->scrambler_disable(connector);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+	KUNIT_EXPECT_EQ(test, priv->test_bridge->scrambler_enable_count, 1);
-+	KUNIT_EXPECT_EQ(test, priv->test_bridge->scrambler_disable_count, 1);
++	return priv->force_ctx_ret;
 +}
 +
-+/*
-+ * Test that the connector created for an HDMI 1.4 bridge doesn't report the
-+ * scrambling capability and ignores the bridge scrambler callbacks.
-+ */
-+static void drm_test_bridge_connector_hdmi_no_scrambler(struct kunit *test)
++static int drm_probe_helper_test_get_modes(struct drm_connector *connector)
 +{
-+	struct drm_bridge_init_priv *priv;
-+	struct drm_connector *connector;
-+
-+	priv = __drm_test_bridge_hdmi_init(test, &drm_test_bridge_hdmi_scrambler_funcs,
-+					   BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444), 8,
-+					   HDMI_VERSION_1_4, 0);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, priv);
-+
-+	connector = priv->connector;
-+	KUNIT_EXPECT_FALSE(test, drm_connector_hdmi_scrambler_supported(connector));
-+	KUNIT_EXPECT_EQ(test, connector->hdmi.max_tmds_char_rate,
-+			HDMI_1_3_TMDS_CHAR_RATE_MAX_HZ);
-+	KUNIT_EXPECT_NULL(test, connector->hdmi.funcs->scrambler_enable);
-+	KUNIT_EXPECT_NULL(test, connector->hdmi.funcs->scrambler_disable);
++	return 0;
 +}
 +
-+/*
-+ * Test that the max TMDS character rate of an HDMI bridge overrides the
-+ * one inferred from the supported HDMI version.
-+ */
-+static void drm_test_bridge_connector_hdmi_max_tmds_char_rate(struct kunit *test)
-+{
-+	struct drm_bridge_init_priv *priv;
-+
-+	priv = __drm_test_bridge_hdmi_init(test, &drm_test_bridge_hdmi_scrambler_funcs,
-+					   BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444), 8,
-+					   HDMI_VERSION_2_0,
-+					   HDMI_1_3_TMDS_CHAR_RATE_MAX_HZ);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, priv);
-+
-+	KUNIT_EXPECT_EQ(test, priv->connector->hdmi.max_tmds_char_rate,
-+			HDMI_1_3_TMDS_CHAR_RATE_MAX_HZ);
-+}
-+
-+struct drm_bridge_connector_hdmi_missing_scrambler_test {
-+	const char *desc;
-+	const struct drm_bridge_funcs *funcs;
++static const struct drm_connector_helper_funcs drm_probe_helper_force_ctx_helper_funcs = {
++	.get_modes	= drm_probe_helper_test_get_modes,
++	.force_ctx	= drm_probe_helper_test_force_ctx,
 +};
 +
-+static const struct drm_bridge_connector_hdmi_missing_scrambler_test
-+drm_bridge_connector_hdmi_missing_scrambler_params[] = {
-+	{ "hdmi_scrambler_enable", &drm_test_bridge_hdmi_no_scrambler_enable_funcs },
-+	{ "hdmi_scrambler_disable", &drm_test_bridge_hdmi_no_scrambler_disable_funcs },
++static const struct drm_connector_helper_funcs drm_probe_helper_force_helper_funcs = {
++	.get_modes	= drm_probe_helper_test_get_modes,
 +};
 +
-+static void
-+drm_bridge_connector_hdmi_missing_scrambler_desc(const struct drm_bridge_connector_hdmi_missing_scrambler_test *t,
-+						 char *desc)
++static const struct drm_connector_funcs drm_probe_helper_force_connector_funcs = {
++	.force			= drm_probe_helper_test_force,
++	.atomic_create_state	= drm_atomic_helper_connector_create_state,
++	.atomic_destroy_state	= drm_atomic_helper_connector_destroy_state,
++	.atomic_duplicate_state	= drm_atomic_helper_connector_duplicate_state,
++};
++
++static int drm_probe_helper_force_test_init(struct kunit *test)
 +{
-+	strscpy(desc, t->desc, KUNIT_PARAM_DESC_SIZE);
++	struct drm_probe_helper_test_priv *priv;
++	int ret;
++
++	priv = kunit_kzalloc(test, sizeof(*priv), GFP_KERNEL);
++	KUNIT_ASSERT_NOT_NULL(test, priv);
++	test->priv = priv;
++
++	priv->dev = drm_kunit_helper_alloc_device(test);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, priv->dev);
++
++	priv->drm = __drm_kunit_helper_alloc_drm_device(test, priv->dev,
++							sizeof(*priv->drm), 0,
++							DRIVER_MODESET | DRIVER_ATOMIC);
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, priv->drm);
++
++	ret = drmm_connector_init(priv->drm, &priv->connector,
++				  &drm_probe_helper_force_connector_funcs,
++				  DRM_MODE_CONNECTOR_HDMIA,
++				  NULL);
++	KUNIT_ASSERT_EQ(test, ret, 0);
++
++	drm_connector_helper_add(&priv->connector,
++				 &drm_probe_helper_force_ctx_helper_funcs);
++
++	priv->connector.force = DRM_FORCE_ON;
++
++	return 0;
 +}
 +
-+KUNIT_ARRAY_PARAM(drm_bridge_connector_hdmi_missing_scrambler,
-+		  drm_bridge_connector_hdmi_missing_scrambler_params,
-+		  drm_bridge_connector_hdmi_missing_scrambler_desc);
++static int drm_probe_helper_test_probe(struct drm_probe_helper_test_priv *priv)
++{
++	int count;
++
++	mutex_lock(&priv->drm->mode_config.mutex);
++
++	count = drm_helper_probe_single_connector_modes(&priv->connector, 1920, 1080);
++
++	mutex_unlock(&priv->drm->mode_config.mutex);
++
++	return count;
++}
 +
 +/*
-+ * Test that creating the connector for an HDMI 2.0 bridge fails when any of
-+ * the bridge scrambler callbacks is missing.
++ * Test that probing a forced connector calls .force_ctx(), in favour of
++ * .force(), with the forced status already set and the connection_mutex held
++ * through the acquire context.
 + */
-+static void drm_test_bridge_connector_hdmi_missing_scrambler(struct kunit *test)
++static void drm_test_probe_helper_force_ctx(struct kunit *test)
 +{
-+	const struct drm_bridge_connector_hdmi_missing_scrambler_test *params =
-+		test->param_value;
-+	struct drm_bridge_init_priv *priv;
++	struct drm_probe_helper_test_priv *priv = test->priv;
++	int count;
 +
-+	priv = __drm_test_bridge_hdmi_init(test, params->funcs,
-+					   BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444), 8,
-+					   HDMI_VERSION_2_0, 0);
-+	KUNIT_EXPECT_EQ(test, PTR_ERR_OR_ZERO(priv), -EINVAL);
++	count = drm_probe_helper_test_probe(priv);
++	KUNIT_EXPECT_GT(test, count, 0);
++
++	KUNIT_EXPECT_EQ(test, priv->force_ctx_count, 1);
++	KUNIT_EXPECT_EQ(test, priv->force_count, 0);
++	KUNIT_EXPECT_EQ(test, priv->force_ctx_status, connector_status_connected);
++	KUNIT_EXPECT_TRUE(test, priv->force_ctx_locked);
++	KUNIT_EXPECT_EQ(test, priv->connector.status, connector_status_connected);
 +}
 +
-+static struct kunit_case drm_bridge_connector_hdmi_tests[] = {
-+	KUNIT_CASE(drm_test_bridge_connector_hdmi_scrambler),
-+	KUNIT_CASE(drm_test_bridge_connector_hdmi_no_scrambler),
-+	KUNIT_CASE(drm_test_bridge_connector_hdmi_max_tmds_char_rate),
-+	KUNIT_CASE_PARAM(drm_test_bridge_connector_hdmi_missing_scrambler,
-+			 drm_bridge_connector_hdmi_missing_scrambler_gen_params),
++/*
++ * Test that probing a connector forced off calls .force_ctx() with the
++ * disconnected status set.
++ */
++static void drm_test_probe_helper_force_ctx_off(struct kunit *test)
++{
++	struct drm_probe_helper_test_priv *priv = test->priv;
++	int count;
++
++	priv->connector.force = DRM_FORCE_OFF;
++
++	count = drm_probe_helper_test_probe(priv);
++	KUNIT_EXPECT_EQ(test, count, 0);
++
++	KUNIT_EXPECT_EQ(test, priv->force_ctx_count, 1);
++	KUNIT_EXPECT_EQ(test, priv->force_ctx_status, connector_status_disconnected);
++	KUNIT_EXPECT_EQ(test, priv->connector.status, connector_status_disconnected);
++}
++
++/*
++ * Test that a .force_ctx() error other than -EDEADLK doesn't prevent the
++ * forced connector from being probed.
++ */
++static void drm_test_probe_helper_force_ctx_error(struct kunit *test)
++{
++	struct drm_probe_helper_test_priv *priv = test->priv;
++	int count;
++
++	priv->force_ctx_ret = -EIO;
++
++	count = drm_probe_helper_test_probe(priv);
++	KUNIT_EXPECT_GT(test, count, 0);
++
++	KUNIT_EXPECT_EQ(test, priv->force_ctx_count, 1);
++	KUNIT_EXPECT_EQ(test, priv->connector.status, connector_status_connected);
++}
++
++/*
++ * Test that a .force_ctx() returning -EDEADLK makes the probe back off and
++ * retry, while restoring the connector status beforehand, so that the status
++ * change still gets detected.
++ */
++static void drm_test_probe_helper_force_ctx_deadlock(struct kunit *test)
++{
++	struct drm_probe_helper_test_priv *priv = test->priv;
++	struct drm_probe_helper_contender *contender;
++	struct task_struct *task;
++	int count = 0;
++	bool done;
++
++	KUNIT_ASSERT_EQ(test, priv->connector.status, connector_status_unknown);
++	KUNIT_ASSERT_FALSE(test, priv->drm->mode_config.delayed_event);
++
++	contender = kunit_kzalloc(test, sizeof(*contender), GFP_KERNEL);
++	KUNIT_ASSERT_NOT_NULL(test, contender);
++
++	contender->drm = priv->drm;
++	drm_modeset_lock_init(&contender->lock);
++	init_completion(&contender->locked);
++	init_completion(&contender->go);
++	init_completion(&contender->done);
++
++	task = kthread_run(drm_probe_helper_contender_fn, contender,
++			   "drm-probe-contender");
++	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, task);
++
++	/* Make sure the contender context is the older one */
++	wait_for_completion(&contender->locked);
++	if (!contender->ret) {
++		priv->contender = contender;
++		count = drm_probe_helper_test_probe(priv);
++	}
++
++	/* The contender must be gone before releasing its resources */
++	done = wait_for_completion_timeout(&contender->done, 10 * HZ);
++	KUNIT_ASSERT_TRUE(test, done);
++	KUNIT_ASSERT_EQ(test, contender->ret, 0);
++
++	KUNIT_EXPECT_GT(test, count, 0);
++	KUNIT_EXPECT_EQ(test, priv->force_ctx_count, 2);
++	KUNIT_EXPECT_EQ(test, priv->force_ctx_status, connector_status_connected);
++	KUNIT_EXPECT_EQ(test, priv->connector.status, connector_status_connected);
++	KUNIT_EXPECT_TRUE(test, priv->drm->mode_config.delayed_event);
++}
++
++/*
++ * Test that probing a forced connector still calls .force() when no
++ * .force_ctx() is provided.
++ */
++static void drm_test_probe_helper_force(struct kunit *test)
++{
++	struct drm_probe_helper_test_priv *priv = test->priv;
++	int count;
++
++	drm_connector_helper_add(&priv->connector,
++				 &drm_probe_helper_force_helper_funcs);
++
++	count = drm_probe_helper_test_probe(priv);
++	KUNIT_EXPECT_GT(test, count, 0);
++
++	KUNIT_EXPECT_EQ(test, priv->force_count, 1);
++	KUNIT_EXPECT_EQ(test, priv->force_ctx_count, 0);
++	KUNIT_EXPECT_EQ(test, priv->connector.status, connector_status_connected);
++}
++
++static struct kunit_case drm_test_probe_helper_force_tests[] = {
++	KUNIT_CASE(drm_test_probe_helper_force_ctx),
++	KUNIT_CASE(drm_test_probe_helper_force_ctx_off),
++	KUNIT_CASE(drm_test_probe_helper_force_ctx_error),
++	KUNIT_CASE(drm_test_probe_helper_force_ctx_deadlock),
++	KUNIT_CASE(drm_test_probe_helper_force),
 +	{ }
 +};
 +
-+static struct kunit_suite drm_bridge_connector_hdmi_test_suite = {
-+	.name = "drm_bridge_connector_hdmi",
-+	.test_cases = drm_bridge_connector_hdmi_tests,
++static struct kunit_suite drm_test_probe_helper_force_suite = {
++	.name = "drm_probe_helper_force",
++	.init = drm_probe_helper_force_test_init,
++	.test_cases = drm_test_probe_helper_force_tests,
 +};
 +
- kunit_test_suites(
- 	&drm_bridge_get_current_state_test_suite,
- 	&drm_bridge_helper_reset_crtc_test_suite,
- 	&drm_bridge_alloc_test_suite,
- 	&drm_bridge_bus_fmt_test_suite,
-+	&drm_bridge_connector_hdmi_test_suite,
- );
- 
- MODULE_AUTHOR("Maxime Ripard <mripard@kernel.org>");
++kunit_test_suite(drm_test_probe_helper_force_suite);
++
+ MODULE_AUTHOR("Maxime Ripard <maxime@cerno.tech>");
+ MODULE_DESCRIPTION("Kunit test for drm_probe_helper functions");
+ MODULE_LICENSE("GPL");
 
 -- 
 2.56.0

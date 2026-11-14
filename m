@@ -1,59 +1,59 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1794679466;
-	b=qa1R5q6RA50Apwjk92R8dCq9GlogxX3EJFljm/x+qlmGWuoTL70xG7Z89yJaA8NCHKDa
-	 cHvuZ/zn+YdqoO/RNS14vQEc9Jn+yHKputmNYhgV1yZ9+L+xZpg3lyeQuIFjZolFaleDM
-	 dmu53Ln1n5JZl4I9/CdAApTiPc4Kcxfminy65L/g4GbLKhKv+C2SYcejIT/gS7Yvln7le
-	 IrnWQYrcBwjpYzTCU2vfLFLxQJdygApo2viqWy46fq4MVNXpQNhgDw96Rld3kUuTStWxe
-	 5RYETYUckzlXr+SlrQ94fLgJD/9A8gCSJc38RXYQlyjU9dPWbxAp46tn6szhj7HUYSA==
+	b=wyLicj+XU/jDMLOAQ2b8Hq5je7XVO2U58aoqp3Nle2W0H03x34R0Xp8Ry7GAT0uxvvb0
+	 Kn6rygyM/5aYJ2sFftVvi8/BlzYdP+cd+Hy8uY/qE3+R/oSJhe5DeawfIIZvkQroVOUPV
+	 qN8wZGryQDB2IZ9MDr1QfaUlwP5WOy369Ny4elEO3L1GsYr5HYyTNcLAq1lXWI0CFuUBc
+	 N+LD78383KxKUU4IczQEOeZKfHO+Cas8z+HOHR4mVxw94HCJkYgicXQ5XkWXfMOY3jR6U
+	 vI4bXsoVyVcJAq5TPXGGleFZuI3g0NVllT/VEG3L1tOcCjUfBwAtBogn+5SeruNXvow==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794679466;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=VmgdJhLqdvObEmVdZHSnVjMxF7CRFu4RZ0ii1YVtQJk=;
-	b=uerf/LnfasT/ylqqUDm9tuyxQ9EFTJJwOTn84tW/kIls010PKQUmTsfLt84HhdKXCIet
-	 1Wblwa+6s4C7IQNAJ0PdMjVO3z4qgDqNKwrHs4pIGr9UdBPIyQuIQUnEhw7RWZCt6Cwx4
-	 bzX/MQvO6FbsBp4dvjbDPamSsb2AZsNfOmx4BzlIalbbHEEU7o48Vl04oNzC0XDacTmLd
-	 l4vFWKRcna5XvjB+w173U+E3K+yGdTZJxjUMjLZCM/Qj2iOs36Si/on9c0LauWQ9g6gXD
-	 uY4Iv6aDsshA20ItGOGB2BxNP7mLncJ+zH3ZBnQ1SFF1aerMO5uugsn04opgW+bjt4w==
+	bh=jw+MrZsI04UhCut1Lcy9TfgOtgk6vMk75DWUITxs4CM=;
+	b=dP0pK0zh5SOKV1TYPr1ptcHhELlaaKIy1JczcRZD7RfpFDDnkQcTqu92ZIL8SHwNE7UD
+	 Um3tAsVWitSHsLDcMDUfmK2RgzseU9nW8cMwgHW6T028YsRNEZxoeHsbDiUyK+Ghzvefa
+	 PUWktyKxN4PgUVu5QTteoYqB5pkwyBWER63E1iJjFo+0foJTJ9YEjpRIdN8qFTq8dBJcp
+	 yDDf6tT8LPohKjRYWqMRMppd5vciYo5fmh83AbcEevKxSluR8En5kXrvRuf6kVrarFzkn
+	 kAdIHBz5XyZKrKnLzpJrChb9xLNpp62drZ2BMBnbXiynRK/KH8eaBEb1dYfqkD+YJhg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b="B12y/U9Z";
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=AuAdV4hK;
 	arc=none smtp.remote-ip=148.251.105.195
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44908606A882;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49764606A883;
 	Sat, 14 Nov 2026 18:04:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 44908606A882
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 49764606A883
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=B12y/U9Z
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=AuAdV4hK
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1794679458;
-	bh=owVPqFwaoXUU+Gcwxuroc+P7E9LF5U9XqHzH7kbz1s0=;
+	s=mail; t=1794679459;
+	bh=VA0rwkfjSh33P+agF41CZoRoNRegKroGX+B+IDlTDzs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=B12y/U9ZpAz20vm5D/hHAoJXT6bUWc70g2oxD7FJYj70lsjHuxYMk0KvXUVmc8Fei
-	 sj2Lol28GXfoqtzZ/DUXkdVS9FOY3M//CY3rjl7QCYHaUyxVv8fusKD3D5NPueCAbS
-	 EioT5ySwEncxK10qAQE1R1O5X5/Rvm5CaqO63kWxFO46HqaB1FDJpQB3AsXNpjRLm4
-	 K+7qDUM+TLAABHVc2VoIalm5nNucBNh5PRVxk2BjubXwq3KNzLf+L2HHWzAXjBGYrX
-	 hlDHzub9P2V7fUU19t4dEC9Vr/2Mckl1RU32SVMvf3ZMKI/CWonWN42wuXXX5YuxN/
-	 cvdFwRv/tqRtQ==
+	b=AuAdV4hK6N8r3Qcr9K6kq7g2E4LPupergUw2gcirBQiganMOJegrSohQwdyi3G9pg
+	 cPnngILkVuJtELdWIPCN4t7kjnJSWNpzGuZvEFufwjF61LN2VP810AegVFkXrNopHn
+	 JqLvCfXb8tEcds8WDMnodqcpawVVWHzQnsEsShvx6HsOzuRVdqRWU9JANENRaU7LXl
+	 RhAJyNQyzNK0Lrju7R4BkRgVX0z7RepdRJ30m8MEHv7TJKXtTPDI0umGnND0hH+0iI
+	 kE9eO3bii8xuHmxu4qF9c33X4VHGaEUstoG2vW6tvtt7bEHhJbvQXrkhgVF+Cub4pG
+	 Z/+HpwIh5eu6A==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id A669617E0BCF;
-	Sat, 14 Nov 2026 19:04:18 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 67EAA17E0F3F;
+	Sat, 14 Nov 2026 19:04:19 +0100 (CET)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Sat, 14 Nov 2026 20:03:26 +0200
-Subject: [PATCH 02/25] video/hdmi: Define SPD InfoFrame vendor/product
- field lengths
+Date: Sat, 14 Nov 2026 20:03:27 +0200
+Subject: [PATCH 03/25] drm/display: hdmi-state-helper: Drop
+ drm_atomic_helper_connector_hdmi_force()
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -65,7 +65,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-2-20e8a33a2286@collabora.com>
+Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-3-20e8a33a2286@collabora.com>
 References: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>, 
@@ -78,94 +78,53 @@ Cc: kernel@collabora.com, linux-fbdev@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-The HDMI specification defines the SPD InfoFrame Vendor Name and
-Product Description as fixed-size fields of 8 and 16 bytes
-respectively.
+With all callers converted to the .force_ctx() connector helper, this
+function has no users left.  Remove it.
 
-Add defines for those lengths and use them in place of the related
-magic numbers, including the payload offsets and the log format
-precisions.  While at it, fix the continuation line alignment in
-hdmi_spd_infoframe_log().
-
-No functional change intended.
-
+Reviewed-by: Maxime Ripard <mripard@kernel.org>
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/video/hdmi.c | 20 +++++++++++++-------
- include/linux/hdmi.h |  7 +++++--
- 2 files changed, 18 insertions(+), 9 deletions(-)
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c | 15 ---------------
+ include/drm/display/drm_hdmi_state_helper.h     |  1 -
+ 2 files changed, 16 deletions(-)
 
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index cd18121afa20..7eeadac2de69 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -304,9 +304,11 @@ ssize_t hdmi_spd_infoframe_pack_only(const struct hdmi_spd_infoframe *frame,
- 	ptr += HDMI_INFOFRAME_HEADER_SIZE;
- 
- 	memcpy(ptr, frame->vendor, sizeof(frame->vendor));
--	memcpy(ptr + 8, frame->product, sizeof(frame->product));
-+	memcpy(ptr + HDMI_SPD_INFOFRAME_VENDOR_LEN, frame->product,
-+	       sizeof(frame->product));
- 
--	ptr[24] = frame->sdi;
-+	ptr[HDMI_SPD_INFOFRAME_VENDOR_LEN + HDMI_SPD_INFOFRAME_PRODUCT_LEN] =
-+		frame->sdi;
- 
- 	hdmi_infoframe_set_checksum(buffer, length);
- 
-@@ -1284,10 +1286,12 @@ static void hdmi_spd_infoframe_log(const char *level,
- 	hdmi_infoframe_log_header(level, dev,
- 				  (const struct hdmi_any_infoframe *)frame);
- 
--	hdmi_log("    vendor: %.8s\n", frame->vendor);
--	hdmi_log("    product: %.16s\n", frame->product);
-+	hdmi_log("    vendor: %.*s\n", HDMI_SPD_INFOFRAME_VENDOR_LEN,
-+		 frame->vendor);
-+	hdmi_log("    product: %.*s\n", HDMI_SPD_INFOFRAME_PRODUCT_LEN,
-+		 frame->product);
- 	hdmi_log("    source device information: %s (0x%x)\n",
--		hdmi_spd_sdi_get_name(frame->sdi), frame->sdi);
-+		 hdmi_spd_sdi_get_name(frame->sdi), frame->sdi);
+diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+index 66ae678fc078..c50cedc7fa65 100644
+--- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
++++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+@@ -1440,21 +1440,6 @@ int drm_atomic_helper_connector_hdmi_hotplug(struct drm_connector *connector,
  }
+ EXPORT_SYMBOL(drm_atomic_helper_connector_hdmi_hotplug);
  
- static const char *
-@@ -1642,11 +1646,13 @@ static int hdmi_spd_infoframe_unpack(struct hdmi_spd_infoframe *frame,
- 
- 	ptr += HDMI_INFOFRAME_HEADER_SIZE;
- 
--	ret = hdmi_spd_infoframe_init(frame, ptr, ptr + 8);
-+	ret = hdmi_spd_infoframe_init(frame, ptr,
-+				      ptr + HDMI_SPD_INFOFRAME_VENDOR_LEN);
- 	if (ret)
- 		return ret;
- 
--	frame->sdi = ptr[24];
-+	frame->sdi = ptr[HDMI_SPD_INFOFRAME_VENDOR_LEN +
-+			 HDMI_SPD_INFOFRAME_PRODUCT_LEN];
- 
- 	return 0;
- }
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index 08922d5330d6..7d96821b486d 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -267,12 +267,15 @@ enum hdmi_spd_sdi {
- 	HDMI_SPD_SDI_PMP,
- };
- 
-+#define HDMI_SPD_INFOFRAME_VENDOR_LEN	8
-+#define HDMI_SPD_INFOFRAME_PRODUCT_LEN	16
-+
- struct hdmi_spd_infoframe {
- 	enum hdmi_infoframe_type type;
- 	unsigned char version;
- 	unsigned char length;
--	char vendor[8] __nonstring;
--	char product[16] __nonstring;
-+	char vendor[HDMI_SPD_INFOFRAME_VENDOR_LEN] __nonstring;
-+	char product[HDMI_SPD_INFOFRAME_PRODUCT_LEN] __nonstring;
- 	enum hdmi_spd_sdi sdi;
- };
+-/**
+- * drm_atomic_helper_connector_hdmi_force - HDMI Connector implementation of the force callback
+- * @connector: A pointer to the HDMI connector
+- *
+- * This function implements the .force() callback for the HDMI connectors. It
+- * can either be used directly as the callback or should be called from within
+- * the .force() callback implementation to maintain the HDMI-specific
+- * connector's data.
+- */
+-void drm_atomic_helper_connector_hdmi_force(struct drm_connector *connector)
+-{
+-	drm_atomic_helper_connector_hdmi_update(connector, NULL, connector->status);
+-}
+-EXPORT_SYMBOL(drm_atomic_helper_connector_hdmi_force);
+-
+ /**
+  * drm_atomic_helper_connector_hdmi_force_ctx - HDMI Connector implementation
+  * of the force_ctx callback
+diff --git a/include/drm/display/drm_hdmi_state_helper.h b/include/drm/display/drm_hdmi_state_helper.h
+index 21e5a9215319..ddbfb5b80fa8 100644
+--- a/include/drm/display/drm_hdmi_state_helper.h
++++ b/include/drm/display/drm_hdmi_state_helper.h
+@@ -27,7 +27,6 @@ int drm_atomic_helper_connector_hdmi_update_infoframes(struct drm_connector *con
+ int drm_atomic_helper_connector_hdmi_hotplug(struct drm_connector *connector,
+ 					     struct drm_modeset_acquire_ctx *ctx,
+ 					     enum drm_connector_status status);
+-void drm_atomic_helper_connector_hdmi_force(struct drm_connector *connector);
+ int drm_atomic_helper_connector_hdmi_force_ctx(struct drm_connector *connector,
+ 					       struct drm_modeset_acquire_ctx *ctx);
  
 
 -- 

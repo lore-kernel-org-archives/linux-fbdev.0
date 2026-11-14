@@ -1,59 +1,58 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1794679468;
-	b=BRYagJxlaNLenbhfG0DectIACXJwNM5ISr3B4i7KXMghLK+BNlyFLaERzLRAJlExBpVs
-	 9LoAWo1ITk3FeeJb+vss4W53S26FxqrForsnEWGvOrxzVjkp+GbSLGnu90TDxDEglYD4W
-	 6EJYqY4K0H0ISU06l8nI+nI9MAKTZYAQcyaf40KA9nIZzENZ3dzo04Tlz7xagm/5dECd+
-	 Ddo9pqjhYnaN5s1TZVY9kQN6oU2AG0ywzYARgF8BuInL3qQa1ZDJ0vAoxN08wXEoYtV3j
-	 aSkSHyN9bOGsepcaT/gplvHoUJopCp6Y9lIuD2r4K5CN9/xYHjasUXfBTtwN4csdKyA==
+	b=SmcBqCP2hSsuP2v2aPgJsnJstgzaKoqYg3uO+ZYKxUIF9OnVPod/6ZhP5nGiSnWekTLR
+	 32DnVWLAnD/mJz8CXvhuFznRV8lDuqqnYDe30HAncicm1r12CB4AqOZxeDvRHnB59BXsM
+	 TmyBCj53TlIUnI1Z4Dk9h7BghxyFxaaDIcb1W/DDg8zjQo/6wmQPnaIfQ2/uD39ABtZO9
+	 bJcUGjH5Mlu4CN4oJWvWmMqOxIm4MeeQnYNrEzWuGz/aXbMPDQafEgIhVoKGL72ATdVD1
+	 4fpYtL9TZeT/kQxkzxOHMXRpAynHuBCJ8gQ7ZrPfnb7hI/ni6BNgl98YILPULoM6W+w==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794679468;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=vKvyFSSR/5Ksq4dTL61APESefVgnjqQrG44vv1NJvK0=;
-	b=PlztacHPMVNp7Wj06jCiziUdVLu4vFIZEhu8G7EcLgh/evsGdPAKB/UxDIYuhpAuuA1W
-	 mP7+7fy4PckItmaiX+NvaQsN7yL14SeVw+zYOcbNd8bXTMR64QRYhlDYVJ0WMQ3lwJqJk
-	 7nzeTEdsuwpKJC136HeM/phuax43Q5+6U2frqmP6YmStdBc1mzV9lGJcrhl+HXzeikEFJ
-	 xHhA9Io0qTqoS+GSSLF1qbIc0KuhOh4LmgPhmsZa94JnuPVveOFT5vqDKkz+jYLT1aPP1
-	 KcawgAWzWCdDlvzoG3llKYxyzsg6whiYrfqneCTEPQ637nD9hY68STOkbYwsogBJlBQ==
+	bh=zaLMDmCu2kbwiz7bJmYaNCqwWa/ZMPGG52UksushYGQ=;
+	b=tInSeTSd+ld8iF/WCYM2fDxwFx7ZtouMD8Wmn+CoYCeB6lliXea2jMZZAUUxv8m0OWie
+	 AvOvmWKvcGEYJK9eRCbAsN0EE1NVeSpesio+L1SmbKCzcuoEZDRueiwhrgcKe4YwGhsXU
+	 h6WMKFL3HUDnaNj5Sn5Hh4Hr+RtKwx1hJNwCQRP8UiwTnA2QQwcXtfq+dqA52MByagxU4
+	 XXy3IJzPsyLOdcPER0dl+WBiXSREnmmAGGmlaYrsN+e9jBXN9AZTnXop223wzf47tkwGy
+	 R3BwnLMxPwOcrXxTAAfCTFsrQzTZWNvdPcgPhaVAuXiCZKcwpFuGuZcRkaqBBxOSbAQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=GuC7YZw+;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=LVAsV8o8;
 	arc=none smtp.remote-ip=148.251.105.195
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5543C60A2607;
-	Sat, 14 Nov 2026 18:04:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5543C60A2607
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52587606A89F;
+	Sat, 14 Nov 2026 18:04:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 52587606A89F
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=GuC7YZw+
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=LVAsV8o8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1794679464;
-	bh=O+60358tIvY1UQJe6wfwALoe9EIRxZdOzbQbGuY0aLg=;
+	s=mail; t=1794679462;
+	bh=6J4G1/Rv0/LQdDbmsrwYYsPxfTgU0udZ9NAS3EEFGc0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=GuC7YZw+WelMNqvBLGvpo9VxrpJcKE9rvOIrQ8pVqZwJ3G+v4+fpZ2ZmprgaZw/qx
-	 N2CdeSLBHsbLLabHvn8aMHAJ6xe9OS1MUsZOhPNEr0Ys2qQCbS6QazGWXBs20s9OzY
-	 98c4/9a8A2QcRq21CXdRvBw6jv/nmI1WN8k0TR0Op9WkzgLhB8lcgeRB6SVq8FwfAx
-	 al7R6Gilf6/CzU/LXi0X4TW678FYbSJoVM7IzqqgO8FsXtHk6iMru0hFBq7o+dMo5V
-	 m0eZEJMUChY1j8y3914s90SxO3jYPZyd227r0ESs6qwa+9WkhkxUhyN0EASAKgzyQJ
-	 7ab6h7s/rYAqw==
+	b=LVAsV8o8iup6d8vJO19nrKVgrijUHbD0G0bUkUmFq6ZljbxHWmRUBKLHWcCRqcKC3
+	 cHpV3EdrIsUG5QHPgbfRBWneB8xd3XjbTezfNo1K3L2yKAuOQFGrRZrLDV04TxRm38
+	 lifuz9sEkyM0fatJbz0lJORPUrfVs4lGjKgS83PM7Ozzz/RW1y8BcNVwIYF3qI70Hb
+	 VK95h3VkyaHpqGiUdSJzxcnD+VBrIMh3r4SIJbalMw7uHgLxg4m1c9K+eHwtC9Re8F
+	 bPXoHHRp2JBupNN0LfxIyKpyA0NcD7d/CWiXY95GSUjXRW7Bja25KSBv2qS6sqziBl
+	 AZVYT2sqTIbDw==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 04ACB17E15E8;
-	Sat, 14 Nov 2026 19:04:23 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 7BD5817E1515;
+	Sat, 14 Nov 2026 19:04:22 +0100 (CET)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Sat, 14 Nov 2026 20:03:33 +0200
-Subject: [PATCH 09/25] drm/connector: Drop redundant hdmi supported_formats
- field
+Date: Sat, 14 Nov 2026 20:03:31 +0200
+Subject: [PATCH 07/25] drm/connector: Remove drmm_connector_hdmi_ini2()
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -65,7 +64,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-9-20e8a33a2286@collabora.com>
+Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-7-20e8a33a2286@collabora.com>
 References: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>, 
@@ -81,69 +80,152 @@ Cc: kernel@collabora.com, linux-fbdev@vger.kernel.org,
  Igor Paunovic <royalnet026@gmail.com>
 X-Mailer: b4 0.15.2
 
-Now that all users migrated to the new drmm_connector_hdmi_init()
-signature, supported_formats is provided through struct
-drm_connector_hdmi_funcs, a reference to which is already stored in
-drm_connector_hdmi.
-
-Drop the redundant field from drm_connector_hdmi and point its users to
-hdmi.funcs->supported_formats instead.
+All callers have been converted to the new drmm_connector_hdmi_init()
+signature, so drop the transitional drmm_connector_hdmi_init2() helper
+along with its declaration, EXPORT_SYMBOL() and kernel-doc.
 
 Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, Rock 5B
-Reviewed-by: Maxime Ripard <mripard@kernel.org>
 Tested-by: Robin Räber <robin.raebi@gmail.com>
 Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588 Orange Pi 5 Plus, dual HDMI
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/display/drm_hdmi_state_helper.c | 2 +-
- drivers/gpu/drm/drm_connector.c                 | 3 ---
- include/drm/drm_connector.h                     | 6 ------
- 3 files changed, 1 insertion(+), 10 deletions(-)
+ drivers/gpu/drm/drm_connector.c | 102 ----------------------------------------
+ include/drm/drm_connector.h     |   9 ----
+ 2 files changed, 111 deletions(-)
 
-diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-index 0e282abb118d..97027dd17276 100644
---- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-+++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
-@@ -427,7 +427,7 @@ sink_supports_format_bpc(const struct drm_connector *connector,
- 		return false;
- 	}
- 
--	if (!(connector->hdmi.supported_formats & BIT(format))) {
-+	if (!(connector->hdmi.funcs->supported_formats & BIT(format))) {
- 		drm_dbg_kms(dev, "%s format unsupported by the connector.\n",
- 			    drm_hdmi_connector_get_output_format_name(format));
- 		return false;
 diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-index b1b7662c575b..2fb6fc0243b5 100644
+index d66188521881..bb508ec7a8cd 100644
 --- a/drivers/gpu/drm/drm_connector.c
 +++ b/drivers/gpu/drm/drm_connector.c
-@@ -617,9 +617,6 @@ int drmm_connector_hdmi_init(struct drm_device *dev,
- 	if (ret)
- 		return ret;
+@@ -682,108 +682,6 @@ int drmm_connector_hdmi_init(struct drm_device *dev,
+ }
+ EXPORT_SYMBOL(drmm_connector_hdmi_init);
  
--	/* TODO: remove after conversion to new drmm_connector_hdmi_init() */
--	connector->hdmi.supported_formats = hdmi_funcs->supported_formats;
+-/**
+- * drmm_connector_hdmi_ini2 - Init a preallocated HDMI connector
+- * @dev: DRM device
+- * @connector: A pointer to the HDMI connector to init
+- * @vendor: HDMI Controller Vendor name
+- * @product: HDMI Controller Product name
+- * @funcs: callbacks for this connector
+- * @hdmi_funcs: HDMI-related callbacks for this connector
+- * @connector_type: user visible type of the connector
+- * @ddc: optional pointer to the associated ddc adapter
+- * @supported_formats: Bitmask of @drm_output_color_format listing supported output formats
+- * @max_bpc: Maximum bits per char the HDMI connector supports
+- *
+- * Initialises a preallocated HDMI connector. Connectors can be
+- * subclassed as part of driver connector objects.
+- *
+- * Cleanup is automatically handled with a call to
+- * drm_connector_cleanup() in a DRM-managed action.
+- *
+- * The connector structure should be allocated with drmm_kzalloc().
+- *
+- * The @drm_connector_funcs.destroy hook must be NULL.
+- *
+- * Returns:
+- * Zero on success, error code on failure.
+- */
+-int drmm_connector_hdmi_ini2(struct drm_device *dev,
+-			     struct drm_connector *connector,
+-			     const char *vendor, const char *product,
+-			     const struct drm_connector_funcs *funcs,
+-			     const struct drm_connector_hdmi_funcs *hdmi_funcs,
+-			     int connector_type,
+-			     struct i2c_adapter *ddc,
+-			     unsigned long supported_formats,
+-			     unsigned int max_bpc)
+-{
+-	int ret;
 -
- 	/*
- 	 * The supported HDMI version can be used to determinate the maximum
- 	 * TMDS character rate allowed by the specification. Some controllers,
+-	if (!vendor || !product)
+-		return -EINVAL;
+-
+-	if ((strlen(vendor) > DRM_CONNECTOR_HDMI_VENDOR_LEN) ||
+-	    (strlen(product) > DRM_CONNECTOR_HDMI_PRODUCT_LEN))
+-		return -EINVAL;
+-
+-	if (!(connector_type == DRM_MODE_CONNECTOR_HDMIA ||
+-	      connector_type == DRM_MODE_CONNECTOR_HDMIB))
+-		return -EINVAL;
+-
+-	if (!supported_formats || !(supported_formats & BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444)))
+-		return -EINVAL;
+-
+-	if (connector->ycbcr_420_allowed != !!(supported_formats & BIT(DRM_OUTPUT_COLOR_FORMAT_YCBCR420)))
+-		return -EINVAL;
+-
+-	if (!(max_bpc == 8 || max_bpc == 10 || max_bpc == 12))
+-		return -EINVAL;
+-
+-	if (!hdmi_funcs->avi.clear_infoframe ||
+-	    !hdmi_funcs->avi.write_infoframe ||
+-	    !hdmi_funcs->hdmi.clear_infoframe ||
+-	    !hdmi_funcs->hdmi.write_infoframe)
+-		return -EINVAL;
+-
+-	ret = drmm_connector_init(dev, connector, funcs, connector_type, ddc);
+-	if (ret)
+-		return ret;
+-
+-	connector->hdmi.supported_formats = supported_formats;
+-	strtomem_pad(connector->hdmi.vendor, vendor, 0);
+-	strtomem_pad(connector->hdmi.product, product, 0);
+-
+-	/*
+-	 * drm_connector_attach_max_bpc_property() requires the
+-	 * connector to have a state.
+-	 */
+-	if (connector->funcs->atomic_create_state) {
+-		struct drm_connector_state *state;
+-
+-		state = connector->funcs->atomic_create_state(connector);
+-		if (IS_ERR(state))
+-			return PTR_ERR(state);
+-
+-		connector->state = state;
+-	}
+-
+-	drm_connector_attach_max_bpc_property(connector, 8, max_bpc);
+-	connector->max_bpc = max_bpc;
+-
+-	if (max_bpc > 8)
+-		drm_connector_attach_hdr_output_metadata_property(connector);
+-
+-	ret = drm_connector_attach_color_format_property(connector, supported_formats);
+-	if (ret)
+-		return ret;
+-
+-	connector->hdmi.funcs = hdmi_funcs;
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(drmm_connector_hdmi_ini2);
+-
+ /**
+  * drm_connector_attach_edid_property - attach edid property.
+  * @connector: the connector
 diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index c75bf65532d4..312638824918 100644
+index f656ed8324d3..241d20a587e5 100644
 --- a/include/drm/drm_connector.h
 +++ b/include/drm/drm_connector.h
-@@ -2180,12 +2180,6 @@ struct drm_connector_hdmi_audio {
-  * struct drm_connector_hdmi - DRM Connector HDMI-related structure
-  */
- struct drm_connector_hdmi {
--	/**
--	 * @supported_formats: Bitmask of @drm_output_color_format
--	 * supported by the controller.
--	 */
--	unsigned long supported_formats;
--
- 	/**
- 	 * @max_tmds_char_rate: Maximum TMDS character rate, in Hz,
- 	 * supported by the controller.
+@@ -2731,15 +2731,6 @@ int drmm_connector_hdmi_init(struct drm_device *dev,
+ 			     const struct drm_connector_hdmi_funcs *hdmi_funcs,
+ 			     int connector_type,
+ 			     struct i2c_adapter *ddc);
+-int drmm_connector_hdmi_ini2(struct drm_device *dev,
+-			     struct drm_connector *connector,
+-			     const char *vendor, const char *product,
+-			     const struct drm_connector_funcs *funcs,
+-			     const struct drm_connector_hdmi_funcs *hdmi_funcs,
+-			     int connector_type,
+-			     struct i2c_adapter *ddc,
+-			     unsigned long supported_formats,
+-			     unsigned int max_bpc);
+ void drm_connector_attach_edid_property(struct drm_connector *connector);
+ int drm_connector_register(struct drm_connector *connector);
+ int drm_connector_dynamic_register(struct drm_connector *connector);
 
 -- 
 2.56.0

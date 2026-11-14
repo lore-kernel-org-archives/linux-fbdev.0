@@ -1,58 +1,59 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794679476;
-	b=ruQzc189gd2UWMXTsjJ+3ju6tlZfK/9M9Vw2wBP54TiNr+JUuXPuSlvdVTu9r9mjNd2/
-	 AuJRafhMWmaeWkIguSyeX8KfaThHk+xvOvnWscQjIZMP+O9pqxN2g6xESWx/KJtFwjI6+
-	 r/77n2iwhRK+fybCT1mhDbCXCY1eqHDndhPBMy6d9pztT4Af/onLyHtzl4I6XeNnQ8YPC
-	 EsazrPFJr/HHKfvxv+89uFDzSLwWtbJTXEbh5xsP8/Lw6K9ZDU2AbjQFUPkoG8aYR+Z3U
-	 qtr8Pmk56hF0y5RUM+CJU+NjMBCdHuTu+5eTI2vELx9pYUeVNg1bFXh8oEHsF8e8shQ==
+	t=1794679472;
+	b=wZNWDIl+ie342iK/U65Q7C/HXzZJ4v7Q9Xkj98TOnZXj8oIW4TBfxtDlpN1pZkOrZBZH
+	 sxJLHlnvP9J8bGyIYq+BbBZOTzwdyjC7z2Po3qnAHcnxyNx8QGCHfxwBobZZ7usc8Pgvt
+	 Ox8mkaQO7ZaD/S6B4ND8vWipbPreCE0J1MHiajr2+/pEuRRiVmoc/AiRPRGr6TUvHH34/
+	 z/2HIBJIkTyCsO5CA7QlnPYC64VeQbH2V+gJdEVbQKqKREtcgRm+cplEKenXT/js5nxd+
+	 sVZAmrp/Pfvy4ANqMRK8elNnL8ehdvHKNr5KS9cmCnwrhO80FZPV5h9DpPznWEX+qqA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794679476;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794679472;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=8bjBYiD5D37jvpg5VesdXHVTRHD5jnnq1u2u3oek6rg=;
-	b=h3tSKFheQfKhkzC24bRW2ALarN0Hn6CAYItyISq6jH7dXGB3UeGzhPQ48FQbXADKkieA
-	 YW22czlydBb8Lkl6+c8RfvYWjEVzCVGc1YAXDDWuIZwgeVttkyUZRpzNcHCj8ZnDpMXdl
-	 XTpNa759uJA8arw1cej4IHnkmBuE1Ihxk5C+u/LBFks2iP8VttWRDt3PSlfGnIhNTbsNt
-	 PfL+N+9UWHyqtWDZVNtsTIsaFL4t3G6FKZ0JkQJggbO5b8joD8Is7xakm+OLYFah0EVxE
-	 zdLpuFFQ6MDnchOOCICMyLXbrO3plhVEaQtl5n4QvLRvct0dSe4UiuEWJ2wsT/pRwlA==
+	bh=yt4YXr00FV2td/So3BO9NrlFClv8RyFVdZ3YHLTS3i8=;
+	b=uDLJkclKFX5GLuLDZMI+0p5brln8ngvrrOxgBv8/RTwj4cqnlRFbo+cElG7c23cvqGEJ
+	 hHIvwcG29Xea0kvhNMfJ8lQWmpFUri+hmSFHyoBWf0fUK9PZ4AeU38l+fkv2zoLyofdvg
+	 aoel8Iv/67Pv4XS1jtAGlCG5oyHiw17fOHGoq4t7MXQr6fH3Z843nzmq5E0SN6Myqx1pf
+	 cs+ORkLvN4WLk5JkghA5FMfb6uRtS+HWgiwHFXzN7DIX8O/qXd89kHU7gQf/E0JJgqxNP
+	 fG/lp3OTKaFwfgqf2IssEsQOnJM7cjveimBUspHTF0McSAkVctvSoBXqInB+2obfieQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=GBL2ZaHg;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=MSp5zZ0w;
 	arc=none smtp.remote-ip=148.251.105.195
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B8C1606F73E;
-	Sat, 14 Nov 2026 18:04:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1B8C1606F73E
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81D9960A5BDD;
+	Sat, 14 Nov 2026 18:04:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 81D9960A5BDD
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=GBL2ZaHg
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=MSp5zZ0w
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1794679474;
-	bh=OFB12+1anyq+FxPnNN5cDkJ8yEUeCz6dJ/YZ1rPl/kQ=;
+	s=mail; t=1794679470;
+	bh=4TSCcyN1t6iIHTjCztU5C2xk2WINIACBF89BHGcwxPs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=GBL2ZaHgaCud24DPMWRwaGvZUU35Q7UUoagt4PirZmlB9RRg1VdWPG9aF2QIGj7th
-	 trjEEqxRZfOc9Perc4r0VwZswQIrR2CCrCnA4JCye373YT3/Razak+qa7c/44XWxqF
-	 wniilQS73OCTKsb52i9Z2S768slA2uy+tYD9TphBj5m38tUTl/ZPerQpMtv5TD1rLF
-	 vJ3Cs6RNfE+ArMgDad1jXBwMS8E8QODJQUKOrpqAQO50pbpiX9lfU+KvclL+YSDYnY
-	 qmosYqlSai3gnDH41MPS8WsVcObWGHx9jVNyo+SB6aH3HkHgEiVIwAGAwNyqv/r9pV
-	 l2cAOdPVp6/WQ==
+	b=MSp5zZ0wEnrQ0sPdKOE2H3ZDNpvr+rHLFjb0+RYQzz0dLpREx69ysAhhrJhRsvNFd
+	 /T2PRN93IAEnzAlIlXax8V1hu5RWZWOu/BBMnb3o98b+QWOrIxPWlI4drxjaeT/H9Y
+	 jUBU/TWtBUnhYO6pByf/rjaRR3IOaIgxMX+MiwRR95cX7BzjhOlS4UFCUDi1BBa7lJ
+	 nKvoo7+Yqq4kg1OBHbr5/g/NUk9QScDYl1vY5A+qbTkPF6yuPXFXc656MwXSWb01cT
+	 rEO8iODOZk41Gl99tits5clATRwB1BxfaBPj81Y+x37Dy30hgjNB7Vru0NWhRdxdDd
+	 QH8c+oMnqGOdw==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id 8E11D17E37E7;
-	Sat, 14 Nov 2026 19:04:34 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id 03E5C17E3BCC;
+	Sat, 14 Nov 2026 19:04:29 +0100 (CET)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Sat, 14 Nov 2026 20:03:47 +0200
-Subject: [PATCH 23/25] drm/tests: bridge: Set supported HDMI version
+Date: Sat, 14 Nov 2026 20:03:41 +0200
+Subject: [PATCH 17/25] drm/tests: connector: Add HDMI source-side scrambler
+ coverage
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -64,7 +65,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-23-20e8a33a2286@collabora.com>
+Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-17-20e8a33a2286@collabora.com>
 References: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>, 
@@ -77,42 +78,165 @@ Cc: kernel@collabora.com, linux-fbdev@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 X-Mailer: b4 0.15.2
 
-Bridges using DRM_BRIDGE_OP_HDMI are now expected to also provide a
-supported HDMI version.  This is not yet enforced, but will become
-mandatory once the migration to the new HDMI connector initialization
-API is completed.
+Add KUnit tests for the HDMI source-side scrambling validation done by
+the new drmm_connector_hdmi_init() helper.
 
-Advertise HDMI 1.4 as the default for the test bridges, since that is
-the highest version that does not require additional initialization
-data.  This also avoids implying support for HDMI capabilities they do
-not currently model.
+Connector initialization derives scrambler support from the
+driver-provided supported_hdmi_ver capability.  Therefore, connectors
+that advertise HDMI 2.0 or later must provide both .scrambler_enable()
+and .scrambler_disable() callbacks.  Registration is rejected if either
+callback is missing.  Conversely, connectors advertising an earlier
+version are never reported as scrambling capable, even when providing
+those callbacks.
 
-Reviewed-by: Maxime Ripard <mripard@kernel.org>
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/tests/drm_bridge_test.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/gpu/drm/tests/drm_connector_test.c | 125 +++++++++++++++++++++++++++++
+ 1 file changed, 125 insertions(+)
 
-diff --git a/drivers/gpu/drm/tests/drm_bridge_test.c b/drivers/gpu/drm/tests/drm_bridge_test.c
-index 15583ade8494..a445f71c31b8 100644
---- a/drivers/gpu/drm/tests/drm_bridge_test.c
-+++ b/drivers/gpu/drm/tests/drm_bridge_test.c
-@@ -497,6 +497,7 @@ drm_test_bridge_chain_init(struct kunit *test, unsigned int num_bridges,
- 			bridge->type = DRM_MODE_CONNECTOR_HDMIA;
- 			bridge->vendor = "LNX";
- 			bridge->product = "KUnit";
-+			bridge->supported_hdmi_ver = HDMI_VERSION_1_4;
- 			bridge->supported_formats = (BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444) |
- 						     BIT(DRM_OUTPUT_COLOR_FORMAT_YCBCR444) |
- 						     BIT(DRM_OUTPUT_COLOR_FORMAT_YCBCR422) |
-@@ -597,6 +598,7 @@ drm_test_bridge_hdmi_init(struct kunit *test, const struct drm_bridge_funcs *fun
- 	bridge->ops |= DRM_BRIDGE_OP_HDMI;
- 	bridge->vendor = "LNX";
- 	bridge->product = "KUnit";
-+	bridge->supported_hdmi_ver = HDMI_VERSION_1_4;
+diff --git a/drivers/gpu/drm/tests/drm_connector_test.c b/drivers/gpu/drm/tests/drm_connector_test.c
+index 698706fca5db..1520e4f8a9ab 100644
+--- a/drivers/gpu/drm/tests/drm_connector_test.c
++++ b/drivers/gpu/drm/tests/drm_connector_test.c
+@@ -1429,6 +1429,126 @@ static void drm_test_connector_hdmi_init_max_tmds_rate_no_version(struct kunit *
+ 	KUNIT_EXPECT_LT(test, ret, 0);
+ }
  
- 	ret = drm_kunit_bridge_add(test, bridge);
- 	if (ret)
++/*
++ * Test that the registration of an HDMI connector advertising HDMI 2.0 support
++ * succeeds when the .scrambler_{enable,disable} callbacks are provided.
++ */
++static void drm_test_connector_hdmi_init_scrambler_valid(struct kunit *test)
++{
++	struct drm_connector_init_priv *priv = test->priv;
++	int ret;
++
++	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
++				       &dummy_funcs,
++				       &dummy_hdmi_funcs_scrambler,
++				       DRM_MODE_CONNECTOR_HDMIA,
++				       &priv->ddc);
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_TRUE(test, drm_connector_hdmi_scrambler_supported(&priv->connector));
++}
++
++/*
++ * Test that the registration of an HDMI connector not advertising HDMI 2.0
++ * support succeeds, and the connector is not reported as scrambling capable.
++ */
++static void drm_test_connector_hdmi_init_scrambler_unsupported(struct kunit *test)
++{
++	struct drm_connector_init_priv *priv = test->priv;
++	int ret;
++
++	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
++				       &dummy_funcs,
++				       &dummy_hdmi_funcs,
++				       DRM_MODE_CONNECTOR_HDMIA,
++				       &priv->ddc);
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_FALSE(test, drm_connector_hdmi_scrambler_supported(&priv->connector));
++}
++
++/*
++ * Test that the registration of an HDMI connector not advertising HDMI 2.0
++ * support, but providing the .scrambler_{enable,disable} callbacks anyway,
++ * succeeds and the connector is still not reported as scrambling capable.
++ */
++static void drm_test_connector_hdmi_init_scrambler_cb_ignored(struct kunit *test)
++{
++	struct drm_connector_init_priv *priv = test->priv;
++	int ret;
++
++	priv->hdmi_funcs = dummy_hdmi_funcs_scrambler;
++	priv->hdmi_funcs.supported_hdmi_ver = HDMI_VERSION_1_4;
++
++	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
++				       &dummy_funcs,
++				       &priv->hdmi_funcs,
++				       DRM_MODE_CONNECTOR_HDMIA,
++				       &priv->ddc);
++	KUNIT_EXPECT_EQ(test, ret, 0);
++	KUNIT_EXPECT_FALSE(test, drm_connector_hdmi_scrambler_supported(&priv->connector));
++}
++
++enum drm_connector_hdmi_scrambler_cb {
++	SCRAMBLER_CALLBACK_ENABLE,
++	SCRAMBLER_CALLBACK_DISABLE,
++	SCRAMBLER_CALLBACK_ALL,
++};
++
++struct drm_connector_hdmi_init_scrambler_missing_cb_case {
++	const char *desc;
++	enum drm_connector_hdmi_scrambler_cb cb;
++};
++
++/*
++ * Test that the registration of an HDMI connector advertising HDMI 2.0 support
++ * fails when any single .scrambler_* callback is missing.
++ */
++static void drm_test_connector_hdmi_init_scrambler_missing_cb(struct kunit *test)
++{
++	const struct drm_connector_hdmi_init_scrambler_missing_cb_case *params = test->param_value;
++	struct drm_connector_init_priv *priv = test->priv;
++	int ret;
++
++	priv->hdmi_funcs = dummy_hdmi_funcs_scrambler;
++
++	switch (params->cb) {
++	case SCRAMBLER_CALLBACK_ENABLE:
++		priv->hdmi_funcs.scrambler_enable = NULL;
++		break;
++	case SCRAMBLER_CALLBACK_DISABLE:
++		priv->hdmi_funcs.scrambler_disable = NULL;
++		break;
++	case SCRAMBLER_CALLBACK_ALL:
++		priv->hdmi_funcs.scrambler_enable = NULL;
++		priv->hdmi_funcs.scrambler_disable = NULL;
++		break;
++	}
++
++	ret = drmm_connector_hdmi_init(&priv->drm, &priv->connector,
++				       &dummy_funcs,
++				       &priv->hdmi_funcs,
++				       DRM_MODE_CONNECTOR_HDMIA,
++				       &priv->ddc);
++	KUNIT_EXPECT_LT(test, ret, 0);
++}
++
++static const struct drm_connector_hdmi_init_scrambler_missing_cb_case
++drm_connector_hdmi_init_scrambler_missing_cb_tests[] = {
++	{ "scrambler_enable",	SCRAMBLER_CALLBACK_ENABLE },
++	{ "scrambler_disable",	SCRAMBLER_CALLBACK_DISABLE },
++	{ "scrambler_*",	SCRAMBLER_CALLBACK_ALL },
++};
++
++static void
++drm_connector_hdmi_init_scrambler_missing_cb_desc(const struct drm_connector_hdmi_init_scrambler_missing_cb_case *t,
++						  char *desc)
++{
++	strscpy(desc, t->desc, KUNIT_PARAM_DESC_SIZE);
++}
++
++KUNIT_ARRAY_PARAM(drm_connector_hdmi_init_scrambler_missing_cb,
++		  drm_connector_hdmi_init_scrambler_missing_cb_tests,
++		  drm_connector_hdmi_init_scrambler_missing_cb_desc);
++
+ static struct kunit_case drmm_connector_hdmi_init_tests[] = {
+ 	KUNIT_CASE(drm_test_connector_hdmi_init_valid),
+ 	KUNIT_CASE(drm_test_connector_hdmi_init_bpc_8),
+@@ -1461,6 +1581,11 @@ static struct kunit_case drmm_connector_hdmi_init_tests[] = {
+ 	KUNIT_CASE(drm_test_connector_hdmi_init_max_tmds_rate_at_limit),
+ 	KUNIT_CASE(drm_test_connector_hdmi_init_max_tmds_rate_off_limit),
+ 	KUNIT_CASE(drm_test_connector_hdmi_init_max_tmds_rate_no_version),
++	KUNIT_CASE(drm_test_connector_hdmi_init_scrambler_valid),
++	KUNIT_CASE(drm_test_connector_hdmi_init_scrambler_unsupported),
++	KUNIT_CASE(drm_test_connector_hdmi_init_scrambler_cb_ignored),
++	KUNIT_CASE_PARAM(drm_test_connector_hdmi_init_scrambler_missing_cb,
++			 drm_connector_hdmi_init_scrambler_missing_cb_gen_params),
+ 	{ }
+ };
+ 
 
 -- 
 2.56.0

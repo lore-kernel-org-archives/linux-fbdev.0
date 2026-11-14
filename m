@@ -1,83 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.42
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.48
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794650543;
-	b=rpjl8a+UqcobKQ46rsNxO3SWabWXKReLnYLXx03Q9qahYCaWr9O1tueTfF3HMFmOOvKO
-	 qI6XU8HNGUOPiOR8Ic5u8cyXI22b+qdlTmOGczr8kO7outqsknlzB363P0wgSamwYZuZR
-	 DD3GkueUyHB/UBfbOXk5sU331VAN7WZMubjVvlCz73sKxQU7xVA49Dw+RubwarKNcPLC+
-	 HZFMhLcGpAnbROT3pydfAHGER9UV7RknpsKk9K7nxUmAXBe0M56jX6QYeTXNFF0SNEtJj
-	 jQnh9e8fxBYMdN6MHbuFkDfZ5OBQX6mS/tJeW7KVk980lEVyhJ1Xb3p2exi+CdW15Fw==
+	t=1794650544;
+	b=e2fVl38DsmvEdjxmvDA2w3S+/8JoqhA3TK1Ne1zBcSpGsTEGG87MTE3IcyVkV/G30+Lm
+	 Pg8e5dES3iDJe6e/4ZIRay+8DNxKDBVrGN72VRSaqmRkolk3INpuc6nHj4cpyUEGe6neA
+	 CJ5E2TCcBsAQq+VEdYlwUGb1kQ0fqgpD9bEM8WLKJSyVh3IYbkF51+O52+E5DHtX6PeSg
+	 1PjvAoY2pWyoCUz43GE3XYzmuMwcjbmNldDrCB/PzJCUDQ7KOSBOdvgzO8VTZN0u4+C2f
+	 lqIGlAwTspBJiJCJPvCNUCEr76s/vvRhQkVNrxxAyYRUdZterVNj66tQ2+ezEjIJmJA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794650543;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794650544;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=56kD8uC/JQs1NVPB4BPCYThtaKRA/inwI9P7GjKzDmc=;
-	b=I+CKRc6Hd7riG9pmWaGvvE2GUfqO+IVEZ9/yYGvOkzqitQRKegjnaDrYjIjA1jCKpwRJ
-	 IGyuHixvFPAR+VTAHnH7iPUvBgj7xt0c7vR8ktS1K5PF4wakhn8D15yaO1ZBY80FtWHj+
-	 ajRapurxf9FP7dSmQaE27kW0ssqJY/46EcBVjWs+QoIlkKjnhhuDqTCPbglpPyOGzZH3f
-	 5uGzI3oR/UMfXkoArfr/dOr3aDLD2D7rFJdSuKkLyY3uyTXdZRpYfbmuNHrkq2FB2NhYC
-	 fg0Y0RQHXQAVGBw06Vos1ijgTlrEcfVMS9TGQOBCa6iiDtAKAZUXOyYrlvljhDdGNAg==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=XwFZMvB4uY9ceiCAZLjceweMYbxPpefUPYbylRB7SRs=;
+	b=x8TTcycmOYYe4KSuXatAflOerE7Prhgij/rnXAI8NlyHxZ0h56+rDAlyriT4+4gwVuo8
+	 RggFwNYB448nfVYduOV8i9yW2538dzYYJlGmtF7hpd3BuCJ0i+uYFnYI3OGF7ME0G3IkY
+	 BWoxKyCx3dTcMAswlXOdwACvQ1DIqenwCTi253MzuFLcQerGUHYl26iddhP0dLzxGUeNc
+	 Fn6fZ6T3X6AVvrRXIWc30lyD7NUhQSx4hhJh5MU9Eb6OGJE+/LvKj99nOhjTWe7y6v2Ze
+	 pIRtF3shN6cpKZT620Fg3i7gG6a2jS5ljxhZLex0po+XfVsddIL81G6s6nIorM79NXQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=C0bvsNLa;
-	arc=none smtp.remote-ip=209.85.128.42
-Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Adsdm6ec;
+	arc=none smtp.remote-ip=209.85.128.48
+Received: from mail-wm1-f48.google.com (mail-wm1-f48.google.com [209.85.128.48])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A231D606A327
-	for <linux-fbdev@vger.kernel.org>; Sat, 14 Nov 2026 10:02:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A231D606A327
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B924606A337
+	for <linux-fbdev@vger.kernel.org>; Sat, 14 Nov 2026 10:02:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2B924606A337
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=C0bvsNLa
-Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-4a140e7405dso21802915e9.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 14 Nov 2026 02:02:22 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Adsdm6ec
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-4a214af2076so11241145e9.0
+        for <linux-fbdev@vger.kernel.org>; Sat, 14 Nov 2026 02:02:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794650541; x=1795255341; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=56kD8uC/JQs1NVPB4BPCYThtaKRA/inwI9P7GjKzDmc=;
-        b=C0bvsNLaV9KaeuIJC/oVHjMVXQs87oWg+JqhC5fI8IZoalFy5Xo8/xyz5JCGQz9PVi
-         DFZc+VNiFsf6j6PlGiopOsqWPMt5EI8PqGIoWP9/cDiITOI0B/6EK72fhp+anASg1VSA
-         nojB9qjBNv/r41TIAxpf1l0u5vtCpxaV44hbjkENWbnVTcpJoJeCsqYL0z+zlx5nfzXb
-         jri/tY9hh4x1imsne0wYH32oe18Z8P1NDUETD2Faii/exY6WK86w1ZqavAw37aOymhkh
-         GDfuFOszOhfl4b9RA40rGtQ7QsoxH182MdDhJ5cVqep7OLs9ZiEMA9ZQr5SpHw6UeNvy
-         Absw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794650541; x=1795255341;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1794650542; x=1795255342; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=56kD8uC/JQs1NVPB4BPCYThtaKRA/inwI9P7GjKzDmc=;
-        b=WxjhZOPnpo63K3hio5d2MXt76m+sWU9J2ohQ+YG0XjyiSyq7Dnb9q2vGFmcYs/U/6O
-         OgYxnien/2uooHxUL8dvVuDRSIaXjMG0xTgSlYgQVmZM/p7o7VzmOn6J+xeaOnCDEH2T
-         woeez756tdVe1nJGFcTq9qoc4a7mkCOX7xHa7HV9L0jptLpkbO+GP44y++4118OyJAaQ
-         nvX4dhGg90X2EwzIPhZlYsCiIfryXcKycTyDZ9tsHBX2uITyLJowEfJkS37nBuHfnVAI
-         G3xgqf18Uvr+ZJuoQMcB8z8WfT21nLJqvwfScOVVucoOWPovoIklQQHufjfLxGsAN/Rw
-         s8Ng==
-X-Forwarded-Encrypted: i=1; AL+hErGW88Vhgl4ZBAiBRMsBbB9jHb7Ru68H+8feEv6IEymdj+p27un5M6d493W0LAdfykCT4RP0jjd0ydDc4Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+UropyLAzD0FVhUDGs7QkdlPbiwGJWrCDGHKQF7wAHe+WeaBfq
-	wNfBydWIj+CMsIqtnr2A1SDdrH9RohDhzIEhKyWkNFQzsPNaxMel+ORB7FrseIXO6oqW2w==
-X-Gm-Gg: AYBFou1kL0dm5yF8w6ps0qIY2T9SOudoX9V1ADRGdyxSsAfCo7aMpV2Tg1LRnMTMlwa
-	rq1Uw8Mne82KnL4oTBNuIdhCzxBexEBmKf8a8ezShunqLmb/CYw7fFegUyQvKwzAGfkaNOG76/B
-	v3d6Qyqbej//vDtcnhZ2Jx6LkzRpmrO4dOFUJZN/ZyihlaAQ94PNqXgDm6kh4pvNWGwyjbucCaO
-	5P0/LzbK1LuVW8Up901WNBBMxj9yjnHIsCE1gkK7OtN9vZT3OUWrTEJTW2/LV1yvVTzL6yl4aA4
-	WfIGQPNddNQRXijbpv9DfR5V9ZUWYSA6C1KgyLnAM1nIwfLQ81B4BUvpO6i7B5OwPDG5D08CI4/
-	KeqX2FMdB6JeqYfIBbJtmexwEsiq31Kj1QRTEZ0GizzMjJ4RKcQunhwfiUZogm2mEmMB2QnbIiY
-	TvLGEgC57RTf9CY8K1duE3LqC3kS8lS0tp8pM57zx76JQlJ7Ng+V8vPb3ZiLz7QuL3TKnKPopCj
-	r1GH1xVprlGHpAgW1rIUyZF1WLhHZ4yv9kqfPivAwYUZ+JO4uaSvcDef9GkViO+QsilIqKEJhYN
-	CIWDDMM37u8ka8e1f+eYTshONxjkSVkIyw==
-X-Received: by 2002:a05:600c:6308:b0:4b7:6942:39bf with SMTP id 5b1f17b1804b1-4bb55a68492mr112151695e9.28.1794650540956;
-        Sat, 14 Nov 2026 02:02:20 -0800 (PST)
+        bh=XwFZMvB4uY9ceiCAZLjceweMYbxPpefUPYbylRB7SRs=;
+        b=Adsdm6ec/zmjbRKQ0f6KusGRFxW8VmYbzy+2DciYeCH6owdTVXMGNUofpTYCLto/dL
+         huEoI687FjwKC2/FlpBQZIwrPGKSKj4Ihqsd785hKijZ01bpgH4mUo+LTCVX5nB18eYX
+         xKivaAINrrdxiGqKs26PHwzxvX/1YjbMnocErnVO6Ve6+y9Cnccm3WpUsnWuqxfrDiv2
+         OQ0U3KgbFCeB03ZOSDYi+3iiu75MfXNiJJmjjb4s39Mt7dbIDoPClvf7Z3YNK5NmHx4n
+         0eQbufP3HVdyydDDTeeMXwh0IdiRKIquc4trFmJQ5WD2bb4TVlTBfzvftd9LUUbmVdRK
+         7pJA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794650542; x=1795255342;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=XwFZMvB4uY9ceiCAZLjceweMYbxPpefUPYbylRB7SRs=;
+        b=KPjZndZY5ystuYTQfBebeLVkDc4e/Xfwu/IYHmXMyV8s+QPzU6V+v+Tndw3Cqt1FQT
+         WZr8LvbTo6vh9H+YGiRRFlZvc/5ZnGhjXwSBnHRMRE41rPFRliDT5NBSgagsZ+YGU2Xm
+         F/rfEFJZLJE1s3j4OrUjGk/gMbkOsSnDEpV9ybDhiCBjPRRU74GlgW2CPQLUUp5bCq6y
+         Y53z/LMySn5xj6WCmF2CJYQo9vewdw5uVB4iK+Yf9mq0qenT+xNIIRg0Xbm10G7zB643
+         6LCsVdqnluzJs0LHjmXYgT9G2IcXHrcdLYi5BClElDzLFlh4Th35KyXIvK/p4ZOH4gmy
+         K1RQ==
+X-Forwarded-Encrypted: i=1; AL+hErENI689ITsiBONJLkTA6VQn6EcoCEccwtmktumF3v5E1N6+Y1bOGGCPtg/cjPwnvuSy0mLYqTxvEqAZXw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8Iixq/zkN0D4xCJzp/KvxhxV33zm0LsDeqfmp+0IS/GWOqE5EU
+	/OGu4pHDONsfzQWr7DG7cuVjkkJ9uUW/4DjtyY5fhgQZioEAEG24DIkecVEZCwHIMOo=
+X-Gm-Gg: AYBFou383F0LjLpc2ekgwSUydGzPxwBMJ9CS5T89rb0IQSiPdVxJuHc0uHzaj0Qpe2Q
+	BHhGWWItjB2+58JwMkxug87nbuc5nkIZfnQSM4rHaWlRY5mMkblAoXKQ+fFNnvzY/bk4Ne3WJ+F
+	LFM0rVuyjqqIV2pbIDKl1+cGq/6dnrmN1V+jUnLCOGaUEDdjp24KXHjOHn2jAN5jZsIgs2OrzmB
+	aLXKm/ygGNMazYap6flWPUeCd3Hi9KrCwVScTmGxwEP6ESV5SdvRjhmsu5jMFySsn6pMEIC4wyz
+	PtymyzCftBSWaAb3n23VAoqAFofMC5RHGYO2YsxG/vcpoN4296sue1qspSWKDS62QnQ/b0OAiuS
+	ZNJGdK+Z+9eWM0WgJen00zNA9xD9ylu2PHClzHZ56AfRkXUEG3t2g4DW/VfoG5wX9mSDkFk8zeI
+	qA21crj4kim56niGDB7BspPq5f5xolP5RlP2xwTF37NfcZUvkslHNkNMwvf0yrays2O8px25tM/
+	jX/sYw+P5preon/5j58DMToFNBcq1vvjMFgBfj609hd6Zjwijk4xXQ18Enk3TWcqH5zcxfdYJd0
+	UpNE2kPh8hRmLOff6drQ0WzG8QTY5eUeu/fspe3//ivRYf8TbYlLqqs=
+X-Received: by 2002:a05:600c:515:b0:4a1:dda8:eb73 with SMTP id 5b1f17b1804b1-4bb55a6a658mr71519865e9.27.1794650542390;
+        Sat, 14 Nov 2026 02:02:22 -0800 (PST)
 Received: from DESKTOP-TMG47OE ([176.41.25.224])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49c608cf46dsm10520184f8f.43.2026.11.14.02.02.18
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49c608cf46dsm10520184f8f.43.2026.11.14.02.02.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 02:02:19 -0800 (PST)
+        Sat, 14 Nov 2026 02:02:21 -0800 (PST)
 From: =?UTF-8?q?Ali=20K=C3=B6se?= <shroot1337@gmail.com>
 To: sudipm.mukherjee@gmail.com,
 	teddy.wang@siliconmotion.com
@@ -86,10 +87,12 @@ Cc: gregkh@linuxfoundation.org,
 	linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] staging: sm750fb: Clean up helpers and fix DAC power-off handling
-Date: Sat, 14 Nov 2026 13:02:04 +0300
-Message-ID: <20261114100207.9124-1-shroot1337@gmail.com>
+Subject: [PATCH 1/3] staging: sm750fb: Replace set_DAC macro with a static function
+Date: Sat, 14 Nov 2026 13:02:05 +0300
+Message-ID: <20261114100207.9124-2-shroot1337@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261114100207.9124-1-shroot1337@gmail.com>
+References: <20261114100207.9124-1-shroot1337@gmail.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -102,38 +105,61 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-This series replaces the set_DAC macro with a local static function,
-corrects the DAC power-off bit handling, and removes an empty software
-I2C acknowledgement helper and its ineffective parameter.
+Replace the set_DAC macro with a static function named set_dac().
+The helper has only one caller, so keep it local to ddk750_display.c
+and remove the macro from ddk750_power.h.
 
-The first and third patches preserve existing behavior. The second
-patch maps the extracted 0/1 DAC state to bit 20 rather than OR-ing it
-into bit 0 of MISC_CTRL.
+This provides parameter type checking and follows kernel naming
+conventions without changing the register operation.
 
-Based on staging-next at 6628e7d4c6b (Linux 7.4-rc1).
+Signed-off-by: Ali Köse <shroot1337@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_display.c | 8 +++++++-
+ drivers/staging/sm750fb/ddk750_power.h   | 5 -----
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-Validation:
-- All SM750 driver objects compiled and linked into sm750fb.o with W=1,
-  CONFIG_FB=y, CONFIG_STAGING=y, and CONFIG_FB_SM750=m.
-- A standalone mocked-register test checked 72 DAC state and register
-  preservation cases: 36 failed before the fix and none failed afterward.
-- checkpatch.pl reported no errors or warnings.
-- git diff --check passed.
-
-Hardware testing was not performed.
-
-Ali Köse (3):
-  staging: sm750fb: Replace set_DAC macro with a static function
-  staging: sm750fb: Fix DAC power-off bit handling
-  staging: sm750fb: Remove empty software I2C acknowledgement helper
-
- drivers/staging/sm750fb/ddk750_display.c |  9 ++++++++-
- drivers/staging/sm750fb/ddk750_power.h   |  5 -----
- drivers/staging/sm750fb/ddk750_swi2c.c   | 19 ++-----------------
- 3 files changed, 10 insertions(+), 23 deletions(-)
-
-
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index 4e390541a507..d619e00fd88e 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -4,6 +4,12 @@
+ #include "ddk750_display.h"
+ #include "ddk750_power.h"
+ 
++static void set_dac(unsigned int off)
++{
++	poke32(MISC_CTRL,
++	       (peek32(MISC_CTRL) & ~MISC_CTRL_DAC_POWER_OFF) | off);
++}
++
+ static void set_display_control(int ctrl, int disp_state)
+ {
+ 	/* state != 0 means turn on both timing & plane en_bit */
+@@ -151,7 +157,7 @@ void ddk750_set_logical_disp_out(enum disp_output output)
+ 	}
+ 
+ 	if (output & DAC_USAGE)
+-		set_DAC((output & DAC_MASK) >> DAC_OFFSET);
++		set_dac((output & DAC_MASK) >> DAC_OFFSET);
+ 
+ 	if (output & DPMS_USAGE)
+ 		ddk750_set_dpms((output & DPMS_MASK) >> DPMS_OFFSET);
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index 0c4ab2120385..61f8608e59de 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -9,11 +9,6 @@ enum dpms {
+ 	CRT_DPMS_OFF = 0x3,
+ };
+ 
+-#define set_DAC(off) {							\
+-	poke32(MISC_CTRL,						\
+-	       (peek32(MISC_CTRL) & ~MISC_CTRL_DAC_POWER_OFF) | (off)); \
+-}
+-
+ void ddk750_set_dpms(enum dpms state);
+ void sm750_set_power_mode(unsigned int mode);
+ void sm750_set_current_gate(unsigned int gate);
 -- 
 2.53.0
 

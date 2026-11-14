@@ -1,59 +1,58 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=148.251.105.195
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794679472;
-	b=3oQLTD2J1EFLQ3M42LWy81GSJBiiqK5apdSq2YSl9IOhfPjB6lbB0/I1Yl/RNyktfWCO
-	 LRBcSv4q65tYsdeFkExsFMH1F5mL6M0uccgzM7W5NQiS/zLPV+T5AYCzd15C2SWVDFOMR
-	 Jg6izYOOEKXE8lWXlystnrk/UdEQL6jJcg9S18V2dDmMpm9JTLbkxFQ0wyilzHHf8dlVM
-	 tRx4qbzeeva5WomCniw+TyrGUgkffXfe+pfTiVRI4PhHUocF7ed6DuxqcfcBqwdCwXtTl
-	 DqRdUcM4ZHa8aCFWgMzhet3dUNxZ/7AM7/TeHC1CecDnOaMCCQHFGEcqR5D94u49mJQ==
+	t=1794679468;
+	b=PufEh9HyyI0A9mM2AhobVijPyET2GDlVktLslqij1zyDJ5CnNPGTlVzOUg+H1vmDAbz/
+	 5Sn91VnBMx2s0ORWG39QjlsNk/fQTuN8S4QLHYijsFHMlb126eoUpwBbDYyRK0G18Q75J
+	 Dmnntxutj5EeellEvAOcxBmTt5n6m3NnK7rjZLxzbVxYKXrK6252riaHg2cOTnqNBwykI
+	 G2jSROk3AsSKmOAyB/3ClGYkrOiH3siI1klDA49tYEGAa+VGqV9UA/z4vSnzW6G5VgdpE
+	 1aUcShqKYCtf6Z8vorB+fo7havFrkIyjunvxxSdgIQ77Y8z2O2fXtzeXF1L3CIdQKPg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794679472;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794679468;
 	h=DMARC-Filter:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
 	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
 	 In-Reply-To:To:Cc:X-Mailer;
-	bh=3u1b8qsMzkgIPoohByedtxzc7AAo7jMkyrr9nupIxTk=;
-	b=IbQ5enA6oZ+nZIlrgglAqyBfeAGrsn595N+QyXABc4pVPohUlhK1giGuKfRor/IyyRVJ
-	 qC+jRJgOkfdxGXSVJFV02frfrLd65dwImb6p35A1w4FGpKduqCe1TrKk4Tr0peOx0yG0A
-	 EfgTtVwCLeYXyagQ/xW6kEubZbbuzbLgxwYGRkOSowmAp+qR+ddPoiZRu65f4Gl0souFU
-	 Qo4+TgP4GBi4ikNKIR6nSNUoxB5jpssZjucSdcHOmkU2yhEAV/0ARt/93BNi1oQJIHs0u
-	 Ze5nWdBMY09h2/SMMA4RQWOBER5SVY3XyOTcxTrlhbfVlZvE/a6a9fTE3YfilAWTAMA==
+	bh=8MOlZn8ITCCuzJV+4ZZxW6DD2etEeKNZcPFn8fR66JA=;
+	b=mr/ZC9ykXQfOfHfUiWG7IJnRK6NfrbBBKz6CZlq93y1GC8+JtX7Bv5VybgXP5Ml2fFTi
+	 XzGfg/254LhQR4883Or3vJoMTJRMrHwDC5zprMjKkPJ9n0TqSUoyIo2P+xp5tmv0HW6CX
+	 lrtzfrFkR+HzK3Er2suCGHC43d+77QzFBsfCBJOX7am6WwR08yqipdFiI9v8zjmQK063C
+	 6L2iLXEhgfVsyjhzDCG30Ff2ovvL1m4N0+ft0GILm4IpmluMG4x3BbWZzUck6tyaQMZ79
+	 Y5DBFGwIYAQQUMkxrvHpkm7R/SZofXTd2SUQUqbLfUH3gNpUMfv1YBtpYM3R+K2RxxQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=collabora.com;
 	spf=pass smtp.mailfrom=collabora.com;
-	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=hrxwIO4j;
+	dkim=pass header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=ZnIRwvRl;
 	arc=none smtp.remote-ip=148.251.105.195
 Received: from bali.collaboradmins.com (bali.collaboradmins.com [148.251.105.195])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42F8960A5BE2;
-	Sat, 14 Nov 2026 18:04:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 42F8960A5BE2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A77D60A2603;
+	Sat, 14 Nov 2026 18:04:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3A77D60A2603
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=collabora.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=hrxwIO4j
+	dkim=pass (2048-bit key) header.d=collabora.com header.i=@collabora.com header.a=rsa-sha256 header.s=mail header.b=ZnIRwvRl
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-	s=mail; t=1794679470;
-	bh=GZ9U5z/SysjEyMtbn5QF+NDNHaZaDxjfik51M+8KLu0=;
+	s=mail; t=1794679464;
+	bh=iNjuddUwp0F/NvBRewhXZhhddFnwPV+N1qaUj5S+D0k=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=hrxwIO4jNAzjMve8Y9N7wUO8kkXf4ehDXzgqmP4khTDF2CH2Xpcm3JNXFr2Dg7hek
-	 n+171fUP+4RcR5Rt+OsOYNYUAOzD0jB2uldFNwVHPZofldMhYE3/gEEio2Ym8xWCCK
-	 423rUkbWNwTdC8DfnAwaCFEv8BnxgShfagSk6+DSR+4hDDEwLCW3HOgWF8faJCYmFN
-	 7uGOigvoZ2WY7VBNq9A6Gyy9z+nLi24mQ70dkbHdYWLDg25zUQr0pk/UZL1/+up8II
-	 9xgTUZQy58NxHiAOxBlXbiCfKQSKQv5KWRBnS/UFrJdVk9ecmKG70chLLRPpMUVKxq
-	 UFNGI71uPFurA==
+	b=ZnIRwvRlvDwDjkz6WzFF94EKBAqlfjeG9sGnbf30culhS7Y4DOUxad9401EG8tjgh
+	 hQPAfeFO27jAkaU6PpS7dMkW58EO7PVL3c9Kv9fpCGSGxSFThE+DTpexIT1Oas8yWr
+	 C/c7tPfPKbRXAz15iE2nJ44unfDWmCd0V1JkUyet8rItHvLiclBvAomzd4vMoSFXXa
+	 QCrAwdmellqQHsQ33KwDUnEaqd7sdg3mSlp3hxgKjJyNPVtqu546cvIHZhZmUN/TTn
+	 EWWtXl+fFNWvnDAf9SIqDUrUkf08tGFhNfY35BeuCFD4NqTIGry5hcjHITYnN1RcVg
+	 36c+k1CW8KgIA==
 Received: from localhost (unknown [100.64.0.241])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: cristicc)
-	by bali.collaboradmins.com (Postfix) with ESMTPSA id B70AB17E3BEA;
-	Sat, 14 Nov 2026 19:04:30 +0100 (CET)
+	by bali.collaboradmins.com (Postfix) with ESMTPSA id B959017E35C9;
+	Sat, 14 Nov 2026 19:04:24 +0100 (CET)
 From: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
-Date: Sat, 14 Nov 2026 20:03:42 +0200
-Subject: [PATCH 18/25] drm/tests: hdmi: Cover mode validation against
- connector max_tmds_char_rate
+Date: Sat, 14 Nov 2026 20:03:34 +0200
+Subject: [PATCH 10/25] drm/connector: Drop redundant max_bpc field
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -64,8 +63,8 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-18-20e8a33a2286@collabora.com>
+Content-Transfer-Encoding: 8bit
+Message-Id: <20261114-drm-conn-hdmi-cleanup-v1-10-20e8a33a2286@collabora.com>
 References: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-0-20e8a33a2286@collabora.com>
 To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>, 
@@ -75,163 +74,90 @@ To: Helge Deller <deller@gmx.de>, Martin Bugge <marbugge@cisco.com>,
  Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
  David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>
 Cc: kernel@collabora.com, linux-fbdev@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, 
+ Diederik de Haas <diederik@cknow-tech.com>, 
+ =?utf-8?q?Robin_R=C3=A4ber?= <robin.raebi@gmail.com>, 
+ Igor Paunovic <royalnet026@gmail.com>
 X-Mailer: b4 0.15.2
 
-Test the hdmi_clock_valid() logic that rejects modes whose TMDS
-character rate exceeds connector->hdmi.max_tmds_char_rate.
+Now that all users migrated to the new drmm_connector_hdmi_init()
+signature, max_bpc is provided through struct drm_connector_hdmi_funcs,
+a reference to which is already stored in drm_connector_hdmi.
 
-Exercise both an explicit limit set through drm_connector_hdmi_funcs'
-supported_tmds_char_rate and the limit inferred from supported_hdmi_ver.
+Drop the redundant connector->max_bpc field and point its users to
+hdmi.funcs->max_bpc instead.
 
-Also verify that a driver hook can further restrict the connector limit.
-
+Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, Rock 5B
+Reviewed-by: Maxime Ripard <mripard@kernel.org>
+Tested-by: Robin Räber <robin.raebi@gmail.com>
+Tested-by: Igor Paunovic <royalnet026@gmail.com> # RK3588 Orange Pi 5 Plus, dual HDMI
 Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
 ---
- drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c | 116 +++++++++++++++++++++
- 1 file changed, 116 insertions(+)
+ drivers/gpu/drm/display/drm_hdmi_state_helper.c | 6 +++---
+ drivers/gpu/drm/drm_connector.c                 | 2 --
+ include/drm/drm_connector.h                     | 5 -----
+ 3 files changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-index f1bdd197429c..d94ec8680a1e 100644
---- a/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-+++ b/drivers/gpu/drm/tests/drm_hdmi_state_helper_test.c
-@@ -190,6 +190,32 @@ static const struct drm_connector_hdmi_funcs reject_100mhz_connector_hdmi_funcs
- 	},
- };
- 
-+static enum drm_mode_status
-+accept_any_connector_tmds_char_rate_valid(const struct drm_connector *connector,
-+					  const struct drm_display_mode *mode,
-+					  unsigned long long tmds_rate)
-+{
-+	return MODE_OK;
-+}
-+
-+static const struct drm_connector_hdmi_funcs reject_over_165mhz_connector_hdmi_funcs = {
-+	.vendor = "Vendor",
-+	.product = "Product",
-+	.supported_hdmi_ver = HDMI_VERSION_1_3,
-+	.supported_tmds_char_rate = HDMI_1_0_TMDS_CHAR_RATE_MAX_HZ,
-+	.supported_formats = BIT(DRM_OUTPUT_COLOR_FORMAT_RGB444),
-+	.max_bpc = 8,
-+	.tmds_char_rate_valid = accept_any_connector_tmds_char_rate_valid,
-+	.avi = {
-+		.clear_infoframe = accept_infoframe_clear_infoframe,
-+		.write_infoframe = accept_infoframe_write_infoframe,
-+	},
-+	.hdmi = {
-+		.clear_infoframe = accept_infoframe_clear_infoframe,
-+		.write_infoframe = accept_infoframe_write_infoframe,
-+	},
-+};
-+
- static int dummy_connector_get_modes(struct drm_connector *connector)
+diff --git a/drivers/gpu/drm/display/drm_hdmi_state_helper.c b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+index 97027dd17276..a85f85b844cb 100644
+--- a/drivers/gpu/drm/display/drm_hdmi_state_helper.c
++++ b/drivers/gpu/drm/display/drm_hdmi_state_helper.c
+@@ -320,7 +320,7 @@
+ void __drm_atomic_helper_connector_hdmi_state_init(struct drm_connector_state *new_conn_state,
+ 						   struct drm_connector *connector)
  {
- 	struct drm_atomic_helper_connector_hdmi_priv *priv =
-@@ -2762,6 +2788,93 @@ static void drm_test_check_mode_valid_reject_max_clock(struct kunit *test)
- 	KUNIT_EXPECT_EQ(test, preferred->clock, 25200);
- }
+-	unsigned int max_bpc = connector->max_bpc;
++	unsigned int max_bpc = connector->hdmi.funcs ? connector->hdmi.funcs->max_bpc : 0;
  
-+/*
-+ * Test that the max_tmds_char_rate inferred from supported_hdmi_ver is applied
-+ * as a mode-filtering limit: with an HDMI 1.3 connector and no driver hook,
-+ * drm_hdmi_connector_mode_valid() will reject modes whose TMDS character rate
-+ * exceeds 340 MHz, even though the sink itself advertises a higher limit
-+ * (600 MHz).
-+ */
-+static void
-+drm_test_check_mode_valid_reject_inferred_max_tmds_char_rate(struct kunit *test)
-+{
-+	struct drm_connector_hdmi_funcs hdmi_funcs = dummy_connector_hdmi_funcs;
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_display_mode *preferred;
-+
-+	hdmi_funcs.supported_hdmi_ver = HDMI_VERSION_1_3;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test, &hdmi_funcs,
-+					test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	KUNIT_ASSERT_EQ(test, priv->connector.hdmi.max_tmds_char_rate,
-+			HDMI_1_3_TMDS_CHAR_RATE_MAX_HZ);
-+
-+	preferred = find_preferred_mode(&priv->connector);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+	KUNIT_EXPECT_EQ(test, preferred->hdisplay, 2560);
-+	KUNIT_EXPECT_EQ(test, preferred->vdisplay, 1600);
-+	KUNIT_EXPECT_EQ(test, preferred->clock, 268500);
-+}
-+
-+/*
-+ * Test that a connector-provided max_tmds_char_rate limit (165 MHz) takes
-+ * precedence over a permissive .tmds_char_rate_valid() driver hook and
-+ * drm_hdmi_connector_mode_valid() will reject modes whose computed TMDS
-+ * character rate exceeds the connector limit.
-+ */
-+static void
-+drm_test_check_mode_valid_connector_max_tmds_char_rate_precedes_driver_hook(struct kunit *test)
-+{
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_display_mode *preferred;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test,
-+					&reject_over_165mhz_connector_hdmi_funcs,
-+					test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	KUNIT_ASSERT_EQ(test, priv->connector.hdmi.max_tmds_char_rate,
-+			HDMI_1_0_TMDS_CHAR_RATE_MAX_HZ);
-+
-+	preferred = find_preferred_mode(&priv->connector);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+	KUNIT_EXPECT_EQ(test, preferred->hdisplay, 2048);
-+	KUNIT_EXPECT_EQ(test, preferred->vdisplay, 1152);
-+	KUNIT_EXPECT_EQ(test, preferred->clock, 162000);
-+}
-+
-+/*
-+ * Test that a connector-provided max_tmds_char_rate (165 MHz) can be further
-+ * limited by a more restrictive (100 MHz) .tmds_char_rate_valid() driver hook
-+ * and drm_hdmi_connector_mode_valid() will reject modes whose computed TMDS
-+ * character rate exceeds the hook limit.
-+ */
-+static void
-+drm_test_check_mode_valid_driver_hook_limits_connector_max_tmds_char_rate(struct kunit *test)
-+{
-+	struct drm_connector_hdmi_funcs hdmi_funcs = reject_100mhz_connector_hdmi_funcs;
-+	struct drm_atomic_helper_connector_hdmi_priv *priv;
-+	struct drm_display_mode *preferred;
-+
-+	hdmi_funcs.supported_hdmi_ver = HDMI_VERSION_1_3;
-+	hdmi_funcs.supported_tmds_char_rate = HDMI_1_0_TMDS_CHAR_RATE_MAX_HZ;
-+
-+	priv = drm_kunit_helper_connector_hdmi_init_with_edid_funcs(test, &hdmi_funcs,
-+					test_edid_hdmi_4k_rgb_yuv420_dc_max_600mhz);
-+	KUNIT_ASSERT_NOT_NULL(test, priv);
-+
-+	KUNIT_ASSERT_EQ(test, priv->connector.hdmi.max_tmds_char_rate,
-+			HDMI_1_0_TMDS_CHAR_RATE_MAX_HZ);
-+
-+	preferred = find_preferred_mode(&priv->connector);
-+	KUNIT_ASSERT_NOT_NULL(test, preferred);
-+	KUNIT_EXPECT_EQ(test, preferred->hdisplay, 1440);
-+	KUNIT_EXPECT_EQ(test, preferred->vdisplay, 900);
-+	KUNIT_EXPECT_EQ(test, preferred->clock, 88750);
-+}
-+
- /*
-  * Test that drm_hdmi_connector_mode_valid() will accept modes that require a
-  * 4:2:0 chroma subsampling, even if said mode would violate maximum clock
-@@ -2852,6 +2965,9 @@ static struct kunit_case drm_atomic_helper_connector_hdmi_mode_valid_tests[] = {
- 	KUNIT_CASE(drm_test_check_mode_valid_reject),
- 	KUNIT_CASE(drm_test_check_mode_valid_reject_rate),
- 	KUNIT_CASE(drm_test_check_mode_valid_reject_max_clock),
-+	KUNIT_CASE(drm_test_check_mode_valid_reject_inferred_max_tmds_char_rate),
-+	KUNIT_CASE(drm_test_check_mode_valid_connector_max_tmds_char_rate_precedes_driver_hook),
-+	KUNIT_CASE(drm_test_check_mode_valid_driver_hook_limits_connector_max_tmds_char_rate),
- 	KUNIT_CASE(drm_test_check_mode_valid_yuv420_only_max_clock),
- 	KUNIT_CASE(drm_test_check_mode_valid_reject_yuv420_only_connector),
- 	KUNIT_CASE(drm_test_check_mode_valid_accept_yuv420_also_connector_rgb),
+ 	new_conn_state->max_bpc = max_bpc;
+ 	new_conn_state->max_requested_bpc = max_bpc;
+@@ -678,7 +678,7 @@ hdmi_compute_config(const struct drm_connector *connector,
+ {
+ 	unsigned int max_bpc = clamp_t(unsigned int,
+ 				       conn_state->max_bpc,
+-				       8, connector->max_bpc);
++				       8, connector->hdmi.funcs->max_bpc);
+ 	enum drm_output_color_format fmt;
+ 	int ret;
+ 
+@@ -811,7 +811,7 @@ static int hdmi_generate_hdr_infoframe(const struct drm_connector *connector,
+ 	if (!connector->hdmi.funcs->hdr_drm.write_infoframe)
+ 		return 0;
+ 
+-	if (connector->max_bpc < 10)
++	if (connector->hdmi.funcs->max_bpc < 10)
+ 		return 0;
+ 
+ 	if (!conn_state->hdr_output_metadata)
+diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
+index 2fb6fc0243b5..95dd4012580c 100644
+--- a/drivers/gpu/drm/drm_connector.c
++++ b/drivers/gpu/drm/drm_connector.c
+@@ -658,8 +658,6 @@ int drmm_connector_hdmi_init(struct drm_device *dev,
+ 	}
+ 
+ 	drm_connector_attach_max_bpc_property(connector, 8, hdmi_funcs->max_bpc);
+-	/* TODO: remove after conversion to new drmm_connector_hdmi_init() */
+-	connector->max_bpc = hdmi_funcs->max_bpc;
+ 
+ 	if (hdmi_funcs->max_bpc > 8)
+ 		drm_connector_attach_hdr_output_metadata_property(connector);
+diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
+index 312638824918..262bc4d91a3c 100644
+--- a/include/drm/drm_connector.h
++++ b/include/drm/drm_connector.h
+@@ -2446,11 +2446,6 @@ struct drm_connector {
+ 	 */
+ 	struct drm_property_blob *path_blob_ptr;
+ 
+-	/**
+-	 * @max_bpc: Maximum bits per color channel the connector supports.
+-	 */
+-	unsigned int max_bpc;
+-
+ 	/**
+ 	 * @max_bpc_property: Default connector property for the max bpc to be
+ 	 * driven out of the connector.
 
 -- 
 2.56.0

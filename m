@@ -1,51 +1,76 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.199
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794822106;
-	b=eQpxHSEXcbWjoLa6B+M2ozZ6mv0r1zFZix3tPGYQJ369wbiavIHS0k32DVM0hwKnjD8H
-	 QD6+eAK+jwb++ECuHzP/FaEtp99pC0tUbw82K+yU6/EA3z86Omy+r0HtaP06+xcsK32IE
-	 H498bLomdSP1Bkq4jN1y0K2TW56Z4LwOpRmuRCSMaHXmX4PBylf5YK4UpJt76EXk5dmQ4
-	 q2zn+xcTsUw2FASC39Ka7s6tT5mlHf7UGZ4yLt+ClwfgX9ToIWU79859cci6DDO6/p/3I
-	 5pB3YsFRR0drgZyt8JFO84xq2cBsia0PsquVHeU7TjRxY1Irpiwpkx1t/FuwJbbctvw==
+	t=1794839185;
+	b=avszJ7Rm/7yiXPKiBHU40OoHtzkg7efRhqvli+GOmb6pQcI5b87sTo0WRE4Dcr5AgAYp
+	 3+7HSlh8CI234hiGVIC9mF92OQ1AiL3aKvdvZ9n5cE99Izy64/K8foJZWUkLOb380ynwX
+	 ss3zbIgWM1cWaT5/1wIuBhCoIsCGV6O2eAAP9ZkBWgHsnaOBYQuFpLeGF8MItgc8q8btw
+	 S5ZnN5NGDvb8FhPyLeN/lOm31QJPglbiho9vL946Byqn0E3jtbFpe5XYNJmY2SrfAkQfs
+	 Ya1qUS6J+zd/O61uKwdHgOb6cf8Mxy8y8mkdVWjqkMudjn/1M1YJ8szWI62n7hY8epA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794822106;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=doTb3+6760LyHkJLv51ETQTO2ku1Db5vB98zHM1U87o=;
-	b=uz7en0+xoQBFTlaioiYDqSlk5RwN5KjTPOHFDlUI6I3+nakQEcE0T+W9o1k90xURv99j
-	 XZ73G/pf6N3o/1OKFXyDnU7VUCC22wUoZxk+9Q2GNl1f3moIbGtzAr5w/13ncCHxz82Sc
-	 V7u7LFcAe4F5CqYkK/jQc4T3JUCM+A5peo7ArDGWPOdqiU0++0MJE0+vLrZ+gydEc82f0
-	 3I0MsBOt+pXoc59bXMxJBUHMiJ7lG+RVGTVoNCdC8kF6mKxNuQ8kDMezN1K2lvzOh5pgJ
-	 fY7hX/sVqg2C8WH0SHnLXG4gmC0W13lvlT6EBngoKf3hJVNHdmT8PjbWG4u88eRK7Bw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794839185;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Received:Date:In-Reply-To:
+	 Mime-Version:References:Message-ID:Subject:From:To:Cc:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=Julx96UTlwUpy/yEEb6XKUMDaihQ6nHqBxqUTRWWoDs=;
+	b=dYkKmEzoUyNdec6iVL0y+vr1rCRJe5HFEPaLu9nnLu9jdFXO5s2eJKwFQ+VaWbo+tHqU
+	 SxAymd5iFTUOAHliOI6uf2EmeBxTFLzfQmracqZcis4XoXvlCC2ntm5nBzV686UfwH0/3
+	 PonxN8+yf2mA4HaMYZptpRRy381+3FYwWp6rXhIM1xE547ZFfdWECqsRJGl5/S29iM+2X
+	 qBGSE3xh7juCtY+4mDBY84rVsESkrJYOpS9Re9H1nioMWyW0kRmkJpNKb9ovBizFgKOPE
+	 TKWWg9uc6eimjQI5FkXmj88O2OPZnMLDULAV3xadiChzkz20+Bvluxra0dQSZriZ7Ow==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=tP8BTgr5;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=google.com;
+	spf=pass smtp.mailfrom=flex--seanjc.bounces.google.com;
+	dkim=pass header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=o04lO8GG;
+	arc=none smtp.remote-ip=209.85.210.199
+Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64DDB606A31C;
-	Mon, 16 Nov 2026 09:41:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04C81606A334
+	for <linux-fbdev@vger.kernel.org>; Mon, 16 Nov 2026 14:26:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 04C81606A334
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=tP8BTgr5
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 728A31F000C4;
-	Mon, 16 Nov 2026 09:41:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1794822106;
-	bh=doTb3+6760LyHkJLv51ETQTO2ku1Db5vB98zHM1U87o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=tP8BTgr5EYmm3Lh6mkM/XBOFuIV0Rr3l0tsk8XTLa2pUYmACVmP5647Ds5QURB/MN
-	 D4ZRvlJ/P2Kaid+s/uACDxkHlrcTgV3ky5M20Vd6c8oOszMYeuKfi1+I0ZHx9HkqAL
-	 +F2TWJjCJjsy+at2Zlp+PkOoljvwjKJZnAKZ0v/w=
-Date: Mon, 16 Nov 2026 10:41:43 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Leon Pelzmann <brunonick1801@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-	linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging: sm750fb: remove ineffective sw_i2c_wait() busy
- loop
-Message-ID: <2026111622-vision-dollhouse-f72f@gregkh>
-References: <20261115215427.112315-1-brunonick1801@gmail.com>
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=o04lO8GG
+Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-8b930598cf0so4840186b3a.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 16 Nov 2026 06:26:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1794839184; x=1795443984; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:cc:to:from:subject
+         :message-id:references:mime-version:in-reply-to:date:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=Julx96UTlwUpy/yEEb6XKUMDaihQ6nHqBxqUTRWWoDs=;
+        b=o04lO8GGgXrESFKdzPFhg+2CZ66oWV/D9RCdkmGQv5zmRx4ocR7cMj49UAZWLzQ08p
+         Exgjw5nzv+VU/noSZj1qNSRM42Efhd5UU9M4zYhj9hYL33RguWZjEdRIwhZZKtjjmAWK
+         CZHQW0LenzCeV4Az+D9oYTYe1+JdnXTThTdnyyA0qyK3iEfA5CNu2rFJPxjCMaEbDPPa
+         4GWRcxQfsKciv2s2Xnp6TE4BCnhHiUeXbt2eHpPmzKjfbnT06BfdZVvWfMuXAZ4NfG2z
+         lvfm/r/kXhSPWJ2Thy+3cctCZhv0qphjwQepT6O3eDBYyRmyUCFE1kDkMxO3F8tlJaEg
+         ursQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794839184; x=1795443984;
+        h=content-transfer-encoding:content-type:cc:to:from:subject
+         :message-id:references:mime-version:in-reply-to:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Julx96UTlwUpy/yEEb6XKUMDaihQ6nHqBxqUTRWWoDs=;
+        b=hvodfWBSHAOrX0xdP31/GyLHKewGFw8OTYUvf5DzXzbTw5p2gK9txqqVsKYlQAMgYl
+         twVvuj3NhEErujN1+axY+OBKktxD8064Ens9FH6grvpE4uCPs1AdmsXSPFpzuRQohSqT
+         7BA6pJytZdTF+0jQmf5iN5HqNeq+xKUHQ1hN+2bV+m1fKpjhJZt8HAUZ5Urivzk2NdX/
+         zX113SJeBvaLeVGIY83K5nx4n8dd7R8kDawahrUH8cOZS1BQ2qu2yM7yoHVMb8t6+vmU
+         lz24yC8fajpWqGfLimq9e1/gQw5IDLYJp9S3XEiv8bhT3Po9knyw5N5vV3UL8vK+jIjR
+         bosQ==
+X-Forwarded-Encrypted: i=1; AL+hErGOYiSYwgU6FIvBziVc16taI0FYa8pZnrTLpnl9Xjkr2QxiVbgSB9NnEOxlYhGoQfKSb1BgnDueGvCvRQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/Zyv+FAHZJH85xs/iUonOlEIGrMXec+5aVD30CoYr+4tWIJ9iP
+	VfouKGVetoYLze+6EZ7/8PPemKH/AtWJZ3y6sJrIx0eJtCKw24yBihLiJBD9FJfrr96GnxdJbCf
+	r5OfTyg==
+X-Received: from pffm4-n2.prod.google.com ([2002:a05:6a00:c304:20b0:8a0:70d8:a2ef])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:4fc3:b0:89f:b166:bde6
+ with SMTP id d2e1a72fcca58-8beb8cc8ad6mr9720424b3a.54.1794839183449; Mon, 16
+ Nov 2026 06:26:23 -0800 (PST)
+Date: Mon, 16 Nov 2026 06:26:22 -0800
+In-Reply-To: <20261114202653.3113381-10-rdunlap@infradead.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -54,27 +79,222 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261115215427.112315-1-brunonick1801@gmail.com>
+Mime-Version: 1.0
+References: <20261114202653.3113381-1-rdunlap@infradead.org> <20261114202653.3113381-10-rdunlap@infradead.org>
+Message-ID: <avsSjioXqbCOn834@seanjc-mac.roam.internal>
+Subject: Re: [PATCH 09/12] docs: ioctl-number: update virtualization entries
+From: Sean Christopherson <seanjc@google.com>
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, 
+	Shuah Khan <skhan@linuxfoundation.org>, linux-doc@vger.kernel.org, 
+	David Hildenbrand <david@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, 
+	Jason Gunthorpe <jgg@nvidia.com>, Leon Romanovsky <leonro@nvidia.com>, linux-mm@kvack.org, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, linux-sound@vger.kernel.org, 
+	Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org, 
+	Marcel Holtmann <marcel@holtmann.org>, Luiz Augusto von Dentz <luiz.dentz@gmail.com>, 
+	linux-bluetooth@vger.kernel.org, 
+	Willem de Bruijn <willemdebruijn.kernel@gmail.com>, Jason Wang <jasowangio@gmail.com>, 
+	David Heidelberg <david@ixit.cz>, oe-linux-nfc@lists.linux.dev, 
+	Chas Williams <3chas3@gmail.com>, linux-atm-general@lists.sourceforge.net, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, netdev@vger.kernel.org, 
+	Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K. Petersen" <mkp@kernel.org>, linux-scsi@vger.kernel.org, 
+	Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, 
+	Vignesh Raghavendra <vigneshr@ti.com>, Zhihao Cheng <chengzhihao1@huawei.com>, linux-mtd@lists.infradead.org, 
+	Neill Kapron <nkapron@google.com>, Andrey Konovalov <andreyknvl@gmail.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, 
+	Juergen Gross <jgross@suse.com>, Stefano Stabellini <sstabellini@kernel.org>, xen-devel@lists.xenproject.org, 
+	Hans de Goede <hansg@kernel.org>, Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>, 
+	"Eugenio =?utf-8?B?UMOpcmV6?=" <eperezma@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org, 
+	virtualization@lists.linux.dev, Jan Kara <jack@suse.cz>, 
+	linux-fsdevel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org, 
+	Mike Marshall <hubcap@omnibond.com>, devel@lists.orangefs.org, 
+	Paulo Alcantara <pc@manguebit.org>, Namjae Jeon <linkinjeon@kernel.org>, linux-cifs@vger.kernel.org, 
+	Jaegeuk Kim <jaegeuk@kernel.org>, Chao Yu <chao@kernel.org>, 
+	linux-f2fs-devel@lists.sourceforge.net, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+	linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	Tzung-Bi Shih <tzungbi@kernel.org>, Benson Leung <bleung@chromium.org>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Alex Deucher <alexander.deucher@amd.com>, 
+	"Christian =?utf-8?B?S8O2bmln?=" <christian.koenig@amd.com>, amd-gfx@lists.freedesktop.org, 
+	Jani Nikula <jani.nikula@linux.intel.com>, 
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, intel-gfx@lists.freedesktop.org, 
+	Matthew Brost <matthew.brost@intel.com>, 
+	"Thomas =?utf-8?Q?Hellstr=C3=B6m?=" <thomas.hellstrom@linux.intel.com>, intel-xe@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Nov 15, 2026 at 10:54:27PM +0100, Leon Pelzmann wrote:
-> sw_i2c_wait() is meant to insert a delay between the bit-banged I2C
-> operations, but it only consists of a loop that computes a value into
-> a local variable which is never read. The loop has no side effects, so
-> the compiler removes it entirely and the function compiles to nothing.
-> With W=1 this also triggers:
-> 
->   ddk750_swi2c.c:95:16: error: variable 'tmp' set but not used
->   [-Werror=unused-but-set-variable=]
-> 
-> Remove the function and all of its call sites. The I2C timing is not
-> changed by this: the object code of ddk750_swi2c.o (x86_64, gcc,
-> allmodconfig) is identical before and after this change.
-> 
-> The W=1 warning was found by building the driver, and the change was
-> prepared with the help of an AI coding assistant (Claude); it was
-> verified by comparing the objdump output before and after the change.
+On Sat, Nov 14, 2026, Randy Dunlap wrote:
+> Update the list of files where virtualization ioctls are defined.
+>=20
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> ---
+> [Since having multiple maintainers trying to merge these would
+> cause some conflicts, it would be more manageable for Jon to
+> take all of these through the docs-next tree.]
+>=20
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Shuah Khan <skhan@linuxfoundation.org>
+> Cc: linux-doc@vger.kernel.org
+> Cc: Juergen Gross <jgross@suse.com>
+> Cc: Stefano Stabellini <sstabellini@kernel.org>
+> Cc: xen-devel@lists.xenproject.org
+> Cc: Hans de Goede <hansg@kernel.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+> Cc: Jason Wang <jasowangio@gmail.com>
+> Cc: Eugenio P=C3=A9rez <eperezma@redhat.com>
+> Cc: Sean Christopherson <seanjc@google.com>
+> Cc: Paolo Bonzini <pbonzini@redhat.com>
+> Cc: kvm@vger.kernel.org
+> Cc: virtualization@lists.linux.dev
+>=20
+>  Documentation/userspace-api/ioctl/ioctl-number.rst |    6 ++++++
+>  1 file changed, 6 insertions(+)
+>=20
+> --- linux-next-20261113.orig/Documentation/userspace-api/ioctl/ioctl-numb=
+er.rst
+> +++ linux-next-20261113/Documentation/userspace-api/ioctl/ioctl-number.rs=
+t
+> @@ -200,6 +200,7 @@ Code  Seq#    Include File
+>  'M'   01-03  drivers/scsi/megaraid/megaraid_sas.h
+>  'M'   00-03  drivers/video/fbdev/mb862xx/mb862xxfb.h
+>  'M'   00-0F  drivers/video/fsl-diu-fb.h                                c=
+onflict!
+> +'M'   01-03  xen/interface/xen-mca.h                                   c=
+onflict!
+>  'N'   00-1F  drivers/usb/scanner.h
+>  'N'   40-7F  uapi/linux/nvme_ioctl.h
+>  'N'   80-83  uapi/linux/ntsync.h and uapi/linux/nvme_ioctl.h           c=
+onflict!
+> @@ -239,6 +240,7 @@ Code  Seq#    Include File
+>  'U'   64     drivers/usb/misc/usbtest.c                                c=
+onflict!
+>  'V'   all    linux/vt.h                                                c=
+onflict!
+>  'V'   all    linux/videodev2.h                                         c=
+onflict!
+> +'V'   00-1F  linux/vboxguest.h                                         c=
+onflict!
+>  'V'   C0     linux/ivtvfb.h                                            c=
+onflict!
+>  'V'   C0     linux/ivtv.h                                              c=
+onflict!
+>  'V'   C0     media/si4713.h                                            c=
+onflict!
+> @@ -357,6 +359,7 @@ Code  Seq#    Include File
+>  '|'   80-9F  samples/                                                  A=
+ny sample and example drivers
+>  0x80  00-1F  linux/fb.h
+>  0x81  00-1F  linux/vduse.h
+> +             drivers/vdpa/vdpa_user/vduse_dev.c
+>  0x89  00-07  asm-generic/sockios.h
+>  0x89  06-07  linux/sockios.h
+>  0x89  0B-DF  linux/sockios.h
+> @@ -398,8 +401,11 @@ Code  Seq#    Include File
+>                                                                         <=
+mailto:kvm@vger.kernel.org>
+>  0xAE  40-FF  linux/kvm.h                                               K=
+ernel-based Virtual Machine
+>                                                                         <=
+mailto:kvm@vger.kernel.org>
+> +0xAE  C6     arch/x86/kvm/x86.c                                        X=
+86 KVM
 
-Please read https://lore.kernel.org/r/2026080354-skater-urgent-31b2@gregkh
+I'd rather omit this entry.  0xAE C6 is covered by the entry above, and the=
+ horror
+in arch/x86/kvm/x86.c is purely a 32-bit compatibility alias for an ioctl t=
+hat is
+defined in kvm.h (the structure payload defines an pointer instead of a __u=
+64).
+
+If it's a sticking point, e.g. this will trip automated tooling over and ov=
+er, then
+I vote to move the relevant definitions to uapi headers, e.g.
+
+diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kv=
+m.h
+index 00ce265391e1..e02ef7a39f7c 100644
+--- a/arch/x86/include/uapi/asm/kvm.h
++++ b/arch/x86/include/uapi/asm/kvm.h
+@@ -230,6 +230,18 @@ struct kvm_msr_filter {
+ 	struct kvm_msr_filter_range ranges[KVM_MSR_FILTER_MAX_RANGES];
+ };
+
++struct kvm_msr_filter_range_compat {
++	__u32 flags;
++	__u32 nmsrs;
++	__u32 base;
++	__u32 bitmap;
++};
++
++struct kvm_msr_filter_compat {
++	__u32 flags;
++	struct kvm_msr_filter_range_compat ranges[KVM_MSR_FILTER_MAX_RANGES];
++};
++
+ struct kvm_cpuid_entry {
+ 	__u32 function;
+ 	__u32 eax;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 0771efaf94c8..ef9f92cba589 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4260,21 +4260,6 @@ int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
+ }
+
+ #ifdef CONFIG_KVM_COMPAT
+-/* for KVM_X86_SET_MSR_FILTER */
+-struct kvm_msr_filter_range_compat {
+-	__u32 flags;
+-	__u32 nmsrs;
+-	__u32 base;
+-	__u32 bitmap;
+-};
+-
+-struct kvm_msr_filter_compat {
+-	__u32 flags;
+-	struct kvm_msr_filter_range_compat ranges[KVM_MSR_FILTER_MAX_RANGES];
+-};
+-
+-#define KVM_X86_SET_MSR_FILTER_COMPAT _IOW(KVMIO, 0xc6, struct kvm_msr_fil=
+ter_compat)
+-
+ long kvm_arch_vm_compat_ioctl(struct file *filp, unsigned int ioctl,
+ 			      unsigned long arg)
+ {
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 8dff2fc1972e..54dbdabd0e9b 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -1477,6 +1477,7 @@ struct kvm_enc_region {
+
+ /* Available with KVM_CAP_X86_MSR_FILTER */
+ #define KVM_X86_SET_MSR_FILTER	_IOW(KVMIO,  0xc6, struct kvm_msr_filter)
++#define KVM_X86_SET_MSR_FILTER_COMPAT _IOW(KVMIO, 0xc6, struct kvm_msr_fil=
+ter_compat)
+
+ /* Available with KVM_CAP_DIRTY_LOG_RING */
+ #define KVM_RESET_DIRTY_RINGS		_IO(KVMIO, 0xc7)
+
+>  0xAE  20-3F  linux/nitro_enclaves.h                                    N=
+itro Enclaves
+>  0xAF  00-1F  linux/fsl_hypervisor.h                                    F=
+reescale hypervisor
+> +0xAF  00-8F  linux/vhost.h                                             c=
+onflict!
+> +0xAF  31-32  drivers/vhost/test.h                                      c=
+onflict!
+>  0xB0  all                                                              R=
+ATIO devices in development:
+>                                                                         <=
+mailto:vgo@ratio.de>
+>  0xB1  00-1F                                                            P=
+PPoX

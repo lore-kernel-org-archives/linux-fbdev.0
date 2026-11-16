@@ -1,96 +1,112 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.48
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.42
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794779696;
-	b=EIm87II1Bdm1JWt6ugPcC2uoMtvnrZ4z8qXu+DapXbTWNvdOavu5zMm+VbIOPjx30RcZ
-	 aLeutsBOelvGMNBLZQqpnWeqeEbRjNy58FWRcG9/Gjv4m4TWT13VdxY1z9LLTI6raAnCd
-	 Uwx++t4tMsJKs6/K+TYiPPnW2+ADksQE6nSFIdDQbk33EOW7Ih2fIaV2E7LBquWHewiw3
-	 sIQoq1KASDUQy9E8Crk8HPdV1qTeP+PaMQIe385QSmNmq4uI9BG9kwYpCIwyAoUxYWEE1
-	 BhQnUc8nw/QDdI4h/oAliJ/yxFaDTNMlU2wsHtpyQIlQmVc5RbVcV8cGlU4eHQ+D0xA==
+	t=1794784925;
+	b=0yhk2DVJMcQ4jWNMPuPucSE4tGocYs+LgC0I72sNHxrfaO5aQUjStcDXtLOHD9qlNJLg
+	 iqoIbCC8yGBvRdzJTr5RPxp8PKSLnoPTiCWB9dKc+ve1ESLKXd2A9Hj2v9LI0jQEJUJUE
+	 hI/qhUFyLrlRNZKbZjPP5Ytpq1K5bgIVHhes+OP02+X6bfMAECz+q0Ux7imuvajp/CAjN
+	 oBtsKtiFyTj/aB3O36EGUTaOpjy4zof9SPbagMgo7verM8QRaUKP0TtkEZkpdpNDPY7Wu
+	 TcApsWviCpVAJ9bQu5/sy/01fmobyb8sxA/uT4/nA2nyknTOzynPEJ5zDwnSAVMUtFw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794779696;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794784925;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
+	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:Content-Type:
 	 Content-Transfer-Encoding;
-	bh=Ll+dYl6IjHGgVeB0nKnh3CO9OrbX/VIAlSchVwuRn28=;
-	b=us+8FhSDzNQ6vy3f0hsU1Y1Vt2rJB6q6SuLKdcRokzHDAG7QxL0tliPXWKXJL9VTw0q6
-	 eXO9gGHyukEX3/JlN2ZBvf7Ic7DtXz+0PT+YC9Zhz5HCAIo42n5/LQI/A+2lkMKQSCN34
-	 xcilIkvKllu2MOXHB6rywKBSjNRWp9B8g5ftVP5Gml7cxQKzXTWInw8v+ofE9L1k5eSoA
-	 +yoYEUVr5mTbz1PDFJCWm2ngzRioK2oyJF2Am8bZjS49jcA+Pg0m7OtuOvLGgwks1ISvz
-	 ZqV2AZrosKshfNyDmshT0wqatG8vUv+T4/0W1KDJodJpajP5QrRjSZFHhMUa5KyHV/g==
+	bh=zAejWuLH6A6kWbjxkZ2dzmDOuVhvhpj01tnf5xLhIOA=;
+	b=w11DlD+D+gQJRQXHmv6T9wtPINhOM+2hck3HRznZyipWYbdDeK3QtO/VIKPQs9SD5+2d
+	 EtzOJHd+v922WYM2FEa+5uFqXvum6S5XcrXZ3nMy2qX8ZlmHBJUljeOZ3MN8pIlj3PgtM
+	 VY5PbnXSE24tn/5Tnhb7ZQslSF1taZg3gdEfKo0vT4PtxYnm1I4pZDTqsIeudr92izAiC
+	 P7dC0ezYuw8dMgfU30hWgHle24oZ1vCiZHDclBe3tvYZzub51uHBjCJgFHv0kjklo0e+7
+	 0kgvJJlPo1fvnJPMwJILrvYZxPd5jcPy5hY2yQ2kBaDxzy5T6iVhV3LMIFucRYhZvDA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=lLp8UpIh;
-	arc=none smtp.remote-ip=209.85.221.48
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L78fOILN;
+	arc=none smtp.remote-ip=209.85.221.42
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com [209.85.221.42])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA276606A330
-	for <linux-fbdev@vger.kernel.org>; Sun, 15 Nov 2026 21:54:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DA276606A330
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64756606A338
+	for <linux-fbdev@vger.kernel.org>; Sun, 15 Nov 2026 23:22:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 64756606A338
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=lLp8UpIh
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-4918c2d727fso1466376f8f.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 15 Nov 2026 13:54:55 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L78fOILN
+Received: by mail-wr1-f42.google.com with SMTP id ffacd0b85a97d-492f0a1b685so2042461f8f.0
+        for <linux-fbdev@vger.kernel.org>; Sun, 15 Nov 2026 15:22:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794779694; x=1795384494; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Ll+dYl6IjHGgVeB0nKnh3CO9OrbX/VIAlSchVwuRn28=;
-        b=lLp8UpIhczoGU99bKCQ/deeLU4T5+QOEljlbDSClUD4xBGymN7xpLVok+gvT6WgU8C
-         S8Fw4KQGzqMKgthHIsCpKE26cWMhffe39FAnlPT33fg3S39lY7CqSNnyl8ycwYOGHGKS
-         3NS4AIbQH1EgHzck90Rhy0TU+CEFMgteHQJd+0Pf6dLpAVXClgJZttXPb4DpunMGTki/
-         szqDnwDynTAg5IBAm+x3HWSYO4nEZCDDgWSwwg/M8DYlaW4CCKJiWh+MoKUPkJpROG2y
-         wcApysLZuT0rDb9oTgoeto1IuaGXMOyiUidNFhnx3AHAkc8a0SVsbiyUMpfDAkHuSxg4
-         Fdxg==
+        d=gmail.com; s=20260707; t=1794784923; x=1795389723; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=zAejWuLH6A6kWbjxkZ2dzmDOuVhvhpj01tnf5xLhIOA=;
+        b=L78fOILNmFl2yRucuBd+RTaXWGuOJvcIykScC6o4ql3NvgDtxFGSzvX7Wb/mtz1gB+
+         VvaUY7a1I3RjWNeLCZPU5TYNEbggTLRKhVo5HzyHvA8mEYBsCXX1Do1SMe6lOraR0yq2
+         YsZczkGxxNJ7SwdmGEVRjrgeFxTY5GIJf/h9eu4rnRPyKFrJPkRH4VP4WjVUgAm1s2kI
+         wIaZ8A0Ymt/FxMFyg5/Hq8uZrKPvAGYW+39fg/TNnXdk1kdJGJ+7erQ48zxTdAY3/+S/
+         mSiUuFj7yJ3nw5LFjtA24ETQM6Rb/xq+GSOodQMTAtS7v534rN3gvysBU4hcu2/y33TF
+         Q7rw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794779694; x=1795384494;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Ll+dYl6IjHGgVeB0nKnh3CO9OrbX/VIAlSchVwuRn28=;
-        b=PVCkFjDO0ooyeZcnf2j0zEOg+yztUE6bw3L13IU/LgL2S6cI93/K8qyqyWClItXoJF
-         3137ZqcnSsUiBV7I0WRdqtgjW6HRJptjUwQU0wsmRzAfjtZHZBrbat4ni/ckVdyedgei
-         m0zIxywtIc0bqcEgKigrle24prlhtXowQ5Sm8RoxvglWFdkptt4Hm7+evo1+w8v2n6aX
-         JjNL4WzFoVty7pjGLl8iK1/OJdCCUPyWifBzCGoersMTCT1FT7Ts3yGaGtyJbfyEDAzT
-         BzDrKKLfxK50XHh+wnEmKoiaYzU19mgxpqzMFUUVJeKozbrzydszg01l65Q+3b+xnXxc
-         gUtg==
-X-Forwarded-Encrypted: i=1; AL+hErFdlBvhQ0R1Osk4VqAMciJkr+rby8icweg9DfAULJkga1l7qgdw63LZSKTadiUpKwIGKQEazsmWjxMoCQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8KFA+cASRel+d0eT+gj69dJZj2fWdO2WefWIjI9vlSvYH7P7Up
-	5HV8AhtP4XkO0AypfJSR+UeMOtTWvT31S9WSyxVYFHQ3UxXEWSnXPHlP
-X-Gm-Gg: AYBFou1oZxvwQ56JWt+j27Bs5N+pMrS3el1zhIwe3mb7xZErwOJofOME3V7NgZnbZxn
-	e+5KaayNh9SmGM81AfRIVo564goLR8jYgZEBLw1BFLrwSsd0lEYAtWGkZC/EPwQeQEcNlWaSTwf
-	i0BM6OZSG46RzuwWsH/pV39pFMvMVPdDY4/XQqxet/KWwcEQV0Hq3HYVdzW4G/pzgUt/TY0/CYM
-	cKYUrq5xHeE0UKgwl0m7KrHfFAEkqLCCiIKpUix91faWXxKZzUqonZvemi/a8VZFs3SGM6S/V95
-	sMRYNQrigNWngotaf7HHhqYsG7RxBJtVDcqt0A3Gy7vQ97RxD6s9PpT9RxvfJQVzEk9HFInRJYm
-	yObXoz5hKLAZeUvC1kcffmz3Q+aIjhH0klBakVcVivPNHFhM5ewgl+928zNhFktuSmkm7JCpDOV
-	msXXlBDoZ8V9VgxAhf2XBeTx/BCmICUJBWqjb8cdalmoVNEtAOBqaRx7W5I9LqGQm+G40llP50w
-	EgZH5/iDZc8zdnPFmfvsl/tQGi40NwN6Cnzy7feOhQLUJ3DS8rrq7BLZjTr5q3bLzleEAXwVK93
-	rcSxSIDGRJYlCfduYHj70Or4AcPTm0PlDT/f5jVj6Zx90Hig6UD8y6qEQbINYtnXLFC+4XP3GfF
-	d8boXwp8xQsKji3yoUwJ/BDVAkQEFbECYZ3CO9fmjpJ23m3ZHst8eLSu8ft/znPnl/5kd7kGBOC
-	95
-X-Received: by 2002:a05:600c:5617:b0:4a3:12fb:1ef1 with SMTP id 5b1f17b1804b1-4bb55a71035mr134809435e9.29.1794779694189;
-        Sun, 15 Nov 2026 13:54:54 -0800 (PST)
-Received: from leon-mainpc.tail82c8c6.ts.net (77.119.194.237.wireless.dyn.drei.com. [77.119.194.237])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49d673ce75fsm12553145f8f.55.2026.11.15.13.54.53
+        d=1e100.net; s=20260707; t=1794784923; x=1795389723;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=zAejWuLH6A6kWbjxkZ2dzmDOuVhvhpj01tnf5xLhIOA=;
+        b=YEQl4EbPVXnbQEj+Ij9CHaXkjF18WF78ps+BxmHhksS0rziKSoGIzgUy+zKGiZDrke
+         PkpAoSJbavntzi/PAkMU116UD4uPVR0RVSR7XE60hRV1/T9jZToNnYb7Z80e2K0y/mZF
+         eGmEtaskevyx1Myoy4HAr/WrnnFcuRpKaz5gq2A9QWI4ywREVyG9XkQaslimLSshC1lJ
+         XB5U2OQWliOuSHUJ8+H0DxREJoWRlsC65B/5WlD3699SFifJsJ/lsiCsx3BLrtmYy8DO
+         NDZ0bJ+yXXivxH6UAl3OXZg1nT/B0PxF2vGofRlpZERy91qZXa7k199Cw7wZkoWGoOWV
+         +TBA==
+X-Forwarded-Encrypted: i=1; AL+hErEHOh4P9ui9jwUOj7yDTH+E4Hswvl8oD5AJIljH0T/LHPhTBwmNvBqekmtXCll8YMywYC9H5hdOuHU4Rw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+iH8y+1cG1AP3pVaazuHhImEKh/N7rNay04620ffb77mxhx8+c
+	oAPgY9tFzwsKe6iAx12Ohl/zW4moYM3phLOFfEu7NilgcqMfmlXNaXTd
+X-Gm-Gg: AYBFou1CHJYS2NcKtV0AVei7Z7qKxCInUaxMBEx3jIOJVlp3Trv/zRTcwcxkHPeU7Ba
+	jOna48+WTnUQWz+szl65FMtnj1QpyHbxeW/Xu9QDkCIbVVfau25BGk1qIDg5NIERBG2kgyuu+uL
+	LDITz93PtNRt4tSVpLoHLzmwu+4SkYsvM6wSXrRjkN2AHvifxi6dQ3UEQ9DZ2Jy2bNe+D3UxtM5
+	vnL0HIJKu11uPdQC4NTYcaYfstxjCyvIimeemIqHHuEJx0QDRFNvFAWY6xO/wqHpL3ewPREeww7
+	aOGaaFEWt3+ND9NHbAnrHNmYBYe4bjUawTuwmFb2vEA1QLic7CHtwluMU9pEjSKgyMcTYZ+8O17
+	SgX2NSjxT32P1b9QJ77gbT1xFWy+bbE/dIgZ0Myw+59jsCoDRrPRq0z2IzSEDfrw7SB7mZ9hk4j
+	s6RceVx1nNM9JEKNcN3ICNL7eBWNEo74sj8kw7ev7qu1LQYeAvtNKs7R4CMZdD4TODdyyXAzZoB
+	aZ423DePaLL3pq/TVbHwQTzlHafmQfo8YYChSWgRdph2pBUvrYFzGHSGDEvw9uF0h8eg/TiYpB9
+	JSt57rhdZEuRqNWbLJZ0zg+zLD60LMd6RkiFMOK4B6mTX1BVDNqjR/I=
+X-Received: by 2002:a05:600c:83c5:b0:4a7:7d22:c50c with SMTP id 5b1f17b1804b1-4bb55a23b36mr182171115e9.2.1794784922517;
+        Sun, 15 Nov 2026 15:22:02 -0800 (PST)
+Received: from ingenieria31.oficinasStQ.local ([79.117.0.220])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb571f976esm127920955e9.3.2026.11.15.15.21.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Nov 2026 13:54:53 -0800 (PST)
-From: Leon Pelzmann <brunonick1801@gmail.com>
-To: gregkh@linuxfoundation.org
-Cc: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
+        Sun, 15 Nov 2026 15:22:01 -0800 (PST)
+From: =?UTF-8?q?M=C3=A0xim=20Pedraza=20Padilla?= <maximpedraza@gmail.com>
+To: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Helge Deller <deller@gmx.de>,
+	Peter Jones <pjones@redhat.com>
+Cc: Francesco Valla <francesco@valla.it>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Mario Limonciello <mario.limonciello@amd.com>,
+	Javier Martinez Canillas <javierm@redhat.com>,
+	Jocelyn Falempe <jfalempe@redhat.com>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	dri-devel@lists.freedesktop.org,
+	linux-efi@vger.kernel.org,
 	linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Leon Pelzmann <brunonick1801@gmail.com>
-Subject: [PATCH] staging: sm750fb: remove ineffective sw_i2c_wait() busy loop
-Date: Sun, 15 Nov 2026 22:54:27 +0100
-Message-ID: <20261115215427.112315-1-brunonick1801@gmail.com>
-X-Mailer: git-send-email 2.56.1
+	linux-doc@vger.kernel.org,
+	linux-embedded@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v7 0/6] Add splash DRM client
+Date: Mon, 16 Nov 2026 01:21:50 +0100
+Message-Id: <20261116002156.1027726-1-maximpedraza@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -100,110 +116,155 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-sw_i2c_wait() is meant to insert a delay between the bit-banged I2C
-operations, but it only consists of a loop that computes a value into
-a local variable which is never read. The loop has no side effects, so
-the compiler removes it entirely and the function compiles to nothing.
-With W=1 this also triggers:
+This is the seventh version of the splash client, which I took over from
+Francesco with v4. As Thomas suggested [1], it holds only the part that
+can go in now: patches 1 to 6 and 8 of v6, with the MAINTAINERS entry
+squashed into the patch that adds drm_splash.c. The device tree source
+and its binding, the placement and rotation, and the connector
+orientation will follow as a separate series on top of this one.
 
-  ddk750_swi2c.c:95:16: error: variable 'tmp' set but not used
-  [-Werror=unused-but-set-variable=]
+The client draws a splash on every output, including those plugged in
+later, until userspace takes over. The image comes from the EFI BGRT or,
+failing that, from a BMP loaded as firmware, named at build time
+("drm_splash.bmp" by default); with neither, only the background is
+drawn, in a colour set at build time. A BGRT image is drawn at the table
+offsets, a BMP loaded as firmware is centred. A BGRT whose ACPI 6.2
+orientation bits are set is skipped for now; turning it comes with the
+rotation in the later series.
 
-Remove the function and all of its call sites. The I2C timing is not
-changed by this: the object code of ddk750_swi2c.o (x86_64, gcc,
-allmodconfig) is identical before and after this change.
+Changes since v6
+----------------
 
-The W=1 warning was found by building the driver, and the change was
-prepared with the help of an AI coding assistant (Claude); it was
-verified by comparing the objdump output before and after the change.
+From the reviews of v6 [1]-[6]:
 
-Signed-off-by: Leon Pelzmann <brunonick1801@gmail.com>
----
- drivers/staging/sm750fb/ddk750_swi2c.c | 34 --------------------------
- 1 file changed, 34 deletions(-)
+  - MAINTAINERS: I am listed as M: and Francesco as R:, in patch 4
+    (Thomas [2], Francesco [3]).
+  - The firmware source is DRM_SPLASH_SRC_FW, and its Kconfig options
+    DRM_CLIENT_SPLASH_SRC_FW and DRM_CLIENT_SPLASH_FW_NAME, since the
+    BGRT is a BMP too (Thomas [4]).
+  - The drm_splash_fw_load() stub returns 0 (Thomas [5]), and
+    drm_splash_image_load() does not call it when the firmware source is
+    disabled.
+  - Thomas, I have kept your Reviewed-by on patch 4, as you said [6].
 
-diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-index e63f3b00ec..e298bf3128 100644
---- a/drivers/staging/sm750fb/ddk750_swi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-@@ -75,31 +75,6 @@ static unsigned long sw_i2c_data_gpio_mux_reg = GPIO_MUX;
- static unsigned long sw_i2c_data_gpio_data_reg = GPIO_DATA;
- static unsigned long sw_i2c_data_gpio_data_dir_reg = GPIO_DATA_DIRECTION;
- 
--/*
-- *  This function puts a delay between command
-- */
--static void sw_i2c_wait(void)
--{
--	/* find a bug:
--	 * peekIO method works well before suspend/resume
--	 * but after suspend, peekIO(0x3ce,0x61) & 0x10
--	 * always be non-zero,which makes the while loop
--	 * never finish.
--	 * use non-ultimate for loop below is safe
--	 */
--
--    /* Change wait algorithm to use PCI bus clock,
--     * it's more reliable than counter loop ..
--     * write 0x61 to 0x3ce and read from 0x3cf
--     */
--	int i, tmp;
--
--	for (i = 0; i < 600; i++) {
--		tmp = i;
--		tmp += i;
--	}
--}
--
- /*
-  *  This function set/reset the SCL GPIO pin
-  *
-@@ -257,11 +232,8 @@ static long sw_i2c_write_byte(unsigned char data)
- 		else
- 			sw_i2c_sda(0);
- 
--		sw_i2c_wait();
--
- 		/* Toggle clk line to one */
- 		sw_i2c_scl(1);
--		sw_i2c_wait();
- 
- 		/* Shift byte to be sent */
- 		value = value << 1;
-@@ -272,9 +244,7 @@ static long sw_i2c_write_byte(unsigned char data)
- 	sw_i2c_sda(1);
- 
- 	/* Set the SCL High for ack */
--	sw_i2c_wait();
- 	sw_i2c_scl(1);
--	sw_i2c_wait();
- 
- 	/* Read SDA, until SDA==0 */
- 	for (i = 0; i < 0xff; i++) {
-@@ -282,9 +252,7 @@ static long sw_i2c_write_byte(unsigned char data)
- 			break;
- 
- 		sw_i2c_scl(0);
--		sw_i2c_wait();
- 		sw_i2c_scl(1);
--		sw_i2c_wait();
- 	}
- 
- 	/* Set the SCL Low and SDA High */
-@@ -316,11 +284,9 @@ static unsigned char sw_i2c_read_byte(unsigned char ack)
- 		/* Set the SCL to Low and SDA to High (Input) */
- 		sw_i2c_scl(0);
- 		sw_i2c_sda(1);
--		sw_i2c_wait();
- 
- 		/* Set the SCL High */
- 		sw_i2c_scl(1);
--		sw_i2c_wait();
- 
- 		/* Read data bits from SDA */
- 		data |= (sw_i2c_read_sda() << i);
+From sashiko's review of v6 [7], and further review:
+
+  - Patch 4: restore leaves the commit to the work, which draws whatever
+    is missing first, so a restore that comes while the device is
+    suspended is no longer lost [7]; a forced restore stays forced across
+    suspend, and the work commits even when no scanout is left.
+  - Patch 4: a hotplug while userspace has the display waits for the
+    next restore, as fbdev does; only a lack of memory makes the image be
+    drawn again; unregister cancels the work before it looks for a
+    firmware request, which the work can now make too; the tile group id
+    is read under mode_config.mutex, which an EDID update holds while it
+    changes or frees the group.
+  - Patch 2: the image address and size are 0 when efi_bgrt_has_image()
+    says there is no image, so that they never disagree on kernels with
+    32-bit physical addresses.
+  - Patch 3: the comment on the DIB header says that a negative width is
+    invalid.
+
+Testing
+-------
+
+  - QEMU versatilepb (pl111, 16 bpp): no image, and the BMP loaded as
+    firmware, compared pixel by pixel.
+  - x86-64 with OVMF: the BGRT through the new accessors; with
+    CONFIG_DRM_CLIENT_SPLASH_SRC_FW=n, with and without a BGRT
+    (bgrt_disable), the background alone and no error.
+  - i386 without PAE on 32-bit OVMF, with the BGRT replaced from the
+    initrd so that it points above 4 GiB: the background alone.
+  - QEMU virt arm64 (virtio-gpu, 32 bpp) with KASAN and kmemleak: the
+    driver bound and unbound repeatedly, a crafted bitmap offset, and
+    the firmware arriving only after the unbind; no reports. With
+    lockdep too, over several outputs, tiled displays and the bind
+    cycles: no reports.
+  - Several outputs, one of them off, and tiled displays from 2x1 up to
+    3x3, 4x2 and 2x4 tiles, in several CRTC orders, simulated with
+    DisplayID tiled topology EDIDs on virtio-gpu heads. The layouts with
+    more than one row and column need a fix to the client modeset code
+    that is not part of this series.
+  - The error paths, with a debug patch forcing them: buffers and formats
+    that fail on one output, work queued while suspended, a restore
+    during suspend or with a master, a hotplug with a master, a fill that
+    fails, a firmware request made by the work and raced against the
+    unbind; no WARN or KASAN report in any of them.
+  - An AM335x board (tilcdc, 16 bpp), booting over TFTP and NFS, with
+    the BMP built in and from an initramfs, an 8 bpp BMP that is
+    rejected, and 5 unbind and bind cycles of tilcdc, checked by reading
+    the scanout buffer back.
+  - W=1 and sparse clean; every patch builds on its own on arm and
+    x86-64; checkpatch --strict clean apart from a quoted modpost line in
+    patch 2 and the MAINTAINERS reminder on patch 3, whose new header
+    FRAMEBUFFER LAYER already covers.
+
+Open questions
+--------------
+
+  - Unbinding waits for a pending firmware request, as it cannot be
+    cancelled and its callback uses the splash, and it waits under the
+    device's clientlist_mutex. Normally the request is long over; with
+    the sysfs fallback it can take up to the loading timeout. Not
+    waiting would mean giving the callback its own refcounted object;
+    I can do that as a follow-up.
+  - The BGRT offsets are for the mode the firmware drew in. When KMS
+    picks another one, the x86 check taken from efifb leaves the screen
+    without a logo, and elsewhere the logo lands off centre. The offsets
+    could be used only when the scanout matches the firmware's
+    framebuffer, and the image centred otherwise.
+  - The splash is a DRM client, so a device using it has no fbdev
+    emulation and no /dev/fb0.
+
+Based on drm-misc-next-2026-10-23 (cf5d8e390e2a).
+
+[1] https://lore.kernel.org/all/066197a1-aa2b-455b-84d8-4e2215fad764@suse.de/
+[2] https://lore.kernel.org/all/ed28619d-6ca7-46aa-82c0-c83f30a836e3@suse.de/
+[3] https://lore.kernel.org/all/avTjrfIEPgyvPDti@bywater/
+[4] https://lore.kernel.org/all/8eaf9955-485f-4908-bb65-1e0c3184fb36@suse.de/
+[5] https://lore.kernel.org/all/c2cbc13a-a58d-4c0b-87ac-62daa6de6fba@suse.de/
+[6] https://lore.kernel.org/all/4762a951-5b37-4e7a-8569-f55a4683c912@suse.de/
+[7] https://lore.kernel.org/all/sashiko-outbox-186719@kernel.org/
+
+v6: https://lore.kernel.org/r/20261027135342.2003632-1-maximpedraza@gmail.com
+v5: https://lore.kernel.org/r/20261013093243.505776-1-maximpedraza@gmail.com
+v4: https://lore.kernel.org/r/20261001195847.141192-1-maximpedraza@gmail.com
+v3: https://lore.kernel.org/r/20260510-drm_client_splash-v3-0-a9aee9f0b2fc@valla.it
+v2: https://lore.kernel.org/r/20260106-drm_client_splash-v2-0-6e86a7434b59@valla.it
+v1: https://lore.kernel.org/r/20251027-drm_client_splash-v1-0-00698933b34a@valla.it
+
+Màxim
+
+Francesco Valla (2):
+  drm: client: add splash client
+  drm: docs: remove bootsplash from TODO
+
+Màxim Pedraza Padilla (4):
+  drm/clients: Kconfig: indent DRM_CLIENT_DEFAULT with tabs
+  efi: bgrt: add accessors for the boot graphics
+  fbdev: efifb: move the BMP headers to <video/bmp.h>
+  drm/client: splash: pick the image source in one place
+
+ Documentation/gpu/todo.rst                    |   17 -
+ MAINTAINERS                                   |    8 +
+ drivers/firmware/efi/efi-bgrt.c               |   76 +-
+ drivers/gpu/drm/clients/Kconfig               |   80 +-
+ drivers/gpu/drm/clients/Makefile              |    1 +
+ drivers/gpu/drm/clients/drm_client_internal.h |    9 +
+ drivers/gpu/drm/clients/drm_client_setup.c    |    8 +
+ drivers/gpu/drm/clients/drm_splash.c          | 1060 +++++++++++++++++
+ drivers/video/fbdev/efifb.c                   |   49 +-
+ include/linux/efi-bgrt.h                      |   39 +-
+ include/video/bmp.h                           |   40 +
+ 11 files changed, 1330 insertions(+), 57 deletions(-)
+ create mode 100644 drivers/gpu/drm/clients/drm_splash.c
+ create mode 100644 include/video/bmp.h
+
+
+base-commit: cf5d8e390e2ac2cfa24a50645efdbb9f0eebe65f
 -- 
-2.56.0
+2.39.5
 

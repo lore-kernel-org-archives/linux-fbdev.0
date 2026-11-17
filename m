@@ -1,79 +1,78 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
 	t=1794937269;
-	b=wWdwA+ldmlI03FsnKfhNpU4d6h75HijqUz4OF1cTxvaU6SSM0iL8VhlOwQY0BxVGsoCQ
-	 mCs8u735mfRtIWHW+Jl78wknkCK1Mc99LGLg9u8UPl44/clV8a0mzKFIOFEmL/XqN0vYU
-	 CVj4ZXW00XPyXixq1hY7/7aEl1ZinIHy47FM4oWnVFVIEJLQ5PraBvqvTbbCNwUtvyw39
-	 82+OMeaWt2C3mRUbTlz56p3B5nFu3YeA+L7KRHnbTAFiJ3yDGfxNr1Mtrd0xyKQv/JqCN
-	 bRb+518Svkbq7uQXD/ceg34uTPnfRRt47rxaGEjHOKCvSq7KMiEq+0fBrnEHKZKtoCQ==
+	b=wXCvjSx7XIfCU8LiZNJanxqHMZnUVcRnOdVatqZSUXr863kESY5tbyoJEUnc087eUtBy
+	 lR3C5RtAID7AfTnT1wWFCiCDPbwNcbgnvBgCSnbEhojvUCN6JNqWky78MCLOFJlIhWwSh
+	 o8VX/Dz+y2FWEJvhKyZI9TSSu0QcLmVFY5dvs77ZPdkIFxc2QwR4Wiho/sWUn8bi4fFRZ
+	 6IRVSK7tlXcyIa4CR+gQbb3Sew3wngGKN3IM+r9WjfMThH72LVrPfeLuDQQVGuokc7Z56
+	 FdruQ+AoPkLRySfZEO9vKBuG+0f1dUw7y8t0oQld+VWxhOY31UI9x3Vr7mAAkea/p7A==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1794937269;
-	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=YXlDBZaIvHo1e8VAiEashHwtglIY0Ep4HLvUXrdMPlw=;
-	b=0mdiy90FQh0Sl9z/uQRCZLBIWnRSlhNlFy7AIJZ6BfxBsMQeEnrC3Cb70XK+ZMMjH/aC
-	 B74DVJgmezMwjfWt/ByXEsKYWXEdOrkaDLuTgz1e9rvJy5MJaUnBgEIc9KtBY7WkIVgg1
-	 OYCf6Hx/xd/yfduFV30OXGBGvS/7r3MOmdiukFXMgGc2I4h07PqHxHqbZ0ec8fn47DmWQ
-	 2ZkRYdDvu3JLabFkDSDRlMtw0ylNxAEZhpMnGBemnNJ5CAO6DUDXcG/OWMvcoS795uroC
-	 31A1vjPgbiJ4/KnFPAL+MO5tjkc1RiGkZcRh7F3c7CsuSTHVMEsIn/pIBmVwKimY7fA==
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=ppyqVBFv/K6NEphnd837iinHXAyuUDMGYOowkO+mkO4=;
+	b=JcEsNtIVucY5wlD0t7dyIur4JfxXGVR/A7r8dgZkrtsu94HdFcaZ7jZk56XwVW0nWNQ/
+	 tn5GpPdf9iKzmTjvj1VxAVi0r/Ec25oBJsbsbxG7DdRzvTh2EJzgAU/020dLtApN2uH5y
+	 TFpLam0Ef9s6Sk35jpPpDIzmuku8rOplaDorPLo6sSH8zCnPqDttMVW9WO+j9aCMBH3t0
+	 BAckTcbJJZQ9PspnaY7ITN8hDhqTs1OKgXXVOLv7acEXC/s7XVAG7vWdgvzlntDcbY62q
+	 oK6f9EOv2RobiEDhm0I7vMGlNukEAnYzsX89xE0KWCfcfnUfFB37gaei0Uy4UUp0TMw==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RYkSyXjE;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h5gkaqT8;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1944606A32F;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D23B7606A31C;
 	Tue, 17 Nov 2026 17:41:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RYkSyXjE
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=h5gkaqT8
 Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
 ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
 	t=1794937269;
-	b=I0BVdHDi2BfYv90RhlOr9Lr0bOayMAlSSAQ8LiPWg88locaZPtZ9G4xu0tGuvNFlEdiB
-	 BFuxfOzHEJGWw1bHBB+LAMkn/4NVxhqtW184YA+od36nlNfv9pPO8iGXiHWIfuxZBUrKP
-	 jVvTJ72JBMRYp+o+6c49SQqa7SMmyfxk/Qx8YSL/WkOBfhKCTGFRD6hNXPySiCHl5uV4T
-	 BPtC2/wm2CvmnQqNJ4lwIA+Tf9YSAryb3NN2d11vKClbxhALxkzrGoiNvbsczs6TkbrWt
-	 Nx1JvYJwRokemJkc+JOZjpMOW0DskjXJeB76QuKyGayNFSOWe1sMFaFFiDnE26DDvNw==
+	b=ApNr+YRjWjs6/aAtd6211n1+7XACOp5k9JfCazDT4LQGRMVLLZOMmAbxqbePsZGdSWNA
+	 Q2akWXTCUgwMZw249DbE9fzht56cXmTTq11A3apvnz8c5A2tnSmJxIJ/j4yuXL3HW7nVr
+	 S6EBZRoP7Md6ZdzEHs/cG2MKVf2Smnl2EmdgjFymboA7Ch4eHn6mzCXDMrNKKF1Gr+/LG
+	 T0YPfUwt7fu/hpf5iUq1DnoHg4SXq08Fl36niiEfSZ1SftrWqrqYZOCA55DzhToOkiJVh
+	 7gNwdieyWU4PwkPPYVkRnAUYyQwgCyxM0bOUe49cEMQ5BppODmMVaQxSH13mcBGF0Nw==
 ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
 	c=relaxed/relaxed; t=1794937269;
-	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
-	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=YXlDBZaIvHo1e8VAiEashHwtglIY0Ep4HLvUXrdMPlw=;
-	b=r9XvizCuHIf6GQXjeb5Qt67MAs0cSRPs1EJzQ/U/BhvqbD4oeIiGogCJ2UYJR7tWHT0i
-	 RYLJUr/qK9oaCFWBoBS6f5Cqo+Igr9kCks2i09tGh+M12CcObPdZQPLkOLthFeyxLMbZH
-	 1PGBjB2p+3//VpSVypBfoWa60oyQp/s47dR8gG1uZ5lMqgjhD1iETFssArU1GgYfrT3av
-	 qV+lcX9Su7iBp/jwpCLwnxTjsjwzvBeZQT+ncBDlmPXRzlYPdc1Fv+lTLdYWss7OWU+2R
-	 0TU/4a7kcNx+w9gmfphnH7soFP5g1hIMsnIbgW5tWKs9LrA6Urjb0gmYfZHl+D8mkHg==
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=ppyqVBFv/K6NEphnd837iinHXAyuUDMGYOowkO+mkO4=;
+	b=udbe1mVRyqZcp7KhDYe+7Xhk1noMK6HQVkb/No02DbhgRc/ZvwtUQp9u2d9I1BdcF59C
+	 I11UATFhg84AKFN6Suj5YsAGzfRBvp24fKfksKHH4zfQe9fxDpGazV6QT27FRllpnx1XY
+	 BLm+CoNZ8QN3rZtpfTztATcIY4oaMHu3RD1MBXCIkkvHwcTid5ZAfM/xhzMjYD8/HBMHM
+	 yBDqZogErWmWQYnLgNykESCr1L6gRARA0UlT6gjdY99NT++eiFnXPzgwog0rdX0pITUpS
+	 3eYQs/GqJC+ZMWwttOJ3dCICs8om+/cyan4QbDBkgF8Fru3cpR1I/B4cJ1cHrYtZ1Dg==
 ARC-Authentication-Results: i=1; smtp.kernel.org; 
 	arc=none smtp.remote-ip=100.80.115.77
 Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id EE7131F000C6;
-	Tue, 17 Nov 2026 17:41:08 +0000 (UTC)
+	by smtp.kernel.org (Postfix) with ESMTPS id 1066E1F000C8;
+	Tue, 17 Nov 2026 17:41:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
 	s=k20260515; t=1794937269;
-	bh=YXlDBZaIvHo1e8VAiEashHwtglIY0Ep4HLvUXrdMPlw=;
-	h=From:Subject:Date:To:Cc:Reply-To;
-	b=RYkSyXjE9IAgeydM0LPE1fBgolP7L1M15dIEyE+OUkh1gfjutGEyAZA9406V/gtEm
-	 gbELMh/Oz9Te5GdelpTeIH0FNDS7GQO3CWpbDyY7EoQWNtsCGtNNzIqhoheaYnCKi/
-	 zqYLLjgtJDd4ZIc/7jKAFNG9SeFRL34qcpMUFjv3xKHMhv/FwgsTymuLkyIzjMr02E
-	 U5/RvpPSxs8sRfuX4qNJvRh9Q8oT9m5AM2N0+PQxuI73puYGJaVkn1Osp7ahTR/y+g
-	 QdSG/bhd/rzN6hC+HhNzbVANhFK3rOTZ1lsTMC526mARaCq/kuBLe1YwI1JuxNGKmi
-	 kcx0h5Mm701UQ==
+	bh=ppyqVBFv/K6NEphnd837iinHXAyuUDMGYOowkO+mkO4=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=h5gkaqT8Q+QiuPOdpMYrtg2a9IvjJU+QlsBxvDtw+8ttXRttXgkhbOGaLeA4J5CGS
+	 YjUE582RakokHY1xbOcjPnqxzauokhPpxeP4KNVKwdWdM4eJVtSa0CfZt/0FUY/E4I
+	 ebq5Hj8RuJgshGGVMiQk0auXehCc2uW9B63OSUh0b6lphWyYIUiG1CkOreuMAb6z0K
+	 j2gAid2TfAAkhnZNcBIfZSvbN72LiO37hyg5afgENrpe8ZqBc/CASKpAY5JockMcxc
+	 RKwPU/ajIe4NBqG4EhpG3YbabSzKY3ptI7ICdHDDc9v3WnRWb20aYGqjvoNha16OyM
+	 V7wd3Tyv6JQBg==
 Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 4C6824AA16;
+	by lkml.kernel.org (Postfix) with ESMTP id 9030D4A9E0;
 	Tue, 17 Nov 2026 17:41:08 +0000 (UTC)
 From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
-Subject: [PATCH v3 0/2] backlight: add ktd3137 support
-Date: Tue, 17 Nov 2026 19:40:57 +0200
-Message-Id: <20261117-6768-ktd3137-v3-0-b4fd957e3b00@protonmail.com>
+Date: Tue, 17 Nov 2026 19:40:58 +0200
+Subject: [PATCH v3 1/2] dt-bindings: leds: backlight: add Kinetic KTD3137
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -84,12 +83,9 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/3XNTQ7CIBCG4asY1mL4aWlx5T2MC6BTi9rSABJN0
- 7tL68ZoXL7JN89MKIC3ENB+MyEPyQbrhhx8u0GmU8MZsG1yI0aYoJQwLCpR42tsOOUVLsDIkoi
- 61UKhfDJ6aO1j5Y6nd4e7voCJi7EsOhui88/1X6LL7g+dKCZYl7poJeGmFHAYvYtu6JW97Yzr0
- eIn9iFQ8iWwLMhCClNSaEEVP8I8zy+sGjsXAQEAAA==
-X-Change-ID: 20261102-6768-ktd3137-4ec95068fb6a
+Message-Id: <20261117-6768-ktd3137-v3-1-b4fd957e3b00@protonmail.com>
+References: <20261117-6768-ktd3137-v3-0-b4fd957e3b00@protonmail.com>
+In-Reply-To: <20261117-6768-ktd3137-v3-0-b4fd957e3b00@protonmail.com>
 To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
  Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -98,63 +94,120 @@ Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-fbdev@vger.kernel.org, Roman Vivchar <rva333@protonmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794937267; l=1886;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794937267; l=2713;
  i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
- bh=FSVxmo57BknMiKWx0HlL7rvM1SWImH1ToEyr5Lg5KGA=;
- b=6xP59/Y/AqYpXNqfijQP8uk+tItfqsnD/vfknkIo3xT6XvOWTesQ/9sLKcMSIUDVjHwFf5zuP
- CVa7id8j4z9C+ndMYh7N5W4ZntdP/oHZI02bEPzdMo6rJGO3juJZXtN
+ bh=pDM+rGPXIE2Yxr4m0AujuxyA6pI+AXeeqaEO+1/IX5I=;
+ b=lRk4ur1Kybvlb1eJxV5XXPq1Kirw6HYBmLH+xQfuFyhR32msgoWa0/A+8xK1OPkhVI1rE+b0r
+ ho4Z47d519VCYH/YsbySzDEt0r+ly1a3t95IeJDh1+5k0om+eExvoge
 X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
  pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
 X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
  auth_id=777
 X-Original-From: Roman Vivchar <rva333@protonmail.com>
 Reply-To: rva333@protonmail.com
+Content-Transfer-Encoding: 7bit
 
-This patch series adds support for Kinetic KTD3137 backlight IC. It
-supports linear brightness range from 0 to 2047.
+From: Roman Vivchar <rva333@protonmail.com>
 
-While the chip supports PWM and MSB modes, they weren't included, since
-MSB mode supports only 8-bit brightness range, and PWM is not enabled on
-this board. I have checked other Xiaomi vendor kernels, and their
-configuration appear to be the same as on my board. I'm not aware if any
-device uses PWM mode with this chip.
+Kinetic KTD3137 is an LED IC, used in various mobile devices for the
+display backlight. Add devicetree bindings documentation for this chip.
 
-This series was developed and tested on the Xiaomi Redmi Note 9 board.
+Datasheet: https://www.kinet-ic.com/uploads/KTD3137-04a.pdf
 
 Signed-off-by: Roman Vivchar <rva333@protonmail.com>
 ---
-Changes in v3:
-- dt-bindings: bring back vin-supply (Krzysztof)
-- Driver:
-    - Move enable_gpio from the struct to local variable
-    - Use .name for i2c match (Sashiko)
-- Link to v2: https://patch.msgid.link/20261110-6768-ktd3137-v2-0-9496c51efea4@protonmail.com
+ .../bindings/leds/backlight/kinetic,ktd3137.yaml   | 64 ++++++++++++++++++++++
+ MAINTAINERS                                        |  5 ++
+ 2 files changed, 69 insertions(+)
 
-Changes in v2:
-- dt-bindings: drop vin-supply from required list (Daniel)
-- Driver:
-    - Drop val variable in ktd3137_init() (Daniel)
-    - Replace KTD3137_DEFAULT_BRIGHTNESS with KTD3137_MAX_BRIGHTNESS (Daniel)
-    - Drop gpiod_set_value_cansleep() in ktd3137_remove() (Daniel)
-- Link to v1: https://patch.msgid.link/20261102-6768-ktd3137-v1-0-b5b4f903c56e@protonmail.com
+diff --git a/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd3137.yaml b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd3137.yaml
+new file mode 100644
+index 000000000000..987f73b2c2cf
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/kinetic,ktd3137.yaml
+@@ -0,0 +1,64 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/kinetic,ktd3137.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Kinetic Technologies KTD3137 LED Backlight
++
++maintainers:
++  - Roman Vivchar <rva333@protonmail.com>
++
++description:
++  The Kinetic Technologies KTD3137 is an I2C LED backlight driver for medium
++  to large size LCD panels.
++
++allOf:
++  - $ref: common.yaml#
++
++properties:
++  compatible:
++    const: kinetic,ktd3137
++
++  reg:
++    maxItems: 1
++
++  default-brightness:
++    maximum: 2047
++    default: 2047
++
++  enable-gpios:
++    maxItems: 1
++    description: GPIO connected to the HWEN pin.
++
++  led-max-microamp:
++    minimum: 5000
++    maximum: 29800
++    default: 20200
++
++  vin-supply: true
++
++required:
++  - compatible
++  - reg
++  - vin-supply
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        backlight@36 {
++            compatible = "kinetic,ktd3137";
++            reg = <0x36>;
++            enable-gpios = <&pio 160 GPIO_ACTIVE_HIGH>;
++            default-brightness = <2047>;
++            led-max-microamp = <20200>;
++            vin-supply = <&vsys>;
++        };
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 15c7dc516f7c..24dd5b43f167 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -14618,6 +14618,11 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/leds/backlight/kinetic,ktd2801.yaml
+ F:	drivers/video/backlight/ktd2801-backlight.c
+ 
++KTD3137 BACKLIGHT DRIVER
++M:	Roman Vivchar <rva333@protonmail.com>
++S:	Maintained
++F:	Documentation/devicetree/bindings/leds/backlight/kinetic,ktd3137.yaml
++
+ KTEST
+ M:	Steven Rostedt <rostedt@goodmis.org>
+ M:	John Hawley <warthog9@eaglescrag.net>
 
----
-Roman Vivchar (2):
-      dt-bindings: leds: backlight: add Kinetic KTD3137
-      backlight: add ktd3137 support
-
- .../bindings/leds/backlight/kinetic,ktd3137.yaml   |  64 +++++
- MAINTAINERS                                        |   6 +
- drivers/video/backlight/Kconfig                    |  11 +
- drivers/video/backlight/Makefile                   |   1 +
- drivers/video/backlight/ktd3137.c                  | 257 +++++++++++++++++++++
- 5 files changed, 339 insertions(+)
----
-base-commit: 5e6de6a2b522f659defacb1551d0465ba6ce13cf
-change-id: 20261102-6768-ktd3137-4ec95068fb6a
-
-Best regards,
---  
-rva3 <rva333@protonmail.com>
+-- 
+2.56.1
 
 

@@ -1,66 +1,104 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=54.206.34.216
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794885489;
-	b=n3RT/8PShNP+8drx/REZaId5iCz0dZriuQPkooEIDBsW8e9rTNF5YQljtZHw2SQYlcyl
-	 BYESuX1gyygiW+5AGvedyL5lzpTYuzSZr/AHoqbVTlqrLmsypwd3VTkLm+kFckV8lY2xu
-	 fgqKrJkqpEuyjKQjKg616lsPmmzK4Jgt4jZmU0S8zh5HINOt9wucmbucvM+J9CaFuDujB
-	 IfyYnv7yodbQET5e+hCR0p7TSKjk10nEw1aCh8tbR82Tscr27NsHik7JzXPsTkCRsj1N0
-	 WYqzVDejxlpi4gI5WoYJxqPQBvYkBL4yiwJeMmvdEfMPxqqGrP4BllJlt3G+Bt4a9QA==
+	t=1794926841;
+	b=lSUn6E1+jR3bkffv9ILLQBDMa5mnBGQTWI+CiDbtCUDrhHXUe8e20uednGzcYtO7x0P2
+	 3HUn3scr8TIoBJkCfK3rVtkLqX0PCapsC57/LoXkaN2nZOqqdFHCvMyN/6HehweIDuJaI
+	 HYqPX23+YGgQ14oJELIh+ZnaX/5gYA+I/DUVV7SyxZLxTpfy3yKn9M6je1ATMr7tAu0J+
+	 iXbpem27qsYqIiPxS/eScIFlEa0wfqlXn9M/nt1z1uukaMqGU9uuETaaeofm7C/G2Q87K
+	 wMRzRMpSELf/rfHDYvIMhTzX9Q8Q2TBfRTDwzH41aQO+Qs1C5GW/u/o/3s2Jd6DZFsg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794885489;
-	h=DMARC-Filter:DKIM-Signature:X-QQ-mid:X-QQ-Originating-IP:Received:
-	 X-QQ-SSF:X-QQ-GoodBg:X-BIZMAIL-ID:From:To:Cc:Subject:Date:Message-Id:
-	 X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-QQ-SENDSIZE:Feedback-ID:X-QQ-XMAILINFO:
-	 X-QQ-XMRINFO:X-QQ-RECHKSPAM;
-	bh=XEX/B5fm61cWurYTFjfzhFA0YSoedPa2iWt3d/nCGIw=;
-	b=GMZHzQV8ZXUBmQQCFZxWWdPJxFvyNUeddjPJL2ve71T+Z2+A7wWac466IBtaAEpWjKc4
-	 Q6/kysCG5Q5RgS5TQYhf70Gf49twRmTvl8qnfJpjvrxF/1rgKID6FT9F5PcIEhR2myKHn
-	 nBzO3QGzbR21lJhgIZsA+pPFSWjc2YS5F/cHuErP3YZvj3V5Fl9n8GlKrZSw7rGOe0ti/
-	 95A1Vf/c7mx3Iup8S9p5oyfvlklHTEJfqMtXEEC9/aA9AqlzetGrqaIcORHzw8ahMKqoA
-	 ytzl47ZQrPCks4AILF2+R1MXkS7q4hpzxdSjC1NOGtlZEZJ+pwnaGS2/COMYLnrMBog==
+	a=rsa-sha256; c=relaxed/relaxed; t=1794926841;
+	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
+	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Rspamd-Queue-Id:
+	 X-Spam-Level:X-Rspamd-Server:X-Rspamd-Action:X-Spam-Flag:
+	 X-Spamd-Result:X-Spam-Score;
+	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
+	b=4ZvGW1cBBTFClp9QMOdb+KQH1p/tJj0x0Et9P+5ES3APQaaojFNEwiVgydNQdyul3XDu
+	 djoJ0bQfYyGAu+A2J7KYG7/LSoNn0+fEaV7/T+NZpZLCeu4g4KvFLGovzyLFeGJF9u6n8
+	 XZMqbOZ9DjTkgfYi0LOL9GjjpQBM3dAN7M80JfzgrQ7Xhj+3s+8ecADbkE8M3CXRj9qi2
+	 L8s4Xd8J80eGDMbZjLNMCEw6fS5DLZ+9SICeeZf/LjIkNCSmEGQMKStIdjaLCVqQx55K/
+	 G0FZnX6I8bTbVBzkGkHklcqb5RsHY9AH75gLfdr67cDyeQZ22ca0Xoo7OT6hl0vnMrg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=uniontech.com;
-	spf=pass smtp.mailfrom=uniontech.com;
-	dkim=pass header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b="S/6DBJIQ";
-	arc=none smtp.remote-ip=54.206.34.216
-Received: from smtpbgau2.qq.com (smtpbgau2.qq.com [54.206.34.216])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=pass header.from=suse.de;
+	spf=pass smtp.mailfrom=suse.de;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qtfKcdd+;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rrC8jDH1;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qtfKcdd+;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rrC8jDH1;
+	arc=none smtp.remote-ip=195.135.223.131
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CA09606A31C;
-	Tue, 17 Nov 2026 03:18:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3CA09606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=uniontech.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=uniontech.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F16EB606A31C
+	for <linux-fbdev@vger.kernel.org>; Tue, 17 Nov 2026 14:47:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F16EB606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=uniontech.com header.i=@uniontech.com header.a=rsa-sha256 header.s=onoh2408 header.b=S/6DBJIQ
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=uniontech.com;
-	s=onoh2408; t=1794885457;
-	bh=XEX/B5fm61cWurYTFjfzhFA0YSoedPa2iWt3d/nCGIw=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=S/6DBJIQH+3DNa+hl5t3xxhlx0Jdf4a18F9ouPJpD6AsGVWppLRx3SCLQfl9KWXu0
-	 3aQ38NcT+hgXHrF02hCdUva1j/4xkcRZ0hdqnF4cE2LeY9KVDAezkVxWkjERLBwtKu
-	 IU0UG/h0mawXl97RctjQ4yLqKa7JJTRduLoO625I=
-X-QQ-mid: esmtpsz10t1794885451t44789937
-X-QQ-Originating-IP: yzdTpx+SJXNUOYYrApmlvTnIUsqXyeyb1ObAEMRP0rY=
-Received: from localhost.localdomain ( [1.202.39.170])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Tue, 17 Nov 2026 11:17:23 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 18232043476698029590
-From: Xue Haolin <xuehaolin@uniontech.com>
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	stable@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] fbdev: sstfb: Error out if pixclock equals zero
-Date: Tue, 17 Nov 2026 11:17:14 +0800
-Message-Id: <20261117031714.259053-1-xuehaolin@uniontech.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20261117022031.252357-1-xuehaolin@uniontech.com>
-References: <20261117022031.252357-1-xuehaolin@uniontech.com>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qtfKcdd+;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rrC8jDH1;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qtfKcdd+;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rrC8jDH1
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 192801F747;
+	Tue, 17 Nov 2026 14:47:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1794926839; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
+	b=qtfKcdd+ls2VTjclu7nZzLH3lxEIL4RwWmrNMUJDGK057WpiO+J2ozSbK8BKtIbJS6DsQw
+	W/67itJgc5nArAGU47HD1gIqw0PDjsESE59yV0j2TTHWaP8Z3zmBSudVIDTyGkcdMPTyWG
+	IQlGCxoI+f6VmofmGbCluWV1HhDu3O0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1794926839;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
+	b=rrC8jDH1cGsozy0GGgcaR4ImIPrsiWoYM/SftoOvtvznfWEcisu4q54/fAVVAozWxl2fQz
+	1fGLgBnuXcdtQlBQ==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=qtfKcdd+;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=rrC8jDH1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1794926839; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
+	b=qtfKcdd+ls2VTjclu7nZzLH3lxEIL4RwWmrNMUJDGK057WpiO+J2ozSbK8BKtIbJS6DsQw
+	W/67itJgc5nArAGU47HD1gIqw0PDjsESE59yV0j2TTHWaP8Z3zmBSudVIDTyGkcdMPTyWG
+	IQlGCxoI+f6VmofmGbCluWV1HhDu3O0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1794926839;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
+	b=rrC8jDH1cGsozy0GGgcaR4ImIPrsiWoYM/SftoOvtvznfWEcisu4q54/fAVVAozWxl2fQz
+	1fGLgBnuXcdtQlBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C55AC1334C;
+	Tue, 17 Nov 2026 14:47:18 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 4zPzHfZo/Gq4TwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Tue, 17 Nov 2026 14:47:18 +0000
+Message-ID: <007f5717-148a-4c90-8352-1fe464bf77b6@suse.de>
+Date: Tue, 17 Nov 2026 15:47:18 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -70,68 +108,125 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/6] fbcon: Clean up glyph handling on redraws
+To: deller@gmx.de, simona@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ sashiko-reviews@lists.linux.dev
+References: <20261027133646.297856-1-tzimmermann@suse.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20261027133646.297856-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpsz:uniontech.com:qybglogicsvrgz:qybglogicsvrgz6b-0
-X-QQ-XMAILINFO: M6x2tnEVru4e7GBRUJQEC7FKeapgacBqX6rElXPVDGi2MWqDBI+0Sbdt
-	1abI+CFtrobSXlj6X529C80d26SKma1p7SUs/ePSfVxkRJRMuyz7uHQa5gu1mQs+vWcq2MC
-	aPDPF0Qm7smp5jfO1/33K5HleQ4dElzcyOHlEamMQdKNig8Xc01zAZbzb+LdaIaJXfhUfKU
-	084BxXj9k6X40tCxxBDjOhSFEgWsiweqCP2qevBMSB0/+jaRLTzWpIzrUgotEgSNltxoqIT
-	YC085xYb63Qnrs9BzVT4cQ1Ew7RscFI9bZ6hzzSRE6AvbM5M0W9M/dBHkBcpcm8NnPwxjpN
-	8r2BNdQSwau0o2jjulsvYbPoI5M59MztiloVl+yDdMNy5vYnzq7f7pwfoaG4sXAQgKCRzvx
-	JbRxz+6c2dindBKG8RgfeBbbW6aCDw5iBOM3RfPzZYM23m2pNlzAqN2umNmUlhMadc2FP14
-	f6Q6qCNEH5cCLDbOmsapk+RNwwtLdpdHY36qOyfsqcpPCH/JhirlN4mSEJmbIayZF2a3Y88
-	9Pjw+P1jXa3VezUK1bgStmaFIUxN26WvhjVFM1JvEfgiYqPF2mADA3tBpoR69OzEjuRNCp/
-	vkbN9etDVuuR2ny57eYEvoKDbmaFz9BtgQYVof54mBn2+5289x0H2yJXMIAj4/tF7x7izmo
-	K0MPP4gjgmp0ldGsSxAzlinQ0sJujGkbarjpRkAMBro1Zv9FumQhp6fO7I9PO2NBJwUc4Kv
-	0zM9TdAndC4CQW76AFEiCqXvVlxP8bV4RivoR6rwM+TXPTRn4RS920eh/OItPqIMgODrDpC
-	YUovNyYp1LKPmsb5S67VRhrbsExFr9QguTYZVAQSXt55aQ6L7tE/FN8MFAdOASRh7vr/bEI
-	ZYqtSilG8EMqSgQG/9aSV7ppMHnEJGOgGIL7OYCdG/tWiD8l2a2yZQj0I40DHTPl4FGQJyx
-	IICfUBuk1b5BI1HJkED6hAKNKPovTPs/nIUdCa/bzmy7yJ/qcjn1g7sLuP3jisdGkxMrosC
-	EDgZt4UZPPZ+OPyof7Pf0bRQfrrwdqzbuka4C21aSd944rSSHQCBW7Eqhub72VZnBC7LPKc
-	w==
-X-QQ-XMRINFO: NS+P29fieYNwqS3WCnRCOn9D1NpZuCnCRA==
-X-QQ-RECHKSPAM: 0
+X-Rspamd-Queue-Id: 192801F747
+X-Spam-Level: 
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Flag: NO
+X-Spamd-Result: default: False [-13.50 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	XM_UA_NO_VERSION(0.01)[];
+	MX_GOOD(-0.01)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	URIBL_BLOCKED(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,suse.com:url];
+	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCPT_COUNT_FIVE(0.00)[5];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	TO_DN_NONE(0.00)[];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:dkim]
+X-Spam-Score: -13.50
 
-The userspace program could pass any values to the driver through
-ioctl() interface. If the driver doesn't check the value of pixclock,
-it may cause divide-by-zero error.
+friendly ping for a review of this series
 
-sstfb_check_var() calls PICOS2KHZ(var->pixclock) which expands to
-1000000000UL / var->pixclock. If var->pixclock is zero, this causes
-a divide-by-zero exception.
+Am 27.10.26 um 14:27 schrieb Thomas Zimmermann:
+> Fbcon's drawing functions open-code much of the glyph handling. Use
+> font helpers instead. Makes fbcon more consistent and easier to
+> understand.
+>
+> Patch 1 updates fbcon to use unsigned char for glyph buffers. This
+> is consistent with the font code and font_data_t.
+>
+> Patches 2 and 3 update font rotation to return rotated glyphs as
+> font_data_t. A rotated font can now use the same interfaces as the
+> unrotated source font. Fbcon uses this to ref count the font buffer.
+>
+> Patches 4 to 6 update various parts of fbcon to use font helpers
+> instead of open-coding access to font_data_t. Having the rotated
+> font as font_data_t makes this convenient.
+>
+> Tested with fbcon on DRM's bochs driver (qemu).
+>
+> Thomas Zimmermann (6):
+>    fbcon: Use unsigned char for glyph data
+>    lib/fonts: Provide internal helpers for allocating font_data_t
+>    lib/fonts, fbcon: Use font_data_t for rotated fonts
+>    fbcon: Refactor size calculation for cursor buffers
+>    fbcon: Look up glyphs using the font interface
+>    fbcon: Handle characters with no glyph defined in a consistent way
+>
+>   drivers/video/fbdev/core/bitblit.c      | 82 +++++++++++++++----------
+>   drivers/video/fbdev/core/fbcon.c        |  3 +-
+>   drivers/video/fbdev/core/fbcon.h        |  5 +-
+>   drivers/video/fbdev/core/fbcon_ccw.c    | 56 +++++++++++------
+>   drivers/video/fbdev/core/fbcon_cw.c     | 57 ++++++++++-------
+>   drivers/video/fbdev/core/fbcon_rotate.c | 19 +++---
+>   drivers/video/fbdev/core/fbcon_ud.c     | 77 +++++++++++++++--------
+>   include/linux/font.h                    |  5 +-
+>   lib/fonts/font.h                        | 12 ++++
+>   lib/fonts/font_rotate.c                 | 32 ++++------
+>   lib/fonts/fonts.c                       | 63 ++++++++++++-------
+>   11 files changed, 254 insertions(+), 157 deletions(-)
+>
 
-Fix this by checking whether pixclock is zero at the beginning of
-sstfb_check_var(), before it is used as a divisor.
-
-This is similar to CVE-2022-3061 in i740fb which was fixed by
-commit 15cf0b82271b ("video: fbdev: i740fb: Error out if
-'pixclock' equals zero"), and the fix in savagefb by
-commit 04e5eac8f3ab ("fbdev: savage: Error out if pixclock equals zero").
-
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Cc: stable@vger.kernel.org
-Signed-off-by: Xue Haolin <xuehaolin@uniontech.com>
----
-Changes in v2:
-- Fix sign-off to use real name "Xue Haolin" to satisfy DCO.
-
- drivers/video/fbdev/sstfb.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-index 8e2c2421028d..de0769eb4a2f 100644
---- a/drivers/video/fbdev/sstfb.c
-+++ b/drivers/video/fbdev/sstfb.c
-@@ -359,6 +359,9 @@ static int sstfb_check_var(struct fb_var_screeninfo *var,
- 	int tiles_in_X, real_length;
- 	unsigned int freq;
- 
-+	if (!var->pixclock)
-+		return -EINVAL;
-+
- 	if (sst_calc_pll(PICOS2KHZ(var->pixclock), &freq, &par->pll)) {
- 		printk(KERN_ERR "sstfb: Pixclock at %ld KHZ out of range\n",
- 				PICOS2KHZ(var->pixclock));
 -- 
-2.43.0
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
+
+

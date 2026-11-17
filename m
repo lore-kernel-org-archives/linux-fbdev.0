@@ -1,104 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794926841;
-	b=lSUn6E1+jR3bkffv9ILLQBDMa5mnBGQTWI+CiDbtCUDrhHXUe8e20uednGzcYtO7x0P2
-	 3HUn3scr8TIoBJkCfK3rVtkLqX0PCapsC57/LoXkaN2nZOqqdFHCvMyN/6HehweIDuJaI
-	 HYqPX23+YGgQ14oJELIh+ZnaX/5gYA+I/DUVV7SyxZLxTpfy3yKn9M6je1ATMr7tAu0J+
-	 iXbpem27qsYqIiPxS/eScIFlEa0wfqlXn9M/nt1z1uukaMqGU9uuETaaeofm7C/G2Q87K
-	 wMRzRMpSELf/rfHDYvIMhTzX9Q8Q2TBfRTDwzH41aQO+Qs1C5GW/u/o/3s2Jd6DZFsg==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794926841;
-	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
-	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
-	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Rspamd-Queue-Id:
-	 X-Spam-Level:X-Rspamd-Server:X-Rspamd-Action:X-Spam-Flag:
-	 X-Spamd-Result:X-Spam-Score;
-	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
-	b=4ZvGW1cBBTFClp9QMOdb+KQH1p/tJj0x0Et9P+5ES3APQaaojFNEwiVgydNQdyul3XDu
-	 djoJ0bQfYyGAu+A2J7KYG7/LSoNn0+fEaV7/T+NZpZLCeu4g4KvFLGovzyLFeGJF9u6n8
-	 XZMqbOZ9DjTkgfYi0LOL9GjjpQBM3dAN7M80JfzgrQ7Xhj+3s+8ecADbkE8M3CXRj9qi2
-	 L8s4Xd8J80eGDMbZjLNMCEw6fS5DLZ+9SICeeZf/LjIkNCSmEGQMKStIdjaLCVqQx55K/
-	 G0FZnX6I8bTbVBzkGkHklcqb5RsHY9AH75gLfdr67cDyeQZ22ca0Xoo7OT6hl0vnMrg==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=suse.de;
-	spf=pass smtp.mailfrom=suse.de;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qtfKcdd+;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rrC8jDH1;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qtfKcdd+;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rrC8jDH1;
-	arc=none smtp.remote-ip=195.135.223.131
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1794937269;
+	b=wWdwA+ldmlI03FsnKfhNpU4d6h75HijqUz4OF1cTxvaU6SSM0iL8VhlOwQY0BxVGsoCQ
+	 mCs8u735mfRtIWHW+Jl78wknkCK1Mc99LGLg9u8UPl44/clV8a0mzKFIOFEmL/XqN0vYU
+	 CVj4ZXW00XPyXixq1hY7/7aEl1ZinIHy47FM4oWnVFVIEJLQ5PraBvqvTbbCNwUtvyw39
+	 82+OMeaWt2C3mRUbTlz56p3B5nFu3YeA+L7KRHnbTAFiJ3yDGfxNr1Mtrd0xyKQv/JqCN
+	 bRb+518Svkbq7uQXD/ceg34uTPnfRRt47rxaGEjHOKCvSq7KMiEq+0fBrnEHKZKtoCQ==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1794937269;
+	h=Received:DKIM-Signature:Received:From:Subject:Date:Message-Id:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=YXlDBZaIvHo1e8VAiEashHwtglIY0Ep4HLvUXrdMPlw=;
+	b=0mdiy90FQh0Sl9z/uQRCZLBIWnRSlhNlFy7AIJZ6BfxBsMQeEnrC3Cb70XK+ZMMjH/aC
+	 B74DVJgmezMwjfWt/ByXEsKYWXEdOrkaDLuTgz1e9rvJy5MJaUnBgEIc9KtBY7WkIVgg1
+	 OYCf6Hx/xd/yfduFV30OXGBGvS/7r3MOmdiukFXMgGc2I4h07PqHxHqbZ0ec8fn47DmWQ
+	 2ZkRYdDvu3JLabFkDSDRlMtw0ylNxAEZhpMnGBemnNJ5CAO6DUDXcG/OWMvcoS795uroC
+	 31A1vjPgbiJ4/KnFPAL+MO5tjkc1RiGkZcRh7F3c7CsuSTHVMEsIn/pIBmVwKimY7fA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RYkSyXjE;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1944606A32F;
+	Tue, 17 Nov 2026 17:41:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RYkSyXjE
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1794937269;
+	b=I0BVdHDi2BfYv90RhlOr9Lr0bOayMAlSSAQ8LiPWg88locaZPtZ9G4xu0tGuvNFlEdiB
+	 BFuxfOzHEJGWw1bHBB+LAMkn/4NVxhqtW184YA+od36nlNfv9pPO8iGXiHWIfuxZBUrKP
+	 jVvTJ72JBMRYp+o+6c49SQqa7SMmyfxk/Qx8YSL/WkOBfhKCTGFRD6hNXPySiCHl5uV4T
+	 BPtC2/wm2CvmnQqNJ4lwIA+Tf9YSAryb3NN2d11vKClbxhALxkzrGoiNvbsczs6TkbrWt
+	 Nx1JvYJwRokemJkc+JOZjpMOW0DskjXJeB76QuKyGayNFSOWe1sMFaFFiDnE26DDvNw==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1794937269;
+	h=DKIM-Signature:Received:From:Subject:Date:Message-Id:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:
+	 Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=YXlDBZaIvHo1e8VAiEashHwtglIY0Ep4HLvUXrdMPlw=;
+	b=r9XvizCuHIf6GQXjeb5Qt67MAs0cSRPs1EJzQ/U/BhvqbD4oeIiGogCJ2UYJR7tWHT0i
+	 RYLJUr/qK9oaCFWBoBS6f5Cqo+Igr9kCks2i09tGh+M12CcObPdZQPLkOLthFeyxLMbZH
+	 1PGBjB2p+3//VpSVypBfoWa60oyQp/s47dR8gG1uZ5lMqgjhD1iETFssArU1GgYfrT3av
+	 qV+lcX9Su7iBp/jwpCLwnxTjsjwzvBeZQT+ncBDlmPXRzlYPdc1Fv+lTLdYWss7OWU+2R
+	 0TU/4a7kcNx+w9gmfphnH7soFP5g1hIMsnIbgW5tWKs9LrA6Urjb0gmYfZHl+D8mkHg==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F16EB606A31C
-	for <linux-fbdev@vger.kernel.org>; Tue, 17 Nov 2026 14:47:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org F16EB606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qtfKcdd+;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rrC8jDH1;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qtfKcdd+;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rrC8jDH1
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 192801F747;
-	Tue, 17 Nov 2026 14:47:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794926839; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
-	b=qtfKcdd+ls2VTjclu7nZzLH3lxEIL4RwWmrNMUJDGK057WpiO+J2ozSbK8BKtIbJS6DsQw
-	W/67itJgc5nArAGU47HD1gIqw0PDjsESE59yV0j2TTHWaP8Z3zmBSudVIDTyGkcdMPTyWG
-	IQlGCxoI+f6VmofmGbCluWV1HhDu3O0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794926839;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
-	b=rrC8jDH1cGsozy0GGgcaR4ImIPrsiWoYM/SftoOvtvznfWEcisu4q54/fAVVAozWxl2fQz
-	1fGLgBnuXcdtQlBQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=qtfKcdd+;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=rrC8jDH1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794926839; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
-	b=qtfKcdd+ls2VTjclu7nZzLH3lxEIL4RwWmrNMUJDGK057WpiO+J2ozSbK8BKtIbJS6DsQw
-	W/67itJgc5nArAGU47HD1gIqw0PDjsESE59yV0j2TTHWaP8Z3zmBSudVIDTyGkcdMPTyWG
-	IQlGCxoI+f6VmofmGbCluWV1HhDu3O0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794926839;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=7foWI0Aj9ppqfJdv5P7q2owDF56g/fZXgTipv1s+ze0=;
-	b=rrC8jDH1cGsozy0GGgcaR4ImIPrsiWoYM/SftoOvtvznfWEcisu4q54/fAVVAozWxl2fQz
-	1fGLgBnuXcdtQlBQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C55AC1334C;
-	Tue, 17 Nov 2026 14:47:18 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 4zPzHfZo/Gq4TwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Tue, 17 Nov 2026 14:47:18 +0000
-Message-ID: <007f5717-148a-4c90-8352-1fe464bf77b6@suse.de>
-Date: Tue, 17 Nov 2026 15:47:18 +0100
+	by smtp.kernel.org (Postfix) with ESMTPS id EE7131F000C6;
+	Tue, 17 Nov 2026 17:41:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794937269;
+	bh=YXlDBZaIvHo1e8VAiEashHwtglIY0Ep4HLvUXrdMPlw=;
+	h=From:Subject:Date:To:Cc:Reply-To;
+	b=RYkSyXjE9IAgeydM0LPE1fBgolP7L1M15dIEyE+OUkh1gfjutGEyAZA9406V/gtEm
+	 gbELMh/Oz9Te5GdelpTeIH0FNDS7GQO3CWpbDyY7EoQWNtsCGtNNzIqhoheaYnCKi/
+	 zqYLLjgtJDd4ZIc/7jKAFNG9SeFRL34qcpMUFjv3xKHMhv/FwgsTymuLkyIzjMr02E
+	 U5/RvpPSxs8sRfuX4qNJvRh9Q8oT9m5AM2N0+PQxuI73puYGJaVkn1Osp7ahTR/y+g
+	 QdSG/bhd/rzN6hC+HhNzbVANhFK3rOTZ1lsTMC526mARaCq/kuBLe1YwI1JuxNGKmi
+	 kcx0h5Mm701UQ==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 4C6824AA16;
+	Tue, 17 Nov 2026 17:41:08 +0000 (UTC)
+From: Roman Vivchar via B4 Relay <devnull+rva333.protonmail.com@kernel.org>
+Subject: [PATCH v3 0/2] backlight: add ktd3137 support
+Date: Tue, 17 Nov 2026 19:40:57 +0200
+Message-Id: <20261117-6768-ktd3137-v3-0-b4fd957e3b00@protonmail.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -108,125 +83,78 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/6] fbcon: Clean up glyph handling on redraws
-To: deller@gmx.de, simona@ffwll.ch
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- sashiko-reviews@lists.linux.dev
-References: <20261027133646.297856-1-tzimmermann@suse.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20261027133646.297856-1-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: 192801F747
-X-Spam-Level: 
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Flag: NO
-X-Spamd-Result: default: False [-13.50 / 50.00];
-	SUSE_INTERNAL_BYPASS(-9.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	XM_UA_NO_VERSION(0.01)[];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	URIBL_BLOCKED(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,suse.com:url];
-	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCPT_COUNT_FIVE(0.00)[5];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_NONE(0.00)[];
-	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:dkim]
-X-Spam-Score: -13.50
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/3XNTQ7CIBCG4asY1mL4aWlx5T2MC6BTi9rSABJN0
+ 7tL68ZoXL7JN89MKIC3ENB+MyEPyQbrhhx8u0GmU8MZsG1yI0aYoJQwLCpR42tsOOUVLsDIkoi
+ 61UKhfDJ6aO1j5Y6nd4e7voCJi7EsOhui88/1X6LL7g+dKCZYl7poJeGmFHAYvYtu6JW97Yzr0
+ eIn9iFQ8iWwLMhCClNSaEEVP8I8zy+sGjsXAQEAAA==
+X-Change-ID: 20261102-6768-ktd3137-4ec95068fb6a
+To: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+ Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Helge Deller <deller@gmx.de>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-fbdev@vger.kernel.org, Roman Vivchar <rva333@protonmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794937267; l=1886;
+ i=rva333@protonmail.com; s=20260510; h=from:subject:message-id;
+ bh=FSVxmo57BknMiKWx0HlL7rvM1SWImH1ToEyr5Lg5KGA=;
+ b=6xP59/Y/AqYpXNqfijQP8uk+tItfqsnD/vfknkIo3xT6XvOWTesQ/9sLKcMSIUDVjHwFf5zuP
+ CVa7id8j4z9C+ndMYh7N5W4ZntdP/oHZI02bEPzdMo6rJGO3juJZXtN
+X-Developer-Key: i=rva333@protonmail.com; a=ed25519;
+ pk=zww/nWjBGoQ4POXCG0BV6fx2iuXK6jx77rsKPA5YK5Y=
+X-Endpoint-Received: by B4 Relay for rva333@protonmail.com/20260510 with
+ auth_id=777
+X-Original-From: Roman Vivchar <rva333@protonmail.com>
+Reply-To: rva333@protonmail.com
 
-friendly ping for a review of this series
+This patch series adds support for Kinetic KTD3137 backlight IC. It
+supports linear brightness range from 0 to 2047.
 
-Am 27.10.26 um 14:27 schrieb Thomas Zimmermann:
-> Fbcon's drawing functions open-code much of the glyph handling. Use
-> font helpers instead. Makes fbcon more consistent and easier to
-> understand.
->
-> Patch 1 updates fbcon to use unsigned char for glyph buffers. This
-> is consistent with the font code and font_data_t.
->
-> Patches 2 and 3 update font rotation to return rotated glyphs as
-> font_data_t. A rotated font can now use the same interfaces as the
-> unrotated source font. Fbcon uses this to ref count the font buffer.
->
-> Patches 4 to 6 update various parts of fbcon to use font helpers
-> instead of open-coding access to font_data_t. Having the rotated
-> font as font_data_t makes this convenient.
->
-> Tested with fbcon on DRM's bochs driver (qemu).
->
-> Thomas Zimmermann (6):
->    fbcon: Use unsigned char for glyph data
->    lib/fonts: Provide internal helpers for allocating font_data_t
->    lib/fonts, fbcon: Use font_data_t for rotated fonts
->    fbcon: Refactor size calculation for cursor buffers
->    fbcon: Look up glyphs using the font interface
->    fbcon: Handle characters with no glyph defined in a consistent way
->
->   drivers/video/fbdev/core/bitblit.c      | 82 +++++++++++++++----------
->   drivers/video/fbdev/core/fbcon.c        |  3 +-
->   drivers/video/fbdev/core/fbcon.h        |  5 +-
->   drivers/video/fbdev/core/fbcon_ccw.c    | 56 +++++++++++------
->   drivers/video/fbdev/core/fbcon_cw.c     | 57 ++++++++++-------
->   drivers/video/fbdev/core/fbcon_rotate.c | 19 +++---
->   drivers/video/fbdev/core/fbcon_ud.c     | 77 +++++++++++++++--------
->   include/linux/font.h                    |  5 +-
->   lib/fonts/font.h                        | 12 ++++
->   lib/fonts/font_rotate.c                 | 32 ++++------
->   lib/fonts/fonts.c                       | 63 ++++++++++++-------
->   11 files changed, 254 insertions(+), 157 deletions(-)
->
+While the chip supports PWM and MSB modes, they weren't included, since
+MSB mode supports only 8-bit brightness range, and PWM is not enabled on
+this board. I have checked other Xiaomi vendor kernels, and their
+configuration appear to be the same as on my board. I'm not aware if any
+device uses PWM mode with this chip.
 
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
+This series was developed and tested on the Xiaomi Redmi Note 9 board.
+
+Signed-off-by: Roman Vivchar <rva333@protonmail.com>
+---
+Changes in v3:
+- dt-bindings: bring back vin-supply (Krzysztof)
+- Driver:
+    - Move enable_gpio from the struct to local variable
+    - Use .name for i2c match (Sashiko)
+- Link to v2: https://patch.msgid.link/20261110-6768-ktd3137-v2-0-9496c51efea4@protonmail.com
+
+Changes in v2:
+- dt-bindings: drop vin-supply from required list (Daniel)
+- Driver:
+    - Drop val variable in ktd3137_init() (Daniel)
+    - Replace KTD3137_DEFAULT_BRIGHTNESS with KTD3137_MAX_BRIGHTNESS (Daniel)
+    - Drop gpiod_set_value_cansleep() in ktd3137_remove() (Daniel)
+- Link to v1: https://patch.msgid.link/20261102-6768-ktd3137-v1-0-b5b4f903c56e@protonmail.com
+
+---
+Roman Vivchar (2):
+      dt-bindings: leds: backlight: add Kinetic KTD3137
+      backlight: add ktd3137 support
+
+ .../bindings/leds/backlight/kinetic,ktd3137.yaml   |  64 +++++
+ MAINTAINERS                                        |   6 +
+ drivers/video/backlight/Kconfig                    |  11 +
+ drivers/video/backlight/Makefile                   |   1 +
+ drivers/video/backlight/ktd3137.c                  | 257 +++++++++++++++++++++
+ 5 files changed, 339 insertions(+)
+---
+base-commit: 5e6de6a2b522f659defacb1551d0465ba6ce13cf
+change-id: 20261102-6768-ktd3137-4ec95068fb6a
+
+Best regards,
+--  
+rva3 <rva333@protonmail.com>
 
 

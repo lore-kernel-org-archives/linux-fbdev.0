@@ -1,118 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=103.168.172.154
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1794967181;
-	b=BHs/RZndW5wCqyyFayJjSatGmAe9H+FQQz/+nS7xKVCxvEbEkyUKkbuo8rRrcuMS4lUA
-	 UOnWwhtGTbA3gRVKvW8tIoGfTTTvVzy5srOP5rLQXbJgrhtBvTMZI2h82lEQ0HTmVDFUz
-	 +Bhh20XBSTGYRCorhGfNdwGmY46LxSCgSdTLpobLCwBh6Tu4qk7RFblTYvVOA0QkD7vud
-	 kmrbwDGpyUs7Qrmz1nHCmndVXRAFM0vOTmNImrr/ojqaP5v0uzS7vPOMAFIdWaGku05tw
-	 AU9Fap4wxUYpiXzB0MnsUerJGIncnHQP3xNd5k4LOhRgjK8sHvr/13KTpnQu1gVfsMQ==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1794967181;
-	h=DMARC-Filter:Received:Received:DKIM-Signature:DKIM-Signature:
-	 X-DKIM2-Info:DKIM2-Signature:X-DKIM2-Info:Message-Instance:
-	 X-ME-Sender:X-ME-Received:X-ME-Proxy-Cause:X-ME-Proxy:Feedback-ID:
-	 Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=ZSV2UPAtaoVAnpwZ/BtCXbiGF7M5OXK+ikdh8M9ib90=;
-	b=zpwEPWb3iCga1UDCuVXy8bHdhSJmwMvBSQ0y4qdVI1PQsIRJR+XHBWVAfaSpAldMNc3R
-	 oUYCmu4Xn4fMBr7UQ5wZi+CxHmivH/o+izrDj6cZqWGOsCceBmqOWFbN3J3/pjvAi25RG
-	 WuIPc3DHV8cvWLy84lntxHp87tZfrHoMGv/srv7ROsv5J2EPIwd2FpwdMgJOZc2Z49HDr
-	 JAki2K76pkcx5jfILT18Rfn3Mo8JpHhTC03iOw2AlnjHQvopCX0sckJPSDXDaA2L/VsF1
-	 +Gk8d7XhrAsoX2HQWWYMhqJFo1ow7FeY+aha2XJqd6cFaUercZdhNHaXPfJk9VD9xbA==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=timdoug.com;
-	spf=pass smtp.mailfrom=timdoug.com;
-	dkim=pass header.d=timdoug.com header.i=@timdoug.com header.a=rsa-sha256 header.s=fm3 header.b=bfgILWXr;
-	dkim=pass header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=UCQvYI5m;
-	arc=none smtp.remote-ip=103.168.172.154
-Received: from fhigh-a3-smtp.messagingengine.com (fhigh-a3-smtp.messagingengine.com [103.168.172.154])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795010853;
+	b=VyL0Xg26/40/KXDY7mYMHRWES96wS7ceHed7tL+hfYOvQGQovAaXAu5F+7MrmoU4BuHn
+	 1WqOpAv4O+OMDETRS/fW7px5ZxEt638dTLUvKE7+uHs/pSsQ8NWgI6pdHTatDHvw006JH
+	 ZdUuODix6anobvsVtwTKIHeurO4xI7HEEldluonHReGZOW1gALHUvEszjLc+PATsE/e4N
+	 nsuYiQADnAbnLxpnHHnhKi3dQtHNvRB9VHQZNC/ZPxAYPvmvR82eGzn7xPvChl9umynz4
+	 BXwndOFJ43YntTvxWYqb/uBFZOJUuM/Pdp98DPPJdjHwiHrEtlrvkutMK6zJar14baA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795010853;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:X-B4-Tracking:
+	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=BALlw79+ejk6OgRMXVcg+vLCGJGFEnxxun1tGkBqdDI=;
+	b=VSw3Ii/yHwzowYGb86zdI41YFtHnr6vRkHmUalxJ9GYwJX66GHjApIU+ItqfPMlCJMxx
+	 zwzVOkFKd7myrw2b6f12cwo+Jiycq+10lxiaUGbJGqMthyrGDWLrFapRcve20Z8xKnB3b
+	 L6Fw2zRlbcTxiTkyXBxv4mrPjnEZVbigcg5mZ2Rvk1mWNxO9bMEbvyL7wq1RA1hzqTH3E
+	 EjwoRapgAl9cC2vuL4GF8j3oJ3wB/0qpy41jHBGwJQDmg5en/oy339w6FVLl/WxcRNwx9
+	 NZypqMT0ezaEgxL7WH+3trm3DATswJmMqI/KHkRgoDOHyanGJREknvi/9cTRj1XjLYg==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="RCtlncK/";
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7261E606A31C;
+	Wed, 18 Nov 2026 14:07:33 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RCtlncK/
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1795010852;
+	b=r8Kk1HK7IFiMhTDnh5rGB8+hObuTvpx1A54v0saIH38ixCuh5nMYmd3z3ytb1ttkfL1L
+	 yFKNBNQk61Ch0oy/jY0q912qg10EPc3mYNDbEZx2D7qN2K6Dc6Rx96ZpdxWTTROj4hgIL
+	 J5jbsN0AB7MyGzaBRN2VJxzQSCjgzbdmyiymbakjHFePC1omXcsYm1dhutL9wQjh61VF1
+	 CuB0Qs3kLOG4zW6Ta+xxWeCt6vp2Az+JvMOezXC5rliGDf1VcTmnpAuAYBiAG6erG9/Ei
+	 6fRSO1+VpKi3gfAY5bfOOiunWwKPzYoUjlDN4TMgkr4jpWp7NDB+8ecL27z1t8rgCIw==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1795010852;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:
+	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=BALlw79+ejk6OgRMXVcg+vLCGJGFEnxxun1tGkBqdDI=;
+	b=CZU3nNyYgB+WrLON0uoxMSGWqKi8JvrP+P+tRfzIHzpR8L0EXQ1nT/D5EV9lB6VxA8Oi
+	 yhEigvObxbUk5H9AAS2naToHvwC43gNgHbc9r+ogO1nY0Gg8wt2OD9sVjAoVcC3W4kHSO
+	 rdibFcJrbS9xDBjJH2qlOcBiPLzedefyT7KX6ru5if3ZTni8cinwnzEYYh3WgYbkTqU6k
+	 DTXuBkTqaLRVgY2Hhyam6IrZxqaPqqv00H6JA8ObdndjWfB5aiwRfotzhQw/WroQEXgA5
+	 9I9xubevDTCg7fmhq5xqAzp5khGj/6IgR5touJhgNFYtyVICUs4Aj63yPJ0dJxMIITA==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6BED606A33D
-	for <linux-fbdev@vger.kernel.org>; Wed, 18 Nov 2026 01:59:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D6BED606A33D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=timdoug.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=timdoug.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=timdoug.com header.i=@timdoug.com header.a=rsa-sha256 header.s=fm3 header.b=bfgILWXr;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=UCQvYI5m
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id D6C43140017D
-	for <linux-fbdev@vger.kernel.org>; Tue, 17 Nov 2026 20:59:39 -0500 (EST)
-Received: from phl-frontend-04 ([10.202.2.163])
-  by phl-compute-04.internal (MEProxy); Tue, 17 Nov 2026 20:59:39 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=timdoug.com; h=
-	cc:cc:content-transfer-encoding:content-type:date:date:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to; s=fm3; t=1794967179; x=1795053579; bh=ZSV2UPAtaoVAnpwZ/BtCX
-	biGF7M5OXK+ikdh8M9ib90=; b=bfgILWXrTdFYbJXjgZTZH/7o1iSLO/AePkmnu
-	lXD5LLmwXbImofnFF54QOcYKkHeEh1F4qVYQXFEKU+b4ptPLPlAEq80tc51ExQyx
-	k2/33LQJNjSQWaIIK5xav+bhCLuJxMohhmqkSJTkQIV2Cp5a10fhfHEkRQFbaPdf
-	9dZbyKeuZCZZ2BS8DLfnZVyDt5/kdwL2jlRERsScMKg/mwksmg9j39wE2nkRqBZe
-	WJgq7hxsNDrpIg/dy3MCGv3kA/PYMcsylpuLRmUs/XZojyI+GWXJagSFy+iBSDPz
-	7zu2H97OwD4HqKAyQv/XAPYlPm7zv1H+/oUB2cAz5C1Eh8kcA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
-	1794967179; x=1795053579; bh=ZSV2UPAtaoVAnpwZ/BtCXbiGF7M5OXK+ikd
-	h8M9ib90=; b=UCQvYI5mBBVo/BlZ4w+XYTQoX8AAYeszT37nEOjaZVzNOjlHBeK
-	/o9Re5o4J7SiqyZe1ApxYiQh/coKmLHfRmSO8a5s0dsh9Pcjl8VrbJp9RxkF29N/
-	CKXsimdtpm8MDlETFT/Af+OrccU5NHOWLF546hS1DfnJQJwzLUfyc82QX1wTz4bB
-	jh7sGwFtSgufNnMQgPDQ65tCNneSBWswKso3cc2GsHcOqoS2lIKjWXkrPh+ni1uj
-	uSqn6va9E+QDYeMQs2WmloeOorJ/obseYJD61lzJAK4zInVPgYcW0k82irZMWPfw
-	IjT8S3a5a0stQCukzA2Kw427pwVVQ+ZrcTA==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=timdoug.com a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1794967179; d=timdoug.com;
-	mf=PG1lQHRpbWRvdWcuY29tPg==;
-	rt=PGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZz4=;
-	s=fm3:rsa-sha256:CxGA/twj3jG9NWa9zIBy99zcfnK8MygRlR/IQBEsiCyldSZ
-	ueB3cAwsReYf8g/z0hGv5u/+b6dhj3RH9fjI5PEdnmcZ5XFjsO9gAoo44p+uf9FD
-	+uqONFUFM4eINpa1Vsnza/cGvWXA04S0qSajUtdJ0ZDYkC9ir5v716BWH27XxpwM
-	uvTPqEoCK+0P8z7QaJTiE77mHqi20irgzGb9uqlbW8quR4KzYg5oTVypPAcn6D5p
-	XwK5iZUYqVt9mRSl780tDnxgFdREASfiXA0JIJfBfvLiqqwx0da8i65FWH3rypti
-	TGXfJgA0X8z7i2qpM5lpWmxVtLz+31+y7P/If6w==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=9;
-	hn=cc,content-transfer-encoding,date,feedback-id,from,
-	message-id,mime-version,subject,to;
-Message-Instance: m=1; h=sha256:ZT4NBP+dZ6kEpTng0nw9OzKrl9rxtmFzgkZR97ggba0=:onF1i3XQsk5QUNA9WnF/o0ScZsWHUpbLtliEd4TzH2k=;
-X-ME-Sender: <xms:iwb9avdF0ygW8J-XIGC96vcrcX6deNnmF1rvJN9VCUHkJbd7LowQKw>
-    <xme:iwb9agoCGzNM2lwjk-J7JXor9s88O81Ek311LbQm_JMEEOS_HyLo1P2YSHZTUfwHc
-    DBbqhh6rygFxPLaTcIFySACIR08f4uSmtioeLH2R07C-jVmXkxXDA>
-X-ME-Received: <xmr:iwb9asDtdxsok4Y4CyRNgW19f0PKFdF6oVMBY8ShJKt4apGSP8oYQd059GdV>
-X-ME-Proxy-Cause: dmFkZTEyqy1RfkBWV1OkqVtKccxbuSkVy3qNQElWzhM9d8A63OOyz0GU41AxauMglzV6j1
-    xuVozbgBF30Rk+IhNslkk3V9Qgh8bOtfnahyq5Kk8hc8mJoWRq3OEeDrcuqOY2+ET7LEMm
-    KOOv1SVCt4+/isiI7qK8vrZrHDAxo2qE9usdd7NGdywKscxsW3q72e/5EK01ACmfPhA8SX
-    zUSC0zcCMTBarhg85y22i6cPJJHzMgtU+nB6qbrBFHqzdQe6bH7n35a/QPurGKhDMdotIz
-    rjL0Qj3awm4VXmSM/Gh216qMquIFEbZBz0TXH3rU1Rq7Q7P3wwDla0B221F0Ocoek7j2se
-    mQnZaerVEUuwhwWrQtL5s2kD4I0Bh9MgPGulSIqyDK7Nry1wMbpvaPlUYSgbNz7SxaQYUI
-    mTOF0pyIZpr3fDbHFsV0l9IhLkjhp2F2xLR1m8cGDvWxW8f5WAP+sBNWfxOntnFMQo8Yfb
-    33WmlOWikeW4Hh2v2a2Boohn7n6QC5Vwwt9wlpNkzR1OC82osgeGQyso8z+o+4qVTOaSH2
-    Tskby3UNgMXX/iRZNAzPVFzIbf0u6NWDuYWzHs/5YMJ/wH5QKtMGrpsLx+YNFOetFa4/9n
-    vliFW2pWeqcUBo5bOyjTTpLMPQEowvRKUv1riGv6BpNMjq6Qly8fhsj98dzQ
-X-ME-Proxy: <xmx:iwb9alah1zlVOc_VmCwGwIe-ucAdHxiiskYojLZcQW27MdBnYtSUog>
-    <xmx:iwb9an6IHU4w7U16Ura1XA48N1fU_tpRaSBn9KPR9xuGv2vQqzmBdA>
-    <xmx:iwb9auZ7_Wjz7r5kmuaW0RPNUORK_sXvWOp4kLDjPSiWfx31gWE6Sg>
-    <xmx:iwb9aughXFI7z7MYAu4CCMXLv3JXiuZNJnreqQiDLmbMa6CnsyXHVg>
-    <xmx:iwb9avBuYyQrVub7lQlRIWV9FOXxblxudrBm088Kx_ToKW4OZe9zg3lN>
-Feedback-ID: i12bc4175:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 17 Nov 2026 20:59:39 -0500 (EST)
-From: Tim Douglas <me@timdoug.com>
-To: deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: valkyriefb: keep the framebuffer mapping size fixed
-Date: Tue, 17 Nov 2026 20:58:59 -0500
-Message-ID: <20261118015859.83794-1-me@timdoug.com>
-X-Mailer: git-send-email 2.54.0
+	by smtp.kernel.org (Postfix) with ESMTPS id 72A631F000C6;
+	Wed, 18 Nov 2026 14:07:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795010852;
+	bh=BALlw79+ejk6OgRMXVcg+vLCGJGFEnxxun1tGkBqdDI=;
+	h=From:Date:Subject:To:Cc:Reply-To;
+	b=RCtlncK/MIpvG8BkVF+Ccdy+Aa5kympTpJX6kKMYiHAAnF1XAqMqEDUlJoGUB+QQY
+	 nJWLNgove0eDScGUJ6oAjcWOTXVjH0RtJl6YGHOjGWQVW3WPWwWn0kNxpWPu4G8P2q
+	 YZXn4wU5yjXQ7e5wQ0zl+SAur1FFGFigRvfzMz14GKjuV2p3XaG+iTGtHmtR5jnZ1j
+	 /Ofzk7HSOdcBGdaVXqMgKjT9LD/nVSlzBUdRtOHaE/pkfMWIuRY6ls2lXjWGGkeWtj
+	 8miFSfw6ex035rDZlcV1jXSvMFmNyEiB9QlxW+A9fDAX6mzbrrPA+Ufr+RjvniNTxF
+	 OqC5WAgWy9bug==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id C50544ADC4;
+	Wed, 18 Nov 2026 14:07:31 +0000 (UTC)
+From: Suyuan Wang via B4 Relay <devnull+shyckless.gmail.com@kernel.org>
+Date: Wed, 18 Nov 2026 14:07:31 +0000
+Subject: [PATCH] fbdev: cobalt_lcdfb: Don't read info after
+ framebuffer_release()
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -122,59 +83,72 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261118-cobalt-lcdfb-v1-1-214062966e2c@gmail.com>
+X-B4-Tracking: v=1; b=H4sIACKx/WoC/yXMQQ5AMBBA0avIrDUxldC4iljoGIwI0iKSxt0Vy
+ 7f4P4BnJ+yhSgI4PsXLukRgmgCN7TKwki4adKYLRDSKVtvOu5qp663SJrdcErHBHGKyOe7l+nZ
+ 189sfdmLa3wfc9wPr0o8gcAAAAA==
+X-Change-ID: 20261118-cobalt-lcdfb-283be7cce813
+To: deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org, yoichi_yuasa@tripeaks.co.jp, 
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795010851; l=1575;
+ i=shyckless@gmail.com; s=default; h=from:subject:message-id;
+ bh=er7rtpx/jSXL/nx1TsKPyrqeGvkHFZOhjOCGFfe5dcs=;
+ b=fDeky12W0HSacB2idTO/VQw34vgDHz88wZN1XKObbv8DHVGPEgYDlyRl4h+ntdPtDy2om7L8f
+ L1nwjqbkygJCOebbQvpOheCZriZQh4ZqHGwZ4OXpw4h7ZwdsJH4UdHJ
+X-Developer-Key: i=shyckless@gmail.com; a=ed25519;
+ pk=pMtccVGiWES3bV+7YBFuBclkvq2n2HBHQ5azaBrK2lY=
+X-Endpoint-Received: by B4 Relay for shyckless@gmail.com/default with
+ auth_id=1498
+X-Original-From: Suyuan Wang <shyckless@gmail.com>
+Reply-To: shyckless@gmail.com
 
-When /dev/fb0 is mapped before a depth change, as with Xorg's fbdev
-driver, the mapping may be too short for the new mode. At 640x480,
-a full frame at 16 bpp is 600 KiB, so drawing it through the
-original 300 KiB mapping from 8 bpp can fault.
+From: Suyuan Wang <stevewong@hust.edu.cn>
 
-Set smem_len to the usable video RAM by subtracting the 4 KiB offset
-already applied to smem_start, then keep that size across mode
-changes.
+When devm_platform_get_and_ioremap_resource() fails, cobalt_lcdfb_probe()
+releases the framebuffer and then dereferences it for the return value:
 
-On a Performa 6200CD using a kernel with local platform support,
-a write past the mapping caused a fault during an Xorg test at
-16 bpp. With the corrected mapping size in the test kernel, twm
-and xterm were displayed successfully in Xorg at 640x480 and 16 bpp.
+	framebuffer_release(info);
+	return PTR_ERR(info->screen_base);
 
-In a test on a Quadra 630 in MAME with Linux v7.4-rc3, /dev/fb0 was
-mapped at 8 bpp and the depth was changed to 16 bpp with the original
-mapping still in place. A SIGSEGV was reported during the 16 bpp draw
-before the fix, and all 480 lines were drawn afterward.
+framebuffer_release() frees info, so info->screen_base is read from freed
+memory. Save the error code before releasing info.
 
-AI assistance was used to investigate the mapping size and draft
-the fix.
+Found with a static analysis tool and checked by hand.
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Signed-off-by: Tim Douglas <me@timdoug.com>
+Fixes: d2386d9e3eb4 ("fbdev: cobalt_lcdfb: Request memory region")
+Cc: stable@vger.kernel.org
+Co-developed-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
+Signed-off-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
+Signed-off-by: Suyuan Wang <stevewong@hust.edu.cn>
 ---
- drivers/video/fbdev/valkyriefb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+The change only moves the error-code read before framebuffer_release().
+Checked by inspection; I couldn't build it here (MIPS, and my MIPS cross
+toolchain fails at an unrelated host step), and I don't have the
+hardware.
+---
+ drivers/video/fbdev/cobalt_lcdfb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index ec3cf4589..e067c89c9 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -510,7 +510,7 @@ static void valkyrie_init_fix(struct fb_fix_screeninfo *fix, struct fb_info_valk
- 	fix->mmio_len = sizeof(struct valkyrie_regs);
- 	fix->type = FB_TYPE_PACKED_PIXELS;
- 	fix->smem_start = p->frame_buffer_phys + 0x1000;
--	fix->smem_len = p->total_vram;
-+	fix->smem_len = p->total_vram - 0x1000;
+diff --git a/drivers/video/fbdev/cobalt_lcdfb.c b/drivers/video/fbdev/cobalt_lcdfb.c
+index f7faa95fefd3..e90f45c91725 100644
+--- a/drivers/video/fbdev/cobalt_lcdfb.c
++++ b/drivers/video/fbdev/cobalt_lcdfb.c
+@@ -297,8 +297,9 @@ static int cobalt_lcdfb_probe(struct platform_device *dev)
  
- 	fix->type_aux = 0;
- 	fix->ywrapstep = 0;
-@@ -523,7 +523,6 @@ static void valkyrie_init_fix(struct fb_fix_screeninfo *fix, struct fb_info_valk
- static void valkyrie_par_to_fix(struct fb_par_valkyrie *par,
- 	struct fb_fix_screeninfo *fix)
- {
--	fix->smem_len = valkyrie_vram_reqd(par->vmode, par->cmode);
- 	fix->visual = (par->cmode == CMODE_8) ?
- 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
- 	fix->line_length = par->vxres << par->cmode;
+ 	info->screen_base = devm_platform_get_and_ioremap_resource(dev, 0, &res);
+ 	if (IS_ERR(info->screen_base)) {
++		retval = PTR_ERR(info->screen_base);
+ 		framebuffer_release(info);
+-		return PTR_ERR(info->screen_base);
++		return retval;
+ 	}
+ 
+ 	info->screen_size = resource_size(res);
 
-base-commit: aebb7274476403040d582c61478df8f4a7bf9cd3
--- 
-2.39.5
+
+
 

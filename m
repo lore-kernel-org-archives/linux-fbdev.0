@@ -1,52 +1,143 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=45.254.49.198
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795011757;
-	b=GyyTg6I7Eh2VZafY+cTPivxi6cCCoC51CxdliTq58jITl/VdZNeNtMn8RTKp0l0tLU+L
-	 lcOt0+HlsBFrgUvSF+GrfX7vncOGW3xWSeGUu0n0gosw48K3gpHemrkVLtadrhs3EndQ8
-	 kGxS6NPmSZp+TmtKhDpuM289VymL5Ai8mJyx0/MPUSVJm+6UCqzkla+fkMmXbwHt8YyVt
-	 8pGb/xrCmhd7GfC37FHZjjNr3/W6asxe82r/COCdC67Mj119Y+rkjqT6WDPl9TMAIGTFp
-	 OxLJ/InOj18j4hTxPiYO6c491ViAbUqRFd+ZJax+ff1+tDHUyf+BWJ3IVobAw7Qku8Q==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795011757;
-	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-HM-Tid:
-	 X-HM-MType:X-HM-Spam-Status:DKIM-Signature;
-	bh=haqNkHmYUBM8afAHWDurlnqO/foJXidzEpjadaLQhdY=;
-	b=USGqEafaaitfesoUlaUiWMVkus0eGSWM/NL0FucEDFEBHttLG9SeyxC1M0FO1a8MySEY
-	 4S6OhkHq3y1sz3etmp0M6ZzuCz/dA9lze3rwCuAQDSU1kRmgWsCuHwooZW0PrOYPfDuIt
-	 EEJXg6k1V+w3F+pdqCTxNeJPEz5wNZ9I3RacjKuvOS9NtIeCjPAtuMY3Z0wDyTlwW/+bf
-	 As+4qcGcUdeI0tU+kFyiKlKsdYOIFhgFtmoWNYV4FgyWcoK0pRyB1yA7R4TzbUab96CY2
-	 TzTjcCydgX4ELN30MSrXU1m69lUvJNrTL+kpT0MR1BvPmtiIvQQo9WJq97n7ebDuung==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mail.sdu.edu.cn;
-	spf=pass smtp.mailfrom=mail.sdu.edu.cn;
-	dkim=pass header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=eJNYHRwI;
-	arc=none smtp.remote-ip=45.254.49.198
-Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.83.76
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795011845;
+	b=ZJnhL8IhmWM2BoXp+ogNkG595XJHPo06qLLpxUD9ndYOqcTv9xQfb3ZGF1vfsoeVRWN/
+	 IZdYLQx5ca0mDBvnhhnO/Sr7ufnmrJup+yQl7ZMq394CO5/fQ5o0dYztSj8torvnoK9Ot
+	 zG7r+PX36Rk+fSVHPs4JT2R4aOiQs0WClEpwuAAORtxQn3pWE9F6nnHABgfnIvMpT2jCJ
+	 TTMPNZKphi/vCRKhJBhTZPbQ7g1fjWn3dBVUNshqluJb9Pcv88xr6CJ0I+i6mYtySd7Qm
+	 HaNpUj/FNhVxFFtB2VegSGAThwgiY7HUFefgDfWR+qgTakMIZBrWUVoTlgHs6A00iiA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795011845;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:
+	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
+	 Received:Received:From:To:CC:Subject:Thread-Index:Date:Message-ID:
+	 Accept-Language:Content-Language:X-MS-Has-Attach:X-MS-TNEF-Correlator:
+	 user-agent:Authentication-Results-Original:x-ms-traffictypediagnostic:
+	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
+	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam-Untrusted:
+	 X-Microsoft-Antispam-Message-Info-Original:
+	 X-Forefront-Antispam-Report-Untrusted:Content-Type:Content-ID:
+	 Content-Transfer-Encoding:MIME-Version:
+	 X-Exchange-RoutingPolicyChecked:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-CodeTwo-MessageID:
+	 X-CodeTwoProcessed:X-EOPAttributedMessage:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStripped:
+	 X-MS-PublicTrafficType:X-MS-Office365-Filtering-Correlation-Id-Prvs:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-Forefront-Antispam-Report:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
+	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
+	bh=5zfof3ZiPX1McltR7TdTHCii4zFyMJGI4YFyO9qQFdI=;
+	b=TeUBHYic/IGDBjnuB7Ss/TMXM8jUSqevN/hQc6zv0VeQXNwC+Ry34nY6V2BGSXi0Ws1f
+	 1/tI4sSYMHOc0kA8NLVii2prfiH3JLxQdLvXyehmBx7UJ6zwHPciaZESjM5wZl6fm7yrH
+	 KV+1WF/vSFtHBljjB6tR65b5kiQfUd6g0yZLza/RBBX0Z5XU7+UT4j4CNt6ZGbfL7vNnm
+	 GYGCCjpIggq25BR2e+YyFXtrKO/sducNvxJIDbpcWDa5F6pQ7ufZgeiK3tk3PkXRkJHBJ
+	 PJ7Kuw2KqurrV1IcvWcqHq245UjulxWPHva7Joolf0BgNl47GoTyQQzI7Qgvau920EA==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=ginzinger.com;
+	spf=pass smtp.mailfrom=ginzinger.com;
+	dkim=pass header.d=ginzinger.com header.i=@ginzinger.com header.a=rsa-sha256 header.s=selector1 header.b=gMF80mji;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.83.76
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11023076.outbound.protection.outlook.com [52.101.83.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86A71606A31C;
-	Wed, 18 Nov 2026 14:22:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 86A71606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mail.sdu.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.sdu.edu.cn
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF828606A339;
+	Wed, 18 Nov 2026 14:24:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BF828606A339
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ginzinger.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ginzinger.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=eJNYHRwI
-Received: from lgs.. (unknown [101.76.249.61])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 5526d7972;
-	Wed, 18 Nov 2026 22:22:30 +0800 (GMT+08:00)
-From: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
-To: Jingoo Han <jingoohan1@gmail.com>,
-	Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH] fbdev: s3c-fb: Fix potential registration corruption on probe failure
-Date: Wed, 18 Nov 2026 22:22:29 +0800
-Message-ID: <20261118-324f82bd41-fbdev-0@mail.sdu.edu.cn>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (2048-bit key, unprotected) header.d=ginzinger.com header.i=@ginzinger.com header.a=rsa-sha256 header.s=selector1 header.b=gMF80mji
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=BetxwPkRFFcvvkTtAZqaI5X3fJNIKffpUqjFeDhZU7bx/IP4ZZyfaQAmUc2XzZZtG2wTUEuJiI/koy0YUDIzhQd61LC0YdN9Lu/CyoTNiC8wO9B3idk92ihnR/9OatpuqjBYBHXY/8KMC3WzDXMbGbf/klUL9c0EPCii8jBJm4gII4u3kwczhaWDNI+r9iwS56wVsGYj8mYrnvipaKZLbfdM85fizw97+yDRZ6Ddah0bNs2f5CFq4w5EHAiEEZo9e7MnTrVCpSujerH3xThWCH16+8h/pY9hIeoSS4LchZIHEG6rMocO/uI3PHj9CMjHGhmmhEBTdQd2AbV/uBLByA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=5zfof3ZiPX1McltR7TdTHCii4zFyMJGI4YFyO9qQFdI=;
+ b=il+WwT3fqYMwP7JbQh/mM2T8+ZmkmNW6+5tpP/uOJYhwgnY3P3aEBVtuU16Kl3pHmZWi4kmPX17uhkVxE4eMpwg3QoeSqmwdfgBSHszPSLLtURDot4LURUVQqkoAY0zZXUJWHCFVcipKAZ8/SXuitJxQGRL0ITIKYlval4IWUr0E5tS70uU3EzBKkdk6E0a7eVhNOZtd4ZaPMYJTuJs7aShMUxUr5AlpLneljyVE3y6sRiuEjwW94gqXYa81cemzcSaKKJ+rH5p7YDbTiJ3g0F5gSnRrETjVoPLKNBo3SCKO03fvNLnxKNQUCoP9FDEFvD0vpyOhdf1u0knAIR+/Dg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 20.93.157.195) smtp.rcpttodomain=gmx.de smtp.mailfrom=ginzinger.com;
+ dmarc=pass (p=none sp=none pct=100) action=none header.from=ginzinger.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ginzinger.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5zfof3ZiPX1McltR7TdTHCii4zFyMJGI4YFyO9qQFdI=;
+ b=gMF80mjid/4tLTTE/5yIv7tB5SJkB191qCfsjeC6PGKFM3xawtv5sOvchTaUNwAPehfzuQuJPaR4YRX4y8IiddS8FDTurCwGkPXn0io3QQJ8UxN95h6Fx2kGZnKQJOqnv4NknD+SqTGGDMmvqLZmimwWKih0ApGhCOcMPYi9iRUQacsqCRxq2S/NhBIQVP0FDaCMLr0RMx42xw1HNIRjoRUsQ9q9is78UCF2r1kIbWH426LTh8GomD1r+FbtupME/ht5Rc8cmhydx+WHa29kyqu9FpDC7Hw06XlzlbdO++7enZkcqW+c+rlJrZGSnssjfg/60vO+KWbT+A7uEu5D5Q==
+Received: from DUZP191CA0056.EURP191.PROD.OUTLOOK.COM (2603:10a6:10:4fa::14)
+ by PA6PR06MB10303.eurprd06.prod.outlook.com (2603:10a6:102:51d::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
+ 2026 14:23:59 +0000
+Received: from DB3PEPF00008860.eurprd02.prod.outlook.com
+ (2603:10a6:10:4fa:cafe::6e) by DUZP191CA0056.outlook.office365.com
+ (2603:10a6:10:4fa::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.14 via Frontend Transport; Wed,
+ 18 Nov 2026 14:23:59 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 20.93.157.195) smtp.mailfrom=ginzinger.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=ginzinger.com;
+Received-SPF: Pass (protection.outlook.com: domain of ginzinger.com designates
+ 20.93.157.195 as permitted sender) receiver=protection.outlook.com;
+ client-ip=20.93.157.195; helo=westeu11-emailsignatures-cloud.codetwo.com;
+ pr=C
+Received: from westeu11-emailsignatures-cloud.codetwo.com (20.93.157.195) by
+ DB3PEPF00008860.mail.protection.outlook.com (10.167.242.11) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.615.4 via Frontend Transport; Wed, 18 Nov 2026 14:23:59 +0000
+Received: from DUZPR08CU001.outbound.protection.outlook.com (40.93.64.71) by westeu11-emailsignatures-cloud.codetwo.com with CodeTwo SMTP Server (TLS12) via SMTP; Wed, 18 Nov 2026 14:23:58 +0000
+Received: from AS5PR06MB10652.eurprd06.prod.outlook.com
+ (2603:10a6:20b:756::23) by VE1PR06MB6911.eurprd06.prod.outlook.com
+ (2603:10a6:800:1a4::13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
+ 2026 14:23:55 +0000
+Received: from AS5PR06MB10652.eurprd06.prod.outlook.com
+ ([fe80::703e:93ce:8522:2f6b]) by AS5PR06MB10652.eurprd06.prod.outlook.com
+ ([fe80::703e:93ce:8522:2f6b%5]) with mapi id 15.21.0615.013; Wed, 18 Nov 2026
+ 14:23:55 +0000
+From: Roosen Henri <Henri.Roosen@ginzinger.com>
+To: "deller@gmx.de" <deller@gmx.de>, "sashal@kernel.org" <sashal@kernel.org>
+CC: Kepplinger-Novakovic Martin <Martin.Kepplinger-Novakovic@ginzinger.com>,
+	"simona@ffwll.ch" <simona@ffwll.ch>, "tzimmermann@suse.de"
+	<tzimmermann@suse.de>, "gregkh@linuxfoundation.org"
+	<gregkh@linuxfoundation.org>, "icb@fastmail.org" <icb@fastmail.org>,
+	"a.vatoropin@crpt.ru" <a.vatoropin@crpt.ru>, "linux-fbdev@vger.kernel.org"
+	<linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
+	<dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>
+Subject: BUG: Linux kernel regression: full screen logo
+Thread-Index: AQHdd2hxmF0x4onrBka1b5buRSqpaw==
+Date: Wed, 18 Nov 2026 14:23:54 +0000
+Message-ID: <074e66817a069dca965d9c258606f23fbcb2e1a3.camel@ginzinger.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+user-agent: Evolution 3.56.2-0+deb13u1 
+Authentication-Results-Original: mx.microsoft.com 1; dkim=none (message not
+ signed) header.d=none;dmarc=none action=none header.from=ginzinger.com;
+x-ms-traffictypediagnostic:
+	AS5PR06MB10652:EE_|VE1PR06MB6911:EE_|DB3PEPF00008860:EE_|PA6PR06MB10303:EE_
+X-MS-Office365-Filtering-Correlation-Id: 06068005-3afb-483e-2e51-08df457f9627
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted:
+ BCL:0;ARA:13230040|23010399003|376014|7416014|366016|1800799024|38070700021|261022075727099003|11063799006|56012099006|261022115727099003|10067099003|261021121427099003|261026121527099003|261102123227099003|261009223027099003|18002099003;
+X-Microsoft-Antispam-Message-Info-Original:
+ jyKJYvWWziYyTLWOQljeUkS9u4rF3HqrVIt5wzJQrCLSh9vC1dksmnk0hsi80H84n85HLHsOaGgudlyI61MU9Pbqy1BofHS7TgsAtC09iZT8fSZYkK+OuHi6gnciKxj5S3xi6f/XnGFfH7q6eb/NV2j6dqMxTtRq3sGqbm3YPf+vwtp7Dtj5S/xeyCNWt5mPRvtfF85CO1DLekIeBG3Sy9ENh9KEYpvjyC4o0/Xrty9lDKtcUq9zIJzno3och9Vp3nH9WtXcJhxtP+tBqcAvDPFhHiDgJJT9wlbTFcI401M9tLXCGIQng8gKFJsZ5x+qfTr+BHNryTcFjdJ88cXmoCWMMk0NavcV+3OfsCxCMmD15AIjlSI++jOkT5J52hIDxIs8f67vfIkXBDwCHhMN5bgsaphZIOD6JPGUTOyIs5MSwTmPoM5oQgQR+qApamWA9pxxbOYWhtSqM8qFNaMPRilFkdP7N88XrP5Gvl77bdqgf6IH78WQUnZlBcG4etFrHj50jra2TH4/0LEA8Htrr/axbEOFgWKBQbjYiPwVvFaf5ijWWZydteKv2PhyBGPgx4HvyoNFGlG72yanJKLaTK9so/ZcL6B9jQUcSou/rbjWAPRFTtrkgfsgQcxd1EOlzkQBMqvJoa2Zkbfj2Wi3glU4riJCfSyAjQ9eDBYy2sI/59YsTrmvWYXyfp3/Vy74PwjYv0H8EKmDqFdG6v66yCwm+WJVjYICxl47mzbNLEU=
+X-Forefront-Antispam-Report-Untrusted:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS5PR06MB10652.eurprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(7416014)(366016)(1800799024)(38070700021)(261022075727099003)(11063799006)(56012099006)(261022115727099003)(10067099003)(261021121427099003)(261026121527099003)(261102123227099003)(261009223027099003)(18002099003);DIR:OUT;SFP:1102;
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <450EAC802749E04099348AC2F91DFD01@eurprd06.prod.outlook.com>
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -56,83 +147,50 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa1ef09abc403a1kunmfc88f5031a12ca
-X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCSk9MVhgYSEkdTBlLTk5MQlYeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlKS0pVTE1VSU9CVU1KWVdZFhoPEhUdFFlBWU9LSFVKS0lCQ0
-	NMVUpLS1VLWQY+
-DKIM-Signature: a=rsa-sha256;
-	b=eJNYHRwIFeniVMid2Oy+In7DqyaRyzjNcRq4bw24gImwksylgJsGXjQdQKsCqNdyYzWh9d+Yl7k+WxqEglV4Bad/cMs33UCs2u2/zzdDQdTa/C21pXtSEz6rYaZdNNZ1ACYC4WQwwu+7kTvoaEy2rdQW14pgDzofId/GxuUq9IU=; c=relaxed/relaxed; s=default; d=mail.sdu.edu.cn; v=1;
-	bh=haqNkHmYUBM8afAHWDurlnqO/foJXidzEpjadaLQhdY=;
-	h=date:mime-version:subject:message-id:from;
+X-Exchange-RoutingPolicyChecked: FAexfHYOQoLUT8XbF5TAVRpvC2v2Q2Zcx2aNSwtmKaghNQUSr0aGsG2Zpkr1H5kkN7vDNpsdD0Sq2uBjaOqBtuK68I3sjzVbjVhH86PNNKRLWgSlkmT8xq/TQRKCJwBCHg5qYHzr/6zh2B7pinHrKNx23OaecOcajDtigpvXp1+iQC2wcBndbteuMO8pVvWzBExGVaNF+BBSRlr7oWbH/3DyE4mt4aiYulWrxoxfbjhMgy4t3KsL1DrQz3XCBII+DeT/WCDdAEhOpwShoiypW0FyluNByZWDDglyq26IEAIgBCFPwhIVKpUz05Kmymvr8KRykiZhrqAyOlvfpOWOtA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR06MB6911
+X-CodeTwo-MessageID: e66126a9-2944-49d7-a91d-652acc5b4a94.20261118142358@westeu11-emailsignatures-cloud.codetwo.com
+X-CodeTwoProcessed: true
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:
+ DB3PEPF00008860.eurprd02.prod.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs:
+	b868acc7-06f5-4100-96af-08df457f93a2
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|35042699022|7416014|1800799024|376014|36860700016|23010399003|14060799003|82310400026|56012099006|261021121427099003|11063799006|10067099003|261026121527099003|261022075727099003|261022115727099003|261102123227099003|261009223027099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	PUI0DAH6zX1i9x6KuqQ67p8a29BlUKcsQ388G6JPKjorYZShfwosZ9Tc11DEIFMHuGfJgrzAdmsL8jl1aT0b1u910TswMqLnKd1m/EjbCkwhXLghY+1rVCT7H0SUgv6y8BMKF2hsoGpYOHdjHjbZxxaLDk8uzdkGBw/n5BzMyuBtqbgPpmVhRSoav/4BqlQvqvwzCPYJZIXNJVjCzi/j2fg5ffxex+TRMpQlOOt6zMqeI7z4Knw618U1w5QcOQaqIDCQjLfPvdqepkSGwL2GhB+HWURs9Lh06aSAsADlZPamkr0kEyOZlQBMjDm1mrHAvDjebpuZXPlfyeQ0TCzLveg9Yyzf1MXcLD0WyYIQcMbyUVNM634UqeFunCvK/C/ivI1A6oyGQvMyXhPd0LECSm7UFOcJ0GtO0cgS6HP+CSg5CzkaFWLqN/38oPWvg61W4VY8OF/xjGfSdj87z6tAsdgt80YxU358YxYFoNljY09RsuXFYswaluF+yhrNQ97gXT8QSxHMUmwxvM92fQXFBmBZ0fHVIMaGsvCpUAXgozZ80IbYEo2HZtVH8juTa0LJREBgoU2lp2KyiOm9UAdAVMpFBoJvQHD3aH4bpA1MW4AngGJxbxMLbTdO4IrZrZwejYJz9qHOBlz7UNmZcFjXZum4jLAdoUEHp+seifql/UFlrjqZDzAYJyqBdHf1DcRKfsInTb/zaLeej9ruAgByfQ==
+X-Forefront-Antispam-Report:
+	CIP:20.93.157.195;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:westeu11-emailsignatures-cloud.codetwo.com;PTR:westeu11-emailsignatures-cloud.codetwo.com;CAT:NONE;SFS:(13230040)(35042699022)(7416014)(1800799024)(376014)(36860700016)(23010399003)(14060799003)(82310400026)(56012099006)(261021121427099003)(11063799006)(10067099003)(261026121527099003)(261022075727099003)(261022115727099003)(261102123227099003)(261009223027099003)(18002099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	ASIevGTLcXHpU1HpI9h79KNfyirL49TkkTqrFyjmldoFeenVnzyYnTpSJRw6pFFiWzZ568Fekzr9+Rxw3Zjgg3WCB6H1A6EsWo0B8/9N49je9+RS+Zdj6bRAWc3t4rpD7v3UBMpM+Je4HCIi90EZl/n4bMnpNcyLrY/3k/5X2+NbHW2gSVg/44vF4jbu/yicRHMQsg8DOmBx+WYINhbfRP33bS4WPWEmuFoXgvD9iiy9KWog+Br0ndxy2V8bMojyPPbPUU6QyjFginmg2ngk1mgxjiYyeGsEvkBxZ7Xl3wSImRqHaCB63IG1f8wUSjfAi5F4hJViBZpnC6O8BcNZDfMHCWWamyzYLXDQ+a2qOQ0R1Jfv7csTnjxdVAr0ONjMmQkv1ro+dl/IWN3nPlSmYiK8sMofDY6crZyBmD6W7sIvUunYHtIKGXmQqE9tbxoX
+X-OriginatorOrg: ginzinger.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 14:23:59.0250
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 06068005-3afb-483e-2e51-08df457f9627
+X-MS-Exchange-CrossTenant-Id: 198354b3-f56d-4ad5-b1e4-7eb8b115ed44
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=198354b3-f56d-4ad5-b1e4-7eb8b115ed44;Ip=[20.93.157.195];Helo=[westeu11-emailsignatures-cloud.codetwo.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	DB3PEPF00008860.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA6PR06MB10303
 
-Probe failure cleanup calls unregister_framebuffer() even when the
-window has not been registered. Its zero-initialized node can then
-remove another framebuffer from registered_fb[0].
-
-Track successful registration and only unregister those framebuffers.
-Also skip empty window slots while unwinding a failed probe.
-
-This issue was found by our static analysis tool under development.
-
-Fixes: ec549a0fdc32 ("fb: add s3c-fb driver for newer Samsung SoC framebuffer devices")
-Cc: stable@vger.kernel.org
-Signed-off-by: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
----
- drivers/video/fbdev/s3c-fb.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
-index 82a3bc9de433..c67ad47a49f0 100644
---- a/drivers/video/fbdev/s3c-fb.c
-+++ b/drivers/video/fbdev/s3c-fb.c
-@@ -161,6 +161,7 @@ struct s3c_fb_palette {
-  * @pseudo_palette: For use in TRUECOLOUR modes for entries 0..15/
-  * @index: The window number of this window.
-  * @palette: The bitfields for changing r/g/b into a hardware palette entry.
-+ * @registered: Whether the framebuffer was successfully registered.
-  */
- struct s3c_fb_win {
- 	struct s3c_fb_pd_win	*windata;
-@@ -172,6 +173,7 @@ struct s3c_fb_win {
- 	u32			*palette_buffer;
- 	u32			 pseudo_palette[16];
- 	unsigned int		 index;
-+	bool			 registered;
- };
- 
- /**
-@@ -1142,14 +1144,15 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
- {
- 	u32 data;
- 
--	if (win->fbinfo) {
-+	if (win && win->fbinfo) {
- 		if (sfb->variant.has_shadowcon) {
- 			data = readl(sfb->regs + SHADOWCON);
- 			data &= ~SHADOWCON_CHx_ENABLE(win->index);
- 			data &= ~SHADOWCON_CHx_LOCAL_ENABLE(win->index);
- 			writel(data, sfb->regs + SHADOWCON);
- 		}
--		unregister_framebuffer(win->fbinfo);
-+		if (win->registered)
-+			unregister_framebuffer(win->fbinfo);
- 		if (win->fbinfo->cmap.len)
- 			fb_dealloc_cmap(&win->fbinfo->cmap);
- 		s3c_fb_free_memory(sfb, win);
-@@ -1272,6 +1275,7 @@ static int s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 		return ret;
- 	}
- 
-+	win->registered = true;
- 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
- 
- 	return 0;
-
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
--- 
-2.43.0
-
+SGVsbG8gSGVsZ2UsIGhlbGxvIFNhc2hhLAoKSSBoYXZlIGJlZW4gYmlzZWN0aW5nIHRoZSBsaW51
+eCBrZXJuZWwgZm9yIGEgcmVncmVzc2lvbiwgd2VyZSBhIHdoaXRlCnN0cmlwZSBvY2N1cnMgYXQg
+dGhlIGJvdHRvbSBvZiB0aGUgZGlzcGxheSwgd2hlbiBzaG93aW5nIHRoZSBib290bG9nby4KClRo
+ZSBiaXNlY3QgZW5kZWQgdXAgYXQgY29tbWl0LTU4MmE4OTEwOWFkOSAoImZiY29uOiBGaXggS0FT
+QU4gc2xhYi1vdXQtCm9mLWJvdW5kcyBSZWFkIGluIGZiY29uX3ByZXBhcmVfbG9nbyIpIG9uIGEg
+djYuMTgueCBrZXJuZWwsIFsgVXBzdHJlYW0KY29tbWl0IDk0ZTZhMDU4YjE2ODIwZTAyZjI1ZTEy
+MjFhNGM0ZTcxM2JhMjM1NTAgXS4KCldlIHVzZSBhIGN1c3RvbSBib290bG9nbyBleGFjdGx5IGZ1
+bGwtc2NyZWVuLiBXaXRoIHlvdXIgY29tbWl0IHdlIGdldCBhCndoaXRlIGJhciBhdCB0aGUgYm90
+dG9tLCB3aGljaCBpIHRoaW5rIGlzIGFib3V0IHRoZSBzaXplIG9mIHRoZSBmb250LQpoZWlnaHQu
+CgpPdXIgbG9nbyBmaWxlIGhhcyA4MDB4NDgwOgoKICBmaWxlIGxvZ29fY2x1dDIyNC5wcG0KICBs
+b2dvX2NsdXQyMjQucHBtOiBOZXRwYm0gaW1hZ2UgZGF0YSwgc2l6ZSA9IDgwMCB4IDQ4MCwgcGl4
+bWFwLCBBU0NJSQp0ZXh0CgpBbmQgdGhlIHRhcmdldCBmcmFtZWJ1ZmZlciBoYXMgdGhlIHNhbWUg
+ODAweDQ4MCBzaXplOgoKICAjIGNhdCAvc3lzL2NsYXNzL2dyYXBoaWNzL2ZiMC92aXJ0dWFsX3Np
+emUgCiAgODAwLDQ4MAoKVGhlIGxvZ28gZG9lcyBub3QgZXhjZWVkIHRoZSBzY3JlZW4gc2l6ZSwg
+c3RpbGwgeW91ciBwYXRjaCBpbnRyb2R1Y2VzCnRoaXMgcmVncmVzc2lvbi4KCkknbSBoYXBweSB0
+byB0ZXN0IGEgcG9zc2libGUgc29sdXRpb24uCgpLaW5kIHJlZ2FyZHMsCkhlbnJpCg==

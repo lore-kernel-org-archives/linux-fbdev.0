@@ -1,143 +1,77 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.83.76
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795011845;
-	b=ZJnhL8IhmWM2BoXp+ogNkG595XJHPo06qLLpxUD9ndYOqcTv9xQfb3ZGF1vfsoeVRWN/
-	 IZdYLQx5ca0mDBvnhhnO/Sr7ufnmrJup+yQl7ZMq394CO5/fQ5o0dYztSj8torvnoK9Ot
-	 zG7r+PX36Rk+fSVHPs4JT2R4aOiQs0WClEpwuAAORtxQn3pWE9F6nnHABgfnIvMpT2jCJ
-	 TTMPNZKphi/vCRKhJBhTZPbQ7g1fjWn3dBVUNshqluJb9Pcv88xr6CJ0I+i6mYtySd7Qm
-	 HaNpUj/FNhVxFFtB2VegSGAThwgiY7HUFefgDfWR+qgTakMIZBrWUVoTlgHs6A00iiA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795011845;
-	h=DMARC-Filter:DKIM-Signature:Received:Received:
-	 X-MS-Exchange-Authentication-Results:Received-SPF:Received:Received:
-	 Received:Received:From:To:CC:Subject:Thread-Index:Date:Message-ID:
-	 Accept-Language:Content-Language:X-MS-Has-Attach:X-MS-TNEF-Correlator:
-	 user-agent:Authentication-Results-Original:x-ms-traffictypediagnostic:
-	 X-MS-Office365-Filtering-Correlation-Id:X-MS-Exchange-SenderADCheck:
-	 X-MS-Exchange-AntiSpam-Relay:X-Microsoft-Antispam-Untrusted:
-	 X-Microsoft-Antispam-Message-Info-Original:
-	 X-Forefront-Antispam-Report-Untrusted:Content-Type:Content-ID:
-	 Content-Transfer-Encoding:MIME-Version:
-	 X-Exchange-RoutingPolicyChecked:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped:X-CodeTwo-MessageID:
-	 X-CodeTwoProcessed:X-EOPAttributedMessage:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStripped:
-	 X-MS-PublicTrafficType:X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp:
-	 X-MS-Exchange-CrossTenant-AuthSource:X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped;
-	bh=5zfof3ZiPX1McltR7TdTHCii4zFyMJGI4YFyO9qQFdI=;
-	b=TeUBHYic/IGDBjnuB7Ss/TMXM8jUSqevN/hQc6zv0VeQXNwC+Ry34nY6V2BGSXi0Ws1f
-	 1/tI4sSYMHOc0kA8NLVii2prfiH3JLxQdLvXyehmBx7UJ6zwHPciaZESjM5wZl6fm7yrH
-	 KV+1WF/vSFtHBljjB6tR65b5kiQfUd6g0yZLza/RBBX0Z5XU7+UT4j4CNt6ZGbfL7vNnm
-	 GYGCCjpIggq25BR2e+YyFXtrKO/sducNvxJIDbpcWDa5F6pQ7ufZgeiK3tk3PkXRkJHBJ
-	 PJ7Kuw2KqurrV1IcvWcqHq245UjulxWPHva7Joolf0BgNl47GoTyQQzI7Qgvau920EA==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ginzinger.com;
-	spf=pass smtp.mailfrom=ginzinger.com;
-	dkim=pass header.d=ginzinger.com header.i=@ginzinger.com header.a=rsa-sha256 header.s=selector1 header.b=gMF80mji;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=52.101.83.76
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazon11023076.outbound.protection.outlook.com [52.101.83.76])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.227.15.15
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795025086;
+	b=w3WzDFBW8N2iBGT9xZkfBUTd7mm92Ylo4YQplknM9zBA61+PLvmdIJpFfBI1d7MKSpzo
+	 dO9uib0wArVdAtttiReCpqpH9uCQoMZDp0MeLU5cmBcpYRK2wBF8KVfwbHZ68vqbPaVTO
+	 j9zoMXnTdxb6+ZAQi+EPtbrk/OJ4T4wninH5RLnlQkruiFL4H5qw3hgmwSKV3yzSFtjKW
+	 OgVELa2c2MCdj1pfon4kBhM7HG+E+KEesVRiW3KzMguem8OG7U1/mEI9ohav0KmwGdq9Y
+	 oh71SuL0USprMjre4KqiDjT9qZ6fYZK4CuWyT93uiZ4LfEsEL0Qx9RhyBqShmS8I/uA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795025086;
+	h=DMARC-Filter:DKIM2-Signature:Message-Instance:DKIM-Signature:
+	 X-UI-Sender-Class:Received:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:Content-Language:From:Autocrypt:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-Provags-ID:X-Spam-Flag:
+	 UI-OutboundReport;
+	bh=K4MPQbQ3rG+e04E19pMqg3pAzGOtyLyFvk9MoET+sJY=;
+	b=3ldvxgQAIchG2L6PnuBuWvCy6bvZPQcPu+se6wintCPkMLAXry3vAWYFud3bIeWyezXx
+	 12KLhtz/dwYL4LD2lsNCGXgMiwd0xtVm9spc790E34p67UMVX4FiR9LhMEBxZCOIZBImr
+	 qmwuX/6O7G+tktZ1VFU0QH1gKkJZLguo5Ujbp1Mplwm6NYWvBIDdu6Mh6ValAFuQnvi3E
+	 jRGk4tT5ZANlPM+QmUzZmDCfW7u8aNCNja/NL74x5QHln1tGhPLwOdslXvll4gxdXX7fd
+	 O9TtIKuK3q5FxtV7YoE0oOK4g93OBTnmScv6lJ64WIFcxQTM0EyegIukEX5aFFTp2xg==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmx.de;
+	spf=pass smtp.mailfrom=gmx.de;
+	dkim=pass header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=ltrRdYch;
+	arc=none smtp.remote-ip=212.227.15.15
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF828606A339;
-	Wed, 18 Nov 2026 14:24:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BF828606A339
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ginzinger.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ginzinger.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15E37606A320
+	for <linux-fbdev@vger.kernel.org>; Wed, 18 Nov 2026 18:04:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 15E37606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ginzinger.com header.i=@ginzinger.com header.a=rsa-sha256 header.s=selector1 header.b=gMF80mji
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=BetxwPkRFFcvvkTtAZqaI5X3fJNIKffpUqjFeDhZU7bx/IP4ZZyfaQAmUc2XzZZtG2wTUEuJiI/koy0YUDIzhQd61LC0YdN9Lu/CyoTNiC8wO9B3idk92ihnR/9OatpuqjBYBHXY/8KMC3WzDXMbGbf/klUL9c0EPCii8jBJm4gII4u3kwczhaWDNI+r9iwS56wVsGYj8mYrnvipaKZLbfdM85fizw97+yDRZ6Ddah0bNs2f5CFq4w5EHAiEEZo9e7MnTrVCpSujerH3xThWCH16+8h/pY9hIeoSS4LchZIHEG6rMocO/uI3PHj9CMjHGhmmhEBTdQd2AbV/uBLByA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=5zfof3ZiPX1McltR7TdTHCii4zFyMJGI4YFyO9qQFdI=;
- b=il+WwT3fqYMwP7JbQh/mM2T8+ZmkmNW6+5tpP/uOJYhwgnY3P3aEBVtuU16Kl3pHmZWi4kmPX17uhkVxE4eMpwg3QoeSqmwdfgBSHszPSLLtURDot4LURUVQqkoAY0zZXUJWHCFVcipKAZ8/SXuitJxQGRL0ITIKYlval4IWUr0E5tS70uU3EzBKkdk6E0a7eVhNOZtd4ZaPMYJTuJs7aShMUxUr5AlpLneljyVE3y6sRiuEjwW94gqXYa81cemzcSaKKJ+rH5p7YDbTiJ3g0F5gSnRrETjVoPLKNBo3SCKO03fvNLnxKNQUCoP9FDEFvD0vpyOhdf1u0knAIR+/Dg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 20.93.157.195) smtp.rcpttodomain=gmx.de smtp.mailfrom=ginzinger.com;
- dmarc=pass (p=none sp=none pct=100) action=none header.from=ginzinger.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ginzinger.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5zfof3ZiPX1McltR7TdTHCii4zFyMJGI4YFyO9qQFdI=;
- b=gMF80mjid/4tLTTE/5yIv7tB5SJkB191qCfsjeC6PGKFM3xawtv5sOvchTaUNwAPehfzuQuJPaR4YRX4y8IiddS8FDTurCwGkPXn0io3QQJ8UxN95h6Fx2kGZnKQJOqnv4NknD+SqTGGDMmvqLZmimwWKih0ApGhCOcMPYi9iRUQacsqCRxq2S/NhBIQVP0FDaCMLr0RMx42xw1HNIRjoRUsQ9q9is78UCF2r1kIbWH426LTh8GomD1r+FbtupME/ht5Rc8cmhydx+WHa29kyqu9FpDC7Hw06XlzlbdO++7enZkcqW+c+rlJrZGSnssjfg/60vO+KWbT+A7uEu5D5Q==
-Received: from DUZP191CA0056.EURP191.PROD.OUTLOOK.COM (2603:10a6:10:4fa::14)
- by PA6PR06MB10303.eurprd06.prod.outlook.com (2603:10a6:102:51d::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
- 2026 14:23:59 +0000
-Received: from DB3PEPF00008860.eurprd02.prod.outlook.com
- (2603:10a6:10:4fa:cafe::6e) by DUZP191CA0056.outlook.office365.com
- (2603:10a6:10:4fa::14) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.615.14 via Frontend Transport; Wed,
- 18 Nov 2026 14:23:59 +0000
-X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
- is 20.93.157.195) smtp.mailfrom=ginzinger.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=ginzinger.com;
-Received-SPF: Pass (protection.outlook.com: domain of ginzinger.com designates
- 20.93.157.195 as permitted sender) receiver=protection.outlook.com;
- client-ip=20.93.157.195; helo=westeu11-emailsignatures-cloud.codetwo.com;
- pr=C
-Received: from westeu11-emailsignatures-cloud.codetwo.com (20.93.157.195) by
- DB3PEPF00008860.mail.protection.outlook.com (10.167.242.11) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.615.4 via Frontend Transport; Wed, 18 Nov 2026 14:23:59 +0000
-Received: from DUZPR08CU001.outbound.protection.outlook.com (40.93.64.71) by westeu11-emailsignatures-cloud.codetwo.com with CodeTwo SMTP Server (TLS12) via SMTP; Wed, 18 Nov 2026 14:23:58 +0000
-Received: from AS5PR06MB10652.eurprd06.prod.outlook.com
- (2603:10a6:20b:756::23) by VE1PR06MB6911.eurprd06.prod.outlook.com
- (2603:10a6:800:1a4::13) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
- 2026 14:23:55 +0000
-Received: from AS5PR06MB10652.eurprd06.prod.outlook.com
- ([fe80::703e:93ce:8522:2f6b]) by AS5PR06MB10652.eurprd06.prod.outlook.com
- ([fe80::703e:93ce:8522:2f6b%5]) with mapi id 15.21.0615.013; Wed, 18 Nov 2026
- 14:23:55 +0000
-From: Roosen Henri <Henri.Roosen@ginzinger.com>
-To: "deller@gmx.de" <deller@gmx.de>, "sashal@kernel.org" <sashal@kernel.org>
-CC: Kepplinger-Novakovic Martin <Martin.Kepplinger-Novakovic@ginzinger.com>,
-	"simona@ffwll.ch" <simona@ffwll.ch>, "tzimmermann@suse.de"
-	<tzimmermann@suse.de>, "gregkh@linuxfoundation.org"
-	<gregkh@linuxfoundation.org>, "icb@fastmail.org" <icb@fastmail.org>,
-	"a.vatoropin@crpt.ru" <a.vatoropin@crpt.ru>, "linux-fbdev@vger.kernel.org"
-	<linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org"
-	<dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>
-Subject: BUG: Linux kernel regression: full screen logo
-Thread-Index: AQHdd2hxmF0x4onrBka1b5buRSqpaw==
-Date: Wed, 18 Nov 2026 14:23:54 +0000
-Message-ID: <074e66817a069dca965d9c258606f23fbcb2e1a3.camel@ginzinger.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-user-agent: Evolution 3.56.2-0+deb13u1 
-Authentication-Results-Original: mx.microsoft.com 1; dkim=none (message not
- signed) header.d=none;dmarc=none action=none header.from=ginzinger.com;
-x-ms-traffictypediagnostic:
-	AS5PR06MB10652:EE_|VE1PR06MB6911:EE_|DB3PEPF00008860:EE_|PA6PR06MB10303:EE_
-X-MS-Office365-Filtering-Correlation-Id: 06068005-3afb-483e-2e51-08df457f9627
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted:
- BCL:0;ARA:13230040|23010399003|376014|7416014|366016|1800799024|38070700021|261022075727099003|11063799006|56012099006|261022115727099003|10067099003|261021121427099003|261026121527099003|261102123227099003|261009223027099003|18002099003;
-X-Microsoft-Antispam-Message-Info-Original:
- jyKJYvWWziYyTLWOQljeUkS9u4rF3HqrVIt5wzJQrCLSh9vC1dksmnk0hsi80H84n85HLHsOaGgudlyI61MU9Pbqy1BofHS7TgsAtC09iZT8fSZYkK+OuHi6gnciKxj5S3xi6f/XnGFfH7q6eb/NV2j6dqMxTtRq3sGqbm3YPf+vwtp7Dtj5S/xeyCNWt5mPRvtfF85CO1DLekIeBG3Sy9ENh9KEYpvjyC4o0/Xrty9lDKtcUq9zIJzno3och9Vp3nH9WtXcJhxtP+tBqcAvDPFhHiDgJJT9wlbTFcI401M9tLXCGIQng8gKFJsZ5x+qfTr+BHNryTcFjdJ88cXmoCWMMk0NavcV+3OfsCxCMmD15AIjlSI++jOkT5J52hIDxIs8f67vfIkXBDwCHhMN5bgsaphZIOD6JPGUTOyIs5MSwTmPoM5oQgQR+qApamWA9pxxbOYWhtSqM8qFNaMPRilFkdP7N88XrP5Gvl77bdqgf6IH78WQUnZlBcG4etFrHj50jra2TH4/0LEA8Htrr/axbEOFgWKBQbjYiPwVvFaf5ijWWZydteKv2PhyBGPgx4HvyoNFGlG72yanJKLaTK9so/ZcL6B9jQUcSou/rbjWAPRFTtrkgfsgQcxd1EOlzkQBMqvJoa2Zkbfj2Wi3glU4riJCfSyAjQ9eDBYy2sI/59YsTrmvWYXyfp3/Vy74PwjYv0H8EKmDqFdG6v66yCwm+WJVjYICxl47mzbNLEU=
-X-Forefront-Antispam-Report-Untrusted:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS5PR06MB10652.eurprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(376014)(7416014)(366016)(1800799024)(38070700021)(261022075727099003)(11063799006)(56012099006)(261022115727099003)(10067099003)(261021121427099003)(261026121527099003)(261102123227099003)(261009223027099003)(18002099003);DIR:OUT;SFP:1102;
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <450EAC802749E04099348AC2F91DFD01@eurprd06.prod.outlook.com>
-Content-Transfer-Encoding: base64
+	dkim=pass (2048-bit key, unprotected) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=ltrRdYch
+DKIM2-Signature:  i=1; m=1; t=1795025083;
+ mf=PGRlbGxlckBnbXguZGU+;
+ rt=PGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZz4=;
+ d=gmx.de;
+ s=s31663417:rsa-sha256:TFxDxepaVa2EyI4JcTh7TW5w80hX
+   dy19l63dzbgfWrspUrREqaPd88HMTv47xQQPAV9Fq24oNFkjSrAExCK9FuDHsYF3DSYtxgvYVZZ
+   9axb5AH7JsCly/TQqi1eFlpxqVLElpelpoxSdRF0ki2a5xqLSmDK2D5yI0eDvV9u+XhAaNbyL9e
+   JPuj+cNucseENgjPC+2YXv6DT1bLIzAhhOTzoK9j8RInY6QQDOa9b3n5Dro80i/ZbkaW52edoMS
+   1cPJb2hSHOJdu3lgEWNOsKNtiocaSQhyZ0vF6yIp9tcL9AMVinrnKteRt/3Ec5nbQylDt5iI1Fq
+   S9s2mIZAjtgKVg==;
+Message-Instance:  m=1;
+ h=sha256:
+   WfmSE8pKLYUAh43jIiAz2SMqraq0Z/4XQFA6zXufBE4=:
+   41ZnElYY6+AL90fW1aKCjH6xMdxxY/zNy1GjqbP7c8A=,
+  sha512:
+   jX5Pt70erHTnjTES5vytxgCI+8qIaJlkkbH0uRbUwHm3Hwlxwq/Os74Ohom2XLd4fwUpNFvVLzREaTdhuwTSFA==:
+   hWxMDdlD7HDkF5Scf9keq+16QOYciEg+pu2GSdD+EkRoC28YdiJJl5IYixJcHYNUQmZ9GcDdE0vqLJTyLf2fHA==;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1795025074; x=1795629874; i=deller@gmx.de;
+	bh=K4MPQbQ3rG+e04E19pMqg3pAzGOtyLyFvk9MoET+sJY=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=ltrRdYchbU/EyqZiS4wE6+wB/SKqRvqRl2UHxxX335wXMbzz77DLtowl5zAAF2CG
+	 z2OwK55zYdrwe+4lghra7aWcjkCsCvyTU8JUWOGBaopi8L59k5k4lbGJ5JBNXrR18
+	 yM9KvJXZWj+/PiczHAz48HpKClHe7dv7Xgaiudp2knirCURr17LbQUYPhq9Krgg25
+	 qMFMZYW+F32+3vuL9bVKCZhEdRsyG8TIvKVEqKMhGPp37r0smGNFQUOiCz/CntmQ+
+	 LzuwV0XOL/XRQ5AvzVF10+d5miKE8Ubyuu5MnNWLm4IUdJUT5Vq12TTh8YRZnfDO3
+	 x/y7SfTzRddeyE2igw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M3UUy-1xUIFc2hIA-006xZ5; Wed, 18
+ Nov 2026 19:04:34 +0100
+Message-ID: <d734924c-6083-405d-8ef8-d0d522d6a187@gmx.de>
+Date: Wed, 18 Nov 2026 19:04:33 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -147,50 +81,216 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: FAexfHYOQoLUT8XbF5TAVRpvC2v2Q2Zcx2aNSwtmKaghNQUSr0aGsG2Zpkr1H5kkN7vDNpsdD0Sq2uBjaOqBtuK68I3sjzVbjVhH86PNNKRLWgSlkmT8xq/TQRKCJwBCHg5qYHzr/6zh2B7pinHrKNx23OaecOcajDtigpvXp1+iQC2wcBndbteuMO8pVvWzBExGVaNF+BBSRlr7oWbH/3DyE4mt4aiYulWrxoxfbjhMgy4t3KsL1DrQz3XCBII+DeT/WCDdAEhOpwShoiypW0FyluNByZWDDglyq26IEAIgBCFPwhIVKpUz05Kmymvr8KRykiZhrqAyOlvfpOWOtA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR06MB6911
-X-CodeTwo-MessageID: e66126a9-2944-49d7-a91d-652acc5b4a94.20261118142358@westeu11-emailsignatures-cloud.codetwo.com
-X-CodeTwoProcessed: true
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:
- DB3PEPF00008860.eurprd02.prod.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs:
-	b868acc7-06f5-4100-96af-08df457f93a2
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|35042699022|7416014|1800799024|376014|36860700016|23010399003|14060799003|82310400026|56012099006|261021121427099003|11063799006|10067099003|261026121527099003|261022075727099003|261022115727099003|261102123227099003|261009223027099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	PUI0DAH6zX1i9x6KuqQ67p8a29BlUKcsQ388G6JPKjorYZShfwosZ9Tc11DEIFMHuGfJgrzAdmsL8jl1aT0b1u910TswMqLnKd1m/EjbCkwhXLghY+1rVCT7H0SUgv6y8BMKF2hsoGpYOHdjHjbZxxaLDk8uzdkGBw/n5BzMyuBtqbgPpmVhRSoav/4BqlQvqvwzCPYJZIXNJVjCzi/j2fg5ffxex+TRMpQlOOt6zMqeI7z4Knw618U1w5QcOQaqIDCQjLfPvdqepkSGwL2GhB+HWURs9Lh06aSAsADlZPamkr0kEyOZlQBMjDm1mrHAvDjebpuZXPlfyeQ0TCzLveg9Yyzf1MXcLD0WyYIQcMbyUVNM634UqeFunCvK/C/ivI1A6oyGQvMyXhPd0LECSm7UFOcJ0GtO0cgS6HP+CSg5CzkaFWLqN/38oPWvg61W4VY8OF/xjGfSdj87z6tAsdgt80YxU358YxYFoNljY09RsuXFYswaluF+yhrNQ97gXT8QSxHMUmwxvM92fQXFBmBZ0fHVIMaGsvCpUAXgozZ80IbYEo2HZtVH8juTa0LJREBgoU2lp2KyiOm9UAdAVMpFBoJvQHD3aH4bpA1MW4AngGJxbxMLbTdO4IrZrZwejYJz9qHOBlz7UNmZcFjXZum4jLAdoUEHp+seifql/UFlrjqZDzAYJyqBdHf1DcRKfsInTb/zaLeej9ruAgByfQ==
-X-Forefront-Antispam-Report:
-	CIP:20.93.157.195;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:westeu11-emailsignatures-cloud.codetwo.com;PTR:westeu11-emailsignatures-cloud.codetwo.com;CAT:NONE;SFS:(13230040)(35042699022)(7416014)(1800799024)(376014)(36860700016)(23010399003)(14060799003)(82310400026)(56012099006)(261021121427099003)(11063799006)(10067099003)(261026121527099003)(261022075727099003)(261022115727099003)(261102123227099003)(261009223027099003)(18002099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	ASIevGTLcXHpU1HpI9h79KNfyirL49TkkTqrFyjmldoFeenVnzyYnTpSJRw6pFFiWzZ568Fekzr9+Rxw3Zjgg3WCB6H1A6EsWo0B8/9N49je9+RS+Zdj6bRAWc3t4rpD7v3UBMpM+Je4HCIi90EZl/n4bMnpNcyLrY/3k/5X2+NbHW2gSVg/44vF4jbu/yicRHMQsg8DOmBx+WYINhbfRP33bS4WPWEmuFoXgvD9iiy9KWog+Br0ndxy2V8bMojyPPbPUU6QyjFginmg2ngk1mgxjiYyeGsEvkBxZ7Xl3wSImRqHaCB63IG1f8wUSjfAi5F4hJViBZpnC6O8BcNZDfMHCWWamyzYLXDQ+a2qOQ0R1Jfv7csTnjxdVAr0ONjMmQkv1ro+dl/IWN3nPlSmYiK8sMofDY6crZyBmD6W7sIvUunYHtIKGXmQqE9tbxoX
-X-OriginatorOrg: ginzinger.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Nov 2026 14:23:59.0250
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 06068005-3afb-483e-2e51-08df457f9627
-X-MS-Exchange-CrossTenant-Id: 198354b3-f56d-4ad5-b1e4-7eb8b115ed44
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=198354b3-f56d-4ad5-b1e4-7eb8b115ed44;Ip=[20.93.157.195];Helo=[westeu11-emailsignatures-cloud.codetwo.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	DB3PEPF00008860.eurprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA6PR06MB10303
+User-Agent: Mozilla Thunderbird
+Subject: Re: BUG: Linux kernel regression: full screen logo
+To: Roosen Henri <Henri.Roosen@ginzinger.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+References: <074e66817a069dca965d9c258606f23fbcb2e1a3.camel@ginzinger.com>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <074e66817a069dca965d9c258606f23fbcb2e1a3.camel@ginzinger.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:CdAZtFkCS++dIujgYOfPc33FibQbsEDg80UH/oR95NvncVw+YCR
+ lTHNqM3TtLKNt94MjEH8VVsPlWd1e/wV3NU54vqf95+Fog3zDJ5GQOoC9qPIRHozer1Sccv
+ NxyyheR4PLxZHO+mg28oUE5A1KSkh3niA02Q4UgTAE3un5wMfcGSMafYLH0WkITAOgwo5Be
+ TJuimkouB5GwpB0mmzA9Q==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:1I0kyM8uXWA=;PJXg0XPMZfz2gdHb3P+7hLfZooY
+ 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
+ rQo=
 
-SGVsbG8gSGVsZ2UsIGhlbGxvIFNhc2hhLAoKSSBoYXZlIGJlZW4gYmlzZWN0aW5nIHRoZSBsaW51
-eCBrZXJuZWwgZm9yIGEgcmVncmVzc2lvbiwgd2VyZSBhIHdoaXRlCnN0cmlwZSBvY2N1cnMgYXQg
-dGhlIGJvdHRvbSBvZiB0aGUgZGlzcGxheSwgd2hlbiBzaG93aW5nIHRoZSBib290bG9nby4KClRo
-ZSBiaXNlY3QgZW5kZWQgdXAgYXQgY29tbWl0LTU4MmE4OTEwOWFkOSAoImZiY29uOiBGaXggS0FT
-QU4gc2xhYi1vdXQtCm9mLWJvdW5kcyBSZWFkIGluIGZiY29uX3ByZXBhcmVfbG9nbyIpIG9uIGEg
-djYuMTgueCBrZXJuZWwsIFsgVXBzdHJlYW0KY29tbWl0IDk0ZTZhMDU4YjE2ODIwZTAyZjI1ZTEy
-MjFhNGM0ZTcxM2JhMjM1NTAgXS4KCldlIHVzZSBhIGN1c3RvbSBib290bG9nbyBleGFjdGx5IGZ1
-bGwtc2NyZWVuLiBXaXRoIHlvdXIgY29tbWl0IHdlIGdldCBhCndoaXRlIGJhciBhdCB0aGUgYm90
-dG9tLCB3aGljaCBpIHRoaW5rIGlzIGFib3V0IHRoZSBzaXplIG9mIHRoZSBmb250LQpoZWlnaHQu
-CgpPdXIgbG9nbyBmaWxlIGhhcyA4MDB4NDgwOgoKICBmaWxlIGxvZ29fY2x1dDIyNC5wcG0KICBs
-b2dvX2NsdXQyMjQucHBtOiBOZXRwYm0gaW1hZ2UgZGF0YSwgc2l6ZSA9IDgwMCB4IDQ4MCwgcGl4
-bWFwLCBBU0NJSQp0ZXh0CgpBbmQgdGhlIHRhcmdldCBmcmFtZWJ1ZmZlciBoYXMgdGhlIHNhbWUg
-ODAweDQ4MCBzaXplOgoKICAjIGNhdCAvc3lzL2NsYXNzL2dyYXBoaWNzL2ZiMC92aXJ0dWFsX3Np
-emUgCiAgODAwLDQ4MAoKVGhlIGxvZ28gZG9lcyBub3QgZXhjZWVkIHRoZSBzY3JlZW4gc2l6ZSwg
-c3RpbGwgeW91ciBwYXRjaCBpbnRyb2R1Y2VzCnRoaXMgcmVncmVzc2lvbi4KCkknbSBoYXBweSB0
-byB0ZXN0IGEgcG9zc2libGUgc29sdXRpb24uCgpLaW5kIHJlZ2FyZHMsCkhlbnJpCg==
+On 11/18/26 15:23, Roosen Henri wrote:
+> Hello Helge, hello Sasha,
+>=20
+> I have been bisecting the linux kernel for a regression, were a white
+> stripe occurs at the bottom of the display, when showing the bootlogo.
+>=20
+> The bisect ended up at commit-582a89109ad9 ("fbcon: Fix KASAN slab-out-
+> of-bounds Read in fbcon_prepare_logo") on a v6.18.x kernel, [ Upstream
+> commit 94e6a058b16820e02f25e1221a4c4e713ba23550 ].
+>=20
+> We use a custom bootlogo exactly full-screen. With your commit we get a
+> white bar at the bottom, which i think is about the size of the font-
+> height.
+>=20
+> Our logo file has 800x480:
+>=20
+>    file logo_clut224.ppm
+>    logo_clut224.ppm: Netpbm image data, size =3D 800 x 480, pixmap, ASCI=
+I
+> text
+>=20
+> And the target framebuffer has the same 800x480 size:
+>=20
+>    # cat /sys/class/graphics/fb0/virtual_size
+>    800,480
+>=20
+> The logo does not exceed the screen size, still your patch introduces
+> this regression.
+>=20
+> I'm happy to test a possible solution.
+
+can you test this (completely untested!) patch:
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
+bcon.c
+index d7890e119dc7..2809c7a6893f 100644
+=2D-- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -666,7 +666,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, str=
+uct fb_info *info,
+         logo_height =3D fb_prepare_logo(info, par->rotate);
+         logo_lines =3D DIV_ROUND_UP(logo_height, vc->vc_font.height);
+         logo_lines =3D min(logo_lines, rows);
+-       logo_lines =3D min(logo_lines, new_rows - 1);
++       logo_lines =3D min(logo_lines, new_rows);
+         if (logo_lines <=3D 0) {
+                 logo_lines =3D 0;
+                 logo_shown =3D FBCON_LOGO_DONTSHOW;
+
+Helge

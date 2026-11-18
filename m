@@ -1,79 +1,52 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795010853;
-	b=VyL0Xg26/40/KXDY7mYMHRWES96wS7ceHed7tL+hfYOvQGQovAaXAu5F+7MrmoU4BuHn
-	 1WqOpAv4O+OMDETRS/fW7px5ZxEt638dTLUvKE7+uHs/pSsQ8NWgI6pdHTatDHvw006JH
-	 ZdUuODix6anobvsVtwTKIHeurO4xI7HEEldluonHReGZOW1gALHUvEszjLc+PATsE/e4N
-	 nsuYiQADnAbnLxpnHHnhKi3dQtHNvRB9VHQZNC/ZPxAYPvmvR82eGzn7xPvChl9umynz4
-	 BXwndOFJ43YntTvxWYqb/uBFZOJUuM/Pdp98DPPJdjHwiHrEtlrvkutMK6zJar14baA==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795010853;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Content-Transfer-Encoding:Message-Id:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Endpoint-Received:X-Original-From:Reply-To;
-	bh=BALlw79+ejk6OgRMXVcg+vLCGJGFEnxxun1tGkBqdDI=;
-	b=VSw3Ii/yHwzowYGb86zdI41YFtHnr6vRkHmUalxJ9GYwJX66GHjApIU+ItqfPMlCJMxx
-	 zwzVOkFKd7myrw2b6f12cwo+Jiycq+10lxiaUGbJGqMthyrGDWLrFapRcve20Z8xKnB3b
-	 L6Fw2zRlbcTxiTkyXBxv4mrPjnEZVbigcg5mZ2Rvk1mWNxO9bMEbvyL7wq1RA1hzqTH3E
-	 EjwoRapgAl9cC2vuL4GF8j3oJ3wB/0qpy41jHBGwJQDmg5en/oy339w6FVLl/WxcRNwx9
-	 NZypqMT0ezaEgxL7WH+3trm3DATswJmMqI/KHkRgoDOHyanGJREknvi/9cTRj1XjLYg==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="RCtlncK/";
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7261E606A31C;
-	Wed, 18 Nov 2026 14:07:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RCtlncK/
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795010852;
-	b=r8Kk1HK7IFiMhTDnh5rGB8+hObuTvpx1A54v0saIH38ixCuh5nMYmd3z3ytb1ttkfL1L
-	 yFKNBNQk61Ch0oy/jY0q912qg10EPc3mYNDbEZx2D7qN2K6Dc6Rx96ZpdxWTTROj4hgIL
-	 J5jbsN0AB7MyGzaBRN2VJxzQSCjgzbdmyiymbakjHFePC1omXcsYm1dhutL9wQjh61VF1
-	 CuB0Qs3kLOG4zW6Ta+xxWeCt6vp2Az+JvMOezXC5rliGDf1VcTmnpAuAYBiAG6erG9/Ei
-	 6fRSO1+VpKi3gfAY5bfOOiunWwKPzYoUjlDN4TMgkr4jpWp7NDB+8ecL27z1t8rgCIw==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795010852;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:
-	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=BALlw79+ejk6OgRMXVcg+vLCGJGFEnxxun1tGkBqdDI=;
-	b=CZU3nNyYgB+WrLON0uoxMSGWqKi8JvrP+P+tRfzIHzpR8L0EXQ1nT/D5EV9lB6VxA8Oi
-	 yhEigvObxbUk5H9AAS2naToHvwC43gNgHbc9r+ogO1nY0Gg8wt2OD9sVjAoVcC3W4kHSO
-	 rdibFcJrbS9xDBjJH2qlOcBiPLzedefyT7KX6ru5if3ZTni8cinwnzEYYh3WgYbkTqU6k
-	 DTXuBkTqaLRVgY2Hhyam6IrZxqaPqqv00H6JA8ObdndjWfB5aiwRfotzhQw/WroQEXgA5
-	 9I9xubevDTCg7fmhq5xqAzp5khGj/6IgR5touJhgNFYtyVICUs4Aj63yPJ0dJxMIITA==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=45.254.49.198
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795011757;
+	b=GyyTg6I7Eh2VZafY+cTPivxi6cCCoC51CxdliTq58jITl/VdZNeNtMn8RTKp0l0tLU+L
+	 lcOt0+HlsBFrgUvSF+GrfX7vncOGW3xWSeGUu0n0gosw48K3gpHemrkVLtadrhs3EndQ8
+	 kGxS6NPmSZp+TmtKhDpuM289VymL5Ai8mJyx0/MPUSVJm+6UCqzkla+fkMmXbwHt8YyVt
+	 8pGb/xrCmhd7GfC37FHZjjNr3/W6asxe82r/COCdC67Mj119Y+rkjqT6WDPl9TMAIGTFp
+	 OxLJ/InOj18j4hTxPiYO6c491ViAbUqRFd+ZJax+ff1+tDHUyf+BWJ3IVobAw7Qku8Q==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795011757;
+	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-HM-Tid:
+	 X-HM-MType:X-HM-Spam-Status:DKIM-Signature;
+	bh=haqNkHmYUBM8afAHWDurlnqO/foJXidzEpjadaLQhdY=;
+	b=USGqEafaaitfesoUlaUiWMVkus0eGSWM/NL0FucEDFEBHttLG9SeyxC1M0FO1a8MySEY
+	 4S6OhkHq3y1sz3etmp0M6ZzuCz/dA9lze3rwCuAQDSU1kRmgWsCuHwooZW0PrOYPfDuIt
+	 EEJXg6k1V+w3F+pdqCTxNeJPEz5wNZ9I3RacjKuvOS9NtIeCjPAtuMY3Z0wDyTlwW/+bf
+	 As+4qcGcUdeI0tU+kFyiKlKsdYOIFhgFtmoWNYV4FgyWcoK0pRyB1yA7R4TzbUab96CY2
+	 TzTjcCydgX4ELN30MSrXU1m69lUvJNrTL+kpT0MR1BvPmtiIvQQo9WJq97n7ebDuung==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=mail.sdu.edu.cn;
+	spf=pass smtp.mailfrom=mail.sdu.edu.cn;
+	dkim=pass header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=eJNYHRwI;
+	arc=none smtp.remote-ip=45.254.49.198
+Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 72A631F000C6;
-	Wed, 18 Nov 2026 14:07:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795010852;
-	bh=BALlw79+ejk6OgRMXVcg+vLCGJGFEnxxun1tGkBqdDI=;
-	h=From:Date:Subject:To:Cc:Reply-To;
-	b=RCtlncK/MIpvG8BkVF+Ccdy+Aa5kympTpJX6kKMYiHAAnF1XAqMqEDUlJoGUB+QQY
-	 nJWLNgove0eDScGUJ6oAjcWOTXVjH0RtJl6YGHOjGWQVW3WPWwWn0kNxpWPu4G8P2q
-	 YZXn4wU5yjXQ7e5wQ0zl+SAur1FFGFigRvfzMz14GKjuV2p3XaG+iTGtHmtR5jnZ1j
-	 /Ofzk7HSOdcBGdaVXqMgKjT9LD/nVSlzBUdRtOHaE/pkfMWIuRY6ls2lXjWGGkeWtj
-	 8miFSfw6ex035rDZlcV1jXSvMFmNyEiB9QlxW+A9fDAX6mzbrrPA+Ufr+RjvniNTxF
-	 OqC5WAgWy9bug==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id C50544ADC4;
-	Wed, 18 Nov 2026 14:07:31 +0000 (UTC)
-From: Suyuan Wang via B4 Relay <devnull+shyckless.gmail.com@kernel.org>
-Date: Wed, 18 Nov 2026 14:07:31 +0000
-Subject: [PATCH] fbdev: cobalt_lcdfb: Don't read info after
- framebuffer_release()
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86A71606A31C;
+	Wed, 18 Nov 2026 14:22:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 86A71606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mail.sdu.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.sdu.edu.cn
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=eJNYHRwI
+Received: from lgs.. (unknown [101.76.249.61])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 5526d7972;
+	Wed, 18 Nov 2026 22:22:30 +0800 (GMT+08:00)
+From: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
+To: Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH] fbdev: s3c-fb: Fix potential registration corruption on probe failure
+Date: Wed, 18 Nov 2026 22:22:29 +0800
+Message-ID: <20261118-324f82bd41-fbdev-0@mail.sdu.edu.cn>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -83,72 +56,83 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261118-cobalt-lcdfb-v1-1-214062966e2c@gmail.com>
-X-B4-Tracking: v=1; b=H4sIACKx/WoC/yXMQQ5AMBBA0avIrDUxldC4iljoGIwI0iKSxt0Vy
- 7f4P4BnJ+yhSgI4PsXLukRgmgCN7TKwki4adKYLRDSKVtvOu5qp663SJrdcErHBHGKyOe7l+nZ
- 189sfdmLa3wfc9wPr0o8gcAAAAA==
-X-Change-ID: 20261118-cobalt-lcdfb-283be7cce813
-To: deller@gmx.de
-Cc: dri-devel@lists.freedesktop.org, yoichi_yuasa@tripeaks.co.jp, 
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795010851; l=1575;
- i=shyckless@gmail.com; s=default; h=from:subject:message-id;
- bh=er7rtpx/jSXL/nx1TsKPyrqeGvkHFZOhjOCGFfe5dcs=;
- b=fDeky12W0HSacB2idTO/VQw34vgDHz88wZN1XKObbv8DHVGPEgYDlyRl4h+ntdPtDy2om7L8f
- L1nwjqbkygJCOebbQvpOheCZriZQh4ZqHGwZ4OXpw4h7ZwdsJH4UdHJ
-X-Developer-Key: i=shyckless@gmail.com; a=ed25519;
- pk=pMtccVGiWES3bV+7YBFuBclkvq2n2HBHQ5azaBrK2lY=
-X-Endpoint-Received: by B4 Relay for shyckless@gmail.com/default with
- auth_id=1498
-X-Original-From: Suyuan Wang <shyckless@gmail.com>
-Reply-To: shyckless@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa1ef09abc403a1kunmfc88f5031a12ca
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCSk9MVhgYSEkdTBlLTk5MQlYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlKS0pVTE1VSU9CVU1KWVdZFhoPEhUdFFlBWU9LSFVKS0lCQ0
+	NMVUpLS1VLWQY+
+DKIM-Signature: a=rsa-sha256;
+	b=eJNYHRwIFeniVMid2Oy+In7DqyaRyzjNcRq4bw24gImwksylgJsGXjQdQKsCqNdyYzWh9d+Yl7k+WxqEglV4Bad/cMs33UCs2u2/zzdDQdTa/C21pXtSEz6rYaZdNNZ1ACYC4WQwwu+7kTvoaEy2rdQW14pgDzofId/GxuUq9IU=; c=relaxed/relaxed; s=default; d=mail.sdu.edu.cn; v=1;
+	bh=haqNkHmYUBM8afAHWDurlnqO/foJXidzEpjadaLQhdY=;
+	h=date:mime-version:subject:message-id:from;
 
-From: Suyuan Wang <stevewong@hust.edu.cn>
+Probe failure cleanup calls unregister_framebuffer() even when the
+window has not been registered. Its zero-initialized node can then
+remove another framebuffer from registered_fb[0].
 
-When devm_platform_get_and_ioremap_resource() fails, cobalt_lcdfb_probe()
-releases the framebuffer and then dereferences it for the return value:
+Track successful registration and only unregister those framebuffers.
+Also skip empty window slots while unwinding a failed probe.
 
-	framebuffer_release(info);
-	return PTR_ERR(info->screen_base);
+This issue was found by our static analysis tool under development.
 
-framebuffer_release() frees info, so info->screen_base is read from freed
-memory. Save the error code before releasing info.
-
-Found with a static analysis tool and checked by hand.
-
-Fixes: d2386d9e3eb4 ("fbdev: cobalt_lcdfb: Request memory region")
+Fixes: ec549a0fdc32 ("fb: add s3c-fb driver for newer Samsung SoC framebuffer devices")
 Cc: stable@vger.kernel.org
-Co-developed-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
-Signed-off-by: Kaixuan Li <kaixuan.li@ntu.edu.sg>
-Signed-off-by: Suyuan Wang <stevewong@hust.edu.cn>
+Signed-off-by: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
 ---
-The change only moves the error-code read before framebuffer_release().
-Checked by inspection; I couldn't build it here (MIPS, and my MIPS cross
-toolchain fails at an unrelated host step), and I don't have the
-hardware.
----
- drivers/video/fbdev/cobalt_lcdfb.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/s3c-fb.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/cobalt_lcdfb.c b/drivers/video/fbdev/cobalt_lcdfb.c
-index f7faa95fefd3..e90f45c91725 100644
---- a/drivers/video/fbdev/cobalt_lcdfb.c
-+++ b/drivers/video/fbdev/cobalt_lcdfb.c
-@@ -297,8 +297,9 @@ static int cobalt_lcdfb_probe(struct platform_device *dev)
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index 82a3bc9de433..c67ad47a49f0 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -161,6 +161,7 @@ struct s3c_fb_palette {
+  * @pseudo_palette: For use in TRUECOLOUR modes for entries 0..15/
+  * @index: The window number of this window.
+  * @palette: The bitfields for changing r/g/b into a hardware palette entry.
++ * @registered: Whether the framebuffer was successfully registered.
+  */
+ struct s3c_fb_win {
+ 	struct s3c_fb_pd_win	*windata;
+@@ -172,6 +173,7 @@ struct s3c_fb_win {
+ 	u32			*palette_buffer;
+ 	u32			 pseudo_palette[16];
+ 	unsigned int		 index;
++	bool			 registered;
+ };
  
- 	info->screen_base = devm_platform_get_and_ioremap_resource(dev, 0, &res);
- 	if (IS_ERR(info->screen_base)) {
-+		retval = PTR_ERR(info->screen_base);
- 		framebuffer_release(info);
--		return PTR_ERR(info->screen_base);
-+		return retval;
+ /**
+@@ -1142,14 +1144,15 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
+ 	u32 data;
+ 
+-	if (win->fbinfo) {
++	if (win && win->fbinfo) {
+ 		if (sfb->variant.has_shadowcon) {
+ 			data = readl(sfb->regs + SHADOWCON);
+ 			data &= ~SHADOWCON_CHx_ENABLE(win->index);
+ 			data &= ~SHADOWCON_CHx_LOCAL_ENABLE(win->index);
+ 			writel(data, sfb->regs + SHADOWCON);
+ 		}
+-		unregister_framebuffer(win->fbinfo);
++		if (win->registered)
++			unregister_framebuffer(win->fbinfo);
+ 		if (win->fbinfo->cmap.len)
+ 			fb_dealloc_cmap(&win->fbinfo->cmap);
+ 		s3c_fb_free_memory(sfb, win);
+@@ -1272,6 +1275,7 @@ static int s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 		return ret;
  	}
  
- 	info->screen_size = resource_size(res);
++	win->registered = true;
+ 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
+ 
+ 	return 0;
 
-
-
+base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
+-- 
+2.43.0
 

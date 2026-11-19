@@ -1,57 +1,56 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795109522;
-	b=dUZQtQMEipd8FV6S0KhPB6bW0Vrg3FJeX15sR7ItxFNq/rBXe4NiPM8CIqLUZey/f8qi
-	 XVffrXhD6HIOI+2yiLvJ95NjuheOo0rb9FBN97UCIVsrCPaHQlOfWw9lEevLcX0TYb9qV
-	 GwGqn+UerVzrnNFK012blN1Vgk5V1FCA803SaVjNscP8ZFBLQ9bAMTCVarWOf78+pESgw
-	 Ui7rXFCgjE/xbkYCY4zYHi4ksC5tdz42p8sAm0JyM26dbqD8oLx1PwzmbLabV8tcHCX7E
-	 U2v9NcY6EIUPDTBRkBuwONyVBcOBxpp/It+AWHjJP2wycbyq73hGOYdhaHZYvEK/E7g==
+	t=1795121034;
+	b=Osnei4bWjFLcfsf7XDxCf+AkROA+NC2o5bUiMs0ktMIuQrlk4Kpk9pV5XI91wuso+uVi
+	 rpU7BV0M/frc09opo0wFC+Va5ybKngZR2t9j+7jqkXFRpgOuz0g44moGm0A10v3orkFK8
+	 Tvjp2dTk4X5ObghtcpML3/d/e7yhxfBv9Lub/lVKQ2XO2JshLFXfpPQWGqaTbpDEVx6IN
+	 lkL+VhdTQjKqyBULCuOrmeSPuXg8gAgr5Y+54KDQpAp/b+2JzQzCSXKJyXtEbh/5/5BaZ
+	 YJ9Ee/5kKd7KPnuegU0KDro55YJcnlr1eyT7H1SPtBia4gypC5sCLm4RGyxywLM1EtQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795109522;
-	h=Received:DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
-	 Message-Id:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	 X-Mailer;
-	bh=dWOqVlQrDMo1jk4gcSOpGcbX7n3Zd69ocOnoUDk8YzI=;
-	b=RGa8BOdXFS0P1omcdfTfzhpOaEhCy7kNDrCXR0rAuAwWp9bV5FcJBoQcVGCxQaJ2QkkK
-	 9BYwAltUP51bHMjrQRoRJbYQzl0TvXfKmmlg4ol/W25ROysd6HLlukjPsDEoalxj46m28
-	 alUU4/XOncfsS8NVJG5jjW/gWyonolepL7aGzhrnS9mLMQzOqxdteHxSup34SHHUNToQe
-	 RLIMfCLHI9b9AJ/d9rnaO19ZeOnY2OGeNX161Y2E2WIec+Dj+B8JHS8Xv+f0RamnUAn73
-	 6F8pYvJJGPdD+DhnyDHbSPwkDsFZh8u6j83XiBmVIJF1Y2jzerdl1VziYHk1AGJWpqA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795121034;
+	h=Received:DKIM-Signature:Date:From:To:cc:Subject:In-Reply-To:
+	 Message-ID:References:MIME-Version:Content-Type;
+	bh=5FuGWnpoRnGfJUPP95+vbL5XVs0jYD6RpmDm3Ay3n3I=;
+	b=NrrlyCU1aYGKnSo7oHtaj6yUHHkSezoVZ/ZAeUPK0ZRFrqo7u2LkdLNgBce6v56I1qpm
+	 TudA1f6QU68q4pOu1goBb3cDUyzxm5rt+To+L4K4D+GH5XotA391scZHBx3VaJsLEjwsp
+	 pr/Kloco/kua1az/QdmVxvZzvV2ZwEXJrK4Sp12+d03cSiRVg+nzrRFkB/dEGPg0W2DNn
+	 4toCh11uTeNu1gMawcWEA65cNJZ9XObE0ZO2Xn0n+27eD4y0DxbjVYmHS/PUDXHytid/W
+	 qtAjUM36GVfR45tABcujeUivx2YxhR0ywhet8x1xE4FQxtW1gCxq0NKKngxQSi1L4PA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HUlUxbux;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jFBRAhnY;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBFA5606A334;
-	Thu, 19 Nov 2026 17:32:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB6BE606BB80;
+	Thu, 19 Nov 2026 20:43:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HUlUxbux
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E56301F000C5;
-	Thu, 19 Nov 2026 17:32:00 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jFBRAhnY
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9AF71F000C0;
+	Thu, 19 Nov 2026 20:43:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795109522;
-	bh=dWOqVlQrDMo1jk4gcSOpGcbX7n3Zd69ocOnoUDk8YzI=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=HUlUxbux7Jbt48w+1T9O49pg9fuSGa7KkSN6Ru2P3XJJQFOiYyS9V2Nt4kfYF0QtT
-	 MTCvdl+gQxnAcpUSVq/6Tx9xbIak12AWz+Fepo1XMUGYeA96/V0bz5K2pT2COS4sLS
-	 Xm02UOsgVBiSjmDvsjCGHmRyleo+9sNPg2/JXlo0cSAIm1YmFoOVwjjeOyKg3WqzEU
-	 Bq4x/lkAVF6wsQ+wf628q1QD0LLotjfpDzcZtlXyw2TQQFVq9LOrUcxDCSgHh5aio0
-	 PV6NjSnhDZsww7U/guq5V0I4xZX/t51qkQq28EihT7t2GGXCng+ImHSOaTmBiZDbJR
-	 JlGg6OGKJaiXQ==
-From: Lee Jones <lee@kernel.org>
-To: Thomas Richard <thomas.richard@bootlin.com>, Lee Jones <lee@kernel.org>, 
- Daniel Thompson <danielt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, 
- Helge Deller <deller@gmx.de>, Petri Karhula <petri.karhula@novatron.fi>, 
- Manuel Ebner <manuelebnerli@mailbox.org>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <20261113114552.895592-2-manuelebnerli@mailbox.org>
-References: <20261113114552.895592-2-manuelebnerli@mailbox.org>
-Subject: Re: (subset) [PATCH v2] backlight: cgbc_bl: Fix kernel-doc
-Message-Id: <179510952067.85896.410495559913801385.b4-ty@b4>
-Date: Thu, 19 Nov 2026 17:32:00 +0000
+	s=k20260515; t=1795121034;
+	bh=5FuGWnpoRnGfJUPP95+vbL5XVs0jYD6RpmDm3Ay3n3I=;
+	h=Date:From:To:cc:Subject:In-Reply-To:References;
+	b=jFBRAhnYENrURvD8F7EwBKzD5YEBanB30Si908P1ro7xGIL7NvfGXP7lkwgaJtry5
+	 gfAkClH/QQ/ID5F9oBvYRpnzEzkeq7iZqdm8MAAbA9NOjkIIbwjK6/j2UbnEHok4CY
+	 i4OrGED4Yz7K3Io6bx9rmu1Carz53pIeqdRvbI+WkGGjEuGFYg/Jh7Xzs7EfzDEZbO
+	 nvzhDuufOQQLvPX4q+0/gGaHXcz+ggIxDnreo1IfSprP3Aen0DSEMiYuN7EHkjoog8
+	 N0glqOkvhUZQp+AKyd3NdxVE0iRtsxQT0Su8HiAoz5kIPyfKpJa2GnFFtstu2jOIvD
+	 mes136M1B7TKg==
+Date: Thu, 19 Nov 2026 21:43:51 +0100 (CET)
+From: Jiri Kosina <jikos@kernel.org>
+To: Helge Deller <deller@gmx.de>
+cc: Benjamin Tissoires <bentiss@kernel.org>, 
+    Aveline Noir <jm5905938@gmail.com>, linux-input@vger.kernel.org, 
+    linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] HID: picolcd: Avoid framebuffer last-close
+ deadlock
+In-Reply-To: <f52cd9ed-4e23-4160-b305-650d853bc18b@gmx.de>
+Message-ID: <5pr05248-751q-224s-2876-pp5599q5o985@xreary.bet>
+References: <CANOyQmGfmBdTRaEamVdGuMBToVLeXGi6qLrnX=xkA9acsL9TSQ@mail.gmail.com> <CANOyQmHF-gjvnLqTGEVBcU6+AWj5ha+7tJhE2E_Cv9aj-gRXdA@mail.gmail.com> <76cddcc5-2cf8-40da-9139-e78353975e41@gmx.de> <179308935900.645289.17780178981863221787@gmail.com>
+ <f52cd9ed-4e23-4160-b305-650d853bc18b@gmx.de>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -61,21 +60,19 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: b4 0.16-dev-ad80c
+Content-Type: text/plain; charset=US-ASCII
 
-On Fri, 13 Nov 2026 12:45:52 +0100, Manuel Ebner wrote:
-> This comment describes a struct as a kernel-doc. Format as such, fixing:
->   $ ./scripts/kernel-doc --none drivers/video/backlight/cgbc_bl.c
->   Warning: drivers/video/backlight/cgbc_bl.c:29 This comment starts with '/**', but isn't a kernel-doc comment. Refer to Documentation/doc-guide/kernel-doc.rst
->    * CGBC backlight driver data
+On Wed, 18 Nov 2026, Helge Deller wrote:
 
-Applied, thanks!
+> Jiri & Benjamin, can you check and decide on patch #1 of this series ?
 
-[1/1] backlight: cgbc_bl: Fix kernel-doc
-      commit: 7f124d0893d69cb702b333c47ed56683abec5c6c
+The patch is line-wrapped / whitespace damaged and can't be applied.
 
---
-Lee Jones [李琼斯]
+Aveline, could you please fix that on your side and resend?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
 

@@ -1,48 +1,48 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=117.135.210.3
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=220.197.31.5
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795097205;
-	b=VIiRBQXn0qX7bgT/LR57IXGsiYKN6x1aFBJ081ahggwHzplI8J74uDrFOZyPBEAYfaRv
-	 JsJTwyuUDaDjKzZbHhwBWaeWU8HfvlB55wPS7QAN0PtFkKCmY22abkWNKexczJUA/l/0N
-	 d8NjlHM63JRnrcFjqc553FhtDXbNnKEAvC1ihxnjQShDlYAGB1h3OQGeNOlL1+RiSwL6r
-	 T7DsFMBQawqVVXNApQjhWcBkVSKa1J8YAcABmvNypdJXOyH/rLuiV4ItaoA2NGC6QeTsE
-	 cOMY5kYKprnGv7VNHMp5RaF0bDwD2WhtIOu/S7InMlzu9ahcYj9l6DozvDGv8UC7qgQ==
+	t=1795097211;
+	b=boZQyHHs/ZpcT/2KlGuxiO8+psAcHJ1FRKByqPD1SnT2H8OY5PHhOE1H2E7EMQKnLy28
+	 xWKk7zNtLNavBRd+cvE7PxwZ3vHTC4ImYGdy03hW1RpCHlgbH6PaKWFyY6Df30lz6zho9
+	 vU5Q8HgjnAeWdCjKpPi99mxbDIwBOPeVNz/qMfFVd6at42qI9PgIRy7IHpgPqrDpxvb7k
+	 Y+/FNUsHENpzNoC4hQBvNCaqfopLt0PGVKn4Mcgb2vzy1fhEOyvDVXtaZ+AOGFCprUspo
+	 yityy3P0iCOqI15mTj/y/T4oFMn7GBpS3P0qyzb6IcZT/CYErIX7SbBq0nIvJM1jkTA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795097205;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795097211;
 	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
 	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:X-CM-TRANSID:X-Coremail-Antispam:
 	 X-CM-SenderInfo;
-	bh=vLqBhvls3J0T+lMLmdvKWmEWWHL4FOKReVb0TX0CKAM=;
-	b=IuSQHFOLfr4rfGnmeLiYuYT6Ipd3Qo4NnV1MLamip9SEN0gsgiyfQvt0TH6liN8S08Fs
-	 VHpaOy9u+9Cx07m0ryECgnLs3tAtyDDiNMfwZv6QGhxU10Jh5yShPfbNWSp4y27gdj8Dd
-	 TAYyRm9wZSV/Tu415DLFRjj0Txkfaaf5ppiOLOkozjI4/PuJWru530wZG8WDqgPF261lW
-	 7/H5IR4CuN601o2xt4SDd/5i2bgISWFJKKg+NbDob9WWkJp310kN6vxiR1MTlwhaskqUl
-	 DHRQ5wTSsZb5dm8QkxnJ0BtULydJU/bYXXaUcRInnpHDNPPgD1djBEAUzd4zfXzuumA==
+	bh=sp4rvbDM8GISTutprCtHpY1FubOH5yKlYsRY2NVBflw=;
+	b=rqFkN9HC9J3RGYYOWW0mkJ0oLfLnHjGfXj4btYm87tjNn/Auingqj4wkkXPSoI1VlTDf
+	 3Wx7yzI9IpPU2T0fGABozfvOjvO0jXGzxskPUVot5FQaW/xTEKQAFgl+B3SmHRRBXhiGo
+	 DriVR0KoannBTkSWgK/G99bxaO7fKVYsu8Hk3mjFnmfIGGwBsn1o6sCyLPiszF5QHW9mn
+	 8wm/tDoagpasLNf+P8URpqu8Aybwavp4z3LN2IoFPUErRCtTzldtTOrhY4EOej0g2ESg9
+	 8mu6F8rqbwgoc4JGnOY7DTqxrJYSli2GkFHff8koGTWTTaAsQk33/Sqoiiz2kTbQ4/w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=163.com;
 	spf=pass smtp.mailfrom=163.com;
-	dkim=pass header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=lRusmdKl;
-	arc=none smtp.remote-ip=117.135.210.3
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
+	dkim=pass header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=UeT1tk7M;
+	arc=none smtp.remote-ip=220.197.31.5
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4055F606A320;
-	Thu, 19 Nov 2026 14:06:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 4055F606A320
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6824F606A32A;
+	Thu, 19 Nov 2026 14:06:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6824F606A32A
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=lRusmdKl
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=UeT1tk7M
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=vL
-	qBhvls3J0T+lMLmdvKWmEWWHL4FOKReVb0TX0CKAM=; b=lRusmdKlEJ8/XKvbkY
-	0mcJWuo+p2wT5/6iBOeCHcEtblGOzZ/VuHL+gS4EwCNb8FBNaITGue8KVbXtdI2l
-	Q4y+NBLMeVSGoLdXXzo7awSEIbDi5FzTJNC8c7Q1QqM24/VMWDP6K1QM//X8IBEZ
-	Z9RsGlqQiY+ezsssDqe7AtTVQ=
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=sp
+	4rvbDM8GISTutprCtHpY1FubOH5yKlYsRY2NVBflw=; b=UeT1tk7MLiS3d2L2nk
+	8A+cvM4gZLWGGtVZpFm0i0QG8OnnRpvbYTZFQ9kYxfyjDkulA1FLT+ZMvjyJrigl
+	+mT7HD91I7U+ziIOZWBOAcqmSCINdRA43JQnR6QWlIPCq+4GwV0r1qzsQ36c44cS
+	sLCzUAMIWzyYeJkvfNHJx7BjY=
 Received: from Ubuntu26.04LTS (unknown [])
-	by gzsmtp5 (Coremail) with SMTP id QCgvCgDnb6hdAv9qLxZ+Gw--.50288S5;
-	Thu, 19 Nov 2026 22:06:23 +0800 (CST)
+	by gzsmtp5 (Coremail) with SMTP id QCgvCgDnb6hdAv9qLxZ+Gw--.50288S3;
+	Thu, 19 Nov 2026 22:06:22 +0800 (CST)
 From: Jiaqi Shi <shijiaqi_develop@163.com>
 To: sudipm.mukherjee@gmail.com,
 	teddy.wang@siliconmotion.com,
@@ -51,9 +51,9 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-staging@lists.linux.dev,
 	linux-kernel@vger.kernel.org,
 	Jiaqi Shi <shijiaqi_develop@163.com>
-Subject: [PATCH 3/3] staging: sm750fb: remove duplicate SM750LE_REVISION_ID definition
-Date: Thu, 19 Nov 2026 22:06:20 +0800
-Message-ID: <20261119140620.169368-4-shijiaqi_develop@163.com>
+Subject: [PATCH 1/3] staging: sm750fb: remove unused MHZ macro
+Date: Thu, 19 Nov 2026 22:06:18 +0800
+Message-ID: <20261119140620.169368-2-shijiaqi_develop@163.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261119140620.169368-1-shijiaqi_develop@163.com>
 References: <20261119140620.169368-1-shijiaqi_develop@163.com>
@@ -67,36 +67,31 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:QCgvCgDnb6hdAv9qLxZ+Gw--.50288S5
-X-Coremail-Antispam: 1Uf129KBjvdXoW7Wry5GFyfCF1rCF4xJryrWFg_yoW3Wrc_Xr
-	47Kw4fJ34q9ayvyr4Dua10yFWFq3yUX3y0g3W5K393ursrJFZ8Wryqv3W3ZryrCFWfGr9r
-	Z3W8Jr4Fy3WjyjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7xRRDUUUUUUUU==
-X-CM-SenderInfo: xvklyxpdtlsvxhyhz0rs6rljoofrz/xtbC7x8yhWr-Al-wHQAA3i
+X-CM-TRANSID:QCgvCgDnb6hdAv9qLxZ+Gw--.50288S3
+X-Coremail-Antispam: 1Uf129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
+	VFW2AGmfu7bjvjm3AaLaJ3UbIYCTnIWIevJa73UjIFyTuYvjTR-BMAUUUUU
+X-CM-SenderInfo: xvklyxpdtlsvxhyhz0rs6rljoofrz/xtbCzh4yhWr-Al44eQAA3v
 
-sm750.h includes ddk750_chip.h, which already defines
-SM750LE_REVISION_ID. Remove the redundant conditional definition from
-sm750.h.
+The MHZ(x) macro has no users in the driver. Remove it.
 
 Signed-off-by: Jiaqi Shi <shijiaqi_develop@163.com>
 ---
- drivers/staging/sm750fb/sm750.h | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/staging/sm750fb/sm750.h | 2 --
+ 1 file changed, 2 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index ea8f445b5fd4..32f58bd7b547 100644
+index fd1cf9eb5797..7511fab2e0e3 100644
 --- a/drivers/staging/sm750fb/sm750.h
 +++ b/drivers/staging/sm750fb/sm750.h
-@@ -7,9 +7,6 @@
+@@ -5,8 +5,6 @@
  
+ #define FB_ACCEL_SMI 0xab
+ 
+-#define MHZ(x) ((x) * 1000000)
+-
  #define DEFAULT_SM750_CHIP_CLOCK	290
  #define DEFAULT_SM750LE_CHIP_CLOCK	333
--#ifndef SM750LE_REVISION_ID
--#define SM750LE_REVISION_ID ((unsigned char)0xfe)
--#endif
- 
- enum sm750_pnltype {
- 	SM750_24TFT = 0,	/* 24bit tft */
+ #ifndef SM750LE_REVISION_ID
 -- 
 2.53.0
 

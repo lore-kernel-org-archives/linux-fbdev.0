@@ -1,51 +1,95 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.175
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795202224;
-	b=J9SCtLoGhupRknB7D5LY51DerNLxUeZNnvHkDoyLPOCjjbmAF3u2qwDF6jEf3kRkk4//
-	 dR0p4ZZjBVxtjNZv/xONGhAjlsOjZ0LNQQdTMM25Q75DMR1jKdmpSqckcjfWuqnsYKg2Z
-	 +3kob6TiVReRGFGP9FCVZ91pFv4A3UhFjogMIZH4xz4Hq3ePiuGUHGwalH4EQQozy2FDz
-	 OtU5xF5iG5cXbIqG7jAVml2BP6nWzq9m1NHSyboJVsfevSlFgruQwM5MMjh+yP/WPVngD
-	 0zpfMumSZwc5mQiiLVgJDU94Ag5eJcb6L5h4pCtlcXw6vT/pvullZwD5jD0L1PrtItA==
+	t=1795205409;
+	b=dGZqM/jEquexZ501q99B2R8200UsLUCdLymc5YrdjsUrVLDqbGm9WYppuVOU9GUe3vRO
+	 0wfr31IzMP7Tgx2ig1GPT3u6LpShvBiX2ZwO5LJikAh960ppNEO1dPM7nF3zuJeE4ApcX
+	 YgIzNfrvmmipuq2V5IkabLGyuIeVYMo0imlB/t/IN6BDtoZ58u3lcg3l8yGcDNu4w7E4C
+	 9f9a4j0uMMH3qmLwvYEuKuljYOuzCjgX+G8yXJIahtjmsNeEaQ5HsuFUABOTLKFKhpdZk
+	 L7mPTB2hvfeOLjU0X9HnNyKEVYX4ecM1oqkubwif36CImvaezWArOKtsCe7j5tfRc1Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795202224;
-	h=Received:DKIM-Signature:Date:From:To:Subject:Message-ID:MIME-Version:
-	 Content-Type:Content-Disposition;
-	bh=8c0/NtjrTm+B61tLaSp0UuIedJNCONp0D79/5KD3kpw=;
-	b=GVJm++bpSi1Rm1eBf0O+DeT/1Fo64vlrZURwonhtjK0UkOXAJ+mQTc3XNggokJiGKtl5
-	 faZTrVOPHpoLp49dDB3CyCvVHhkqE2ENoImBXeT574KA5DCWi1ySMAMv+G+zyVD6WNDYU
-	 9a2RPxxD354KTi+e9xXOGz/fVSzIBVvGcM6EEes/Tm4San/yr3PVtbRUX2VCqJSsWGPL6
-	 QVhhw7FbpePxbIoli381Md6e5m7dgEVIoZC5GdZ2ZWc5rJ8K/iAq75juqNUGsiIhgUsBY
-	 ceUQBfy/DyFIJ6dkqNPkYKwf5OollDsvjDYOAXok693t5VoCZUXEEloYJq8/vtriuMw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795205409;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=M68LbjcTJ3E++0vyBdIVrjiqmT6srx4BEI+V4obs4pE=;
+	b=lAWTS46OOXbPUpRRkPeEFuu5byvDc2EIT1xefXUOqKJekzgvLErTS1oXlaPBO4z6HGdZ
+	 4ZzRM+fwbhTYAktKBu0qeauxvCH7Lw1lMvxTAtk+4rnuEXMPoOGTTmvR6QTvhftik3xqW
+	 zAV2wHavo8RvcaxxBgyb55ipee0KNpQrdPCnUW0thbk+wO4ovuYtI9bVnw9HFtgulF39W
+	 2bo8uccZ6obcNYtEBUvFbj2kCsdudNxAp9z1LQCWQTWyqSuVBjdGRct9yfkkGJfRoqtop
+	 /hwhxivWoCGVP7mwAdxZ138RvDLy2+nF5U7qfQkbM563K3bxG80d/4juvuVP6DJbr3g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cj+uLyHl;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=trailofbits.com;
+	spf=pass smtp.mailfrom=trailofbits.com;
+	dkim=pass header.d=trailofbits.com header.i=@trailofbits.com header.a=rsa-sha256 header.s=google header.b=Gg5LX1qX;
+	arc=none smtp.remote-ip=74.125.82.175
+Received: from mail-dy1-f175.google.com (mail-dy1-f175.google.com [74.125.82.175])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E9C560A261C
-	for <linux-fbdev@vger.kernel.org>; Fri, 20 Nov 2026 19:17:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 02789606A6DF
+	for <linux-fbdev@vger.kernel.org>; Fri, 20 Nov 2026 20:10:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 02789606A6DF
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=trailofbits.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=trailofbits.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cj+uLyHl
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 74D7F1F000D0;
-	Fri, 20 Nov 2026 19:17:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795202223;
-	bh=8c0/NtjrTm+B61tLaSp0UuIedJNCONp0D79/5KD3kpw=;
-	h=Date:From:To:Subject;
-	b=cj+uLyHlU4Z9OEQn6EMHtpuN0H7xI6GAZryLNjxkjIkKwU+GwZ+xwWmcR5lH7b7q1
-	 l4YaDC2Tnn6pjqjkHJ7botKoEtImHCTabrA0Z7SqKfawCtZC0Q8fjBBcn1YPKyFQr/
-	 kVE3ATOO+Iefr0TXNTig/lfcEm1bLc7cHheEsSaOkilbk5NOmjHp+/PrQXhOZ9HVkk
-	 Opqa0jXOLb4vKRb96o0aguLgtUs/8xsoY9nHDX8e0YolWnvQ2ee25WDPdEJi3XvusE
-	 oybhT3EukWL1VLKcJTKvvBTZiBkBPJXXnAbRpQj0agIGTyQNulkVd8imLl3NTl3C4w
-	 +LgZL+lGSRw9w==
-Date: Fri, 20 Nov 2026 20:16:59 +0100
-From: Helge Deller <deller@kernel.org>
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	Henri Roosen <henri.roosen@ginzinger.com>
-Subject: [PATCH v3] fbcon: Don't drop last logo line if logo is same size as
- screen
-Message-ID: <awCcqwVKi_n0KMhi@carbonx1>
+	dkim=pass (2048-bit key, unprotected) header.d=trailofbits.com header.i=@trailofbits.com header.a=rsa-sha256 header.s=google header.b=Gg5LX1qX
+Received: by mail-dy1-f175.google.com with SMTP id 5a478bee46e88-3866a784546so1011423eec.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 20 Nov 2026 12:10:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=trailofbits.com; s=google; t=1795205407; x=1795810207; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=M68LbjcTJ3E++0vyBdIVrjiqmT6srx4BEI+V4obs4pE=;
+        b=Gg5LX1qX17VWmImDXwcPSGRir+9pe3muYHdBXXn2TQZBLaax2P5BdibC66jKqm8gXj
+         wPaxIl7kqPOBeGHU41R9p9i4a8Vko4bRLscP3RcRlM8AP79jbI/epFFZKM9YeqtMcKfP
+         ep9AaCBVX+senmrCXWT5t/PVACubiiShEmjkVFxMK1EIqnWdMQqJPGdsPdYI14SwXEED
+         SkcrTKBu+2jku7MZxtBytLDxWEWhCEBjaYULCLysORczlS0sgw6kLKnjOjS7OjPH6Ub8
+         zPxjODqEY5YKdEpT9gfUveoR7keIfRLvgKwas334lsYQ8ciBqybX9euPEl+qxVwi2qxK
+         VlOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795205407; x=1795810207;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=M68LbjcTJ3E++0vyBdIVrjiqmT6srx4BEI+V4obs4pE=;
+        b=iJyNPR5jxTuyuFWA5ChMqJ7I5ufTpk+RC1Mr84W6q0rbENtZus6KxkEkxqWNRJdqit
+         XuYMqhiI9HGCWWAawhgtHwO9UD8rUEmya86hgPZg5vPmKP1+wRHiNGXemJiBo/gBPxur
+         sk2Tdt/l7HzZ/pGpbaiHHwb6pVDHubTquV8KudFc9BBCFVJx9TC590M1w2rWlt7uL1zs
+         O4BDHbBdJQ226Luz31qz9S2RHC8D/ITyk1SgBO5+Stsb0rVgPYNWKnYy1XOIwazf5zpk
+         IO1vAUNeBGQ1H7RLywVjue2ld5oUSQm90zHVxjJMIpvOPwK8SgZYG5w4LRD/SBUOAAjb
+         NPdw==
+X-Forwarded-Encrypted: i=1; AL+hErEFzadd2IFqv2If/1hXHDJqmJTQ6d5EqfnaChRShB6Sys02p+wHlRTWVBWqKMuDYj4zinwrfAXZnCeGvw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+yrE2gorELsUcOzG+jK38YM+5+w/0kuiyfEFbB+S2rsFnUwmpS
+	NGngAiDpW7u11N5M4LpTiXlzJd8Ws/zt2pfWC+g7JBpFXnb0T8YoqUko3w4ToQjpGxSCMdJGSXR
+	d4e8Q
+X-Gm-Gg: AYBFou3wrrj/mStWE+Wx9JCAmAMhJz0edi+Hk80YLTEWXk6BQXzJ0/r260gc4QU1WuG
+	iO8qr38Qhg+Nme+HFAX9f/c7W0fBGWUzLI7RxOlZxwekG5dfNrEWAezSEGnnVWxPYtBVNUd5Skz
+	2cYZg41sB2Nbot0B5WvIPZAo/tq1+n/bJ88n1N4NWTI40rGugUK5CzcJA08PpxJezfJKOLdbERd
+	wGcTIpfgs8LVfFKSZuh5VM/TwHRP0no5NVZbVdZZNZnSuiSiFT4YZ/kuV4NOibdl9iEaNv0V7zF
+	RJrPOHeK4FkxLdlK5LSCXhYj0hgqIugh40Mxr1XBksQuKLWj0+/KYaOsS6pxfZUKe9iknbfJKX3
+	gjJyVBDEWC/1Zs4IoPqgpOr97G+xN01oXDtoq870RCiUZg1qoNt1EPKS7xvpAP1Ddy3rtJf+Dz1
+	DWHHYfQO60Ln1kJRYEeQy837U2heM9UYCKXQjrXM5M1p8gSQtXkGS7lGVdvOg+bJcgEZgsjpqb+
+	VEO1rOqdGocfdMnL7m5sYAOn58Zh3hBCnA0tos9GbM6U6QYImmLVQ1nsrbDEBlZy0eUnGy7wksX
+	k8aGpGT1gOZq7uopI44MB56UkmzeVSsnW0Y8q1wzDzweOLSQg2XvVqI4jtUYSVZ0jcAlvNL6LYD
+	SrK4UYhghHdyREjFrzUI9q8U=
+X-Received: by 2002:a05:7300:88:b0:386:959c:11ac with SMTP id 5a478bee46e88-386959c141bmr1391312eec.6.1795205406871;
+        Fri, 20 Nov 2026 12:10:06 -0800 (PST)
+Received: from localhost.localdomain ([2603:8003:6d40:6669:dd51:675:4b81:7ba])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38567abb870sm8771267eec.25.2026.11.20.12.10.06
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Fri, 20 Nov 2026 12:10:06 -0800 (PST)
+From: Artem Dinaburg <artem@trailofbits.com>
+To: stable@vger.kernel.org
+Cc: deller@gmx.de,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	mlbnkm1@gmail.com,
+	simona@ffwll.ch
+Subject: [6.18.y] Please pick three fbdev mode-sysfs fixes
+Date: Fri, 20 Nov 2026 15:10:03 -0500
+Message-ID: <20261120201003.42046-1-artem@trailofbits.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -55,61 +99,43 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Henri reported a regression that when a custom bootlogo is exactly as
-big as the screen, a white bar with the size of the font height is
-displayed at the bottom of the display.
+Hi,
 
-This patch fixes this off-by-one bug, but now -as sashiko-bot noticed-
-since the logo covers the whole screen there is no area left in which
-the text can be scrolled. To avoid accesses outside the screen memory
-simply keep the text area covering the full screen (and possibly
-overwriting) the full-screen logo.
+Please pick these fbdev fixes for 6.18.y, in this order:
 
-Fixes: 94e6a058b168 ("fbcon: Fix KASAN slab-out-of-bounds Read in fbcon_prepare_logo")
-Tested-by: Henri Roosen <henri.roosen@ginzinger.com>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Cc: stable@vger.kernel.org # v7.3+
+  d15d51fb26e830af58f3f21964f1c09c239077ea (CVE-2026-80580)
+  ("fbdev: bound mode sysfs output to the sysfs buffer")
+  95e647d2a5304a8fd11f1ba3c8502de700650131 (CVE-2026-80579)
+  ("fbdev: clear fb_info->mode before deleting a videomode")
+  061db6b7a910b8378f3b2df64f8c0a3ddc6e85f2 (CVE-2026-80785)
+  ("fbdev: serialize mode sysfs access with lock_fb_info()")
 
----
-v2: first sashiko-bot fixes
-v3: sashiko-bot noticed another problem that screen gets cleared on full screen logo
+They bound the modes output to the sysfs buffer, clear fb_info->mode
+before its modelist entry is freed, and serialize the mode sysfs readers
+and writers with modelist replacement in store_modes().
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index d7890e119dc7..e7240eeb8381 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -666,7 +666,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
- 	logo_height = fb_prepare_logo(info, par->rotate);
- 	logo_lines = DIV_ROUND_UP(logo_height, vc->vc_font.height);
- 	logo_lines = min(logo_lines, rows);
--	logo_lines = min(logo_lines, new_rows - 1);
-+	logo_lines = min(logo_lines, new_rows);
- 	if (logo_lines <= 0) {
- 		logo_lines = 0;
- 		logo_shown = FBCON_LOGO_DONTSHOW;
-@@ -734,7 +734,9 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
- 		pr_info("fbcon: disable boot-logo (boot-logo bigger than screen).\n");
- 	} else {
- 		logo_shown = FBCON_LOGO_DRAW;
--		vc->vc_top = logo_lines;
-+		/* keep vc_top if logo covers whole screen */
-+		if (logo_lines < vc->vc_bottom)
-+			vc->vc_top = logo_lines;
- 	}
- }
- #endif /* MODULE */
-@@ -2269,7 +2271,9 @@ static bool fbcon_switch(struct vc_data *vc)
- 
- 		logo_shown = fg_console;
- 		fb_show_logo(info, par->rotate);
--		update_region(vc,
-+		/* avoid screen update on full screen sized logo */
-+		if (vc->vc_top)
-+			update_region(vc,
- 			      vc->vc_origin + vc->vc_size_row * vc->vc_top,
- 			      vc->vc_size_row * (vc->vc_bottom -
- 						 vc->vc_top) / 2);
+The fixes were tagged "Cc: stable@vger.kernel.org # v7.1+" and are so
+far only in 7.1.10/7.1.11 and in mainline since 7.2. The affected code
+is older: the CVE records list all three bugs as present since 2.6.12,
+and 6.18.64 has the same unlocked show_mode(), show_modes() and
+store_mode() paths. If the v7.1+ limit was intentional, please let me
+know and disregard this request.
 
+The prerequisite, upstream commit 6f611e5e5f33 ("fbdev: Wrap
+user-invoked calls to fb_set_var() in helper"), has been in 6.18.y since
+6.18.57. All three fixes apply unchanged, in order, on 6.18.64, and no
+patch currently in queue-6.18 touches the same files. 6.12.y and older
+stable series lack these fixes as well; this request covers only 6.18.y.
+
+Compiled drivers/video/fbdev/core/fbmem.o and fbsysfs.o on 6.18.64 from
+a cumulative x86_64 tree using allmodconfig. No kernel boot or runtime
+test was performed.
+
+An LLM was used to check applicability and stable-queue history and to
+draft this request; I reviewed the result.
+
+Thanks,
+Artem Dinaburg

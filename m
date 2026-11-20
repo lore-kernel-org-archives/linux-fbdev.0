@@ -1,99 +1,99 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1795175550;
-	b=F42jA9OZvz6gFqOpUz5R9AFCv73ZIsK06E0qc60tLOS1CM9FKzvMif736/PVG7MrQjN4
-	 uPfJpmep58Q3qUch6AlE2HdwTyoM3srprgajpsypBDpodg9IQzmRwByH135fFi9isgR9K
-	 J/bES3V1FfBI1atvVCx/nEVDEuEjXrfx2hNrzEI5Q3ij3Fn5fVWbjUdiXJrd22nHl3/tM
-	 2/ZkGABB/BPDBcXW2nIyR5v+6jOOhhiZuT3HMN5FH5mQoeVjWlDcepRS2oKEu6fRqbKDO
-	 a9XrY0SPXMJFzprIfswx3yDYXHaKUN2uckHKH/WVy46zV3YA7oXNBMfOCgko9+HIv1A==
+	b=0L45aBbrKgUZWWWqU6nvUxPebhq9j1gaL3gz3pYeIVUUcGOrZGLiHEHslhhY1u7dEAK6
+	 yQ2rlUHLJtvUOwqfuKCR+bAnjm0QFQReJJAasDmXPwUCToi4Av4eZZC6/qTJTu6LRXHuZ
+	 aJnPxzulgxsP5LBjjinfWqQkwj83xIHaRzlrUYQBIzwa6Kc6FV6RnxkAUSe3DBsuIAw1e
+	 ccAYH+6ZIq1jgGBCJAC8SV0DU+lzAqrmVJCU8P3BYKKC/0+8Ot0QOmFPkuwziKHMGcnaB
+	 D8CLdGgFOFYGhtbXVcf4bvpOXy12vRsohV95y47uCohZt4vCzqfHp/BM5PvABO8ccpg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1795175550;
 	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
 	 DKIM-Signature:Received:Received:From:To:Cc:Subject:Date:Message-ID:
 	 X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-Spam-Flag:X-Spam-Level:X-Spamd-Result:
-	 X-Spam-Score;
-	bh=rBhR1XXDmsaBtS9I7K/8WAas372bkG5V3RmqL726cbA=;
-	b=kWgNRuztn1jCf+cV2wBwXr6rbMzzwHn+nDNYTyQsPZhxHreM5KfwUyr4kw2kXxmiDJYv
-	 o46pIpghpIHj8p9C4KdFlYgmWyAnNCFJoxYIcUhR7zqBZCPxtySwEEqHKZm/sFyeC2fml
-	 vwIQRH5tl2QbdUczbAvr1U7fps2sYu6XCsFrzp/KvFAWXrnFuoPTD6hvxRR+PeecxVbSk
-	 fTT/kZvlZdU1DHtuUqE0eDcedsLH2iVK9AMXRaesSSl6BaTH2523jR8RnCzLAKqDbpPaF
-	 /MtZ4xDFSlwkWEyZdsq8xNoxkiPfTC5xo69p9TJ5P+muObmvw5rMMHTUso7DHhA17bw==
+	 Content-Transfer-Encoding:X-Spamd-Result:X-Spam-Score:X-Spam-Level:
+	 X-Spam-Flag;
+	bh=PudVGhLCUlPyWymquxbH/1V/3QTsc6MZYUQUBEgt4b4=;
+	b=ESB4ICzurCTzcASGYnORbuapgIsLpA6boyVyVI2vshsFUbKdilfhoQsx838kENZC+Ruu
+	 X5Ztc1D2cCL7WXMTJOLXkdRbwdncy0wN17YIagzmUZZ+AV+zLIJ6/Z1Su+gFcnlscVQSU
+	 oHqXT7LV/zC6Xl9pv1Lps1j78kHHmhdVDsN7411z/+WfpUExGv952UmsjoWPtY9W6aadZ
+	 gLS9JvQcwUpt1GgIR6DuCad2ajACaBO7iBuL/HOo2iSaFgQDc31+aY5qdR8x4pMFzdJKU
+	 ecovhRpcwHkbbNjE0jKG3glhNp+zje2/Na3QCQ8ILg1frETlEADDenbFEHc52QB1jcw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=suse.de;
 	spf=pass smtp.mailfrom=suse.de;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PnJ8YYEY;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=zzOB4Qta;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PnJ8YYEY;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=zzOB4Qta;
-	arc=none smtp.remote-ip=195.135.223.130
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=CXnh3Hj2;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rF4Kt851;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=t4bRdPwa;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=goHcT8ke;
+	arc=none smtp.remote-ip=195.135.223.131
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9822C606A335
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A453E606A326
 	for <linux-fbdev@vger.kernel.org>; Fri, 20 Nov 2026 11:52:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9822C606A335
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A453E606A326
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PnJ8YYEY;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=zzOB4Qta;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PnJ8YYEY;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=zzOB4Qta
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=CXnh3Hj2;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=rF4Kt851;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=t4bRdPwa;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=goHcT8ke
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 236232257F;
-	Fri, 20 Nov 2026 11:52:28 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id DDA9E1F76C;
+	Fri, 20 Nov 2026 11:52:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1795175548; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rBhR1XXDmsaBtS9I7K/8WAas372bkG5V3RmqL726cbA=;
-	b=PnJ8YYEYhnEr5/cq9NInMtPbGCIL71e2NJhkK7AtyWn9adXyN92nvnyHvOc8KUkM2WgSDP
-	41YFdPKewY1PdcNmWAbprrdznmH7aEkTHomwO/2ERFtXkM6ERIvGRbuQPAbH3nMrcTxel2
-	o/pU8Vgrz2GBhrlifxmhu+PYrppT3YU=
+	bh=PudVGhLCUlPyWymquxbH/1V/3QTsc6MZYUQUBEgt4b4=;
+	b=CXnh3Hj2+g7I6uPPG2m8b00CD4AfQmN1SQPHsdyu618JuPpq0o6UqLDRzeSTO59mGVwku0
+	3SBw5AbqNeUGVMkjz0zf8/Gy4BP/QGmBPe75nn2yc9AkoqraGHRsPzDE6Hxpq3pvKM9HXS
+	+j/MBuBrydp4h1xJmANqIoSsvnBn2s4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1795175548;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rBhR1XXDmsaBtS9I7K/8WAas372bkG5V3RmqL726cbA=;
-	b=zzOB4QtaUaMDoZ7s7dNjDtgKvSqG2ytRlehDkzkGkqU3eUJm7wg/gG8I+YEX9Cf2yhIUyt
-	xtOPQxUxDF1zmFBg==
-Authentication-Results: smtp-out1.suse.de;
+	bh=PudVGhLCUlPyWymquxbH/1V/3QTsc6MZYUQUBEgt4b4=;
+	b=rF4Kt851KVWb25toewwyO3oiGFV7rsKsKxIxNhpAhnyVDYLMckMJNkhVs/oTrEBoue7cFQ
+	Ke0kZXwmgF0nj1BQ==
+Authentication-Results: smtp-out2.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1795175548; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1795175547; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rBhR1XXDmsaBtS9I7K/8WAas372bkG5V3RmqL726cbA=;
-	b=PnJ8YYEYhnEr5/cq9NInMtPbGCIL71e2NJhkK7AtyWn9adXyN92nvnyHvOc8KUkM2WgSDP
-	41YFdPKewY1PdcNmWAbprrdznmH7aEkTHomwO/2ERFtXkM6ERIvGRbuQPAbH3nMrcTxel2
-	o/pU8Vgrz2GBhrlifxmhu+PYrppT3YU=
+	bh=PudVGhLCUlPyWymquxbH/1V/3QTsc6MZYUQUBEgt4b4=;
+	b=t4bRdPwaAh+7emwQCMzmZi8Gm9B2ucVTfAKtVMXyyozaHXJiHhLf7KEhdlp6XEOxhNfOrM
+	Bfl3h6UOtbPlAL37YFOPhSxLTbOgN5FklmXBR4dHOBomEHwIpZkDlMDnF5pE0C5w0o3g2X
+	yyaIP/iMPaWUDooE8xhpou3gD4JJUr0=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1795175548;
+	s=susede2_ed25519; t=1795175547;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rBhR1XXDmsaBtS9I7K/8WAas372bkG5V3RmqL726cbA=;
-	b=zzOB4QtaUaMDoZ7s7dNjDtgKvSqG2ytRlehDkzkGkqU3eUJm7wg/gG8I+YEX9Cf2yhIUyt
-	xtOPQxUxDF1zmFBg==
+	bh=PudVGhLCUlPyWymquxbH/1V/3QTsc6MZYUQUBEgt4b4=;
+	b=goHcT8kenXYkmjYM+FoEqhxTye6f6QsMBmN/1XwrBGE3ymLso0c186hP/uKrGh/9t45sH9
+	DNkZDYxC9u6OU+BQ==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CE70F134F6;
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 95C091348F;
 	Fri, 20 Nov 2026 11:52:27 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id UE2UA3o0AGsbDAAAD6G6ig:T7
+	id UE2UA3o0AGsbDAAAD6G6ig:T6
 	(envelope-from <tzimmermann@suse.de>); Fri, 20 Nov 2026 11:52:27 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: deller@gmx.de,
@@ -102,9 +102,9 @@ Cc: dri-devel@lists.freedesktop.org,
 	linux-fbdev@vger.kernel.org,
 	sashiko-reviews@lists.linux.dev,
 	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 6/6] fbcon: Handle characters with no glyph defined in a consistent way
-Date: Fri, 20 Nov 2026 12:49:59 +0100
-Message-ID: <20261120115215.52092-7-tzimmermann@suse.de>
+Subject: [PATCH v2 5/6] fbcon: Look up glyphs using the font interface
+Date: Fri, 20 Nov 2026 12:49:58 +0100
+Message-ID: <20261120115215.52092-6-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <20261120115215.52092-1-tzimmermann@suse.de>
 References: <20261120115215.52092-1-tzimmermann@suse.de>
@@ -118,8 +118,6 @@ List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Flag: NO
-X-Spam-Level: 
 X-Spamd-Result: default: False [-15.80 / 50.00];
 	SUSE_INTERNAL_BYPASS(-9.00)[];
 	REPLY(-4.00)[];
@@ -144,239 +142,304 @@ X-Spamd-Result: default: False [-15.80 / 50.00];
 	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email];
 	FREEMAIL_ENVRCPT(0.00)[gmx.de]
 X-Spam-Score: -15.80
+X-Spam-Level: 
+X-Spam-Flag: NO
 
-Check the result of font_data_glyph_buf() for NULL when drawing the
-screen. Fall back to a default value of '\0' for undefined glpyhs. Skip
-the character if no fallback exists.
+Replace the open-coded glyph lookup with font_data_glyph_buf() in
+implementations of putcs and cursor bitops. As rotated glyphs are
+now stored as font_data_t, the regular lookup function for glyphs
+works.
 
-Error checking for fonts has been inconsistent or absent from fbcon.
-Most of the drawing code relies on earlier validation in the font-import
-code. Some code implements the glyph test by itself. At least all of
-fbcon should be consistent in how it handles undefined glyphs.
+Also replace the open-coded size calculations with font-data helpers.
 
-Calls to font_data_glyph_buf() returning NULL for undefined glyphs make
-it easy to handle this special case consistently across fbcon.
+Note that with screen rotation enabled, width and height swap places
+for CW and CCW implementations.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/bitblit.c   | 27 +++++++++++++++++----------
- drivers/video/fbdev/core/fbcon_ccw.c | 12 +++++++++++-
- drivers/video/fbdev/core/fbcon_cw.c  | 13 +++++++++++--
- drivers/video/fbdev/core/fbcon_ud.c  | 18 +++++++++++++++++-
- 4 files changed, 56 insertions(+), 14 deletions(-)
+ drivers/video/fbdev/core/bitblit.c   | 23 ++++++++++++++---------
+ drivers/video/fbdev/core/fbcon_ccw.c | 14 ++++++++------
+ drivers/video/fbdev/core/fbcon_cw.c  | 14 ++++++++------
+ drivers/video/fbdev/core/fbcon_ud.c  | 23 ++++++++++++++---------
+ 4 files changed, 44 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
-index c28329466f05..cf3adc46aaa9 100644
+index 1cbfbe50bebf..c28329466f05 100644
 --- a/drivers/video/fbdev/core/bitblit.c
 +++ b/drivers/video/fbdev/core/bitblit.c
-@@ -81,7 +81,6 @@ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+@@ -76,13 +76,15 @@ static void bit_clear(struct vc_data *vc, struct fb_info *info, int sy,
+ 
+ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ 				     const u16 *s, u32 attr, u32 cnt,
+-				     u32 d_pitch, u32 s_pitch, u32 cellsize,
++				     u32 d_pitch, u32 s_width, u32 s_vpitch,
+ 				     struct fb_image *image,
  				     unsigned char *buf, u8 *dst)
  {
  	u16 charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
--	unsigned int charcnt = vc->vc_font.charcount;
+ 	unsigned int charcnt = vc->vc_font.charcount;
  	u32 idx = vc->vc_font.width >> 3;
- 	struct fbcon_par *par = info->fbcon_par;
- 	u32 s_pitch = font_glyph_pitch(s_width);
-@@ -90,9 +89,12 @@ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
- 	while (cnt--) {
- 		u16 ch = scr_readw(s++) & charmask;
++	struct fbcon_par *par = info->fbcon_par;
++	u32 s_pitch = font_glyph_pitch(s_width);
+ 	const unsigned char *src;
  
--		if (ch >= charcnt)
--			ch = 0;
- 		src = font_data_glyph_buf(par->p->fontdata, s_width, s_vpitch, ch);
-+		if (!src) {
-+			src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch, '\0');
-+			if (!src)
-+				goto next_char;
-+		}
+ 	while (cnt--) {
+@@ -90,7 +92,7 @@ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ 
+ 		if (ch >= charcnt)
+ 			ch = 0;
+-		src = vc->vc_font.data + (unsigned int)ch * cellsize;
++		src = font_data_glyph_buf(par->p->fontdata, s_width, s_vpitch, ch);
  
  		if (attr) {
  			update_attr(buf, src, attr, vc);
-@@ -105,7 +107,7 @@ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
- 		else
- 			fb_pad_aligned_buffer(dst, d_pitch, src, idx,
- 					      image->height);
--
-+next_char:
- 		dst += s_pitch;
- 	}
- 
-@@ -120,7 +122,6 @@ static inline void bit_putcs_unaligned(struct vc_data *vc,
+@@ -113,7 +115,7 @@ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ static inline void bit_putcs_unaligned(struct vc_data *vc,
+ 				       struct fb_info *info, const u16 *s,
+ 				       u32 attr, u32 cnt, u32 d_pitch,
+-				       u32 s_pitch, u32 cellsize,
++				       u32 s_width, u32 s_vpitch,
+ 				       struct fb_image *image,
  				       unsigned char *buf, u8 *dst)
  {
- 	u16 charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
--	unsigned int charcnt = vc->vc_font.charcount;
+@@ -122,6 +124,8 @@ static inline void bit_putcs_unaligned(struct vc_data *vc,
  	u32 shift_low = 0, mod = vc->vc_font.width % 8;
  	u32 shift_high = 8;
  	u32 idx = vc->vc_font.width >> 3;
-@@ -131,9 +132,12 @@ static inline void bit_putcs_unaligned(struct vc_data *vc,
- 	while (cnt--) {
- 		u16 ch = scr_readw(s++) & charmask;
++	struct fbcon_par *par = info->fbcon_par;
++	u32 s_pitch = font_glyph_pitch(s_width);
+ 	const unsigned char *src;
  
--		if (ch >= charcnt)
--			ch = 0;
- 		src = font_data_glyph_buf(par->p->fontdata, s_width, s_vpitch, ch);
-+		if (!src) {
-+			src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch, '\0');
-+			if (!src)
-+				goto next_char;
-+		}
+ 	while (cnt--) {
+@@ -129,7 +133,7 @@ static inline void bit_putcs_unaligned(struct vc_data *vc,
+ 
+ 		if (ch >= charcnt)
+ 			ch = 0;
+-		src = vc->vc_font.data + (unsigned int)ch * cellsize;
++		src = font_data_glyph_buf(par->p->fontdata, s_width, s_vpitch, ch);
  
  		if (attr) {
  			update_attr(buf, src, attr, vc);
-@@ -143,6 +147,7 @@ static inline void bit_putcs_unaligned(struct vc_data *vc,
- 		fb_pad_unaligned_buffer(dst, d_pitch, src, idx,
- 					image->height, shift_high,
- 					shift_low, mod);
-+next_char:
- 		shift_low += mod;
- 		dst += (shift_low >= 8) ? s_pitch : s_pitch - 1;
- 		shift_low &= 7;
-@@ -291,10 +296,12 @@ static void bit_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
- 	attribute = get_attribute(info, c);
- 	c &= charmask;
+@@ -156,8 +160,9 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
+ 	struct fbcon_par *par = info->fbcon_par;
+ 	struct fb_image image;
+ 	u32 vyres = GETVYRES(par->p, info);
+-	u32 width = DIV_ROUND_UP(vc->vc_font.width, 8);
+-	u32 cellsize = width * vc->vc_font.height;
++	u32 width = vc->vc_font.width;
++	u32 vpitch = vc->vc_font.height;
++	u32 cellsize = font_glyph_size(width, vpitch);
+ 	u32 maxcnt = info->pixmap.size/cellsize;
+ 	u32 scan_align = info->pixmap.scan_align - 1;
+ 	u32 buf_align = info->pixmap.buf_align - 1;
+@@ -212,10 +217,10 @@ static void bit_putcs(struct vc_data *vc, struct fb_info *info,
  
--	/* Clamp to font size, same as bit_putcs_aligned() */
--	if (c >= vc->vc_font.charcount)
--		c = 0;
- 	src = font_data_glyph_buf(par->p->fontdata, width, vpitch, c);
-+	if (!src) {
-+		src = font_data_glyph_buf(par->p->fontdata, width, vpitch, '\0');
-+		if (!src)
-+			return;
-+	}
+ 		if (!mod)
+ 			bit_putcs_aligned(vc, info, s, attribute, cnt, pitch,
+-					  width, cellsize, &image, buf, dst);
++					  width, vpitch, &image, buf, dst);
+ 		else
+ 			bit_putcs_unaligned(vc, info, s, attribute, cnt,
+-					    pitch, width, cellsize, &image,
++					    pitch, width, vpitch, &image,
+ 					    buf, dst);
+ 
+ 		image.dx += cnt * vc->vc_font.width;
+@@ -289,7 +294,7 @@ static void bit_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
+ 	/* Clamp to font size, same as bit_putcs_aligned() */
+ 	if (c >= vc->vc_font.charcount)
+ 		c = 0;
+-	src = vc->vc_font.data + (c * cellsize);
++	src = font_data_glyph_buf(par->p->fontdata, width, vpitch, c);
  
  	if (par->cursor_state.image.data != (const char *)src ||
  	    par->cursor_reset) {
 diff --git a/drivers/video/fbdev/core/fbcon_ccw.c b/drivers/video/fbdev/core/fbcon_ccw.c
-index 9da6c0e41e7a..cbaa75fc1cc1 100644
+index 589291caed32..9da6c0e41e7a 100644
 --- a/drivers/video/fbdev/core/fbcon_ccw.c
 +++ b/drivers/video/fbdev/core/fbcon_ccw.c
-@@ -109,6 +109,11 @@ static inline void ccw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+@@ -97,7 +97,7 @@ static void ccw_clear(struct vc_data *vc, struct fb_info *info, int sy,
+ 
+ static inline void ccw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ 				    const u16 *s, u32 attr, u32 cnt,
+-				    u32 d_pitch, u32 s_pitch, u32 cellsize,
++				    u32 d_pitch, u32 s_width, u32 s_vpitch,
+ 				    struct fb_image *image,
+ 				    unsigned char *buf, u8 *dst)
+ {
+@@ -107,7 +107,8 @@ static inline void ccw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ 	const unsigned char *src;
+ 
  	while (cnt--) {
- 		src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch,
- 					  scr_readw(s--) & charmask);
-+		if (!src) {
-+			src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch, '\0');
-+			if (!src)
-+				goto next_char;
-+		}
+-		src = par->rotated.buf + (scr_readw(s--) & charmask) * cellsize;
++		src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch,
++					  scr_readw(s--) & charmask);
  
  		if (attr) {
  			ccw_update_attr(buf, src, attr, vc);
-@@ -121,7 +126,7 @@ static inline void ccw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
- 		else
- 			fb_pad_aligned_buffer(dst, d_pitch, src, idx,
- 					      vc->vc_font.width);
--
-+next_char:
- 		dst += d_pitch * vc->vc_font.width;
- 	}
+@@ -133,8 +134,9 @@ static void ccw_putcs(struct vc_data *vc, struct fb_info *info,
+ {
+ 	struct fb_image image;
+ 	struct fbcon_par *par = info->fbcon_par;
+-	u32 width = font_glyph_pitch(vc->vc_font.height);
+-	u32 cellsize = width * vc->vc_font.width;
++	u32 width = vc->vc_font.height;
++	u32 vpitch = vc->vc_font.width;
++	u32 cellsize = font_glyph_size(width, vpitch);
+ 	u32 maxcnt = info->pixmap.size/cellsize;
+ 	u32 scan_align = info->pixmap.scan_align - 1;
+ 	u32 buf_align = info->pixmap.buf_align - 1;
+@@ -176,7 +178,7 @@ static void ccw_putcs(struct vc_data *vc, struct fb_info *info,
+ 		dst = fb_get_buffer_offset(info, &info->pixmap, size);
+ 		image.data = dst;
+ 		ccw_putcs_aligned(vc, info, s, attribute, cnt, pitch,
+-				 width, cellsize, &image, buf, dst);
++				 width, vpitch, &image, buf, dst);
+ 		image.dy += image.height;
+ 		count -= cnt;
+ 		s -= cnt;
+@@ -243,7 +245,7 @@ static void ccw_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
  
-@@ -246,6 +251,11 @@ static void ccw_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
   	c = scr_readw((u16 *) vc->vc_pos);
  	attribute = get_attribute(info, c);
- 	src = font_data_glyph_buf(par->rotated.buf, width, vpitch, c & charmask);
-+	if (!src) {
-+		src = font_data_glyph_buf(par->rotated.buf, width, vpitch, c & charmask);
-+		if (!src)
-+			return;
-+	}
+-	src = par->rotated.buf + ((c & charmask) * cellsize);
++	src = font_data_glyph_buf(par->rotated.buf, width, vpitch, c & charmask);
  
  	if (par->cursor_state.image.data != (const char *)src ||
  	    par->cursor_reset) {
 diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/core/fbcon_cw.c
-index 354f40f77bb4..7606ad38c269 100644
+index 87e9dd666953..354f40f77bb4 100644
 --- a/drivers/video/fbdev/core/fbcon_cw.c
 +++ b/drivers/video/fbdev/core/fbcon_cw.c
-@@ -94,7 +94,11 @@ static inline void cw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+@@ -82,7 +82,7 @@ static void cw_clear(struct vc_data *vc, struct fb_info *info, int sy,
+ 
+ static inline void cw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ 				    const u16 *s, u32 attr, u32 cnt,
+-				    u32 d_pitch, u32 s_pitch, u32 cellsize,
++				    u32 d_pitch, u32 s_width, u32 s_vpitch,
+ 				    struct fb_image *image,
+ 				    unsigned char *buf, u8 *dst)
+ {
+@@ -92,7 +92,8 @@ static inline void cw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ 	const unsigned char *src;
+ 
  	while (cnt--) {
- 		src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch,
- 					  scr_readw(s++) & charmask);
--
-+		if (!src) {
-+			src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch, '\0');
-+			if (!src)
-+				goto next_char;
-+		}
+-		src = par->rotated.buf + (scr_readw(s++) & charmask) * cellsize;
++		src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch,
++					  scr_readw(s++) & charmask);
+ 
  		if (attr) {
  			cw_update_attr(buf, src, attr, vc);
- 			src = buf;
-@@ -106,7 +110,7 @@ static inline void cw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
- 		else
- 			fb_pad_aligned_buffer(dst, d_pitch, src, idx,
- 					      vc->vc_font.width);
--
-+next_char:
- 		dst += d_pitch * vc->vc_font.width;
- 	}
+@@ -118,8 +119,9 @@ static void cw_putcs(struct vc_data *vc, struct fb_info *info,
+ {
+ 	struct fb_image image;
+ 	struct fbcon_par *par = info->fbcon_par;
+-	u32 width = font_glyph_pitch(vc->vc_font.height);
+-	u32 cellsize = width * vc->vc_font.width;
++	u32 width = vc->vc_font.height;
++	u32 vpitch = vc->vc_font.width;
++	u32 cellsize = font_glyph_size(width, vpitch);
+ 	u32 maxcnt = info->pixmap.size/cellsize;
+ 	u32 scan_align = info->pixmap.scan_align - 1;
+ 	u32 buf_align = info->pixmap.buf_align - 1;
+@@ -159,7 +161,7 @@ static void cw_putcs(struct vc_data *vc, struct fb_info *info,
+ 		dst = fb_get_buffer_offset(info, &info->pixmap, size);
+ 		image.data = dst;
+ 		cw_putcs_aligned(vc, info, s, attribute, cnt, pitch,
+-				 width, cellsize, &image, buf, dst);
++				 width, vpitch, &image, buf, dst);
+ 		image.dy += image.height;
+ 		count -= cnt;
+ 		s += cnt;
+@@ -226,7 +228,7 @@ static void cw_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
  
-@@ -229,6 +233,11 @@ static void cw_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
   	c = scr_readw((u16 *) vc->vc_pos);
  	attribute = get_attribute(info, c);
- 	src = font_data_glyph_buf(par->rotated.buf, width, vpitch, c & charmask);
-+	if (!src) {
-+		src = font_data_glyph_buf(par->rotated.buf, width, vpitch, '\0');
-+		if (!src)
-+			return;
-+	}
+-	src = par->rotated.buf + ((c & charmask) * (cellsize));
++	src = font_data_glyph_buf(par->rotated.buf, width, vpitch, c & charmask);
  
  	if (par->cursor_state.image.data != (const char *)src ||
  	    par->cursor_reset) {
 diff --git a/drivers/video/fbdev/core/fbcon_ud.c b/drivers/video/fbdev/core/fbcon_ud.c
-index 01f45eaa2013..bdba3a959d1e 100644
+index a610af1023de..01f45eaa2013 100644
 --- a/drivers/video/fbdev/core/fbcon_ud.c
 +++ b/drivers/video/fbdev/core/fbcon_ud.c
-@@ -96,6 +96,11 @@ static inline void ud_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+@@ -83,17 +83,19 @@ static void ud_clear(struct vc_data *vc, struct fb_info *info, int sy,
+ 
+ static inline void ud_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ 				    const u16 *s, u32 attr, u32 cnt,
+-				    u32 d_pitch, u32 s_pitch, u32 cellsize,
++				    u32 d_pitch, u32 s_width, u32 s_vpitch,
+ 				    struct fb_image *image,
+ 				    unsigned char *buf, u8 *dst)
+ {
+ 	struct fbcon_par *par = info->fbcon_par;
+ 	u16 charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
+ 	u32 idx = vc->vc_font.width >> 3;
++	u32 s_pitch = font_glyph_pitch(s_width);
+ 	const unsigned char *src;
+ 
  	while (cnt--) {
- 		src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch,
- 					  scr_readw(s--) & charmask);
-+		if (!src) {
-+			src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch, '\0');
-+			if (!src)
-+				goto next_char;
-+		}
+-		src = par->rotated.buf + (scr_readw(s--) & charmask) * cellsize;
++		src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch,
++					  scr_readw(s--) & charmask);
  
  		if (attr) {
  			ud_update_attr(buf, src, attr, vc);
-@@ -108,7 +113,7 @@ static inline void ud_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+@@ -116,7 +118,7 @@ static inline void ud_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ static inline void ud_putcs_unaligned(struct vc_data *vc,
+ 				      struct fb_info *info, const u16 *s,
+ 				      u32 attr, u32 cnt, u32 d_pitch,
+-				      u32 s_pitch, u32 cellsize,
++				      u32 s_width, u32 s_vpitch,
+ 				      struct fb_image *image,
+ 				      unsigned char *buf, u8 *dst)
+ {
+@@ -125,10 +127,12 @@ static inline void ud_putcs_unaligned(struct vc_data *vc,
+ 	u32 shift_low = 0, mod = vc->vc_font.width % 8;
+ 	u32 shift_high = 8;
+ 	u32 idx = vc->vc_font.width >> 3;
++	u32 s_pitch = font_glyph_pitch(s_width);
+ 	const unsigned char *src;
+ 
+ 	while (cnt--) {
+-		src = par->rotated.buf + (scr_readw(s--) & charmask) * cellsize;
++		src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch,
++					  scr_readw(s--) & charmask);
+ 
+ 		if (attr) {
+ 			ud_update_attr(buf, src, attr, vc);
+@@ -154,8 +158,9 @@ static void ud_putcs(struct vc_data *vc, struct fb_info *info,
+ {
+ 	struct fb_image image;
+ 	struct fbcon_par *par = info->fbcon_par;
+-	u32 width = font_glyph_pitch(vc->vc_font.width);
+-	u32 cellsize = width * vc->vc_font.height;
++	u32 width = vc->vc_font.width;
++	u32 vpitch = vc->vc_font.height;
++	u32 cellsize = font_glyph_size(width, vpitch);
+ 	u32 maxcnt = info->pixmap.size/cellsize;
+ 	u32 scan_align = info->pixmap.scan_align - 1;
+ 	u32 buf_align = info->pixmap.buf_align - 1;
+@@ -200,10 +205,10 @@ static void ud_putcs(struct vc_data *vc, struct fb_info *info,
+ 
+ 		if (!mod)
+ 			ud_putcs_aligned(vc, info, s, attribute, cnt, pitch,
+-					 width, cellsize, &image, buf, dst);
++					 width, vpitch, &image, buf, dst);
  		else
- 			fb_pad_aligned_buffer(dst, d_pitch, src, idx,
- 					      image->height);
--
-+next_char:
- 		dst += s_pitch;
- 	}
+ 			ud_putcs_unaligned(vc, info, s, attribute, cnt, pitch,
+-					   width, cellsize, &image,
++					   width, vpitch, &image,
+ 					   buf, dst);
  
-@@ -133,6 +138,11 @@ static inline void ud_putcs_unaligned(struct vc_data *vc,
- 	while (cnt--) {
- 		src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch,
- 					  scr_readw(s--) & charmask);
-+		if (!src) {
-+			src = font_data_glyph_buf(par->rotated.buf, s_width, s_vpitch, '\0');
-+			if (!src)
-+				goto next_char;
-+		}
+ 		image.dx += image.width;
+@@ -273,7 +278,7 @@ static void ud_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
  
- 		if (attr) {
- 			ud_update_attr(buf, src, attr, vc);
-@@ -142,6 +152,7 @@ static inline void ud_putcs_unaligned(struct vc_data *vc,
- 		fb_pad_unaligned_buffer(dst, d_pitch, src, idx,
- 					image->height, shift_high,
- 					shift_low, mod);
-+next_char:
- 		shift_low += mod;
- 		dst += (shift_low >= 8) ? s_pitch : s_pitch - 1;
- 		shift_low &= 7;
-@@ -279,6 +290,11 @@ static void ud_cursor(struct vc_data *vc, struct fb_info *info, bool enable,
   	c = scr_readw((u16 *) vc->vc_pos);
  	attribute = get_attribute(info, c);
- 	src = font_data_glyph_buf(par->rotated.buf, width, vpitch, c & charmask);
-+	if (!src) {
-+		src = font_data_glyph_buf(par->rotated.buf, width, vpitch, '\0');
-+		if (!src)
-+			return;
-+	}
+-	src = par->rotated.buf + ((c & charmask) * cellsize);
++	src = font_data_glyph_buf(par->rotated.buf, width, vpitch, c & charmask);
  
  	if (par->cursor_state.image.data != (const char *)src ||
  	    par->cursor_reset) {

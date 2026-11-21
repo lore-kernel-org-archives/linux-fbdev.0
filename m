@@ -1,51 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.27.42.2
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795280396;
-	b=hz1Q81AzGiHHgsqk9OVGYGge9ao00Wg/7YxDYZSS6KwMMKAWKlNE2LqZaFIZtdQB4xcx
-	 Relf1QtwnsCfMa69GhDFeHK7K0b9iCFsKQySbXA+fWi1Zp2/TJTanJLEKv7ruLsqrgqLh
-	 3DnG2dOHmSnbe/RDyruUsigfqac1+9gyupc4cYKxwfdXmd6eD+ddPVdcwiFqVf+6PuvQi
-	 0tjHYIaNv6jtGO3431DdW1Q4M+YYqlwiYnu/9Bz3H4O7yAlHc2/VvjeZ6EBqu26yskZh6
-	 tTVVaj459hiV+xRGunju0qhud3lY1VYeLf9Nme4PJu20C/+eqGtfmiBtOl77YlhYhBA==
+	t=1795281400;
+	b=vtvySAB3v+lyNvz1OJENXOhQEfT061ti4oicvIeUJRiglGkFExPA1AUgabojQXvGsa2q
+	 cmB+yUycBG//5LVxXsY0ehqBt3quGDxqwaE9YePAKNqFMh/7eL7V9AJkbN3uS6vMfRTj4
+	 yNm6VkltoG/2eXY00nSCocTqzphEsNBebvE0EFRNQJ1SQZVX4L9aZ5gOl0xk1oLB+VR4w
+	 IDtEsUVluE75fo4phQ3bSLUlPOCtdKvvxupa16bRG/VSRgTasKrO9JYkTKBUr7F1FY9XR
+	 rtjoSNPFFCFcfDkg/lHGPkaDyH29a6VeL7wv+I7ZQKVSpzXw+BTs1L8lXG8C1I25/Xg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795280396;
-	h=Received:DKIM-Signature:Date:From:To:Subject:Message-ID:MIME-Version:
-	 Content-Type:Content-Disposition;
-	bh=HxFQ2qa/MmVsd7tMIBT1v4526ip7d+VB96nm/kUeU0c=;
-	b=R5uY6aNjsxN9XRAeLUrsrOAct0jWQ81XjMZTg0Us6+j/TEaO++I9PlN40SpzmHqyBJGn
-	 l41MiQLmh6zxYXroQ9dpJf3Mgpbw74R/ieQ2qcUeNROvSzSAO4cab5wvBxNCE6CYRPmyQ
-	 9OoT6+JAruqpegmDESjz9VyX+/NDEp4xRfEPynid6j8yIesDlpdRtyozLy4D8+FJJAKHf
-	 yM+OBCgK9bnvlagyYxRvWQbm/2UBw6Z2JYVWy2hBJ+HD1FbzhZjSTAZgiUR1tTEBgenKM
-	 1KPIxQuw9QMrLj1HlWyuW3G/7lOpAaOOXYqtTHwuMrZH/e/YdVlZoVg2F4Qqq7pnKxQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795281400;
+	h=DMARC-Filter:Received:DKIM-Signature:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=wAfXimiNyxGjt5hvSoNH/WZxt6zmJP9vl158/kVceow=;
+	b=DqgGQv+60BObj2TMd+47K6QQg5y+sVgCsxdoYp2B0/ElH5ult+p2GbJyeynPO4JIQzTl
+	 US52u6HBs9HMvNCgIvAE/qo/1isHAHAzCunhYKAo/+qRPG3ZB/PKKBzHpXD4vFER+W/vo
+	 5bEL9srTSFe1JZYlh41omloebxLU+d1uvkG4X2cYBiS0HE6ptlFcCXyf9oiT3mGhIJTfg
+	 GkYAl08MwwEvxqDytg0zi2jcCqnQgydOpuBJvx6SRa44a6Xi5DWIGwv+Re3CRoLl+ZRKU
+	 jqKvHl79zMWT0IJ9YAqRF8NIbGuefKo6xJWhXTxhGT8EQEHLSM4TWRJRdli1LWgZNxg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XrA1lHl4;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=free.fr;
+	spf=pass smtp.mailfrom=free.fr;
+	dkim=pass header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=eU2JvbEg;
+	arc=none smtp.remote-ip=212.27.42.2
+Received: from smtp2-g21.free.fr (smtp2-g21.free.fr [212.27.42.2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 427CD606A32C;
-	Sat, 21 Nov 2026 16:59:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4A40606A320
+	for <linux-fbdev@vger.kernel.org>; Sat, 21 Nov 2026 17:16:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D4A40606A320
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=free.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XrA1lHl4
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7FBE31F000C6;
-	Sat, 21 Nov 2026 16:59:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795280395;
-	bh=HxFQ2qa/MmVsd7tMIBT1v4526ip7d+VB96nm/kUeU0c=;
-	h=Date:From:To:Subject;
-	b=XrA1lHl4gnn2kw/Bz9DfiQwty3vdVgUUmcCpbnNE5YokCOeCyK9ut/VNAUd+/LI7F
-	 ny/GwGPeF9RR/9wExG7twav6NXRbpAVE9dxPYHoC5nRWVY9bQgZbN5g/3CkH2smJg5
-	 Tpzf8iGI/7pKH0AiQiuxl4D7IBRPe7mvJQ4hgcAddeG4J9e6bqRd+H0H/mx3gAYd8+
-	 CGAkSDk7YlsxZXLi0yCdMivpTQUzIquIFlm2QT8+VHu4XNE8E2fFWYqxx1S20Ry17p
-	 WmMcSIWogeY2Uu1Gppxt6mmwjbPSGil5+hTpKK3UJm0/Poub821WFMZtWmNGPzAhmE
-	 R17rjA13cn9NA==
-Date: Sat, 21 Nov 2026 17:59:51 +0100
-From: Helge Deller <deller@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] fbdev fixes for v7.4-rc4
-Message-ID: <awHOB8hdCRXVd--I@carbonx1>
+	dkim=pass (2048-bit key) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=eU2JvbEg
+Received: from localhost (unknown [45.13.107.210])
+	(Authenticated sender: lucasantunes@free.fr)
+	by smtp2-g21.free.fr (Postfix) with ESMTPSA id 7FE792003CC;
+	Sat, 21 Nov 2026 18:16:27 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
+	s=smtp-20201208; t=1795281391;
+	bh=I58JmmLrPF8Q8+YukbWHcL+IJM3ErWNQw1kMPHisjD4=;
+	h=From:To:Cc:Subject:Date:From;
+	b=eU2JvbEgitzfH3eQfgXoPcDvPSPHznJas7ghOS8buU/FIpSIhuknQmgUoYkqnc0Y+
+	 gtbUdmrnD86YGSswVknz/2pwYlrwFZnOnQvELYLMw8qKoj8kpmrBoy0v3nqHzzaQ4D
+	 f7Yw6JfF2cRiSwMrZ7jz1ECcloyJ16P9ZXC4UIqEEMIpkmjtz/LgqQEhakPGm/7Mrf
+	 apgHEzXQ0fVR0z3y6/VE6tDbi3cL4cijdXIfuJ/6ypodbkB4dP5pV3s9o0FnQFHRED
+	 WGqwpHt/k9s7HC1grW+TbTeT1nDMzns7PSEn0jyNZ23pKGafdaFyzFMWYtYNNZlW2E
+	 WUou3q2vcnlKQ==
+From: Lucas Antunes <lucasantunes@free.fr>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-staging@lists.linux.dev,
+	linux-fbdev@vger.kernel.org,
+	Lucas Antunes <lucasantunes@free.fr>
+Subject: [PATCH] staging: fbtft: upd161704: use fsleep() instead of udelay()
+Date: Sat, 21 Nov 2026 18:16:10 +0100
+Message-ID: <20261121171610.16391-1-lucasantunes@free.fr>
+X-Mailer: git-send-email 2.56.1
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -55,83 +64,71 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-Dear Linus,
+init_display() is called from the probe path, which runs in process
+context and is allowed to sleep. Replace the busy-waiting udelay()
+calls with fsleep(), which picks the best delay mechanism for the
+requested duration, as recommended by
+Documentation/timers/delay_sleep_functions.rst.
 
-please pull some more fbdev fixes for kernel v7.4-rc4.
+Delays of 10us or less keep busy-waiting inside fsleep(), so only the
+100us and 200us delays actually change behaviour.
 
-Thanks!
-Helge
+Signed-off-by: Lucas Antunes <lucasantunes@free.fr>
+---
+ drivers/staging/fbtft/fb_upd161704.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-----------------------------------------------------------------
-The following changes since commit 7475ea8b58616b33c04afb976cf0fbaad9dd63fb:
+diff --git a/drivers/staging/fbtft/fb_upd161704.c b/drivers/staging/fbtft/fb_upd161704.c
+index 7288140e7c3e..26b7309d6455 100644
+--- a/drivers/staging/fbtft/fb_upd161704.c
++++ b/drivers/staging/fbtft/fb_upd161704.c
+@@ -32,27 +32,27 @@ static int init_display(struct fbtft_par *par)
+ 
+ 	/* oscillator start */
+ 	write_reg(par, 0x003A, 0x0001);	/*Oscillator 0: stop, 1: operation */
+-	udelay(100);
++	fsleep(100);
+ 
+ 	/* y-setting */
+ 	write_reg(par, 0x0024, 0x007B);	/* amplitude setting */
+-	udelay(10);
++	fsleep(10);
+ 	write_reg(par, 0x0025, 0x003B);	/* amplitude setting */
+ 	write_reg(par, 0x0026, 0x0034);	/* amplitude setting */
+-	udelay(10);
++	fsleep(10);
+ 	write_reg(par, 0x0027, 0x0004);	/* amplitude setting */
+ 	write_reg(par, 0x0052, 0x0025);	/* circuit setting 1 */
+-	udelay(10);
++	fsleep(10);
+ 	write_reg(par, 0x0053, 0x0033);	/* circuit setting 2 */
+ 	write_reg(par, 0x0061, 0x001C);	/* adjustment V10 positive polarity */
+-	udelay(10);
++	fsleep(10);
+ 	write_reg(par, 0x0062, 0x002C);	/* adjustment V9 negative polarity */
+ 	write_reg(par, 0x0063, 0x0022);	/* adjustment V34 positive polarity */
+-	udelay(10);
++	fsleep(10);
+ 	write_reg(par, 0x0064, 0x0027);	/* adjustment V31 negative polarity */
+-	udelay(10);
++	fsleep(10);
+ 	write_reg(par, 0x0065, 0x0014);	/* adjustment V61 negative polarity */
+-	udelay(10);
++	fsleep(10);
+ 	write_reg(par, 0x0066, 0x0010);	/* adjustment V61 negative polarity */
+ 
+ 	/* Basical clock for 1 line (BASECOUNT[7:0]) number specified */
+@@ -60,7 +60,7 @@ static int init_display(struct fbtft_par *par)
+ 
+ 	/* Power supply setting */
+ 	write_reg(par, 0x0019, 0x0000);	/* DC/DC output setting */
+-	udelay(200);
++	fsleep(200);
+ 	write_reg(par, 0x001A, 0x1000);	/* DC/DC frequency setting */
+ 	write_reg(par, 0x001B, 0x0023);	/* DC/DC rising setting */
+ 	write_reg(par, 0x001C, 0x0C01);	/* Regulator voltage setting */
+-- 
+2.56.1
 
-  Linux 7.4-rc2 (2026-11-08 16:22:20 -0800)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-for-7.4-rc4
-
-for you to fetch changes up to b3f1631d362539cfe14571ccfd7db919ffbc08c7:
-
-  fbdev: radeonfb: reject a zero pixclock in radeonfb_check_var() (2026-11-19 17:57:11 +0100)
-
-----------------------------------------------------------------
-fbdev fixes for 7.4-rc4:
-
-Various small fixes, all scheduled for backport, which fix out-of-bound
-accesses, improves the parameter checks or fix use-after-free accesses in
-fm2fb, radeonfb, cobalt_lcdfb, valkyriefb, sstfb.
-vgacon now falls back to the dummy console if mapping the VGA memory
-fails, which fixes a crash on Alpha, and fix one sleep-in-atomic-context
-bug which is triggered by the blinking cursor.
-
-----------------------------------------------------------------
-Jianqiang Zou (1):
-      fbdev: radeonfb: reject a zero pixclock in radeonfb_check_var()
-
-Matt Turner (1):
-      vgacon: Fall back to the dummy console if mapping VGA memory fails
-
-Miro Kropacek (1):
-      fbdev: atafb: Restrict SuperVidel handling to the Falcon
-
-Steffen A. Mork (1):
-      fbdev: fm2fb: Fix iomem access
-
-Suyuan Wang (1):
-      fbdev: cobalt_lcdfb: Don't read info after framebuffer_release()
-
-Tim Douglas (2):
-      fbdev: macmodes: compare the pixel clock of each candidate mode
-      fbdev: valkyriefb: keep the framebuffer mapping size fixed
-
-Weiming Shi (1):
-      fbdev: vfb: Validate framebuffer geometry and memory size
-
-Xue Haolin (1):
-      fbdev: sstfb: Error out if pixclock equals zero
-
-Yao Yiqi (1):
-      fbcon: Avoid cancel_delayed_work_sync() in atomic context
-
-YuanZhe Liu (3):
-      fbdev: smscufx: don't free registered framebuffer on probe error
-      fbdev: smscufx: keep the usb_device alive while ufx_data is in use
-      fbdev: smscufx: allocate the size advertised in smem_len
-
- drivers/video/console/vgacon.c        |  2 ++
- drivers/video/fbdev/atafb.c           | 18 ++++++++++-----
- drivers/video/fbdev/aty/radeon_base.c |  3 +++
- drivers/video/fbdev/cobalt_lcdfb.c    |  3 ++-
- drivers/video/fbdev/core/fbcon.c      | 41 ++++++++++++++++++++++++++++++-----
- drivers/video/fbdev/core/fbcon.h      |  1 +
- drivers/video/fbdev/fm2fb.c           |  2 +-
- drivers/video/fbdev/macmodes.c        |  2 +-
- drivers/video/fbdev/smscufx.c         | 26 +++++++++++++++++-----
- drivers/video/fbdev/sstfb.c           |  3 +++
- drivers/video/fbdev/valkyriefb.c      |  3 +--
- drivers/video/fbdev/vfb.c             | 18 +++++++++++++--
- 12 files changed, 99 insertions(+), 23 deletions(-)

@@ -1,92 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.214.178
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795268375;
-	b=XvKqSDjeT7V15wFpVwywjXk8goNxJ1/6ubGvNkZH9jHX9oAjw5S930lucxWOY78iPs0n
-	 4WZTy/3IuQ+5iPGZWTVMPPVQMJAeZcyeYq9WzwCZrDoZ/vxPCQTmJoj6dSl4amubuc1Ra
-	 Hcj1pAmse/LdT58+Jan4GaNhyn502AwiVXGuhrOAk8Azn/4MNbpnC3d4qTqy8u2UGtjp1
-	 fwaXXly2+znBBgxlwem4Z53byGaE2GJehakXQRgSmLLVnAB+9ox+9dPrvrjds8mqEmFyi
-	 GnxmfAiG+4ds+NcG+ueN46kcnE3GrspFRaOHmraD02m66/Gx5LxlYets5eFn5fW7zAg==
+	t=1795274874;
+	b=TDjTcgjZpB8xddTCrr298jCOBa0zRQrAR9FM2uFhYhxtGQjqzkpro0CgMKjEH1WwuhTk
+	 RLEiVj0HCxZ4C5UuppElNGDNJS5hHZebpuTdCjmx/uU2puojysrX7t1OGpY8JmZeftxB7
+	 YdCjwCLOMra79iIkKb6epE47Pr9VhSzF4SNxARJeULZgugTUbdH1LVaSVDtk25INFKAaD
+	 19qWfVix4x8qGMjDwyYsWimp1OaHayRar7V5KMO8xnTtFeHboB30Nr5NaL3NFo7bK40pX
+	 ChEFfndzA+aMUGfFSRz5g4OHMjy3DKSES2kFkVRrK3jQCS92qr2xm8AYUnJ6zsLKBXA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795268375;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=jpAB7bN4jOX4zDM3zWu+BqiTANE8OqvGyHkfG0EgWp8=;
-	b=FP7e/XQMUw3OXrXSmA7Hb8GIoTgPB+5UiqUr4QDukUQGNC+Ec5upj2ComKImsY9yi96D
-	 AQz2ReOnqLb2s4JlcGZVHmnVlZGs8X+odQy9VIuyzonmDxxhK/zXaFAVpY6K58xnw2AC4
-	 LdQl62aX0HqDIYJGtxceFE0uq//bGk7N1NdwtBY3O9yY59iy+TSxSz7mRME5KyCzPzmw8
-	 t0e1d6wdmtguLB8/O9C7X4y86Xf8ECRU50a+idHukVEq83g1fPURuHFLG8JmZ2CigFPw/
-	 VgpeHEb33y5PR5PkH2pKryqX67qxRdt2jyGze59C9DB+aFVfCblX5t2QRNLL+uSqBIw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795274874;
+	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding;
+	bh=zgQymTj5zj6QQGl9fTcd/jbTu80sUikQ+ngEqSrA6rE=;
+	b=TkXhMQHv5CWBimjgxtH3zAsbu3eJhn5Ffro0MP59sEpv0WNas32ewl/n0vO+dzCr9TGW
+	 F+lbZl/hFrANASApokg0jWyfAyJ1gdfWHM61rGIIPjJIriZXF0gV2ljkaw4loRj7fnCIQ
+	 suW1Psp8vIN4TvhzWqnOI/FsUKRa4uVUsSEY3jxkLN3TCZDVJqHOMusxNzF3WcgRVgcs7
+	 qn3D3ZyJpXU8mQVB598G3PMnkCLlZK6r7KtWnfThddVsOF/gE9XKl/XIAT/s+j5Ofs0/N
+	 4Mcnim1bWRVMhGoJz9FE69djiKOp1iirTd9aCGoU8bkQBn2UUKqcD6xRlEPMUjycX2A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=x0GmXMpc;
-	arc=none smtp.remote-ip=209.85.214.178
-Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eA7+k7bT;
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EE37606A32C
-	for <linux-fbdev@vger.kernel.org>; Sat, 21 Nov 2026 13:39:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9EE37606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 24F44606A320;
+	Sat, 21 Nov 2026 15:27:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=x0GmXMpc
-Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-2f01f296937so14856215ad.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 21 Nov 2026 05:39:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795268374; x=1795873174; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=jpAB7bN4jOX4zDM3zWu+BqiTANE8OqvGyHkfG0EgWp8=;
-        b=x0GmXMpcJGEGUgPPs38gakwdA6J6Z0yLES82zLYAFZLqsbI/lndHmKNXRzl/mvoskn
-         XKlNKB+5kMzOTrRf6SM1je6hFibJUyQ4CBKY1OrWOpFHh0uVsiehpwzlbwC6ZpR0FapB
-         a9Wiyz0iwaw0PQa67CPgPMv1wpd2wbSKX8D0Sf9QXzwur2fJj8AdAj/n5oH3jvUjCAB+
-         lUL7doeJadhWhrDsV7LUeXgr9H6M0Il8DnFZ9xynGi6WUcendggG/Z6WP8pU8YlDYQgt
-         /KAoFs8ASbifr0GK4SteOXLxN1kX2EGyrEe+zfHYAgcIv6TtUi7tNEmW37akNyRLEPEB
-         wI9g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795268374; x=1795873174;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=jpAB7bN4jOX4zDM3zWu+BqiTANE8OqvGyHkfG0EgWp8=;
-        b=PrucQVgKp7oqE9bdxegUho5QN2Gy287Nqe3Pc4YNw2JT6u9spC/ZAJmOVvcnuWjTOJ
-         uwyFHgjGnHbD4qaVUesRW2zJg0ncRxy2KrSWK9upXG/D8y7FCc9nKhXZXUW2cJkgMgwh
-         4uptnMdBwuFWaeFp+tozJtK1+cKbF5QFiSkmJahdaOgROko8zoQtgSLifoULvOnjHoJ3
-         Mo0OQ3eea9ArD/R6KXQva7plVJsL0KlbjeD7+jhV3yn56OBaN9MHKqGsnzZFvYJNLedj
-         zw8R5/iTjwWePpZRHFLv/g5xt37JyjhVBc/US8ipuUtPUsJjnqbTBjECfTXQYwpernkL
-         qivg==
-X-Gm-Message-State: APuU4Z8PJCJFvTKMwfipvGXYI9mSoZRQIUYdu13hK9DobeHS1Ap7zN8U
-	pNNEPCIxhektpFYxznmhk5Jzu9U9hUMUE6XIn5xQVXMc/OnllXfbWJui
-X-Gm-Gg: AZFdTZe/xdi6xCDzb64ofadnEqCiD2L65RQVJPEuSwhkZpcfbiuhialYgi2WjQwupQ7
-	nqlIqmEG/BUZjjP5tDqD57ATIJLxOOhnf814xcxzp3iciTnKZ8l3qkVK2PBwTJdzcIbwIktONwE
-	MFCgpQsJH11AJkFMIRIS1Cf8G7TWkOm9E5twfiJ4C6aaOnzwwltLf78Wug75Sj4dHOdUZQUdjjN
-	NsOwYyyofjaps5C+3eUJ3LQ3uD1InGfPwOfM7lru7bMpc7aNDPXa/3AyqDLbyQ0vJC+fkBijiUe
-	GoW1KQnr/fWLOeD0QzIl3dJ+Te6yxwlMnOEqAQMoND0toldR74bfjqOOq+q7kb9qt02dTVrulRK
-	7ghTt2LwM2LSpM39Otun85WEJl3z55Qmp8JHh59m9/7m/SwR+vRgTPD7fuwtzthRMIM9dE6AsRm
-	1vfeDjx3uTv0wNPReOcLoeSg4dLUGwOs7Wp28/ZwGDEuGrOuwP7adNEjsl/Umzv7NRd6E5hlHs6
-	Jn8fcwFA0Wkl2jpDWfzmr+UKccA8mQB3zkwjR0dShNgDzu5pZBVVJPuT74PGhCwsfTQxYjevsB3
-	DGxVvL8V3Uj34lOACP8EeJ5BNd75rg091BsGOA0=
-X-Received: by 2002:a17:903:98b:b0:2df:aed3:2ac0 with SMTP id d9443c01a7336-2f03f1cf5ccmr67862115ad.10.1795268373920;
-        Sat, 21 Nov 2026 05:39:33 -0800 (PST)
-Received: from omarchy ([14.139.177.146])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2f03f0de00asm26621375ad.35.2026.11.21.05.39.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 21 Nov 2026 05:39:33 -0800 (PST)
-From: Vaibhav Chahar <vaibhav.chahar26@gmail.com>
-To: sudipm.mukherjee@gmail.com,
-	teddy.wang@siliconmotion.com,
-	gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org,
-	linux-staging@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	Vaibhav Chahar <vaibhav.chahar26@gmail.com>
-Subject: [PATCH] staging: sm750fb: Use str_has_prefix instead of strncmp()
-Date: Sat, 21 Nov 2026 19:08:43 +0530
-Message-ID: <20261121133843.127718-1-vaibhav.chahar26@gmail.com>
-X-Mailer: git-send-email 2.56.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eA7+k7bT
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06E191F000C0;
+	Sat, 21 Nov 2026 15:27:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795274873;
+	bh=zgQymTj5zj6QQGl9fTcd/jbTu80sUikQ+ngEqSrA6rE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=eA7+k7bTNtTpV1N/bkZ1z4PZuxwDiplB2sYoFcgIe/S0eC1hhYoKSGaYM+iy3JDDB
+	 WTOMpBEkz6xH3Fo034BN06/CgOoXYGnU7g+5gkOxMxIyiRYI5GLtid8o0esX03chIt
+	 OJXVyK1Y44elW393MsK8BKGcp4+XoWZCvsRIyBOsdNxX4W69n7pk6qAfhospcZFcu9
+	 UoiH2sVNI5ln6Iwu1RkayeTIuBBdj2bivXLC467raQlH5BMRmybtfScFjbXYWQRpUL
+	 FJzgdLDEZaHUS21xyb3PdwcIDYow3oe60RR/oNcGqb3jSzKC0C+qBGixXYlmRBjBhW
+	 uAsgwQTBr/viA==
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>,
+	deller@gmx.de,
+	dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	mlbnkm1@gmail.com,
+	simona@ffwll.ch,
+	Artem Dinaburg <artem@trailofbits.com>
+Subject: Re: [6.18.y] Please pick three fbdev mode-sysfs fixes
+Date: Sat, 21 Nov 2026 10:27:34 -0500
+Message-ID: <2026-11-21-1-daily-reply-0006@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261120201003.42046-1-artem@trailofbits.com>
+References: <20261120201003.42046-1-artem@trailofbits.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -98,64 +65,17 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Using str_has_prefix() is cleaner and more readable than using
-strncmp() with strlen(). Also avoiding the possibility of errors due to
-mismatched string lengths.
+> Please pick these fbdev fixes for 6.18.y, in this order:
+>
+>   d15d51fb26e830af58f3f21964f1c09c239077ea (CVE-2026-80580)
+>   ("fbdev: bound mode sysfs output to the sysfs buffer")
+>   95e647d2a5304a8fd11f1ba3c8502de700650131 (CVE-2026-80579)
+>   ("fbdev: clear fb_info->mode before deleting a videomode")
+>   061db6b7a910b8378f3b2df64f8c0a3ddc6e85f2 (CVE-2026-80785)
+>   ("fbdev: serialize mode sysfs access with lock_fb_info()")
 
-Signed-off-by: Vaibhav Chahar <vaibhav.chahar26@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+Queued for 6.18, thanks.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 99d410e18..658e93b27 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -854,21 +854,21 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
- 		dev_info(&sm750_dev->pdev->dev, "opt=%s\n", opt);
- 		dev_info(&sm750_dev->pdev->dev, "src=%s\n", src);
- 
--		if (!strncmp(opt, "swap", strlen("swap"))) {
-+		if (str_has_prefix(opt, "swap")) {
- 			swap = 1;
--		} else if (!strncmp(opt, "nocrt", strlen("nocrt"))) {
-+		} else if (str_has_prefix(opt, "nocrt")) {
- 			sm750_dev->nocrt = 1;
--		} else if (!strncmp(opt, "36bit", strlen("36bit"))) {
-+		} else if (str_has_prefix(opt, "36bit")) {
- 			sm750_dev->pnltype = SM750_DOUBLE_TFT;
--		} else if (!strncmp(opt, "18bit", strlen("18bit"))) {
-+		} else if (str_has_prefix(opt, "18bit")) {
- 			sm750_dev->pnltype = SM750_DUAL_TFT;
--		} else if (!strncmp(opt, "24bit", strlen("24bit"))) {
-+		} else if (str_has_prefix(opt, "24bit")) {
- 			sm750_dev->pnltype = SM750_24TFT;
--		} else if (!strncmp(opt, "nohwc0", strlen("nohwc0"))) {
-+		} else if (str_has_prefix(opt, "nohwc0")) {
- 			g_hwcursor &= ~0x1;
--		} else if (!strncmp(opt, "nohwc1", strlen("nohwc1"))) {
-+		} else if (str_has_prefix(opt, "nohwc1")) {
- 			g_hwcursor &= ~0x2;
--		} else if (!strncmp(opt, "nohwc", strlen("nohwc"))) {
-+		} else if (str_has_prefix(opt, "nohwc")) {
- 			g_hwcursor = 0;
- 		} else {
- 			if (!g_fbmode[0]) {
-@@ -1073,11 +1073,11 @@ static int __init lynxfb_setup(char *options)
- 	 */
- 	while ((opt = strsep(&options, ":")) != NULL) {
- 		/* options that mean for any lynx chips are configured here */
--		if (!strncmp(opt, "noaccel", strlen("noaccel"))) {
-+		if (str_has_prefix(opt, "noaccel")) {
- 			g_noaccel = 1;
--		} else if (!strncmp(opt, "nomtrr", strlen("nomtrr"))) {
-+		} else if (str_has_prefix(opt, "nomtrr")) {
- 			g_nomtrr = 1;
--		} else if (!strncmp(opt, "dual", strlen("dual"))) {
-+		} else if (str_has_prefix(opt, "dual")) {
- 			g_dualview = 1;
- 		} else {
- 			strcat(tmp, opt);
 -- 
-2.56.0
-
+Thanks,
+Sasha

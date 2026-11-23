@@ -1,59 +1,60 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795438729;
-	b=aZPgKgBdZvr6KfGnc/Yg3z+E64aFNsvO0pfxeqxra/uMtzbzRv3j++HAjfJzXC3JTkN7
-	 KqHaXP5nA1Xhj/Ar1hAGqTUhfQLYl74UGTs6DrhPqWBHEEcmlFsvwBRrA1unaTHzzjD4e
-	 OAfxlkBTawbUYcXTXZbkmm/slnZjzR7OAQDN7qIQbQVFVuxrB2lhk6LAV8dHfHTkPIif/
-	 f0LwFZuBTXSl4DBbQ8v6TB2wLCegvUVbhPHMDuPMWWSuSv+ooU3DH7NJ6ZkKA2aKKP8Sh
-	 xZx5SPohDYCZqOWrkL/8ZgNS+6uqquWdkRQVqxs7ACzNiwv1P06Zl37Io02S7AFWs0Q==
+	t=1795438928;
+	b=t6i1CQvtziQdH1isLbKmUup/eqaOhYMsKwWlLKlq8AkNJclf50yAHxOjAcCToO3zebCU
+	 igvRWphyJjmZ368umZ/+/grffUYM23hqifJbLpGVnEKcDVuHhpsUn8/D0ufbV77ndRJqU
+	 G1qVcGCmHMB4TLb8f5NCC4N/sY+4Bvb/Z9E8KBo0P60r1H4JbRQblh37uSxFjN3M4yF3b
+	 gQlNAzYf8aWyOLdZnO21ESXpz2gJ286WSMutsvcCSM84zDc/iB+3pLnpAjykrUHcM7m8T
+	 W7xbKbMY3WXXx0mW9KS8XmqJs1/WkgC6ec5sx2R1nCg5vKBWnt5COoMsTDgJtqfDV3Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795438729;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795438928;
 	h=Received:DKIM-Signature:Message-ID:Date:From:To:Subject:In-Reply-To:
 	 References:Cc:Content-Transfer-Encoding;
-	bh=/iMdDPOlUrYpb8pfDUfC/X2GGru3CmJD7BQ2/aFt7vo=;
-	b=VMP+/CF8JmIpW897eNllYTQ+OuXgSo0S92jfY3FKlJRREwsHXio+HHGKv5Ai0RfNCVTU
-	 rY3quM8UZRoqSCdJ0lcbTpw7zMHQ3sUvPUZIuWbRfNuz2bSEKbLGqKjqG49Jz/YRCD76r
-	 EMrRT/+cGPj7AMv78hAmsCst5sIO9OXL/l1zfuyh2QsneWghK7MRjsUOFdWwwAVw1qDSf
-	 YZcmdOxZXb3QQcfdwGB+ZlKD9dtXszm/QDYcDQKgBts7Pcj59sqbbEaQCKjwqVpCVWUU4
-	 EiD+vuA0h1r2wd+Ns0qA0GOMwMMGJVauHnPYetfU7BEBXEhZUJzALHSSjjzggZbtZ3w==
+	bh=TJ2A87nOClwrvrq6t2auqPCfNpbW4imX0mx2kNoeTLo=;
+	b=tkLffA8+UYGTzka2lZnEPZhIlgbpkLN54SZufWuI0khbezKxfOjX5x6R1goCbuT2lwLA
+	 Hx6fRwt3nsBlMK8bHFsNqwQIafFS9s1uc3FFHBTsbeDUEMJSKICCgH8c/D/OVdA7r7MM6
+	 2hL4nWkdS/Y7Wra2xktj0L5Od0RUw5lrymsb4aSPlSiUKG3K3srojsKK834LkypbcjeaM
+	 CWa+RxP3n7fn+eoS23+7VE9dcsiBnUDO35UxucS2W1bpve7eQ3nlrJrbZkm2b5MiqsaKI
+	 nVGjwIA9+Pzv8k+JoMLHe7g9M5ZdEa/Ptmcalw/A4e70/vgNvXx/OeHEBUcYmcp+epA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g8Fh3daD;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hn0X8FZZ;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B39FB606A31A;
-	Mon, 23 Nov 2026 12:58:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4234B606A31A;
+	Mon, 23 Nov 2026 13:02:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=g8Fh3daD
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A7681F000C0;
-	Mon, 23 Nov 2026 12:58:48 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hn0X8FZZ
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D51C91F000C4;
+	Mon, 23 Nov 2026 13:02:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795438729;
-	bh=/iMdDPOlUrYpb8pfDUfC/X2GGru3CmJD7BQ2/aFt7vo=;
+	s=k20260515; t=1795438927;
+	bh=TJ2A87nOClwrvrq6t2auqPCfNpbW4imX0mx2kNoeTLo=;
 	h=Date:From:To:Subject:In-Reply-To:References:Cc;
-	b=g8Fh3daD3xH+mbm/mrxKESnZNu3kBwJ2o5nRb+HFA7we1T/7H+YEdvL42tRd/YLav
-	 YAWkg4Zb10Odzmg1d1hRv3d0ym6GOvra3iFAPMQkMpYB1X2wcBeiy6KXpNczXRF3Tq
-	 pRvSLxkYjPjEVlA9dMhEprbZGDEU1Y2JqMOVx67JrgwlsPG2Gg4G9ylnjhV5LRUXwv
-	 aMKQvMIKBK1CxR58eT6uRB9sARJn0Jq5sO7gYYLk2BB86r2Iv7eDzt0vIyxrCar8qm
-	 WICwTayWsG7YpMqKWwX8Db/paUAu/YhXjdSSzagWk8MLm2qQf6ac3SO4A4FEa6alXG
-	 S+pWvq8+AJP3w==
-Message-ID: <28fb51fd6287f4b2faf996b696724c7e@kernel.org>
-Date: Mon, 23 Nov 2026 12:58:46 +0000
+	b=hn0X8FZZh4Mjm5RDchkTDW5x555D25XzaKP3/VwujyCBP8DyWqtYBD3Ok7J5QyWr2
+	 JghiuQAsOMq7eMwOIo6V8nmhWZ8CpE/rIWZGsEugUvi7oRcQ6KhLEBfgaWUq8J/Bqy
+	 ZUt7tYli/3VI3AJR3mwWihDjG0Ng6kET74+L7U5Ule6hD1vJIvoFr8AGz12+sN8zn3
+	 SfdIHoTmFZqeuTIEGHzw1iLq4FyD8iCLZ09bwdl8D1rYSB9U4paqEy3PL5pfADH7wM
+	 l0CU5qNJlPQmTaZRJ0fFPsAls3Q61rABNf43CX+oI86jpuhPqs1Z7KJEIjJ5FC21Ak
+	 xzpnS4XoUO6yg==
+Message-ID: <a7ab0adec79adca2dba948c634f45d6c@kernel.org>
+Date: Mon, 23 Nov 2026 13:02:04 +0000
 From: "Maxime Ripard" <mripard@kernel.org>
 To: "Cristian Ciocaltea" <cristian.ciocaltea@collabora.com>
-Subject: Re: [PATCH 06/25] drm/tests: hdmi: Convert to
- drmm_connector_hdmi_init()
-In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-6-20e8a33a2286@collabora.com>
-References: <20261114-drm-conn-hdmi-cleanup-v1-6-20e8a33a2286@collabora.com>
+Subject: Re: [PATCH 07/25] drm/connector: Remove drmm_connector_hdmi_ini2()
+In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-7-20e8a33a2286@collabora.com>
+References: <20261114-drm-conn-hdmi-cleanup-v1-7-20e8a33a2286@collabora.com>
 Cc: dri-devel@lists.freedesktop.org, kernel@collabora.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "David
- Airlie" <airlied@gmail.com>, "Hans Verkuil" <hverkuil@kernel.org>, "Helge
- Deller" <deller@gmx.de>, "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, "Martin
+ Airlie" <airlied@gmail.com>, "Diederik de Haas" <diederik@cknow-tech.com>, "Hans
+ Verkuil" <hverkuil@kernel.org>, "Helge Deller" <deller@gmx.de>, "Igor
+ Paunovic" <royalnet026@gmail.com>, "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, "Martin
  Bugge" <marbugge@cisco.com>, "Mauro Carvalho Chehab" <mchehab@kernel.org>, "Maxime
- Ripard" <mripard@kernel.org>, "Simona Vetter" <simona@ffwll.ch>, "Thierry
- Reding" <treding@nvidia.com>, "Thomas Zimmermann" <tzimmermann@suse.de>
-Content-Transfer-Encoding: 7bit
+ Ripard" <mripard@kernel.org>, =?utf-8?b?Um9iaW4gUsOkYmVy?= <robin.raebi@gmail.com>, "Simona
+ Vetter" <simona@ffwll.ch>, "Thierry Reding" <treding@nvidia.com>, "Thomas
+ Zimmermann" <tzimmermann@suse.de>
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -63,13 +64,14 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 
-On Sat, 14 Nov 2026 20:03:30 +0200, Cristian Ciocaltea wrote:
-> Switch tests over to the new drmm_connector_hdmi_init() signature, where
-> the vendor, product, supported_formats and max_bpc values previously
-> passed as arguments are now provided through struct
-> drm_connector_hdmi_funcs.
-> 
-> 
+On Sat, 14 Nov 2026 20:03:31 +0200, Cristian Ciocaltea wrote:
+> All callers have been converted to the new drmm_connector_hdmi_init()
+> signature, so drop the transitional drmm_connector_hdmi_init2() helper
+> along with its declaration, EXPORT_SYMBOL() and kernel-doc.
+>=20
+> Tested-by: Diederik de Haas <diederik@cknow-tech.com>  # NanoPC-T6 LTS, R=
+ock 5B
+>=20
 > [ ... ]
 
 Acked-by: Maxime Ripard <mripard@kernel.org>

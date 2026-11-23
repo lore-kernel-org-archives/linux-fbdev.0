@@ -1,73 +1,104 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.217.50
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795420347;
-	b=duTTcPpkMj4eeUoiY8L5x2vRQ+cmLZIzVer97KGAT9r/quToLtBmDcenalTDfCfdeS3h
-	 QfhOi5GfhO++aojflSni336MF+4sDsEv7eqlTr+as1RxZhK1SKyVkhWGv4BG+ogFwfF3S
-	 OwxZh8U5eiZO2B+bAAzQ8tXV2dt1uCdzCIzaw8F7e0hLaxVLV4N23rY7AfFZ44sKPhSkG
-	 5N9AWfidgqIiX/eL9oyAdR7bL9Z0O+b78eaXbFf/lZnE6duuuhcWc/zEKpiX4vFh7hraZ
-	 o/nin44tPfJP5bHIQdGlRFkTyJGx331SjBzMdo6Som6Zw7XKorUXaqwGB7f8IuINWsA==
+	t=1795428709;
+	b=bUPplvPtDRA5SQIsXAin2J3iR3c+an49CUQcU2FSw6CP4uQ76SsugwlRwsBR3y1YeXRf
+	 MNx9KoT29psEef3gLUJWANKsW6AGYyplvdRe605ZMnArMbzX1iglCPKfxaZwLkXD9ddGz
+	 ZsMHV7GKI1ImPOPcn2lhPM+W+PUkUC6oLnEJKBoM9g9SuNAvzM0J7pe2tT46jPYlU+nmK
+	 IceaTXaldANjB1xRjNhwRzsQN1sDPd+p+7NrGGK3hEme9Wmj6jcTU9PV9NDlhJuP3NRhp
+	 f8x/qV+OhbHSEgM+biDi160wtHO3zARqZ35GOvogEXlSXW6D9tACZ7ZjWzpNREYG4cA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795420347;
-	h=DMARC-Filter:Received:X-Google-DKIM-Signature:X-Gm-Message-State:
-	 X-Gm-Gg:X-Received:Received:Received:X-Received:MIME-Version:
-	 References:In-Reply-To:From:Date:X-Gmail-Original-Message-ID:
-	 X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type;
-	bh=gPjBrUC4IIvbAeHFoPzSJVURfLd/Eu+uv7trnU32st0=;
-	b=3+8QP0DSYeHNCVUw/bY34hJaWKHNl5dSgm+nkXCuUFOxBJhaK8IKDbwj+ZDkkbzbecsT
-	 iDjAkkHXVdklbUKBMhO1ryIfBQO8lTTSvMGhdHnNpgeXGbICxzOBb1/qyAVhurX6ecwcP
-	 MNRzzRhNDeP8O28KMejnmj10B3gtqTgwpsrqqjhBZ8xBMm6GaKoRfKjV3jc24e89hmWrW
-	 jAw2jUidVw2y+h1gLnQetV9kwD5kVYlenyFF1DnzjqVB5YCQaxR9u0YtMPOzNZQ9e839C
-	 i3hKNuZx7HrtnyCLSIzeKNoaphw8L+TpRHihPCTIu+fDLVJJbANQTVRTNWN+p4gg/wg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795428709;
+	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
+	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spamd-Result:
+	 X-Rspamd-Server:X-Rspamd-Action:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
+	 X-Rspamd-Queue-Id;
+	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
+	b=mdWNajK7dt9fFICSSPrVqf8wSBV2uIuREZfuXD34zb7ANyi/Uguz+bIr5kI/y1t92AXP
+	 nCJRdPAUv6+LoQ9WcVeBPeOpLE0nRrTzzQvQHuRxrkgdWwePl6sM0cQ6SMHhQMuzMLS/I
+	 7CB26+beZthGc9DvgiCFzokQrk55sPZr29365zBs4oDbZVCi+hrRrlemTFUhDQKhEMv03
+	 OMGD/qU/CXmZus2ugmhGczqZYGAMbhh4m/NjskP1Wrvp0t6wTZG88uDdTi25f9ZWx3EF2
+	 fv6/yUn7TZdvUgCOykGeCAJD9m7eGG7FpvbQ+169Sgd8RuCJ3RQ1r40Dekq0nFtbatQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=fail header.from=linux-m68k.org;
-	spf=pass smtp.mailfrom=gmail.com;
-	arc=none smtp.remote-ip=209.85.217.50
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com [209.85.217.50])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=suse.de;
+	spf=pass smtp.mailfrom=suse.de;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DnWD5Ywu;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=l7FIJZ1D;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DnWD5Ywu;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=l7FIJZ1D;
+	arc=none smtp.remote-ip=195.135.223.131
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C79E1606A32A
-	for <linux-fbdev@vger.kernel.org>; Mon, 23 Nov 2026 07:52:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C79E1606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-7d2d1b4a83aso924680137.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 22 Nov 2026 23:52:26 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795420346; x=1796025146;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=gPjBrUC4IIvbAeHFoPzSJVURfLd/Eu+uv7trnU32st0=;
-        b=cos4Ai2vxHO3Cz07cHCSvofQ0dzV5KUxxHhhj+44Lk0oTB/EzZ4NeS04LuOZDvT2A2
-         2BdL3dpNoOkwzfSv411hbqPlJOmZiI6bNBL73G2p/QSm241J6UnkEgXFziXoSVuz+v5t
-         bRfhInxTa6QUcsp95jH8ENMQfBzCHxYp+QxbEJc9+N6kaSw4bzI8CSJl76RcSULsteWB
-         HpYuM3ZYkWll01+6cjpm/X4jSJ13yYyWoTfrbmDd6I5aGN/IEJO1DG9GejQpmdJTv4/7
-         NO6tnuHZ9xJu0rP8VB+oAoZs4bjhJisAs1VCf4tlS8minfcawT9mR4nY5HuJunK0/BX+
-         y2kQ==
-X-Gm-Message-State: APuU4Z/kROCf3HvJ/brC1HscCtQygoAbSylvClCV67mdlSHRx3ml/m1b
-	mmknDTalLIMZb2k7ElkW4zFw27j98GaMXtXpWeDJH5EaQYeSAe+21Rr4NM9HK4S+
-X-Gm-Gg: AZFdTZciZ0xIL9ElYiuKwBG9mlgoDm6dzNYx4+DfWNBiI4RToAlkY+m/hBjPRhJebXS
-	bU14Na8M8IO2TiYeawGHS4xTU7eLWFIuYrQeITPrx+je/IKrt53BWQfS9DvncmBs//r6PYiLwV3
-	Q3+z4DtFAhnOyyB/DyX/1WENtpaM725TtwQU07WHupeo4oX3GCeXPyuve6SCOtWWlB0ok1vMamr
-	OQkvVsEK5PiEnbSPAknd6xJPmjYI2TdLsVA01HkEh17Jn+E+IihhVR4BeaCtI6Q1k8E0s7tpTnM
-	JZBseoa260Tq6upXONf9A2w+2IV/3Aze/UZsb30/hYfPUrhkP2tymKiflo37i7SnEsxsJ0yPtbO
-	7kMrlnO1pUS9quNVoiLxS7yE22YA3+taPDjO4pfPK6TU0bA719qFNR2PB8kVrYzr8kU8hOSblcp
-	RkJ8HU9kdG7Uc4g2nkuxBoFpzGU/ue0Dh98JbDVU+K7mq1S6Hd5VMUBzhXii1mNnisa5GDwVJNP
-	Z14SS4kw8iX2Bg6XQApQa7wQEULTNH8GVlddgh4AmTgciG13t6W3MFQn13fReQJCY9bNMAGuYF1
-	9uCSlfbXqI/eoeKCamQCnEgPA2VDHMaIs7ci2rd8uXG+W/z2iEaM5apm+N/wQMRMQMk=
-X-Received: by 2002:a05:6102:4411:b0:7c3:3890:6076 with SMTP id ada2fe7eead31-7d739696d1dmr4084786137.6.1795420345603;
-        Sun, 22 Nov 2026 23:52:25 -0800 (PST)
-Received: from mail-vs1-f48.google.com (mail-vs1-f48.google.com. [209.85.217.48])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-99e6df8a28dsm10923328241.4.2026.11.22.23.52.25
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 22 Nov 2026 23:52:25 -0800 (PST)
-Received: by mail-vs1-f48.google.com with SMTP id ada2fe7eead31-7d2d1b4a83aso924677137.3
-        for <linux-fbdev@vger.kernel.org>; Sun, 22 Nov 2026 23:52:25 -0800 (PST)
-X-Received: by 2002:a05:6102:c4b:b0:7cc:174b:f7bc with SMTP id
- ada2fe7eead31-7d7397267a8mr4285980137.15.1795420344893; Sun, 22 Nov 2026
- 23:52:24 -0800 (PST)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54D81606A32C
+	for <linux-fbdev@vger.kernel.org>; Mon, 23 Nov 2026 10:11:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 54D81606A32C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DnWD5Ywu;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=l7FIJZ1D;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DnWD5Ywu;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=l7FIJZ1D
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 5237B1F445;
+	Mon, 23 Nov 2026 10:11:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1795428706; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
+	b=DnWD5Ywuewrx4njscNE9TWbl2RJlXITf/wgxNULVUCMjVazoSqQBWPL/GZUE5Ve0oiATwY
+	ykmvUke+8R1c5d6RoseCMpfiLHrUW7LooY3osZSAVi/2TdrJPdy/w+QCzNMBRNyde5CZx2
+	/+5iyoCEVVVcW8zBXheimxhkHS+FWv0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1795428706;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
+	b=l7FIJZ1DDhBmCqhGI4IqQC7FKy6nbCkxE1mM5jcI7py9TuyKQrKFB5M6AX16k6xHOrp3Aw
+	tjgiELnXb/zHl9AA==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=DnWD5Ywu;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=l7FIJZ1D
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1795428706; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
+	b=DnWD5Ywuewrx4njscNE9TWbl2RJlXITf/wgxNULVUCMjVazoSqQBWPL/GZUE5Ve0oiATwY
+	ykmvUke+8R1c5d6RoseCMpfiLHrUW7LooY3osZSAVi/2TdrJPdy/w+QCzNMBRNyde5CZx2
+	/+5iyoCEVVVcW8zBXheimxhkHS+FWv0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1795428706;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
+	b=l7FIJZ1DDhBmCqhGI4IqQC7FKy6nbCkxE1mM5jcI7py9TuyKQrKFB5M6AX16k6xHOrp3Aw
+	tjgiELnXb/zHl9AA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0CC0B13510;
+	Mon, 23 Nov 2026 10:11:46 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id kH61NGERBGuuTwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 23 Nov 2026 10:11:46 +0000
+Message-ID: <f1b416d8-b301-4523-afd3-1e3cf7876118@suse.de>
+Date: Mon, 23 Nov 2026 11:11:45 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -77,89 +108,124 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20261120175413.176249-1-deller@gmx.de>
-In-Reply-To: <20261120175413.176249-1-deller@gmx.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 23 Nov 2026 08:52:13 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWyrdpVKvs=8Q+B-Syo1ZdAJvfJXFv0qiNtR9z4VnwnBQ@mail.gmail.com>
-X-Gm-Features: Aa3M54qOyxN021oFFusiAroXY34uRuwIJkT2Rviou6jBcd7wAahwXo5xPECEOBY
-Message-ID: <CAMuHMdWyrdpVKvs=8Q+B-Syo1ZdAJvfJXFv0qiNtR9z4VnwnBQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] fbdev: radeonfb: reject a zero pixclock in radeonfb_check_var()
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	Jianqiang Zou <jq.zou@outlook.com>, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/6] fbcon: Use unsigned char for glyph data
+To: Helge Deller <deller@gmx.de>, simona@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20261120115215.52092-1-tzimmermann@suse.de>
+ <20261120115215.52092-2-tzimmermann@suse.de>
+ <8c261690-a840-4713-905b-51b6dc51aedc@gmx.de>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <8c261690-a840-4713-905b-51b6dc51aedc@gmx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-14.50 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	DWL_DNSWL_LOW(-1.00)[suse.de:dkim];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	XM_UA_NO_VERSION(0.01)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	ARC_NA(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de];
+	RCPT_COUNT_THREE(0.00)[4];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MID_RHS_MATCH_FROM(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:dkim]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Flag: NO
+X-Spam-Score: -14.50
+X-Spam-Level: 
+X-Rspamd-Queue-Id: 5237B1F445
 
-Hi Helge, Jianqiang,
+Hi
 
-On Fri, 20 Nov 2026 at 18:54, Helge Deller <deller@gmx.de> wrote:
-> From: Jianqiang Zou <jq.zou@outlook.com>
+Am 21.11.26 um 18:37 schrieb Helge Deller:
+> On 11/20/26 12:49, Thomas Zimmermann wrote:
+>> Represent glyph data as unsigned char, as done by font_data_t. Convert
+>> all related code. Also declare source buffers with glyph data as const
+>> because internal fonts reside in read-only memory. Avoid writing them.
+>>
+>> We still use char for glyph data in struct fb_image. The type is part
+>> of the kernel uAPI and therefore cannot be changed. Fall back to type
+>> casting in this case.
+>>
+>> Destination buffers for font drawing are still u8. This is framebuffer
+>> memory provided by graphics hardware.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> ---
+>>   drivers/video/fbdev/core/bitblit.c   | 25 ++++++++++++++-----------
+>>   drivers/video/fbdev/core/fbcon.h     |  4 ++--
+>>   drivers/video/fbdev/core/fbcon_ccw.c | 22 ++++++++++++----------
+>>   drivers/video/fbdev/core/fbcon_cw.c  | 22 ++++++++++++----------
+>>   drivers/video/fbdev/core/fbcon_ud.c  | 28 +++++++++++++++-------------
+>>   5 files changed, 55 insertions(+), 46 deletions(-)
 >
-> radeonfb_set_par() derives the dot clock from the user supplied
-> struct fb_var_screeninfo:
 >
->         dotClock = 1000000000 / pixClock;
+> For the whole series:
+> Reviewed-by: Helge Deller <deller@gmx.de>
 >
-> where pixClock is copied from mode->pixclock.  A zero pixclock
-> bypasses the existing validation and makes the kernel divide by zero
-> in radeonfb_set_par().
->
-> The driver does have a check for this: fb_validate_mode() returns
-> -EINVAL when pixclock is 0, but radeon_match_mode() only calls it when
-> the output has no scaler and an EDID-derived mode database is
-> available:
->
->         if (has_rmx == 0 && rinfo->mon1_modedb)
->                 if (fb_validate_mode(...))
->                         return -EINVAL;
->
-> mon1_modedb is only filled in when an EDID is read, so when no
-> EDID-derived mode database is available the validation is skipped and
-> the invalid mode reaches radeonfb_set_par().
->
-> Reject a zero pixclock in radeonfb_check_var() before matching the
-> mode.  fb_set_var() calls it on the FBIOPUT_VSCREENINFO path before
-> ->fb_set_par(), so the invalid value is rejected before the mode is
-> applied.  This is the same check other fbdev drivers use (i740fb,
-> arkfb, s3fb).
->
-> Reproduced on Linux 7.3.0 using a custom QEMU PCI stub device with
-> vendor/device ID 1002:5955; no physical Radeon hardware was used.  A
-> single FBIOPUT_VSCREENINFO with pixclock = 0 is enough to trigger the
-> divide error.
->
-> Signed-off-by: Jianqiang Zou <jq.zou@outlook.com>
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Helge Deller <deller@gmx.de>
+> I've added the series to my (upcoming) for-next git tree.
 
-Thanks for your patch, which is now commit b3f1631d362539cf ("fbdev:
-radeonfb: reject a zero pixclock in radeonfb_check_var()") in v7.4-rc4.
+Thanks. The review bot found a few issues, so there might be an update 
+coming.
 
+Best regards
+Thomas
 
-> --- a/drivers/video/fbdev/aty/radeon_base.c
-> +++ b/drivers/video/fbdev/aty/radeon_base.c
-> @@ -836,6 +836,9 @@ static int radeonfb_check_var (struct fb_var_screeninfo *var, struct fb_info *in
->          int nom, den;
->         unsigned int pitch;
 >
-> +       if (!var->pixclock)
-> +               return -EINVAL;
-> +
+> Thanks!
+> Helge
 
-This violates fbdev API rounding rules:
-  1. If a value doesn't fit, it must be rounded up by the driver,
-  2. If a value is too large, -EINVAL must be returned.
-
->         if (radeon_match_mode(rinfo, &v, var))
->                 return -EINVAL;
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+-- 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+

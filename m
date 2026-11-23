@@ -1,60 +1,102 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.130
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795439279;
-	b=SgekSTFuzwX/ouTVC4ynSY5jU+NlLYhEB66KedIlZQAsVLJx4ySFODae9vi69nxQCHI/
-	 fwKQdEgBeX72vJDL85H/mXCaMR5K5dCmSS2HhmQ2fz05/CNm7uMokD1k56IKsqnBA3gDH
-	 XpAa6R/bxyBdeIzo7mFK3b0L6AHedr1loWICSymD/wT+SIzDmO+Mo+jilpmxuGGNZLgu9
-	 0xPxcsiIDEArIEZs0qV/OhO/6GtMysY/N2dL38mzC7edQACsQSHlcZg+MHzWFr5tyh2SN
-	 bW7jKU4TNHQesXDEd4mipPhpy2NI7YcwIRWZmK0ykJcL4hBGkIX2NfY1vFe2+YCn50Q==
+	t=1795442761;
+	b=0EN1guO9Z+KkM+0qU+nxjbsjH6eSJ668koVuRY8XKGlLhl1WlBuwWdBc3PisIOuhWufd
+	 pJLQDmpdbtpU3vhu8yh3Cw43R/f4IL93rJAqIK1kkxLQ4U1PkUuhRWoCj6fnIpd+i7zZS
+	 OY17dNMwev0VLrkjM8OUxOPz6GB4EsRoQHo4kUbqATvV/Zno9S4Pjo0mnQh+yprxk/U7q
+	 osguUu2/Qk4jocWmXlLOrEzgZKwI5Kk33ON4cJ5k3pwRfukPmN0+FTSZ39lGPSvZU1WBE
+	 FLVlnCk+KAAJXJnLrr7HIVYYz6xeujL2hsjn9K5oZlQ3gkcFRMoHEGvJWHHssT2niYA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795439279;
-	h=Received:DKIM-Signature:Message-ID:Date:From:To:Subject:In-Reply-To:
-	 References:Cc:Content-Transfer-Encoding;
-	bh=LKa2vsaDvtaWNoj3QpEStf5Hs24zGtCTpUXk/Yj/O2k=;
-	b=Xq/1iHyXXI0SGwAORPK/G51eyeJRF29IDHsXQAllvIbnKjFI7wmTscI9OaQssun+J+jE
-	 0jYcqGxJYemj3rgDHhTR97SXkOQwzOTrRfGhwYEpmnsuDz8y5npEoW4y0FHFIIpybG0sP
-	 JhOYJG/0gy9C9gWQ4AqbKMLxMsbHbYrd4OcixmqTIY+TXBRDEB6GxeRBi5raCYE+5YJxP
-	 Iqgy5tpb+JoW/GA+wnej91AP/Ew8gbD9TngJTV0RX04hSepIdUEoKhHsuMHyOmIzWipL3
-	 3TzcvinTy2cKfPkWdkARWY+yysOoAoraEYHhfOptQlTw90vO6E0FE+KQZllKzTGCR1w==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795442761;
+	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
+	 DKIM-Signature:Received:Received:From:To:Cc:Subject:Date:Message-ID:
+	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-Spamd-Result:
+	 X-Spam-Score:X-Spam-Level:X-Spam-Flag;
+	bh=81TNR2PIfjb8PK1jMan1kn9wiEmEn2lhPF/V4DpuXFc=;
+	b=a+PknRHastviSJI8AJvctFB13sJvCCh9cAxvaK2mroQl/pZGCxpBExaE46UR04tLzZAS
+	 lY6QVAi9AhUZSQ9En5t5FzG7mjpYeBVT3y9PP5IeeaCLFjsH7/ZkitId3MPr/o0r3ZJx/
+	 sjscJHk39g8ovVOQtJdqle91bfi+behHFwagCPqyHELzOalAleB8Frb8qmCfT38kSqSf7
+	 0FkZDU2t1W7tb9tdRrtJ2jZPfop0XlM3n6WUjugRYyrabdxC0toc4C5mmg3McAW79CAts
+	 ISPDSPBJzbx0jtNMcFSrZjwN1KD7u+SLB06rZPl74UxelRyWJ+iIEBkAIH4qhkJsJ/w==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DK4j4JVl;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=suse.de;
+	spf=pass smtp.mailfrom=suse.de;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b="aJ/Fi+qB";
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JgOj70n6;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b="aJ/Fi+qB";
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JgOj70n6;
+	arc=none smtp.remote-ip=195.135.223.130
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 09A5A606A31A;
-	Mon, 23 Nov 2026 13:07:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57FF6606A31F
+	for <linux-fbdev@vger.kernel.org>; Mon, 23 Nov 2026 14:06:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 57FF6606A31F
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DK4j4JVl
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E02431F000C0;
-	Mon, 23 Nov 2026 13:07:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795439278;
-	bh=LKa2vsaDvtaWNoj3QpEStf5Hs24zGtCTpUXk/Yj/O2k=;
-	h=Date:From:To:Subject:In-Reply-To:References:Cc;
-	b=DK4j4JVlbEivXv3TjcwcBwzD5AUYazUJ6ef11A73UhNJRpp9blOC3zziE1sENTJ7n
-	 4/9sbQTirzrP2gl1KUSCFR12zIO7vYE82+3nwkNCMOZ7Pv8yc1/fp1H1Qm9T7eTflW
-	 L/EMq8zh+4kpHX3VvBnm6snCwpkUT5ZIu9KtTDco33fg+N6Rt4bYqJBrMKiq7Wc0+4
-	 xTth6wqo6XdV9sZeay++YZrOZ+PUnpHdRl1AsBbS9RJJUjotbDclRjgjEKKxYu/PZ3
-	 4QLhXXPdUey7uGk57zF3pC/Q3HNWNxSd4p2WlZBZlytxxePyKFzR72J6V3k0Ib2faN
-	 SXC6eLgqO324g==
-Message-ID: <98380c565736e8f2b72dd0299743d57c@kernel.org>
-Date: Mon, 23 Nov 2026 13:07:55 +0000
-From: "Maxime Ripard" <mripard@kernel.org>
-To: "Cristian Ciocaltea" <cristian.ciocaltea@collabora.com>
-Subject: Re: [PATCH 10/25] drm/connector: Drop redundant max_bpc field
-In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-10-20e8a33a2286@collabora.com>
-References: <20261114-drm-conn-hdmi-cleanup-v1-10-20e8a33a2286@collabora.com>
-Cc: dri-devel@lists.freedesktop.org, kernel@collabora.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "David
- Airlie" <airlied@gmail.com>, "Diederik de Haas" <diederik@cknow-tech.com>, "Hans
- Verkuil" <hverkuil@kernel.org>, "Helge Deller" <deller@gmx.de>, "Igor
- Paunovic" <royalnet026@gmail.com>, "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, "Martin
- Bugge" <marbugge@cisco.com>, "Mauro Carvalho Chehab" <mchehab@kernel.org>, "Maxime
- Ripard" <mripard@kernel.org>, =?utf-8?b?Um9iaW4gUsOkYmVy?= <robin.raebi@gmail.com>, "Simona
- Vetter" <simona@ffwll.ch>, "Thierry Reding" <treding@nvidia.com>, "Thomas
- Zimmermann" <tzimmermann@suse.de>
-Content-Transfer-Encoding: 7bit
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=aJ/Fi+qB;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JgOj70n6;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=aJ/Fi+qB;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=JgOj70n6
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 7389F21EC2;
+	Mon, 23 Nov 2026 14:05:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1795442759; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=81TNR2PIfjb8PK1jMan1kn9wiEmEn2lhPF/V4DpuXFc=;
+	b=aJ/Fi+qB1Edwbj7toycTJ8oeR8L1/0B5BbS/GbfTw1hlQcajrFeokNs68FBUPGfwAu5rpS
+	nEPWG3sK/vW/NnJK7GV99M/uhiZ8BaRDU+PvIZGMBndlgfgk5YZtYes4cj2Y4OkjPS3tem
+	oqfhLVEot7h2qSw1F7maj7V2zVa2LG0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1795442759;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=81TNR2PIfjb8PK1jMan1kn9wiEmEn2lhPF/V4DpuXFc=;
+	b=JgOj70n6vrU/plWrLNue3tLUHTfUEKeCMNpREeQ7woc6mTJwweD1hMdc+l7M00bs519OeS
+	d098JE+EweSgOFDQ==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1795442759; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=81TNR2PIfjb8PK1jMan1kn9wiEmEn2lhPF/V4DpuXFc=;
+	b=aJ/Fi+qB1Edwbj7toycTJ8oeR8L1/0B5BbS/GbfTw1hlQcajrFeokNs68FBUPGfwAu5rpS
+	nEPWG3sK/vW/NnJK7GV99M/uhiZ8BaRDU+PvIZGMBndlgfgk5YZtYes4cj2Y4OkjPS3tem
+	oqfhLVEot7h2qSw1F7maj7V2zVa2LG0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1795442759;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=81TNR2PIfjb8PK1jMan1kn9wiEmEn2lhPF/V4DpuXFc=;
+	b=JgOj70n6vrU/plWrLNue3tLUHTfUEKeCMNpREeQ7woc6mTJwweD1hMdc+l7M00bs519OeS
+	d098JE+EweSgOFDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 237231352B;
+	Mon, 23 Nov 2026 14:05:59 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id oQeBOkZIBGvqQwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 23 Nov 2026 14:05:59 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: deller@gmx.de,
+	simona@ffwll.ch
+Cc: dri-devel@lists.freedesktop.org,
+	linux-fbdev@vger.kernel.org,
+	sashiko-reviews@lists.linux.dev,
+	Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v3 0/6] fbcon: Clean up glyph handling on redraws
+Date: Mon, 23 Nov 2026 15:03:33 +0100
+Message-ID: <20261123140554.1129792-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.56.1
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -63,17 +105,87 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-11.80 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCPT_COUNT_FIVE(0.00)[6];
+	FREEMAIL_ENVRCPT(0.00)[gmx.de]
+X-Spam-Score: -11.80
+X-Spam-Level: 
+X-Spam-Flag: NO
 
-On Sat, 14 Nov 2026 20:03:34 +0200, Cristian Ciocaltea wrote:
-> Now that all users migrated to the new drmm_connector_hdmi_init()
-> signature, max_bpc is provided through struct drm_connector_hdmi_funcs,
-> a reference to which is already stored in drm_connector_hdmi.
-> 
-> Drop the redundant connector->max_bpc field and point its users to
-> 
-> [ ... ]
+Fbcon's drawing functions open-code much of the glyph handling. Use
+font helpers instead. Makes fbcon more consistent and easier to
+understand.
 
-Acked-by: Maxime Ripard <mripard@kernel.org>
+Patch 1 updates fbcon to use unsigned char for glyph buffers. This
+is consistent with the font code and font_data_t.
 
-Thanks!
-Maxime
+Patches 2 and 3 update font rotation to return rotated glyphs as
+font_data_t. A rotated font can now use the same interfaces as the
+unrotated source font. Fbcon uses this to ref count the rotated
+font's buffer.
+
+Patches 4 to 6 update various parts of fbcon to use font helpers
+instead of open-coding access to font_data_t. Having the rotated
+font as font_data_t makes this convenient.
+
+Tested with fbcon on DRM's bochs driver (qemu).
+
+v3:
+- replace remaining instances of kfree() with font_data_put()
+- upcast vc_font.data to font_data_t for glyph lookup
+- fix fallback in ccw_cursor()
+v2:
+- resolve merge conflicts in fbcon
+- fix typos in commit descriptions
+
+Thomas Zimmermann (6):
+  fbcon: Use unsigned char for glyph data
+  lib/fonts: Provide internal helpers for allocating font_data_t
+  lib/fonts, fbcon: Use font_data_t for rotated fonts
+  fbcon: Refactor size calculation for cursor buffers
+  fbcon: Look up glyphs using the font interface
+  fbcon: Handle characters with no glyph defined in a consistent way
+
+ drivers/video/fbdev/core/bitblit.c      | 83 +++++++++++++++----------
+ drivers/video/fbdev/core/fbcon.c        | 12 ++--
+ drivers/video/fbdev/core/fbcon.h        |  5 +-
+ drivers/video/fbdev/core/fbcon_ccw.c    | 56 +++++++++++------
+ drivers/video/fbdev/core/fbcon_cw.c     | 57 ++++++++++-------
+ drivers/video/fbdev/core/fbcon_rotate.c | 19 +++---
+ drivers/video/fbdev/core/fbcon_ud.c     | 77 +++++++++++++++--------
+ include/linux/font.h                    |  5 +-
+ lib/fonts/font.h                        | 12 ++++
+ lib/fonts/font_rotate.c                 | 39 +++++-------
+ lib/fonts/fonts.c                       | 63 ++++++++++++-------
+ 11 files changed, 263 insertions(+), 165 deletions(-)
+
+
+base-commit: 579369fbe7227f6b00acc883ac90606a5266932a
+prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
+prerequisite-patch-id: a5a973e527c88a5b47053d7a72aefe0b550197cb
+prerequisite-patch-id: b9adc9622920a3e70168e672c2c92795b3e3a106
+prerequisite-patch-id: 5030de433a01c2e99056cadb676a8e2ba35f055a
+-- 
+2.56.1
+

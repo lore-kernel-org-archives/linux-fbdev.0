@@ -1,104 +1,69 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=124.126.103.232
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795428709;
-	b=bUPplvPtDRA5SQIsXAin2J3iR3c+an49CUQcU2FSw6CP4uQ76SsugwlRwsBR3y1YeXRf
-	 MNx9KoT29psEef3gLUJWANKsW6AGYyplvdRe605ZMnArMbzX1iglCPKfxaZwLkXD9ddGz
-	 ZsMHV7GKI1ImPOPcn2lhPM+W+PUkUC6oLnEJKBoM9g9SuNAvzM0J7pe2tT46jPYlU+nmK
-	 IceaTXaldANjB1xRjNhwRzsQN1sDPd+p+7NrGGK3hEme9Wmj6jcTU9PV9NDlhJuP3NRhp
-	 f8x/qV+OhbHSEgM+biDi160wtHO3zARqZ35GOvogEXlSXW6D9tACZ7ZjWzpNREYG4cA==
+	t=1795428724;
+	b=e7ZylcIJ9/3aa1kHG8QyDct0EXwbk8EMcp08k02tPsQrKl2diCPngIDM/1AEMHFJz2Vy
+	 mKZOvY3Km6uHCqxLwOP03BpRZhx7IOrLpEHYKA/vHAPrQsfqxfashM3tpPhlt3wfDK4Y/
+	 VlL1XJQwEwoebTflcnnQrH4auuBJETAnVqIH2ItUxI2tAkkAQzpOMQ9Caz/MeCg9syAGN
+	 rp0TMOwjxgNgp2e2+fnFmkvcRJMUydoDgi7u9gP8HIeiXhro5qEZqXbbD3dbNQqEOjO05
+	 +dEK1B5cZ/v1ThybqApVucFmiDTvCN0Ppi3yeshhH7j1VxtBybFZikEtOQKYNDTwsjA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795428709;
-	h=DMARC-Filter:Received:DKIM-Signature:DKIM-Signature:DKIM-Signature:
-	 DKIM-Signature:Received:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:Autocrypt:
-	 In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Spamd-Result:
-	 X-Rspamd-Server:X-Rspamd-Action:X-Spam-Flag:X-Spam-Score:X-Spam-Level:
-	 X-Rspamd-Queue-Id;
-	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
-	b=mdWNajK7dt9fFICSSPrVqf8wSBV2uIuREZfuXD34zb7ANyi/Uguz+bIr5kI/y1t92AXP
-	 nCJRdPAUv6+LoQ9WcVeBPeOpLE0nRrTzzQvQHuRxrkgdWwePl6sM0cQ6SMHhQMuzMLS/I
-	 7CB26+beZthGc9DvgiCFzokQrk55sPZr29365zBs4oDbZVCi+hrRrlemTFUhDQKhEMv03
-	 OMGD/qU/CXmZus2ugmhGczqZYGAMbhh4m/NjskP1Wrvp0t6wTZG88uDdTi25f9ZWx3EF2
-	 fv6/yUn7TZdvUgCOykGeCAJD9m7eGG7FpvbQ+169Sgd8RuCJ3RQ1r40Dekq0nFtbatQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795428724;
+	h=DMARC-Filter:X-UUID:X-CID-P-RULE:X-CID-O-INFO:X-CID-META:X-CID-BVR:
+	 X-CID-BAS:X-CID-FACTOR:X-CID-RHF:X-UUID:Received:From:To:Cc:Subject:
+	 Date:Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=NO0x74vFEbFRFk1Ud+R7tW+jyS24/LF/j/409ZNv2N8=;
+	b=Ch0YB7zUZEJGAlaGLNBcAZFYy+CMhmPLQvVyYrbYGaMsTxW1Vq4CJg4G/tnIQn2/fnzk
+	 HMVyfHYf0/nuPyy7ExPBaQBMnhcWxNOAKgla+DLDMwJPB+lvbWso8YTtuOwSiWMAMI9eJ
+	 VEJJBW3tpScc2yDmq0OJzjGfFJP9AEw86wuAdltEGvPLKLn72rIltJDowhGAYkw1JFZ9B
+	 YwappWRQ9zceDFVXNFf8do7b8idbmmjej9GtqGCLQ8458HaWavq5LU3KhRtdnCu4io/7j
+	 e0Cmi84Ck6F8uc/3cfuucRRTVuzFnUIoSdDo+L9b5rc+poNDOyv1/2AnpOQ4pY3I/gg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=suse.de;
-	spf=pass smtp.mailfrom=suse.de;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DnWD5Ywu;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=l7FIJZ1D;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DnWD5Ywu;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=l7FIJZ1D;
-	arc=none smtp.remote-ip=195.135.223.131
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	dmarc=none header.from=kylinos.cn;
+	spf=pass smtp.mailfrom=kylinos.cn;
+	arc=none smtp.remote-ip=124.126.103.232
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54D81606A32C
-	for <linux-fbdev@vger.kernel.org>; Mon, 23 Nov 2026 10:11:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 54D81606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DnWD5Ywu;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=l7FIJZ1D;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DnWD5Ywu;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=l7FIJZ1D
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 5237B1F445;
-	Mon, 23 Nov 2026 10:11:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1795428706; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
-	b=DnWD5Ywuewrx4njscNE9TWbl2RJlXITf/wgxNULVUCMjVazoSqQBWPL/GZUE5Ve0oiATwY
-	ykmvUke+8R1c5d6RoseCMpfiLHrUW7LooY3osZSAVi/2TdrJPdy/w+QCzNMBRNyde5CZx2
-	/+5iyoCEVVVcW8zBXheimxhkHS+FWv0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1795428706;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
-	b=l7FIJZ1DDhBmCqhGI4IqQC7FKy6nbCkxE1mM5jcI7py9TuyKQrKFB5M6AX16k6xHOrp3Aw
-	tjgiELnXb/zHl9AA==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=DnWD5Ywu;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=l7FIJZ1D
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1795428706; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
-	b=DnWD5Ywuewrx4njscNE9TWbl2RJlXITf/wgxNULVUCMjVazoSqQBWPL/GZUE5Ve0oiATwY
-	ykmvUke+8R1c5d6RoseCMpfiLHrUW7LooY3osZSAVi/2TdrJPdy/w+QCzNMBRNyde5CZx2
-	/+5iyoCEVVVcW8zBXheimxhkHS+FWv0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1795428706;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=Gs8I0wkGd5iLGo5bx2l4PPs6fETlgWvAhGrCIXZ8g54=;
-	b=l7FIJZ1DDhBmCqhGI4IqQC7FKy6nbCkxE1mM5jcI7py9TuyKQrKFB5M6AX16k6xHOrp3Aw
-	tjgiELnXb/zHl9AA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0CC0B13510;
-	Mon, 23 Nov 2026 10:11:46 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id kH61NGERBGuuTwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 23 Nov 2026 10:11:46 +0000
-Message-ID: <f1b416d8-b301-4523-afd3-1e3cf7876118@suse.de>
-Date: Mon, 23 Nov 2026 11:11:45 +0100
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 70ACA606A33E;
+	Mon, 23 Nov 2026 10:12:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 70ACA606A33E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 4ed9c192e72611f19a56ed5b684f684d-20261123
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.19,REQID:9026a8a2-b792-4f5a-9c6b-aa1809da5366,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:7db8b62,CLOUDID:08f9c6b08b8bae52e26abe2fa9450a67,BulkI
+	D:nil,BulkQuantity:0,SF:102|850|865|898,TC:nil,Content:0|15|50|99,EDM:-3,I
+	P:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0
+	,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 4ed9c192e72611f19a56ed5b684f684d-20261123
+Received: from localhost [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <pengyu@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 682078225; Mon, 23 Nov 2026 18:11:54 +0800
+From: Yu Peng <pengyu@kylinos.cn>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Nicolas Pitre <nico@fluxnic.net>,
+	Ronan Pigott <ronan@rjp.ie>,
+	linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Yu Peng <pengyu@kylinos.cn>
+Subject: [PATCH] vt: Skip hardware scrolling while blanked and fix VESA blanking
+Date: Mon, 23 Nov 2026 18:11:51 +0800
+Message-Id: <20261123101151.414436-1-pengyu@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -108,124 +73,64 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/6] fbcon: Use unsigned char for glyph data
-To: Helge Deller <deller@gmx.de>, simona@ffwll.ch
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20261120115215.52092-1-tzimmermann@suse.de>
- <20261120115215.52092-2-tzimmermann@suse.de>
- <8c261690-a840-4713-905b-51b6dc51aedc@gmx.de>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <8c261690-a840-4713-905b-51b6dc51aedc@gmx.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-14.50 / 50.00];
-	SUSE_INTERNAL_BYPASS(-9.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	DWL_DNSWL_LOW(-1.00)[suse.de:dkim];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	XM_UA_NO_VERSION(0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[gmx.de,ffwll.ch];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	RCPT_COUNT_THREE(0.00)[4];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MID_RHS_MATCH_FROM(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:dkim]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spam-Flag: NO
-X-Spam-Score: -14.50
-X-Spam-Level: 
-X-Rspamd-Queue-Id: 5237B1F445
 
-Hi
+When vgacon is blanked without palette blanking (!vga_palette_blanked),
+vgacon_set_origin() rejects VRAM so vc->vc_origin points to the heap
+buffer vc->vc_screenbuf. Calling hardware scroll callbacks while blanked
+then treats vc->vc_screenbuf as VRAM and causes out-of-bounds accesses.
 
-Am 21.11.26 um 18:37 schrieb Helge Deller:
-> On 11/20/26 12:49, Thomas Zimmermann wrote:
->> Represent glyph data as unsigned char, as done by font_data_t. Convert
->> all related code. Also declare source buffers with glyph data as const
->> because internal fonts reside in read-only memory. Avoid writing them.
->>
->> We still use char for glyph data in struct fb_image. The type is part
->> of the kernel uAPI and therefore cannot be changed. Fall back to type
->> casting in this case.
->>
->> Destination buffers for font drawing are still u8. This is framebuffer
->> memory provided by graphics hardware.
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->> ---
->>   drivers/video/fbdev/core/bitblit.c   | 25 ++++++++++++++-----------
->>   drivers/video/fbdev/core/fbcon.h     |  4 ++--
->>   drivers/video/fbdev/core/fbcon_ccw.c | 22 ++++++++++++----------
->>   drivers/video/fbdev/core/fbcon_cw.c  | 22 ++++++++++++----------
->>   drivers/video/fbdev/core/fbcon_ud.c  | 28 +++++++++++++++-------------
->>   5 files changed, 55 insertions(+), 46 deletions(-)
->
->
-> For the whole series:
-> Reviewed-by: Helge Deller <deller@gmx.de>
->
-> I've added the series to my (upcoming) for-next git tree.
+Use con_should_update() to skip hardware scrolling and scrollback while
+blanked, allowing con_scroll() to fall back to software scrolling.
+In vgacon_blank(), return !vga_palette_blanked for VESA blanking so
+direct VESA blanking switches vc->vc_origin to vc->vc_screenbuf
+immediately instead of losing output on unblank.
 
-Thanks. The review bot found a few issues, so there might be an update 
-coming.
+Assisted-by: LLM
+Signed-off-by: Yu Peng <pengyu@kylinos.cn>
+---
+ drivers/tty/vt/vt.c            | 7 ++++---
+ drivers/video/console/vgacon.c | 2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-Best regards
-Thomas
-
->
-> Thanks!
-> Helge
-
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 6a6eb8b2a6dec..39be682645097 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -726,8 +726,8 @@ static void con_scroll(struct vc_data *vc, unsigned int top,
+ 		return;
+ 
+ 	vc_uniscr_scroll(vc, top, bottom, dir, nr);
+-	if (con_is_visible(vc) &&
+-			vc->vc_sw->con_scroll(vc, top, bottom, dir, nr))
++	if (con_should_update(vc) &&
++	    vc->vc_sw->con_scroll(vc, top, bottom, dir, nr))
+ 		return;
+ 
+ 	src = clear = (u16 *)(vc->vc_origin + vc->vc_size_row * top);
+@@ -3488,7 +3488,8 @@ static void console_callback(struct work_struct *ignored)
+ 	if (scrollback_delta) {
+ 		struct vc_data *vc = vc_cons[fg_console].d;
+ 		clear_selection();
+-		if (vc->vc_mode == KD_TEXT && vc->vc_sw->con_scrolldelta)
++		if (con_should_update(vc) && vc->vc_mode == KD_TEXT &&
++		    vc->vc_sw->con_scrolldelta)
+ 			vc->vc_sw->con_scrolldelta(vc, scrollback_delta);
+ 		scrollback_delta = 0;
+ 	}
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 09f7c376b4689..3a706c1f1cb28 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -796,7 +796,7 @@ static bool vgacon_blank(struct vc_data *c, enum vesa_blank_mode blank,
+ 			vga_vesa_blank(&vgastate, blank);
+ 			vga_vesa_blanked = blank;
+ 		}
+-		return false;
++		return !vga_palette_blanked;
+ 	}
+ }
+ 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Stefan Gaiser, Jochen Jaser, Abhinav Puri, (HRB 36809, AG Nürnberg)
-
+2.43.0
 

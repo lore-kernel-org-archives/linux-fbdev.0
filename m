@@ -1,110 +1,94 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.52
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795396454;
-	b=zi5CmbsyWWIP6YcQ/4Fam+GvM7peZZwKt/YIGlQtl/6OKgHMFyzsT15Agz7Vx8bqtkbM
-	 GAq3PTSrvx6U84peo4eUzpgskES8ERlNgm48wOYmNlP6DdI05KxPqn4HVh3h9BIAjslP5
-	 9F/AEk173YcK4hPNj4w7MqeoYvLqQzWfCpMcXtjAvNE8DjnOPnZNjaYteMW7ToVdmwb9K
-	 vFNh63HZdgszbwnqP3GQhw5U3SAqBbUUoYcNeYyp/DR+5S8tTg0UKWqahvnpXXtzztHwQ
-	 O9ZJGDKJY3J/3f0NdVbUCqonjBwR6P0lwAYDanVSSxl/X3i7SI6Uk7gmnyConHSfTVg==
+	t=1795419232;
+	b=YiRgcHCyqWOjByI/VW2WXLoDmpZ7MuDGBAb+fJo+Ps1LE9ta/BYRTyr3HgVUNv32L5W0
+	 Y9KZIaeUNLYJOZ2K5aQ/c4fBySUsLA9S6DG4TaBlKYd9eS1iwH4uPiECufoH7DRg+MJa7
+	 MrmUxIv5JSXdwzbskKxoDZmVbnoilc5Bzg6CTRRMDsCCeQyVmBDEcNsY52TprKbmy7E+O
+	 CNBiYSBfWrIc5+NoLiHU18bjgJrOQrvgHfVapLZeUkxhX6ZYSFlwuTbjKNIM1umlmHa2Z
+	 +u3F8iiv7WIQFU8EGva2e/V+Zloep1xDyxDpMQAWKigE9RqCPSh+wY3Cmd4KLtAmy+A==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795396454;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=1nAFz1rE2Zgq0kT2UJ5pKEhQqcU8lxqQXw2MrFx+Nfc=;
-	b=pYZrMBTfNg/tmd5x+6LlDdoeixZlNJ55dAWeRxY8ztf03HR0s7/UdHR9gNKc9N/uWePj
-	 4CkIGVm9AcUqiXxBqwnrsZb+cPSGX6GMJevdtDz5+Ovu5QxGWCZENhHVJp23xUYqrtls0
-	 WiCfI/oIN+MLF2RqmZsp2raJBZnwj1VGeEe8iwJ+o8MrsqTpq+5f3RFNf8mmgpDYOOGnG
-	 pmishOdd7aYSQGCApUZyOAiwFORtgvvtqfZafCILuLUB4GraLHtu4L5eaypgZ1P+Rge2X
-	 6ZhW1/QNp0FrcTvIJ/w0UhpauL/DmjKewRbsub40ZyTUp5IqRzi42cJpfvrkBkDp5QA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795419232;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To;
+	bh=vCLV3XBRX2wh16raJXcCmA/lhiX2jHGFoT2tZZcD4OY=;
+	b=Q3gRRwfRhbY5fMbb0VBcl3k/vMNkIZ2vz1oDqO37nTp0t8loHlY84/LfKz1EaIS0I/WX
+	 IAkQtevD0TaLwfvNiEV2vBbbuAD7l1f8avtRe79QOZLRFDsgvxUWytTN0zKdb94yUQNnX
+	 fmGOHrLwrptRE14q6owRTJ1shJV1IioUBvbgkroIy+M62Dib+3H9sxXeM0dYER0Xw+vfI
+	 wgmfoW9FcQkafWX4mcELrUi0QV29+sbCMPaYLQHvHx6fV5W9ZU73LAk41fCk2TQ5TyI3f
+	 x4ebRA5f1VZMeJXnEgi12p8/RzQ1/04d45rb/nbYAYMuK+oYsYImr7mZAjycWrEs4FA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m5brb9u8;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VCXfCOp8;
+	arc=none smtp.remote-ip=209.85.221.52
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4AE13606A332;
-	Mon, 23 Nov 2026 01:14:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6FA8606A327
+	for <linux-fbdev@vger.kernel.org>; Mon, 23 Nov 2026 07:33:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A6FA8606A327
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m5brb9u8
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D6C351F000C0;
-	Mon, 23 Nov 2026 01:14:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795396453;
-	bh=1nAFz1rE2Zgq0kT2UJ5pKEhQqcU8lxqQXw2MrFx+Nfc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=m5brb9u8foWKbi7SrlcdW6nE2yWIS8IEGVU5QHSZYMih+9IEkmiqaNM0lLx2EYbPE
-	 Ene3Ka2hJ1BAvW2vOWqYEoxo49rMX/8KuHKgTHWJQeFE3NrlIrAf3xeYL6VLmMY+/l
-	 ekFXnTI29+zSfV1Cj1JiY8g0iM3LpoM2wMrgHM/4k71UbfvjD94MuJKD4cUZLqKZBp
-	 tapIlLzsw5cg25rKFRJ3Wy6OzHRx9WFNJ4Dy/E+S8IHUzJbf1ziPCMSD/LFgujVS+y
-	 I6gkNfNt8+7zFmlY0xlcmT0RV+dcWLazJhMGzWNLJfBLUPxJ9MdE0Cw4N9AumibzJ+
-	 +Zbi9zcgZuE0w==
-Date: Mon, 23 Nov 2026 01:13:59 +0000
-From: Tzung-Bi Shih <tzungbi@kernel.org>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>, linux-doc@vger.kernel.org,
-	David Hildenbrand <david@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jason Gunthorpe <jgg@nvidia.com>,
-	Leon Romanovsky <leonro@nvidia.com>, linux-mm@kvack.org,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	linux-sound@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
-	linux-block@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-	linux-bluetooth@vger.kernel.org,
-	Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
-	Jason Wang <jasowangio@gmail.com>, David Heidelberg <david@ixit.cz>,
-	oe-linux-nfc@lists.linux.dev, Chas Williams <3chas3@gmail.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@kernel.org>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	netdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
-	linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	MPT-FusionLinux.pdl@broadcom.com,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	"Martin K. Petersen" <mkp@kernel.org>, linux-scsi@vger.kernel.org,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Zhihao Cheng <chengzhihao1@huawei.com>,
-	linux-mtd@lists.infradead.org, Neill Kapron <nkapron@google.com>,
-	Andrey Konovalov <andreyknvl@gmail.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-usb@vger.kernel.org, Juergen Gross <jgross@suse.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	xen-devel@lists.xenproject.org, Hans de Goede <hansg@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
-	Sean Christopherson <seanjc@google.com>,
-	Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org,
-	virtualization@lists.linux.dev, Jan Kara <jack@suse.cz>,
-	linux-fsdevel@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>,
-	linux-ext4@vger.kernel.org, Mike Marshall <hubcap@omnibond.com>,
-	devel@lists.orangefs.org, Paulo Alcantara <pc@manguebit.org>,
-	Namjae Jeon <linkinjeon@kernel.org>, linux-cifs@vger.kernel.org,
-	Jaegeuk Kim <jaegeuk@kernel.org>, Chao Yu <chao@kernel.org>,
-	linux-f2fs-devel@lists.sourceforge.net,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Benson Leung <bleung@chromium.org>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
-	amd-gfx@lists.freedesktop.org,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	intel-gfx@lists.freedesktop.org,
-	Matthew Brost <matthew.brost@intel.com>,
-	Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>,
-	intel-xe@lists.freedesktop.org
-Subject: Re: [PATCH v2 11/12] docs: ioctl-number: update platform entries
-Message-ID: <awOTV4kbshpi_cxp@google.com>
-References: <20261119053514.255348-1-rdunlap@infradead.org>
- <20261119053514.255348-12-rdunlap@infradead.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=VCXfCOp8
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-497614c95f0so1595180f8f.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 22 Nov 2026 23:33:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795419230; x=1796024030; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=vCLV3XBRX2wh16raJXcCmA/lhiX2jHGFoT2tZZcD4OY=;
+        b=VCXfCOp8x1ww4uHujrC7pVcFsWm9ll5+3jP0cPhMcx6ttmvaIKksQfsbujU7V5fNfm
+         ctHYjnBcBBTT4iIkk6KdbHo5/r+xK4lb54V8TIjrNLqzU9wbBIOxfykFhyr/S20GxGm3
+         vw6ND98u4X/U5HRukUPAhHEJhhk9aFDp9aR1TPXRPj/dyuRCe+epO1zbsxgxD23UmWQw
+         VXLT/C+Zj5jQtXbZBwee4Rm+x1xJyhFWc3amKhZ7MsIK3o2vwF09ev/Qn41aHXSigxAz
+         5swfuCPMclJacJoet/DPjgEimcCUX+Xhri5N3Y49v5FjeDbm0UnBYUI8f+6xV33PhQRt
+         SMQA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795419230; x=1796024030;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=vCLV3XBRX2wh16raJXcCmA/lhiX2jHGFoT2tZZcD4OY=;
+        b=D01uDgVRs/aGP5tm1KqyblBKkQq+Z2h633RYy36dub/mBHX1+WWSP06EKJGE5mJsUg
+         fgxQGSoT/7Ew3e7jIN1tJxmBKU7PMgK7ZzKaMxcS+SLRleEgPhnKEzmF5NPXO6EylCHC
+         XAItyGlcMe+HBtftoWQJL+y7BvYZAPIQQTYWceSHzSsR5g3tKraasBQGMU81QbkGRDjn
+         Gm1GuSukDt1lEn4RU8UxROwWsrXhOBEEBVVp5TbZM6ayHWBmVHWHClU7HLDZHxmNX0ZK
+         m7EBpqHzGUSj59DNoneaMDd4MAZrFLddltZ5BLLv6og4fxoKOG84Xuhhp2ncsBBJtB7y
+         OiWA==
+X-Forwarded-Encrypted: i=1; AL+hErE4zeHu5joIvgEDfL4p4DFuLrcYLsCkWbg/hQLIvjPHg2yuyXlKjCgEFCPNcKdFYgpSgOWWlE9FR1z5Ag==@vger.kernel.org
+X-Gm-Message-State: APuU4Z8zvlbWtVd04lswtNxW/IfMGSI9y2zEQtdBxFjJXNFHx9T1aIj0
+	4i9v/s8RmfpmvvgvPqC8hEmErlR3N2YQOsRgB87Nu0RgkanFOdae2+yL
+X-Gm-Gg: AZFdTZcyFtjSfIou/x9g7fS2rHm/rGiE7v+ctbK07KCFB0HLq+JiJg3cThVTVJdUMZF
+	OOXFiKCWg7ziF7fWUF7IWm2Pq/M/VT4pNjG5Zqm8ca/XgbfAAOuxwBJaR1m1vOkc5zFSaMiSOVH
+	Q57IrkMt5PHeH1hilnAqNhJui66SsjnePqzNBZA5RxsQztUqaVrkIpby2Z3ZLY++OJaq7gQUTjF
+	gfuaNDjxNp6DL3gKz6Rjl5OYVnWHe9tb/n12Qgv8hOAJhKThYGo/FEtixiu4uA88cJ/cQRW8ZxP
+	G1LkCjyzP1BW5D1Cuu6lgR30nNkFZHCdGQyi0LTBUKOsSEQUVXuZcOqawFnTxMpfpnsv+Hjhg+i
+	6C44RlMc56FUtGx1jjCj4RsiOrNUOHAvWepFulQxK7DkawT1Qfqt+XjSmovNKi8C31EMnzK41iL
+	7jsupo07IUyvzMaQ/qk8lpzXuj1/8WGIs32Jz0QDHBUPF82Zk6ussgf6F7C8l0GV0uhxyBzE+vz
+	nq6HQEMQ80KEpip+Q/SSLM65/QJCZgGgddVKawt43XQFjXoDqbBbkCeKADe36Weug+NRMZEWhCA
+	0k2P1IUg+V3dVh9srcbv414DQ1uHTKSVM1SuQ9Jg5HWZ0CWuCT90nPVWUjUfuXGYfEMcsyJ9UEd
+	djQ/ve8c0ZzoCisXhm4bv9Av4nfuKYzZhxaobsS9mvD4I/i4jKIzoCiEx2kkhEBFr5qc=
+X-Received: by 2002:a05:600c:3b91:b0:4bb:7e4e:de53 with SMTP id 5b1f17b1804b1-4bb8881059bmr259331755e9.12.1795419229774;
+        Sun, 22 Nov 2026 23:33:49 -0800 (PST)
+Received: from localhost ([2c0f:3d00:6be:8900:ce5e:9212:ea4b:f30])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb884a3a3dsm311285775e9.10.2026.11.22.23.33.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 22 Nov 2026 23:33:48 -0800 (PST)
+Date: Mon, 23 Nov 2026 10:33:45 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Vaibhav Chahar <vaibhav.chahar26@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+	gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+	linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: Use str_has_prefix instead of strncmp()
+Message-ID: <awPsWXOo2MxJcX-g@stanley.mountain>
+References: <20261121133843.127718-1-vaibhav.chahar26@gmail.com>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -116,18 +100,23 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261119053514.255348-12-rdunlap@infradead.org>
+In-Reply-To: <20261121133843.127718-1-vaibhav.chahar26@gmail.com>
 
-On Wed, Nov 18, 2026 at 09:35:12PM -0800, Randy Dunlap wrote:
-> Update the list of platform/ files where ioctls are defined and update
-> the ranges of function numbers that are used.
+On Sat, Nov 21, 2026 at 07:08:43PM +0530, Vaibhav Chahar wrote:
+> Using str_has_prefix() is cleaner and more readable than using
+> strncmp() with strlen(). Also avoiding the possibility of errors due to
+> mismatched string lengths.
 > 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Signed-off-by: Vaibhav Chahar <vaibhav.chahar26@gmail.com>
 > ---
-> v2: no change
-> 
-> [Since having multiple maintainers trying to merge these would
-> cause some conflicts, it would be more manageable for Jon to
-> take all of these through the docs-next tree.]
 
-Acked-by: Tzung-Bi Shih <tzungbi@kernel.org> # cros_ec
+Ah.  The str_has_prefix() has been there for 8 years and I'm only
+learning about it now.  I like it!  Much more intentional than
+strncmp().
+
+Reviewed-by: Dan Carpenter <error27@gmail.com>
+
+regards,
+dan carpenter
+
+

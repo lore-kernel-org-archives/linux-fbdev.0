@@ -1,52 +1,52 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795439250;
-	b=aHi9UY9+YuvNwn7BUfSXYu8Qd2wdyC5wD3+VSEZcDGYx85dEkArujDppdagDtPr43usA
-	 HHq0ILPBHN422K3/oqgYMJHyOlFcl4FqwDVVxagSswmmp4i2gxLLtN8JjyJzi0HK8SoI9
-	 ZHNyok9xsOS5VW6lfGzzuA2z3e254lQAKW0IG6DCoeTMK8f5uG8GizbzSQfqVnGmGwHQe
-	 V+KBVtIl5Sr+sRcmgiNvZVms3bHlZzhVHLIKyuV5r5OrF+cXGYHuZeDeIBbZlQxDWrulJ
-	 KLrbgAvrK3IClRj67l50gR8755BPnJAOX21RMQEFY4S+kg2QvnM/D9DIPXZLA7ynGMw==
+	t=1795439264;
+	b=IzJ22Zk72EPrn5j7EQGMNgyU3zWUOwLcE1ANjg62S7wLGApy2j9mB48zQxu1x2iCv2NN
+	 NqvPcHjukhCnoNPglTvqVBmVps5TVB7YKGzhfpPmmCc9PpXtS7hRreJHfLyS4MKJT7YMr
+	 P781+3zzXbcSOXdOA8SRSHtZgLjBZva3LshGyZKxQK5SdqqPeBnNKdtpTMfoP7v1HwR6Z
+	 9O0P5UetYfSjhB8e6w+Lhe1DO39/UZFzSKm2O4yV+ru53gAUm1Afw0elz/QYnSOcSdSlH
+	 d4GUxJeahA9w75aqgDPOzgpPtz4S8crpzG+tew/ldKAPSaMuIW+IwTkrNHCrHbSyZMg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795439250;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795439264;
 	h=Received:DKIM-Signature:Message-ID:Date:From:To:Subject:In-Reply-To:
 	 References:Cc:Content-Transfer-Encoding;
-	bh=vdxhRaQriSkjmU7uxkOrG5krlgZH26MSD++dFcw6b/U=;
-	b=YFBzxqg4IsEYECRNgS/omYaR2UnPnkEbsNw4Z1m+AxcMp7ZT55S93Gh/9uKvdWfhLV83
-	 wpweM694JGvC/QORDUqQLOHZ2GvyWZm+yCMTOjYTTEK69lEvkBt69KoK8LxJB2Q+7OX8X
-	 YvRPg+ury60R3YQ1rcd0K2DlNR67NZAK01KQJAirzb01NQSSRcCnYremFzBiEWRzFysvn
-	 lRXw01YJTnZw5Tl7tyTN5sH8BbVNIA3cUWSkwobmJ4g5O4HbN7+AhmorSsrmKZQVDUJfe
-	 egJNezAdaJIEWzm9TePNy2Bbd2Zq9o6y2AKFGch1QZqMH2c7W9OWnnyvmwZCVfCy+KQ==
+	bh=9OlWkQM+XFoN1Gs95fD/lZlKv7wZ9cKWXpxYEv3AD9g=;
+	b=NqboXPeZFjWGOuWTn6clQE/vaMt9C7gfI6lCArPRKa0Q37SlY71q/L12Ek+QXM9OKwq4
+	 o6t/9ctlzTDyFWGle4lY5VbYz+kwO9eukx1Lyvlf1yryA6S3xlT5vlO3t3KP5+OLG5bnO
+	 ycyLTgU7gMek86Z9oywPtdQX2+T57vIOMv8+rHvCFUk58z8/bjHQovuBqYQRpzubiXfm/
+	 6iYkMELsXfyZf6KNtG+PG0iQ/G+Rt3JmtJxYR2eVB/mP9l3rUZtmsTkJPAdCv90/84jNO
+	 20st2Mvxo1NrSknmq5elbwC/3vWF2m+uDE3cHCs/Hgw5ShwrF7ntMEWvtzX/PuxOHRA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ay3g793d;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hnb0gqJa;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 427E4606A31A;
-	Mon, 23 Nov 2026 13:07:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6595F606A31F;
+	Mon, 23 Nov 2026 13:07:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ay3g793d
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7AA611F000CA;
-	Mon, 23 Nov 2026 13:07:28 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hnb0gqJa
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 615591F000D1;
+	Mon, 23 Nov 2026 13:07:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795439249;
-	bh=vdxhRaQriSkjmU7uxkOrG5krlgZH26MSD++dFcw6b/U=;
+	s=k20260515; t=1795439263;
+	bh=9OlWkQM+XFoN1Gs95fD/lZlKv7wZ9cKWXpxYEv3AD9g=;
 	h=Date:From:To:Subject:In-Reply-To:References:Cc;
-	b=Ay3g793dsN2YBA+eUW3PLAfPKW2d8RoGpfOPAWBeb3ceXlZW23XpDxQRg+D5JIgXZ
-	 YyYRtnmp5jAGLJpYzdYSpQr+TXGfDJaCVUMM3S9AHRnkghdNpwCaZQo/3TB20oAq4F
-	 TTFTjxe4ZHCxBK37C/aNryEDW0915ymNfVGCw5Di8tWL0jhAy+xZF1QxR2dMdAyp94
-	 4Di7JTSPQAHqYd9a70HZ4fiIchq8W/8ZNintFh/emVhqsHapoxqZk+GZLM7gBLX584
-	 Gw/EUujZbIWvp5FYd6yL2NpR6q06fpIqbqOdHWEqsyIhTHlVtIrjj1kvLBQyPAVaWX
-	 1A0vJdRR4PEJA==
-Message-ID: <88513b81069770339040ceea59f8e0a0@kernel.org>
-Date: Mon, 23 Nov 2026 13:07:26 +0000
+	b=hnb0gqJazK387+u2EVsGIBflv5BRGabh1+/e68fIAp0LpW/GSLj2dey8mo2V4esdD
+	 07JfjdvM45fs3Zm59mN8WA19c9ZN8De+bYmfBZ8yxu5lGqTuljKdYn3tlyw+i0spoG
+	 C4giAORXw1pORS21HEcnFL9yIJhSCJ5tQ/Ia1Uz8mXgkyMcQQvwrkWi0yYyqt/Mwa2
+	 baEI/C4665/euuzOS8k1orEm7fWbvUCxmr6HvaOEXAf9bKFOcJTUbWbwHDGJaYc+P6
+	 YiBz8pDKinek7XEJodZtaWUPet2z20utNtqGYAf/R5ojRE1RylRVljwx/SHOEUNqfh
+	 fvGb3WPU6+Z0Q==
+Message-ID: <2fddb3794c21ee97aebfdbc14f29ad9f@kernel.org>
+Date: Mon, 23 Nov 2026 13:07:41 +0000
 From: "Maxime Ripard" <mripard@kernel.org>
 To: "Cristian Ciocaltea" <cristian.ciocaltea@collabora.com>
-Subject: Re: [PATCH 08/25] drm/connector: Drop redundant hdmi vendor/product
- fields
-In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-8-20e8a33a2286@collabora.com>
-References: <20261114-drm-conn-hdmi-cleanup-v1-8-20e8a33a2286@collabora.com>
+Subject: Re: [PATCH 09/25] drm/connector: Drop redundant hdmi
+ supported_formats field
+In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-9-20e8a33a2286@collabora.com>
+References: <20261114-drm-conn-hdmi-cleanup-v1-9-20e8a33a2286@collabora.com>
 Cc: dri-devel@lists.freedesktop.org, kernel@collabora.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "David
  Airlie" <airlied@gmail.com>, "Diederik de Haas" <diederik@cknow-tech.com>, "Hans
  Verkuil" <hverkuil@kernel.org>, "Helge Deller" <deller@gmx.de>, "Igor
@@ -65,9 +65,9 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 
-On Sat, 14 Nov 2026 20:03:32 +0200, Cristian Ciocaltea wrote:
+On Sat, 14 Nov 2026 20:03:33 +0200, Cristian Ciocaltea wrote:
 > Now that all users migrated to the new drmm_connector_hdmi_init()
-> signature, vendor and product are provided through struct
+> signature, supported_formats is provided through struct
 > drm_connector_hdmi_funcs, a reference to which is already stored in
 > drm_connector_hdmi.
 > 

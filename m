@@ -1,88 +1,88 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=85.215.255.120
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795505230;
-	b=L646RotBsqzMhPpbSWUoGiVsa4uIuXoLVdtkmjdfBNSiWDBHJdnK6t7gLpK9ui6FpaOH
-	 BUEkk1VACkVdM8ixUrX+trMCsTA+2Y4KeIwhvmqsAMohBieuw34fzMElAcEfb3CS+87DW
-	 Z8MYe3S5NyrZISF1iK4C+SKKytgJwMZC2vA6/uIfGIDwN3ZCRS560nDQw9rmOhUxaaJ4w
-	 HxvgfhsYSuONRVlMGJlagpT2ZT/UdoqaShinKCpz6XPfOoQvurpuGzq8shDv6jqBJS42g
-	 Ud+XIYbEm4VxT7usz7a+Fy0RPRre0+Gcnib+MvsyQ25uwKmj48ey7RVK8Hw9QkheBqQ==
+	t=1795505231;
+	b=IaFdC1JcCNIx9pLBJilO6IccLD1H2XLUUQgRb7UOyra+5gjNK9NKy9b8FQTl+IJ+cgTI
+	 qGIE3pOQ6Txn6+RQ9vge5LW28z2QjG52vE1Q1gQgm2ZVxa6v3UB5oxWmTxTh4YqVa5Iyp
+	 nz96lVgLx/BzCfQLQYBe40gzWAfAPtEGG8uWQfmNkKDJ9OWNujh5rVoGiw9ZJJualsJMk
+	 6ztiUm6fnSZAerouOhvnkzsO2mnQS0B+ihcdmcMK9urb8MYLP/p+EkA2sO9MFwjHndnjQ
+	 tzGDyDtqar3GmXMGyEPSx1hFn3xvKH17nvEhCKKSKcp5gnyVi8XjWBlkHBDf23b/CUQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795505230;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795505231;
 	h=DMARC-Filter:X-RZG-CLASS-ID:DKIM-Signature:DKIM-Signature:X-RZG-AUTH:
 	 Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding:Content-Type;
-	bh=Srv8rcHLAJAs2t2TPg31VwudISEwEVC5eUbPY+Dzbd8=;
-	b=d6TW5LtvHFa6xtcQDHW6M6kazEHQBxAbWkyafCYbBaOC9SLEmqqs6k0I21ljD4Crp7uj
-	 9mHPyijFochz/gIIUROThD6xKdB9cnPnqOWMleZk/h8SC7n5IRG3VMAWct7iGLdSnHiEd
-	 60sf+7tij0q7tpUPHxiRDTyBlkQfR73yXSK11t2Hnzi6WftA2QCCyP13sXC7vxQsleU+U
-	 iD31fH6qLLM6SnlSibxjhHUEigsCboZE+W1+l2Ms5khs7Tir6UL5tL2xAMCdVA5yad8+T
-	 NuugLTXYelUuNKlhBzwu1jGdkFMSp1PPTcsizDr0mqYOe86eHMFaxuyQjkJJT0/azcg==
+	bh=a8tT1IHZ/9bnUeOSg8CevW7PO23hEqXdhqumUHaN6cc=;
+	b=RViJiGfpk8R1mOJk67fCgILRXhGtAJggBqxDiNrPRLst46L96TemwlgyGZNeX1DmAFXV
+	 u2t5XGLsWhJf43umcCrQlYPZMiX6V8RYw2RDqooUa8cJomwDhKFAmKMKVfFxh/6CZw3yM
+	 faV8NJYCUOfOlabIzEMW10wCHASUSvDX6YeBErIm9CQsHikkVeq8HCRKAlVWPUA/3C/1w
+	 fa2G8gjZmenMf2ZIpAAT2hQwRUZ02Gu1meUNj4kefejVIp51IvTLdt6YxL0EM3IUt4gKd
+	 GAbCSUVmg0/iCm8hc4/Dr8lDjEICe965ThdMeKxnl9H3MKG18j/ZaypZMXjdMhoLWmQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=goldelico.com;
 	spf=pass smtp.mailfrom=goldelico.com;
-	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=CsX2K4gr;
-	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=HCJfdnxH;
+	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=Y6g743+R;
+	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=DrtAx6L9;
 	arc=pass header.oldest-pass=0 smtp.remote-ip=85.215.255.120
 Received: from mo4-p04-ob.smtp.rzone.de (mo4-p04-ob.smtp.rzone.de [85.215.255.120])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4E2760A263E;
-	Tue, 24 Nov 2026 07:27:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A4E2760A263E
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F56460A3823;
+	Tue, 24 Nov 2026 07:27:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 7F56460A3823
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=goldelico.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goldelico.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=CsX2K4gr;
-	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=HCJfdnxH
-ARC-Seal: i=1; a=rsa-sha256; t=1795505179; cv=none;
+	dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=Y6g743+R;
+	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=DrtAx6L9
+ARC-Seal: i=1; a=rsa-sha256; t=1795505178; cv=none;
     d=strato.com; s=strato-dkim-0002;
-    b=igMAIfZCNbOFtvleGfJ7d6euUGYeaasdKaSNtk906Xmg6DnoVK8CT2RRQq1pwUqQT1
-    Ii0yBCtNovhvvZgCB27T6gIWeVoeTBvRSZYb87t6G2E5bU5RjIu7b3pnyIWroCiifEdF
-    WPNS+kC0Vdj/urkhtkSSWxICD8hle/oVjkQQ2OFuqyNk0uO1PJS/zzAd6Pkr6PRIbiZ0
-    roSkvoHttMe4brhcac4QyNkZ73Dkna/Nzr7bFyiDWaYASGHkPUqxmFTLlSOkigzL8i93
-    zMPmos4+CFFYzLWf4nxvxGhPqSzq4uX1ru/5trTm20HpuF/9occD2GCnCSYuLNQDQ5Q/
-    5ehA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1795505179;
+    b=q6SJfTzfqprZYrgKsjzLeq49n1EwhAQRgizro9+K5esUxEOx0G43J5fyVJ5d9BjQnr
+    RtP4FrUlFS5Kimgyvq9sASavJlKP3ItH0Crb+UNdsLeIcqeuwuz+dNR5BWchGCIJwVJt
+    2qfGlbSJyGqUcRTshIbAtswZ/xTq6Ub1atO0IlVQbvV+OsJzg08jrIE0gVLgzZcv0ZUS
+    B3YhCi6mywVGyOufXBSz+FGbOK4pBgnEZs8So3Isy6rANvBezYtxrLZCpZrYqF90odJ/
+    v5ax3EqL32kd+ornB3YB4wFDRE/7ZAgSLeWgUvd7i4olQqlpNZ/YF2IufiIE4QbUqhLE
+    yitA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1795505178;
     s=strato-dkim-0002; d=strato.com;
     h=References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Cc:Date:
     From:Subject:Sender;
-    bh=Srv8rcHLAJAs2t2TPg31VwudISEwEVC5eUbPY+Dzbd8=;
-    b=OQi+Fmmo8/mwUjPKJ5A1C5D8cPcMDjTUOgrkLz+vEHk7fxwSadXLReLrRSdh/WvJZb
-    BQbx5T+7BELdQdtWf8qQeYeqtA9WslsMmD3ETJx0y+0ihjjfRosvff5RMNRs1Ksysxhj
-    B1lFvu/hdQ0B1roa9SPqpeRMzXHmbgAVIGmBizQkdSr3o8lrEgCWQVU9bTC2KjNwaxvl
-    8kC3fLDQosZLqfhrDrSvxgHKAhIqT/CPLbl+ghaVZX1CRuTcJRaUgwH8YyMdTrJEyyyQ
-    g5oBVs8HstfCJ32CL/u4J3mqJGSun8Ec28q1OqB1L941Yd7oXpYLVXtxQylNmwZv3MD3
-    MNMA==
+    bh=a8tT1IHZ/9bnUeOSg8CevW7PO23hEqXdhqumUHaN6cc=;
+    b=KtSl0BSqZ2gateMzLu96RLyWf4L8ofQVX5jOnYmYvAL6NIjmCFqClRmRSHBREH9Bkd
+    MzJ0Gz1PY9Vw6SxMklGR3ROyfIWMoW31FpfT/5r7hRuqz/2uBt/sENDOYteKuOdTD1Dm
+    TOxL+X2uhbJAqInCfpC09WlC7ZDnNFH73XWf5VNfpHZi0K9vtTFKhKYnv5GAn2WMSNHG
+    0SoI6CNliRDF6M+QCEay2lJ3am+3Oc/BZBvK6uwi6DSV637xxdwXMAMLga22DS8T+rPD
+    Idealv/wxhM5yR4leRSGCf/1TUowCsxHkLe+ABy3acDccaKFQNNZ0C4NXvZzU3YutXu2
+    Gb3g==
 ARC-Authentication-Results: i=1; strato.com;
     arc=none;
     dkim=none
 X-RZG-CLASS-ID: mo04
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1795505179;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1795505178;
     s=strato-dkim-0002; d=goldelico.com;
     h=References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Cc:Date:
     From:Subject:Sender;
-    bh=Srv8rcHLAJAs2t2TPg31VwudISEwEVC5eUbPY+Dzbd8=;
-    b=CsX2K4grDtkfuKJe2SA8EN89igEnflyJckHzpcWLl8RHR/zlFByYVZN9fg2aELr6Qr
-    vIoucQDn1n88sL2kQc3oGFZi2/sQUwdp//V+Xo6fhdZxcSmHU/Lz4keNZ9wHCfLQWHxl
-    zY+PxssjDK0+EZfY4dV5zW8/hb0hJB8kCVbH0Ro19Pt+TaQU4fdE4h7zBDfhow4R4IVO
-    /BgbVNogmrGlUqjb7JC0OT4lbjbfg3lXcWJnydg++W/FJv6KZQSvttTz5eGI/4DEyg1o
-    PAC7IPne25idIVSPJrxO0epmNHtp+dFg8RBZR6i9Y0dGqPnpchHTu15hKdqUBe3/GkgK
-    6qUw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1795505179;
+    bh=a8tT1IHZ/9bnUeOSg8CevW7PO23hEqXdhqumUHaN6cc=;
+    b=Y6g743+R6atTH1Bs99pXFNWSa3562WXL2uIoA5xO0x2FhxF+zGf+zgObT2TImNfsNT
+    P+4pUKqcVZT/c0Fcg2/jc7aFGTW4MsN8IVQiLG3DzGuIf0MkWilyCo3d6+SxPEN6sN2X
+    MCjOkcVqU3KlE9yzhmqcxHTfbmqTpGbsmf4bEtOORCgYq0iy36UInElx/BY7Nt7w5vZX
+    h2fUwXjFnA0sZi62m04+/6Sf/z8UiHbLOwHY+zXNsnwF2K0LYJgcfUjiUDU0ZBvE4MTI
+    6dmETfoI1D/c+cyg27opmzOwWU0th2mSSWJ8F0Wp9X3sDJobxlFng4YLRQnzpk5OWjMM
+    Rb3g==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1795505178;
     s=strato-dkim-0003; d=goldelico.com;
     h=References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Cc:Date:
     From:Subject:Sender;
-    bh=Srv8rcHLAJAs2t2TPg31VwudISEwEVC5eUbPY+Dzbd8=;
-    b=HCJfdnxH8wx/8C22xbS1CYyR4LwXme0uWeKGZSBqhaX2w7o+WupFIIPdyUuZ0CtqmQ
-    1KEzNusC0g7xsOK0X3DA==
+    bh=a8tT1IHZ/9bnUeOSg8CevW7PO23hEqXdhqumUHaN6cc=;
+    b=DrtAx6L9aiM0luEU9dC+6uFoApLVFOJ1cxmTwwLyvyImtCtpXJfWFsN2OfWyoGGSg7
+    atmRqGZWjRV0QGxqGnCw==
 X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMhflhwDubTJ9qVpwcQVkPW4I1HrV3poLlciNVTQoM6kVxzKyrKzkpjcAwdDfiN49"
 Received: from iMac.fritz.box
     by smtp.strato.de (RZmta 55.6.3 AUTH)
-    with ESMTPSA id Qb56a22AO7QI1HR
+    with ESMTPSA id Qb56a22AO7QH1HQ
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
 	(Client did not present a certificate);
-    Tue, 24 Nov 2026 08:26:18 +0100 (CET)
+    Tue, 24 Nov 2026 08:26:17 +0100 (CET)
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
 To: Linus Walleij <linus.walleij@linaro.org>,
 	Bartosz Golaszewski <brgl@kernel.org>,
@@ -126,11 +126,10 @@ Cc: Jessica Zhang <jessica.zhang@oss.qualcomm.com>,
 	linux-fbdev@vger.kernel.org,
 	letux-kernel@openphoenux.org,
 	kernel@pyra-handheld.com,
-	"H. Nikolaus Schaller" <hns@goldelico.com>,
-	Grond <grond66@riseup.net>
-Subject: [PATCH v2 13/20] ARM: dts: omap3pandora: Disable unused DMA channels
-Date: Tue, 24 Nov 2026 08:25:53 +0100
-Message-ID: <9c47a735aeb0d1a5795119af0e9b8ae2bdcbad2e.1795505160.git.hns@goldelico.com>
+	"H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: [PATCH v2 12/20] drm/panel: td043mtea1: Attach DT backlight
+Date: Tue, 24 Nov 2026 08:25:52 +0100
+Message-ID: <163581590b662ebc7a12ccac3cc191b9a3ed4240.1795505160.git.hns@goldelico.com>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <cover.1795505160.git.hns@goldelico.com>
 References: <cover.1795505160.git.hns@goldelico.com>
@@ -146,59 +145,36 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain; charset="us-ascii"
 
-On the OpenPandora, only McSPI1 (spi0) is actually used. Because the device
-tree defaults in arch/arm/boot/dts/omap3.dtsi leave all of the mcspi
-interfaces enabled, the DMA channels which the device tree assigns to them
-cannot be used for anything else. This is a problem because OMAP3's sDMA
-controller can only have 32 DMA channels configured at any one time.
+Connect the TPO TD043MTEA1 DRM panel to its backlight described in
+Device Tree by calling drm_panel_of_backlight() during probe. Without
+this association, the panel does not control the DT backlight.
 
-This can exhaust available sDMA channels and prevent McBSP audio
-transfers from being allocated.
-
-Disable unused McSPI2, McSPI3 and McSPI4 in the Pandora device tree.
-
-Suggested-by: Grond <grond66@riseup.net>
 Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 ---
 
 Notes:
     Changes against V1:
-    - Historical origin: 24727d33755e (Grond, 2021-12-08).
-      The original contributor is credited with Suggested-by rather than
-      an unverified current DCO sign-off.
-      Commit-message and provenance review assisted by ChatGPT; code unchanged.
+    - Explain the DT backlight lookup performed by drm_panel_of_backlight().
+      Commit-message review assisted by ChatGPT; code unchanged.
 
- .../boot/dts/ti/omap/omap3-pandora-common.dtsi  | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ drivers/gpu/drm/panel/panel-tpo-td043mtea1.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi b/arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi
-index 06c5b23589991..2097ec15c6513 100644
---- a/arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi
-+++ b/arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi
-@@ -685,6 +685,23 @@ lcd_in: endpoint {
+diff --git a/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c b/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
+index b18af526b54c5..cb2fa393591c8 100644
+--- a/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
++++ b/drivers/gpu/drm/panel/panel-tpo-td043mtea1.c
+@@ -450,6 +450,10 @@ static int td043mtea1_probe(struct spi_device *spi)
+ 		return ret;
+ 	}
  
- };
- 
-+/*
-+ * Only mcspi1 is used on the pandora, the others do not surface on the board
-+ * due to pinmux configuration. disable the unused ones so that they do not
-+ * consume DMA channels
-+ */
-+&mcspi2 {
-+	status = "disabled";
-+};
++	ret = drm_panel_of_backlight(&lcd->panel);
++	if (ret)
++		return ret;
 +
-+&mcspi3 {
-+	status = "disabled";
-+};
-+
-+&mcspi4 {
-+	status = "disabled";
-+};
-+
- /* n/a - used as GPIOs */
- &mcbsp1 {
- };
+ 	ret = sysfs_create_group(&spi->dev.kobj, &td043mtea1_attr_group);
+ 	if (ret < 0) {
+ 		dev_err(&spi->dev, "failed to create sysfs files\n");
 -- 
 2.56.0
 

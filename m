@@ -1,59 +1,69 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=124.126.103.232
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795451682;
-	b=KtRoPOVzQDYoxR5uCHxGfQQbybTl8TX2kDLKi0EDxG5M5XTms4IRl8mYG2DscuEvzTo5
-	 EXgr3kcESoAmanD7Kjb7QuUAEfXwnwDRLVd/9GKWv8KSXfewbtPJiZ0hipKPTabRhUkq8
-	 FqWV/cAlYK5+b3s8AEGZDGJ07bQYpuMn/odGdzM34yYqPq9Oe0NcNnJdz8zzUTdQM8vfI
-	 sfDsuE32dtX4TiMLp5TCN3YZGFv+h00XdthXo2GFDk87yEXIB8BNrvsRxmDAExWZQ3ynr
-	 OIZJr5tZLIIJHvSAKB0pgnFbxfircvQWB6x5AUizCsRxEySVQeQTM9UBhbLnftz1/gA==
+	t=1795488501;
+	b=YeimQyFnvbeI6G3F1/i0hgoDLyeDubUJHVm42elZ+WO+ACYkoXItIdK9gSTQrazQVgLZ
+	 fyKtelv3/EoqkBcbxNFFRO7+kI7SIq1GjpO6yyT9HoY0ooAk7MTf5DBmpv/5pFddFEHEf
+	 +B/FoIPCVpgFL5SnyUi9G8OikNmOyLQZEYqctaZkSvcTCjNih+SAvG3F7OeW0jeBq54Qx
+	 lcQR5zPj5OVyUvhbK6RFdPHpjoA63X6L2BSgdAYl7H7ZXiU/kTMLn9g15V8Mvz0W5d2kx
+	 TyPgorwP+cXzIvbmKEAjVuI1NiAKY+0Y5mWzMpS/2YTZHxn8hIkfpnLmDvp2F+LMuNg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795451682;
-	h=Received:DKIM-Signature:Message-ID:Date:From:To:Subject:In-Reply-To:
-	 References:Cc:Content-Transfer-Encoding;
-	bh=k6ik7b3Wu505/fmtIFICmTXA27T4QVBi8Qs06F9TrW0=;
-	b=HZJqkgwIksvk3lmTfibOaGbynfKHbHlmDFN2IWAadd9qDLc/XSEHXI3tk9M4Fp+axxXD
-	 XPQRXAnpo7ygUy6GjLXBXbyze/MFk1kcTfejovfdTaMwXt0Ld6aQZ9Z8wziedl1kUB8/H
-	 oxxYlRyWSR0/vTlqNvWVElc+sV01n0470zBVNA3b6l+UKKILiVrcug2uo9XHTVaZmyVJJ
-	 mAPT6S/8NrdEffkJMSB0eSahdm8hVY8Njrw9PV+N6nPWeXxK3i/xbmffKxuJO6Ylk0wID
-	 N4tewYpPtjmjXytND8ZIR4ykGfzE6aeP1fG+gTdKb43GBerZLrvPImalg9Gpsa7T/Gw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795488501;
+	h=DMARC-Filter:X-UUID:X-CID-P-RULE:X-CID-O-INFO:X-CID-META:X-CID-BVR:
+	 X-CID-BAS:X-CID-FACTOR:X-CID-RHF:X-UUID:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
+	bh=gSlhVMrHKcU/qOQJ0zOmbPCCq8E5yqXKSvaxRXdmCto=;
+	b=sZ9+JdmqZXJxbcNka1krCyqDIGzwexKWt2VE+Vleutjogw2KX2XBip6CvHtA/tbRaeql
+	 scgMYDf1BOthOyrVnZaPw9deEBuNYmZWbGKGQBotUITDAD/qR9Leni8buVt3AJVSUPR7b
+	 odXKi/u/G7Smyyw+cWGTf5Lw2EyEDzsWcVrCjnB7Q3OjcXg17lywuGVJFI9I+EMUHv7r8
+	 8sUvvGBFrKq0uBBX9gRRopI/q8x+HeEQFR5tgVLOxPyVoap4jXty9eH/1+bFurxNhKQi3
+	 aRIBVqWrYfQhZEXkwPx5+/0ALJm8J4cgBwcWAhjLpQuGJtXiuhf7BzN8VBY5oWfiq/A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kHo9XLlW;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=none header.from=kylinos.cn;
+	spf=pass smtp.mailfrom=kylinos.cn;
+	arc=none smtp.remote-ip=124.126.103.232
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E0FB606A31A;
-	Mon, 23 Nov 2026 16:34:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kHo9XLlW
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C8641F000D2;
-	Mon, 23 Nov 2026 16:34:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795451681;
-	bh=k6ik7b3Wu505/fmtIFICmTXA27T4QVBi8Qs06F9TrW0=;
-	h=Date:From:To:Subject:In-Reply-To:References:Cc;
-	b=kHo9XLlWwiCnxwxe2ET0kxB7kuAHZuu7NK5JPOcC/x4YjlQ32Z2jbqi9x8e5sQUs2
-	 rFt5cX4ZuOHnUkdkB/o50qM0C5YCph2A6gWU8/78SFW634swZSJWNnC1a4F5dIJ4vK
-	 Ovls5WnjdJoxG/hPtukYj368pvB8f0XqsAtRpD+4yVqhzfXbWoHFKZtDE7e+dQQNqT
-	 BcZbScqxbesWQ51b5F6i9pINDNNNReBZEtitgZY/9c2o1QfDj32DkqrisUSQ8H3SoU
-	 c8AuWHCpthDbSJbMa93LaeJzHgz5FBGPqIMO84p9shf/zE8T8op3KDK8OPutEXVljY
-	 cm1d3+Q5cB1bQ==
-Message-ID: <e1f51916a704096cf8e26711d4e7c793@kernel.org>
-Date: Mon, 23 Nov 2026 16:34:39 +0000
-From: "Maxime Ripard" <mripard@kernel.org>
-To: "Cristian Ciocaltea" <cristian.ciocaltea@collabora.com>
-Subject: Re: [PATCH 20/25] drm/tests: hdmi: Add SPD InfoFrame vendor/product
- coverage
-In-Reply-To: <20261114-drm-conn-hdmi-cleanup-v1-20-20e8a33a2286@collabora.com>
-References: <20261114-drm-conn-hdmi-cleanup-v1-20-20e8a33a2286@collabora.com>
-Cc: dri-devel@lists.freedesktop.org, kernel@collabora.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "David
- Airlie" <airlied@gmail.com>, "Hans Verkuil" <hverkuil@kernel.org>, "Helge
- Deller" <deller@gmx.de>, "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>, "Martin
- Bugge" <marbugge@cisco.com>, "Mauro Carvalho Chehab" <mchehab@kernel.org>, "Maxime
- Ripard" <mripard@kernel.org>, "Simona Vetter" <simona@ffwll.ch>, "Thierry
- Reding" <treding@nvidia.com>, "Thomas Zimmermann" <tzimmermann@suse.de>
-Content-Transfer-Encoding: 7bit
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C3A2606A31E;
+	Tue, 24 Nov 2026 02:48:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 1C3A2606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kylinos.cn
+X-UUID: 7ea534c0e7b111f19a56ed5b684f684d-20261124
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.3.19,REQID:3c093e59-60d6-4673-8742-02a69f15615b,IP:0,U
+	RL:0,TC:0,Content:-5,EDM:25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:20
+X-CID-META: VersionHash:7db8b62,CLOUDID:09287dc18e05006869466b218a6b2857,BulkI
+	D:nil,BulkQuantity:0,SF:102|850|865|898,TC:nil,Content:0|15|50|99,EDM:5,IP
+	:nil,URL:99|1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV
+	:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 2,SSN|SDN
+X-CID-BAS: 2,SSN|SDN,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_ULS
+X-CID-RHF: D41D8CD98F00B204E9800998ECF8427E
+X-UUID: 7ea534c0e7b111f19a56ed5b684f684d-20261124
+Received: from localhost [(10.44.16.150)] by mailgw.kylinos.cn
+	(envelope-from <pengyu@kylinos.cn>)
+	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
+	with ESMTP id 499285219; Tue, 24 Nov 2026 10:48:14 +0800
+From: Yu Peng <pengyu@kylinos.cn>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Helge Deller <deller@gmx.de>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Nicolas Pitre <nico@fluxnic.net>,
+	Ronan Pigott <ronan@rjp.ie>,
+	linux-serial@vger.kernel.org,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	Yu Peng <pengyu@kylinos.cn>
+Subject: [PATCH v2 0/2] vt/vgacon: Skip blanked hardware scroll and fix VESA blanking
+Date: Tue, 24 Nov 2026 10:48:09 +0800
+Message-ID: <20261124024811.305592-1-pengyu@kylinos.cn>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -62,17 +72,23 @@ List-Subscribe: <mailto:linux-fbdev+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Sat, 14 Nov 2026 20:03:44 +0200, Cristian Ciocaltea wrote:
-> The vendor and product strings provided through struct
-> drm_connector_hdmi_funcs end up in the SPD InfoFrame, whose fields are
-> defined by the HDMI specification as fixed-size: 8 bytes for the vendor
-> name and 16 bytes for the product description, padded with zeros and
-> left without any trailing NUL when a name spans the whole field.
-> 
-> [ ... ]
+Split v1 [1] into two independent patches as requested by Helge Deller,
+ordered so patch 1 fixes blanked scrolling before patch 2 switches
+direct VESA blanking to vc->vc_screenbuf.
 
-Acked-by: Maxime Ripard <mripard@kernel.org>
+[1] https://lore.kernel.org/all/20261123101151.414436-1-pengyu@kylinos.cn/
 
-Thanks!
-Maxime
+Yu Peng (2):
+  vt: Skip hardware scrolling while blanked
+  vgacon: Switch to screenbuf on direct VESA blanking
+
+ drivers/tty/vt/vt.c            | 7 ++++---
+ drivers/video/console/vgacon.c | 2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+-- 
+2.43.0
+

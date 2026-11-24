@@ -1,79 +1,77 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=178.238.236.174
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=212.227.15.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795555080;
-	b=mdPcLON9cIcrBwRQ+FErV+tdUrdWXbnPtiA3LWTWqyMIf5YoLkQ5LPARsbcjT7ezP/u1
-	 JKEUuhsm4T0VMj8gzNzf7e8ekG0RVGkMFihKJfi4gLtHPOg0MgYZ+v/VQJve2Nj/zUuYy
-	 ph8NpORDgEyeyixdpsR4nAMREKkvMLk9exeaJ1D2GFe2M3F9rKaTvwtdQvmOh6LPlLXnA
-	 fRrhxQhgZClzSiPFSJRocUmrfTO158WzkoXT+ytfIJGHnvPNL8WCIJ+WNczdIdnwrojhH
-	 jdnC2saXNitZjumjQ75vhQw337Tb1aViu5avVPvVb1UgouFGm4iJHR4V4umLim5xidw==
+	t=1795556253;
+	b=MTJPJ/AScaT1XhpWyonNOKndVSVHyguw9bS0fyalzg1NQb2CybWSvAP+zkZ55sXEFvlH
+	 EKmhL3//LitK8IyF62WZ7QJNcnXhvNYhP8kOOIJ5edsNvsyHpvxnmYAYjo6QgiMtAKFwz
+	 LkWZw9eu+UGNn7o04tsAcYcdNR8bSl5TFNHi6QzCQPCkYxcEVkrHGJLGuUDAOE6rRee/f
+	 fclXJkCO4Ey82AeYxSaFZG766jbY+HemGWRiWfPb3mnKtObjMr/RTDgU7pybLJiq7Zksy
+	 jcP0kcNEwSlN41uVOd2KXdCf7JSLyoy5L5N7GFnXcIBjr34qMvNNUEoyXChKm5JPkOg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795555080;
-	h=DMARC-Filter:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 In-Reply-To:References:X-Mailer:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=gnvsu0TDZ5slNtZXuUskfju+pk2M78SPgeweXv/OO6g=;
-	b=WoP4wekixMLj5ZE2soEHC4kPZPbpl68HPbLR53MT+7saeYZnEG+AVD6v6UjC6k4fGPFK
-	 tzMRL9E+ZyaSxy6DPluU0glasIPxDHTQvLkixwh0VWMwVP1MkzYr4FyR5Bw8Xi98Nx0Dh
-	 AbbJCnFIMDV1t8z9468pP45HvAHOZBrUl6cE+oEqoz7ExCH/q/lswHZSs1sFppBXe7YNq
-	 aJL5zHUfv/wEk1jxzTXiQ0zHxcmBLlPGaWkGX0tvWp12lav8GMTqxQuYT7QG0y66dNURu
-	 6Q50943RumGypBNE1NFRd91Q4SD05FIvHWqOa9c3yUNAul4KVMlyhiTlrRqC0ljZsQQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795556253;
+	h=DMARC-Filter:DKIM2-Signature:Message-Instance:DKIM-Signature:
+	 X-UI-Sender-Class:Received:Message-ID:Date:MIME-Version:User-Agent:
+	 Subject:To:Cc:References:Content-Language:From:Autocrypt:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding:X-Provags-ID:X-Spam-Flag:
+	 UI-OutboundReport;
+	bh=5L8GReJaNnujsS7a1EWrgLiqhdYOYglSeCGZ4pyKlcw=;
+	b=ULgzj1U2FdHoR0Lgg8+T8/IKr6igC2RsF3UdqDc1+FZfAKCoVkd25TuJfNyv0BsHLzkl
+	 P2F0a/tDLvlpqWKOEPks3onQ6L3gLMZxozEn5DS9gxZq6HuBXA4jtwaNOewzAsYx8l9x4
+	 FqhB3VC6z0Ueq8FQ3cM9vPPTdW+O3ntFqLeRMx6ZVVxj2Y1+BOoVZDwO1B8cHIcCP4HsA
+	 TI9g/xxw27ECoWL8NLdFwKpwq9vWs+ZSemNT6mMK7gCCot7k9mA4o28xaCwgTNE+st2Av
+	 MOSLNdG0hcg4xmbyIUy/4F4yQD3JxNdS3VoVttPC21LO6NTvj2YPOf2FpW+YGCqVLnQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=kemnade.info;
-	spf=pass smtp.mailfrom=kemnade.info;
-	dkim=pass header.d=kemnade.info header.i=@kemnade.info header.a=rsa-sha256 header.s=20220719 header.b=8OcmMhbM;
-	arc=none smtp.remote-ip=178.238.236.174
-Received: from mail.andi.de1.cc (mail.andi.de1.cc [178.238.236.174])
+	dmarc=pass header.from=gmx.de;
+	spf=pass smtp.mailfrom=gmx.de;
+	dkim=pass header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=Lva4JWz0;
+	arc=none smtp.remote-ip=212.227.15.18
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1D5F606A32E;
-	Tue, 24 Nov 2026 21:17:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B1D5F606A32E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kemnade.info
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kemnade.info
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B98CE606A31E
+	for <linux-fbdev@vger.kernel.org>; Tue, 24 Nov 2026 21:37:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B98CE606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmx.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kemnade.info header.i=@kemnade.info header.a=rsa-sha256 header.s=20220719 header.b=8OcmMhbM
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=kemnade.info; s=20220719; h=References:In-Reply-To:Subject:Cc:To:From:
-	Reply-To:Content-ID:Content-Description;
-	bh=gnvsu0TDZ5slNtZXuUskfju+pk2M78SPgeweXv/OO6g=; t=1795555070; x=1796764670; 
-	b=8OcmMhbMFvDN43DdqUAbNeJOgoYCaWiHKUPe5/1ABjKq+HbI+phrPqB+TEStgxKTPPW3A2O0LnO
-	UUbBO+S8aRQ/u6AiOhen4rCGw5WVdayB7PnQdVKArg3H27tZ45KdyBIkebU+4oMPZ+5TGImXtxQv+
-	OnQXEfQkuPZzFtanS7eQu+hvFZqIymb9oXSJBIP0Sn0PhVzjuh15/hPJpbOZ6YJm15BdX6PiQ59H0
-	92VITcOfNTjrU8aqiaihQUo1VIECQnWJu4kkzb5qwv51k98fIvDLiCWaWCkcoh6RbD9tWxb+NqM+C
-	NXbSvZCeGaqxFsWPM4CQlVWtzNc9bwP+3UaA==;
-Date: Tue, 24 Nov 2026 22:16:10 +0100
-From: Andreas Kemnade <andreas@kemnade.info>
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski
- <brgl@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
- <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Lee Jones
- <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, Jingoo Han
- <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>, Liam Girdwood
- <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Aaro Koskinen
- <aaro.koskinen@iki.fi>, Kevin Hilman <khilman@baylibre.com>, Roger Quadros
- <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>, Russell King
- <linux@armlinux.org.uk>, Neil Armstrong <neil.armstrong@linaro.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
- <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
- <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Uwe =?UTF-8?B?S2xl?=
- =?UTF-8?B?aW5lLUvDtm5pZw==?= <ukleinek@kernel.org>, Helge Deller
- <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
- <tiwai@suse.com>, Peter Ujfalusi <peter.ujfalusi@gmail.com>, Jarkko Nikula
- <jarkko.nikula@bitmer.com>, Jessica Zhang <jessica.zhang@oss.qualcomm.com>,
- linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-leds@vger.kernel.org, linux-sound@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org,
- letux-kernel@openphoenux.org, kernel@pyra-handheld.com
-Subject: Re: [PATCH v2 20/20] ARM: OMAP2+: Remove Pandora platform-data
- quirks
-Message-ID: <20261124221610.2938d62f@kemnade.info>
-In-Reply-To: <1cb5bd7216b334e8c4eff21ff3463deeb6109595.1795505160.git.hns@goldelico.com>
-References: <cover.1795505160.git.hns@goldelico.com>
-	<1cb5bd7216b334e8c4eff21ff3463deeb6109595.1795505160.git.hns@goldelico.com>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.49; aarch64-unknown-linux-gnu)
+	dkim=pass (2048-bit key) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=Lva4JWz0
+DKIM2-Signature:  i=1; m=1; t=1795556250;
+ mf=PGRlbGxlckBnbXguZGU+;
+ rt=PGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZz4=;
+ d=gmx.de;
+ s=s31663417:rsa-sha256:Y5z2Lxy9TFsD6Vakk5vEZZW1k+L1
+   uqTXpTbq4ijlZ4aLBu8ZzPKLtDt6ay6BT+bJiiZX3eXCBtb0pju8sBeATyZ5qrNH3+YYGykLzcw
+   Atp4kKJ7lZmpQxK0D3632NdfsshCpQFZJmZ2qy4nWfxXzjQas0fDx3I/LrGPLUl9VVkpHLeFyd7
+   9nZmtpu2MNM3+2R+6QbAs72pEeRbO4SwTJK9A19KCS/4CMxfXLQnmeDCCUQsnGNLCdHtD8iIm4k
+   CvurZ9G8RapQAtGNeHxybMUQIGxuOtmmo4QbP8IA1/WUYzo1DRg4hElneh0KKAqSVtnKBjJbWDI
+   P2Yu7TDxzNTC1g==;
+Message-Instance:  m=1;
+ h=sha256:
+   mYowByvkc9s+IKw8eL91SRXeDxAvfennaxsjfOTFoCQ=:
+   bB5bhJ3Xemob1i6GTTkra7WAMkaip8ToxUJp/9+us6E=,
+  sha512:
+   6msYqRfgRe2gOCTq0+mFKzAkzjcuZqiNb/2YW5/FJQVOLv4Ur1wYd46vAOj1JCImUGgfbyiqLbxte+iDz+qH9w==:
+   3SkFOiO7a9PC+fglTJVpGT+kOKy3qdJjLSJJnbgs/WdOvsg9h2hrYUMYs5SoF99QsLvl+N82z8GpOjeJQJ+5hw==;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1795556231; x=1796161031; i=deller@gmx.de;
+	bh=5L8GReJaNnujsS7a1EWrgLiqhdYOYglSeCGZ4pyKlcw=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=Lva4JWz00a/quKKlPqgWH7hYBOCzDLdXMW07txyvS1smhs0viIK/UVxTUXjx7llr
+	 PdeCw4FPCVXic76vWjohb75dUW+aEt17BBpG4fKs6Uc6cBgLRI3XtuJ7sMILxUbw/
+	 8ssd/A2u3CPI7xxckd7wE61c7cB+dxJPRrun1K1p1ZxEU0xUirNhn7HdSaIzger+z
+	 fqNZB9dwNjMkHF3TO3ek8XvEMZHklYQubRE5LTtiLOM9bXOCheDCLE08+G8fH2AkI
+	 mIdsRFo9SvvFv8O5oa7YRB3LkEJwnGD55BQN8OmYBlltjNg5Z/7P0NyYlKgieFfBM
+	 tRCoTRdsBOgIjRiNsA==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MjS5A-1yFnLg3mKg-00hETq; Tue, 24
+ Nov 2026 22:37:11 +0100
+Message-ID: <27cf86d7-b333-41cb-a250-6b6a14034b86@gmx.de>
+Date: Tue, 24 Nov 2026 22:37:09 +0100
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -83,84 +81,183 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/2] vt: Skip hardware scrolling while blanked
+To: Yu Peng <pengyu@kylinos.cn>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>, Nicolas Pitre
+ <nico@fluxnic.net>, Ronan Pigott <ronan@rjp.ie>,
+ linux-serial@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+References: <20261124024811.305592-1-pengyu@kylinos.cn>
+ <20261124024811.305592-2-pengyu@kylinos.cn>
+Content-Language: en-US
+From: Helge Deller <deller@gmx.de>
+Autocrypt: addr=deller@gmx.de; keydata=
+ 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
+In-Reply-To: <20261124024811.305592-2-pengyu@kylinos.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:44vrnUG7/85r7xcLvI3Bl7XE5Vcmwu82yVgUfXcyJH4jFbj2ofd
+ ggnlm1k2Jeoo7YnLFno7N8UjU8EtFp1HsW8AGfWgyXyZMyQa+q5xGHwqojT34S+nSzByg8J
+ kDkpfZeu9yHHQZbE734gdAQPSyASS2FrXEJYfayIxl8hE0T67XoI6081SU5pglhk9mHPJMg
+ LJL2cEeJ2zLEwTV7syheA==
+X-Spam-Flag: NO
+UI-OutboundReport: notjunk:1;M01:P0:bd6qMY7KNMw=;qNo+avNQ2b9ntpFVyDkDaUQ19bg
+ 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
 
-On Tue, 24 Nov 2026 08:26:00 +0100
-"H. Nikolaus Schaller" <hns@goldelico.com> wrote:
-
-> The Pandora backlight is now described in the device tree and driven by
-> pwm-backlight. The sound card also uses device-tree descriptions for its
-> codec and amplifier GPIOs instead of legacy GPIO lookup tables.
-> 
-> Remove omap3_pandora_legacy_init(), its backlight platform device and
-> audio GPIO lookup table, and the associated board compatibility entries.
-> These platform-data quirks are no longer needed.
-> 
-> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+On 11/24/26 03:48, Yu Peng wrote:
+> When vgacon is blanked without palette blanking (!vga_palette_blanked),
+> vgacon_set_origin() rejects VRAM so vc->vc_origin points to the heap
+> buffer vc->vc_screenbuf. Calling hardware scroll callbacks while blanked
+> then treats vc->vc_screenbuf as VRAM and causes out-of-bounds accesses.
+>=20
+> Use con_should_update() to skip hardware scrolling and scrollback while
+> blanked, allowing con_scroll() to fall back to software scrolling.
+>=20
+> Assisted-by: LLM
+> Signed-off-by: Yu Peng <pengyu@kylinos.cn>
 > ---
-> 
-> Notes:
->     Changes against V1:
->     - Andreas Kemnade raised bisectability and intermediate driver
->       availability concerns for the V1 pdata-quirks removal.
->     - Correct the legacy backlight name and explain removal of both backlight platform data and audio GPIO lookup tables.
->     - Commit-message review assisted by ChatGPT.
-> 
->  arch/arm/mach-omap2/pdata-quirks.c | 23 -----------------------
->  1 file changed, 23 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/pdata-quirks.c b/arch/arm/mach-omap2/pdata-quirks.c
-> index b947bacf23a37..aca7097a692ed 100644
-> --- a/arch/arm/mach-omap2/pdata-quirks.c
-> +++ b/arch/arm/mach-omap2/pdata-quirks.c
-> @@ -268,27 +268,6 @@ static void __init omap3_logicpd_torpedo_init(void)
->  	omap3_gpio126_127_129();
->  }
->  
-> -/* omap3pandora legacy devices */
-> -
-> -static struct platform_device pandora_backlight = {
-> -	.name	= "pandora-backlight",
-> -	.id	= -1,
-> -};
-> -
-> -static struct gpiod_lookup_table pandora_soc_audio_gpios = {
-> -	.dev_id = "soc-audio",
-> -	.table = {
-> -		GPIO_LOOKUP("gpio-112-127", 6, "dac", GPIO_ACTIVE_HIGH),
-> -		GPIO_LOOKUP("gpio-0-15", 14, "amp", GPIO_ACTIVE_HIGH),
-> -		{ }
-> -	},
-> -};
-> -
-> -static void __init omap3_pandora_legacy_init(void)
-> -{
+>   drivers/tty/vt/vt.c | 7 ++++---
+>   1 file changed, 4 insertions(+), 3 deletions(-)
+both patches applied to fbdev git tree.
 
-maybe ask here for pwm-backlight node? Then this all can be untangled a bit.
-so something like if (of_find_compatible_node(NULL, NULL,"pwm-backlight"))
-
-if that node is available do not register that device.
-Such a change can go in as soon as we have consensous that pwm-backlight
-is the way to go.
-
-After all is in, in a final cleanup step, remove the pandora_bl and
-the quirk.
-
-> -	platform_device_register(&pandora_backlight);
-> -	gpiod_add_lookup_table(&pandora_soc_audio_gpios);
-> -}
->  #endif /* CONFIG_ARCH_OMAP3 */
->  
->  #ifdef CONFIG_SOC_DRA7XX
-> @@ -514,8 +493,6 @@ static struct pdata_init pdata_quirks[] __initdata = {
->  	{ "ti,omap3-evm-37xx", omap3_evm_legacy_init, },
->  	{ "ti,am3517-evm", am3517_evm_legacy_init, },
->  	{ "technexion,omap3-tao3530", omap3_tao3530_legacy_init, },
-> -	{ "openpandora,omap3-pandora-600mhz", omap3_pandora_legacy_init, },
-> -	{ "openpandora,omap3-pandora-1ghz", omap3_pandora_legacy_init, },
->  #endif
->  	{ /* sentinel */ },
->  };
-Regards,
-Andreas
+Thanks!
+Helge

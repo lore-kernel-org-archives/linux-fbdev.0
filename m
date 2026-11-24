@@ -1,88 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=81.169.146.178
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=85.215.255.124
 ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795505227;
-	b=Lhdp3UrXxtmoHTdHYid+sC+Xuq4fwoiF8tXTiz1HIMAjvsv7PKtySiSa4qiJHaHHZ3nc
-	 5wv3TfEpPGGlQ4u/yiYPLGhY8qrSvmFjkPLYVBcj8PROo12n1ib6Vy8UMZ6mnFbXqV4OZ
-	 WH0IBZfnqlDNl2shBK2UKvLPaJDhsLGNnKFsSpOWKpcZEVfY/NpWBaeTBekwLgr8Ju8bb
-	 pFw6OgxmyWdSES8Z9MOdbD+nf204wI/X8TF6VKWxPLljvv7BpbasyhRiILnMl35bIPGx+
-	 SMSrneeAHPG1UOnE8laMN1xhCODqKqNjNgi6d3QhtERELiIWjqTqDCG+I9KGzlwBDlQ==
+	t=1795505223;
+	b=K4/0PyZj25G7LOVKiu81CzxRbdXp/jwXNPJcMpXtwoqwOxakz/JjNWuo9iqnXFEXah7C
+	 R2vELUfJljWYr6B2I4NbykMcBcSdOzVElNBGK6CsITlMdmgbd2x7ry974iQ4FpIdzx1fh
+	 w0V5oRrPMHgdAk6ffyNjOjYwKoKbZcMYAUXOC2NgZLBj1c4MHduOa1wb4ZSwuIuy0/Jti
+	 AFMiqYcuoUJs0S2QkDPRTd3fBm5T2d7mZ4qHU4cyq+JJfwoNrumllBqTEDzzYQ7HFkCt4
+	 ErHbIm/KkwVKi7ATGhWipCl5/qYH95KukDbDdSmvXfY73IJFticy4lCgHGsHWngB/PQ==
 ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795505227;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795505223;
 	h=DMARC-Filter:X-RZG-CLASS-ID:DKIM-Signature:DKIM-Signature:X-RZG-AUTH:
 	 Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:
 	 References:MIME-Version:Content-Transfer-Encoding:Content-Type;
-	bh=mCTL5EvoBNQXTJTXdmgYEKENHLcWSBGgDwEoOT4R3Mk=;
-	b=1P6JYEYHgnwCUdx3+hlkfQcQZ2AvidhSLHXERQumGoSQ0iXIyqj1WpHF36U5VEgcOghT
-	 D8Y2J4pl9zhsRjSEQ5j3S7O/5rvKoVstEL6QONWpmdsZ+MwlDh+oxJBwZHGEEKpYpwxKg
-	 x4HZn/+grzT2BNQmAREAHaSnkNHdvOwiHev43Dlvxju1xd4P6jdjruZZUze2TRrw6YxNr
-	 Z75kaKA+a+YshLDw323BHW66PFEopbQMDugajArN3twQT5mGanVYQYso5v2kgcyHrhAcp
-	 cSlIw9ANItaJh9oS8K8GNkE2VZ5B9b7FU5/UClZuo80Kbtkp2rJe9PEhPMvh/8LGe6g==
+	bh=adbm0DzSO3mJYHLc7cJuWzX3GDM1m8RObj3Et4x+Weo=;
+	b=y8Axe42DmegpNv9EPvWwG+9BQguUwCaR7EGELeeEpLgEg8d4GDml5b2TMT/soskKbg6I
+	 Pwx2qH69COYLj3kNQ3MJWMRs2cogDIGT07SXjfZ60ZA1KGDmpqk5AP+7THwuipndpgEP2
+	 +dk08Q0kMRqolD5KRaLcRiTqA71ooFRU1psXzO6SQT5LarxYBtUXj3BcEy0PZr+nNk7CS
+	 VGnyzsj/hxMhSbwvgn53xI4xSZZnO93SNJrdq8apFH1r/GnLfB7OSqp2/ltqKjNGDd6PX
+	 /sFD7VRNGAlc4iW1xZGq68PlVu8FQ12uTEAZHGG2Csa3KqBX5W9yanCkaceIvLYbKwQ==
 ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=goldelico.com;
 	spf=pass smtp.mailfrom=goldelico.com;
-	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=rsa-sha256 header.s=strato-dkim-0002 header.b="Fxnvak0/";
-	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=7Wn2AS8k;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=81.169.146.178
-Received: from mo4-p04-ob.smtp.rzone.de (mo4-p04-ob.smtp.rzone.de [81.169.146.178])
+	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=sjoeRwWy;
+	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ARc606Vv;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=85.215.255.124
+Received: from mo4-p04-ob.smtp.rzone.de (mo4-p04-ob.smtp.rzone.de [85.215.255.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9183D606A6BD;
-	Tue, 24 Nov 2026 07:27:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9183D606A6BD
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A95D8606A681;
+	Tue, 24 Nov 2026 07:27:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A95D8606A681
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=goldelico.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=goldelico.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=Fxnvak0/;
-	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=7Wn2AS8k
-ARC-Seal: i=1; a=rsa-sha256; t=1795505181; cv=none;
+	dkim=pass (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=sjoeRwWy;
+	dkim=pass header.d=goldelico.com header.i=@goldelico.com header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=ARc606Vv
+ARC-Seal: i=1; a=rsa-sha256; t=1795505182; cv=none;
     d=strato.com; s=strato-dkim-0002;
-    b=A3XF1ilXUm20dh0OxsSuCe3Of7WWYq5ZPtt2AYfQLeflUb4+Cl1AYyzcaqgyDoLGDU
-    2jrsAoVzqOG/WEMuozZPsGkA4gcddUB0xRq5LnsA6yF41J2H+7Z/5VnO3hQA4IL3G9FW
-    V+lKNTmoTdIQJcVxJOELZM2r4eNUfjadAYmoyAfwLfja8gszawx6bTAUI4mVz4cz0ABP
-    sxG/KX3zadCk5wP4tiW0BblkhQjniNFzFj0ubnQD04XibJTEXi77vp9lPQIA+5/Y8huG
-    J/V7KJpqncoP29i3/dUfuDzjaneMgAbUje5CKg6g0HVzmxrEQoECV0Ab/oKOGbJhZlu8
-    NNxQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1795505181;
+    b=DucnJM3AhZn6SkPAKsBpAX/bZCQstTVhXrdEvPqOwpS9ZRbh3Asw/scuKJGQjQXJuH
+    2rPil4Z2fSYZOI4WqrEijyipqAcsBjKxWmEQaUb7wQbt+j2II4z/LxfnLAyyIOikDDFm
+    5knubW7nL99GXTD1wUztNm8bTWBnA9wlEXTSjJBHz1OuWQDhU9lyCeqchYggGYsiNQlH
+    xVycQ94hs1JEcGFku7l7JT5yNc5T+58EXKJXLevQFKXOIiXUJ5roT3kesdCvMif8YvPu
+    EMl663kbocbzH0BDL6jS71HKIxh6I0bFYMGiyEtcZx2RhjM/TCAc2hasdmYlkFfpuATY
+    PHTg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1795505182;
     s=strato-dkim-0002; d=strato.com;
     h=References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Cc:Date:
     From:Subject:Sender;
-    bh=mCTL5EvoBNQXTJTXdmgYEKENHLcWSBGgDwEoOT4R3Mk=;
-    b=dQd8m9zSw4xOEHf7fb+yKlbVKpQZptCr/I02KCLYQ5+88jUwqDu1n0uk6rJ9juxxGg
-    M8pGZ6oGu1RSOr4Rn3RE2fTagJDQJu8BLFQDJft81vb0jaT9xWeDM3vYVVmIZPV+PDmb
-    TGb9t9zYghC2dcRra2AP1hAvdnDF6/UNQQwkkrRQ62FQnm9ni+B4iwa9JfJrth3PsEsG
-    6vRzVU0hZbvXt6s63tb1nMlHMxNNeEVtnwZcRfFk/lO7G179MouDvZWUDolsKq3xZr3Q
-    dnOsnS7ENL3MArrAPNarHzn/XpI/5SGyMsETwqStkwF1nctyuGHG4HKo1tapb0OiuTkq
-    flNQ==
+    bh=adbm0DzSO3mJYHLc7cJuWzX3GDM1m8RObj3Et4x+Weo=;
+    b=XLQmyxQZsnUAqqRpeSuYpwVbaEf64X5pXFVaRiss2CULJpGSBoXU8qSMPRmJegY54n
+    jonOh9PyL31mWIv65ljH2Sfn+pXIMdBjmwAstqTGrdaYJ24sqjMMPM6q0ZN4hyWkiKU2
+    yX7qPJLM+l2j60cXesRVda9ZPB3T10yZ5QDdqhfy7OO6kr5nvOektqQZTOun6s8CmYPs
+    q+03hOkIiVMJUCV06N/xrJMni7v+Pa8UM0RW715XZwcbsoXl6Oly4B+Nl/VPp7vIVslA
+    AfpYlFPdgz0hA5I3FrherlNYWbN3T07vk8rayzhaLganKYwN5E4DX7Qf1FkHyh0cDiqV
+    uYdQ==
 ARC-Authentication-Results: i=1; strato.com;
     arc=none;
     dkim=none
 X-RZG-CLASS-ID: mo04
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1795505181;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1795505182;
     s=strato-dkim-0002; d=goldelico.com;
     h=References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Cc:Date:
     From:Subject:Sender;
-    bh=mCTL5EvoBNQXTJTXdmgYEKENHLcWSBGgDwEoOT4R3Mk=;
-    b=Fxnvak0/8rqxa3Afav7WD/Vb4Xmp/7ha3h2kETtQauUoh03jLEn8mYcbsLwBMwL6kw
-    IH0tgaWVQPeQ7FFdoO2/+qscKr5HHGYc69YBWXiKhde3uMhwqI6xSoHkZbTcTgwVc3Lf
-    X0uRs11os2b2zMNj6a6YyMcHbP3q9Dqd16VGxWURKvHlXNftnt3w0kTEQn57tx1Lp1YN
-    rCmeBSy1VHki5+Q/JzLbgY4VYxhVXaYWXvEV6UqYTCJAd7ICnv6yCHkN/J5sVmihEsl+
-    Lpz6ClZoOuDz4a6ukJ8TdCWHd1TlRMyfhosdP3kusZCR98KbrlcvujFQrY4TJKSbcdrU
-    yDgg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1795505181;
+    bh=adbm0DzSO3mJYHLc7cJuWzX3GDM1m8RObj3Et4x+Weo=;
+    b=sjoeRwWy32ESLe/xZiz6JbxIHsZoP/Aae7i5NH+rygVjLYpOSOjHofkXLNTcD5NvNr
+    i87/Ddf5vp+8IO0rq+XPx/vkBqC7cBenAxJh7ZTxuIYsbZBj1BMbz84Wy0LUNmZIUzWr
+    b8fsNHQFLSzm6aRT42UIwjG9IT1TyvJ0PDlnjVGPCkqtUGhXVTQBF2H8r/yok6flZQJQ
+    TshtUeiB59W3A9C0hTLXBx+h5QJLUre2diVjl6PgpiCg/1y6qDyC+WKUOzASrn/Tg3S+
+    nu7HPSuwzIYDVpERe0CPiFdtDtkCQuK4m9YwPRzmQ2MFWIHqxa0d8Rp3wdT6n461DoOW
+    hCig==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1795505182;
     s=strato-dkim-0003; d=goldelico.com;
     h=References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Cc:Date:
     From:Subject:Sender;
-    bh=mCTL5EvoBNQXTJTXdmgYEKENHLcWSBGgDwEoOT4R3Mk=;
-    b=7Wn2AS8kMWAXG2COmnHxpUcRqKgBo+1TebY6U9yNLv3eHDO0gCdjGuFU8kcfcaFDs3
-    yUe4lsGOSnZBVr4ap/Cg==
+    bh=adbm0DzSO3mJYHLc7cJuWzX3GDM1m8RObj3Et4x+Weo=;
+    b=ARc606VvAJi/E1vAOJ//WCiLmxlauC8TnSvthekUEYyNZNIdEuFvL/I1iU8Kalv1It
+    3bIsatUM5Xm7yF8wYFCA==
 X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMhflhwDubTJ9qVpwcQVkPW4I1HrV3poLlciNVTQoM6kVxzKyrKzkpjcAwdDfiN49"
 Received: from iMac.fritz.box
     by smtp.strato.de (RZmta 55.6.3 AUTH)
-    with ESMTPSA id Qb56a22AO7QK1HT
+    with ESMTPSA id Qb56a22AO7QL1HU
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
 	(Client did not present a certificate);
-    Tue, 24 Nov 2026 08:26:20 +0100 (CET)
+    Tue, 24 Nov 2026 08:26:21 +0100 (CET)
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
 To: Linus Walleij <linus.walleij@linaro.org>,
 	Bartosz Golaszewski <brgl@kernel.org>,
@@ -126,11 +126,11 @@ Cc: Jessica Zhang <jessica.zhang@oss.qualcomm.com>,
 	linux-fbdev@vger.kernel.org,
 	letux-kernel@openphoenux.org,
 	kernel@pyra-handheld.com,
-	Stefan Leichter <sle85276@gmx.de>,
-	"H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH v2 15/20] ARM: dts: omap3pandora: Enable audio interfaces
-Date: Tue, 24 Nov 2026 08:25:55 +0100
-Message-ID: <99b22d8d689922af59f48e3a703bfee517e50b3e.1795505160.git.hns@goldelico.com>
+	"H. Nikolaus Schaller" <hns@goldelico.com>,
+	Grond <grond66@riseup.net>
+Subject: [PATCH v2 16/20] ARM: dts: omap3pandora: Describe PCM1773
+Date: Tue, 24 Nov 2026 08:25:56 +0100
+Message-ID: <770a015f333c1927fccee2663eb76a7de923dffb.1795505160.git.hns@goldelico.com>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <cover.1795505160.git.hns@goldelico.com>
 References: <cover.1795505160.git.hns@goldelico.com>
@@ -146,43 +146,41 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain; charset="us-ascii"
 
-From: Stefan Leichter <sle85276@gmx.de>
+Describe the PCM1773 playback DAC in the common OpenPandora device tree.
+The DAC is supplied by VSIM and enabled through GPIO118. This allows
+the PCM1773 codec driver to bind without platform-data registration.
 
-Enable McBSP2 for the external playback DAC and McBSP4 for the
-TWL4030 capture path on OpenPandora.
-
-Signed-off-by: Stefan Leichter <sle85276@gmx.de>
+Suggested-by: Grond <grond66@riseup.net>
 Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 ---
 
 Notes:
     Changes against V1:
-    - Historical origin: d0494afbcf2e (Stefan Leichter, 2020-06-29).
-      Commit-message review assisted by ChatGPT; code unchanged.
+    - Historical origin: 13b32c8cd102 (Grond, 2021-12-15).
+    - The current DTS node has been reviewed for the PCM1773 binding and GPIO/supply properties.
+    - Code and commit-message review assisted by ChatGPT.
 
- arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi b/arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi
-index f25fc4f8ad042..2a5e8ba5714da 100644
+index 2a5e8ba5714da..6e349f7ae6936 100644
 --- a/arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi
 +++ b/arch/arm/boot/dts/ti/omap/omap3-pandora-common.dtsi
-@@ -728,6 +728,7 @@ &mcbsp1 {
+@@ -64,6 +64,13 @@ tv_connector_in: endpoint {
+ 		};
+ 	};
  
- /* audio DAC */
- &mcbsp2 {
-+	status = "okay";
- };
++	dac: pcm1773-codec {
++		compatible = "ti,pcm1773";
++		vcc-supply = <&vsim>;
++		enable-gpios = <&gpio4 22 GPIO_ACTIVE_HIGH>; /* GPIO 118 */
++		status = "okay";
++	};
++
+ 	gpio-leds {
  
- /* bluetooth */
-@@ -740,6 +741,7 @@ &mcbsp3 {
- 
- /* to twl4030*/
- &mcbsp4 {
-+	status = "okay";
- };
- 
- &venc {
+ 		compatible = "gpio-leds";
 -- 
 2.56.0
 

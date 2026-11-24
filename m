@@ -1,113 +1,52 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=45.254.49.197
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795527502;
-	b=TgHV/IPKgeWqZIzA3z9UnJi7Fafh5kCkWImENc4/iyoUBpYVW4jm3LRDjzP0mcFbyc63
-	 DJSa3b9XYkuvcX+G0VvStnNO8ULoCWTWeOzve7cHcqiVmA/2U8rzFW8VEykFSWTUfx8U8
-	 0OyY8h5kdo3jvpEZdc7v8kQ4IJImyqSykd1kv2VduR9Zre1XaiujlxMGbQ31wbowijlUZ
-	 dkyvVbdX7K/OdWwYpfn4DEcqse6d6jTLVO3qihhy/UXGx7FSyqWK5CEeFVKvET96JyIKu
-	 zuzxoGdiDOXTY6Oo/4dEUq5Ozv+oadE8Q6f6l6gb7tyVt25qEp+zpTYzXykCVzuleyQ==
+	t=1795528726;
+	b=EKnaTVuRapBtd/jC7jrPOV28jeqZVJu6dVQzg4jDB9iReNRUODuQb/x5G3/k4YyLF/Mp
+	 9Qa1QHM621y/wcyx9opM2IG81xtOxxwNZszrFESwyto8kP+7U5qMrQmGHG2nbYVjtEetz
+	 88qvHhs68PNrz02upM1D2KywSlKsdDJW0QMF9QlozXAnT/kR/bNqgxjUIZvTFq66Q68Vt
+	 AjGvyBx42wdSDqP8H+jFbLdyYZiGBG1+7ABC6/YMQA14M3r9KhEx1W7PmE/MNS/kXcR4q
+	 re9HDjuiFl5arFoSL/aLc1loPhgufqFOJC9oc6wKKLd3wxfhp+OuGT4sWc//6jOH7FQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795527502;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 Mail-Followup-To:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:X-Cookie;
-	bh=hBb7CziwmaEve0HjYdLhPP8A5dGN2yZ/4+i68vOpPLA=;
-	b=vJuqxpx/TtiGo1GNlwXIoKnW47ZGRw8Sqd2uXwbCVuJbBERu+3bOJxqeJr/J1uocHSuw
-	 Da6yHVEGPOjcCdtyBUhYJenLG2t4RN/ANWGiVK4NtMT5+3M8hPM+5G74o9e1rvC9tUd6w
-	 f3vqd1mv/lq0h7By4s2Ez6AATF3szGhqeDeRNAQ0hHrspD5G1h6A3+18ZjEKoQ5LdVk3s
-	 oX/uY6mZk1nXXVUwnbnmRduWRa+EVOdkWscfywwgNXz5gDvWQZNpn8sAia1sj7g+9oKYQ
-	 NlRZLF9+H3b9yHDl1h36ENYDE/gN0YZ1lbOkU+B7KhXwqPZ/vjYCLuAGCNK0cdqhkCQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795528726;
+	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-HM-Tid:
+	 X-HM-MType:X-HM-Spam-Status:DKIM-Signature;
+	bh=+HySKkOVbW474osHQ9Y0YmzT/kE7CKLfCjwENY+Iv3I=;
+	b=zSo94itHHGOFBgUcoLk1gi48seGU9nkPLAs0ZezICFS45FJc4e035MvYYAmrrARz6zlF
+	 mbyN7i02fYIMe1Hkyhno5zfTPyoX4uhyCQFoldG7Z30oKGoXeORf6uFN5/+Hzn4ili2Bp
+	 EmJgAbVseX7EfaPqREIWm/0SIswYSsIEdGvSt4MYCEYWwxdKF9RB+xxsi84hFXNNfa9R1
+	 CN3jNZ98Mk8/80XOK8JCNZ8FNDD9+645vGdg7V6bDVMUdOJzsBYzXi68Bfnhx+ZYEGCT8
+	 UFLuXo0Z2naZx1vfQ8awMK9klkjkwtb3gsmAJZoCckxLVXBHm43c7rfbT26fMjso18g==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oEvA9JlK;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=mail.sdu.edu.cn;
+	spf=pass smtp.mailfrom=mail.sdu.edu.cn;
+	dkim=pass header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=LWPg5PLb;
+	arc=none smtp.remote-ip=45.254.49.197
+Received: from mail-m49197.qiye.163.com (mail-m49197.qiye.163.com [45.254.49.197])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 100E1606A321;
-	Tue, 24 Nov 2026 13:38:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88FF2606A326;
+	Tue, 24 Nov 2026 13:58:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 88FF2606A326
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mail.sdu.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.sdu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oEvA9JlK
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C48451F000C0;
-	Tue, 24 Nov 2026 13:38:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795527501;
-	bh=hBb7CziwmaEve0HjYdLhPP8A5dGN2yZ/4+i68vOpPLA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=oEvA9JlKinpj4CLa0YM6Nnu6QLmPew7urXHJpo4ZY1RapqnGsMeZoiTJ7ejlAh1wB
-	 z/4fG12dJSX006iBcFfaePI0M82vQ/1lbBDsYhXFPYLKOy6787YEbjgE2NTsh2LOnd
-	 YYS8P8FaEZ84WtS/L5EnxkSVgHxjjzXXJgJzz7UaNIBflVYxmWx/jPSoJ67DFMin7B
-	 48FH10YLDBmkTcl4sT4odtP5IxcWGp7FR81EE+8XK88PyG8uKCTLcwZHYiH8ilxH3V
-	 D8dFdk3x8iZiHSxDB1qrRh2eAI+U+TXTP3MiPubiQm0VUBtbo99xI2tQapnHz6R5jC
-	 CTkpyiMWVUWdg==
-Date: Tue, 24 Nov 2026 13:38:09 +0000
-From: Mark Brown <broonie@kernel.org>
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Aaro Koskinen <aaro.koskinen@iki.fi>,
-	Andreas Kemnade <andreas@kemnade.info>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
-	Helge Deller <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Peter Ujfalusi <peter.ujfalusi@gmail.com>,
-	Jarkko Nikula <jarkko.nikula@bitmer.com>,
-	Jessica Zhang <jessica.zhang@oss.qualcomm.com>,
-	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, linux-sound@vger.kernel.org,
-	linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	letux-kernel@openphoenux.org, kernel@pyra-handheld.com
-Subject: Re: [PATCH v2 00/20] ARM: omap3: pandora: Modernize audio and
- backlight to use Device Tree to finally remove pdata-quirks
-Message-ID: <f31b5adb-f6e8-4cab-8d92-17645bf1b69a@sirena.org.uk>
-Mail-Followup-To: "H. Nikolaus Schaller" <hns@goldelico.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Lee Jones <lee@kernel.org>,
-	Daniel Thompson <danielt@kernel.org>,
-	Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Aaro Koskinen <aaro.koskinen@iki.fi>,
-	Andreas Kemnade <andreas@kemnade.info>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Roger Quadros <rogerq@kernel.org>, Tony Lindgren <tony@atomide.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@kernel.org>,
-	Helge Deller <deller@gmx.de>, Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Peter Ujfalusi <peter.ujfalusi@gmail.com>,
-	Jarkko Nikula <jarkko.nikula@bitmer.com>,
-	Jessica Zhang <jessica.zhang@oss.qualcomm.com>,
-	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, linux-sound@vger.kernel.org,
-	linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-	letux-kernel@openphoenux.org, kernel@pyra-handheld.com
-References: <cover.1795505160.git.hns@goldelico.com>
+	dkim=pass (1024-bit key) header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=LWPg5PLb
+Received: from lgs.. (unknown [101.76.249.61])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 55d4cdb9f;
+	Tue, 24 Nov 2026 21:58:42 +0800 (GMT+08:00)
+From: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
+To: Jingoo Han <jingoohan1@gmail.com>,
+	Helge Deller <deller@gmx.de>
+Cc: linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH v2] fbdev: s3c-fb: Fix potential registration corruption on probe failure
+Date: Tue, 24 Nov 2026 21:58:40 +0800
+Message-ID: <20261124135840.2276343-1-liguangshuo@mail.sdu.edu.cn>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -117,52 +56,122 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="nSbMoxGlmoiutN4J"
-Content-Disposition: inline
-In-Reply-To: <cover.1795505160.git.hns@goldelico.com>
-X-Cookie: Real Users never use the Help key.
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa20dda064003a1kunma2178d373424ae
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCTExLVk1NT0sdHkgYHUJIHlYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlKS0pVTE1VSU9CVU1KWVdZFhoPEhUdFFlBWU9LSFVKS0lCQ0
+	NMVUpLS1VLWQY+
+DKIM-Signature: a=rsa-sha256;
+	b=LWPg5PLb9d6gzJORAqlgK8DHlzCNVSaYpI4KfipNPdYA+XydQSYkdramj35/25nIPUmVuwHaqa5nL+7ui10BOaIg3lQZS+mT6oPuGvB/+i5QykrN5JbjRW9hA4xSrGmAPGu74EQLjZtQU60V1R4yM5eky1pMAjwzOGKLb47IlR0=; c=relaxed/relaxed; s=default; d=mail.sdu.edu.cn; v=1;
+	bh=+HySKkOVbW474osHQ9Y0YmzT/kE7CKLfCjwENY+Iv3I=;
+	h=date:mime-version:subject:message-id:from;
 
+s3c_fb_probe_win() publishes its window before registration succeeds.
+On failure, the caller unregisters that unregistered framebuffer, whose
+zero-initialized node can remove another framebuffer from registered_fb[0].
+Colour-map allocation failure is also ignored.
 
---nSbMoxGlmoiutN4J
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Unwind failed windows inside s3c_fb_probe_win() and publish them only
+after successful registration. Stop the window before freeing its display
+memory if registration fails, and skip empty slots in the caller's cleanup.
 
-On Tue, Nov 24, 2026 at 08:25:40AM +0100, H. Nikolaus Schaller wrote:
-> PATCH V2 2026-11-24 08:26:00:
-> Changes in V2:
-> The series has been reworked and expanded from 16 to 20 patches,
-> addressing review feedback and issues identified during hardware testing.
+This issue was found by our static analysis tool under development.
 
-> Audio and power management:
-> ===========================
+Fixes: ec549a0fdc32 ("fb: add s3c-fb driver for newer Samsung SoC framebuffer devices")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guangshuo Li <liguangshuo@mail.sdu.edu.cn>
+---
+Changes in v2:
+  - Unwind failed windows in s3c_fb_probe_win() and publish the window
+    only after registration succeeds, without a registration flag.
+  - Stop on colour-map allocation failure and skip empty cleanup slots.
+  - Blank the enabled window before freeing memory if registration fails.
 
-> PWM and backlight:
-> ==================
+ drivers/video/fbdev/s3c-fb.c | 27 +++++++++++++++++++--------
+ 1 file changed, 19 insertions(+), 8 deletions(-)
 
-> Device Tree and general cleanup:
-> ================================
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index fde78707d313..8fae4d909bb7 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -1197,7 +1197,6 @@ static int s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	WARN_ON(windata->yres == 0);
+ 
+ 	win = fbinfo->par;
+-	*res = win;
+ 	win->variant = *variant;
+ 	win->fbinfo = fbinfo;
+ 	win->parent = sfb;
+@@ -1208,7 +1207,7 @@ static int s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	ret = s3c_fb_alloc_memory(sfb, win);
+ 	if (ret) {
+ 		dev_err(sfb->dev, "failed to allocate display memory\n");
+-		return ret;
++		goto err_release_fb;
+ 	}
+ 
+ 	/* setup the r/b/g positions for the window's palette */
+@@ -1249,16 +1248,17 @@ static int s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	ret = s3c_fb_check_var(&fbinfo->var, fbinfo);
+ 	if (ret < 0) {
+ 		dev_err(sfb->dev, "check_var failed on initial video params\n");
+-		return ret;
++		goto err_free_memory;
+ 	}
+ 
+ 	/* create initial colour map */
+ 
+ 	ret = fb_alloc_cmap(&fbinfo->cmap, win->variant.palette_sz, 1);
+-	if (ret == 0)
+-		fb_set_cmap(&fbinfo->cmap, fbinfo);
+-	else
++	if (ret) {
+ 		dev_err(sfb->dev, "failed to allocate fb cmap\n");
++		goto err_free_memory;
++	}
++	fb_set_cmap(&fbinfo->cmap, fbinfo);
+ 
+ 	s3c_fb_set_par(fbinfo);
+ 
+@@ -1269,12 +1269,22 @@ static int s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	ret = register_framebuffer(fbinfo);
+ 	if (ret < 0) {
+ 		dev_err(sfb->dev, "failed to register framebuffer\n");
+-		return ret;
++		goto err_blank;
+ 	}
+ 
++	*res = win;
+ 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
+ 
+ 	return 0;
++
++err_blank:
++	s3c_fb_blank(FB_BLANK_POWERDOWN, fbinfo);
++	fb_dealloc_cmap(&fbinfo->cmap);
++err_free_memory:
++	s3c_fb_free_memory(sfb, win);
++err_release_fb:
++	framebuffer_release(fbinfo);
++	return ret;
+ }
+ 
+ /**
+@@ -1470,7 +1480,8 @@ static int s3c_fb_probe(struct platform_device *pdev)
+ 		if (ret < 0) {
+ 			dev_err(dev, "failed to create window %d\n", win);
+ 			for (; win >= 0; win--)
+-				s3c_fb_release_win(sfb, sfb->windows[win]);
++				if (sfb->windows[win])
++					s3c_fb_release_win(sfb, sfb->windows[win]);
+ 			goto err_pm_runtime;
+ 		}
+ 	}
 
-This is dealing with several tangentially related topics over multiple
-subsystems in a single series, this makes it a lot less digestable and
-results in a huge series with an extremely large CC list and murky merge
-strategy.  Please split things out into separate serieses, even within
-the various subsystems there are batches of independent work which
-really do not need to be in the same series.
+base-commit: b6a9fa34ce4187cb69d3c588a4bbffc31ce5db8f
+-- 
+2.43.0
 
---nSbMoxGlmoiutN4J
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmsFk0AACgkQJNaLcl1U
-h9C5/gf8Cm0A5yFYJVQeo/T7StRW0pHrKh1EmIz06r7u8NK09DP+BhXT8qRk1I41
-F7QT+nveX8OD+3Wz+Zyw7iAN7DdNLpIpci7jqzm/9hHAIeCU9h5mbXgGLRZXlLLy
-MJ/MIEGdSDswMSbHdd1qbOAph080P7loJJrXcVFvWHRwH6+Gc6umpSBfu7uLM+D0
-W+mM6fRvvz0Ou0YBcV+gvdp/18n0MiQ11v7dn3UsQaFHkJfTZzKZh6WOuUZ3JdKr
-H1DtRqRYCJooQcaZpUWdRGDHEAMHXgW1+o7r3gEfGTklbsyY+xeOhXEBbU7jQLjd
-SS7bE1b2Y0pMX5XKGAjMXMyqtG/2dg==
-=LtHo
------END PGP SIGNATURE-----
-
---nSbMoxGlmoiutN4J--

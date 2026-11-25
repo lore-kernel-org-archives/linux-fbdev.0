@@ -1,57 +1,59 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=143.255.12.172
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=45.79.88.28
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795623656;
-	b=SUGen2wZceqEKzKVmPKM5x0fCqiqJmVuicv/8A5d+mFHzhw+nkFre8sQyfWQcMYxJXam
-	 S4XGZgsyAeuy2M7zLZXTzHH6Ch2VyG6l/nvpx7keqhzpNrYCvC9unV9OEsZSI+K24xCE2
-	 A0k7Y855oMj5NQvbo4PhbyB0XqYbkx068R0hOXERWXgAg1SriqAnN5E42o3GSJm3GNPdv
-	 I9heWm0CuW4Xs5tIwjM1wCbusYxJYwcF58yndrGCO6cr0ajw961pKFr6taB2cNsgedUbA
-	 T/3xy0ctQWjisRkNw18qMm3VMMrS70c6QDANjCElDEGFoZPPBX/C8F2OZgUQjveb3pg==
+	t=1795625137;
+	b=d7PihfG8THwoBJDKt1sW+ZleRR42s30RFBmqCyjDrFAWsxuZV4Yr5eV0+TVwQfNKy76l
+	 37MmJxCButtmfr5ujtpQzyKL8CO/BRKTCQLM2IbfP19asYFiBm/7lkTNMK8s/48gFIkZJ
+	 G/MhgwC1+5cTNEcp8xesI4axVxEbe1/Wacm6n70fCji7IFATTISr+2uCuhtP5g2gRLWch
+	 OJR5qaty3Is/CwVWSgXKGO5ZnnrDSE+F+vISrjJDR3nPnYGRATofmLINqWubaHziwPAd6
+	 yGp/RMkR7ffED9cZI7QZzU1VtK1/Mwbwu19nMDCRuyXYODeJBsIpE+/SBNgGN9jIBKA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795623656;
-	h=DMARC-Filter:DKIM-Signature:Received:Message-ID:From:To:Cc:Subject:
-	 In-Reply-To:References:Date:MIME-Version:Content-Type;
-	bh=MFjp1Epxvbzt1A9g4t7Y/jDE3CxQAavGU4RMdlNgNPA=;
-	b=gJUP6Y3aI1R3Cfii1OHn1t2hp4JPCaxEM8U+ksfg8JEZsbr9VLissd/vAd/xVPd2AX0t
-	 8fB6DhXsPbXruvMkuixYnH8m0mklObMgw32BU82IWjXJHKb/2fb5fb29Lh4k1jrCj5oEi
-	 sley+i8xHKgYfT+grgHbACf0ob6NFe4mpO1y4lUa4qtGozO3bVBLxnoiwJwChvJKjqR+o
-	 VLPJHigu9nfbNqpxCUub49H4tD97Y/3UmBg5t7MGfuNFnrGjYK/QAoB1UosfmYLeCWzDe
-	 21GrSIErvkHgGWrJ/lLSckodoTWeu9eCFZ8wU2ZhgjexDg9Z5/aKX9s4udOJRQGvoMw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795625137;
+	h=DMARC-Filter:DKIM-Filter:DKIM-Signature:Received:From:To:Cc:Subject:
+	 In-Reply-To:References:Date:Message-ID:MIME-Version:Content-Type;
+	bh=11zt4OupvieQqDw22Q2ubqyLm0TwPHTf9uDp8UQ/aNg=;
+	b=PUsbplCsMhlqiymWe4V5Xj/NroXrL6l5nwWUHeAe+tJogdDy8zUOeEkMzFcJNRInmf+Q
+	 Zjji2Mth+x5/ypT5hjyfsZV+DJlbCDhDP9SVZavQG79hsWIvKkMekf0zhvdHPWK4Xisa7
+	 0OLHR1E8Hg7Yvzz3zEDDiiyU729leUZO7zbT0URM5MwvsfrRKVK/VaerhW82piXXxpal5
+	 YY+PM/cgeZQrO1gojlBzOuc1R85JbaT3S7vlqlDVxnKY2gXjGQXbPApahWRk9Q1nGwk6+
+	 /6wQs7SGFbO7KbnQ/Sb2YHFSFjj7A2wxpg2Rm8yyRqjng5fp+Cef4UaWGd6Cw5rmWgg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=manguebit.org;
-	spf=pass smtp.mailfrom=manguebit.org;
-	dkim=pass header.d=manguebit.org header.i=@manguebit.org header.a=rsa-sha256 header.s=dkim header.b="Au1x/Qfi";
-	arc=none smtp.remote-ip=143.255.12.172
-Received: from mx1.manguebit.org (mx1.manguebit.org [143.255.12.172])
+	dmarc=pass header.from=lwn.net;
+	spf=pass smtp.mailfrom=lwn.net;
+	dkim=pass header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=gYew8w2z;
+	arc=none smtp.remote-ip=45.79.88.28
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC034606A32A;
-	Wed, 25 Nov 2026 16:20:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CC034606A32A
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=manguebit.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=manguebit.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AEEE606A327;
+	Wed, 25 Nov 2026 16:45:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5AEEE606A327
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lwn.net
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lwn.net
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=manguebit.org header.i=@manguebit.org header.a=rsa-sha256 header.s=dkim header.b=Au1x/Qfi
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=manguebit.org; s=dkim; h=Content-Type:MIME-Version:Date:References:
-	In-Reply-To:Subject:Cc:To:From:Message-ID:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=MFjp1Epxvbzt1A9g4t7Y/jDE3CxQAavGU4RMdlNgNPA=; b=Au1x/Qfixdt8Oeg5ELWQmTzZ7d
-	wr1MiZso849kQQI90RjKYgtWlHvOsL4sUODQa+yJU/QJtei3+nwrCl8XPzyxSYVWxD0jEkv9ZHfHG
-	OmNUZEcDaNBk4Nn1E9cP7BuRGcZNEM6J6xtS4Ket7/m79g97o7hU8kn2wKyFBLeu8gwPpXcQdviQ+
-	Hln2JCas14QUSmhfJsWIjqhstDco/PUWJlhmY/+248fQXkeCIGO5O9nEwcb7Q1W2v+0HrcyzdyrIT
-	XwITUgiGSX5J7ehQY0B1lclNs46kSXv1DsiPlzDA2AP0RSCXykcJrKqmOyVKoOLO8j21CyIPiZYaT
-	T4+/q8fw==;
-Received: from pc by mx1.manguebit.org with local (Exim 4.100.1)
-	id 1xWFjN-00000000vNZ-3XTu;
-	Wed, 25 Nov 2026 13:20:25 -0300
-Message-ID: <9afd33b0951849b9a48c5a0783d76fde@manguebit.org>
-From: Paulo Alcantara <pc@manguebit.org>
+	dkim=pass (2048-bit key) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=gYew8w2z
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 164CF410D0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+	t=1795625135; bh=11zt4OupvieQqDw22Q2ubqyLm0TwPHTf9uDp8UQ/aNg=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=gYew8w2zbH6+bi/mBbqli+h0aBDamw00BioPDCMMC4Es4g+qCaaIw8gBYOLhfGAsU
+	 9mfNHzR2Wjt3eb5ezNkPplfVvqDZB4yLXc7H/uIjYl6k/R0SNrt0O4pqewchTPc4H+
+	 DoPRzU4+fJgJOU7hPx03jLkV4HVaXJMTTjxyrWRVyiE+GFkUio915W5ZUB0L5VMnbm
+	 Z5AtjEERksNhEMgjG3ZSm0ynjzhzYrKmQP0JaqQq4T6DitPDhHE0cz5cUJ9ItE/n9j
+	 Ip9FDRPDTnpXpMfA3rcqvq+BtjVyvtC+AdbQzNra/9WErFSqw5foLA7PdpN6n18WG/
+	 9pepodyHhS3sA==
+Received: from localhost (unknown [205.220.129.44])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by ms.lwn.net (Postfix) with ESMTPSA id 164CF410D0;
+	Wed, 25 Nov 2026 16:45:34 +0000 (UTC)
+From: Jonathan Corbet <corbet@lwn.net>
 To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, linux-doc@vger.kernel.org, David
- Hildenbrand <david@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Jason Gunthorpe <jgg@nvidia.com>, Leon Romanovsky <leonro@nvidia.com>,
+Cc: Randy Dunlap <rdunlap@infradead.org>, Shuah Khan
+ <skhan@linuxfoundation.org>, linux-doc@vger.kernel.org, David Hildenbrand
+ <david@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Jason
+ Gunthorpe <jgg@nvidia.com>, Leon Romanovsky <leonro@nvidia.com>,
  linux-mm@kvack.org, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
  <tiwai@suse.com>, linux-sound@vger.kernel.org, Jens Axboe
  <axboe@kernel.dk>, linux-block@vger.kernel.org, Marcel Holtmann
@@ -80,11 +82,12 @@ Cc: Randy Dunlap <rdunlap@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
  virtualization@lists.linux.dev, Jan Kara <jack@suse.cz>,
  linux-fsdevel@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>,
  linux-ext4@vger.kernel.org, Mike Marshall <hubcap@omnibond.com>,
- devel@lists.orangefs.org, Namjae Jeon <linkinjeon@kernel.org>,
- linux-cifs@vger.kernel.org, Jaegeuk Kim <jaegeuk@kernel.org>, Chao Yu
- <chao@kernel.org>, linux-f2fs-devel@lists.sourceforge.net, Florian
- Fainelli <florian.fainelli@broadcom.com>, Broadcom internal kernel review
- list <bcm-kernel-feedback-list@broadcom.com>, Tzung-Bi Shih
+ devel@lists.orangefs.org, Paulo Alcantara <pc@manguebit.org>, Namjae Jeon
+ <linkinjeon@kernel.org>, linux-cifs@vger.kernel.org, Jaegeuk Kim
+ <jaegeuk@kernel.org>, Chao Yu <chao@kernel.org>,
+ linux-f2fs-devel@lists.sourceforge.net, Florian Fainelli
+ <florian.fainelli@broadcom.com>, Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, Tzung-Bi Shih
  <tzungbi@kernel.org>, Benson Leung <bleung@chromium.org>, David Airlie
  <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Alex Deucher
  <alexander.deucher@amd.com>, Christian =?utf-8?Q?K=C3=B6nig?=
@@ -95,11 +98,11 @@ Cc: Randy Dunlap <rdunlap@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
  intel-gfx@lists.freedesktop.org, Matthew Brost <matthew.brost@intel.com>,
  Thomas =?utf-8?Q?Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
  intel-xe@lists.freedesktop.org
-Subject: Re: [PATCH v2 10/12] docs: ioctl-number: update FS entries
-In-Reply-To: <20261119053514.255348-11-rdunlap@infradead.org>
-References: <20261119053514.255348-1-rdunlap@infradead.org>
- <20261119053514.255348-11-rdunlap@infradead.org>
-Date: Wed, 25 Nov 2026 13:20:25 -0300
+Subject: Re: [PATCH v3 00/12] docs: ioctl-number: update entries
+In-Reply-To: <20261125061340.3402300-1-rdunlap@infradead.org>
+References: <20261125061340.3402300-1-rdunlap@infradead.org>
+Date: Wed, 25 Nov 2026 09:45:27 -0700
+Message-ID: <875wxkx3ko.fsf@trenco.lwn.net>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -113,12 +116,29 @@ Content-Type: text/plain
 
 Randy Dunlap <rdunlap@infradead.org> writes:
 
-> Update the list of files where filesystem ioctls are defined and update
-> the ranges of function numbers that are used.
+> Update file names that define ioctls and update the range of
+> ioctl function numbers that are used where they have changed.
 >
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> ---
-> v2: address sashiko review comment (ext4 00-2F range referred to
->     the wrong file name)
+> [Since having multiple maintainers trying to merge these would
+> cause some conflicts, it would be more manageable for Jon to
+> take all of these through the docs-next tree.]
+>
+>  [PATCH 01/12 v2] docs: ioctl-number: update MM entries
+>  [PATCH 02/12 v2] docs: ioctl-number: update sound entries
+>  [PATCH 03/12 v2] docs: ioctl-number: update block entries
+>  [PATCH 04/12 v2] docs: ioctl-number: update networking entries
+>  [PATCH 05/12 v2] docs: ioctl-number: update video/fbdev entries
+>  [PATCH 06/12 v2] docs: ioctl-number: update SCSI entries
+>  [PATCH 07/12 v2] docs: ioctl-number: update MTD entries
+>  [PATCH 08/12 v2] docs: ioctl-number: update USB entries
+>  [PATCH 09/12 v2] docs: ioctl-number: update virtualization entries
+>  [PATCH 10/12 v2] docs: ioctl-number: update FS entries
+>  [PATCH 11/12 v2] docs: ioctl-number: update platform entries
+>  [PATCH 12/12 v2] docs: ioctl-number: update DRM entries
+>
+>  Documentation/userspace-api/ioctl/ioctl-number.rst |   91 ++++++++---
+>  1 file changed, 72 insertions(+), 19 deletions(-)
 
-Reviewed-by: Paulo Alcantara <pc@manguebit.org>
+I've applied the series, thanks.
+
+jon

@@ -1,57 +1,55 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=93.77.172.5
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795626230;
-	b=k6HKtzi8HwxtImYUKRVeCDRc/PS6egOKsQA3Nt2GHX1BD1zHhlo69XLLdFvAXgCLNjK4
-	 Uw8UjGTodhU9QQ+1D5aTP8j/f6tuTZpsS+1bAnI3cx7gs4D5AoJS2LOXECgq0QMeSKjyb
-	 ClcSzcEumby4RIX1heoW7aVBum3IxdbfOJyn+0HXoMbTOQNRDpcO/wna1MNmz8K5dNEpf
-	 Hy0iPYDMgedAqJ37gyaHtI96MDzY8opeM9+LzK0zNO5Qq2resOmCvYNWQzp6Yh0S2NzMP
-	 fDluLnTgCBasgYSPmhszwSP6L6B31XbdKX1OfP+phUB3z0QvobgLWQxrLeuiuMsg1Uw==
+	t=1795631876;
+	b=ICBNX9k2OUKq1538VWcrPxKj8XP80XyWkH82vwiJcGW1moOun2xsLDHr3Mnc2lh4qVXX
+	 ZZ+bhZ30deMA3ZV+FwiON7FkXwo1URRsY2tTQkumbbNAM7Lw00/gxtym29vXpcPyuxhTA
+	 AX5SFJnsRS6J+qvYUJX2ORVOyj+FNVnAv+XhXKvrtRg7Q/cthLDhqcSN+wk33aB7Zlrg7
+	 U2614JbF8carHuNlxMCFbY9Bl3RY2ZjXK9CPafyw6q8Wo8krmVyZ1Lur5u89RtcPv+KVt
+	 3ncK1VtEhlIwoe3LaOWR8WSMMsh+uuS3TG3vMzwyjNfAIGijqBWciO3I32DdbcooYLw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795626230;
-	h=DMARC-Filter:Received:Received:X-Yandex-Fwd:DKIM-Signature:From:
-	 Subject:Date:Message-Id:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer;
-	bh=5fyibea5xsAv0DxgVuzf78dNLQbsIr/IVZ3YzJ6A8X0=;
-	b=dBq2rWsjshCu+ePQAcPt11YNDrIqF0rZKZthQ/v6wuCLTYNrcx8KfRuOuxF5NC8jccJh
-	 iwQ3b/cXT4T01auXCHC0WCymGca85DCveEApbtqBz+gREezTbiWqQLGC+NuvzCvVx56aH
-	 D85paL/oUJwQQwdMllESaJoXraB1YmlR4k3SCaASvCF1TD+6wSlC07+aUpJPpJMgyyCXt
-	 BwjogJJoogDxaivAxpvo8mEx6d0cnivxrKXuDkCpy7nLmyPafIzLE1NyFz4lMXJfhcQiV
-	 JSHioftdC7j4hWLWCo+F1RzNW4CNdRpTvL+1YPvRU1mahHLOiFmizTRTxvIhiw5/5PQ==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795631876;
+	h=Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Received:MIME-Version:References:In-Reply-To:
+	 From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:Message-ID:
+	 Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	bh=ThhoIel7DpJo+Z9HTOd5yaKh4yxVMCupiDlEOYEsUTA=;
+	b=EcedIMZnkkGlsIm5vT/XYT/+4hq+iEE0p7NJAKeQMJxzwFS1aZXP9wOJfQ24ShzTVC6p
+	 zS398pDvIzgXtflco0MFO0wk6H2q7qKuBmK7BqMTccTAUyp5rFe1hwibPGgemOn0etLFU
+	 w97Mp4NmWiY+AnkDkbJ++JpEDnE0sexCuzCozJjtDQF7z/bbagm9yc/Usa67xnuKggVp7
+	 4F+owMXZGDpcQY6UjKgB71Krm9j0ykghbZnRP0WFjuDQKPpFM0FS+ZllErRBBNEobLnZA
+	 WWOSKeCpS8y26tPWmWQwKqCcNzyy+yQ5byTnFVynEecdN+F73UyquQN57Ui3JXO9VCg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=yandex-team.ru;
-	spf=pass smtp.mailfrom=yandex-team.ru;
-	dkim=pass header.d=yandex-team.ru header.i=@yandex-team.ru header.a=rsa-sha256 header.s=default header.b=aKmJIWCR;
-	arc=none smtp.remote-ip=93.77.172.5
-Received: from forwardcorp2e.mail.yandex.net (forwardcorp2e.mail.yandex.net [93.77.172.5])
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b="hM/Hhp/g";
+	arc=none smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53977606A31E;
-	Wed, 25 Nov 2026 17:03:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 53977606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=yandex-team.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yandex-team.ru
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 729E2606A692
+	for <linux-fbdev@vger.kernel.org>; Wed, 25 Nov 2026 18:37:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=yandex-team.ru header.i=@yandex-team.ru header.a=rsa-sha256 header.s=default header.b=aKmJIWCR
-Received: from mail-nwsmtp-smtp-corp-main-80 (mail-nwsmtp-smtp-corp-main-80.yp-c.yandex.net)
-	by forwardcorp2e.mail.yandex.net (postfix) with ESMTPS id BDD10C02AF;
-	Wed, 25 Nov 2026 20:03:39 +0300 (MSK)
-Received: from [127.0.1.1]
-	by mail-nwsmtp-smtp-corp-main-80 with ESMTPSA id a3lrP22Zo8c0-42NguKdy;
-	Wed, 25 Nov 2026 20:03:39 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex-team.ru;
-	s=default; t=1795626219;
-	bh=5fyibea5xsAv0DxgVuzf78dNLQbsIr/IVZ3YzJ6A8X0=;
-	h=Cc:To:Message-Id:Date:Subject:From;
-	b=aKmJIWCRFpLJGwyIXhwL4qDqJkPOWvlFxpoxvA7QEnoOKlkJVev9qiCttoz75Zteg
-	 +d4EUsuZmhd0Rg/y1xuane2A+gLvyZrCJ4Czbd3aYSSnxNj6WrIdb6g6m/lJ+cmn1n
-	 GOAGkFjoRZTu+pswm7r6h5p2Yf8m1pwa2WbgZ+oY=
-Authentication-Results: mail-nwsmtp-smtp-corp-main-80; dkim=pass header.i=@yandex-team.ru
-From: Mikhail Rudenko <xyzzy@yandex-team.ru>
-Subject: [PATCH 0/3] Implement handoff for EFI earlycon
-Date: Wed, 25 Nov 2026 20:03:24 +0300
-Message-Id: <20261125-efi-earlycon-v1-0-49ac2c0a430b@yandex-team.ru>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hM/Hhp/g
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E70AA1F0180F
+	for <linux-fbdev@vger.kernel.org>; Wed, 25 Nov 2026 18:37:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795631875;
+	bh=ThhoIel7DpJo+Z9HTOd5yaKh4yxVMCupiDlEOYEsUTA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=hM/Hhp/glJKiy2UHvvPIvDz3bQ4arx/Em/jxGlIs5JIsIRP6rNUba0vLTpWsUqcBO
+	 NdkENmgt12xGYAJnV9QcJA9zK9aN9SuIj7azxDqkyCr5VbEJiENv3aLIOL345VWIk7
+	 iuYKY7HtDzY4HLK6DGClLXDVJkWHjRZsqckxARxf1ajyj6BerGz0ibB9CLJAauzBzj
+	 uPEtNXFnyZ6E4+OPuZBLooz6aBMV05j4asXKIxbZD6onyZ1OVuxlQ9RaNmYyjc7Rs+
+	 FLFVCbtOR3vioC/MsER9Iv0DkVbr8UgJcPw0O6/cU6KowHbij67fFbk8aOKP3vUMsf
+	 DCbUGF87fuXcQ==
+Received: by mail-lf1-f45.google.com with SMTP id 2adb3069b0e04-5bfa65c8617so3849981e87.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 25 Nov 2026 10:37:55 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErElqV64dVhfW0r+55V4l6bmEEgtKzLdX0UzdFLp77ROL/B5c+tkcjGZ98buH2sXR7BI1mCRarHI0oTOpA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9bVYcronfSGuKSK63zlpBRSl1EhL6LJJ4icf9GddqHBYGkTbJs
+	ls0iXug6A0tJaJZ57Y5/QnWa3DBW/c8c3lodLyCQvv5DAqGzMDXoyDEqubu2Z+K4+uGKKQL/pg7
+	BnkCMrblLhdTOoZAW+cOTMPt1kKGQLO8=
+X-Received: by 2002:a05:6512:3d10:b0:5c0:d7c:7a1 with SMTP id
+ 2adb3069b0e04-5c1bc7d0f5amr6199145e87.25.1795631874701; Wed, 25 Nov 2026
+ 10:37:54 -0800 (PST)
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -61,75 +59,41 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzNDQyNT3dS0TN3UxKKcyuT8PF1Tw+QUk6RUk1SLFGMloJaCIqB0Bdi46Fg
- Iv7g0KSs1uQRkhlJtLQCwffS9cAAAAA==
-X-Change-ID: 20261125-efi-earlycon-51cd4be4e8d3
-To: Ard Biesheuvel <ardb@kernel.org>, 
- Ilias Apalodimas <ilias.apalodimas@linaro.org>, 
- Thomas Zimmermann <tzimmermann@suse.de>, 
- Javier Martinez Canillas <javierm@redhat.com>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>, 
- Simona Vetter <simona@ffwll.ch>, Peter Jones <pjones@redhat.com>, 
- Helge Deller <deller@gmx.de>, Hans de Goede <hansg@kernel.org>, 
- Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
- Randy Dunlap <rdunlap@infradead.org>
-Cc: linux-efi@vger.kernel.org, linux-kernel@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 
- linux-doc@vger.kernel.org, Mikhail Rudenko <xyzzy@yandex-team.ru>
-X-Mailer: b4 0.15.2
+References: <20261119230733.790573-4-blum@kernel.org>
+In-Reply-To: <20261119230733.790573-4-blum@kernel.org>
+From: Linus Walleij <linusw@kernel.org>
+Date: Wed, 25 Nov 2026 19:37:42 +0100
+X-Gmail-Original-Message-ID: <CAD++jLm_sE7r22_THeMU=jHfA5u-NH1PyDcZ+3OP5KfBPsM0ZQ@mail.gmail.com>
+X-Gm-Features: Aa3M54rz2zBBXyjBliUtbexR77yF7c6oBfq13Y-rusRNaJWJqhX0Mayx5QUkSkI
+Message-ID: <CAD++jLm_sE7r22_THeMU=jHfA5u-NH1PyDcZ+3OP5KfBPsM0ZQ@mail.gmail.com>
+Subject: Re: [PATCH 1/3] backlight: ktd253: Initialize properties before
+ device registration
+To: Thorsten Blum <blum@kernel.org>
+Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>, 
+	Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>, 
+	=?UTF-8?Q?Duje_Mihanovi=C4=87?= <duje@dujemihanovic.xyz>, 
+	Jin Park <jinyoungp@nvidia.com>, Samuel Ortiz <sameo@linux.intel.com>, 
+	dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-This small series aims at making EFI earlycon a better debugging
-tool. Currently, when earlycon=efifb us requested, there are two
-options. (1) By default, earlycon is unregistered as soon as real
-console comes up, before devices init. Sometimes, "real" device is VT
-with dummycon, resulting in no console output untile framebuffer/drm
-console takes over. (2) When keep_bootcon option is used, earlycon
-never unregisters. This solves the issue of (1), but results in
-display corruption when both EFI earlycon and framebuffer/drm drivers
-write to the same aperture.
+On Fri, Nov 20, 2026 at 12:08=E2=80=AFAM Thorsten Blum <blum@kernel.org> wr=
+ote:
 
-The approach here is to take the best from (1) and (2): EFI earlycon
-unregisters exactly when the frambuffer/drm driver claims
-aperture. This new behavior is gated with 'earlycon=efifb,handoff'
-option, so the default case does not change.
+> The backlight API requires max_brightness to be supplied at device
+> registration and not to be modified afterwards. KTD253 currently sets it
+> after registering the device, allowing userspace to read a maximum
+> brightness of 0 before the configured value is applied.
+>
+> Pass the initial brightness, maximum brightness, and power state to
+> devm_backlight_device_register() to set them before the sysfs attributes
+> become visible to userspace.
+>
+> Fixes: 5317f37e48b9 ("backlight: Add Kinetic KTD253 backlight driver")
+> Signed-off-by: Thorsten Blum <blum@kernel.org>
 
-Patch 1 aligns EFI earlycon framebuffer unmapping time with actual
-console unregistration.
+Looks right.
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
-Patch 2 moves aperture ackquisition in efifb and simplefb before
-mapping the framebuffer. Also it moves resource size checks before
-aperture ackquisition in simpledrm.
-
-Finally, patch 3 implements "handoff" option for efifb, and wires
-conditional EFI earlycon unregistration to
-devm_aperture_acquire_for_platform_device(),
-aperture_remove_conflicting_devices() and
-aperture_remove_conflicting_pci_devices().
-
-Signed-off-by: Mikhail Rudenko <xyzzy@yandex-team.ru>
----
-Mikhail Rudenko (3):
-      efi: earlycon: unmap framebuffer when the console is unregistered
-      video: acquire firmware framebuffer apertures before mapping
-      video: aperture: hand off EFI earlycon on aperture ackquisition
-
- Documentation/admin-guide/kernel-parameters.txt |  5 ++-
- drivers/firmware/efi/earlycon.c                 | 49 ++++++++++++++++++++++---
- drivers/gpu/drm/sysfb/simpledrm.c               | 28 +++++++-------
- drivers/video/aperture.c                        | 13 ++++++-
- drivers/video/fbdev/efifb.c                     | 12 +++---
- drivers/video/fbdev/simplefb.c                  | 11 +++---
- include/linux/efi.h                             |  7 ++++
- 7 files changed, 93 insertions(+), 32 deletions(-)
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261125-efi-earlycon-51cd4be4e8d3
-
-Best regards,
---  
-Mikhail Rudenko <xyzzy@yandex-team.ru>
-
+Yours,
+Linus Walleij

@@ -1,103 +1,64 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.54
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=89.221.237.224
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795810621;
-	b=BHpb9T/mD8rsgAz/U24qxURimPjRUFQXmLv2zl9i592NqBxtnAcYY/iH1LCXOvMdef14
-	 y3hW2J0r3roZuvHn9eIWGs0TuVGzLI1oXyVQFkAr6PrOH2sSieq8vwKQlGsRISxaZ0xl6
-	 YYUHvKrXyYfZGTBzYgikTyInrwlrayHSAdzb8Fb7QWZ0gQf9GFxelS1nGZLU3lSua5eLv
-	 SyGKEavr/jPEZiS6GXo/Mw4N22cOXHWfqJ17bXPcZtUjnyebg+K3XVmQYyvsFuBeG+9+f
-	 7MwghuVmXEQV6H14sFMHnoB4+tTVklFLxv/oN1YERDplM1hrZtJtA9PGwsTBSFWFfMg==
+	t=1795822385;
+	b=N5pGncpYR7vw784YQY048Qrz8XKZ/t9InptSbhB1U6clfS9OKSlFP4C2hUKIzu5nOKB8
+	 1YoW5KYMxOx9Ygf8DTDcSXUrqedQJm7aqFNWVwg9eNUaPFJwTzZX3V5Cc9VGu8o9Lm1eB
+	 6IMbVAYw2kpoJGgisGq0yphv65CqAnwIfBdvDz1JXCZo397KGqKGJKVp6vH8dr25+0pOZ
+	 VWXNKanI6nwVmbZABpwSWJeTT8XDF4+dSl7nmoRDSW0kv6ML/gFoVIBOciN/kWwTG/rsB
+	 GdgNfnQ0cyLGkWyC+vAAFkR5qPfDU4hgLzRxyfajfzok/wgyxSAOP1WxihZvfc3E5WA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795810621;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:Content-Type;
-	bh=EO5k6n/37i6TdunZgGiZGXGdx4jOGbhNEYDu4cn2rWw=;
-	b=3D2cDTlZvxBcyPSAAIUuAnHxkZ2Bcz2g6tIKm4E7y7MB6yVtTkK6JSW0+AF0pvOhy3Qm
-	 a9S8YocCLKioJT6PvsGRZfW7+7wE/H4U27cjHW3Qbu5thkbxmOVfIxrRDNxPwha/oJWXJ
-	 lhM+py0iSlvuSZb9aHviiAsE4Ay+qj6naKSASz2wI9ts5S7gIz2v2JXBiqix6+9OzY+zX
-	 hp0m3L2YHfLYX5a3pJsBDAAPHVPA9mg+8awWb7u1UwoS6NZeFYYZEpvOyqpdxa+J7P4D0
-	 +ho+CuLGpOma9dbrkKYWF+qEBTBkMZGCxox8hSJIKmwFzINWG8HpYKdtfxQt2I+LY3g==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795822385;
+	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
+	 Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-Mailru-Src:X-7564579A:X-77F55803:X-7FA49CB5:X-87b9d050:X-C1DE0DAB:
+	 X-C8649E89:X-D57D3AED:X-Mailru-Sender:X-Mras;
+	bh=p7rHqBFtr53PsJeEsSa+AyFm7nVo6qAICBOgCOIhAvA=;
+	b=RpVh9AUNOmjilxkQnDjTikKQNc1sgur2aiEFTVEVP+UdSKXsGKlC8Gy3sUfG5xOO3/am
+	 D72lzTbfJl89oY/phoKYFzZnb/av9DFL6PrEtAdw3o0aP4X2on99+nZZiXglK4mUtlWDC
+	 Dn08p8KPVlE2Ecye/8L1+YL04NIzI1s2AEF24wsrPBOtbXhgfMfaBbeYqtB3UXIaKrqh5
+	 NgYycTcRw8+xpbPeXv9AWez+SFWs78Kzi8r0bVkhHKdzCZb2dttxrSELTbvn1qxxIi5YG
+	 bGLGgq3qdADQ7jcg8jYtV7YinZenld5KZDyWx/HYfcFDacP+smOmC12MV8qltzXuKKw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RDtyxHbU;
-	arc=none smtp.remote-ip=209.85.128.54
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=mail.ru;
+	spf=pass smtp.mailfrom=mail.ru;
+	dkim=pass header.d=mail.ru header.i=@mail.ru header.a=rsa-sha256 header.s=mail4 header.b=eYIibspq;
+	arc=none smtp.remote-ip=89.221.237.224
+Received: from send129.i.mail.ru (send129.i.mail.ru [89.221.237.224])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D712606A32D
-	for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2026 20:17:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0D712606A32D
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA4F7606A31C
+	for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2026 23:33:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org CA4F7606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=mail.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=RDtyxHbU
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-4a207b02a2cso60976185e9.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2026 12:17:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795810619; x=1796415419; darn=vger.kernel.org;
-        h=content-type:content-transfer-encoding:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=EO5k6n/37i6TdunZgGiZGXGdx4jOGbhNEYDu4cn2rWw=;
-        b=RDtyxHbUna2CLhsAKbFg7qydec3+Fk84/8mG1l1EmvUQSBTO4yKXF/vBXD8MCHm06i
-         /Srz/vEExGpmWHawDRnZxqMRs4BCbJsZUumDr6MZ56bDZRrz4VOFhaKyg7TH7zLpowcc
-         1teeYl3mlvGvrExsvf1a9uVIiwoUaRmh2xPXzM2wVuWym8Demv/UJFJD+VTTB1mKPaHb
-         7vts5II6MM7MqWuF/LapYzPcm9xcZ5a5R2b80wqSin3CJRehUA7m3Lfp0UuiMiWlHkct
-         XwHdvKcskjHcd2WOCJQKHa9IuZzOln38lOG9ZYJw18IWUAv6dq3SZXwZZ2PmHxSClYff
-         d9Ag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795810619; x=1796415419;
-        h=content-type:content-transfer-encoding:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=EO5k6n/37i6TdunZgGiZGXGdx4jOGbhNEYDu4cn2rWw=;
-        b=2VTy55OJiJt/vRTabqDfU3gkTndkTFKkeYiBy5jKN3m3P7v+dxwrE/LNAz3rxnAcAf
-         NRiqs7nPMlcIVbN5e55M4+JTv0bvMoXxGFUP6uKjcgXXV+fSr5R0+x8lPGoAZS74465T
-         JHLg1oxbFrVopW7Mx15H3qKLVOxVssWCHZueluR/Ueit+9j9Vu+l2dcevV4UWPQ7o268
-         kclWmcLVyjqX/RZO7ORtuXzL6aFD/M8CAVDdP7I/Dls8O3HXH8DR+Eq0FAhp7exPRMF6
-         UWl0FMEUeA4p+3Sjqc/iwsEmzjj8j7UdL+xRffDg5gPJF1gPTpYk3fKzAVrtA4zeFp7T
-         PMjg==
-X-Gm-Message-State: APuU4Z+sYV/mmOQNGDle5vYT5uoVo6+xNfF65mWGbn57ZT2A5M6iJe37
-	2hogha0gtVHwXn5zM4sCr3cbPymQnfVo1ab4WN5jLabD8Yl5B0Vc4Lpw
-X-Gm-Gg: AZFdTZfPcIeBUEPhGjT+7+e0jaBwTi7kQkmzvMHb7z2HaNNRl5loY+SUi2QXFKlcDI6
-	BbH10tZLvlYASunALF2N5yhePArUK33MLB6o5sj6dDE5dSy4D5YE+wHrtcyRxKXfKlhrolT0meG
-	yzcj3O59ae+ilimw05RZvanM82r7zc+hP76TGXHMuYKGbj+h6DP0RhiS/84XpV9hZdN4KXBM8o7
-	U/hF4nody2IimMzvoy5AbJAwTAF2peSNYVQjanKhWNuqtA4UkJnLjppVRGA5jwUrR9G8fxQdH9k
-	YuI3V3tBG6zlvRPbaJK1bnbOKre74NAVS/CK201EZHYGvVQQDVke0jLi4ZdDsDQgvSA34+iz/F8
-	TNd0Ni617X+QaWcOX8p5ofAjVzjJ1EfEST3h6o6Q91dGfUWWWlBslccGa4t5l9w+741POqnFIzU
-	Bacam8x86CXDKvn6littyhqeJOOaWUFOpRzN/1B0HBTUJpBeXOBtQgW6LI6Ab5tKu33TMofSUby
-	uYAZ0oS84RsTrU759lS/2e3965rK/GwuDXvwhuoT4obi/7W92jCQ9ELja66gKMeZv3lKIk1Cm8M
-	4C+r4f34ZzsU0ORfiosdpFEW3mZXYS7IsEzeh7ntHRyiDldJRXGv3sdn0mi8Q8ENsNvnvRxmnxw
-	uUB2iCeGl6AhqvamfhZboNR+MDrDyJp/5OX8qaxO2kJXxlAlaPanaGqp5WutPsQdYOFtV0VTGzS
-	FHwm6Q7YzPn4x8zF3mVxmitKFyRjbto5BvP/F53SAPj3aW1HhKVKWIhIQgdd/Tp2tfB3M0Lb+ob
-	jxp1zXNBHdk4DTgAMpFbl8G/w==
-X-Received: by 2002:a05:600c:1d09:b0:4bb:73d5:ab33 with SMTP id 5b1f17b1804b1-4bb88816acemr564296155e9.22.1795810619117;
-        Fri, 27 Nov 2026 12:16:59 -0800 (PST)
-Received: from jernej-laptop.localnet ([2a00:ee2:6a02:9300:bb69:6bcf:1b11:e85b])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb8538b09bsm1298123635e9.4.2026.11.27.12.16.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2026 12:16:58 -0800 (PST)
-From: Jernej =?UTF-8?B?xaBrcmFiZWM=?= <jernej.skrabec@gmail.com>
-To: Andre Przywara <andre.przywara@arm.com>, Hans de Goede <hansg@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
- Samuel Holland <samuel@sholland.org>, linux-sunxi@lists.linux.dev
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-sunxi@lists.linux.dev, Alastair D'Silva <alastair@d-silva.org>
-Subject:
- Re: [PATCH 0/3] arm64: dts: allwinner: sun60i-a733: Add simplefb HDMI support
-Date: Fri, 27 Nov 2026 21:16:57 +0100
-Message-ID: <QITIdKDQRWGwlU1DQqnbAg@gmail.com>
-In-Reply-To: <d4a41c5cfb33d6d39f0ba927541beca1175ad001.camel@d-silva.org>
-References:
- <20261127080649.1982883-1-alastair@d-silva.org>
- <18637573-d20f-4a58-9e63-6bf71b015cef@arm.com>
- <d4a41c5cfb33d6d39f0ba927541beca1175ad001.camel@d-silva.org>
+	dkim=pass (2048-bit key, unprotected) header.d=mail.ru header.i=@mail.ru header.a=rsa-sha256 header.s=mail4 header.b=eYIibspq
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mail.ru;
+	s=mail4; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:Subject:Cc:
+	To:From:From:Sender:Reply-To:To:Cc:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive:
+	X-Cloud-Ids:Disposition-Notification-To;
+	bh=p7rHqBFtr53PsJeEsSa+AyFm7nVo6qAICBOgCOIhAvA=; t=1795822383; x=1795912383; 
+	b=eYIibspq+ogUs6K2P4OA9KCC7dRaNE2Pfq2LEHrqHxPgq8fzUzz8HQUfMbam2EdaOPVks/6tVEG
+	3NfuNdS+2KnimUpDmiZIvvpSsbwJpKUQkai29ZCpZPaVKHuCNzOOjHsl/W/INeLUx5VMw55kduqJ+
+	/kQ5a4WxbaG3fBp6exc79ySy3LcOXUnM9yL5Fg9HDzxXEIOY0oPPRx2MnxYPnQzBoCQctka+YTX+B
+	ej81vOYcQ+o1fUya/Q4Ip2sGAur90U9iTKJF4xSle9qhQx/cjqVdh34Ud684B/24EBMhtUeCCK4B1
+	VUCAnL+WWZXeIxJl9shxwBQG9BI+x+GOnS4A==;
+Received: by exim-smtp-558c69478d-m9w8r with esmtpa (envelope-from <listdansp@mail.ru>)
+	id 1xX5Qz-000000001UA-2TdB; Sat, 28 Nov 2026 02:32:53 +0300
+From: Danila Chernetsov <listdansp@mail.ru>
+To: Helge Deller <deller@gmx.de>
+Cc: Danila Chernetsov <listdansp@mail.ru>,
+	linux-fbdev@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	lvc-project@linuxtesting.org
+Subject: [PATCH] fbdev: kyro: Fix division by zero in SetOverlayViewPort()
+Date: Fri, 27 Nov 2026 23:32:35 +0000
+Message-Id: <20261127233235.114388-1-listdansp@mail.ru>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -107,53 +68,51 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Authentication-Results: exim-smtp-558c69478d-m9w8r; auth=pass smtp.auth=listdansp@mail.ru smtp.mailfrom=listdansp@mail.ru
+X-Mailru-Src: smtp
+X-7564579A: 646B95376F6C166E
+X-77F55803: 4F1203BC0FB41BD9D70A5F1A44F40AC43D0E6C000425B11C04362336E679F555182A05F538085040F22E11A790351CBD3DE06ABAFEAF6705D56B1B13BBCB64096DEDD8D0123AD74F718F752AB0E2B2A6
+X-7FA49CB5: FF5795518A3D127A4AD6D5ED66289B5278DA827A17800CE70CF6737295EB4C15EA1F7E6F0F101C67BD4B6F7A4D31EC0BCC500DACC3FED6E28638F802B75D45FF8AA50765F7900637AC83A81C8FD4AD23D82A6BABE6F325AC2E85FA5F3EDFCBAA7353EFBB553375669F88000598BFA23382AD04D68A503819EE04A50893A13BF8631B19FC615D17028EEF46B7454FC60B9742502CCDD46D0D7AE820D2C17D0E56F6B57BC7E64490611E7FA7ABCAF51C92176DF2183F8FC7C068077CCD40B79AC98941B15DA834481F9449624AB7ADAF37BA3038C0950A5D36D5E8D9A59859A8B6B7057D79CCFA8C9476E601842F6C81A1F004C906525384303E02D724532EE2C3F43C7A68FF6260569E8FC8737B5C2249EC8D19AE6D49635B68655334FD4449CB9ECD01F8117BC8BEAAAE862A0553A39223F8577A6DFFEA7C6B5F34833ED93A1043847C11F186F3C59DAA53EE0834AAEE
+X-87b9d050: 1
+X-C1DE0DAB: 0D63561A33F958A5F6222A1A74656B9B5002B1117B3ED696B6A7830B35D0D71F406406D89DD9EB8A823CB91A9FED034534781492E4B8EEADA2D5570B22232E1EC79554A2A72441328621D336A7BC284946AD531847A6065A535571D14F44ED41
+X-C8649E89: 1C3962B70DF3F0AD73CAD6646DEDE191716CD42B3DD1D34C77DD89D51EBB774225B6776AC983F447FC0B9F89525902EE6F57B2FD27647F25E66C117BDB76D659FA38DD0D7A27D7212D5D44C1726F9B840830A235A2DB08508272F20761BE5569C9C61001E0E2033DB8341EE9D5BE9A0A4094D0EC68B737AB63D675394448594C6E9FE195E79E65269350E1BD188BD56E4C41F94D744909CE04437D853D7CD20871FE3B1D98EC473624A389F0E278DBF4
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu53w8ahmwBjZKM/YPHZyZHvz5uv+WouB9+ObcCpyrx6l7KImUglyhkEat/+ysWwi0gdhEs0JGjl6ggRWTy1haxBpVdbIX1nthFXOcIETfglQORZ0zpDET4ZrlAo0bq3TDyw5v+G6YiroYwLwAQKEQ+vbo=
+X-Mailru-Sender: 4CE1109FD677D277CCA829E46AA49FF5CB0D5C3CA18C49A4B951B70A5BD4BD8E755FCD75DC2D209564F72039A0FE7D74C53BD13D3F6EEB2F3DDE9B364B0DF289C95E31D8FCF52BE1594FB4C9F0DBF4120D4ABDE8C577C2ED
+X-Mras: Ok
 
-Dne petek, 27. november 2026 ob 11:20:02 Srednjeevropski standardni =C4=8Da=
-s je Alastair D'Silva napisal(a):
->=20
-> On Fri, 2026-11-27 at 10:03 +0000, Andre Przywara wrote:
-> > Hi,
-> >=20
-> > On 11/27/26 09:06, Alastair D'Silva wrote:
-> > > This series adds boot-time simplefb HDMI support for Allwinner A733
-> > > (sun60i-a733). U-Boot enables DE3.5, TCON_TV0, and DW-HDMI2.0 and
-> >=20
-> > Where does it do that and which U-Boot version does?
-> > I don't think we really want simplefb in the mainline DTs any more,=20
-> > unless there is a big blocker or delay for proper Linux DE support (lik=
-e=20
-> > there was back in the A64 days).
-> > In Jernej's HDMI series he hints about A733 support being pretty=20
-> > straight-forward with the reworked H616 DE code, so chances are we see=
-=20
-> > proper DE3.5 support in DRM rather sooner than later.
-> >=20
-> > Cheers,
-> > Andre
-> >=20
->=20
-> I think the blocker was firmware for DE for this SoC - it can be ripped o=
-ut
-> of the Orange Pi OS blobs, but that won't be acceptable for linux-firmwar=
-e.
->=20
-> I'm currently reverse engineering the GPU firmware blob, it's not very la=
-rge,
-> and is a well understood instruction set (MIPs) so that may be a path for=
-ward
-> without the vendor contributing the blob to linux-firmware themselves.
+In SetOverlayViewPort(), the vertical scale factor is calculated as
+(ulDest << 11) / ulSrc and used as a divisor a few lines later. The
+quotient truncates to zero if the on-screen viewport is a single line
+high (ulDest == 0), or if the overlay surface was created with zero
+height, in which case ulSrc wraps around to U32_MAX. The existing
+check "if (ulSrc <= 1)" does not prevent either case, and the
+division by ulFxScale causes a divide error in the kernel.
 
-What is this GPU firmware blob? If you mean for Imagination GPU, that
-blob is already in linux-firmware. But then, this has nothing to do with
-actual display output. Display Engine 3.5 doesn't need any firmware...
+Return -EINVAL when the scale factor is zero.
 
-I'm with Andre here. simplefb isn't needed. For anything more fancy,
-Maxime is working on DRM readout series, which should allow seamless
-takeover of display devices from bootloaders, like U-Boot.
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
 
-Best regards,
-Jernej
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Signed-off-by: Danila Chernetsov <listdansp@mail.ru>
+---
+ drivers/video/fbdev/kyro/STG4000OverlayDevice.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
+diff --git a/drivers/video/fbdev/kyro/STG4000OverlayDevice.c b/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
+index cb6fa0991fca..fae1f5d5ec8a 100644
+--- a/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
++++ b/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
+@@ -376,6 +376,9 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
+ 	ulFxScale = (ulDest << 11) / ulSrc;	/* fixed point scale factor */
+ 	ulFxOffset = (srcDest.lDstY2 - srcDest.ulDstY2) << 11;
+ 
++	if (!ulFxScale)
++		return -EINVAL;
++
+ 	ulSrcBottom = ulSrcBottom - (ulFxOffset / ulFxScale);
+ 	ulSrc = ulSrcBottom - ulSrcTop;
+ 	ulHeight = ulSrc;
+-- 
+2.25.1
 

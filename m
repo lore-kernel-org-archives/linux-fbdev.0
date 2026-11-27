@@ -1,57 +1,60 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=119.15.109.137
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795766818;
-	b=qHr4mmaKxrJyjopd0UgczIeLdhxzcFwX8Mstw3O5lF/UkAaB5+fn+vLhM0YP4yAmIyC8
-	 +1cOTMF8k8EgNU5oXpxbVx+uWbocPqpJBfVpcHEg1yj+ZV+KvDfjVQtOPj3M9H0VuTp6e
-	 F8dCvSTy0Fydf1pt8k89r8aDPPbU/ah5zNaG6prTBy784BWWGU7sFgg1k/qGGYlWIHeyW
-	 Q0XdSMv2xq6vseEyaELMXJV+JuNfWTrekTxxV6MQOZP59aFo9WAplmkB5/rwXD9M1GOgs
-	 gS+LLcSCEpIEyNtgBCmD/scTfa0cQtHkhWn3KPLykLes1ZqLT4zPZ5Jvt3RpcUdG9kQ==
+	t=1795766822;
+	b=SkFidnT9D8iOo/n2taMZDGuSvov5Xsc5WLR0R8qSXVEijnqHuslUAHT2HquG6TQ5zgeP
+	 hnZyIbyb0B6b9bjnkZND3wmnv/yfz2jvX6+BYgwkUFs7bUkxePvyzs9AhFpasfNrrjuUi
+	 5dPQ0dFSrqx4wIg44es5G0tcywTUzsE/+8qbEZJpG/LImjcfkO9p2zsiImsWUrGIfExGr
+	 UaKPhk41W2J0NKrLDSwAfkmsbnK1rGgAAQva9v5yJ3rpXztXct3/RXFvDSPYXAlZnyX3q
+	 s1Ryu30m+P3Tw/JbDehVOCfwt/6strkeQju+3I7LSFwSCRqAxXUvK1eQjgyYHrMMZoA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795766818;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795766822;
 	h=DMARC-Filter:Received:DKIM-Signature:X-GPT-Reason:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding;
-	bh=gvWBA1mhx8ibYVBggwemKsSLz8VkwDf35wvv7VpFuF4=;
-	b=jQl3xjlm8v828Uxse8WmCkq+f6E6CXoKSFAEf6CrUBBNCeL7QZ8IrYyt50KPh1HZPqhQ
-	 yXotDgYeRBqzWe3PUOoWJzZmpmtrrjtBL3ff7HMXmrc1XfJQzmulM6n86IyHGTDje+tM3
-	 ZkPBwza7byJB2phLtRmkSbkXXhE26rtqYyUlWmnG9wHtzENqB2MCdHVFeh8F8tWVS59nK
-	 VlMBniVqNE9PAQgJ1rHOScH9I2jaz/fu0LBoAQndye9pViBbqrYWLd0CEAVSXdJuuV/2f
-	 DkFjrv0FyBP64apRnHf5OR41gcK/xNaLXaS0ssfhCbE/qjgakuWUrETq4+NYzxuYLFw==
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding;
+	bh=5+4WWMGxQZEZwgmCm5Go6TCy3m3YHuZQuM4Z32rUfXE=;
+	b=XvCRW8ZybkF2kPUzfieXb+FHbZ7xQ8+yq1CSD3fczaTvwvDqThj7JQnMpNRalXiokOZR
+	 Nbeoci1asi4EG3jkSEe23cuRzxklyOAhYCRpEO9Zq/K3yFRd0PRBB3rM34mRh5L8NqRc7
+	 57K6KGIpJiL7gNOQw5eEN/ZCdBRyuIDWGuR9kVgUufbatbSuHdmzLx/J3HytRqAhkxx9o
+	 QuEAlmvXaue03f/dYxlfc0oZ+DrqtxRCrUMR2Gw1gOcWdwUbs/Tzf8R/NAZW7ISW+7O0u
+	 bacVWeZFk/281PKpD+B6FWO2jy0JPUHx3OqucS8Lm9y2feLHLhuQ2cvdFtvLv885/Pw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=d-silva.org;
 	spf=pass smtp.mailfrom=d-silva.org;
-	dkim=pass header.d=d-silva.org header.i=@d-silva.org header.a=rsa-sha256 header.s=2025a header.b=NKiQWi6G;
+	dkim=pass header.d=d-silva.org header.i=@d-silva.org header.a=rsa-sha256 header.s=2025a header.b=ODRjKCOG;
 	arc=none smtp.remote-ip=119.15.109.137
 Received: from www.nmnhosting.com (watt.d-silva.org [119.15.109.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32606606A31C;
-	Fri, 27 Nov 2026 08:06:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 32606606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 71684606A31E;
+	Fri, 27 Nov 2026 08:07:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 71684606A31E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=d-silva.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=d-silva.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=d-silva.org header.i=@d-silva.org header.a=rsa-sha256 header.s=2025a header.b=NKiQWi6G
+	dkim=pass (2048-bit key) header.d=d-silva.org header.i=@d-silva.org header.a=rsa-sha256 header.s=2025a header.b=ODRjKCOG
 Received: from Hawking.lan (hawking.lan [10.0.1.4])
-	by www.nmnhosting.com (Postfix) with ESMTP id 2D6D74C972;
-	Fri, 27 Nov 2026 19:06:49 +1100 (AEDT)
+	by www.nmnhosting.com (Postfix) with ESMTP id 909534C979;
+	Fri, 27 Nov 2026 19:06:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=d-silva.org; s=2025a;
-	t=1795766809;
+	t=1795766815;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=gvWBA1mhx8ibYVBggwemKsSLz8VkwDf35wvv7VpFuF4=;
-	b=NKiQWi6GIrzDGR2pthCqjgdeHpEK1h48kycZnGQ7Ij9HtRGZZYqaQzFhr33YzIhXsi1wtz
-	Hrb3hB6WyphdOfO4PgxapHCaxHo4CpfbhEYOPBZoKuJBa9aZNXnsV/ljO+tPh2cTY/z6px
-	ZdnS0wSCDQOPZihsbANHOh0Nyb40lS3tWMWiALnJrcQsB4VydiV4h3H1rV6EuJQ1hNtuUX
-	HcFoKpCA2XAkHSBIa34g6fCWIQFwDQxpX2+Jk7pqaneaEMiu9Dz6/7NlRykG5OtEE4/eN5
-	wB7z1OQGZNxmcuAsT/zGrX5JHiikTexn8pVu91UgyrPGXTvlUmbMzUvjI848ow==
-X-GPT-Reason: legitimate; the message is a technical software patch
-	for the Linux kernel, which is consistent with the personal mailbox
-	of a developer (alastair@d-silva.org); the sender domain matches
-	the recipient domain; the links provided point to the well-known
-	kernel.org mailing list platform; there are no markers of marketing,
-	phishing, or urgency.
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=5+4WWMGxQZEZwgmCm5Go6TCy3m3YHuZQuM4Z32rUfXE=;
+	b=ODRjKCOG8mpFQk6IQDfrwcfRKrp4wvILiOuH4J9F74evzSwb5hfcIz4XfvDBq6m9YbdYa5
+	a+80zMmC1UlgjtpoLfYwCU8xOsXBiB13CIUHlwHPvDofuIM0mjWdbm0V3/RaXwDFN/C8oZ
+	hl+D4QbmkvxduyDrWzPDiSbGU8IdIsJVEXfLw7c568UaGVI2431JtpAIo+wsFtpRiWumzQ
+	yyaE+GXf3XAuRx7OlkkIYVgpq+bP1ShPfQ5Vx9x6VZ1cWEBJYzJS9tMwmWI6tDERyifZDK
+	Bn3ZPZFI1LR3AdQQr9A5y5h0XDxgzrkupigLw1O+dE+2NOdz2JMnE6eZgRJ5gw==
+X-GPT-Reason: This is a legitimate personal/professional communication.
+	The content is a technical patch submission (Linux kernel style)
+	for a display driver, which aligns perfectly with the personal
+	mailbox (alastair@d-silva.org) and the sender's identity
+	(alastair@d-silva.org). There are no phishing indicators, no urgent
+	scare tactics, and the message lacks any marketing or malicious
+	links.
 From: Alastair D'Silva <alastair@d-silva.org>
 To: Hans de Goede <hansg@kernel.org>,
 	Rob Herring <robh@kernel.org>,
@@ -66,10 +69,12 @@ Cc: linux-fbdev@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-sunxi@lists.linux.dev,
 	Alastair D'Silva <alastair@d-silva.org>
-Subject: [PATCH 0/3] arm64: dts: allwinner: sun60i-a733: Add simplefb HDMI support
-Date: Fri, 27 Nov 2026 19:06:46 +1100
-Message-ID: <20261127080649.1982883-1-alastair@d-silva.org>
+Subject: [PATCH 1/3] dt-bindings: display: simple-framebuffer: Add Allwinner DE3.5 HDMI pipeline
+Date: Fri, 27 Nov 2026 19:06:47 +1100
+Message-ID: <20261127080649.1982883-2-alastair@d-silva.org>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261127080649.1982883-1-alastair@d-silva.org>
+References: <20261127080649.1982883-1-alastair@d-silva.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -81,31 +86,25 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series adds boot-time simplefb HDMI support for Allwinner A733
-(sun60i-a733). U-Boot enables DE3.5, TCON_TV0, and DW-HDMI2.0 and
-updates the disabled /chosen/framebuffer-hdmi node. Linux keeps the
-display clocks and PCK-600 power domains active across boot.
+Add the de0-tcon-tv0-hdmi pipeline for Allwinner A733 DE3.5 HDMI output.
 
-Tested on Xunlong OrangePi 4 Pro, based on:
-  [PATCH 0/3] arm64: dts: allwinner: Add Xunlong OrangePi 4 Pro support
-  https://lore.kernel.org/r/20261125124407.4098345-1-alastair@d-silva.org
-  [PATCH] pmdomain: sunxi: pck600: Initialize pd->pck in probe
-  https://lore.kernel.org/r/20261127080625.1982574-1-alastair@d-silva.org
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ .../devicetree/bindings/display/simple-framebuffer.yaml          | 1 +
+ 1 file changed, 1 insertion(+)
 
-Alastair D'Silva (3):
-  dt-bindings: display: simple-framebuffer: Add Allwinner DE3.5 HDMI
-    pipeline
-  arm64: dts: allwinner: sun60i-a733: Add PCK-600 power domain
-    controller
-  arm64: dts: allwinner: sun60i-a733: Add simplefb HDMI node
-
- .../bindings/display/simple-framebuffer.yaml  |  1 +
- .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 36 +++++++++++++++++++
- 2 files changed, 37 insertions(+)
-
-prerequisite-patch-id: 309a5a3ca5b216915907263dea7024263abf1d1c
-prerequisite-patch-id: 55e543b9854c7ae2fa86969233d05ccadd3792e9
-prerequisite-patch-id: cfcad85224e288ec2168e7f245b4a1c63e9a34a7
+diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+index c627ec088434..350cb075f055 100644
+--- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
++++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+@@ -131,6 +131,7 @@ properties:
+   allwinner,pipeline:
+     description: Pipeline used by the framebuffer on Allwinner SoCs
+     enum:
++      - de0-tcon-tv0-hdmi
+       - de_be0-lcd0
+       - de_be0-lcd0-hdmi
+       - de_be0-lcd0-tve0
 -- 
 2.53.0
 

@@ -1,80 +1,49 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=119.15.109.137
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795766837;
-	b=aqvduk7lBuiYNMYjiq27Jcmp8xcbMcfArN2w2WD8iSW1UUcBMV2Jb7a++YMGOFnPGmcy
-	 VbovC9ifz+7JEcEWGxsntgczX7SPE/rpAJK4jIwI4Zm0ktVtUsfHIxKKXZpk45n0tHYOp
-	 gVsK5GMbFHvdtcAXhi4o67tx9CmyVYRgqpXvBjikXTaRDJJJJs3vzQ86Z4mCAmmNnt7My
-	 FnKs4yiTAomunC+P7gMZA2B+BZj4mQzv/R5KM1E5bOt/aB8agZZaWljbLDAUbp8tesg18
-	 WdcEUf83sh17jCNwSLZfqF2aCat4YlHiEHLa9le4vYslU27TTpOEn28lEzJbmriyX6w==
+	t=1795773804;
+	b=cnTv4P0/Ygtb1C3NZ+XoMlVS0PLa1bSueOZNsas0X1o6duazj2+NvgbZ+tbvbQ/6KNRH
+	 sN7U6iOGoAlmie6uIDTEUhouiCFCLXv3L1h4IZ+TvYgGe/rxrrOHr5pzTm94Ns8276yEN
+	 FGY66bjGW4f6t3svQRD/9P1EngUMZrHQDU7ozqci6qvTpuvesLXGQ5db+CgdBs9wyz37E
+	 JeCbltijdr9z0IbXQpnGdXiwpEkUd8vSBWMp6q2R1clvmQEaoeCzMHNYTM77vQBcai6V+
+	 gvmrQxmTTOEd4c30dqLwgrpFv/CIkkYcLS2kRR/lOeIHoGLIv5CO2Yal+uNvRh2VndQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795766837;
-	h=DMARC-Filter:Received:DKIM-Signature:X-GPT-Reason:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=uP2T9+mEzaneJvWG+hF9U3aolWC4k7dp9+khY3E2Xds=;
-	b=w+nPAMcVO0ffIQ2/98cpFEw2g4j6KTHbxyvjfvBYtdYaA5PKyq4XAILTl5D6Q4LyKXnX
-	 /zCvRM1lEaqSRRWugyzoMvcXK6hPOj29Ox8/lKyLeUGBCyFHbCwsTNx4RXo0/fKE/nkCi
-	 +Mq9lw1DmCvuwa+iyjubcUBRAPaUYKDf6phYreCE3u9HwG2yzSUUPTBZeqcO3gWmaEKjZ
-	 hTNU9+9yYIk58s05MJD9NPMu+kasDi3LYjrGQOVDspSoLUBUKhSTRRi2P8r6/Yopv+Ani
-	 6IRnRhSpF4tBye9GSrshKa26fs/sVO0bbSV8vRH03XY4tVs9uqFTlWFt78eIlcHnUpw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795773804;
+	h=DMARC-Filter:Received:Received:DKIM-Signature:Message-ID:Date:
+	 MIME-Version:User-Agent:Subject:To:Cc:References:Content-Language:
+	 From:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+	bh=lVOW8l75+YA+TNFgiPtCP7q5WQJyikZOcST3pLWFG+M=;
+	b=R01BExZE7SjBNcQeH2aVPlnuX7TGnvJgx6HBosUgut4ugGNJxT4b5p2lD/SAHpc6d4XM
+	 LRXb9glQwiFDqwKTTtUWCnagGjLnaB0EokVTtzKyvz1oZhpTBAK40wVoUOV4PjnkRVRp6
+	 w/fth2atSbgwkii8nsQ7Fg47HeplUon/NWuh2wUOACrnI6sFwoyAQrXWG2iG/m7tQM22o
+	 64Owrb7BBjaqp5Vo9XLDqhdIar5k3tR0kGaYQ3u6IWEN6X1KbuqbBqCzL5b8dFKXjcw6/
+	 fi5Ai5KtD/thV3a/F56FUtS465PLDjzjqd7FtsR0HGbWnPFYyQhu2Sk8Wra6NwGWbCg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=d-silva.org;
-	spf=pass smtp.mailfrom=d-silva.org;
-	dkim=pass header.d=d-silva.org header.i=@d-silva.org header.a=rsa-sha256 header.s=2025a header.b=Rix4Na17;
-	arc=none smtp.remote-ip=119.15.109.137
-Received: from www.nmnhosting.com (watt.d-silva.org [119.15.109.137])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC1FD606A31E;
-	Fri, 27 Nov 2026 08:07:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DC1FD606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=d-silva.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=d-silva.org
+	dmarc=pass header.from=arm.com;
+	spf=pass smtp.mailfrom=arm.com;
+	dkim=pass header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=cYH2v8JY;
+	arc=none smtp.remote-ip=217.140.110.172
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 5FB5F606A327;
+	Fri, 27 Nov 2026 10:03:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5FB5F606A327
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=d-silva.org header.i=@d-silva.org header.a=rsa-sha256 header.s=2025a header.b=Rix4Na17
-Received: from Hawking.lan (hawking.lan [10.0.1.4])
-	by www.nmnhosting.com (Postfix) with ESMTP id C68B94C97A;
-	Fri, 27 Nov 2026 19:07:08 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=d-silva.org; s=2025a;
-	t=1795766828;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uP2T9+mEzaneJvWG+hF9U3aolWC4k7dp9+khY3E2Xds=;
-	b=Rix4Na17urkRnqUM/sP+h41j5Yjmqu/7rkE9IuJLrl0v6kQ1CKEGwb7ZUllKZZ3eR0IC41
-	GcoDm8bh4lWKB3Vy6nDn6olt36+0OTZMRTYXrXS2FUiW+RZhXeYJCNOujeIAOjSvXmNWlJ
-	csfrhv3+3XF9JyP8GWt5MI24oNoPxm0wh0/KSS1uqYF19jUmpNf0R/U2A9glIhZukFgBXf
-	ZQrM4D4FeOENAmWVlX6TNmucqYTa1IkDRYgC47MQiX2XTa86JhNTDa93GGSKjiXg8zueSp
-	dA0Q7FA4FSHQS5T/Sy2IzMdUejs85aLA8Gwt93HCxZmOc8ISqP+C4c9xAX1aiw==
-X-GPT-Reason: This is a legitimate personal/technical correspondence.
-	The email content is a technical patch description for a Linux
-	kernel (arm64: dts: allwinner), which aligns perfectly with the
-	sender's domain (alastair@d-silva.org) and the recipient's personal
-	mailbox (alastair@d-silva.org). There are no phishing indicators,
-	no marketing content, and the sender identity is consistent across
-	the From and Reply-To headers.
-From: Alastair D'Silva <alastair@d-silva.org>
-To: Hans de Goede <hansg@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Chen-Yu Tsai <wens@kernel.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>
-Cc: linux-fbdev@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-sunxi@lists.linux.dev,
-	Alastair D'Silva <alastair@d-silva.org>
-Subject: [PATCH 3/3] arm64: dts: allwinner: sun60i-a733: Add simplefb HDMI node
-Date: Fri, 27 Nov 2026 19:06:49 +1100
-Message-ID: <20261127080649.1982883-4-alastair@d-silva.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20261127080649.1982883-1-alastair@d-silva.org>
-References: <20261127080649.1982883-1-alastair@d-silva.org>
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=cYH2v8JY
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1A8C41758;
+	Fri, 27 Nov 2026 02:03:20 -0800 (PST)
+Received: from [10.33.50.35] (e142021.arm.com [10.33.50.35])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 671123F86C;
+	Fri, 27 Nov 2026 02:03:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1795773802; bh=H8nZxnnDGCJuTHPvOjaWLW2hhq4iXdq3kr4GLdgMbYc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=cYH2v8JYfSlKSm6ZU73aDFvRc7WlCVMeF0g3+UbC9kRZKGdzHWwTu6gHISmDJwJ6K
+	 VPEmR19SFFV0mQu2hCiL1pVSZ0H8xZZUlW21OAwqeV/XieQ/XSym4yfn7scqXB527u
+	 nzRhpfMl8pWJ47e+AirLLdt5xtQdGK4IeMuewj1U=
+Message-ID: <18637573-d20f-4a58-9e63-6bf71b015cef@arm.com>
+Date: Fri, 27 Nov 2026 10:03:18 +0000
 X-Mailing-List: linux-fbdev@vger.kernel.org
 List-Id: <linux-fbdev.vger.kernel.org>
 List-Post: <mailto:linux-fbdev@vger.kernel.org>
@@ -84,56 +53,63 @@ List-Unsubscribe: <mailto:linux-fbdev+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-fbdev+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/3] arm64: dts: allwinner: sun60i-a733: Add simplefb HDMI
+ support
+To: Alastair D'Silva <alastair@d-silva.org>, Hans de Goede
+ <hansg@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Samuel Holland <samuel@sholland.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev
+References: <20261127080649.1982883-1-alastair@d-silva.org>
+Content-Language: en-GB
+From: Andre Przywara <andre.przywara@arm.com>
+In-Reply-To: <20261127080649.1982883-1-alastair@d-silva.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Add a disabled simple-framebuffer HDMI node under /chosen.
-List the DE3.5, TCON, and HDMI clocks and power domains so Linux
-keeps them active.
+Hi,
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
----
- .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 28 +++++++++++++++++++
- 1 file changed, 28 insertions(+)
+On 11/27/26 09:06, Alastair D'Silva wrote:
+> This series adds boot-time simplefb HDMI support for Allwinner A733
+> (sun60i-a733). U-Boot enables DE3.5, TCON_TV0, and DW-HDMI2.0 and
 
-diff --git a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
-index 509d0cfea160..46418fc60529 100644
---- a/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
-+++ b/arch/arm64/boot/dts/allwinner/sun60i-a733.dtsi
-@@ -13,6 +13,34 @@ / {
- 	#size-cells = <2>;
- 	interrupt-parent = <&gic>;
- 
-+	chosen {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		simplefb_hdmi: framebuffer-hdmi {
-+			compatible = "allwinner,simple-framebuffer",
-+				     "simple-framebuffer";
-+			allwinner,pipeline = "de0-tcon-tv0-hdmi";
-+			clocks = <&ccu CLK_PLL_DE>,
-+				 <&ccu CLK_AHB_DE>,
-+				 <&ccu CLK_AHB_VID_COUT0>,
-+				 <&ccu CLK_AHB_VID_COUT1>,
-+				 <&ccu CLK_MBUS_DESYS>,
-+				 <&ccu CLK_BUS_DE0>,
-+				 <&ccu CLK_DE0>,
-+				 <&ccu CLK_BUS_DPSS_TOP1>,
-+				 <&ccu CLK_BUS_TCON_TV0>,
-+				 <&ccu CLK_HDMI_TV>,
-+				 <&ccu CLK_BUS_HDMI_TV>,
-+				 <&ccu CLK_HDMI_SFR>;
-+			power-domains = <&pck600 PD_DE_SYS>,
-+					<&pck600 PD_VO>,
-+					<&pck600 PD_VO1>;
-+			status = "disabled";
-+		};
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--- 
-2.53.0
+Where does it do that and which U-Boot version does?
+I don't think we really want simplefb in the mainline DTs any more, 
+unless there is a big blocker or delay for proper Linux DE support (like 
+there was back in the A64 days).
+In Jernej's HDMI series he hints about A733 support being pretty 
+straight-forward with the reworked H616 DE code, so chances are we see 
+proper DE3.5 support in DRM rather sooner than later.
+
+Cheers,
+Andre
+
+> updates the disabled /chosen/framebuffer-hdmi node. Linux keeps the
+> display clocks and PCK-600 power domains active across boot.
+> 
+> Tested on Xunlong OrangePi 4 Pro, based on:
+>    [PATCH 0/3] arm64: dts: allwinner: Add Xunlong OrangePi 4 Pro support
+>    https://lore.kernel.org/r/20261125124407.4098345-1-alastair@d-silva.org
+>    [PATCH] pmdomain: sunxi: pck600: Initialize pd->pck in probe
+>    https://lore.kernel.org/r/20261127080625.1982574-1-alastair@d-silva.org
+> 
+> Alastair D'Silva (3):
+>    dt-bindings: display: simple-framebuffer: Add Allwinner DE3.5 HDMI
+>      pipeline
+>    arm64: dts: allwinner: sun60i-a733: Add PCK-600 power domain
+>      controller
+>    arm64: dts: allwinner: sun60i-a733: Add simplefb HDMI node
+> 
+>   .../bindings/display/simple-framebuffer.yaml  |  1 +
+>   .../arm64/boot/dts/allwinner/sun60i-a733.dtsi | 36 +++++++++++++++++++
+>   2 files changed, 37 insertions(+)
+> 
+> prerequisite-patch-id: 309a5a3ca5b216915907263dea7024263abf1d1c
+> prerequisite-patch-id: 55e543b9854c7ae2fa86969233d05ccadd3792e9
+> prerequisite-patch-id: cfcad85224e288ec2168e7f245b4a1c63e9a34a7
 
